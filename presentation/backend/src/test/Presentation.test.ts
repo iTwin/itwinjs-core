@@ -15,6 +15,8 @@ import { PresentationIpcHandler } from "../presentation-backend/PresentationIpcH
 import { PresentationManager } from "../presentation-backend/PresentationManager.js";
 import { PresentationRpcImpl } from "../presentation-backend/PresentationRpcImpl.js";
 import { TemporaryStorage } from "../presentation-backend/TemporaryStorage.js";
+import { _presentation_manager_detail } from "../presentation-backend/InternalSymbols.js";
+import { PresentationManagerDetail } from "../presentation-backend/PresentationManagerDetail.js";
 
 describe("Presentation", () => {
   afterEach(async () => {
@@ -39,9 +41,10 @@ describe("Presentation", () => {
       sinon.stub(IModelHost, "onBeforeShutdown").get(() => onBeforeShutdown);
 
       Presentation.initialize({
+        // @ts-expect-error internal prop
         clientManagerFactory: () =>
           ({
-            setOnManagerUsedHandler: sinon.stub(),
+            onUsed: new BeEvent(),
             [Symbol.dispose]: sinon.stub(),
           }) as unknown as PresentationManager,
       });
@@ -84,7 +87,11 @@ describe("Presentation", () => {
 
       it("uses client manager factory provided through props", () => {
         const managerMock = moq.Mock.ofType<PresentationManager>();
-        Presentation.initialize({ clientManagerFactory: () => managerMock.object });
+        managerMock.setup((x) => x.onUsed).returns(() => new BeEvent());
+        Presentation.initialize({
+          // @ts-expect-error internal prop
+          clientManagerFactory: () => managerMock.object,
+        });
         expect(Presentation.getManager()).to.eq(managerMock.object);
       });
     });
@@ -134,10 +141,22 @@ describe("Presentation", () => {
       const imodelMock = moq.Mock.ofType<BriefcaseDb>();
       const nativePlatformMock = moq.Mock.ofType<NativePlatformDefinition>();
       const managerMock = moq.Mock.ofType<PresentationManager>();
-      managerMock.setup((x) => x.getNativePlatform).returns(() => () => nativePlatformMock.object);
+      managerMock.setup((x) => x.onUsed).returns(() => new BeEvent());
+      managerMock
+        .setup((x) => x[_presentation_manager_detail])
+        .returns(
+          () =>
+            ({
+              getNativePlatform: () => nativePlatformMock.object,
+            }) as PresentationManagerDetail,
+        );
       nativePlatformMock.setup((x) => x.getImodelAddon(imodelMock.object)).verifiable(moq.Times.atLeastOnce());
 
-      Presentation.initialize({ enableSchemasPreload: true, clientManagerFactory: () => managerMock.object });
+      Presentation.initialize({
+        enableSchemasPreload: true,
+        // @ts-expect-error internal prop
+        clientManagerFactory: () => managerMock.object,
+      });
       BriefcaseDb.onOpened.raiseEvent(imodelMock.object, {} as any);
       nativePlatformMock.verify(async (x) => x.forceLoadSchemas(moq.It.isAny()), moq.Times.once());
     });

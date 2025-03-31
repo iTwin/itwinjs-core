@@ -197,6 +197,8 @@ export enum PresentationBackendNativeLoggerCategory {
 
 // @public
 export class PresentationManager {
+    // @internal (undocumented)
+    get [_presentation_manager_detail](): PresentationManagerDetail;
     [Symbol.dispose](): void;
     constructor(props?: PresentationManagerProps);
     get activeUnitSystem(): UnitSystemKey | undefined;
@@ -211,28 +213,23 @@ export class PresentationManager {
     getContentSet(requestOptions: WithCancelEvent<Prioritized<Paged<ContentRequestOptions<IModelDb, Descriptor, KeySet, RulesetVariable>>>> & BackendDiagnosticsAttribute): Promise<Item[]>;
     getContentSetSize(requestOptions: WithCancelEvent<Prioritized<ContentRequestOptions<IModelDb, Descriptor | DescriptorOverrides, KeySet, RulesetVariable>>> & BackendDiagnosticsAttribute): Promise<number>;
     getContentSources(requestOptions: WithCancelEvent<Prioritized<ContentSourcesRequestOptions<IModelDb>>> & BackendDiagnosticsAttribute): Promise<SelectClassInfo[]>;
-    // @internal (undocumented)
-    getDetail(): PresentationManagerDetail;
     getDisplayLabelDefinition(requestOptions: WithCancelEvent<Prioritized<DisplayLabelRequestOptions<IModelDb, InstanceKey>>> & BackendDiagnosticsAttribute): Promise<LabelDefinition>;
     getDisplayLabelDefinitions(requestOptions: WithCancelEvent<Prioritized<Paged<DisplayLabelsRequestOptions<IModelDb, InstanceKey>>>> & BackendDiagnosticsAttribute): Promise<LabelDefinition[]>;
     getElementProperties<TParsedContent = ElementProperties>(requestOptions: WithCancelEvent<Prioritized<SingleElementPropertiesRequestOptions<IModelDb, TParsedContent>>> & BackendDiagnosticsAttribute): Promise<TParsedContent | undefined>;
     getElementProperties<TParsedContent = ElementProperties>(requestOptions: WithCancelEvent<Prioritized<MultiElementPropertiesRequestOptions<IModelDb, TParsedContent>>> & BackendDiagnosticsAttribute): Promise<MultiElementPropertiesResponse<TParsedContent>>;
     getFilteredNodePaths(requestOptions: WithCancelEvent<Prioritized<FilterByTextHierarchyRequestOptions<IModelDb, RulesetVariable>>> & BackendDiagnosticsAttribute): Promise<NodePathElement[]>;
-    // @internal (undocumented)
-    getNativePlatform: () => NativePlatformDefinition;
     getNodePaths(requestOptions: WithCancelEvent<Prioritized<FilterByInstancePathsHierarchyRequestOptions<IModelDb, RulesetVariable>>> & BackendDiagnosticsAttribute): Promise<NodePathElement[]>;
     getNodes(requestOptions: WithCancelEvent<Prioritized<Paged<HierarchyRequestOptions<IModelDb, NodeKey, RulesetVariable>>>> & BackendDiagnosticsAttribute): Promise<Node_2[]>;
     getNodesCount(requestOptions: WithCancelEvent<Prioritized<HierarchyRequestOptions<IModelDb, NodeKey, RulesetVariable>>> & BackendDiagnosticsAttribute): Promise<number>;
     getNodesDescriptor(requestOptions: WithCancelEvent<Prioritized<HierarchyLevelDescriptorRequestOptions<IModelDb, NodeKey, RulesetVariable>>> & BackendDiagnosticsAttribute): Promise<Descriptor | undefined>;
     getPagedDistinctValues(requestOptions: WithCancelEvent<Prioritized<DistinctValuesRequestOptions<IModelDb, Descriptor | DescriptorOverrides, KeySet, RulesetVariable>>> & BackendDiagnosticsAttribute): Promise<PagedResponse<DisplayValueGroup>>;
-    // @internal (undocumented)
+    // (undocumented)
     getRulesetId(rulesetOrId: Ruleset | string): string;
     // @deprecated
     getSelectionScopes(_requestOptions: SelectionScopeRequestOptions<IModelDb> & BackendDiagnosticsAttribute): Promise<SelectionScope[]>;
+    get onUsed(): BeEvent<() => void>;
     get props(): PresentationManagerProps;
     rulesets(): RulesetManager;
-    // @internal (undocumented)
-    setOnManagerUsedHandler(handler: () => void): void;
     vars(rulesetId: string): RulesetVariablesManager;
 }
 
@@ -245,15 +242,11 @@ export interface PresentationManagerCachingConfig {
 
 // @public
 export interface PresentationManagerProps {
-    // @internal (undocumented)
-    addon?: NativePlatformDefinition;
     caching?: PresentationManagerCachingConfig;
     defaultFormats?: FormatsMap;
     defaultUnitSystem?: UnitSystemKey;
     diagnostics?: BackendDiagnosticsOptions;
     getLocalizedString?: (key: string) => string;
-    // @internal
-    id?: string;
     // @deprecated
     presentationAssetsRoot?: string | PresentationAssetsRootConfig;
     rulesetDirectories?: string[];
@@ -267,8 +260,6 @@ export interface PresentationManagerProps {
 
 // @public
 export interface PresentationProps extends Omit<PresentationManagerProps, "enableSchemasPreload"> {
-    // @internal
-    clientManagerFactory?: (clientId: string, props: PresentationManagerProps) => PresentationManager;
     enableSchemasPreload?: boolean;
     requestTimeout?: number;
     unusedClientLifetime?: number;
@@ -323,7 +314,7 @@ export interface RulesetVariablesManager {
 }
 
 // @public @deprecated
-export type SingleManagerPresentationProps = Omit<PresentationProps, "clientManagerFactory" | "unusedClientLifetime">;
+export type SingleManagerPresentationProps = Omit<PresentationProps, "unusedClientLifetime">;
 
 // @public @deprecated
 export type UnitSystemFormat = UnitSystemFormat_2;

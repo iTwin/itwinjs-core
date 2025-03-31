@@ -237,12 +237,11 @@ export class PresentationRpcInterface extends RpcInterface {
 
   /** @deprecated in 4.10. Use [PresentationManager]($presentation-frontend) instead of calling the RPC interface directly. */
   public async getContentDescriptor(_token: IModelRpcProps, _options: ContentDescriptorRpcRequestOptions): PresentationRpcResponse<DescriptorJSON | undefined> {
-    arguments[1] = { ...arguments[1], transport: "unparsed-json" };
-    const response: PresentationRpcResponseData<DescriptorJSON | string | undefined> = await this.forward(arguments);
-    if (response.statusCode === PresentationStatus.Success && typeof response.result === "string") {
-      response.result = JSON.parse(response.result);
-    }
-    return response as PresentationRpcResponseData<DescriptorJSON | undefined>;
+    const response: PresentationRpcResponseData<string | undefined> = await this.forward(arguments);
+    return {
+      ...response,
+      ...(response.result ? { result: JSON.parse(response.result) } : {}),
+    };
   }
 
   /** @deprecated in 4.10. Use [PresentationManager]($presentation-frontend) instead of calling the RPC interface directly. */

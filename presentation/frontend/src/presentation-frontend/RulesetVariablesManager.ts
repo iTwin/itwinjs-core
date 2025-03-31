@@ -83,9 +83,7 @@ export interface RulesetVariablesManager {
   /** Unsets variable with given id. */
   unset(variableId: string): Promise<void>;
 
-  /** Retrieves all variables.
-   * @internal
-   */
+  /** Retrieves all variables. */
   getAllVariables(): RulesetVariable[];
 }
 
@@ -103,8 +101,8 @@ export class RulesetVariablesManagerImpl implements RulesetVariablesManager {
 
   public getAllVariables(): RulesetVariable[] {
     const variables: RulesetVariable[] = [];
-    for (const entry of this._clientValues) {
-      variables.push(entry[1]);
+    for (const [_, variable] of this._clientValues) {
+      variables.push(variable);
     }
     return variables;
   }

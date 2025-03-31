@@ -8,6 +8,7 @@ import { BeEvent } from '@itwin/core-bentley';
 import { ClientDiagnostics } from '@itwin/presentation-common';
 import { ClientDiagnosticsAttribute } from '@itwin/presentation-common';
 import { ClientDiagnosticsHandler } from '@itwin/presentation-common';
+import { ComputeSelectionRequestOptions } from '@itwin/presentation-common';
 import { Content } from '@itwin/presentation-common';
 import { ContentDescriptorRequestOptions } from '@itwin/presentation-common';
 import { ContentInstanceKeysRequestOptions } from '@itwin/presentation-common';
@@ -31,11 +32,13 @@ import { HierarchyUpdateInfo } from '@itwin/presentation-common';
 import { Id64Arg } from '@itwin/core-bentley';
 import { Id64String } from '@itwin/core-bentley';
 import { IModelConnection } from '@itwin/core-frontend';
+import { IModelRpcProps } from '@itwin/core-common';
 import { InstanceKey } from '@itwin/presentation-common';
 import { Item } from '@itwin/presentation-common';
 import { Key } from '@itwin/presentation-common';
 import { Keys } from '@itwin/presentation-common';
 import { KeySet } from '@itwin/presentation-common';
+import { KeySetJSON } from '@itwin/presentation-common';
 import { LabelDefinition } from '@itwin/presentation-common';
 import { Localization } from '@itwin/core-common';
 import { Node as Node_2 } from '@itwin/presentation-common';
@@ -51,6 +54,7 @@ import { SchemaContext } from '@itwin/ecschema-metadata';
 import { SelectClassInfo } from '@itwin/presentation-common';
 import { SelectionScope } from '@itwin/presentation-common';
 import { SelectionScopeProps } from '@itwin/presentation-common';
+import { SelectionScopeRequestOptions } from '@itwin/presentation-common';
 import { SelectionStorage } from '@itwin/unified-selection';
 import { SingleElementPropertiesRequestOptions } from '@itwin/presentation-common';
 import { UnitSystemKey } from '@itwin/core-quantity';
@@ -85,10 +89,6 @@ export class FavoritePropertiesManager implements Disposable {
     clear(imodel: IModelConnection, scope: FavoritePropertiesScope): Promise<void>;
     // @deprecated (undocumented)
     dispose(): void;
-    // @internal
-    ensureInitialized(imodel: IModelConnection): Promise<void>;
-    // @internal
-    static FAVORITES_IDENTIFIER_PREFIX: string;
     // @deprecated
     has(field: Field, imodel: IModelConnection, scope: FavoritePropertiesScope): boolean;
     hasAsync(field: Field, imodel: IModelConnection, scope: FavoritePropertiesScope): Promise<boolean>;
@@ -99,8 +99,6 @@ export class FavoritePropertiesManager implements Disposable {
     // @deprecated
     sortFields: (imodel: IModelConnection, fields: Field[]) => Field[];
     sortFieldsAsync(imodel: IModelConnection, fields: Field[]): Promise<Field[]>;
-    // @internal
-    startConnectionInitialization(imodel: IModelConnection): void;
     // (undocumented)
     readonly storage: IFavoritePropertiesStorage;
 }
@@ -207,14 +205,6 @@ export class Presentation {
     static registerInitializationHandler(handler: () => Promise<() => void>): void;
     // @deprecated
     static get selection(): SelectionManager;
-    // @internal (undocumented)
-    static setFavoritePropertiesManager(value: FavoritePropertiesManager): void;
-    // @internal (undocumented)
-    static setLocalization(value: Localization): void;
-    // @internal (undocumented)
-    static setPresentationManager(value: PresentationManager): void;
-    // @internal (undocumented)
-    static setSelectionManager(value: SelectionManager): void;
     static terminate(): void;
 }
 
@@ -226,6 +216,10 @@ export enum PresentationFrontendLoggerCategory {
 
 // @public
 export class PresentationManager implements Disposable {
+    // @internal (undocumented)
+    get [_presentation_manager_ipcRequestsHandler](): IpcRequestsHandler | undefined;
+    // @internal (undocumented)
+    get [_presentation_manager_rpcRequestsHandler](): RpcRequestsHandler;
     // (undocumented)
     [Symbol.dispose](): void;
     get activeLocale(): string | undefined;
@@ -236,8 +230,6 @@ export class PresentationManager implements Disposable {
     static create(props?: PresentationManagerProps): PresentationManager;
     // @deprecated (undocumented)
     dispose(): void;
-    // @internal
-    ensureIModelInitialized(_: IModelConnection): Promise<void>;
     // @deprecated
     getContent(requestOptions: GetContentRequestOptions & MultipleValuesRequestOptions): Promise<Content | undefined>;
     // @deprecated
@@ -286,15 +278,9 @@ export class PresentationManager implements Disposable {
     }>;
     // @deprecated
     getPagedDistinctValues(requestOptions: GetDistinctValuesRequestOptions & MultipleValuesRequestOptions): Promise<PagedResponse<DisplayValueGroup>>;
-    // @internal (undocumented)
-    get ipcRequestsHandler(): IpcRequestsHandler | undefined;
     onIModelContentChanged: BeEvent<(args: IModelContentChangeEventArgs) => void>;
     onIModelHierarchyChanged: BeEvent<(args: IModelHierarchyChangeEventArgs) => void>;
-    // @internal (undocumented)
-    get rpcRequestsHandler(): RpcRequestsHandler;
     rulesets(): RulesetManager;
-    // @internal
-    startIModelInitialization(_: IModelConnection): void;
     vars(rulesetId: string): RulesetVariablesManager;
 }
 
@@ -305,11 +291,7 @@ export interface PresentationManagerProps {
     activeUnitSystem?: UnitSystemKey;
     clientId?: string;
     defaultFormats?: FormatsMap;
-    // @internal (undocumented)
-    ipcRequestsHandler?: IpcRequestsHandler;
     requestTimeout?: number;
-    // @internal (undocumented)
-    rpcRequestsHandler?: RpcRequestsHandler;
     schemaContextProvider?: (imodel: IModelConnection) => SchemaContext;
 }
 
@@ -336,7 +318,6 @@ export interface RulesetManager {
 
 // @public
 export interface RulesetVariablesManager {
-    // @internal
     getAllVariables(): RulesetVariable[];
     getBool(variableId: string): Promise<boolean>;
     getId64(variableId: string): Promise<Id64String>;
@@ -429,8 +410,6 @@ export class SelectionManager implements ISelectionProvider, Disposable {
     getHiliteSetIterator(imodel: IModelConnection): AsyncIterableIterator<HiliteSet>;
     getSelection(imodel: IModelConnection, level?: number): Readonly<KeySet>;
     getSelectionLevels(imodel: IModelConnection): number[];
-    // @internal (undocumented)
-    getToolSelectionSyncHandler(imodel: IModelConnection): ToolSelectionSyncHandler | undefined;
     removeFromSelection(source: string, imodel: IModelConnection, keys: Keys, level?: number, rulesetId?: string): void;
     removeFromSelectionWithScope(source: string, imodel: IModelConnection, ids: Id64Arg, scope: SelectionScopeProps | SelectionScope | string, level?: number, rulesetId?: string): Promise<void>;
     replaceSelection(source: string, imodel: IModelConnection, keys: Keys, level?: number, rulesetId?: string): void;
@@ -465,7 +444,10 @@ export class SelectionScopesManager {
 // @public @deprecated
 export interface SelectionScopesManagerProps {
     localeProvider?: () => string | undefined;
-    rpcRequestsHandler: RpcRequestsHandler;
+    rpcRequestsHandler: {
+        getSelectionScopes: (args: SelectionScopeRequestOptions<IModelRpcProps> & ClientDiagnosticsAttribute) => Promise<SelectionScope[]>;
+        computeSelection: (args: ComputeSelectionRequestOptions<IModelRpcProps> & ClientDiagnosticsAttribute) => Promise<KeySetJSON>;
+    };
 }
 
 // (No @packageDocumentation comment for this package)
