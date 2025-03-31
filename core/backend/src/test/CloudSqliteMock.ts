@@ -8,6 +8,12 @@ import { CloudSqlite } from "../CloudSqlite";
 import { HubMock } from "../HubMock";
 import * as path from "path";
 import { BriefcaseManager } from "../BriefcaseManager";
+import { CheckpointProps, V2CheckpointManager } from "../CheckpointManager";
+import { V2CheckpointAccessProps } from "../BackendHubAccess";
+import { IModelHost } from "../IModelHost";
+import { _hubAccess } from "../internal/Symbols";
+import { IModelError } from "@itwin/core-common";
+import { IModelStatus } from "@itwin/core-bentley";
 
 export class CloudContainerMock {
   public isConnected = false;
@@ -75,6 +81,24 @@ export class CloudSqliteMock {
         }
       } else {
         return origTransferDb(direction, container, props);
+      }
+    }));
+    this._stubs.push(sinon.stub(V2CheckpointManager, "attach").callsFake(async (checkpoint: CheckpointProps): Promise<{ dbName: string, container: CloudSqlite.CloudContainer | undefined }> => {
+      console.log("CloudSqliteMock attach called"); // eslint-disable-line no-console
+      let v2props: V2CheckpointAccessProps | undefined;
+      try {
+        v2props = await IModelHost[_hubAccess].queryV2Checkpoint(checkpoint);
+        if (!v2props)
+          throw new Error("no checkpoint");
+      } catch (err: any) {
+        throw new IModelError(IModelStatus.NotFound, `V2 checkpoint not found: err: ${err.message}`);
+      }
+
+      const container = V2CheckpointManager.getContainer(v2props, checkpoint);
+      if (container instanceof CloudContainerMock) {
+        return container.attach();
+      } else {
+        throw new Error("Mock attach only supports CloudContainerMock");
       }
     }));
   }

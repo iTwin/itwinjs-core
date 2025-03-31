@@ -169,7 +169,7 @@ export class V2CheckpointManager {
     return { ...from, baseUri: `https://${from.accountName}.blob.core.windows.net`, accessToken: from.sasToken, storageType: "azure" };
   }
 
-  private static getContainer(v2Props: V2CheckpointAccessProps, checkpoint: CheckpointProps) {
+  public static getContainer(v2Props: V2CheckpointAccessProps, checkpoint: CheckpointProps) {
     let container = this.containers.get(v2Props.containerId);
     if (undefined === container) {
       let tokenFn: ((args: CloudSqlite.RequestTokenArgs) => Promise<AccessToken>) | undefined;
@@ -199,9 +199,6 @@ export class V2CheckpointManager {
 
     try {
       const container = this.getContainer(v2props, checkpoint);
-      if (container instanceof CloudContainerMock) {
-        return container.attach();
-      }
       const dbName = v2props.dbName;
       // Use the new token from the recently queried v2 checkpoint just incase the one we currently have is expired.
       container.accessToken = v2props.sasToken;
