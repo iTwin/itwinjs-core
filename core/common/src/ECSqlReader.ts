@@ -7,8 +7,8 @@
  */
 import { Base64EncodedString } from "./Base64EncodedString";
 import {
-  DbQueryError, DbQueryRequest, DbQueryResponse, DbRequestExecutor, DbRequestKind, DbResponseKind, DbResponseStatus, DbValueFormat, QueryBinder,
-  QueryOptions, QueryOptionsBuilder, QueryPropertyMetaData, QueryRowFormat,
+  DbQueryError, DbQueryRequest, DbQueryResponse, DbRequestExecutor, DbRequestKind, DbResponseKind, DbResponseStatus, DbValueFormat, QueryBinder, QueryOptions, QueryOptionsBuilder,
+  QueryPropertyMetaData, QueryRowFormat,
 } from "./ConcurrentQuery";
 
 /** @public */
