@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 /* eslint-disable @typescript-eslint/naming-convention */
 /** @packageDocumentation
- * @module Internal
+ * @module Core
  */
 
 function sym(name: string): string {
