@@ -268,6 +268,16 @@ export interface ConstantProps extends SchemaItemProps {
 export type SchemaItemFormatProps = SchemaItemProps & FormatProps;
 
 /**
+ * This interface defines properties necessary to support persistence of a set of formats.
+ * @beta
+ */
+export interface FormatSet {
+  name: string;
+  label: string;
+  formats: { [kindOfQuantityId: string]: SchemaItemFormatProps }
+}
+
+/**
  * @beta
  */
 export interface SchemaItemOverrideFormatProps extends SchemaItemFormatProps {

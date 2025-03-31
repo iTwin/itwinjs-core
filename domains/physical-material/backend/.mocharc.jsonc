@@ -1,0 +1,5 @@
+{
+  "spec": [
+  "lib/esm/test/**/*.test.js"
+]
+}

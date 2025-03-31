@@ -64,9 +64,14 @@ export class StrokeOptions {
   public set needNormals(value: boolean) {
     this._needNormals = value;
   }
-  /** Whether twoSided is requested. */
+  /**
+   * Whether to request facets that are viewable from the back.
+   * * Default value is true.
+   * * Set to false only if the requested facets are expected to form a closed volume with outward normals,
+   * indicating they are amenable to backface culling for improved display performance.
+   */
   public get needTwoSided(): boolean {
-    return this._needTwoSided !== undefined ? this._needTwoSided : false;
+    return this._needTwoSided !== undefined ? this._needTwoSided : true;
   }
   public set needTwoSided(value: boolean) {
     this._needTwoSided = value;
