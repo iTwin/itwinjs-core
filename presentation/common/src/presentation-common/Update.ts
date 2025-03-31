@@ -6,8 +6,8 @@
  * @module Core
  */
 
-import { NodeKey } from "./hierarchy/Key";
-import { Node, PartialNode } from "./hierarchy/Node";
+import { NodeKey } from "./hierarchy/Key.js";
+import { Node, PartialNode } from "./hierarchy/Node.js";
 
 /**
  * A constant for indicating that a full update is required.

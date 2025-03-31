@@ -2,13 +2,13 @@
   "name": "@itwin/workspace-editor",
   "license": "MIT",
   "main": "lib/WorkspaceEditor.js",
-  "version": "5.0.0-dev.71",
+  "version": "5.0.0-dev.94",
   "bin": {
     "WorkspaceEditor": "./lib/WorkspaceEditor.js"
   },
   "scripts": {
     "build": "tsc 1>&2",
-    "clean": "rimraf lib .rush/temp/package-deps*.json",
+    "clean": "rimraf -g lib .rush/temp/package-deps*.json",
     "cover": "",
     "docs": "",
     "lint": "eslint \"./src/**/*.ts\" 1>&2",
@@ -37,8 +37,8 @@
     "@types/yargs": "17.0.19",
     "@types/glob": "^5.0.35",
     "eslint": "^9.13.0",
-    "mocha": "^10.2.0",
-    "rimraf": "^3.0.2",
+    "mocha": "^11.1.0",
+    "rimraf": "^6.0.1",
     "typescript": "~5.6.2"
   }
 }

@@ -2,6 +2,36 @@
   "name": "@itwin/rpcinterface-full-stack-tests",
   "entries": [
     {
+      "version": "4.10.11",
+      "tag": "@itwin/rpcinterface-full-stack-tests_v4.10.11",
+      "date": "Wed, 19 Mar 2025 15:30:39 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.10.10",
+      "tag": "@itwin/rpcinterface-full-stack-tests_v4.10.10",
+      "date": "Tue, 11 Mar 2025 15:25:11 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Resolves CVE-2025-27152"
+          }
+        ]
+      }
+    },
+    {
+      "version": "4.10.9",
+      "tag": "@itwin/rpcinterface-full-stack-tests_v4.10.9",
+      "date": "Tue, 11 Mar 2025 05:17:33 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.10.8",
+      "tag": "@itwin/rpcinterface-full-stack-tests_v4.10.8",
+      "date": "Thu, 06 Mar 2025 14:13:37 GMT",
+      "comments": {}
+    },
+    {
       "version": "4.10.7",
       "tag": "@itwin/rpcinterface-full-stack-tests_v4.10.7",
       "date": "Tue, 18 Feb 2025 17:27:03 GMT",

@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/certa",
+      "comment": "Upgrade to Electron 35, drop support for Electron 34",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/certa"
+}

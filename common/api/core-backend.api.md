@@ -184,6 +184,7 @@ import { Polyface } from '@itwin/core-geometry';
 import { PolyfaceData } from '@itwin/core-geometry';
 import { PolyfaceVisitor } from '@itwin/core-geometry';
 import { PropertyCallback } from '@itwin/core-common';
+import { PropertyHandler } from '@itwin/ecschema-metadata';
 import { QueryBinder } from '@itwin/core-common';
 import { QueryOptions } from '@itwin/core-common';
 import { QueryRowFormat } from '@itwin/core-common';
@@ -359,7 +360,7 @@ export interface BackendHubAccess {
     downloadChangeset: (arg: DownloadChangesetArg) => Promise<ChangesetFileProps>;
     downloadChangesets: (arg: DownloadChangesetRangeArg) => Promise<ChangesetFileProps[]>;
     // @internal @deprecated
-    downloadV1Checkpoint: (arg: CheckpointArg) => Promise<ChangesetIndexAndId>;
+    downloadV1Checkpoint: (arg: DownloadRequest) => Promise<ChangesetIndexAndId>;
     getChangesetFromNamedVersion: (arg: IModelIdArg & {
         versionName: string;
     }) => Promise<ChangesetProps>;
@@ -828,9 +829,6 @@ export class ChannelRootAspect extends ElementUniqueAspect {
     static insert(iModel: IModelDb, ownerId: Id64String, channelName: string): void;
 }
 
-// @internal @deprecated (undocumented)
-export type CheckpointArg = DownloadRequest;
-
 // @internal (undocumented)
 export class CheckpointManager {
     static downloadCheckpoint(request: DownloadRequest): Promise<void>;
@@ -874,7 +872,7 @@ export class ClassRegistry {
     static register(entityClass: typeof Entity, schema: typeof Schema): void;
     static registerModule(moduleObj: any, schema: typeof Schema): void;
     // @internal
-    static unregisterCLass(classFullName: string): boolean;
+    static unregisterClass(classFullName: string): boolean;
     // @internal
     static unregisterClassesFrom(schema: typeof Schema): void;
 }
@@ -1792,11 +1790,13 @@ export class ECDb implements Disposable {
     [Symbol.dispose](): void;
     constructor();
     abandonChanges(): void;
+    attachDb(fileName: string, alias: string): void;
     // @internal
     clearStatementCache(): void;
     closeDb(): void;
     createDb(pathName: string): void;
     createQueryReader(ecsql: string, params?: QueryBinder, config?: QueryOptions): ECSqlReader;
+    detachDb(alias: string): void;
     // @deprecated (undocumented)
     dispose(): void;
     // @internal
@@ -1808,14 +1808,8 @@ export class ECDb implements Disposable {
     // @internal
     prepareSqliteStatement(sql: string, logErrors?: boolean): SqliteStatement;
     prepareStatement(ecsql: string, logErrors?: boolean): ECSqlStatement;
-    // @deprecated
-    query(ecsql: string, params?: QueryBinder, options?: QueryOptions): AsyncIterableIterator<any>;
-    // @deprecated
-    queryRowCount(ecsql: string, params?: QueryBinder): Promise<number>;
     // @internal
     resetSqliteCache(size: number): void;
-    // @deprecated
-    restartQuery(token: string, ecsql: string, params?: QueryBinder, options?: QueryOptions): AsyncIterableIterator<any>;
     saveChanges(changesetName?: string): void;
     withPreparedSqliteStatement<T>(sql: string, callback: (stmt: SqliteStatement) => T, logErrors?: boolean): T;
     withPreparedStatement<T>(ecsql: string, callback: (stmt: ECSqlStatement) => T, logErrors?: boolean): T;
@@ -2042,17 +2036,14 @@ class Element_2 extends Entity {
     // (undocumented)
     static get className(): string;
     code: Code;
-    // @beta @deprecated
-    protected collectPredecessorIds(predecessorIds: EntityReferenceSet): void;
     // (undocumented)
     protected collectReferenceIds(referenceIds: EntityReferenceSet): void;
     delete(): void;
     federationGuid?: GuidString;
+    // @deprecated
     getClassMetaData(): EntityMetaData | undefined;
     getDisplayLabel(): string;
     getJsonProperty(nameSpace: string): any;
-    // @beta @deprecated
-    getPredecessorIds(): Id64Set;
     getToolTipMessage(): string[];
     getUserProperties(namespace: string): any;
     insert(): string;
@@ -2344,15 +2335,13 @@ export class Entity {
     get classFullName(): string;
     static get className(): string;
     get className(): string;
-    // @internal @deprecated
-    protected collectReferenceConcreteIds: (_referenceIds: EntityReferenceSet) => void;
     // @beta
     protected collectReferenceIds(_referenceIds: EntityReferenceSet): void;
+    forEach(func: PropertyHandler, includeCustom?: boolean): void;
+    // @deprecated
     forEachProperty(func: PropertyCallback, includeCustom?: boolean): void;
     // @beta
     getMetaData(): Promise<EntityClass>;
-    // @internal @deprecated
-    getReferenceConcreteIds: () => EntityReferenceSet;
     // @beta
     getReferenceIds(): EntityReferenceSet;
     id: Id64String;
@@ -2378,6 +2367,23 @@ export class Entity {
 export type EntityClassType<T> = Function & {
     prototype: T;
 };
+
+// @public
+export class EntityJsClassMap {
+    // @internal (undocumented)
+    [Symbol.iterator](): IterableIterator<[string, typeof Entity]>;
+    // @internal (undocumented)
+    clear(): void;
+    // @internal (undocumented)
+    delete(classFullName: string): boolean;
+    // @internal (undocumented)
+    get(classFullName: string): typeof Entity | undefined;
+    // @internal (undocumented)
+    has(classFullName: string): boolean;
+    register(entityClass: typeof Entity, schema: typeof Schema): void;
+    // @internal (undocumented)
+    set(classFullName: string, entityClass: typeof Entity): void;
+}
 
 // @alpha
 export namespace EntityReferences {
@@ -2579,11 +2585,6 @@ export class ExternalSourceAspect extends ElementMultiAspect {
         elementId: Id64String;
         aspectId: Id64String;
     }>;
-    // @deprecated (undocumented)
-    static findBySource(iModelDb: IModelDb, scope: Id64String, kind: string, identifier: string): {
-        elementId?: Id64String;
-        aspectId?: Id64String;
-    };
     identifier: string;
     jsonProperties?: string;
     kind: string;
@@ -3091,7 +3092,7 @@ export class HubMock {
     // (undocumented)
     static downloadChangesets(arg: DownloadChangesetRangeArg): Promise<ChangesetFileProps[]>;
     // (undocumented)
-    static downloadV1Checkpoint(arg: CheckpointArg): Promise<ChangesetIndexAndId>;
+    static downloadV1Checkpoint(arg: DownloadRequest): Promise<ChangesetIndexAndId>;
     // (undocumented)
     static findLocalHub(iModelId: GuidString): LocalHub;
     static getChangesetFromNamedVersion(arg: IModelIdArg & {
@@ -3151,12 +3152,6 @@ export interface ImageSourceFromImageBufferArgs {
     targetFormat?: ImageSourceFormat.Png | ImageSourceFormat.Jpeg;
 }
 
-// @beta @deprecated (undocumented)
-export const IModelCloneContext: typeof IModelElementCloneContext;
-
-// @beta @deprecated (undocumented)
-export type IModelCloneContext = IModelElementCloneContext;
-
 // @public
 export abstract class IModelDb extends IModel {
     // @internal (undocumented)
@@ -3169,13 +3164,14 @@ export abstract class IModelDb extends IModel {
     });
     abandonChanges(): void;
     acquireSchemaLock(): Promise<void>;
+    attachDb(fileName: string, alias: string): void;
     // @internal
     protected beforeClose(): void;
     // @internal
     cancelSnap(sessionId: string): void;
     // @beta (undocumented)
     readonly channels: ChannelControl;
-    // @internal
+    // @internal @deprecated
     get classMetaDataRegistry(): MetaDataRegistry;
     clearCaches(): void;
     // @internal (undocumented)
@@ -3201,6 +3197,7 @@ export abstract class IModelDb extends IModel {
     deleteFileProperty(prop: FilePropertyProps): void;
     // @beta
     deleteSettingDictionary(name: string): void;
+    detachDb(alias: string): void;
     // @beta
     elementGeometryCacheOperation(requestProps: ElementGeometryCacheOperationRequestProps): BentleyStatus;
     // @beta
@@ -3221,7 +3218,9 @@ export abstract class IModelDb extends IModel {
     protected _fontMap?: FontMap;
     // @beta
     get fonts(): IModelDbFonts;
+    // @deprecated
     static forEachMetaData(iModel: IModelDb, classFullName: string, wantSuper: boolean, func: PropertyCallback, includeCustom?: boolean): void;
+    // @deprecated
     forEachMetaData(classFullName: string, wantSuper: boolean, func: PropertyCallback, includeCustom?: boolean): void;
     generateElementGraphics(request: ElementGraphicsRequestProps): Promise<Uint8Array | undefined>;
     getBriefcaseId(): BriefcaseId;
@@ -3231,6 +3230,7 @@ export abstract class IModelDb extends IModel {
     getJsClass<T extends typeof Entity>(classFullName: string): T;
     getLastError(): string;
     getMassProperties(props: MassPropertiesRequestProps): Promise<MassPropertiesResponseProps>;
+    // @deprecated
     getMetaData(classFullName: string): EntityMetaData;
     getSchemaProps(name: string): ECSchemaProps;
     get holdsSchemaLock(): boolean;
@@ -3252,6 +3252,7 @@ export abstract class IModelDb extends IModel {
     // @internal
     get isStandalone(): boolean;
     isStandaloneDb(): this is StandaloneDb;
+    get jsClassMap(): EntityJsClassMap;
     // @internal (undocumented)
     protected loadWorkspaceSettings(): Promise<void>;
     get locks(): LockControl;
@@ -3275,16 +3276,12 @@ export abstract class IModelDb extends IModel {
     // @internal
     prepareSqliteStatement(sql: string, logErrors?: boolean): SqliteStatement;
     prepareStatement(sql: string, logErrors?: boolean): ECSqlStatement;
-    // @deprecated
-    query(ecsql: string, params?: QueryBinder, options?: QueryOptions): AsyncIterableIterator<any>;
     // @internal
     queryAllUsedSpatialSubCategories(): Promise<SubCategoryResultRow[]>;
     queryEntityIds(params: EntityQueryParams): Id64Set;
     queryFilePropertyBlob(prop: FilePropertyProps): Uint8Array | undefined;
     queryFilePropertyString(prop: FilePropertyProps): string | undefined;
     queryNextAvailableFileProperty(prop: FilePropertyProps): number;
-    // @deprecated
-    queryRowCount(ecsql: string, params?: QueryBinder): Promise<number>;
     querySchemaVersion(schemaName: string): string | undefined;
     // @internal
     querySubCategories(categoryIds: Iterable<Id64String>): Promise<SubCategoryResultRow[]>;
@@ -3299,8 +3296,6 @@ export abstract class IModelDb extends IModel {
     requestSnap(sessionId: string, props: SnapRequestProps): Promise<SnapResponseProps>;
     // @internal (undocumented)
     restartDefaultTxn(): void;
-    // @deprecated
-    restartQuery(token: string, ecsql: string, params?: QueryBinder, options?: QueryOptions): AsyncIterableIterator<any>;
     // @internal (undocumented)
     restartTxnSession(): void;
     // @internal @deprecated (undocumented)
@@ -3311,11 +3306,13 @@ export abstract class IModelDb extends IModel {
     saveSettingDictionary(name: string, dict: SettingsContainer): void;
     // @beta
     get schemaContext(): SchemaContext;
+    get schemaMap(): SchemaMap;
     // @beta
     simplifyElementGeometry(args: SimplifyElementGeometryArgs): IModelStatus;
     // (undocumented)
     readonly tiles: IModelDb.Tiles;
     static tryFindByKey(key: string): IModelDb | undefined;
+    // @deprecated
     tryGetMetaData(classFullName: string): EntityMetaData | undefined;
     tryPrepareStatement(sql: string): ECSqlStatement | undefined;
     updateEcefLocation(ecef: EcefLocation): void;
@@ -3427,8 +3424,6 @@ export namespace IModelDb {
         }): Promise<ViewStore.CloudAccess>;
         static readonly defaultQueryParams: ViewQueryParams;
         getThumbnail(viewDefinitionId: Id64String): ThumbnailProps | undefined;
-        // @deprecated (undocumented)
-        getViewStateData(viewDefinitionId: ViewIdString, options?: ViewStateLoadProps): ViewStateProps;
         getViewStateProps(viewDefinitionId: ViewIdString, options?: ViewStateLoadProps): Promise<ViewStateProps>;
         // (undocumented)
         get hasViewStore(): boolean;
@@ -4223,7 +4218,7 @@ export interface LockStatusShared {
     state: LockState_2.Shared;
 }
 
-// @internal
+// @internal @deprecated
 export class MetaDataRegistry {
     add(classFullName: string, metaData: EntityMetaData): void;
     find(classFullName: string): EntityMetaData | undefined;
@@ -4903,6 +4898,17 @@ export interface SchemaImportOptions {
 
 // @internal (undocumented)
 export type SchemaKey = IModelJsNative.ECSchemaXmlContext.SchemaKey;
+
+// @public
+export class SchemaMap {
+    // @internal (undocumented)
+    delete(schemaName: string): boolean;
+    // @internal (undocumented)
+    get(schemaName: string): typeof Schema | undefined;
+    registerSchema(schema: typeof Schema): void;
+    // @internal (undocumented)
+    set(schemaName: string, schema: typeof Schema): void;
+}
 
 // @internal (undocumented)
 export type SchemaMatchType = IModelJsNative.ECSchemaXmlContext.SchemaMatchType;

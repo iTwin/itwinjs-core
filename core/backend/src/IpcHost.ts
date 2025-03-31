@@ -7,19 +7,18 @@
  */
 
 import { IModelJsNative } from "@bentley/imodeljs-native";
-import { assert, BentleyError, IModelStatus, Logger, LogLevel, OpenMode } from "@itwin/core-bentley";
+import { assert, BentleyError, IModelStatus, JsonUtils, Logger, LogLevel, OpenMode } from "@itwin/core-bentley";
 import {
   ChangesetIndex, ChangesetIndexAndId, EditingScopeNotifications, getPullChangesIpcChannel, IModelConnectionProps, IModelError, IModelNotFoundResponse, IModelRpcProps,
   ipcAppChannels, IpcAppFunctions, IpcAppNotifications, IpcInvokeReturn, IpcListener, IpcSocketBackend, iTwinChannel,
-  ITwinError,
   OpenBriefcaseProps, OpenCheckpointArgs, PullChangesOptions, RemoveFunction, SnapshotOpenOptions, StandaloneOpenOptions, TileTreeContentIds, TxnNotifications,
 } from "@itwin/core-common";
 import { ProgressFunction, ProgressStatus } from "./CheckpointManager";
 import { BriefcaseDb, IModelDb, SnapshotDb, StandaloneDb } from "./IModelDb";
 import { IModelHost, IModelHostOptions } from "./IModelHost";
-import { cancelTileContentRequests } from "./rpc-impl/IModelTileRpcImpl";
 import { IModelNative } from "./internal/NativePlatform";
 import { _nativeDb } from "./internal/Symbols";
+import { cancelTileContentRequests } from "./rpc-impl/IModelTileRpcImpl";
 
 /**
   * Options for [[IpcHost.startup]]
@@ -173,33 +172,21 @@ export abstract class IpcHandler {
           throw new IModelError(IModelStatus.FunctionNotFound, `Method "${impl.constructor.name}.${funcName}" not found on IpcHandler registered for channel: ${impl.channelName}`);
 
         return { result: await func.call(impl, ...args) };
-      } catch (err: any) {
-        let ret: IpcInvokeReturn;
-        if (ITwinError.isITwinError(err)) {
-          const { namespace, errorKey, message, stack, metadata, ...rest } = err;
-          ret = {
-            iTwinError:
-            {
-              namespace,
-              errorKey,
-              message,
-              ...(metadata && { metadata }), // Include metadata only when defined
-              ...rest,
-            },
-          };
-          if (!IpcHost.noStack)
-            ret.iTwinError.stack = stack;
-        } else {
-          ret = {
-            error:
-            {
-              name: err.hasOwnProperty("name") ? err.name : err.constructor?.name ?? "Unknown Error",
-              message: err.message ?? BentleyError.getErrorMessage(err),
-              errorNumber: err.errorNumber ?? 0,
-            },
-          };
-          if (!IpcHost.noStack)
-            ret.error.stack = BentleyError.getErrorStack(err);
+      } catch (err: unknown) {
+
+        if (!JsonUtils.isObject(err)) // if the exception isn't an object, just forward it
+          return { error: err as any };
+
+        const ret = { error: { ...err } };
+        ret.error.message = err.message; // NB: .message, and .stack members of Error are not enumerable, so spread operator above does not copy them.
+        if (!IpcHost.noStack)
+          ret.error.stack = err.stack;
+
+        if (err instanceof BentleyError) {
+          ret.error.iTwinErrorId = err.iTwinErrorId;
+          if (err.hasMetaData)
+            ret.error.loggingMetadata = err.loggingMetadata;
+          delete ret.error._metaData;
         }
         return ret;
       }

@@ -3,11 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert } from "chai";
-import { AccessToken, Guid, Id64, Id64String } from "@itwin/core-bentley";
-import { Range3d } from "@itwin/core-geometry";
 import { BisCoreSchema, BriefcaseDb, ClassRegistry, CodeService, Element, PhysicalModel, StandaloneDb, Subject } from "@itwin/core-backend";
-import { Code, CodeScopeSpec, CodeSpec, CodeSpecProperties, IModel, InUseLocksError } from "@itwin/core-common";
+import { AccessToken, Guid, Id64, Id64String } from "@itwin/core-bentley";
+import { Code, CodeScopeSpec, CodeSpec, CodeSpecProperties, ConflictingLocksError, IModel } from "@itwin/core-common";
+import { Range3d } from "@itwin/core-geometry";
+import { assert } from "chai";
 import { IModelTestUtils } from "./IModelTestUtils";
 
 /** Example code organized as tests to make sure that it builds and runs successfully. */
@@ -41,20 +41,20 @@ describe("Example Code", () => {
 
   it("should check for an InUseLocksError", async () => {
     if (iModel.isBriefcase) {
-      const briefcaseDb = iModel as any as BriefcaseDb; // just to eliminate all of the distracting if (iModel.isBriefcase) stuff from the code snippets
       const elementId = PhysicalModel.insert(iModel, IModel.rootSubjectId, "newModelCode2");
       assert.isTrue(elementId !== undefined);
       // __PUBLISH_EXTRACT_START__ ITwinError.catchAndHandleITwinError
       try {
-        await briefcaseDb.locks.acquireLocks({ exclusive: elementId });
-      } catch (err) {
-        if (InUseLocksError.isInUseLocksError(err)) {
-          const inUseLocks = err.inUseLocks;
-          for (const inUseLock of inUseLocks) {
-            const _briefcaseIds = inUseLock.briefcaseIds;
-            const _state = inUseLock.state;
-            const _objectId = inUseLock.objectId;
-            // Create a user friendly error message
+        await iModel.locks.acquireLocks({ exclusive: elementId });
+      } catch (err: unknown) {
+        if (ConflictingLocksError.isError(err)) {
+          if (err.conflictingLocks) {
+            for (const inUseLock of err.conflictingLocks) {
+              const _briefcaseId = inUseLock.briefcaseIds[0];
+              const _state = inUseLock.state;
+              const _objectId = inUseLock.objectId;
+              // Create a user friendly error message
+            }
           }
         } else {
           throw err;

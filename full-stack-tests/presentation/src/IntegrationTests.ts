@@ -6,7 +6,9 @@
 import * as fs from "fs";
 import Backend from "i18next-http-backend";
 import * as path from "path";
-import rimraf from "rimraf";
+import { rimrafSync } from "rimraf";
+import dotenv from "dotenv";
+import dotenvExpand from "dotenv-expand";
 import sinon from "sinon";
 import { IModelHost, IModelHostOptions, IModelJsFs } from "@itwin/core-backend";
 import { Guid, Logger, LogLevel } from "@itwin/core-bentley";
@@ -23,7 +25,7 @@ import {
 } from "@itwin/presentation-backend";
 import { PresentationRpcInterface } from "@itwin/presentation-common";
 import { Presentation as PresentationFrontend, PresentationProps as PresentationFrontendProps } from "@itwin/presentation-frontend";
-import { getOutputRoot } from "./Utils";
+import { getOutputRoot } from "./Utils.js";
 
 const DEFAULT_BACKEND_TIMEOUT: number = 0;
 
@@ -33,8 +35,6 @@ function loadEnv(envFile: string) {
     return;
   }
 
-  const dotenv = require("dotenv"); // eslint-disable-line @typescript-eslint/no-require-imports
-  const dotenvExpand = require("dotenv-expand"); // eslint-disable-line @typescript-eslint/no-require-imports
   const envResult = dotenv.config({ path: envFile });
   if (envResult.error) {
     throw envResult.error;
@@ -43,7 +43,7 @@ function loadEnv(envFile: string) {
   dotenvExpand(envResult);
 }
 
-loadEnv(path.join(__dirname, "..", ".env"));
+loadEnv(path.join(import.meta.dirname, "..", ".env"));
 
 class IntegrationTestsApp extends NoRenderApp {
   public static override async startup(opts?: IModelAppOptions): Promise<void> {
@@ -76,6 +76,7 @@ export const initialize = async (props?: {
   const outputRoot = setupTestsOutputDirectory();
 
   const backendInitProps: PresentationBackendProps = {
+    // @ts-expect-error internal prop
     id: `test-${Guid.createValue()}`,
     requestTimeout: DEFAULT_BACKEND_TIMEOUT,
     rulesetDirectories: [path.join(path.resolve("lib"), "assets", "rulesets")],
@@ -208,7 +209,7 @@ async function terminatePresentation(frontendApp = IModelApp) {
   PresentationBackend.terminate();
   await IModelHost.shutdown();
   if (hierarchiesCacheDirectory) {
-    rimraf.sync(hierarchiesCacheDirectory);
+    rimrafSync(hierarchiesCacheDirectory);
   }
 
   // terminate frontend

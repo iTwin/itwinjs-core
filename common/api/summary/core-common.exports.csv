@@ -110,6 +110,8 @@ public;type;ChangesetIndexOrId
 public;interface;ChangesetProps
 public;interface;ChangesetRange
 public;enum;ChangesetType
+beta;interface;ChannelError
+beta;namespace;ChannelError
 public;interface;ChannelRootAspectProps
 internal;interface;ClassifierTileTreeId
 public;class;ClipIntersectionStyle
@@ -140,9 +142,8 @@ alpha;enum;ConcreteEntityTypes
 alpha;namespace;ConcreteEntityTypes
 internal;function;toBisCoreRootClassFullName
 public;interface;ConflictingLock
-deprecated;interface;ConflictingLock
+beta;interface;ConflictingLocks
 public;class;ConflictingLocksError
-deprecated;class;ConflictingLocksError
 alpha;enum;ContentFlags
 internal;class;ContentIdProvider
 public;class;ContextRealityModel
@@ -172,6 +173,7 @@ internal;const;CURRENT_INVOCATION
 internal;const;CURRENT_REQUEST
 internal;enum;CurrentImdlVersion
 beta;interface;CustomAttribute
+deprecated;interface;CustomAttribute
 internal;interface;CustomViewState3dCreatorOptions
 internal;interface;CustomViewState3dProps
 public;class;CutStyle
@@ -261,7 +263,9 @@ public;class;EmptyLocalization
 public;interface;EntityIdAndClassId
 public;type;EntityIdAndClassIdIterable
 beta;class;EntityMetaData
+deprecated;class;EntityMetaData
 beta;interface;EntityMetaDataProps
+deprecated;interface;EntityMetaDataProps
 public;interface;EntityProps
 public;interface;EntityQueryParams
 alpha;type;EntityReference
@@ -290,6 +294,7 @@ public;interface;FilePropertyProps
 public;enum;FillDisplay
 public;enum;FillFlags
 public;interface;FlatBufferGeometryStream
+beta;interface;FontFace
 public;interface;FontFamilyDescriptor
 beta;interface;FontFamilySelector
 public;type;FontId
@@ -444,9 +449,6 @@ internal;interface;InterceptedRpcRequest
 beta;enum;InternetConnectivityStatus
 public;const;Interpolation
 public;type;InterpolationFunction
-beta;interface;InUseLock
-beta;interface;InUseLocksError
-beta;namespace;InUseLocksError
 internal;const;ipcAppChannels
 internal;interface;IpcAppFunctions
 internal;interface;IpcAppNotifications
@@ -470,8 +472,6 @@ public;function;isPlacement3dProps
 public;function;isPowerOfTwo
 public;function;isValidImageSourceFormat
 internal;const;iTwinChannel
-beta;interface;ITwinError
-beta;namespace;ITwinError
 public;interface;JsonGeometryStream
 internal;interface;LegacyAnalysisStyleProps
 internal;interface;LightLocationProps
@@ -525,6 +525,7 @@ public;namespace;ModelGeometryChanges
 public;interface;ModelGeometryChangesProps
 public;interface;ModelIdAndGeometryGuid
 public;interface;ModelLoadProps
+beta;enum;ModelMapLayerDrapeTarget
 public;interface;ModelMapLayerProps
 public;class;ModelMapLayerSettings
 public;interface;ModelPlanarClipMaskArgs
@@ -628,9 +629,12 @@ public;class;Projection
 public;type;ProjectionMethod
 public;interface;ProjectionProps
 beta;type;PropertyCallback
+deprecated;type;PropertyCallback
 beta;class;PropertyMetaData
+deprecated;class;PropertyMetaData
 public;class;PropertyMetaDataMap
 beta;interface;PropertyMetaDataProps
+deprecated;interface;PropertyMetaDataProps
 internal;interface;PullChangesOptions
 public;class;QParams2d
 alpha;interface;QParams2dProps
@@ -852,6 +856,7 @@ beta;interface;TextBlockGeometryProps
 beta;type;TextBlockGeometryPropsEntry
 beta;type;TextBlockJustification
 beta;interface;TextBlockLayoutResult
+beta;interface;TextBlockMargins
 beta;interface;TextBlockProps
 beta;interface;TextBlockStringifyOptions
 beta;class;TextRun
@@ -920,6 +925,7 @@ public;interface;TypeDefinitionElementProps
 internal;type;TypedGltfChunk
 public;enum;TypeOfChange
 public;type;UnitType
+public;type;UpdateCallback
 beta;interface;UpgradeOptions
 public;interface;UrlLinkProps
 public;class;VerticalCRS

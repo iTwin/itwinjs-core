@@ -57,7 +57,7 @@ export class NumberArray {
     return sum;
   }
   /** Return true if arrays have identical counts and equal entries (using `!==` comparison) */
-  public static isExactEqual(dataA: any[] | Float64Array | undefined, dataB: any[] | Float64Array | undefined): boolean {
+  public static isExactEqual(dataA: any[] | Float64Array | Uint8Array | Uint32Array | undefined, dataB: any[] | Float64Array | Uint8Array | Uint32Array | undefined): boolean {
     if (dataA && dataB) {
       if (dataA.length !== dataB.length)
         return false;
@@ -306,6 +306,28 @@ export class NumberArray {
       bytes[iByte] = (Math.floor(bytes[iByte]) & 0xFF) << shiftBits;
     }
     return bytes[0] | bytes[1] | bytes[2] | bytes[3];
+  }
+
+  /**
+   * Given an array of strictly increasing numbers, find the index of the largest number that is less than or equal
+   * to `value`.
+   * * Get an initial estimate by proportions of `value` and the first and last entries.
+   * * Linear search from there for final value.
+   * * For regularly spaced numbers (e.g., `data` is the `_facetStart` indices for a triangulated [[IndexedPolyface]]),
+   * the proportional estimate will be immediately correct.
+   * @param data the array of strictly increasing numbers
+   * @param value the value to search for
+   */
+  public static searchStrictlyIncreasingNumbers(data: ReadonlyArray<number>, value: number): number | undefined {
+    const lastQ = data.length - 1;
+    if (lastQ <= 0 || value < 0 || value >= data[lastQ])
+      return undefined;
+    let q = Math.floor((value * lastQ) / data[lastQ]);
+    while (data[q] > value)
+      q--;
+    while (data[q + 1] <= value)
+      q++;
+    return q;
   }
 }
 

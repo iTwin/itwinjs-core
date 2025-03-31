@@ -7,10 +7,9 @@
 !lib/**/*.d.ts.map
 !lib/**/*.js
 !lib/**/*.js.map
+!lib/**/*.json
 !lib/**/assets/**/*
 !lib/**/public/**/*
-
-
 !Ruleset.schema.json
 
 # then ignore some stuff again

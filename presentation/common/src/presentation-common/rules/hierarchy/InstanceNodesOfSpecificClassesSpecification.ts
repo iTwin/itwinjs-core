@@ -6,8 +6,8 @@
  * @module PresentationRules
  */
 
-import { MultiSchemaClassesSpecification } from "../ClassSpecifications";
-import { ChildNodeSpecificationBase, DefaultGroupingPropertiesContainer } from "./ChildNodeSpecification";
+import { MultiSchemaClassesSpecification } from "../ClassSpecifications.js";
+import { ChildNodeSpecificationBase, DefaultGroupingPropertiesContainer } from "./ChildNodeSpecification.js";
 
 /**
  * Returns nodes for instances of specific ECClasses.
