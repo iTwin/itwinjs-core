@@ -23,7 +23,6 @@ import { IModelJsFs } from "./IModelJsFs";
 import { SnapshotDb, TokenArg } from "./IModelDb";
 import { IModelNative } from "./internal/NativePlatform";
 import { _getCheckpointDb, _hubAccess, _nativeDb, _openCheckpoint } from "./internal/Symbols";
-import { CloudContainerMock } from "./test/CloudSqliteMock";
 
 const loggerCategory = BackendLoggerCategory.IModelDb;
 
