@@ -16,7 +16,7 @@ import {
   SheetProps, SheetTemplateProps, SubjectProps, TypeDefinition, TypeDefinitionElementProps, UrlLinkProps,
 } from "@itwin/core-common";
 import { ClipVector, Range3d, Transform } from "@itwin/core-geometry";
-import { Entity } from "./Entity";
+import { ECSqlRow, Entity, InstanceProps } from "./Entity";
 import { IModelDb } from "./IModelDb";
 import { IModelElementCloneContext } from "./IModelElementCloneContext";
 import { DefinitionModel, DrawingModel, PhysicalModel, SectionDrawingModel } from "./Model";
@@ -142,6 +142,29 @@ export class Element extends Entity {
     this.federationGuid = props.federationGuid;
     this.userLabel = props.userLabel;
     this.jsonProperties = { ...props.jsonProperties }; // make sure we have our own copy
+  }
+
+  protected static override get customHandledECProperties(): string[] {
+    return [ ...super.customHandledECProperties, "codeValue", "codeSpec", "codeScope", "model", "parent", "federationGuid", "userLabel", "jsonProperties" ];
+  }
+
+  public static override deserialize(props: InstanceProps): ElementProps {
+    const instance = props.row;
+    const elProps = super.deserialize(props) as ElementProps;
+    elProps.code =  {value: instance.codeValue, spec: instance.codeSpec.id, scope: instance.codeScope.id}
+    elProps.model = instance.model.id;
+    elProps.parent = instance.parent;
+    return elProps;
+  }
+
+  public static override serialize(props: ElementProps): ECSqlRow {
+    const inst = super.serialize(props);
+    inst.codeValue = props.code.value;
+    inst.codeSpec = {id: props.code.spec};
+    inst.codeScope = {id: props.code.scope};
+    inst.model = {id: props.model};
+    inst.parent = props.parent;
+    return inst;
   }
 
   /** Called before a new Element is inserted.

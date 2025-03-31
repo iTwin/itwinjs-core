@@ -12,8 +12,13 @@ import type { IModelDb } from "./IModelDb";
 import { Schema } from "./Schema";
 import { EntityClass, PropertyHandler, SchemaItemKey } from "@itwin/ecschema-metadata";
 
-export interface RawECInstance {
-  instance: any;
+export interface ECSqlRow {
+  [key: string]: any
+}
+
+export interface InstanceProps {
+  row: ECSqlRow;
+  iModel: IModelDb;
 }
 
 /** Represents one of the fundamental building block in an [[IModelDb]]: as an [[Element]], [[Model]], or [[Relationship]].
@@ -82,12 +87,30 @@ export class Entity {
     return new subclass(props, iModel);
   }
 
-  public static deserialize(instance: RawECInstance): EntityProps {
-    const props = {
-        classFullName: instance.instance.classFullName,
-        id: instance.instance.id,
+  protected static get customHandledECProperties(): string[] {
+    return ["id", "className"];
+  }
+
+  public static deserialize(props: InstanceProps): EntityProps {
+    const enProps: EntityProps = {
+      id: props.row.id,
+      classFullName: props.row.className.replace(".", ":"),
     }
-    return props;
+    Object.keys(props.row).filter((propName) => !this.customHandledECProperties.includes(propName)).forEach((propName) => {
+      (enProps as any)[propName] = props.row[propName];
+    });
+    return enProps;
+  }
+
+  public static serialize(props: EntityProps): ECSqlRow {
+    const inst: ECSqlRow = {
+      id: props.id,
+      className: props.classFullName,
+    }
+    Object.keys(props).filter((propName) => !this.customHandledECProperties.includes(propName)).forEach((propName) => {
+      inst[propName] = (props as any)[propName];
+    });
+    return inst;
   }
 
   /** Obtain the JSON representation of this Entity. Subclasses of [[Entity]] typically override this method to return their corresponding sub-type of [EntityProps]($common) -
