@@ -6,8 +6,8 @@
  * @module Collections
  */
 
-import { OrderedComparator } from "./Compare";
-import { CloneFunction, lowerBound, shallowClone } from "./SortedArray";
+import { OrderedComparator } from "./Compare.js";
+import { CloneFunction, lowerBound, shallowClone } from "./SortedArray.js";
 
 class DictionaryIterator<K, V> implements Iterator<DictionaryEntry<K, V>> {
   private _keys: K[];

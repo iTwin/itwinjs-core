@@ -6,8 +6,8 @@
  * @module Collections
  */
 
-import { OrderedComparator } from "./Compare";
-import { Dictionary } from "./Dictionary";
+import { OrderedComparator } from "./Compare.js";
+import { Dictionary } from "./Dictionary.js";
 
 /**
  * Derived from:

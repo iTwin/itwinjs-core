@@ -6,9 +6,9 @@
  * @module Ids
  */
 
-import { assert } from "./Assert";
-import { CompressedId64Set } from "./CompressedId64Set";
-import { Id64Array, Id64String } from "./Id";
+import { assert } from "./Assert.js";
+import { CompressedId64Set } from "./CompressedId64Set.js";
+import { Id64Array, Id64String } from "./Id.js";
 
 /** @public */
 export type OrderedId64Iterable = Iterable<Id64String>;

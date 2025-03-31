@@ -7,7 +7,7 @@
  */
 
 import type { ContextAPI, SpanAttributes, SpanAttributeValue, SpanContext, SpanOptions, TraceAPI, Tracer } from "@opentelemetry/api";
-import { LogFunction, Logger, LogLevel } from "./Logger";
+import { LogFunction, Logger, LogLevel } from "./Logger.js";
 
 // re-export so that consumers can construct full SpanOptions object without external dependencies
 /**

@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, describe, it } from "vitest";
-import { BeDuration } from "../Time";
+import { BeDuration } from "../Time.js";
 
 describe("BeDuration", () => {
 

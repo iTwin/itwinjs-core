@@ -3,8 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { describe, expect, it } from "vitest";
-import { compareStrings, SortedArray } from "../core-bentley";
-import { compareBooleans, compareNumbers, compareNumbersOrUndefined, compareStringsOrUndefined, compareWithTolerance } from "../Compare";
+import { compareBooleans, compareNumbers, compareNumbersOrUndefined, compareStringsOrUndefined, compareWithTolerance } from "../Compare.js";
+import { compareStrings, SortedArray } from "../core-bentley.js";
 
 class Thing {
   public constructor(public readonly first: number, public readonly second: number) { }

@@ -6,7 +6,7 @@
  * @module Errors
  */
 
-import { Logger } from "./Logger";
+import { Logger } from "./Logger.js";
 
 /** A function to be notified when an unexpected error happens
  * @public

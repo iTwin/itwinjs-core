@@ -6,7 +6,7 @@
  * @module Events
  */
 
-import { UnexpectedErrors } from "./UnexpectedErrors";
+import { UnexpectedErrors } from "./UnexpectedErrors.js";
 
 /** A function invoked when a BeEvent is raised.
  * @public

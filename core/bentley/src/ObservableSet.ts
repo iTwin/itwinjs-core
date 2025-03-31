@@ -6,7 +6,7 @@
  * @module Collections
  */
 
-import { BeEvent } from "./BeEvent";
+import { BeEvent } from "./BeEvent.js";
 
 /** A standard [Set<T>](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Set) that emits events when its contents change.
  * @public

@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { describe, expect, it } from "vitest";
-import { compareNumbers, IndexMap } from "../core-bentley";
+import { compareNumbers, IndexMap } from "../core-bentley.js";
 
 describe("IndexMap", () => {
   it("should remember insertion order", () => {

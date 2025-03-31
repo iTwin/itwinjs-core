@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { describe, expect, it } from "vitest";
-import * as ClassUtils from "../ClassUtils";
+import * as ClassUtils from "../ClassUtils.js";
 
 type Extends<T, Base> = T extends Base ? true : false;
 

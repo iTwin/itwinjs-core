@@ -3,5 +3,5 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-export { RepositoryStatus } from "./RepositoryStatus";
-export { DbChangeStage, DbConflictCause, DbConflictResolution, DbValueType } from "./BeSQLiteInternal";
+export { DbChangeStage, DbConflictCause, DbConflictResolution, DbValueType } from "./BeSQLiteInternal.js";
+export { RepositoryStatus } from "./RepositoryStatus.js";
