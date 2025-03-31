@@ -9,11 +9,10 @@ import {
   IModel,
   SubCategoryAppearance,
 } from "@itwin/core-common";
-import * as chai from "chai";
-import { assert, expect } from "chai";
-import * as chaiAsPromised from "chai-as-promised";
-import { HubWrappers, KnownTestLocations } from "../";
-import { HubMock } from "../../HubMock";
+import chai, { assert, expect } from "chai";
+import chaiAsPromised from "chai-as-promised";
+import sinon from "sinon";
+import { HubMock } from "../../HubMock.js";
 import {
   BriefcaseDb,
   ChannelControl,
@@ -21,11 +20,11 @@ import {
   ExternalSourceAspect,
   SpatialCategory,
   SqliteChangeOp,
-} from "../../core-backend";
-import { IModelTestUtils, TestUserType } from "../IModelTestUtils";
-import { RebaseChangesetConflictArgs, SqliteConflictCause } from "../../internal/ChangesetConflictArgs";
+} from "../../core-backend.js";
+import { RebaseChangesetConflictArgs, SqliteConflictCause } from "../../internal/ChangesetConflictArgs.js";
+import { IModelTestUtils, TestUserType } from "../IModelTestUtils.js";
+import { HubWrappers, KnownTestLocations } from "../index.js";
 chai.use(chaiAsPromised);
-import * as sinon from "sinon";
 
 export async function createNewModelAndCategory(rwIModel: BriefcaseDb, parent?: Id64String) {
   // Create a new physical model.

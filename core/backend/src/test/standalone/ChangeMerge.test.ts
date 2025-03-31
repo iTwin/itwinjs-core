@@ -8,10 +8,9 @@ import {
   IModel,
   SubCategoryAppearance
 } from "@itwin/core-common";
-import * as chai from "chai";
-import { assert } from "chai";
-import * as chaiAsPromised from "chai-as-promised";
-import { HubWrappers, KnownTestLocations } from "..";
+import chai, { assert } from "chai";
+import chaiAsPromised from "chai-as-promised";
+import sinon from "sinon";
 import {
   BriefcaseDb,
   ChannelControl,
@@ -19,12 +18,12 @@ import {
   IModelHost,
   SpatialCategory,
   SqliteChangesetReader
-} from "../../core-backend";
-import { HubMock } from "../../HubMock";
-import { RebaseChangesetConflictArgs, TxnArgs } from "../../internal/ChangesetConflictArgs";
-import { IModelTestUtils, TestUserType } from "../IModelTestUtils";
+} from "../../core-backend.js";
+import { HubMock } from "../../HubMock.js";
+import { RebaseChangesetConflictArgs, TxnArgs } from "../../internal/ChangesetConflictArgs.js";
+import { IModelTestUtils, TestUserType } from "../IModelTestUtils.js";
+import { HubWrappers, KnownTestLocations } from "../index.js";
 chai.use(chaiAsPromised);
-import * as sinon from "sinon";
 
 async function assertThrowsAsync<T>(test: () => Promise<T>, msg?: string) {
   try {

@@ -2,14 +2,14 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert, expect } from "chai";
 import { Id64, Id64String } from "@itwin/core-bentley";
 import {
-  BriefcaseIdValue, Code,  ColorDef,  GeometricElementProps, IModel,
+  BriefcaseIdValue, Code, ColorDef, GeometricElementProps, IModel,
   SubCategoryAppearance,
 } from "@itwin/core-common";
-import {   _nativeDb, IModelDb, IModelJsFs, SnapshotDb, SpatialCategory } from "../../core-backend";
-import { IModelTestUtils } from "../IModelTestUtils";
+import { assert, expect } from "chai";
+import { _nativeDb, IModelDb, IModelJsFs, SnapshotDb, SpatialCategory } from "../../core-backend.js";
+import { IModelTestUtils } from "../IModelTestUtils.js";
 
 interface TestElement extends GeometricElementProps {
   addresses: [null, {city: "Pune", zip: 28}];

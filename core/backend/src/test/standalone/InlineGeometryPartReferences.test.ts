@@ -2,17 +2,17 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
 import { Guid, Id64 } from "@itwin/core-bentley";
-import { LineString3d, Loop, Point3d } from "@itwin/core-geometry";
 import {
   AreaPattern,
   Code, ColorDef, GeometricElement3dProps, GeometryParams, GeometryPartProps, GeometryStreamBuilder, GeometryStreamIterator, IModel,
 } from "@itwin/core-common";
+import { LineString3d, Loop, Point3d } from "@itwin/core-geometry";
+import { expect } from "chai";
 import {
   _nativeDb, GenericSchema, GeometricElement3d, GeometryPart, PhysicalModel, PhysicalObject, PhysicalPartition, RenderMaterialElement, SnapshotDb, SpatialCategory, SubCategory, SubjectOwnsPartitionElements,
-} from "../../core-backend";
-import { IModelTestUtils } from "../IModelTestUtils";
+} from "../../core-backend.js";
+import { IModelTestUtils } from "../IModelTestUtils.js";
 
 // The only geometry in our geometry streams will be squares of 1 meter in x and y, with origin at (pos, 0, 0).
 interface Primitive { pos: number }

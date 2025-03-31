@@ -3,14 +3,14 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert } from "chai";
 import {
   GeographicCRSInterpretRequestProps, GeographicCRSProps,
 } from "@itwin/core-common";
-import { IModelNative } from "../../internal/NativePlatform";
 import { Geometry, Range2d, Range2dProps } from "@itwin/core-geometry";
-import { GeoCoordConfig } from "../../GeoCoordConfig";
-import { getAvailableCoordinateReferenceSystems } from "../../GeographicCRSServices";
+import { assert } from "chai";
+import { GeoCoordConfig } from "../../GeoCoordConfig.js";
+import { getAvailableCoordinateReferenceSystems } from "../../GeographicCRSServices.js";
+import { IModelNative } from "../../internal/NativePlatform.js";
 
 // spell-checker: disable
 

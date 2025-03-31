@@ -2,19 +2,19 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert } from "chai";
-import * as path from "path";
 import { Code } from "@itwin/core-common";
+import { SchemaKey } from "@itwin/ecschema-metadata";
+import { assert } from "chai";
+import path from "path";
 import {
   DefinitionElement,
   Element,
   InformationContentElement,
   RepositoryLink,
   SnapshotDb, SpatialViewDefinition, UrlLink, ViewDefinition3d,
-} from "../../core-backend";
-import { IModelTestUtils } from "../IModelTestUtils";
-import { KnownTestLocations } from "../KnownTestLocations";
-import { SchemaKey } from "@itwin/ecschema-metadata";
+} from "../../core-backend.js";
+import { IModelTestUtils } from "../IModelTestUtils.js";
+import { KnownTestLocations } from "../KnownTestLocations.js";
 
 describe("IModel Schema Context", () => {
   let imodel: SnapshotDb;

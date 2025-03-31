@@ -2,10 +2,6 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert, expect } from "chai";
-import * as path from "path";
-import * as semver from "semver";
-import * as sinon from "sinon";
 import { DbResult, Guid, GuidString, Id64, Id64String, IModelStatus, Logger, OpenMode, ProcessDetector } from "@itwin/core-bentley";
 import {
   AxisAlignedBox3d, BisCodeSpec, BriefcaseIdValue, ChangesetIdWithIndex, Code, CodeScopeSpec, CodeSpec, ColorByName, ColorDef, DefinitionElementProps,
@@ -18,8 +14,14 @@ import {
 import {
   Geometry, GeometryQuery, LineString3d, Loop, Matrix4d, Point3d, PolyfaceBuilder, Range3d, StrokeOptions, Transform, XYZProps, YawPitchRollAngles,
 } from "@itwin/core-geometry";
-import { V2CheckpointAccessProps } from "../../BackendHubAccess";
-import { V2CheckpointManager } from "../../CheckpointManager";
+import { CustomAttributeClass, EntityClass, PrimitiveArrayProperty, PrimitiveOrEnumPropertyBase, PropertyType, propertyTypeToString, SchemaItemType } from "@itwin/ecschema-metadata";
+import { assert, expect } from "chai";
+import path from "path";
+import { performance } from "perf_hooks";
+import semver from "semver";
+import sinon from "sinon";
+import { V2CheckpointAccessProps } from "../../BackendHubAccess.js";
+import { V2CheckpointManager } from "../../CheckpointManager.js";
 import {
   _nativeDb, BisCoreSchema, Category, ClassRegistry, DefinitionContainer, DefinitionGroup, DefinitionGroupGroupsDefinitions,
   DefinitionModel, DefinitionPartition, DictionaryModel, DisplayStyle3d, DisplayStyleCreationOptions, DocumentPartition, DrawingGraphic, ECSqlStatement,
@@ -27,16 +29,14 @@ import {
   GeometricModel, GroupInformationPartition, IModelDb, IModelHost, IModelJsFs, InformationPartitionElement, InformationRecordElement, LightLocation,
   LinkPartition, Model, PhysicalElement, PhysicalModel, PhysicalObject, PhysicalPartition, RenderMaterialElement, RenderMaterialElementParams, SnapshotDb, SpatialCategory,
   SqliteStatement, SqliteValue, SqliteValueType, StandaloneDb, SubCategory, Subject, Texture, ViewDefinition,
-} from "../../core-backend";
-import { BriefcaseDb, SnapshotDbOpenArgs } from "../../IModelDb";
-import { HubMock } from "../../HubMock";
-import { KnownTestLocations } from "../KnownTestLocations";
-import { IModelTestUtils } from "../IModelTestUtils";
-import { DisableNativeAssertions } from "../TestUtils";
-import { samplePngTexture } from "../imageData";
-import { performance } from "perf_hooks";
-import { _hubAccess } from "../../internal/Symbols";
-import { CustomAttributeClass, EntityClass, PrimitiveArrayProperty, PrimitiveOrEnumPropertyBase, PropertyType, propertyTypeToString, SchemaItemType } from "@itwin/ecschema-metadata";
+} from "../../core-backend.js";
+import { HubMock } from "../../HubMock.js";
+import { BriefcaseDb, SnapshotDbOpenArgs } from "../../IModelDb.js";
+import { _hubAccess } from "../../internal/Symbols.js";
+import { samplePngTexture } from "../imageData.js";
+import { IModelTestUtils } from "../IModelTestUtils.js";
+import { KnownTestLocations } from "../KnownTestLocations.js";
+import { DisableNativeAssertions } from "../TestUtils.js";
 // spell-checker: disable
 
 async function getIModelError<T>(promise: Promise<T>): Promise<IModelError | undefined> {

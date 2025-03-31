@@ -3,17 +3,17 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert } from "chai";
-import * as path from "path";
 import { Id64, Id64Set } from "@itwin/core-bentley";
-import { Point3d } from "@itwin/core-geometry";
 import { GeometryPartProps, IModel } from "@itwin/core-common";
+import { Point3d } from "@itwin/core-geometry";
+import { assert } from "chai";
+import path from "path";
 import {
   CategorySelector, DisplayStyle2d, DisplayStyle3d, DrawingCategory, DrawingViewDefinition, GeometryPart, IModelJsFs, InformationPartitionElement,
   ModelSelector, OrthographicViewDefinition, RenderMaterialElement, SnapshotDb, SpatialCategory, SubCategory, Subject, Texture,
-} from "../../core-backend";
-import { ExtensiveTestScenario, IModelTestUtils } from "../IModelTestUtils";
-import { KnownTestLocations } from "../KnownTestLocations";
+} from "../../core-backend.js";
+import { ExtensiveTestScenario, IModelTestUtils } from "../IModelTestUtils.js";
+import { KnownTestLocations } from "../KnownTestLocations.js";
 
 describe("DeleteDefinitionElements", () => {
   const outputDir: string = path.join(KnownTestLocations.outputDir, "DeleteDefinitionElements");

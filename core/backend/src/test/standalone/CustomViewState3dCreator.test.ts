@@ -3,13 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert } from "chai";
+import { CompressedId64Set, Id64String } from "@itwin/core-bentley";
 import { CustomViewState3dProps } from "@itwin/core-common";
-import { SnapshotDb } from "../../IModelDb";
-import { CompressedId64Set, Id64String} from "@itwin/core-bentley";
-import { IModelTestUtils } from "../IModelTestUtils";
-import { CustomViewState3dCreator } from "../../CustomViewState3dCreator";
 import { Range3d } from "@itwin/core-geometry";
+import { assert } from "chai";
+import { CustomViewState3dCreator } from "../../CustomViewState3dCreator.js";
+import { SnapshotDb } from "../../IModelDb.js";
+import { IModelTestUtils } from "../IModelTestUtils.js";
 
 describe("CustomViewState3dCreator", () => {
   let imodel: SnapshotDb;

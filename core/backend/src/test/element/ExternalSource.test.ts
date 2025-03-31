@@ -3,17 +3,17 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert } from "chai";
 import { Id64String } from "@itwin/core-bentley";
 import {
   Code, ExternalSourceAttachmentProps, ExternalSourceProps, IModel, RepositoryLinkProps, SynchronizationConfigLinkProps,
 } from "@itwin/core-common";
+import { assert } from "chai";
 import {
   ExternalSource, ExternalSourceAttachment, ExternalSourceAttachmentAttachesSource, ExternalSourceGroup, ExternalSourceGroupGroupsSources,
   ExternalSourceIsInRepository, ExternalSourceOwnsAttachments, FolderContainsRepositories, FolderLink, IModelDb, LinkElement, RepositoryLink,
   SnapshotDb, SynchronizationConfigLink, SynchronizationConfigProcessesSources, SynchronizationConfigSpecifiesRootSources,
-} from "../../core-backend";
-import { IModelTestUtils } from "../IModelTestUtils";
+} from "../../core-backend.js";
+import { IModelTestUtils } from "../IModelTestUtils.js";
 
 describe("ExternalSource", () => {
 

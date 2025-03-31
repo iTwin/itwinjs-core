@@ -9,10 +9,10 @@
 import { join, relative } from "node:path";
 import { DbResult, IModelStatus } from "@itwin/core-bentley";
 import { IModelError, StorageValue } from "@itwin/core-common";
-import { ECDb, ECDbOpenMode } from "./ECDb";
-import { IModelHost } from "./IModelHost";
-import { IModelJsFs } from "./IModelJsFs";
-import { NativeHost } from "./NativeHost";
+import { ECDb, ECDbOpenMode } from "./ECDb.js";
+import { IModelHost } from "./IModelHost.js";
+import { IModelJsFs } from "./IModelJsFs.js";
+import { NativeHost } from "./NativeHost.js";
 
 // cspell:ignore ecdb
 

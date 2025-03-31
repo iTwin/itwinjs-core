@@ -3,19 +3,19 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
 import { Guid, Id64, Id64String } from "@itwin/core-bentley";
-import { Box, Point3d, Range3d, Vector3d, YawPitchRollAngles } from "@itwin/core-geometry";
 import {
   BatchType, Code, ColorDef, defaultTileOptions, GeometryStreamBuilder, IModel, iModelTileTreeIdToString, PhysicalElementProps,
   PrimaryTileTreeId, RenderSchedule,
 } from "@itwin/core-common";
+import { Box, Point3d, Range3d, Vector3d, YawPitchRollAngles } from "@itwin/core-geometry";
+import { expect } from "chai";
 import {
   _nativeDb, GenericSchema, IModelDb, PhysicalModel, PhysicalObject, PhysicalPartition, RenderTimeline, SnapshotDb,
   SpatialCategory,
   SubjectOwnsPartitionElements,
-} from "../../core-backend";
-import { IModelTestUtils } from "../IModelTestUtils";
+} from "../../core-backend.js";
+import { IModelTestUtils } from "../IModelTestUtils.js";
 
 let uniqueId = 0;
 

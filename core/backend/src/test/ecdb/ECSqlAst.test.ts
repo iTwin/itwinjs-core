@@ -6,7 +6,7 @@
  * @module ECSqlExpr
  */
 
-import { assert } from "chai";
+import { DbResult } from "@itwin/core-bentley";
 import {
   AssignmentExpr,
   BetweenExpr,
@@ -56,9 +56,9 @@ import {
   UsingRelationshipJoinExpr,
   WhereClauseExp,
 } from "@itwin/ecsql-common";
-import { ECDb, ECDbOpenMode, IModelHost } from "../../core-backend";
-import { IModelTestUtils } from "../IModelTestUtils";
-import { DbResult } from "@itwin/core-bentley";
+import { assert } from "chai";
+import { ECDb, ECDbOpenMode, IModelHost } from "../../core-backend.js";
+import { IModelTestUtils } from "../IModelTestUtils.js";
 
 describe("ECSql Abstract Syntax Tree", () => {
   let ecdb: ECDb;

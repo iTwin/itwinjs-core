@@ -2,16 +2,16 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert } from "chai";
 import { DbResult } from "@itwin/core-bentley";
-import { ECSqlRowArg, ECSqlStatement, SnapshotDb } from "../../../core-backend";
-import { KnownTestLocations } from "../../KnownTestLocations";
 import { ECSqlReader, ECSqlValueType, QueryBinder, QueryOptions, QueryRowFormat } from "@itwin/core-common";
-import { buildBinaryData, ECDbMarkdownTestParser, ECDbTestMode, ECDbTestProps, ECDbTestRowFormat } from "./ECSqlTestParser";
-import * as path from "path";
-import * as fs from "fs";
-import { ECSqlDatasets } from "../dataset/ECSqlDatasets";
 import { Point2d, Point3d } from "@itwin/core-geometry";
+import { assert } from "chai";
+import fs from "fs";
+import path from "path";
+import { ECSqlRowArg, ECSqlStatement, SnapshotDb } from "../../../core-backend.js";
+import { KnownTestLocations } from "../../KnownTestLocations.js";
+import { ECSqlDatasets } from "../dataset/ECSqlDatasets.js";
+import { buildBinaryData, ECDbMarkdownTestParser, ECDbTestMode, ECDbTestProps, ECDbTestRowFormat } from "./ECSqlTestParser.js";
 
 enum TestDataset {
   AllProperties = "AllProperties.bim"

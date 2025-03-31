@@ -3,8 +3,6 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert } from "chai";
-import * as fs from "fs";
 import { DbResult, Id64, Id64Array, Id64String } from "@itwin/core-bentley";
 import {
   Code, ColorDef, ElementGeometryInfo, ElementGeometryOpcode, FillDisplay, GeometryClass, GeometryParams, GeometryPartProps, GeometryStreamBuilder, GeometryStreamProps,
@@ -13,13 +11,15 @@ import {
 import {
   Angle, Box, GeometryQuery, GrowableXYArray, GrowableXYZArray, LineSegment3d, LineString3d, Loop, Point3d, PolyfaceBuilder, Range3d, Sphere, StrokeOptions, Vector3d,
 } from "@itwin/core-geometry";
+import { assert } from "chai";
+import fs from "fs";
 import {
   ExportGraphics, ExportGraphicsInfo, ExportGraphicsMeshVisitor, ExportGraphicsOptions, GeometricElement, IModelJsFs, LineStyleDefinition, PhysicalObject,
   RenderMaterialElement, SnapshotDb, Texture,
-} from "../../core-backend";
-import { GeometryPart } from "../../Element";
-import { ExportGraphicsFunction, ExportLinesInfo, ExportPartInfo, ExportPartInstanceInfo, ExportPartLinesInfo } from "../../ExportGraphics";
-import { IModelTestUtils } from "../IModelTestUtils";
+} from "../../core-backend.js";
+import { GeometryPart } from "../../Element.js";
+import { ExportGraphicsFunction, ExportLinesInfo, ExportPartInfo, ExportPartInstanceInfo, ExportPartLinesInfo } from "../../ExportGraphics.js";
+import { IModelTestUtils } from "../IModelTestUtils.js";
 
 describe("exportGraphics", () => {
   let iModel: SnapshotDb;

@@ -1,15 +1,15 @@
-import { assert } from "chai";
 /*---------------------------------------------------------------------------------------------
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { DbResult } from "@itwin/core-bentley";
 import { ECSqlReader, QueryBinder, QueryOptionsBuilder, QueryRowFormat } from "@itwin/core-common";
-import { SnapshotDb } from "../../core-backend";
-import { ECSqlStatement } from "../../ECSqlStatement";
-import { IModelTestUtils } from "../IModelTestUtils";
-import { KnownTestLocations } from "../KnownTestLocations";
-import { ECDbTestHelper } from "./ECDbTestHelper";
+import { assert } from "chai";
+import { SnapshotDb } from "../../core-backend.js";
+import { ECSqlStatement } from "../../ECSqlStatement.js";
+import { IModelTestUtils } from "../IModelTestUtils.js";
+import { KnownTestLocations } from "../KnownTestLocations.js";
+import { ECDbTestHelper } from "./ECDbTestHelper.js";
 
 describe("ECSqlReader", (() => {
   let iModel: SnapshotDb;

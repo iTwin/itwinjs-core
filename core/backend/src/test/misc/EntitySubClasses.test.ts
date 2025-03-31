@@ -1,9 +1,9 @@
-import { expect } from "chai";
 import { AuxCoordSystemProps, Code, GeometricModel2dProps, ModelProps } from "@itwin/core-common";
-import { SnapshotDb } from "../../IModelDb";
-import { GeometricModel2d } from "../../Model";
-import { IModelTestUtils } from "../IModelTestUtils";
-import { AuxCoordSystem2d, AuxCoordSystem3d } from "../../ViewDefinition";
+import { expect } from "chai";
+import { SnapshotDb } from "../../IModelDb.js";
+import { GeometricModel2d } from "../../Model.js";
+import { AuxCoordSystem2d, AuxCoordSystem3d } from "../../ViewDefinition.js";
+import { IModelTestUtils } from "../IModelTestUtils.js";
 
 describe("EntitySubClasses", () => {
   let iModelDb: SnapshotDb;

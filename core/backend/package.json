@@ -2,25 +2,32 @@
   "name": "@itwin/core-backend",
   "version": "5.0.0-dev.94",
   "description": "iTwin.js backend components",
-  "main": "lib/cjs/core-backend.js",
-  "module": "lib/esm/core-backend.js",
-  "typings": "lib/cjs/core-backend",
   "license": "MIT",
+  "type": "module",
+  "main": "lib/cjs/core-backend.js",
+  "types": "lib/cjs/core-backend",
+  "module": "lib/esm/core-backend.js",
+  "exports": {
+    ".": {
+      "import": "./lib/esm/core-backend.js",
+      "require": "./lib/cjs/core-backend.js"
+    }
+  },
   "engines": {
     "node": "^20.0.0 || ^22.0.0"
   },
   "scripts": {
     "build": "npm run -s build:cjs && npm run -s build:esm && npm run -s copy:assets && npm run -s copy:test-assets && npm run -s copy:ecsqltestmdfiles",
-    "build:cjs": "tsc 1>&2 --outDir lib/cjs",
-    "build:esm": "tsc 1>&2 --module ES2022 --outDir lib/esm",
+    "build:cjs": "internal-tools build-cjs",
+    "build:esm": "tsc 1>&2 --outDir lib/esm",
     "clean": "rimraf -g lib .rush/temp/package-deps*.json  ../../tools/internal/ios/core-test-runner/build ../../tools/internal/lib",
     "docs": "betools docs --json=../../generated-docs/core/core-backend/file.json --tsIndexFile=./core-backend.ts --onlyJson --excludeGlob=**/*.d.ts",
     "copy:assets": " npm run -s copy:assets:cjs && npm run -s copy:assets:esm",
     "copy:assets:cjs": "cpx \"./src/assets/**/*\" ./lib/cjs/assets",
     "copy:assets:esm": "cpx \"./src/assets/**/*\" ./lib/esm/assets",
-    "copy:ecsqltestmdfiles": "cpx \"./src/test/ecsql/queries/*\" ./lib/cjs/test/ecsql/queries",
+    "copy:ecsqltestmdfiles": "cpx \"./src/test/ecsql/queries/*\" ./lib/esm/test/ecsql/queries",
     "copy:config": "internal-tools copy-config",
-    "copy:test-assets": "cpx \"./src/test/assets/**/*\" ./lib/cjs/test/assets",
+    "copy:test-assets": "cpx \"./src/test/assets/**/*\" ./lib/esm/test/assets",
     "cover": "nyc npm -s test",
     "extract-api": "betools extract-api --entry=core-backend",
     "lint": "eslint \"./src/**/*.ts\" 1>&2",

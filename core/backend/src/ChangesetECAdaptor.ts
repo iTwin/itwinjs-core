@@ -6,7 +6,7 @@
  * @module ECDb
  */
 import { DbResult, GuidString, Id64String } from "@itwin/core-bentley";
-import { AnyDb, SqliteChange, SqliteChangeOp, SqliteChangesetReader, SqliteValueStage } from "./SqliteChangesetReader";
+import { AnyDb, SqliteChange, SqliteChangeOp, SqliteChangesetReader, SqliteValueStage } from "./SqliteChangesetReader.js";
 
 interface IClassRef {
   classId: Id64String;

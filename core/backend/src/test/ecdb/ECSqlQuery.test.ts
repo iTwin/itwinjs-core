@@ -2,14 +2,14 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert } from "chai";
 import { DbResult, Id64 } from "@itwin/core-bentley";
 import { DbQueryRequest, DbQueryResponse, DbRequestExecutor, DbRequestKind, ECSqlReader, QueryBinder, QueryOptionsBuilder, QueryPropertyMetaData, QueryRowFormat } from "@itwin/core-common";
-import { ConcurrentQuery } from "../../ConcurrentQuery";
-import { _nativeDb, ECSqlStatement, IModelDb, SnapshotDb } from "../../core-backend";
-import { IModelTestUtils } from "../IModelTestUtils";
-import { SequentialLogMatcher } from "../SequentialLogMatcher";
-import * as path from "path";
+import { assert } from "chai";
+import path from "path";
+import { ConcurrentQuery } from "../../ConcurrentQuery.js";
+import { _nativeDb, ECSqlStatement, IModelDb, SnapshotDb } from "../../core-backend.js";
+import { IModelTestUtils } from "../IModelTestUtils.js";
+import { SequentialLogMatcher } from "../SequentialLogMatcher.js";
 
 // cspell:ignore mirukuru ibim
 

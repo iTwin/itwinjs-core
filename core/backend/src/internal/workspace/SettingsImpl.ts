@@ -6,16 +6,17 @@
  * @module Workspace
  */
 
-import * as fs from "fs-extra";
-import { parse } from "json5";
-import { extname, join } from "path";
 import { BeEvent } from "@itwin/core-bentley";
 import { LocalDirName, LocalFileName } from "@itwin/core-common";
-import { IModelJsFs } from "../../IModelJsFs";
-import { Setting, SettingName, Settings, SettingsContainer, SettingsDictionary, SettingsDictionaryProps, SettingsDictionarySource, SettingsPriority } from "../../workspace/Settings";
-import { IModelHost } from "../../IModelHost";
-import { _implementationProhibited } from "../Symbols";
+import fs from "fs-extra";
+import pkg from "json5";
+import { extname, join } from "path";
+import { IModelHost } from "../../IModelHost.js";
+import { IModelJsFs } from "../../IModelJsFs.js";
+import { Setting, SettingName, Settings, SettingsContainer, SettingsDictionary, SettingsDictionaryProps, SettingsDictionarySource, SettingsPriority } from "../../workspace/Settings.js";
+import { _implementationProhibited } from "../Symbols.js";
 
+const { parse } = pkg;
 const dictionaryMatches = (d1: SettingsDictionarySource, d2: SettingsDictionarySource): boolean => {
   return (d1.workspaceDb === d2.workspaceDb) && (d1.name === d2.name);
 };

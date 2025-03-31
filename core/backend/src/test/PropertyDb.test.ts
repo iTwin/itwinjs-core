@@ -3,14 +3,14 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import { OpenMode } from "@itwin/core-bentley";
 import { expect } from "chai";
 import { existsSync } from "fs";
 import { Suite } from "mocha";
 import { join } from "path";
-import { OpenMode } from "@itwin/core-bentley";
-import { IModelHost } from "../IModelHost";
-import { PropertyStore } from "../PropertyStore";
-import { KnownTestLocations } from "./KnownTestLocations";
+import { IModelHost } from "../IModelHost.js";
+import { PropertyStore } from "../PropertyStore.js";
+import { KnownTestLocations } from "./KnownTestLocations.js";
 
 describe("PropertyDb", function (this: Suite) {
   this.timeout(0);

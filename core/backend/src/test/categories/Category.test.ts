@@ -2,13 +2,13 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
 import { Guid, Id64 } from "@itwin/core-bentley";
 import { SubCategoryAppearance } from "@itwin/core-common";
+import { expect } from "chai";
 import {
   IModelDb, RenderMaterialElement, RenderMaterialElementParams, SpatialCategory, StandaloneDb, SubCategory,
-} from "../../core-backend";
-import { IModelTestUtils } from "../IModelTestUtils";
+} from "../../core-backend.js";
+import { IModelTestUtils } from "../IModelTestUtils.js";
 
 describe("Category", () => {
   let imodel: StandaloneDb;

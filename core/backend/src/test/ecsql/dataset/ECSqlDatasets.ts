@@ -2,14 +2,14 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert } from "chai";
-import * as path from "path";
 import { Id64, Id64String } from "@itwin/core-bentley";
-import { _nativeDb, IModelDb, IModelHost, SnapshotDb, SpatialCategory } from "../../../core-backend";
-import { IModelTestUtils } from "../../IModelTestUtils";
 import { Code, ColorDef, ElementAspectProps, GeometryStreamProps, IModel, PhysicalElementProps, RelatedElementProps, SubCategoryAppearance } from "@itwin/core-common";
 import { Arc3d, IModelJson, Point2d, Point3d } from "@itwin/core-geometry";
-import { KnownTestLocations } from "../../KnownTestLocations";
+import { assert } from "chai";
+import path from "path";
+import { _nativeDb, IModelDb, IModelHost, SnapshotDb, SpatialCategory } from "../../../core-backend.js";
+import { IModelTestUtils } from "../../IModelTestUtils.js";
+import { KnownTestLocations } from "../../KnownTestLocations.js";
 
 
 interface IPrimitiveBase {

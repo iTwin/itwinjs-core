@@ -6,10 +6,10 @@
  * @module SQLiteDb
  */
 import { DbChangeStage, DbOpcode, DbResult, DbValueType, Id64String } from "@itwin/core-bentley";
-import { ECDb } from "./ECDb";
-import { IModelDb } from "./IModelDb";
-import { IModelNative } from "./internal/NativePlatform";
-import { _nativeDb } from "./internal/Symbols";
+import { ECDb } from "./ECDb.js";
+import { IModelDb } from "./IModelDb.js";
+import { IModelNative } from "./internal/NativePlatform.js";
+import { _nativeDb } from "./internal/Symbols.js";
 
 /** Changed value type
  * @beta

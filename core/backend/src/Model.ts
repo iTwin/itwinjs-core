@@ -9,16 +9,16 @@
 // cspell:ignore elid
 
 import { GuidString, Id64String, JsonUtils } from "@itwin/core-bentley";
-import { Point2d, Range3d } from "@itwin/core-geometry";
 import {
   AxisAlignedBox3d, ElementProps, EntityReferenceSet, GeometricModel2dProps, GeometricModel3dProps, GeometricModelProps, IModel,
   InformationPartitionElementProps, ModelProps, RelatedElement,
 } from "@itwin/core-common";
-import { DefinitionPartition, DocumentPartition, InformationRecordPartition, PhysicalPartition, SheetIndexPartition, SpatialLocationPartition } from "./Element";
-import { Entity } from "./Entity";
-import { IModelDb } from "./IModelDb";
-import { SubjectOwnsPartitionElements } from "./NavigationRelationship";
-import { _nativeDb, _verifyChannel } from "./internal/Symbols";
+import { Point2d, Range3d } from "@itwin/core-geometry";
+import { DefinitionPartition, DocumentPartition, InformationRecordPartition, PhysicalPartition, SheetIndexPartition, SpatialLocationPartition } from "./Element.js";
+import { Entity } from "./Entity.js";
+import { IModelDb } from "./IModelDb.js";
+import { SubjectOwnsPartitionElements } from "./NavigationRelationship.js";
+import { _nativeDb, _verifyChannel } from "./internal/Symbols.js";
 
 /** Argument for the `Model.onXxx` static methods
  * @beta

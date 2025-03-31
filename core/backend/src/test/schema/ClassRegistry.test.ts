@@ -2,25 +2,25 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert, expect } from "chai";
-import * as sinon from "sinon";
-import * as path from "path";
+import { OpenMode } from "@itwin/core-bentley";
 import {
   BisCodeSpec, Code, ConcreteEntityTypes, DefinitionElementProps, ECJsNames, ElementAspectProps, ElementProps, EntityReferenceSet, ModelProps,
   PropertyMetaData,
   RelatedElement, RelatedElementProps, RelationshipProps, SchemaState,
 } from "@itwin/core-common";
+import { EntityClass, NavigationProperty, PrimitiveProperty } from "@itwin/ecschema-metadata";
+import { assert, expect } from "chai";
+import path from "path";
+import sinon from "sinon";
+import { ClassRegistry } from "../../ClassRegistry.js";
 import {
   DefinitionElement, DefinitionModel, ElementRefersToElements, EntityReferences, IModelDb, IModelJsFs, Model, RepositoryLink,
   Schema, SnapshotDb, SpatialViewDefinition, StandaloneDb, UrlLink, ViewDefinition3d,
-} from "../../core-backend";
-import { IModelTestUtils } from "../IModelTestUtils";
-import { KnownTestLocations } from "../KnownTestLocations";
-import { Element } from "../../Element";
-import { Schemas } from "../../Schema";
-import { ClassRegistry } from "../../ClassRegistry";
-import { OpenMode } from "@itwin/core-bentley";
-import { EntityClass, NavigationProperty, PrimitiveProperty } from "@itwin/ecschema-metadata";
+} from "../../core-backend.js";
+import { Element } from "../../Element.js";
+import { Schemas } from "../../Schema.js";
+import { IModelTestUtils } from "../IModelTestUtils.js";
+import { KnownTestLocations } from "../KnownTestLocations.js";
 
 describe("Class Registry", () => {
   let imodel: SnapshotDb;

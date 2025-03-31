@@ -8,7 +8,6 @@
 
 // cspell:ignore cset csets ecchanges
 
-import * as path from "path";
 import {
   AccessToken, BeDuration, ChangeSetStatus, GuidString, IModelHubStatus, IModelStatus, Logger, OpenMode, Optional, StopWatch,
 } from "@itwin/core-bentley";
@@ -16,15 +15,16 @@ import {
   BriefcaseId, BriefcaseIdValue, BriefcaseProps, ChangesetFileProps, ChangesetIndex, ChangesetIndexOrId, ChangesetProps, ChangesetRange, ChangesetType, IModelError, IModelVersion, LocalBriefcaseProps,
   LocalDirName, LocalFileName, RequestNewBriefcaseProps,
 } from "@itwin/core-common";
-import { AcquireNewBriefcaseIdArg, IModelNameArg } from "./BackendHubAccess";
-import { BackendLoggerCategory } from "./BackendLoggerCategory";
-import { CheckpointManager, CheckpointProps, ProgressFunction } from "./CheckpointManager";
-import { BriefcaseDb, IModelDb, TokenArg } from "./IModelDb";
-import { IModelHost } from "./IModelHost";
-import { IModelJsFs } from "./IModelJsFs";
-import { SchemaSync } from "./SchemaSync";
-import { _hubAccess, _nativeDb, _releaseAllLocks } from "./internal/Symbols";
-import { IModelNative } from "./internal/NativePlatform";
+import * as path from "path";
+import { AcquireNewBriefcaseIdArg, IModelNameArg } from "./BackendHubAccess.js";
+import { BackendLoggerCategory } from "./BackendLoggerCategory.js";
+import { CheckpointManager, CheckpointProps, ProgressFunction } from "./CheckpointManager.js";
+import { BriefcaseDb, IModelDb, TokenArg } from "./IModelDb.js";
+import { IModelHost } from "./IModelHost.js";
+import { IModelJsFs } from "./IModelJsFs.js";
+import { SchemaSync } from "./SchemaSync.js";
+import { IModelNative } from "./internal/NativePlatform.js";
+import { _hubAccess, _nativeDb, _releaseAllLocks } from "./internal/Symbols.js";
 
 const loggerCategory = BackendLoggerCategory.IModelDb;
 

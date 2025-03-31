@@ -6,9 +6,9 @@
  * @module Workspace
  */
 
-import { SQLiteDb, VersionedSqliteDb } from "../../SQLiteDb";
-import { _nativeDb } from "../Symbols";
-import { workspaceManifestProperty } from "./WorkspaceImpl";
+import { SQLiteDb, VersionedSqliteDb } from "../../SQLiteDb.js";
+import { _nativeDb } from "../Symbols.js";
+import { workspaceManifestProperty } from "./WorkspaceImpl.js";
 
 export class WorkspaceSqliteDb extends VersionedSqliteDb {
   public override myVersion = "1.0.0";

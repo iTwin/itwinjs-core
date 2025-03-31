@@ -6,12 +6,12 @@
  * @module ElementAspects
  */
 
-import { ChannelRootAspectProps, ElementAspectProps, EntityReferenceSet, ExternalSourceAspectProps, RelatedElement } from "@itwin/core-common";
-import { Entity } from "./Entity";
-import { IModelDb } from "./IModelDb";
-import { ECSqlStatement } from "./ECSqlStatement";
 import { DbResult, Id64String } from "@itwin/core-bentley";
-import { _verifyChannel } from "./internal/Symbols";
+import { ChannelRootAspectProps, ElementAspectProps, EntityReferenceSet, ExternalSourceAspectProps, RelatedElement } from "@itwin/core-common";
+import { ECSqlStatement } from "./ECSqlStatement.js";
+import { Entity } from "./Entity.js";
+import { IModelDb } from "./IModelDb.js";
+import { _verifyChannel } from "./internal/Symbols.js";
 
 /** Argument for the `ElementAspect.onXxx` static methods
  * @beta

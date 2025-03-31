@@ -3,15 +3,15 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert } from "chai";
 import { Guid } from "@itwin/core-bentley";
 import { BriefcaseIdValue } from "@itwin/core-common";
-import { Element } from "../../Element";
-import { HubWrappers, IModelTestUtils } from "../IModelTestUtils";
-import { KnownTestLocations } from "../KnownTestLocations";
-import { HubMock } from "../../HubMock";
-import { TestChangeSetUtility } from "../TestChangeSetUtility";
-import { _nativeDb, ChannelControl } from "../../core-backend";
+import { assert } from "chai";
+import { _nativeDb, ChannelControl } from "../../core-backend.js";
+import { Element } from "../../Element.js";
+import { HubMock } from "../../HubMock.js";
+import { HubWrappers, IModelTestUtils } from "../IModelTestUtils.js";
+import { KnownTestLocations } from "../KnownTestLocations.js";
+import { TestChangeSetUtility } from "../TestChangeSetUtility.js";
 
 describe("BriefcaseManager", async () => {
   const testITwinId: string = Guid.createValue();

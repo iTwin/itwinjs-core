@@ -6,28 +6,28 @@
  * @module Workspace
  */
 
-import { createHash } from "crypto";
-import * as fs from "fs-extra";
-import { dirname, extname, join } from "path";
-import * as semver from "semver";
+import type { IModelJsNative } from "@bentley/imodeljs-native";
 import { AccessToken, assert, BeEvent, DbResult, Mutable, OpenMode } from "@itwin/core-bentley";
 import { FilePropertyProps, IModelError, LocalDirName, LocalFileName } from "@itwin/core-common";
-import { CloudSqlite } from "../../CloudSqlite";
-import { IModelHost, KnownLocations } from "../../IModelHost";
-import { IModelJsFs } from "../../IModelJsFs";
-import { SQLiteDb } from "../../SQLiteDb";
-import { SqliteStatement } from "../../SqliteStatement";
-import { SettingName, Settings, SettingsContainer, SettingsDictionaryProps, SettingsPriority } from "../../workspace/Settings";
-import type { IModelJsNative } from "@bentley/imodeljs-native";
+import { createHash } from "crypto";
+import fs from "fs-extra";
+import { dirname, extname, join } from "path";
+import semver from "semver";
+import { CloudSqlite } from "../../CloudSqlite.js";
+import { IModelHost, KnownLocations } from "../../IModelHost.js";
+import { IModelJsFs } from "../../IModelJsFs.js";
+import { SQLiteDb } from "../../SQLiteDb.js";
+import { SqliteStatement } from "../../SqliteStatement.js";
+import { SettingName, Settings, SettingsContainer, SettingsDictionaryProps, SettingsPriority } from "../../workspace/Settings.js";
 import {
   GetWorkspaceContainerArgs, Workspace, WorkspaceContainer, WorkspaceContainerId, WorkspaceContainerProps, WorkspaceDb, WorkspaceDbCloudProps,
   WorkspaceDbFullName, WorkspaceDbLoadError, WorkspaceDbLoadErrors, WorkspaceDbManifest, WorkspaceDbName, WorkspaceDbNameAndVersion, WorkspaceDbProps,
   WorkspaceDbQueryResourcesArgs, WorkspaceDbSettingsProps, WorkspaceDbVersion, WorkspaceOpts, WorkspaceResourceName, WorkspaceSettingNames,
-} from "../../workspace/Workspace";
-import { CreateNewWorkspaceContainerArgs, CreateNewWorkspaceDbVersionArgs, EditableWorkspaceContainer, EditableWorkspaceDb, WorkspaceEditor } from "../../workspace/WorkspaceEditor";
-import { WorkspaceSqliteDb } from "./WorkspaceSqliteDb";
-import { SettingsImpl } from "./SettingsImpl";
-import { _implementationProhibited, _nativeDb } from "../Symbols";
+} from "../../workspace/Workspace.js";
+import { CreateNewWorkspaceContainerArgs, CreateNewWorkspaceDbVersionArgs, EditableWorkspaceContainer, EditableWorkspaceDb, WorkspaceEditor } from "../../workspace/WorkspaceEditor.js";
+import { _implementationProhibited, _nativeDb } from "../Symbols.js";
+import { SettingsImpl } from "./SettingsImpl.js";
+import { WorkspaceSqliteDb } from "./WorkspaceSqliteDb.js";
 
 function workspaceDbNameWithDefault(dbName?: WorkspaceDbName): WorkspaceDbName {
   return dbName ?? "workspace-db";

@@ -3,18 +3,18 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
-import * as fs from "fs-extra";
-import { extname } from "path";
-import * as sinon from "sinon";
 import { Guid } from "@itwin/core-bentley";
 import { Range3d } from "@itwin/core-geometry";
-import { SettingsPriority } from "../../workspace/Settings";
-import { Workspace, WorkspaceContainerProps, WorkspaceDbManifest, WorkspaceDbProps } from "../../workspace/Workspace";
-import { EditableWorkspaceDb, WorkspaceEditor } from "../../workspace/WorkspaceEditor";
-import { IModelTestUtils } from "../IModelTestUtils";
-import { validateWorkspaceContainerId, validateWorkspaceDbName } from "../../internal/workspace/WorkspaceImpl";
-import { _nativeDb } from "../../internal/Symbols";
+import { expect } from "chai";
+import fs from "fs-extra";
+import { extname } from "path";
+import sinon from "sinon";
+import { _nativeDb } from "../../internal/Symbols.js";
+import { validateWorkspaceContainerId, validateWorkspaceDbName } from "../../internal/workspace/WorkspaceImpl.js";
+import { SettingsPriority } from "../../workspace/Settings.js";
+import { Workspace, WorkspaceContainerProps, WorkspaceDbManifest, WorkspaceDbProps } from "../../workspace/Workspace.js";
+import { EditableWorkspaceDb, WorkspaceEditor } from "../../workspace/WorkspaceEditor.js";
+import { IModelTestUtils } from "../IModelTestUtils.js";
 
 describe("WorkspaceFile", () => {
 

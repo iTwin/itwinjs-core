@@ -3,14 +3,14 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert, expect } from "chai";
+import { IModelJsNative } from "@bentley/imodeljs-native";
 import { BeDuration } from "@itwin/core-bentley";
 import { Matrix4d } from "@itwin/core-geometry";
-import { IModelNative } from "../../internal/NativePlatform";
-import { StandaloneDb } from "../../IModelDb";
-import { IModelTestUtils } from "../IModelTestUtils";
-import { IModelJsNative } from "@bentley/imodeljs-native";
-import { _nativeDb } from "../../internal/Symbols";
+import { assert, expect } from "chai";
+import { StandaloneDb } from "../../IModelDb.js";
+import { IModelNative } from "../../internal/NativePlatform.js";
+import { _nativeDb } from "../../internal/Symbols.js";
+import { IModelTestUtils } from "../IModelTestUtils.js";
 
 describe("DgnDbWorker", () => {
   let imodel: StandaloneDb;

@@ -5,15 +5,15 @@
 /** @packageDocumentation
  * @module iModels
  */
+import { IModelJsNative } from "@bentley/imodeljs-native";
 import { Id64, Id64String } from "@itwin/core-bentley";
 import { Code, CodeScopeSpec, CodeSpec, ElementProps, IModel, PropertyMetaData, RelatedElement } from "@itwin/core-common";
-import { IModelJsNative } from "@bentley/imodeljs-native";
-import { SubCategory } from "./Category";
-import { Element } from "./Element";
-import { IModelDb } from "./IModelDb";
-import { IModelNative } from "./internal/NativePlatform";
-import { SQLiteDb } from "./SQLiteDb";
-import { _nativeDb } from "./internal/Symbols";
+import { SubCategory } from "./Category.js";
+import { Element } from "./Element.js";
+import { IModelDb } from "./IModelDb.js";
+import { IModelNative } from "./internal/NativePlatform.js";
+import { _nativeDb } from "./internal/Symbols.js";
+import { SQLiteDb } from "./SQLiteDb.js";
 
 /** The context for transforming a *source* Element to a *target* Element and remapping internal identifiers to the target iModel.
  * @beta

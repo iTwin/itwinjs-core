@@ -3,12 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import * as path from "path";
 import { IModelJsNative, NativeLoggerCategory } from "@bentley/imodeljs-native";
 import { BentleyLoggerCategory, Logger, LogLevel, ProcessDetector } from "@itwin/core-bentley";
-import { BackendLoggerCategory } from "../BackendLoggerCategory";
-import { IModelHost, IModelHostOptions } from "../IModelHost";
-import { IModelNative } from "../internal/NativePlatform";
+import path from "path";
+import { BackendLoggerCategory } from "../BackendLoggerCategory.js";
+import { IModelHost, IModelHostOptions } from "../IModelHost.js";
+import { IModelNative } from "../internal/NativePlatform.js";
 
 /** Class for simple test timing */
 export class Timer {
@@ -59,14 +59,14 @@ export class TestUtils {
     if (ProcessDetector.isMobileAppBackend) {
       return undefined; // Let the native side handle the cache.
     }
-    return fallback ?? path.join(__dirname, ".cache"); // Set the cache dir to be under the lib directory.
+    return fallback ?? path.join(import.meta.dirname, ".cache"); // Set the cache dir to be under the lib directory.
   }
 
   /** Handles the startup of IModelHost.
    * The provided config is used and will override any of the default values used in this method.
    *
    * The default includes:
-   * - cacheDir = path.join(__dirname, ".cache")
+   * - cacheDir = path.join(import.meta.dirname, ".cache")
    * - allowSharedChannel = false;
    */
   public static async startBackend(config?: IModelHostOptions): Promise<void> {

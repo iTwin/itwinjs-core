@@ -2,10 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert } from "chai";
-import * as os from "os";
 import { Logger, LogLevel } from "@itwin/core-bentley";
-import { DevTools, DevToolsStatsFormatter } from "../../core-backend";
+import { assert } from "chai";
+import os from "os";
+import { DevTools, DevToolsStatsFormatter } from "../../core-backend.js";
 
 interface StringIndexedObject<T> {
   [index: string]: T;

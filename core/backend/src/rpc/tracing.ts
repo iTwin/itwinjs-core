@@ -10,9 +10,10 @@
 
 import { assert, Logger, SpanKind, Tracing } from "@itwin/core-bentley";
 import { RpcActivity, RpcInvocation } from "@itwin/core-common";
+import otelApi from "@opentelemetry/api";
 import { AsyncLocalStorage } from "async_hooks";
-import { BackendLoggerCategory } from "../BackendLoggerCategory";
-import { IModelHost } from "../IModelHost";
+import { BackendLoggerCategory } from "../BackendLoggerCategory.js";
+import { IModelHost } from "../IModelHost.js";
 
 /* eslint-disable @typescript-eslint/no-deprecated */
 
@@ -64,10 +65,8 @@ export function initializeTracing(enableOpenTelemetry: boolean = false) {
 
   if (enableOpenTelemetry) {
     try {
-      // eslint-disable-next-line @typescript-eslint/no-require-imports
-      const api = require("@opentelemetry/api");
-      const tracer = api.trace.getTracer("@itwin/core-backend", IModelHost.backendVersion);
-      Tracing.enableOpenTelemetry(tracer, api);
+      const tracer = otelApi.trace.getTracer("@itwin/core-backend", IModelHost.backendVersion);
+      Tracing.enableOpenTelemetry(tracer, otelApi);
       RpcInvocation.runActivity = async (activity, fn) => RpcTrace.runWithSpan(activity, fn); // wrap invocation in an OpenTelemetry span in addition to RpcTrace
     } catch (e) {
       Logger.logError(BackendLoggerCategory.IModelHost, "Failed to initialize OpenTelemetry");

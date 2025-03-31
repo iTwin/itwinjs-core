@@ -8,8 +8,8 @@
 
 import { BeEvent, JSONSchemaType } from "@itwin/core-bentley";
 import { LocalDirName, LocalFileName } from "@itwin/core-common";
-import { WorkspaceDb } from "./Workspace";
-import { _implementationProhibited } from "../internal/Symbols";
+import { _implementationProhibited } from "../internal/Symbols.js";
+import { WorkspaceDb } from "./Workspace.js";
 
 /** The value of a single named parameter within a [[Workspace.settings]] that configures some aspect of the applications run-time behavior.
  * Settings are stored in a [[SettingsDictionary]]. A setting is described by its [[SettingSchema]].

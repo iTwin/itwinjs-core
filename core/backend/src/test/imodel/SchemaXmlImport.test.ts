@@ -2,14 +2,14 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert } from "chai";
-import * as fs from "fs";
-import * as path from "path";
-import { PhysicalElement, SnapshotDb } from "../../core-backend";
-import { IModelTestUtils } from "../IModelTestUtils";
 import { Logger, LogLevel } from "@itwin/core-bentley";
-import { KnownTestLocations } from "../KnownTestLocations";
 import { EntityClass } from "@itwin/ecschema-metadata";
+import { assert } from "chai";
+import fs from "fs";
+import path from "path";
+import { PhysicalElement, SnapshotDb } from "../../core-backend.js";
+import { IModelTestUtils } from "../IModelTestUtils.js";
+import { KnownTestLocations } from "../KnownTestLocations.js";
 
 describe("Schema XML Import Tests", () => {
   let imodel: SnapshotDb;

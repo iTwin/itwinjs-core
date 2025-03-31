@@ -2,14 +2,14 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert, expect } from "chai";
-import * as path from "path";
-import * as sinon from "sinon";
 import { DbResult, Id64, Id64String, Logger } from "@itwin/core-bentley";
-import { ECDb, ECDbOpenMode, ECSqlInsertResult, ECSqlStatement, IModelJsFs, SqliteStatement, SqliteValue, SqliteValueType } from "../../core-backend";
-import { KnownTestLocations } from "../KnownTestLocations";
-import { ECDbTestHelper } from "./ECDbTestHelper";
 import { QueryOptionsBuilder } from "@itwin/core-common";
+import { assert, expect } from "chai";
+import path from "path";
+import sinon from "sinon";
+import { ECDb, ECDbOpenMode, ECSqlInsertResult, ECSqlStatement, IModelJsFs, SqliteStatement, SqliteValue, SqliteValueType } from "../../core-backend.js";
+import { KnownTestLocations } from "../KnownTestLocations.js";
+import { ECDbTestHelper } from "./ECDbTestHelper.js";
 
 describe("ECDb", () => {
   const outDir = KnownTestLocations.outputDir;

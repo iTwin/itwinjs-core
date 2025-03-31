@@ -3,9 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
-import { IModelJsFs } from "../../IModelJsFs";
-import { NativeHost } from "../../NativeHost";
-import { NativeAppStorage } from "../../NativeAppStorage";
+import { IModelJsFs } from "../../IModelJsFs.js";
+import { NativeAppStorage } from "../../NativeAppStorage.js";
+import { NativeHost } from "../../NativeHost.js";
 
 describe("NativeApp storage backend", () => {
   before(async () => {

@@ -8,11 +8,11 @@
 
 import { DbResult, Id64String, IModelStatus } from "@itwin/core-bentley";
 import { ChannelError, ChannelRootAspectProps, IModel, IModelError } from "@itwin/core-common";
-import { ChannelControl, ChannelKey } from "../ChannelControl";
-import { Subject } from "../Element";
-import { IModelDb } from "../IModelDb";
-import { IModelHost } from "../IModelHost";
-import { _implementationProhibited, _nativeDb, _verifyChannel } from "./Symbols";
+import { ChannelControl, ChannelKey } from "../ChannelControl.js";
+import { Subject } from "../Element.js";
+import { IModelDb } from "../IModelDb.js";
+import { IModelHost } from "../IModelHost.js";
+import { _implementationProhibited, _nativeDb, _verifyChannel } from "./Symbols.js";
 
 class ChannelAdmin implements ChannelControl {
   public static readonly channelClassName = "bis:ChannelRootAspect";

@@ -3,21 +3,21 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import { Guid, Id64 } from "@itwin/core-bentley";
+import { CodeScopeSpec, CodeSpec, ElementProps, IModel } from "@itwin/core-common";
 import { assert, expect } from "chai";
 import { join } from "path";
 import { restore as sinonRestore, type SinonSpy, spy as sinonSpy } from "sinon";
-import { Guid, Id64 } from "@itwin/core-bentley";
-import { CodeScopeSpec, CodeSpec, ElementProps, IModel } from "@itwin/core-common";
-import { ClassRegistry } from "../../ClassRegistry";
-import { ElementUniqueAspect, OnAspectIdArg, OnAspectPropsArg } from "../../ElementAspect";
+import { ClassRegistry } from "../../ClassRegistry.js";
 import {
   _nativeDb, ChannelControl, ChannelKey, FunctionalBreakdownElement, FunctionalComponentElement, FunctionalModel, FunctionalPartition,
   FunctionalSchema, InformationPartitionElement, OnChildElementIdArg, OnChildElementPropsArg, OnElementIdArg, OnElementInModelIdArg,
   OnElementInModelPropsArg, OnElementPropsArg, OnModelIdArg, OnModelPropsArg, OnSubModelIdArg, OnSubModelPropsArg, Schemas, StandaloneDb,
-} from "../../core-backend";
-import { ElementOwnsChildElements, ElementOwnsUniqueAspect, SubjectOwnsPartitionElements } from "../../NavigationRelationship";
-import { IModelTestUtils } from "../IModelTestUtils";
-import { KnownTestLocations } from "../KnownTestLocations";
+} from "../../core-backend.js";
+import { ElementUniqueAspect, OnAspectIdArg, OnAspectPropsArg } from "../../ElementAspect.js";
+import { ElementOwnsChildElements, ElementOwnsUniqueAspect, SubjectOwnsPartitionElements } from "../../NavigationRelationship.js";
+import { IModelTestUtils } from "../IModelTestUtils.js";
+import { KnownTestLocations } from "../KnownTestLocations.js";
 
 let iModelDb: StandaloneDb;
 const insertedLabel = "inserted label";

@@ -2,11 +2,11 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert } from "chai";
-import { convertEC2SchemasToEC3Schemas, ECDb, ECSqlStatement, upgradeCustomAttributesToEC3 } from "../core-backend";
-import { KnownTestLocations } from "./KnownTestLocations";
-import { ECDbTestHelper } from "./ecdb/ECDbTestHelper";
 import { DbResult } from "@itwin/core-bentley";
+import { assert } from "chai";
+import { convertEC2SchemasToEC3Schemas, ECDb, ECSqlStatement, upgradeCustomAttributesToEC3 } from "../core-backend.js";
+import { KnownTestLocations } from "./KnownTestLocations.js";
+import { ECDbTestHelper } from "./ecdb/ECDbTestHelper.js";
 
 describe("convertEC2Schemas", () => {
   it("verify namespace", () => {

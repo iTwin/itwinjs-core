@@ -8,21 +8,21 @@
 
 // cspell:ignore BLOCKCACHE
 
-import * as path from "path";
 import { NativeLoggerCategory } from "@bentley/imodeljs-native";
 import { AccessToken, BeEvent, ChangeSetStatus, Guid, GuidString, IModelStatus, Logger, LogLevel, Mutable, OpenMode, StopWatch } from "@itwin/core-bentley";
 import {
   BriefcaseIdValue, ChangesetId, ChangesetIdWithIndex, ChangesetIndexAndId, IModelError, IModelVersion, LocalDirName, LocalFileName, OpenCheckpointArgs,
 } from "@itwin/core-common";
-import { V2CheckpointAccessProps } from "./BackendHubAccess";
-import { BackendLoggerCategory } from "./BackendLoggerCategory";
-import { BriefcaseManager } from "./BriefcaseManager";
-import { CloudSqlite } from "./CloudSqlite";
-import { IModelHost } from "./IModelHost";
-import { IModelJsFs } from "./IModelJsFs";
-import { SnapshotDb, TokenArg } from "./IModelDb";
-import { IModelNative } from "./internal/NativePlatform";
-import { _hubAccess, _nativeDb } from "./internal/Symbols";
+import path from "path";
+import { V2CheckpointAccessProps } from "./BackendHubAccess.js";
+import { BackendLoggerCategory } from "./BackendLoggerCategory.js";
+import { BriefcaseManager } from "./BriefcaseManager.js";
+import { CloudSqlite } from "./CloudSqlite.js";
+import { SnapshotDb, TokenArg } from "./IModelDb.js";
+import { IModelHost } from "./IModelHost.js";
+import { IModelJsFs } from "./IModelJsFs.js";
+import { IModelNative } from "./internal/NativePlatform.js";
+import { _hubAccess, _nativeDb } from "./internal/Symbols.js";
 
 const loggerCategory = BackendLoggerCategory.IModelDb;
 

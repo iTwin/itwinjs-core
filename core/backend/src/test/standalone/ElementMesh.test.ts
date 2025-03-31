@@ -2,18 +2,18 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
 import { Guid, Id64 } from "@itwin/core-bentley";
-import {
-  Loop, Path, Point3d, PolyfaceBuilder, Range3d, StrokeOptions,
-} from "@itwin/core-geometry";
 import {
   Code, ColorDef, GeometricElement3dProps, GeometryParams, GeometryPartProps, GeometryStreamBuilder, GeometryStreamEntryProps, IModel, readElementMeshes,
 } from "@itwin/core-common";
 import {
+  Loop, Path, Point3d, PolyfaceBuilder, Range3d, StrokeOptions,
+} from "@itwin/core-geometry";
+import { expect } from "chai";
+import {
   _nativeDb, GenericSchema, GeometryPart, PhysicalModel, PhysicalObject, PhysicalPartition, SnapshotDb, SpatialCategory, SubjectOwnsPartitionElements,
-} from "../../core-backend";
-import { IModelTestUtils } from "../IModelTestUtils";
+} from "../../core-backend.js";
+import { IModelTestUtils } from "../IModelTestUtils.js";
 
 describe("generateElementMeshes", () => {
   let imodel: SnapshotDb;

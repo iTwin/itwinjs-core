@@ -3,11 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
 import { Id64 } from "@itwin/core-bentley";
 import { GeometricElement3dProps, Placement3d } from "@itwin/core-common";
-import { GeometricElement3d, SnapshotDb } from "../../core-backend";
-import { IModelTestUtils } from "../index";
+import { expect } from "chai";
+import { GeometricElement3d, SnapshotDb } from "../../core-backend.js";
+import { IModelTestUtils } from "../index.js";
 
 describe("computeProjectExtents", () => {
   let imodel: SnapshotDb;

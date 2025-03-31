@@ -2,11 +2,11 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
 import { Guid, Id64 } from "@itwin/core-bentley";
 import { Base64EncodedString, ImageSourceFormat, IModel, TextureTransparency } from "@itwin/core-common";
-import { SnapshotDb, Texture } from "../../core-backend";
-import { IModelTestUtils } from "../IModelTestUtils";
+import { expect } from "chai";
+import { SnapshotDb, Texture } from "../../core-backend.js";
+import { IModelTestUtils } from "../IModelTestUtils.js";
 
 describe("Texture", () => {
   let imodel: SnapshotDb;
