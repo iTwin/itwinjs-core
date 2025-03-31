@@ -3,6 +3,9 @@
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
 /* eslint-disable @typescript-eslint/naming-convention */
+/** @packageDocumentation
+ * @module Internal
+ */
 
 function sym(name: string): string {
   return `${name}_presentation-frontend_INTERNAL_ONLY_DO_NOT_USE`;
