@@ -6002,6 +6002,7 @@ export interface ModelLoadProps {
 // @beta
 export enum ModelMapLayerDrapeTarget {
     Globe = 0,
+    IModel = 2,
     RealityData = 1
 }
 
@@ -6009,6 +6010,8 @@ export enum ModelMapLayerDrapeTarget {
 export interface ModelMapLayerProps extends CommonMapLayerProps {
     // @internal (undocumented)
     accessKey?: never;
+    // @beta
+    drapeModels?: Id64Array;
     // @beta
     drapeTarget?: ModelMapLayerDrapeTarget;
     // @internal (undocumented)
@@ -6023,13 +6026,15 @@ export interface ModelMapLayerProps extends CommonMapLayerProps {
 // @public
 export class ModelMapLayerSettings extends MapLayerSettings {
     // @internal
-    protected constructor(modelId: Id64String, name: string, visible?: boolean, transparency?: number, transparentBackground?: boolean, drapeTarget?: ModelMapLayerDrapeTarget);
+    protected constructor(modelId: Id64String, name: string, visible?: boolean, transparency?: number, transparentBackground?: boolean, drapeTarget?: ModelMapLayerDrapeTarget, drapeModels?: Id64Array);
     get allSubLayersInvisible(): boolean;
     clone(changedProps: Partial<ModelMapLayerProps>): ModelMapLayerSettings;
     // @internal (undocumented)
     protected cloneProps(changedProps: Partial<ModelMapLayerProps>): ModelMapLayerProps;
     // @internal (undocumented)
     displayMatches(other: MapLayerSettings): boolean;
+    // @beta
+    readonly drapeModels?: Id64Array;
     // @beta
     readonly drapeTarget: ModelMapLayerDrapeTarget;
     static fromJSON(json: ModelMapLayerProps): ModelMapLayerSettings;
