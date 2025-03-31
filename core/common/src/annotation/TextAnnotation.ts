@@ -44,6 +44,13 @@ export type TextAnnotationFrame = "none" | "line" | "rectangle" | "circle" | "eq
  */
 export type TextAnnotationFillColor = TextStyleColor | "background";
 
+export interface TextFrameStyleProps {
+  frame?: TextAnnotationFrame;
+  fill?: TextAnnotationFillColor;
+  border?: TextStyleColor;
+  borderWeight?: number;
+}
+
 /**
  * JSON representation of a [[TextAnnotation]].
  * @beta
@@ -58,7 +65,7 @@ export interface TextAnnotationProps {
   /** See [[TextAnnotation.anchor]]. Default: top-left. */
   anchor?: TextAnnotationAnchor;
   /** TODO */
-  frame?: TextAnnotationFrame
+  frame?: TextFrameStyleProps
 }
 
 /** Arguments supplied to [[TextAnnotation.create]].
@@ -74,7 +81,7 @@ export interface TextAnnotationCreateArgs {
   /** See [[TextAnnotation.anchor]]. Default: top-left. */
   anchor?: TextAnnotationAnchor;
   /** TODO */
-  frame?: TextAnnotationFrame
+  frame?: TextFrameStyleProps
 }
 
 /**
@@ -102,9 +109,9 @@ export class TextAnnotation {
   /** An offset applied to the anchor point that can be used to position annotations within the same geometry stream relative to one another. */
   public offset: Point3d;
   /** The frame type of the text annotation. */
-  public frame?: TextAnnotationFrame;
+  public frame?: TextFrameStyleProps;
 
-  private constructor(offset: Point3d, angles: YawPitchRollAngles, textBlock: TextBlock, anchor: TextAnnotationAnchor, frame?: TextAnnotationFrame) {
+  private constructor(offset: Point3d, angles: YawPitchRollAngles, textBlock: TextBlock, anchor: TextAnnotationAnchor, frame?: TextFrameStyleProps) {
     this.offset = offset;
     this.orientation = angles;
     this.textBlock = textBlock;
@@ -212,9 +219,14 @@ export class TextAnnotation {
 
   /** Returns true if this annotation is logically equivalent to `other`. */
   public equals(other: TextAnnotation): boolean {
+    const framesMatch = this.frame?.frame === other.frame?.frame
+      && this.frame?.fill === other.frame?.fill
+      && this.frame?.border === other.frame?.border
+      && this.frame?.borderWeight === other.frame?.borderWeight;
+
     return this.anchor.horizontal === other.anchor.horizontal && this.anchor.vertical === other.anchor.vertical
       && this.orientation.isAlmostEqual(other.orientation) && this.offset.isAlmostEqual(other.offset)
       && this.textBlock.equals(other.textBlock)
-      && this.frame === other.frame;
+      && framesMatch;
   }
 }

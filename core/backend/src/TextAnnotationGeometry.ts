@@ -6,7 +6,7 @@
  * @module ElementGeometry
  */
 
-import { ColorDef, TextAnnotation, TextAnnotationFrame, TextBlockGeometryProps, TextBlockGeometryPropsEntry, TextString, TextStyleColor } from "@itwin/core-common";
+import { ColorDef, TextAnnotation, TextBlockGeometryProps, TextBlockGeometryPropsEntry, TextFrameStyleProps, TextString, TextStyleColor } from "@itwin/core-common";
 import { ComputeRangesForTextLayout, FindFontId, FindTextStyle, layoutTextBlock, RunLayout, TextBlockLayout } from "./TextAnnotationLayout";
 import { LineSegment3d, Point3d, Range2d, Transform, Vector2d } from "@itwin/core-geometry";
 import { assert } from "@itwin/core-bentley";
@@ -204,29 +204,32 @@ function produceTextBlockGeometry(layout: TextBlockLayout, documentTransform: Tr
   return { entries: context.entries };
 }
 
-function produceFrameGeometry(layout: TextBlockLayout, documentTransform: Transform, frame?: TextAnnotationFrame): TextBlockGeometryProps {
+function produceFrameGeometry(layout: TextBlockLayout, documentTransform: Transform, frameProps?: TextFrameStyleProps): TextBlockGeometryProps {
   const context: GeometryContext = { entries: [] };
 
-  if (frame && frame !== "none") {
-    context.entries.push({
-      border: {
-        shape: frame,
-        width: 1,
-        color: ColorDef.black.toJSON(),
-        transform: documentTransform.toJSON(),
-        range: layout.range.toJSON(),
-      }
-    });
+  if (frameProps?.frame && frameProps?.frame !== "none") {
+    if (frameProps.border) {
+      context.entries.push({
+        border: {
+          shape: frameProps.frame,
+          width: frameProps.borderWeight ?? 1,
+          color: frameProps.border,
+          transform: documentTransform.toJSON(),
+          range: layout.range.toJSON(),
+        }
+      });
+    }
 
-    context.entries.push({
-      fill: {
-        shape: frame,
-        // color: ColorDef.red.toJSON(),
-        color: "background",
-        transform: documentTransform.toJSON(),
-        range: layout.range.toJSON(),
-      }
-    });
+    if (frameProps.fill) {
+      context.entries.push({
+        fill: {
+          shape: frameProps.frame,
+          color: frameProps.fill,
+          transform: documentTransform.toJSON(),
+          range: layout.range.toJSON(),
+        }
+      });
+    }
   }
 
   return { entries: context.entries };

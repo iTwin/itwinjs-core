@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { BaselineShift, ColorDef, FractionRun, GeometryStreamBuilder, IModelTileRpcInterface, LineBreakRun, TextAnnotation, TextAnnotationAnchor, TextBlock, TextBlockJustification, TextBlockMargins, TextRun, TextStyleSettingsProps } from "@itwin/core-common";
+import { BaselineShift, ColorDef, FractionRun, GeometryStreamBuilder, IModelTileRpcInterface, LineBreakRun, TextAnnotation, TextAnnotationAnchor, TextAnnotationFrame, TextBlock, TextBlockJustification, TextBlockMargins, TextFrameStyleProps, TextRun, TextStyleSettingsProps } from "@itwin/core-common";
 import { DecorateContext, Decorator, GraphicType, IModelApp, IModelConnection, readElementGraphics, RenderGraphicOwner, Tool } from "@itwin/core-frontend";
 import { DtaRpcInterface } from "../common/DtaRpcInterface";
 import { Guid, Id64, Id64String } from "@itwin/core-bentley";
@@ -24,7 +24,7 @@ class TextEditor implements Decorator {
   public rotation = 0;
   public offset = { x: 0, y: 0 };
   public anchor: TextAnnotationAnchor = { horizontal: "left", vertical: "top" };
-  public frame: TextAnnotationFrame = "none";
+  public frame: TextFrameStyleProps = {};
   public debugAnchorPointAndRange = false;
 
   // Properties applied to the entire document
@@ -110,8 +110,9 @@ class TextEditor implements Decorator {
     };
   }
 
-  public setFrame(frame: string) {
-    if (frame as TextAnnotationFrame) this.frame = (frame as TextAnnotationFrame);
+  public setFrame(frame: TextFrameStyleProps, wantCompleteOverride: boolean = false) {
+    if (wantCompleteOverride) this.frame = frame;
+    else this.frame = { ...this.frame, ...frame };
   }
 
   public async update(): Promise<void> {
@@ -344,7 +345,13 @@ export class TextDecorationTool extends Tool {
         break;
       }
       case "frame": {
-        editor.setFrame(inArgs[1])
+        const key = inArgs[1];
+        const val = inArgs[2];
+        if (key === "style") editor.setFrame({ frame: val as TextAnnotationFrame });
+        else if (key === "fill") editor.setFrame({ fill: (val === "background" || val === "subcategory") ? val : val ? ColorDef.fromString(val).toJSON() : undefined });
+        else if (key === "border") editor.setFrame({ border: val ? ColorDef.fromString(val).toJSON() : undefined });
+        else if (key === "borderWeight") editor.setFrame({ borderWeight: Number(val) });
+
         break;
       }
 

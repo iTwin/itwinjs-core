@@ -447,30 +447,33 @@ export namespace ElementGeometry {
           result = this.appendGeometryQuery(LineSegment3d.fromJSON(entry.separator));
         } else if (undefined !== entry.fill) {
           const params = new GeometryParams(Id64.invalid);
+          params.elmPriority = 0;
 
           if (entry.fill.color === "background") {
             params.backgroundFill = BackgroundFill.Solid;
-            params.fillDisplay = FillDisplay.Blanking;
+            params.fillDisplay = FillDisplay.Always;
           } else if (entry.fill.color !== "subcategory") {
             params.fillColor = ColorDef.fromJSON(entry.fill.color);
-            params.fillDisplay = FillDisplay.Blanking;
+            params.fillDisplay = FillDisplay.Always;
           }
 
           const frame = FrameGeometry.computeFrame(entry.fill.shape, entry.fill.range, entry.fill.transform);
           const loop = Loop.createArray(frame);
 
-          result = this.appendGeometryParamsChange(params) && this.appendGeometryQuery(loop);
+          result = this.appendGeometryParamsChange(params);
+          result = result && this.appendGeometryQuery(loop);
         } else if (undefined !== entry.border) {
           const params = new GeometryParams(Id64.invalid);
           if (entry.border.color !== "subcategory") {
-            params.fillColor = ColorDef.fromJSON(entry.border.color);
-            params.fillDisplay = FillDisplay.Blanking;
+            params.lineColor = ColorDef.fromJSON(entry.border.color);
+            params.weight = entry.border.width;
           }
 
           const frame = FrameGeometry.computeFrame(entry.border.shape, entry.border.range, entry.border.transform);
           const path = Path.createArray(frame);
 
-          result = this.appendGeometryParamsChange(params) && this.appendGeometryQuery(path);
+          result = this.appendGeometryParamsChange(params);
+          result = result && this.appendGeometryQuery(path);
         } else {
           result = false;
         }
