@@ -11,9 +11,9 @@ import { mkdirSync, unlinkSync } from "fs";
 import { dirname, join } from "path";
 import { NativeLibrary } from "@bentley/imodeljs-native";
 import {
-  AccessToken, BeDuration, BriefcaseStatus, Constructor, GuidString, Logger, LogLevel, Mutable, OpenMode, Optional, PickAsyncMethods, PickMethods, StopWatch,
+  AccessToken, BeDuration, BriefcaseStatus, Constructor, GuidString, Logger, LogLevel, OpenMode, Optional, PickAsyncMethods, PickMethods, StopWatch,
 } from "@itwin/core-bentley";
-import { LocalDirName, LocalFileName } from "@itwin/core-common";
+import { CloudSqliteError, LocalDirName, LocalFileName } from "@itwin/core-common";
 import { BlobContainer } from "./BlobContainerService";
 import { IModelHost, KnownLocations } from "./IModelHost";
 import { IModelJsFs } from "./IModelJsFs";
@@ -22,33 +22,6 @@ import { RpcTrace } from "./rpc/tracing";
 import type { SQLiteDb, VersionedSqliteDb } from "./SQLiteDb";
 
 // spell:ignore logmsg httpcode daemonless cachefile cacheslots ddthh cloudsqlite premajor preminor prepatch
-
-export interface CloudSqliteError extends Error {
-  readonly key: string;
-  readonly details?: CloudSqliteError.ErrorDetails;
-}
-
-export namespace CloudSqliteError {
-  export interface ErrorDetails {
-    readonly dbName: string;
-    readonly version?: string;
-  }
-  export const scope = "itwin-cloudsqlite-error";
-  export type Key =
-    "not-a-function" |
-    "invalid-name" |
-    "no-version-available" |
-    "service-not-available"
-
-  export function throwError(key: Key, msg: string, details?: CloudSqlite.LoadProps): never {
-    const e = new Error(msg) as Mutable<CloudSqliteError>;
-    e.key = key;
-    if (details)
-      e.details = details;
-    // eslint-disable-next-line @typescript-eslint/only-throw-error
-    throw e;
-  }
-}
 
 /**
  * Types for accessing SQLite databases stored in cloud containers.
@@ -63,7 +36,7 @@ export namespace CloudSqlite {
 
   function verifyService<T>(serviceName: string, service: T | undefined): T {
     if (undefined === service)
-      CloudSqliteError.throwError("service-not-available", `${serviceName} service is not available`);
+      CloudSqliteError.throwError("service-not-available", { message: `${serviceName} service is not available` });
     return service;
   }
   /**
@@ -88,12 +61,12 @@ export namespace CloudSqlite {
 
   export function noLeadingOrTrailingSpaces(name: string, msg: string) {
     if (name.trim() !== name)
-      CloudSqliteError.throwError("invalid-name", `${msg} [${name}] may not have leading or trailing spaces`);
+      CloudSqliteError.throwError("invalid-name", { message: `${msg} [${name}] may not have leading or trailing spaces` });
   }
 
   export function validateDbName(dbName: DbName) {
     if (dbName === "" || dbName.length > 255 || /[#\.<>:"/\\"`'|?*\u0000-\u001F]/g.test(dbName) || /^(con|prn|aux|nul|com\d|lpt\d)$/i.test(dbName))
-      CloudSqliteError.throwError("invalid-name", `invalid dbName: [${dbName}]`);
+      CloudSqliteError.throwError("invalid-name", { message: "invalid dbName", dbName });
 
     noLeadingOrTrailingSpaces(dbName, "dbName");
   }
@@ -106,6 +79,8 @@ export namespace CloudSqlite {
    */
   export function createCloudContainer(args: ContainerAccessProps & { accessLevel?: BlobContainer.RequestAccessLevel, tokenFn?: (args: RequestTokenArgs) => Promise<AccessToken> }): CloudContainer {
     const container = new NativeLibrary.nativeLib.CloudContainer(args) as CloudContainerInternal;
+    // we're going to add these fields to the newly created object. They should *not* be enumerable so they are not copied
+    // when the object is cloned (e.g. when attached to an exception).
     ["timer", "refreshPromise", "onConnected", "onDisconnect"].forEach((member) => {
       Object.defineProperty(container, member, { enumerable: false, writable: true })
     });
@@ -811,22 +786,22 @@ export namespace CloudSqlite {
     const container = args.container as CloudContainerInternal;
     while (true) {
       try {
-        if (container.hasWriteLock) {
-          if (container.writeLockHeldBy === args.user) {
-            return container.acquireWriteLock(args.user); // refresh the write lock's expiry time.
-          }
-          const err = new Error() as any; // lock held by another user within this process
-          err.errorNumber = 5;
-          err.lockedBy = container.writeLockHeldBy;
-          err.expires = container.writeLockExpires;
-          throw err;
-        }
-        return container.acquireWriteLock(args.user);
+        // if the write is already held:
+        // - by the same user, just update the write lock expiry (by calling acquireWriteLock).
+        // - by another user, throw an error
+        if (container.hasWriteLock && container.writeLockHeldBy !== args.user)
+          CloudSqliteError.throwError<CloudSqliteError.WriteLockHeld>("write-lock-held", {
+            message: "lock in use", errorNumber: 5,
+            lockedBy: container.writeLockHeldBy ?? "",
+            expires: container.writeLockExpires
+          });
 
+        return container.acquireWriteLock(args.user);
       } catch (e: any) {
         if (e.errorNumber === 5 && args.busyHandler && "stop" !== await args.busyHandler(e.lockedBy, e.expires)) // 5 === BE_SQLITE_BUSY
           continue; // busy handler wants to try again
-        throw e;
+
+        CloudSqliteError.throwError("write-lock-held", { message: e.message, ...e });
       }
     }
   }
@@ -879,7 +854,7 @@ export namespace CloudSqlite {
     // clean allows prerelease, so try it first. If that fails attempt to coerce it (coerce strips prerelease even if you say not to.)
     const semVersion = semver.clean(version, opts) ?? semver.coerce(version, opts)?.version;
     if (!semVersion)
-      CloudSqliteError.throwError("invalid-name", "invalid version specification");
+      CloudSqliteError.throwError("invalid-name", { message: "invalid version specification" });
     version = semVersion;
     return version;
   }
@@ -914,14 +889,14 @@ export namespace CloudSqlite {
         return `${dbName}:${version}`;
     } catch { }
 
-    CloudSqliteError.throwError("no-version-available", `No version of '${dbName}' available for "${range}"`, props);
+    CloudSqliteError.throwError("no-version-available", { message: `No version of '${dbName}' available for "${range}"`, ...props });
   }
 
   export async function createNewDbVersion(args: CreateNewDbVersionArgs): Promise<{ oldDb: DbNameAndVersion, newDb: DbNameAndVersion }> {
     const oldDb = parseDbFileName(args.fromDb);
     const newVersion = semver.inc(oldDb.version, args.versionType, args.identifier);
     if (!newVersion)
-      CloudSqliteError.throwError("invalid-name", `cannot create new version for ${args.fromDb}`);
+      CloudSqliteError.throwError("invalid-name", { message: `cannot create new version for ${args.fromDb}`, dbName: args.fromDb });
 
     const newName = makeSemverName(oldDb.dbName, newVersion);
     await args.container.copyDatabase(args.fromDb, newName);
@@ -1169,7 +1144,7 @@ export namespace CloudSqlite {
     private getDbMethod(methodName: string): (...args: any[]) => any {
       const fn = (this._cloudDb as any)[methodName];
       if (typeof fn !== "function")
-        CloudSqliteError.throwError("not-a-function", `illegal method name ${methodName}`);
+        CloudSqliteError.throwError("not-a-function", { message: `illegal method name ${methodName}`, dbName: this.dbName });
       return fn;
     }
 

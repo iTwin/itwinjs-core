@@ -10,8 +10,8 @@ import * as fs from "fs";
 import { dirname } from "path";
 import * as semver from "semver";
 import { IModelJsNative } from "@bentley/imodeljs-native";
-import { DbResult, Mutable, OpenMode } from "@itwin/core-bentley";
-import { LocalFileName } from "@itwin/core-common";
+import { DbResult, OpenMode } from "@itwin/core-bentley";
+import { LocalFileName, SqliteError } from "@itwin/core-common";
 import { CloudSqlite } from "./CloudSqlite";
 import { IModelNative } from "./internal/NativePlatform";
 import { IModelJsFs } from "./IModelJsFs";
@@ -22,25 +22,6 @@ import { _nativeDb } from "./internal/Symbols";
 
 /* eslint-disable @typescript-eslint/unified-signatures */
 
-export interface SqliteError extends Error {
-  readonly key: string;
-}
-
-export namespace SqliteError {
-  export const scope = "itwin-sqlite-error";
-  export type Key =
-    "already-open" |
-    "incompatible-version" |
-    "invalid-versions-property" |
-    "readonly";
-
-  export function throwError(key: Key, msg: string): never {
-    const e = new Error(msg) as Mutable<SqliteError>;
-    e.key = key;
-    // eslint-disable-next-line @typescript-eslint/only-throw-error
-    throw e;
-  }
-}
 
 /**
  * A "generic" SQLiteDb. This class may be used to access local files or databases in a cloud container.
@@ -145,7 +126,7 @@ export class SQLiteDb {
    */
   public withOpenDb<T>(args: SQLiteDb.WithOpenDbArgs, operation: () => T): T {
     if (this.isOpen)
-      SqliteError.throwError("already-open", "database is already open");
+      SqliteError.throwError("already-open", "database is already open", args.dbName);
 
     const save = () => this.closeDb(true), abandon = () => this.closeDb(false);
     this.openDb(args.dbName, args.openMode ?? OpenMode.Readonly, args.container);
@@ -256,7 +237,7 @@ export class SQLiteDb {
    */
   public withSavePoint(savePointName: string, operation: () => void) {
     if (this.isReadonly)
-      SqliteError.throwError("readonly", "database is readonly");
+      SqliteError.throwError("readonly", "database is readonly", this[_nativeDb].getFilePath());
 
     this.executeSQL(`SAVEPOINT ${savePointName}`);
     try {
@@ -326,7 +307,7 @@ export abstract class VersionedSqliteDb extends SQLiteDb {
   public getRequiredVersions() {
     const checkIsString = (value: any) => {
       if (typeof value !== "string")
-        SqliteError.throwError("invalid-versions-property", `CloudDb ${this[_nativeDb].getFilePath()} has invalid "versions" property`);
+        SqliteError.throwError("invalid-versions-property", `CloudDb has invalid "versions" property`, this[_nativeDb].getFilePath());
       return value;
     };
     const versionJson = checkIsString(this[_nativeDb].queryFileProperty(VersionedSqliteDb._versionProps, true));
@@ -371,7 +352,7 @@ export abstract class VersionedSqliteDb extends SQLiteDb {
 
     this.closeDb();
     const tooNew = semver.gtr(this.myVersion, range);
-    SqliteError.throwError("incompatible-version", `${this[_nativeDb].getFilePath()} requires ${tooNew ? "older" : "newer"} version of ${this.constructor.name} for ${isReadonly ? "read" : "write"}`);
+    SqliteError.throwError("incompatible-version", `requires ${tooNew ? "older" : "newer"} version of ${this.constructor.name} for ${isReadonly ? "read" : "write"}`, this[_nativeDb].getFilePath());
 
   }
 

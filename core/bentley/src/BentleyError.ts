@@ -9,7 +9,6 @@
 import { DbResult } from "./BeSQLite";
 import { RepositoryStatus } from "./internal/RepositoryStatus";
 import { JsonUtils } from "./JsonUtils";
-import { Optional } from "./UtilityTypes";
 
 /** Uniquely identifies a specific kind of [[ITwinError]].
  * @beta
@@ -42,7 +41,7 @@ export namespace ITwinError {
   /** Instantiate a new `ITwinError` or subtype thereof.
    * @see [[ITwinError.throwError]] to conveniently instantiate and throw the error.
    */
-  export function create<T extends ITwinError>(args: Optional<T, "name">): T {
+  export function create<T extends ITwinError>(args: Omit<T, "name">): T {
     const err = new Error(args.message);
     Object.assign(err, args);
     err.name = args.iTwinErrorId.key; // helpful because this is used by `toString` for Error class
@@ -52,7 +51,7 @@ export namespace ITwinError {
   /** Instantiate and immediately throw an `ITwinError`.
    * @see [[ITwinError.create]] to instantiate an error without throwing it.
    */
-  export function throwError<T extends ITwinError>(args: Optional<T, "name">): never {
+  export function throwError<T extends ITwinError>(args: Omit<T, "name">): never {
     throw create(args);
   }
 

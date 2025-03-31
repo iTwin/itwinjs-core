@@ -14,6 +14,7 @@ import { assert, BeDuration, DbResult, Guid, GuidString, Logger, LoggingMetaData
 import { AzuriteTest } from "./AzuriteTest";
 
 import "./StartupShutdown"; // calls startup/shutdown IModelHost before/after all tests
+import { CloudSqliteError } from "@itwin/core-common";
 
 // spell:ignore localstore itwindb
 
@@ -359,7 +360,16 @@ describe("CloudSqlite", () => {
 
     expect(contain1.queryDatabases().length).equals(3);
 
-    expect(() => CloudSqlite.querySemverMatch({ container: contain1, dbName: "test1", version: "^1" })).throws("No version");
+    try {
+      CloudSqlite.querySemverMatch({ container: contain1, dbName: "test1", version: "^1" });
+      expect(false, "should throw").true;
+    } catch (e: unknown) {
+      expect(CloudSqliteError.isError(e)).true;
+      if (CloudSqliteError.isError(e, "no-version-available")) {
+        expect(e.message).contains("No version");
+        expect(e.dbName).equals("test1");
+      }
+    }
 
     await expect(BriefcaseDb.open({ fileName: "testBim2", container: contain1 })).rejectedWith("write lock not held");
     await CloudSqlite.withWriteLock({ user: user1, container: contain1 }, async () => {
@@ -450,17 +460,28 @@ describe("CloudSqlite", () => {
     // test busy retry handler
     let retries = 0;
     await CloudSqlite.withWriteLock({ user: user2, container: cont2 }, async () => {
-      await expect(CloudSqlite.withWriteLock({
-        user: user1,
-        container: contain1,
-        busyHandler: async (lockedBy: string, expires: string) => {
-          expect(lockedBy).equals(user2);
-          expect(expires.length).greaterThan(0);
-          return ++retries < 5 ? undefined : "stop";
-        },
-      }, async () => { })).rejectedWith("is currently locked");
+      try {
+        await CloudSqlite.withWriteLock({
+          user: user1,
+          container: contain1,
+          busyHandler: async (lockedBy: string, expires: string) => {
+            expect(lockedBy).equals(user2);
+            expect(expires.length).greaterThan(0);
+            return ++retries < 5 ? undefined : "stop";
+          }
+        }, async () => { });
+        expect(false, "should throw").true;
+      } catch (e: unknown) {
+        expect(CloudSqliteError.isError(e, "write-lock-held"));
+        if (CloudSqliteError.isError<CloudSqliteError.WriteLockHeld>(e, "write-lock-held")) {
+          expect(e.message).contains("is currently locked");
+          expect(typeof e.expires).equals("string");
+          expect(e.lockedBy).equals(user2);
+          expect(retries).equals(5); // retry handler should be called 5 times
+        }
+
+      }
     });
-    expect(retries).equals(5); // retry handler should be called 5 times
 
     cont2.disconnect({ detach: true });
     contain1.disconnect({ detach: true });

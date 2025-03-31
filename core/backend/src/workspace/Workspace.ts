@@ -6,7 +6,7 @@
  * @module Workspace
  */
 
-import { AccessToken, BeEvent, Logger, Mutable, Optional, UnexpectedErrors } from "@itwin/core-bentley";
+import { AccessToken, BeEvent, ITwinError, Logger, Optional, UnexpectedErrors } from "@itwin/core-bentley";
 import { LocalDirName, LocalFileName } from "@itwin/core-common";
 import { CloudSqlite } from "../CloudSqlite";
 import { SQLiteDb } from "../SQLiteDb";
@@ -14,31 +14,6 @@ import { SettingName, Settings, SettingsDictionary, SettingsPriority } from "./S
 import type { IModelJsNative } from "@bentley/imodeljs-native";
 import { BackendLoggerCategory } from "../BackendLoggerCategory";
 import { _implementationProhibited } from "../internal/Symbols";
-
-export interface WorkspaceError extends Error {
-  readonly key: string;
-}
-
-export namespace WorkspaceError {
-  export const scope = "itwin-workspace-error";
-  export type Key =
-    "already-exists" |
-    "already-published" |
-    "container-exists" |
-    "does-not-exist" |
-    "invalid-name" |
-    "no-cloud-container" |
-    "resource-exists" |
-    "too-large" |
-    "write-error";
-
-  export function throwError(key: Key, msg: string): never {
-    const e = new Error(msg) as Mutable<WorkspaceError>;
-    e.key = key;
-    // eslint-disable-next-line @typescript-eslint/only-throw-error
-    throw e;
-  }
-}
 
 /** The unique identifier of a [[WorkspaceContainer]]. This becomes the base name for a local file directory holding the container's [[WorkspaceDb]]s.
  * A valid `WorkspaceContainerId` must conform to the following constraints:
@@ -163,7 +138,7 @@ export interface WorkspaceDbManifest {
  * is not authorized to access its [[WorkspaceContainer]].
  * @beta
  */
-export interface WorkspaceDbLoadError extends Error {
+export interface WorkspaceDbLoadError extends ITwinError {
   /** The properties of the [[WorkspaceDb]] that was attempted to load, including the identity of its [[WorkspaceContainer]]. */
   wsDbProps?: WorkspaceDbProps & Partial<WorkspaceDbCloudProps>;
   /** The [[WorkspaceDb]] in which the error occurred, if available. */
@@ -175,7 +150,7 @@ export interface WorkspaceDbLoadError extends Error {
  * so that the user can be notified of the problems.
  * @beta
  */
-export interface WorkspaceDbLoadErrors extends Error {
+export interface WorkspaceDbLoadErrors extends ITwinError {
   /** An array of problems that were encountered attempting to load [[WorkspaceDb]]s for an [[IModelDb]]. The most common problem
    * is that the user doesn't have read access to one or more [[WorkspaceContainer]]s used by the iModel's [[Workspace]]..
    */
