@@ -127,12 +127,6 @@ export class SelectionManager implements ISelectionProvider, Disposable {
     }
   }
 
-  /** @internal */
-  /* c8 ignore next 3 */
-  public getToolSelectionSyncHandler(imodel: IModelConnection) {
-    return this._imodelToolSelectionSyncHandlers.get(imodel)?.handler;
-  }
-
   /**
    * Request the manager to sync with imodel's tool selection (see `IModelConnection.selectionSet`).
    */
