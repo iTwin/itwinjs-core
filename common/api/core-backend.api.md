@@ -6105,6 +6105,8 @@ export class V2CheckpointManager {
     static readonly cloudCacheName = "Checkpoints";
     static downloadCheckpoint(request: DownloadRequest): Promise<ChangesetId>;
     // (undocumented)
+    static getContainer(v2Props: V2CheckpointAccessProps, checkpoint: CheckpointProps): CloudSqlite.CloudContainer;
+    // (undocumented)
     static getFolder(): LocalDirName;
 }
 
