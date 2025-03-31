@@ -69,17 +69,29 @@ import bisSupplementalRuleset from "./supplemental-presentation-rules/BisCore.Pr
 import funcSupplementalRuleset from "./supplemental-presentation-rules/Functional.PresentationRuleSet.json" with { type: "json" };
 import { BackendDiagnosticsAttribute, BackendDiagnosticsOptions, combineDiagnosticsOptions, getElementKey, reportDiagnostics } from "./Utils.js";
 
+/**
+ * Produce content descriptor that is not intended for querying content. Allows the implementation to omit certain
+ * operations to make obtaining content descriptor faster.
+ * @internal
+ */
+export const DESCRIPTOR_ONLY_CONTENT_FLAG = 1 << 9;
+
+interface PresentationManagerDetailProps extends PresentationManagerProps {
+  id?: string;
+  addon?: NativePlatformDefinition;
+}
+
 /** @internal */
 export class PresentationManagerDetail implements Disposable {
   private _disposed: boolean;
   private _nativePlatform: NativePlatformDefinition | undefined;
-  private _onManagerUsed: (() => void) | undefined;
   private _diagnosticsOptions: BackendDiagnosticsOptions | undefined;
 
   public rulesets: RulesetManager;
   public activeUnitSystem: UnitSystemKey | undefined;
+  public readonly onUsed: BeEvent<() => void>;
 
-  constructor(params: PresentationManagerProps) {
+  constructor(params: PresentationManagerDetailProps) {
     this._disposed = false;
 
     this._nativePlatform =
@@ -96,7 +108,7 @@ export class PresentationManagerDetail implements Disposable {
     setupRulesets(this._nativePlatform, params.supplementalRulesetDirectories ?? [], params.rulesetDirectories ?? []);
     this.activeUnitSystem = params.defaultUnitSystem;
 
-    this._onManagerUsed = undefined;
+    this.onUsed = new BeEvent();
     this.rulesets = new RulesetManagerImpl(() => this.getNativePlatform());
     this._diagnosticsOptions = params.diagnostics;
   }
@@ -108,6 +120,7 @@ export class PresentationManagerDetail implements Disposable {
 
     this.getNativePlatform()[Symbol.dispose]();
     this._nativePlatform = undefined;
+    this.onUsed.clear();
 
     this._disposed = true;
   }
@@ -117,10 +130,6 @@ export class PresentationManagerDetail implements Disposable {
       throw new Error("Attempting to use Presentation manager after disposal");
     }
     return this._nativePlatform!;
-  }
-
-  public setOnManagerUsedHandler(handler: () => void) {
-    this._onManagerUsed = handler;
   }
 
   public async getNodes(
@@ -195,7 +204,7 @@ export class PresentationManagerDetail implements Disposable {
       requestId: NativePlatformRequestTypes.GetContentDescriptor,
       rulesetId: this.registerRuleset(rulesetOrId),
       ...strippedOptions,
-      contentFlags: contentFlags ?? ContentFlags.DescriptorOnly, // only set "descriptor only" flag if there are no flags provided
+      contentFlags: contentFlags ?? DESCRIPTOR_ONLY_CONTENT_FLAG, // only set "descriptor only" flag if there are no flags provided
       keys: getKeysForContentRequest(requestOptions.keys, (map) => bisElementInstanceKeysProcessor(requestOptions.imodel, map)),
     };
     return this.request(params);
@@ -335,7 +344,7 @@ export class PresentationManagerDetail implements Disposable {
   }
 
   public async request(params: RequestParams): Promise<string> {
-    this._onManagerUsed?.();
+    this.onUsed.raiseEvent();
     const { requestId, imodel, unitSystem, diagnostics: requestDiagnostics, cancelEvent, ...strippedParams } = params;
     const imodelAddon = this.getNativePlatform().getImodelAddon(imodel);
     const response = await withOptionalDiagnostics([this._diagnosticsOptions, requestDiagnostics], async (diagnosticsOptions) => {
