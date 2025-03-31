@@ -207,7 +207,7 @@ There are just a few guidelines you need to follow.
 
 We recommend putting your github username, followed by a succinct branch name that reflects the changes you want to make. Eg. ` git checkout -b "<gh_username>/cleanup-docs"`
 
-Branch names should be all lowercase to avoid potential issues with non-case-sensitive systems and words should be separated by a `-`.
+Branch names should be all lowercase to avoid potential issues with non-case-sensitive systems and words should be separated by a dash. Eg: `my-itwin-changes`
 
 ### Contributor License Agreement (CLA)
 
