@@ -909,20 +909,9 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
     let localCenterToPoint: Vector3d | undefined;
     const vectorToEye = tangOpts?.vectorToEye;
     if (vectorToEye) {
-      const viewToWorld = Matrix3d.createRigidViewAxesZTowardsEye(vectorToEye.x, vectorToEye.y, vectorToEye.z);
-      // Convert the spacePoint into the arc's default system in which
-      // vector U is column 0,
-      // vector V is column 1,
-      // column 2 of viewToWorld is column 2.
-      const arcToView = Matrix3d.createColumns(
-        this.matrixRef.getColumn(0), this.matrixRef.getColumn(1), viewToWorld.getColumn(2),
-      );
+      const arcToView = Matrix3d.createColumns(this.matrixRef.getColumn(0), this.matrixRef.getColumn(1), vectorToEye);
       localCenterToPoint = arcToView.multiplyInverse(centerToPoint);
     } else {
-      // Convert the spacePoint into the arc's default system in which
-      // vector U is column 0,
-      // vector V is column 1,
-      // cross product of column 0 and 1 (or maybe a scale of it) is column 2.
       localCenterToPoint = this.matrixRef.multiplyInverse(centerToPoint)!;
     }
     if (localCenterToPoint === undefined)
@@ -944,7 +933,7 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
         const beta = Math.atan2(distanceToTangency, 1);
         for (const theta of [alpha + beta, alpha - beta]) {
           const fraction = this.sweep.radiansToPositivePeriodicFraction(theta);
-          if (tangOpts?.extend || fraction <= 1.0) {
+          if (tangOpts?.extend || (0 <= fraction && fraction <= 1.0)) {
             const tangent = CurveLocationDetail.createCurveFractionPoint(this, fraction, this.fractionToPoint(fraction));
             announceTangent(tangent);
           }
