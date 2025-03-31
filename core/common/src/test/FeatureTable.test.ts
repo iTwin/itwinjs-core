@@ -6,9 +6,9 @@ import { describe, expect, it } from "vitest";
 import { Id64 } from "@itwin/core-bentley";
 import {
   Feature, FeatureTable, ModelFeature, PackedFeature,
-} from "../FeatureTable";
-import { MultiModelPackedFeatureTable, PackedFeatureModelTable, PackedFeatureTable } from "../internal/PackedFeatureTable"; 
-import { GeometryClass } from "../GeometryParams";
+} from "../FeatureTable.js";
+import { MultiModelPackedFeatureTable, PackedFeatureModelTable, PackedFeatureTable } from "../internal/PackedFeatureTable.js";
+import { GeometryClass } from "../GeometryParams.js";
 
 function makeFeatureTable(numFeatures: number): FeatureTable {
   const table = new FeatureTable(numFeatures);

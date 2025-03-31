@@ -3,8 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { describe, expect, it } from "vitest";
-import { FrustumPlanes } from "../geometry/FrustumPlanes";
-import { Frustum } from "../Frustum";
+import { FrustumPlanes } from "../geometry/FrustumPlanes.js";
+import { Frustum } from "../Frustum.js";
 import { Point3d } from "@itwin/core-geometry";
 
 describe("FrustumPlanes", () => {

@@ -7,10 +7,10 @@
  */
 
 import { assert, BeEvent } from "@itwin/core-bentley";
-import { FeatureAppearance, FeatureAppearanceProps } from "./FeatureSymbology";
-import { PlanarClipMaskMode, PlanarClipMaskProps, PlanarClipMaskSettings } from "./PlanarClipMask";
-import { SpatialClassifierProps, SpatialClassifiers, SpatialClassifiersContainer } from "./SpatialClassification";
-import { RealityModelDisplayProps, RealityModelDisplaySettings } from "./RealityModelDisplaySettings";
+import { FeatureAppearance, FeatureAppearanceProps } from "./FeatureSymbology.js";
+import { PlanarClipMaskMode, PlanarClipMaskProps, PlanarClipMaskSettings } from "./PlanarClipMask.js";
+import { SpatialClassifierProps, SpatialClassifiers, SpatialClassifiersContainer } from "./SpatialClassification.js";
+import { RealityModelDisplayProps, RealityModelDisplaySettings } from "./RealityModelDisplaySettings.js";
 
 /** JSON representation of the blob properties for an OrbitGt property cloud.
  * @alpha

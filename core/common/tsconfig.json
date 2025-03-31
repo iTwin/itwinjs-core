@@ -2,6 +2,8 @@
   "extends": "./node_modules/@itwin/build-tools/tsconfig-base.json",
   "include": ["./src/**/*.ts"],
   "compilerOptions": {
-    "lib": ["ES2022"],
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "lib": ["ES2022"]
   },
 }

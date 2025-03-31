@@ -8,12 +8,12 @@
 
 /* eslint-disable @typescript-eslint/no-deprecated */
 
-import { IModelConnectionProps, IModelRpcProps, SnapshotOpenOptions } from "../IModel";
-import { RpcInterface } from "../RpcInterface";
-import { RpcManager } from "../RpcManager";
-import { RpcOperation } from "./core/RpcOperation";
-import { RpcRequestTokenSupplier_T } from "./core/RpcRequest";
-import { RpcRoutingToken } from "./core/RpcRoutingToken";
+import { IModelConnectionProps, IModelRpcProps, SnapshotOpenOptions } from "../IModel.js";
+import { RpcInterface } from "../RpcInterface.js";
+import { RpcManager } from "../RpcManager.js";
+import { RpcOperation } from "./core/RpcOperation.js";
+import { RpcRequestTokenSupplier_T } from "./core/RpcRequest.js";
+import { RpcRoutingToken } from "./core/RpcRoutingToken.js";
 
 const unknownIModelId: RpcRequestTokenSupplier_T = (req) => ({ iModelId: "undefined", key: req.parameters[0] });
 

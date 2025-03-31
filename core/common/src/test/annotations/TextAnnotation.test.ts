@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { TextAnnotation, TextAnnotationAnchor } from "../../annotation/TextAnnotation";
+import { TextAnnotation, TextAnnotationAnchor } from "../../annotation/TextAnnotation.js";
 import { Angle, Point3d, Range2d, Range3d, YawPitchRollAngles } from "@itwin/core-geometry";
 
 describe("TextAnnotation", () => {

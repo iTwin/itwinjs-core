@@ -5,15 +5,16 @@
 /** @packageDocumentation
  * @module RpcInterface
  */
-
+/* eslint-disable @typescript-eslint/ban-ts-comment */
+// @ts-ignore Ignoring js-base64 import error
 import { Base64 } from "js-base64";
-import { IModelRpcProps } from "../../IModel";
-import { RpcInterface } from "../../RpcInterface";
-import { RpcInterfaceEndpoints, RpcManager } from "../../RpcManager";
-import { RpcConfiguration } from "./RpcConfiguration";
-import { RpcInvocation } from "./RpcInvocation";
-import { RpcOperation } from "./RpcOperation";
-import { RpcRegistry } from "./RpcRegistry";
+import { IModelRpcProps } from "../../IModel.js";
+import { RpcInterface } from "../../RpcInterface.js";
+import { RpcInterfaceEndpoints, RpcManager } from "../../RpcManager.js";
+import { RpcConfiguration } from "./RpcConfiguration.js";
+import { RpcInvocation } from "./RpcInvocation.js";
+import { RpcOperation } from "./RpcOperation.js";
+import { RpcRegistry } from "./RpcRegistry.js";
 
 /** An RPC operation control response.
  * @public

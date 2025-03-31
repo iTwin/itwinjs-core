@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { describe, expect, it } from "vitest";
-import { BackgroundMapType } from "../BackgroundMapProvider";
-import { BaseMapLayerSettings, ImageMapLayerProps, ImageMapLayerSettings, MapSubLayerProps, MapSubLayerSettings } from "../core-common";
+import { BackgroundMapType } from "../BackgroundMapProvider.js";
+import { BaseMapLayerSettings, ImageMapLayerProps, ImageMapLayerSettings, MapSubLayerProps, MapSubLayerSettings } from "../core-common.js";
 
 const testMapSubLayer0 = { name: "TestName", visible: true, title: "TestTitle" };
 const testMapSubLayer1 = { name: "TestName", visible: true, title: "TestTitle", id: 0, parent: -1, children: [1, 2, 3] };

@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, describe, it } from "vitest";
-import { Code, CodeProps } from "../Code";
+import { Code, CodeProps } from "../Code.js";
 
 describe("Code", () => {
   const spec = "0x1";

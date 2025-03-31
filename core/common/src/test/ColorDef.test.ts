@@ -3,8 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert, describe, expect, it } from "vitest";
-import { ColorByName } from "../ColorByName";
-import { ColorDef } from "../ColorDef";
+import { ColorByName } from "../ColorByName.js";
+import { ColorDef } from "../ColorDef.js";
 
 // cspell:ignore cadetblue hsla
 

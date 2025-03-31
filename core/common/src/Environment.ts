@@ -7,9 +7,9 @@
  */
 
 import { NonFunctionPropertiesOf } from "@itwin/core-bentley";
-import { Atmosphere } from "./Atmosphere";
-import { GroundPlane, GroundPlaneProps } from "./GroundPlane";
-import { SkyBox, SkyBoxProps } from "./SkyBox";
+import { Atmosphere } from "./Atmosphere.js";
+import { GroundPlane, GroundPlaneProps } from "./GroundPlane.js";
+import { SkyBox, SkyBoxProps } from "./SkyBox.js";
 
 /** JSON representation of an [[Environment]].
  * @see [[DisplayStyle3dSettingsProps.environment]].

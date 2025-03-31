@@ -5,15 +5,15 @@
 /** @packageDocumentation
  * @module RpcInterface
  */
-import { RpcInterface, RpcInterfaceDefinition } from "../../RpcInterface";
-import { RpcManager } from "../../RpcManager";
-import { RpcControlChannel } from "./RpcControl";
-import { SerializedRpcActivity } from "./RpcInvocation";
-import { RpcProtocol, RpcRequestFulfillment } from "./RpcProtocol";
-import { INSTANCE } from "./RpcRegistry";
-import { RpcRequest } from "./RpcRequest";
-import { RpcRequestContext } from "./RpcRequestContext";
-import { RpcRoutingToken } from "./RpcRoutingToken";
+import { RpcInterface, RpcInterfaceDefinition } from "../../RpcInterface.js";
+import { RpcManager } from "../../RpcManager.js";
+import { RpcControlChannel } from "./RpcControl.js";
+import { SerializedRpcActivity } from "./RpcInvocation.js";
+import { RpcProtocol, RpcRequestFulfillment } from "./RpcProtocol.js";
+import { INSTANCE } from "./RpcRegistry.js";
+import { RpcRequest } from "./RpcRequest.js";
+import { RpcRequestContext } from "./RpcRequestContext.js";
+import { RpcRoutingToken } from "./RpcRoutingToken.js";
 
 /** @internal */
 export type RpcConfigurationSupplier = (routing?: RpcRoutingToken) => { new(): RpcConfiguration }; // eslint-disable-line @typescript-eslint/prefer-function-type

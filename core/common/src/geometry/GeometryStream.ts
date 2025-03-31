@@ -11,18 +11,18 @@ import {
   Angle, AnyGeometryQuery, GeometryQuery, IModelJson as GeomJson, LineSegment3d, LowAndHighXYZ, Matrix3d, Point2d, Point3d, Range3d, Transform, TransformProps,
   Vector3d, XYZProps, YawPitchRollAngles, YawPitchRollProps,
 } from "@itwin/core-geometry";
-import { ColorDef, ColorDefProps } from "../ColorDef";
-import { GeometricElement2dProps, GeometricElement3dProps, GeometryPartProps, isPlacement2dProps, PlacementProps } from "../ElementProps";
-import { BackgroundFill, FillDisplay, GeometryClass, GeometryParams } from "../GeometryParams";
-import { Gradient } from "../Gradient";
-import { IModelError } from "../IModelError";
-import { AreaPattern } from "./AreaPattern";
-import { ImageGraphic, ImageGraphicProps } from "./ImageGraphic";
-import { LineStyle } from "./LineStyle";
-import { TextString, TextStringProps } from "./TextString";
-import { Base64EncodedString } from "../Base64EncodedString";
-import { Placement2d, Placement3d } from "./Placement";
-import { TextBlockGeometryProps } from "../annotation/TextBlockGeometryProps";
+import { ColorDef, ColorDefProps } from "../ColorDef.js";
+import { GeometricElement2dProps, GeometricElement3dProps, GeometryPartProps, isPlacement2dProps, PlacementProps } from "../ElementProps.js";
+import { BackgroundFill, FillDisplay, GeometryClass, GeometryParams } from "../GeometryParams.js";
+import { Gradient } from "../Gradient.js";
+import { IModelError } from "../IModelError.js";
+import { AreaPattern } from "./AreaPattern.js";
+import { ImageGraphic, ImageGraphicProps } from "./ImageGraphic.js";
+import { LineStyle } from "./LineStyle.js";
+import { TextString, TextStringProps } from "./TextString.js";
+import { Base64EncodedString } from "../Base64EncodedString.js";
+import { Placement2d, Placement3d } from "./Placement.js";
+import { TextBlockGeometryProps } from "../annotation/TextBlockGeometryProps.js";
 
 /** Establish a non-default [[SubCategory]] or to override [[SubCategoryAppearance]] for the geometry that follows.
  * A GeometryAppearanceProps always signifies a reset to the [[SubCategoryAppearance]] for subsequent [[GeometryStreamProps]] entries for undefined values.

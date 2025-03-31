@@ -7,7 +7,7 @@
  */
 
 import { IndexedPolyfaceVisitor, Matrix3d, Point2d, Point3d, PolyfaceVisitor, Transform, Vector3d, XAndY } from "@itwin/core-geometry";
-import { RenderTexture } from "./RenderTexture";
+import { RenderTexture } from "./RenderTexture.js";
 import { compareBooleans, compareBooleansOrUndefined, compareNumbers, compareNumbersOrUndefined, comparePossiblyUndefined } from "@itwin/core-bentley";
 
 /** Defines normal map parameters.

@@ -4,9 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { describe, expect, it } from "vitest";
-import { BackgroundMapSettings, GlobeMode, PersistentBackgroundMapProps } from "../BackgroundMapSettings";
-import { BackgroundMapType } from "../BackgroundMapProvider";
-import { TerrainHeightOriginMode } from "../TerrainSettings";
+import { BackgroundMapSettings, GlobeMode, PersistentBackgroundMapProps } from "../BackgroundMapSettings.js";
+import { BackgroundMapType } from "../BackgroundMapProvider.js";
+import { TerrainHeightOriginMode } from "../TerrainSettings.js";
 
 describe("BackgroundMapSettings", () => {
   it("round-trips through JSON", () => {

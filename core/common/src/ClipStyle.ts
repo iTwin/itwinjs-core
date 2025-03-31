@@ -7,11 +7,11 @@
  */
 
 import { assert, JsonUtils } from "@itwin/core-bentley";
-import { ViewFlagOverrides } from "./ViewFlags";
-import { RgbColor, RgbColorProps } from "./RgbColor";
-import { HiddenLine } from "./HiddenLine";
-import { FeatureAppearance, FeatureAppearanceProps } from "./FeatureSymbology";
-import { ColorDef } from "./ColorDef";
+import { ViewFlagOverrides } from "./ViewFlags.js";
+import { RgbColor, RgbColorProps } from "./RgbColor.js";
+import { HiddenLine } from "./HiddenLine.js";
+import { FeatureAppearance, FeatureAppearanceProps } from "./FeatureSymbology.js";
+import { ColorDef } from "./ColorDef.js";
 
 /** Wire format describing a [[CutStyle]] applied to section-cut geometry produced at intersections with a view's [ClipVector]($core-geometry).
  * @see [[ClipStyleProps.cutStyle]].

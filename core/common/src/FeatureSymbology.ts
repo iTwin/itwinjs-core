@@ -7,12 +7,12 @@
  */
 
 import { assert, Id64, Id64String } from "@itwin/core-bentley";
-import { BatchType, Feature } from "./FeatureTable";
-import { ColorDef } from "./ColorDef";
-import { GeometryClass } from "./GeometryParams";
-import { LinePixels } from "./LinePixels";
-import { RgbColor, RgbColorProps } from "./RgbColor";
-import { SubCategoryOverride } from "./SubCategoryOverride";
+import { BatchType, Feature } from "./FeatureTable.js";
+import { ColorDef } from "./ColorDef.js";
+import { GeometryClass } from "./GeometryParams.js";
+import { LinePixels } from "./LinePixels.js";
+import { RgbColor, RgbColorProps } from "./RgbColor.js";
+import { SubCategoryOverride } from "./SubCategoryOverride.js";
 
 function copyIdSetToUint32Set(dst: Id64.Uint32Set, src: Iterable<string>): void {
   dst.clear();

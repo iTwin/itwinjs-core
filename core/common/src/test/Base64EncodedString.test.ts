@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { describe, expect, it } from "vitest";
-import { Base64EncodedString } from "../Base64EncodedString";
+import { Base64EncodedString } from "../Base64EncodedString.js";
 
 function expectEqualUint8Arrays(actual: Uint8Array, expected: Uint8Array) {
   expect(actual.length).to.equal(expected.length);

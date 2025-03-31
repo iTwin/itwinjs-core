@@ -12,32 +12,32 @@ import {
   assert, BeEvent, CompressedId64Set, Id64, Id64Array, Id64String, JsonUtils, MutableCompressedId64Set, OrderedId64Iterable,
 } from "@itwin/core-bentley";
 import { XYZProps } from "@itwin/core-geometry";
-import { AmbientOcclusion } from "./AmbientOcclusion";
-import { AnalysisStyle, AnalysisStyleProps } from "./AnalysisStyle";
-import { BackgroundMapSettings, PersistentBackgroundMapProps } from "./BackgroundMapSettings";
-import { ClipStyle, ClipStyleProps } from "./ClipStyle";
-import { ColorDef, ColorDefProps } from "./ColorDef";
-import { DefinitionElementProps } from "./ElementProps";
-import { HiddenLine } from "./HiddenLine";
-import { FeatureAppearance, FeatureAppearanceProps } from "./FeatureSymbology";
-import { PlanarClipMaskProps, PlanarClipMaskSettings } from "./PlanarClipMask";
-import { SubCategoryOverride } from "./SubCategoryOverride";
-import { LightSettings, LightSettingsProps } from "./LightSettings";
-import { MapImageryProps, MapImagerySettings } from "./MapImagerySettings";
-import { PlanProjectionSettings, PlanProjectionSettingsProps } from "./PlanProjectionSettings";
-import { RenderSchedule } from "./RenderSchedule";
-import { Environment, EnvironmentProps } from "./Environment";
-import { SolarShadowSettings, SolarShadowSettingsProps } from "./SolarShadows";
-import { SubCategoryAppearance } from "./SubCategoryAppearance";
-import { ThematicDisplay, ThematicDisplayMode, ThematicDisplayProps } from "./ThematicDisplay";
-import { ViewFlagProps, ViewFlags } from "./ViewFlags";
-import { Cartographic } from "./geometry/Cartographic";
-import { IModel } from "./IModel";
-import { calculateSolarDirection } from "./SolarCalculate";
-import { ContextRealityModel, ContextRealityModelProps, ContextRealityModels } from "./ContextRealityModel";
-import { RealityModelDisplayProps, RealityModelDisplaySettings } from "./RealityModelDisplaySettings";
-import { WhiteOnWhiteReversalProps, WhiteOnWhiteReversalSettings } from "./WhiteOnWhiteReversalSettings";
-import { ContourDisplay, ContourDisplayProps } from "./ContourDisplay";
+import { AmbientOcclusion } from "./AmbientOcclusion.js";
+import { AnalysisStyle, AnalysisStyleProps } from "./AnalysisStyle.js";
+import { BackgroundMapSettings, PersistentBackgroundMapProps } from "./BackgroundMapSettings.js";
+import { ClipStyle, ClipStyleProps } from "./ClipStyle.js";
+import { ColorDef, ColorDefProps } from "./ColorDef.js";
+import { DefinitionElementProps } from "./ElementProps.js";
+import { HiddenLine } from "./HiddenLine.js";
+import { FeatureAppearance, FeatureAppearanceProps } from "./FeatureSymbology.js";
+import { PlanarClipMaskProps, PlanarClipMaskSettings } from "./PlanarClipMask.js";
+import { SubCategoryOverride } from "./SubCategoryOverride.js";
+import { LightSettings, LightSettingsProps } from "./LightSettings.js";
+import { MapImageryProps, MapImagerySettings } from "./MapImagerySettings.js";
+import { PlanProjectionSettings, PlanProjectionSettingsProps } from "./PlanProjectionSettings.js";
+import { RenderSchedule } from "./RenderSchedule.js";
+import { Environment, EnvironmentProps } from "./Environment.js";
+import { SolarShadowSettings, SolarShadowSettingsProps } from "./SolarShadows.js";
+import { SubCategoryAppearance } from "./SubCategoryAppearance.js";
+import { ThematicDisplay, ThematicDisplayMode, ThematicDisplayProps } from "./ThematicDisplay.js";
+import { ViewFlagProps, ViewFlags } from "./ViewFlags.js";
+import { Cartographic } from "./geometry/Cartographic.js";
+import { IModel } from "./IModel.js";
+import { calculateSolarDirection } from "./SolarCalculate.js";
+import { ContextRealityModel, ContextRealityModelProps, ContextRealityModels } from "./ContextRealityModel.js";
+import { RealityModelDisplayProps, RealityModelDisplaySettings } from "./RealityModelDisplaySettings.js";
+import { WhiteOnWhiteReversalProps, WhiteOnWhiteReversalSettings } from "./WhiteOnWhiteReversalSettings.js";
+import { ContourDisplay, ContourDisplayProps } from "./ContourDisplay.js";
 
 /** Describes the [[SubCategoryOverride]]s applied to a [[SubCategory]] by a [[DisplayStyle]].
  * @see [[DisplayStyleSettingsProps]]

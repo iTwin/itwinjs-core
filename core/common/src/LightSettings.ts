@@ -8,7 +8,7 @@
 
 import { assert, JsonUtils } from "@itwin/core-bentley";
 import { Vector3d, XYZProps } from "@itwin/core-geometry";
-import { RgbColor, RgbColorProps } from "./RgbColor";
+import { RgbColor, RgbColorProps } from "./RgbColor.js";
 
 function extractIntensity(value: number | undefined, defaultValue: number) {
   const maxIntensity = 5;

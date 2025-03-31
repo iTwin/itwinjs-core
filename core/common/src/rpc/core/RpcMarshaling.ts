@@ -6,9 +6,9 @@
  * @module RpcInterface
  */
 import { BentleyStatus } from "@itwin/core-bentley";
-import { IModelError } from "../../IModelError";
-import { BackendReadable } from "../../internal/BackendTypes";
-import { RpcProtocol } from "./RpcProtocol";
+import { IModelError } from "../../IModelError.js";
+import { BackendReadable } from "../../internal/BackendTypes.js";
+import { RpcProtocol } from "./RpcProtocol.js";
 
 // cspell:ignore unmarshal
 /* eslint-disable @typescript-eslint/no-deprecated */

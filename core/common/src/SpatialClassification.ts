@@ -7,7 +7,7 @@
  */
 
 import { assert, Id64String } from "@itwin/core-bentley";
-import { ModelMapLayerSettings } from "./MapLayerSettings";
+import { ModelMapLayerSettings } from "./MapLayerSettings.js";
 
 /** Describes how a [[SpatialClassifier]] affects the display of classified geometry - that is, geometry intersecting
  * the classifier.

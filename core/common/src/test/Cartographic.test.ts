@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert, describe, it } from "vitest";
 import { Angle } from "@itwin/core-geometry";
-import { Cartographic } from "../geometry/Cartographic";
+import { Cartographic } from "../geometry/Cartographic.js";
 
 describe("Cartographic", () => {
   it("should convert properly", () => {

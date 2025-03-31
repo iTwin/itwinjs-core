@@ -7,8 +7,8 @@
  */
 
 import { Id64, Id64String, JsonUtils } from "@itwin/core-bentley";
-import { ColorDef } from "./ColorDef";
-import { SubCategoryAppearance } from "./SubCategoryAppearance";
+import { ColorDef } from "./ColorDef.js";
+import { SubCategoryAppearance } from "./SubCategoryAppearance.js";
 
 /** Overrides selected aspects of a [[SubCategoryAppearance]] in the context of a [[DisplayStyleState]].
  * When determining how geometry belonging to a [[SubCategory]] will appear when drawn within a view:

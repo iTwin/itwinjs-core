@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { describe, expect, it } from "vitest";
-import { PlanProjectionSettings, PlanProjectionSettingsProps } from "../PlanProjectionSettings";
+import { PlanProjectionSettings, PlanProjectionSettingsProps } from "../PlanProjectionSettings.js";
 
 describe("PlanProjectionSettings", () => {
   it("round-trips through JSON", () => {

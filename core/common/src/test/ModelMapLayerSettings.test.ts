@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { describe, expect, it } from "vitest";
-import { ModelMapLayerDrapeTarget, ModelMapLayerProps, ModelMapLayerSettings } from "../core-common";
+import { ModelMapLayerDrapeTarget, ModelMapLayerProps, ModelMapLayerSettings } from "../core-common.js";
 
 const testMapLayer0 = { name: "TestName", modelId: "0x123", visible: true };
 const testMapLayer1 = { name: "TestName", modelId: "0x123", transparency: .5, transparentBackground: false, visible: true };

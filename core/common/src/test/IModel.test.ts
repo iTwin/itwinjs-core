@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 import { describe, expect, it } from "vitest";
 import { Point3d, Range3d } from "@itwin/core-geometry";
-import { EcefLocation, EcefLocationProps, IModel, IModelProps, RootSubjectProps } from "../IModel";
-import { GeographicCRS } from "../geometry/CoordinateReferenceSystem";
+import { EcefLocation, EcefLocationProps, IModel, IModelProps, RootSubjectProps } from "../IModel.js";
+import { GeographicCRS } from "../geometry/CoordinateReferenceSystem.js";
 
 interface TestIModelProps extends IModelProps {
   key: string;

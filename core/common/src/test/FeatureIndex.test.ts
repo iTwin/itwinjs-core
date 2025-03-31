@@ -3,8 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert, describe, it } from "vitest";
-import { ColorDef } from "../ColorDef";
-import { ColorIndex } from "../FeatureIndex";
+import { ColorDef } from "../ColorDef.js";
+import { ColorIndex } from "../FeatureIndex.js";
 
 describe("ColorIndex", () => {
   it("should create, store and retrieve from ColorIndex", () => {

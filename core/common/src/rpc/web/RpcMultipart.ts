@@ -7,10 +7,10 @@
  */
 
 import { BentleyStatus } from "@itwin/core-bentley";
-import { IModelError } from "../../IModelError";
-import { BackendBuffer, BackendReadable } from "../../internal/BackendTypes";
-import { RpcSerializedValue } from "../core/RpcMarshaling";
-import { HttpServerRequest } from "../web/WebAppRpcProtocol";
+import { IModelError } from "../../IModelError.js";
+import { BackendBuffer, BackendReadable } from "../../internal/BackendTypes.js";
+import { RpcSerializedValue } from "../core/RpcMarshaling.js";
+import { HttpServerRequest } from "../web/WebAppRpcProtocol.js";
 
 /* eslint-disable @typescript-eslint/no-deprecated */
 

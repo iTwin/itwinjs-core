@@ -5,7 +5,7 @@
 /** @packageDocumentation
  * @module Rendering
  */
-import { RenderTexture } from "../RenderTexture";
+import { RenderTexture } from "../RenderTexture.js";
 
 /** Parameters used to construct a [[RenderTexture]] in old RenderTexture functions.
  *  Use RenderSystem.createTexture and CreateTextureArgs instead.

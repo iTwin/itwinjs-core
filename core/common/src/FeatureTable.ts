@@ -9,8 +9,8 @@
 import {
   assert, compareNumbers, compareStrings, Id64, Id64String, IndexedValue, IndexMap, UintArray,
 } from "@itwin/core-bentley";
-import { GeometryClass } from "./GeometryParams";
-import { PackedFeatureTable } from "./internal/PackedFeatureTable";
+import { GeometryClass } from "./GeometryParams.js";
+import { PackedFeatureTable } from "./internal/PackedFeatureTable.js";
 
 /** Describes a discrete entity within a batched [RenderGraphic]($frontend) that can be
  * grouped with other such entities in a [[FeatureTable]].

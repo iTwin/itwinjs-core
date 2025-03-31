@@ -7,8 +7,8 @@
  */
 
 import { NonFunctionPropertiesOf } from "@itwin/core-bentley";
-import { ColorByName } from "./ColorByName";
-import { ColorDef, ColorDefProps } from "./ColorDef";
+import { ColorByName } from "./ColorByName.js";
+import { ColorDef, ColorDefProps } from "./ColorDef.js";
 
 /** JSON representation of a [[GroundPlane]].
  * @see [[EnvironmentProps.ground]].

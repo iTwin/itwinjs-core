@@ -3,8 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert, describe, it } from "vitest";
-import { Cartographic } from "../geometry/Cartographic";
-import { calculateSolarAngles, calculateSunriseOrSunset } from "../SolarCalculate";
+import { Cartographic } from "../geometry/Cartographic.js";
+import { calculateSolarAngles, calculateSunriseOrSunset } from "../SolarCalculate.js";
 
 function testSolarAngleCalculation(location: Cartographic, dateString: string, expectedAzimuth: number, expectedElevation: number, expectedSunriseString?: string, expectedSunsetString?: string) {
   const date = new Date(dateString);

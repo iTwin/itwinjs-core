@@ -5,9 +5,9 @@
 
 import { Vector3d } from "@itwin/core-geometry";
 import { describe, expect, it } from "vitest";
-import { DisplayStyle3dSettings } from "../DisplayStyleSettings";
-import { LightSettings, LightSettingsProps, SolarLightProps } from "../LightSettings";
-import { RgbColor } from "../RgbColor";
+import { DisplayStyle3dSettings } from "../DisplayStyleSettings.js";
+import { LightSettings, LightSettingsProps, SolarLightProps } from "../LightSettings.js";
+import { RgbColor } from "../RgbColor.js";
 
 describe("LightSettings", () => {
   it("round-trips through JSON", () => {

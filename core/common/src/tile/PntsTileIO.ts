@@ -7,7 +7,7 @@
  */
 
 import { ByteStream } from "@itwin/core-bentley";
-import { TileFormat, TileHeader } from "./TileIO";
+import { TileFormat, TileHeader } from "./TileIO.js";
 
 /** Header preceding tile content in [pnts](https://github.com/AnalyticalGraphicsInc/3d-tiles/tree/master/specification/TileFormats/PointCloud) format.
  * @internal

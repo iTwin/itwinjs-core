@@ -6,11 +6,11 @@
  * @module RpcInterface
  */
 
-import { IModelRpcProps } from "./IModel";
-import { RpcOperation } from "./rpc/core/RpcOperation";
-import { RpcRegistry } from "./rpc/core/RpcRegistry";
-import { RpcInterface, RpcInterfaceDefinition, RpcInterfaceImplementation } from "./RpcInterface";
-import { RpcRoutingToken } from "./rpc/core/RpcRoutingToken";
+import { IModelRpcProps } from "./IModel.js";
+import { RpcOperation } from "./rpc/core/RpcOperation.js";
+import { RpcRegistry } from "./rpc/core/RpcRegistry.js";
+import { RpcInterface, RpcInterfaceDefinition, RpcInterfaceImplementation } from "./RpcInterface.js";
+import { RpcRoutingToken } from "./rpc/core/RpcRoutingToken.js";
 
 /** Describes the endpoints of an RPC interface.
  * @beta

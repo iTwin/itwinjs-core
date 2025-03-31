@@ -7,11 +7,11 @@
  */
 
 import { Id64, Id64String } from "@itwin/core-bentley";
-import { ColorDef } from "./ColorDef";
-import { AreaPattern } from "./geometry/AreaPattern";
-import { LineStyle } from "./geometry/LineStyle";
-import { Gradient } from "./Gradient";
-import { IModel } from "./IModel";
+import { ColorDef } from "./ColorDef.js";
+import { AreaPattern } from "./geometry/AreaPattern.js";
+import { LineStyle } from "./geometry/LineStyle.js";
+import { Gradient } from "./Gradient.js";
+import { IModel } from "./IModel.js";
 
 /** Whether a closed region should be drawn for wireframe display with its internal area filled or not.
  * @public

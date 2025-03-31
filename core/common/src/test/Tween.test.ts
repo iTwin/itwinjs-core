@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert, describe, it } from "vitest";
-import { Easing, Tween, Tweens } from "../Tween";
+import { Easing, Tween, Tweens } from "../Tween.js";
 
 /** adapted from
  * Tween.js - Licensed under the MIT license

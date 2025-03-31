@@ -7,7 +7,7 @@
  */
 
 import { ByteStream, utf8ToString } from "@itwin/core-bentley";
-import { TileFormat, TileHeader } from "./TileIO";
+import { TileFormat, TileHeader } from "./TileIO.js";
 
 /** Header preceding tile content in [b3dm](https://github.com/AnalyticalGraphicsInc/3d-tiles/tree/master/specification/TileFormats/Batched3DModel) format.
  * @internal

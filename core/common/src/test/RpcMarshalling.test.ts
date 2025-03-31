@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { describe, expect, it } from "vitest";
-import { RpcMarshaling, RpcSerializedValue } from "../rpc/core/RpcMarshaling";
+import { RpcMarshaling, RpcSerializedValue } from "../rpc/core/RpcMarshaling.js";
 
 describe("RpcMarshaling.deserialize", () => {
   it("should deserialize valid JSON", () => {
