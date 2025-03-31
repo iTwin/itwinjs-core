@@ -23,6 +23,7 @@ describe("SchemaWalker tests", () => {
     $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
     name: "TestSchema",
     version: "1.2.3",
+    alias: "ts",
   };
 
   const schemaJson = {

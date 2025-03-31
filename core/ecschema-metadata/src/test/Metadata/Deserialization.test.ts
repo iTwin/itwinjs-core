@@ -28,6 +28,7 @@ describe("Full Schema Deserialization", () => {
         $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
         name: "TestSchema",
         version: "1.2.3",
+        alias: "ts",
         description: "This is a test description",
         label: "This is a test label",
       });
@@ -45,6 +46,7 @@ describe("Full Schema Deserialization", () => {
         $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
         name: "TestSchema",
         version: "1.2.3",
+        alias: "ts",
         description: "This is a test description",
         label: "This is a test label",
       });
@@ -63,6 +65,7 @@ describe("Full Schema Deserialization", () => {
         $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
         name: "TestSchema",
         version: "1.2.3",
+        alias: "ts",
         description: "This is a test description",
         label: "This is a test label",
       };
@@ -81,6 +84,7 @@ describe("Full Schema Deserialization", () => {
         $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
         name: "TestSchema",
         version: "1.1000.0",
+        alias: "ts",
       };
 
       await expect(Schema.fromJson(schemaJson, new SchemaContext())).to.be.rejectedWith(ECObjectsError);
@@ -91,6 +95,7 @@ describe("Full Schema Deserialization", () => {
         $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
         name: "TestSchema",
         version: "1.0.10000000",
+        alias: "ts",
       };
       await expect(Schema.fromJson(schemaJson, new SchemaContext())).to.be.rejectedWith(ECObjectsError);
     });
@@ -100,6 +105,7 @@ describe("Full Schema Deserialization", () => {
         $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
         name: "0TestSchema",
         version: "1.0.0",
+        alias: "ts",
       };
 
       await expect(Schema.fromJson(schemaJson, new SchemaContext())).to.be.rejectedWith(ECObjectsError);
@@ -111,7 +117,7 @@ describe("Full Schema Deserialization", () => {
       $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
       name: "TestSchema",
       version: "1.2.3",
-
+      alias: "ts",
     };
     const validSchemaJson = {
       ...baseJson,
@@ -481,6 +487,7 @@ describe("Full Schema Deserialization", () => {
       $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
       name: "TestSchema",
       version: "1.2.3",
+      alias: "ts",
     };
 
     it("should throw for invalid items attribute", async () => {
@@ -572,6 +579,7 @@ describe("Full Schema Deserialization", () => {
       $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
       name: "TestSchema",
       version: "1.2.3",
+      alias: "ts",
     };
     type Mock<T> = { readonly [P in keyof T]: sinon.SinonSpy; };
     let mockVisitor: Mock<ISchemaPartVisitor>;
