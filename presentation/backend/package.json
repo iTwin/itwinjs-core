@@ -1,6 +1,6 @@
 {
   "name": "@itwin/presentation-backend",
-  "version": "5.0.0-dev.93",
+  "version": "5.0.0-dev.94",
   "description": "Backend of iTwin.js Presentation library",
   "license": "MIT",
   "repository": {
@@ -28,6 +28,10 @@
     ".": {
       "import": "./lib/esm/presentation-backend.js",
       "require": "./lib/cjs/presentation-backend.js"
+    },
+    "./internal": {
+      "import": "./lib/esm/presentation-backend-internal.js",
+      "require": "./lib/cjs/presentation-backend-internal.js"
     },
     "./package.json": "./package.json"
   },
