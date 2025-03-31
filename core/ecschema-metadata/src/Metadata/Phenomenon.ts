@@ -12,7 +12,7 @@ import { ECObjectsError, ECObjectsStatus } from "../Exception";
 import { Schema } from "./Schema";
 import { SchemaItem } from "./SchemaItem";
 
-/** @beta */
+/** @public @preview */
 export class Phenomenon extends SchemaItem {
   public override readonly schemaItemType = Phenomenon.schemaItemType;
   public static override get schemaItemType() { return SchemaItemType.Phenomenon; }

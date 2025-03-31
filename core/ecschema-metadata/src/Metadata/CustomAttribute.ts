@@ -8,7 +8,7 @@
 
 import { Schema } from "./Schema";
 
-/** @beta */
+/** @public @preview */
 export interface CustomAttribute {
   className: string;
   [propName: string]: any;
@@ -21,7 +21,7 @@ export interface CustomAttributeSet {
   get(className: string): CustomAttribute | undefined;
 }
 
-/** @beta */
+/** @public @preview */
 export interface CustomAttributeContainerProps {
   customAttributes?: CustomAttributeSet;
   fullName: string;

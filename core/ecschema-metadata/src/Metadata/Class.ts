@@ -25,7 +25,7 @@ import { ECSpecVersion, SchemaReadHelper } from "../Deserialization/Helper";
 
 /**
  * A common abstract class for all of the ECClass types.
- * @beta
+ * @public @preview
  */
 export abstract class ECClass extends SchemaItem implements CustomAttributeContainerProps {
   public static override get schemaItemType(): SupportedSchemaItemType { return AbstractSchemaItemType.Class; } // need this so getItem("name", ECClass) in schema works
@@ -72,7 +72,7 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
    * Gets the derived classes belonging to this class.
    * @returns An array of ECClasses or undefined if no derived classes exist.
    */
-  public async getDerivedClasses(): Promise<ECClass [] | undefined> {
+  public async getDerivedClasses(): Promise<ECClass[] | undefined> {
     if (!this._derivedClasses || this._derivedClasses.size === 0)
       return undefined;
 
@@ -567,7 +567,7 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
 
     if (this.baseClass) {
       const baseClass = await this.baseClass;
-      if(baseClass) {
+      if (baseClass) {
         ECClass.mergeProperties(result, existingValues, await baseClass.getProperties(), false);
       }
     }
@@ -610,7 +610,7 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
    * @returns An array of properties, empty array if none exist.
    */
   public getPropertiesSync(excludeInherited?: boolean): Iterable<Property> {
-    if(excludeInherited) {
+    if (excludeInherited) {
       return this._properties && this._properties.size > 0 ? this._properties.values() : [];
     }
 
@@ -802,18 +802,18 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
 
 /**
  * A Typescript class representation of an ECStructClass.
- * @beta
+ * @public @preview
  */
 export class StructClass extends ECClass {
   /**
    * Get the type of item represented by this instance
-   * @beta
+   * @public @preview
    */
   public override readonly schemaItemType = StructClass.schemaItemType;
 
   /**
    * Get the type of item represented by this class
-   * @beta
+   * @public @preview
    */
   public static override get schemaItemType() { return SchemaItemType.StructClass; }
   /**

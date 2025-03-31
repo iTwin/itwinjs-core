@@ -29,7 +29,7 @@ type AnyConstraintClass = EntityClass | Mixin | RelationshipClass;
 
 /**
  * A Typescript class representation of a ECRelationshipClass.
- * @beta
+ * @public @preview
  */
 export class RelationshipClass extends ECClass {
   public override readonly schemaItemType = RelationshipClass.schemaItemType;
@@ -165,7 +165,7 @@ export class RelationshipClass extends ECClass {
 
 /**
  * A Typescript class representation of a ECRelationshipConstraint.
- * @beta
+ * @public @preview
  */
 export class RelationshipConstraint implements CustomAttributeContainerProps {
   protected _abstractConstraint?: LazyLoadedRelationshipConstraintClass;
@@ -349,7 +349,7 @@ export class RelationshipConstraint implements CustomAttributeContainerProps {
         async () => {
           const tempAbstractConstraint = await relClassSchema.lookupItem(relationshipConstraintProps.abstractConstraint!);
           if (undefined === tempAbstractConstraint ||
-               (!EntityClass.isEntityClass(tempAbstractConstraint) && !Mixin.isMixin(tempAbstractConstraint) && !RelationshipClass.isRelationshipClass(tempAbstractConstraint)))
+            (!EntityClass.isEntityClass(tempAbstractConstraint) && !Mixin.isMixin(tempAbstractConstraint) && !RelationshipClass.isRelationshipClass(tempAbstractConstraint)))
             throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate the abstractConstraint ${relationshipConstraintProps.abstractConstraint}.`);
 
           return tempAbstractConstraint;
@@ -359,7 +359,7 @@ export class RelationshipConstraint implements CustomAttributeContainerProps {
     const loadEachConstraint = (constraintClassName: any) => {
       const tempConstraintClass = relClassSchema.lookupItemSync(constraintClassName);
       if (!tempConstraintClass ||
-           (!EntityClass.isEntityClass(tempConstraintClass) && !Mixin.isMixin(tempConstraintClass) && !RelationshipClass.isRelationshipClass(tempConstraintClass)))
+        (!EntityClass.isEntityClass(tempConstraintClass) && !Mixin.isMixin(tempConstraintClass) && !RelationshipClass.isRelationshipClass(tempConstraintClass)))
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
       return tempConstraintClass;
     };
@@ -462,7 +462,7 @@ export abstract class MutableRelationshipConstraint extends RelationshipConstrai
 const INT32_MAX = 2147483647;
 
 /**
- * @beta
+ * @public @preview
  */
 export class RelationshipMultiplicity {
   public static readonly zeroOne = new RelationshipMultiplicity(0, 1);

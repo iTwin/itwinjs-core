@@ -20,7 +20,7 @@ import { SchemaItem } from "./SchemaItem";
 import { Unit } from "./Unit";
 
 /**
- * @beta
+ * @public @preview
  */
 export class Format extends SchemaItem {
   public override readonly schemaItemType = Format.schemaItemType;
@@ -336,10 +336,10 @@ export class Format extends SchemaItem {
    * @returns True if the item is a Format, false otherwise.
    */
   public static isFormat(item?: SchemaItem): item is Format {
-  if (item && item.schemaItemType === SchemaItemType.Format)
-    return true;
+    if (item && item.schemaItemType === SchemaItemType.Format)
+      return true;
 
-  return false;
+    return false;
   }
 
   /**

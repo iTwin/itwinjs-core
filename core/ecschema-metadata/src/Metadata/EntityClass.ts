@@ -21,7 +21,7 @@ import { SchemaItem } from "./SchemaItem";
 
 /**
  * A Typescript class representation of an ECEntityClass.
- * @beta
+ * @public @preview
  */
 export class EntityClass extends ECClass implements HasMixins {
   public override readonly schemaItemType = EntityClass.schemaItemType;
@@ -108,7 +108,7 @@ export class EntityClass extends ECClass implements HasMixins {
     }
 
     const baseClass = await this.baseClass;
-    if(baseClass) {
+    if (baseClass) {
       ECClass.mergeProperties(result, existingValues, await baseClass.getProperties(), false);
     }
 
@@ -227,7 +227,7 @@ export class EntityClass extends ECClass implements HasMixins {
    * @returns The item cast to EntityClass if it is an EntityClass, undefined otherwise.
    */
   public static assertIsEntityClass(item?: SchemaItem): asserts item is EntityClass {
-    if(!this.isEntityClass(item))
+    if (!this.isEntityClass(item))
       throw new ECObjectsError(ECObjectsStatus.InvalidSchemaItemType, `Expected '${SchemaItemType.EntityClass}' (EntityClass)`);
   }
 }

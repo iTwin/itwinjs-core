@@ -28,67 +28,67 @@ import { Unit } from "./Metadata/Unit";
 import { UnitSystem } from "./Metadata/UnitSystem";
 import { SchemaItemKey, SchemaKey } from "./SchemaKey";
 
-/** @beta */
+/** @public @preview */
 export type LazyLoadedSchema = SchemaKey & DelayedPromise<Schema> & Promise<Schema>;
 
-/** @beta */
+/** @public @preview */
 export type LazyLoadedSchemaItem<T extends SchemaItem> = Readonly<SchemaItemKey> & DelayedPromise<T> & Promise<T>;
-/** @beta */
+/** @public @preview */
 export type LazyLoadedECClass = LazyLoadedSchemaItem<ECClass>;
-/** @beta */
+/** @public @preview */
 export type LazyLoadedEntityClass = LazyLoadedSchemaItem<EntityClass>;
-/** @beta */
+/** @public @preview */
 export type LazyLoadedMixin = LazyLoadedSchemaItem<Mixin>;
-/** @beta */
+/** @public @preview */
 export type LazyLoadedStructClass = LazyLoadedSchemaItem<StructClass>;
-/** @beta */
+/** @public @preview */
 export type LazyLoadedCustomAttributeClass = LazyLoadedSchemaItem<CustomAttributeClass>;
-/** @beta */
+/** @public @preview */
 export type LazyLoadedRelationshipClass = LazyLoadedSchemaItem<RelationshipClass>;
-/** @beta */
+/** @public @preview */
 export type LazyLoadedEnumeration = LazyLoadedSchemaItem<Enumeration>;
-/** @beta */
+/** @public @preview */
 export type LazyLoadedKindOfQuantity = LazyLoadedSchemaItem<KindOfQuantity>;
-/** @beta */
+/** @public @preview */
 export type LazyLoadedPropertyCategory = LazyLoadedSchemaItem<PropertyCategory>;
-/** @beta */
+/** @public @preview */
 export type LazyLoadedRelationshipConstraintClass = LazyLoadedSchemaItem<EntityClass | Mixin | RelationshipClass>;
-/** @beta */
+/** @public @preview */
 export type LazyLoadedUnit = LazyLoadedSchemaItem<Unit>;
-/** @beta */
+/** @public @preview */
 export type LazyLoadedInvertedUnit = LazyLoadedSchemaItem<InvertedUnit>;
-/** @beta */
+/** @public @preview */
 export type LazyLoadedConstant = LazyLoadedSchemaItem<Constant>;
-/** @beta */
+/** @public @preview */
 export type LazyLoadedPhenomenon = LazyLoadedSchemaItem<Phenomenon>;
-/** @beta */
+/** @public @preview */
 export type LazyLoadedUnitSystem = LazyLoadedSchemaItem<UnitSystem>;
-/** @beta */
+/** @public @preview */
 export type LazyLoadedFormat = LazyLoadedSchemaItem<Format>;
 
-/** @beta */
+/** @public @preview */
 export type AnyClass = EntityClass | Mixin | StructClass | CustomAttributeClass | RelationshipClass;
-/** @beta */
+/** @public @preview */
 export type AnySchemaItem = AnyClass | Enumeration | KindOfQuantity | PropertyCategory | Unit | InvertedUnit | Constant | Phenomenon | UnitSystem | Format;
-/** @beta */
+/** @public @preview */
 export type AnyECType = Schema | SchemaItem | AnyProperty | RelationshipConstraint | CustomAttributeContainerProps | CustomAttribute | OverrideFormat | AnyEnumerator;
 
 /**
  *  Holds the SchemaKeys for a schema and it's references.  Designed so that Schema fulfills this interface.
- * @beta
+ * @public @preview
  */
 export interface SchemaInfo {
   schemaKey: SchemaKey;
   references: WithSchemaKey[];
 }
 
-/** @beta */
+/** @public @preview */
 export interface WithSchemaKey {
   schemaKey: SchemaKey;
 }
 
 /** This is needed to break a circular dependency between Class and EntityClass.
- * @beta
+ * @public @preview
  */
 export interface HasMixins {
   mixins: LazyLoadedMixin[];

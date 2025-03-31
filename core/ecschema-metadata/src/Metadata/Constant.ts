@@ -19,7 +19,7 @@ import { SchemaItem } from "./SchemaItem";
 
 /**
  * A Constant is a specific type of Unit that represents a number.
- * @beta
+ * @public @preview
  */
 export class Constant extends SchemaItem {
   public override readonly schemaItemType = Constant.schemaItemType;

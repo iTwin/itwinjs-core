@@ -9,7 +9,7 @@
 import { PrimitiveType } from "./ECObjects";
 import { ECObjectsError, ECObjectsStatus } from "./Exception";
 
-/** @beta */
+/** @public @preview */
 const enum PropertyFlags { // eslint-disable-line no-restricted-syntax
   Primitive = 0x01,
   Struct = 0x02,
@@ -19,7 +19,7 @@ const enum PropertyFlags { // eslint-disable-line no-restricted-syntax
 }
 
 /**
- * @beta
+ * @public @preview
  */
 export enum PropertyType {
   Struct = 0x02, // PropertyFlags.Struct
@@ -51,7 +51,7 @@ export enum PropertyType {
   IGeometry_Array = 0xA05, // PrimitiveType.IGeometry | PropertyFlags.Array
 }
 
-/** @beta */
+/** @public @preview */
 export namespace PropertyTypeUtils {
   export function isArray(t: PropertyType) {
     return (t === (PropertyFlags.Array | t));
@@ -79,7 +79,7 @@ export namespace PropertyTypeUtils {
   }
 }
 
-/** @beta */
+/** @public @preview */
 export function propertyTypeToString(type: PropertyType) {
   if (PropertyTypeUtils.isPrimitive(type))
     return (PropertyTypeUtils.isArray(type)) ? "PrimitiveArrayProperty" : "PrimitiveProperty";

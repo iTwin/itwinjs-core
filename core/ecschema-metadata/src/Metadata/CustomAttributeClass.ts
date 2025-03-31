@@ -16,7 +16,7 @@ import { SchemaItem } from "./SchemaItem";
 
 /**
  * A Typescript class representation of an ECCustomAttributeClass.
- * @beta
+ * @public @preview
  */
 export class CustomAttributeClass extends ECClass {
   public override readonly schemaItemType = CustomAttributeClass.schemaItemType;

@@ -8,7 +8,7 @@
 
 import { BentleyError } from "@itwin/core-bentley";
 
-/** @beta */
+/** @public @preview */
 export enum ECObjectsStatus {
   ECOBJECTS_ERROR_BASE = 0x88EC,
   Success = 0,

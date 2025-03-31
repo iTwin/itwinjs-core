@@ -18,7 +18,7 @@ import { globSync } from "glob";
 /**
  * A SchemaLocater implementation for locating XML Schema files
  * from the file system using configurable search paths.
- * @beta This is a workaround the current lack of a full xml parser.
+ * @public @preview This is a workaround the current lack of a full xml parser.
  */
 export class SchemaXmlFileLocater extends SchemaFileLocater implements ISchemaLocater {
   /**
@@ -130,7 +130,7 @@ export class SchemaXmlFileLocater extends SchemaFileLocater implements ISchemaLo
  *
  * @note This locater is read-only and does not allow adding new schema search paths.
  * @note This locater should be used as a fallback/last chance locater in the schema context as any user defined schema should have higher precedence over the standard schema.
- * @beta This is a workaround due to the current lack of a full xml parser.
+ * @public @preview This is a workaround due to the current lack of a full xml parser.
  */
 export class PublishedSchemaXmlFileLocater extends SchemaXmlFileLocater implements ISchemaLocater {
   /**

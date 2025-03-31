@@ -11,7 +11,7 @@ import { ECObjectsError, ECObjectsStatus } from "../Exception";
 import { SchemaItem } from "./SchemaItem";
 
 /**
- * @beta
+ * @public @preview
  */
 export class UnitSystem extends SchemaItem {
   public override readonly schemaItemType = UnitSystem.schemaItemType;

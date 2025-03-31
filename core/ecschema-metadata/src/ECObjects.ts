@@ -16,7 +16,7 @@ if (!(Symbol as any).asyncIterator) {
   (Symbol as any).asyncIterator = Symbol.for("Symbol.asyncIterator");
 }
 
-/** @beta */
+/** @public @preview */
 export enum ECClassModifier {
   None,
   Abstract,
@@ -27,7 +27,7 @@ export enum ECClassModifier {
  * An enumeration that has all the schema item type names as values
  *
  * @enum {string}
- * @beta
+ * @public @preview
  */
 export enum SchemaItemType {
   EntityClass = "EntityClass",
@@ -48,7 +48,7 @@ export enum SchemaItemType {
 
 /**
  * Additional Schema Item Types which define classes of item types
- * @beta
+ * @public @preview
  */
 export enum AbstractSchemaItemType {
   Class = "Class",
@@ -57,13 +57,13 @@ export enum AbstractSchemaItemType {
 
 /**
  * Defines types of items that may be provided to identify supported items
- * @beta
+ * @public @preview
  */
 export type SupportedSchemaItemType = SchemaItemType | AbstractSchemaItemType;
 
 /**
  * Primitive data types for ECProperties.
- * @beta
+ * @public @preview
  */
 export enum PrimitiveType {
   Uninitialized = 0x00,
@@ -81,7 +81,7 @@ export enum PrimitiveType {
 
 /**
  * Defines the valid CustomAttribute container types.
- * @beta
+ * @public @preview
  */
 export enum CustomAttributeContainerType {
   Schema = (0x0001 << 0),
@@ -104,7 +104,7 @@ export enum CustomAttributeContainerType {
 
 /**
  * Defines what sort of match should be used when locating a schema.
- * @beta
+ * @public @preview
  */
 export enum SchemaMatchType {
   /*
@@ -124,21 +124,21 @@ export enum SchemaMatchType {
 
 /**
  * Identifer for an ECRelationshipConstraint. Used to determine the side of the relationship the constraint is representing.
- * @beta
+ * @public @preview
  */
 export enum RelationshipEnd {
   Source = 0,
   Target = 1,
 }
 
-/** @beta */
+/** @public @preview */
 export enum StrengthType {
   Referencing,
   Holding,
   Embedding,
 }
 
-/** @beta */
+/** @public @preview */
 export enum StrengthDirection {
   Forward = 1,
   Backward = 2,
@@ -149,7 +149,7 @@ export enum StrengthDirection {
 /**
  * Parses the provided string into an ECClassModifier if the string is a valid modifier.
  * @param modifier The modifier string to parse.
- * @beta
+ * @public @preview
  */
 export function parseClassModifier(modifier: string): ECClassModifier | undefined {
   const lowerModifier = modifier.toLowerCase();
@@ -163,7 +163,7 @@ export function parseClassModifier(modifier: string): ECClassModifier | undefine
 
 /**
  * @return A string representing the provided ECClassModifier. If the modifier is not valid, an empty string is returned.
- * @beta
+ * @public @preview
  */
 export function classModifierToString(modifier: ECClassModifier): string {
   switch (modifier) {
@@ -178,7 +178,7 @@ export function classModifierToString(modifier: ECClassModifier): string {
  * Tries to parse the given string as one of the 8 schema item types.
  * @param type The schema item type string to parse.
  * @returns A valid SchemaItemType if successfully parsed. Otherwise, undefined if the provided string is not a valid SchemaItemType.
- * @beta
+ * @public @preview
  */
 export function parseSchemaItemType(type: string): SchemaItemType | undefined {
   switch (type.toLowerCase()) {
@@ -204,7 +204,7 @@ export function parseSchemaItemType(type: string): SchemaItemType | undefined {
  * Converts a valid SchemaItemType to a display string.
  * @param value The SchemaItemType to stringify.
  * @return A string representing the provided SchemaItemType. If the type is not valid, an empty string is returned.
- * @beta
+ * @public @preview
  * @deprecated in 4.6.0 SchemaItemType is a string enum so just use it directly
  */
 export function schemaItemTypeToString(value: SchemaItemType): string {
@@ -236,7 +236,7 @@ export function schemaItemTypeToXmlString(value: SchemaItemType): string {
  * Tries to parse the given string as one of the 10 primitive types.
  * @param type The primitive type string to parse.
  * @returns A valid PrimitiveType if successfully parsed, or undefined if the provided string is not a valid PrimitiveType.
- * @beta
+ * @public @preview
  */
 export function parsePrimitiveType(type: string): PrimitiveType | undefined {
   switch (type.toLowerCase()) {
@@ -255,7 +255,7 @@ export function parsePrimitiveType(type: string): PrimitiveType | undefined {
   return undefined;
 }
 
-/** @beta */
+/** @public @preview */
 export function primitiveTypeToString(type: PrimitiveType): string {
   switch (type) {
     case PrimitiveType.Binary: return "binary";
@@ -275,7 +275,7 @@ export function primitiveTypeToString(type: PrimitiveType): string {
 /**
  * Parses the given string into the appropriate CustomAttributeContainerType if the string is valid.
  * @param type The container type string to parse.
- * @beta
+ * @public @preview
  */
 export function parseCustomAttributeContainerType(type: string): CustomAttributeContainerType | undefined {
   const typeTokens = type.split(/[|,;]+/);
@@ -349,7 +349,7 @@ export function parseCustomAttributeContainerType(type: string): CustomAttribute
  * Creates a string representing a valid CustomAttributeContainerType.
  * @param value The CustomAttributeContainerType to stringify.
  * @return A string representing the provided CustomAttributeContainerType. If the type is not valid, an empty string is returned.
- * @beta
+ * @public @preview
  */
 export function containerTypeToString(type: CustomAttributeContainerType): string {
 
@@ -411,7 +411,7 @@ export function containerTypeToString(type: CustomAttributeContainerType): strin
   return containerType;
 }
 
-/** @beta */
+/** @public @preview */
 export function parseRelationshipEnd(end: string): RelationshipEnd | undefined {
   switch (end.toLowerCase()) {
     case "source": return RelationshipEnd.Source;
@@ -420,7 +420,7 @@ export function parseRelationshipEnd(end: string): RelationshipEnd | undefined {
   return undefined;
 }
 
-/** @beta */
+/** @public @preview */
 export function relationshipEndToString(end: RelationshipEnd): string {
   switch (end) {
     case RelationshipEnd.Source: return ECStringConstants.RELATIONSHIP_END_SOURCE;
@@ -433,7 +433,7 @@ export function relationshipEndToString(end: RelationshipEnd): string {
  * Takes a string representing a StrengthType, will parse it and return the corresponding StrengthType.
  * @throws ECObjectsStatus.InvalidStrength if the provided string that is not valid
  * @param strength
- * @beta
+ * @public @preview
  */
 export function parseStrength(strength: string): StrengthType | undefined {
   switch (strength.toLowerCase()) {
@@ -444,7 +444,7 @@ export function parseStrength(strength: string): StrengthType | undefined {
   return undefined;
 }
 
-/** @beta */
+/** @public @preview */
 export function strengthToString(strength: StrengthType): string {
   switch (strength) {
     case StrengthType.Embedding: return "Embedding";
@@ -454,7 +454,7 @@ export function strengthToString(strength: StrengthType): string {
   }
 }
 
-/** @beta */
+/** @public @preview */
 export function parseStrengthDirection(direction: string): StrengthDirection | undefined {
   switch (direction.toLowerCase()) {
     case "forward": return StrengthDirection.Forward;
@@ -463,7 +463,7 @@ export function parseStrengthDirection(direction: string): StrengthDirection | u
   return undefined;
 }
 
-/** @beta */
+/** @public @preview */
 export function strengthDirectionToString(direction: StrengthDirection): string {
   switch (direction) {
     case StrengthDirection.Forward: return "Forward";
@@ -473,22 +473,22 @@ export function strengthDirectionToString(direction: StrengthDirection): string 
 }
 
 /** Compares a SchemaItemType against supported type.
- * @beta
+ * @public @preview
  */
 export function isSupportedSchemaItemType(value: SchemaItemType, supported: SupportedSchemaItemType): boolean {
-  if(value === supported)
+  if (value === supported)
     return true;
 
-  if(supported === AbstractSchemaItemType.Class && (
+  if (supported === AbstractSchemaItemType.Class && (
     value === SchemaItemType.EntityClass ||
     value === SchemaItemType.Mixin ||
     value === SchemaItemType.StructClass ||
     value === SchemaItemType.CustomAttributeClass ||
     value === SchemaItemType.RelationshipClass)) {
-      return true;
+    return true;
   }
 
-  if(supported === AbstractSchemaItemType.SchemaItem) {
+  if (supported === AbstractSchemaItemType.SchemaItem) {
     return true;
   }
 

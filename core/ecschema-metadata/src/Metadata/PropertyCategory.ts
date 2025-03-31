@@ -13,7 +13,7 @@ import { Schema } from "./Schema";
 import { SchemaItem } from "./SchemaItem";
 
 /**
- * @beta
+ * @public @preview
  */
 export class PropertyCategory extends SchemaItem {
   public override readonly schemaItemType = PropertyCategory.schemaItemType;

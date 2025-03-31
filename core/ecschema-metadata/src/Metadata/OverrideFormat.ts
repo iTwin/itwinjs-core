@@ -18,7 +18,7 @@ import { Mutable } from "@itwin/core-bentley";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
 
 /**
- * @beta
+ * @public @preview
  */
 export interface OverrideFormatProps {
   name: string;
@@ -28,7 +28,7 @@ export interface OverrideFormatProps {
 
 /**
  * Overrides of a Format, from a Schema, and is SchemaItem that is used specifically on KindOfQuantity.
- * @beta
+ * @public @preview
  */
 export class OverrideFormat {
   private _precision?: DecimalPrecision | FractionalPrecision;

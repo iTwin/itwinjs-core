@@ -38,7 +38,7 @@ const padStartEx = (str: string, targetLength: number, padString: string) => {
  * addition of two properties: fileName and schemaText.  The fileName contains the
  * full path to the file on disk and schemaText is the full string representation
  * of the Schema.
- * @beta
+ * @public @preview
  */
 export class FileSchemaKey extends SchemaKey {
   // The schema file associated with the SchemaKey
@@ -62,7 +62,7 @@ export class FileSchemaKey extends SchemaKey {
 
 /**
  * Abstract class to hold common/overlapping functionality between SchemaJsonFileLocater and SchemaXmlFileLocater
- * @beta - Needs further testing and possibly moved to a separate package.
+ * @public @preview - Needs further testing and possibly moved to a separate package.
  */
 export abstract class SchemaFileLocater {
   public searchPaths: string[];
