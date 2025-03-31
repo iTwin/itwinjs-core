@@ -63,6 +63,7 @@ import { Presentation } from "./Presentation.js";
 import { PresentationManager } from "./PresentationManager.js";
 import { DESCRIPTOR_ONLY_CONTENT_FLAG, getRulesetIdObject } from "./PresentationManagerDetail.js";
 import { TemporaryStorage } from "./TemporaryStorage.js";
+import { _presentation_manager_detail } from "./InternalSymbols.js";
 
 const packageJsonVersion = packageJson.version;
 
@@ -260,7 +261,7 @@ export class PresentationRpcImpl extends PresentationRpcInterface implements Dis
     return this.makeRequest(token, "getPagedNodes", requestOptions, async (options) => {
       options = enforceValidPageSize(options);
       const [serializedHierarchyLevel, count] = await Promise.all([
-        this.getManager(requestOptions.clientId).getDetail().getNodes(options),
+        this.getManager(requestOptions.clientId)[_presentation_manager_detail].getNodes(options),
         this.getManager(requestOptions.clientId).getNodesCount(options),
       ]);
       const hierarchyLevel: HierarchyLevel = deepReplaceNullsToUndefined(JSON.parse(serializedHierarchyLevel));
@@ -276,7 +277,7 @@ export class PresentationRpcImpl extends PresentationRpcInterface implements Dis
     requestOptions: HierarchyLevelDescriptorRpcRequestOptions,
   ): PresentationRpcResponse<string | DescriptorJSON | undefined> {
     return this.makeRequest(token, "getNodesDescriptor", requestOptions, async (options) => {
-      return this.getManager(requestOptions.clientId).getDetail().getNodesDescriptor(options);
+      return this.getManager(requestOptions.clientId)[_presentation_manager_detail].getNodesDescriptor(options);
     });
   }
 
@@ -285,7 +286,7 @@ export class PresentationRpcImpl extends PresentationRpcInterface implements Dis
     requestOptions: FilterByInstancePathsHierarchyRpcRequestOptions,
   ): PresentationRpcResponse<NodePathElement[]> {
     return this.makeRequest(token, "getNodePaths", requestOptions, async (options) => {
-      return this.getManager(requestOptions.clientId).getDetail().getNodePaths(options);
+      return this.getManager(requestOptions.clientId)[_presentation_manager_detail].getNodePaths(options);
     });
   }
 
@@ -294,7 +295,7 @@ export class PresentationRpcImpl extends PresentationRpcInterface implements Dis
     requestOptions: FilterByTextHierarchyRpcRequestOptions,
   ): PresentationRpcResponse<NodePathElement[]> {
     return this.makeRequest(token, "getFilteredNodePaths", requestOptions, async (options) => {
-      return this.getManager(requestOptions.clientId).getDetail().getFilteredNodePaths(options);
+      return this.getManager(requestOptions.clientId)[_presentation_manager_detail].getFilteredNodePaths(options);
     });
   }
 
@@ -322,7 +323,9 @@ export class PresentationRpcImpl extends PresentationRpcInterface implements Dis
       };
       // Here we send a plain JSON string but we will parse it to DescriptorJSON on the frontend. This way we are
       // bypassing unnecessary deserialization and serialization.
-      return Presentation.getManager(requestOptions.clientId).getDetail().getContentDescriptor(options) as unknown as DescriptorJSON | undefined;
+      return Presentation.getManager(requestOptions.clientId)[_presentation_manager_detail].getContentDescriptor(options) as unknown as
+        | DescriptorJSON
+        | undefined;
     });
   }
 
@@ -348,7 +351,7 @@ export class PresentationRpcImpl extends PresentationRpcInterface implements Dis
 
       const [size, content] = await Promise.all([
         this.getManager(requestOptions.clientId).getContentSetSize(options),
-        this.getManager(requestOptions.clientId).getDetail().getContent(options),
+        this.getManager(requestOptions.clientId)[_presentation_manager_detail].getContent(options),
       ]);
 
       if (!content) {
@@ -390,7 +393,7 @@ export class PresentationRpcImpl extends PresentationRpcInterface implements Dis
     return this.makeRequest(token, "getElementProperties", { ...requestOptions }, async (options) => {
       const manager = this.getManager(requestOptions.clientId);
       const { elementId, ...optionsNoElementId } = options;
-      const content = await manager.getDetail().getContent({
+      const content = await manager[_presentation_manager_detail].getContent({
         ...optionsNoElementId,
         descriptor: {
           displayType: DefaultContentDisplayTypes.PropertyPane,
@@ -415,7 +418,7 @@ export class PresentationRpcImpl extends PresentationRpcInterface implements Dis
         ...options,
         keys: KeySet.fromJSON(options.keys),
       });
-      return this.getManager(requestOptions.clientId).getDetail().getPagedDistinctValues(options);
+      return this.getManager(requestOptions.clientId)[_presentation_manager_detail].getPagedDistinctValues(options);
     });
   }
 
@@ -439,7 +442,7 @@ export class PresentationRpcImpl extends PresentationRpcInterface implements Dis
 
       const [size, content] = await Promise.all([
         this.getManager(requestOptions.clientId).getContentSetSize(options),
-        this.getManager(requestOptions.clientId).getDetail().getContent(options),
+        this.getManager(requestOptions.clientId)[_presentation_manager_detail].getContent(options),
       ]);
 
       if (size === 0 || !content) {
@@ -458,7 +461,7 @@ export class PresentationRpcImpl extends PresentationRpcInterface implements Dis
     requestOptions: DisplayLabelRpcRequestOptions,
   ): PresentationRpcResponse<LabelDefinition> {
     return this.makeRequest(token, "getDisplayLabelDefinition", requestOptions, async (options) => {
-      const label = await this.getManager(requestOptions.clientId).getDetail().getDisplayLabelDefinition(options);
+      const label = await this.getManager(requestOptions.clientId)[_presentation_manager_detail].getDisplayLabelDefinition(options);
       return label;
     });
   }
@@ -472,9 +475,10 @@ export class PresentationRpcImpl extends PresentationRpcInterface implements Dis
       requestOptions.keys.splice(pageOpts.paging.size);
     }
     return this.makeRequest(token, "getPagedDisplayLabelDefinitions", requestOptions, async (options) => {
-      const labels = await this.getManager(requestOptions.clientId)
-        .getDetail()
-        .getDisplayLabelDefinitions({ ...options, keys: options.keys });
+      const labels = await this.getManager(requestOptions.clientId)[_presentation_manager_detail].getDisplayLabelDefinitions({
+        ...options,
+        keys: options.keys,
+      });
       return {
         total: options.keys.length,
         items: labels,
