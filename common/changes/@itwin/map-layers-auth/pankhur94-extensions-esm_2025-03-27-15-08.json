@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/map-layers-auth",
+      "comment": "change map-layers-auth to pure esm",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/map-layers-auth"
+}
