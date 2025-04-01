@@ -1,15 +1,22 @@
 {
   "name": "@itwin/map-layers-formats",
-  "version": "5.0.0-dev.94",
+  "version": "5.0.0-dev.95",
   "description": "Enables additional map-layers formats in iTwin.js",
   "main": "lib/cjs/map-layers-formats.js",
   "module": "lib/esm/map-layers-formats.js",
   "typings": "lib/cjs/map-layers-formats",
+  "type": "module",
+  "exports": {
+    ".": {
+      "import": "./lib/esm/map-layers-formats.js",
+      "require": "./lib/cjs/map-layers-formats.js"
+    }
+  },
   "license": "MIT",
   "scripts": {
     "build": "npm run -s copy:locale && npm run -s build:cjs && npm run -s build:esm",
-    "build:cjs": "tsc 1>&2 --outDir lib/cjs",
-    "build:esm": "tsc 1>&2 --module ES2022 --outDir lib/esm",
+    "build:cjs": "internal-tools build-cjs",
+    "build:esm": "tsc 1>&2 --outDir lib/esm",
     "clean": "rimraf -g lib .rush/temp/package-deps*.json",
     "copy:locale": "cpx \"./src/public/**/*\" ./lib/public",
     "cover": "nyc npm -s test",
@@ -17,7 +24,7 @@
     "extract-api": "betools extract-api --entry=map-layers-formats",
     "lint": "eslint \"./src/**/*.{ts,tsx}\" 1>&2",
     "pseudolocalize": "betools pseudolocalize --englishDir=./src/public/locales/en --out=./src/public/locales/en-PSEUDO",
-    "test": "mocha \"./lib/cjs/test/**/*.test.js\" --reporter-option maxDiffSize=0",
+    "test": "mocha",
     "rebuild": "npm run -s clean && npm run -s build"
   },
   "repository": {
@@ -55,6 +62,7 @@
     "chai-as-promised": "^7.1.1",
     "cpx2": "^8.0.0",
     "eslint": "^9.13.0",
+    "internal-tools": "workspace:*",
     "jsdom": "^26.0.0",
     "mocha": "^11.1.0",
     "nyc": "^17.1.0",
