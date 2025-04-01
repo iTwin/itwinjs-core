@@ -100,7 +100,11 @@
     "webpack": "^5.76.0"
   },
   "dependencies": {
+<<<<<<< HEAD
     "@bentley/imodeljs-native": "4.11.28",
+=======
+    "@bentley/imodeljs-native": "5.0.84",
+>>>>>>> 7c74ed9085 (pass pullMerge to getIModelProps which causes extents to be loaded from the database instead of the cached value (#7187))
     "@itwin/cloud-agnostic-core": "^2.2.4",
     "@itwin/core-telemetry": "workspace:*",
     "@itwin/object-storage-azure": "^2.3.0",
