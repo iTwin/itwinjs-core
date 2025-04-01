@@ -41,11 +41,7 @@ dependencies {
     implementation 'com.google.android.material:material:1.7.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
     implementation 'androidx.navigation:navigation-ui:2.5.3'
-<<<<<<< HEAD
     implementation 'com.github.itwin:mobile-native-android:4.11.28'
-=======
-    implementation 'com.github.itwin:mobile-native-android:5.0.84'
->>>>>>> 7c74ed9085 (pass pullMerge to getIModelProps which causes extents to be loaded from the database instead of the cached value (#7187))
     implementation 'androidx.webkit:webkit:1.5.0'
 }
 

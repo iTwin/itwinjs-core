@@ -3170,13 +3170,9 @@ export abstract class IModelDb extends IModel {
     // @alpha
     importSchemaStrings(serializedXmlSchemas: string[]): Promise<void>;
     // @internal (undocumented)
-<<<<<<< HEAD
-    protected initializeIModelDb(): void;
-=======
     protected initializeIModelDb(when?: "pullMerge"): void;
     // @beta
     inlineGeometryParts(): InlineGeometryPartsResult;
->>>>>>> 7c74ed9085 (pass pullMerge to getIModelProps which causes extents to be loaded from the database instead of the cached value (#7187))
     get isBriefcase(): boolean;
     isBriefcaseDb(): this is BriefcaseDb;
     // @internal
