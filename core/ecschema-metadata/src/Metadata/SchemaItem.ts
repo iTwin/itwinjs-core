@@ -6,13 +6,12 @@
  * @module Metadata
  */
 
+import { ECSchemaNamespaceUris } from "../Constants";
 import { SchemaItemProps } from "../Deserialization/JsonProps";
 import { AbstractSchemaItemType, SchemaItemType, schemaItemTypeToXmlString, SupportedSchemaItemType } from "../ECObjects";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
 import { ECVersion, SchemaItemKey } from "../SchemaKey";
 import { Schema } from "./Schema";
-
-const SCHEMAURL3_2 = "https://dev.bentley.com/json_schemas/ec/32/schemaitem";
 
 /**
  * An abstract class that supplies all of the common parts of a SchemaItem.
@@ -55,7 +54,7 @@ export abstract class SchemaItem {
   public toJSON(standalone: boolean = false, includeSchemaVersion: boolean = false) {
     const itemJson: { [value: string]: any } = {};
     if (standalone) {
-      itemJson.$schema = SCHEMAURL3_2; // $schema is required
+      itemJson.$schema = ECSchemaNamespaceUris.SCHEMAITEMURL3_2; // $schema is required
       itemJson.schema = this.schema.name;
       itemJson.name = this.name; // name is required
       if (includeSchemaVersion) // check flag to see if we should output version

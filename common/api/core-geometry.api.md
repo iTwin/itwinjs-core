@@ -1341,8 +1341,9 @@ export class Cone extends SolidPrimitive implements UVSurface, UVSurfaceIsoParam
     clone(): Cone;
     cloneTransformed(transform: Transform): Cone | undefined;
     constantVSection(vFraction: number): CurveCollection | undefined;
-    static createAxisPoints(centerA: Point3d, centerB: Point3d, radiusA: number, radiusB: number, capped: boolean): Cone | undefined;
-    static createBaseAndTarget(centerA: Point3d, centerB: Point3d, vectorX: Vector3d, vectorY: Vector3d, radiusA: number, radiusB: number, capped: boolean): Cone;
+    static createAxisPoints(centerA: Point3d, centerB: Point3d, radiusA: number, radiusB: number, capped?: boolean): Cone | undefined;
+    static createBaseAndTarget(centerA: Point3d, centerB: Point3d, vectorX: Vector3d, vectorY: Vector3d, radiusA: number, radiusB: number, capped?: boolean): Cone;
+    static createDgnCone(centerA: Point3d, centerB: Point3d, vectorX: Vector3d, vectorY: Vector3d, radiusA: number, radiusB: number, capped?: boolean): Cone | undefined;
     dispatchToGeometryHandler(handler: GeometryHandler): any;
     extendRange(rangeToExtend: Range3d, transform?: Transform): void;
     getCenterA(): Point3d;
@@ -2554,6 +2555,7 @@ export namespace IModelJson {
     }
     export interface AxesProps {
         xyVectors?: [XYZProps, XYZProps];
+        xyzVectors?: [XYZProps, XYZProps, XYZProps];
         yawPitchRollAngles?: YawPitchRollProps;
         zxVectors?: [XYZProps, XYZProps];
     }
@@ -2591,7 +2593,9 @@ export namespace IModelJson {
         radius?: number;
         start: XYZProps;
         startRadius?: number;
+        // @deprecated
         vectorX?: XYZProps;
+        // @deprecated
         vectorY?: XYZProps;
     }
     export interface CurveCollectionProps extends PlanarRegionProps {
@@ -2624,6 +2628,7 @@ export namespace IModelJson {
         auxData?: AuxDataProps;
         color?: [number];
         colorIndex?: [number];
+        edgeMateIndex?: [number];
         expectedClosure?: number;
         normal?: [XYZProps];
         normalIndex?: [number];
@@ -2816,6 +2821,7 @@ export class IndexedPolyface extends Polyface {
     get facetCount(): number;
     facetIndex0(facetIndex: number): number;
     facetIndex1(facetIndex: number): number;
+    get facetStart(): ReadonlyArray<number>;
     protected _facetStart: number[];
     protected _facetToFaceData: number[];
     // @deprecated
@@ -2832,7 +2838,6 @@ export class IndexedPolyface extends Polyface {
     reverseIndices(): void;
     reverseNormals(): void;
     reverseSingleFacet(facetId: number): void;
-    static searchStrictlyIncreasingNumbers(data: number[], value: number): number | undefined;
     setNewFaceData(endFacetIndex?: number): boolean;
     terminateFacet(validateAllIndices?: boolean): string[] | undefined;
     tryGetFaceData(i: number): FacetFaceData | undefined;
@@ -3815,7 +3820,7 @@ export class NumberArray {
     static createArrayWithMaxStepSize(low: number, high: number, step: number): number[];
     static isAlmostEqual(dataA: number[] | Float64Array | undefined, dataB: number[] | Float64Array | undefined, tolerance?: number): boolean;
     static isCoordinateInArray(x: number, data: number[] | undefined): boolean;
-    static isExactEqual(dataA: any[] | Float64Array | undefined, dataB: any[] | Float64Array | undefined): boolean;
+    static isExactEqual(dataA: any[] | Float64Array | Uint8Array | Uint32Array | undefined, dataB: any[] | Float64Array | Uint8Array | Uint32Array | undefined): boolean;
     static linearCombination(data: number[], scales: number[]): number;
     static linearCombinationOfColors(colors: number[], scales: number[]): number;
     static maxAbsArray(values: number[]): number;
@@ -3824,6 +3829,7 @@ export class NumberArray {
     static maxAbsTwo(a1: number, a2: number): number;
     static pack(source: number[] | number[][] | number[][][]): Float64Array;
     static preciseSum(data: number[]): number;
+    static searchStrictlyIncreasingNumbers(data: ReadonlyArray<number>, value: number): number | undefined;
     static sum(data: number[] | Float64Array): number;
     static unpack2d(source: Float64Array, numPerBlock: number): number[][] | undefined;
     static unpack3d(source: Float64Array, numPerRow: number, numPerBlock: number): number[][][] | undefined;
@@ -5530,6 +5536,8 @@ export class Segment1d {
 
 // @public
 export namespace SerializationHelpers {
+    export function announceCompressedZeroBasedReflexiveIndices(sourceIndices: Int32Array, numPerBlock: number, blockSeparator: number, nullValue: number, announceRemappedIndex: (i: number | undefined) => any): boolean;
+    export function announceUncompressedZeroBasedReflexiveIndices(sourceIndices: Array<number | undefined>, sourceStarts: ReadonlyArray<number>, blockSeparator: number, nullValue: number, announceRemappedIndex: (i: number) => any): boolean;
     export function announceZeroBasedIndicesFromSignedOneBasedIndices(sourceIndices: Int32Array, numPerBlock: number, announceZeroBasedIndex: (i0: number, flag?: boolean) => any, terminateBlock?: () => any): void;
     export function announceZeroBasedIndicesWithExternalBlocking(sourceIndices: Int32Array, blockingIndices: Int32Array, numPerBlock: number, announceZeroBasedIndex: (i0: number) => any, terminateBlock?: () => any): void;
     export interface BSplineCurveData {
@@ -5561,6 +5569,10 @@ export namespace SerializationHelpers {
     export function cloneBSplineSurfaceData(source: BSplineSurfaceData): BSplineSurfaceData;
     export function createBSplineCurveData(poles: number[][] | Float64Array, dim: number, knots: number[] | Float64Array, numPoles: number, order: number): BSplineCurveData;
     export function createBSplineSurfaceData(poles: number[][][] | Float64Array, dim: number, uKnots: number[] | Float64Array, uNumPoles: number, uOrder: number, vKnots: number[] | Float64Array, vNumPoles: number, vOrder: number): BSplineSurfaceData;
+    export enum EdgeMateIndex {
+        BlockSeparator = -1,
+        NoEdgeMate = -2
+    }
     export class Export {
         static prepareBSplineCurveData(data: BSplineCurveData, options?: BSplineDataOptions): boolean;
         static prepareBSplineSurfaceData(data: BSplineSurfaceData, options?: BSplineDataOptions): boolean;
@@ -5647,11 +5659,12 @@ export class Sphere extends SolidPrimitive implements UVSurface {
     cloneVectorX(): Vector3d;
     cloneVectorY(): Vector3d;
     cloneVectorZ(): Vector3d;
-    constantVSection(vFraction: number): CurveCollection | undefined;
-    static createCenterRadius(center: Point3d, radius: number, latitudeSweep?: AngleSweep): Sphere;
-    static createDgnSphere(center: Point3d, vectorX: Vector3d, vectorZ: Vector3d, radiusXY: number, radiusZ: number, latitudeSweep: AngleSweep, capped: boolean): Sphere | undefined;
-    static createEllipsoid(localToWorld: Transform, latitudeSweep: AngleSweep, capped: boolean): Sphere | undefined;
-    static createFromAxesAndScales(center: Point3d, axes: undefined | Matrix3d, radiusX: number, radiusY: number, radiusZ: number, latitudeSweep: AngleSweep | undefined, capped: boolean): Sphere | undefined;
+    constantUSection(uFraction: number): Arc3d;
+    constantVSection(vFraction: number): Loop;
+    static createCenterRadius(center: Point3d, radius: number, latitudeSweep?: AngleSweep, capped?: boolean): Sphere;
+    static createDgnSphere(center: Point3d, vectorX: Vector3d, vectorZ: Vector3d, radiusXY: number, radiusZ: number, latitudeSweep?: AngleSweep, capped?: boolean): Sphere | undefined;
+    static createEllipsoid(localToWorld: Transform, latitudeSweep?: AngleSweep, capped?: boolean): Sphere | undefined;
+    static createFromAxesAndScales(center: Point3d, axes: undefined | Matrix3d, radiusX: number, radiusY: number, radiusZ: number, latitudeSweep?: AngleSweep, capped?: boolean): Sphere | undefined;
     dispatchToGeometryHandler(handler: GeometryHandler): any;
     extendRange(range: Range3d, transform?: Transform): void;
     getConstructiveFrame(): Transform | undefined;

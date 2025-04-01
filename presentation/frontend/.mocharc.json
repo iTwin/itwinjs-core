@@ -1,16 +1,14 @@
 {
   "require": [
-    "source-map-support/register",
-    "jsdom-global/register",
-    "./lib/cjs/test/setup.js"
+    "./lib/esm/test/setup.js"
   ],
   "checkLeaks": true,
   "timeout": 60000,
   "spec": [
-    "lib/cjs/test/**/*.test.js"
+    "lib/esm/test/**/*.test.js"
   ],
   "exclude": [
-    "lib/cjs/test/coverage/**/*"
+    "lib/test/coverage/**/*"
   ],
   "reporter": [
     "node_modules/@itwin/build-tools/mocha-reporter"

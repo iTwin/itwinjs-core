@@ -431,6 +431,10 @@
       "allowedCategories": [ "integration-testing", "internal" ]
     },
     {
+      "name": "c8",
+      "allowedCategories": [ "backend", "common", "frontend" ]
+    },
+    {
       "name": "cache-require-paths",
       "allowedCategories": [ "internal" ]
     },
@@ -632,7 +636,7 @@
     },
     {
       "name": "internal-tools",
-      "allowedCategories": [ "backend", "integration-testing", "internal" ]
+      "allowedCategories": [ "backend", "common", "extensions", "frontend", "integration-testing", "internal" ]
     },
     {
       "name": "inversify",
@@ -716,6 +720,10 @@
     },
     {
       "name": "npm-run-all",
+      "allowedCategories": [ "integration-testing", "internal" ]
+    },
+    {
+      "name": "npm-run-all2",
       "allowedCategories": [ "integration-testing", "internal" ]
     },
     {

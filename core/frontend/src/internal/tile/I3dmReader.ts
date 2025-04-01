@@ -13,6 +13,7 @@ import { InstancedGraphicParams } from "../../common/render/InstancedGraphicPara
 import { Mesh } from "../../common/internal/render/MeshPrimitives";
 import { RenderSystem } from "../../render/RenderSystem";
 import { BatchedTileIdMap, GltfReader, GltfReaderProps, GltfReaderResult, ShouldAbortReadGltf } from "../../tile/internal";
+import { LayerTileData } from "../render/webgl/MapLayerParams";
 
 function setTransform(transforms: Float32Array, index: number, rotation: Matrix3d, origin: Point3d): void {
   const i = index * 12;
@@ -51,7 +52,7 @@ export class I3dmReader extends GltfReader {
   private readonly _modelId: Id64String;
 
   public static create(stream: ByteStream, iModel: IModelConnection, modelId: Id64String, is3d: boolean, range: ElementAlignedBox3d,
-    system: RenderSystem, yAxisUp: boolean, isLeaf: boolean, isCanceled?: ShouldAbortReadGltf, idMap?: BatchedTileIdMap, deduplicateVertices=false): I3dmReader | undefined {
+    system: RenderSystem, yAxisUp: boolean, isLeaf: boolean, isCanceled?: ShouldAbortReadGltf, idMap?: BatchedTileIdMap, deduplicateVertices=false, tileData?: LayerTileData): I3dmReader | undefined {
     const header = new I3dmHeader(stream);
     if (!header.isValid)
       return undefined;
@@ -67,15 +68,15 @@ export class I3dmReader extends GltfReader {
 
     const featureBinary = new Uint8Array(stream.arrayBuffer, header.featureTableJsonPosition + header.featureTableJsonLength, header.featureTableBinaryLength);
     return new I3dmReader(featureBinary, JSON.parse(featureStr), header.batchTableJson, props, iModel, modelId, is3d, system,
-      range, isLeaf, isCanceled, idMap, deduplicateVertices);
+      range, isLeaf, isCanceled, idMap, deduplicateVertices, tileData);
   }
 
   private constructor(private _featureBinary: Uint8Array, private _featureJson: any, private _batchTableJson: any, props: GltfReaderProps,
     iModel: IModelConnection, modelId: Id64String, is3d: boolean, system: RenderSystem, private _range: ElementAlignedBox3d,
-    private _isLeaf: boolean, shouldAbort?: ShouldAbortReadGltf, _idMap?: BatchedTileIdMap, deduplicateVertices=false) {
+    private _isLeaf: boolean, shouldAbort?: ShouldAbortReadGltf, _idMap?: BatchedTileIdMap, deduplicateVertices=false, tileData?: LayerTileData) {
     super({
       props, iModel, system, shouldAbort, deduplicateVertices,
-      is2d: !is3d, idMap: _idMap,
+      is2d: !is3d, idMap: _idMap, tileData
     });
     this._modelId = modelId;
   }

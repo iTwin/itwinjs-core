@@ -538,6 +538,8 @@ export class AccuDraw {
     setRotationMode(mode: RotationMode): void;
     setValueByIndex(index: ItemField, value: number): void;
     smartKeyin: boolean;
+    // @beta
+    snapIndexing: boolean;
     // @internal (undocumented)
     softConstructionPlane(outPtP: Point3d, inPtP: Point3d, pointOnPlaneP: Point3d, normalVectorP: Vector3d, vp: Viewport, isSnap: boolean): boolean;
     stickyZLock: boolean;
@@ -3825,7 +3827,9 @@ export interface GltfMeshPrimitive extends GltfProperty {
 
 // @internal
 export abstract class GltfReader {
-    protected constructor(args: GltfReaderArgs);
+    protected constructor(args: GltfReaderArgs & {
+        tileData?: LayerTileData;
+    });
     // (undocumented)
     protected get _accessors(): GltfDictionary<GltfAccessor>;
     // (undocumented)
@@ -5960,8 +5964,6 @@ export class MapTile extends RealityTile {
     // @internal (undocumented)
     get baseImageryIsReady(): boolean;
     // @internal (undocumented)
-    clearLayers(): void;
-    // @internal (undocumented)
     protected _collectStatistics(stats: RenderMemory.Statistics): void;
     // @internal (undocumented)
     static computeRangeCorners(corners: Point3d[], normal: Vector3d, chordHeight: number, result?: Point3d[], heightRange?: Range1d): Point3d[];
@@ -6069,10 +6071,6 @@ export abstract class MapTileProjection {
 export class MapTileTree extends RealityTileTree {
     // @internal
     constructor(params: RealityTileTreeParams, ecefToDb: Transform, bimElevationBias: number, geodeticOffset: number, sourceTilingScheme: MapTilingScheme, id: MapTreeId, applyTerrain: boolean);
-    // @internal
-    addImageryLayer(tree: ImageryMapTileTree, settings: MapLayerSettings, index: number, baseImageryLayer: boolean): void;
-    // @internal (undocumented)
-    addModelLayer(layerTreeRef: ModelMapLayerTileTreeReference, context: SceneContext): void;
     // @internal (undocumented)
     baseColor?: ColorDef;
     // @internal (undocumented)
@@ -6081,11 +6079,9 @@ export class MapTileTree extends RealityTileTree {
     bimElevationBias: number;
     // @internal (undocumented)
     clearImageryTreesAndClassifiers(): void;
-    // @internal (undocumented)
-    clearLayers(): void;
     // @internal
     cloneImageryTreeState(): Map<string, ImageryTileTreeState>;
-    // @internal (undocumented)
+    // (undocumented)
     protected collectClassifierGraphics(args: TileDrawArgs, selectedTiles: RealityTile[]): void;
     // @internal (undocumented)
     createGlobeChild(params: TileParams, quadId: QuadId, _rangeCorners: Point3d[], rectangle: MapCartoRectangle, ellipsoidPatch: EllipsoidPatch, heightRange?: Range1d): MapTile;
@@ -6129,7 +6125,7 @@ export class MapTileTree extends RealityTileTree {
     // @internal (undocumented)
     get isTransparent(): boolean;
     // @internal (undocumented)
-    layerClassifiers: Map<number, RenderPlanarClassifier>;
+    get layerHandler(): LayerTileTreeHandler;
     // @internal (undocumented)
     layerImageryTrees: MapLayerTreeSetting[];
     // @internal
@@ -6170,7 +6166,7 @@ export class MapTileTree extends RealityTileTree {
 
 // @internal
 export class MapTileTreeReference extends TileTreeReference {
-    constructor(settings: BackgroundMapSettings, _baseLayerSettings: BaseLayerSettings | undefined, _layerSettings: MapLayerSettings[], iModel: IModelConnection, tileUserId: number, isOverlay: boolean, _isDrape: boolean, _overrideTerrainDisplay?: CheckTerrainDisplayOverride | undefined);
+    constructor(settings: BackgroundMapSettings, baseLayerSettings: BaseLayerSettings | undefined, layerSettings: MapLayerSettings[], iModel: IModelConnection, tileUserId: number, isOverlay: boolean, _isDrape: boolean, _overrideTerrainDisplay?: CheckTerrainDisplayOverride | undefined);
     addAttributions(cards: HTMLTableElement, vp: ScreenViewport): Promise<void>;
     // @deprecated (undocumented)
     addLogoCards(cards: HTMLTableElement, vp: ScreenViewport): void;
@@ -6181,8 +6177,6 @@ export class MapTileTreeReference extends TileTreeReference {
     canSupplyToolTip(hit: HitDetail): boolean;
     // (undocumented)
     get castsShadows(): boolean;
-    // (undocumented)
-    clearLayers(): void;
     // (undocumented)
     createDrawArgs(context: SceneContext): TileDrawArgs | undefined;
     // (undocumented)
@@ -6207,26 +6201,24 @@ export class MapTileTreeReference extends TileTreeReference {
     // (undocumented)
     imageryTreeFromTreeModelIds(mapTreeModelId: Id64String, layerTreeModelId: Id64String): ImageryMapLayerTreeReference[];
     // (undocumented)
-    initializeLayers(context: SceneContext): boolean;
+    readonly iModel: IModelConnection;
     // (undocumented)
     get isGlobal(): boolean;
     // (undocumented)
     protected get _isLoadingComplete(): boolean;
     // (undocumented)
-    isOverlay: boolean;
-    // (undocumented)
     layerFromTreeModelIds(mapTreeModelId: Id64String, layerTreeModelId: Id64String): MapLayerInfoFromTileTree[];
+    // (undocumented)
+    get layerRefHandler(): LayerTileTreeReferenceHandler;
     // (undocumented)
     get layerSettings(): MapLayerSettings[];
     // (undocumented)
     get planarClipMaskPriority(): number;
     // (undocumented)
-    setBaseLayerSettings(baseLayerSettings: BaseLayerSettings): void;
-    // (undocumented)
-    setLayerSettings(layerSettings: MapLayerSettings[]): void;
-    // (undocumented)
     get settings(): BackgroundMapSettings;
     set settings(settings: BackgroundMapSettings);
+    // (undocumented)
+    shouldDrapeLayer(layerTreeRef?: MapLayerTileTreeReference): boolean;
     // (undocumented)
     get treeOwner(): TileTreeOwner;
     unionFitRange(_range: Range3d): void;
@@ -7061,7 +7053,7 @@ export class NullTarget extends RenderTarget {
     // (undocumented)
     get renderSystem(): any;
     // (undocumented)
-    reset(): void;
+    reset(_realityMapLayerChanged?: boolean): void;
     // (undocumented)
     get screenSpaceEffects(): Iterable<string>;
     set screenSpaceEffects(_effects: Iterable<string>);
@@ -7894,6 +7886,8 @@ export interface RealityMeshParams {
     positions: QPoint3dBuffer;
     // @alpha
     texture?: RenderTexture;
+    // @internal (undocumented)
+    tileData?: LayerTileData;
     uvs: QPoint2dBuffer;
 }
 
@@ -8507,7 +8501,7 @@ export abstract class RenderSystem implements Disposable {
     createBranch(branch: GraphicBranch, transform: Transform, options?: GraphicBranchOptions): RenderGraphic;
     createClipVolume(_clipVector: ClipVector): RenderClipVolume | undefined;
     // @internal (undocumented)
-    createGeometryFromMesh(mesh: Mesh, viOrigin: Point3d | undefined): RenderGeometry | undefined;
+    createGeometryFromMesh(mesh: Mesh, viOrigin: Point3d | undefined, tileData?: LayerTileData): RenderGeometry | undefined;
     abstract createGraphic(options: CustomGraphicBuilderOptions | ViewportGraphicBuilderOptions): GraphicBuilder;
     abstract createGraphicBranch(branch: GraphicBranch, transform: Transform, options?: GraphicBranchOptions): RenderGraphic;
     createGraphicBuilder(placement: Transform, type: GraphicType, viewport: Viewport, pickableId?: Id64String): GraphicBuilder;
@@ -8551,7 +8545,7 @@ export abstract class RenderSystem implements Disposable {
     // @internal (undocumented)
     createRealityMeshGeometry(_params: RealityMeshParams, _disableTextureDisposal?: boolean): RenderGeometry | undefined;
     // @internal (undocumented)
-    createRealityMeshGraphic(_params: RealityMeshGraphicParams, _disableTextureDisposal?: boolean): RenderGraphic | undefined;
+    createRealityMeshGraphic(_params: MeshMapLayerGraphicParams, _disableTextureDisposal?: boolean): RenderGraphic | undefined;
     // @internal
     abstract createRenderGraphic(_geometry: RenderGeometry, instances?: InstancedGraphicParams | RenderAreaPattern): RenderGraphic | undefined;
     // @beta
@@ -8718,7 +8712,7 @@ export abstract class RenderTarget implements Disposable, RenderMemory.Consumer 
     // @internal (undocumented)
     abstract get renderSystem(): RenderSystem;
     // @internal (undocumented)
-    reset(): void;
+    reset(_realityMapLayerChanged?: boolean): void;
     // @internal (undocumented)
     abstract get screenSpaceEffects(): Iterable<string>;
     abstract set screenSpaceEffects(_effectNames: Iterable<string>);
@@ -10069,7 +10063,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     readonly renderRect: ViewRect;
     // (undocumented)
     get renderSystem(): System;
-    reset(): void;
+    reset(_realityMapLayerChanged?: boolean): void;
     // (undocumented)
     get screenSpaceEffectContext(): ScreenSpaceEffectContext;
     // (undocumented)
@@ -10279,6 +10273,8 @@ export abstract class Tile {
     abstract get channel(): TileRequestChannel;
     get children(): Tile[] | undefined;
     protected _childrenLoadStatus: TileTreeLoadStatus;
+    // @internal (undocumented)
+    clearLayers(): void;
     // @internal
     collectStatistics(stats: RenderMemory.Statistics, includeChildren?: boolean): void;
     // @internal
@@ -11007,6 +11003,8 @@ export abstract class TileTree {
     // @internal (undocumented)
     protected _lastSelected: BeTimePoint;
     get lastSelectedTime(): BeTimePoint;
+    // @internal (undocumented)
+    get layerHandler(): LayerTileTreeHandler | undefined;
     // @internal (undocumented)
     get loadPriority(): TileLoadPriority;
     abstract get maxDepth(): number | undefined;

@@ -6,7 +6,7 @@
  * @module Content
  */
 
-import { ClassInfo, CompressedClassInfoJSON, PropertyInfo, PropertyInfoJSON } from "../EC";
+import { ClassInfo, CompressedClassInfoJSON, PropertyInfo, PropertyInfoJSON } from "../EC.js";
 
 /**
  * Data structure that describes one step of property
@@ -30,8 +30,6 @@ export type PropertyAccessorPath = PropertyAccessor[];
 /**
  * Data structure that describes a single ECProperty that's
  * included in a [[PropertiesField]].
- *
- * TODO: Remove?
  *
  * @public
  */

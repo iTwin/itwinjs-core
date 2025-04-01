@@ -7,7 +7,7 @@
  */
 
 import { MapLayerAccessToken } from "@itwin/core-frontend";
-import { ArcGisGenerateTokenOptions, ArcGisOAuth2Token, ArcGisToken, ArcGisTokenGenerator } from "./ArcGisTokenGenerator";
+import { ArcGisGenerateTokenOptions, ArcGisOAuth2Token, ArcGisToken, ArcGisTokenGenerator } from "./ArcGisTokenGenerator.js";
 
 /** @internal */
 interface ArcGisTokenProps {

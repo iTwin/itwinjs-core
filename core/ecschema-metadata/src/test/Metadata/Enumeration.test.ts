@@ -11,6 +11,7 @@ import { Enumeration, MutableEnumeration } from "../../Metadata/Enumeration";
 import { Schema } from "../../Metadata/Schema";
 import { createEmptyXmlDocument, getElementChildrenByTagName } from "../TestUtils/SerializationHelper";
 import { createSchemaJsonWithItems } from "../TestUtils/DeserializationHelpers";
+import { ECSchemaNamespaceUris } from "../../Constants";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 
@@ -392,7 +393,7 @@ describe("Enumeration", () => {
   describe("toJSON", () => {
     let testEnumSansPrimType: Enumeration;
     const baseJson = {
-      $schema: "https://dev.bentley.com/json_schemas/ec/32/schemaitem",
+      $schema: ECSchemaNamespaceUris.SCHEMAITEMURL3_2,
       schemaItemType: "Enumeration",
       name: "TestEnumeration",
       schema: "TestSchema",
@@ -555,7 +556,7 @@ describe("Enumeration", () => {
     const newDom = createEmptyXmlDocument();
     let testEnumeration: Enumeration;
     const baseJson = {
-      $schema: "https://dev.bentley.com/json_schemas/ec/32/schemaitem",
+      $schema: ECSchemaNamespaceUris.SCHEMAITEMURL3_2,
       schemaItemType: "Enumeration",
       name: "TestEnumeration",
       schema: "TestSchema",

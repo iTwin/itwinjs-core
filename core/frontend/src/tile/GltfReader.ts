@@ -25,7 +25,7 @@ import { Mesh } from "../common/internal/render/MeshPrimitives";
 import { Triangle } from "../common/internal/render/Primitives";
 import { RenderGraphic } from "../render/RenderGraphic";
 import { RenderSystem } from "../render/RenderSystem";
-import { BatchedTileIdMap, decodeMeshoptBuffer, RealityTileGeometry, TileContent } from "./internal";
+import { BatchedTileIdMap, decodeMeshoptBuffer, RealityTileGeometry,TileContent } from "./internal";
 import type { DracoLoader, DracoMesh } from "@loaders.gl/draco";
 import { CreateRenderMaterialArgs } from "../render/CreateRenderMaterialArgs";
 import { DisplayParams } from "../common/internal/render/DisplayParams";
@@ -42,6 +42,7 @@ import { PickableGraphicOptions } from "../common/render/BatchOptions";
 import { createGraphicTemplate, GraphicTemplateBatch, GraphicTemplateBranch, GraphicTemplateNode } from "../internal/render/GraphicTemplateImpl";
 import { RenderGeometry } from "../internal/render/RenderGeometry";
 import { GraphicTemplate } from "../render/GraphicTemplate";
+import { LayerTileData } from "../internal/render/webgl/MapLayerParams";
 
 /** @internal */
 export type GltfDataBuffer = Uint8Array | Uint16Array | Uint32Array | Float32Array;
@@ -455,6 +456,7 @@ export abstract class GltfReader {
   protected _meshElementIdToFeatureIndex: Map<string, number> = new Map<string, number>();
   protected _structuralMetadata?: StructuralMetadata;
   protected readonly _idMap?: BatchedTileIdMap;
+  private _tileData?: LayerTileData | undefined;
 
   protected get _nodes(): GltfDictionary<GltfNode> { return this._glTF.nodes ?? emptyDict; }
   protected get _meshes(): GltfDictionary<GltfMesh> { return this._glTF.meshes ?? emptyDict; }
@@ -620,7 +622,15 @@ export abstract class GltfReader {
     if (!gltfMesh.points || !gltfMesh.pointRange)
       return this._system.createGeometryFromMesh(gltfMesh.primitive, undefined);
 
-    const realityMeshPrimitive = (this._vertexTableRequired || isInstanced) ? undefined : RealityMeshParams.fromGltfMesh(gltfMesh);
+    let realityMeshPrimitive = (this._vertexTableRequired || isInstanced) ? undefined : RealityMeshParams.fromGltfMesh(gltfMesh);
+    if (realityMeshPrimitive && this._tileData) {
+
+      realityMeshPrimitive = {
+        ...realityMeshPrimitive,
+        tileData: this._tileData,
+      };
+    }
+
     if (realityMeshPrimitive) {
       const realityMesh = this._system.createRealityMeshGeometry(realityMeshPrimitive);
       if (realityMesh)
@@ -644,7 +654,7 @@ export abstract class GltfReader {
       for (const normal of gltfMesh.normals)
         mesh.normals.push(new OctEncodedNormal(normal));
 
-    return this._system.createGeometryFromMesh(mesh, undefined);
+    return this._system.createGeometryFromMesh(mesh, undefined, this._tileData,);
   }
 
   private readInstanceAttributes(node: Gltf2Node, featureTable: FeatureTable | undefined): InstancedGraphicParams | undefined {
@@ -794,7 +804,7 @@ export abstract class GltfReader {
     featureTable: FeatureTable | undefined,
     transformStack: TransformStack,
     batchInstances?: InstancedGraphicParams,
-    pseudoRtcBias?: Vector3d,
+    pseudoRtcBias?: Vector3d
   ): TileReadStatus {
     if (undefined === node)
       return TileReadStatus.InvalidTileData;
@@ -989,7 +999,8 @@ export abstract class GltfReader {
   public readBufferData8(json: { [k: string]: any }, accessorName: string): GltfBufferData | undefined { return this.readBufferData(json, accessorName, GltfDataType.UnsignedByte); }
   public readBufferDataFloat(json: { [k: string]: any }, accessorName: string): GltfBufferData | undefined { return this.readBufferData(json, accessorName, GltfDataType.Float); }
 
-  protected constructor(args: GltfReaderArgs) {
+  protected constructor(args: GltfReaderArgs & { tileData?: LayerTileData }) {
+    this._tileData = args.tileData;
     this._glTF = args.props.glTF;
     this._version = args.props.version;
     this._yAxisUp = args.props.yAxisUp;
@@ -2230,12 +2241,13 @@ export class GltfGraphicsReader extends GltfReader {
   public readonly binaryData?: Uint8Array; // strictly for tests
   public meshes?: GltfMeshData; // strictly for tests
 
-  public constructor(props: GltfReaderProps, args: ReadGltfGraphicsArgs) {
+  public constructor(props: GltfReaderProps, args: ReadGltfGraphicsArgs & { tileData?: LayerTileData }) {
     super({
       props,
       iModel: args.iModel,
       vertexTableRequired: true,
       idMap: args.idMap,
+      tileData: args.tileData,
     });
 
     this._contentRange = args.contentRange;

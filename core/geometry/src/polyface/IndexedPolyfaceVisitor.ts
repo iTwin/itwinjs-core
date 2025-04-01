@@ -33,6 +33,8 @@ export class IndexedPolyfaceVisitor extends PolyfaceData implements PolyfaceVisi
     this._numWrap = numWrap;
     if (polyface.data.auxData)
       this.auxData = polyface.data.auxData.createForVisitor();
+    if (polyface.data.edgeMateIndex)
+      this.edgeMateIndex = [];
     this.reset();
     this._numEdges = 0;
     this._nextFacetIndex = 0;
@@ -158,7 +160,7 @@ export class IndexedPolyfaceVisitor extends PolyfaceData implements PolyfaceVisi
   public clientAuxIndex(i: number): number {
     return this.auxData ? this.auxData.indices[i] : -1;
   }
-  /** Clear the contents of all arrays. */
+  /** Clear the contents of the data arrays. */
   public clearArrays(): void {
     this.point.length = 0;
     this.edgeVisible.length = 0;
@@ -168,7 +170,7 @@ export class IndexedPolyfaceVisitor extends PolyfaceData implements PolyfaceVisi
       this.normal.length = 0;
     if (this.color !== undefined)
       this.color.length = 0;
-    // TODO: indices? auxData? taggedNumericData?
+    // TODO: auxData? taggedNumericData?
   }
   /** Transfer data from a specified `index` of the `other` visitor as new data in this visitor. */
   public pushDataFrom(other: PolyfaceVisitor, index: number): void {
@@ -180,7 +182,7 @@ export class IndexedPolyfaceVisitor extends PolyfaceData implements PolyfaceVisi
       this.normal.pushFromGrowableXYZArray(other.normal, index);
     if (this.color && other.color && index < other.color.length)
       this.color.push(other.color[index]);
-    // TODO: indices? auxData? taggedNumericData?
+    // TODO: auxData? taggedNumericData?
   }
   /**
    * Transfer interpolated data from the other visitor.

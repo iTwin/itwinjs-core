@@ -3,12 +3,9 @@
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import * as faker from "faker";
-import { Item, ItemJSON } from "../../presentation-common/content/Item";
-import { createTestContentItem, createTestLabelDefinition } from "../_helpers";
-import { createTestECInstanceKey } from "../_helpers/EC";
-import { createRandomECClassInfo, createRandomECInstanceKey, createRandomLabelDefinition } from "../_helpers/random";
-import { NestedContentValue } from "../../presentation-common/content/Value";
+import { Item, ItemJSON } from "../../presentation-common/content/Item.js";
+import { createTestContentItem, createTestECClassInfo, createTestECInstanceKey, createTestLabelDefinition } from "../_helpers/index.js";
+import { NestedContentValue } from "../../presentation-common/content/Value.js";
 
 describe("Item", () => {
   describe("constructor", () => {
@@ -37,15 +34,15 @@ describe("Item", () => {
     beforeEach(() => {
       testItemJSON = {
         primaryKeys: [],
-        labelDefinition: createRandomLabelDefinition(),
-        classInfo: createRandomECClassInfo(),
+        labelDefinition: createTestLabelDefinition(),
+        classInfo: createTestECClassInfo(),
         values: {
-          key1: faker.random.number(),
-          key2: faker.random.words(),
+          key1: 123,
+          key2: "456",
         },
         displayValues: {
-          key1: faker.random.words(),
-          key2: faker.random.words(),
+          key1: "123",
+          key2: "456",
         },
         mergedFieldNames: ["key1"],
       };
@@ -93,10 +90,10 @@ describe("Item", () => {
 
     it("creates valid Item with nested content values", () => {
       const nestedContentValue: NestedContentValue = {
-        primaryKeys: [createRandomECInstanceKey()],
+        primaryKeys: [createTestECInstanceKey()],
         values: { nested: undefined },
         displayValues: { nested: "" },
-        mergedFieldNames: [faker.random.word()],
+        mergedFieldNames: ["test-field"],
       };
       const item = Item.fromJSON({
         ...testItemJSON,

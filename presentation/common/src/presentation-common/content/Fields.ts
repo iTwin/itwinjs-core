@@ -17,15 +17,15 @@ import {
   RelationshipPath,
   RelationshipPathJSON,
   StrippedRelationshipPath,
-} from "../EC";
-import { PresentationError, PresentationStatus } from "../Error";
-import { RelationshipMeaning } from "../rules/content/modifiers/RelatedPropertiesSpecification";
-import { omitUndefined } from "../Utils";
-import { CategoryDescription } from "./Category";
-import { EditorDescription } from "./Editor";
-import { Property, PropertyJSON } from "./Property";
-import { RendererDescription } from "./Renderer";
-import { TypeDescription } from "./TypeDescription";
+} from "../EC.js";
+import { PresentationError, PresentationStatus } from "../Error.js";
+import { RelationshipMeaning } from "../rules/content/modifiers/RelatedPropertiesSpecification.js";
+import { omitUndefined } from "../Utils.js";
+import { CategoryDescription } from "./Category.js";
+import { EditorDescription } from "./Editor.js";
+import { Property, PropertyJSON } from "./Property.js";
+import { RendererDescription } from "./Renderer.js";
+import { TypeDescription } from "./TypeDescription.js";
 
 /**
  * Data structure for a [[Field]] serialized to JSON.
@@ -210,7 +210,7 @@ export class Field {
     renderer?: RendererDescription,
     extendedData?: { [key: string]: unknown },
   ) {
-    /* istanbul ignore next */
+    /* c8 ignore next 14 */
     const props =
       "category" in categoryOrProps
         ? categoryOrProps
@@ -425,7 +425,7 @@ export class PropertiesField extends Field {
     editor?: EditorDescription,
     renderer?: RendererDescription,
   ) {
-    /* istanbul ignore next */
+    /* c8 ignore next 14 */
     const props =
       "category" in categoryOrProps
         ? categoryOrProps
@@ -629,7 +629,7 @@ export class ArrayPropertiesField extends PropertiesField {
     editor?: EditorDescription,
     renderer?: RendererDescription,
   ) {
-    /* istanbul ignore next */
+    /* c8 ignore next 15 */
     const props =
       "category" in categoryOrProps
         ? categoryOrProps
@@ -756,7 +756,7 @@ export class StructPropertiesField extends PropertiesField {
     editor?: EditorDescription,
     renderer?: RendererDescription,
   ) {
-    /* istanbul ignore next */
+    /* c8 ignore next 15 */
     const props =
       "category" in categoryOrProps
         ? categoryOrProps
@@ -953,7 +953,7 @@ export class NestedContentField extends Field {
     autoExpand?: boolean,
     renderer?: RendererDescription,
   ) {
-    /* istanbul ignore next */
+    /* c8 ignore next 17 */
     const props =
       "category" in categoryOrProps
         ? categoryOrProps
