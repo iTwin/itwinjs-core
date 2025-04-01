@@ -3171,8 +3171,6 @@ export abstract class IModelDb extends IModel {
     importSchemaStrings(serializedXmlSchemas: string[]): Promise<void>;
     // @internal (undocumented)
     protected initializeIModelDb(when?: "pullMerge"): void;
-    // @beta
-    inlineGeometryParts(): InlineGeometryPartsResult;
     get isBriefcase(): boolean;
     isBriefcaseDb(): this is BriefcaseDb;
     // @internal
