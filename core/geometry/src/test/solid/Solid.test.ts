@@ -10,6 +10,7 @@ import { ConstructCurveBetweenCurves } from "../../curve/ConstructCurveBetweenCu
 import { GeometryQuery } from "../../curve/GeometryQuery";
 import { LineSegment3d } from "../../curve/LineSegment3d";
 import { LineString3d } from "../../curve/LineString3d";
+import { Loop } from "../../curve/Loop";
 import { Path } from "../../curve/Path";
 import { StrokeOptions } from "../../curve/StrokeOptions";
 import { Angle } from "../../geometry3d/Angle";
@@ -354,35 +355,22 @@ describe("Solids", () => {
     const ck = new Checker();
     const sweeps = Sample.createSimpleRotationalSweeps();
     const transforms = [
-      Transform.createTranslationXYZ(10, 0, 0),
-      Transform.createTranslationXYZ(0, 20, 0),
-      Transform.createTranslationXYZ(20, 0, 0), // Maybe harder than first pass because dx changes?
-      Transform.createOriginAndMatrix(Point3d.create(0, 0, 0), Matrix3d.createUniformScale(2)),
-      Transform.createOriginAndMatrix(Point3d.create(0, 10, 0), Matrix3d.createUniformScale(2))];
+      Transform.createTranslationXYZ(5, 0, 0),
+      Transform.createTranslationXYZ(0, 10, 0),
+      Transform.createTranslationXYZ(0, 0, 10),
+      Transform.createOriginAndMatrix(Point3d.create(5, 0, 0), Matrix3d.createUniformScale(2)),
+      Transform.createOriginAndMatrix(Point3d.create(0, 10, 0), Matrix3d.createUniformScale(2)),
+    ];
     const allGeometry: GeometryQuery[] = [];
-    let dy = 0;
-    const unitBox = Sample.createRangeEdges(Range3d.createXYZXYZ(0, 0, 0, 1, 3, 0.25))!;
-    /*
-        for (const s of sweeps) {
-          GeometryCoreTestIO.captureGeometry(allGeometry, s.clone(), 0, 0);
-        }
-        */
-    for (let sampleIndex = 0; sampleIndex < sweeps.length; sampleIndex += 2) {  // increment by 2 to skip cap variants
-      let dx = 100;
-      const s = sweeps[sampleIndex];
-      // GeometryCoreTestIO.captureGeometry(allGeometry, s.clone(), 0, 0);
-      // GeometryCoreTestIO.captureGeometry(allGeometry, s.clone(), 0.5 * dx, dy);
-      // GeometryCoreTestIO.captureGeometry(allGeometry, s.clone(), dx, 0.5 * dy);
-      // GeometryCoreTestIO.captureGeometry(allGeometry, s.clone(), dx, dy);
-      GeometryCoreTestIO.captureGeometry(allGeometry, unitBox.clone(), dx, dy);
-      const range = s.range();
-      const rangeEdges = Sample.createRangeEdges(range)!;
-      GeometryCoreTestIO.captureGeometry(allGeometry, rangeEdges, dx, dy);
-      for (let transformIndex = 0; transformIndex < 4; transformIndex++) {
-        const transform = transforms[transformIndex];
-        GeometryCoreTestIO.captureGeometry(allGeometry, unitBox.clone(), dx, dy);
-        const s1 = s.cloneTransformed(transform);
+    let dy = 0;git status
+    for (let sweep = 0; sweep < sweeps.length; sweep += 2) { // increment by 2 to skip cap variants
+      let dx = 0;
+      const s = sweeps[sweep];
+      const rangeEdges = Sample.createRangeEdges(s.range())!;
+      for (const transform of transforms) {
+        GeometryCoreTestIO.captureGeometry(allGeometry, rangeEdges.clone(), dx, dy);
         GeometryCoreTestIO.captureGeometry(allGeometry, s.clone(), dx, dy);
+        const s1 = s.cloneTransformed(transform);
         GeometryCoreTestIO.captureGeometry(allGeometry, s1, dx, dy);
         /*
         GeometryCoreTestIO.captureGeometry(allGeometry, s.clone()!, dx, dy);
@@ -390,19 +378,31 @@ describe("Solids", () => {
           const section = s1.constantVSection(vFraction)!;
           GeometryCoreTestIO.captureGeometry(allGeometry, section, dx, dy);
         }
-
         const range1 = s1.range();
         const rangeEdges1 = Sample.createRangeEdges(range1)!;
         GeometryCoreTestIO.captureGeometry(allGeometry, rangeEdges1, dx, dy);
         */
-        dx += 100.0;
+        dx += 20.0;
       }
-      dy += 100.0;
+      dy += 30.0;
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "Solid", "RotationalSweep");
     expect(ck.getNumErrors()).toBe(0);
   });
+  it("RotationalSweepsIsAlmostEqual", () => {
+    const ck = new Checker();
 
+    const base = Loop.create(LineString3d.createRectangleXY(Point3d.create(1, 0, 0), 2, 3));
+    const axis = Ray3d.createXYZUVW(0, 0, 0, 0, 1, 0);
+    const sweep1 = RotationalSweep.create(base, axis, Angle.createDegrees(45.0), false)!;
+    const sweep2 = RotationalSweep.create(base, axis, Angle.createDegrees(150.0), false)!;
+    const sweep3 = RotationalSweep.create(base, axis, Angle.createDegrees(45.0), false)!;
+
+    ck.testFalse(sweep1.isAlmostEqual(sweep2), "sweep1 and sweep2 are not equal (different sweep angles)");
+    ck.testTrue(sweep1.isAlmostEqual(sweep3), "sweep1 and sweep2 are equal");
+
+    expect(ck.getNumErrors()).toBe(0);
+  });
   it("RuledSweeps", () => {
     const ck = new Checker();
     const sweeps = Sample.createRuledSweeps(true, true);
