@@ -178,33 +178,16 @@ export interface LayerTileData {
  * @internal
  */
 export function compareMapLayer(prevView: ViewState, newView: ViewState): boolean {
-  const prevLayers = prevView.displayStyle.getMapLayers(false);
-  const newLayers = newView.displayStyle.getMapLayers(false);
+  const getModelIds = (layers: any[]): string[] =>
+    layers
+      .filter((layer) => layer instanceof ModelMapLayerSettings &&
+        (layer.drapeTarget === ModelMapLayerDrapeTarget.RealityData || layer.drapeTarget === ModelMapLayerDrapeTarget.IModel))
+      .map((layer: ModelMapLayerSettings) => layer.modelId);
 
-  const prevModelIds: string[] = [];
-  const newModelIds: string[] = [];
+  const prevModelIds = getModelIds(prevView.displayStyle.getMapLayers(false));
+  const newModelIds = getModelIds(newView.displayStyle.getMapLayers(false));
 
-  for (const layer of prevLayers) {
-      if (layer instanceof ModelMapLayerSettings && layer.drapeTarget === ModelMapLayerDrapeTarget.RealityData) {
-          prevModelIds.push(layer.modelId);
-      }
-  }
-
-  for (const layer of newLayers) {
-      if (layer instanceof ModelMapLayerSettings && layer.drapeTarget === ModelMapLayerDrapeTarget.RealityData) {
-          newModelIds.push(layer.modelId);
-      }
-  }
-
-  if (prevModelIds.length !== newModelIds.length) {
-      return true;
-  }
-
-  for (let i = 0; i < prevModelIds.length; i++) {
-      if (prevModelIds[i] !== newModelIds[i]) {
-          return true;
-      }
-  }
-
-  return false;
+  // Compare lengths first, then check model IDs
+  return prevModelIds.length !== newModelIds.length ||
+         prevModelIds.some((id) => !newModelIds.includes(id));
 }
