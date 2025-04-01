@@ -11,9 +11,9 @@ import {
   ClipIntersectionStyle, ClipStyle, ClipStyleProps, ColorByName, ColorDef, CutStyleProps, LinePixels, RenderMode, RgbColor,
 } from "@itwin/core-common";
 import { IModelApp, Tool, Viewport } from "@itwin/core-frontend";
-import { parseToggle } from "./parseToggle";
-import { parseBoolean } from "./parseBoolean";
-import { DisplayStyleTool } from "./DisplayStyleTools";
+import { DisplayStyleTool } from "./DisplayStyleTools.js";
+import { parseBoolean } from "./parseBoolean.js";
+import { parseToggle } from "./parseToggle.js";
 
 /** This tool specifies or un-specifies a clip color to use for pixels inside or outside the clip region.
  * Arguments can be:

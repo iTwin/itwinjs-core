@@ -7,7 +7,7 @@
  * @module Controls
  */
 
-import { createButton } from "./Button";
+import { createButton } from "./Button.js";
 
 /** @alpha */
 export type NestMenuHandler = (expanded: boolean) => void;

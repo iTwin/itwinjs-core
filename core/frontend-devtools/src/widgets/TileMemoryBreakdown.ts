@@ -7,8 +7,8 @@
  */
 
 import { IModelApp, IModelConnection, RenderMemory, Tile } from "@itwin/core-frontend";
-import { createCheckBox } from "../ui/CheckBox";
-import { formatMemory } from "./MemoryTracker";
+import { createCheckBox } from "../ui/CheckBox.js";
+import { formatMemory } from "./MemoryTracker.js";
 
 interface TileMemoryCounter {
   numTiles: number;

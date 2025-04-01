@@ -8,7 +8,7 @@
  */
 
 import { PerformanceMetrics, Target, Viewport } from "@itwin/core-frontend";
-import { createCheckBox } from "../ui/CheckBox";
+import { createCheckBox } from "../ui/CheckBox.js";
 
 /** Displays average frames-per-second.
  * NOTE: Enabling fps tracking causes a new frame to render on every tick of the render loop, which may negatively impact battery life.

@@ -8,7 +8,7 @@
  */
 
 import { IModelApp, Tool } from "@itwin/core-frontend";
-import { parseToggle } from "./parseToggle";
+import { parseToggle } from "./parseToggle.js";
 
 // CSpell: ignore fmtr
 

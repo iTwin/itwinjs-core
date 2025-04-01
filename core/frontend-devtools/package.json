@@ -2,14 +2,21 @@
   "name": "@itwin/frontend-devtools",
   "version": "5.0.0-dev.94",
   "description": "Debug menu and supporting UI widgets",
+  "type": "module",
   "main": "lib/cjs/frontend-devtools.js",
   "module": "lib/esm/frontend-devtools.js",
-  "typings": "lib/cjs/frontend-devtools",
+  "types": "lib/cjs/frontend-devtools",
+  "exports": {
+    ".": {
+      "require": "./lib/cjs/frontend-devtools.js",
+      "import": "./lib/esm/frontend-devtools.js"
+    }
+  },
   "license": "MIT",
   "scripts": {
     "build": "npm run -s copy:public && npm run -s build:cjs && npm run -s build:esm",
-    "build:cjs": "tsc 1>&2 --outDir lib/cjs",
-    "build:esm": "tsc 1>&2 --module ES2022 --outDir lib/esm",
+    "build:cjs": "internal-tools build-cjs",
+    "build:esm": "tsc 1>&2 --outDir lib/esm",
     "copy:public": "cpx \"./public/**/*\" ./lib/public",
     "clean": "rimraf -g lib .rush/temp/package-deps*.json",
     "docs": "betools docs --json=../../generated-docs/core/frontend-devtools/file.json --tsIndexFile=./frontend-devtools.ts --onlyJson",
@@ -47,6 +54,7 @@
     "@types/file-saver": "^2.0.1",
     "cpx2": "^8.0.0",
     "eslint": "^9.13.0",
+    "internal-tools": "workspace:*",
     "rimraf": "^6.0.1",
     "typescript": "~5.6.2"
   }

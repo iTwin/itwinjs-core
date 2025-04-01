@@ -9,9 +9,9 @@
 
 import { FeatureAppearance, FeatureAppearanceProps, RgbColorProps } from "@itwin/core-common";
 import { getCesiumAssetUrl, IModelApp, NotifyMessageDetails, OutputMessagePriority, Tool, Viewport } from "@itwin/core-frontend";
-import { copyStringToClipboard } from "../ClipboardUtilities";
-import { parseBoolean } from "./parseBoolean";
-import { parseToggle } from "./parseToggle";
+import { copyStringToClipboard } from "../ClipboardUtilities.js";
+import { parseBoolean } from "./parseBoolean.js";
+import { parseToggle } from "./parseToggle.js";
 
 /** This tool attaches a specified reality model.
  * @beta

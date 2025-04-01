@@ -7,7 +7,7 @@
  */
 
 import { ScreenSpaceEffectBuilder, UniformType, VaryingType } from "@itwin/core-frontend";
-import { AddEffectTool } from "./EffectTools";
+import { AddEffectTool } from "./EffectTools.js";
 
 /** Adds one of a collection of "convolution kernels" that alter a [Viewport]($frontend)'s image by blending neighboring pixels.
  * Based on https://webglfundamentals.org/webgl/lessons/webgl-image-processing-continued.html

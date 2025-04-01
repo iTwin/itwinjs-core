@@ -9,7 +9,7 @@
 import { Id64 } from "@itwin/core-bentley";
 import { ColorDef } from "@itwin/core-common";
 import { EmphasizeElements, IModelApp, QueryVisibleFeaturesOptions, ScreenViewport, Tool } from "@itwin/core-frontend";
-import { parseArgs } from "./parseArgs";
+import { parseArgs } from "./parseArgs.js";
 
 /** Applies the `EmphasizeElements` API in some way to the selected Viewport.
  * @beta

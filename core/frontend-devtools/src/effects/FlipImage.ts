@@ -7,8 +7,8 @@
  */
 
 import { ScreenSpaceEffectBuilder, Tool, UniformType, VaryingType } from "@itwin/core-frontend";
-import { parseArgs } from "../tools/parseArgs";
-import { AddEffectTool, refreshViewportsForEffect } from "./EffectTools";
+import { parseArgs } from "../tools/parseArgs.js";
+import { AddEffectTool, refreshViewportsForEffect } from "./EffectTools.js";
 
 let flipHorizontal = false;
 let flipVertical = false;

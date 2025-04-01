@@ -8,7 +8,7 @@
  */
 
 import { IModelApp, PrimitiveVisibility, type RenderTargetDebugControl, ScreenViewport, Tool } from "@itwin/core-frontend";
-import { parseToggle } from "./parseToggle";
+import { parseToggle } from "./parseToggle.js";
 
 /** Executes some code against a RenderTargetDebugControl obtained from the selected viewport.
  * @beta

@@ -9,7 +9,7 @@
 
 import { AxisAlignedBox3d, ColorDef, LinePixels } from "@itwin/core-common";
 import { DecorateContext, GraphicType, IModelApp, IModelConnection, Tool } from "@itwin/core-frontend";
-import { parseToggle } from "./parseToggle";
+import { parseToggle } from "./parseToggle.js";
 
 /** @beta */
 export class ProjectExtentsDecoration {

@@ -10,8 +10,8 @@
 import { Id64String } from "@itwin/core-bentley";
 import { BaseMapLayerSettings, ColorDef, ModelMapLayerDrapeTarget, ModelMapLayerSettings } from "@itwin/core-common";
 import { IModelApp, MapLayerSource, MapLayerSources, MapLayerSourceStatus, NotifyMessageDetails, OutputMessagePriority, Tool, WmsUtilities } from "@itwin/core-frontend";
-import { parseBoolean } from "./parseBoolean";
-import { parseToggle } from "./parseToggle";
+import { parseBoolean } from "./parseBoolean.js";
+import { parseToggle } from "./parseToggle.js";
 
 /** Base class for attaching map layer tool. */
 class AttachMapLayerBaseTool extends Tool {

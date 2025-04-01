@@ -7,12 +7,12 @@
  * @module Tools
  */
 
-import { Map4d, Point3d } from "@itwin/core-geometry";
 import { ColorByName, ColorDef, Frustum, LinePixels, Npc } from "@itwin/core-common";
 import {
   CoordSystem, DecorateContext, Decorator, GraphicBuilder, GraphicType, IModelApp, Tool, Viewport, ViewState, ViewState3d,
 } from "@itwin/core-frontend";
-import { parseToggle } from "./parseToggle";
+import { Map4d, Point3d } from "@itwin/core-geometry";
+import { parseToggle } from "./parseToggle.js";
 
 interface FrustumDecorationOptions {
   showPreloadFrustum?: boolean;

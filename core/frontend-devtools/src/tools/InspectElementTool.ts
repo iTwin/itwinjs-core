@@ -13,8 +13,8 @@ import {
   BeButtonEvent, CoreTools, EventHandled, HitDetail, IModelApp, LocateFilterStatus, LocateResponse, MessageBoxIconType, MessageBoxType,
   NotifyMessageDetails, OutputMessagePriority, PrimitiveTool,
 } from "@itwin/core-frontend";
-import { copyStringToClipboard } from "../ClipboardUtilities";
-import { parseArgs } from "./parseArgs";
+import { copyStringToClipboard } from "../ClipboardUtilities.js";
+import { parseArgs } from "./parseArgs.js";
 
 /** Creates a readable text summary of a geometric element or geometry part. The keyin takes the following arguments, all of which are optional:
  *  - `id=elementId,elementId,elementId` comma-separated list of element Ids where each `elementId` is a hexadecimal element Id such as "0x12cb";

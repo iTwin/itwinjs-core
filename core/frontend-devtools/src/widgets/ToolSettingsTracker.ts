@@ -9,9 +9,9 @@
 
 import { BeDuration } from "@itwin/core-bentley";
 import { IModelApp, ScreenViewport, ToolSettings, Viewport } from "@itwin/core-frontend";
-import { createCheckBox } from "../ui/CheckBox";
-import { createNestedMenu } from "../ui/NestedMenu";
-import { createLabeledNumericInput, createNumericInput } from "../ui/NumericInput";
+import { createCheckBox } from "../ui/CheckBox.js";
+import { createNestedMenu } from "../ui/NestedMenu.js";
+import { createLabeledNumericInput, createNumericInput } from "../ui/NumericInput.js";
 
 /** Allows the global settings controlling the behavior of viewing tools to be customized.
  * @alpha

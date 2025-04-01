@@ -12,7 +12,7 @@ import { PlanarClipMaskMode, PlanarClipMaskPriority, PlanarClipMaskSettings } fr
 import {
   BeButtonEvent, ContextRealityModelState, EventHandled, HitDetail, IModelApp, LocateFilterStatus, LocateResponse, PrimitiveTool, ScreenViewport, Tool,
 } from "@itwin/core-frontend";
-import { parseBoolean } from "./parseBoolean";
+import { parseBoolean } from "./parseBoolean.js";
 
 /** Set Map Masking by selected models.
  * @beta
