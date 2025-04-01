@@ -42,7 +42,6 @@ export class RotationalSweep extends SolidPrimitive {
     this._contour = contour;
     this._normalizedAxis = normalizedAxis;
     this._sweepAngle = sweepAngle;
-    this.capped = capped;
   }
   /**
    * Create a rotational sweep.

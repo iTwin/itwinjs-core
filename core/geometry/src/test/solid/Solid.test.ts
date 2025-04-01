@@ -362,7 +362,7 @@ describe("Solids", () => {
       Transform.createOriginAndMatrix(Point3d.create(0, 10, 0), Matrix3d.createUniformScale(2)),
     ];
     const allGeometry: GeometryQuery[] = [];
-    let dy = 0;git status
+    let dy = 0;
     for (let sweep = 0; sweep < sweeps.length; sweep += 2) { // increment by 2 to skip cap variants
       let dx = 0;
       const s = sweeps[sweep];
