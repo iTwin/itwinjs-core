@@ -436,6 +436,9 @@ importers:
       eslint:
         specifier: ^9.13.0
         version: 9.13.0
+      internal-tools:
+        specifier: workspace:*
+        version: link:../../tools/internal
       mocha:
         specifier: ^11.1.0
         version: 11.1.0

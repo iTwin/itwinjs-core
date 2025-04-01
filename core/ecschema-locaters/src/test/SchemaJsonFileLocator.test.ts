@@ -3,11 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import EC from "@itwin/ecschema-metadata";
 import { assert } from "chai";
-import * as path from "path";
-import * as EC from "@itwin/ecschema-metadata";
-import { FileSchemaKey } from "../SchemaFileLocater";
-import { SchemaJsonFileLocater } from "../SchemaJsonFileLocater";
+import path from "path";
+import { FileSchemaKey } from "../SchemaFileLocater.js";
+import { SchemaJsonFileLocater } from "../SchemaJsonFileLocater.js";
 
 describe("SchemaJsonFileLocater tests: ", () => {
   let locater: SchemaJsonFileLocater;
@@ -16,7 +16,7 @@ describe("SchemaJsonFileLocater tests: ", () => {
   beforeEach(() => {
     locater = new SchemaJsonFileLocater();
 
-    locater.addSchemaSearchPath(path.join(__dirname, "assets"));
+    locater.addSchemaSearchPath(path.join(import.meta.dirname, "assets"));
     context = new EC.SchemaContext();
     context.addLocater(locater);
   });

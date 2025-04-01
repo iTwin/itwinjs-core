@@ -3,18 +3,18 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert, expect } from "chai";
-import * as fs from "fs";
-import * as path from "path";
 import { Schema, SchemaContext, SchemaKey, SchemaMatchType } from "@itwin/ecschema-metadata";
-import { SchemaXmlFileLocater } from "../SchemaXmlFileLocater";
-import { StubSchemaXmlFileLocater } from "../StubSchemaXmlFileLocater";
-import { SchemaXml } from "../SchemaXml";
-import { SchemaXmlStringLocater } from "../SchemaXmlStringLocater";
+import { assert, expect } from "chai";
+import fs from "fs";
+import path from "path";
+import { SchemaXml } from "../SchemaXml.js";
+import { SchemaXmlFileLocater } from "../SchemaXmlFileLocater.js";
+import { SchemaXmlStringLocater } from "../SchemaXmlStringLocater.js";
+import { StubSchemaXmlFileLocater } from "../StubSchemaXmlFileLocater.js";
 
 describe("Concurrent XML schema deserialization", () => {
-  const assetDir: string = path.join(__dirname, "assets");
-  const schemaFolder = path.join(__dirname, "assets", "xml");
+  const assetDir: string = path.join(import.meta.dirname, "assets");
+  const schemaFolder = path.join(import.meta.dirname, "assets", "xml");
 
   const schemaKeys: SchemaKey[] = [];
   let context: SchemaContext;
@@ -60,7 +60,7 @@ describe("Concurrent XML schema deserialization", () => {
   });
 
   function getSchemaPathFromPackage(packageName: string, schemaFileName: string): string {
-    const schemaFile = path.join(__dirname, "..", "..", "..", "node_modules", "@bentley", packageName, schemaFileName);
+    const schemaFile = path.join(import.meta.dirname, "..", "..", "..", "node_modules", "@bentley", packageName, schemaFileName);
     return schemaFile;
   }
 
@@ -77,7 +77,7 @@ describe("Concurrent XML schema deserialization", () => {
   }
 
   const loadSchemaString = (schemaName: string) => {
-    const searchPath = path.join(__dirname, "assets", "xml", `${schemaName}.ecschema.xml`);
+    const searchPath = path.join(import.meta.dirname, "assets", "xml", `${schemaName}.ecschema.xml`);
     const file = fs.readFileSync(searchPath);
     return file.toString();
   };

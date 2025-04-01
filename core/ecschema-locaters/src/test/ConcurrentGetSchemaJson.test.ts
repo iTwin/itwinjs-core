@@ -3,15 +3,15 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert, expect } from "chai";
-import * as fs from "fs";
-import * as path from "path";
 import { ECVersion, Schema, SchemaContext, SchemaJsonLocater, SchemaKey, SchemaMatchType } from "@itwin/ecschema-metadata";
-import { SchemaJsonFileLocater } from "../SchemaJsonFileLocater";
+import { assert, expect } from "chai";
+import fs from "fs";
+import path from "path";
+import { SchemaJsonFileLocater } from "../SchemaJsonFileLocater.js";
 
 describe("Concurrent schema JSON deserialization", () => {
-  const assetDir: string = path.join(__dirname, "assets");
-  const schemaFolder = path.join(__dirname, "assets", "json");
+  const assetDir: string = path.join(import.meta.dirname, "assets");
+  const schemaFolder = path.join(import.meta.dirname, "assets", "json");
 
   const schemaKeys: SchemaKey[] = [];
   let context: SchemaContext;
@@ -59,7 +59,7 @@ describe("Concurrent schema JSON deserialization", () => {
   });
 
   function getSchemaPathFromPackage(packageName: string, schemaFileName: string): string {
-    const schemaFile = path.join(__dirname, "..", "..", "..", "node_modules", "@bentley", packageName, schemaFileName);
+    const schemaFile = path.join(import.meta.dirname, "..", "..", "..", "node_modules", "@bentley", packageName, schemaFileName);
     return schemaFile;
   }
 

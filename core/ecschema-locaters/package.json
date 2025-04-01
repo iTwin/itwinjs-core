@@ -3,9 +3,16 @@
   "version": "5.0.0-dev.94",
   "description": "EC Schema file locaters",
   "license": "MIT",
+  "type": "module",
   "main": "lib/cjs/ecschema-locaters.js",
   "module": "lib/esm/ecschema-locaters.js",
-  "typings": "lib/cjs/ecschema-locaters",
+  "types": "lib/cjs/ecschema-locaters",
+  "exports": {
+    ".": {
+      "import": "./lib/esm/ecschema-locaters.js",
+      "require": "./lib/cjs/ecschema-locaters.js"
+    }
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/iTwin/itwinjs-core.git",
@@ -13,10 +20,10 @@
   },
   "scripts": {
     "build": "npm run -s build:cjs && npm run -s build:esm && npm run -s copy:test-assets",
-    "build:cjs": "tsc 1>&2 --outDir lib/cjs",
-    "build:esm": "tsc 1>&2 --module ES2022 --outDir lib/esm",
+    "build:cjs": "internal-tools build-cjs",
+    "build:esm": "tsc 1>&2 --outDir lib/esm",
     "clean": "rimraf -g lib .rush/temp/package-deps*.json",
-    "copy:test-assets": "cpx \"./src/test/assets/**/*\" ./lib/cjs/test/assets",
+    "copy:test-assets": "cpx \"./src/test/assets/**/*\" ./lib/esm/test/assets",
     "extract-api": "betools extract-api --entry=ecschema-locaters",
     "lint": "eslint \"./src/**/*.ts\" 1>&2",
     "test": "mocha",
@@ -65,6 +72,7 @@
     "chai-as-promised": "^7.1.1",
     "cpx2": "^8.0.0",
     "eslint": "^9.13.0",
+    "internal-tools": "workspace:*",
     "mocha": "^11.1.0",
     "nyc": "^17.1.0",
     "rimraf": "^6.0.1",

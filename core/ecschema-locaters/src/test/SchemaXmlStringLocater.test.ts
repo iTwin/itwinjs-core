@@ -3,13 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert, expect } from "chai";
-import * as path from "path";
-import * as fs from "fs";
-import { globSync } from "glob";
 import { ECObjectsError, ECObjectsStatus, ECVersion, SchemaContext, SchemaKey, SchemaMatchType } from "@itwin/ecschema-metadata";
-import { SchemaXmlStringLocater } from "../SchemaXmlStringLocater";
-import { StringSchemaKey } from "../SchemaStringLocater";
+import { assert, expect } from "chai";
+import fs from "fs";
+import { globSync } from "glob";
+import path from "path";
+import { StringSchemaKey } from "../SchemaStringLocater.js";
+import { SchemaXmlStringLocater } from "../SchemaXmlStringLocater.js";
 
 describe("SchemaXmlStringLocater tests:", () => {
   let locater: SchemaXmlStringLocater;
@@ -17,14 +17,14 @@ describe("SchemaXmlStringLocater tests:", () => {
   let schemaStrings: string [];
 
   const loadSchemaString = (schemaName: string) => {
-    const searchPath = path.join(__dirname, "assets", `${schemaName}.ecschema.xml`);
+    const searchPath = path.join(import.meta.dirname, "assets", `${schemaName}.ecschema.xml`);
     const file = fs.readFileSync(searchPath);
     return file.toString();
   };
 
   const loadSchemaStrings = () => {
     const schemas: string [] = [];
-    const searchPath = path.join(__dirname, "assets", "Schema*.ecschema.xml");
+    const searchPath = path.join(import.meta.dirname, "assets", "Schema*.ecschema.xml");
     const result = globSync(searchPath, { windowsPathsNoEscape: true });
     for (const match of result) {
       const file = fs.readFileSync(match);

@@ -6,12 +6,12 @@
  * @module Locaters
  */
 
-import * as fs from "fs";
-import * as path from "path";
 import {
   ECObjectsError, ECObjectsStatus, ECVersion, ISchemaLocater, Schema, SchemaContext, SchemaInfo, SchemaKey, SchemaMatchType,
 } from "@itwin/ecschema-metadata";
-import { FileSchemaKey, SchemaFileLocater } from "./SchemaFileLocater";
+import fs from "fs";
+import path from "path";
+import { FileSchemaKey, SchemaFileLocater } from "./SchemaFileLocater.js";
 
 /**
  * A SchemaLocator implementation for locating JSON Schema files
