@@ -176,7 +176,7 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
   public async getInheritedProperty(name: string): Promise<Property | undefined> {
     if (this.baseClass) {
       const baseClassObj = await this.baseClass;
-      return baseClassObj.getProperty(name, true);
+      return baseClassObj.getProperty(name);
     }
 
     return undefined;
@@ -189,7 +189,7 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
   public getInheritedPropertySync(name: string): Property | undefined {
     const baseClassObj = this.getBaseClassSync();
     if (baseClassObj)
-      return baseClassObj.getPropertySync(name, true);
+      return baseClassObj.getPropertySync(name);
 
     return undefined;
   }
@@ -203,7 +203,7 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
   protected async createPrimitiveProperty(name: string, primitiveType: PrimitiveType): Promise<PrimitiveProperty>;
   protected async createPrimitiveProperty(name: string, primitiveType: Enumeration): Promise<EnumerationProperty>;
   protected async createPrimitiveProperty(name: string, primitiveType?: string | PrimitiveType | Enumeration): Promise<Property> {
-    if (await this.getProperty(name))
+    if (await this.getProperty(name, true))
       throw new ECObjectsError(ECObjectsStatus.DuplicateProperty, `An ECProperty with the name ${name} already exists in the class ${this.name}.`);
 
     const propType = await this.loadPrimitiveType(primitiveType, this.schema);
@@ -222,7 +222,7 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
   protected createPrimitivePropertySync(name: string, primitiveType: PrimitiveType): PrimitiveProperty;
   protected createPrimitivePropertySync(name: string, primitiveType: Enumeration): EnumerationProperty;
   protected createPrimitivePropertySync(name: string, primitiveType?: string | PrimitiveType | Enumeration): Property {
-    if (this.getPropertySync(name))
+    if (this.getPropertySync(name, true))
       throw new ECObjectsError(ECObjectsStatus.DuplicateProperty, `An ECProperty with the name ${name} already exists in the class ${this.name}.`);
 
     const propType = this.loadPrimitiveTypeSync(primitiveType, this.schema);
@@ -240,7 +240,7 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
   protected async createPrimitiveArrayProperty(name: string, primitiveType: PrimitiveType): Promise<PrimitiveArrayProperty>;
   protected async createPrimitiveArrayProperty(name: string, primitiveType: Enumeration): Promise<EnumerationArrayProperty>;
   protected async createPrimitiveArrayProperty(name: string, primitiveType?: string | PrimitiveType | Enumeration): Promise<Property> {
-    if (await this.getProperty(name))
+    if (await this.getProperty(name, true))
       throw new ECObjectsError(ECObjectsStatus.DuplicateProperty, `An ECProperty with the name ${name} already exists in the class ${this.name}.`);
 
     const propType = await this.loadPrimitiveType(primitiveType, this.schema);
@@ -258,7 +258,7 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
   protected createPrimitiveArrayPropertySync(name: string, primitiveType: PrimitiveType): PrimitiveArrayProperty;
   protected createPrimitiveArrayPropertySync(name: string, primitiveType: Enumeration): EnumerationArrayProperty;
   protected createPrimitiveArrayPropertySync(name: string, primitiveType?: string | PrimitiveType | Enumeration): Property {
-    if (this.getPropertySync(name))
+    if (this.getPropertySync(name, true))
       throw new ECObjectsError(ECObjectsStatus.DuplicateProperty, `An ECProperty with the name ${name} already exists in the class ${this.name}.`);
 
     const propType = this.loadPrimitiveTypeSync(primitiveType, this.schema);
@@ -274,7 +274,7 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
    * @param structType The struct type of property to create.
    */
   protected async createStructProperty(name: string, structType: string | StructClass): Promise<StructProperty> {
-    if (await this.getProperty(name))
+    if (await this.getProperty(name, true))
       throw new ECObjectsError(ECObjectsStatus.DuplicateProperty, `An ECProperty with the name ${name} already exists in the class ${this.name}.`);
 
     return this.addProperty(new StructProperty(this, name, await this.loadStructType(structType, this.schema)));
@@ -286,7 +286,7 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
    * @param structType The struct type of property to create.
    */
   protected createStructPropertySync(name: string, structType: string | StructClass): StructProperty {
-    if (this.getPropertySync(name))
+    if (this.getPropertySync(name, true))
       throw new ECObjectsError(ECObjectsStatus.DuplicateProperty, `An ECProperty with the name ${name} already exists in the class ${this.name}.`);
 
     return this.addProperty(new StructProperty(this, name, this.loadStructTypeSync(structType, this.schema)));
@@ -298,7 +298,7 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
    * @param type
    */
   protected async createStructArrayProperty(name: string, structType: string | StructClass): Promise<StructArrayProperty> {
-    if (await this.getProperty(name))
+    if (await this.getProperty(name, true))
       throw new ECObjectsError(ECObjectsStatus.DuplicateProperty, `An ECProperty with the name ${name} already exists in the class ${this.name}.`);
 
     return this.addProperty(new StructArrayProperty(this, name, await this.loadStructType(structType, this.schema)));
@@ -310,7 +310,7 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
    * @param type
    */
   protected createStructArrayPropertySync(name: string, structType: string | StructClass): StructArrayProperty {
-    if (this.getPropertySync(name))
+    if (this.getPropertySync(name, true))
       throw new ECObjectsError(ECObjectsStatus.DuplicateProperty, `An ECProperty with the name ${name} already exists in the class ${this.name}.`);
 
     return this.addProperty(new StructArrayProperty(this, name, this.loadStructTypeSync(structType, this.schema)));

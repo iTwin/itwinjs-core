@@ -39,9 +39,9 @@ describe("ECClass", () => {
       await (entityClass as ECClass as MutableClass).createPrimitiveProperty("PrimProp");
       await (entityClass as ECClass as MutableClass).setBaseClass(new DelayedPromiseWithProps(baseClass.key, async () => baseClass));
 
-      expect(await entityClass.getProperty("BasePrimProp")).to.be.undefined;
-      expect(await entityClass.getProperty("BasePrimProp", false)).to.be.undefined;
-      expect(await entityClass.getProperty("BasePrimProp", true)).equal(basePrimProp);
+      expect(await entityClass.getProperty("BasePrimProp", true)).to.be.undefined;
+      expect(await entityClass.getProperty("BasePrimProp", true)).to.be.undefined;
+      expect(await entityClass.getProperty("BasePrimProp")).equal(basePrimProp);
       expect(await entityClass.getInheritedProperty("BasePrimProp")).equal(basePrimProp);
       expect(await entityClass.getInheritedProperty("PrimProp")).to.be.undefined;
     });
@@ -54,9 +54,9 @@ describe("ECClass", () => {
       (entityClass as ECClass as MutableClass).createPrimitivePropertySync("PrimProp");
       await (entityClass as ECClass as MutableClass).setBaseClass(new DelayedPromiseWithProps(baseClass.key, async () => baseClass));
 
-      expect(entityClass.getPropertySync("BasePrimProp")).to.be.undefined;
-      expect(entityClass.getPropertySync("BasePrimProp", false)).to.be.undefined;
-      expect(entityClass.getPropertySync("BasePrimProp", true)).equal(basePrimProp);
+      expect(entityClass.getPropertySync("BasePrimProp", true)).to.be.undefined;
+      expect(entityClass.getPropertySync("BasePrimProp", true)).to.be.undefined;
+      expect(entityClass.getPropertySync("BasePrimProp")).equal(basePrimProp);
       expect(entityClass.getInheritedPropertySync("BasePrimProp")).equal(basePrimProp);
       expect(entityClass.getInheritedPropertySync("PrimProp")).to.be.undefined;
     });
@@ -77,9 +77,9 @@ describe("ECClass", () => {
       const entityClass = new EntityClass(schema, "TestClass");
       await (entityClass as ECClass as MutableClass).setBaseClass(new DelayedPromiseWithProps(baseClass.key, async () => baseClass));
 
-      expect(await entityClass.getProperty("TESTPROP", true)).equal(primProp);
-      expect(await entityClass.getProperty("testprop", true)).equal(primProp);
-      expect(await entityClass.getProperty("tEsTpRoP", true)).equal(primProp);
+      expect(await entityClass.getProperty("TESTPROP")).equal(primProp);
+      expect(await entityClass.getProperty("testprop")).equal(primProp);
+      expect(await entityClass.getProperty("tEsTpRoP")).equal(primProp);
 
       expect(await entityClass.getInheritedProperty("TESTPROP")).equal(primProp);
       expect(await entityClass.getInheritedProperty("testprop")).equal(primProp);
@@ -96,52 +96,52 @@ describe("ECClass", () => {
     });
 
     it("should do nothing when deleting property name that is not in class", async () => {
-      expect(entityClass.getPropertiesSync(true)).to.be.empty;
+      expect(entityClass.getPropertiesSync()).to.be.empty;
       expect(await entityClass.getProperty("TestProp", true)).to.be.undefined;
 
       await (entityClass as ECClass as MutableClass).deleteProperty("TestProp");
 
-      expect(entityClass.getPropertiesSync(true)).to.be.empty;
+      expect(entityClass.getPropertiesSync()).to.be.empty;
       expect(await entityClass.getProperty("TestProp", true)).to.be.undefined;
     });
 
     it("should do nothing when deleting property name that is not in class, synchronous", async () => {
-      expect(entityClass.getPropertiesSync(true)).to.be.empty;
+      expect(entityClass.getPropertiesSync()).to.be.empty;
       expect(await entityClass.getProperty("TestProp", true)).to.be.undefined;
 
       (entityClass as ECClass as MutableClass).deletePropertySync("TestProp");
 
-      expect(entityClass.getPropertiesSync(true)).to.be.empty;
+      expect(entityClass.getPropertiesSync()).to.be.empty;
       expect(await entityClass.getProperty("TestProp", true)).to.be.undefined;
     });
 
     it("should do nothing if a property is already deleted, synchronous", async () => {
       const primProp = await (entityClass as ECClass as MutableClass).createPrimitiveProperty("TestProp");
 
-      expect([...entityClass.getPropertiesSync(true)].length).to.equal(1);
+      expect([...entityClass.getPropertiesSync()].length).to.equal(1);
       expect(await entityClass.getProperty("TestProp")).equal(primProp);
 
       (entityClass as ECClass as MutableClass).deletePropertySync("TestProp");
-      expect([...entityClass.getPropertiesSync(true)].length).to.equal(0);
+      expect([...entityClass.getPropertiesSync()].length).to.equal(0);
       expect(await entityClass.getProperty("TestProp")).to.be.undefined;
 
       (entityClass as ECClass as MutableClass).deletePropertySync("TestProp");
-      expect([...entityClass.getPropertiesSync(true)].length).to.equal(0);
+      expect([...entityClass.getPropertiesSync()].length).to.equal(0);
       expect(await entityClass.getProperty("TestProp")).to.be.undefined;
     });
 
     it("should do nothing if a property is already deleted", async () => {
       const primProp = await (entityClass as ECClass as MutableClass).createPrimitiveProperty("TestProp");
 
-      expect([...entityClass.getPropertiesSync(true)].length).to.equal(1);
+      expect([...entityClass.getPropertiesSync()].length).to.equal(1);
       expect(await entityClass.getProperty("TestProp")).equal(primProp);
 
       await (entityClass as ECClass as MutableClass).deleteProperty("TestProp");
-      expect([...entityClass.getPropertiesSync(true)].length).to.equal(0);
+      expect([...entityClass.getPropertiesSync()].length).to.equal(0);
       expect(await entityClass.getProperty("TestProp")).to.be.undefined;
 
       await (entityClass as ECClass as MutableClass).deleteProperty("TestProp");
-      expect([...entityClass.getPropertiesSync(true)].length).to.equal(0);
+      expect([...entityClass.getPropertiesSync()].length).to.equal(0);
       expect(await entityClass.getProperty("TestProp")).to.be.undefined;
     });
 
@@ -150,21 +150,21 @@ describe("ECClass", () => {
       const primProp2 = await (entityClass as ECClass as MutableClass).createPrimitiveProperty("TestProp2");
       const primProp3 = await (entityClass as ECClass as MutableClass).createPrimitiveProperty("TestProp3");
 
-      expect([...entityClass.getPropertiesSync(true)].length).to.equal(3);
+      expect([...entityClass.getPropertiesSync()].length).to.equal(3);
       expect(await entityClass.getProperty("TestProp1")).equal(primProp1);
       expect(await entityClass.getProperty("TestProp2")).equal(primProp2);
       expect(await entityClass.getProperty("TestProp3")).equal(primProp3);
 
       await (entityClass as ECClass as MutableClass).deleteProperty("TestProp1");
-      expect([...entityClass.getPropertiesSync(true)].length).to.equal(2);
+      expect([...entityClass.getPropertiesSync()].length).to.equal(2);
       expect(await entityClass.getProperty("TestProp1")).to.be.undefined;
 
       await (entityClass as ECClass as MutableClass).deleteProperty("testprop2");
-      expect([...entityClass.getPropertiesSync(true)].length).to.equal(1);
+      expect([...entityClass.getPropertiesSync()].length).to.equal(1);
       expect(await entityClass.getProperty("TestProp2")).to.be.undefined;
 
       await (entityClass as ECClass as MutableClass).deleteProperty("TESTPROP3");
-      expect([...entityClass.getPropertiesSync(true)].length).to.equal(0);
+      expect([...entityClass.getPropertiesSync()].length).to.equal(0);
       expect(await entityClass.getProperty("TestProp3")).to.be.undefined;
     });
 
@@ -173,21 +173,21 @@ describe("ECClass", () => {
       const primProp2 = await (entityClass as ECClass as MutableClass).createPrimitiveProperty("TestProp2");
       const primProp3 = await (entityClass as ECClass as MutableClass).createPrimitiveProperty("TestProp3");
 
-      expect([...entityClass.getPropertiesSync(true)].length).to.equal(3);
+      expect([...entityClass.getPropertiesSync()].length).to.equal(3);
       expect(await entityClass.getProperty("TestProp1")).equal(primProp1);
       expect(await entityClass.getProperty("TestProp2")).equal(primProp2);
       expect(await entityClass.getProperty("TestProp3")).equal(primProp3);
 
       (entityClass as ECClass as MutableClass).deletePropertySync("TestProp1");
-      expect([...entityClass.getPropertiesSync(true)].length).to.equal(2);
+      expect([...entityClass.getPropertiesSync()].length).to.equal(2);
       expect(await entityClass.getProperty("TestProp1")).to.be.undefined;
 
       (entityClass as ECClass as MutableClass).deletePropertySync("testprop2");
-      expect([...entityClass.getPropertiesSync(true)].length).to.equal(1);
+      expect([...entityClass.getPropertiesSync()].length).to.equal(1);
       expect(await entityClass.getProperty("TestProp2")).to.be.undefined;
 
       (entityClass as ECClass as MutableClass).deletePropertySync("TESTPROP3");
-      expect([...entityClass.getPropertiesSync(true)].length).to.equal(0);
+      expect([...entityClass.getPropertiesSync()].length).to.equal(0);
       expect(await entityClass.getProperty("TestProp3")).to.be.undefined;
     });
 
@@ -198,7 +198,7 @@ describe("ECClass", () => {
       const structArrProp = await (entityClass as ECClass as MutableClass).createStructArrayProperty("StructArrProp", new StructClass(schema, "TestStruct"));
       const navProp = await (entityClass as MutableEntityClass).createNavigationProperty("NavProp", new RelationshipClass(schema, "TestRel"), StrengthDirection.Forward);
 
-      expect([...entityClass.getPropertiesSync(true)].length).to.equal(5);
+      expect([...entityClass.getPropertiesSync()].length).to.equal(5);
       expect(await entityClass.getProperty("PrimProp")).equal(primProp);
       expect(await entityClass.getProperty("PrimArrProp")).equal(primArrProp);
       expect(await entityClass.getProperty("StructProp")).equal(structProp);
@@ -206,23 +206,23 @@ describe("ECClass", () => {
       expect(await entityClass.getProperty("NavProp")).equal(navProp);
 
       await (entityClass as ECClass as MutableClass).deleteProperty("PrimProp");
-      expect([...entityClass.getPropertiesSync(true)].length).to.equal(4);
+      expect([...entityClass.getPropertiesSync()].length).to.equal(4);
       expect(await entityClass.getProperty("PrimProp")).to.be.undefined;
 
       await (entityClass as ECClass as MutableClass).deleteProperty("PrimArrProp");
-      expect([...entityClass.getPropertiesSync(true)].length).to.equal(3);
+      expect([...entityClass.getPropertiesSync()].length).to.equal(3);
       expect(await entityClass.getProperty("PrimArrProp")).to.be.undefined;
 
       await (entityClass as ECClass as MutableClass).deleteProperty("StructProp");
-      expect([...entityClass.getPropertiesSync(true)].length).to.equal(2);
+      expect([...entityClass.getPropertiesSync()].length).to.equal(2);
       expect(await entityClass.getProperty("StructProp")).to.be.undefined;
 
       await (entityClass as ECClass as MutableClass).deleteProperty("StructArrProp");
-      expect([...entityClass.getPropertiesSync(true)].length).to.equal(1);
+      expect([...entityClass.getPropertiesSync()].length).to.equal(1);
       expect(await entityClass.getProperty("StructArrProp")).to.be.undefined;
 
       await (entityClass as ECClass as MutableClass).deleteProperty("NavProp");
-      expect([...entityClass.getPropertiesSync(true)].length).to.equal(0);
+      expect([...entityClass.getPropertiesSync()].length).to.equal(0);
       expect(await entityClass.getProperty("NavProp")).to.be.undefined;
     });
 
@@ -233,7 +233,7 @@ describe("ECClass", () => {
       const structArrProp = await (entityClass as ECClass as MutableClass).createStructArrayProperty("StructArrProp", new StructClass(schema, "TestStruct"));
       const navProp = await (entityClass as MutableEntityClass).createNavigationProperty("NavProp", new RelationshipClass(schema, "TestRel"), StrengthDirection.Forward);
 
-      expect([...entityClass.getPropertiesSync(true)].length).to.equal(5);
+      expect([...entityClass.getPropertiesSync()].length).to.equal(5);
       expect(await entityClass.getProperty("PrimProp")).equal(primProp);
       expect(await entityClass.getProperty("PrimArrProp")).equal(primArrProp);
       expect(await entityClass.getProperty("StructProp")).equal(structProp);
@@ -241,23 +241,23 @@ describe("ECClass", () => {
       expect(await entityClass.getProperty("NavProp")).equal(navProp);
 
       (entityClass as ECClass as MutableClass).deletePropertySync("PrimProp");
-      expect([...entityClass.getPropertiesSync(true)].length).to.equal(4);
+      expect([...entityClass.getPropertiesSync()].length).to.equal(4);
       expect(await entityClass.getProperty("PrimProp")).to.be.undefined;
 
       (entityClass as ECClass as MutableClass).deletePropertySync("PrimArrProp");
-      expect([...entityClass.getPropertiesSync(true)].length).to.equal(3);
+      expect([...entityClass.getPropertiesSync()].length).to.equal(3);
       expect(await entityClass.getProperty("PrimArrProp")).to.be.undefined;
 
       (entityClass as ECClass as MutableClass).deletePropertySync("StructProp");
-      expect([...entityClass.getPropertiesSync(true)].length).to.equal(2);
+      expect([...entityClass.getPropertiesSync()].length).to.equal(2);
       expect(await entityClass.getProperty("StructProp")).to.be.undefined;
 
       (entityClass as ECClass as MutableClass).deletePropertySync("StructArrProp");
-      expect([...entityClass.getPropertiesSync(true)].length).to.equal(1);
+      expect([...entityClass.getPropertiesSync()].length).to.equal(1);
       expect(await entityClass.getProperty("StructArrProp")).to.be.undefined;
 
       (entityClass as ECClass as MutableClass).deletePropertySync("NavProp");
-      expect([...entityClass.getPropertiesSync(true)].length).to.equal(0);
+      expect([...entityClass.getPropertiesSync()].length).to.equal(0);
       expect(await entityClass.getProperty("NavProp")).to.be.undefined;
     });
   });

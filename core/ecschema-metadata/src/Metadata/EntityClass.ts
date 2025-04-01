@@ -117,7 +117,7 @@ export class EntityClass extends ECClass implements HasMixins {
       ECClass.mergeProperties(result, existingValues, await resolvedMixin.getProperties(), false);
     }
 
-    const localProps = await this.getProperties(true);
+    const localProps = await this.getProperties();
     ECClass.mergeProperties(result, existingValues, localProps, true);
   }
 
