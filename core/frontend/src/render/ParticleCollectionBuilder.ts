@@ -11,14 +11,14 @@ import { Matrix3d, Point2d, Point3d, Range3d, Transform, Vector2d, XAndY, XYAndZ
 import {
   ColorDef, ColorIndex, Feature, FeatureIndex, FeatureTable, FillFlags, PackedFeatureTable, QParams3d, QPoint3dList, RenderTexture,
 } from "@itwin/core-common";
-import { Viewport } from "../Viewport";
-import { RenderGraphic } from "./RenderGraphic";
-import { GraphicBranch } from "./GraphicBranch";
-import { DisplayParams } from "../common/internal/render/DisplayParams";
-import { MeshParams } from "../common/internal/render/MeshParams";
-import { createMeshParams } from "../common/internal/render/VertexTableBuilder";
-import { IModelApp } from "../IModelApp";
-import { MeshArgs } from "./MeshArgs";
+import { Viewport } from "../Viewport.js";
+import { RenderGraphic } from "./RenderGraphic.js";
+import { GraphicBranch } from "./GraphicBranch.js";
+import { DisplayParams } from "../common/internal/render/DisplayParams.js";
+import { MeshParams } from "../common/internal/render/MeshParams.js";
+import { createMeshParams } from "../common/internal/render/VertexTableBuilder.js";
+import { IModelApp } from "../IModelApp.js";
+import { MeshArgs } from "./MeshArgs.js";
 
 /** Parameters used to construct a [[ParticleCollectionBuilder]].
  * @public

@@ -5,11 +5,11 @@
 import { describe, expect, it } from "vitest";
 import { Point2d, Point3d, Range3d } from "@itwin/core-geometry";
 import { ColorDef, MeshPolyline, OctEncodedNormal } from "@itwin/core-common";
-import { DisplayParams } from "../../../common/internal/render/DisplayParams";
-import { MeshPrimitiveType } from "../../../common/internal/render/MeshPrimitive";
-import { Mesh } from "../../../common/internal/render/MeshPrimitives";
-import { Triangle } from "../../../common/internal/render/Primitives";
-import { VertexKey } from "../../../common/internal/render/VertexKey";
+import { DisplayParams } from "../../../common/internal/render/DisplayParams.js";
+import { MeshPrimitiveType } from "../../../common/internal/render/MeshPrimitive.js";
+import { Mesh } from "../../../common/internal/render/MeshPrimitives.js";
+import { Triangle } from "../../../common/internal/render/Primitives.js";
+import { VertexKey } from "../../../common/internal/render/VertexKey.js";
 
 export class FakeDisplayParams extends DisplayParams {
   public constructor() { super(DisplayParams.Type.Linear, ColorDef.black, ColorDef.black); }

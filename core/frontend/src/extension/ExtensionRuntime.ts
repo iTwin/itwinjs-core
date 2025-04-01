@@ -10,7 +10,7 @@
 /* eslint-disable @itwin/no-internal-barrel-imports */
 /* eslint-disable sort-imports */
 
-import { ExtensionHost } from "./ExtensionHost";
+import { ExtensionHost } from "./ExtensionHost.js";
 
 const globalSymbol = Symbol.for("itwin.core.frontend.globals");
 if ((globalThis as any)[globalSymbol])
@@ -210,7 +210,7 @@ import {
   readGltfGraphics,
   synchronizeViewportFrusta,
   synchronizeViewportViews,
-} from "../core-frontend";
+} from "../core-frontend.js";
 
 import {
   // @public enum(s) from @itwin/core-common

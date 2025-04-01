@@ -7,24 +7,24 @@
  */
 
 import { assert } from "@itwin/core-bentley";
-import { AttributeMap } from "../AttributeMap";
-import { TextureUnit } from "../RenderFlags";
+import { AttributeMap } from "../AttributeMap.js";
+import { TextureUnit } from "../RenderFlags.js";
 import {
   FragmentShaderBuilder, FragmentShaderComponent, ProgramBuilder, VariableType, VertexShaderBuilder, VertexShaderComponent,
-} from "../ShaderBuilder";
-import { System } from "../System";
-import { IsInstanced, PositionType } from "../TechniqueFlags";
-import { TechniqueId } from "../TechniqueId";
-import { addColor } from "./Color";
-import { addEdgeContrast } from "./Edge";
-import { addFrustum, addShaderFlags } from "./Common";
-import { unquantize2d } from "./Decode";
-import { addHiliter } from "./FeatureSymbology";
-import { addWhiteOnWhiteReversal } from "./Fragment";
+} from "../ShaderBuilder.js";
+import { System } from "../System.js";
+import { IsInstanced, PositionType } from "../TechniqueFlags.js";
+import { TechniqueId } from "../TechniqueId.js";
+import { addColor } from "./Color.js";
+import { addEdgeContrast } from "./Edge.js";
+import { addFrustum, addShaderFlags } from "./Common.js";
+import { unquantize2d } from "./Decode.js";
+import { addHiliter } from "./FeatureSymbology.js";
+import { addWhiteOnWhiteReversal } from "./Fragment.js";
 import {
   addLineCode as addLineCodeUniform, addLineWeight, addModelViewMatrix, addProjectionMatrix, addSamplePosition,
-} from "./Vertex";
-import { addModelToWindowCoordinates, addViewport } from "./Viewport";
+} from "./Vertex.js";
+import { addModelToWindowCoordinates, addViewport } from "./Viewport.js";
 
 const checkForDiscard = "return discardByLineCode;";
 

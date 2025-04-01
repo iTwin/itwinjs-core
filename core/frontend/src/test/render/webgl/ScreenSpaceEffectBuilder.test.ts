@@ -5,11 +5,11 @@
 
 import { EmptyLocalization } from "@itwin/core-common";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { IModelApp } from "../../../IModelApp";
+import { IModelApp } from "../../../IModelApp.js";
 import {
   ScreenSpaceEffectBuilder, ScreenSpaceEffectBuilderParams, UniformType, VaryingType,
-} from "../../../render/ScreenSpaceEffectBuilder";
-import { System } from "../../../internal/render/webgl/System";
+} from "../../../render/ScreenSpaceEffectBuilder.js";
+import { System } from "../../../internal/render/webgl/System.js";
 
 describe("ScreenSpaceEffectBuilder", () => {
   beforeAll(async () => {

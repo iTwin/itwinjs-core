@@ -8,12 +8,12 @@
 import { assert, Id64, Id64String } from "@itwin/core-bentley";
 import { Arc3d, CurvePrimitive, LineSegment3d, LineString3d, Path, Point3d, Transform, Vector3d, XYZProps } from "@itwin/core-geometry";
 import { GeometryClass, LinePixels } from "@itwin/core-common";
-import { IModelApp } from "./IModelApp";
-import { IModelConnection } from "./IModelConnection";
-import { IconSprites, Sprite } from "./Sprites";
-import { DecorateContext } from "./ViewContext";
-import { ScreenViewport, Viewport } from "./Viewport";
-import { GraphicType } from "./common/render/GraphicType";
+import { IModelApp } from "./IModelApp.js";
+import { IModelConnection } from "./IModelConnection.js";
+import { IconSprites, Sprite } from "./Sprites.js";
+import { DecorateContext } from "./ViewContext.js";
+import { ScreenViewport, Viewport } from "./Viewport.js";
+import { GraphicType } from "./common/render/GraphicType.js";
 
 /**
  * @public

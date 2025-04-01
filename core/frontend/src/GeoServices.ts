@@ -15,8 +15,8 @@ import {
   GeoCoordinatesRequestProps, GeoCoordinatesResponseProps, GeoCoordStatus, GeographicCRSProps, IModelCoordinatesRequestProps, IModelCoordinatesResponseProps,
   IModelReadRpcInterface, PointWithStatus,
 } from "@itwin/core-common";
-import { IModelConnection } from "./IModelConnection";
-import { FrontendLoggerCategory } from "./common/FrontendLoggerCategory";
+import { IModelConnection } from "./IModelConnection.js";
+import { FrontendLoggerCategory } from "./common/FrontendLoggerCategory.js";
 
 /** Options used to create a [[CoordinateConverter]].
  * @internal exported strictly for tests.

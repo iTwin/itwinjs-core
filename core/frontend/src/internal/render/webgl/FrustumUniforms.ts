@@ -8,10 +8,10 @@
 
 import { InverseMatrixState, Matrix4d, Point3d, Transform, Vector3d } from "@itwin/core-geometry";
 import { Frustum, Npc } from "@itwin/core-common";
-import { UniformHandle } from "./UniformHandle";
-import { IModelFrameLifecycle } from "./IModelFrameLifecycle";
-import { Matrix4 } from "./Matrix";
-import { desync, sync } from "./Sync";
+import { UniformHandle } from "./UniformHandle.js";
+import { IModelFrameLifecycle } from "./IModelFrameLifecycle.js";
+import { Matrix4 } from "./Matrix.js";
+import { desync, sync } from "./Sync.js";
 
 /** @internal */
 export const enum FrustumUniformType { // eslint-disable-line no-restricted-syntax

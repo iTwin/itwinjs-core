@@ -5,7 +5,7 @@
 import { Guid } from "@itwin/core-bentley";
 import { Range3d } from "@itwin/core-geometry";
 import { Cartographic } from "@itwin/core-common";
-import { BlankConnection } from "../IModelConnection";
+import { BlankConnection } from "../IModelConnection.js";
 
 /** Open a blank connection for tests. */
 export function createBlankConnection(name = "test-blank-connection",

@@ -4,17 +4,17 @@
 *--------------------------------------------------------------------------------------------*/
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { Range3d, Transform } from "@itwin/core-geometry";
-import { IModelConnection } from "../../IModelConnection";
-import { IModelApp } from "../../IModelApp";
-import { MockRender } from "../../internal/render/MockRender";
-import { RenderGraphic } from "../../render/RenderGraphic";
-import { RenderMemory } from "../../render/RenderMemory";
+import { IModelConnection } from "../../IModelConnection.js";
+import { IModelApp } from "../../IModelApp.js";
+import { MockRender } from "../../internal/render/MockRender.js";
+import { RenderGraphic } from "../../render/RenderGraphic.js";
+import { RenderMemory } from "../../render/RenderMemory.js";
 import {
   Tile, TileContent, TileDrawArgs, TileLoadPriority, TileRequest, TileTree,
   TileTreeOwner,
   TileTreeSupplier,
-} from "../../tile/internal";
-import { createBlankConnection } from "../createBlankConnection";
+} from "../../tile/internal.js";
+import { createBlankConnection } from "../createBlankConnection.js";
 
 describe("Tiles", () => {
 

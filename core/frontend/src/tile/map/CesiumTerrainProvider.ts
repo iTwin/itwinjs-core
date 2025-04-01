@@ -10,15 +10,15 @@ import { assert, BeDuration, BeTimePoint, ByteStream, JsonUtils, utf8ToString } 
 import { Point2d, Point3d, Range1d, Vector3d } from "@itwin/core-geometry";
 import { CesiumTerrainAssetId, nextPoint3d64FromByteStream, OctEncodedNormal, QPoint2d } from "@itwin/core-common";
 import { MessageSeverity } from "@itwin/appui-abstract";
-import { request, RequestOptions } from "../../request/Request";
-import { ApproximateTerrainHeights } from "../../ApproximateTerrainHeights";
-import { IModelApp } from "../../IModelApp";
-import { RealityMeshParams, RealityMeshParamsBuilder } from "../../render/RealityMeshParams";
+import { request, RequestOptions } from "../../request/Request.js";
+import { ApproximateTerrainHeights } from "../../ApproximateTerrainHeights.js";
+import { IModelApp } from "../../IModelApp.js";
+import { RealityMeshParams, RealityMeshParamsBuilder } from "../../render/RealityMeshParams.js";
 import {
   GeographicTilingScheme, MapTile, MapTilingScheme, QuadId, ReadMeshArgs, RequestMeshDataArgs, TerrainMeshProvider,
   TerrainMeshProviderOptions, Tile, TileAvailability,
-} from "../internal";
-import { ScreenViewport } from "../../Viewport";
+} from "../internal.js";
+import { ScreenViewport } from "../../Viewport.js";
 
 /** @internal */
 enum QuantizedMeshExtensionIds {

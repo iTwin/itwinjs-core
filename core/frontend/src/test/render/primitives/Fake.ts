@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 import { ColorDef } from "@itwin/core-common";
 import { Range3d, Transform } from "@itwin/core-geometry";
-import { DisplayParams } from "../../../common/internal/render/DisplayParams";
-import { Geometry } from "../../../common/internal/render/GeometryPrimitives";
+import { DisplayParams } from "../../../common/internal/render/DisplayParams.js";
+import { Geometry } from "../../../common/internal/render/GeometryPrimitives.js";
 
 export class FakeDisplayParams extends DisplayParams {
   public constructor() {

@@ -4,12 +4,12 @@
 *--------------------------------------------------------------------------------------------*/
 import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 import { Point3d, Vector3d } from "@itwin/core-geometry";
-import { IModelApp } from "../../IModelApp";
-import { IModelConnection } from "../../IModelConnection";
-import { QueryVisibleFeaturesOptions } from "../../render/VisibleFeature";
-import { SpatialViewState } from "../../SpatialViewState";
-import { ScreenViewport } from "../../Viewport";
-import { createBlankConnection } from "../createBlankConnection";
+import { IModelApp } from "../../IModelApp.js";
+import { IModelConnection } from "../../IModelConnection.js";
+import { QueryVisibleFeaturesOptions } from "../../render/VisibleFeature.js";
+import { SpatialViewState } from "../../SpatialViewState.js";
+import { ScreenViewport } from "../../Viewport.js";
+import { createBlankConnection } from "../createBlankConnection.js";
 import { EmptyLocalization } from "@itwin/core-common";
 
 describe("Visible feature query", () => {

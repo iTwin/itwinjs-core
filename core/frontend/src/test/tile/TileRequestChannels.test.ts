@@ -5,7 +5,7 @@
 import { describe, expect, it } from "vitest";
 import {
   Tile, TileContentDecodingStatistics, TileRequestChannel, TileRequestChannels,
-} from "../../tile/internal";
+} from "../../tile/internal.js";
 
 // Assumes no minification or uglification.
 function expectClassName(obj: object, name: string): void {

@@ -17,32 +17,32 @@ import {
   MeshEdges, MeshPolyline, MeshPolylineList, OctEncodedNormal, PackedFeatureTable, QParams2d, QParams3d, QPoint2dList,
   QPoint3dList, Quantization, RenderMaterial, RenderMode, RenderTexture, TextureMapping, TextureTransparency, TileFormat, TileReadStatus, ViewFlagOverrides,
 } from "@itwin/core-common";
-import { IModelConnection } from "../IModelConnection";
-import { IModelApp } from "../IModelApp";
-import { InstancedGraphicParams } from "../common/render/InstancedGraphicParams";
-import { RealityMeshParams } from "../render/RealityMeshParams";
-import { Mesh } from "../common/internal/render/MeshPrimitives";
-import { Triangle } from "../common/internal/render/Primitives";
-import { RenderGraphic } from "../render/RenderGraphic";
-import { RenderSystem } from "../render/RenderSystem";
-import { BatchedTileIdMap, decodeMeshoptBuffer, RealityTileGeometry,TileContent } from "./internal";
+import { IModelConnection } from "../IModelConnection.js";
+import { IModelApp } from "../IModelApp.js";
+import { InstancedGraphicParams } from "../common/render/InstancedGraphicParams.js";
+import { RealityMeshParams } from "../render/RealityMeshParams.js";
+import { Mesh } from "../common/internal/render/MeshPrimitives.js";
+import { Triangle } from "../common/internal/render/Primitives.js";
+import { RenderGraphic } from "../render/RenderGraphic.js";
+import { RenderSystem } from "../render/RenderSystem.js";
+import { BatchedTileIdMap, decodeMeshoptBuffer, RealityTileGeometry,TileContent } from "./internal.js";
 import type { DracoLoader, DracoMesh } from "@loaders.gl/draco";
-import { CreateRenderMaterialArgs } from "../render/CreateRenderMaterialArgs";
-import { DisplayParams } from "../common/internal/render/DisplayParams";
-import { FrontendLoggerCategory } from "../common/FrontendLoggerCategory";
-import { getImageSourceFormatForMimeType, imageBitmapFromImageSource, imageElementFromImageSource, tryImageElementFromUrl } from "../common/ImageUtil";
-import { MeshPrimitiveType } from "../common/internal/render/MeshPrimitive";
-import { PointCloudArgs } from "../common/internal/render/PointCloudPrimitive";
-import { TextureImageSource } from "../common/render/TextureParams";
+import { CreateRenderMaterialArgs } from "../render/CreateRenderMaterialArgs.js";
+import { DisplayParams } from "../common/internal/render/DisplayParams.js";
+import { FrontendLoggerCategory } from "../common/FrontendLoggerCategory.js";
+import { getImageSourceFormatForMimeType, imageBitmapFromImageSource, imageElementFromImageSource, tryImageElementFromUrl } from "../common/ImageUtil.js";
+import { MeshPrimitiveType } from "../common/internal/render/MeshPrimitive.js";
+import { PointCloudArgs } from "../common/internal/render/PointCloudPrimitive.js";
+import { TextureImageSource } from "../common/render/TextureParams.js";
 import {
   DracoMeshCompression, getGltfNodeMeshIds, Gltf2Node, GltfAccessor, GltfBuffer, GltfBufferViewProps, GltfDataType, GltfDictionary, gltfDictionaryIterator, GltfDocument, GltfId,
   GltfImage, GltfMaterial, GltfMesh, GltfMeshMode, GltfMeshPrimitive, GltfNode, GltfSampler, GltfScene, GltfStructuralMetadata, GltfTechniqueState, GltfTexture, GltfWrapMode, isGltf1Material, traverseGltfNodes,
-} from "../common/gltf/GltfSchema";
-import { PickableGraphicOptions } from "../common/render/BatchOptions";
-import { createGraphicTemplate, GraphicTemplateBatch, GraphicTemplateBranch, GraphicTemplateNode } from "../internal/render/GraphicTemplateImpl";
-import { RenderGeometry } from "../internal/render/RenderGeometry";
-import { GraphicTemplate } from "../render/GraphicTemplate";
-import { LayerTileData } from "../internal/render/webgl/MapLayerParams";
+} from "../common/gltf/GltfSchema.js";
+import { PickableGraphicOptions } from "../common/render/BatchOptions.js";
+import { createGraphicTemplate, GraphicTemplateBatch, GraphicTemplateBranch, GraphicTemplateNode } from "../internal/render/GraphicTemplateImpl.js";
+import { RenderGeometry } from "../internal/render/RenderGeometry.js";
+import { GraphicTemplate } from "../render/GraphicTemplate.js";
+import { LayerTileData } from "../internal/render/webgl/MapLayerParams.js";
 
 /** @internal */
 export type GltfDataBuffer = Uint8Array | Uint16Array | Uint32Array | Float32Array;

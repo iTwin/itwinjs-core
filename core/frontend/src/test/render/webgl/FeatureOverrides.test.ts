@@ -6,18 +6,18 @@ import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from
 import { BeEvent } from "@itwin/core-bentley";
 import { Point2d, Range3d, Transform } from "@itwin/core-geometry";
 import { ColorByName, ColorDef, EmptyLocalization, Feature, FeatureAppearance, FeatureTable, PackedFeatureTable, RenderMode, RgbColor } from "@itwin/core-common";
-import { ViewRect } from "../../../common/ViewRect";
-import { IModelApp } from "../../../IModelApp";
-import { FeatureSymbology } from "../../../render/FeatureSymbology";
-import { GraphicBranch } from "../../../render/GraphicBranch";
-import { Target } from "../../../internal/render/webgl/Target";
-import { Texture2DDataUpdater } from "../../../internal/render/webgl/Texture";
-import { Batch, Branch } from "../../../internal/render/webgl/Graphic";
-import { readUniqueColors, testBlankViewport } from "../../openBlankViewport";
-import { OvrFlags } from "../../../common/internal/render/OvrFlags";
-import { Decorator } from "../../../ViewManager";
-import { DecorateContext } from "../../../ViewContext";
-import { GraphicType } from "../../../common/render/GraphicType";
+import { ViewRect } from "../../../common/ViewRect.js";
+import { IModelApp } from "../../../IModelApp.js";
+import { FeatureSymbology } from "../../../render/FeatureSymbology.js";
+import { GraphicBranch } from "../../../render/GraphicBranch.js";
+import { Target } from "../../../internal/render/webgl/Target.js";
+import { Texture2DDataUpdater } from "../../../internal/render/webgl/Texture.js";
+import { Batch, Branch } from "../../../internal/render/webgl/Graphic.js";
+import { readUniqueColors, testBlankViewport } from "../../openBlankViewport.js";
+import { OvrFlags } from "../../../common/internal/render/OvrFlags.js";
+import { Decorator } from "../../../ViewManager.js";
+import { DecorateContext } from "../../../ViewContext.js";
+import { GraphicType } from "../../../common/render/GraphicType.js";
 
 describe("FeatureOverrides", () => {
   beforeAll(async () => IModelApp.startup({ localization: new EmptyLocalization() }));

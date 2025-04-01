@@ -4,13 +4,13 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { IModelApp } from "../../../IModelApp";
+import { IModelApp } from "../../../IModelApp.js";
 import { EmptyLocalization, FeatureTable, PackedFeatureTable } from "@itwin/core-common";
-import { RenderGraphic } from "../../../render/RenderGraphic";
+import { RenderGraphic } from "../../../render/RenderGraphic.js";
 import { Point3d, Range3d, Transform } from "@itwin/core-geometry";
-import { GraphicBuilder } from "../../../render/GraphicBuilder";
-import { GraphicBranch } from "../../../render/GraphicBranch";
-import { GraphicType } from "../../../common/render/GraphicType";
+import { GraphicBuilder } from "../../../render/GraphicBuilder.js";
+import { GraphicBranch } from "../../../render/GraphicBranch.js";
+import { GraphicType } from "../../../common/render/GraphicType.js";
 
 describe("Graphic", () => {
   beforeAll(async () => IModelApp.startup({ localization: new EmptyLocalization() }));

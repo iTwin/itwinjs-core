@@ -7,14 +7,14 @@
  */
 
 import { ColorDef, SpatialClassifierInsideDisplay, SpatialClassifierOutsideDisplay } from "@itwin/core-common";
-import { BoundaryType, SingleTexturedViewportQuadGeometry, VolumeClassifierGeometry } from "../CachedGeometry";
-import { FloatRgb, FloatRgba } from "../FloatRGBA";
-import { TextureUnit } from "../RenderFlags";
-import { FragmentShaderComponent, ShaderBuilder, VariableType } from "../ShaderBuilder";
-import { ShaderProgram } from "../ShaderProgram";
-import { Texture2DHandle } from "../Texture";
-import { assignFragColor } from "./Fragment";
-import { createViewportQuadBuilder } from "./ViewportQuad";
+import { BoundaryType, SingleTexturedViewportQuadGeometry, VolumeClassifierGeometry } from "../CachedGeometry.js";
+import { FloatRgb, FloatRgba } from "../FloatRGBA.js";
+import { TextureUnit } from "../RenderFlags.js";
+import { FragmentShaderComponent, ShaderBuilder, VariableType } from "../ShaderBuilder.js";
+import { ShaderProgram } from "../ShaderProgram.js";
+import { Texture2DHandle } from "../Texture.js";
+import { assignFragColor } from "./Fragment.js";
+import { createViewportQuadBuilder } from "./ViewportQuad.js";
 
 const computehiliteColor = "return vec4(u_hilite_color.rgb, 1.0);";
 

@@ -7,12 +7,12 @@
  */
 
 import { ThematicDisplayMode, ThematicGradientMode } from "@itwin/core-common";
-import { FragmentShaderComponent, ProgramBuilder, ShaderBuilder, VariableType } from "../ShaderBuilder";
-import { System } from "../System";
-import { addRenderPass } from "./RenderPass";
-import { addInstancedRtcMatrix, addProjectionMatrix } from "./Vertex";
-import { TextureUnit } from "../RenderFlags";
-import { addEyeSpace } from "./Common";
+import { FragmentShaderComponent, ProgramBuilder, ShaderBuilder, VariableType } from "../ShaderBuilder.js";
+import { System } from "../System.js";
+import { addRenderPass } from "./RenderPass.js";
+import { addInstancedRtcMatrix, addProjectionMatrix } from "./Vertex.js";
+import { TextureUnit } from "../RenderFlags.js";
+import { addEyeSpace } from "./Common.js";
 
 const getSensorFloat = `
 vec4 getSensor(int index) {

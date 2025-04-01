@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { describe, expect, it } from "vitest";
-import { Frustum2d } from "../Frustum2d";
+import { Frustum2d } from "../Frustum2d.js";
 
 describe("Frustum2d", () => {
   it("should range from -1 to 1", () => {

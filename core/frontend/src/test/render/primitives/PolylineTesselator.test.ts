@@ -5,7 +5,7 @@
 import { describe, expect, it } from "vitest";
 import { Point3d } from "@itwin/core-geometry";
 import { QPoint3dList } from "@itwin/core-common";
-import { tesselatePolyline } from "../../../common/internal/render/PolylineParams";
+import { tesselatePolyline } from "../../../common/internal/render/PolylineParams.js";
 
 describe("PolylineTesselator", () => {
   it("produces joint triangles", () => {

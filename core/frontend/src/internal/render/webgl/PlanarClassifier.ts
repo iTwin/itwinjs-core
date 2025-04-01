@@ -12,31 +12,31 @@ import {
   ColorDef, Frustum, FrustumPlanes, RenderMode, RenderTexture, SpatialClassifierInsideDisplay, SpatialClassifierOutsideDisplay, TextureTransparency,
 } from "@itwin/core-common";
 import { Matrix4d, Plane3dByOriginAndUnitNormal, Point3d, Range3d, Vector3d } from "@itwin/core-geometry";
-import { PlanarClipMaskState } from "../../../PlanarClipMaskState";
-import { GraphicsCollectorDrawArgs, SpatialClassifierTileTreeReference, TileTreeReference } from "../../../tile/internal";
-import { SceneContext } from "../../../ViewContext";
-import { FeatureSymbology } from "../../../render/FeatureSymbology";
-import { RenderGraphic } from "../../../render/RenderGraphic";
-import { RenderMemory } from "../../../render/RenderMemory";
-import { PlanarClassifierTarget, RenderPlanarClassifier } from "../RenderPlanarClassifier";
-import { BatchState } from "./BatchState";
-import { BranchStack } from "./BranchStack";
-import { CachedGeometry, Combine3TexturesGeometry, CombineTexturesGeometry, ViewportQuadGeometry } from "./CachedGeometry";
-import { WebGLDisposable } from "./Disposable";
-import { DrawCommands } from "./DrawCommand";
-import { FrameBuffer } from "./FrameBuffer";
-import { GL } from "./GL";
-import { Batch, Branch } from "./Graphic";
-import { PlanarTextureProjection } from "./PlanarTextureProjection";
-import { RenderCommands } from "./RenderCommands";
-import { RenderPass } from "./RenderFlags";
-import { RenderState } from "./RenderState";
-import { getDrawParams } from "./ScratchDrawParams";
-import { System } from "./System";
-import { Target } from "./Target";
-import { TechniqueId } from "./TechniqueId";
-import { Texture, TextureHandle } from "./Texture";
-import { ActiveSpatialClassifier } from "../../../SpatialClassifiersState";
+import { PlanarClipMaskState } from "../../../PlanarClipMaskState.js";
+import { GraphicsCollectorDrawArgs, SpatialClassifierTileTreeReference, TileTreeReference } from "../../../tile/internal.js";
+import { SceneContext } from "../../../ViewContext.js";
+import { FeatureSymbology } from "../../../render/FeatureSymbology.js";
+import { RenderGraphic } from "../../../render/RenderGraphic.js";
+import { RenderMemory } from "../../../render/RenderMemory.js";
+import { PlanarClassifierTarget, RenderPlanarClassifier } from "../RenderPlanarClassifier.js";
+import { BatchState } from "./BatchState.js";
+import { BranchStack } from "./BranchStack.js";
+import { CachedGeometry, Combine3TexturesGeometry, CombineTexturesGeometry, ViewportQuadGeometry } from "./CachedGeometry.js";
+import { WebGLDisposable } from "./Disposable.js";
+import { DrawCommands } from "./DrawCommand.js";
+import { FrameBuffer } from "./FrameBuffer.js";
+import { GL } from "./GL.js";
+import { Batch, Branch } from "./Graphic.js";
+import { PlanarTextureProjection } from "./PlanarTextureProjection.js";
+import { RenderCommands } from "./RenderCommands.js";
+import { RenderPass } from "./RenderFlags.js";
+import { RenderState } from "./RenderState.js";
+import { getDrawParams } from "./ScratchDrawParams.js";
+import { System } from "./System.js";
+import { Target } from "./Target.js";
+import { TechniqueId } from "./TechniqueId.js";
+import { Texture, TextureHandle } from "./Texture.js";
+import { ActiveSpatialClassifier } from "../../../SpatialClassifiersState.js";
 
 export enum PlanarClassifierContent { None = 0, MaskOnly = 1, ClassifierOnly = 2, ClassifierAndMask = 3 }
 

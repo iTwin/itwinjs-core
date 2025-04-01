@@ -5,9 +5,9 @@
 import type {
   ExtensionManifest,
   ExtensionProvider,
-} from "../Extension";
-import { request } from "../../request/Request";
-import { loadScript } from "./ExtensionLoadScript";
+} from "../Extension.js";
+import { request } from "../../request/Request.js";
+import { loadScript } from "./ExtensionLoadScript.js";
 
 /**
  * Required props for a remote extension provider

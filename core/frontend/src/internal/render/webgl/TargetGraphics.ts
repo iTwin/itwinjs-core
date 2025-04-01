@@ -7,10 +7,10 @@
  */
 
 import { dispose, disposeArray } from "@itwin/core-bentley";
-import { GraphicList } from "../../../render/RenderGraphic";
-import { Decorations } from "../../../render/Decorations";
-import { CanvasDecorationList } from "../../../render/CanvasDecoration";
-import { Scene } from "../../../render/Scene";
+import { GraphicList } from "../../../render/RenderGraphic.js";
+import { Decorations } from "../../../render/Decorations.js";
+import { CanvasDecorationList } from "../../../render/CanvasDecoration.js";
+import { Scene } from "../../../render/Scene.js";
 
 /** The various graphics associated with a [[Target]].
  * @internal

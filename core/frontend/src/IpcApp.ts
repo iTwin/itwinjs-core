@@ -11,8 +11,8 @@ import {
   BackendError, IModelError, ipcAppChannels, IpcAppFunctions, IpcAppNotifications, IpcInvokeReturn, IpcListener, IpcSocketFrontend, iTwinChannel,
   RemoveFunction,
 } from "@itwin/core-common";
-import { _callIpcChannel } from "./common/internal/Symbols";
-import { IModelApp, IModelAppOptions } from "./IModelApp";
+import { _callIpcChannel } from "./common/internal/Symbols.js";
+import { IModelApp, IModelAppOptions } from "./IModelApp.js";
 
 /**
  * Options for [[IpcApp.startup]]

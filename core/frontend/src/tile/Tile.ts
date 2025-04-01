@@ -9,17 +9,17 @@
 import { assert, dispose } from "@itwin/core-bentley";
 import { Arc3d, ClipPlaneContainment, Matrix4d, Point2d, Point3d, Point4d, Range3d, Transform, Vector3d } from "@itwin/core-geometry";
 import { BoundingSphere, ColorDef, ElementAlignedBox3d, Frustum, FrustumPlanes } from "@itwin/core-common";
-import { IModelApp } from "../IModelApp";
-import { IModelConnection } from "../IModelConnection";
-import { GraphicBuilder } from "../render/GraphicBuilder";
-import { RenderGraphic } from "../render/RenderGraphic";
-import { RenderMemory } from "../render/RenderMemory";
-import { RenderSystem } from "../render/RenderSystem";
-import { SceneContext } from "../ViewContext";
-import { Viewport } from "../Viewport";
+import { IModelApp } from "../IModelApp.js";
+import { IModelConnection } from "../IModelConnection.js";
+import { GraphicBuilder } from "../render/GraphicBuilder.js";
+import { RenderGraphic } from "../render/RenderGraphic.js";
+import { RenderMemory } from "../render/RenderMemory.js";
+import { RenderSystem } from "../render/RenderSystem.js";
+import { SceneContext } from "../ViewContext.js";
+import { Viewport } from "../Viewport.js";
 import {
   LRUTileListNode, TileContent, TileDrawArgs, TileParams, TileRequest, TileRequestChannel, TileTree, TileTreeLoadStatus, TileUsageMarker, TileUser, TileUserIdSet,
-} from "./internal";
+} from "./internal.js";
 
 // cSpell:ignore undisplayable bitfield
 

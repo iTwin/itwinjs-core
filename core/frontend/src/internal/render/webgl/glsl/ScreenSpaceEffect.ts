@@ -6,11 +6,11 @@
  * @module WebGL
  */
 
-import { ScreenSpaceEffectBuilderParams } from "../../../../render/ScreenSpaceEffectBuilder";
-import { TextureUnit } from "../RenderFlags";
-import { AttributeMap } from "../AttributeMap";
-import { FragmentShaderComponent, ProgramBuilder, VariableType, VertexShaderComponent } from "../ShaderBuilder";
-import { assignFragColor } from "./Fragment";
+import { ScreenSpaceEffectBuilderParams } from "../../../../render/ScreenSpaceEffectBuilder.js";
+import { TextureUnit } from "../RenderFlags.js";
+import { AttributeMap } from "../AttributeMap.js";
+import { FragmentShaderComponent, ProgramBuilder, VariableType, VertexShaderComponent } from "../ShaderBuilder.js";
+import { assignFragColor } from "./Fragment.js";
 
 const computePosition = `
   effectMain(rawPos);

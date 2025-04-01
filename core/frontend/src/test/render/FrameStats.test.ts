@@ -3,12 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { IModelApp } from "../../IModelApp";
-import { IModelConnection } from "../../IModelConnection";
-import { createBlankConnection } from "../createBlankConnection";
-import { ScreenViewport } from "../../Viewport";
-import { FrameStats } from "../../render/FrameStats";
-import { openBlankViewport } from "../openBlankViewport";
+import { IModelApp } from "../../IModelApp.js";
+import { IModelConnection } from "../../IModelConnection.js";
+import { createBlankConnection } from "../createBlankConnection.js";
+import { ScreenViewport } from "../../Viewport.js";
+import { FrameStats } from "../../render/FrameStats.js";
+import { openBlankViewport } from "../openBlankViewport.js";
 import { EmptyLocalization } from "@itwin/core-common";
 
 describe("FrameStats", () => {

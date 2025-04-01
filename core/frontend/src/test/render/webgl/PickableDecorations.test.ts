@@ -5,11 +5,11 @@
 
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { Point3d } from "@itwin/core-geometry";
-import { IModelApp } from "../../../IModelApp";
-import { DecorateContext } from "../../../ViewContext";
-import { Viewport } from "../../../Viewport";
-import { readUniquePixelData, testBlankViewport } from "../../openBlankViewport";
-import { GraphicType } from "../../../common/render/GraphicType";
+import { IModelApp } from "../../../IModelApp.js";
+import { DecorateContext } from "../../../ViewContext.js";
+import { Viewport } from "../../../Viewport.js";
+import { readUniquePixelData, testBlankViewport } from "../../openBlankViewport.js";
+import { GraphicType } from "../../../common/render/GraphicType.js";
 
 describe("Pickable decorations", () => {
   class Decorator {

@@ -882,6 +882,9 @@ importers:
       glob:
         specifier: ^10.3.12
         version: 10.3.12
+      internal-tools:
+        specifier: workspace:*
+        version: link:../../tools/internal
       playwright:
         specifier: ~1.47.1
         version: 1.47.1

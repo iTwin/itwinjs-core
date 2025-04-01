@@ -7,8 +7,8 @@
  */
 
 import { assert, Id64String } from "@itwin/core-bentley";
-import { IModelConnection } from "../../IModelConnection";
-import { BatchTableProperties } from "../../tile/internal";
+import { IModelConnection } from "../../IModelConnection.js";
+import { BatchTableProperties } from "../../tile/internal.js";
 
 /**
  * Mapping between transient IDs assigned to 3D tiles "features" and batch table properties (and visa versa).

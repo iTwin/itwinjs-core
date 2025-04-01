@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { describe, expect, it } from "vitest";
-import { desync, isSynchronized, sync, SyncObserver } from "../../../internal/render/webgl/Sync";
+import { desync, isSynchronized, sync, SyncObserver } from "../../../internal/render/webgl/Sync.js";
 
 describe("SyncObserver", () => {
   it("should synchronize with Sync", () => {

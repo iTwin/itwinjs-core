@@ -8,9 +8,9 @@
 
 import { Id64, Id64String } from "@itwin/core-bentley";
 import { BatchType, Feature, GeometryClass, ModelFeature } from "@itwin/core-common";
-import { HitPath, HitPriority } from "../HitDetail";
-import { IModelConnection } from "../IModelConnection";
-import type { Viewport } from "../Viewport";
+import { HitPath, HitPriority } from "../HitDetail.js";
+import { IModelConnection } from "../IModelConnection.js";
+import type { Viewport } from "../Viewport.js";
 import { Transform } from "@itwin/core-geometry";
 
 /** Describes aspects of a pixel as read from a [[Viewport]].

@@ -7,14 +7,14 @@
  */
 
 import { Point3d } from "@itwin/core-geometry";
-import { AccuSnap } from "./AccuSnap";
-import { HitListHolder } from "./ElementLocateManager";
-import { HitDetail, HitList, HitPriority, HitSource, SnapDetail, SnapHeat, SnapMode } from "./HitDetail";
-import { IModelApp } from "./IModelApp";
-import { BeButton, BeButtonEvent } from "./tools/Tool";
-import { ViewHandleType, ViewManip } from "./tools/ViewTool";
-import { DecorateContext } from "./ViewContext";
-import { ScreenViewport } from "./Viewport";
+import { AccuSnap } from "./AccuSnap.js";
+import { HitListHolder } from "./ElementLocateManager.js";
+import { HitDetail, HitList, HitPriority, HitSource, SnapDetail, SnapHeat, SnapMode } from "./HitDetail.js";
+import { IModelApp } from "./IModelApp.js";
+import { BeButton, BeButtonEvent } from "./tools/Tool.js";
+import { ViewHandleType, ViewManip } from "./tools/ViewTool.js";
+import { DecorateContext } from "./ViewContext.js";
+import { ScreenViewport } from "./Viewport.js";
 
 /**
  * @public

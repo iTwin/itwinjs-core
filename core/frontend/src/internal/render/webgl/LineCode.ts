@@ -7,7 +7,7 @@
  */
 
 import { LinePixels } from "@itwin/core-common";
-import { lineCodeFromLinePixels } from "../../../common/internal/render/LineCode";
+import { lineCodeFromLinePixels } from "../../../common/internal/render/LineCode.js";
 
 /** Describes one of the pre-defined line patterns. See Render.LinePixels.
  * @internal

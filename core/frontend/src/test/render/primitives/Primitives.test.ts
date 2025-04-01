@@ -5,10 +5,10 @@
 import { describe, expect, it } from "vitest";
 import { LineString3d, Loop, Point3d, Range3d, Sample, Transform, Vector3d } from "@itwin/core-geometry";
 import { GraphicParams } from "@itwin/core-common";
-import { DisplayParams } from "../../../common/internal/render/DisplayParams";
-import { GeometryList } from "../../../common/internal/render/GeometryList";
-import { Geometry } from "../../../common/internal/render/GeometryPrimitives";
-import { ToleranceRatio } from "../../../common/internal/render/Primitives";
+import { DisplayParams } from "../../../common/internal/render/DisplayParams.js";
+import { GeometryList } from "../../../common/internal/render/GeometryList.js";
+import { Geometry } from "../../../common/internal/render/GeometryPrimitives.js";
+import { ToleranceRatio } from "../../../common/internal/render/Primitives.js";
 
 function verifyGeometryQueries(g: Geometry, doDecimate: boolean = false, doVertexCluster: boolean = true, hasPart: boolean = false) {
   expect(g.doDecimate()).toBe(doDecimate);

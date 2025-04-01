@@ -8,20 +8,20 @@
 
 import { dispose } from "@itwin/core-bentley";
 import { Point3d, Range3d } from "@itwin/core-geometry";
-import { MeshParams } from "../../../common/internal/render/MeshParams";
-import { SurfaceType } from "../../../common/internal/render/SurfaceParams";
-import { RenderMemory } from "../../../render/RenderMemory";
-import { CachedGeometry } from "./CachedGeometry";
-import { Graphic } from "./Graphic";
-import { InstanceBuffers, PatternBuffers } from "./InstancedGeometry";
-import { Primitive } from "./Primitive";
-import { RenderCommands } from "./RenderCommands";
-import { RenderPass } from "./RenderFlags";
-import { EdgeGeometry, PolylineEdgeGeometry, SilhouetteEdgeGeometry } from "./EdgeGeometry";
-import { IndexedEdgeGeometry } from "./IndexedEdgeGeometry";
-import { SurfaceGeometry } from "./SurfaceGeometry";
-import { MeshData } from "./MeshData";
-import { RenderGeometry } from "../../../internal/render/RenderGeometry";
+import { MeshParams } from "../../../common/internal/render/MeshParams.js";
+import { SurfaceType } from "../../../common/internal/render/SurfaceParams.js";
+import { RenderMemory } from "../../../render/RenderMemory.js";
+import { CachedGeometry } from "./CachedGeometry.js";
+import { Graphic } from "./Graphic.js";
+import { InstanceBuffers, PatternBuffers } from "./InstancedGeometry.js";
+import { Primitive } from "./Primitive.js";
+import { RenderCommands } from "./RenderCommands.js";
+import { RenderPass } from "./RenderFlags.js";
+import { EdgeGeometry, PolylineEdgeGeometry, SilhouetteEdgeGeometry } from "./EdgeGeometry.js";
+import { IndexedEdgeGeometry } from "./IndexedEdgeGeometry.js";
+import { SurfaceGeometry } from "./SurfaceGeometry.js";
+import { MeshData } from "./MeshData.js";
+import { RenderGeometry } from "../../../internal/render/RenderGeometry.js";
 
 /** @internal */
 export class MeshRenderGeometry implements RenderGeometry {

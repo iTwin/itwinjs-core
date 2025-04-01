@@ -13,13 +13,13 @@ import {
   OctEncodedNormal, PolylineEdgeArgs, PolylineFlags, PolylineTypeFlags, QParams3d, QPoint3dList,
   SilhouetteEdgeArgs,
 } from "@itwin/core-common";
-import { ColorMap } from "./ColorMap";
-import { DisplayParams } from "./DisplayParams";
-import { MeshPointList, MeshPrimitiveType, Point3dList } from "./MeshPrimitive";
-import { Triangle, TriangleList } from "./Primitives";
-import { VertexKeyProps } from "./VertexKey";
-import { MeshArgs } from "../../../render/MeshArgs";
-import { PolylineArgs } from "../../../render/PolylineArgs";
+import { ColorMap } from "./ColorMap.js";
+import { DisplayParams } from "./DisplayParams.js";
+import { MeshPointList, MeshPrimitiveType, Point3dList } from "./MeshPrimitive.js";
+import { Triangle, TriangleList } from "./Primitives.js";
+import { VertexKeyProps } from "./VertexKey.js";
+import { MeshArgs } from "../../../render/MeshArgs.js";
+import { PolylineArgs } from "../../../render/PolylineArgs.js";
 
 export function createPolylineArgs(mesh: Mesh): PolylineArgs | undefined {
   if (!mesh.polylines || mesh.polylines.length === 0)

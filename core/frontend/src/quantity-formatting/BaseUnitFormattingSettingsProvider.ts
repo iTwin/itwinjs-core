@@ -7,13 +7,13 @@
  */
 
 import { FormatProps, UnitSystemKey } from "@itwin/core-quantity";
-import { IModelApp } from "../IModelApp";
-import { IModelConnection } from "../IModelConnection";
-import { SelectedViewportChangedArgs } from "../ViewManager";
+import { IModelApp } from "../IModelApp.js";
+import { IModelConnection } from "../IModelConnection.js";
+import { SelectedViewportChangedArgs } from "../ViewManager.js";
 import {
   FormattingUnitSystemChangedArgs, OverrideFormatEntry, QuantityFormatOverridesChangedArgs, QuantityFormatter,
   QuantityTypeKey, UnitFormattingSettingsProvider,
-} from "./QuantityFormatter";
+} from "./QuantityFormatter.js";
 
 /** This abstract class reacts to changes in the "active" iModel and updates the [[QuantityFormatter]] overrides and active
  * presentation unit system based on stored preferences.  In addition, monitors the [[QuantityFormatter]] for changes to format overrides and the active

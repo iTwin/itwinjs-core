@@ -7,13 +7,13 @@
  */
 
 import { assert } from "@itwin/core-bentley";
-import {BriefcaseConnection} from "../BriefcaseConnection";
-import { IModelApp } from "../IModelApp";
-import { IModelConnection } from "../IModelConnection";
-import { NotifyMessageDetails, OutputMessagePriority } from "../NotificationManager";
-import { Viewport } from "../Viewport";
-import { AccuDrawShortcuts } from "./AccuDrawTool";
-import { BeButton, BeButtonEvent, CoordinateLockOverrides, CoreTools, InteractiveTool } from "./Tool";
+import {BriefcaseConnection} from "../BriefcaseConnection.js";
+import { IModelApp } from "../IModelApp.js";
+import { IModelConnection } from "../IModelConnection.js";
+import { NotifyMessageDetails, OutputMessagePriority } from "../NotificationManager.js";
+import { Viewport } from "../Viewport.js";
+import { AccuDrawShortcuts } from "./AccuDrawTool.js";
+import { BeButton, BeButtonEvent, CoordinateLockOverrides, CoreTools, InteractiveTool } from "./Tool.js";
 
 /** The PrimitiveTool class can be used to implement tools to create or modify geometric elements.
  * @see [Writing a PrimitiveTool]($docs/learning/frontend/primitivetools.md)

@@ -8,9 +8,9 @@
 
 import { Point3d, Range3d } from "@itwin/core-geometry";
 import { Cartographic, GlobeMode } from "@itwin/core-common";
-import { BingElevationProvider } from "./tile/internal";
-import { ScreenViewport } from "./Viewport";
-import { ViewState3d } from "./ViewState";
+import { BingElevationProvider } from "./tile/internal.js";
+import { ScreenViewport } from "./Viewport.js";
+import { ViewState3d } from "./ViewState.js";
 
 /** Describes a rectangular area of the earth using cartographic data structures.
  * @public

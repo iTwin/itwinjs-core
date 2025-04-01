@@ -11,11 +11,11 @@ import {
   IModelConnectionProps, IModelError, IModelReadRpcInterface, IModelRpcOpenProps, IModelVersion, RpcManager, RpcNotFoundResponse, RpcOperation,
   RpcRequest, RpcRequestEvent,
 } from "@itwin/core-common";
-import { FrontendLoggerCategory } from "./common/FrontendLoggerCategory";
-import { IModelApp } from "./IModelApp";
-import { IModelConnection } from "./IModelConnection";
-import { IModelRoutingContext } from "./IModelRoutingContext";
-import { IpcApp } from "./IpcApp";
+import { FrontendLoggerCategory } from "./common/FrontendLoggerCategory.js";
+import { IModelApp } from "./IModelApp.js";
+import { IModelConnection } from "./IModelConnection.js";
+import { IModelRoutingContext } from "./IModelRoutingContext.js";
+import { IpcApp } from "./IpcApp.js";
 
 const loggerCategory = FrontendLoggerCategory.IModelConnection;
 

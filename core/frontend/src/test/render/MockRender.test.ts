@@ -4,11 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { IModelApp } from "../../IModelApp";
-import { MockRender } from "../../internal/render/MockRender";
-import { RenderGraphic } from "../../render/RenderGraphic";
-import { RenderTarget } from "../../render/RenderTarget";
-import { ViewRect } from "../../common/ViewRect";
+import { IModelApp } from "../../IModelApp.js";
+import { MockRender } from "../../internal/render/MockRender.js";
+import { RenderGraphic } from "../../render/RenderGraphic.js";
+import { RenderTarget } from "../../render/RenderTarget.js";
+import { ViewRect } from "../../common/ViewRect.js";
 
 class MyTarget extends MockRender.OffScreenTarget { }
 class MyList extends MockRender.List { }

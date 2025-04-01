@@ -14,15 +14,15 @@ import {
   MapLayerSettings, MapSubLayerProps, RenderSchedule, RenderTimelineProps,
   SolarShadowSettings, SubCategoryOverride, SubLayerId, TerrainHeightOriginMode, ThematicDisplay, ThematicDisplayMode, ThematicGradientMode, ViewFlags,
 } from "@itwin/core-common";
-import { ApproximateTerrainHeights } from "./ApproximateTerrainHeights";
-import { BackgroundMapGeometry } from "./BackgroundMapGeometry";
-import { ContextRealityModelState } from "./ContextRealityModelState";
-import { ElementState } from "./EntityState";
-import { IModelApp } from "./IModelApp";
-import { IModelConnection } from "./IModelConnection";
-import { PlanarClipMaskState } from "./PlanarClipMaskState";
-import { getCesiumOSMBuildingsUrl, MapLayerIndex, TileTreeReference } from "./tile/internal";
-import { _onScheduleScriptReferenceChanged, _scheduleScriptReference } from './common/internal/Symbols';
+import { ApproximateTerrainHeights } from "./ApproximateTerrainHeights.js";
+import { BackgroundMapGeometry } from "./BackgroundMapGeometry.js";
+import { ContextRealityModelState } from "./ContextRealityModelState.js";
+import { ElementState } from "./EntityState.js";
+import { IModelApp } from "./IModelApp.js";
+import { IModelConnection } from "./IModelConnection.js";
+import { PlanarClipMaskState } from "./PlanarClipMaskState.js";
+import { getCesiumOSMBuildingsUrl, MapLayerIndex, TileTreeReference } from "./tile/internal.js";
+import { _onScheduleScriptReferenceChanged, _scheduleScriptReference } from './common/internal/Symbols.js';
 
 /** @internal */
 export class TerrainDisplayOverrides {

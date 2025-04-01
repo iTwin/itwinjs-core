@@ -6,11 +6,11 @@
  * @module Rendering
  */
 
-import { AuxChannelTable } from "./AuxChannelTable";
-import { VertexTable } from "./VertexTable";
-import { SurfaceParams } from "./SurfaceParams";
-import { EdgeParams } from "./EdgeParams";
-import { LayerTileData } from "../../../internal/render/webgl/MapLayerParams";
+import { AuxChannelTable } from "./AuxChannelTable.js";
+import { VertexTable } from "./VertexTable.js";
+import { SurfaceParams } from "./SurfaceParams.js";
+import { EdgeParams } from "./EdgeParams.js";
+import { LayerTileData } from "../../../internal/render/webgl/MapLayerParams.js";
 
 /** Describes mesh geometry to be submitted to the rendering system.
  * A mesh consists of a surface and its edges, which may include any combination of silhouettes, polylines, and single segments.

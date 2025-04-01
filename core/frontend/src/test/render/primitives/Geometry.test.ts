@@ -6,10 +6,10 @@
 import { describe, expect, it } from "vitest";
 import { IndexedPolyface, LineString3d, Loop, Path, Point3d, Range3d, Transform } from "@itwin/core-geometry";
 import { ColorDef, GraphicParams } from "@itwin/core-common";
-import { DisplayParams } from "../../../common/internal/render/DisplayParams";
-import { Geometry } from "../../../common/internal/render/GeometryPrimitives";
-import { StrokesPrimitiveList, StrokesPrimitivePointList, StrokesPrimitivePointLists } from "../../../common/internal/render/Strokes";
-import { PolyfacePrimitive, PolyfacePrimitiveList } from "../../../common/internal/render/Polyface";
+import { DisplayParams } from "../../../common/internal/render/DisplayParams.js";
+import { Geometry } from "../../../common/internal/render/GeometryPrimitives.js";
+import { StrokesPrimitiveList, StrokesPrimitivePointList, StrokesPrimitivePointLists } from "../../../common/internal/render/Strokes.js";
+import { PolyfacePrimitive, PolyfacePrimitiveList } from "../../../common/internal/render/Polyface.js";
 
 function pointIsInArray(pt: Point3d, arr: Point3d[]): boolean {
   for (const arrPt of arr) {

@@ -7,23 +7,23 @@
  */
 
 import { Matrix4d, Vector3d } from "@itwin/core-geometry";
-import { RenderPlan } from "../RenderPlan";
-import { BatchUniforms } from "./BatchUniforms";
-import { BranchUniforms } from "./BranchUniforms";
-import { FrustumUniforms, FrustumUniformType } from "./FrustumUniforms";
-import { UniformHandle } from "./UniformHandle";
-import { HiliteUniforms } from "./HiliteUniforms";
-import { LightingUniforms } from "./LightingUniforms";
-import { Matrix4 } from "./Matrix";
-import { ShadowUniforms } from "./ShadowUniforms";
-import { StyleUniforms } from "./StyleUniforms";
-import { desync, sync, SyncObserver, SyncToken } from "./Sync";
-import { Target } from "./Target";
-import { ThematicUniforms } from "./ThematicUniforms";
-import { ViewRectUniforms } from "./ViewRectUniforms";
-import { RealityModelUniforms } from "./RealityModelUniforms";
-import { AtmosphereUniforms } from "./AtmosphereUniforms";
-import { ContourUniforms } from "./ContourUniforms";
+import { RenderPlan } from "../RenderPlan.js";
+import { BatchUniforms } from "./BatchUniforms.js";
+import { BranchUniforms } from "./BranchUniforms.js";
+import { FrustumUniforms, FrustumUniformType } from "./FrustumUniforms.js";
+import { UniformHandle } from "./UniformHandle.js";
+import { HiliteUniforms } from "./HiliteUniforms.js";
+import { LightingUniforms } from "./LightingUniforms.js";
+import { Matrix4 } from "./Matrix.js";
+import { ShadowUniforms } from "./ShadowUniforms.js";
+import { StyleUniforms } from "./StyleUniforms.js";
+import { desync, sync, SyncObserver, SyncToken } from "./Sync.js";
+import { Target } from "./Target.js";
+import { ThematicUniforms } from "./ThematicUniforms.js";
+import { ViewRectUniforms } from "./ViewRectUniforms.js";
+import { RealityModelUniforms } from "./RealityModelUniforms.js";
+import { AtmosphereUniforms } from "./AtmosphereUniforms.js";
+import { ContourUniforms } from "./ContourUniforms.js";
 
 class PixelWidthFactor {
   /** The pixel width factor depends on both the frustum and the view rect. It also depends on the frustum scale associated with the current Branch. */

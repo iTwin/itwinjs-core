@@ -6,12 +6,12 @@
  * @module WebGL
  */
 import { ContourDisplay } from "@itwin/core-common";
-import { TextureUnit } from "../RenderFlags";
+import { TextureUnit } from "../RenderFlags.js";
 import {
   FragmentShaderComponent, ProgramBuilder, VariableType,
-} from "../ShaderBuilder";
-import { addFeatureIndex } from "./FeatureSymbology";
-import { addInstancedRtcMatrix } from "./Vertex";
+} from "../ShaderBuilder.js";
+import { addFeatureIndex } from "./FeatureSymbology.js";
+import { addInstancedRtcMatrix } from "./Vertex.js";
 
 const computeContourNdx = `
   if (u_contourLUTWidth == 0u)

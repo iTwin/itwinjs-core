@@ -8,12 +8,12 @@
 
 import { dispose } from "@itwin/core-bentley";
 import { QParams2d, QParams3d } from "@itwin/core-common";
-import { VertexTable } from "../../../common/internal/render/VertexTable";
-import { ColorInfo } from "./ColorInfo";
-import { WebGLDisposable } from "./Disposable";
-import { qorigin3dToArray, qparams2dToArray, qscale3dToArray } from "./AttributeBuffers";
-import { TextureHandle } from "./Texture";
-import { AuxChannel, AuxChannelTable, AuxDisplacementChannel, AuxParamChannel } from "../../../common/internal/render/AuxChannelTable";
+import { VertexTable } from "../../../common/internal/render/VertexTable.js";
+import { ColorInfo } from "./ColorInfo.js";
+import { WebGLDisposable } from "./Disposable.js";
+import { qorigin3dToArray, qparams2dToArray, qscale3dToArray } from "./AttributeBuffers.js";
+import { TextureHandle } from "./Texture.js";
+import { AuxChannel, AuxChannelTable, AuxDisplacementChannel, AuxParamChannel } from "../../../common/internal/render/AuxChannelTable.js";
 
 type ChannelPropName = "normals" | "displacements" | "params";
 

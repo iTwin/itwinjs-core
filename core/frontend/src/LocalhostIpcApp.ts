@@ -7,9 +7,9 @@
  */
 
 import { InterceptedRpcRequest, IpcSession, IpcWebSocket, IpcWebSocketFrontend, IpcWebSocketMessage, IpcWebSocketTransport, rpcOverIpcStrings } from "@itwin/core-common";
-import { IpcApp } from "./IpcApp";
-import { IModelApp, IModelAppOptions } from "./IModelApp";
-import { _callIpcChannel } from "./common/internal/Symbols";
+import { IpcApp } from "./IpcApp.js";
+import { IModelApp, IModelAppOptions } from "./IModelApp.js";
+import { _callIpcChannel } from "./common/internal/Symbols.js";
 
 /** @internal */
 export interface LocalHostIpcAppOpts {

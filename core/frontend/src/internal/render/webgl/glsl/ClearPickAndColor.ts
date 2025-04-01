@@ -6,9 +6,9 @@
  * @module WebGL
  */
 
-import { FragmentShaderComponent, VariableType } from "../ShaderBuilder";
-import { ShaderProgram } from "../ShaderProgram";
-import { createViewportQuadBuilder } from "./ViewportQuad";
+import { FragmentShaderComponent, VariableType } from "../ShaderBuilder.js";
+import { ShaderProgram } from "../ShaderProgram.js";
+import { createViewportQuadBuilder } from "./ViewportQuad.js";
 
 const computeBaseColor = "return u_bgColor;";
 

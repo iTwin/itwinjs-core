@@ -7,7 +7,7 @@
  */
 
 import { Transform, XAndY, XYAndZ } from "@itwin/core-geometry";
-import { GltfAlphaMode } from "./GltfSchema";
+import { GltfAlphaMode } from "./GltfSchema.js";
 
 /** Types describing the in-memory representation of a glTF model as parsed from a [[GltfDocument]].
  * This API is incomplete.

@@ -9,15 +9,15 @@
 import { assert, BeTimePoint } from "@itwin/core-bentley";
 import { Matrix4d, Range1d, Range3d, Transform } from "@itwin/core-geometry";
 import { ElementAlignedBox3d, FeatureAppearanceProvider, FrustumPlanes, HiddenLine, PlanarClipMaskPriority, ViewFlagOverrides } from "@itwin/core-common";
-import { HitDetail } from "../HitDetail";
-import { FeatureSymbology } from "../render/FeatureSymbology";
-import { RenderClipVolume } from "../render/RenderClipVolume";
-import { RenderMemory } from "../render/RenderMemory";
-import { DecorateContext, SceneContext } from "../ViewContext";
-import { ScreenViewport } from "../Viewport";
+import { HitDetail } from "../HitDetail.js";
+import { FeatureSymbology } from "../render/FeatureSymbology.js";
+import { RenderClipVolume } from "../render/RenderClipVolume.js";
+import { RenderMemory } from "../render/RenderMemory.js";
+import { DecorateContext, SceneContext } from "../ViewContext.js";
+import { ScreenViewport } from "../Viewport.js";
 import {
   DisclosedTileTreeSet, GeometryTileTreeReference, MapFeatureInfoOptions, MapLayerFeatureInfo, RenderGraphicTileTreeArgs, TileDrawArgs, TileGeometryCollector, TileTree, TileTreeLoadStatus, TileTreeOwner, tileTreeReferenceFromRenderGraphic,
-} from "./internal";
+} from "./internal.js";
 
 /** Describes the type of graphics produced by a [[TileTreeReference]].
  * @public

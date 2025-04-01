@@ -13,23 +13,23 @@ import {
   Frustum, FrustumPlanes, RenderMode, RenderTexture, SolarShadowSettings, TextureTransparency, ViewFlags,
 } from "@itwin/core-common";
 import { RenderType } from "@itwin/webgl-compatibility";
-import { Tile, TileDrawArgs, TileTreeReference, TileVisibility } from "../../../tile/internal";
-import { SceneContext } from "../../../ViewContext";
-import { RenderGraphic } from "../../../render/RenderGraphic";
-import { RenderMemory } from "../../../render/RenderMemory";
-import { BranchStack } from "./BranchStack";
-import { BatchState } from "./BatchState";
-import { EVSMGeometry } from "./CachedGeometry";
-import { WebGLDisposable } from "./Disposable";
-import { FrameBuffer } from "./FrameBuffer";
-import { GL } from "./GL";
-import { RenderCommands } from "./RenderCommands";
-import { RenderPass, TextureUnit } from "./RenderFlags";
-import { RenderState } from "./RenderState";
-import { getDrawParams } from "./ScratchDrawParams";
-import { System } from "./System";
-import { Target } from "./Target";
-import { Texture, TextureHandle } from "./Texture";
+import { Tile, TileDrawArgs, TileTreeReference, TileVisibility } from "../../../tile/internal.js";
+import { SceneContext } from "../../../ViewContext.js";
+import { RenderGraphic } from "../../../render/RenderGraphic.js";
+import { RenderMemory } from "../../../render/RenderMemory.js";
+import { BranchStack } from "./BranchStack.js";
+import { BatchState } from "./BatchState.js";
+import { EVSMGeometry } from "./CachedGeometry.js";
+import { WebGLDisposable } from "./Disposable.js";
+import { FrameBuffer } from "./FrameBuffer.js";
+import { GL } from "./GL.js";
+import { RenderCommands } from "./RenderCommands.js";
+import { RenderPass, TextureUnit } from "./RenderFlags.js";
+import { RenderState } from "./RenderState.js";
+import { getDrawParams } from "./ScratchDrawParams.js";
+import { System } from "./System.js";
+import { Target } from "./Target.js";
+import { Texture, TextureHandle } from "./Texture.js";
 
 type ProcessTiles = (tiles: Tile[]) => void;
 

@@ -4,12 +4,12 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { IModelApp } from "../../../IModelApp";
-import { Debug } from "../../../internal/render/webgl/Diagnostics";
-import { FrameBuffer } from "../../../internal/render/webgl/FrameBuffer";
-import { GL } from "../../../internal/render/webgl/GL";
-import { RenderBuffer } from "../../../internal/render/webgl/RenderBuffer";
-import { TextureHandle } from "../../../internal/render/webgl/Texture";
+import { IModelApp } from "../../../IModelApp.js";
+import { Debug } from "../../../internal/render/webgl/Diagnostics.js";
+import { FrameBuffer } from "../../../internal/render/webgl/FrameBuffer.js";
+import { GL } from "../../../internal/render/webgl/GL.js";
+import { RenderBuffer } from "../../../internal/render/webgl/RenderBuffer.js";
+import { TextureHandle } from "../../../internal/render/webgl/Texture.js";
 import { EmptyLocalization } from "@itwin/core-common";
 
 describe("FrameBuffer tests", () => {

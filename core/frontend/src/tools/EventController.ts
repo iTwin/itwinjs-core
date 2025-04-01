@@ -6,8 +6,8 @@
  * @module Tools
  */
 
-import { ScreenViewport } from "../Viewport";
-import { ToolAdmin } from "./ToolAdmin";
+import { ScreenViewport } from "../Viewport.js";
+import { ToolAdmin } from "./ToolAdmin.js";
 
 /**
  * An EventController maps user input events from a Viewport to the ToolAdmin so that tools can process them.

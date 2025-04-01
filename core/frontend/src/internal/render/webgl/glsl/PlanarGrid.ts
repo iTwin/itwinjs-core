@@ -6,17 +6,17 @@
  * @module WebGL
  */
 
-import { PlanarGridTransparency } from "../../../../render/RenderSystem";
-import { AttributeMap } from "../AttributeMap";
-import { FragmentShaderComponent, ProgramBuilder, VariableType, VertexShaderComponent } from "../ShaderBuilder";
-import { ShaderProgram } from "../ShaderProgram";
-import { System } from "../System";
-import { TechniqueId } from "../TechniqueId";
-import { addShaderFlags } from "./Common";
-import { unquantize2d } from "./Decode";
-import { addLogDepth } from "./LogarithmicDepthBuffer";
-import { addTranslucency } from "./Translucency";
-import { addModelViewProjectionMatrix } from "./Vertex";
+import { PlanarGridTransparency } from "../../../../render/RenderSystem.js";
+import { AttributeMap } from "../AttributeMap.js";
+import { FragmentShaderComponent, ProgramBuilder, VariableType, VertexShaderComponent } from "../ShaderBuilder.js";
+import { ShaderProgram } from "../ShaderProgram.js";
+import { System } from "../System.js";
+import { TechniqueId } from "../TechniqueId.js";
+import { addShaderFlags } from "./Common.js";
+import { unquantize2d } from "./Decode.js";
+import { addLogDepth } from "./LogarithmicDepthBuffer.js";
+import { addTranslucency } from "./Translucency.js";
+import { addModelViewProjectionMatrix } from "./Vertex.js";
 
 const computePosition = "gl_PointSize = 1.0; return MAT_MVP * rawPos;";
 const computeTexCoord = "return unquantize2d(a_uvParam, u_qTexCoordParams);";

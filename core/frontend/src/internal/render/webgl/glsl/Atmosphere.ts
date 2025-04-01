@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { MAX_SAMPLE_POINTS } from "../AtmosphereUniforms";
+import { MAX_SAMPLE_POINTS } from "../AtmosphereUniforms.js";
 import {
   FragmentShaderBuilder,
   FragmentShaderComponent,
@@ -11,7 +11,7 @@ import {
   VariableType,
   VertexShaderBuilder,
   VertexShaderComponent,
-} from "../ShaderBuilder";
+} from "../ShaderBuilder.js";
 
 const computeRayDir = `
 vec3 computeRayDir(vec3 eyeSpace) {

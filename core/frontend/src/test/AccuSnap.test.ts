@@ -6,14 +6,14 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { Id64String } from "@itwin/core-bentley";
 import { Angle, AxisIndex, LineSegment3d, Matrix3d, Point3d, Transform, XYZ, XYZProps } from "@itwin/core-geometry";
 import { EmptyLocalization, GeometryClass, RenderSchedule, SnapRequestProps, SnapResponseProps } from "@itwin/core-common";
-import { IModelConnection } from "../IModelConnection";
-import { HitDetail, HitPriority, HitSource, SnapDetail, SnapMode } from "../HitDetail";
-import { LocateResponse, SnapStatus } from "../ElementLocateManager";
-import { ScreenViewport } from "../Viewport";
-import { AccuSnap } from "../AccuSnap";
-import { IModelApp } from "../IModelApp";
-import { testBlankViewportAsync } from "./openBlankViewport";
-import { _requestSnap } from "../common/internal/Symbols";
+import { IModelConnection } from "../IModelConnection.js";
+import { HitDetail, HitPriority, HitSource, SnapDetail, SnapMode } from "../HitDetail.js";
+import { LocateResponse, SnapStatus } from "../ElementLocateManager.js";
+import { ScreenViewport } from "../Viewport.js";
+import { AccuSnap } from "../AccuSnap.js";
+import { IModelApp } from "../IModelApp.js";
+import { testBlankViewportAsync } from "./openBlankViewport.js";
+import { _requestSnap } from "../common/internal/Symbols.js";
 
 interface HitDetailProps {
   hitPoint?: XYZProps; // defaults to [0, 0, 0]

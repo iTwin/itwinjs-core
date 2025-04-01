@@ -9,15 +9,15 @@
 import { compareBooleans, compareNumbers, Dictionary, Id64String } from "@itwin/core-bentley";
 import { Range3d } from "@itwin/core-geometry";
 import { Feature, FeatureTable } from "@itwin/core-common";
-import { DisplayParams } from "./DisplayParams";
-import { MeshPrimitiveType } from "./MeshPrimitive";
-import { GeometryList } from "./GeometryList";
-import { Geometry } from "./GeometryPrimitives";
-import { PolyfacePrimitive } from "./Polyface";
-import { GeometryOptions, ToleranceRatio } from "./Primitives";
-import { StrokesPrimitive } from "./Strokes";
-import { MeshBuilder, MeshEdgeCreationOptions } from "./MeshBuilder";
-import { Mesh, MeshList } from "./MeshPrimitives";
+import { DisplayParams } from "./DisplayParams.js";
+import { MeshPrimitiveType } from "./MeshPrimitive.js";
+import { GeometryList } from "./GeometryList.js";
+import { Geometry } from "./GeometryPrimitives.js";
+import { PolyfacePrimitive } from "./Polyface.js";
+import { GeometryOptions, ToleranceRatio } from "./Primitives.js";
+import { StrokesPrimitive } from "./Strokes.js";
+import { MeshBuilder, MeshEdgeCreationOptions } from "./MeshBuilder.js";
+import { Mesh, MeshList } from "./MeshPrimitives.js";
 
 /** @internal */
 export class MeshBuilderMap extends Dictionary<MeshBuilderMap.Key, MeshBuilder> {

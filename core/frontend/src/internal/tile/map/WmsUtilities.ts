@@ -3,8 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { HttpResponseError, RequestBasicCredentials } from "../../../request/Request";
-import { headersIncludeAuthMethod, setBasicAuthorization } from "../../../request/utils";
+import { HttpResponseError, RequestBasicCredentials } from "../../../request/Request.js";
+import { headersIncludeAuthMethod, setBasicAuthorization } from "../../../request/utils.js";
 
 /** @packageDocumentation
  * @module Tiles

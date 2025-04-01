@@ -7,11 +7,11 @@
  */
 
 import { TransientIdSequence, TransientIdSequenceProps } from "@itwin/core-bentley";
-import { _implementationProhibited } from "../Symbols";
-import { GraphicDescriptionContextProps, WorkerGraphicDescriptionContext, WorkerGraphicDescriptionContextProps, WorkerTextureParams } from "../../render/GraphicDescriptionContext";
-import { MaterialParams } from "../../render/MaterialParams";
+import { _implementationProhibited } from "../Symbols.js";
+import { GraphicDescriptionContextProps, WorkerGraphicDescriptionContext, WorkerGraphicDescriptionContextProps, WorkerTextureParams } from "../../render/GraphicDescriptionContext.js";
+import { MaterialParams } from "../../render/MaterialParams.js";
 import { ColorDef, ColorDefProps, Gradient, ImageBufferFormat, ImageSource, ImageSourceFormat, RenderMaterial, RenderTexture, RgbColor, RgbColorProps, TextureMapping, TextureTransparency } from "@itwin/core-common";
-import { ImdlModel } from "../../imdl/ImdlModel";
+import { ImdlModel } from "../../imdl/ImdlModel.js";
 
 /** As part of a [[WorkerGraphicDescriptionContext]], describes constraints imposed by the [[RenderSystem]] that a [[GraphicDescriptionBuilder]] needs to know about
  * when creating a [[GraphicDescription]].

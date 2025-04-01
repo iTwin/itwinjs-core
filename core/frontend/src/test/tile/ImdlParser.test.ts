@@ -4,10 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { RenderSchedule as RS, TileReadStatus } from "@itwin/core-common";
-import { ImdlTimeline } from "../../common/imdl/ParseImdlDocument";
-import { acquireImdlParser, ImdlParser } from "../../tile/internal";
-import { IModelApp } from "../../IModelApp";
-import { VertexIndices } from "../../common/internal/render/VertexIndices";
+import { ImdlTimeline } from "../../common/imdl/ParseImdlDocument.js";
+import { acquireImdlParser, ImdlParser } from "../../tile/internal.js";
+import { IModelApp } from "../../IModelApp.js";
+import { VertexIndices } from "../../common/internal/render/VertexIndices.js";
 
 describe("acquireImdlParser", () => {
   beforeAll(async () => {

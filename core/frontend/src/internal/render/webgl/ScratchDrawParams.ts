@@ -2,9 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { CachedGeometry } from "./CachedGeometry";
-import { DrawParams, ShaderProgramParams } from "./DrawCommand";
-import { Target } from "./Target";
+import { CachedGeometry } from "./CachedGeometry.js";
+import { DrawParams, ShaderProgramParams } from "./DrawCommand.js";
+import { Target } from "./Target.js";
 
 let progParams: ShaderProgramParams | undefined;
 let drawParams: DrawParams | undefined;

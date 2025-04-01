@@ -10,20 +10,20 @@ import { BentleyStatus, Id64, Id64Array, Id64String } from "@itwin/core-bentley"
 import { AxisOrder, IModelJson, Matrix3d, Plane3dByOriginAndUnitNormal, Point2d, Point3d, PointString3d, PolygonOps, Vector3d, XAndY, XYAndZ } from "@itwin/core-geometry";
 import { ColorDef, GeometryStreamProps, LinePixels, MassPropertiesOperation, MassPropertiesRequestProps, MassPropertiesResponseProps } from "@itwin/core-common";
 import { DialogItem, DialogItemValue, DialogPropertySyncItem, PropertyDescription } from "@itwin/appui-abstract";
-import { AccuDrawHintBuilder, ContextRotationId } from "../AccuDraw";
-import { LocateFilterStatus, LocateResponse } from "../ElementLocateManager";
-import { HitDetail, HitGeomType } from "../HitDetail";
-import { IModelApp } from "../IModelApp";
-import { Marker } from "../Marker";
-import { NotifyMessageDetails, OutputMessagePriority, OutputMessageType } from "../NotificationManager";
-import { QuantityType } from "../quantity-formatting/QuantityFormatter";
-import { CanvasDecoration } from "../render/CanvasDecoration";
-import { DecorateContext } from "../ViewContext";
-import { Viewport } from "../Viewport";
-import { PrimitiveTool } from "./PrimitiveTool";
-import { BeButtonEvent, BeModifierKeys, CoreTools, EventHandled, InputSource } from "./Tool";
-import { ToolAssistance, ToolAssistanceImage, ToolAssistanceInputMethod, ToolAssistanceInstruction, ToolAssistanceSection } from "./ToolAssistance";
-import { GraphicType } from "../common/render/GraphicType";
+import { AccuDrawHintBuilder, ContextRotationId } from "../AccuDraw.js";
+import { LocateFilterStatus, LocateResponse } from "../ElementLocateManager.js";
+import { HitDetail, HitGeomType } from "../HitDetail.js";
+import { IModelApp } from "../IModelApp.js";
+import { Marker } from "../Marker.js";
+import { NotifyMessageDetails, OutputMessagePriority, OutputMessageType } from "../NotificationManager.js";
+import { QuantityType } from "../quantity-formatting/QuantityFormatter.js";
+import { CanvasDecoration } from "../render/CanvasDecoration.js";
+import { DecorateContext } from "../ViewContext.js";
+import { Viewport } from "../Viewport.js";
+import { PrimitiveTool } from "./PrimitiveTool.js";
+import { BeButtonEvent, BeModifierKeys, CoreTools, EventHandled, InputSource } from "./Tool.js";
+import { ToolAssistance, ToolAssistanceImage, ToolAssistanceInputMethod, ToolAssistanceInstruction, ToolAssistanceSection } from "./ToolAssistance.js";
+import { GraphicType } from "../common/render/GraphicType.js";
 
 function translateBold(key: string) {
   return `<b>${CoreTools.translate(`Measure.Labels.${key}`)}:</b> `;

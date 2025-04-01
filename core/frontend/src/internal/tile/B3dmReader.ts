@@ -9,14 +9,14 @@
 import { ByteStream, Id64String, JsonUtils } from "@itwin/core-bentley";
 import { Point3d, Transform, Vector3d } from "@itwin/core-geometry";
 import { B3dmHeader, ColorDef, ElementAlignedBox3d, Feature, FeatureTable, TileReadStatus } from "@itwin/core-common";
-import { IModelConnection } from "../../IModelConnection";
-import { Mesh } from "../../common/internal/render/MeshPrimitives";
-import { RenderSystem } from "../../render/RenderSystem";
-import { GltfDataType, GltfMeshPrimitive } from "../../common/gltf/GltfSchema";
+import { IModelConnection } from "../../IModelConnection.js";
+import { Mesh } from "../../common/internal/render/MeshPrimitives.js";
+import { RenderSystem } from "../../render/RenderSystem.js";
+import { GltfDataType, GltfMeshPrimitive } from "../../common/gltf/GltfSchema.js";
 import {
   BatchedTileIdMap, GltfBufferData, GltfReader, GltfReaderProps, GltfReaderResult, ShouldAbortReadGltf,
-} from "../../tile/internal";
-import { LayerTileData } from "../render/webgl/MapLayerParams";
+} from "../../tile/internal.js";
+import { LayerTileData } from "../render/webgl/MapLayerParams.js";
 
 
 /**

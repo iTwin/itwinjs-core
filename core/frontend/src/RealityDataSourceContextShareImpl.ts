@@ -5,14 +5,14 @@
 /** @packageDocumentation
  * @module Tiles
  */
-import { request } from "./request/Request";
+import { request } from "./request/Request.js";
 import { AccessToken, assert, GuidString, Logger } from "@itwin/core-bentley";
 import { RealityData, RealityDataFormat, RealityDataProvider, RealityDataSourceKey, RealityDataSourceProps } from "@itwin/core-common";
-import { FrontendLoggerCategory } from "./common/FrontendLoggerCategory";
-import { IModelApp } from "./IModelApp";
+import { FrontendLoggerCategory } from "./common/FrontendLoggerCategory.js";
+import { IModelApp } from "./IModelApp.js";
 
-import { PublisherProductInfo, RealityDataSource, SpatialLocationAndExtents } from "./RealityDataSource";
-import { OPCFormatInterpreter, ThreeDTileFormatInterpreter } from "./tile/internal";
+import { PublisherProductInfo, RealityDataSource, SpatialLocationAndExtents } from "./RealityDataSource.js";
+import { OPCFormatInterpreter, ThreeDTileFormatInterpreter } from "./tile/internal.js";
 
 /** This class provides access to the reality data provider services.
  * It encapsulates access to a reality data weiter it be from local access, http or ProjectWise Context Share.

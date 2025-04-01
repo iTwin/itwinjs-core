@@ -13,11 +13,11 @@ import { Range3d, Transform } from "@itwin/core-geometry";
 import {
   BatchType, ElementGeometryChange, ElementGraphicsRequestProps, FeatureAppearance, FeatureAppearanceProvider, FeatureAppearanceSource, GeometryClass, TileFormat,
 } from "@itwin/core-common";
-import { RenderSystem } from "../../render/RenderSystem";
-import { IModelApp } from "../../IModelApp";
+import { RenderSystem } from "../../render/RenderSystem.js";
+import { IModelApp } from "../../IModelApp.js";
 import {
   ImdlReader, IModelTileTree, RootIModelTile, Tile, TileContent, TileDrawArgs, TileParams, TileRequest, TileRequestChannel, TileTree,
-} from "../../tile/internal";
+} from "../../tile/internal.js";
 
 /** The root tile for the branch of an [[IModelTileTree]] containing graphics for elements that have been modified during the current
  * Not intended for direct consumption - exported for use by [[IModelTileTree]].

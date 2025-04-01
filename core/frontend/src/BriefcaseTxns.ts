@@ -12,9 +12,9 @@ import {
   ModelIdAndGeometryGuid, NotifyEntitiesChangedArgs, RemoveFunction, RootSubjectProps, TxnNotifications,
 } from "@itwin/core-common";
 import { Point3d, Range3d, Range3dProps, XYZProps } from "@itwin/core-geometry";
-import { BriefcaseConnection } from "./BriefcaseConnection";
-import { IpcApp, NotificationHandler } from "./IpcApp";
-import { EntityChanges, TxnEntityChanges } from "./TxnEntityChanges";
+import { BriefcaseConnection } from "./BriefcaseConnection.js";
+import { IpcApp, NotificationHandler } from "./IpcApp.js";
+import { EntityChanges, TxnEntityChanges } from "./TxnEntityChanges.js";
 
 /**
  * Base class for notification handlers for events from the backend that are specific to a [[BriefcaseConnection]].

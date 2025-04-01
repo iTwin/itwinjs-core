@@ -8,8 +8,8 @@
 
 import { Id64String } from "@itwin/core-bentley";
 import { GeometryClass } from "@itwin/core-common";
-import { ViewRect } from "../common/ViewRect";
-import { IModelConnection } from "../IModelConnection";
+import { ViewRect } from "../common/ViewRect.js";
+import { IModelConnection } from "../IModelConnection.js";
 
 /** Represents a [Feature]($common) determined to be visible within a [[Viewport]].
  * @see [[Viewport.queryVisibleFeatures]].

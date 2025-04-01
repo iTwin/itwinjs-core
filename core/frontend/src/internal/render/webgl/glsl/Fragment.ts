@@ -6,9 +6,9 @@
  * @module WebGL
  */
 
-import { FragmentShaderBuilder, FragmentShaderComponent, SourceBuilder, VariableType } from "../ShaderBuilder";
-import { encodeDepthRgb } from "./Decode";
-import { addRenderPass } from "./RenderPass";
+import { FragmentShaderBuilder, FragmentShaderComponent, SourceBuilder, VariableType } from "../ShaderBuilder.js";
+import { encodeDepthRgb } from "./Decode.js";
+import { addRenderPass } from "./RenderPass.js";
 
 /** @internal */
 export function addWindowToTexCoords(frag: FragmentShaderBuilder) {

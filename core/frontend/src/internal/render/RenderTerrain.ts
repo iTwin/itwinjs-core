@@ -7,7 +7,7 @@
  */
 
 import { Range2d, Transform, Vector2d } from "@itwin/core-geometry";
-import { RenderMemory } from "../../render/RenderMemory";
+import { RenderMemory } from "../../render/RenderMemory.js";
 import { RenderTexture } from "@itwin/core-common";
 
 export abstract class RenderTerrainGeometry implements Disposable, RenderMemory.Consumer {

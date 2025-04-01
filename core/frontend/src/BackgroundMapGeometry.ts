@@ -9,9 +9,9 @@
 import { assert } from "@itwin/core-bentley";
 import { Angle, Arc3d, ClipPlane, ClipPlaneContainment, Constant, CurvePrimitive, Ellipsoid, GrowableXYZArray, LongitudeLatitudeNumber, Matrix3d, Plane3dByOriginAndUnitNormal, Point2d, Point3d, Point4d, Range1d, Range3d, Ray3d, Transform, Vector3d, WritableXYAndZ, XYAndZ } from "@itwin/core-geometry";
 import { Cartographic, ColorByName, ColorDef, Frustum, GeoCoordStatus, GlobeMode, LinePixels } from "@itwin/core-common";
-import { IModelConnection } from "./IModelConnection";
-import { GraphicBuilder } from "./render/GraphicBuilder";
-import { WebMercatorTilingScheme } from "./tile/internal";
+import { IModelConnection } from "./IModelConnection.js";
+import { GraphicBuilder } from "./render/GraphicBuilder.js";
+import { WebMercatorTilingScheme } from "./tile/internal.js";
 
 const scratchRange = Range3d.createNull();
 const scratchZeroPoint = Point3d.createZero();

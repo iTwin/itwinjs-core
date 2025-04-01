@@ -6,15 +6,15 @@
  * @module WebGL
  */
 
-import { AttributeMap } from "../AttributeMap";
-import { FragmentShaderComponent, ProgramBuilder, VariableType, VertexShaderComponent } from "../ShaderBuilder";
-import { IsInstanced, PositionType } from "../TechniqueFlags";
-import { TechniqueId } from "../TechniqueId";
-import { addColor } from "./Color";
-import { addShaderFlags } from "./Common";
-import { addHiliter } from "./FeatureSymbology";
-import { addWhiteOnWhiteReversal } from "./Fragment";
-import { addLineWeight, addModelViewProjectionMatrix } from "./Vertex";
+import { AttributeMap } from "../AttributeMap.js";
+import { FragmentShaderComponent, ProgramBuilder, VariableType, VertexShaderComponent } from "../ShaderBuilder.js";
+import { IsInstanced, PositionType } from "../TechniqueFlags.js";
+import { TechniqueId } from "../TechniqueId.js";
+import { addColor } from "./Color.js";
+import { addShaderFlags } from "./Common.js";
+import { addHiliter } from "./FeatureSymbology.js";
+import { addWhiteOnWhiteReversal } from "./Fragment.js";
+import { addLineWeight, addModelViewProjectionMatrix } from "./Vertex.js";
 
 const computePosition = `
   float lineWeight = computeLineWeight();

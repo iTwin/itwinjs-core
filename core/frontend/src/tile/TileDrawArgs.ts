@@ -9,16 +9,16 @@
 import { BeTimePoint } from "@itwin/core-bentley";
 import { ClipVector, Geometry, Map4d, Matrix4d, Point3d, Point4d, Range1d, Range3d, Transform, Vector3d } from "@itwin/core-geometry";
 import { FeatureAppearanceProvider, FrustumPlanes, HiddenLine, ViewFlagOverrides } from "@itwin/core-common";
-import { FeatureSymbology } from "../render/FeatureSymbology";
-import { GraphicBranch, GraphicBranchOptions } from "../render/GraphicBranch";
-import { RenderClipVolume } from "../render/RenderClipVolume";
-import { RenderGraphic } from "../render/RenderGraphic";
-import { RenderPlanarClassifier } from "../internal/render/RenderPlanarClassifier";
-import { SceneContext } from "../ViewContext";
-import { ViewingSpace } from "../ViewingSpace";
-import { CoordSystem } from "../CoordSystem";
-import { Tile, TileGraphicType, TileTree } from "./internal";
-import { RenderTextureDrape } from "../internal/render/RenderTextureDrape";
+import { FeatureSymbology } from "../render/FeatureSymbology.js";
+import { GraphicBranch, GraphicBranchOptions } from "../render/GraphicBranch.js";
+import { RenderClipVolume } from "../render/RenderClipVolume.js";
+import { RenderGraphic } from "../render/RenderGraphic.js";
+import { RenderPlanarClassifier } from "../internal/render/RenderPlanarClassifier.js";
+import { SceneContext } from "../ViewContext.js";
+import { ViewingSpace } from "../ViewingSpace.js";
+import { CoordSystem } from "../CoordSystem.js";
+import { Tile, TileGraphicType, TileTree } from "./internal.js";
+import { RenderTextureDrape } from "../internal/render/RenderTextureDrape.js";
 
 const scratchRange = new Range3d();
 const scratchPoint = Point3d.create();

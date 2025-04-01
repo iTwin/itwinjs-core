@@ -7,8 +7,8 @@
  */
 
 import { RenderMode } from "@itwin/core-common";
-import { RenderPass } from "./RenderFlags";
-import { Target } from "./Target";
+import { RenderPass } from "./RenderFlags.js";
+import { Target } from "./Target.js";
 
 /* eslint-disable no-restricted-syntax */
 

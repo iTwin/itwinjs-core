@@ -6,16 +6,16 @@
  * @module WebGL
  */
 
-import { BatchState } from "./BatchState";
-import { FeatureOverrides } from "./FeatureOverrides";
-import { Batch } from "./Graphic";
-import { UniformHandle } from "./UniformHandle";
-import { desync, sync } from "./Sync";
-import { Target } from "./Target";
-import { FeatureMode } from "./TechniqueFlags";
-import { ThematicSensors } from "./ThematicSensors";
-import { Contours } from "./Contours";
-import { OvrFlags } from "../../../common/internal/render/OvrFlags";
+import { BatchState } from "./BatchState.js";
+import { FeatureOverrides } from "./FeatureOverrides.js";
+import { Batch } from "./Graphic.js";
+import { UniformHandle } from "./UniformHandle.js";
+import { desync, sync } from "./Sync.js";
+import { Target } from "./Target.js";
+import { FeatureMode } from "./TechniqueFlags.js";
+import { ThematicSensors } from "./ThematicSensors.js";
+import { Contours } from "./Contours.js";
+import { OvrFlags } from "../../../common/internal/render/OvrFlags.js";
 
 const scratchRgb = new Float32Array(3);
 const noOverrideRgb = new Float32Array([-1.0, -1.0, -1.0]);

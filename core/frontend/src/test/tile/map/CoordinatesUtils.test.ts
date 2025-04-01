@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { describe, expect, it } from "vitest";
-import { deflateCoordinates } from "../../../tile/internal";
+import { deflateCoordinates } from "../../../tile/internal.js";
 
 describe("CoordinatesUtils", () => {
   it("should deflate coordinates array", async () => {

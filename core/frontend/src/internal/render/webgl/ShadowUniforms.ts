@@ -8,11 +8,11 @@
 
 import { Matrix4d } from "@itwin/core-geometry";
 import { ColorDef, RgbColor } from "@itwin/core-common";
-import { FloatRgba } from "./FloatRGBA";
-import { UniformHandle } from "./UniformHandle";
-import { Matrix4 } from "./Matrix";
-import { desync, sync, SyncToken } from "./Sync";
-import { Target } from "./Target";
+import { FloatRgba } from "./FloatRGBA.js";
+import { UniformHandle } from "./UniformHandle.js";
+import { Matrix4 } from "./Matrix.js";
+import { desync, sync, SyncToken } from "./Sync.js";
+import { Target } from "./Target.js";
 
 /** Maintains state of uniforms used for applying shadows.
  * @internal

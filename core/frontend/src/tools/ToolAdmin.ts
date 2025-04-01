@@ -10,26 +10,26 @@ import { AbandonedError, assert, BeEvent, BeTimePoint, IModelStatus, Logger } fr
 import { Matrix3d, Point2d, Point3d, Transform, Vector3d, XAndY } from "@itwin/core-geometry";
 import { Easing, GeometryStreamProps, NpcCenter } from "@itwin/core-common";
 import { DialogItemValue, DialogPropertyItem, DialogPropertySyncItem } from "@itwin/appui-abstract";
-import { AccuSnap, TentativeOrAccuSnap } from "../AccuSnap";
-import { LocateOptions } from "../ElementLocateManager";
-import { FrontendLoggerCategory } from "../common/FrontendLoggerCategory";
-import { HitDetail } from "../HitDetail";
-import { IModelApp } from "../IModelApp";
-import { linePlaneIntersect } from "../LinePlaneIntersect";
-import { MessageBoxIconType, MessageBoxType } from "../NotificationManager";
-import { CanvasDecoration } from "../render/CanvasDecoration";
-import { IconSprites } from "../Sprites";
-import { OnViewExtentsError, ViewChangeOptions } from "../ViewAnimation";
-import { DecorateContext, DynamicsContext } from "../ViewContext";
-import { ScreenViewport, Viewport } from "../Viewport";
-import { ViewStatus } from "../ViewStatus";
-import { PrimitiveTool } from "./PrimitiveTool";
+import { AccuSnap, TentativeOrAccuSnap } from "../AccuSnap.js";
+import { LocateOptions } from "../ElementLocateManager.js";
+import { FrontendLoggerCategory } from "../common/FrontendLoggerCategory.js";
+import { HitDetail } from "../HitDetail.js";
+import { IModelApp } from "../IModelApp.js";
+import { linePlaneIntersect } from "../LinePlaneIntersect.js";
+import { MessageBoxIconType, MessageBoxType } from "../NotificationManager.js";
+import { CanvasDecoration } from "../render/CanvasDecoration.js";
+import { IconSprites } from "../Sprites.js";
+import { OnViewExtentsError, ViewChangeOptions } from "../ViewAnimation.js";
+import { DecorateContext, DynamicsContext } from "../ViewContext.js";
+import { ScreenViewport, Viewport } from "../Viewport.js";
+import { ViewStatus } from "../ViewStatus.js";
+import { PrimitiveTool } from "./PrimitiveTool.js";
 import {
   BeButton, BeButtonEvent, BeButtonState, BeModifierKeys, BeTouchEvent, BeWheelEvent, CoordinateLockOverrides, CoordSource, EventHandled,
   InputCollector, InputSource, InteractiveTool, Tool,
-} from "./Tool";
-import { ToolSettings } from "./ToolSettings";
-import { ViewTool } from "./ViewTool";
+} from "./Tool.js";
+import { ToolSettings } from "./ToolSettings.js";
+import { ViewTool } from "./ViewTool.js";
 
 /**
  * @public

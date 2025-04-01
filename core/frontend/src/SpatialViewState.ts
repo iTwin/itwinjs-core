@@ -9,15 +9,15 @@
 import { BeEvent, CompressedId64Set, Id64String, OrderedId64Iterable } from "@itwin/core-bentley";
 import { Constant, Matrix3d, Range3d, XYAndZ } from "@itwin/core-geometry";
 import { AxisAlignedBox3d, HydrateViewStateRequestProps, HydrateViewStateResponseProps, SpatialViewDefinitionProps, ViewStateProps } from "@itwin/core-common";
-import { AuxCoordSystemSpatialState, AuxCoordSystemState } from "./AuxCoordSys";
-import { ModelSelectorState } from "./ModelSelectorState";
-import { CategorySelectorState } from "./CategorySelectorState";
-import { DisplayStyle3dState } from "./DisplayStyleState";
-import { GeometricModel3dState, GeometricModelState } from "./ModelState";
-import { SceneContext } from "./ViewContext";
-import { IModelConnection } from "./IModelConnection";
-import { AttachToViewportArgs, ViewState3d } from "./ViewState";
-import { SpatialTileTreeReferences, TileTreeReference } from "./tile/internal";
+import { AuxCoordSystemSpatialState, AuxCoordSystemState } from "./AuxCoordSys.js";
+import { ModelSelectorState } from "./ModelSelectorState.js";
+import { CategorySelectorState } from "./CategorySelectorState.js";
+import { DisplayStyle3dState } from "./DisplayStyleState.js";
+import { GeometricModel3dState, GeometricModelState } from "./ModelState.js";
+import { SceneContext } from "./ViewContext.js";
+import { IModelConnection } from "./IModelConnection.js";
+import { AttachToViewportArgs, ViewState3d } from "./ViewState.js";
+import { SpatialTileTreeReferences, TileTreeReference } from "./tile/internal.js";
 
 /** Options supplied to [[SpatialViewState.computeFitRange]].
  * @public

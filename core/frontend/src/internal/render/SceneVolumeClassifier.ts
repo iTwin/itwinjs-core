@@ -7,7 +7,7 @@
  */
 
 import { Id64String } from "@itwin/core-bentley";
-import { ActiveSpatialClassifier } from "../../SpatialClassifiersState";
+import { ActiveSpatialClassifier } from "../../SpatialClassifiersState.js";
 
 /** Describes the spatial classification applied to a [[Scene]]. */
 export interface SceneVolumeClassifier {

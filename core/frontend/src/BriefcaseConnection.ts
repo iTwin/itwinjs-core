@@ -11,13 +11,13 @@ import {
   ChangesetIndex, ChangesetIndexAndId, getPullChangesIpcChannel, IModelConnectionProps, IModelError,
   PullChangesOptions as IpcAppPullChangesOptions, OpenBriefcaseProps, StandaloneOpenOptions,
 } from "@itwin/core-common";
-import { BriefcaseTxns } from "./BriefcaseTxns";
-import { GraphicalEditingScope } from "./GraphicalEditingScope";
-import { IModelApp } from "./IModelApp";
-import { IModelConnection } from "./IModelConnection";
-import { IpcApp } from "./IpcApp";
-import { disposeTileTreesForGeometricModels } from "./tile/internal";
-import { Viewport } from "./Viewport";
+import { BriefcaseTxns } from "./BriefcaseTxns.js";
+import { GraphicalEditingScope } from "./GraphicalEditingScope.js";
+import { IModelApp } from "./IModelApp.js";
+import { IModelConnection } from "./IModelConnection.js";
+import { IpcApp } from "./IpcApp.js";
+import { disposeTileTreesForGeometricModels } from "./tile/internal.js";
+import { Viewport } from "./Viewport.js";
 
 /**
  * Download progress information.

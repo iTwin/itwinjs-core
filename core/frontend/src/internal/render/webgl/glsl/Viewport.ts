@@ -6,9 +6,9 @@
  * @module WebGL
  */
 
-import { ShaderBuilder, VariableType, VertexShaderBuilder } from "../ShaderBuilder";
-import { addRenderPass } from "./RenderPass";
-import { addModelViewMatrix, addProjectionMatrix } from "./Vertex";
+import { ShaderBuilder, VariableType, VertexShaderBuilder } from "../ShaderBuilder.js";
+import { addRenderPass } from "./RenderPass.js";
+import { addModelViewMatrix, addProjectionMatrix } from "./Vertex.js";
 
 /** @internal */
 export function addViewport(shader: ShaderBuilder) {

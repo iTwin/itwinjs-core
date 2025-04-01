@@ -7,9 +7,9 @@
  */
 
 import { MapSubLayerProps } from "@itwin/core-common";
-import { RequestBasicCredentials } from "../../../request/Request";
+import { RequestBasicCredentials } from "../../../request/Request.js";
 import WMS from "wms-capabilities";
-import { MapCartoRectangle, WmsUtilities } from "../../../tile/internal";
+import { MapCartoRectangle, WmsUtilities } from "../../../tile/internal.js";
 
 function rangeFromJSONArray(json: any): MapCartoRectangle | undefined {
   return (Array.isArray(json) && json.length === 4) ? MapCartoRectangle.fromDegrees(json[0], json[1], json[2], json[3]) : undefined;

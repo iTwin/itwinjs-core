@@ -44,7 +44,7 @@ export default defineConfig({
         "lcov",
         "cobertura"
       ],
-      reportsDirectory: "./lib/cjs/test/coverage",
+      reportsDirectory: "./lib/esm/test/coverage",
     },
     minWorkers: 1,
     maxWorkers: 3

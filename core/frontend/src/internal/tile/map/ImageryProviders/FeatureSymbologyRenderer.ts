@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { FeatureAttributeDrivenSymbology } from "../../../../tile/internal";
+import { FeatureAttributeDrivenSymbology } from "../../../../tile/internal.js";
 
 /** Renderer responsible of applying the feature symbology
  * @internal

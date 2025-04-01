@@ -7,9 +7,9 @@
  */
 
 import { Matrix4d } from "@itwin/core-geometry";
-import { UniformHandle } from "./UniformHandle";
-import { Matrix4 } from "./Matrix";
-import { desync, sync } from "./Sync";
+import { UniformHandle } from "./UniformHandle.js";
+import { Matrix4 } from "./Matrix.js";
+import { desync, sync } from "./Sync.js";
 
 /** Maintains uniform variable state associated with a Target's ViewRect.
  * @internal

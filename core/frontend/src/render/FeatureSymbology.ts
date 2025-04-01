@@ -8,8 +8,8 @@
 
 import { BeEvent, Id64 } from "@itwin/core-bentley";
 import { FeatureAppearance, FeatureOverrides } from "@itwin/core-common";
-import { Viewport } from "../Viewport";
-import { ViewState } from "../ViewState";
+import { Viewport } from "../Viewport.js";
+import { ViewState } from "../ViewState.js";
 
 // cspell:ignore subcat subcats
 

@@ -7,10 +7,10 @@
  */
 
 import { ContourDisplay, RgbColor } from "@itwin/core-common";
-import { UniformHandle } from "./UniformHandle";
-import { desync, sync } from "./Sync";
-import { Target } from "./Target";
-import { LineCode } from "./LineCode";
+import { UniformHandle } from "./UniformHandle.js";
+import { desync, sync } from "./Sync.js";
+import { Target } from "./Target.js";
+import { LineCode } from "./LineCode.js";
 
 /** Maintains state for uniforms related to contour display.
  * @internal

@@ -6,7 +6,7 @@
  * @module WebGL
  */
 
-import { VariableType, VertexShaderBuilder } from "../ShaderBuilder";
+import { VariableType, VertexShaderBuilder } from "../ShaderBuilder.js";
 
 const computeLUTCoords = `
 vec2 computeLUTCoords(float index, vec2 dimensions, vec2 center, float mult) {

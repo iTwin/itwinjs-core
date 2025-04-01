@@ -8,15 +8,15 @@
 
 import { assert, dispose, Id64, OrderedId64Iterable } from "@itwin/core-bentley";
 import { ContourDisplay, PackedFeature, RenderFeatureTable } from "@itwin/core-common";
-import { WebGLDisposable } from "./Disposable";
-import { GL } from "./GL";
-import { UniformHandle } from "./UniformHandle";
-import { TextureUnit } from "./RenderFlags";
-import { System } from "./System";
-import { Target } from "./Target";
-import { Texture2DDataUpdater, Texture2DHandle, TextureHandle } from "./Texture";
-import { BatchOptions } from "../../../common/render/BatchOptions";
-import { computeDimensions } from "../../../common/internal/render/VertexTable";
+import { WebGLDisposable } from "./Disposable.js";
+import { GL } from "./GL.js";
+import { UniformHandle } from "./UniformHandle.js";
+import { TextureUnit } from "./RenderFlags.js";
+import { System } from "./System.js";
+import { Target } from "./Target.js";
+import { Texture2DDataUpdater, Texture2DHandle, TextureHandle } from "./Texture.js";
+import { BatchOptions } from "../../../common/render/BatchOptions.js";
+import { computeDimensions } from "../../../common/internal/render/VertexTable.js";
 
 /** @internal */
 export type ContoursCleanup = () => void;

@@ -7,7 +7,7 @@
  */
 
 import { FillFlags, RenderMaterial, RenderTexture } from "@itwin/core-common";
-import { VertexIndices } from "./VertexIndices";
+import { VertexIndices } from "./VertexIndices.js";
 
 /** @internal */
 export enum SurfaceType {

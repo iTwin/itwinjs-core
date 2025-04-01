@@ -5,14 +5,14 @@
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { BeDuration, BeEvent } from "@itwin/core-bentley";
 import { Point3d, Range3d, Transform } from "@itwin/core-geometry";
-import { IModelConnection } from "../../IModelConnection";
-import { SpatialViewState } from "../../SpatialViewState";
-import { ScreenViewport, Viewport } from "../../Viewport";
-import { IModelApp } from "../../IModelApp";
+import { IModelConnection } from "../../IModelConnection.js";
+import { SpatialViewState } from "../../SpatialViewState.js";
+import { ScreenViewport, Viewport } from "../../Viewport.js";
+import { IModelApp } from "../../IModelApp.js";
 import {
   Tile, TileContent, TiledGraphicsProvider, TileLoadPriority, TileRequest, TileTree, TileTreeOwner, TileTreeReference, TileTreeSupplier,
-} from "../../tile/internal";
-import { createBlankConnection } from "../createBlankConnection";
+} from "../../tile/internal.js";
+import { createBlankConnection } from "../createBlankConnection.js";
 import { EmptyLocalization } from "@itwin/core-common";
 
 class TestTile extends Tile {
@@ -258,7 +258,7 @@ describe("TiledGraphicsProvider", () => {
           func(a);
           func(b);
         }
-        
+
         public * getReferences(): Iterable<TileTreeReference> {
           yield b;
           yield a;

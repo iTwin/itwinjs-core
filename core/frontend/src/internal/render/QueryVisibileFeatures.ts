@@ -7,12 +7,12 @@
  */
 
  import { assert } from "@itwin/core-bentley";
- import { QueryVisibleFeaturesCallback, QueryVisibleFeaturesOptions, VisibleFeature } from "../../render/VisibleFeature";
- import { Pixel } from "../../render/Pixel";
-import { ViewRect } from "../../common/ViewRect";
-import { IModelConnection } from "../../IModelConnection";
-import { Viewport } from "../../Viewport";
- 
+ import { QueryVisibleFeaturesCallback, QueryVisibleFeaturesOptions, VisibleFeature } from "../../render/VisibleFeature.js";
+ import { Pixel } from "../../render/Pixel.js";
+import { ViewRect } from "../../common/ViewRect.js";
+import { IModelConnection } from "../../IModelConnection.js";
+import { Viewport } from "../../Viewport.js";
+
 /** Ensures that the iterable supplied to QueryVisibleFeaturesCallback becomes invalidated once the callback exits.
  * The iterable relies on RenderTarget state that changes from one frame to another.
  */

@@ -7,19 +7,19 @@
  */
 
 import { assert } from "@itwin/core-bentley";
-import { Pass, RenderOrder, TextureUnit } from "../RenderFlags";
+import { Pass, RenderOrder, TextureUnit } from "../RenderFlags.js";
 import {
   FragmentShaderBuilder, FragmentShaderComponent, ProgramBuilder, ShaderBuilder, VariablePrecision, VariableType, VertexShaderBuilder,
   VertexShaderComponent,
-} from "../ShaderBuilder";
-import { FeatureMode, TechniqueFlags } from "../TechniqueFlags";
-import { addExtractNthBit, addEyeSpace, addUInt32s } from "./Common";
-import { decodeDepthRgb, decodeUint24 } from "./Decode";
-import { addWindowToTexCoords, assignFragColor, computeLinearDepth } from "./Fragment";
-import { addLookupTable } from "./LookupTable";
-import { addRenderPass } from "./RenderPass";
-import { addAlpha, addLineWeight, replaceLineCode, replaceLineWeight } from "./Vertex";
-import { OvrFlags } from "../../../../common/internal/render/OvrFlags";
+} from "../ShaderBuilder.js";
+import { FeatureMode, TechniqueFlags } from "../TechniqueFlags.js";
+import { addExtractNthBit, addEyeSpace, addUInt32s } from "./Common.js";
+import { decodeDepthRgb, decodeUint24 } from "./Decode.js";
+import { addWindowToTexCoords, assignFragColor, computeLinearDepth } from "./Fragment.js";
+import { addLookupTable } from "./LookupTable.js";
+import { addRenderPass } from "./RenderPass.js";
+import { addAlpha, addLineWeight, replaceLineCode, replaceLineWeight } from "./Vertex.js";
+import { OvrFlags } from "../../../../common/internal/render/OvrFlags.js";
 
 /* eslint-disable no-restricted-syntax */
 
@@ -622,7 +622,7 @@ const computeFeatureOverrides = `
     feature_invisible = true;
     return;
   }
-    
+
   v_feature_emphasis = kEmphFlag_Hilite * extractNthBit(emphFlags, kOvrBit_Hilited) + kEmphFlag_Emphasize * extractNthBit(emphFlags, kOvrBit_Emphasized);
 
   float flags = value.x * 256.0;

@@ -9,20 +9,20 @@
 import { dispose } from "@itwin/core-bentley";
 import { Point3d } from "@itwin/core-geometry";
 import { FeatureIndexType, PolylineTypeFlags, QParams3d, RenderMode } from "@itwin/core-common";
-import { PolylineParams } from "../../../common/internal/render/PolylineParams";
-import { RenderMemory } from "../../../render/RenderMemory";
-import { LUTGeometry, PolylineBuffers } from "./CachedGeometry";
-import { ColorInfo } from "./ColorInfo";
-import { ShaderProgramParams } from "./DrawCommand";
-import { LineCode } from "./LineCode";
-import { GL } from "./GL";
-import { BuffersContainer } from "./AttributeBuffers";
-import { Pass, RenderOrder } from "./RenderFlags";
-import { System } from "./System";
-import { Target } from "./Target";
-import { TechniqueId } from "./TechniqueId";
-import { VertexLUT } from "./VertexLUT";
-import { RenderGeometry } from "../../../internal/render/RenderGeometry";
+import { PolylineParams } from "../../../common/internal/render/PolylineParams.js";
+import { RenderMemory } from "../../../render/RenderMemory.js";
+import { LUTGeometry, PolylineBuffers } from "./CachedGeometry.js";
+import { ColorInfo } from "./ColorInfo.js";
+import { ShaderProgramParams } from "./DrawCommand.js";
+import { LineCode } from "./LineCode.js";
+import { GL } from "./GL.js";
+import { BuffersContainer } from "./AttributeBuffers.js";
+import { Pass, RenderOrder } from "./RenderFlags.js";
+import { System } from "./System.js";
+import { Target } from "./Target.js";
+import { TechniqueId } from "./TechniqueId.js";
+import { VertexLUT } from "./VertexLUT.js";
+import { RenderGeometry } from "../../../internal/render/RenderGeometry.js";
 
 /** @internal */
 export class PolylineGeometry extends LUTGeometry implements RenderGeometry {

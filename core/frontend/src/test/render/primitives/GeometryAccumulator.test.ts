@@ -5,20 +5,20 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { LineString3d, Loop, Path, Point3d, Range3d, Transform } from "@itwin/core-geometry";
 import { ColorDef, EmptyLocalization, GraphicParams } from "@itwin/core-common";
-import { IModelApp } from "../../../IModelApp";
-import { IModelConnection } from "../../../IModelConnection";
-import { RenderGraphic } from "../../../render/RenderGraphic";
-import { StandardViewId } from "../../../StandardView";
-import { SpatialViewState } from "../../../SpatialViewState";
-import { Branch } from "../../../internal/render/webgl/Graphic";
-import { createBlankConnection } from "../../createBlankConnection";
-import { FakeGeometry } from "./Fake";
-import { GraphicType } from "../../../common";
-import { PrimitiveBuilder } from "../../../internal/render/PrimitiveBuilder";
-import { GeometryAccumulator } from "../../../common/internal/render/GeometryAccumulator";
-import { DisplayParams } from "../../../common/internal/render/DisplayParams";
-import { Geometry } from "../../../common/internal/render/GeometryPrimitives";
-import { _accumulator } from "../../../common/internal/Symbols";
+import { IModelApp } from "../../../IModelApp.js";
+import { IModelConnection } from "../../../IModelConnection.js";
+import { RenderGraphic } from "../../../render/RenderGraphic.js";
+import { StandardViewId } from "../../../StandardView.js";
+import { SpatialViewState } from "../../../SpatialViewState.js";
+import { Branch } from "../../../internal/render/webgl/Graphic.js";
+import { createBlankConnection } from "../../createBlankConnection.js";
+import { FakeGeometry } from "./Fake.js";
+import { GraphicType } from "../../../common.js";
+import { PrimitiveBuilder } from "../../../internal/render/PrimitiveBuilder.js";
+import { GeometryAccumulator } from "../../../common/internal/render/GeometryAccumulator.js";
+import { DisplayParams } from "../../../common/internal/render/DisplayParams.js";
+import { Geometry } from "../../../common/internal/render/GeometryPrimitives.js";
+import { _accumulator } from "../../../common/internal/Symbols.js";
 
 describe("GeometryAccumulator tests", () => {
   let iModel: IModelConnection;

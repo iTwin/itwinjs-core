@@ -10,16 +10,16 @@
 import { assert } from "@itwin/core-bentley";
 import { Matrix4d } from "@itwin/core-geometry";
 import { SpatialClassifierInsideDisplay } from "@itwin/core-common";
-import { Matrix4 } from "../Matrix";
-import { PlanarClassifierContent } from "../PlanarClassifier";
-import { TextureUnit } from "../RenderFlags";
-import { FragmentShaderComponent, ProgramBuilder, ShaderBuilder, VariableType } from "../ShaderBuilder";
-import { IsThematic } from "../TechniqueFlags";
-import { Texture2DHandle } from "../Texture";
-import { addShaderFlags, addUInt32s } from "./Common";
-import { addClassifierFlash } from "./FeatureSymbology";
-import { addWindowToTexCoords } from "./Fragment";
-import { addInstancedRtcMatrix } from "./Vertex";
+import { Matrix4 } from "../Matrix.js";
+import { PlanarClassifierContent } from "../PlanarClassifier.js";
+import { TextureUnit } from "../RenderFlags.js";
+import { FragmentShaderComponent, ProgramBuilder, ShaderBuilder, VariableType } from "../ShaderBuilder.js";
+import { IsThematic } from "../TechniqueFlags.js";
+import { Texture2DHandle } from "../Texture.js";
+import { addShaderFlags, addUInt32s } from "./Common.js";
+import { addClassifierFlash } from "./FeatureSymbology.js";
+import { addWindowToTexCoords } from "./Fragment.js";
+import { addInstancedRtcMatrix } from "./Vertex.js";
 
 export const volClassOpaqueColor = `
 vec4 volClassColor(vec4 baseColor, float depth) {

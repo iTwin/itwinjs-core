@@ -5,12 +5,12 @@
 
 import { Range3d } from "@itwin/core-geometry";
 import { EmptyLocalization, GltfV2ChunkTypes, GltfVersions, RenderTexture, TileFormat } from "@itwin/core-common";
-import { IModelConnection } from "../../IModelConnection";
-import { IModelApp } from "../../IModelApp";
-import { GltfDataType, GltfDocument, GltfId, GltfNode, GltfSampler, GltfWrapMode } from "../../common/gltf/GltfSchema";
-import { GltfDataBuffer, GltfGraphicsReader, GltfReader, GltfReaderArgs, GltfReaderProps, GltfReaderResult } from "../../tile/GltfReader";
-import { createBlankConnection } from "../createBlankConnection";
-import { BatchedTileIdMap } from "../../tile/internal";
+import { IModelConnection } from "../../IModelConnection.js";
+import { IModelApp } from "../../IModelApp.js";
+import { GltfDataType, GltfDocument, GltfId, GltfNode, GltfSampler, GltfWrapMode } from "../../common/gltf/GltfSchema.js";
+import { GltfDataBuffer, GltfGraphicsReader, GltfReader, GltfReaderArgs, GltfReaderProps, GltfReaderResult } from "../../tile/GltfReader.js";
+import { createBlankConnection } from "../createBlankConnection.js";
+import { BatchedTileIdMap } from "../../tile/internal.js";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 const minimalBin = new Uint8Array([12, 34, 0xfe, 0xdc]);

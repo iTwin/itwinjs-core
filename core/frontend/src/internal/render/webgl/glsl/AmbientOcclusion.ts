@@ -8,18 +8,18 @@
 
 // portions adapted from Cesium.js Copyright 2011 - 2022 Cesium Contributors
 
-import { AmbientOcclusionGeometry } from "../CachedGeometry";
-import { TextureUnit } from "../RenderFlags";
-import { FragmentShaderComponent, VariablePrecision, VariableType } from "../ShaderBuilder";
-import { ShaderProgram } from "../ShaderProgram";
-import { System } from "../System";
-import { Texture2DHandle } from "../Texture";
-import { addFrustum } from "./Common";
-import { decodeDepthRgb } from "./Decode";
-import { addRenderOrderConstants, readDepthAndOrder } from "./FeatureSymbology";
-import { addWindowToTexCoords, assignFragColor } from "./Fragment";
-import { addViewport } from "./Viewport";
-import { createViewportQuadBuilder } from "./ViewportQuad";
+import { AmbientOcclusionGeometry } from "../CachedGeometry.js";
+import { TextureUnit } from "../RenderFlags.js";
+import { FragmentShaderComponent, VariablePrecision, VariableType } from "../ShaderBuilder.js";
+import { ShaderProgram } from "../ShaderProgram.js";
+import { System } from "../System.js";
+import { Texture2DHandle } from "../Texture.js";
+import { addFrustum } from "./Common.js";
+import { decodeDepthRgb } from "./Decode.js";
+import { addRenderOrderConstants, readDepthAndOrder } from "./FeatureSymbology.js";
+import { addWindowToTexCoords, assignFragColor } from "./Fragment.js";
+import { addViewport } from "./Viewport.js";
+import { createViewportQuadBuilder } from "./ViewportQuad.js";
 
 // 'PB' indicates a shader variation when only the pickbuffer is available
 // 'DB' indicates a shader variation when the real floating point depth buffer is available.

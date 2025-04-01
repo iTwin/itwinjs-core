@@ -6,7 +6,7 @@
  * @module Tiles
  */
 import { ImageMapLayerSettings } from "@itwin/core-common";
-import { MapLayerImageryProvider, MapLayerSourceStatus, MapLayerSourceValidation } from "../../../../tile/internal";
+import { MapLayerImageryProvider, MapLayerSourceStatus, MapLayerSourceValidation } from "../../../../tile/internal.js";
 
 const levelToken = "{level}";
 const rowToken = "{row}";

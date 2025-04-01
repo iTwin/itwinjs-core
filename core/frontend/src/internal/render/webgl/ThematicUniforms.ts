@@ -10,16 +10,16 @@ import { assert, dispose } from "@itwin/core-bentley";
 import {
   Gradient, RenderTexture, ThematicDisplay, ThematicDisplayMode, ThematicGradientMode, ThematicGradientTransparencyMode,
 } from "@itwin/core-common";
-import { WebGLDisposable } from "./Disposable";
-import { UniformHandle } from "./UniformHandle";
-import { TextureUnit } from "./RenderFlags";
-import { desync, sync } from "./Sync";
-import { TextureHandle } from "./Texture";
-import { ThematicSensors } from "./ThematicSensors";
+import { WebGLDisposable } from "./Disposable.js";
+import { UniformHandle } from "./UniformHandle.js";
+import { TextureUnit } from "./RenderFlags.js";
+import { desync, sync } from "./Sync.js";
+import { TextureHandle } from "./Texture.js";
+import { ThematicSensors } from "./ThematicSensors.js";
 import { Angle, Range3d, Transform, Vector3d } from "@itwin/core-geometry";
-import { Target } from "./Target";
-import { System } from "./System";
-import { FloatRgba } from "./FloatRGBA";
+import { Target } from "./Target.js";
+import { System } from "./System.js";
+import { FloatRgba } from "./FloatRGBA.js";
 
 /** Maintains state for uniforms related to thematic display.
  * @internal

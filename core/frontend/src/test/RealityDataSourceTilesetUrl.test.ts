@@ -5,7 +5,7 @@
 
 import { describe, expect, it } from "vitest";
 import { RealityDataProvider } from "@itwin/core-common";
-import { RealityDataSourceTilesetUrlImpl } from "../RealityDataSourceTilesetUrlImpl";
+import { RealityDataSourceTilesetUrlImpl } from "../RealityDataSourceTilesetUrlImpl.js";
 
 describe("RealityDataSourceTilesetUrl", () => {
   it("handle content type of relative urls", async () => {

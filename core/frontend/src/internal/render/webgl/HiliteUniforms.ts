@@ -7,10 +7,10 @@
  */
 
 import { Hilite } from "@itwin/core-common";
-import { FloatRgb } from "./FloatRGBA";
-import { UniformHandle } from "./UniformHandle";
-import { Matrix3 } from "./Matrix";
-import { desync, sync } from "./Sync";
+import { FloatRgb } from "./FloatRGBA.js";
+import { UniformHandle } from "./UniformHandle.js";
+import { Matrix3 } from "./Matrix.js";
+import { desync, sync } from "./Sync.js";
 
 /** Maintains state for uniforms related to hilite and emphasis.
  * @internal

@@ -7,12 +7,12 @@
  * @module AccuDraw
  */
 import { FormatType, Parser } from "@itwin/core-quantity";
-import { AccuDraw, CompassMode, ItemField } from "../AccuDraw";
-import { ViewRect } from "../common/ViewRect";
-import { IModelApp } from "../IModelApp";
-import { AccuDrawShortcuts } from "./AccuDrawTool";
-import { BeButtonEvent } from "./Tool";
-import { ScreenViewport } from "../Viewport";
+import { AccuDraw, CompassMode, ItemField } from "../AccuDraw.js";
+import { ViewRect } from "../common/ViewRect.js";
+import { IModelApp } from "../IModelApp.js";
+import { AccuDrawShortcuts } from "./AccuDrawTool.js";
+import { BeButtonEvent } from "./Tool.js";
+import { ScreenViewport } from "../Viewport.js";
 
 interface AccuDrawControls {
   overlay: HTMLDivElement; // Viewport overlay...

@@ -9,11 +9,11 @@
 import { assert, Dictionary } from "@itwin/core-bentley";
 import { Angle, IndexedPolyface, Point2d, Point3d, Polyface, PolyfaceVisitor, Range3d, Vector3d } from "@itwin/core-geometry";
 import { Feature, MeshEdge, MeshEdges, MeshPolyline, OctEncodedNormal, OctEncodedNormalPair, QPoint3dList, TextureMapping } from "@itwin/core-common";
-import { DisplayParams } from "./DisplayParams";
-import { Triangle, TriangleKey, TriangleSet } from "./Primitives";
-import { StrokesPrimitivePointLists } from "./Strokes";
-import { VertexKey, VertexKeyProps, VertexMap } from "./VertexKey";
-import { Mesh } from "./MeshPrimitives";
+import { DisplayParams } from "./DisplayParams.js";
+import { Triangle, TriangleKey, TriangleSet } from "./Primitives.js";
+import { StrokesPrimitivePointLists } from "./Strokes.js";
+import { VertexKey, VertexKeyProps, VertexMap } from "./VertexKey.js";
+import { Mesh } from "./MeshPrimitives.js";
 
 // Describes a vertex along with the index of the source vertex in the source PolyfaceVisitor.
 type VertexKeyPropsWithIndex = VertexKeyProps & { sourceIndex: number };

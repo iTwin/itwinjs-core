@@ -8,20 +8,20 @@
 
 import { assert, dispose, Id64 } from "@itwin/core-bentley";
 import { PackedFeature, RenderFeatureTable } from "@itwin/core-common";
-import { FeatureSymbology } from "../../../render/FeatureSymbology";
-import { WebGLDisposable } from "./Disposable";
-import { LineCode } from "./LineCode";
-import { GL } from "./GL";
-import { UniformHandle } from "./UniformHandle";
-import { EmphasisFlags, TextureUnit } from "./RenderFlags";
-import { sync, SyncObserver } from "./Sync";
-import { System } from "./System";
-import { Hilites, Target } from "./Target";
-import { Texture2DDataUpdater, Texture2DHandle, TextureHandle } from "./Texture";
-import { BatchOptions } from "../../../common/render/BatchOptions";
-import { DisplayParams } from "../../../common/internal/render/DisplayParams";
-import { OvrFlags } from "../../../common/internal/render/OvrFlags";
-import { computeDimensions } from "../../../common/internal/render/VertexTable";
+import { FeatureSymbology } from "../../../render/FeatureSymbology.js";
+import { WebGLDisposable } from "./Disposable.js";
+import { LineCode } from "./LineCode.js";
+import { GL } from "./GL.js";
+import { UniformHandle } from "./UniformHandle.js";
+import { EmphasisFlags, TextureUnit } from "./RenderFlags.js";
+import { sync, SyncObserver } from "./Sync.js";
+import { System } from "./System.js";
+import { Hilites, Target } from "./Target.js";
+import { Texture2DDataUpdater, Texture2DHandle, TextureHandle } from "./Texture.js";
+import { BatchOptions } from "../../../common/render/BatchOptions.js";
+import { DisplayParams } from "../../../common/internal/render/DisplayParams.js";
+import { OvrFlags } from "../../../common/internal/render/OvrFlags.js";
+import { computeDimensions } from "../../../common/internal/render/VertexTable.js";
 
 export function isFeatureHilited(feature: PackedFeature, hilites: Hilites, isModelHilited: boolean): boolean {
   if (hilites.isEmpty)

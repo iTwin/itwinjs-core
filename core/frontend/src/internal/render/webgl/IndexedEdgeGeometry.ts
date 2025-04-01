@@ -8,20 +8,20 @@
 
 import { assert, dispose } from "@itwin/core-bentley";
 import { RenderMode } from "@itwin/core-common";
-import { RenderMemory } from "../../../render/RenderMemory";
-import { TextureHandle } from "./Texture";
-import { BufferHandle, BufferParameters, BuffersContainer } from "./AttributeBuffers";
-import { WebGLDisposable } from "./Disposable";
-import { MeshData } from "./MeshData";
-import { MeshGeometry } from "./MeshGeometry";
-import { AttributeMap } from "./AttributeMap";
-import { TechniqueId } from "./TechniqueId";
-import { GL } from "./GL";
-import { System } from "./System";
-import { Target } from "./Target";
-import { ShaderProgramParams } from "./DrawCommand";
-import { RenderOrder } from "./RenderFlags";
-import { EdgeTable, IndexedEdgeParams } from "../../../common/internal/render/EdgeParams";
+import { RenderMemory } from "../../../render/RenderMemory.js";
+import { TextureHandle } from "./Texture.js";
+import { BufferHandle, BufferParameters, BuffersContainer } from "./AttributeBuffers.js";
+import { WebGLDisposable } from "./Disposable.js";
+import { MeshData } from "./MeshData.js";
+import { MeshGeometry } from "./MeshGeometry.js";
+import { AttributeMap } from "./AttributeMap.js";
+import { TechniqueId } from "./TechniqueId.js";
+import { GL } from "./GL.js";
+import { System } from "./System.js";
+import { Target } from "./Target.js";
+import { ShaderProgramParams } from "./DrawCommand.js";
+import { RenderOrder } from "./RenderFlags.js";
+import { EdgeTable, IndexedEdgeParams } from "../../../common/internal/render/EdgeParams.js";
 
 /** @see [[EdgeTable]]
  * @internal

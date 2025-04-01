@@ -5,17 +5,17 @@
 
 // barrel for non-internal APIs in ./common. Re-exported from core-frontend.ts
 
-export * from "./common/FrontendLoggerCategory";
-export * from "./common/ImageUtil";
-export * from "./common/render/BatchOptions";
-export * from "./common/render/GraphicAssembler";
-export * from "./common/render/GraphicDescriptionBuilder";
-export * from "./common/render/GraphicDescriptionContext";
-export * from "./common/render/GraphicPrimitive";
-export * from "./common/render/GraphicType";
-export * from "./common/render/InstancedGraphicParams";
-export * from "./common/render/MaterialParams";
-export * from "./common/render/RenderInstancesParams";
-export * from "./common/render/TextureParams";
-export * from "./common/ViewRect";
-export * from "./common/WorkerProxy";
+export * from "./common/FrontendLoggerCategory.js";
+export * from "./common/ImageUtil.js";
+export * from "./common/render/BatchOptions.js";
+export * from "./common/render/GraphicAssembler.js";
+export * from "./common/render/GraphicDescriptionBuilder.js";
+export * from "./common/render/GraphicDescriptionContext.js";
+export * from "./common/render/GraphicPrimitive.js";
+export * from "./common/render/GraphicType.js";
+export * from "./common/render/InstancedGraphicParams.js";
+export * from "./common/render/MaterialParams.js";
+export * from "./common/render/RenderInstancesParams.js";
+export * from "./common/render/TextureParams.js";
+export * from "./common/ViewRect.js";
+export * from "./common/WorkerProxy.js";

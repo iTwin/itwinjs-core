@@ -9,16 +9,16 @@
 import { assert, ByteStream } from "@itwin/core-bentley";
 import { Point2d, Point3d, Transform } from "@itwin/core-geometry";
 import { BatchType, CompositeTileHeader, TileFormat, ViewFlagOverrides } from "@itwin/core-common";
-import { IModelApp } from "../../IModelApp";
-import { GraphicBranch } from "../../render/GraphicBranch";
-import { RenderSystem } from "../../render/RenderSystem";
-import { ScreenViewport, Viewport } from "../../Viewport";
-import { GltfWrapMode } from "../../common/gltf/GltfSchema";
+import { IModelApp } from "../../IModelApp.js";
+import { GraphicBranch } from "../../render/GraphicBranch.js";
+import { RenderSystem } from "../../render/RenderSystem.js";
+import { ScreenViewport, Viewport } from "../../Viewport.js";
+import { GltfWrapMode } from "../../common/gltf/GltfSchema.js";
 import {
   B3dmReader, BatchedTileIdMap, createDefaultViewFlagOverrides, GltfGraphicsReader, GltfReader, GltfReaderProps, I3dmReader, ImdlReader, readPointCloudTileContent,
   RealityTile, RealityTileContent, RealityTileTree, Tile, TileContent, TileDrawArgs, TileLoadPriority, TileRequest, TileRequestChannel, TileUser,
-} from "../../tile/internal";
-import { LayerTileData } from "../render/webgl/MapLayerParams";
+} from "../../tile/internal.js";
+import { LayerTileData } from "../render/webgl/MapLayerParams.js";
 
 const defaultViewFlagOverrides = createDefaultViewFlagOverrides({});
 

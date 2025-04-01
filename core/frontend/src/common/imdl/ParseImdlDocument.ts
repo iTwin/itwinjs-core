@@ -13,24 +13,24 @@ import {
   PackedFeatureTable, PolylineTypeFlags, QParams2d, QParams3d, RenderFeatureTable, RenderMaterial, RenderMaterialParams, RenderSchedule, RenderTexture, RgbColor,
   TextureMapping, TileFormat, TileHeader, TileReadStatus,
 } from "@itwin/core-common";
-import { ImdlModel as Imdl } from "./ImdlModel";
+import { ImdlModel as Imdl } from "./ImdlModel.js";
 import {
   AnyImdlPrimitive, ImdlAreaPattern, ImdlColorDef, ImdlCompactEdges, ImdlDisplayParams, ImdlDocument, ImdlIndexedEdges, ImdlMesh, ImdlMeshEdges,
   ImdlMeshPrimitive, ImdlNamedTexture, ImdlPolyline, ImdlSegmentEdges, ImdlSilhouetteEdges, ImdlTextureMapping,
-} from "./ImdlSchema";
-import { MeshPrimitiveType } from "../internal/render/MeshPrimitive";
-import { isValidSurfaceType, SurfaceMaterial } from "../internal/render/SurfaceParams";
-import { DisplayParams } from "../internal/render/DisplayParams";
-import { AuxChannelTable, AuxChannelTableProps } from "../internal/render/AuxChannelTable";
-import { ComputeAnimationNodeId, splitMeshParams, splitPointStringParams, splitPolylineParams } from "../internal/render/VertexTableSplitter";
-import { AnimationNodeId } from "../internal/render/AnimationNodeId";
-import { EdgeParams } from "../internal/render/EdgeParams";
-import { MeshParams } from "../internal/render/MeshParams";
-import { VertexTable } from "../internal/render/VertexTable";
-import { MaterialParams } from "../render/MaterialParams";
-import { VertexIndices } from "../internal/render/VertexIndices";
-import { indexedEdgeParamsFromCompactEdges } from "./CompactEdges";
-import { getMeshoptDecoder, MeshoptDecoder } from "../../tile/internal";
+} from "./ImdlSchema.js";
+import { MeshPrimitiveType } from "../internal/render/MeshPrimitive.js";
+import { isValidSurfaceType, SurfaceMaterial } from "../internal/render/SurfaceParams.js";
+import { DisplayParams } from "../internal/render/DisplayParams.js";
+import { AuxChannelTable, AuxChannelTableProps } from "../internal/render/AuxChannelTable.js";
+import { ComputeAnimationNodeId, splitMeshParams, splitPointStringParams, splitPolylineParams } from "../internal/render/VertexTableSplitter.js";
+import { AnimationNodeId } from "../internal/render/AnimationNodeId.js";
+import { EdgeParams } from "../internal/render/EdgeParams.js";
+import { MeshParams } from "../internal/render/MeshParams.js";
+import { VertexTable } from "../internal/render/VertexTable.js";
+import { MaterialParams } from "../render/MaterialParams.js";
+import { VertexIndices } from "../internal/render/VertexIndices.js";
+import { indexedEdgeParamsFromCompactEdges } from "./CompactEdges.js";
+import { getMeshoptDecoder, MeshoptDecoder } from "../../tile/internal.js";
 
 /** Timeline used to reassemble iMdl content into animatable nodes.
  * @internal

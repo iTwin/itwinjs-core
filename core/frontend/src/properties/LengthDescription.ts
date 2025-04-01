@@ -6,9 +6,9 @@
  * @module Properties
  */
 
-import { IModelApp } from "../IModelApp";
-import { QuantityType } from "../quantity-formatting/QuantityFormatter";
-import { FormattedQuantityDescription } from "./FormattedQuantityDescription";
+import { IModelApp } from "../IModelApp.js";
+import { QuantityType } from "../quantity-formatting/QuantityFormatter.js";
+import { FormattedQuantityDescription } from "./FormattedQuantityDescription.js";
 
 /**
  * Length Property Description

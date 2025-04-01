@@ -6,9 +6,9 @@
 /** @packageDocumentation
  * @module Tiles
  */
-import { request } from "../../request/Request";
-import { IModelApp } from "../../IModelApp";
-import { IModelConnection } from "../../IModelConnection";
+import { request } from "../../request/Request.js";
+import { IModelApp } from "../../IModelApp.js";
+import { IModelConnection } from "../../IModelConnection.js";
 import { Cartographic } from "@itwin/core-common";
 import { Point3d, Range1d, Range2d } from "@itwin/core-geometry";
 

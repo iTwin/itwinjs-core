@@ -7,9 +7,9 @@
  */
 
 import { ColorDef, PackedFeatureTable } from "@itwin/core-common";
-import { MapCartoRectangle, MapTileProjection } from "../../tile/internal";
-import { RenderTerrainGeometry, TerrainTexture } from "./RenderTerrain";
-import { RenderPlanarClassifier } from "./RenderPlanarClassifier";
+import { MapCartoRectangle, MapTileProjection } from "../../tile/internal.js";
+import { RenderTerrainGeometry, TerrainTexture } from "./RenderTerrain.js";
+import { RenderPlanarClassifier } from "./RenderPlanarClassifier.js";
 
 export type MapLayerClassifiers = Map<number, RenderPlanarClassifier>;
 

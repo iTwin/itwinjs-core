@@ -8,8 +8,8 @@
 
 import { Angle, Matrix3d, Point2d, Point3d, Transform, Vector3d } from "@itwin/core-geometry";
 import { Cartographic } from "@itwin/core-common";
-import { IModelConnection } from "../../IModelConnection";
-import { MapCartoRectangle } from "../internal";
+import { IModelConnection } from "../../IModelConnection.js";
+import { MapCartoRectangle } from "../internal.js";
 
 /** A scheme for converting between two representations of the surface of the Earth: an ellipsoid and a rectangular [tiled map](https://en.wikipedia.org/wiki/Tiled_web_map).
  * Positions on the surface of the ellipsoid are expressed in [Cartographic]($common) coordinates.

@@ -6,11 +6,11 @@ import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 import { ByteStream } from "@itwin/core-bentley";
 import { Point3d } from "@itwin/core-geometry";
 import { ColorIndex, EmptyLocalization, FeatureIndex, FillFlags, MeshEdge, OctEncodedNormal, OctEncodedNormalPair, QPoint3dList } from "@itwin/core-common";
-import { IModelApp } from "../../../IModelApp";
-import { MeshArgsEdges } from "../../../common/internal/render/MeshPrimitives";
-import { VertexIndices } from "../../../common/internal/render/VertexIndices";
-import { createEdgeParams, EdgeParams, EdgeTable } from "../../../common/internal/render/EdgeParams";
-import { MeshArgs } from "../../../render/MeshArgs";
+import { IModelApp } from "../../../IModelApp.js";
+import { MeshArgsEdges } from "../../../common/internal/render/MeshPrimitives.js";
+import { VertexIndices } from "../../../common/internal/render/VertexIndices.js";
+import { createEdgeParams, EdgeParams, EdgeTable } from "../../../common/internal/render/EdgeParams.js";
+import { MeshArgs } from "../../../render/MeshArgs.js";
 
 function makeNormalPair(n0: number, n1: number): OctEncodedNormalPair {
   return new OctEncodedNormalPair(new OctEncodedNormal(n0), new OctEncodedNormal(n1));

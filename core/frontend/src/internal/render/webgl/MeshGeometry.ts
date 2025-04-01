@@ -7,13 +7,13 @@
  */
 
 import { RenderMode } from "@itwin/core-common";
-import { LUTGeometry } from "./CachedGeometry";
-import { ColorInfo } from "./ColorInfo";
-import { ShaderProgramParams } from "./DrawCommand";
-import { FloatRgba } from "./FloatRGBA";
-import { Pass } from "./RenderFlags";
-import { Target } from "./Target";
-import { MeshData } from "./MeshData";
+import { LUTGeometry } from "./CachedGeometry.js";
+import { ColorInfo } from "./ColorInfo.js";
+import { ShaderProgramParams } from "./DrawCommand.js";
+import { FloatRgba } from "./FloatRGBA.js";
+import { Pass } from "./RenderFlags.js";
+import { Target } from "./Target.js";
+import { MeshData } from "./MeshData.js";
 
 /** Defines one aspect of the geometry of a mesh (surface or edges)
  * @internal

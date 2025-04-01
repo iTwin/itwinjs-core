@@ -20,21 +20,21 @@ import {
   ViewIdString, ViewQueryParams, ViewStateLoadProps, ViewStateProps, ViewStoreRpc,
 } from "@itwin/core-common";
 import { Point3d, Range3dProps, Transform, XYAndZ, XYZProps } from "@itwin/core-geometry";
-import { BriefcaseConnection } from "./BriefcaseConnection";
-import { CheckpointConnection } from "./CheckpointConnection";
-import { FrontendLoggerCategory } from "./common/FrontendLoggerCategory";
-import { EntityState } from "./EntityState";
-import { GeoServices } from "./GeoServices";
-import { IModelApp } from "./IModelApp";
-import { IModelRoutingContext } from "./IModelRoutingContext";
-import { ModelState } from "./ModelState";
-import { HiliteSet, SelectionSet } from "./SelectionSet";
-import { SubCategoriesCache } from "./SubCategoriesCache";
-import { BingElevationProvider } from "./tile/internal";
-import { Tiles } from "./Tiles";
-import { ViewState } from "./ViewState";
-import { _requestSnap } from "./common/internal/Symbols";
-import { IpcApp } from "./IpcApp";
+import { BriefcaseConnection } from "./BriefcaseConnection.js";
+import { CheckpointConnection } from "./CheckpointConnection.js";
+import { FrontendLoggerCategory } from "./common/FrontendLoggerCategory.js";
+import { EntityState } from "./EntityState.js";
+import { GeoServices } from "./GeoServices.js";
+import { IModelApp } from "./IModelApp.js";
+import { IModelRoutingContext } from "./IModelRoutingContext.js";
+import { ModelState } from "./ModelState.js";
+import { HiliteSet, SelectionSet } from "./SelectionSet.js";
+import { SubCategoriesCache } from "./SubCategoriesCache.js";
+import { BingElevationProvider } from "./tile/internal.js";
+import { Tiles } from "./Tiles.js";
+import { ViewState } from "./ViewState.js";
+import { _requestSnap } from "./common/internal/Symbols.js";
+import { IpcApp } from "./IpcApp.js";
 
 const loggerCategory: string = FrontendLoggerCategory.IModelConnection;
 

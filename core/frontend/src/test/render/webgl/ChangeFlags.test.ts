@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { describe, expect, it } from "vitest";
-import { ChangeFlag, MutableChangeFlags } from "../../../ChangeFlags";
+import { ChangeFlag, MutableChangeFlags } from "../../../ChangeFlags.js";
 
 describe("ChangeFlags", () => {
   it("should behave as expected", () => {

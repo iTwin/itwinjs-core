@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { deflateCoordinates, FeatureGeometryRenderer } from "../../../../tile/internal";
+import { deflateCoordinates, FeatureGeometryRenderer } from "../../../../tile/internal.js";
 
 /** @internal */
 export class ArcGisGeometryReaderJSON {

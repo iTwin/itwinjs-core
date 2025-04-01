@@ -7,8 +7,8 @@
  */
 
 import { dispose, disposeArray } from "@itwin/core-bentley";
-import { CanvasDecorationList } from "./CanvasDecoration";
-import { GraphicList, RenderGraphic } from "./RenderGraphic";
+import { CanvasDecorationList } from "./CanvasDecoration.js";
+import { GraphicList, RenderGraphic } from "./RenderGraphic.js";
 
 /** A set of [[RenderGraphic]]s and [[CanvasDecoration]]s produced by [[Tool]]s and [[Decorator]]s, used to decorate the contents of a [[Viewport]].
  * @public

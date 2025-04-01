@@ -6,8 +6,8 @@
  * @module WebGL
  */
 
-import { RenderPass } from "../RenderFlags";
-import { ShaderBuilder, VariableType } from "../ShaderBuilder";
+import { RenderPass } from "../RenderFlags.js";
+import { ShaderBuilder, VariableType } from "../ShaderBuilder.js";
 
 // render passes actually used in shader code.
 const renderPasses = [

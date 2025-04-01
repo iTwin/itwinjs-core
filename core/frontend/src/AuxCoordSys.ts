@@ -11,14 +11,14 @@ import { Angle, AngleSweep, Arc3d, Matrix3d, Point2d, Point3d, Transform, Vector
 import {
   AuxCoordSystem2dProps, AuxCoordSystem3dProps, AuxCoordSystemProps, BisCodeSpec, Code, ColorDef, IModel, LinePixels, Npc,
 } from "@itwin/core-common";
-import { ElementState } from "./EntityState";
-import { IModelConnection } from "./IModelConnection";
-import { GraphicBuilder } from "./render/GraphicBuilder";
-import { DecorateContext } from "./ViewContext";
-import { CoordSystem } from "./CoordSystem";
-import { Viewport } from "./Viewport";
-import { ViewState } from "./ViewState";
-import { GraphicType } from "./common/render/GraphicType";
+import { ElementState } from "./EntityState.js";
+import { IModelConnection } from "./IModelConnection.js";
+import { GraphicBuilder } from "./render/GraphicBuilder.js";
+import { DecorateContext } from "./ViewContext.js";
+import { CoordSystem } from "./CoordSystem.js";
+import { Viewport } from "./Viewport.js";
+import { ViewState } from "./ViewState.js";
+import { GraphicType } from "./common/render/GraphicType.js";
 
 /**
  * @public

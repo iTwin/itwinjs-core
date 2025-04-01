@@ -6,8 +6,8 @@
  * @module Rendering
  */
 
-import { MaterialParams } from "../common/render/MaterialParams";
-import { RenderMaterialSource } from "../internal/render/RenderMaterialSource";
+import { MaterialParams } from "../common/render/MaterialParams.js";
+import { RenderMaterialSource } from "../internal/render/RenderMaterialSource.js";
 
 /** Arguments supplied to [[RenderSystem.createRenderMaterial]].
  * @public

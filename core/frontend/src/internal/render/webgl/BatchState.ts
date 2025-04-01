@@ -8,9 +8,9 @@
 
 import { assert, Id64, Id64String, lowerBound } from "@itwin/core-bentley";
 import { ModelFeature } from "@itwin/core-common";
-import { IModelConnection } from "../../../IModelConnection";
-import { BranchStack } from "./BranchStack";
-import { Batch } from "./Graphic";
+import { IModelConnection } from "../../../IModelConnection.js";
+import { BranchStack } from "./BranchStack.js";
+import { Batch } from "./Graphic.js";
 
 /**
  * Assigns a transient, unique 32-bit integer ID to each Batch in a RenderCommands.

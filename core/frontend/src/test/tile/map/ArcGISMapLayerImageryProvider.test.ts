@@ -5,7 +5,7 @@
 
 import { Cartographic, EmptyLocalization, ImageMapLayerSettings, ServerError } from "@itwin/core-common";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { IModelApp } from "../../../IModelApp";
+import { IModelApp } from "../../../IModelApp.js";
 import {
   ArcGisGetServiceJsonArgs,
   ArcGISIdentifyRequestUrl,
@@ -16,10 +16,10 @@ import {
   MapLayerImageryProvider,
   QuadId,
 
-} from "../../../tile/internal";
-import { ArcGISMapLayerDataset } from "./ArcGISMapLayerDataset";
+} from "../../../tile/internal.js";
+import { ArcGISMapLayerDataset } from "./ArcGISMapLayerDataset.js";
 import { Range2dProps } from "@itwin/core-geometry";
-import { indexedArrayFromUrlParams } from "./MapLayerTestUtilities";
+import { indexedArrayFromUrlParams } from "./MapLayerTestUtilities.js";
 
 const sampleSource = { formatId: "ArcGIS", url: "https://localhost/Mapserver", name: "Test" };
 

@@ -7,8 +7,8 @@
  */
 
 import { BeTimePoint } from "@itwin/core-bentley";
-import { IModelApp } from "../IModelApp";
-import { TileUser } from "./internal";
+import { IModelApp } from "../IModelApp.js";
+import { TileUser } from "./internal.js";
 
 /** A marker associated with a [[Tile]] to track usage of that tile by any number of [[TileUser]]s.
  * The marker tracks:

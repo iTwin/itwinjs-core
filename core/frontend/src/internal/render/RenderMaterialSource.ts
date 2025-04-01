@@ -7,7 +7,7 @@
  */
 
 import { Id64String } from "@itwin/core-bentley";
-import { IModelConnection } from "../../IModelConnection";
+import { IModelConnection } from "../../IModelConnection.js";
 
 /** Specifies the provenance of a [RenderMaterial]($common) created for a persistent material element.
  * @see [[CreateRenderMaterialArgs.source]].

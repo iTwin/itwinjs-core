@@ -5,7 +5,7 @@
 
 import { assert, CompressedId64Set, Id64, Id64Arg, Id64Set, Id64String, OrderedId64Iterable } from "@itwin/core-bentley";
 import { SubCategoryAppearance, SubCategoryResultRow } from "@itwin/core-common";
-import { IModelConnection } from "./IModelConnection";
+import { IModelConnection } from "./IModelConnection.js";
 
 /** A cancelable paginated request for subcategory information.
  * @see SubCategoriesCache

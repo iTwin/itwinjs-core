@@ -11,13 +11,13 @@ import { Transform } from "@itwin/core-geometry";
 import {
   BatchType, FeatureAppearance, FeatureAppearanceProvider, GeometryClass, HiddenLine, RealityModelDisplaySettings, RenderMode, ViewFlags,
 } from "@itwin/core-common";
-import { IModelConnection } from "../../../IModelConnection";
-import { FeatureSymbology } from "../../../render/FeatureSymbology";
-import { ClipVolume } from "./ClipVolume";
-import { Branch } from "./Graphic";
-import { PlanarClassifier } from "./PlanarClassifier";
-import { TextureDrape } from "./TextureDrape";
-import { EdgeSettings } from "./EdgeSettings";
+import { IModelConnection } from "../../../IModelConnection.js";
+import { FeatureSymbology } from "../../../render/FeatureSymbology.js";
+import { ClipVolume } from "./ClipVolume.js";
+import { Branch } from "./Graphic.js";
+import { PlanarClassifier } from "./PlanarClassifier.js";
+import { TextureDrape } from "./TextureDrape.js";
+import { EdgeSettings } from "./EdgeSettings.js";
 
 /** Options used to construct a BranchState.
  * @internal

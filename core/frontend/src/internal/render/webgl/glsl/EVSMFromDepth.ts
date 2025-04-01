@@ -6,14 +6,14 @@
  * @module WebGL
  */
 
-import { AttributeMap } from "../AttributeMap";
-import { EVSMGeometry } from "../CachedGeometry";
-import { TextureUnit } from "../RenderFlags";
-import { FragmentShaderComponent, ProgramBuilder, VariablePrecision, VariableType, VertexShaderComponent } from "../ShaderBuilder";
-import { ShaderProgram } from "../ShaderProgram";
-import { Texture2DHandle } from "../Texture";
-import { assignFragColor } from "./Fragment";
-import { addEvsmExponent, warpDepth } from "./SolarShadowMapping";
+import { AttributeMap } from "../AttributeMap.js";
+import { EVSMGeometry } from "../CachedGeometry.js";
+import { TextureUnit } from "../RenderFlags.js";
+import { FragmentShaderComponent, ProgramBuilder, VariablePrecision, VariableType, VertexShaderComponent } from "../ShaderBuilder.js";
+import { ShaderProgram } from "../ShaderProgram.js";
+import { Texture2DHandle } from "../Texture.js";
+import { assignFragColor } from "./Fragment.js";
+import { addEvsmExponent, warpDepth } from "./SolarShadowMapping.js";
 
 // This shader reads the depth texture, converts it to EVSM values, then averages those down 4 to 1
 
