@@ -2,9 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { ISchemaLocater, Schema, SchemaContext, SchemaInfo, SchemaKey, SchemaMatchType, SchemaProps } from "@itwin/ecschema-metadata";
 import { IModelRpcProps } from "@itwin/core-common";
-import { ECSchemaRpcInterface } from "./ECSchemaRpcInterface";
+import { ISchemaLocater, Schema, SchemaContext, SchemaInfo, SchemaKey, SchemaMatchType, SchemaProps } from "@itwin/ecschema-metadata";
+import { ECSchemaRpcInterface } from "./ECSchemaRpcInterface.js";
 
 /**
  * Defines a schema locater that retrieves schemas using an RPC interface.
