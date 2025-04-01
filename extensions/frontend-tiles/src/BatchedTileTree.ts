@@ -8,9 +8,9 @@ import { BatchType, RenderMode, RenderSchedule, ViewFlagOverrides } from "@itwin
 import {
   acquireImdlDecoder, ImdlDecoder, IModelApp, Tile, TileDrawArgs, TileTree, TileTreeParams,
 } from "@itwin/core-frontend";
-import { BatchedTile, BatchedTileParams } from "./BatchedTile";
-import { BatchedTilesetReader, ModelMetadata } from "./BatchedTilesetReader";
-import { frontendTilesOptions } from "./FrontendTiles";
+import { BatchedTile, BatchedTileParams } from "./BatchedTile.js";
+import { BatchedTilesetReader, ModelMetadata } from "./BatchedTilesetReader.js";
+import { frontendTilesOptions } from "./FrontendTiles.js";
 
 const defaultViewFlags: ViewFlagOverrides = {
   renderMode: RenderMode.SmoothShade,

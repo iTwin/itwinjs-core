@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "pulling a changeset with project extents changes now updates the extents of the opened imodel",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}

@@ -3239,7 +3239,7 @@ export abstract class IModelDb extends IModel {
     // @alpha
     importSchemaStrings(serializedXmlSchemas: string[]): Promise<void>;
     // @internal (undocumented)
-    protected initializeIModelDb(): void;
+    protected initializeIModelDb(when?: "pullMerge"): void;
     // @beta
     inlineGeometryParts(): InlineGeometryPartsResult;
     get isBriefcase(): boolean;
