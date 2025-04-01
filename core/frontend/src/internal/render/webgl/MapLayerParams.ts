@@ -12,7 +12,7 @@ import { RenderPlanarClassifier } from "../RenderPlanarClassifier";
 import { PlanarClassifier } from "./PlanarClassifier";
 import { TerrainTexture } from "../RenderTerrain";
 import { Matrix4 } from "./Matrix";
-import { ModelMapLayerDrapeTarget, ModelMapLayerSettings, RenderTexture } from "@itwin/core-common";
+import { MapLayerSettings, ModelMapLayerDrapeTarget, ModelMapLayerSettings, RenderTexture } from "@itwin/core-common";
 import { assert, dispose, disposeArray } from "@itwin/core-bentley";
 import { MeshMapLayerGraphicParams } from "../MeshMapLayerGraphicParams";
 import { System } from "./System";
@@ -178,16 +178,25 @@ export interface LayerTileData {
  * @internal
  */
 export function compareMapLayer(prevView: ViewState, newView: ViewState): boolean {
-  const getModelIds = (layers: any[]): string[] =>
-    layers
-      .filter((layer) => layer instanceof ModelMapLayerSettings &&
-        (layer.drapeTarget === ModelMapLayerDrapeTarget.RealityData || layer.drapeTarget === ModelMapLayerDrapeTarget.IModel))
-      .map((layer: ModelMapLayerSettings) => layer.modelId);
+  const getDrapedModelIds = (view: ViewState): string[] =>
+    view.displayStyle
+      .getMapLayers(false)
+      .filter((layer): layer is ModelMapLayerSettings =>
+        layer instanceof ModelMapLayerSettings &&
+        (layer.drapeTarget === ModelMapLayerDrapeTarget.RealityData ||
+         layer.drapeTarget === ModelMapLayerDrapeTarget.IModel))
+      .map(layer => layer.modelId);
 
-  const prevModelIds = getModelIds(prevView.displayStyle.getMapLayers(false));
-  const newModelIds = getModelIds(newView.displayStyle.getMapLayers(false));
+  const prev = getDrapedModelIds(prevView);
+  const next = getDrapedModelIds(newView);
 
-  // Compare lengths first, then check model IDs
-  return prevModelIds.length !== newModelIds.length ||
-         prevModelIds.some((id) => !newModelIds.includes(id));
+  if (prev.length !== next.length)
+    return true;
+
+  for (let i = 0; i < prev.length; i++) {
+    if (prev[i] !== next[i])
+      return true;
+  }
+
+  return false;
 }
