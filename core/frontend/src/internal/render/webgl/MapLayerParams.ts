@@ -12,7 +12,7 @@ import { RenderPlanarClassifier } from "../RenderPlanarClassifier";
 import { PlanarClassifier } from "./PlanarClassifier";
 import { TerrainTexture } from "../RenderTerrain";
 import { Matrix4 } from "./Matrix";
-import { MapLayerSettings, ModelMapLayerDrapeTarget, ModelMapLayerSettings, RenderTexture } from "@itwin/core-common";
+import { ModelMapLayerDrapeTarget, ModelMapLayerSettings, RenderTexture } from "@itwin/core-common";
 import { assert, dispose, disposeArray } from "@itwin/core-bentley";
 import { MeshMapLayerGraphicParams } from "../MeshMapLayerGraphicParams";
 import { System } from "./System";
