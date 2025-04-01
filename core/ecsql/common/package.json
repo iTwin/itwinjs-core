@@ -2,14 +2,21 @@
   "name": "@itwin/ecsql-common",
   "version": "5.0.0-dev.94",
   "description": "ECSql component that can be reference on backend and frontend",
+  "type": "module",
   "main": "lib/cjs/ecsql-common.js",
   "module": "lib/esm/ecsql-common.js",
-  "typings": "lib/cjs/ecsql-common",
+  "types": "lib/cjs/ecsql-common",
+  "exports": {
+    ".": {
+      "require": "./lib/cjs/ecsql-common.js",
+      "import": "./lib/esm/ecsql-common.js"
+    }
+  },
   "license": "MIT",
   "scripts": {
     "build": "npm run -s build:cjs && npm run -s build:esm",
-    "build:cjs": "tsc 1>&2 --outDir lib/cjs",
-    "build:esm": "tsc 1>&2 --module ES2022 --outDir lib/esm",
+    "build:cjs": "internal-tools build-cjs",
+    "build:esm": "tsc 1>&2 --outDir lib/esm",
     "clean": "rimraf -g lib .rush/temp/package-deps*.json",
     "docs": "betools docs --json=../../../generated-docs/core/ecsql-common/file.json --tsIndexFile=./ecsql-common.ts --onlyJson",
     "extract-api": "betools extract-api --entry=ecsql-common",
@@ -45,6 +52,7 @@
     "@types/mocha": "^10.0.6",
     "chai": "^4.3.10",
     "eslint": "^9.13.0",
+    "internal-tools": "workspace:*",
     "mocha": "^11.1.0",
     "nyc": "^17.1.0",
     "rimraf": "^6.0.1",
