@@ -131,7 +131,7 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
    * Searches, case-insensitive, for a local ECProperty with the name provided.
    * @param name
    */
-  public async getProperty(name: string, includeInherited: boolean = false): Promise<Property | undefined> {
+  public async getProperty(name: string, excludeInherited: boolean = false): Promise<Property | undefined> {
     if (this._properties) {
       const upperKey = name.toUpperCase();
       const property = this._properties.get(upperKey);
@@ -139,7 +139,7 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
         return property;
     }
 
-    if (!includeInherited) {
+    if (excludeInherited) {
       return undefined;
     }
 
@@ -150,7 +150,7 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
    * Searches, case-insensitive, for a local ECProperty with the name provided.
    * @param name
    */
-  public getPropertySync(name: string, includeInherited: boolean = false): Property | undefined {
+  public getPropertySync(name: string, excludeInherited: boolean = false): Property | undefined {
     if (this._properties) {
       const upperKey = name.toUpperCase();
       const property = this._properties.get(upperKey);
@@ -158,7 +158,7 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
         return property;
     }
 
-    if (!includeInherited) {
+    if (excludeInherited) {
       return undefined;
     }
 
