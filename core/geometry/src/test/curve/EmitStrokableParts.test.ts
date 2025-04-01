@@ -4,16 +4,16 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { describe, expect, it } from "vitest";
-import { CurvePrimitive } from "../../curve/CurvePrimitive";
-import { LineString3d } from "../../curve/LineString3d";
-import { StrokeOptions } from "../../curve/StrokeOptions";
-import { FrameBuilder } from "../../geometry3d/FrameBuilder";
-import { IStrokeHandler } from "../../geometry3d/GeometryHandler";
-import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
-// import { Point3d, Vector3d, Transform, Matrix3d, Range1d } from "../PointVector";
-import { Sample } from "../../serialization/GeometrySamples";
-// import { Geometry } from "../Geometry";
-import { Checker } from "../Checker";
+import { CurvePrimitive } from "../../curve/CurvePrimitive.js";
+import { LineString3d } from "../../curve/LineString3d.js";
+import { StrokeOptions } from "../../curve/StrokeOptions.js";
+import { FrameBuilder } from "../../geometry3d/FrameBuilder.js";
+import { IStrokeHandler } from "../../geometry3d/GeometryHandler.js";
+import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d.js";
+// import { Point3d, Vector3d, Transform, Matrix3d, Range1d } from "../PointVector.js";
+import { Sample } from "../../serialization/GeometrySamples.js";
+// import { Geometry } from "../Geometry.js";
+import { Checker } from "../Checker.js";
 
 function maxSegmentLength(linestring: LineString3d): number {
   let aMax = 0;

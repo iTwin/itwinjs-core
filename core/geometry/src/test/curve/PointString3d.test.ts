@@ -4,13 +4,13 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { describe, expect, it } from "vitest";
-import { PointString3d } from "../../curve/PointString3d";
-import { Plane3dByOriginAndUnitNormal } from "../../geometry3d/Plane3dByOriginAndUnitNormal";
-import { Point3d } from "../../geometry3d/Point3dVector3d";
-import { Point3dArray } from "../../geometry3d/PointHelpers";
-import { Range3d } from "../../geometry3d/Range";
-import { Sample } from "../../serialization/GeometrySamples";
-import { Checker } from "../Checker";
+import { PointString3d } from "../../curve/PointString3d.js";
+import { Plane3dByOriginAndUnitNormal } from "../../geometry3d/Plane3dByOriginAndUnitNormal.js";
+import { Point3d } from "../../geometry3d/Point3dVector3d.js";
+import { Point3dArray } from "../../geometry3d/PointHelpers.js";
+import { Range3d } from "../../geometry3d/Range.js";
+import { Sample } from "../../serialization/GeometrySamples.js";
+import { Checker } from "../Checker.js";
 
 function exercisePointString3d(ck: Checker, lsA: PointString3d) {
   const numPoints = lsA.numPoints();

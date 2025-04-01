@@ -5,13 +5,13 @@
 /** @packageDocumentation
  * @module Curve
  */
-import { AnyCurve } from "./CurveTypes";
-import { BagOfCurves, CurveCollection } from "./CurveCollection";
-import { CurvePrimitive } from "./CurvePrimitive";
-import { Loop } from "./Loop";
-import { ParityRegion } from "./ParityRegion";
-import { Path } from "./Path";
-import { UnionRegion } from "./UnionRegion";
+import { AnyCurve } from "./CurveTypes.js";
+import { BagOfCurves, CurveCollection } from "./CurveCollection.js";
+import { CurvePrimitive } from "./CurvePrimitive.js";
+import { Loop } from "./Loop.js";
+import { ParityRegion } from "./ParityRegion.js";
+import { Path } from "./Path.js";
+import { UnionRegion } from "./UnionRegion.js";
 
 /** base class for detailed traversal of curve artifacts.
  * * This recurses to children in the quickest way (no records of path)

@@ -5,10 +5,10 @@
 /** @packageDocumentation
  * @module Curve
  */
-import { Transform } from "../../geometry3d/Transform";
-import { CurveCollection } from "../CurveCollection";
-import { CurvePrimitive } from "../CurvePrimitive";
-import { RecursiveCurveProcessor } from "../CurveProcessor";
+import { Transform } from "../../geometry3d/Transform.js";
+import { CurveCollection } from "../CurveCollection.js";
+import { CurvePrimitive } from "../CurvePrimitive.js";
+import { RecursiveCurveProcessor } from "../CurveProcessor.js";
 
 /** Algorithmic class: Transform curves in place.
  * @internal

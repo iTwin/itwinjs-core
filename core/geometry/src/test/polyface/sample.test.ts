@@ -4,21 +4,21 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { describe, it } from "vitest";
-// import { Checker } from "../Checker";
-import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
-import { Loop } from "../../curve/Loop";
-import { LinearSweep } from "../../solid/LinearSweep";
-import { ParityRegion } from "../../curve/ParityRegion";
-import { Arc3d } from "../../curve/Arc3d";
-import { AngleSweep } from "../../geometry3d/AngleSweep";
-import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
-import { GeometryQuery } from "../../curve/GeometryQuery";
-import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
-import { ConvexClipPlaneSet } from "../../clipping/ConvexClipPlaneSet";
-import { PolyfaceQuery } from "../../polyface/PolyfaceQuery";
-import { ClippedPolyfaceBuilders, PolyfaceClip } from "../../polyface/PolyfaceClip";
-import { Angle } from "../../geometry3d/Angle";
-import { StrokeOptions } from "../../curve/StrokeOptions";
+// import { Checker } from "../Checker.js";
+import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d.js";
+import { Loop } from "../../curve/Loop.js";
+import { LinearSweep } from "../../solid/LinearSweep.js";
+import { ParityRegion } from "../../curve/ParityRegion.js";
+import { Arc3d } from "../../curve/Arc3d.js";
+import { AngleSweep } from "../../geometry3d/AngleSweep.js";
+import { GeometryCoreTestIO } from "../GeometryCoreTestIO.js";
+import { GeometryQuery } from "../../curve/GeometryQuery.js";
+import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder.js";
+import { ConvexClipPlaneSet } from "../../clipping/ConvexClipPlaneSet.js";
+import { PolyfaceQuery } from "../../polyface/PolyfaceQuery.js";
+import { ClippedPolyfaceBuilders, PolyfaceClip } from "../../polyface/PolyfaceClip.js";
+import { Angle } from "../../geometry3d/Angle.js";
+import { StrokeOptions } from "../../curve/StrokeOptions.js";
 describe("MeshConstruction", () => {
   /**
    * Example of constructing a plate with holes.

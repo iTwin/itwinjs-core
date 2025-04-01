@@ -3,11 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { describe, expect, it } from "vitest";
-import { Matrix3d } from "../../geometry3d/Matrix3d";
-import { Vector3d } from "../../geometry3d/Point3dVector3d";
-import { YawPitchRollAngles } from "../../geometry3d/YawPitchRollAngles";
-import { Point4d } from "../../geometry4d/Point4d";
-import * as bsiChecker from "../Checker";
+import { Matrix3d } from "../../geometry3d/Matrix3d.js";
+import { Vector3d } from "../../geometry3d/Point3dVector3d.js";
+import { YawPitchRollAngles } from "../../geometry3d/YawPitchRollAngles.js";
+import { Point4d } from "../../geometry4d/Point4d.js";
+import * as bsiChecker from "../Checker.js";
 
 function rotatexyzw(xyzw: Point4d): Point4d {
   return Point4d.create(xyzw.y, xyzw.z, xyzw.w, xyzw.x);

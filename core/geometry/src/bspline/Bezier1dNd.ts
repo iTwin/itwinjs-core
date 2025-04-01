@@ -6,14 +6,14 @@
  * @module Bspline
  */
 
-import { Geometry } from "../Geometry";
-import { Point2d } from "../geometry3d/Point2dVector2d";
-import { Point3d } from "../geometry3d/Point3dVector3d";
-import { Point3dArray } from "../geometry3d/PointHelpers";
-import { Segment1d } from "../geometry3d/Segment1d";
-import { Point4d } from "../geometry4d/Point4d";
-import { BezierCoffs, UnivariateBezier } from "../numerics/BezierPolynomials";
-import { KnotVector } from "./KnotVector";
+import { Geometry } from "../Geometry.js";
+import { Point2d } from "../geometry3d/Point2dVector2d.js";
+import { Point3d } from "../geometry3d/Point3dVector3d.js";
+import { Point3dArray } from "../geometry3d/PointHelpers.js";
+import { Segment1d } from "../geometry3d/Segment1d.js";
+import { Point4d } from "../geometry4d/Point4d.js";
+import { BezierCoffs, UnivariateBezier } from "../numerics/BezierPolynomials.js";
+import { KnotVector } from "./KnotVector.js";
 
 /**
  * Shared implementation details for derived bezier curve classes

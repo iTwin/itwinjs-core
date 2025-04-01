@@ -7,7 +7,7 @@
  * @module Polyface
  */
 
-import { Point3d } from "../geometry3d/Point3dVector3d";
+import { Point3d } from "../geometry3d/Point3dVector3d.js";
 
 //
 //      2------------------3

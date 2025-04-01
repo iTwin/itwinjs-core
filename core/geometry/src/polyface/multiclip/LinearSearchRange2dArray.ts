@@ -6,9 +6,9 @@
  * @module RangeSearch
  */
 
-import { Range2d } from "../../geometry3d/Range";
-import { LowAndHighXY } from "../../geometry3d/XYZProps";
-import { Range2dSearchInterface } from "./Range2dSearchInterface";
+import { Range2d } from "../../geometry3d/Range.js";
+import { LowAndHighXY } from "../../geometry3d/XYZProps.js";
+import { Range2dSearchInterface } from "./Range2dSearchInterface.js";
 
 /**
  * An array of decorated Range2d.

@@ -3,8 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { describe, expect, it } from "vitest";
-import { LongitudeLatitudeNumber } from "../../geometry3d/LongitudeLatitudeAltitude";
-import { Checker } from "../Checker";
+import { LongitudeLatitudeNumber } from "../../geometry3d/LongitudeLatitudeAltitude.js";
+import { Checker } from "../Checker.js";
 
 describe("LongitudeLatitudeNumber", () => {
   it("create", () => {

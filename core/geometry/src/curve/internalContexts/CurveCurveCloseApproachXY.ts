@@ -8,26 +8,26 @@
  */
 
 import { assert } from "@itwin/core-bentley";
-import { BSplineCurve3d, BSplineCurve3dBase } from "../../bspline/BSplineCurve";
-import { BSplineCurve3dH } from "../../bspline/BSplineCurve3dH";
-import { Geometry } from "../../Geometry";
-import { RecurseToCurvesGeometryHandler } from "../../geometry3d/GeometryHandler";
-import { GrowableFloat64Array } from "../../geometry3d/GrowableFloat64Array";
-import { Point3d } from "../../geometry3d/Point3dVector3d";
-import { Range3d } from "../../geometry3d/Range";
+import { BSplineCurve3d, BSplineCurve3dBase } from "../../bspline/BSplineCurve.js";
+import { BSplineCurve3dH } from "../../bspline/BSplineCurve3dH.js";
+import { Geometry } from "../../Geometry.js";
+import { RecurseToCurvesGeometryHandler } from "../../geometry3d/GeometryHandler.js";
+import { GrowableFloat64Array } from "../../geometry3d/GrowableFloat64Array.js";
+import { Point3d } from "../../geometry3d/Point3dVector3d.js";
+import { Range3d } from "../../geometry3d/Range.js";
 import {
   CurveCurveCloseApproachXYRRtoRRD, CurvePointCloseApproachXYRtoRD, Newton1dUnbounded, Newton2dUnboundedWithDerivative,
-} from "../../numerics/Newton";
-import { AnalyticRoots } from "../../numerics/Polynomials";
-import { SmallSystem } from "../../numerics/SmallSystem";
-import { Arc3d } from "../Arc3d";
-import { CurveChainWithDistanceIndex } from "../CurveChainWithDistanceIndex";
-import { CurveCollection } from "../CurveCollection";
-import { CurveIntervalRole, CurveLocationDetail, CurveLocationDetailPair } from "../CurveLocationDetail";
-import { CurvePrimitive } from "../CurvePrimitive";
-import { AnyCurve } from "../CurveTypes";
-import { LineSegment3d } from "../LineSegment3d";
-import { LineString3d } from "../LineString3d";
+} from "../../numerics/Newton.js";
+import { AnalyticRoots } from "../../numerics/Polynomials.js";
+import { SmallSystem } from "../../numerics/SmallSystem.js";
+import { Arc3d } from "../Arc3d.js";
+import { CurveChainWithDistanceIndex } from "../CurveChainWithDistanceIndex.js";
+import { CurveCollection } from "../CurveCollection.js";
+import { CurveIntervalRole, CurveLocationDetail, CurveLocationDetailPair } from "../CurveLocationDetail.js";
+import { CurvePrimitive } from "../CurvePrimitive.js";
+import { AnyCurve } from "../CurveTypes.js";
+import { LineSegment3d } from "../LineSegment3d.js";
+import { LineString3d } from "../LineString3d.js";
 
 // cspell:word XYRR currentdFdX
 

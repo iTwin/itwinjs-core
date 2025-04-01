@@ -7,16 +7,16 @@
  * @module Solid
  */
 
-import { CurveCollection } from "../curve/CurveCollection";
-import { GeometryQuery } from "../curve/GeometryQuery";
-import { Transform } from "../geometry3d/Transform";
-import { Box } from "./Box";
-import { Cone } from "./Cone";
-import { LinearSweep } from "./LinearSweep";
-import { RotationalSweep } from "./RotationalSweep";
-import { RuledSweep } from "./RuledSweep";
-import { Sphere } from "./Sphere";
-import { TorusPipe } from "./TorusPipe";
+import { CurveCollection } from "../curve/CurveCollection.js";
+import { GeometryQuery } from "../curve/GeometryQuery.js";
+import { Transform } from "../geometry3d/Transform.js";
+import { Box } from "./Box.js";
+import { Cone } from "./Cone.js";
+import { LinearSweep } from "./LinearSweep.js";
+import { RotationalSweep } from "./RotationalSweep.js";
+import { RuledSweep } from "./RuledSweep.js";
+import { Sphere } from "./Sphere.js";
+import { TorusPipe } from "./TorusPipe.js";
 
 /**
  * Describes the concrete type of a [[SolidPrimitive]]. Each type name maps to a specific subclass and can be used for

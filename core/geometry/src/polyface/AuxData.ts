@@ -7,13 +7,13 @@
  * @module Polyface
  */
 
-// import { Point2d } from "./Geometry2d";
-import { Transform } from "../geometry3d/Transform";
-import { Matrix3d } from "../geometry3d/Matrix3d";
-import { Point3d } from "../geometry3d/Point3dVector3d";
-import { NumberArray } from "../geometry3d/PointHelpers";
-// import { Geometry } from "./Geometry";
-import { Range1d, Range3d } from "../geometry3d/Range";
+// import { Point2d } from "./Geometry2d.js";
+import { Transform } from "../geometry3d/Transform.js";
+import { Matrix3d } from "../geometry3d/Matrix3d.js";
+import { Point3d } from "../geometry3d/Point3dVector3d.js";
+import { NumberArray } from "../geometry3d/PointHelpers.js";
+// import { Geometry } from "./Geometry.js";
+import { Range1d, Range3d } from "../geometry3d/Range.js";
 
 /** The types of data that can be represented by an [[AuxChannelData]]. Each type of data contributes differently to the
  * animation applied by an [AnalysisStyle]($common) and responds differently when the host [[PolyfaceAuxData]] is transformed.

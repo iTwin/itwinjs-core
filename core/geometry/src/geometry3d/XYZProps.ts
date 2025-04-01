@@ -7,7 +7,7 @@
  * @module CartesianGeometry
  */
 
-import { Geometry } from "../Geometry";
+import { Geometry } from "../Geometry.js";
 
 /**
  * Interface for class with `x` and `y` as number properties.

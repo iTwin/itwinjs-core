@@ -6,18 +6,18 @@
  * @module CartesianGeometry
  */
 
-import { CurveExtendMode, CurveExtendOptions, VariantCurveExtendParameter } from "../curve/CurveExtendMode";
-import { CurveLocationDetailPair } from "../curve/CurveLocationDetail";
-import { LineSegment3d } from "../curve/LineSegment3d";
-import { LineString3d } from "../curve/LineString3d";
-import { Geometry } from "../Geometry";
-import { GrowableXYZArray } from "./GrowableXYZArray";
-import { IndexedXYZCollection } from "./IndexedXYZCollection";
-import { Plane3dByOriginAndUnitNormal } from "./Plane3dByOriginAndUnitNormal";
-import { Point3dArrayCarrier } from "./Point3dArrayCarrier";
-import { Point3d, Vector3d } from "./Point3dVector3d";
-import { PolylineCompressionContext } from "./PolylineCompressionByEdgeOffset";
-import { Range1d } from "./Range";
+import { CurveExtendMode, CurveExtendOptions, VariantCurveExtendParameter } from "../curve/CurveExtendMode.js";
+import { CurveLocationDetailPair } from "../curve/CurveLocationDetail.js";
+import { LineSegment3d } from "../curve/LineSegment3d.js";
+import { LineString3d } from "../curve/LineString3d.js";
+import { Geometry } from "../Geometry.js";
+import { GrowableXYZArray } from "./GrowableXYZArray.js";
+import { IndexedXYZCollection } from "./IndexedXYZCollection.js";
+import { Plane3dByOriginAndUnitNormal } from "./Plane3dByOriginAndUnitNormal.js";
+import { Point3dArrayCarrier } from "./Point3dArrayCarrier.js";
+import { Point3d, Vector3d } from "./Point3dVector3d.js";
+import { PolylineCompressionContext } from "./PolylineCompressionByEdgeOffset.js";
+import { Range1d } from "./Range.js";
 
 // cspell:word Puecker
 /**

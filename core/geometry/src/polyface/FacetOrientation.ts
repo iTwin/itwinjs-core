@@ -5,9 +5,9 @@
 /** @packageDocumentation
  * @module Polyface
  */
-import { IndexedEdgeMatcher, SortableEdge } from "./IndexedEdgeMatcher";
-import { IndexedPolyface, PolyfaceVisitor } from "./Polyface";
-import { PolyfaceQuery } from "./PolyfaceQuery";
+import { IndexedEdgeMatcher, SortableEdge } from "./IndexedEdgeMatcher.js";
+import { IndexedPolyface, PolyfaceVisitor } from "./Polyface.js";
+import { PolyfaceQuery } from "./PolyfaceQuery.js";
 
 class OrientedComponentData {
   public numPositive: number;

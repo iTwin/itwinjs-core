@@ -7,18 +7,18 @@
  * @module Curve
  */
 
-import { CurvePrimitive } from "../curve/CurvePrimitive";
+import { CurvePrimitive } from "../curve/CurvePrimitive.js";
 
-import type { GeometryHandler, IStrokeHandler } from "../geometry3d/GeometryHandler";
-import type { Plane3dByOriginAndUnitNormal } from "../geometry3d/Plane3dByOriginAndUnitNormal";
-import type { Plane3dByOriginAndVectors } from "../geometry3d/Plane3dByOriginAndVectors";
-import type { Ray3d } from "../geometry3d/Ray3d";
-import type { Transform } from "../geometry3d/Transform";
-import type { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
-import type { Range1d, Range3d } from "../geometry3d/Range";
-import type { OffsetOptions } from "./OffsetOptions";
-import type { LineString3d } from "./LineString3d";
-import type { StrokeOptions } from "./StrokeOptions";
+import type { GeometryHandler, IStrokeHandler } from "../geometry3d/GeometryHandler.js";
+import type { Plane3dByOriginAndUnitNormal } from "../geometry3d/Plane3dByOriginAndUnitNormal.js";
+import type { Plane3dByOriginAndVectors } from "../geometry3d/Plane3dByOriginAndVectors.js";
+import type { Ray3d } from "../geometry3d/Ray3d.js";
+import type { Transform } from "../geometry3d/Transform.js";
+import type { Point3d, Vector3d } from "../geometry3d/Point3dVector3d.js";
+import type { Range1d, Range3d } from "../geometry3d/Range.js";
+import type { OffsetOptions } from "./OffsetOptions.js";
+import type { LineString3d } from "./LineString3d.js";
+import type { StrokeOptions } from "./StrokeOptions.js";
 
 /**
  * A ProxyCurve is expected to be used as a base class for curve types that use some existing curve (the proxy)

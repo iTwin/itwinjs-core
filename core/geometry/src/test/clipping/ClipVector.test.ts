@@ -4,27 +4,27 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { beforeAll, describe, expect, it } from "vitest";
-import { ClipPlane } from "../../clipping/ClipPlane";
-import { ClipMaskXYZRangePlanes, ClipPrimitive, ClipPrimitiveShapeProps, ClipShape } from "../../clipping/ClipPrimitive";
-import { ClipUtilities } from "../../clipping/ClipUtils";
-import { ClipVector, StringifiedClipVector } from "../../clipping/ClipVector";
-import { ConvexClipPlaneSet } from "../../clipping/ConvexClipPlaneSet";
-import { GeometryQuery } from "../../curve/GeometryQuery";
-import { LineString3d } from "../../curve/LineString3d";
-import { Loop } from "../../curve/Loop";
-import { Angle } from "../../geometry3d/Angle";
-import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray";
-import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
-import { PolygonOps } from "../../geometry3d/PolygonOps";
-import { Range3d } from "../../geometry3d/Range";
-import { GrowableXYZArrayCache } from "../../geometry3d/ReusableObjectCache";
-import { Transform } from "../../geometry3d/Transform";
-import { Matrix4d } from "../../geometry4d/Matrix4d";
-import { Sample } from "../../serialization/GeometrySamples";
-import { Checker } from "../Checker";
-import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
-import { prettyPrint } from "../testFunctions";
-import { clipPrimitivesAreEqual } from "./ClipPrimitives.test"; // External test functions
+import { ClipPlane } from "../../clipping/ClipPlane.js";
+import { ClipMaskXYZRangePlanes, ClipPrimitive, ClipPrimitiveShapeProps, ClipShape } from "../../clipping/ClipPrimitive.js";
+import { ClipUtilities } from "../../clipping/ClipUtils.js";
+import { ClipVector, StringifiedClipVector } from "../../clipping/ClipVector.js";
+import { ConvexClipPlaneSet } from "../../clipping/ConvexClipPlaneSet.js";
+import { GeometryQuery } from "../../curve/GeometryQuery.js";
+import { LineString3d } from "../../curve/LineString3d.js";
+import { Loop } from "../../curve/Loop.js";
+import { Angle } from "../../geometry3d/Angle.js";
+import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray.js";
+import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d.js";
+import { PolygonOps } from "../../geometry3d/PolygonOps.js";
+import { Range3d } from "../../geometry3d/Range.js";
+import { GrowableXYZArrayCache } from "../../geometry3d/ReusableObjectCache.js";
+import { Transform } from "../../geometry3d/Transform.js";
+import { Matrix4d } from "../../geometry4d/Matrix4d.js";
+import { Sample } from "../../serialization/GeometrySamples.js";
+import { Checker } from "../Checker.js";
+import { GeometryCoreTestIO } from "../GeometryCoreTestIO.js";
+import { prettyPrint } from "../testFunctions.js";
+import { clipPrimitivesAreEqual } from "./ClipPrimitives.test.js"; // External test functions
 
 /** Enumerated type for point manipulation at the extremities of a ClipVector's ClipShape. */
 const enum PointAdjustment { // eslint-disable-line no-restricted-syntax

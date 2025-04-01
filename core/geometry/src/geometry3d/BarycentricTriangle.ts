@@ -8,11 +8,11 @@
 
 import { assert } from "@itwin/core-bentley";
 
-import { Geometry, PolygonLocation } from "../Geometry";
-import { Matrix3d } from "./Matrix3d";
-import { Point3d, Vector3d } from "./Point3dVector3d";
-import { Ray3d } from "./Ray3d";
-import { Transform } from "./Transform";
+import { Geometry, PolygonLocation } from "../Geometry.js";
+import { Matrix3d } from "./Matrix3d.js";
+import { Point3d, Vector3d } from "./Point3dVector3d.js";
+import { Ray3d } from "./Ray3d.js";
+import { Transform } from "./Transform.js";
 
 /**
  * Carries data about a location in the plane of a triangle.

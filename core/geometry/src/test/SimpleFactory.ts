@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import * as g from "../core-geometry";
+import * as g from "../core-geometry.js";
 
 // GeometryCoreTestIO.consoleLog("=========================");
 // GeometryCoreTestIO.consoleLog("Standalone Output");

@@ -6,9 +6,9 @@
  * @module Curve
  */
 
-import { Geometry } from "../Geometry";
-import { Angle } from "../geometry3d/Angle";
-import { StrokeOptions } from "./StrokeOptions";
+import { Geometry } from "../Geometry.js";
+import { Angle } from "../geometry3d/Angle.js";
+import { StrokeOptions } from "./StrokeOptions.js";
 
 /**
  * Control parameters for joint construction, used in offset construction methods such as [[RegionOps.constructPolygonWireXYOffset]] and [[RegionOps.constructCurveXYOffset]].

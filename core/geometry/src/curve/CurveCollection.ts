@@ -6,32 +6,32 @@
 /** @packageDocumentation
  * @module Curve
  */
-import { Geometry } from "../Geometry";
-import { GeometryHandler } from "../geometry3d/GeometryHandler";
-import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
-import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
-import { Range1d, Range3d } from "../geometry3d/Range";
-import { Ray3d } from "../geometry3d/Ray3d";
-import { Transform } from "../geometry3d/Transform";
-import { VariantCurveExtendParameter } from "./CurveExtendMode";
-import { CurveLocationDetail } from "./CurveLocationDetail";
-import { CurvePrimitive } from "./CurvePrimitive";
-import { RecursiveCurveProcessor } from "./CurveProcessor";
-import { AnyCurve, type AnyRegion } from "./CurveTypes";
-import { GeometryQuery } from "./GeometryQuery";
-import { CloneCurvesContext } from "./internalContexts/CloneCurvesContext";
-import { CloneWithExpandedLineStrings } from "./internalContexts/CloneWithExpandedLineStrings";
-import { CountLinearPartsSearchContext } from "./internalContexts/CountLinearPartsSearchContext";
-import { GapSearchContext } from "./internalContexts/GapSearchContext";
-import { PlaneAltitudeRangeContext } from "./internalContexts/PlaneAltitudeRangeContext";
-import { SumLengthsContext } from "./internalContexts/SumLengthsContext";
-import { TransformInPlaceContext } from "./internalContexts/TransformInPlaceContext";
-import { LineString3d } from "./LineString3d";
-import { ProxyCurve } from "./ProxyCurve";
-import { StrokeOptions } from "./StrokeOptions";
+import { Geometry } from "../Geometry.js";
+import { GeometryHandler } from "../geometry3d/GeometryHandler.js";
+import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray.js";
+import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d.js";
+import { Range1d, Range3d } from "../geometry3d/Range.js";
+import { Ray3d } from "../geometry3d/Ray3d.js";
+import { Transform } from "../geometry3d/Transform.js";
+import { VariantCurveExtendParameter } from "./CurveExtendMode.js";
+import { CurveLocationDetail } from "./CurveLocationDetail.js";
+import { CurvePrimitive } from "./CurvePrimitive.js";
+import { RecursiveCurveProcessor } from "./CurveProcessor.js";
+import { AnyCurve, type AnyRegion } from "./CurveTypes.js";
+import { GeometryQuery } from "./GeometryQuery.js";
+import { CloneCurvesContext } from "./internalContexts/CloneCurvesContext.js";
+import { CloneWithExpandedLineStrings } from "./internalContexts/CloneWithExpandedLineStrings.js";
+import { CountLinearPartsSearchContext } from "./internalContexts/CountLinearPartsSearchContext.js";
+import { GapSearchContext } from "./internalContexts/GapSearchContext.js";
+import { PlaneAltitudeRangeContext } from "./internalContexts/PlaneAltitudeRangeContext.js";
+import { SumLengthsContext } from "./internalContexts/SumLengthsContext.js";
+import { TransformInPlaceContext } from "./internalContexts/TransformInPlaceContext.js";
+import { LineString3d } from "./LineString3d.js";
+import { ProxyCurve } from "./ProxyCurve.js";
+import { StrokeOptions } from "./StrokeOptions.js";
 
-import type { Path } from "./Path";
-import type { Loop } from "./Loop";
+import type { Path } from "./Path.js";
+import type { Loop } from "./Loop.js";
 
 /** Note: CurveChain and BagOfCurves classes are located in this file to prevent circular dependency. */
 

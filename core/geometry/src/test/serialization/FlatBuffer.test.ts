@@ -4,31 +4,31 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect, it } from "vitest";
 import { flatbuffers } from "flatbuffers";
-import { AkimaCurve3d } from "../../bspline/AkimaCurve3d";
-import { Arc3d } from "../../curve/Arc3d";
-import { CurvePrimitive } from "../../curve/CurvePrimitive";
-import { GeometryQuery } from "../../curve/GeometryQuery";
-import { LineSegment3d } from "../../curve/LineSegment3d";
-import { LineString3d } from "../../curve/LineString3d";
-import { PointString3d } from "../../curve/PointString3d";
-import { IntegratedSpiral3d } from "../../curve/spiral/IntegratedSpiral3d";
-import { Angle } from "../../geometry3d/Angle";
-import { AngleSweep } from "../../geometry3d/AngleSweep";
-import { Matrix3d } from "../../geometry3d/Matrix3d";
-import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
-import { Segment1d } from "../../geometry3d/Segment1d";
-import { Transform } from "../../geometry3d/Transform";
-import { AuxChannelDataType } from "../../polyface/AuxData";
-import { TaggedNumericData } from "../../polyface/TaggedNumericData";
-import { BentleyGeometryFlatBuffer } from "../../serialization/BentleyGeometryFlatBuffer";
-import { BGFBAccessors } from "../../serialization/BGFBAccessors";
-import { DeepCompare } from "../../serialization/DeepCompare";
-import { Sample } from "../../serialization/GeometrySamples";
-import { IModelJson } from "../../serialization/IModelJsonSchema";
-import { SolidPrimitive } from "../../solid/SolidPrimitive";
-import { Checker } from "../Checker";
-import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
-import { prettyPrint } from "../testFunctions";
+import { AkimaCurve3d } from "../../bspline/AkimaCurve3d.js";
+import { Arc3d } from "../../curve/Arc3d.js";
+import { CurvePrimitive } from "../../curve/CurvePrimitive.js";
+import { GeometryQuery } from "../../curve/GeometryQuery.js";
+import { LineSegment3d } from "../../curve/LineSegment3d.js";
+import { LineString3d } from "../../curve/LineString3d.js";
+import { PointString3d } from "../../curve/PointString3d.js";
+import { IntegratedSpiral3d } from "../../curve/spiral/IntegratedSpiral3d.js";
+import { Angle } from "../../geometry3d/Angle.js";
+import { AngleSweep } from "../../geometry3d/AngleSweep.js";
+import { Matrix3d } from "../../geometry3d/Matrix3d.js";
+import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d.js";
+import { Segment1d } from "../../geometry3d/Segment1d.js";
+import { Transform } from "../../geometry3d/Transform.js";
+import { AuxChannelDataType } from "../../polyface/AuxData.js";
+import { TaggedNumericData } from "../../polyface/TaggedNumericData.js";
+import { BentleyGeometryFlatBuffer } from "../../serialization/BentleyGeometryFlatBuffer.js";
+import { BGFBAccessors } from "../../serialization/BGFBAccessors.js";
+import { DeepCompare } from "../../serialization/DeepCompare.js";
+import { Sample } from "../../serialization/GeometrySamples.js";
+import { IModelJson } from "../../serialization/IModelJsonSchema.js";
+import { SolidPrimitive } from "../../solid/SolidPrimitive.js";
+import { Checker } from "../Checker.js";
+import { GeometryCoreTestIO } from "../GeometryCoreTestIO.js";
+import { prettyPrint } from "../testFunctions.js";
 
 // cSpell:word flatbuffers
 // cSpell:word fbjs

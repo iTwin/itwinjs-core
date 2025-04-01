@@ -3,12 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { describe, it } from "vitest";
-import { Geometry } from "../../Geometry";
-import { GrowableFloat64Array } from "../../geometry3d/GrowableFloat64Array";
-import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray";
-import { Matrix3d } from "../../geometry3d/Matrix3d";
-import { Point3d } from "../../geometry3d/Point3dVector3d";
-import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
+import { Geometry } from "../../Geometry.js";
+import { GrowableFloat64Array } from "../../geometry3d/GrowableFloat64Array.js";
+import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray.js";
+import { Matrix3d } from "../../geometry3d/Matrix3d.js";
+import { Point3d } from "../../geometry3d/Point3dVector3d.js";
+import { GeometryCoreTestIO } from "../GeometryCoreTestIO.js";
 
 function inverseCalculationLoop(numTest: number, usingCache: boolean, usingResult: boolean) {
   const savedFlag = Matrix3d.useCachedInverse;

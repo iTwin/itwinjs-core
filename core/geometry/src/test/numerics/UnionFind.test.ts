@@ -4,9 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { describe, expect, it } from "vitest";
-import { UnionFindContext } from "../../numerics/UnionFind";
-import { Checker } from "../Checker";
-import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
+import { UnionFindContext } from "../../numerics/UnionFind.js";
+import { Checker } from "../Checker.js";
+import { GeometryCoreTestIO } from "../GeometryCoreTestIO.js";
 
 describe("UnionFind", () => {
   it("BinaryTree", () => {

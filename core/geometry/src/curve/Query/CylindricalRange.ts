@@ -7,16 +7,16 @@
  * @module Curve
  */
 
-import { RecurseToCurvesGeometryHandler } from "../../geometry3d/GeometryHandler";
-import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
-import { Ray3d } from "../../geometry3d/Ray3d";
-import { Transform } from "../../geometry3d/Transform";
-import { Arc3d } from "../Arc3d";
-import { AnyCurve } from "../CurveTypes";
-import { GeometryQuery } from "../GeometryQuery";
-import { LineSegment3d } from "../LineSegment3d";
-import { LineString3d } from "../LineString3d";
-import { StrokeOptions } from "../StrokeOptions";
+import { RecurseToCurvesGeometryHandler } from "../../geometry3d/GeometryHandler.js";
+import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d.js";
+import { Ray3d } from "../../geometry3d/Ray3d.js";
+import { Transform } from "../../geometry3d/Transform.js";
+import { Arc3d } from "../Arc3d.js";
+import { AnyCurve } from "../CurveTypes.js";
+import { GeometryQuery } from "../GeometryQuery.js";
+import { LineSegment3d } from "../LineSegment3d.js";
+import { LineString3d } from "../LineString3d.js";
+import { StrokeOptions } from "../StrokeOptions.js";
 
 /**
  * Context for computing geometry range around an axis.

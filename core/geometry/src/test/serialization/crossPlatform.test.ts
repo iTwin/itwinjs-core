@@ -3,20 +3,20 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import * as fs from "fs";
+import fs from "fs";
 import { describe, expect, it } from "vitest";
-import { GeometryQuery } from "../../curve/GeometryQuery";
-import { Matrix3d } from "../../geometry3d/Matrix3d";
-import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
-import { IndexedPolyfaceWalker } from "../../polyface/IndexedPolyfaceWalker";
-import { IndexedPolyface } from "../../polyface/Polyface";
-import { BentleyGeometryFlatBuffer } from "../../serialization/BentleyGeometryFlatBuffer";
-import { IModelJson } from "../../serialization/IModelJsonSchema";
-import { SerializationHelpers } from "../../serialization/SerializationHelpers";
-import { Cone } from "../../solid/Cone";
-import { Sphere } from "../../solid/Sphere";
-import { Checker } from "../Checker";
-import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
+import { GeometryQuery } from "../../curve/GeometryQuery.js";
+import { Matrix3d } from "../../geometry3d/Matrix3d.js";
+import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d.js";
+import { IndexedPolyfaceWalker } from "../../polyface/IndexedPolyfaceWalker.js";
+import { IndexedPolyface } from "../../polyface/Polyface.js";
+import { BentleyGeometryFlatBuffer } from "../../serialization/BentleyGeometryFlatBuffer.js";
+import { IModelJson } from "../../serialization/IModelJsonSchema.js";
+import { SerializationHelpers } from "../../serialization/SerializationHelpers.js";
+import { Cone } from "../../solid/Cone.js";
+import { Sphere } from "../../solid/Sphere.js";
+import { Checker } from "../Checker.js";
+import { GeometryCoreTestIO } from "../GeometryCoreTestIO.js";
 
 // Verify that the typescript API can read flatbuffer and json files written by the typescript and native APIs.
 // Each test case consists of at least four files that encode the same single geometry: native-authored fb and json, typescript-authored fb and json

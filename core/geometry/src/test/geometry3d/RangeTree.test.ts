@@ -4,33 +4,33 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { describe, expect, it } from "vitest";
-import { BezierCurve3d } from "../../bspline/BezierCurve3d";
-import { InterpolationCurve3d, InterpolationCurve3dOptions } from "../../bspline/InterpolationCurve3d";
-import { CurveLocationDetail, CurveLocationDetailPair } from "../../curve/CurveLocationDetail";
-import { CurvePrimitive } from "../../curve/CurvePrimitive";
-import { GeometryQuery } from "../../curve/GeometryQuery";
-import { LineSegment3d } from "../../curve/LineSegment3d";
-import { LineString3d } from "../../curve/LineString3d";
-import { StrokeOptions } from "../../curve/StrokeOptions";
-import { Geometry, PolygonLocation } from "../../Geometry";
-import { AngleSweep } from "../../geometry3d/AngleSweep";
-import { Point3d } from "../../geometry3d/Point3dVector3d";
-import { Range3d } from "../../geometry3d/Range";
-import { Transform } from "../../geometry3d/Transform";
+import { BezierCurve3d } from "../../bspline/BezierCurve3d.js";
+import { InterpolationCurve3d, InterpolationCurve3dOptions } from "../../bspline/InterpolationCurve3d.js";
+import { CurveLocationDetail, CurveLocationDetailPair } from "../../curve/CurveLocationDetail.js";
+import { CurvePrimitive } from "../../curve/CurvePrimitive.js";
+import { GeometryQuery } from "../../curve/GeometryQuery.js";
+import { LineSegment3d } from "../../curve/LineSegment3d.js";
+import { LineString3d } from "../../curve/LineString3d.js";
+import { StrokeOptions } from "../../curve/StrokeOptions.js";
+import { Geometry, PolygonLocation } from "../../Geometry.js";
+import { AngleSweep } from "../../geometry3d/AngleSweep.js";
+import { Point3d } from "../../geometry3d/Point3dVector3d.js";
+import { Range3d } from "../../geometry3d/Range.js";
+import { Transform } from "../../geometry3d/Transform.js";
 import {
   ConvexFacetLocationDetail, FacetLocationDetail, FacetLocationDetailPair, NonConvexFacetLocationDetail,
-} from "../../polyface/FacetLocationDetail";
-import { IndexedPolyface } from "../../polyface/Polyface";
-import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
-import { PolyfaceQuery } from "../../polyface/PolyfaceQuery";
-import { LineString3dRangeTreeContext } from "../../polyface/RangeTree/LineString3dRangeTreeContext";
-import { Point3dArrayRangeTreeContext } from "../../polyface/RangeTree/Point3dArrayRangeTreeContext";
-import { PolyfaceRangeTreeContext } from "../../polyface/RangeTree/PolyfaceRangeTreeContext";
-import { RangeTreeNode, RangeTreeOps, SingleTreeSearchHandler, TwoTreeSearchHandler } from "../../polyface/RangeTree/RangeTreeNode";
-import { Sample } from "../../serialization/GeometrySamples";
-import { LinearSweep } from "../../solid/LinearSweep";
-import { Checker } from "../Checker";
-import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
+} from "../../polyface/FacetLocationDetail.js";
+import { IndexedPolyface } from "../../polyface/Polyface.js";
+import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder.js";
+import { PolyfaceQuery } from "../../polyface/PolyfaceQuery.js";
+import { LineString3dRangeTreeContext } from "../../polyface/RangeTree/LineString3dRangeTreeContext.js";
+import { Point3dArrayRangeTreeContext } from "../../polyface/RangeTree/Point3dArrayRangeTreeContext.js";
+import { PolyfaceRangeTreeContext } from "../../polyface/RangeTree/PolyfaceRangeTreeContext.js";
+import { RangeTreeNode, RangeTreeOps, SingleTreeSearchHandler, TwoTreeSearchHandler } from "../../polyface/RangeTree/RangeTreeNode.js";
+import { Sample } from "../../serialization/GeometrySamples.js";
+import { LinearSweep } from "../../solid/LinearSweep.js";
+import { Checker } from "../Checker.js";
+import { GeometryCoreTestIO } from "../GeometryCoreTestIO.js";
 
 // Clone and shift the range ...
 // shift by dx and dy

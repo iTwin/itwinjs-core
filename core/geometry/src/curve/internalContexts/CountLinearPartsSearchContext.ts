@@ -6,11 +6,11 @@
 /** @packageDocumentation
  * @module Curve
  */
-import { CurveCollection } from "../CurveCollection";
-import { CurvePrimitive } from "../CurvePrimitive";
-import { RecursiveCurveProcessorWithStack } from "../CurveProcessor";
-import { LineSegment3d } from "../LineSegment3d";
-import { LineString3d } from "../LineString3d";
+import { CurveCollection } from "../CurveCollection.js";
+import { CurvePrimitive } from "../CurvePrimitive.js";
+import { RecursiveCurveProcessorWithStack } from "../CurveProcessor.js";
+import { LineSegment3d } from "../LineSegment3d.js";
+import { LineString3d } from "../LineString3d.js";
 
 /** Algorithmic class: Count LineSegment3d and LineString3d primitives.
  * @internal

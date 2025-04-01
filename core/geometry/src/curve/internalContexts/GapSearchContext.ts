@@ -6,11 +6,11 @@
 /** @packageDocumentation
  * @module Curve
  */
-import { CurveChain, CurveCollection } from "../CurveCollection";
-import { CurvePrimitive } from "../CurvePrimitive";
-import { RecursiveCurveProcessorWithStack } from "../CurveProcessor";
+import { CurveChain, CurveCollection } from "../CurveCollection.js";
+import { CurvePrimitive } from "../CurvePrimitive.js";
+import { RecursiveCurveProcessorWithStack } from "../CurveProcessor.js";
 
-// import { SumLengthsContext, GapSearchContext, CountLinearPartsSearchContext, CloneCurvesContext, TransformInPlaceContext } from "./CurveSearches";
+// import { SumLengthsContext, GapSearchContext, CountLinearPartsSearchContext, CloneCurvesContext, TransformInPlaceContext } from "./CurveSearches.js";
 /**
  * Algorithmic class: Accumulate maximum gap between adjacent primitives of CurveChain.
  * @internal

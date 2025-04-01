@@ -4,33 +4,33 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { describe, expect, it } from "vitest";
-import { BSplineCurve3d } from "../../bspline/BSplineCurve";
-import { Arc3d } from "../../curve/Arc3d";
-import { CoordinateXYZ } from "../../curve/CoordinateXYZ";
-import { GeometryQuery } from "../../curve/GeometryQuery";
-import { LineSegment3d } from "../../curve/LineSegment3d";
-import { LineString3d } from "../../curve/LineString3d";
-import { Loop } from "../../curve/Loop";
-import { ParityRegion } from "../../curve/ParityRegion";
-import { Path } from "../../curve/Path";
-import { StrokeOptions } from "../../curve/StrokeOptions";
-import { Angle } from "../../geometry3d/Angle";
-import { AngleSweep } from "../../geometry3d/AngleSweep";
-import { Matrix3d } from "../../geometry3d/Matrix3d";
-import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
-import { Ray3d } from "../../geometry3d/Ray3d";
-import { Transform } from "../../geometry3d/Transform";
-import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
-import { TaggedNumericData } from "../../polyface/TaggedNumericData";
-import { IModelJson } from "../../serialization/IModelJsonSchema";
-import { Box } from "../../solid/Box";
-import { Cone } from "../../solid/Cone";
-import { LinearSweep } from "../../solid/LinearSweep";
-import { RotationalSweep } from "../../solid/RotationalSweep";
-import { Sphere } from "../../solid/Sphere";
-import { TorusPipe } from "../../solid/TorusPipe";
-import { Checker } from "../Checker";
-import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
+import { BSplineCurve3d } from "../../bspline/BSplineCurve.js";
+import { Arc3d } from "../../curve/Arc3d.js";
+import { CoordinateXYZ } from "../../curve/CoordinateXYZ.js";
+import { GeometryQuery } from "../../curve/GeometryQuery.js";
+import { LineSegment3d } from "../../curve/LineSegment3d.js";
+import { LineString3d } from "../../curve/LineString3d.js";
+import { Loop } from "../../curve/Loop.js";
+import { ParityRegion } from "../../curve/ParityRegion.js";
+import { Path } from "../../curve/Path.js";
+import { StrokeOptions } from "../../curve/StrokeOptions.js";
+import { Angle } from "../../geometry3d/Angle.js";
+import { AngleSweep } from "../../geometry3d/AngleSweep.js";
+import { Matrix3d } from "../../geometry3d/Matrix3d.js";
+import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d.js";
+import { Ray3d } from "../../geometry3d/Ray3d.js";
+import { Transform } from "../../geometry3d/Transform.js";
+import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder.js";
+import { TaggedNumericData } from "../../polyface/TaggedNumericData.js";
+import { IModelJson } from "../../serialization/IModelJsonSchema.js";
+import { Box } from "../../solid/Box.js";
+import { Cone } from "../../solid/Cone.js";
+import { LinearSweep } from "../../solid/LinearSweep.js";
+import { RotationalSweep } from "../../solid/RotationalSweep.js";
+import { Sphere } from "../../solid/Sphere.js";
+import { TorusPipe } from "../../solid/TorusPipe.js";
+import { Checker } from "../Checker.js";
+import { GeometryCoreTestIO } from "../GeometryCoreTestIO.js";
 
 // This file emits (to console.log) text suitable for use as markdown content for examples of constructor call and json of results
 // The output is suppressed by emitToLog.

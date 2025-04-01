@@ -4,10 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { describe, expect, it } from "vitest";
-import { Point3d } from "../../geometry3d/Point3dVector3d";
-import { TriDiagonalSystem } from "../../numerics/TriDiagonalSystem";
-import { Checker } from "../Checker";
-import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
+import { Point3d } from "../../geometry3d/Point3dVector3d.js";
+import { TriDiagonalSystem } from "../../numerics/TriDiagonalSystem.js";
+import { Checker } from "../Checker.js";
+import { GeometryCoreTestIO } from "../GeometryCoreTestIO.js";
 
 class TestFixture {
   public ck: Checker;

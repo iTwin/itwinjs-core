@@ -7,13 +7,13 @@
  * @module CartesianGeometry
  */
 import { assert } from "@itwin/core-bentley";
-import { Arc3d } from "../curve/Arc3d";
-import { CurveLocationDetail, CurveLocationDetailPair } from "../curve/CurveLocationDetail";
-import { CurvePrimitive } from "../curve/CurvePrimitive";
-import { Geometry } from "../Geometry";
-import { AngleSweep } from "./AngleSweep";
-import { Point3d, Vector3d } from "./Point3dVector3d";
-import { Segment1d } from "./Segment1d";
+import { Arc3d } from "../curve/Arc3d.js";
+import { CurveLocationDetail, CurveLocationDetailPair } from "../curve/CurveLocationDetail.js";
+import { CurvePrimitive } from "../curve/CurvePrimitive.js";
+import { Geometry } from "../Geometry.js";
+import { AngleSweep } from "./AngleSweep.js";
+import { Point3d, Vector3d } from "./Point3dVector3d.js";
+import { Segment1d } from "./Segment1d.js";
 
 /**
  * `CoincidentGeometryQuery` has methods useful in testing for overlapping geometry.

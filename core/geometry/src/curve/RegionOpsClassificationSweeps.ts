@@ -7,29 +7,29 @@
  * @module Curve
  */
 
-import { Geometry } from "../Geometry";
-import { MultiLineStringDataVariant } from "../geometry3d/IndexedXYZCollection";
-import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
-import { Range2d, Range3d } from "../geometry3d/Range";
-import { Ray3d } from "../geometry3d/Ray3d";
-import { XAndY } from "../geometry3d/XYZProps";
-import { HalfEdge, HalfEdgeGraph, HalfEdgeMask, NodeToNumberFunction } from "../topology/Graph";
-import { HalfEdgeGraphSearch } from "../topology/HalfEdgeGraphSearch";
-import { HalfEdgeGraphMerge } from "../topology/Merging";
-import { RegularizationContext } from "../topology/RegularizeFace";
-import { Arc3d } from "./Arc3d";
-import { CurveCurve } from "./CurveCurve";
-import { CurveLocationDetail } from "./CurveLocationDetail";
-import { CurvePrimitive } from "./CurvePrimitive";
-import { AnyRegion } from "./CurveTypes";
-import { GeometryQuery } from "./GeometryQuery";
-import { PlaneAltitudeRangeContext } from "./internalContexts/PlaneAltitudeRangeContext";
-import { LineSegment3d } from "./LineSegment3d";
-import { Loop } from "./Loop";
-import { ParityRegion } from "./ParityRegion";
-import { PlanarSubdivision } from "./Query/PlanarSubdivision";
-import { GraphCheckPointFunction, RegionBinaryOpType, RegionOps } from "./RegionOps";
-import { UnionRegion } from "./UnionRegion";
+import { Geometry } from "../Geometry.js";
+import { MultiLineStringDataVariant } from "../geometry3d/IndexedXYZCollection.js";
+import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d.js";
+import { Range2d, Range3d } from "../geometry3d/Range.js";
+import { Ray3d } from "../geometry3d/Ray3d.js";
+import { XAndY } from "../geometry3d/XYZProps.js";
+import { HalfEdge, HalfEdgeGraph, HalfEdgeMask, NodeToNumberFunction } from "../topology/Graph.js";
+import { HalfEdgeGraphSearch } from "../topology/HalfEdgeGraphSearch.js";
+import { HalfEdgeGraphMerge } from "../topology/Merging.js";
+import { RegularizationContext } from "../topology/RegularizeFace.js";
+import { Arc3d } from "./Arc3d.js";
+import { CurveCurve } from "./CurveCurve.js";
+import { CurveLocationDetail } from "./CurveLocationDetail.js";
+import { CurvePrimitive } from "./CurvePrimitive.js";
+import { AnyRegion } from "./CurveTypes.js";
+import { GeometryQuery } from "./GeometryQuery.js";
+import { PlaneAltitudeRangeContext } from "./internalContexts/PlaneAltitudeRangeContext.js";
+import { LineSegment3d } from "./LineSegment3d.js";
+import { Loop } from "./Loop.js";
+import { ParityRegion } from "./ParityRegion.js";
+import { PlanarSubdivision } from "./Query/PlanarSubdivision.js";
+import { GraphCheckPointFunction, RegionBinaryOpType, RegionOps } from "./RegionOps.js";
+import { UnionRegion } from "./UnionRegion.js";
 
 /**
  * base class for callbacks during region sweeps.

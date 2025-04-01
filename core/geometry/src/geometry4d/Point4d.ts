@@ -6,14 +6,14 @@
 /** @packageDocumentation
  * @module Numerics
  */
-import { BeJSONFunctions, Geometry, PlaneAltitudeEvaluator } from "../Geometry";
-import { Plane3d } from "../geometry3d/Plane3d";
-import { Plane3dByOriginAndUnitNormal } from "../geometry3d/Plane3dByOriginAndUnitNormal";
-import { Plane3dByOriginAndVectors } from "../geometry3d/Plane3dByOriginAndVectors";
-import { Point2d } from "../geometry3d/Point2dVector2d";
-import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
-import { Ray3d } from "../geometry3d/Ray3d";
-import { XAndY, XYAndZ } from "../geometry3d/XYZProps";
+import { BeJSONFunctions, Geometry, PlaneAltitudeEvaluator } from "../Geometry.js";
+import { Plane3d } from "../geometry3d/Plane3d.js";
+import { Plane3dByOriginAndUnitNormal } from "../geometry3d/Plane3dByOriginAndUnitNormal.js";
+import { Plane3dByOriginAndVectors } from "../geometry3d/Plane3dByOriginAndVectors.js";
+import { Point2d } from "../geometry3d/Point2dVector2d.js";
+import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d.js";
+import { Ray3d } from "../geometry3d/Ray3d.js";
+import { XAndY, XYAndZ } from "../geometry3d/XYZProps.js";
 
 /**
  * 4d point packed in an array of 4 numbers.

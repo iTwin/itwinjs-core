@@ -3,36 +3,36 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { describe, expect, it } from "vitest";
-import * as fs from "fs";
-import { ClipUtilities } from "../../clipping/ClipUtils";
-import { UnionOfConvexClipPlaneSets } from "../../clipping/UnionOfConvexClipPlaneSets";
-import { Arc3d } from "../../curve/Arc3d";
-import { CurveChain, CurveCollection } from "../../curve/CurveCollection";
-import { CurveFactory } from "../../curve/CurveFactory";
-import { CurveOps } from "../../curve/CurveOps";
-import { GeometryQuery } from "../../curve/GeometryQuery";
-import { LineSegment3d } from "../../curve/LineSegment3d";
-import { LineString3d } from "../../curve/LineString3d";
-import { Loop } from "../../curve/Loop";
-import { JointOptions } from "../../curve/OffsetOptions";
-import { Path } from "../../curve/Path";
-import { RegionBinaryOpType, RegionOps } from "../../curve/RegionOps";
-import { Angle } from "../../geometry3d/Angle";
-import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray";
-import { Matrix3d } from "../../geometry3d/Matrix3d";
-import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
-import { Point3dArray } from "../../geometry3d/PointHelpers";
-import { Range3d } from "../../geometry3d/Range";
-import { Transform } from "../../geometry3d/Transform";
-import { IndexedPolyface } from "../../polyface/Polyface";
-import { ClippedPolyfaceBuilders, PolyfaceClip } from "../../polyface/PolyfaceClip";
-import { PolyfaceQuery } from "../../polyface/PolyfaceQuery";
-import { Sample } from "../../serialization/GeometrySamples";
-import { IModelJson } from "../../serialization/IModelJsonSchema";
-import { SweepContour } from "../../solid/SweepContour";
-import { HalfEdgeGraphMerge, VertexNeighborhoodSortData } from "../../topology/Merging";
-import { Checker } from "../Checker";
-import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
+import fs from "fs";
+import { ClipUtilities } from "../../clipping/ClipUtils.js";
+import { UnionOfConvexClipPlaneSets } from "../../clipping/UnionOfConvexClipPlaneSets.js";
+import { Arc3d } from "../../curve/Arc3d.js";
+import { CurveChain, CurveCollection } from "../../curve/CurveCollection.js";
+import { CurveFactory } from "../../curve/CurveFactory.js";
+import { CurveOps } from "../../curve/CurveOps.js";
+import { GeometryQuery } from "../../curve/GeometryQuery.js";
+import { LineSegment3d } from "../../curve/LineSegment3d.js";
+import { LineString3d } from "../../curve/LineString3d.js";
+import { Loop } from "../../curve/Loop.js";
+import { JointOptions } from "../../curve/OffsetOptions.js";
+import { Path } from "../../curve/Path.js";
+import { RegionBinaryOpType, RegionOps } from "../../curve/RegionOps.js";
+import { Angle } from "../../geometry3d/Angle.js";
+import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray.js";
+import { Matrix3d } from "../../geometry3d/Matrix3d.js";
+import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d.js";
+import { Point3dArray } from "../../geometry3d/PointHelpers.js";
+import { Range3d } from "../../geometry3d/Range.js";
+import { Transform } from "../../geometry3d/Transform.js";
+import { IndexedPolyface } from "../../polyface/Polyface.js";
+import { ClippedPolyfaceBuilders, PolyfaceClip } from "../../polyface/PolyfaceClip.js";
+import { PolyfaceQuery } from "../../polyface/PolyfaceQuery.js";
+import { Sample } from "../../serialization/GeometrySamples.js";
+import { IModelJson } from "../../serialization/IModelJsonSchema.js";
+import { SweepContour } from "../../solid/SweepContour.js";
+import { HalfEdgeGraphMerge, VertexNeighborhoodSortData } from "../../topology/Merging.js";
+import { Checker } from "../Checker.js";
+import { GeometryCoreTestIO } from "../GeometryCoreTestIO.js";
 
 function captureClippedPolygon(allGeometry: GeometryQuery[], points: Point3d[], clipper: UnionOfConvexClipPlaneSets,
   x0: number,

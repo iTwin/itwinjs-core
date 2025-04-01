@@ -7,8 +7,8 @@
  * @module Curve
  */
 
-import { Geometry } from "../Geometry";
-import { Angle } from "../geometry3d/Angle";
+import { Geometry } from "../Geometry.js";
+import { Angle } from "../geometry3d/Angle.js";
 
 /**
  * Tolerance blob for various stroking methods.

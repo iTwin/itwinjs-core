@@ -2,18 +2,18 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Geometry } from "../../Geometry";
-import { Point3d } from "../../geometry3d/Point3dVector3d";
-import { HalfEdge, HalfEdgeGraph } from "../../topology/Graph";
-import { HalfEdgeGraphSearch } from "../../topology/HalfEdgeGraphSearch";
-import { HalfEdgeGraphMerge } from "../../topology/Merging";
-import { Arc3d } from "../Arc3d";
-import { CurveLocationDetail, CurveLocationDetailPair } from "../CurveLocationDetail";
-import { CurvePrimitive } from "../CurvePrimitive";
-import { LineSegment3d } from "../LineSegment3d";
-import { LineString3d } from "../LineString3d";
-import { Loop, LoopCurveLoopCurve, SignedLoops } from "../Loop";
-import { RegionOps } from "../RegionOps";
+import { Geometry } from "../../Geometry.js";
+import { Point3d } from "../../geometry3d/Point3dVector3d.js";
+import { HalfEdge, HalfEdgeGraph } from "../../topology/Graph.js";
+import { HalfEdgeGraphSearch } from "../../topology/HalfEdgeGraphSearch.js";
+import { HalfEdgeGraphMerge } from "../../topology/Merging.js";
+import { Arc3d } from "../Arc3d.js";
+import { CurveLocationDetail, CurveLocationDetailPair } from "../CurveLocationDetail.js";
+import { CurvePrimitive } from "../CurvePrimitive.js";
+import { LineSegment3d } from "../LineSegment3d.js";
+import { LineString3d } from "../LineString3d.js";
+import { Loop, LoopCurveLoopCurve, SignedLoops } from "../Loop.js";
+import { RegionOps } from "../RegionOps.js";
 
 /** @packageDocumentation
  * @module Curve

@@ -6,11 +6,11 @@
 /** @packageDocumentation
  * @module CartesianGeometry
  */
-import { BooleanClipNodeIntersection, BooleanClipNodeParity, BooleanClipNodeUnion } from "./BooleanClipNode";
-import { ClipPlane } from "./ClipPlane";
-import { Clipper, ClipUtilities } from "./ClipUtils";
-import { ConvexClipPlaneSet } from "./ConvexClipPlaneSet";
-import { UnionOfConvexClipPlaneSets } from "./UnionOfConvexClipPlaneSets";
+import { BooleanClipNodeIntersection, BooleanClipNodeParity, BooleanClipNodeUnion } from "./BooleanClipNode.js";
+import { ClipPlane } from "./ClipPlane.js";
+import { Clipper, ClipUtilities } from "./ClipUtils.js";
+import { ConvexClipPlaneSet } from "./ConvexClipPlaneSet.js";
+import { UnionOfConvexClipPlaneSets } from "./UnionOfConvexClipPlaneSets.js";
 
 /**
  * A BooleanClipFactory is a factory to create objects that implement interior nodes of a tree of boolean clip operations.

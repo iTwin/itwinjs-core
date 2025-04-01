@@ -32,7 +32,7 @@ export default defineConfig({
         "lcov",
         "cobertura"
       ],
-      reportsDirectory: "./lib/cjs/test/coverage",
+      reportsDirectory: "./lib/esm/test/coverage",
       thresholds: { // This should not be in the default config file.
         branches: 70,
         statements: 85,

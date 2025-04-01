@@ -6,13 +6,13 @@
  * @module RangeSearch
  */
 
-import { CurveLocationDetail, CurveLocationDetailPair } from "../../curve/CurveLocationDetail";
-import { Point3d } from "../../geometry3d/Point3dVector3d";
-import { Range3d } from "../../geometry3d/Range";
-import { RangeTreeNode, RangeTreeOps } from "./RangeTreeNode";
+import { CurveLocationDetail, CurveLocationDetailPair } from "../../curve/CurveLocationDetail.js";
+import { Point3d } from "../../geometry3d/Point3dVector3d.js";
+import { Range3d } from "../../geometry3d/Range.js";
+import { RangeTreeNode, RangeTreeOps } from "./RangeTreeNode.js";
 import {
   SingleTreeSearchHandlerForClosestPointInArray, TwoTreeSearchHandlerForPoint3dArrayPoint3dArrayCloseApproach,
-} from "./RangeTreeSearchHandlers";
+} from "./RangeTreeSearchHandlers.js";
 
 /**
  * Handler class for searching a range tree containing unordered Point3d data.

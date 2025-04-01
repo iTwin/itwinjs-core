@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { Geometry } from "../Geometry";
+import { Geometry } from "../Geometry.js";
 
 /** @packageDocumentation
  * @module Numerics

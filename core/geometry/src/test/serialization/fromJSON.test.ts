@@ -4,25 +4,25 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { describe, it } from "vitest";
-import { LineSegment3d } from "../../curve/LineSegment3d";
-import { LineString3d } from "../../curve/LineString3d";
-import { PointString3d } from "../../curve/PointString3d";
-import { Angle } from "../../geometry3d/Angle";
-import { AngleSweep } from "../../geometry3d/AngleSweep";
-import { Matrix3d } from "../../geometry3d/Matrix3d";
-import { Plane3dByOriginAndUnitNormal } from "../../geometry3d/Plane3dByOriginAndUnitNormal";
-import { Plane3dByOriginAndVectors } from "../../geometry3d/Plane3dByOriginAndVectors";
-import { Range1d, Range2d, Range3d } from "../../geometry3d/Range";
-import { Ray3d } from "../../geometry3d/Ray3d";
-import { Transform } from "../../geometry3d/Transform";
-import { YawPitchRollAngles } from "../../geometry3d/YawPitchRollAngles";
-import { Map4d } from "../../geometry4d/Map4d";
-import { Matrix4d } from "../../geometry4d/Matrix4d";
-import { Point4d } from "../../geometry4d/Point4d";
-import { Complex } from "../../numerics/Complex";
-import { Checker } from "../Checker";
-import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
-import { SimpleFactory } from "../SimpleFactory";
+import { LineSegment3d } from "../../curve/LineSegment3d.js";
+import { LineString3d } from "../../curve/LineString3d.js";
+import { PointString3d } from "../../curve/PointString3d.js";
+import { Angle } from "../../geometry3d/Angle.js";
+import { AngleSweep } from "../../geometry3d/AngleSweep.js";
+import { Matrix3d } from "../../geometry3d/Matrix3d.js";
+import { Plane3dByOriginAndUnitNormal } from "../../geometry3d/Plane3dByOriginAndUnitNormal.js";
+import { Plane3dByOriginAndVectors } from "../../geometry3d/Plane3dByOriginAndVectors.js";
+import { Range1d, Range2d, Range3d } from "../../geometry3d/Range.js";
+import { Ray3d } from "../../geometry3d/Ray3d.js";
+import { Transform } from "../../geometry3d/Transform.js";
+import { YawPitchRollAngles } from "../../geometry3d/YawPitchRollAngles.js";
+import { Map4d } from "../../geometry4d/Map4d.js";
+import { Matrix4d } from "../../geometry4d/Matrix4d.js";
+import { Point4d } from "../../geometry4d/Point4d.js";
+import { Complex } from "../../numerics/Complex.js";
+import { Checker } from "../Checker.js";
+import { GeometryCoreTestIO } from "../GeometryCoreTestIO.js";
+import { SimpleFactory } from "../SimpleFactory.js";
 
 let noisy = 0;
 function report(a: any, b: any) {

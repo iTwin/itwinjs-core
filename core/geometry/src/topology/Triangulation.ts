@@ -7,20 +7,20 @@
  * @module Topology
  */
 
-import { ClipUtilities } from "../clipping/ClipUtils";
-import { Geometry } from "../Geometry";
-import { FrameBuilder } from "../geometry3d/FrameBuilder";
-import { IndexedXYZCollection, LineStringDataVariant, MultiLineStringDataVariant } from "../geometry3d/IndexedXYZCollection";
-import { Plane3dByOriginAndUnitNormal } from "../geometry3d/Plane3dByOriginAndUnitNormal";
-import { Point3d } from "../geometry3d/Point3dVector3d";
-import { Point3dArray } from "../geometry3d/PointHelpers";
-import { PointStreamXYZXYZHandlerBase, VariantPointDataStream } from "../geometry3d/PointStreaming";
-import { Range1d, Range2d } from "../geometry3d/Range";
-import { Transform } from "../geometry3d/Transform";
-import { XAndY } from "../geometry3d/XYZProps";
-import { HalfEdge, HalfEdgeGraph, HalfEdgeMask } from "./Graph";
-import { MarkedEdgeSet } from "./HalfEdgeMarkSet";
-import { InsertAndRetriangulateContext, InsertedVertexZOptions } from "./InsertAndRetriangulateContext";
+import { ClipUtilities } from "../clipping/ClipUtils.js";
+import { Geometry } from "../Geometry.js";
+import { FrameBuilder } from "../geometry3d/FrameBuilder.js";
+import { IndexedXYZCollection, LineStringDataVariant, MultiLineStringDataVariant } from "../geometry3d/IndexedXYZCollection.js";
+import { Plane3dByOriginAndUnitNormal } from "../geometry3d/Plane3dByOriginAndUnitNormal.js";
+import { Point3d } from "../geometry3d/Point3dVector3d.js";
+import { Point3dArray } from "../geometry3d/PointHelpers.js";
+import { PointStreamXYZXYZHandlerBase, VariantPointDataStream } from "../geometry3d/PointStreaming.js";
+import { Range1d, Range2d } from "../geometry3d/Range.js";
+import { Transform } from "../geometry3d/Transform.js";
+import { XAndY } from "../geometry3d/XYZProps.js";
+import { HalfEdge, HalfEdgeGraph, HalfEdgeMask } from "./Graph.js";
+import { MarkedEdgeSet } from "./HalfEdgeMarkSet.js";
+import { InsertAndRetriangulateContext, InsertedVertexZOptions } from "./InsertAndRetriangulateContext.js";
 
 /**
  * Static methods for triangulating polygons and points.

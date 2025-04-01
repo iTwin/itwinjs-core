@@ -3,29 +3,29 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import * as fs from "fs";
+import fs from "fs";
 import { describe, expect, it } from "vitest";
-import { BezierCurve3d } from "../../bspline/BezierCurve3d";
-import { Arc3d } from "../../curve/Arc3d";
-import { BagOfCurves, CurveCollection } from "../../curve/CurveCollection";
-import { CurveExtendMode } from "../../curve/CurveExtendMode";
-import { CurveFactory } from "../../curve/CurveFactory";
-import { CurveLocationDetail } from "../../curve/CurveLocationDetail";
-import { CurvePrimitive } from "../../curve/CurvePrimitive";
-import { GeometryQuery } from "../../curve/GeometryQuery";
-import { LineSegment3d } from "../../curve/LineSegment3d";
-import { LineString3d } from "../../curve/LineString3d";
-import { Loop } from "../../curve/Loop";
-import { Path } from "../../curve/Path";
-import { ConsolidateAdjacentCurvePrimitivesOptions, RegionOps } from "../../curve/RegionOps";
-import { AngleSweep } from "../../geometry3d/AngleSweep";
-import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
-import { Range3d } from "../../geometry3d/Range";
-import { Transform } from "../../geometry3d/Transform";
-import { Sample } from "../../serialization/GeometrySamples";
-import { IModelJson } from "../../serialization/IModelJsonSchema";
-import { Checker } from "../Checker";
-import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
+import { BezierCurve3d } from "../../bspline/BezierCurve3d.js";
+import { Arc3d } from "../../curve/Arc3d.js";
+import { BagOfCurves, CurveCollection } from "../../curve/CurveCollection.js";
+import { CurveExtendMode } from "../../curve/CurveExtendMode.js";
+import { CurveFactory } from "../../curve/CurveFactory.js";
+import { CurveLocationDetail } from "../../curve/CurveLocationDetail.js";
+import { CurvePrimitive } from "../../curve/CurvePrimitive.js";
+import { GeometryQuery } from "../../curve/GeometryQuery.js";
+import { LineSegment3d } from "../../curve/LineSegment3d.js";
+import { LineString3d } from "../../curve/LineString3d.js";
+import { Loop } from "../../curve/Loop.js";
+import { Path } from "../../curve/Path.js";
+import { ConsolidateAdjacentCurvePrimitivesOptions, RegionOps } from "../../curve/RegionOps.js";
+import { AngleSweep } from "../../geometry3d/AngleSweep.js";
+import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d.js";
+import { Range3d } from "../../geometry3d/Range.js";
+import { Transform } from "../../geometry3d/Transform.js";
+import { Sample } from "../../serialization/GeometrySamples.js";
+import { IModelJson } from "../../serialization/IModelJsonSchema.js";
+import { Checker } from "../Checker.js";
+import { GeometryCoreTestIO } from "../GeometryCoreTestIO.js";
 
 const consolidateAdjacentPath = "./src/test/data/curve/";
 

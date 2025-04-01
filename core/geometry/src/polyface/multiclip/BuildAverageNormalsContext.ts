@@ -6,12 +6,12 @@
  * @module Polyface
  */
 
-import { Vector3d } from "../../geometry3d/Point3dVector3d";
-import { PolygonOps } from "../../geometry3d/PolygonOps";
-import { IndexedPolyface } from "../Polyface";
-import { Geometry } from "../../Geometry";
-import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray";
-import { Angle } from "../../geometry3d/Angle";
+import { Vector3d } from "../../geometry3d/Point3dVector3d.js";
+import { PolygonOps } from "../../geometry3d/PolygonOps.js";
+import { IndexedPolyface } from "../Polyface.js";
+import { Geometry } from "../../Geometry.js";
+import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray.js";
+import { Angle } from "../../geometry3d/Angle.js";
 
 /**
  * Normal vector with area (or other numeric) and source index

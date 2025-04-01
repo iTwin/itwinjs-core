@@ -4,13 +4,13 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { describe, expect, it } from "vitest";
-import { Arc3d } from "../../curve/Arc3d";
-import { GeometryQuery } from "../../curve/GeometryQuery";
-import { StrokeOptions } from "../../curve/StrokeOptions";
-import { AngleSweep } from "../../geometry3d/AngleSweep";
-import { Point3d } from "../../geometry3d/Point3dVector3d";
-import { Checker } from "../Checker";
-import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
+import { Arc3d } from "../../curve/Arc3d.js";
+import { GeometryQuery } from "../../curve/GeometryQuery.js";
+import { StrokeOptions } from "../../curve/StrokeOptions.js";
+import { AngleSweep } from "../../geometry3d/AngleSweep.js";
+import { Point3d } from "../../geometry3d/Point3dVector3d.js";
+import { Checker } from "../Checker.js";
+import { GeometryCoreTestIO } from "../GeometryCoreTestIO.js";
 
 describe("StrokeOptions", () => {
 

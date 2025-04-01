@@ -4,14 +4,14 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { describe, expect, it } from "vitest";
-import { AustralianRailCorpXYEvaluator } from "../../curve/spiral/AustralianRailCorpXYEvaluator";
-import { CzechSpiralEvaluator } from "../../curve/spiral/CzechSpiralEvaluator";
-import { DirectSpiral3d } from "../../curve/spiral/DirectSpiral3d";
-import { Range1d } from "../../geometry3d/Range";
-import { Transform } from "../../geometry3d/Transform";
-import { Quadrature } from "../../numerics/Quadrature";
-import { Checker } from "../Checker";
-import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
+import { AustralianRailCorpXYEvaluator } from "../../curve/spiral/AustralianRailCorpXYEvaluator.js";
+import { CzechSpiralEvaluator } from "../../curve/spiral/CzechSpiralEvaluator.js";
+import { DirectSpiral3d } from "../../curve/spiral/DirectSpiral3d.js";
+import { Range1d } from "../../geometry3d/Range.js";
+import { Transform } from "../../geometry3d/Transform.js";
+import { Quadrature } from "../../numerics/Quadrature.js";
+import { Checker } from "../Checker.js";
+import { GeometryCoreTestIO } from "../GeometryCoreTestIO.js";
 
 describe("AustralianRailCorpSpiral", () => {
   it("HelloWorld", () => {

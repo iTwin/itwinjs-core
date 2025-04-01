@@ -4,26 +4,26 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { describe, expect, it } from "vitest";
-import * as fs from "fs";
-import { GeometryQuery } from "../../curve/GeometryQuery";
-import { LineSegment3d } from "../../curve/LineSegment3d";
-import { Loop } from "../../curve/Loop";
-import { ParityRegion } from "../../curve/ParityRegion";
-import { RegionBinaryOpType, RegionOps } from "../../curve/RegionOps";
-import { Angle } from "../../geometry3d/Angle";
-import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray";
-import { MultiLineStringDataVariant } from "../../geometry3d/IndexedXYZCollection";
-import { Matrix3d } from "../../geometry3d/Matrix3d";
-import { Point3d } from "../../geometry3d/Point3dVector3d";
-import { Transform } from "../../geometry3d/Transform";
-import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
-import { Sample } from "../../serialization/GeometrySamples";
-import { IModelJson } from "../../serialization/IModelJsonSchema";
-import { HalfEdge, HalfEdgeGraph } from "../../topology/Graph";
-import { HalfEdgeGraphSpineContext } from "../../topology/HalfEdgeGraphSpineContext";
-import { RegularizationContext } from "../../topology/RegularizeFace";
-import { Checker } from "../Checker";
-import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
+import fs from "fs";
+import { GeometryQuery } from "../../curve/GeometryQuery.js";
+import { LineSegment3d } from "../../curve/LineSegment3d.js";
+import { Loop } from "../../curve/Loop.js";
+import { ParityRegion } from "../../curve/ParityRegion.js";
+import { RegionBinaryOpType, RegionOps } from "../../curve/RegionOps.js";
+import { Angle } from "../../geometry3d/Angle.js";
+import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray.js";
+import { MultiLineStringDataVariant } from "../../geometry3d/IndexedXYZCollection.js";
+import { Matrix3d } from "../../geometry3d/Matrix3d.js";
+import { Point3d } from "../../geometry3d/Point3dVector3d.js";
+import { Transform } from "../../geometry3d/Transform.js";
+import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder.js";
+import { Sample } from "../../serialization/GeometrySamples.js";
+import { IModelJson } from "../../serialization/IModelJsonSchema.js";
+import { HalfEdge, HalfEdgeGraph } from "../../topology/Graph.js";
+import { HalfEdgeGraphSpineContext } from "../../topology/HalfEdgeGraphSpineContext.js";
+import { RegularizationContext } from "../../topology/RegularizeFace.js";
+import { Checker } from "../Checker.js";
+import { GeometryCoreTestIO } from "../GeometryCoreTestIO.js";
 
 function loadSpineGraph(context: HalfEdgeGraphSpineContext, data: any) {
   if (Array.isArray(data) && data[0] instanceof Point3d) {

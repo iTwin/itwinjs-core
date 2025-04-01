@@ -7,18 +7,18 @@
  * @module Curve
  */
 
-import { Geometry } from "../Geometry";
-import { Range3d } from "../geometry3d/Range";
-import { BagOfCurves, CurveCollection } from "./CurveCollection";
-import { CurvePrimitive } from "./CurvePrimitive";
-import { AnyChain, AnyCurve } from "./CurveTypes";
-import { MultiChainCollector } from "./internalContexts/MultiChainCollector";
-import { CurveChainWireOffsetContext } from "./internalContexts/PolygonOffsetContext";
-import { LineString3d } from "./LineString3d";
-import { Loop } from "./Loop";
-import { OffsetOptions } from "./OffsetOptions";
-import { Path } from "./Path";
-import { StrokeOptions } from "./StrokeOptions";
+import { Geometry } from "../Geometry.js";
+import { Range3d } from "../geometry3d/Range.js";
+import { BagOfCurves, CurveCollection } from "./CurveCollection.js";
+import { CurvePrimitive } from "./CurvePrimitive.js";
+import { AnyChain, AnyCurve } from "./CurveTypes.js";
+import { MultiChainCollector } from "./internalContexts/MultiChainCollector.js";
+import { CurveChainWireOffsetContext } from "./internalContexts/PolygonOffsetContext.js";
+import { LineString3d } from "./LineString3d.js";
+import { Loop } from "./Loop.js";
+import { OffsetOptions } from "./OffsetOptions.js";
+import { Path } from "./Path.js";
+import { StrokeOptions } from "./StrokeOptions.js";
 
 /**
  * Static methods for miscellaneous curve operations.

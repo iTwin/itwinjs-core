@@ -4,13 +4,13 @@
 *--------------------------------------------------------------------------------------------*/
 import { describe, expect, it } from "vitest";
 
-import { PerpParallelOptions } from "../../Geometry";
-import { Angle } from "../../geometry3d/Angle";
-import { Point2dArrayCarrier } from "../../geometry3d/Point2dArrayCarrier";
-import { Point2d, Vector2d } from "../../geometry3d/Point2dVector2d";
-import { Point3d } from "../../geometry3d/Point3dVector3d";
-import { Sample } from "../../serialization/GeometrySamples";
-import * as bsiChecker from "../Checker";
+import { PerpParallelOptions } from "../../Geometry.js";
+import { Angle } from "../../geometry3d/Angle.js";
+import { Point2dArrayCarrier } from "../../geometry3d/Point2dArrayCarrier.js";
+import { Point2d, Vector2d } from "../../geometry3d/Point2dVector2d.js";
+import { Point3d } from "../../geometry3d/Point3dVector3d.js";
+import { Sample } from "../../serialization/GeometrySamples.js";
+import * as bsiChecker from "../Checker.js";
 
 describe("Point2d", () => {
   it("zeros", () => {

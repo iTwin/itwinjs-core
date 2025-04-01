@@ -8,29 +8,29 @@
  */
 
 import { assert } from "@itwin/core-bentley";
-import { ClipPlane } from "../clipping/ClipPlane";
-import { ConvexClipPlaneSet } from "../clipping/ConvexClipPlaneSet";
-import { UnionOfConvexClipPlaneSets } from "../clipping/UnionOfConvexClipPlaneSets";
-import { AnyRegion } from "../curve/CurveTypes";
-import { LineString3d } from "../curve/LineString3d";
-import { Loop } from "../curve/Loop";
-import { RegionBinaryOpType, RegionOps } from "../curve/RegionOps";
-import { StrokeOptions } from "../curve/StrokeOptions";
-import { UnionRegion } from "../curve/UnionRegion";
-import { Geometry, PlaneAltitudeEvaluator } from "../Geometry";
-import { FrameBuilder } from "../geometry3d/FrameBuilder";
-import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
-import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
-import { IndexedXYZCollectionPolygonOps, PolygonOps } from "../geometry3d/PolygonOps";
-import { Range1d, Range2d, Range3d } from "../geometry3d/Range";
-import { GrowableXYZArrayCache } from "../geometry3d/ReusableObjectCache";
-import { Transform } from "../geometry3d/Transform";
-import { SweepContour } from "../solid/SweepContour";
-import { ChainMergeContext } from "../topology/ChainMerge";
-import { RangeSearch } from "./multiclip/RangeSearch";
-import { IndexedPolyface, Polyface, PolyfaceVisitor } from "./Polyface";
-import { PolyfaceBuilder } from "./PolyfaceBuilder";
-import { PolyfaceQuery } from "./PolyfaceQuery";
+import { ClipPlane } from "../clipping/ClipPlane.js";
+import { ConvexClipPlaneSet } from "../clipping/ConvexClipPlaneSet.js";
+import { UnionOfConvexClipPlaneSets } from "../clipping/UnionOfConvexClipPlaneSets.js";
+import { AnyRegion } from "../curve/CurveTypes.js";
+import { LineString3d } from "../curve/LineString3d.js";
+import { Loop } from "../curve/Loop.js";
+import { RegionBinaryOpType, RegionOps } from "../curve/RegionOps.js";
+import { StrokeOptions } from "../curve/StrokeOptions.js";
+import { UnionRegion } from "../curve/UnionRegion.js";
+import { Geometry, PlaneAltitudeEvaluator } from "../Geometry.js";
+import { FrameBuilder } from "../geometry3d/FrameBuilder.js";
+import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray.js";
+import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d.js";
+import { IndexedXYZCollectionPolygonOps, PolygonOps } from "../geometry3d/PolygonOps.js";
+import { Range1d, Range2d, Range3d } from "../geometry3d/Range.js";
+import { GrowableXYZArrayCache } from "../geometry3d/ReusableObjectCache.js";
+import { Transform } from "../geometry3d/Transform.js";
+import { SweepContour } from "../solid/SweepContour.js";
+import { ChainMergeContext } from "../topology/ChainMerge.js";
+import { RangeSearch } from "./multiclip/RangeSearch.js";
+import { IndexedPolyface, Polyface, PolyfaceVisitor } from "./Polyface.js";
+import { PolyfaceBuilder } from "./PolyfaceBuilder.js";
+import { PolyfaceQuery } from "./PolyfaceQuery.js";
 
 /**
  * carrier for a point array with an index into UnionOfConvexClipPlaneSets

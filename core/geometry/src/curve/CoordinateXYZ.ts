@@ -5,11 +5,11 @@
 /** @packageDocumentation
  * @module Curve
  */
-import { GeometryHandler } from "../geometry3d/GeometryHandler";
-import { Point3d } from "../geometry3d/Point3dVector3d";
-import { Range3d } from "../geometry3d/Range";
-import { Transform } from "../geometry3d/Transform";
-import { GeometryQuery } from "./GeometryQuery";
+import { GeometryHandler } from "../geometry3d/GeometryHandler.js";
+import { Point3d } from "../geometry3d/Point3dVector3d.js";
+import { Range3d } from "../geometry3d/Range.js";
+import { Transform } from "../geometry3d/Transform.js";
+import { GeometryQuery } from "./GeometryQuery.js";
 
 /**
  * A Coordinate is a Point3d with supporting methods from the GeometryQuery abstraction.

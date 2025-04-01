@@ -7,7 +7,7 @@
  * @module CartesianGeometry
  */
 
-import { Geometry } from "../Geometry";
+import { Geometry } from "../Geometry.js";
 
 /**
  * * A Segment1d is an interval of an axis named x.

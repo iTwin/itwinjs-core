@@ -6,13 +6,13 @@
  * @module RangeSearch
  */
 
-import { Geometry } from "../../Geometry";
-import { Range2d } from "../../geometry3d/Range";
-import { UsageSums } from "../../numerics/UsageSums";
-import { RangeLengthData } from "../RangeLengthData";
-import { GriddedRaggedRange2dSetWithOverflow } from "./GriddedRaggedRange2dSetWithOverflow";
-import { LinearSearchRange2dArray } from "./LinearSearchRange2dArray";
-import { Range2dSearchInterface } from "./Range2dSearchInterface";
+import { Geometry } from "../../Geometry.js";
+import { Range2d } from "../../geometry3d/Range.js";
+import { UsageSums } from "../../numerics/UsageSums.js";
+import { RangeLengthData } from "../RangeLengthData.js";
+import { GriddedRaggedRange2dSetWithOverflow } from "./GriddedRaggedRange2dSetWithOverflow.js";
+import { LinearSearchRange2dArray } from "./LinearSearchRange2dArray.js";
+import { Range2dSearchInterface } from "./Range2dSearchInterface.js";
 
 /** Class with static members to work with various range searchers. */
 export class RangeSearch {

@@ -7,48 +7,48 @@
  * @module Curve
  */
 
-import { Geometry } from "../Geometry";
-import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
+import { Geometry } from "../Geometry.js";
+import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray.js";
 import {
   IndexedReadWriteXYZCollection, IndexedXYZCollection, LineStringDataVariant, MultiLineStringDataVariant,
-} from "../geometry3d/IndexedXYZCollection";
-import { Point3dArrayCarrier } from "../geometry3d/Point3dArrayCarrier";
-import { Point3d } from "../geometry3d/Point3dVector3d";
-import { PolygonOps } from "../geometry3d/PolygonOps";
-import { PolylineCompressionContext } from "../geometry3d/PolylineCompressionByEdgeOffset";
-import { Range3d } from "../geometry3d/Range";
-import { SortablePolygon } from "../geometry3d/SortablePolygon";
-import { Transform } from "../geometry3d/Transform";
-import { XAndY, XYAndZ } from "../geometry3d/XYZProps";
-import { MomentData } from "../geometry4d/MomentData";
-import { IndexedPolyface, Polyface } from "../polyface/Polyface";
-import { PolyfaceBuilder } from "../polyface/PolyfaceBuilder";
-import { HalfEdge, HalfEdgeGraph, HalfEdgeMask } from "../topology/Graph";
-import { HalfEdgeGraphSearch } from "../topology/HalfEdgeGraphSearch";
-import { HalfEdgeGraphOps } from "../topology/Merging";
-import { Triangulator } from "../topology/Triangulation";
-import { BagOfCurves, CurveChain, CurveCollection } from "./CurveCollection";
-import { CurveCurve } from "./CurveCurve";
-import { CurveOps } from "./CurveOps";
-import { CurvePrimitive } from "./CurvePrimitive";
-import { AnyChain, AnyCurve, AnyRegion } from "./CurveTypes";
-import { CurveWireMomentsXYZ } from "./CurveWireMomentsXYZ";
-import { GeometryQuery } from "./GeometryQuery";
-import { ChainCollectorContext } from "./internalContexts/ChainCollectorContext";
-import { PolygonWireOffsetContext } from "./internalContexts/PolygonOffsetContext";
-import { LineString3d } from "./LineString3d";
-import { Loop, SignedLoops } from "./Loop";
-import { JointOptions, OffsetOptions } from "./OffsetOptions";
-import { ParityRegion } from "./ParityRegion";
-import { Path } from "./Path";
-import { ConsolidateAdjacentCurvePrimitivesContext } from "./Query/ConsolidateAdjacentPrimitivesContext";
-import { CurveSplitContext } from "./Query/CurveSplitContext";
-import { PointInOnOutContext } from "./Query/InOutTests";
-import { PlanarSubdivision } from "./Query/PlanarSubdivision";
-import { RegionMomentsXY } from "./RegionMomentsXY";
-import { RegionBooleanContext, RegionGroupOpType, RegionOpsFaceToFaceSearch } from "./RegionOpsClassificationSweeps";
-import { StrokeOptions } from "./StrokeOptions";
-import { UnionRegion } from "./UnionRegion";
+} from "../geometry3d/IndexedXYZCollection.js";
+import { Point3dArrayCarrier } from "../geometry3d/Point3dArrayCarrier.js";
+import { Point3d } from "../geometry3d/Point3dVector3d.js";
+import { PolygonOps } from "../geometry3d/PolygonOps.js";
+import { PolylineCompressionContext } from "../geometry3d/PolylineCompressionByEdgeOffset.js";
+import { Range3d } from "../geometry3d/Range.js";
+import { SortablePolygon } from "../geometry3d/SortablePolygon.js";
+import { Transform } from "../geometry3d/Transform.js";
+import { XAndY, XYAndZ } from "../geometry3d/XYZProps.js";
+import { MomentData } from "../geometry4d/MomentData.js";
+import { IndexedPolyface, Polyface } from "../polyface/Polyface.js";
+import { PolyfaceBuilder } from "../polyface/PolyfaceBuilder.js";
+import { HalfEdge, HalfEdgeGraph, HalfEdgeMask } from "../topology/Graph.js";
+import { HalfEdgeGraphSearch } from "../topology/HalfEdgeGraphSearch.js";
+import { HalfEdgeGraphOps } from "../topology/Merging.js";
+import { Triangulator } from "../topology/Triangulation.js";
+import { BagOfCurves, CurveChain, CurveCollection } from "./CurveCollection.js";
+import { CurveCurve } from "./CurveCurve.js";
+import { CurveOps } from "./CurveOps.js";
+import { CurvePrimitive } from "./CurvePrimitive.js";
+import { AnyChain, AnyCurve, AnyRegion } from "./CurveTypes.js";
+import { CurveWireMomentsXYZ } from "./CurveWireMomentsXYZ.js";
+import { GeometryQuery } from "./GeometryQuery.js";
+import { ChainCollectorContext } from "./internalContexts/ChainCollectorContext.js";
+import { PolygonWireOffsetContext } from "./internalContexts/PolygonOffsetContext.js";
+import { LineString3d } from "./LineString3d.js";
+import { Loop, SignedLoops } from "./Loop.js";
+import { JointOptions, OffsetOptions } from "./OffsetOptions.js";
+import { ParityRegion } from "./ParityRegion.js";
+import { Path } from "./Path.js";
+import { ConsolidateAdjacentCurvePrimitivesContext } from "./Query/ConsolidateAdjacentPrimitivesContext.js";
+import { CurveSplitContext } from "./Query/CurveSplitContext.js";
+import { PointInOnOutContext } from "./Query/InOutTests.js";
+import { PlanarSubdivision } from "./Query/PlanarSubdivision.js";
+import { RegionMomentsXY } from "./RegionMomentsXY.js";
+import { RegionBooleanContext, RegionGroupOpType, RegionOpsFaceToFaceSearch } from "./RegionOpsClassificationSweeps.js";
+import { StrokeOptions } from "./StrokeOptions.js";
+import { UnionRegion } from "./UnionRegion.js";
 
 /**
  * * `properties` is a string with special characters indicating

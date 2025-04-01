@@ -3,12 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { describe, expect, it } from "vitest";
-import { Point3d } from "../../geometry3d/Point3dVector3d";
-import { NumberArray } from "../../geometry3d/PointHelpers";
-import { IndexedPolyfaceWalker } from "../../polyface/IndexedPolyfaceWalker";
-import { IndexedPolyface } from "../../polyface/Polyface";
-import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
-import { Checker } from "../Checker";
+import { Point3d } from "../../geometry3d/Point3dVector3d.js";
+import { NumberArray } from "../../geometry3d/PointHelpers.js";
+import { IndexedPolyfaceWalker } from "../../polyface/IndexedPolyfaceWalker.js";
+import { IndexedPolyface } from "../../polyface/Polyface.js";
+import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder.js";
+import { Checker } from "../Checker.js";
 
 function verifyStrictlyIncreasingArraySearch(ck: Checker, data: number[], name: string) {
   for (let i0 = 0; i0 + 1 < data.length; i0++) {

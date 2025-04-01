@@ -7,20 +7,20 @@
  * @module Curve
  */
 
-import { Geometry } from "../../Geometry";
-import { Matrix3d } from "../../geometry3d/Matrix3d";
-import { Range1d, Range3d } from "../../geometry3d/Range";
-import { Segment1d } from "../../geometry3d/Segment1d";
-import { Transform } from "../../geometry3d/Transform";
-import { CurvePrimitive } from "../CurvePrimitive";
-import { CurveOffsetXYHandler } from "../internalContexts/CurveOffsetXYHandler";
-import { PlaneAltitudeRangeContext } from "../internalContexts/PlaneAltitudeRangeContext";
-import { LineString3d } from "../LineString3d";
-import { OffsetOptions } from "../OffsetOptions";
-import { TransitionConditionalProperties } from "./TransitionConditionalProperties";
+import { Geometry } from "../../Geometry.js";
+import { Matrix3d } from "../../geometry3d/Matrix3d.js";
+import { Range1d, Range3d } from "../../geometry3d/Range.js";
+import { Segment1d } from "../../geometry3d/Segment1d.js";
+import { Transform } from "../../geometry3d/Transform.js";
+import { CurvePrimitive } from "../CurvePrimitive.js";
+import { CurveOffsetXYHandler } from "../internalContexts/CurveOffsetXYHandler.js";
+import { PlaneAltitudeRangeContext } from "../internalContexts/PlaneAltitudeRangeContext.js";
+import { LineString3d } from "../LineString3d.js";
+import { OffsetOptions } from "../OffsetOptions.js";
+import { TransitionConditionalProperties } from "./TransitionConditionalProperties.js";
 
-import type { Vector3d } from "../../geometry3d/Point3dVector3d";
-import type { Ray3d } from "../../geometry3d/Ray3d";
+import type { Vector3d } from "../../geometry3d/Point3dVector3d.js";
+import type { Ray3d } from "../../geometry3d/Ray3d.js";
 
 /**
  * This is the set of valid type names for "integrated" spirals

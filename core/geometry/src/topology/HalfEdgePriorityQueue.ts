@@ -7,8 +7,8 @@
  * @module Topology
  */
 import { OrderedComparator, PriorityQueue } from "@itwin/core-bentley";
-import { HalfEdge } from "./Graph";
-import { HalfEdgeGraphOps } from "./Merging";
+import { HalfEdge } from "./Graph.js";
+import { HalfEdgeGraphOps } from "./Merging.js";
 
 /**
  * * Combination of a priority queue of HalfEdges with

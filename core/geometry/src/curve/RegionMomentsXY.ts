@@ -7,23 +7,23 @@
  * @module Curve
  */
 
-// import { Geometry, Angle, AngleSweep } from "../Geometry";
+// import { Geometry, Angle, AngleSweep } from "../Geometry.js";
 
-import { BSplineCurve3d } from "../bspline/BSplineCurve";
-import { BSplineCurve3dH } from "../bspline/BSplineCurve3dH";
-import { Angle } from "../geometry3d/Angle";
-import { NullGeometryHandler } from "../geometry3d/GeometryHandler";
-import { Point3d } from "../geometry3d/Point3dVector3d";
-import { MomentData } from "../geometry4d/MomentData";
-import { Arc3d } from "./Arc3d";
-import { CurvePrimitive } from "./CurvePrimitive";
-import { LineSegment3d } from "./LineSegment3d";
-import { LineString3d } from "./LineString3d";
-import { Loop } from "./Loop";
-import { ParityRegion } from "./ParityRegion";
-import { StrokeOptions } from "./StrokeOptions";
-import { TransitionSpiral3d } from "./spiral/TransitionSpiral3d";
-import { UnionRegion } from "./UnionRegion";
+import { BSplineCurve3d } from "../bspline/BSplineCurve.js";
+import { BSplineCurve3dH } from "../bspline/BSplineCurve3dH.js";
+import { Angle } from "../geometry3d/Angle.js";
+import { NullGeometryHandler } from "../geometry3d/GeometryHandler.js";
+import { Point3d } from "../geometry3d/Point3dVector3d.js";
+import { MomentData } from "../geometry4d/MomentData.js";
+import { Arc3d } from "./Arc3d.js";
+import { CurvePrimitive } from "./CurvePrimitive.js";
+import { LineSegment3d } from "./LineSegment3d.js";
+import { LineString3d } from "./LineString3d.js";
+import { Loop } from "./Loop.js";
+import { ParityRegion } from "./ParityRegion.js";
+import { StrokeOptions } from "./StrokeOptions.js";
+import { TransitionSpiral3d } from "./spiral/TransitionSpiral3d.js";
+import { UnionRegion } from "./UnionRegion.js";
 
 /**
  * Implementation class for computing XY area moments.

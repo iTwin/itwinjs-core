@@ -4,27 +4,27 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { describe, expect, it } from "vitest";
-import * as fs from "fs";
-import { AnyCurve } from "../../curve/CurveTypes";
-import { BagOfCurves, CurveChain, CurveCollection } from "../../curve/CurveCollection";
-import { CurveOps } from "../../curve/CurveOps";
-import { GeometryQuery } from "../../curve/GeometryQuery";
-import { LineSegment3d } from "../../curve/LineSegment3d";
-import { LineString3d } from "../../curve/LineString3d";
-import { Loop } from "../../curve/Loop";
-import { JointOptions } from "../../curve/OffsetOptions";
-import { Path } from "../../curve/Path";
-import { RegionOps } from "../../curve/RegionOps";
-import { Geometry } from "../../Geometry";
-import { PolygonOps } from "../../geometry3d/PolygonOps";
-import { PolylineOps } from "../../geometry3d/PolylineOps";
-import { Range3d } from "../../geometry3d/Range";
-import { Sample, SteppedIndexFunctionFactory } from "../../serialization/GeometrySamples";
-import { IModelJson } from "../../serialization/IModelJsonSchema";
-import { Checker } from "../Checker";
-import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
-import { ChainMergeContext } from "../../topology/ChainMerge";
-import { Vector3d } from "../../geometry3d/Point3dVector3d";
+import fs from "fs";
+import { AnyCurve } from "../../curve/CurveTypes.js";
+import { BagOfCurves, CurveChain, CurveCollection } from "../../curve/CurveCollection.js";
+import { CurveOps } from "../../curve/CurveOps.js";
+import { GeometryQuery } from "../../curve/GeometryQuery.js";
+import { LineSegment3d } from "../../curve/LineSegment3d.js";
+import { LineString3d } from "../../curve/LineString3d.js";
+import { Loop } from "../../curve/Loop.js";
+import { JointOptions } from "../../curve/OffsetOptions.js";
+import { Path } from "../../curve/Path.js";
+import { RegionOps } from "../../curve/RegionOps.js";
+import { Geometry } from "../../Geometry.js";
+import { PolygonOps } from "../../geometry3d/PolygonOps.js";
+import { PolylineOps } from "../../geometry3d/PolylineOps.js";
+import { Range3d } from "../../geometry3d/Range.js";
+import { Sample, SteppedIndexFunctionFactory } from "../../serialization/GeometrySamples.js";
+import { IModelJson } from "../../serialization/IModelJsonSchema.js";
+import { Checker } from "../Checker.js";
+import { GeometryCoreTestIO } from "../GeometryCoreTestIO.js";
+import { ChainMergeContext } from "../../topology/ChainMerge.js";
+import { Vector3d } from "../../geometry3d/Point3dVector3d.js";
 
 const chainCollectorInputDirectory = "./src/test/data/ChainCollector/";
 const noOffset0 = "aecc_alignment";

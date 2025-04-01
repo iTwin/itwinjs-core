@@ -4,29 +4,29 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { describe, expect, it } from "vitest";
-import { ClipPlane } from "../../clipping/ClipPlane";
-import { Arc3d } from "../../curve/Arc3d";
-import { CurveLocationDetail } from "../../curve/CurveLocationDetail";
-import { CurveOps } from "../../curve/CurveOps";
-import { CurvePrimitive } from "../../curve/CurvePrimitive";
-import { AnyCurve } from "../../curve/CurveTypes";
-import { GeometryQuery } from "../../curve/GeometryQuery";
-import { LineSegment3d } from "../../curve/LineSegment3d";
-import { LineString3d } from "../../curve/LineString3d";
-import { Loop } from "../../curve/Loop";
-import { Path } from "../../curve/Path";
-import { StrokeOptions } from "../../curve/StrokeOptions";
-import { Geometry } from "../../Geometry";
-import { Angle } from "../../geometry3d/Angle";
-import { AngleSweep } from "../../geometry3d/AngleSweep";
-import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray";
-import { Matrix3d } from "../../geometry3d/Matrix3d";
-import { Plane3dByOriginAndUnitNormal } from "../../geometry3d/Plane3dByOriginAndUnitNormal";
-import { Point2d } from "../../geometry3d/Point2dVector2d";
-import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
-import { Transform } from "../../geometry3d/Transform";
-import { Checker } from "../Checker";
-import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
+import { ClipPlane } from "../../clipping/ClipPlane.js";
+import { Arc3d } from "../../curve/Arc3d.js";
+import { CurveLocationDetail } from "../../curve/CurveLocationDetail.js";
+import { CurveOps } from "../../curve/CurveOps.js";
+import { CurvePrimitive } from "../../curve/CurvePrimitive.js";
+import { AnyCurve } from "../../curve/CurveTypes.js";
+import { GeometryQuery } from "../../curve/GeometryQuery.js";
+import { LineSegment3d } from "../../curve/LineSegment3d.js";
+import { LineString3d } from "../../curve/LineString3d.js";
+import { Loop } from "../../curve/Loop.js";
+import { Path } from "../../curve/Path.js";
+import { StrokeOptions } from "../../curve/StrokeOptions.js";
+import { Geometry } from "../../Geometry.js";
+import { Angle } from "../../geometry3d/Angle.js";
+import { AngleSweep } from "../../geometry3d/AngleSweep.js";
+import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray.js";
+import { Matrix3d } from "../../geometry3d/Matrix3d.js";
+import { Plane3dByOriginAndUnitNormal } from "../../geometry3d/Plane3dByOriginAndUnitNormal.js";
+import { Point2d } from "../../geometry3d/Point2dVector2d.js";
+import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d.js";
+import { Transform } from "../../geometry3d/Transform.js";
+import { Checker } from "../Checker.js";
+import { GeometryCoreTestIO } from "../GeometryCoreTestIO.js";
 
 function exerciseClonePartialLineString3d(ck: Checker, allGeometry: GeometryQuery[], lsA: LineString3d, delta: Point3d) {
   const expectValidResults = lsA.numPoints() > 1;

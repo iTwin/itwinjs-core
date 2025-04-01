@@ -4,27 +4,27 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { describe, expect, it } from "vitest";
-import * as fs from "fs";
-import { CurveCollection } from "../../curve/CurveCollection";
-import { GeometryQuery } from "../../curve/GeometryQuery";
-import { ParityRegion } from "../../curve/ParityRegion";
-import { RegionOps } from "../../curve/RegionOps";
-import { Angle } from "../../geometry3d/Angle";
-import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray";
-import { Matrix3d } from "../../geometry3d/Matrix3d";
-import { Point3d } from "../../geometry3d/Point3dVector3d";
-import { Transform } from "../../geometry3d/Transform";
-import { MomentData } from "../../geometry4d/MomentData";
-import { SortableEdgeCluster } from "../../polyface/IndexedEdgeMatcher";
-import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
-import { DuplicateFacetClusterSelector, PolyfaceQuery } from "../../polyface/PolyfaceQuery";
-import { IModelJson } from "../../serialization/IModelJsonSchema";
-import { LinearSweep } from "../../solid/LinearSweep";
-import { SweepContour } from "../../solid/SweepContour";
-import { Triangulator } from "../../topology/Triangulation";
-import { Checker } from "../Checker";
-import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
-import { GraphChecker } from "../topology/Graph.test";
+import fs from "fs";
+import { CurveCollection } from "../../curve/CurveCollection.js";
+import { GeometryQuery } from "../../curve/GeometryQuery.js";
+import { ParityRegion } from "../../curve/ParityRegion.js";
+import { RegionOps } from "../../curve/RegionOps.js";
+import { Angle } from "../../geometry3d/Angle.js";
+import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray.js";
+import { Matrix3d } from "../../geometry3d/Matrix3d.js";
+import { Point3d } from "../../geometry3d/Point3dVector3d.js";
+import { Transform } from "../../geometry3d/Transform.js";
+import { MomentData } from "../../geometry4d/MomentData.js";
+import { SortableEdgeCluster } from "../../polyface/IndexedEdgeMatcher.js";
+import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder.js";
+import { DuplicateFacetClusterSelector, PolyfaceQuery } from "../../polyface/PolyfaceQuery.js";
+import { IModelJson } from "../../serialization/IModelJsonSchema.js";
+import { LinearSweep } from "../../solid/LinearSweep.js";
+import { SweepContour } from "../../solid/SweepContour.js";
+import { Triangulator } from "../../topology/Triangulation.js";
+import { Checker } from "../Checker.js";
+import { GeometryCoreTestIO } from "../GeometryCoreTestIO.js";
+import { GraphChecker } from "../topology/Graph.test.js";
 
 describe("ParityRegionSweep", () => {
   it("Hello", () => {

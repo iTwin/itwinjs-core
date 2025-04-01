@@ -3,37 +3,37 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { describe, expect, it } from "vitest";
-import * as fs from "fs";
-import { BezierCurve3d } from "../../bspline/BezierCurve3d";
-import { BezierCurveBase } from "../../bspline/BezierCurveBase";
-import { BSplineCurve3d, BSplineCurve3dBase } from "../../bspline/BSplineCurve";
-import { BSplineCurve3dH } from "../../bspline/BSplineCurve3dH";
-import { BSplineWrapMode, KnotVector } from "../../bspline/KnotVector";
-import { CurveChain } from "../../curve/CurveCollection";
-import { CurveLocationDetail } from "../../curve/CurveLocationDetail";
-import { CurvePrimitive } from "../../curve/CurvePrimitive";
-import { GeometryQuery } from "../../curve/GeometryQuery";
-import { LineSegment3d } from "../../curve/LineSegment3d";
-import { LineString3d } from "../../curve/LineString3d";
-import { Path } from "../../curve/Path";
-import { StrokeOptions } from "../../curve/StrokeOptions";
-import { Geometry } from "../../Geometry";
-import { Angle } from "../../geometry3d/Angle";
-import { AngleSweep } from "../../geometry3d/AngleSweep";
-import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray";
-import { Matrix3d } from "../../geometry3d/Matrix3d";
-import { Plane3dByOriginAndUnitNormal } from "../../geometry3d/Plane3dByOriginAndUnitNormal";
-import { Point3d } from "../../geometry3d/Point3dVector3d";
-import { NumberArray, Point3dArray } from "../../geometry3d/PointHelpers";
-import { Range3d } from "../../geometry3d/Range";
-import { Transform } from "../../geometry3d/Transform";
-import { Point4d } from "../../geometry4d/Point4d";
-import { Sample } from "../../serialization/GeometrySamples";
-import { IModelJson } from "../../serialization/IModelJsonSchema";
-import { Checker } from "../Checker";
-import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
-import { testGeometryQueryRoundTrip } from "../serialization/FlatBuffer.test";
-import { prettyPrint } from "../testFunctions";
+import fs from "fs";
+import { BezierCurve3d } from "../../bspline/BezierCurve3d.js";
+import { BezierCurveBase } from "../../bspline/BezierCurveBase.js";
+import { BSplineCurve3d, BSplineCurve3dBase } from "../../bspline/BSplineCurve.js";
+import { BSplineCurve3dH } from "../../bspline/BSplineCurve3dH.js";
+import { BSplineWrapMode, KnotVector } from "../../bspline/KnotVector.js";
+import { CurveChain } from "../../curve/CurveCollection.js";
+import { CurveLocationDetail } from "../../curve/CurveLocationDetail.js";
+import { CurvePrimitive } from "../../curve/CurvePrimitive.js";
+import { GeometryQuery } from "../../curve/GeometryQuery.js";
+import { LineSegment3d } from "../../curve/LineSegment3d.js";
+import { LineString3d } from "../../curve/LineString3d.js";
+import { Path } from "../../curve/Path.js";
+import { StrokeOptions } from "../../curve/StrokeOptions.js";
+import { Geometry } from "../../Geometry.js";
+import { Angle } from "../../geometry3d/Angle.js";
+import { AngleSweep } from "../../geometry3d/AngleSweep.js";
+import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray.js";
+import { Matrix3d } from "../../geometry3d/Matrix3d.js";
+import { Plane3dByOriginAndUnitNormal } from "../../geometry3d/Plane3dByOriginAndUnitNormal.js";
+import { Point3d } from "../../geometry3d/Point3dVector3d.js";
+import { NumberArray, Point3dArray } from "../../geometry3d/PointHelpers.js";
+import { Range3d } from "../../geometry3d/Range.js";
+import { Transform } from "../../geometry3d/Transform.js";
+import { Point4d } from "../../geometry4d/Point4d.js";
+import { Sample } from "../../serialization/GeometrySamples.js";
+import { IModelJson } from "../../serialization/IModelJsonSchema.js";
+import { Checker } from "../Checker.js";
+import { GeometryCoreTestIO } from "../GeometryCoreTestIO.js";
+import { testGeometryQueryRoundTrip } from "../serialization/FlatBuffer.test.js";
+import { prettyPrint } from "../testFunctions.js";
 
 /** return knots [0,0,0, step, 2*step, ... N,N,N]
  * where there are:

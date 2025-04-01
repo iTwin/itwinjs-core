@@ -6,7 +6,7 @@
  * @module CartesianGeometry
  */
 
-import { AngleProps, BeJSONFunctions, Geometry, TrigValues } from "../Geometry";
+import { AngleProps, BeJSONFunctions, Geometry, TrigValues } from "../Geometry.js";
 
 /**
  * An `Angle` carries the numeric value of an angle, with methods to allow (require!) callers to

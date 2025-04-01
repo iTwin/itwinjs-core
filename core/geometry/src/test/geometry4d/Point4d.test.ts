@@ -3,12 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { describe, expect, it } from "vitest";
-import { Geometry } from "../../Geometry";
-import { Plane3dByOriginAndUnitNormal } from "../../geometry3d/Plane3dByOriginAndUnitNormal";
-import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
-import { Point4d } from "../../geometry4d/Point4d";
-import { Checker } from "../Checker";
-import { Point2d } from "../../geometry3d/Point2dVector2d";
+import { Geometry } from "../../Geometry.js";
+import { Plane3dByOriginAndUnitNormal } from "../../geometry3d/Plane3dByOriginAndUnitNormal.js";
+import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d.js";
+import { Point4d } from "../../geometry4d/Point4d.js";
+import { Checker } from "../Checker.js";
+import { Point2d } from "../../geometry3d/Point2dVector2d.js";
 
 function testExactPoint4dXYZW(ck: Checker, point: Point4d, x: number, y: number, z: number, w: number) {
   ck.testExactNumber(x, point.x);

@@ -9,9 +9,9 @@
 // cspell:word JSONXY
 // cspell:word CWXY CCWXY
 
-import { BeJSONFunctions, Geometry, PerpParallelOptions } from "../Geometry";
-import { Angle } from "./Angle";
-import { XAndY, XYProps } from "./XYZProps";
+import { BeJSONFunctions, Geometry, PerpParallelOptions } from "../Geometry.js";
+import { Angle } from "./Angle.js";
+import { XAndY, XYProps } from "./XYZProps.js";
 
 /**
  * Minimal object containing x,y and operations that are meaningful without change in both point and vector.

@@ -7,12 +7,12 @@
  * @module Numerics
  */
 
-import { Geometry } from "../Geometry";
-import { GrowableBlockedArray } from "../geometry3d/GrowableBlockedArray";
-import { GrowableXYArray } from "../geometry3d/GrowableXYArray";
-import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
-import { Point2d } from "../geometry3d/Point2dVector2d";
-import { Point3d } from "../geometry3d/Point3dVector3d";
+import { Geometry } from "../Geometry.js";
+import { GrowableBlockedArray } from "../geometry3d/GrowableBlockedArray.js";
+import { GrowableXYArray } from "../geometry3d/GrowableXYArray.js";
+import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray.js";
+import { Point2d } from "../geometry3d/Point2dVector2d.js";
+import { Point3d } from "../geometry3d/Point3dVector3d.js";
 
 /**
  * Blocked array with operations to sort and cluster with a tolerance.

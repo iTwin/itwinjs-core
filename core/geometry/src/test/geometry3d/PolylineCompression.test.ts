@@ -4,16 +4,16 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { describe, expect, it } from "vitest";
-import { GeometryQuery } from "../../curve/GeometryQuery";
-import { LineString3d } from "../../curve/LineString3d";
-import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
-import { Point3dArray } from "../../geometry3d/PointHelpers";
-import { PolygonOps } from "../../geometry3d/PolygonOps";
-import { PolylineOps } from "../../geometry3d/PolylineOps";
-import { Range3d } from "../../geometry3d/Range";
-import { Sample } from "../../serialization/GeometrySamples";
-import { Checker } from "../Checker";
-import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
+import { GeometryQuery } from "../../curve/GeometryQuery.js";
+import { LineString3d } from "../../curve/LineString3d.js";
+import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d.js";
+import { Point3dArray } from "../../geometry3d/PointHelpers.js";
+import { PolygonOps } from "../../geometry3d/PolygonOps.js";
+import { PolylineOps } from "../../geometry3d/PolylineOps.js";
+import { Range3d } from "../../geometry3d/Range.js";
+import { Sample } from "../../serialization/GeometrySamples.js";
+import { Checker } from "../Checker.js";
+import { GeometryCoreTestIO } from "../GeometryCoreTestIO.js";
 
 class PolylineCompressionChecker {
   public ck = new Checker();

@@ -2,8 +2,8 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { GrowableXYZArray } from "./GrowableXYZArray";
-import { IndexedXYZCollection } from "./IndexedXYZCollection";
+import { GrowableXYZArray } from "./GrowableXYZArray.js";
+import { IndexedXYZCollection } from "./IndexedXYZCollection.js";
 
 /** @packageDocumentation
  * @module ArraysAndInterfaces

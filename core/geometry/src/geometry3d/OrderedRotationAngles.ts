@@ -6,9 +6,9 @@
 /** @packageDocumentation
  * @module CartesianGeometry
  */
-import { AxisOrder, Geometry } from "../Geometry";
-import { Angle } from "./Angle";
-import { Matrix3d } from "./Matrix3d";
+import { AxisOrder, Geometry } from "../Geometry.js";
+import { Angle } from "./Angle.js";
+import { Matrix3d } from "./Matrix3d.js";
 
 /* cspell:word cxcz, cxsz, cxcy, cxsy, sxcz, sxsz, sxcy, sxsy, cycz, cysz, sycz, sysz */
 

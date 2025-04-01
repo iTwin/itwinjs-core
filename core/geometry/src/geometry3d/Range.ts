@@ -7,15 +7,15 @@
  * @module CartesianGeometry
  */
 
-import { AxisIndex, BeJSONFunctions, Geometry } from "../Geometry";
-import { MultiLineStringDataVariant } from "../geometry3d/IndexedXYZCollection";
-import { GrowableXYZArray } from "./GrowableXYZArray";
-import { Matrix3d } from "./Matrix3d";
-import { Point2d, Vector2d } from "./Point2dVector2d";
-import { Point3d, Vector3d } from "./Point3dVector3d";
-import { PointStreamRangeCollector, VariantPointDataStream } from "./PointStreaming";
-import { Transform } from "./Transform";
-import { LowAndHighXY, LowAndHighXYZ, Range1dProps, Range2dProps, Range3dProps, XAndY, XYAndZ } from "./XYZProps";
+import { AxisIndex, BeJSONFunctions, Geometry } from "../Geometry.js";
+import { MultiLineStringDataVariant } from "../geometry3d/IndexedXYZCollection.js";
+import { GrowableXYZArray } from "./GrowableXYZArray.js";
+import { Matrix3d } from "./Matrix3d.js";
+import { Point2d, Vector2d } from "./Point2dVector2d.js";
+import { Point3d, Vector3d } from "./Point3dVector3d.js";
+import { PointStreamRangeCollector, VariantPointDataStream } from "./PointStreaming.js";
+import { Transform } from "./Transform.js";
+import { LowAndHighXY, LowAndHighXYZ, Range1dProps, Range2dProps, Range3dProps, XAndY, XYAndZ } from "./XYZProps.js";
 
 // allow _EXTREME_POSITIVE and _EXTREME_NEGATIVE
 /* eslint-disable @typescript-eslint/naming-convention */

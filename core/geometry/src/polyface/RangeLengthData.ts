@@ -6,9 +6,9 @@
  * @module RangeSearch
  */
 
-import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
-import { Range3d } from "../geometry3d/Range";
-import { UsageSums } from "../numerics/UsageSums";
+import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray.js";
+import { Range3d } from "../geometry3d/Range.js";
+import { UsageSums } from "../numerics/UsageSums.js";
 
 /**
  * Accumulated data for x,y,z length statistics in ranges.

@@ -5,15 +5,15 @@
 /** @packageDocumentation
  * @module CartesianGeometry
  */
-import { LineString3d } from "../curve/LineString3d";
-import { StrokeOptions } from "../curve/StrokeOptions";
-import { Geometry } from "../Geometry";
-import { Angle } from "./Angle";
-import { EllipsoidPatch } from "./Ellipsoid";
-import { UVSurface } from "./GeometryHandler";
-import { Plane3dByOriginAndVectors } from "./Plane3dByOriginAndVectors";
-import { Point3d } from "./Point3dVector3d";
-import { Range3d } from "./Range";
+import { LineString3d } from "../curve/LineString3d.js";
+import { StrokeOptions } from "../curve/StrokeOptions.js";
+import { Geometry } from "../Geometry.js";
+import { Angle } from "./Angle.js";
+import { EllipsoidPatch } from "./Ellipsoid.js";
+import { UVSurface } from "./GeometryHandler.js";
+import { Plane3dByOriginAndVectors } from "./Plane3dByOriginAndVectors.js";
+import { Point3d } from "./Point3dVector3d.js";
+import { Range3d } from "./Range.js";
 /**
  * Support methods to act on surfaces with 0..1 uv fractional parameterization
  * @public

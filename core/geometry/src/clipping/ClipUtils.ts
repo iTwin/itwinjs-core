@@ -7,37 +7,37 @@
  */
 
 import { assert } from "@itwin/core-bentley";
-import { Arc3d } from "../curve/Arc3d";
-import { BagOfCurves } from "../curve/CurveCollection";
-import { CurveFactory } from "../curve/CurveFactory";
-import { AnnounceNumberNumber, AnnounceNumberNumberCurvePrimitive, CurvePrimitive } from "../curve/CurvePrimitive";
-import { AnyCurve, AnyRegion } from "../curve/CurveTypes";
-import { GeometryQuery } from "../curve/GeometryQuery";
-import { LineSegment3d } from "../curve/LineSegment3d";
-import { LineString3d } from "../curve/LineString3d";
-import { Loop } from "../curve/Loop";
-import { Path } from "../curve/Path";
-import { RegionBinaryOpType, RegionOps } from "../curve/RegionOps";
-import { UnionRegion } from "../curve/UnionRegion";
-import { Geometry } from "../Geometry";
-import { FrameBuilder } from "../geometry3d/FrameBuilder";
-import { GrowableFloat64Array } from "../geometry3d/GrowableFloat64Array";
-import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
-import { IndexedXYZCollection } from "../geometry3d/IndexedXYZCollection";
-import { Plane3dByOriginAndUnitNormal } from "../geometry3d/Plane3dByOriginAndUnitNormal";
-import { Point3dArrayCarrier } from "../geometry3d/Point3dArrayCarrier";
-import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
-import { Range1d, Range3d } from "../geometry3d/Range";
-import { GrowableXYZArrayCache } from "../geometry3d/ReusableObjectCache";
-import { Transform } from "../geometry3d/Transform";
-import { XAndY } from "../geometry3d/XYZProps";
-import { PolyfaceBuilder } from "../polyface/PolyfaceBuilder";
-import { ClipPlane } from "./ClipPlane";
-import { ClipPrimitive } from "./ClipPrimitive";
-import { ClipVector } from "./ClipVector";
-import { ConvexClipPlaneSet } from "./ConvexClipPlaneSet";
-import { LineStringOffsetClipperContext } from "./internalContexts/LineStringOffsetClipperContext";
-import { UnionOfConvexClipPlaneSets } from "./UnionOfConvexClipPlaneSets";
+import { Arc3d } from "../curve/Arc3d.js";
+import { BagOfCurves } from "../curve/CurveCollection.js";
+import { CurveFactory } from "../curve/CurveFactory.js";
+import { AnnounceNumberNumber, AnnounceNumberNumberCurvePrimitive, CurvePrimitive } from "../curve/CurvePrimitive.js";
+import { AnyCurve, AnyRegion } from "../curve/CurveTypes.js";
+import { GeometryQuery } from "../curve/GeometryQuery.js";
+import { LineSegment3d } from "../curve/LineSegment3d.js";
+import { LineString3d } from "../curve/LineString3d.js";
+import { Loop } from "../curve/Loop.js";
+import { Path } from "../curve/Path.js";
+import { RegionBinaryOpType, RegionOps } from "../curve/RegionOps.js";
+import { UnionRegion } from "../curve/UnionRegion.js";
+import { Geometry } from "../Geometry.js";
+import { FrameBuilder } from "../geometry3d/FrameBuilder.js";
+import { GrowableFloat64Array } from "../geometry3d/GrowableFloat64Array.js";
+import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray.js";
+import { IndexedXYZCollection } from "../geometry3d/IndexedXYZCollection.js";
+import { Plane3dByOriginAndUnitNormal } from "../geometry3d/Plane3dByOriginAndUnitNormal.js";
+import { Point3dArrayCarrier } from "../geometry3d/Point3dArrayCarrier.js";
+import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d.js";
+import { Range1d, Range3d } from "../geometry3d/Range.js";
+import { GrowableXYZArrayCache } from "../geometry3d/ReusableObjectCache.js";
+import { Transform } from "../geometry3d/Transform.js";
+import { XAndY } from "../geometry3d/XYZProps.js";
+import { PolyfaceBuilder } from "../polyface/PolyfaceBuilder.js";
+import { ClipPlane } from "./ClipPlane.js";
+import { ClipPrimitive } from "./ClipPrimitive.js";
+import { ClipVector } from "./ClipVector.js";
+import { ConvexClipPlaneSet } from "./ConvexClipPlaneSet.js";
+import { LineStringOffsetClipperContext } from "./internalContexts/LineStringOffsetClipperContext.js";
+import { UnionOfConvexClipPlaneSets } from "./UnionOfConvexClipPlaneSets.js";
 
 /**
  * Enumerated type for describing where geometry lies with respect to clipping planes.

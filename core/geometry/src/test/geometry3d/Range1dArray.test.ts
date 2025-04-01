@@ -3,13 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { describe, expect, it } from "vitest";
-import { Geometry } from "../../Geometry";
-import { GrowableFloat64Array } from "../../geometry3d/GrowableFloat64Array";
-import { Range1d } from "../../geometry3d/Range";
-import { compareRange1dLexicalLowHigh, Range1dArray } from "../../numerics/Range1dArray";
-import { Checker } from "../Checker";
+import { Geometry } from "../../Geometry.js";
+import { GrowableFloat64Array } from "../../geometry3d/GrowableFloat64Array.js";
+import { Range1d } from "../../geometry3d/Range.js";
+import { compareRange1dLexicalLowHigh, Range1dArray } from "../../numerics/Range1dArray.js";
+import { Checker } from "../Checker.js";
 
-// import { prettyPrint } from "./testFunctions";
+// import { prettyPrint } from "./testFunctions.js";
 /**
  *
  * @param numRange number of ranges

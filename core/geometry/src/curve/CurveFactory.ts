@@ -7,40 +7,40 @@
  * @module Curve
  */
 
-import { AxisIndex, AxisOrder, Geometry, PlaneAltitudeEvaluator } from "../Geometry";
-import { Angle } from "../geometry3d/Angle";
-import { AngleSweep } from "../geometry3d/AngleSweep";
-import { Ellipsoid, GeodesicPathPoint } from "../geometry3d/Ellipsoid";
-import { IndexedXYZCollection } from "../geometry3d/IndexedXYZCollection";
-import { Matrix3d } from "../geometry3d/Matrix3d";
-import { Plane3dByOriginAndUnitNormal } from "../geometry3d/Plane3dByOriginAndUnitNormal";
-import { Vector2d } from "../geometry3d/Point2dVector2d";
-import { Point3dArrayCarrier } from "../geometry3d/Point3dArrayCarrier";
-import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
-import { PolylineOps } from "../geometry3d/PolylineOps";
-import { Ray3d } from "../geometry3d/Ray3d";
-import { Segment1d } from "../geometry3d/Segment1d";
-import { Transform } from "../geometry3d/Transform";
-import { XAndY } from "../geometry3d/XYZProps";
-import { SmallSystem } from "../numerics/SmallSystem";
-import { IndexedPolyface } from "../polyface/Polyface";
-import { PolyfaceBuilder } from "../polyface/PolyfaceBuilder";
-import { Cone } from "../solid/Cone";
-import { RuledSweep } from "../solid/RuledSweep";
-import { TorusPipe } from "../solid/TorusPipe";
-import { Arc3d, ArcBlendData } from "./Arc3d";
-import { CurveChain } from "./CurveCollection";
-import { CurvePrimitive } from "./CurvePrimitive";
-import { AnyCurve, AnyRegion } from "./CurveTypes";
-import { GeometryQuery } from "./GeometryQuery";
-import { LineSegment3d } from "./LineSegment3d";
-import { LineString3d } from "./LineString3d";
-import { Loop } from "./Loop";
-import { Path } from "./Path";
-import { RegionOps } from "./RegionOps";
-import { IntegratedSpiral3d } from "./spiral/IntegratedSpiral3d";
-import { IntegratedSpiralTypeName } from "./spiral/TransitionSpiral3d";
-import { StrokeOptions } from "./StrokeOptions";
+import { AxisIndex, AxisOrder, Geometry, PlaneAltitudeEvaluator } from "../Geometry.js";
+import { Angle } from "../geometry3d/Angle.js";
+import { AngleSweep } from "../geometry3d/AngleSweep.js";
+import { Ellipsoid, GeodesicPathPoint } from "../geometry3d/Ellipsoid.js";
+import { IndexedXYZCollection } from "../geometry3d/IndexedXYZCollection.js";
+import { Matrix3d } from "../geometry3d/Matrix3d.js";
+import { Plane3dByOriginAndUnitNormal } from "../geometry3d/Plane3dByOriginAndUnitNormal.js";
+import { Vector2d } from "../geometry3d/Point2dVector2d.js";
+import { Point3dArrayCarrier } from "../geometry3d/Point3dArrayCarrier.js";
+import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d.js";
+import { PolylineOps } from "../geometry3d/PolylineOps.js";
+import { Ray3d } from "../geometry3d/Ray3d.js";
+import { Segment1d } from "../geometry3d/Segment1d.js";
+import { Transform } from "../geometry3d/Transform.js";
+import { XAndY } from "../geometry3d/XYZProps.js";
+import { SmallSystem } from "../numerics/SmallSystem.js";
+import { IndexedPolyface } from "../polyface/Polyface.js";
+import { PolyfaceBuilder } from "../polyface/PolyfaceBuilder.js";
+import { Cone } from "../solid/Cone.js";
+import { RuledSweep } from "../solid/RuledSweep.js";
+import { TorusPipe } from "../solid/TorusPipe.js";
+import { Arc3d, ArcBlendData } from "./Arc3d.js";
+import { CurveChain } from "./CurveCollection.js";
+import { CurvePrimitive } from "./CurvePrimitive.js";
+import { AnyCurve, AnyRegion } from "./CurveTypes.js";
+import { GeometryQuery } from "./GeometryQuery.js";
+import { LineSegment3d } from "./LineSegment3d.js";
+import { LineString3d } from "./LineString3d.js";
+import { Loop } from "./Loop.js";
+import { Path } from "./Path.js";
+import { RegionOps } from "./RegionOps.js";
+import { IntegratedSpiral3d } from "./spiral/IntegratedSpiral3d.js";
+import { IntegratedSpiralTypeName } from "./spiral/TransitionSpiral3d.js";
+import { StrokeOptions } from "./StrokeOptions.js";
 
 // cspell:word CCWXY
 

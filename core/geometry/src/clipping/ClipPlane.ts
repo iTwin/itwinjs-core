@@ -7,26 +7,26 @@
  * @module CartesianGeometry
  */
 
-import { Arc3d } from "../curve/Arc3d";
-import { AnnounceNumberNumberCurvePrimitive } from "../curve/CurvePrimitive";
-import { AxisOrder, Geometry } from "../Geometry";
-import { Angle } from "../geometry3d/Angle";
-import { GrowableFloat64Array } from "../geometry3d/GrowableFloat64Array";
-import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
-import { IndexedXYZCollection } from "../geometry3d/IndexedXYZCollection";
-import { Matrix3d } from "../geometry3d/Matrix3d";
-import { Plane3d } from "../geometry3d/Plane3d";
-import { Plane3dByOriginAndUnitNormal } from "../geometry3d/Plane3dByOriginAndUnitNormal";
-import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
-import { IndexedXYZCollectionPolygonOps } from "../geometry3d/PolygonOps";
-import { Range1d, Range3d } from "../geometry3d/Range";
-import { GrowableXYZArrayCache } from "../geometry3d/ReusableObjectCache";
-import { Transform } from "../geometry3d/Transform";
-import { XYZProps } from "../geometry3d/XYZProps";
-import { Matrix4d } from "../geometry4d/Matrix4d";
-import { Point4d } from "../geometry4d/Point4d";
-import { AnalyticRoots } from "../numerics/Polynomials";
-import { Clipper, ClipUtilities, PolygonClipper } from "./ClipUtils";
+import { Arc3d } from "../curve/Arc3d.js";
+import { AnnounceNumberNumberCurvePrimitive } from "../curve/CurvePrimitive.js";
+import { AxisOrder, Geometry } from "../Geometry.js";
+import { Angle } from "../geometry3d/Angle.js";
+import { GrowableFloat64Array } from "../geometry3d/GrowableFloat64Array.js";
+import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray.js";
+import { IndexedXYZCollection } from "../geometry3d/IndexedXYZCollection.js";
+import { Matrix3d } from "../geometry3d/Matrix3d.js";
+import { Plane3d } from "../geometry3d/Plane3d.js";
+import { Plane3dByOriginAndUnitNormal } from "../geometry3d/Plane3dByOriginAndUnitNormal.js";
+import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d.js";
+import { IndexedXYZCollectionPolygonOps } from "../geometry3d/PolygonOps.js";
+import { Range1d, Range3d } from "../geometry3d/Range.js";
+import { GrowableXYZArrayCache } from "../geometry3d/ReusableObjectCache.js";
+import { Transform } from "../geometry3d/Transform.js";
+import { XYZProps } from "../geometry3d/XYZProps.js";
+import { Matrix4d } from "../geometry4d/Matrix4d.js";
+import { Point4d } from "../geometry4d/Point4d.js";
+import { AnalyticRoots } from "../numerics/Polynomials.js";
+import { Clipper, ClipUtilities, PolygonClipper } from "./ClipUtils.js";
 
 /**
  * Wire format describing a [[ClipPlane]].

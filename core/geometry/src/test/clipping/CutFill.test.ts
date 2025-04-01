@@ -4,18 +4,18 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { describe, expect, it } from "vitest";
-import { GeometryQuery } from "../../curve/GeometryQuery";
-import { Checker } from "../Checker";
-import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
-import { ClippedPolyfaceBuilders, PolyfaceClip } from "../../polyface/PolyfaceClip";
-import { Range3d } from "../../geometry3d/Range";
-import { IndexedPolyface, Polyface } from "../../polyface/Polyface";
-import { ConvexClipPlaneSet } from "../../clipping/ConvexClipPlaneSet";
-import { Sample } from "../../serialization/GeometrySamples";
-import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
-import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
-import { PolyfaceQuery } from "../../polyface/PolyfaceQuery";
-import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray";
+import { GeometryQuery } from "../../curve/GeometryQuery.js";
+import { Checker } from "../Checker.js";
+import { GeometryCoreTestIO } from "../GeometryCoreTestIO.js";
+import { ClippedPolyfaceBuilders, PolyfaceClip } from "../../polyface/PolyfaceClip.js";
+import { Range3d } from "../../geometry3d/Range.js";
+import { IndexedPolyface, Polyface } from "../../polyface/Polyface.js";
+import { ConvexClipPlaneSet } from "../../clipping/ConvexClipPlaneSet.js";
+import { Sample } from "../../serialization/GeometrySamples.js";
+import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d.js";
+import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder.js";
+import { PolyfaceQuery } from "../../polyface/PolyfaceQuery.js";
+import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray.js";
 
 function clipMeshToRange(range: Range3d, mesh: Polyface): { inside: Polyface | undefined, outside: Polyface | undefined } {
   const clipper = ConvexClipPlaneSet.createRange3dPlanes(range);
