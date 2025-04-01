@@ -6,8 +6,8 @@
  * @module Editing
  */
 
-import { AnyDiagnostic } from "../Validation/Diagnostic";
 import { AnyEnumerator, CustomAttributeContainerProps, Enumeration, PrimitiveType, primitiveTypeToString, Property, RelationshipConstraint, SchemaItemKey, SchemaItemType, SchemaKey } from "@itwin/ecschema-metadata";
+import { AnyDiagnostic } from "../Validation/Diagnostic.js";
 
 /** @alpha */
 export enum ECEditingStatus {

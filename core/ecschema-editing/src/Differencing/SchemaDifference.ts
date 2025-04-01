@@ -6,19 +6,20 @@
  * @module Differencing
  */
 
-import { AnySchemaDifferenceConflict } from "./SchemaConflicts";
-import { AnySchemaEdits, SchemaEditType } from "../Merging/Edits/SchemaEdits";
-import { SchemaDiagnosticVisitor } from "./SchemaDiagnosticVisitor";
-import { SchemaChanges } from "../Validation/SchemaChanges";
-import { SchemaComparer } from "../Validation/SchemaComparer";
-import { AnyEnumerator, AnyProperty, AnyPropertyProps, ConstantProps, CustomAttribute,
+import {
+  AnyEnumerator, AnyProperty, AnyPropertyProps, ConstantProps, CustomAttribute,
   CustomAttributeClassProps, ECClass, EntityClassProps, EnumerationProps, InvertedUnitProps, KindOfQuantityProps,
   MixinProps, PhenomenonProps, PropertyCategoryProps, RelationshipClassProps, RelationshipConstraintProps,
   type Schema, SchemaItem, SchemaItemFormatProps, SchemaItemKey, SchemaItemProps, SchemaItemType, SchemaItemUnitProps, SchemaReferenceProps, StructClassProps, UnitSystemProps,
 } from "@itwin/ecschema-metadata";
-import { validateDifferences } from "./SchemaDifferenceValidator";
-import { AnyDiagnostic } from "../Validation/Diagnostic";
-import { NameMapping, PropertyKey } from "../Merging/Edits/NameMapping";
+import { NameMapping, PropertyKey } from "../Merging/Edits/NameMapping.js";
+import { AnySchemaEdits, SchemaEditType } from "../Merging/Edits/SchemaEdits.js";
+import { AnyDiagnostic } from "../Validation/Diagnostic.js";
+import { SchemaChanges } from "../Validation/SchemaChanges.js";
+import { SchemaComparer } from "../Validation/SchemaComparer.js";
+import { AnySchemaDifferenceConflict } from "./SchemaConflicts.js";
+import { SchemaDiagnosticVisitor } from "./SchemaDiagnosticVisitor.js";
+import { validateDifferences } from "./SchemaDifferenceValidator.js";
 
 /** Utility-Type to remove possible readonly flags on the given type. */
 type PartialEditable<T> = {

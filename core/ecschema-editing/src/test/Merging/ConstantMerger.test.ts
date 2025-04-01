@@ -3,11 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { Constant, Phenomenon, Schema, SchemaItemType } from "@itwin/ecschema-metadata";
-import { SchemaMerger } from "../../Merging/SchemaMerger";
-import { getSchemaDifferences, SchemaOtherTypes } from "../../Differencing/SchemaDifference";
-import { BisTestHelper } from "../TestUtils/BisTestHelper";
 import { expect } from "chai";
-import { AnySchemaDifferenceConflict, ConflictCode, SchemaEdits } from "../../ecschema-editing";
+import { getSchemaDifferences, SchemaOtherTypes } from "../../Differencing/SchemaDifference.js";
+import { AnySchemaDifferenceConflict, ConflictCode, SchemaEdits } from "../../ecschema-editing.js";
+import { SchemaMerger } from "../../Merging/SchemaMerger.js";
+import { BisTestHelper } from "../TestUtils/BisTestHelper.js";
 
 describe("Constant merger tests", () => {
   const sourceJson = {
@@ -286,10 +286,10 @@ describe("Constant merger tests", () => {
             phenomenon: "SourceSchema.testPhenomenon",
             definition: "ONE",
             numerator: 100,
-          },          
+          },
         },
       }, await BisTestHelper.getNewContext());
-  
+
       const targetSchema = await Schema.fromJson({
         ...targetJson,
         items: {
@@ -299,7 +299,7 @@ describe("Constant merger tests", () => {
           },
         },
       }, await BisTestHelper.getNewContext());
-  
+
       const result = await getSchemaDifferences(targetSchema, sourceSchema);
       expect(result.conflicts).to.have.lengthOf(1, "Unexpected length of conflicts");
       expect(result.conflicts).to.satisfy(([conflict]: AnySchemaDifferenceConflict[]) => {
@@ -309,14 +309,14 @@ describe("Constant merger tests", () => {
         expect(conflict).to.have.a.property("target", "PropertyCategory");
         return true;
       });
-  
+
       const schemaEdits = new SchemaEdits();
-      const testItem = await sourceSchema.getItem("testItem") as Constant;      
+      const testItem = await sourceSchema.getItem("testItem") as Constant;
       schemaEdits.items.rename(testItem, "mergedConstant");
-  
+
       const merger = new SchemaMerger(targetSchema.context);
       const mergedSchema = await merger.merge(result, schemaEdits);
-  
+
       await expect(mergedSchema.getItem("mergedConstant")).to.be.eventually.fulfilled.then(async (ecClass) => {
         expect(ecClass).to.exist;
         expect(ecClass).has.property("schemaItemType").equals(SchemaItemType.Constant);
@@ -366,12 +366,12 @@ describe("Constant merger tests", () => {
       }, await BisTestHelper.getNewContext());
 
       const schemaEdits = new SchemaEdits();
-      const testItem = await sourceSchema.getItem("testItem") as Constant;      
+      const testItem = await sourceSchema.getItem("testItem") as Constant;
       schemaEdits.items.rename(testItem, "mergedConstant");
 
       const merger = new SchemaMerger(targetSchema.context);
       const mergedSchema = await merger.mergeSchemas(targetSchema, sourceSchema, schemaEdits);
- 
+
       await expect(mergedSchema.getItem("mergedConstant")).to.be.eventually.not.undefined
         .then((constant: Constant) => {
           expect(constant).to.have.a.property("label").to.equal("Changed Hecto");
@@ -420,7 +420,7 @@ describe("Constant merger tests", () => {
       }, await BisTestHelper.getNewContext());
 
       const schemaEdits = new SchemaEdits();
-      const testItem = await sourceSchema.getItem("testItem") as Constant;      
+      const testItem = await sourceSchema.getItem("testItem") as Constant;
       schemaEdits.items.rename(testItem, "mergedConstant");
 
       const result = await getSchemaDifferences(targetSchema, sourceSchema, schemaEdits);
@@ -432,10 +432,10 @@ describe("Constant merger tests", () => {
         expect(conflict).to.have.a.property("target", "StructClass");
         return true;
       });
-  
-      const phenomenonItem = await sourceSchema.getItem("phenomenonItem") as Phenomenon;      
+
+      const phenomenonItem = await sourceSchema.getItem("phenomenonItem") as Phenomenon;
       schemaEdits.items.rename(phenomenonItem, "mergedPhenomenon");
-  
+
       const merger = new SchemaMerger(targetSchema.context);
       const mergedSchema = await merger.merge(result, schemaEdits);
 
@@ -462,7 +462,7 @@ describe("Constant merger tests", () => {
             phenomenon: "SourceSchema.testPhenomenon",
             definition: "PI",
             numerator: 100,
-          }, 
+          },
         },
       }, await BisTestHelper.getNewContext());
 
@@ -487,7 +487,7 @@ describe("Constant merger tests", () => {
       }, await BisTestHelper.getNewContext());
 
       const schemaEdits = new SchemaEdits();
-      const testItem = await sourceSchema.getItem("testItem") as Constant;      
+      const testItem = await sourceSchema.getItem("testItem") as Constant;
       schemaEdits.items.rename(testItem, "mergedConstant");
 
       const merger = new SchemaMerger(targetSchema.context);
@@ -507,7 +507,7 @@ describe("Constant merger tests", () => {
             phenomenon: "SourceSchema.testPhenomenon",
             definition: "ONE",
             numerator: 1,
-          }, 
+          },
         },
       }, await BisTestHelper.getNewContext());
 
@@ -532,7 +532,7 @@ describe("Constant merger tests", () => {
       }, await BisTestHelper.getNewContext());
 
       const schemaEdits = new SchemaEdits();
-      const testItem = await sourceSchema.getItem("testItem") as Constant;      
+      const testItem = await sourceSchema.getItem("testItem") as Constant;
       schemaEdits.items.rename(testItem, "mergedConstant");
 
       const merger = new SchemaMerger(targetSchema.context);
@@ -553,7 +553,7 @@ describe("Constant merger tests", () => {
             definition: "ONE",
             numerator: 100,
             denominator: 9,
-          }, 
+          },
         },
       }, await BisTestHelper.getNewContext());
 
@@ -579,7 +579,7 @@ describe("Constant merger tests", () => {
       }, await BisTestHelper.getNewContext());
 
       const schemaEdits = new SchemaEdits();
-      const testItem = await sourceSchema.getItem("testItem") as Constant;      
+      const testItem = await sourceSchema.getItem("testItem") as Constant;
       schemaEdits.items.rename(testItem, "mergedConstant");
 
       const merger = new SchemaMerger(targetSchema.context);

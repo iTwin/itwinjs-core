@@ -7,10 +7,10 @@
  */
 
 import { SchemaItemKey, SchemaItemType, SchemaKey, UnitSystem, UnitSystemProps } from "@itwin/ecschema-metadata";
-import { SchemaContextEditor } from "./Editor";
-import { MutableUnitSystem } from "./Mutable/MutableUnitSystem";
-import { ECEditingStatus, SchemaEditingError, SchemaItemId } from "./Exception";
-import { SchemaItems } from "./SchemaItems";
+import { SchemaContextEditor } from "./Editor.js";
+import { ECEditingStatus, SchemaEditingError, SchemaItemId } from "./Exception.js";
+import { MutableUnitSystem } from "./Mutable/MutableUnitSystem.js";
+import { SchemaItems } from "./SchemaItems.js";
 
 /**
  * @alpha

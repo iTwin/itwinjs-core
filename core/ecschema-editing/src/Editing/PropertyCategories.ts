@@ -7,10 +7,10 @@
  */
 
 import { PropertyCategory, PropertyCategoryProps, SchemaItemKey, SchemaItemType, SchemaKey } from "@itwin/ecschema-metadata";
-import { SchemaContextEditor } from "./Editor";
-import { MutablePropertyCategory } from "./Mutable/MutablePropertyCategory";
-import { ECEditingStatus, SchemaEditingError, SchemaItemId } from "./Exception";
-import { SchemaItems } from "./SchemaItems";
+import { SchemaContextEditor } from "./Editor.js";
+import { ECEditingStatus, SchemaEditingError, SchemaItemId } from "./Exception.js";
+import { MutablePropertyCategory } from "./Mutable/MutablePropertyCategory.js";
+import { SchemaItems } from "./SchemaItems.js";
 
 /**
  * @alpha

@@ -3,15 +3,16 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
-import { AnyECType, AnyProperty, Constant, CustomAttributeClass, ECClass, EntityClass, Enumeration, Format, InvertedUnit, KindOfQuantity, Mixin, Phenomenon, PropertyCategory,
+import {
+  AnyECType, AnyProperty, Constant, CustomAttributeClass, ECClass, EntityClass, Enumeration, Format, InvertedUnit, KindOfQuantity, Mixin, Phenomenon, PropertyCategory,
   RelationshipClass, Schema, SchemaContext, StructClass, Unit,
 } from "@itwin/ecschema-metadata";
-import { AnyDiagnostic, DiagnosticCategory, DiagnosticType } from "../../Validation/Diagnostic";
-import { ISchemaChanges, SchemaChanges } from "../../Validation/SchemaChanges";
-import { SchemaCompareCodes } from "../../Validation/SchemaCompareDiagnostics";
-import { SchemaComparer } from "../../Validation/SchemaComparer";
-import { ISchemaCompareReporter } from "../../Validation/SchemaCompareReporter";
+import { expect } from "chai";
+import { AnyDiagnostic, DiagnosticCategory, DiagnosticType } from "../../Validation/Diagnostic.js";
+import { ISchemaChanges, SchemaChanges } from "../../Validation/SchemaChanges.js";
+import { SchemaCompareCodes } from "../../Validation/SchemaCompareDiagnostics.js";
+import { SchemaComparer } from "../../Validation/SchemaComparer.js";
+import { ISchemaCompareReporter } from "../../Validation/SchemaCompareReporter.js";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 

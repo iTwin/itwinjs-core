@@ -7,10 +7,10 @@
  */
 
 import { Constant, ConstantProps, DelayedPromiseWithProps, Phenomenon, SchemaItemKey, SchemaItemType, SchemaKey } from "@itwin/ecschema-metadata";
-import { SchemaContextEditor } from "./Editor";
-import { MutableConstant } from "./Mutable/MutableConstant";
-import { ECEditingStatus, SchemaEditingError, SchemaItemId } from "./Exception";
-import { SchemaItems } from "./SchemaItems";
+import { SchemaContextEditor } from "./Editor.js";
+import { ECEditingStatus, SchemaEditingError, SchemaItemId } from "./Exception.js";
+import { MutableConstant } from "./Mutable/MutableConstant.js";
+import { SchemaItems } from "./SchemaItems.js";
 
 /**
  * @alpha

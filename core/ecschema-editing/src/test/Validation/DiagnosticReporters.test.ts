@@ -3,16 +3,15 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert, expect } from "chai";
 import { BentleyError, Logger } from "@itwin/core-bentley";
 import { EmptyLocalization } from "@itwin/core-common";
 import { EntityClass, PrimitiveProperty, PrimitiveType, Schema, SchemaContext } from "@itwin/ecschema-metadata";
-import { FormatDiagnosticReporter } from "../../ecschema-editing";
-import { MutableClass } from "../../Editing/Mutable/MutableClass";
-import { AnyDiagnostic, createPropertyDiagnosticClass, DiagnosticCategory } from "../../Validation/Diagnostic";
-import { LoggingDiagnosticReporter } from "../../Validation/LoggingDiagnosticReporter";
-
-import * as sinon from "sinon";
+import { assert, expect } from "chai";
+import sinon from "sinon";
+import { FormatDiagnosticReporter } from "../../ecschema-editing.js";
+import { MutableClass } from "../../Editing/Mutable/MutableClass.js";
+import { AnyDiagnostic, createPropertyDiagnosticClass, DiagnosticCategory } from "../../Validation/Diagnostic.js";
+import { LoggingDiagnosticReporter } from "../../Validation/LoggingDiagnosticReporter.js";
 
 class TestDiagnosticReporter extends FormatDiagnosticReporter {
   constructor(suppressions?: Map<string, string[]>) {

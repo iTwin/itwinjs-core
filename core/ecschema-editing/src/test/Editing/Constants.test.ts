@@ -1,7 +1,11 @@
-import { expect } from "chai";
-import { SchemaContextEditor } from "../../Editing/Editor";
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
 import { Constant, ConstantProps, ECVersion, SchemaContext, SchemaItemKey, SchemaKey } from "@itwin/ecschema-metadata";
-import { ECEditingStatus } from "../../Editing/Exception";
+import { expect } from "chai";
+import { SchemaContextEditor } from "../../Editing/Editor.js";
+import { ECEditingStatus } from "../../Editing/Exception.js";
 
 describe("Constant tests", () => {
   let testEditor: SchemaContextEditor;

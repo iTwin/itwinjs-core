@@ -2,15 +2,15 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
 import {
   ECClassModifier, EntityClass, Enumeration, EnumerationArrayProperty, EnumerationProperty, NavigationProperty,
   PrimitiveArrayProperty, PrimitiveProperty, PrimitiveType, RelationshipClass, RelationshipClassProps,
   RelationshipConstraintProps, Schema, SchemaContext, SchemaItemKey, SchemaKey, StrengthDirection,
   StructArrayProperty, StructClass, StructProperty, UnitSystem,
 } from "@itwin/ecschema-metadata";
-import { SchemaContextEditor } from "../../Editing/Editor";
-import { ECEditingStatus } from "../../Editing/Exception";
+import { expect } from "chai";
+import { SchemaContextEditor } from "../../Editing/Editor.js";
+import { ECEditingStatus } from "../../Editing/Exception.js";
 
 describe("ECClass tests", () => {
   // Uses an entity class to create properties.

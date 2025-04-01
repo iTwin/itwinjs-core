@@ -2,10 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import type { SchemaMergeContext } from "./SchemaMerger";
-import type { SchemaReferenceDifference } from "../Differencing/SchemaDifference";
-import type { SchemaContextEditor } from "../Editing/Editor";
 import { ECVersion, Schema, SchemaKey, SchemaMatchType } from "@itwin/ecschema-metadata";
+import type { SchemaReferenceDifference } from "../Differencing/SchemaDifference.js";
+import type { SchemaContextEditor } from "../Editing/Editor.js";
+import type { SchemaMergeContext } from "./SchemaMerger.js";
 
 /**
  * Merges a new reference to an external schema into the target schema.

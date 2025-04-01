@@ -31,7 +31,7 @@ import {
   type SchemaReferenceDifference,
   type StructClassDifference,
   type UnitSystemDifference,
-} from "./SchemaDifference";
+} from "./SchemaDifference.js";
 
 /**
  * Indicates whether the given difference is type of ConstantDifference.

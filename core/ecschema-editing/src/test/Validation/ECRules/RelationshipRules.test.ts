@@ -3,11 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
 import { RelationshipClass, Schema, SchemaContext } from "@itwin/ecschema-metadata";
-import * as Rules from "../../../Validation/ECRules";
-import { createSchemaJsonWithItems } from "../../TestUtils/DeserializationHelpers";
-import { DiagnosticCategory, DiagnosticType } from "../../../Validation/Diagnostic";
+import { expect } from "chai";
+import { DiagnosticCategory, DiagnosticType } from "../../../Validation/Diagnostic.js";
+import * as Rules from "../../../Validation/ECRules.js";
+import { createSchemaJsonWithItems } from "../../TestUtils/DeserializationHelpers.js";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 

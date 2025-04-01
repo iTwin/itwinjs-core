@@ -3,15 +3,16 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
-import { CustomAttributeClass, ECClassModifier, EntityClass,
+import {
+  CustomAttributeClass, ECClassModifier, EntityClass,
   Schema, SchemaContext,
 } from "@itwin/ecschema-metadata";
-import { MutableClass } from "../../../Editing/Mutable/MutableClass";
-import { MutableSchema } from "../../../Editing/Mutable/MutableSchema";
-import * as Rules from "../../../Validation/ECRules";
-import { toArray } from "../../TestUtils/DiagnosticHelpers";
-import { DiagnosticCategory, DiagnosticType } from "../../../Validation/Diagnostic";
+import { expect } from "chai";
+import { MutableClass } from "../../../Editing/Mutable/MutableClass.js";
+import { MutableSchema } from "../../../Editing/Mutable/MutableSchema.js";
+import { DiagnosticCategory, DiagnosticType } from "../../../Validation/Diagnostic.js";
+import * as Rules from "../../../Validation/ECRules.js";
+import { toArray } from "../../TestUtils/DiagnosticHelpers.js";
 
 describe("CustomAttribute Rules Tests", () => {
   let testSchema: Schema;

@@ -2,14 +2,14 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
 import {
   ECClassModifier, ECVersion, EntityClass, NavigationProperty, NavigationPropertyProps, RelationshipClass, RelationshipClassProps, RelationshipConstraint,
   RelationshipConstraintProps, RelationshipEnd, Schema, SchemaContext, SchemaItemKey, SchemaKey, StrengthDirection, StrengthType,
 } from "@itwin/ecschema-metadata";
-import { SchemaContextEditor } from "../../Editing/Editor";
-import { AnyDiagnostic, Diagnostics } from "../../ecschema-editing";
-import { ECEditingStatus } from "../../Editing/Exception";
+import { expect } from "chai";
+import { AnyDiagnostic, Diagnostics } from "../../ecschema-editing.js";
+import { SchemaContextEditor } from "../../Editing/Editor.js";
+import { ECEditingStatus } from "../../Editing/Exception.js";
 
 function getRuleViolationMessage(ruleViolations: AnyDiagnostic[]) {
   let violations = "";

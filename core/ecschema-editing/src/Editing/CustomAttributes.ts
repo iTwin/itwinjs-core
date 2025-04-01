@@ -11,10 +11,10 @@ import {
   CustomAttributeClassProps, CustomAttributeContainerType,
   SchemaItemKey, SchemaItemType, SchemaKey,
 } from "@itwin/ecschema-metadata";
-import { SchemaContextEditor } from "./Editor";
-import { ECClasses } from "./ECClasses";
-import { MutableCAClass } from "./Mutable/MutableCAClass";
-import { ClassId, ECEditingStatus, SchemaEditingError } from "./Exception";
+import { ECClasses } from "./ECClasses.js";
+import { SchemaContextEditor } from "./Editor.js";
+import { ClassId, ECEditingStatus, SchemaEditingError } from "./Exception.js";
+import { MutableCAClass } from "./Mutable/MutableCAClass.js";
 
 /**
  * @alpha

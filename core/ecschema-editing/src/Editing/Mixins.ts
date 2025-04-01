@@ -10,12 +10,12 @@ import {
   DelayedPromiseWithProps, EntityClass, Mixin, MixinProps, NavigationPropertyProps, RelationshipClass,
   SchemaItemKey, SchemaItemType, SchemaKey, StrengthDirection,
 } from "@itwin/ecschema-metadata";
-import { SchemaContextEditor } from "./Editor";
-import { ECClasses } from "./ECClasses";
-import { MutableMixin } from "./Mutable/MutableMixin";
-import { MutableEntityClass } from "./Mutable/MutableEntityClass";
-import { NavigationProperties } from "./Properties";
-import { ClassId, ECEditingStatus, SchemaEditingError } from "./Exception";
+import { ECClasses } from "./ECClasses.js";
+import { SchemaContextEditor } from "./Editor.js";
+import { ClassId, ECEditingStatus, SchemaEditingError } from "./Exception.js";
+import { MutableEntityClass } from "./Mutable/MutableEntityClass.js";
+import { MutableMixin } from "./Mutable/MutableMixin.js";
+import { NavigationProperties } from "./Properties.js";
 
 /**
  * @alpha

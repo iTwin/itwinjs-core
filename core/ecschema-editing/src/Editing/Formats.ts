@@ -6,12 +6,12 @@
  * @module Editing
  */
 
-import { Format, InvertedUnit, SchemaItemFormatProps, SchemaItemKey, SchemaItemType, SchemaKey, Unit } from "@itwin/ecschema-metadata";
 import { FormatType } from "@itwin/core-quantity";
-import { SchemaContextEditor } from "./Editor";
-import { MutableFormat } from "./Mutable/MutableFormat";
-import { ECEditingStatus, SchemaEditingError, SchemaItemId } from "./Exception";
-import { SchemaItems } from "./SchemaItems";
+import { Format, InvertedUnit, SchemaItemFormatProps, SchemaItemKey, SchemaItemType, SchemaKey, Unit } from "@itwin/ecschema-metadata";
+import { SchemaContextEditor } from "./Editor.js";
+import { ECEditingStatus, SchemaEditingError, SchemaItemId } from "./Exception.js";
+import { MutableFormat } from "./Mutable/MutableFormat.js";
+import { SchemaItems } from "./SchemaItems.js";
 
 /**
  * @alpha

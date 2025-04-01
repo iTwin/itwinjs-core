@@ -1,18 +1,26 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+/** @packageDocumentation
+ * @module Editing
+ */
+
 import { CustomAttribute, CustomAttributeContainerProps, DelayedPromiseWithProps, ECClass, ECName,
   EnumerationProperty, KindOfQuantity, NavigationProperty, PrimitiveProperty,
   PropertyCategory, SchemaItemKey, StructProperty } from "@itwin/ecschema-metadata";
 import { assert } from "@itwin/core-bentley";
-import { SchemaContextEditor } from "./Editor";
-import * as Rules from "../Validation/ECRules";
-import { MutableArrayProperty } from "./Mutable/MutableArrayProperty";
-import { MutableProperty } from "./Mutable/MutableProperty";
-import { MutablePrimitiveOrEnumPropertyBase } from "./Mutable/MutablePrimitiveOrEnumProperty";
-import { MutableClass } from "./Mutable/MutableClass";
-import { MutableStructProperty } from "./Mutable/MutableStructProperty";
-import { MutableNavigationProperty } from "./Mutable/MutableNavigationProperty";
-import { ECClassSchemaItems } from "./ECClasses";
-import { ClassId, CustomAttributeId, ECEditingStatus, PropertyId, PropertyTypeName, SchemaEditingError, SchemaId } from "./Exception";
-import { AnyDiagnostic } from "../Validation/Diagnostic";
+import { SchemaContextEditor } from "./Editor.js";
+import * as Rules from "../Validation/ECRules.js";
+import { MutableArrayProperty } from "./Mutable/MutableArrayProperty.js";
+import { MutableProperty } from "./Mutable/MutableProperty.js";
+import { MutablePrimitiveOrEnumPropertyBase } from "./Mutable/MutablePrimitiveOrEnumProperty.js";
+import { MutableClass } from "./Mutable/MutableClass.js";
+import { MutableStructProperty } from "./Mutable/MutableStructProperty.js";
+import { MutableNavigationProperty } from "./Mutable/MutableNavigationProperty.js";
+import { ECClassSchemaItems } from "./ECClasses.js";
+import { ClassId, CustomAttributeId, ECEditingStatus, PropertyId, PropertyTypeName, SchemaEditingError, SchemaId } from "./Exception.js";
+import { AnyDiagnostic } from "../Validation/Diagnostic.js";
 
 type MutablePropertyType = MutableProperty | MutableArrayProperty | MutablePrimitiveOrEnumPropertyBase | MutableNavigationProperty | MutableStructProperty;
 

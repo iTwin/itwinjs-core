@@ -2,10 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import type { PhenomenonDifference } from "../Differencing/SchemaDifference";
-import type { MutablePhenomenon } from "../Editing/Mutable/MutablePhenomenon";
-import type { SchemaMergeContext } from "./SchemaMerger";
 import { ECObjectsError, ECObjectsStatus, type SchemaItemKey } from "@itwin/ecschema-metadata";
+import type { PhenomenonDifference } from "../Differencing/SchemaDifference.js";
+import type { MutablePhenomenon } from "../Editing/Mutable/MutablePhenomenon.js";
+import type { SchemaMergeContext } from "./SchemaMerger.js";
 
 /**
  * Merges a new Phenomenon into the target schema.

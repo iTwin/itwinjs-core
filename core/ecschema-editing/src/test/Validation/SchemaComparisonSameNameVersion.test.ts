@@ -3,8 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { Property, Schema, SchemaContext, SchemaItem } from "@itwin/ecschema-metadata";
-import { AnyDiagnostic, ISchemaChanges, ISchemaCompareReporter, SchemaChanges, SchemaCompareCodes, SchemaComparer } from "../../ecschema-editing";
 import { expect } from "chai";
+import { AnyDiagnostic, ISchemaChanges, ISchemaCompareReporter, SchemaChanges, SchemaCompareCodes, SchemaComparer } from "../../ecschema-editing.js";
 
 class SchemaCompareReporter implements ISchemaCompareReporter {
   public changes: SchemaChanges[] = [];

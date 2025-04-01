@@ -2,11 +2,11 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
-import { ECClassModifier, ECVersion, Format, SchemaContext, SchemaKey } from "@itwin/ecschema-metadata";
 import { FormatTraits, FormatType } from "@itwin/core-quantity";
-import { SchemaContextEditor } from "../../Editing/Editor";
-import { ECEditingStatus } from "../../Editing/Exception";
+import { ECClassModifier, ECVersion, Format, SchemaContext, SchemaKey } from "@itwin/ecschema-metadata";
+import { expect } from "chai";
+import { SchemaContextEditor } from "../../Editing/Editor.js";
+import { ECEditingStatus } from "../../Editing/Exception.js";
 
 describe("Formats tests", () => {
   let testEditor: SchemaContextEditor;

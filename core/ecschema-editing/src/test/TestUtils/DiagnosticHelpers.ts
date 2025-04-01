@@ -3,15 +3,16 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import * as sinon from "sinon";
-import { AnyClass, AnyProperty, Constant, CustomAttribute, CustomAttributeClass, CustomAttributeContainerProps, EntityClass,
+import {
+  AnyClass, AnyProperty, Constant, CustomAttribute, CustomAttributeClass, CustomAttributeContainerProps, EntityClass,
   Enumeration, Format, InvertedUnit, KindOfQuantity, Mixin, Phenomenon, PropertyCategory,
   RelationshipClass, RelationshipConstraint, Schema, SchemaItem, StructClass, Unit, UnitSystem,
 } from "@itwin/ecschema-metadata";
-import * as Diagnostics from "../../Validation/Diagnostic";
-import { IDiagnosticReporter } from "../../Validation/DiagnosticReporter";
-import { IRuleSet } from "../../Validation/Rules";
-import { IRuleSuppressionSet } from "../../Validation/RuleSuppressionSet";
+import sinon from "sinon";
+import * as Diagnostics from "../../Validation/Diagnostic.js";
+import { IDiagnosticReporter } from "../../Validation/DiagnosticReporter.js";
+import { IRuleSet } from "../../Validation/Rules.js";
+import { IRuleSuppressionSet } from "../../Validation/RuleSuppressionSet.js";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 

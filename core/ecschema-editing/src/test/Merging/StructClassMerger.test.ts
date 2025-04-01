@@ -3,10 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { ECClassModifier, EntityClass, PropertyType, Schema, SchemaContext, SchemaItemType, StructClass } from "@itwin/ecschema-metadata";
-import { SchemaMerger } from "../../Merging/SchemaMerger";
-import { BisTestHelper } from "../TestUtils/BisTestHelper";
 import { expect } from "chai";
-import { AnySchemaDifferenceConflict, ConflictCode, getSchemaDifferences, SchemaEdits } from "../../ecschema-editing";
+import { AnySchemaDifferenceConflict, ConflictCode, getSchemaDifferences, SchemaEdits } from "../../ecschema-editing.js";
+import { SchemaMerger } from "../../Merging/SchemaMerger.js";
+import { BisTestHelper } from "../TestUtils/BisTestHelper.js";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 
@@ -193,14 +193,14 @@ describe("StructClass merger tests", () => {
         items: {
           baseItem: {
             schemaItemType: "StructClass",
-          },        
+          },
           testItem: {
             schemaItemType: "StructClass",
             baseClass: "SourceSchema.baseItem",
           },
         },
       }, await BisTestHelper.getNewContext());
-  
+
       const targetSchema = await Schema.fromJson({
         ...targetJson,
         items: {
@@ -210,7 +210,7 @@ describe("StructClass merger tests", () => {
           },
         },
       }, targetContext);
-  
+
       const result = await getSchemaDifferences(targetSchema, sourceSchema);
       expect(result.conflicts).to.have.lengthOf(1, "Unexpected length of conflicts");
       expect(result.conflicts).to.satisfy(([conflict]: AnySchemaDifferenceConflict[]) => {
@@ -220,14 +220,14 @@ describe("StructClass merger tests", () => {
         expect(conflict).to.have.a.property("target", "CustomAttributeClass");
         return true;
       });
-  
+
       const schemaEdits = new SchemaEdits();
       const testItem = await sourceSchema.getItem("testItem") as StructClass;
       schemaEdits.items.rename(testItem, "mergedStruct");
-  
+
       const merger = new SchemaMerger(targetContext);
       const mergedSchema = await merger.merge(result, schemaEdits);
-  
+
       await expect(mergedSchema.getItem("mergedStruct")).to.be.eventually.fulfilled.then(async (ecClass) => {
         expect(ecClass).to.exist;
         expect(ecClass).has.property("schemaItemType").equals(SchemaItemType.StructClass);
@@ -328,13 +328,13 @@ describe("StructClass merger tests", () => {
         expect(conflict).to.have.a.property("target", "EntityClass");
         return true;
       });
-  
+
       const baseItem = await sourceSchema.getItem("baseItem") as StructClass;
       schemaEdits.items.rename(baseItem, "mergedBaseStruct");
-  
+
       const merger = new SchemaMerger(targetContext);
       const mergedSchema = await merger.merge(result, schemaEdits);
-  
+
       await expect(mergedSchema.getItem("mergedBaseStruct")).to.be.eventually.fulfilled.then(async (ecClass) => {
         expect(ecClass).to.exist;
         expect(ecClass).has.property("schemaItemType").equals(SchemaItemType.StructClass);
@@ -348,7 +348,7 @@ describe("StructClass merger tests", () => {
     it("should add re-mapped struct property", async() => {
       const sourceSchema = await Schema.fromJson({
         ...sourceJson,
-        items: {          
+        items: {
           testEntity: {
             schemaItemType: "EntityClass",
             properties: [{
@@ -364,7 +364,7 @@ describe("StructClass merger tests", () => {
           },
           testItem: {
             schemaItemType: "StructClass",
-          },         
+          },
         },
       }, await BisTestHelper.getNewContext());
 
@@ -372,7 +372,7 @@ describe("StructClass merger tests", () => {
         ...targetJson,
         items: {
           testEntity: {
-            schemaItemType: "EntityClass",            
+            schemaItemType: "EntityClass",
           },
           mergedStruct: {
             schemaItemType: "StructClass",
@@ -390,7 +390,7 @@ describe("StructClass merger tests", () => {
 
       const merger = new SchemaMerger(targetContext);
       const mergedSchema = await merger.mergeSchemas(targetSchema, sourceSchema, schemaEdits);
- 
+
       await expect(mergedSchema.getItem("TestEntity")).to.be.eventually.not.undefined
         .then(async(ecClass: EntityClass) => {
           await expect(ecClass.getProperty("structProp")).to.be.eventually.fulfilled.then((property) => {
@@ -402,7 +402,7 @@ describe("StructClass merger tests", () => {
             expect(property).to.exist;
             expect(property).has.a.property("propertyType").equals(PropertyType.Struct_Array);
             expect(property).has.a.nested.property("structClass.name").equals("mergedStruct");
-          });          
+          });
       });
     });
 
@@ -412,7 +412,7 @@ describe("StructClass merger tests", () => {
         items: {
           baseItem: {
             schemaItemType: "StructClass",
-          },        
+          },
           testItem: {
             schemaItemType: "StructClass",
             baseClass: "SourceSchema.baseItem",

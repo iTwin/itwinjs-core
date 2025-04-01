@@ -7,10 +7,10 @@
  */
 
 import { DelayedPromiseWithProps, Phenomenon, SchemaItemKey, SchemaItemType, SchemaItemUnitProps, SchemaKey, Unit, UnitSystem } from "@itwin/ecschema-metadata";
-import { SchemaContextEditor } from "./Editor";
-import { MutableUnit } from "./Mutable/MutableUnit";
-import { ECEditingStatus, SchemaEditingError, SchemaItemId } from "./Exception";
-import { SchemaItems } from "./SchemaItems";
+import { SchemaContextEditor } from "./Editor.js";
+import { ECEditingStatus, SchemaEditingError, SchemaItemId } from "./Exception.js";
+import { MutableUnit } from "./Mutable/MutableUnit.js";
+import { SchemaItems } from "./SchemaItems.js";
 
 /**
  * @alpha

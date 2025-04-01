@@ -2,11 +2,11 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import type { CustomAttributeClassDifference } from "../Differencing/SchemaDifference";
-import type { MutableCAClass } from "../Editing/Mutable/MutableCAClass";
-import type { SchemaMergeContext } from "./SchemaMerger";
 import { containerTypeToString, parseCustomAttributeContainerType, SchemaItemKey } from "@itwin/ecschema-metadata";
-import { modifyClass } from "./ClassMerger";
+import type { CustomAttributeClassDifference } from "../Differencing/SchemaDifference.js";
+import type { MutableCAClass } from "../Editing/Mutable/MutableCAClass.js";
+import { modifyClass } from "./ClassMerger.js";
+import type { SchemaMergeContext } from "./SchemaMerger.js";
 
 /**
  * Merges a new CustomAttribute into the target schema.

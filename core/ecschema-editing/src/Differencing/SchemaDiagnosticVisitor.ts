@@ -6,13 +6,13 @@
  * @module Differencing
  */
 
-import type { AnyDiagnostic } from "../Validation/Diagnostic";
-import { SchemaCompareCodes } from "../Validation/SchemaCompareDiagnostics";
 import {
   AnyEnumerator, AnyPropertyProps, AnySchemaItem, CustomAttribute, ECClass,
   Enumeration, Format, InvertedUnit, KindOfQuantity, Mixin, OverrideFormat, Property, PropertyProps,
   RelationshipConstraint, RelationshipConstraintProps, Schema, SchemaItem, Unit,
 } from "@itwin/ecschema-metadata";
+import type { AnyDiagnostic } from "../Validation/Diagnostic.js";
+import { SchemaCompareCodes } from "../Validation/SchemaCompareDiagnostics.js";
 import {
   type AnyClassItemDifference,
   type AnySchemaItemDifference,
@@ -29,7 +29,7 @@ import {
   type SchemaDifference,
   SchemaOtherTypes,
   type SchemaReferenceDifference,
-} from "./SchemaDifference";
+} from "./SchemaDifference.js";
 
 /**
  * The SchemaDiagnosticVisitor is a visitor implementation for diagnostic entries

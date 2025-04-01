@@ -6,14 +6,15 @@
  * @module Comparison
  */
 
-import { AnyClass, AnyEnumerator, Constant, CustomAttribute, CustomAttributeClass, EntityClass,
+import {
+  AnyClass, AnyEnumerator, Constant, CustomAttribute, CustomAttributeClass, EntityClass,
   Enumeration, Format, InvertedUnit, KindOfQuantity, Mixin, OverrideFormat, PropertyCategory,
   RelationshipClass, Schema, SchemaItem, Unit,
 } from "@itwin/ecschema-metadata";
 import {
   createClassDiagnosticClass, createCustomAttributeContainerDiagnosticClass, createPropertyDiagnosticClass,
   createRelationshipConstraintDiagnosticClass, createSchemaDiagnosticClass, createSchemaItemDiagnosticClass,
-} from "./Diagnostic";
+} from "./Diagnostic.js";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 

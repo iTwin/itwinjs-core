@@ -2,10 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
 import { ECVersion, PropertyCategory, SchemaContext, SchemaItemType, SchemaKey } from "@itwin/ecschema-metadata";
-import { SchemaContextEditor } from "../../Editing/Editor";
-import { ECEditingStatus } from "../../Editing/Exception";
+import { expect } from "chai";
+import { SchemaContextEditor } from "../../Editing/Editor.js";
+import { ECEditingStatus } from "../../Editing/Exception.js";
 
 describe("Property Category tests", () => {
   let testEditor: SchemaContextEditor;

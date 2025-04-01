@@ -3,8 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { SchemaItemType } from "@itwin/ecschema-metadata";
-import { SchemaDifferenceWalker } from "../Differencing/SchemaDifferenceVisitor";
-import { AnySchemaDifference, DifferenceType, SchemaOtherTypes, SchemaType } from "../Differencing/SchemaDifference";
+import { AnySchemaDifference, DifferenceType, SchemaOtherTypes, SchemaType } from "../Differencing/SchemaDifference.js";
+import { SchemaDifferenceWalker } from "../Differencing/SchemaDifferenceVisitor.js";
 
 /**
  * A walker that traverses the schema differences in a certain oder and invokes the appropriate

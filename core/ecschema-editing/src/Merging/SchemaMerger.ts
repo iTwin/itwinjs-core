@@ -7,14 +7,14 @@
  */
 
 import { Schema, SchemaContext, SchemaItem, SchemaItemKey, SchemaKey, SchemaMatchType } from "@itwin/ecschema-metadata";
-import { SchemaContextEditor } from "../Editing/Editor";
-import { SchemaConflictsError } from "../Differencing/Errors";
-import { getSchemaDifferences, type SchemaDifferenceResult } from "../Differencing/SchemaDifference";
-import { SchemaMergingVisitor } from "./SchemaMergingVisitor";
-import { SchemaMergingWalker } from "./SchemaMergingWalker";
-import { SchemaEdits } from "./Edits/SchemaEdits";
-import { ECEditingStatus, SchemaEditingError } from "../Editing/Exception";
-import { NameMapping } from "./Edits/NameMapping";
+import { SchemaConflictsError } from "../Differencing/Errors.js";
+import { getSchemaDifferences, type SchemaDifferenceResult } from "../Differencing/SchemaDifference.js";
+import { SchemaContextEditor } from "../Editing/Editor.js";
+import { ECEditingStatus, SchemaEditingError } from "../Editing/Exception.js";
+import { NameMapping } from "./Edits/NameMapping.js";
+import { SchemaEdits } from "./Edits/SchemaEdits.js";
+import { SchemaMergingVisitor } from "./SchemaMergingVisitor.js";
+import { SchemaMergingWalker } from "./SchemaMergingWalker.js";
 
 /**
  * Defines the context of a Schema merging run.

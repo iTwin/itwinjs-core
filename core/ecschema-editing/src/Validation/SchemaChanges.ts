@@ -6,12 +6,13 @@
  * @module Comparison
  */
 
-import { AnyClass, AnyEnumerator, CustomAttribute, ECClass, ECObjectsError, ECObjectsStatus,
+import {
+  AnyClass, AnyEnumerator, CustomAttribute, ECClass, ECObjectsError, ECObjectsStatus,
   EntityClass, Enumeration, Format, KindOfQuantity, OverrideFormat, Property, RelationshipClass, RelationshipConstraint,
   Schema, SchemaItem, SchemaItemType,
 } from "@itwin/ecschema-metadata";
-import { AnyDiagnostic } from "./Diagnostic";
-import { SchemaCompareCodes } from "./SchemaCompareDiagnostics";
+import { AnyDiagnostic } from "./Diagnostic.js";
+import { SchemaCompareCodes } from "./SchemaCompareDiagnostics.js";
 
 /**
  * Possible change types used to categorize ISchemaChange objects.

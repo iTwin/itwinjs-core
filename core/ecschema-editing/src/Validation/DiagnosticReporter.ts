@@ -7,9 +7,9 @@
  */
 
 import { Localization } from "@itwin/core-common";
-import { AnyDiagnostic } from "./Diagnostic";
+import { AnyDiagnostic } from "./Diagnostic.js";
 
-import * as assert from "assert";
+import assert from "assert";
 
 const translationNamespace = "ECSchemaMetaData";
 const subTranslationNamespace = "Diagnostics";

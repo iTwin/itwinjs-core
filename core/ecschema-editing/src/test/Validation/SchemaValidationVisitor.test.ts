@@ -3,18 +3,19 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
-import { AnyProperty, Constant, CustomAttributeClass, ECClass, EntityClass, Enumeration, Format,
+import {
+  AnyProperty, Constant, CustomAttributeClass, ECClass, EntityClass, Enumeration, Format,
   InvertedUnit, KindOfQuantity, Mixin, Phenomenon, PrimitiveType, PropertyCategory, RelationshipClass,
   RelationshipConstraint, RelationshipEnd, Schema, SchemaContext, StructClass, Unit, UnitSystem,
 } from "@itwin/ecschema-metadata";
-import { MutableClass } from "../../Editing/Mutable/MutableClass";
-import { MutableProperty } from "@itwin/ecschema-metadata/src/Metadata/Property";
-import { DiagnosticCategory } from "../../Validation/Diagnostic";
-import { SchemaValidationVisitor } from "../../Validation/SchemaValidationVisitor";
-import { ApplySuppressionSet, EmptyRuleSet, IgnoreSuppressionSet, TestDiagnostics, TestReporter, TestRuleSet, TestRuleSetB } from "../TestUtils/DiagnosticHelpers";
+import { MutableProperty } from "@itwin/ecschema-metadata/src/Metadata/Property.js";
+import { expect } from "chai";
+import { MutableClass } from "../../Editing/Mutable/MutableClass.js";
+import { DiagnosticCategory } from "../../Validation/Diagnostic.js";
+import { SchemaValidationVisitor } from "../../Validation/SchemaValidationVisitor.js";
+import { ApplySuppressionSet, EmptyRuleSet, IgnoreSuppressionSet, TestDiagnostics, TestReporter, TestRuleSet, TestRuleSetB } from "../TestUtils/DiagnosticHelpers.js";
 
-import * as sinon from "sinon";
+import sinon from "sinon";
 
 describe("SchemaValidationVisitor tests", () => {
   let visitor: SchemaValidationVisitor;

@@ -7,10 +7,10 @@
  */
 
 import { SchemaItemKey, SchemaItemType, SchemaKey, StructClass, StructClassProps } from "@itwin/ecschema-metadata";
-import { SchemaContextEditor } from "./Editor";
-import { ECClasses } from "./ECClasses";
-import { MutableStructClass } from "./Mutable/MutableClass";
-import { ClassId, ECEditingStatus, SchemaEditingError } from "./Exception";
+import { ECClasses } from "./ECClasses.js";
+import { SchemaContextEditor } from "./Editor.js";
+import { ClassId, ECEditingStatus, SchemaEditingError } from "./Exception.js";
+import { MutableStructClass } from "./Mutable/MutableClass.js";
 
 /**
  * @alpha A class extending ECClasses allowing you to create schema items of type StructClass.

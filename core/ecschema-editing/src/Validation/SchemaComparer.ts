@@ -6,17 +6,17 @@
  * @module Comparison
  */
 
+import { formatTraitsToArray } from "@itwin/core-quantity";
 import {
   AnyClass, AnyEnumerator, AnyProperty, classModifierToString, Constant, containerTypeToString, CustomAttribute, CustomAttributeClass,
   CustomAttributeContainerProps, ECClass, EntityClass, Enumeration, Format, InvertedUnit, KindOfQuantity, Mixin, OverrideFormat, Phenomenon,
   primitiveTypeToString, PropertyCategory, propertyTypeToString, RelationshipClass, RelationshipConstraint, Schema,
   SchemaItem, SchemaItemKey, strengthDirectionToString, strengthToString, Unit,
 } from "@itwin/ecschema-metadata";
-import { formatTraitsToArray } from "@itwin/core-quantity";
-import { ISchemaCompareReporter } from "./SchemaCompareReporter";
-import { SchemaCompareResultDelegate } from "./SchemaCompareResultDelegate";
-import { SchemaCompareVisitor } from "./SchemaCompareVisitor";
-import { SchemaWalker } from "./SchemaWalker";
+import { ISchemaCompareReporter } from "./SchemaCompareReporter.js";
+import { SchemaCompareResultDelegate } from "./SchemaCompareResultDelegate.js";
+import { SchemaCompareVisitor } from "./SchemaCompareVisitor.js";
+import { SchemaWalker } from "./SchemaWalker.js";
 
 /**
  * Enum that identifies if Schema A is being iterated (Forward) or

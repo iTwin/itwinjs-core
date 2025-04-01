@@ -3,11 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
 import { Schema, SchemaContext } from "@itwin/ecschema-metadata";
-import { MutableSchema } from "../../../Editing/Mutable/MutableSchema";
-import * as Rules from "../../../Validation/ECRules";
-import { DiagnosticCategory, DiagnosticType } from "../../../Validation/Diagnostic";
+import { expect } from "chai";
+import { MutableSchema } from "../../../Editing/Mutable/MutableSchema.js";
+import { DiagnosticCategory, DiagnosticType } from "../../../Validation/Diagnostic.js";
+import * as Rules from "../../../Validation/ECRules.js";
 
 describe("Schema rules tests", () => {
   let context: SchemaContext;

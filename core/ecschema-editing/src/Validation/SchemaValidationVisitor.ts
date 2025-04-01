@@ -6,16 +6,17 @@
  * @module Validation
  */
 
-import { AnyClass, AnyECType, AnyProperty, Constant, CustomAttribute, CustomAttributeClass, CustomAttributeContainerProps,
+import {
+  AnyClass, AnyECType, AnyProperty, Constant, CustomAttribute, CustomAttributeClass, CustomAttributeContainerProps,
   EntityClass, Enumeration, Format, InvertedUnit, ISchemaPartVisitor, KindOfQuantity, Mixin,
   Phenomenon, PropertyCategory, RelationshipClass, RelationshipConstraint, Schema, SchemaItem,
   StructClass, Unit, UnitSystem,
 } from "@itwin/ecschema-metadata";
 
-import { AnyDiagnostic, DiagnosticCategory } from "./Diagnostic";
-import { IDiagnosticReporter } from "./DiagnosticReporter";
-import { IRuleSet } from "./Rules";
-import { IRuleSuppressionMap, IRuleSuppressionSet, ISuppressionRule } from "./RuleSuppressionSet";
+import { AnyDiagnostic, DiagnosticCategory } from "./Diagnostic.js";
+import { IDiagnosticReporter } from "./DiagnosticReporter.js";
+import { IRuleSet } from "./Rules.js";
+import { IRuleSuppressionMap, IRuleSuppressionSet, ISuppressionRule } from "./RuleSuppressionSet.js";
 
 interface RuleSetArray {
   [name: string]: IRuleSet;

@@ -3,9 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { CustomAttribute, CustomAttributeClass, RelationshipClass } from "@itwin/ecschema-metadata";
-import { type SchemaMergeContext } from "./SchemaMerger";
-import { type CustomAttributeDifference } from "../Differencing/SchemaDifference";
-import { getClassEditor, toItemKey, toPropertyKey, updateSchemaItemFullName, updateSchemaItemKey } from "./Utils";
+import { type CustomAttributeDifference } from "../Differencing/SchemaDifference.js";
+import { type SchemaMergeContext } from "./SchemaMerger.js";
+import { getClassEditor, toItemKey, toPropertyKey, updateSchemaItemFullName, updateSchemaItemKey } from "./Utils.js";
 
 type CustomAttributeSetter = (customAttribute: CustomAttribute) => Promise<void>;
 

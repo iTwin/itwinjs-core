@@ -10,11 +10,11 @@ import {
   ECClassModifier, EntityClass, EntityClassProps,
   Mixin, NavigationPropertyProps, RelationshipClass, SchemaItemKey, SchemaItemType, SchemaKey, StrengthDirection,
 } from "@itwin/ecschema-metadata";
-import { SchemaContextEditor } from "./Editor";
-import { ECClasses } from "./ECClasses";
-import { MutableEntityClass } from "./Mutable/MutableEntityClass";
-import { NavigationProperties } from "./Properties";
-import { ClassId, ECEditingStatus, SchemaEditingError } from "./Exception";
+import { ECClasses } from "./ECClasses.js";
+import { SchemaContextEditor } from "./Editor.js";
+import { ClassId, ECEditingStatus, SchemaEditingError } from "./Exception.js";
+import { MutableEntityClass } from "./Mutable/MutableEntityClass.js";
+import { NavigationProperties } from "./Properties.js";
 
 /**
  * @alpha

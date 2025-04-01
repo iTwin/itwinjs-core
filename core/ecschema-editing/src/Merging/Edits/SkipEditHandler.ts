@@ -6,9 +6,9 @@
  * @module Merging
  */
 
-import type { AnySchemaDifference, SchemaDifferenceResult } from "../../Differencing/SchemaDifference";
-import type { AnySchemaDifferenceConflict } from "../../Differencing/SchemaConflicts";
-import type { SkipEdit } from "./SchemaEdits";
+import type { AnySchemaDifferenceConflict } from "../../Differencing/SchemaConflicts.js";
+import type { AnySchemaDifference, SchemaDifferenceResult } from "../../Differencing/SchemaDifference.js";
+import type { SkipEdit } from "./SchemaEdits.js";
 
 /**
  * Applies a skip edit to the schema differences. It basically removes all entries that

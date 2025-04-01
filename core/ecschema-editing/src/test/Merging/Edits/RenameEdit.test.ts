@@ -3,10 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { CustomAttributeClass, EntityClass, PropertyCategory, PropertyType, RelationshipClass, Schema, SchemaContext, SchemaItemType } from "@itwin/ecschema-metadata";
-import { AnySchemaDifferenceConflict, ConflictCode, getSchemaDifferences, SchemaEdits, SchemaMerger } from "../../../ecschema-editing";
-import { BisTestHelper } from "../../TestUtils/BisTestHelper";
 import { expect } from "chai";
 import "chai-as-promised";
+import { AnySchemaDifferenceConflict, ConflictCode, getSchemaDifferences, SchemaEdits, SchemaMerger } from "../../../ecschema-editing.js";
+import { BisTestHelper } from "../../TestUtils/BisTestHelper.js";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 

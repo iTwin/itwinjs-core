@@ -2,12 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { InvertedUnit, SchemaItemKey, Unit } from "@itwin/ecschema-metadata";
 import { FormatTraits, parseFormatTrait, parseScientificType, parseShowSignOption } from "@itwin/core-quantity";
-import { FormatDifference, FormatUnitDifference, FormatUnitLabelDifference } from "../Differencing/SchemaDifference";
-import { MutableFormat } from "../Editing/Mutable/MutableFormat";
-import { SchemaMergeContext } from "./SchemaMerger";
-import { updateSchemaItemFullName, updateSchemaItemKey } from "./Utils";
+import { InvertedUnit, SchemaItemKey, Unit } from "@itwin/ecschema-metadata";
+import { FormatDifference, FormatUnitDifference, FormatUnitLabelDifference } from "../Differencing/SchemaDifference.js";
+import { MutableFormat } from "../Editing/Mutable/MutableFormat.js";
+import { SchemaMergeContext } from "./SchemaMerger.js";
+import { updateSchemaItemFullName, updateSchemaItemKey } from "./Utils.js";
 
 /**
  * Merges a new Format into the target schema.

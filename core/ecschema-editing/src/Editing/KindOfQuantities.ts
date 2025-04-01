@@ -11,10 +11,10 @@ import {
   Format, InvertedUnit, KindOfQuantity, KindOfQuantityProps, OverrideFormat,
   SchemaItemKey, SchemaItemType, SchemaKey, Unit,
 } from "@itwin/ecschema-metadata";
-import { SchemaContextEditor } from "./Editor";
-import { MutableKindOfQuantity } from "./Mutable/MutableKindOfQuantity";
-import { ECEditingStatus, SchemaEditingError, SchemaItemId } from "./Exception";
-import { SchemaItems } from "./SchemaItems";
+import { SchemaContextEditor } from "./Editor.js";
+import { ECEditingStatus, SchemaEditingError, SchemaItemId } from "./Exception.js";
+import { MutableKindOfQuantity } from "./Mutable/MutableKindOfQuantity.js";
+import { SchemaItems } from "./SchemaItems.js";
 
 /**
  * @alpha

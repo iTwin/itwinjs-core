@@ -6,26 +6,26 @@
  * @module Editing
  */
 
-import * as Rules from "../Validation/ECRules";
-import { CustomAttribute, ECObjectsError, ECObjectsStatus, isSupportedSchemaItemType, Schema, SchemaContext, SchemaItem, SchemaItemKey, SchemaItemType, SchemaKey, SchemaMatchType, SupportedSchemaItemType } from "@itwin/ecschema-metadata";
-import { MutableSchema } from "./Mutable/MutableSchema";
 import { assert } from "@itwin/core-bentley";
-import { Constants } from "./Constants";
-import { CustomAttributes } from "./CustomAttributes";
-import { Entities } from "./Entities";
-import { Enumerations } from "./Enumerations";
-import { Formats } from "./Formats";
-import { InvertedUnits } from "./InvertedUnits";
-import { KindOfQuantities } from "./KindOfQuantities";
-import { Mixins } from "./Mixins";
-import { Phenomena } from "./Phenomena";
-import { PropertyCategories } from "./PropertyCategories";
-import { RelationshipClasses } from "./RelationshipClasses";
-import { Structs } from "./Structs";
-import { Units } from "./Units";
-import { UnitSystems } from "./UnitSystems";
-import { CustomAttributeId, ECEditingStatus, SchemaEditingError, SchemaId, SchemaItemId } from "./Exception";
-import { AnyDiagnostic } from "../Validation/Diagnostic";
+import { CustomAttribute, ECObjectsError, ECObjectsStatus, isSupportedSchemaItemType, Schema, SchemaContext, SchemaItem, SchemaItemKey, SchemaItemType, SchemaKey, SchemaMatchType, SupportedSchemaItemType } from "@itwin/ecschema-metadata";
+import { AnyDiagnostic } from "../Validation/Diagnostic.js";
+import * as Rules from "../Validation/ECRules.js";
+import { Constants } from "./Constants.js";
+import { CustomAttributes } from "./CustomAttributes.js";
+import { Entities } from "./Entities.js";
+import { Enumerations } from "./Enumerations.js";
+import { CustomAttributeId, ECEditingStatus, SchemaEditingError, SchemaId, SchemaItemId } from "./Exception.js";
+import { Formats } from "./Formats.js";
+import { InvertedUnits } from "./InvertedUnits.js";
+import { KindOfQuantities } from "./KindOfQuantities.js";
+import { Mixins } from "./Mixins.js";
+import { MutableSchema } from "./Mutable/MutableSchema.js";
+import { Phenomena } from "./Phenomena.js";
+import { PropertyCategories } from "./PropertyCategories.js";
+import { RelationshipClasses } from "./RelationshipClasses.js";
+import { Structs } from "./Structs.js";
+import { Units } from "./Units.js";
+import { UnitSystems } from "./UnitSystems.js";
 
 /**
  * A class that allows you to edit and create schemas, classes, and items from the SchemaContext level.

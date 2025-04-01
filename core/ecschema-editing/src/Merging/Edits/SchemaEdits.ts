@@ -7,10 +7,10 @@
  */
 
 import type { ECClass, SchemaItem } from "@itwin/ecschema-metadata";
-import type { SchemaDifferenceResult } from "../../Differencing/SchemaDifference";
-import { NameMapping } from "./NameMapping";
-import { applyRenamePropertyEdit, applyRenameSchemaItemEdit } from "./RenameEditHandler";
-import { applySkipEdit } from "./SkipEditHandler";
+import type { SchemaDifferenceResult } from "../../Differencing/SchemaDifference.js";
+import { NameMapping } from "./NameMapping.js";
+import { applyRenamePropertyEdit, applyRenameSchemaItemEdit } from "./RenameEditHandler.js";
+import { applySkipEdit } from "./SkipEditHandler.js";
 
 /**
  * An enumeration that has all the schema edit names.

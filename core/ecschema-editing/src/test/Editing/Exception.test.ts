@@ -1,8 +1,8 @@
-import { expect } from "chai";
-import { SchemaContextEditor } from "../../Editing/Editor";
 import { RelationshipClass, RelationshipConstraint, RelationshipEnd, Schema, SchemaContext, SchemaItemKey, SchemaItemType, SchemaKey } from "@itwin/ecschema-metadata";
-import { ClassId, ECEditingStatus, PropertyId, RelationshipConstraintId, SchemaEditingError, SchemaId, SchemaItemId } from "../../Editing/Exception";
-import { AnyDiagnostic, Diagnostics } from "../../ecschema-editing";
+import { expect } from "chai";
+import { SchemaContextEditor } from "../../Editing/Editor.js";
+import { ClassId, ECEditingStatus, PropertyId, RelationshipConstraintId, SchemaEditingError, SchemaId, SchemaItemId } from "../../Editing/Exception.js";
+import { AnyDiagnostic, Diagnostics } from "../../ecschema-editing.js";
 
 function getRuleViolationMessage(ruleViolations: AnyDiagnostic[]) {
   let violations = "";
