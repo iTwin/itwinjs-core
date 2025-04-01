@@ -390,9 +390,9 @@ export class GeometryCoreTestIO {
         const corners = range.corners();
         if (placement)
           placement.multiplyPoint3dArrayInPlace(corners);
-        if (!Geometry.isSameCoordinate(range.high.z, range.low.z))
-          this.captureGeometry(collection, LineString3d.createIndexedPoints(corners, [0, 1, 3, 2, 0, 4, 5, 7, 6, 4, 2, 6, 3, 7, 1, 5]), dx, dy, dz);
-        else
+        if (!Geometry.isSameCoordinate(range.high.z, range.low.z)){
+          this.captureGeometry(collection, LineString3d.createIndexedPoints(corners, [0, 1, 3, 2, 0, 4, 5, 1, 5, 7,3,7,6,2,6,4]), dx, dy, dz);
+        } else
           this.captureGeometry(collection, LineString3d.createIndexedPoints(corners, [0, 1, 3, 2, 0]), dx, dy, dz);
       } else if (range instanceof Range2d) {
         const corners = range.corners3d(true, 0);

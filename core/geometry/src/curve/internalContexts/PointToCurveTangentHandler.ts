@@ -7,6 +7,7 @@
  */
 
 import { RecurseToCurvesGeometryHandler } from "../../geometry3d/GeometryHandler";
+import { Matrix3d } from "../../geometry3d/Matrix3d";
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 import { Arc3d } from "../Arc3d";
 import { CurvePrimitive } from "../CurvePrimitive";
@@ -23,16 +24,36 @@ export class PointToCurveTangentHandler extends RecurseToCurvesGeometryHandler {
   public spacePoint: Point3d;
   public collector: TangencyPointCollector;
   public extendArcs: boolean;
-  public constructor(spacePoint: Point3d, collector: TangencyPointCollector, extendArcs: boolean = false) {
+  // If available, do the tangency as viewed in the xy plane AFTER multiplying vectors by this matrix.
+  public worldToView: Matrix3d | undefined;
+  public constructor(spacePoint: Point3d, collector: TangencyPointCollector, extendArcs: boolean = false, viewMatrix: Matrix3d | undefined) {
     super();
     this.spacePoint = spacePoint;
     this.collector = collector;
     this.extendArcs = extendArcs;
+    this.worldToView = viewMatrix;
   }
 
   public override handleArc3d(g: Arc3d) {
     const centerToPoint = Vector3d.createStartEnd (g.centerRef, this.spacePoint);
-    const localCenterToPoint = g.matrixRef.multiplyInverse (centerToPoint);
+    let localCenterToPoint: Vector3d | undefined;
+    if (this.worldToView){
+      // Convert the vector spacePoint into the arc's default system in which
+      //  U vector is column  0
+      //  V vector is column 1
+      //  worldToVew row 2 is column 3
+      const arcToView = Matrix3d.createColumns (
+        g.matrixRef.getColumn(0),g.matrixRef.getColumn(1),this.worldToView.getRow (2));
+      localCenterToPoint = arcToView.multiplyInverse (centerToPoint);
+    } else {
+      // Convert the vector spacePoint into the arc's default system in which
+      //  U vector is column  0
+      //  V vector is column 1
+      //  their cross product (or maybe a scale of it) is column 2.
+      localCenterToPoint  = g.matrixRef.multiplyInverse (centerToPoint)!;
+    }
+    if (localCenterToPoint === undefined)
+      return;
     // localCenterToPoint is measured in the (deskewed and descaled!) coordinate system of the
     // arc U and V axes.  That is, the arc is now a unit circle.
     // Angle alpha is from the local x axis to localCenterToPoint.
