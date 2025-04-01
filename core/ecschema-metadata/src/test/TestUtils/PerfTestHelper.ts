@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import * as Benchmark from "benchmark";
+import Benchmark from "benchmark";
 
 /* eslint-disable no-console */
 export async function comparePerformance(...funcs: Array<() => Promise<any>>): Promise<void> {

@@ -4,22 +4,22 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, expect } from "chai";
-import { CustomAttributeClass } from "../../Metadata/CustomAttributeClass";
-import { RelationshipClass } from "../../Metadata/RelationshipClass";
-import { SchemaContext } from "../../Context";
-import { DelayedPromiseWithProps } from "../../DelayedPromise";
-import { ECObjectsError } from "../../Exception";
-import { ECClass, MutableClass, StructClass } from "../../Metadata/Class";
-import { CustomAttributeSet } from "../../Metadata/CustomAttribute";
-import { EntityClass, MutableEntityClass } from "../../Metadata/EntityClass";
-import { Mixin } from "../../Metadata/Mixin";
-import { MutableSchema, Schema } from "../../Metadata/Schema";
-import { SchemaItem } from "../../Metadata/SchemaItem";
-import { SchemaKey } from "../../SchemaKey";
-import { createSchemaJsonWithItems } from "../TestUtils/DeserializationHelpers";
-import { createEmptyXmlDocument, getElementChildren, getElementChildrenByTagName } from "../TestUtils/SerializationHelper";
-import { StrengthDirection } from "../../ECObjects";
-import { ECSchemaNamespaceUris } from "../../Constants";
+import { ECSchemaNamespaceUris } from "../../Constants.js";
+import { SchemaContext } from "../../Context.js";
+import { DelayedPromiseWithProps } from "../../DelayedPromise.js";
+import { StrengthDirection } from "../../ECObjects.js";
+import { ECObjectsError } from "../../Exception.js";
+import { ECClass, MutableClass, StructClass } from "../../Metadata/Class.js";
+import { CustomAttributeSet } from "../../Metadata/CustomAttribute.js";
+import { CustomAttributeClass } from "../../Metadata/CustomAttributeClass.js";
+import { EntityClass, MutableEntityClass } from "../../Metadata/EntityClass.js";
+import { Mixin } from "../../Metadata/Mixin.js";
+import { RelationshipClass } from "../../Metadata/RelationshipClass.js";
+import { MutableSchema, Schema } from "../../Metadata/Schema.js";
+import { SchemaItem } from "../../Metadata/SchemaItem.js";
+import { SchemaKey } from "../../SchemaKey.js";
+import { createSchemaJsonWithItems } from "../TestUtils/DeserializationHelpers.js";
+import { createEmptyXmlDocument, getElementChildren, getElementChildrenByTagName } from "../TestUtils/SerializationHelper.js";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 

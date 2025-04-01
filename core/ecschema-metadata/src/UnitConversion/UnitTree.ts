@@ -3,16 +3,16 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { BentleyError, BentleyStatus } from "@itwin/core-bentley";
-import { SchemaContext } from "../Context";
-import { Constant } from "../Metadata/Constant";
-import { Schema } from "../Metadata/Schema";
-import { SchemaItem } from "../Metadata/SchemaItem";
-import { Unit } from "../Metadata/Unit";
-import { SchemaItemKey, SchemaKey } from "../SchemaKey";
-import { SchemaItemType } from "../ECObjects";
-import { UnitConversion } from "./UnitConversion";
-import { DefinitionFragment, parseDefinition } from "./Parser";
-import { Graph } from "./Graph";
+import { SchemaContext } from "../Context.js";
+import { SchemaItemType } from "../ECObjects.js";
+import { Constant } from "../Metadata/Constant.js";
+import { Schema } from "../Metadata/Schema.js";
+import { SchemaItem } from "../Metadata/SchemaItem.js";
+import { Unit } from "../Metadata/Unit.js";
+import { SchemaItemKey, SchemaKey } from "../SchemaKey.js";
+import { Graph } from "./Graph.js";
+import { DefinitionFragment, parseDefinition } from "./Parser.js";
+import { UnitConversion } from "./UnitConversion.js";
 
 /** @internal */
 export class GraphUtils {

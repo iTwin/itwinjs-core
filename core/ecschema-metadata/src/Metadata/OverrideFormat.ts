@@ -6,16 +6,16 @@
  * @module Metadata
  */
 
-import { XmlSerializationUtils } from "../Deserialization/XmlSerializationUtils";
-import { SchemaItemType } from "../ECObjects";
-import { DecimalPrecision, FormatProps, formatStringRgx, FormatTraits, FormatType, FractionalPrecision, ScientificType, ShowSignOption } from "@itwin/core-quantity";
-import { Format } from "./Format";
-import { InvertedUnit } from "./InvertedUnit";
-import { Schema } from "./Schema";
-import { SchemaItemOverrideFormatProps } from "../Deserialization/JsonProps";
-import { Unit } from "./Unit";
 import { Mutable } from "@itwin/core-bentley";
-import { ECObjectsError, ECObjectsStatus } from "../Exception";
+import { DecimalPrecision, FormatProps, formatStringRgx, FormatTraits, FormatType, FractionalPrecision, ScientificType, ShowSignOption } from "@itwin/core-quantity";
+import { SchemaItemOverrideFormatProps } from "../Deserialization/JsonProps.js";
+import { XmlSerializationUtils } from "../Deserialization/XmlSerializationUtils.js";
+import { SchemaItemType } from "../ECObjects.js";
+import { ECObjectsError, ECObjectsStatus } from "../Exception.js";
+import { Format } from "./Format.js";
+import { InvertedUnit } from "./InvertedUnit.js";
+import { Schema } from "./Schema.js";
+import { Unit } from "./Unit.js";
 
 /**
  * @beta

@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { Schema } from "../Metadata/Schema";
+import { Schema } from "../Metadata/Schema.js";
 
 /**
  * Utility class for working with Schema graphs.

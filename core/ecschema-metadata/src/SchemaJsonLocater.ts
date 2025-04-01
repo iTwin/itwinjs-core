@@ -3,12 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { ISchemaLocater, SchemaContext } from "./Context";
-import { SchemaProps } from "./Deserialization/JsonProps";
-import { SchemaMatchType } from "./ECObjects";
-import { SchemaInfo } from "./Interfaces";
-import { Schema } from "./Metadata/Schema";
-import { SchemaKey } from "./SchemaKey";
+import { ISchemaLocater, SchemaContext } from "./Context.js";
+import { SchemaProps } from "./Deserialization/JsonProps.js";
+import { SchemaMatchType } from "./ECObjects.js";
+import { SchemaInfo } from "./Interfaces.js";
+import { Schema } from "./Metadata/Schema.js";
+import { SchemaKey } from "./SchemaKey.js";
 
 /**
  * Gets the full schema Json for the input schema name or undefined if not found

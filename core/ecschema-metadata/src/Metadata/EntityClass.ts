@@ -6,18 +6,18 @@
  * @module Metadata
  */
 
-import { DelayedPromiseWithProps } from "../DelayedPromise";
-import { EntityClassProps } from "../Deserialization/JsonProps";
-import { XmlSerializationUtils } from "../Deserialization/XmlSerializationUtils";
-import { parseStrengthDirection, SchemaItemType, StrengthDirection } from "../ECObjects";
-import { ECObjectsError, ECObjectsStatus } from "../Exception";
-import { HasMixins, LazyLoadedMixin } from "../Interfaces";
-import { SchemaItemKey } from "../SchemaKey";
-import { ECClass } from "./Class";
-import { Mixin } from "./Mixin";
-import { AnyProperty, NavigationProperty, Property } from "./Property";
-import { RelationshipClass } from "./RelationshipClass";
-import { SchemaItem } from "./SchemaItem";
+import { DelayedPromiseWithProps } from "../DelayedPromise.js";
+import { EntityClassProps } from "../Deserialization/JsonProps.js";
+import { XmlSerializationUtils } from "../Deserialization/XmlSerializationUtils.js";
+import { parseStrengthDirection, SchemaItemType, StrengthDirection } from "../ECObjects.js";
+import { ECObjectsError, ECObjectsStatus } from "../Exception.js";
+import { HasMixins, LazyLoadedMixin } from "../Interfaces.js";
+import { SchemaItemKey } from "../SchemaKey.js";
+import { ECClass } from "./Class.js";
+import { Mixin } from "./Mixin.js";
+import { AnyProperty, NavigationProperty, Property } from "./Property.js";
+import { RelationshipClass } from "./RelationshipClass.js";
+import { SchemaItem } from "./SchemaItem.js";
 
 /**
  * A Typescript class representation of an ECEntityClass.

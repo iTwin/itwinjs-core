@@ -4,10 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, expect } from "chai";
-import { SchemaContext } from "../../Context";
-import { StructClass } from "../../Metadata/Class";
-import { Schema } from "../../Metadata/Schema";
-import { createSchemaJsonWithItems } from "../TestUtils/DeserializationHelpers";
+import { SchemaContext } from "../../Context.js";
+import { StructClass } from "../../Metadata/Class.js";
+import { Schema } from "../../Metadata/Schema.js";
+import { createSchemaJsonWithItems } from "../TestUtils/DeserializationHelpers.js";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 

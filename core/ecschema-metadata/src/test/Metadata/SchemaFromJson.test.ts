@@ -3,10 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { SchemaContext } from "../../Context";
-import { Schema } from "../../Metadata/Schema";
-import { ECObjectsError } from "../../Exception";
-import { ECSchemaNamespaceUris } from "../../Constants";
+import { ECSchemaNamespaceUris } from "../../Constants.js";
+import { SchemaContext } from "../../Context.js";
+import { ECObjectsError } from "../../Exception.js";
+import { Schema } from "../../Metadata/Schema.js";
 
 describe("Schema from json creation with different containers tests", () => {
   let context: SchemaContext;

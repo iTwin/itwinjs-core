@@ -4,10 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { SchemaKeyProps } from "../Deserialization/JsonProps";
-import { SchemaMatchType } from "../ECObjects";
-import { ECObjectsError } from "../Exception";
-import { ECVersion, SchemaKey } from "../SchemaKey";
+import { SchemaKeyProps } from "../Deserialization/JsonProps.js";
+import { SchemaMatchType } from "../ECObjects.js";
+import { ECObjectsError } from "../Exception.js";
+import { ECVersion, SchemaKey } from "../SchemaKey.js";
 
 describe("SchemaKey", () => {
   let testKey: SchemaKey;

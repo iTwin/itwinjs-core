@@ -6,27 +6,27 @@
  * @module Metadata
  */
 
-import { DelayedPromise } from "./DelayedPromise";
-import { ECClass, StructClass } from "./Metadata/Class";
-import { Constant } from "./Metadata/Constant";
-import { CustomAttribute, CustomAttributeContainerProps } from "./Metadata/CustomAttribute";
-import { CustomAttributeClass } from "./Metadata/CustomAttributeClass";
-import { EntityClass } from "./Metadata/EntityClass";
-import { AnyEnumerator, Enumeration } from "./Metadata/Enumeration";
-import { Format } from "./Metadata/Format";
-import { InvertedUnit } from "./Metadata/InvertedUnit";
-import { KindOfQuantity } from "./Metadata/KindOfQuantity";
-import { Mixin } from "./Metadata/Mixin";
-import { OverrideFormat } from "./Metadata/OverrideFormat";
-import { Phenomenon } from "./Metadata/Phenomenon";
-import { AnyProperty } from "./Metadata/Property";
-import { PropertyCategory } from "./Metadata/PropertyCategory";
-import { RelationshipClass, RelationshipConstraint } from "./Metadata/RelationshipClass";
-import { Schema } from "./Metadata/Schema";
-import { SchemaItem } from "./Metadata/SchemaItem";
-import { Unit } from "./Metadata/Unit";
-import { UnitSystem } from "./Metadata/UnitSystem";
-import { SchemaItemKey, SchemaKey } from "./SchemaKey";
+import { DelayedPromise } from "./DelayedPromise.js";
+import { ECClass, StructClass } from "./Metadata/Class.js";
+import { Constant } from "./Metadata/Constant.js";
+import { CustomAttribute, CustomAttributeContainerProps } from "./Metadata/CustomAttribute.js";
+import { CustomAttributeClass } from "./Metadata/CustomAttributeClass.js";
+import { EntityClass } from "./Metadata/EntityClass.js";
+import { AnyEnumerator, Enumeration } from "./Metadata/Enumeration.js";
+import { Format } from "./Metadata/Format.js";
+import { InvertedUnit } from "./Metadata/InvertedUnit.js";
+import { KindOfQuantity } from "./Metadata/KindOfQuantity.js";
+import { Mixin } from "./Metadata/Mixin.js";
+import { OverrideFormat } from "./Metadata/OverrideFormat.js";
+import { Phenomenon } from "./Metadata/Phenomenon.js";
+import { AnyProperty } from "./Metadata/Property.js";
+import { PropertyCategory } from "./Metadata/PropertyCategory.js";
+import { RelationshipClass, RelationshipConstraint } from "./Metadata/RelationshipClass.js";
+import { Schema } from "./Metadata/Schema.js";
+import { SchemaItem } from "./Metadata/SchemaItem.js";
+import { Unit } from "./Metadata/Unit.js";
+import { UnitSystem } from "./Metadata/UnitSystem.js";
+import { SchemaItemKey, SchemaKey } from "./SchemaKey.js";
 
 /** @beta */
 export type LazyLoadedSchema = SchemaKey & DelayedPromise<Schema> & Promise<Schema>;

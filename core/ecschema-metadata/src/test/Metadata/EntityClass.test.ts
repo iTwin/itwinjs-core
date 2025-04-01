@@ -4,18 +4,18 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, expect } from "chai";
-import { SchemaContext } from "../../Context";
-import { DelayedPromiseWithProps } from "../../DelayedPromise";
-import { ECClassModifier, SchemaItemType } from "../../ECObjects";
-import { ECObjectsError } from "../../Exception";
-import { ECClass, MutableClass } from "../../Metadata/Class";
-import { EntityClass, MutableEntityClass } from "../../Metadata/EntityClass";
-import { Mixin } from "../../Metadata/Mixin";
-import { RelationshipClass } from "../../Metadata/RelationshipClass";
-import { MutableSchema, Schema } from "../../Metadata/Schema";
-import { createSchemaJsonWithItems } from "../TestUtils/DeserializationHelpers";
-import { createEmptyXmlDocument, getElementChildrenByTagName } from "../TestUtils/SerializationHelper";
-import { ECSchemaNamespaceUris } from "../../Constants";
+import { ECSchemaNamespaceUris } from "../../Constants.js";
+import { SchemaContext } from "../../Context.js";
+import { DelayedPromiseWithProps } from "../../DelayedPromise.js";
+import { ECClassModifier, SchemaItemType } from "../../ECObjects.js";
+import { ECObjectsError } from "../../Exception.js";
+import { ECClass, MutableClass } from "../../Metadata/Class.js";
+import { EntityClass, MutableEntityClass } from "../../Metadata/EntityClass.js";
+import { Mixin } from "../../Metadata/Mixin.js";
+import { RelationshipClass } from "../../Metadata/RelationshipClass.js";
+import { MutableSchema, Schema } from "../../Metadata/Schema.js";
+import { createSchemaJsonWithItems } from "../TestUtils/DeserializationHelpers.js";
+import { createEmptyXmlDocument, getElementChildrenByTagName } from "../TestUtils/SerializationHelper.js";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 

@@ -3,9 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { SchemaLoader } from "../../SchemaLoader";
-import { ECObjectsError } from "../../Exception";
-import { ECSchemaNamespaceUris } from "../../Constants";
+import { ECSchemaNamespaceUris } from "../../Constants.js";
+import { ECObjectsError } from "../../Exception.js";
+import { SchemaLoader } from "../../SchemaLoader.js";
 
 describe("SchemaLoader", () => {
 

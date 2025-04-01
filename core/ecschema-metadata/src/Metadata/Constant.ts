@@ -6,16 +6,16 @@
  * @module Metadata
  */
 
-import { DelayedPromiseWithProps } from "../DelayedPromise";
-import { ConstantProps } from "../Deserialization/JsonProps";
-import { XmlSerializationUtils } from "../Deserialization/XmlSerializationUtils";
-import { SchemaItemType } from "../ECObjects";
-import { ECObjectsError, ECObjectsStatus } from "../Exception";
-import { LazyLoadedPhenomenon } from "../Interfaces";
-import { SchemaItemKey } from "../SchemaKey";
-import { Phenomenon } from "./Phenomenon";
-import { Schema } from "./Schema";
-import { SchemaItem } from "./SchemaItem";
+import { DelayedPromiseWithProps } from "../DelayedPromise.js";
+import { ConstantProps } from "../Deserialization/JsonProps.js";
+import { XmlSerializationUtils } from "../Deserialization/XmlSerializationUtils.js";
+import { SchemaItemType } from "../ECObjects.js";
+import { ECObjectsError, ECObjectsStatus } from "../Exception.js";
+import { LazyLoadedPhenomenon } from "../Interfaces.js";
+import { SchemaItemKey } from "../SchemaKey.js";
+import { Phenomenon } from "./Phenomenon.js";
+import { Schema } from "./Schema.js";
+import { SchemaItem } from "./SchemaItem.js";
 
 /**
  * A Constant is a specific type of Unit that represents a number.

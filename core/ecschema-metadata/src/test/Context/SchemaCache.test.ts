@@ -3,12 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import * as chai from "chai";
-import * as chaiAsPromised from "chai-as-promised";
-import { SchemaCache, SchemaContext } from "../../Context";
-import { ECObjectsError } from "../../Exception";
-import { Schema } from "../../Metadata/Schema";
-import { SchemaKey } from "../../SchemaKey";
+import chai from "chai";
+import chaiAsPromised from "chai-as-promised";
+import { SchemaCache, SchemaContext } from "../../Context.js";
+import { ECObjectsError } from "../../Exception.js";
+import { Schema } from "../../Metadata/Schema.js";
+import { SchemaKey } from "../../SchemaKey.js";
 
 const assert = chai.assert;
 const expect = chai.expect;

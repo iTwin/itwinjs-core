@@ -6,10 +6,10 @@
  * @module Metadata
  */
 
-import { SchemaKeyProps } from "./Deserialization/JsonProps";
-import { SchemaMatchType } from "./ECObjects";
-import { ECObjectsError, ECObjectsStatus } from "./Exception";
-import { ECName } from "./ECName";
+import { SchemaKeyProps } from "./Deserialization/JsonProps.js";
+import { ECName } from "./ECName.js";
+import { SchemaMatchType } from "./ECObjects.js";
+import { ECObjectsError, ECObjectsStatus } from "./Exception.js";
 
 /**
  * @beta

@@ -1,7 +1,9 @@
 {
   "extends": "./node_modules/@itwin/build-tools/tsconfig-base.json",
   "compilerOptions": {
-    "outDir": "./lib"
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "esModuleInterop": true
   },
   "include": [
     "src/**/*.ts"

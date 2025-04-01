@@ -6,18 +6,18 @@
  * @module Metadata
  */
 
-import { SchemaItemFormatProps } from "../Deserialization/JsonProps";
-import { XmlSerializationUtils } from "../Deserialization/XmlSerializationUtils";
-import { SchemaItemType } from "../ECObjects";
-import { ECObjectsError, ECObjectsStatus } from "../Exception";
 import {
   BaseFormat, DecimalPrecision, FormatTraits, formatTraitsToArray, FormatType, FractionalPrecision,
   ScientificType, ShowSignOption,
 } from "@itwin/core-quantity";
-import { InvertedUnit } from "./InvertedUnit";
-import { Schema } from "./Schema";
-import { SchemaItem } from "./SchemaItem";
-import { Unit } from "./Unit";
+import { SchemaItemFormatProps } from "../Deserialization/JsonProps.js";
+import { XmlSerializationUtils } from "../Deserialization/XmlSerializationUtils.js";
+import { SchemaItemType } from "../ECObjects.js";
+import { ECObjectsError, ECObjectsStatus } from "../Exception.js";
+import { InvertedUnit } from "./InvertedUnit.js";
+import { Schema } from "./Schema.js";
+import { SchemaItem } from "./SchemaItem.js";
+import { Unit } from "./Unit.js";
 
 /**
  * @beta

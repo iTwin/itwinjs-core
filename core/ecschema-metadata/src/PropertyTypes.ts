@@ -6,8 +6,8 @@
  * @module Metadata
  */
 
-import { PrimitiveType } from "./ECObjects";
-import { ECObjectsError, ECObjectsStatus } from "./Exception";
+import { PrimitiveType } from "./ECObjects.js";
+import { ECObjectsError, ECObjectsStatus } from "./Exception.js";
 
 /** @beta */
 const enum PropertyFlags { // eslint-disable-line no-restricted-syntax

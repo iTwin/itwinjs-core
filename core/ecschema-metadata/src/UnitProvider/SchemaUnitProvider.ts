@@ -4,13 +4,13 @@
 *--------------------------------------------------------------------------------------------*/
 import { BentleyError, BentleyStatus } from "@itwin/core-bentley";
 import { BadUnit, UnitConversionInvert, UnitConversionProps, UnitExtraData, UnitProps, UnitsProvider } from "@itwin/core-quantity";
-import { ISchemaLocater, SchemaContext } from "../Context";
-import { SchemaItem } from "../Metadata/SchemaItem";
-import { SchemaItemKey, SchemaKey } from "../SchemaKey";
-import { Unit } from "../Metadata/Unit";
-import { SchemaItemType } from "../ECObjects";
-import { UnitConverter } from "../UnitConversion/UnitConverter";
-import { InvertedUnit } from "../Metadata/InvertedUnit";
+import { ISchemaLocater, SchemaContext } from "../Context.js";
+import { SchemaItemType } from "../ECObjects.js";
+import { InvertedUnit } from "../Metadata/InvertedUnit.js";
+import { SchemaItem } from "../Metadata/SchemaItem.js";
+import { Unit } from "../Metadata/Unit.js";
+import { SchemaItemKey, SchemaKey } from "../SchemaKey.js";
+import { UnitConverter } from "../UnitConversion/UnitConverter.js";
 
 /**
  * Class used to find Units in SchemaContext by attributes such as Phenomenon and DisplayLabel.

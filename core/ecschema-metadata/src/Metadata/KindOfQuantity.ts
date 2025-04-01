@@ -6,17 +6,17 @@
  * @module Metadata
  */
 
-import { DelayedPromiseWithProps } from "../DelayedPromise";
-import { KindOfQuantityProps } from "../Deserialization/JsonProps";
-import { XmlSerializationUtils } from "../Deserialization/XmlSerializationUtils";
-import { SchemaItemType } from "../ECObjects";
-import { ECObjectsError, ECObjectsStatus } from "../Exception";
-import { LazyLoadedInvertedUnit, LazyLoadedUnit } from "../Interfaces";
-import { Format } from "./Format";
-import { InvertedUnit } from "./InvertedUnit";
-import { OverrideFormat, OverrideFormatProps } from "./OverrideFormat";
-import { SchemaItem } from "./SchemaItem";
-import { Unit } from "./Unit";
+import { DelayedPromiseWithProps } from "../DelayedPromise.js";
+import { KindOfQuantityProps } from "../Deserialization/JsonProps.js";
+import { XmlSerializationUtils } from "../Deserialization/XmlSerializationUtils.js";
+import { SchemaItemType } from "../ECObjects.js";
+import { ECObjectsError, ECObjectsStatus } from "../Exception.js";
+import { LazyLoadedInvertedUnit, LazyLoadedUnit } from "../Interfaces.js";
+import { Format } from "./Format.js";
+import { InvertedUnit } from "./InvertedUnit.js";
+import { OverrideFormat, OverrideFormatProps } from "./OverrideFormat.js";
+import { SchemaItem } from "./SchemaItem.js";
+import { Unit } from "./Unit.js";
 
 /** A Typescript class representation of a KindOfQuantity.
  * @beta

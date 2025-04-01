@@ -4,34 +4,34 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import * as ECStringConstants from "../Constants";
-import * as Context from "../Context";
-import * as DelayedPromise from "../DelayedPromise";
-import * as SchemaGraphUtil from "../Deserialization/SchemaGraphUtil";
-import * as ECObjects from "../ECObjects";
-import * as Index from "../ecschema-metadata";
-import * as Exception from "../Exception";
-import * as Interfaces from "../Interfaces";
-import { ECClass, StructClass } from "../Metadata/Class";
-import * as Constant from "../Metadata/Constant";
-import * as CustomAttributeClass from "../Metadata/CustomAttributeClass";
-import { EntityClass } from "../Metadata/EntityClass";
-import { Enumeration } from "../Metadata/Enumeration";
-import * as Format from "../Metadata/Format";
-import * as InvertedUnit from "../Metadata/InvertedUnit";
-import * as KindOfQuantity from "../Metadata/KindOfQuantity";
-import * as Mixin from "../Metadata/Mixin";
-import * as OverrideFormat from "../Metadata/OverrideFormat";
-import * as Phenomenon from "../Metadata/Phenomenon";
-import * as Property from "../Metadata/Property";
-import * as PropertyCategory from "../Metadata/PropertyCategory";
-import * as RelationshipClass from "../Metadata/RelationshipClass";
-import { Schema } from "../Metadata/Schema";
-import * as SchemaItem from "../Metadata/SchemaItem";
-import * as Unit from "../Metadata/Unit";
-import * as UnitSystem from "../Metadata/UnitSystem";
-import * as PropertyTypes from "../PropertyTypes";
-import * as SchemaKey from "../SchemaKey";
+import * as ECStringConstants from "../Constants.js";
+import * as Context from "../Context.js";
+import * as DelayedPromise from "../DelayedPromise.js";
+import * as SchemaGraphUtil from "../Deserialization/SchemaGraphUtil.js";
+import * as ECObjects from "../ECObjects.js";
+import * as Index from "../ecschema-metadata.js";
+import * as Exception from "../Exception.js";
+import * as Interfaces from "../Interfaces.js";
+import { ECClass, StructClass } from "../Metadata/Class.js";
+import * as Constant from "../Metadata/Constant.js";
+import * as CustomAttributeClass from "../Metadata/CustomAttributeClass.js";
+import { EntityClass } from "../Metadata/EntityClass.js";
+import { Enumeration } from "../Metadata/Enumeration.js";
+import * as Format from "../Metadata/Format.js";
+import * as InvertedUnit from "../Metadata/InvertedUnit.js";
+import * as KindOfQuantity from "../Metadata/KindOfQuantity.js";
+import * as Mixin from "../Metadata/Mixin.js";
+import * as OverrideFormat from "../Metadata/OverrideFormat.js";
+import * as Phenomenon from "../Metadata/Phenomenon.js";
+import * as Property from "../Metadata/Property.js";
+import * as PropertyCategory from "../Metadata/PropertyCategory.js";
+import * as RelationshipClass from "../Metadata/RelationshipClass.js";
+import { Schema } from "../Metadata/Schema.js";
+import * as SchemaItem from "../Metadata/SchemaItem.js";
+import * as Unit from "../Metadata/Unit.js";
+import * as UnitSystem from "../Metadata/UnitSystem.js";
+import * as PropertyTypes from "../PropertyTypes.js";
+import * as SchemaKey from "../SchemaKey.js";
 
 // new type with specified index signature
 interface Dict {

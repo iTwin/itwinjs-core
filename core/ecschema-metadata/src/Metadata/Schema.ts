@@ -6,34 +6,34 @@
  * @module Metadata
  */
 
-import { SchemaContext } from "../Context";
-import { ECSpecVersion, SchemaReadHelper } from "../Deserialization/Helper";
-import { JsonParser } from "../Deserialization/JsonParser";
-import { SchemaProps } from "../Deserialization/JsonProps";
-import { XmlParser } from "../Deserialization/XmlParser";
-import { XmlSerializationUtils } from "../Deserialization/XmlSerializationUtils";
-import { ECClassModifier, isSupportedSchemaItemType, PrimitiveType } from "../ECObjects";
-import { ECObjectsError, ECObjectsStatus } from "../Exception";
-import { AnyClass, SchemaInfo } from "../Interfaces";
-import { ECVersion, SchemaItemKey, SchemaKey } from "../SchemaKey";
-import { ECName } from "../ECName";
-import { ECClass, StructClass } from "./Class";
-import { Constant } from "./Constant";
-import { CustomAttribute, CustomAttributeContainerProps, CustomAttributeSet, serializeCustomAttributes } from "./CustomAttribute";
-import { CustomAttributeClass } from "./CustomAttributeClass";
-import { EntityClass } from "./EntityClass";
-import { Enumeration } from "./Enumeration";
-import { Format } from "./Format";
-import { InvertedUnit } from "./InvertedUnit";
-import { KindOfQuantity } from "./KindOfQuantity";
-import { Mixin } from "./Mixin";
-import { Phenomenon } from "./Phenomenon";
-import { PropertyCategory } from "./PropertyCategory";
-import { RelationshipClass } from "./RelationshipClass";
-import { SchemaItem } from "./SchemaItem";
-import { Unit } from "./Unit";
-import { UnitSystem } from "./UnitSystem";
-import { ECSchemaNamespaceUris } from "../Constants";
+import { ECSchemaNamespaceUris } from "../Constants.js";
+import { SchemaContext } from "../Context.js";
+import { ECSpecVersion, SchemaReadHelper } from "../Deserialization/Helper.js";
+import { JsonParser } from "../Deserialization/JsonParser.js";
+import { SchemaProps } from "../Deserialization/JsonProps.js";
+import { XmlParser } from "../Deserialization/XmlParser.js";
+import { XmlSerializationUtils } from "../Deserialization/XmlSerializationUtils.js";
+import { ECName } from "../ECName.js";
+import { ECClassModifier, isSupportedSchemaItemType, PrimitiveType } from "../ECObjects.js";
+import { ECObjectsError, ECObjectsStatus } from "../Exception.js";
+import { AnyClass, SchemaInfo } from "../Interfaces.js";
+import { ECVersion, SchemaItemKey, SchemaKey } from "../SchemaKey.js";
+import { ECClass, StructClass } from "./Class.js";
+import { Constant } from "./Constant.js";
+import { CustomAttribute, CustomAttributeContainerProps, CustomAttributeSet, serializeCustomAttributes } from "./CustomAttribute.js";
+import { CustomAttributeClass } from "./CustomAttributeClass.js";
+import { EntityClass } from "./EntityClass.js";
+import { Enumeration } from "./Enumeration.js";
+import { Format } from "./Format.js";
+import { InvertedUnit } from "./InvertedUnit.js";
+import { KindOfQuantity } from "./KindOfQuantity.js";
+import { Mixin } from "./Mixin.js";
+import { Phenomenon } from "./Phenomenon.js";
+import { PropertyCategory } from "./PropertyCategory.js";
+import { RelationshipClass } from "./RelationshipClass.js";
+import { SchemaItem } from "./SchemaItem.js";
+import { Unit } from "./Unit.js";
+import { UnitSystem } from "./UnitSystem.js";
 /**
  * @beta
  */

@@ -6,9 +6,9 @@
  * @module Metadata
  */
 
-import { SchemaItemType } from "../ECObjects";
-import { ECObjectsError, ECObjectsStatus } from "../Exception";
-import { SchemaItem } from "./SchemaItem";
+import { SchemaItemType } from "../ECObjects.js";
+import { ECObjectsError, ECObjectsStatus } from "../Exception.js";
+import { SchemaItem } from "./SchemaItem.js";
 
 /**
  * @beta

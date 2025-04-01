@@ -3,29 +3,29 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { SchemaContext } from "../Context";
-import { parsePrimitiveType, parseSchemaItemType, SchemaItemType, SchemaMatchType } from "../ECObjects";
-import { ECObjectsError, ECObjectsStatus } from "../Exception";
-import { AnyClass, AnySchemaItem, SchemaInfo } from "../Interfaces";
-import { ECClass, MutableClass, StructClass } from "../Metadata/Class";
-import { Constant } from "../Metadata/Constant";
-import { CustomAttributeClass } from "../Metadata/CustomAttributeClass";
-import { EntityClass, MutableEntityClass } from "../Metadata/EntityClass";
-import { Format } from "../Metadata/Format";
-import { InvertedUnit } from "../Metadata/InvertedUnit";
-import { KindOfQuantity } from "../Metadata/KindOfQuantity";
-import { Mixin } from "../Metadata/Mixin";
-import { MutableProperty, Property } from "../Metadata/Property";
-import { MutableRelationshipConstraint, RelationshipClass, RelationshipConstraint } from "../Metadata/RelationshipClass";
-import { MutableSchema, Schema } from "../Metadata/Schema";
-import { SchemaItem } from "../Metadata/SchemaItem";
-import { Unit } from "../Metadata/Unit";
-import { ECVersion, SchemaItemKey, SchemaKey } from "../SchemaKey";
-import { ISchemaPartVisitor, SchemaPartVisitorDelegate } from "../SchemaPartVisitorDelegate";
 import { getItemNamesFromFormatString } from "@itwin/core-quantity";
-import { AbstractParser, AbstractParserConstructor, CAProviderTuple } from "./AbstractParser";
-import { ClassProps, PropertyProps, RelationshipConstraintProps, SchemaReferenceProps } from "./JsonProps";
-import { SchemaGraph } from "../utils/SchemaGraph";
+import { SchemaContext } from "../Context.js";
+import { parsePrimitiveType, parseSchemaItemType, SchemaItemType, SchemaMatchType } from "../ECObjects.js";
+import { ECObjectsError, ECObjectsStatus } from "../Exception.js";
+import { AnyClass, AnySchemaItem, SchemaInfo } from "../Interfaces.js";
+import { ECClass, MutableClass, StructClass } from "../Metadata/Class.js";
+import { Constant } from "../Metadata/Constant.js";
+import { CustomAttributeClass } from "../Metadata/CustomAttributeClass.js";
+import { EntityClass, MutableEntityClass } from "../Metadata/EntityClass.js";
+import { Format } from "../Metadata/Format.js";
+import { InvertedUnit } from "../Metadata/InvertedUnit.js";
+import { KindOfQuantity } from "../Metadata/KindOfQuantity.js";
+import { Mixin } from "../Metadata/Mixin.js";
+import { MutableProperty, Property } from "../Metadata/Property.js";
+import { MutableRelationshipConstraint, RelationshipClass, RelationshipConstraint } from "../Metadata/RelationshipClass.js";
+import { MutableSchema, Schema } from "../Metadata/Schema.js";
+import { SchemaItem } from "../Metadata/SchemaItem.js";
+import { Unit } from "../Metadata/Unit.js";
+import { ECVersion, SchemaItemKey, SchemaKey } from "../SchemaKey.js";
+import { ISchemaPartVisitor, SchemaPartVisitorDelegate } from "../SchemaPartVisitorDelegate.js";
+import { SchemaGraph } from "../utils/SchemaGraph.js";
+import { AbstractParser, AbstractParserConstructor, CAProviderTuple } from "./AbstractParser.js";
+import { ClassProps, PropertyProps, RelationshipConstraintProps, SchemaReferenceProps } from "./JsonProps.js";
 
 type AnyCAContainer = Schema | ECClass | Property | RelationshipConstraint;
 type AnyMutableCAContainer = MutableSchema | MutableClass | MutableProperty | MutableRelationshipConstraint;

@@ -4,22 +4,22 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert } from "@itwin/core-bentley";
-import { parsePrimitiveType, PrimitiveType, primitiveTypeToString, StrengthDirection, strengthDirectionToString } from "../ECObjects";
-import { ECObjectsError, ECObjectsStatus } from "../Exception";
-import { ECClass, StructClass } from "../Metadata/Class";
-import { CustomAttribute } from "../Metadata/CustomAttribute";
-import { CustomAttributeClass } from "../Metadata/CustomAttributeClass";
-import { Enumeration } from "../Metadata/Enumeration";
-import { PrimitiveProperty, Property, StructArrayProperty } from "../Metadata/Property";
-import { ECName } from "../ECName";
-import { AbstractParser, CAProviderTuple } from "./AbstractParser";
+import { ECName } from "../ECName.js";
+import { parsePrimitiveType, PrimitiveType, primitiveTypeToString, StrengthDirection, strengthDirectionToString } from "../ECObjects.js";
+import { ECObjectsError, ECObjectsStatus } from "../Exception.js";
+import { ECClass, StructClass } from "../Metadata/Class.js";
+import { CustomAttribute } from "../Metadata/CustomAttribute.js";
+import { CustomAttributeClass } from "../Metadata/CustomAttributeClass.js";
+import { Enumeration } from "../Metadata/Enumeration.js";
+import { PrimitiveProperty, Property, StructArrayProperty } from "../Metadata/Property.js";
+import { AbstractParser, CAProviderTuple } from "./AbstractParser.js";
+import { ECSpecVersion, SchemaReadHelper } from "./Helper.js";
 import {
   ClassProps, ConstantProps, CustomAttributeClassProps, EntityClassProps, EnumerationProps, EnumeratorProps, InvertedUnitProps,
   KindOfQuantityProps, MixinProps, NavigationPropertyProps, PhenomenonProps, PrimitiveArrayPropertyProps, PrimitiveOrEnumPropertyBaseProps,
   PrimitivePropertyProps, PropertyCategoryProps, PropertyProps, RelationshipClassProps, RelationshipConstraintProps, SchemaItemFormatProps, SchemaItemProps,
   SchemaItemUnitProps, SchemaProps, SchemaReferenceProps, StructArrayPropertyProps, StructClassProps, StructPropertyProps, UnitSystemProps,
-} from "./JsonProps";
-import { ECSpecVersion, SchemaReadHelper } from "./Helper";
+} from "./JsonProps.js";
 
 const NON_ITEM_SCHEMA_ELEMENTS = ["ECSchemaReference", "ECCustomAttributes"];
 const ECXML_URI = "http://www\\.bentley\\.com/schemas/Bentley\\.ECXML";

@@ -3,12 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { PrimitiveType, primitiveTypeToString } from "../ECObjects";
-import { ECObjectsError, ECObjectsStatus } from "../Exception";
-import { CustomAttribute } from "../Metadata/CustomAttribute";
-import { CustomAttributeClass } from "../Metadata/CustomAttributeClass";
-import { ArrayProperty, EnumerationProperty, PrimitiveOrEnumPropertyBase, PrimitiveProperty, Property, StructProperty } from "../Metadata/Property";
-import { Schema } from "../Metadata/Schema";
+import { PrimitiveType, primitiveTypeToString } from "../ECObjects.js";
+import { ECObjectsError, ECObjectsStatus } from "../Exception.js";
+import { CustomAttribute } from "../Metadata/CustomAttribute.js";
+import { CustomAttributeClass } from "../Metadata/CustomAttributeClass.js";
+import { ArrayProperty, EnumerationProperty, PrimitiveOrEnumPropertyBase, PrimitiveProperty, Property, StructProperty } from "../Metadata/Property.js";
+import { Schema } from "../Metadata/Schema.js";
 
 /**
  * Namespace holding utility functions for serializing EC types to the EC XML format.

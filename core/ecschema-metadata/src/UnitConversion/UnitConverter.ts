@@ -3,13 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { BentleyError, BentleyStatus } from "@itwin/core-bentley";
-import { SchemaContext } from "../Context";
-import { Constant } from "../Metadata/Constant";
-import { SchemaItem } from "../Metadata/SchemaItem";
-import { Unit } from "../Metadata/Unit";
-import { SchemaKey } from "../SchemaKey";
-import { UnitConversion } from "./UnitConversion";
-import { UnitGraph } from "./UnitTree";
+import { SchemaContext } from "../Context.js";
+import { Constant } from "../Metadata/Constant.js";
+import { SchemaItem } from "../Metadata/SchemaItem.js";
+import { Unit } from "../Metadata/Unit.js";
+import { SchemaKey } from "../SchemaKey.js";
+import { UnitConversion } from "./UnitConversion.js";
+import { UnitGraph } from "./UnitTree.js";
 
 /**
  * Class constructed with SchemaContext and used to calculate [[UnitConversion]] between Units

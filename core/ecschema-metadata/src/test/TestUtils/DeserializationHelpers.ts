@@ -4,14 +4,14 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { DOMParser } from "@xmldom/xmldom";
-import { ISchemaLocater, SchemaContext } from "../../Context";
-import { SchemaReadHelper } from "../../Deserialization/Helper";
-import { XmlParser } from "../../Deserialization/XmlParser";
-import { SchemaMatchType } from "../../ECObjects";
-import { Schema } from "../../Metadata/Schema";
-import { SchemaKey } from "../../SchemaKey";
-import { SchemaInfo } from "../../Interfaces";
-import { ECSchemaNamespaceUris } from "../../Constants";
+import { ECSchemaNamespaceUris } from "../../Constants.js";
+import { ISchemaLocater, SchemaContext } from "../../Context.js";
+import { SchemaReadHelper } from "../../Deserialization/Helper.js";
+import { XmlParser } from "../../Deserialization/XmlParser.js";
+import { SchemaMatchType } from "../../ECObjects.js";
+import { SchemaInfo } from "../../Interfaces.js";
+import { Schema } from "../../Metadata/Schema.js";
+import { SchemaKey } from "../../SchemaKey.js";
 
 export function createSchemaJsonWithItems(itemsJson: any, referenceJson?: any): any {
   return {

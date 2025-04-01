@@ -2,9 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Constant } from "../Metadata/Constant";
-import { Unit } from "../Metadata/Unit";
 import { almostEqual } from "@itwin/core-quantity";
+import { Constant } from "../Metadata/Constant.js";
+import { Unit } from "../Metadata/Unit.js";
 
 /**
  * Class used for storing calculated conversion between two Units [[UnitConverter.calculateConversion]] and converting values from one Unit to another [[UnitConverter.evaluate]]

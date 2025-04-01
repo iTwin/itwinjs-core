@@ -7,7 +7,7 @@
  */
 
 import { assert } from "@itwin/core-bentley";
-import { ECObjectsError, ECObjectsStatus } from "./Exception";
+import { ECObjectsError, ECObjectsStatus } from "./Exception.js";
 
 const validECNameRegex = /^([a-zA-Z_]+[a-zA-Z0-9_]*)$/i;
 const ecNameReplacerRegex = /__x([0-9a-fA-F]{4})__/g;

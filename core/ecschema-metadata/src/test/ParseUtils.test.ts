@@ -9,8 +9,8 @@ import {
   parsePrimitiveType, parseRelationshipEnd, parseSchemaItemType, parseStrength, parseStrengthDirection, PrimitiveType, primitiveTypeToString,
   RelationshipEnd, relationshipEndToString, SchemaItemType, StrengthDirection, strengthDirectionToString, strengthToString,
   StrengthType,
-} from "../ECObjects";
-import { ECObjectsError, ECObjectsStatus } from "../Exception";
+} from "../ECObjects.js";
+import { ECObjectsError, ECObjectsStatus } from "../Exception.js";
 
 describe("Parsing/ToString Functions", () => {
   it("parsePrimitiveType", () => {

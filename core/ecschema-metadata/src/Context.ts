@@ -2,12 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { SchemaMatchType } from "./ECObjects";
-import { ECObjectsError, ECObjectsStatus } from "./Exception";
-import { SchemaInfo } from "./Interfaces";
-import { MutableSchema, Schema } from "./Metadata/Schema";
-import { SchemaItem } from "./Metadata/SchemaItem";
-import { SchemaItemKey, SchemaKey } from "./SchemaKey";
+import { SchemaMatchType } from "./ECObjects.js";
+import { ECObjectsError, ECObjectsStatus } from "./Exception.js";
+import { SchemaInfo } from "./Interfaces.js";
+import { MutableSchema, Schema } from "./Metadata/Schema.js";
+import { SchemaItem } from "./Metadata/SchemaItem.js";
+import { SchemaItemKey, SchemaKey } from "./SchemaKey.js";
 
 /**
  * @internal

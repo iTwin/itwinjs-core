@@ -3,12 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { SchemaContext } from "../Context";
-import { SchemaMatchType } from "../ECObjects";
-import { ECObjectsError, ECObjectsStatus } from "../Exception";
-import { SchemaInfo } from "../Interfaces";
-import { Schema } from "../Metadata/Schema";
-import { SchemaKey } from "../SchemaKey";
+import { SchemaContext } from "../Context.js";
+import { SchemaMatchType } from "../ECObjects.js";
+import { ECObjectsError, ECObjectsStatus } from "../Exception.js";
+import { SchemaInfo } from "../Interfaces.js";
+import { Schema } from "../Metadata/Schema.js";
+import { SchemaKey } from "../SchemaKey.js";
 
 /**
  * A schema and it's reference that make up part of a schema cycle

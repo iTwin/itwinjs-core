@@ -6,24 +6,24 @@
  * @module Metadata
  */
 
-import { DelayedPromiseWithProps } from "../DelayedPromise";
-import { ECSpecVersion, SchemaReadHelper } from "../Deserialization/Helper";
-import { RelationshipClassProps, RelationshipConstraintProps } from "../Deserialization/JsonProps";
-import { XmlSerializationUtils } from "../Deserialization/XmlSerializationUtils";
+import { DelayedPromiseWithProps } from "../DelayedPromise.js";
+import { ECSpecVersion, SchemaReadHelper } from "../Deserialization/Helper.js";
+import { RelationshipClassProps, RelationshipConstraintProps } from "../Deserialization/JsonProps.js";
+import { XmlSerializationUtils } from "../Deserialization/XmlSerializationUtils.js";
 import {
   ECClassModifier, parseStrength, parseStrengthDirection, RelationshipEnd, SchemaItemType, StrengthDirection, strengthDirectionToString,
   strengthToString, StrengthType,
-} from "../ECObjects";
-import { ECObjectsError, ECObjectsStatus } from "../Exception";
-import { LazyLoadedRelationshipConstraintClass } from "../Interfaces";
-import { SchemaItemKey } from "../SchemaKey";
-import { ECClass } from "./Class";
-import { CustomAttribute, CustomAttributeContainerProps, CustomAttributeSet, serializeCustomAttributes } from "./CustomAttribute";
-import { createNavigationProperty, createNavigationPropertySync, EntityClass } from "./EntityClass";
-import { Mixin } from "./Mixin";
-import { NavigationProperty } from "./Property";
-import { Schema } from "./Schema";
-import { SchemaItem } from "./SchemaItem";
+} from "../ECObjects.js";
+import { ECObjectsError, ECObjectsStatus } from "../Exception.js";
+import { LazyLoadedRelationshipConstraintClass } from "../Interfaces.js";
+import { SchemaItemKey } from "../SchemaKey.js";
+import { ECClass } from "./Class.js";
+import { CustomAttribute, CustomAttributeContainerProps, CustomAttributeSet, serializeCustomAttributes } from "./CustomAttribute.js";
+import { createNavigationProperty, createNavigationPropertySync, EntityClass } from "./EntityClass.js";
+import { Mixin } from "./Mixin.js";
+import { NavigationProperty } from "./Property.js";
+import { Schema } from "./Schema.js";
+import { SchemaItem } from "./SchemaItem.js";
 
 type AnyConstraintClass = EntityClass | Mixin | RelationshipClass;
 

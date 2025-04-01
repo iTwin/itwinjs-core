@@ -4,12 +4,12 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, expect } from "chai";
-import { SchemaContext } from "../../Context";
-import { Phenomenon } from "../../Metadata/Phenomenon";
-import { Schema } from "../../Metadata/Schema";
-import { createEmptyXmlDocument } from "../TestUtils/SerializationHelper";
-import { createSchemaJsonWithItems } from "../TestUtils/DeserializationHelpers";
-import { ECSchemaNamespaceUris } from "../../Constants";
+import { ECSchemaNamespaceUris } from "../../Constants.js";
+import { SchemaContext } from "../../Context.js";
+import { Phenomenon } from "../../Metadata/Phenomenon.js";
+import { Schema } from "../../Metadata/Schema.js";
+import { createSchemaJsonWithItems } from "../TestUtils/DeserializationHelpers.js";
+import { createEmptyXmlDocument } from "../TestUtils/SerializationHelper.js";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 

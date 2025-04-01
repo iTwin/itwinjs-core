@@ -6,13 +6,13 @@
  * @module Metadata
  */
 
-import { ECSpecVersion, SchemaReadHelper } from "../Deserialization/Helper";
-import { EnumerationProps, EnumeratorProps } from "../Deserialization/JsonProps";
-import { PrimitiveType, primitiveTypeToString, SchemaItemType } from "../ECObjects";
-import { ECObjectsError, ECObjectsStatus } from "../Exception";
-import { ECName } from "../ECName";
-import { Schema } from "./Schema";
-import { SchemaItem } from "./SchemaItem";
+import { ECSpecVersion, SchemaReadHelper } from "../Deserialization/Helper.js";
+import { EnumerationProps, EnumeratorProps } from "../Deserialization/JsonProps.js";
+import { ECName } from "../ECName.js";
+import { PrimitiveType, primitiveTypeToString, SchemaItemType } from "../ECObjects.js";
+import { ECObjectsError, ECObjectsStatus } from "../Exception.js";
+import { Schema } from "./Schema.js";
+import { SchemaItem } from "./SchemaItem.js";
 
 /** @beta */
 export interface Enumerator<T> {

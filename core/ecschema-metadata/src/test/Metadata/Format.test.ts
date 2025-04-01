@@ -3,18 +3,18 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert, expect } from "chai";
-import { SchemaContext } from "../../Context";
-import { JsonParser } from "../../Deserialization/JsonParser";
-import { SchemaItemFormatProps } from "../../Deserialization/JsonProps";
-import { ECObjectsError } from "../../Exception";
-import { Format } from "../../Metadata/Format";
-import { MutableSchema, Schema } from "../../Metadata/Schema";
 import { DecimalPrecision, FormatTraits, FormatType, QuantityError, ShowSignOption } from "@itwin/core-quantity";
-import { createSchemaJsonWithItems } from "../TestUtils/DeserializationHelpers";
-import { TestSchemaLocater } from "../TestUtils/FormatTestHelper";
-import { createEmptyXmlDocument, getElementChildrenByTagName } from "../TestUtils/SerializationHelper";
-import { ECSchemaNamespaceUris } from "../../Constants";
+import { assert, expect } from "chai";
+import { ECSchemaNamespaceUris } from "../../Constants.js";
+import { SchemaContext } from "../../Context.js";
+import { JsonParser } from "../../Deserialization/JsonParser.js";
+import { SchemaItemFormatProps } from "../../Deserialization/JsonProps.js";
+import { ECObjectsError } from "../../Exception.js";
+import { Format } from "../../Metadata/Format.js";
+import { MutableSchema, Schema } from "../../Metadata/Schema.js";
+import { createSchemaJsonWithItems } from "../TestUtils/DeserializationHelpers.js";
+import { TestSchemaLocater } from "../TestUtils/FormatTestHelper.js";
+import { createEmptyXmlDocument, getElementChildrenByTagName } from "../TestUtils/SerializationHelper.js";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 

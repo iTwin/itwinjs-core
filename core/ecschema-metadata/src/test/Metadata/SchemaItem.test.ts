@@ -4,26 +4,26 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, expect } from "chai";
-import { SchemaContext } from "../../Context";
-import { SchemaItem } from "../../Metadata/SchemaItem";
-import { EntityClass } from "../../Metadata/EntityClass";
-import { Schema } from "../../Metadata/Schema";
-import { SchemaItemKey, SchemaKey } from "../../SchemaKey";
-import { createEmptyXmlDocument } from "../TestUtils/SerializationHelper";
-import { AbstractSchemaItemType, SchemaItemType } from "../../ECObjects";
-import { Mixin } from "../../Metadata/Mixin";
-import { ECClass, StructClass } from "../../Metadata/Class";
-import { CustomAttributeClass } from "../../Metadata/CustomAttributeClass";
-import { RelationshipClass } from "../../Metadata/RelationshipClass";
-import { Enumeration } from "../../Metadata/Enumeration";
-import { KindOfQuantity } from "../../Metadata/KindOfQuantity";
-import { PropertyCategory } from "../../Metadata/PropertyCategory";
-import { Unit } from "../../Metadata/Unit";
-import { InvertedUnit } from "../../Metadata/InvertedUnit";
-import { Constant } from "../../Metadata/Constant";
-import { Phenomenon } from "../../Metadata/Phenomenon";
-import { UnitSystem } from "../../Metadata/UnitSystem";
-import { ECSchemaNamespaceUris, Format } from "../../ecschema-metadata";
+import { SchemaContext } from "../../Context.js";
+import { AbstractSchemaItemType, SchemaItemType } from "../../ECObjects.js";
+import { ECClass, StructClass } from "../../Metadata/Class.js";
+import { Constant } from "../../Metadata/Constant.js";
+import { CustomAttributeClass } from "../../Metadata/CustomAttributeClass.js";
+import { EntityClass } from "../../Metadata/EntityClass.js";
+import { Enumeration } from "../../Metadata/Enumeration.js";
+import { InvertedUnit } from "../../Metadata/InvertedUnit.js";
+import { KindOfQuantity } from "../../Metadata/KindOfQuantity.js";
+import { Mixin } from "../../Metadata/Mixin.js";
+import { Phenomenon } from "../../Metadata/Phenomenon.js";
+import { PropertyCategory } from "../../Metadata/PropertyCategory.js";
+import { RelationshipClass } from "../../Metadata/RelationshipClass.js";
+import { Schema } from "../../Metadata/Schema.js";
+import { SchemaItem } from "../../Metadata/SchemaItem.js";
+import { Unit } from "../../Metadata/Unit.js";
+import { UnitSystem } from "../../Metadata/UnitSystem.js";
+import { SchemaItemKey, SchemaKey } from "../../SchemaKey.js";
+import { ECSchemaNamespaceUris, Format } from "../../ecschema-metadata.js";
+import { createEmptyXmlDocument } from "../TestUtils/SerializationHelper.js";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 

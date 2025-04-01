@@ -3,21 +3,20 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert, expect } from "chai";
-import { SchemaContext } from "../../Context";
-import { ECClassModifier, PrimitiveType, PropertyType, SchemaItemType, StrengthType } from "../../ECObjects";
-import { ECObjectsError } from "../../Exception";
-import { ECClass, StructClass } from "../../Metadata/Class";
-import { EntityClass } from "../../Metadata/EntityClass";
-import { Mixin } from "../../Metadata/Mixin";
-import { MutableSchema, Schema } from "../../Metadata/Schema";
-import { createEmptyXmlDocument, getElementChildren, getElementChildrenByTagName } from "../TestUtils/SerializationHelper";
-import { SchemaReadHelper } from "../../Deserialization/Helper";
-import { XmlParser } from "../../Deserialization/XmlParser";
-import { SchemaKey } from "../../SchemaKey";
-
-import { Constant, CustomAttributeClass, ECSchemaNamespaceUris, Enumeration, Format, InvertedUnit, KindOfQuantity, Phenomenon, Property, PropertyCategory, RelationshipClass, SchemaItem, Unit, UnitSystem } from "../../ecschema-metadata";
 import { DOMParser, XMLSerializer } from "@xmldom/xmldom";
+import { assert, expect } from "chai";
+import { SchemaContext } from "../../Context.js";
+import { SchemaReadHelper } from "../../Deserialization/Helper.js";
+import { XmlParser } from "../../Deserialization/XmlParser.js";
+import { ECClassModifier, PrimitiveType, PropertyType, SchemaItemType, StrengthType } from "../../ECObjects.js";
+import { Constant, CustomAttributeClass, ECSchemaNamespaceUris, Enumeration, Format, InvertedUnit, KindOfQuantity, Phenomenon, Property, PropertyCategory, RelationshipClass, SchemaItem, Unit, UnitSystem } from "../../ecschema-metadata.js";
+import { ECObjectsError } from "../../Exception.js";
+import { ECClass, StructClass } from "../../Metadata/Class.js";
+import { EntityClass } from "../../Metadata/EntityClass.js";
+import { Mixin } from "../../Metadata/Mixin.js";
+import { MutableSchema, Schema } from "../../Metadata/Schema.js";
+import { SchemaKey } from "../../SchemaKey.js";
+import { createEmptyXmlDocument, getElementChildren, getElementChildrenByTagName } from "../TestUtils/SerializationHelper.js";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 describe("Schema", () => {
