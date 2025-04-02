@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { Angle, AngleSweep, AnyCurvePrimitive, Arc3d, LineString3d, Point3d, Range2d, Range2dProps, Transform, TransformProps, Vector2d } from "@itwin/core-geometry";
+import { Angle, AngleSweep, AnyCurvePrimitive, Arc3d, LineString3d, Point3d, Range2d, Range2dProps, Transform, TransformProps, Vector2d, XYAndZ } from "@itwin/core-geometry";
 import { TextAnnotationFrame } from "../annotation/TextAnnotation";
 
 // I don't love where this is.
@@ -24,6 +24,15 @@ export namespace FrameGeometry {
       case "roundedRectangle": return FrameGeometry.computeRoundedRectangle(rangeProps, transformProps);
     }
   }
+
+  // Options: vertices, midpoints, closest point, circle: pi/4 intervals; which side are we connecting to?
+  // terminator point; possibly elbow length or no elbow length
+
+  /** Returns the closest point on the text frame where a leader can attach to */
+  export const computeLeaderStartPoint = (frame: TextAnnotationFrame, rangeProps: Range2dProps, transformProps: TransformProps, terminatorPoint: XYAndZ, wantElbow?: boolean, elbowLength?: number): Point3d => {
+    return Point3d.create(0, 0, 0);
+  }
+
 
   // Rectangle
   export const computeRectangle = (rangeProps: Range2dProps, transformProps: TransformProps): AnyCurvePrimitive[] => {
