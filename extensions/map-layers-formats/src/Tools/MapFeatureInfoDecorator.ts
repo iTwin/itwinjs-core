@@ -2,16 +2,19 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+
+import { Logger } from "@itwin/core-bentley";
 import { Base64EncodedString, ColorDef } from "@itwin/core-common";
 import {
   BeButtonEvent, Cluster, DecorateContext, Decorator,
   GeometryTileTreeReference, GraphicBuilder, GraphicPrimitive, GraphicType, IModelApp, MapTileTreeReference, Marker, MarkerImage, MarkerSet,
   ScreenViewport,
-  Viewport } from "@itwin/core-frontend";
+  Viewport
+} from "@itwin/core-frontend";
 import { GrowableXYZArray, LineString3d, Point2d, Point3d, Polyface, Range3d, Transform, XAndY, XYAndZ } from "@itwin/core-geometry";
-import { MapFeatureInfoToolData } from "./MapFeatureInfoTool";
-import { GeometryTerrainDraper } from "./GeometryTerrainDraper";
-import { Logger } from "@itwin/core-bentley";
+import { GeometryTerrainDraper } from "./GeometryTerrainDraper.js";
+import { MapFeatureInfoToolData } from "./MapFeatureInfoTool.js";
+
 const loggerCategory = "MapLayersFormats.MapFeatureInfoDecorator";
 
 /** @internal */

@@ -7,9 +7,9 @@ import { expect } from "chai";
 import { Guid } from "@itwin/core-bentley";
 import { Content, ContentSpecificationTypes, InstanceKey, KeySet, Ruleset, RuleTypes } from "@itwin/presentation-common";
 import { Presentation } from "@itwin/presentation-frontend";
-import { collect, getFieldByLabel } from "../../Utils";
-import { buildTestIModelConnection, insertDocumentPartition } from "../../IModelSetupUtils";
-import { describeContentTestSuite } from "./Utils";
+import { collect, getFieldByLabel } from "../../Utils.js";
+import { buildTestIModelConnection, insertDocumentPartition } from "../../IModelSetupUtils.js";
+import { describeContentTestSuite } from "./Utils.js";
 
 describeContentTestSuite("Guid properties", () => {
   it("creates guid fields", async function () {

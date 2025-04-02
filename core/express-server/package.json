@@ -1,16 +1,18 @@
 {
   "name": "@itwin/express-server",
-  "version": "5.0.0-dev.86",
+  "version": "5.0.0-dev.96",
   "description": "iTwin.js express utilities",
   "main": "lib/cjs/ExpressServer.js",
+  "module": "lib/esm/ExpressServer.js",
   "typings": "lib/cjs/ExpressServer",
   "license": "MIT",
   "engines": {
     "node": "^20.0.0 || ^22.0.0"
   },
   "scripts": {
-    "build": "npm run -s build:cjs",
+    "build": "npm run -s build:cjs && npm run -s build:esm",
     "build:cjs": "tsc 1>&2 --outDir lib/cjs",
+    "build:esm": "tsc 1>&2 --module ES2022 --outDir lib/esm",
     "clean": "rimraf -g lib .rush/temp/package-deps*.json",
     "docs": "betools docs --json=../../generated-docs/core/express-server/file.json --tsIndexFile=./ExpressServer.ts --onlyJson",
     "extract-api": "betools extract-api --entry=ExpressServer",

@@ -6,7 +6,7 @@
 import { expect } from "chai";
 import { LabelDefinition } from "@itwin/presentation-common";
 import { Presentation } from "@itwin/presentation-frontend";
-import { describeContentTestSuite, getFieldLabels } from "./Utils";
+import { describeContentTestSuite, getFieldLabels } from "./Utils.js";
 
 describeContentTestSuite("Element properties", ({ getDefaultSuiteIModel }) => {
   it("gets element properties with default content parser", async () => {

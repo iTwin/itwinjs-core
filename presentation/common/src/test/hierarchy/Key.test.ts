@@ -3,65 +3,64 @@
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { NodeKey, StandardNodeTypes } from "../../presentation-common/hierarchy/Key";
-import { createTestECInstanceKey } from "../_helpers/EC";
-import { createTestNodeKey } from "../_helpers/Hierarchy";
+import { NodeKey, StandardNodeTypes } from "../../presentation-common/hierarchy/Key.js";
 import {
-  createRandomBaseNodeKey,
-  createRandomECClassGroupingNodeKey,
-  createRandomECInstancesNodeKey,
-  createRandomECPropertyGroupingNodeKey,
-  createRandomLabelGroupingNodeKey,
-} from "../_helpers/random";
+  createTestECClassGroupingNodeKey,
+  createTestECInstanceKey,
+  createTestECInstancesNodeKey,
+  createTestECPropertyGroupingNodeKey,
+  createTestLabelGroupingNodeKey,
+  createTestNodeKey,
+} from "../_helpers/index.js";
 
 describe("NodeKey", () => {
   describe("isInstancesNodeKey", () => {
     it("returns correct results for different types of nodes", () => {
-      expect(NodeKey.isInstancesNodeKey(createRandomBaseNodeKey())).to.be.false;
-      expect(NodeKey.isInstancesNodeKey(createRandomECInstancesNodeKey())).to.be.true;
-      expect(NodeKey.isInstancesNodeKey(createRandomECClassGroupingNodeKey())).to.be.false;
-      expect(NodeKey.isInstancesNodeKey(createRandomECPropertyGroupingNodeKey())).to.be.false;
-      expect(NodeKey.isInstancesNodeKey(createRandomLabelGroupingNodeKey())).to.be.false;
+      expect(NodeKey.isInstancesNodeKey(createTestNodeKey())).to.be.false;
+      expect(NodeKey.isInstancesNodeKey(createTestECInstancesNodeKey())).to.be.true;
+      expect(NodeKey.isInstancesNodeKey(createTestECClassGroupingNodeKey())).to.be.false;
+      expect(NodeKey.isInstancesNodeKey(createTestECPropertyGroupingNodeKey())).to.be.false;
+      expect(NodeKey.isInstancesNodeKey(createTestLabelGroupingNodeKey())).to.be.false;
     });
   });
 
   describe("isClassGroupingNodeKey", () => {
     it("returns correct results for different types of nodes", () => {
-      expect(NodeKey.isClassGroupingNodeKey(createRandomBaseNodeKey())).to.be.false;
-      expect(NodeKey.isClassGroupingNodeKey(createRandomECInstancesNodeKey())).to.be.false;
-      expect(NodeKey.isClassGroupingNodeKey(createRandomECClassGroupingNodeKey())).to.be.true;
-      expect(NodeKey.isClassGroupingNodeKey(createRandomECPropertyGroupingNodeKey())).to.be.false;
-      expect(NodeKey.isClassGroupingNodeKey(createRandomLabelGroupingNodeKey())).to.be.false;
+      expect(NodeKey.isClassGroupingNodeKey(createTestNodeKey())).to.be.false;
+      expect(NodeKey.isClassGroupingNodeKey(createTestECInstancesNodeKey())).to.be.false;
+      expect(NodeKey.isClassGroupingNodeKey(createTestECClassGroupingNodeKey())).to.be.true;
+      expect(NodeKey.isClassGroupingNodeKey(createTestECPropertyGroupingNodeKey())).to.be.false;
+      expect(NodeKey.isClassGroupingNodeKey(createTestLabelGroupingNodeKey())).to.be.false;
     });
   });
 
   describe("isPropertyGroupingNodeKey", () => {
     it("returns correct results for different types of nodes", () => {
-      expect(NodeKey.isPropertyGroupingNodeKey(createRandomBaseNodeKey())).to.be.false;
-      expect(NodeKey.isPropertyGroupingNodeKey(createRandomECInstancesNodeKey())).to.be.false;
-      expect(NodeKey.isPropertyGroupingNodeKey(createRandomECClassGroupingNodeKey())).to.be.false;
-      expect(NodeKey.isPropertyGroupingNodeKey(createRandomECPropertyGroupingNodeKey())).to.be.true;
-      expect(NodeKey.isPropertyGroupingNodeKey(createRandomLabelGroupingNodeKey())).to.be.false;
+      expect(NodeKey.isPropertyGroupingNodeKey(createTestNodeKey())).to.be.false;
+      expect(NodeKey.isPropertyGroupingNodeKey(createTestECInstancesNodeKey())).to.be.false;
+      expect(NodeKey.isPropertyGroupingNodeKey(createTestECClassGroupingNodeKey())).to.be.false;
+      expect(NodeKey.isPropertyGroupingNodeKey(createTestECPropertyGroupingNodeKey())).to.be.true;
+      expect(NodeKey.isPropertyGroupingNodeKey(createTestLabelGroupingNodeKey())).to.be.false;
     });
   });
 
   describe("isLabelGroupingNodeKey", () => {
     it("returns correct results for different types of nodes", () => {
-      expect(NodeKey.isLabelGroupingNodeKey(createRandomBaseNodeKey())).to.be.false;
-      expect(NodeKey.isLabelGroupingNodeKey(createRandomECInstancesNodeKey())).to.be.false;
-      expect(NodeKey.isLabelGroupingNodeKey(createRandomECClassGroupingNodeKey())).to.be.false;
-      expect(NodeKey.isLabelGroupingNodeKey(createRandomECPropertyGroupingNodeKey())).to.be.false;
-      expect(NodeKey.isLabelGroupingNodeKey(createRandomLabelGroupingNodeKey())).to.be.true;
+      expect(NodeKey.isLabelGroupingNodeKey(createTestNodeKey())).to.be.false;
+      expect(NodeKey.isLabelGroupingNodeKey(createTestECInstancesNodeKey())).to.be.false;
+      expect(NodeKey.isLabelGroupingNodeKey(createTestECClassGroupingNodeKey())).to.be.false;
+      expect(NodeKey.isLabelGroupingNodeKey(createTestECPropertyGroupingNodeKey())).to.be.false;
+      expect(NodeKey.isLabelGroupingNodeKey(createTestLabelGroupingNodeKey())).to.be.true;
     });
   });
 
   describe("isGroupingNodeKey", () => {
     it("returns correct results for different types of nodes", () => {
-      expect(NodeKey.isGroupingNodeKey(createRandomBaseNodeKey())).to.be.false;
-      expect(NodeKey.isGroupingNodeKey(createRandomECInstancesNodeKey())).to.be.false;
-      expect(NodeKey.isGroupingNodeKey(createRandomECClassGroupingNodeKey())).to.be.true;
-      expect(NodeKey.isGroupingNodeKey(createRandomECPropertyGroupingNodeKey())).to.be.true;
-      expect(NodeKey.isGroupingNodeKey(createRandomLabelGroupingNodeKey())).to.be.true;
+      expect(NodeKey.isGroupingNodeKey(createTestNodeKey())).to.be.false;
+      expect(NodeKey.isGroupingNodeKey(createTestECInstancesNodeKey())).to.be.false;
+      expect(NodeKey.isGroupingNodeKey(createTestECClassGroupingNodeKey())).to.be.true;
+      expect(NodeKey.isGroupingNodeKey(createTestECPropertyGroupingNodeKey())).to.be.true;
+      expect(NodeKey.isGroupingNodeKey(createTestLabelGroupingNodeKey())).to.be.true;
     });
   });
 

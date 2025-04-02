@@ -1,6 +1,10 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
 import { CanvasDecoration, DecorateContext, Decorator, IconSprites, IModelApp, Sprite } from "@itwin/core-frontend";
 import { Point3d } from "@itwin/core-geometry";
-import { GoogleMapsMapTypes } from "./GoogleMaps";
+import { GoogleMapsMapTypes } from "./GoogleMaps.js";
 
 
 /** A simple decorator that show logo at the a given screen position.

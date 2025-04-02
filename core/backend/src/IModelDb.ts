@@ -22,7 +22,7 @@ import {
   GeoCoordinatesRequestProps, GeoCoordinatesResponseProps, GeometryContainmentRequestProps, GeometryContainmentResponseProps, IModel,
   IModelCoordinatesRequestProps, IModelCoordinatesResponseProps, IModelError, IModelNotFoundResponse, IModelTileTreeProps, LocalFileName,
   MassPropertiesRequestProps, MassPropertiesResponseProps, ModelExtentsProps, ModelLoadProps, ModelProps, ModelSelectorProps, OpenBriefcaseProps,
-  OpenCheckpointArgs, OpenSqliteArgs, ProfileOptions, PropertyCallback, QueryBinder, QueryOptions, QueryOptionsBuilder, QueryRowFormat, SchemaState,
+  OpenCheckpointArgs, OpenSqliteArgs, ProfileOptions, PropertyCallback, QueryBinder, QueryOptions, QueryRowFormat, SchemaState,
   SheetProps, SnapRequestProps, SnapResponseProps, SnapshotOpenOptions, SpatialViewDefinitionProps, SubCategoryResultRow, TextureData,
   TextureLoadProps, ThumbnailProps, UpgradeOptions, ViewDefinition2dProps, ViewDefinitionProps, ViewIdString, ViewQueryParams, ViewStateLoadProps,
   ViewStateProps, ViewStoreRpc,
@@ -33,7 +33,7 @@ import { BriefcaseManager, PullChangesArgs, PushChangesArgs, RevertChangesArgs }
 import { ChannelControl } from "./ChannelControl";
 import { createChannelControl } from "./internal/ChannelAdmin";
 import { CheckpointManager, CheckpointProps, V2CheckpointManager } from "./CheckpointManager";
-import { ClassRegistry, MetaDataRegistry } from "./ClassRegistry";
+import { ClassRegistry, EntityJsClassMap, MetaDataRegistry } from "./ClassRegistry";
 import { CloudSqlite } from "./CloudSqlite";
 import { CodeService } from "./CodeService";
 import { CodeSpecs } from "./CodeSpecs";
@@ -71,6 +71,7 @@ import { IModelDbFonts } from "./IModelDbFonts";
 import { createIModelDbFonts } from "./internal/IModelDbFontsImpl";
 import { _close, _hubAccess, _nativeDb, _releaseAllLocks } from "./internal/Symbols";
 import { SchemaContext, SchemaJsonLocater } from "@itwin/ecschema-metadata";
+import { SchemaMap } from "./Schema";
 
 // spell:ignore fontid fontmap
 
@@ -228,7 +229,10 @@ export abstract class IModelDb extends IModel {
   private readonly _statementCache = new StatementCache<ECSqlStatement>();
   private readonly _sqliteStatementCache = new StatementCache<SqliteStatement>();
   private _codeSpecs?: CodeSpecs;
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   private _classMetaDataRegistry?: MetaDataRegistry;
+  private _jsClassMap?: EntityJsClassMap;
+  private _schemaMap?: SchemaMap;
   private _schemaContext?: SchemaContext;
   /** @deprecated in 5.0.0. Use [[fonts]]. */
   protected _fontMap?: FontMap; // eslint-disable-line @typescript-eslint/no-deprecated
@@ -432,8 +436,8 @@ export abstract class IModelDb extends IModel {
   }
 
   /** @internal */
-  protected initializeIModelDb() {
-    const props = this[_nativeDb].getIModelProps();
+  protected initializeIModelDb(when?: "pullMerge") {
+    const props = this[_nativeDb].getIModelProps(when);
     super.initialize(props.rootSubject.name, props);
     if (this._initialized)
       return;
@@ -561,73 +565,6 @@ export abstract class IModelDb extends IModel {
       },
     };
     return new ECSqlReader(executor, ecsql, params, config);
-  }
-  /** Execute a query and stream its results
-   * The result of the query is async iterator over the rows. The iterator will get next page automatically once rows in current page has been read.
-   * [ECSQL row]($docs/learning/ECSQLRowFormat).
-   *
-   * See also:
-   * - [ECSQL Overview]($docs/learning/backend/ExecutingECSQL)
-   * - [Code Examples]($docs/learning/backend/ECSQLCodeExamples)
-   *
-   * @param ecsql The ECSQL statement to execute
-   * @param params The values to bind to the parameters (if the ECSQL has any).
-   * @param options Allow to specify certain flags which control how query is executed.
-   * @returns Returns the query result as an *AsyncIterableIterator<any>*  which lazy load result as needed. The row format is determined by *rowFormat* parameter.
-   * See [ECSQL row format]($docs/learning/ECSQLRowFormat) for details about the format of the returned rows.
-   * @throws [IModelError]($common) If there was any error while submitting, preparing or stepping into query
-   * @deprecated in 3.7. Use [[createQueryReader]] instead; it accepts the same parameters.
-   */
-  public async * query(ecsql: string, params?: QueryBinder, options?: QueryOptions): AsyncIterableIterator<any> {
-    const builder = new QueryOptionsBuilder(options);
-    const reader = this.createQueryReader(ecsql, params, builder.getOptions());
-    while (await reader.step())
-      yield reader.formatCurrentRow();
-
-  }
-
-  /** Compute number of rows that would be returned by the ECSQL.
-   *
-   * See also:
-   * - [ECSQL Overview]($docs/learning/backend/ExecutingECSQL)
-   * - [Code Examples]($docs/learning/backend/ECSQLCodeExamples)
-   *
-   * @param ecsql The ECSQL statement to execute
-   * @param params The values to bind to the parameters (if the ECSQL has any).
-   * See "[iTwin.js Types used in ECSQL Parameter Bindings]($docs/learning/ECSQLParameterTypes)" for details.
-   * @returns Return row count.
-   * @throws [IModelError]($common) If the statement is invalid
-   * @deprecated in 3.7. Count the number of results using `count(*)` where the original query is a subquery instead. E.g., `SELECT count(*) FROM (<query-whose-rows-to-count>)`.
-   */
-  public async queryRowCount(ecsql: string, params?: QueryBinder): Promise<number> {
-    for await (const row of this.createQueryReader(`SELECT count(*) FROM (${ecsql})`, params)) {
-      return row[0] as number;
-    }
-    throw new IModelError(DbResult.BE_SQLITE_ERROR, "Failed to get row count");
-  }
-
-  /** Cancel any previous query with same token and run execute the current specified query.
-   * The result of the query is async iterator over the rows. The iterator will get next page automatically once rows in current page has been read.
-   * [ECSQL row]($docs/learning/ECSQLRowFormat).
-   *
-   * See also:
-   * - [ECSQL Overview]($docs/learning/backend/ExecutingECSQL)
-   * - [Code Examples]($docs/learning/backend/ECSQLCodeExamples)
-   *
-   * @param ecsql The ECSQL statement to execute
-   * @param token None empty restart token. The previous query with same token would be cancelled. This would cause
-   * exception which user code must handle.
-   * @param params The values to bind to the parameters (if the ECSQL has any).
-   * @param options Allow to specify certain flags which control how query is executed.
-   * @returns Returns the query result as an *AsyncIterableIterator<any>*  which lazy load result as needed. The row format is determined by *rowFormat* parameter.
-   * See [ECSQL row format]($docs/learning/ECSQLRowFormat) for details about the format of the returned rows.
-   * @throws [IModelError]($common) If there was any error while submitting, preparing or stepping into query
-   * @deprecated in 3.7. Use [[createQueryReader]] instead. Pass in the restart token as part of the `config` argument; e.g., `{ restartToken: myToken }` or `new QueryOptionsBuilder().setRestartToken(myToken).getOptions()`.
-   */
-  public async * restartQuery(token: string, ecsql: string, params?: QueryBinder, options?: QueryOptions): AsyncIterableIterator<any> {
-    for await (const row of this.createQueryReader(ecsql, params, new QueryOptionsBuilder(options).setRestartToken(token).getOptions())) {
-      yield row;
-    }
   }
 
   /**
@@ -792,6 +729,8 @@ export abstract class IModelDb extends IModel {
     this._statementCache.clear();
     this._sqliteStatementCache.clear();
     this._classMetaDataRegistry = undefined;
+    this._jsClassMap = undefined;
+    this._schemaMap = undefined;
     this._schemaContext = undefined;
   }
 
@@ -1108,12 +1047,44 @@ export abstract class IModelDb extends IModel {
 
   /** The registry of entity metadata for this iModel.
    * @internal
+   * @deprecated in 5.0. Please use `schemaContext` from the `iModel` instead.
+   *
+   * @example
+   * ```typescript
+   * // Current usage:
+   * const classMetaData: EntityMetaData | undefined = iModel.classMetaDataRegistry.find("SchemaName:ClassName");
+   *
+   * // Replacement:
+   * const metaData: EntityClass | undefined = imodel.schemaContext.getSchemaItemSync("SchemaName.ClassName", EntityClass);
+   * ```
    */
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   public get classMetaDataRegistry(): MetaDataRegistry {
     if (this._classMetaDataRegistry === undefined)
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       this._classMetaDataRegistry = new MetaDataRegistry();
 
     return this._classMetaDataRegistry;
+  }
+
+  /**
+   * Allows registering js classes mapped to ECClasses
+   */
+  public get jsClassMap(): EntityJsClassMap {
+    if (this._jsClassMap === undefined)
+      this._jsClassMap = new EntityJsClassMap();
+
+    return this._jsClassMap;
+  }
+
+  /**
+   * Allows locally registering a schema for this imodel, in constrast to [Schemas.registerSchema] which is a global operation
+   */
+  public get schemaMap(): SchemaMap {
+    if (this._schemaMap === undefined)
+      this._schemaMap = new SchemaMap();
+
+    return this._schemaMap;
   }
 
   /**
@@ -1179,6 +1150,7 @@ export abstract class IModelDb extends IModel {
         throw err;
       }
 
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       this.loadMetaData(classFullName);
       return ClassRegistry.getClass(classFullName, this) as T;
     }
@@ -1186,11 +1158,25 @@ export abstract class IModelDb extends IModel {
 
   /** Get metadata for a class. This method will load the metadata from the iModel into the cache as a side-effect, if necessary.
    * @throws [[IModelError]] if the metadata cannot be found nor loaded.
+   * @deprecated in 5.0. Please use `getSchemaItem` from `SchemaContext` class instead.
+   *
+   * @example
+   *  * ```typescript
+   * // Current usage:
+   * const metaData: EntityMetaData = imodel.getMetaData("SchemaName:ClassName");
+   *
+   * // Replacement:
+   * const metaData: EntityClass | undefined = imodel.schemaContext.getSchemaItemSync("SchemaName", "ClassName", EntityClass);
+   * ```
    */
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   public getMetaData(classFullName: string): EntityMetaData {
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     let metadata = this.classMetaDataRegistry.find(classFullName);
     if (metadata === undefined) {
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       this.loadMetaData(classFullName);
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       metadata = this.classMetaDataRegistry.find(classFullName);
       if (metadata === undefined)
         throw ClassRegistry.makeMetaDataNotFoundError(classFullName); // do not log
@@ -1198,9 +1184,22 @@ export abstract class IModelDb extends IModel {
     return metadata;
   }
 
-  /** Identical to [[getMetaData]], except it returns `undefined` instead of throwing an error if the metadata cannot be found nor loaded. */
+  /** Identical to [[getMetaData]], except it returns `undefined` instead of throwing an error if the metadata cannot be found nor loaded.
+   * @deprecated in 5.0. Please use `getSchemaItem` from `SchemaContext` class instead.
+   *
+   * @example
+   *  * ```typescript
+   * // Current usage:
+   * const metaData: EntityMetaData | undefined = imodel.tryGetMetaData("SchemaName:ClassName");
+   *
+   * // Replacement:
+   * const metaData: EntityClass | undefined = imodel.schemaContext.getSchemaItemSync("SchemaName.ClassName", EntityClass);
+   * ```
+   */
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   public tryGetMetaData(classFullName: string): EntityMetaData | undefined {
     try {
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       return this.getMetaData(classFullName);
     } catch {
       return undefined;
@@ -1214,8 +1213,24 @@ export abstract class IModelDb extends IModel {
    * @param func The callback to be invoked on each property
    * @param includeCustom If true (default), include custom-handled properties in the iteration. Otherwise, skip custom-handled properties.
    * @note Custom-handled properties are core properties that have behavior enforced by C++ handlers.
+   * @deprecated in 5.0. Please use `forEachProperty` instead.
+   *
+   * @example
+   * ```typescript
+   * // Current usage:
+   * IModelDb.forEachMetaData(imodel, "BisCore:Element", true, (name: string, propMetaData: PropertyMetaData) => {
+   *   console.log(`Property name: ${name}, Property type: ${propMetaData.primitiveType}`);
+   * }, false);
+   *
+   * // Replacement:
+   * await IModelDb.forEachProperty(imodel, "TestDomain.TestDomainClass", true, (propName: string, property: Property) => {
+   *   console.log(`Property name: ${propName}, Property type: ${property.propertyType}`);
+   * }, false);
+   * ```
    */
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   public static forEachMetaData(iModel: IModelDb, classFullName: string, wantSuper: boolean, func: PropertyCallback, includeCustom: boolean = true) {
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     iModel.forEachMetaData(classFullName, wantSuper, func, includeCustom);
   }
 
@@ -1225,8 +1240,24 @@ export abstract class IModelDb extends IModel {
    * @param func The callback to be invoked on each property
    * @param includeCustom If true (default), include custom-handled properties in the iteration. Otherwise, skip custom-handled properties.
    * @note Custom-handled properties are core properties that have behavior enforced by C++ handlers.
+   * @deprecated in 5.0. Use `forEachProperty` from `SchemaContext` class instead.
+   *
+   * @example
+   * ```typescript
+   * // Current usage:
+   * iModel.forEachMetaData("BisCore:Element", true, (name: string, propMetaData: PropertyMetaData) => {
+   *   console.log(`Property name: ${name}, Property type: ${propMetaData.primitiveType}`);
+   * });
+   *
+   * // Replacement:
+   * imodel.schemaContext.forEachProperty("BisCore:Element", true, (propName: string, property: Property) => {
+   *   console.log(`Property name: ${propName}, Property type: ${property.propertyType}`);
+   * });
+   * ```
    */
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   public forEachMetaData(classFullName: string, wantSuper: boolean, func: PropertyCallback, includeCustom: boolean = true) {
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     const meta = this.getMetaData(classFullName); // will load if necessary
     for (const propName in meta.properties) { // eslint-disable-line guard-for-in
       const propMeta = meta.properties[propName];
@@ -1235,11 +1266,16 @@ export abstract class IModelDb extends IModel {
     }
 
     if (wantSuper && meta.baseClasses && meta.baseClasses.length > 0)
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       meta.baseClasses.forEach((baseClass) => this.forEachMetaData(baseClass, true, func, includeCustom));
   }
 
-  /** @internal */
+  /**
+   * @internal
+   * @deprecated in 5.0. Please use `schemaContext` from `iModel` instead to get metadata.
+   */
   private loadMetaData(classFullName: string) {
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     if (this.classMetaDataRegistry.find(classFullName))
       return;
 
@@ -1252,11 +1288,14 @@ export abstract class IModelDb extends IModel {
       throw new IModelError(val.error.status, `Error getting class meta data for: ${classFullName}`);
 
     assert(undefined !== val.result);
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     const metaData = new EntityMetaData(JSON.parse(val.result));
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     this.classMetaDataRegistry.add(classFullName, metaData);
 
     // Recursive, to make sure that base classes are cached.
     if (metaData.baseClasses !== undefined && metaData.baseClasses.length > 0)
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       metaData.baseClasses.forEach((baseClassName: string) => this.loadMetaData(baseClassName));
   }
 
@@ -2327,6 +2366,7 @@ export namespace IModelDb {
       const fullClassName = aspectClassFullName.replace(".", ":").split(":");
       const val = this._iModel[_nativeDb].getECClassMetaData(fullClassName[0], fullClassName[1]);
       if (val.result !== undefined) {
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         const metaData = new EntityMetaData(JSON.parse(val.result));
         if (metaData.modifier !== "Abstract") // Class is not abstract, use normal query to retrieve aspects
           return this._queryAspects(elementId, aspectClassFullName, excludedClassFullNames);
@@ -2544,18 +2584,6 @@ export namespace IModelDb {
         }
       }
       return props;
-    }
-
-    /** @deprecated in 3.x. use [[getViewStateProps]]. */
-    public getViewStateData(viewDefinitionId: ViewIdString, options?: ViewStateLoadProps): ViewStateProps {
-      const viewStateData = this.loadViewData(viewDefinitionId, options);
-      const baseModelId = (viewStateData.viewDefinitionProps as ViewDefinition2dProps).baseModelId;
-      if (baseModelId) {
-        const drawingExtents = Range3d.fromJSON(this._iModel[_nativeDb].queryModelExtents({ id: baseModelId }).modelExtents);
-        if (!drawingExtents.isNull)
-          viewStateData.modelExtents = drawingExtents.toJSON();
-      }
-      return viewStateData;
     }
 
     /** Obtain a [ViewStateProps]($common) for a [[ViewDefinition]] specified by ViewIdString. */
@@ -3163,7 +3191,7 @@ export class BriefcaseDb extends IModelDb {
       await BriefcaseManager.pullAndApplyChangesets(this, arg ?? {});
       if (!this.skipSyncSchemasOnPullAndPush)
         await SchemaSync.pull(this);
-      this.initializeIModelDb();
+      this.initializeIModelDb("pullMerge");
     });
 
     IpcHost.notifyTxns(this, "notifyPulledChanges", this.changeset as ChangesetIndexAndId);
@@ -3249,7 +3277,7 @@ export class BriefcaseDb extends IModelDb {
     // pushing changes requires a writeable briefcase
     await this.executeWritable(async () => {
       await BriefcaseManager.pullMergePush(this, arg);
-      this.initializeIModelDb();
+      this.initializeIModelDb("pullMerge");
     });
 
     const changeset = this.changeset as ChangesetIndexAndId;

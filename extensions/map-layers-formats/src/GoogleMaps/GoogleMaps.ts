@@ -8,7 +8,7 @@
 
 import { BaseMapLayerSettings, ImageMapLayerSettings } from "@itwin/core-common";
 import { MapCartoRectangle } from "@itwin/core-frontend";
-import { GoogleMapsUtils } from "../internal/GoogleMapsUtils";
+import { GoogleMapsUtils } from "../internal/GoogleMapsUtils.js";
 
 
 /**

@@ -87,12 +87,17 @@ export namespace JsonUtils {
       json[key] = val;
   }
 
+  /** Returns `true` if `json` is a non-null object. */
+  export function isObject(json: unknown): json is { [key: string]: unknown } {
+    return json !== null && "object" === typeof json;
+  }
+
   /** Determine if a Javascript object is equivalent to `{}`.
    * @param json The JSON object to test.
    * @returns true if `json` is an Object with no keys.
    */
   export function isEmptyObject(json: any): boolean {
-    return "object" === typeof json && 0 === Object.keys(json).length;
+    return isObject(json) && 0 === Object.keys(json).length;
   }
 
   /** Determine if the input is undefined or an empty Javascript object.

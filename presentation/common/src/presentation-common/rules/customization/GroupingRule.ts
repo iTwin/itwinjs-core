@@ -6,8 +6,8 @@
  * @module PresentationRules
  */
 
-import { SingleSchemaClassSpecification } from "../ClassSpecifications";
-import { RuleBase } from "../Rule";
+import { SingleSchemaClassSpecification } from "../ClassSpecifications.js";
+import { RuleBase } from "../Rule.js";
 
 /**
  * Grouping rules provide advanced ways to group instances when creating hierarchies.
