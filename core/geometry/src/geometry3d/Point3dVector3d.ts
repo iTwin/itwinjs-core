@@ -1577,8 +1577,12 @@ export class Vector3d extends XYZ {
    * @param returnValueIfAnInputIsZeroLength if either vector is near zero length, return this value. Default false.
    * @param options optional radian and distance tolerances.
    */
-  public isParallelTo(other: Vector3d, oppositeIsParallel: boolean = false,
-    returnValueIfAnInputIsZeroLength: boolean = false, options?: PerpParallelOptions): boolean {
+  public isParallelTo(
+    other: Vector3d,
+    oppositeIsParallel: boolean = false,
+    returnValueIfAnInputIsZeroLength: boolean = false,
+    options?: PerpParallelOptions,
+  ): boolean {
     const radianSquaredTol: number = options?.radianSquaredTol ?? Geometry.smallAngleRadiansSquared;
     const distanceSquaredTol: number = options?.distanceSquaredTol ?? Geometry.smallMetricDistanceSquared;
     const a2 = this.magnitudeSquared();
@@ -1589,9 +1593,9 @@ export class Vector3d extends XYZ {
     if (dot < 0.0 && !oppositeIsParallel)
       return false;
     const cross2 = this.crossProductMagnitudeSquared(other);
-    /* a2,b2,cross2 are squared lengths of respective vectors */
-    /* cross2 = sin^2(theta) * a2 * b2 */
-    /* For small theta, sin^2(theta)~~theta^2 */
+    // a2,b2,cross2 are squared lengths of respective vectors
+    // cross2 = sin^2(theta) * a2 * b2
+    // For small theta, sin^2(theta) =~ theta^2
     return cross2 <= radianSquaredTol * a2 * b2;
   }
   /**

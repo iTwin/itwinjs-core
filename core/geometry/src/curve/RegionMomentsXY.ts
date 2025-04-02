@@ -33,16 +33,15 @@ export class RegionMomentsXY extends NullGeometryHandler {
   private _activeMomentData?: MomentData;
   private _point0 = Point3d.create();
   private _point1 = Point3d.create();
-
-  /** Accumulate (independent) integrations over
-   * * origin to chord of the arc.
-   * * origin to the "cap" between the chord and arc.
+  /**
+   * Accumulate (independent) integrations over area from the origin to this arc.
+   * * If arc is closed, integrations over the arc.
+   * * If arc is not closed, integrations over the closed area created by arc and chord to the end points.
    */
   public override handleArc3d(arc: Arc3d): void {
     const momentData = this._activeMomentData!;
     const sweepRadians = arc.sweep.sweepRadians;
     const alphaRadians = sweepRadians * 0.5;
-    // from https://apps.dtic.mil/dtic/tr/fulltext/u2/274936.pdf page 71  for radius = 1
     let s = Math.sin(alphaRadians);
     let c = Math.cos(alphaRadians);
     let s1 = Math.sin(sweepRadians);
@@ -64,18 +63,19 @@ export class RegionMomentsXY extends NullGeometryHandler {
     const midRadians = arc.sweep.fractionToRadians(0.5);
     const centralPlane = arc.radiansToRotatedBasis(midRadians);
     const centroid = centralPlane.origin.plusScaled(centralPlane.vectorU, centerToCentroid);
-    momentData.accumulateXYProductsInCentroidalFrame(productXX, 0.0, productYY, area, centroid, centralPlane.vectorU, centralPlane.vectorV);
+    momentData.accumulateXYProductsInCentroidalFrame(
+      productXX, 0.0, productYY, area, centroid, centralPlane.vectorU, centralPlane.vectorV,
+    );
     const pointB = arc.fractionToPoint(0.0);
     const pointC = arc.fractionToPoint(1.0);
     momentData.accumulateTriangleMomentsXY(undefined, pointB, pointC);
   }
-
-  /** Accumulate integrals over the (triangular) areas from the origin to each line segment */
+  /** Accumulate integrals over the (triangular) areas from the origin to each line segment. */
   public override handleLineString3d(ls: LineString3d): void {
     const momentData = this._activeMomentData!;
     momentData.accumulateTriangleToLineStringMomentsXY(undefined, ls.packedPoints);
   }
-  /** Accumulate integrals over the (triangular) area from the origin to this line segment */
+  /** Accumulate integrals over the (triangular) area from the origin to this line segment. */
   public override handleLineSegment3d(segment: LineSegment3d): void {
     const momentData = this._activeMomentData!;
     segment.startPoint(this._point0);
@@ -92,13 +92,11 @@ export class RegionMomentsXY extends NullGeometryHandler {
     return momentData;
   }
   /**
-   * ASSUMPTIONS FOR ORIENTATION AND CONTAINMENT ISSUES
-   * * Largest area is outer
-   * * All others are interior (and not overlapping)
-   * Hence
-   * * Outer area sign must be positive -- negate all integrations as needed
-   * * Outer area signs must be positive -- negate all integrations as needed
-   * @param region
+   * Accumulate (as simple addition) products over each component of the parity region.
+   * * ASSUMPTIONS FOR ORIENTATION AND CONTAINMENT ISSUES:
+   *   * Largest area is outer.
+   *   * All others are interior (and not overlapping).
+   *   * Hence outer area signs must be positive -- negate all integrations as needed.
    */
   public override handleParityRegion(region: ParityRegion): MomentData | undefined {
     const allChildMoments: MomentData[] = [];
@@ -114,7 +112,6 @@ export class RegionMomentsXY extends NullGeometryHandler {
             maxAbsArea = q;
             largestChildMoments = childMoments;
           }
-
         }
       }
     }
@@ -144,7 +141,6 @@ export class RegionMomentsXY extends NullGeometryHandler {
     }
     return summedMoments;
   }
-
   private _strokeOptions?: StrokeOptions;
   private getStrokeOptions(): StrokeOptions {
     if (this._strokeOptions)
@@ -155,9 +151,9 @@ export class RegionMomentsXY extends NullGeometryHandler {
     this._strokeOptions = options;
     return options;
   }
-  /** Single curve primitive (not loop . . .).
-   * * stroke the curve
-   * * accumulate stroke array.
+  /**
+   * Handle a single curve primitive (not loop).
+   * * Stroke the curve and accumulate stroke array.
    */
   public handleCurvePrimitive(cp: CurvePrimitive) {
     const strokes = LineString3d.create();
@@ -165,11 +161,16 @@ export class RegionMomentsXY extends NullGeometryHandler {
     cp.emitStrokes(strokes, options);
     this.handleLineString3d(strokes);
   }
-  /** handle strongly typed  BSplineCurve3d  as generic curve primitive */
-  public override handleBSplineCurve3d(g: BSplineCurve3d) { return this.handleCurvePrimitive(g); }
-  /** handle strongly typed  BSplineCurve3dH  as generic curve primitive */
-  public override handleBSplineCurve3dH(g: BSplineCurve3dH) { return this.handleCurvePrimitive(g); }
-  /** handle strongly typed  TransitionSpiral as generic curve primitive  */
-  public override handleTransitionSpiral(g: TransitionSpiral3d) { return this.handleCurvePrimitive(g); }
-
+  /** Handle strongly typed  BSplineCurve3d  as generic curve primitive. */
+  public override handleBSplineCurve3d(g: BSplineCurve3d) {
+    return this.handleCurvePrimitive(g);
+  }
+  /** Handle strongly typed  BSplineCurve3dH  as generic curve primitive. */
+  public override handleBSplineCurve3dH(g: BSplineCurve3dH) {
+    return this.handleCurvePrimitive(g);
+  }
+  /** Handle strongly typed  TransitionSpiral as generic curve primitive. */
+  public override handleTransitionSpiral(g: TransitionSpiral3d) {
+    return this.handleCurvePrimitive(g);
+  }
 }

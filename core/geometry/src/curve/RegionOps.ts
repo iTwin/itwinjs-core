@@ -8,15 +8,17 @@
  */
 
 import { Geometry } from "../Geometry";
+import { FrameBuilder } from "../geometry3d/FrameBuilder";
 import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
 import {
   IndexedReadWriteXYZCollection, IndexedXYZCollection, LineStringDataVariant, MultiLineStringDataVariant,
 } from "../geometry3d/IndexedXYZCollection";
 import { Point3dArrayCarrier } from "../geometry3d/Point3dArrayCarrier";
-import { Point3d } from "../geometry3d/Point3dVector3d";
+import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
 import { PolygonOps } from "../geometry3d/PolygonOps";
 import { PolylineCompressionContext } from "../geometry3d/PolylineCompressionByEdgeOffset";
 import { Range3d } from "../geometry3d/Range";
+import { Ray3d } from "../geometry3d/Ray3d";
 import { SortablePolygon } from "../geometry3d/SortablePolygon";
 import { Transform } from "../geometry3d/Transform";
 import { XAndY, XYAndZ } from "../geometry3d/XYZProps";
@@ -86,13 +88,15 @@ export enum RegionBinaryOpType {
 export class RegionOps {
   /**
    * Return moment sums for a loop, parity region, or union region.
+   * * The input region should be rotated parallel to the xy-plane as z-coords will be ignored.
    * * If `rawMomentData` is the MomentData returned by computeXYAreaMoments, convert to principal axes and moments with
-   *    call `principalMomentData = MomentData.inertiaProductsToPrincipalAxes (rawMomentData.origin, rawMomentData.sums);`
-   * @param root any Loop, ParityRegion, or UnionRegion.
+   * call `principalMomentData = MomentData.inertiaProductsToPrincipalAxes(rawMomentData.origin, rawMomentData.sums);`
+   * * `rawMomentData.origin` is the centroid of the loop or region.
+   * @param region any Loop, ParityRegion, or UnionRegion.
    */
-  public static computeXYAreaMoments(root: AnyRegion): MomentData | undefined {
+  public static computeXYAreaMoments(region: AnyRegion): MomentData | undefined {
     const handler = new RegionMomentsXY();
-    const result = root.dispatchToGeometryHandler(handler);
+    const result = region.dispatchToGeometryHandler(handler);
     if (result instanceof MomentData) {
       result.shiftOriginAndSumsToCentroidOfSums();
       return result;
@@ -101,8 +105,8 @@ export class RegionOps {
   }
   /**
    * Return an area tolerance for a given xy-range and optional distance tolerance.
-   * @param range range of planar region to tolerance
-   * @param distanceTolerance optional absolute distance tolerance
+   * @param range range of planar region to tolerance.
+   * @param distanceTolerance optional absolute distance tolerance.
   */
   public static computeXYAreaTolerance(range: Range3d, distanceTolerance: number = Geometry.smallMetricDistance): number {
     // if A = bh and e is distance tolerance, then A' := (b+e/2)(h+e/2) = A + e/2(b+h+e/2), so A'-A = e/2(b+h+e/2).
@@ -111,12 +115,13 @@ export class RegionOps {
   }
   /**
    * Return a (signed) xy area for a region.
+   * * The input region should be rotated parallel to the xy-plane as z-coords will be ignored.
    * * The area is negative if and only if the region is oriented clockwise with respect to the positive z-axis.
-   * @param root any Loop, ParityRegion, or UnionRegion.
+   * @param region any Loop, ParityRegion, or UnionRegion.
    */
-  public static computeXYArea(root: AnyRegion): number | undefined {
+  public static computeXYArea(region: AnyRegion): number | undefined {
     const handler = new RegionMomentsXY();
-    const result = root.dispatchToGeometryHandler(handler);
+    const result = region.dispatchToGeometryHandler(handler);
     if (result instanceof MomentData) {
       return result.quantitySum;
     }
@@ -124,15 +129,51 @@ export class RegionOps {
   }
   /**
    * Return MomentData with the sums of wire moments.
+   * * The input region should be rotated parallel to the xy-plane as z-coords will be ignored.
    * * If `rawMomentData` is the MomentData returned by computeXYAreaMoments, convert to principal axes and moments with
-   *    call `principalMomentData = MomentData.inertiaProductsToPrincipalAxes (rawMomentData.origin, rawMomentData.sums);`
-   * @param root any CurveCollection or CurvePrimitive.
+   * call `principalMomentData = MomentData.inertiaProductsToPrincipalAxes (rawMomentData.origin, rawMomentData.sums);`
+   * @param region any CurveCollection or CurvePrimitive.
    */
-  public static computeXYZWireMomentSums(root: AnyCurve): MomentData | undefined {
+  public static computeXYZWireMomentSums(region: AnyCurve): MomentData | undefined {
     const handler = new CurveWireMomentsXYZ();
-    handler.visitLeaves(root);
+    handler.visitLeaves(region);
     const result = handler.momentData;
     result.shiftOriginAndSumsToCentroidOfSums();
+    return result;
+  }
+  /**
+   * Return a Ray3d with (assuming the region in planar):
+   * * `origin` at the centroid of the (3D) region,
+   * * `direction` is the unit vector perpendicular to the plane,
+   * * `a` is the area.
+   * @param region any CurveCollection or CurvePrimitive.
+   */
+  public static centroidAreaNormal(region: AnyRegion, result?: Ray3d): Ray3d | undefined {
+    const localToWorld = FrameBuilder.createRightHandedFrame(undefined, region);
+    if (!localToWorld)
+      return undefined;
+    const normal = localToWorld.matrix.columnZ();
+    let regionIsXY = false;
+    let regionXY: AnyRegion | undefined = region;
+    if (normal.isParallelTo(Vector3d.unitZ(), true)) // region is parallel to xy-plane
+      regionIsXY = true;
+    if (!regionIsXY) { // rotate the region to be parallel to the xy-plane
+      const localToWorldInverse = localToWorld.inverse()!;
+      regionXY = region.cloneTransformed(localToWorldInverse) as AnyRegion;
+      if (!regionXY)
+        return undefined;
+    }
+    const momentData = RegionOps.computeXYAreaMoments(regionXY);
+    if (!momentData)
+      return undefined;
+    const centroid = momentData.origin;
+    if (!regionIsXY) // rotate centroid back (area is unchanged)
+      localToWorld.multiplyPoint3d(centroid, centroid);
+    if (result)
+      result.set(centroid, normal);
+    else
+      result = Ray3d.create(centroid, normal);
+    result.a = momentData.sums.atIJ(3, 3);
     return result;
   }
   /**

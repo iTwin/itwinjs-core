@@ -31,9 +31,20 @@ import { Point4d } from "./Point4d";
  *         * e.g. entry 03 is summed x.
  *    * In this level:
  *        * the `absoluteQuantity` member is undefined.
- *        * the `localToWorldMap` and `radiiOfGyration` are created by have undefined contents.
- *  * Second level: after a call to inertiaProductsToPrincipalAxes, the `localToWorldMap`, `absoluteQuantity` and
+ *        * the `localToWorldMap` and `radiiOfGyration` are created but have undefined contents.
+ *  * Second level: after a call to `inertiaProductsToPrincipalAxes`, the `localToWorldMap`, `absoluteQuantity` and
  *    `radiiOfGyration` are filled in.
+ * * Some physical definitions:
+ *   * Moment of inertia (or mass moment of inertia) is the ratio between torque (rotational force) applied and the
+ * resulting angular acceleration about a rotational axis.
+ *   * Moment of inertia is increased if (a) mass is increased, (b) distance from rotational axis is increased. Therefore,
+ * it can be formulated as M*R^2 where M is mass and R is the distance from the rotational axis. Higher moment of inertia
+ * leads to higher resistance to against rotation.
+ *   * There is a similar concept called "area moment of inertia" which is resistance against bending.
+ *   * Moment of inertia can be formulated as integral of y^2 over area of the object if rotational axis is x-axis and
+ * similarly integral of x^2 over area of the object if rotational axis is y-axis.
+ *   * Moment of inertia tensor (the `sums` matrix) summarized all moments of inertia of an object with one quantity. It
+ * may be calculated wrt any point in space but for practical purposes, the center of mass is most commonly used.
  * @public
  */
 export class MomentData {
@@ -52,12 +63,29 @@ export class MomentData {
    * * This set up with its inverse already constructed.
    */
   public localToWorldMap: Transform;
+  /** Radii of gyration (square roots of principal second moments). */
+  public radiusOfGyration: Vector3d;
+  /**
+   * Principal quantity (e.g. length, area, or volume). This is undefined in raw moments, and becomes defined by
+   * inertiaProductsToPrincipalAxes.
+   */
+  public absoluteQuantity?: number;
   // private variables
   private static _vectorA?: Point4d;
   private static _vectorB?: Point4d;
   private static _vectorC?: Point4d;
   private _point0 = Point3d.create();
   private _point1 = Point3d.create();
+  /** Constructor. */
+  private constructor() {
+    this.origin = Point3d.createZero();
+    this.needOrigin = false;
+    this.sums = Matrix4d.createZero();
+    this.localToWorldMap = Transform.createIdentity();
+    this.radiusOfGyration = Vector3d.create();
+    this.absoluteQuantity = 0.1; // so optimizer sees its type
+    this.absoluteQuantity = undefined;
+  }
   /**
    * Return the lower-right (3,3) entry in the sums.
    * * This is the quantity (i.e. length, area, or volume) summed.
@@ -93,23 +121,6 @@ export class MomentData {
       this.origin.set(x, y, z);
       this.needOrigin = false;
     }
-  }
-  /** Radii of gyration (square roots of principal second moments). */
-  public radiusOfGyration: Vector3d;
-  /**
-   * Principal quantity (e.g. length, area, or volume). This is undefined in raw moments, and becomes defined by
-   * inertiaProductsToPrincipalAxes.
-   */
-  public absoluteQuantity?: number;
-  /** Constructor. */
-  private constructor() {
-    this.origin = Point3d.createZero();
-    this.sums = Matrix4d.createZero();
-    this.localToWorldMap = Transform.createIdentity();
-    this.radiusOfGyration = Vector3d.create();
-    this.needOrigin = false;
-    this.absoluteQuantity = 0.1; // so optimizer sees its type
-    this.absoluteQuantity = undefined;
   }
   /**
    * Create moments with optional origin.
@@ -152,7 +163,7 @@ export class MomentData {
     axes.setColumnsPoint4dXYZ(points[0], points[1], points[2]);
     if (axes.determinant() < 0)
       axes.scaleColumnsInPlace(-1.0, -1.0, -1.0);
-    // prefer x and z positive -- y falls wherever . ..
+    // prefer x and z positive; y falls wherever
     if (axes.at(0, 0) < 0.0)
       axes.scaleColumnsInPlace(-1.0, -1.0, 1.0);
     if (axes.at(2, 2) < 0.0)
@@ -177,7 +188,8 @@ export class MomentData {
    * * Hence x axis is long direction.
    * * Hence planar data generates large moment as Z.
    * @param origin The origin used for the inertia products.
-   * @param inertiaProducts The inertia products: sums or integrals of [xx,xy,xz,xw; yx,yy, yz,yw; zx,zy,zz,zw; wx,wy,wz,w].
+   * @param inertiaProducts The inertia products: sums or integrals of
+   * [xx,xy,xz,xw; yx,yy,yz,yw; zx,zy,zz,zw; wx,wy,wz,w].
    */
   public static inertiaProductsToPrincipalAxes(origin: XYZ, inertiaProducts: Matrix4d): MomentData | undefined {
     const moments = new MomentData();
@@ -200,7 +212,8 @@ export class MomentData {
       axisVectors.scaleColumnsInPlace(1, -1, -1);
     moments.localToWorldMap = Transform.createOriginAndMatrix(moments.origin, axisVectors);
     moments.radiusOfGyration.set(
-      Math.sqrt(Math.abs(moment2.x)), Math.sqrt(Math.abs(moment2.y)), Math.sqrt(Math.abs(moment2.z)));
+      Math.sqrt(Math.abs(moment2.x)), Math.sqrt(Math.abs(moment2.y)), Math.sqrt(Math.abs(moment2.z)),
+    );
     moments.radiusOfGyration.scaleInPlace(1.0 / Math.sqrt(Math.abs(w)));
     moments.absoluteQuantity = Math.abs(w);
     return moments;
@@ -222,23 +235,21 @@ export class MomentData {
    */
   public static areEquivalentPrincipalAxes(dataA: MomentData | undefined, dataB: MomentData | undefined): boolean {
     if (dataA && dataB
-      && Geometry.isSameCoordinate(dataA.quantitySum, dataB.quantitySum)) {  // um.. need different tolerance for area, volume?)
+      && Geometry.isSameCoordinate(dataA.quantitySum, dataB.quantitySum)) { // need different tolerance for area, volume?
       if (dataA.localToWorldMap.getOrigin().isAlmostEqual(dataB.localToWorldMap.getOrigin())
         && dataA.radiusOfGyration.isAlmostEqual(dataB.radiusOfGyration)) {
         if (Geometry.isSameCoordinate(dataA.radiusOfGyration.x, dataA.radiusOfGyration.y)) {
-          // We have at least xy symmetry ....
+          // we have at least xy symmetry
           if (Geometry.isSameCoordinate(dataA.radiusOfGyration.x, dataA.radiusOfGyration.z))
             return true;
-          // just xy.
-          // allow opposite z directions.
-          // If the z's are aligned, x an dy can spin freely.
+          // just xy; allow opposite z directions; if the z's are aligned, x an dy can spin freely
           const zA = dataA.localToWorldMap.matrix.columnZ();
           const zB = dataB.localToWorldMap.matrix.columnZ();
           if (zA.isParallelTo(zB, true))
             return true;
           return false;
         }
-        // no symmetry.  Test all three axes.
+        // no symmetry; test all three axes
         const vectorA = Vector3d.create();
         const vectorB = Vector3d.create();
         for (let i = 0; i < 3; i++) {
@@ -273,19 +284,18 @@ export class MomentData {
   }
   /** Revise the accumulated sums to be "around the centroid". */
   public shiftOriginAndSumsToCentroidOfSums(): boolean {
-    const xyz = this.sums.columnW().realPoint();
+    const xyz = this.sums.columnW().realPoint(); // centroid of the geometry
     if (xyz) {
       this.shiftOriginAndSumsByXYZ(xyz.x, xyz.y, xyz.z);
       return true;
     }
     return false;
   }
-
   /**
    * Revise the accumulated sums.
-   * * add ax,ay,ax to the origin coordinates.
-   * * apply the negative translation to the sums.
-  */
+   * * Add (ax,ay,az) to the origin coordinates.
+   * * Apply the negative translation to the sums.
+   */
   public shiftOriginAndSumsByXYZ(ax: number, ay: number, az: number) {
     this.origin.addXYZInPlace(ax, ay, az);
     this.sums.multiplyTranslationSandwichInPlace(-ax, -ay, -az);
@@ -295,24 +305,26 @@ export class MomentData {
     this.shiftOriginAndSumsByXYZ(newOrigin.x - this.origin.x, newOrigin.y - this.origin.y, newOrigin.z - this.origin.z);
   }
   /**
-   * Compute moments of a triangle from the origin to the given line.
-   * Accumulate them to this.sums.
-   * * If `pointA` is undefined, use `this.origin` as pointA.
-   * * If `this.needOrigin` is set, pointB is used
-  */
+   * Compute moments of a triangle from the origin to the given line. Accumulate them to `this.sums`.
+   * * If `pointA` is undefined, use `this.origin` as `pointA`.
+   * * If `this.needOrigin` is set, `pointB` is used.
+   */
   public accumulateTriangleMomentsXY(pointA: XAndY | undefined, pointB: XAndY, pointC: XAndY) {
     this.setOriginXYZIfNeeded(pointB.x, pointB.y, 0.0);
     const x0 = this.origin.x;
     const y0 = this.origin.y;
-    const vectorA = MomentData._vectorA =
-      pointA !== undefined ? Point4d.create(pointA.x - x0, pointA.y - y0, 0.0, 1.0, MomentData._vectorA)
-        : Point4d.create(this.origin.x, this.origin.y, 0.0, 1.0, MomentData._vectorA);
+    const vectorA = MomentData._vectorA = (pointA !== undefined) ?
+      Point4d.create(pointA.x - x0, pointA.y - y0, 0.0, 1.0, MomentData._vectorA) :
+      Point4d.create(this.origin.x, this.origin.y, 0.0, 1.0, MomentData._vectorA);
     const vectorB = MomentData._vectorB = Point4d.create(pointB.x - x0, pointB.y - y0, 0.0, 1.0, MomentData._vectorB);
     const vectorC = MomentData._vectorC = Point4d.create(pointC.x - x0, pointC.y - y0, 0.0, 1.0, MomentData._vectorC);
-    // accumulate Return product integrals I(0<=u<=1) I (0<=v<= u)  (w*W + u *U + v * V)(w*W + u *U + v * V)^  du dv
-    //  where w = 1-u-v
-    //  W = column vector (point00.x, point00.y, point00.z, 1.0) etc.
-    const detJ = Geometry.crossProductXYXY(vectorB.x - vectorA.x, vectorB.y - vectorA.y, vectorC.x - vectorA.x, vectorC.y - vectorA.y);
+    // Below lines calculate double integral of [x y z 1]^ [x y z 1] dx dy over the triangle created by A,B,C.
+    // To calculate the integrals, linear barycentric transformation comes to play here. Double integral of u^2
+    // and v^2 over unit triangle (created by points (0,0), (1,0), (0,1)) is 1/12 and double integral of u*v over
+    // unit triangle is 1/24. Note that element 3,3 of the matrix is the area of the triangle created by A,B,C.
+    const detJ = Geometry.crossProductXYXY(
+      vectorB.x - vectorA.x, vectorB.y - vectorA.y, vectorC.x - vectorA.x, vectorC.y - vectorA.y,
+    );
     if (detJ !== 0.0) {
       const r1_12 = detJ / 12.0;
       const r1_24 = detJ / 24.0;
@@ -330,7 +342,7 @@ export class MomentData {
       this.sums.addScaledOuterProductInPlace(vectorC, vectorC, r1_12);
     }
   }
-  /** Add scaled outer product of (4d, unit weight) point to this.sums. */
+  /** Add scaled outer product of (4d, unit weight) point to `this.sums`. */
   public accumulateScaledOuterProduct(point: XYAndZ, scaleFactor: number) {
     this.setOriginXYZIfNeeded(point.x, point.y, 0.0);
     const vectorA = MomentData._vectorA = Point4d.create(
@@ -359,16 +371,16 @@ export class MomentData {
     this.sums.addScaledOuterProductInPlace(vectorB, vectorB, r1_3);
   }
   /**
-   * Compute moments of triangles from a base point to the given linestring.
-   * Accumulate them to this.sums.
+   * Compute moments of triangles from a base point to the given linestring. Accumulate them to `this.sums`.
    * * If `pointA` is undefined, use `this.origin` as pointA.
    * * If `this.needOrigin` is set, the first point of the array is captured as local origin for subsequent sums.
-   *
    */
   public accumulateTriangleToLineStringMomentsXY(sweepBase: XAndY | undefined, points: GrowableXYZArray) {
     const n = points.length;
     if (n > 1) {
       points.getPoint3dAtUncheckedPointIndex(0, this._point0);
+      // If linestring is closed, the for loop performs the Shoelace algorithm (triangle form) to find the integral
+      // over linestring. Note that element 3,3 of the matrix is the area of the polygon formed by the linestring.
       for (let i = 1; i < n; i++) {
         points.getPoint3dAtUncheckedPointIndex(i, this._point1);
         this.accumulateTriangleMomentsXY(sweepBase, this._point0, this._point1);
@@ -377,17 +389,17 @@ export class MomentData {
     }
   }
   /**
-   * * Assemble XX, YY, XY products into a full matrix form [xx,xy,0,0; xy,yy,0,0;0,0,0,0;0,0,0,1].
-   * * Sandwich this between transforms with columns [vectorU, vectorV, 0000, origin].  (Column weights 0001) (only xy
-   *   parts of vectors).
-   * * scale by detJ for the xy-only determinant of the vectors.
+   * Assemble XX, YY, XY products into a full matrix form [xx,xy,0,0; xy,yy,0,0; 0,0,0,0; 0,0,0,1].
+   * * Sandwich this between transforms with columns [vectorU, vectorV, 0000, origin].
+   *   (column weights 0001; only xy parts of vectors).
+   * * Scale by detJ for the xy-only determinant of the vectors.
    * @param productXX
    * @param productXY
    * @param productYY
-   * @param area Area in caller's system.
-   * @param origin Caller's origin.
-   * @param vectorU Caller's U axis (not necessarily unit).
-   * @param vectorV Caller's V axis (not necessarily unit).
+   * @param area area in caller's system.
+   * @param origin caller's origin.
+   * @param vectorU caller's U axis (not necessarily unit).
+   * @param vectorV caller's V axis (not necessarily unit).
    */
   public accumulateXYProductsInCentroidalFrame(
     productXX: number, productXY: number, productYY: number,
@@ -421,7 +433,6 @@ export class MomentData {
       other.sums, this.origin.x - other.origin.x, this.origin.y - other.origin.y, this.origin.z - other.origin.z, scale,
     );
   }
-
   /**
    * Accumulate sums from Matrix4d and origin.
    * * Scale by given scaleFactor (e.g. sign to correct orientation).

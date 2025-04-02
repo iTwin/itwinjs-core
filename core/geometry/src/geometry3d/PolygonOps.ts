@@ -518,16 +518,16 @@ export class PolygonOps {
     return s;
   }
   /**
-   * Return a Ray3d with (assuming the polygon is planar and not self-intersecting):
+   * Return a Ray3d with (assuming the polygon formed by `points` is planar and not self-intersecting):
    * * `origin` at the centroid of the (3D) polygon,
    * * `direction` is the unit vector perpendicular to the plane,
    * * `a` is the area.
-   * @param points
+   * @param points array of points to from the polygon.
    */
-  public static centroidAreaNormal(points: IndexedXYZCollection | Point3d[]): Ray3d | undefined {
+  public static centroidAreaNormal(points: IndexedXYZCollection | Point3d[], result?: Ray3d): Ray3d | undefined {
     if (Array.isArray(points)) {
       const carrier = new Point3dArrayCarrier(points);
-      return this.centroidAreaNormal(carrier);
+      return this.centroidAreaNormal(carrier, result);
     }
     const n = points.length;
     if (n === 3) {
@@ -537,20 +537,21 @@ export class PolygonOps {
       points.accumulateScaledXYZ(1, 1.0, centroid);
       points.accumulateScaledXYZ(2, 1.0, centroid);
       centroid.scaleInPlace(1.0 / 3.0);
-      const result = Ray3d.createCapture(centroid, normal);
+      if (result)
+        result.set(centroid, normal);
+      else
+        result = Ray3d.create(centroid, normal);
       if (result.tryNormalizeInPlaceWithAreaWeight(a))
         return result;
       return undefined;
     }
     if (n >= 3) {
-
       const areaNormal = Vector3d.createZero();
       // This will work with or without closure edge.  If closure is given, the last vector is 000.
       for (let i = 2; i < n; i++) {
         points.accumulateCrossProductIndexIndexIndex(0, i - 1, i, areaNormal);
       }
       areaNormal.normalizeInPlace();
-
       const origin = points.getPoint3dAtCheckedPointIndex(0)!;
       const vector0 = Vector3d.create();
       const vector1 = Vector3d.create();
@@ -559,11 +560,11 @@ export class PolygonOps {
       const centroidSum = Vector3d.createZero();
       const normalSum = Vector3d.createZero();
       let signedTriangleArea;
-      // This will work with or without closure edge.  If closure is given, the last vector is 000.
+      // This will work with or without closure edge. If closure is given, the last vector is 000.
       for (let i = 2; i < n; i++) {
         points.vectorXYAndZIndex(origin, i, vector1);
         cross = vector0.crossProduct(vector1, cross);
-        signedTriangleArea = areaNormal.dotProduct(cross);    // well, actually twice the area.
+        signedTriangleArea = areaNormal.dotProduct(cross); // well, actually twice the area.
         normalSum.addInPlace(cross); // this grows to twice the area
         const b = signedTriangleArea / 6.0;
         centroidSum.plus2Scaled(vector0, b, vector1, b, centroidSum);
@@ -572,7 +573,10 @@ export class PolygonOps {
       const area = 0.5 * normalSum.magnitude();
       const inverseArea = Geometry.conditionalDivideFraction(1, area);
       if (inverseArea !== undefined) {
-        const result = Ray3d.createCapture(origin.plusScaled(centroidSum, inverseArea), normalSum);
+        if (result)
+          result.set(origin.plusScaled(centroidSum, inverseArea), normalSum);
+        else
+          result = Ray3d.create(origin.plusScaled(centroidSum, inverseArea), normalSum);
         result.tryNormalizeInPlaceWithAreaWeight(area);
         return result;
       }
