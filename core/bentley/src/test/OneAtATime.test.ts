@@ -3,8 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { describe, expect, it, onTestFinished } from "vitest";
-import { AbandonedError, OneAtATimeAction } from "../OneAtATimeAction";
-import { BeDuration } from "../Time";
+import { AbandonedError, OneAtATimeAction } from "../OneAtATimeAction.js";
+import { BeDuration } from "../Time.js";
 
 describe("OneAtATime test", () => {
 

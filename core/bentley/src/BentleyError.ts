@@ -6,10 +6,10 @@
  * @module Errors
  */
 
-import { DbResult } from "./BeSQLite";
-import { RepositoryStatus } from "./internal/RepositoryStatus";
-import { JsonUtils } from "./JsonUtils";
-import { Optional } from "./UtilityTypes";
+import { DbResult } from "./BeSQLite.js";
+import { RepositoryStatus } from "./internal/RepositoryStatus.js";
+import { JsonUtils } from "./JsonUtils.js";
+import { Optional } from "./UtilityTypes.js";
 
 /** Uniquely identifies a specific kind of [[ITwinError]].
  * @beta

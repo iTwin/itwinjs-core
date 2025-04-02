@@ -6,7 +6,7 @@
  * @module Collections
  */
 
-import { OrderedComparator } from "./Compare";
+import { OrderedComparator } from "./Compare.js";
 
 /**
  * A function that, given a value of type T, returns a copy of that value. Such functions are used by various collection classes.

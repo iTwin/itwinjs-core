@@ -6,7 +6,7 @@
  * @module Utils
  */
 
-import { BentleyError } from "./BentleyError";
+import { BentleyError } from "./BentleyError.js";
 
 /** @beta */
 export class AbandonedError extends Error { }

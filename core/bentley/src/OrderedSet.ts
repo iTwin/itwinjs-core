@@ -6,8 +6,8 @@
  * @module Collections
  */
 
-import { OrderedComparator } from "./Compare";
-import { CloneFunction, shallowClone, SortedArray } from "./SortedArray";
+import { OrderedComparator } from "./Compare.js";
+import { CloneFunction, shallowClone, SortedArray } from "./SortedArray.js";
 
 /** A read-only equivalent of `Set<T>` that maintains its elements in sorted order as specified by a comparison function.
  * Iteration returns elements in the order specified by the comparison function, as opposed to `Set` which returns elements in insertion order.

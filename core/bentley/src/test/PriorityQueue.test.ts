@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { describe, expect, it } from "vitest";
-import { PriorityQueue } from "../core-bentley";
+import { PriorityQueue } from "../core-bentley.js";
 
 class TestHeap extends PriorityQueue<number> {
   public invertOrder: boolean = false;

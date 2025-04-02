@@ -6,9 +6,9 @@
  * @module Logging
  */
 
-import { BeEvent } from "./BeEvent";
-import { BentleyError, IModelStatus, LoggingMetaData } from "./BentleyError";
-import { BentleyLoggerCategory } from "./BentleyLoggerCategory";
+import { BeEvent } from "./BeEvent.js";
+import { BentleyError, IModelStatus, LoggingMetaData } from "./BentleyError.js";
+import { BentleyLoggerCategory } from "./BentleyLoggerCategory.js";
 
 /** Defines the *signature* for a log function.
  * @public
