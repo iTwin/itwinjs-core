@@ -92,7 +92,7 @@ export function readPntsColors(stream: ByteStream, dataOffset: number, pnts: Pnt
       // ###TODO We currently don't support transparency for point clouds, so convert RGBA to RGB by stripping out the alpha channel.
     const rgb = new Uint8Array(nComponents);
     const rgba = new Uint8Array(stream.arrayBuffer, dataOffset + pnts.RGBA.byteOffset, 4 * nPts);
-    for (let i = 0; i < nPts; i += 4) {
+    for (let i = 0; i < nPts; i++) {
       rgb[i * 3 + 0] = rgba[i * 4 + 0];
       rgb[i * 3 + 1] = rgba[i * 4 + 1];
       rgb[i * 3 + 2] = rgba[i * 4 + 2];

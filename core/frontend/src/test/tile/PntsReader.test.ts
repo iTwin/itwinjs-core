@@ -22,6 +22,14 @@ describe("readPntsColors", () => {
   });
 
   it("converts RGBA to RGB", () => {
-    
+    const pntsProps = {
+      POINTS_LENGTH: 3,
+      POSITION: { byteOffset: -999 },
+      RGBA: { byteOffset: 0 },
+    };
+
+    const stream = ByteStream.fromUint8Array(new Uint8Array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]));
+    const result = readPntsColors(stream, 0, pntsProps)!;
+    expect(Array.from(result)).to.deep.equal([0, 1, 2, 4, 5, 6, 8, 9, 10]);
   });
 });
