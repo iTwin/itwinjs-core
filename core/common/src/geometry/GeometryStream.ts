@@ -8,7 +8,7 @@
 
 import { Id64, Id64String, IModelStatus } from "@itwin/core-bentley";
 import {
-  Angle, AnyGeometryQuery, GeometryQuery, IModelJson as GeomJson, LineSegment3d, LowAndHighXYZ, Matrix3d, Point2d, Point3d, Range3d, Transform, TransformProps,
+  Angle, AnyGeometryQuery, GeometryQuery, IModelJson as GeomJson, LineSegment3d, LineString3d, LowAndHighXYZ, Matrix3d, Point2d, Point3d, Range3d, Transform, TransformProps,
   Vector3d, XYZProps, YawPitchRollAngles, YawPitchRollProps,
 } from "@itwin/core-geometry";
 import { ColorDef, ColorDefProps } from "../ColorDef";
@@ -349,8 +349,17 @@ export class GeometryStreamBuilder {
           this.geometryStream.push({ appearance: { color: entry.color } });
           result = true;
         }
-      } else {
+      } else if (entry.separator) {
         result = this.appendGeometry(LineSegment3d.fromJSON(entry.separator));
+      } else {
+        entry.leader?.terminators.forEach((terminator) => {
+          result = this.appendGeometry(LineSegment3d.fromJSON(terminator));
+        });
+        const leaderLinePointsArray: Point3d[] = []
+        entry.leader?.leaderLine.forEach((point) => {
+          leaderLinePointsArray.push(Point3d.fromJSON(point))
+        })
+        result = this.appendGeometry(LineString3d.create(leaderLinePointsArray))
       }
 
       if (!result) {

@@ -6,9 +6,9 @@
  * @module ElementGeometry
  */
 
-import { ColorDef, TextAnnotation, TextBlockGeometryProps, TextBlockGeometryPropsEntry, TextString, TextStyleColor } from "@itwin/core-common";
+import { ColorDef, TextAnnotation, TextBlockGeometryProps, TextBlockGeometryPropsEntry, TextString, TextStyleColor, TextStyleSettings } from "@itwin/core-common";
 import { ComputeRangesForTextLayout, FindFontId, FindTextStyle, layoutTextBlock, RunLayout, TextBlockLayout } from "./TextAnnotationLayout";
-import { LineSegment3d, Point3d, Range2d, Transform, Vector2d } from "@itwin/core-geometry";
+import { LineSegment3d, Point3d, Range2d, Transform, Vector2d, Vector3d, XYZProps } from "@itwin/core-geometry";
 import { assert } from "@itwin/core-bentley";
 import { IModelDb } from "./IModelDb";
 
@@ -125,7 +125,41 @@ function processFractionRun(run: RunLayout, transform: Transform, context: Geome
   }
 }
 
-function produceTextBlockGeometry(layout: TextBlockLayout, documentTransform: Transform, debugAnchorPt?: Point3d): TextBlockGeometryProps {
+function processLeaders(startPoint: Point3d, endPoint: Point3d, context: GeometryContext, intermediatePoints?: Point3d[]) {
+  let firstLeaderSegmentEndpoint;
+  if (intermediatePoints) {
+    firstLeaderSegmentEndpoint = intermediatePoints[0]
+  } else {
+    firstLeaderSegmentEndpoint = endPoint
+  }
+  const firstLeaderSegmentDirection = Vector3d.createStartEnd(
+    startPoint,
+    firstLeaderSegmentEndpoint
+  ).normalize();
+
+  const leaderLinePoints: XYZProps[] = [];
+  leaderLinePoints.push(startPoint.toJSON())
+  intermediatePoints?.forEach((point) => {
+    leaderLinePoints.push(point.toJSON())
+  });
+  leaderLinePoints.push(endPoint.toJSON())
+
+  const termY = firstLeaderSegmentDirection?.unitCrossProduct(Vector3d.unitZ());
+  if (!termY || !firstLeaderSegmentDirection) return;
+  const basePoint = startPoint.plusScaled(firstLeaderSegmentDirection, 1);
+  const point1 = basePoint.plusScaled(termY, 0.5);
+  const point2 = basePoint.plusScaled(termY.negate(), 0.5);
+  context.entries.push({
+    leader: {
+      terminators:
+        [{ startPoint: startPoint.toJSON(), endPoint: point1.toJSON() },
+        { startPoint: startPoint.toJSON(), endPoint: point2.toJSON() }],
+      leaderLine: leaderLinePoints
+    }
+  })
+}
+
+function produceTextBlockGeometry(layout: TextBlockLayout, documentTransform: Transform, debugAnchorPt?: Point3d, textStyleSettings?: TextStyleSettings): TextBlockGeometryProps {
   const context: GeometryContext = { entries: [] };
   for (const line of layout.lines) {
     const lineTrans = Transform.createTranslationXYZ(line.offsetFromDocument.x, line.offsetFromDocument.y, 0);
@@ -198,6 +232,12 @@ function produceTextBlockGeometry(layout: TextBlockLayout, documentTransform: Tr
         },
       });
     });
+    const textColor = textStyleSettings?.color ?? ColorDef.black.toJSON();
+
+    setColor(textColor, context);
+
+    const leaderStartPoint = debugAnchorPt.plusScaled(Vector3d.unitX(), 4)
+    processLeaders(leaderStartPoint, debugAnchorPt, context)
   }
 
   return { entries: context.entries };
@@ -233,10 +273,10 @@ export function produceTextAnnotationGeometry(args: ProduceTextAnnotationGeometr
     ...args,
     textBlock: args.annotation.textBlock,
   });
-
+  const textStyle = args.findTextStyle ? args.findTextStyle(args.annotation.textBlock.styleName) : undefined;
   const dimensions = layout.range;
   const transform = args.annotation.computeTransform(dimensions);
 
   const anchorPoint = args.debugAnchorPointAndRange ? transform.multiplyPoint3d(args.annotation.computeAnchorPoint(dimensions)) : undefined;
-  return produceTextBlockGeometry(layout, transform, anchorPoint);
+  return produceTextBlockGeometry(layout, transform, anchorPoint, textStyle);
 }

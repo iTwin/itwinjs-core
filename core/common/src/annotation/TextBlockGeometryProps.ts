@@ -21,6 +21,7 @@ export type TextBlockGeometryPropsEntry = {
   text: TextStringProps;
   separator?: never;
   color?: never;
+  leader?: never;
 } | {
   text?: never;
   separator: {
@@ -28,10 +29,20 @@ export type TextBlockGeometryPropsEntry = {
     endPoint: XYZProps;
   };
   color?: never;
+  leader?: never;
 } | {
   text?: never;
   separator?: never;
   color: TextStyleColor;
+  leader?: never;
+} | {
+  text?: never;
+  separator?: never;
+  color?: never;
+  leader: {
+    terminators: { startPoint: XYZProps, endPoint: XYZProps }[];
+    leaderLine: XYZProps[];
+  };
 };
 
 /**

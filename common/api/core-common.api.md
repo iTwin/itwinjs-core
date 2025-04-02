@@ -9780,20 +9780,31 @@ export interface TextBlockGeometryProps {
 
 // @beta
 export type TextBlockGeometryPropsEntry = {
-    text: TextStringProps;
-    separator?: never;
-    color?: never;
+  text: TextStringProps;
+  separator?: never;
+  color?: never;
+  leader?: never;
 } | {
-    text?: never;
-    separator: {
-        startPoint: XYZProps;
-        endPoint: XYZProps;
-    };
-    color?: never;
+  text?: never;
+  separator: {
+    startPoint: XYZProps;
+    endPoint: XYZProps;
+  };
+  color?: never;
+  leader?: never;
 } | {
-    text?: never;
-    separator?: never;
-    color: TextStyleColor;
+  text?: never;
+  separator?: never;
+  color: TextStyleColor;
+  leader?: never;
+} | {
+  text?: never;
+  separator?: never;
+  color?: never;
+  leader: {
+    terminators: [{ startPoint: XYZProps, endPoint: XYZProps }];
+    leaderLine: XYZProps[];
+  };
 };
 
 // @beta

@@ -442,8 +442,17 @@ export namespace ElementGeometry {
           }
 
           result = this.appendGeometryParamsChange(params);
-        } else {
+        } else if (entry.separator) {
           result = this.appendGeometryQuery(LineSegment3d.fromJSON(entry.separator));
+        } else {
+          entry.leader?.terminators.forEach((terminator) => {
+            result = this.appendGeometryQuery(LineSegment3d.fromJSON(terminator));
+          });
+          const leaderLinePointsArray: Point3d[] = []
+          entry.leader?.leaderLine.forEach((point) => {
+            leaderLinePointsArray.push(Point3d.fromJSON(point))
+          })
+          result = this.appendGeometryQuery(LineString3d.create(leaderLinePointsArray))
         }
 
         if (!result) {
