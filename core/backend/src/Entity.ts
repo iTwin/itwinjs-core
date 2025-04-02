@@ -102,7 +102,7 @@ export class Entity {
     return enProps;
   }
 
-  public static serialize(props: EntityProps): ECSqlRow {
+  public static serialize(props: EntityProps, _iModel: IModelDb): ECSqlRow {
     const inst: ECSqlRow = {
       id: props.id,
       className: props.classFullName,

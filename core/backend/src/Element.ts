@@ -21,7 +21,7 @@ import { IModelDb } from "./IModelDb";
 import { IModelElementCloneContext } from "./IModelElementCloneContext";
 import { DefinitionModel, DrawingModel, PhysicalModel, SectionDrawingModel } from "./Model";
 import { SubjectOwnsSubjects } from "./NavigationRelationship";
-import { _elementWasCreated, _verifyChannel } from "./internal/Symbols";
+import { _elementWasCreated, _nativeDb, _verifyChannel } from "./internal/Symbols";
 
 /** Argument for the `Element.onXxx` static methods
  * @beta
@@ -145,25 +145,27 @@ export class Element extends Entity {
   }
 
   protected static override get customHandledECProperties(): string[] {
-    return [ ...super.customHandledECProperties, "codeValue", "codeSpec", "codeScope", "model", "parent", "federationGuid", "userLabel", "jsonProperties" ];
+    return [...super.customHandledECProperties, "codeValue", "codeSpec", "codeScope", "model", "parent", "federationGuid"];
   }
 
   public static override deserialize(props: InstanceProps): ElementProps {
-    const instance = props.row;
     const elProps = super.deserialize(props) as ElementProps;
-    elProps.code =  {value: instance.codeValue, spec: instance.codeSpec.id, scope: instance.codeScope.id}
+    const instance = props.row;
+    elProps.code = { value: instance.codeValue, spec: instance.codeSpec.id, scope: instance.codeScope.id }
     elProps.model = instance.model.id;
     elProps.parent = instance.parent;
+    elProps.federationGuid = instance.federationGuid;
     return elProps;
   }
 
-  public static override serialize(props: ElementProps): ECSqlRow {
-    const inst = super.serialize(props);
+  public static override serialize(props: ElementProps, iModel: IModelDb): ECSqlRow {
+    const inst = super.serialize(props, iModel);
     inst.codeValue = props.code.value;
-    inst.codeSpec = {id: props.code.spec};
-    inst.codeScope = {id: props.code.scope};
-    inst.model = {id: props.model};
+    inst.codeSpec = { id: props.code.spec };
+    inst.codeScope = { id: props.code.scope };
+    inst.model = { id: props.model };
     inst.parent = props.parent;
+    inst.federationGuid = props.federationGuid ?? iModel[_nativeDb].newBeGuid();
     return inst;
   }
 
