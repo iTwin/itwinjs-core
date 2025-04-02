@@ -94,7 +94,7 @@ export class Entity {
   public static deserialize(props: InstanceProps): EntityProps {
     const enProps: EntityProps = {
       id: props.row.id,
-      classFullName: props.row.className.replace(".", ":"),
+      classFullName: props.row.classFullName,
     }
     Object.keys(props.row).filter((propName) => !this.customHandledECProperties.includes(propName)).forEach((propName) => {
       (enProps as any)[propName] = props.row[propName];
@@ -197,7 +197,7 @@ export class Entity {
       this._metadata = await this.iModel.schemaContext.getSchemaItem(this.schemaItemKey, EntityClass);
     }
 
-    if(!this._metadata) {
+    if (!this._metadata) {
       throw new Error(`Cannot get metadata for ${this.classFullName}`);
     }
 

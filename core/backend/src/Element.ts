@@ -11,7 +11,7 @@ import {
   AxisAlignedBox3d, BisCodeSpec, Code, CodeScopeProps, CodeSpec, ConcreteEntityTypes, DefinitionElementProps, ElementAlignedBox3d,
   ElementProps, EntityMetaData, EntityReferenceSet, GeometricElement2dProps, GeometricElement3dProps, GeometricElementProps,
   GeometricModel2dProps, GeometricModel3dProps, GeometryPartProps, GeometryStreamProps, IModel, InformationPartitionElementProps, LineStyleProps,
-  ModelProps, PhysicalElementProps, PhysicalTypeProps, Placement2d, Placement3d, RelatedElement, RenderSchedule, RenderTimelineProps,
+  ModelProps, PhysicalElementProps, PhysicalTypeProps, Placement2d, Placement3d, Placement3dProps, RelatedElement, RenderSchedule, RenderTimelineProps,
   RepositoryLinkProps, SectionDrawingLocationProps, SectionDrawingProps, SectionType, SheetBorderTemplateProps,
   SheetProps, SheetTemplateProps, SubjectProps, TypeDefinition, TypeDefinitionElementProps, UrlLinkProps,
 } from "@itwin/core-common";
@@ -524,6 +524,16 @@ export abstract class GeometricElement extends Element {
     ...super.requiredReferenceKeyTypeMap,
     category: ConcreteEntityTypes.Element,
   };
+  protected static override get customHandledECProperties(): string[] {
+    return super.customHandledECProperties;
+  }
+
+  public static override deserialize(props: InstanceProps): GeometricElementProps {
+    return super.deserialize(props) as GeometricElementProps;
+  }
+  public static override serialize(props: GeometricElementProps, iModel: IModelDb): ECSqlRow {
+    return super.serialize(props, iModel);
+  }
 }
 
 /** An abstract base class to model real world entities that intrinsically have 3d geometry.
@@ -555,6 +565,56 @@ export abstract class GeometricElement3d extends GeometricElement {
     super.collectReferenceIds(referenceIds);
     if (undefined !== this.typeDefinition)
       referenceIds.addElement(this.typeDefinition.id);
+  }
+  protected static override get customHandledECProperties(): string[] {
+    return [...super.customHandledECProperties, "category", "geometryStream", "origin", "yaw", "pitch", "roll", "bBoxLow", "bBoxHigh", "typeDefinition"];
+  }
+
+  public static override deserialize(props: InstanceProps): GeometricElement3dProps {
+    const elProps = super.deserialize(props) as GeometricElement3dProps;
+    const instance = props.row;
+    elProps.category = instance.category.id;
+    elProps.placement = {
+      origin: instance.origin,
+      angles: {
+        yaw: instance.yaw,
+        pitch: instance.pitch,
+        roll: instance.roll,
+      },
+      bbox: {
+        low: instance.bBoxLow,
+        high: instance.bBoxHigh,
+      }
+    };
+
+    if (instance.geometryStream) {
+      elProps.geom = props.iModel[_nativeDb].geomSourceToProps({
+        is2d: false,
+        geom: instance.geometryStream,
+        placement: elProps.placement,
+        categoryId: elProps.category
+      }) as GeometryStreamProps;
+    }
+
+    elProps.typeDefinition = instance.typeDefinition;
+    return elProps;
+  }
+
+  public static override serialize(props: GeometricElement3dProps, iModel: IModelDb): ECSqlRow {
+    const inst = super.serialize(props, iModel);
+    inst.category = { id: props.category };
+    if (props.placement) {
+      inst.origin = props.placement.origin;
+      inst.yaw = props.placement.angles.yaw;
+      inst.pitch = props.placement.angles.pitch;
+      inst.roll = props.placement.angles.roll;
+      if (props.placement.bbox) {
+        inst.bBoxLow = props.placement.bbox.low;
+        inst.bBoxHigh = props.placement.bbox.high;
+      }
+    }
+    inst.typeDefinition = props.typeDefinition;
+    return inst;
   }
 }
 
