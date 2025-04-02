@@ -17,7 +17,7 @@ import { Schema } from "../../Metadata/Schema";
 import { ISchemaPartVisitor } from "../../SchemaPartVisitorDelegate";
 import { XmlParser } from "../../Deserialization/XmlParser";
 import { deserializeInfoXml, deserializeXml, deserializeXmlSync, ReferenceSchemaLocater } from "../TestUtils/DeserializationHelpers";
-import { Mixin, RelationshipClass } from "../../ecschema-metadata";
+import { ECSchemaNamespaceUris, Mixin, RelationshipClass } from "../../ecschema-metadata";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 
@@ -25,7 +25,7 @@ describe("Full Schema Deserialization", () => {
   describe("basic (empty) schemas", () => {
     it("should successfully deserialize a valid JSON string", async () => {
       const schemaString = JSON.stringify({
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+        $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
         name: "TestSchema",
         version: "1.2.3",
         description: "This is a test description",
@@ -42,7 +42,7 @@ describe("Full Schema Deserialization", () => {
     });
     it("should successfully deserialize a valid JSON string synchronously", () => {
       const schemaString = JSON.stringify({
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+        $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
         name: "TestSchema",
         version: "1.2.3",
         description: "This is a test description",
@@ -60,7 +60,7 @@ describe("Full Schema Deserialization", () => {
 
     it("should successfully deserialize name and version from a valid JSON object", async () => {
       const schemaJson = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+        $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
         name: "TestSchema",
         version: "1.2.3",
         description: "This is a test description",
@@ -78,7 +78,7 @@ describe("Full Schema Deserialization", () => {
 
     it("should throw for invalid schema version", async () => {
       const schemaJson = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+        $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
         name: "TestSchema",
         version: "1.1000.0",
       };
@@ -88,7 +88,7 @@ describe("Full Schema Deserialization", () => {
 
     it("should throw for invalid schema minor version", async () => {
       const schemaJson = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+        $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
         name: "TestSchema",
         version: "1.0.10000000",
       };
@@ -97,7 +97,7 @@ describe("Full Schema Deserialization", () => {
 
     it("should throw for invalid schema name", async () => {
       const schemaJson = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+        $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
         name: "0TestSchema",
         version: "1.0.0",
       };
@@ -108,7 +108,7 @@ describe("Full Schema Deserialization", () => {
 
   describe("with schema reference", () => {
     const baseJson = {
-      $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+      $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
       name: "TestSchema",
       version: "1.2.3",
 
@@ -188,14 +188,14 @@ describe("Full Schema Deserialization", () => {
       const context = new SchemaContext();
 
       const schemaAJson = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+        $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
         name: "RefSchemaA",
         version: "1.0.0",
         alias: "a",
       };
 
       const schemaBJson = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+        $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
         name: "RefSchemaB",
         version: "2.0.0",
         alias: "b",
@@ -225,7 +225,7 @@ describe("Full Schema Deserialization", () => {
 
       const context2 = new SchemaContext();
       const schemaCJson = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+        $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
         name: "RefSchemaC",
         version: "1.0.0",
         alias: "c",
@@ -242,14 +242,14 @@ describe("Full Schema Deserialization", () => {
       };
 
       const schemaDJson = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+        $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
         name: "RefSchemaD",
         version: "1.0.0",
         alias: "d",
       };
 
       const schemaEJson = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+        $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
         name: "RefSchemaE",
         version: "1.0.0",
         alias: "e",
@@ -262,7 +262,7 @@ describe("Full Schema Deserialization", () => {
       };
 
       const schemaFJson = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+        $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
         name: "RefSchemaF",
         version: "1.0.0",
         alias: "f",
@@ -295,7 +295,7 @@ describe("Full Schema Deserialization", () => {
       const context = new SchemaContext();
 
       const schemaAJson = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+        $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
         name: "RefSchemaA",
         version: "1.0.0",
         alias: "a",
@@ -312,7 +312,7 @@ describe("Full Schema Deserialization", () => {
       };
 
       const schemaBJson = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+        $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
         name: "RefSchemaB",
         version: "1.0.0",
         alias: "b",
@@ -329,14 +329,14 @@ describe("Full Schema Deserialization", () => {
       };
 
       const schemaCJson = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+        $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
         name: "RefSchemaC",
         version: "1.0.0",
         alias: "c",
       };
 
       const schemaDJson = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+        $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
         name: "RefSchemaD",
         version: "1.0.0",
         alias: "d",
@@ -478,7 +478,7 @@ describe("Full Schema Deserialization", () => {
 
   describe("with items", () => {
     const baseJson = {
-      $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+      $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
       name: "TestSchema",
       version: "1.2.3",
     };
@@ -569,7 +569,7 @@ describe("Full Schema Deserialization", () => {
 
   describe("with visitor", () => {
     const baseJson = {
-      $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+      $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
       name: "TestSchema",
       version: "1.2.3",
     };
@@ -811,7 +811,7 @@ describe("Full Schema Deserialization", () => {
           if (RelationshipClass.isRelationshipClass(c))
             descriptions.push((await c.source.abstractConstraint!).description!);
           else if (c.schemaItemType === SchemaItemType.EntityClass) {
-            const prop = [...c.properties!][0] as NavigationProperty;
+            const prop = [...c.getPropertiesSync(true)][0] as NavigationProperty;
             descriptions.push((await prop.relationshipClass).description!);
           }
         }) as any,
@@ -884,7 +884,7 @@ describe("Full Schema Deserialization", () => {
           if (RelationshipClass.isRelationshipClass(c))
             descriptions.push((await c.source.abstractConstraint!).description!);
           else if (c.schemaItemType === SchemaItemType.EntityClass) {
-            const prop = [...c.properties!][0] as NavigationProperty;
+            const prop = [...c.getPropertiesSync(true)][0] as NavigationProperty;
             descriptions.push((await prop.relationshipClass).description!);
           }
         }) as any,
@@ -918,7 +918,7 @@ describe("Full Schema Deserialization", () => {
 
   describe("with schema custom attributes", () => {
     const baseJson = {
-      $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+      $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
       name: "ValidSchema",
       version: "1.2.3",
       alias: "vs",
@@ -1087,7 +1087,7 @@ describe("Full Schema Deserialization", () => {
 
   describe("with property custom attributes", () => {
     const getSchemaJson = (propJson: any) => ({
-      $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+      $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
       name: "ValidSchema",
       version: "1.2.3",
       alias: "vs",
@@ -1121,7 +1121,7 @@ describe("Full Schema Deserialization", () => {
     it("async - single property CustomAttribute", async () => {
       const testSchema = await Schema.fromJson(oneCustomAttributeJson, new SchemaContext());
       expect(testSchema).to.exist;
-      const testProp = [...(await testSchema.getItem("TestClass") as AnyClass).properties!][0];
+      const testProp = [...(await testSchema.getItem("TestClass") as AnyClass).getPropertiesSync(true)][0];
       expect(testProp).to.exist;
       expect(testProp.name).to.eql("TestProp");
       expect(testProp.customAttributes!.get("ValidSchema.TestCAClassA")).to.exist;
@@ -1131,7 +1131,7 @@ describe("Full Schema Deserialization", () => {
     it("sync - single property CustomAttribute", () => {
       const testSchema = Schema.fromJsonSync(oneCustomAttributeJson, new SchemaContext());
       expect(testSchema).to.exist;
-      const testProp = [...(testSchema.getItemSync("TestClass") as AnyClass).properties!][0];
+      const testProp = [...(testSchema.getItemSync("TestClass") as AnyClass).getPropertiesSync(true)][0];
       expect(testProp).to.exist;
       expect(testProp.name).to.eql("TestProp");
       expect(testProp.customAttributes!.get("ValidSchema.TestCAClassA")).to.exist;
@@ -1152,7 +1152,7 @@ describe("Full Schema Deserialization", () => {
     it("async - multiple property CustomAttributes", async () => {
       const testSchema = await Schema.fromJson(twoCustomAttributesJson, new SchemaContext());
       expect(testSchema).to.exist;
-      const testProp = [...(await testSchema.getItem("TestClass") as AnyClass).properties!][0];
+      const testProp = [...(await testSchema.getItem("TestClass") as AnyClass).getPropertiesSync(true)][0];
       expect(testProp).to.exist;
       expect(testProp.name).to.eql("TestProp");
       expect(testProp.customAttributes!.get("ValidSchema.TestCAClassA")).to.exist;
@@ -1162,7 +1162,7 @@ describe("Full Schema Deserialization", () => {
     it("sync - multiple property CustomAttributes", () => {
       const testSchema = Schema.fromJsonSync(twoCustomAttributesJson, new SchemaContext());
       expect(testSchema).to.exist;
-      const testProp = [...(testSchema.getItemSync("TestClass") as AnyClass).properties!][0];
+      const testProp = [...(testSchema.getItemSync("TestClass") as AnyClass).getPropertiesSync(true)][0];
       expect(testProp).to.exist;
       expect(testProp.name).to.eql("TestProp");
       expect(testProp.customAttributes!.get("ValidSchema.TestCAClassA")).to.exist;
@@ -1189,7 +1189,7 @@ describe("Full Schema Deserialization", () => {
 
       const testSchema = Schema.fromJsonSync(getSchemaJson(propertyJson), new SchemaContext());
       expect(testSchema).to.exist;
-      const testProp = [...(testSchema.getItemSync("TestClass") as AnyClass).properties!][0];
+      const testProp = [...(testSchema.getItemSync("TestClass") as AnyClass).getPropertiesSync(true)][0];
       expect(testProp).to.exist;
 
       assert.strictEqual(testProp.customAttributes!.get("ValidSchema.TestCAClassA")!.ShowClasses, 1.2);

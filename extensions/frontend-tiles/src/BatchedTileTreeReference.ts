@@ -4,15 +4,15 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, Id64Set } from "@itwin/core-bentley";
-import { Range3d, Transform } from "@itwin/core-geometry";
 import {
   BatchType, FeatureAppearance, FeatureAppearanceProvider, FeatureAppearanceSource, GeometryClass, ViewFlagOverrides,
 } from "@itwin/core-common";
 import {
   formatAnimationBranchId, RenderClipVolume, SceneContext, TileDrawArgs, TileGraphicType, TileTree, TileTreeOwner, TileTreeReference,
 } from "@itwin/core-frontend";
-import { BatchedModels } from "./BatchedModels";
-import { ModelGroup, ModelGroupInfo } from "./ModelGroup";
+import { Range3d, Transform } from "@itwin/core-geometry";
+import { BatchedModels } from "./BatchedModels.js";
+import { ModelGroup, ModelGroupInfo } from "./ModelGroup.js";
 
 export interface BatchedTileTreeReferenceArgs {
   readonly models: BatchedModels;

@@ -2,14 +2,14 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { esriPBuffer } from "../ArcGisFeature/esriPBuffer.gen";
-import { FeatureAttributeDrivenSymbology, FeatureGeometryRenderer, GraphicsGeometryRenderer, MapLayerFeature, MapLayerFeatureAttribute, MapLayerFeatureInfo, MapSubLayerFeatureInfo} from "@itwin/core-frontend";
 import { PrimitiveValue, PropertyValueFormat, StandardTypeNames } from "@itwin/appui-abstract";
-import { ImageMapLayerSettings } from "@itwin/core-common";
-import { ArcGisBaseFeatureReader } from "./ArcGisFeatureReader";
-import { ArcGisResponseData } from "./ArcGisFeatureResponse";
 import { Logger } from "@itwin/core-bentley";
-import { ArcGisFeatureGeometryType } from "./ArcGisFeatureQuery";
+import { ImageMapLayerSettings } from "@itwin/core-common";
+import { FeatureAttributeDrivenSymbology, FeatureGeometryRenderer, GraphicsGeometryRenderer, MapLayerFeature, MapLayerFeatureAttribute, MapLayerFeatureInfo, MapSubLayerFeatureInfo } from "@itwin/core-frontend";
+import { esriPBuffer } from "../ArcGisFeature/esriPBuffer.gen.js";
+import { ArcGisFeatureGeometryType } from "./ArcGisFeatureQuery.js";
+import { ArcGisBaseFeatureReader } from "./ArcGisFeatureReader.js";
+import { ArcGisResponseData } from "./ArcGisFeatureResponse.js";
 
 const esriGeometryType = esriPBuffer.FeatureCollectionPBuffer.GeometryType;
 const loggerCategory = "MapLayersFormats.ArcGISFeature";

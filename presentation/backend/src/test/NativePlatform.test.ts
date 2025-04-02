@@ -3,14 +3,13 @@
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import * as faker from "faker";
 import { join } from "path";
 import sinon from "sinon";
 import * as moq from "typemoq";
 import { _nativeDb, IModelDb, IModelHost, IModelJsNative, IModelNative } from "@itwin/core-backend";
 import { BeEvent } from "@itwin/core-bentley";
 import { DiagnosticsScopeLogs, PresentationError, PresentationStatus, VariableValueTypes } from "@itwin/presentation-common";
-import { createDefaultNativePlatform, NativePlatformDefinition, PresentationNativePlatformResponseError } from "../presentation-backend/NativePlatform";
+import { createDefaultNativePlatform, NativePlatformDefinition, PresentationNativePlatformResponseError } from "../presentation-backend/NativePlatform.js";
 
 describe("default NativePlatform", () => {
   let nativePlatform: NativePlatformDefinition;
@@ -18,7 +17,7 @@ describe("default NativePlatform", () => {
 
   beforeEach(async () => {
     try {
-      await IModelHost.startup({ cacheDir: join(__dirname, ".cache") });
+      await IModelHost.startup({ cacheDir: join(import.meta.dirname, ".cache", `${process.pid}`) });
     } catch (e) {
       let isLoaded = false;
       try {
@@ -32,7 +31,7 @@ describe("default NativePlatform", () => {
     addonMock.reset();
     // eslint-disable-next-line @typescript-eslint/naming-convention
     const TNativePlatform = createDefaultNativePlatform({
-      id: faker.random.uuid(),
+      id: "test-id",
       taskAllocationsMap: {},
       updateCallback: () => {},
     });
@@ -174,7 +173,7 @@ describe("default NativePlatform", () => {
 
   it("calls addon's getRulesets", async () => {
     const ruleset = { id: "", rules: [] };
-    const hash = faker.random.uuid();
+    const hash = "test-hash";
     const serializedResult = JSON.stringify([{ ruleset, hash }]);
     addonMock
       .setup((x) => x.getRulesets(ruleset.id))
@@ -187,7 +186,7 @@ describe("default NativePlatform", () => {
 
   it("calls addon's addRuleset", async () => {
     const ruleset = { id: "", rules: [] };
-    const hash = faker.random.uuid();
+    const hash = "test-hash";
     const serializedRuleset = JSON.stringify(ruleset);
     addonMock
       .setup((x) => x.addRuleset(serializedRuleset))
@@ -218,9 +217,9 @@ describe("default NativePlatform", () => {
   });
 
   it("calls addon's setRulesetVariableValue", async () => {
-    const rulesetId = faker.random.word();
-    const variableId = faker.random.word();
-    const value = faker.random.word();
+    const rulesetId = "test-ruleset-id";
+    const variableId = "test-var-id";
+    const value = "test-value";
     addonMock
       .setup((x) => x.setRulesetVariableValue(rulesetId, variableId, VariableValueTypes.String, value))
       .returns(() => ({ result: undefined }))
@@ -230,8 +229,8 @@ describe("default NativePlatform", () => {
   });
 
   it("calls addon's unsetRulesetVariableValue", async () => {
-    const rulesetId = faker.random.word();
-    const variableId = faker.random.word();
+    const rulesetId = "test-ruleset-id";
+    const variableId = "test-var-id";
     addonMock
       .setup((x) => x.unsetRulesetVariableValue(rulesetId, variableId))
       .returns(() => ({ result: undefined }))
@@ -241,9 +240,9 @@ describe("default NativePlatform", () => {
   });
 
   it("calls addon's getRulesetVariableValue", async () => {
-    const rulesetId = faker.random.word();
-    const variableId = faker.random.word();
-    const value = faker.random.word();
+    const rulesetId = "test-ruleset-id";
+    const variableId = "test-var-id";
+    const value = "test-value";
     addonMock
       .setup((x) => x.getRulesetVariableValue(rulesetId, variableId, VariableValueTypes.String))
       .returns(() => ({ result: value }))

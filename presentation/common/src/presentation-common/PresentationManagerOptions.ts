@@ -8,15 +8,15 @@
 
 import { BeEvent, Id64String } from "@itwin/core-bentley";
 import { UnitSystemKey } from "@itwin/core-quantity";
-import { Descriptor, SelectionInfo } from "./content/Descriptor";
-import { FieldDescriptor } from "./content/Fields";
-import { Item } from "./content/Item";
-import { InstanceKey } from "./EC";
-import { ElementProperties } from "./ElementProperties";
-import { InstanceFilterDefinition } from "./InstanceFilterDefinition";
-import { Ruleset } from "./rules/Ruleset";
-import { RulesetVariable } from "./RulesetVariables";
-import { SelectionScopeProps } from "./selection/SelectionScope";
+import { Descriptor, SelectionInfo } from "./content/Descriptor.js";
+import { FieldDescriptor } from "./content/Fields.js";
+import { Item } from "./content/Item.js";
+import { InstanceKey } from "./EC.js";
+import { ElementProperties } from "./ElementProperties.js";
+import { InstanceFilterDefinition } from "./InstanceFilterDefinition.js";
+import { Ruleset } from "./rules/Ruleset.js";
+import { RulesetVariable } from "./RulesetVariables.js";
+import { SelectionScopeProps } from "./selection/SelectionScope.js";
 
 /**
  * A generic request options type used for both hierarchy and content requests.
@@ -34,13 +34,6 @@ export interface RequestOptions<TIModel> {
    * unit is used if unit system is not specified.
    */
   unitSystem?: UnitSystemKey;
-
-  /**
-   * Expected form of response. This property is set automatically on newer frontends.
-   * `unparsed-json` — deliver response from native addon without parsing it.
-   * @internal
-   */
-  transport?: "unparsed-json";
 }
 
 /**

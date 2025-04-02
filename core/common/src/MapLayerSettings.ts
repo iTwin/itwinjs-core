@@ -190,6 +190,16 @@ export interface ImageMapLayerProps extends CommonMapLayerProps {
 
 }
 
+/** The target onto which to drape a model map layer.
+ * @beta
+ */
+export enum ModelMapLayerDrapeTarget {
+  /** Drape only onto the globe. */
+  Globe = 0,
+  /** Drape only onto all attached reality data. */
+  RealityData = 1,
+}
+
 /** JSON representation of a [[ModelMapLayerSettings]].
  * @see [[MapImagerySettings]].
  * @public
@@ -197,6 +207,10 @@ export interface ImageMapLayerProps extends CommonMapLayerProps {
 export interface ModelMapLayerProps extends CommonMapLayerProps {
   /** The Id of the [GeometricModel]($backend) containing the geometry to be drawn by the layer. */
   modelId: Id64String;
+  /** Specifies the target onto which to drape this model map layer. Defaults to [ModelMapLayerDrapeTarget.Globe]($common).
+   * @beta
+   */
+  drapeTarget?: ModelMapLayerDrapeTarget;
 
   /** @internal */
   url?: never;
@@ -521,26 +535,33 @@ export class ImageMapLayerSettings extends MapLayerSettings {
  * @public
  */
 export class ModelMapLayerSettings extends MapLayerSettings {
+  /** Specifies the target onto which to drape this model map layer. Defaults to [ModelMapLayerDrapeTarget.Globe]($common).
+   * @beta
+   */
+  public readonly drapeTarget: ModelMapLayerDrapeTarget;
   public readonly modelId: Id64String;
   public override get source(): string { return this.modelId; }
 
   /** @internal */
   protected constructor(modelId: Id64String,  name: string, visible = true,
-    transparency: number = 0, transparentBackground = true) {
+    transparency: number = 0, transparentBackground = true, drapeTarget = ModelMapLayerDrapeTarget.Globe) {
     super(name, visible, transparency, transparentBackground);
     this.modelId = modelId;
+    this.drapeTarget = drapeTarget;
   }
 
   /** Construct from JSON, performing validation and applying default values for undefined fields. */
   public static override fromJSON(json: ModelMapLayerProps): ModelMapLayerSettings {
     const transparentBackground = (json.transparentBackground === undefined) ? true : json.transparentBackground;
-    return new this(json.modelId, json.name, json.visible, json.transparency, transparentBackground);
+    return new this(json.modelId, json.name, json.visible, json.transparency, transparentBackground, json.drapeTarget);
   }
 
   /** return JSON representation of this MapLayerSettings object */
   public override toJSON(): ModelMapLayerProps {
     const props = super._toJSON() as ModelMapLayerProps;
     props.modelId = this.modelId;
+    if (this.drapeTarget !== ModelMapLayerDrapeTarget.Globe)
+      props.drapeTarget = this.drapeTarget;
     return props;
   }
 
@@ -556,6 +577,7 @@ export class ModelMapLayerSettings extends MapLayerSettings {
   protected override cloneProps(changedProps: Partial<ModelMapLayerProps>): ModelMapLayerProps {
     const props = super.cloneProps(changedProps) as ModelMapLayerProps;
     props.modelId = changedProps.modelId ?? this.modelId;
+    props.drapeTarget = changedProps.drapeTarget ?? this.drapeTarget;
     return props;
   }
 

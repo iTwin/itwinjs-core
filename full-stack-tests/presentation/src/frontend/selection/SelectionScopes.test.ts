@@ -8,9 +8,9 @@ import { expect } from "chai";
 import { Id64 } from "@itwin/core-bentley";
 import { IModelConnection } from "@itwin/core-frontend";
 import { Presentation } from "@itwin/presentation-frontend";
-import { TestIModelConnection } from "../../IModelSetupUtils";
-import { initialize, terminate } from "../../IntegrationTests";
-import { waitFor } from "../../Utils";
+import { TestIModelConnection } from "../../IModelSetupUtils.js";
+import { initialize, terminate } from "../../IntegrationTests.js";
+import { waitFor } from "../../Utils.js";
 
 describe("Selection Scopes", () => {
   let imodel: IModelConnection;

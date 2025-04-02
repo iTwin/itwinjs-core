@@ -18,7 +18,7 @@ import {
   PresentationStatus,
   SelectionScope,
 } from "@itwin/presentation-common";
-import { getElementKey } from "./Utils";
+import { getElementKey } from "./Utils.js";
 
 /**
  * Contains helper methods for computing selection scopes. Will get removed
@@ -27,7 +27,7 @@ import { getElementKey } from "./Utils";
  * @internal
  */
 export class SelectionScopesHelper {
-  // istanbul ignore next
+  /* c8 ignore next */
   private constructor() {}
 
   public static getSelectionScopes(): SelectionScope[] {
@@ -109,7 +109,6 @@ export class SelectionScopesHelper {
       `;
     return imodel.withPreparedStatement(query, (stmt): InstanceKey | undefined => {
       stmt.bindId(1, graphicalElementId);
-      // istanbul ignore else
       if (DbResult.BE_SQLITE_ROW === stmt.step()) {
         const row = stmt.getRow();
         if (row.funcElClassName && row.funcElId) {
