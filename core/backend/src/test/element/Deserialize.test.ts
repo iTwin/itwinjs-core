@@ -49,7 +49,7 @@ describe("Element Deserialize", () => {
     const classDef = iModelDb.getJsClass<typeof Element>(key.classFullName);
     const elementProps = classDef.deserialize(rawInstance);
 
-    const element = iModelDb.elements.getElement<GeometricElement3d>({ id: key.id, wantGeometry: true });
+    const element = iModelDb.elements.getElement<GeometricElement3d>({ id: key.id, wantGeometry: true }).toJSON();
     console.log(element);
     console.log(elementProps);
 

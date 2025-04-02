@@ -11,9 +11,9 @@ import {
   AxisAlignedBox3d, BisCodeSpec, Code, CodeScopeProps, CodeSpec, ConcreteEntityTypes, DefinitionElementProps, ElementAlignedBox3d,
   ElementProps, EntityMetaData, EntityReferenceSet, GeometricElement2dProps, GeometricElement3dProps, GeometricElementProps,
   GeometricModel2dProps, GeometricModel3dProps, GeometryPartProps, GeometryStreamProps, IModel, InformationPartitionElementProps, LineStyleProps,
-  ModelProps, PhysicalElementProps, PhysicalTypeProps, Placement2d, Placement3d, Placement3dProps, RelatedElement, RenderSchedule, RenderTimelineProps,
+  ModelProps, PhysicalElementProps, PhysicalTypeProps, Placement2d, Placement2dProps, Placement3d, Placement3dProps, RelatedElement, RenderSchedule, RenderTimelineProps,
   RepositoryLinkProps, SectionDrawingLocationProps, SectionDrawingProps, SectionType, SheetBorderTemplateProps,
-  SheetProps, SheetTemplateProps, SubjectProps, TypeDefinition, TypeDefinitionElementProps, UrlLinkProps,
+  SheetProps, SheetTemplateProps, SubjectProps, TypeDefinition, TypeDefinitionElementProps, UrlLinkProps, isPlacement3dProps,
 } from "@itwin/core-common";
 import { ClipVector, Range3d, Transform } from "@itwin/core-geometry";
 import { ECSqlRow, Entity, InstanceProps } from "./Entity";
@@ -145,7 +145,8 @@ export class Element extends Entity {
   }
 
   protected static override get customHandledECProperties(): string[] {
-    return [...super.customHandledECProperties, "codeValue", "codeSpec", "codeScope", "model", "parent", "federationGuid"];
+    return [...super.customHandledECProperties, "codeValue", "codeSpec", "codeScope", "model", "parent", "federationGuid",
+      "lastMod"];
   }
 
   public static override deserialize(props: InstanceProps): ElementProps {
@@ -153,8 +154,11 @@ export class Element extends Entity {
     const instance = props.row;
     elProps.code = { value: instance.codeValue, spec: instance.codeSpec.id, scope: instance.codeScope.id }
     elProps.model = instance.model.id;
-    elProps.parent = instance.parent;
-    elProps.federationGuid = instance.federationGuid;
+    if (instance.parent)
+      elProps.parent = instance.parent;
+
+    if (instance.federationGuid)
+      elProps.federationGuid = instance.federationGuid;
     return elProps;
   }
 
@@ -525,7 +529,7 @@ export abstract class GeometricElement extends Element {
     category: ConcreteEntityTypes.Element,
   };
   protected static override get customHandledECProperties(): string[] {
-    return super.customHandledECProperties;
+    return [...super.customHandledECProperties, "inSpatialIndex"];
   }
 
   public static override deserialize(props: InstanceProps): GeometricElementProps {
@@ -574,19 +578,6 @@ export abstract class GeometricElement3d extends GeometricElement {
     const elProps = super.deserialize(props) as GeometricElement3dProps;
     const instance = props.row;
     elProps.category = instance.category.id;
-    elProps.placement = {
-      origin: instance.origin,
-      angles: {
-        yaw: instance.yaw,
-        pitch: instance.pitch,
-        roll: instance.roll,
-      },
-      bbox: {
-        low: instance.bBoxLow,
-        high: instance.bBoxHigh,
-      }
-    };
-
     if (instance.geometryStream) {
       elProps.geom = props.iModel[_nativeDb].geomSourceToProps({
         is2d: false,
@@ -595,23 +586,82 @@ export abstract class GeometricElement3d extends GeometricElement {
         categoryId: elProps.category
       }) as GeometryStreamProps;
     }
+    elProps.placement = {
+      origin: [instance.origin.x, instance.origin.y, instance.origin.z],
+      angles: {
+        roll: instance.roll,
+        yaw: instance.yaw,
+        pitch: instance.pitch,
+      },
+      bbox: {
+        low: [instance.bBoxLow.x, instance.bBoxLow.y, instance.bBoxLow.z],
+        high: [instance.bBoxHigh.x, instance.bBoxHigh.y, instance.bBoxHigh.z],
+      }
+    };
 
-    elProps.typeDefinition = instance.typeDefinition;
+    if (instance.typeDefinition) {
+      elProps.typeDefinition = instance.typeDefinition;
+    }
+
     return elProps;
   }
 
   public static override serialize(props: GeometricElement3dProps, iModel: IModelDb): ECSqlRow {
     const inst = super.serialize(props, iModel);
     inst.category = { id: props.category };
-    if (props.placement) {
-      inst.origin = props.placement.origin;
-      inst.yaw = props.placement.angles.yaw;
-      inst.pitch = props.placement.angles.pitch;
-      inst.roll = props.placement.angles.roll;
-      if (props.placement.bbox) {
-        inst.bBoxLow = props.placement.bbox.low;
-        inst.bBoxHigh = props.placement.bbox.high;
+
+    const assignPlacement = (placement: Placement3dProps) => {
+      if (Array.isArray(placement.origin)) {
+        inst.origin = { x: placement.origin[0], y: placement.origin[1], z: placement.origin[2] };
+      } else {
+        inst.origin = placement.origin;
       }
+      inst.yaw = placement.angles.yaw;
+      inst.pitch = placement.angles.pitch;
+      inst.roll = placement.angles.roll;
+      if (placement.bbox) {
+        if (Array.isArray(placement.bbox.low)) {
+          inst.bBoxLow = { x: placement.bbox.low[0], y: placement.bbox.low[1], z: placement.bbox.low[2] };
+        } else {
+          inst.bBoxLow = placement.bbox.low;
+        }
+
+        if (Array.isArray(placement.bbox.high)) {
+          inst.bBoxHigh = { x: placement.bbox.high[0], y: placement.bbox.high[1], z: placement.bbox.high[2] };
+        } else {
+          inst.bBoxHigh = placement.bbox.high;
+        }
+      }
+    }
+
+
+    if (props.placement) {
+      assignPlacement(props.placement);
+    }
+
+    // Need work
+    if (props.elementGeometryBuilderParams) {
+      const source = iModel[_nativeDb].builderToGeomSource(
+        props.elementGeometryBuilderParams as any, {
+        is2d: false,
+        placement: props.placement,
+        categoryId: props.category,
+      });
+
+      inst.geometryStream = source.geom;
+      if (source.placement) {
+        assignPlacement(source.placement as Placement3dProps);
+      }
+    }
+    // Need work need to send Id/ClassName
+    if (props.geom) {
+      const source = iModel[_nativeDb].propsToGeomSource(
+        props.geom as any, {
+        is2d: false,
+        placement: props.placement,
+        categoryId: props.category,
+      });
+      inst.geometryStream = source.geom;
     }
     inst.typeDefinition = props.typeDefinition;
     return inst;
@@ -649,7 +699,96 @@ export abstract class GeometricElement2d extends GeometricElement {
 
     return val;
   }
+  protected static override get customHandledECProperties(): string[] {
+    return [...super.customHandledECProperties, "category", "geometryStream", "origin", "angle", "bBoxLow", "bBoxHigh", "typeDefinition"];
+  }
 
+  public static override deserialize(props: InstanceProps): GeometricElement2dProps {
+    const elProps = super.deserialize(props) as GeometricElement2dProps;
+    const instance = props.row;
+    elProps.category = instance.category.id;
+    if (instance.geometryStream) {
+      elProps.geom = props.iModel[_nativeDb].geomSourceToProps({
+        is2d: true,
+        geom: instance.geometryStream,
+        placement: elProps.placement,
+        categoryId: elProps.category
+      }) as GeometryStreamProps;
+    }
+    elProps.placement = {
+      origin: [instance.origin.x, instance.origin.y],
+      angle: instance.angle,
+      bbox: {
+        low: [instance.bBoxLow.x, instance.bBoxLow.y],
+        high: [instance.bBoxHigh.x, instance.bBoxHigh.y],
+      }
+    };
+
+    if (instance.typeDefinition) {
+      elProps.typeDefinition = instance.typeDefinition;
+    }
+
+    return elProps;
+  }
+
+  public static override serialize(props: GeometricElement2dProps, iModel: IModelDb): ECSqlRow {
+    const inst = super.serialize(props, iModel);
+    inst.category = { id: props.category };
+
+    const assignPlacement = (placement: Placement2dProps) => {
+      if (Array.isArray(placement.origin)) {
+        inst.origin = { x: placement.origin[0], y: placement.origin[1] };
+      } else {
+        inst.origin = placement.origin;
+      }
+      inst.rotation = placement.angle;
+      if (placement.bbox) {
+        if (Array.isArray(placement.bbox.low)) {
+          inst.bBoxLow = { x: placement.bbox.low[0], y: placement.bbox.low[1] };
+        } else {
+          inst.bBoxLow = placement.bbox.low;
+        }
+
+        if (Array.isArray(placement.bbox.high)) {
+          inst.bBoxHigh = { x: placement.bbox.high[0], y: placement.bbox.high[1] };
+        } else {
+          inst.bBoxHigh = placement.bbox.high;
+        }
+      }
+    }
+
+
+    if (props.placement) {
+      assignPlacement(props.placement);
+    }
+
+    // Need work
+    if (props.elementGeometryBuilderParams) {
+      const source = iModel[_nativeDb].builderToGeomSource(
+        props.elementGeometryBuilderParams as any, {
+        is2d: false,
+        placement: props.placement,
+        categoryId: props.category,
+      });
+
+      inst.geometryStream = source.geom;
+      if (source.placement) {
+        assignPlacement(source.placement as Placement2dProps);
+      }
+    }
+    // Need work need to send Id/ClassName
+    if (props.geom) {
+      const source = iModel[_nativeDb].propsToGeomSource(
+        props.geom as any, {
+        is2d: false,
+        placement: props.placement,
+        categoryId: props.category,
+      });
+      inst.geometryStream = source.geom;
+    }
+    inst.typeDefinition = props.typeDefinition;
+    return inst;
+  }
   protected override collectReferenceIds(referenceIds: EntityReferenceSet): void {
     super.collectReferenceIds(referenceIds);
     if (undefined !== this.typeDefinition)

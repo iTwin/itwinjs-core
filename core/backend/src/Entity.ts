@@ -93,8 +93,8 @@ export class Entity {
 
   public static deserialize(props: InstanceProps): EntityProps {
     const enProps: EntityProps = {
-      id: props.row.id,
       classFullName: props.row.classFullName,
+      id: props.row.id,
     }
     Object.keys(props.row).filter((propName) => !this.customHandledECProperties.includes(propName)).forEach((propName) => {
       (enProps as any)[propName] = props.row[propName];
