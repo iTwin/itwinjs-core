@@ -16,7 +16,7 @@ An attribute of an Entity can be implemented as an [ECProperty](../../ec/ec-prop
 
 Note, however, that there may be attributions whose applicability dependend on the state of a more general concept on a specific Entity. Such attributions shall be implemented via a class-hierarchy based on `Element-Aspects`(./elementaspect-fundamentals.md). If the overall concept is considered *essential* for the associated Entity, the target multiplicity of its associated `ElementOwnsUniqueAspect` or `ElementOwnsMultiAspect` relationship shall be set accordingly (i.e. 1..1 or 1..* respectively). See [Sub-Properties and ElementAspects](./elementaspect-fundamentals.md#sub-properties-and-elementaspects) for more information and an example of this situation.
 
-The default behavior of all UX controls in iTwin.js is to show First-class properties as attribution of their associated Element-class, unless they are selectively hidden by using the `HiddenProperty` or `HiddenClass` *Custom-Attributes*.
+First-class properties shall be shown in UX controls as attribution of their associated Element-class, unless they are selectively hidden by using the `HiddenProperty` or `HiddenClass` *Custom-Attributes*.
 
 ### Optional Attributes
 
