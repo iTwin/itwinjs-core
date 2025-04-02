@@ -133,7 +133,8 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
 
   /**
    * Searches, case-insensitive, for a local ECProperty with the name provided.
-   * @param name
+   * @param name The name of the property to retrieve.
+   * @param excludeInherited If true, excludes inherited properties from the results. Defaults to false.
    */
   public async getProperty(name: string, excludeInherited: boolean = false): Promise<Property | undefined> {
     if (this._properties) {
@@ -152,7 +153,8 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
 
   /**
    * Searches, case-insensitive, for a local ECProperty with the name provided.
-   * @param name
+   * @param name The name of the property to retrieve.
+   * @param excludeInherited If true, excludes inherited properties from the results. Defaults to false.
    */
   public getPropertySync(name: string, excludeInherited: boolean = false): Property | undefined {
     if (this._properties) {
