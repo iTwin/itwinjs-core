@@ -8,8 +8,8 @@
 
 import { BentleyStatus } from "@itwin/core-bentley";
 import { IModelError } from "@itwin/core-common";
-import { ECSchemaXmlContext } from "./ECSchemaXmlContext";
-import { IModelNative } from "./internal/NativePlatform";
+import { ECSchemaXmlContext } from "./ECSchemaXmlContext.js";
+import { IModelNative } from "./internal/NativePlatform.js";
 
 /** Converts EC2 Xml ECSchema(s). On success, the `EC2 Xml schemas` are converted into `EC3.2 Xml schemas`.
  * @param ec2XmlSchemas The EC2 Xml string(s) created from a serialized ECSchema.

@@ -8,7 +8,7 @@
 
 import { BentleyStatus  } from "@itwin/core-bentley";
 import { FormDataCommon, HttpServerRequest, IModelError, RpcMultipart, RpcSerializedValue } from "@itwin/core-common";
-import * as FormData from "form-data";
+import FormData from "form-data";
 import * as multiparty from "multiparty";
 
 /* eslint-disable @typescript-eslint/no-deprecated */

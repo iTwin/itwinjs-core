@@ -13,12 +13,12 @@ import {
   AccessToken, BeDuration, BriefcaseStatus, Constructor, GuidString, Logger, LogLevel, OpenMode, Optional, PickAsyncMethods, PickMethods, StopWatch,
 } from "@itwin/core-bentley";
 import { LocalDirName, LocalFileName } from "@itwin/core-common";
-import { BlobContainer } from "./BlobContainerService";
-import { IModelHost, KnownLocations } from "./IModelHost";
-import { IModelJsFs } from "./IModelJsFs";
-import { RpcTrace } from "./rpc/tracing";
+import { BlobContainer } from "./BlobContainerService.js";
+import { IModelHost, KnownLocations } from "./IModelHost.js";
+import { IModelJsFs } from "./IModelJsFs.js";
+import { RpcTrace } from "./rpc/tracing.js";
 
-import type { SQLiteDb, VersionedSqliteDb } from "./SQLiteDb";
+import type { SQLiteDb, VersionedSqliteDb } from "./SQLiteDb.js";
 
 // spell:ignore logmsg httpcode daemonless cachefile cacheslots ddthh
 

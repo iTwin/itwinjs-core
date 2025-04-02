@@ -3,14 +3,14 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
-import { computeGraphemeOffsets, ComputeGraphemeOffsetsArgs, ComputeRangesForTextLayout, ComputeRangesForTextLayoutArgs, FindFontId, FindTextStyle, layoutTextBlock, LineLayout, RunLayout, TextBlockLayout, TextLayoutRanges } from "../../TextAnnotationLayout";
+import { computeGraphemeOffsets, ComputeGraphemeOffsetsArgs, ComputeRangesForTextLayout, ComputeRangesForTextLayoutArgs, FindFontId, FindTextStyle, layoutTextBlock, LineLayout, RunLayout, TextBlockLayout, TextLayoutRanges } from "../../TextAnnotationLayout.js";
 import { Geometry, Range2d } from "@itwin/core-geometry";
 import { ColorDef, FontType, FractionRun, LineBreakRun, LineLayoutResult, Run, RunLayoutResult, TextAnnotation, TextAnnotation2dProps, TextAnnotation3dProps, TextAnnotationAnchor, TextBlock, TextBlockGeometryPropsEntry, TextBlockMargins, TextRun, TextStringProps, TextStyleSettings } from "@itwin/core-common";
-import { IModelDb, SnapshotDb } from "../../IModelDb";
-import { TextAnnotation2d, TextAnnotation3d } from "../../TextAnnotationElement";
-import { produceTextAnnotationGeometry } from "../../TextAnnotationGeometry";
-import { IModelTestUtils } from "../IModelTestUtils";
-import { GeometricElement3d } from "../../Element";
+import { IModelDb, SnapshotDb } from "../../IModelDb.js";
+import { TextAnnotation2d, TextAnnotation3d } from "../../TextAnnotationElement.js";
+import { produceTextAnnotationGeometry } from "../../TextAnnotationGeometry.js";
+import { IModelTestUtils } from "../IModelTestUtils.js";
+import { GeometricElement3d } from "../../Element.js";
 import { Id64, ProcessDetector } from "@itwin/core-bentley";
 
 function computeTextRangeAsStringLength(args: ComputeRangesForTextLayoutArgs): TextLayoutRanges {

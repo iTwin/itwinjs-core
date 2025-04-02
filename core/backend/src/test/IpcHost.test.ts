@@ -1,7 +1,7 @@
 import * as sinon from "sinon";
 import { expect } from "chai";
 import { IpcInvokeReturn, IpcSocketBackend } from "@itwin/core-common";
-import { IpcHandler, IpcHost } from "../IpcHost";
+import { IpcHandler, IpcHost } from "../IpcHost.js";
 
 interface MockIpcInterface {
   mockMethod: () => string;

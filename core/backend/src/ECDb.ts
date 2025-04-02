@@ -8,12 +8,12 @@
 import { assert, DbResult, Logger, OpenMode } from "@itwin/core-bentley";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import { DbQueryRequest, ECSchemaProps, ECSqlReader, IModelError, QueryBinder, QueryOptions } from "@itwin/core-common";
-import { BackendLoggerCategory } from "./BackendLoggerCategory";
-import { ConcurrentQuery } from "./ConcurrentQuery";
-import { ECSqlStatement } from "./ECSqlStatement";
-import { IModelNative } from "./internal/NativePlatform";
-import { SqliteStatement, StatementCache } from "./SqliteStatement";
-import { _nativeDb } from "./internal/Symbols";
+import { BackendLoggerCategory } from "./BackendLoggerCategory.js";
+import { ConcurrentQuery } from "./ConcurrentQuery.js";
+import { ECSqlStatement } from "./ECSqlStatement.js";
+import { IModelNative } from "./internal/NativePlatform.js";
+import { SqliteStatement, StatementCache } from "./SqliteStatement.js";
+import { _nativeDb } from "./internal/Symbols.js";
 
 const loggerCategory: string = BackendLoggerCategory.ECDb;
 

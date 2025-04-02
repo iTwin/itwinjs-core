@@ -8,8 +8,8 @@ import {
   BriefcaseIdValue, Code,  ColorDef,  GeometricElementProps, IModel,
   SubCategoryAppearance,
 } from "@itwin/core-common";
-import {   _nativeDb, IModelDb, IModelJsFs, SnapshotDb, SpatialCategory } from "../../core-backend";
-import { IModelTestUtils } from "../IModelTestUtils";
+import {   _nativeDb, IModelDb, IModelJsFs, SnapshotDb, SpatialCategory } from "../../core-backend.js";
+import { IModelTestUtils } from "../IModelTestUtils.js";
 
 interface TestElement extends GeometricElementProps {
   addresses: [null, {city: "Pune", zip: 28}];

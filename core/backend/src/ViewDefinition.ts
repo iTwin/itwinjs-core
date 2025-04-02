@@ -16,10 +16,10 @@ import {
   SpatialViewDefinitionProps, ViewAttachmentProps, ViewDefinition2dProps, ViewDefinition3dProps, ViewDefinitionProps, ViewDetails,
   ViewDetails3d,
 } from "@itwin/core-common";
-import { DefinitionElement, GraphicalElement2d, SpatialLocationElement } from "./Element";
-import { IModelDb } from "./IModelDb";
-import { DisplayStyle, DisplayStyle2d, DisplayStyle3d } from "./DisplayStyle";
-import { IModelElementCloneContext } from "./IModelElementCloneContext";
+import { DefinitionElement, GraphicalElement2d, SpatialLocationElement } from "./Element.js";
+import { IModelDb } from "./IModelDb.js";
+import { DisplayStyle, DisplayStyle2d, DisplayStyle3d } from "./DisplayStyle.js";
+import { IModelElementCloneContext } from "./IModelElementCloneContext.js";
 
 /** Holds the list of Ids of GeometricModels displayed by a [[SpatialViewDefinition]]. Multiple SpatialViewDefinitions may point to the same ModelSelector.
  * @see [ModelSelectorState]($frontend)

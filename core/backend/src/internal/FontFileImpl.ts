@@ -6,11 +6,11 @@
 import * as fs from "fs";
 import { FontFace, FontType, LocalFileName } from "@itwin/core-common";
 import type { IModelJsNative } from "@bentley/imodeljs-native";
-import { CreateFontFileFromRscBlobArgs, CreateFontFileFromShxBlobArgs, FontFile } from "../FontFile";
-import { _faceProps, _getData, _implementationProhibited, _key } from "./Symbols";
+import { CreateFontFileFromRscBlobArgs, CreateFontFileFromShxBlobArgs, FontFile } from "../FontFile.js";
+import { _faceProps, _getData, _implementationProhibited, _key } from "./Symbols.js";
 import { compareNumbersOrUndefined } from "@itwin/core-bentley";
-import { IModelNative } from "./NativePlatform"; 
-import { IModelDb } from "../IModelDb";
+import { IModelNative } from "./NativePlatform.js";
+import { IModelDb } from "../IModelDb.js";
 
 abstract class FontFileImpl implements FontFile {
   public readonly [_implementationProhibited] = undefined;
@@ -49,7 +49,7 @@ abstract class FontFileImpl implements FontFile {
 class TrueTypeFontFile extends FontFileImpl {
   readonly #fileName: LocalFileName;
   readonly #embeddable: boolean;
-  
+
   public constructor(fileName: LocalFileName, embeddable: boolean, faces: IModelJsNative.FontFaceProps[]) {
     super(faces);
     this.#fileName = fileName;

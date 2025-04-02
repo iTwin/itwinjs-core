@@ -8,10 +8,10 @@ import {
   IModel,
   SubCategoryAppearance
 } from "@itwin/core-common";
-import * as chai from "chai";
+import chai from "chai";
 import { assert } from "chai";
-import * as chaiAsPromised from "chai-as-promised";
-import { HubWrappers, KnownTestLocations } from "..";
+import chaiAsPromised from "chai-as-promised";
+import { HubWrappers, KnownTestLocations } from "../index.js";
 import {
   BriefcaseDb,
   ChannelControl,
@@ -19,10 +19,10 @@ import {
   IModelHost,
   SpatialCategory,
   SqliteChangesetReader
-} from "../../core-backend";
-import { HubMock } from "../../HubMock";
-import { RebaseChangesetConflictArgs, TxnArgs } from "../../internal/ChangesetConflictArgs";
-import { IModelTestUtils, TestUserType } from "../IModelTestUtils";
+} from "../../core-backend.js";
+import { HubMock } from "../../HubMock.js";
+import { RebaseChangesetConflictArgs, TxnArgs } from "../../internal/ChangesetConflictArgs.js";
+import { IModelTestUtils, TestUserType } from "../IModelTestUtils.js";
 chai.use(chaiAsPromised);
 import * as sinon from "sinon";
 

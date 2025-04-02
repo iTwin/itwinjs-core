@@ -6,12 +6,12 @@ import { assert } from "chai";
 import { DbResult, Guid, GuidString, Id64, Id64String } from "@itwin/core-bentley";
 import { NavigationValue, QueryBinder, QueryOptions, QueryOptionsBuilder, QueryRowFormat } from "@itwin/core-common";
 import { Point2d, Point3d, Range3d, XAndY, XYAndZ } from "@itwin/core-geometry";
-import { _nativeDb, ECDb, ECEnumValue, ECSqlColumnInfo, ECSqlInsertResult, ECSqlStatement, ECSqlValue, SnapshotDb } from "../../core-backend";
-import { IModelTestUtils } from "../IModelTestUtils";
-import { KnownTestLocations } from "../KnownTestLocations";
-import { SequentialLogMatcher } from "../SequentialLogMatcher";
-import { ECDbTestHelper } from "./ECDbTestHelper";
-import { ConcurrentQuery } from "../../ConcurrentQuery";
+import { _nativeDb, ECDb, ECEnumValue, ECSqlColumnInfo, ECSqlInsertResult, ECSqlStatement, ECSqlValue, SnapshotDb } from "../../core-backend.js";
+import { IModelTestUtils } from "../IModelTestUtils.js";
+import { KnownTestLocations } from "../KnownTestLocations.js";
+import { SequentialLogMatcher } from "../SequentialLogMatcher.js";
+import { ECDbTestHelper } from "./ECDbTestHelper.js";
+import { ConcurrentQuery } from "../../ConcurrentQuery.js";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 const selectSingleRow = new QueryOptionsBuilder().setLimit({ count: 1, offset: -1 }).setRowFormat(QueryRowFormat.UseJsPropertyNames).getOptions();

@@ -4,9 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { Buffer } from "node:buffer";
-import * as chai from "chai";
+import chai from "chai";
 import { assert, expect } from "chai";
-import * as chaiAsPromised from "chai-as-promised";
+import chaiAsPromised from "chai-as-promised";
 import * as path from "path";
 import { AccessToken, BeEvent, DbResult, Guid, GuidString, Id64, Id64String, IModelStatus, omit, OpenMode } from "@itwin/core-bentley";
 import {
@@ -17,25 +17,25 @@ import {
   RpcPendingResponse, SkyBoxImageType, SubCategoryAppearance, SubCategoryOverride, SyncMode,
 } from "@itwin/core-common";
 import { Box, Cone, LineString3d, Point2d, Point3d, Range2d, Range3d, StandardViewIndex, Vector3d, YawPitchRollAngles } from "@itwin/core-geometry";
-import { RequestNewBriefcaseArg } from "../BriefcaseManager";
-import { CheckpointProps, V1CheckpointManager } from "../CheckpointManager";
-import { ClassRegistry } from "../ClassRegistry";
+import { RequestNewBriefcaseArg } from "../BriefcaseManager.js";
+import { CheckpointProps, V1CheckpointManager } from "../CheckpointManager.js";
+import { ClassRegistry } from "../ClassRegistry.js";
 import {
   _nativeDb, AuxCoordSystem2d, BriefcaseDb, BriefcaseLocalValue, BriefcaseManager, CategorySelector, ChannelControl, DisplayStyle2d, DisplayStyle3d, DrawingCategory,
   DrawingViewDefinition, ECSqlStatement, Element, ElementAspect, ElementOwnsChildElements, ElementOwnsMultiAspects, ElementOwnsUniqueAspect,
   ElementUniqueAspect, ExternalSource, ExternalSourceIsInRepository, FunctionalModel, FunctionalSchema, GroupModel, IModelDb, IModelHost,
   IModelJsFs, InformationPartitionElement, Model, ModelSelector, OrthographicViewDefinition, PhysicalModel, PhysicalObject,
   PhysicalPartition, RenderMaterialElement, SnapshotDb, SpatialCategory, SubCategory, SubjectOwnsPartitionElements, Texture, ViewDefinition,
-} from "../core-backend";
-import { DefinitionPartition, Drawing, DrawingGraphic, GeometryPart, LinkElement, PhysicalElement, RepositoryLink, Subject } from "../Element";
-import { DefinitionModel, DocumentListModel, DrawingModel, InformationRecordModel, SpatialLocationModel } from "../Model";
-import { DrawingGraphicRepresentsElement, ElementDrivesElement, Relationship, RelationshipProps } from "../Relationship";
-import { DownloadAndOpenArgs, RpcBriefcaseUtility } from "../rpc-impl/RpcBriefcaseUtility";
-import { Schema, Schemas } from "../Schema";
-import { HubMock } from "../HubMock";
-import { KnownTestLocations } from "./KnownTestLocations";
-import { BackendHubAccess } from "../BackendHubAccess";
-import { _hubAccess } from "../internal/Symbols";
+} from "../core-backend.js";
+import { DefinitionPartition, Drawing, DrawingGraphic, GeometryPart, LinkElement, PhysicalElement, RepositoryLink, Subject } from "../Element.js";
+import { DefinitionModel, DocumentListModel, DrawingModel, InformationRecordModel, SpatialLocationModel } from "../Model.js";
+import { DrawingGraphicRepresentsElement, ElementDrivesElement, Relationship, RelationshipProps } from "../Relationship.js";
+import { DownloadAndOpenArgs, RpcBriefcaseUtility } from "../rpc-impl/RpcBriefcaseUtility.js";
+import { Schema, Schemas } from "../Schema.js";
+import { HubMock } from "../HubMock.js";
+import { KnownTestLocations } from "./KnownTestLocations.js";
+import { BackendHubAccess } from "../BackendHubAccess.js";
+import { _hubAccess } from "../internal/Symbols.js";
 
 chai.use(chaiAsPromised);
 

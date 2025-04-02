@@ -7,7 +7,7 @@
  */
 
 import { Range2dProps } from "@itwin/core-geometry";
-import { IModelNative } from "./internal/NativePlatform";
+import { IModelNative } from "./internal/NativePlatform.js";
 
 /** Describes a geographic coordinate reference system produced by [[getAvailableCoordinateReferenceSystems]].
  * @beta

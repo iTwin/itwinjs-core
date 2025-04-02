@@ -18,8 +18,8 @@ import {
 import {
   Geometry, GeometryQuery, LineString3d, Loop, Matrix4d, Point3d, PolyfaceBuilder, Range3d, StrokeOptions, Transform, XYZProps, YawPitchRollAngles,
 } from "@itwin/core-geometry";
-import { V2CheckpointAccessProps } from "../../BackendHubAccess";
-import { V2CheckpointManager } from "../../CheckpointManager";
+import { V2CheckpointAccessProps } from "../../BackendHubAccess.js";
+import { V2CheckpointManager } from "../../CheckpointManager.js";
 import {
   _nativeDb, BisCoreSchema, Category, ClassRegistry, DefinitionContainer, DefinitionGroup, DefinitionGroupGroupsDefinitions,
   DefinitionModel, DefinitionPartition, DictionaryModel, DisplayStyle3d, DisplayStyleCreationOptions, DocumentPartition, DrawingGraphic, ECSqlStatement,
@@ -27,15 +27,15 @@ import {
   GeometricModel, GroupInformationPartition, IModelDb, IModelHost, IModelJsFs, InformationPartitionElement, InformationRecordElement, LightLocation,
   LinkPartition, Model, PhysicalElement, PhysicalModel, PhysicalObject, PhysicalPartition, RenderMaterialElement, RenderMaterialElementParams, SnapshotDb, SpatialCategory,
   SqliteStatement, SqliteValue, SqliteValueType, StandaloneDb, SubCategory, Subject, Texture, ViewDefinition,
-} from "../../core-backend";
-import { BriefcaseDb, SnapshotDbOpenArgs } from "../../IModelDb";
-import { HubMock } from "../../HubMock";
-import { KnownTestLocations } from "../KnownTestLocations";
-import { IModelTestUtils } from "../IModelTestUtils";
-import { DisableNativeAssertions } from "../TestUtils";
-import { samplePngTexture } from "../imageData";
+} from "../../core-backend.js";
+import { BriefcaseDb, SnapshotDbOpenArgs } from "../../IModelDb.js";
+import { HubMock } from "../../HubMock.js";
+import { KnownTestLocations } from "../KnownTestLocations.js";
+import { IModelTestUtils } from "../IModelTestUtils.js";
+import { DisableNativeAssertions } from "../TestUtils.js";
+import { samplePngTexture } from "../imageData.js";
 import { performance } from "perf_hooks";
-import { _hubAccess } from "../../internal/Symbols";
+import { _hubAccess } from "../../internal/Symbols.js";
 import { CustomAttributeClass, EntityClass, PrimitiveArrayProperty, PrimitiveOrEnumPropertyBase, PropertyType, propertyTypeToString, SchemaItemType } from "@itwin/ecschema-metadata";
 // spell-checker: disable
 

@@ -5,7 +5,7 @@
 import { assert } from "chai";
 import * as os from "os";
 import { Logger, LogLevel } from "@itwin/core-bentley";
-import { DevTools, DevToolsStatsFormatter } from "../../core-backend";
+import { DevTools, DevToolsStatsFormatter } from "../../core-backend.js";
 
 interface StringIndexedObject<T> {
   [index: string]: T;

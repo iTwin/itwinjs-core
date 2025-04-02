@@ -5,8 +5,8 @@
 import { assert, IModelStatus } from "@itwin/core-bentley";
 import { ElementGraphicsRequestProps, IModelError } from "@itwin/core-common";
 import { ElementGraphicsStatus } from "@bentley/imodeljs-native";
-import { IModelDb } from "./IModelDb";
-import { _nativeDb } from "./internal/Symbols";
+import { IModelDb } from "./IModelDb.js";
+import { _nativeDb } from "./internal/Symbols.js";
 
 /** See [[IModelDb.generateElementGraphics]] and IModelTileRpcImpl.requestElementGraphics.
  * @internal

@@ -13,12 +13,12 @@ import {
   ipcAppChannels, IpcAppFunctions, IpcAppNotifications, IpcInvokeReturn, IpcListener, IpcSocketBackend, iTwinChannel,
   OpenBriefcaseProps, OpenCheckpointArgs, PullChangesOptions, RemoveFunction, SnapshotOpenOptions, StandaloneOpenOptions, TileTreeContentIds, TxnNotifications,
 } from "@itwin/core-common";
-import { ProgressFunction, ProgressStatus } from "./CheckpointManager";
-import { BriefcaseDb, IModelDb, SnapshotDb, StandaloneDb } from "./IModelDb";
-import { IModelHost, IModelHostOptions } from "./IModelHost";
-import { IModelNative } from "./internal/NativePlatform";
-import { _nativeDb } from "./internal/Symbols";
-import { cancelTileContentRequests } from "./rpc-impl/IModelTileRpcImpl";
+import { ProgressFunction, ProgressStatus } from "./CheckpointManager.js";
+import { BriefcaseDb, IModelDb, SnapshotDb, StandaloneDb } from "./IModelDb.js";
+import { IModelHost, IModelHostOptions } from "./IModelHost.js";
+import { IModelNative } from "./internal/NativePlatform.js";
+import { _nativeDb } from "./internal/Symbols.js";
+import { cancelTileContentRequests } from "./rpc-impl/IModelTileRpcImpl.js";
 
 /**
   * Options for [[IpcHost.startup]]

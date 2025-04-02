@@ -11,9 +11,9 @@ import {
   BisCodeSpec, Code, CodeScopeProps, CodeSpec, ColorDef, DisplayStyle3dProps, DisplayStyle3dSettings, DisplayStyle3dSettingsProps,
   DisplayStyleProps, DisplayStyleSettings, DisplayStyleSubCategoryProps, EntityReferenceSet, PlanProjectionSettingsProps, RenderSchedule, SkyBoxImageProps, ViewFlags,
 } from "@itwin/core-common";
-import { DefinitionElement, RenderTimeline } from "./Element";
-import { IModelDb } from "./IModelDb";
-import { IModelElementCloneContext } from "./IModelElementCloneContext";
+import { DefinitionElement, RenderTimeline } from "./Element.js";
+import { IModelDb } from "./IModelDb.js";
+import { IModelElementCloneContext } from "./IModelElementCloneContext.js";
 
 /** A DisplayStyle defines the parameters for 'styling' the contents of a view.
  * Internally a DisplayStyle consists of a dictionary of several named 'styles' describing specific aspects of the display style as a whole.

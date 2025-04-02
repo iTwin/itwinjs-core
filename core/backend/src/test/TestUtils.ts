@@ -6,9 +6,9 @@
 import * as path from "path";
 import { IModelJsNative, NativeLoggerCategory } from "@bentley/imodeljs-native";
 import { BentleyLoggerCategory, Logger, LogLevel, ProcessDetector } from "@itwin/core-bentley";
-import { BackendLoggerCategory } from "../BackendLoggerCategory";
-import { IModelHost, IModelHostOptions } from "../IModelHost";
-import { IModelNative } from "../internal/NativePlatform";
+import { BackendLoggerCategory } from "../BackendLoggerCategory.js";
+import { IModelHost, IModelHostOptions } from "../IModelHost.js";
+import { IModelNative } from "../internal/NativePlatform.js";
 
 /** Class for simple test timing */
 export class Timer {

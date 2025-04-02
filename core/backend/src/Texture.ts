@@ -10,8 +10,8 @@ import { Id64String } from "@itwin/core-bentley";
 import {
   Base64EncodedString, BisCodeSpec, Code, CodeScopeProps, CodeSpec, ImageSourceFormat, TextureProps,
 } from "@itwin/core-common";
-import { DefinitionElement } from "./Element";
-import { IModelDb } from "./IModelDb";
+import { DefinitionElement } from "./Element.js";
+import { IModelDb } from "./IModelDb.js";
 
 /** A [TextureProps]($common) in which the image data can be specified either as a base-64-encoded string or a Uint8Array.
  * @see [[Texture]] constructor.

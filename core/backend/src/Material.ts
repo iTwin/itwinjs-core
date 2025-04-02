@@ -10,9 +10,9 @@ import { Id64, Id64String } from "@itwin/core-bentley";
 import {
   BisCodeSpec, Code, CodeScopeProps, CodeSpec, DefinitionElementProps, ElementProps, NormalMapProps, RenderMaterialAssetMapsProps, RenderMaterialProps, RgbFactorProps, TextureMapProps,
 } from "@itwin/core-common";
-import { DefinitionElement } from "./Element";
-import { IModelDb } from "./IModelDb";
-import { IModelElementCloneContext } from "./IModelElementCloneContext";
+import { DefinitionElement } from "./Element.js";
+import { IModelDb } from "./IModelDb.js";
+import { IModelElementCloneContext } from "./IModelElementCloneContext.js";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 

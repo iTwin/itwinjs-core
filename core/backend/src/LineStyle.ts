@@ -8,8 +8,8 @@
 
 import { Id64String, IModelStatus } from "@itwin/core-bentley";
 import { FilePropertyProps, IModelError, LinePixels, LineStyleProps } from "@itwin/core-common";
-import { GeometryPart, LineStyle } from "./Element";
-import { IModelDb } from "./IModelDb";
+import { GeometryPart, LineStyle } from "./Element.js";
+import { IModelDb } from "./IModelDb.js";
 
 /** A line style definition is a uniquely named pattern that repeats as it is displayed along a curve path. In the absence of a line style, curve display is limited to solid lines with a width in pixels.
  * There are three varieties of line styles:

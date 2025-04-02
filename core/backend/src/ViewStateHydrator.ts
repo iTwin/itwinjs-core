@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 import { BentleyError, CompressedId64Set, Id64String, Logger } from "@itwin/core-bentley";
 import { HydrateViewStateRequestProps, HydrateViewStateResponseProps, ModelProps, ViewAttachmentProps, ViewStateLoadProps } from "@itwin/core-common";
-import { BackendLoggerCategory } from "./BackendLoggerCategory";
-import { IModelDb } from "./IModelDb";
+import { BackendLoggerCategory } from "./BackendLoggerCategory.js";
+import { IModelDb } from "./IModelDb.js";
 
 /** @internal */
 export class ViewStateHydrator {

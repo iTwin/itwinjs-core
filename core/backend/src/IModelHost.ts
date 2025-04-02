@@ -7,9 +7,9 @@
  */
 
 // To avoid circular load errors, the "Element" classes must be loaded before IModelHost.
-import "./IModelDb"; // DO NOT REMOVE OR MOVE THIS LINE!
+import "./IModelDb.js"; // DO NOT REMOVE OR MOVE THIS LINE!
 
-import { IModelNative, loadNativePlatform } from "./internal/NativePlatform";
+import { IModelNative, loadNativePlatform } from "./internal/NativePlatform.js";
 import * as os from "os";
 import "reflect-metadata"; // this has to be before @itwin/object-storage-* and @itwin/cloud-agnostic-core imports because those packages contain decorators that use this polyfill.
 import { NativeLibrary } from "@bentley/imodeljs-native";
@@ -18,30 +18,30 @@ import { AccessToken, assert, BeEvent, BentleyStatus, DbResult, Guid, GuidString
 import { AuthorizationClient, IModelError, LocalDirName, SessionProps } from "@itwin/core-common";
 import { AzureServerStorageBindings } from "@itwin/object-storage-azure";
 import { ServerStorage } from "@itwin/object-storage-core";
-import { BackendHubAccess, CreateNewIModelProps } from "./BackendHubAccess";
-import { BackendLoggerCategory } from "./BackendLoggerCategory";
-import { BisCoreSchema } from "./BisCoreSchema";
-import { BriefcaseManager } from "./BriefcaseManager";
-import { CloudSqlite } from "./CloudSqlite";
-import { FunctionalSchema } from "./domains/FunctionalSchema";
-import { GenericSchema } from "./domains/GenericSchema";
-import { GeoCoordConfig } from "./GeoCoordConfig";
-import { IModelJsFs } from "./IModelJsFs";
-import { DevToolsRpcImpl } from "./rpc-impl/DevToolsRpcImpl";
-import { IModelReadRpcImpl } from "./rpc-impl/IModelReadRpcImpl";
-import { IModelTileRpcImpl } from "./rpc-impl/IModelTileRpcImpl";
-import { SnapshotIModelRpcImpl } from "./rpc-impl/SnapshotIModelRpcImpl";
-import { initializeRpcBackend } from "./RpcBackend";
-import { TileStorage } from "./TileStorage";
-import { SettingsContainer, SettingsPriority } from "./workspace/Settings";
-import { SettingsSchemas } from "./workspace/SettingsSchemas";
-import { Workspace, WorkspaceOpts } from "./workspace/Workspace";
+import { BackendHubAccess, CreateNewIModelProps } from "./BackendHubAccess.js";
+import { BackendLoggerCategory } from "./BackendLoggerCategory.js";
+import { BisCoreSchema } from "./BisCoreSchema.js";
+import { BriefcaseManager } from "./BriefcaseManager.js";
+import { CloudSqlite } from "./CloudSqlite.js";
+import { FunctionalSchema } from "./domains/FunctionalSchema.js";
+import { GenericSchema } from "./domains/GenericSchema.js";
+import { GeoCoordConfig } from "./GeoCoordConfig.js";
+import { IModelJsFs } from "./IModelJsFs.js";
+import { DevToolsRpcImpl } from "./rpc-impl/DevToolsRpcImpl.js";
+import { IModelReadRpcImpl } from "./rpc-impl/IModelReadRpcImpl.js";
+import { IModelTileRpcImpl } from "./rpc-impl/IModelTileRpcImpl.js";
+import { SnapshotIModelRpcImpl } from "./rpc-impl/SnapshotIModelRpcImpl.js";
+import { initializeRpcBackend } from "./RpcBackend.js";
+import { TileStorage } from "./TileStorage.js";
+import { SettingsContainer, SettingsPriority } from "./workspace/Settings.js";
+import { SettingsSchemas } from "./workspace/SettingsSchemas.js";
+import { Workspace, WorkspaceOpts } from "./workspace/Workspace.js";
 import { Container } from "inversify";
 import { join, normalize as normalizeDir } from "path";
-import { constructWorkspace, OwnedWorkspace } from "./internal/workspace/WorkspaceImpl";
-import { SettingsImpl } from "./internal/workspace/SettingsImpl";
-import { constructSettingsSchemas } from "./internal/workspace/SettingsSchemasImpl";
-import { _getHubAccess, _hubAccess, _setHubAccess } from "./internal/Symbols";
+import { constructWorkspace, OwnedWorkspace } from "./internal/workspace/WorkspaceImpl.js";
+import { SettingsImpl } from "./internal/workspace/SettingsImpl.js";
+import { constructSettingsSchemas } from "./internal/workspace/SettingsSchemasImpl.js";
+import { _getHubAccess, _hubAccess, _setHubAccess } from "./internal/Symbols.js";
 
 const loggerCategory = BackendLoggerCategory.IModelHost;
 
@@ -683,7 +683,12 @@ export class KnownLocations {
 
   /** The directory where the core-backend assets are stored. */
   public static get packageAssetsDir(): LocalDirName {
-    return join(__dirname, "assets");
+    if(typeof __dirname === "undefined") {
+      // @ts-ignore TS complains about import.meta  in cjs builds
+      return join(import.meta.dirname, "assets");
+    } else {
+      return join(__dirname, "assets");
+    }
   }
 
   /** The temporary directory. */

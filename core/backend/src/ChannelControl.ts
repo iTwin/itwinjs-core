@@ -7,7 +7,7 @@
  */
 
 import { Id64String } from "@itwin/core-bentley";
-import { _implementationProhibited, _verifyChannel } from "./internal/Symbols";
+import { _implementationProhibited, _verifyChannel } from "./internal/Symbols.js";
 
 /** The key for a channel. Used for "allowed channels" in [[ChannelControl]]
  * @beta
