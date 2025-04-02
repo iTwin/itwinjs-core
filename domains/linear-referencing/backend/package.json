@@ -1,6 +1,6 @@
 {
   "name": "@itwin/linear-referencing-backend",
-  "version": "5.0.0-dev.95",
+  "version": "5.0.0-dev.96",
   "main": "lib/cjs/linear-referencing-backend.js",
   "module": "lib/esm/linear-referencing-backend.js",
   "typings": "lib/cjs/linear-referencing-backend",
