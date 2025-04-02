@@ -116,7 +116,7 @@ Here is a sample screenshot of draping a model from within an iModel (the piping
 
 ![model onto reality draping example](./assets/model-draping-onto-reality.jpg "Example of draping a model from within an iModel (the piping in the air) onto some glTF reality data (the terrain underneath)")
 
-Here is a sample screenshot of draping models from within an iModel onto other models from that same iModel. The red piping model is draping onto the blue slab model. The blue slab model is draping onto the terrain model. All of these models are contains within the same iModel.
+Here is a sample screenshot of draping models from within an iModel onto other models from that same iModel. The red piping model is draping onto the blue slab model. The blue slab model is draping onto the terrain model. All of these models are contained within the same iModel.
 
 ![models onto models draping example](./assets/models-draping-onto-models.jpg "Example of draping models from within an iModel onto other models from that same iModel")
 
