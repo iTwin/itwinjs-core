@@ -12,7 +12,7 @@ The following sections focus on attributes that are meant to be persisted in a B
 
 ### First-class Attributes
 
-An attribute of an Entity can be implemented as an [ECProperty](../../ec/ec-property.md) directly defined on the [Element-class](./data-classification.md#element-class) that represents it - also known as a `First-class property`. This is the strategy recommended to follow for attribution considered as *essential* according to the semantics and modeling perspective captured by the element-class modeling the associated Entity.
+An attribute of an Entity can be implemented as an [ECProperty](../../ec/ec-property.md) directly defined on the [Element-class](./data-classification.md#element-class) that represents it - also known as a `First-class property`. This is the strategy recommended to follow for attribution considered as *essential* according to the semantics and [modeling perspective](../data-organization/modeling-perspectives.md) captured by the element-class modeling the associated Entity.
 
 Note, however, that there may be attributions whose applicability dependend on the state of a more general concept on a specific Entity. Such attributions shall be implemented via a class-hierarchy based on `Element-Aspects`(./elementaspect-fundamentals.md). If the overall concept is considered *essential* for the associated Entity, the target multiplicity of its associated `ElementOwnsUniqueAspect` or `ElementOwnsMultiAspect` relationship shall be set accordingly (i.e. 1..1 or 1..* respectively). See [Sub-Properties and ElementAspects](./elementaspect-fundamentals.md#sub-properties-and-elementaspects) for more information and an example of this situation.
 
