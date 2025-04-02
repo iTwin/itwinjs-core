@@ -245,7 +245,7 @@ export abstract class MutableEntityClass extends EntityClass {
 
 /** @internal */
 export async function createNavigationProperty(ecClass: ECClass, name: string, relationship: string | RelationshipClass, direction: string | StrengthDirection): Promise<NavigationProperty> {
-  if (await ecClass.getProperty(name))
+  if (await ecClass.getProperty(name, true))
     throw new ECObjectsError(ECObjectsStatus.DuplicateProperty, `An ECProperty with the name ${name} already exists in the class ${ecClass.name}.`);
 
   let resolvedRelationship: RelationshipClass | undefined;
