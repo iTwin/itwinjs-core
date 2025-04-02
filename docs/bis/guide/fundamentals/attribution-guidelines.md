@@ -22,7 +22,7 @@ First-class properties shall be shown in UX controls as attribution of their ass
 
 Attribution of an Entity considered optional can be implemented as [EC Properties](../../ec/ec-property.md) of an [Element-Aspect](./elementaspect-fundamentals.md). An `Element-Aspect` is a set of properties that can be attached to an `Element` instance.
 
-The default behavior of all UX controls in iTwin.js is to show Element-Aspect properties as attribution of their associated Element-instance, unless they are selectively hidden by using the `HiddenProperty` or `HiddenClass` *Custom-Attributes*.
+Element-Aspect properties shall be shown in UX controls as attribution of their associated Element-instance, unless they are selectively hidden by using the `HiddenProperty` or `HiddenClass` *Custom-Attributes*.
 
 ### Attributes in Link-table Relationships
 
@@ -30,7 +30,7 @@ The default behavior of all UX controls in iTwin.js is to show Element-Aspect pr
 
 As an example, the base class of `Link-table` relationships - `ElementRefersToElements` - contains the `MemberPriority` property to enable data-writers to specify an order for the instances at the target-end of the relationship with respect to a common source-instance.
 
-Link-table relationship properties are not included in any UX control in iTwin.js by default.
+Link-table relationship properties shall not included in any generic UX control by default.
 
 ### JSON data
 
@@ -38,7 +38,7 @@ Instance-specific *ad hoc* data on an Element can be captured in JSON format in 
 
 More carefully planned data can also be stored in JSON format. This is the case of [Authoring-focused attributes](#authoring-focused-attributes) in some cases, especially because such data typically only has one reader: the iTwin Native application that depends on it. In that case, it is recommended that a property different from the base `JsonProperties` is used to store it. Such kind of properties need to be defined as *string* [ECProperties](../../ec/ec-property.md) whose *extendedType* is set to *Json*.
 
-JSON-based properties are not included in any UX control in iTwin.js by default.
+JSON-based properties shall not included in any generic UX control by default.
 
 ## Derived Attributes
 
