@@ -8,10 +8,10 @@
 
 import { Id64String } from "@itwin/core-bentley";
 import { TransformProps } from "@itwin/core-geometry";
-import { Placement2dProps, Placement3dProps } from "../ElementProps";
-import { ElementGeometryDataEntry } from "../geometry/ElementGeometry";
-import { GeometryStreamProps } from "../geometry/GeometryStream";
-import { ContentFlags, TreeFlags } from "../tile/TileMetadata";
+import { Placement2dProps, Placement3dProps } from "../ElementProps.js";
+import { ElementGeometryDataEntry } from "../geometry/ElementGeometry.js";
+import { GeometryStreamProps } from "../geometry/GeometryStream.js";
+import { ContentFlags, TreeFlags } from "../tile/TileMetadata.js";
 
 /** Wire format describing properties common to [[PersistentGraphicsRequestProps]] and [[DynamicGraphicsRequestProps]].
  * @see [[ElementGraphicsRequestProps]] for more details.

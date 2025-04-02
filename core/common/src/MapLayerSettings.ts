@@ -7,8 +7,8 @@
  */
 
 import { assert, Id64String } from "@itwin/core-bentley";
-import { BackgroundMapProvider, BackgroundMapProviderProps, BackgroundMapType } from "./BackgroundMapProvider";
-import { DeprecatedBackgroundMapProps } from "./BackgroundMapSettings";
+import { BackgroundMapProvider, BackgroundMapProviderProps, BackgroundMapType } from "./BackgroundMapProvider.js";
+import { DeprecatedBackgroundMapProps } from "./BackgroundMapSettings.js";
 
 /** The current set of supported map layer formats.
  * In order to be displayed, a corresponding format must have been registered in the [MapLayerFormatRegistry]($frontend)

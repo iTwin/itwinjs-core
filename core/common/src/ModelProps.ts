@@ -8,9 +8,9 @@
 
 import { GuidString, Id64String } from "@itwin/core-bentley";
 import { XYProps } from "@itwin/core-geometry";
-import { CodeProps } from "./Code";
-import { RelatedElementProps } from "./ElementProps";
-import { EntityProps, EntityQueryParams } from "./EntityProps";
+import { CodeProps } from "./Code.js";
+import { RelatedElementProps } from "./ElementProps.js";
+import { EntityProps, EntityQueryParams } from "./EntityProps.js";
 
 /** Properties that define a [Model]($docs/bis/guide/fundamentals/model-fundamentals)
  * @public

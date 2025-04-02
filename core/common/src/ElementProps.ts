@@ -10,13 +10,13 @@ import { GuidString, Id64, Id64String, IModelStatus } from "@itwin/core-bentley"
 import {
   AngleProps, ClipVectorProps, LowAndHighXYProps, LowAndHighXYZProps, TransformProps, XYProps, XYZProps, YawPitchRollProps,
 } from "@itwin/core-geometry";
-import { CodeProps } from "./Code";
-import { EntityProps } from "./EntityProps";
-import { ElementGeometryBuilderParams, ElementGeometryBuilderParamsForPart } from "./geometry/ElementGeometry";
-import { GeometryStreamProps } from "./geometry/GeometryStream";
-import { IModelError } from "./IModelError";
-import { SubCategoryAppearance } from "./SubCategoryAppearance";
-import { TextAnnotationProps } from "./annotation/TextAnnotation";
+import { CodeProps } from "./Code.js";
+import { EntityProps } from "./EntityProps.js";
+import { ElementGeometryBuilderParams, ElementGeometryBuilderParamsForPart } from "./geometry/ElementGeometry.js";
+import { GeometryStreamProps } from "./geometry/GeometryStream.js";
+import { IModelError } from "./IModelError.js";
+import { SubCategoryAppearance } from "./SubCategoryAppearance.js";
+import { TextAnnotationProps } from "./annotation/TextAnnotation.js";
 
 /** Properties of a NavigationProperty.
  * @public

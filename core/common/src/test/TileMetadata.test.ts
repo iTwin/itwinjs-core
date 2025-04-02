@@ -6,11 +6,11 @@
 import { Id64String } from "@itwin/core-bentley";
 import { Point3d, Range3d } from "@itwin/core-geometry";
 import { describe, expect, it } from "vitest";
-import { BatchType } from "../FeatureTable";
+import { BatchType } from "../FeatureTable.js";
 import {
   ClassifierTileTreeId, computeTileChordTolerance, ContentIdProvider, EdgeOptions, IModelTileTreeId, iModelTileTreeIdToString,
   parseTileTreeIdAndContentId, PrimaryTileTreeId, defaultTileOptions as realDefaultTileOptions, TileMetadata, TileOptions, TreeFlags,
-} from "../tile/TileMetadata";
+} from "../tile/TileMetadata.js";
 
 // NB: These tests were written when defaultTileOptions specified indexed edges as the default. Now, compact edges are the default.
 // Adjust the defaults used by the tests to continue to use indexed; additional tests for compact have been added.

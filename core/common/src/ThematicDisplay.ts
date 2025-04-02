@@ -8,9 +8,9 @@
 
 import { compareNumbers } from "@itwin/core-bentley";
 import { Point3d, Range1d, Range1dProps, Vector3d, XYZProps } from "@itwin/core-geometry";
-import { ColorDef, ColorDefProps } from "./ColorDef";
-import { Gradient } from "./Gradient";
-import { TextureTransparency } from "./TextureProps";
+import { ColorDef, ColorDefProps } from "./ColorDef.js";
+import { Gradient } from "./Gradient.js";
+import { TextureTransparency } from "./TextureProps.js";
 
 /** A thematic gradient mode used to generate and apply a thematic effect to a scene.
  * @see [[ThematicGradientSettings.mode]]

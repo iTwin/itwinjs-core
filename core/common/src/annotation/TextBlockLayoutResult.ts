@@ -7,8 +7,8 @@
  */
 
 import { Range2dProps, XAndY } from "@itwin/core-geometry";
-import { FontId } from "../Fonts";
-import { TextStyleSettingsProps } from "./TextStyle";
+import { FontId } from "../Fonts.js";
+import { TextStyleSettingsProps } from "./TextStyle.js";
 
 /**
  * Represents a single run in a [[LineLayoutResult]].

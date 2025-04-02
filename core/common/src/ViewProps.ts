@@ -8,15 +8,15 @@
 
 import { CompressedId64Set, Id64Array, Id64String } from "@itwin/core-bentley";
 import { AngleProps, Range3dProps, TransformProps, XYProps, XYZProps, YawPitchRollProps } from "@itwin/core-geometry";
-import { CameraProps } from "./Camera";
-import { DisplayStyleProps, DisplayStyleSettingsProps } from "./DisplayStyleSettings";
-import { DefinitionElementProps, DisplayStyleLoadProps, ElementProps, RenderTimelineProps, SheetProps, ViewAttachmentProps } from "./ElementProps";
-import { EntityQueryParams } from "./EntityProps";
-import { ModelProps } from "./ModelProps";
-import { SubCategoryAppearance } from "./SubCategoryAppearance";
-import { ViewDetails3dProps, ViewDetailsProps } from "./ViewDetails";
-import { ThumbnailProps } from "./Thumbnail";
-import { RenderSchedule } from "./RenderSchedule";
+import { CameraProps } from "./Camera.js";
+import { DisplayStyleProps, DisplayStyleSettingsProps } from "./DisplayStyleSettings.js";
+import { DefinitionElementProps, DisplayStyleLoadProps, ElementProps, RenderTimelineProps, SheetProps, ViewAttachmentProps } from "./ElementProps.js";
+import { EntityQueryParams } from "./EntityProps.js";
+import { ModelProps } from "./ModelProps.js";
+import { SubCategoryAppearance } from "./SubCategoryAppearance.js";
+import { ViewDetails3dProps, ViewDetailsProps } from "./ViewDetails.js";
+import { ThumbnailProps } from "./Thumbnail.js";
+import { RenderSchedule } from "./RenderSchedule.js";
 
 /** The id of either an element or an entry in a ViewStore.
  * @public

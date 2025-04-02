@@ -5,8 +5,8 @@
 
 import { Point3d, Range1d, Vector3d } from "@itwin/core-geometry";
 import { describe, expect, it } from "vitest";
-import { ColorDef } from "../ColorDef";
-import { ThematicDisplay, ThematicDisplayMode, ThematicDisplayProps, ThematicDisplaySensorSettings, ThematicGradientColorScheme, ThematicGradientMode } from "../ThematicDisplay";
+import { ColorDef } from "../ColorDef.js";
+import { ThematicDisplay, ThematicDisplayMode, ThematicDisplayProps, ThematicDisplaySensorSettings, ThematicGradientColorScheme, ThematicGradientMode } from "../ThematicDisplay.js";
 
 describe("ThematicDisplay", () => {
   it("Ensures ThematicDisplay derives values properly from JSON, including handling defaults and incorrect values", () => {

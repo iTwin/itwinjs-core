@@ -7,9 +7,9 @@
  */
 
 import { Geometry } from "@itwin/core-geometry";
-import { ColorByName } from "./ColorByName";
-import { HSLColor } from "./HSLColor";
-import { HSVColor, HSVConstants } from "./HSVColor";
+import { ColorByName } from "./ColorByName.js";
+import { HSLColor } from "./HSLColor.js";
+import { HSVColor, HSVConstants } from "./HSVColor.js";
 
 // cspell: ignore ttbbggrr bbggrr rrggbb aabbggrr abgr rrggbb hsla lerp torgb dhue dsaturation dvalue intpart fractpart cyanish
 

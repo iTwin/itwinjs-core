@@ -7,9 +7,9 @@
  */
 
 import { JsonUtils } from "@itwin/core-bentley";
-import { ColorByName } from "./ColorByName";
-import { ColorDef, ColorDefProps } from "./ColorDef";
-import { RgbColor } from "./RgbColor";
+import { ColorByName } from "./ColorByName.js";
+import { ColorDef, ColorDefProps } from "./ColorDef.js";
+import { RgbColor } from "./RgbColor.js";
 
 /** JSON representation of [[SolarShadowSettings]].
  * @public

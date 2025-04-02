@@ -7,9 +7,9 @@
  */
 
 import { LogLevel } from "@itwin/core-bentley";
-import { IModelRpcProps } from "../IModel";
-import { RpcInterface } from "../RpcInterface";
-import { RpcManager } from "../RpcManager";
+import { IModelRpcProps } from "../IModel.js";
+import { RpcInterface } from "../RpcInterface.js";
+import { RpcManager } from "../RpcManager.js";
 
 /** Options to get the backend statistics
  * @internal

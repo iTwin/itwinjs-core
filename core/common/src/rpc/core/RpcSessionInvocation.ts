@@ -6,13 +6,13 @@
  * @module RpcInterface
  */
 
-import { InterceptedRpcRequest } from "../../ipc/IpcSession";
-import { RpcConfiguration } from "./RpcConfiguration";
-import { RpcRequestStatus, RpcResponseCacheControl } from "./RpcConstants";
-import { RpcInvocation } from "./RpcInvocation";
-import { RpcSerializedValue } from "./RpcMarshaling";
-import { RpcProtocol, SerializedRpcRequest } from "./RpcProtocol";
-import { RpcRequest } from "./RpcRequest";
+import { InterceptedRpcRequest } from "../../ipc/IpcSession.js";
+import { RpcConfiguration } from "./RpcConfiguration.js";
+import { RpcRequestStatus, RpcResponseCacheControl } from "./RpcConstants.js";
+import { RpcInvocation } from "./RpcInvocation.js";
+import { RpcSerializedValue } from "./RpcMarshaling.js";
+import { RpcProtocol, SerializedRpcRequest } from "./RpcProtocol.js";
+import { RpcRequest } from "./RpcRequest.js";
 
 /* eslint-disable @typescript-eslint/no-deprecated */
 

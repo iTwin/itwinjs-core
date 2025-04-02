@@ -5,17 +5,17 @@
 /** @packageDocumentation
  * @module RpcInterface
  */
-import { RpcConfiguration, RpcConfigurationSupplier } from "./rpc/core/RpcConfiguration";
-import { CURRENT_REQUEST } from "./rpc/core/RpcRegistry";
-import { aggregateLoad, RpcRequest } from "./rpc/core/RpcRequest";
-import { RpcRoutingToken } from "./rpc/core/RpcRoutingToken";
-import { InterceptedRpcRequest, IpcSession } from "./ipc/IpcSession";
-import { RpcSerializedValue } from "./rpc/core/RpcMarshaling";
-import { RpcManagedStatus } from "./rpc/core/RpcProtocol";
-import { IModelError, NoContentError } from "./IModelError";
-import { RpcRequestEvent, RpcRequestStatus } from "./rpc/core/RpcConstants";
+import { RpcConfiguration, RpcConfigurationSupplier } from "./rpc/core/RpcConfiguration.js";
+import { CURRENT_REQUEST } from "./rpc/core/RpcRegistry.js";
+import { aggregateLoad, RpcRequest } from "./rpc/core/RpcRequest.js";
+import { RpcRoutingToken } from "./rpc/core/RpcRoutingToken.js";
+import { InterceptedRpcRequest, IpcSession } from "./ipc/IpcSession.js";
+import { RpcSerializedValue } from "./rpc/core/RpcMarshaling.js";
+import { RpcManagedStatus } from "./rpc/core/RpcProtocol.js";
+import { IModelError, NoContentError } from "./IModelError.js";
+import { RpcRequestEvent, RpcRequestStatus } from "./rpc/core/RpcConstants.js";
 import { BeDuration, BentleyStatus } from "@itwin/core-bentley";
-import { RpcNotFoundResponse } from "./rpc/core/RpcControl";
+import { RpcNotFoundResponse } from "./rpc/core/RpcControl.js";
 
 /* eslint-disable @typescript-eslint/no-deprecated */
 

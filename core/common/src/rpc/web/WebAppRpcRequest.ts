@@ -7,15 +7,15 @@
  */
 
 import { BentleyStatus } from "@itwin/core-bentley";
-import { IModelError, ServerError, ServerTimeoutError } from "../../IModelError";
-import { RpcInterface } from "../../RpcInterface";
-import { RpcContentType, RpcProtocolEvent, WEB_RPC_CONSTANTS } from "../core/RpcConstants";
-import { MarshalingBinaryMarker, RpcSerializedValue } from "../core/RpcMarshaling";
-import { RpcRequestFulfillment, SerializedRpcRequest } from "../core/RpcProtocol";
-import { RpcRequest } from "../core/RpcRequest";
-import { RpcMultipartParser } from "./multipart/RpcMultipartParser";
-import { RpcMultipart } from "./RpcMultipart";
-import { HttpServerRequest, HttpServerResponse, WebAppRpcProtocol } from "./WebAppRpcProtocol";
+import { IModelError, ServerError, ServerTimeoutError } from "../../IModelError.js";
+import { RpcInterface } from "../../RpcInterface.js";
+import { RpcContentType, RpcProtocolEvent, WEB_RPC_CONSTANTS } from "../core/RpcConstants.js";
+import { MarshalingBinaryMarker, RpcSerializedValue } from "../core/RpcMarshaling.js";
+import { RpcRequestFulfillment, SerializedRpcRequest } from "../core/RpcProtocol.js";
+import { RpcRequest } from "../core/RpcRequest.js";
+import { RpcMultipartParser } from "./multipart/RpcMultipartParser.js";
+import { RpcMultipart } from "./RpcMultipart.js";
+import { HttpServerRequest, HttpServerResponse, WebAppRpcProtocol } from "./WebAppRpcProtocol.js";
 
 /* eslint-disable @typescript-eslint/no-deprecated */
 declare const location: any;

@@ -6,8 +6,8 @@
  * @module Rendering
  */
 
-import { ColorDef } from "../ColorDef";
-import { TextureMapping } from "../TextureMapping";
+import { ColorDef } from "../ColorDef.js";
+import { TextureMapping } from "../TextureMapping.js";
 
 function clampToNormalizedRange(value: number): number {
   return Math.max(0.0, Math.min(1.0, value));

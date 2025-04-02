@@ -6,8 +6,8 @@
  * @module RpcInterface
  */
 
-import { RpcInterfaceDefinition } from "../RpcInterface";
-import { RpcConfiguration, RpcDefaultConfiguration } from "./core/RpcConfiguration";
+import { RpcInterfaceDefinition } from "../RpcInterface.js";
+import { RpcConfiguration, RpcDefaultConfiguration } from "./core/RpcConfiguration.js";
 
 /** An RpcManager that uses RpcDefaultConfiguration/RpcDirectProtocol to make client stubs invoke
  * registered server impls as direct method calls within the same JavaScript context. In other words,

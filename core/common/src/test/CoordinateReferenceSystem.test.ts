@@ -5,11 +5,11 @@
 // cspell:ignore JSONXYZ, ETRF, OSGB, DHDN, CLRK, Benoit, NAVD, NADCON, Xfrm, prvi, stgeorge, stlrnc, stpaul, helmert, NSRS
 
 import { describe, expect, it } from "vitest";
-import { GeographicCRS, GeographicCRSProps, HorizontalCRS, HorizontalCRSExtent, HorizontalCRSExtentProps, HorizontalCRSProps } from "../geometry/CoordinateReferenceSystem";
-import { GeodeticDatum, GeodeticDatumProps, GeodeticTransform, GeodeticTransformPath, GeodeticTransformPathProps, GeodeticTransformProps } from "../geometry/GeodeticDatum";
-import { GeodeticEllipsoid, GeodeticEllipsoidProps } from "../geometry/GeodeticEllipsoid";
-import { Carto2DDegrees } from "../geometry/Projection";
-// import { ProjectionMethod2 } from "../geometry/Projection";
+import { GeographicCRS, GeographicCRSProps, HorizontalCRS, HorizontalCRSExtent, HorizontalCRSExtentProps, HorizontalCRSProps } from "../geometry/CoordinateReferenceSystem.js";
+import { GeodeticDatum, GeodeticDatumProps, GeodeticTransform, GeodeticTransformPath, GeodeticTransformPathProps, GeodeticTransformProps } from "../geometry/GeodeticDatum.js";
+import { GeodeticEllipsoid, GeodeticEllipsoidProps } from "../geometry/GeodeticEllipsoid.js";
+import { Carto2DDegrees } from "../geometry/Projection.js";
+// import { ProjectionMethod2 } from "../geometry/Projection.js";
 
 describe("Geodetic Settings", () => {
 

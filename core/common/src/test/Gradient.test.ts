@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert, describe, expect, it } from "vitest";
 import { Angle } from "@itwin/core-geometry";
-import { Gradient } from "../Gradient";
-import { ImageBuffer, ImageBufferFormat } from "../Image";
+import { Gradient } from "../Gradient.js";
+import { ImageBuffer, ImageBufferFormat } from "../Image.js";
 
 describe("Gradient.Symb", () => {
   it("should round-trip through JSON", () => {

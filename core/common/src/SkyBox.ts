@@ -7,8 +7,8 @@
  */
 
 import { Id64, Id64String, NonFunctionPropertiesOf } from "@itwin/core-bentley";
-import { ColorDef, ColorDefProps } from "./ColorDef";
-import { TextureImageSpec } from "./RenderTexture";
+import { ColorDef, ColorDefProps } from "./ColorDef.js";
+import { TextureImageSpec } from "./RenderTexture.js";
 
 /** Supported types of [[SkyBox]] images.
  * @see [[SkyBoxImageProps]].

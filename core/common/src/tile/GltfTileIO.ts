@@ -7,7 +7,7 @@
  */
 
 import { assert, ByteStream } from "@itwin/core-bentley";
-import { TileFormat, TileHeader } from "./TileIO";
+import { TileFormat, TileHeader } from "./TileIO.js";
 
 /** Known version of the [glTF format](https://www.khronos.org/gltf/).
  * @internal

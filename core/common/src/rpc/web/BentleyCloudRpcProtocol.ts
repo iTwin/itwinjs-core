@@ -7,15 +7,15 @@
  */
 
 import { BentleyStatus } from "@itwin/core-bentley";
-import { IModelRpcProps } from "../../IModel";
-import { IModelError } from "../../IModelError";
-import { RpcConfiguration } from "../core/RpcConfiguration";
-import { RpcOperation } from "../core/RpcOperation";
-import { SerializedRpcOperation, SerializedRpcRequest } from "../core/RpcProtocol";
-import { RpcRequest } from "../core/RpcRequest";
-import { OpenAPIParameter } from "./OpenAPI";
-import { WebAppRpcProtocol } from "./WebAppRpcProtocol";
-import { SerializedRpcActivity } from "../core/RpcInvocation";
+import { IModelRpcProps } from "../../IModel.js";
+import { IModelError } from "../../IModelError.js";
+import { RpcConfiguration } from "../core/RpcConfiguration.js";
+import { RpcOperation } from "../core/RpcOperation.js";
+import { SerializedRpcOperation, SerializedRpcRequest } from "../core/RpcProtocol.js";
+import { RpcRequest } from "../core/RpcRequest.js";
+import { OpenAPIParameter } from "./OpenAPI.js";
+import { WebAppRpcProtocol } from "./WebAppRpcProtocol.js";
+import { SerializedRpcActivity } from "../core/RpcInvocation.js";
 
 enum AppMode {
   MilestoneReview = "1",

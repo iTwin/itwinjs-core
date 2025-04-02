@@ -5,7 +5,7 @@
 import { assert, describe, expect, it } from "vitest";
 import {
   RenderMode, ViewFlagOverrides, ViewFlagProps, ViewFlags, ViewFlagsProperties,
-} from "../ViewFlags";
+} from "../ViewFlags.js";
 
 function invertDefaults(): ViewFlags {
   const invertedProperties: Partial<ViewFlagsProperties> = { renderMode: RenderMode.SolidFill };

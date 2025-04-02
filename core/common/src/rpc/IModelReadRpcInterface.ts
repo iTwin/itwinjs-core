@@ -8,34 +8,34 @@
 
 import { CompressedId64Set, GuidString, Id64String, IModelStatus } from "@itwin/core-bentley";
 import { Range3dProps } from "@itwin/core-geometry";
-import { CodeProps } from "../Code";
-import { DbBlobRequest, DbBlobResponse, DbQueryRequest, DbQueryResponse } from "../ConcurrentQuery";
-import { ElementMeshRequestProps } from "../ElementMesh";
-import { ElementLoadOptions, ElementProps } from "../ElementProps";
-import { EntityQueryParams } from "../EntityProps";
-import { FontMapProps } from "../Fonts";
+import { CodeProps } from "../Code.js";
+import { DbBlobRequest, DbBlobResponse, DbQueryRequest, DbQueryResponse } from "../ConcurrentQuery.js";
+import { ElementMeshRequestProps } from "../ElementMesh.js";
+import { ElementLoadOptions, ElementProps } from "../ElementProps.js";
+import { EntityQueryParams } from "../EntityProps.js";
+import { FontMapProps } from "../Fonts.js";
 import {
   GeoCoordinatesRequestProps, GeoCoordinatesResponseProps, IModelCoordinatesRequestProps, IModelCoordinatesResponseProps,
-} from "../GeoCoordinateServices";
-import { GeometryContainmentRequestProps, GeometryContainmentResponseProps } from "../GeometryContainment";
-import { GeometrySummaryRequestProps } from "../GeometrySummary";
-import { IModelConnectionProps, IModelRpcOpenProps, IModelRpcProps } from "../IModel";
+} from "../GeoCoordinateServices.js";
+import { GeometryContainmentRequestProps, GeometryContainmentResponseProps } from "../GeometryContainment.js";
+import { GeometrySummaryRequestProps } from "../GeometrySummary.js";
+import { IModelConnectionProps, IModelRpcOpenProps, IModelRpcProps } from "../IModel.js";
 import {
   MassPropertiesPerCandidateRequestProps, MassPropertiesPerCandidateResponseProps, MassPropertiesRequestProps, MassPropertiesResponseProps,
-} from "../MassProperties";
-import { ModelProps } from "../ModelProps";
-import { RpcInterface } from "../RpcInterface";
-import { RpcManager } from "../RpcManager";
-import { SnapRequestProps, SnapResponseProps } from "../internal/Snapping";
-import { TextureData, TextureLoadProps } from "../TextureProps";
+} from "../MassProperties.js";
+import { ModelProps } from "../ModelProps.js";
+import { RpcInterface } from "../RpcInterface.js";
+import { RpcManager } from "../RpcManager.js";
+import { SnapRequestProps, SnapResponseProps } from "../internal/Snapping.js";
+import { TextureData, TextureLoadProps } from "../TextureProps.js";
 import {
   CustomViewState3dCreatorOptions, CustomViewState3dProps, HydrateViewStateRequestProps, HydrateViewStateResponseProps, SubCategoryResultRow,
   ViewStateLoadProps, ViewStateProps,
-} from "../ViewProps";
-import { RpcResponseCacheControl } from "./core/RpcConstants";
-import { RpcNotFoundResponse } from "./core/RpcControl";
-import { RpcOperation } from "./core/RpcOperation";
-import { RpcRoutingToken } from "./core/RpcRoutingToken";
+} from "../ViewProps.js";
+import { RpcResponseCacheControl } from "./core/RpcConstants.js";
+import { RpcNotFoundResponse } from "./core/RpcControl.js";
+import { RpcOperation } from "./core/RpcOperation.js";
+import { RpcRoutingToken } from "./core/RpcRoutingToken.js";
 
 /** Response if the IModelDb was not found at the backend
  * (if the service has moved)

@@ -8,20 +8,20 @@
 import { flatbuffers } from "flatbuffers";
 import { BentleyStatus, Id64, Id64String } from "@itwin/core-bentley";
 import { Angle, AngleSweep, Arc3d, BentleyGeometryFlatBuffer, CurveCollection, FrameBuilder, GeometryQuery, LineSegment3d, LineString3d, Loop, Matrix3d, Plane3dByOriginAndUnitNormal, Point2d, Point3d, Point3dArray, PointString3d, Polyface, PolyfaceQuery, Range2d, Range3d, SolidPrimitive, Transform, Vector3d, YawPitchRollAngles } from "@itwin/core-geometry";
-import { EGFBAccessors } from "./ElementGeometryFB";
-import { Base64EncodedString } from "../Base64EncodedString";
-import { TextString, TextStringGlyphData, TextStringProps } from "./TextString";
-import { ColorDef } from "../ColorDef";
-import { BackgroundFill, FillDisplay, GeometryClass, GeometryParams } from "../GeometryParams";
-import { Gradient } from "../Gradient";
-import { ThematicGradientSettings, ThematicGradientSettingsProps } from "../ThematicDisplay";
-import { AreaPattern } from "./AreaPattern";
-import { BRepEntity } from "./GeometryStream";
-import { ImageGraphic, ImageGraphicCorners, ImageGraphicProps } from "./ImageGraphic";
-import { LineStyle } from "./LineStyle";
-import { ElementAlignedBox3d, Placement2d, Placement3d } from "./Placement";
-import { isPlacement2dProps, PlacementProps } from "../ElementProps";
-import { TextBlockGeometryProps } from "../annotation/TextBlockGeometryProps";
+import { EGFBAccessors } from "./ElementGeometryFB.js";
+import { Base64EncodedString } from "../Base64EncodedString.js";
+import { TextString, TextStringGlyphData, TextStringProps } from "./TextString.js";
+import { ColorDef } from "../ColorDef.js";
+import { BackgroundFill, FillDisplay, GeometryClass, GeometryParams } from "../GeometryParams.js";
+import { Gradient } from "../Gradient.js";
+import { ThematicGradientSettings, ThematicGradientSettingsProps } from "../ThematicDisplay.js";
+import { AreaPattern } from "./AreaPattern.js";
+import { BRepEntity } from "./GeometryStream.js";
+import { ImageGraphic, ImageGraphicCorners, ImageGraphicProps } from "./ImageGraphic.js";
+import { LineStyle } from "./LineStyle.js";
+import { ElementAlignedBox3d, Placement2d, Placement3d } from "./Placement.js";
+import { isPlacement2dProps, PlacementProps } from "../ElementProps.js";
+import { TextBlockGeometryProps } from "../annotation/TextBlockGeometryProps.js";
 
 /** Specifies the type of an entry in a geometry stream.
  * @see [[ElementGeometryDataEntry.opcode]].

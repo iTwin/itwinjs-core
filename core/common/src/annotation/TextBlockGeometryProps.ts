@@ -7,8 +7,8 @@
  */
 
 import { XYZProps } from "@itwin/core-geometry";
-import { TextStringProps } from "../geometry/TextString";
-import { TextStyleColor } from "./TextStyle";
+import { TextStringProps } from "../geometry/TextString.js";
+import { TextStyleColor } from "./TextStyle.js";
 
 /**
  * A single entry in a [[TextBlockGeometryProps]], representing one of the following primitive types:

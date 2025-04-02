@@ -6,10 +6,10 @@
  * @module Symbology
  */
 
-import { ColorDef } from "./ColorDef";
-import { Gradient } from "./Gradient";
-import { LinePixels } from "./LinePixels";
-import { RenderMaterial } from "./RenderMaterial";
+import { ColorDef } from "./ColorDef.js";
+import { Gradient } from "./Gradient.js";
+import { LinePixels } from "./LinePixels.js";
+import { RenderMaterial } from "./RenderMaterial.js";
 
 /** Flags indicating whether and how the interiors of closed planar regions is displayed within a view.
  * @public

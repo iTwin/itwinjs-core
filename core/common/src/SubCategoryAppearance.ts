@@ -7,7 +7,7 @@
  */
 
 import { Id64, Id64String, JsonUtils } from "@itwin/core-bentley";
-import { ColorDef, ColorDefProps } from "./ColorDef";
+import { ColorDef, ColorDefProps } from "./ColorDef.js";
 
 /** Parameters that define the way geometry on a [[SubCategory]] appears.
  * SubCategoryAppearance describes the intrinsic appearance of geometry belonging to that SubCategory, independent of a particular [[ViewState]].

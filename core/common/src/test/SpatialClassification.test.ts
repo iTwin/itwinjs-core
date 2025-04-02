@@ -8,7 +8,7 @@ import { Id64String } from "@itwin/core-bentley";
 import {
   SpatialClassifier, SpatialClassifierFlags, SpatialClassifierInsideDisplay, SpatialClassifierOutsideDisplay, SpatialClassifierProps, SpatialClassifiers,
   SpatialClassifiersContainer,
-} from "../SpatialClassification";
+} from "../SpatialClassification.js";
 
 describe("SpatialClassifierFlags", () => {
   it("normalizes display mode", () => {

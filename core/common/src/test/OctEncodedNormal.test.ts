@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert, describe, it } from "vitest";
 import { Vector3d, XYZ } from "@itwin/core-geometry";
-import { OctEncodedNormal } from "../OctEncodedNormal";
+import { OctEncodedNormal } from "../OctEncodedNormal.js";
 
 function _expectSignsEqual(a: number, b: number) {
   if (a !== 0) {

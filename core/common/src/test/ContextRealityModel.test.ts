@@ -6,10 +6,10 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import {
   ContextRealityModel, ContextRealityModelProps, ContextRealityModels, ContextRealityModelsContainer,
-} from "../ContextRealityModel";
-import { SpatialClassifier, SpatialClassifierInsideDisplay, SpatialClassifierOutsideDisplay } from "../SpatialClassification";
-import { PlanarClipMaskMode, PlanarClipMaskSettings } from "../PlanarClipMask";
-import { FeatureAppearance } from "../FeatureSymbology";
+} from "../ContextRealityModel.js";
+import { SpatialClassifier, SpatialClassifierInsideDisplay, SpatialClassifierOutsideDisplay } from "../SpatialClassification.js";
+import { PlanarClipMaskMode, PlanarClipMaskSettings } from "../PlanarClipMask.js";
+import { FeatureAppearance } from "../FeatureSymbology.js";
 
 describe("ContextRealityModel", () => {
   function makeModel(props: ContextRealityModelProps): ContextRealityModel {

@@ -7,7 +7,7 @@
  */
 
 import { AccessToken, GuidString } from "@itwin/core-bentley";
-import { BriefcaseProps, LocalBriefcaseProps, RequestNewBriefcaseProps } from "./BriefcaseTypes";
+import { BriefcaseProps, LocalBriefcaseProps, RequestNewBriefcaseProps } from "./BriefcaseTypes.js";
 
 /** @internal */
 export const nativeAppIpcStrings = {

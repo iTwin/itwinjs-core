@@ -8,12 +8,12 @@
 
 import { GuidString, Id64String, IModelStatus, LogLevel, OpenMode } from "@itwin/core-bentley";
 import { Range3dProps, XYZProps } from "@itwin/core-geometry";
-import { OpenBriefcaseProps, OpenCheckpointArgs } from "./BriefcaseTypes";
-import { ChangedEntities } from "./ChangedEntities";
-import { ChangesetIndex, ChangesetIndexAndId } from "./ChangesetProps";
-import { GeographicCRSProps } from "./geometry/CoordinateReferenceSystem";
-import { EcefLocationProps, IModelConnectionProps, IModelRpcProps, RootSubjectProps, SnapshotOpenOptions, StandaloneOpenOptions } from "./IModel";
-import { ModelGeometryChangesProps } from "./ModelGeometryChanges";
+import { OpenBriefcaseProps, OpenCheckpointArgs } from "./BriefcaseTypes.js";
+import { ChangedEntities } from "./ChangedEntities.js";
+import { ChangesetIndex, ChangesetIndexAndId } from "./ChangesetProps.js";
+import { GeographicCRSProps } from "./geometry/CoordinateReferenceSystem.js";
+import { EcefLocationProps, IModelConnectionProps, IModelRpcProps, RootSubjectProps, SnapshotOpenOptions, StandaloneOpenOptions } from "./IModel.js";
+import { ModelGeometryChangesProps } from "./ModelGeometryChanges.js";
 
 /** Options for pulling changes into iModel.
  * @internal

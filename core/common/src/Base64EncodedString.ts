@@ -5,7 +5,8 @@
 /** @packageDocumentation
  * @module Entities
  */
-
+/* eslint-disable @typescript-eslint/ban-ts-comment */
+// @ts-ignore Ignoring js-base64 import error
 import { Base64 } from "js-base64";
 
 /** Represents an array of bytes encoded in base-64 with a prefix indicating the encoding, as required when converting EC properties of `binary` type to and from JSON.

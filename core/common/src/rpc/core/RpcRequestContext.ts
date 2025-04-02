@@ -5,8 +5,8 @@
 /** @packageDocumentation
  * @module RpcInterface
  */
-import { SerializedRpcActivity } from "./RpcInvocation";
-import { RpcRequest } from "./RpcRequest";
+import { SerializedRpcActivity } from "./RpcInvocation.js";
+import { RpcRequest } from "./RpcRequest.js";
 
 /** Interface to enable passing application-specific context with each RPC request.
  * @internal
