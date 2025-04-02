@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-common",
+      "comment": "add new imodel drapeTarget to ModelMapLayerProps",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-common"
+}
