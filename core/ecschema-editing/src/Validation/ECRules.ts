@@ -313,7 +313,7 @@ export async function* incompatibleValueTypePropertyOverride(property: AnyProper
     return;
 
   async function callback(baseClass: ECClass): Promise<PropertyDiagnostic<any[]> | undefined> {
-    const baseProperty = await baseClass.getProperty(property.name);
+    const baseProperty = await baseClass.getProperty(property.name, true);
     if (!baseProperty)
       return;
 
@@ -347,7 +347,7 @@ export async function* incompatibleTypePropertyOverride(property: AnyProperty): 
     return;
 
   async function callback(baseClass: ECClass): Promise<PropertyDiagnostic<any[]> | undefined> {
-    const baseProperty = await baseClass.getProperty(property.name);
+    const baseProperty = await baseClass.getProperty(property.name, true);
     if (!baseProperty)
       return;
 
@@ -374,7 +374,7 @@ export async function* incompatibleUnitPropertyOverride(property: AnyProperty): 
     return;
 
   async function callback(baseClass: ECClass): Promise<PropertyDiagnostic<any[]> | undefined> {
-    const baseProperty = await baseClass.getProperty(property.name);
+    const baseProperty = await baseClass.getProperty(property.name, true);
     if (!baseProperty || !baseProperty.kindOfQuantity)
       return;
 
@@ -449,7 +449,7 @@ export async function* validateNavigationProperty(property: AnyProperty): AsyncI
   }
 
   const isClassSupported = async (ecClass: ECClass, propertyName: string, constraintName: string): Promise<boolean> => {
-    if (constraintName === ecClass.fullName && undefined !== await ecClass.getProperty(propertyName))
+    if (constraintName === ecClass.fullName && undefined !== await ecClass.getProperty(propertyName, true))
       return true;
 
     const inheritedProp = await ecClass.getInheritedProperty(propertyName);

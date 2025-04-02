@@ -38,7 +38,7 @@ export class Properties {
         throw new SchemaEditingError(ECEditingStatus.SetPropertyName, new PropertyId(this.ecClassType, classKey, propertyName), e);
       });
 
-    const baseProperty = await existingProperty.class.getProperty(newPropertyName, true) as MutableProperty;
+    const baseProperty = await existingProperty.class.getProperty(newPropertyName) as MutableProperty;
     if (baseProperty) {
       throw new SchemaEditingError(ECEditingStatus.SetPropertyName, new PropertyId(this.ecClassType, classKey, propertyName),
         new SchemaEditingError(ECEditingStatus.PropertyAlreadyExists, new PropertyId(this.ecClassType, baseProperty.class.key, newPropertyName)));
@@ -48,12 +48,12 @@ export class Properties {
     const derivedProperties: Array<MutableProperty> = [];
     const derivedClasses = await this.findDerivedClasses(existingProperty.class as MutableClass);
     for (const derivedClass of derivedClasses) {
-      if (await derivedClass.getProperty(newPropertyName)) {
+      if (await derivedClass.getProperty(newPropertyName, true)) {
         throw new SchemaEditingError(ECEditingStatus.SetPropertyName, new PropertyId(this.ecClassType, classKey, propertyName),
           new SchemaEditingError(ECEditingStatus.PropertyAlreadyExists, new PropertyId(this.ecClassType, derivedClass.key, newPropertyName)));
       }
 
-      const propertyOverride = await derivedClass.getProperty(propertyName) as MutableProperty;
+      const propertyOverride = await derivedClass.getProperty(propertyName, true) as MutableProperty;
       // If found the property is overridden in the derived class.
       if (propertyOverride)
         derivedProperties.push(propertyOverride);
@@ -215,7 +215,7 @@ export class Properties {
   protected async getProperty<T extends MutablePropertyType>(classKey: SchemaItemKey, propertyName: string): Promise<T> {
     const mutableClass = await this.getClass(classKey);
 
-    const property = await mutableClass.getProperty(propertyName) as T;
+    const property = await mutableClass.getProperty(propertyName, true) as T;
     if (property === undefined) {
       throw new SchemaEditingError(ECEditingStatus.PropertyNotFound, new PropertyId(mutableClass.schemaItemType as ECClassSchemaItems, classKey, propertyName));
     }
