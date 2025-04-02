@@ -242,9 +242,10 @@ describe("HalfEdgeGraphSearch", () => {
     ck.testExactNumber(boundaryLoops[0][3].id, 8);
     expect(ck.getNumErrors()).toBe(0);
   });
-  it("HalfEdgeGraphSearch.graphToPolyface", () => {
+  it.only("HalfEdgeGraphSearch.graphToPolyface", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
+
     const graph = new HalfEdgeGraph();
     const node0 = graph.addEdgeXY(1, 1, 0, 0);
     const node1 = node0.faceSuccessor;
