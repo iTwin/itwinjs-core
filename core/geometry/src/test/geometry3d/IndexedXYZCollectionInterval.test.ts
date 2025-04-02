@@ -3,9 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { describe, expect, it } from "vitest";
-import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray";
-import { IndexedCollectionInterval, IndexedXYZCollectionInterval } from "../../geometry3d/IndexedCollectionInterval";
-import * as bsiChecker from "../Checker";
+import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray.js";
+import { IndexedCollectionInterval, IndexedXYZCollectionInterval } from "../../geometry3d/IndexedCollectionInterval.js";
+import * as bsiChecker from "../Checker.js";
 
 describe("IndexedXYZCollectionInterval", () => {
   it("hello", () => {

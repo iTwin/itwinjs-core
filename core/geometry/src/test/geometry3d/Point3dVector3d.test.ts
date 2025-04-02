@@ -4,14 +4,14 @@
 *--------------------------------------------------------------------------------------------*/
 import { describe, expect, it } from "vitest";
 
-import { AxisIndex, AxisOrder, Geometry, PerpParallelOptions } from "../../Geometry";
-import { Angle } from "../../geometry3d/Angle";
-import { Point3dArrayCarrier } from "../../geometry3d/Point3dArrayCarrier";
-import { Point3d, Vector3d, XYZ } from "../../geometry3d/Point3dVector3d";
-import { Ray3d } from "../../geometry3d/Ray3d";
-import { XYZProps } from "../../geometry3d/XYZProps";
-import { Sample } from "../../serialization/GeometrySamples";
-import * as bsiChecker from "../Checker";
+import { AxisIndex, AxisOrder, Geometry, PerpParallelOptions } from "../../Geometry.js";
+import { Angle } from "../../geometry3d/Angle.js";
+import { Point3dArrayCarrier } from "../../geometry3d/Point3dArrayCarrier.js";
+import { Point3d, Vector3d, XYZ } from "../../geometry3d/Point3dVector3d.js";
+import { Ray3d } from "../../geometry3d/Ray3d.js";
+import { XYZProps } from "../../geometry3d/XYZProps.js";
+import { Sample } from "../../serialization/GeometrySamples.js";
+import * as bsiChecker from "../Checker.js";
 
 // cSpell:words Jcross CCWXY CWXY
 describe("Point3d", () => {

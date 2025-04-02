@@ -7,8 +7,8 @@
  */
 
 import { assert } from "@itwin/core-bentley";
-import { Geometry } from "../Geometry";
-import { NumberArray } from "../geometry3d/PointHelpers";
+import { Geometry } from "../Geometry.js";
+import { NumberArray } from "../geometry3d/PointHelpers.js";
 
 /**
  * B-spline curve and surface types in this library are non-periodic. But they can be created from legacy periodic data.

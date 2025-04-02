@@ -4,16 +4,16 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { describe, expect, it } from "vitest";
-import { Plane3dByOriginAndVectors } from "../../geometry3d/Plane3dByOriginAndVectors";
-import { AxisOrder } from "../../Geometry";
-import { Matrix3d } from "../../geometry3d/Matrix3d";
-import { Plane3dByOriginAndUnitNormal } from "../../geometry3d/Plane3dByOriginAndUnitNormal";
-import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
-import { Checker } from "../Checker";
-import { Sample } from "../../serialization/GeometrySamples";
-import { Point4d } from "../../geometry4d/Point4d";
-import { ClipPlane } from "../../clipping/ClipPlane";
-import { Plane3d } from "../../geometry3d/Plane3d";
+import { Plane3dByOriginAndVectors } from "../../geometry3d/Plane3dByOriginAndVectors.js";
+import { AxisOrder } from "../../Geometry.js";
+import { Matrix3d } from "../../geometry3d/Matrix3d.js";
+import { Plane3dByOriginAndUnitNormal } from "../../geometry3d/Plane3dByOriginAndUnitNormal.js";
+import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d.js";
+import { Checker } from "../Checker.js";
+import { Sample } from "../../serialization/GeometrySamples.js";
+import { Point4d } from "../../geometry4d/Point4d.js";
+import { ClipPlane } from "../../clipping/ClipPlane.js";
+import { Plane3d } from "../../geometry3d/Plane3d.js";
 
 /**
  * Check that planeA and planeB have matched PlaneAltitudeEvaluator results (other than bit loss)

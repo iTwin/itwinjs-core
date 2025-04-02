@@ -7,7 +7,7 @@
  * @module Topology
  */
 // cspell:word FSFP
-import { HalfEdge, HalfEdgeGraph, HalfEdgeMask } from "./Graph";
+import { HalfEdge, HalfEdgeGraph, HalfEdgeMask } from "./Graph.js";
 
 // Search services for HalfEdgeGraph
 /**

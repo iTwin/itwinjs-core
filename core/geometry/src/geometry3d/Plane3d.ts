@@ -6,9 +6,9 @@
 /** @packageDocumentation
  * @module CartesianGeometry
  */
-import { Geometry, PlaneAltitudeEvaluator } from "../Geometry";
-import { Point4d } from "../geometry4d/Point4d";
-import { Point3d, Vector3d } from "./Point3dVector3d";
+import { Geometry, PlaneAltitudeEvaluator } from "../Geometry.js";
+import { Point4d } from "../geometry4d/Point4d.js";
+import { Point3d, Vector3d } from "./Point3dVector3d.js";
 
 /**
  * Plane3d is the abstract base class for multiple 3d plane representations:

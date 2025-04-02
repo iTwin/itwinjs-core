@@ -6,11 +6,11 @@
  * @module RangeSearch
  */
 
-import { Range2d } from "../../geometry3d/Range";
-import { LowAndHighXY } from "../../geometry3d/XYZProps";
-import { GriddedRaggedRange2dSet } from "./GriddedRaggedRange2dSet";
-import { LinearSearchRange2dArray } from "./LinearSearchRange2dArray";
-import { Range2dSearchInterface } from "./Range2dSearchInterface";
+import { Range2d } from "../../geometry3d/Range.js";
+import { LowAndHighXY } from "../../geometry3d/XYZProps.js";
+import { GriddedRaggedRange2dSet } from "./GriddedRaggedRange2dSet.js";
+import { LinearSearchRange2dArray } from "./LinearSearchRange2dArray.js";
+import { Range2dSearchInterface } from "./Range2dSearchInterface.js";
 
 /**
  * Use GriddedRaggedRange2dSetWithOverflow for searching among many ranges for which:

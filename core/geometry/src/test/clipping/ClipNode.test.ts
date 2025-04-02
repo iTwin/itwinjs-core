@@ -5,27 +5,27 @@
 
 import { describe, expect, it } from "vitest";
 import * as fs from "fs";
-import { BooleanClipFactory } from "../../clipping/BooleanClipFactory";
-import { BooleanClipNode } from "../../clipping/BooleanClipNode";
-import { ClipPlane } from "../../clipping/ClipPlane";
-import { Clipper, ClipUtilities } from "../../clipping/ClipUtils";
-import { ConvexClipPlaneSet } from "../../clipping/ConvexClipPlaneSet";
-import { Arc3d } from "../../curve/Arc3d";
-import { CurvePrimitive } from "../../curve/CurvePrimitive";
-import { GeometryQuery } from "../../curve/GeometryQuery";
-import { LineSegment3d } from "../../curve/LineSegment3d";
-import { LineString3d } from "../../curve/LineString3d";
-import { Loop } from "../../curve/Loop";
-import { Geometry } from "../../Geometry";
-import { AngleSweep } from "../../geometry3d/AngleSweep";
-import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
-import { Sample } from "../../serialization/GeometrySamples";
-import { Checker } from "../Checker";
-import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
-import { IModelJson } from "../../serialization/IModelJsonSchema";
-import { RegionBinaryOpType, RegionOps } from "../../curve/RegionOps";
-import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray";
-import { GrowableXYZArrayCache } from "../../geometry3d/ReusableObjectCache";
+import { BooleanClipFactory } from "../../clipping/BooleanClipFactory.js";
+import { BooleanClipNode } from "../../clipping/BooleanClipNode.js";
+import { ClipPlane } from "../../clipping/ClipPlane.js";
+import { Clipper, ClipUtilities } from "../../clipping/ClipUtils.js";
+import { ConvexClipPlaneSet } from "../../clipping/ConvexClipPlaneSet.js";
+import { Arc3d } from "../../curve/Arc3d.js";
+import { CurvePrimitive } from "../../curve/CurvePrimitive.js";
+import { GeometryQuery } from "../../curve/GeometryQuery.js";
+import { LineSegment3d } from "../../curve/LineSegment3d.js";
+import { LineString3d } from "../../curve/LineString3d.js";
+import { Loop } from "../../curve/Loop.js";
+import { Geometry } from "../../Geometry.js";
+import { AngleSweep } from "../../geometry3d/AngleSweep.js";
+import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d.js";
+import { Sample } from "../../serialization/GeometrySamples.js";
+import { Checker } from "../Checker.js";
+import { GeometryCoreTestIO } from "../GeometryCoreTestIO.js";
+import { IModelJson } from "../../serialization/IModelJsonSchema.js";
+import { RegionBinaryOpType, RegionOps } from "../../curve/RegionOps.js";
+import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray.js";
+import { GrowableXYZArrayCache } from "../../geometry3d/ReusableObjectCache.js";
 
 /**
  *

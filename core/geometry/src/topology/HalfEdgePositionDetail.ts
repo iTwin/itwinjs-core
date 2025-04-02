@@ -6,10 +6,10 @@
  * @module Topology
  */
 
-import { Geometry } from "../Geometry";
-import { Point3d } from "../geometry3d/Point3dVector3d";
-import { XYAndZ } from "../geometry3d/XYZProps";
-import { HalfEdge } from "./Graph";
+import { Geometry } from "../Geometry.js";
+import { Point3d } from "../geometry3d/Point3dVector3d.js";
+import { XYAndZ } from "../geometry3d/XYZProps.js";
+import { HalfEdge } from "./Graph.js";
 
 /** Enumeration of categorization of "where" a HalfEdgePositionDetail is sitting in the graph. */
 export enum HalfEdgeTopo {

@@ -7,13 +7,13 @@
  * @module Curve
  */
 
-import { GeometryHandler } from "../geometry3d/GeometryHandler";
-import { AnyCurve } from "./CurveTypes";
-import { CurveCollection } from "./CurveCollection";
-import { RecursiveCurveProcessor } from "./CurveProcessor";
-import { GeometryQuery } from "./GeometryQuery";
-import { Loop } from "./Loop";
-import { StrokeOptions } from "./StrokeOptions";
+import { GeometryHandler } from "../geometry3d/GeometryHandler.js";
+import { AnyCurve } from "./CurveTypes.js";
+import { CurveCollection } from "./CurveCollection.js";
+import { RecursiveCurveProcessor } from "./CurveProcessor.js";
+import { GeometryQuery } from "./GeometryQuery.js";
+import { Loop } from "./Loop.js";
+import { StrokeOptions } from "./StrokeOptions.js";
 
 /**
  * * A `ParityRegion` is a collection of `Loop` objects.

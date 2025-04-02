@@ -6,9 +6,9 @@
 /** @packageDocumentation
  * @module Curve
  */
-import { Geometry } from "../../Geometry";
-import { Angle } from "../../geometry3d/Angle";
-import { CubicEvaluator } from "./CubicEvaluator";
+import { Geometry } from "../../Geometry.js";
+import { Angle } from "../../geometry3d/Angle.js";
+import { CubicEvaluator } from "./CubicEvaluator.js";
 /**
  * AustralianRailCorp spiral (also known as New South Wales spiral)
  * * The ultimate curve is a cubic `y = m * x^3`.

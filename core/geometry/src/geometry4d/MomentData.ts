@@ -10,14 +10,14 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 // cspell:word ABAT
 
-import { Geometry } from "../Geometry";
-import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
-import { Matrix3d } from "../geometry3d/Matrix3d";
-import { Point3d, Vector3d, XYZ } from "../geometry3d/Point3dVector3d";
-import { Transform } from "../geometry3d/Transform";
-import { XAndY, XYAndZ } from "../geometry3d/XYZProps";
-import { Matrix4d } from "./Matrix4d";
-import { Point4d } from "./Point4d";
+import { Geometry } from "../Geometry.js";
+import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray.js";
+import { Matrix3d } from "../geometry3d/Matrix3d.js";
+import { Point3d, Vector3d, XYZ } from "../geometry3d/Point3dVector3d.js";
+import { Transform } from "../geometry3d/Transform.js";
+import { XAndY, XYAndZ } from "../geometry3d/XYZProps.js";
+import { Matrix4d } from "./Matrix4d.js";
+import { Point4d } from "./Point4d.js";
 
 /**
  * A MomentData structure exists in several levels:

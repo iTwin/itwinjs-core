@@ -7,13 +7,13 @@
  * @module CartesianGeometry
  */
 
-import { AxisOrder, BeJSONFunctions, Geometry } from "../Geometry";
-import { Point4d } from "../geometry4d/Point4d";
-import { Matrix3d } from "./Matrix3d";
-import { Point2d } from "./Point2dVector2d";
-import { Point3d, Vector3d, XYZ } from "./Point3dVector3d";
-import { Range3d } from "./Range";
-import { TransformProps, XAndY, XYAndZ } from "./XYZProps";
+import { AxisOrder, BeJSONFunctions, Geometry } from "../Geometry.js";
+import { Point4d } from "../geometry4d/Point4d.js";
+import { Matrix3d } from "./Matrix3d.js";
+import { Point2d } from "./Point2dVector2d.js";
+import { Point3d, Vector3d, XYZ } from "./Point3dVector3d.js";
+import { Range3d } from "./Range.js";
+import { TransformProps, XAndY, XYAndZ } from "./XYZProps.js";
 
 /**
  * A Transform consists of an origin and a Matrix3d. This describes a coordinate frame with this origin, with

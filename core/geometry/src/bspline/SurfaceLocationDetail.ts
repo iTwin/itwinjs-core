@@ -5,10 +5,10 @@
 /** @packageDocumentation
  * @module Curve
  */
-import { CurveLocationDetail } from "../curve/CurveLocationDetail";
-import { UVSurface } from "../geometry3d/GeometryHandler";
-import { Point2d } from "../geometry3d/Point2dVector2d";
-import { Point3d } from "../geometry3d/Point3dVector3d";
+import { CurveLocationDetail } from "../curve/CurveLocationDetail.js";
+import { UVSurface } from "../geometry3d/GeometryHandler.js";
+import { Point2d } from "../geometry3d/Point2dVector2d.js";
+import { Point3d } from "../geometry3d/Point3dVector3d.js";
 
 /**
  * CurveLocationDetail carries point and paramter data about a point evaluated on a curve.

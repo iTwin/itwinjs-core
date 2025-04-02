@@ -2,14 +2,14 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Geometry } from "../Geometry";
-import { Angle } from "../geometry3d/Angle";
-import { BarycentricTriangle } from "../geometry3d/BarycentricTriangle";
-import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
-import { IndexedXYZCollectionInterval } from "../geometry3d/IndexedCollectionInterval";
-import { IndexedXYZCollection } from "../geometry3d/IndexedXYZCollection";
-import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
-import { TriangleCandidate } from "./TriangleCandidate";
+import { Geometry } from "../Geometry.js";
+import { Angle } from "../geometry3d/Angle.js";
+import { BarycentricTriangle } from "../geometry3d/BarycentricTriangle.js";
+import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray.js";
+import { IndexedXYZCollectionInterval } from "../geometry3d/IndexedCollectionInterval.js";
+import { IndexedXYZCollection } from "../geometry3d/IndexedXYZCollection.js";
+import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d.js";
+import { TriangleCandidate } from "./TriangleCandidate.js";
 
 /** @packageDocumentation
  * @module Polyface

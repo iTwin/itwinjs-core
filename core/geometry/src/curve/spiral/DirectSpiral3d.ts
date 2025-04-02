@@ -5,27 +5,27 @@
 /** @packageDocumentation
  * @module Curve
  */
-import { Geometry } from "../../Geometry";
-import { Angle } from "../../geometry3d/Angle";
-import { GeometryHandler, IStrokeHandler } from "../../geometry3d/GeometryHandler";
-import { Plane3dByOriginAndUnitNormal } from "../../geometry3d/Plane3dByOriginAndUnitNormal";
-import { Plane3dByOriginAndVectors } from "../../geometry3d/Plane3dByOriginAndVectors";
-import { Point3d } from "../../geometry3d/Point3dVector3d";
-import { Ray3d } from "../../geometry3d/Ray3d";
-import { Segment1d } from "../../geometry3d/Segment1d";
-import { Transform } from "../../geometry3d/Transform";
-import { CurveLengthContext } from "../internalContexts/CurveLengthContext";
-import { LineString3d } from "../LineString3d";
-import { StrokeOptions } from "../StrokeOptions";
-import { AustralianRailCorpXYEvaluator } from "./AustralianRailCorpXYEvaluator";
-import { ClothoidSeriesRLEvaluator } from "./ClothoidSeries";
-import { CzechSpiralEvaluator, ItalianSpiralEvaluator } from "./CzechSpiralEvaluator";
-import { DirectHalfCosineSpiralEvaluator } from "./DirectHalfCosineSpiralEvaluator";
-import { MXCubicAlongArcEvaluator } from "./MXCubicAlongArcSpiralEvaluator";
-import { PolishCubicEvaluator } from "./PolishCubicSpiralEvaluator";
-import { TransitionConditionalProperties } from "./TransitionConditionalProperties";
-import { TransitionSpiral3d } from "./TransitionSpiral3d";
-import { XYCurveEvaluator } from "./XYCurveEvaluator";
+import { Geometry } from "../../Geometry.js";
+import { Angle } from "../../geometry3d/Angle.js";
+import { GeometryHandler, IStrokeHandler } from "../../geometry3d/GeometryHandler.js";
+import { Plane3dByOriginAndUnitNormal } from "../../geometry3d/Plane3dByOriginAndUnitNormal.js";
+import { Plane3dByOriginAndVectors } from "../../geometry3d/Plane3dByOriginAndVectors.js";
+import { Point3d } from "../../geometry3d/Point3dVector3d.js";
+import { Ray3d } from "../../geometry3d/Ray3d.js";
+import { Segment1d } from "../../geometry3d/Segment1d.js";
+import { Transform } from "../../geometry3d/Transform.js";
+import { CurveLengthContext } from "../internalContexts/CurveLengthContext.js";
+import { LineString3d } from "../LineString3d.js";
+import { StrokeOptions } from "../StrokeOptions.js";
+import { AustralianRailCorpXYEvaluator } from "./AustralianRailCorpXYEvaluator.js";
+import { ClothoidSeriesRLEvaluator } from "./ClothoidSeries.js";
+import { CzechSpiralEvaluator, ItalianSpiralEvaluator } from "./CzechSpiralEvaluator.js";
+import { DirectHalfCosineSpiralEvaluator } from "./DirectHalfCosineSpiralEvaluator.js";
+import { MXCubicAlongArcEvaluator } from "./MXCubicAlongArcSpiralEvaluator.js";
+import { PolishCubicEvaluator } from "./PolishCubicSpiralEvaluator.js";
+import { TransitionConditionalProperties } from "./TransitionConditionalProperties.js";
+import { TransitionSpiral3d } from "./TransitionSpiral3d.js";
+import { XYCurveEvaluator } from "./XYCurveEvaluator.js";
 
 /**
 * DirectSpiral3d acts like a TransitionSpiral3d for serialization purposes, but implements spiral types that have "direct" xy calculations without the integrations required

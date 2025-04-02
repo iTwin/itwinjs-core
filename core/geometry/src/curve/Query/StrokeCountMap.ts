@@ -6,8 +6,8 @@
  * @module Curve
  */
 
-import { Geometry } from "../../Geometry";
-import { CurvePrimitive } from "../CurvePrimitive";
+import { Geometry } from "../../Geometry.js";
+import { CurvePrimitive } from "../CurvePrimitive.js";
 
 /**
  * Data carrier interface for per-primitive stroke counts and distances used by PolyfaceBuilder.

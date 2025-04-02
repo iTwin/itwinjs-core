@@ -4,12 +4,12 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { describe, expect, it } from "vitest";
-import { Checker } from "../Checker";
-import { Sample } from "../../serialization/GeometrySamples";
-import { AkimaCurve3d } from "../../bspline/AkimaCurve3d";
-import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
-import { GeometryQuery } from "../../curve/GeometryQuery";
-import { testGeometryQueryRoundTrip } from "../serialization/FlatBuffer.test";
+import { Checker } from "../Checker.js";
+import { Sample } from "../../serialization/GeometrySamples.js";
+import { AkimaCurve3d } from "../../bspline/AkimaCurve3d.js";
+import { GeometryCoreTestIO } from "../GeometryCoreTestIO.js";
+import { GeometryQuery } from "../../curve/GeometryQuery.js";
+import { testGeometryQueryRoundTrip } from "../serialization/FlatBuffer.test.js";
 
 describe("AkimaCurve3d", () => {
   it("HelloWorld", () => {

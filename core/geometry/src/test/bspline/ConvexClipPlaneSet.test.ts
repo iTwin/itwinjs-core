@@ -4,19 +4,19 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { describe, expect, it } from "vitest";
-import { BooleanClipFactory } from "../../clipping/BooleanClipFactory";
-import { BooleanClipNode } from "../../clipping/BooleanClipNode";
-import { Clipper } from "../../clipping/ClipUtils";
-import { ConvexClipPlaneSet, ConvexClipPlaneSetProps } from "../../clipping/ConvexClipPlaneSet";
-import { UnionOfConvexClipPlaneSets, UnionOfConvexClipPlaneSetsProps } from "../../clipping/UnionOfConvexClipPlaneSets";
-import { LineSegment3d } from "../../curve/LineSegment3d";
-import { Geometry } from "../../Geometry";
-import { Angle } from "../../geometry3d/Angle";
-import { Matrix3d } from "../../geometry3d/Matrix3d";
-import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
-import { Range3d } from "../../geometry3d/Range";
-import { Transform } from "../../geometry3d/Transform";
-import { Checker } from "../Checker";
+import { BooleanClipFactory } from "../../clipping/BooleanClipFactory.js";
+import { BooleanClipNode } from "../../clipping/BooleanClipNode.js";
+import { Clipper } from "../../clipping/ClipUtils.js";
+import { ConvexClipPlaneSet, ConvexClipPlaneSetProps } from "../../clipping/ConvexClipPlaneSet.js";
+import { UnionOfConvexClipPlaneSets, UnionOfConvexClipPlaneSetsProps } from "../../clipping/UnionOfConvexClipPlaneSets.js";
+import { LineSegment3d } from "../../curve/LineSegment3d.js";
+import { Geometry } from "../../Geometry.js";
+import { Angle } from "../../geometry3d/Angle.js";
+import { Matrix3d } from "../../geometry3d/Matrix3d.js";
+import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d.js";
+import { Range3d } from "../../geometry3d/Range.js";
+import { Transform } from "../../geometry3d/Transform.js";
+import { Checker } from "../Checker.js";
 
 describe("ConvexClipPlaneSet", () => {
   it("HelloWorld", () => {

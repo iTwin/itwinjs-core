@@ -3,19 +3,19 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { describe, expect, it } from "vitest";
-import { GeometryQuery } from "../../curve/GeometryQuery";
-import { LineSegment3d } from "../../curve/LineSegment3d";
-import { LineString3d } from "../../curve/LineString3d";
-import { Geometry } from "../../Geometry";
-import { Angle } from "../../geometry3d/Angle";
-import { SmoothTransformBetweenFrusta } from "../../geometry3d/FrustumAnimation";
-import { Matrix3d } from "../../geometry3d/Matrix3d";
-import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
-import { Ray3d } from "../../geometry3d/Ray3d";
-import { Transform } from "../../geometry3d/Transform";
-import { YawPitchRollAngles } from "../../geometry3d/YawPitchRollAngles";
-import { Checker } from "../Checker";
-import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
+import { GeometryQuery } from "../../curve/GeometryQuery.js";
+import { LineSegment3d } from "../../curve/LineSegment3d.js";
+import { LineString3d } from "../../curve/LineString3d.js";
+import { Geometry } from "../../Geometry.js";
+import { Angle } from "../../geometry3d/Angle.js";
+import { SmoothTransformBetweenFrusta } from "../../geometry3d/FrustumAnimation.js";
+import { Matrix3d } from "../../geometry3d/Matrix3d.js";
+import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d.js";
+import { Ray3d } from "../../geometry3d/Ray3d.js";
+import { Transform } from "../../geometry3d/Transform.js";
+import { YawPitchRollAngles } from "../../geometry3d/YawPitchRollAngles.js";
+import { Checker } from "../Checker.js";
+import { GeometryCoreTestIO } from "../GeometryCoreTestIO.js";
 
 /**
  * create a linestring that walks around all the edges (and some decoration) for a frustum defined by corners.

@@ -6,8 +6,8 @@
 /** @packageDocumentation
  * @module Curve
  */
-import { Geometry } from "../../Geometry";
-import { CubicEvaluator } from "./CubicEvaluator";
+import { Geometry } from "../../Geometry.js";
+import { CubicEvaluator } from "./CubicEvaluator.js";
 /**
  * MX Cubic along arc.
  * This is y= m*x^3 with

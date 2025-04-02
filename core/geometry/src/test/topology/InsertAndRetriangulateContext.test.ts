@@ -4,24 +4,24 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { describe, expect, it } from "vitest";
-import { GeometryQuery } from "../../curve/GeometryQuery";
-import { LineSegment3d } from "../../curve/LineSegment3d";
-import { LineString3d } from "../../curve/LineString3d";
-import { Angle } from "../../geometry3d/Angle";
-import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
-import { Point3dArray } from "../../geometry3d/PointHelpers";
-import { PolygonOps } from "../../geometry3d/PolygonOps";
-import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
-import { PolyfaceQuery } from "../../polyface/PolyfaceQuery";
-import { Sample } from "../../serialization/GeometrySamples";
-import { HalfEdgeGraph } from "../../topology/Graph";
-import { HalfEdgePositionDetail, HalfEdgeTopo } from "../../topology/HalfEdgePositionDetail";
-import { InsertAndRetriangulateContext, InsertedVertexZOptions } from "../../topology/InsertAndRetriangulateContext";
-import { HalfEdgeGraphMerge } from "../../topology/Merging";
-import { Triangulator } from "../../topology/Triangulation";
-import { Checker } from "../Checker";
-import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
-import { GraphChecker } from "./Graph.test";
+import { GeometryQuery } from "../../curve/GeometryQuery.js";
+import { LineSegment3d } from "../../curve/LineSegment3d.js";
+import { LineString3d } from "../../curve/LineString3d.js";
+import { Angle } from "../../geometry3d/Angle.js";
+import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d.js";
+import { Point3dArray } from "../../geometry3d/PointHelpers.js";
+import { PolygonOps } from "../../geometry3d/PolygonOps.js";
+import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder.js";
+import { PolyfaceQuery } from "../../polyface/PolyfaceQuery.js";
+import { Sample } from "../../serialization/GeometrySamples.js";
+import { HalfEdgeGraph } from "../../topology/Graph.js";
+import { HalfEdgePositionDetail, HalfEdgeTopo } from "../../topology/HalfEdgePositionDetail.js";
+import { InsertAndRetriangulateContext, InsertedVertexZOptions } from "../../topology/InsertAndRetriangulateContext.js";
+import { HalfEdgeGraphMerge } from "../../topology/Merging.js";
+import { Triangulator } from "../../topology/Triangulation.js";
+import { Checker } from "../Checker.js";
+import { GeometryCoreTestIO } from "../GeometryCoreTestIO.js";
+import { GraphChecker } from "./Graph.test.js";
 
 /**
  * Output for HalfEdgePositionDetail:

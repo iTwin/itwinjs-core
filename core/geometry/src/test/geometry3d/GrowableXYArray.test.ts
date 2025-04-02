@@ -3,21 +3,21 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { describe, expect, it } from "vitest";
-import { Geometry } from "../../Geometry";
-import { Angle } from "../../geometry3d/Angle";
-import { GrowableFloat64Array } from "../../geometry3d/GrowableFloat64Array";
-import { GrowableXYArray } from "../../geometry3d/GrowableXYArray";
-import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray";
-import { Matrix3d } from "../../geometry3d/Matrix3d";
-import { Point2dArrayCarrier } from "../../geometry3d/Point2dArrayCarrier";
-import { Point2d, Vector2d } from "../../geometry3d/Point2dVector2d";
-import { Point3dArrayCarrier } from "../../geometry3d/Point3dArrayCarrier";
-import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
-import { Range2d } from "../../geometry3d/Range";
-import { Transform } from "../../geometry3d/Transform";
-import { Sample } from "../../serialization/GeometrySamples";
-import { Checker } from "../Checker";
-import { XAndY } from "../../geometry3d/XYZProps";
+import { Geometry } from "../../Geometry.js";
+import { Angle } from "../../geometry3d/Angle.js";
+import { GrowableFloat64Array } from "../../geometry3d/GrowableFloat64Array.js";
+import { GrowableXYArray } from "../../geometry3d/GrowableXYArray.js";
+import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray.js";
+import { Matrix3d } from "../../geometry3d/Matrix3d.js";
+import { Point2dArrayCarrier } from "../../geometry3d/Point2dArrayCarrier.js";
+import { Point2d, Vector2d } from "../../geometry3d/Point2dVector2d.js";
+import { Point3dArrayCarrier } from "../../geometry3d/Point3dArrayCarrier.js";
+import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d.js";
+import { Range2d } from "../../geometry3d/Range.js";
+import { Transform } from "../../geometry3d/Transform.js";
+import { Sample } from "../../serialization/GeometrySamples.js";
+import { Checker } from "../Checker.js";
+import { XAndY } from "../../geometry3d/XYZProps.js";
 
 describe("GrowableXYArray", () => {
   it("PointMoments", () => {

@@ -4,24 +4,24 @@
 *--------------------------------------------------------------------------------------------*/
 import { describe, expect, it } from "vitest";
 import * as fs from "fs";
-import { Arc3d } from "../../curve/Arc3d";
-import { CurveChainWithDistanceIndex } from "../../curve/CurveChainWithDistanceIndex";
-import { CurveCurve } from "../../curve/CurveCurve";
-import { CurveExtendMode } from "../../curve/CurveExtendMode";
-import { CurveLocationDetail } from "../../curve/CurveLocationDetail";
-import { GeometryQuery } from "../../curve/GeometryQuery";
-import { LineSegment3d } from "../../curve/LineSegment3d";
-import { LineString3d } from "../../curve/LineString3d";
-import { Loop } from "../../curve/Loop";
-import { Path } from "../../curve/Path";
-import { Geometry } from "../../Geometry";
-import { Angle } from "../../geometry3d/Angle";
-import { AngleSweep } from "../../geometry3d/AngleSweep";
-import { Point3d } from "../../geometry3d/Point3dVector3d";
-import { Sample } from "../../serialization/GeometrySamples";
-import { IModelJson } from "../../serialization/IModelJsonSchema";
-import { Checker } from "../Checker";
-import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
+import { Arc3d } from "../../curve/Arc3d.js";
+import { CurveChainWithDistanceIndex } from "../../curve/CurveChainWithDistanceIndex.js";
+import { CurveCurve } from "../../curve/CurveCurve.js";
+import { CurveExtendMode } from "../../curve/CurveExtendMode.js";
+import { CurveLocationDetail } from "../../curve/CurveLocationDetail.js";
+import { GeometryQuery } from "../../curve/GeometryQuery.js";
+import { LineSegment3d } from "../../curve/LineSegment3d.js";
+import { LineString3d } from "../../curve/LineString3d.js";
+import { Loop } from "../../curve/Loop.js";
+import { Path } from "../../curve/Path.js";
+import { Geometry } from "../../Geometry.js";
+import { Angle } from "../../geometry3d/Angle.js";
+import { AngleSweep } from "../../geometry3d/AngleSweep.js";
+import { Point3d } from "../../geometry3d/Point3dVector3d.js";
+import { Sample } from "../../serialization/GeometrySamples.js";
+import { IModelJson } from "../../serialization/IModelJsonSchema.js";
+import { Checker } from "../Checker.js";
+import { GeometryCoreTestIO } from "../GeometryCoreTestIO.js";
 
 // cspell:word XYAB, XYBA
 

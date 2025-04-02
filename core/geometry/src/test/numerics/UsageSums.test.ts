@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { describe, expect, it } from "vitest";
-import { UsageSums } from "../../numerics/UsageSums";
-import { Checker } from "../Checker";
+import { UsageSums } from "../../numerics/UsageSums.js";
+import { Checker } from "../Checker.js";
 
 describe("UsageSums", () => {
   it("HelloWorld", () => {

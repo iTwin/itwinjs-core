@@ -4,9 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { describe, expect, it } from "vitest";
-import { HalfEdge, HalfEdgeGraph } from "../../topology/Graph";
-import { AbstractHalfEdgeGraphMarkSet, MarkedEdgeSet, MarkedFaceSet, MarkedHalfEdgeSet, MarkedVertexSet } from "../../topology/HalfEdgeMarkSet";
-import { Checker } from "../Checker";
+import { HalfEdge, HalfEdgeGraph } from "../../topology/Graph.js";
+import { AbstractHalfEdgeGraphMarkSet, MarkedEdgeSet, MarkedFaceSet, MarkedHalfEdgeSet, MarkedVertexSet } from "../../topology/HalfEdgeMarkSet.js";
+import { Checker } from "../Checker.js";
 
 describe("HalfEdgeMarkSet", () => {
 

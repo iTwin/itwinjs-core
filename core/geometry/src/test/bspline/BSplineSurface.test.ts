@@ -4,23 +4,23 @@
 *--------------------------------------------------------------------------------------------*/
 import { describe, expect, it } from "vitest";
 import * as fs from "fs";
-import { BSplineSurface3d, BSplineSurface3dH, BSplineSurface3dQuery, UVSelect, WeightStyle } from "../../bspline/BSplineSurface";
-import { BSplineWrapMode } from "../../bspline/KnotVector";
-import { Geometry } from "../../Geometry";
-import { GeometryQuery } from "../../curve/GeometryQuery";
-import { Plane3dByOriginAndUnitNormal } from "../../geometry3d/Plane3dByOriginAndUnitNormal";
-import { Point3d } from "../../geometry3d/Point3dVector3d";
-import { Range3d } from "../../geometry3d/Range";
-import { Transform } from "../../geometry3d/Transform";
-import { Sample } from "../../serialization/GeometrySamples";
-import { Checker } from "../Checker";
-import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
-import { IModelJson } from "../../serialization/IModelJsonSchema";
-import { testGeometryQueryRoundTrip } from "../serialization/FlatBuffer.test";
-import { StrokeOptions } from "../../curve/StrokeOptions";
-import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
-import { NumberArray, Point3dArray, Point4dArray } from "../../geometry3d/PointHelpers";
-import { Point4d } from "../../geometry4d/Point4d";
+import { BSplineSurface3d, BSplineSurface3dH, BSplineSurface3dQuery, UVSelect, WeightStyle } from "../../bspline/BSplineSurface.js";
+import { BSplineWrapMode } from "../../bspline/KnotVector.js";
+import { Geometry } from "../../Geometry.js";
+import { GeometryQuery } from "../../curve/GeometryQuery.js";
+import { Plane3dByOriginAndUnitNormal } from "../../geometry3d/Plane3dByOriginAndUnitNormal.js";
+import { Point3d } from "../../geometry3d/Point3dVector3d.js";
+import { Range3d } from "../../geometry3d/Range.js";
+import { Transform } from "../../geometry3d/Transform.js";
+import { Sample } from "../../serialization/GeometrySamples.js";
+import { Checker } from "../Checker.js";
+import { GeometryCoreTestIO } from "../GeometryCoreTestIO.js";
+import { IModelJson } from "../../serialization/IModelJsonSchema.js";
+import { testGeometryQueryRoundTrip } from "../serialization/FlatBuffer.test.js";
+import { StrokeOptions } from "../../curve/StrokeOptions.js";
+import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder.js";
+import { NumberArray, Point3dArray, Point4dArray } from "../../geometry3d/PointHelpers.js";
+import { Point4d } from "../../geometry4d/Point4d.js";
 
 function testBasisValues(ck: Checker, data: Float64Array, expectedValue: number = 1) {
   let s = 0.0; for (const a of data) s += a;

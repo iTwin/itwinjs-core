@@ -3,14 +3,14 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { describe, expect, it } from "vitest";
-import { AxisOrder } from "../../Geometry";
-import { Angle } from "../../geometry3d/Angle";
-import { Matrix3d } from "../../geometry3d/Matrix3d";
-import { OrderedRotationAngles } from "../../geometry3d/OrderedRotationAngles";
-import { Vector3d } from "../../geometry3d/Point3dVector3d";
-import { YawPitchRollAngles } from "../../geometry3d/YawPitchRollAngles";
-import { Checker } from "../Checker";
-import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
+import { AxisOrder } from "../../Geometry.js";
+import { Angle } from "../../geometry3d/Angle.js";
+import { Matrix3d } from "../../geometry3d/Matrix3d.js";
+import { OrderedRotationAngles } from "../../geometry3d/OrderedRotationAngles.js";
+import { Vector3d } from "../../geometry3d/Point3dVector3d.js";
+import { YawPitchRollAngles } from "../../geometry3d/YawPitchRollAngles.js";
+import { Checker } from "../Checker.js";
+import { GeometryCoreTestIO } from "../GeometryCoreTestIO.js";
 
 function multiplyMatricesByAxisOrder(xMatrix: Matrix3d, yMatrix: Matrix3d, zMatrix: Matrix3d, axisOrder: AxisOrder): Matrix3d {
   switch (axisOrder) {

@@ -7,25 +7,25 @@
  * @module CartesianGeometry
  */
 
-import { BSplineCurve3d } from "../bspline/BSplineCurve";
-import { Arc3d } from "../curve/Arc3d";
-import { CurveCollection } from "../curve/CurveCollection";
-import { CurveLocationDetail, CurveLocationDetailPair } from "../curve/CurveLocationDetail";
-import { CurvePrimitive } from "../curve/CurvePrimitive";
-import { LineSegment3d } from "../curve/LineSegment3d";
-import { LineString3d } from "../curve/LineString3d";
-import { Angle } from "../geometry3d/Angle";
-import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
-import { IndexedXYZCollection } from "../geometry3d/IndexedXYZCollection";
-import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
-import { Point3dArray } from "../geometry3d/PointHelpers";
-import { PolygonOps } from "../geometry3d/PolygonOps";
-import { Range1d } from "../geometry3d/Range";
-import { GrowableXYZArrayCache } from "../geometry3d/ReusableObjectCache";
-import { Range1dArray } from "../numerics/Range1dArray";
-import { ClipPlane } from "./ClipPlane";
-import { ClipUtilities, PolygonClipper } from "./ClipUtils";
-import { ConvexClipPlaneSet } from "./ConvexClipPlaneSet";
+import { BSplineCurve3d } from "../bspline/BSplineCurve.js";
+import { Arc3d } from "../curve/Arc3d.js";
+import { CurveCollection } from "../curve/CurveCollection.js";
+import { CurveLocationDetail, CurveLocationDetailPair } from "../curve/CurveLocationDetail.js";
+import { CurvePrimitive } from "../curve/CurvePrimitive.js";
+import { LineSegment3d } from "../curve/LineSegment3d.js";
+import { LineString3d } from "../curve/LineString3d.js";
+import { Angle } from "../geometry3d/Angle.js";
+import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray.js";
+import { IndexedXYZCollection } from "../geometry3d/IndexedXYZCollection.js";
+import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d.js";
+import { Point3dArray } from "../geometry3d/PointHelpers.js";
+import { PolygonOps } from "../geometry3d/PolygonOps.js";
+import { Range1d } from "../geometry3d/Range.js";
+import { GrowableXYZArrayCache } from "../geometry3d/ReusableObjectCache.js";
+import { Range1dArray } from "../numerics/Range1dArray.js";
+import { ClipPlane } from "./ClipPlane.js";
+import { ClipUtilities, PolygonClipper } from "./ClipUtils.js";
+import { ConvexClipPlaneSet } from "./ConvexClipPlaneSet.js";
 
 /**
  * An AlternatingConvexClipTreeNode is a node in a tree structure in which

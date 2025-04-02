@@ -8,16 +8,16 @@
  */
 
 import { assert } from "@itwin/core-bentley";
-import { Geometry } from "../Geometry";
-import { Angle } from "../geometry3d/Angle";
-import { AngleSweep } from "../geometry3d/AngleSweep";
-import { GrowableFloat64Array, OptionalGrowableFloat64Array } from "../geometry3d/GrowableFloat64Array";
-import { LongitudeLatitudeNumber } from "../geometry3d/LongitudeLatitudeAltitude";
-import { Point2d } from "../geometry3d/Point2dVector2d";
-import { Point3d, Vector3d, XYZ } from "../geometry3d/Point3dVector3d";
-import { Range1d, Range3d } from "../geometry3d/Range";
-import { Ray3d } from "../geometry3d/Ray3d";
-import { XAndY } from "../geometry3d/XYZProps";
+import { Geometry } from "../Geometry.js";
+import { Angle } from "../geometry3d/Angle.js";
+import { AngleSweep } from "../geometry3d/AngleSweep.js";
+import { GrowableFloat64Array, OptionalGrowableFloat64Array } from "../geometry3d/GrowableFloat64Array.js";
+import { LongitudeLatitudeNumber } from "../geometry3d/LongitudeLatitudeAltitude.js";
+import { Point2d } from "../geometry3d/Point2dVector2d.js";
+import { Point3d, Vector3d, XYZ } from "../geometry3d/Point3dVector3d.js";
+import { Range1d, Range3d } from "../geometry3d/Range.js";
+import { Ray3d } from "../geometry3d/Ray3d.js";
+import { XAndY } from "../geometry3d/XYZProps.js";
 
 // cspell:words Cardano internaldocs
 

@@ -8,19 +8,19 @@
  */
 
 import { assert } from "@itwin/core-bentley";
-import { CurveLocationDetail } from "../curve/CurveLocationDetail";
-import { LineSegment3d } from "../curve/LineSegment3d";
-import { Geometry } from "../Geometry";
-import { Angle } from "../geometry3d/Angle";
-import { MultiLineStringDataVariant } from "../geometry3d/IndexedXYZCollection";
-import { Point2d, Vector2d } from "../geometry3d/Point2dVector2d";
-import { Range3d } from "../geometry3d/Range";
-import { ClusterableArray } from "../numerics/ClusterableArray";
-import { SmallSystem } from "../numerics/SmallSystem";
-import { HalfEdge, HalfEdgeGraph, HalfEdgeMask } from "./Graph";
-import { HalfEdgePriorityQueueWithPartnerArray } from "./HalfEdgePriorityQueue";
-import { RegularizationContext } from "./RegularizeFace";
-import { Triangulator } from "./Triangulation";
+import { CurveLocationDetail } from "../curve/CurveLocationDetail.js";
+import { LineSegment3d } from "../curve/LineSegment3d.js";
+import { Geometry } from "../Geometry.js";
+import { Angle } from "../geometry3d/Angle.js";
+import { MultiLineStringDataVariant } from "../geometry3d/IndexedXYZCollection.js";
+import { Point2d, Vector2d } from "../geometry3d/Point2dVector2d.js";
+import { Range3d } from "../geometry3d/Range.js";
+import { ClusterableArray } from "../numerics/ClusterableArray.js";
+import { SmallSystem } from "../numerics/SmallSystem.js";
+import { HalfEdge, HalfEdgeGraph, HalfEdgeMask } from "./Graph.js";
+import { HalfEdgePriorityQueueWithPartnerArray } from "./HalfEdgePriorityQueue.js";
+import { RegularizationContext } from "./RegularizeFace.js";
+import { Triangulator } from "./Triangulation.js";
 
 export class GraphSplitData {
   public numUpEdge = 0;

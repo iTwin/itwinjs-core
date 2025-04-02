@@ -5,20 +5,20 @@
 
 import { describe, expect, it } from "vitest";
 
-import { GeometryQuery } from "../../curve/GeometryQuery";
-import { LineSegment3d } from "../../curve/LineSegment3d";
-import { LineString3d } from "../../curve/LineString3d";
-import { Geometry, PolygonLocation } from "../../Geometry";
-import { Angle } from "../../geometry3d/Angle";
-import { BarycentricTriangle, TriangleLocationDetail } from "../../geometry3d/BarycentricTriangle";
-import { Matrix3d } from "../../geometry3d/Matrix3d";
-import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
-import { PolygonOps } from "../../geometry3d/PolygonOps";
-import { Range3d } from "../../geometry3d/Range";
-import { Ray3d } from "../../geometry3d/Ray3d";
-import { Transform } from "../../geometry3d/Transform";
-import { Checker } from "../Checker";
-import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
+import { GeometryQuery } from "../../curve/GeometryQuery.js";
+import { LineSegment3d } from "../../curve/LineSegment3d.js";
+import { LineString3d } from "../../curve/LineString3d.js";
+import { Geometry, PolygonLocation } from "../../Geometry.js";
+import { Angle } from "../../geometry3d/Angle.js";
+import { BarycentricTriangle, TriangleLocationDetail } from "../../geometry3d/BarycentricTriangle.js";
+import { Matrix3d } from "../../geometry3d/Matrix3d.js";
+import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d.js";
+import { PolygonOps } from "../../geometry3d/PolygonOps.js";
+import { Range3d } from "../../geometry3d/Range.js";
+import { Ray3d } from "../../geometry3d/Ray3d.js";
+import { Transform } from "../../geometry3d/Transform.js";
+import { Checker } from "../Checker.js";
+import { GeometryCoreTestIO } from "../GeometryCoreTestIO.js";
 
 // cspell:word subtriangle
 function verifyTriangle(ck: Checker, triangle: BarycentricTriangle) {

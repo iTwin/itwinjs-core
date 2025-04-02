@@ -4,24 +4,24 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { describe, expect, it } from "vitest";
-import { GeometryQuery } from "../../curve/GeometryQuery";
-import { LineSegment3d } from "../../curve/LineSegment3d";
-import { LineString3d } from "../../curve/LineString3d";
-import { Geometry } from "../../Geometry";
-import { Angle } from "../../geometry3d/Angle";
-import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
-import { Point2d } from "../../geometry3d/Point2dVector2d";
-import { Transform } from "../../geometry3d/Transform";
-import { HalfEdge, HalfEdgeGraph, HalfEdgeMask, NodeFunction } from "../../topology/Graph";
-import { HalfEdgeGraphSearch } from "../../topology/HalfEdgeGraphSearch";
-import { HalfEdgeMaskValidation, HalfEdgePointerInspector } from "../../topology/HalfEdgeGraphValidation";
-import { HalfEdgeGraphMerge } from "../../topology/Merging";
-import { Checker } from "../Checker";
-import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
-import { NodeXYZUV } from "../../topology/HalfEdgeNodeXYZUV";
-import { HalfEdgePositionDetail, HalfEdgeTopo } from "../../topology/HalfEdgePositionDetail";
-import { InsertAndRetriangulateContext } from "../../topology/InsertAndRetriangulateContext";
-import { OutputManager } from "../clipping/ClipPlanes.test";
+import { GeometryQuery } from "../../curve/GeometryQuery.js";
+import { LineSegment3d } from "../../curve/LineSegment3d.js";
+import { LineString3d } from "../../curve/LineString3d.js";
+import { Geometry } from "../../Geometry.js";
+import { Angle } from "../../geometry3d/Angle.js";
+import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d.js";
+import { Point2d } from "../../geometry3d/Point2dVector2d.js";
+import { Transform } from "../../geometry3d/Transform.js";
+import { HalfEdge, HalfEdgeGraph, HalfEdgeMask, NodeFunction } from "../../topology/Graph.js";
+import { HalfEdgeGraphSearch } from "../../topology/HalfEdgeGraphSearch.js";
+import { HalfEdgeMaskValidation, HalfEdgePointerInspector } from "../../topology/HalfEdgeGraphValidation.js";
+import { HalfEdgeGraphMerge } from "../../topology/Merging.js";
+import { Checker } from "../Checker.js";
+import { GeometryCoreTestIO } from "../GeometryCoreTestIO.js";
+import { NodeXYZUV } from "../../topology/HalfEdgeNodeXYZUV.js";
+import { HalfEdgePositionDetail, HalfEdgeTopo } from "../../topology/HalfEdgePositionDetail.js";
+import { InsertAndRetriangulateContext } from "../../topology/InsertAndRetriangulateContext.js";
+import { OutputManager } from "../clipping/ClipPlanes.test.js";
 
 function logGraph(graph: HalfEdgeGraph, title: any): void {
   GeometryCoreTestIO.consoleLog(` == begin == ${title}`);

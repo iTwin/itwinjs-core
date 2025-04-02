@@ -4,29 +4,29 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { describe, expect, it } from "vitest";
-import { GeometryQuery } from "../../curve/GeometryQuery";
-import { LineSegment3d } from "../../curve/LineSegment3d";
-import { LineString3d } from "../../curve/LineString3d";
-import { Loop } from "../../curve/Loop";
-import { ParityRegion } from "../../curve/ParityRegion";
-import { StrokeOptions } from "../../curve/StrokeOptions";
-import { Geometry } from "../../Geometry";
-import { Angle } from "../../geometry3d/Angle";
-import { Matrix3d } from "../../geometry3d/Matrix3d";
-import { Point3d } from "../../geometry3d/Point3dVector3d";
-import { Point3dArray } from "../../geometry3d/PointHelpers";
-import { Range3d } from "../../geometry3d/Range";
-import { Transform } from "../../geometry3d/Transform";
-import { IndexedPolyface } from "../../polyface/Polyface";
-import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
-import { Sample } from "../../serialization/GeometrySamples";
-import { HalfEdge, HalfEdgeGraph, HalfEdgeMask } from "../../topology/Graph";
-import { HalfEdgeGraphSearch, HalfEdgeMaskTester } from "../../topology/HalfEdgeGraphSearch";
-import { HalfEdgeGraphOps } from "../../topology/Merging";
-import { RegularizationContext } from "../../topology/RegularizeFace";
-import { Triangulator } from "../../topology/Triangulation";
-import { Checker } from "../Checker";
-import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
+import { GeometryQuery } from "../../curve/GeometryQuery.js";
+import { LineSegment3d } from "../../curve/LineSegment3d.js";
+import { LineString3d } from "../../curve/LineString3d.js";
+import { Loop } from "../../curve/Loop.js";
+import { ParityRegion } from "../../curve/ParityRegion.js";
+import { StrokeOptions } from "../../curve/StrokeOptions.js";
+import { Geometry } from "../../Geometry.js";
+import { Angle } from "../../geometry3d/Angle.js";
+import { Matrix3d } from "../../geometry3d/Matrix3d.js";
+import { Point3d } from "../../geometry3d/Point3dVector3d.js";
+import { Point3dArray } from "../../geometry3d/PointHelpers.js";
+import { Range3d } from "../../geometry3d/Range.js";
+import { Transform } from "../../geometry3d/Transform.js";
+import { IndexedPolyface } from "../../polyface/Polyface.js";
+import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder.js";
+import { Sample } from "../../serialization/GeometrySamples.js";
+import { HalfEdge, HalfEdgeGraph, HalfEdgeMask } from "../../topology/Graph.js";
+import { HalfEdgeGraphSearch, HalfEdgeMaskTester } from "../../topology/HalfEdgeGraphSearch.js";
+import { HalfEdgeGraphOps } from "../../topology/Merging.js";
+import { RegularizationContext } from "../../topology/RegularizeFace.js";
+import { Triangulator } from "../../topology/Triangulation.js";
+import { Checker } from "../Checker.js";
+import { GeometryCoreTestIO } from "../GeometryCoreTestIO.js";
 
 /** Treat each xy as (r, radians) */
 function mapThetaR(points: Point3d[], scaleX: number, scaleY: number): Point3d[] {

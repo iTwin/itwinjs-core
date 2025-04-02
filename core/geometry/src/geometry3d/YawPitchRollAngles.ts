@@ -7,11 +7,11 @@
  * @module CartesianGeometry
  */
 
-import { AngleProps, Geometry } from "../Geometry";
-import { Angle } from "./Angle";
-import { Matrix3d } from "./Matrix3d";
-import { Point3d } from "./Point3dVector3d";
-import { Transform } from "./Transform";
+import { AngleProps, Geometry } from "../Geometry.js";
+import { Angle } from "./Angle.js";
+import { Matrix3d } from "./Matrix3d.js";
+import { Point3d } from "./Point3dVector3d.js";
+import { Transform } from "./Transform.js";
 
 // cspell:word Tait
 

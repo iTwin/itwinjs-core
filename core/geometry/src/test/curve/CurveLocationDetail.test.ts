@@ -4,11 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { describe, expect, it } from "vitest";
-import { CurveLocationDetail, CurveLocationDetailPair } from "../../curve/CurveLocationDetail";
-import { LineSegment3d } from "../../curve/LineSegment3d";
-import { Geometry } from "../../Geometry";
-import { Checker } from "../Checker";
-import { Point3d } from "../../geometry3d/Point3dVector3d";
+import { CurveLocationDetail, CurveLocationDetailPair } from "../../curve/CurveLocationDetail.js";
+import { LineSegment3d } from "../../curve/LineSegment3d.js";
+import { Geometry } from "../../Geometry.js";
+import { Checker } from "../Checker.js";
+import { Point3d } from "../../geometry3d/Point3dVector3d.js";
 
 describe("CurveLocationDetail", () => {
   it("HelloWorld", () => {

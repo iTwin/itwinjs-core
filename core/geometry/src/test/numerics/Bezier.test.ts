@@ -4,23 +4,23 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { describe, expect, it } from "vitest";
-import { LineString3d } from "../../curve/LineString3d";
-import { Geometry } from "../../Geometry";
-import { AngleSweep } from "../../geometry3d/AngleSweep";
-import { Point2d } from "../../geometry3d/Point2dVector2d";
-import { Point3d } from "../../geometry3d/Point3dVector3d";
-import { Range3d } from "../../geometry3d/Range";
-import { Segment1d } from "../../geometry3d/Segment1d";
-import { Transform } from "../../geometry3d/Transform";
-// import { Sample } from "../serialization/GeometrySamples";
-import { BezierCoffs, Order2Bezier, Order3Bezier, Order4Bezier, Order5Bezier, UnivariateBezier } from "../../numerics/BezierPolynomials";
-import { PascalCoefficients } from "../../numerics/PascalCoefficients";
-import { Sample } from "../../serialization/GeometrySamples";
-import { Box } from "../../solid/Box";
-import { Checker } from "../Checker";
-import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
+import { LineString3d } from "../../curve/LineString3d.js";
+import { Geometry } from "../../Geometry.js";
+import { AngleSweep } from "../../geometry3d/AngleSweep.js";
+import { Point2d } from "../../geometry3d/Point2dVector2d.js";
+import { Point3d } from "../../geometry3d/Point3dVector3d.js";
+import { Range3d } from "../../geometry3d/Range.js";
+import { Segment1d } from "../../geometry3d/Segment1d.js";
+import { Transform } from "../../geometry3d/Transform.js";
+// import { Sample } from "../serialization/GeometrySamples.js";
+import { BezierCoffs, Order2Bezier, Order3Bezier, Order4Bezier, Order5Bezier, UnivariateBezier } from "../../numerics/BezierPolynomials.js";
+import { PascalCoefficients } from "../../numerics/PascalCoefficients.js";
+import { Sample } from "../../serialization/GeometrySamples.js";
+import { Box } from "../../solid/Box.js";
+import { Checker } from "../Checker.js";
+import { GeometryCoreTestIO } from "../GeometryCoreTestIO.js";
 
-// import { prettyPrint } from "./testFunctions";
+// import { prettyPrint } from "./testFunctions.js";
 describe("Bezier", () => {
   it("HelloWorld", () => {
     const ck = new Checker();

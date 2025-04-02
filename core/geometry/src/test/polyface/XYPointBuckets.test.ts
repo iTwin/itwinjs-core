@@ -3,15 +3,15 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { describe, expect, it } from "vitest";
-import { GeometryQuery } from "../../curve/GeometryQuery";
-import { Angle } from "../../geometry3d/Angle";
-import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray";
-import { Point3d } from "../../geometry3d/Point3dVector3d";
-import { Range2d } from "../../geometry3d/Range";
-import { XYIndexGrid, XYPointBuckets } from "../../polyface/multiclip/XYPointBuckets";
-import { Sample } from "../../serialization/GeometrySamples";
-import { Checker } from "../Checker";
-import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
+import { GeometryQuery } from "../../curve/GeometryQuery.js";
+import { Angle } from "../../geometry3d/Angle.js";
+import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray.js";
+import { Point3d } from "../../geometry3d/Point3dVector3d.js";
+import { Range2d } from "../../geometry3d/Range.js";
+import { XYIndexGrid, XYPointBuckets } from "../../polyface/multiclip/XYPointBuckets.js";
+import { Sample } from "../../serialization/GeometrySamples.js";
+import { Checker } from "../Checker.js";
+import { GeometryCoreTestIO } from "../GeometryCoreTestIO.js";
 
 describe("XYPointBuckets", () => {
 

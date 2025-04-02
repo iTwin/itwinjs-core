@@ -7,25 +7,25 @@
  * @module CartesianGeometry
  */
 
-import { Geometry } from "../Geometry";
-import { Vector2d } from "../geometry3d/Point2dVector2d";
-import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
-import { PolygonOps } from "../geometry3d/PolygonOps";
-import { TransformProps, XYZProps } from "../geometry3d/XYZProps";
-import { Range3d } from "../geometry3d/Range";
-import { Transform } from "../geometry3d/Transform";
-import { Matrix4d } from "../geometry4d/Matrix4d";
-import { HalfEdge, HalfEdgeGraph, HalfEdgeMask } from "../topology/Graph";
-import { Triangulator } from "../topology/Triangulation";
-import { ClipPlane } from "./ClipPlane";
-import { Clipper, ClipPlaneContainment } from "./ClipUtils";
-import { ConvexClipPlaneSet } from "./ConvexClipPlaneSet";
-import { UnionOfConvexClipPlaneSets, UnionOfConvexClipPlaneSetsProps } from "./UnionOfConvexClipPlaneSets";
-import { AlternatingCCTreeNode } from "./AlternatingConvexClipTree";
-import { Point3dArray } from "../geometry3d/PointHelpers";
-import { PolylineOps } from "../geometry3d/PolylineOps";
-import { Arc3d } from "../curve/Arc3d";
-import { AnnounceNumberNumber, AnnounceNumberNumberCurvePrimitive } from "../curve/CurvePrimitive";
+import { Geometry } from "../Geometry.js";
+import { Vector2d } from "../geometry3d/Point2dVector2d.js";
+import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d.js";
+import { PolygonOps } from "../geometry3d/PolygonOps.js";
+import { TransformProps, XYZProps } from "../geometry3d/XYZProps.js";
+import { Range3d } from "../geometry3d/Range.js";
+import { Transform } from "../geometry3d/Transform.js";
+import { Matrix4d } from "../geometry4d/Matrix4d.js";
+import { HalfEdge, HalfEdgeGraph, HalfEdgeMask } from "../topology/Graph.js";
+import { Triangulator } from "../topology/Triangulation.js";
+import { ClipPlane } from "./ClipPlane.js";
+import { Clipper, ClipPlaneContainment } from "./ClipUtils.js";
+import { ConvexClipPlaneSet } from "./ConvexClipPlaneSet.js";
+import { UnionOfConvexClipPlaneSets, UnionOfConvexClipPlaneSetsProps } from "./UnionOfConvexClipPlaneSets.js";
+import { AlternatingCCTreeNode } from "./AlternatingConvexClipTree.js";
+import { Point3dArray } from "../geometry3d/PointHelpers.js";
+import { PolylineOps } from "../geometry3d/PolylineOps.js";
+import { Arc3d } from "../curve/Arc3d.js";
+import { AnnounceNumberNumber, AnnounceNumberNumberCurvePrimitive } from "../curve/CurvePrimitive.js";
 // cspell:word zlow
 // cspell:word zhigh
 /**

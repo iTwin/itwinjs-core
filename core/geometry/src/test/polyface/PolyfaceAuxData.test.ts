@@ -4,24 +4,24 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { describe, expect, it } from "vitest";
-import { Arc3d } from "../../curve/Arc3d";
-import { GeometryQuery } from "../../curve/GeometryQuery";
-import { LineString3d } from "../../curve/LineString3d";
-import { Path } from "../../curve/Path";
-import { StrokeOptions } from "../../curve/StrokeOptions";
-import { Geometry } from "../../Geometry";
-import { Angle } from "../../geometry3d/Angle";
-import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
-import { NumberArray, Point3dArray } from "../../geometry3d/PointHelpers";
-import { Transform } from "../../geometry3d/Transform";
-import { AuxChannel, AuxChannelData, AuxChannelDataType, PolyfaceAuxData } from "../../polyface/AuxData";
-import { IndexedPolyface } from "../../polyface/Polyface";
-import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
-import { BentleyGeometryFlatBuffer } from "../../serialization/BentleyGeometryFlatBuffer";
-import { IModelJson } from "../../serialization/IModelJsonSchema";
-import { Checker } from "../Checker";
-import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
-import { ImportedSample } from "../ImportedSamples";
+import { Arc3d } from "../../curve/Arc3d.js";
+import { GeometryQuery } from "../../curve/GeometryQuery.js";
+import { LineString3d } from "../../curve/LineString3d.js";
+import { Path } from "../../curve/Path.js";
+import { StrokeOptions } from "../../curve/StrokeOptions.js";
+import { Geometry } from "../../Geometry.js";
+import { Angle } from "../../geometry3d/Angle.js";
+import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d.js";
+import { NumberArray, Point3dArray } from "../../geometry3d/PointHelpers.js";
+import { Transform } from "../../geometry3d/Transform.js";
+import { AuxChannel, AuxChannelData, AuxChannelDataType, PolyfaceAuxData } from "../../polyface/AuxData.js";
+import { IndexedPolyface } from "../../polyface/Polyface.js";
+import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder.js";
+import { BentleyGeometryFlatBuffer } from "../../serialization/BentleyGeometryFlatBuffer.js";
+import { IModelJson } from "../../serialization/IModelJsonSchema.js";
+import { Checker } from "../Checker.js";
+import { GeometryCoreTestIO } from "../GeometryCoreTestIO.js";
+import { ImportedSample } from "../ImportedSamples.js";
 
 /** Create a polyface representing a cantilever beam with [[PolyfaceAuxData]] representing the stress and deflection. */
 function createCantileverBeamPolyface(beamRadius: number = 10.0, beamLength: number = 100.0, facetSize: number = 1.0, zScale: number = 1.0) {

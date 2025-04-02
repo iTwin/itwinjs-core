@@ -7,20 +7,20 @@
  * @module Solid
  */
 
-import { AnyCurve } from "../curve/CurveTypes";
-import { CurveCollection } from "../curve/CurveCollection";
-import { GeometryQuery } from "../curve/GeometryQuery";
-import { LineString3d } from "../curve/LineString3d";
-import { Loop } from "../curve/Loop";
-import { Path } from "../curve/Path";
-import { GeometryHandler } from "../geometry3d/GeometryHandler";
-import { Vector3d } from "../geometry3d/Point3dVector3d";
-import { PolygonOps } from "../geometry3d/PolygonOps";
-import { Range3d } from "../geometry3d/Range";
-import { Transform } from "../geometry3d/Transform";
-import { XAndY } from "../geometry3d/XYZProps";
-import { SolidPrimitive } from "./SolidPrimitive";
-import { SweepContour } from "./SweepContour";
+import { AnyCurve } from "../curve/CurveTypes.js";
+import { CurveCollection } from "../curve/CurveCollection.js";
+import { GeometryQuery } from "../curve/GeometryQuery.js";
+import { LineString3d } from "../curve/LineString3d.js";
+import { Loop } from "../curve/Loop.js";
+import { Path } from "../curve/Path.js";
+import { GeometryHandler } from "../geometry3d/GeometryHandler.js";
+import { Vector3d } from "../geometry3d/Point3dVector3d.js";
+import { PolygonOps } from "../geometry3d/PolygonOps.js";
+import { Range3d } from "../geometry3d/Range.js";
+import { Transform } from "../geometry3d/Transform.js";
+import { XAndY } from "../geometry3d/XYZProps.js";
+import { SolidPrimitive } from "./SolidPrimitive.js";
+import { SweepContour } from "./SweepContour.js";
 
 /**
  * A LinearSweep is a `SolidPrimitive` defined by

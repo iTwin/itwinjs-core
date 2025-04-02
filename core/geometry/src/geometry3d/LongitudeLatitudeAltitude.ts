@@ -6,8 +6,8 @@
  * @module CartesianGeometry
  */
 
-import { BeJSONFunctions, Geometry } from "../Geometry";
-import { Angle } from "./Angle";
+import { BeJSONFunctions, Geometry } from "../Geometry.js";
+import { Angle } from "./Angle.js";
 
 /**
  * An `AngleAngleNumber` is a pair of angles (named `longitude` and `latitude`) and an additional number.

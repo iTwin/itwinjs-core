@@ -6,19 +6,19 @@
 /** @packageDocumentation
  * @module CartesianGeometry
  */
-import { AnyRegion } from "../curve/CurveTypes";
-import { CurveChain } from "../curve/CurveCollection";
-import { CurvePrimitive } from "../curve/CurvePrimitive";
-import { LineString3d } from "../curve/LineString3d";
-import { Loop } from "../curve/Loop";
-import { ParityRegion } from "../curve/ParityRegion";
-import { RegionOps } from "../curve/RegionOps";
-import { UnionRegion } from "../curve/UnionRegion";
-import { IndexedReadWriteXYZCollection, IndexedXYZCollection } from "./IndexedXYZCollection";
-import { Point3d } from "./Point3dVector3d";
-import { PolygonOps } from "./PolygonOps";
-import { Range3d } from "./Range";
-import { XAndY } from "./XYZProps";
+import { AnyRegion } from "../curve/CurveTypes.js";
+import { CurveChain } from "../curve/CurveCollection.js";
+import { CurvePrimitive } from "../curve/CurvePrimitive.js";
+import { LineString3d } from "../curve/LineString3d.js";
+import { Loop } from "../curve/Loop.js";
+import { ParityRegion } from "../curve/ParityRegion.js";
+import { RegionOps } from "../curve/RegionOps.js";
+import { UnionRegion } from "../curve/UnionRegion.js";
+import { IndexedReadWriteXYZCollection, IndexedXYZCollection } from "./IndexedXYZCollection.js";
+import { Point3d } from "./Point3dVector3d.js";
+import { PolygonOps } from "./PolygonOps.js";
+import { Range3d } from "./Range.js";
+import { XAndY } from "./XYZProps.js";
 
 /** abstract base class for area-related queries of a loop.
  * * subclasses have particular logic for `Loop` and polygon data.

@@ -6,14 +6,14 @@
  * @module Curve
  */
 
-import { BSplineCurve3d } from "../../bspline/BSplineCurve";
-import { BSplineCurveOps } from "../../bspline/BSplineCurveOps";
-import { InterpolationCurve3dOptions } from "../../bspline/InterpolationCurve3d";
-import { Geometry } from "../../Geometry";
-import { IStrokeHandler } from "../../geometry3d/GeometryHandler";
-import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
-import { Ray3d } from "../../geometry3d/Ray3d";
-import { CurvePrimitive } from "../CurvePrimitive";
+import { BSplineCurve3d } from "../../bspline/BSplineCurve.js";
+import { BSplineCurveOps } from "../../bspline/BSplineCurveOps.js";
+import { InterpolationCurve3dOptions } from "../../bspline/InterpolationCurve3d.js";
+import { Geometry } from "../../Geometry.js";
+import { IStrokeHandler } from "../../geometry3d/GeometryHandler.js";
+import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d.js";
+import { Ray3d } from "../../geometry3d/Ray3d.js";
+import { CurvePrimitive } from "../CurvePrimitive.js";
 
 /**
  * Context for constructing the xy-offset of a CurvePrimitive by interpolating the xy-offsets of computed strokes.

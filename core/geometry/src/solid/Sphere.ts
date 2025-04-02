@@ -7,22 +7,22 @@
  * @module Solid
  */
 
-import { Arc3d } from "../curve/Arc3d";
-import { GeometryQuery } from "../curve/GeometryQuery";
-import { LineString3d } from "../curve/LineString3d";
-import { Loop } from "../curve/Loop";
-import { StrokeOptions } from "../curve/StrokeOptions";
-import { AxisOrder, Geometry } from "../Geometry";
-import { Angle } from "../geometry3d/Angle";
-import { AngleSweep } from "../geometry3d/AngleSweep";
-import { GeometryHandler, UVSurface } from "../geometry3d/GeometryHandler";
-import { Matrix3d } from "../geometry3d/Matrix3d";
-import { Plane3dByOriginAndVectors } from "../geometry3d/Plane3dByOriginAndVectors";
-import { Vector2d } from "../geometry3d/Point2dVector2d";
-import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
-import { Range3d } from "../geometry3d/Range";
-import { Transform } from "../geometry3d/Transform";
-import { SolidPrimitive } from "./SolidPrimitive";
+import { Arc3d } from "../curve/Arc3d.js";
+import { GeometryQuery } from "../curve/GeometryQuery.js";
+import { LineString3d } from "../curve/LineString3d.js";
+import { Loop } from "../curve/Loop.js";
+import { StrokeOptions } from "../curve/StrokeOptions.js";
+import { AxisOrder, Geometry } from "../Geometry.js";
+import { Angle } from "../geometry3d/Angle.js";
+import { AngleSweep } from "../geometry3d/AngleSweep.js";
+import { GeometryHandler, UVSurface } from "../geometry3d/GeometryHandler.js";
+import { Matrix3d } from "../geometry3d/Matrix3d.js";
+import { Plane3dByOriginAndVectors } from "../geometry3d/Plane3dByOriginAndVectors.js";
+import { Vector2d } from "../geometry3d/Point2dVector2d.js";
+import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d.js";
+import { Range3d } from "../geometry3d/Range.js";
+import { Transform } from "../geometry3d/Transform.js";
+import { SolidPrimitive } from "./SolidPrimitive.js";
 
 /**
  * A unit sphere mapped by an arbitrary [[Transform]].

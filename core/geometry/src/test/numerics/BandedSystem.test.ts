@@ -4,15 +4,15 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { describe, expect, it } from "vitest";
-import { BSplineCurveOps } from "../../bspline/BSplineCurveOps";
-import { GeometryQuery } from "../../curve/GeometryQuery";
-import { AngleSweep } from "../../geometry3d/AngleSweep";
-import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray";
-import { Point3d } from "../../geometry3d/Point3dVector3d";
-import { BandedSystem } from "../../numerics/BandedSystem";
-import { Sample } from "../../serialization/GeometrySamples";
-import { Checker } from "../Checker";
-import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
+import { BSplineCurveOps } from "../../bspline/BSplineCurveOps.js";
+import { GeometryQuery } from "../../curve/GeometryQuery.js";
+import { AngleSweep } from "../../geometry3d/AngleSweep.js";
+import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray.js";
+import { Point3d } from "../../geometry3d/Point3dVector3d.js";
+import { BandedSystem } from "../../numerics/BandedSystem.js";
+import { Sample } from "../../serialization/GeometrySamples.js";
+import { Checker } from "../Checker.js";
+import { GeometryCoreTestIO } from "../GeometryCoreTestIO.js";
 
 function maxDiff(arrayA: Float64Array, arrayB: Float64Array): number {
   let diff = 0.0;

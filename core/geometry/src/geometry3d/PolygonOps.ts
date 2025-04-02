@@ -7,24 +7,24 @@
  * @module CartesianGeometry
  */
 import { assert } from "@itwin/core-bentley";
-import { CurveLocationDetailPair } from "../curve/CurveLocationDetail";
-import { AxisOrder, Geometry, PlaneAltitudeEvaluator, PolygonLocation } from "../Geometry";
-import { Matrix4d } from "../geometry4d/Matrix4d";
-import { Point4d } from "../geometry4d/Point4d";
-import { XYParitySearchContext } from "../topology/XYParitySearchContext";
-import { FrameBuilder } from "./FrameBuilder";
-import { GrowableXYZArray } from "./GrowableXYZArray";
-import { IndexedReadWriteXYZCollection, IndexedXYZCollection } from "./IndexedXYZCollection";
-import { Matrix3d } from "./Matrix3d";
-import { Plane3dByOriginAndUnitNormal } from "./Plane3dByOriginAndUnitNormal";
-import { Point2d, Vector2d } from "./Point2dVector2d";
-import { Point3dArrayCarrier } from "./Point3dArrayCarrier";
-import { Point3d, Vector3d } from "./Point3dVector3d";
-import { PolylineOps } from "./PolylineOps";
-import { Range1d, Range3d } from "./Range";
-import { Ray3d } from "./Ray3d";
-import { SortablePolygon } from "./SortablePolygon";
-import { XAndY, XYAndZ } from "./XYZProps";
+import { CurveLocationDetailPair } from "../curve/CurveLocationDetail.js";
+import { AxisOrder, Geometry, PlaneAltitudeEvaluator, PolygonLocation } from "../Geometry.js";
+import { Matrix4d } from "../geometry4d/Matrix4d.js";
+import { Point4d } from "../geometry4d/Point4d.js";
+import { XYParitySearchContext } from "../topology/XYParitySearchContext.js";
+import { FrameBuilder } from "./FrameBuilder.js";
+import { GrowableXYZArray } from "./GrowableXYZArray.js";
+import { IndexedReadWriteXYZCollection, IndexedXYZCollection } from "./IndexedXYZCollection.js";
+import { Matrix3d } from "./Matrix3d.js";
+import { Plane3dByOriginAndUnitNormal } from "./Plane3dByOriginAndUnitNormal.js";
+import { Point2d, Vector2d } from "./Point2dVector2d.js";
+import { Point3dArrayCarrier } from "./Point3dArrayCarrier.js";
+import { Point3d, Vector3d } from "./Point3dVector3d.js";
+import { PolylineOps } from "./PolylineOps.js";
+import { Range1d, Range3d } from "./Range.js";
+import { Ray3d } from "./Ray3d.js";
+import { SortablePolygon } from "./SortablePolygon.js";
+import { XAndY, XYAndZ } from "./XYZProps.js";
 
 /**
  * Carries data about a point in the plane of a polygon.

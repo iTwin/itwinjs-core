@@ -5,14 +5,14 @@
 /** @packageDocumentation
  * @module Topology
  */
-import { Geometry } from "../Geometry";
-import { HalfEdge, HalfEdgeGraph, HalfEdgeMask } from "./Graph";
-import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
-import { HalfEdgeGraphMerge } from "./Merging";
-import { Triangulator } from "./Triangulation";
-import { RegularizationContext } from "./RegularizeFace";
-import { HalfEdgeGraphSearch, HalfEdgeMaskTester } from "./HalfEdgeGraphSearch";
-import { Angle } from "../geometry3d/Angle";
+import { Geometry } from "../Geometry.js";
+import { HalfEdge, HalfEdgeGraph, HalfEdgeMask } from "./Graph.js";
+import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d.js";
+import { HalfEdgeGraphMerge } from "./Merging.js";
+import { Triangulator } from "./Triangulation.js";
+import { RegularizationContext } from "./RegularizeFace.js";
+import { HalfEdgeGraphSearch, HalfEdgeMaskTester } from "./HalfEdgeGraphSearch.js";
+import { Angle } from "../geometry3d/Angle.js";
 // cSpell:disable
 // const sSpineRelTol = 1.0e-8;
 // const sSpineGraphAbsTol = 0.0;

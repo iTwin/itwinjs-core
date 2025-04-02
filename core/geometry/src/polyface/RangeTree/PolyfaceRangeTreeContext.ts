@@ -6,14 +6,14 @@
  * @module RangeSearch
  */
 
-import { Geometry } from "../../Geometry";
-import { Point3d } from "../../geometry3d/Point3dVector3d";
-import { Range3d } from "../../geometry3d/Range";
-import { FacetLocationDetail, FacetLocationDetailPair } from "../FacetLocationDetail";
-import { Polyface, PolyfaceVisitor } from "../Polyface";
-import { PolyfaceQuery } from "../PolyfaceQuery";
-import { RangeTreeNode, RangeTreeOps } from "./RangeTreeNode";
-import { SingleTreeSearchHandlerForClosestPointOnPolyface, TwoTreeSearchHandlerForFacetFacetCloseApproach } from "./RangeTreeSearchHandlers";
+import { Geometry } from "../../Geometry.js";
+import { Point3d } from "../../geometry3d/Point3dVector3d.js";
+import { Range3d } from "../../geometry3d/Range.js";
+import { FacetLocationDetail, FacetLocationDetailPair } from "../FacetLocationDetail.js";
+import { Polyface, PolyfaceVisitor } from "../Polyface.js";
+import { PolyfaceQuery } from "../PolyfaceQuery.js";
+import { RangeTreeNode, RangeTreeOps } from "./RangeTreeNode.js";
+import { SingleTreeSearchHandlerForClosestPointOnPolyface, TwoTreeSearchHandlerForFacetFacetCloseApproach } from "./RangeTreeSearchHandlers.js";
 
 /**
  * Handler class for searching a range tree containing the facets of a polyface.

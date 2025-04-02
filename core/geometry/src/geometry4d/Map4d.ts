@@ -6,11 +6,11 @@
  * @module Numerics
  */
 
-import { BeJSONFunctions } from "../Geometry";
-import { Matrix3d } from "../geometry3d/Matrix3d";
-import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
-import { Transform } from "../geometry3d/Transform";
-import { Matrix4d } from "./Matrix4d";
+import { BeJSONFunctions } from "../Geometry.js";
+import { Matrix3d } from "../geometry3d/Matrix3d.js";
+import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d.js";
+import { Transform } from "../geometry3d/Transform.js";
+import { Matrix4d } from "./Matrix4d.js";
 
 /**
  * Map4 carries two Matrix4d which are inverses of each other.

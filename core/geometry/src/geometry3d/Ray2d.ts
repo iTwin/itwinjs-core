@@ -7,8 +7,8 @@
  * @module CartesianGeometry
  */
 
-import { Geometry } from "../Geometry";
-import { Point2d, Vector2d } from "../geometry3d/Point2dVector2d";
+import { Geometry } from "../Geometry.js";
+import { Point2d, Vector2d } from "../geometry3d/Point2dVector2d.js";
 
 // cspell:word CCWXY, CWXY
 

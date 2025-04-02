@@ -6,10 +6,10 @@
  * @module RangeSearch
  */
 
-import { Range2d, Range3d } from "../../geometry3d/Range";
-import { LowAndHighXY } from "../../geometry3d/XYZProps";
-import { LinearSearchRange2dArray } from "./LinearSearchRange2dArray";
-import { Range2dSearchInterface } from "./Range2dSearchInterface";
+import { Range2d, Range3d } from "../../geometry3d/Range.js";
+import { LowAndHighXY } from "../../geometry3d/XYZProps.js";
+import { LinearSearchRange2dArray } from "./LinearSearchRange2dArray.js";
+import { Range2dSearchInterface } from "./Range2dSearchInterface.js";
 
 /**
  * Type abbreviation to allow undefined as a Range2dSearchInterface parameter.

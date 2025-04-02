@@ -6,14 +6,14 @@
 /** @packageDocumentation
  * @module CartesianGeometry
  */
-import { AxisOrder, BeJSONFunctions, Geometry } from "../Geometry";
-import { Plane3d } from "./Plane3d";
-import { Point4d } from "../geometry4d/Point4d";
-import { Angle } from "./Angle";
-import { Matrix3d } from "./Matrix3d";
-import { Point3d, Vector3d } from "./Point3dVector3d";
-import { Transform } from "./Transform";
-import { XAndY } from "./XYZProps";
+import { AxisOrder, BeJSONFunctions, Geometry } from "../Geometry.js";
+import { Plane3d } from "./Plane3d.js";
+import { Point4d } from "../geometry4d/Point4d.js";
+import { Angle } from "./Angle.js";
+import { Matrix3d } from "./Matrix3d.js";
+import { Point3d, Vector3d } from "./Point3dVector3d.js";
+import { Transform } from "./Transform.js";
+import { XAndY } from "./XYZProps.js";
 
 /**
  * A plane defined by

@@ -4,19 +4,19 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, OrderedComparator, OrderedSet, SortedArray } from "@itwin/core-bentley";
-import { Geometry } from "../../Geometry";
-import { Angle } from "../../geometry3d/Angle";
-import { AngleSweep } from "../../geometry3d/AngleSweep";
-import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
-import { Range1d } from "../../geometry3d/Range";
-import { Ray3d } from "../../geometry3d/Ray3d";
-import { Transform } from "../../geometry3d/Transform";
-import { Arc3d, EllipticalArcApproximationOptions, EllipticalArcSampleMethod } from "../Arc3d";
-import { CurveChain } from "../CurveCollection";
-import { CurveLocationDetailPair } from "../CurveLocationDetail";
-import { Loop } from "../Loop";
-import { Path } from "../Path";
-import { CurveCurveCloseApproachXY } from "./CurveCurveCloseApproachXY";
+import { Geometry } from "../../Geometry.js";
+import { Angle } from "../../geometry3d/Angle.js";
+import { AngleSweep } from "../../geometry3d/AngleSweep.js";
+import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d.js";
+import { Range1d } from "../../geometry3d/Range.js";
+import { Ray3d } from "../../geometry3d/Ray3d.js";
+import { Transform } from "../../geometry3d/Transform.js";
+import { Arc3d, EllipticalArcApproximationOptions, EllipticalArcSampleMethod } from "../Arc3d.js";
+import { CurveChain } from "../CurveCollection.js";
+import { CurveLocationDetailPair } from "../CurveLocationDetail.js";
+import { Loop } from "../Loop.js";
+import { Path } from "../Path.js";
+import { CurveCurveCloseApproachXY } from "./CurveCurveCloseApproachXY.js";
 
 /** @packageDocumentation
  * @module Curve

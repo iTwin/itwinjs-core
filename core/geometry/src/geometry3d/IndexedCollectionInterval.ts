@@ -6,7 +6,7 @@
  * @module ArraysAndInterfaces
  */
 
-import { IndexedXYZCollection } from "./IndexedXYZCollection";
+import { IndexedXYZCollection } from "./IndexedXYZCollection.js";
 
 interface CollectionWithLength {
   length: number;

@@ -4,11 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { describe, expect, it } from "vitest";
-import { HalfEdge, HalfEdgeGraph } from "../../topology/Graph";
-import { HalfEdgeGraphFromIndexedLoopsContext } from "../../topology/HalfEdgeGraphFromIndexedLoopsContext";
-import { Checker } from "../Checker";
-import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
-import { GraphChecker } from "./Graph.test";
+import { HalfEdge, HalfEdgeGraph } from "../../topology/Graph.js";
+import { HalfEdgeGraphFromIndexedLoopsContext } from "../../topology/HalfEdgeGraphFromIndexedLoopsContext.js";
+import { Checker } from "../Checker.js";
+import { GeometryCoreTestIO } from "../GeometryCoreTestIO.js";
+import { GraphChecker } from "./Graph.test.js";
 
 function formatNodeForDump(he: HalfEdge): string {
   const o = { id: he.id, psm: [he.facePredecessor.id, he.faceSuccessor.id, he.edgeMate.id, HalfEdge.nodeToMaskString(he)] };

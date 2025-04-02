@@ -6,11 +6,11 @@
  * @module RangeSearch
  */
 
-import { Geometry } from "../../Geometry";
-import { IndexedXYZCollection } from "../../geometry3d/IndexedXYZCollection";
-import { Point3d } from "../../geometry3d/Point3dVector3d";
-import { Range2d, Range3d } from "../../geometry3d/Range";
-import { LowAndHighXY } from "../../geometry3d/XYZProps";
+import { Geometry } from "../../Geometry.js";
+import { IndexedXYZCollection } from "../../geometry3d/IndexedXYZCollection.js";
+import { Point3d } from "../../geometry3d/Point3dVector3d.js";
+import { Range2d, Range3d } from "../../geometry3d/Range.js";
+import { LowAndHighXY } from "../../geometry3d/XYZProps.js";
 
 /** Type for a value which may be either (a) undefined or (b) an array of type []. */
 export type OptionalArray<T> = T[] | undefined;

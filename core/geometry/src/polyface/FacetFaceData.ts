@@ -6,11 +6,11 @@
  * @module Polyface
  */
 
-import { Point2d, Vector2d } from "../geometry3d/Point2dVector2d";
-import { Point3d } from "../geometry3d/Point3dVector3d";
-import { Range2d } from "../geometry3d/Range";
-import { IndexedPolyface } from "./Polyface";
-import { IndexedPolyfaceVisitor } from "./IndexedPolyfaceVisitor";
+import { Point2d, Vector2d } from "../geometry3d/Point2dVector2d.js";
+import { Point3d } from "../geometry3d/Point3dVector3d.js";
+import { Range2d } from "../geometry3d/Range.js";
+import { IndexedPolyface } from "./Polyface.js";
+import { IndexedPolyfaceVisitor } from "./IndexedPolyfaceVisitor.js";
 
 /**
  * Data for a face in a polyface containing facets.

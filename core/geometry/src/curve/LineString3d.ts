@@ -5,32 +5,32 @@
 /** @packageDocumentation
  * @module Curve
  */
-import { Clipper } from "../clipping/ClipUtils";
-import { AxisOrder, BeJSONFunctions, Geometry, PlaneAltitudeEvaluator } from "../Geometry";
-import { Angle } from "../geometry3d/Angle";
-import { GeometryHandler, IStrokeHandler } from "../geometry3d/GeometryHandler";
-import { GrowableFloat64Array } from "../geometry3d/GrowableFloat64Array";
-import { GrowableXYArray } from "../geometry3d/GrowableXYArray";
-import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
-import { MultiLineStringDataVariant } from "../geometry3d/IndexedXYZCollection";
-import { Matrix3d } from "../geometry3d/Matrix3d";
-import { Plane3dByOriginAndUnitNormal } from "../geometry3d/Plane3dByOriginAndUnitNormal";
-import { Plane3dByOriginAndVectors } from "../geometry3d/Plane3dByOriginAndVectors";
-import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
-import { PointStreamGrowableXYZArrayCollector, VariantPointDataStream } from "../geometry3d/PointStreaming";
-import { Range1d, Range3d } from "../geometry3d/Range";
-import { Ray3d } from "../geometry3d/Ray3d";
-import { Transform } from "../geometry3d/Transform";
-import { XAndY, XYZProps } from "../geometry3d/XYZProps";
-import { CurveExtendOptions, VariantCurveExtendParameter } from "./CurveExtendMode";
-import { CurveIntervalRole, CurveLocationDetail, CurveSearchStatus } from "./CurveLocationDetail";
-import { AnnounceNumberNumberCurvePrimitive, CurvePrimitive } from "./CurvePrimitive";
-import { GeometryQuery } from "./GeometryQuery";
-import { PlaneAltitudeRangeContext } from "./internalContexts/PlaneAltitudeRangeContext";
-import { LineSegment3d } from "./LineSegment3d";
-import { OffsetOptions } from "./OffsetOptions";
-import { StrokeCountMap } from "./Query/StrokeCountMap";
-import { StrokeOptions } from "./StrokeOptions";
+import { Clipper } from "../clipping/ClipUtils.js";
+import { AxisOrder, BeJSONFunctions, Geometry, PlaneAltitudeEvaluator } from "../Geometry.js";
+import { Angle } from "../geometry3d/Angle.js";
+import { GeometryHandler, IStrokeHandler } from "../geometry3d/GeometryHandler.js";
+import { GrowableFloat64Array } from "../geometry3d/GrowableFloat64Array.js";
+import { GrowableXYArray } from "../geometry3d/GrowableXYArray.js";
+import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray.js";
+import { MultiLineStringDataVariant } from "../geometry3d/IndexedXYZCollection.js";
+import { Matrix3d } from "../geometry3d/Matrix3d.js";
+import { Plane3dByOriginAndUnitNormal } from "../geometry3d/Plane3dByOriginAndUnitNormal.js";
+import { Plane3dByOriginAndVectors } from "../geometry3d/Plane3dByOriginAndVectors.js";
+import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d.js";
+import { PointStreamGrowableXYZArrayCollector, VariantPointDataStream } from "../geometry3d/PointStreaming.js";
+import { Range1d, Range3d } from "../geometry3d/Range.js";
+import { Ray3d } from "../geometry3d/Ray3d.js";
+import { Transform } from "../geometry3d/Transform.js";
+import { XAndY, XYZProps } from "../geometry3d/XYZProps.js";
+import { CurveExtendOptions, VariantCurveExtendParameter } from "./CurveExtendMode.js";
+import { CurveIntervalRole, CurveLocationDetail, CurveSearchStatus } from "./CurveLocationDetail.js";
+import { AnnounceNumberNumberCurvePrimitive, CurvePrimitive } from "./CurvePrimitive.js";
+import { GeometryQuery } from "./GeometryQuery.js";
+import { PlaneAltitudeRangeContext } from "./internalContexts/PlaneAltitudeRangeContext.js";
+import { LineSegment3d } from "./LineSegment3d.js";
+import { OffsetOptions } from "./OffsetOptions.js";
+import { StrokeCountMap } from "./Query/StrokeCountMap.js";
+import { StrokeOptions } from "./StrokeOptions.js";
 
 /**
  * Starting with the segment at (baseIndex, baseIndex + 1):

@@ -6,16 +6,16 @@
  * @module Bspline
  */
 
-import { Geometry } from "../Geometry";
-import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
-import { IndexedXYZCollection } from "../geometry3d/IndexedXYZCollection";
-import { Point3dArrayCarrier } from "../geometry3d/Point3dArrayCarrier";
-import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
-import { Point3dArray } from "../geometry3d/PointHelpers";
-import { BandedSystem } from "../numerics/BandedSystem";
-import { BSplineCurve3d } from "./BSplineCurve";
-import { InterpolationCurve3dOptions, InterpolationCurve3dProps } from "./InterpolationCurve3d";
-import { BSplineWrapMode, KnotVector } from "./KnotVector";
+import { Geometry } from "../Geometry.js";
+import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray.js";
+import { IndexedXYZCollection } from "../geometry3d/IndexedXYZCollection.js";
+import { Point3dArrayCarrier } from "../geometry3d/Point3dArrayCarrier.js";
+import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d.js";
+import { Point3dArray } from "../geometry3d/PointHelpers.js";
+import { BandedSystem } from "../numerics/BandedSystem.js";
+import { BSplineCurve3d } from "./BSplineCurve.js";
+import { InterpolationCurve3dOptions, InterpolationCurve3dProps } from "./InterpolationCurve3d.js";
+import { BSplineWrapMode, KnotVector } from "./KnotVector.js";
 
 /**
  * A class with static methods for creating B-spline curves.

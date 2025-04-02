@@ -5,11 +5,11 @@
 /** @packageDocumentation
  * @module Curve
  */
-import { Geometry, ICloneable } from "../Geometry";
-import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
-import { Ray3d } from "../geometry3d/Ray3d";
-import { Transform } from "../geometry3d/Transform";
-import { CurvePrimitive } from "./CurvePrimitive";
+import { Geometry, ICloneable } from "../Geometry.js";
+import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d.js";
+import { Ray3d } from "../geometry3d/Ray3d.js";
+import { Transform } from "../geometry3d/Transform.js";
+import { CurvePrimitive } from "./CurvePrimitive.js";
 
 /**
  * An enumeration of special conditions being described by a CurveLocationDetail.
