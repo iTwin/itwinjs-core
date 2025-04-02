@@ -755,6 +755,11 @@ For more information read [Pull merge & conflict resolution](../learning/backend
   - `Schema.getItems()` changed from `IterableIterator<SchemaItem>` to `Iterable<SchemaItem>`
 - Reworked caching for merged properties on ECClass. Previously there was a boolean flag `ECClass.getProperties(resetCache: boolean)`.
   This flag has been removed. The cache is automatically cleared, and in cases when base classes change, there is a new `ECClass.cleanCache()` method.
+- Updated the `ECClass.getProperty` and `ECClass.getPropertySync` method signatures to include inherited properties by default, not exclude them. This aligns
+  with `ECClass.getProperties/Sync()` signature.
+  ```ts
+  public async getProperty(name: string, excludeInherited: boolean = false): Promise<Property | undefined>
+  ```
 
 #### Tips for adjusting existing code
 
