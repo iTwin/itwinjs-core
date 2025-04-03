@@ -859,8 +859,7 @@ export namespace CloudSqlite {
   }
 
   export function isSemverEditable(dbFullName: string, container: CloudContainer) {
-    const parsed = parseDbFileName(dbFullName);
-    return isSemverPrerelease(parsed.version) || container.queryDatabase(dbFullName)?.state !== "copied";
+    return isSemverPrerelease(parseDbFileName(dbFullName).version) || container.queryDatabase(dbFullName)?.state === "copied";
   }
 
   /** Create a dbName for a database from its base name and version. This will be in the format "name:version" */
