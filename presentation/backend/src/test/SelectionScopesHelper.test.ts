@@ -8,10 +8,9 @@ import { DrawingGraphic, Element, IModelDb } from "@itwin/core-backend";
 import { Id64, Id64String } from "@itwin/core-bentley";
 import { CodeProps, ElementProps, GeometricElement2dProps, ModelProps } from "@itwin/core-common";
 import { InstanceKey } from "@itwin/presentation-common";
-import { createTestECInstanceKey } from "@itwin/presentation-common/lib/cjs/test";
-import { SelectionScopesHelper } from "../presentation-backend/SelectionScopesHelper";
-import { stubECSqlReader } from "./Helpers";
-
+import { createTestECInstanceKey } from "@itwin/presentation-common/test-utils";
+import { SelectionScopesHelper } from "../presentation-backend/SelectionScopesHelper.js";
+import { stubECSqlReader } from "./Helpers.js";
 describe("SelectionScopesHelper", () => {
   describe("getSelectionScopes", () => {
     it("returns expected selection scopes", async () => {

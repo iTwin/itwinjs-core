@@ -456,6 +456,16 @@ export enum ECObjectsStatus {
     UnableToLocateSchema = 35071
 }
 
+// @internal (undocumented)
+export namespace ECSchemaNamespaceUris {
+    const // (undocumented)
+    SCHEMAURL3_2_JSON = "https://dev.bentley.com/json_schemas/ec/32/ecschema";
+    const // (undocumented)
+    SCHEMAITEMURL3_2 = "https://dev.bentley.com/json_schemas/ec/32/schemaitem";
+    const // (undocumented)
+    SCHEMAURL3_2_XML = "http://www.bentley.com/schemas/Bentley.ECXML.3.2";
+}
+
 // @internal
 export interface ECSpecVersion {
     // (undocumented)

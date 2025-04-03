@@ -206,6 +206,9 @@ There are just a few guidelines you need to follow.
 ### Branch Naming Policy
 
 We recommend putting your github username, followed by a succinct branch name that reflects the changes you want to make. Eg. ` git checkout -b "<gh_username>/cleanup-docs"`
+
+Branch names should be all lowercase to avoid potential issues with non-case-sensitive systems and words should be separated by a dash. Eg: `my-itwin-changes`
+
 ### Contributor License Agreement (CLA)
 
 A [Contribution License Agreement with Bentley](https://gist.github.com/imodeljs-admin/9a071844d3a8d420092b5cf360e978ca) must be signed before your contributions will be accepted. Upon opening a pull request, you will be prompted to use [cla-assistant](https://cla-assistant.io/) for a one-time acceptance applicable for all Bentley projects.

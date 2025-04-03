@@ -9,11 +9,11 @@ import sinon from "sinon";
 import * as moq from "typemoq";
 import { IModelConnection } from "@itwin/core-frontend";
 import { Content, DEFAULT_KEYS_BATCH_SIZE, Descriptor, Item, KeySet } from "@itwin/presentation-common";
-import { createTestContentDescriptor, createTestContentItem, createTestECInstanceKey } from "@itwin/presentation-common/lib/cjs/test";
+import { createTestContentDescriptor, createTestContentItem, createTestECInstanceKey } from "@itwin/presentation-common/test-utils";
 import { TRANSIENT_ELEMENT_CLASSNAME } from "@itwin/unified-selection";
-import { GetContentRequestOptions, MultipleValuesRequestOptions, PresentationManager } from "../../presentation-frontend";
-import { Presentation } from "../../presentation-frontend/Presentation";
-import { HiliteSetProvider } from "../../presentation-frontend/selection/HiliteSetProvider";
+import { GetContentRequestOptions, MultipleValuesRequestOptions, PresentationManager } from "../../presentation-frontend.js";
+import { Presentation } from "../../presentation-frontend/Presentation.js";
+import { HiliteSetProvider } from "../../presentation-frontend/selection/HiliteSetProvider.js";
 import { Id64, TransientIdSequence } from "@itwin/core-bentley";
 
 describe("HiliteSetProvider", () => {
@@ -23,14 +23,15 @@ describe("HiliteSetProvider", () => {
     Promise<{ descriptor: Descriptor; total: number; items: AsyncIterableIterator<Item> } | undefined>
   >();
 
-  before(() => {
+  beforeEach(() => {
     const managerMock = sinon.createStubInstance(PresentationManager, {
       getContentIterator: fakeGetContentIterator,
     });
-    Presentation.setPresentationManager(managerMock);
+    sinon.replaceGetter(Presentation, "presentation", () => managerMock);
   });
 
-  beforeEach(() => {
+  afterEach(() => {
+    sinon.restore();
     imodelMock.reset();
     fakeGetContentIterator.reset();
   });

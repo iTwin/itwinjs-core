@@ -6,7 +6,7 @@
 import { expect } from "chai";
 import * as sinon from "sinon";
 import { RegisteredRuleset, Rule, Ruleset, RuleTypes } from "@itwin/presentation-common";
-import { RulesetManagerImpl } from "../presentation-frontend/RulesetManager";
+import { RulesetManagerImpl } from "../presentation-frontend/RulesetManager.js";
 
 describe("RulesetManager", () => {
   let onRulesetModifiedSpy: sinon.SinonSpy<[RegisteredRuleset, Ruleset], Promise<void>>;

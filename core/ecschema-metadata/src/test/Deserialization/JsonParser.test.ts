@@ -7,6 +7,7 @@ import { assert } from "chai";
 import { JsonParser } from "../../Deserialization/JsonParser";
 import { ECObjectsError } from "../../Exception";
 import { createSchemaJsonWithItems } from "../TestUtils/DeserializationHelpers";
+import { ECSchemaNamespaceUris } from "../../Constants";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 
@@ -672,7 +673,7 @@ describe("JsonParser", () => {
 
     it("should throw for invalid version", () => {
       const json = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+        $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
         name: "BadSchema",
         version: 0,
       };
@@ -682,7 +683,7 @@ describe("JsonParser", () => {
 
     it("should throw for missing version", () => {
       const json = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+        $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
         name: "BadSchema",
       };
       parser = new JsonParser(json);

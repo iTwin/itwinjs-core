@@ -7,8 +7,8 @@ import { firstValueFrom, toArray } from "rxjs";
 import * as moq from "typemoq";
 import { IModelDb } from "@itwin/core-backend";
 import { PresentationError } from "@itwin/presentation-common";
-import { createIdBatches, getBatchedClassElementIds, getElementsCount } from "../presentation-backend/ElementPropertiesHelper";
-import { stubECSqlReader } from "./Helpers";
+import { createIdBatches, getBatchedClassElementIds, getElementsCount } from "../presentation-backend/ElementPropertiesHelper.js";
+import { stubECSqlReader } from "./Helpers.js";
 
 describe("getElementsCount", () => {
   const imodelMock = moq.Mock.ofType<IModelDb>();

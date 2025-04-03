@@ -19,7 +19,7 @@ import {
   PresentationStatus,
   SelectionScope,
 } from "@itwin/presentation-common";
-import { getElementKey } from "./Utils";
+import { getElementKey } from "./Utils.js";
 
 /**
  * Contains helper methods for computing selection scopes. Will get removed
@@ -28,8 +28,8 @@ import { getElementKey } from "./Utils";
  * @internal
  */
 export class SelectionScopesHelper {
-  // istanbul ignore next
-  private constructor() {}
+  /* c8 ignore next */
+  private constructor() { }
 
   public static getSelectionScopes(): SelectionScope[] {
     const createSelectionScope = (scopeId: string, label: string, description: string): SelectionScope => ({

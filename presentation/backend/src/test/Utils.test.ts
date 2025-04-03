@@ -6,7 +6,7 @@ import { expect } from "chai";
 import * as sinon from "sinon";
 import * as moq from "typemoq";
 import { IModelDb } from "@itwin/core-backend";
-import { combineDiagnosticsOptions, getElementKey, getLocalizedStringEN, normalizeVersion, reportDiagnostics } from "../presentation-backend/Utils";
+import { combineDiagnosticsOptions, getElementKey, getLocalizedStringEN, normalizeVersion, reportDiagnostics } from "../presentation-backend/Utils.js";
 import { ElementProps } from "@itwin/core-common";
 
 describe("getElementKey", () => {

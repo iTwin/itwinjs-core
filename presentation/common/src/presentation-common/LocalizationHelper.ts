@@ -6,21 +6,20 @@
  * @module Core
  */
 
-import { CategoryDescription } from "./content/Category";
-import { Content } from "./content/Content";
-import { Descriptor } from "./content/Descriptor";
-import { Field } from "./content/Fields";
-import { Item } from "./content/Item";
-import { DisplayValue, DisplayValueGroup, Value } from "./content/Value";
-import { ElementProperties } from "./ElementProperties";
-import { Node } from "./hierarchy/Node";
-import { NodePathElement } from "./hierarchy/NodePathElement";
-import { LabelCompositeValue, LabelDefinition } from "./LabelDefinition";
+import { CategoryDescription } from "./content/Category.js";
+import { Content } from "./content/Content.js";
+import { Descriptor } from "./content/Descriptor.js";
+import { Field } from "./content/Fields.js";
+import { Item } from "./content/Item.js";
+import { DisplayValue, DisplayValueGroup, Value } from "./content/Value.js";
+import { ElementProperties } from "./ElementProperties.js";
+import { Node } from "./hierarchy/Node.js";
+import { NodePathElement } from "./hierarchy/NodePathElement.js";
+import { COMPOSITE_LABEL_DEFINITION_TYPENAME, LabelCompositeValue, LabelDefinition } from "./LabelDefinition.js";
 
 const KEY_PATTERN = /@[\w\d\-_]+:[\w\d\-\._]+?@/g;
 
-/** @internal */
-export interface LocalizationHelperProps {
+interface LocalizationHelperProps {
   getLocalizedString: (key: string) => string;
 }
 
@@ -61,7 +60,7 @@ export class LocalizationHelper {
       values: compositeValue.values.map((value) => this.getLocalizedLabelDefinition(value)),
     });
 
-    if (labelDefinition.typeName === LabelDefinition.COMPOSITE_DEFINITION_TYPENAME) {
+    if (labelDefinition.typeName === COMPOSITE_LABEL_DEFINITION_TYPENAME) {
       return {
         ...labelDefinition,
         rawValue: getLocalizedComposite(labelDefinition.rawValue as LabelCompositeValue),

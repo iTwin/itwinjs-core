@@ -18,6 +18,8 @@ Table of contents:
   - [Back-end image conversion](#back-end-image-conversion)
   - [Presentation](#presentation)
     - [Unified selection move to `@itwin/unified-selection`](#unified-selection-move-to-itwinunified-selection)
+    - [Localization assets in `@itwin/presentation-common`](#localization-assets-in-itwinpresentation-common)
+    - [Internal APIs](#internal-apis)
   - [Google Maps 2D tiles API](#google-maps-2d-tiles-api)
   - [Delete all transactions](#delete-all-transactions)
   - [Attach/detach db](#attachdetach-db)
@@ -127,6 +129,17 @@ The Presentation system is moving towards a more modular approach, with smaller 
 ### Unified selection move to `@itwin/unified-selection`
 
 The unified selection system has been part of `@itwin/presentation-frontend` for a long time, providing a way for apps to have a single source of truth of what's selected. This system is now deprecated in favor of the new [@itwin/unified-selection](https://www.npmjs.com/package/@itwin/unified-selection) package. See the [migration guide](https://github.com/iTwin/presentation/blob/master/packages/unified-selection/learning/MigrationGuide.md) for migration details.
+
+### Localization assets in `@itwin/presentation-common`
+
+The `@itwin/presentation-common` delivers a localization file used by either `@itwin/presentation-backend` or `@itwin/presentation-frontend`, depending on where the localization is needed. Backend and frontend code expects to find localization assets under different directories:
+
+- Frontend looks for localization assets under `lib/public/locales` directory.
+- Backend used to look for localization assets under `lib/cjs/assets/locales` directory. This directory has been changed to `lib/assets/locales` to avoid duplication between `cjs` and `esm` builds. Anyone looking for localization assets in code can find then using `@itwin/presentation-common/locales/en/Presentation.json` import path.
+
+### Internal APIs
+
+The Presentation packages exported a number of `@internal` APIs through the public barrel files. These APIs were never intended for consumers' use and have been removed from the public barrels to avoid accidental usage.
 
 ## Google Maps 2D tiles API
 
@@ -251,6 +264,7 @@ await iModelDb.schemaContext.getSchemaItem("SchemaName", "ClassName");
 await iModelDb.schemaContext.getSchemaItem("SchemaName:ClassName");
 await iModelDb.schemaContext.getSchemaItem("SchemaName.ClassName");
 ```
+
 > The `schemaContext.getSchemaItem` function has a synchronous version as well `schemaContext.getSchemaItemSync` which supports all the same parameters as the asynchronous function. Refer to the examples [below](#deprecated-metadata-retrieval-methods).
 
 The deprecated `imodel.getMetaData()` function was limited to only Entity classes.
@@ -265,7 +279,6 @@ const metaData: UnitSystem | undefined = await imodelDb.schemaContext.getSchemaI
 const metaData: Format | undefined = await imodelDb.schemaContext.getSchemaItem("Formats.DefaultReal", Format);
 const metaData: KindOfQuantity | undefined = await imodelDb.schemaContext.getSchemaItem("TestSchema.TestKoQ", KindOfQuantity);
 ```
-
 
 ### @itwin/core-frontend
 
@@ -745,14 +758,14 @@ For more information read [Pull merge & conflict resolution](../learning/backend
 - Reworked caching for merged properties on ECClass. Previously there was a boolean flag `ECClass.getProperties(resetCache: boolean)`.
   This flag has been removed. The cache is automatically cleared, and in cases when base classes change, there is a new `ECClass.cleanCache()` method.
 
-#### Tips for adjusting existing code:
+#### Tips for adjusting existing code
 
 Existing calls like `context.getSchemaItem<EntityClass>("schema:myName")` have to be adjusted either into
 `context.getSchemaItem("schema", "myName", EntityClass)` or more verbose as a general item followed by a type-guard:
 
 ```ts
-const item: SchemaItem = await iModel.schemaContext.getSchemaItem("BisCore", "Element")
-if (item && EntityClass.isEntityClass(item )) {
+const item: SchemaItem = await iModel.schemaContext.getSchemaItem("BisCore", "Element");
+if (item && EntityClass.isEntityClass(item)) {
 }
 ```
 

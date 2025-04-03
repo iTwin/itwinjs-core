@@ -14,10 +14,10 @@ import {
   LinearlyReferencedAtLocationProps, LinearlyReferencedFromToLocationAspectProps, LinearlyReferencedFromToLocationProps,
   LinearlyReferencedLocationType, QueryParams, ReferentElementProps,
 } from "@itwin/linear-referencing-common";
-import { LinearlyReferencedAtLocation, LinearlyReferencedFromToLocation } from "./LinearReferencingElementAspects";
+import { LinearlyReferencedAtLocation, LinearlyReferencedFromToLocation } from "./LinearReferencingElementAspects.js";
 import {
   ILinearLocationLocatesElement, ILinearlyLocatedAlongILinearElement, ILinearlyLocatedAttributesElement, IReferentReferencesElement,
-} from "./LinearReferencingRelationships";
+} from "./LinearReferencingRelationships.js";
 
 /** Base class for Spatial Location Element subclasses representing properties whose value is located along a Linear-Element and only applies to a portion of an Element.
  * @beta

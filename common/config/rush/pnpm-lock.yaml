@@ -17,8 +17,8 @@ importers:
   ../../core/backend:
     dependencies:
       '@bentley/imodeljs-native':
-        specifier: 5.0.82
-        version: 5.0.82
+        specifier: 5.0.86
+        version: 5.0.86
       '@itwin/cloud-agnostic-core':
         specifier: ^2.2.4
         version: 2.2.4(inversify@6.0.1)(reflect-metadata@0.1.13)
@@ -1039,8 +1039,8 @@ importers:
         specifier: ^6.1.2
         version: 6.1.2
       i18next-http-backend:
-        specifier: ^1.4.4
-        version: 1.4.4
+        specifier: ^3.0.2
+        version: 3.0.2
     devDependencies:
       '@itwin/build-tools':
         specifier: workspace:*
@@ -1417,6 +1417,9 @@ importers:
       eslint:
         specifier: ^9.13.0
         version: 9.13.0
+      internal-tools:
+        specifier: workspace:*
+        version: link:../../../tools/internal
       mocha:
         specifier: ^11.1.0
         version: 11.1.0
@@ -1474,6 +1477,9 @@ importers:
       eslint:
         specifier: ^9.13.0
         version: 9.13.0
+      internal-tools:
+        specifier: workspace:*
+        version: link:../../../tools/internal
       mocha:
         specifier: ^11.1.0
         version: 11.1.0
@@ -1516,6 +1522,9 @@ importers:
       eslint:
         specifier: ^9.13.0
         version: 9.13.0
+      internal-tools:
+        specifier: workspace:*
+        version: link:../../../tools/internal
       mocha:
         specifier: ^11.1.0
         version: 11.1.0
@@ -1564,6 +1573,9 @@ importers:
       eslint:
         specifier: ^9.13.0
         version: 9.13.0
+      internal-tools:
+        specifier: workspace:*
+        version: link:../../../tools/internal
       mocha:
         specifier: ^11.1.0
         version: 11.1.0
@@ -1922,6 +1934,9 @@ importers:
       glob:
         specifier: ^10.3.12
         version: 10.3.12
+      internal-tools:
+        specifier: workspace:*
+        version: link:../../tools/internal
       mocha:
         specifier: ^11.1.0
         version: 11.1.0
@@ -1979,6 +1994,9 @@ importers:
       fetch-mock:
         specifier: ~11.1.3
         version: 11.1.3
+      internal-tools:
+        specifier: workspace:*
+        version: link:../../tools/internal
       mocha:
         specifier: ^11.1.0
         version: 11.1.0
@@ -2070,6 +2088,9 @@ importers:
       fetch-mock:
         specifier: ~11.1.3
         version: 11.1.3
+      internal-tools:
+        specifier: workspace:*
+        version: link:../../tools/internal
       jsdom:
         specifier: ^26.0.0
         version: 26.0.0
@@ -2713,9 +2734,6 @@ importers:
       '@types/sinon-chai':
         specifier: ^3.2.0
         version: 3.2.0
-      '@types/source-map-support':
-        specifier: ^0.4.0
-        version: 0.4.0
       cache-require-paths:
         specifier: ^0.3.0
         version: 0.3.0
@@ -2762,8 +2780,8 @@ importers:
         specifier: ^25.0.0
         version: 25.0.0(jsdom@26.0.0)
       i18next-http-backend:
-        specifier: ^1.4.4
-        version: 1.4.4
+        specifier: ^3.0.2
+        version: 3.0.2
       internal-tools:
         specifier: workspace:*
         version: link:../../tools/internal
@@ -2788,9 +2806,6 @@ importers:
       sinon-chai:
         specifier: ^3.7.0
         version: 3.7.0(chai@4.3.10)(sinon@17.0.2)
-      source-map-support:
-        specifier: ^0.5.6
-        version: 0.5.6
       typemoq:
         specifier: ^2.1.0
         version: 2.1.0
@@ -3124,9 +3139,9 @@ importers:
       '@types/sinonjs__fake-timers':
         specifier: ^8.1.5
         version: 8.1.5
-      '@types/source-map-support':
-        specifier: ^0.4.0
-        version: 0.4.0
+      c8:
+        specifier: ^10.1.3
+        version: 10.1.3
       chai:
         specifier: ^4.3.10
         version: 4.3.10
@@ -3154,12 +3169,12 @@ importers:
       eslint-config-prettier:
         specifier: ^9.1.0
         version: 9.1.0(eslint@9.13.0)
+      internal-tools:
+        specifier: workspace:*
+        version: link:../../tools/internal
       mocha:
         specifier: ^11.1.0
         version: 11.1.0
-      nyc:
-        specifier: ^17.1.0
-        version: 17.1.0
       prettier:
         specifier: ^3.2.5
         version: 3.2.5
@@ -3172,9 +3187,6 @@ importers:
       sinon-chai:
         specifier: ^3.7.0
         version: 3.7.0(chai@4.3.10)(sinon@17.0.2)
-      source-map-support:
-        specifier: ^0.5.6
-        version: 0.5.6
       typemoq:
         specifier: ^2.1.0
         version: 2.1.0
@@ -3220,15 +3232,18 @@ importers:
       '@types/mocha':
         specifier: ^10.0.6
         version: 10.0.6
+      '@types/node':
+        specifier: ~20.17.0
+        version: 20.17.0
       '@types/sinon':
         specifier: ^17.0.2
         version: 17.0.2
       '@types/sinon-chai':
         specifier: ^3.2.0
         version: 3.2.0
-      '@types/source-map-support':
-        specifier: ^0.4.0
-        version: 0.4.0
+      c8:
+        specifier: ^10.1.3
+        version: 10.1.3
       chai:
         specifier: ^4.3.10
         version: 4.3.10
@@ -3256,12 +3271,12 @@ importers:
       eslint-config-prettier:
         specifier: ^9.1.0
         version: 9.1.0(eslint@9.13.0)
+      internal-tools:
+        specifier: workspace:*
+        version: link:../../tools/internal
       mocha:
         specifier: ^11.1.0
         version: 11.1.0
-      nyc:
-        specifier: ^17.1.0
-        version: 17.1.0
       prettier:
         specifier: ^3.2.5
         version: 3.2.5
@@ -3274,9 +3289,6 @@ importers:
       sinon-chai:
         specifier: ^3.7.0
         version: 3.7.0(chai@4.3.10)(sinon@17.0.2)
-      source-map-support:
-        specifier: ^0.5.6
-        version: 0.5.6
       typemoq:
         specifier: ^2.1.0
         version: 2.1.0
@@ -3347,15 +3359,18 @@ importers:
       '@types/mocha':
         specifier: ^10.0.6
         version: 10.0.6
+      '@types/node':
+        specifier: ~20.17.0
+        version: 20.17.0
       '@types/sinon':
         specifier: ^17.0.2
         version: 17.0.2
       '@types/sinon-chai':
         specifier: ^3.2.0
         version: 3.2.0
-      '@types/source-map-support':
-        specifier: ^0.4.0
-        version: 0.4.0
+      c8:
+        specifier: ^10.1.3
+        version: 10.1.3
       chai:
         specifier: ^4.3.10
         version: 4.3.10
@@ -3380,15 +3395,15 @@ importers:
       eslint-config-prettier:
         specifier: ^9.1.0
         version: 9.1.0(eslint@9.13.0)
+      internal-tools:
+        specifier: workspace:*
+        version: link:../../tools/internal
       jsdom:
         specifier: ^26.0.0
         version: 26.0.0
       mocha:
         specifier: ^11.1.0
         version: 11.1.0
-      nyc:
-        specifier: ^17.1.0
-        version: 17.1.0
       prettier:
         specifier: ^3.2.5
         version: 3.2.5
@@ -3401,9 +3416,6 @@ importers:
       sinon-chai:
         specifier: ^3.7.0
         version: 3.7.0(chai@4.3.10)(sinon@17.0.2)
-      source-map-support:
-        specifier: ^0.5.6
-        version: 0.5.6
       typemoq:
         specifier: ^2.1.0
         version: 2.1.0
@@ -4037,7 +4049,7 @@ importers:
         version: 0.26.11(typescript@5.6.2)
       typedoc-plugin-merge-modules:
         specifier: ^6.0.3
-        version: 6.0.3(typedoc@0.26.11(typescript@5.6.2))
+        version: 6.1.0(typedoc@0.26.11(typescript@5.6.2))
       typescript:
         specifier: ~5.6.2
         version: 5.6.2
@@ -4617,8 +4629,8 @@ packages:
   '@bentley/icons-generic@1.0.34':
     resolution: {integrity: sha512-IIs1wDcY2oZ8tJ3EZRw0U51M+0ZL3MvwoDYYmhUXaa9/UZqpFoOyLBGaxjirQteWXqTIMm3mFvmC+Nbn1ok4Iw==}
 
-  '@bentley/imodeljs-native@5.0.82':
-    resolution: {integrity: sha512-7L8xwRt+HM7LD93leqPlQkcjxPrJQFBV5cAhj6TqwV9+P6HKLoS8R3zERKpBsprDHidxrJLM5c5FxKNKBbZl4A==}
+  '@bentley/imodeljs-native@5.0.86':
+    resolution: {integrity: sha512-ubD0BP9eFftlGt8d1wSTEPQuXaE8sVNL558eWVXTsEda0Fw5VMFWkObgNiq7MJPcSpeNcNtcZdFzIn5eNpfCSQ==}
 
   '@bentley/linear-referencing-schema@2.0.3':
     resolution: {integrity: sha512-2pFIEN4BS7alIDhGous6N2icKAS8ZhVBfoWB8WvSFaYnneGv5YwbbXl46qATDdPO5jUFezkW6uVxdpp1eOgUHQ==}
@@ -5735,6 +5747,9 @@ packages:
   '@types/i18next@8.4.2':
     resolution: {integrity: sha512-YVBE5OAwMdcCQcz3HmNpPpsfhWdARLe5fIi5A4vVJTm03Zp4Y1ySFJ5TQg8H5/r7GmvZUuOM6Qpuvc6jKdAnFQ==}
 
+  '@types/istanbul-lib-coverage@2.0.6':
+    resolution: {integrity: sha512-2QF/t/auWm0lsy8XtKVPG19v3sSOQlJe/YHZgfjb/KBBHOGSV+J2q/S671rcq9uTBrLAXmZpqJiaQbMT+zNU1w==}
+
   '@types/jquery@3.5.32':
     resolution: {integrity: sha512-b9Xbf4CkMqS02YH8zACqN1xzdxc3cO735Qe5AbSUFmyOiaWAbcpqh9Wna+Uk0vgACvoQHpWDg2rGdHkYPLmCiQ==}
 
@@ -5830,9 +5845,6 @@ packages:
 
   '@types/sizzle@2.3.9':
     resolution: {integrity: sha512-xzLEyKB50yqCUPUJkIsrVvoWNfFUbIZI+RspLWt8u+tIW/BetMBZtgV2LY/2o+tYH8dRvQ+eoPf3NdhQCcLE2w==}
-
-  '@types/source-map-support@0.4.0':
-    resolution: {integrity: sha512-9oVAi1Jlr274pbMGPEe0S3IPImV9knVNafa6E4MookD/fjOZAE6EmLkFX5ZjtZ9OXNPi2FCIZzUSMvwAUUKeSg==}
 
   '@types/spdy@3.4.4':
     resolution: {integrity: sha512-N9LBlbVRRYq6HgYpPkqQc3a9HJ/iEtVZToW6xlTtJiMhmRJ7jJdV7TaZQJw/Ve/1ePUsQiCTDc4JMuzzag94GA==}
@@ -6468,6 +6480,16 @@ packages:
     resolution: {integrity: sha512-/Nf7TyzTx6S3yRJObOAV7956r8cr2+Oj8AC5dt8wSP3BQAoeX58NoHyCU8P8zGkNXStjTSi6fzO6F0pBdcYbEg==}
     engines: {node: '>= 0.8'}
 
+  c8@10.1.3:
+    resolution: {integrity: sha512-LvcyrOAaOnrrlMpW22n690PUvxiq4Uf9WMhQwNJ9vgagkL/ph1+D4uvjvDA5XCbykrc0sx+ay6pVi9YZ1GnhyA==}
+    engines: {node: '>=18'}
+    hasBin: true
+    peerDependencies:
+      monocart-coverage-reports: ^2
+    peerDependenciesMeta:
+      monocart-coverage-reports:
+        optional: true
+
   cac@6.7.14:
     resolution: {integrity: sha512-b6Ilus+c3RrdDk+JhLKUAQfzzgLEPy6wcXqS7f/xe1EETvsDP6GORG7SFuOs6cID5YkqchW/LXZbX5bc8j7ZcQ==}
     engines: {node: '>=8'}
@@ -6764,8 +6786,8 @@ packages:
     engines: {node: '>=10.14', npm: '>=6', yarn: '>=1'}
     hasBin: true
 
-  cross-fetch@3.1.5:
-    resolution: {integrity: sha512-lvb1SBsI0Z7GDwmuid+mU3kWVBwTVUbe7S0H52yaaAdQOXq2YktTCZdlAcNKFzE6QtRz0snpw9bNiPeOIkkQvw==}
+  cross-fetch@4.0.0:
+    resolution: {integrity: sha512-e4a5N8lVvuLgAWgnCrLr2PP0YyDOTHa9H/Rj54dirp61qXnNq46m82bRhNqIA5VccJtWBvPTFRV3TtvHUKPB1g==}
 
   cross-spawn@7.0.5:
     resolution: {integrity: sha512-ZVJrKKYunU38/76t0RMOulHOnUcbU9GbpWKAOZ0mhjr7CX6FVrH+4FrAapSOekrgFQ3f/8gwMEuIft0aKq6Hug==}
@@ -7839,8 +7861,8 @@ packages:
   i18next-browser-languagedetector@6.1.2:
     resolution: {integrity: sha512-YDzIGHhMRvr7M+c8B3EQUKyiMBhfqox4o1qkFvt4QXuu5V2cxf74+NCr+VEkUuU0y+RwcupA238eeolW1Yn80g==}
 
-  i18next-http-backend@1.4.4:
-    resolution: {integrity: sha512-M4gLPe6JKZ2p1UmE6t4rzWV/sAxgrLThW7ztXAsTpFwFqXoyzhTzX8eYxVv9KjpCQh4K9nwxnEjEi+74C4Thbg==}
+  i18next-http-backend@3.0.2:
+    resolution: {integrity: sha512-PdlvPnvIp4E1sYi46Ik4tBYh/v/NbYfFFgTjkwFl0is8A18s7/bx9aXqsrOax9WUbeNS6mD2oix7Z0yGGf6m5g==}
 
   i18next@21.9.1:
     resolution: {integrity: sha512-ITbDrAjbRR73spZAiu6+ex5WNlHRr1mY+acDi2ioTHuUiviJqSz269Le1xHAf0QaQ6GgIHResUhQNcxGwa/PhA==}
@@ -8734,8 +8756,8 @@ packages:
   node-abort-controller@3.1.1:
     resolution: {integrity: sha512-AGK2yQKIjRuqnc6VkX2Xj5d+QW8xZ87pa1UK6yA6ouUyuxfHuMP6umE5QK7UmTeOAymo+Zx1Fxiuw9rVx8taHQ==}
 
-  node-fetch@2.6.7:
-    resolution: {integrity: sha512-ZjMPFEfVx5j+y2yF35Kzx5sF7kDzxuDj6ziH4FFbOp87zKDZNx8yExJIb05OGF4Nlt9IHFIMBkRl41VdvcNdbQ==}
+  node-fetch@2.7.0:
+    resolution: {integrity: sha512-c4FRfUm/dbcWZ7U+1Wq0AwCyFL+3nt2bEw05wfxSz+DWpWsitgmSgYmy2dQdWyKC1694ELPqMs/YzUSNozLt8A==}
     engines: {node: 4.x || >=6.0.0}
     peerDependencies:
       encoding: ^0.1.0
@@ -10087,10 +10109,10 @@ packages:
   typedarray-to-buffer@3.1.5:
     resolution: {integrity: sha512-zdu8XMNEDepKKR+XYOXAVPtWui0ly0NtohUscw+UmaHiAWT8hrV1rr//H6V+0DvJ3OQ19S979M0laLfX8rm82Q==}
 
-  typedoc-plugin-merge-modules@6.0.3:
-    resolution: {integrity: sha512-66mKhcU3RqjLnFzrC4jObqKpnKg+yCyBmTYfzGHjuVlBb1ZhPyD64kLBR6ZsSx5oy99W/Kizu5xc5NBN2nY3kQ==}
+  typedoc-plugin-merge-modules@6.1.0:
+    resolution: {integrity: sha512-AZIyw+H1oG3xpJOq1b2CVnpK7A6OIddi7FsjljsbmQ7vx6dtaorEoz/DQPcGSOzWhWdJPqqdncIzVySuoffS2w==}
     peerDependencies:
-      typedoc: 0.26.x
+      typedoc: 0.26.x || ^0.27.1
 
   typedoc@0.26.11:
     resolution: {integrity: sha512-sFEgRRtrcDl2FxVP58Ze++ZK2UQAEvtvvH8rRlig1Ja3o7dDaMHmaBfvJmdGnNEFaLTpQsN8dpvZaTqJSu/Ugw==}
@@ -10215,6 +10237,10 @@ packages:
 
   v8-compile-cache-lib@3.0.1:
     resolution: {integrity: sha512-wa7YjyUGfNZngI/vtK0UHAN+lgDCxBPCylVXGp0zu59Fz5aiGtNXaq3DhIov063MorB+VfufLh3JlF2KdTK3xg==}
+
+  v8-to-istanbul@9.3.0:
+    resolution: {integrity: sha512-kiGUalWN+rgBJ/1OHZsBtU4rXZOfj/7rKQxULKlIzwzQSvMJUUNgPwJEEh7gU6xEVxC0ahoOBvN2YI8GH6FNgA==}
+    engines: {node: '>=10.12.0'}
 
   validator@13.12.0:
     resolution: {integrity: sha512-c1Q0mCiPlgdTVVVIJIrBuxNicYE+t/7oKeI9MWLj3fh/uq2Pxh/3eeWbVZ4OcGW1TUf53At0njHw5SMdA3tmMg==}
@@ -10998,7 +11024,7 @@ snapshots:
 
   '@bentley/icons-generic@1.0.34': {}
 
-  '@bentley/imodeljs-native@5.0.82': {}
+  '@bentley/imodeljs-native@5.0.86': {}
 
   '@bentley/linear-referencing-schema@2.0.3': {}
 
@@ -11976,13 +12002,13 @@ snapshots:
   '@types/body-parser@1.19.5':
     dependencies:
       '@types/connect': 3.4.38
-      '@types/node': 20.17.0
+      '@types/node': 20.17.24
 
   '@types/cacheable-request@6.0.3':
     dependencies:
       '@types/http-cache-semantics': 4.0.4
       '@types/keyv': 3.1.4
-      '@types/node': 20.17.0
+      '@types/node': 20.17.24
       '@types/responselike': 1.0.3
 
   '@types/chai-as-promised@7.1.0':
@@ -12006,7 +12032,7 @@ snapshots:
 
   '@types/connect@3.4.38':
     dependencies:
-      '@types/node': 20.17.0
+      '@types/node': 20.17.24
 
   '@types/cookie@0.6.0': {}
 
@@ -12040,14 +12066,14 @@ snapshots:
 
   '@types/express-serve-static-core@4.19.6':
     dependencies:
-      '@types/node': 20.17.0
+      '@types/node': 20.17.24
       '@types/qs': 6.9.18
       '@types/range-parser': 1.2.7
       '@types/send': 0.17.4
 
   '@types/express-serve-static-core@5.0.6':
     dependencies:
-      '@types/node': 20.17.0
+      '@types/node': 20.17.24
       '@types/qs': 6.9.18
       '@types/range-parser': 1.2.7
       '@types/send': 0.17.4
@@ -12082,7 +12108,7 @@ snapshots:
 
   '@types/fs-extra@8.1.5':
     dependencies:
-      '@types/node': 20.17.0
+      '@types/node': 20.17.24
 
   '@types/geojson@7946.0.14': {}
 
@@ -12110,6 +12136,8 @@ snapshots:
 
   '@types/i18next@8.4.2': {}
 
+  '@types/istanbul-lib-coverage@2.0.6': {}
+
   '@types/jquery@3.5.32':
     dependencies:
       '@types/sizzle': 2.3.9
@@ -12126,11 +12154,11 @@ snapshots:
 
   '@types/jsonwebtoken@8.5.9':
     dependencies:
-      '@types/node': 20.17.0
+      '@types/node': 20.17.24
 
   '@types/keyv@3.1.4':
     dependencies:
-      '@types/node': 20.17.0
+      '@types/node': 20.17.24
 
   '@types/lodash@4.14.202': {}
 
@@ -12178,24 +12206,24 @@ snapshots:
 
   '@types/readable-stream@4.0.18':
     dependencies:
-      '@types/node': 20.17.0
+      '@types/node': 20.17.24
       safe-buffer: 5.1.2
 
   '@types/responselike@1.0.3':
     dependencies:
-      '@types/node': 20.17.0
+      '@types/node': 20.17.24
 
   '@types/semver@7.3.10': {}
 
   '@types/send@0.17.4':
     dependencies:
       '@types/mime': 1.3.5
-      '@types/node': 20.17.0
+      '@types/node': 20.17.24
 
   '@types/serve-static@1.15.7':
     dependencies:
       '@types/http-errors': 2.0.4
-      '@types/node': 20.17.0
+      '@types/node': 20.17.24
       '@types/send': 0.17.4
 
   '@types/shimmer@1.2.0': {}
@@ -12213,10 +12241,6 @@ snapshots:
 
   '@types/sizzle@2.3.9': {}
 
-  '@types/source-map-support@0.4.0':
-    dependencies:
-      '@types/node': 20.17.0
-
   '@types/spdy@3.4.4':
     dependencies:
       '@types/node': 20.17.0
@@ -12233,7 +12257,7 @@ snapshots:
     dependencies:
       '@types/cookiejar': 2.1.5
       '@types/methods': 1.1.4
-      '@types/node': 20.17.0
+      '@types/node': 20.17.24
       form-data: 4.0.2
 
   '@types/supertest@6.0.2':
@@ -12259,7 +12283,7 @@ snapshots:
 
   '@types/ws@7.4.7':
     dependencies:
-      '@types/node': 20.17.0
+      '@types/node': 20.17.24
 
   '@types/yargs-parser@21.0.3': {}
 
@@ -12269,7 +12293,7 @@ snapshots:
 
   '@types/yauzl@2.10.3':
     dependencies:
-      '@types/node': 20.17.0
+      '@types/node': 20.17.24
     optional: true
 
   '@typescript-eslint/eslint-plugin@8.11.0(@typescript-eslint/parser@8.11.0(eslint@9.13.0)(typescript@5.6.2))(eslint@9.13.0)(typescript@5.6.2)':
@@ -13065,6 +13089,20 @@ snapshots:
 
   bytes@3.1.2: {}
 
+  c8@10.1.3:
+    dependencies:
+      '@bcoe/v8-coverage': 1.0.2
+      '@istanbuljs/schema': 0.1.3
+      find-up: 5.0.0
+      foreground-child: 3.3.1
+      istanbul-lib-coverage: 3.2.2
+      istanbul-lib-report: 3.0.1
+      istanbul-reports: 3.1.7
+      test-exclude: 7.0.1
+      v8-to-istanbul: 9.3.0
+      yargs: 17.7.2
+      yargs-parser: 21.1.1
+
   cac@6.7.14: {}
 
   cache-require-paths@0.3.0: {}
@@ -13210,7 +13248,7 @@ snapshots:
 
   chrome-launcher@0.15.2:
     dependencies:
-      '@types/node': 20.17.0
+      '@types/node': 20.17.24
       escape-string-regexp: 4.0.0
       is-wsl: 2.2.0
       lighthouse-logger: 1.4.2
@@ -13401,9 +13439,9 @@ snapshots:
     dependencies:
       cross-spawn: 7.0.6
 
-  cross-fetch@3.1.5:
+  cross-fetch@4.0.0:
     dependencies:
-      node-fetch: 2.6.7
+      node-fetch: 2.7.0
     transitivePeerDependencies:
       - encoding
 
@@ -14717,9 +14755,9 @@ snapshots:
     dependencies:
       '@babel/runtime': 7.26.10
 
-  i18next-http-backend@1.4.4:
+  i18next-http-backend@3.0.2:
     dependencies:
-      cross-fetch: 3.1.5
+      cross-fetch: 4.0.0
     transitivePeerDependencies:
       - encoding
 
@@ -15065,7 +15103,7 @@ snapshots:
 
   jest-worker@27.5.1:
     dependencies:
-      '@types/node': 20.17.0
+      '@types/node': 20.17.24
       merge-stream: 2.0.0
       supports-color: 8.1.1
 
@@ -15693,7 +15731,7 @@ snapshots:
 
   node-abort-controller@3.1.1: {}
 
-  node-fetch@2.6.7:
+  node-fetch@2.7.0:
     dependencies:
       whatwg-url: 5.0.0
 
@@ -17174,7 +17212,7 @@ snapshots:
     dependencies:
       is-typedarray: 1.0.0
 
-  typedoc-plugin-merge-modules@6.0.3(typedoc@0.26.11(typescript@5.6.2)):
+  typedoc-plugin-merge-modules@6.1.0(typedoc@0.26.11(typescript@5.6.2)):
     dependencies:
       typedoc: 0.26.11(typescript@5.6.2)
 
@@ -17307,6 +17345,12 @@ snapshots:
   uuid@8.3.2: {}
 
   v8-compile-cache-lib@3.0.1: {}
+
+  v8-to-istanbul@9.3.0:
+    dependencies:
+      '@jridgewell/trace-mapping': 0.3.25
+      '@types/istanbul-lib-coverage': 2.0.6
+      convert-source-map: 2.0.0
 
   validator@13.12.0: {}
 
@@ -17673,7 +17717,7 @@ snapshots:
 
   wkx@0.5.0:
     dependencies:
-      '@types/node': 20.17.0
+      '@types/node': 20.17.24
 
   wms-capabilities@0.4.0:
     dependencies:
