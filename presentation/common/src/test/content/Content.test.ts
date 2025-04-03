@@ -3,10 +3,10 @@
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { Content, ContentJSON } from "../../presentation-common/content/Content";
-import { Item } from "../../presentation-common/content/Item";
-import { createTestContentDescriptor } from "../_helpers/Content";
-import { createTestECClassInfo, createTestECInstanceKey, createTestLabelDefinition } from "../_helpers";
+import { Content, ContentJSON } from "../../presentation-common/content/Content.js";
+import { Item } from "../../presentation-common/content/Item.js";
+import { createTestContentDescriptor } from "../_helpers/Content.js";
+import { createTestECClassInfo, createTestECInstanceKey, createTestLabelDefinition } from "../_helpers/index.js";
 
 describe("Content", () => {
   describe("constructor", () => {

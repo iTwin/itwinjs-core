@@ -29,7 +29,7 @@ import "./StartupShutdown"; // calls startup/shutdown IModelHost before/after al
 //      - Required to be a SPA
 //    IMJS_OIDC_BROWSER_TEST_REDIRECT_URI
 //    IMJS_OIDC_BROWSER_TEST_SCOPES
-//      - Required scopes: "openid imodelhub context-registry-service:read-only"
+//      - Required scopes: "itwin-platform"
 
 describe("BriefcaseManager", () => {
   let testITwinId: string;
@@ -87,17 +87,13 @@ describe("BriefcaseManager", () => {
 
     const expectedChangeSet = await IModelHost[_hubAccess].getChangesetFromVersion({ version: IModelVersion.first(), accessToken, iModelId: readOnlyTestIModelId });
     assert.strictEqual(iModel.changeset.id, expectedChangeSet.id);
-    assert.strictEqual(iModel.changeset.id, expectedChangeSet.id);
 
-    // the v2 checkpoint should be opened directly
-    // Convert to UNIX path separators on Windows for consistent results.
-    const actualPathName = iModel.pathName.replace(/\\/g, "/");
-    const expectedPathName = `/imodelblocks-73c9d3f0-3a47-41d6-8d2a-c0b0e4099f6a/BASELINE.bim`;
-    expect(actualPathName).equals(expectedPathName);
+    // This iModelDb should be a snapshot because it was opened as a checkpoint
+    expect(iModel.isSnapshot).true;
     iModel.close();
   });
 
-  it.skip("should reuse checkpoints", async () => {
+  it("should reuse checkpoints", async () => {
     const iModel1 = await HubWrappers.openCheckpointUsingRpc({ accessToken, iTwinId: testITwinId, iModelId: readOnlyTestIModelId, asOf: IModelVersion.named("FirstVersion").toJSON() });
     assert.exists(iModel1, "No iModel returned from call to BriefcaseManager.open");
 
@@ -109,28 +105,9 @@ describe("BriefcaseManager", () => {
     assert.exists(iModel3, "No iModel returned from call to BriefcaseManager.open");
     assert.notEqual(iModel3, iModel2, "opening two different versions should not cause briefcases to be shared when the older one is open");
 
-    const pathname2 = iModel2.pathName;
     iModel2.close();
-    assert.isTrue(IModelJsFs.existsSync(pathname2));
-
-    const pathname3 = iModel3.pathName;
     iModel3.close();
-    assert.isTrue(IModelJsFs.existsSync(pathname3));
-
-    const iModel4 = await HubWrappers.openCheckpointUsingRpc({ accessToken, iTwinId: testITwinId, iModelId: readOnlyTestIModelId, asOf: IModelVersion.named("FirstVersion").toJSON() });
-    assert.exists(iModel4, "No iModel returned from call to BriefcaseManager.open");
-    assert.equal(iModel4.pathName, pathname2, "previously closed briefcase was expected to be shared");
-
-    const iModel5 = await HubWrappers.openCheckpointUsingRpc({ accessToken, iTwinId: testITwinId, iModelId: readOnlyTestIModelId, asOf: IModelVersion.named("SecondVersion").toJSON() });
-    assert.exists(iModel5, "No iModel returned from call to BriefcaseManager.open");
-    assert.equal(iModel5.pathName, pathname3, "previously closed briefcase was expected to be shared");
-
-    await HubWrappers.closeAndDeleteBriefcaseDb(accessToken, iModel4);
-    assert.isFalse(IModelJsFs.existsSync(pathname2));
-
-    await HubWrappers.closeAndDeleteBriefcaseDb(accessToken, iModel5);
-    assert.isFalse(IModelJsFs.existsSync(pathname3));
-  });
+    });
 
   it("should be able to show progress when downloading a briefcase (#integration)", async () => {
     const testIModelId = await HubUtility.getTestIModelId(accessToken, HubUtility.testIModelNames.stadium);

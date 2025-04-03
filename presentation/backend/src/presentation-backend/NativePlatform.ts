@@ -19,7 +19,7 @@ import {
   VariableValueJSON,
   VariableValueTypes,
 } from "@itwin/presentation-common";
-import { HierarchyCacheMode } from "./PresentationManager";
+import { HierarchyCacheMode } from "./PresentationManager.js";
 
 /** @internal */
 export enum NativePlatformRequestTypes {

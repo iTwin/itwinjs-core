@@ -6,9 +6,9 @@
  * @module PresentationRules
  */
 
-import { SingleSchemaClassSpecification } from "../ClassSpecifications";
-import { RelationshipPathSpecification } from "../RelationshipPathSpecification";
-import { RuleBase } from "../Rule";
+import { SingleSchemaClassSpecification } from "../ClassSpecifications.js";
+import { RelationshipPathSpecification } from "../RelationshipPathSpecification.js";
+import { RuleBase } from "../Rule.js";
 
 /**
  * Instance label override rule provides a way to set instance label to one of its property values,

@@ -5,13 +5,14 @@
 import { assert } from "chai";
 import { SchemaLoader } from "../../SchemaLoader";
 import { ECObjectsError } from "../../Exception";
+import { ECSchemaNamespaceUris } from "../../Constants";
 
 describe("SchemaLoader", () => {
 
   const getSchemaProps = (schemaName: string) => {
     if (schemaName === "SchemaD") {
       return {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+        $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
         alias: "d",
         description: "This is a test Schema.",
         label: "SchemaD",

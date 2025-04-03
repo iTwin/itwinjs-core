@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { DisplayValue, IContentVisitor, ProcessPrimitiveValueProps, traverseContentItem, Value } from "@itwin/presentation-common";
-import { initialize, terminate } from "../IntegrationTests";
+import { initialize, terminate } from "../IntegrationTests.js";
 import { IModelDb, SnapshotDb } from "@itwin/core-backend";
 import { Presentation } from "@itwin/presentation-backend";
 

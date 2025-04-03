@@ -8,7 +8,7 @@ import { Guid } from "@itwin/core-bentley";
 import { IModelConnection } from "@itwin/core-frontend";
 import { Content, ContentSpecificationTypes, DisplayValue, FormatsMap, InstanceKey, KeySet, Ruleset, RuleTypes } from "@itwin/presentation-common";
 import { PresentationManager, PresentationManagerProps } from "@itwin/presentation-frontend";
-import { collect, getFieldByLabel } from "../../Utils";
+import { collect, getFieldByLabel } from "../../Utils.js";
 import {
   buildTestIModelConnection,
   importSchema,
@@ -16,11 +16,11 @@ import {
   insertPhysicalElement,
   insertPhysicalModelWithPartition,
   insertSpatialCategory,
-} from "../../IModelSetupUtils";
+} from "../../IModelSetupUtils.js";
 import { UnitSystemKey } from "@itwin/core-quantity";
 import { SchemaContext } from "@itwin/ecschema-metadata";
 import { ECSchemaRpcLocater } from "@itwin/ecschema-rpcinterface-common";
-import { describeContentTestSuite, getDisplayValue } from "./Utils";
+import { describeContentTestSuite, getDisplayValue } from "./Utils.js";
 
 describeContentTestSuite("Property value formatting", ({ getDefaultSuiteIModel }) => {
   const ruleset: Ruleset = {
