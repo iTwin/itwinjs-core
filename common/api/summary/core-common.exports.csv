@@ -217,6 +217,7 @@ public;interface;DisplayStyleSettingsOptions
 public;interface;DisplayStyleSettingsProps
 public;interface;DisplayStyleSubCategoryProps
 beta;enum;DomainOptions
+public;interface;DrawingProps
 public;interface;DynamicGraphicsRequest2dProps
 public;interface;DynamicGraphicsRequest3dProps
 public;interface;DynamicGraphicsRequestProps

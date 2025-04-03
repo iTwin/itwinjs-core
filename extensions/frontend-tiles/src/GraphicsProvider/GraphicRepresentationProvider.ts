@@ -4,8 +4,8 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { AccessToken, Logger } from "@itwin/core-bentley";
-import { loggerCategory } from "../LoggerCategory";
 import { IModelApp, ITWINJS_CORE_VERSION } from "@itwin/core-frontend";
+import { loggerCategory } from "../LoggerCategory.js";
 
 /** The expected format of the Graphic Representation
  * @beta

@@ -66,6 +66,7 @@ import { DisplayStyleLoadProps } from '@itwin/core-common';
 import { DisplayStyleProps } from '@itwin/core-common';
 import { DisplayStyleSettings } from '@itwin/core-common';
 import { DisplayStyleSettingsProps } from '@itwin/core-common';
+import { DrawingProps } from '@itwin/core-common';
 import { EcefLocation } from '@itwin/core-common';
 import { ECSchemaProps } from '@itwin/core-common';
 import { ECSqlReader } from '@itwin/core-common';
@@ -1719,12 +1720,16 @@ export class Downloads {
 
 // @public
 export class Drawing extends Document_2 {
-    protected constructor(props: ElementProps, iModel: IModelDb);
+    protected constructor(props: DrawingProps, iModel: IModelDb);
     // (undocumented)
     static get className(): string;
     static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code;
     protected static get drawingModelFullClassName(): string;
-    static insert(iModelDb: IModelDb, documentListModelId: Id64String, name: string): Id64String;
+    static insert(iModelDb: IModelDb, documentListModelId: Id64String, name: string, scaleFactor?: number): Id64String;
+    get scaleFactor(): number;
+    set scaleFactor(factor: number);
+    // (undocumented)
+    toJSON(): DrawingProps;
 }
 
 // @public
@@ -3237,7 +3242,7 @@ export abstract class IModelDb extends IModel {
     // @alpha
     importSchemaStrings(serializedXmlSchemas: string[]): Promise<void>;
     // @internal (undocumented)
-    protected initializeIModelDb(): void;
+    protected initializeIModelDb(when?: "pullMerge"): void;
     // @beta
     inlineGeometryParts(): InlineGeometryPartsResult;
     get isBriefcase(): boolean;
