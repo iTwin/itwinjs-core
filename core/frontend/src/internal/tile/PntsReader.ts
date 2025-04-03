@@ -82,20 +82,20 @@ type UnquantizedPntsProps = CommonPntsProps & {
 
 type PntsProps = QuantizedPntsProps | UnquantizedPntsProps;
 
-function readPntsColors(stream: ByteStream, dataOffset: number, pnts: PntsProps): Uint8Array | undefined {
+export function readPntsColors(stream: ByteStream, dataOffset: number, pnts: PntsProps): Uint8Array | undefined {
   const nPts = pnts.POINTS_LENGTH;
   const nComponents = 3 * nPts;
   if (pnts.RGB)
     return new Uint8Array(stream.arrayBuffer, dataOffset + pnts.RGB.byteOffset, nComponents);
 
   if (pnts.RGBA) {
-    // ###TODO support point cloud transparency.
+      // ###TODO We currently don't support transparency for point clouds, so convert RGBA to RGB by stripping out the alpha channel.
     const rgb = new Uint8Array(nComponents);
-    const rgba = new Uint8Array(stream.arrayBuffer, dataOffset + pnts.RGBA.byteOffset, nComponents);
-    for (let i = 0; i < nComponents; i += 4) {
-      rgb[i + 0] = rgba[i + 0];
-      rgb[i + 1] = rgba[i + 1];
-      rgb[i + 2] = rgba[i + 2];
+    const rgba = new Uint8Array(stream.arrayBuffer, dataOffset + pnts.RGBA.byteOffset, 4 * nPts);
+    for (let i = 0; i < nPts; i++) {
+      rgb[i * 3 + 0] = rgba[i * 4 + 0];
+      rgb[i * 3 + 1] = rgba[i * 4 + 1];
+      rgb[i * 3 + 2] = rgba[i * 4 + 2];
     }
 
     return rgb;
