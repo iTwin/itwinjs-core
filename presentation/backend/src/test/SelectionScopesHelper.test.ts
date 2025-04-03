@@ -229,7 +229,7 @@ describe("SelectionScopesHelper", () => {
         const { key: parentKey } = setupIModelForElementProps({ parentKey: grandparentKey });
         const { key: elementKey } = setupIModelForElementProps({ parentKey });
 
-        const result = await SelectionScopesHelper.computeSelection({ imodel: imodelMock.object, elementIds: [elementKey.id!], scope: { id: "top-assembly" } });
+        const result = await SelectionScopesHelper.computeSelection({ imodel: imodelMock.object, elementIds: [elementKey.id], scope: { id: "top-assembly" } });
         expect(result.size).to.eq(1);
         expect(result.has(grandparentKey)).to.be.true;
       });
