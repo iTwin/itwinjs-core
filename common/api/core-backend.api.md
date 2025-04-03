@@ -1811,10 +1811,6 @@ export class ECDb implements Disposable {
     prepareStatement(ecsql: string, logErrors?: boolean): ECSqlStatement;
     // @beta
     prepareWriteStatement(ecsql: string, logErrors?: boolean): ECSqlWriteStatement;
-    // @deprecated
-    query(ecsql: string, params?: QueryBinder, options?: QueryOptions): AsyncIterableIterator<any>;
-    // @deprecated
-    queryRowCount(ecsql: string, params?: QueryBinder): Promise<number>;
     // @internal
     resetSqliteCache(size: number): void;
     saveChanges(changesetName?: string): void;
