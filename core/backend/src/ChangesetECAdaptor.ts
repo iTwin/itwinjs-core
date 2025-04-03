@@ -414,6 +414,8 @@ namespace DateTime {
 export class PartialECChangeUnifier implements Disposable {
   private readonly _cacheTable = Guid.createValue();
   private _readonly = false;
+  private readonly _defaultbatchSize = 25000;
+
   public constructor(private _db: AnyDb) {
     this.createTempTable();
   }
@@ -540,6 +542,14 @@ export class PartialECChangeUnifier implements Disposable {
     }
   }
 
+  public getInstanceCount(): number {
+    return this._db.withPreparedSqliteStatement(`SELECT COUNT(*) FROM [temp].[${this._cacheTable}]`, (stmt) => {
+      if (stmt.step() === DbResult.BE_SQLITE_ROW)
+        return stmt.getValue(0).getInteger();
+      return 0;
+    });
+  }
+
   private setInstance(key: string, value: ChangedECInstance): void {
     const shallowCopy = Object.assign({}, value);
     PartialECChangeUnifier.replaceUint8ArrayWithBase64(shallowCopy);
@@ -636,7 +646,62 @@ export class PartialECChangeUnifier implements Disposable {
   public get instances(): IterableIterator<ChangedECInstance> {
     return this.getInstances();
   }
+
+  /**
+   * Retrieves EC change instances in batches. Recommended when changeset is known to be very large.
+   * @beta
+   *
+   * This generator function fetches EC change instances in batches of a specified size.
+   * It yields arrays of `ChangedECInstance` objects, each representing a batch of instances.
+   *
+   * @param [in] batchSize The number of instances to include in each batch.
+   *                      If not specified, the default batch size is used.
+   *                      Must be a positive integer.
+   *
+   * @return IterableIterator<ChangedECInstance[]> An iterator that yields arrays of `ChangedECInstance` objects.
+   *                                               Each array represents a batch of instances.
+   *
+   * @throws std::runtime_error If the `batchSize` is not a positive integer.
+   *
+   * @code
+   * const batchSize = 1000;
+   * for (const batch of unifier.getInstancesInBatches(batchSize)) {
+   *   console.log(`Processing a batch with ${batch.length} instances`);
+   *   for (const changedInstance of batch) {
+   *     // Process each instance in the batch
+   *     console.log(`changedInstance: ${changedInstance.ECInstanceId} of class ${changedInstance.ECClassId} with meta ${changedInstance.$meta}`);
+   *   }
+   * }
+   * @endcode
+   */
+  public *getInstancesInBatches(batchSize?: number): IterableIterator<ChangedECInstance[]> {
+    if (batchSize === undefined)
+      batchSize = this._defaultbatchSize;
+    else if (!Number.isInteger(batchSize) || batchSize <= 0)
+      throw new Error("Invalid batch size specified.");
+
+    const stmt = this._db.prepareSqliteStatement(`SELECT [value] FROM [temp].[${this._cacheTable}]`);
+
+    let batch: ChangedECInstance[] = [];
+    while (stmt.step() === DbResult.BE_SQLITE_ROW) {
+      const value = JSON.parse(stmt.getValueString(0)) as ChangedECInstance;
+      PartialECChangeUnifier.replaceBase64WithUint8Array(value);
+      batch.push(value);
+
+      if (batch.length >= batchSize) {
+        yield batch; // Yield the batch when it reaches the batch size specified
+        batch = [];
+      }
+    }
+
+    // Yield any remaining rows as the final batch
+    if (batch.length > 0)
+      yield batch;
+
+    stmt[Symbol.dispose]();
+  }
 }
+
 /**
  * Transform sqlite change to ec change. EC change is partial change as
  * it is per table while a single instance can span multiple table.

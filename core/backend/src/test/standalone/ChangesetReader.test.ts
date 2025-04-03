@@ -862,4 +862,96 @@ describe("Changeset Reader API", async () => {
     }
     rwIModel.close();
   });
+
+  it("Changeset reader with paging", async () => {
+    const adminToken = "super manager token";
+    const iModelName = "LargeChangesetTest";
+    const rwIModelId = await HubMock.createNewIModel({ iTwinId, iModelName, description: "TestSubject", accessToken: adminToken });
+    assert.isNotEmpty(rwIModelId);
+
+    const rwIModel = await HubWrappers.downloadAndOpenBriefcase({ iTwinId, iModelId: rwIModelId, accessToken: adminToken });
+
+    // Import schema
+    const schema = `<?xml version="1.0" encoding="UTF-8"?>
+    <ECSchema schemaName="TestDomain" alias="ts" version="01.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
+        <ECSchemaReference name="BisCore" version="01.00" alias="bis"/>
+        <ECEntityClass typeName="TestElement">
+            <BaseClass>bis:GraphicalElement2d</BaseClass>
+            <ECProperty propertyName="name" typeName="string"/>
+        </ECEntityClass>
+    </ECSchema>`;
+    await rwIModel.importSchemaStrings([schema]);
+    rwIModel.channels.addAllowedChannel(ChannelControl.sharedChannelName);
+
+    // Create drawing model and category
+    const codeProps = Code.createEmpty();
+    codeProps.value = "DrawingModel";
+    await rwIModel.locks.acquireLocks({ shared: IModel.dictionaryId });
+    const [, drawingModelId] = IModelTestUtils.createAndInsertDrawingPartitionAndModel(rwIModel, codeProps, true);
+    let drawingCategoryId = DrawingCategory.queryCategoryIdByName(rwIModel, IModel.dictionaryId, "MyDrawingCategory");
+    if (undefined === drawingCategoryId)
+      drawingCategoryId = DrawingCategory.insert(rwIModel, IModel.dictionaryId, "MyDrawingCategory", new SubCategoryAppearance());
+
+    rwIModel.saveChanges();
+    await rwIModel.pushChanges({ description: "Initial Test Data Setup", accessToken: adminToken });
+
+    // Insert a large number of elements
+    const numElements = 10; // Adjust this number to create a very large changeset
+    await rwIModel.locks.acquireLocks({ shared: drawingModelId });
+    for (let i = 0; i < numElements; i++) {
+      const elementProps = {
+        classFullName: "TestDomain:TestElement",
+        model: drawingModelId,
+        category: drawingCategoryId,
+        code: Code.createEmpty(),
+        name: `Element_${i}`,
+      };
+      assert.isTrue(Id64.isValidId64(rwIModel.elements.insertElement(elementProps)), `Failed to insert element ${elementProps.name}`);
+    }
+    rwIModel.saveChanges();
+    await rwIModel.pushChanges({ description: "Changeset to test", accessToken: adminToken });
+
+    const targetDir = path.join(KnownTestLocations.outputDir, rwIModelId, "changesets");
+    const changesets = await HubMock.downloadChangesets({ iModelId: rwIModelId, targetDir });
+    const reader = SqliteChangesetReader.openFile({ fileName: changesets[1].pathname, db: rwIModel, disableSchemaCheck: true });
+    const adaptor = new ECChangesetAdaptor(reader);
+    const unifier = new PartialECChangeUnifier(reader.db);
+    adaptor.acceptOp("Inserted");
+
+    while (adaptor.step())
+      unifier.appendFrom(adaptor);
+
+    assert.equal(unifier.getInstanceCount(), numElements, "Number of instances should match the number of inserted elements");
+
+    for (const [batchSize, expectedNumOfBatches] of [
+      [undefined, 1],
+      [3, 4],
+      [5, 2],
+      [7, 2],
+      [10, 1],
+      [14, 1],
+      [1000, 1],
+    ]) {
+      let numOfBatches = 0;
+      let totalCount = 0;
+      for (const batch of unifier.getInstancesInBatches(batchSize)) {
+        numOfBatches++;
+        totalCount += batch.length;
+      }
+
+      expect(numOfBatches).to.equal(expectedNumOfBatches, `Number of batches should match the expected number of batches for batch size ${batchSize}`);
+      expect(totalCount).to.equal(numElements, `Total count should match the number of instances in all batches for batch size ${batchSize}`);
+    }
+
+    for (const batchSize of [-1, 1.5, 0.0001, 1.001]) {
+      expect(() => {
+        Array.from(unifier.getInstancesInBatches(batchSize)); // Trigger the generator function
+      }).to.throw(
+        "Invalid batch size specified.",
+        `Batch size ${batchSize} should throw an error`
+      );
+    }
+
+    rwIModel.close();
+  });
 });
