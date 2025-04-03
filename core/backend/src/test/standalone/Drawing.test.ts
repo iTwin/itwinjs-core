@@ -32,7 +32,7 @@ describe.only("Drawing", () => {
   }
 
   describe("scaleFactor", () => {
-    function makeProps(scaleFactor: any): DrawingProps {
+    function makeDrawing(scaleFactor: any): Drawing {
       const props: DrawingProps = {
         classFullName: Drawing.classFullName,
         model: documentListModelId,
@@ -43,11 +43,7 @@ describe.only("Drawing", () => {
         props.scaleFactor = scaleFactor;
       }
 
-      return props;
-    }
-
-    function makeDrawing(scaleFactor: any): Drawing {
-      return new TestDrawing(makeProps(scaleFactor));
+      return new TestDrawing(props);
     }
 
     function expectScaleFactor(scaleFactor: any, expected: number): void {
@@ -59,21 +55,43 @@ describe.only("Drawing", () => {
       expectScaleFactor(undefined, 1);
       expectScaleFactor(null, 1);
       expectScaleFactor(0, 1);
+      expectScaleFactor(-123, 1);
       expectScaleFactor(false, 1);
       expectScaleFactor(true, 1);
       expectScaleFactor("", 1);
       expectScaleFactor("abcdef", 1);
     });
 
-    it("throws when attempting to set to zero", () => {
+    it("throws when attempting to set to zero or negative value", () => {
       const drawing = makeDrawing(undefined);
       expect(drawing.scaleFactor).to.equal(1);
-      expect(() => drawing.scaleFactor = 0).to.throw("Drawing.scaleFactor cannot be zero");
+      expect(() => drawing.scaleFactor = 0).to.throw("Drawing.scaleFactor must be greater than zero");
+      expect(drawing.scaleFactor).to.equal(1);
+      expect(() => drawing.scaleFactor = -123).to.throw("Drawing.scaleFactor must be greater than zero");
       expect(drawing.scaleFactor).to.equal(1);
     });
 
     it("is included in JSON IFF not equal to 1", () => {
-      
+      function expectFactor(scaleFactor: any, expected: number | undefined): void {
+        const drawing = makeDrawing(scaleFactor);
+        expect(drawing.scaleFactor === 1).to.equal(expected === undefined);
+        const props = drawing.toJSON();
+        expect(props.scaleFactor).to.equal(expected);
+      }
+
+      expectFactor(undefined, undefined);
+      expectFactor(null, undefined);
+      expectFactor(0, undefined);
+      expectFactor(1, undefined);
+      expectFactor(-123, undefined);
+      expectFactor(false, undefined);
+      expectFactor(true, undefined);
+      expectFactor("", undefined);
+      expectFactor("abcdef", undefined);
+
+      expectFactor(2, 2);
+      expectFactor(123, 123);
+      expectFactor(0.05, 0.05);
     });
 
     it("is preserved when round-tripped through persistence layer", () => {

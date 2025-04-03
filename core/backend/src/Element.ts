@@ -768,19 +768,19 @@ export class Drawing extends Document {
   /** A factor used by tools to adjust the size of text in [GeometricElement2d]($backend)s in the associated [DrawingModel]($backend) and to compute the
    * size of the [ViewAttachment]($backend) created when attaching the [Drawing]($backend) to a [Sheet]($backend).
    * Default: 1.
-   * @note Attempting to set this property to zero will produce an exception.
+   * @note Attempting to set this property to a value less than or equal to zero will produce an exception.
    * @public
    */
   public get scaleFactor(): number { return this._scaleFactor; }
   public set scaleFactor(factor: number) {
-    if (factor === 0) {
+    if (factor <= 0) {
       if (this._scaleFactor === undefined) {
         // Entity constructor calls our setter before our constructor runs...don't throw an exception at that time,
         // because somebody may have persisted the value as zero.
         return;
       }
 
-      throw new Error("Drawing.scaleFactor cannot be zero");
+      throw new Error("Drawing.scaleFactor must be greater than zero");
     }
 
     this._scaleFactor = factor;
@@ -791,13 +791,14 @@ export class Drawing extends Document {
   protected constructor(props: DrawingProps, iModel: IModelDb) {
     super(props, iModel);
 
-    this._scaleFactor = typeof props.scaleFactor === "number" && props.scaleFactor !== 0 ? props.scaleFactor : 1;
+    this._scaleFactor = typeof props.scaleFactor === "number" && props.scaleFactor > 0 ? props.scaleFactor : 1;
   }
 
   public override toJSON(): DrawingProps {
     const drawingProps: DrawingProps = super.toJSON();
-    if (this.scaleFactor !== 1) {
-      drawingProps.scaleFactor = this.scaleFactor;
+    // Entity.toJSON auto-magically sets drawingProps.scaleFactor from this.scaleFactor - unset if default value of 1.
+    if (drawingProps.scaleFactor === 1) {
+      delete drawingProps.scaleFactor;
     }
 
     return drawingProps;
@@ -822,7 +823,7 @@ export class Drawing extends Document {
    * @param name The name of the Drawing.
    * @returns The Id of the newly inserted Drawing element and the DrawingModel that breaks it down (same value).
    * @throws [[IModelError]] if unable to insert the element.
-   * @throws Error if `scaleFactor` is zero.
+   * @throws Error if `scaleFactor` is less than or equal to zero.
    */
   public static insert(iModelDb: IModelDb, documentListModelId: Id64String, name: string, scaleFactor?: number): Id64String {
     const drawingProps: DrawingProps = {
@@ -831,9 +832,11 @@ export class Drawing extends Document {
       code: this.createCode(iModelDb, documentListModelId, name),
     };
 
-    if (scaleFactor === 0) {
-      throw new Error("Drawing.scaleFactor cannot be zero");
-    } else if (typeof scaleFactor === "number" && scaleFactor !== 1) {
+    if (scaleFactor !== undefined) {
+      if (scaleFactor <= 0) {
+        throw new Error("Drawing.scaleFactor must be greater than zero");
+      }
+      
       drawingProps.scaleFactor = scaleFactor;
     }
 
