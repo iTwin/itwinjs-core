@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert } from "chai";
-import * as path from "path";
+import * as path from "node:path";
 import * as semver from "semver";
 import { Guid, Id64, Id64String } from "@itwin/core-bentley";
 import {

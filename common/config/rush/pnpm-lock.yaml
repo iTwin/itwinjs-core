@@ -1396,9 +1396,6 @@ importers:
       '@types/chai':
         specifier: 4.3.1
         version: 4.3.1
-      '@types/fs-extra':
-        specifier: ^4.0.7
-        version: 4.0.7
       '@types/mocha':
         specifier: ^10.0.6
         version: 10.0.6
