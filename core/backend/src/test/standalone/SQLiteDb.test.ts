@@ -5,8 +5,8 @@
 
 import { expect } from "chai";
 import { BeDuration, DbResult, OpenMode } from "@itwin/core-bentley";
-import { SQLiteDb } from "../../SQLiteDb";
-import { IModelTestUtils } from "../IModelTestUtils";
+import { SQLiteDb } from "../../SQLiteDb.js";
+import { IModelTestUtils } from "../IModelTestUtils.js";
 
 describe("SQLiteDb", () => {
 

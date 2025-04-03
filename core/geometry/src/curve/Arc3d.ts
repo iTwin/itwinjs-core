@@ -7,37 +7,37 @@
  * @module Curve
  */
 
-import { Clipper } from "../clipping/ClipUtils";
-import { Constant } from "../Constant";
-import { AxisOrder, BeJSONFunctions, Geometry, PlaneAltitudeEvaluator } from "../Geometry";
-import { Angle } from "../geometry3d/Angle";
-import { AngleSweep } from "../geometry3d/AngleSweep";
-import { GeometryHandler, IStrokeHandler } from "../geometry3d/GeometryHandler";
-import { Matrix3d } from "../geometry3d/Matrix3d";
-import { Plane3dByOriginAndUnitNormal } from "../geometry3d/Plane3dByOriginAndUnitNormal";
-import { Plane3dByOriginAndVectors } from "../geometry3d/Plane3dByOriginAndVectors";
-import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
-import { Range1d, Range3d } from "../geometry3d/Range";
-import { Ray3d } from "../geometry3d/Ray3d";
-import { Transform } from "../geometry3d/Transform";
-import { XYAndZ } from "../geometry3d/XYZProps";
-import { Matrix4d } from "../geometry4d/Matrix4d";
-import { Point4d } from "../geometry4d/Point4d";
-import { SineCosinePolynomial, TrigPolynomial } from "../numerics/Polynomials";
-import { SmallSystem } from "../numerics/SmallSystem";
-import { CurveChain } from "./CurveCollection";
-import { CurveExtendMode, CurveExtendOptions, VariantCurveExtendParameter } from "./CurveExtendMode";
-import { CurveIntervalRole, CurveLocationDetail, CurveSearchStatus } from "./CurveLocationDetail";
-import { AnnounceNumberNumberCurvePrimitive, CurvePrimitive } from "./CurvePrimitive";
-import { GeometryQuery } from "./GeometryQuery";
-import { CurveOffsetXYHandler } from "./internalContexts/CurveOffsetXYHandler";
-import { EllipticalArcApproximationContext } from "./internalContexts/EllipticalArcApproximationContext";
-import { PlaneAltitudeRangeContext } from "./internalContexts/PlaneAltitudeRangeContext";
-import { LineSegment3d } from "./LineSegment3d";
-import { LineString3d } from "./LineString3d";
-import { OffsetOptions } from "./OffsetOptions";
-import { Path } from "./Path";
-import { StrokeOptions } from "./StrokeOptions";
+import { Clipper } from "../clipping/ClipUtils.js";
+import { Constant } from "../Constant.js";
+import { AxisOrder, BeJSONFunctions, Geometry, PlaneAltitudeEvaluator } from "../Geometry.js";
+import { Angle } from "../geometry3d/Angle.js";
+import { AngleSweep } from "../geometry3d/AngleSweep.js";
+import { GeometryHandler, IStrokeHandler } from "../geometry3d/GeometryHandler.js";
+import { Matrix3d } from "../geometry3d/Matrix3d.js";
+import { Plane3dByOriginAndUnitNormal } from "../geometry3d/Plane3dByOriginAndUnitNormal.js";
+import { Plane3dByOriginAndVectors } from "../geometry3d/Plane3dByOriginAndVectors.js";
+import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d.js";
+import { Range1d, Range3d } from "../geometry3d/Range.js";
+import { Ray3d } from "../geometry3d/Ray3d.js";
+import { Transform } from "../geometry3d/Transform.js";
+import { XYAndZ } from "../geometry3d/XYZProps.js";
+import { Matrix4d } from "../geometry4d/Matrix4d.js";
+import { Point4d } from "../geometry4d/Point4d.js";
+import { SineCosinePolynomial, TrigPolynomial } from "../numerics/Polynomials.js";
+import { SmallSystem } from "../numerics/SmallSystem.js";
+import { CurveChain } from "./CurveCollection.js";
+import { CurveExtendMode, CurveExtendOptions, VariantCurveExtendParameter } from "./CurveExtendMode.js";
+import { CurveIntervalRole, CurveLocationDetail, CurveSearchStatus } from "./CurveLocationDetail.js";
+import { AnnounceNumberNumberCurvePrimitive, CurvePrimitive } from "./CurvePrimitive.js";
+import { GeometryQuery } from "./GeometryQuery.js";
+import { CurveOffsetXYHandler } from "./internalContexts/CurveOffsetXYHandler.js";
+import { EllipticalArcApproximationContext } from "./internalContexts/EllipticalArcApproximationContext.js";
+import { PlaneAltitudeRangeContext } from "./internalContexts/PlaneAltitudeRangeContext.js";
+import { LineSegment3d } from "./LineSegment3d.js";
+import { LineString3d } from "./LineString3d.js";
+import { OffsetOptions } from "./OffsetOptions.js";
+import { Path } from "./Path.js";
+import { StrokeOptions } from "./StrokeOptions.js";
 
 // cspell:words binormal
 

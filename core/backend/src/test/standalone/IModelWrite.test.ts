@@ -9,25 +9,25 @@ import {
   GeometricElement2dProps, GeometryStreamProps, IModel, IModelVersion, LockState, QueryRowFormat, RequestNewBriefcaseProps, SchemaState, SubCategoryAppearance,
 } from "@itwin/core-common";
 import { Arc3d, IModelJson, Point2d, Point3d } from "@itwin/core-geometry";
-import * as chai from "chai";
+import chai from "chai";
 import { assert, expect } from "chai";
-import * as chaiAsPromised from "chai-as-promised";
+import chaiAsPromised from "chai-as-promised";
 import * as fs from "fs";
 import * as semver from "semver";
 import * as sinon from "sinon";
-import { HubWrappers, KnownTestLocations } from "../";
-import { DrawingCategory } from "../../Category";
-import { ECSqlStatement } from "../../ECSqlStatement";
-import { HubMock } from "../../HubMock";
+import { HubWrappers, KnownTestLocations } from "../index.js";
+import { DrawingCategory } from "../../Category.js";
+import { ECSqlStatement } from "../../ECSqlStatement.js";
+import { HubMock } from "../../HubMock.js";
 import {
   _nativeDb,
   BriefcaseDb,
   BriefcaseManager,
   ChannelControl,
   CodeService, DefinitionModel, DictionaryModel, DocumentListModel, Drawing, DrawingGraphic, OpenBriefcaseArgs, SpatialCategory, Subject,
-} from "../../core-backend";
-import { IModelTestUtils, TestUserType } from "../IModelTestUtils";
-import { ServerBasedLocks } from "../../internal/ServerBasedLocks";
+} from "../../core-backend.js";
+import { IModelTestUtils, TestUserType } from "../IModelTestUtils.js";
+import { ServerBasedLocks } from "../../internal/ServerBasedLocks.js";
 
 chai.use(chaiAsPromised);
 

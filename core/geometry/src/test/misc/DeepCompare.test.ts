@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 import { describe, expect, it } from "vitest";
 import * as fs from "fs";
-import { DeepCompare } from "../../serialization/DeepCompare";
-import { Checker } from "../Checker";
+import { DeepCompare } from "../../serialization/DeepCompare.js";
+import { Checker } from "../Checker.js";
 
 // Variables used for testing
 const deepComparisonFolderPath = "./src/test/data/deepComparisonTestFiles/";

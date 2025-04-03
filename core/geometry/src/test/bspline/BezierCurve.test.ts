@@ -3,21 +3,21 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { describe, expect, it } from "vitest";
-import { Bezier1dNd } from "../../bspline/Bezier1dNd";
-import { BezierCurve3d } from "../../bspline/BezierCurve3d";
-import { BezierCurve3dH } from "../../bspline/BezierCurve3dH";
-import { BSpline1dNd } from "../../bspline/BSpline1dNd";
-import { BSplineCurve3d } from "../../bspline/BSplineCurve";
-import { BSplineWrapMode, KnotVector } from "../../bspline/KnotVector";
-import { GeometryQuery } from "../../curve/GeometryQuery";
-import { LineSegment3d } from "../../curve/LineSegment3d";
-import { LineString3d } from "../../curve/LineString3d";
-import { Plane3dByOriginAndUnitNormal } from "../../geometry3d/Plane3dByOriginAndUnitNormal";
-import { Point2d } from "../../geometry3d/Point2dVector2d";
-import { Point3d } from "../../geometry3d/Point3dVector3d";
-import { Point4d } from "../../geometry4d/Point4d";
-import { Checker } from "../Checker";
-import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
+import { Bezier1dNd } from "../../bspline/Bezier1dNd.js";
+import { BezierCurve3d } from "../../bspline/BezierCurve3d.js";
+import { BezierCurve3dH } from "../../bspline/BezierCurve3dH.js";
+import { BSpline1dNd } from "../../bspline/BSpline1dNd.js";
+import { BSplineCurve3d } from "../../bspline/BSplineCurve.js";
+import { BSplineWrapMode, KnotVector } from "../../bspline/KnotVector.js";
+import { GeometryQuery } from "../../curve/GeometryQuery.js";
+import { LineSegment3d } from "../../curve/LineSegment3d.js";
+import { LineString3d } from "../../curve/LineString3d.js";
+import { Plane3dByOriginAndUnitNormal } from "../../geometry3d/Plane3dByOriginAndUnitNormal.js";
+import { Point2d } from "../../geometry3d/Point2dVector2d.js";
+import { Point3d } from "../../geometry3d/Point3dVector3d.js";
+import { Point4d } from "../../geometry4d/Point4d.js";
+import { Checker } from "../Checker.js";
+import { GeometryCoreTestIO } from "../GeometryCoreTestIO.js";
 
 function exercise1dNdBase(ck: Checker, curve: Bezier1dNd) {
   ck.testLE(1, curve.order, "Bezier1dNd has nontrivial order");

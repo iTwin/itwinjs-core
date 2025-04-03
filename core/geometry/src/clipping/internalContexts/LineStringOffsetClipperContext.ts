@@ -3,12 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { Geometry } from "../../Geometry";
-import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
-import { UnionOfConvexClipPlaneSets } from "../UnionOfConvexClipPlaneSets";
-import { ConvexClipPlaneSet } from "../ConvexClipPlaneSet";
-import { ClipPlane } from "../ClipPlane";
-import { IndexedXYZCollection } from "../../geometry3d/IndexedXYZCollection";
+import { Geometry } from "../../Geometry.js";
+import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d.js";
+import { UnionOfConvexClipPlaneSets } from "../UnionOfConvexClipPlaneSets.js";
+import { ConvexClipPlaneSet } from "../ConvexClipPlaneSet.js";
+import { ClipPlane } from "../ClipPlane.js";
+import { IndexedXYZCollection } from "../../geometry3d/IndexedXYZCollection.js";
 /**
  * Class for building clip sets for offset regions.
  * @internal

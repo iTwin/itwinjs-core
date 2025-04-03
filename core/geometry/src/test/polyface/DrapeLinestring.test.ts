@@ -4,22 +4,22 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect, it } from "vitest";
 import * as fs from "fs";
-import { BSplineCurve3d } from "../../bspline/BSplineCurve";
-import { CurvePrimitive } from "../../curve/CurvePrimitive";
-import { GeometryQuery } from "../../curve/GeometryQuery";
-import { LineString3d } from "../../curve/LineString3d";
-import { Angle } from "../../geometry3d/Angle";
-import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray";
-import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
-import { Range3d } from "../../geometry3d/Range";
-import { Transform } from "../../geometry3d/Transform";
-import { IndexedPolyface } from "../../polyface/Polyface";
-import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
-import { PolyfaceQuery, SweepLineStringToFacetsOptions } from "../../polyface/PolyfaceQuery";
-import { Sample } from "../../serialization/GeometrySamples";
-import { IModelJson } from "../../serialization/IModelJsonSchema";
-import { Checker } from "../Checker";
-import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
+import { BSplineCurve3d } from "../../bspline/BSplineCurve.js";
+import { CurvePrimitive } from "../../curve/CurvePrimitive.js";
+import { GeometryQuery } from "../../curve/GeometryQuery.js";
+import { LineString3d } from "../../curve/LineString3d.js";
+import { Angle } from "../../geometry3d/Angle.js";
+import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray.js";
+import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d.js";
+import { Range3d } from "../../geometry3d/Range.js";
+import { Transform } from "../../geometry3d/Transform.js";
+import { IndexedPolyface } from "../../polyface/Polyface.js";
+import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder.js";
+import { PolyfaceQuery, SweepLineStringToFacetsOptions } from "../../polyface/PolyfaceQuery.js";
+import { Sample } from "../../serialization/GeometrySamples.js";
+import { IModelJson } from "../../serialization/IModelJsonSchema.js";
+import { Checker } from "../Checker.js";
+import { GeometryCoreTestIO } from "../GeometryCoreTestIO.js";
 
 /** Functions useful for modifying test data. */
 export class RFunctions {

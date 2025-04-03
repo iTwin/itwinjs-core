@@ -4,16 +4,16 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { describe, expect, it } from "vitest";
-import { GeometryQuery } from "../../curve/GeometryQuery";
-import { LineString3d } from "../../curve/LineString3d";
-import { StrokeOptions } from "../../curve/StrokeOptions";
-import { Angle } from "../../geometry3d/Angle";
-import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray";
-import { Point3d } from "../../geometry3d/Point3dVector3d";
-import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
-import { Sample } from "../../serialization/GeometrySamples";
-import { Checker } from "../Checker";
-import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
+import { GeometryQuery } from "../../curve/GeometryQuery.js";
+import { LineString3d } from "../../curve/LineString3d.js";
+import { StrokeOptions } from "../../curve/StrokeOptions.js";
+import { Angle } from "../../geometry3d/Angle.js";
+import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray.js";
+import { Point3d } from "../../geometry3d/Point3dVector3d.js";
+import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder.js";
+import { Sample } from "../../serialization/GeometrySamples.js";
+import { Checker } from "../Checker.js";
+import { GeometryCoreTestIO } from "../GeometryCoreTestIO.js";
 
 // ---------------------------------------------------------------------------------------------------
 

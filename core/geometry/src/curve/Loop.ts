@@ -6,16 +6,16 @@
 /** @packageDocumentation
  * @module Curve
  */
-import { GeometryHandler } from "../geometry3d/GeometryHandler";
-import { IndexedXYZCollection } from "../geometry3d/IndexedXYZCollection";
-import { Point3d } from "../geometry3d/Point3dVector3d";
-import { CurveChainWithDistanceIndex } from "./CurveChainWithDistanceIndex";
-import { CurveChain } from "./CurveCollection";
-import { CurvePrimitive } from "./CurvePrimitive";
-import { RecursiveCurveProcessor } from "./CurveProcessor";
-import { GeometryQuery } from "./GeometryQuery";
-import { LineString3d } from "./LineString3d";
-import { StrokeOptions } from "./StrokeOptions";
+import { GeometryHandler } from "../geometry3d/GeometryHandler.js";
+import { IndexedXYZCollection } from "../geometry3d/IndexedXYZCollection.js";
+import { Point3d } from "../geometry3d/Point3dVector3d.js";
+import { CurveChainWithDistanceIndex } from "./CurveChainWithDistanceIndex.js";
+import { CurveChain } from "./CurveCollection.js";
+import { CurvePrimitive } from "./CurvePrimitive.js";
+import { RecursiveCurveProcessor } from "./CurveProcessor.js";
+import { GeometryQuery } from "./GeometryQuery.js";
+import { LineString3d } from "./LineString3d.js";
+import { StrokeOptions } from "./StrokeOptions.js";
 
 /**
  * A `Loop` is a curve chain that is the boundary of a closed (planar) loop.

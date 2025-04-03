@@ -6,9 +6,9 @@
 import * as os from "os";
 import * as process from "process";
 import { Logger, LogLevel } from "@itwin/core-bentley";
-import { BackendLoggerCategory } from "./BackendLoggerCategory";
-import { IModelHost } from "./IModelHost";
-import { IModelNative } from "./internal/NativePlatform";
+import { BackendLoggerCategory } from "./BackendLoggerCategory.js";
+import { IModelHost } from "./IModelHost.js";
+import { IModelNative } from "./internal/NativePlatform.js";
 import { RpcInterfaceEndpoints } from "@itwin/core-common";
 
 // cspell:ignore ppid elap

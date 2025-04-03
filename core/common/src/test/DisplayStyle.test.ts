@@ -5,22 +5,22 @@
 
 import { describe, expect, it } from "vitest";
 import { CompressedId64Set, Id64String, OrderedId64Iterable } from "@itwin/core-bentley";
-import { BackgroundMapType } from "../BackgroundMapProvider";
-import { GlobeMode } from "../BackgroundMapSettings";
-import { ColorByName } from "../ColorByName";
+import { BackgroundMapType } from "../BackgroundMapProvider.js";
+import { GlobeMode } from "../BackgroundMapSettings.js";
+import { ColorByName } from "../ColorByName.js";
 import {
   DisplayStyle3dSettings, DisplayStyle3dSettingsProps, DisplayStyleOverridesOptions, DisplayStylePlanarClipMaskProps, DisplayStyleSettings, MonochromeMode,
-} from "../DisplayStyleSettings";
-import { LinePixels } from "../LinePixels";
-import { PlanProjectionSettings, PlanProjectionSettingsProps } from "../PlanProjectionSettings";
-import { SpatialClassifierInsideDisplay, SpatialClassifierOutsideDisplay } from "../SpatialClassification";
-import { ThematicDisplayMode } from "../ThematicDisplay";
-import { RenderMode, ViewFlags } from "../ViewFlags";
-import { PlanarClipMaskMode, PlanarClipMaskSettings } from "../PlanarClipMask";
-import { WhiteOnWhiteReversalProps, WhiteOnWhiteReversalSettings } from "../WhiteOnWhiteReversalSettings";
-import { SkyGradient } from "../SkyBox";
-import { GroundPlane } from "../GroundPlane";
-import { Atmosphere } from "../Atmosphere";
+} from "../DisplayStyleSettings.js";
+import { LinePixels } from "../LinePixels.js";
+import { PlanProjectionSettings, PlanProjectionSettingsProps } from "../PlanProjectionSettings.js";
+import { SpatialClassifierInsideDisplay, SpatialClassifierOutsideDisplay } from "../SpatialClassification.js";
+import { ThematicDisplayMode } from "../ThematicDisplay.js";
+import { RenderMode, ViewFlags } from "../ViewFlags.js";
+import { PlanarClipMaskMode, PlanarClipMaskSettings } from "../PlanarClipMask.js";
+import { WhiteOnWhiteReversalProps, WhiteOnWhiteReversalSettings } from "../WhiteOnWhiteReversalSettings.js";
+import { SkyGradient } from "../SkyBox.js";
+import { GroundPlane } from "../GroundPlane.js";
+import { Atmosphere } from "../Atmosphere.js";
 
 describe("DisplayStyleSettings", () => {
   describe("whiteOnWhiteReversal", () => {

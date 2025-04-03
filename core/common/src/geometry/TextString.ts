@@ -7,7 +7,7 @@
  */
 
 import { Point2d, Point3d, Range2d, Transform, Vector3d, XYZProps, YawPitchRollAngles, YawPitchRollProps } from "@itwin/core-geometry";
-import { FontId } from "../Fonts";
+import { FontId } from "../Fonts.js";
 
 /**
  * Optional cached text layout information used to support legacy proxy graphics.

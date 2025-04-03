@@ -7,16 +7,16 @@
  */
 
 import { assert } from "@itwin/core-bentley";
-import { Geometry, PolygonLocation } from "../Geometry";
-import { Point3d } from "../geometry3d/Point3dVector3d";
-import { PolygonOps } from "../geometry3d/PolygonOps";
-import { Ray3d } from "../geometry3d/Ray3d";
-import { SmallSystem } from "../numerics/SmallSystem";
-import { HalfEdge, HalfEdgeGraph, HalfEdgeMask } from "./Graph";
-import { MarkedEdgeSet } from "./HalfEdgeMarkSet";
-import { PointSearchContext, RayClassification } from "./HalfEdgePointInGraphSearch";
-import { HalfEdgePositionDetail } from "./HalfEdgePositionDetail";
-import { Triangulator } from "./Triangulation";
+import { Geometry, PolygonLocation } from "../Geometry.js";
+import { Point3d } from "../geometry3d/Point3dVector3d.js";
+import { PolygonOps } from "../geometry3d/PolygonOps.js";
+import { Ray3d } from "../geometry3d/Ray3d.js";
+import { SmallSystem } from "../numerics/SmallSystem.js";
+import { HalfEdge, HalfEdgeGraph, HalfEdgeMask } from "./Graph.js";
+import { MarkedEdgeSet } from "./HalfEdgeMarkSet.js";
+import { PointSearchContext, RayClassification } from "./HalfEdgePointInGraphSearch.js";
+import { HalfEdgePositionDetail } from "./HalfEdgePositionDetail.js";
+import { Triangulator } from "./Triangulation.js";
 
 /**
  * Options for setting the z-coordinate of a vertex in the triangulation when a point with the same xy is inserted.

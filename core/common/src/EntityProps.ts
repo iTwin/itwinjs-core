@@ -8,7 +8,7 @@
 
 import { Id64, Id64String } from "@itwin/core-bentley";
 import { Point2d, Point3d } from "@itwin/core-geometry";
-import { RelatedElement } from "./ElementProps";
+import { RelatedElement } from "./ElementProps.js";
 
 /** The persistent format of an [Entity]($backend), also used as the "wire format" when transmitting information about entities
  * between the backend and frontend.

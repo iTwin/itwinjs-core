@@ -11,9 +11,9 @@ import { GeometryPartProps, IModel } from "@itwin/core-common";
 import {
   CategorySelector, DisplayStyle2d, DisplayStyle3d, DrawingCategory, DrawingViewDefinition, GeometryPart, IModelJsFs, InformationPartitionElement,
   ModelSelector, OrthographicViewDefinition, RenderMaterialElement, SnapshotDb, SpatialCategory, SubCategory, Subject, Texture,
-} from "../../core-backend";
-import { ExtensiveTestScenario, IModelTestUtils } from "../IModelTestUtils";
-import { KnownTestLocations } from "../KnownTestLocations";
+} from "../../core-backend.js";
+import { ExtensiveTestScenario, IModelTestUtils } from "../IModelTestUtils.js";
+import { KnownTestLocations } from "../KnownTestLocations.js";
 
 describe("DeleteDefinitionElements", () => {
   const outputDir: string = path.join(KnownTestLocations.outputDir, "DeleteDefinitionElements");

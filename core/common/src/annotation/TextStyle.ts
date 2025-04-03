@@ -6,7 +6,7 @@
  * @module Annotation
  */
 
-import { ColorDefProps } from "../ColorDef";
+import { ColorDefProps } from "../ColorDef.js";
 
 /** Specifies how to separate the numerator and denominator of a [[FractionRun]], by either a horizontal or diagonal bar.
  * @see [[TextStyleSettingsProps.stackedFractionType]] and [[TextStyleSettings.stackedFractionType]].

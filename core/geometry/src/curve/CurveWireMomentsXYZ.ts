@@ -7,16 +7,16 @@
  * @module Curve
  */
 
-// import { Geometry, Angle, AngleSweep } from "../Geometry";
+// import { Geometry, Angle, AngleSweep } from "../Geometry.js";
 
-import { Geometry } from "../Geometry";
-import { IStrokeHandler } from "../geometry3d/GeometryHandler";
-import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
-import { MomentData } from "../geometry4d/MomentData";
-import { GaussMapper } from "../numerics/Quadrature";
-import { AnyCurve } from "./CurveTypes";
-import { CurveCollection } from "./CurveCollection";
-import { CurvePrimitive } from "./CurvePrimitive";
+import { Geometry } from "../Geometry.js";
+import { IStrokeHandler } from "../geometry3d/GeometryHandler.js";
+import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d.js";
+import { MomentData } from "../geometry4d/MomentData.js";
+import { GaussMapper } from "../numerics/Quadrature.js";
+import { AnyCurve } from "./CurveTypes.js";
+import { CurveCollection } from "./CurveCollection.js";
+import { CurvePrimitive } from "./CurvePrimitive.js";
 
 /**
  * Class to visit curve primitives and accumulate wire moment integrations.

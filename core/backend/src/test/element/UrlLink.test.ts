@@ -4,11 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import { Guid, Id64 } from "@itwin/core-bentley";
-import { IModelTestUtils } from "../IModelTestUtils";
+import { IModelTestUtils } from "../IModelTestUtils.js";
 
 import { IModel, RepositoryLinkProps } from "@itwin/core-common";
-import { RepositoryLink } from "../../Element";
-import { SnapshotDb } from "../../IModelDb";
+import { RepositoryLink } from "../../Element.js";
+import { SnapshotDb } from "../../IModelDb.js";
 
 const testFileName = "UrlLinkTest.bim";
 const subDirName = "UrlLinkTrip";

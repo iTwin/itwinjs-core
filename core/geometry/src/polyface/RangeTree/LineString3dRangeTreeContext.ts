@@ -6,15 +6,15 @@
  * @module RangeSearch
  */
 
-import { CurveLocationDetail, CurveLocationDetailPair } from "../../curve/CurveLocationDetail";
-import { LineString3d } from "../../curve/LineString3d";
-import { Geometry } from "../../Geometry";
-import { Point3d } from "../../geometry3d/Point3dVector3d";
-import { Range3d } from "../../geometry3d/Range";
-import { RangeTreeNode, RangeTreeOps } from "./RangeTreeNode";
+import { CurveLocationDetail, CurveLocationDetailPair } from "../../curve/CurveLocationDetail.js";
+import { LineString3d } from "../../curve/LineString3d.js";
+import { Geometry } from "../../Geometry.js";
+import { Point3d } from "../../geometry3d/Point3dVector3d.js";
+import { Range3d } from "../../geometry3d/Range.js";
+import { RangeTreeNode, RangeTreeOps } from "./RangeTreeNode.js";
 import {
   SingleTreeSearchHandlerForClosestPointOnLineString3d, TwoTreeSearchHandlerForLineString3dLineString3dCloseApproach,
-} from "./RangeTreeSearchHandlers";
+} from "./RangeTreeSearchHandlers.js";
 
 /**
  * Handler class for searching a range tree containing the segments of a linestring.

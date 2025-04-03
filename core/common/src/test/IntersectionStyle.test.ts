@@ -3,8 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { describe, expect, it } from "vitest";
-import { ClipIntersectionStyle, ClipIntersectionStyleProps, ClipStyle } from "../ClipStyle";
-import { DisplayStyleSettings, DisplayStyleSettingsProps } from "../DisplayStyleSettings";
+import { ClipIntersectionStyle, ClipIntersectionStyleProps, ClipStyle } from "../ClipStyle.js";
+import { DisplayStyleSettings, DisplayStyleSettingsProps } from "../DisplayStyleSettings.js";
 
 describe("IntersectionStyle", () => {
   it("should round-trip through JSON", () => {

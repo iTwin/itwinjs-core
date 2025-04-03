@@ -6,11 +6,11 @@
 import { assert, expect } from "chai";
 import { BeDuration } from "@itwin/core-bentley";
 import { Matrix4d } from "@itwin/core-geometry";
-import { IModelNative } from "../../internal/NativePlatform";
-import { StandaloneDb } from "../../IModelDb";
-import { IModelTestUtils } from "../IModelTestUtils";
+import { IModelNative } from "../../internal/NativePlatform.js";
+import { StandaloneDb } from "../../IModelDb.js";
+import { IModelTestUtils } from "../IModelTestUtils.js";
 import { IModelJsNative } from "@bentley/imodeljs-native";
-import { _nativeDb } from "../../internal/Symbols";
+import { _nativeDb } from "../../internal/Symbols.js";
 
 describe("DgnDbWorker", () => {
   let imodel: StandaloneDb;

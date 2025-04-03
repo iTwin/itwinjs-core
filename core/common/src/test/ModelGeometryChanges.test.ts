@@ -6,7 +6,7 @@
 import { describe, expect, it } from "vitest";
 import { CompressedId64Set, DbOpcode, Guid, Id64String, OrderedId64Iterable, TransientIdSequence } from "@itwin/core-bentley";
 import { Range3d, Range3dProps } from "@itwin/core-geometry";
-import { ElementGeometryChange, ModelGeometryChanges, ModelGeometryChangesProps } from "../ModelGeometryChanges";
+import { ElementGeometryChange, ModelGeometryChanges, ModelGeometryChangesProps } from "../ModelGeometryChanges.js";
 
 // Each test is list of inserted, updated, and/or deleted element Ids; along with modelId.
 // We choose an arbitrary range for each insert or update.

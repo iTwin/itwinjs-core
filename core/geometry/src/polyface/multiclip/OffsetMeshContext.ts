@@ -6,20 +6,20 @@
  * @module Polyface
  */
 
-import { Geometry } from "../../Geometry";
-import { Angle } from "../../geometry3d/Angle";
-import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray";
-import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
-import { PolygonOps } from "../../geometry3d/PolygonOps";
-import { PolylineCompressionContext } from "../../geometry3d/PolylineCompressionByEdgeOffset";
-import { Ray3d } from "../../geometry3d/Ray3d";
-import { XYAndZ } from "../../geometry3d/XYZProps";
-import { SmallSystem } from "../../numerics/SmallSystem";
-import { HalfEdge, HalfEdgeGraph, HalfEdgeMask } from "../../topology/Graph";
-import { HalfEdgeGraphFromIndexedLoopsContext } from "../../topology/HalfEdgeGraphFromIndexedLoopsContext";
-import { IndexedPolyface } from "../Polyface";
-import { PolyfaceBuilder } from "../PolyfaceBuilder";
-import { OffsetMeshOptions } from "../PolyfaceQuery";
+import { Geometry } from "../../Geometry.js";
+import { Angle } from "../../geometry3d/Angle.js";
+import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray.js";
+import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d.js";
+import { PolygonOps } from "../../geometry3d/PolygonOps.js";
+import { PolylineCompressionContext } from "../../geometry3d/PolylineCompressionByEdgeOffset.js";
+import { Ray3d } from "../../geometry3d/Ray3d.js";
+import { XYAndZ } from "../../geometry3d/XYZProps.js";
+import { SmallSystem } from "../../numerics/SmallSystem.js";
+import { HalfEdge, HalfEdgeGraph, HalfEdgeMask } from "../../topology/Graph.js";
+import { HalfEdgeGraphFromIndexedLoopsContext } from "../../topology/HalfEdgeGraphFromIndexedLoopsContext.js";
+import { IndexedPolyface } from "../Polyface.js";
+import { PolyfaceBuilder } from "../PolyfaceBuilder.js";
+import { OffsetMeshOptions } from "../PolyfaceQuery.js";
 
 function isDefinedAndTrue(value: boolean | undefined): boolean {
   if (value === undefined)

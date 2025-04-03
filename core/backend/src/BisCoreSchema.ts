@@ -7,21 +7,21 @@
  */
 
 import * as path from "path";
-import * as categoryMod from "./Category";
-import { ClassRegistry } from "./ClassRegistry";
-import * as elementMod from "./Element";
-import * as aspectMod from "./ElementAspect";
-import * as externalSourceMod from "./ExternalSource";
-import { KnownLocations } from "./IModelHost";
-import * as materialMod from "./Material";
-import * as modelMod from "./Model";
-import * as linkMod from "./Relationship";
-import { Schema, Schemas } from "./Schema";
-import * as textureMod from "./Texture";
-import * as viewMod from "./ViewDefinition";
-import * as displayStyleMod from "./DisplayStyle";
-import * as annotationsMod from "./TextAnnotationElement";
-import * as sheetIndex from "./SheetIndex";
+import * as categoryMod from "./Category.js";
+import { ClassRegistry } from "./ClassRegistry.js";
+import * as elementMod from "./Element.js";
+import * as aspectMod from "./ElementAspect.js";
+import * as externalSourceMod from "./ExternalSource.js";
+import { KnownLocations } from "./IModelHost.js";
+import * as materialMod from "./Material.js";
+import * as modelMod from "./Model.js";
+import * as linkMod from "./Relationship.js";
+import { Schema, Schemas } from "./Schema.js";
+import * as textureMod from "./Texture.js";
+import * as viewMod from "./ViewDefinition.js";
+import * as displayStyleMod from "./DisplayStyle.js";
+import * as annotationsMod from "./TextAnnotationElement.js";
+import * as sheetIndex from "./SheetIndex.js";
 
 /**
  * The [BisCore]($docs/bis/guide/fundamentals/schemas-domains.md) schema is the lowest level Schema in an iModel.

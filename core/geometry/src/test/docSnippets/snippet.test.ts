@@ -3,13 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { describe, it } from "vitest";
-import * as geometry from "../../core-geometry";
-import { Matrix3d } from "../../geometry3d/Matrix3d";
-import { Plane3dByOriginAndUnitNormal } from "../../geometry3d/Plane3dByOriginAndUnitNormal";
-import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
-import { Ray3d } from "../../geometry3d/Ray3d";
-import { YawPitchRollAngles } from "../../geometry3d/YawPitchRollAngles";
-import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
+import * as geometry from "../../core-geometry.js";
+import { Matrix3d } from "../../geometry3d/Matrix3d.js";
+import { Plane3dByOriginAndUnitNormal } from "../../geometry3d/Plane3dByOriginAndUnitNormal.js";
+import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d.js";
+import { Ray3d } from "../../geometry3d/Ray3d.js";
+import { YawPitchRollAngles } from "../../geometry3d/YawPitchRollAngles.js";
+import { GeometryCoreTestIO } from "../GeometryCoreTestIO.js";
 
 const emitToConsole = false;
 // In geometry source tests, convert to string and emit to console.

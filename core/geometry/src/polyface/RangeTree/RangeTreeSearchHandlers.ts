@@ -6,18 +6,18 @@
  * @module RangeSearch
  */
 
-import { CurveLocationDetail, CurveLocationDetailPair } from "../../curve/CurveLocationDetail";
-import { LineSegment3d } from "../../curve/LineSegment3d";
-import { LineString3d } from "../../curve/LineString3d";
-import { Point3d } from "../../geometry3d/Point3dVector3d";
-import { PolygonLocationDetail, PolygonOps } from "../../geometry3d/PolygonOps";
-import { Range3d } from "../../geometry3d/Range";
-import { ConvexFacetLocationDetail, FacetLocationDetail, FacetLocationDetailPair, NonConvexFacetLocationDetail } from "../FacetLocationDetail";
-import { LineString3dRangeTreeContext } from "./LineString3dRangeTreeContext";
-import { MinimumValueTester } from "./MinimumValueTester";
-import { Point3dArrayRangeTreeContext } from "./Point3dArrayRangeTreeContext";
-import { PolyfaceRangeTreeContext } from "./PolyfaceRangeTreeContext";
-import { SingleTreeSearchHandler, TwoTreeDistanceMinimizationSearchHandler } from "./RangeTreeNode";
+import { CurveLocationDetail, CurveLocationDetailPair } from "../../curve/CurveLocationDetail.js";
+import { LineSegment3d } from "../../curve/LineSegment3d.js";
+import { LineString3d } from "../../curve/LineString3d.js";
+import { Point3d } from "../../geometry3d/Point3dVector3d.js";
+import { PolygonLocationDetail, PolygonOps } from "../../geometry3d/PolygonOps.js";
+import { Range3d } from "../../geometry3d/Range.js";
+import { ConvexFacetLocationDetail, FacetLocationDetail, FacetLocationDetailPair, NonConvexFacetLocationDetail } from "../FacetLocationDetail.js";
+import { LineString3dRangeTreeContext } from "./LineString3dRangeTreeContext.js";
+import { MinimumValueTester } from "./MinimumValueTester.js";
+import { Point3dArrayRangeTreeContext } from "./Point3dArrayRangeTreeContext.js";
+import { PolyfaceRangeTreeContext } from "./PolyfaceRangeTreeContext.js";
+import { SingleTreeSearchHandler, TwoTreeDistanceMinimizationSearchHandler } from "./RangeTreeNode.js";
 
 /**
  * Helper class for searching for the closest point in a set of points.

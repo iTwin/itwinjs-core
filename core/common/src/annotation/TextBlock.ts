@@ -6,7 +6,7 @@
  * @module Annotation
  */
 
-import { TextStyleSettingsProps } from "./TextStyle";
+import { TextStyleSettingsProps } from "./TextStyle.js";
 
 /** Options supplied to [[TextBlockComponent.applyStyle]] to control how the style is applied to the component and its child components.
  * @beta

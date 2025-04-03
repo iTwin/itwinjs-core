@@ -7,9 +7,9 @@
  * @module Polyface
  */
 
-import { IndexedEdgeMatcher, SortableEdgeCluster } from "./IndexedEdgeMatcher";
-import { IndexedPolyfaceVisitor } from "./IndexedPolyfaceVisitor";
-import { IndexedPolyface } from "./Polyface";
+import { IndexedEdgeMatcher, SortableEdgeCluster } from "./IndexedEdgeMatcher.js";
+import { IndexedPolyfaceVisitor } from "./IndexedPolyfaceVisitor.js";
+import { IndexedPolyface } from "./Polyface.js";
 
 /**
  * The `IndexedPolyfaceWalker` class supports navigation around facets, across edges, and around vertices in an

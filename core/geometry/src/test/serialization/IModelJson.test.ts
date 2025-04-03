@@ -4,22 +4,22 @@
 *--------------------------------------------------------------------------------------------*/
 import { describe, expect, it } from "vitest";
 import * as fs from "fs";
-import { BSplineCurve3dBase } from "../../bspline/BSplineCurve";
-import { Arc3d } from "../../curve/Arc3d";
-import { CoordinateXYZ } from "../../curve/CoordinateXYZ";
-import { CurvePrimitive } from "../../curve/CurvePrimitive";
-import { GeometryQuery } from "../../curve/GeometryQuery";
-import { Path } from "../../curve/Path";
-import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
-import { IndexedPolyface } from "../../polyface/Polyface";
-import { DeepCompare } from "../../serialization/DeepCompare";
-import { Sample } from "../../serialization/GeometrySamples";
-import { IModelJson } from "../../serialization/IModelJsonSchema";
-import { Box } from "../../solid/Box";
-import { Checker } from "../Checker";
-import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
-import { prettyPrint } from "../testFunctions";
-import { testGeometryQueryRoundTrip } from "./FlatBuffer.test";
+import { BSplineCurve3dBase } from "../../bspline/BSplineCurve.js";
+import { Arc3d } from "../../curve/Arc3d.js";
+import { CoordinateXYZ } from "../../curve/CoordinateXYZ.js";
+import { CurvePrimitive } from "../../curve/CurvePrimitive.js";
+import { GeometryQuery } from "../../curve/GeometryQuery.js";
+import { Path } from "../../curve/Path.js";
+import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d.js";
+import { IndexedPolyface } from "../../polyface/Polyface.js";
+import { DeepCompare } from "../../serialization/DeepCompare.js";
+import { Sample } from "../../serialization/GeometrySamples.js";
+import { IModelJson } from "../../serialization/IModelJsonSchema.js";
+import { Box } from "../../solid/Box.js";
+import { Checker } from "../Checker.js";
+import { GeometryCoreTestIO } from "../GeometryCoreTestIO.js";
+import { prettyPrint } from "../testFunctions.js";
+import { testGeometryQueryRoundTrip } from "./FlatBuffer.test.js";
 
 // cspell:word geomlibs
 // cspell:word BSIJSON

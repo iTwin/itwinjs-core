@@ -4,21 +4,21 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { describe, expect, it } from "vitest";
-import { Angle } from "../../geometry3d/Angle";
-import { AngleSweep } from "../../geometry3d/AngleSweep";
-import { Arc3d } from "../../curve/Arc3d";
-import { Checker } from "../Checker";
-import { CurveFactory } from "../../curve/CurveFactory";
-import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
-import { GeometryQuery } from "../../curve/GeometryQuery";
-import { LineString3d } from "../../curve/LineString3d";
-import { Matrix3d } from "../../geometry3d/Matrix3d";
-import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
-import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
-import { StrokeOptions } from "../../curve/StrokeOptions";
-import { Transform } from "../../geometry3d/Transform";
-import { TorusPipe } from "../../solid/TorusPipe";
-import { Point2d } from "../../geometry3d/Point2dVector2d";
+import { Angle } from "../../geometry3d/Angle.js";
+import { AngleSweep } from "../../geometry3d/AngleSweep.js";
+import { Arc3d } from "../../curve/Arc3d.js";
+import { Checker } from "../Checker.js";
+import { CurveFactory } from "../../curve/CurveFactory.js";
+import { GeometryCoreTestIO } from "../GeometryCoreTestIO.js";
+import { GeometryQuery } from "../../curve/GeometryQuery.js";
+import { LineString3d } from "../../curve/LineString3d.js";
+import { Matrix3d } from "../../geometry3d/Matrix3d.js";
+import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d.js";
+import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder.js";
+import { StrokeOptions } from "../../curve/StrokeOptions.js";
+import { Transform } from "../../geometry3d/Transform.js";
+import { TorusPipe } from "../../solid/TorusPipe.js";
+import { Point2d } from "../../geometry3d/Point2dVector2d.js";
 
 describe("PipePath", () => {
   it("TorusPipeAlongArc", () => {

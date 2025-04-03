@@ -4,16 +4,16 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { describe, expect, it } from "vitest";
-import { Arc3d } from "../../curve/Arc3d";
-import { GeometryQuery } from "../../curve/GeometryQuery";
-import { LineSegment3d } from "../../curve/LineSegment3d";
-import { LineString3d } from "../../curve/LineString3d";
-import { Angle } from "../../geometry3d/Angle";
-import { Point3d } from "../../geometry3d/Point3dVector3d";
-import { ConstraintState, PolarData } from "../../numerics/PolarData";
-import { Checker } from "../Checker";
-import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
-import { prettyPrint } from "../testFunctions";
+import { Arc3d } from "../../curve/Arc3d.js";
+import { GeometryQuery } from "../../curve/GeometryQuery.js";
+import { LineSegment3d } from "../../curve/LineSegment3d.js";
+import { LineString3d } from "../../curve/LineString3d.js";
+import { Angle } from "../../geometry3d/Angle.js";
+import { Point3d } from "../../geometry3d/Point3dVector3d.js";
+import { ConstraintState, PolarData } from "../../numerics/PolarData.js";
+import { Checker } from "../Checker.js";
+import { GeometryCoreTestIO } from "../GeometryCoreTestIO.js";
+import { prettyPrint } from "../testFunctions.js";
 
 function verifyCompletePolarSinglePoint(ck: Checker, partialData: PolarData, data: PolarData | PolarData[] | undefined, expectGeometry: boolean) {
   if (data === undefined) {

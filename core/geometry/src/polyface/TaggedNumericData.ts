@@ -6,7 +6,7 @@
  * @module Polyface
  */
 
-import { Geometry } from "../Geometry";
+import { Geometry } from "../Geometry.js";
 
 /**
  * `TaggedNumericConstants` defines enums with constant values for use in tags of [[TaggedNumericData]]

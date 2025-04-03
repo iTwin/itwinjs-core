@@ -6,9 +6,9 @@
 /** @packageDocumentation
  * @module Curve
  */
-import { Geometry } from "../../Geometry";
-import { CubicEvaluator } from "./CubicEvaluator";
-import { SimpleNewton } from "../../numerics/Newton";
+import { Geometry } from "../../Geometry.js";
+import { CubicEvaluator } from "./CubicEvaluator.js";
+import { SimpleNewton } from "../../numerics/Newton.js";
 /**
  * Czech cubic.
  * This is y= m*x^3 with

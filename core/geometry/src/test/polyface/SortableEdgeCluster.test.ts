@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { describe, expect, it } from "vitest";
-import { IndexedEdgeMatcher, SortableEdge, SortableEdgeCluster } from "../../polyface/IndexedEdgeMatcher";
-import { Checker } from "../Checker";
+import { IndexedEdgeMatcher, SortableEdge, SortableEdgeCluster } from "../../polyface/IndexedEdgeMatcher.js";
+import { Checker } from "../Checker.js";
 
 describe("SortableEdgeCluster", () => {
   it("hello", () => {

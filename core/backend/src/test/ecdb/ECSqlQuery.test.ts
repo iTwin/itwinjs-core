@@ -5,10 +5,10 @@
 import { assert } from "chai";
 import { DbResult, Id64 } from "@itwin/core-bentley";
 import { DbQueryRequest, DbQueryResponse, DbRequestExecutor, DbRequestKind, ECSqlReader, QueryBinder, QueryOptionsBuilder, QueryPropertyMetaData, QueryRowFormat } from "@itwin/core-common";
-import { ConcurrentQuery } from "../../ConcurrentQuery";
-import { _nativeDb, ECSqlStatement, IModelDb, SnapshotDb } from "../../core-backend";
-import { IModelTestUtils } from "../IModelTestUtils";
-import { SequentialLogMatcher } from "../SequentialLogMatcher";
+import { ConcurrentQuery } from "../../ConcurrentQuery.js";
+import { _nativeDb, ECSqlStatement, IModelDb, SnapshotDb } from "../../core-backend.js";
+import { IModelTestUtils } from "../IModelTestUtils.js";
+import { SequentialLogMatcher } from "../SequentialLogMatcher.js";
 import * as path from "path";
 
 // cspell:ignore mirukuru ibim

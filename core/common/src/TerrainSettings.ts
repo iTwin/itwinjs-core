@@ -6,7 +6,7 @@
  * @module DisplayStyles
  */
 
-import { BackgroundMapProps } from "./BackgroundMapSettings";
+import { BackgroundMapProps } from "./BackgroundMapSettings.js";
 
 /** Ids of [Cesium ION assets](https://cesium.com/platform/cesium-ion/content/) providing global terrain data.
  * These values are appropriate to use with [[TerrainSettings.dataSource]] when [[TerrainSettings.providerName]] is set to "CesiumWorldTerrain".

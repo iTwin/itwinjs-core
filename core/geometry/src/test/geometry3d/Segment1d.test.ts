@@ -4,9 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { describe, expect, it } from "vitest";
-import { Geometry } from "../../Geometry";
-import { Segment1d } from "../../geometry3d/Segment1d";
-import { Checker } from "../Checker";
+import { Geometry } from "../../Geometry.js";
+import { Segment1d } from "../../geometry3d/Segment1d.js";
+import { Checker } from "../Checker.js";
 
 function verifySegment(ck: Checker, a: number, b: number) {
   const s0 = Segment1d.create(a, b);

@@ -6,16 +6,16 @@
  * @module Curve
  */
 
-import { Geometry } from "../../Geometry";
-import { Point3d } from "../../geometry3d/Point3dVector3d";
-import { Range1d } from "../../geometry3d/Range";
-import { AnyCurve } from "../CurveTypes";
-import { CurveChain, CurveCollection } from "../CurveCollection";
-import { LineString3d } from "../LineString3d";
-import { Loop } from "../Loop";
-import { ParityRegion } from "../ParityRegion";
-import { StrokeOptions } from "../StrokeOptions";
-import { StrokeCountMap } from "./StrokeCountMap";
+import { Geometry } from "../../Geometry.js";
+import { Point3d } from "../../geometry3d/Point3dVector3d.js";
+import { Range1d } from "../../geometry3d/Range.js";
+import { AnyCurve } from "../CurveTypes.js";
+import { CurveChain, CurveCollection } from "../CurveCollection.js";
+import { LineString3d } from "../LineString3d.js";
+import { Loop } from "../Loop.js";
+import { ParityRegion } from "../ParityRegion.js";
+import { StrokeOptions } from "../StrokeOptions.js";
+import { StrokeCountMap } from "./StrokeCountMap.js";
 
 // cspell:word remapa
 /**

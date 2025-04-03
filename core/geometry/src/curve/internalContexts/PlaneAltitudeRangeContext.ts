@@ -7,22 +7,22 @@
  * @module Curve
  */
 
-import { BSplineCurve3d } from "../../bspline/BSplineCurve";
-import { BSplineCurve3dH } from "../../bspline/BSplineCurve3dH";
-import { Geometry, PlaneAltitudeEvaluator } from "../../Geometry";
-import { Angle } from "../../geometry3d/Angle";
-import { RecurseToCurvesGeometryHandler } from "../../geometry3d/GeometryHandler";
-import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray";
-import { Plane3dByOriginAndUnitNormal } from "../../geometry3d/Plane3dByOriginAndUnitNormal";
-import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
-import { Range1d } from "../../geometry3d/Range";
-import { Ray3d } from "../../geometry3d/Ray3d";
-import { SineCosinePolynomial } from "../../numerics/Polynomials";
-import { Arc3d } from "../Arc3d";
-import { GeometryQuery } from "../GeometryQuery";
-import { LineSegment3d } from "../LineSegment3d";
-import { LineString3d } from "../LineString3d";
-import { StrokeOptions } from "../StrokeOptions";
+import { BSplineCurve3d } from "../../bspline/BSplineCurve.js";
+import { BSplineCurve3dH } from "../../bspline/BSplineCurve3dH.js";
+import { Geometry, PlaneAltitudeEvaluator } from "../../Geometry.js";
+import { Angle } from "../../geometry3d/Angle.js";
+import { RecurseToCurvesGeometryHandler } from "../../geometry3d/GeometryHandler.js";
+import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray.js";
+import { Plane3dByOriginAndUnitNormal } from "../../geometry3d/Plane3dByOriginAndUnitNormal.js";
+import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d.js";
+import { Range1d } from "../../geometry3d/Range.js";
+import { Ray3d } from "../../geometry3d/Ray3d.js";
+import { SineCosinePolynomial } from "../../numerics/Polynomials.js";
+import { Arc3d } from "../Arc3d.js";
+import { GeometryQuery } from "../GeometryQuery.js";
+import { LineSegment3d } from "../LineSegment3d.js";
+import { LineString3d } from "../LineString3d.js";
+import { StrokeOptions } from "../StrokeOptions.js";
 
 /**
  * Accumulator context for searching for extrema of geometry along a plane.

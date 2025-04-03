@@ -6,8 +6,8 @@
  * @module Utils
  */
 
-import { assert } from "./Assert";
-import { Id64, Id64String } from "./Id";
+import { assert } from "./Assert.js";
+import { Id64, Id64String } from "./Id.js";
 
 /** Allows the contents of an [ArrayBuffer](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/ArrayBuffer)
  * to be consumed sequentially using methods to extract
@@ -50,7 +50,7 @@ export class ByteStream {
    */
   public static fromUint8Array(bytes: Uint8Array): ByteStream {
     const { byteOffset, byteLength } = bytes;
-    return new ByteStream(bytes.buffer, { byteOffset, byteLength });  
+    return new ByteStream(bytes.buffer, { byteOffset, byteLength });
   }
 
   /** Construct a new ByteStream with the read position set to the beginning.
@@ -58,7 +58,7 @@ export class ByteStream {
    * @param subView If defined, specifies the subset of the underlying buffer's data to use.
    */
   public static fromArrayBuffer(buffer: ArrayBuffer | SharedArrayBuffer, subView?: { byteOffset: number, byteLength: number }): ByteStream {
-    return new ByteStream(buffer, subView);  
+    return new ByteStream(buffer, subView);
   }
 
   /** The number of bytes in this stream */

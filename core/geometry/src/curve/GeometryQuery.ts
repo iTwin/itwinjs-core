@@ -5,16 +5,16 @@
 /** @packageDocumentation
  * @module Curve
  */
-import { BSpline2dNd } from "../bspline/BSplineSurface";
-import { GeometryHandler } from "../geometry3d/GeometryHandler";
-import { Range3d } from "../geometry3d/Range";
-import { Transform } from "../geometry3d/Transform";
-import { Polyface } from "../polyface/Polyface";
-import { SolidPrimitive } from "../solid/SolidPrimitive";
-import { CoordinateXYZ } from "./CoordinateXYZ";
-import { CurveCollection } from "./CurveCollection";
-import { CurvePrimitive } from "./CurvePrimitive";
-import { PointString3d } from "./PointString3d";
+import { BSpline2dNd } from "../bspline/BSplineSurface.js";
+import { GeometryHandler } from "../geometry3d/GeometryHandler.js";
+import { Range3d } from "../geometry3d/Range.js";
+import { Transform } from "../geometry3d/Transform.js";
+import { Polyface } from "../polyface/Polyface.js";
+import { SolidPrimitive } from "../solid/SolidPrimitive.js";
+import { CoordinateXYZ } from "./CoordinateXYZ.js";
+import { CurveCollection } from "./CurveCollection.js";
+import { CurvePrimitive } from "./CurvePrimitive.js";
+import { PointString3d } from "./PointString3d.js";
 
 /**
  * Describes the category of a [[GeometryQuery]], enabling type-switching like:

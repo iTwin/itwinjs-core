@@ -7,13 +7,13 @@
  * @module Curve
  */
 
-import { Geometry } from "../../Geometry";
-import { AnyCurve } from "../CurveTypes";
-import { CurveChain, CurveCollection } from "../CurveCollection";
-import { CurveCurve } from "../CurveCurve";
-import { CurveLocationDetail, CurveLocationDetailPair } from "../CurveLocationDetail";
-import { CurvePrimitive } from "../CurvePrimitive";
-import { Path } from "../Path";
+import { Geometry } from "../../Geometry.js";
+import { AnyCurve } from "../CurveTypes.js";
+import { CurveChain, CurveCollection } from "../CurveCollection.js";
+import { CurveCurve } from "../CurveCurve.js";
+import { CurveLocationDetail, CurveLocationDetailPair } from "../CurveLocationDetail.js";
+import { CurvePrimitive } from "../CurvePrimitive.js";
+import { Path } from "../Path.js";
 
 /**
  * Data about a curve cut.

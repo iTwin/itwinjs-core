@@ -7,7 +7,7 @@
  */
 
 import { compareNumbers } from "@itwin/core-bentley";
-import { ColorDef } from "./ColorDef";
+import { ColorDef } from "./ColorDef.js";
 
 /** JSON representation of an [[RgbColor]], with each component an integer in the range [0, 255].
  * @public

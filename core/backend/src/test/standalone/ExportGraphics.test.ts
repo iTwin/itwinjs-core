@@ -16,10 +16,10 @@ import {
 import {
   ExportGraphics, ExportGraphicsInfo, ExportGraphicsMeshVisitor, ExportGraphicsOptions, GeometricElement, IModelJsFs, LineStyleDefinition, PhysicalObject,
   RenderMaterialElement, SnapshotDb, Texture,
-} from "../../core-backend";
-import { GeometryPart } from "../../Element";
-import { ExportGraphicsFunction, ExportLinesInfo, ExportPartInfo, ExportPartInstanceInfo, ExportPartLinesInfo } from "../../ExportGraphics";
-import { IModelTestUtils } from "../IModelTestUtils";
+} from "../../core-backend.js";
+import { GeometryPart } from "../../Element.js";
+import { ExportGraphicsFunction, ExportLinesInfo, ExportPartInfo, ExportPartInstanceInfo, ExportPartLinesInfo } from "../../ExportGraphics.js";
+import { IModelTestUtils } from "../IModelTestUtils.js";
 
 describe("exportGraphics", () => {
   let iModel: SnapshotDb;

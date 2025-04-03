@@ -1,11 +1,11 @@
 import { Logger, LogLevel, StopWatch } from "@itwin/core-bentley";
 import { DbQueryConfig, ECSqlReader, QueryStats } from "@itwin/core-common";
 import { expect } from "chai";
-import { ConcurrentQuery } from "../../ConcurrentQuery";
-import { ECDb } from "../../ECDb";
-import { IModelDb, SnapshotDb } from "../../IModelDb";
-import { _nativeDb } from "../../core-backend";
-import { IModelTestUtils } from "../IModelTestUtils";
+import { ConcurrentQuery } from "../../ConcurrentQuery.js";
+import { ECDb } from "../../ECDb.js";
+import { IModelDb, SnapshotDb } from "../../IModelDb.js";
+import { _nativeDb } from "../../core-backend.js";
+import { IModelTestUtils } from "../IModelTestUtils.js";
 
 interface ITaskResult {
   stats: QueryStats;

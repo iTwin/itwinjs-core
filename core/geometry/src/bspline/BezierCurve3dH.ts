@@ -6,19 +6,19 @@
  * @module Bspline
  */
 
-import { CurveLocationDetail } from "../curve/CurveLocationDetail";
-import { Geometry } from "../Geometry";
-import { GeometryHandler } from "../geometry3d/GeometryHandler";
-import { Plane3dByOriginAndVectors } from "../geometry3d/Plane3dByOriginAndVectors";
-import { Point2d } from "../geometry3d/Point2dVector2d";
-import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
-import { Range3d } from "../geometry3d/Range";
-import { Ray3d } from "../geometry3d/Ray3d";
-import { Transform } from "../geometry3d/Transform";
-import { Matrix4d } from "../geometry4d/Matrix4d";
-import { Point4d } from "../geometry4d/Point4d";
-import { BezierPolynomialAlgebra } from "../numerics/BezierPolynomials";
-import { BezierCurveBase } from "./BezierCurveBase";
+import { CurveLocationDetail } from "../curve/CurveLocationDetail.js";
+import { Geometry } from "../Geometry.js";
+import { GeometryHandler } from "../geometry3d/GeometryHandler.js";
+import { Plane3dByOriginAndVectors } from "../geometry3d/Plane3dByOriginAndVectors.js";
+import { Point2d } from "../geometry3d/Point2dVector2d.js";
+import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d.js";
+import { Range3d } from "../geometry3d/Range.js";
+import { Ray3d } from "../geometry3d/Ray3d.js";
+import { Transform } from "../geometry3d/Transform.js";
+import { Matrix4d } from "../geometry4d/Matrix4d.js";
+import { Point4d } from "../geometry4d/Point4d.js";
+import { BezierPolynomialAlgebra } from "../numerics/BezierPolynomials.js";
+import { BezierCurveBase } from "./BezierCurveBase.js";
 
 /** 3d curve with homogeneous weights.
  * * A control point with weight w and cartesian (projected) coordinates x,y,z has the weight multiplied into the coordinates,

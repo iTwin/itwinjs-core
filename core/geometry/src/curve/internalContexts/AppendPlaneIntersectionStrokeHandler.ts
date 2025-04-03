@@ -6,15 +6,15 @@
  * @module Curve
  */
 
-import { Geometry, PlaneAltitudeEvaluator } from "../../Geometry";
-import { IStrokeHandler } from "../../geometry3d/GeometryHandler";
-import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
-import { Ray3d } from "../../geometry3d/Ray3d";
-import { Order2Bezier } from "../../numerics/BezierPolynomials";
-import { Newton1dUnboundedApproximateDerivative } from "../../numerics/Newton";
-import { CurveLocationDetail } from "../CurveLocationDetail";
-import { CurvePrimitive } from "../CurvePrimitive";
-import { NewtonRtoRStrokeHandler } from "./NewtonRtoRStrokeHandler";
+import { Geometry, PlaneAltitudeEvaluator } from "../../Geometry.js";
+import { IStrokeHandler } from "../../geometry3d/GeometryHandler.js";
+import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d.js";
+import { Ray3d } from "../../geometry3d/Ray3d.js";
+import { Order2Bezier } from "../../numerics/BezierPolynomials.js";
+import { Newton1dUnboundedApproximateDerivative } from "../../numerics/Newton.js";
+import { CurveLocationDetail } from "../CurveLocationDetail.js";
+import { CurvePrimitive } from "../CurvePrimitive.js";
+import { NewtonRtoRStrokeHandler } from "./NewtonRtoRStrokeHandler.js";
 
 /**
  * Context for computing intersections of a CurvePrimitive with a plane.

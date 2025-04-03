@@ -7,19 +7,19 @@
  * @module Solid
  */
 
-import { AnyCurve } from "../curve/CurveTypes";
-import { CurveCollection } from "../curve/CurveCollection";
-import { GeometryQuery } from "../curve/GeometryQuery";
-import { StrokeOptions } from "../curve/StrokeOptions";
-import { AxisOrder, Geometry } from "../Geometry";
-import { Angle } from "../geometry3d/Angle";
-import { GeometryHandler } from "../geometry3d/GeometryHandler";
-import { Matrix3d } from "../geometry3d/Matrix3d";
-import { Range3d } from "../geometry3d/Range";
-import { Ray3d } from "../geometry3d/Ray3d";
-import { Transform } from "../geometry3d/Transform";
-import { SolidPrimitive } from "./SolidPrimitive";
-import { SweepContour } from "./SweepContour";
+import { AnyCurve } from "../curve/CurveTypes.js";
+import { CurveCollection } from "../curve/CurveCollection.js";
+import { GeometryQuery } from "../curve/GeometryQuery.js";
+import { StrokeOptions } from "../curve/StrokeOptions.js";
+import { AxisOrder, Geometry } from "../Geometry.js";
+import { Angle } from "../geometry3d/Angle.js";
+import { GeometryHandler } from "../geometry3d/GeometryHandler.js";
+import { Matrix3d } from "../geometry3d/Matrix3d.js";
+import { Range3d } from "../geometry3d/Range.js";
+import { Ray3d } from "../geometry3d/Ray3d.js";
+import { Transform } from "../geometry3d/Transform.js";
+import { SolidPrimitive } from "./SolidPrimitive.js";
+import { SweepContour } from "./SweepContour.js";
 
 /**
  * A LinearSweep is

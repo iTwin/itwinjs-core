@@ -3,23 +3,23 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { describe, expect, it } from "vitest";
-import { GeometryQuery } from "../../curve/GeometryQuery";
-import { LineSegment3d } from "../../curve/LineSegment3d";
-import { LineString3d } from "../../curve/LineString3d";
-import { Angle } from "../../geometry3d/Angle";
-import { Matrix3d } from "../../geometry3d/Matrix3d";
-import { Plane3dByOriginAndVectors } from "../../geometry3d/Plane3dByOriginAndVectors";
-import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
-import { Range3d } from "../../geometry3d/Range";
-import { Transform } from "../../geometry3d/Transform";
-import { Map4d } from "../../geometry4d/Map4d";
-import { Matrix4d } from "../../geometry4d/Matrix4d";
-import { PlaneByOriginAndVectors4d } from "../../geometry4d/PlaneByOriginAndVectors4d";
-import { Point4d } from "../../geometry4d/Point4d";
-import { SmallSystem } from "../../numerics/SmallSystem";
-import * as bsiChecker from "../Checker";
-import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
-import { prettyPrint } from "../testFunctions";
+import { GeometryQuery } from "../../curve/GeometryQuery.js";
+import { LineSegment3d } from "../../curve/LineSegment3d.js";
+import { LineString3d } from "../../curve/LineString3d.js";
+import { Angle } from "../../geometry3d/Angle.js";
+import { Matrix3d } from "../../geometry3d/Matrix3d.js";
+import { Plane3dByOriginAndVectors } from "../../geometry3d/Plane3dByOriginAndVectors.js";
+import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d.js";
+import { Range3d } from "../../geometry3d/Range.js";
+import { Transform } from "../../geometry3d/Transform.js";
+import { Map4d } from "../../geometry4d/Map4d.js";
+import { Matrix4d } from "../../geometry4d/Matrix4d.js";
+import { PlaneByOriginAndVectors4d } from "../../geometry4d/PlaneByOriginAndVectors4d.js";
+import { Point4d } from "../../geometry4d/Point4d.js";
+import { SmallSystem } from "../../numerics/SmallSystem.js";
+import * as bsiChecker from "../Checker.js";
+import { GeometryCoreTestIO } from "../GeometryCoreTestIO.js";
+import { prettyPrint } from "../testFunctions.js";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 

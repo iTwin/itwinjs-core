@@ -3,21 +3,21 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { describe, expect, it } from "vitest";
-import { Arc3d } from "../../curve/Arc3d";
-import { GeometryQuery } from "../../curve/GeometryQuery";
-import { LineSegment3d } from "../../curve/LineSegment3d";
-import { LineString3d } from "../../curve/LineString3d";
-import { Loop } from "../../curve/Loop";
-import { StandardViewIndex } from "../../Geometry";
-import { AngleSweep } from "../../geometry3d/AngleSweep";
-import { Matrix3d } from "../../geometry3d/Matrix3d";
-import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
-import { Transform } from "../../geometry3d/Transform";
-import { IndexedPolyface } from "../../polyface/Polyface";
-import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
-import { Sample } from "../../serialization/GeometrySamples";
-import { Checker } from "../Checker";
-import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
+import { Arc3d } from "../../curve/Arc3d.js";
+import { GeometryQuery } from "../../curve/GeometryQuery.js";
+import { LineSegment3d } from "../../curve/LineSegment3d.js";
+import { LineString3d } from "../../curve/LineString3d.js";
+import { Loop } from "../../curve/Loop.js";
+import { StandardViewIndex } from "../../Geometry.js";
+import { AngleSweep } from "../../geometry3d/AngleSweep.js";
+import { Matrix3d } from "../../geometry3d/Matrix3d.js";
+import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d.js";
+import { Transform } from "../../geometry3d/Transform.js";
+import { IndexedPolyface } from "../../polyface/Polyface.js";
+import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder.js";
+import { Sample } from "../../serialization/GeometrySamples.js";
+import { Checker } from "../Checker.js";
+import { GeometryCoreTestIO } from "../GeometryCoreTestIO.js";
 
 /* Create an XYZ triad with arcs to clarify XY and XYZ planes */
 function makeViewableGeometry(): GeometryQuery[] {

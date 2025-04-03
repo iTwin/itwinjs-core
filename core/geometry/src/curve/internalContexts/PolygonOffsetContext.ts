@@ -6,21 +6,21 @@
  * @module Curve
  */
 
-import { Geometry } from "../../Geometry";
-import { AngleSweep } from "../../geometry3d/AngleSweep";
-import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
-import { Ray3d } from "../../geometry3d/Ray3d";
-import { Arc3d } from "../Arc3d";
-import { CurveChain, CurveCollection } from "../CurveCollection";
-import { CurveCurve } from "../CurveCurve";
-import { CurveCurveApproachType, CurveLocationDetailPair } from "../CurveLocationDetail";
-import { CurvePrimitive } from "../CurvePrimitive";
-import { LineSegment3d } from "../LineSegment3d";
-import { LineString3d } from "../LineString3d";
-import { Loop } from "../Loop";
-import { JointOptions, OffsetOptions } from "../OffsetOptions";
-import { Path } from "../Path";
-import { RegionOps } from "../RegionOps";
+import { Geometry } from "../../Geometry.js";
+import { AngleSweep } from "../../geometry3d/AngleSweep.js";
+import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d.js";
+import { Ray3d } from "../../geometry3d/Ray3d.js";
+import { Arc3d } from "../Arc3d.js";
+import { CurveChain, CurveCollection } from "../CurveCollection.js";
+import { CurveCurve } from "../CurveCurve.js";
+import { CurveCurveApproachType, CurveLocationDetailPair } from "../CurveLocationDetail.js";
+import { CurvePrimitive } from "../CurvePrimitive.js";
+import { LineSegment3d } from "../LineSegment3d.js";
+import { LineString3d } from "../LineString3d.js";
+import { Loop } from "../Loop.js";
+import { JointOptions, OffsetOptions } from "../OffsetOptions.js";
+import { Path } from "../Path.js";
+import { RegionOps } from "../RegionOps.js";
 
 // cspell:word CCWXY
 

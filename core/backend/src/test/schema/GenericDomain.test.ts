@@ -12,8 +12,8 @@ import {
   DefinitionModel, DocumentListModel, ECSqlStatement, GenericDocument, GenericGraphicalModel3d, GenericGraphicalType2d, GenericPhysicalMaterial,
   GenericPhysicalType, GenericSchema, Graphic3d, Group, GroupModel, IModelDb, IModelJsFs, PhysicalElementIsOfPhysicalMaterial,
   PhysicalElementIsOfType, PhysicalModel, PhysicalObject, PhysicalTypeIsOfPhysicalMaterial, SnapshotDb, SpatialCategory,
-} from "../../core-backend";
-import { IModelTestUtils } from "../IModelTestUtils";
+} from "../../core-backend.js";
+import { IModelTestUtils } from "../IModelTestUtils.js";
 
 describe("Generic Domain", () => {
 

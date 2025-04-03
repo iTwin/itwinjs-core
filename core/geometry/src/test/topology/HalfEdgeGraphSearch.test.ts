@@ -4,18 +4,18 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { describe, expect, it } from "vitest";
-import { GeometryQuery } from "../../curve/GeometryQuery";
-import { StrokeOptions } from "../../curve/StrokeOptions";
-import { Point3d } from "../../geometry3d/Point3dVector3d";
-import { Transform } from "../../geometry3d/Transform";
-import { IndexedPolyface } from "../../polyface/Polyface";
-import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
-import { PolyfaceQuery } from "../../polyface/PolyfaceQuery";
-import { Sample } from "../../serialization/GeometrySamples";
-import { HalfEdge, HalfEdgeGraph, HalfEdgeMask } from "../../topology/Graph";
-import { HalfEdgeGraphSearch, HalfEdgeMaskTester } from "../../topology/HalfEdgeGraphSearch";
-import { Checker } from "../Checker";
-import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
+import { GeometryQuery } from "../../curve/GeometryQuery.js";
+import { StrokeOptions } from "../../curve/StrokeOptions.js";
+import { Point3d } from "../../geometry3d/Point3dVector3d.js";
+import { Transform } from "../../geometry3d/Transform.js";
+import { IndexedPolyface } from "../../polyface/Polyface.js";
+import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder.js";
+import { PolyfaceQuery } from "../../polyface/PolyfaceQuery.js";
+import { Sample } from "../../serialization/GeometrySamples.js";
+import { HalfEdge, HalfEdgeGraph, HalfEdgeMask } from "../../topology/Graph.js";
+import { HalfEdgeGraphSearch, HalfEdgeMaskTester } from "../../topology/HalfEdgeGraphSearch.js";
+import { Checker } from "../Checker.js";
+import { GeometryCoreTestIO } from "../GeometryCoreTestIO.js";
 
 // cspell:word internaldocs
 

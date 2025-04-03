@@ -4,16 +4,16 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert, describe, expect, it } from "vitest";
 import { Id64, Id64String } from "@itwin/core-bentley";
-import { ColorDef } from "../ColorDef";
-import { RgbColor } from "../RgbColor";
-import { BatchType, Feature } from "../FeatureTable";
-import { GeometryClass } from "../GeometryParams";
-import { LinePixels } from "../LinePixels";
-import { SubCategoryAppearance } from "../SubCategoryAppearance";
-import { SubCategoryOverride } from "../SubCategoryOverride";
+import { ColorDef } from "../ColorDef.js";
+import { RgbColor } from "../RgbColor.js";
+import { BatchType, Feature } from "../FeatureTable.js";
+import { GeometryClass } from "../GeometryParams.js";
+import { LinePixels } from "../LinePixels.js";
+import { SubCategoryAppearance } from "../SubCategoryAppearance.js";
+import { SubCategoryOverride } from "../SubCategoryOverride.js";
 import {
   FeatureAppearance, FeatureAppearanceProps, FeatureAppearanceProvider, FeatureAppearanceSource, FeatureOverrides,
-} from "../FeatureSymbology";
+} from "../FeatureSymbology.js";
 
 describe("FeatureAppearance", () => {
   it("default constructor works as expected", () => {

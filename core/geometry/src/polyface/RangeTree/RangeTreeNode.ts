@@ -7,7 +7,7 @@
  */
 
 import { assert } from "@itwin/core-bentley";
-import { Range3d } from "../../geometry3d/Range";
+import { Range3d } from "../../geometry3d/Range.js";
 
 /** Type name FlexData is shorthand for a member or parameter which can be:
  * * undefined

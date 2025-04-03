@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { SnapshotDb } from "../IModelDb";
-import { IModelTestUtils } from "./IModelTestUtils";
+import { SnapshotDb } from "../IModelDb.js";
+import { IModelTestUtils } from "./IModelTestUtils.js";
 
 describe("Attach/Detach Db", () => {
   it("attach simulation db", async () => {

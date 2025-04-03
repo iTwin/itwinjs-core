@@ -3,17 +3,17 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { describe, expect, it } from "vitest";
-import { Arc3d } from "../../curve/Arc3d";
-import { CurveLocationDetail } from "../../curve/CurveLocationDetail";
-import { GeometryQuery } from "../../curve/GeometryQuery";
-import { LineSegment3d } from "../../curve/LineSegment3d";
-import { AngleSweep } from "../../geometry3d/AngleSweep";
-import { CoincidentGeometryQuery } from "../../geometry3d/CoincidentGeometryOps";
-import { Point3d } from "../../geometry3d/Point3dVector3d";
-import { Range1d } from "../../geometry3d/Range";
-import { Checker } from "../Checker";
-import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
-import { prettyPrint } from "../testFunctions";
+import { Arc3d } from "../../curve/Arc3d.js";
+import { CurveLocationDetail } from "../../curve/CurveLocationDetail.js";
+import { GeometryQuery } from "../../curve/GeometryQuery.js";
+import { LineSegment3d } from "../../curve/LineSegment3d.js";
+import { AngleSweep } from "../../geometry3d/AngleSweep.js";
+import { CoincidentGeometryQuery } from "../../geometry3d/CoincidentGeometryOps.js";
+import { Point3d } from "../../geometry3d/Point3dVector3d.js";
+import { Range1d } from "../../geometry3d/Range.js";
+import { Checker } from "../Checker.js";
+import { GeometryCoreTestIO } from "../GeometryCoreTestIO.js";
+import { prettyPrint } from "../testFunctions.js";
 
 describe("CoincidentGeometryQuery", () => {
 

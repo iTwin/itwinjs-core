@@ -7,8 +7,8 @@ import {
   ClipStyle,
   ClipStyleProps,
   CutStyle,
-} from "../ClipStyle";
-import { DisplayStyleSettings, DisplayStyleSettingsProps } from "../DisplayStyleSettings";
+} from "../ClipStyle.js";
+import { DisplayStyleSettings, DisplayStyleSettingsProps } from "../DisplayStyleSettings.js";
 
 describe("ClipStyle", () => {
   it("should round-trip through JSON", () => {

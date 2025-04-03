@@ -6,7 +6,7 @@
  * @module ArraysAndInterfaces
  */
 
-import { BlockComparisonFunction } from "./GrowableFloat64Array";
+import { BlockComparisonFunction } from "./GrowableFloat64Array.js";
 
 /**
  * Array of contiguous doubles, indexed by block number and index within block.

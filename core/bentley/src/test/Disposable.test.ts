@@ -3,8 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert, describe, it } from "vitest";
-import { DisposableList, IDisposable, using } from "../core-bentley";
-import { isIDisposable } from "../Disposable";
+import { DisposableList, IDisposable, using } from "../core-bentley.js";
+import { isIDisposable } from "../Disposable.js";
 
 /* eslint-disable @typescript-eslint/no-deprecated */
 class CallbackDisposable implements IDisposable {

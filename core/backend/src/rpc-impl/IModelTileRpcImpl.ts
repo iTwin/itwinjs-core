@@ -9,14 +9,14 @@
 import { AccessToken, assert, BeDuration, Id64Array, Logger } from "@itwin/core-bentley";
 import { ElementGraphicsRequestProps, IModelRpcProps, IModelTileRpcInterface, IModelTileTreeProps, RpcInterface, RpcManager, RpcPendingResponse, TileContentIdentifier, TileContentSource, TileTreeContentIds, TileVersionInfo } from "@itwin/core-common";
 import type { Metadata, TransferConfig } from "@itwin/object-storage-core";
-import { BackendLoggerCategory } from "../BackendLoggerCategory";
-import { IModelDb } from "../IModelDb";
-import { IModelHost } from "../IModelHost";
-import { PromiseMemoizer, QueryablePromise } from "../PromiseMemoizer";
-import { RpcTrace } from "../rpc/tracing";
-import { RpcBriefcaseUtility } from "./RpcBriefcaseUtility";
-import { IModelNative } from "../internal/NativePlatform";
-import { _nativeDb } from "../internal/Symbols";
+import { BackendLoggerCategory } from "../BackendLoggerCategory.js";
+import { IModelDb } from "../IModelDb.js";
+import { IModelHost } from "../IModelHost.js";
+import { PromiseMemoizer, QueryablePromise } from "../PromiseMemoizer.js";
+import { RpcTrace } from "../rpc/tracing.js";
+import { RpcBriefcaseUtility } from "./RpcBriefcaseUtility.js";
+import { IModelNative } from "../internal/NativePlatform.js";
+import { _nativeDb } from "../internal/Symbols.js";
 
 interface TileRequestProps {
   accessToken?: AccessToken;

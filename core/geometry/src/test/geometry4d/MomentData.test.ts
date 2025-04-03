@@ -3,25 +3,25 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { describe, expect, it } from "vitest";
-import { BSplineCurve3d } from "../../bspline/BSplineCurve";
-import { Arc3d } from "../../curve/Arc3d";
-import { AnyRegion } from "../../curve/CurveTypes";
-import { CurveChain, CurveCollection } from "../../curve/CurveCollection";
-import { CurvePrimitive } from "../../curve/CurvePrimitive";
-import { GeometryQuery } from "../../curve/GeometryQuery";
-import { LineSegment3d } from "../../curve/LineSegment3d";
-import { LineString3d } from "../../curve/LineString3d";
-import { Loop } from "../../curve/Loop";
-import { RegionOps } from "../../curve/RegionOps";
-import { StrokeOptions } from "../../curve/StrokeOptions";
-import { Angle } from "../../geometry3d/Angle";
-import { Matrix3d } from "../../geometry3d/Matrix3d";
-import { Point3d } from "../../geometry3d/Point3dVector3d";
-import { Transform } from "../../geometry3d/Transform";
-import { MomentData } from "../../geometry4d/MomentData";
-import { Sample } from "../../serialization/GeometrySamples";
-import { Checker } from "../Checker";
-import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
+import { BSplineCurve3d } from "../../bspline/BSplineCurve.js";
+import { Arc3d } from "../../curve/Arc3d.js";
+import { AnyRegion } from "../../curve/CurveTypes.js";
+import { CurveChain, CurveCollection } from "../../curve/CurveCollection.js";
+import { CurvePrimitive } from "../../curve/CurvePrimitive.js";
+import { GeometryQuery } from "../../curve/GeometryQuery.js";
+import { LineSegment3d } from "../../curve/LineSegment3d.js";
+import { LineString3d } from "../../curve/LineString3d.js";
+import { Loop } from "../../curve/Loop.js";
+import { RegionOps } from "../../curve/RegionOps.js";
+import { StrokeOptions } from "../../curve/StrokeOptions.js";
+import { Angle } from "../../geometry3d/Angle.js";
+import { Matrix3d } from "../../geometry3d/Matrix3d.js";
+import { Point3d } from "../../geometry3d/Point3dVector3d.js";
+import { Transform } from "../../geometry3d/Transform.js";
+import { MomentData } from "../../geometry4d/MomentData.js";
+import { Sample } from "../../serialization/GeometrySamples.js";
+import { Checker } from "../Checker.js";
+import { GeometryCoreTestIO } from "../GeometryCoreTestIO.js";
 
 /** Add individual segments of  xyz array to parent. */
 function addSegmentsToChain(parent: CurveChain, points: Point3d[]) {

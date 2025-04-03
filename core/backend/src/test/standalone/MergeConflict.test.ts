@@ -9,11 +9,11 @@ import {
   IModel,
   SubCategoryAppearance,
 } from "@itwin/core-common";
-import * as chai from "chai";
+import chai from "chai";
 import { assert, expect } from "chai";
-import * as chaiAsPromised from "chai-as-promised";
-import { HubWrappers, KnownTestLocations } from "../";
-import { HubMock } from "../../HubMock";
+import chaiAsPromised from "chai-as-promised";
+import { HubWrappers, KnownTestLocations } from "../index.js";
+import { HubMock } from "../../HubMock.js";
 import {
   BriefcaseDb,
   ChannelControl,
@@ -21,9 +21,9 @@ import {
   ExternalSourceAspect,
   SpatialCategory,
   SqliteChangeOp,
-} from "../../core-backend";
-import { IModelTestUtils, TestUserType } from "../IModelTestUtils";
-import { RebaseChangesetConflictArgs, SqliteConflictCause } from "../../internal/ChangesetConflictArgs";
+} from "../../core-backend.js";
+import { IModelTestUtils, TestUserType } from "../IModelTestUtils.js";
+import { RebaseChangesetConflictArgs, SqliteConflictCause } from "../../internal/ChangesetConflictArgs.js";
 chai.use(chaiAsPromised);
 import * as sinon from "sinon";
 

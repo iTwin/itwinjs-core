@@ -6,9 +6,9 @@
  * @module MapLayers
  */
 
-import { DeprecatedBackgroundMapProps } from "./BackgroundMapSettings";
-import { ColorDef, ColorDefProps } from "./ColorDef";
-import { BaseMapLayerProps, BaseMapLayerSettings, MapLayerProps, MapLayerSettings } from "./MapLayerSettings";
+import { DeprecatedBackgroundMapProps } from "./BackgroundMapSettings.js";
+import { ColorDef, ColorDefProps } from "./ColorDef.js";
+import { BaseMapLayerProps, BaseMapLayerSettings, MapLayerProps, MapLayerSettings } from "./MapLayerSettings.js";
 
 /** JSON representation of a [[BaseLayerSettings]].
  * @public

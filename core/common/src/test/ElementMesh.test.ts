@@ -6,7 +6,7 @@
 import { describe, expect, it } from "vitest";
 import { Uint8ArrayBuilder } from "@itwin/core-bentley";
 import { BentleyGeometryFlatBuffer, IndexedPolyface, Point3d, PolyfaceBuilder } from "@itwin/core-geometry";
-import { readElementMeshes } from "../ElementMesh";
+import { readElementMeshes } from "../ElementMesh.js";
 
 class MeshesBuilder extends Uint8ArrayBuilder {
   public appendChunk(type: string, data?: Uint8Array): void {

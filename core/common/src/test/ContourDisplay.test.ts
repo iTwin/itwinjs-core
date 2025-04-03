@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { describe, expect, it } from "vitest";
-import { ContourDisplay } from "../ContourDisplay";
-import { LinePixels } from "../LinePixels";
+import { ContourDisplay } from "../ContourDisplay.js";
+import { LinePixels } from "../LinePixels.js";
 
 describe("ContourDisplay", () => {
   it("Ensure ContourDisplay derives values properly from JSON, including setting defaults and round-tripping through JSON", () => {

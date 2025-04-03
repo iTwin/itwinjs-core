@@ -4,14 +4,14 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert, describe, expect, it } from "vitest";
 
-import { AxisOrder } from "../../Geometry";
-import { Matrix3d } from "../../geometry3d/Matrix3d";
-import { Point2d } from "../../geometry3d/Point2dVector2d";
-import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
-import { Transform } from "../../geometry3d/Transform";
-import { Sample } from "../../serialization/GeometrySamples";
-import { Checker } from "../Checker";
-import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
+import { AxisOrder } from "../../Geometry.js";
+import { Matrix3d } from "../../geometry3d/Matrix3d.js";
+import { Point2d } from "../../geometry3d/Point2dVector2d.js";
+import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d.js";
+import { Transform } from "../../geometry3d/Transform.js";
+import { Sample } from "../../serialization/GeometrySamples.js";
+import { Checker } from "../Checker.js";
+import { GeometryCoreTestIO } from "../GeometryCoreTestIO.js";
 
 describe("Transform.Inverse", () => {
   it("Transform.Inverse", () => {

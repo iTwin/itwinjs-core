@@ -6,9 +6,9 @@
 /** @packageDocumentation
  * @module Curve
  */
-import { CurveCollection } from "../CurveCollection";
-import { CurvePrimitive } from "../CurvePrimitive";
-import { RecursiveCurveProcessor } from "../CurveProcessor";
+import { CurveCollection } from "../CurveCollection.js";
+import { CurvePrimitive } from "../CurvePrimitive.js";
+import { RecursiveCurveProcessor } from "../CurveProcessor.js";
 
 /**
  * Algorithmic class: Sum lengths of curves

@@ -3,8 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { describe, expect, it } from "vitest";
-import { ThematicGradientSettings } from "../ThematicDisplay";
-import { AnalysisStyle, AnalysisStyleProps, LegacyAnalysisStyleProps } from "../AnalysisStyle";
+import { ThematicGradientSettings } from "../ThematicDisplay.js";
+import { AnalysisStyle, AnalysisStyleProps, LegacyAnalysisStyleProps } from "../AnalysisStyle.js";
 
 describe("AnalysisStyle", () => {
   it("round-trips through JSON", () => {

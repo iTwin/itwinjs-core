@@ -6,12 +6,12 @@
  * @module Curve
  */
 
-import { IStrokeHandler } from "../../geometry3d/GeometryHandler";
-import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
-import { Range1d } from "../../geometry3d/Range";
-import { Ray3d } from "../../geometry3d/Ray3d";
-import { GaussMapper } from "../../numerics/Quadrature";
-import { CurvePrimitive } from "../CurvePrimitive";
+import { IStrokeHandler } from "../../geometry3d/GeometryHandler.js";
+import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d.js";
+import { Range1d } from "../../geometry3d/Range.js";
+import { Ray3d } from "../../geometry3d/Ray3d.js";
+import { GaussMapper } from "../../numerics/Quadrature.js";
+import { CurvePrimitive } from "../CurvePrimitive.js";
 
 /**
  * Context for computing the length of a CurvePrimitive.

@@ -10,10 +10,10 @@ import {
   assert, ByteStream, compareBooleans, compareBooleansOrUndefined, compareNumbers, compareStrings, compareStringsOrUndefined, Id64, Id64String,
 } from "@itwin/core-bentley";
 import { Range3d, Vector3d } from "@itwin/core-geometry";
-import { BatchType } from "../FeatureTable";
-import { TileProps } from "../TileProps";
-import { CurrentImdlVersion, FeatureTableHeader, ImdlFlags, ImdlHeader } from "./IModelTileIO";
-import { TileReadError, TileReadStatus } from "./TileIO";
+import { BatchType } from "../FeatureTable.js";
+import { TileProps } from "../TileProps.js";
+import { CurrentImdlVersion, FeatureTableHeader, ImdlFlags, ImdlHeader } from "./IModelTileIO.js";
+import { TileReadError, TileReadStatus } from "./TileIO.js";
 
 // cspell:ignore imdl mult bitfield
 

@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { describe, expect, it } from "vitest";
 import { ClipVector, ClipVectorProps } from "@itwin/core-geometry";
-import { ViewDetails } from "../ViewDetails";
+import { ViewDetails } from "../ViewDetails.js";
 
 describe("ViewDetails", () => {
   describe("clipVector", () => {

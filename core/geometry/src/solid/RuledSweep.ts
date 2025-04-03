@@ -7,17 +7,17 @@
  * @module Solid
  */
 
-import { ConstructCurveBetweenCurves } from "../curve/ConstructCurveBetweenCurves";
-import { AnyCurve } from "../curve/CurveTypes";
-import { CurveChain, CurveCollection } from "../curve/CurveCollection";
-import { CurvePrimitive } from "../curve/CurvePrimitive";
-import { GeometryQuery } from "../curve/GeometryQuery";
-import { Geometry } from "../Geometry";
-import { GeometryHandler } from "../geometry3d/GeometryHandler";
-import { Range3d } from "../geometry3d/Range";
-import { Transform } from "../geometry3d/Transform";
-import { SolidPrimitive } from "./SolidPrimitive";
-import { SweepContour } from "./SweepContour";
+import { ConstructCurveBetweenCurves } from "../curve/ConstructCurveBetweenCurves.js";
+import { AnyCurve } from "../curve/CurveTypes.js";
+import { CurveChain, CurveCollection } from "../curve/CurveCollection.js";
+import { CurvePrimitive } from "../curve/CurvePrimitive.js";
+import { GeometryQuery } from "../curve/GeometryQuery.js";
+import { Geometry } from "../Geometry.js";
+import { GeometryHandler } from "../geometry3d/GeometryHandler.js";
+import { Range3d } from "../geometry3d/Range.js";
+import { Transform } from "../geometry3d/Transform.js";
+import { SolidPrimitive } from "./SolidPrimitive.js";
+import { SweepContour } from "./SweepContour.js";
 
 /**
  * Type for a function argument taking 2 curves and returning another curve or failing with undefined.

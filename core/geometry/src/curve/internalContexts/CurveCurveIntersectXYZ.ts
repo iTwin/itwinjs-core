@@ -8,26 +8,26 @@
  */
 
 import { assert } from "@itwin/core-bentley";
-import { BSplineCurve3d, BSplineCurve3dBase } from "../../bspline/BSplineCurve";
-import { BSplineCurve3dH } from "../../bspline/BSplineCurve3dH";
-import { Geometry } from "../../Geometry";
-import { RecurseToCurvesGeometryHandler } from "../../geometry3d/GeometryHandler";
-import { Plane3dByOriginAndUnitNormal } from "../../geometry3d/Plane3dByOriginAndUnitNormal";
-import { Vector2d } from "../../geometry3d/Point2dVector2d";
-import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
-import { TrigPolynomial } from "../../numerics/Polynomials";
-import { SmallSystem } from "../../numerics/SmallSystem";
-import { Arc3d } from "../Arc3d";
-import { CurveChainWithDistanceIndex } from "../CurveChainWithDistanceIndex";
-import { CurveCollection } from "../CurveCollection";
-import { CurveIntervalRole, CurveLocationDetail, CurveLocationDetailPair } from "../CurveLocationDetail";
-import { CurvePrimitive } from "../CurvePrimitive";
-import { AnyCurve } from "../CurveTypes";
-import { GeometryQuery } from "../GeometryQuery";
-import { LineSegment3d } from "../LineSegment3d";
-import { LineString3d } from "../LineString3d";
-import { Loop } from "../Loop";
-import { Path } from "../Path";
+import { BSplineCurve3d, BSplineCurve3dBase } from "../../bspline/BSplineCurve.js";
+import { BSplineCurve3dH } from "../../bspline/BSplineCurve3dH.js";
+import { Geometry } from "../../Geometry.js";
+import { RecurseToCurvesGeometryHandler } from "../../geometry3d/GeometryHandler.js";
+import { Plane3dByOriginAndUnitNormal } from "../../geometry3d/Plane3dByOriginAndUnitNormal.js";
+import { Vector2d } from "../../geometry3d/Point2dVector2d.js";
+import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d.js";
+import { TrigPolynomial } from "../../numerics/Polynomials.js";
+import { SmallSystem } from "../../numerics/SmallSystem.js";
+import { Arc3d } from "../Arc3d.js";
+import { CurveChainWithDistanceIndex } from "../CurveChainWithDistanceIndex.js";
+import { CurveCollection } from "../CurveCollection.js";
+import { CurveIntervalRole, CurveLocationDetail, CurveLocationDetailPair } from "../CurveLocationDetail.js";
+import { CurvePrimitive } from "../CurvePrimitive.js";
+import { AnyCurve } from "../CurveTypes.js";
+import { GeometryQuery } from "../GeometryQuery.js";
+import { LineSegment3d } from "../LineSegment3d.js";
+import { LineString3d } from "../LineString3d.js";
+import { Loop } from "../Loop.js";
+import { Path } from "../Path.js";
 
 // cspell:word XYRR
 

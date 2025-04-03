@@ -3,8 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { Geometry } from "../Geometry";
-import { Range1d } from "../geometry3d/Range";
+import { Geometry } from "../Geometry.js";
+import { Range1d } from "../geometry3d/Range.js";
 
 /**
  * Accumulator for computing average and standard deviations.

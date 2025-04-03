@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { describe, expect, it } from "vitest";
-import { MaskManager } from "../../topology/MaskManager";
-import { Checker } from "../Checker";
+import { MaskManager } from "../../topology/MaskManager.js";
+import { Checker } from "../Checker.js";
 
 describe("MaskManager", () => {
 

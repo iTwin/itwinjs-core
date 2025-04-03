@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert, describe, expect, it } from "vitest";
-import { BeEvent, BeEventList, Listener, ListenerType } from "../core-bentley";
+import { BeEvent, BeEventList, Listener, ListenerType } from "../core-bentley.js";
 
 class Dummy {
   constructor(_name: string) { }

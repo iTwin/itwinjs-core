@@ -13,12 +13,12 @@ import {
 import {
   DefinitionElement, DefinitionModel, ElementRefersToElements, EntityReferences, IModelDb, IModelJsFs, Model, RepositoryLink,
   Schema, SnapshotDb, SpatialViewDefinition, StandaloneDb, UrlLink, ViewDefinition3d,
-} from "../../core-backend";
-import { IModelTestUtils } from "../IModelTestUtils";
-import { KnownTestLocations } from "../KnownTestLocations";
-import { Element } from "../../Element";
-import { Schemas } from "../../Schema";
-import { ClassRegistry } from "../../ClassRegistry";
+} from "../../core-backend.js";
+import { IModelTestUtils } from "../IModelTestUtils.js";
+import { KnownTestLocations } from "../KnownTestLocations.js";
+import { Element } from "../../Element.js";
+import { Schemas } from "../../Schema.js";
+import { ClassRegistry } from "../../ClassRegistry.js";
 import { OpenMode } from "@itwin/core-bentley";
 import { EntityClass, NavigationProperty, PrimitiveProperty } from "@itwin/ecschema-metadata";
 

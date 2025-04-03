@@ -7,8 +7,8 @@
  */
 
 import { compareBooleans, compareNumbers, CompressedId64Set, NonFunctionPropertiesOf, OrderedId64Iterable } from "@itwin/core-bentley";
-import { LinePixels } from "./LinePixels";
-import { RgbColor, RgbColorProps } from "./RgbColor";
+import { LinePixels } from "./LinePixels.js";
+import { RgbColor, RgbColorProps } from "./RgbColor.js";
 
 /** JSON representation of a [[ContourStyle]].
  * @public

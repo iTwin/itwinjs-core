@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert } from "vitest";
-import { Point3d } from "../geometry3d/Point3dVector3d";
+import { Point3d } from "../geometry3d/Point3dVector3d.js";
 
 // GeometryCoreTestIO.consoleLog("=========================");
 // GeometryCoreTestIO.consoleLog("Standalone Output");

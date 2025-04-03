@@ -7,18 +7,18 @@
  * @module Polyface
  */
 
-import { Geometry } from "../Geometry";
-import { GrowableXYArray } from "../geometry3d/GrowableXYArray";
-import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
-import { Point2d } from "../geometry3d/Point2dVector2d";
-import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
-import { NumberArray } from "../geometry3d/PointHelpers";
-import { Range3d } from "../geometry3d/Range";
-import { Transform } from "../geometry3d/Transform";
-import { ClusterableArray } from "../numerics/ClusterableArray";
-import { PolyfaceAuxData } from "./AuxData";
-import { FacetFaceData } from "./FacetFaceData";
-import { TaggedNumericData } from "./TaggedNumericData";
+import { Geometry } from "../Geometry.js";
+import { GrowableXYArray } from "../geometry3d/GrowableXYArray.js";
+import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray.js";
+import { Point2d } from "../geometry3d/Point2dVector2d.js";
+import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d.js";
+import { NumberArray } from "../geometry3d/PointHelpers.js";
+import { Range3d } from "../geometry3d/Range.js";
+import { Transform } from "../geometry3d/Transform.js";
+import { ClusterableArray } from "../numerics/ClusterableArray.js";
+import { PolyfaceAuxData } from "./AuxData.js";
+import { FacetFaceData } from "./FacetFaceData.js";
+import { TaggedNumericData } from "./TaggedNumericData.js";
 
 // cspell:word internaldocs
 

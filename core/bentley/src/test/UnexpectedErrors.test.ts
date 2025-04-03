@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { describe, expect, it } from "vitest";
-import { BeEvent } from "../BeEvent";
-import { UnexpectedErrors } from "../UnexpectedErrors";
+import { BeEvent } from "../BeEvent.js";
+import { UnexpectedErrors } from "../UnexpectedErrors.js";
 
 describe("Unexpected error handling", () => {
 

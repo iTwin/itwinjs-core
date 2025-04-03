@@ -4,19 +4,19 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { describe, expect, it } from "vitest";
-import { CoordinateXYZ } from "../../curve/CoordinateXYZ";
-import { CurveLocationDetail, CurveLocationDetailPair } from "../../curve/CurveLocationDetail";
-import { CurvePrimitive } from "../../curve/CurvePrimitive";
-import { GeometryQuery } from "../../curve/GeometryQuery";
-import { LineSegment3d } from "../../curve/LineSegment3d";
-import { AxisOrder, Geometry } from "../../Geometry";
-import { Matrix3d } from "../../geometry3d/Matrix3d";
-import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
-import { Range1d, Range3d } from "../../geometry3d/Range";
-import { Transform } from "../../geometry3d/Transform";
-import { Sample } from "../../serialization/GeometrySamples";
-import { Checker } from "../Checker";
-import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
+import { CoordinateXYZ } from "../../curve/CoordinateXYZ.js";
+import { CurveLocationDetail, CurveLocationDetailPair } from "../../curve/CurveLocationDetail.js";
+import { CurvePrimitive } from "../../curve/CurvePrimitive.js";
+import { GeometryQuery } from "../../curve/GeometryQuery.js";
+import { LineSegment3d } from "../../curve/LineSegment3d.js";
+import { AxisOrder, Geometry } from "../../Geometry.js";
+import { Matrix3d } from "../../geometry3d/Matrix3d.js";
+import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d.js";
+import { Range1d, Range3d } from "../../geometry3d/Range.js";
+import { Transform } from "../../geometry3d/Transform.js";
+import { Sample } from "../../serialization/GeometrySamples.js";
+import { Checker } from "../Checker.js";
+import { GeometryCoreTestIO } from "../GeometryCoreTestIO.js";
 
 function exerciseLineSegment3d(ck: Checker, segmentA: LineSegment3d) {
   const a = 4.2;

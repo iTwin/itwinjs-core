@@ -7,7 +7,7 @@
  */
 
 import { compareStrings, Guid, GuidString } from "@itwin/core-bentley";
-import { TextureMapping } from "./TextureMapping";
+import { TextureMapping } from "./TextureMapping.js";
 
 /** Represents a material which can be applied to a surface to control aspects of its appearance such as color, reflectivity, texture, and so on.
  * @public

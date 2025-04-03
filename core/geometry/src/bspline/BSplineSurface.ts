@@ -6,18 +6,18 @@
  * @module Bspline
  */
 
-import { GeometryQuery } from "../curve/GeometryQuery";
-import { AxisOrder, Geometry } from "../Geometry";
-import { GeometryHandler, UVSurface } from "../geometry3d/GeometryHandler";
-import { Matrix3d } from "../geometry3d/Matrix3d";
-import { Plane3dByOriginAndUnitNormal } from "../geometry3d/Plane3dByOriginAndUnitNormal";
-import { Plane3dByOriginAndVectors } from "../geometry3d/Plane3dByOriginAndVectors";
-import { Point3d } from "../geometry3d/Point3dVector3d";
-import { Point3dArray, Point4dArray } from "../geometry3d/PointHelpers";
-import { Range3d } from "../geometry3d/Range";
-import { Transform } from "../geometry3d/Transform";
-import { Point4d } from "../geometry4d/Point4d";
-import { BSplineWrapMode, KnotVector } from "./KnotVector";
+import { GeometryQuery } from "../curve/GeometryQuery.js";
+import { AxisOrder, Geometry } from "../Geometry.js";
+import { GeometryHandler, UVSurface } from "../geometry3d/GeometryHandler.js";
+import { Matrix3d } from "../geometry3d/Matrix3d.js";
+import { Plane3dByOriginAndUnitNormal } from "../geometry3d/Plane3dByOriginAndUnitNormal.js";
+import { Plane3dByOriginAndVectors } from "../geometry3d/Plane3dByOriginAndVectors.js";
+import { Point3d } from "../geometry3d/Point3dVector3d.js";
+import { Point3dArray, Point4dArray } from "../geometry3d/PointHelpers.js";
+import { Range3d } from "../geometry3d/Range.js";
+import { Transform } from "../geometry3d/Transform.js";
+import { Point4d } from "../geometry4d/Point4d.js";
+import { BSplineWrapMode, KnotVector } from "./KnotVector.js";
 
 /**
  * UVSelect is an integer indicating uDirection (0) or vDirection (1) in a bspline surface parameterization.
