@@ -774,6 +774,12 @@ export class Drawing extends Document {
   public get scaleFactor(): number { return this._scaleFactor; }
   public set scaleFactor(factor: number) {
     if (factor === 0) {
+      if (this._scaleFactor === undefined) {
+        // Entity constructor calls our setter before our constructor runs...don't throw an exception at that time,
+        // because somebody may have persisted the value as zero.
+        return;
+      }
+
       throw new Error("Drawing.scaleFactor cannot be zero");
     }
 
