@@ -101,7 +101,7 @@ describe("BriefcaseManager", () => {
     assert.exists(iModel2, "No iModel returned from call to BriefcaseManager.open");
     assert.equal(iModel1, iModel2, "previously open briefcase was expected to be shared");
 
-    const iModel3 = await HubWrappers.openCheckpointUsingRpc({ accessToken, iTwinId: testITwinId, iModelId: readOnlyTestIModelId, asOf: IModelVersion.named("SecondVersion").toJSON() });
+    const iModel3 = await HubWrappers.openCheckpointUsingRpc({ accessToken, iTwinId: testITwinId, iModelId: readOnlyTestIModelId, asOf: IModelVersion.named("ThirdVersion").toJSON() });
     assert.exists(iModel3, "No iModel returned from call to BriefcaseManager.open");
     assert.notEqual(iModel3, iModel2, "opening two different versions should not cause briefcases to be shared when the older one is open");
 
