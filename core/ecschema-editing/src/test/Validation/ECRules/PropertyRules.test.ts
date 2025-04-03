@@ -3,14 +3,16 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import {
+  AnyProperty, DelayedPromiseWithProps, ECClass, EntityClass, KindOfQuantity, PrimitiveProperty, PrimitiveType,
+  PropertyProps, RelationshipClass, Schema, SchemaContext, StructClass
+} from "@itwin/ecschema-metadata";
 import { expect } from "chai";
-import { AnyProperty, DelayedPromiseWithProps, ECClass, EntityClass, KindOfQuantity, PrimitiveProperty, PrimitiveType,
-  PropertyProps, RelationshipClass, Schema, SchemaContext, StructClass } from "@itwin/ecschema-metadata";
-import { MutableClass } from "../../../Editing/Mutable/MutableClass";
-import { MutableSchema } from "../../../Editing/Mutable/MutableSchema";
-import { DiagnosticCategory, DiagnosticType } from "../../../Validation/Diagnostic";
-import * as Rules from "../../../Validation/ECRules";
-import { createSchemaJsonWithItems } from "../../TestUtils/DeserializationHelpers";
+import { MutableClass } from "../../../Editing/Mutable/MutableClass.js";
+import { MutableSchema } from "../../../Editing/Mutable/MutableSchema.js";
+import { DiagnosticCategory, DiagnosticType } from "../../../Validation/Diagnostic.js";
+import * as Rules from "../../../Validation/ECRules.js";
+import { createSchemaJsonWithItems } from "../../TestUtils/DeserializationHelpers.js";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 

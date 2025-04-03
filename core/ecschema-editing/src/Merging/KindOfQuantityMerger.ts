@@ -2,11 +2,11 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import type { KindOfQuantityDifference, KindOfQuantityPresentationFormatDifference } from "../Differencing/SchemaDifference";
-import type { MutableKindOfQuantity } from "../Editing/Mutable/MutableKindOfQuantity";
-import type { SchemaMergeContext } from "./SchemaMerger";
 import { Format, InvertedUnit, OverrideFormat, SchemaItemKey, Unit } from "@itwin/ecschema-metadata";
-import { updateSchemaItemFullName, updateSchemaItemKey } from "./Utils";
+import type { KindOfQuantityDifference, KindOfQuantityPresentationFormatDifference } from "../Differencing/SchemaDifference.js";
+import type { MutableKindOfQuantity } from "../Editing/Mutable/MutableKindOfQuantity.js";
+import type { SchemaMergeContext } from "./SchemaMerger.js";
+import { updateSchemaItemFullName, updateSchemaItemKey } from "./Utils.js";
 
 /**
  * Merges a new KindOfQuantity into the target schema.

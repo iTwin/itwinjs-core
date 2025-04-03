@@ -4,9 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 import { HttpServerRequest, HttpServerResponse } from "@itwin/core-common";
 import { expect } from "chai";
-import * as sinon from "sinon";
-import * as request from "supertest";
-import { FakeBentleyCloudRpcConfiguration, TestIModelJsExpressServer } from "./Mocks";
+import sinon from "sinon";
+import request from "supertest";
+import { FakeBentleyCloudRpcConfiguration, TestIModelJsExpressServer } from "./Mocks.js";
 
 // Returns fake response for specified mock's method
 function mockRequestHandler(mock: sinon.SinonMock, method: string, status: number, result: string) {

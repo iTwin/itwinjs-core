@@ -6,22 +6,22 @@
  * @module CartesianGeometry
  */
 
-import { Arc3d } from "../curve/Arc3d";
-import { AnnounceNumberNumberCurvePrimitive } from "../curve/CurvePrimitive";
-import { LineSegment3d } from "../curve/LineSegment3d";
-import { Geometry } from "../Geometry";
-import { GrowableFloat64Array } from "../geometry3d/GrowableFloat64Array";
-import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
-import { IndexedXYZCollection } from "../geometry3d/IndexedXYZCollection";
-import { Point3d } from "../geometry3d/Point3dVector3d";
-import { Range1d, Range3d } from "../geometry3d/Range";
-import { Ray3d } from "../geometry3d/Ray3d";
-import { GrowableXYZArrayCache } from "../geometry3d/ReusableObjectCache";
-import { Segment1d } from "../geometry3d/Segment1d";
-import { Transform } from "../geometry3d/Transform";
-import { Matrix4d } from "../geometry4d/Matrix4d";
-import { Clipper, ClipPlaneContainment, ClipUtilities, PolygonClipper } from "./ClipUtils";
-import { ConvexClipPlaneSet, ConvexClipPlaneSetProps } from "./ConvexClipPlaneSet";
+import { Arc3d } from "../curve/Arc3d.js";
+import { AnnounceNumberNumberCurvePrimitive } from "../curve/CurvePrimitive.js";
+import { LineSegment3d } from "../curve/LineSegment3d.js";
+import { Geometry } from "../Geometry.js";
+import { GrowableFloat64Array } from "../geometry3d/GrowableFloat64Array.js";
+import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray.js";
+import { IndexedXYZCollection } from "../geometry3d/IndexedXYZCollection.js";
+import { Point3d } from "../geometry3d/Point3dVector3d.js";
+import { Range1d, Range3d } from "../geometry3d/Range.js";
+import { Ray3d } from "../geometry3d/Ray3d.js";
+import { GrowableXYZArrayCache } from "../geometry3d/ReusableObjectCache.js";
+import { Segment1d } from "../geometry3d/Segment1d.js";
+import { Transform } from "../geometry3d/Transform.js";
+import { Matrix4d } from "../geometry4d/Matrix4d.js";
+import { Clipper, ClipPlaneContainment, ClipUtilities, PolygonClipper } from "./ClipUtils.js";
+import { ConvexClipPlaneSet, ConvexClipPlaneSetProps } from "./ConvexClipPlaneSet.js";
 
 /**
  * Wire format describing a [[UnionOfConvexClipPlaneSets]].

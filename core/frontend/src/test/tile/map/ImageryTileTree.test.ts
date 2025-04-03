@@ -5,13 +5,13 @@
 
 import { ImageMapLayerProps, ImageMapLayerSettings } from "@itwin/core-common";
 import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
-import { MockRender } from "../../../internal/render/MockRender";
-import { createBlankConnection } from "../../createBlankConnection";
-import { ImageryMapLayerTreeReference } from "../../../tile/map/ImageryTileTree";
-import { IModelConnection } from "../../../IModelConnection";
-import { ImageryMapLayerFormat } from "../../../tile/map/MapLayerImageryFormats";
-import { MapLayerImageryProvider } from "../../../tile/map/MapLayerImageryProvider";
-import { IModelApp } from "../../../IModelApp";
+import { MockRender } from "../../../internal/render/MockRender.js";
+import { createBlankConnection } from "../../createBlankConnection.js";
+import { ImageryMapLayerTreeReference } from "../../../tile/map/ImageryTileTree.js";
+import { IModelConnection } from "../../../IModelConnection.js";
+import { ImageryMapLayerFormat } from "../../../tile/map/MapLayerImageryFormats.js";
+import { MapLayerImageryProvider } from "../../../tile/map/MapLayerImageryProvider.js";
+import { IModelApp } from "../../../IModelApp.js";
 
 class CustomProvider extends MapLayerImageryProvider {
   public override async constructUrl(_row: number, _column: number, _zoomLevel: number) { return this._settings.url;}

@@ -4,9 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { describe, expect, it } from "vitest";
-import { CurveExtendMode, CurveExtendOptions } from "../../curve/CurveExtendMode";
-import { AngleSweep } from "../../geometry3d/AngleSweep";
-import { Checker } from "../Checker";
+import { CurveExtendMode, CurveExtendOptions } from "../../curve/CurveExtendMode.js";
+import { AngleSweep } from "../../geometry3d/AngleSweep.js";
+import { Checker } from "../Checker.js";
 
 describe("CurveExtendMode", () => {
 

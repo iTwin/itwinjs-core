@@ -7,12 +7,12 @@
  */
 
 import { Range3d, Transform } from "@itwin/core-geometry";
-import { _batch, _branch, _implementationProhibited, _nodes } from "../../common/internal/Symbols";
-import { RenderGeometry } from "./RenderGeometry";
+import { _batch, _branch, _implementationProhibited, _nodes } from "../../common/internal/Symbols.js";
+import { RenderGeometry } from "./RenderGeometry.js";
 import { RenderFeatureTable, ViewFlagOverrides } from "@itwin/core-common";
-import { InstancedGraphicParams } from "../../common/render/InstancedGraphicParams";
-import { BatchOptions } from "../../common/render/BatchOptions";
-import { GraphicTemplate } from "../../render/GraphicTemplate";
+import { InstancedGraphicParams } from "../../common/render/InstancedGraphicParams.js";
+import { BatchOptions } from "../../common/render/BatchOptions.js";
+import { GraphicTemplate } from "../../render/GraphicTemplate.js";
 
 /** @internal */
 export interface GraphicTemplateNode {

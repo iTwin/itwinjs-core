@@ -7,12 +7,12 @@
  * @module Numerics
  */
 
-import { Geometry } from "../Geometry";
-import { Point2d, Vector2d } from "../geometry3d/Point2dVector2d";
-import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
-import { XAndY } from "../geometry3d/XYZProps";
-import { Point4d } from "../geometry4d/Point4d";
-import { BilinearPolynomial } from "./Polynomials";
+import { Geometry } from "../Geometry.js";
+import { Point2d, Vector2d } from "../geometry3d/Point2dVector2d.js";
+import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d.js";
+import { XAndY } from "../geometry3d/XYZProps.js";
+import { Point4d } from "../geometry4d/Point4d.js";
+import { BilinearPolynomial } from "./Polynomials.js";
 
 // cspell:word XYUV
 

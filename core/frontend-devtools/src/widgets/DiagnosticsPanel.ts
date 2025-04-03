@@ -9,14 +9,14 @@
 
 import { dispose } from "@itwin/core-bentley";
 import { Viewport } from "@itwin/core-frontend";
-import { FpsTracker } from "./FpsTracker";
-import { GpuProfiler } from "./GpuProfiler";
-import { KeyinField } from "./KeyinField";
-import { MemoryTracker } from "./MemoryTracker";
-import { RenderCommandBreakdown } from "./RenderCommandBreakdown";
-import { TileMemoryBreakdown } from "./TileMemoryBreakdown";
-import { TileStatisticsTracker } from "./TileStatisticsTracker";
-import { ToolSettingsTracker } from "./ToolSettingsTracker";
+import { FpsTracker } from "./FpsTracker.js";
+import { GpuProfiler } from "./GpuProfiler.js";
+import { KeyinField } from "./KeyinField.js";
+import { MemoryTracker } from "./MemoryTracker.js";
+import { RenderCommandBreakdown } from "./RenderCommandBreakdown.js";
+import { TileMemoryBreakdown } from "./TileMemoryBreakdown.js";
+import { TileStatisticsTracker } from "./TileStatisticsTracker.js";
+import { ToolSettingsTracker } from "./ToolSettingsTracker.js";
 
 /** Options for configuring a [[DiagnosticsPanel]].
  * @beta

@@ -6,17 +6,17 @@
  * @module SQLiteDb
  */
 
-import * as fs from "fs";
-import { dirname } from "path";
-import * as semver from "semver";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import { DbResult, OpenMode } from "@itwin/core-bentley";
 import { LocalFileName } from "@itwin/core-common";
-import { CloudSqlite } from "./CloudSqlite";
-import { IModelNative } from "./internal/NativePlatform";
-import { IModelJsFs } from "./IModelJsFs";
-import { SqliteStatement, StatementCache } from "./SqliteStatement";
-import { _nativeDb } from "./internal/Symbols";
+import fs from "fs";
+import { dirname } from "path";
+import semver from "semver";
+import { CloudSqlite } from "./CloudSqlite.js";
+import { IModelJsFs } from "./IModelJsFs.js";
+import { SqliteStatement, StatementCache } from "./SqliteStatement.js";
+import { IModelNative } from "./internal/NativePlatform.js";
+import { _nativeDb } from "./internal/Symbols.js";
 
 // cspell:ignore savepoint julianday rowid
 

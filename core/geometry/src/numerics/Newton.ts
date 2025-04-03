@@ -7,13 +7,13 @@
  * @module Numerics
  */
 
-import { CurvePrimitive } from "../curve/CurvePrimitive";
-import { Geometry } from "../Geometry";
-import { Plane3dByOriginAndVectors } from "../geometry3d/Plane3dByOriginAndVectors";
-import { Point2d, Vector2d } from "../geometry3d/Point2dVector2d";
-import { Point3d } from "../geometry3d/Point3dVector3d";
-import { Ray3d } from "../geometry3d/Ray3d";
-import { SmallSystem } from "./SmallSystem";
+import { CurvePrimitive } from "../curve/CurvePrimitive.js";
+import { Geometry } from "../Geometry.js";
+import { Plane3dByOriginAndVectors } from "../geometry3d/Plane3dByOriginAndVectors.js";
+import { Point2d, Vector2d } from "../geometry3d/Point2dVector2d.js";
+import { Point3d } from "../geometry3d/Point3dVector3d.js";
+import { Ray3d } from "../geometry3d/Ray3d.js";
+import { SmallSystem } from "./SmallSystem.js";
 
 // cspell:word currentdFdX XYRR
 

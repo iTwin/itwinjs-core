@@ -6,24 +6,24 @@
  * @module Curve
  */
 
-import { TransitionSpiral3d } from "./TransitionSpiral3d";
-import { Segment1d } from "../../geometry3d/Segment1d";
-import { AngleSweep } from "../../geometry3d/AngleSweep";
-import { Transform } from "../../geometry3d/Transform";
-import { LineString3d } from "../LineString3d";
-import { NormalizedTransition } from "./NormalizedTransition";
-import { TransitionConditionalProperties } from "./TransitionConditionalProperties";
-import { Quadrature } from "../../numerics/Quadrature";
-import { Point3d } from "../../geometry3d/Point3dVector3d";
-import { Matrix3d } from "../../geometry3d/Matrix3d";
-import { Angle } from "../../geometry3d/Angle";
-import { Plane3dByOriginAndUnitNormal } from "../../geometry3d/Plane3dByOriginAndUnitNormal";
-import { AxisOrder, Geometry } from "../../Geometry";
-import { StrokeOptions } from "../StrokeOptions";
-import { GeometryHandler, IStrokeHandler } from "../../geometry3d/GeometryHandler";
-import { Ray3d } from "../../geometry3d/Ray3d";
-import { Plane3dByOriginAndVectors } from "../../geometry3d/Plane3dByOriginAndVectors";
-import { GeometryQuery } from "../GeometryQuery";
+import { TransitionSpiral3d } from "./TransitionSpiral3d.js";
+import { Segment1d } from "../../geometry3d/Segment1d.js";
+import { AngleSweep } from "../../geometry3d/AngleSweep.js";
+import { Transform } from "../../geometry3d/Transform.js";
+import { LineString3d } from "../LineString3d.js";
+import { NormalizedTransition } from "./NormalizedTransition.js";
+import { TransitionConditionalProperties } from "./TransitionConditionalProperties.js";
+import { Quadrature } from "../../numerics/Quadrature.js";
+import { Point3d } from "../../geometry3d/Point3dVector3d.js";
+import { Matrix3d } from "../../geometry3d/Matrix3d.js";
+import { Angle } from "../../geometry3d/Angle.js";
+import { Plane3dByOriginAndUnitNormal } from "../../geometry3d/Plane3dByOriginAndUnitNormal.js";
+import { AxisOrder, Geometry } from "../../Geometry.js";
+import { StrokeOptions } from "../StrokeOptions.js";
+import { GeometryHandler, IStrokeHandler } from "../../geometry3d/GeometryHandler.js";
+import { Ray3d } from "../../geometry3d/Ray3d.js";
+import { Plane3dByOriginAndVectors } from "../../geometry3d/Plane3dByOriginAndVectors.js";
+import { GeometryQuery } from "../GeometryQuery.js";
 /**
  * An IntegratedSpiral3d is a curve defined by integrating its curvature.
  * * The first integral of curvature (with respect to distance along the curve) is the bearing angle (in radians)

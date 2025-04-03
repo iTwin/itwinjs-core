@@ -9,7 +9,7 @@
 
 import { FeatureAppearance, FeatureAppearanceProps, LinePixels, RgbColorProps } from "@itwin/core-common";
 import { IModelApp, NotifyMessageDetails, OutputMessagePriority, SpatialViewState, Tool, Viewport } from "@itwin/core-frontend";
-import { parseBoolean } from "./parseBoolean";
+import { parseBoolean } from "./parseBoolean.js";
 
 function changeModelAppearanceOverrides(vp: Viewport | undefined, overrides: FeatureAppearanceProps, name: string): boolean {
   let changed = false;

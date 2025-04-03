@@ -4,9 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { ClipVector, Point3d, Transform } from "@itwin/core-geometry";
-import { ClipVolume } from "../../../internal/render/webgl/ClipVolume";
-import { ClipStack } from "../../../internal/render/webgl/ClipStack";
-import { IModelApp } from "../../../IModelApp";
+import { ClipVolume } from "../../../internal/render/webgl/ClipVolume.js";
+import { ClipStack } from "../../../internal/render/webgl/ClipStack.js";
+import { IModelApp } from "../../../IModelApp.js";
 import { EmptyLocalization } from "@itwin/core-common";
 
 function createClipVector(offset = 0): ClipVector {

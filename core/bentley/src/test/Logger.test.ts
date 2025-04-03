@@ -3,9 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert, describe, expect, it } from "vitest";
-import { BentleyError, IModelStatus, ITwinError, LoggingMetaData } from "../BentleyError";
-import { Logger, LogLevel, PerfLogger } from "../Logger";
-import { BeDuration } from "../Time";
+import { BentleyError, IModelStatus, ITwinError, LoggingMetaData } from "../BentleyError.js";
+import { Logger, LogLevel, PerfLogger } from "../Logger.js";
+import { BeDuration } from "../Time.js";
 
 let outerr: any[];
 let outwarn: any[];
@@ -482,7 +482,7 @@ describe("Logger", () => {
     Logger.logException("testcat", e2);
     expect(outerr[0]).equal("testcat");
     expect(outerr[1]).equal("key1: itwin error");
-    expect(outerr[2]).deep.equal({ ...e2 }); // message and stack should be stripped off 
+    expect(outerr[2]).deep.equal({ ...e2 }); // message and stack should be stripped off
 
     clearOutlets();
     expect(() => Logger.logException("testcat", undefined)).to.not.throw("undefined exception");

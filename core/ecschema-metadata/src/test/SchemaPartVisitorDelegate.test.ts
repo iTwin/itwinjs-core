@@ -4,25 +4,25 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { SchemaContext } from "../Context";
-import { PrimitiveType, RelationshipEnd } from "../ECObjects";
-import { ECClass, MutableClass, StructClass } from "../Metadata/Class";
-import { Constant } from "../Metadata/Constant";
-import { CustomAttributeClass } from "../Metadata/CustomAttributeClass";
-import { EntityClass } from "../Metadata/EntityClass";
-import { Enumeration } from "../Metadata/Enumeration";
-import { Format } from "../Metadata/Format";
-import { InvertedUnit } from "../Metadata/InvertedUnit";
-import { KindOfQuantity } from "../Metadata/KindOfQuantity";
-import { Mixin } from "../Metadata/Mixin";
-import { Phenomenon } from "../Metadata/Phenomenon";
-import { PropertyCategory } from "../Metadata/PropertyCategory";
-import { RelationshipClass, RelationshipConstraint } from "../Metadata/RelationshipClass";
-import { Schema } from "../Metadata/Schema";
-import { Unit } from "../Metadata/Unit";
-import { UnitSystem } from "../Metadata/UnitSystem";
-import { SchemaPartVisitorDelegate } from "../SchemaPartVisitorDelegate";
-import * as sinon from "sinon";
+import sinon from "sinon";
+import { SchemaContext } from "../Context.js";
+import { PrimitiveType, RelationshipEnd } from "../ECObjects.js";
+import { ECClass, MutableClass, StructClass } from "../Metadata/Class.js";
+import { Constant } from "../Metadata/Constant.js";
+import { CustomAttributeClass } from "../Metadata/CustomAttributeClass.js";
+import { EntityClass } from "../Metadata/EntityClass.js";
+import { Enumeration } from "../Metadata/Enumeration.js";
+import { Format } from "../Metadata/Format.js";
+import { InvertedUnit } from "../Metadata/InvertedUnit.js";
+import { KindOfQuantity } from "../Metadata/KindOfQuantity.js";
+import { Mixin } from "../Metadata/Mixin.js";
+import { Phenomenon } from "../Metadata/Phenomenon.js";
+import { PropertyCategory } from "../Metadata/PropertyCategory.js";
+import { RelationshipClass, RelationshipConstraint } from "../Metadata/RelationshipClass.js";
+import { Schema } from "../Metadata/Schema.js";
+import { Unit } from "../Metadata/Unit.js";
+import { UnitSystem } from "../Metadata/UnitSystem.js";
+import { SchemaPartVisitorDelegate } from "../SchemaPartVisitorDelegate.js";
 
 describe("SchemaPartVisitorDelegate Tests", () => {
   let schema: Schema;

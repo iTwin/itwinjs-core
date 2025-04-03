@@ -9,18 +9,18 @@
 
 import { assert, dispose } from "@itwin/core-bentley";
 import { FeatureIndexType } from "@itwin/core-common";
-import { PointCloudArgs } from "../../../common/internal/render/PointCloudPrimitive";
-import { RenderMemory } from "../../../render/RenderMemory";
-import { AttributeMap } from "./AttributeMap";
-import { CachedGeometry } from "./CachedGeometry";
-import { ShaderProgramParams } from "./DrawCommand";
-import { GL } from "./GL";
-import { BufferHandle, BufferParameters, BuffersContainer, QBufferHandle3d } from "./AttributeBuffers";
-import { Pass, RenderOrder } from "./RenderFlags";
-import { System } from "./System";
-import { Target } from "./Target";
-import { TechniqueId } from "./TechniqueId";
-import { RenderGeometry } from "../../../internal/render/RenderGeometry";
+import { PointCloudArgs } from "../../../common/internal/render/PointCloudPrimitive.js";
+import { RenderMemory } from "../../../render/RenderMemory.js";
+import { AttributeMap } from "./AttributeMap.js";
+import { CachedGeometry } from "./CachedGeometry.js";
+import { ShaderProgramParams } from "./DrawCommand.js";
+import { GL } from "./GL.js";
+import { BufferHandle, BufferParameters, BuffersContainer, QBufferHandle3d } from "./AttributeBuffers.js";
+import { Pass, RenderOrder } from "./RenderFlags.js";
+import { System } from "./System.js";
+import { Target } from "./Target.js";
+import { TechniqueId } from "./TechniqueId.js";
+import { RenderGeometry } from "../../../internal/render/RenderGeometry.js";
 
 /** @internal */
 export class PointCloudGeometry extends CachedGeometry implements RenderGeometry {

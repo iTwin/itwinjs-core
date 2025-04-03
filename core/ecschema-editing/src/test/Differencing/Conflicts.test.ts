@@ -2,10 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { AnySchemaDifferenceConflict, ConflictCode } from "../../Differencing/SchemaConflicts";
 import { Schema, SchemaContext, SchemaProps } from "@itwin/ecschema-metadata";
-import { getSchemaDifferences, SchemaDifferenceResult } from "../../Differencing/SchemaDifference";
 import { expect } from "chai";
+import { AnySchemaDifferenceConflict, ConflictCode } from "../../Differencing/SchemaConflicts.js";
+import { getSchemaDifferences, SchemaDifferenceResult } from "../../Differencing/SchemaDifference.js";
 /* eslint-disable @typescript-eslint/naming-convention */
 
 describe("Schema Difference Conflicts", () => {
@@ -1799,7 +1799,7 @@ describe("Schema Difference Conflicts", () => {
         expect(conflict).to.have.a.nested.property("difference.schemaType", "FormatUnit");
         expect(conflict).to.have.a.nested.property("difference.itemName", "ConflictFormat");
       });
-    });  
+    });
 
     it("should find a conflict if format unit phenomenon differs", async () => {
       const sourceSchema = {

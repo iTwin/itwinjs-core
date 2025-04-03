@@ -2,11 +2,11 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import schemas from "./Data/index";
 import { EntityClass, Schema, StructClass } from "@itwin/ecschema-metadata";
-import { ConflictCode, getSchemaDifferences, SchemaEdits, SchemaMerger } from "../../../../ecschema-editing";
 import { expect } from "chai";
-import { BisTestHelper } from "../../../TestUtils/BisTestHelper";
+import { ConflictCode, getSchemaDifferences, SchemaEdits, SchemaMerger } from "../../../../ecschema-editing.js";
+import { BisTestHelper } from "../../../TestUtils/BisTestHelper.js";
+import schemas from "./Data/index.js";
 
 describe("Schema Item Name conflict iterative resolutions", () => {
   it("shall re-apply stored conflict resolutions", async () => {

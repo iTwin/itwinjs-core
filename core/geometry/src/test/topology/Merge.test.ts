@@ -4,23 +4,23 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { describe, expect, it } from "vitest";
-import { GeometryQuery } from "../../curve/GeometryQuery";
-import { LineString3d } from "../../curve/LineString3d";
-import { Angle } from "../../geometry3d/Angle";
-import { Matrix3d } from "../../geometry3d/Matrix3d";
-import { Point3d } from "../../geometry3d/Point3dVector3d";
-import { Transform } from "../../geometry3d/Transform";
-import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
-import { Sample } from "../../serialization/GeometrySamples";
-import { HalfEdge, HalfEdgeGraph } from "../../topology/Graph";
-import { HalfEdgeGraphSearch } from "../../topology/HalfEdgeGraphSearch";
-import { HalfEdgePriorityQueueWithPartnerArray } from "../../topology/HalfEdgePriorityQueue";
-import { HalfEdgeGraphMerge } from "../../topology/Merging";
-import { Triangulator } from "../../topology/Triangulation";
-import { Checker } from "../Checker";
-import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
-import { prettyPrint } from "../testFunctions";
-import { GraphChecker } from "./Graph.test";
+import { GeometryQuery } from "../../curve/GeometryQuery.js";
+import { LineString3d } from "../../curve/LineString3d.js";
+import { Angle } from "../../geometry3d/Angle.js";
+import { Matrix3d } from "../../geometry3d/Matrix3d.js";
+import { Point3d } from "../../geometry3d/Point3dVector3d.js";
+import { Transform } from "../../geometry3d/Transform.js";
+import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder.js";
+import { Sample } from "../../serialization/GeometrySamples.js";
+import { HalfEdge, HalfEdgeGraph } from "../../topology/Graph.js";
+import { HalfEdgeGraphSearch } from "../../topology/HalfEdgeGraphSearch.js";
+import { HalfEdgePriorityQueueWithPartnerArray } from "../../topology/HalfEdgePriorityQueue.js";
+import { HalfEdgeGraphMerge } from "../../topology/Merging.js";
+import { Triangulator } from "../../topology/Triangulation.js";
+import { Checker } from "../Checker.js";
+import { GeometryCoreTestIO } from "../GeometryCoreTestIO.js";
+import { prettyPrint } from "../testFunctions.js";
+import { GraphChecker } from "./Graph.test.js";
 
 describe("GraphMerge", () => {
 

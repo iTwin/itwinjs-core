@@ -3,21 +3,21 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert, expect } from "chai";
-import * as sinon from "sinon";
 import { DOMParser } from "@xmldom/xmldom";
-import { SchemaContext } from "../../Context";
-import { SchemaReadHelper } from "../../Deserialization/Helper";
-import { JsonParser } from "../../Deserialization/JsonParser";
-import { SchemaItemType } from "../../ECObjects";
-import { ECObjectsError } from "../../Exception";
-import { AnyClass } from "../../Interfaces";
-import { NavigationProperty } from "../../Metadata/Property";
-import { Schema } from "../../Metadata/Schema";
-import { ISchemaPartVisitor } from "../../SchemaPartVisitorDelegate";
-import { XmlParser } from "../../Deserialization/XmlParser";
-import { deserializeInfoXml, deserializeXml, deserializeXmlSync, ReferenceSchemaLocater } from "../TestUtils/DeserializationHelpers";
-import { ECSchemaNamespaceUris, Mixin, RelationshipClass } from "../../ecschema-metadata";
+import { assert, expect } from "chai";
+import sinon from "sinon";
+import { SchemaContext } from "../../Context.js";
+import { SchemaReadHelper } from "../../Deserialization/Helper.js";
+import { JsonParser } from "../../Deserialization/JsonParser.js";
+import { XmlParser } from "../../Deserialization/XmlParser.js";
+import { SchemaItemType } from "../../ECObjects.js";
+import { ECSchemaNamespaceUris, Mixin, RelationshipClass } from "../../ecschema-metadata.js";
+import { ECObjectsError } from "../../Exception.js";
+import { AnyClass } from "../../Interfaces.js";
+import { NavigationProperty } from "../../Metadata/Property.js";
+import { Schema } from "../../Metadata/Schema.js";
+import { ISchemaPartVisitor } from "../../SchemaPartVisitorDelegate.js";
+import { deserializeInfoXml, deserializeXml, deserializeXmlSync, ReferenceSchemaLocater } from "../TestUtils/DeserializationHelpers.js";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 

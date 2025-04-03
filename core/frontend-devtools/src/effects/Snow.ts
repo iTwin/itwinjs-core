@@ -7,13 +7,13 @@
  */
 
 import { dispose } from "@itwin/core-bentley";
-import { Point2d, Range1d, Range2d, Vector2d } from "@itwin/core-geometry";
 import { RenderTexture, TextureTransparency } from "@itwin/core-common";
 import {
   DecorateContext, Decorator, GraphicType, imageElementFromUrl, IModelApp, ParticleCollectionBuilder, ParticleProps, Tool, Viewport,
 } from "@itwin/core-frontend";
-import { parseToggle } from "../tools/parseToggle";
-import { randomFloat, randomInteger } from "./Random";
+import { Point2d, Range1d, Range2d, Vector2d } from "@itwin/core-geometry";
+import { parseToggle } from "../tools/parseToggle.js";
+import { randomFloat, randomInteger } from "./Random.js";
 
 /** Represents one particle displayed by a [[SnowDecorator]].
  * Particle positions are in [CoordSystem.View]($frontend).

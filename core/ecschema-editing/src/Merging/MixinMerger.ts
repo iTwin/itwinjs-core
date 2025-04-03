@@ -2,12 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import type { MixinClassDifference } from "../Differencing/SchemaDifference";
-import type { MutableMixin } from "../Editing/Mutable/MutableMixin";
-import type { SchemaMergeContext } from "./SchemaMerger";
 import type { SchemaItemKey } from "@itwin/ecschema-metadata";
-import { updateSchemaItemFullName, updateSchemaItemKey } from "./Utils";
-import { modifyClass } from "./ClassMerger";
+import type { MixinClassDifference } from "../Differencing/SchemaDifference.js";
+import type { MutableMixin } from "../Editing/Mutable/MutableMixin.js";
+import { modifyClass } from "./ClassMerger.js";
+import type { SchemaMergeContext } from "./SchemaMerger.js";
+import { updateSchemaItemFullName, updateSchemaItemKey } from "./Utils.js";
 
 /**
  * Merges a new Mixin into the target schema.

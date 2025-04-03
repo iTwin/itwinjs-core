@@ -2,13 +2,14 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { type SchemaMergeContext } from "./SchemaMerger";
-import { AnyClassItemDifference } from "../Differencing/SchemaDifference";
-import { updateSchemaItemKey } from "./Utils";
-import { type MutableClass } from "../Editing/Mutable/MutableClass";
+
 import { CustomAttribute, ECClass, ECClassModifier, parseClassModifier, SchemaItemKey, SchemaItemType } from "@itwin/ecschema-metadata";
-import { mergeClassProperties } from "./PropertyMerger";
-import { applyCustomAttributes } from "./CustomAttributeMerger";
+import { AnyClassItemDifference } from "../Differencing/SchemaDifference.js";
+import { type MutableClass } from "../Editing/Mutable/MutableClass.js";
+import { applyCustomAttributes } from "./CustomAttributeMerger.js";
+import { mergeClassProperties } from "./PropertyMerger.js";
+import { type SchemaMergeContext } from "./SchemaMerger.js";
+import { updateSchemaItemKey } from "./Utils.js";
 
 /**
  * Shared modify merger of all ECClass based items.

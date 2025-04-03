@@ -9,9 +9,9 @@
 import { assert } from "@itwin/core-bentley";
 import { Point3d } from "@itwin/core-geometry";
 import { QParams2d, QParams3d } from "@itwin/core-common";
-import { WebGLDisposable } from "./Disposable";
-import { GL } from "./GL";
-import { System } from "./System";
+import { WebGLDisposable } from "./Disposable.js";
+import { GL } from "./GL.js";
+import { System } from "./System.js";
 
 /** Describes a connection between a BufferHandle and an arbitrary number of attributes associated with that BufferHandle. */
 interface BufferHandleLinkage {  // eslint-disable-line @typescript-eslint/no-unsafe-declaration-merging

@@ -9,17 +9,17 @@
 import { assert } from "@itwin/core-bentley";
 import { Plane3dByOriginAndUnitNormal, Point2d, Transform } from "@itwin/core-geometry";
 import { Frustum, QPoint2dList, QPoint3dList } from "@itwin/core-common";
-import { GraphicBranch } from "../../../render/GraphicBranch";
-import { RenderGraphic } from "../../../render/RenderGraphic";
-import { RenderMemory } from "../../../render/RenderMemory";
-import { PlanarGridProps, RenderSystem } from "../../../render/RenderSystem";
-import { BufferHandle, BufferParameters, QBufferHandle2d, QBufferHandle3d } from "./AttributeBuffers";
-import { AttributeMap } from "./AttributeMap";
-import { IndexedGeometry, IndexedGeometryParams } from "./CachedGeometry";
-import { GL } from "./GL";
-import { Primitive } from "./Primitive";
-import { Pass, RenderOrder } from "./RenderFlags";
-import { TechniqueId } from "./TechniqueId";
+import { GraphicBranch } from "../../../render/GraphicBranch.js";
+import { RenderGraphic } from "../../../render/RenderGraphic.js";
+import { RenderMemory } from "../../../render/RenderMemory.js";
+import { PlanarGridProps, RenderSystem } from "../../../render/RenderSystem.js";
+import { BufferHandle, BufferParameters, QBufferHandle2d, QBufferHandle3d } from "./AttributeBuffers.js";
+import { AttributeMap } from "./AttributeMap.js";
+import { IndexedGeometry, IndexedGeometryParams } from "./CachedGeometry.js";
+import { GL } from "./GL.js";
+import { Primitive } from "./Primitive.js";
+import { Pass, RenderOrder } from "./RenderFlags.js";
+import { TechniqueId } from "./TechniqueId.js";
 
 class PlanarGridGeometryParams extends IndexedGeometryParams {
 

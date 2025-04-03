@@ -8,7 +8,7 @@
  */
 
 import { HitDetail, IModelApp, Tool, ToolTipProvider } from "@itwin/core-frontend";
-import { parseToggle } from "./parseToggle";
+import { parseToggle } from "./parseToggle.js";
 
 /** Augments tooltips with detailed information useful for debugging.
  * @internal

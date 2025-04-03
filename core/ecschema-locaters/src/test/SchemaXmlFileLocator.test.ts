@@ -3,11 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert, expect } from "chai";
-import * as path from "path";
 import { ECObjectsError, ECObjectsStatus, ECVersion, SchemaContext, SchemaKey, SchemaMatchType } from "@itwin/ecschema-metadata";
-import { FileSchemaKey } from "../SchemaFileLocater";
-import { PublishedSchemaXmlFileLocater, SchemaXmlFileLocater } from "../SchemaXmlFileLocater";
+import { assert, expect } from "chai";
+import path from "path";
+import { FileSchemaKey } from "../SchemaFileLocater.js";
+import { PublishedSchemaXmlFileLocater, SchemaXmlFileLocater } from "../SchemaXmlFileLocater.js";
 
 describe("SchemaXmlFileLocater tests:", () => {
   let locater: SchemaXmlFileLocater;
@@ -15,7 +15,7 @@ describe("SchemaXmlFileLocater tests:", () => {
 
   beforeEach(() => {
     locater = new SchemaXmlFileLocater();
-    locater.addSchemaSearchPath(path.join(__dirname, "assets"));
+    locater.addSchemaSearchPath(path.join(import.meta.dirname, "assets"));
     context = new SchemaContext();
     context.addLocater(locater);
   });
@@ -211,6 +211,6 @@ describe("SchemaXmlFileLocater tests:", () => {
     expect(() => locater.getSchemaKey(schemaXml)).to.throw(ECObjectsError, `Could not find the ECSchema 'schemaName' or 'version' tag in the given file`);
   });
   it("PublishedSchemaXmlFileLocater - should throw with incorrect argument", async () => {
-    assert.throw(() => new PublishedSchemaXmlFileLocater(__dirname), Error, `The directory ${path.join(__dirname, "ECSchemas")} containing standard schemas does not exist.`);
+    assert.throw(() => new PublishedSchemaXmlFileLocater(import.meta.dirname), Error, `The directory ${path.join(import.meta.dirname, "ECSchemas")} containing standard schemas does not exist.`);
   });
 });

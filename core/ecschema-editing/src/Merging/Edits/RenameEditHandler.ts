@@ -6,10 +6,10 @@
  * @module Merging
  */
 
-import type { RenamePropertyEdit, RenameSchemaItemEdit } from "./SchemaEdits";
-import { AnySchemaItemDifference, ClassPropertyDifference,SchemaDifferenceResult } from "../../Differencing/SchemaDifference";
 import { SchemaItem } from "@itwin/ecschema-metadata";
-import * as Utils from "../../Differencing/Utils";
+import { AnySchemaItemDifference, ClassPropertyDifference, SchemaDifferenceResult } from "../../Differencing/SchemaDifference.js";
+import * as Utils from "../../Differencing/Utils.js";
+import type { RenamePropertyEdit, RenameSchemaItemEdit } from "./SchemaEdits.js";
 
 type Editable<T extends object> = {
   -readonly [P in keyof T]: T[P];

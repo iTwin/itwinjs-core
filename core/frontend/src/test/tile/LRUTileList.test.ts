@@ -3,8 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { describe, expect, it } from "vitest";
-import { RenderMemory } from "../../render/RenderMemory";
-import { LRUTileList, LRUTileListNode, Tile } from "../../tile/internal";
+import { RenderMemory } from "../../render/RenderMemory.js";
+import { LRUTileList, LRUTileListNode, Tile } from "../../tile/internal.js";
 
 function mockTile(bytesUsed: number): Tile {
   return {

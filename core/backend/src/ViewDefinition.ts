@@ -8,18 +8,18 @@
 
 import { Id64, Id64Array, Id64String, IModelStatus, JsonUtils } from "@itwin/core-bentley";
 import {
-  Angle, Matrix3d, Point2d, Point3d, Range2d, Range3d, StandardViewIndex, Transform, Vector3d, YawPitchRollAngles,
-} from "@itwin/core-geometry";
-import {
   AuxCoordSystem2dProps, AuxCoordSystem3dProps, AuxCoordSystemProps, BisCodeSpec, Camera, CategorySelectorProps, Code, CodeScopeProps,
   CodeSpec, ConcreteEntityTypes, EntityReferenceSet, IModelError, LightLocationProps, ModelSelectorProps, RelatedElement,
   SpatialViewDefinitionProps, ViewAttachmentProps, ViewDefinition2dProps, ViewDefinition3dProps, ViewDefinitionProps, ViewDetails,
   ViewDetails3d,
 } from "@itwin/core-common";
-import { DefinitionElement, GraphicalElement2d, SpatialLocationElement } from "./Element";
-import { IModelDb } from "./IModelDb";
-import { DisplayStyle, DisplayStyle2d, DisplayStyle3d } from "./DisplayStyle";
-import { IModelElementCloneContext } from "./IModelElementCloneContext";
+import {
+  Angle, Matrix3d, Point2d, Point3d, Range2d, Range3d, StandardViewIndex, Transform, Vector3d, YawPitchRollAngles,
+} from "@itwin/core-geometry";
+import { DisplayStyle, DisplayStyle2d, DisplayStyle3d } from "./DisplayStyle.js";
+import { DefinitionElement, GraphicalElement2d, SpatialLocationElement } from "./Element.js";
+import { IModelDb } from "./IModelDb.js";
+import { IModelElementCloneContext } from "./IModelElementCloneContext.js";
 
 /** Holds the list of Ids of GeometricModels displayed by a [[SpatialViewDefinition]]. Multiple SpatialViewDefinitions may point to the same ModelSelector.
  * @see [ModelSelectorState]($frontend)

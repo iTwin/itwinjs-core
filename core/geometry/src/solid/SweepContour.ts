@@ -7,25 +7,25 @@
  * @module Solid
  */
 
-import { ClipPlane } from "../clipping/ClipPlane";
-import { ConvexClipPlaneSet } from "../clipping/ConvexClipPlaneSet";
-import { UnionOfConvexClipPlaneSets } from "../clipping/UnionOfConvexClipPlaneSets";
-import { CurveCollection } from "../curve/CurveCollection";
-import { CurvePrimitive } from "../curve/CurvePrimitive";
-import { AnyCurve, AnyRegion } from "../curve/CurveTypes";
-import { LineString3d } from "../curve/LineString3d";
-import { Loop } from "../curve/Loop";
-import { ParityRegion } from "../curve/ParityRegion";
-import { Path } from "../curve/Path";
-import { RegionOps } from "../curve/RegionOps";
-import { StrokeOptions } from "../curve/StrokeOptions";
-import { FrameBuilder } from "../geometry3d/FrameBuilder";
-import { MultiLineStringDataVariant } from "../geometry3d/IndexedXYZCollection";
-import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
-import { Ray3d } from "../geometry3d/Ray3d";
-import { Transform } from "../geometry3d/Transform";
-import { IndexedPolyface } from "../polyface/Polyface";
-import { PolyfaceBuilder } from "../polyface/PolyfaceBuilder";
+import { ClipPlane } from "../clipping/ClipPlane.js";
+import { ConvexClipPlaneSet } from "../clipping/ConvexClipPlaneSet.js";
+import { UnionOfConvexClipPlaneSets } from "../clipping/UnionOfConvexClipPlaneSets.js";
+import { CurveCollection } from "../curve/CurveCollection.js";
+import { CurvePrimitive } from "../curve/CurvePrimitive.js";
+import { AnyCurve, AnyRegion } from "../curve/CurveTypes.js";
+import { LineString3d } from "../curve/LineString3d.js";
+import { Loop } from "../curve/Loop.js";
+import { ParityRegion } from "../curve/ParityRegion.js";
+import { Path } from "../curve/Path.js";
+import { RegionOps } from "../curve/RegionOps.js";
+import { StrokeOptions } from "../curve/StrokeOptions.js";
+import { FrameBuilder } from "../geometry3d/FrameBuilder.js";
+import { MultiLineStringDataVariant } from "../geometry3d/IndexedXYZCollection.js";
+import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d.js";
+import { Ray3d } from "../geometry3d/Ray3d.js";
+import { Transform } from "../geometry3d/Transform.js";
+import { IndexedPolyface } from "../polyface/Polyface.js";
+import { PolyfaceBuilder } from "../polyface/PolyfaceBuilder.js";
 
 /**
  * Sweepable planar contour with Transform for local to world interaction.

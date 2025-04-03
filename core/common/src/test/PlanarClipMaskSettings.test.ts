@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { describe, expect, it } from "vitest";
-import { PlanarClipMaskMode, PlanarClipMaskProps, PlanarClipMaskSettings } from "../PlanarClipMask";
+import { PlanarClipMaskMode, PlanarClipMaskProps, PlanarClipMaskSettings } from "../PlanarClipMask.js";
 
 function expectProps(mask: PlanarClipMaskSettings, expected: PlanarClipMaskProps): void {
   const actual = mask.toJSON();

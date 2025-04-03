@@ -8,12 +8,12 @@
 
 import { IndexedPolyface, Loop, Path, Point3d, Range3d, SolidPrimitive, Transform } from "@itwin/core-geometry";
 import { AnalysisStyleDisplacement, Feature } from "@itwin/core-common";
-import { DisplayParams } from "./DisplayParams";
-import { MeshBuilderMap } from "./MeshBuilderMap";
-import { MeshList } from "./MeshPrimitives";
-import { GeometryOptions } from "./Primitives";
-import { GeometryList } from "./GeometryList";
-import { Geometry, PrimitiveGeometryType } from "./GeometryPrimitives";
+import { DisplayParams } from "./DisplayParams.js";
+import { MeshBuilderMap } from "./MeshBuilderMap.js";
+import { MeshList } from "./MeshPrimitives.js";
+import { GeometryOptions } from "./Primitives.js";
+import { GeometryList } from "./GeometryList.js";
+import { Geometry, PrimitiveGeometryType } from "./GeometryPrimitives.js";
 
 /** @internal */
 export class GeometryAccumulator {

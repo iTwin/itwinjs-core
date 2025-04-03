@@ -7,21 +7,21 @@
  * @module Curve
  */
 
-import { Geometry } from "../../Geometry";
-import { FrameBuilder } from "../../geometry3d/FrameBuilder";
-import { Point3d } from "../../geometry3d/Point3dVector3d";
-import { XYAndZ } from "../../geometry3d/XYZProps";
-import { Arc3d } from "../Arc3d";
-import { BagOfCurves, CurveCollection } from "../CurveCollection";
-import { CurveCurve } from "../CurveCurve";
-import { CurvePrimitive } from "../CurvePrimitive";
-import { AnyChain, AnyCurve } from "../CurveTypes";
-import { LineSegment3d } from "../LineSegment3d";
-import { LineString3d } from "../LineString3d";
-import { Loop } from "../Loop";
-import { Path } from "../Path";
-import { RegionOps } from "../RegionOps";
-import { StrokeOptions } from "../StrokeOptions";
+import { Geometry } from "../../Geometry.js";
+import { FrameBuilder } from "../../geometry3d/FrameBuilder.js";
+import { Point3d } from "../../geometry3d/Point3dVector3d.js";
+import { XYAndZ } from "../../geometry3d/XYZProps.js";
+import { Arc3d } from "../Arc3d.js";
+import { BagOfCurves, CurveCollection } from "../CurveCollection.js";
+import { CurveCurve } from "../CurveCurve.js";
+import { CurvePrimitive } from "../CurvePrimitive.js";
+import { AnyChain, AnyCurve } from "../CurveTypes.js";
+import { LineSegment3d } from "../LineSegment3d.js";
+import { LineString3d } from "../LineString3d.js";
+import { Loop } from "../Loop.js";
+import { Path } from "../Path.js";
+import { RegionOps } from "../RegionOps.js";
+import { StrokeOptions } from "../StrokeOptions.js";
 
 /**
  * Manage a growing array of arrays of curve primitives that are to be joined "head to tail" in paths.

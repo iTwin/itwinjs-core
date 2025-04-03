@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { describe, expect, it } from "vitest";
 import { Point3d, Range3d } from "@itwin/core-geometry";
-import { QParams3d, QPoint3d } from "../QPoint";
+import { QParams3d, QPoint3d } from "../QPoint.js";
 
 function expectPointsEqual(lhs: Point3d, rhs: Point3d, tolerance: number) {
   expect(lhs.isAlmostEqual(rhs, tolerance)).to.equal(true);

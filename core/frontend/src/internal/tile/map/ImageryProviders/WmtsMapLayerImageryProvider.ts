@@ -12,7 +12,7 @@ import {
   MapLayerImageryProviderStatus,
   QuadId,
   WmsUtilities, WmtsCapabilities, WmtsCapability, WmtsConstants,
-} from "../../../../tile/internal";
+} from "../../../../tile/internal.js";
 
 interface TileMatrixSetAndLimits { tileMatrixSet: WmtsCapability.TileMatrixSet, limits: WmtsCapability.TileMatrixSetLimits[] | undefined }
 

@@ -8,18 +8,18 @@
 
 import { Angle, Point3d, Vector3d } from "@itwin/core-geometry";
 import { Npc } from "@itwin/core-common";
-import { AttributeMap } from "../AttributeMap";
-import { SkySphereViewportQuadGeometry } from "../CachedGeometry";
-import { fromSumOf, FrustumUniformType } from "../FrustumUniforms";
-import { TextureUnit } from "../RenderFlags";
-import { FragmentShaderComponent, ProgramBuilder, ShaderType, VariableType } from "../ShaderBuilder";
-import { System } from "../System";
-import { TechniqueId } from "../TechniqueId";
-import { Texture } from "../Texture";
-import { assignFragColor } from "./Fragment";
-import { createViewportQuadBuilder } from "./ViewportQuad";
-import { addAtmosphericScatteringEffect } from "./Atmosphere";
-import { TechniqueFlags } from "../TechniqueFlags";
+import { AttributeMap } from "../AttributeMap.js";
+import { SkySphereViewportQuadGeometry } from "../CachedGeometry.js";
+import { fromSumOf, FrustumUniformType } from "../FrustumUniforms.js";
+import { TextureUnit } from "../RenderFlags.js";
+import { FragmentShaderComponent, ProgramBuilder, ShaderType, VariableType } from "../ShaderBuilder.js";
+import { System } from "../System.js";
+import { TechniqueId } from "../TechniqueId.js";
+import { Texture } from "../Texture.js";
+import { assignFragColor } from "./Fragment.js";
+import { createViewportQuadBuilder } from "./ViewportQuad.js";
+import { addAtmosphericScatteringEffect } from "./Atmosphere.js";
+import { TechniqueFlags } from "../TechniqueFlags.js";
 
 const computeGradientValue = `
   // For the gradient sky it's good enough to calculate these in the vertex shader.

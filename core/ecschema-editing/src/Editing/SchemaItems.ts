@@ -7,10 +7,10 @@
  */
 
 import { ECObjectsError, ECObjectsStatus, SchemaItem, SchemaItemKey, SchemaItemProps, SchemaItemType, SchemaKey } from "@itwin/ecschema-metadata";
-import { SchemaContextEditor } from "./Editor";
-import { ECEditingStatus, SchemaEditingError, SchemaId, SchemaItemId } from "./Exception";
-import { MutableSchema } from "./Mutable/MutableSchema";
-import { MutableSchemaItem } from "./Mutable/MutableSchemaItem";
+import { SchemaContextEditor } from "./Editor.js";
+import { ECEditingStatus, SchemaEditingError, SchemaId, SchemaItemId } from "./Exception.js";
+import { MutableSchema } from "./Mutable/MutableSchema.js";
+import { MutableSchemaItem } from "./Mutable/MutableSchemaItem.js";
 
 export type CreateSchemaItem<T extends SchemaItem> = (schema: MutableSchema) => (name: string, ...args: any[]) => Promise<T>;
 export type CreateSchemaItemFromProps<T extends SchemaItem> = (props: SchemaItemProps, ...args: any[]) => Promise<T>;

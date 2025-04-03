@@ -6,10 +6,10 @@
  * @module Metadata
  */
 
-import { ECStringConstants } from "./Constants";
-import { ECObjectsError, ECObjectsStatus } from "./Exception";
+import { ECStringConstants } from "./Constants.js";
+import { ECObjectsError, ECObjectsStatus } from "./Exception.js";
 
-export { PropertyType } from "./PropertyTypes";
+export { PropertyType } from "./PropertyTypes.js";
 
 // NEEDSWORK: This shim is currently required to use async iterators.  See https://github.com/Microsoft/TypeScript/issues/14151
 if (!(Symbol as any).asyncIterator) {

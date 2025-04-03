@@ -6,7 +6,7 @@
  * @module Rendering
  */
 
-import { RenderMemory } from "./RenderMemory";
+import { RenderMemory } from "./RenderMemory.js";
 import { Range3d } from "@itwin/core-geometry";
 
 /** Abstract representation of an object which can be rendered by a [[RenderSystem]].

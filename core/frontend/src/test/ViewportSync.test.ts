@@ -5,11 +5,11 @@
 
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { EmptyLocalization, ViewFlags } from "@itwin/core-common";
-import { IModelApp } from "../IModelApp";
-import { StandardViewId } from "../StandardView";
-import { Viewport } from "../Viewport";
-import { connectViewports, synchronizeViewportFrusta, synchronizeViewportViews, TwoWayViewportFrustumSync, TwoWayViewportSync } from "../ViewportSync";
-import { openBlankViewport } from "./openBlankViewport";
+import { IModelApp } from "../IModelApp.js";
+import { StandardViewId } from "../StandardView.js";
+import { Viewport } from "../Viewport.js";
+import { connectViewports, synchronizeViewportFrusta, synchronizeViewportViews, TwoWayViewportFrustumSync, TwoWayViewportSync } from "../ViewportSync.js";
+import { openBlankViewport } from "./openBlankViewport.js";
 
 function rotate(vp: Viewport, id: StandardViewId) {
   vp.view.setStandardRotation(id);

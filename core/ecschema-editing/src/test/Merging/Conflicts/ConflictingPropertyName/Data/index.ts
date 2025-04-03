@@ -1,9 +1,9 @@
-import version0 from "./ConflictingPropertyName.01.00.00.json";
-import version1 from "./ConflictingPropertyName.01.00.01.json";
-import version2 from "./ConflictingPropertyName.01.00.02.json";
-import version3 from "./ConflictingPropertyName.01.00.03.json";
-import version4 from "./ConflictingPropertyName.01.00.04.json";
-import version5 from "./ConflictingPropertyName.01.00.05.json";
+import version0 from "./ConflictingPropertyName.01.00.00.json.js";
+import version1 from "./ConflictingPropertyName.01.00.01.json.js";
+import version2 from "./ConflictingPropertyName.01.00.02.json.js";
+import version3 from "./ConflictingPropertyName.01.00.03.json.js";
+import version4 from "./ConflictingPropertyName.01.00.04.json.js";
+import version5 from "./ConflictingPropertyName.01.00.05.json.js";
 export default [
   version0,
   version1,

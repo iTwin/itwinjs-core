@@ -4,10 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert } from "chai";
-import { SchemaContext } from "../Context";
-import { SchemaGraphUtil } from "../Deserialization/SchemaGraphUtil";
-import { MutableSchema, Schema } from "../Metadata/Schema";
-import { SchemaKey } from "../SchemaKey";
+import { SchemaContext } from "../Context.js";
+import { SchemaGraphUtil } from "../Deserialization/SchemaGraphUtil.js";
+import { MutableSchema, Schema } from "../Metadata/Schema.js";
+import { SchemaKey } from "../SchemaKey.js";
 
 describe("SchemaGraphUtil tests:", () => {
   const context = new SchemaContext();

@@ -3,10 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { EntityClass, PropertyCategory, PropertyType, Schema, SchemaItemType, StructClass } from "@itwin/ecschema-metadata";
-import { SchemaMerger } from "../../Merging/SchemaMerger";
-import { BisTestHelper } from "../TestUtils/BisTestHelper";
 import { expect } from "chai";
-import { AnySchemaDifferenceConflict, ConflictCode, getSchemaDifferences, SchemaEdits } from "../../ecschema-editing";
+import { AnySchemaDifferenceConflict, ConflictCode, getSchemaDifferences, SchemaEdits } from "../../ecschema-editing.js";
+import { SchemaMerger } from "../../Merging/SchemaMerger.js";
+import { BisTestHelper } from "../TestUtils/BisTestHelper.js";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 
@@ -21,7 +21,7 @@ describe("PropertyCategory merge tests", () => {
     ],
     customAttributes: [
       { className: "CoreCustomAttributes.DynamicSchema" },
-    ],    
+    ],
   };
 
   const targetJson = {
@@ -111,7 +111,7 @@ describe("PropertyCategory merge tests", () => {
           },
         },
       }, await BisTestHelper.getNewContext());
-  
+
       const targetSchema = await Schema.fromJson({
         ...targetJson,
         items: {
@@ -120,7 +120,7 @@ describe("PropertyCategory merge tests", () => {
           },
         },
       }, await BisTestHelper.getNewContext());
-  
+
       const result = await getSchemaDifferences(targetSchema, sourceSchema);
       expect(result.conflicts).to.have.lengthOf(1, "Unexpected length of conflicts");
       expect(result.conflicts).to.satisfy(([conflict]: AnySchemaDifferenceConflict[]) => {
@@ -132,12 +132,12 @@ describe("PropertyCategory merge tests", () => {
       });
 
       const schemaEdits = new SchemaEdits();
-      const testItem = await sourceSchema.getItem("testItem") as PropertyCategory;      
+      const testItem = await sourceSchema.getItem("testItem") as PropertyCategory;
       schemaEdits.items.rename(testItem, "mergedCategory");
-  
+
       const merger = new SchemaMerger(targetSchema.context);
       const mergedSchema = await merger.merge(result, schemaEdits);
-  
+
       await expect(mergedSchema.getItem("mergedCategory")).to.be.eventually.fulfilled.then(async (ecClass) => {
         expect(ecClass).to.exist;
         expect(ecClass).has.property("schemaItemType").equals(SchemaItemType.PropertyCategory);
@@ -173,12 +173,12 @@ describe("PropertyCategory merge tests", () => {
       }, await BisTestHelper.getNewContext());
 
       const schemaEdits = new SchemaEdits();
-      const testItem = await sourceSchema.getItem("testItem") as PropertyCategory;      
+      const testItem = await sourceSchema.getItem("testItem") as PropertyCategory;
       schemaEdits.items.rename(testItem, "mergedCategory");
 
       const merger = new SchemaMerger(targetSchema.context);
       const mergedSchema = await merger.mergeSchemas(targetSchema, sourceSchema, schemaEdits);
- 
+
       await expect(mergedSchema.getItem("mergedCategory")).to.be.eventually.not.undefined
         .then((propertyCategory: PropertyCategory) => {
           expect(propertyCategory).to.have.a.property("label").to.equal("Changed Phasing");
@@ -234,12 +234,12 @@ describe("PropertyCategory merge tests", () => {
       }, await BisTestHelper.getNewContext());
 
       const schemaEdits = new SchemaEdits();
-      const testItem = await sourceSchema.getItem("testItem") as PropertyCategory;      
+      const testItem = await sourceSchema.getItem("testItem") as PropertyCategory;
       schemaEdits.items.rename(testItem, "mergedCategory");
 
       const merger = new SchemaMerger(targetSchema.context);
       const mergedSchema = await merger.mergeSchemas(targetSchema, sourceSchema, schemaEdits);
- 
+
       await expect(mergedSchema.getItem("testEntity")).to.be.eventually.not.undefined
         .then(async(ecClass: EntityClass) => {
           await expect(ecClass.getProperty("boolProp")).to.be.eventually.fulfilled.then((property) => {
@@ -289,19 +289,19 @@ describe("PropertyCategory merge tests", () => {
       }, await BisTestHelper.getNewContext());
 
       const schemaEdits = new SchemaEdits();
-      const testItem = await sourceSchema.getItem("testItem") as PropertyCategory;      
+      const testItem = await sourceSchema.getItem("testItem") as PropertyCategory;
       schemaEdits.items.rename(testItem, "mergedCategory");
 
       const merger = new SchemaMerger(targetSchema.context);
       const mergedSchema = await merger.mergeSchemas(targetSchema, sourceSchema, schemaEdits);
-      
+
       await expect(mergedSchema.getItem("testStruct")).to.be.eventually.not.undefined
         .then(async(ecClass: StructClass) => {
           await expect(ecClass.getProperty("stringProp")).to.be.eventually.fulfilled.then((property) => {
             expect(property).to.exist;
             expect(property).has.a.property("propertyType").equals(PropertyType.String);
             expect(property).has.a.nested.property("category.name").equals("mergedCategory");
-          });         
+          });
       });
     });
   });

@@ -3,12 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { Schema, SchemaContext, SchemaItemType, Unit } from "@itwin/ecschema-metadata";
-import { getSchemaDifferences, SchemaOtherTypes } from "../../Differencing/SchemaDifference";
-import { AnySchemaDifferenceConflict, ConflictCode } from "../../Differencing/SchemaConflicts";
-import { SchemaMerger } from "../../Merging/SchemaMerger";
-import { SchemaEdits } from "../../Merging/Edits/SchemaEdits";
-import { BisTestHelper } from "../TestUtils/BisTestHelper";
 import { expect } from "chai";
+import { AnySchemaDifferenceConflict, ConflictCode } from "../../Differencing/SchemaConflicts.js";
+import { getSchemaDifferences, SchemaOtherTypes } from "../../Differencing/SchemaDifference.js";
+import { SchemaEdits } from "../../Merging/Edits/SchemaEdits.js";
+import { SchemaMerger } from "../../Merging/SchemaMerger.js";
+import { BisTestHelper } from "../TestUtils/BisTestHelper.js";
 
 describe("Unit merge tests", () => {
   let targetContext: SchemaContext;
@@ -374,16 +374,16 @@ describe("Unit merge tests", () => {
           },
         },
       }, sourceContext);
-  
+
       const targetSchema = await Schema.fromJson({
         ...targetJson,
         items: {
           testItem: {
             schemaItemType: "EntityClass",
-          },          
+          },
         },
       }, targetContext);
-  
+
       const result = await getSchemaDifferences(targetSchema, sourceSchema);
       expect(result.conflicts).to.have.lengthOf(1, "Unexpected length of conflicts");
       expect(result.conflicts).to.satisfy(([conflict]: AnySchemaDifferenceConflict[]) => {
@@ -393,14 +393,14 @@ describe("Unit merge tests", () => {
         expect(conflict).to.have.a.property("target", "EntityClass");
         return true;
       });
-  
+
       const schemaEdits = new SchemaEdits();
-      const sourceItem = await sourceSchema.getItem("testItem") as Unit;      
+      const sourceItem = await sourceSchema.getItem("testItem") as Unit;
       schemaEdits.items.rename(sourceItem, "mergedUnit");
-  
+
       const merger = new SchemaMerger(targetContext);
       const mergedSchema = await merger.merge(result, schemaEdits);
-  
+
       await expect(mergedSchema.getItem("mergedUnit")).to.be.eventually.fulfilled.then(async (schemaItem) => {
         expect(schemaItem).to.exist;
         expect(schemaItem).to.have.property("schemaItemType").equals(SchemaItemType.Unit);
@@ -457,7 +457,7 @@ describe("Unit merge tests", () => {
 
       const merger = new SchemaMerger(targetContext);
       const mergedSchema = await merger.mergeSchemas(targetSchema, sourceSchema, schemaEdits);
- 
+
       await expect(mergedSchema.getItem("mergedUnit")).to.be.eventually.not.undefined
         .then((unit: Unit) => {
           expect(unit).to.have.a.property("label").to.equal("Changed Test");

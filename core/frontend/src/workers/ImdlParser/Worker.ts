@@ -8,9 +8,9 @@
 
 import { assert } from "@itwin/core-bentley";
 import { RenderSchedule } from "@itwin/core-common";
-import { collectTransferables, ImdlModel } from "../../common/imdl/ImdlModel";
-import { ImdlParseError, ImdlParserOptions, ImdlTimeline, parseImdlDocument } from "../../common/imdl/ParseImdlDocument";
-import { registerWorker } from "../RegisterWorker";
+import { collectTransferables, ImdlModel } from "../../common/imdl/ImdlModel.js";
+import { ImdlParseError, ImdlParserOptions, ImdlTimeline, parseImdlDocument } from "../../common/imdl/ParseImdlDocument.js";
+import { registerWorker } from "../RegisterWorker.js";
 
 let timeline: ImdlTimeline | undefined;
 

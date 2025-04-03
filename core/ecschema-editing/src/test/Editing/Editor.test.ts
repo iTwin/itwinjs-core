@@ -2,16 +2,16 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
 import {
   ECClass,
   ECVersion, EntityClass, PrimitiveType, Schema,
   SchemaContext, SchemaItemKey, SchemaKey,
 } from "@itwin/ecschema-metadata";
-import { SchemaContextEditor } from "../../Editing/Editor";
-import { AnyDiagnostic } from "../../Validation/Diagnostic";
-import { Diagnostics } from "../../Validation/ECRules";
-import { ECEditingStatus } from "../../Editing/Exception";
+import { expect } from "chai";
+import { SchemaContextEditor } from "../../Editing/Editor.js";
+import { ECEditingStatus } from "../../Editing/Exception.js";
+import { AnyDiagnostic } from "../../Validation/Diagnostic.js";
+import { Diagnostics } from "../../Validation/ECRules.js";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 

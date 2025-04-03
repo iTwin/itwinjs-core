@@ -8,7 +8,7 @@
 import { Id64String } from "@itwin/core-bentley";
 import {
   BlobOptions, BlobOptionsBuilder, BlobRange, DbBlobRequest, DbBlobResponse, DbQueryError, DbRequestExecutor, DbRequestKind,
-} from "./ConcurrentQuery";
+} from "./ConcurrentQuery.js";
 
 /** @beta */
 export class Uint8Chunks implements Iterable<Uint8Array> {

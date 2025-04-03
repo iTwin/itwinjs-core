@@ -4,10 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert } from "chai";
-import { JsonParser } from "../../Deserialization/JsonParser";
-import { ECObjectsError } from "../../Exception";
-import { createSchemaJsonWithItems } from "../TestUtils/DeserializationHelpers";
-import { ECSchemaNamespaceUris } from "../../Constants";
+import { ECSchemaNamespaceUris } from "../../Constants.js";
+import { JsonParser } from "../../Deserialization/JsonParser.js";
+import { ECObjectsError } from "../../Exception.js";
+import { createSchemaJsonWithItems } from "../TestUtils/DeserializationHelpers.js";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 

@@ -6,14 +6,14 @@
  * @module RpcInterface
  */
 
-import { RpcInterfaceDefinition } from "../../RpcInterface";
-import { RpcManager } from "../../RpcManager";
-import { RpcConfiguration } from "../core/RpcConfiguration";
-import { RpcRequestEvent } from "../core/RpcConstants";
-import { RpcRequest, RpcRequestEventHandler } from "../core/RpcRequest";
-import { BentleyCloudRpcProtocol } from "./BentleyCloudRpcProtocol";
-import { OpenAPIInfo } from "./OpenAPI";
-import { RpcRoutingToken } from "../core/RpcRoutingToken";
+import { RpcInterfaceDefinition } from "../../RpcInterface.js";
+import { RpcManager } from "../../RpcManager.js";
+import { RpcConfiguration } from "../core/RpcConfiguration.js";
+import { RpcRequestEvent } from "../core/RpcConstants.js";
+import { RpcRequest, RpcRequestEventHandler } from "../core/RpcRequest.js";
+import { BentleyCloudRpcProtocol } from "./BentleyCloudRpcProtocol.js";
+import { OpenAPIInfo } from "./OpenAPI.js";
+import { RpcRoutingToken } from "../core/RpcRoutingToken.js";
 
 /* eslint-disable @typescript-eslint/no-deprecated */
 

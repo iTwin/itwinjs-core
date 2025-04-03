@@ -3,12 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import EC from "@itwin/ecschema-metadata";
 import { expect, use } from "chai";
-import * as chaiAsPromised from "chai-as-promised";
-import * as path from "path";
-import * as EC from "@itwin/ecschema-metadata";
-import { FileSchemaKey } from "../SchemaFileLocater";
-import { StubSchemaXmlFileLocater } from "../StubSchemaXmlFileLocater";
+import chaiAsPromised from "chai-as-promised";
+import path from "path";
+import { FileSchemaKey } from "../SchemaFileLocater.js";
+import { StubSchemaXmlFileLocater } from "../StubSchemaXmlFileLocater.js";
 
 use(chaiAsPromised);
 
@@ -18,13 +18,13 @@ describe("StubSchemaXmlFileLocater tests:", () => {
 
   beforeEach(() => {
     locater = new StubSchemaXmlFileLocater();
-    locater.addSchemaSearchPath(path.join(__dirname, "assets"));
+    locater.addSchemaSearchPath(path.join(import.meta.dirname, "assets"));
     context = new EC.SchemaContext();
     context.addLocater(locater);
   });
 
   it("loadSchema, schema text not provided, schema loaded successfully", async () => {
-    const schemaPath = path.join(__dirname, "assets", "SchemaA.02.00.02.ecschema.xml");
+    const schemaPath = path.join(import.meta.dirname, "assets", "SchemaA.02.00.02.ecschema.xml");
     const schemaKey = new FileSchemaKey(new EC.SchemaKey("SchemaA", 2, 0, 2), schemaPath);
     schemaKey.schemaText = locater.readUtf8FileToStringSync(schemaPath);
     const schema = locater.loadSchema(schemaPath);
@@ -33,7 +33,7 @@ describe("StubSchemaXmlFileLocater tests:", () => {
   });
 
   it("loadSchema, schema text provided, schema loaded successfully", async () => {
-    const schemaPath = path.join(__dirname, "assets", "SchemaA.02.00.02.ecschema.xml");
+    const schemaPath = path.join(import.meta.dirname, "assets", "SchemaA.02.00.02.ecschema.xml");
     const schemaText = locater.readUtf8FileToStringSync(schemaPath);
     const schemaKey = new FileSchemaKey(new EC.SchemaKey("SchemaA", 2, 0, 2), schemaPath);
     schemaKey.schemaText = schemaText;
@@ -44,7 +44,7 @@ describe("StubSchemaXmlFileLocater tests:", () => {
   });
 
   it("loadSchema, schema can't be found, throws", async () => {
-    const schemaPath = path.join(__dirname, "assets", "DoesNotExist.01.00.00.ecschema.xml");
+    const schemaPath = path.join(import.meta.dirname, "assets", "DoesNotExist.01.00.00.ecschema.xml");
     expect(() => locater.loadSchema(schemaPath)).to.throw(Error, `ENOENT: no such file or directory, open '${schemaPath}'`);
   });
 

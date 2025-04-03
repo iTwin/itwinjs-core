@@ -1,9 +1,9 @@
+import { HttpServerRequest, HttpServerResponse, RpcRequestFulfillment, RpcRequestStatus, SerializedRpcRequest, WebAppRpcProtocol } from "@itwin/core-common";
 import { expect } from "chai";
+import { brotliDecompressSync, unzipSync } from "node:zlib";
 import { SinonStub, stub } from "sinon";
 import { Readable, Writable } from "stream";
-import { HttpServerRequest, HttpServerResponse, RpcRequestFulfillment, RpcRequestStatus, SerializedRpcRequest, WebAppRpcProtocol } from "@itwin/core-common";
-import { sendResponse } from "../../rpc/web/response";
-import { brotliDecompressSync, unzipSync } from "node:zlib";
+import { sendResponse } from "../../rpc/web/response.js";
 
 /* eslint-disable @typescript-eslint/no-deprecated */
 

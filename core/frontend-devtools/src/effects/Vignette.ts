@@ -7,8 +7,8 @@
  */
 
 import { ScreenSpaceEffectBuilder, Tool, UniformType, VaryingType } from "@itwin/core-frontend";
-import { parseArgs } from "../tools/parseArgs";
-import { AddEffectTool, refreshViewportsForEffect } from "./EffectTools";
+import { parseArgs } from "../tools/parseArgs.js";
+import { AddEffectTool, refreshViewportsForEffect } from "./EffectTools.js";
 
 /** Applies a [vignette](https://en.wikipedia.org/wiki/Vignetting) effect to the viewport.
  * From https://github.com/TyLindberg/glsl-vignette/blob/master/advanced.glsl.

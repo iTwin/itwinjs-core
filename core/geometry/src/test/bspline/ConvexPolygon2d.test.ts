@@ -4,19 +4,19 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { describe, expect, it } from "vitest";
-import { CurveLocationDetail } from "../../curve/CurveLocationDetail";
-import { GeometryQuery } from "../../curve/GeometryQuery";
-import { LineSegment3d } from "../../curve/LineSegment3d";
-import { Geometry } from "../../Geometry";
-import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray";
-import { Point2d, Vector2d } from "../../geometry3d/Point2dVector2d";
-import { Point3d } from "../../geometry3d/Point3dVector3d";
-import { PolygonOps } from "../../geometry3d/PolygonOps";
-import { Ray2d } from "../../geometry3d/Ray2d";
-import { ConvexPolygon2d } from "../../numerics/ConvexPolygon2d";
-import { Sample } from "../../serialization/GeometrySamples";
-import { Checker } from "../Checker";
-import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
+import { CurveLocationDetail } from "../../curve/CurveLocationDetail.js";
+import { GeometryQuery } from "../../curve/GeometryQuery.js";
+import { LineSegment3d } from "../../curve/LineSegment3d.js";
+import { Geometry } from "../../Geometry.js";
+import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray.js";
+import { Point2d, Vector2d } from "../../geometry3d/Point2dVector2d.js";
+import { Point3d } from "../../geometry3d/Point3dVector3d.js";
+import { PolygonOps } from "../../geometry3d/PolygonOps.js";
+import { Ray2d } from "../../geometry3d/Ray2d.js";
+import { ConvexPolygon2d } from "../../numerics/ConvexPolygon2d.js";
+import { Sample } from "../../serialization/GeometrySamples.js";
+import { Checker } from "../Checker.js";
+import { GeometryCoreTestIO } from "../GeometryCoreTestIO.js";
 
 // Form rays from centroid to each point.
 // Compute points fractionally on the chord.

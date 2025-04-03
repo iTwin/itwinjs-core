@@ -7,10 +7,10 @@
  * @module CartesianGeometry
  */
 
-import { GrowableXYZArray } from "./GrowableXYZArray";
-import { IndexedXYZCollection, LineStringDataVariant, MultiLineStringDataVariant } from "./IndexedXYZCollection";
-import { Point3d } from "./Point3dVector3d";
-import { Range3d } from "./Range";
+import { GrowableXYZArray } from "./GrowableXYZArray.js";
+import { IndexedXYZCollection, LineStringDataVariant, MultiLineStringDataVariant } from "./IndexedXYZCollection.js";
+import { Point3d } from "./Point3dVector3d.js";
+import { Range3d } from "./Range.js";
 
 //
 // remarks: point array variants . . .

@@ -7,8 +7,8 @@
  */
 
 import { ClipPlane, Point3d, Vector3d } from "@itwin/core-geometry";
-import { Frustum } from "../Frustum";
-import { BoundingSphere } from "./BoundingSphere";
+import { Frustum } from "../Frustum.js";
+import { BoundingSphere } from "./BoundingSphere.js";
 
 /*
 The following visualizes the contents of frustum.points, which is sent to computeFrustumPlanes().

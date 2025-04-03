@@ -3,10 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
-import { imageBufferFromImageSource, imageSourceFromImageBuffer } from "../ImageSourceConversion";
-import { samplePngTexture } from "./imageData";
 import { BinaryImageSource, ImageBuffer, ImageBufferFormat, ImageSourceFormat } from "@itwin/core-common";
+import { expect } from "chai";
+import { imageBufferFromImageSource, imageSourceFromImageBuffer } from "../ImageSourceConversion.js";
+import { samplePngTexture } from "./imageData.js";
 
 // samplePngTexture encodes this image:
 // White Red  Red
@@ -129,7 +129,7 @@ describe("ImageSource conversion", () => {
       expect(img.format).to.equal(ImageBufferFormat.Rgba);
       expectImagePixels(img, [...top, ...middle, ...bottom].map((x) => ((x | 0xff000000) >>> 0)));
     });
-    
+
     it("defaults to RGBA IFF alpha channel is present", () => {
       const transparent = imageSourceFromImageBuffer({ image: makeImage(true), targetFormat: ImageSourceFormat.Png })!;
       expect(imageBufferFromImageSource({ source: transparent })!.format).to.equal(ImageBufferFormat.Rgba);

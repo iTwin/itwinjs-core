@@ -7,14 +7,14 @@
  */
 
 import { BentleyStatus } from "@itwin/core-bentley";
-import { IModelRpcProps } from "../../IModel";
-import { IModelError } from "../../IModelError";
-import { RpcInterface, RpcInterfaceDefinition } from "../../RpcInterface";
-import { RpcResponseCacheControl } from "./RpcConstants";
-import { OPERATION, POLICY, RpcRegistry } from "./RpcRegistry";
+import { IModelRpcProps } from "../../IModel.js";
+import { IModelError } from "../../IModelError.js";
+import { RpcInterface, RpcInterfaceDefinition } from "../../RpcInterface.js";
+import { RpcResponseCacheControl } from "./RpcConstants.js";
+import { OPERATION, POLICY, RpcRegistry } from "./RpcRegistry.js";
 import {
   RpcRequestCallback_T, RpcRequestInitialRetryIntervalSupplier_T, RpcRequestTokenSupplier_T, RpcResponseCachingCallback_T,
-} from "./RpcRequest";
+} from "./RpcRequest.js";
 
 /** The policy for an RPC operation.
  * @internal

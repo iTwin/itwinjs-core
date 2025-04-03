@@ -188,6 +188,9 @@ importers:
       eslint:
         specifier: ^9.13.0
         version: 9.13.0
+      internal-tools:
+        specifier: workspace:*
+        version: link:../../tools/internal
       rimraf:
         specifier: ^6.0.1
         version: 6.0.1
@@ -237,6 +240,9 @@ importers:
       eslint:
         specifier: ^9.13.0
         version: 9.13.0
+      internal-tools:
+        specifier: workspace:*
+        version: link:../../tools/internal
       nyc:
         specifier: ^17.1.0
         version: 17.1.0
@@ -309,6 +315,9 @@ importers:
       eslint:
         specifier: ^9.13.0
         version: 9.13.0
+      internal-tools:
+        specifier: workspace:*
+        version: link:../../tools/internal
       mocha:
         specifier: ^11.1.0
         version: 11.1.0
@@ -427,6 +436,9 @@ importers:
       eslint:
         specifier: ^9.13.0
         version: 9.13.0
+      internal-tools:
+        specifier: workspace:*
+        version: link:../../tools/internal
       mocha:
         specifier: ^11.1.0
         version: 11.1.0
@@ -496,6 +508,9 @@ importers:
       eslint:
         specifier: ^9.13.0
         version: 9.13.0
+      internal-tools:
+        specifier: workspace:*
+        version: link:../../tools/internal
       mocha:
         specifier: ^11.1.0
         version: 11.1.0
@@ -535,6 +550,9 @@ importers:
       eslint:
         specifier: ^9.13.0
         version: 9.13.0
+      internal-tools:
+        specifier: workspace:*
+        version: link:../../../tools/internal
       rimraf:
         specifier: ^6.0.1
         version: 6.0.1
@@ -571,6 +589,9 @@ importers:
       eslint:
         specifier: ^9.13.0
         version: 9.13.0
+      internal-tools:
+        specifier: workspace:*
+        version: link:../../../tools/internal
       rimraf:
         specifier: ^6.0.1
         version: 6.0.1
@@ -602,6 +623,9 @@ importers:
       eslint:
         specifier: ^9.13.0
         version: 9.13.0
+      internal-tools:
+        specifier: workspace:*
+        version: link:../../../tools/internal
       mocha:
         specifier: ^11.1.0
         version: 11.1.0
@@ -742,6 +766,9 @@ importers:
       eslint:
         specifier: ^9.13.0
         version: 9.13.0
+      internal-tools:
+        specifier: workspace:*
+        version: link:../../tools/internal
       mocha:
         specifier: ^11.1.0
         version: 11.1.0
@@ -855,6 +882,9 @@ importers:
       glob:
         specifier: ^10.3.12
         version: 10.3.12
+      internal-tools:
+        specifier: workspace:*
+        version: link:../../tools/internal
       playwright:
         specifier: ~1.47.1
         version: 1.47.1
@@ -916,6 +946,9 @@ importers:
       eslint:
         specifier: ^9.13.0
         version: 9.13.0
+      internal-tools:
+        specifier: workspace:*
+        version: link:../../tools/internal
       rimraf:
         specifier: ^6.0.1
         version: 6.0.1
@@ -950,6 +983,9 @@ importers:
       eslint:
         specifier: ^9.13.0
         version: 9.13.0
+      internal-tools:
+        specifier: workspace:*
+        version: link:../../tools/internal
       rimraf:
         specifier: ^6.0.1
         version: 6.0.1

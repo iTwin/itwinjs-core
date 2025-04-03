@@ -3,9 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { describe, expect, it } from "vitest";
-import { CutStyle, CutStyleProps } from "../ClipStyle";
-import { HiddenLine } from "../HiddenLine";
-import { FeatureAppearance } from "../FeatureSymbology";
+import { CutStyle, CutStyleProps } from "../ClipStyle.js";
+import { HiddenLine } from "../HiddenLine.js";
+import { FeatureAppearance } from "../FeatureSymbology.js";
 
 describe("CutStyle", () => {
   it("should round-trip through JSON", () => {

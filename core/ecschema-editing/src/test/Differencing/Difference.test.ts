@@ -3,11 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { Schema, SchemaContext } from "@itwin/ecschema-metadata";
-import { DifferenceType, getSchemaDifferences, SchemaDifferenceResult, SchemaOtherTypes } from "../../Differencing/SchemaDifference";
 import { expect } from "chai";
-
-import sourceJson from "./sourceSchema.json";
-import targetJson from "./targetSchema.json";
+import { DifferenceType, getSchemaDifferences, SchemaDifferenceResult, SchemaOtherTypes } from "../../Differencing/SchemaDifference.js";
+import sourceJson from "./sourceSchema.json.js";
+import targetJson from "./targetSchema.json.js";
 
 interface LookupArgs {
   changeType?: DifferenceType;
@@ -309,7 +308,7 @@ describe("Schema Differences", () => {
               {
                 name: "SourceSchema.MissingUnit",
                 label: "four",
-              }, 
+              },
               {
                 name: "SourceSchema.MissingInvertedUnit",
               },

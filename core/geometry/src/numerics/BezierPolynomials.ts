@@ -7,11 +7,11 @@
  * @module Numerics
  */
 
-// import { Angle, AngleSweep, Geometry } from "../Geometry";
-import { Geometry } from "../Geometry";
-import { GrowableFloat64Array } from "../geometry3d/GrowableFloat64Array";
-import { PascalCoefficients } from "./PascalCoefficients";
-import { AnalyticRoots, Degree2PowerPolynomial, Degree3PowerPolynomial, Degree4PowerPolynomial } from "./Polynomials";
+// import { Angle, AngleSweep, Geometry } from "../Geometry.js";
+import { Geometry } from "../Geometry.js";
+import { GrowableFloat64Array } from "../geometry3d/GrowableFloat64Array.js";
+import { PascalCoefficients } from "./PascalCoefficients.js";
+import { AnalyticRoots, Degree2PowerPolynomial, Degree3PowerPolynomial, Degree4PowerPolynomial } from "./Polynomials.js";
 
 /**
  * * BezierCoffs is an abstract base class for one-dimensional (u to f(u)) Bezier polynomials.

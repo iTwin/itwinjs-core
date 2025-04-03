@@ -6,15 +6,15 @@
  * @module iModels
  */
 
-import { FontFamilyDescriptor, FontFamilySelector, FontId, FontProps, FontType } from "@itwin/core-common";
-import { _faceProps, _getData, _implementationProhibited, _key, _nativeDb } from "./Symbols";
-import { IModelDb } from "../IModelDb";
-import { EmbedFontFileArgs, IModelDbFonts, QueryMappedFamiliesArgs } from "../IModelDbFonts";
-import { EmbeddedFontFile } from "./FontFileImpl";
-import { assert, DbResult, Logger } from "@itwin/core-bentley";
 import type { IModelJsNative } from "@bentley/imodeljs-native";
-import { FontFile } from "../FontFile";
-import { BackendLoggerCategory } from "../BackendLoggerCategory";
+import { assert, DbResult, Logger } from "@itwin/core-bentley";
+import { FontFamilyDescriptor, FontFamilySelector, FontId, FontProps, FontType } from "@itwin/core-common";
+import { BackendLoggerCategory } from "../BackendLoggerCategory.js";
+import { FontFile } from "../FontFile.js";
+import { IModelDb } from "../IModelDb.js";
+import { EmbedFontFileArgs, IModelDbFonts, QueryMappedFamiliesArgs } from "../IModelDbFonts.js";
+import { EmbeddedFontFile } from "./FontFileImpl.js";
+import { _faceProps, _getData, _implementationProhibited, _key, _nativeDb } from "./Symbols.js";
 
 class IModelDbFontsImpl implements IModelDbFonts {
   public readonly [_implementationProhibited] = undefined;

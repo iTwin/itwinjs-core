@@ -3,12 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { ECClassModifier, EntityClass, Schema, SchemaContext, SchemaItemKey, SchemaItemType } from "@itwin/ecschema-metadata";
-import { SchemaMerger } from "../../Merging/SchemaMerger";
-import { getSchemaDifferences, SchemaOtherTypes } from "../../Differencing/SchemaDifference";
-import { ECEditingStatus } from "../../Editing/Exception";
-import { BisTestHelper } from "../TestUtils/BisTestHelper";
 import { expect } from "chai";
-import { AnySchemaDifferenceConflict, ConflictCode, SchemaEdits } from "../../ecschema-editing";
+import { getSchemaDifferences, SchemaOtherTypes } from "../../Differencing/SchemaDifference.js";
+import { AnySchemaDifferenceConflict, ConflictCode, SchemaEdits } from "../../ecschema-editing.js";
+import { ECEditingStatus } from "../../Editing/Exception.js";
+import { SchemaMerger } from "../../Merging/SchemaMerger.js";
+import { BisTestHelper } from "../TestUtils/BisTestHelper.js";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 

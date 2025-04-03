@@ -7,8 +7,8 @@
  * @module Topology
  */
 
-import { HalfEdge, HalfEdgeGraph, HalfEdgeMask } from "./Graph";
-import { HalfEdgeGraphOps } from "./Merging";
+import { HalfEdge, HalfEdgeGraph, HalfEdgeMask } from "./Graph.js";
+import { HalfEdgeGraphOps } from "./Merging.js";
 
 /**
  * * Context for regularizing single faces.

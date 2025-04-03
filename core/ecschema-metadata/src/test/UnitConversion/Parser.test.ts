@@ -2,10 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as fs from "fs";
-import * as path from "path";
 import { expect } from "chai";
-import { DefinitionFragment, parseDefinition } from "../../UnitConversion/Parser";
+import fs from "fs";
+import path from "path";
+import { DefinitionFragment, parseDefinition } from "../../UnitConversion/Parser.js";
 
 describe("DefinitionParser tests", () => {
   const definitionsToTest: string[] = [
@@ -38,7 +38,7 @@ describe("DefinitionParser tests", () => {
   type KeyValuePair = [string, DefinitionFragment];
 
   const expectedData: { [key: string]: KeyValuePair[] } = JSON.parse(
-    fs.readFileSync(path.join(__dirname, "..", "assets", "./ParserTests.json"), "utf-8"),
+    fs.readFileSync(path.join(import.meta.dirname, "..", "assets", "./ParserTests.json"), "utf-8"),
   );
 
   describe("parsing individual tokens", () => {

@@ -7,10 +7,10 @@ import {
   ConstantProps, CustomAttributeClassProps, EntityClassProps, EnumerationProps, InvertedUnitProps, KindOfQuantityProps, MixinProps,
   NavigationPropertyProps, PhenomenonProps, PrimitiveArrayPropertyProps, PrimitivePropertyProps, PropertyCategoryProps, RelationshipClassProps,
   SchemaItemFormatProps, SchemaItemUnitProps, SchemaProps, SchemaReferenceProps, StructArrayPropertyProps, StructClassProps, StructPropertyProps, UnitSystemProps,
-} from "../Deserialization/JsonProps";
-import { CustomAttribute } from "../Metadata/CustomAttribute";
-import { CustomAttributeClass } from "../Metadata/CustomAttributeClass";
-import { ECSpecVersion } from "./Helper";
+} from "../Deserialization/JsonProps.js";
+import { CustomAttribute } from "../Metadata/CustomAttribute.js";
+import { CustomAttributeClass } from "../Metadata/CustomAttributeClass.js";
+import { ECSpecVersion } from "./Helper.js";
 
 type SchemaItemTuple<T> = Readonly<[string /** Name */, string /** SchemaItemType */, Readonly<T>]>;
 type PropertyTuple<T> = Readonly<[string /** Name */, string /** Property */, Readonly<T>]>;

@@ -5,8 +5,8 @@
 
 import { BentleyStatus } from "@itwin/core-bentley";
 import { IModelError } from "@itwin/core-common";
-import { type GLTimerResult, GLTimerResultCallback } from "../RenderSystemDebugControl";
-import { System } from "./System";
+import { type GLTimerResult, GLTimerResultCallback } from "../RenderSystemDebugControl.js";
+import { System } from "./System.js";
 
 class DisjointTimerExtension {
   private _e: any; // EXT_disjoint_timer_query, not available in lib.dom.d.ts

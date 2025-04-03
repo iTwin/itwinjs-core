@@ -4,32 +4,32 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { beforeAll, describe, expect, it } from "vitest";
-import { ClipPlane } from "../../clipping/ClipPlane";
-import { ClipMaskXYZRangePlanes, ClipPrimitive, ClipShape } from "../../clipping/ClipPrimitive";
-import { ClipUtilities } from "../../clipping/ClipUtils";
-import { ClipVector } from "../../clipping/ClipVector";
-import { ConvexClipPlaneSet } from "../../clipping/ConvexClipPlaneSet";
-import { UnionOfConvexClipPlaneSets } from "../../clipping/UnionOfConvexClipPlaneSets";
-import { GeometryQuery } from "../../curve/GeometryQuery";
-import { Angle } from "../../geometry3d/Angle";
-import { Matrix3d } from "../../geometry3d/Matrix3d";
-import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
-import { Point3dArray } from "../../geometry3d/PointHelpers";
-import { PolygonOps } from "../../geometry3d/PolygonOps";
-import { PolylineOps } from "../../geometry3d/PolylineOps";
-import { Range3d } from "../../geometry3d/Range";
-import { Transform } from "../../geometry3d/Transform";
-import { IndexedPolyface } from "../../polyface/Polyface";
-import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
-import { ClippedPolyfaceBuilders, PolyfaceClip } from "../../polyface/PolyfaceClip";
-import { Sample } from "../../serialization/GeometrySamples";
-import { Cone } from "../../solid/Cone";
-import { HalfEdge, HalfEdgeGraph, HalfEdgeMask } from "../../topology/Graph";
-import { Triangulator } from "../../topology/Triangulation";
-import { Checker } from "../Checker";
-import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
-import { prettyPrint } from "../testFunctions";
-import { exerciseClipPrimitive } from "./ClipVector.test";
+import { ClipPlane } from "../../clipping/ClipPlane.js";
+import { ClipMaskXYZRangePlanes, ClipPrimitive, ClipShape } from "../../clipping/ClipPrimitive.js";
+import { ClipUtilities } from "../../clipping/ClipUtils.js";
+import { ClipVector } from "../../clipping/ClipVector.js";
+import { ConvexClipPlaneSet } from "../../clipping/ConvexClipPlaneSet.js";
+import { UnionOfConvexClipPlaneSets } from "../../clipping/UnionOfConvexClipPlaneSets.js";
+import { GeometryQuery } from "../../curve/GeometryQuery.js";
+import { Angle } from "../../geometry3d/Angle.js";
+import { Matrix3d } from "../../geometry3d/Matrix3d.js";
+import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d.js";
+import { Point3dArray } from "../../geometry3d/PointHelpers.js";
+import { PolygonOps } from "../../geometry3d/PolygonOps.js";
+import { PolylineOps } from "../../geometry3d/PolylineOps.js";
+import { Range3d } from "../../geometry3d/Range.js";
+import { Transform } from "../../geometry3d/Transform.js";
+import { IndexedPolyface } from "../../polyface/Polyface.js";
+import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder.js";
+import { ClippedPolyfaceBuilders, PolyfaceClip } from "../../polyface/PolyfaceClip.js";
+import { Sample } from "../../serialization/GeometrySamples.js";
+import { Cone } from "../../solid/Cone.js";
+import { HalfEdge, HalfEdgeGraph, HalfEdgeMask } from "../../topology/Graph.js";
+import { Triangulator } from "../../topology/Triangulation.js";
+import { Checker } from "../Checker.js";
+import { GeometryCoreTestIO } from "../GeometryCoreTestIO.js";
+import { prettyPrint } from "../testFunctions.js";
+import { exerciseClipPrimitive } from "./ClipVector.test.js";
 
 /** EXPENSIVE -- Returns true if two convex sets are equal, allowing reordering of arrays */
 function convexSetsAreEqual(convexSet0: ConvexClipPlaneSet, convexSet1: ConvexClipPlaneSet): boolean {

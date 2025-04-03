@@ -2,9 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import type { PropertyCategoryDifference } from "../Differencing/SchemaDifference";
-import type { SchemaMergeContext } from "./SchemaMerger";
 import type { SchemaItemKey } from "@itwin/ecschema-metadata";
+import type { PropertyCategoryDifference } from "../Differencing/SchemaDifference.js";
+import type { SchemaMergeContext } from "./SchemaMerger.js";
 
 /**
  * Merges a new PropertyCategory into the target schema.

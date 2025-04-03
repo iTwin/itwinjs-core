@@ -7,8 +7,8 @@
  * @module ArraysAndInterfaces
  */
 
-import { Point2d, Vector2d, XY } from "./Point2dVector2d";
-import { XAndY } from "./XYZProps";
+import { Point2d, Vector2d, XY } from "./Point2dVector2d.js";
+import { XAndY } from "./XYZProps.js";
 
 /**
  * abstract base class for access to XY data with indexed reference.

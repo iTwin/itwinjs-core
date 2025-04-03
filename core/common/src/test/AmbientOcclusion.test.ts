@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { describe, expect, it } from "vitest";
-import { AmbientOcclusion } from "../AmbientOcclusion";
+import { AmbientOcclusion } from "../AmbientOcclusion.js";
 
 describe("AmbientOcclusion.Settings", () => {
   it("toJSON() should return defaults as undefined", () => {

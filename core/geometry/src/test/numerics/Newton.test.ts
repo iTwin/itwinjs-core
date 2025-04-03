@@ -4,9 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { describe, expect, it } from "vitest";
-import { Newton1dUnbounded, Newton1dUnboundedApproximateDerivative, Newton2dUnboundedWithDerivative, NewtonEvaluatorRRtoRRD, NewtonEvaluatorRtoR, NewtonEvaluatorRtoRD, SimpleNewton } from "../../numerics/Newton";
-import { Checker } from "../Checker";
-import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
+import { Newton1dUnbounded, Newton1dUnboundedApproximateDerivative, Newton2dUnboundedWithDerivative, NewtonEvaluatorRRtoRRD, NewtonEvaluatorRtoR, NewtonEvaluatorRtoRD, SimpleNewton } from "../../numerics/Newton.js";
+import { Checker } from "../Checker.js";
+import { GeometryCoreTestIO } from "../GeometryCoreTestIO.js";
 
 // cspell:word currentdFdX
 export class HornerEvaluator extends NewtonEvaluatorRtoRD {

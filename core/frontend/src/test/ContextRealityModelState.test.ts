@@ -7,14 +7,14 @@ import { Id64, Id64String } from "@itwin/core-bentley";
 import {
   Code, EmptyLocalization, PlanarClipMaskMode, PlanarClipMaskProps, PlanarClipMaskSettings, RealityModelDisplaySettings,
 } from "@itwin/core-common";
-import { DisplayStyle3dState } from "../DisplayStyleState";
-import { ContextRealityModelState } from "../ContextRealityModelState";
-import { IModelConnection } from "../IModelConnection";
-import { IModelApp } from "../IModelApp";
+import { DisplayStyle3dState } from "../DisplayStyleState.js";
+import { ContextRealityModelState } from "../ContextRealityModelState.js";
+import { IModelConnection } from "../IModelConnection.js";
+import { IModelApp } from "../IModelApp.js";
 import {
   createOrbitGtTileTreeReference, createRealityTileTreeReference, OrbitGtTreeReference, TileTreeOwner,
-} from "../tile/internal";
-import { createBlankConnection } from "./createBlankConnection";
+} from "../tile/internal.js";
+import { createBlankConnection } from "./createBlankConnection.js";
 
 describe("ContextRealityModelState", () => {
   let imodel: IModelConnection;

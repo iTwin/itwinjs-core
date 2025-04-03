@@ -6,9 +6,9 @@
  * @module ArraysAndInterfaces
  */
 
-import { IndexedReadWriteXYZCollection } from "./IndexedXYZCollection";
-import { Point3d, Vector3d } from "./Point3dVector3d";
-import { XYAndZ } from "./XYZProps";
+import { IndexedReadWriteXYZCollection } from "./IndexedXYZCollection.js";
+import { Point3d, Vector3d } from "./Point3dVector3d.js";
+import { XYAndZ } from "./XYZProps.js";
 
 /**
  * Helper object to access members of a Point3d[] in geometric calculations.

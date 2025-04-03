@@ -9,17 +9,17 @@
 import { BeTimePoint, dispose } from "@itwin/core-bentley";
 import { ClipMaskXYZRangePlanes, ClipShape, ClipVector, IndexedPolyface, Point3d, Transform } from "@itwin/core-geometry";
 import { ColorDef, Frustum } from "@itwin/core-common";
-import { IModelApp } from "../IModelApp";
-import { GraphicBranch, GraphicBranchOptions } from "../render/GraphicBranch";
-import { GraphicBuilder } from "../render/GraphicBuilder";
-import { RenderGraphic } from "../render/RenderGraphic";
-import { RenderSystem } from "../render/RenderSystem";
-import { ViewingSpace } from "../ViewingSpace";
-import { Viewport } from "../Viewport";
+import { IModelApp } from "../IModelApp.js";
+import { GraphicBranch, GraphicBranchOptions } from "../render/GraphicBranch.js";
+import { GraphicBuilder } from "../render/GraphicBuilder.js";
+import { RenderGraphic } from "../render/RenderGraphic.js";
+import { RenderSystem } from "../render/RenderSystem.js";
+import { ViewingSpace } from "../ViewingSpace.js";
+import { Viewport } from "../Viewport.js";
 import {
   RealityTileRegion, RealityTileTree, Tile, TileContent, TileDrawArgs, TileGeometryCollector, TileGraphicType, TileLoadStatus, TileParams, TileRequest, TileRequestChannel,
   TileTreeLoadStatus, TileUser, TraversalDetails, TraversalSelectionContext,
-} from "./internal";
+} from "./internal.js";
 
 /** @internal */
 export interface RealityTileParams extends TileParams {

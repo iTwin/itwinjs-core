@@ -2,12 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import type { SchemaMergeContext } from "./SchemaMerger";
-import type { AnyClassItemDifference, ClassPropertyDifference, DifferenceType } from "../Differencing/SchemaDifference";
 import { AnyProperty, AnyPropertyProps, ArrayPropertyProps, CustomAttribute, ECClass, Enumeration, EnumerationPropertyProps, NavigationPropertyProps, parsePrimitiveType, PrimitivePropertyProps, RelationshipClass, SchemaItemKey, SchemaItemType, StructClass, StructPropertyProps } from "@itwin/ecschema-metadata";
-import { getClassEditor, toItemKey, toPropertyKey, updateSchemaItemFullName, updateSchemaItemKey } from "./Utils";
-import { MutableProperty } from "../Editing/Mutable/MutableProperty";
-import { applyCustomAttributes } from "./CustomAttributeMerger";
+import type { AnyClassItemDifference, ClassPropertyDifference, DifferenceType } from "../Differencing/SchemaDifference.js";
+import { MutableProperty } from "../Editing/Mutable/MutableProperty.js";
+import { applyCustomAttributes } from "./CustomAttributeMerger.js";
+import type { SchemaMergeContext } from "./SchemaMerger.js";
+import { getClassEditor, toItemKey, toPropertyKey, updateSchemaItemFullName, updateSchemaItemKey } from "./Utils.js";
 
 type PartialEditable<T> = {
   -readonly [P in keyof T]: T[P];

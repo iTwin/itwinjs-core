@@ -7,16 +7,16 @@
  * @module Solid
  */
 
-import { CurveAndSurfaceLocationDetail, UVSurfaceLocationDetail } from "../bspline/SurfaceLocationDetail";
-import { CurveLocationDetail } from "../curve/CurveLocationDetail";
-import { Geometry } from "../Geometry";
-import { SmallSystem } from "../numerics/SmallSystem";
-import { UVSurface } from "./GeometryHandler";
-import { Plane3dByOriginAndVectors } from "./Plane3dByOriginAndVectors";
-import { Point3d } from "./Point3dVector3d";
-import { Range3d } from "./Range";
-import { Ray3d } from "./Ray3d";
-import { Transform } from "./Transform";
+import { CurveAndSurfaceLocationDetail, UVSurfaceLocationDetail } from "../bspline/SurfaceLocationDetail.js";
+import { CurveLocationDetail } from "../curve/CurveLocationDetail.js";
+import { Geometry } from "../Geometry.js";
+import { SmallSystem } from "../numerics/SmallSystem.js";
+import { UVSurface } from "./GeometryHandler.js";
+import { Plane3dByOriginAndVectors } from "./Plane3dByOriginAndVectors.js";
+import { Point3d } from "./Point3dVector3d.js";
+import { Range3d } from "./Range.js";
+import { Ray3d } from "./Ray3d.js";
+import { Transform } from "./Transform.js";
 
 // cspell:word uparrow, rightarrow
 

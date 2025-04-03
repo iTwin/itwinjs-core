@@ -7,7 +7,7 @@
  */
 
 import { SchemaItemType } from "@itwin/ecschema-metadata";
-import { type AnySchemaDifference, SchemaOtherTypes } from "./SchemaDifference";
+import { type AnySchemaDifference, SchemaOtherTypes } from "./SchemaDifference.js";
 
 /**
  * Defines the interface for a visitor that can be used to traverse schema differences.

@@ -12,8 +12,8 @@ import { ViewStateProps } from "@itwin/core-common";
 import {
   EntityState, IModelApp, IModelConnection, NotifyMessageDetails, OutputMessagePriority, Tool, ViewState,
 } from "@itwin/core-frontend";
-import { copyStringToClipboard } from "../ClipboardUtilities";
-import { parseArgs } from "./parseArgs";
+import { copyStringToClipboard } from "../ClipboardUtilities.js";
+import { parseArgs } from "./parseArgs.js";
 
 /** Serialize a ViewState to JSON. The returned JSON can later be passed to [deserializeViewState] to reinstantiate the ViewState.
  * @beta

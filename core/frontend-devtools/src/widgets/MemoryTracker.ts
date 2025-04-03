@@ -11,7 +11,7 @@ import { assert, BeTimePoint } from "@itwin/core-bentley";
 import {
   DisclosedTileTreeSet, IModelApp, RenderMemory, TileTree, TileTreeOwner, Viewport,
 } from "@itwin/core-frontend";
-import { ComboBoxEntry, createComboBox } from "../ui/ComboBox";
+import { ComboBoxEntry, createComboBox } from "../ui/ComboBox.js";
 
 function collectTileTreeMemory(stats: RenderMemory.Statistics, owner: TileTreeOwner): void {
   const tree = owner.tileTree;

@@ -3,16 +3,16 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert, expect } from "chai";
-import { SchemaContext } from "../../Context";
-import { Format } from "../../Metadata/Format";
-import { InvertedUnit } from "../../Metadata/InvertedUnit";
-import { OverrideFormat } from "../../Metadata/OverrideFormat";
-import { Schema } from "../../Metadata/Schema";
-import { Unit } from "../../Metadata/Unit";
 import { FormatTraits, FractionalPrecision, ShowSignOption } from "@itwin/core-quantity";
-import { createSchemaJsonWithItems } from "../TestUtils/DeserializationHelpers";
-import { TestSchemaLocater } from "../TestUtils/FormatTestHelper";
+import { assert, expect } from "chai";
+import { SchemaContext } from "../../Context.js";
+import { Format } from "../../Metadata/Format.js";
+import { InvertedUnit } from "../../Metadata/InvertedUnit.js";
+import { OverrideFormat } from "../../Metadata/OverrideFormat.js";
+import { Schema } from "../../Metadata/Schema.js";
+import { Unit } from "../../Metadata/Unit.js";
+import { createSchemaJsonWithItems } from "../TestUtils/DeserializationHelpers.js";
+import { TestSchemaLocater } from "../TestUtils/FormatTestHelper.js";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 

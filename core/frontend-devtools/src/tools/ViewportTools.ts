@@ -12,8 +12,8 @@ import { Camera, ColorDef, Hilite } from "@itwin/core-common";
 import {
   DrawingViewState, FlashMode, FlashSettings, FlashSettingsOptions, IModelApp, TileBoundingBoxes, Tool, Viewport,
 } from "@itwin/core-frontend";
-import { parseArgs } from "./parseArgs";
-import { parseToggle } from "./parseToggle";
+import { parseArgs } from "./parseArgs.js";
+import { parseToggle } from "./parseToggle.js";
 
 /** Base class for a tool that toggles some aspect of a Viewport.
  * @beta

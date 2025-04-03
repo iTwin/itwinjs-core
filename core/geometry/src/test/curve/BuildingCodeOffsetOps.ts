@@ -3,18 +3,18 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { Arc3d } from "../../curve/Arc3d";
-import { CurvePrimitive } from "../../curve/CurvePrimitive";
-import { LineSegment3d } from "../../curve/LineSegment3d";
-import { Loop } from "../../curve/Loop";
-import { Path } from "../../curve/Path";
-import { Geometry } from "../../Geometry";
-import { AngleSweep } from "../../geometry3d/AngleSweep";
-import { GrowableFloat64Array } from "../../geometry3d/GrowableFloat64Array";
-import { Vector2d } from "../../geometry3d/Point2dVector2d";
-import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
-import { AnalyticRoots } from "../../numerics/Polynomials";
-import { SmallSystem } from "../../numerics/SmallSystem";
+import { Arc3d } from "../../curve/Arc3d.js";
+import { CurvePrimitive } from "../../curve/CurvePrimitive.js";
+import { LineSegment3d } from "../../curve/LineSegment3d.js";
+import { Loop } from "../../curve/Loop.js";
+import { Path } from "../../curve/Path.js";
+import { Geometry } from "../../Geometry.js";
+import { AngleSweep } from "../../geometry3d/AngleSweep.js";
+import { GrowableFloat64Array } from "../../geometry3d/GrowableFloat64Array.js";
+import { Vector2d } from "../../geometry3d/Point2dVector2d.js";
+import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d.js";
+import { AnalyticRoots } from "../../numerics/Polynomials.js";
+import { SmallSystem } from "../../numerics/SmallSystem.js";
 
 /**
  * Assorted static methods for constructing fragmentary and complete curves for offsets from linestrings.

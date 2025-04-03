@@ -14,9 +14,9 @@ import {
 import {
   DisplayStyle3dState, IModelApp, NotifyMessageDetails, OutputMessagePriority, Tool, Viewport,
 } from "@itwin/core-frontend";
-import { copyStringToClipboard } from "../ClipboardUtilities";
-import { parseArgs } from "./parseArgs";
-import { parseToggle } from "./parseToggle";
+import { copyStringToClipboard } from "../ClipboardUtilities.js";
+import { parseArgs } from "./parseArgs.js";
+import { parseToggle } from "./parseToggle.js";
 
 type BooleanFlagName =
   "dimensions" | "patterns" | "weights" | "styles" | "transparency" | "fill" | "textures" | "materials" | "acsTriad" | "grid" | "visibleEdges" |

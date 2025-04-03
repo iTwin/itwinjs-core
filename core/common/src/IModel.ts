@@ -11,12 +11,12 @@ import {
   Angle, AxisIndex, AxisOrder, Constant, Geometry, Matrix3d, Point3d, Range3d, Range3dProps, Transform, TransformProps, Vector3d, XYAndZ, XYZProps,
   YawPitchRollAngles, YawPitchRollProps,
 } from "@itwin/core-geometry";
-import { ChangesetIdWithIndex } from "./ChangesetProps";
-import { Cartographic, CartographicProps } from "./geometry/Cartographic";
-import { GeographicCRS, GeographicCRSProps } from "./geometry/CoordinateReferenceSystem";
-import { AxisAlignedBox3d } from "./geometry/Placement";
-import { IModelError } from "./IModelError";
-import { ThumbnailProps } from "./Thumbnail";
+import { ChangesetIdWithIndex } from "./ChangesetProps.js";
+import { Cartographic, CartographicProps } from "./geometry/Cartographic.js";
+import { GeographicCRS, GeographicCRSProps } from "./geometry/CoordinateReferenceSystem.js";
+import { AxisAlignedBox3d } from "./geometry/Placement.js";
+import { IModelError } from "./IModelError.js";
+import { ThumbnailProps } from "./Thumbnail.js";
 
 /** The properties to open a connection to an iModel for RPC operations.
  * @public

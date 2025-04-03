@@ -7,15 +7,15 @@
  */
 
 import { BentleyStatus } from "@itwin/core-bentley";
-import { IModelError } from "../../IModelError";
-import { RpcConfiguration } from "./RpcConfiguration";
-import { RpcPendingQueue } from "./RpcPendingQueue";
-import { initializeRpcRequest } from "./RpcRequest";
-import { RpcRoutingToken } from "./RpcRoutingToken";
-import { RpcInterface, RpcInterfaceDefinition, RpcInterfaceImplementation } from "../../RpcInterface";
-import { RpcInterfaceEndpoints } from "../../RpcManager";
-import { RpcControlChannel } from "./RpcControl";
-import { RpcOperation, RpcOperationPolicy } from "./RpcOperation";
+import { IModelError } from "../../IModelError.js";
+import { RpcConfiguration } from "./RpcConfiguration.js";
+import { RpcPendingQueue } from "./RpcPendingQueue.js";
+import { initializeRpcRequest } from "./RpcRequest.js";
+import { RpcRoutingToken } from "./RpcRoutingToken.js";
+import { RpcInterface, RpcInterfaceDefinition, RpcInterfaceImplementation } from "../../RpcInterface.js";
+import { RpcInterfaceEndpoints } from "../../RpcManager.js";
+import { RpcControlChannel } from "./RpcControl.js";
+import { RpcOperation, RpcOperationPolicy } from "./RpcOperation.js";
 
 /** @internal */
 export const REGISTRY = Symbol.for("@itwin/core-common/RpcRegistry");

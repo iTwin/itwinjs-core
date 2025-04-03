@@ -10,22 +10,22 @@
 import { assert, dispose } from "@itwin/core-bentley";
 import { Matrix4d, Plane3dByOriginAndUnitNormal, Point3d, Range3d, Vector3d } from "@itwin/core-geometry";
 import { ColorDef, Frustum, FrustumPlanes, RenderTexture, TextureTransparency } from "@itwin/core-common";
-import { GraphicsCollectorDrawArgs, MapTileTreeReference, TileTreeReference } from "../../../tile/internal";
-import { SceneContext } from "../../../ViewContext";
-import { ViewState3d } from "../../../ViewState";
-import { FeatureSymbology } from "../../../render/FeatureSymbology";
-import { RenderGraphic } from "../../../render/RenderGraphic";
-import { BatchState } from "./BatchState";
-import { BranchStack } from "./BranchStack";
-import { FrameBuffer } from "./FrameBuffer";
-import { GL } from "./GL";
-import { PlanarTextureProjection } from "./PlanarTextureProjection";
-import { RenderCommands } from "./RenderCommands";
-import { RenderPass } from "./RenderFlags";
-import { System } from "./System";
-import { Target } from "./Target";
-import { Texture, TextureHandle } from "./Texture";
-import { TextureDrape } from "./TextureDrape";
+import { GraphicsCollectorDrawArgs, MapTileTreeReference, TileTreeReference } from "../../../tile/internal.js";
+import { SceneContext } from "../../../ViewContext.js";
+import { ViewState3d } from "../../../ViewState.js";
+import { FeatureSymbology } from "../../../render/FeatureSymbology.js";
+import { RenderGraphic } from "../../../render/RenderGraphic.js";
+import { BatchState } from "./BatchState.js";
+import { BranchStack } from "./BranchStack.js";
+import { FrameBuffer } from "./FrameBuffer.js";
+import { GL } from "./GL.js";
+import { PlanarTextureProjection } from "./PlanarTextureProjection.js";
+import { RenderCommands } from "./RenderCommands.js";
+import { RenderPass } from "./RenderFlags.js";
+import { System } from "./System.js";
+import { Target } from "./Target.js";
+import { Texture, TextureHandle } from "./Texture.js";
+import { TextureDrape } from "./TextureDrape.js";
 
 /** @internal */
 export class BackgroundMapDrape extends TextureDrape {

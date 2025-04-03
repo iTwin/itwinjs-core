@@ -4,15 +4,15 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, expect } from "chai";
-import { SchemaContext } from "../../Context";
-import { SchemaItemType } from "../../ECObjects";
-import { ECObjectsError } from "../../Exception";
-import { Constant } from "../../Metadata/Constant";
-import { Phenomenon } from "../../Metadata/Phenomenon";
-import { Schema } from "../../Metadata/Schema";
-import { createSchemaJsonWithItems } from "../TestUtils/DeserializationHelpers";
-import { createEmptyXmlDocument } from "../TestUtils/SerializationHelper";
-import { ECSchemaNamespaceUris } from "../../Constants";
+import { ECSchemaNamespaceUris } from "../../Constants.js";
+import { SchemaContext } from "../../Context.js";
+import { SchemaItemType } from "../../ECObjects.js";
+import { ECObjectsError } from "../../Exception.js";
+import { Constant } from "../../Metadata/Constant.js";
+import { Phenomenon } from "../../Metadata/Phenomenon.js";
+import { Schema } from "../../Metadata/Schema.js";
+import { createSchemaJsonWithItems } from "../TestUtils/DeserializationHelpers.js";
+import { createEmptyXmlDocument } from "../TestUtils/SerializationHelper.js";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 

@@ -2,12 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import type { RelationshipClassDifference, RelationshipConstraintClassDifference, RelationshipConstraintDifference } from "../Differencing/SchemaDifference";
-import type { MutableRelationshipClass } from "../Editing/Mutable/MutableRelationshipClass";
-import { locateSchemaItem, updateSchemaItemFullName, updateSchemaItemKey } from "./Utils";
-import { modifyClass } from "./ClassMerger";
-import { SchemaMergeContext } from "./SchemaMerger";
 import { ECClass, EntityClass, Mixin, parseStrength, parseStrengthDirection, RelationshipClass, RelationshipConstraintProps, RelationshipMultiplicity, SchemaItemKey, SchemaItemType } from "@itwin/ecschema-metadata";
+import type { RelationshipClassDifference, RelationshipConstraintClassDifference, RelationshipConstraintDifference } from "../Differencing/SchemaDifference.js";
+import type { MutableRelationshipClass } from "../Editing/Mutable/MutableRelationshipClass.js";
+import { modifyClass } from "./ClassMerger.js";
+import { SchemaMergeContext } from "./SchemaMerger.js";
+import { locateSchemaItem, updateSchemaItemFullName, updateSchemaItemKey } from "./Utils.js";
 
 /**
  * Merges a new RelationshipClass into the target schema.

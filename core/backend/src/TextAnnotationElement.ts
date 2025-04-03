@@ -6,11 +6,11 @@
  * @module Elements
  */
 
-import { GeometryParams, GeometryStreamBuilder, TextAnnotation, TextAnnotation2dProps, TextAnnotation3dProps } from "@itwin/core-common";
-import { IModelDb } from "./IModelDb";
-import { AnnotationElement2d, GraphicalElement3d } from "./Element";
-import { produceTextAnnotationGeometry } from "./TextAnnotationGeometry";
 import { Id64String } from "@itwin/core-bentley";
+import { GeometryParams, GeometryStreamBuilder, TextAnnotation, TextAnnotation2dProps, TextAnnotation3dProps } from "@itwin/core-common";
+import { AnnotationElement2d, GraphicalElement3d } from "./Element.js";
+import { IModelDb } from "./IModelDb.js";
+import { produceTextAnnotationGeometry } from "./TextAnnotationGeometry.js";
 
 function updateAnnotation(element: TextAnnotation2d | TextAnnotation3d, annotation: TextAnnotation, subCategory: Id64String | undefined): boolean {
   const builder = new GeometryStreamBuilder();

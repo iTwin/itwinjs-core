@@ -2,17 +2,17 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as fs from "fs";
-import * as path from "path";
-import { expect } from "chai";
-import { Schema, SchemaContext, SchemaInfo } from "../../ecschema-metadata";
-import { deserializeXmlSync } from "../TestUtils/DeserializationHelpers";
-import { SchemaUnitProvider } from "../../UnitProvider/SchemaUnitProvider";
-import { UNIT_EXTRA_DATA } from "./UnitData";
 import { UnitProps } from "@itwin/core-quantity";
-import { ISchemaLocater } from "../../Context";
-import { SchemaMatchType } from "../../ECObjects";
-import { SchemaKey } from "../../SchemaKey";
+import { expect } from "chai";
+import fs from "fs";
+import path from "path";
+import { ISchemaLocater } from "../../Context.js";
+import { SchemaMatchType } from "../../ECObjects.js";
+import { Schema, SchemaContext, SchemaInfo } from "../../ecschema-metadata.js";
+import { SchemaKey } from "../../SchemaKey.js";
+import { SchemaUnitProvider } from "../../UnitProvider/SchemaUnitProvider.js";
+import { deserializeXmlSync } from "../TestUtils/DeserializationHelpers.js";
+import { UNIT_EXTRA_DATA } from "./UnitData.js";
 
 class TestSchemaLocater implements ISchemaLocater {
   public async getSchema(schemaKey: SchemaKey, matchType: SchemaMatchType, context?: SchemaContext): Promise<Schema | undefined> {
@@ -26,7 +26,7 @@ class TestSchemaLocater implements ISchemaLocater {
     if (schemaKey.name !== "Units")
       return undefined;
 
-    const schemaFile = path.join(__dirname, "..", "..", "..", "..", "node_modules", "@bentley", "units-schema", "Units.ecschema.xml");
+    const schemaFile = path.join(import.meta.dirname, "..", "..", "..", "..", "node_modules", "@bentley", "units-schema", "Units.ecschema.xml");
     const schemaXml = fs.readFileSync(schemaFile, "utf-8");
     const schema = deserializeXmlSync(schemaXml, context || new SchemaContext());
     return schema;
@@ -42,19 +42,19 @@ describe("Unit Provider tests", () => {
     before(() => {
       context = new SchemaContext();
 
-      const schemaFile = path.join(__dirname, "..", "..", "..", "..", "node_modules", "@bentley", "units-schema", "Units.ecschema.xml");
+      const schemaFile = path.join(import.meta.dirname, "..", "..", "..", "..", "node_modules", "@bentley", "units-schema", "Units.ecschema.xml");
       const schemaXml = fs.readFileSync(schemaFile, "utf-8");
       deserializeXmlSync(schemaXml, context);
 
-      const siSchemaFile = path.join(__dirname, "..", "assets", "SIUnits.ecschema.xml");
+      const siSchemaFile = path.join(import.meta.dirname, "..", "assets", "SIUnits.ecschema.xml");
       const siSchemaXml = fs.readFileSync(siSchemaFile, "utf-8");
       deserializeXmlSync(siSchemaXml, context);
 
-      const metricSchemaFile = path.join(__dirname, "..", "assets", "MetricUnits.ecschema.xml");
+      const metricSchemaFile = path.join(import.meta.dirname, "..", "assets", "MetricUnits.ecschema.xml");
       const metricSchemaXml = fs.readFileSync(metricSchemaFile, "utf-8");
       deserializeXmlSync(metricSchemaXml, context);
 
-      const usSchemaFile = path.join(__dirname, "..", "assets", "USUnits.ecschema.xml");
+      const usSchemaFile = path.join(import.meta.dirname, "..", "assets", "USUnits.ecschema.xml");
       const usSchemaXml = fs.readFileSync(usSchemaFile, "utf-8");
       deserializeXmlSync(usSchemaXml, context);
 

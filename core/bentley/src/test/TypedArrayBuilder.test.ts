@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { describe, expect, it } from "vitest";
-import { UintArrayBuilder } from "../TypedArrayBuilder";
+import { UintArrayBuilder } from "../TypedArrayBuilder.js";
 
 describe("UintArrayBuilder", () => {
   class Builder extends UintArrayBuilder {

@@ -3,13 +3,14 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
-import { DelayedPromiseWithProps, ECClass, ECClassModifier, EntityClass,
+import {
+  DelayedPromiseWithProps, ECClass, ECClassModifier, EntityClass,
   RelationshipClass, Schema, SchemaContext, schemaItemTypeToString,
 } from "@itwin/ecschema-metadata";
-import * as Rules from "../../../Validation/ECRules";
-import { DiagnosticCategory, DiagnosticType } from "../../../Validation/Diagnostic";
-import { MutableClass } from "../../../Editing/Mutable/MutableClass";
+import { expect } from "chai";
+import { MutableClass } from "../../../Editing/Mutable/MutableClass.js";
+import { DiagnosticCategory, DiagnosticType } from "../../../Validation/Diagnostic.js";
+import * as Rules from "../../../Validation/ECRules.js";
 
 /* eslint-disable @typescript-eslint/no-deprecated */
 

@@ -8,10 +8,10 @@
  */
 
 import { PointCloudDisplaySettings, RealityModelDisplaySettings } from "@itwin/core-common";
-import { UniformHandle } from "./UniformHandle";
-import { desync, sync } from "./Sync";
+import { UniformHandle } from "./UniformHandle.js";
+import { desync, sync } from "./Sync.js";
 import { Range3d, Transform, Vector3d } from "@itwin/core-geometry";
-import { Target } from "./Target";
+import { Target } from "./Target.js";
 
 /** A Target keeps track of the current settings for drawing point clouds.
  * Pushing a Branch may *replace* the current settings. Popping the Branch does not reset them. It is expected that every Branch containing

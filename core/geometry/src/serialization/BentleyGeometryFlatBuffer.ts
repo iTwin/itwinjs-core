@@ -5,9 +5,9 @@
 /** @packageDocumentation
  * @module Serialization
  */
-import { GeometryQuery } from "../curve/GeometryQuery";
-import { BGFBReader } from "./BGFBReader";
-import { BGFBWriter } from "./BGFBWriter";
+import { GeometryQuery } from "../curve/GeometryQuery.js";
+import { BGFBReader } from "./BGFBReader.js";
+import { BGFBWriter } from "./BGFBWriter.js";
 
 /**
  * Top level entries to convert between GeometryQuery types and FlatBuffer Bytes.

@@ -3,9 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { describe, expect, it } from "vitest";
-import * as fs from "fs";
-import { DeepCompare } from "../../serialization/DeepCompare";
-import { Checker } from "../Checker";
+import fs from "fs";
+import { DeepCompare } from "../../serialization/DeepCompare.js";
+import { Checker } from "../Checker.js";
 
 // Variables used for testing
 const deepComparisonFolderPath = "./src/test/data/deepComparisonTestFiles/";

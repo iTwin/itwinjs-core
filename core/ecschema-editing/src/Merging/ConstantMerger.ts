@@ -2,11 +2,11 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import type { ConstantDifference } from "../Differencing/SchemaDifference";
-import type{ MutableConstant } from "../Editing/Mutable/MutableConstant";
-import type { SchemaMergeContext } from "./SchemaMerger";
 import { DelayedPromiseWithProps, ECObjectsError, ECObjectsStatus, Phenomenon, SchemaItemKey } from "@itwin/ecschema-metadata";
-import { updateSchemaItemFullName, updateSchemaItemKey } from "./Utils";
+import type { ConstantDifference } from "../Differencing/SchemaDifference.js";
+import type { MutableConstant } from "../Editing/Mutable/MutableConstant.js";
+import type { SchemaMergeContext } from "./SchemaMerger.js";
+import { updateSchemaItemFullName, updateSchemaItemKey } from "./Utils.js";
 
 /**
  * Merges a new Constant into the target schema.

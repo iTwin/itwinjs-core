@@ -7,11 +7,11 @@
  */
 
 import { BentleyError, Logger } from "@itwin/core-bentley";
-import { CloudSqlite } from "./CloudSqlite";
-import { IModelHost } from "./IModelHost";
-import { Settings } from "./workspace/Settings";
-import { WorkspaceDbCloudProps } from "./workspace/Workspace";
-import { IModelNative } from "./internal/NativePlatform";
+import { CloudSqlite } from "./CloudSqlite.js";
+import { IModelHost } from "./IModelHost.js";
+import { IModelNative } from "./internal/NativePlatform.js";
+import { Settings } from "./workspace/Settings.js";
+import { WorkspaceDbCloudProps } from "./workspace/Workspace.js";
 
 const loggerCat = "GeoCoord";
 

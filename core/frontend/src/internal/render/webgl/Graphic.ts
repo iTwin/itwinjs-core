@@ -9,26 +9,26 @@
 import { assert, dispose, Id64String } from "@itwin/core-bentley";
 import { ElementAlignedBox3d, FeatureAppearanceProvider, RenderFeatureTable, ThematicDisplayMode, ViewFlags } from "@itwin/core-common";
 import { Range3d, Transform } from "@itwin/core-geometry";
-import { IModelConnection } from "../../../IModelConnection";
-import { FeatureSymbology } from "../../../render/FeatureSymbology";
-import { GraphicBranch, GraphicBranchOptions } from "../../../render/GraphicBranch";
-import { GraphicList, RenderGraphic } from "../../../render/RenderGraphic";
-import { RenderMemory } from "../../../render/RenderMemory";
-import { ClipVolume } from "./ClipVolume";
-import { WebGLDisposable } from "./Disposable";
-import { EdgeSettings } from "./EdgeSettings";
-import { FeatureOverrides } from "./FeatureOverrides";
-import { PlanarClassifier } from "./PlanarClassifier";
-import { Primitive } from "./Primitive";
-import { RenderCommands } from "./RenderCommands";
-import { RenderPass } from "./RenderFlags";
-import { Target } from "./Target";
-import { TextureDrape } from "./TextureDrape";
-import { ThematicSensors } from "./ThematicSensors";
-import { BranchState } from "./BranchState";
-import { BatchOptions } from "../../../common/render/BatchOptions";
-import { Contours } from "./Contours";
-import { GraphicBranchFrustum } from "../GraphicBranchFrustum";
+import { IModelConnection } from "../../../IModelConnection.js";
+import { FeatureSymbology } from "../../../render/FeatureSymbology.js";
+import { GraphicBranch, GraphicBranchOptions } from "../../../render/GraphicBranch.js";
+import { GraphicList, RenderGraphic } from "../../../render/RenderGraphic.js";
+import { RenderMemory } from "../../../render/RenderMemory.js";
+import { ClipVolume } from "./ClipVolume.js";
+import { WebGLDisposable } from "./Disposable.js";
+import { EdgeSettings } from "./EdgeSettings.js";
+import { FeatureOverrides } from "./FeatureOverrides.js";
+import { PlanarClassifier } from "./PlanarClassifier.js";
+import { Primitive } from "./Primitive.js";
+import { RenderCommands } from "./RenderCommands.js";
+import { RenderPass } from "./RenderFlags.js";
+import { Target } from "./Target.js";
+import { TextureDrape } from "./TextureDrape.js";
+import { ThematicSensors } from "./ThematicSensors.js";
+import { BranchState } from "./BranchState.js";
+import { BatchOptions } from "../../../common/render/BatchOptions.js";
+import { Contours } from "./Contours.js";
+import { GraphicBranchFrustum } from "../GraphicBranchFrustum.js";
 
 /** @internal */
 export abstract class Graphic extends RenderGraphic implements WebGLDisposable {

@@ -8,12 +8,12 @@
 
 import { assert } from "@itwin/core-bentley";
 import { AnalysisStyleDisplacement, AnalysisStyleThematic, ThematicGradientSettings } from "@itwin/core-common";
-import { DrawParams } from "../DrawCommand";
-import { TextureUnit } from "../RenderFlags";
-import { VariableType, VertexShaderBuilder, VertexShaderComponent } from "../ShaderBuilder";
-import { octDecodeNormal } from "./Surface";
-import { unquantizePosition } from "./Vertex";
-import { AuxChannel, AuxDisplacementChannel, AuxParamChannel } from "../../../../common/internal/render/AuxChannelTable";
+import { DrawParams } from "../DrawCommand.js";
+import { TextureUnit } from "../RenderFlags.js";
+import { VariableType, VertexShaderBuilder, VertexShaderComponent } from "../ShaderBuilder.js";
+import { octDecodeNormal } from "./Surface.js";
+import { unquantizePosition } from "./Vertex.js";
+import { AuxChannel, AuxDisplacementChannel, AuxParamChannel } from "../../../../common/internal/render/AuxChannelTable.js";
 
 const initialize = `
   g_anim_step = vec2(1.0) / u_animLUTParams.xy;

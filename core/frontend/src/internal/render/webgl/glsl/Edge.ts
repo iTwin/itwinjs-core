@@ -7,21 +7,21 @@
  */
 
 import { assert } from "@itwin/core-bentley";
-import { AttributeMap } from "../AttributeMap";
-import { FragmentShaderComponent, ProgramBuilder, VariableType, VertexShaderBuilder, VertexShaderComponent } from "../ShaderBuilder";
-import { IsAnimated, IsInstanced, PositionType } from "../TechniqueFlags";
-import { TechniqueId } from "../TechniqueId";
-import { TextureUnit } from "../RenderFlags";
-import { addAnimation } from "./Animation";
-import { addColor } from "./Color";
-import { addFrustum, addShaderFlags } from "./Common";
-import { addWhiteOnWhiteReversal } from "./Fragment";
-import { addAdjustWidth, addLineCode } from "./Polyline";
-import { octDecodeNormal } from "./Surface";
-import { addLineWeight, addModelViewMatrix, addNormalMatrix, addProjectionMatrix, addSamplePosition } from "./Vertex";
-import { addModelToWindowCoordinates, addViewport } from "./Viewport";
-import { addLookupTable } from "./LookupTable";
-import { addRenderOrder, addRenderOrderConstants } from "./FeatureSymbology";
+import { AttributeMap } from "../AttributeMap.js";
+import { FragmentShaderComponent, ProgramBuilder, VariableType, VertexShaderBuilder, VertexShaderComponent } from "../ShaderBuilder.js";
+import { IsAnimated, IsInstanced, PositionType } from "../TechniqueFlags.js";
+import { TechniqueId } from "../TechniqueId.js";
+import { TextureUnit } from "../RenderFlags.js";
+import { addAnimation } from "./Animation.js";
+import { addColor } from "./Color.js";
+import { addFrustum, addShaderFlags } from "./Common.js";
+import { addWhiteOnWhiteReversal } from "./Fragment.js";
+import { addAdjustWidth, addLineCode } from "./Polyline.js";
+import { octDecodeNormal } from "./Surface.js";
+import { addLineWeight, addModelViewMatrix, addNormalMatrix, addProjectionMatrix, addSamplePosition } from "./Vertex.js";
+import { addModelToWindowCoordinates, addViewport } from "./Viewport.js";
+import { addLookupTable } from "./LookupTable.js";
+import { addRenderOrder, addRenderOrderConstants } from "./FeatureSymbology.js";
 
 export type EdgeBuilderType = "SegmentEdge" | "Silhouette" | "IndexedEdge";
 

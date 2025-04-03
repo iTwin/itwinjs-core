@@ -6,13 +6,13 @@
  * @module Extensions
  */
 
-import { IModelApp } from "../IModelApp";
-import type { ToolAdmin } from "../tools/ToolAdmin";
-import type { AccuSnap } from "../AccuSnap";
-import type { NotificationManager } from "../NotificationManager";
-import type { ViewManager } from "../ViewManager";
-import type { ElementLocateManager } from "../ElementLocateManager";
-import type { RenderSystem } from "../render/RenderSystem";
+import { IModelApp } from "../IModelApp.js";
+import type { ToolAdmin } from "../tools/ToolAdmin.js";
+import type { AccuSnap } from "../AccuSnap.js";
+import type { NotificationManager } from "../NotificationManager.js";
+import type { ViewManager } from "../ViewManager.js";
+import type { ElementLocateManager } from "../ElementLocateManager.js";
+import type { RenderSystem } from "../render/RenderSystem.js";
 
 /**
  * Subset of IModelApp exposed to Extensions

@@ -3,15 +3,15 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
-import * as sinon from "sinon";
-import { ChangesetIdWithIndex } from "@itwin/core-common";
-import { CheckpointManager, V1CheckpointManager, V2CheckpointManager } from "../../CheckpointManager";
-import { IModelDb, SnapshotDb } from "../../IModelDb";
 import { Logger } from "@itwin/core-bentley";
-import { IModelHost } from "../../IModelHost";
-import { HubMock } from "../../HubMock";
-import { _hubAccess, _nativeDb } from "../../internal/Symbols";
+import { ChangesetIdWithIndex } from "@itwin/core-common";
+import { expect } from "chai";
+import sinon from "sinon";
+import { CheckpointManager, V1CheckpointManager, V2CheckpointManager } from "../../CheckpointManager.js";
+import { HubMock } from "../../HubMock.js";
+import { IModelDb, SnapshotDb } from "../../IModelDb.js";
+import { IModelHost } from "../../IModelHost.js";
+import { _hubAccess, _nativeDb } from "../../internal/Symbols.js";
 
 describe("SnapshotDb.refreshContainerForRpc", () => {
   afterEach(() => sinon.restore());

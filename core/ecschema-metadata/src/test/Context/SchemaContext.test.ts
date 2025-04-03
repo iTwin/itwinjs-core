@@ -3,16 +3,16 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import * as chai from "chai";
-import * as chaiAsPromised from "chai-as-promised";
-import { SchemaCache, SchemaContext } from "../../Context";
-import { SchemaMatchType } from "../../ECObjects";
-import { ECObjectsError } from "../../Exception";
-import { Schema } from "../../Metadata/Schema";
-import { SchemaItemKey, SchemaKey } from "../../SchemaKey";
-import { EntityClass } from "../../Metadata/EntityClass";
-import { SchemaItem } from "../../Metadata/SchemaItem";
-import { CustomAttributeClass, ECSchemaNamespaceUris, Enumeration, Format, KindOfQuantity, Mixin, Phenomenon, RelationshipClass, StructClass, Unit, UnitSystem } from "../../ecschema-metadata";
+import chai from "chai";
+import chaiAsPromised from "chai-as-promised";
+import { SchemaCache, SchemaContext } from "../../Context.js";
+import { SchemaMatchType } from "../../ECObjects.js";
+import { ECObjectsError } from "../../Exception.js";
+import { EntityClass } from "../../Metadata/EntityClass.js";
+import { Schema } from "../../Metadata/Schema.js";
+import { SchemaItem } from "../../Metadata/SchemaItem.js";
+import { SchemaItemKey, SchemaKey } from "../../SchemaKey.js";
+import { CustomAttributeClass, ECSchemaNamespaceUris, Enumeration, Format, KindOfQuantity, Mixin, Phenomenon, RelationshipClass, StructClass, Unit, UnitSystem } from "../../ecschema-metadata.js";
 
 const assert = chai.assert;
 const expect = chai.expect;

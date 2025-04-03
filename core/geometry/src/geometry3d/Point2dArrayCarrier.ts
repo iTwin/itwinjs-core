@@ -5,9 +5,9 @@
 /** @packageDocumentation
  * @module CartesianGeometry
  */
-import { IndexedXYCollection } from "./IndexedXYCollection";
-import { Point2d, Vector2d, XY } from "./Point2dVector2d";
-import { XAndY } from "./XYZProps";
+import { IndexedXYCollection } from "./IndexedXYCollection.js";
+import { Point2d, Vector2d, XY } from "./Point2dVector2d.js";
+import { XAndY } from "./XYZProps.js";
 
 /**
  * Helper object to access members of a Point2d[] in geometric calculations.

@@ -3,26 +3,26 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { SchemaItemType } from "./ECObjects";
-import { AnyClass, AnyECType } from "./Interfaces";
-import { ECClass, StructClass } from "./Metadata/Class";
-import { Constant } from "./Metadata/Constant";
-import { CustomAttributeContainerProps } from "./Metadata/CustomAttribute";
-import { CustomAttributeClass } from "./Metadata/CustomAttributeClass";
-import { EntityClass } from "./Metadata/EntityClass";
-import { Enumeration } from "./Metadata/Enumeration";
-import { Format } from "./Metadata/Format";
-import { InvertedUnit } from "./Metadata/InvertedUnit";
-import { KindOfQuantity } from "./Metadata/KindOfQuantity";
-import { Mixin } from "./Metadata/Mixin";
-import { Phenomenon } from "./Metadata/Phenomenon";
-import { AnyProperty, Property } from "./Metadata/Property";
-import { PropertyCategory } from "./Metadata/PropertyCategory";
-import { RelationshipClass, RelationshipConstraint } from "./Metadata/RelationshipClass";
-import { Schema } from "./Metadata/Schema";
-import { SchemaItem } from "./Metadata/SchemaItem";
-import { Unit } from "./Metadata/Unit";
-import { UnitSystem } from "./Metadata/UnitSystem";
+import { SchemaItemType } from "./ECObjects.js";
+import { AnyClass, AnyECType } from "./Interfaces.js";
+import { ECClass, StructClass } from "./Metadata/Class.js";
+import { Constant } from "./Metadata/Constant.js";
+import { CustomAttributeContainerProps } from "./Metadata/CustomAttribute.js";
+import { CustomAttributeClass } from "./Metadata/CustomAttributeClass.js";
+import { EntityClass } from "./Metadata/EntityClass.js";
+import { Enumeration } from "./Metadata/Enumeration.js";
+import { Format } from "./Metadata/Format.js";
+import { InvertedUnit } from "./Metadata/InvertedUnit.js";
+import { KindOfQuantity } from "./Metadata/KindOfQuantity.js";
+import { Mixin } from "./Metadata/Mixin.js";
+import { Phenomenon } from "./Metadata/Phenomenon.js";
+import { AnyProperty, Property } from "./Metadata/Property.js";
+import { PropertyCategory } from "./Metadata/PropertyCategory.js";
+import { RelationshipClass, RelationshipConstraint } from "./Metadata/RelationshipClass.js";
+import { Schema } from "./Metadata/Schema.js";
+import { SchemaItem } from "./Metadata/SchemaItem.js";
+import { Unit } from "./Metadata/Unit.js";
+import { UnitSystem } from "./Metadata/UnitSystem.js";
 
 /**
  * Interface to allow schema traversal/deserialization workflows to visit

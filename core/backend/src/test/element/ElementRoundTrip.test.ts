@@ -2,17 +2,17 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert, expect } from "chai";
 import { DbResult, Id64, Id64String } from "@itwin/core-bentley";
 import {
   BriefcaseIdValue, Code, ColorDef, ElementAspectProps, ElementGeometry, GeometricElementProps, GeometryStreamProps, IModel, PhysicalElementProps,
   Placement3dProps, QueryRowFormat, SubCategoryAppearance,
 } from "@itwin/core-common";
 import { Angle, Arc3d, Cone, IModelJson as GeomJson, LineSegment3d, Point2d, Point3d } from "@itwin/core-geometry";
-import { _nativeDb, ECSqlStatement, IModelDb, IModelJsFs, PhysicalModel, PhysicalObject, SnapshotDb, SpatialCategory } from "../../core-backend";
-import { ElementRefersToElements } from "../../Relationship";
-import { IModelTestUtils } from "../IModelTestUtils";
 import { EntityClass, RelationshipClass } from "@itwin/ecschema-metadata";
+import { assert, expect } from "chai";
+import { _nativeDb, ECSqlStatement, IModelDb, IModelJsFs, PhysicalModel, PhysicalObject, SnapshotDb, SpatialCategory } from "../../core-backend.js";
+import { ElementRefersToElements } from "../../Relationship.js";
+import { IModelTestUtils } from "../IModelTestUtils.js";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 

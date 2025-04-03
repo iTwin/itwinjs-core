@@ -9,12 +9,12 @@
 import { assert, dispose } from "@itwin/core-bentley";
 import { Point3d, Range3d, Transform } from "@itwin/core-geometry";
 import { ThematicDisplaySensor, ThematicDisplaySensorSettings } from "@itwin/core-common";
-import { WebGLDisposable } from "./Disposable";
-import { GL } from "./GL";
-import { Texture2DData, Texture2DHandle } from "./Texture";
-import { UniformHandle } from "./UniformHandle";
-import { TextureUnit } from "./RenderFlags";
-import { Target } from "./Target";
+import { WebGLDisposable } from "./Disposable.js";
+import { GL } from "./GL.js";
+import { Texture2DData, Texture2DHandle } from "./Texture.js";
+import { UniformHandle } from "./UniformHandle.js";
+import { TextureUnit } from "./RenderFlags.js";
+import { Target } from "./Target.js";
 
 /** @internal */
 interface ThematicSensorsTexture {

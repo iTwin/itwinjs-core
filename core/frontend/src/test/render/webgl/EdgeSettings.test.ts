@@ -5,10 +5,10 @@
 
 import { describe, expect, it } from "vitest";
 import { ColorDef, HiddenLine, LinePixels, RenderMode, ViewFlags } from "@itwin/core-common";
-import { EdgeSettings } from "../../../internal/render/webgl/EdgeSettings";
-import { RenderPass } from "../../../internal/render/webgl/RenderFlags";
-import { LineCode } from "../../../internal/render/webgl/LineCode";
-import { OvrFlags } from "../../../common/internal/render/OvrFlags";
+import { EdgeSettings } from "../../../internal/render/webgl/EdgeSettings.js";
+import { RenderPass } from "../../../internal/render/webgl/RenderFlags.js";
+import { LineCode } from "../../../internal/render/webgl/LineCode.js";
+import { OvrFlags } from "../../../common/internal/render/OvrFlags.js";
 
 describe("EdgeSettings", () => {
   it("defaults to overriding nothing", () => {

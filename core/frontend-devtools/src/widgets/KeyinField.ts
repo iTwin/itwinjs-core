@@ -8,9 +8,9 @@
  */
 
 import { IModelApp, MessageBoxIconType, MessageBoxType, ParseAndRunResult } from "@itwin/core-frontend";
-import { createButton } from "../ui/Button";
-import { appendDataListEntries, createDataList, DataList, DataListEntry } from "../ui/DataList";
-import { createTextBox, TextBox } from "../ui/TextBox";
+import { createButton } from "../ui/Button.js";
+import { appendDataListEntries, createDataList, DataList, DataListEntry } from "../ui/DataList.js";
+import { createTextBox, TextBox } from "../ui/TextBox.js";
 
 function keyinsToDataListEntries(keyins: string[]): DataListEntry[] {
   const entries: DataListEntry[] = [];

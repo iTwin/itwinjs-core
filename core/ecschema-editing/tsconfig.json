@@ -2,5 +2,10 @@
   "extends": "./node_modules/@itwin/build-tools/tsconfig-base.json",
   "include": [
     "src/**/*.ts"
-  ]
+  ],
+  "compilerOptions": {
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "esModuleInterop": true
+  }
 }

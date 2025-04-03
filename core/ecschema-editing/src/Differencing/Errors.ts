@@ -7,7 +7,7 @@
  */
 
 import type { SchemaKey } from "@itwin/ecschema-metadata";
-import type { AnySchemaDifferenceConflict } from "./SchemaConflicts";
+import type { AnySchemaDifferenceConflict } from "./SchemaConflicts.js";
 
 /**
  * Error class that contains conflicts when differencing two schemas.

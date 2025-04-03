@@ -10,16 +10,16 @@ import { assert, BeEvent, dispose, Id64String } from "@itwin/core-bentley";
 import {
   ImageBuffer, ImageBufferFormat, ImageSource, ImageSourceFormat, isPowerOfTwo, nextHighestPowerOfTwo, RenderTexture, TextureData, TextureTransparency,
 } from "@itwin/core-common";
-import { getImageSourceMimeType, imageBufferToPngDataUrl, imageElementFromImageSource, openImageDataUrlInNewWindow } from "../../../common/ImageUtil";
-import { IModelConnection } from "../../../IModelConnection";
-import { IModelApp } from "../../../IModelApp";
-import { WebGLDisposable } from "./Disposable";
-import { GL } from "./GL";
-import { UniformHandle } from "./UniformHandle";
-import { TextureUnit } from "./RenderFlags";
-import { System } from "./System";
-import { TextureOwnership } from "../../../render/CreateTextureArgs";
-import { OvrFlags } from "../../../common/internal/render/OvrFlags";
+import { getImageSourceMimeType, imageBufferToPngDataUrl, imageElementFromImageSource, openImageDataUrlInNewWindow } from "../../../common/ImageUtil.js";
+import { IModelConnection } from "../../../IModelConnection.js";
+import { IModelApp } from "../../../IModelApp.js";
+import { WebGLDisposable } from "./Disposable.js";
+import { GL } from "./GL.js";
+import { UniformHandle } from "./UniformHandle.js";
+import { TextureUnit } from "./RenderFlags.js";
+import { System } from "./System.js";
+import { TextureOwnership } from "../../../render/CreateTextureArgs.js";
+import { OvrFlags } from "../../../common/internal/render/OvrFlags.js";
 
 /** @internal */
 export type Texture2DData = Uint8Array | Float32Array;

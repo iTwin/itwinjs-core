@@ -3,10 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { Constant, Phenomenon, Schema, SchemaItemType } from "@itwin/ecschema-metadata";
-import { SchemaMerger } from "../../Merging/SchemaMerger";
-import { BisTestHelper } from "../TestUtils/BisTestHelper";
 import { expect } from "chai";
-import { AnySchemaDifferenceConflict, ConflictCode, getSchemaDifferences, SchemaEdits } from "../../ecschema-editing";
+import { AnySchemaDifferenceConflict, ConflictCode, getSchemaDifferences, SchemaEdits } from "../../ecschema-editing.js";
+import { SchemaMerger } from "../../Merging/SchemaMerger.js";
+import { BisTestHelper } from "../TestUtils/BisTestHelper.js";
 
 describe("Phenomenon merger tests", () => {
   const sourceJson = {
@@ -107,7 +107,7 @@ describe("Phenomenon merger tests", () => {
           },
         },
       }, await BisTestHelper.getNewContext());
-  
+
       const targetSchema = await Schema.fromJson({
         ...targetJson,
         items: {
@@ -117,7 +117,7 @@ describe("Phenomenon merger tests", () => {
           },
         },
       }, await BisTestHelper.getNewContext());
-  
+
       const result = await getSchemaDifferences(targetSchema, sourceSchema);
       expect(result.conflicts).to.have.lengthOf(1, "Unexpected length of conflicts");
       expect(result.conflicts).to.satisfy(([conflict]: AnySchemaDifferenceConflict[]) => {
@@ -127,14 +127,14 @@ describe("Phenomenon merger tests", () => {
         expect(conflict).to.have.a.property("target", "PropertyCategory");
         return true;
       });
-  
+
       const schemaEdits = new SchemaEdits();
-      const sourceItem = await sourceSchema.getItem("testItem") as Phenomenon;      
+      const sourceItem = await sourceSchema.getItem("testItem") as Phenomenon;
       schemaEdits.items.rename(sourceItem, "mergedPhenomenon");
-  
+
       const merger = new SchemaMerger(targetSchema.context);
       const mergedSchema = await merger.merge(result, schemaEdits);
-  
+
       await expect(mergedSchema.getItem("mergedPhenomenon")).to.be.eventually.fulfilled.then(async (ecClass) => {
         expect(ecClass).to.exist;
         expect(ecClass).has.property("schemaItemType").equals(SchemaItemType.Phenomenon);
@@ -171,12 +171,12 @@ describe("Phenomenon merger tests", () => {
       }, await BisTestHelper.getNewContext());
 
       const schemaEdits = new SchemaEdits();
-      const sourceItem = await sourceSchema.getItem("testItem") as Phenomenon;      
+      const sourceItem = await sourceSchema.getItem("testItem") as Phenomenon;
       schemaEdits.items.rename(sourceItem, "mergedPhenomenon");
 
       const merger = new SchemaMerger(targetSchema.context);
       const mergedSchema = await merger.mergeSchemas(targetSchema, sourceSchema, schemaEdits);
- 
+
       await expect(mergedSchema.getItem("mergedPhenomenon")).to.be.eventually.not.undefined
         .then((phenomenon: Phenomenon) => {
           expect(phenomenon).to.have.a.property("label").to.equal("Changed Area");
@@ -218,9 +218,9 @@ describe("Phenomenon merger tests", () => {
       }, await BisTestHelper.getNewContext());
 
       const schemaEdits = new SchemaEdits();
-      const sourceItem = await sourceSchema.getItem("testItem") as Phenomenon;      
+      const sourceItem = await sourceSchema.getItem("testItem") as Phenomenon;
       schemaEdits.items.rename(sourceItem, "mergedPhenomenon");
-  
+
       const merger = new SchemaMerger(targetSchema.context);
       const mergedSchema = await merger.mergeSchemas(targetSchema, sourceSchema, schemaEdits);
 
@@ -275,9 +275,9 @@ describe("Phenomenon merger tests", () => {
       }, await BisTestHelper.getNewContext());
 
       const schemaEdits = new SchemaEdits();
-      const sourceItem = await sourceSchema.getItem("testItem") as Phenomenon;      
+      const sourceItem = await sourceSchema.getItem("testItem") as Phenomenon;
       schemaEdits.items.rename(sourceItem, "mergedPhenomenon");
-  
+
       const merger = new SchemaMerger(targetSchema.context);
       const mergedSchema = await merger.mergeSchemas(targetSchema, sourceSchema, schemaEdits);
 
@@ -314,7 +314,7 @@ describe("Phenomenon merger tests", () => {
       }, await BisTestHelper.getNewContext());
 
       const schemaEdits = new SchemaEdits();
-      const sourceItem = await sourceSchema.getItem("testItem") as Phenomenon;      
+      const sourceItem = await sourceSchema.getItem("testItem") as Phenomenon;
       schemaEdits.items.rename(sourceItem, "mergedPhenomenon");
 
       const merger = new SchemaMerger(targetSchema.context);

@@ -9,9 +9,9 @@
 import { BeDuration, Id64String } from "@itwin/core-bentley";
 import { Transform } from "@itwin/core-geometry";
 import { ElementAlignedBox3d } from "@itwin/core-common";
-import { IModelConnection } from "../IModelConnection";
-import { RenderClipVolume } from "../render/RenderClipVolume";
-import { TileLoadPriority } from "./internal";
+import { IModelConnection } from "../IModelConnection.js";
+import { RenderClipVolume } from "../render/RenderClipVolume.js";
+import { TileLoadPriority } from "./internal.js";
 
 /** Parameters used to construct a [[TileTree]].
  * @public

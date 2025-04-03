@@ -2,10 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import type { EnumeratorDifference } from "../Differencing/SchemaDifference";
-import type { SchemaMergeContext } from "./SchemaMerger";
 import { SchemaItemKey } from "@itwin/ecschema-metadata";
-import { toItemKey } from "./Utils";
+import type { EnumeratorDifference } from "../Differencing/SchemaDifference.js";
+import type { SchemaMergeContext } from "./SchemaMerger.js";
+import { toItemKey } from "./Utils.js";
 
 /**
  * Merges a new Enumerator into the target schema.

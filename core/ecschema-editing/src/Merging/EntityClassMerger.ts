@@ -2,12 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import type { EntityClassDifference, EntityClassMixinDifference } from "../Differencing/SchemaDifference";
-import type { MutableEntityClass } from "../Editing/Mutable/MutableEntityClass";
-import type { SchemaMergeContext } from "./SchemaMerger";
 import { SchemaItemKey } from "@itwin/ecschema-metadata";
-import { modifyClass } from "./ClassMerger";
-import { toItemKey, updateSchemaItemKey } from "./Utils";
+import type { EntityClassDifference, EntityClassMixinDifference } from "../Differencing/SchemaDifference.js";
+import type { MutableEntityClass } from "../Editing/Mutable/MutableEntityClass.js";
+import { modifyClass } from "./ClassMerger.js";
+import type { SchemaMergeContext } from "./SchemaMerger.js";
+import { toItemKey, updateSchemaItemKey } from "./Utils.js";
 
 /**
  * Merges a new EntityClass into the target schema.

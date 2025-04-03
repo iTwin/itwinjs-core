@@ -6,11 +6,11 @@
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 import { Range3d } from "@itwin/core-geometry";
 import { EmptyLocalization } from "@itwin/core-common";
-import { SpatialViewState } from "../SpatialViewState";
-import type { IModelConnection } from "../IModelConnection";
-import { IModelApp } from "../IModelApp";
-import { RealityModelTileTree, TileTreeLoadStatus, TileTreeReference } from "../tile/internal";
-import { createBlankConnection } from "./createBlankConnection";
+import { SpatialViewState } from "../SpatialViewState.js";
+import type { IModelConnection } from "../IModelConnection.js";
+import { IModelApp } from "../IModelApp.js";
+import { RealityModelTileTree, TileTreeLoadStatus, TileTreeReference } from "../tile/internal.js";
+import { createBlankConnection } from "./createBlankConnection.js";
 
 describe("SpatialViewState", () => {
   afterEach(() => {

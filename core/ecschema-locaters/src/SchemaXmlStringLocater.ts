@@ -6,11 +6,11 @@
  * @module Locaters
  */
 
-import { DOMParser } from "@xmldom/xmldom";
 import {
   ECObjectsError, ECObjectsStatus, ECVersion, ISchemaLocater, Schema, SchemaContext, SchemaInfo, SchemaKey, SchemaMatchType, SchemaReadHelper, XmlParser,
 } from "@itwin/ecschema-metadata";
-import { SchemaStringLocater, StringSchemaKey } from "./SchemaStringLocater";
+import { DOMParser } from "@xmldom/xmldom";
+import { SchemaStringLocater, StringSchemaKey } from "./SchemaStringLocater.js";
 
 /**
  * A SchemaLocator implementation for locating and deserializing EC Schemas from XML strings

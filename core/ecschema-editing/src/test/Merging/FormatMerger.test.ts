@@ -2,14 +2,14 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Format, Schema, SchemaContext, SchemaItemType } from "@itwin/ecschema-metadata";
-import { getSchemaDifferences, SchemaOtherTypes } from "../../Differencing/SchemaDifference";
-import { AnySchemaDifferenceConflict, ConflictCode } from "../../Differencing/SchemaConflicts";
-import { SchemaMerger } from "../../Merging/SchemaMerger";
-import { SchemaEdits } from "../../Merging/Edits/SchemaEdits";
-import { BisTestHelper } from "../TestUtils/BisTestHelper";
-import { expect } from "chai";
 import { DecimalPrecision, FormatTraits, FormatType, FractionalPrecision, ScientificType, ShowSignOption } from "@itwin/core-quantity";
+import { Format, Schema, SchemaContext, SchemaItemType } from "@itwin/ecschema-metadata";
+import { expect } from "chai";
+import { AnySchemaDifferenceConflict, ConflictCode } from "../../Differencing/SchemaConflicts.js";
+import { getSchemaDifferences, SchemaOtherTypes } from "../../Differencing/SchemaDifference.js";
+import { SchemaEdits } from "../../Merging/Edits/SchemaEdits.js";
+import { SchemaMerger } from "../../Merging/SchemaMerger.js";
+import { BisTestHelper } from "../TestUtils/BisTestHelper.js";
 
 describe("Format merge tests", () => {
   let targetContext: SchemaContext;
@@ -651,7 +651,7 @@ describe("Format merge tests", () => {
           },
         },
       }, sourceContext);
-  
+
       const targetSchema = await Schema.fromJson({
         ...targetJson,
         items: {
@@ -674,10 +674,10 @@ describe("Format merge tests", () => {
       const schemaEdits = new SchemaEdits();
       const sourceItem = await sourceSchema.getItem("testItem") as Format;
       schemaEdits.items.rename(sourceItem, "mergedFormat");
-  
+
       const merger = new SchemaMerger(targetContext);
       const mergedSchema = await merger.merge(result, schemaEdits);
-  
+
       await expect(mergedSchema.getItem("mergedFormat")).to.be.eventually.fulfilled.then(async (schemaItem) => {
         expect(schemaItem).to.exist;
         expect(schemaItem).to.have.property("schemaItemType").equals(SchemaItemType.Format);
@@ -740,7 +740,7 @@ describe("Format merge tests", () => {
 
       const merger = new SchemaMerger(targetContext);
       const mergedSchema = await merger.mergeSchemas(targetSchema, sourceSchema, schemaEdits);
- 
+
       await expect(mergedSchema.getItem("mergedFormat")).to.be.eventually.not.undefined
         .then((format: Format) => {
           expect(format).to.have.a.property("label").to.equal("Changed");
@@ -801,12 +801,12 @@ describe("Format merge tests", () => {
           },
           testItem: {
             schemaItemType: "EntityClass",
-          },          
+          },
         },
       }, targetContext);
 
       const schemaEdits = new SchemaEdits();
-      const sourceItem = await sourceSchema.getItem("testItem") as Format;      
+      const sourceItem = await sourceSchema.getItem("testItem") as Format;
       schemaEdits.items.rename(sourceItem, "mergedFormat");
 
       const merger = new SchemaMerger(targetContext);
@@ -876,12 +876,12 @@ describe("Format merge tests", () => {
           },
           testItem: {
             schemaItemType: "StructClass",
-          },          
+          },
         },
       }, targetContext);
 
       const schemaEdits = new SchemaEdits();
-      const sourceItem = await sourceSchema.getItem("testItem") as Format;      
+      const sourceItem = await sourceSchema.getItem("testItem") as Format;
       schemaEdits.items.rename(sourceItem, "mergedFormat");
 
       const merger = new SchemaMerger(targetContext);
@@ -952,12 +952,12 @@ describe("Format merge tests", () => {
           },
           testItem: {
             schemaItemType: "EntityClass",
-          },          
+          },
         },
       }, targetContext);
 
       const schemaEdits = new SchemaEdits();
-      const sourceItem = await sourceSchema.getItem("testItem") as Format;      
+      const sourceItem = await sourceSchema.getItem("testItem") as Format;
       schemaEdits.items.rename(sourceItem, "mergedFormat");
 
       const result = await getSchemaDifferences(targetSchema, sourceSchema, schemaEdits);

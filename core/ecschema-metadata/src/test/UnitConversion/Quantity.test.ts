@@ -3,16 +3,16 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert, expect } from "chai";
-import { SchemaContext } from "../../Context";
-import { SchemaItemFormatProps } from "../../Deserialization/JsonProps";
-import { Format } from "../../Metadata/Format";
-import { MutableSchema, Schema } from "../../Metadata/Schema";
 import { Formatter, FormatterSpec, Parser, ParserSpec, Format as QFormat, Quantity, UnitProps } from "@itwin/core-quantity";
-import { deserializeXmlSync } from "../TestUtils/DeserializationHelpers";
-import { SchemaKey, SchemaMatchType, SchemaUnitProvider } from "../../ecschema-metadata";
-import * as fs from "fs";
-import * as path from "path";
+import { assert, expect } from "chai";
+import fs from "fs";
+import path from "path";
+import { SchemaContext } from "../../Context.js";
+import { SchemaItemFormatProps } from "../../Deserialization/JsonProps.js";
+import { SchemaKey, SchemaMatchType, SchemaUnitProvider } from "../../ecschema-metadata.js";
+import { Format } from "../../Metadata/Format.js";
+import { MutableSchema, Schema } from "../../Metadata/Schema.js";
+import { deserializeXmlSync } from "../TestUtils/DeserializationHelpers.js";
 
 describe("Quantity", () => {
   describe("Conversions", () => {
@@ -22,7 +22,7 @@ describe("Quantity", () => {
     before(() => {
       context = new SchemaContext();
 
-      const schemaFile = path.join(__dirname, "..", "..", "..", "..", "node_modules", "@bentley", "units-schema", "Units.ecschema.xml");
+      const schemaFile = path.join(import.meta.dirname, "..", "..", "..", "..", "node_modules", "@bentley", "units-schema", "Units.ecschema.xml");
       const schemaXml = fs.readFileSync(schemaFile, "utf-8");
       deserializeXmlSync(schemaXml, context);
       provider = new SchemaUnitProvider(context);
@@ -113,7 +113,7 @@ describe("Quantity", () => {
 
     it("Roundtrip radian value", async () => {
       const context = new SchemaContext();
-      const schemaFile = path.join(__dirname, "..", "..", "..", "..", "node_modules", "@bentley", "units-schema", "Units.ecschema.xml");
+      const schemaFile = path.join(import.meta.dirname, "..", "..", "..", "..", "node_modules", "@bentley", "units-schema", "Units.ecschema.xml");
       const schemaXml = fs.readFileSync(schemaFile, "utf-8");
       deserializeXmlSync(schemaXml, context);
 

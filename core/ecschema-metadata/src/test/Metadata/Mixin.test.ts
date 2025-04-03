@@ -4,17 +4,17 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, expect } from "chai";
-import * as sinon from "sinon";
-import { SchemaContext } from "../../Context";
-import { DelayedPromiseWithProps } from "../../DelayedPromise";
-import { StrengthDirection } from "../../ECObjects";
-import { ECObjectsError } from "../../Exception";
-import { EntityClass } from "../../Metadata/EntityClass";
-import { Mixin } from "../../Metadata/Mixin";
-import { NavigationProperty } from "../../Metadata/Property";
-import { MutableSchema, Schema } from "../../Metadata/Schema";
-import { createSchemaJsonWithItems } from "../TestUtils/DeserializationHelpers";
-import { createEmptyXmlDocument, getElementChildrenByTagName } from "../TestUtils/SerializationHelper";
+import sinon from "sinon";
+import { SchemaContext } from "../../Context.js";
+import { DelayedPromiseWithProps } from "../../DelayedPromise.js";
+import { StrengthDirection } from "../../ECObjects.js";
+import { ECObjectsError } from "../../Exception.js";
+import { EntityClass } from "../../Metadata/EntityClass.js";
+import { Mixin } from "../../Metadata/Mixin.js";
+import { NavigationProperty } from "../../Metadata/Property.js";
+import { MutableSchema, Schema } from "../../Metadata/Schema.js";
+import { createSchemaJsonWithItems } from "../TestUtils/DeserializationHelpers.js";
+import { createEmptyXmlDocument, getElementChildrenByTagName } from "../TestUtils/SerializationHelper.js";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 

@@ -7,10 +7,10 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { assert as bAssert } from "@itwin/core-bentley";
 import { EmptyLocalization } from "@itwin/core-common";
 import { ParsedQuantity, Parser, UnitProps } from "@itwin/core-quantity";
-import { IModelApp } from "../IModelApp";
-import { LocalUnitFormatProvider } from "../quantity-formatting/LocalUnitFormatProvider";
-import { OverrideFormatEntry, QuantityFormatter, QuantityType, QuantityTypeArg } from "../quantity-formatting/QuantityFormatter";
-import { BearingQuantityType } from "./BearingQuantityType";
+import { IModelApp } from "../IModelApp.js";
+import { LocalUnitFormatProvider } from "../quantity-formatting/LocalUnitFormatProvider.js";
+import { OverrideFormatEntry, QuantityFormatter, QuantityType, QuantityTypeArg } from "../quantity-formatting/QuantityFormatter.js";
+import { BearingQuantityType } from "./BearingQuantityType.js";
 
 function withinTolerance(x: number, y: number, tolerance?: number): boolean {
   const tol: number = undefined !== tolerance ? tolerance : 0.1e-6;

@@ -5,9 +5,9 @@
 
 /* eslint-disable @typescript-eslint/naming-convention */
 
-import { expect } from "chai";
-import * as sinon from "sinon";
 import { ECClass, ISchemaPartVisitor, RelationshipClass, Schema, SchemaContext, SchemaWalker } from "@itwin/ecschema-metadata";
+import { expect } from "chai";
+import sinon from "sinon";
 
 describe("SchemaWalker tests", () => {
   let testSchema: Schema;

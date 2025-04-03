@@ -12,15 +12,15 @@ import {
   DisplayStyleSubCategoryProps, ElementProps, IModel, ModelSelectorProps, PlanProjectionSettingsProps, RenderSchedule,
   RenderTimelineProps, SpatialViewDefinitionProps, ThumbnailFormatProps, ThumbnailProps, ViewDefinitionProps, ViewStoreRpc,
 } from "@itwin/core-common";
-import { CloudSqlite } from "./CloudSqlite";
-import { VersionedSqliteDb } from "./SQLiteDb";
-import { SqliteStatement } from "./SqliteStatement";
-import { IModelDb } from "./IModelDb";
-import { Category } from "./Category";
-import { Model } from "./Model";
-import { Entity } from "./Entity";
-import { BlobContainer } from "./BlobContainerService";
-import { _nativeDb } from "./internal/Symbols";
+import { BlobContainer } from "./BlobContainerService.js";
+import { Category } from "./Category.js";
+import { CloudSqlite } from "./CloudSqlite.js";
+import { Entity } from "./Entity.js";
+import { IModelDb } from "./IModelDb.js";
+import { _nativeDb } from "./internal/Symbols.js";
+import { Model } from "./Model.js";
+import { VersionedSqliteDb } from "./SQLiteDb.js";
+import { SqliteStatement } from "./SqliteStatement.js";
 
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 

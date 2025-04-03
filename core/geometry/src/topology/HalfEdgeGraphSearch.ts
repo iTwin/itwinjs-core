@@ -6,10 +6,10 @@
 /** @packageDocumentation
  * @module Topology
  */
-import { Range1d } from "../geometry3d/Range";
-import { HalfEdge, HalfEdgeGraph, HalfEdgeMask, HalfEdgeToBooleanFunction, NodeFunction, NodeToNumberFunction } from "./Graph";
-import { SignedDataSummary } from "./SignedDataSummary";
-import { XYParitySearchContext } from "./XYParitySearchContext";
+import { Range1d } from "../geometry3d/Range.js";
+import { HalfEdge, HalfEdgeGraph, HalfEdgeMask, HalfEdgeToBooleanFunction, NodeFunction, NodeToNumberFunction } from "./Graph.js";
+import { SignedDataSummary } from "./SignedDataSummary.js";
+import { XYParitySearchContext } from "./XYParitySearchContext.js";
 
 // cspell:word internaldocs
 

@@ -10,8 +10,8 @@
 import { BentleyError } from "@itwin/core-bentley";
 import { QueryRowFormat } from "@itwin/core-common";
 import { IModelApp, NotifyMessageDetails, OutputMessagePriority, Tool } from "@itwin/core-frontend";
-import { copyStringToClipboard } from "../ClipboardUtilities";
-import { parseArgs } from "./parseArgs";
+import { copyStringToClipboard } from "../ClipboardUtilities.js";
+import { parseArgs } from "./parseArgs.js";
 
 /** Base class for a tool that can convert between source aspect Ids and element Ids.
  * A "source aspect Id" is a string that identifies an object (such as an element) in the source document from which the iModel originated.

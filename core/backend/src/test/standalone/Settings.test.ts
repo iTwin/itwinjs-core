@@ -3,14 +3,14 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
 import { assert, Mutable, OpenMode } from "@itwin/core-bentley";
-import { SnapshotDb, StandaloneDb } from "../../IModelDb";
-import { IModelHost } from "../../IModelHost";
-import { Setting, SettingsContainer, SettingsPriority } from "../../workspace/Settings";
-import { SettingGroupSchema, SettingSchema } from "../../workspace/SettingsSchemas";
-import { IModelTestUtils } from "../IModelTestUtils";
-import { GcsDbProps, GeoCoordConfig } from "../../GeoCoordConfig";
+import { expect } from "chai";
+import { GcsDbProps, GeoCoordConfig } from "../../GeoCoordConfig.js";
+import { SnapshotDb, StandaloneDb } from "../../IModelDb.js";
+import { IModelHost } from "../../IModelHost.js";
+import { Setting, SettingsContainer, SettingsPriority } from "../../workspace/Settings.js";
+import { SettingGroupSchema, SettingSchema } from "../../workspace/SettingsSchemas.js";
+import { IModelTestUtils } from "../IModelTestUtils.js";
 
 describe("Settings", () => {
   let iModel: SnapshotDb;

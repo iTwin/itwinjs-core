@@ -3,12 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
 import { DelayedPromiseWithProps, ECClass, ECClassModifier, EntityClass, Schema, SchemaContext } from "@itwin/ecschema-metadata";
-import { MutableSchema } from "../../Editing/Mutable/MutableSchema";
-import { SchemaValidater } from "../../Validation/SchemaValidater";
-import { TestRuleSet } from "../TestUtils/DiagnosticHelpers";
-import { MutableClass } from "../../Editing/Mutable/MutableClass";
+import { expect } from "chai";
+import { MutableClass } from "../../Editing/Mutable/MutableClass.js";
+import { MutableSchema } from "../../Editing/Mutable/MutableSchema.js";
+import { SchemaValidater } from "../../Validation/SchemaValidater.js";
+import { TestRuleSet } from "../TestUtils/DiagnosticHelpers.js";
 
 describe("SchemaValidater tests", () => {
   let schema: Schema;

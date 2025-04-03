@@ -3,12 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { SchemaContext } from "./Context";
-import { SchemaMatchType } from "./ECObjects";
-import { ECObjectsError, ECObjectsStatus } from "./Exception";
-import { Schema } from "./Metadata/Schema";
-import { SchemaJsonLocater, SchemaPropsGetter } from "./SchemaJsonLocater";
-import { ECVersion, SchemaKey } from "./SchemaKey";
+import { SchemaContext } from "./Context.js";
+import { SchemaMatchType } from "./ECObjects.js";
+import { ECObjectsError, ECObjectsStatus } from "./Exception.js";
+import { Schema } from "./Metadata/Schema.js";
+import { SchemaJsonLocater, SchemaPropsGetter } from "./SchemaJsonLocater.js";
+import { ECVersion, SchemaKey } from "./SchemaKey.js";
 
 /**
  * A utility class for loading EC Schema objects using a function that returns schema json for a given schema name.

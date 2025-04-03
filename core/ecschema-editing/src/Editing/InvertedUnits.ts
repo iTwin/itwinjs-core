@@ -10,10 +10,10 @@ import {
   DelayedPromiseWithProps, InvertedUnit, InvertedUnitProps, SchemaItemKey,
   SchemaItemType, SchemaKey, Unit, UnitSystem,
 } from "@itwin/ecschema-metadata";
-import { SchemaContextEditor } from "./Editor";
-import { MutableInvertedUnit } from "./Mutable/MutableInvertedUnit";
-import { ECEditingStatus, SchemaEditingError, SchemaItemId } from "./Exception";
-import { SchemaItems } from "./SchemaItems";
+import { SchemaContextEditor } from "./Editor.js";
+import { ECEditingStatus, SchemaEditingError, SchemaItemId } from "./Exception.js";
+import { MutableInvertedUnit } from "./Mutable/MutableInvertedUnit.js";
+import { SchemaItems } from "./SchemaItems.js";
 
 /**
  * @alpha

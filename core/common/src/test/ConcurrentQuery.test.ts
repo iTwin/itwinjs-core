@@ -2,11 +2,12 @@
  * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
-
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 import { Point2d, Point3d } from "@itwin/core-geometry";
 import { assert, describe, it } from "vitest";
+// @ts-ignore Ignoring js-base64 import error
 import { Base64 } from "js-base64";
-import { QueryBinder, QueryParamType } from "../ConcurrentQuery";
+import { QueryBinder, QueryParamType } from "../ConcurrentQuery.js";
 
 describe("QueryBinder", () => {
   it("binds values", async () => {

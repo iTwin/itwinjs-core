@@ -7,12 +7,12 @@
  */
 
 import { assert } from "@itwin/core-bentley";
-import { AttributeDetails } from "./AttributeMap";
-import { addInstancedModelMatrixRTC } from "./glsl/Instancing";
-import { volClassOpaqueColor } from "./glsl/PlanarClassification";
-import { addPosition, earlyVertexDiscard, lateVertexDiscard, vertexDiscard } from "./glsl/Vertex";
-import { ShaderProgram } from "./ShaderProgram";
-import { PositionType } from "./TechniqueFlags";
+import { AttributeDetails } from "./AttributeMap.js";
+import { addInstancedModelMatrixRTC } from "./glsl/Instancing.js";
+import { volClassOpaqueColor } from "./glsl/PlanarClassification.js";
+import { addPosition, earlyVertexDiscard, lateVertexDiscard, vertexDiscard } from "./glsl/Vertex.js";
+import { ShaderProgram } from "./ShaderProgram.js";
+import { PositionType } from "./TechniqueFlags.js";
 
 /* eslint-disable no-restricted-syntax */
 

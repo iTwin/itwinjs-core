@@ -7,12 +7,12 @@
  */
 
 import { ISchemaPartVisitor, Schema } from "@itwin/ecschema-metadata";
-import { IRuleSet } from "./Rules";
-import { SchemaValidationVisitor } from "./SchemaValidationVisitor";
-import { IDiagnosticReporter, SuppressionDiagnosticReporter } from "./DiagnosticReporter";
-import { AnyDiagnostic } from "./Diagnostic";
-import { SchemaWalker } from "./SchemaWalker";
-import { ECRuleSet } from "./ECRules";
+import { AnyDiagnostic } from "./Diagnostic.js";
+import { IDiagnosticReporter, SuppressionDiagnosticReporter } from "./DiagnosticReporter.js";
+import { ECRuleSet } from "./ECRules.js";
+import { IRuleSet } from "./Rules.js";
+import { SchemaValidationVisitor } from "./SchemaValidationVisitor.js";
+import { SchemaWalker } from "./SchemaWalker.js";
 
 class CollectionReporter extends SuppressionDiagnosticReporter {
   private _diagnostics: AnyDiagnostic[] = [];

@@ -33,7 +33,7 @@ CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
 TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
-import { RpcSerializedValue } from "../../core/RpcMarshaling";
+import { RpcSerializedValue } from "../../core/RpcMarshaling.js";
 
 const START = 0;
 const START_BOUNDARY = 1;

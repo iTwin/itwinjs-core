@@ -3,15 +3,15 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { IModelDb, SnapshotDb } from "../../../core-backend";
 import { DbResult } from "@itwin/core-bentley";
 import { ECSqlValueType, QueryOptionsBuilder, QueryPropertyMetaData, QueryRowFormat } from "@itwin/core-common";
-import * as path from "path";
-import * as fs from "fs";
-import * as crypto from "crypto";
-import { ECSqlDatasets } from "../dataset/ECSqlDatasets";
-import { KnownTestLocations } from "../../KnownTestLocations";
+import crypto from "crypto";
+import fs from "fs";
+import path from "path";
 import { format } from "sql-formatter";
+import { IModelDb, SnapshotDb } from "../../../core-backend.js";
+import { KnownTestLocations } from "../../KnownTestLocations.js";
+import { ECSqlDatasets } from "../dataset/ECSqlDatasets.js";
 
 // Call like this:
 // node lib\cjs\test\ecsql\src\ECSqlTestGenerator.js AllProperties.bim "SELECT * FROM meta.ECSchemaDef LIMIT 2" -t
@@ -108,7 +108,7 @@ ${JSON.stringify(results, null, 2)}
 `;
   }
 
-  const outputFilePath = path.join(__dirname, "generated.ecsql.md");
+  const outputFilePath = path.join(import.meta.dirname, "generated.ecsql.md");
   fs.appendFileSync(outputFilePath, markdownContent, "utf-8");
   // eslint-disable-next-line no-console
   console.log(`Results written to ${outputFilePath}`);

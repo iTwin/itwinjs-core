@@ -7,10 +7,10 @@
  */
 
 import { ColorDef, HiddenLine, RenderMode, ViewFlags } from "@itwin/core-common";
-import { FloatRgba } from "./FloatRGBA";
-import { RenderPass } from "./RenderFlags";
-import { LineCode } from "./LineCode";
-import { OvrFlags } from "../../../common/internal/render/OvrFlags";
+import { FloatRgba } from "./FloatRGBA.js";
+import { RenderPass } from "./RenderFlags.js";
+import { LineCode } from "./LineCode.js";
+import { OvrFlags } from "../../../common/internal/render/OvrFlags.js";
 
 /** Controls symbology of edges based on ViewFlags and HiddenLine.Settings. Typically these come from the Target's
  * RenderPlan, but a GraphicBranch may override those settings.

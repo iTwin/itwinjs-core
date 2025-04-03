@@ -8,8 +8,8 @@
 
 import { BeEvent, JSONSchema, JSONSchemaTypeName } from "@itwin/core-bentley";
 import { LocalDirName, LocalFileName } from "@itwin/core-common";
-import { _implementationProhibited } from "../internal/Symbols";
-import { SettingName } from "./Settings";
+import { _implementationProhibited } from "../internal/Symbols.js";
+import { SettingName } from "./Settings.js";
 
 /** Metadata describing a single [[Setting]] as part of a [[SettingGroupSchema]].
   * Every setting has a [[type]], which can be one of the following:

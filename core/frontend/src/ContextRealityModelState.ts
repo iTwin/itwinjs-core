@@ -8,12 +8,12 @@
 
 import { assert, Id64String } from "@itwin/core-bentley";
 import { ContextRealityModel, ContextRealityModelProps, FeatureAppearance, RealityDataFormat, RealityDataSourceKey } from "@itwin/core-common";
-import { DisplayStyleState } from "./DisplayStyleState";
-import { IModelConnection } from "./IModelConnection";
-import { PlanarClipMaskState } from "./PlanarClipMaskState";
-import { RealityDataSource } from "./RealityDataSource";
-import { SpatialClassifiersState } from "./SpatialClassifiersState";
-import { createOrbitGtTileTreeReference, createRealityTileTreeReference, RealityModelTileTree, TileTreeReference } from "./tile/internal";
+import { DisplayStyleState } from "./DisplayStyleState.js";
+import { IModelConnection } from "./IModelConnection.js";
+import { PlanarClipMaskState } from "./PlanarClipMaskState.js";
+import { RealityDataSource } from "./RealityDataSource.js";
+import { SpatialClassifiersState } from "./SpatialClassifiersState.js";
+import { createOrbitGtTileTreeReference, createRealityTileTreeReference, RealityModelTileTree, TileTreeReference } from "./tile/internal.js";
 
 /** A [ContextRealityModel]($common) attached to a [[DisplayStyleState]] supplying a [[TileTreeReference]] used to draw the
  * reality model in a [[Viewport]].

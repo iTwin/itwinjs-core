@@ -6,15 +6,16 @@
  * @module Workspace
  */
 
-import * as fs from "fs-extra";
-import { parse } from "json5";
-import { extname, join } from "path";
 import { assert, BeEvent, JSONSchemaType, JSONSchemaTypeName, Mutable } from "@itwin/core-bentley";
 import { LocalDirName, LocalFileName } from "@itwin/core-common";
-import { IModelJsFs } from "../../IModelJsFs";
-import { SettingGroupSchema, SettingSchema, SettingsSchemas } from "../../workspace/SettingsSchemas";
-import { _implementationProhibited } from "../Symbols";
+import fs from "fs-extra";
+import pkg from "json5";
+import { extname, join } from "path";
+import { IModelJsFs } from "../../IModelJsFs.js";
+import { SettingGroupSchema, SettingSchema, SettingsSchemas } from "../../workspace/SettingsSchemas.js";
+import { _implementationProhibited } from "../Symbols.js";
 
+const { parse } = pkg;
 const makeSettingKey = (prefix: string, key: string) => `${prefix}/${key}`;
 
 class SettingsSchemasImpl implements SettingsSchemas {

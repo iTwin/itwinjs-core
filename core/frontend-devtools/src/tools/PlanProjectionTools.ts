@@ -9,9 +9,9 @@
 
 import { PlanProjectionSettings, PlanProjectionSettingsProps, SubCategoryOverride } from "@itwin/core-common";
 import { DisplayStyle3dState, IModelApp, ModelState, NotifyMessageDetails, OutputMessagePriority, Viewport } from "@itwin/core-frontend";
-import { copyStringToClipboard } from "../ClipboardUtilities";
-import { DisplayStyleTool } from "./DisplayStyleTools";
-import { parseArgs } from "./parseArgs";
+import { copyStringToClipboard } from "../ClipboardUtilities.js";
+import { DisplayStyleTool } from "./DisplayStyleTools.js";
+import { parseArgs } from "./parseArgs.js";
 
 /** Dumps a JSON representation of the plan projection settings for the current viewport.
  * @beta

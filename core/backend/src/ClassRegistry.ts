@@ -8,12 +8,12 @@
 
 import { DbResult, Id64, Id64String, IModelStatus, Logger } from "@itwin/core-bentley";
 import { EntityMetaData, EntityReferenceSet, IModelError, RelatedElement } from "@itwin/core-common";
-import { Entity } from "./Entity";
-import { IModelDb } from "./IModelDb";
-import { Schema, Schemas } from "./Schema";
-import { EntityReferences } from "./EntityReferences";
-import * as assert from "assert";
-import { _nativeDb } from "./internal/Symbols";
+import assert from "assert";
+import { Entity } from "./Entity.js";
+import { EntityReferences } from "./EntityReferences.js";
+import { IModelDb } from "./IModelDb.js";
+import { _nativeDb } from "./internal/Symbols.js";
+import { Schema, Schemas } from "./Schema.js";
 
 const isGeneratedClassTag = Symbol("isGeneratedClassTag");
 

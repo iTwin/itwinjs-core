@@ -6,6 +6,7 @@
  * @module Editing
  */
 
+import { assert } from "@itwin/core-bentley";
 import {
   CustomAttribute,
   CustomAttributeContainerProps,
@@ -14,14 +15,13 @@ import {
   PrimitivePropertyProps, PrimitiveType, SchemaItem, SchemaItemKey, SchemaItemType, SchemaKey, StructArrayPropertyProps,
   StructClass, StructPropertyProps,
 } from "@itwin/ecschema-metadata";
-import { assert } from "@itwin/core-bentley";
-import { SchemaContextEditor } from "./Editor";
-import { MutableClass } from "./Mutable/MutableClass";
-import * as Rules from "../Validation/ECRules";
-import { ArrayProperties, EnumerationProperties, PrimitiveProperties, Properties, StructProperties } from "./Properties";
-import { ClassId, CustomAttributeId, ECEditingStatus, PropertyId, SchemaEditingError, SchemaId, SchemaItemId } from "./Exception";
-import { AnyDiagnostic } from "../Validation/Diagnostic";
-import { CreateSchemaItem, SchemaItems } from "./SchemaItems";
+import { AnyDiagnostic } from "../Validation/Diagnostic.js";
+import * as Rules from "../Validation/ECRules.js";
+import { SchemaContextEditor } from "./Editor.js";
+import { ClassId, CustomAttributeId, ECEditingStatus, PropertyId, SchemaEditingError, SchemaId, SchemaItemId } from "./Exception.js";
+import { MutableClass } from "./Mutable/MutableClass.js";
+import { ArrayProperties, EnumerationProperties, PrimitiveProperties, Properties, StructProperties } from "./Properties.js";
+import { CreateSchemaItem, SchemaItems } from "./SchemaItems.js";
 
 export type ECClassSchemaItems = SchemaItemType.EntityClass | SchemaItemType.StructClass | SchemaItemType.RelationshipClass | SchemaItemType.Mixin | SchemaItemType.CustomAttributeClass;
 

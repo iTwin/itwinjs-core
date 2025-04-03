@@ -6,17 +6,17 @@
  * @module Bspline
  */
 
-import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
-import { Geometry } from "../Geometry";
-import { Point3dArray } from "../geometry3d/PointHelpers";
-import { ProxyCurve } from "../curve/ProxyCurve";
-import { CurvePrimitive } from "../curve/CurvePrimitive";
-import { BSplineCurveOps } from "../bspline/BSplineCurveOps";
-import { BSplineCurve3d } from "./BSplineCurve";
-import { GeometryQuery } from "../curve/GeometryQuery";
-import { Transform } from "../geometry3d/Transform";
-import { GeometryHandler } from "../geometry3d/GeometryHandler";
-import { XYZProps } from "../geometry3d/XYZProps";
+import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d.js";
+import { Geometry } from "../Geometry.js";
+import { Point3dArray } from "../geometry3d/PointHelpers.js";
+import { ProxyCurve } from "../curve/ProxyCurve.js";
+import { CurvePrimitive } from "../curve/CurvePrimitive.js";
+import { BSplineCurveOps } from "../bspline/BSplineCurveOps.js";
+import { BSplineCurve3d } from "./BSplineCurve.js";
+import { GeometryQuery } from "../curve/GeometryQuery.js";
+import { Transform } from "../geometry3d/Transform.js";
+import { GeometryHandler } from "../geometry3d/GeometryHandler.js";
+import { XYZProps } from "../geometry3d/XYZProps.js";
 
 /**
  * fitPoints and end condition data for [[InterpolationCurve3d]]

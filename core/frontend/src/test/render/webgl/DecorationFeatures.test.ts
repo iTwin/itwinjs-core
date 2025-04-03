@@ -4,10 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 import { afterAll, afterEach, beforeAll, describe, it } from "vitest";
 import { ColorDef, EmptyLocalization, RenderMode } from "@itwin/core-common";
-import { GraphicType, IModelApp, ScreenViewport } from "../../../core-frontend";
-import { expectColors } from "../../ExpectColors";
-import { testBlankViewport } from "../../openBlankViewport";
-import { BoxDecorator, TestDecorator } from "../../TestDecorators";
+import { GraphicType, IModelApp, ScreenViewport } from "../../../core-frontend.js";
+import { expectColors } from "../../ExpectColors.js";
+import { testBlankViewport } from "../../openBlankViewport.js";
+import { BoxDecorator, TestDecorator } from "../../TestDecorators.js";
 
 describe("Decorations containing Features", () => {
   beforeAll(async () => IModelApp.startup({ localization: new EmptyLocalization() }));

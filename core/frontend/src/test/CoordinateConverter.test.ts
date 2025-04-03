@@ -5,9 +5,9 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { Point3d, Range3d, XYAndZ, XYZProps } from "@itwin/core-geometry";
 import { Cartographic, EcefLocation, EmptyLocalization, GeoCoordStatus, PointWithStatus } from "@itwin/core-common";
-import { BlankConnection } from "../IModelConnection";
-import { IModelApp } from "../IModelApp";
-import { CoordinateConverter, CoordinateConverterOptions } from "../GeoServices";
+import { BlankConnection } from "../IModelConnection.js";
+import { IModelApp } from "../IModelApp.js";
+import { CoordinateConverter, CoordinateConverterOptions } from "../GeoServices.js";
 
 class Connection extends BlankConnection {
   private _isClosed = false;

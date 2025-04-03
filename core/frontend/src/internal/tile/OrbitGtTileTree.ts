@@ -17,22 +17,22 @@ import {
   OrbitGtDataManager, OrbitGtFrameData, OrbitGtIProjectToViewForSort, OrbitGtIViewRequest, OrbitGtLevel, OrbitGtTileIndex, OrbitGtTileLoadSorter,
   OrbitGtTransform, PageCachedFile, PointDataRaw, UrlFS,
 } from "@itwin/core-orbitgt";
-import { calculateEcefToDbTransformAtLocation } from "../../BackgroundMapGeometry";
-import { DisplayStyleState } from "../../DisplayStyleState";
-import { HitDetail } from "../../HitDetail";
-import { IModelApp } from "../../IModelApp";
-import { IModelConnection } from "../../IModelConnection";
-import { RealityDataSource } from "../../RealityDataSource";
-import { Mesh } from "../../common/internal/render/MeshPrimitives";
-import { RenderGraphic } from "../../render/RenderGraphic";
-import { RenderMemory } from "../../render/RenderMemory";
-import { RenderSystem } from "../../render/RenderSystem";
-import { ViewingSpace } from "../../ViewingSpace";
-import { Viewport } from "../../Viewport";
+import { calculateEcefToDbTransformAtLocation } from "../../BackgroundMapGeometry.js";
+import { DisplayStyleState } from "../../DisplayStyleState.js";
+import { HitDetail } from "../../HitDetail.js";
+import { IModelApp } from "../../IModelApp.js";
+import { IModelConnection } from "../../IModelConnection.js";
+import { RealityDataSource } from "../../RealityDataSource.js";
+import { Mesh } from "../../common/internal/render/MeshPrimitives.js";
+import { RenderGraphic } from "../../render/RenderGraphic.js";
+import { RenderMemory } from "../../render/RenderMemory.js";
+import { RenderSystem } from "../../render/RenderSystem.js";
+import { ViewingSpace } from "../../ViewingSpace.js";
+import { Viewport } from "../../Viewport.js";
 import {
   RealityModelTileTree, Tile, TileContent, TileDrawArgs, TileLoadPriority, TileParams, TileRequest, TileTree, TileTreeOwner,
   TileTreeParams, TileTreeSupplier, TileUsageMarker,
-} from "../../tile/internal";
+} from "../../tile/internal.js";
 
 const scratchRange = Range3d.create();
 const scratchWorldFrustum = new Frustum();

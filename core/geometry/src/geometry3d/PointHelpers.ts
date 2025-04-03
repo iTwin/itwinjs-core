@@ -6,16 +6,16 @@
 /** @packageDocumentation
  * @module CartesianGeometry
  */
-import { Geometry } from "../Geometry";
-import { Point4d } from "../geometry4d/Point4d";
-import { IndexedXYZCollection, MultiLineStringDataVariant } from "./IndexedXYZCollection";
-import { Plane3dByOriginAndUnitNormal } from "./Plane3dByOriginAndUnitNormal";
-import { Point2d } from "./Point2dVector2d";
-import { Point3dArrayCarrier } from "./Point3dArrayCarrier";
-import { Point3d, Vector3d, XYZ } from "./Point3dVector3d";
-import { PointStringDeepXYZArrayCollector, VariantPointDataStream } from "./PointStreaming";
-import { Transform } from "./Transform";
-import { XAndY, XYAndZ, XYZProps } from "./XYZProps";
+import { Geometry } from "../Geometry.js";
+import { Point4d } from "../geometry4d/Point4d.js";
+import { IndexedXYZCollection, MultiLineStringDataVariant } from "./IndexedXYZCollection.js";
+import { Plane3dByOriginAndUnitNormal } from "./Plane3dByOriginAndUnitNormal.js";
+import { Point2d } from "./Point2dVector2d.js";
+import { Point3dArrayCarrier } from "./Point3dArrayCarrier.js";
+import { Point3d, Vector3d, XYZ } from "./Point3dVector3d.js";
+import { PointStringDeepXYZArrayCollector, VariantPointDataStream } from "./PointStreaming.js";
+import { Transform } from "./Transform.js";
+import { XAndY, XYAndZ, XYZProps } from "./XYZProps.js";
 
 /**
  *

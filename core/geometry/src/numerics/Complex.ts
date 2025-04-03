@@ -5,8 +5,8 @@
 /** @packageDocumentation
  * @module Numerics
  */
-import { BeJSONFunctions, Geometry } from "../Geometry";
-import { Angle } from "../geometry3d/Angle";
+import { BeJSONFunctions, Geometry } from "../Geometry.js";
+import { Angle } from "../geometry3d/Angle.js";
 
 /**
  * OPerations on a "complex number" class with real part `x` and complex part `y`

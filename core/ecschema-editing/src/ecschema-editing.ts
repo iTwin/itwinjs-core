@@ -3,27 +3,27 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-export * from "./Validation/Diagnostic";
-export * from "./Validation/DiagnosticReporter";
-export { DiagnosticCodes, Diagnostics, ECRuleSet } from "./Validation/ECRules";
-export * from "./Validation/LoggingDiagnosticReporter";
-export * from "./Validation/Rules";
-export * from "./Validation/SchemaValidationVisitor";
-export * from "./Validation/SchemaWalker";
-export * from "./Validation/SchemaCompareDiagnostics";
-export * from "./Validation/SchemaChanges";
-export * from "./Validation/SchemaComparer";
-export * from "./Validation/SchemaCompareReporter";
-export * from "./Editing/Editor";
-export * from "./Editing/Exception";
-export { ISuppressionRule, IRuleSuppressionSet, IRuleSuppressionMap } from "./Validation/RuleSuppressionSet";
-export { SchemaValidater } from "./Validation/SchemaValidater";
-export * from "./Differencing/SchemaDifference";
-export * from "./Differencing/SchemaConflicts";
-export * from "./Differencing/Errors";
-export * from "./Differencing/Utils";
-export { SchemaMerger } from "./Merging/SchemaMerger";
-export * from "./Merging/Edits/SchemaEdits";
+export * from "./Differencing/Errors.js";
+export * from "./Differencing/SchemaConflicts.js";
+export * from "./Differencing/SchemaDifference.js";
+export * from "./Differencing/Utils.js";
+export * from "./Editing/Editor.js";
+export * from "./Editing/Exception.js";
+export * from "./Merging/Edits/SchemaEdits.js";
+export { SchemaMerger } from "./Merging/SchemaMerger.js";
+export * from "./Validation/Diagnostic.js";
+export * from "./Validation/DiagnosticReporter.js";
+export { DiagnosticCodes, Diagnostics, ECRuleSet } from "./Validation/ECRules.js";
+export * from "./Validation/LoggingDiagnosticReporter.js";
+export * from "./Validation/Rules.js";
+export { IRuleSuppressionMap, IRuleSuppressionSet, ISuppressionRule } from "./Validation/RuleSuppressionSet.js";
+export * from "./Validation/SchemaChanges.js";
+export * from "./Validation/SchemaCompareDiagnostics.js";
+export * from "./Validation/SchemaComparer.js";
+export * from "./Validation/SchemaCompareReporter.js";
+export { SchemaValidater } from "./Validation/SchemaValidater.js";
+export * from "./Validation/SchemaValidationVisitor.js";
+export * from "./Validation/SchemaWalker.js";
 
 /** @docs-package-description
  * The ecschema-editing package contains classes for validating, and editing ECSchemas that can be used in both [frontend]($docs/learning/frontend/index.md) and [backend]($docs/learning/backend/index.md).

@@ -3,12 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
+import { ElementGraphicsStatus } from "@bentley/imodeljs-native";
 import { assert } from "@itwin/core-bentley";
 import { CurrentImdlVersion, DynamicGraphicsRequest3dProps, ElementGeometry, ElementGeometryDataEntry, ElementGraphicsRequestProps, GeometryStreamIterator } from "@itwin/core-common";
-import { ElementGraphicsStatus } from "@bentley/imodeljs-native";
-import { _nativeDb, GeometricElement3d, SnapshotDb } from "../../core-backend";
-import { IModelTestUtils } from "../IModelTestUtils";
+import { expect } from "chai";
+import { _nativeDb, GeometricElement3d, SnapshotDb } from "../../core-backend.js";
+import { IModelTestUtils } from "../IModelTestUtils.js";
 
 describe("ElementGraphics", () => {
   let imodel: SnapshotDb;

@@ -5,27 +5,27 @@
 
 import { assert as bAssert } from "@itwin/core-bentley";
 import { assert, expect } from "chai";
-import { SchemaContext } from "../../Context";
-import { DelayedPromiseWithProps } from "../../DelayedPromise";
-import { PrimitiveType, StrengthDirection } from "../../ECObjects";
-import { ECObjectsError } from "../../Exception";
-import { ECClass, MutableClass, StructClass } from "../../Metadata/Class";
-import { CustomAttribute } from "../../Metadata/CustomAttribute";
-import { EntityClass } from "../../Metadata/EntityClass";
-import { Enumeration } from "../../Metadata/Enumeration";
-import { KindOfQuantity } from "../../Metadata/KindOfQuantity";
+import { ECSchemaNamespaceUris } from "../../Constants.js";
+import { SchemaContext } from "../../Context.js";
+import { DelayedPromiseWithProps } from "../../DelayedPromise.js";
+import { PrimitiveType, StrengthDirection } from "../../ECObjects.js";
+import { ECObjectsError } from "../../Exception.js";
+import { ECClass, MutableClass, StructClass } from "../../Metadata/Class.js";
+import { CustomAttribute } from "../../Metadata/CustomAttribute.js";
+import { EntityClass } from "../../Metadata/EntityClass.js";
+import { Enumeration } from "../../Metadata/Enumeration.js";
+import { KindOfQuantity } from "../../Metadata/KindOfQuantity.js";
 import {
   EnumerationArrayProperty, EnumerationProperty, MutableProperty, NavigationProperty, PrimitiveArrayProperty, PrimitiveProperty, Property,
   StructArrayProperty, StructProperty,
-} from "../../Metadata/Property";
-import { PropertyCategory } from "../../Metadata/PropertyCategory";
-import { RelationshipClass } from "../../Metadata/RelationshipClass";
-import { MutableSchema, Schema } from "../../Metadata/Schema";
-import { PropertyType } from "../../PropertyTypes";
-import { createSchemaJsonWithItems } from "../TestUtils/DeserializationHelpers";
-import { createEmptyXmlDocument } from "../TestUtils/SerializationHelper";
-import { TestSchemaLocater } from "../TestUtils/FormatTestHelper";
-import { ECSchemaNamespaceUris } from "../../Constants";
+} from "../../Metadata/Property.js";
+import { PropertyCategory } from "../../Metadata/PropertyCategory.js";
+import { RelationshipClass } from "../../Metadata/RelationshipClass.js";
+import { MutableSchema, Schema } from "../../Metadata/Schema.js";
+import { PropertyType } from "../../PropertyTypes.js";
+import { createSchemaJsonWithItems } from "../TestUtils/DeserializationHelpers.js";
+import { TestSchemaLocater } from "../TestUtils/FormatTestHelper.js";
+import { createEmptyXmlDocument } from "../TestUtils/SerializationHelper.js";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 

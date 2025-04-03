@@ -6,7 +6,7 @@
  * @module Rendering
  */
 
-import { ColorDef } from "./ColorDef";
+import { ColorDef } from "./ColorDef.js";
 
 /** As part of a [[ColorIndex]], describes per-vertex colors for a [MeshArgs]($frontend) or [PolylineArgs]($frontend).
  * The [[colors]] array holds the set of unique colors. The [[indices]] array describes the color of each vertex as an index into [[colors]].

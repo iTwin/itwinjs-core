@@ -8,9 +8,9 @@
  */
 
 import { IModelApp, TileAdmin, Viewport } from "@itwin/core-frontend";
-import { createButton } from "../ui/Button";
-import { createCheckBox } from "../ui/CheckBox";
-import { createNumericInput } from "../ui/NumericInput";
+import { createButton } from "../ui/Button.js";
+import { createCheckBox } from "../ui/CheckBox.js";
+import { createNumericInput } from "../ui/NumericInput.js";
 
 type GetStatValue = (stats: TileAdmin.Statistics, vp: Viewport) => number;
 interface StatEntry {

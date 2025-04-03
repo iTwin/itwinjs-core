@@ -3,13 +3,16 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import * as os from "os";
-import * as process from "process";
 import { Logger, LogLevel } from "@itwin/core-bentley";
-import { BackendLoggerCategory } from "./BackendLoggerCategory";
-import { IModelHost } from "./IModelHost";
-import { IModelNative } from "./internal/NativePlatform";
 import { RpcInterfaceEndpoints } from "@itwin/core-common";
+import os from "os";
+import process from "process";
+import { BackendLoggerCategory } from "./BackendLoggerCategory.js";
+import { IModelHost } from "./IModelHost.js";
+import { IModelNative } from "./internal/NativePlatform.js";
+// @ts-expect-error package.json will resolve from the lib/{cjs,esm} dir without copying it into the build output we deliver
+// eslint-disable-next-line @itwin/import-within-package
+import packageJson from "../../package.json" with { type: "json" };
 
 // cspell:ignore ppid elap
 
@@ -208,7 +211,7 @@ export class DevTools {
     const availableRpcs: RpcInterfaceEndpoints[] = [];
     return {
       application: IModelHost.applicationVersion,
-      iTwinJs: require("../../package.json").version, // eslint-disable-line @typescript-eslint/no-require-imports
+      iTwinJs: packageJson.version,
       availableRpcs, // filled in on the frontend
     };
   }

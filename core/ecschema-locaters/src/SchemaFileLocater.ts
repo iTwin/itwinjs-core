@@ -6,10 +6,10 @@
  * @module Locaters
  */
 
-import * as fs from "fs";
-import { globSync } from "glob";
-import * as path from "path";
 import { Schema, SchemaContext, SchemaKey, SchemaMatchType } from "@itwin/ecschema-metadata";
+import fs from "fs";
+import { globSync } from "glob";
+import path from "path";
 
 const formatString = (format: string, ...args: string[]) => {
   return format.replace(/{(\d+)}/g, (match, theNumber) => {

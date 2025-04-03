@@ -2,9 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { join } from "path";
-import { tmpdir } from "os";
 import { ProcessDetector } from "@itwin/core-bentley";
+import { tmpdir } from "os";
+import { join } from "path";
 
 export class KnownTestLocations {
 
@@ -16,7 +16,7 @@ export class KnownTestLocations {
       return join(tmpdir(), "assets");
     }
 
-    return join(__dirname, "assets");
+    return join(import.meta.dirname, "assets");
   }
 
   /** The directory where tests can write. */
@@ -26,6 +26,6 @@ export class KnownTestLocations {
     }
 
     // Assume that we are running in nodejs
-    return join(__dirname, "output");
+    return join(import.meta.dirname, "output");
   }
 }

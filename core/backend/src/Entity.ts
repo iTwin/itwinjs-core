@@ -8,9 +8,9 @@
 
 import { Id64, Id64String } from "@itwin/core-bentley";
 import { EntityProps, EntityReferenceSet, PropertyCallback, PropertyMetaData } from "@itwin/core-common";
-import type { IModelDb } from "./IModelDb";
-import { Schema } from "./Schema";
 import { EntityClass, PropertyHandler, SchemaItemKey } from "@itwin/ecschema-metadata";
+import type { IModelDb } from "./IModelDb.js";
+import { Schema } from "./Schema.js";
 
 /** Represents one of the fundamental building block in an [[IModelDb]]: as an [[Element]], [[Model]], or [[Relationship]].
  * Every subclass of Entity represents one BIS [ECClass]($ecschema-metadata).

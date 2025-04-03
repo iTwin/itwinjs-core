@@ -4,20 +4,20 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { describe, expect, it } from "vitest";
-import { Geometry } from "../../Geometry";
-import { Angle } from "../../geometry3d/Angle";
-import { BilinearPatch } from "../../geometry3d/BilinearPatch";
-import { Matrix3d } from "../../geometry3d/Matrix3d";
-import { Point2d } from "../../geometry3d/Point2dVector2d";
-import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
-import { Range3d } from "../../geometry3d/Range";
-import { Ray3d } from "../../geometry3d/Ray3d";
-import { Transform } from "../../geometry3d/Transform";
-import { Checker } from "../Checker";
-import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
-import { GeometryQuery } from "../../curve/GeometryQuery";
-import { StrokeOptions } from "../../curve/StrokeOptions";
-import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
+import { Geometry } from "../../Geometry.js";
+import { Angle } from "../../geometry3d/Angle.js";
+import { BilinearPatch } from "../../geometry3d/BilinearPatch.js";
+import { Matrix3d } from "../../geometry3d/Matrix3d.js";
+import { Point2d } from "../../geometry3d/Point2dVector2d.js";
+import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d.js";
+import { Range3d } from "../../geometry3d/Range.js";
+import { Ray3d } from "../../geometry3d/Ray3d.js";
+import { Transform } from "../../geometry3d/Transform.js";
+import { Checker } from "../Checker.js";
+import { GeometryCoreTestIO } from "../GeometryCoreTestIO.js";
+import { GeometryQuery } from "../../curve/GeometryQuery.js";
+import { StrokeOptions } from "../../curve/StrokeOptions.js";
+import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder.js";
 
 function verifyPatch(ck: Checker, patch: BilinearPatch) {
   const transform = Transform.createOriginAndMatrix(Point3d.create(10, 20, 10), Matrix3d.createRotationAroundVector(Vector3d.create(1, 4, 2), Angle.createDegrees(20)));

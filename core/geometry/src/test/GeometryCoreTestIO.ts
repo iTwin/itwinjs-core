@@ -2,28 +2,28 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as fs from "fs";
-import { Arc3d } from "../curve/Arc3d";
-import { CurveLocationDetail, CurveLocationDetailPair } from "../curve/CurveLocationDetail";
-import { GeometryQuery } from "../curve/GeometryQuery";
-import { CurveChainWireOffsetContext } from "../curve/internalContexts/PolygonOffsetContext";
-import { LineSegment3d } from "../curve/LineSegment3d";
-import { LineString3d } from "../curve/LineString3d";
-import { Loop } from "../curve/Loop";
-import { Geometry } from "../Geometry";
-import { AngleSweep } from "../geometry3d/AngleSweep";
-import { UVSurface } from "../geometry3d/GeometryHandler";
-import { IndexedXYZCollection } from "../geometry3d/IndexedXYZCollection";
-import { Point3d } from "../geometry3d/Point3dVector3d";
-import { PolygonOps } from "../geometry3d/PolygonOps";
-import { Range2d, Range3d } from "../geometry3d/Range";
-import { Transform } from "../geometry3d/Transform";
-import { MomentData } from "../geometry4d/MomentData";
-import { IndexedPolyface, Polyface } from "../polyface/Polyface";
-import { PolyfaceBuilder } from "../polyface/PolyfaceBuilder";
-import { BentleyGeometryFlatBuffer } from "../serialization/BentleyGeometryFlatBuffer";
-import { IModelJson } from "../serialization/IModelJsonSchema";
-import { prettyPrint } from "./testFunctions";
+import fs from "fs";
+import { Arc3d } from "../curve/Arc3d.js";
+import { CurveLocationDetail, CurveLocationDetailPair } from "../curve/CurveLocationDetail.js";
+import { GeometryQuery } from "../curve/GeometryQuery.js";
+import { CurveChainWireOffsetContext } from "../curve/internalContexts/PolygonOffsetContext.js";
+import { LineSegment3d } from "../curve/LineSegment3d.js";
+import { LineString3d } from "../curve/LineString3d.js";
+import { Loop } from "../curve/Loop.js";
+import { Geometry } from "../Geometry.js";
+import { AngleSweep } from "../geometry3d/AngleSweep.js";
+import { UVSurface } from "../geometry3d/GeometryHandler.js";
+import { IndexedXYZCollection } from "../geometry3d/IndexedXYZCollection.js";
+import { Point3d } from "../geometry3d/Point3dVector3d.js";
+import { PolygonOps } from "../geometry3d/PolygonOps.js";
+import { Range2d, Range3d } from "../geometry3d/Range.js";
+import { Transform } from "../geometry3d/Transform.js";
+import { MomentData } from "../geometry4d/MomentData.js";
+import { IndexedPolyface, Polyface } from "../polyface/Polyface.js";
+import { PolyfaceBuilder } from "../polyface/PolyfaceBuilder.js";
+import { BentleyGeometryFlatBuffer } from "../serialization/BentleyGeometryFlatBuffer.js";
+import { IModelJson } from "../serialization/IModelJsonSchema.js";
+import { prettyPrint } from "./testFunctions.js";
 
 // Methods (called from other files in the test suite) for doing I/O of tests files.
 export class GeometryCoreTestIO {
@@ -34,7 +34,7 @@ export class GeometryCoreTestIO {
   /** For debugging: set to true to also run longer tests */
   public static enableLongTests: boolean = false;
   /** For debugging: the location of json files output by saveGeometry. */
-  public static outputRootDirectory = "./src/test/output";
+  public static outputRootDirectory = "./src/test/output.js";
   /** Wrapper for console.log */
   public static consoleLog(message?: any, ...optionalParams: any[]): void {
     if (this.enableConsole)

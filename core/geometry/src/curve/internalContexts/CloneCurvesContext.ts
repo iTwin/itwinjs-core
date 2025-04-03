@@ -6,10 +6,10 @@
  * @module Curve
  */
 
-import { Transform } from "../../geometry3d/Transform";
-import { BagOfCurves, CurveChain, CurveCollection } from "../CurveCollection";
-import { CurvePrimitive } from "../CurvePrimitive";
-import { RecursiveCurveProcessorWithStack } from "../CurveProcessor";
+import { Transform } from "../../geometry3d/Transform.js";
+import { BagOfCurves, CurveChain, CurveCollection } from "../CurveCollection.js";
+import { CurvePrimitive } from "../CurvePrimitive.js";
+import { RecursiveCurveProcessorWithStack } from "../CurveProcessor.js";
 
 /**
  * Algorithmic class for cloning curve collections.

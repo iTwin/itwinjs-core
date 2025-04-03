@@ -7,39 +7,39 @@
  * @module ArraysAndInterfaces
  */
 
-import { AkimaCurve3d } from "../bspline/AkimaCurve3d";
-import { BezierCurve3d } from "../bspline/BezierCurve3d";
-import { BezierCurve3dH } from "../bspline/BezierCurve3dH";
-import { BezierCurveBase } from "../bspline/BezierCurveBase";
-import { BSplineCurve3d } from "../bspline/BSplineCurve";
-import { BSplineCurve3dH } from "../bspline/BSplineCurve3dH";
-import { BSplineSurface3d, BSplineSurface3dH } from "../bspline/BSplineSurface";
-import { InterpolationCurve3d } from "../bspline/InterpolationCurve3d";
-import { Arc3d } from "../curve/Arc3d";
-import { CoordinateXYZ } from "../curve/CoordinateXYZ";
-import { CurveChainWithDistanceIndex } from "../curve/CurveChainWithDistanceIndex";
-import { BagOfCurves, CurveCollection } from "../curve/CurveCollection";
-import { CurvePrimitive } from "../curve/CurvePrimitive";
-import { GeometryQuery } from "../curve/GeometryQuery";
-import { LineSegment3d } from "../curve/LineSegment3d";
-import { LineString3d } from "../curve/LineString3d";
-import { Loop } from "../curve/Loop";
-import { ParityRegion } from "../curve/ParityRegion";
-import { Path } from "../curve/Path";
-import { PointString3d } from "../curve/PointString3d";
-import { TransitionSpiral3d } from "../curve/spiral/TransitionSpiral3d";
-import { UnionRegion } from "../curve/UnionRegion";
-import { IndexedPolyface } from "../polyface/Polyface";
-import { Box } from "../solid/Box";
-import { Cone } from "../solid/Cone";
-import { LinearSweep } from "../solid/LinearSweep";
-import { RotationalSweep } from "../solid/RotationalSweep";
-import { RuledSweep } from "../solid/RuledSweep";
-import { Sphere } from "../solid/Sphere";
-import { TorusPipe } from "../solid/TorusPipe";
-import { Plane3dByOriginAndVectors } from "./Plane3dByOriginAndVectors";
-import { Vector2d } from "./Point2dVector2d";
-import { Point3d, Vector3d } from "./Point3dVector3d";
+import { AkimaCurve3d } from "../bspline/AkimaCurve3d.js";
+import { BezierCurve3d } from "../bspline/BezierCurve3d.js";
+import { BezierCurve3dH } from "../bspline/BezierCurve3dH.js";
+import { BezierCurveBase } from "../bspline/BezierCurveBase.js";
+import { BSplineCurve3d } from "../bspline/BSplineCurve.js";
+import { BSplineCurve3dH } from "../bspline/BSplineCurve3dH.js";
+import { BSplineSurface3d, BSplineSurface3dH } from "../bspline/BSplineSurface.js";
+import { InterpolationCurve3d } from "../bspline/InterpolationCurve3d.js";
+import { Arc3d } from "../curve/Arc3d.js";
+import { CoordinateXYZ } from "../curve/CoordinateXYZ.js";
+import { CurveChainWithDistanceIndex } from "../curve/CurveChainWithDistanceIndex.js";
+import { BagOfCurves, CurveCollection } from "../curve/CurveCollection.js";
+import { CurvePrimitive } from "../curve/CurvePrimitive.js";
+import { GeometryQuery } from "../curve/GeometryQuery.js";
+import { LineSegment3d } from "../curve/LineSegment3d.js";
+import { LineString3d } from "../curve/LineString3d.js";
+import { Loop } from "../curve/Loop.js";
+import { ParityRegion } from "../curve/ParityRegion.js";
+import { Path } from "../curve/Path.js";
+import { PointString3d } from "../curve/PointString3d.js";
+import { TransitionSpiral3d } from "../curve/spiral/TransitionSpiral3d.js";
+import { UnionRegion } from "../curve/UnionRegion.js";
+import { IndexedPolyface } from "../polyface/Polyface.js";
+import { Box } from "../solid/Box.js";
+import { Cone } from "../solid/Cone.js";
+import { LinearSweep } from "../solid/LinearSweep.js";
+import { RotationalSweep } from "../solid/RotationalSweep.js";
+import { RuledSweep } from "../solid/RuledSweep.js";
+import { Sphere } from "../solid/Sphere.js";
+import { TorusPipe } from "../solid/TorusPipe.js";
+import { Plane3dByOriginAndVectors } from "./Plane3dByOriginAndVectors.js";
+import { Vector2d } from "./Point2dVector2d.js";
+import { Point3d, Vector3d } from "./Point3dVector3d.js";
 
 /**
  * `GeometryHandler` defines the base abstract methods for double-dispatch geometry computation.

@@ -2,11 +2,11 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as express from "express";
-import * as enableWs from "express-ws";
-import { Server as HttpServer } from "http";
-import { BentleyCloudRpcConfiguration, RpcConfiguration, WebAppRpcProtocol } from "@itwin/core-common";
 import { LocalhostIpcHost } from "@itwin/core-backend";
+import { BentleyCloudRpcConfiguration, RpcConfiguration, WebAppRpcProtocol } from "@itwin/core-common";
+import express from "express";
+import enableWs from "express-ws";
+import { Server as HttpServer } from "http";
 
 /**
  * Options for configuring IModelJsExpressServer.

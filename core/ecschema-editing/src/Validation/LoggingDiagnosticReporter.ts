@@ -7,8 +7,8 @@
  */
 
 import { Logger } from "@itwin/core-bentley";
-import { AnyDiagnostic, DiagnosticCategory } from "./Diagnostic";
-import { FormatDiagnosticReporter } from "./DiagnosticReporter";
+import { AnyDiagnostic, DiagnosticCategory } from "./Diagnostic.js";
+import { FormatDiagnosticReporter } from "./DiagnosticReporter.js";
 
 const loggingCategory = "ecschema-metadata";
 

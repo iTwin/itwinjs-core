@@ -7,12 +7,12 @@
  */
 
 import { Id64String } from "@itwin/core-bentley";
-import { Point3d, Range1d, Vector3d } from "@itwin/core-geometry";
 import { RenderTexture, TextureTransparency } from "@itwin/core-common";
 import {
   DecorateContext, GraphicType, HitDetail, imageElementFromUrl, IModelApp, IModelConnection, ParticleCollectionBuilder, ParticleProps, Tool,
 } from "@itwin/core-frontend";
-import { randomFloat, randomFloatInRange, randomIntegerInRange, randomPositionInRange } from "./Random";
+import { Point3d, Range1d, Vector3d } from "@itwin/core-geometry";
+import { randomFloat, randomFloatInRange, randomIntegerInRange, randomPositionInRange } from "./Random.js";
 
 /** Represents one particle in the system. */
 class Particle implements ParticleProps {

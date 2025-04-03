@@ -4,10 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { IModelApp } from "../../../IModelApp";
-import { GL } from "../../../internal/render/webgl/GL";
-import { RenderState } from "../../../internal/render/webgl/RenderState";
-import { System } from "../../../internal/render/webgl/System";
+import { IModelApp } from "../../../IModelApp.js";
+import { GL } from "../../../internal/render/webgl/GL.js";
+import { RenderState } from "../../../internal/render/webgl/RenderState.js";
+import { System } from "../../../internal/render/webgl/System.js";
 import { EmptyLocalization } from "@itwin/core-common";
 
 describe("RenderState", () => {

@@ -2,16 +2,16 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert, expect } from "chai";
-import { computeGraphemeOffsets, ComputeGraphemeOffsetsArgs, ComputeRangesForTextLayout, ComputeRangesForTextLayoutArgs, FindFontId, FindTextStyle, layoutTextBlock, LineLayout, RunLayout, TextBlockLayout, TextLayoutRanges } from "../../TextAnnotationLayout";
-import { Geometry, Range2d } from "@itwin/core-geometry";
-import { ColorDef, FontType, FractionRun, LineBreakRun, LineLayoutResult, Run, RunLayoutResult, TextAnnotation, TextAnnotation2dProps, TextAnnotation3dProps, TextAnnotationAnchor, TextBlock, TextBlockGeometryPropsEntry, TextBlockMargins, TextRun, TextStringProps, TextStyleSettings } from "@itwin/core-common";
-import { IModelDb, SnapshotDb } from "../../IModelDb";
-import { TextAnnotation2d, TextAnnotation3d } from "../../TextAnnotationElement";
-import { produceTextAnnotationGeometry } from "../../TextAnnotationGeometry";
-import { IModelTestUtils } from "../IModelTestUtils";
-import { GeometricElement3d } from "../../Element";
 import { Id64, ProcessDetector } from "@itwin/core-bentley";
+import { ColorDef, FontType, FractionRun, LineBreakRun, LineLayoutResult, Run, RunLayoutResult, TextAnnotation, TextAnnotation2dProps, TextAnnotation3dProps, TextAnnotationAnchor, TextBlock, TextBlockGeometryPropsEntry, TextBlockMargins, TextRun, TextStringProps, TextStyleSettings } from "@itwin/core-common";
+import { Geometry, Range2d } from "@itwin/core-geometry";
+import { assert, expect } from "chai";
+import { GeometricElement3d } from "../../Element.js";
+import { IModelDb, SnapshotDb } from "../../IModelDb.js";
+import { TextAnnotation2d, TextAnnotation3d } from "../../TextAnnotationElement.js";
+import { produceTextAnnotationGeometry } from "../../TextAnnotationGeometry.js";
+import { computeGraphemeOffsets, ComputeGraphemeOffsetsArgs, ComputeRangesForTextLayout, ComputeRangesForTextLayoutArgs, FindFontId, FindTextStyle, layoutTextBlock, LineLayout, RunLayout, TextBlockLayout, TextLayoutRanges } from "../../TextAnnotationLayout.js";
+import { IModelTestUtils } from "../IModelTestUtils.js";
 
 function computeTextRangeAsStringLength(args: ComputeRangesForTextLayoutArgs): TextLayoutRanges {
   const range = new Range2d(0, 0, args.chars.length, args.lineHeight);

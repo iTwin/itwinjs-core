@@ -3,19 +3,19 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert, expect } from "chai";
-import { SchemaContext } from "../../Context";
-import { ECObjectsError } from "../../Exception";
-import { Format } from "../../Metadata/Format";
-import { KindOfQuantity } from "../../Metadata/KindOfQuantity";
-import { OverrideFormat } from "../../Metadata/OverrideFormat";
-import { Schema } from "../../Metadata/Schema";
-import { Unit } from "../../Metadata/Unit";
 import { DecimalPrecision } from "@itwin/core-quantity";
-import { createSchemaJsonWithItems } from "../TestUtils/DeserializationHelpers";
-import { TestSchemaLocater } from "../TestUtils/FormatTestHelper";
-import { createEmptyXmlDocument } from "../TestUtils/SerializationHelper";
-import { ECSchemaNamespaceUris } from "../../Constants";
+import { assert, expect } from "chai";
+import { ECSchemaNamespaceUris } from "../../Constants.js";
+import { SchemaContext } from "../../Context.js";
+import { ECObjectsError } from "../../Exception.js";
+import { Format } from "../../Metadata/Format.js";
+import { KindOfQuantity } from "../../Metadata/KindOfQuantity.js";
+import { OverrideFormat } from "../../Metadata/OverrideFormat.js";
+import { Schema } from "../../Metadata/Schema.js";
+import { Unit } from "../../Metadata/Unit.js";
+import { createSchemaJsonWithItems } from "../TestUtils/DeserializationHelpers.js";
+import { TestSchemaLocater } from "../TestUtils/FormatTestHelper.js";
+import { createEmptyXmlDocument } from "../TestUtils/SerializationHelper.js";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 

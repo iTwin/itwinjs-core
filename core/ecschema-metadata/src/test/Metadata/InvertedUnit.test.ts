@@ -4,16 +4,16 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, expect } from "chai";
-import { SchemaContext } from "../../Context";
-import { SchemaItemType } from "../../ECObjects";
-import { ECObjectsError } from "../../Exception";
-import { InvertedUnit } from "../../Metadata/InvertedUnit";
-import { Schema } from "../../Metadata/Schema";
-import { Unit } from "../../Metadata/Unit";
-import { UnitSystem } from "../../Metadata/UnitSystem";
-import { createEmptyXmlDocument } from "../TestUtils/SerializationHelper";
-import { createSchemaJsonWithItems } from "../TestUtils/DeserializationHelpers";
-import { ECSchemaNamespaceUris } from "../../Constants";
+import { ECSchemaNamespaceUris } from "../../Constants.js";
+import { SchemaContext } from "../../Context.js";
+import { SchemaItemType } from "../../ECObjects.js";
+import { ECObjectsError } from "../../Exception.js";
+import { InvertedUnit } from "../../Metadata/InvertedUnit.js";
+import { Schema } from "../../Metadata/Schema.js";
+import { Unit } from "../../Metadata/Unit.js";
+import { UnitSystem } from "../../Metadata/UnitSystem.js";
+import { createSchemaJsonWithItems } from "../TestUtils/DeserializationHelpers.js";
+import { createEmptyXmlDocument } from "../TestUtils/SerializationHelper.js";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 

@@ -7,8 +7,8 @@
  */
 
 import { Id64String } from "@itwin/core-bentley";
-import { RenderMemory } from "../../render/RenderMemory";
-import { SceneContext } from "../../ViewContext";
+import { RenderMemory } from "../../render/RenderMemory.js";
+import { SceneContext } from "../../ViewContext.js";
 
 /** An opaque representation of a texture draped on geometry within a [[Viewport]]. */
 export abstract class RenderTextureDrape implements Disposable {

@@ -7,18 +7,18 @@ import {
   Cone, Point3d, PolyfaceBuilder, Range3d, Sphere, StrokeOptions, Transform,
 } from "@itwin/core-geometry";
 import { ColorByName, ColorDef, ColorDefProps, ColorIndex, EmptyLocalization, FeatureIndex, FillFlags, QParams3d, QPoint3dList, RenderMode } from "@itwin/core-common";
-import { GraphicBuilder, ViewportGraphicBuilderOptions } from "../../render/GraphicBuilder";
-import { IModelApp, IModelAppOptions } from "../../IModelApp";
-import { IModelConnection } from "../../IModelConnection";
-import { createBlankConnection } from "../createBlankConnection";
-import { RenderSystem } from "../../render/RenderSystem";
-import { ScreenViewport } from "../../Viewport";
-import { MeshParams } from "../../common/internal/render/MeshParams";
-import { SurfaceType } from "../../common/internal/render/SurfaceParams";
-import { MeshRenderGeometry } from "../../internal/render/webgl/Mesh";
-import { openBlankViewport } from "../openBlankViewport";
-import { GraphicType } from "../../common/render/GraphicType";
-import { MeshArgs } from "../../render/MeshArgs";
+import { GraphicBuilder, ViewportGraphicBuilderOptions } from "../../render/GraphicBuilder.js";
+import { IModelApp, IModelAppOptions } from "../../IModelApp.js";
+import { IModelConnection } from "../../IModelConnection.js";
+import { createBlankConnection } from "../createBlankConnection.js";
+import { RenderSystem } from "../../render/RenderSystem.js";
+import { ScreenViewport } from "../../Viewport.js";
+import { MeshParams } from "../../common/internal/render/MeshParams.js";
+import { SurfaceType } from "../../common/internal/render/SurfaceParams.js";
+import { MeshRenderGeometry } from "../../internal/render/webgl/Mesh.js";
+import { openBlankViewport } from "../openBlankViewport.js";
+import { GraphicType } from "../../common/render/GraphicType.js";
+import { MeshArgs } from "../../render/MeshArgs.js";
 
 describe("GraphicBuilder", () => {
   let imodel: IModelConnection;
@@ -315,14 +315,14 @@ describe("GraphicBuilder", () => {
         return createPointStringGeometry.apply(IModelApp.renderSystem, [params, viOrigin]);
       };
     });
-    
+
     afterEach(() => {
       primitiveColors.length = 0;
       IModelApp.renderSystem.createMeshGeometry = createMeshGeometry;
       IModelApp.renderSystem.createPolylineGeometry = createPolylineGeometry;
       IModelApp.renderSystem.createPointStringGeometry = createPointStringGeometry;
     });
-    
+
     const lineColor = ColorDef.red;
     const fillColor = ColorDef.blue;
     const points = [new Point3d(0, 0, 0), new Point3d(1, 0, 0), new Point3d(0, 1, 0), new Point3d(0, 0, 0)];
@@ -350,7 +350,7 @@ describe("GraphicBuilder", () => {
       builder.finish();
       expectColor(["PointString", lineColor.toJSON()]);
     });
-    
+
     it("produces edge table for planar region if line color and fill color are the same", () => {
       const builder = IModelApp.renderSystem.createGraphic({ type: GraphicType.Scene, viewport });
       builder.setSymbology(fillColor, fillColor, 1);

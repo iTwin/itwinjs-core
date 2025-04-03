@@ -6,10 +6,10 @@
  * @module SQLite
  */
 
+import { IModelJsNative } from "@bentley/imodeljs-native";
 import { assert, BentleyError, DbResult, GuidString, Id64String, LRUMap } from "@itwin/core-bentley";
 import { ECJsNames, IModelError } from "@itwin/core-common";
-import { IModelJsNative } from "@bentley/imodeljs-native";
-import { IModelNative } from "./internal/NativePlatform";
+import { IModelNative } from "./internal/NativePlatform.js";
 
 // spell:ignore julianday
 

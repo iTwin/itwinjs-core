@@ -11,14 +11,14 @@ import {
   RelationshipClass, RelationshipClassProps, RelationshipConstraint, RelationshipEnd, RelationshipMultiplicity, SchemaItemKey, SchemaItemType,
   SchemaKey, StrengthDirection, StrengthType,
 } from "@itwin/ecschema-metadata";
-import { SchemaContextEditor } from "./Editor";
-import { ECClasses } from "./ECClasses";
-import { MutableRelationshipClass, MutableRelationshipConstraint } from "./Mutable/MutableRelationshipClass";
-import * as Rules from "../Validation/ECRules";
-import { AnyDiagnostic, RelationshipConstraintDiagnostic, SchemaItemDiagnostic } from "../Validation/Diagnostic";
-import { NavigationProperties } from "./Properties";
-import { ClassId, CustomAttributeId, ECEditingStatus, RelationshipConstraintId, SchemaEditingError } from "./Exception";
-import { MutableClass } from "./Mutable/MutableClass";
+import { AnyDiagnostic, RelationshipConstraintDiagnostic, SchemaItemDiagnostic } from "../Validation/Diagnostic.js";
+import * as Rules from "../Validation/ECRules.js";
+import { ECClasses } from "./ECClasses.js";
+import { SchemaContextEditor } from "./Editor.js";
+import { ClassId, CustomAttributeId, ECEditingStatus, RelationshipConstraintId, SchemaEditingError } from "./Exception.js";
+import { MutableClass } from "./Mutable/MutableClass.js";
+import { MutableRelationshipClass, MutableRelationshipConstraint } from "./Mutable/MutableRelationshipClass.js";
+import { NavigationProperties } from "./Properties.js";
 
 /**
  * @alpha

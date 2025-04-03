@@ -3,10 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
 import { Enumeration, PrimitiveType, Schema, SchemaContext } from "@itwin/ecschema-metadata";
-import * as Rules from "../../../Validation/ECRules";
-import { DiagnosticCategory, DiagnosticType } from "../../../Validation/Diagnostic";
+import { expect } from "chai";
+import { DiagnosticCategory, DiagnosticType } from "../../../Validation/Diagnostic.js";
+import * as Rules from "../../../Validation/ECRules.js";
 
 describe("Enumeration rule tests", () => {
   let schema: Schema;

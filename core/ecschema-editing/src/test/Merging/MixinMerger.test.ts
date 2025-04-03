@@ -3,10 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { ECClassModifier, Mixin, Schema, SchemaContext, SchemaItemType } from "@itwin/ecschema-metadata";
-import { SchemaMerger } from "../../Merging/SchemaMerger";
 import { expect } from "chai";
-import { BisTestHelper } from "../TestUtils/BisTestHelper";
-import { AnySchemaDifferenceConflict, ConflictCode, getSchemaDifferences, SchemaEdits } from "../../ecschema-editing";
+import { AnySchemaDifferenceConflict, ConflictCode, getSchemaDifferences, SchemaEdits } from "../../ecschema-editing.js";
+import { SchemaMerger } from "../../Merging/SchemaMerger.js";
+import { BisTestHelper } from "../TestUtils/BisTestHelper.js";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 
@@ -35,7 +35,7 @@ describe("Mixin merger tests", () => {
     ],
     customAttributes: [
       { className: "CoreCustomAttributes.DynamicSchema" },
-    ],    
+    ],
   };
 
   beforeEach(async () => {
@@ -189,7 +189,7 @@ describe("Mixin merger tests", () => {
           },
         },
       }, await BisTestHelper.getNewContext());
-  
+
       const targetSchema = await Schema.fromJson({
         ...targetJson,
         items: {
@@ -198,10 +198,10 @@ describe("Mixin merger tests", () => {
           },
           testItem: {
             schemaItemType: "UnitSystem",
-          },          
+          },
         },
       }, targetContext);
-  
+
       const result = await getSchemaDifferences(targetSchema, sourceSchema);
       expect(result.conflicts).to.have.lengthOf(1, "Unexpected length of conflicts");
       expect(result.conflicts).to.satisfy(([conflict]: AnySchemaDifferenceConflict[]) => {
@@ -215,10 +215,10 @@ describe("Mixin merger tests", () => {
       const schemaEdits = new SchemaEdits();
       const testItem = await sourceSchema.getItem("testItem") as Mixin;
       schemaEdits.items.rename(testItem, "mergedMixin");
-  
+
       const merger = new SchemaMerger(targetContext);
       const mergedSchema = await merger.merge(result, schemaEdits);
-  
+
       await expect(mergedSchema.getItem("mergedMixin")).to.be.eventually.fulfilled.then(async (ecClass) => {
         expect(ecClass).to.exist;
         expect(ecClass).to.have.a.property("schemaItemType").equals(SchemaItemType.Mixin);
@@ -258,17 +258,17 @@ describe("Mixin merger tests", () => {
           },
           testItem: {
             schemaItemType: "UnitSystem",
-          },          
+          },
         },
       }, targetContext);
 
       const schemaEdits = new SchemaEdits();
       const testItem = await sourceSchema.getItem("testItem") as Mixin;
       schemaEdits.items.rename(testItem, "mergedMixin");
-      
+
       const merger = new SchemaMerger(targetContext);
       const mergedSchema = await merger.mergeSchemas(targetSchema, sourceSchema, schemaEdits);
- 
+
       await expect(mergedSchema.getItem("mergedMixin")).to.be.eventually.not.undefined
         .then((mixin: Mixin) => {
           expect(mixin).to.have.a.property("label").to.equal("Changed Phasing");
@@ -309,7 +309,7 @@ describe("Mixin merger tests", () => {
           },
           testItem: {
             schemaItemType: "UnitSystem",
-          },          
+          },
         },
       }, targetContext);
 
@@ -319,7 +319,7 @@ describe("Mixin merger tests", () => {
 
       const merger = new SchemaMerger(targetContext);
       const mergedSchema = await merger.mergeSchemas(targetSchema, sourceSchema, schemaEdits);
- 
+
       await expect(mergedSchema.getItem("testMixin")).to.be.eventually.fulfilled.then(async (ecClass) => {
         expect(ecClass).to.exist;
         expect(ecClass).to.have.a.property("schemaItemType").equals(SchemaItemType.Mixin);
@@ -359,7 +359,7 @@ describe("Mixin merger tests", () => {
           },
           testItem: {
             schemaItemType: "UnitSystem",
-          },          
+          },
         },
       }, targetContext);
 
@@ -369,7 +369,7 @@ describe("Mixin merger tests", () => {
 
       const merger = new SchemaMerger(targetContext);
       const mergedSchema = await merger.mergeSchemas(targetSchema, sourceSchema, schemaEdits);
- 
+
       await expect(mergedSchema.getItem("sourceEntity")).to.be.eventually.fulfilled.then(async (ecClass) => {
         expect(ecClass).to.exist;
         expect(ecClass).to.have.a.property("schemaItemType").equals(SchemaItemType.EntityClass);
@@ -403,7 +403,7 @@ describe("Mixin merger tests", () => {
           },
           testItem: {
             schemaItemType: "UnitSystem",
-          },          
+          },
         },
       }, targetContext);
 
@@ -411,7 +411,7 @@ describe("Mixin merger tests", () => {
       const testItem = await sourceSchema.getItem("testItem") as Mixin;
       schemaEdits.items.rename(testItem, "mergedMixin");
 
-      const result = await getSchemaDifferences(targetSchema, sourceSchema, schemaEdits);     
+      const result = await getSchemaDifferences(targetSchema, sourceSchema, schemaEdits);
       const merger = new SchemaMerger(targetContext);
       await expect(merger.merge(result, schemaEdits)).to.be.rejectedWith("Changing the mixin 'testItem' appliesTo is not supported.");
     });

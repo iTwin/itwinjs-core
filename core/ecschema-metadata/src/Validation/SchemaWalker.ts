@@ -3,12 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { SchemaItemType } from "../ECObjects";
-import { ECClass } from "../Metadata/Class";
-import { RelationshipClass } from "../Metadata/RelationshipClass";
-import { Schema } from "../Metadata/Schema";
-import { SchemaItem } from "../Metadata/SchemaItem";
-import { ISchemaPartVisitor, SchemaPartVisitorDelegate } from "../SchemaPartVisitorDelegate";
+import { SchemaItemType } from "../ECObjects.js";
+import { ECClass } from "../Metadata/Class.js";
+import { RelationshipClass } from "../Metadata/RelationshipClass.js";
+import { Schema } from "../Metadata/Schema.js";
+import { SchemaItem } from "../Metadata/SchemaItem.js";
+import { ISchemaPartVisitor, SchemaPartVisitorDelegate } from "../SchemaPartVisitorDelegate.js";
 
 /**
  * The purpose of this class is to traverse a given schema, allowing clients to hook into

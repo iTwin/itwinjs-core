@@ -6,14 +6,14 @@
  * @module Curve
  */
 
-import { Geometry } from "../Geometry";
-import { Matrix4d } from "../geometry4d/Matrix4d";
-import { CurveLocationDetailPair } from "./CurveLocationDetail";
-import { CurvePrimitive } from "./CurvePrimitive";
-import { AnyCurve } from "./CurveTypes";
-import { CurveCurveCloseApproachXY } from "./internalContexts/CurveCurveCloseApproachXY";
-import { CurveCurveIntersectXY } from "./internalContexts/CurveCurveIntersectXY";
-import { CurveCurveIntersectXYZ } from "./internalContexts/CurveCurveIntersectXYZ";
+import { Geometry } from "../Geometry.js";
+import { Matrix4d } from "../geometry4d/Matrix4d.js";
+import { CurveLocationDetailPair } from "./CurveLocationDetail.js";
+import { CurvePrimitive } from "./CurvePrimitive.js";
+import { AnyCurve } from "./CurveTypes.js";
+import { CurveCurveCloseApproachXY } from "./internalContexts/CurveCurveCloseApproachXY.js";
+import { CurveCurveIntersectXY } from "./internalContexts/CurveCurveIntersectXY.js";
+import { CurveCurveIntersectXYZ } from "./internalContexts/CurveCurveIntersectXYZ.js";
 
 /**
  * `CurveCurve` has static method for various computations that work on a pair of curves or curve collections.

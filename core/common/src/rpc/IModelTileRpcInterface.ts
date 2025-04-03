@@ -8,13 +8,13 @@
 
 import type { TransferConfig } from "@itwin/object-storage-core/lib/common";
 import { Id64Array } from "@itwin/core-bentley";
-import { RpcResponseCacheControl } from "./core/RpcConstants";
-import { RpcOperation } from "./core/RpcOperation";
-import { IModelRpcProps } from "../IModel";
-import { RpcInterface } from "../RpcInterface";
-import { RpcManager } from "../RpcManager";
-import { ElementGraphicsRequestProps } from "../tile/ElementGraphics";
-import { IModelTileTreeProps, TileContentIdentifier, TileContentSource, TileVersionInfo } from "../TileProps";
+import { RpcResponseCacheControl } from "./core/RpcConstants.js";
+import { RpcOperation } from "./core/RpcOperation.js";
+import { IModelRpcProps } from "../IModel.js";
+import { RpcInterface } from "../RpcInterface.js";
+import { RpcManager } from "../RpcManager.js";
+import { ElementGraphicsRequestProps } from "../tile/ElementGraphics.js";
+import { IModelTileTreeProps, TileContentIdentifier, TileContentSource, TileVersionInfo } from "../TileProps.js";
 
 /** @public */
 export abstract class IModelTileRpcInterface extends RpcInterface {

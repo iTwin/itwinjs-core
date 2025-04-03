@@ -7,9 +7,9 @@
  * @module Widgets
  */
 
-import { saveAs } from "file-saver";
 import { GLTimerResult, IModelApp, RenderSystemDebugControl } from "@itwin/core-frontend";
-import { createCheckBox } from "../ui/CheckBox";
+import { saveAs } from "file-saver";
+import { createCheckBox } from "../ui/CheckBox.js";
 
 /** Trace Event Format, viewable with chrome://tracing
  * https://docs.google.com/document/d/1CvAClvFfyA5R-PhYUmn5OOQtYMH4h6I0nSsKchNAySU/edit

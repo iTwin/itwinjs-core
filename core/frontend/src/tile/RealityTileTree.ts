@@ -11,16 +11,16 @@ import {
   Matrix3d, Point3d, Range3d, Transform, Vector3d, XYZProps,
 } from "@itwin/core-geometry";
 import { Cartographic, ColorDef, GeoCoordStatus, ViewFlagOverrides } from "@itwin/core-common";
-import { BackgroundMapGeometry } from "../BackgroundMapGeometry";
-import { GeoConverter } from "../GeoServices";
-import { IModelApp } from "../IModelApp";
-import { GraphicBranch } from "../render/GraphicBranch";
-import { GraphicBuilder } from "../render/GraphicBuilder";
-import { SceneContext } from "../ViewContext";
+import { BackgroundMapGeometry } from "../BackgroundMapGeometry.js";
+import { GeoConverter } from "../GeoServices.js";
+import { IModelApp } from "../IModelApp.js";
+import { GraphicBranch } from "../render/GraphicBranch.js";
+import { GraphicBuilder } from "../render/GraphicBuilder.js";
+import { SceneContext } from "../ViewContext.js";
 import {
   GraphicsCollectorDrawArgs, MapTile, RealityTile, RealityTileLoader, RealityTileParams, Tile, TileDrawArgs, TileGeometryCollector,
   TileGraphicType, TileParams, TileTree, TileTreeParams,
-} from "./internal";
+} from "./internal.js";
 
 /** @internal */
 export class TraversalDetails {

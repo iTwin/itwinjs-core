@@ -2,13 +2,13 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { gunzip, gzip } from "zlib";
-import { promisify } from "util";
-import { Metadata, ObjectReference, ServerStorage, TransferConfig } from "@itwin/object-storage-core";
-import { getTileObjectReference } from "@itwin/core-common";
 import { Logger } from "@itwin/core-bentley";
-import { BackendLoggerCategory } from "./BackendLoggerCategory";
-import { IModelHost } from "./IModelHost";
+import { getTileObjectReference } from "@itwin/core-common";
+import { Metadata, ObjectReference, ServerStorage, TransferConfig } from "@itwin/object-storage-core";
+import { promisify } from "util";
+import { gunzip, gzip } from "zlib";
+import { BackendLoggerCategory } from "./BackendLoggerCategory.js";
+import { IModelHost } from "./IModelHost.js";
 
 /**
  * Identifies a tile in cloud tile cache.

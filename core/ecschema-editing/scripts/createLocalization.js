@@ -3,21 +3,21 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-const fs = require("fs");
-const path = require("path");
+import fs from "fs";
+import path from "path";
 const root = process.cwd();
-const ecDiagnosticsDir = path.resolve(root, "lib", "cjs", "Validation", "ECRules");
-const ecDiagnostics = require(ecDiagnosticsDir);
+const ecDiagnosticsDir = path.resolve(root, "lib", "cjs", "Validation", "ECRules.js");
 
 function printErrorAndFail(errorMessage) {
   console.log(`Build failed creating localization file ECSchemaEditing.json: ${errorMessage}`);
   throw new Error();
 }
 
-function createLocalization() {
+async function createLocalization() {
   const localesDir = path.resolve(root, "public", "locales", "en");
   const entries = {};
-
+  const ecDiagnosticsUrl = new URL(`file://${ecDiagnosticsDir.replace(/\\/g, '/')}`);
+  const ecDiagnostics = await import(ecDiagnosticsUrl);
   for (const [, value] of Object.entries(ecDiagnostics.Diagnostics)) {
     entries[value.prototype.code] = value.prototype.messageText;
   }
@@ -40,4 +40,4 @@ function createLocalization() {
   console.log("ECSchemaEditing localization successful.");
 }
 
-createLocalization();
+await createLocalization();

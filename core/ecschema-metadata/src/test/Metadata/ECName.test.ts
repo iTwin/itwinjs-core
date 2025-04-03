@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { ECName } from "../../ECName";
-import { ECObjectsError } from "../../Exception";
+import { ECName } from "../../ECName.js";
+import { ECObjectsError } from "../../Exception.js";
 
 describe("ECName", () => {
   it("validates", () => {

@@ -7,14 +7,14 @@
  * @module SQLiteDb
  */
 
-import { CloudSqlite } from "./CloudSqlite";
-import { VersionedSqliteDb } from "./SQLiteDb";
-import { BriefcaseDb, IModelDb } from "./IModelDb";
+import { IModelJsNative } from "@bentley/imodeljs-native";
 import { DbResult, OpenMode } from "@itwin/core-bentley";
 import { IModelError, LocalFileName } from "@itwin/core-common";
-import { IModelJsNative } from "@bentley/imodeljs-native";
-import { IModelNative } from "./internal/NativePlatform";
-import { _nativeDb } from "./internal/Symbols";
+import { CloudSqlite } from "./CloudSqlite.js";
+import { BriefcaseDb, IModelDb } from "./IModelDb.js";
+import { IModelNative } from "./internal/NativePlatform.js";
+import { _nativeDb } from "./internal/Symbols.js";
+import { VersionedSqliteDb } from "./SQLiteDb.js";
 
 /** @internal */
 export namespace SchemaSync {

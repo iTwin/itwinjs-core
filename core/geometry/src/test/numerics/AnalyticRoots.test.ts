@@ -4,20 +4,20 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { describe, expect, it } from "vitest";
-import { Arc3d } from "../../curve/Arc3d";
-import { Geometry } from "../../Geometry";
-import { AngleSweep } from "../../geometry3d/AngleSweep";
-import { GrowableFloat64Array } from "../../geometry3d/GrowableFloat64Array";
-import { Point2d, Vector2d } from "../../geometry3d/Point2dVector2d";
-import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
-import { NumberArray } from "../../geometry3d/PointHelpers";
-import { Point4d } from "../../geometry4d/Point4d";
+import { Arc3d } from "../../curve/Arc3d.js";
+import { Geometry } from "../../Geometry.js";
+import { AngleSweep } from "../../geometry3d/AngleSweep.js";
+import { GrowableFloat64Array } from "../../geometry3d/GrowableFloat64Array.js";
+import { Point2d, Vector2d } from "../../geometry3d/Point2dVector2d.js";
+import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d.js";
+import { NumberArray } from "../../geometry3d/PointHelpers.js";
+import { Point4d } from "../../geometry4d/Point4d.js";
 import {
   AnalyticRoots, BilinearPolynomial, Degree2PowerPolynomial, Degree3PowerPolynomial, PowerPolynomial, TrigPolynomial,
-} from "../../numerics/Polynomials";
-import { SmallSystem } from "../../numerics/SmallSystem";
-import { Checker } from "../Checker";
-import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
+} from "../../numerics/Polynomials.js";
+import { SmallSystem } from "../../numerics/SmallSystem.js";
+import { Checker } from "../Checker.js";
+import { GeometryCoreTestIO } from "../GeometryCoreTestIO.js";
 
 // Toggle for printing in cubic & quartic testers
 const printAll = false;

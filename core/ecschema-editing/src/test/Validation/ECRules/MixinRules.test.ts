@@ -3,12 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
 import { DelayedPromiseWithProps, ECClass, EntityClass, Mixin, Schema, SchemaContext } from "@itwin/ecschema-metadata";
-import { MutableEntityClass } from "../../../Editing/Mutable/MutableEntityClass";
-import { DiagnosticCategory, DiagnosticType } from "../../../Validation/Diagnostic";
-import * as Rules from "../../../Validation/ECRules";
-import { MutableClass } from "../../../Editing/Mutable/MutableClass";
+import { expect } from "chai";
+import { MutableClass } from "../../../Editing/Mutable/MutableClass.js";
+import { MutableEntityClass } from "../../../Editing/Mutable/MutableEntityClass.js";
+import { DiagnosticCategory, DiagnosticType } from "../../../Validation/Diagnostic.js";
+import * as Rules from "../../../Validation/ECRules.js";
 
 describe("Mixin Rule Tests", () => {
   let schema: Schema;

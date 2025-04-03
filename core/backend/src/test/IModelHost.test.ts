@@ -2,22 +2,22 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert, expect } from "chai";
-import * as path from "path";
-import * as sinon from "sinon";
+import { Logger, LogLevel } from "@itwin/core-bentley";
 import { RpcRegistry } from "@itwin/core-common";
-import { BriefcaseManager } from "../BriefcaseManager";
-import { SnapshotDb } from "../IModelDb";
-import { IModelHost, IModelHostOptions, KnownLocations } from "../IModelHost";
-import { Schemas } from "../Schema";
-import { KnownTestLocations } from "./KnownTestLocations";
 import { AzureServerStorage, AzureServerStorageBindings, AzureServerStorageBindingsConfig } from "@itwin/object-storage-azure";
 import { ServerStorage } from "@itwin/object-storage-core";
-import { TestUtils } from "./TestUtils";
-import { IModelTestUtils } from "./IModelTestUtils";
-import { Logger, LogLevel } from "@itwin/core-bentley";
-import { overrideSyncNativeLogLevels } from "../internal/NativePlatform";
-import { _getHubAccess, _hubAccess } from "../internal/Symbols";
+import { assert, expect } from "chai";
+import path from "path";
+import sinon from "sinon";
+import { BriefcaseManager } from "../BriefcaseManager.js";
+import { SnapshotDb } from "../IModelDb.js";
+import { IModelHost, IModelHostOptions, KnownLocations } from "../IModelHost.js";
+import { overrideSyncNativeLogLevels } from "../internal/NativePlatform.js";
+import { _getHubAccess, _hubAccess } from "../internal/Symbols.js";
+import { Schemas } from "../Schema.js";
+import { IModelTestUtils } from "./IModelTestUtils.js";
+import { KnownTestLocations } from "./KnownTestLocations.js";
+import { TestUtils } from "./TestUtils.js";
 
 describe("IModelHost", () => {
   const opts = { cacheDir: TestUtils.getCacheDir() };

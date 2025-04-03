@@ -2,14 +2,15 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as chai from "chai";
-import * as chaiAsPromised from "chai-as-promised";
-import { ECClass, ECClassModifier, ECVersion, EntityClass, PrimitiveProperty, PrimitiveType, Schema, SchemaContext,
+import {
+  ECClass, ECClassModifier, ECVersion, EntityClass, PrimitiveProperty, PrimitiveType, Schema, SchemaContext,
   SchemaItemKey, SchemaKey, SchemaMatchType,
 } from "@itwin/ecschema-metadata";
-import { SchemaContextEditor } from "../../Editing/Editor";
-import { BisTestHelper } from "../TestUtils/BisTestHelper";
-import { ECEditingStatus } from "../../Editing/Exception";
+import chai from "chai";
+import chaiAsPromised from "chai-as-promised";
+import { SchemaContextEditor } from "../../Editing/Editor.js";
+import { ECEditingStatus } from "../../Editing/Exception.js";
+import { BisTestHelper } from "../TestUtils/BisTestHelper.js";
 
 const expect = chai.expect;
 chai.use(chaiAsPromised);

@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { WmtsCapabilities } from "../../../internal/tile/map/WmtsCapabilities";
-import { fakeTextFetch } from "./MapLayerTestUtilities";
+import { WmtsCapabilities } from "../../../internal/tile/map/WmtsCapabilities.js";
+import { fakeTextFetch } from "./MapLayerTestUtilities.js";
 
 describe("WmtsCapabilities", () => {
   const SMALL_DEGREES_DIFFERENCE = 1.0e-8;

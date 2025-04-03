@@ -6,11 +6,11 @@
  * @module Locaters
  */
 
-import * as path from "path";
 import {
   ECObjectsError, ECObjectsStatus, ECVersion, ISchemaLocater, Schema, SchemaContext, SchemaInfo, SchemaKey, SchemaMatchType,
 } from "@itwin/ecschema-metadata";
-import { FileSchemaKey, SchemaFileLocater } from "./SchemaFileLocater";
+import path from "path";
+import { FileSchemaKey, SchemaFileLocater } from "./SchemaFileLocater.js";
 
 function isECv2Schema(schemaText: string): boolean {
   return /<ECSchema[^>]*xmlns=".*ECXML.2.0"/.test(schemaText);

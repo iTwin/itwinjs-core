@@ -3,12 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-export * from "./SchemaFileLocater";
-export * from "./SchemaXml";
-export * from "./SchemaJsonFileLocater";
-export * from "./SchemaXmlFileLocater";
-export * from "./StubSchemaXmlFileLocater";
-export * from "./SchemaXmlStringLocater";
+export * from "./SchemaFileLocater.js";
+export * from "./SchemaJsonFileLocater.js";
+export * from "./SchemaXml.js";
+export * from "./SchemaXmlFileLocater.js";
+export * from "./SchemaXmlStringLocater.js";
+export * from "./StubSchemaXmlFileLocater.js";
 
 /** @docs-package-description
  * The ecschema-locaters package contains classes for locating ECSchemas within a given

@@ -6,8 +6,8 @@
  * @module Rendering
  */
 
-import { OctEncodedNormalPair } from "../OctEncodedNormal";
-import { PolylineIndices } from "../RenderPolyline";
+import { OctEncodedNormalPair } from "../OctEncodedNormal.js";
+import { PolylineIndices } from "../RenderPolyline.js";
 
 /** @internal */
 export class MeshPolyline {

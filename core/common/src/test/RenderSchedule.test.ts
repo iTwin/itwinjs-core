@@ -6,8 +6,8 @@
 import { describe, expect, it } from "vitest";
 import { CompressedId64Set } from "@itwin/core-bentley";
 import { Matrix3d, Point3d, Point4d, Transform, TransformProps } from "@itwin/core-geometry";
-import { RenderSchedule as RS } from "../RenderSchedule";
-import { RgbColor } from "../RgbColor";
+import { RenderSchedule as RS } from "../RenderSchedule.js";
+import { RgbColor } from "../RgbColor.js";
 
 describe("RenderSchedule", () => {
   it("interpolates transforms", () => {

@@ -4,16 +4,16 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import * as sinon from "sinon";
-import { SchemaContext } from "../../Context";
-import { SchemaReadHelper } from "../../Deserialization/Helper";
-import { JsonParser } from "../../Deserialization/JsonParser";
-import { ECClass } from "../../Metadata/Class";
-import { RelationshipClass } from "../../Metadata/RelationshipClass";
-import { Schema } from "../../Metadata/Schema";
-import { ISchemaPartVisitor } from "../../SchemaPartVisitorDelegate";
-import { SchemaWalker } from "../../Validation/SchemaWalker";
-import { ECSchemaNamespaceUris } from "../../Constants";
+import sinon from "sinon";
+import { ECSchemaNamespaceUris } from "../../Constants.js";
+import { SchemaContext } from "../../Context.js";
+import { SchemaReadHelper } from "../../Deserialization/Helper.js";
+import { JsonParser } from "../../Deserialization/JsonParser.js";
+import { ECClass } from "../../Metadata/Class.js";
+import { RelationshipClass } from "../../Metadata/RelationshipClass.js";
+import { Schema } from "../../Metadata/Schema.js";
+import { ISchemaPartVisitor } from "../../SchemaPartVisitorDelegate.js";
+import { SchemaWalker } from "../../Validation/SchemaWalker.js";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 

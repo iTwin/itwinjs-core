@@ -7,10 +7,10 @@
  */
 
 import { AnyEnumerator, Enumeration, EnumerationProps, PrimitiveType, SchemaItemKey, SchemaItemType, SchemaKey } from "@itwin/ecschema-metadata";
-import { SchemaContextEditor } from "./Editor";
-import { MutableEnumeration } from "./Mutable/MutableEnumeration";
-import { ECEditingStatus, EnumeratorId, SchemaEditingError, SchemaItemId } from "./Exception";
-import { SchemaItems } from "./SchemaItems";
+import { SchemaContextEditor } from "./Editor.js";
+import { ECEditingStatus, EnumeratorId, SchemaEditingError, SchemaItemId } from "./Exception.js";
+import { MutableEnumeration } from "./Mutable/MutableEnumeration.js";
+import { SchemaItems } from "./SchemaItems.js";
 
 type MutableEnumerator = {
   -readonly [P in keyof AnyEnumerator]: AnyEnumerator[P]

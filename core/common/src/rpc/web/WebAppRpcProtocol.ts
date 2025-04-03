@@ -7,15 +7,15 @@
  */
 
 import { BentleyError, Logger } from "@itwin/core-bentley";
-import { CommonLoggerCategory } from "../../CommonLoggerCategory";
-import { BackendReadable, BackendWritable } from "../../internal/BackendTypes";
-import { RpcConfiguration } from "../core/RpcConfiguration";
-import { RpcContentType, RpcRequestStatus, WEB_RPC_CONSTANTS } from "../core/RpcConstants";
-import { RpcOperation } from "../core/RpcOperation";
-import { RpcProtocol, SerializedRpcRequest } from "../core/RpcProtocol";
-import { OpenAPIInfo, OpenAPIParameter, RpcOpenAPIDescription } from "./OpenAPI";
-import { WebAppRpcLogging } from "./WebAppRpcLogging";
-import { WebAppRpcRequest } from "./WebAppRpcRequest";
+import { CommonLoggerCategory } from "../../CommonLoggerCategory.js";
+import { BackendReadable, BackendWritable } from "../../internal/BackendTypes.js";
+import { RpcConfiguration } from "../core/RpcConfiguration.js";
+import { RpcContentType, RpcRequestStatus, WEB_RPC_CONSTANTS } from "../core/RpcConstants.js";
+import { RpcOperation } from "../core/RpcOperation.js";
+import { RpcProtocol, SerializedRpcRequest } from "../core/RpcProtocol.js";
+import { OpenAPIInfo, OpenAPIParameter, RpcOpenAPIDescription } from "./OpenAPI.js";
+import { WebAppRpcLogging } from "./WebAppRpcLogging.js";
+import { WebAppRpcRequest } from "./WebAppRpcRequest.js";
 
 /* eslint-disable @typescript-eslint/no-deprecated */
 

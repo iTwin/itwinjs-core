@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 import { describe, expect, it } from "vitest";
 
-import { Complex } from "../../numerics/Complex";
-import { Checker } from "../Checker";
+import { Complex } from "../../numerics/Complex.js";
+import { Checker } from "../Checker.js";
 
 class ComplexTests {
   public ck: Checker;

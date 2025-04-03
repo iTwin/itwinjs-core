@@ -11,9 +11,9 @@ import {
   RenderTexture, ThematicDisplay, ViewFlags, WhiteOnWhiteReversalSettings,
 } from "@itwin/core-common";
 import { ClipVector, Constant, Matrix3d, Point3d, Vector3d } from "@itwin/core-geometry";
-import { FlashSettings } from "../../FlashSettings";
-import { Viewport } from "../../Viewport";
-import { ViewState3d } from "../../ViewState";
+import { FlashSettings } from "../../FlashSettings.js";
+import { Viewport } from "../../Viewport.js";
+import { ViewState3d } from "../../ViewState.js";
 
 const scratchPoint3a = new Point3d();
 const scratchPoint3b = new Point3d();

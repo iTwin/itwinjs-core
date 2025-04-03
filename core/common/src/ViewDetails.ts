@@ -8,7 +8,7 @@
 
 import { assert, BeEvent, Id64, Id64String, JsonUtils } from "@itwin/core-bentley";
 import { ClipVector, ClipVectorProps, Geometry, XAndY } from "@itwin/core-geometry";
-import { ModelClipGroupProps, ModelClipGroups } from "./ModelClipGroup";
+import { ModelClipGroupProps, ModelClipGroups } from "./ModelClipGroup.js";
 
 /** Properties of a [[ViewDefinitionProps]] stored as JSON.
  * @see [[ViewDefinitionProps.jsonProperties]].

@@ -3,13 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
 import {
   AnyEnumerator, Constant, CustomAttributeClass, EntityClass, Enumeration, Format, InvertedUnit, KindOfQuantity, Mixin, Phenomenon, PrimitiveProperty,
   PropertyCategory, RelationshipClass, RelationshipConstraint, RelationshipEnd, Schema, SchemaContext, SchemaItemType, Unit,
 } from "@itwin/ecschema-metadata";
-import { ChangeType, SchemaChanges } from "../../Validation/SchemaChanges";
-import { SchemaCompareDiagnostics } from "../../Validation/SchemaCompareDiagnostics";
+import { expect } from "chai";
+import { ChangeType, SchemaChanges } from "../../Validation/SchemaChanges.js";
+import { SchemaCompareDiagnostics } from "../../Validation/SchemaCompareDiagnostics.js";
 
 describe("SchemaChanges tests", () => {
   let schema: Schema;

@@ -6,7 +6,7 @@
  * @module Entities
  */
 
-import { ElementProps, RelatedElementProps } from "../ElementProps";
+import { ElementProps, RelatedElementProps } from "../ElementProps.js";
 
 /**
  * @public

@@ -8,14 +8,14 @@
  */
 
 import { Id64String } from "@itwin/core-bentley";
-import { Point3d } from "@itwin/core-geometry";
 import {
   BisCodeSpec, Code, CodeScopeSpec, EntityReferenceSet, ExternalSourceAttachmentProps, ExternalSourceAttachmentRole, ExternalSourceProps, IModel, RelatedElement,
   SynchronizationConfigLinkProps,
 } from "@itwin/core-common";
-import { InformationReferenceElement, UrlLink } from "./Element";
-import { IModelDb } from "./IModelDb";
-import { ExternalSourceAttachmentAttachesSource, ExternalSourceIsInRepository } from "./NavigationRelationship";
+import { Point3d } from "@itwin/core-geometry";
+import { InformationReferenceElement, UrlLink } from "./Element.js";
+import { IModelDb } from "./IModelDb.js";
+import { ExternalSourceAttachmentAttachesSource, ExternalSourceIsInRepository } from "./NavigationRelationship.js";
 
 /** An ExternalSource refers to an 'information container' found in a repository. In some cases, the container is the entire repository.
  * @note The associated ECClass was added to the BisCore schema in version 1.0.13

@@ -7,7 +7,7 @@
  */
 
 import { Point3d, Range2d, Transform, XYZProps, YawPitchRollAngles, YawPitchRollProps } from "@itwin/core-geometry";
-import { TextBlock, TextBlockProps } from "./TextBlock";
+import { TextBlock, TextBlockProps } from "./TextBlock.js";
 
 /** Describes how to compute the "anchor point" for a [[TextAnnotation]].
  * The anchor point is a point on or inside of the 2d bounding box enclosing the contents of the annotation's [[TextBlock]].

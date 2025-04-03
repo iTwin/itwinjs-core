@@ -6,20 +6,20 @@
  * @module Curve
  */
 
-import { NullGeometryHandler } from "../../geometry3d/GeometryHandler";
-import { Point3d } from "../../geometry3d/Point3dVector3d";
-import { PolylineCompressionContext } from "../../geometry3d/PolylineCompressionByEdgeOffset";
-import { PolylineOps } from "../../geometry3d/PolylineOps";
-import { Arc3d } from "../Arc3d";
-import { CurveChain } from "../CurveCollection";
-import { CurveFactory } from "../CurveFactory";
-import { LineSegment3d } from "../LineSegment3d";
-import { LineString3d } from "../LineString3d";
-import { Loop } from "../Loop";
-import { ParityRegion } from "../ParityRegion";
-import { Path } from "../Path";
-import { ConsolidateAdjacentCurvePrimitivesOptions } from "../RegionOps";
-import { UnionRegion } from "../UnionRegion";
+import { NullGeometryHandler } from "../../geometry3d/GeometryHandler.js";
+import { Point3d } from "../../geometry3d/Point3dVector3d.js";
+import { PolylineCompressionContext } from "../../geometry3d/PolylineCompressionByEdgeOffset.js";
+import { PolylineOps } from "../../geometry3d/PolylineOps.js";
+import { Arc3d } from "../Arc3d.js";
+import { CurveChain } from "../CurveCollection.js";
+import { CurveFactory } from "../CurveFactory.js";
+import { LineSegment3d } from "../LineSegment3d.js";
+import { LineString3d } from "../LineString3d.js";
+import { Loop } from "../Loop.js";
+import { ParityRegion } from "../ParityRegion.js";
+import { Path } from "../Path.js";
+import { ConsolidateAdjacentCurvePrimitivesOptions } from "../RegionOps.js";
+import { UnionRegion } from "../UnionRegion.js";
 
 /**
  * * Implementation class for ConsolidateAdjacentCurvePrimitives.

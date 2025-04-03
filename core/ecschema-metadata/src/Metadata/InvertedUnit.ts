@@ -6,16 +6,16 @@
  * @module Metadata
  */
 
-import { DelayedPromiseWithProps } from "../DelayedPromise";
-import { InvertedUnitProps } from "../Deserialization/JsonProps";
-import { XmlSerializationUtils } from "../Deserialization/XmlSerializationUtils";
-import { SchemaItemType } from "../ECObjects";
-import { ECObjectsError, ECObjectsStatus } from "../Exception";
-import { LazyLoadedUnit, LazyLoadedUnitSystem } from "../Interfaces";
-import { SchemaItemKey } from "../SchemaKey";
-import { SchemaItem } from "./SchemaItem";
-import { Unit } from "./Unit";
-import { UnitSystem } from "./UnitSystem";
+import { DelayedPromiseWithProps } from "../DelayedPromise.js";
+import { InvertedUnitProps } from "../Deserialization/JsonProps.js";
+import { XmlSerializationUtils } from "../Deserialization/XmlSerializationUtils.js";
+import { SchemaItemType } from "../ECObjects.js";
+import { ECObjectsError, ECObjectsStatus } from "../Exception.js";
+import { LazyLoadedUnit, LazyLoadedUnitSystem } from "../Interfaces.js";
+import { SchemaItemKey } from "../SchemaKey.js";
+import { SchemaItem } from "./SchemaItem.js";
+import { Unit } from "./Unit.js";
+import { UnitSystem } from "./UnitSystem.js";
 
 /**
  * An InvertedUnit is a specific type of Unit that describes the inverse of a single Unit whose dimensional derivation is unit-less.

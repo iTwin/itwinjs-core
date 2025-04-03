@@ -3,9 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { SchemaItemKey } from "@itwin/ecschema-metadata";
-import { InvertedUnitDifference } from "../Differencing/SchemaDifference";
-import { SchemaMergeContext } from "./SchemaMerger";
-import { updateSchemaItemFullName } from "./Utils";
+import { InvertedUnitDifference } from "../Differencing/SchemaDifference.js";
+import { SchemaMergeContext } from "./SchemaMerger.js";
+import { updateSchemaItemFullName } from "./Utils.js";
 
 /**
  * Merges a new InvertedUnit into the target schema.

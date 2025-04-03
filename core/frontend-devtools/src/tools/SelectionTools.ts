@@ -9,8 +9,8 @@
 
 import { CompressedId64Set, Id64Arg, OrderedId64Iterable } from "@itwin/core-bentley";
 import { IModelApp, NotifyMessageDetails, OutputMessagePriority, Tool } from "@itwin/core-frontend";
-import { copyStringToClipboard } from "../ClipboardUtilities";
-import { parseArgs } from "./parseArgs";
+import { copyStringToClipboard } from "../ClipboardUtilities.js";
+import { parseArgs } from "./parseArgs.js";
 
 /** Replaces the contents of the selection set with the set of element Ids specified.
  * Element Ids are separated by whitespace.

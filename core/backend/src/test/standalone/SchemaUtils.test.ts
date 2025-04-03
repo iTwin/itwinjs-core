@@ -3,8 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { Schema } from "../../Schema";
-import * as Semver from "semver";
+import Semver from "semver";
+import { Schema } from "../../Schema.js";
 
 describe("Schema Utilities Test", () => {
 

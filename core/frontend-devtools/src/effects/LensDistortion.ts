@@ -8,8 +8,8 @@
 
 import { assert } from "@itwin/core-bentley";
 import { ScreenSpaceEffectBuilder, Tool, UniformType, VaryingType } from "@itwin/core-frontend";
-import { AddEffectTool, refreshViewportsForEffect } from "./EffectTools";
-import { parseArgs } from "../tools/parseArgs";
+import { parseArgs } from "../tools/parseArgs.js";
+import { AddEffectTool, refreshViewportsForEffect } from "./EffectTools.js";
 
 /** Adds a screen-space effect to the selected [[Viewport]] to simulate the lens distortion produced by real-world cameras with very wide fields of view.
  * Based on https://www.decarpentier.nl/lens-distortion

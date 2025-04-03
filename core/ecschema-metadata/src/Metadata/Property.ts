@@ -6,25 +6,25 @@
  * @module Metadata
  */
 
-import { DelayedPromiseWithProps } from "../DelayedPromise";
+import { DelayedPromiseWithProps } from "../DelayedPromise.js";
 import {
   ArrayPropertyProps, EnumerationPropertyProps, NavigationPropertyProps, PrimitiveArrayPropertyProps, PrimitiveOrEnumPropertyBaseProps,
   PrimitivePropertyProps, PropertyProps, StructPropertyProps,
-} from "../Deserialization/JsonProps";
-import { XmlSerializationUtils } from "../Deserialization/XmlSerializationUtils";
-import { parsePrimitiveType, PrimitiveType, primitiveTypeToString, SchemaItemType, StrengthDirection, strengthDirectionToString } from "../ECObjects";
-import { ECObjectsError, ECObjectsStatus } from "../Exception";
-import { AnyClass, LazyLoadedEnumeration, LazyLoadedKindOfQuantity, LazyLoadedPropertyCategory, LazyLoadedRelationshipClass } from "../Interfaces";
-import { PropertyType, propertyTypeToString, PropertyTypeUtils } from "../PropertyTypes";
-import { SchemaItemKey } from "../SchemaKey";
-import { ECName } from "../ECName";
-import { ECClass, StructClass } from "./Class";
-import { CustomAttribute, CustomAttributeContainerProps, CustomAttributeSet, serializeCustomAttributes } from "./CustomAttribute";
-import { Enumeration } from "./Enumeration";
-import { KindOfQuantity } from "./KindOfQuantity";
-import { PropertyCategory } from "./PropertyCategory";
-import { type RelationshipClass } from "./RelationshipClass";
-import { Schema } from "./Schema";
+} from "../Deserialization/JsonProps.js";
+import { XmlSerializationUtils } from "../Deserialization/XmlSerializationUtils.js";
+import { ECName } from "../ECName.js";
+import { parsePrimitiveType, PrimitiveType, primitiveTypeToString, SchemaItemType, StrengthDirection, strengthDirectionToString } from "../ECObjects.js";
+import { ECObjectsError, ECObjectsStatus } from "../Exception.js";
+import { AnyClass, LazyLoadedEnumeration, LazyLoadedKindOfQuantity, LazyLoadedPropertyCategory, LazyLoadedRelationshipClass } from "../Interfaces.js";
+import { PropertyType, propertyTypeToString, PropertyTypeUtils } from "../PropertyTypes.js";
+import { SchemaItemKey } from "../SchemaKey.js";
+import { ECClass, StructClass } from "./Class.js";
+import { CustomAttribute, CustomAttributeContainerProps, CustomAttributeSet, serializeCustomAttributes } from "./CustomAttribute.js";
+import { Enumeration } from "./Enumeration.js";
+import { KindOfQuantity } from "./KindOfQuantity.js";
+import { PropertyCategory } from "./PropertyCategory.js";
+import { type RelationshipClass } from "./RelationshipClass.js";
+import { Schema } from "./Schema.js";
 
 /**
  * A common abstract class for all ECProperty types.

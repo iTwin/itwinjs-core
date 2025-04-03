@@ -2,20 +2,20 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
-import * as path from "path";
-import * as fs from "fs-extra";
-import * as sinon from "sinon";
 import { SchemaContext, SchemaKey, SchemaMatchType } from "@itwin/ecschema-metadata";
-import { SchemaXmlFileLocater } from "../SchemaXmlFileLocater";
-import { SchemaXml } from "../SchemaXml";
+import { expect } from "chai";
+import fs from "fs-extra";
+import path from "path";
+import sinon from "sinon";
+import { SchemaXml } from "../SchemaXml.js";
+import { SchemaXmlFileLocater } from "../SchemaXmlFileLocater.js";
 
 describe("SchemaXml tests:", () => {
   let locater: SchemaXmlFileLocater;
   let resultLocater: SchemaXmlFileLocater;
   let context: SchemaContext;
   let resultContext: SchemaContext;
-  const outDir = path.join(__dirname, "output");
+  const outDir = path.join(import.meta.dirname, "output");
 
   before(() => {
     fs.ensureDirSync(outDir);
@@ -23,12 +23,12 @@ describe("SchemaXml tests:", () => {
 
   beforeEach(() => {
     locater = new SchemaXmlFileLocater();
-    locater.addSchemaSearchPath(path.join(__dirname, "assets"));
+    locater.addSchemaSearchPath(path.join(import.meta.dirname, "assets"));
     context = new SchemaContext();
     context.addLocater(locater);
 
     resultLocater = new SchemaXmlFileLocater();
-    resultLocater.addSchemaSearchPath(path.join(__dirname, "output"));
+    resultLocater.addSchemaSearchPath(path.join(import.meta.dirname, "output"));
     resultContext = new SchemaContext();
     resultContext.addLocater(resultLocater);
   });

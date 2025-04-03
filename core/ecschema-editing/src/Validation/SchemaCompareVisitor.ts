@@ -6,12 +6,13 @@
  * @module Comparison
  */
 
-import { AnyClass, AnyProperty, Constant, CustomAttributeClass, CustomAttributeContainerProps,
+import {
+  AnyClass, AnyProperty, Constant, CustomAttributeClass, CustomAttributeContainerProps,
   ECClass, EntityClass, Enumeration, Format, InvertedUnit, ISchemaPartVisitor, KindOfQuantity, Mixin,
   Phenomenon, Property, PropertyCategory, RelationshipClass, RelationshipConstraint, Schema, SchemaItem,
   SchemaItemType, StructClass, Unit, UnitSystem,
 } from "@itwin/ecschema-metadata";
-import { ISchemaComparer } from "./SchemaComparer";
+import { ISchemaComparer } from "./SchemaComparer.js";
 
 /**
  * An ISchemaPartVisitor interface implementation that is used to compare to Schemas.

@@ -6,7 +6,7 @@
  * @module Symbology
  */
 
-import { ColorDef } from "./ColorDef";
+import { ColorDef } from "./ColorDef.js";
 
 /** An immutable color defined by Hue, Saturation, and Lightness.
  * @see [here](https://en.wikipedia.org/wiki/HSL_and_HSV) for difference between HSL and HSV

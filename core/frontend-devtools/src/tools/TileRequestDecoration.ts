@@ -9,7 +9,7 @@
 
 import { ColorDef, LinePixels } from "@itwin/core-common";
 import { DecorateContext, GraphicBuilder, GraphicType, IModelApp, TileTree, Tool, Viewport } from "@itwin/core-frontend";
-import { parseToggle } from "./parseToggle";
+import { parseToggle } from "./parseToggle.js";
 
 class TileRequestDecoration {
   private static _instance?: TileRequestDecoration;

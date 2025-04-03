@@ -3,14 +3,14 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
-import { SchemaContext } from "../../Context";
-import { RelationshipEnd } from "../../ECObjects";
-import { ECObjectsError } from "../../Exception";
-import { RelationshipClass, RelationshipConstraint } from "../../Metadata/RelationshipClass";
-import { Schema } from "../../Metadata/Schema";
-import { createSchemaJsonWithItems } from "../TestUtils/DeserializationHelpers";
-import { createEmptyXmlDocument, getElementChildren, getElementChildrenByTagName } from "../TestUtils/SerializationHelper";
-import { ECSchemaNamespaceUris } from "../../Constants";
+import { ECSchemaNamespaceUris } from "../../Constants.js";
+import { SchemaContext } from "../../Context.js";
+import { RelationshipEnd } from "../../ECObjects.js";
+import { ECObjectsError } from "../../Exception.js";
+import { RelationshipClass, RelationshipConstraint } from "../../Metadata/RelationshipClass.js";
+import { Schema } from "../../Metadata/Schema.js";
+import { createSchemaJsonWithItems } from "../TestUtils/DeserializationHelpers.js";
+import { createEmptyXmlDocument, getElementChildren, getElementChildrenByTagName } from "../TestUtils/SerializationHelper.js";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 

@@ -3,18 +3,18 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { ECObjectsError, ECObjectsStatus } from "../Exception";
-import { CustomAttribute } from "../Metadata/CustomAttribute";
-import { CustomAttributeClass } from "../Metadata/CustomAttributeClass";
-import { ECName } from "../ECName";
-import { AbstractParser, CAProviderTuple } from "./AbstractParser";
+import { ECName } from "../ECName.js";
+import { ECObjectsError, ECObjectsStatus } from "../Exception.js";
+import { CustomAttribute } from "../Metadata/CustomAttribute.js";
+import { CustomAttributeClass } from "../Metadata/CustomAttributeClass.js";
+import { AbstractParser, CAProviderTuple } from "./AbstractParser.js";
+import { ECSpecVersion, SchemaReadHelper } from "./Helper.js";
 import {
   ConstantProps, CustomAttributeClassProps, EntityClassProps, EnumerationProps, InvertedUnitProps, KindOfQuantityProps, MixinProps,
   NavigationPropertyProps, PhenomenonProps, PrimitiveArrayPropertyProps, PrimitiveOrEnumPropertyBaseProps, PrimitivePropertyProps,
   PropertyCategoryProps, PropertyProps, RelationshipClassProps, SchemaItemFormatProps, SchemaItemUnitProps, SchemaProps, SchemaReferenceProps, StructArrayPropertyProps, StructClassProps,
   StructPropertyProps, UnitSystemProps,
-} from "./JsonProps";
-import { ECSpecVersion, SchemaReadHelper } from "./Helper";
+} from "./JsonProps.js";
 
 interface UnknownObject { readonly [name: string]: unknown }
 function isObject(x: unknown): x is UnknownObject {

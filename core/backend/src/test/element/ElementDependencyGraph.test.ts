@@ -4,18 +4,18 @@
 *--------------------------------------------------------------------------------------------*/
 /* eslint-disable @typescript-eslint/naming-convention */
 
-import { assert } from "chai";
-import * as fs from "fs";
-import * as path from "path";
 import { Guid, Id64Array, Id64String, Logger, OpenMode } from "@itwin/core-bentley";
 import {
   CodeScopeSpec, CodeSpec, ColorByName, DomainOptions, GeometryStreamBuilder, IModel, RelatedElementProps, RelationshipProps, SubCategoryAppearance,
   UpgradeOptions,
 } from "@itwin/core-common";
 import { LineSegment3d, Point3d, YawPitchRollAngles } from "@itwin/core-geometry";
-import { _nativeDb, ChannelControl, ElementDrivesElementProps, IModelJsFs, PhysicalModel, SpatialCategory, StandaloneDb } from "../../core-backend";
-import { IModelTestUtils, TestElementDrivesElement, TestPhysicalObject, TestPhysicalObjectProps } from "../IModelTestUtils";
-import { IModelNative } from "../../internal/NativePlatform";
+import { assert } from "chai";
+import fs from "fs";
+import path from "path";
+import { _nativeDb, ChannelControl, ElementDrivesElementProps, IModelJsFs, PhysicalModel, SpatialCategory, StandaloneDb } from "../../core-backend.js";
+import { IModelNative } from "../../internal/NativePlatform.js";
+import { IModelTestUtils, TestElementDrivesElement, TestPhysicalObject, TestPhysicalObjectProps } from "../IModelTestUtils.js";
 
 export function copyFile(newName: string, pathToCopy: string): string {
   const newPath = path.join(path.dirname(pathToCopy), newName);

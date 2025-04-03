@@ -7,7 +7,7 @@
  */
 
 import { IModelApp } from "@itwin/core-frontend";
-import { createCheckBox } from "../ui/CheckBox";
+import { createCheckBox } from "../ui/CheckBox.js";
 
 export class RenderCommandBreakdown {
   private readonly _div: HTMLDivElement;

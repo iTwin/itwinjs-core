@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { HttpResponseError, request, RequestBasicCredentials } from "../request/Request";
+import { HttpResponseError, request, RequestBasicCredentials } from "../request/Request.js";
 
 describe("request()", async () => {
   afterEach(() => {

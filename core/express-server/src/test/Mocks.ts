@@ -3,9 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { BentleyCloudRpcConfiguration, BentleyCloudRpcProtocol, OpenAPIInfo } from "@itwin/core-common";
-import * as http from "http";
-import * as sinon from "sinon";
-import { IModelJsExpressServer } from "../ExpressServer";
+import http from "http";
+import sinon from "sinon";
+import { IModelJsExpressServer } from "../ExpressServer.js";
 
 export class FakeBentleyCloudRpcConfiguration extends BentleyCloudRpcConfiguration {
 

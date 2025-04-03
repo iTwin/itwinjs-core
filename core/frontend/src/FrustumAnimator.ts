@@ -8,10 +8,10 @@
 
 import { Angle, Geometry, Matrix3d, Point3d, Range3d, Transform, Vector3d } from "@itwin/core-geometry";
 import { Tweens } from "@itwin/core-common";
-import { Animator, ViewAnimationOptions } from "./ViewAnimation";
-import { ScreenViewport } from "./Viewport";
-import { ViewPose, ViewPose3d } from "./ViewPose";
-import { ViewState3d } from "./ViewState";
+import { Animator, ViewAnimationOptions } from "./ViewAnimation.js";
+import { ScreenViewport } from "./Viewport.js";
+import { ViewPose, ViewPose3d } from "./ViewPose.js";
+import { ViewState3d } from "./ViewState.js";
 /**
  * Compute an intermediate eye point as it swings around a moving target with rotating axes and varying distance to target.
  * (eye, target, distance) is redundant -- implementation problem is to figure out which to use for compatibility with subsequent view setup.

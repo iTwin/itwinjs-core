@@ -6,7 +6,7 @@
  * @module IpcSocket
  */
 
-import { IpcWebSocketMessage } from "./IpcWebSocket";
+import { IpcWebSocketMessage } from "./IpcWebSocket.js";
 
 function isBuffer(val: any): boolean {
   return val && typeof (val.constructor) !== "undefined" && typeof (val.constructor.isBuffer) === "function" && val.constructor.isBuffer(val);

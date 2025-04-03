@@ -6,8 +6,8 @@
  * @module WebGL
  */
 
-import { FragmentShaderComponent, ProgramBuilder, VariablePrecision, VariableType } from "../ShaderBuilder";
-import { addFrustum } from "./Common";
+import { FragmentShaderComponent, ProgramBuilder, VariablePrecision, VariableType } from "../ShaderBuilder.js";
+import { addFrustum } from "./Common.js";
 
 const computeDirectionalLighting = `
 void computeDirectionalLight (inout float diffuse, inout float specular, vec3 normal, vec3 toEye, vec3 lightDir, float lightIntensity, float specularExponent) {

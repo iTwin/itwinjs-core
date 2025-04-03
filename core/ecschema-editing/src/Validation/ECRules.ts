@@ -17,8 +17,8 @@ import {
   createRelationshipConstraintDiagnosticClass, createSchemaDiagnosticClass, createSchemaItemDiagnosticClass, CustomAttributeContainerDiagnostic,
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   DiagnosticType, PropertyDiagnostic, RelationshipConstraintDiagnostic, SchemaDiagnostic, SchemaItemDiagnostic,
-} from "./Diagnostic";
-import { IRuleSet } from "./Rules";
+} from "./Diagnostic.js";
+import { IRuleSet } from "./Rules.js";
 
 const ruleSetName = "ECObjects";
 

@@ -6,11 +6,11 @@
  * @module Metadata
  */
 
-import { PropertyCategoryProps } from "../Deserialization/JsonProps";
-import { SchemaItemType } from "../ECObjects";
-import { ECObjectsError, ECObjectsStatus } from "../Exception";
-import { Schema } from "./Schema";
-import { SchemaItem } from "./SchemaItem";
+import { PropertyCategoryProps } from "../Deserialization/JsonProps.js";
+import { SchemaItemType } from "../ECObjects.js";
+import { ECObjectsError, ECObjectsStatus } from "../Exception.js";
+import { Schema } from "./Schema.js";
+import { SchemaItem } from "./SchemaItem.js";
 
 /**
  * @beta

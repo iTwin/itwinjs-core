@@ -6,9 +6,9 @@
  * @module Bspline
  */
 
-import { Geometry } from "../Geometry";
-import { Point3d } from "../geometry3d/Point3dVector3d";
-import { BSplineWrapMode, KnotVector } from "./KnotVector";
+import { Geometry } from "../Geometry.js";
+import { Point3d } from "../geometry3d/Point3dVector3d.js";
+import { BSplineWrapMode, KnotVector } from "./KnotVector.js";
 
 /**
  * Knots and poles for a B-spline function mapping R to R^n.

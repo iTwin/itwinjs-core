@@ -2,13 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert } from "chai";
 import { Guid, Id64 } from "@itwin/core-bentley";
-import { IModelTestUtils } from "../IModelTestUtils";
-
 import { IModel, RepositoryLinkProps } from "@itwin/core-common";
-import { RepositoryLink } from "../../Element";
-import { SnapshotDb } from "../../IModelDb";
+import { assert } from "chai";
+import { RepositoryLink } from "../../Element.js";
+import { SnapshotDb } from "../../IModelDb.js";
+import { IModelTestUtils } from "../IModelTestUtils.js";
 
 const testFileName = "UrlLinkTest.bim";
 const subDirName = "UrlLinkTrip";

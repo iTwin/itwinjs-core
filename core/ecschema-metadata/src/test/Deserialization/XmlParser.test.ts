@@ -4,20 +4,20 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, expect } from "chai";
-import * as sinon from "sinon";
-import { CAProviderTuple } from "../../Deserialization/AbstractParser";
+import sinon from "sinon";
+import { SchemaContext } from "../../Context.js";
+import { CAProviderTuple } from "../../Deserialization/AbstractParser.js";
 import {
   ConstantProps, EntityClassProps, EnumerationPropertyProps, EnumerationProps, EnumeratorProps, InvertedUnitProps, MixinProps,
   NavigationPropertyProps, PhenomenonProps, PrimitiveArrayPropertyProps, PrimitivePropertyProps, PropertyCategoryProps, SchemaItemFormatProps,
   SchemaProps, SchemaReferenceProps, StructArrayPropertyProps,
-} from "../../Deserialization/JsonProps";
-import { XmlParser } from "../../Deserialization/XmlParser";
-import { SchemaContext } from "../../Context";
-import { CustomAttributeClass } from "../../Metadata/CustomAttributeClass";
-import { Schema } from "../../Metadata/Schema";
-import { ECObjectsError } from "../../Exception";
-import { createSchemaJsonWithItems, createSchemaXmlWithItems } from "../TestUtils/DeserializationHelpers";
-import { Enumeration } from "../../ecschema-metadata";
+} from "../../Deserialization/JsonProps.js";
+import { XmlParser } from "../../Deserialization/XmlParser.js";
+import { Enumeration } from "../../ecschema-metadata.js";
+import { ECObjectsError } from "../../Exception.js";
+import { CustomAttributeClass } from "../../Metadata/CustomAttributeClass.js";
+import { Schema } from "../../Metadata/Schema.js";
+import { createSchemaJsonWithItems, createSchemaXmlWithItems } from "../TestUtils/DeserializationHelpers.js";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 

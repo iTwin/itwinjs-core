@@ -8,12 +8,12 @@
  */
 
 import { assert } from "@itwin/core-bentley";
-import { Geometry } from "../Geometry";
-import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
-import { Ray3d } from "../geometry3d/Ray3d";
-import { HalfEdge, HalfEdgeMask } from "./Graph";
-import { NodeXYZUV } from "./HalfEdgeNodeXYZUV";
-import { HalfEdgePositionDetail } from "./HalfEdgePositionDetail";
+import { Geometry } from "../Geometry.js";
+import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d.js";
+import { Ray3d } from "../geometry3d/Ray3d.js";
+import { HalfEdge, HalfEdgeMask } from "./Graph.js";
+import { NodeXYZUV } from "./HalfEdgeNodeXYZUV.js";
+import { HalfEdgePositionDetail } from "./HalfEdgePositionDetail.js";
 
 // cspell:word Chebyshev
 

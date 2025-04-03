@@ -7,10 +7,10 @@
  * @module Numerics
  */
 
-import { Geometry } from "../Geometry";
-import { Point2d, Vector2d } from "../geometry3d/Point2dVector2d";
-import { Range1d } from "../geometry3d/Range";
-import { Ray2d } from "../geometry3d/Ray2d";
+import { Geometry } from "../Geometry.js";
+import { Point2d, Vector2d } from "../geometry3d/Point2dVector2d.js";
+import { Range1d } from "../geometry3d/Range.js";
+import { Ray2d } from "../geometry3d/Ray2d.js";
 
 /**
  * Convex hull of points in 2d.

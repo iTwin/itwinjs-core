@@ -6,7 +6,7 @@
 import { describe, expect, it } from "vitest";
 import {
   PointCloudDisplayProps, PointCloudDisplaySettings, RealityModelDisplayProps, RealityModelDisplaySettings,
-} from "../RealityModelDisplaySettings";
+} from "../RealityModelDisplaySettings.js";
 
 describe("PointCloudDisplaySettings", () => {
   it("round-trips through JSON", () => {

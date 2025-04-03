@@ -5,19 +5,19 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { dispose } from "@itwin/core-bentley";
 import { ClipVector, Point3d, Transform, Vector3d } from "@itwin/core-geometry";
-import { IModelApp } from "../../../IModelApp";
-import { ViewRect } from "../../../common/ViewRect";
-import { createEmptyRenderPlan } from "../../../internal/render/RenderPlan";
-import { GraphicBranch } from "../../../render/GraphicBranch";
-import { Branch } from "../../../internal/render/webgl/Graphic";
-import { ClipVolume } from "../../../internal/render/webgl/ClipVolume";
-import { ClipStack } from "../../../internal/render/webgl/ClipStack";
-import { Target } from "../../../internal/render/webgl/Target";
+import { IModelApp } from "../../../IModelApp.js";
+import { ViewRect } from "../../../common/ViewRect.js";
+import { createEmptyRenderPlan } from "../../../internal/render/RenderPlan.js";
+import { GraphicBranch } from "../../../render/GraphicBranch.js";
+import { Branch } from "../../../internal/render/webgl/Graphic.js";
+import { ClipVolume } from "../../../internal/render/webgl/ClipVolume.js";
+import { ClipStack } from "../../../internal/render/webgl/ClipStack.js";
+import { Target } from "../../../internal/render/webgl/Target.js";
 import { ClipStyle, EmptyLocalization } from "@itwin/core-common";
-import { BranchUniforms } from "../../../internal/render/webgl/BranchUniforms";
-import { ScreenViewport } from "../../../Viewport";
-import { SpatialViewState } from "../../../core-frontend";
-import { createBlankConnection } from "../../createBlankConnection";
+import { BranchUniforms } from "../../../internal/render/webgl/BranchUniforms.js";
+import { ScreenViewport } from "../../../Viewport.js";
+import { SpatialViewState } from "../../../core-frontend.js";
+import { createBlankConnection } from "../../createBlankConnection.js";
 
 function makeClipVolume(): ClipVolume {
   const vec = ClipVector.createEmpty();

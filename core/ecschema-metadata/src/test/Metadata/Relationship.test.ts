@@ -4,19 +4,19 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, expect } from "chai";
-import * as sinon from "sinon";
-import { SchemaContext } from "../../Context";
-import { DelayedPromiseWithProps } from "../../DelayedPromise";
-import { RelationshipEnd, StrengthDirection, StrengthType } from "../../ECObjects";
-import { ECObjectsError } from "../../Exception";
-import { CustomAttributeClass } from "../../Metadata/CustomAttributeClass";
-import { EntityClass } from "../../Metadata/EntityClass";
-import { Mixin } from "../../Metadata/Mixin";
-import { MutableRelationshipConstraint, RelationshipClass, RelationshipConstraint, RelationshipMultiplicity } from "../../Metadata/RelationshipClass";
-import { MutableSchema, Schema } from "../../Metadata/Schema";
-import { createSchemaJsonWithItems } from "../TestUtils/DeserializationHelpers";
-import { createEmptyXmlDocument, getElementChildrenByTagName } from "../TestUtils/SerializationHelper";
-import { ECSchemaNamespaceUris } from "../../Constants";
+import sinon from "sinon";
+import { ECSchemaNamespaceUris } from "../../Constants.js";
+import { SchemaContext } from "../../Context.js";
+import { DelayedPromiseWithProps } from "../../DelayedPromise.js";
+import { RelationshipEnd, StrengthDirection, StrengthType } from "../../ECObjects.js";
+import { ECObjectsError } from "../../Exception.js";
+import { CustomAttributeClass } from "../../Metadata/CustomAttributeClass.js";
+import { EntityClass } from "../../Metadata/EntityClass.js";
+import { Mixin } from "../../Metadata/Mixin.js";
+import { MutableRelationshipConstraint, RelationshipClass, RelationshipConstraint, RelationshipMultiplicity } from "../../Metadata/RelationshipClass.js";
+import { MutableSchema, Schema } from "../../Metadata/Schema.js";
+import { createSchemaJsonWithItems } from "../TestUtils/DeserializationHelpers.js";
+import { createEmptyXmlDocument, getElementChildrenByTagName } from "../TestUtils/SerializationHelper.js";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 

@@ -5,8 +5,10 @@
 /** @packageDocumentation
  * @module iModels
  */
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 import { BentleyError, CompressedId64Set, DbResult, Id64, Id64String, OrderedId64Iterable } from "@itwin/core-bentley";
 import { Point2d, Point3d } from "@itwin/core-geometry";
+// @ts-ignore Ignoring js-base64 import error
 import { Base64 } from "js-base64";
 
 /**

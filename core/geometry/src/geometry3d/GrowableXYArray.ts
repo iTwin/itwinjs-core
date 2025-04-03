@@ -7,16 +7,16 @@
  * @module ArraysAndInterfaces
  */
 
-import { Geometry } from "../Geometry";
-import { GrowableXYZArray } from "./GrowableXYZArray";
-import { IndexedXYCollection } from "./IndexedXYCollection";
-import { MultiLineStringDataVariant } from "./IndexedXYZCollection";
-import { Matrix3d } from "./Matrix3d";
-import { Point2d, Vector2d } from "./Point2dVector2d";
-import { Point3d } from "./Point3dVector3d";
-import { Range2d } from "./Range";
-import { Transform } from "./Transform";
-import { XAndY, XYAndZ } from "./XYZProps";
+import { Geometry } from "../Geometry.js";
+import { GrowableXYZArray } from "./GrowableXYZArray.js";
+import { IndexedXYCollection } from "./IndexedXYCollection.js";
+import { MultiLineStringDataVariant } from "./IndexedXYZCollection.js";
+import { Matrix3d } from "./Matrix3d.js";
+import { Point2d, Vector2d } from "./Point2dVector2d.js";
+import { Point3d } from "./Point3dVector3d.js";
+import { Range2d } from "./Range.js";
+import { Transform } from "./Transform.js";
+import { XAndY, XYAndZ } from "./XYZProps.js";
 
 /** `GrowableXYArray` manages a (possibly growing) Float64Array to pack xy coordinates.
  * @public

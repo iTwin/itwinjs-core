@@ -6,8 +6,8 @@
  * @module Rendering
  */
 
-import { _implementationProhibited } from "../../common/internal/Symbols";
-import { RenderMemory } from "../../render/RenderMemory";
+import { _implementationProhibited } from "../../common/internal/Symbols.js";
+import { RenderMemory } from "../../render/RenderMemory.js";
 
 /** An opaque representation of instructions for repeatedly drawing a [[RenderGeometry]] to pattern a planar region,
  * to be supplied to [[RenderSystem.createRenderGraphic]].

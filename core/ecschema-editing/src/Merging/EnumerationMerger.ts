@@ -3,9 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { primitiveTypeToString, type SchemaItemKey } from "@itwin/ecschema-metadata";
-import type { EnumerationDifference } from "../Differencing/SchemaDifference";
-import type { SchemaMergeContext } from "./SchemaMerger";
-import type { MutableEnumeration } from "../Editing/Mutable/MutableEnumeration";
+import type { EnumerationDifference } from "../Differencing/SchemaDifference.js";
+import type { MutableEnumeration } from "../Editing/Mutable/MutableEnumeration.js";
+import type { SchemaMergeContext } from "./SchemaMerger.js";
 
 /**
  * Merges a new Enumeration into the target schema.

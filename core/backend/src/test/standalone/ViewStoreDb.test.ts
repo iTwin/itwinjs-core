@@ -3,13 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import { Guid, GuidString, Logger, LogLevel, OpenMode } from "@itwin/core-bentley";
+import { ThumbnailFormatProps } from "@itwin/core-common";
 import { expect } from "chai";
 import { Suite } from "mocha";
 import { join } from "path";
-import { Guid, GuidString, Logger, LogLevel, OpenMode } from "@itwin/core-bentley";
-import { ViewStore } from "../../ViewStore";
-import { ThumbnailFormatProps } from "@itwin/core-common";
-import { KnownTestLocations } from "../KnownTestLocations";
+import { ViewStore } from "../../ViewStore.js";
+import { KnownTestLocations } from "../KnownTestLocations.js";
 
 describe("ViewStore", function (this: Suite) {
   this.timeout(0);

@@ -7,12 +7,12 @@
  */
 
 import { assert } from "@itwin/core-bentley";
-import { TextureUnit } from "../RenderFlags";
-import { FragmentShaderComponent, ProgramBuilder, VariablePrecision, VariableType } from "../ShaderBuilder";
-import { addEyeSpace, addFrustum } from "./Common";
-import { addPixelWidthFactor } from "./FeatureSymbology";
-import { computeAlphaWeight, computeOutputs } from "./Translucency";
-import { addModelViewMatrix } from "./Vertex";
+import { TextureUnit } from "../RenderFlags.js";
+import { FragmentShaderComponent, ProgramBuilder, VariablePrecision, VariableType } from "../ShaderBuilder.js";
+import { addEyeSpace, addFrustum } from "./Common.js";
+import { addPixelWidthFactor } from "./FeatureSymbology.js";
+import { computeAlphaWeight, computeOutputs } from "./Translucency.js";
+import { addModelViewMatrix } from "./Vertex.js";
 
 const getClipPlaneFloat = `
 vec4 getClipPlane(int index) {

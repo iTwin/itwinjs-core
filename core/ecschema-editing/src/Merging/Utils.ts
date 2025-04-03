@@ -2,10 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { ECClasses } from "../Editing/ECClasses";
-import { PropertyKey } from "./Edits/NameMapping";
-import type { SchemaMergeContext } from "./SchemaMerger";
 import { ECClass, ECObjectsError, ECObjectsStatus, SchemaContext, SchemaItem, SchemaItemKey, SchemaItemType } from "@itwin/ecschema-metadata";
+import { ECClasses } from "../Editing/ECClasses.js";
+import { PropertyKey } from "./Edits/NameMapping.js";
+import type { SchemaMergeContext } from "./SchemaMerger.js";
 
 /**
  * Resolves a SchemaItemKey for the given item name.

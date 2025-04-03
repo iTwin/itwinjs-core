@@ -6,18 +6,18 @@
  * @module Polyface
  */
 
-import { Transform } from "../../geometry3d/Transform";
-import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray";
-import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
-import { Segment1d } from "../../geometry3d/Segment1d";
-import { AnnounceDrapePanel } from "../PolyfaceQuery";
-import { Range3d } from "../../geometry3d/Range";
-import { Geometry } from "../../Geometry";
-import { Polyface } from "../Polyface";
-import { ClipPlane } from "../../clipping/ClipPlane";
-import { ConvexClipPlaneSet } from "../../clipping/ConvexClipPlaneSet";
-import { IndexedXYZCollectionPolygonOps, Point3dArrayPolygonOps } from "../../geometry3d/PolygonOps";
-import { Matrix3d } from "../../geometry3d/Matrix3d";
+import { Transform } from "../../geometry3d/Transform.js";
+import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray.js";
+import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d.js";
+import { Segment1d } from "../../geometry3d/Segment1d.js";
+import { AnnounceDrapePanel } from "../PolyfaceQuery.js";
+import { Range3d } from "../../geometry3d/Range.js";
+import { Geometry } from "../../Geometry.js";
+import { Polyface } from "../Polyface.js";
+import { ClipPlane } from "../../clipping/ClipPlane.js";
+import { ConvexClipPlaneSet } from "../../clipping/ConvexClipPlaneSet.js";
+import { IndexedXYZCollectionPolygonOps, Point3dArrayPolygonOps } from "../../geometry3d/PolygonOps.js";
+import { Matrix3d } from "../../geometry3d/Matrix3d.js";
 
 export class SweepLineStringToFacetContext {
   private _spacePoints: GrowableXYZArray;

@@ -6,36 +6,36 @@
  * @module Bspline
  */
 
-import { VariantCurveExtendParameter } from "../curve/CurveExtendMode";
-import { CurveIntervalRole, CurveLocationDetail } from "../curve/CurveLocationDetail";
-import { CurvePrimitive } from "../curve/CurvePrimitive";
-import { CurveOffsetXYHandler } from "../curve/internalContexts/CurveOffsetXYHandler";
-import { PlaneAltitudeRangeContext } from "../curve/internalContexts/PlaneAltitudeRangeContext";
-import { LineString3d } from "../curve/LineString3d";
-import { OffsetOptions } from "../curve/OffsetOptions";
-import { StrokeCountMap } from "../curve/Query/StrokeCountMap";
-import { StrokeOptions } from "../curve/StrokeOptions";
-import { Geometry, PlaneAltitudeEvaluator } from "../Geometry";
-import { GeometryHandler, IStrokeHandler } from "../geometry3d/GeometryHandler";
-import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
-import { Plane3dByOriginAndUnitNormal } from "../geometry3d/Plane3dByOriginAndUnitNormal";
-import { Plane3dByOriginAndVectors } from "../geometry3d/Plane3dByOriginAndVectors";
-import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
-import { Point3dArray } from "../geometry3d/PointHelpers";
-import { Range1d, Range3d } from "../geometry3d/Range";
-import { Ray3d } from "../geometry3d/Ray3d";
-import { Transform } from "../geometry3d/Transform";
-import { Point4d } from "../geometry4d/Point4d";
-import { UnivariateBezier } from "../numerics/BezierPolynomials";
-import { AkimaCurve3dOptions } from "./AkimaCurve3d";
-import { Bezier1dNd } from "./Bezier1dNd";
-import { BezierCurve3d } from "./BezierCurve3d";
-import { BezierCurve3dH } from "./BezierCurve3dH";
-import { BezierCurveBase } from "./BezierCurveBase";
-import { BSpline1dNd } from "./BSpline1dNd";
-import { BSplineCurveOps } from "./BSplineCurveOps";
-import { InterpolationCurve3dOptions } from "./InterpolationCurve3d";
-import { BSplineWrapMode, KnotVector } from "./KnotVector";
+import { VariantCurveExtendParameter } from "../curve/CurveExtendMode.js";
+import { CurveIntervalRole, CurveLocationDetail } from "../curve/CurveLocationDetail.js";
+import { CurvePrimitive } from "../curve/CurvePrimitive.js";
+import { CurveOffsetXYHandler } from "../curve/internalContexts/CurveOffsetXYHandler.js";
+import { PlaneAltitudeRangeContext } from "../curve/internalContexts/PlaneAltitudeRangeContext.js";
+import { LineString3d } from "../curve/LineString3d.js";
+import { OffsetOptions } from "../curve/OffsetOptions.js";
+import { StrokeCountMap } from "../curve/Query/StrokeCountMap.js";
+import { StrokeOptions } from "../curve/StrokeOptions.js";
+import { Geometry, PlaneAltitudeEvaluator } from "../Geometry.js";
+import { GeometryHandler, IStrokeHandler } from "../geometry3d/GeometryHandler.js";
+import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray.js";
+import { Plane3dByOriginAndUnitNormal } from "../geometry3d/Plane3dByOriginAndUnitNormal.js";
+import { Plane3dByOriginAndVectors } from "../geometry3d/Plane3dByOriginAndVectors.js";
+import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d.js";
+import { Point3dArray } from "../geometry3d/PointHelpers.js";
+import { Range1d, Range3d } from "../geometry3d/Range.js";
+import { Ray3d } from "../geometry3d/Ray3d.js";
+import { Transform } from "../geometry3d/Transform.js";
+import { Point4d } from "../geometry4d/Point4d.js";
+import { UnivariateBezier } from "../numerics/BezierPolynomials.js";
+import { AkimaCurve3dOptions } from "./AkimaCurve3d.js";
+import { Bezier1dNd } from "./Bezier1dNd.js";
+import { BezierCurve3d } from "./BezierCurve3d.js";
+import { BezierCurve3dH } from "./BezierCurve3dH.js";
+import { BezierCurveBase } from "./BezierCurveBase.js";
+import { BSpline1dNd } from "./BSpline1dNd.js";
+import { BSplineCurveOps } from "./BSplineCurveOps.js";
+import { InterpolationCurve3dOptions } from "./InterpolationCurve3d.js";
+import { BSplineWrapMode, KnotVector } from "./KnotVector.js";
 
 /**
  * Base class for BSplineCurve3d and BSplineCurve3dH.

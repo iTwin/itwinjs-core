@@ -2,36 +2,38 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { AnyClassItemDifference, AnySchemaDifference, AnySchemaItemDifference, ClassPropertyDifference, 
-  ConstantDifference, CustomAttributeClassDifference, CustomAttributeDifference, EntityClassDifference, 
-  EntityClassMixinDifference, EnumerationDifference, EnumeratorDifference, FormatDifference, FormatUnitDifference, 
-  FormatUnitLabelDifference, InvertedUnitDifference, KindOfQuantityDifference, KindOfQuantityPresentationFormatDifference, 
-  MixinClassDifference, PhenomenonDifference, PropertyCategoryDifference, RelationshipClassDifference, 
-  RelationshipConstraintClassDifference, RelationshipConstraintDifference, SchemaDifference, SchemaReferenceDifference, 
-  StructClassDifference, UnitDifference, UnitSystemDifference } from "../Differencing/SchemaDifference";
-import { addConstant, modifyConstant } from "./ConstantMerger";
-import { addCustomAttribute } from "./CustomAttributeMerger";
-import { addCustomAttributeClass, modifyCustomAttributeClass } from "./CustomAttributeClassMerger";
-import { addClassMixins, addEntityClass, modifyEntityClass } from "./EntityClassMerger";
-import { addEnumeration, modifyEnumeration } from "./EnumerationMerger";
-import { addEnumerator, modifyEnumerator } from "./EnumeratorMerger";
-import { addKindOfQuantity, addPresentationFormat, modifyKindOfQuantity } from "./KindOfQuantityMerger";
-import { addMixinClass, modifyMixinClass } from "./MixinMerger";
-import { addPhenomenon, modifyPhenomenon } from "./PhenomenonMerger";
-import { addPropertyCategory, modifyPropertyCategory } from "./PropertyCategoryMerger";
-import { addRelationshipClass, mergeRelationshipClassConstraint, mergeRelationshipConstraint, modifyRelationshipClass } from "./RelationshipClassMerger";
-import { addSchemaReferences, modifySchemaReferences } from "./SchemaReferenceMerger";
-import { addStructClass, modifyStructClass } from "./StructClassMerger";
-import { addUnitSystem, modifyUnitSystem } from "./UnitSystemMerger";
-import { mergePropertyDifference } from "./PropertyMerger";
-import { isClassDifference } from "../Differencing/Utils";
-import { SchemaDifferenceVisitor } from "../Differencing/SchemaDifferenceVisitor";
 import { SchemaItemKey } from "@itwin/ecschema-metadata";
-import { SchemaMergeContext } from "./SchemaMerger";
-import { toItemKey } from "./Utils";
-import { addUnit, modifyUnit } from "./UnitMerger";
-import { addInvertedUnit, modifyInvertedUnit } from "./InvertedUnitMerger";
-import { addFormat, modifyFormat, modifyFormatUnit, modifyFormatUnitLabel } from "./FormatMerger";
+import {
+  AnyClassItemDifference, AnySchemaDifference, AnySchemaItemDifference, ClassPropertyDifference,
+  ConstantDifference, CustomAttributeClassDifference, CustomAttributeDifference, EntityClassDifference,
+  EntityClassMixinDifference, EnumerationDifference, EnumeratorDifference, FormatDifference, FormatUnitDifference,
+  FormatUnitLabelDifference, InvertedUnitDifference, KindOfQuantityDifference, KindOfQuantityPresentationFormatDifference,
+  MixinClassDifference, PhenomenonDifference, PropertyCategoryDifference, RelationshipClassDifference,
+  RelationshipConstraintClassDifference, RelationshipConstraintDifference, SchemaDifference, SchemaReferenceDifference,
+  StructClassDifference, UnitDifference, UnitSystemDifference
+} from "../Differencing/SchemaDifference.js";
+import { SchemaDifferenceVisitor } from "../Differencing/SchemaDifferenceVisitor.js";
+import { isClassDifference } from "../Differencing/Utils.js";
+import { addConstant, modifyConstant } from "./ConstantMerger.js";
+import { addCustomAttributeClass, modifyCustomAttributeClass } from "./CustomAttributeClassMerger.js";
+import { addCustomAttribute } from "./CustomAttributeMerger.js";
+import { addClassMixins, addEntityClass, modifyEntityClass } from "./EntityClassMerger.js";
+import { addEnumeration, modifyEnumeration } from "./EnumerationMerger.js";
+import { addEnumerator, modifyEnumerator } from "./EnumeratorMerger.js";
+import { addFormat, modifyFormat, modifyFormatUnit, modifyFormatUnitLabel } from "./FormatMerger.js";
+import { addInvertedUnit, modifyInvertedUnit } from "./InvertedUnitMerger.js";
+import { addKindOfQuantity, addPresentationFormat, modifyKindOfQuantity } from "./KindOfQuantityMerger.js";
+import { addMixinClass, modifyMixinClass } from "./MixinMerger.js";
+import { addPhenomenon, modifyPhenomenon } from "./PhenomenonMerger.js";
+import { addPropertyCategory, modifyPropertyCategory } from "./PropertyCategoryMerger.js";
+import { mergePropertyDifference } from "./PropertyMerger.js";
+import { addRelationshipClass, mergeRelationshipClassConstraint, mergeRelationshipConstraint, modifyRelationshipClass } from "./RelationshipClassMerger.js";
+import { SchemaMergeContext } from "./SchemaMerger.js";
+import { addSchemaReferences, modifySchemaReferences } from "./SchemaReferenceMerger.js";
+import { addStructClass, modifyStructClass } from "./StructClassMerger.js";
+import { addUnit, modifyUnit } from "./UnitMerger.js";
+import { addUnitSystem, modifyUnitSystem } from "./UnitSystemMerger.js";
+import { toItemKey } from "./Utils.js";
 
 /** Definition of schema items change type handler array. */
 interface ItemChangeTypeHandler<T extends AnySchemaDifference> {

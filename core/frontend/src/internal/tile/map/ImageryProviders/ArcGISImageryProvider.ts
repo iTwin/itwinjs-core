@@ -7,10 +7,10 @@
  */
 
 import { ImageMapLayerSettings } from "@itwin/core-common";
-import { ArcGisErrorCode, ArcGISServiceMetadata, ArcGisUtilities, MapLayerAccessClient, MapLayerAccessToken, MapLayerImageryProvider, MapLayerImageryProviderStatus } from "../../../../tile/internal";
-import { IModelApp } from "../../../../IModelApp";
-import { NotifyMessageDetails, OutputMessagePriority } from "../../../../NotificationManager";
-import { headersIncludeAuthMethod } from "../../../../request/utils";
+import { ArcGisErrorCode, ArcGISServiceMetadata, ArcGisUtilities, MapLayerAccessClient, MapLayerAccessToken, MapLayerImageryProvider, MapLayerImageryProviderStatus } from "../../../../tile/internal.js";
+import { IModelApp } from "../../../../IModelApp.js";
+import { NotifyMessageDetails, OutputMessagePriority } from "../../../../NotificationManager.js";
+import { headersIncludeAuthMethod } from "../../../../request/utils.js";
 
 /** Base class for ArcGIS map-layer imagery providers.
  *

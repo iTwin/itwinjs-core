@@ -7,9 +7,9 @@
  */
 
 import { assert } from "@itwin/core-bentley";
-import { WebGLDisposable } from "./Disposable";
-import { GL } from "./GL";
-import { System } from "./System";
+import { WebGLDisposable } from "./Disposable.js";
+import { GL } from "./GL.js";
+import { System } from "./System.js";
 
 function computeBytesUsed(width: number, height: number, format: GL.RenderBuffer.Format, numSamples: number): number {
   const bytesPerPixel = (GL.RenderBuffer.Format.DepthComponent16 === format ? 2 : 4);

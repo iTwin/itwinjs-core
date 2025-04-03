@@ -2,13 +2,13 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as fs from "fs";
-import * as path from "path";
-import { expect } from "chai";
-import { SchemaContext } from "../../Context";
-import { deserializeXmlSync } from "../TestUtils/DeserializationHelpers";
-import { UnitConverter } from "../../UnitConversion/UnitConverter";
 import { almostEqual } from "@itwin/core-quantity";
+import { expect } from "chai";
+import fs from "fs";
+import path from "path";
+import { SchemaContext } from "../../Context.js";
+import { UnitConverter } from "../../UnitConversion/UnitConverter.js";
+import { deserializeXmlSync } from "../TestUtils/DeserializationHelpers.js";
 
 interface TestData {
   from: string;
@@ -21,11 +21,11 @@ describe("Unit Conversion tests", () => {
   const tolerance = 1.19209290e-7;
   const context = new SchemaContext();
   const testData: TestData[] = JSON.parse(
-    fs.readFileSync(path.join(__dirname, "..", "assets", "./UnitTests.json"), "utf-8"),
+    fs.readFileSync(path.join(import.meta.dirname, "..", "assets", "./UnitTests.json"), "utf-8"),
   );
 
   before(() => {
-    const schemaFile = path.join(__dirname, "..", "..", "..", "..", "node_modules", "@bentley", "units-schema", "Units.ecschema.xml");
+    const schemaFile = path.join(import.meta.dirname, "..", "..", "..", "..", "node_modules", "@bentley", "units-schema", "Units.ecschema.xml");
     const schemaXml = fs.readFileSync(schemaFile, "utf-8");
     deserializeXmlSync(schemaXml, context);
   });

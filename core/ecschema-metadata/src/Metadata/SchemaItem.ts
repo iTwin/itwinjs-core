@@ -6,12 +6,12 @@
  * @module Metadata
  */
 
-import { ECSchemaNamespaceUris } from "../Constants";
-import { SchemaItemProps } from "../Deserialization/JsonProps";
-import { AbstractSchemaItemType, SchemaItemType, schemaItemTypeToXmlString, SupportedSchemaItemType } from "../ECObjects";
-import { ECObjectsError, ECObjectsStatus } from "../Exception";
-import { ECVersion, SchemaItemKey } from "../SchemaKey";
-import { Schema } from "./Schema";
+import { ECSchemaNamespaceUris } from "../Constants.js";
+import { SchemaItemProps } from "../Deserialization/JsonProps.js";
+import { AbstractSchemaItemType, SchemaItemType, schemaItemTypeToXmlString, SupportedSchemaItemType } from "../ECObjects.js";
+import { ECObjectsError, ECObjectsStatus } from "../Exception.js";
+import { ECVersion, SchemaItemKey } from "../SchemaKey.js";
+import { Schema } from "./Schema.js";
 
 /**
  * An abstract class that supplies all of the common parts of a SchemaItem.

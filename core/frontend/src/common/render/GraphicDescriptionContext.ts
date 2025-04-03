@@ -7,10 +7,10 @@
  */
 
 import { TransientIdSequence } from "@itwin/core-bentley";
-import { _implementationProhibited, _textures } from "../internal/Symbols";
-import { WorkerGraphicDescriptionContextImpl } from "../internal/render/GraphicDescriptionContextImpl";
+import { _implementationProhibited, _textures } from "../internal/Symbols.js";
+import { WorkerGraphicDescriptionContextImpl } from "../internal/render/GraphicDescriptionContextImpl.js";
 import { Gradient, ImageBuffer, ImageSource, RenderMaterial, RenderTexture, TextureTransparency } from "@itwin/core-common";
-import { MaterialParams } from "./MaterialParams";
+import { MaterialParams } from "./MaterialParams.js";
 
 /** Parameters describing a [[RenderTexture]] to be created on a Worker by [[WorkerGraphicDescriptionContext.createTexture]].
  * @beta

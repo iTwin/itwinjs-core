@@ -7,21 +7,21 @@
  */
 
 import { assert } from "@itwin/core-bentley";
-import { DelayedPromiseWithProps } from "../DelayedPromise";
-import { ClassProps } from "../Deserialization/JsonProps";
-import { XmlSerializationUtils } from "../Deserialization/XmlSerializationUtils";
-import { AbstractSchemaItemType, classModifierToString, ECClassModifier, parseClassModifier, parsePrimitiveType, PrimitiveType, SchemaItemType, SupportedSchemaItemType } from "../ECObjects";
-import { ECObjectsError, ECObjectsStatus } from "../Exception";
-import { AnyClass, HasMixins, LazyLoadedECClass } from "../Interfaces";
-import { SchemaItemKey, SchemaKey } from "../SchemaKey";
-import { CustomAttribute, CustomAttributeContainerProps, CustomAttributeSet, serializeCustomAttributes } from "./CustomAttribute";
-import { Enumeration } from "./Enumeration";
+import { DelayedPromiseWithProps } from "../DelayedPromise.js";
+import { ECSpecVersion, SchemaReadHelper } from "../Deserialization/Helper.js";
+import { ClassProps } from "../Deserialization/JsonProps.js";
+import { XmlSerializationUtils } from "../Deserialization/XmlSerializationUtils.js";
+import { AbstractSchemaItemType, classModifierToString, ECClassModifier, parseClassModifier, parsePrimitiveType, PrimitiveType, SchemaItemType, SupportedSchemaItemType } from "../ECObjects.js";
+import { ECObjectsError, ECObjectsStatus } from "../Exception.js";
+import { AnyClass, HasMixins, LazyLoadedECClass } from "../Interfaces.js";
+import { SchemaItemKey, SchemaKey } from "../SchemaKey.js";
+import { CustomAttribute, CustomAttributeContainerProps, CustomAttributeSet, serializeCustomAttributes } from "./CustomAttribute.js";
+import { Enumeration } from "./Enumeration.js";
 import {
   EnumerationArrayProperty, EnumerationProperty, PrimitiveArrayProperty, PrimitiveProperty, Property, StructArrayProperty, StructProperty,
-} from "./Property";
-import { Schema } from "./Schema";
-import { SchemaItem } from "./SchemaItem";
-import { ECSpecVersion, SchemaReadHelper } from "../Deserialization/Helper";
+} from "./Property.js";
+import { Schema } from "./Schema.js";
+import { SchemaItem } from "./SchemaItem.js";
 
 /**
  * A common abstract class for all of the ECClass types.

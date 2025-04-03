@@ -2,30 +2,30 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { SchemaContext } from "../../Context";
 import { expect } from "chai";
-import * as fs from "fs";
-import * as path from "path";
-import { deserializeXmlSync } from "../TestUtils/DeserializationHelpers";
-import { UnitConverter } from "../../UnitConversion/UnitConverter";
+import fs from "fs";
+import path from "path";
+import { SchemaContext } from "../../Context.js";
+import { UnitConverter } from "../../UnitConversion/UnitConverter.js";
+import { deserializeXmlSync } from "../TestUtils/DeserializationHelpers.js";
 
 describe("Testing when unit conversion should throw", () => {
   const context = new SchemaContext();
 
   before(() => {
-    const siSchemaFile = path.join(__dirname, "..", "assets", "SIUnits.ecschema.xml");
+    const siSchemaFile = path.join(import.meta.dirname, "..", "assets", "SIUnits.ecschema.xml");
     const siSchemaXml = fs.readFileSync(siSchemaFile, "utf-8");
     deserializeXmlSync(siSchemaXml, context);
 
-    const metricSchemaFile = path.join(__dirname, "..", "assets", "MetricUnits.ecschema.xml");
+    const metricSchemaFile = path.join(import.meta.dirname, "..", "assets", "MetricUnits.ecschema.xml");
     const metricSchemaXml = fs.readFileSync(metricSchemaFile, "utf-8");
     deserializeXmlSync(metricSchemaXml, context);
 
-    const usSchemaFile = path.join(__dirname, "..", "assets", "USUnits.ecschema.xml");
+    const usSchemaFile = path.join(import.meta.dirname, "..", "assets", "USUnits.ecschema.xml");
     const usSchemaXml = fs.readFileSync(usSchemaFile, "utf-8");
     deserializeXmlSync(usSchemaXml, context);
 
-    const auSchemaFile = path.join(__dirname, "..", "assets", "ValidationUnits.ecschema.xml");
+    const auSchemaFile = path.join(import.meta.dirname, "..", "assets", "ValidationUnits.ecschema.xml");
     const auSchemaXml = fs.readFileSync(auSchemaFile, "utf-8");
     deserializeXmlSync(auSchemaXml, context);
   });

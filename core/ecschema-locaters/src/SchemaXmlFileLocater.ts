@@ -6,14 +6,14 @@
  * @module Locaters
  */
 
-import * as path from "path";
-import * as fs from "fs";
-import { DOMParser } from "@xmldom/xmldom";
 import {
   ECObjectsError, ECObjectsStatus, ECVersion, ISchemaLocater, Schema, SchemaContext, SchemaInfo, SchemaKey, SchemaMatchType, SchemaReadHelper, XmlParser,
 } from "@itwin/ecschema-metadata";
-import { FileSchemaKey, SchemaFileLocater } from "./SchemaFileLocater";
+import { DOMParser } from "@xmldom/xmldom";
+import fs from "fs";
 import { globSync } from "glob";
+import path from "path";
+import { FileSchemaKey, SchemaFileLocater } from "./SchemaFileLocater.js";
 
 /**
  * A SchemaLocater implementation for locating XML Schema files

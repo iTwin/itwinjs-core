@@ -2,10 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as path from "path";
 import { Guid } from "@itwin/core-bentley";
-import { ECDb } from "../../ECDb";
-import { IModelJsFs } from "../../IModelJsFs";
+import path from "path";
+import { ECDb } from "../../ECDb.js";
+import { IModelJsFs } from "../../IModelJsFs.js";
 
 export class ECDbTestHelper {
 

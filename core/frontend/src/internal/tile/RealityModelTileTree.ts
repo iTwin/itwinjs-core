@@ -16,24 +16,24 @@ import {
   RealityDataProvider, RealityDataSourceKey, RealityModelDisplaySettings, ViewFlagOverrides,
 } from "@itwin/core-common";
 import { Angle, Constant, Ellipsoid, Matrix3d, Point3d, Range3d, Ray3d, Transform, TransformProps, Vector3d, XYZ } from "@itwin/core-geometry";
-import { calculateEcefToDbTransformAtLocation } from "../../BackgroundMapGeometry";
-import { DisplayStyleState } from "../../DisplayStyleState";
-import { HitDetail } from "../../HitDetail";
-import { IModelApp } from "../../IModelApp";
-import { IModelConnection } from "../../IModelConnection";
-import { PlanarClipMaskState } from "../../PlanarClipMaskState";
-import { RealityDataSource } from "../../RealityDataSource";
-import { RenderMemory } from "../../render/RenderMemory";
-import { SceneContext } from "../../ViewContext";
-import { ViewState } from "../../ViewState";
+import { calculateEcefToDbTransformAtLocation } from "../../BackgroundMapGeometry.js";
+import { DisplayStyleState } from "../../DisplayStyleState.js";
+import { HitDetail } from "../../HitDetail.js";
+import { IModelApp } from "../../IModelApp.js";
+import { IModelConnection } from "../../IModelConnection.js";
+import { PlanarClipMaskState } from "../../PlanarClipMaskState.js";
+import { RealityDataSource } from "../../RealityDataSource.js";
+import { RenderMemory } from "../../render/RenderMemory.js";
+import { SceneContext } from "../../ViewContext.js";
+import { ViewState } from "../../ViewState.js";
 import {
   BatchedTileIdMap, CesiumIonAssetProvider, createClassifierTileTreeReference, createDefaultViewFlagOverrides, DisclosedTileTreeSet, GeometryTileTreeReference,
   getGcsConverterAvailable, LayerTileTreeHandler, LayerTileTreeReferenceHandler, MapLayerTileTreeReference, MapLayerTreeSetting, RealityTile, RealityTileLoader, RealityTileParams, RealityTileTree, RealityTileTreeParams, SpatialClassifierTileTreeReference, Tile,
   TileDrawArgs, TileLoadPriority, TileRequest, TileTree, TileTreeOwner, TileTreeReference, TileTreeSupplier,
-} from "../../tile/internal";
-import { SpatialClassifiersState } from "../../SpatialClassifiersState";
-import { RealityDataSourceTilesetUrlImpl } from "../../RealityDataSourceTilesetUrlImpl";
-import { compareMapLayer } from "../render/webgl/MapLayerParams";
+} from "../../tile/internal.js";
+import { SpatialClassifiersState } from "../../SpatialClassifiersState.js";
+import { RealityDataSourceTilesetUrlImpl } from "../../RealityDataSourceTilesetUrlImpl.js";
+import { compareMapLayer } from "../render/webgl/MapLayerParams.js";
 
 function getUrl(content: any) {
   return content ? (content.url ? content.url : content.uri) : undefined;
@@ -361,13 +361,13 @@ function assembleUrl(prefix: string, url: string): string {
     return url.substring(1);
   }
 
-  if (url.startsWith("./")) {
+  if (url.startsWith("./.js")) {
     // Relative to parent tile
     url = url.substring(2);
   } else {
     const prefixParts = prefix.split("/");
     prefixParts.pop();
-    while (url.startsWith("../")) {
+    while (url.startsWith("../.js")) {
       prefixParts.pop();
       url = url.substring(3);
     }

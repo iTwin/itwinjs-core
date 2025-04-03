@@ -8,7 +8,7 @@
  */
 
 import { IModelApp, NotifyMessageDetails, OutputMessagePriority, RenderSystemDebugControl, Tool } from "@itwin/core-frontend";
-import { parseToggle } from "./parseToggle";
+import { parseToggle } from "./parseToggle.js";
 
 /** Executes some code against a RenderSystemDebugControl obtained from the IModelApp's RenderSystem.
  * @beta

@@ -9,7 +9,7 @@
 import { BeTimePoint } from "@itwin/core-bentley";
 import { Angle, Matrix3d, Point2d, Point3d, Vector3d } from "@itwin/core-geometry";
 import { Camera } from "@itwin/core-common";
-import { ViewState, ViewState2d, ViewState3d } from "./ViewState";
+import { ViewState, ViewState2d, ViewState3d } from "./ViewState.js";
 
 /** The "pose" for a [View]($docs/learning/frontend/views#viewstate-parameters) describing the viewed area or volume, depending upon whether
  * the view is 2d or 3d.

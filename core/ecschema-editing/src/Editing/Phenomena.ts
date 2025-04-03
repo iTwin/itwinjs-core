@@ -7,10 +7,10 @@
  */
 
 import { Phenomenon, PhenomenonProps, SchemaItemKey, SchemaItemType, SchemaKey } from "@itwin/ecschema-metadata";
-import { SchemaContextEditor } from "./Editor";
-import { MutablePhenomenon } from "./Mutable/MutablePhenomenon";
-import { ECEditingStatus, SchemaEditingError, SchemaItemId } from "./Exception";
-import { SchemaItems } from "./SchemaItems";
+import { SchemaContextEditor } from "./Editor.js";
+import { ECEditingStatus, SchemaEditingError, SchemaItemId } from "./Exception.js";
+import { MutablePhenomenon } from "./Mutable/MutablePhenomenon.js";
+import { SchemaItems } from "./SchemaItems.js";
 
 /**
  * @alpha

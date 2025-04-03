@@ -6,14 +6,14 @@
  * @module Utils
  */
 
-export { _callIpcChannel, _scheduleScriptReference } from "../common/internal/Symbols";
-export { AnimationNodeId } from "../common/internal/render/AnimationNodeId";
-export { GltfDataType, type GltfMeshPrimitive } from "../common/gltf/GltfSchema";
-export { OnScreenTarget, Target } from "./render/webgl/Target";
-export { PerformanceMetrics } from "./render/webgl/PerformanceMetrics";
-export { type GLTimerResult, RenderDiagnostics, type RenderSystemDebugControl } from "./render/RenderSystemDebugControl";
-export { formatAnimationBranchId } from "./render/AnimationBranchState";
-export { PrimitiveVisibility, type RenderTargetDebugControl } from "./render/RenderTargetDebugControl";
+export { _callIpcChannel, _scheduleScriptReference } from "../common/internal/Symbols.js";
+export { AnimationNodeId } from "../common/internal/render/AnimationNodeId.js";
+export { GltfDataType, type GltfMeshPrimitive } from "../common/gltf/GltfSchema.js";
+export { OnScreenTarget, Target } from "./render/webgl/Target.js";
+export { PerformanceMetrics } from "./render/webgl/PerformanceMetrics.js";
+export { type GLTimerResult, RenderDiagnostics, type RenderSystemDebugControl } from "./render/RenderSystemDebugControl.js";
+export { formatAnimationBranchId } from "./render/AnimationBranchState.js";
+export { PrimitiveVisibility, type RenderTargetDebugControl } from "./render/RenderTargetDebugControl.js";
 
 // Used by frontend-tiles, map-layers-formats, frontend-dev-tools
 export {
@@ -48,9 +48,9 @@ export {
  SpatialTileTreeReferences,
  type WGS84Extent,
  WmsUtilities,
-} from "../tile/internal";
+} from "../tile/internal.js";
 
 // Used by display-test-app which currently builds using both ESModules and CommonJS.
 // Remove once CommonJS is dropped.
-export { DebugShaderFile } from "./render/RenderSystemDebugControl";
-export { IModelTileTree } from "./tile/IModelTileTree";
+export { DebugShaderFile } from "./render/RenderSystemDebugControl.js";
+export { IModelTileTree } from "./tile/IModelTileTree.js";

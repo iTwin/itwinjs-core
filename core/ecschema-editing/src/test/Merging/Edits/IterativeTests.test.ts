@@ -1,8 +1,8 @@
 import { EntityClass, PrimitiveType, Schema } from "@itwin/ecschema-metadata";
-import { AnySchemaDifferenceConflict, ConflictCode, getSchemaDifferences, SchemaDifferenceResult, SchemaEdits, SchemaMerger } from "../../../ecschema-editing";
-import { BisTestHelper } from "../../TestUtils/BisTestHelper";
-import { deserializeXml } from "../../TestUtils/DeserializationHelpers";
 import { expect } from "chai";
+import { AnySchemaDifferenceConflict, ConflictCode, getSchemaDifferences, SchemaDifferenceResult, SchemaEdits, SchemaMerger } from "../../../ecschema-editing.js";
+import { BisTestHelper } from "../../TestUtils/BisTestHelper.js";
+import { deserializeXml } from "../../TestUtils/DeserializationHelpers.js";
 
 describe("Iterative Tests", () => {
 

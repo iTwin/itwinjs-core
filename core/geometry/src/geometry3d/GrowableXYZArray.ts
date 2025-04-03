@@ -7,17 +7,17 @@
  * @module ArraysAndInterfaces
  */
 
-import { Geometry, PlaneAltitudeEvaluator } from "../Geometry";
-import { Matrix4d } from "../geometry4d/Matrix4d";
-import { IndexedReadWriteXYZCollection, IndexedXYZCollection, MultiLineStringDataVariant } from "./IndexedXYZCollection";
-import { Matrix3d } from "./Matrix3d";
-import { Plane3dByOriginAndUnitNormal } from "./Plane3dByOriginAndUnitNormal";
-import { Point2d } from "./Point2dVector2d";
-import { Point3d, Vector3d } from "./Point3dVector3d";
-import { PointStreamGrowableXYZArrayCollector, VariantPointDataStream } from "./PointStreaming";
-import { Range1d, Range3d } from "./Range";
-import { Transform } from "./Transform";
-import { XYAndZ } from "./XYZProps";
+import { Geometry, PlaneAltitudeEvaluator } from "../Geometry.js";
+import { Matrix4d } from "../geometry4d/Matrix4d.js";
+import { IndexedReadWriteXYZCollection, IndexedXYZCollection, MultiLineStringDataVariant } from "./IndexedXYZCollection.js";
+import { Matrix3d } from "./Matrix3d.js";
+import { Plane3dByOriginAndUnitNormal } from "./Plane3dByOriginAndUnitNormal.js";
+import { Point2d } from "./Point2dVector2d.js";
+import { Point3d, Vector3d } from "./Point3dVector3d.js";
+import { PointStreamGrowableXYZArrayCollector, VariantPointDataStream } from "./PointStreaming.js";
+import { Range1d, Range3d } from "./Range.js";
+import { Transform } from "./Transform.js";
+import { XYAndZ } from "./XYZProps.js";
 
 /** `GrowableXYArray` manages a (possibly growing) Float64Array to pack xy coordinates.
  * @public

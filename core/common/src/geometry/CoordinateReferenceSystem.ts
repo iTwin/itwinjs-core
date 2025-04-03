@@ -7,10 +7,10 @@
  */
 // cspell:ignore NAVD, NGVD, NSRS, Helmert
 
-import { GeodeticDatum, GeodeticDatumProps } from "./GeodeticDatum";
-import { GeodeticEllipsoid, GeodeticEllipsoidProps } from "./GeodeticEllipsoid";
-import { Carto2DDegrees, Carto2DDegreesProps, Projection, ProjectionProps } from "./Projection";
-import { AdditionalTransform, AdditionalTransformProps } from "./AdditionalTransform";
+import { GeodeticDatum, GeodeticDatumProps } from "./GeodeticDatum.js";
+import { GeodeticEllipsoid, GeodeticEllipsoidProps } from "./GeodeticEllipsoid.js";
+import { Carto2DDegrees, Carto2DDegreesProps, Projection, ProjectionProps } from "./Projection.js";
+import { AdditionalTransform, AdditionalTransformProps } from "./AdditionalTransform.js";
 /** This type indicates possible linear and angular units supported.
  *  @public
  *  @extensions

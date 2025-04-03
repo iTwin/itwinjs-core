@@ -3,9 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { ECSchemaNamespaceUris } from "../../Constants";
-import { SchemaContext } from "../../Context";
-import { Schema } from "../../Metadata/Schema";
+import { ECSchemaNamespaceUris } from "../../Constants.js";
+import { SchemaContext } from "../../Context.js";
+import { Schema } from "../../Metadata/Schema.js";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 

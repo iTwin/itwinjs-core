@@ -3,8 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
-import { ExtensionManifest, RemoteExtensionProvider } from "../core-frontend";
-import { ExtensionAdmin } from "../extension/ExtensionAdmin";
+import { ExtensionManifest, RemoteExtensionProvider } from "../core-frontend.js";
+import { ExtensionAdmin } from "../extension/ExtensionAdmin.js";
 
 describe("ExtensionAdmin", () => {
   const extensions = [

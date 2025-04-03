@@ -6,24 +6,24 @@
  * @module Serialization
  */
 
-import { CurvePrimitive } from "../curve/CurvePrimitive";
-import { LineString3d } from "../curve/LineString3d";
-import { StrokeCountMap } from "../curve/Query/StrokeCountMap";
-import { StrokeOptions } from "../curve/StrokeOptions";
-import { Geometry } from "../Geometry";
-import { GeometryHandler, IStrokeHandler } from "../geometry3d/GeometryHandler";
-import { Plane3dByOriginAndUnitNormal } from "../geometry3d/Plane3dByOriginAndUnitNormal";
-import { Plane3dByOriginAndVectors } from "../geometry3d/Plane3dByOriginAndVectors";
-import { Point3d } from "../geometry3d/Point3dVector3d";
-import { Point3dArray, Point4dArray } from "../geometry3d/PointHelpers";
-import { Range3d } from "../geometry3d/Range";
-import { Ray3d } from "../geometry3d/Ray3d";
-import { Transform } from "../geometry3d/Transform";
-import { Point4d } from "../geometry4d/Point4d";
-import { BezierCurve3dH } from "./BezierCurve3dH";
-import { BezierCurveBase } from "./BezierCurveBase";
-import { BSplineCurve3dBase } from "./BSplineCurve";
-import { BSplineWrapMode, KnotVector } from "./KnotVector";
+import { CurvePrimitive } from "../curve/CurvePrimitive.js";
+import { LineString3d } from "../curve/LineString3d.js";
+import { StrokeCountMap } from "../curve/Query/StrokeCountMap.js";
+import { StrokeOptions } from "../curve/StrokeOptions.js";
+import { Geometry } from "../Geometry.js";
+import { GeometryHandler, IStrokeHandler } from "../geometry3d/GeometryHandler.js";
+import { Plane3dByOriginAndUnitNormal } from "../geometry3d/Plane3dByOriginAndUnitNormal.js";
+import { Plane3dByOriginAndVectors } from "../geometry3d/Plane3dByOriginAndVectors.js";
+import { Point3d } from "../geometry3d/Point3dVector3d.js";
+import { Point3dArray, Point4dArray } from "../geometry3d/PointHelpers.js";
+import { Range3d } from "../geometry3d/Range.js";
+import { Ray3d } from "../geometry3d/Ray3d.js";
+import { Transform } from "../geometry3d/Transform.js";
+import { Point4d } from "../geometry4d/Point4d.js";
+import { BezierCurve3dH } from "./BezierCurve3dH.js";
+import { BezierCurveBase } from "./BezierCurveBase.js";
+import { BSplineCurve3dBase } from "./BSplineCurve.js";
+import { BSplineWrapMode, KnotVector } from "./KnotVector.js";
 
 /**
  * Weighted (Homogeneous) BSplineCurve in 3d

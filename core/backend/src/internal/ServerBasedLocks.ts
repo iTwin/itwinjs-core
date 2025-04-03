@@ -9,12 +9,12 @@
 
 import { DbResult, Id64, Id64Arg, Id64String, IModelStatus, OpenMode } from "@itwin/core-bentley";
 import { IModel, IModelError, LockState } from "@itwin/core-common";
-import { LockMap } from "../BackendHubAccess";
-import { BriefcaseDb } from "../IModelDb";
-import { LockControl } from "../LockControl";
-import { IModelHost } from "../IModelHost";
-import { SQLiteDb } from "../SQLiteDb";
-import { _close, _elementWasCreated, _hubAccess, _implementationProhibited, _nativeDb, _releaseAllLocks } from "./Symbols";
+import { LockMap } from "../BackendHubAccess.js";
+import { BriefcaseDb } from "../IModelDb.js";
+import { IModelHost } from "../IModelHost.js";
+import { LockControl } from "../LockControl.js";
+import { SQLiteDb } from "../SQLiteDb.js";
+import { _close, _elementWasCreated, _hubAccess, _implementationProhibited, _nativeDb, _releaseAllLocks } from "./Symbols.js";
 
 /**
  * Both the Model and Parent of an element are considered "owners" of their member elements. That means:

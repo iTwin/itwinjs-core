@@ -3,14 +3,14 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert, describe, expect, it } from "vitest";
-import { Geometry } from "../../Geometry";
-import { Angle } from "../../geometry3d/Angle";
-import { Matrix3d } from "../../geometry3d/Matrix3d";
-import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
-import { Transform } from "../../geometry3d/Transform";
-import { YawPitchRollAngles, YawPitchRollProps } from "../../geometry3d/YawPitchRollAngles";
-import * as bsiChecker from "../Checker";
-import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
+import { Geometry } from "../../Geometry.js";
+import { Angle } from "../../geometry3d/Angle.js";
+import { Matrix3d } from "../../geometry3d/Matrix3d.js";
+import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d.js";
+import { Transform } from "../../geometry3d/Transform.js";
+import { YawPitchRollAngles, YawPitchRollProps } from "../../geometry3d/YawPitchRollAngles.js";
+import * as bsiChecker from "../Checker.js";
+import { GeometryCoreTestIO } from "../GeometryCoreTestIO.js";
 
 describe("YPR", () => {
   it("hello", () => {

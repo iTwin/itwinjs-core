@@ -3,10 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { EntityClass, Mixin, Schema, SchemaContext, SchemaItemType, StructClass } from "@itwin/ecschema-metadata";
-import { SchemaOtherTypes } from "../../Differencing/SchemaDifference";
-import { SchemaMerger } from "../../Merging/SchemaMerger";
-import { BisTestHelper } from "../TestUtils/BisTestHelper";
 import { expect } from "chai";
+import { SchemaOtherTypes } from "../../Differencing/SchemaDifference.js";
+import { SchemaMerger } from "../../Merging/SchemaMerger.js";
+import { BisTestHelper } from "../TestUtils/BisTestHelper.js";
 
 describe("Class items merging order tests", () => {
   let context: SchemaContext;

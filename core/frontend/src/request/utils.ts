@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { Base64EncodedString } from "@itwin/core-common";
-import { RequestBasicCredentials } from "./Request";
+import { RequestBasicCredentials } from "./Request.js";
 
 /**
  * Check whether or not one of the requested authentication method is listed in the HTTP 'WWW-Authenticate' response header

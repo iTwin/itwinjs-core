@@ -10,15 +10,15 @@ import { ByteStream, JsonUtils, Logger, utf8ToString } from "@itwin/core-bentley
 import { Matrix3d, Point3d, Point4d, Transform } from "@itwin/core-geometry";
 import { GlbHeader, ImageSource, TileFormat } from "@itwin/core-common";
 import type { DracoLoader, DracoMesh } from "@loaders.gl/draco";
-import { FrontendLoggerCategory } from "../FrontendLoggerCategory";
-import { TextureImageSource } from "../render/TextureParams";
+import { FrontendLoggerCategory } from "../FrontendLoggerCategory.js";
+import { TextureImageSource } from "../render/TextureParams.js";
 import {
   getImageSourceFormatForMimeType, imageBitmapFromImageSource, imageElementFromImageSource, tryImageElementFromUrl,
-} from "../ImageUtil";
+} from "../ImageUtil.js";
 import {
   DracoMeshCompression, getGltfNodeMeshIds, GltfAccessor, GltfBuffer, GltfBufferViewProps, GltfDictionary, gltfDictionaryIterator, GltfDocument, GltfId, GltfImage, GltfMesh, GltfMeshMode, GltfMeshPrimitive, GltfNode, traverseGltfNodes,
-} from "./GltfSchema";
-import { Gltf } from "./GltfModel";
+} from "./GltfSchema.js";
+import { Gltf } from "./GltfModel.js";
 
 /** @internal */
 export interface ParseGltfLogger {

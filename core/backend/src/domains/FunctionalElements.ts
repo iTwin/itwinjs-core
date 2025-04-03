@@ -10,11 +10,11 @@ import { Id64String } from "@itwin/core-bentley";
 import {
   FunctionalElementProps, IModel, InformationPartitionElementProps, ModelProps, RelatedElement, TypeDefinitionElementProps,
 } from "@itwin/core-common";
-import { InformationPartitionElement, RoleElement, TypeDefinitionElement } from "../Element";
-import { IModelDb } from "../IModelDb";
-import { RoleModel } from "../Model";
-import { SubjectOwnsPartitionElements } from "../NavigationRelationship";
-import { DrawingGraphicRepresentsElement, ElementRefersToElements } from "../Relationship";
+import { InformationPartitionElement, RoleElement, TypeDefinitionElement } from "../Element.js";
+import { IModelDb } from "../IModelDb.js";
+import { RoleModel } from "../Model.js";
+import { SubjectOwnsPartitionElements } from "../NavigationRelationship.js";
+import { DrawingGraphicRepresentsElement, ElementRefersToElements } from "../Relationship.js";
 
 /** A FunctionalPartition element is a key part of the iModel information hierarchy and is always parented
  * to a Subject and broken down by a FunctionalModel.

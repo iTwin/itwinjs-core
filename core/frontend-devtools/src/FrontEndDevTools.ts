@@ -7,68 +7,68 @@
  */
 
 import { IModelApp } from "@itwin/core-frontend";
-import { EdgeDetectionEffect, EmbossEffect, GaussianBlurEffect, SharpenEffect, SharpnessEffect, UnsharpenEffect } from "./effects/Convolution";
-import { ClearEffectsTool } from "./effects/EffectTools";
-import { ExplosionEffect } from "./effects/Explosion";
-import { FlipImageConfig, FlipImageEffect } from "./effects/FlipImage";
-import { LensDistortionConfig, LensDistortionEffect } from "./effects/LensDistortion";
-import { SaturationConfig, SaturationEffect } from "./effects/Saturation";
-import { SnowEffect } from "./effects/Snow";
-import { VignetteConfig, VignetteEffect } from "./effects/Vignette";
-import {
-  MaskBackgroundMapByElementTool, MaskBackgroundMapByExcludedElementTool, MaskBackgroundMapByModelTool, MaskBackgroundMapBySubCategoryTool, MaskRealityModelByElementTool, MaskRealityModelByExcludedElementTool,
-  MaskRealityModelByModelTool, MaskRealityModelBySubCategoryTool, SetHigherPriorityRealityModelMasking, SetMapHigherPriorityMasking, UnmaskMapTool, UnmaskRealityModelTool,
-} from "./tools/PlanarMaskTools";
-import {
-  ChangeCameraTool, ChangeEmphasisSettingsTool, ChangeFlashSettingsTool, ChangeHiliteModeTool, ChangeHiliteSettingsTool, DefaultTileSizeModifierTool, FadeOutTool,
-  FreezeSceneTool, SetAspectRatioSkewTool, ShowTileVolumesTool, Toggle3dManipulationsTool, ToggleDrawingGraphicsTool, ToggleSectionDrawingSpatialViewTool,
-  ToggleTileTreeReferencesTool, ToggleViewAttachmentBoundariesTool, ToggleViewAttachmentClipShapesTool, ToggleViewAttachmentsTool, ViewportAddRealityModel,
-  ViewportTileSizeModifierTool,
-} from "./tools/ViewportTools";
-import { AnimationIntervalTool } from "./tools/AnimationIntervalTool";
-import { ChangeUnitsTool } from "./tools/ChangeUnitsTool";
-import { ClipColorTool, ClipIntersectionTool, TestClipStyleTool, ToggleSectionCutTool } from "./tools/ClipTools";
+import { EdgeDetectionEffect, EmbossEffect, GaussianBlurEffect, SharpenEffect, SharpnessEffect, UnsharpenEffect } from "./effects/Convolution.js";
+import { ClearEffectsTool } from "./effects/EffectTools.js";
+import { ExplosionEffect } from "./effects/Explosion.js";
+import { FlipImageConfig, FlipImageEffect } from "./effects/FlipImage.js";
+import { LensDistortionConfig, LensDistortionEffect } from "./effects/LensDistortion.js";
+import { SaturationConfig, SaturationEffect } from "./effects/Saturation.js";
+import { SnowEffect } from "./effects/Snow.js";
+import { VignetteConfig, VignetteEffect } from "./effects/Vignette.js";
+import { AnimationIntervalTool } from "./tools/AnimationIntervalTool.js";
+import { ChangeUnitsTool } from "./tools/ChangeUnitsTool.js";
+import { ClipColorTool, ClipIntersectionTool, TestClipStyleTool, ToggleSectionCutTool } from "./tools/ClipTools.js";
 import {
   ApplyRenderingStyleTool, ChangeBackgroundColorTool, ChangeViewFlagsTool, OverrideSubCategoryTool, SaveRenderingStyleTool, SkyCubeTool,
   SkySphereTool, ToggleSkyboxTool, ToggleWiremeshTool, WoWIgnoreBackgroundTool,
-} from "./tools/DisplayStyleTools";
-import { QueryScheduleScriptTool, ReverseScheduleScriptTool, SetScheduleScriptTool } from "./tools/ScheduleScriptTools";
+} from "./tools/DisplayStyleTools.js";
 import {
   ClearEmphasizedElementsTool, ClearIsolatedElementsTool, EmphasizeSelectedElementsTool, EmphasizeVisibleElementsTool, IsolateSelectedElementsTool,
-} from "./tools/EmphasizeElementsTool";
-import { ToggleFrustumSnapshotTool, ToggleSelectedViewFrustumTool, ToggleShadowFrustumTool } from "./tools/FrustumDecoration";
-import { InspectElementTool } from "./tools/InspectElementTool";
+} from "./tools/EmphasizeElementsTool.js";
+import { ToggleFrustumSnapshotTool, ToggleSelectedViewFrustumTool, ToggleShadowFrustumTool } from "./tools/FrustumDecoration.js";
+import { InspectElementTool } from "./tools/InspectElementTool.js";
 import {
   AttachArcGISFeatureMapLayerByUrlTool,
   AttachArcGISMapLayerByUrlTool, AttachMapLayerTool, AttachMapOverlayTool, AttachModelMapLayerTool, AttachOgcApiFeaturesMapLayerTool, AttachTileURLMapLayerByUrlTool, AttachWmsMapLayerByUrlTool,
   AttachWmtsMapLayerByUrlTool, DetachMapLayersTool, MapBaseColorTool, MapBaseTransparencyTool, MapBaseVisibilityTool, MapLayerSubLayerVisibilityTool,
   MapLayerTransparencyTool, MapLayerVisibilityTool, MapLayerZoomTool, ReorderMapLayers, SetMapBaseTool, ToggleTerrainTool,
-} from "./tools/MapLayerTool";
-import { MeasureTileLoadTimeTool } from "./tools/MeasureTileLoadTime";
+} from "./tools/MapLayerTool.js";
+import { MeasureTileLoadTimeTool } from "./tools/MeasureTileLoadTime.js";
 import {
   ClearModelAppearanceOverrides, SetModelColorTool, SetModelEmphasizedTool, SetModelIgnoresMaterialsTool, SetModelLineCodeTool,
   SetModelLineWeightTool, SetModelLocateTool, SetModelTransparencyTool,
-} from "./tools/ModelAppearanceTools";
-import { ChangePlanProjectionSettingsTool, DumpPlanProjectionSettingsTool, OverrideSubCategoryPriorityTool } from "./tools/PlanProjectionTools";
-import { ToggleProjectExtentsTool } from "./tools/ProjectExtents";
+} from "./tools/ModelAppearanceTools.js";
+import {
+  MaskBackgroundMapByElementTool, MaskBackgroundMapByExcludedElementTool, MaskBackgroundMapByModelTool, MaskBackgroundMapBySubCategoryTool, MaskRealityModelByElementTool, MaskRealityModelByExcludedElementTool,
+  MaskRealityModelByModelTool, MaskRealityModelBySubCategoryTool, SetHigherPriorityRealityModelMasking, SetMapHigherPriorityMasking, UnmaskMapTool, UnmaskRealityModelTool,
+} from "./tools/PlanarMaskTools.js";
+import { ChangePlanProjectionSettingsTool, DumpPlanProjectionSettingsTool, OverrideSubCategoryPriorityTool } from "./tools/PlanProjectionTools.js";
+import { ToggleProjectExtentsTool } from "./tools/ProjectExtents.js";
 import {
   AttachCesiumAssetTool, AttachRealityModelTool, ClearRealityModelAppearanceOverrides, DetachRealityModelTool, SaveRealityModelTool,
   SetRealityModelColorTool, SetRealityModelEmphasizedTool, SetRealityModelLocateTool, SetRealityModelTransparencyTool, ToggleOSMBuildingDisplay,
-} from "./tools/RealityModelTools";
-import { RealityTransitionTool } from "./tools/RealityTransitionTool";
-import { CompileShadersTool, LoseWebGLContextTool, ToggleDPIForLODTool } from "./tools/RenderSystemTools";
+} from "./tools/RealityModelTools.js";
+import { RealityTransitionTool } from "./tools/RealityTransitionTool.js";
+import { CompileShadersTool, LoseWebGLContextTool, ToggleDPIForLODTool } from "./tools/RenderSystemTools.js";
 import {
   SetAASamplesTool, ToggleDrapeFrustumTool, ToggleMaskFrustumTool, ToggleNormalMaps, TogglePrimitiveVisibilityTool, ToggleReadPixelsTool, ToggleRealityTileBounds, ToggleRealityTileFreeze,
   ToggleRealityTileLogging, ToggleRealityTilePreload, ToggleVolClassIntersect,
-} from "./tools/RenderTargetTools";
-import { ReportWebGLCompatibilityTool } from "./tools/ReportWebGLCompatibilityTool";
-import { ApplyViewByIdTool, ApplyViewTool, SaveViewTool } from "./tools/SavedViews";
-import { DumpSelectionSetTool, SelectElementsByIdTool } from "./tools/SelectionTools";
-import { SetGpuMemoryLimitTool } from "./tools/SetGpuMemoryLimitTool";
-import { ElementIdFromSourceAspectIdTool, SourceAspectIdFromElementIdTool } from "./tools/SourceAspectIdTools";
-import { ToggleTileRequestDecorationTool } from "./tools/TileRequestDecoration";
-import { ToggleTileTreeBoundsDecorationTool } from "./tools/TileTreeBoundsDecoration";
-import { ToggleToolTipsTool } from "./tools/ToolTipProvider";
+} from "./tools/RenderTargetTools.js";
+import { ReportWebGLCompatibilityTool } from "./tools/ReportWebGLCompatibilityTool.js";
+import { ApplyViewByIdTool, ApplyViewTool, SaveViewTool } from "./tools/SavedViews.js";
+import { QueryScheduleScriptTool, ReverseScheduleScriptTool, SetScheduleScriptTool } from "./tools/ScheduleScriptTools.js";
+import { DumpSelectionSetTool, SelectElementsByIdTool } from "./tools/SelectionTools.js";
+import { SetGpuMemoryLimitTool } from "./tools/SetGpuMemoryLimitTool.js";
+import { ElementIdFromSourceAspectIdTool, SourceAspectIdFromElementIdTool } from "./tools/SourceAspectIdTools.js";
+import { ToggleTileRequestDecorationTool } from "./tools/TileRequestDecoration.js";
+import { ToggleTileTreeBoundsDecorationTool } from "./tools/TileTreeBoundsDecoration.js";
+import { ToggleToolTipsTool } from "./tools/ToolTipProvider.js";
+import {
+  ChangeCameraTool, ChangeEmphasisSettingsTool, ChangeFlashSettingsTool, ChangeHiliteModeTool, ChangeHiliteSettingsTool, DefaultTileSizeModifierTool, FadeOutTool,
+  FreezeSceneTool, SetAspectRatioSkewTool, ShowTileVolumesTool, Toggle3dManipulationsTool, ToggleDrawingGraphicsTool, ToggleSectionDrawingSpatialViewTool,
+  ToggleTileTreeReferencesTool, ToggleViewAttachmentBoundariesTool, ToggleViewAttachmentClipShapesTool, ToggleViewAttachmentsTool, ViewportAddRealityModel,
+  ViewportTileSizeModifierTool,
+} from "./tools/ViewportTools.js";
 
 /** Entry-point for the package. Before using the package you *must* call [[FrontendDevTools.initialize]].
  * @beta

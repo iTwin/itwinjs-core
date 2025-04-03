@@ -6,8 +6,8 @@
  * @module RpcInterface
  */
 
-import { RpcOperation } from "../core/RpcOperation";
-import { WebAppRpcProtocol } from "./WebAppRpcProtocol";
+import { RpcOperation } from "../core/RpcOperation.js";
+import { WebAppRpcProtocol } from "./WebAppRpcProtocol.js";
 
 /* eslint-disable @typescript-eslint/no-deprecated */
 

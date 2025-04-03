@@ -7,13 +7,13 @@
  * @module Polyface
  */
 
-import { Geometry } from "../Geometry";
-import { Angle } from "../geometry3d/Angle";
-import { Point2d } from "../geometry3d/Point2dVector2d";
-import { Vector3d } from "../geometry3d/Point3dVector3d";
-import { PolygonOps } from "../geometry3d/PolygonOps";
-import { IndexedPolyface, PolyfaceVisitor } from "./Polyface";
-import { PolyfaceData } from "./PolyfaceData";
+import { Geometry } from "../Geometry.js";
+import { Angle } from "../geometry3d/Angle.js";
+import { Point2d } from "../geometry3d/Point2dVector2d.js";
+import { Vector3d } from "../geometry3d/Point3dVector3d.js";
+import { PolygonOps } from "../geometry3d/PolygonOps.js";
+import { IndexedPolyface, PolyfaceVisitor } from "./Polyface.js";
+import { PolyfaceData } from "./PolyfaceData.js";
 
 /**
  * An `IndexedPolyfaceVisitor` is an iterator-like object that "visits" facets of a mesh.

@@ -9,12 +9,12 @@
 import { BeDuration, BeTimePoint, dispose, Id64String } from "@itwin/core-bentley";
 import { Matrix4d, Range3d, Transform } from "@itwin/core-geometry";
 import { ElementAlignedBox3d, FrustumPlanes, ViewFlagOverrides } from "@itwin/core-common";
-import { calculateEcefToDbTransformAtLocation } from "../BackgroundMapGeometry";
-import { IModelApp } from "../IModelApp";
-import { IModelConnection } from "../IModelConnection";
-import { RenderClipVolume } from "../render/RenderClipVolume";
-import { RenderMemory } from "../render/RenderMemory";
-import { LayerTileTreeHandler, Tile, TileDrawArgs, TileGeometryCollector, TileLoadPriority, TileTreeParams } from "./internal";
+import { calculateEcefToDbTransformAtLocation } from "../BackgroundMapGeometry.js";
+import { IModelApp } from "../IModelApp.js";
+import { IModelConnection } from "../IModelConnection.js";
+import { RenderClipVolume } from "../render/RenderClipVolume.js";
+import { RenderMemory } from "../render/RenderMemory.js";
+import { LayerTileTreeHandler, Tile, TileDrawArgs, TileGeometryCollector, TileLoadPriority, TileTreeParams } from "./internal.js";
 
 /** Describes the current state of a [[TileTree]]. TileTrees are loaded asynchronously and may be unloaded after a period of disuse.
  * @see [[TileTreeOwner]].

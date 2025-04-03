@@ -6,14 +6,14 @@
 /** @packageDocumentation
  * @module CartesianGeometry
  */
-import { AxisOrder, BeJSONFunctions, Geometry } from "../Geometry";
-import { Plane3d } from "./Plane3d";
-import { Point4d } from "../geometry4d/Point4d";
-import { Point3d, Vector3d } from "./Point3dVector3d";
-import { Ray3d } from "./Ray3d";
-import { Transform } from "./Transform";
-import { XYAndZ } from "./XYZProps";
-import { Matrix3d } from "./Matrix3d";
+import { AxisOrder, BeJSONFunctions, Geometry } from "../Geometry.js";
+import { Plane3d } from "./Plane3d.js";
+import { Point4d } from "../geometry4d/Point4d.js";
+import { Point3d, Vector3d } from "./Point3dVector3d.js";
+import { Ray3d } from "./Ray3d.js";
+import { Transform } from "./Transform.js";
+import { XYAndZ } from "./XYZProps.js";
+import { Matrix3d } from "./Matrix3d.js";
 
 /**
  * A Plane3dByOriginAndVectors is an origin and a pair of vectors.

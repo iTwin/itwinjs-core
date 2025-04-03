@@ -3,21 +3,21 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert, expect } from "chai";
 import { BeDuration, BeEvent, Guid, Id64, IModelStatus, OpenMode } from "@itwin/core-bentley";
-import { LineSegment3d, Point3d, YawPitchRollAngles } from "@itwin/core-geometry";
 import {
   Code, ColorByName, DomainOptions, EntityIdAndClassId, EntityIdAndClassIdIterable, GeometryStreamBuilder, IModel, IModelError, SubCategoryAppearance, TxnAction, UpgradeOptions,
 } from "@itwin/core-common";
+import { LineSegment3d, Point3d, YawPitchRollAngles } from "@itwin/core-geometry";
+import { EntityClass, SchemaItemKey, SchemaKey } from "@itwin/ecschema-metadata";
+import { assert, expect } from "chai";
 import {
   _nativeDb,
   ChangeInstanceKey,
   ChannelControl,
   IModelJsFs, PhysicalModel, setMaxEntitiesPerEvent, SpatialCategory, StandaloneDb, TxnChangedEntities, TxnManager,
-} from "../../core-backend";
-import { IModelTestUtils, TestElementDrivesElement, TestPhysicalObject, TestPhysicalObjectProps } from "../IModelTestUtils";
-import { IModelNative } from "../../internal/NativePlatform";
-import { EntityClass, SchemaItemKey, SchemaKey } from "@itwin/ecschema-metadata";
+} from "../../core-backend.js";
+import { IModelNative } from "../../internal/NativePlatform.js";
+import { IModelTestUtils, TestElementDrivesElement, TestPhysicalObject, TestPhysicalObjectProps } from "../IModelTestUtils.js";
 
 /// cspell:ignore accum
 

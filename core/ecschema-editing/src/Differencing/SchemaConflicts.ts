@@ -7,7 +7,7 @@
  */
 
 import type { SchemaItemType } from "@itwin/ecschema-metadata";
-import type { AnySchemaDifference, SchemaOtherTypes, SchemaType } from "./SchemaDifference";
+import type { AnySchemaDifference, SchemaOtherTypes, SchemaType } from "./SchemaDifference.js";
 
 /**
  * The unique conflicts codes for Schema differencing.

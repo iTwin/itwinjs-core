@@ -7,9 +7,9 @@
  */
 
 import { assert } from "@itwin/core-bentley";
-import { FragmentShaderComponent, ProgramBuilder, VariableType } from "../ShaderBuilder";
-import { System } from "../System";
-import { addEyeSpace } from "./Common";
+import { FragmentShaderComponent, ProgramBuilder, VariableType } from "../ShaderBuilder.js";
+import { System } from "../System.js";
+import { addEyeSpace } from "./Common.js";
 
 // Based on http://tulrich.com/geekstuff/log_depth_buffer.txt
 // Previously attempted to adjust z in vertex shader along the lines of https://outerra.blogspot.com/2013/07/logarithmic-depth-buffer-optimizations.html

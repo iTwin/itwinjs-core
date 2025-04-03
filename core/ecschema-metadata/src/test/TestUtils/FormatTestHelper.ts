@@ -3,12 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { ECSchemaNamespaceUris } from "../../Constants";
-import { ISchemaLocater, SchemaContext } from "../../Context";
-import { SchemaMatchType } from "../../ECObjects";
-import { SchemaInfo } from "../../Interfaces";
-import { Schema } from "../../Metadata/Schema";
-import { SchemaKey } from "../../SchemaKey";
+import { ECSchemaNamespaceUris } from "../../Constants.js";
+import { ISchemaLocater, SchemaContext } from "../../Context.js";
+import { SchemaMatchType } from "../../ECObjects.js";
+import { SchemaInfo } from "../../Interfaces.js";
+import { Schema } from "../../Metadata/Schema.js";
+import { SchemaKey } from "../../SchemaKey.js";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 

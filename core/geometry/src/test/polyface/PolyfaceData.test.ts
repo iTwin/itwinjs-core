@@ -4,11 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { describe, expect, it } from "vitest";
-import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
-import { IndexedPolyface } from "../../polyface/Polyface";
-import { PolyfaceData } from "../../polyface/PolyfaceData";
-import { Sample } from "../../serialization/GeometrySamples";
-import { Checker } from "../Checker";
+import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d.js";
+import { IndexedPolyface } from "../../polyface/Polyface.js";
+import { PolyfaceData } from "../../polyface/PolyfaceData.js";
+import { Sample } from "../../serialization/GeometrySamples.js";
+import { Checker } from "../Checker.js";
 
 describe("PolyfaceData", () => {
   it("PolyfaceData.isValidFacetStartIndexArray", () => {

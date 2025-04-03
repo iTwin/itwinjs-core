@@ -5,18 +5,18 @@
 
 import { assert, BentleyError, Id64Array, Id64String, IModelStatus } from "@itwin/core-bentley";
 import {
+  BRepEntity, GeometryParams, GeometryStreamIterator, GeometrySummaryRequestProps, GeometrySummaryVerbosity, ImagePrimitive,
+  IModelError, TextStringPrimitive,
+} from "@itwin/core-common";
+import {
   AkimaCurve3d, AnyGeometryQuery, Arc3d, BezierCurveBase, Box, BSplineCurve3d, Cone, CurveChainWithDistanceIndex, CurveCollection, CurvePrimitive, IModelJson,
   InterpolationCurve3d,
   LinearSweep, LineSegment3d, LineString3d, Loop, Path, Range3d, RotationalSweep, RuledSweep, SolidPrimitive, Sphere, TorusPipe, Transform,
   TransitionSpiral3d, UVSelect,
 } from "@itwin/core-geometry";
-import {
-  BRepEntity, GeometryParams, GeometryStreamIterator, GeometrySummaryRequestProps, GeometrySummaryVerbosity, ImagePrimitive,
-  IModelError, TextStringPrimitive,
-} from "@itwin/core-common";
-import { Element, GeometricElement, GeometryPart } from "./Element";
-import { IModelDb } from "./IModelDb";
-import { _nativeDb } from "./internal/Symbols";
+import { Element, GeometricElement, GeometryPart } from "./Element.js";
+import { IModelDb } from "./IModelDb.js";
+import { _nativeDb } from "./internal/Symbols.js";
 
 interface ElementGeom {
   iterator: GeometryStreamIterator;

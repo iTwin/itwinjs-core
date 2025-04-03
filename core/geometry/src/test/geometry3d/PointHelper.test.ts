@@ -3,36 +3,36 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { describe, expect, it } from "vitest";
-import { Arc3d } from "../../curve/Arc3d";
-import { GeometryQuery } from "../../curve/GeometryQuery";
-import { LineSegment3d } from "../../curve/LineSegment3d";
-import { LineString3d } from "../../curve/LineString3d";
-import { Loop } from "../../curve/Loop";
-import { StrokeOptions } from "../../curve/StrokeOptions";
-import { Geometry } from "../../Geometry";
-import { Angle } from "../../geometry3d/Angle";
-import { FrameBuilder } from "../../geometry3d/FrameBuilder";
-import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray";
-import { Matrix3d } from "../../geometry3d/Matrix3d";
-import { Plane3dByOriginAndUnitNormal } from "../../geometry3d/Plane3dByOriginAndUnitNormal";
-import { Point2d, Vector2d } from "../../geometry3d/Point2dVector2d";
-import { Point3dArrayCarrier } from "../../geometry3d/Point3dArrayCarrier";
-import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
-import { NumberArray, Point2dArray, Point3dArray, Point4dArray, Vector3dArray } from "../../geometry3d/PointHelpers";
-import { PolygonOps } from "../../geometry3d/PolygonOps";
-import { Range3d } from "../../geometry3d/Range";
-import { Ray3d } from "../../geometry3d/Ray3d";
-import { Transform } from "../../geometry3d/Transform";
-import { XAndY, XYZProps } from "../../geometry3d/XYZProps";
-import { Matrix4d } from "../../geometry4d/Matrix4d";
-import { MomentData } from "../../geometry4d/MomentData";
-import { Point4d } from "../../geometry4d/Point4d";
-import { Sample } from "../../serialization/GeometrySamples";
-import { HalfEdgeGraph } from "../../topology/Graph";
-import { HalfEdgeGraphSearch } from "../../topology/HalfEdgeGraphSearch";
-import { Triangulator } from "../../topology/Triangulation";
-import { Checker } from "../Checker";
-import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
+import { Arc3d } from "../../curve/Arc3d.js";
+import { GeometryQuery } from "../../curve/GeometryQuery.js";
+import { LineSegment3d } from "../../curve/LineSegment3d.js";
+import { LineString3d } from "../../curve/LineString3d.js";
+import { Loop } from "../../curve/Loop.js";
+import { StrokeOptions } from "../../curve/StrokeOptions.js";
+import { Geometry } from "../../Geometry.js";
+import { Angle } from "../../geometry3d/Angle.js";
+import { FrameBuilder } from "../../geometry3d/FrameBuilder.js";
+import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray.js";
+import { Matrix3d } from "../../geometry3d/Matrix3d.js";
+import { Plane3dByOriginAndUnitNormal } from "../../geometry3d/Plane3dByOriginAndUnitNormal.js";
+import { Point2d, Vector2d } from "../../geometry3d/Point2dVector2d.js";
+import { Point3dArrayCarrier } from "../../geometry3d/Point3dArrayCarrier.js";
+import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d.js";
+import { NumberArray, Point2dArray, Point3dArray, Point4dArray, Vector3dArray } from "../../geometry3d/PointHelpers.js";
+import { PolygonOps } from "../../geometry3d/PolygonOps.js";
+import { Range3d } from "../../geometry3d/Range.js";
+import { Ray3d } from "../../geometry3d/Ray3d.js";
+import { Transform } from "../../geometry3d/Transform.js";
+import { XAndY, XYZProps } from "../../geometry3d/XYZProps.js";
+import { Matrix4d } from "../../geometry4d/Matrix4d.js";
+import { MomentData } from "../../geometry4d/MomentData.js";
+import { Point4d } from "../../geometry4d/Point4d.js";
+import { Sample } from "../../serialization/GeometrySamples.js";
+import { HalfEdgeGraph } from "../../topology/Graph.js";
+import { HalfEdgeGraphSearch } from "../../topology/HalfEdgeGraphSearch.js";
+import { Triangulator } from "../../topology/Triangulation.js";
+import { Checker } from "../Checker.js";
+import { GeometryCoreTestIO } from "../GeometryCoreTestIO.js";
 
 /**
  * Return the radius of a circle with area matching centroidData.a

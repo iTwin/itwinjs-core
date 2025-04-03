@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { describe, expect, it } from "vitest";
-import { GenericInstanceFilter, GenericInstanceFilterRule, GenericInstanceFilterRuleValue } from "../GenericInstanceFilter";
+import { GenericInstanceFilter, GenericInstanceFilterRule, GenericInstanceFilterRuleValue } from "../GenericInstanceFilter.js";
 
 describe("GenericInstanceFilterRuleValue", () => {
   it("'isPoint2d' returns correct result", () => {
