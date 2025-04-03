@@ -16,6 +16,7 @@ export * from "./BackgroundMapSettings";
 export * from "./Base64EncodedString";
 export * from "./BriefcaseTypes";
 export * from "./Camera";
+export * from "./CatalogIModelTypes";
 export * from "./ChangedElements";
 export * from "./ChangedEntities";
 export * from "./ChangesetProps";

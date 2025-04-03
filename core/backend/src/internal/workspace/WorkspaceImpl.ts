@@ -9,8 +9,8 @@
 import { createHash } from "crypto";
 import * as fs from "fs-extra";
 import { dirname, extname, join } from "path";
-import { AccessToken, assert, BeEvent, DbResult, ITwinError, Mutable, OpenMode } from "@itwin/core-bentley";
-import { FilePropertyProps, LocalDirName, LocalFileName, WorkspaceError } from "@itwin/core-common";
+import { AccessToken, assert, BeEvent, DbResult, Mutable, OpenMode } from "@itwin/core-bentley";
+import { CloudSqliteError, FilePropertyProps, LocalDirName, LocalFileName, WorkspaceError } from "@itwin/core-common";
 import { CloudSqlite } from "../../CloudSqlite";
 import { IModelHost, KnownLocations } from "../../IModelHost";
 import { IModelJsFs } from "../../IModelJsFs";
@@ -48,7 +48,7 @@ interface WorkspaceCloudCache extends CloudSqlite.CloudCache {
 function makeWorkspaceCloudCache(arg: CloudSqlite.CreateCloudCacheArg): WorkspaceCloudCache {
   const cache = CloudSqlite.CloudCaches.getCache(arg) as WorkspaceCloudCache;
   if (undefined === cache.workspaceContainers) // if we just created this container, add the map.
-    cache.workspaceContainers = new Map<string, WorkspaceCloudContainer>();
+    Object.defineProperty(cache, "workspaceContainers", { enumerable: false, value: new Map<string, WorkspaceCloudContainer>() });
   return cache;
 }
 
@@ -63,6 +63,8 @@ function getWorkspaceCloudContainer(props: CloudSqlite.ContainerAccessProps, cac
     return cloudContainer;
 
   cloudContainer = CloudSqlite.createCloudContainer(props) as WorkspaceCloudContainer;
+  // make sure these members are not included in `structuredClone`
+  ["sharedConnect", "sharedDisconnect"].forEach((member) => Object.defineProperty(cloudContainer, member, { enumerable: false, writable: true }));
   cache.workspaceContainers.set(id, cloudContainer);
   cloudContainer.connectCount = 0;
   cloudContainer.sharedConnect = function (this: WorkspaceCloudContainer) {
@@ -525,7 +527,6 @@ class EditorContainerImpl extends WorkspaceContainerImpl implements EditableWork
 
     const fromDb = this.resolveDbFileName(args.fromProps ?? {});
     return CloudSqlite.createNewDbVersion({ ...args, container, fromDb });
-
   }
 
   public override getWorkspaceDb(props: WorkspaceDbProps): EditableWorkspaceDb {
@@ -535,9 +536,9 @@ class EditorContainerImpl extends WorkspaceContainerImpl implements EditableWork
   public getEditableDb(props: WorkspaceDbProps): EditableWorkspaceDb {
     const db = this._wsDbs.get(workspaceDbNameWithDefault(props.dbName)) as EditableDbImpl | undefined ?? new EditableDbImpl(props, this);
 
-    if (this.cloudContainer && !CloudSqlite.isSemverPrerelease(db.version) && this.cloudContainer.queryDatabase(db.dbFileName)?.state !== "copied") {
+    if (this.cloudContainer && !CloudSqlite.isSemverEditable(db.dbFileName, this.cloudContainer)) {
       this._wsDbs.delete(workspaceDbNameWithDefault(props.dbName));
-      WorkspaceError.throwError("already-published", { message: `${db.dbFileName} has been published and is not editable. Make a new version first.` });
+      CloudSqliteError.throwError("already-published", { message: `${db.dbFileName} has been published and is not editable. Make a new version first.` });
     }
 
     return db;

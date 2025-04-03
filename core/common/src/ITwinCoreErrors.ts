@@ -51,12 +51,15 @@ export interface CloudSqliteError extends ITwinError {
 export namespace CloudSqliteError {
   export const scope = "itwin-CloudSqlite";
   export type Key =
+    "already-published" |
     "not-a-function" |
     "invalid-name" |
     "no-version-available" |
     "service-not-available" |
-    /** @see WriteLockHeld */
-    "write-lock-held";
+    /** @see WriteLockHeld for details */
+    "write-lock-held" |
+    /** The write lock on a container is not held but is required */
+    "write-lock-not-held";
 
   /** thrown when an attempt to acquire the write lock for a container fails because the lock is already held by somebody else ("write-lock-held").  */
   export interface WriteLockHeld extends CloudSqliteError {
@@ -108,7 +111,6 @@ export namespace WorkspaceError {
   export const scope = "itwin-workspace-error";
   export type Key =
     "already-exists" |
-    "already-published" |
     "container-exists" |
     "does-not-exist" |
     "invalid-name" |

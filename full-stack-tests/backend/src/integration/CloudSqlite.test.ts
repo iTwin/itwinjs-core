@@ -479,7 +479,6 @@ describe("CloudSqlite", () => {
           expect(e.lockedBy).equals(user2);
           expect(retries).equals(5); // retry handler should be called 5 times
         }
-
       }
     });
 

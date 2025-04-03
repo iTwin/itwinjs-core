@@ -40,6 +40,10 @@ export namespace CloudSqlite {
     return service;
   }
 
+  export function getBlobService(): BlobContainer.ContainerService {
+    return verifyService("BlobContainer", BlobContainer.service);
+  }
+
   /**
    * Request a new AccessToken for a cloud container using the [[BlobContainer]] service.
    * If the service is unavailable or returns an error, an empty token is returned.
@@ -49,7 +53,7 @@ export namespace CloudSqlite {
     let userToken = args.userToken ? args.userToken : await IModelHost.getAccessToken();
     if (userToken === "")
       userToken = RpcTrace.currentActivity?.accessToken ?? "";
-    const response = await verifyService("BlobContainer", BlobContainer.service).requestToken({ ...args, userToken });
+    const response = await getBlobService().requestToken({ ...args, userToken });
     return response?.token ?? "";
   }
 
@@ -81,7 +85,7 @@ export namespace CloudSqlite {
   export function createCloudContainer(args: ContainerAccessProps & { accessLevel?: BlobContainer.RequestAccessLevel, tokenFn?: (args: RequestTokenArgs) => Promise<AccessToken> }): CloudContainer {
     const container = new NativeLibrary.nativeLib.CloudContainer(args) as CloudContainerInternal;
     // we're going to add these fields to the newly created object. They should *not* be enumerable so they are not copied
-    // when the object is cloned (e.g. when attached to an exception).
+    // when the object is cloned (e.g. when included in an exception across processes).
     ["timer", "refreshPromise", "onConnected", "onDisconnect"].forEach((member) => {
       Object.defineProperty(container, member, { enumerable: false, writable: true })
     });
@@ -247,33 +251,28 @@ export namespace CloudSqlite {
    * - Contain none of the following characters: forward or backward slash, period, single or double quote, backtick, colon, and "#".
    * - Begin or end with a whitespace character.
    * @see [[DbFullName]] for the fully-specified name, including version information.
-   * @beta
    */
   export type DbName = string;
 
   /** The fully-specified name of a CloudSqlite database, combining its [[DbName]] and [[DbVersion]] in the format "name:version".
-   * @beta
    */
   export type DbFullName = string;
 
-  /** A [semver](https://github.com/npm/node-semver) string describing the version of a [[WorkspaceDb]], e.g., "4.2.11".
-   * @beta
+  /** A [semver](https://github.com/npm/node-semver) string describing the version of a database, e.g., "4.2.11".
    */
   export type DbVersion = string;
 
-  /** A [semver string](https://github.com/npm/node-semver?tab=readme-ov-file#ranges) describing a range of acceptable [[WorkspaceDbVersion]]s,
+  /** A [semver string](https://github.com/npm/node-semver?tab=readme-ov-file#ranges) describing a range of acceptable versions,
    * e.g., ">=1.2.7 <1.3.0".
-   * @beta
    */
   export type DbVersionRange = string;
 
   /** Specifies the name and version of a CloudSqlite database.
-   * @beta
    */
   export interface DbNameAndVersion {
     /** The name of the database */
     readonly dbName: DbName;
-    /** The range of acceptable versions of the [[WorkspaceDb]] of the specified [[dbName]].
+    /** The range of acceptable versions of the database of the specified [[dbName]].
      * If omitted, it defaults to the newest available version.
      */
     readonly version?: DbVersionRange;
@@ -285,20 +284,18 @@ export namespace CloudSqlite {
      * By default, only released version are allowed.
      */
     readonly includePrerelease?: boolean;
-    /** If true, start a prefetch operation whenever this [[WorkspaceDb]] is opened, to begin downloading pages of the database before they are needed. */
+    /** If true, start a prefetch operation whenever this database is opened, to begin downloading pages of the database before they are needed. */
     readonly prefetch?: boolean;
   }
 
   /**
    * The release increment for a version number, used as part of [[CreateNewDbVersionArgs]] to specify the kind of version to create.
    * @see [semver.ReleaseType](https://www.npmjs.com/package/semver)
-   * @beta
    */
   export type SemverIncrement = "major" | "minor" | "patch" | "premajor" | "preminor" | "prepatch" | "prerelease";
 
   /**
    * Arguments supplied to [[CloudSqlite.createNewDbVersion]].
-   * @beta
    */
   export interface CreateNewDbVersionArgs {
     readonly container: CloudContainer;
@@ -864,7 +861,12 @@ export namespace CloudSqlite {
     return semver.major(version) === 0 || semver.prerelease(version);
   }
 
-  /** Create a dbName for a WorkspaceDb from its base name and version. This will be in the format "name:version" */
+  export function isSemverEditable(dbFullName: string, container: CloudContainer) {
+    const parsed = parseDbFileName(dbFullName);
+    return isSemverPrerelease(parsed.version) && container.queryDatabase(dbFullName)?.state !== "copied";
+  }
+
+  /** Create a dbName for a database from its base name and version. This will be in the format "name:version" */
   export function makeSemverName(dbName: DbName, version?: DbVersion): DbName {
     return `${dbName}:${validateDbVersion(version)}`;
   }
@@ -1067,10 +1069,9 @@ export namespace CloudSqlite {
      * @note the current user must have administrator rights to create containers.
      */
     protected static async createBlobContainer(args: Omit<BlobContainer.CreateNewContainerProps, "userToken">): Promise<CloudSqlite.ContainerProps> {
-      const service = verifyService("BlobContainer", BlobContainer.service)
       const auth = verifyService("Authorization Client", IModelHost.authorizationClient);
       const userToken = await auth.getAccessToken();
-      const cloudContainer = await service.create({ scope: args.scope, metadata: args.metadata, userToken });
+      const cloudContainer = await getBlobService().create({ scope: args.scope, metadata: args.metadata, userToken });
       return { baseUri: cloudContainer.baseUri, containerId: cloudContainer.containerId, storageType: cloudContainer.provider };
     }
 
