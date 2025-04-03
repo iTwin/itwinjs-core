@@ -663,7 +663,8 @@ export class PartialECChangeUnifier implements Disposable {
    *
    * @throws std::runtime_error If the `batchSize` is not a positive integer.
    *
-   * @code
+   * @example
+   * ```typescript
    * const batchSize = 1000;
    * for (const batch of unifier.getInstancesInBatches(batchSize)) {
    *   console.log(`Processing a batch with ${batch.length} instances`);
@@ -672,7 +673,7 @@ export class PartialECChangeUnifier implements Disposable {
    *     console.log(`changedInstance: ${changedInstance.ECInstanceId} of class ${changedInstance.ECClassId} with meta ${changedInstance.$meta}`);
    *   }
    * }
-   * @endcode
+   * ```
    */
   public *getInstancesInBatches(batchSize?: number): IterableIterator<ChangedECInstance[]> {
     if (batchSize === undefined)
