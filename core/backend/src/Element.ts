@@ -816,6 +816,7 @@ export class Drawing extends Document {
    * @param name The name of the Drawing.
    * @returns The Id of the newly inserted Drawing element and the DrawingModel that breaks it down (same value).
    * @throws [[IModelError]] if unable to insert the element.
+   * @throws Error if `scaleFactor` is zero.
    */
   public static insert(iModelDb: IModelDb, documentListModelId: Id64String, name: string, scaleFactor?: number): Id64String {
     const drawingProps: DrawingProps = {
@@ -824,7 +825,9 @@ export class Drawing extends Document {
       code: this.createCode(iModelDb, documentListModelId, name),
     };
 
-    if (scaleFactor) {
+    if (scaleFactor === 0) {
+      throw new Error("Drawing.scaleFactor cannot be zero");
+    } else if (typeof scaleFactor === "number" && scaleFactor !== 1) {
       drawingProps.scaleFactor = scaleFactor;
     }
 
