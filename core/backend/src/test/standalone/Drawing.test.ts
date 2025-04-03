@@ -3,11 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { Guid, Id64 } from "@itwin/core-bentley";
-import { Transform } from "@itwin/core-geometry";
-import { RelatedElement, DrawingProps } from "@itwin/core-common";
+import { Guid } from "@itwin/core-bentley";
+import { DrawingProps } from "@itwin/core-common";
 import { Drawing } from "../../Element";
-import { DocumentListModel, DrawingModel } from "../../Model";
+import { DocumentListModel } from "../../Model";
 import { SnapshotDb } from "../../IModelDb";
 import { IModelTestUtils } from "../IModelTestUtils";
 
@@ -100,16 +99,24 @@ describe.only("Drawing", () => {
   });
 
   describe("insert", () => {
-    it("throws if scaleFactor is zero", () => {
-      
+    function insertDrawing(scaleFactor: number | undefined): Drawing {
+      const drawingId = Drawing.insert(imodel, documentListModelId, Guid.createValue(), scaleFactor);
+      return imodel.elements.getElement<Drawing>(drawingId);
+    }
+
+    it("throws if scaleFactor is not positive", () => {
+      expect(() => insertDrawing(0)).to.throw("Drawing.scaleFactor must be greater than zero");
+      expect(() => insertDrawing(-123)).to.throw("Drawing.scaleFactor must be greater than zero");
     });
 
     it("defaults scaleFactor to 1", () => {
-      
+      expect(insertDrawing(undefined).scaleFactor).to.equal(1);
     });
 
     it("preserves scaleFactor", () => {
-      
+      expect(insertDrawing(2).scaleFactor).to.equal(2);
+      expect(insertDrawing(123).scaleFactor).to.equal(123);
+      expect(insertDrawing(0.05).scaleFactor).to.equal(0.05);
     });
   });
 });
