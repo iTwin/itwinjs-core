@@ -10,7 +10,7 @@ import { DocumentListModel } from "../../Model";
 import { SnapshotDb } from "../../IModelDb";
 import { IModelTestUtils } from "../IModelTestUtils";
 
-describe.only("Drawing", () => {
+describe("Drawing", () => {
   let imodel: SnapshotDb;
   let documentListModelId: string;
 
