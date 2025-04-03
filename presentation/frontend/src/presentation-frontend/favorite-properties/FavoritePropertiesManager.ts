@@ -11,6 +11,7 @@ import { QueryRowFormat } from "@itwin/core-common";
 import { IModelConnection } from "@itwin/core-frontend";
 import { ClassId, Field, NestedContentField, PropertiesField } from "@itwin/presentation-common";
 import { IFavoritePropertiesStorage } from "./FavoritePropertiesStorage.js";
+import { IModelConnectionInitializationHandler, imodelInitializationHandlers } from "../IModelConnectionInitialization.js";
 
 /**
  * Scopes that favorite properties can be stored in.
@@ -61,12 +62,6 @@ export interface FavoritePropertiesManagerProps {
  * @public
  */
 export class FavoritePropertiesManager implements Disposable {
-  /**
-   * Used in tests to avoid collisions between multiple runs using the same storage
-   * @internal
-   */
-  public static FAVORITES_IDENTIFIER_PREFIX = "";
-
   /** Event raised after favorite properties have changed. */
   public onFavoritesChanged = new BeEvent<() => void>();
 
@@ -77,6 +72,7 @@ export class FavoritePropertiesManager implements Disposable {
   private _imodelProperties: Map<string, Set<PropertyFullName>>;
   private _imodelBaseClassesByClass: Map<string, { [className: string]: string[] }>;
   private _imodelInitializationPromises: Map<IModelConnection, Promise<void>>;
+  private _imodelInitializationHandler: IModelConnectionInitializationHandler;
 
   /** Property order is saved only in iModel scope */
   private _propertiesOrder: Map<string, FavoritePropertiesOrderInfo[]>;
@@ -88,13 +84,21 @@ export class FavoritePropertiesManager implements Disposable {
     this._propertiesOrder = new Map<string, FavoritePropertiesOrderInfo[]>();
     this._imodelBaseClassesByClass = new Map<string, { [className: string]: string[] }>();
     this._imodelInitializationPromises = new Map<IModelConnection, Promise<void>>();
+    imodelInitializationHandlers.add(
+      (this._imodelInitializationHandler = {
+        startInitialization: (imodel) => this.startConnectionInitialization(imodel),
+        ensureInitialized: async (imodel) => this.ensureInitialized(imodel),
+      }),
+    );
   }
 
   public [Symbol.dispose]() {
+    imodelInitializationHandlers.delete(this._imodelInitializationHandler);
     if (isDisposable(this.storage)) {
       this.storage[Symbol.dispose]();
-    /* c8 ignore next 3 */
-    } else if (isIDisposable(this.storage)) { /* eslint-disable-line @typescript-eslint/no-deprecated */
+      /* c8 ignore next 4 */
+      /* eslint-disable-next-line @typescript-eslint/no-deprecated */
+    } else if (isIDisposable(this.storage)) {
       this.storage.dispose();
     }
   }
@@ -185,22 +189,14 @@ export class FavoritePropertiesManager implements Disposable {
     }
   }
 
-  /**
-   * Calls [[FavoritePropertiesManager.initializeConnection]] and caches the promise which should be awaited by calling [[FavoritePropertiesManager.ensureInitialized]].
-   * @internal
-   */
-  public startConnectionInitialization(imodel: IModelConnection) {
+  private startConnectionInitialization(imodel: IModelConnection) {
     if (!this.isInitialized(imodel) && !this._imodelInitializationPromises.has(imodel)) {
       // eslint-disable-next-line @typescript-eslint/no-deprecated
       this._imodelInitializationPromises.set(imodel, this.initializeConnection(imodel));
     }
   }
 
-  /**
-   * Performs the initialization process or finishes the one that was started by [[FavoritePropertiesManager.startConnectionInitialization]].
-   * @internal
-   */
-  public async ensureInitialized(imodel: IModelConnection) {
+  private async ensureInitialized(imodel: IModelConnection) {
     if (this.isInitialized(imodel)) {
       return;
     }
@@ -627,14 +623,12 @@ const getiModelInfo = (iTwinId: string, imodelId: string) => `${iTwinId}/${imode
 
 const getPropertiesFieldPropertyNames = (field: PropertiesField) => {
   const nestingPrefix = getNestingPrefix(field.parent);
-  return field.properties.map(
-    (property) => `${FavoritePropertiesManager.FAVORITES_IDENTIFIER_PREFIX}${nestingPrefix}${property.property.classInfo.name}:${property.property.name}`,
-  );
+  return field.properties.map((property) => `${nestingPrefix}${property.property.classInfo.name}:${property.property.name}`);
 };
 
 const getNestedContentFieldPropertyName = (field: NestedContentField) => {
   const nestingPrefix = getNestingPrefix(field);
-  return `${FavoritePropertiesManager.FAVORITES_IDENTIFIER_PREFIX}${nestingPrefix}${field.contentClassInfo.name}`;
+  return `${nestingPrefix}${field.contentClassInfo.name}`;
 };
 
 const getNestingPrefix = (field: NestedContentField | undefined) => {
@@ -679,7 +673,7 @@ export const getFieldInfos = (field: Field): Set<PropertyFullName> => {
   } else if (field.isNestedContentField()) {
     fieldInfos.add(getNestedContentFieldPropertyName(field));
   } else {
-    fieldInfos.add(`${FavoritePropertiesManager.FAVORITES_IDENTIFIER_PREFIX}${field.name}`);
+    fieldInfos.add(field.name);
   }
   return fieldInfos;
 };

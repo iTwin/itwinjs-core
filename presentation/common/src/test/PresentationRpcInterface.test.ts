@@ -151,12 +151,6 @@ describe("PresentationRpcInterface", () => {
         keys: new KeySet().toJSON(),
       };
 
-      it("forwards call without modifying options", async () => {
-        await rpcInterface.getContentDescriptor(token, options);
-        expect(spy).to.be.calledOnceWith([token, { ...options, transport: "unparsed-json" }]);
-        expect(options.transport).to.be.undefined;
-      });
-
       it("parses string response into DescriptorJSON", async () => {
         const descriptorJson = createTestContentDescriptor({ fields: [] }).toJSON();
         const presentationResponse: PresentationRpcResponseData<string> = {
@@ -167,6 +161,17 @@ describe("PresentationRpcInterface", () => {
 
         const response = await rpcInterface.getContentDescriptor(token, options);
         expect(response.result).to.be.deep.equal(descriptorJson);
+      });
+
+      it("returns undefined result", async () => {
+        const presentationResponse: PresentationRpcResponseData<string> = {
+          statusCode: PresentationStatus.Success,
+          result: undefined,
+        };
+        spy.returns(Promise.resolve(presentationResponse));
+
+        const response = await rpcInterface.getContentDescriptor(token, options);
+        expect(response.result).to.be.be.undefined;
       });
     });
 

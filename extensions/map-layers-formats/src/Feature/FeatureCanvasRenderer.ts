@@ -3,9 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { Transform } from "@itwin/core-geometry";
 import { FeatureGeometryBaseRenderer, FeatureSymbolizedRenderer, FeatureSymbologyRenderer } from "@itwin/core-frontend";
-import { ArcGisSymbologyCanvasRenderer } from "../ArcGisFeature/ArcGisSymbologyRenderer";
+import { Transform } from "@itwin/core-geometry";
+import { ArcGisSymbologyCanvasRenderer } from "../ArcGisFeature/ArcGisSymbologyRenderer.js";
 
 /** @internal */
 export class FeatureCanvasRenderer extends FeatureGeometryBaseRenderer implements FeatureSymbolizedRenderer {
