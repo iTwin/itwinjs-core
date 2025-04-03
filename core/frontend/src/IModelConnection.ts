@@ -21,7 +21,7 @@ import {
   ViewIdString, ViewQueryParams, ViewStateLoadProps, ViewStateProps, ViewStoreRpc,
 } from "@itwin/core-common";
 import { Point3d, Range3d, Range3dProps, Transform, XYAndZ, XYZProps } from "@itwin/core-geometry";
-import type { IModelReadAPI, IModelReadIpcAPI, QueryRequest } from "@itwin/imodelread-common";
+import { ElementNotFoundError, type IModelReadAPI, type IModelReadIpcAPI, MeshesNotFoundError, type QueryRequest } from "@itwin/imodelread-common";
 import { IpcIModelRead } from "@itwin/imodelread-client-ipc";
 import { BriefcaseConnection } from "./BriefcaseConnection";
 import { CheckpointConnection } from "./CheckpointConnection";
@@ -463,7 +463,10 @@ export abstract class IModelConnection extends IModel {
     try {
      meshes = await this._iModelReadApi.getElementMeshes(requestProps.source, requestProps);
     } catch (error: unknown) {
-      throw new IModelError(BentleyStatus.ERROR, error instanceof Error ? error.message : "Unknown error occurred");
+      if (error instanceof ElementNotFoundError || error instanceof MeshesNotFoundError)
+        throw new IModelError(BentleyStatus.ERROR, "Geometric element required");
+
+      throw error;
     }
 
     return meshes;
