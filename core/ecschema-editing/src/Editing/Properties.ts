@@ -38,10 +38,10 @@ export class Properties {
         throw new SchemaEditingError(ECEditingStatus.SetPropertyName, new PropertyId(this.ecClassType, classKey, propertyName), e);
       });
 
-    const baseProperty = await existingProperty.class.getProperty(newPropertyName) as MutableProperty;
-    if (baseProperty) {
+    const  existingNewProperty = await existingProperty.class.getProperty(newPropertyName) as MutableProperty;
+    if (existingNewProperty) {
       throw new SchemaEditingError(ECEditingStatus.SetPropertyName, new PropertyId(this.ecClassType, classKey, propertyName),
-        new SchemaEditingError(ECEditingStatus.PropertyAlreadyExists, new PropertyId(this.ecClassType, baseProperty.class.key, newPropertyName)));
+        new SchemaEditingError(ECEditingStatus.PropertyAlreadyExists, new PropertyId(this.ecClassType, existingNewProperty.class.key, newPropertyName)));
     }
 
     // Handle derived classes

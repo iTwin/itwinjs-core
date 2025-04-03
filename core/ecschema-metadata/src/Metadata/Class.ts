@@ -132,7 +132,8 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
   }
 
   /**
-   * Searches, case-insensitive, for a local ECProperty with the name provided.
+   * Searches, case-insensitive, for an ECProperty with given the name on this class and, by default, on
+   * all base classes. Set excludeInherited to 'true' to only search the local class.
    * @param name The name of the property to retrieve.
    * @param excludeInherited If true, excludes inherited properties from the results. Defaults to false.
    */
