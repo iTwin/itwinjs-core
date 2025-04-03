@@ -31,7 +31,7 @@ describe.only("Drawing", () => {
   }
 
   describe("scaleFactor", () => {
-    function makeDrawing(scaleFactor: any): Drawing {
+    function makeDrawingProps(scaleFactor: any): DrawingProps {
       const props: DrawingProps = {
         classFullName: Drawing.classFullName,
         model: documentListModelId,
@@ -41,8 +41,12 @@ describe.only("Drawing", () => {
       if (undefined !== scaleFactor) {
         props.scaleFactor = scaleFactor;
       }
+      
+      return props;
+    }
 
-      return new TestDrawing(props);
+    function makeDrawing(scaleFactor: any): Drawing {
+      return new TestDrawing(makeDrawingProps(scaleFactor));
     }
 
     function expectScaleFactor(scaleFactor: any, expected: number): void {
@@ -94,7 +98,21 @@ describe.only("Drawing", () => {
     });
 
     it("is preserved when round-tripped through persistence layer", () => {
-      
+      function test(scaleFactor: number | undefined): void {
+        const insertProps = makeDrawingProps(scaleFactor);
+        expect(insertProps.scaleFactor).to.equal(scaleFactor);
+        const elemId = imodel.elements.insertElement(insertProps);
+        const readProps = imodel.elements.getElementProps<DrawingProps>(elemId);
+        expect(readProps.scaleFactor).to.equal(scaleFactor);
+      }
+
+      test(undefined);
+      test(1);
+      test(2);
+      test(123);
+      test(0.05);
+      test(0);
+      test(-123);
     });
   });
 
