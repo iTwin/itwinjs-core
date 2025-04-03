@@ -203,7 +203,7 @@ export interface DrawingProps extends ElementProps {
   /** A factor used by tools to adjust the size of text in [GeometricElement2d]($backend)s in the associated [DrawingModel]($backend) and to compute the
    * size of the [ViewAttachment]($backend) created when attaching the [Drawing]($backend) to a [Sheet]($backend).
    * Default: 1.
-   * @note The scale factor **must** be non-zero.
+   * @note The scale factor **must** be greater than zero.
    * @public
    */
   scaleFactor?: number;
