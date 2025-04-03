@@ -821,6 +821,7 @@ export class Drawing extends Document {
    * @param iModelDb Insert into this iModel
    * @param documentListModelId Insert the new Drawing into this DocumentListModel
    * @param name The name of the Drawing.
+   * @param scaleFactor See [[scaleFactor]]. Must be greater than zero.
    * @returns The Id of the newly inserted Drawing element and the DrawingModel that breaks it down (same value).
    * @throws [[IModelError]] if unable to insert the element.
    * @throws Error if `scaleFactor` is less than or equal to zero.
