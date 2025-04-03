@@ -1456,9 +1456,6 @@ importers:
       '@types/chai':
         specifier: 4.3.1
         version: 4.3.1
-      '@types/fs-extra':
-        specifier: ^4.0.7
-        version: 4.0.7
       '@types/mocha':
         specifier: ^10.0.6
         version: 10.0.6
@@ -1504,30 +1501,12 @@ importers:
       '@itwin/eslint-plugin':
         specifier: 5.0.0-dev.1
         version: 5.0.0-dev.1(eslint@9.13.0)(typescript@5.6.2)
-      '@types/chai':
-        specifier: 4.3.1
-        version: 4.3.1
-      '@types/fs-extra':
-        specifier: ^4.0.7
-        version: 4.0.7
-      '@types/mocha':
-        specifier: ^10.0.6
-        version: 10.0.6
-      chai:
-        specifier: ^4.3.10
-        version: 4.3.10
       eslint:
         specifier: ^9.13.0
         version: 9.13.0
       internal-tools:
         specifier: workspace:*
         version: link:../../../tools/internal
-      mocha:
-        specifier: ^11.1.0
-        version: 11.1.0
-      nyc:
-        specifier: ^17.1.0
-        version: 17.1.0
       rimraf:
         specifier: ^6.0.1
         version: 6.0.1
@@ -1555,9 +1534,6 @@ importers:
       '@types/chai':
         specifier: 4.3.1
         version: 4.3.1
-      '@types/fs-extra':
-        specifier: ^4.0.7
-        version: 4.0.7
       '@types/mocha':
         specifier: ^10.0.6
         version: 10.0.6
