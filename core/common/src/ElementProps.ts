@@ -195,11 +195,25 @@ export enum SectionType {
   Plan = 6,
 }
 
+/** Properties that define a [Drawing]($backend).
+ * @public
+ * @extensions
+ */
+export interface DrawingProps extends ElementProps {
+  /** A factor used by tools to adjust the size of text in [GeometricElement2d]($backend)s in the associated [DrawingModel]($backend) and to compute the
+   * size of the [ViewAttachment]($backend) created when attaching the [Drawing]($backend) to a [Sheet]($backend).
+   * Default: 1.
+   * @note The scale factor **must** be non-zero.
+   * @public
+   */
+  scaleFactor?: number;
+}
+
 /** Properties that define a [SectionDrawing]($backend).
  * @public
  * @extensions
  */
-export interface SectionDrawingProps extends ElementProps {
+export interface SectionDrawingProps extends DrawingProps {
   /** The type of section used to generate the drawing. Default: Section. */
   sectionType?: SectionType;
   /** The spatial view from which the section was generated. */

@@ -8,7 +8,7 @@
 
 import { CompressedId64Set, GuidString, Id64, Id64String, JsonUtils, OrderedId64Array } from "@itwin/core-bentley";
 import {
-  AxisAlignedBox3d, BisCodeSpec, Code, CodeScopeProps, CodeSpec, ConcreteEntityTypes, DefinitionElementProps, ElementAlignedBox3d,
+  AxisAlignedBox3d, BisCodeSpec, Code, CodeScopeProps, CodeSpec, ConcreteEntityTypes, DefinitionElementProps, DrawingProps, ElementAlignedBox3d,
   ElementProps, EntityMetaData, EntityReferenceSet, GeometricElement2dProps, GeometricElement3dProps, GeometricElementProps,
   GeometricModel2dProps, GeometricModel3dProps, GeometryPartProps, GeometryStreamProps, IModel, InformationPartitionElementProps, LineStyleProps,
   ModelProps, PhysicalElementProps, PhysicalTypeProps, Placement2d, Placement3d, RelatedElement, RenderSchedule, RenderTimelineProps,
@@ -763,8 +763,39 @@ export abstract class Document extends InformationContentElement {
  * @public
  */
 export class Drawing extends Document {
+  private _scaleFactor: number;
+
+  /** A factor used by tools to adjust the size of text in [GeometricElement2d]($backend)s in the associated [DrawingModel]($backend) and to compute the
+   * size of the [ViewAttachment]($backend) created when attaching the [Drawing]($backend) to a [Sheet]($backend).
+   * Default: 1.
+   * @note Attempting to set this property to zero will produce an exception.
+   * @public
+   */
+  public get scaleFactor(): number { return this._scaleFactor; }
+  public set scaleFactor(factor: number) {
+    if (factor === 0) {
+      throw new Error("Drawing.scaleFactor cannot be zero");
+    }
+
+    this._scaleFactor = factor;
+  }
+
   public static override get className(): string { return "Drawing"; }
-  protected constructor(props: ElementProps, iModel: IModelDb) { super(props, iModel); }
+
+  protected constructor(props: DrawingProps, iModel: IModelDb) {
+    super(props, iModel);
+
+    this._scaleFactor = typeof props.scaleFactor === "number" && props.scaleFactor !== 0 ? props.scaleFactor : 1;
+  }
+
+  public override toJSON(): DrawingProps {
+    const drawingProps: DrawingProps = super.toJSON();
+    if (this.scaleFactor !== 1) {
+      drawingProps.scaleFactor = this.scaleFactor;
+    }
+
+    return drawingProps;
+  }
 
   /** The name of the DrawingModel class modeled by this element type. */
   protected static get drawingModelFullClassName(): string { return DrawingModel.classFullName; }
@@ -786,12 +817,17 @@ export class Drawing extends Document {
    * @returns The Id of the newly inserted Drawing element and the DrawingModel that breaks it down (same value).
    * @throws [[IModelError]] if unable to insert the element.
    */
-  public static insert(iModelDb: IModelDb, documentListModelId: Id64String, name: string): Id64String {
-    const drawingProps: ElementProps = {
+  public static insert(iModelDb: IModelDb, documentListModelId: Id64String, name: string, scaleFactor?: number): Id64String {
+    const drawingProps: DrawingProps = {
       classFullName: this.classFullName,
       model: documentListModelId,
       code: this.createCode(iModelDb, documentListModelId, name),
     };
+
+    if (scaleFactor) {
+      drawingProps.scaleFactor = scaleFactor;
+    }
+
     const drawingId: Id64String = iModelDb.elements.insertElement(drawingProps);
     const model: DrawingModel = iModelDb.models.createModel({
       classFullName: this.drawingModelFullClassName,
