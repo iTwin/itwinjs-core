@@ -61,6 +61,17 @@ export namespace CatalogIModelTypes {
     prefetch?: boolean;
   }
 
+  export interface CreateNewVersionArgs {
+    readonly containerId: string;
+    /** full name of source Db (including version) */
+    readonly fromDb: string;
+    /** The type of version increment to apply to the source version. */
+    readonly versionType: "major" | "minor" | "patch" | "premajor" | "preminor" | "prepatch" | "prerelease";
+    /** For prerelease versions, a string that becomes part of the version name. */
+    readonly identifier?: string;
+  }
+
+
   /** A [semver string](https://github.com/npm/node-semver?tab=readme-ov-file#ranges) describing a range of acceptable [[CatalogIModels]]s,
    * e.g., ">=1.2.7 <1.3.0".
    */
@@ -73,6 +84,8 @@ export namespace CatalogIModelTypes {
     acquireWriteLock(args: ContainerArg & { username: string }): Promise<void>;
     /** Release the write lock for a CatalogIModel container. */
     releaseWriteLock(args: ContainerArg & { abandon?: true }): Promise<void>;
+    /** create a new version of a CatalogIModel from an existing version. */
+    createNewVersion(args: CreateNewVersionArgs): Promise<{ oldDb: NameAndVersion, newDb: NameAndVersion }>;
     /** Attempt to open a CatalogIModel */
     openCatalog(args: OpenArgs): Promise<IModelConnectionProps>;
   }

@@ -10,7 +10,7 @@
 
 import { CloudSqlite } from "./CloudSqlite";
 import { IModelHost } from "./IModelHost";
-import { type CatalogIModelTypes, CloudSqliteError } from "@itwin/core-common";
+import { type CatalogIModelTypes, CloudSqliteError, IModelConnectionProps } from "@itwin/core-common";
 import { IpcHandler } from "./IpcHost";
 import { StandaloneDb } from "./IModelDb";
 import { OpenMode } from "@itwin/core-bentley";
@@ -62,7 +62,7 @@ const ensureLocked = (container: CloudSqlite.CloudContainer, reason: string) => 
 }
 export class CatalogDb extends StandaloneDb {
 
-  public async createNewContainer(args: CatalogIModelTypes.CreateNewContainerArgs): Promise<CatalogIModelTypes.NewContainerProps> {
+  public static async createNewContainer(args: CatalogIModelTypes.CreateNewContainerArgs): Promise<CatalogIModelTypes.NewContainerProps> {
     const userToken = await IModelHost.getAccessToken();
     const cloudContainerProps = await CloudSqlite.getBlobService().create({ scope: { iTwinId: args.iTwinId }, metadata: { containerType: "standaloneDb", ...args.metadata }, userToken });
 
@@ -102,28 +102,42 @@ export class CatalogDb extends StandaloneDb {
       return super.openFile(args.dbName, args.writeable ? OpenMode.ReadWrite : OpenMode.Readonly, args);
 
     const container = await getCatalogContainerObj(args.containerId);
-    const fileName = CloudSqlite.makeSemverName(args.dbName, args.version);
+    const dbFullName = CloudSqlite.makeSemverName(args.dbName, args.version);
 
     if (args.writeable) {
-      ensureLocked(container, "open a CatalogIModel for write");
-      CloudSqlite.isSemverEditable({ container, dbFullName })
+      ensureLocked(container, "open a Catalog for write");
+      if (!CloudSqlite.isSemverEditable(dbFullName, container))
+        CloudSqliteError.throwError("already-published", { message: "Catalog has already been published and is not editable. Make a new version first.", ...args })
     }
-    if (args.prefetch)
-      CloudSqlite.startCloudPrefetch(container, fileName);
 
-    return super.open({ ...args, fileName, container, readonly: !args.writeable });
+    if (args.prefetch)
+      CloudSqlite.startCloudPrefetch(container, dbFullName);
+
+    return super.open({ ...args, fileName: dbFullName, container, readonly: !args.writeable });
   }
 
-
-  public static async createNewVersion(args: CreateNewWorkspaceDbVersionArgs): Promise<{ oldDb: WorkspaceDbNameAndVersion, newDb: WorkspaceDbNameAndVersion }> {
-    requireWriteLock();
-    const container = this.cloudContainer;
-
-    const fromDb = this.resolveDbFileName(args.fromProps ?? {});
-    return CloudSqlite.createNewDbVersion({ ...args, container, fromDb });
+  public static async createNewVersion(args: CatalogIModelTypes.CreateNewVersionArgs): Promise<{ oldDb: CatalogIModelTypes.NameAndVersion, newDb: CatalogIModelTypes.NameAndVersion }> {
+    const container = await getCatalogContainerObj(args.containerId);
+    ensureLocked(container, "create a new version");
+    return CloudSqlite.createNewDbVersion(container, args);
   }
 }
 
-export class CatalogDbIpc extends IpcHandler implements CatalogIModelTypes.IpcMethods {
+export class CatalogIModelIpc extends IpcHandler implements CatalogIModelTypes.IpcMethods {
   public get channelName(): CatalogIModelTypes.IpcChannel { return "catalogIModel/ipc"; }
+  public async createNewContainer(args: CatalogIModelTypes.CreateNewContainerArgs): Promise<CatalogIModelTypes.NewContainerProps> {
+    return CatalogDb.createNewContainer(args);
+  }
+  public async acquireWriteLock(args: CatalogIModelTypes.ContainerArg & { username: string; }): Promise<void> {
+    return CatalogDb.acquireWriteLock(args);
+  }
+  public async releaseWriteLock(args: CatalogIModelTypes.ContainerArg & { abandon?: true; }): Promise<void> {
+    return CatalogDb.releaseWriteLock(args);
+  }
+  public async openCatalog(args: CatalogIModelTypes.OpenArgs): Promise<IModelConnectionProps> {
+    return CatalogDb.openCatalog(args);
+  }
+  public async createNewVersion(args: CatalogIModelTypes.CreateNewVersionArgs): Promise<{ oldDb: CatalogIModelTypes.NameAndVersion; newDb: CatalogIModelTypes.NameAndVersion; }> {
+    return CatalogDb.createNewVersion(args);
+  }
 }

@@ -11,7 +11,8 @@ import { extname, join } from "path";
 import * as readline from "readline";
 import * as Yargs from "yargs";
 import {
-  _nativeDb, CloudSqlite, EditableWorkspaceContainer, EditableWorkspaceDb, IModelHost, IModelJsFs, SQLiteDb, SqliteStatement, WorkspaceContainerProps, WorkspaceDb, WorkspaceDbFullName, WorkspaceDbName, WorkspaceDbVersionIncrement, WorkspaceEditor, WorkspaceResourceName,
+  _nativeDb, CloudSqlite, EditableWorkspaceContainer, EditableWorkspaceDb, IModelHost, IModelJsFs, SQLiteDb, SqliteStatement, WorkspaceContainerProps, WorkspaceDb,
+  WorkspaceDbFullName, WorkspaceDbName, WorkspaceEditor, WorkspaceResourceName,
 } from "@itwin/core-backend";
 import { constructWorkspaceDb, workspaceDbFileExt } from "@itwin/core-backend/lib/cjs/internal/workspace/WorkspaceImpl";
 import { AccessToken, BentleyError, DbResult, Logger, LogLevel, OpenMode, StopWatch } from "@itwin/core-bentley";
@@ -69,7 +70,7 @@ interface CopyWorkspaceDbOpt extends WorkspaceDbOpt {
 
 /** options for creating a new version of a WorkspaceDb */
 interface MakeVersionOpt extends WorkspaceDbOpt {
-  versionType: WorkspaceDbVersionIncrement;
+  versionType: CloudSqlite.SemverIncrement;
 }
 
 /** Resource type names */

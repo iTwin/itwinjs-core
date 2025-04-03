@@ -43,8 +43,8 @@ export namespace SqliteError {
 export interface CloudSqliteError extends ITwinError {
   /** The name of the database that generated the error */
   readonly dbName?: string;
-  /** The version number of the error */
-  readonly version?: string;
+  /** The name of the container associated with the error */
+  readonly containerId?: string;
 }
 
 /** @beta */
@@ -56,9 +56,11 @@ export namespace CloudSqliteError {
     "invalid-name" |
     "no-version-available" |
     "service-not-available" |
-    /** @see WriteLockHeld for details */
+    /** The write lock cannot be acquired because it is currently held by somebody else.
+     * @see WriteLockHeld for details
+     */
     "write-lock-held" |
-    /** The write lock on a container is not held but is required */
+    /** The write lock on a container is not held, but is required for this operation */
     "write-lock-not-held";
 
   /** thrown when an attempt to acquire the write lock for a container fails because the lock is already held by somebody else ("write-lock-held").  */
@@ -82,10 +84,13 @@ export namespace CloudSqliteError {
   }
 }
 
+/** Errors thrown by the ViewStore apis */
 export interface ViewStoreError extends ITwinError {
+  /** The name of the ViewStore that generated the error */
   viewStoreName?: string;
 }
 
+/** @beta */
 export namespace ViewStoreError {
   export const scope = "itwin-ViewStore";
   export type Key =
@@ -107,8 +112,12 @@ export namespace ViewStoreError {
   }
 }
 
+/**
+ * Errors thrown by the Workspace apis
+ * @beta
+ */
 export namespace WorkspaceError {
-  export const scope = "itwin-workspace-error";
+  export const scope = "itwin-Workspace";
   export type Key =
     "already-exists" |
     "container-exists" |
@@ -121,26 +130,31 @@ export namespace WorkspaceError {
     "too-large" |
     "write-error";
 
+  /** Determine whether an error object is a WorkspaceError */
+  export function isError<T extends ITwinError>(error: unknown, key?: Key): error is T {
+    return ITwinError.isError<T>(error, scope, key);
+  }
+
   export function throwError<T extends ITwinError>(key: Key, e: Omit<T, "name" | "iTwinErrorId">): never {
     ITwinError.throwError<ITwinError>({ ...e, iTwinErrorId: { key, scope } });
   }
 }
 
 
-/** An error originating from the [[ChannelControl]] interface.
+/** Errors originating from the [[ChannelControl]] interface.
  * @beta
  */
-export interface ChannelError extends ITwinError {
+export interface ChannelControlError extends ITwinError {
   /** The channel key that caused the error. */
   readonly channelKey: string;
 }
 
 /** @beta */
-export namespace ChannelError {
-  // the scope for all `ChannelError`s.
+export namespace ChannelControlError {
+  /** the ITwinError scope for `ChannelControlError`s. */
   export const scope = "itwin-ChannelControl";
 
-  /** The set of keys identifying the different kinds of `ChannelError`s */
+  /** Keys that identify `ChannelControlError`s */
   export type Key =
     /** an attempt to create a channel within an existing channel */
     "may-not-nest" |
@@ -149,12 +163,12 @@ export namespace ChannelError {
     /** the root channel already exists */
     "root-exists";
 
-  /** Instantiate and throw a ChannelError */
+  /** Instantiate and throw a ChannelControlError */
   export function throwError(key: Key, message: string, channelKey: string): never {
-    ITwinError.throwError<ChannelError>({ iTwinErrorId: { scope, key }, message, channelKey });
+    ITwinError.throwError<ChannelControlError>({ iTwinErrorId: { scope, key }, message, channelKey });
   }
-  /** Determine whether an error object is a ChannelError */
-  export function isError(error: unknown, key?: Key): error is ChannelError {
-    return ITwinError.isError<ChannelError>(error, scope, key) && typeof error.channelKey === "string";
+  /** Determine whether an error object is a ChannelControlError */
+  export function isError(error: unknown, key?: Key): error is ChannelControlError {
+    return ITwinError.isError<ChannelControlError>(error, scope, key) && typeof error.channelKey === "string";
   }
 }

@@ -526,7 +526,7 @@ class EditorContainerImpl extends WorkspaceContainerImpl implements EditableWork
       WorkspaceError.throwError("no-cloud-container", { message: "versions require cloud containers" });
 
     const fromDb = this.resolveDbFileName(args.fromProps ?? {});
-    return CloudSqlite.createNewDbVersion({ ...args, container, fromDb });
+    return CloudSqlite.createNewDbVersion(container, { ...args, fromDb });
   }
 
   public override getWorkspaceDb(props: WorkspaceDbProps): EditableWorkspaceDb {

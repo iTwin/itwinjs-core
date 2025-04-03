@@ -298,9 +298,6 @@ export namespace CloudSqlite {
    * Arguments supplied to [[CloudSqlite.createNewDbVersion]].
    */
   export interface CreateNewDbVersionArgs {
-    readonly container: CloudContainer;
-    /**
-     */
     readonly fromDb: DbFullName;
     /** The type of version increment to apply to the source version. */
     readonly versionType: SemverIncrement;
@@ -863,7 +860,7 @@ export namespace CloudSqlite {
 
   export function isSemverEditable(dbFullName: string, container: CloudContainer) {
     const parsed = parseDbFileName(dbFullName);
-    return isSemverPrerelease(parsed.version) && container.queryDatabase(dbFullName)?.state !== "copied";
+    return isSemverPrerelease(parsed.version) || container.queryDatabase(dbFullName)?.state !== "copied";
   }
 
   /** Create a dbName for a database from its base name and version. This will be in the format "name:version" */
@@ -871,6 +868,7 @@ export namespace CloudSqlite {
     return `${dbName}:${validateDbVersion(version)}`;
   }
 
+  /** query the databases in the supplied container for the highest SemVer match according to the version range. Throws if no version available for the range. */
   export function querySemverMatch(props: LoadProps): DbFullName {
     const dbName = props.dbName;
     const dbs = props.container.queryDatabases(`${dbName}*`); // get all databases that start with dbName
@@ -895,14 +893,14 @@ export namespace CloudSqlite {
     CloudSqliteError.throwError("no-version-available", { message: `No version of '${dbName}' available for "${range}"`, ...props });
   }
 
-  export async function createNewDbVersion(args: CreateNewDbVersionArgs): Promise<{ oldDb: DbNameAndVersion, newDb: DbNameAndVersion }> {
+  export async function createNewDbVersion(container: CloudContainer, args: CreateNewDbVersionArgs): Promise<{ oldDb: DbNameAndVersion, newDb: DbNameAndVersion }> {
     const oldDb = parseDbFileName(args.fromDb);
     const newVersion = semver.inc(oldDb.version, args.versionType, args.identifier);
     if (!newVersion)
       CloudSqliteError.throwError("invalid-name", { message: `cannot create new version for ${args.fromDb}`, dbName: args.fromDb });
 
     const newName = makeSemverName(oldDb.dbName, newVersion);
-    await args.container.copyDatabase(args.fromDb, newName);
+    await container.copyDatabase(args.fromDb, newName);
     // return the old and new db names and versions
     return { oldDb, newDb: { dbName: oldDb.dbName, version: newVersion } };
   }
