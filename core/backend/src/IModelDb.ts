@@ -1773,7 +1773,21 @@ export namespace IModelDb {
      */
     private tryGetModelJson<T extends ModelProps>(modelIdArg: ModelLoadProps): T | undefined {
       try {
-        return this._iModel[_nativeDb].getModel(modelIdArg) as T;
+        if (IModelHost.configuration?.enableWIPNativeInstanceFunctions) {
+          const options = {
+            useJsNames: true,
+          }
+          const readProps = this._iModel[_nativeDb].resolveInstanceKey(modelIdArg);
+          if (undefined === readProps)
+            throw new IModelError(IModelStatus.NotFound, `Model=${modelIdArg.id}`);
+          const rawInstance = this._iModel[_nativeDb].readInstance(readProps, options) as T;
+          // Deserialize the Model
+          const classDef = this._iModel.getJsClass<typeof Model>(readProps.classFullName);
+          const elementProps = classDef.deserialize({ row: rawInstance, iModel: this._iModel }) as T;
+          return elementProps;
+        } else {
+          return this._iModel[_nativeDb].getModel(modelIdArg) as T;
+        }
       } catch {
         return undefined;
       }
@@ -1944,7 +1958,22 @@ export namespace IModelDb {
      */
     private tryGetElementJson<T extends ElementProps>(loadProps: ElementLoadProps): T | undefined {
       try {
-        return this._iModel[_nativeDb].getElement(loadProps) as T;
+        if (IModelHost.configuration?.enableWIPNativeInstanceFunctions) {
+          const options = {
+            ...loadProps,
+            useJsNames: true,
+          }
+          const readProps = this._iModel[_nativeDb].resolveInstanceKey(loadProps);
+          if (undefined === readProps)
+            throw new IModelError(IModelStatus.NotFound, `Element=${loadProps.id}`);
+          const rawInstance = this._iModel[_nativeDb].readInstance(readProps, options) as T;
+          // Deserialize the Element
+          const classDef = this._iModel.getJsClass<typeof Element>(readProps.classFullName);
+          const elementProps = classDef.deserialize({ row: rawInstance, iModel: this._iModel }) as T;
+          return elementProps;
+        } else {
+          return this._iModel[_nativeDb].getElement(loadProps) as T;
+        }
       } catch {
         return undefined;
       }
@@ -1961,7 +1990,21 @@ export namespace IModelDb {
         props = { code: props };
       }
       try {
-        return this._iModel[_nativeDb].getElement(props) as T;
+        if (IModelHost.configuration?.enableWIPNativeInstanceFunctions) {
+          const options = {
+            useJsNames: true,
+          }
+          const readProps = this._iModel[_nativeDb].resolveInstanceKey(props);
+          if (undefined === readProps)
+            throw new IModelError(IModelStatus.NotFound, `Element=${props.id}`);
+          const rawInstance = this._iModel[_nativeDb].readInstance(readProps, options) as T;
+          // Deserialize the Element
+          const classDef = this._iModel.getJsClass<typeof Element>(readProps.classFullName);
+          const elementProps = classDef.deserialize({ row: rawInstance, iModel: this._iModel }) as T;
+          return elementProps;
+        } else {
+          return this._iModel[_nativeDb].getElement(props) as T;
+        }
       } catch (err: any) {
         throw new IModelError(err.errorNumber, err.message);
       }
