@@ -11,6 +11,7 @@ import { EntityProps, EntityReferenceSet, PropertyCallback, PropertyMetaData } f
 import type { IModelDb } from "./IModelDb";
 import { Schema } from "./Schema";
 import { EntityClass, PropertyHandler, SchemaItemKey } from "@itwin/ecschema-metadata";
+import { _nativeDb } from "./internal/Symbols";
 
 export interface ECSqlRow {
   [key: string]: any
@@ -20,6 +21,12 @@ export interface InstanceProps {
   row: ECSqlRow;
   iModel: IModelDb;
 }
+
+export interface CustomHandledProperty {
+  name: string;
+  isComputed?: true;
+}
+export type CustomHandledPropertyList = CustomHandledProperty[];
 
 /** Represents one of the fundamental building block in an [[IModelDb]]: as an [[Element]], [[Model]], or [[Relationship]].
  * Every subclass of Entity represents one BIS [ECClass]($ecschema-metadata).
@@ -87,17 +94,23 @@ export class Entity {
     return new subclass(props, iModel);
   }
 
-  protected static get customHandledECProperties(): string[] {
-    return ["id", "className"];
+  protected static get customHandledProperties(): CustomHandledPropertyList {
+    return [ {name: "id"}, {name: "className"}, {name: "jsonProperties"} ];
   }
 
   public static deserialize(props: InstanceProps): EntityProps {
     const enProps: EntityProps = {
       id: props.row.id,
-      classFullName: props.row.className.replace(".", ":"),
+      classFullName: props.row.classFullName,
     }
-    Object.keys(props.row).filter((propName) => !this.customHandledECProperties.includes(propName)).forEach((propName) => {
-      (enProps as any)[propName] = props.row[propName];
+    if (props.row.jsonProperties) {
+      // Deserialize the jsonProperties field and convert it to a JSON object
+      const deserializedProps = props.iModel[_nativeDb].patchElementProperties(props.row.jsonProperties);
+      enProps.jsonProperties = JSON.parse(deserializedProps);
+    }
+    // Deserialize the standard handled properties
+    Object.keys(props.row).filter((property) => !this.customHandledProperties.map((val) => val.name).includes(property)).forEach((property) => {
+      (enProps as any)[property] = props.row[property];
     });
     return enProps;
   }
@@ -107,8 +120,8 @@ export class Entity {
       id: props.id,
       className: props.classFullName,
     }
-    Object.keys(props).filter((propName) => !this.customHandledECProperties.includes(propName)).forEach((propName) => {
-      inst[propName] = (props as any)[propName];
+    Object.keys(props).filter((property) => !this.customHandledProperties.map((val) => val.name).includes(property)).forEach((property) => {
+      inst[property] = (props as any)[property];
     });
     return inst;
   }

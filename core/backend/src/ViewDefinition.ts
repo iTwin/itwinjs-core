@@ -20,6 +20,7 @@ import { DefinitionElement, GraphicalElement2d, SpatialLocationElement } from ".
 import { IModelDb } from "./IModelDb";
 import { DisplayStyle, DisplayStyle2d, DisplayStyle3d } from "./DisplayStyle";
 import { IModelElementCloneContext } from "./IModelElementCloneContext";
+import { CustomHandledPropertyList, ECSqlRow, InstanceProps } from "./Entity";
 
 /** Holds the list of Ids of GeometricModels displayed by a [[SpatialViewDefinition]]. Multiple SpatialViewDefinitions may point to the same ModelSelector.
  * @see [ModelSelectorState]($frontend)
@@ -284,6 +285,18 @@ export abstract class ViewDefinition3d extends ViewDefinition {
   /** The camera used for this view, if `cameraOn` is true. */
   public camera: Camera;
 
+
+  protected static override get customHandledProperties(): CustomHandledPropertyList {
+    return [ ...super.customHandledProperties,
+      { name: "eyePoint", isComputed: true },
+      { name: "focusDistance", isComputed: true },
+      { name: "lensAngle", isComputed: true },
+      { name: "yaw", isComputed: true },
+      { name: "roll", isComputed: true },
+      { name: "pitch", isComputed: true },
+    ];
+  }
+
   protected constructor(props: ViewDefinition3dProps, iModel: IModelDb) {
     super(props, iModel);
     this.cameraOn = JsonUtils.asBool(props.cameraOn);
@@ -292,6 +305,31 @@ export abstract class ViewDefinition3d extends ViewDefinition {
     this.angles = YawPitchRollAngles.fromJSON(props.angles);
     this.camera = new Camera(props.camera);
     this._details = new ViewDetails3d(this.jsonProperties);
+  }
+
+  public static override deserialize(props: InstanceProps): ViewDefinition3dProps {
+    const instance = props.row;
+    const elProps = super.deserialize(props) as ViewDefinition3dProps;
+    // ViewDefinition3dProps
+    if ("isCameraOn" in props && props.isCameraOn !== undefined) {
+      elProps.cameraOn = props.isCameraOn as boolean;
+      elProps.camera = { eye: instance.eyePoint, focusDist: instance.focusDistance, lens: instance.lensAngle };
+      elProps.angles = { yaw: instance.yaw, roll: instance.roll, pitch: instance.pitch };
+    }
+    return elProps;
+  }
+
+  public static override serialize(props: ViewDefinition3dProps): ECSqlRow {
+    const row = super.serialize(props);
+    // if (props.isCameraOn !== undefined) {
+    //   props.eyePoint = Instance.eyePoint;
+    //   props.focusDistance = Instance.focusDistance;
+    //   props.lensAngle = Instance.lensAngle;
+    //   props.yaw = Instance.yaw;
+    //   props.roll = Instance.roll;
+    //   props.pitch = Instance.pitch;
+    // }
+    return row;
   }
 
   public override toJSON(): ViewDefinition3dProps {

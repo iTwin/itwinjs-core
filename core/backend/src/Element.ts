@@ -16,7 +16,7 @@ import {
   SheetProps, SheetTemplateProps, SubjectProps, TypeDefinition, TypeDefinitionElementProps, UrlLinkProps,
 } from "@itwin/core-common";
 import { ClipVector, Range3d, Transform } from "@itwin/core-geometry";
-import { ECSqlRow, Entity, InstanceProps } from "./Entity";
+import { CustomHandledPropertyList, ECSqlRow, Entity, InstanceProps } from "./Entity";
 import { IModelDb } from "./IModelDb";
 import { IModelElementCloneContext } from "./IModelElementCloneContext";
 import { DefinitionModel, DrawingModel, PhysicalModel, SectionDrawingModel } from "./Model";
@@ -144,8 +144,16 @@ export class Element extends Entity {
     this.jsonProperties = { ...props.jsonProperties }; // make sure we have our own copy
   }
 
-  protected static override get customHandledECProperties(): string[] {
-    return [ ...super.customHandledECProperties, "codeValue", "codeSpec", "codeScope", "model", "parent", "federationGuid", "userLabel", "jsonProperties" ];
+  protected static override get customHandledProperties(): CustomHandledPropertyList {
+    return [ ...super.customHandledProperties,
+      { name: "codeValue" },
+      { name: "codeSpec" },
+      { name: "codeScope" },
+      { name: "model" },
+      { name: "parent" },
+      { name: "federationGuid" },
+      { name: "userLabel" },
+    ];
   }
 
   public static override deserialize(props: InstanceProps): ElementProps {
