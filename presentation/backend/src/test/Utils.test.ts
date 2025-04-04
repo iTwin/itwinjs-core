@@ -28,6 +28,7 @@ describe("getElementKey", () => {
 
   it("returns valid key for existing id", () => {
     const id = "0x123";
+    elementResult = { classFullName: "schema:class" };
     const result = getElementKey(imodel.object, id);
     expect(result).to.deep.eq({ className: elementResult?.classFullName, id });
   });
