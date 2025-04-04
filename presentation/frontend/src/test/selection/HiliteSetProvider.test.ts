@@ -23,14 +23,15 @@ describe("HiliteSetProvider", () => {
     Promise<{ descriptor: Descriptor; total: number; items: AsyncIterableIterator<Item> } | undefined>
   >();
 
-  before(() => {
+  beforeEach(() => {
     const managerMock = sinon.createStubInstance(PresentationManager, {
       getContentIterator: fakeGetContentIterator,
     });
-    Presentation.setPresentationManager(managerMock);
+    sinon.replaceGetter(Presentation, "presentation", () => managerMock);
   });
 
-  beforeEach(() => {
+  afterEach(() => {
+    sinon.restore();
     imodelMock.reset();
     fakeGetContentIterator.reset();
   });

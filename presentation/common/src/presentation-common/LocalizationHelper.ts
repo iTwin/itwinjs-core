@@ -15,7 +15,7 @@ import { DisplayValue, DisplayValueGroup, Value } from "./content/Value.js";
 import { ElementProperties } from "./ElementProperties.js";
 import { Node } from "./hierarchy/Node.js";
 import { NodePathElement } from "./hierarchy/NodePathElement.js";
-import { LabelCompositeValue, LabelDefinition } from "./LabelDefinition.js";
+import { COMPOSITE_LABEL_DEFINITION_TYPENAME, LabelCompositeValue, LabelDefinition } from "./LabelDefinition.js";
 
 const KEY_PATTERN = /@[\w\d\-_]+:[\w\d\-\._]+?@/g;
 
@@ -60,7 +60,7 @@ export class LocalizationHelper {
       values: compositeValue.values.map((value) => this.getLocalizedLabelDefinition(value)),
     });
 
-    if (labelDefinition.typeName === LabelDefinition.COMPOSITE_DEFINITION_TYPENAME) {
+    if (labelDefinition.typeName === COMPOSITE_LABEL_DEFINITION_TYPENAME) {
       return {
         ...labelDefinition,
         rawValue: getLocalizedComposite(labelDefinition.rawValue as LabelCompositeValue),

@@ -324,7 +324,7 @@ export class IndexedPolyfaceWalker {
    *   * `walkerD1 = walkerC.nextAroundFacet()` also moves to kD.
    *   * `walkerD.nextAroundVertex()` moves from kD back to kA.
    */
-  public static buildEdgeMateIndices(polyface: IndexedPolyface) {
+  public static buildEdgeMateIndices(polyface: IndexedPolyface): void {
     const matcher = new IndexedEdgeMatcher();
     const numFacet = polyface.facetCount;
     for (let facetIndex = 0; facetIndex < numFacet; facetIndex++) {

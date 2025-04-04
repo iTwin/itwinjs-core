@@ -15,6 +15,7 @@ import { PresentationIpcHandler } from "./PresentationIpcHandler.js";
 import { PresentationManager, PresentationManagerProps } from "./PresentationManager.js";
 import { PresentationRpcImpl } from "./PresentationRpcImpl.js";
 import { FactoryBasedTemporaryStorage } from "./TemporaryStorage.js";
+import { _presentation_manager_detail } from "./InternalSymbols.js";
 
 /**
  * Properties that can be used to configure [[Presentation]] API.
@@ -33,16 +34,17 @@ export interface PresentationProps extends Omit<PresentationManagerProps, "enabl
   enableSchemasPreload?: boolean;
 
   /**
-   * Factory method for creating separate managers for each client
-   * @internal
-   */
-  clientManagerFactory?: (clientId: string, props: PresentationManagerProps) => PresentationManager;
-
-  /**
    * How much time should an unused client manager be stored in memory
    * before it's disposed.
    */
   unusedClientLifetime?: number;
+}
+
+interface PresentationInternalProps {
+  /**
+   * Factory method for creating separate managers for each client
+   */
+  clientManagerFactory?: (clientId: string, props: PresentationManagerProps) => PresentationManager;
 }
 
 /**
@@ -69,7 +71,7 @@ export type PresentationPropsBase = PresentationProps;
  * @public
  * @deprecated in 4.8 - use [[PresentationProps]] instead.
  */
-export type SingleManagerPresentationProps = Omit<PresentationProps, "clientManagerFactory" | "unusedClientLifetime">;
+export type SingleManagerPresentationProps = Omit<PresentationProps, "unusedClientLifetime">;
 
 interface ClientStoreItem {
   manager: PresentationManager;
@@ -86,7 +88,7 @@ interface ClientStoreItem {
  * @public
  */
 export class Presentation {
-  private static _initProps: PresentationProps | undefined;
+  private static _initProps: (PresentationProps & PresentationInternalProps) | undefined;
   private static _clientsStorage: FactoryBasedTemporaryStorage<ClientStoreItem> | undefined;
   private static _disposeIpcHandler: DisposeFunc | undefined;
   private static _shutdownListener: DisposeFunc | undefined;
@@ -97,7 +99,7 @@ export class Presentation {
   private constructor() {}
 
   /** Properties used to initialize the presentation framework */
-  public static get initProps() {
+  public static get initProps(): PresentationProps | undefined {
     return this._initProps;
   }
 
@@ -179,8 +181,12 @@ export class Presentation {
     const manager =
       Presentation._initProps && Presentation._initProps.clientManagerFactory
         ? Presentation._initProps.clientManagerFactory(clientId, Presentation._initProps)
-        : new PresentationManager({ ...Presentation._initProps, id: clientId });
-    manager.setOnManagerUsedHandler(onManagerUsed);
+        : new PresentationManager({
+            ...Presentation._initProps,
+            // @ts-expect-error internal prop
+            id: clientId,
+          });
+    manager.onUsed.addListener(onManagerUsed);
     Logger.logInfo(
       PresentationBackendLoggerCategory.PresentationManager,
       `Created a PresentationManager instance with ID: ${clientId}. Total instances: ${this._clientsStorage!.values.length}.`,
@@ -216,8 +222,8 @@ export class Presentation {
 
   private static onIModelOpened = (imodel: BriefcaseDb) => {
     const manager = this.getManager();
-    const imodelAddon = manager.getNativePlatform().getImodelAddon(imodel);
+    const imodelAddon = manager[_presentation_manager_detail].getNativePlatform().getImodelAddon(imodel);
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    manager.getNativePlatform().forceLoadSchemas(imodelAddon);
+    manager[_presentation_manager_detail].getNativePlatform().forceLoadSchemas(imodelAddon);
   };
 }
