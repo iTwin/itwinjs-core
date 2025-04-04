@@ -196,6 +196,7 @@ export class ExternalSourceAspect extends ElementMultiAspect {
   public static findAllBySource(iModelDb: IModelDb, scope: Id64String, kind: string, identifier: string): Array<{ elementId: Id64String, aspectId: Id64String }> {
     const sql = `SELECT Element.Id, ECInstanceId FROM ${ExternalSourceAspect.classFullName} WHERE (Scope.Id=:scope AND Kind=:kind AND Identifier=:identifier)`;
     const found: Array<{ elementId: Id64String, aspectId: Id64String }> = [];
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     iModelDb.withPreparedStatement(sql, (statement: ECSqlStatement) => {
       statement.bindId("scope", scope);
       statement.bindString("kind", kind);

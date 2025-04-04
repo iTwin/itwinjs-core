@@ -113,7 +113,7 @@ describe("IModelWriteTest", () => {
       fsWatcher.callback = fn;
       return fsWatcher;
     };
-    sinon.stub(fs, "watch").callsFake(watchStub);
+    const watchStubResult = sinon.stub(fs, "watch").callsFake(watchStub);
 
     const bc = await BriefcaseDb.open({ fileName: briefcaseProps.fileName });
     bc.channels.addAllowedChannel(ChannelControl.sharedChannelName);
@@ -137,7 +137,10 @@ describe("IModelWriteTest", () => {
     expect(nClosed).equal(1);
 
     bc.close();
-    sinon.restore();
+    // NOTE: Since HubMock.startup() is called in the before() block and not beforeEach(), we CANNOT
+    // call sinon.restore() here. This is because sinon.restore() will restore the stubs for
+    // CloudSqlite that HubMock.startup() put in place.
+    watchStubResult.restore();
   });
 
   function expectEqualChangesets(a: ChangesetIdWithIndex, b: ChangesetIdWithIndex): void {
@@ -164,7 +167,7 @@ describe("IModelWriteTest", () => {
       fsWatcher.callback = fn;
       return fsWatcher;
     };
-    sinon.stub(fs, "watch").callsFake(watchStub);
+    const watchStubResult = sinon.stub(fs, "watch").callsFake(watchStub);
 
     const bc = await BriefcaseDb.open({ fileName: briefcaseProps.fileName });
     bc.channels.addAllowedChannel(ChannelControl.sharedChannelName);
@@ -209,7 +212,10 @@ describe("IModelWriteTest", () => {
     expect(nClosed).equal(1);
 
     bc.close();
-    sinon.restore();
+    // NOTE: Since HubMock.startup() is called in the before() block and not beforeEach(), we CANNOT
+    // call sinon.restore() here. This is because sinon.restore() will restore the stubs for
+    // CloudSqlite that HubMock.startup() put in place.
+    watchStubResult.restore();
   });
 
   it("WatchForChanges - pull", async () => {
@@ -248,7 +254,7 @@ describe("IModelWriteTest", () => {
       fsWatcher.callback = fn;
       return fsWatcher;
     };
-    sinon.stub(fs, "watch").callsFake(watchStub);
+    const watchStubResult = sinon.stub(fs, "watch").callsFake(watchStub);
 
     const bc = await BriefcaseDb.open({ fileName: briefcaseProps.fileName });
     bc.channels.addAllowedChannel(ChannelControl.sharedChannelName);
@@ -278,7 +284,10 @@ describe("IModelWriteTest", () => {
     expect(nClosed).equal(1);
 
     bc.close();
-    sinon.restore();
+    // NOTE: Since HubMock.startup() is called in the before() block and not beforeEach(), we CANNOT
+    // call sinon.restore() here. This is because sinon.restore() will restore the stubs for
+    // CloudSqlite that HubMock.startup() put in place.
+    watchStubResult.restore();
   });
 
   it("should handle undo/redo", async () => {
@@ -486,6 +495,7 @@ describe("IModelWriteTest", () => {
     const briefcaseDb = await BriefcaseDb.open({ fileName: briefcaseProps.fileName });
     briefcaseDb.channels.addAllowedChannel(ChannelControl.sharedChannelName);
     let firstNonRootElement = { id: undefined, codeValue: "test" };
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     briefcaseDb.withPreparedStatement("SELECT * from Bis.Element LIMIT 1 OFFSET 1", (stmt: ECSqlStatement) => {
       if (stmt.step() === DbResult.BE_SQLITE_ROW) {
         firstNonRootElement = stmt.getRow();
@@ -616,6 +626,7 @@ describe("IModelWriteTest", () => {
       assert.equal(changesets.length, 2);
     }
     let rows: any[] = [];
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     rwIModel.withPreparedStatement("SELECT * FROM TestDomain.Test2dElement", (stmt: ECSqlStatement) => {
       while (stmt.step() === DbResult.BE_SQLITE_ROW) {
         rows.push(stmt.getRow());
@@ -633,6 +644,7 @@ describe("IModelWriteTest", () => {
       // pull and merge changes
       await rwIModel2.pullChanges({ accessToken: userToken });
       rows = [];
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
       rwIModel2.withPreparedStatement("SELECT * FROM TestDomain.Test2dElement", (stmt: ECSqlStatement) => {
         while (stmt.step() === DbResult.BE_SQLITE_ROW) {
           rows.push(stmt.getRow());
@@ -722,6 +734,7 @@ describe("IModelWriteTest", () => {
       assert.equal(changesets.length, 5);
     }
     rows = [];
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     rwIModel.withPreparedStatement("SELECT * FROM TestDomain.Test2dElement", (stmt: ECSqlStatement) => {
       while (stmt.step() === DbResult.BE_SQLITE_ROW) {
         rows.push(stmt.getRow());
@@ -739,6 +752,7 @@ describe("IModelWriteTest", () => {
     assert.equal(rows.map((r) => r.v).filter((v) => v).length, 10);
 
     rows = [];
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     rwIModel.withPreparedStatement("SELECT * FROM TestDomain.Test2dElement2nd", (stmt: ECSqlStatement) => {
       while (stmt.step() === DbResult.BE_SQLITE_ROW) {
         rows.push(stmt.getRow());
@@ -760,6 +774,7 @@ describe("IModelWriteTest", () => {
       await rwIModel2.pullChanges({ accessToken: userToken });
       rows = [];
       // Following fail without the fix in briefcase manager where we clear statement cache on schema changeset apply
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       rwIModel2.withPreparedStatement("SELECT * FROM TestDomain.Test2dElement", (stmt: ECSqlStatement) => {
         while (stmt.step() === DbResult.BE_SQLITE_ROW) {
           rows.push(stmt.getRow());
@@ -791,6 +806,7 @@ describe("IModelWriteTest", () => {
         }
       }
       rows = [];
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       rwIModel2.withPreparedStatement("SELECT * FROM TestDomain.Test2dElement2nd", (stmt: ECSqlStatement) => {
         while (stmt.step() === DbResult.BE_SQLITE_ROW) {
           rows.push(stmt.getRow());

@@ -2497,6 +2497,11 @@ export enum DomainOptions {
 }
 
 // @public
+export interface DrawingProps extends ElementProps {
+    scaleFactor?: number;
+}
+
+// @public
 export interface DynamicGraphicsRequest2dProps extends DynamicGraphicsRequestProps {
     readonly placement: Omit<Placement2dProps, "bbox">;
     readonly type: "2d";
@@ -7392,6 +7397,7 @@ export interface QueryLimit {
 // @public
 export interface QueryOptions extends BaseReaderOptions {
     abbreviateBlobs?: boolean;
+    // @deprecated
     convertClassIdsToClassNames?: boolean;
     includeMetaData?: boolean;
     limit?: QueryLimit;
@@ -7405,6 +7411,7 @@ export class QueryOptionsBuilder {
     // (undocumented)
     getOptions(): QueryOptions;
     setAbbreviateBlobs(val: boolean): this;
+    // @deprecated
     setConvertClassIdsToNames(val: boolean): this;
     // @internal
     setDelay(val: number): this;
@@ -8988,7 +8995,7 @@ export interface SectionDrawingLocationProps extends GeometricElement3dProps {
 }
 
 // @public
-export interface SectionDrawingProps extends ElementProps {
+export interface SectionDrawingProps extends DrawingProps {
     // (undocumented)
     jsonProperties?: {
         drawingToSpatialTransform?: TransformProps;

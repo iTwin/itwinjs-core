@@ -114,13 +114,19 @@ public;class;ECDb
 public;enum;ECDbOpenMode
 public;interface;ECEnumValue
 public;class;ECSchemaXmlContext
+deprecated;interface;ECEnumValue
 public;class;ECSqlBinder
 public;interface;ECSqlColumnInfo
+deprecated;interface;ECSqlColumnInfo
 public;class;ECSqlInsertResult
 public;interface;ECSqlRowArg
 public;class;ECSqlStatement
+deprecated;class;ECSqlStatement
 public;class;ECSqlValue
+deprecated;class;ECSqlValue
 public;class;ECSqlValueIterator
+deprecated;class;ECSqlValueIterator
+public;class;ECSqlWriteStatement
 beta;interface;EditableWorkspaceContainer
 beta;interface;EditableWorkspaceDb
 public;class;ElementAspect
@@ -452,7 +458,6 @@ public;class;TypeDefinitionElement
 public;interface;UpdateModelOptions
 beta;function;upgradeCustomAttributesToEC3
 public;class;UrlLink
-internal;class;V1CheckpointManager
 public;interface;V2CheckpointAccessProps
 internal;class;V2CheckpointManager
 public;interface;ValidationError

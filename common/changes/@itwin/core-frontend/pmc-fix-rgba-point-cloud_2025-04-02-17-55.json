@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Fix conversion of RGBA to RGB when decoding point cloud colors.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}
