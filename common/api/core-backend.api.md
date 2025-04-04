@@ -1810,14 +1810,23 @@ export class ECDb implements Disposable {
     openDb(pathName: string, openMode?: ECDbOpenMode): void;
     // @internal
     prepareSqliteStatement(sql: string, logErrors?: boolean): SqliteStatement;
+    // @deprecated
     prepareStatement(ecsql: string, logErrors?: boolean): ECSqlStatement;
+    // @beta
+    prepareWriteStatement(ecsql: string, logErrors?: boolean): ECSqlWriteStatement;
     // @internal
     resetSqliteCache(size: number): void;
     saveChanges(changesetName?: string): void;
+    // @beta
+    withCachedWriteStatement<T>(ecsql: string, callback: (stmt: ECSqlWriteStatement) => T, logErrors?: boolean): T;
     withPreparedSqliteStatement<T>(sql: string, callback: (stmt: SqliteStatement) => T, logErrors?: boolean): T;
+    // @deprecated
     withPreparedStatement<T>(ecsql: string, callback: (stmt: ECSqlStatement) => T, logErrors?: boolean): T;
     withSqliteStatement<T>(sql: string, callback: (stmt: SqliteStatement) => T, logErrors?: boolean): T;
+    // @deprecated
     withStatement<T>(ecsql: string, callback: (stmt: ECSqlStatement) => T, logErrors?: boolean): T;
+    // @beta
+    withWriteStatement<T>(ecsql: string, callback: (stmt: ECSqlWriteStatement) => T, logErrors?: boolean): T;
 }
 
 // @public
@@ -1829,7 +1838,7 @@ export enum ECDbOpenMode {
     ReadWrite = 1
 }
 
-// @public
+// @public @deprecated
 export interface ECEnumValue {
     // (undocumented)
     key: string;
@@ -1879,7 +1888,7 @@ export class ECSqlBinder {
     bindStruct(val: object): void;
 }
 
-// @public
+// @public @deprecated
 export interface ECSqlColumnInfo {
     getAccessString(): string;
     getOriginPropertyName(): string | undefined;
@@ -1908,7 +1917,7 @@ export interface ECSqlRowArg {
     rowFormat?: QueryRowFormat;
 }
 
-// @public
+// @public @deprecated
 export class ECSqlStatement implements IterableIterator<any>, Disposable {
     [Symbol.dispose](): void;
     [Symbol.iterator](): IterableIterator<any>;
@@ -1958,7 +1967,7 @@ export class ECSqlStatement implements IterableIterator<any>, Disposable {
     };
 }
 
-// @public
+// @public @deprecated
 export class ECSqlValue {
     // @internal
     constructor(val: IModelJsNative.ECSqlValue);
@@ -1985,7 +1994,7 @@ export class ECSqlValue {
     get value(): any;
 }
 
-// @public
+// @public @deprecated
 export class ECSqlValueIterator implements IterableIterator<ECSqlValue> {
     // (undocumented)
     [Symbol.iterator](): IterableIterator<ECSqlValue>;
@@ -1993,6 +2002,49 @@ export class ECSqlValueIterator implements IterableIterator<ECSqlValue> {
     constructor(it: IModelJsNative.ECSqlValueIterator);
     // (undocumented)
     next(): IteratorResult<ECSqlValue>;
+}
+
+// @public
+export class ECSqlWriteStatement {
+    constructor(stmt?: ECSqlStatement);
+    bindArray(parameter: number | string, val: any[]): void;
+    bindBlob(parameter: number | string, blob: string | Uint8Array | ArrayBuffer | SharedArrayBuffer): void;
+    bindBoolean(parameter: number | string, val: boolean): void;
+    bindDateTime(parameter: number | string, isoDateTimeString: string): void;
+    bindDouble(parameter: number | string, val: number): void;
+    bindGuid(parameter: number | string, val: GuidString): void;
+    bindId(parameter: number | string, val: Id64String): void;
+    // (undocumented)
+    bindIdSet(parameter: number | string, val: Id64String[]): void;
+    bindInteger(parameter: number | string, val: number | string): void;
+    bindNavigation(parameter: number | string, val: NavigationBindingValue): void;
+    bindNull(parameter: number | string): void;
+    bindPoint2d(parameter: number | string, val: XAndY): void;
+    bindPoint3d(parameter: number | string, val: XYAndZ): void;
+    bindRange3d(parameter: number | string, val: LowAndHighXYZ): void;
+    bindString(parameter: number | string, val: string): void;
+    bindStruct(parameter: number | string, val: object): void;
+    bindValue(parameter: number | string, val: any): void;
+    bindValues(values: any[] | object): void;
+    clearBindings(): void;
+    getBinder(parameter: string | number): ECSqlBinder;
+    getColumnCount(): number;
+    // @internal
+    getNativeSql(): string;
+    get isPrepared(): boolean;
+    // @internal
+    prepare(db: IModelJsNative.ECDb, ecsql: string, logErrors?: boolean): void;
+    reset(): void;
+    // (undocumented)
+    get sql(): string;
+    stepForInsert(): ECSqlInsertResult;
+    // @internal
+    get stmt(): ECSqlStatement;
+    // @internal
+    tryPrepare(db: IModelJsNative.DgnDb | IModelJsNative.ECDb, ecsql: string, logErrors?: boolean): {
+        status: DbResult;
+        message: string;
+    };
 }
 
 // @beta
@@ -3278,6 +3330,7 @@ export abstract class IModelDb extends IModel {
     performCheckpoint(): void;
     // @internal
     prepareSqliteStatement(sql: string, logErrors?: boolean): SqliteStatement;
+    // @deprecated
     prepareStatement(sql: string, logErrors?: boolean): ECSqlStatement;
     // @internal
     queryAllUsedSpatialSubCategories(): Promise<SubCategoryResultRow[]>;
@@ -3317,6 +3370,7 @@ export abstract class IModelDb extends IModel {
     static tryFindByKey(key: string): IModelDb | undefined;
     // @deprecated
     tryGetMetaData(classFullName: string): EntityMetaData | undefined;
+    // @deprecated
     tryPrepareStatement(sql: string): ECSqlStatement | undefined;
     updateEcefLocation(ecef: EcefLocation): void;
     // @beta
@@ -3329,8 +3383,10 @@ export abstract class IModelDb extends IModel {
     // @internal
     get watchFilePathName(): LocalFileName;
     withPreparedSqliteStatement<T>(sql: string, callback: (stmt: SqliteStatement) => T, logErrors?: boolean): T;
+    // @deprecated
     withPreparedStatement<T>(ecsql: string, callback: (stmt: ECSqlStatement) => T, logErrors?: boolean): T;
     withSqliteStatement<T>(sql: string, callback: (stmt: SqliteStatement) => T, logErrors?: boolean): T;
+    // @deprecated
     withStatement<T>(ecsql: string, callback: (stmt: ECSqlStatement) => T, logErrors?: boolean): T;
     // @beta
     get workspace(): Workspace;

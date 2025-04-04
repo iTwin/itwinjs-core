@@ -70,6 +70,7 @@ describe("ECSql Abstract Syntax Tree", () => {
   async function parseECSql(ecsql: string) {
     const parseTreeECSql = `PRAGMA PARSE_TREE("${ecsql}") ECSQLOPTIONS ENABLE_EXPERIMENTAL_FEATURES`;
     if (true) {
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       return ecdb.withPreparedStatement(parseTreeECSql, (stmt) => {
         if (DbResult.BE_SQLITE_ROW !== stmt.step()) {
           throw new Error("unable to get parse tree.");
