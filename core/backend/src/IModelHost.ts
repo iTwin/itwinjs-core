@@ -196,6 +196,10 @@ export interface IModelHostOptions {
    */
   allowSharedChannel?: boolean;
 
+  /**
+   * Use native instance functions for element, model, and aspect CRUD operations.
+   */
+  enableWIPNativeInstanceFunctions?: boolean;
 }
 
 /** Configuration of core-backend.
@@ -231,6 +235,8 @@ export class IModelHostConfiguration implements IModelHostOptions {
   public logTileSizeThreshold = IModelHostConfiguration.defaultLogTileSizeThreshold;
   /** @internal */
   public crashReportingConfig?: CrashReportingConfig;
+  /** @beta */
+  public enableWIPNativeInstanceFunctions = true;
 }
 
 /**
@@ -469,6 +475,10 @@ export class IModelHost {
       this.sessionId = Guid.createValue();
 
     this.authorizationClient = options.authorizationClient;
+
+    if (!options.enableWIPNativeInstanceFunctions) {
+      options.enableWIPNativeInstanceFunctions = true;
+    }
 
     this.backendVersion = require("../../package.json").version; // eslint-disable-line @typescript-eslint/no-require-imports
     initializeRpcBackend(options.enableOpenTelemetry);
