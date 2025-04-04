@@ -3491,8 +3491,10 @@ export class SnapshotDb extends IModelDb {
     snapshot._restartDefaultTxnTimer = setTimeout(() => {
       snapshot.restartDefaultTxn();
     }, (10 * 60) * 1000).unref(); // 10 minutes
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    snapshot._refreshSas = new RefreshV2CheckpointSas(snapshot[_nativeDb].cloudContainer!.accessToken, checkpoint.reattachSafetySeconds);
+    const cloudContainer = snapshot[_nativeDb].cloudContainer;
+    if (cloudContainer !== undefined) {
+      snapshot._refreshSas = new RefreshV2CheckpointSas(cloudContainer.accessToken, checkpoint.reattachSafetySeconds);
+    }
     return snapshot;
   }
 
