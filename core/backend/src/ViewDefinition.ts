@@ -319,8 +319,8 @@ export abstract class ViewDefinition3d extends ViewDefinition {
     return elProps;
   }
 
-  public static override serialize(props: ViewDefinition3dProps): ECSqlRow {
-    const row = super.serialize(props);
+  public static override serialize(props: ViewDefinition3dProps, _iModel: IModelDb): ECSqlRow {
+    const row = super.serialize(props, _iModel);
     // if (props.isCameraOn !== undefined) {
     //   props.eyePoint = Instance.eyePoint;
     //   props.focusDistance = Instance.focusDistance;

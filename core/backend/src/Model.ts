@@ -95,8 +95,8 @@ export class Model extends Entity {
     return modelProps;
   }
 
-  public static override serialize(props: ModelProps): ECSqlRow {
-    const inst = super.serialize(props);
+  public static override serialize(props: ModelProps, _iModel: IModelDb): ECSqlRow {
+    const inst = super.serialize(props, _iModel);
     return inst;
   }
 

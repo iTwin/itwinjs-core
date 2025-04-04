@@ -1,5 +1,5 @@
 import { Element, GeometricElement3d } from "../../Element";
-import { _nativeDb, InstanceProps, Model } from "../../core-backend";
+import { _nativeDb, ECSqlStatement, InstanceProps, Model } from "../../core-backend";
 import { SnapshotDb } from "../../IModelDb";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
@@ -90,22 +90,6 @@ describe("Element Deserialize", () => {
     parent: undefined,
   };
 
-  it("should properly read an Element, deserialize it, and re-serialize it", async () => {
-    // Read an element using getInstance()
-    const elementId = "0x34";
-    let classId: string | undefined;
-    let classFullName: string | undefined;
-
-    // Deserialize the element
-    const classDef = iModelDb.getJsClass<typeof Element>(key.classFullName);
-    const elementProps = classDef.deserialize(rawInstance);
-
-    const element = iModelDb.elements.getElement<GeometricElement3d>({ id: key.id, wantGeometry: true }).toJSON();
-    console.log(element);
-    console.log(elementProps);
-
-  });
-
   it("SpatialViewDefinitionUsesModelSelector", async () => {
     const key = getInstanceKey("0x34", "Element");
     const rawInstance: InstanceProps = {
@@ -137,7 +121,7 @@ describe("Element Deserialize", () => {
     expect(elementProps.jsonProperties).to.deep.equal(element.jsonProperties);
 
     // Serialize the element again
-    const instance = classDef.serialize(elementProps);
+    const instance = classDef.serialize(elementProps, iModelDb);
     expect(instance).to.not.be.undefined;
     expect(instance.id).to.equal(element.id);
     expect(instance.className).to.equal(element.classFullName);
@@ -180,7 +164,7 @@ describe("Element Deserialize", () => {
     expect(elementProps.parent).to.equal(element.parent);
 
     // Serialize the element again
-    const instance = classDef.serialize(elementProps);
+    const instance = classDef.serialize(elementProps, renderIModelDb);
     expect(instance).to.not.be.undefined;
     expect(instance.id).to.equal(element.id);
     expect(instance.className).to.equal(element.classFullName);

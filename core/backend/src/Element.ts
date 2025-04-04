@@ -535,8 +535,8 @@ export abstract class GeometricElement extends Element {
     ...super.requiredReferenceKeyTypeMap,
     category: ConcreteEntityTypes.Element,
   };
-  protected static override get customHandledECProperties(): string[] {
-    return [...super.customHandledECProperties, "inSpatialIndex"];
+  protected static override get customHandledProperties(): CustomHandledPropertyList {
+    return [...super.customHandledProperties, {name: "inSpatialIndex"}];
   }
 
   public static override deserialize(props: InstanceProps): GeometricElementProps {
