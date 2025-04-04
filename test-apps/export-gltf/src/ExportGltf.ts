@@ -438,6 +438,7 @@ const exportGltfArgs = yargs
   const elementIdArray: Id64Array = [];
   // Get all 3D elements that aren't part of template definitions or in private models.
   const sql = "SELECT e.ECInstanceId FROM bis.GeometricElement3d e JOIN bis.Model m ON e.Model.Id=m.ECInstanceId WHERE m.isTemplate=false AND m.isPrivate=false";
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
   GltfGlobals.iModel.withPreparedStatement(sql, (stmt: ECSqlStatement) => {
     while (stmt.step() === DbResult.BE_SQLITE_ROW)
       elementIdArray.push(stmt.getValue(0).getId());
