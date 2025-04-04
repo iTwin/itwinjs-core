@@ -3,13 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { Attachment, CheckpointConnection, SheetViewState, ViewState } from "@itwin/core-frontend";
-import { XYProps } from "@itwin/core-geometry";
+import { Attachment, CheckpointConnection, SheetViewState, ViewAttachmentInfo, ViewAttachments, ViewAttachmentsInfo, ViewState } from "@itwin/core-frontend";
+import { Range2d, Range3d, Transform, XYProps } from "@itwin/core-geometry";
 import { TestUsers } from "@itwin/oidc-signin-tool/lib/cjs/TestUsers";
 import { testOnScreenViewport } from "../TestViewport";
 import { TestUtility } from "../TestUtility";
 import { HydrateViewStateResponseProps, Placement2d, ViewAttachmentProps } from "@itwin/core-common";
-import { coreFullStackTestIpc } from "../Editing";
+import { coreFullStackTestIpc, initializeEditTools, transformElements } from "../Editing";
 
 describe("Sheet views (#integration)", () => {
   let imodel: CheckpointConnection;
@@ -172,35 +172,24 @@ describe("Sheet views (#integration)", () => {
     expect(clone.viewAttachmentProps).to.deep.equal(view.viewAttachmentProps);
   });
 
-  describe.only("areAllTileTreesLoaded", () => {
+  describe.only("ViewAttachments", () => {
 
-    it("should return true when attachments are outside of the view", async () => {
+    before(async () => {
+      await TestUtility.startFrontend(undefined, undefined, true);
+      await initializeEditTools();
+    });
 
-      await testOnScreenViewport(sheetViewId, imodel, 40, 30, async (vp) => {
+    after(async () => {
+      await TestUtility.shutdownFrontend();
+    });
 
-        // Create a sheet view
-
-        // const attachmentProps: ViewAttachmentProps = {
-        //   id: "outOfView",
-        //   category: attachmentCategoryId,
-        //   model: imodel.models.getDefaultModelId(),
-        //   code: { spec: "0x1a", scope: imodel.models.getDefaultModelId(), value: "outOfView" },
-        //   classFullName: ViewAttachment.classFullName,
-        //   placement: {
-        //     origin: { x: 100, y: 0 },
-        //     angle: 0,
-        //   },
-        //   view: sheetView,
-        // }
-
-
-        const sheetView = await imodel.views.load(sheetViewId) as SheetViewState;
-        const viewAttachmentProps = sheetView.viewAttachmentProps;
+    it("areAllTileTreesLoaded should return true when attachments are outside of the viewed extents", async () => {
+      const sheetView = await imodel.views.load(sheetViewId) as SheetViewState;
 
         // Create a new attachment
         const newOrigin: XYProps = { x:100, y: 0 };
         const newAttachmentProps: ViewAttachmentProps = {
-          ...viewAttachmentProps[0],
+          ...sheetView.viewAttachmentProps[0],
           placement : {
             origin: newOrigin,
             angle: 0,
@@ -208,34 +197,8 @@ describe("Sheet views (#integration)", () => {
           id: "outOfView"
         };
 
+        // insert the new attachment into the backend
         await coreFullStackTestIpc.createAndInsertViewAttachment(imodel.key, newAttachmentProps);
-
-        // Create a new sheet view with the new attachment
-        const viewProps = sheetView.toProps();
-        viewProps.viewDefinitionProps.id = "newSheetView";
-        viewProps.sheetAttachments = [newAttachmentProps.id!];
-        const newSheetView = SheetViewState.createFromProps(viewProps, imodel);
-
-        // Load the new sheet view
-        // const options: HydrateViewStateResponseProps = {
-        //   sheetViewAttachmentProps: [newAttachmentProps],
-        //   sheetViewViews: [viewProps],
-        // }
-
-        await newSheetView.load();
-        // await newSheetView.postload(options);
-
-        // Attach the new sheet view to the viewport (which creates the attachment)
-        newSheetView.attachToViewport(vp);
-        vp.renderFrame();
-
-        // check if the attachment exists
-        console.log("newSheetView.attachments", newSheetView.attachments);
-        expect (newSheetView.attachments).not.to.be.undefined;
-
-        const attachment = newSheetView.attachments![0] as unknown as Attachment;
-        expect(attachment).not.to.be.undefined;
-      });
     });
   });
 });

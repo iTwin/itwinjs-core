@@ -92,7 +92,19 @@ class FullStackTestIpcHandler extends IpcHandler implements FullStackTestIpc {
   public async createAndInsertViewAttachment(key: string, viewAttachmentProps: ViewAttachmentProps): Promise<Id64String> {
     const iModelDb = IModelDb.findByKey(key);
     const viewAttachment = new ViewAttachment(viewAttachmentProps, iModelDb);
-    return iModelDb.elements.insertElement(viewAttachment.toJSON());
+    console.log("viewAttachment", viewAttachmentProps);
+    // const props: ElementProps = {
+    //   classFullName: viewAttachmentProps.classFullName,
+    //   model: viewAttachmentProps.model,
+    //   code: viewAttachmentProps.code,
+    //   id: viewAttachmentProps.id,
+    //   jsonProperties: {
+    //     view: viewAttachment.view,
+    //   }
+    // }
+    const props = viewAttachment.toJSON();
+    const element = iModelDb.elements.createElement(props);
+    return iModelDb.elements.insertElement(element.toJSON() );
   }
 }
 
