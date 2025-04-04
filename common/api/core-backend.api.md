@@ -66,6 +66,7 @@ import { DisplayStyleLoadProps } from '@itwin/core-common';
 import { DisplayStyleProps } from '@itwin/core-common';
 import { DisplayStyleSettings } from '@itwin/core-common';
 import { DisplayStyleSettingsProps } from '@itwin/core-common';
+import { DrawingProps } from '@itwin/core-common';
 import { EcefLocation } from '@itwin/core-common';
 import { ECSchemaProps } from '@itwin/core-common';
 import { ECSqlReader } from '@itwin/core-common';
@@ -359,8 +360,6 @@ export interface BackendHubAccess {
     deleteIModel: (arg: IModelIdArg & ITwinIdArg) => Promise<void>;
     downloadChangeset: (arg: DownloadChangesetArg) => Promise<ChangesetFileProps>;
     downloadChangesets: (arg: DownloadChangesetRangeArg) => Promise<ChangesetFileProps[]>;
-    // @internal @deprecated
-    downloadV1Checkpoint: (arg: DownloadRequest) => Promise<ChangesetIndexAndId>;
     getChangesetFromNamedVersion: (arg: IModelIdArg & {
         versionName: string;
     }) => Promise<ChangesetProps>;
@@ -831,11 +830,11 @@ export class ChannelRootAspect extends ElementUniqueAspect {
 
 // @internal (undocumented)
 export class CheckpointManager {
+    // (undocumented)
+    static [_openCheckpoint](fileName: LocalFileName, checkpoint: CheckpointProps): SnapshotDb;
     static downloadCheckpoint(request: DownloadRequest): Promise<void>;
     // (undocumented)
     static getKey(checkpoint: CheckpointProps): string;
-    // (undocumented)
-    static readonly onDownloadV1: BeEvent<(job: DownloadJob) => void>;
     // (undocumented)
     static readonly onDownloadV2: BeEvent<(job: DownloadJob) => void>;
     // (undocumented)
@@ -1721,12 +1720,16 @@ export class Downloads {
 
 // @public
 export class Drawing extends Document_2 {
-    protected constructor(props: ElementProps, iModel: IModelDb);
+    protected constructor(props: DrawingProps, iModel: IModelDb);
     // (undocumented)
     static get className(): string;
     static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code;
     protected static get drawingModelFullClassName(): string;
-    static insert(iModelDb: IModelDb, documentListModelId: Id64String, name: string): Id64String;
+    static insert(iModelDb: IModelDb, documentListModelId: Id64String, name: string, scaleFactor?: number): Id64String;
+    get scaleFactor(): number;
+    set scaleFactor(factor: number);
+    // (undocumented)
+    toJSON(): DrawingProps;
 }
 
 // @public
@@ -3124,7 +3127,7 @@ export class HubMock {
     // (undocumented)
     static queryIModelByName(arg: IModelNameArg): Promise<GuidString | undefined>;
     // (undocumented)
-    static queryV2Checkpoint(_arg: CheckpointProps): Promise<V2CheckpointAccessProps | undefined>;
+    static queryV2Checkpoint(arg: CheckpointProps): Promise<V2CheckpointAccessProps | undefined>;
     // (undocumented)
     static releaseAllLocks(arg: BriefcaseDbArg): Promise<void>;
     static releaseBriefcase(arg: BriefcaseIdArg): Promise<void>;
@@ -6083,19 +6086,6 @@ export class UrlLink extends LinkElement {
     url?: string;
 }
 
-// @internal
-export class V1CheckpointManager {
-    static downloadCheckpoint(request: DownloadRequest): Promise<ChangesetId>;
-    // (undocumented)
-    static getCheckpointDb(request: DownloadRequest): Promise<SnapshotDb>;
-    // (undocumented)
-    static getFileName(checkpoint: CheckpointProps): LocalFileName;
-    // (undocumented)
-    static getFolder(iModelId: GuidString): LocalDirName;
-    // (undocumented)
-    static openCheckpointV1(fileName: LocalFileName, checkpoint: CheckpointProps): SnapshotDb;
-}
-
 // @public
 export interface V2CheckpointAccessProps {
     readonly accountName: string;
@@ -6108,15 +6098,19 @@ export interface V2CheckpointAccessProps {
 // @internal
 export class V2CheckpointManager {
     // (undocumented)
+    static [_getCheckpointDb](request: DownloadRequest): Promise<SnapshotDb>;
+    // (undocumented)
     static attach(checkpoint: CheckpointProps): Promise<{
         dbName: string;
-        container: CloudSqlite.CloudContainer;
+        container: CloudSqlite.CloudContainer | undefined;
     }>;
     // (undocumented)
     static cleanup(): void;
     // (undocumented)
     static readonly cloudCacheName = "Checkpoints";
     static downloadCheckpoint(request: DownloadRequest): Promise<ChangesetId>;
+    // (undocumented)
+    static getContainer(v2Props: V2CheckpointAccessProps, checkpoint: CheckpointProps): CloudSqlite.CloudContainer;
     // (undocumented)
     static getFolder(): LocalDirName;
 }
