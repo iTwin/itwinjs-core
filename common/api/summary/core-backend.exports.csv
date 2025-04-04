@@ -113,8 +113,8 @@ beta;class;DriverBundleElement
 public;class;ECDb
 public;enum;ECDbOpenMode
 public;interface;ECEnumValue
-public;class;ECSchemaXmlContext
 deprecated;interface;ECEnumValue
+public;class;ECSchemaXmlContext
 public;class;ECSqlBinder
 public;interface;ECSqlColumnInfo
 deprecated;interface;ECSqlColumnInfo
