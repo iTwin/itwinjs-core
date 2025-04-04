@@ -1,4 +1,4 @@
-import { Element, GeometricElement3d } from "../../Element";
+import { Element } from "../../Element";
 import { _nativeDb, ECSqlStatement, InstanceProps, Model } from "../../core-backend";
 import { SnapshotDb } from "../../IModelDb";
 import { IModelTestUtils } from "../IModelTestUtils";
