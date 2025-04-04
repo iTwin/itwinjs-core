@@ -577,8 +577,19 @@ export abstract class GeometricElement3d extends GeometricElement {
     if (undefined !== this.typeDefinition)
       referenceIds.addElement(this.typeDefinition.id);
   }
-  protected static override get customHandledECProperties(): string[] {
-    return [...super.customHandledECProperties, "category", "geometryStream", "origin", "yaw", "pitch", "roll", "bBoxLow", "bBoxHigh", "typeDefinition"];
+
+  protected static override get customHandledProperties(): CustomHandledPropertyList {
+    return [...super.customHandledProperties,
+      { name: "category" },
+      { name: "geometryStream" },
+      { name: "origin" },
+      { name: "yaw" },
+      { name: "pitch" },
+      { name: "roll" },
+      { name: "bBoxLow" },
+      { name: "bBoxHigh" },
+      { name: "typeDefinition" }
+    ];
   }
 
   public static override deserialize(props: InstanceProps): GeometricElement3dProps {
@@ -706,8 +717,17 @@ export abstract class GeometricElement2d extends GeometricElement {
 
     return val;
   }
-  protected static override get customHandledECProperties(): string[] {
-    return [...super.customHandledECProperties, "category", "geometryStream", "origin", "angle", "bBoxLow", "bBoxHigh", "typeDefinition"];
+
+  protected static override get customHandledProperties(): CustomHandledPropertyList {
+    return [...super.customHandledProperties,
+      { name: "category" },
+      { name: "geometryStream" },
+      { name: "origin" },
+      { name: "angle" },
+      { name: "bBoxLow" },
+      { name: "bBoxHigh" },
+      { name: "typeDefinition" }
+    ];
   }
 
   public static override deserialize(props: InstanceProps): GeometricElement2dProps {

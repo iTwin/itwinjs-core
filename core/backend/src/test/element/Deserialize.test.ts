@@ -205,7 +205,7 @@ describe("Element Deserialize", () => {
     expect(modelProps.classFullName).to.equal(model.classFullName);
 
     // Serialize the element again
-    const instance = classDef.serialize(modelProps);
+    const instance = classDef.serialize(modelProps, iModelDb);
     expect(instance).to.not.be.undefined;
     expect(instance.id).to.equal(model.id);
   });
