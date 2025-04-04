@@ -1170,6 +1170,22 @@ export abstract class IModelDb extends IModel {
     }
   }
 
+  /** Constructs a ResolveInstanceKeyArgs from given parameters
+   * @throws [[IModelError]] if the combination of supplied parameters is invalid.
+   * @internal
+   */
+  public getInstanceArgs(instanceId?: Id64String, baseClassName?: string, federationGuid?: GuidString, code?: CodeProps): IModelJsNative.ResolveInstanceKeyArgs {
+    if (instanceId && baseClassName) {
+      return { partialKey: { id: instanceId, baseClassName }};
+    } else if (federationGuid) {
+      return { federationGuid };
+    } else if (code) {
+      return { code };
+    } else {
+      throw new IModelError(IModelStatus.InvalidId, "Either instanceId and baseClassName or federationGuid or code must be specified");
+    }
+  }
+
   /** Get metadata for a class. This method will load the metadata from the iModel into the cache as a side-effect, if necessary.
    * @throws [[IModelError]] if the metadata cannot be found nor loaded.
    * @deprecated in 5.0. Please use `getSchemaItem` from `SchemaContext` class instead.
@@ -1793,7 +1809,7 @@ export namespace IModelDb {
           const options = {
             useJsNames: true,
           }
-          const readProps = this._iModel[_nativeDb].resolveInstanceKey(modelIdArg);
+          const readProps = this._iModel[_nativeDb].resolveInstanceKey(this._iModel.getInstanceArgs(modelIdArg.id, "Bis:Model", undefined, modelIdArg.code));
           if (undefined === readProps)
             throw new IModelError(IModelStatus.NotFound, `Model=${modelIdArg.id}`);
           const rawInstance = this._iModel[_nativeDb].readInstance(readProps, options) as T;
@@ -1979,7 +1995,7 @@ export namespace IModelDb {
             ...loadProps,
             useJsNames: true,
           }
-          const readProps = this._iModel[_nativeDb].resolveInstanceKey(loadProps);
+          const readProps = this._iModel[_nativeDb].resolveInstanceKey(this._iModel.getInstanceArgs(loadProps.id, "Bis:Element", loadProps.federationGuid, loadProps.code));
           if (undefined === readProps)
             throw new IModelError(IModelStatus.NotFound, `Element=${loadProps.id}`);
           const rawInstance = this._iModel[_nativeDb].readInstance(readProps, options) as T;
@@ -2010,7 +2026,7 @@ export namespace IModelDb {
           const options = {
             useJsNames: true,
           }
-          const readProps = this._iModel[_nativeDb].resolveInstanceKey(props);
+          const readProps = this._iModel[_nativeDb].resolveInstanceKey(this._iModel.getInstanceArgs(props.id, "Bis:Element", props.federationGuid, props.code));
           if (undefined === readProps)
             throw new IModelError(IModelStatus.NotFound, `Element=${props.id}`);
           const rawInstance = this._iModel[_nativeDb].readInstance(readProps, options) as T;
