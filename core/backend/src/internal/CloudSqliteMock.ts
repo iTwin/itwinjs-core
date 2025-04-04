@@ -3,17 +3,17 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import * as sinon from "sinon";
 import { CloudSqlite } from "../CloudSqlite";
-import { HubMock } from "../HubMock";
+import { HubMock } from "./HubMock";
 import * as path from "path";
 import { BriefcaseManager } from "../BriefcaseManager";
 import { CheckpointProps, V2CheckpointManager } from "../CheckpointManager";
 import { V2CheckpointAccessProps } from "../BackendHubAccess";
 import { IModelHost } from "../IModelHost";
-import { _hubAccess } from "../internal/Symbols";
+import { _hubAccess } from "./Symbols";
 import { IModelError } from "@itwin/core-common";
-import { IModelStatus } from "@itwin/core-bentley";
+import { AccessToken, IModelStatus } from "@itwin/core-bentley";
+import { BlobContainer } from "../BlobContainerService";
 
 export class CloudContainerMock {
   public isConnected = false;
@@ -53,26 +53,27 @@ export class CloudContainerMock {
  * @internal
  */
 export class CloudSqliteMock {
-  private static _stubs: sinon.SinonStub[] = [];
+  private static _stubs: any[] = [];
 
   /**
    * Begin mocking the CloudSqlite access needed for [[V2CheckpointManager.downloadCheckpoint]]. This uses [[HubMock]] to
    * copy a local file to the target file. Call [[shutdown]] to stop the mocking.
    */
   public static startup() {
+    const sinon = require("sinon"); // eslint-disable-line @typescript-eslint/no-require-imports
     if (this._stubs.length > 0) {
       throw new Error("CloudSqliteMock.startup called twice without calling shutdown");
     }
     const origCreateCloudContainer = CloudSqlite.createCloudContainer;
     const origTransferDb = CloudSqlite.transferDb;
-    this._stubs.push(sinon.stub(CloudSqlite, "createCloudContainer").callsFake((args) => {
+    this._stubs.push(sinon.stub(CloudSqlite, "createCloudContainer").callsFake((args: CloudSqlite.ContainerAccessProps & { accessLevel?: BlobContainer.RequestAccessLevel, tokenFn?: (args: CloudSqlite.RequestTokenArgs) => Promise<AccessToken> }) => {
       if ((args as any).isMock) {
         return new CloudContainerMock(args) as any as CloudSqlite.CloudContainer;
       } else {
         return origCreateCloudContainer(args);
       }
     }));
-    this._stubs.push(sinon.stub(CloudSqlite, "transferDb").callsFake(async (direction, container: any, props) => {
+    this._stubs.push(sinon.stub(CloudSqlite, "transferDb").callsFake(async (direction: CloudSqlite.TransferDirection, container: any, props: CloudSqlite.TransferDbProps) => {
       if (container instanceof CloudContainerMock) {
         if (direction === "download") {
           container.downloadCheckpoint(props.localFileName);

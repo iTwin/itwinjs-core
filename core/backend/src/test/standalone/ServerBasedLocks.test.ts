@@ -15,7 +15,7 @@ import { BriefcaseDb, SnapshotDb } from "../../IModelDb";
 import { IModelHost } from "../../IModelHost";
 import { ElementOwnsChildElements } from "../../NavigationRelationship";
 import { ServerBasedLocks } from "../../internal/ServerBasedLocks";
-import { HubMock } from "../../HubMock";
+import { HubMock } from "../../internal/HubMock";
 import { ExtensiveTestScenario, IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { ChannelControl } from "../../core-backend";
