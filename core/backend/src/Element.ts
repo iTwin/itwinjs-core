@@ -10,13 +10,12 @@ import { CompressedId64Set, GuidString, Id64, Id64String, JsonUtils, OrderedId64
 import {
   AxisAlignedBox3d, BisCodeSpec, Code, CodeScopeProps, CodeSpec, ConcreteEntityTypes, DefinitionElementProps, ElementAlignedBox3d,
   ElementProps, EntityMetaData, EntityReferenceSet, GeometricElement2dProps, GeometricElement3dProps, GeometricElementProps,
-  GeometricModel2dProps, GeometricModel3dProps, GeometryPartProps, GeometryStreamProps, IModel, InformationPartitionElementProps, isPlacement3dProps,
-  LineStyleProps, ModelProps, PhysicalElementProps, PhysicalTypeProps, Placement2d, Placement2dProps, Placement3d, Placement3dProps, RelatedElement, RenderSchedule,
+  GeometricModel2dProps, GeometricModel3dProps, GeometryPartProps, GeometryStreamProps, IModel, InformationPartitionElementProps, LineStyleProps, ModelProps, PhysicalElementProps, PhysicalTypeProps, Placement2d, Placement2dProps, Placement3d, Placement3dProps, RelatedElement, RenderSchedule,
   RenderTimelineProps, RepositoryLinkProps, SectionDrawingLocationProps, SectionDrawingProps, SectionType,
-  SheetBorderTemplateProps, SheetProps, SheetTemplateProps, SubjectProps, TypeDefinition, TypeDefinitionElementProps, UrlLinkProps,
+  SheetBorderTemplateProps, SheetProps, SheetTemplateProps, SubjectProps, TypeDefinition, TypeDefinitionElementProps, UrlLinkProps
 } from "@itwin/core-common";
 import { ClipVector, Range3d, Transform } from "@itwin/core-geometry";
-import { CustomHandledPropertyList, ECSqlRow, Entity, InstanceProps } from "./Entity";
+import { CustomHandledProperty, ECSqlRow, Entity, InstanceProps } from "./Entity";
 import { IModelDb } from "./IModelDb";
 import { IModelElementCloneContext } from "./IModelElementCloneContext";
 import { DefinitionModel, DrawingModel, PhysicalModel, SectionDrawingModel } from "./Model";
@@ -144,17 +143,16 @@ export class Element extends Entity {
     this.jsonProperties = { ...props.jsonProperties }; // make sure we have our own copy
   }
 
-  protected static override get customHandledProperties(): CustomHandledPropertyList {
-    return [ ...super.customHandledProperties,
-      { name: "codeValue" },
-      { name: "codeSpec" },
-      { name: "codeScope" },
-      { name: "model" },
-      { name: "parent" },
-      { name: "federationGuid" },
-      { name: "lastMod" },
-    ];
-  }
+  protected static override readonly _customHandledProps: CustomHandledProperty[] = [
+    { propertyName: "codeValue", source: "Class" },
+    { propertyName: "codeSpec", source: "Class" },
+    { propertyName: "codeScope", source: "Class" },
+    { propertyName: "model", source: "Class" },
+    { propertyName: "parent", source: "Class" },
+    { propertyName: "federationGuid", source: "Class" },
+    { propertyName: "lastMod", source: "Class" },
+  ];
+
 
   public static override deserialize(props: InstanceProps): ElementProps {
     const elProps = super.deserialize(props) as ElementProps;
@@ -535,13 +533,15 @@ export abstract class GeometricElement extends Element {
     ...super.requiredReferenceKeyTypeMap,
     category: ConcreteEntityTypes.Element,
   };
-  protected static override get customHandledProperties(): CustomHandledPropertyList {
-    return [...super.customHandledProperties, {name: "inSpatialIndex"}];
-  }
+
+  protected static override readonly _customHandledProps: CustomHandledProperty[] = [
+    { propertyName: "inSpatialIndex", source: "Class" },
+  ];
 
   public static override deserialize(props: InstanceProps): GeometricElementProps {
     return super.deserialize(props) as GeometricElementProps;
   }
+
   public static override serialize(props: GeometricElementProps, iModel: IModelDb): ECSqlRow {
     return super.serialize(props, iModel);
   }
@@ -578,19 +578,19 @@ export abstract class GeometricElement3d extends GeometricElement {
       referenceIds.addElement(this.typeDefinition.id);
   }
 
-  protected static override get customHandledProperties(): CustomHandledPropertyList {
-    return [...super.customHandledProperties,
-      { name: "category" },
-      { name: "geometryStream" },
-      { name: "origin" },
-      { name: "yaw" },
-      { name: "pitch" },
-      { name: "roll" },
-      { name: "bBoxLow" },
-      { name: "bBoxHigh" },
-      { name: "typeDefinition" }
-    ];
-  }
+
+  protected static override readonly _customHandledProps: CustomHandledProperty[] = [
+    { propertyName: "category", source: "Class" },
+    { propertyName: "geometryStream", source: "Class" },
+    { propertyName: "origin", source: "Class" },
+    { propertyName: "yaw", source: "Class" },
+    { propertyName: "pitch", source: "Class" },
+    { propertyName: "roll", source: "Class" },
+    { propertyName: "bBoxLow", source: "Class" },
+    { propertyName: "bBoxHigh", source: "Class" },
+    { propertyName: "typeDefinition", source: "Class" }
+  ];
+
 
   public static override deserialize(props: InstanceProps): GeometricElement3dProps {
     const elProps = super.deserialize(props) as GeometricElement3dProps;
@@ -718,17 +718,15 @@ export abstract class GeometricElement2d extends GeometricElement {
     return val;
   }
 
-  protected static override get customHandledProperties(): CustomHandledPropertyList {
-    return [...super.customHandledProperties,
-      { name: "category" },
-      { name: "geometryStream" },
-      { name: "origin" },
-      { name: "angle" },
-      { name: "bBoxLow" },
-      { name: "bBoxHigh" },
-      { name: "typeDefinition" }
-    ];
-  }
+  protected static override readonly _customHandledProps: CustomHandledProperty[] = [
+    { propertyName: "category", source: "Class" },
+    { propertyName: "geometryStream", source: "Class" },
+    { propertyName: "origin", source: "Class" },
+    { propertyName: "angle", source: "Class" },
+    { propertyName: "bBoxLow", source: "Class" },
+    { propertyName: "bBoxHigh", source: "Class" },
+    { propertyName: "typeDefinition", source: "Class" }
+  ];
 
   public static override deserialize(props: InstanceProps): GeometricElement2dProps {
     const elProps = super.deserialize(props) as GeometricElement2dProps;

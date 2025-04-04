@@ -20,7 +20,7 @@ import { DefinitionElement, GraphicalElement2d, SpatialLocationElement } from ".
 import { IModelDb } from "./IModelDb";
 import { DisplayStyle, DisplayStyle2d, DisplayStyle3d } from "./DisplayStyle";
 import { IModelElementCloneContext } from "./IModelElementCloneContext";
-import { CustomHandledPropertyList, ECSqlRow, InstanceProps } from "./Entity";
+import { CustomHandledProperty, ECSqlRow, InstanceProps } from "./Entity";
 
 /** Holds the list of Ids of GeometricModels displayed by a [[SpatialViewDefinition]]. Multiple SpatialViewDefinitions may point to the same ModelSelector.
  * @see [ModelSelectorState]($frontend)
@@ -285,17 +285,14 @@ export abstract class ViewDefinition3d extends ViewDefinition {
   /** The camera used for this view, if `cameraOn` is true. */
   public camera: Camera;
 
-
-  protected static override get customHandledProperties(): CustomHandledPropertyList {
-    return [ ...super.customHandledProperties,
-      { name: "eyePoint", isComputed: true },
-      { name: "focusDistance", isComputed: true },
-      { name: "lensAngle", isComputed: true },
-      { name: "yaw", isComputed: true },
-      { name: "roll", isComputed: true },
-      { name: "pitch", isComputed: true },
-    ];
-  }
+  protected static override readonly _customHandledProps: CustomHandledProperty[] = [
+    { propertyName: "eyePoint", source: "Class" },
+    { propertyName: "focusDistance", source: "Class" },
+    { propertyName: "lensAngle", source: "Class" },
+    { propertyName: "yaw", source: "Class" },
+    { propertyName: "roll", source: "Class" },
+    { propertyName: "pitch", source: "Class" },
+  ];
 
   protected constructor(props: ViewDefinition3dProps, iModel: IModelDb) {
     super(props, iModel);
