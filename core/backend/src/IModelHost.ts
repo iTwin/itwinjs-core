@@ -236,7 +236,7 @@ export class IModelHostConfiguration implements IModelHostOptions {
   /** @internal */
   public crashReportingConfig?: CrashReportingConfig;
   /** @beta */
-  public enableWIPNativeInstanceFunctions = true;
+  public enableWIPNativeInstanceFunctions?: boolean;
 }
 
 /**
