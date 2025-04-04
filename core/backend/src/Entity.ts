@@ -100,8 +100,8 @@ export class Entity {
 
   public static deserialize(props: InstanceProps): EntityProps {
     const enProps: EntityProps = {
-      id: props.row.id,
       classFullName: props.row.classFullName,
+      id: props.row.id,
     }
     if (props.row.jsonProperties) {
       // Deserialize the jsonProperties field and convert it to a JSON object
@@ -115,7 +115,7 @@ export class Entity {
     return enProps;
   }
 
-  public static serialize(props: EntityProps): ECSqlRow {
+  public static serialize(props: EntityProps, _iModel: IModelDb): ECSqlRow {
     const inst: ECSqlRow = {
       id: props.id,
       className: props.classFullName,
@@ -210,7 +210,7 @@ export class Entity {
       this._metadata = await this.iModel.schemaContext.getSchemaItem(this.schemaItemKey, EntityClass);
     }
 
-    if(!this._metadata) {
+    if (!this._metadata) {
       throw new Error(`Cannot get metadata for ${this.classFullName}`);
     }
 

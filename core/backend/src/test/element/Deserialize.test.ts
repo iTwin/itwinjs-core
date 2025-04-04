@@ -1,11 +1,11 @@
-import { _nativeDb, ECSqlStatement, InstanceProps, Model } from "../../core-backend";
-import { Element } from "../../Element";
+import { Element, GeometricElement3d } from "../../Element";
+import { _nativeDb, InstanceProps, Model } from "../../core-backend";
 import { SnapshotDb } from "../../IModelDb";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 import * as path from "node:path";
 import * as sinon from "sinon";
-import { DbResult } from "@itwin/core-bentley";
+import { DbResult, Id64String } from "@itwin/core-bentley";
 import { expect } from "chai";
 
 describe("Element Deserialize", () => {
@@ -31,6 +31,16 @@ describe("Element Deserialize", () => {
   afterEach(() => {
     sinon.restore();
   });
+
+  function getInstanceKey(id: Id64String, baseClass: "Element" | "Model") {
+    return iModelDb.withPreparedStatement(`SELECT ec_className(ECClassId, 's:c') FROM Bis.${baseClass} WHERE ECInstanceId=?`, (stmt: ECSqlStatement) => {
+      stmt.bindId(1, id);
+      if (stmt.step() === DbResult.BE_SQLITE_ROW) {
+        return { id, classFullName: stmt.getValue(0).getString() };
+      }
+      throw new Error(`Element with id ${id} not found`);
+    });
+  }
 
   const testElementProps = {
     id: "0x34",
@@ -82,28 +92,32 @@ describe("Element Deserialize", () => {
 
   it("should properly read an Element, deserialize it, and re-serialize it", async () => {
     // Read an element using getInstance()
-    let elementId = "0x34";
+    const elementId = "0x34";
     let classId: string | undefined;
     let classFullName: string | undefined;
 
-    // eslint-disable-next-line prefer-const
-    [elementId, classId, classFullName] = iModelDb.withPreparedStatement("SELECT ECClassId FROM Bis.Element WHERE ECInstanceId=?", (stmt: ECSqlStatement) => {
-      stmt.bindId(1, elementId);
-      return stmt.step() === DbResult.BE_SQLITE_ROW ? [elementId, stmt.getValue(0).getId(), stmt.getValue(0).getClassNameForClassId()] : [elementId, undefined, undefined];
-    });
-    expect(classId).to.not.be.undefined;
-    expect(classFullName).to.not.be.undefined;
-    classFullName = classFullName!.replaceAll(".", ":");
+    // Deserialize the element
+    const classDef = iModelDb.getJsClass<typeof Element>(key.classFullName);
+    const elementProps = classDef.deserialize(rawInstance);
+
+    const element = iModelDb.elements.getElement<GeometricElement3d>({ id: key.id, wantGeometry: true }).toJSON();
+    console.log(element);
+    console.log(elementProps);
+
+  });
+
+  it("SpatialViewDefinitionUsesModelSelector", async () => {
+    const key = getInstanceKey("0x34", "Element");
     const rawInstance: InstanceProps = {
       iModel: iModelDb,
-      row: iModelDb[_nativeDb].readInstance({ id: elementId, classFullName }, { useJsNames: true, }),
+      row: iModelDb[_nativeDb].readInstance(key, { useJsNames: true }),
     };
 
     // Deserialize the element
-    const classDef = iModelDb.getJsClass<typeof Element>(classFullName);
+    const classDef = iModelDb.getJsClass<typeof Element>(key.classFullName);
     const elementProps = classDef.deserialize(rawInstance);
 
-    const element = iModelDb.elements.getElementProps(elementId);
+    const element = iModelDb.elements.getElement(key.id);
 
     // Verify the element was deserialized correctly
     expect(elementProps).to.not.be.undefined;
