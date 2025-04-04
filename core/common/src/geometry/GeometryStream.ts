@@ -8,7 +8,7 @@
 
 import { Id64, Id64String, IModelStatus } from "@itwin/core-bentley";
 import {
-  Angle, AnyGeometryQuery, GeometryQuery, IModelJson as GeomJson, LineSegment3d, LineString3d, LowAndHighXYZ, Matrix3d, Point2d, Point3d, Range3d, Transform, TransformProps,
+  Angle, AnyGeometryQuery, GeometryQuery, IModelJson as GeomJson, LineSegment3d, LineString3d, Loop, LowAndHighXYZ, Matrix3d, Path, Point2d, Point3d, Range3d, Transform, TransformProps,
   Vector3d, XYZProps, YawPitchRollAngles, YawPitchRollProps,
 } from "@itwin/core-geometry";
 import { ColorDef, ColorDefProps } from "../ColorDef";
@@ -23,6 +23,7 @@ import { TextString, TextStringProps } from "./TextString";
 import { Base64EncodedString } from "../Base64EncodedString";
 import { Placement2d, Placement3d } from "./Placement";
 import { TextBlockGeometryProps } from "../annotation/TextBlockGeometryProps";
+import { FrameGeometry } from "./TextFrameGeometry";
 
 /** Establish a non-default [[SubCategory]] or to override [[SubCategoryAppearance]] for the geometry that follows.
  * A GeometryAppearanceProps always signifies a reset to the [[SubCategoryAppearance]] for subsequent [[GeometryStreamProps]] entries for undefined values.
@@ -341,7 +342,10 @@ export class GeometryStreamBuilder {
     for (const entry of block.entries) {
       let result: boolean;
       if (undefined !== entry.text) {
-        result = this.appendTextString(new TextString(entry.text));
+        const params = new GeometryParams(Id64.invalid);
+        params.elmPriority = 1;
+
+        result = this.appendGeometryParamsChange(params) && this.appendTextString(new TextString(entry.text));
       } else if (undefined !== entry.color) {
         if (entry.color === "subcategory") {
           result = this.appendSubCategoryChange(Id64.invalid);
@@ -349,8 +353,37 @@ export class GeometryStreamBuilder {
           this.geometryStream.push({ appearance: { color: entry.color } });
           result = true;
         }
-      } else if (entry.separator) {
+      } else if (entry.separator !== undefined) {
         result = this.appendGeometry(LineSegment3d.fromJSON(entry.separator));
+      } else if (undefined !== entry.fill) {
+        const params = new GeometryParams(Id64.invalid);
+        params.elmPriority = 0;
+
+        if (entry.fill.color === "background") {
+          params.backgroundFill = BackgroundFill.Solid;
+          params.fillDisplay = FillDisplay.Always;
+        } else if (entry.fill.color !== "subcategory") {
+          params.fillColor = ColorDef.fromJSON(entry.fill.color);
+          params.fillDisplay = FillDisplay.Always;
+        }
+
+        const frame = FrameGeometry.computeFrame(entry.fill.shape, entry.fill.range, entry.fill.transform);
+        const loop = Loop.createArray(frame);
+
+        result = this.appendGeometryParamsChange(params);
+        result = result && this.appendGeometry(loop);
+      } else if (undefined !== entry.border) {
+        const params = new GeometryParams(Id64.invalid);
+        if (entry.border.color !== "subcategory") {
+          params.lineColor = ColorDef.fromJSON(entry.border.color);
+          params.weight = entry.border.width;
+        }
+
+        const frame = FrameGeometry.computeFrame(entry.border.shape, entry.border.range, entry.border.transform);
+        const path = Path.createArray(frame);
+
+        result = this.appendGeometryParamsChange(params);
+        result = result && this.appendGeometry(path);
       } else {
         entry.leader?.terminators.forEach((terminator) => {
           result = this.appendGeometry(LineSegment3d.fromJSON(terminator));

@@ -6,9 +6,10 @@
  * @module Annotation
  */
 
-import { XYZProps } from "@itwin/core-geometry";
+import { Range2dProps, TransformProps, XYZProps } from "@itwin/core-geometry";
 import { TextStringProps } from "../geometry/TextString";
 import { TextStyleColor } from "./TextStyle";
+import { TextAnnotationFillColor, TextAnnotationFrame } from "./TextAnnotation";
 
 /**
  * A single entry in a [[TextBlockGeometryProps]], representing one of the following primitive types:
@@ -22,6 +23,8 @@ export type TextBlockGeometryPropsEntry = {
   separator?: never;
   color?: never;
   leader?: never;
+  border?: never;
+  fill?: never;
 } | {
   text?: never;
   separator: {
@@ -30,11 +33,40 @@ export type TextBlockGeometryPropsEntry = {
   };
   color?: never;
   leader?: never;
+  border?: never;
+  fill?: never;
 } | {
   text?: never;
   separator?: never;
   color: TextStyleColor;
   leader?: never;
+  border?: never;
+  fill?: never;
+} | {
+  text?: never;
+  separator?: never;
+  color?: never;
+  leader?: never,
+  border: {
+    color: TextStyleColor;
+    width: number;
+    shape: TextAnnotationFrame;
+    transform: TransformProps;
+    range: Range2dProps;
+  };
+  fill?: never;
+} | {
+  text?: never;
+  separator?: never;
+  color?: never;
+  leader?: never;
+  border?: never;
+  fill: {
+    color: TextAnnotationFillColor;
+    shape: TextAnnotationFrame;
+    transform: TransformProps;
+    range: Range2dProps;
+  };
 } | {
   text?: never;
   separator?: never;
@@ -42,7 +74,9 @@ export type TextBlockGeometryPropsEntry = {
   leader: {
     terminators: { startPoint: XYZProps, endPoint: XYZProps }[];
     leaderLine: XYZProps[];
-  };
+  },
+  border?: never,
+  fill?: never;
 };
 
 /**

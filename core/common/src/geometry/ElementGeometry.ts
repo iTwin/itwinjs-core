@@ -7,7 +7,7 @@
  */
 import { flatbuffers } from "flatbuffers";
 import { BentleyStatus, Id64, Id64String } from "@itwin/core-bentley";
-import { Angle, AngleSweep, Arc3d, BentleyGeometryFlatBuffer, CurveCollection, FrameBuilder, GeometryQuery, LineSegment3d, LineString3d, Loop, Matrix3d, Plane3dByOriginAndUnitNormal, Point2d, Point3d, Point3dArray, PointString3d, Polyface, PolyfaceQuery, Range2d, Range3d, SolidPrimitive, Transform, Vector3d, YawPitchRollAngles } from "@itwin/core-geometry";
+import { Angle, AngleSweep, Arc3d, BentleyGeometryFlatBuffer, CurveCollection, FrameBuilder, GeometryQuery, LineSegment3d, LineString3d, Loop, Matrix3d, Path, Plane3dByOriginAndUnitNormal, Point2d, Point3d, Point3dArray, PointString3d, Polyface, PolyfaceQuery, Range2d, Range3d, SolidPrimitive, Transform, Vector3d, YawPitchRollAngles } from "@itwin/core-geometry";
 import { EGFBAccessors } from "./ElementGeometryFB";
 import { Base64EncodedString } from "../Base64EncodedString";
 import { TextString, TextStringGlyphData, TextStringProps } from "./TextString";
@@ -22,6 +22,7 @@ import { LineStyle } from "./LineStyle";
 import { ElementAlignedBox3d, Placement2d, Placement3d } from "./Placement";
 import { isPlacement2dProps, PlacementProps } from "../ElementProps";
 import { TextBlockGeometryProps } from "../annotation/TextBlockGeometryProps";
+import { FrameGeometry } from "./TextFrameGeometry";
 
 /** Specifies the type of an entry in a geometry stream.
  * @see [[ElementGeometryDataEntry.opcode]].
@@ -444,6 +445,35 @@ export namespace ElementGeometry {
           result = this.appendGeometryParamsChange(params);
         } else if (entry.separator) {
           result = this.appendGeometryQuery(LineSegment3d.fromJSON(entry.separator));
+        } else if (undefined !== entry.fill) {
+          const params = new GeometryParams(Id64.invalid);
+          params.elmPriority = 0;
+
+          if (entry.fill.color === "background") {
+            params.backgroundFill = BackgroundFill.Solid;
+            params.fillDisplay = FillDisplay.Always;
+          } else if (entry.fill.color !== "subcategory") {
+            params.fillColor = ColorDef.fromJSON(entry.fill.color);
+            params.fillDisplay = FillDisplay.Always;
+          }
+
+          const frame = FrameGeometry.computeFrame(entry.fill.shape, entry.fill.range, entry.fill.transform);
+          const loop = Loop.createArray(frame);
+
+          result = this.appendGeometryParamsChange(params);
+          result = result && this.appendGeometryQuery(loop);
+        } else if (undefined !== entry.border) {
+          const params = new GeometryParams(Id64.invalid);
+          if (entry.border.color !== "subcategory") {
+            params.lineColor = ColorDef.fromJSON(entry.border.color);
+            params.weight = entry.border.width;
+          }
+
+          const frame = FrameGeometry.computeFrame(entry.border.shape, entry.border.range, entry.border.transform);
+          const path = Path.createArray(frame);
+
+          result = this.appendGeometryParamsChange(params);
+          result = result && this.appendGeometryQuery(path);
         } else {
           entry.leader?.terminators.forEach((terminator) => {
             result = this.appendGeometryQuery(LineSegment3d.fromJSON(terminator));

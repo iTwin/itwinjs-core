@@ -6,7 +6,7 @@
  * @module ElementGeometry
  */
 
-import { ColorDef, TextAnnotation, TextBlockGeometryProps, TextBlockGeometryPropsEntry, TextString, TextStyleColor, TextStyleSettings } from "@itwin/core-common";
+import { ColorDef, TextAnnotation, TextBlockGeometryProps, TextBlockGeometryPropsEntry, TextFrameStyleProps, TextString, TextStyleColor, TextStyleSettings } from "@itwin/core-common";
 import { ComputeRangesForTextLayout, FindFontId, FindTextStyle, layoutTextBlock, RunLayout, TextBlockLayout } from "./TextAnnotationLayout";
 import { LineSegment3d, Point3d, Range2d, Transform, Vector2d, Vector3d, XYZProps } from "@itwin/core-geometry";
 import { assert } from "@itwin/core-bentley";
@@ -161,6 +161,7 @@ function processLeaders(startPoint: Point3d, endPoint: Point3d, context: Geometr
 
 function produceTextBlockGeometry(layout: TextBlockLayout, documentTransform: Transform, debugAnchorPt?: Point3d, textStyleSettings?: TextStyleSettings): TextBlockGeometryProps {
   const context: GeometryContext = { entries: [] };
+
   for (const line of layout.lines) {
     const lineTrans = Transform.createTranslationXYZ(line.offsetFromDocument.x, line.offsetFromDocument.y, 0);
     for (const run of line.runs) {
@@ -243,6 +244,37 @@ function produceTextBlockGeometry(layout: TextBlockLayout, documentTransform: Tr
   return { entries: context.entries };
 }
 
+function produceFrameGeometry(layout: TextBlockLayout, documentTransform: Transform, frameProps?: TextFrameStyleProps): TextBlockGeometryProps {
+  const context: GeometryContext = { entries: [] };
+
+  if (frameProps?.frame && frameProps?.frame !== "none") {
+    if (frameProps.border) {
+      context.entries.push({
+        border: {
+          shape: frameProps.frame,
+          width: frameProps.borderWeight ?? 1,
+          color: frameProps.border,
+          transform: documentTransform.toJSON(),
+          range: layout.range.toJSON(),
+        }
+      });
+    }
+
+    if (frameProps.fill) {
+      context.entries.push({
+        fill: {
+          shape: frameProps.frame,
+          color: frameProps.fill,
+          transform: documentTransform.toJSON(),
+          range: layout.range.toJSON(),
+        }
+      });
+    }
+  }
+
+  return { entries: context.entries };
+}
+
 /** Arguments supplied to [[produceTextAnnotationGeometry]].
  * @beta
  */
@@ -278,5 +310,9 @@ export function produceTextAnnotationGeometry(args: ProduceTextAnnotationGeometr
   const transform = args.annotation.computeTransform(dimensions);
 
   const anchorPoint = args.debugAnchorPointAndRange ? transform.multiplyPoint3d(args.annotation.computeAnchorPoint(dimensions)) : undefined;
-  return produceTextBlockGeometry(layout, transform, anchorPoint, textStyle);
+
+  const textBlockGeometry = produceTextBlockGeometry(layout, transform, anchorPoint, textStyle);
+  const frameGeometry = produceFrameGeometry(layout, transform, args.annotation.frame);
+  const entries = [...textBlockGeometry.entries, ...frameGeometry.entries];
+  return { entries };
 }
