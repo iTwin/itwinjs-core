@@ -3,13 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { Attachment, CheckpointConnection, SheetViewState, ViewAttachmentInfo, ViewAttachments, ViewAttachmentsInfo, ViewState } from "@itwin/core-frontend";
-import { Range2d, Range3d, Transform, XYProps } from "@itwin/core-geometry";
+import { CheckpointConnection, SheetViewState, ViewState } from "@itwin/core-frontend";
+import { XYProps } from "@itwin/core-geometry";
 import { TestUsers } from "@itwin/oidc-signin-tool/lib/cjs/TestUsers";
 import { testOnScreenViewport } from "../TestViewport";
 import { TestUtility } from "../TestUtility";
-import { HydrateViewStateResponseProps, Placement2d, ViewAttachmentProps } from "@itwin/core-common";
-import { coreFullStackTestIpc, initializeEditTools, transformElements } from "../Editing";
+import {  ViewAttachmentProps } from "@itwin/core-common";
+import { coreFullStackTestIpc, initializeEditTools } from "../Editing";
 
 describe("Sheet views (#integration)", () => {
   let imodel: CheckpointConnection;
