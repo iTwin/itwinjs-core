@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert } from "chai";
+import { assert, beforeAll, describe, it } from "vitest";
 import {
   GeographicCRSInterpretRequestProps, GeographicCRSProps,
 } from "@itwin/core-common";
@@ -11,11 +11,13 @@ import { IModelNative } from "../../internal/NativePlatform.js";
 import { Geometry, Range2d, Range2dProps } from "@itwin/core-geometry";
 import { GeoCoordConfig } from "../../GeoCoordConfig.js";
 import { getAvailableCoordinateReferenceSystems } from "../../GeographicCRSServices.js";
+import { TestUtils } from "../TestUtils.js";
 
 // spell-checker: disable
 
 describe("GeoServices", () => {
-  before(() => {
+  beforeAll(async () => {
+    await TestUtils.startBackend();
     GeoCoordConfig.loadDefaultDatabases();
   });
 

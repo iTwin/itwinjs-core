@@ -8,7 +8,7 @@
 
 import { Logger } from "@itwin/core-bentley";
 import { CommonLoggerCategory, RpcInvocation, RpcProtocolEvent, WebAppRpcLogging } from "@itwin/core-common";
-import * as os from "os";
+import os from "node:os";
 
 /* eslint-disable @typescript-eslint/no-deprecated */
 

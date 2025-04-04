@@ -6,8 +6,8 @@
  * @module iModels
  */
 
-import * as fs from "fs";
-import { join } from "path";
+import fs from "node:fs";
+import { join } from "node:path";
 import touch from "touch";
 import { IModelJsNative, SchemaWriteStatus } from "@bentley/imodeljs-native";
 import {

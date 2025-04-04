@@ -2,17 +2,19 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { Guid, Id64 } from "@itwin/core-bentley";
 import { SubCategoryAppearance } from "@itwin/core-common";
 import {
   IModelDb, RenderMaterialElement, RenderMaterialElementParams, SpatialCategory, StandaloneDb, SubCategory,
 } from "../../core-backend.js";
 import { IModelTestUtils } from "../IModelTestUtils.js";
+import { TestUtils } from "../TestUtils.js";
 
 describe("Category", () => {
   let imodel: StandaloneDb;
-  before(() => {
+  beforeAll(async () => {
+    await TestUtils.startBackend();
     imodel = StandaloneDb.createEmpty(IModelTestUtils.prepareOutputFile("Category", "Category.bim"), {
       rootSubject: { name: "Category tests", description: "Category tests" },
       client: "Category",
@@ -22,8 +24,9 @@ describe("Category", () => {
     });
   });
 
-  after(() => {
+  afterAll(async () => {
     imodel.close();
+    await TestUtils.shutdownBackend();
   });
 
   it("should insert with default subcategory appearance", () => {

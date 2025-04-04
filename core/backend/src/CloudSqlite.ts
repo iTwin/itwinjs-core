@@ -6,8 +6,8 @@
  * @module SQLiteDb
  */
 
-import { mkdirSync, unlinkSync } from "fs";
-import { dirname, join } from "path";
+import { mkdirSync, unlinkSync } from "node:fs";
+import { dirname, join } from "node:path";
 import { NativeLibrary } from "@bentley/imodeljs-native";
 import {
   AccessToken, BeDuration, BriefcaseStatus, Constructor, GuidString, Logger, LogLevel, OpenMode, Optional, PickAsyncMethods, PickMethods, StopWatch,

@@ -7,8 +7,8 @@
  */
 
 import { createHash } from "crypto";
-import * as fs from "fs-extra";
-import { dirname, extname, join } from "path";
+import fs from "fs-extra";
+import { dirname, extname, join } from "node:path";
 import * as semver from "semver";
 import { AccessToken, assert, BeEvent, DbResult, Mutable, OpenMode } from "@itwin/core-bentley";
 import { FilePropertyProps, IModelError, LocalDirName, LocalFileName } from "@itwin/core-common";

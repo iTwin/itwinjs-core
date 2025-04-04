@@ -6,7 +6,7 @@
  * @module Schema
  */
 
-import * as path from "path";
+import path from "node:path";
 import { DbResult } from "@itwin/core-bentley";
 import { IModelError } from "@itwin/core-common";
 import { ClassRegistry } from "../ClassRegistry.js";

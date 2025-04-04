@@ -2,11 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert } from "chai";
+import { assert, afterAll, beforeAll, describe, it } from "vitest";
 import { QueryBinder, QueryRowFormat } from "@itwin/core-common";
 import { IModelDb, SnapshotDb } from "../../core-backend.js";
 import { IModelTestUtils } from "../IModelTestUtils.js";
 import { SequentialLogMatcher } from "../SequentialLogMatcher.js";
+import { TestUtils } from "../TestUtils.js";
 
 // cspell:ignore mirukuru ibim
 
@@ -21,12 +22,14 @@ async function executeQuery(iModel: IModelDb, ecsql: string, bindings?: any[] | 
 describe("Common table expression support in ECSQL", () => {
   let imodel1: SnapshotDb;
 
-  before(async () => {
+  beforeAll(async () => {
+    await TestUtils.startBackend();
     imodel1 = SnapshotDb.openFile(IModelTestUtils.resolveAssetFile("test.bim"));
   });
 
-  after(async () => {
+  afterAll(async () => {
     imodel1.close();
+    await TestUtils.shutdownBackend();
   });
   it("collect base properties recursively", async () => {
     const query = `

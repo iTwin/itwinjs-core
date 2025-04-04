@@ -1,5 +1,5 @@
 import * as sinon from "sinon";
-import { expect } from "chai";
+import { beforeEach, describe, expect, it } from "vitest";
 import { IpcInvokeReturn, IpcSocketBackend } from "@itwin/core-common";
 import { IpcHandler, IpcHost } from "../IpcHost.js";
 

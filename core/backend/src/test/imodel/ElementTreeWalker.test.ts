@@ -5,13 +5,14 @@
 import { Id64, Id64Array, Id64String } from "@itwin/core-bentley";
 import { Code, GeometricElement2dProps, GeometricElementProps, IModel, SubCategoryAppearance } from "@itwin/core-common";
 import { Point2d } from "@itwin/core-geometry";
-import { assert } from "chai";
-import * as path from "path";
+import { afterAll, afterEach, assert, beforeAll, beforeEach, describe, it } from "vitest";
+import path from "node:path";
 import * as sinon from "sinon";
 import { DefinitionContainer, DefinitionModel, DocumentListModel, Drawing, DrawingCategory, DrawingGraphic, ElementGroupsMembers, ElementOwnsChildElements, ExternalSource, ExternalSourceGroup, IModelDb, Model, PhysicalPartition, SnapshotDb, SpatialCategory, SubCategory, Subject } from "../../core-backend.js";
 import { deleteElementSubTrees, deleteElementTree, ElementTreeBottomUp, ElementTreeWalkerScope } from "../../ElementTreeWalker.js";
 import { IModelTestUtils } from "../IModelTestUtils.js";
 import { KnownTestLocations } from "../KnownTestLocations.js";
+import { TestUtils } from "../TestUtils.js";
 
 // Test class that collects the results of a bottom-up tree walk
 class ElementTreeCollector extends ElementTreeBottomUp {
@@ -90,14 +91,16 @@ describe("ElementTreeWalker", () => {
   let physicalObjectId2: Id64String;
   let physicalObjectId3: Id64String;
 
-  before(async () => {
+  beforeAll(async () => {
     originalEnv = { ...process.env };
 
     IModelTestUtils.registerTestBimSchema();
+    await TestUtils.startBackend();
   });
 
-  after(() => {
+  afterAll(async () => {
     process.env = originalEnv;
+    await TestUtils.shutdownBackend();
   });
 
   beforeEach(async () => {

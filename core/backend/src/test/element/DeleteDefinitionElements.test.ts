@@ -3,8 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert } from "chai";
-import * as path from "path";
+import { assert, beforeAll, describe, it } from "vitest";
+import path from "node:path";
 import { Id64, Id64Set } from "@itwin/core-bentley";
 import { Point3d } from "@itwin/core-geometry";
 import { GeometryPartProps, IModel } from "@itwin/core-common";
@@ -14,11 +14,12 @@ import {
 } from "../../core-backend.js";
 import { ExtensiveTestScenario, IModelTestUtils } from "../IModelTestUtils.js";
 import { KnownTestLocations } from "../KnownTestLocations.js";
+import { TestUtils } from "../TestUtils.js";
 
 describe("DeleteDefinitionElements", () => {
   const outputDir: string = path.join(KnownTestLocations.outputDir, "DeleteDefinitionElements");
 
-  before(async () => {
+  beforeAll(async () => {
     if (!IModelJsFs.existsSync(KnownTestLocations.outputDir)) {
       IModelJsFs.mkdirSync(KnownTestLocations.outputDir);
     }
@@ -28,6 +29,7 @@ describe("DeleteDefinitionElements", () => {
   });
 
   it("should delete if not used", async () => {
+    await TestUtils.startBackend();
     const iModelFile: string = IModelTestUtils.prepareOutputFile("DeleteDefinitionElements", "DeleteDefinitionElements.bim");
     const iModelDb = SnapshotDb.createEmpty(iModelFile, { rootSubject: { name: "DeleteDefinitionElements" } });
     await ExtensiveTestScenario.prepareDb(iModelDb);
@@ -232,5 +234,6 @@ describe("DeleteDefinitionElements", () => {
 
     iModelDb.saveChanges();
     iModelDb.close();
+    await TestUtils.shutdownBackend();
   });
 });

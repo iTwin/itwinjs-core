@@ -2,8 +2,8 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as path from "path";
-import * as fs from "fs";
+import path from "node:path";
+import fs from "node:fs";
 import { marked, Tokens } from "marked";
 
 export interface ECDbTestProps {
@@ -183,7 +183,7 @@ function understandAndReplaceBinaryData(str: string): any{
 
 export class ECDbMarkdownTestParser {
   public static parse(): ECDbTestProps[] {
-    const testAssetsDir = path.join(__dirname ,"..","queries");
+    const testAssetsDir = path.join(import.meta.dirname ,"..","queries");
     const testFiles = fs.readdirSync(testAssetsDir, "utf-8").filter((fileName) => fileName.toLowerCase().endsWith("ecsql.md"));
     const out: ECDbTestProps[] = [];
 

@@ -10,7 +10,7 @@
 import "./IModelDb.js"; // DO NOT REMOVE OR MOVE THIS LINE!
 
 import { IModelNative, loadNativePlatform } from "./internal/NativePlatform.js";
-import * as os from "os";
+import os from "node:os";
 import "reflect-metadata"; // this has to be before @itwin/object-storage-* and @itwin/cloud-agnostic-core imports because those packages contain decorators that use this polyfill.
 import { NativeLibrary } from "@bentley/imodeljs-native";
 import { DependenciesConfig, Types as ExtensionTypes } from "@itwin/cloud-agnostic-core";
@@ -37,11 +37,14 @@ import { SettingsContainer, SettingsPriority } from "./workspace/Settings.js";
 import { SettingsSchemas } from "./workspace/SettingsSchemas.js";
 import { Workspace, WorkspaceOpts } from "./workspace/Workspace.js";
 import { Container } from "inversify";
-import { join, normalize as normalizeDir } from "path";
+import { join, normalize as normalizeDir } from "node:path";
 import { constructWorkspace, OwnedWorkspace } from "./internal/workspace/WorkspaceImpl.js";
 import { SettingsImpl } from "./internal/workspace/SettingsImpl.js";
 import { constructSettingsSchemas } from "./internal/workspace/SettingsSchemasImpl.js";
 import { _getHubAccess, _hubAccess, _setHubAccess } from "./internal/Symbols.js";
+// @ts-expect-error package.json will resolve from the lib/{cjs,esm} dir without copying it into the build output we deliver
+// eslint-disable-next-line @itwin/import-within-package
+import packageJson from "../../package.json" with { type: "json" };
 
 const loggerCategory = BackendLoggerCategory.IModelHost;
 
@@ -470,7 +473,7 @@ export class IModelHost {
 
     this.authorizationClient = options.authorizationClient;
 
-    this.backendVersion = require("../../package.json").version; // eslint-disable-line @typescript-eslint/no-require-imports
+    this.backendVersion = packageJson.version;
     initializeRpcBackend(options.enableOpenTelemetry);
 
     this.loadNative(options);

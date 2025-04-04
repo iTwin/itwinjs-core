@@ -2,14 +2,14 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert } from "chai";
+import { afterAll, assert, beforeAll, describe, it } from "vitest";
 import { DbResult } from "@itwin/core-bentley";
 import { ECSqlRowArg, ECSqlStatement, SnapshotDb } from "../../../core-backend.js";
 import { KnownTestLocations } from "../../KnownTestLocations.js";
 import { ECSqlReader, ECSqlValueType, QueryBinder, QueryOptions, QueryRowFormat } from "@itwin/core-common";
 import { buildBinaryData, ECDbMarkdownTestParser, ECDbTestMode, ECDbTestProps, ECDbTestRowFormat } from "./ECSqlTestParser.js";
-import * as path from "path";
-import * as fs from "fs";
+import path from "node:path";
+import fs from "node:fs";
 import { ECSqlDatasets } from "../dataset/ECSqlDatasets.js";
 import { Point2d, Point3d } from "@itwin/core-geometry";
 
@@ -20,7 +20,7 @@ enum TestDataset {
 const snapshotDbs: { [key in TestDataset]?: SnapshotDb } = {};
 
 describe("Markdown based ECDb test runner", async () => {
-  before(async () => {
+  beforeAll(async () => {
     await ECSqlDatasets.generateFiles();
     const datasetFilePath = path.join(KnownTestLocations.outputDir, "ECSqlTests", TestDataset.AllProperties);
     if (!fs.existsSync(datasetFilePath)) {
@@ -29,7 +29,7 @@ describe("Markdown based ECDb test runner", async () => {
     snapshotDbs[TestDataset.AllProperties] = SnapshotDb.openFile(datasetFilePath);
   });
 
-  after(() => {
+  afterAll(() => {
     for (const key in snapshotDbs) {
         if (snapshotDbs.hasOwnProperty(key)) {
             (snapshotDbs[key as keyof typeof snapshotDbs])?.close();

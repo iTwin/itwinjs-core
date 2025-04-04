@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert } from "chai";
+import { afterAll, assert, beforeAll, describe, it } from "vitest";
 import { Id64String } from "@itwin/core-bentley";
 import {
   Code, ExternalSourceAttachmentProps, ExternalSourceProps, IModel, RepositoryLinkProps, SynchronizationConfigLinkProps,
@@ -14,10 +14,18 @@ import {
   SnapshotDb, SynchronizationConfigLink, SynchronizationConfigProcessesSources, SynchronizationConfigSpecifiesRootSources,
 } from "../../core-backend.js";
 import { IModelTestUtils } from "../IModelTestUtils.js";
+import { TestUtils } from "../TestUtils.js";
 
 describe("ExternalSource", () => {
+  beforeAll(async () => {
+    await TestUtils.startBackend();
+  });
 
-  it("should create elements and relationships like an iModel Connector would", () => {
+  afterAll(async () => {
+    await TestUtils.shutdownBackend();
+  });
+
+  it("should create elements and relationships like an iModel Connector would", async() => {
     const iModelFileName = IModelTestUtils.prepareOutputFile("ExternalSource", "ExternalSource.bim");
     const iModelDb = SnapshotDb.createEmpty(iModelFileName, { rootSubject: { name: "ExternalSource Test" } });
 

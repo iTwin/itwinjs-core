@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert, expect } from "chai";
+import { afterAll, assert, beforeAll, describe, expect, it } from "vitest";
 import { BentleyStatus, Id64, Id64String, IModelStatus } from "@itwin/core-bentley";
 import {
   Angle, AngleSweep, Arc3d, Box, ClipMaskXYZRangePlanes, ClipPlane, ClipPlaneContainment, ClipPrimitive, ClipShape, ClipVector, ConvexClipPlaneSet,
@@ -308,13 +308,13 @@ function createGeometricElemFromSeed(imodel: SnapshotDb, seedId: Id64String, ent
 describe("GeometryStream", () => {
   let imodel: SnapshotDb;
 
-  before(() => {
+  beforeAll(() => {
     const seedFileName = IModelTestUtils.resolveAssetFile("CompatibilityTestSeed.bim");
     const testFileName = IModelTestUtils.prepareOutputFile("GeometryStream", "GeometryStreamTest.bim");
     imodel = IModelTestUtils.createSnapshotFromSeed(testFileName, seedFileName);
   });
 
-  after(() => {
+  afterAll(() => {
     imodel.close();
   });
 
@@ -1512,13 +1512,13 @@ describe("GeometryStream", () => {
 describe("ElementGeometry", () => {
   let imodel: SnapshotDb;
 
-  before(() => {
+  beforeAll(() => {
     const seedFileName = IModelTestUtils.resolveAssetFile("CompatibilityTestSeed.bim");
     const testFileName = IModelTestUtils.prepareOutputFile("GeometryStream", "GeometryStreamTest.bim");
     imodel = IModelTestUtils.createSnapshotFromSeed(testFileName, seedFileName);
   });
 
-  after(() => {
+  afterAll(() => {
     imodel.close();
   });
 
@@ -2441,13 +2441,13 @@ describe("ElementGeometry", () => {
 describe("BRepGeometry", () => {
   let imodel: SnapshotDb;
 
-  before(() => {
+  beforeAll(() => {
     const seedFileName = IModelTestUtils.resolveAssetFile("CompatibilityTestSeed.bim");
     const testFileName = IModelTestUtils.prepareOutputFile("GeometryStream", "GeometryStreamTest.bim");
     imodel = IModelTestUtils.createSnapshotFromSeed(testFileName, seedFileName);
   });
 
-  after(() => {
+  afterAll(() => {
     imodel.close();
   });
 
@@ -3016,13 +3016,13 @@ describe("BRepGeometry", () => {
 describe("Mass Properties", () => {
   let imodel: SnapshotDb;
 
-  before(() => {
+  beforeAll(() => {
     const seedFileName = IModelTestUtils.resolveAssetFile("CompatibilityTestSeed.bim");
     const testFileName = IModelTestUtils.prepareOutputFile("GeometryStream", "GeometryStreamTest.bim");
     imodel = IModelTestUtils.createSnapshotFromSeed(testFileName, seedFileName);
   });
 
-  after(() => {
+  afterAll(() => {
     imodel.close();
   });
 
@@ -3086,13 +3086,13 @@ describe("Mass Properties", () => {
 describe("Geometry Containment", () => {
   let imodel: SnapshotDb;
 
-  before(() => {
+  beforeAll(() => {
     const seedFileName = IModelTestUtils.resolveAssetFile("CompatibilityTestSeed.bim");
     const testFileName = IModelTestUtils.prepareOutputFile("GeometryStream", "GeometryStreamTest.bim");
     imodel = IModelTestUtils.createSnapshotFromSeed(testFileName, seedFileName);
   });
 
-  after(() => {
+  afterAll(() => {
     imodel.close();
   });
 

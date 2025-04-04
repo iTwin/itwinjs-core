@@ -2,8 +2,8 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
-import * as fs from "fs";
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from "vitest";
+import fs from "node:fs";
 import * as sinon from "sinon";
 import { BriefcaseDb, IModelDb } from "../../IModelDb.js";
 import { IModelTestUtils } from "../IModelTestUtils.js";
@@ -16,6 +16,7 @@ import { HubMock } from "../../HubMock.js";
 import { KnownTestLocations } from "../KnownTestLocations.js";
 import { BriefcaseManager } from "../../BriefcaseManager.js";
 import { QueryMappedFamiliesArgs } from "../../IModelDbFonts.js";
+import { TestUtils } from "../TestUtils.js";
 
 describe("IModelDbFonts", () => {
   let db: IModelDb;
@@ -49,8 +50,14 @@ describe("IModelDbFonts", () => {
 
   }
 
-  before(() => HubMock.startup("IModelDbFontsTest", KnownTestLocations.outputDir));
-  after(() => HubMock.shutdown());
+  beforeAll(async () => {
+    HubMock.startup("IModelDbFontsTest", KnownTestLocations.outputDir);
+    await TestUtils.startBackend();
+  });
+  afterAll(async () => {
+    HubMock.shutdown();
+    await TestUtils.shutdownBackend();
+  });
 
   beforeEach(async () => {
     CodeService.createForIModel = () => MockCodeService as any;
@@ -172,8 +179,8 @@ describe("IModelDbFonts", () => {
     });
 
     it("throws if font is not embeddable", async () => {
-      await expect(db.fonts.embedFontFile({ file: createTTFile("Karla-Restricted.ttf") })).to.eventually.be.rejectedWith("Font does not permit embedding");
-      await expect(db.fonts.embedFontFile({ file: createTTFile("Karla-Preview-And-Print.ttf") })).to.eventually.be.rejectedWith("Font does not permit embedding");
+      await expect(db.fonts.embedFontFile({ file: createTTFile("Karla-Restricted.ttf") })).rejects.toThrow("Font does not permit embedding");
+      await expect(db.fonts.embedFontFile({ file: createTTFile("Karla-Preview-And-Print.ttf") })).rejects.toThrow("Font does not permit embedding");
     });
 
     it("allocates font Ids unless otherwise specified", async () => {

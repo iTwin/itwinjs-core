@@ -6,7 +6,7 @@
  * @module ECSqlExpr
  */
 
-import { assert } from "chai";
+import { assert, afterAll, beforeAll, describe, it } from "vitest";
 import {
   AssignmentExpr,
   BetweenExpr,
@@ -56,9 +56,10 @@ import {
   UsingRelationshipJoinExpr,
   WhereClauseExp,
 } from "@itwin/ecsql-common";
-import { ECDb, ECDbOpenMode, IModelHost } from "../../core-backend.js";
+import { ECDb, ECDbOpenMode } from "../../core-backend.js";
 import { IModelTestUtils } from "../IModelTestUtils.js";
 import { DbResult } from "@itwin/core-bentley";
+import { TestUtils } from "../TestUtils.js";
 
 describe("ECSql Abstract Syntax Tree", () => {
   let ecdb: ECDb;
@@ -92,14 +93,15 @@ describe("ECSql Abstract Syntax Tree", () => {
       printTree(child, indent);
   }
 
-  before(async () => {
-    await IModelHost.startup();
+  beforeAll(async () => {
+    await TestUtils.startBackend();
     ecdb = new ECDb();
     ecdb.openDb(IModelTestUtils.resolveAssetFile("test.bim"), ECDbOpenMode.ReadWrite);
   });
 
-  after(async () => {
+  afterAll(async () => {
     ecdb.closeDb();
+    await TestUtils.shutdownBackend();
   });
   it("parse (|, &, <<, >>, +, -, %, /, *) binary & unary", async () => {
     const tests = [

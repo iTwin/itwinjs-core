@@ -4,9 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 /* eslint-disable @typescript-eslint/naming-convention */
 
-import { assert } from "chai";
-import * as fs from "fs";
-import * as path from "path";
+import { afterAll, assert, beforeAll, describe, it } from "vitest";
+import fs from "node:fs";
+import path from "node:path";
 import { Guid, Id64Array, Id64String, Logger, OpenMode } from "@itwin/core-bentley";
 import {
   CodeScopeSpec, CodeSpec, ColorByName, DomainOptions, GeometryStreamBuilder, IModel, RelatedElementProps, RelationshipProps, SubCategoryAppearance,
@@ -16,6 +16,7 @@ import { LineSegment3d, Point3d, YawPitchRollAngles } from "@itwin/core-geometry
 import { _nativeDb, ChannelControl, ElementDrivesElementProps, IModelJsFs, PhysicalModel, SpatialCategory, StandaloneDb } from "../../core-backend.js";
 import { IModelTestUtils, TestElementDrivesElement, TestPhysicalObject, TestPhysicalObjectProps } from "../IModelTestUtils.js";
 import { IModelNative } from "../../internal/NativePlatform.js";
+import { TestUtils } from "../TestUtils.js";
 
 export function copyFile(newName: string, pathToCopy: string): string {
   const newPath = path.join(path.dirname(pathToCopy), newName);
@@ -152,7 +153,8 @@ describe("ElementDependencyGraph", () => {
     nativeDb.closeFile();
   };
 
-  before(async () => {
+  beforeAll(async () => {
+    await TestUtils.startBackend();
     IModelTestUtils.registerTestBimSchema();
     // make a unique name for the output file so this test can be run in parallel
     testFileName = IModelTestUtils.prepareOutputFile("ElementDependencyGraph", `${Guid.createValue()}.bim`);
@@ -172,8 +174,9 @@ describe("ElementDependencyGraph", () => {
     imodel.close();
   });
 
-  after(() => {
+  afterAll(async () => {
     IModelJsFs.removeSync(testFileName);
+    await TestUtils.shutdownBackend();
   });
 
   it("should invokeCallbacks EDE only", () => {

@@ -1,6 +1,6 @@
 import { Logger, LogLevel, StopWatch } from "@itwin/core-bentley";
 import { DbQueryConfig, ECSqlReader, QueryStats } from "@itwin/core-common";
-import { expect } from "chai";
+import { describe, expect, it } from "vitest";
 import { ConcurrentQuery } from "../../ConcurrentQuery.js";
 import { ECDb } from "../../ECDb.js";
 import { IModelDb, SnapshotDb } from "../../IModelDb.js";

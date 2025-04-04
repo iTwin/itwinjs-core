@@ -3,11 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert, expect } from "chai";
+import { afterAll, assert, beforeAll, describe, expect, it } from "vitest";
 import { DbResult, Id64, Id64String } from "@itwin/core-bentley";
 import { ImageSourceFormat, IModel, NormalMapFlags, NormalMapProps, RenderMaterialAssetMapsProps, RenderMaterialAssetProps, RenderMaterialProps, TextureMapProps } from "@itwin/core-common";
 import { ChannelControl, IModelElementCloneContext, RenderMaterialElement, RenderMaterialElementParams, SnapshotDb, Texture } from "../../core-backend.js";
 import { IModelTestUtils } from "../IModelTestUtils.js";
+import { TestUtils } from "../TestUtils.js";
 
 function removeUndefined(assetProps: RenderMaterialAssetProps): RenderMaterialAssetProps {
   const input = assetProps as any;
@@ -42,13 +43,17 @@ describe("RenderMaterialElement", () => {
   let materialNumber = 0;
   let textureNumber = 0;
 
-  before(() => {
+  beforeAll(async () => {
+    await TestUtils.startBackend();
     const seedFileName = IModelTestUtils.resolveAssetFile("CompatibilityTestSeed.bim");
     const testFileName = IModelTestUtils.prepareOutputFile("ExportGraphics", "ExportGraphicsTest.bim");
     imodel = IModelTestUtils.createSnapshotFromSeed(testFileName, seedFileName);
   });
 
-  after(() => imodel.close());
+  afterAll(async () => {
+    imodel.close();
+    await TestUtils.startBackend();
+  });
 
   function test(params: Omit<RenderMaterialElementParams, "paletteName">, expected?: RenderMaterialAssetProps): RenderMaterialElement {
     const name = `material${++materialNumber}`;

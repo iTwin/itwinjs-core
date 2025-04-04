@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert } from "chai";
+import { afterEach, assert, describe, it } from "vitest";
 import { BeDuration } from "@itwin/core-bentley";
 import { PromiseMemoizer, QueryablePromise } from "../../PromiseMemoizer.js";
 import * as sinon from "sinon";

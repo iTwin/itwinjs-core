@@ -2,16 +2,25 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert } from "chai";
-import * as os from "os";
+import { afterAll, assert, beforeAll, describe, it } from "vitest";
+import os from "node:os";
 import { Logger, LogLevel } from "@itwin/core-bentley";
 import { DevTools, DevToolsStatsFormatter } from "../../core-backend.js";
+import { TestUtils } from "../TestUtils.js";
 
 interface StringIndexedObject<T> {
   [index: string]: T;
 }
 
 describe("DevTools", () => {
+  beforeAll(async () => {
+    await TestUtils.startBackend();
+  });
+
+  afterAll(async () => {
+    await TestUtils.shutdownBackend();
+  });
+
   // we like to skip this test fixture for ios
   it("can fetch stats from backend", () => {
     const stats = DevTools.stats();

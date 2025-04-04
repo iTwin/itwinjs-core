@@ -3,8 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert, expect } from "chai";
-import { join } from "path";
+import { afterAll, assert, beforeAll, describe, expect, it } from "vitest";
+import { join } from "node:path";
 import { CompressedId64Set, Guid, GuidString, Id64, Id64String, OpenMode } from "@itwin/core-bentley";
 import {
   Camera, Code, ColorByName, ColorDef, DisplayStyle3dProps, ElementProps, IModel, IModelError, PlanProjectionSettings, SpatialViewDefinitionProps,
@@ -16,6 +16,7 @@ import {
 } from "../../core-backend.js";
 import { IModelTestUtils } from "../IModelTestUtils.js";
 import { KnownTestLocations } from "../KnownTestLocations.js";
+import { TestUtils } from "../TestUtils.js";
 
 function createNewModelAndCategory(rwIModel: IModelDb) {
   const modelId = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(rwIModel, IModelTestUtils.getUniqueModelCode(rwIModel, "newPhysicalModel"))[1];
@@ -57,7 +58,8 @@ describe("ViewDefinition", () => {
   }
 
   let iModel: StandaloneDb;
-  before(() => {
+  beforeAll(async () => {
+    await TestUtils.startBackend();
     iModel = StandaloneDb.createEmpty(IModelTestUtils.prepareOutputFile("ViewDefinition", "ViewDefinition.bim"), {
       rootSubject: { name: "ViewDefinition tests", description: "ViewDefinition tests" },
       client: "ViewDefinition",
@@ -72,10 +74,11 @@ describe("ViewDefinition", () => {
     vs1.openDb(dbName, OpenMode.ReadWrite);
   });
 
-  after(() => {
+  afterAll(async () => {
     iModel.abandonChanges();
     iModel.close();
     vs1.closeDb(true);
+    await TestUtils.shutdownBackend();
   });
 
   it("SpatialViewDefinition", async () => {
@@ -138,7 +141,7 @@ describe("ViewDefinition", () => {
       "0x11e", "0x12a", "0x12b", "0x12d", "0x12e", "0x13a", "0x13b", "0x13d", "0x13e", "0x14a", "0x14b", "0x14d", "0x14e",
       "0x15a", "0x15b", "0x15d", "0x15e", "0x16a", "0x16b", "0x16d"]);
 
-    await expect(vs1.addCategorySelector({ selector: { query: { from: "BisCore:SubCategory" } } })).to.be.rejectedWith("must select from BisCore:Category");
+    await expect(vs1.addCategorySelector({ selector: { query: { from: "BisCore:SubCategory" } } })).rejects.toThrow("must select from BisCore:Category");
     const cs2 = (await vs1.addCategorySelector({ selector: { query: { from: "BisCore:Category" } } }));
     expect(cs2).equal("@2");
     const cs3 = (await vs1.addCategorySelector({ selector: { query: { from: "BisCore:Category", adds: longElementList } } }));
@@ -256,7 +259,7 @@ describe("ViewDefinition", () => {
     expect(viewDefOut.cameraOn).equal(true);
     expect(JSON.stringify(viewDefOut.origin)).equal(JSON.stringify([1, 2, 3]));
     viewDefOut.displayStyleId = "@2";
-    await expect(vs1.updateViewDefinition({ viewId: v1, viewDefinition: viewDefOut })).to.be.rejectedWith("invalid Id for displayStyles");
+    await expect(vs1.updateViewDefinition({ viewId: v1, viewDefinition: viewDefOut })).rejects.toThrow("invalid Id for displayStyles");
     // add a new display style and uodate the view to use it
     viewDefOut.displayStyleId = await vs1.addDisplayStyle({ className: ds1.classFullName, settings: ds1.toJSON().jsonProperties.styles });
     await vs1.updateViewDefinition({ viewId: v1, viewDefinition: viewDefOut });

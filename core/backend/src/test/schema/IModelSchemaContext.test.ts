@@ -2,8 +2,8 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert } from "chai";
-import * as path from "path";
+import { afterAll, assert, beforeAll, describe, it } from "vitest";
+import path from "node:path";
 import { Code } from "@itwin/core-common";
 import {
   DefinitionElement,
@@ -15,19 +15,22 @@ import {
 import { IModelTestUtils } from "../IModelTestUtils.js";
 import { KnownTestLocations } from "../KnownTestLocations.js";
 import { SchemaKey } from "@itwin/ecschema-metadata";
+import { TestUtils } from "../TestUtils.js";
 
 describe("IModel Schema Context", () => {
   let imodel: SnapshotDb;
 
-  before(() => {
+  beforeAll(async () => {
+    await TestUtils.startBackend();
     const seedFileName = IModelTestUtils.resolveAssetFile("test.bim");
     const testFileName = IModelTestUtils.prepareOutputFile("IModelSchemaContext", "IModelSchemaContext.bim");
     imodel = IModelTestUtils.createSnapshotFromSeed(testFileName, seedFileName);
     assert.exists(imodel);
   });
 
-  after(() => {
+  afterAll(async () => {
     imodel?.close();
+    await TestUtils.shutdownBackend();
   });
 
   it("should verify the Entity metadata of known element subclasses", async () => {

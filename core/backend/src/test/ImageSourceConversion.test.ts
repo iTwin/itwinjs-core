@@ -3,7 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { TestUtils } from "./TestUtils.js";
 import { imageBufferFromImageSource, imageSourceFromImageBuffer } from "../ImageSourceConversion.js";
 import { samplePngTexture } from "./imageData.js";
 import { BinaryImageSource, ImageBuffer, ImageBufferFormat, ImageSourceFormat } from "@itwin/core-common";
@@ -98,6 +99,14 @@ function computeMaxCompressionError(compressed: ImageBuffer, original: ImageBuff
 }
 
 describe("ImageSource conversion", () => {
+  beforeAll(async () => {
+    await TestUtils.startBackend();
+  });
+
+  afterAll(async () => {
+    await TestUtils.shutdownBackend();
+  });
+
   describe("imageBufferFromImageSource", () => {
     it("decodes PNG", () => {
       const buf = imageBufferFromImageSource({ source: samplePng })!;

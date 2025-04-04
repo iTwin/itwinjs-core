@@ -5,7 +5,7 @@
 import { DbResult, GuidString, Id64, Id64String } from "@itwin/core-bentley";
 import { Code, ColorDef, GeometryStreamProps, IModel, SubCategoryAppearance } from "@itwin/core-common";
 import { Arc3d, IModelJson, Point3d } from "@itwin/core-geometry";
-import { assert, expect } from "chai";
+import { afterAll, assert, beforeAll, describe, expect, it } from "vitest";
 import * as path from "node:path";
 import { DrawingCategory } from "../../Category.js";
 import { ChangesetECAdaptor as ECChangesetAdaptor, PartialECChangeUnifier } from "../../ChangesetECAdaptor.js";
@@ -15,15 +15,20 @@ import { SqliteChangeOp, SqliteChangesetReader } from "../../SqliteChangesetRead
 import { HubWrappers, IModelTestUtils } from "../IModelTestUtils.js";
 import { KnownTestLocations } from "../KnownTestLocations.js";
 import { _nativeDb, ChannelControl } from "../../core-backend.js";
+import { TestUtils } from "../TestUtils.js";
 
 describe("Changeset Reader API", async () => {
   let iTwinId: GuidString;
 
-  before(() => {
+  beforeAll(async () => {
+    await TestUtils.startBackend();
     HubMock.startup("ChangesetReaderTest", KnownTestLocations.outputDir);
     iTwinId = HubMock.iTwinId;
   });
-  after(() => HubMock.shutdown());
+  afterAll(async () => {
+    HubMock.shutdown();
+    await TestUtils.shutdownBackend();
+  });
   it("Able to recover from when ExclusiveRootClassId is NULL for overflow table", async () => {
     /**
      * 1. Import schema with class that span overflow table.

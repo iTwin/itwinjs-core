@@ -3,8 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert, expect } from "chai";
-import { join } from "path";
+import { afterAll, assert, beforeAll, describe, expect, it } from "vitest";
+import { join } from "node:path";
 import { AccessToken, Guid, Mutable } from "@itwin/core-bentley";
 import { ChangesetFileProps, ChangesetType, LockState } from "@itwin/core-common";
 import { LockProps } from "../../BackendHubAccess.js";
@@ -17,6 +17,7 @@ import { KnownTestLocations } from "../KnownTestLocations.js";
 import { LockStatusExclusive, LockStatusShared } from "../../LocalHub.js";
 import { ProgressFunction, ProgressStatus } from "../../CheckpointManager.js";
 import { _hubAccess } from "../../internal/Symbols.js";
+import { TestUtils } from "../TestUtils.js";
 
 describe("HubMock", () => {
   const tmpDir = join(KnownTestLocations.outputDir, "HubMockTest");
@@ -24,11 +25,13 @@ describe("HubMock", () => {
   const version0 = IModelTestUtils.resolveAssetFile("test.bim");
   const accessToken: AccessToken = "fake token";
 
-  before(() => {
+  beforeAll(async () => {
+    await TestUtils.startBackend();
     HubMock.startup("HubMockTest", KnownTestLocations.outputDir);
   });
-  after(() => {
+  afterAll(async () => {
     HubMock.shutdown();
+    await TestUtils.startBackend();
   });
 
   it("should be able to create HubMock", async () => {

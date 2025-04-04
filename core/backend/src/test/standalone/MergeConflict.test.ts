@@ -9,9 +9,7 @@ import {
   IModel,
   SubCategoryAppearance,
 } from "@itwin/core-common";
-import chai from "chai";
-import { assert, expect } from "chai";
-import chaiAsPromised from "chai-as-promised";
+import { afterAll, assert, beforeAll, describe, expect, it } from "vitest";
 import { HubWrappers, KnownTestLocations } from "../index.js";
 import { HubMock } from "../../HubMock.js";
 import {
@@ -24,7 +22,6 @@ import {
 } from "../../core-backend.js";
 import { IModelTestUtils, TestUserType } from "../IModelTestUtils.js";
 import { RebaseChangesetConflictArgs, SqliteConflictCause } from "../../internal/ChangesetConflictArgs.js";
-chai.use(chaiAsPromised);
 import * as sinon from "sinon";
 
 export async function createNewModelAndCategory(rwIModel: BriefcaseDb, parent?: Id64String) {
@@ -56,11 +53,11 @@ async function assertThrowsAsync<T>(test: () => Promise<T>, msg?: string) {
 describe.skip("Merge conflict & locking", () => { // ###TODO FLAKY https://github.com/iTwin/itwinjs-core/issues/7730
   let iTwinId: GuidString;
 
-  before(() => {
+  beforeAll(() => {
     HubMock.startup("MergeConflictTest", KnownTestLocations.outputDir);
     iTwinId = HubMock.iTwinId;
   });
-  after(() => HubMock.shutdown());
+  afterAll(() => HubMock.shutdown());
 
   it("pull/merge causing update conflict - dirty read/modify (with no lock)", async () => {
     /**
@@ -171,7 +168,7 @@ describe.skip("Merge conflict & locking", () => { // ###TODO FLAKY https://githu
 
     expect(conflicts.length).to.be.equals(3);
 
-    chai.expect(
+    expect(
       [
         {
           "cause": "Data",
@@ -413,7 +410,7 @@ describe.skip("Merge conflict & locking", () => { // ###TODO FLAKY https://githu
     insertAspectIntoB2();
 
     /* b1 cannot acquire lock on el1 as its already taken by b2 */
-    await expect(b1.locks.acquireLocks({ exclusive: el1 })).to.be.rejectedWith("exclusive lock is already held");
+    await expect(b1.locks.acquireLocks({ exclusive: el1 })).rejects.toThrow("exclusive lock is already held");
 
     /* push changes on b2 to release lock on el1 */
     b2.saveChanges();

@@ -8,7 +8,7 @@
 
 // cspell:ignore BLOCKCACHE
 
-import * as path from "path";
+import path from "node:path";
 import { NativeLoggerCategory } from "@bentley/imodeljs-native";
 import { AccessToken, BeEvent, ChangeSetStatus, Guid, GuidString, IModelStatus, Logger, LogLevel, Mutable, OpenMode, StopWatch } from "@itwin/core-bentley";
 import {

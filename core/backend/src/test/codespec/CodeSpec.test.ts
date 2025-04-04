@@ -2,15 +2,17 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { Guid, Id64 } from "@itwin/core-bentley";
 import { CodeScopeSpec, CodeSpec } from "@itwin/core-common";
 import { IModelTestUtils } from "../IModelTestUtils.js";
 import { StandaloneDb } from "../../IModelDb.js";
+import { TestUtils } from "../TestUtils.js";
 
-describe("CodeSpec", () => {
+describe("CodeSpec", async () => {
   let imodel: StandaloneDb;
-  before(() => {
+  beforeAll(async () => {
+    await TestUtils.startBackend();
     imodel = StandaloneDb.createEmpty(IModelTestUtils.prepareOutputFile("CodeSpec", "CodeSpec.bim"), {
       rootSubject: { name: "CodeSpec tests", description: "CodeSpec tests" },
       client: "CodeSpec",
@@ -20,8 +22,9 @@ describe("CodeSpec", () => {
     });
   });
 
-  after(() => {
+  afterAll(async () => {
     imodel.close();
+    await TestUtils.shutdownBackend();
   });
 
   it("should insert with default properties and update them later", () => {

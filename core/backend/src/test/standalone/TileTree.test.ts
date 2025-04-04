@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
+import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 import { Guid, Id64, Id64String } from "@itwin/core-bentley";
 import { Box, Point3d, Range3d, Vector3d, YawPitchRollAngles } from "@itwin/core-geometry";
 import {
@@ -16,6 +16,7 @@ import {
   SubjectOwnsPartitionElements,
 } from "../../core-backend.js";
 import { IModelTestUtils } from "../IModelTestUtils.js";
+import { TestUtils } from "../TestUtils.js";
 
 let uniqueId = 0;
 
@@ -88,7 +89,8 @@ describe("tile tree", () => {
     return scriptBuilder.finish();
   }
 
-  before(() => {
+  beforeAll(async () => {
+    await TestUtils.startBackend();
     const props = {
       rootSubject: { name: "TileTreeTest", description: "Test purgeTileTrees" },
       client: "TileTree",
@@ -131,8 +133,9 @@ describe("tile tree", () => {
     expect(Id64.isValid(renderTimelineId)).to.be.true;
   });
 
-  after(() => {
+  afterAll(async () => {
     db.close();
+    await TestUtils.shutdownBackend();
   });
 
   afterEach(() => {

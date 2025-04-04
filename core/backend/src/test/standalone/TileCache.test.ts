@@ -2,8 +2,8 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
-import * as path from "path";
+import { describe, expect, it } from "vitest";
+import path from "node:path";
 import * as sinon from "sinon";
 import { Guid, Logger } from "@itwin/core-bentley";
 import {

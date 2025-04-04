@@ -2,32 +2,35 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert } from "chai";
-import * as fs from "fs";
-import * as path from "path";
+import { afterAll, assert, beforeAll, describe, it } from "vitest";
+import fs from "node:fs";
+import path from "node:path";
 import { PhysicalElement, SnapshotDb } from "../../core-backend.js";
 import { IModelTestUtils } from "../IModelTestUtils.js";
 import { Logger, LogLevel } from "@itwin/core-bentley";
 import { KnownTestLocations } from "../KnownTestLocations.js";
 import { EntityClass } from "@itwin/ecschema-metadata";
+import { TestUtils } from "../TestUtils.js";
 
 describe("Schema XML Import Tests", () => {
   let imodel: SnapshotDb;
 
-  before(() => {
+  beforeAll(async () => {
     // initialize logging
     if (false) {
       Logger.initializeToConsole();
       Logger.setLevelDefault(LogLevel.Error);
     }
+    await TestUtils.startBackend();
     const testFileName = IModelTestUtils.prepareOutputFile("SchemaXMLImport", "SchemaXMLImport.bim");
     imodel = SnapshotDb.createEmpty(testFileName, { rootSubject: { name: "SchemaXMLImportTest" } }); // IModelTestUtils.createSnapshotFromSeed(testFileName, seedFileName);
     assert.exists(imodel);
   });
 
-  after(() => {
+  afterAll(async () => {
     if (imodel)
       imodel.close();
+    await TestUtils.shutdownBackend();
   });
 
   it("should import schema XML", async () => {

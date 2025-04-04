@@ -8,7 +8,7 @@
 
 // cspell:ignore cset csets ecchanges
 
-import * as path from "path";
+import path from "node:path";
 import {
   AccessToken, BeDuration, ChangeSetStatus, GuidString, IModelHubStatus, IModelStatus, Logger, OpenMode, Optional, StopWatch,
 } from "@itwin/core-bentley";

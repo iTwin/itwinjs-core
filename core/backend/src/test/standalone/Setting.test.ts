@@ -3,10 +3,19 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { Setting } from "../../workspace/Settings.js";
+import { TestUtils } from "../TestUtils.js";
 
 describe("Setting", () => {
+  beforeAll(async () => {
+    await TestUtils.startBackend();
+  });
+
+  afterAll(async () => {
+    await TestUtils.startBackend();
+  });
+
   describe("areEqual", () => {
     it("should return true for two identical primitive values", () => {
       expect(Setting.areEqual(5, 5)).to.be.true;

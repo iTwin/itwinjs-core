@@ -2,14 +2,15 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert } from "chai";
+import { assert, afterAll, beforeAll, describe, it } from "vitest";
 import { DbResult, Id64 } from "@itwin/core-bentley";
 import { DbQueryRequest, DbQueryResponse, DbRequestExecutor, DbRequestKind, ECSqlReader, QueryBinder, QueryOptionsBuilder, QueryPropertyMetaData, QueryRowFormat } from "@itwin/core-common";
 import { ConcurrentQuery } from "../../ConcurrentQuery.js";
 import { _nativeDb, ECSqlStatement, IModelDb, SnapshotDb } from "../../core-backend.js";
 import { IModelTestUtils } from "../IModelTestUtils.js";
 import { SequentialLogMatcher } from "../SequentialLogMatcher.js";
-import * as path from "path";
+import path from "node:path";
+import { TestUtils } from "../TestUtils.js";
 
 // cspell:ignore mirukuru ibim
 
@@ -29,8 +30,8 @@ describe("ECSql Query", () => {
   let imodel5: SnapshotDb;
   let imodel6: SnapshotDb;
 
-  before(async () => {
-
+  beforeAll(async () => {
+    await TestUtils.startBackend();
     imodel1 = SnapshotDb.openFile(IModelTestUtils.resolveAssetFile("test.bim"));
     imodel2 = SnapshotDb.openFile(IModelTestUtils.resolveAssetFile("CompatibilityTestSeed.bim"));
     imodel3 = SnapshotDb.openFile(IModelTestUtils.resolveAssetFile("GetSetAutoHandledStructProperties.bim"));
@@ -39,13 +40,14 @@ describe("ECSql Query", () => {
     imodel6 = SnapshotDb.openFile(IModelTestUtils.resolveAssetFile("test_ec_4003.bim"));
   });
 
-  after(async () => {
+  afterAll(async () => {
     imodel1.close();
     imodel2.close();
     imodel3.close();
     imodel4.close();
     imodel5.close();
     imodel6.close();
+    await TestUtils.shutdownBackend();
   });
   it("verify 4.8.x format for ECClassId", async () => {
     const queries = [

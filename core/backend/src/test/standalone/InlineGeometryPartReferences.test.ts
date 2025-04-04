@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { Guid, Id64 } from "@itwin/core-bentley";
 import { LineString3d, Loop, Point3d } from "@itwin/core-geometry";
 import {
@@ -13,6 +13,7 @@ import {
   _nativeDb, GenericSchema, GeometricElement3d, GeometryPart, PhysicalModel, PhysicalObject, PhysicalPartition, RenderMaterialElement, SnapshotDb, SpatialCategory, SubCategory, SubjectOwnsPartitionElements,
 } from "../../core-backend.js";
 import { IModelTestUtils } from "../IModelTestUtils.js";
+import { TestUtils } from "../TestUtils.js";
 
 // The only geometry in our geometry streams will be squares of 1 meter in x and y, with origin at (pos, 0, 0).
 interface Primitive { pos: number }
@@ -143,6 +144,14 @@ describe("DgnDb.inlineGeometryPartReferences", () => {
   let blueSubCategoryId: string;
   let redSubCategoryId: string;
   let materialId: string;
+
+  beforeAll(async () => {
+    await TestUtils.startBackend();
+  });
+
+  afterAll(async () => {
+    await TestUtils.shutdownBackend();
+  });
 
   beforeEach(() => {
     imodel = SnapshotDb.createEmpty(IModelTestUtils.prepareOutputFile("InlineGeomParts", `${Guid.createValue()}.bim`), {

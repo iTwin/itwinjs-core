@@ -2,17 +2,26 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert, expect } from "chai";
-import * as path from "path";
-import * as sinon from "sinon";
+import { afterAll, assert, beforeAll, describe, expect, it } from "vitest";
+import path from "node:path";
+import sinon from "sinon";
 import { DbResult, Id64, Id64String, Logger } from "@itwin/core-bentley";
 import { ECDb, ECDbOpenMode, ECSqlInsertResult, ECSqlStatement, IModelJsFs, SqliteStatement, SqliteValue, SqliteValueType } from "../../core-backend.js";
 import { KnownTestLocations } from "../KnownTestLocations.js";
 import { ECDbTestHelper } from "./ECDbTestHelper.js";
 import { QueryOptionsBuilder } from "@itwin/core-common";
+import { TestUtils } from "../TestUtils.js";
 
 describe("ECDb", () => {
   const outDir = KnownTestLocations.outputDir;
+
+  beforeAll( async () => {
+    await TestUtils.startBackend();
+  });
+
+  afterAll( async () => {
+    await TestUtils.shutdownBackend();
+  });
 
   it("should be able to create a new ECDb", () => {
     using ecdb = ECDbTestHelper.createECDb(outDir, "create.ecdb");
@@ -441,7 +450,7 @@ describe("ECDb", () => {
     ecdb.closeDb();
   });
 
-  it("should make importSchema fail if new schema changes are observed without version bump", () => {
+  it("should make importSchema fail if new schema changes are observed without version bump", async () => {
     const ecdb: ECDb = ECDbTestHelper.createECDb(outDir, "importSchemaNoVersionBump.ecdb");
     const xmlpathOriginal = path.join(outDir, "importSchemaNoVersionBump1.ecschema.xml");
 

@@ -6,7 +6,7 @@
  * @module NativeApp
  */
 
-import { join } from "path";
+import { join } from "node:path";
 import { AccessToken, assert, BeEvent, GuidString } from "@itwin/core-bentley";
 import {
   BriefcaseProps, InternetConnectivityStatus, LocalBriefcaseProps, NativeAppFunctions, nativeAppIpcStrings, NativeAppNotifications,

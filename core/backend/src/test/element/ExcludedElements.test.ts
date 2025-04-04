@@ -2,23 +2,26 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { Id64 } from "@itwin/core-bentley";
 import { BisCodeSpec, DisplayStyleProps, IModel, QueryBinder, QueryRowFormat } from "@itwin/core-common";
 import { DisplayStyle3d, SnapshotDb } from "../../core-backend.js";
 import { IModelTestUtils } from "../IModelTestUtils.js";
+import { TestUtils } from "../TestUtils.js";
 
 // spell-checker: disable
 
 describe("ExcludedElements", () => {
   let imodel: SnapshotDb;
 
-  before(() => {
+  beforeAll(async () => {
+    await TestUtils.startBackend();
     imodel = IModelTestUtils.createSnapshotFromSeed(IModelTestUtils.prepareOutputFile("IModel", "test.bim"), IModelTestUtils.resolveAssetFile("test.bim"));
   });
 
-  after(() => {
+  afterAll(async () => {
     imodel.close();
+    await TestUtils.shutdownBackend();
   });
 
   it("should persist as a string and return as requested type", async () => {

@@ -2,14 +2,15 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert } from "chai";
-import * as path from "path";
+import { afterAll, assert, beforeAll, describe, it } from "vitest";
+import path from "node:path";
 import { DbResult } from "@itwin/core-bentley";
 import { Range3d } from "@itwin/core-geometry";
 import { ECDb, ECDbOpenMode, SqliteStatement, SqliteValueType } from "../../core-backend.js";
 import { KnownTestLocations } from "../KnownTestLocations.js";
 import { ECDbTestHelper } from "./ECDbTestHelper.js";
 import { SequentialLogMatcher } from "../SequentialLogMatcher.js";
+import { TestUtils } from "../TestUtils.js";
 
 describe("SqliteStatement", () => {
   const outDir = KnownTestLocations.outputDir;
@@ -17,6 +18,14 @@ describe("SqliteStatement", () => {
   const intVal = 0;
   const doubleVal = -2.5;
   const blobVal = new Uint8Array(new Range3d(1.2, 2.3, 3.4, 4.5, 5.6, 6.7).toFloat64Array().buffer);
+
+  beforeAll(async () => {
+    await TestUtils.startBackend();
+  });
+
+  afterAll(async () => {
+    await TestUtils.shutdownBackend();
+  });
 
   it("create table, insert, select with ecdb", () => {
     using ecdb = ECDbTestHelper.createECDb(outDir, "sqlitestatement.ecdb");

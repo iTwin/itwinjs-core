@@ -3,13 +3,22 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
+import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 import { CompressedId64Set, Guid } from "@itwin/core-bentley";
 import { DisplayStyle3dSettingsProps, DisplayStyleSettingsProps, IModel, SkyBoxImageType, SkyBoxProps } from "@itwin/core-common";
 import { DisplayStyle3d, IModelElementCloneContext, SnapshotDb, SpatialCategory, StandaloneDb, SubCategory } from "../../core-backend.js";
 import { IModelTestUtils } from "../IModelTestUtils.js";
+import { TestUtils } from "../TestUtils.js";
 
 describe("DisplayStyle", () => {
+  beforeAll(async () => {
+    await TestUtils.startBackend();
+  });
+
+  afterAll(async () => {
+    await TestUtils.shutdownBackend();
+  });
+
   it("preserves skybox", () => {
     const localDb = SnapshotDb.createEmpty(IModelTestUtils.prepareOutputFile("DisplayStyle", "DisplayStyleSkybox.bim"), {
       rootSubject: { name: "DisplayStyle tests", description: "DisplayStyle tests" },
@@ -64,7 +73,7 @@ describe("DisplayStyle", () => {
     let db: StandaloneDb;
     let db2: StandaloneDb;
 
-    before(() => {
+    beforeAll(() => {
       db = StandaloneDb.createEmpty(IModelTestUtils.prepareOutputFile("DisplayStyle", "DisplayStyle.bim"), {
         rootSubject: { name: "DisplayStyle tests", description: "DisplayStyle tests" },
         client: "DisplayStyle",
@@ -87,7 +96,7 @@ describe("DisplayStyle", () => {
       db2.abandonChanges();
     });
 
-    after(() => {
+    afterAll(() => {
       db.close();
       db2.close();
     });

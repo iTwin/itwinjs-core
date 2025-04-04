@@ -2,14 +2,20 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert, expect } from "chai";
+import { afterAll, assert, beforeAll, describe, expect, it } from "vitest";
 import { IModelJsFs } from "../../IModelJsFs.js";
 import { NativeHost } from "../../NativeHost.js";
 import { NativeAppStorage } from "../../NativeAppStorage.js";
+import { TestUtils } from "../TestUtils.js";
 
 describe("NativeApp storage backend", () => {
-  before(async () => {
+  beforeAll(async () => {
+    await TestUtils.startBackend();
     IModelJsFs.purgeDirSync(NativeHost.appSettingsCacheDir);
+  });
+
+  afterAll(async () => {
+    await TestUtils.shutdownBackend();
   });
 
   it("should persistence primitive type values", () => {

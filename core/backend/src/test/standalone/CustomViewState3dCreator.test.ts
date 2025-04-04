@@ -3,21 +3,26 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert } from "chai";
+import { afterAll, assert, beforeAll, describe, it } from "vitest";
 import { CustomViewState3dProps } from "@itwin/core-common";
 import { SnapshotDb } from "../../IModelDb.js";
 import { CompressedId64Set, Id64String} from "@itwin/core-bentley";
 import { IModelTestUtils } from "../IModelTestUtils.js";
 import { CustomViewState3dCreator } from "../../CustomViewState3dCreator.js";
 import { Range3d } from "@itwin/core-geometry";
+import { TestUtils } from "../TestUtils.js";
 
 describe("CustomViewState3dCreator", () => {
   let imodel: SnapshotDb;
-  after(() => {
+
+  afterAll(async () => {
     if (imodel && imodel.isOpen)
       imodel.close();
+    await TestUtils.shutdownBackend();
   });
-  before(() => {
+
+  beforeAll(async () => {
+    await TestUtils.startBackend();
     const filename = IModelTestUtils.resolveAssetFile("mirukuru.ibim");
     imodel = SnapshotDb.openFile(filename);
   });

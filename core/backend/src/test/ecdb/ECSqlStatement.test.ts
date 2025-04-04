@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert } from "chai";
+import { afterAll, assert, beforeAll, describe, expect, it } from "vitest";
 import { DbResult, Guid, GuidString, Id64, Id64String } from "@itwin/core-bentley";
 import { NavigationValue, QueryBinder, QueryOptions, QueryOptionsBuilder, QueryRowFormat } from "@itwin/core-common";
 import { Point2d, Point3d, Range3d, XAndY, XYAndZ } from "@itwin/core-geometry";
@@ -12,6 +12,7 @@ import { KnownTestLocations } from "../KnownTestLocations.js";
 import { SequentialLogMatcher } from "../SequentialLogMatcher.js";
 import { ECDbTestHelper } from "./ECDbTestHelper.js";
 import { ConcurrentQuery } from "../../ConcurrentQuery.js";
+import { TestUtils } from "../TestUtils.js";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 const selectSingleRow = new QueryOptionsBuilder().setLimit({ count: 1, offset: -1 }).setRowFormat(QueryRowFormat.UseJsPropertyNames).getOptions();
@@ -52,6 +53,12 @@ function blobEqual(lhs: any, rhs: any) {
 }
 
 describe("ECSqlStatement", () => {
+  beforeAll(async () => {
+    await TestUtils.startBackend();
+  });
+  afterAll(async () => {
+    await TestUtils.shutdownBackend();
+  });
   const outDir = KnownTestLocations.outputDir;
   const testRange = new Range3d(1.2, 2.3, 3.4, 4.5, 5.6, 6.7);
   const blobVal = new Uint8Array(testRange.toFloat64Array().buffer);
@@ -3238,7 +3245,6 @@ describe("ECSqlStatement", () => {
     const paramsWithStruct = new QueryBinder();
     paramsWithStruct.bindStruct("structValue", structValue);
     reader = ecdb.createQueryReader("SELECT * FROM ts.Baz WHERE structProperty = :structValue", paramsWithStruct);
-
-    await assert.isRejected(reader.toArray(), "Struct type binding not supported");
+    await expect(reader.toArray()).rejects.toThrow("Struct type binding not supported");
   });
 });

@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { join } from "path";
+import { join } from "node:path";
 import { DbResult, GuidString, Id64String, IModelHubStatus, IModelStatus, OpenMode } from "@itwin/core-bentley";
 import {
   BriefcaseId, BriefcaseIdValue, ChangesetFileProps, ChangesetId, ChangesetIdWithIndex, ChangesetIndex, ChangesetIndexOrId, ChangesetProps,

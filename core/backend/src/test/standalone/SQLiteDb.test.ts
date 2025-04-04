@@ -3,12 +3,20 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { BeDuration, DbResult, OpenMode } from "@itwin/core-bentley";
 import { SQLiteDb } from "../../SQLiteDb.js";
 import { IModelTestUtils } from "../IModelTestUtils.js";
+import { TestUtils } from "../TestUtils.js";
 
 describe("SQLiteDb", () => {
+  beforeAll(async () => {
+    await TestUtils.startBackend();
+  });
+
+  afterAll(async () => {
+    await TestUtils.shutdownBackend();
+  });
 
   it("should create new SQLiteDb", async () => {
     const fileName = IModelTestUtils.prepareOutputFile("SQLiteDb", "db1.db");

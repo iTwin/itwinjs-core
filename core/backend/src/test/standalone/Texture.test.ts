@@ -2,21 +2,24 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { Guid, Id64 } from "@itwin/core-bentley";
 import { Base64EncodedString, ImageSourceFormat, IModel, TextureTransparency } from "@itwin/core-common";
 import { SnapshotDb, Texture } from "../../core-backend.js";
 import { IModelTestUtils } from "../IModelTestUtils.js";
+import { TestUtils } from "../TestUtils.js";
 
 describe("Texture", () => {
   let imodel: SnapshotDb;
 
-  before(async () => {
+  beforeAll(async () => {
+    await TestUtils.startBackend();
     imodel = IModelTestUtils.createSnapshotFromSeed(IModelTestUtils.prepareOutputFile("IModel", "CompatibilityTestSeed.bim"), IModelTestUtils.resolveAssetFile("CompatibilityTestSeed.bim"));
   });
 
-  after(() => {
+  afterAll(async () => {
     imodel.close();
+    await TestUtils.shutdownBackend();
   });
 
   it("should accept image as Uint8Array or base-64-encoded string", () => {

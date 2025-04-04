@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as path from "path";
+import path from "node:path";
 import { Guid } from "@itwin/core-bentley";
 import { ECDb } from "../../ECDb.js";
 import { IModelJsFs } from "../../IModelJsFs.js";

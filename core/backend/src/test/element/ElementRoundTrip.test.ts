@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert, expect } from "chai";
+import { afterAll, assert, beforeAll, describe, expect, it } from "vitest";
 import { DbResult, Id64, Id64String } from "@itwin/core-bentley";
 import {
   BriefcaseIdValue, Code, ColorDef, ElementAspectProps, ElementGeometry, GeometricElementProps, GeometryStreamProps, IModel, PhysicalElementProps,
@@ -13,6 +13,7 @@ import { _nativeDb, ECSqlStatement, IModelDb, IModelJsFs, PhysicalModel, Physica
 import { ElementRefersToElements } from "../../Relationship.js";
 import { IModelTestUtils } from "../IModelTestUtils.js";
 import { EntityClass, RelationshipClass } from "@itwin/ecschema-metadata";
+import { TestUtils } from "../TestUtils.js";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 
@@ -519,11 +520,12 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
     ],
   };
 
-  before(async () => {
+  beforeAll(async () => {
     // write schema to disk as we do not have api to import xml directly
     const testSchemaPath = IModelTestUtils.prepareOutputFile(subDirName, schemaFileName);
     IModelJsFs.writeFileSync(testSchemaPath, testSchema);
 
+    await TestUtils.startBackend();
     const imodel = SnapshotDb.createEmpty(iModelPath, { rootSubject: { name: "RoundTripTest" } });
     await imodel.importSchemas([testSchemaPath]);
     imodel[_nativeDb].resetBriefcaseId(BriefcaseIdValue.Unassigned);
@@ -535,6 +537,10 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
 
     imodel.saveChanges();
     imodel.close();
+  });
+
+  afterAll(async () => {
+    await TestUtils.shutdownBackend();
   });
 
   it("Roundtrip all type of properties via ElementApi, ConcurrentQuery and ECSqlStatement via insert and update", async () => {
@@ -941,14 +947,14 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
       imodel.saveChanges();
 
       const inMemoryCopy = imodel.elements.getElement<PhysicalObject>({ id: objId, wantGeometry: true }, PhysicalObject);
-      expect(inMemoryCopy.placement).to.deep.advancedEqual(expectedPlacement);
+      expect(inMemoryCopy.placement).advancedEqual(expectedPlacement);
 
       // reload db since there is a different path for loading properties not in memory that we want to force
       imodel.close();
       imodel = SnapshotDb.openFile(imodelPath);
 
       const readFromDbCopy = imodel.elements.getElement<PhysicalObject>({ id: objId, wantGeometry: true }, PhysicalObject);
-      expect(readFromDbCopy.placement).to.deep.advancedEqual(expectedPlacement);
+      expect(readFromDbCopy.placement).advancedEqual(expectedPlacement);
 
       imodel.close();
     };

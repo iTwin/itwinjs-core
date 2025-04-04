@@ -1,4 +1,4 @@
-import { expect } from "chai";
+import { beforeEach, describe, expect, it } from "vitest";
 import { SinonStub, stub } from "sinon";
 import { Readable, Writable } from "stream";
 import { HttpServerRequest, HttpServerResponse, RpcRequestFulfillment, RpcRequestStatus, SerializedRpcRequest, WebAppRpcProtocol } from "@itwin/core-common";

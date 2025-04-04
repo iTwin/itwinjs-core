@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { CompressedId64Set, IModelStatus, OpenMode } from "@itwin/core-bentley";
 import { LineSegment3d, Point3d, YawPitchRollAngles } from "@itwin/core-geometry";
 import {
@@ -13,6 +13,7 @@ import {
   ChannelControl, IModelJsFs, PhysicalModel, SpatialCategory, StandaloneDb, VolumeElement,
 } from "../../core-backend.js";
 import { IModelTestUtils } from "../IModelTestUtils.js";
+import { TestUtils } from "../TestUtils.js";
 
 describe("Model geometry changes", () => {
   let imodel: StandaloneDb;
@@ -20,7 +21,8 @@ describe("Model geometry changes", () => {
   let categoryId: string;
   let lastChanges: ModelGeometryChangesProps[] | undefined;
 
-  before(async () => {
+  beforeAll(async () => {
+    await TestUtils.startBackend();
     const testFileName = IModelTestUtils.prepareOutputFile("ModelGeometryTracking", "ModelGeometryTracking.bim");
     const seedFileName = IModelTestUtils.resolveAssetFile("test.bim");
     IModelJsFs.copySync(seedFileName, testFileName);
@@ -36,9 +38,10 @@ describe("Model geometry changes", () => {
     imodel.txns.onGeometryChanged.addListener((props) => lastChanges = props);
   });
 
-  after(async () => {
+  afterAll(async () => {
     imodel[_nativeDb].setGeometricModelTrackingEnabled(false);
     imodel.close();
+    await TestUtils.shutdownBackend();
   });
 
   interface GeometricModelChange {

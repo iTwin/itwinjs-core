@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert, expect } from "chai";
+import { afterAll, assert, beforeAll, describe, expect, it, test} from "vitest";
 import { computeGraphemeOffsets, ComputeGraphemeOffsetsArgs, ComputeRangesForTextLayout, ComputeRangesForTextLayoutArgs, FindFontId, FindTextStyle, layoutTextBlock, LineLayout, RunLayout, TextBlockLayout, TextLayoutRanges } from "../../TextAnnotationLayout.js";
 import { Geometry, Range2d } from "@itwin/core-geometry";
 import { ColorDef, FontType, FractionRun, LineBreakRun, LineLayoutResult, Run, RunLayoutResult, TextAnnotation, TextAnnotation2dProps, TextAnnotation3dProps, TextAnnotationAnchor, TextBlock, TextBlockGeometryPropsEntry, TextBlockMargins, TextRun, TextStringProps, TextStyleSettings } from "@itwin/core-common";
@@ -12,6 +12,7 @@ import { produceTextAnnotationGeometry } from "../../TextAnnotationGeometry.js";
 import { IModelTestUtils } from "../IModelTestUtils.js";
 import { GeometricElement3d } from "../../Element.js";
 import { Id64, ProcessDetector } from "@itwin/core-bentley";
+import { TestUtils } from "../TestUtils.js";
 
 function computeTextRangeAsStringLength(args: ComputeRangesForTextLayoutArgs): TextLayoutRanges {
   const range = new Range2d(0, 0, args.chars.length, args.lineHeight);
@@ -188,11 +189,7 @@ describe("layoutTextBlock", () => {
     expect(tb.lines.every((line) => line.offsetFromDocument.x === 0)).to.be.true;
   });
 
-  it("splits paragraphs into multiple lines if runs exceed the document width", function () {
-    if (!isIntlSupported()) {
-      this.skip();
-    }
-
+  it.skipIf(!isIntlSupported())("splits paragraphs into multiple lines if runs exceed the document width", function () {
     const textBlock = TextBlock.create({ styleName: "" });
     textBlock.width = 6;
     textBlock.appendRun(makeTextRun("ab"));
@@ -224,11 +221,7 @@ describe("layoutTextBlock", () => {
     expect(range.yLength()).to.equal(height);
   }
 
-  it("computes range for wrapped lines", function () {
-    if (!isIntlSupported()) {
-      this.skip();
-    }
-
+  it.skipIf(!isIntlSupported())("computes range for wrapped lines", function () {
     const block = TextBlock.create({ styleName: "", width: 3, styleOverrides: { lineHeight: 1, lineSpacingFactor: 0 } });
 
     function expectBlockRange(width: number, height: number): void {
@@ -257,11 +250,7 @@ describe("layoutTextBlock", () => {
     expectBlockRange(10, 2);
   });
 
-  it("computes range for split runs", function () {
-    if (!isIntlSupported()) {
-      this.skip();
-    }
-
+  it.skipIf(!isIntlSupported())("computes range for split runs", function () {
     const block = TextBlock.create({ styleName: "", styleOverrides: { lineHeight: 1, lineSpacingFactor: 0 } });
 
     function expectBlockRange(width: number, height: number): void {
@@ -280,11 +269,7 @@ describe("layoutTextBlock", () => {
     expectBlockRange(10, 2);
   });
 
-  it("justifies lines", function () {
-    if (!isIntlSupported()) {
-      this.skip();
-    }
-
+  it.skipIf(!isIntlSupported())("justifies lines", function () {
     const block = TextBlock.create({ styleName: "", styleOverrides: { lineSpacingFactor: 0 } });
 
     function expectBlockRange(width: number, height: number): void {
@@ -390,11 +375,7 @@ describe("layoutTextBlock", () => {
     return layout;
   }
 
-  it("splits a single TextRun at word boundaries if it exceeds the document width", function () {
-    if (!isIntlSupported()) {
-      this.skip();
-    }
-
+  it.skipIf(!isIntlSupported())("splits a single TextRun at word boundaries if it exceeds the document width", function () {
     expectLines("a bc def ghij klmno pqrstu vwxyz", 5, [
       "a bc ",
       "def ",
@@ -436,11 +417,7 @@ describe("layoutTextBlock", () => {
     ]);
   });
 
-  it("considers consecutive whitespace part of a single 'word'", function () {
-    if (!isIntlSupported()) {
-      this.skip();
-    }
-
+  it.skipIf(!isIntlSupported())("considers consecutive whitespace part of a single 'word'", function () {
     expectLines("a b  c   d    e     f      ", 3, [
       "a ",
       "b  ",
@@ -451,20 +428,12 @@ describe("layoutTextBlock", () => {
     ]);
   });
 
-  it("wraps Japanese text", function () {
-    if (!isIntlSupported()) {
-      this.skip();
-    }
-
+  it.skipIf(!isIntlSupported())("wraps Japanese text", function () {
     // "I am a cat. The name is Tanuki."
     expectLines("吾輩は猫である。名前はたぬき。", 1, ["吾", "輩", "は", "猫", "で", "あ", "る。", "名", "前", "は", "た", "ぬ", "き。"]);
   });
 
-  it("performs word-wrapping with punctuation", function () {
-    if (!isIntlSupported()) {
-      this.skip();
-    }
-
+  it.skipIf(!isIntlSupported())("performs word-wrapping with punctuation", function () {
     expectLines("1.24 56.7 8,910", 1, ["1.24 ", "56.7 ", "8,910"]);
 
     expectLines("a.bc de.f g,hij", 1, ["a.bc ", "de.f ", "g,hij"]);
@@ -480,11 +449,7 @@ describe("layoutTextBlock", () => {
     ]);
   });
 
-  it("performs word-wrapping and line-splitting with multiple runs", function () {
-    if (!isIntlSupported()) {
-      this.skip();
-    }
-
+  it.skipIf(!isIntlSupported())("performs word-wrapping and line-splitting with multiple runs", function () {
     const textBlock = TextBlock.create({ styleName: "" });
     for (const str of ["The ", "quick brown", " fox jumped over ", "the lazy ", "dog"]) {
       textBlock.appendRun(makeTextRun(str));
@@ -528,11 +493,7 @@ describe("layoutTextBlock", () => {
     ]);
   });
 
-  it("wraps multiple runs", function () {
-    if (!isIntlSupported()) {
-      this.skip();
-    }
-
+  it.skipIf(!isIntlSupported())("wraps multiple runs", function () {
     const block = TextBlock.create({ styleName: "" });
     block.appendRun(makeTextRun("aa")); // 2 chars wide
     block.appendRun(makeTextRun("bb ccc d ee")); // 11 chars wide
@@ -572,11 +533,7 @@ describe("layoutTextBlock", () => {
     expectLayout(-2, "aabb ccc d eeff ggg h");
   });
 
-  it("does not word wrap due to floating point rounding error", function () {
-    if (!isIntlSupported()) {
-      this.skip();
-    }
-
+  it.skipIf(!isIntlSupported())("does not word wrap due to floating point rounding error", function () {
     const block = TextBlock.create({ styleName: "", styleOverrides: { lineHeight: 1, lineSpacingFactor: 0 } });
     block.appendRun(makeTextRun("abc defg"));
     const layout1 = doLayout(block);
@@ -588,11 +545,7 @@ describe("layoutTextBlock", () => {
     expect(layout2.range.yLength()).to.equal(1);
   })
 
-  it("has consistent data when converted to a layout result", function () {
-    if (!isIntlSupported()) {
-      this.skip();
-    }
-
+  it.skipIf(!isIntlSupported())("has consistent data when converted to a layout result", function () {
     // Initialize a new TextBlockLayout object
     const textBlock = TextBlock.create({ width: 50, styleName: "", styleOverrides: { widthFactor: 34, color: 0x00ff00, fontName: "arial" } });
     const run0 = TextRun.create({
@@ -869,13 +822,17 @@ describe("layoutTextBlock", () => {
   describe("using native font library", () => {
     let iModel: SnapshotDb;
 
-    before(() => {
+    beforeAll(async () => {
+      await TestUtils.startBackend();
       const seedFileName = IModelTestUtils.resolveAssetFile("CompatibilityTestSeed.bim");
       const testFileName = IModelTestUtils.prepareOutputFile("NativeFonts", "NativeFonts.bim");
       iModel = IModelTestUtils.createSnapshotFromSeed(testFileName, seedFileName);
     });
 
-    after(() => iModel.close());
+    afterAll(async () => {
+      iModel.close();
+      await TestUtils.shutdownBackend();
+    });
 
     it("maps font names to Id", async () => {
       const vera = iModel.fonts.findId({ name: "Vera" });
@@ -1254,7 +1211,8 @@ describe("TextAnnotation element", () => {
     let imodel: SnapshotDb;
     let seed: GeometricElement3d;
 
-    before(() => {
+    beforeAll(async () => {
+      await TestUtils.startBackend();
       const seedFileName = IModelTestUtils.resolveAssetFile("CompatibilityTestSeed.bim");
       const testFileName = IModelTestUtils.prepareOutputFile("GeometryStream", "GeometryStreamTest.bim");
       imodel = IModelTestUtils.createSnapshotFromSeed(testFileName, seedFileName);
@@ -1264,7 +1222,10 @@ describe("TextAnnotation element", () => {
       assert.isTrue(seed.federationGuid! === "18eb4650-b074-414f-b961-d9cfaa6c8746");
     });
 
-    after(() => imodel.close());
+    afterAll(async () => {
+      imodel.close();
+      TestUtils.shutdownBackend();
+    });
 
     function createElement(props?: Partial<TextAnnotation3dProps>): TextAnnotation3d {
       return TextAnnotation3d.fromJSON({

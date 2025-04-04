@@ -2,9 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert, expect } from "chai";
+import { afterAll, assert, beforeAll, describe, expect, it } from "vitest";
 import * as sinon from "sinon";
-import * as path from "path";
+import path from "node:path";
 import {
   BisCodeSpec, Code, ConcreteEntityTypes, DefinitionElementProps, ECJsNames, ElementAspectProps, ElementProps, EntityReferenceSet, ModelProps,
   PropertyMetaData,
@@ -21,19 +21,22 @@ import { Schemas } from "../../Schema.js";
 import { ClassRegistry } from "../../ClassRegistry.js";
 import { OpenMode } from "@itwin/core-bentley";
 import { EntityClass, NavigationProperty, PrimitiveProperty } from "@itwin/ecschema-metadata";
+import { TestUtils } from "../TestUtils.js";
 
 describe("Class Registry", () => {
   let imodel: SnapshotDb;
 
-  before(() => {
+  beforeAll(async () => {
+    await TestUtils.startBackend();
     const seedFileName = IModelTestUtils.resolveAssetFile("test.bim");
     const testFileName = IModelTestUtils.prepareOutputFile("ClassRegistry", "ClassRegistryTest.bim");
     imodel = IModelTestUtils.createSnapshotFromSeed(testFileName, seedFileName);
     assert.exists(imodel);
   });
 
-  after(() => {
+  afterAll(async () => {
     imodel?.close();
+    await TestUtils.shutdownBackend();
   });
 
   it("should verify the Entity metadata of known element subclasses", async () => {
@@ -108,7 +111,8 @@ describe("Class Registry", () => {
 describe("Class Registry - getRootMetaData", () => {
   let imodel: StandaloneDb;
 
-  before(async () => {
+  beforeAll(async () => {
+    await TestUtils.startBackend();
     const seedFileName = IModelTestUtils.resolveAssetFile("test.bim");
     const testFileName = IModelTestUtils.prepareOutputFile("ClassRegistry", "GetRootMetaData.bim");
     IModelJsFs.copySync(seedFileName, testFileName);
@@ -168,8 +172,9 @@ describe("Class Registry - getRootMetaData", () => {
     ]); // will throw an exception if import fails
   });
 
-  after(() => {
+  afterAll(async () => {
     imodel?.close();
+    await TestUtils.startBackend();
   });
 
   it("should get the root metadata", async () => {
@@ -191,7 +196,7 @@ describe("Class Registry - generated classes", () => {
   let imodel: SnapshotDb;
   const testSchemaPath = path.join(KnownTestLocations.assetsDir, "TestGeneratedClasses.ecschema.xml");
 
-  before(async () => {
+  beforeAll(async () => {
     const seedFileName = IModelTestUtils.resolveAssetFile("test.bim");
     const testFileName = IModelTestUtils.prepareOutputFile("ClassRegistry", "GeneratedClasses.bim");
     imodel = IModelTestUtils.createSnapshotFromSeed(testFileName, seedFileName);
@@ -199,7 +204,7 @@ describe("Class Registry - generated classes", () => {
     await imodel.importSchemas([testSchemaPath]); // will throw an exception if import fails
   });
 
-  after(() => {
+  afterAll(() => {
     imodel?.close();
   });
 
@@ -765,7 +770,8 @@ describe("Global state of ClassRegistry", () => {
   let imodel1: SnapshotDb;
   let imodel2: SnapshotDb;
 
-  before(() => {
+  beforeAll(async () => {
+    await TestUtils.startBackend();
     const seedFileName = IModelTestUtils.resolveAssetFile("test.bim");
     const testFileName1 = IModelTestUtils.prepareOutputFile("ClassRegistry", "GlobalState1.bim");
     const testFileName2 = IModelTestUtils.prepareOutputFile("ClassRegistry", "GlobalState2.bim");
@@ -775,9 +781,10 @@ describe("Global state of ClassRegistry", () => {
     assert.exists(imodel2);
   });
 
-  after(() => {
+  afterAll(async () => {
     imodel1?.close();
     imodel2?.close();
+    await TestUtils.shutdownBackend();
   });
 
   it("registering a class in different imodels should not affect each other", async () => {

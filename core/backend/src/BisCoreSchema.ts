@@ -6,7 +6,7 @@
  * @module Schema
  */
 
-import * as path from "path";
+import path from "node:path";
 import * as categoryMod from "./Category.js";
 import { ClassRegistry } from "./ClassRegistry.js";
 import * as elementMod from "./Element.js";

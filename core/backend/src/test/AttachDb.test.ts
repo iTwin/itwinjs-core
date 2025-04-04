@@ -3,11 +3,20 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { SnapshotDb } from "../IModelDb.js";
 import { IModelTestUtils } from "./IModelTestUtils.js";
+import { TestUtils } from "./TestUtils.js";
 
 describe("Attach/Detach Db", () => {
+  beforeAll(async () => {
+    await TestUtils.startBackend();
+  });
+
+  afterAll(async () => {
+    await TestUtils.shutdownBackend();
+  });
+
   it("attach simulation db", async () => {
     const masterFile = IModelTestUtils.resolveAssetFile("sim-master.bim");
     const simulationFile = IModelTestUtils.resolveAssetFile("sim-attach.ecdb");

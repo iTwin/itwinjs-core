@@ -1,20 +1,23 @@
-import { expect } from "chai";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { AuxCoordSystemProps, Code, GeometricModel2dProps, ModelProps } from "@itwin/core-common";
 import { SnapshotDb } from "../../IModelDb.js";
 import { GeometricModel2d } from "../../Model.js";
 import { IModelTestUtils } from "../IModelTestUtils.js";
 import { AuxCoordSystem2d, AuxCoordSystem3d } from "../../ViewDefinition.js";
+import { TestUtils } from "../TestUtils.js";
 
 describe("EntitySubClasses", () => {
   let iModelDb: SnapshotDb;
 
-  before(() => {
+  beforeAll(async () => {
+    await TestUtils.startBackend();
     const testFileName = IModelTestUtils.prepareOutputFile("EntitySubClasses", "Empty.bim");
     iModelDb = SnapshotDb.createEmpty(testFileName, { rootSubject: { name: "Subject" } });
   });
 
-  after(() => {
+  afterAll(async () => {
     iModelDb.close();
+    await TestUtils.shutdownBackend();
   })
 
   it("should correctly set globalOrigin for GeometricModel2d", async () => {

@@ -8,7 +8,7 @@
 
 import { AccessToken, assert, DbResult, GuidString, Id64String, IModelStatus, Logger } from "@itwin/core-bentley";
 import { ChangedValueState, ChangeOpCode, ChangesetRange, IModelError, IModelVersion } from "@itwin/core-common";
-import * as path from "path";
+import path from "node:path";
 import { BackendLoggerCategory } from "./BackendLoggerCategory.js";
 import { BriefcaseManager } from "./BriefcaseManager.js";
 import { ECDb, ECDbOpenMode } from "./ECDb.js";

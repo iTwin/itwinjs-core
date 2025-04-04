@@ -2,27 +2,30 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert, expect } from "chai";
+import { afterAll, assert, beforeAll, describe, expect, it } from "vitest";
 import { Id64, Id64String } from "@itwin/core-bentley";
 import { ElementAspectProps, ExternalSourceAspectProps, IModel, SubCategoryAppearance } from "@itwin/core-common";
 import {
   Element, ElementAspect, ElementMultiAspect, ElementUniqueAspect, ExternalSourceAspect, PhysicalElement, SnapshotDb, SpatialCategory,
 } from "../../core-backend.js";
 import { IModelTestUtils } from "../IModelTestUtils.js";
+import { TestUtils } from "../TestUtils.js";
 
 describe("ElementAspect", () => {
 
   let iModel: SnapshotDb;
 
-  before(() => {
+  beforeAll(async () => {
+    await TestUtils.startBackend();
     // NOTE: see ElementAspectTests.PresentationRuleScenarios in DgnPlatform\Tests\DgnProject\NonPublished\ElementAspect_Test.cpp for how ElementAspectTest.bim was created
     const seedFileName = IModelTestUtils.resolveAssetFile("ElementAspectTest.bim");
     const testFileName = IModelTestUtils.prepareOutputFile("ElementAspect", "ElementAspectTest.bim");
     iModel = IModelTestUtils.createSnapshotFromSeed(testFileName, seedFileName);
   });
 
-  after(() => {
+  afterAll(async () => {
     iModel.close();
+    await TestUtils.shutdownBackend();
   });
 
   it("should be able to get aspects from test file", () => {
@@ -291,7 +294,7 @@ describe("ElementAspect", () => {
       version: "1.0",
     };
     const aspect = new ExternalSourceAspect(aspectProps, iModelDb);
-    expect(aspect).to.deep.subsetEqual(aspectProps, { normalizeClassNameProps: true });
+    expect(aspect).subsetEqual(aspectProps, { normalizeClassNameProps: true });
     iModelDb.elements.insertAspect(aspectProps);
 
     const aspectJson = aspect.toJSON();
@@ -302,9 +305,9 @@ describe("ElementAspect", () => {
     const aspects: ElementAspect[] = iModelDb.elements.getAspects(elementId, aspectProps.classFullName);
     assert.equal(aspects.length, 1);
     assert.equal(JSON.stringify(aspects), `[{"classFullName":"BisCore:ExternalSourceAspect","id":"0x21","scope":{"id":"0x1","relClassName":"BisCore.ElementScopesExternalSourceIdentifier"},"identifier":"A","kind":"Letter","version":"1.0","checksum":"1","element":{"id":"0x11","relClassName":"BisCore.ElementOwnsMultiAspects"}}]`);
-    expect(aspects[0]).to.deep.subsetEqual(aspectProps, { normalizeClassNameProps: true });
+    expect(aspects[0]).subsetEqual(aspectProps, { normalizeClassNameProps: true });
 
-    expect(aspectJson).to.deep.subsetEqual(aspectProps, { normalizeClassNameProps: true });
+    expect(aspectJson).subsetEqual(aspectProps, { normalizeClassNameProps: true });
 
     assert(aspectProps.scope !== undefined);
     const foundAspects = ExternalSourceAspect.findAllBySource(iModelDb, aspectProps.scope.id, aspectProps.kind, aspectProps.identifier);

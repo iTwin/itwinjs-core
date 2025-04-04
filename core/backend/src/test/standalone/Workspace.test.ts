@@ -3,9 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
-import * as fs from "fs-extra";
-import { extname } from "path";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import fs from "fs-extra";
+import { extname } from "node:path";
 import * as sinon from "sinon";
 import { Guid } from "@itwin/core-bentley";
 import { Range3d } from "@itwin/core-geometry";
@@ -15,18 +15,21 @@ import { EditableWorkspaceDb, WorkspaceEditor } from "../../workspace/WorkspaceE
 import { IModelTestUtils } from "../IModelTestUtils.js";
 import { validateWorkspaceContainerId, validateWorkspaceDbName } from "../../internal/workspace/WorkspaceImpl.js";
 import { _nativeDb } from "../../internal/Symbols.js";
+import { TestUtils } from "../TestUtils.js";
 
 describe("WorkspaceFile", () => {
 
   let editor: WorkspaceEditor;
   let workspace: Workspace;
 
-  before(() => {
+  beforeAll(async () => {
+    await TestUtils.startBackend();
     editor = WorkspaceEditor.construct();
     workspace = editor.workspace;
   });
-  after(() => {
+  afterAll(async () => {
     editor.close();
+    await TestUtils.shutdownBackend();
   });
 
   async function makeEditableDb(props: WorkspaceDbProps & WorkspaceContainerProps, manifest: WorkspaceDbManifest): Promise<EditableWorkspaceDb> {

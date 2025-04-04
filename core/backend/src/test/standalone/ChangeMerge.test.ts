@@ -8,9 +8,7 @@ import {
   IModel,
   SubCategoryAppearance
 } from "@itwin/core-common";
-import chai from "chai";
-import { assert } from "chai";
-import chaiAsPromised from "chai-as-promised";
+import { afterAll, afterEach, assert, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { HubWrappers, KnownTestLocations } from "../index.js";
 import {
   BriefcaseDb,
@@ -23,7 +21,6 @@ import {
 import { HubMock } from "../../HubMock.js";
 import { RebaseChangesetConflictArgs, TxnArgs } from "../../internal/ChangesetConflictArgs.js";
 import { IModelTestUtils, TestUserType } from "../IModelTestUtils.js";
-chai.use(chaiAsPromised);
 import * as sinon from "sinon";
 
 async function assertThrowsAsync<T>(test: () => Promise<T>, msg?: string) {
@@ -74,12 +71,12 @@ describe("Change merge method", () => {
     return b.elements.insertElement(IModelTestUtils.createPhysicalObject(b, ctx.modelId, ctx.spatialCategoryId).toJSON());
   }
 
-  before(async () => {
+  beforeAll(async () => {
     await IModelHost.startup();
     HubMock.startup("PullMergeMethod", KnownTestLocations.outputDir);
   });
 
-  after(async () => {
+  afterAll(async () => {
     HubMock.shutdown()
     //await IModelHost.shutdown();
   });
@@ -409,7 +406,7 @@ describe("Change merge method", () => {
 
     b2.saveFileProperty({ namespace: "test", name: "test" }, "test3");
 
-    chai.expect(() => b2.saveChanges("test1")).throws("Could not save changes (test1)");
+    expect(() => b2.saveChanges("test1")).throws("Could not save changes (test1)");
     b2.abandonChanges();
 
     // set handler to resolve conflict
@@ -418,10 +415,10 @@ describe("Change merge method", () => {
         if (args.cause === "Conflict") {
           if (args.tableName === "be_Prop") {
             if (args.opcode === "Inserted") {
-              chai.expect(args.getColumnNames()).to.be.deep.equal(["Namespace", "Name", "Id", "SubId", "TxnMode", "StrData", "RawSize", "Data"]);
-              chai.expect(args.txn.id).to.be.equal("0x100000000");
-              chai.expect(args.txn.descr).to.be.equal("test2");
-              chai.expect(args.txn.type).to.be.equal("Data");
+              expect(args.getColumnNames()).to.be.deep.equal(["Namespace", "Name", "Id", "SubId", "TxnMode", "StrData", "RawSize", "Data"]);
+              expect(args.txn.id).to.be.equal("0x100000000");
+              expect(args.txn.descr).to.be.equal("test2");
+              expect(args.txn.type).to.be.equal("Data");
               const localChangedVal = args.getValueText(5, "New");
               const tipValue = b2.queryFilePropertyString({ namespace: "test", name: "test" });
               b2.saveFileProperty({ namespace: "test", name: "test" }, `${tipValue} + ${localChangedVal}`);
@@ -438,15 +435,15 @@ describe("Change merge method", () => {
 
     // use changeset api to read txn directly
     const reader = SqliteChangesetReader.openTxn({ db: b2, txnId: "0x100000000" });
-    chai.expect(reader.step()).to.be.true;
-    chai.expect(reader.tableName).to.be.equal("be_Prop");
-    chai.expect(reader.getColumnNames(reader.tableName)[5]).to.be.equal("StrData");
+    expect(reader.step()).to.be.true;
+    expect(reader.tableName).to.be.equal("be_Prop");
+    expect(reader.getColumnNames(reader.tableName)[5]).to.be.equal("StrData");
     // note the operation changed from insert to update
-    chai.expect(reader.op).to.be.equal("Updated");
+    expect(reader.op).to.be.equal("Updated");
     // note this old value is from master branch after changeset was recomputed
-    chai.expect(reader.getChangeValueText(5, "Old")).to.be.equal("test1");
+    expect(reader.getChangeValueText(5, "Old")).to.be.equal("test1");
     // note this new value is from local branch after merger.
-    chai.expect(reader.getChangeValueText(5, "New")).to.be.equal("test1 + test2");
+    expect(reader.getChangeValueText(5, "New")).to.be.equal("test1 + test2");
     reader.close();
 
     assert.equal(b2.queryFilePropertyString({ namespace: "test", name: "test" }), "test1 + test2");

@@ -2,14 +2,15 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as fs from "fs";
-import { expect } from "chai";
+import fs from "node:fs";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { FontFace, FontType } from "@itwin/core-common";
 import { IModelTestUtils } from "../IModelTestUtils.js";
 import { FontFile } from "../../FontFile.js";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import { CadFontFile } from "../../internal/FontFileImpl.js";
 import { _key } from "../../internal/Symbols.js";
+import { TestUtils } from "../TestUtils.js";
 
 function expectFaces(file: FontFile, expected: FontFace[]): void {
   const actual = Array.from(file.faces);
@@ -40,6 +41,14 @@ describe("FontFile", () => {
   });
 
   describe("createFromRscBlob", () => {
+    beforeAll(async () => {
+      await TestUtils.startBackend();
+    });
+
+    afterAll(async () => {
+      await TestUtils.shutdownBackend();
+    });
+
     it("creates a valid font", () => {
       const blob = fs.readFileSync(IModelTestUtils.resolveFontFile("ENGINEERING.bin"));
       const file = FontFile.createFromRscFontBlob({ familyName: "ENGINEERING", blob });
@@ -55,6 +64,14 @@ describe("FontFile", () => {
   });
 
   describe("TrueType fonts", () => {
+    beforeAll(async () => {
+      await TestUtils.startBackend();
+    });
+
+    afterAll(async () => {
+      await TestUtils.shutdownBackend();
+    });
+
     describe("createFromTrueTypeFileName", () => {
       it("throws on non-existent file", () => {
         let fileName = IModelTestUtils.resolveFontFile("Karla-Regular.ttf");

@@ -6,8 +6,8 @@
 import { IModelDb, SnapshotDb } from "../../../core-backend.js";
 import { DbResult } from "@itwin/core-bentley";
 import { ECSqlValueType, QueryOptionsBuilder, QueryPropertyMetaData, QueryRowFormat } from "@itwin/core-common";
-import * as path from "path";
-import * as fs from "fs";
+import path from "node:path";
+import fs from "node:fs";
 import * as crypto from "crypto";
 import { ECSqlDatasets } from "../dataset/ECSqlDatasets.js";
 import { KnownTestLocations } from "../../KnownTestLocations.js";
@@ -108,7 +108,7 @@ ${JSON.stringify(results, null, 2)}
 `;
   }
 
-  const outputFilePath = path.join(__dirname, "generated.ecsql.md");
+  const outputFilePath = path.join(import.meta.dirname, "generated.ecsql.md");
   fs.appendFileSync(outputFilePath, markdownContent, "utf-8");
   // eslint-disable-next-line no-console
   console.log(`Results written to ${outputFilePath}`);

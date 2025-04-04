@@ -2,8 +2,8 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert, expect } from "chai";
-import * as path from "path";
+import { afterAll, afterEach, assert, beforeEach, describe, expect, it } from "vitest";
+import path from "node:path";
 import * as sinon from "sinon";
 import { RpcRegistry } from "@itwin/core-common";
 import { BriefcaseManager } from "../BriefcaseManager.js";
@@ -29,7 +29,7 @@ describe("IModelHost", () => {
     sinon.restore();
   });
 
-  after(async () => {
+  afterAll(async () => {
     await TestUtils.startBackend();
   });
 
@@ -179,7 +179,7 @@ describe("IModelHost", () => {
     };
     config.tileCacheStorage = {} as ServerStorage;
 
-    await expect(IModelHost.startup(config)).to.be.rejectedWith("Cannot use both Azure and custom cloud storage providers for tile cache.");
+    await expect(IModelHost.startup(config)).rejects.toThrow("Cannot use both Azure and custom cloud storage providers for tile cache.");
   });
 
   it("should use local cache if cloud storage provider for tile cache is not set", async () => {

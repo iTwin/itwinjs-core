@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert, expect } from "chai";
+import { afterAll, afterEach, assert, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { BeDuration, BeEvent, Guid, Id64, IModelStatus, OpenMode } from "@itwin/core-bentley";
 import { LineSegment3d, Point3d, YawPitchRollAngles } from "@itwin/core-geometry";
 import {
@@ -18,6 +18,7 @@ import {
 import { IModelTestUtils, TestElementDrivesElement, TestPhysicalObject, TestPhysicalObjectProps } from "../IModelTestUtils.js";
 import { IModelNative } from "../../internal/NativePlatform.js";
 import { EntityClass, SchemaItemKey, SchemaKey } from "@itwin/ecschema-metadata";
+import { TestUtils } from "../TestUtils.js";
 
 /// cspell:ignore accum
 
@@ -37,6 +38,14 @@ describe("TxnManager", () => {
     nativeDb.deleteAllTxns();
     nativeDb.closeFile();
   };
+
+  beforeAll(async () => {
+    await TestUtils.startBackend();
+  });
+
+  afterAll(async () => {
+    await TestUtils.shutdownBackend();
+  });
 
   beforeEach(async () => {
     IModelTestUtils.registerTestBimSchema();

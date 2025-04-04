@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
+import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 import * as sinon from "sinon";
 import { ChangesetIdWithIndex } from "@itwin/core-common";
 import { CheckpointManager, V1CheckpointManager, V2CheckpointManager } from "../../CheckpointManager.js";
@@ -12,8 +12,17 @@ import { Logger } from "@itwin/core-bentley";
 import { IModelHost } from "../../IModelHost.js";
 import { HubMock } from "../../HubMock.js";
 import { _hubAccess, _nativeDb } from "../../internal/Symbols.js";
+import { TestUtils } from "../TestUtils.js";
 
 describe("SnapshotDb.refreshContainerForRpc", () => {
+  beforeAll(async () => {
+    await TestUtils.startBackend();
+  });
+
+  afterAll(async () => {
+    await TestUtils.shutdownBackend();
+  });
+
   afterEach(() => sinon.restore());
 
   const changeset: ChangesetIdWithIndex = { id: "fakeChangeSetId", index: 10 };
@@ -120,7 +129,7 @@ describe("SnapshotDb.refreshContainerForRpc", () => {
     const infoLogStub = sinon.stub(Logger, "logInfo").callsFake(() => { });
 
     clock.setSystemTime(Date.parse("2021-01-01T00:58:10Z")); // within safety period
-    void expect(checkpoint.refreshContainerForRpc("")).to.be.fulfilled;
+    await expect(checkpoint.refreshContainerForRpc("")).resolves.not.toThrow();
     expect(queryStub.callCount).equal(0, "should not need reattach yet");
 
     clock.setSystemTime(Date.parse("2021-01-01T00:59:10Z")); // after safety period
@@ -134,13 +143,13 @@ describe("SnapshotDb.refreshContainerForRpc", () => {
     expect(infoLogStub.args[0][1]).include("attempting to refresh");
     expect(errorLogStub.callCount).equal(0);
 
-    void expect(attachPromise).to.not.be.fulfilled;
-    void expect(promise2).to.not.be.fulfilled;
-    void expect(promise3).to.not.be.fulfilled;
+    await expect(attachPromise).resolves.toBeUndefined();
+    await expect(promise2).resolves.toBeUndefined();
+    await expect(promise3).resolves.toBeUndefined();
     await attachPromise;
-    void expect(attachPromise).to.be.fulfilled;
-    void expect(promise2).to.be.fulfilled;
-    void expect(promise3).to.be.fulfilled;
+    await expect(attachPromise).resolves.not.toThrow();
+    await expect(promise2).resolves.not.toThrow();
+    await expect(promise3).resolves.not.toThrow();
     expect(infoLogStub.callCount).equal(2);
     expect(infoLogStub.args[1][1]).include("refreshed checkpoint sasToken");
 

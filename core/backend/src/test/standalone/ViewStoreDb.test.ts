@@ -3,20 +3,20 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
-import { Suite } from "mocha";
-import { join } from "path";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { join } from "node:path";
 import { Guid, GuidString, Logger, LogLevel, OpenMode } from "@itwin/core-bentley";
 import { ViewStore } from "../../ViewStore.js";
 import { ThumbnailFormatProps } from "@itwin/core-common";
 import { KnownTestLocations } from "../KnownTestLocations.js";
+import { TestUtils } from "../TestUtils.js";
 
-describe("ViewStore", function (this: Suite) {
-  this.timeout(0);
+describe("ViewStore", { timeout: Infinity }, function () {
 
   let vs1: ViewStore.ViewDb;
 
-  before(async () => {
+  beforeAll(async () => {
+    await TestUtils.startBackend();
     Logger.setLevel("SQLite", LogLevel.None); // we're expecting errors
     const dbName = join(KnownTestLocations.outputDir, "viewStore.db");
     ViewStore.ViewDb.createNewDb(dbName);
@@ -24,9 +24,10 @@ describe("ViewStore", function (this: Suite) {
     vs1.openDb(dbName, OpenMode.ReadWrite);
   });
 
-  after(async () => {
+  afterAll(async () => {
     vs1.closeDb(true);
     Logger.setLevel("SQLite", LogLevel.Error);
+    await TestUtils.shutdownBackend();
   });
 
   it("ViewDb", async () => {
@@ -285,7 +286,7 @@ describe("ViewStore", function (this: Suite) {
 
     await vs1.addSearch({ name: "search1", json: "search1-json" });
     const search2 = await vs1.addSearch({ name: "search2", json: "search2-json" });
-    await expect(vs1.addSearch({ name: "search1", json: "search1-json" })).to.be.rejectedWith("UNIQUE");
+    await expect(vs1.addSearch({ name: "search1", json: "search1-json" })).rejects.toThrow("UNIQUE");
     const search1Id = vs1.findSearchByName("search1");
     expect(search1Id).equals(1);
     const search1 = vs1.getSearch(search1Id)!;

@@ -3,8 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert } from "chai";
-import * as path from "path";
+import { afterAll, afterEach, assert, beforeAll, describe, it } from "vitest";
+import path from "node:path";
 import * as sinon from "sinon";
 import { Guid } from "@itwin/core-bentley";
 import { CheckpointManager, V1CheckpointManager, V2CheckpointManager } from "../../CheckpointManager.js";
@@ -14,6 +14,7 @@ import { IModelJsFs } from "../../IModelJsFs.js";
 import { IModelTestUtils } from "../IModelTestUtils.js";
 import { HubMock } from "../../HubMock.js";
 import { _hubAccess } from "../../internal/Symbols.js";
+import { TestUtils } from "../TestUtils.js";
 
 describe("V1 Checkpoint Manager", () => {
   it("empty props", async () => {
@@ -86,6 +87,13 @@ describe("V1 Checkpoint Manager", () => {
 });
 
 describe("Checkpoint Manager", () => {
+  beforeAll(async () => {
+    await TestUtils.startBackend();
+  });
+
+  afterAll(async () => {
+    await TestUtils.shutdownBackend();
+  });
 
   afterEach(() => {
     sinon.restore();

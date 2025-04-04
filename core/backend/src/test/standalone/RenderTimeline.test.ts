@@ -2,15 +2,21 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { Id64, Id64String, OpenMode } from "@itwin/core-bentley";
 import { Code, IModel, RenderSchedule, RenderTimelineProps } from "@itwin/core-common";
 import { GenericSchema, IModelJsFs, RenderTimeline, StandaloneDb } from "../../core-backend.js";
 import { IModelTestUtils } from "../IModelTestUtils.js";
+import { TestUtils } from "../TestUtils.js";
 
 describe("RenderTimeline", () => {
-  before(() => {
+  beforeAll(async () => {
+    await TestUtils.startBackend();
     GenericSchema.registerSchema();
+  });
+
+  afterAll(async () => {
+    await TestUtils.shutdownBackend();
   });
 
   function makeScriptProps(): RenderSchedule.ScriptProps {

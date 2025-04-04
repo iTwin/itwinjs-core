@@ -6,7 +6,7 @@
  * @module Schema
  */
 
-import * as path from "path";
+import path from "node:path";
 import { ClassRegistry } from "../ClassRegistry.js";
 import { KnownLocations } from "../IModelHost.js";
 import { Schema, Schemas } from "../Schema.js";

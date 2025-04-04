@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import * as fs from "fs";
+import fs from "node:fs";
 import { FontFace, FontType, LocalFileName } from "@itwin/core-common";
 import type { IModelJsNative } from "@bentley/imodeljs-native";
 import { CreateFontFileFromRscBlobArgs, CreateFontFileFromShxBlobArgs, FontFile } from "../FontFile.js";

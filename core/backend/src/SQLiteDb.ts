@@ -6,8 +6,8 @@
  * @module SQLiteDb
  */
 
-import * as fs from "fs";
-import { dirname } from "path";
+import fs from "node:fs";
+import { dirname } from "node:path";
 import * as semver from "semver";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import { DbResult, OpenMode } from "@itwin/core-bentley";

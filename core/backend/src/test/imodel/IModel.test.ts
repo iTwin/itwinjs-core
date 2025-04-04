@@ -2,8 +2,8 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert, expect } from "chai";
-import * as path from "path";
+import { afterAll, afterEach, assert, beforeAll, describe, expect, it } from "vitest";
+import path from "node:path";
 import * as semver from "semver";
 import * as sinon from "sinon";
 import { DbResult, Guid, GuidString, Id64, Id64String, IModelStatus, Logger, OpenMode, ProcessDetector } from "@itwin/core-bentley";
@@ -62,7 +62,7 @@ describe("iModel", () => {
   let imodel5: SnapshotDb;
   let originalEnv: any;
 
-  before(async () => {
+  beforeAll(async () => {
     originalEnv = { ...process.env };
 
     IModelTestUtils.registerTestBimSchema();
@@ -76,7 +76,7 @@ describe("iModel", () => {
     await imodel1.importSchemas([schemaPathname]); // will throw an exception if import fails
   });
 
-  after(() => {
+  afterAll(() => {
     process.env = originalEnv;
     imodel1.close();
     imodel2.close();
@@ -2271,7 +2271,7 @@ describe("iModel", () => {
     queryStub.callsFake(async () => {
       throw new Error("no checkpoint");
     });
-    await expect(checkpoint.refreshContainerForRpc(accessToken)).to.eventually.be.rejectedWith("no checkpoint");
+    await expect(checkpoint.refreshContainerForRpc(accessToken)).rejects.toThrow("no checkpoint");
 
     checkpoint.close();
   });

@@ -4,10 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { Buffer } from "node:buffer";
-import chai from "chai";
-import { assert, expect } from "chai";
-import chaiAsPromised from "chai-as-promised";
-import * as path from "path";
+import { assert, expect } from "vitest";
+import path from "node:path";
 import { AccessToken, BeEvent, DbResult, Guid, GuidString, Id64, Id64String, IModelStatus, omit, OpenMode } from "@itwin/core-bentley";
 import {
   AuxCoordSystem2dProps, Base64EncodedString, ChangesetIdWithIndex, Code, CodeProps, CodeScopeSpec, CodeSpec, ColorDef, ElementAspectProps,
@@ -37,7 +35,6 @@ import { KnownTestLocations } from "./KnownTestLocations.js";
 import { BackendHubAccess } from "../BackendHubAccess.js";
 import { _hubAccess } from "../internal/Symbols.js";
 
-chai.use(chaiAsPromised);
 
 /* eslint-disable @typescript-eslint/explicit-member-accessibility */
 
@@ -936,7 +933,7 @@ export class ExtensiveTestScenario {
     } as const;
     sourceDb.elements.insertAspect(aspectProps);
     const sourceUniqueAspect: ElementUniqueAspect = sourceDb.elements.getAspects(physicalObjectId1, "ExtensiveTestScenario:SourceUniqueAspect")[0];
-    expect(sourceUniqueAspect).to.deep.subsetEqual(omit(aspectProps, ["commonBinary"]), { normalizeClassNameProps: true });
+    expect(sourceUniqueAspect).subsetEqual(omit(aspectProps, ["commonBinary"]), { normalizeClassNameProps: true });
     sourceDb.elements.insertAspect({
       classFullName: "ExtensiveTestScenario:SourceMultiAspect",
       element: new ElementOwnsMultiAspects(physicalObjectId1),
@@ -1172,19 +1169,19 @@ export class ExtensiveTestScenario {
     const uniqueAspects: ElementAspect[] = iModelDb.elements.getAspects(physicalObjectId1, uniqueAspectClassFullName);
     assert.equal(uniqueAspects.length, 1);
     const uniqueAspect = uniqueAspects[0].asAny;
-    expect(uniqueAspect).to.deep.subsetEqual({
+    expect(uniqueAspect).subsetEqual({
       commonDouble: 1.1,
       commonString: "Unique-Updated",
       commonLong: physicalObjectId1,
     });
     if (testTargetSchema) {
-      expect(uniqueAspect).to.deep.subsetEqual({
+      expect(uniqueAspect).subsetEqual({
         targetDouble: 11.1,
         targetString: "UniqueAspect-Updated",
         targetLong: physicalObjectId1,
       });
     } else {
-      expect(uniqueAspect).to.deep.subsetEqual({
+      expect(uniqueAspect).subsetEqual({
         sourceDouble: 11.1,
         sourceString: "UniqueAspect-Updated",
         sourceLong: physicalObjectId1,

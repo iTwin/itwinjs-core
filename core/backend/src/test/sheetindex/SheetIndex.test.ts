@@ -9,10 +9,11 @@ import { BisCodeSpec, CodeScopeSpec, CodeSpec, GeometricModel2dProps, RelatedEle
 import { IModelDb, SnapshotDb } from "../../IModelDb.js";
 import { ExtensiveTestScenario, IModelTestUtils } from "../IModelTestUtils.js";
 import { DocumentPartition, Sheet } from "../../Element.js";
-import { expect } from "chai";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { DocumentListModel, SheetIndexModel, SheetModel } from "../../Model.js";
 import { ElementOwnsChildElements, SheetIndexFolderOwnsEntries, SheetIndexOwnsEntries, SheetIndexReferenceRefersToSheetIndex, SheetReferenceRefersToSheet } from "../../NavigationRelationship.js";
 import { SheetIndex, SheetIndexFolder, SheetIndexReference, SheetReference } from "../../SheetIndex.js";
+import { TestUtils } from "../TestUtils.js";
 
 export const getOrCreateDocumentList = async (iModel: IModelDb): Promise<Id64String> => {
   const documentListName = "SheetList";
@@ -76,6 +77,7 @@ describe("SheetIndex", () => {
   let iModel: SnapshotDb;
 
   beforeEach(async () => {
+    await TestUtils.startBackend();
     const iModelFile: string = IModelTestUtils.prepareOutputFile("IModel", "TestSheetIndex.bim");
 
     const iModelDb = SnapshotDb.createEmpty(iModelFile, { rootSubject: { name: "SheetIndex" } });
@@ -86,9 +88,10 @@ describe("SheetIndex", () => {
     await insertCodeSpec(iModel);
   });
 
-  afterEach(() => {
+  afterEach(async () => {
     iModel.abandonChanges();
     iModel.close();
+    await TestUtils.shutdownBackend();
   });
 
   it("SheetIndexModel Should insert", async () => {

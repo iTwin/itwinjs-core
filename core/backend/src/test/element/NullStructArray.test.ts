@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert, expect } from "chai";
+import { assert, beforeAll, describe, expect, it } from "vitest";
 import { Id64, Id64String } from "@itwin/core-bentley";
 import {
   BriefcaseIdValue, Code,  ColorDef,  GeometricElementProps, IModel,
@@ -10,6 +10,7 @@ import {
 } from "@itwin/core-common";
 import {   _nativeDb, IModelDb, IModelJsFs, SnapshotDb, SpatialCategory } from "../../core-backend.js";
 import { IModelTestUtils } from "../IModelTestUtils.js";
+import { TestUtils } from "../TestUtils.js";
 
 interface TestElement extends GeometricElementProps {
   addresses: [null, {city: "Pune", zip: 28}];
@@ -50,7 +51,7 @@ describe("Insert Null elements in Struct Array, and ensure they are returned whi
   const subDirName = "NullStructElement";
   const iModelPath = IModelTestUtils.prepareOutputFile(subDirName, iModelFileName);
 
-  before(async () => {
+  beforeAll(async () => {
     // write schema to disk as we do not have api to import xml directly
     const testSchemaPath = IModelTestUtils.prepareOutputFile(subDirName, schemaFileName);
     IModelJsFs.writeFileSync(testSchemaPath, testSchema);
@@ -70,6 +71,7 @@ describe("Insert Null elements in Struct Array, and ensure they are returned whi
   });
 
   it("Test for struct array to contain null structs", async () => {
+    await TestUtils.startBackend();
     const testFileName = IModelTestUtils.prepareOutputFile(subDirName, "roundtrip_correct_data.bim");
     const imodel = IModelTestUtils.createSnapshotFromSeed(testFileName, iModelPath);
     const spatialCategoryId = SpatialCategory.queryCategoryIdByName(imodel, IModel.dictionaryId, categoryName);
@@ -92,6 +94,7 @@ describe("Insert Null elements in Struct Array, and ensure they are returned whi
     expect(actualValue.addresses[0]).to.be.empty;
 
     imodel.close();
+    await TestUtils.shutdownBackend();
   });
 
 });

@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { Id64 } from "@itwin/core-bentley";
 import { Transform } from "@itwin/core-geometry";
 import { RelatedElement, SectionDrawingProps, SectionType } from "@itwin/core-common";
@@ -10,18 +10,21 @@ import { Drawing, SectionDrawing } from "../../Element.js";
 import { DocumentListModel, DrawingModel, SectionDrawingModel } from "../../Model.js";
 import { SnapshotDb } from "../../IModelDb.js";
 import { IModelTestUtils } from "../IModelTestUtils.js";
+import { TestUtils } from "../TestUtils.js";
 
 describe("SectionDrawing", () => {
   let imodel: SnapshotDb;
   let documentListModelId: string;
-  before(() => {
+  beforeAll(async () => {
+    await TestUtils.startBackend();
     const iModelPath = IModelTestUtils.prepareOutputFile("SectionDrawing", "SectionDrawing.bim");
     imodel = SnapshotDb.createEmpty(iModelPath, { rootSubject: { name: "SectionDrawingTest" } });
     documentListModelId = DocumentListModel.insert(imodel, SnapshotDb.rootSubjectId, "DocumentList");
   });
 
-  after(() => {
+  afterAll(async () => {
     imodel.close();
+    await TestUtils.shutdownBackend();
   });
 
   it("should round-trip through JSON", () => {

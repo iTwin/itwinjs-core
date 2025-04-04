@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { Guid, Id64 } from "@itwin/core-bentley";
 import {
   Loop, Path, Point3d, PolyfaceBuilder, Range3d, StrokeOptions,
@@ -14,13 +14,15 @@ import {
   _nativeDb, GenericSchema, GeometryPart, PhysicalModel, PhysicalObject, PhysicalPartition, SnapshotDb, SpatialCategory, SubjectOwnsPartitionElements,
 } from "../../core-backend.js";
 import { IModelTestUtils } from "../IModelTestUtils.js";
+import { TestUtils } from "../TestUtils.js";
 
 describe("generateElementMeshes", () => {
   let imodel: SnapshotDb;
   let modelId: string;
   let categoryId: string;
 
-  before(() => {
+  beforeAll(async () => {
+    await TestUtils.startBackend();
     imodel = SnapshotDb.createEmpty(IModelTestUtils.prepareOutputFile("generateElementMeshes", `${Guid.createValue()}.bim`), {
       rootSubject: { name: "generateElementMeshes", description: "generateElementMeshes" },
     });
@@ -42,12 +44,13 @@ describe("generateElementMeshes", () => {
     categoryId = SpatialCategory.insert(imodel, IModel.dictionaryId, "cat", { color: ColorDef.blue.toJSON() });
   });
 
-  after(() => {
+  afterAll(async () => {
     imodel.close();
+    await TestUtils.shutdownBackend();
   });
 
   it("throws if source is not a geometric element", async () => {
-    await expect(imodel[_nativeDb].generateElementMeshes({source: "NotAnId"})).rejectedWith("Geometric element required");
+    await expect(imodel[_nativeDb].generateElementMeshes({source: "NotAnId"})).rejects.toThrow("Geometric element required");
   });
 
   function insertTriangleElement(origin = [0, 0, 0]): string {

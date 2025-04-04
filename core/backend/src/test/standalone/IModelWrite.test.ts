@@ -9,10 +9,8 @@ import {
   GeometricElement2dProps, GeometryStreamProps, IModel, IModelVersion, LockState, QueryRowFormat, RequestNewBriefcaseProps, SchemaState, SubCategoryAppearance,
 } from "@itwin/core-common";
 import { Arc3d, IModelJson, Point2d, Point3d } from "@itwin/core-geometry";
-import chai from "chai";
-import { assert, expect } from "chai";
-import chaiAsPromised from "chai-as-promised";
-import * as fs from "fs";
+import { afterAll, assert, beforeAll, describe, expect, it } from "vitest";
+import fs from "node:fs";
 import * as semver from "semver";
 import * as sinon from "sinon";
 import { HubWrappers, KnownTestLocations } from "../index.js";
@@ -28,8 +26,8 @@ import {
 } from "../../core-backend.js";
 import { IModelTestUtils, TestUserType } from "../IModelTestUtils.js";
 import { ServerBasedLocks } from "../../internal/ServerBasedLocks.js";
+import { TestUtils } from "../TestUtils.js";
 
-chai.use(chaiAsPromised);
 
 export async function createNewModelAndCategory(rwIModel: BriefcaseDb, parent?: Id64String) {
   // Create a new physical model.
@@ -51,11 +49,15 @@ describe("IModelWriteTest", () => {
   let superAccessToken: AccessToken;
   let iTwinId: GuidString;
 
-  before(() => {
+  beforeAll(async () => {
+    await TestUtils.startBackend();
     HubMock.startup("IModelWriteTest", KnownTestLocations.outputDir);
     iTwinId = HubMock.iTwinId;
   });
-  after(() => HubMock.shutdown());
+  afterAll(async () => {
+    HubMock.shutdown();
+    await TestUtils.shutdownBackend();
+  });
 
   it("Check busyTimeout option", async () => {
     const iModelProps = {
@@ -858,11 +860,11 @@ describe("IModelWriteTest", () => {
     const iModelBeforeExtentsChange = await HubWrappers.downloadAndOpenBriefcase({ accessToken, iTwinId, iModelId, asOf: IModelVersion.asOfChangeSet(changesetIdBeforeExtentsChange).toJSON() });
     const extentsBeforePull = iModelBeforeExtentsChange.projectExtents;
     // Read the extents fileProperty.
-    const extentsStrBeforePull = iModelBeforeExtentsChange.queryFilePropertyString({name: "Extents", namespace: "dgn_Db"});
+    const extentsStrBeforePull = iModelBeforeExtentsChange.queryFilePropertyString({ name: "Extents", namespace: "dgn_Db" });
     const ecefLocationBeforeExtentsChange = iModelBeforeExtentsChange.ecefLocation;
     await iModelBeforeExtentsChange.pullChanges(); // Pulls the extents change.
     const extentsAfterPull = iModelBeforeExtentsChange.projectExtents;
-    const extentsStrAfterPull = iModelBeforeExtentsChange.queryFilePropertyString({name: "Extents", namespace: "dgn_Db"});
+    const extentsStrAfterPull = iModelBeforeExtentsChange.queryFilePropertyString({ name: "Extents", namespace: "dgn_Db" });
     const ecefLocationAfterExtentsChange = iModelBeforeExtentsChange.ecefLocation;
 
     expect(ecefLocationBeforeExtentsChange).to.not.be.undefined;

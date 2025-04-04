@@ -3,21 +3,24 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { Id64 } from "@itwin/core-bentley";
 import { GeometricElement3dProps, Placement3d } from "@itwin/core-common";
 import { GeometricElement3d, SnapshotDb } from "../../core-backend.js";
 import { IModelTestUtils } from "../index.js";
+import { TestUtils } from "../TestUtils.js";
 
 describe("computeProjectExtents", () => {
   let imodel: SnapshotDb;
 
-  before(() => {
+  beforeAll(async () => {
+    await TestUtils.startBackend();
     imodel = IModelTestUtils.createSnapshotFromSeed(IModelTestUtils.prepareOutputFile("IModel", "test.bim"), IModelTestUtils.resolveAssetFile("test.bim"));
   });
 
-  after(() => {
+  afterAll(async () => {
     imodel.close();
+    await TestUtils.shutdownBackend();
   });
 
   it("should return requested information", () => {

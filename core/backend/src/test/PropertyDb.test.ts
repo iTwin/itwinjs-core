@@ -3,21 +3,19 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
-import { existsSync } from "fs";
-import { Suite } from "mocha";
-import { join } from "path";
+import { beforeAll, describe, expect, it } from "vitest";
+import { existsSync } from "node:fs";
+import { join } from "node:path";
 import { OpenMode } from "@itwin/core-bentley";
 import { IModelHost } from "../IModelHost.js";
 import { PropertyStore } from "../PropertyStore.js";
 import { KnownTestLocations } from "./KnownTestLocations.js";
 
-describe("PropertyDb", function (this: Suite) {
-  this.timeout(0);
+describe("PropertyDb", { timeout: Infinity }, function () {
 
   const outputDir = KnownTestLocations.outputDir;
 
-  before(async () => IModelHost.startup());
+  beforeAll(async () => IModelHost.startup());
 
   it("save and load properties", async () => {
     const dbName = join(outputDir, "properties.db");

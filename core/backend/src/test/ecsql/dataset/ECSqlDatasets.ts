@@ -2,8 +2,8 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert } from "chai";
-import * as path from "path";
+import { assert, describe, it } from "vitest";
+import path from "node:path";
 import { Id64, Id64String } from "@itwin/core-bentley";
 import { _nativeDb, IModelDb, IModelHost, SnapshotDb, SpatialCategory } from "../../../core-backend.js";
 import { IModelTestUtils } from "../../IModelTestUtils.js";

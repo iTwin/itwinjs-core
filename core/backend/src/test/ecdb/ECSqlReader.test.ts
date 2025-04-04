@@ -1,26 +1,29 @@
-import { assert } from "chai";
 /*---------------------------------------------------------------------------------------------
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { DbResult } from "@itwin/core-bentley";
 import { ECSqlReader, QueryBinder, QueryOptionsBuilder, QueryRowFormat } from "@itwin/core-common";
+import { assert, afterAll, beforeAll, describe, it, beforeEach } from "vitest";
 import { SnapshotDb } from "../../core-backend.js";
 import { ECSqlStatement } from "../../ECSqlStatement.js";
 import { IModelTestUtils } from "../IModelTestUtils.js";
 import { KnownTestLocations } from "../KnownTestLocations.js";
 import { ECDbTestHelper } from "./ECDbTestHelper.js";
+import { TestUtils } from "../TestUtils.js";
 
-describe("ECSqlReader", (() => {
+describe("ECSqlReader", (async () => {
   let iModel: SnapshotDb;
   let reader: ECSqlReader;
 
-  before(async () => {
+  beforeAll(async () => {
+    await TestUtils.startBackend();
     iModel = SnapshotDb.openFile(IModelTestUtils.resolveAssetFile("test.bim"));
   });
 
-  after(async () => {
+  afterAll(async () => {
     iModel.close();
+    await TestUtils.shutdownBackend();
   });
 
   describe("bind Id64 enumerable", async () => {
