@@ -9418,6 +9418,8 @@ export class SheetViewState extends ViewState2d {
     // (undocumented)
     getViewedExtents(): AxisAlignedBox3d;
     // (undocumented)
+    getViewedExtentsFromFrustum(): Range3d;
+    // (undocumented)
     isDrawingView(): this is DrawingViewState;
     // (undocumented)
     isSheetView(): this is SheetViewState;
