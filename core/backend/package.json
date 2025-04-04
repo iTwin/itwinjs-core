@@ -1,6 +1,6 @@
 {
   "name": "@itwin/core-backend",
-  "version": "5.0.0-dev.96",
+  "version": "5.0.0-dev.98",
   "description": "iTwin.js backend components",
   "main": "lib/cjs/core-backend.js",
   "module": "lib/esm/core-backend.js",
@@ -26,6 +26,7 @@
     "lint": "eslint \"./src/**/*.ts\" 1>&2",
     "lint-fix": "eslint --fix -f visualstudio \"./src/**/*.ts\" 1>&2",
     "test": "mocha",
+    "test:debug": "mocha --inspect-brk",
     "ios:webpack:tests": "TESTS_GLOB=./lib/esm/**/*.test.js webpack --config ../../tools/internal/ios/ios.webpack.config.js",
     "ios:copy:assets": "cpx \"./src/test/assets/**/*\" ../../tools/internal/lib/ios/assets/assets && cpx \"./src/assets/**/*\" ../../tools/internal/lib/ios/assets/assets",
     "ios:build:tests": "npm run -s build && npm run -s ios:webpack:tests && npm run -s ios:copy:assets",
