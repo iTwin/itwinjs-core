@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/physical-material-backend",
+      "comment": "Depreciate ECSqlStatement API",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/physical-material-backend"
+}
