@@ -4,14 +4,14 @@
 *--------------------------------------------------------------------------------------------*/
 
 import * as sinon from "sinon";
-import { CloudSqlite } from "./CloudSqlite";
-import { HubMock } from "./HubMock";
+import { CloudSqlite } from "../CloudSqlite";
+import { HubMock } from "../HubMock";
 import * as path from "path";
-import { BriefcaseManager } from "./BriefcaseManager";
-import { CheckpointProps, V2CheckpointManager } from "./CheckpointManager";
-import { V2CheckpointAccessProps } from "./BackendHubAccess";
-import { IModelHost } from "./IModelHost";
-import { _hubAccess } from "./internal/Symbols";
+import { BriefcaseManager } from "../BriefcaseManager";
+import { CheckpointProps, V2CheckpointManager } from "../CheckpointManager";
+import { V2CheckpointAccessProps } from "../BackendHubAccess";
+import { IModelHost } from "../IModelHost";
+import { _hubAccess } from "../internal/Symbols";
 import { IModelError } from "@itwin/core-common";
 import { IModelStatus } from "@itwin/core-bentley";
 

@@ -19,7 +19,7 @@ import { IModelJsFs } from "./IModelJsFs";
 import { LocalHub } from "./LocalHub";
 import { TokenArg } from "./IModelDb";
 import { _getHubAccess, _setHubAccess } from "./internal/Symbols";
-import { CloudSqliteMock } from "./CloudSqliteMock";
+import { CloudSqliteMock } from "./test/CloudSqliteMock";
 
 function wasStarted(val: string | undefined): asserts val is string {
   if (undefined === val)
