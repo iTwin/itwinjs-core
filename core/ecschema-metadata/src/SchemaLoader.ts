@@ -20,7 +20,7 @@ import { ECVersion, SchemaKey } from "./SchemaKey";
  * ```ts
  * [[include:IModelSchemas.loadFromDb]]
  * ```
- * @beta
+ * @public @preview
  */
 export class SchemaLoader {
   private _context: SchemaContext;

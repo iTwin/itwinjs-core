@@ -19,7 +19,7 @@ import { UnitSystem } from "./UnitSystem";
 
 /**
  * An InvertedUnit is a specific type of Unit that describes the inverse of a single Unit whose dimensional derivation is unit-less.
- * @beta
+ * @public @preview
  */
 export class InvertedUnit extends SchemaItem {
   public override readonly schemaItemType = InvertedUnit.schemaItemType;
@@ -43,7 +43,7 @@ export class InvertedUnit extends SchemaItem {
    * @returns The item cast to InvertedUnit if it is an InvertedUnit, undefined otherwise.
    */
   public static assertIsInvertedUnit(item?: SchemaItem): asserts item is InvertedUnit {
-    if(!this.isInvertedUnit(item))
+    if (!this.isInvertedUnit(item))
       throw new ECObjectsError(ECObjectsStatus.InvalidSchemaItemType, `Expected '${SchemaItemType.InvertedUnit}' (InvertedUnit)`);
   }
 

@@ -14,7 +14,7 @@ import { ECName } from "../ECName";
 import { Schema } from "./Schema";
 import { SchemaItem } from "./SchemaItem";
 
-/** @beta */
+/** @public @preview */
 export interface Enumerator<T> {
   readonly name: string;
   readonly value: T;
@@ -22,12 +22,12 @@ export interface Enumerator<T> {
   readonly description?: string;
 }
 
-/** @beta */
+/** @public @preview */
 export type AnyEnumerator = Enumerator<string | number>;
 
 /**
  * A Typescript class representation of an ECEnumeration.
- * @beta
+ * @public @preview
  */
 export class Enumeration extends SchemaItem {
   public override readonly schemaItemType = Enumeration.schemaItemType;
@@ -160,7 +160,7 @@ export class Enumeration extends SchemaItem {
       } else if (/string/i.test(enumerationProps.type)) {
         this._type = PrimitiveType.String;
       } else {
-        if (SchemaReadHelper.isECSpecVersionNewer({readVersion: enumerationProps.originalECSpecMajorVersion, writeVersion: enumerationProps.originalECSpecMinorVersion} as ECSpecVersion))
+        if (SchemaReadHelper.isECSpecVersionNewer({ readVersion: enumerationProps.originalECSpecMajorVersion, writeVersion: enumerationProps.originalECSpecMinorVersion } as ECSpecVersion))
           this._type = PrimitiveType.String;
         else
           throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Enumeration ${this.name} has an invalid 'type' attribute. It should be either "int" or "string".`);

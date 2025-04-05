@@ -114,7 +114,7 @@ public;class;ECDb
 public;enum;ECDbOpenMode
 public;interface;ECEnumValue
 deprecated;interface;ECEnumValue
-beta;class;ECSchemaXmlContext
+public;class;ECSchemaXmlContext
 public;class;ECSqlBinder
 public;interface;ECSqlColumnInfo
 deprecated;interface;ECSqlColumnInfo

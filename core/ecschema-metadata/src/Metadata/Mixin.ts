@@ -22,7 +22,7 @@ import { SchemaItem } from "./SchemaItem";
 
 /**
  * A Typescript class representation of a Mixin.
- * @beta
+ * @public @preview
  */
 export class Mixin extends ECClass {
   public override readonly schemaItemType = Mixin.schemaItemType;

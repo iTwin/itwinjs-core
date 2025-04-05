@@ -15,18 +15,18 @@ import { Schema } from "./Schema";
 
 /**
  * An abstract class that supplies all of the common parts of a SchemaItem.
- * @beta
+ * @public @preview
  */
 export abstract class SchemaItem {
   /**
    * Get the type of item represented by this class
-   * @beta
+   * @public @preview
    */
   public static get schemaItemType(): SupportedSchemaItemType { return AbstractSchemaItemType.SchemaItem }
 
   /**
    * Get the type of item represented by this instance
-   * @beta
+   * @public @preview
    */
   public abstract get schemaItemType(): SchemaItemType;
   public readonly schema: Schema;
@@ -154,7 +154,7 @@ export abstract class SchemaItem {
     const schemaItem = object as SchemaItem;
 
     return schemaItem !== undefined && schemaItem.key !== undefined && schemaItem.schema !== undefined
-             && schemaItem.schemaItemType !== undefined;
+      && schemaItem.schemaItemType !== undefined;
   }
 
   /**

@@ -19,7 +19,7 @@ import { SchemaItem } from "./SchemaItem";
 import { Unit } from "./Unit";
 
 /** A Typescript class representation of a KindOfQuantity.
- * @beta
+ * @public @preview
  */
 export class KindOfQuantity extends SchemaItem {
   public override readonly schemaItemType = KindOfQuantity.schemaItemType;
@@ -182,7 +182,7 @@ export class KindOfQuantity extends SchemaItem {
     if (!Unit.isUnit(persistenceUnit) && !InvertedUnit.isInvertedUnit(persistenceUnit))
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The item ${kindOfQuantityProps.persistenceUnit} is not a Unit or InvertedUnit.`);
 
-    if(Unit.isUnit(persistenceUnit))
+    if (Unit.isUnit(persistenceUnit))
       this._persistenceUnit = new DelayedPromiseWithProps(persistenceUnit.key, async () => persistenceUnit);
     else
       this._persistenceUnit = new DelayedPromiseWithProps(persistenceUnit.key, async () => persistenceUnit);
@@ -202,7 +202,7 @@ export class KindOfQuantity extends SchemaItem {
     if (!Unit.isUnit(persistenceUnit) && !InvertedUnit.isInvertedUnit(persistenceUnit))
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The item ${kindOfQuantityProps.persistenceUnit} is not a Unit or InvertedUnit.`);
 
-    if(Unit.isUnit(persistenceUnit))
+    if (Unit.isUnit(persistenceUnit))
       this._persistenceUnit = new DelayedPromiseWithProps(persistenceUnit.key, async () => persistenceUnit);
     else
       this._persistenceUnit = new DelayedPromiseWithProps(persistenceUnit.key, async () => persistenceUnit);

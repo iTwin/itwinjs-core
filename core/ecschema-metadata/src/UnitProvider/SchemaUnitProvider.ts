@@ -14,7 +14,7 @@ import { InvertedUnit } from "../Metadata/InvertedUnit";
 
 /**
  * Class used to find Units in SchemaContext by attributes such as Phenomenon and DisplayLabel.
- * @beta
+ * @public @preview
  */
 export class SchemaUnitProvider implements UnitsProvider {
   private _unitConverter: UnitConverter;
@@ -97,7 +97,7 @@ export class SchemaUnitProvider implements UnitsProvider {
     // Find units' full name that match given phenomenon param.
     const filteredUnits: Array<UnitProps> = [];
     const schemaItems = this._context.getSchemaItems();
-    for( const value of schemaItems) {
+    for (const value of schemaItems) {
       if (Unit.isUnit(value)) {
         const foundPhenomenon = await value.phenomenon;
         if (foundPhenomenon && foundPhenomenon.key.matchesFullName(phenomenon)) {
@@ -245,7 +245,7 @@ export class SchemaUnitProvider implements UnitsProvider {
   private async findUnitByDisplayLabel(displayLabel: string, schemaName?: string, phenomenon?: string, unitSystem?: string): Promise<UnitProps> {
     // TODO: Known bug: This only looks through loaded schemas. If schema name is provided, we can attempt to load that schema
     const schemaItems = this._context.getSchemaItems();
-    for(const value of schemaItems) {
+    for (const value of schemaItems) {
       if (Unit.isUnit(value) && value.label?.toLowerCase() === displayLabel) {
         // TODO: this can be optimized. We don't have to await these if we don't want to check for them
         const currPhenomenon = await value.phenomenon;

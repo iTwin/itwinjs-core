@@ -35,7 +35,7 @@ import { Unit } from "./Unit";
 import { UnitSystem } from "./UnitSystem";
 import { ECSchemaNamespaceUris } from "../Constants";
 /**
- * @beta
+ * @public @preview
  */
 export class Schema implements CustomAttributeContainerProps {
   private static _currentECSpecVersion = "3.2";
@@ -550,7 +550,7 @@ export class Schema implements CustomAttributeContainerProps {
   public async getItem<T extends typeof SchemaItem>(name: string, itemConstructor: T): Promise<InstanceType<T> | undefined>
   public async getItem<T extends typeof SchemaItem>(name: string, itemConstructor?: T): Promise<SchemaItem | InstanceType<T> | undefined> {
     // this method exists so we can rewire it later when we load partial schemas, for now it is identical to the sync version
-    if(itemConstructor === undefined)
+    if (itemConstructor === undefined)
       return this.getItemSync(name) as InstanceType<T> | undefined;
 
     return this.getItemSync(name, itemConstructor);
@@ -569,7 +569,7 @@ export class Schema implements CustomAttributeContainerProps {
     if (value === undefined || itemConstructor === undefined)
       return value;
 
-    if(isSupportedSchemaItemType(value.schemaItemType, itemConstructor.schemaItemType))
+    if (isSupportedSchemaItemType(value.schemaItemType, itemConstructor.schemaItemType))
       return value as InstanceType<T>;
 
     return undefined;
@@ -601,8 +601,8 @@ export class Schema implements CustomAttributeContainerProps {
       return undefined;
 
     return itemConstructor
-        ? refSchema.getItem(itemName, itemConstructor)
-        : refSchema.getItem(itemName);
+      ? refSchema.getItem(itemName, itemConstructor)
+      : refSchema.getItem(itemName);
   }
 
   /**
@@ -631,8 +631,8 @@ export class Schema implements CustomAttributeContainerProps {
       return undefined;
 
     return itemConstructor
-        ? refSchema.getItemSync(itemName, itemConstructor)
-        : refSchema.getItemSync(itemName);
+      ? refSchema.getItemSync(itemName, itemConstructor)
+      : refSchema.getItemSync(itemName);
   }
 
   /**

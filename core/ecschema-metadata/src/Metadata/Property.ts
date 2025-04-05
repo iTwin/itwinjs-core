@@ -28,7 +28,7 @@ import { Schema } from "./Schema";
 
 /**
  * A common abstract class for all ECProperty types.
- * @beta
+ * @public @preview
  */
 export abstract class Property implements CustomAttributeContainerProps {
   protected _name: ECName;
@@ -109,9 +109,9 @@ export abstract class Property implements CustomAttributeContainerProps {
   public get schema(): Schema { return this._class.schema; }
 
   public getCategorySync(): PropertyCategory | undefined {
-    if (!this._category){
+    if (!this._category) {
       const baseProperty = this.class.getInheritedPropertySync(this.name);
-      if (undefined !== baseProperty){
+      if (undefined !== baseProperty) {
         return baseProperty.getCategorySync();
       }
 
@@ -122,9 +122,9 @@ export abstract class Property implements CustomAttributeContainerProps {
   }
 
   public getKindOfQuantitySync(): KindOfQuantity | undefined {
-    if (!this._kindOfQuantity){
+    if (!this._kindOfQuantity) {
       const baseProperty = this.class.getInheritedPropertySync(this.name);
-      if (undefined !== baseProperty){
+      if (undefined !== baseProperty) {
         return baseProperty.getKindOfQuantitySync();
       }
 
@@ -338,11 +338,11 @@ export abstract class Property implements CustomAttributeContainerProps {
 }
 
 /** A callback function to process properties of an Entity
- * @beta
+ * @public @preview
  */
 export type PropertyHandler = (name: string, property: Property) => void;
 
-/** @beta */
+/** @public @preview */
 export abstract class PrimitiveOrEnumPropertyBase extends Property {
   protected _extendedTypeName?: string;
   protected _minLength?: number;
@@ -458,7 +458,7 @@ export abstract class PrimitiveOrEnumPropertyBase extends Property {
   }
 }
 
-/** @beta */
+/** @public @preview */
 export class PrimitiveProperty extends PrimitiveOrEnumPropertyBase {
   public get primitiveType(): PrimitiveType { return PropertyTypeUtils.getPrimitiveType(this._type); }
 
@@ -495,7 +495,7 @@ export class PrimitiveProperty extends PrimitiveOrEnumPropertyBase {
   }
 }
 
-/** @beta */
+/** @public @preview */
 export class EnumerationProperty extends PrimitiveOrEnumPropertyBase {
   protected _enumeration?: LazyLoadedEnumeration;
 
@@ -549,7 +549,7 @@ export class EnumerationProperty extends PrimitiveOrEnumPropertyBase {
 
 }
 
-/** @beta */
+/** @public @preview */
 export class StructProperty extends Property {
   protected _structClass: StructClass;
 
@@ -590,7 +590,7 @@ export class StructProperty extends Property {
   }
 }
 
-/** @beta */
+/** @public @preview */
 export class NavigationProperty extends Property {
   protected _relationshipClass: LazyLoadedRelationshipClass;
   protected _direction: StrengthDirection;
@@ -642,7 +642,7 @@ type Constructor<T> = new (...args: any[]) => T;
 // TODO: Consolidate all of the INT32_MAX variables.
 const INT32_MAX = 2147483647;
 
-/** @beta */
+/** @public @preview */
 export abstract class ArrayProperty extends Property {
   protected _minOccurs: number = 0;
   protected _maxOccurs?: number = INT32_MAX;
@@ -731,7 +731,7 @@ const ArrayPropertyMixin = <T extends Constructor<Property>>(Base: T) => {
   } as Constructor<Property> as typeof Base & Constructor<ArrayProperty>;
 };
 
-/** @beta */
+/** @public @preview */
 export class PrimitiveArrayProperty extends ArrayPropertyMixin(PrimitiveProperty) {
   constructor(ecClass: ECClass, name: string, primitiveType: PrimitiveType = PrimitiveType.Integer) {
     super(ecClass, name, primitiveType);
@@ -746,29 +746,29 @@ export class PrimitiveArrayProperty extends ArrayPropertyMixin(PrimitiveProperty
 
 }
 
-/** @beta */
+/** @public @preview */
 export class EnumerationArrayProperty extends ArrayPropertyMixin(EnumerationProperty) {
   constructor(ecClass: ECClass, name: string, type: LazyLoadedEnumeration) {
     super(ecClass, name, type);
   }
 }
 
-/** @beta */
+/** @public @preview */
 export class StructArrayProperty extends ArrayPropertyMixin(StructProperty) {
   constructor(ecClass: ECClass, name: string, type: StructClass) {
     super(ecClass, name, type);
   }
 }
 
-/** @beta */
+/** @public @preview */
 export type AnyArrayProperty = PrimitiveArrayProperty | EnumerationArrayProperty | StructArrayProperty;
-/** @beta */
+/** @public @preview */
 export type AnyPrimitiveProperty = PrimitiveProperty | PrimitiveArrayProperty;
-/** @beta */
+/** @public @preview */
 export type AnyEnumerationProperty = EnumerationProperty | EnumerationArrayProperty;
-/** @beta */
+/** @public @preview */
 export type AnyStructProperty = StructProperty | StructArrayProperty;
-/** @beta */
+/** @public @preview */
 export type AnyProperty = AnyPrimitiveProperty | AnyEnumerationProperty | AnyStructProperty | NavigationProperty;
 
 /**

@@ -21,7 +21,7 @@ import { UnitSystem } from "./UnitSystem";
 /**
  * An abstract class that adds the ability to define Units and everything that goes with them, within an ECSchema as a
  * first-class concept is to allow the iModel to not be dependent on any hard-coded Units
- * @beta
+ * @public @preview
  */
 export class Unit extends SchemaItem {
   public override readonly schemaItemType = Unit.schemaItemType;
@@ -194,7 +194,7 @@ export class Unit extends SchemaItem {
    * @returns The item cast to Unit if it is a Unit, undefined otherwise.
    */
   public static assertIsUnit(item?: SchemaItem): asserts item is Unit {
-    if(!this.isUnit(item))
+    if (!this.isUnit(item))
       throw new ECObjectsError(ECObjectsStatus.InvalidSchemaItemType, `Expected '${SchemaItemType.Unit}' (Unit)`);
   }
 }
