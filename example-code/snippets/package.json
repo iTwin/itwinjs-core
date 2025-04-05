@@ -40,6 +40,9 @@
     "get-system-fonts": "^2.0.2"
   },
   "devDependencies": {
+    "@bentley/units-schema": "^1.0.8",
+    "@bentley/formats-schema": "^1.0.0",
+    "@bentley/aec-units-schema": "^1.0.3",
     "@itwin/build-tools": "workspace:*",
     "@itwin/eslint-plugin": "5.0.0-dev.1",
     "@itwin/oidc-signin-tool": "^4.4.1",
