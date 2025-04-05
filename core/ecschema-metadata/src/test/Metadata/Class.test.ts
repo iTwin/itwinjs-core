@@ -290,6 +290,7 @@ describe("ECClass", () => {
         $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
         name: "TestSchema",
         version: "1.2.3",
+        alias: "ts",
         items: {
           TestFirstBaseCAClass0: { schemaItemType: "CustomAttributeClass", appliesTo: "AnyClass" },
           TestFirstBaseCAClass1: { schemaItemType: "CustomAttributeClass", appliesTo: "AnyClass" },
@@ -360,6 +361,7 @@ describe("ECClass", () => {
         $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
         name: "TestSchema",
         version: "1.2.3",
+        alias: "ts",
         items: {
           TestCAClass0: { schemaItemType: "CustomAttributeClass", appliesTo: "AnyClass" },
           TestCAClass1: { schemaItemType: "CustomAttributeClass", appliesTo: "AnyClass" },
@@ -494,6 +496,7 @@ describe("ECClass", () => {
         $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
         name: "TestSchema",
         version: "1.2.3",
+        alias: "ts",
         items: {
           testBaseClass: {
             schemaItemType: "EntityClass",
@@ -526,6 +529,7 @@ describe("ECClass", () => {
         $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
         name: "TestSchema",
         version: "1.2.3",
+        alias: "ts",
         references: [
           {
             name: "RefSchema",
@@ -579,6 +583,7 @@ describe("ECClass", () => {
       $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
       name: "TestSchema",
       version: "1.2.3",
+      alias: "ts",
       items: {
         TestCAClass: { schemaItemType: "CustomAttributeClass", appliesTo: "AnyClass" },
         testClass: {
@@ -616,6 +621,7 @@ describe("ECClass", () => {
       $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
       name: "TestSchema",
       version: "1.2.3",
+      alias: "ts",
       items: {
         TestCAClassA: { schemaItemType: "CustomAttributeClass", appliesTo: "AnyClass" },
         TestCAClassB: { schemaItemType: "CustomAttributeClass", appliesTo: "AnyClass" },
@@ -655,6 +661,7 @@ describe("ECClass", () => {
       $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
       name: "TestSchema",
       version: "1.2.3",
+      alias: "ts",
       items: {
         testClass: {
           schemaItemType: "EntityClass",
@@ -716,6 +723,7 @@ describe("ECClass", () => {
         $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
         name: "TestSchema",
         version: "1.2.3",
+        alias: "ts",
         items: {
           testStruct: {
             schemaItemType: "StructClass",
@@ -906,6 +914,7 @@ describe("ECClass", () => {
         $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
         name: "TestSchema",
         version: "1.2.3",
+        alias: "ts",
         items: {
           testBaseClass: {
             schemaItemType: "EntityClass",
@@ -1027,6 +1036,7 @@ describe("ECClass", () => {
       $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
       name: "TestSchema",
       version: "1.2.3",
+      alias: "ts",
       items: {
         TestCAClassA: { schemaItemType: "CustomAttributeClass", appliesTo: "AnyProperty" },
         TestCAClassB: { schemaItemType: "CustomAttributeClass", appliesTo: "AnyProperty" },
@@ -1091,6 +1101,7 @@ describe("ECClass", () => {
       $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
       name: "TestSchema",
       version: "1.2.3",
+      alias: "ts",
       items: {
         testBaseClass: {
           schemaItemType: "EntityClass",
