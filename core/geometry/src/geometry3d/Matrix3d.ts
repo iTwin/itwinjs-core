@@ -961,35 +961,40 @@ export class Matrix3d implements BeJSONFunctions {
         result = Matrix3d.createRowValues(
           1, 0, 0,
           0, -1, 0,
-          0, 0, -1);
+          0, 0, -1,
+        );
         break;
       // Start with TOP view, ccw rotation by -90 degrees around X and by 90 degrees around Z
       case StandardViewIndex.Left:
         result = Matrix3d.createRowValues(
           0, -1, 0,
           0, 0, 1,
-          -1, 0, 0);
+          -1, 0, 0,
+        );
         break;
       // Start with TOP view, ccw rotation by -90 degrees around X and by -90 degrees around Z
       case StandardViewIndex.Right:
         result = Matrix3d.createRowValues(
           0, 1, 0,
           0, 0, 1,
-          1, 0, 0);
+          1, 0, 0,
+        );
         break;
       // Start with TOP view, ccw rotation by -90 degrees around X
       case StandardViewIndex.Front:
         result = Matrix3d.createRowValues(
           1, 0, 0,
           0, 0, 1,
-          0, -1, 0);
+          0, -1, 0,
+        );
         break;
       // Start with TOP view, ccw rotation by -90 degrees around X and by 180 degrees around Z
       case StandardViewIndex.Back:
         result = Matrix3d.createRowValues(
           -1, 0, 0,
           0, 0, 1,
-          0, 1, 0);
+          0, 1, 0,
+        );
         break;
       /**
        * Isometric view
@@ -1002,14 +1007,16 @@ export class Matrix3d implements BeJSONFunctions {
         result = Matrix3d.createRowValues(
           0.707106781186548, -0.70710678118654757, 0.00000000000000000,
           0.408248290463863, 0.40824829046386302, 0.81649658092772603,
-          -0.577350269189626, -0.57735026918962573, 0.57735026918962573);
+          -0.577350269189626, -0.57735026918962573, 0.57735026918962573,
+        );
         break;
       // Start with FRONT view, ccw rotation by 45 degrees around Y and by 35.264 degrees around X
       case StandardViewIndex.RightIso:
         result = Matrix3d.createRowValues(
           0.707106781186548, 0.70710678118654757, 0.00000000000000000,
           -0.408248290463863, 0.40824829046386302, 0.81649658092772603,
-          0.577350269189626, -0.57735026918962573, 0.57735026918962573);
+          0.577350269189626, -0.57735026918962573, 0.57735026918962573,
+        );
         break;
       // no rotation
       case StandardViewIndex.Top:
