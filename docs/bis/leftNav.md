@@ -20,6 +20,7 @@ defaultState: activeOpen
   - [Codes](./guide/fundamentals/codes.md)
   - [FederationGuids](./guide/fundamentals/federationGuids.md)
   - [ElementAspect Fundamentals](./guide/fundamentals/elementaspect-fundamentals.md)
+  - [Attribution: Guidelines](./guide/fundamentals/attribution-guidelines.md)
   - [Mixins](./guide/fundamentals/mixins.md)
   - [Model Fundamentals](./guide/fundamentals/model-fundamentals.md)
   - [Relationship Fundamentals](./guide/fundamentals/relationship-fundamentals.md)
