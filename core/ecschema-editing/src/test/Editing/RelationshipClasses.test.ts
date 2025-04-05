@@ -25,6 +25,7 @@ describe("Relationship tests from an existing schema", () => {
     $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
     name: "TestSchema",
     version: "1.2.3",
+    alias: "ts",
     items: {
       SourceBaseEntity: {
         schemaItemType: "EntityClass",
@@ -46,6 +47,7 @@ describe("Relationship tests from an existing schema", () => {
     $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
     name: "RefSchema",
     version: "1.2.3",
+    alias: "ts",
     items: {
       RefSourceBaseEntity: {
         schemaItemType: "EntityClass",
