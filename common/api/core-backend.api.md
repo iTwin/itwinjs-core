@@ -6097,6 +6097,8 @@ export interface V2CheckpointAccessProps {
 export class V2CheckpointManager {
     // (undocumented)
     static [_getCheckpointDb](request: DownloadRequest): Promise<SnapshotDb>;
+    static [_mockCheckpointAttach]?: (checkpoint: CheckpointProps) => string;
+    static [_mockCheckpointDownload]?: (_request: DownloadRequest) => void;
     // (undocumented)
     static attach(checkpoint: CheckpointProps): Promise<{
         dbName: string;
