@@ -7,7 +7,7 @@
  */
 
 import { assert, BentleyError, BeTimePoint, ByteStream } from "@itwin/core-bentley";
-import { Range3d } from "@itwin/core-geometry";
+import { Range3d, Transform } from "@itwin/core-geometry";
 import {
   ColorDef, computeChildTileProps, computeChildTileRanges, computeTileChordTolerance, ElementAlignedBox3d, LinePixels, TileFormat, TileProps,
 } from "@itwin/core-common";
@@ -115,6 +115,11 @@ export class IModelTile extends Tile {
         system,
         isCanceled,
         sizeMultiplier,
+        tileData: {
+          ecefTransform: this.tree.iModel.ecefLocation?.getTransform() ?? Transform.createIdentity(),
+          range: this.range,
+          layerClassifiers: this.tree.layerHandler?.layerClassifiers,
+        },
       });
     } catch {
       //

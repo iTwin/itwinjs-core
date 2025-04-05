@@ -8,7 +8,7 @@
 
 import { BaseLayerSettings, ColorDef, MapLayerSettings } from "@itwin/core-common";
 import { SceneContext } from "../ViewContext";
-import { createMapLayerTreeReference, ImageryMapLayerTreeReference, ImageryMapTileTree, MapLayerTileTreeReference, ModelMapLayerTileTreeReference, TileTreeLoadStatus, TileTreeOwner } from "./internal";
+import { createMapLayerTreeReference, DisclosedTileTreeSet, ImageryMapLayerTreeReference, ImageryMapTileTree, MapLayerTileTreeReference, ModelMapLayerTileTreeReference, TileTreeLoadStatus, TileTreeOwner } from "./internal";
 import { IModelConnection } from "../IModelConnection";
 
 /** @internal */
@@ -35,6 +35,12 @@ export class LayerTileTreeReferenceHandler {
   public get baseTransparent() { return this._baseTransparent; }
   public get baseImageryLayerIncluded() { return this._baseImageryLayerIncluded; }
   public get layerSettings() { return this._layerSettings; }
+
+  public discloseTileTrees(trees: DisclosedTileTreeSet): void {
+    for (const imageryTree of this.layerTrees)
+      if (imageryTree)
+        trees.disclose(imageryTree);
+  }
 
   public constructor(ref: LayerTileTreeReference, pIsOverlay: boolean, baseLayerSettings?: BaseLayerSettings, layerSettings?: MapLayerSettings[]) {
     this._ref = ref;

@@ -5064,6 +5064,8 @@ export class IModelTileTree extends TileTree {
     // (undocumented)
     get batchType(): BatchType;
     // (undocumented)
+    protected collectClassifierGraphics(args: TileDrawArgs, selectedTiles: Tile[]): void;
+    // (undocumented)
     get containsTransformNodes(): boolean;
     // (undocumented)
     readonly contentIdProvider: ContentIdProvider;
@@ -5087,6 +5089,10 @@ export class IModelTileTree extends TileTree {
     get is3d(): boolean;
     // (undocumented)
     get isContentUnbounded(): boolean;
+    // (undocumented)
+    get layerHandler(): LayerTileTreeHandler;
+    // (undocumented)
+    layerImageryTrees: MapLayerTreeSetting[];
     // (undocumented)
     get loadPriority(): TileLoadPriority;
     // (undocumented)
