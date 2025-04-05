@@ -710,6 +710,8 @@ export namespace RealityModelTileTree {
 
       if (undefined !== this._planarClipMask)
         this._planarClipMask.discloseTileTrees(trees);
+
+      this._layerRefHandler.discloseTileTrees(trees);
     }
 
     public override collectStatistics(stats: RenderMemory.Statistics): void {
