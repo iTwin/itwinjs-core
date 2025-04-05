@@ -34,6 +34,15 @@ export namespace CloudSqlite {
 
   export type RequestTokenArgs = Optional<BlobContainer.RequestTokenProps, "userToken">;
 
+  /** Add (or replace) a property to an object that is not enumerable.
+   * This is important so this member will be skipped when the object is the target of
+   * [structuredClone](https://developer.mozilla.org/docs/Web/API/Web_Workers_API/Structured_clone_algorithm)
+   * (e.g. when the object is part of an exception that is marshalled across process boundaries.)
+   */
+  export function addHiddenProperty<T>(o: T, p: PropertyKey, value?: any): T {
+    return Object.defineProperty(o, p, { enumerable: false, writable: true, value })
+  }
+
   function verifyService<T>(serviceName: string, service: T | undefined): T {
     if (undefined === service)
       CloudSqliteError.throwError("service-not-available", { message: `${serviceName} service is not available` });
@@ -86,9 +95,9 @@ export namespace CloudSqlite {
     const container = new NativeLibrary.nativeLib.CloudContainer(args) as CloudContainerInternal;
     // we're going to add these fields to the newly created object. They should *not* be enumerable so they are not copied
     // when the object is cloned (e.g. when included in an exception across processes).
-    ["timer", "refreshPromise", "onConnected", "onDisconnect"].forEach((member) => {
-      Object.defineProperty(container, member, { enumerable: false, writable: true })
-    });
+    addHiddenProperty(container, "timer");
+    addHiddenProperty(container, "refreshPromise");
+
     const refreshSeconds = (undefined !== args.tokenRefreshSeconds) ? args.tokenRefreshSeconds : 60 * 60; // default is 1 hour
     container.lockExpireSeconds = args.lockExpireSeconds ?? 60 * 60; // default is 1 hour
 
@@ -114,13 +123,13 @@ export namespace CloudSqlite {
           tokenRefreshFn(); // schedule next refresh
         }, refreshSeconds * 1000);
       };
-      container.onConnected = tokenRefreshFn; // schedule the first refresh when the container is connected
-      container.onDisconnect = () => { // clear the refresh timer when the container is disconnected
+      addHiddenProperty(container, "onConnected", tokenRefreshFn); // schedule the first refresh when the container is connected
+      addHiddenProperty(container, "onDisconnect", () => { // clear the refresh timer when the container is disconnected
         if (container.timer !== undefined) {
           clearTimeout(container.timer);
           container.timer = undefined;
         }
-      };
+      });
     }
     return container;
   }
@@ -802,19 +811,19 @@ export namespace CloudSqlite {
   }
 
   /**
- * Perform an asynchronous write operation on a CloudContainer with the write lock held.
- * 1. if write lock is already held by the current user, refresh write lock's expiry time, call operation and return.
- * 2. attempt to acquire the write lock, with retries. Throw if unable to obtain write lock.
- * 3. perform the operation
- * 3.a if the operation throws, abandon all changes and re-throw
- * 4. release the write lock.
- * 5. return value from operation
- * @param user the name to be displayed to other users in the event they attempt to obtain the lock while it is held by us
- * @param container the CloudContainer for which the lock is to be acquired
- * @param operation an asynchronous operation performed with the write lock held.
- * @param busyHandler if present, function called when the write lock is currently held by another user.
- * @returns a Promise with the result of `operation`
- */
+  * Perform an asynchronous write operation on a CloudContainer with the write lock held.
+  * 1. if write lock is already held by the current user, refresh write lock's expiry time, call operation and return.
+  * 2. attempt to acquire the write lock, with retries. Throw if unable to obtain write lock.
+  * 3. perform the operation
+  * 3.a if the operation throws, abandon all changes and re-throw
+  * 4. release the write lock.
+  * 5. return value from operation
+  * @param user the name to be displayed to other users in the event they attempt to obtain the lock while it is held by us
+  * @param container the CloudContainer for which the lock is to be acquired
+  * @param operation an asynchronous operation performed with the write lock held.
+  * @param busyHandler if present, function called when the write lock is currently held by another user.
+  * @returns a Promise with the result of `operation`
+  */
   export async function withWriteLock<T>(args: { user: string, container: CloudContainer, busyHandler?: WriteLockBusyHandler }, operation: () => Promise<T>): Promise<T> {
     await acquireWriteLock(args);
     const containerInternal = args.container as CloudContainerInternal;

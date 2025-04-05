@@ -48,7 +48,7 @@ interface WorkspaceCloudCache extends CloudSqlite.CloudCache {
 function makeWorkspaceCloudCache(arg: CloudSqlite.CreateCloudCacheArg): WorkspaceCloudCache {
   const cache = CloudSqlite.CloudCaches.getCache(arg) as WorkspaceCloudCache;
   if (undefined === cache.workspaceContainers) // if we just created this container, add the map.
-    Object.defineProperty(cache, "workspaceContainers", { enumerable: false, value: new Map<string, WorkspaceCloudContainer>() });
+    CloudSqlite.addHiddenProperty(cache, "workspaceContainers", new Map<string, WorkspaceCloudContainer>());
   return cache;
 }
 
@@ -63,26 +63,24 @@ function getWorkspaceCloudContainer(props: CloudSqlite.ContainerAccessProps, cac
     return cloudContainer;
 
   cloudContainer = CloudSqlite.createCloudContainer(props) as WorkspaceCloudContainer;
-  // make sure these members are not included in `structuredClone`
-  ["sharedConnect", "sharedDisconnect"].forEach((member) => Object.defineProperty(cloudContainer, member, { enumerable: false, writable: true }));
   cache.workspaceContainers.set(id, cloudContainer);
   cloudContainer.connectCount = 0;
-  cloudContainer.sharedConnect = function (this: WorkspaceCloudContainer) {
+  CloudSqlite.addHiddenProperty(cloudContainer, "sharedConnect", function (this: WorkspaceCloudContainer) {
     if (this.connectCount++ === 0) {
       this.connect(cache);
       return true;
     }
 
     return false;
-  };
+  });
 
-  cloudContainer.sharedDisconnect = function (this: WorkspaceCloudContainer) {
+  CloudSqlite.addHiddenProperty(cloudContainer, "sharedDisconnect", function (this: WorkspaceCloudContainer) {
     if (--this.connectCount <= 0) {
       this.disconnect();
       cache.workspaceContainers.delete(id);
       this.connectCount = 0;
     }
-  };
+  });
 
   return cloudContainer;
 }

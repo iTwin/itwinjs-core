@@ -29,7 +29,7 @@ const getCloudCache = () => {
 const makeCloudCache = (arg: CloudSqlite.CreateCloudCacheArg) => {
   const cache = CloudSqlite.CloudCaches.getCache(arg) as CatalogCloudCache;
   if (undefined === cache.catalogContainers) // if we just created this container, add the map but make it non-enumerable
-    Object.defineProperty(cache, "catalogContainers", { enumerable: false, writable: true, value: new Map<string, CloudSqlite.CloudContainer>() });
+    CloudSqlite.addHiddenProperty(cache, "catalogContainers", new Map<string, CloudSqlite.CloudContainer>());
   return cache;
 }
 
