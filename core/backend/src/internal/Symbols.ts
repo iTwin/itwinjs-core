@@ -27,3 +27,5 @@ export const _setHubAccess = Symbol.for(sym("setHubAccess"));
 export const _getHubAccess = Symbol.for(sym("getHubAccess"));
 export const _openCheckpoint = Symbol.for(sym("openCheckpoint"));
 export const _getCheckpointDb = Symbol.for(sym("getCheckpointDb"));
+export const _mockCheckpointAttach = Symbol.for(sym("mockCheckpointAttach"));
+export const _mockCheckpointDownload = Symbol.for(sym("mockCheckpointDownload"));

@@ -12,7 +12,7 @@ import { FontFile } from "../../FontFile";
 import type { IModelJsNative } from "@bentley/imodeljs-native";
 import { _faceProps, _getData } from "../../internal/Symbols";
 import { CodeService } from "../../CodeService";
-import { HubMock } from "../../HubMock";
+import { HubMock } from "../../internal/HubMock";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { BriefcaseManager } from "../../BriefcaseManager";
 import { QueryMappedFamiliesArgs } from "../../IModelDbFonts";

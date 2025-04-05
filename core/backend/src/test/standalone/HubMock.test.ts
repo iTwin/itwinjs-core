@@ -11,7 +11,7 @@ import { LockProps } from "../../BackendHubAccess";
 import { BriefcaseManager } from "../../BriefcaseManager";
 import { IModelHost } from "../../IModelHost";
 import { IModelJsFs } from "../../IModelJsFs";
-import { HubMock } from "../../HubMock";
+import { HubMock } from "../../internal/HubMock";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { LockStatusExclusive, LockStatusShared } from "../../LocalHub";

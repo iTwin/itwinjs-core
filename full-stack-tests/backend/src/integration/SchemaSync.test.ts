@@ -5,8 +5,9 @@
 
 import { assert, expect } from "chai";
 import { Suite } from "mocha";
-import { _nativeDb, BriefcaseDb, BriefcaseManager, ChannelControl, CloudSqlite, DrawingCategory, HubMock, IModelDb, IModelHost, SchemaSync, SnapshotDb, SqliteStatement } from "@itwin/core-backend";
+import { _nativeDb, BriefcaseDb, BriefcaseManager, ChannelControl, CloudSqlite, DrawingCategory, IModelDb, IModelHost, SchemaSync, SnapshotDb, SqliteStatement } from "@itwin/core-backend";
 import { AzuriteTest } from "./AzuriteTest";
+import { HubMock } from "@itwin/core-backend/lib/cjs/internal/HubMock";
 import { HubWrappers, IModelTestUtils, KnownTestLocations } from "@itwin/core-backend/lib/cjs/test";
 import { AccessToken, DbResult, Guid, Id64String, OpenMode } from "@itwin/core-bentley";
 import * as path from "path";

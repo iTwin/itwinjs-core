@@ -20,7 +20,7 @@ import {
   SpatialCategory,
   SqliteChangesetReader
 } from "../../core-backend";
-import { HubMock } from "../../HubMock";
+import { HubMock } from "../../internal/HubMock";
 import { RebaseChangesetConflictArgs, TxnArgs } from "../../internal/ChangesetConflictArgs";
 import { IModelTestUtils, TestUserType } from "../IModelTestUtils";
 chai.use(chaiAsPromised);
