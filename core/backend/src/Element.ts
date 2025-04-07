@@ -14,7 +14,7 @@ import {
   RenderTimelineProps, RepositoryLinkProps, SectionDrawingLocationProps, SectionDrawingProps, SectionType,
   SheetBorderTemplateProps, SheetProps, SheetTemplateProps, SubjectProps, TypeDefinition, TypeDefinitionElementProps, UrlLinkProps
 } from "@itwin/core-common";
-import { ClipVector, Range3d, Transform } from "@itwin/core-geometry";
+import { ClipVector, LowAndHighXYZProps, Range3d, Transform } from "@itwin/core-geometry";
 import { CustomHandledProperty, ECSqlRow, Entity, InstanceProps } from "./Entity";
 import { IModelDb } from "./IModelDb";
 import { IModelElementCloneContext } from "./IModelElementCloneContext";
@@ -604,17 +604,22 @@ export abstract class GeometricElement3d extends GeometricElement {
         categoryId: elProps.category
       }) as GeometryStreamProps;
     }
+    const origin = instance.origin ? [instance.origin.x, instance.origin.y, instance.origin.z] : [0, 0, 0];
+    let bbox: LowAndHighXYZProps | undefined;
+    if ("bBoxHigh" in instance && instance.bBoxHigh !== undefined && "bBoxLow" in instance && instance.bBoxLow !== undefined) {
+      bbox =  {
+        low: [instance.bBoxLow.x, instance.bBoxLow.y, instance.bBoxLow.z],
+        high: [instance.bBoxHigh.x, instance.bBoxHigh.y, instance.bBoxHigh.z],
+      }
+    }
     elProps.placement = {
-      origin: [instance.origin.x, instance.origin.y, instance.origin.z],
+      origin,
       angles: {
         roll: instance.roll,
         yaw: instance.yaw,
         pitch: instance.pitch,
       },
-      bbox: {
-        low: [instance.bBoxLow.x, instance.bBoxLow.y, instance.bBoxLow.z],
-        high: [instance.bBoxHigh.x, instance.bBoxHigh.y, instance.bBoxHigh.z],
-      }
+      bbox
     };
 
     if (instance.typeDefinition) {
@@ -740,13 +745,18 @@ export abstract class GeometricElement2d extends GeometricElement {
         categoryId: elProps.category
       }) as GeometryStreamProps;
     }
-    elProps.placement = {
-      origin: [instance.origin.x, instance.origin.y],
-      angle: instance.angle,
-      bbox: {
+    const origin = instance.origin ? [instance.origin.x, instance.origin.y] : [0, 0];
+    let bbox: LowAndHighXYZProps | undefined;
+    if ("bBoxHigh" in instance && instance.bBoxHigh !== undefined && "bBoxLow" in instance && instance.bBoxLow !== undefined) {
+      bbox =  {
         low: [instance.bBoxLow.x, instance.bBoxLow.y],
         high: [instance.bBoxHigh.x, instance.bBoxHigh.y],
       }
+    }
+    elProps.placement = {
+      origin,
+      angle: instance.angle,
+      bbox,
     };
 
     if (instance.typeDefinition) {
@@ -1086,7 +1096,7 @@ export class Drawing extends Document {
       if (scaleFactor <= 0) {
         throw new Error("Drawing.scaleFactor must be greater than zero");
       }
-      
+
       drawingProps.scaleFactor = scaleFactor;
     }
 
