@@ -198,7 +198,7 @@ export enum ModelMapLayerDrapeTarget {
   Globe = 0,
   /** Drape only onto all attached reality data. */
   RealityData = 1,
-  /** Drape only onto models within the iModel. See [[ModelMapLayerProps.drapeModels]] for how to control which models receive the draping. */
+  /** Drape only onto all models within the iModel. */
   IModel = 2,
 }
 
@@ -213,10 +213,6 @@ export interface ModelMapLayerProps extends CommonMapLayerProps {
    * @beta
    */
   drapeTarget?: ModelMapLayerDrapeTarget;
-  /**  If [[drapeTarget]] is [[ModelMapLayerDrapeTarget.IModel]], specifies a list of models within the iModel which will receive the draping.
-   * @beta
-   */
-  drapeModels?: Id64Array;
   /** @internal */
   url?: never;
   /** @internal */
@@ -544,26 +540,21 @@ export class ModelMapLayerSettings extends MapLayerSettings {
    * @beta
    */
   public readonly drapeTarget: ModelMapLayerDrapeTarget;
-  /**  If [[drapeTarget]] is [[ModelMapLayerDrapeTarget.IModel]], specifies a list of models within the iModel which will receive the draping.
-   * @beta
-   */
-  public readonly drapeModels?: Id64Array;
   public readonly modelId: Id64String;
   public override get source(): string { return this.modelId; }
 
   /** @internal */
   protected constructor(modelId: Id64String,  name: string, visible = true,
-    transparency: number = 0, transparentBackground = true, drapeTarget = ModelMapLayerDrapeTarget.Globe, drapeModels?: Id64Array) {
+    transparency: number = 0, transparentBackground = true, drapeTarget = ModelMapLayerDrapeTarget.Globe) {
     super(name, visible, transparency, transparentBackground);
     this.modelId = modelId;
     this.drapeTarget = drapeTarget;
-    this.drapeModels = drapeModels;
   }
 
   /** Construct from JSON, performing validation and applying default values for undefined fields. */
   public static override fromJSON(json: ModelMapLayerProps): ModelMapLayerSettings {
     const transparentBackground = (json.transparentBackground === undefined) ? true : json.transparentBackground;
-    return new this(json.modelId, json.name, json.visible, json.transparency, transparentBackground, json.drapeTarget, json.drapeModels);
+    return new this(json.modelId, json.name, json.visible, json.transparency, transparentBackground, json.drapeTarget);
   }
 
   /** return JSON representation of this MapLayerSettings object */
@@ -572,8 +563,6 @@ export class ModelMapLayerSettings extends MapLayerSettings {
     props.modelId = this.modelId;
     if (this.drapeTarget !== ModelMapLayerDrapeTarget.Globe)
       props.drapeTarget = this.drapeTarget;
-    if (this.drapeTarget === ModelMapLayerDrapeTarget.IModel && this.drapeModels)
-      props.drapeModels = this.drapeModels;
     return props;
   }
 
@@ -590,7 +579,6 @@ export class ModelMapLayerSettings extends MapLayerSettings {
     const props = super.cloneProps(changedProps) as ModelMapLayerProps;
     props.modelId = changedProps.modelId ?? this.modelId;
     props.drapeTarget = changedProps.drapeTarget ?? this.drapeTarget;
-    props.drapeModels = changedProps.drapeModels ?? this.drapeModels;
     return props;
   }
 

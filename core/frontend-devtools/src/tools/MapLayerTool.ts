@@ -70,7 +70,7 @@ export class AttachModelMapLayerTool extends Tool {
   public static override toolId = "AttachModelMapLayerTool";
   constructor(protected _formatId: string) { super(); }
 
-  public override async run(nameIn?: string, drapeTarget?: string, drapeModels?: string): Promise<boolean> {
+  public override async run(nameIn?: string, drapeTarget?: string): Promise<boolean> {
     const vp = IModelApp.viewManager.selectedView;
     if (!vp)
       return false;
@@ -94,15 +94,14 @@ export class AttachModelMapLayerTool extends Tool {
         settingsDrapeTarget = ModelMapLayerDrapeTarget.RealityData;
       else if ("imodel" === drapeTarget)
         settingsDrapeTarget = ModelMapLayerDrapeTarget.IModel;
-      const settingsDrapeModels = drapeModels ? drapeModels.split(",") : undefined;
-      const settings = ModelMapLayerSettings.fromJSON({ name, modelId, drapeTarget: settingsDrapeTarget, drapeModels: settingsDrapeModels });
+      const settings = ModelMapLayerSettings.fromJSON({ name, modelId, drapeTarget: settingsDrapeTarget });
       vp.displayStyle.attachMapLayer({ settings, mapLayerIndex: { isOverlay: false, index: -1 } });
     }
     return true;
   }
 
   public override async parseAndRun(...args: string[]): Promise<boolean> {
-    return this.run(args[0], args[1], args[2]);
+    return this.run(args[0], args[1]);
   }
   public async onRestartTool() {
   }
