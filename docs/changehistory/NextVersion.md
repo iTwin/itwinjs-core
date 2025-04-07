@@ -60,7 +60,9 @@ Table of contents:
       - [No pending/local changes](#no-pendinglocal-changes)
       - [With pending/local changes](#with-pendinglocal-changes)
     - [Reworked @itwin/ecschema-metadata package](#reworked-itwinecschema-metadata-package)
-      - [Tips for adjusting existing code](#tips-for-adjusting-existing-code)
+      - [Tips for adjusting existing code:](#tips-for-adjusting-existing-code)
+  - [Deprecated ECSqlStatement](#deprecated-ecsqlstatement)
+  - [Attach/detach db](#attachdetach-db)
 
 ## Selection set
 
@@ -770,3 +772,20 @@ if (item && EntityClass.isEntityClass(item)) {
 A regex can be used to do bulk renaming:
 `getSchemaItem<([^>]+)>\(([^)]+)\)` replace with: `getSchemaItem($2, $1)`
 This applies to `SchemaContext.getSchemaItem/Sync`, `Schema.getItem/Sync` and `Schema.lookupItem/Sync`.
+
+## Deprecated ECSqlStatement
+
+`ECSqlStatement` is deprecated in 4.11 Use [IModelDb.createQueryReader]($backend) or [ECDb.createQueryReader]($backend)
+
+Following are related classes to ECSqlStatement that are also mark depercate
+
+- `ECEnumValue`
+- `ECSqlValue`
+- `ECSqlValueIterator`
+- `ECSqlColumnInfo`
+
+  In concurrent query `QueryOptions.convertClassIdsToClassNames` & `QueryOptionsBuilder.setConvertClassIdsToNames()` are deprecated. Use ECSQL ec_classname() function to convert class ids to class names.
+
+## Attach/detach db
+
+Allow the attachment of an ECDb/IModel to a connection and running ECSQL that combines data from both databases.

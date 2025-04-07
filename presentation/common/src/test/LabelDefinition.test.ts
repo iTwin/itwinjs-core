@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { LabelDefinition } from "../presentation-common/LabelDefinition.js";
+import { COMPOSITE_LABEL_DEFINITION_TYPENAME, LabelDefinition } from "../presentation-common/LabelDefinition.js";
 
 describe("LabelDefinition", () => {
   describe("fromLabelString", () => {
@@ -22,7 +22,7 @@ describe("LabelDefinition", () => {
     it("returns correct values", () => {
       const stringDefinition = LabelDefinition.fromLabelString("Test String");
       const compositeDefinition: LabelDefinition = {
-        typeName: LabelDefinition.COMPOSITE_DEFINITION_TYPENAME,
+        typeName: COMPOSITE_LABEL_DEFINITION_TYPENAME,
         displayValue: "Composite-Value",
         rawValue: {
           separator: "-",

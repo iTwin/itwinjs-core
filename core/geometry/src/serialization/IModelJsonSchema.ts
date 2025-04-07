@@ -582,12 +582,20 @@ export namespace IModelJson {
     numPerFace?: number;
     /** Indicates if mesh closure is unknown (0 | undefined), open sheet (1), or closed solid (2). */
     expectedClosure?: number;
-    /** Optional flag indicating if mesh display must assume both sides are visible. */
+    /**
+     * The [[PolyfaceData.twoSided]] flag.
+     */
     twoSided?: boolean;
     /** Optional analytical data at the vertices of the mesh */
     auxData?: AuxDataProps;
     /** Optional array of tagged geometry (such as to request subdivision surface) */
     tags?: TaggedNumericDataProps;
+
+    /**
+     * Optional edge -> edgeMate map, parallel to the other index arrays.
+     * * Each entry is a zero-based index, or -1 face loop terminator, or -2 to indicate "no edge mate".
+     */
+    edgeMateIndex?: [number];
   }
   /** parser services for "iModelJson" schema
    * * 1: create a reader with `new ImodelJsonReader`
@@ -953,12 +961,10 @@ export namespace IModelJson {
         && data.hasOwnProperty("pointIndex") && Array.isArray(data.pointIndex)) {
         const polyface = IndexedPolyface.create();
         const numPerFace = data.hasOwnProperty("numPerFace") ? data.numPerFace : 0;
-        if (data.hasOwnProperty("twoSided")) {
-          const q = data.twoSided;
-          if (q === true || q === false) {
-            polyface.twoSided = q;
-          }
-        }
+
+        // default value is true!!
+        polyface.twoSided = this.parseBooleanProperty(data, "twoSided", true) ?? true;
+
         if (data.hasOwnProperty("expectedClosure")) {
           const q = data.expectedClosure;
           if (Number.isFinite(q)) {
@@ -997,6 +1003,17 @@ export namespace IModelJson {
           (i: number, v?: boolean) => { polyface.addPointIndex(i, v); },
           () => { polyface.terminateFacet(false); });
 
+        if (data.hasOwnProperty("edgeMateIndex") && Array.isArray(data.edgeMateIndex)) {
+          const edgeMateIndex: Array<number | undefined> = [];
+          if (!SerializationHelpers.announceCompressedZeroBasedReflexiveIndices(data.edgeMateIndex, numPerFace,
+            SerializationHelpers.EdgeMateIndex.BlockSeparator, SerializationHelpers.EdgeMateIndex.NoEdgeMate,
+            (i: number | undefined) => edgeMateIndex.push(i),
+          )) {
+            assert(false, "unable to deserialize json edgeMateIndex array");
+          }
+          polyface.data.edgeMateIndex = edgeMateIndex;
+        }
+
         if (!polyface.validateAllIndices())
           return undefined;
 
@@ -1006,6 +1023,7 @@ export namespace IModelJson {
         if (data.hasOwnProperty("tags"))
           polyface.data.taggedNumericData = Reader.parseTaggedNumericProps(data.tags);
 
+        // NOTE: faceData is ignored
         return polyface;
       }
       return undefined;
@@ -1749,9 +1767,10 @@ export namespace IModelJson {
       const visitor = pf.createVisitor(0);
       let indexCounter = 0;
 
-      const normalIndex = [];
-      const paramIndex = [];
-      const colorIndex = [];
+      const normalIndex: number[] = [];
+      const paramIndex: number[] = [];
+      const colorIndex: number[] = [];
+      const edgeMateIndex: number[] = [];
 
       let n;
       while (visitor.moveToNextFacet()) {
@@ -1778,33 +1797,56 @@ export namespace IModelJson {
           colorIndex.push(0);
         }
       }
+
       let taggedNumericData;
       if (pf.data.taggedNumericData) {
         taggedNumericData = this.handleTaggedNumericData(pf.data.taggedNumericData);
       }
-      // assemble the contents in alphabetical order.
+
+      if (pf.data.edgeMateIndex) {
+        if (!SerializationHelpers.announceUncompressedZeroBasedReflexiveIndices(pf.data.edgeMateIndex,
+          pf.facetStart, SerializationHelpers.EdgeMateIndex.BlockSeparator,
+          SerializationHelpers.EdgeMateIndex.NoEdgeMate, (i: number) => edgeMateIndex.push(i),
+        )){
+          assert(false, "unable to serialize edgeMateIndex array to json");
+        }
+      }
+
       const contents: { [k: string]: any } = {};
+
       if (pf.expectedClosure !== 0)
         contents.expectedClosure = pf.expectedClosure;
-      if (pf.twoSided)
-        contents.twoSided = true;
+
+      contents.twoSided = pf.twoSided;
+
       if (pf.data.auxData)
         contents.auxData = this.handlePolyfaceAuxData(pf.data.auxData, pf);
 
-      if (pf.data.color) contents.color = colors;
-      if (pf.data.colorIndex) contents.colorIndex = colorIndex;
+      if (pf.data.color)
+        contents.color = colors;
+      if (pf.data.colorIndex)
+        contents.colorIndex = colorIndex;
 
-      if (pf.data.normal) contents.normal = normals;
-      if (pf.data.normalIndex) contents.normalIndex = normalIndex;
+      if (pf.data.normal)
+        contents.normal = normals;
+      if (pf.data.normalIndex)
+        contents.normalIndex = normalIndex;
 
-      if (pf.data.param) contents.param = params;
-      if (pf.data.paramIndex) contents.paramIndex = paramIndex;
+      if (pf.data.param)
+        contents.param = params;
+      if (pf.data.paramIndex)
+        contents.paramIndex = paramIndex;
 
       contents.point = points;
       contents.pointIndex = pointIndex;
 
       if (taggedNumericData)
         contents.tags = taggedNumericData;
+
+      if (pf.data.edgeMateIndex)
+        contents.edgeMateIndex = edgeMateIndex;
+
+      // NOTE: pf.data.face is not persistent
       return { indexedMesh: contents };
     }
 

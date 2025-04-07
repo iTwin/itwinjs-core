@@ -23,10 +23,9 @@ export interface InstanceProps {
 }
 
 export interface CustomHandledProperty {
-  name: string;
-  isComputed?: true;
+  readonly propertyName: string;
+  readonly source: "Class" | "Computed";
 }
-export type CustomHandledPropertyList = CustomHandledProperty[];
 
 /** Represents one of the fundamental building block in an [[IModelDb]]: as an [[Element]], [[Model]], or [[Relationship]].
  * Every subclass of Entity represents one BIS [ECClass]($ecschema-metadata).
@@ -94,35 +93,57 @@ export class Entity {
     return new subclass(props, iModel);
   }
 
-  protected static get customHandledProperties(): CustomHandledPropertyList {
-    return [ {name: "id"}, {name: "className"}, {name: "jsonProperties"} ];
+  /* @internal */
+  protected static readonly _customHandledProps: CustomHandledProperty[] = [
+    { propertyName: "id", source: "Class" },
+    { propertyName: "className", source: "Class" },
+    { propertyName: "jsonProperties", source: "Class" }
+  ];
+
+  /* @internal */
+  private static getCustomHandledProperties(): readonly CustomHandledProperty[] {
+    if (this.name === "Entity") {
+      return this._customHandledProps;
+    }
+
+    const superClass = Object.getPrototypeOf(this) as typeof Entity;
+    return [
+      ...superClass.getCustomHandledProperties(),
+      ...this._customHandledProps,
+    ];
   }
 
+  /* @internal */
   public static deserialize(props: InstanceProps): EntityProps {
     const enProps: EntityProps = {
       classFullName: props.row.classFullName,
       id: props.row.id,
     }
+
     if (props.row.jsonProperties) {
-      // Deserialize the jsonProperties field and convert it to a JSON object
-      const deserializedProps = props.iModel[_nativeDb].patchElementProperties(props.row.jsonProperties);
-      enProps.jsonProperties = JSON.parse(deserializedProps);
+      enProps.jsonProperties = JSON.parse(props.iModel[_nativeDb].patchElementProperties(props.row.jsonProperties));
     }
-    // Deserialize the standard handled properties
-    Object.keys(props.row).filter((property) => !this.customHandledProperties.map((val) => val.name).includes(property)).forEach((property) => {
-      (enProps as any)[property] = props.row[property];
-    });
+
+    const customHandledProperties = this.getCustomHandledProperties();
+    Object.keys(props.row)
+      .filter((propertyName) => customHandledProperties.find((val) => val.propertyName === propertyName) === undefined)
+      .forEach((propertyName) => (enProps as ECSqlRow)[propertyName] = props.row[propertyName]
+      );
     return enProps;
   }
 
+  /* @internal */
   public static serialize(props: EntityProps, _iModel: IModelDb): ECSqlRow {
     const inst: ECSqlRow = {
+      classFullName: props.classFullName,
       id: props.id,
-      className: props.classFullName,
     }
-    Object.keys(props).filter((property) => !this.customHandledProperties.map((val) => val.name).includes(property)).forEach((property) => {
-      inst[property] = (props as any)[property];
-    });
+
+    const customHandledProperties = this.getCustomHandledProperties();
+    Object.keys(props)
+      .filter((propertyName) => customHandledProperties.find((val) => val.propertyName === propertyName) === undefined)
+      .forEach((propertyName) => inst[propertyName] = (props as ECSqlRow)[propertyName]
+      );
     return inst;
   }
 

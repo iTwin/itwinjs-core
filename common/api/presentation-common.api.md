@@ -254,8 +254,6 @@ export type ContentDescriptorRpcRequestOptions = PresentationRpcRequestOptions<C
 
 // @public
 export enum ContentFlags {
-    // @internal
-    DescriptorOnly = 512,
     DistinctValues = 16,
     IncludeInputKeys = 256,
     KeysOnly = 1,
@@ -1303,8 +1301,6 @@ export interface LabelDefinition {
 
 // @public (undocumented)
 export namespace LabelDefinition {
-    const // @internal (undocumented)
-    COMPOSITE_DEFINITION_TYPENAME = "composite";
     export function fromLabelString(label: string): LabelDefinition;
     export function isCompositeDefinition(def: LabelDefinition): def is LabelDefinition & {
         rawValue: LabelCompositeValue;
@@ -2129,8 +2125,6 @@ export interface RepeatableRelationshipStepSpecification extends RelationshipSte
 export interface RequestOptions<TIModel> {
     imodel: TIModel;
     locale?: string;
-    // @internal
-    transport?: "unparsed-json";
     unitSystem?: UnitSystemKey;
 }
 

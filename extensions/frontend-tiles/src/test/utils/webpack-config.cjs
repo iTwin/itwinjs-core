@@ -7,7 +7,7 @@ const path = require("path");
 const webpack = require("webpack");
 const { globSync } = require("glob");
 
-const frontendLib = path.resolve(__dirname, "../../../lib/cjs");
+const frontendLib = path.resolve(__dirname, "../../../lib/esm");
 
 function createConfig(shouldInstrument) {
   const config = {

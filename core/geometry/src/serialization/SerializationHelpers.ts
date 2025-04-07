@@ -111,7 +111,7 @@ export namespace SerializationHelpers {
   }
 
   /** Copy B-spline curve data from source to dest */
-  function copyBSplineCurveDataPoles(source: BSplineCurveData): {poles?: number[][], weights?: number[]} {
+  function copyBSplineCurveDataPoles(source: BSplineCurveData): { poles?: number[][], weights?: number[] } {
     let nPole = 0;
     let nCoordPerPole = 0;
     let nPoleCoords = 0;
@@ -155,11 +155,11 @@ export namespace SerializationHelpers {
       poles = NumberArray.copy2d(source.poles);
     if (poles && source.weights)
       weights = NumberArray.create(source.weights);
-    return {poles, weights};
+    return { poles, weights };
   }
 
   /** Copy B-spline surface data from source to dest */
-  function copyBSplineSurfaceDataPoles(source: BSplineSurfaceData): {poles?: number[][][], weights?: number[][]} {
+  function copyBSplineSurfaceDataPoles(source: BSplineSurfaceData): { poles?: number[][][], weights?: number[][] } {
     let nPoleRow = 0;
     let nPolePerRow = 0;
     let nCoordPerPole = 0;
@@ -215,7 +215,7 @@ export namespace SerializationHelpers {
       else
         weights = NumberArray.copy2d(source.weights);
     }
-    return {poles, weights};
+    return { poles, weights };
   }
 
   /** Convert B-spline curve data arrays to the types specified by options. */
@@ -368,10 +368,138 @@ export namespace SerializationHelpers {
     }
   }
 
+  /** Special values for persistent zero-based edge mate indices. */
+  export enum EdgeMateIndex {
+    /** Separates face loops. */
+    BlockSeparator = -1,
+    /** Indicates no edge mate. */
+    NoEdgeMate = -2
+  };
+
+  /**
+   * Build two index arrays into a source array:
+   * * `sourceStarts[k]` is the first index of the k_th block in `sourceIndices`.
+   * * `compressedStarts[k]` is the first index of the k_th block in a compressed clone `C` of `sourceIndices`
+   * with all pads/terminators removed.
+   * * The last entry of `sourceStarts`/`compressedStarts` is the length of `sourceIndices`/`C`.
+   * @returns `undefined` if invalid inputs, or the two computed arrays of block start indices.
+  */
+  function buildBlockStartIndices(sourceIndices: Int32Array, numPerBlock: number, blockSeparator: number): { sourceStarts: number[], compressedStarts: number[] } | undefined {
+    if (sourceIndices.length === 0 || sourceIndices[0] === blockSeparator)
+      return undefined;
+    const sourceStarts: number[] = [];
+    const compressedStarts: number[] = [];
+    sourceStarts.push(0);
+    compressedStarts.push(0);
+    const getBlockLength = (iBlockStart: number): number => {
+      if (sourceIndices[iBlockStart] === blockSeparator)
+        return 0;
+      for (let i = iBlockStart + 1; i < sourceIndices.length; i++) {
+        if ((sourceIndices[i - 1] !== blockSeparator && sourceIndices[i] === blockSeparator) || (numPerBlock > 2 && (i % numPerBlock === 0)))
+          return i - iBlockStart;
+        if (i === sourceIndices.length - 1) // last fixed block, or unterminated last variable block
+          return sourceIndices.length - iBlockStart;
+      }
+      return 0;
+    }
+    for (let i = 0; i < sourceIndices.length;) {
+      const blockLength = getBlockLength(i);
+      if (blockLength <= 0)
+        return undefined;
+      i += blockLength;
+      for (; i < sourceIndices.length && sourceIndices[i] === blockSeparator; i++);
+      sourceStarts.push(i);
+      compressedStarts.push(compressedStarts[compressedStarts.length - 1] + blockLength);
+    }
+    return { sourceStarts, compressedStarts };
+  }
+
+  /**
+   * Compress a 0-based blocked index array by removing block separators/pads and remapping each index.
+   * * The entries of `sourceIndices` are reflexive indices, i.e., they index `sourceIndices`.
+   * * The remapped index `j` must refer to the same block location in the compressed array to which the
+   * original index `i >= 0` refers in `sourceIndices`; therefore `j` is obtained from `i` by subtracting the
+   * number of block separators/pads preceding `sourceIndices[i]`.
+   * @param sourceIndices array of blocked indices to process. Each entry is a 0-based reflexive index, `nullValue`, or `blockSeparator`.
+   * @param numPerBlock index blocking for sourceIndices: padded block size > 2 or variable-sized terminated blocks.
+   * @param blockSeparator negative value that terminates/pads blocks in sourceIndices, e.g. -1. This value is not announced.
+   * @param nullValue negative value that represents "no index" in sourceIndices, e.g., -2. This value is announced as "undefined".
+   * @param announceRemappedIndex callback to receive a remapped index.
+   * @returns true if and only if the mapping was successful.
+   */
+  export function announceCompressedZeroBasedReflexiveIndices(
+    sourceIndices: Int32Array,
+    numPerBlock: number,
+    blockSeparator: number,
+    nullValue: number,
+    announceRemappedIndex: (i: number | undefined) => any,
+  ): boolean {
+    if (!sourceIndices.length || blockSeparator >= 0 || nullValue >= 0 || (blockSeparator === nullValue))
+      return false;
+    // remapped index = source index - # preceding terminators/pads in sourceIndices
+    // Instead of counting terminators/pads, we use a pair of block start index arrays
+    const blocking = buildBlockStartIndices(sourceIndices, numPerBlock, blockSeparator);
+    if (!blocking)
+      return false;
+    for (const index of sourceIndices) {
+      if (index === nullValue)
+        announceRemappedIndex(undefined);
+      else if (index >= 0) {
+        const iBlock = NumberArray.searchStrictlyIncreasingNumbers(blocking.sourceStarts, index);
+        if (iBlock === undefined)
+          return false;
+        const blockOffset = index - blocking.sourceStarts[iBlock];
+        announceRemappedIndex(blocking.compressedStarts[iBlock] + blockOffset);
+      }
+    }
+    return true;
+  }
+
+  /**
+   * Uncompress a 0-based index array by inserting block separators and remapping each index.
+   * * Defined entries of `sourceIndices` are reflexive indices, i.e., they index `sourceIndices`.
+   * * The remapped index `j` must refer to the same block location in the uncompressed array to which the
+   * original defined index `i` refers in `sourceIndices`; therefore `j` is obtained from `i` by adding the
+   * number of full blocks preceding `sourceIndices[i]`.
+   * @param sourceIndices array of compressed indices to process. Each entry is a 0-based reflexive index, or `undefined`.
+   * @param sourceStarts sourceStarts[k] is the first index of the k_th block in `sourceIndices`; its last entry is the
+   * length of `sourceIndices`.
+   * @param blockSeparator negative value that represents an announced block terminator, e.g. -1.
+   * @param nullValue negative value to announce for an undefined source index, e.g., -2.
+   * @param announceRemappedIndex callback to receive a remapped index.
+   * @returns true if and only if the mapping was successful.
+   */
+  export function announceUncompressedZeroBasedReflexiveIndices(
+    sourceIndices: Array<number | undefined>,
+    sourceStarts: ReadonlyArray<number>,
+    blockSeparator: number,
+    nullValue: number,
+    announceRemappedIndex: (i: number) => any,
+  ): boolean {
+    if (!sourceIndices.length || sourceStarts.length < 2 || blockSeparator >= 0 || nullValue >= 0 || (blockSeparator === nullValue))
+      return false;
+    // remapped index = source index + # preceding blocks in sourceIndices
+    for (let i = 0; i < sourceStarts.length - 1; i++) {
+      for (let j = sourceStarts[i]; j < sourceStarts[i + 1]; j++) {
+        const index = sourceIndices[j];
+        if (index === undefined)
+          announceRemappedIndex(nullValue);
+        else if (index >= 0) {
+          const iBlock = NumberArray.searchStrictlyIncreasingNumbers(sourceStarts, index);
+          if (iBlock === undefined)
+            return false;
+          announceRemappedIndex(index + iBlock);
+        }
+      }
+      announceRemappedIndex(blockSeparator);
+    }
+    return true;
+  }
+
   /** Helper class for preparing geometry data for import. */
   export class Import {
     /** copy knots, with options to control destination type and extraneous knot removal */
-    private static copyKnots(knots: Float64Array | number[], options?: BSplineDataOptions, iStart?: number, iEnd?: number): Float64Array| number[] {
+    private static copyKnots(knots: Float64Array | number[], options?: BSplineDataOptions, iStart?: number, iEnd?: number): Float64Array | number[] {
       if (undefined === iStart)
         iStart = 0;
       if (undefined === iEnd)

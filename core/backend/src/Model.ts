@@ -15,7 +15,7 @@ import {
   InformationPartitionElementProps, ModelProps, RelatedElement,
 } from "@itwin/core-common";
 import { DefinitionPartition, DocumentPartition, InformationRecordPartition, PhysicalPartition, SheetIndexPartition, SpatialLocationPartition } from "./Element";
-import { CustomHandledPropertyList, ECSqlRow, Entity, InstanceProps } from "./Entity";
+import { ECSqlRow, Entity, InstanceProps } from "./Entity";
 import { IModelDb } from "./IModelDb";
 import { SubjectOwnsPartitionElements } from "./NavigationRelationship";
 import { _nativeDb, _verifyChannel } from "./internal/Symbols";
@@ -84,10 +84,6 @@ export class Model extends Entity {
     this.isPrivate = JsonUtils.asBool(props.isPrivate);
     this.isTemplate = JsonUtils.asBool(props.isTemplate);
     this.jsonProperties = { ...props.jsonProperties }; // make sure we have our own copy
-  }
-
-  protected static override get customHandledProperties(): CustomHandledPropertyList {
-    return [ ...super.customHandledProperties, ];
   }
 
   public static override deserialize(props: InstanceProps): ModelProps {
