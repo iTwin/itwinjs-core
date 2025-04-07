@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-backend",
-      "comment": "move test to example-code",
+      "comment": "",
       "type": "none"
     }
   ],
