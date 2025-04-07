@@ -310,13 +310,13 @@ export abstract class IModelConnection extends IModel {
     if (integerRegex.test(allKeys[0])) {
       const queryArgs: QueryArgs = [];
       Object.values(serializedArgs).forEach(value => {
-        queryArgs.push({...value, type: this.parseIdToParamType(value.type)});
-      })
-      return queryArgs
+        queryArgs.push({ ...value, type: this.parseIdToParamType(value.type) });
+      });
+      return queryArgs;
     } else {
       const queryArgs: QueryArgs = {};
       for (const [key, value] of Object.entries(serializedArgs)) {
-        queryArgs[key] = {...value, type: this.parseIdToParamType(value.type)};
+        queryArgs[key] = { ...value, type: this.parseIdToParamType(value.type) };
       }
       return queryArgs;
     }
