@@ -5,7 +5,6 @@
   "type": "module",
   "main": "lib/cjs/core-frontend.js",
   "module": "lib/esm/core-frontend.js",
-  "types": "lib/cjs/core-frontend",
   "exports": {
     ".": {
       "require": {
@@ -16,6 +15,10 @@
         "types": "./lib/esm/core-frontend",
         "default": "./lib/esm/core-frontend.js"
       }
+    },
+    "./internal": {
+      "import": "./lib/esm/internal/cross-package.js",
+      "require": "./lib/cjs/internal/cross-package.js"
     }
   },
   "license": "MIT",

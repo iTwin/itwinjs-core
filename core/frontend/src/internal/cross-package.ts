@@ -48,6 +48,7 @@ export {
  SpatialTileTreeReferences,
  type WGS84Extent,
  WmsUtilities,
+ type TilePatch  // Used by map-layers-formats test
 } from "../tile/internal.js";
 
 // Used by display-test-app which currently builds using both ESModules and CommonJS.

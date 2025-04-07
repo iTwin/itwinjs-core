@@ -5,7 +5,7 @@
 
 import { Frustum, ImageMapLayerSettings } from "@itwin/core-common";
 import { DecorateContext, Decorations, IconSprites, IModelApp, MapCartoRectangle, MapTile, MapTileTree, QuadId, ScreenViewport, Sprite } from "@itwin/core-frontend";
-import { TilePatch } from "@itwin/core-frontend/lib/cjs/tile/internal.js";
+import { TilePatch } from "@itwin/core-frontend/internal";
 import { Range3d } from "@itwin/core-geometry";
 import { expect } from "chai";
 import sinon from "sinon";

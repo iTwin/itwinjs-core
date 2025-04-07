@@ -8,7 +8,7 @@
 
 // @ts-expect-error package.json will resolve from the lib/{cjs,esm} dir without copying it into the build output we deliver
 // eslint-disable-next-line @itwin/import-within-package
-import packageJson from "../../package.json";
+import packageJson from "../../package.json" assert { type: "json" };
 /** @public */
 export const ITWINJS_CORE_VERSION = packageJson.version as string;
 const COPYRIGHT_NOTICE = 'Copyright © 2017-2024 <a href="https://www.bentley.com" target="_blank" rel="noopener noreferrer">Bentley Systems, Inc.</a>';
