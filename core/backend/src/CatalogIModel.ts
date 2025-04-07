@@ -6,8 +6,6 @@
  * @module iModels
  */
 
-
-
 import { CloudSqlite } from "./CloudSqlite";
 import { IModelHost } from "./IModelHost";
 import { type CatalogIModelTypes, CloudSqliteError, IModelConnectionProps } from "@itwin/core-common";
@@ -65,7 +63,6 @@ const getWriteableContainer = async (containerId: string) => getCatalogContainer
 const ensureLocked = (container: CloudSqlite.CloudContainer, reason: string) => {
   if (!container.hasWriteLock)
     CloudSqliteError.throwError("write-lock-not-held", { message: `Write lock must be held to ${reason}` });
-
 }
 
 export class CatalogDb extends StandaloneDb {
@@ -86,7 +83,7 @@ export class CatalogDb extends StandaloneDb {
 export class EditableCatalog extends StandaloneDb {
   public static async createNewContainer(args: CatalogIModelTypes.CreateNewContainerArgs): Promise<CatalogIModelTypes.NewContainerProps> {
     const userToken = await IModelHost.getAccessToken();
-    const cloudContainerProps = await CloudSqlite.getBlobService().create({ scope: { iTwinId: args.iTwinId }, metadata: { containerType: "standaloneDb", ...args.metadata }, userToken });
+    const cloudContainerProps = await CloudSqlite.getBlobService().create({ scope: { iTwinId: args.iTwinId }, metadata: { containerType: "CatalogIModel", ...args.metadata }, userToken });
 
     const container = CloudSqlite.createCloudContainer({
       accessLevel: "admin",
