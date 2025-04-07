@@ -18,7 +18,7 @@ import {
   MassPropertiesRequestProps, MassPropertiesResponseProps, ModelExtentsProps, ModelProps, ModelQueryParams, NoContentError, Placement, Placement2d,
   Placement3d, QueryBinder, QueryOptions, QueryOptionsBuilder, QueryParamType, QueryRowFormat, RpcManager, SnapRequestProps, SnapResponseProps,
   SnapshotIModelRpcInterface, SubCategoryAppearance, SubCategoryResultRow, TextureData, TextureLoadProps, ThumbnailProps, ViewDefinitionProps,
-  ViewIdString, ViewQueryParams, ViewStateLoadProps, ViewStateProps, ViewStoreRpc
+  ViewIdString, ViewQueryParams, ViewStateLoadProps, ViewStateProps, ViewStoreRpc,
 } from "@itwin/core-common";
 import { Point3d, Range3d, Range3dProps, Transform, XYAndZ, XYZProps } from "@itwin/core-geometry";
 import type { IModelReadAPI, IModelReadIpcAPI, QueryArgs } from "@itwin/imodelread-common";
@@ -317,13 +317,13 @@ export abstract class IModelConnection extends IModel {
     if (integerRegex.test(allKeys[0])) {
       const queryArgs: QueryArgs = [];
       Object.values(serializedArgs).forEach(value => {
-        queryArgs.push({...value, type: this.parseIdToParamType(value.type)});
-      })
-      return queryArgs
+        queryArgs.push({ ...value, type: this.parseIdToParamType(value.type) });
+      });
+      return queryArgs;
     } else {
       const queryArgs: QueryArgs = {};
       for (const [key, value] of Object.entries(serializedArgs)) {
-        queryArgs[key] = {...value, type: this.parseIdToParamType(value.type)};
+        queryArgs[key] = { ...value, type: this.parseIdToParamType(value.type) };
       }
       return queryArgs;
     }

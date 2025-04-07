@@ -411,7 +411,7 @@ export class ECSqlReader implements AsyncIterableIterator<QueryRowProxy> {
    * @returns array of metadata objects with populated missing values
    */
   private static populateDeprecatedMetadataProps(meta: MetadataWithOptionalLegacyFields[]): QueryPropertyMetaData[] {
-    const jsonNameDict: {[jsonName: string] : number } = {}
+    const jsonNameDict: { [jsonName: string] : number } = {};
     return meta.map((value, index) =>
       Object.assign(value, {
         generated: this.isGeneratedProperty(value),
@@ -422,7 +422,7 @@ export class ECSqlReader implements AsyncIterableIterator<QueryRowProxy> {
     );
   }
 
-  private static createJsonName(meta: MetadataWithOptionalLegacyFields, jsonNameDict: {[jsonName: string] : number }): string {
+  private static createJsonName(meta: MetadataWithOptionalLegacyFields, jsonNameDict: { [jsonName: string] : number }): string {
     let jsName;
     if (this.isGeneratedProperty(meta)) {
       jsName = this.lowerFirstChar(meta.name);
