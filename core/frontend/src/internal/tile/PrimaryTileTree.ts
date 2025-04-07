@@ -27,6 +27,7 @@ import { SpatialViewState } from "../../SpatialViewState";
 import { SceneContext } from "../../ViewContext";
 import { AttachToViewportArgs, ViewState, ViewState3d } from "../../ViewState";
 import {
+  DisclosedTileTreeSet,
   IModelTileTree, IModelTileTreeParams, iModelTileTreeParamsFromJSON, LayerTileTreeReferenceHandler, MapLayerTileTreeReference, SpatialClassifierTileTreeReference, TileDrawArgs, TileGraphicType, TileTree, TileTreeOwner, TileTreeReference,
   TileTreeSupplier,
 } from "../../tile/internal";
@@ -221,6 +222,11 @@ class PrimaryTreeReference extends TileTreeReference {
 
   protected get isPlanProjection(): boolean {
     return false;
+  }
+
+  public override discloseTileTrees(trees: DisclosedTileTreeSet): void {
+    super.discloseTileTrees(trees);
+    this._layerRefHandler.discloseTileTrees(trees);
   }
 
   protected override getClipVolume(_tree: TileTree): RenderClipVolume | undefined {

@@ -931,9 +931,7 @@ export class MapTileTreeReference extends TileTreeReference {
 
   public override discloseTileTrees(trees: DisclosedTileTreeSet): void {
     super.discloseTileTrees(trees);
-    for (const imageryTree of this._layerRefHandler.layerTrees)
-      if (imageryTree)
-        trees.disclose(imageryTree);
+    this._layerRefHandler.discloseTileTrees(trees);
 
     if (this._planarClipMask)
       this._planarClipMask.discloseTileTrees(trees);
