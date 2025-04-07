@@ -9,10 +9,10 @@ import {
   RpcManager, RpcRegistry, TileContentSource,
 } from "@itwin/core-common";
 import { AzureBlobStorageCredentials, GeometricModel3d, IModelDb, IModelHost, RpcTrace } from "@itwin/core-backend";
-import { HubWrappers } from "@itwin/core-backend/lib/cjs/test";
+import { HubWrappers } from "@itwin/core-backend/lib/esm/test/";
 import { TestUsers, TestUtility } from "@itwin/oidc-signin-tool";
-import { HubUtility } from "../HubUtility";
-import { startupForIntegration } from "./StartupShutdown";
+import { HubUtility } from "../HubUtility.js";
+import { startupForIntegration } from "./StartupShutdown.js";
 import { gunzip } from "zlib";
 import { promisify } from "util";
 

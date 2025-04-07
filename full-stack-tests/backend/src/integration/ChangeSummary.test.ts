@@ -13,11 +13,11 @@ import {
   BriefcaseDb, BriefcaseManager, ChangeSummary, ChangeSummaryManager, ECSqlStatement, ElementOwnsChildElements, IModelHost, IModelJsFs,
   SpatialCategory,
 } from "@itwin/core-backend";
-import { _hubAccess } from "@itwin/core-backend/lib/cjs/internal/Symbols";
-import { HubWrappers, IModelTestUtils, KnownTestLocations, TestChangeSetUtility } from "@itwin/core-backend/lib/cjs/test/index";
-import { HubUtility, TestUserType } from "../HubUtility";
+import { _hubAccess } from "@itwin/core-backend/internal";
+import { HubWrappers, IModelTestUtils, KnownTestLocations, TestChangeSetUtility } from "@itwin/core-backend/test";
+import { HubUtility, TestUserType } from "../HubUtility.js";
 
-import "./StartupShutdown"; // calls startup/shutdown IModelHost before/after all tests
+import "./StartupShutdown.js"; // calls startup/shutdown IModelHost before/after all tests
 
 function setupTest(iModelId: string): void {
   const cacheFilePath: string = BriefcaseManager.getChangeCachePathName(iModelId);

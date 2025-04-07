@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import "./setup";
+import "./setup.js";
 import { assert } from "chai";
 import * as fs from "fs-extra";
 import * as path from "path";
@@ -11,7 +11,7 @@ import { ElementAspectProps, IModel, SubCategoryAppearance } from "@itwin/core-c
 import { TestUsers, TestUtility } from "@itwin/oidc-signin-tool";
 import { Reporter } from "@itwin/perf-tools";
 import { DictionaryModel, ElementAspect, IModelDb, IModelHost, IModelHostOptions, SnapshotDb, SpatialCategory } from "@itwin/core-backend";
-import { HubWrappers, IModelTestUtils, KnownTestLocations } from "@itwin/core-backend/lib/cjs/test/index";
+import { HubWrappers, IModelTestUtils, KnownTestLocations } from "@itwin/core-backend/test";
 import { IModelsClient } from "@itwin/imodels-client-authoring";
 import { BackendIModelsAccess } from "@itwin/imodels-access-backend";
 

@@ -15,6 +15,15 @@
         "types": "./lib/esm/core-backend",
         "default": "./lib/esm/core-backend.js"
       }
+    },
+    "./test": {
+      "import": {
+        "default": "./lib/esm/test/index.js"
+      }
+    },
+    "./internal": {
+      "import": "./lib/esm/internal/cross-package.js",
+      "require": "./lib/cjs/internal/cross-package.js"
     }
   },
   "license": "MIT",

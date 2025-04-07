@@ -6,7 +6,7 @@
 import { expect } from "chai";
 import { Suite } from "mocha";
 import { CloudSqlite, IModelHost, PropertyStore } from "@itwin/core-backend";
-import { AzuriteTest } from "./AzuriteTest";
+import { AzuriteTest } from "./AzuriteTest.js";
 import { Guid } from "@itwin/core-bentley";
 
 function countProperties(values: any, filter?: PropertyStore.PropertyFilter) {

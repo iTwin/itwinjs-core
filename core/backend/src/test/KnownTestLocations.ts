@@ -15,7 +15,7 @@ export class KnownTestLocations {
       // its tmpdir before running the tests.
       return join(tmpdir(), "assets");
     }
-
+    
     return join(import.meta.dirname, "assets");
   }
 

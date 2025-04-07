@@ -8,7 +8,7 @@ import * as path from "path";
 import * as readline from "readline";
 import { DbResult, OpenMode, StopWatch } from "@itwin/core-bentley";
 import { ECDb, ECDbOpenMode, SQLiteDb, SqliteStatement } from "@itwin/core-backend";
-import { KnownTestLocations } from "@itwin/core-backend/lib/cjs/test/index";
+import { KnownTestLocations } from "@itwin/core-backend/test";
 
 function makeRandStr(length: number) {
   let text = "";

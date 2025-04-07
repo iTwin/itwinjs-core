@@ -17,9 +17,9 @@
 // import { Reporter } from "@itwin/perf-tools";
 // import { BriefcaseManager, DictionaryModel, Element, IModelDb, IModelHost, IModelJsNative, SpatialCategory, StandaloneDb } from "@itwin/core-backend";
 // import { _hubAccess } from "@itwin/core-backend/lib/cjs/internal/Symbols";
-// import { HubWrappers, IModelTestUtils, KnownTestLocations, RevisionUtility } from "@itwin/core-backend/lib/cjs/test/index";
-// import { HubUtility } from "../HubUtility";
-// import { PerfTestUtility } from "./PerfTestUtils";
+// import { HubWrappers, IModelTestUtils, KnownTestLocations, RevisionUtility } from "@itwin/core-backend/lib/esm/test/index";
+// import { HubUtility } from "../HubUtility.js";
+// import { PerfTestUtility } from "./PerfTestUtils.js";
 // import { BackendIModelsAccess } from "@itwin/imodels-access-backend";
 // import { Authorization, ContainingChanges, IModelsClient } from "@itwin/imodels-client-management";
 

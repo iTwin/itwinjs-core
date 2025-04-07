@@ -9,9 +9,9 @@ import { IModelHost, IModelJsFs, IModelJsNative, IModelNative } from "@itwin/cor
 import { AccessToken, ChangeSetStatus, GuidString, Logger, OpenMode, PerfLogger } from "@itwin/core-bentley";
 import { ChangesetFileProps, ChangesetType } from "@itwin/core-common";
 import { TestUsers, TestUtility } from "@itwin/oidc-signin-tool";
-import { HubUtility } from "../HubUtility";
+import { HubUtility } from "../HubUtility.js";
 
-import "./StartupShutdown"; // calls startup/shutdown IModelHost before/after all tests
+import "./StartupShutdown.js"; // calls startup/shutdown IModelHost before/after all tests
 
 // Useful utilities to download/upload test cases from/to iModelHub
 describe("ApplyChangesets", () => {

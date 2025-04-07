@@ -11,8 +11,8 @@ import {
 } from "@itwin/core-common";
 import { Reporter } from "@itwin/perf-tools";
 import { _nativeDb, ECSqlStatement, IModelDb, IModelHost, IModelJsFs, SnapshotDb, SpatialCategory } from "@itwin/core-backend";
-import { IModelTestUtils, KnownTestLocations } from "@itwin/core-backend/lib/cjs/test/index";
-import { PerfTestUtility } from "./PerfTestUtils";
+import { IModelTestUtils, KnownTestLocations } from "@itwin/core-backend/test";
+import { PerfTestUtility } from "./PerfTestUtils.js";
 
 describe("SchemaDesignPerf Relationship Comparison", () => {
   const outDir: string = path.join(KnownTestLocations.outputDir, "RelationshipPerformance");

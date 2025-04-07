@@ -9,11 +9,11 @@ import { existsSync, removeSync } from "fs-extra";
 import { join } from "path";
 import * as sinon from "sinon";
 import { _nativeDb, BlobContainer, BriefcaseDb, CloudSqlite, IModelHost, IModelJsFs, KnownLocations, PropertyStore, SnapshotDb, SQLiteDb } from "@itwin/core-backend";
-import { KnownTestLocations } from "@itwin/core-backend/lib/cjs/test";
+import { KnownTestLocations } from "@itwin/core-backend/test";
 import { assert, BeDuration, DbResult, Guid, GuidString, Logger, LoggingMetaData, LogLevel, OpenMode, StopWatch } from "@itwin/core-bentley";
-import { AzuriteTest } from "./AzuriteTest";
+import { AzuriteTest } from "./AzuriteTest.js";
 
-import "./StartupShutdown"; // calls startup/shutdown IModelHost before/after all tests
+import "./StartupShutdown.js"; // calls startup/shutdown IModelHost before/after all tests
 
 // spell:ignore localstore itwindb
 

@@ -9,14 +9,14 @@ import * as fs from "fs-extra";
 import * as path from "path";
 import * as sinon from "sinon";
 import { _nativeDb, CloudSqlite, IModelDb, IModelHost, IModelJsFs, NativeCloudSqlite, SettingsPriority, SnapshotDb, V2CheckpointAccessProps, V2CheckpointManager } from "@itwin/core-backend";
-import { _hubAccess } from "@itwin/core-backend/lib/cjs/internal/Symbols";
-import { KnownTestLocations } from "@itwin/core-backend/lib/cjs/test/KnownTestLocations";
+import { _hubAccess } from "@itwin/core-backend/internal";
+import { KnownTestLocations } from "@itwin/core-backend/test";
 import { AccessToken, GuidString } from "@itwin/core-bentley";
 import { ChangesetProps, IModelVersion } from "@itwin/core-common";
 import { TestUsers, TestUtility } from "@itwin/oidc-signin-tool";
-import { HubUtility } from "../HubUtility";
+import { HubUtility } from "../HubUtility.js";
 
-import "./StartupShutdown"; // calls startup/shutdown IModelHost before/after all tests
+import "./StartupShutdown.js"; // calls startup/shutdown IModelHost before/after all tests
 
 async function queryBisModelCount(imodel: IModelDb): Promise<number> {
   const reader = imodel.createQueryReader("SELECT count(*) FROM bis.model");

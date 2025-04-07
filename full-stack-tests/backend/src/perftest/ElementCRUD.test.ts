@@ -11,8 +11,8 @@ import {
 } from "@itwin/core-common";
 import { Reporter } from "@itwin/perf-tools";
 import { _nativeDb, DrawingCategory, ECSqlStatement, Element, IModelDb, IModelHost, IModelJsFs, SnapshotDb, SpatialCategory } from "@itwin/core-backend";
-import { IModelTestUtils, KnownTestLocations } from "@itwin/core-backend/lib/cjs/test/index";
-import { PerfTestUtility } from "./PerfTestUtils";
+import { IModelTestUtils, KnownTestLocations } from "@itwin/core-backend/test";
+import { PerfTestUtility } from "./PerfTestUtils.js";
 
 // @ts-expect-error package.json will resolve from the lib/{cjs,esm} dir without copying it into the build output we deliver
 // eslint-disable-next-line @itwin/import-within-package

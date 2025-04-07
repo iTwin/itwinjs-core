@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import "./StartupShutdown"; // calls startup/shutdown IModelHost before/after all tests
+import "./StartupShutdown.js"; // calls startup/shutdown IModelHost before/after all tests
 import { expect } from "chai";
 import * as fs from "fs-extra";
 import { join } from "path";
@@ -12,7 +12,7 @@ import {
   WorkspaceDbCloudProps, WorkspaceDbLoadError, WorkspaceDbLoadErrors, WorkspaceDbQueryResourcesArgs, WorkspaceEditor, WorkspaceSettingNames,
 } from "@itwin/core-backend";
 import { assert, Guid } from "@itwin/core-bentley";
-import { AzuriteTest } from "./AzuriteTest";
+import { AzuriteTest } from "./AzuriteTest.js";
 
 // cspell:ignore premajor
 

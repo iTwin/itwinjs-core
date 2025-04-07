@@ -9,11 +9,11 @@ import { Range3d } from "@itwin/core-geometry";
 import { TestUsers, TestUtility } from "@itwin/oidc-signin-tool";
 import { assert } from "chai";
 import { BriefcaseManager, ChangedElementsDb, IModelDb, IModelHost, IModelJsFs, ProcessChangesetOptions, SnapshotDb } from "@itwin/core-backend";
-import { _hubAccess } from "@itwin/core-backend/lib/cjs/internal/Symbols";
-import { HubWrappers } from "@itwin/core-backend/lib/cjs/test/IModelTestUtils";
-import { HubUtility } from "../HubUtility";
+import { _hubAccess } from "@itwin/core-backend/internal";
+import { HubWrappers } from "@itwin/core-backend/test";
+import { HubUtility } from "../HubUtility.js";
 
-import "./StartupShutdown"; // calls startup/shutdown IModelHost before/after all tests
+import "./StartupShutdown.js"; // calls startup/shutdown IModelHost before/after all tests
 
 describe("ChangedElements", () => {
   let accessToken: AccessToken;
