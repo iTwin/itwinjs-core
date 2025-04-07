@@ -3,13 +3,20 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { CheckpointConnection, SheetViewState, ViewState } from "@itwin/core-frontend";
-import { XYProps } from "@itwin/core-geometry";
+import { BlankConnection, BriefcaseConnection, CheckpointConnection, IModelApp, IModelConnection, ScreenViewport, SheetViewState, SnapshotConnection, SpatialViewState, ViewState } from "@itwin/core-frontend";
+import { Range3d, XYProps } from "@itwin/core-geometry";
 import { TestUsers } from "@itwin/oidc-signin-tool/lib/cjs/TestUsers";
 import { testOnScreenViewport } from "../TestViewport";
 import { TestUtility } from "../TestUtility";
-import {  ViewAttachmentProps } from "@itwin/core-common";
-import { coreFullStackTestIpc, initializeEditTools } from "../Editing";
+// import {  Cartographic, Code, GeometricModel2dProps, RelatedElement, SheetProps, SubCategoryAppearance, ViewAttachmentProps } from "@itwin/core-common";
+import { addAllowedChannel, coreFullStackTestIpc, initializeEditTools, makeModelCode } from "../Editing";
+import { Cartographic } from "@itwin/core-common";
+import { Guid } from "@itwin/core-bentley";
+import { DrawingViewDefinition } from "@itwin/core-backend";
+// import { Guid, Id64, Id64String, OpenMode } from "@itwin/core-bentley";
+// import * as path from "path";
+// import { TestSnapshotConnection } from "../TestSnapshotConnection";
+// import { DefinitionModel, DocumentListModel, DocumentPartition, DrawingCategory, IModelDb, Sheet, SheetModel, StandaloneDb, Subject } from "@itwin/core-backend";
 
 describe("Sheet views (#integration)", () => {
   let imodel: CheckpointConnection;
@@ -175,30 +182,24 @@ describe("Sheet views (#integration)", () => {
   describe.only("ViewAttachments", () => {
 
     before(async () => {
-      await TestUtility.startFrontend(undefined, undefined, true);
       await initializeEditTools();
+      await TestUtility.startFrontend(undefined, undefined, true);
+      await TestUtility.initialize(TestUsers.regular);
     });
 
     after(async () => {
       await TestUtility.shutdownFrontend();
+      await IModelApp.shutdown();
     });
 
     it("areAllTileTreesLoaded should return true when attachments are outside of the viewed extents", async () => {
-      const sheetView = await imodel.views.load(sheetViewId) as SheetViewState;
+      const sheetViewStateProps = await coreFullStackTestIpc.createViewAttachmentAndInsertIntoSheetView();
+      const newSheetView = SheetViewState.createFromProps(sheetViewStateProps, await BriefcaseConnection.openStandalone("D:/iTwinGraphics/core/itwinjs-core/core/backend/lib/cjs/test/assets/sheetViewTest.bim"));
+      await newSheetView.load();
 
-        // Create a new attachment
-        const newOrigin: XYProps = { x:100, y: 0 };
-        const newAttachmentProps: ViewAttachmentProps = {
-          ...sheetView.viewAttachmentProps[0],
-          placement : {
-            origin: newOrigin,
-            angle: 0,
-          },
-          id: "outOfView"
-        };
-
-        // insert the new attachment into the backend
-        await coreFullStackTestIpc.createAndInsertViewAttachment(imodel.key, newAttachmentProps);
+      expect(newSheetView).not.to.be.undefined;
+      expect(newSheetView.viewAttachmentProps.length).to.equal(1);
+      expect(newSheetView.attachments).not.to.be.undefined;
     });
   });
 });
