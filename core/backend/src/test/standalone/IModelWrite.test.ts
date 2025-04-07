@@ -18,7 +18,7 @@ import * as sinon from "sinon";
 import { HubWrappers, KnownTestLocations } from "../";
 import { DrawingCategory } from "../../Category";
 import { ECSqlStatement } from "../../ECSqlStatement";
-import { HubMock } from "../../HubMock";
+import { HubMock } from "../../internal/HubMock";
 import {
   _nativeDb,
   BriefcaseDb,

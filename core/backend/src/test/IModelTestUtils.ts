@@ -32,7 +32,7 @@ import { DefinitionModel, DocumentListModel, DrawingModel, InformationRecordMode
 import { DrawingGraphicRepresentsElement, ElementDrivesElement, Relationship, RelationshipProps } from "../Relationship";
 import { DownloadAndOpenArgs, RpcBriefcaseUtility } from "../rpc-impl/RpcBriefcaseUtility";
 import { Schema, Schemas } from "../Schema";
-import { HubMock } from "../HubMock";
+import { HubMock } from "../internal/HubMock";
 import { KnownTestLocations } from "./KnownTestLocations";
 import { BackendHubAccess } from "../BackendHubAccess";
 import { _getCheckpointDb, _hubAccess } from "../internal/Symbols";
