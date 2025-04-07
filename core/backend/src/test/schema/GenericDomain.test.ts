@@ -19,6 +19,7 @@ import { TestUtils } from "../TestUtils.js";
 describe("Generic Domain", () => {
 
   function count(iModelDb: IModelDb, classFullName: string): number {
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     return iModelDb.withPreparedStatement(`SELECT COUNT(*) FROM ${classFullName}`, (statement: ECSqlStatement): number => {
       return DbResult.BE_SQLITE_ROW === statement.step() ? statement.getValue(0).getInteger() : 0;
     });

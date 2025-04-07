@@ -1,6 +1,6 @@
 {
   "name": "@itwin/physical-material-backend",
-  "version": "5.0.0-dev.96",
+  "version": "5.0.0-dev.99",
   "main": "lib/cjs/physical-material-backend.js",
   "module": "lib/esm/physical-material-backend.js",
   "typings": "lib/cjs/physical-material-backend",
@@ -56,7 +56,6 @@
     "@itwin/core-common": "workspace:*",
     "@itwin/eslint-plugin": "5.0.0-dev.1",
     "@types/chai": "4.3.1",
-    "@types/fs-extra": "^4.0.7",
     "@types/mocha": "^10.0.6",
     "@types/node": "~20.17.0",
     "chai": "^4.3.10",
@@ -66,9 +65,6 @@
     "nyc": "^17.1.0",
     "rimraf": "^6.0.1",
     "typescript": "~5.6.2"
-  },
-  "TODO-dependencies": {
-    "@bentley/physicalmaterial-schema": "~1.0.1"
   },
   "nyc": {
     "extends": "./node_modules/@itwin/build-tools/.nycrc"

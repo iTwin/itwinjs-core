@@ -21,7 +21,6 @@ import {
 import { HubMock } from "../../HubMock.js";
 import { RebaseChangesetConflictArgs, TxnArgs } from "../../internal/ChangesetConflictArgs.js";
 import { IModelTestUtils, TestUserType } from "../IModelTestUtils.js";
-import * as sinon from "sinon";
 
 async function assertThrowsAsync<T>(test: () => Promise<T>, msg?: string) {
   try {
@@ -105,10 +104,6 @@ describe("Change merge method", () => {
     b1.saveChanges();
     await b1.pushChanges({ description: "" });
     b1.close();
-  });
-
-  afterEach(async () => {
-    sinon.restore();
   });
 
   it("rebase events (noFastForward:true)", async () => {
