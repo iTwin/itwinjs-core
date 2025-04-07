@@ -3,8 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { describe, expect, it } from "vitest";
-import { createWorkerProxy } from "../../common/WorkerProxy";
-import { TestWorker } from "./test-worker";
+import { createWorkerProxy } from "../../common/WorkerProxy.js";
+import { TestWorker } from "./test-worker.js";
 
 describe("WorkerProxy", () => {
   const createWorker = () => createWorkerProxy<TestWorker>("/test-worker.js");

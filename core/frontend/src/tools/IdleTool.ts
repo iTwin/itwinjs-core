@@ -6,9 +6,9 @@
  * @module Tools
  */
 
-import { IModelApp } from "../IModelApp";
-import { BeButton, BeButtonEvent, BeTouchEvent, BeWheelEvent, EventHandled, InteractiveTool } from "./Tool";
-import { DefaultViewTouchTool, FitViewTool, ViewHandleType, ViewManip } from "./ViewTool";
+import { IModelApp } from "../IModelApp.js";
+import { BeButton, BeButtonEvent, BeTouchEvent, BeWheelEvent, EventHandled, InteractiveTool } from "./Tool.js";
+import { DefaultViewTouchTool, FitViewTool, ViewHandleType, ViewManip } from "./ViewTool.js";
 
 /**
  * The default "idle" tool. If no tool is active, or the active tool does not respond to a given

@@ -17,8 +17,8 @@ import {
   TileUrlImageryProvider,
   WmsMapLayerImageryProvider,
   WmtsMapLayerImageryProvider,
-} from "../../../tile/internal";
-import { IModelApp } from "../../../IModelApp";
+} from "../../../tile/internal.js";
+import { IModelApp } from "../../../IModelApp.js";
 
 const getSampleLayerSettings = ((formatId: string) => {
   return ImageMapLayerSettings.fromJSON({

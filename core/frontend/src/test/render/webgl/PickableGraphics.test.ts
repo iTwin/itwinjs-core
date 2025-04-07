@@ -5,15 +5,15 @@
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { Point3d, Vector3d } from "@itwin/core-geometry";
 import { ColorDef, EmptyLocalization, Feature, GeometryClass, RenderMode } from "@itwin/core-common";
-import { IModelConnection } from "../../../IModelConnection";
-import { ScreenViewport } from "../../../Viewport";
-import { DecorateContext } from "../../../ViewContext";
-import { IModelApp } from "../../../IModelApp";
-import { SpatialViewState } from "../../../SpatialViewState";
-import { createBlankConnection } from "../../createBlankConnection";
-import { BoxDecorator, TestDecorator } from "../../TestDecorators";
-import { expectColors } from "../../ExpectColors";
-import { GraphicType } from "../../../core-frontend";
+import { IModelConnection } from "../../../IModelConnection.js";
+import { ScreenViewport } from "../../../Viewport.js";
+import { DecorateContext } from "../../../ViewContext.js";
+import { IModelApp } from "../../../IModelApp.js";
+import { SpatialViewState } from "../../../SpatialViewState.js";
+import { createBlankConnection } from "../../createBlankConnection.js";
+import { BoxDecorator, TestDecorator } from "../../TestDecorators.js";
+import { expectColors } from "../../ExpectColors.js";
+import { GraphicType } from "../../../core-frontend.js";
 
 describe("Pickable graphic", () => {
   let imodel: IModelConnection;

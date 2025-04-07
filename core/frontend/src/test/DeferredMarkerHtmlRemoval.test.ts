@@ -3,12 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { ScreenViewport } from "../Viewport";
-import { Decorator } from "../ViewManager";
-import { DecorateContext } from "../ViewContext";
-import { IModelApp } from "../IModelApp";
-import { openBlankViewport } from "./openBlankViewport";
-import { Marker } from "../Marker";
+import { ScreenViewport } from "../Viewport.js";
+import { Decorator } from "../ViewManager.js";
+import { DecorateContext } from "../ViewContext.js";
+import { IModelApp } from "../IModelApp.js";
+import { openBlankViewport } from "./openBlankViewport.js";
+import { Marker } from "../Marker.js";
 import { EmptyLocalization } from "@itwin/core-common";
 
 describe("ScreenViewport", () => {

@@ -11,9 +11,9 @@ import { Range3d } from "@itwin/core-geometry";
 import {
   EditingScopeNotifications, ElementGeometryChange, ipcAppChannels, ModelGeometryChanges, ModelGeometryChangesProps, RemoveFunction,
 } from "@itwin/core-common";
-import { BriefcaseNotificationHandler } from "./BriefcaseTxns";
-import { BriefcaseConnection } from "./BriefcaseConnection";
-import { IpcApp } from "./IpcApp";
+import { BriefcaseNotificationHandler } from "./BriefcaseTxns.js";
+import { BriefcaseConnection } from "./BriefcaseConnection.js";
+import { IpcApp } from "./IpcApp.js";
 
 class ModelChanges extends SortedArray<ElementGeometryChange> {
   public geometryGuid: GuidString;

@@ -12,39 +12,39 @@ import {
   ModelFeature, PointCloudDisplaySettings, RenderFeatureTable, RenderMode, SpatialClassifierInsideDisplay, SpatialClassifierOutsideDisplay,
 } from "@itwin/core-common";
 import { RenderType } from "@itwin/webgl-compatibility";
-import { IModelConnection } from "../../../IModelConnection";
-import { SceneContext } from "../../../ViewContext";
-import { ViewRect } from "../../../common/ViewRect";
-import { Pixel } from "../../../render/Pixel";
-import { GraphicList } from "../../../render/RenderGraphic";
-import { RenderMemory } from "../../../render/RenderMemory";
-import { BranchState } from "./BranchState";
-import { BatchState } from "./BatchState";
+import { IModelConnection } from "../../../IModelConnection.js";
+import { SceneContext } from "../../../ViewContext.js";
+import { ViewRect } from "../../../common/ViewRect.js";
+import { Pixel } from "../../../render/Pixel.js";
+import { GraphicList } from "../../../render/RenderGraphic.js";
+import { RenderMemory } from "../../../render/RenderMemory.js";
+import { BranchState } from "./BranchState.js";
+import { BatchState } from "./BatchState.js";
 import {
   AmbientOcclusionGeometry, BlurGeometry, BlurType, BoundaryType, CachedGeometry, CompositeGeometry, CopyPickBufferGeometry,
   SingleTexturedViewportQuadGeometry, ViewportQuadGeometry, VolumeClassifierGeometry,
-} from "./CachedGeometry";
-import { Debug } from "./Diagnostics";
-import { WebGLDisposable } from "./Disposable";
-import { DrawCommands, extractFlashedVolumeClassifierCommands, extractHilitedVolumeClassifierCommands } from "./DrawCommand";
-import { DepthBuffer, FrameBuffer } from "./FrameBuffer";
-import { GL } from "./GL";
-import { IModelFrameLifecycle } from "./IModelFrameLifecycle";
-import { Matrix4 } from "./Matrix";
-import { RenderCommands } from "./RenderCommands";
-import { CompositeFlags, RenderOrder, RenderPass, TextureUnit } from "./RenderFlags";
-import { RenderState } from "./RenderState";
-import { getDrawParams } from "./ScratchDrawParams";
-import { SolarShadowMap } from "./SolarShadowMap";
-import { System } from "./System";
-import { Target } from "./Target";
-import { TechniqueId } from "./TechniqueId";
-import { TextureHandle } from "./Texture";
-import { RenderBufferMultiSample } from "./RenderBuffer";
-import { Primitive } from "./Primitive";
-import { ShaderProgramExecutor } from "./ShaderProgram";
-import { EDLMode, EyeDomeLighting } from "./EDL";
-import { FrustumUniformType } from "./FrustumUniforms";
+} from "./CachedGeometry.js";
+import { Debug } from "./Diagnostics.js";
+import { WebGLDisposable } from "./Disposable.js";
+import { DrawCommands, extractFlashedVolumeClassifierCommands, extractHilitedVolumeClassifierCommands } from "./DrawCommand.js";
+import { DepthBuffer, FrameBuffer } from "./FrameBuffer.js";
+import { GL } from "./GL.js";
+import { IModelFrameLifecycle } from "./IModelFrameLifecycle.js";
+import { Matrix4 } from "./Matrix.js";
+import { RenderCommands } from "./RenderCommands.js";
+import { CompositeFlags, RenderOrder, RenderPass, TextureUnit } from "./RenderFlags.js";
+import { RenderState } from "./RenderState.js";
+import { getDrawParams } from "./ScratchDrawParams.js";
+import { SolarShadowMap } from "./SolarShadowMap.js";
+import { System } from "./System.js";
+import { Target } from "./Target.js";
+import { TechniqueId } from "./TechniqueId.js";
+import { TextureHandle } from "./Texture.js";
+import { RenderBufferMultiSample } from "./RenderBuffer.js";
+import { Primitive } from "./Primitive.js";
+import { ShaderProgramExecutor } from "./ShaderProgram.js";
+import { EDLMode, EyeDomeLighting } from "./EDL.js";
+import { FrustumUniformType } from "./FrustumUniforms.js";
 
 export function collectTextureStatistics(texture: TextureHandle | undefined, stats: RenderMemory.Statistics): void {
   if (undefined !== texture)

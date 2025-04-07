@@ -7,10 +7,10 @@
  */
 
 import { assert } from "@itwin/core-bentley";
-import { VertexTableBuilder } from "./VertexTableBuilder";
-import { VertexIndices } from "./VertexIndices";
-import { VertexTable } from "./VertexTable";
-import { PolylineArgs } from "../../../render/PolylineArgs";
+import { VertexTableBuilder } from "./VertexTableBuilder.js";
+import { VertexIndices } from "./VertexIndices.js";
+import { VertexTable } from "./VertexTable.js";
+import { PolylineArgs } from "../../../render/PolylineArgs.js";
 
 /** Describes point string geometry to be submitted to the rendering system.
  * @internal

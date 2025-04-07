@@ -11,13 +11,13 @@ import {
   AnyCurvePrimitive, Arc3d, Box, CurvePrimitive, IndexedPolyface, LineSegment3d, LineString3d, Loop, Path, Point2d, Point3d, Polyface, Range3d, SolidPrimitive, Transform,
 } from "@itwin/core-geometry";
 import { AnalysisStyle, ColorDef, Feature, Frustum, Gradient, GraphicParams, LinePixels, Npc, RenderTexture } from "@itwin/core-common";
-import { _accumulator, _implementationProhibited } from "../internal/Symbols";
-import { GraphicType } from "./GraphicType";
-import { PickableGraphicOptions } from "./BatchOptions";
-import { GraphicPrimitive } from "./GraphicPrimitive";
-import { GeometryAccumulator } from "../internal/render/GeometryAccumulator";
-import { DisplayParams } from "../internal/render/DisplayParams";
-import { Geometry } from "../internal/render/GeometryPrimitives";
+import { _accumulator, _implementationProhibited } from "../internal/Symbols.js";
+import { GraphicType } from "./GraphicType.js";
+import { PickableGraphicOptions } from "./BatchOptions.js";
+import { GraphicPrimitive } from "./GraphicPrimitive.js";
+import { GeometryAccumulator } from "../internal/render/GeometryAccumulator.js";
+import { DisplayParams } from "../internal/render/DisplayParams.js";
+import { Geometry } from "../internal/render/GeometryPrimitives.js";
 
 /** @internal Used by GraphicAssembler's internal constructor. Subclasses define their own constructor arguments. */
 export interface GraphicAssemblerOptions {

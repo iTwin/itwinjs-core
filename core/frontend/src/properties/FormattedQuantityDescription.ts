@@ -8,8 +8,8 @@
 
 import { FormatterSpec, Parser, ParserSpec } from "@itwin/core-quantity";
 import { BaseQuantityDescription, ParseResults } from "@itwin/appui-abstract";
-import { IModelApp } from "../IModelApp";
-import { QuantityType } from "../quantity-formatting/QuantityFormatter";
+import { IModelApp } from "../IModelApp.js";
+import { QuantityType } from "../quantity-formatting/QuantityFormatter.js";
 
 /**
  * Base Quantity Property Description

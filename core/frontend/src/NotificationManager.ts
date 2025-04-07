@@ -8,8 +8,8 @@
 import { BeDuration } from "@itwin/core-bentley";
 import { Point2d, XAndY } from "@itwin/core-geometry";
 import { DisplayMessageType, MessagePresenter, MessageSeverity, RelativePosition } from "@itwin/appui-abstract";
-import { IModelApp } from "./IModelApp";
-import { ToolAssistanceInstructions } from "./tools/ToolAssistance";
+import { IModelApp } from "./IModelApp.js";
+import { ToolAssistanceInstructions } from "./tools/ToolAssistance.js";
 
 // cSpell:words messagebox
 

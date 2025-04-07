@@ -6,8 +6,8 @@
  * @module Rendering
  */
 
-import { FragmentShaderComponent, ProgramBuilder, VariableType, VertexShaderBuilder, VertexShaderComponent } from "../ShaderBuilder";
-import { addInstanceColor } from "./Instancing";
+import { FragmentShaderComponent, ProgramBuilder, VariableType, VertexShaderBuilder, VertexShaderComponent } from "../ShaderBuilder.js";
+import { addInstanceColor } from "./Instancing.js";
 
 // Vertex
 // Color table is appended to vertex data. Compute the index of the vertex one-past-the-end of the vertex data

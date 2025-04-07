@@ -8,9 +8,9 @@
 
 import { Id64String } from "@itwin/core-bentley";
 import { FeatureAppearance, PlanarClipMaskMode, PlanarClipMaskPriority, PlanarClipMaskProps, PlanarClipMaskSettings } from "@itwin/core-common";
-import { FeatureSymbology } from "./render/FeatureSymbology";
-import { DisclosedTileTreeSet, TileTreeReference } from "./tile/internal";
-import { SceneContext } from "./ViewContext";
+import { FeatureSymbology } from "./render/FeatureSymbology.js";
+import { DisclosedTileTreeSet, TileTreeReference } from "./tile/internal.js";
+import { SceneContext } from "./ViewContext.js";
 import { Range3d } from "@itwin/core-geometry";
 
 /** The State of Planar Clip Mask applied to a reality model or background map.

@@ -3,16 +3,16 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { IModelApp } from "../IModelApp";
-import { IModelConnection } from "../IModelConnection";
-import { createBlankConnection } from "./createBlankConnection";
+import { IModelApp } from "../IModelApp.js";
+import { IModelConnection } from "../IModelConnection.js";
+import { createBlankConnection } from "./createBlankConnection.js";
 import { Cartographic, EcefLocation, EmptyLocalization } from "@itwin/core-common";
-import { SpatialViewState } from "../SpatialViewState";
+import { SpatialViewState } from "../SpatialViewState.js";
 import { Point3d, Range3d, Vector3d } from "@itwin/core-geometry";
-import { StandardViewId } from "../StandardView";
-import { MarginOptions } from "../ViewAnimation";
-import { MarginPercent, PaddingPercent } from "../MarginPercent";
-import { ViewStatus } from "../ViewStatus";
+import { StandardViewId } from "../StandardView.js";
+import { MarginOptions } from "../ViewAnimation.js";
+import { MarginPercent, PaddingPercent } from "../MarginPercent.js";
+import { ViewStatus } from "../ViewStatus.js";
 
 describe("Look At", () => {
   let imodel: IModelConnection;

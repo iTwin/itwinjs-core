@@ -10,27 +10,27 @@
 import { dispose } from "@itwin/core-bentley";
 import { Range3d, Transform } from "@itwin/core-geometry";
 import { ElementAlignedBox3d, EmptyLocalization, RenderFeatureTable } from "@itwin/core-common";
-import { IModelApp, IModelAppOptions } from "../../IModelApp";
-import { IModelConnection } from "../../IModelConnection";
-import { MeshParams } from "../../common/internal/render/MeshParams";
-import { PointStringParams } from "../../common/internal/render/PointStringParams";
-import { PolylineParams } from "../../common/internal/render/PolylineParams";
-import { ViewRect } from "../../common/ViewRect";
-import { Decorations } from "../../render/Decorations";
-import { GraphicBranch, GraphicBranchOptions } from "../../render/GraphicBranch";
-import { CustomGraphicBuilderOptions, GraphicBuilder, ViewportGraphicBuilderOptions } from "../../render/GraphicBuilder";
-import { Pixel } from "../../render/Pixel";
-import { PrimitiveBuilder } from "../../internal/render/PrimitiveBuilder";
-import { PointCloudArgs } from "../../common/internal/render/PointCloudPrimitive";
-import { GraphicList, RenderGraphic } from "../../render/RenderGraphic";
-import { RenderMemory } from "../../render/RenderMemory";
-import { RenderPlan } from "../../internal/render/RenderPlan";
-import { RenderSystem } from "../../render/RenderSystem";
-import { RenderTarget } from "../../render/RenderTarget";
-import { Scene } from "../../render/Scene";
-import { _implementationProhibited } from "../../common/internal/Symbols";
-import { RenderGeometry } from "./RenderGeometry";
-import { RenderAreaPattern } from "./RenderAreaPattern";
+import { IModelApp, IModelAppOptions } from "../../IModelApp.js";
+import { IModelConnection } from "../../IModelConnection.js";
+import { MeshParams } from "../../common/internal/render/MeshParams.js";
+import { PointStringParams } from "../../common/internal/render/PointStringParams.js";
+import { PolylineParams } from "../../common/internal/render/PolylineParams.js";
+import { ViewRect } from "../../common/ViewRect.js";
+import { Decorations } from "../../render/Decorations.js";
+import { GraphicBranch, GraphicBranchOptions } from "../../render/GraphicBranch.js";
+import { CustomGraphicBuilderOptions, GraphicBuilder, ViewportGraphicBuilderOptions } from "../../render/GraphicBuilder.js";
+import { Pixel } from "../../render/Pixel.js";
+import { PrimitiveBuilder } from "../../internal/render/PrimitiveBuilder.js";
+import { PointCloudArgs } from "../../common/internal/render/PointCloudPrimitive.js";
+import { GraphicList, RenderGraphic } from "../../render/RenderGraphic.js";
+import { RenderMemory } from "../../render/RenderMemory.js";
+import { RenderPlan } from "../../internal/render/RenderPlan.js";
+import { RenderSystem } from "../../render/RenderSystem.js";
+import { RenderTarget } from "../../render/RenderTarget.js";
+import { Scene } from "../../render/Scene.js";
+import { _implementationProhibited } from "../../common/internal/Symbols.js";
+import { RenderGeometry } from "./RenderGeometry.js";
+import { RenderAreaPattern } from "./RenderAreaPattern.js";
 
 /** Contains extensible mock implementations of the various components of a RenderSystem, intended for use in tests.
  * Use these for tests instead of the default RenderSystem wherever possible because:

@@ -8,9 +8,9 @@
 
 import { Id64, Id64Arg, Id64Set } from "@itwin/core-bentley";
 import { AppearanceOverrideProps, ColorDef, EmphasizeElementsProps, FeatureAppearance, FeatureOverrideType, RgbColor } from "@itwin/core-common";
-import { FeatureSymbology } from "./render/FeatureSymbology";
-import { FeatureOverrideProvider } from "./FeatureOverrideProvider";
-import { Viewport } from "./Viewport";
+import { FeatureSymbology } from "./render/FeatureSymbology.js";
+import { FeatureOverrideProvider } from "./FeatureOverrideProvider.js";
+import { Viewport } from "./Viewport.js";
 
 /** An implementation of [[FeatureOverrideProvider]] for emphasizing selected elements through simple color/transparency appearance overrides.
  * @public

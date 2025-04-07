@@ -8,10 +8,10 @@
 
 import { Map4d } from "@itwin/core-geometry";
 import { FrustumPlanes } from "@itwin/core-common";
-import { GraphicBranch } from "../../render/GraphicBranch";
-import { RenderGraphic } from "../../render/RenderGraphic";
-import { SceneContext } from "../../ViewContext";
-import { TileDrawArgs, TileGraphicType, TileTreeReference } from "../../tile/internal";
+import { GraphicBranch } from "../../render/GraphicBranch.js";
+import { RenderGraphic } from "../../render/RenderGraphic.js";
+import { SceneContext } from "../../ViewContext.js";
+import { TileDrawArgs, TileGraphicType, TileTreeReference } from "../../tile/internal.js";
 
 export interface GraphicsCollector {
   addGraphic(graphic: RenderGraphic): void;

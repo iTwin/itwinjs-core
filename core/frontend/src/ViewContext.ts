@@ -12,24 +12,24 @@ import {
   Point3d, Range1d, Transform, XAndY,
 } from "@itwin/core-geometry";
 import { Frustum, FrustumPlanes, ViewFlags } from "@itwin/core-common";
-import { CachedDecoration, DecorationsCache } from "./DecorationsCache";
-import { IModelApp } from "./IModelApp";
-import { PlanarClipMaskState } from "./PlanarClipMaskState";
-import { CanvasDecoration } from "./render/CanvasDecoration";
-import { Decorations } from "./render/Decorations";
-import { GraphicBranch, GraphicBranchOptions } from "./render/GraphicBranch";
-import { GraphicBuilder, ViewportGraphicBuilderOptions } from "./render/GraphicBuilder";
-import { GraphicList, RenderGraphic } from "./render/RenderGraphic";
-import { RenderPlanarClassifier } from "./internal/render/RenderPlanarClassifier";
-import { RenderSystem, } from "./render/RenderSystem";
-import { RenderTarget } from "./render/RenderTarget";
-import { Scene } from "./render/Scene";
-import { SpatialClassifierTileTreeReference, Tile, TileGraphicType, TileLoadStatus, TileTreeReference } from "./tile/internal";
-import { ViewingSpace } from "./ViewingSpace";
-import { ELEMENT_MARKED_FOR_REMOVAL, ScreenViewport, Viewport, ViewportDecorator } from "./Viewport";
-import { ActiveSpatialClassifier } from "./SpatialClassifiersState";
-import { GraphicType } from "./common/render/GraphicType";
-import { RenderTextureDrape } from "./internal/render/RenderTextureDrape";
+import { CachedDecoration, DecorationsCache } from "./DecorationsCache.js";
+import { IModelApp } from "./IModelApp.js";
+import { PlanarClipMaskState } from "./PlanarClipMaskState.js";
+import { CanvasDecoration } from "./render/CanvasDecoration.js";
+import { Decorations } from "./render/Decorations.js";
+import { GraphicBranch, GraphicBranchOptions } from "./render/GraphicBranch.js";
+import { GraphicBuilder, ViewportGraphicBuilderOptions } from "./render/GraphicBuilder.js";
+import { GraphicList, RenderGraphic } from "./render/RenderGraphic.js";
+import { RenderPlanarClassifier } from "./internal/render/RenderPlanarClassifier.js";
+import { RenderSystem, } from "./render/RenderSystem.js";
+import { RenderTarget } from "./render/RenderTarget.js";
+import { Scene } from "./render/Scene.js";
+import { SpatialClassifierTileTreeReference, Tile, TileGraphicType, TileLoadStatus, TileTreeReference } from "./tile/internal.js";
+import { ViewingSpace } from "./ViewingSpace.js";
+import { ELEMENT_MARKED_FOR_REMOVAL, ScreenViewport, Viewport, ViewportDecorator } from "./Viewport.js";
+import { ActiveSpatialClassifier } from "./SpatialClassifiersState.js";
+import { GraphicType } from "./common/render/GraphicType.js";
+import { RenderTextureDrape } from "./internal/render/RenderTextureDrape.js";
 
 /** Provides context for producing [[RenderGraphic]]s for drawing within a [[Viewport]].
  * @public

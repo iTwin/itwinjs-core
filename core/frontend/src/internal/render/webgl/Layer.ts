@@ -7,11 +7,11 @@
  */
 
 import { Id64 } from "@itwin/core-bentley";
-import { RenderMemory } from "../../../render/RenderMemory";
-import { Graphic } from "./Graphic";
-import { RenderCommands } from "./RenderCommands";
-import { RenderPass } from "./RenderFlags";
-import { Target } from "./Target";
+import { RenderMemory } from "../../../render/RenderMemory.js";
+import { Graphic } from "./Graphic.js";
+import { RenderCommands } from "./RenderCommands.js";
+import { RenderPass } from "./RenderFlags.js";
+import { Target } from "./Target.js";
 import { Range3d } from "@itwin/core-geometry";
 
 abstract class GraphicWrapper extends Graphic {

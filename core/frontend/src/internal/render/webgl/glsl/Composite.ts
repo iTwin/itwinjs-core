@@ -7,13 +7,13 @@
  */
 
 import { assert } from "@itwin/core-bentley";
-import { CompositeGeometry } from "../CachedGeometry";
-import { CompositeFlags, TextureUnit } from "../RenderFlags";
-import { FragmentShaderBuilder, FragmentShaderComponent, VariableType } from "../ShaderBuilder";
-import { ShaderProgram } from "../ShaderProgram";
-import { Texture2DHandle } from "../Texture";
-import { addWindowToTexCoords, assignFragColor } from "./Fragment";
-import { createViewportQuadBuilder } from "./ViewportQuad";
+import { CompositeGeometry } from "../CachedGeometry.js";
+import { CompositeFlags, TextureUnit } from "../RenderFlags.js";
+import { FragmentShaderBuilder, FragmentShaderComponent, VariableType } from "../ShaderBuilder.js";
+import { ShaderProgram } from "../ShaderProgram.js";
+import { Texture2DHandle } from "../Texture.js";
+import { addWindowToTexCoords, assignFragColor } from "./Fragment.js";
+import { createViewportQuadBuilder } from "./ViewportQuad.js";
 
 function addHiliteSettings(frag: FragmentShaderBuilder): void {
   frag.addUniform("u_hilite_settings", VariableType.Mat3, (prog) => {

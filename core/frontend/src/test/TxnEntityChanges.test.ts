@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { describe, expect, it } from "vitest";
-import { EntityChanges, Metadata, TxnEntityChangeIterable, TxnEntityChangeType } from "../TxnEntityChanges";
+import { EntityChanges, Metadata, TxnEntityChangeIterable, TxnEntityChangeType } from "../TxnEntityChanges.js";
 import { NotifyEntitiesChangedArgs, NotifyEntitiesChangedMetadata } from "@itwin/core-common";
 
 describe("TxnEntityMetadata", () => {

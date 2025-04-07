@@ -10,7 +10,7 @@ import { assert } from "@itwin/core-bentley";
 import {
   ClipVector, Point3d, Transform, UnionOfConvexClipPlaneSets, Vector3d,
 } from "@itwin/core-geometry";
-import { RenderClipVolume } from "../../../render/RenderClipVolume";
+import { RenderClipVolume } from "../../../render/RenderClipVolume.js";
 
 const scratch = {
   normal: new Vector3d(),

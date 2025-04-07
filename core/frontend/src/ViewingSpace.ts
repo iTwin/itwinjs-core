@@ -10,14 +10,14 @@ import {
   AxisOrder, ClipPlaneContainment, Constant, Map4d, Matrix3d, Plane3dByOriginAndUnitNormal, Point3d, Point4d, Range1d, Range2d, Range3d, Transform, Vector3d, XYAndZ, XYZ,
 } from "@itwin/core-geometry";
 import { AxisAlignedBox3d, Frustum, GridOrientationType, Npc, NpcCorners } from "@itwin/core-common";
-import { ApproximateTerrainHeights } from "./ApproximateTerrainHeights";
-import { CoordSystem } from "./CoordSystem";
-import { Viewport } from "./Viewport";
-import { ViewRect } from "./common/ViewRect";
-import { ViewState } from "./ViewState";
-import { Frustum2d } from "./Frustum2d";
-import { getFrustumPlaneIntersectionDepthRange } from "./BackgroundMapGeometry";
-import { TiledGraphicsProvider } from "./tile/internal";
+import { ApproximateTerrainHeights } from "./ApproximateTerrainHeights.js";
+import { CoordSystem } from "./CoordSystem.js";
+import { Viewport } from "./Viewport.js";
+import { ViewRect } from "./common/ViewRect.js";
+import { ViewState } from "./ViewState.js";
+import { Frustum2d } from "./Frustum2d.js";
+import { getFrustumPlaneIntersectionDepthRange } from "./BackgroundMapGeometry.js";
+import { TiledGraphicsProvider } from "./tile/internal.js";
 
 /** Describes a [[Viewport]]'s viewing volume, plus its size on the screen. A new
  * instance of ViewingSpace is created every time the Viewport's frustum changes.

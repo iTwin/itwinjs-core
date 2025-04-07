@@ -7,12 +7,12 @@
  */
 
 import { Range1d } from "@itwin/core-geometry";
-import { ApproximateTerrainHeights } from "../../ApproximateTerrainHeights";
-import { ScreenViewport } from "../../Viewport";
-import { RealityMeshParams } from "../../render/RealityMeshParams";
+import { ApproximateTerrainHeights } from "../../ApproximateTerrainHeights.js";
+import { ScreenViewport } from "../../Viewport.js";
+import { RealityMeshParams } from "../../render/RealityMeshParams.js";
 import {
   MapCartoRectangle, MapTile, MapTilingScheme, QuadId,
-} from "../internal";
+} from "../internal.js";
 
 /** Options supplied to [[TerrainProvider.createTerrainMeshProvider]] to construct a [[TerrainMeshProvider]].
  * @public

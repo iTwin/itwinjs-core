@@ -9,8 +9,8 @@
 import {
   BadUnit, BasicUnit, UnitConversionProps, UnitProps, UnitsProvider,
 } from "@itwin/core-quantity";
-import { UnitNameKey } from "./QuantityFormatter";
-import { UNIT_EXTRA_DATA } from "./UnitsData";
+import { UnitNameKey } from "./QuantityFormatter.js";
+import { UNIT_EXTRA_DATA } from "./UnitsData.js";
 
 // cSpell:ignore ussurvey USCUSTOM
 

@@ -7,7 +7,7 @@
  */
 
 import { ElementAlignedBox3d } from "@itwin/core-common";
-import { Tile } from "./internal";
+import { Tile } from "./internal.js";
 
 /**
  * Parameters used to construct a [[Tile]].

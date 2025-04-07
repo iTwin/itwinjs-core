@@ -15,21 +15,21 @@ import {
   PrimaryTileTreeId, RenderMode, RenderSchedule, SpatialClassifier, ViewFlagOverrides, ViewFlagsProperties,
 } from "@itwin/core-common";
 import { Range3d, StringifiedClipVector, Transform } from "@itwin/core-geometry";
-import { DisplayStyleState } from "../../DisplayStyleState";
-import { IModelApp } from "../../IModelApp";
-import { IModelConnection } from "../../IModelConnection";
-import { GeometricModel3dState, GeometricModelState } from "../../ModelState";
-import { formatAnimationBranchId } from "../../internal/render/AnimationBranchState";
-import { AnimationNodeId } from "../../common/internal/render/AnimationNodeId";
-import { RenderClipVolume } from "../../render/RenderClipVolume";
-import { SpatialViewState } from "../../SpatialViewState";
-import { SceneContext } from "../../ViewContext";
-import { AttachToViewportArgs, ViewState, ViewState3d } from "../../ViewState";
+import { DisplayStyleState } from "../../DisplayStyleState.js";
+import { IModelApp } from "../../IModelApp.js";
+import { IModelConnection } from "../../IModelConnection.js";
+import { GeometricModel3dState, GeometricModelState } from "../../ModelState.js";
+import { formatAnimationBranchId } from "../../internal/render/AnimationBranchState.js";
+import { AnimationNodeId } from "../../common/internal/render/AnimationNodeId.js";
+import { RenderClipVolume } from "../../render/RenderClipVolume.js";
+import { SpatialViewState } from "../../SpatialViewState.js";
+import { SceneContext } from "../../ViewContext.js";
+import { AttachToViewportArgs, ViewState, ViewState3d } from "../../ViewState.js";
 import {
   IModelTileTree, IModelTileTreeParams, iModelTileTreeParamsFromJSON, MapLayerTileTreeReference, TileDrawArgs, TileGraphicType, TileTree, TileTreeOwner, TileTreeReference,
   TileTreeSupplier,
-} from "../../tile/internal";
-import { _scheduleScriptReference } from "../../common/internal/Symbols";
+} from "../../tile/internal.js";
+import { _scheduleScriptReference } from "../../common/internal/Symbols.js";
 
 interface PrimaryTreeId {
   treeId: PrimaryTileTreeId;

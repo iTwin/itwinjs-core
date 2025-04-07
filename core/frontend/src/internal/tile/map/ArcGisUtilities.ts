@@ -4,9 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 import { Angle, Constant } from "@itwin/core-geometry";
 import { MapSubLayerProps } from "@itwin/core-common";
-import { MapCartoRectangle, MapLayerAccessClient, MapLayerAccessToken, MapLayerAccessTokenParams, MapLayerSource, MapLayerSourceStatus, MapLayerSourceValidation, ValidateSourceArgs} from "../../../tile/internal";
-import { IModelApp } from "../../../IModelApp";
-import { headersIncludeAuthMethod } from "../../../request/utils";
+import { MapCartoRectangle, MapLayerAccessClient, MapLayerAccessToken, MapLayerAccessTokenParams, MapLayerSource, MapLayerSourceStatus, MapLayerSourceValidation, ValidateSourceArgs} from "../../../tile/internal.js";
+import { IModelApp } from "../../../IModelApp.js";
+import { headersIncludeAuthMethod } from "../../../request/utils.js";
 
 /** @packageDocumentation
  * @module Tiles

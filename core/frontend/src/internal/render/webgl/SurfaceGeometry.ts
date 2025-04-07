@@ -8,23 +8,23 @@
 
 import { assert, dispose } from "@itwin/core-bentley";
 import { CartographicRange, FillFlags, RenderMode, TextureTransparency, ThematicGradientTransparencyMode, ViewFlags } from "@itwin/core-common";
-import { SurfaceType } from "../../../common/internal/render/SurfaceParams";
-import { RenderMemory } from "../../../render/RenderMemory";
-import { AttributeMap } from "./AttributeMap";
-import { ShaderProgramParams } from "./DrawCommand";
-import { GL } from "./GL";
-import { BufferHandle, BufferParameters, BuffersContainer } from "./AttributeBuffers";
-import { MaterialInfo } from "./Material";
-import { Pass, RenderOrder, RenderPass, SurfaceBitIndex } from "./RenderFlags";
-import { System } from "./System";
-import { Target } from "./Target";
-import { TechniqueId } from "./TechniqueId";
-import { MeshData } from "./MeshData";
-import { MeshGeometry } from "./MeshGeometry";
-import { LayerTextureParams, ProjectedTexture } from "./MapLayerParams";
-import { MeshParams } from "../../../common/internal/render/MeshParams";
-import { MapCartoRectangle, PlanarProjection, PlanarTilePatch } from "../../../tile/internal";
-import { MeshMapLayerGraphicParams } from "../MeshMapLayerGraphicParams";
+import { SurfaceType } from "../../../common/internal/render/SurfaceParams.js";
+import { RenderMemory } from "../../../render/RenderMemory.js";
+import { AttributeMap } from "./AttributeMap.js";
+import { ShaderProgramParams } from "./DrawCommand.js";
+import { GL } from "./GL.js";
+import { BufferHandle, BufferParameters, BuffersContainer } from "./AttributeBuffers.js";
+import { MaterialInfo } from "./Material.js";
+import { Pass, RenderOrder, RenderPass, SurfaceBitIndex } from "./RenderFlags.js";
+import { System } from "./System.js";
+import { Target } from "./Target.js";
+import { TechniqueId } from "./TechniqueId.js";
+import { MeshData } from "./MeshData.js";
+import { MeshGeometry } from "./MeshGeometry.js";
+import { LayerTextureParams, ProjectedTexture } from "./MapLayerParams.js";
+import { MeshParams } from "../../../common/internal/render/MeshParams.js";
+import { MapCartoRectangle, PlanarProjection, PlanarTilePatch } from "../../../tile/internal.js";
+import { MeshMapLayerGraphicParams } from "../MeshMapLayerGraphicParams.js";
 import { Vector3d } from "@itwin/core-geometry";
 
 /** @internal */

@@ -5,7 +5,7 @@
 import { describe, expect, it } from "vitest";
 import { BeDuration, BeEvent } from "@itwin/core-bentley";
 import { GeographicCRSProps, PointWithStatus } from "@itwin/core-common";
-import { GeoServices, GeoServicesOptions } from "../GeoServices";
+import { GeoServices, GeoServicesOptions } from "../GeoServices.js";
 
 describe("GeoServices", () => {
   function makeGeoServices(opts: Partial<GeoServicesOptions> = { }): GeoServices {

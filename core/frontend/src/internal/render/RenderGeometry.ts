@@ -6,7 +6,7 @@
  * @module Rendering
  */
 
-import { RenderMemory } from "../../render/RenderMemory";
+import { RenderMemory } from "../../render/RenderMemory.js";
 import { Range3d } from "@itwin/core-geometry";
 
 /** An opaque representation of geometry allocated by a [[RenderSystem]] to be supplied to [[RenderSystem.createRenderGraphic]]. */

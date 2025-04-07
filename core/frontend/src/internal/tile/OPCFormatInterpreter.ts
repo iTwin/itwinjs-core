@@ -6,9 +6,9 @@
 import { Cartographic, EcefLocation } from "@itwin/core-common";
 import { Range3d } from "@itwin/core-geometry";
 import { ALong, CRSManager, Downloader, DownloaderXhr, OnlineEngine, OPCReader, OrbitGtBounds, PageCachedFile, PointCloudReader, UrlFS } from "@itwin/core-orbitgt";
-import { FrontendLoggerCategory } from "../../common/FrontendLoggerCategory";
+import { FrontendLoggerCategory } from "../../common/FrontendLoggerCategory.js";
 import { BentleyError, Logger, LoggingMetaData, RealityDataStatus } from "@itwin/core-bentley";
-import { RealityDataError, SpatialLocationAndExtents } from "../../RealityDataSource";
+import { RealityDataError, SpatialLocationAndExtents } from "../../RealityDataSource.js";
 
 const loggerCategory: string = FrontendLoggerCategory.RealityData;
 

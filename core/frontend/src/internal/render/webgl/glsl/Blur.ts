@@ -6,15 +6,15 @@
  * @module WebGL
  */
 
-import { BlurGeometry, BlurType } from "../CachedGeometry";
-import { TextureUnit } from "../RenderFlags";
-import { FragmentShaderComponent, VariablePrecision, VariableType } from "../ShaderBuilder";
-import { ShaderProgram } from "../ShaderProgram";
-import { Texture2DHandle } from "../Texture";
-import { addRenderOrderConstants } from "./FeatureSymbology";
-import { addWindowToTexCoords, assignFragColor } from "./Fragment";
-import { addViewport } from "./Viewport";
-import { createViewportQuadBuilder } from "./ViewportQuad";
+import { BlurGeometry, BlurType } from "../CachedGeometry.js";
+import { TextureUnit } from "../RenderFlags.js";
+import { FragmentShaderComponent, VariablePrecision, VariableType } from "../ShaderBuilder.js";
+import { ShaderProgram } from "../ShaderProgram.js";
+import { Texture2DHandle } from "../Texture.js";
+import { addRenderOrderConstants } from "./FeatureSymbology.js";
+import { addWindowToTexCoords, assignFragColor } from "./Fragment.js";
+import { addViewport } from "./Viewport.js";
+import { createViewportQuadBuilder } from "./ViewportQuad.js";
 
 // This shader applies a Gaussian blur in one dimension.
 const computeBlur = `

@@ -7,8 +7,8 @@
  */
 
 import { UnitSystemKey } from "@itwin/core-quantity";
-import { OverrideFormatEntry, QuantityFormatter, QuantityTypeKey } from "./QuantityFormatter";
-import { BaseUnitFormattingSettingsProvider } from "./BaseUnitFormattingSettingsProvider";
+import { OverrideFormatEntry, QuantityFormatter, QuantityTypeKey } from "./QuantityFormatter.js";
+import { BaseUnitFormattingSettingsProvider } from "./BaseUnitFormattingSettingsProvider.js";
 
 /** Implementation of BaseUnitFormattingSettingsProvider that stores and retrieves data in local storage.
  *  @beta

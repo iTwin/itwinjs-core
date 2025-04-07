@@ -9,12 +9,12 @@
 import { assert, dispose } from "@itwin/core-bentley";
 import { ClipPlaneContainment, ClipVector, Point3d, Range3d, Transform } from "@itwin/core-geometry";
 import { ClipIntersectionStyle, RgbColor } from "@itwin/core-common";
-import { IModelApp } from "../../../IModelApp";
-import { RenderClipVolume } from "../../../render/RenderClipVolume";
-import { FloatRgba } from "./FloatRGBA";
-import { Texture2DData, Texture2DHandle, TextureHandle } from "./Texture";
-import { ClipVolume } from "./ClipVolume";
-import { GL } from "./GL";
+import { IModelApp } from "../../../IModelApp.js";
+import { RenderClipVolume } from "../../../render/RenderClipVolume.js";
+import { FloatRgba } from "./FloatRGBA.js";
+import { Texture2DData, Texture2DHandle, TextureHandle } from "./Texture.js";
+import { ClipVolume } from "./ClipVolume.js";
+import { GL } from "./GL.js";
 
 interface Clip {
   readonly numRows: number;

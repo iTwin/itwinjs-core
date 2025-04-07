@@ -8,21 +8,21 @@
 
 import { assert, dispose } from "@itwin/core-bentley";
 import { RenderMode } from "@itwin/core-common";
-import { TesselatedPolyline } from "../../../common/internal/render/PolylineParams";
-import { RenderMemory } from "../../../render/RenderMemory";
-import { AttributeMap } from "./AttributeMap";
-import { PolylineBuffers } from "./CachedGeometry";
-import { ColorInfo } from "./ColorInfo";
-import { ShaderProgramParams } from "./DrawCommand";
-import { GL } from "./GL";
-import { BufferHandle, BufferParameters, BuffersContainer } from "./AttributeBuffers";
-import { RenderOrder } from "./RenderFlags";
-import { System } from "./System";
-import { Target } from "./Target";
-import { TechniqueId } from "./TechniqueId";
-import { MeshData } from "./MeshData";
-import { MeshGeometry } from "./MeshGeometry";
-import { SegmentEdgeParams, SilhouetteParams } from "../../../common/internal/render/EdgeParams";
+import { TesselatedPolyline } from "../../../common/internal/render/PolylineParams.js";
+import { RenderMemory } from "../../../render/RenderMemory.js";
+import { AttributeMap } from "./AttributeMap.js";
+import { PolylineBuffers } from "./CachedGeometry.js";
+import { ColorInfo } from "./ColorInfo.js";
+import { ShaderProgramParams } from "./DrawCommand.js";
+import { GL } from "./GL.js";
+import { BufferHandle, BufferParameters, BuffersContainer } from "./AttributeBuffers.js";
+import { RenderOrder } from "./RenderFlags.js";
+import { System } from "./System.js";
+import { Target } from "./Target.js";
+import { TechniqueId } from "./TechniqueId.js";
+import { MeshData } from "./MeshData.js";
+import { MeshGeometry } from "./MeshGeometry.js";
+import { SegmentEdgeParams, SilhouetteParams } from "../../../common/internal/render/EdgeParams.js";
 
 /** @internal */
 export class EdgeGeometry extends MeshGeometry {

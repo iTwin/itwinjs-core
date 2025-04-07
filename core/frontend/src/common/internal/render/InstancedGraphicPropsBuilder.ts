@@ -4,11 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { Range3d } from "@itwin/core-geometry";
-import { Instance } from "../../render/RenderInstancesParams";
+import { Instance } from "../../render/RenderInstancesParams.js";
 import { Feature, FeatureTable } from "@itwin/core-common";
-import { InstancedGraphicProps } from "../../render/InstancedGraphicParams";
-import { OvrFlags } from "./OvrFlags";
-import { lineCodeFromLinePixels } from "./LineCode";
+import { InstancedGraphicProps } from "../../render/InstancedGraphicParams.js";
+import { OvrFlags } from "./OvrFlags.js";
+import { lineCodeFromLinePixels } from "./LineCode.js";
 
 const invalidFeature = new Feature();
 

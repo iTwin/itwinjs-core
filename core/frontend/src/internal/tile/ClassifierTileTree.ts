@@ -9,17 +9,17 @@ import { compareNumbers, comparePossiblyUndefined, compareStrings, compareString
 import {
   BatchType, ClassifierTileTreeId, iModelTileTreeIdToString, RenderMode, RenderSchedule, SpatialClassifier, ViewFlagsProperties,
 } from "@itwin/core-common";
-import { DisplayStyleState } from "../../DisplayStyleState";
-import { IModelApp } from "../../IModelApp";
-import { IModelConnection } from "../../IModelConnection";
-import { GeometricModelState } from "../../ModelState";
-import { SceneContext } from "../../ViewContext";
-import { ViewState } from "../../ViewState";
-import { ActiveSpatialClassifier, SpatialClassifiersState } from "../../SpatialClassifiersState";
+import { DisplayStyleState } from "../../DisplayStyleState.js";
+import { IModelApp } from "../../IModelApp.js";
+import { IModelConnection } from "../../IModelConnection.js";
+import { GeometricModelState } from "../../ModelState.js";
+import { SceneContext } from "../../ViewContext.js";
+import { ViewState } from "../../ViewState.js";
+import { ActiveSpatialClassifier, SpatialClassifiersState } from "../../SpatialClassifiersState.js";
 import {
   DisclosedTileTreeSet, IModelTileTree, iModelTileTreeParamsFromJSON, TileTree, TileTreeLoadStatus, TileTreeOwner, TileTreeReference, TileTreeSupplier,
-} from "../../tile/internal";
-import { _scheduleScriptReference } from "../../common/internal/Symbols";
+} from "../../tile/internal.js";
+import { _scheduleScriptReference } from "../../common/internal/Symbols.js";
 
 interface ClassifierTreeId extends ClassifierTileTreeId {
   modelId: Id64String;

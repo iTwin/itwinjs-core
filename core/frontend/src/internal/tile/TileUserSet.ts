@@ -7,7 +7,7 @@
  */
 
 import { ReadonlySortedArray, SortedArray } from "@itwin/core-bentley";
-import { TileUser } from "../../tile/internal";
+import { TileUser } from "../../tile/internal.js";
 
 /** An immutable set of [[TileUser]]s wherein uniqueness is determined by each TileUser's unique integer identifier.
  * @see [[UniqueTileUserSets]].

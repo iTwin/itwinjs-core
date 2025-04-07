@@ -15,11 +15,11 @@ import {
   WmsMapLayerImageryProvider,
   WmtsCapabilities,
   WmtsMapLayerImageryProvider,
-} from "../../../tile/internal";
-import { IModelApp } from "../../../IModelApp";
-import { RequestBasicCredentials } from "../../../request/Request";
+} from "../../../tile/internal.js";
+import { IModelApp } from "../../../IModelApp.js";
+import { RequestBasicCredentials } from "../../../request/Request.js";
 import { Point2d } from "@itwin/core-geometry";
-import { createFakeTileResponse, fakeTextFetch } from "./MapLayerTestUtilities";
+import { createFakeTileResponse, fakeTextFetch } from "./MapLayerTestUtilities.js";
 
 const wmsSampleSource = { formatId: "WMS", url: "https://localhost/wms", name: "Test WMS" };
 

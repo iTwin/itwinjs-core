@@ -5,8 +5,8 @@
 
 import { OrbitGtBlobProps, RealityDataFormat, RealityDataProvider, RealityDataSourceKey } from "@itwin/core-common";
 import { describe, expect, it } from "vitest";
-import { CesiumIonAssetProvider, getCesiumAssetUrl } from "../tile/internal";
-import { RealityDataSource } from "../RealityDataSource";
+import { CesiumIonAssetProvider, getCesiumAssetUrl } from "../tile/internal.js";
+import { RealityDataSource } from "../RealityDataSource.js";
 
 describe("RealityDataSource", () => {
   it("should handle creation from empty url", () => {

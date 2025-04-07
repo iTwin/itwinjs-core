@@ -5,9 +5,9 @@
 /** @packageDocumentation
  * @module WebGL
  */
-import { FragmentShaderBuilder, FragmentShaderComponent, VariableType } from "../ShaderBuilder";
-import { System } from "../System";
-import { addUInt32s } from "./Common";
+import { FragmentShaderBuilder, FragmentShaderComponent, VariableType } from "../ShaderBuilder.js";
+import { System } from "../System.js";
+import { addUInt32s } from "./Common.js";
 
 export const testInside = `
 bool testInside(float x0, float y0, float x1, float y1, float x, float y) {

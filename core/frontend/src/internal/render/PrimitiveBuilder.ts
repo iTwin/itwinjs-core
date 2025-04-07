@@ -8,18 +8,18 @@
 
 import { Point3d, Range3d, Transform } from "@itwin/core-geometry";
 import { Gradient, PackedFeatureTable, QPoint3dList, RenderTexture } from "@itwin/core-common";
-import { CustomGraphicBuilderOptions, GraphicBuilder, ViewportGraphicBuilderOptions } from "../../render/GraphicBuilder";
-import { RenderGraphic } from "../../render/RenderGraphic";
-import { RenderSystem } from "../../render/RenderSystem";
-import { GeometryOptions } from "../../common/internal/render/Primitives";
-import { GeometryAccumulator } from "../../common/internal/render/GeometryAccumulator";
-import { MeshList } from "../../common/internal/render/MeshPrimitives";
-import { GraphicBranch } from "../../render/GraphicBranch";
+import { CustomGraphicBuilderOptions, GraphicBuilder, ViewportGraphicBuilderOptions } from "../../render/GraphicBuilder.js";
+import { RenderGraphic } from "../../render/RenderGraphic.js";
+import { RenderSystem } from "../../render/RenderSystem.js";
+import { GeometryOptions } from "../../common/internal/render/Primitives.js";
+import { GeometryAccumulator } from "../../common/internal/render/GeometryAccumulator.js";
+import { MeshList } from "../../common/internal/render/MeshPrimitives.js";
+import { GraphicBranch } from "../../render/GraphicBranch.js";
 import { assert } from "@itwin/core-bentley";
-import { _accumulator, _implementationProhibited } from "../../common/internal/Symbols";
-import { createGraphicTemplate, GraphicTemplateBatch } from "../../internal/render/GraphicTemplateImpl";
-import { GraphicTemplate } from "../../render/GraphicTemplate";
-import { RenderGeometry } from "./RenderGeometry";
+import { _accumulator, _implementationProhibited } from "../../common/internal/Symbols.js";
+import { createGraphicTemplate, GraphicTemplateBatch } from "../../internal/render/GraphicTemplateImpl.js";
+import { GraphicTemplate } from "../../render/GraphicTemplate.js";
+import { RenderGeometry } from "./RenderGeometry.js";
 
 export class PrimitiveBuilder extends GraphicBuilder {
   public readonly [_implementationProhibited] = undefined;

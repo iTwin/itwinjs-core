@@ -4,18 +4,18 @@
 *--------------------------------------------------------------------------------------------*/
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { Point2d, Range3d, Transform } from "@itwin/core-geometry";
-import { RenderInstancesParamsBuilder } from "../../common/render/RenderInstancesParams";
+import { RenderInstancesParamsBuilder } from "../../common/render/RenderInstancesParams.js";
 import { Id64 } from "@itwin/core-bentley";
-import { RenderInstancesParamsImpl } from "../../internal/render/RenderInstancesParamsImpl";
-import { InstancedGraphicPropsBuilder } from "../../common/internal/render/InstancedGraphicPropsBuilder";
-import { InstancedGraphicParams, InstancedGraphicProps } from "../../common/render/InstancedGraphicParams";
-import { InstanceBuffers, InstanceBuffersData } from "../../internal/render/webgl/InstancedGeometry";
-import { IModelApp } from "../../IModelApp";
+import { RenderInstancesParamsImpl } from "../../internal/render/RenderInstancesParamsImpl.js";
+import { InstancedGraphicPropsBuilder } from "../../common/internal/render/InstancedGraphicPropsBuilder.js";
+import { InstancedGraphicParams, InstancedGraphicProps } from "../../common/render/InstancedGraphicParams.js";
+import { InstanceBuffers, InstanceBuffersData } from "../../internal/render/webgl/InstancedGeometry.js";
+import { IModelApp } from "../../IModelApp.js";
 import { ColorDef, EmptyLocalization, Feature, LinePixels, ModelFeature, RenderMode } from "@itwin/core-common";
-import { GraphicType } from "../../common";
-import { Color, openBlankViewport, readColorCounts, readUniqueColors, readUniqueFeatures } from "../openBlankViewport";
-import { GraphicBranch, readGltfTemplate, StandardViewId } from "../../core-frontend";
-import { _featureTable } from "../../common/internal/Symbols";
+import { GraphicType } from "../../common.js";
+import { Color, openBlankViewport, readColorCounts, readUniqueColors, readUniqueFeatures } from "../openBlankViewport.js";
+import { GraphicBranch, readGltfTemplate, StandardViewId } from "../../core-frontend.js";
+import { _featureTable } from "../../common/internal/Symbols.js";
 
 describe("RenderInstancesParamsBuilder", () => {
   it("throws if no instances supplied", () => {

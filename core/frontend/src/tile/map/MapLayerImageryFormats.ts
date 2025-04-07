@@ -6,7 +6,7 @@
  * @module MapLayers
  */
 import { ImageMapLayerSettings, MapSubLayerProps } from "@itwin/core-common";
-import { IModelConnection } from "../../IModelConnection";
+import { IModelConnection } from "../../IModelConnection.js";
 import {
   ArcGISMapLayerImageryProvider,
   ArcGisUtilities,
@@ -27,7 +27,7 @@ import {
   WmtsCapabilities,
   WmtsCapability,
   WmtsMapLayerImageryProvider,
-} from "../internal";
+} from "../internal.js";
 
 /** Base class imagery map layer formats.
  *  Subclasses should override formatId and [[MapLayerFormat.createImageryProvider]].

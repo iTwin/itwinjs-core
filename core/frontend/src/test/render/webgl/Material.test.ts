@@ -5,7 +5,7 @@
 
 import { describe, expect, it } from "vitest";
 import { ColorDef, RenderMaterialParams } from "@itwin/core-common";
-import { Material } from "../../../internal/render/webgl/Material";
+import { Material } from "../../../internal/render/webgl/Material.js";
 
 
 // Equivalent to the glsl function used in glsl/Material.ts to unpack a vec3 material param from a packed float value.

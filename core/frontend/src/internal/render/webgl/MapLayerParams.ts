@@ -8,15 +8,15 @@
  */
 
 import { Matrix4d, Range2d, Range3d, Transform } from "@itwin/core-geometry";
-import { RenderPlanarClassifier } from "../RenderPlanarClassifier";
-import { PlanarClassifier } from "./PlanarClassifier";
-import { TerrainTexture } from "../RenderTerrain";
-import { Matrix4 } from "./Matrix";
+import { RenderPlanarClassifier } from "../RenderPlanarClassifier.js";
+import { PlanarClassifier } from "./PlanarClassifier.js";
+import { TerrainTexture } from "../RenderTerrain.js";
+import { Matrix4 } from "./Matrix.js";
 import { ModelMapLayerDrapeTarget, ModelMapLayerSettings, RenderTexture } from "@itwin/core-common";
 import { assert, dispose, disposeArray } from "@itwin/core-bentley";
-import { MeshMapLayerGraphicParams } from "../MeshMapLayerGraphicParams";
-import { System } from "./System";
-import { ViewState } from "../../../ViewState";
+import { MeshMapLayerGraphicParams } from "../MeshMapLayerGraphicParams.js";
+import { System } from "./System.js";
+import { ViewState } from "../../../ViewState.js";
 
 export class ProjectedTexture {
   public classifier: PlanarClassifier;

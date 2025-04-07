@@ -7,10 +7,10 @@
  */
 
 import { assert } from "@itwin/core-bentley";
-import { RenderGraphicOwner } from "./render/RenderGraphic";
-import { ViewportDecorator } from "./Viewport";
-import { CanvasDecoration } from "./render/CanvasDecoration";
-import { GraphicType } from "./common/render/GraphicType";
+import { RenderGraphicOwner } from "./render/RenderGraphic.js";
+import { ViewportDecorator } from "./Viewport.js";
+import { CanvasDecoration } from "./render/CanvasDecoration.js";
+import { GraphicType } from "./common/render/GraphicType.js";
 
 /** @internal */
 export type CachedDecoration =

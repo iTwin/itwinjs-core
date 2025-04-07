@@ -5,7 +5,7 @@
 
 import { MapSubLayerSettings } from "@itwin/core-common";
 import { describe, expect, it } from "vitest";
-import { MapLayerSource, MapLayerSourceProps } from "../../../tile/map/MapLayerSources";
+import { MapLayerSource, MapLayerSourceProps } from "../../../tile/map/MapLayerSources.js";
 
 const sampleSourceJson = {
   formatId: "WMS",

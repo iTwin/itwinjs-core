@@ -5,11 +5,11 @@
 
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { Code, DisplayStyle3dProps, EmptyLocalization, RenderSchedule, RenderTimelineProps } from "@itwin/core-common";
-import { DisplayStyle3dState } from "../DisplayStyleState";
-import { IModelConnection } from "../IModelConnection";
-import { IModelApp } from "../IModelApp";
-import { createBlankConnection } from "./createBlankConnection";
-import { _onScheduleScriptReferenceChanged, _scheduleScriptReference } from './../common/internal/Symbols';
+import { DisplayStyle3dState } from "../DisplayStyleState.js";
+import { IModelConnection } from "../IModelConnection.js";
+import { IModelApp } from "../IModelApp.js";
+import { createBlankConnection } from "./createBlankConnection.js";
+import { _onScheduleScriptReferenceChanged, _scheduleScriptReference } from './../common/internal/Symbols.js';
 
 describe("DisplayStyleState", () => {
   describe("schedule script state", () => {

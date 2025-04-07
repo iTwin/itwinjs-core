@@ -8,9 +8,9 @@
 import { assert, BentleyStatus, GuidString } from "@itwin/core-bentley";
 import { IModelError, RealityData, RealityDataFormat, RealityDataProvider, RealityDataSourceKey, RealityDataSourceProps } from "@itwin/core-common";
 
-import { request } from "./request/Request";
-import { PublisherProductInfo, RealityDataSource, SpatialLocationAndExtents } from "./RealityDataSource";
-import { ThreeDTileFormatInterpreter } from "./tile/internal";
+import { request } from "./request/Request.js";
+import { PublisherProductInfo, RealityDataSource, SpatialLocationAndExtents } from "./RealityDataSource.js";
+import { ThreeDTileFormatInterpreter } from "./tile/internal.js";
 
 /** This class provides access to the reality data provider services.
  * It encapsulates access to a reality data weiter it be from local access, http or ProjectWise Context Share.

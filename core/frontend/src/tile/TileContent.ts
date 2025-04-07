@@ -7,7 +7,7 @@
  */
 
 import { ElementAlignedBox3d } from "@itwin/core-common";
-import { RenderGraphic } from "../render/RenderGraphic";
+import { RenderGraphic } from "../render/RenderGraphic.js";
 
 /**
  * Describes the contents of a [[Tile]]. Specific sub-types of [[Tile]] may describe their content using sub-types of this interface.

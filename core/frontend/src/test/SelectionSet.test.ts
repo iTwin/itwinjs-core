@@ -5,10 +5,10 @@
 
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { BeEvent } from "@itwin/core-bentley";
-import { IModelApp } from "../IModelApp";
-import { IModelConnection } from "../IModelConnection";
-import { HiliteSet, SelectionSet, SelectionSetEvent, SelectionSetEventType } from "../SelectionSet";
-import { ViewManager } from "../ViewManager";
+import { IModelApp } from "../IModelApp.js";
+import { IModelConnection } from "../IModelConnection.js";
+import { HiliteSet, SelectionSet, SelectionSetEvent, SelectionSetEventType } from "../SelectionSet.js";
+import { ViewManager } from "../ViewManager.js";
 
 describe("SelectionSet", () => {
   const viewManagerMock = {

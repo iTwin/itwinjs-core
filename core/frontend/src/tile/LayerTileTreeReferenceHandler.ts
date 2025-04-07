@@ -7,9 +7,9 @@
  */
 
 import { BaseLayerSettings, ColorDef, MapLayerSettings } from "@itwin/core-common";
-import { SceneContext } from "../ViewContext";
-import { createMapLayerTreeReference, ImageryMapLayerTreeReference, ImageryMapTileTree, MapLayerTileTreeReference, ModelMapLayerTileTreeReference, TileTreeLoadStatus, TileTreeOwner } from "./internal";
-import { IModelConnection } from "../IModelConnection";
+import { SceneContext } from "../ViewContext.js";
+import { createMapLayerTreeReference, ImageryMapLayerTreeReference, ImageryMapTileTree, MapLayerTileTreeReference, ModelMapLayerTileTreeReference, TileTreeLoadStatus, TileTreeOwner } from "./internal.js";
+import { IModelConnection } from "../IModelConnection.js";
 
 /** @internal */
 export interface LayerTileTreeReference {

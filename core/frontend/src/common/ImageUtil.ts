@@ -8,7 +8,7 @@
 
 import { Point2d } from "@itwin/core-geometry";
 import { ImageBuffer, ImageBufferFormat, ImageSource, ImageSourceFormat } from "@itwin/core-common";
-import { ViewRect } from "./ViewRect";
+import { ViewRect } from "./ViewRect.js";
 
 interface Rgba {
   r: number;

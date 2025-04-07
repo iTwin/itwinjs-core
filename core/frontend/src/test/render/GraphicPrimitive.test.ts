@@ -5,10 +5,10 @@
 
 import { describe, expect, it } from "vitest";
 import { Arc3d, Loop, Path, Point2d, Point3d, Polyface, SolidPrimitive } from "@itwin/core-geometry";
-import { GraphicBuilder } from "../../render/GraphicBuilder";
-import { GraphicType } from "../../common/render/GraphicType";
-import { GraphicPrimitive } from "../../common/render/GraphicPrimitive";
-import { _implementationProhibited } from "../../common/internal/Symbols";
+import { GraphicBuilder } from "../../render/GraphicBuilder.js";
+import { GraphicType } from "../../common/render/GraphicType.js";
+import { GraphicPrimitive } from "../../common/render/GraphicPrimitive.js";
+import { _implementationProhibited } from "../../common/internal/Symbols.js";
 
 describe("GraphicPrimitive", () => {
   class Builder extends GraphicBuilder {

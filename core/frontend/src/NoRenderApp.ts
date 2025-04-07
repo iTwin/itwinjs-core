@@ -7,12 +7,12 @@
  */
 
 import { EmptyLocalization } from "@itwin/core-common";
-import { IModelApp, IModelAppOptions } from "./IModelApp";
-import { AnimationBranchStates } from "./internal/render/AnimationBranchState";
-import { RenderSystem } from "./render/RenderSystem";
-import { RenderTarget } from "./render/RenderTarget";
-import { ViewRect } from "./common/ViewRect";
-import { _implementationProhibited } from "./common/internal/Symbols";
+import { IModelApp, IModelAppOptions } from "./IModelApp.js";
+import { AnimationBranchStates } from "./internal/render/AnimationBranchState.js";
+import { RenderSystem } from "./render/RenderSystem.js";
+import { RenderTarget } from "./render/RenderTarget.js";
+import { ViewRect } from "./common/ViewRect.js";
+import { _implementationProhibited } from "./common/internal/Symbols.js";
 
 /**
  * A RenderTarget for applications that must run in environments where WebGL is not present.

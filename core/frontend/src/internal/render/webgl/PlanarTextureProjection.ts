@@ -12,12 +12,12 @@ import {
   ClipUtilities, ConvexClipPlaneSet, GrowableXYZArray, Map4d, Matrix3d, Matrix4d, Plane3dByOriginAndUnitNormal, Point3d, Range1d, Range2d, Range3d,
   Ray3d, Transform,
 } from "@itwin/core-geometry";
-import { ApproximateTerrainHeights } from "../../../ApproximateTerrainHeights";
-import { Tile, TileTreeReference } from "../../../tile/internal";
-import { SceneContext } from "../../../ViewContext";
-import { ViewState3d } from "../../../ViewState";
-import { RenderState } from "./RenderState";
-import { Target } from "./Target";
+import { ApproximateTerrainHeights } from "../../../ApproximateTerrainHeights.js";
+import { Tile, TileTreeReference } from "../../../tile/internal.js";
+import { SceneContext } from "../../../ViewContext.js";
+import { ViewState3d } from "../../../ViewState.js";
+import { RenderState } from "./RenderState.js";
+import { Target } from "./Target.js";
 
 const scratchRange = Range3d.createNull();
 const scratchMap4d = Map4d.createIdentity();

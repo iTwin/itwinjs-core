@@ -6,12 +6,12 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { BeDuration } from "@itwin/core-bentley";
 import { ColorDef, EmptyLocalization, Environment, EnvironmentProps, Gradient, ImageSource, ImageSourceFormat, RenderTexture, SkyBox, SkyBoxImageType } from "@itwin/core-common";
-import { EnvironmentDecorations } from "../../EnvironmentDecorations";
-import { imageElementFromImageSource } from "../../common/ImageUtil";
-import { SpatialViewState } from "../../SpatialViewState";
-import { IModelConnection } from "../../IModelConnection";
-import { IModelApp } from "../../IModelApp";
-import { createBlankConnection } from "../createBlankConnection";
+import { EnvironmentDecorations } from "../../EnvironmentDecorations.js";
+import { imageElementFromImageSource } from "../../common/ImageUtil.js";
+import { SpatialViewState } from "../../SpatialViewState.js";
+import { IModelConnection } from "../../IModelConnection.js";
+import { IModelApp } from "../../IModelApp.js";
+import { createBlankConnection } from "../createBlankConnection.js";
 
 describe("EnvironmentDecorations", () => {
   let iModel: IModelConnection;

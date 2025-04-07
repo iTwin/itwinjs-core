@@ -7,18 +7,18 @@
  */
 
 import { assert, dispose } from "@itwin/core-bentley";
-import { RenderMemory } from "../../../render/RenderMemory";
-import { PrimitiveVisibility } from "../RenderTargetDebugControl";
-import { CachedGeometry, LUTGeometry, SkySphereViewportQuadGeometry } from "./CachedGeometry";
-import { DrawParams, PrimitiveCommand } from "./DrawCommand";
-import { Graphic } from "./Graphic";
-import { InstanceBuffers, InstancedGeometry, PatternBuffers } from "./InstancedGeometry";
-import { RenderCommands } from "./RenderCommands";
-import { Pass, RenderOrder, RenderPass } from "./RenderFlags";
-import { ShaderProgramExecutor } from "./ShaderProgram";
-import { System } from "./System";
-import { Target } from "./Target";
-import { TechniqueId } from "./TechniqueId";
+import { RenderMemory } from "../../../render/RenderMemory.js";
+import { PrimitiveVisibility } from "../RenderTargetDebugControl.js";
+import { CachedGeometry, LUTGeometry, SkySphereViewportQuadGeometry } from "./CachedGeometry.js";
+import { DrawParams, PrimitiveCommand } from "./DrawCommand.js";
+import { Graphic } from "./Graphic.js";
+import { InstanceBuffers, InstancedGeometry, PatternBuffers } from "./InstancedGeometry.js";
+import { RenderCommands } from "./RenderCommands.js";
+import { Pass, RenderOrder, RenderPass } from "./RenderFlags.js";
+import { ShaderProgramExecutor } from "./ShaderProgram.js";
+import { System } from "./System.js";
+import { Target } from "./Target.js";
+import { TechniqueId } from "./TechniqueId.js";
 import { Range3d } from "@itwin/core-geometry";
 
 /** @internal */

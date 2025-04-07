@@ -7,11 +7,11 @@
  */
 
 import { assert, Logger } from "@itwin/core-bentley";
-import { FrontendLoggerCategory } from "../../../common/FrontendLoggerCategory";
-import { Matrix3, Matrix4 } from "./Matrix";
-import { ShaderProgram } from "./ShaderProgram";
-import { SyncToken } from "./Sync";
-import { System } from "./System";
+import { FrontendLoggerCategory } from "../../../common/FrontendLoggerCategory.js";
+import { Matrix3, Matrix4 } from "./Matrix.js";
+import { ShaderProgram } from "./ShaderProgram.js";
+import { SyncToken } from "./Sync.js";
+import { System } from "./System.js";
 
 const enum DataType {// eslint-disable-line no-restricted-syntax
   Undefined, // eslint-disable-line id-denylist

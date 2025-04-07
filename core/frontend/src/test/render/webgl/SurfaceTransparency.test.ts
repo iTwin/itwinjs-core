@@ -5,20 +5,20 @@
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { Point2d, Point3d, Range3d, Vector3d } from "@itwin/core-geometry";
 import { ColorDef, ColorIndex, EmptyLocalization, FeatureIndex, FillFlags, ImageBuffer, ImageBufferFormat, QParams3d, QPoint3dList, RenderMaterial, RenderMode, RenderTexture, TextureMapping, TextureTransparency } from "@itwin/core-common";
-import { RenderGraphic } from "../../../render/RenderGraphic";
-import { createRenderPlanFromViewport } from "../../../internal/render/RenderPlan";
-import { IModelApp } from "../../../IModelApp";
-import { IModelConnection } from "../../../IModelConnection";
-import { SpatialViewState } from "../../../SpatialViewState";
-import { ScreenViewport } from "../../../Viewport";
-import { Target } from "../../../internal/render/webgl/Target";
-import { Primitive } from "../../../internal/render/webgl/Primitive";
-import { Pass, RenderPass, SinglePass } from "../../../internal/render/webgl/RenderFlags";
-import { MeshGraphic } from "../../../internal/render/webgl/Mesh";
-import { SurfaceGeometry } from "../../../internal/render/webgl/SurfaceGeometry";
-import { createBlankConnection } from "../../createBlankConnection";
-import { createMeshParams } from "../../../common/internal/render/VertexTableBuilder";
-import { MeshArgs } from "../../../render/MeshArgs";
+import { RenderGraphic } from "../../../render/RenderGraphic.js";
+import { createRenderPlanFromViewport } from "../../../internal/render/RenderPlan.js";
+import { IModelApp } from "../../../IModelApp.js";
+import { IModelConnection } from "../../../IModelConnection.js";
+import { SpatialViewState } from "../../../SpatialViewState.js";
+import { ScreenViewport } from "../../../Viewport.js";
+import { Target } from "../../../internal/render/webgl/Target.js";
+import { Primitive } from "../../../internal/render/webgl/Primitive.js";
+import { Pass, RenderPass, SinglePass } from "../../../internal/render/webgl/RenderFlags.js";
+import { MeshGraphic } from "../../../internal/render/webgl/Mesh.js";
+import { SurfaceGeometry } from "../../../internal/render/webgl/SurfaceGeometry.js";
+import { createBlankConnection } from "../../createBlankConnection.js";
+import { createMeshParams } from "../../../common/internal/render/VertexTableBuilder.js";
+import { MeshArgs } from "../../../render/MeshArgs.js";
 
 function createMesh(transparency: number, mat?: RenderMaterial | RenderTexture): RenderGraphic {
   const colors = new ColorIndex();

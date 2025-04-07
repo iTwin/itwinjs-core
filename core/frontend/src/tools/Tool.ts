@@ -10,12 +10,12 @@ import { DialogItem, DialogItemValue, DialogProperty, DialogPropertySyncItem } f
 import { assert } from "@itwin/core-bentley";
 import { GeometryStreamProps, IModelError } from "@itwin/core-common";
 import { Point2d, Point3d, PolygonOps, XAndY } from "@itwin/core-geometry";
-import { LocateFilterStatus, LocateResponse } from "../ElementLocateManager";
-import { FuzzySearch, FuzzySearchResults } from "../FuzzySearch";
-import { HitDetail } from "../HitDetail";
-import { IModelApp } from "../IModelApp";
-import { DecorateContext, DynamicsContext } from "../ViewContext";
-import { ScreenViewport } from "../Viewport";
+import { LocateFilterStatus, LocateResponse } from "../ElementLocateManager.js";
+import { FuzzySearch, FuzzySearchResults } from "../FuzzySearch.js";
+import { HitDetail } from "../HitDetail.js";
+import { IModelApp } from "../IModelApp.js";
+import { DecorateContext, DynamicsContext } from "../ViewContext.js";
+import { ScreenViewport } from "../Viewport.js";
 
 /**
  * @public

@@ -3,17 +3,17 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { ColorDef, EmptyLocalization, Environment, EnvironmentProps, ImageSource, ImageSourceFormat, RenderTexture, SkyBoxImageType } from "@itwin/core-common";
-import { IModelConnection } from "../../../IModelConnection";
-import { ScreenViewport } from "../../../Viewport";
-import { IModelApp } from "../../../IModelApp";
-import { SpatialViewState } from "../../../SpatialViewState";
-import { createBlankConnection } from "../../createBlankConnection";
-import { expectColors, expectNotTheseColors } from "../../ExpectColors";
+import { IModelConnection } from "../../../IModelConnection.js";
+import { ScreenViewport } from "../../../Viewport.js";
+import { IModelApp } from "../../../IModelApp.js";
+import { SpatialViewState } from "../../../SpatialViewState.js";
+import { createBlankConnection } from "../../createBlankConnection.js";
+import { expectColors, expectNotTheseColors } from "../../ExpectColors.js";
 import { BeDuration } from "@itwin/core-bentley";
-import { EnvironmentDecorations } from "../../../EnvironmentDecorations";
-import { imageElementFromImageSource } from "../../../common/ImageUtil";
+import { EnvironmentDecorations } from "../../../EnvironmentDecorations.js";
+import { imageElementFromImageSource } from "../../../common/ImageUtil.js";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { Texture2DHandle, TextureCubeHandle } from "../../../internal/render/webgl/Texture";
+import { Texture2DHandle, TextureCubeHandle } from "../../../internal/render/webgl/Texture.js";
 
 describe("Sky rendering", () => {
   let iModel: IModelConnection;

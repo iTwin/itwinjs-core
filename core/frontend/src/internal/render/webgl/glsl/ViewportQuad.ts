@@ -6,8 +6,8 @@
  * @module WebGL
  */
 
-import { AttributeDetails, AttributeMap } from "../AttributeMap";
-import { ProgramBuilder, VariableType, VertexShaderComponent } from "../ShaderBuilder";
+import { AttributeDetails, AttributeMap } from "../AttributeMap.js";
+import { ProgramBuilder, VariableType, VertexShaderComponent } from "../ShaderBuilder.js";
 
 // Positions are in NDC [-1..1]. Compute UV params in [0..1]
 const computeTexCoord = "v_texCoord = (rawPosition.xy + 1.0) * 0.5;";

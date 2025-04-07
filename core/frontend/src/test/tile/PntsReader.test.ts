@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { describe, expect, it } from "vitest";
-import { readPntsColors } from "../../tile/internal";
+import { readPntsColors } from "../../tile/internal.js";
 import { ByteStream } from "@itwin/core-bentley";
 
 /* eslint-disable @typescript-eslint/naming-convention */

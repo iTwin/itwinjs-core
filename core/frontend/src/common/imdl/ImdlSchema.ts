@@ -10,10 +10,10 @@ import { ClipVectorProps, Range3dProps, TransformProps, XYProps, XYZProps } from
 import {
   ColorDefProps, FeatureIndexType, FillFlags, Gradient, ImageSourceFormat, LinePixels, TextureMapping, TextureTransparency,
 } from "@itwin/core-common";
-import { AuxChannelTableProps } from "../internal/render/AuxChannelTable";
-import { DisplayParams } from "../internal/render/DisplayParams";
-import { MeshPrimitiveType } from "../internal/render/MeshPrimitive";
-import { SurfaceType } from "../internal/render/SurfaceParams";
+import { AuxChannelTableProps } from "../internal/render/AuxChannelTable.js";
+import { DisplayParams } from "../internal/render/DisplayParams.js";
+import { MeshPrimitiveType } from "../internal/render/MeshPrimitive.js";
+import { SurfaceType } from "../internal/render/SurfaceParams.js";
 
 /** Describes a [ColorDef]($common) as [r, g, b] with each component in [0..1].
  * @internal

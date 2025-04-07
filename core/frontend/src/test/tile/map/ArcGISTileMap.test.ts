@@ -8,7 +8,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 
 import {
   ArcGISTileMap, QuadId,
-} from "../../../tile/internal";
+} from "../../../tile/internal.js";
 import { BeEvent } from "@itwin/core-bentley";
 
 const fakeArcGisUrl = "https:localhost/test/rest";

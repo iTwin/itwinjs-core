@@ -7,26 +7,26 @@
  */
 
 import { Point3d, Range3d, Range3dProps, Transform, XYAndZ } from "@itwin/core-geometry";
-import { addPrimitiveTransferables, ImdlModel } from "../../imdl/ImdlModel";
+import { addPrimitiveTransferables, ImdlModel } from "../../imdl/ImdlModel.js";
 import {
   ComputeGraphicDescriptionChordToleranceArgs, GraphicDescription, GraphicDescriptionBuilder, GraphicDescriptionBuilderOptions,
-} from "../../render/GraphicDescriptionBuilder";
-import { GraphicType } from "../../render/GraphicType";
-import { GraphicAssembler } from "../../render/GraphicAssembler";
+} from "../../render/GraphicDescriptionBuilder.js";
+import { GraphicType } from "../../render/GraphicType.js";
+import { GraphicAssembler } from "../../render/GraphicAssembler.js";
 import { Gradient, PackedFeatureTable, QPoint3dList } from "@itwin/core-common";
-import { BatchOptions } from "../../render/BatchOptions";
+import { BatchOptions } from "../../render/BatchOptions.js";
 import { assert, Id64String, TransientIdSequence } from "@itwin/core-bentley";
-import { Mesh } from "./MeshPrimitives";
-import { createPointStringParams } from "./PointStringParams";
-import { VertexTable } from "./VertexTable";
-import { createPolylineParams } from "./PolylineParams";
-import { createMeshParams } from "./VertexTableBuilder";
-import { edgeParamsToImdl } from "../../imdl/ParseImdlDocument";
-import { _accumulator, _implementationProhibited } from "../Symbols";
-import { WorkerGraphicDescriptionContextImpl, WorkerMaterial, WorkerTexture } from "./GraphicDescriptionContextImpl";
-import { GraphicDescriptionContext } from "../../render/GraphicDescriptionContext";
-import { MeshArgs } from "../../../render/MeshArgs";
-import { PolylineArgs } from "../../../render/PolylineArgs";
+import { Mesh } from "./MeshPrimitives.js";
+import { createPointStringParams } from "./PointStringParams.js";
+import { VertexTable } from "./VertexTable.js";
+import { createPolylineParams } from "./PolylineParams.js";
+import { createMeshParams } from "./VertexTableBuilder.js";
+import { edgeParamsToImdl } from "../../imdl/ParseImdlDocument.js";
+import { _accumulator, _implementationProhibited } from "../Symbols.js";
+import { WorkerGraphicDescriptionContextImpl, WorkerMaterial, WorkerTexture } from "./GraphicDescriptionContextImpl.js";
+import { GraphicDescriptionContext } from "../../render/GraphicDescriptionContext.js";
+import { MeshArgs } from "../../../render/MeshArgs.js";
+import { PolylineArgs } from "../../../render/PolylineArgs.js";
 
 export type BatchDescription = Omit<BatchOptions, "tileId"> & {
   featureTable: ImdlModel.FeatureTable;

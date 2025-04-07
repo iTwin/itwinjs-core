@@ -9,26 +9,26 @@
 import { assert } from "@itwin/core-bentley";
 import { Range3d } from "@itwin/core-geometry";
 import { Frustum, FrustumPlanes, RenderMode, ViewFlags } from "@itwin/core-common";
-import { Decorations } from "../../../render/Decorations";
-import { SurfaceType } from "../../../common/internal/render/SurfaceParams";
-import { GraphicList, RenderGraphic } from "../../../render/RenderGraphic";
-import { AnimationBranchState } from "../AnimationBranchState";
-import { BranchStack } from "./BranchStack";
-import { BatchState } from "./BatchState";
-import { BranchState } from "./BranchState";
+import { Decorations } from "../../../render/Decorations.js";
+import { SurfaceType } from "../../../common/internal/render/SurfaceParams.js";
+import { GraphicList, RenderGraphic } from "../../../render/RenderGraphic.js";
+import { AnimationBranchState } from "../AnimationBranchState.js";
+import { BranchStack } from "./BranchStack.js";
+import { BatchState } from "./BatchState.js";
+import { BranchState } from "./BranchState.js";
 import {
   DrawCommands, PopBatchCommand, PopBranchCommand, PopClipCommand, PopCommand, PrimitiveCommand, PushBatchCommand,
   PushBranchCommand, PushClipCommand, PushCommand, PushStateCommand,
-} from "./DrawCommand";
-import { Batch, Branch, Graphic, GraphicsArray } from "./Graphic";
-import { Layer, LayerContainer } from "./Layer";
-import { LayerCommandLists } from "./LayerCommands";
-import { MeshGraphic } from "./Mesh";
-import { Primitive } from "./Primitive";
-import { CompositeFlags, Pass, RenderOrder, RenderPass } from "./RenderFlags";
-import { TargetGraphics } from "./TargetGraphics";
-import { Target } from "./Target";
-import { ClipVolume } from "./ClipVolume";
+} from "./DrawCommand.js";
+import { Batch, Branch, Graphic, GraphicsArray } from "./Graphic.js";
+import { Layer, LayerContainer } from "./Layer.js";
+import { LayerCommandLists } from "./LayerCommands.js";
+import { MeshGraphic } from "./Mesh.js";
+import { Primitive } from "./Primitive.js";
+import { CompositeFlags, Pass, RenderOrder, RenderPass } from "./RenderFlags.js";
+import { TargetGraphics } from "./TargetGraphics.js";
+import { Target } from "./Target.js";
+import { ClipVolume } from "./ClipVolume.js";
 
 /** A list of DrawCommands to be rendered, ordered by render pass.
  * @internal

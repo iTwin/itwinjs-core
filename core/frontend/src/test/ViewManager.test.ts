@@ -3,12 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { OnScreenTarget } from "../internal/render/webgl/Target";
-import { IModelApp } from "../IModelApp";
-import { IModelConnection } from "../IModelConnection";
-import { createBlankConnection } from "./createBlankConnection";
-import { openBlankViewport } from "./openBlankViewport";
-import { expectColors } from "./ExpectColors";
+import { OnScreenTarget } from "../internal/render/webgl/Target.js";
+import { IModelApp } from "../IModelApp.js";
+import { IModelConnection } from "../IModelConnection.js";
+import { createBlankConnection } from "./createBlankConnection.js";
+import { openBlankViewport } from "./openBlankViewport.js";
+import { expectColors } from "./ExpectColors.js";
 import { ColorDef, EmptyLocalization } from "@itwin/core-common";
 
 describe("ViewManager", () => {

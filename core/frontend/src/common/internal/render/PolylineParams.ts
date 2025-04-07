@@ -7,13 +7,13 @@
  */
 
 import { LinePixels, PolylineIndices, PolylineTypeFlags, QPoint3dList } from "@itwin/core-common";
-import { VertexIndices } from "./VertexIndices";
-import { VertexTable } from "./VertexTable";
+import { VertexIndices } from "./VertexIndices.js";
+import { VertexTable } from "./VertexTable.js";
 import { Point3d, Vector3d } from "@itwin/core-geometry";
 import { assert } from "@itwin/core-bentley";
-import { VertexTableBuilder } from "./VertexTableBuilder";
-import { MeshArgs } from "../../../render/MeshArgs";
-import { PolylineArgs } from "../../../render/PolylineArgs";
+import { VertexTableBuilder } from "./VertexTableBuilder.js";
+import { MeshArgs } from "../../../render/MeshArgs.js";
+import { PolylineArgs } from "../../../render/PolylineArgs.js";
 
 /** Represents a tesselated polyline.
  * Given a polyline as a line string, each segment of the line string is triangulated into a quad.

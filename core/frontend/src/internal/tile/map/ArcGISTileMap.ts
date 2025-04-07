@@ -7,7 +7,7 @@
  */
 
 import { assert, compareStrings, Dictionary, Logger } from "@itwin/core-bentley";
-import { QuadId } from "../../../tile/internal";
+import { QuadId } from "../../../tile/internal.js";
 import { ImageMapLayerSettings } from "@itwin/core-common";
 const loggerCategory = "ArcGISTileMap";
 

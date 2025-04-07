@@ -9,8 +9,8 @@
 import { assert } from "@itwin/core-bentley";
 import { Point2d, Range1d, Range2d } from "@itwin/core-geometry";
 import { Cartographic } from "@itwin/core-common";
-import { GeographicTilingScheme, QuadId } from "./tile/internal";
-import type { ApproximateTerrainHeightsProps } from "./ApproximateTerrainHeightsProps";
+import { GeographicTilingScheme, QuadId } from "./tile/internal.js";
+import type { ApproximateTerrainHeightsProps } from "./ApproximateTerrainHeightsProps.js";
 
 let instance: ApproximateTerrainHeights | undefined;
 
@@ -39,7 +39,7 @@ export class ApproximateTerrainHeights {
    */
   public async initialize(): Promise<void> {
     if (!this._terrainHeights) {
-      const { terrainHeightsPropsString } = await import("./ApproximateTerrainHeightsProps");
+      const { terrainHeightsPropsString } = await import("./ApproximateTerrainHeightsProps.js");
       this._terrainHeights = JSON.parse(terrainHeightsPropsString);
     }
   }

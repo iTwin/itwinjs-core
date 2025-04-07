@@ -5,15 +5,15 @@
 
 import { Cartographic, DisplayStyle3dProps, EcefLocation, EmptyLocalization, GeoCoordinatesRequestProps, IModelConnectionProps, IModelCoordinatesRequestProps, PointWithStatus } from "@itwin/core-common";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { IModelApp } from "../../../IModelApp";
+import { IModelApp } from "../../../IModelApp.js";
 import {
   FeatureGraphicsRenderer,
-} from "../../../tile/internal";
-import { BlankConnection, IModelConnection } from "../../../IModelConnection";
-import { GeoServices, GeoServicesOptions } from "../../../GeoServices";
+} from "../../../tile/internal.js";
+import { BlankConnection, IModelConnection } from "../../../IModelConnection.js";
+import { GeoServices, GeoServicesOptions } from "../../../GeoServices.js";
 import { Guid, Mutable } from "@itwin/core-bentley";
 import { Loop, Point3d, Range3d, Transform, XYZProps } from "@itwin/core-geometry";
-import { BackgroundMapGeometry, DisplayStyle3dState, GraphicLineString, ScreenViewport, ViewState3d } from "../../../core-frontend";
+import { BackgroundMapGeometry, DisplayStyle3dState, GraphicLineString, ScreenViewport, ViewState3d } from "../../../core-frontend.js";
 
 import * as moq from "typemoq";
 

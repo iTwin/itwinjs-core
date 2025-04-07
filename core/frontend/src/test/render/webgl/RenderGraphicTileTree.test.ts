@@ -4,9 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { IModelApp } from "../../../IModelApp";
-import { GraphicType, HitDetail, HitDetailProps, HitPriority, HitSource, TileTreeReference } from "../../../core-frontend";
-import { testBlankViewportAsync } from "../../openBlankViewport";
+import { IModelApp } from "../../../IModelApp.js";
+import { GraphicType, HitDetail, HitDetailProps, HitPriority, HitSource, TileTreeReference } from "../../../core-frontend.js";
+import { testBlankViewportAsync } from "../../openBlankViewport.js";
 import { Feature } from "@itwin/core-common";
 import { Point3d } from "@itwin/core-geometry";
 

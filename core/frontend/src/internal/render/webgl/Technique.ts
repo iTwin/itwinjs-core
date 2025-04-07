@@ -7,52 +7,52 @@
  */
 
 import { assert, dispose } from "@itwin/core-bentley";
-import { BlurType } from "./CachedGeometry";
-import { ClippingProgram, createClippingProgram } from "./ClippingProgram";
-import { WebGLDisposable } from "./Disposable";
-import { DrawCommands, DrawParams } from "./DrawCommand";
-import { createAmbientOcclusionProgram } from "./glsl/AmbientOcclusion";
-import { createBlurProgram } from "./glsl/Blur";
-import { createEDLCalcBasicProgram, createEDLCalcFullProgram, createEDLFilterProgram, createEDLMixProgram } from "./glsl/EDL";
-import { createClearPickAndColorProgram } from "./glsl/ClearPickAndColor";
-import { createClearTranslucentProgram } from "./glsl/ClearTranslucent";
-import { createCombine3TexturesProgram } from "./glsl/Combine3Textures";
-import { createCombineTexturesProgram } from "./glsl/CombineTextures";
-import { addEyeSpace, addFrustum, addShaderFlags } from "./glsl/Common";
-import { createCompositeProgram } from "./glsl/Composite";
-import { createCopyColorProgram } from "./glsl/CopyColor";
-import { createCopyPickBuffersProgram } from "./glsl/CopyPickBuffers";
+import { BlurType } from "./CachedGeometry.js";
+import { ClippingProgram, createClippingProgram } from "./ClippingProgram.js";
+import { WebGLDisposable } from "./Disposable.js";
+import { DrawCommands, DrawParams } from "./DrawCommand.js";
+import { createAmbientOcclusionProgram } from "./glsl/AmbientOcclusion.js";
+import { createBlurProgram } from "./glsl/Blur.js";
+import { createEDLCalcBasicProgram, createEDLCalcFullProgram, createEDLFilterProgram, createEDLMixProgram } from "./glsl/EDL.js";
+import { createClearPickAndColorProgram } from "./glsl/ClearPickAndColor.js";
+import { createClearTranslucentProgram } from "./glsl/ClearTranslucent.js";
+import { createCombine3TexturesProgram } from "./glsl/Combine3Textures.js";
+import { createCombineTexturesProgram } from "./glsl/CombineTextures.js";
+import { addEyeSpace, addFrustum, addShaderFlags } from "./glsl/Common.js";
+import { createCompositeProgram } from "./glsl/Composite.js";
+import { createCopyColorProgram } from "./glsl/CopyColor.js";
+import { createCopyPickBuffersProgram } from "./glsl/CopyPickBuffers.js";
 import {
   createVolClassBlendProgram, createVolClassColorUsingStencilProgram, createVolClassCopyZProgram, createVolClassSetBlendProgram,
-} from "./glsl/CopyStencil";
-import { createEdgeBuilder, EdgeBuilderType } from "./glsl/Edge";
-import { createEVSMProgram } from "./glsl/EVSMFromDepth";
-import { addFeatureId, addFeatureSymbology, addRenderOrder, addUniformFeatureSymbology, FeatureSymbologyOptions, mixFeatureColor } from "./glsl/FeatureSymbology";
-import { addFragColorWithPreMultipliedAlpha, addPickBufferOutputs } from "./glsl/Fragment";
-import { addLogDepth } from "./glsl/LogarithmicDepthBuffer";
-import { addUnlitMonochrome } from "./glsl/Monochrome";
-import createPlanarGridProgram from "./glsl/PlanarGrid";
-import { createPointCloudBuilder, createPointCloudHiliter } from "./glsl/PointCloud";
-import { createPointStringBuilder, createPointStringHiliter } from "./glsl/PointString";
-import { createPolylineBuilder, createPolylineHiliter } from "./glsl/Polyline";
+} from "./glsl/CopyStencil.js";
+import { createEdgeBuilder, EdgeBuilderType } from "./glsl/Edge.js";
+import { createEVSMProgram } from "./glsl/EVSMFromDepth.js";
+import { addFeatureId, addFeatureSymbology, addRenderOrder, addUniformFeatureSymbology, FeatureSymbologyOptions, mixFeatureColor } from "./glsl/FeatureSymbology.js";
+import { addFragColorWithPreMultipliedAlpha, addPickBufferOutputs } from "./glsl/Fragment.js";
+import { addLogDepth } from "./glsl/LogarithmicDepthBuffer.js";
+import { addUnlitMonochrome } from "./glsl/Monochrome.js";
+import createPlanarGridProgram from "./glsl/PlanarGrid.js";
+import { createPointCloudBuilder, createPointCloudHiliter } from "./glsl/PointCloud.js";
+import { createPointStringBuilder, createPointStringHiliter } from "./glsl/PointString.js";
+import { createPolylineBuilder, createPolylineHiliter } from "./glsl/Polyline.js";
 import {
   addColorOverrideMix, createClassifierRealityMeshHiliter, createRealityMeshBuilder, createRealityMeshHiliter,
-} from "./glsl/RealityMesh";
-import { createSkyBoxProgram } from "./glsl/SkyBox";
-import { createSkySphereBuilder } from "./glsl/SkySphere";
-import { createSurfaceBuilder, createSurfaceHiliter } from "./glsl/Surface";
-import { addTranslucency } from "./glsl/Translucency";
-import { addModelViewMatrix } from "./glsl/Vertex";
-import { RenderPass } from "./RenderFlags";
-import { ProgramBuilder, VertexShaderComponent } from "./ShaderBuilder";
-import { CompileStatus, ShaderProgram, ShaderProgramExecutor } from "./ShaderProgram";
-import { System } from "./System";
-import { Target } from "./Target";
+} from "./glsl/RealityMesh.js";
+import { createSkyBoxProgram } from "./glsl/SkyBox.js";
+import { createSkySphereBuilder } from "./glsl/SkySphere.js";
+import { createSurfaceBuilder, createSurfaceHiliter } from "./glsl/Surface.js";
+import { addTranslucency } from "./glsl/Translucency.js";
+import { addModelViewMatrix } from "./glsl/Vertex.js";
+import { RenderPass } from "./RenderFlags.js";
+import { ProgramBuilder, VertexShaderComponent } from "./ShaderBuilder.js";
+import { CompileStatus, ShaderProgram, ShaderProgramExecutor } from "./ShaderProgram.js";
+import { System } from "./System.js";
+import { Target } from "./Target.js";
 import {
   EnableAtmosphere,
   FeatureMode, IsAnimated, IsClassified, IsEdgeTestNeeded, IsInstanced, IsShadowable, IsThematic, IsWiremesh, PositionType, TechniqueFlags,
-} from "./TechniqueFlags";
-import { computeCompositeTechniqueId, TechniqueId } from "./TechniqueId";
+} from "./TechniqueFlags.js";
+import { computeCompositeTechniqueId, TechniqueId } from "./TechniqueId.js";
 
 /** Defines a rendering technique implemented using one or more shader programs.
  * @internal

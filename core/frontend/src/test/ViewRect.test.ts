@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { describe, expect, it } from "vitest";
-import { ViewRect } from "../common/ViewRect";
-import { getCenteredViewRect } from "../common/ImageUtil";
+import { ViewRect } from "../common/ViewRect.js";
+import { getCenteredViewRect } from "../common/ImageUtil.js";
 
 function expectRect(rect: ViewRect, l: number, t: number, r: number, b: number): void {
   expect(rect.left).toEqual(l);

@@ -13,16 +13,16 @@ import {
   ButtonGroupEditorParams, DialogItem, DialogItemValue, DialogPropertySyncItem, PropertyDescription, PropertyEditorParamTypes,
   SuppressLabelEditorParams,
 } from "@itwin/appui-abstract";
-import { LocateFilterStatus, LocateResponse } from "../ElementLocateManager";
-import { HitDetail } from "../HitDetail";
-import { IModelApp } from "../IModelApp";
-import { Pixel } from "../render/Pixel";
-import { DecorateContext } from "../ViewContext";
-import { ViewRect } from "../common/ViewRect";
-import { PrimitiveTool } from "./PrimitiveTool";
-import { BeButton, BeButtonEvent, BeModifierKeys, BeTouchEvent, CoordinateLockOverrides, CoreTools, EventHandled, InputSource } from "./Tool";
-import { ManipulatorToolEvent } from "./ToolAdmin";
-import { ToolAssistance, ToolAssistanceImage, ToolAssistanceInputMethod, ToolAssistanceInstruction, ToolAssistanceSection } from "./ToolAssistance";
+import { LocateFilterStatus, LocateResponse } from "../ElementLocateManager.js";
+import { HitDetail } from "../HitDetail.js";
+import { IModelApp } from "../IModelApp.js";
+import { Pixel } from "../render/Pixel.js";
+import { DecorateContext } from "../ViewContext.js";
+import { ViewRect } from "../common/ViewRect.js";
+import { PrimitiveTool } from "./PrimitiveTool.js";
+import { BeButton, BeButtonEvent, BeModifierKeys, BeTouchEvent, CoordinateLockOverrides, CoreTools, EventHandled, InputSource } from "./Tool.js";
+import { ManipulatorToolEvent } from "./ToolAdmin.js";
+import { ToolAssistance, ToolAssistanceImage, ToolAssistanceInputMethod, ToolAssistanceInstruction, ToolAssistanceSection } from "./ToolAssistance.js";
 
 // cSpell:ignore buttongroup
 

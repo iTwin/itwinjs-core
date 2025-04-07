@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 import { Range1d } from "@itwin/core-geometry";
 import { describe, expect, it } from "vitest";
-import { ApproximateTerrainHeights } from "../../../ApproximateTerrainHeights";
-import { GeographicTilingScheme, QuadId } from "../../../tile/internal";
+import { ApproximateTerrainHeights } from "../../../ApproximateTerrainHeights.js";
+import { GeographicTilingScheme, QuadId } from "../../../tile/internal.js";
 
 describe("ApproximateTerrainHeights", () => {
   it("test correct heights", async () => {

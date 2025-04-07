@@ -7,8 +7,8 @@
  */
 
 import { Logger } from "@itwin/core-bentley";
-import type { ExtMeshoptCompressionFilter, ExtMeshoptCompressionMode } from "../../common/gltf/GltfSchema";
-import { FrontendLoggerCategory } from "../../common/FrontendLoggerCategory";
+import type { ExtMeshoptCompressionFilter, ExtMeshoptCompressionMode } from "../../common/gltf/GltfSchema.js";
+import { FrontendLoggerCategory } from "../../common/FrontendLoggerCategory.js";
 
 export interface MeshoptDecoder {
   decodeVertexBuffer: (target: Uint8Array, count: number, size: number, source: Uint8Array, filter?: string) => void;

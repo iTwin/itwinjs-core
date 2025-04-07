@@ -6,10 +6,10 @@
  * @module WebGL
  */
 
-import { FragmentShaderComponent, ProgramBuilder } from "../ShaderBuilder";
-import { addEyeSpace, addFrustum } from "./Common";
-import { computeLinearDepth } from "./Fragment";
-import { addModelViewMatrix } from "./Vertex";
+import { FragmentShaderComponent, ProgramBuilder } from "../ShaderBuilder.js";
+import { addEyeSpace, addFrustum } from "./Common.js";
+import { computeLinearDepth } from "./Fragment.js";
+import { addModelViewMatrix } from "./Vertex.js";
 
 // See Weighted Blended Order-Independent Transparency for examples of different weighting functions:
 // http://jcgt.org/published/0002/02/09/

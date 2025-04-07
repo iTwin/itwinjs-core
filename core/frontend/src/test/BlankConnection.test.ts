@@ -4,9 +4,9 @@
  *--------------------------------------------------------------------------------------------*/
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import { EmptyLocalization } from "@itwin/core-common";
-import { IModelApp } from "../IModelApp";
-import { IModelConnection } from "../IModelConnection";
-import { createBlankConnection } from "./createBlankConnection";
+import { IModelApp } from "../IModelApp.js";
+import { IModelConnection } from "../IModelConnection.js";
+import { createBlankConnection } from "./createBlankConnection.js";
 
 describe("BlankConnection", async () => {
   beforeAll(async () => IModelApp.startup({ localization: new EmptyLocalization() }));

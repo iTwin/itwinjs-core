@@ -7,8 +7,8 @@
  */
 import { Id64, Id64Arg, Id64String, ObservableSet } from "@itwin/core-bentley";
 import { CategorySelectorProps } from "@itwin/core-common";
-import { ElementState } from "./EntityState";
-import { IModelConnection } from "./IModelConnection";
+import { ElementState } from "./EntityState.js";
+import { IModelConnection } from "./IModelConnection.js";
 
 /** A set of Categories to be displayed in a [[ViewState]].
  * Elements belonging to categories not specified in the category selector will not be drawn in the view.

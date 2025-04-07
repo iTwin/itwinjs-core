@@ -6,8 +6,8 @@
  * @module WebGL
  */
 
-import { GL } from "./GL";
-import { System } from "./System";
+import { GL } from "./GL.js";
+import { System } from "./System.js";
 
 /** @internal */
 export class RenderStateFlags {

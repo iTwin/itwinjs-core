@@ -4,13 +4,13 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { Feature, FeatureTable, GeometryClass, LinePixels } from "@itwin/core-common";
-import { InstancedGraphicPropsBuilder } from "../../common/internal/render/InstancedGraphicPropsBuilder";
-import { InstancedGraphicProps } from "../../common/render/InstancedGraphicParams";
-import { Instance, InstanceSymbology } from "../../common/render/RenderInstancesParams";
+import { InstancedGraphicPropsBuilder } from "../../common/internal/render/InstancedGraphicPropsBuilder.js";
+import { InstancedGraphicProps } from "../../common/render/InstancedGraphicParams.js";
+import { Instance, InstanceSymbology } from "../../common/render/RenderInstancesParams.js";
 import { describe, expect, it } from "vitest";
 import { Point3d, Transform, XYZProps } from "@itwin/core-geometry";
 import { Id64String } from "@itwin/core-bentley";
-import { OvrFlags } from "../../common/internal/render/OvrFlags";
+import { OvrFlags } from "../../common/internal/render/OvrFlags.js";
 
 function build(instances: Instance[], haveFeatures = false): InstancedGraphicProps {
   const builder = new InstancedGraphicPropsBuilder();

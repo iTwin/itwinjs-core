@@ -7,11 +7,11 @@
  */
 
 import { RenderType } from "@itwin/webgl-compatibility";
-import { DrawParams } from "../DrawCommand";
-import { UniformHandle } from "../UniformHandle";
-import { ProgramBuilder, ShaderBuilder, ShaderType, VariableType } from "../ShaderBuilder";
-import { System } from "../System";
-import { addModelViewMatrix } from "./Vertex";
+import { DrawParams } from "../DrawCommand.js";
+import { UniformHandle } from "../UniformHandle.js";
+import { ProgramBuilder, ShaderBuilder, ShaderType, VariableType } from "../ShaderBuilder.js";
+import { System } from "../System.js";
+import { addModelViewMatrix } from "./Vertex.js";
 
 // These are not used anywhere currently, but will leave them here commented out in case we want them later.
 // const chooseFloatWithBitFlag2 = `

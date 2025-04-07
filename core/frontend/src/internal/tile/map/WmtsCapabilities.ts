@@ -7,8 +7,8 @@
  */
 
 import { Point2d, Range2d } from "@itwin/core-geometry";
-import { RequestBasicCredentials } from "../../../request/Request";
-import { MapCartoRectangle, WmsUtilities } from "../../../tile/internal";
+import { RequestBasicCredentials } from "../../../request/Request.js";
+import { MapCartoRectangle, WmsUtilities } from "../../../tile/internal.js";
 
 enum OwsConstants {
   ABSTRACT_XMLTAG = "ows:Abstract",

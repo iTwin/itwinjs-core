@@ -9,19 +9,19 @@
 import { assert, dispose } from "@itwin/core-bentley";
 import { ColorByName, ColorDef, FrustumPlanes, GlobeMode, PackedFeatureTable, RenderTexture } from "@itwin/core-common";
 import { AxisOrder, BilinearPatch, ClipPlane, ClipPrimitive, ClipShape, ClipVector, Constant, ConvexClipPlaneSet, EllipsoidPatch, LongitudeLatitudeNumber, Matrix3d, Point3d, PolygonOps, Range1d, Range2d, Range3d, Ray3d, Transform, Vector2d, Vector3d } from "@itwin/core-geometry";
-import { IModelApp } from "../../IModelApp";
-import { GraphicBuilder } from "../../render/GraphicBuilder";
-import { RealityMeshParams } from "../../render/RealityMeshParams";
-import { upsampleRealityMeshParams } from "../../internal/render/UpsampleRealityMeshParams";
-import { RenderGraphic } from "../../render/RenderGraphic";
-import { RenderMemory } from "../../render/RenderMemory";
-import { RenderSystem } from "../../render/RenderSystem";
-import { RenderTerrainGeometry, TerrainTexture } from "../../internal/render/RenderTerrain";
-import { ViewingSpace } from "../../ViewingSpace";
+import { IModelApp } from "../../IModelApp.js";
+import { GraphicBuilder } from "../../render/GraphicBuilder.js";
+import { RealityMeshParams } from "../../render/RealityMeshParams.js";
+import { upsampleRealityMeshParams } from "../../internal/render/UpsampleRealityMeshParams.js";
+import { RenderGraphic } from "../../render/RenderGraphic.js";
+import { RenderMemory } from "../../render/RenderMemory.js";
+import { RenderSystem } from "../../render/RenderSystem.js";
+import { RenderTerrainGeometry, TerrainTexture } from "../../internal/render/RenderTerrain.js";
+import { ViewingSpace } from "../../ViewingSpace.js";
 import {
   ImageryMapTile, MapCartoRectangle, MapTileLoader, MapTileTree, QuadId, RealityTile, RealityTileParams, Tile, TileContent, TileDrawArgs, TileGraphicType,
   TileLoadStatus, TileTreeLoadStatus, TraversalSelectionContext,
-} from "../internal";
+} from "../internal.js";
 
 /** @internal */
 export class PlanarTilePatch {

@@ -7,10 +7,10 @@
  */
 
 import { Id64String } from "@itwin/core-bentley";
-import { RenderGraphic } from "./RenderGraphic";
-import { RenderPlanarClassifier } from "../internal/render/RenderPlanarClassifier";
-import { SceneVolumeClassifier } from "../internal/render/SceneVolumeClassifier";
-import { RenderTextureDrape } from "../internal/render/RenderTextureDrape";
+import { RenderGraphic } from "./RenderGraphic.js";
+import { RenderPlanarClassifier } from "../internal/render/RenderPlanarClassifier.js";
+import { SceneVolumeClassifier } from "../internal/render/SceneVolumeClassifier.js";
+import { RenderTextureDrape } from "../internal/render/RenderTextureDrape.js";
 
 /** Holds a collection of objects comprising the scene to be drawn by a [[Viewport]]'s.
  * @see [[SceneContext]] for the context in which the scene is created.

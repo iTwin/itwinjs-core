@@ -6,8 +6,8 @@
  * @module WebGL
  */
 
-import { VariableType } from "./ShaderBuilder";
-import { TechniqueId } from "./TechniqueId";
+import { VariableType } from "./ShaderBuilder.js";
+import { TechniqueId } from "./TechniqueId.js";
 
 /**
  * Describes the details of an attribute associated with an attribute name.

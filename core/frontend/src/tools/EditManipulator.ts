@@ -8,15 +8,15 @@
 
 import { AxisOrder, Matrix3d, Point3d, Transform, Vector3d } from "@itwin/core-geometry";
 import { ColorDef } from "@itwin/core-common";
-import { AccuDrawHintBuilder } from "../AccuDraw";
-import { HitDetail } from "../HitDetail";
-import { IModelApp } from "../IModelApp";
-import { IModelConnection } from "../IModelConnection";
-import { SelectionSetEvent } from "../SelectionSet";
-import { DecorateContext } from "../ViewContext";
-import { Viewport } from "../Viewport";
-import { BeButton, BeButtonEvent, BeTouchEvent, CoordinateLockOverrides, EventHandled, InputCollector, InputSource, Tool } from "./Tool";
-import { ManipulatorToolEvent } from "./ToolAdmin";
+import { AccuDrawHintBuilder } from "../AccuDraw.js";
+import { HitDetail } from "../HitDetail.js";
+import { IModelApp } from "../IModelApp.js";
+import { IModelConnection } from "../IModelConnection.js";
+import { SelectionSetEvent } from "../SelectionSet.js";
+import { DecorateContext } from "../ViewContext.js";
+import { Viewport } from "../Viewport.js";
+import { BeButton, BeButtonEvent, BeTouchEvent, CoordinateLockOverrides, EventHandled, InputCollector, InputSource, Tool } from "./Tool.js";
+import { ManipulatorToolEvent } from "./ToolAdmin.js";
 
 /** Classes and methods to create on screen control handles for interactive modification of element(s) and pickable decorations.
  * The basic flow is:

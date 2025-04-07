@@ -9,10 +9,10 @@
 import { assert } from "@itwin/core-bentley";
 import { Transform } from "@itwin/core-geometry";
 import { HiddenLine, ViewFlags } from "@itwin/core-common";
-import { FeatureSymbology } from "../../../render/FeatureSymbology";
-import { BranchState } from "./BranchState";
-import { Branch } from "./Graphic";
-import { EdgeSettings } from "./EdgeSettings";
+import { FeatureSymbology } from "../../../render/FeatureSymbology.js";
+import { BranchState } from "./BranchState.js";
+import { Branch } from "./Graphic.js";
+import { EdgeSettings } from "./EdgeSettings.js";
 
 /**
  * Represents the current state of the scene graph. As the scene graph is traversed,

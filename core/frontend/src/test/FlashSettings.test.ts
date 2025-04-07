@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { describe, expect, it } from "vitest";
 import { BeDuration } from "@itwin/core-bentley";
-import { FlashMode, FlashSettings, FlashSettingsOptions } from "../FlashSettings";
+import { FlashMode, FlashSettings, FlashSettingsOptions } from "../FlashSettings.js";
 
 type FlashProps = Pick<FlashSettings, "duration" | "maxIntensity" | "litMode">;
 

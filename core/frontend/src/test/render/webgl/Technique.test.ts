@@ -3,17 +3,17 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { IModelApp } from "../../../IModelApp";
-import { AttributeMap } from "../../../internal/render/webgl/AttributeMap";
-import { CompileStatus } from "../../../internal/render/webgl/ShaderProgram";
-import { DrawParams, ShaderProgramParams } from "../../../internal/render/webgl/DrawCommand";
-import { FeatureMode, TechniqueFlags } from "../../../internal/render/webgl/TechniqueFlags";
-import { FragmentShaderComponent, ProgramBuilder, VariableType, VertexShaderComponent } from "../../../internal/render/webgl/ShaderBuilder";
-import { SingularTechnique, Techniques } from "../../../internal/render/webgl/Technique";
-import { System } from "../../../internal/render/webgl/System";
-import { Target } from "../../../internal/render/webgl/Target";
-import { TechniqueId } from "../../../internal/render/webgl/TechniqueId";
-import { ViewportQuadGeometry } from "../../../internal/render/webgl/CachedGeometry";
+import { IModelApp } from "../../../IModelApp.js";
+import { AttributeMap } from "../../../internal/render/webgl/AttributeMap.js";
+import { CompileStatus } from "../../../internal/render/webgl/ShaderProgram.js";
+import { DrawParams, ShaderProgramParams } from "../../../internal/render/webgl/DrawCommand.js";
+import { FeatureMode, TechniqueFlags } from "../../../internal/render/webgl/TechniqueFlags.js";
+import { FragmentShaderComponent, ProgramBuilder, VariableType, VertexShaderComponent } from "../../../internal/render/webgl/ShaderBuilder.js";
+import { SingularTechnique, Techniques } from "../../../internal/render/webgl/Technique.js";
+import { System } from "../../../internal/render/webgl/System.js";
+import { Target } from "../../../internal/render/webgl/Target.js";
+import { TechniqueId } from "../../../internal/render/webgl/TechniqueId.js";
+import { ViewportQuadGeometry } from "../../../internal/render/webgl/CachedGeometry.js";
 import { Logger, LogLevel } from "@itwin/core-bentley";
 import { EmptyLocalization } from "@itwin/core-common";
 

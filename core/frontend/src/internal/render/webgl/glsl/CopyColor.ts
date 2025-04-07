@@ -6,13 +6,13 @@
  * @module WebGL
  */
 
-import { SingleTexturedViewportQuadGeometry } from "../CachedGeometry";
-import { TextureUnit } from "../RenderFlags";
-import { FragmentShaderComponent, VariableType } from "../ShaderBuilder";
-import { ShaderProgram } from "../ShaderProgram";
-import { Texture2DHandle } from "../Texture";
-import { assignFragColor } from "./Fragment";
-import { createViewportQuadBuilder } from "./ViewportQuad";
+import { SingleTexturedViewportQuadGeometry } from "../CachedGeometry.js";
+import { TextureUnit } from "../RenderFlags.js";
+import { FragmentShaderComponent, VariableType } from "../ShaderBuilder.js";
+import { ShaderProgram } from "../ShaderProgram.js";
+import { Texture2DHandle } from "../Texture.js";
+import { assignFragColor } from "./Fragment.js";
+import { createViewportQuadBuilder } from "./ViewportQuad.js";
 
 const computeColor = "return TEXTURE(u_color, v_texCoord);";
 

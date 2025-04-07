@@ -7,17 +7,17 @@
  */
 
 import { assert } from "@itwin/core-bentley";
-import { DebugShaderFile } from "../RenderSystemDebugControl";
-import { AttributeDetails } from "./AttributeMap";
-import { WebGLDisposable } from "./Disposable";
-import { DrawParams, ShaderProgramParams } from "./DrawCommand";
-import { GL } from "./GL";
-import { Batch, Branch } from "./Graphic";
-import { UniformHandle } from "./UniformHandle";
-import { RenderPass } from "./RenderFlags";
-import { System } from "./System";
-import { Target } from "./Target";
-import { TechniqueFlags } from "./TechniqueFlags";
+import { DebugShaderFile } from "../RenderSystemDebugControl.js";
+import { AttributeDetails } from "./AttributeMap.js";
+import { WebGLDisposable } from "./Disposable.js";
+import { DrawParams, ShaderProgramParams } from "./DrawCommand.js";
+import { GL } from "./GL.js";
+import { Batch, Branch } from "./Graphic.js";
+import { UniformHandle } from "./UniformHandle.js";
+import { RenderPass } from "./RenderFlags.js";
+import { System } from "./System.js";
+import { Target } from "./Target.js";
+import { TechniqueFlags } from "./TechniqueFlags.js";
 
 /* eslint-disable no-restricted-syntax */
 

@@ -8,8 +8,8 @@
 
 import { Map4d } from "@itwin/core-geometry";
 import { FrustumPlanes } from "@itwin/core-common";
-import { TileDrawArgs } from "../../tile/internal";
-import { RenderPlanarClassifier } from "../render/RenderPlanarClassifier";
+import { TileDrawArgs } from "../../tile/internal.js";
+import { RenderPlanarClassifier } from "../render/RenderPlanarClassifier.js";
 
 export class RealityTileDrawArgs extends TileDrawArgs {
   private readonly _worldToViewMap: Map4d;

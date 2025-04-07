@@ -7,14 +7,14 @@
  */
 
 import { Point3d, Range3d, Transform } from "@itwin/core-geometry";
-import { IModelConnection } from "../IModelConnection";
-import { Viewport } from "../Viewport";
-import { RenderGraphic } from "./RenderGraphic";
-import { GraphicType } from "../common/render/GraphicType";
-import type { PickableGraphicOptions} from "../common/render/BatchOptions";
-import { GraphicAssembler } from "../common/render/GraphicAssembler";
-import { _implementationProhibited } from "../common/internal/Symbols";
-import { GraphicTemplate } from "./GraphicTemplate";
+import { IModelConnection } from "../IModelConnection.js";
+import { Viewport } from "../Viewport.js";
+import { RenderGraphic } from "./RenderGraphic.js";
+import { GraphicType } from "../common/render/GraphicType.js";
+import type { PickableGraphicOptions} from "../common/render/BatchOptions.js";
+import { GraphicAssembler } from "../common/render/GraphicAssembler.js";
+import { _implementationProhibited } from "../common/internal/Symbols.js";
+import { GraphicTemplate } from "./GraphicTemplate.js";
 
 /** Options for creating a [[GraphicBuilder]] used by functions like [[DecorateContext.createGraphic]] and [[RenderSystem.createGraphic]].
  * @see [[ViewportGraphicBuilderOptions]] to create a graphic builder for a [[Viewport]].

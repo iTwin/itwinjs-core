@@ -7,7 +7,7 @@
  */
 
 import { ColorDef, RgbColor } from "@itwin/core-common";
-import { UniformHandle } from "./UniformHandle";
+import { UniformHandle } from "./UniformHandle.js";
 
 function clamp(norm: number): number {
   return Math.max(0, Math.min(1, norm));

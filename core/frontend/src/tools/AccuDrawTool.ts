@@ -8,14 +8,14 @@
 
 import { BentleyStatus } from "@itwin/core-bentley";
 import { AxisOrder, Geometry, Matrix3d, Point3d, Transform, Vector3d } from "@itwin/core-geometry";
-import { AccuDraw, AccuDrawFlags, AccuDrawHintBuilder, CompassMode, ContextMode, ItemField, KeyinStatus, LockedStates, RotationMode, ThreeAxes } from "../AccuDraw";
-import { TentativeOrAccuSnap } from "../AccuSnap";
-import { ACSDisplayOptions, AuxCoordSystemState } from "../AuxCoordSys";
-import { SnapDetail, SnapHeat } from "../HitDetail";
-import { IModelApp } from "../IModelApp";
-import { DecorateContext } from "../ViewContext";
-import { ScreenViewport, Viewport } from "../Viewport";
-import { BeButtonEvent, CoordinateLockOverrides, CoreTools, EventHandled, InputCollector, Tool } from "./Tool";
+import { AccuDraw, AccuDrawFlags, AccuDrawHintBuilder, CompassMode, ContextMode, ItemField, KeyinStatus, LockedStates, RotationMode, ThreeAxes } from "../AccuDraw.js";
+import { TentativeOrAccuSnap } from "../AccuSnap.js";
+import { ACSDisplayOptions, AuxCoordSystemState } from "../AuxCoordSys.js";
+import { SnapDetail, SnapHeat } from "../HitDetail.js";
+import { IModelApp } from "../IModelApp.js";
+import { DecorateContext } from "../ViewContext.js";
+import { ScreenViewport, Viewport } from "../Viewport.js";
+import { BeButtonEvent, CoordinateLockOverrides, CoreTools, EventHandled, InputCollector, Tool } from "./Tool.js";
 
 // cSpell:ignore dont unlockedz
 

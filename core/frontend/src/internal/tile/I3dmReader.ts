@@ -8,12 +8,12 @@
 import { ByteStream, Id64String, JsonUtils, utf8ToString } from "@itwin/core-bentley";
 import { AxisOrder, Matrix3d, Point3d, Vector3d } from "@itwin/core-geometry";
 import { ElementAlignedBox3d, Feature, FeatureTable, I3dmHeader, TileReadStatus } from "@itwin/core-common";
-import { IModelConnection } from "../../IModelConnection";
-import { InstancedGraphicParams } from "../../common/render/InstancedGraphicParams";
-import { Mesh } from "../../common/internal/render/MeshPrimitives";
-import { RenderSystem } from "../../render/RenderSystem";
-import { BatchedTileIdMap, GltfReader, GltfReaderProps, GltfReaderResult, ShouldAbortReadGltf } from "../../tile/internal";
-import { LayerTileData } from "../render/webgl/MapLayerParams";
+import { IModelConnection } from "../../IModelConnection.js";
+import { InstancedGraphicParams } from "../../common/render/InstancedGraphicParams.js";
+import { Mesh } from "../../common/internal/render/MeshPrimitives.js";
+import { RenderSystem } from "../../render/RenderSystem.js";
+import { BatchedTileIdMap, GltfReader, GltfReaderProps, GltfReaderResult, ShouldAbortReadGltf } from "../../tile/internal.js";
+import { LayerTileData } from "../render/webgl/MapLayerParams.js";
 
 function setTransform(transforms: Float32Array, index: number, rotation: Matrix3d, origin: Point3d): void {
   const i = index * 12;

@@ -10,16 +10,16 @@ import { disposeArray, Id64String } from "@itwin/core-bentley";
 import {
   FeatureAppearanceProvider, HiddenLine, RealityModelDisplaySettings, ViewFlagOverrides, ViewFlags,
 } from "@itwin/core-common";
-import { IModelConnection } from "../IModelConnection";
-import { FeatureSymbology } from "./FeatureSymbology";
-import { RenderClipVolume } from "./RenderClipVolume";
-import { RenderGraphic } from "./RenderGraphic";
-import { RenderMemory } from "./RenderMemory";
-import { RenderPlanarClassifier } from "../internal/render/RenderPlanarClassifier";
-import { RenderTextureDrape } from "../internal/render/RenderTextureDrape";
+import { IModelConnection } from "../IModelConnection.js";
+import { FeatureSymbology } from "./FeatureSymbology.js";
+import { RenderClipVolume } from "./RenderClipVolume.js";
+import { RenderGraphic } from "./RenderGraphic.js";
+import { RenderMemory } from "./RenderMemory.js";
+import { RenderPlanarClassifier } from "../internal/render/RenderPlanarClassifier.js";
+import { RenderTextureDrape } from "../internal/render/RenderTextureDrape.js";
 import { Range3d, Transform } from "@itwin/core-geometry";
-import { AnimationNodeId } from "../common/internal/render/AnimationNodeId";
-import { GraphicBranchFrustum } from "../internal/render/GraphicBranchFrustum";
+import { AnimationNodeId } from "../common/internal/render/AnimationNodeId.js";
+import { GraphicBranchFrustum } from "../internal/render/GraphicBranchFrustum.js";
 
 /**
  * A node in a scene graph. The branch itself is not renderable. Instead it contains a list of RenderGraphics,

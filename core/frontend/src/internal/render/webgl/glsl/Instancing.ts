@@ -7,11 +7,11 @@
  */
 
 import { assert } from "@itwin/core-bentley";
-import { VariableType, VertexShaderBuilder } from "../ShaderBuilder";
-import { UniformHandle } from "../UniformHandle";
-import { Matrix4 } from "../Matrix";
-import { addExtractNthBit } from "./Common";
-import { addOvrFlagConstants } from "./FeatureSymbology";
+import { VariableType, VertexShaderBuilder } from "../ShaderBuilder.js";
+import { UniformHandle } from "../UniformHandle.js";
+import { Matrix4 } from "../Matrix.js";
+import { addExtractNthBit } from "./Common.js";
+import { addOvrFlagConstants } from "./FeatureSymbology.js";
 
 const extractInstanceBit = `
 float extractInstanceBit(uint flag) { return extractNthBit(a_instanceOverrides.r, flag); }

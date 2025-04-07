@@ -9,19 +9,19 @@
 import { assert } from "@itwin/core-bentley";
 import { ClipVector, Matrix3d, Matrix4d, Point3d, Transform, XYZ } from "@itwin/core-geometry";
 import { ClipStyle, HiddenLine, ViewFlags } from "@itwin/core-common";
-import { FeatureSymbology } from "../../../render/FeatureSymbology";
-import { BranchState } from "./BranchState";
-import { BranchStack } from "./BranchStack";
-import { BatchState } from "./BatchState";
-import { CachedGeometry } from "./CachedGeometry";
-import { Branch } from "./Graphic";
-import { UniformHandle } from "./UniformHandle";
-import { Matrix3, Matrix4 } from "./Matrix";
-import { RenderCommands } from "./RenderCommands";
-import { desync, sync, SyncToken } from "./Sync";
-import { Target } from "./Target";
-import { ClipStack } from "./ClipStack";
-import { IModelApp } from "../../../IModelApp";
+import { FeatureSymbology } from "../../../render/FeatureSymbology.js";
+import { BranchState } from "./BranchState.js";
+import { BranchStack } from "./BranchStack.js";
+import { BatchState } from "./BatchState.js";
+import { CachedGeometry } from "./CachedGeometry.js";
+import { Branch } from "./Graphic.js";
+import { UniformHandle } from "./UniformHandle.js";
+import { Matrix3, Matrix4 } from "./Matrix.js";
+import { RenderCommands } from "./RenderCommands.js";
+import { desync, sync, SyncToken } from "./Sync.js";
+import { Target } from "./Target.js";
+import { ClipStack } from "./ClipStack.js";
+import { IModelApp } from "../../../IModelApp.js";
 
 function equalXYZs(a: XYZ | undefined, b: XYZ | undefined): boolean {
   if (a === b)

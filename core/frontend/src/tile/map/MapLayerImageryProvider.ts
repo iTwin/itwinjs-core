@@ -9,13 +9,13 @@
 import { assert, BeEvent } from "@itwin/core-bentley";
 import { Cartographic, ImageMapLayerSettings, ImageSource, ImageSourceFormat } from "@itwin/core-common";
 import { Angle } from "@itwin/core-geometry";
-import { IModelApp } from "../../IModelApp";
-import { NotifyMessageDetails, OutputMessagePriority } from "../../NotificationManager";
-import { ScreenViewport } from "../../Viewport";
-import { appendQueryParams, GeographicTilingScheme, ImageryMapTile, ImageryMapTileTree, MapCartoRectangle, MapFeatureInfoOptions, MapLayerFeatureInfo, MapTilingScheme, QuadId, WebMercatorTilingScheme } from "../internal";
-import { HitDetail } from "../../HitDetail";
-import { headersIncludeAuthMethod, setBasicAuthorization, setRequestTimeout } from "../../request/utils";
-import { DecorateContext } from "../../ViewContext";
+import { IModelApp } from "../../IModelApp.js";
+import { NotifyMessageDetails, OutputMessagePriority } from "../../NotificationManager.js";
+import { ScreenViewport } from "../../Viewport.js";
+import { appendQueryParams, GeographicTilingScheme, ImageryMapTile, ImageryMapTileTree, MapCartoRectangle, MapFeatureInfoOptions, MapLayerFeatureInfo, MapTilingScheme, QuadId, WebMercatorTilingScheme } from "../internal.js";
+import { HitDetail } from "../../HitDetail.js";
+import { headersIncludeAuthMethod, setBasicAuthorization, setRequestTimeout } from "../../request/utils.js";
+import { DecorateContext } from "../../ViewContext.js";
 
 /** @internal */
 const tileImageSize = 256, untiledImageSize = 256;

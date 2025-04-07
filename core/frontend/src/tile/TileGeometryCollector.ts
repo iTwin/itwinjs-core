@@ -7,10 +7,10 @@
  */
 
 import { IndexedPolyface, Range3d, Transform } from "@itwin/core-geometry";
-import { IModelApp } from "../IModelApp";
+import { IModelApp } from "../IModelApp.js";
 import {
   Tile, TileTreeReference, TileUser,
-} from "./internal";
+} from "./internal.js";
 
 /** Enumerates the statuses returned by [[TileGeometryCollector.collectTile]].
  * - "accept": The tile's geometry should be collected.

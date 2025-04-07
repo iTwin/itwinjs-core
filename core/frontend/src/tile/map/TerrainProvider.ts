@@ -6,7 +6,7 @@
  * @module Tiles
  */
 
-import { getCesiumTerrainProvider, TerrainMeshProvider, TerrainMeshProviderOptions } from "../internal";
+import { getCesiumTerrainProvider, TerrainMeshProvider, TerrainMeshProviderOptions } from "../internal.js";
 
 /** Interface adopted by an object that can supply [[TerrainMeshProvider]]s enabling the display of 3d terrain in a [[Viewport]].
  * @see [[TerrainProviderRegistry]] to register or look up a `TerrainProvider` by its name.

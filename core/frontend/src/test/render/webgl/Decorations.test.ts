@@ -5,16 +5,16 @@
 import { afterAll, afterEach, beforeAll, beforeEach, describe, it } from "vitest";
 import { Point3d, Transform, Vector3d } from "@itwin/core-geometry";
 import { ColorDef, EmptyLocalization, RenderMode } from "@itwin/core-common";
-import { IModelConnection } from "../../../IModelConnection";
-import { ScreenViewport } from "../../../Viewport";
-import { IModelApp } from "../../../IModelApp";
-import { SpatialViewState } from "../../../SpatialViewState";
-import { createBlankConnection } from "../../createBlankConnection";
-import { BoxDecorator, SphereDecorator, TestDecorator } from "../../TestDecorators";
-import { expectColors } from "../../ExpectColors";
-import { ViewRect } from "../../../common/ViewRect";
-import { ViewState } from "../../../ViewState";
-import { StandardViewId } from "../../../StandardView";
+import { IModelConnection } from "../../../IModelConnection.js";
+import { ScreenViewport } from "../../../Viewport.js";
+import { IModelApp } from "../../../IModelApp.js";
+import { SpatialViewState } from "../../../SpatialViewState.js";
+import { createBlankConnection } from "../../createBlankConnection.js";
+import { BoxDecorator, SphereDecorator, TestDecorator } from "../../TestDecorators.js";
+import { expectColors } from "../../ExpectColors.js";
+import { ViewRect } from "../../../common/ViewRect.js";
+import { ViewState } from "../../../ViewState.js";
+import { StandardViewId } from "../../../StandardView.js";
 
 describe("Decorations", () => {
   let imodel: IModelConnection;

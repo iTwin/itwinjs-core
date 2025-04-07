@@ -7,7 +7,7 @@
  */
 
 import { SpatialClassifier, SpatialClassifierFlags, SpatialClassifiers, SpatialClassifiersContainer } from "@itwin/core-common";
-import { TileTreeReference } from "./tile/internal";
+import { TileTreeReference } from "./tile/internal.js";
 
 /** A [SpatialClassifier]($common) that uses geoemtry produced at run-time to classify a reality model.
  * The geometry is supplied by a [[TileTreeReference]].

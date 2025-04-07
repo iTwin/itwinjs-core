@@ -7,7 +7,7 @@
  */
 
 import { Cartographic } from "@itwin/core-common";
-import { MapCartoRectangle, MapTilingScheme } from "../../../tile/internal";
+import { MapCartoRectangle, MapTilingScheme } from "../../../tile/internal.js";
 import { SortedArray } from "@itwin/core-bentley";
 
 // portions adapted from Cesium.js Copyright 2011 - 2017 Cesium Contributors

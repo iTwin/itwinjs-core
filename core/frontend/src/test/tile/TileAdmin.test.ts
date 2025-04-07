@@ -4,15 +4,15 @@
 *--------------------------------------------------------------------------------------------*/
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { Point3d, Range3d, Transform, Vector3d } from "@itwin/core-geometry";
-import { IModelConnection } from "../../IModelConnection";
-import { IModelApp } from "../../IModelApp";
-import { SpatialViewState } from "../../SpatialViewState";
-import { ScreenViewport, Viewport } from "../../Viewport";
-import { MockRender } from "../../internal/render/MockRender";
-import { RenderGraphic } from "../../render/RenderGraphic";
-import { RenderMemory } from "../../render/RenderMemory";
-import { GpuMemoryLimit, GpuMemoryLimits, Tile, TileAdmin, TileContent, TiledGraphicsProvider, TileDrawArgs, TileLoadPriority, TileRequest, TileTree, TileTreeOwner, TileTreeReference, TileTreeSupplier } from "../../tile/internal";
-import { createBlankConnection } from "../createBlankConnection";
+import { IModelConnection } from "../../IModelConnection.js";
+import { IModelApp } from "../../IModelApp.js";
+import { SpatialViewState } from "../../SpatialViewState.js";
+import { ScreenViewport, Viewport } from "../../Viewport.js";
+import { MockRender } from "../../internal/render/MockRender.js";
+import { RenderGraphic } from "../../render/RenderGraphic.js";
+import { RenderMemory } from "../../render/RenderMemory.js";
+import { GpuMemoryLimit, GpuMemoryLimits, Tile, TileAdmin, TileContent, TiledGraphicsProvider, TileDrawArgs, TileLoadPriority, TileRequest, TileTree, TileTreeOwner, TileTreeReference, TileTreeSupplier } from "../../tile/internal.js";
+import { createBlankConnection } from "../createBlankConnection.js";
 
 describe("TileAdmin", () => {
   describe("memory limit configuration", () => {

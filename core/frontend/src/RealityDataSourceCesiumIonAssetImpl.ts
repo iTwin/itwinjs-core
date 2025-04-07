@@ -5,11 +5,11 @@
 /** @packageDocumentation
  * @module Tiles
  */
-import { request } from "./request/Request";
+import { request } from "./request/Request.js";
 import { assert, BentleyStatus, GuidString } from "@itwin/core-bentley";
 import { IModelError, RealityData, RealityDataProvider, RealityDataSourceKey, RealityDataSourceProps } from "@itwin/core-common";
-import { CesiumIonAssetProvider, getCesiumAccessTokenAndEndpointUrl, getCesiumAssetUrl, getCesiumOSMBuildingsUrl } from "./tile/internal";
-import { PublisherProductInfo, RealityDataSource, SpatialLocationAndExtents } from "./RealityDataSource";
+import { CesiumIonAssetProvider, getCesiumAccessTokenAndEndpointUrl, getCesiumAssetUrl, getCesiumOSMBuildingsUrl } from "./tile/internal.js";
+import { PublisherProductInfo, RealityDataSource, SpatialLocationAndExtents } from "./RealityDataSource.js";
 
 /** This class provides access to the reality data provider services.
  * It encapsulates access to a reality data weiter it be from local access, http or ProjectWise Context Share.

@@ -9,9 +9,9 @@ import {
   MapLayerFormat,
   MapLayerFormatRegistry,
   MapLayerImageryProvider,
-} from "../../../tile/internal";
+} from "../../../tile/internal.js";
 import { ImageMapLayerProps, ImageMapLayerSettings } from "@itwin/core-common";
-import { IModelConnection } from "../../../IModelConnection";
+import { IModelConnection } from "../../../IModelConnection.js";
 
 class TestMapLayerFormat extends MapLayerFormat {
   public static override formatId = "TestMapLayerFormat";

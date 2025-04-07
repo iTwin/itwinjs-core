@@ -4,10 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { Point3d } from "@itwin/core-geometry";
-import { GraphicType, IModelApp, RenderGraphic } from "../../../core-frontend";
-import { PrimitiveBuilder } from "../../../internal/render/PrimitiveBuilder";
-import { Batch, Branch, GraphicsArray } from "../../../internal/render/webgl/Graphic";
-import { MeshGraphic } from "../../../internal/render/webgl/Mesh";
+import { GraphicType, IModelApp, RenderGraphic } from "../../../core-frontend.js";
+import { PrimitiveBuilder } from "../../../internal/render/PrimitiveBuilder.js";
+import { Batch, Branch, GraphicsArray } from "../../../internal/render/webgl/Graphic.js";
+import { MeshGraphic } from "../../../internal/render/webgl/Mesh.js";
 import { EmptyLocalization } from "@itwin/core-common";
 
 describe("PrimitiveBuilder", () => {

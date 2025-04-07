@@ -11,15 +11,15 @@ import { Point3d, Transform } from "@itwin/core-geometry";
 import {
   BatchType, decodeTileContentDescription, TileReadError, TileReadStatus,
 } from "@itwin/core-common";
-import { IModelApp } from "../IModelApp";
-import { IModelConnection } from "../IModelConnection";
-import { GraphicBranch } from "../render/GraphicBranch";
-import { RenderGraphic } from "../render/RenderGraphic";
-import { RenderSystem } from "../render/RenderSystem";
-import { ImdlModel } from "../common/imdl/ImdlModel";
-import { convertFeatureTable, ImdlParseError, ImdlParserOptions, ImdlTimeline, parseImdlDocument } from "../common/imdl/ParseImdlDocument";
-import { decodeImdlGraphics, IModelTileContent, Tile } from "./internal";
-import { BatchOptions } from "../common/render/BatchOptions";
+import { IModelApp } from "../IModelApp.js";
+import { IModelConnection } from "../IModelConnection.js";
+import { GraphicBranch } from "../render/GraphicBranch.js";
+import { RenderGraphic } from "../render/RenderGraphic.js";
+import { RenderSystem } from "../render/RenderSystem.js";
+import { ImdlModel } from "../common/imdl/ImdlModel.js";
+import { convertFeatureTable, ImdlParseError, ImdlParserOptions, ImdlTimeline, parseImdlDocument } from "../common/imdl/ParseImdlDocument.js";
+import { decodeImdlGraphics, IModelTileContent, Tile } from "./internal.js";
+import { BatchOptions } from "../common/render/BatchOptions.js";
 
 /** @internal */
 export interface ImdlReaderResult extends IModelTileContent {

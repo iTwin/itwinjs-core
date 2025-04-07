@@ -8,12 +8,12 @@
 
 import { BeEvent } from "@itwin/core-bentley";
 import { Point3d, Vector3d } from "@itwin/core-geometry";
-import { Viewport } from "../../../Viewport";
-import { FrameBuffer, FrameBufferStack } from "./FrameBuffer";
-import { FrustumUniformType } from "./FrustumUniforms";
-import { RenderCommands } from "./RenderCommands";
-import { CompositeFlags } from "./RenderFlags";
-import { System } from "./System";
+import { Viewport } from "../../../Viewport.js";
+import { FrameBuffer, FrameBufferStack } from "./FrameBuffer.js";
+import { FrustumUniformType } from "./FrustumUniforms.js";
+import { RenderCommands } from "./RenderCommands.js";
+import { CompositeFlags } from "./RenderFlags.js";
+import { System } from "./System.js";
 
 /** @internal */
 export interface FrameRenderData {

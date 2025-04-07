@@ -5,9 +5,9 @@
 
 import { ImageMapLayerSettings } from "@itwin/core-common";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { ArcGISImageryProvider } from "../../../tile/internal";
-import { indexedArrayFromUrlParams } from "./MapLayerTestUtilities";
-import { headersIncludeAuthMethod } from "../../../request/utils";
+import { ArcGISImageryProvider } from "../../../tile/internal.js";
+import { indexedArrayFromUrlParams } from "./MapLayerTestUtilities.js";
+import { headersIncludeAuthMethod } from "../../../request/utils.js";
 
 const sampleSource = { formatId: "ArcGIS", url: "https://sub.service.com/service", name: "Test" };
 

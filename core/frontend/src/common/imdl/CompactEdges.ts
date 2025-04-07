@@ -7,10 +7,10 @@
  */
 
 import { assert } from "@itwin/core-bentley";
-import { ImdlEdgeVisibility } from "./ImdlSchema";
-import { ImdlModel } from "./ImdlModel";
-import { calculateEdgeTableParams } from "../internal/render/EdgeParams";
-import { VertexIndices } from "../internal/render/VertexIndices";
+import { ImdlEdgeVisibility } from "./ImdlSchema.js";
+import { ImdlModel } from "./ImdlModel.js";
+import { calculateEdgeTableParams } from "../internal/render/EdgeParams.js";
+import { VertexIndices } from "../internal/render/VertexIndices.js";
 
 /** Parameters supplied to [[indexedEdgeParamsFromCompactEdges]].
  * @internal

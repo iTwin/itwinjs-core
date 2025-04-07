@@ -12,21 +12,21 @@ import {
   PointString3d, Ray3d, Transform, Vector2d, Vector3d,
 } from "@itwin/core-geometry";
 import { ColorByName, ColorDef, GeometryStreamProps, LinePixels } from "@itwin/core-common";
-import { TentativeOrAccuSnap } from "./AccuSnap";
-import { ACSDisplayOptions, AuxCoordSystemState } from "./AuxCoordSys";
-import { HitDetail, SnapDetail, SnapHeat, SnapMode } from "./HitDetail";
-import { IModelApp } from "./IModelApp";
-import { GraphicBuilder } from "./render/GraphicBuilder";
-import { StandardViewId } from "./StandardView";
-import { BeButton, BeButtonEvent, CoordinateLockOverrides, InputCollector, InputSource } from "./tools/Tool";
-import { ViewTool } from "./tools/ViewTool";
-import { DecorateContext } from "./ViewContext";
-import { linePlaneIntersect } from "./LinePlaneIntersect";
-import { ScreenViewport, Viewport } from "./Viewport";
-import { ViewState } from "./ViewState";
-import { QuantityType } from "./quantity-formatting/QuantityFormatter";
+import { TentativeOrAccuSnap } from "./AccuSnap.js";
+import { ACSDisplayOptions, AuxCoordSystemState } from "./AuxCoordSys.js";
+import { HitDetail, SnapDetail, SnapHeat, SnapMode } from "./HitDetail.js";
+import { IModelApp } from "./IModelApp.js";
+import { GraphicBuilder } from "./render/GraphicBuilder.js";
+import { StandardViewId } from "./StandardView.js";
+import { BeButton, BeButtonEvent, CoordinateLockOverrides, InputCollector, InputSource } from "./tools/Tool.js";
+import { ViewTool } from "./tools/ViewTool.js";
+import { DecorateContext } from "./ViewContext.js";
+import { linePlaneIntersect } from "./LinePlaneIntersect.js";
+import { ScreenViewport, Viewport } from "./Viewport.js";
+import { ViewState } from "./ViewState.js";
+import { QuantityType } from "./quantity-formatting/QuantityFormatter.js";
 import { FormatterSpec, FormatType, ParseError, Parser, ParserSpec, QuantityParseResult } from "@itwin/core-quantity";
-import { GraphicType } from "./common/render/GraphicType";
+import { GraphicType } from "./common/render/GraphicType.js";
 
 // cspell:ignore dont primitivetools
 

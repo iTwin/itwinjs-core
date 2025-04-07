@@ -8,14 +8,14 @@
 
 import { assert, Uint32ArrayBuilder, Uint8ArrayBuilder } from "@itwin/core-bentley";
 import { ColorDef, RenderFeatureTable, RenderMaterial } from "@itwin/core-common";
-import { calculateEdgeTableParams, EdgeParams, EdgeTable, IndexedEdgeParams } from "./EdgeParams";
-import { computeDimensions, VertexTable } from "./VertexTable";
-import { VertexIndices } from "./VertexIndices";
-import { createSurfaceMaterial, SurfaceMaterial } from "./SurfaceParams";
-import { MaterialParams } from "../../render/MaterialParams";
-import { MeshParams } from "./MeshParams";
-import { PointStringParams } from "./PointStringParams";
-import { PolylineParams, TesselatedPolyline } from "./PolylineParams";
+import { calculateEdgeTableParams, EdgeParams, EdgeTable, IndexedEdgeParams } from "./EdgeParams.js";
+import { computeDimensions, VertexTable } from "./VertexTable.js";
+import { VertexIndices } from "./VertexIndices.js";
+import { createSurfaceMaterial, SurfaceMaterial } from "./SurfaceParams.js";
+import { MaterialParams } from "../../render/MaterialParams.js";
+import { MeshParams } from "./MeshParams.js";
+import { PointStringParams } from "./PointStringParams.js";
+import { PolylineParams, TesselatedPolyline } from "./PolylineParams.js";
 
 /** @internal */
 export interface VertexTableWithIndices {

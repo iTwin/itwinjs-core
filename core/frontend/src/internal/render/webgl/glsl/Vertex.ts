@@ -7,15 +7,15 @@
  */
 
 import { assert } from "@itwin/core-bentley";
-import { DrawParams } from "../DrawCommand";
-import { UniformHandle } from "../UniformHandle";
-import { Matrix4 } from "../Matrix";
-import { Pass, TextureUnit } from "../RenderFlags";
-import { PositionType } from "../TechniqueFlags";
-import { VariableType, VertexShaderBuilder } from "../ShaderBuilder";
-import { decodeUint16, decodeUint24 } from "./Decode";
-import { addInstanceOverrides } from "./Instancing";
-import { addLookupTable } from "./LookupTable";
+import { DrawParams } from "../DrawCommand.js";
+import { UniformHandle } from "../UniformHandle.js";
+import { Matrix4 } from "../Matrix.js";
+import { Pass, TextureUnit } from "../RenderFlags.js";
+import { PositionType } from "../TechniqueFlags.js";
+import { VariableType, VertexShaderBuilder } from "../ShaderBuilder.js";
+import { decodeUint16, decodeUint24 } from "./Decode.js";
+import { addInstanceOverrides } from "./Instancing.js";
+import { addLookupTable } from "./LookupTable.js";
 
 const initializeVertLUTCoords = `
   g_vertexLUTIndex = decodeUInt24(qpos);

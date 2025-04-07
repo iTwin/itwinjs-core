@@ -11,13 +11,13 @@ import { Range3d } from "@itwin/core-geometry";
 import {
   ColorDef, computeChildTileProps, computeChildTileRanges, computeTileChordTolerance, ElementAlignedBox3d, LinePixels, TileFormat, TileProps,
 } from "@itwin/core-common";
-import { IModelApp } from "../../IModelApp";
-import { GraphicBuilder } from "../../render/GraphicBuilder";
-import { RenderSystem } from "../../render/RenderSystem";
+import { IModelApp } from "../../IModelApp.js";
+import { GraphicBuilder } from "../../render/GraphicBuilder.js";
+import { RenderSystem } from "../../render/RenderSystem.js";
 import {
   addRangeGraphic, IModelTileTree, Tile, TileBoundingBoxes, TileContent, TileDrawArgs, TileLoadStatus, TileParams, TileRequest,
   TileRequestChannel, TileTreeLoadStatus, TileVisibility,
-} from "./../../tile/internal";
+} from "./../../tile/internal.js";
 
 /** Parameters used to construct an [[IModelTile]].
  */

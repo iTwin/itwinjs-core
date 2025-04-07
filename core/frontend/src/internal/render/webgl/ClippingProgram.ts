@@ -7,10 +7,10 @@
  */
 
 import { dispose } from "@itwin/core-bentley";
-import { ProgramBuilder } from "./ShaderBuilder";
-import { CompileStatus, ShaderProgram } from "./ShaderProgram";
-import { System } from "./System";
-import { addClipping } from "./glsl/Clipping";
+import { ProgramBuilder } from "./ShaderBuilder.js";
+import { CompileStatus, ShaderProgram } from "./ShaderProgram.js";
+import { System } from "./System.js";
+import { addClipping } from "./glsl/Clipping.js";
 
 function createClippingBuilder(src: ProgramBuilder): ProgramBuilder {
   const builder = src.clone();

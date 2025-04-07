@@ -14,19 +14,19 @@ import {
 } from "@itwin/core-geometry";
 import { ClipStyle, ColorDef, LinePixels, Placement2d } from "@itwin/core-common";
 import { DialogItem, DialogItemValue, DialogPropertySyncItem, PropertyDescription } from "@itwin/appui-abstract";
-import { AccuDrawHintBuilder, ContextRotationId } from "../AccuDraw";
-import { CoordSystem } from "../CoordSystem";
-import { LocateResponse } from "../ElementLocateManager";
-import { HitDetail } from "../HitDetail";
-import { IModelApp } from "../IModelApp";
-import { GraphicBuilder } from "../render/GraphicBuilder";
-import { DecorateContext } from "../ViewContext";
-import { ScreenViewport, Viewport } from "../Viewport";
-import { EditManipulator } from "./EditManipulator";
-import { PrimitiveTool } from "./PrimitiveTool";
-import { BeButtonEvent, CoordinateLockOverrides, CoreTools, EventHandled } from "./Tool";
-import { ToolAssistance, ToolAssistanceImage, ToolAssistanceInputMethod, ToolAssistanceInstruction, ToolAssistanceSection } from "./ToolAssistance";
-import { GraphicType } from "../common/render/GraphicType";
+import { AccuDrawHintBuilder, ContextRotationId } from "../AccuDraw.js";
+import { CoordSystem } from "../CoordSystem.js";
+import { LocateResponse } from "../ElementLocateManager.js";
+import { HitDetail } from "../HitDetail.js";
+import { IModelApp } from "../IModelApp.js";
+import { GraphicBuilder } from "../render/GraphicBuilder.js";
+import { DecorateContext } from "../ViewContext.js";
+import { ScreenViewport, Viewport } from "../Viewport.js";
+import { EditManipulator } from "./EditManipulator.js";
+import { PrimitiveTool } from "./PrimitiveTool.js";
+import { BeButtonEvent, CoordinateLockOverrides, CoreTools, EventHandled } from "./Tool.js";
+import { ToolAssistance, ToolAssistanceImage, ToolAssistanceInputMethod, ToolAssistanceInstruction, ToolAssistanceSection } from "./ToolAssistance.js";
+import { GraphicType } from "../common/render/GraphicType.js";
 
 // cSpell:ignore geti
 

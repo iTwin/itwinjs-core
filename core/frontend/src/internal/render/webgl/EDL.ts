@@ -8,18 +8,18 @@
  */
 
 import { assert, dispose } from "@itwin/core-bentley";
-import { RenderMemory } from "../../../render/RenderMemory";
-import { EDLCalcBasicGeometry, EDLCalcFullGeometry, EDLFilterGeometry, EDLMixGeometry } from "./CachedGeometry";
-import { WebGLDisposable } from "./Disposable";
-import { DepthBuffer, FrameBuffer } from "./FrameBuffer";
-import { GL } from "./GL";
-import { RenderBufferMultiSample } from "./RenderBuffer";
-import { RenderState } from "./RenderState";
-import { collectGeometryStatistics, collectTextureStatistics } from "./SceneCompositor";
-import { getDrawParams } from "./ScratchDrawParams";
-import { System } from "./System";
-import { Target } from "./Target";
-import { TextureHandle } from "./Texture";
+import { RenderMemory } from "../../../render/RenderMemory.js";
+import { EDLCalcBasicGeometry, EDLCalcFullGeometry, EDLFilterGeometry, EDLMixGeometry } from "./CachedGeometry.js";
+import { WebGLDisposable } from "./Disposable.js";
+import { DepthBuffer, FrameBuffer } from "./FrameBuffer.js";
+import { GL } from "./GL.js";
+import { RenderBufferMultiSample } from "./RenderBuffer.js";
+import { RenderState } from "./RenderState.js";
+import { collectGeometryStatistics, collectTextureStatistics } from "./SceneCompositor.js";
+import { getDrawParams } from "./ScratchDrawParams.js";
+import { System } from "./System.js";
+import { Target } from "./Target.js";
+import { TextureHandle } from "./Texture.js";
 
 class Bundle implements WebGLDisposable {
   private constructor(

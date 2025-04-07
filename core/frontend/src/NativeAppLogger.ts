@@ -7,7 +7,7 @@
  */
 
 import { BentleyError, Logger, LoggingMetaData, LogLevel } from "@itwin/core-bentley";
-import { IpcApp } from "./IpcApp";
+import { IpcApp } from "./IpcApp.js";
 
 /**
  * Describe log message

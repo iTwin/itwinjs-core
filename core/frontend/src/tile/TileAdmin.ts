@@ -12,14 +12,14 @@ import {
   BackendError, defaultTileOptions, EdgeOptions, ElementGraphicsRequestProps, getMaximumMajorTileFormatVersion, IModelError, IModelTileRpcInterface,
   IModelTileTreeProps, RenderSchedule, RpcOperation, RpcResponseCacheControl, ServerTimeoutError, TileContentSource, TileVersionInfo,
 } from "@itwin/core-common";
-import { IModelApp } from "../IModelApp";
-import { IpcApp } from "../IpcApp";
-import { IModelConnection } from "../IModelConnection";
-import { Viewport } from "../Viewport";
+import { IModelApp } from "../IModelApp.js";
+import { IpcApp } from "../IpcApp.js";
+import { IModelConnection } from "../IModelConnection.js";
+import { Viewport } from "../Viewport.js";
 import {
   DisclosedTileTreeSet, FetchCloudStorage, IModelTileTree, LRUTileList, ReadonlyTileUserSet, Tile, TileContentDecodingStatistics, TileLoadStatus,
   TileRequest, TileRequestChannels, TileStorage, TileTree, TileTreeOwner, TileUsageMarker, TileUser, UniqueTileUserSets,
-} from "./internal";
+} from "./internal.js";
 import type { FrontendStorage } from "@itwin/object-storage-core/lib/frontend";
 
 /** Details about any tiles not handled by [[TileAdmin]]. At this time, that means OrbitGT point cloud tiles.

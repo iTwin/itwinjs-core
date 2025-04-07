@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { ImageMapLayerSettings } from "@itwin/core-common";
-import { TileUrlImageryProvider } from "../../../tile/internal";
+import { TileUrlImageryProvider } from "../../../tile/internal.js";
 import { describe, expect, it } from "vitest";
 
 describe("TileUrlImageryProvider", () => {

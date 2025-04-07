@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { testBlankViewport } from "./openBlankViewport";
-import { FeatureSymbology, IModelApp, Viewport, ViewState } from "../core-frontend";
+import { testBlankViewport } from "./openBlankViewport.js";
+import { FeatureSymbology, IModelApp, Viewport, ViewState } from "../core-frontend.js";
 import { EmptyLocalization } from "@itwin/core-common";
 
 describe("FeatureSymbology.Overrides", () => {

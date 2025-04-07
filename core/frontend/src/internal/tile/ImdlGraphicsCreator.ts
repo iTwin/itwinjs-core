@@ -11,25 +11,25 @@ import { ClipVector, Point2d, Point3d, Range3d, Transform } from "@itwin/core-ge
 import {
   ColorDef, Gradient, ImageSource, RenderMaterial, RenderMaterialParams, RenderTexture, RenderTextureParams, TextureMapping,
 } from "@itwin/core-common";
-import { AuxChannelTable } from "../../common/internal/render/AuxChannelTable";
-import { createSurfaceMaterial } from "../../common/internal/render/SurfaceParams";
-import { ImdlModel as Imdl } from "../../common/imdl/ImdlModel";
-import { ImdlColorDef, ImdlNamedTexture, ImdlTextureMapping } from "../../common/imdl/ImdlSchema";
-import { convertFeatureTable, edgeParamsFromImdl, toMaterialParams, toVertexTable } from "../../common/imdl/ParseImdlDocument";
-import { VertexIndices } from "../../common/internal/render/VertexIndices";
-import type { RenderGraphic } from "../../render/RenderGraphic";
-import { GraphicBranch } from "../../render/GraphicBranch";
-import type { RenderSystem } from "../../render/RenderSystem";
-import { InstancedGraphicParams } from "../../common/render/InstancedGraphicParams";
-import type { IModelConnection } from "../../IModelConnection";
-import { GraphicDescription } from "../../common/render/GraphicDescriptionBuilder";
-import { GraphicDescriptionImpl, isGraphicDescription } from "../../common/internal/render/GraphicDescriptionBuilderImpl";
-import { GraphicDescriptionContext } from "../../common/render/GraphicDescriptionContext";
-import { _implementationProhibited, _textures } from "../../common/internal/Symbols";
-import { RenderGeometry } from "../../internal/render/RenderGeometry";
-import { createGraphicTemplate, GraphicTemplateBatch, GraphicTemplateBranch } from "../../internal/render/GraphicTemplateImpl";
-import { GraphicTemplate } from "../../render/GraphicTemplate";
-import { Tile } from "../../tile/internal";
+import { AuxChannelTable } from "../../common/internal/render/AuxChannelTable.js";
+import { createSurfaceMaterial } from "../../common/internal/render/SurfaceParams.js";
+import { ImdlModel as Imdl } from "../../common/imdl/ImdlModel.js";
+import { ImdlColorDef, ImdlNamedTexture, ImdlTextureMapping } from "../../common/imdl/ImdlSchema.js";
+import { convertFeatureTable, edgeParamsFromImdl, toMaterialParams, toVertexTable } from "../../common/imdl/ParseImdlDocument.js";
+import { VertexIndices } from "../../common/internal/render/VertexIndices.js";
+import type { RenderGraphic } from "../../render/RenderGraphic.js";
+import { GraphicBranch } from "../../render/GraphicBranch.js";
+import type { RenderSystem } from "../../render/RenderSystem.js";
+import { InstancedGraphicParams } from "../../common/render/InstancedGraphicParams.js";
+import type { IModelConnection } from "../../IModelConnection.js";
+import { GraphicDescription } from "../../common/render/GraphicDescriptionBuilder.js";
+import { GraphicDescriptionImpl, isGraphicDescription } from "../../common/internal/render/GraphicDescriptionBuilderImpl.js";
+import { GraphicDescriptionContext } from "../../common/render/GraphicDescriptionContext.js";
+import { _implementationProhibited, _textures } from "../../common/internal/Symbols.js";
+import { RenderGeometry } from "../../internal/render/RenderGeometry.js";
+import { createGraphicTemplate, GraphicTemplateBatch, GraphicTemplateBranch } from "../../internal/render/GraphicTemplateImpl.js";
+import { GraphicTemplate } from "../../render/GraphicTemplate.js";
+import { Tile } from "../../tile/internal.js";
 
 /** Options provided to [[decodeImdlContent]].
  */

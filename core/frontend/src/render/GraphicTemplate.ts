@@ -6,8 +6,8 @@
  * @module Rendering
  */
 
-import { _batch, _branch, _implementationProhibited, _nodes } from "../common/internal/Symbols";
-import { GraphicTemplateBatch, GraphicTemplateBranch, GraphicTemplateNode } from "../internal/render/GraphicTemplateImpl";
+import { _batch, _branch, _implementationProhibited, _nodes } from "../common/internal/Symbols.js";
+import { GraphicTemplateBatch, GraphicTemplateBranch, GraphicTemplateNode } from "../internal/render/GraphicTemplateImpl.js";
 
 /** A reusable representation of a [[RenderGraphic]].
  * You can use [[RenderSystem.createGraphicFromTemplate]] to produce a [[RenderGraphic]] from a template.

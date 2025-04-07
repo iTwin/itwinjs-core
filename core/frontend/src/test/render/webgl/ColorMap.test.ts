@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { describe, expect, it } from "vitest";
 import { ColorDef, ColorIndex } from "@itwin/core-common";
-import { ColorMap } from "../../../common/internal/render/ColorMap";
+import { ColorMap } from "../../../common/internal/render/ColorMap.js";
 
 describe("ColorMap", () => {
   it("create a new ColorMap", () => {

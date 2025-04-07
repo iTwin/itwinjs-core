@@ -9,11 +9,11 @@
 import { Logger } from "@itwin/core-bentley";
 import { Point2d, Point3d, XYAndZ } from "@itwin/core-geometry";
 import { ImageSource } from "@itwin/core-common";
-import { FrontendLoggerCategory } from "./common/FrontendLoggerCategory";
-import { imageElementFromImageSource, imageElementFromUrl  } from "./common/ImageUtil";
-import { CanvasDecoration } from "./render/CanvasDecoration";
-import { DecorateContext } from "./ViewContext";
-import { ScreenViewport } from "./Viewport";
+import { FrontendLoggerCategory } from "./common/FrontendLoggerCategory.js";
+import { imageElementFromImageSource, imageElementFromUrl  } from "./common/ImageUtil.js";
+import { CanvasDecoration } from "./render/CanvasDecoration.js";
+import { DecorateContext } from "./ViewContext.js";
+import { ScreenViewport } from "./Viewport.js";
 
 /** Sprites are small raster images that are drawn *on top* of Viewports by a ViewDecoration.
  * Their purpose is to draw the user's attention to something of importance.

@@ -8,12 +8,12 @@
 
 import { compareStrings, Guid, GuidString, Id64String } from "@itwin/core-bentley";
 import { ViewFlagOverrides } from "@itwin/core-common";
-import { Tile, TileDrawArgs, TileLoadPriority, TileTree, TileTreeOwner, TileTreeReference, TileTreeSupplier } from "./internal";
-import { RenderGraphic } from "../render/RenderGraphic";
-import { IModelConnection } from "../IModelConnection";
+import { Tile, TileDrawArgs, TileLoadPriority, TileTree, TileTreeOwner, TileTreeReference, TileTreeSupplier } from "./internal.js";
+import { RenderGraphic } from "../render/RenderGraphic.js";
+import { IModelConnection } from "../IModelConnection.js";
 import { Range3d, Transform } from "@itwin/core-geometry";
-import { IModelApp } from "../IModelApp";
-import { HitDetail } from "../HitDetail";
+import { IModelApp } from "../IModelApp.js";
+import { HitDetail } from "../HitDetail.js";
 
 /** Arguments supplied to [[TileTreeReference.createFromRenderGraphic]].
  * @beta

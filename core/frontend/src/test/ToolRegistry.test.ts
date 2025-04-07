@@ -4,10 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { ITwinLocalization } from "@itwin/core-i18n";
-import { FuzzySearchResult, FuzzySearchResults } from "../FuzzySearch";
-import { IModelApp } from "../IModelApp";
-import { MockRender } from "../internal/render/MockRender";
-import { KeyinParseError, Tool } from "../tools/Tool";
+import { FuzzySearchResult, FuzzySearchResults } from "../FuzzySearch.js";
+import { IModelApp } from "../IModelApp.js";
+import { MockRender } from "../internal/render/MockRender.js";
+import { KeyinParseError, Tool } from "../tools/Tool.js";
 
 // these are later set by executing the TestImmediate tool.
 let testVal1: number;
