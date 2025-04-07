@@ -6,8 +6,8 @@
  * @module Curve
  */
 
-import { Geometry } from "../Geometry";
-import { AngleSweep } from "../geometry3d/AngleSweep";
+import { Geometry } from "../Geometry.js";
+import { AngleSweep } from "../geometry3d/AngleSweep.js";
 
 /**
  * Enumeration of condition for extending a curve beyond start or end point.

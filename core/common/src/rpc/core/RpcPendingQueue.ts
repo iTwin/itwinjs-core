@@ -6,8 +6,8 @@
  * @module RpcInterface
  */
 
-import { RpcRequestEvent, RpcRequestStatus } from "./RpcConstants";
-import { RpcRequest } from "./RpcRequest";
+import { RpcRequestEvent, RpcRequestStatus } from "./RpcConstants.js";
+import { RpcRequest } from "./RpcRequest.js";
 
 /* eslint-disable @typescript-eslint/no-deprecated */
 

@@ -8,19 +8,19 @@
 
 import { assert, Id64, Id64String } from "@itwin/core-bentley";
 import { PackedFeature } from "@itwin/core-common";
-import { BranchState } from "./BranchState";
-import { CachedGeometry } from "./CachedGeometry";
-import { ClipVolume } from "./ClipVolume";
-import { isFeatureHilited } from "./FeatureOverrides";
-import { Batch, Branch } from "./Graphic";
-import { UniformHandle } from "./UniformHandle";
-import { Primitive } from "./Primitive";
-import { Pass, RenderOrder, RenderPass } from "./RenderFlags";
-import { ShaderProgramExecutor } from "./ShaderProgram";
-import { System } from "./System";
-import { Hilites, Target } from "./Target";
-import { EnableAtmosphere, IsAnimated, IsClassified, IsInstanced, IsShadowable, IsThematic, IsWiremesh, TechniqueFlags } from "./TechniqueFlags";
-import { TechniqueId } from "./TechniqueId";
+import { BranchState } from "./BranchState.js";
+import { CachedGeometry } from "./CachedGeometry.js";
+import { ClipVolume } from "./ClipVolume.js";
+import { isFeatureHilited } from "./FeatureOverrides.js";
+import { Batch, Branch } from "./Graphic.js";
+import { UniformHandle } from "./UniformHandle.js";
+import { Primitive } from "./Primitive.js";
+import { Pass, RenderOrder, RenderPass } from "./RenderFlags.js";
+import { ShaderProgramExecutor } from "./ShaderProgram.js";
+import { System } from "./System.js";
+import { Hilites, Target } from "./Target.js";
+import { EnableAtmosphere, IsAnimated, IsClassified, IsInstanced, IsShadowable, IsThematic, IsWiremesh, TechniqueFlags } from "./TechniqueFlags.js";
+import { TechniqueId } from "./TechniqueId.js";
 
 /* eslint-disable no-restricted-syntax */
 

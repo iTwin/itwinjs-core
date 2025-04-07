@@ -4,33 +4,33 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { describe, expect, it } from "vitest";
-import { Arc3d } from "../../curve/Arc3d";
-import { GeometryQuery } from "../../curve/GeometryQuery";
-import { LineSegment3d } from "../../curve/LineSegment3d";
-import { LineString3d } from "../../curve/LineString3d";
-import { Geometry } from "../../Geometry";
-import { Angle } from "../../geometry3d/Angle";
-import { AngleSweep } from "../../geometry3d/AngleSweep";
-import { GrowableFloat64Array } from "../../geometry3d/GrowableFloat64Array";
-import { LongitudeLatitudeNumber } from "../../geometry3d/LongitudeLatitudeAltitude";
-import { Matrix3d } from "../../geometry3d/Matrix3d";
-import { Point2d, Vector2d } from "../../geometry3d/Point2dVector2d";
-import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
-import { NumberArray } from "../../geometry3d/PointHelpers";
-import { Range3d } from "../../geometry3d/Range";
-import { Ray3d } from "../../geometry3d/Ray3d";
-import { Transform } from "../../geometry3d/Transform";
-import { Point4d } from "../../geometry4d/Point4d";
-import { BezierCoffs, Order2Bezier, Order3Bezier, Order4Bezier, Order5Bezier, UnivariateBezier } from "../../numerics/BezierPolynomials";
+import { Arc3d } from "../../curve/Arc3d.js";
+import { GeometryQuery } from "../../curve/GeometryQuery.js";
+import { LineSegment3d } from "../../curve/LineSegment3d.js";
+import { LineString3d } from "../../curve/LineString3d.js";
+import { Geometry } from "../../Geometry.js";
+import { Angle } from "../../geometry3d/Angle.js";
+import { AngleSweep } from "../../geometry3d/AngleSweep.js";
+import { GrowableFloat64Array } from "../../geometry3d/GrowableFloat64Array.js";
+import { LongitudeLatitudeNumber } from "../../geometry3d/LongitudeLatitudeAltitude.js";
+import { Matrix3d } from "../../geometry3d/Matrix3d.js";
+import { Point2d, Vector2d } from "../../geometry3d/Point2dVector2d.js";
+import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d.js";
+import { NumberArray } from "../../geometry3d/PointHelpers.js";
+import { Range3d } from "../../geometry3d/Range.js";
+import { Ray3d } from "../../geometry3d/Ray3d.js";
+import { Transform } from "../../geometry3d/Transform.js";
+import { Point4d } from "../../geometry4d/Point4d.js";
+import { BezierCoffs, Order2Bezier, Order3Bezier, Order4Bezier, Order5Bezier, UnivariateBezier } from "../../numerics/BezierPolynomials.js";
 import {
   AnalyticRoots, Degree2PowerPolynomial, Degree3PowerPolynomial, Degree4PowerPolynomial, ImplicitLineXY, SphereImplicit, TorusImplicit,
   TrigPolynomial,
-} from "../../numerics/Polynomials";
-import { Quadrature } from "../../numerics/Quadrature";
-import { SmallSystem } from "../../numerics/SmallSystem";
-import { Sphere } from "../../solid/Sphere";
-import { Checker } from "../Checker";
-import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
+} from "../../numerics/Polynomials.js";
+import { Quadrature } from "../../numerics/Quadrature.js";
+import { SmallSystem } from "../../numerics/SmallSystem.js";
+import { Sphere } from "../../solid/Sphere.js";
+import { Checker } from "../Checker.js";
+import { GeometryCoreTestIO } from "../GeometryCoreTestIO.js";
 
 function testBezier(ck: Checker, bezier: BezierCoffs) {
   for (const f of [0, 0.25, 0.75]) {

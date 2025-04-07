@@ -9,11 +9,11 @@
 import { assert, compareNumbers, compareStrings, SortedArray } from "@itwin/core-bentley";
 import {
   DrawCommand, DrawCommands, PopBatchCommand, PopBranchCommand, PopCommand, PushBatchCommand, PushBranchCommand, PushCommand,
-} from "./DrawCommand";
-import { Layer, LayerContainer } from "./Layer";
-import { RenderCommands } from "./RenderCommands";
-import { RenderPass } from "./RenderFlags";
-import { Target } from "./Target";
+} from "./DrawCommand.js";
+import { Layer, LayerContainer } from "./Layer.js";
+import { RenderCommands } from "./RenderCommands.js";
+import { RenderPass } from "./RenderFlags.js";
+import { Target } from "./Target.js";
 
 type OpCode = "Idle" | "Container" | "Branch" | "Batch" | "Layer";
 

@@ -6,17 +6,17 @@
  * @module Tiles
  */
 import { Cartographic, ImageMapLayerSettings, ImageSource, ServerError } from "@itwin/core-common";
-import { IModelApp } from "../../../../IModelApp";
+import { IModelApp } from "../../../../IModelApp.js";
 import {
   ArcGisErrorCode, ArcGisGeometryReaderJSON, ArcGISImageryProvider, ArcGISTileMap, ArcGisUtilities,
   FeatureGraphicsRenderer, ImageryMapTileTree, MapCartoRectangle, MapFeatureInfoOptions, MapLayerFeature,
   MapLayerFeatureInfo, MapLayerImageryProviderStatus, MapSubLayerFeatureInfo, QuadId,
-} from "../../../../tile/internal";
+} from "../../../../tile/internal.js";
 import { PropertyValueFormat, StandardTypeNames } from "@itwin/appui-abstract";
 import { Point2d, Range2d, Range2dProps, XYProps } from "@itwin/core-geometry";
 import { IModelStatus, Logger } from "@itwin/core-bentley";
-import { HitDetail } from "../../../../HitDetail";
-import { ScreenViewport } from "../../../../Viewport";
+import { HitDetail } from "../../../../HitDetail.js";
+import { ScreenViewport } from "../../../../Viewport.js";
 
 
 const loggerCategory =  "MapLayerImageryProvider.ArcGISMapLayerImageryProvider";

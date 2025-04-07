@@ -11,22 +11,22 @@ import {
   AxisAlignedBox3d, Frustum, HydrateViewStateRequestProps, HydrateViewStateResponseProps, QueryRowFormat, SectionDrawingViewProps, ViewDefinition2dProps, ViewFlagOverrides, ViewStateProps,
 } from "@itwin/core-common";
 import { Constant, Range3d, Transform, TransformProps, Vector3d } from "@itwin/core-geometry";
-import { CategorySelectorState } from "./CategorySelectorState";
-import { CoordSystem } from "./CoordSystem";
-import { DisplayStyle2dState } from "./DisplayStyleState";
-import { Frustum2d } from "./Frustum2d";
-import { IModelApp } from "./IModelApp";
-import { IModelConnection } from "./IModelConnection";
-import { FeatureSymbology } from "./render/FeatureSymbology";
-import { GraphicBranch, GraphicBranchOptions } from "./render/GraphicBranch";
-import { MockRender } from "./internal/render/MockRender";
-import { RenderGraphic } from "./render/RenderGraphic";
-import { Scene } from "./render/Scene";
-import { DisclosedTileTreeSet, TileGraphicType } from "./tile/internal";
-import { SceneContext } from "./ViewContext";
-import { OffScreenViewport, Viewport } from "./Viewport";
-import { ViewRect } from "./common/ViewRect";
-import { AttachToViewportArgs, ComputeDisplayTransformArgs, ExtentLimits, GetAttachmentViewportArgs, ViewState2d, ViewState3d } from "./ViewState";
+import { CategorySelectorState } from "./CategorySelectorState.js";
+import { CoordSystem } from "./CoordSystem.js";
+import { DisplayStyle2dState } from "./DisplayStyleState.js";
+import { Frustum2d } from "./Frustum2d.js";
+import { IModelApp } from "./IModelApp.js";
+import { IModelConnection } from "./IModelConnection.js";
+import { FeatureSymbology } from "./render/FeatureSymbology.js";
+import { GraphicBranch, GraphicBranchOptions } from "./render/GraphicBranch.js";
+import { MockRender } from "./internal/render/MockRender.js";
+import { RenderGraphic } from "./render/RenderGraphic.js";
+import { Scene } from "./render/Scene.js";
+import { DisclosedTileTreeSet, TileGraphicType } from "./tile/internal.js";
+import { SceneContext } from "./ViewContext.js";
+import { OffScreenViewport, Viewport } from "./Viewport.js";
+import { ViewRect } from "./common/ViewRect.js";
+import { AttachToViewportArgs, ComputeDisplayTransformArgs, ExtentLimits, GetAttachmentViewportArgs, ViewState2d, ViewState3d } from "./ViewState.js";
 
 /** Strictly for testing.
  * @internal

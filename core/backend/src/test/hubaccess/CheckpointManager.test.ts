@@ -3,15 +3,23 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert } from "chai";
-import * as path from "path";
+import { afterAll, afterEach, assert, beforeAll, describe, it } from "vitest";
+import path from "node:path";
 import * as sinon from "sinon";
 import { Guid } from "@itwin/core-bentley";
-import { CheckpointManager, V2CheckpointManager } from "../../CheckpointManager";
-import { IModelJsFs } from "../../IModelJsFs";
-import { _hubAccess, _nativeDb } from "../../internal/Symbols";
+import { CheckpointManager, V2CheckpointManager } from "../../CheckpointManager.js";
+import { IModelJsFs } from "../../IModelJsFs.js";
+import { _hubAccess, _nativeDb } from "../../internal/Symbols.js";
+import { TestUtils } from "../TestUtils.js";
 
 describe("Checkpoint Manager", () => {
+  beforeAll(async () => {
+    await TestUtils.startBackend();
+  });
+
+  afterAll(async () => {
+    await TestUtils.shutdownBackend();
+  });
 
   afterEach(() => {
     sinon.restore();

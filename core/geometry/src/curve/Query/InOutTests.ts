@@ -7,16 +7,16 @@
  * @module Curve
  */
 
-import { Geometry } from "../../Geometry";
-import { Angle } from "../../geometry3d/Angle";
-import { Plane3dByOriginAndUnitNormal } from "../../geometry3d/Plane3dByOriginAndUnitNormal";
-import { Point3d } from "../../geometry3d/Point3dVector3d";
-import { AnyRegion } from "../CurveTypes";
-import { CurveIntervalRole, CurveLocationDetail } from "../CurveLocationDetail";
-import { CurvePrimitive } from "../CurvePrimitive";
-import { Loop } from "../Loop";
-import { ParityRegion } from "../ParityRegion";
-import { UnionRegion } from "../UnionRegion";
+import { Geometry } from "../../Geometry.js";
+import { Angle } from "../../geometry3d/Angle.js";
+import { Plane3dByOriginAndUnitNormal } from "../../geometry3d/Plane3dByOriginAndUnitNormal.js";
+import { Point3d } from "../../geometry3d/Point3dVector3d.js";
+import { AnyRegion } from "../CurveTypes.js";
+import { CurveIntervalRole, CurveLocationDetail } from "../CurveLocationDetail.js";
+import { CurvePrimitive } from "../CurvePrimitive.js";
+import { Loop } from "../Loop.js";
+import { ParityRegion } from "../ParityRegion.js";
+import { UnionRegion } from "../UnionRegion.js";
 
 /**
  * Context for testing containment in Loop, ParityRegion and UnionRegion.

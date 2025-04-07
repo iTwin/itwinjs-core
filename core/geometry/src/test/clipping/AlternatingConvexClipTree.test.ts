@@ -4,29 +4,29 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { describe, expect, it } from "vitest";
-import { BSplineCurve3d } from "../../bspline/BSplineCurve";
-import { AlternatingCCTreeNode } from "../../clipping/AlternatingConvexClipTree";
-import { Arc3d } from "../../curve/Arc3d";
-import { CurveLocationDetailPair } from "../../curve/CurveLocationDetail";
-import { CurvePrimitive } from "../../curve/CurvePrimitive";
-import { GeometryQuery } from "../../curve/GeometryQuery";
-import { LineSegment3d } from "../../curve/LineSegment3d";
-import { LineString3d } from "../../curve/LineString3d";
-import { Geometry } from "../../Geometry";
-import { Angle } from "../../geometry3d/Angle";
-import { AngleSweep } from "../../geometry3d/AngleSweep";
-import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray";
-import { Matrix3d } from "../../geometry3d/Matrix3d";
-import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
-import { Point3dArray } from "../../geometry3d/PointHelpers";
-import { PolygonOps } from "../../geometry3d/PolygonOps";
-import { Range3d } from "../../geometry3d/Range";
-import { GrowableXYZArrayCache } from "../../geometry3d/ReusableObjectCache";
-import { Transform } from "../../geometry3d/Transform";
-import { UsageSums } from "../../numerics/UsageSums";
-import { Sample } from "../../serialization/GeometrySamples";
-import { Checker, SaveAndRestoreCheckTransform } from "../Checker";
-import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
+import { BSplineCurve3d } from "../../bspline/BSplineCurve.js";
+import { AlternatingCCTreeNode } from "../../clipping/AlternatingConvexClipTree.js";
+import { Arc3d } from "../../curve/Arc3d.js";
+import { CurveLocationDetailPair } from "../../curve/CurveLocationDetail.js";
+import { CurvePrimitive } from "../../curve/CurvePrimitive.js";
+import { GeometryQuery } from "../../curve/GeometryQuery.js";
+import { LineSegment3d } from "../../curve/LineSegment3d.js";
+import { LineString3d } from "../../curve/LineString3d.js";
+import { Geometry } from "../../Geometry.js";
+import { Angle } from "../../geometry3d/Angle.js";
+import { AngleSweep } from "../../geometry3d/AngleSweep.js";
+import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray.js";
+import { Matrix3d } from "../../geometry3d/Matrix3d.js";
+import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d.js";
+import { Point3dArray } from "../../geometry3d/PointHelpers.js";
+import { PolygonOps } from "../../geometry3d/PolygonOps.js";
+import { Range3d } from "../../geometry3d/Range.js";
+import { GrowableXYZArrayCache } from "../../geometry3d/ReusableObjectCache.js";
+import { Transform } from "../../geometry3d/Transform.js";
+import { UsageSums } from "../../numerics/UsageSums.js";
+import { Sample } from "../../serialization/GeometrySamples.js";
+import { Checker, SaveAndRestoreCheckTransform } from "../Checker.js";
+import { GeometryCoreTestIO } from "../GeometryCoreTestIO.js";
 
 // Globals
 let clipEvalCount = 0;

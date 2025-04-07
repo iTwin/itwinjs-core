@@ -6,8 +6,8 @@
  * @module Curve
  */
 
-import { NewtonEvaluatorRtoR } from "../../numerics/Newton";
-import { CurvePrimitive } from "../CurvePrimitive";
+import { NewtonEvaluatorRtoR } from "../../numerics/Newton.js";
+import { CurvePrimitive } from "../CurvePrimitive.js";
 
 /** Intermediate class for managing the parentCurve announcements from an IStrokeHandler.
  * @internal

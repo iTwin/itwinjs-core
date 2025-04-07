@@ -9,21 +9,21 @@
 import { CompressedId64Set, Id64, Id64Arg, Id64Array, Id64String, OrderedId64Array } from "@itwin/core-bentley";
 import { ColorDef, QueryRowFormat } from "@itwin/core-common";
 import { Point2d, Point3d, Range2d } from "@itwin/core-geometry";
-import { AccuDrawHintBuilder } from "../AccuDraw";
-import { LocateFilterStatus, LocateResponse } from "../ElementLocateManager";
-import { HitDetail } from "../HitDetail";
-import { IModelApp } from "../IModelApp";
-import { IModelConnection } from "../IModelConnection";
-import { NotifyMessageDetails, OutputMessagePriority } from "../NotificationManager";
-import { Pixel } from "../render/Pixel";
-import { SelectionSet } from "../SelectionSet";
-import { DecorateContext } from "../ViewContext";
-import { Viewport } from "../Viewport";
-import { ViewRect } from "../common/ViewRect";
-import { PrimitiveTool } from "./PrimitiveTool";
-import { SelectionMethod } from "./SelectTool";
-import { BeButton, BeButtonEvent, BeModifierKeys, CoreTools, EventHandled } from "./Tool";
-import { ToolAssistance, ToolAssistanceImage, ToolAssistanceInputMethod, ToolAssistanceInstruction, ToolAssistanceSection } from "./ToolAssistance";
+import { AccuDrawHintBuilder } from "../AccuDraw.js";
+import { LocateFilterStatus, LocateResponse } from "../ElementLocateManager.js";
+import { HitDetail } from "../HitDetail.js";
+import { IModelApp } from "../IModelApp.js";
+import { IModelConnection } from "../IModelConnection.js";
+import { NotifyMessageDetails, OutputMessagePriority } from "../NotificationManager.js";
+import { Pixel } from "../render/Pixel.js";
+import { SelectionSet } from "../SelectionSet.js";
+import { DecorateContext } from "../ViewContext.js";
+import { Viewport } from "../Viewport.js";
+import { ViewRect } from "../common/ViewRect.js";
+import { PrimitiveTool } from "./PrimitiveTool.js";
+import { SelectionMethod } from "./SelectTool.js";
+import { BeButton, BeButtonEvent, BeModifierKeys, CoreTools, EventHandled } from "./Tool.js";
+import { ToolAssistance, ToolAssistanceImage, ToolAssistanceInputMethod, ToolAssistanceInstruction, ToolAssistanceSection } from "./ToolAssistance.js";
 
 /** Identifies the source of the elements in the agenda.
  * @public

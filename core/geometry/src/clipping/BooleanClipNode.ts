@@ -7,15 +7,15 @@
  * @module CartesianGeometry
  */
 
-import { Arc3d } from "../curve/Arc3d";
-import { AnnounceNumberNumber, AnnounceNumberNumberCurvePrimitive, CurvePrimitive } from "../curve/CurvePrimitive";
-import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
-import { IndexedXYZCollection } from "../geometry3d/IndexedXYZCollection";
-import { Point3d } from "../geometry3d/Point3dVector3d";
-import { Range1d } from "../geometry3d/Range";
-import { GrowableXYZArrayCache } from "../geometry3d/ReusableObjectCache";
-import { Range1dArray } from "../numerics/Range1dArray";
-import { Clipper, ClipStepAction, ClipUtilities, PolygonClipper } from "./ClipUtils";
+import { Arc3d } from "../curve/Arc3d.js";
+import { AnnounceNumberNumber, AnnounceNumberNumberCurvePrimitive, CurvePrimitive } from "../curve/CurvePrimitive.js";
+import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray.js";
+import { IndexedXYZCollection } from "../geometry3d/IndexedXYZCollection.js";
+import { Point3d } from "../geometry3d/Point3dVector3d.js";
+import { Range1d } from "../geometry3d/Range.js";
+import { GrowableXYZArrayCache } from "../geometry3d/ReusableObjectCache.js";
+import { Range1dArray } from "../numerics/Range1dArray.js";
+import { Clipper, ClipStepAction, ClipUtilities, PolygonClipper } from "./ClipUtils.js";
 
 /** BooleanClipNode is an abstract base class for boolean actions by an array of clippers.
  * * Derived class must implement

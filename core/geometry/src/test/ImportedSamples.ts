@@ -2,8 +2,8 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { IndexedPolyface } from "../polyface/Polyface";
-import { GeometryCoreTestIO } from "./GeometryCoreTestIO";
+import { IndexedPolyface } from "../polyface/Polyface.js";
+import { GeometryCoreTestIO } from "./GeometryCoreTestIO.js";
 
 // cspell:word rhombicosidodecahedron
 

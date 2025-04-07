@@ -6,7 +6,7 @@
  * @module Rendering
  */
 
-import { ColorDef } from "./ColorDef";
+import { ColorDef } from "./ColorDef.js";
 
 /** Contains types related to display of hilited elements within a [[Viewport]].
  * @public

@@ -9,8 +9,8 @@
 import {
   assert, Id64, Id64String, UintArray,
 } from "@itwin/core-bentley";
-import { BatchType, ComputeNodeId, Feature, FeatureTable, ModelFeature, PackedFeature, PackedFeatureWithIndex, RenderFeatureTable } from "../FeatureTable";
-import { GeometryClass } from "../GeometryParams";
+import { BatchType, ComputeNodeId, Feature, FeatureTable, ModelFeature, PackedFeature, PackedFeatureWithIndex, RenderFeatureTable } from "../FeatureTable.js";
+import { GeometryClass } from "../GeometryParams.js";
 
 /**
  * An immutable, packed representation of a [[FeatureTable]]. The features are packed into a single array of 32-bit integer values,

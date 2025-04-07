@@ -7,12 +7,12 @@
  */
 import { BentleyError, GuidString, Logger, LoggingMetaData, RealityDataStatus } from "@itwin/core-bentley";
 import { Cartographic, EcefLocation, OrbitGtBlobProps, RealityData, RealityDataFormat, RealityDataProvider, RealityDataSourceKey } from "@itwin/core-common";
-import { FrontendLoggerCategory } from "./common/FrontendLoggerCategory";
-import { CesiumIonAssetProvider, ContextShareProvider, getCesiumAssetUrl } from "./tile/internal";
-import { RealityDataSourceTilesetUrlImpl } from "./RealityDataSourceTilesetUrlImpl";
-import { RealityDataSourceContextShareImpl } from "./RealityDataSourceContextShareImpl";
-import { RealityDataSourceCesiumIonAssetImpl } from "./RealityDataSourceCesiumIonAssetImpl";
-import { IModelApp } from "./IModelApp";
+import { FrontendLoggerCategory } from "./common/FrontendLoggerCategory.js";
+import { CesiumIonAssetProvider, ContextShareProvider, getCesiumAssetUrl } from "./tile/internal.js";
+import { RealityDataSourceTilesetUrlImpl } from "./RealityDataSourceTilesetUrlImpl.js";
+import { RealityDataSourceContextShareImpl } from "./RealityDataSourceContextShareImpl.js";
+import { RealityDataSourceCesiumIonAssetImpl } from "./RealityDataSourceCesiumIonAssetImpl.js";
+import { IModelApp } from "./IModelApp.js";
 import { Range3d } from "@itwin/core-geometry";
 
 const loggerCategory: string = FrontendLoggerCategory.RealityData;

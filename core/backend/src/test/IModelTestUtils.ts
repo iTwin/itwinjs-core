@@ -4,10 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { Buffer } from "node:buffer";
-import * as chai from "chai";
-import { assert, expect } from "chai";
-import * as chaiAsPromised from "chai-as-promised";
-import * as path from "path";
+import { assert, expect } from "vitest";
+import path from "node:path";
 import { AccessToken, BeEvent, DbResult, Guid, GuidString, Id64, Id64String, IModelStatus, omit, OpenMode } from "@itwin/core-bentley";
 import {
   AuxCoordSystem2dProps, Base64EncodedString, ChangesetIdWithIndex, Code, CodeProps, CodeScopeSpec, CodeSpec, ColorDef, ElementAspectProps,
@@ -17,27 +15,25 @@ import {
   RpcPendingResponse, SkyBoxImageType, SubCategoryAppearance, SubCategoryOverride, SyncMode,
 } from "@itwin/core-common";
 import { Box, Cone, LineString3d, Point2d, Point3d, Range2d, Range3d, StandardViewIndex, Vector3d, YawPitchRollAngles } from "@itwin/core-geometry";
-import { RequestNewBriefcaseArg } from "../BriefcaseManager";
-import { CheckpointProps, V2CheckpointManager } from "../CheckpointManager";
-import { ClassRegistry } from "../ClassRegistry";
+import { RequestNewBriefcaseArg } from "../BriefcaseManager.js";
+import { CheckpointProps, V2CheckpointManager } from "../CheckpointManager.js";
+import { ClassRegistry } from "../ClassRegistry.js";
 import {
   _nativeDb, AuxCoordSystem2d, BriefcaseDb, BriefcaseLocalValue, BriefcaseManager, CategorySelector, ChannelControl, DisplayStyle2d, DisplayStyle3d, DrawingCategory,
   DrawingViewDefinition, ECSqlStatement, Element, ElementAspect, ElementOwnsChildElements, ElementOwnsMultiAspects, ElementOwnsUniqueAspect,
   ElementUniqueAspect, ExternalSource, ExternalSourceIsInRepository, FunctionalModel, FunctionalSchema, GroupModel, IModelDb, IModelHost,
   IModelJsFs, InformationPartitionElement, Model, ModelSelector, OrthographicViewDefinition, PhysicalModel, PhysicalObject,
   PhysicalPartition, RenderMaterialElement, SnapshotDb, SpatialCategory, SubCategory, SubjectOwnsPartitionElements, Texture, ViewDefinition,
-} from "../core-backend";
-import { DefinitionPartition, Drawing, DrawingGraphic, GeometryPart, LinkElement, PhysicalElement, RepositoryLink, Subject } from "../Element";
-import { DefinitionModel, DocumentListModel, DrawingModel, InformationRecordModel, SpatialLocationModel } from "../Model";
-import { DrawingGraphicRepresentsElement, ElementDrivesElement, Relationship, RelationshipProps } from "../Relationship";
-import { DownloadAndOpenArgs, RpcBriefcaseUtility } from "../rpc-impl/RpcBriefcaseUtility";
-import { Schema, Schemas } from "../Schema";
-import { HubMock } from "../HubMock";
-import { KnownTestLocations } from "./KnownTestLocations";
-import { BackendHubAccess } from "../BackendHubAccess";
-import { _getCheckpointDb, _hubAccess } from "../internal/Symbols";
-
-chai.use(chaiAsPromised);
+} from "../core-backend.js";
+import { DefinitionPartition, Drawing, DrawingGraphic, GeometryPart, LinkElement, PhysicalElement, RepositoryLink, Subject } from "../Element.js";
+import { DefinitionModel, DocumentListModel, DrawingModel, InformationRecordModel, SpatialLocationModel } from "../Model.js";
+import { DrawingGraphicRepresentsElement, ElementDrivesElement, Relationship, RelationshipProps } from "../Relationship.js";
+import { DownloadAndOpenArgs, RpcBriefcaseUtility } from "../rpc-impl/RpcBriefcaseUtility.js";
+import { Schema, Schemas } from "../Schema.js";
+import { HubMock } from "../HubMock.js";
+import { KnownTestLocations } from "./KnownTestLocations.js";
+import { BackendHubAccess } from "../BackendHubAccess.js";
+import { _getCheckpointDb, _hubAccess } from "../internal/Symbols.js";
 
 /* eslint-disable @typescript-eslint/explicit-member-accessibility */
 
@@ -948,7 +944,7 @@ export class ExtensiveTestScenario {
     } as const;
     sourceDb.elements.insertAspect(aspectProps);
     const sourceUniqueAspect: ElementUniqueAspect = sourceDb.elements.getAspects(physicalObjectId1, "ExtensiveTestScenario:SourceUniqueAspect")[0];
-    expect(sourceUniqueAspect).to.deep.subsetEqual(omit(aspectProps, ["commonBinary"]), { normalizeClassNameProps: true });
+    expect(sourceUniqueAspect).subsetEqual(omit(aspectProps, ["commonBinary"]), { normalizeClassNameProps: true });
     sourceDb.elements.insertAspect({
       classFullName: "ExtensiveTestScenario:SourceMultiAspect",
       element: new ElementOwnsMultiAspects(physicalObjectId1),
@@ -1184,19 +1180,19 @@ export class ExtensiveTestScenario {
     const uniqueAspects: ElementAspect[] = iModelDb.elements.getAspects(physicalObjectId1, uniqueAspectClassFullName);
     assert.equal(uniqueAspects.length, 1);
     const uniqueAspect = uniqueAspects[0].asAny;
-    expect(uniqueAspect).to.deep.subsetEqual({
+    expect(uniqueAspect).subsetEqual({
       commonDouble: 1.1,
       commonString: "Unique-Updated",
       commonLong: physicalObjectId1,
     });
     if (testTargetSchema) {
-      expect(uniqueAspect).to.deep.subsetEqual({
+      expect(uniqueAspect).subsetEqual({
         targetDouble: 11.1,
         targetString: "UniqueAspect-Updated",
         targetLong: physicalObjectId1,
       });
     } else {
-      expect(uniqueAspect).to.deep.subsetEqual({
+      expect(uniqueAspect).subsetEqual({
         sourceDouble: 11.1,
         sourceString: "UniqueAspect-Updated",
         sourceLong: physicalObjectId1,

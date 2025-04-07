@@ -4,12 +4,12 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { IModelApp } from "../IModelApp";
+import { IModelApp } from "../IModelApp.js";
 import { Cartographic, EmptyLocalization, GlobeMode } from "@itwin/core-common";
-import { BlankConnection, IModelConnection } from "../IModelConnection";
+import { BlankConnection, IModelConnection } from "../IModelConnection.js";
 import { Point3d, Range3d, XYAndZ } from "@itwin/core-geometry";
-import { BackgroundMapGeometry } from "../BackgroundMapGeometry";
-import { createBlankConnection } from "./createBlankConnection";
+import { BackgroundMapGeometry } from "../BackgroundMapGeometry.js";
+import { createBlankConnection } from "./createBlankConnection.js";
 import { Guid } from "@itwin/core-bentley";
 
 describe("BackgroundMapGeometry", () => {

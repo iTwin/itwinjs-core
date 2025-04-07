@@ -4,11 +4,11 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { MapLayerSource, MapLayerSourceStatus } from "../../../tile/internal";
-import { ArcGisGetServiceJsonArgs, ArcGisUtilities } from "../../../internal/tile/map/ArcGisUtilities";
-import { ArcGISMapLayerDataset } from "./ArcGISMapLayerDataset";
-import { wsg84Lods256px, wsg84Lods512px } from "./Wgs84Lods";
-import { indexedArrayFromUrlParams } from "./MapLayerTestUtilities";
+import { MapLayerSource, MapLayerSourceStatus } from "../../../tile/internal.js";
+import { ArcGisGetServiceJsonArgs, ArcGisUtilities } from "../../../internal/tile/map/ArcGisUtilities.js";
+import { ArcGISMapLayerDataset } from "./ArcGISMapLayerDataset.js";
+import { wsg84Lods256px, wsg84Lods512px } from "./Wgs84Lods.js";
+import { indexedArrayFromUrlParams } from "./MapLayerTestUtilities.js";
 
 function stubGetServiceJson(json: any) {
   return vi.spyOn(ArcGisUtilities, "getServiceJson").mockImplementation(async function _(_args: ArcGisGetServiceJsonArgs) {

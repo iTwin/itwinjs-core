@@ -7,9 +7,9 @@
  */
 
 import { Id64String } from "@itwin/core-bentley";
-import { RenderClipVolume } from "../../render/RenderClipVolume";
+import { RenderClipVolume } from "../../render/RenderClipVolume.js";
 import { RenderSchedule } from "@itwin/core-common";
-import { IModelApp } from "../../IModelApp";
+import { IModelApp } from "../../IModelApp.js";
 
 /** Clip/Transform for a branch that are varied over time. */
 export interface AnimationBranchState {

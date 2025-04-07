@@ -4,12 +4,12 @@
 *--------------------------------------------------------------------------------------------*/
 import { Atmosphere } from "@itwin/core-common";
 import { Matrix3d, Point3d, Transform } from "@itwin/core-geometry";
-import { RenderPlanEllipsoid } from "../RenderPlan";
-import { WebGLDisposable } from "./Disposable";
-import { Matrix3, Matrix4 } from "./Matrix";
-import { desync, sync, SyncTarget } from "./Sync";
-import { Target } from "./Target";
-import { UniformHandle } from "./UniformHandle";
+import { RenderPlanEllipsoid } from "../RenderPlan.js";
+import { WebGLDisposable } from "./Disposable.js";
+import { Matrix3, Matrix4 } from "./Matrix.js";
+import { desync, sync, SyncTarget } from "./Sync.js";
+import { Target } from "./Target.js";
+import { UniformHandle } from "./UniformHandle.js";
 
 export const MAX_SAMPLE_POINTS = 40; // Maximum number of sample points to be used for the in-scattering and out-scattering computations.
 

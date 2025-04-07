@@ -7,15 +7,15 @@
  * @module Curve
  */
 
-import { BeJSONFunctions, Geometry } from "../Geometry";
-import { GeometryHandler } from "../geometry3d/GeometryHandler";
-import { Plane3dByOriginAndUnitNormal } from "../geometry3d/Plane3dByOriginAndUnitNormal";
-import { Point3d } from "../geometry3d/Point3dVector3d";
-import { Point3dArray } from "../geometry3d/PointHelpers";
-import { Range3d } from "../geometry3d/Range";
-import { Transform } from "../geometry3d/Transform";
-import { XYZProps } from "../geometry3d/XYZProps";
-import { GeometryQuery } from "./GeometryQuery";
+import { BeJSONFunctions, Geometry } from "../Geometry.js";
+import { GeometryHandler } from "../geometry3d/GeometryHandler.js";
+import { Plane3dByOriginAndUnitNormal } from "../geometry3d/Plane3dByOriginAndUnitNormal.js";
+import { Point3d } from "../geometry3d/Point3dVector3d.js";
+import { Point3dArray } from "../geometry3d/PointHelpers.js";
+import { Range3d } from "../geometry3d/Range.js";
+import { Transform } from "../geometry3d/Transform.js";
+import { XYZProps } from "../geometry3d/XYZProps.js";
+import { GeometryQuery } from "./GeometryQuery.js";
 
 /**
  * A PointString3d is an array of points.

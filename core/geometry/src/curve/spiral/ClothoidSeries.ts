@@ -7,9 +7,9 @@
  * @module Curve
  */
 
-import { Geometry } from "../../Geometry";
-import { XYCurveEvaluator } from "./XYCurveEvaluator";
-import { SimpleNewton } from "../../numerics/Newton";
+import { Geometry } from "../../Geometry.js";
+import { XYCurveEvaluator } from "./XYCurveEvaluator.js";
+import { SimpleNewton } from "../../numerics/Newton.js";
 /**
  * Methods to evaluate caller-specified number of terms of the x and y series for a clothoid.
  * Each instance has

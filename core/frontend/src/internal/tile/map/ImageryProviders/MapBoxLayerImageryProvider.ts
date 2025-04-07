@@ -7,9 +7,9 @@
  */
 
 import { ImageMapLayerSettings } from "@itwin/core-common";
-import { IModelApp } from "../../../../IModelApp";
-import { MapLayerImageryProvider } from "../../../../tile/internal";
-import { ScreenViewport } from "../../../../Viewport";
+import { IModelApp } from "../../../../IModelApp.js";
+import { MapLayerImageryProvider } from "../../../../tile/internal.js";
+import { ScreenViewport } from "../../../../Viewport.js";
 
 
 /** Base class imagery map layer formats.  Subclasses should override formatId and [[MapLayerFormat.createImageryProvider]].

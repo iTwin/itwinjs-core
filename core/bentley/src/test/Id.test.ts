@@ -6,7 +6,7 @@
 import { assert, describe, expect, it } from "vitest";
 import {
   CompressedId64Set, Guid, GuidString, Id64, Id64Arg, Id64Array, Id64String, MutableCompressedId64Set, OrderedId64Iterable, TransientIdSequence,
-} from "../core-bentley";
+} from "../core-bentley.js";
 
 class Uint64Id {
   public constructor(public readonly high: number,

@@ -7,7 +7,7 @@
  */
 
 import { assert } from "@itwin/core-bentley";
-import type { WorkerImplementation } from "../common/WorkerProxy";
+import type { WorkerImplementation } from "../common/WorkerProxy.js";
 
 interface WorkerRequest {
   /** The name of the method in the worker's interface to invoke. */

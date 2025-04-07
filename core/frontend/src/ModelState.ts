@@ -11,13 +11,13 @@ import {
   GeometricModel2dProps, GeometricModel3dProps, GeometricModelProps, ModelProps, RealityDataFormat, RealityDataSourceKey, RealityModelDisplaySettings, RelatedElement,
 } from "@itwin/core-common";
 import { Point2d, Range3d } from "@itwin/core-geometry";
-import { EntityState } from "./EntityState";
-import { HitDetail } from "./HitDetail";
-import { IModelConnection } from "./IModelConnection";
-import { RealityDataSource } from "./RealityDataSource";
-import { createOrbitGtTileTreeReference, createPrimaryTileTreeReference, createRealityTileTreeReference, TileTreeReference } from "./tile/internal";
-import { ViewState } from "./ViewState";
-import { SpatialClassifiersState } from "./SpatialClassifiersState";
+import { EntityState } from "./EntityState.js";
+import { HitDetail } from "./HitDetail.js";
+import { IModelConnection } from "./IModelConnection.js";
+import { RealityDataSource } from "./RealityDataSource.js";
+import { createOrbitGtTileTreeReference, createPrimaryTileTreeReference, createRealityTileTreeReference, TileTreeReference } from "./tile/internal.js";
+import { ViewState } from "./ViewState.js";
+import { SpatialClassifiersState } from "./SpatialClassifiersState.js";
 
 /** Represents the front-end state of a [Model]($backend).
  * @public

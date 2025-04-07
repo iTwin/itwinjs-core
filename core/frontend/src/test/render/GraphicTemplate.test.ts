@@ -4,19 +4,19 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { IModelApp } from "../../IModelApp";
+import { IModelApp } from "../../IModelApp.js";
 import { EmptyLocalization } from "@itwin/core-common";
-import { GraphicType } from "../../common/render/GraphicType";
+import { GraphicType } from "../../common/render/GraphicType.js";
 import { Point2d, Point3d, Transform } from "@itwin/core-geometry";
-import { RenderInstances } from "../../render/RenderSystem";
-import { _batch, _branch, _nodes } from "../../common/internal/Symbols";
-import { GraphicTemplate } from "../../render/GraphicTemplate";
-import { RenderInstancesParamsBuilder } from "../../common/render/RenderInstancesParams";
+import { RenderInstances } from "../../render/RenderSystem.js";
+import { _batch, _branch, _nodes } from "../../common/internal/Symbols.js";
+import { GraphicTemplate } from "../../render/GraphicTemplate.js";
+import { RenderInstancesParamsBuilder } from "../../common/render/RenderInstancesParams.js";
 import { TransientIdSequence } from "@itwin/core-bentley";
-import { GraphicDescriptionImpl } from "../../common/internal/render/GraphicDescriptionBuilderImpl";
-import { GraphicDescriptionBuilder } from "../../common/render/GraphicDescriptionBuilder";
-import { WorkerGraphicDescriptionContext } from "../../common/render/GraphicDescriptionContext";
-import { IModelConnection } from "../../IModelConnection";
+import { GraphicDescriptionImpl } from "../../common/internal/render/GraphicDescriptionBuilderImpl.js";
+import { GraphicDescriptionBuilder } from "../../common/render/GraphicDescriptionBuilder.js";
+import { WorkerGraphicDescriptionContext } from "../../common/render/GraphicDescriptionContext.js";
+import { IModelConnection } from "../../IModelConnection.js";
 
 describe("GraphicTemplate", () => {
   beforeAll(async () => IModelApp.startup({ localization: new EmptyLocalization() }));

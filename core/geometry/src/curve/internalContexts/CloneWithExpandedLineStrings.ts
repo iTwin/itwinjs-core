@@ -7,11 +7,11 @@
  * @module Curve
  */
 
-import { CurveCollection } from "../CurveCollection";
-import { CurvePrimitive } from "../CurvePrimitive";
-import { LineSegment3d } from "../LineSegment3d";
-import { LineString3d } from "../LineString3d";
-import { CloneCurvesContext } from "./CloneCurvesContext";
+import { CurveCollection } from "../CurveCollection.js";
+import { CurvePrimitive } from "../CurvePrimitive.js";
+import { LineSegment3d } from "../LineSegment3d.js";
+import { LineString3d } from "../LineString3d.js";
+import { CloneCurvesContext } from "./CloneCurvesContext.js";
 
 /**
  * Algorithmic class for cloning with linestrings expanded to line segments

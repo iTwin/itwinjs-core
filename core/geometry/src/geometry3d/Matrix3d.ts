@@ -6,13 +6,13 @@
  * @module CartesianGeometry
  */
 
-import { AxisIndex, AxisOrder, BeJSONFunctions, Geometry, StandardViewIndex } from "../Geometry";
-import { Point4d } from "../geometry4d/Point4d";
-import { Angle } from "./Angle";
-import { Point2d } from "./Point2dVector2d";
-import { Point3d, Vector3d, XYZ } from "./Point3dVector3d";
-import { Transform } from "./Transform";
-import { Matrix3dProps, WritableXYAndZ, XAndY, XYAndZ } from "./XYZProps";
+import { AxisIndex, AxisOrder, BeJSONFunctions, Geometry, StandardViewIndex } from "../Geometry.js";
+import { Point4d } from "../geometry4d/Point4d.js";
+import { Angle } from "./Angle.js";
+import { Point2d } from "./Point2dVector2d.js";
+import { Point3d, Vector3d, XYZ } from "./Point3dVector3d.js";
+import { Transform } from "./Transform.js";
+import { Matrix3dProps, WritableXYAndZ, XAndY, XYAndZ } from "./XYZProps.js";
 
 /* eslint-disable @itwin/prefer-get */
 // cSpell:words XXYZ YXYZ ZXYZ SaeedTorabi arctan newcommand diagonalization

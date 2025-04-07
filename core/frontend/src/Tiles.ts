@@ -7,9 +7,9 @@
  */
 
 import { BeTimePoint, Dictionary, dispose, Id64Array, Id64String, IModelStatus } from "@itwin/core-bentley";
-import { IModelApp } from "./IModelApp";
-import { IModelConnection } from "./IModelConnection";
-import { TileTree, TileTreeLoadStatus, TileTreeOwner, TileTreeSupplier } from "./tile/internal";
+import { IModelApp } from "./IModelApp.js";
+import { IModelConnection } from "./IModelConnection.js";
+import { TileTree, TileTreeLoadStatus, TileTreeOwner, TileTreeSupplier } from "./tile/internal.js";
 
 class TreeOwner implements TileTreeOwner {
   private _tileTree?: TileTree;

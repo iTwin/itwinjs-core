@@ -9,12 +9,12 @@
 import { ByteStream, Id64String, Logger, utf8ToString } from "@itwin/core-bentley";
 import { Point3d, Range3d } from "@itwin/core-geometry";
 import { BatchType, Feature, FeatureTable, PackedFeatureTable, PntsHeader, QParams3d, QPoint3d, Quantization } from "@itwin/core-common";
-import { FrontendLoggerCategory } from "../../common/FrontendLoggerCategory";
-import { IModelConnection } from "../../IModelConnection";
-import { Mesh } from "../../common/internal/render/MeshPrimitives";
-import { RenderGraphic } from "../../render/RenderGraphic";
-import { RenderSystem } from "../../render/RenderSystem";
-import { RealityTile } from "../../tile/internal";
+import { FrontendLoggerCategory } from "../../common/FrontendLoggerCategory.js";
+import { IModelConnection } from "../../IModelConnection.js";
+import { Mesh } from "../../common/internal/render/MeshPrimitives.js";
+import { RenderGraphic } from "../../render/RenderGraphic.js";
+import { RenderSystem } from "../../render/RenderSystem.js";
+import { RealityTile } from "../../tile/internal.js";
 
 /** Schema for the [3DTILES_draco_point_compression](https://github.com/CesiumGS/3d-tiles/tree/main/extensions/3DTILES_draco_point_compression) extension. */
 interface DracoPointCloud {

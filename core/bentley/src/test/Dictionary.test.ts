@@ -3,8 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { describe, expect, it } from "vitest";
-import { compareStrings, Dictionary } from "../core-bentley";
-import { expectSorted, Id } from "./SortedArray.test";
+import { compareStrings, Dictionary } from "../core-bentley.js";
+import { expectSorted, Id } from "./SortedArray.test.js";
 
 describe("Dictionary", () => {
   it("should maintain mapping between keys and values", () => {

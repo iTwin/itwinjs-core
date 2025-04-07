@@ -8,25 +8,25 @@
  */
 
 import { assert } from "@itwin/core-bentley";
-import { Clipper } from "../clipping/ClipUtils";
-import { BeJSONFunctions, Geometry, PlaneAltitudeEvaluator } from "../Geometry";
-import { GeometryHandler, IStrokeHandler } from "../geometry3d/GeometryHandler";
-import { Plane3dByOriginAndVectors } from "../geometry3d/Plane3dByOriginAndVectors";
-import { Vector2d } from "../geometry3d/Point2dVector2d";
-import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
-import { Range1d, Range3d } from "../geometry3d/Range";
-import { Ray3d } from "../geometry3d/Ray3d";
-import { Transform } from "../geometry3d/Transform";
-import { Order2Bezier } from "../numerics/BezierPolynomials";
-import { SmallSystem } from "../numerics/SmallSystem";
-import { CurveExtendOptions, VariantCurveExtendParameter } from "./CurveExtendMode";
-import { CurveIntervalRole, CurveLocationDetail, CurveLocationDetailPair } from "./CurveLocationDetail";
-import { AnnounceNumberNumberCurvePrimitive, CurvePrimitive } from "./CurvePrimitive";
-import { GeometryQuery } from "./GeometryQuery";
-import { PlaneAltitudeRangeContext } from "./internalContexts/PlaneAltitudeRangeContext";
-import { LineString3d } from "./LineString3d";
-import { OffsetOptions } from "./OffsetOptions";
-import { StrokeOptions } from "./StrokeOptions";
+import { Clipper } from "../clipping/ClipUtils.js";
+import { BeJSONFunctions, Geometry, PlaneAltitudeEvaluator } from "../Geometry.js";
+import { GeometryHandler, IStrokeHandler } from "../geometry3d/GeometryHandler.js";
+import { Plane3dByOriginAndVectors } from "../geometry3d/Plane3dByOriginAndVectors.js";
+import { Vector2d } from "../geometry3d/Point2dVector2d.js";
+import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d.js";
+import { Range1d, Range3d } from "../geometry3d/Range.js";
+import { Ray3d } from "../geometry3d/Ray3d.js";
+import { Transform } from "../geometry3d/Transform.js";
+import { Order2Bezier } from "../numerics/BezierPolynomials.js";
+import { SmallSystem } from "../numerics/SmallSystem.js";
+import { CurveExtendOptions, VariantCurveExtendParameter } from "./CurveExtendMode.js";
+import { CurveIntervalRole, CurveLocationDetail, CurveLocationDetailPair } from "./CurveLocationDetail.js";
+import { AnnounceNumberNumberCurvePrimitive, CurvePrimitive } from "./CurvePrimitive.js";
+import { GeometryQuery } from "./GeometryQuery.js";
+import { PlaneAltitudeRangeContext } from "./internalContexts/PlaneAltitudeRangeContext.js";
+import { LineString3d } from "./LineString3d.js";
+import { OffsetOptions } from "./OffsetOptions.js";
+import { StrokeOptions } from "./StrokeOptions.js";
 
 /**
  * A LineSegment3d is:

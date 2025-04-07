@@ -7,10 +7,10 @@
  * @module ArraysAndInterfaces
  */
 
-import { Geometry } from "../Geometry";
-import { Point3d, Vector3d, XYZ } from "./Point3dVector3d";
-import { Range3d } from "./Range";
-import { XAndY, XYAndZ } from "./XYZProps";
+import { Geometry } from "../Geometry.js";
+import { Point3d, Vector3d, XYZ } from "./Point3dVector3d.js";
+import { Range3d } from "./Range.js";
+import { XAndY, XYAndZ } from "./XYZProps.js";
 
 class PointsIterator implements Iterator<Point3d>, Iterable<Point3d> {
   private readonly _collection: IndexedXYZCollection;

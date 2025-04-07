@@ -7,15 +7,15 @@
  */
 
 import { BeEvent } from "@itwin/core-bentley";
-import { IModelRpcProps } from "../../IModel";
-import { RpcInterface, RpcInterfaceDefinition } from "../../RpcInterface";
-import { RpcConfiguration } from "./RpcConfiguration";
-import { RpcProtocolEvent, RpcRequestStatus, RpcResponseCacheControl } from "./RpcConstants";
-import { RpcNotFoundResponse } from "./RpcControl";
-import { RpcInvocation, SerializedRpcActivity } from "./RpcInvocation";
-import { RpcMarshaling, RpcSerializedValue } from "./RpcMarshaling";
-import { RpcOperation } from "./RpcOperation";
-import { RpcRequest } from "./RpcRequest";
+import { IModelRpcProps } from "../../IModel.js";
+import { RpcInterface, RpcInterfaceDefinition } from "../../RpcInterface.js";
+import { RpcConfiguration } from "./RpcConfiguration.js";
+import { RpcProtocolEvent, RpcRequestStatus, RpcResponseCacheControl } from "./RpcConstants.js";
+import { RpcNotFoundResponse } from "./RpcControl.js";
+import { RpcInvocation, SerializedRpcActivity } from "./RpcInvocation.js";
+import { RpcMarshaling, RpcSerializedValue } from "./RpcMarshaling.js";
+import { RpcOperation } from "./RpcOperation.js";
+import { RpcRequest } from "./RpcRequest.js";
 
 /* eslint-disable @typescript-eslint/no-deprecated */
 

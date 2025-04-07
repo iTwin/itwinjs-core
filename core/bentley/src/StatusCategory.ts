@@ -17,8 +17,8 @@ import {
   IModelStatus,
   RealityDataStatus,
   RpcInterfaceStatus,
-} from "./BentleyError";
-import { RepositoryStatus } from "./internal/RepositoryStatus";
+} from "./BentleyError.js";
+import { RepositoryStatus } from "./internal/RepositoryStatus.js";
 
 /* eslint-disable @typescript-eslint/no-shadow */
 

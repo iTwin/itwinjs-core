@@ -9,18 +9,18 @@
 import { assert, dispose } from "@itwin/core-bentley";
 import {
   ScreenSpaceEffectBuilder, ScreenSpaceEffectBuilderParams, ScreenSpaceEffectContext, UniformArrayParams, UniformParams, UniformType, VaryingType,
-} from "../../../render/ScreenSpaceEffectBuilder";
-import { TechniqueId } from "./TechniqueId";
-import { ProgramBuilder, VariableType } from "./ShaderBuilder";
-import { CompileStatus, ShaderProgram } from "./ShaderProgram";
-import { RenderState } from "./RenderState";
-import { SingleTexturedViewportQuadGeometry, ViewportQuadGeometry } from "./CachedGeometry";
-import { FrameBuffer } from "./FrameBuffer";
-import { getDrawParams } from "./ScratchDrawParams";
-import { SingularTechnique } from "./Technique";
-import { Target } from "./Target";
-import { System } from "./System";
-import { createScreenSpaceEffectProgramBuilder } from "./glsl/ScreenSpaceEffect";
+} from "../../../render/ScreenSpaceEffectBuilder.js";
+import { TechniqueId } from "./TechniqueId.js";
+import { ProgramBuilder, VariableType } from "./ShaderBuilder.js";
+import { CompileStatus, ShaderProgram } from "./ShaderProgram.js";
+import { RenderState } from "./RenderState.js";
+import { SingleTexturedViewportQuadGeometry, ViewportQuadGeometry } from "./CachedGeometry.js";
+import { FrameBuffer } from "./FrameBuffer.js";
+import { getDrawParams } from "./ScratchDrawParams.js";
+import { SingularTechnique } from "./Technique.js";
+import { Target } from "./Target.js";
+import { System } from "./System.js";
+import { createScreenSpaceEffectProgramBuilder } from "./glsl/ScreenSpaceEffect.js";
 
 type ShouldApply = (context: ScreenSpaceEffectContext) => boolean;
 

@@ -6,7 +6,7 @@
  * @module WebGL
  */
 
-import { FragmentShaderComponent, ProgramBuilder, VariableType } from "../ShaderBuilder";
+import { FragmentShaderComponent, ProgramBuilder, VariableType } from "../ShaderBuilder.js";
 
 // Vertex shader produces barycentric coordinate for corner of triangle to be smoothly interpolated over face of triangle.
 // This requires WebGL 2 because gl_VertexID.

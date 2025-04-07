@@ -7,15 +7,15 @@
  * @module Topology
  */
 
-import { LineSegment3d } from "../curve/LineSegment3d";
-import { Geometry } from "../Geometry";
-import { Angle } from "../geometry3d/Angle";
-import { Point2d, Vector2d } from "../geometry3d/Point2dVector2d";
-import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
-import { Transform } from "../geometry3d/Transform";
-import { WritableXYAndZ, XAndY, XYAndZ } from "../geometry3d/XYZProps";
-import { SmallSystem } from "../numerics/SmallSystem";
-import { MaskManager } from "./MaskManager";
+import { LineSegment3d } from "../curve/LineSegment3d.js";
+import { Geometry } from "../Geometry.js";
+import { Angle } from "../geometry3d/Angle.js";
+import { Point2d, Vector2d } from "../geometry3d/Point2dVector2d.js";
+import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d.js";
+import { Transform } from "../geometry3d/Transform.js";
+import { WritableXYAndZ, XAndY, XYAndZ } from "../geometry3d/XYZProps.js";
+import { SmallSystem } from "../numerics/SmallSystem.js";
+import { MaskManager } from "./MaskManager.js";
 
 // import { GraphChecker } from "../test/topology/Graph.test"; // used for debugging
 

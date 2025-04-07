@@ -7,16 +7,16 @@
  */
 
 import { LocalFileName } from "@itwin/core-common";
-import { SQLiteDb } from "../SQLiteDb";
-import { SettingsContainer } from "./Settings";
-import { BlobContainer } from "../BlobContainerService";
+import { SQLiteDb } from "../SQLiteDb.js";
+import { SettingsContainer } from "./Settings.js";
+import { BlobContainer } from "../BlobContainerService.js";
 import {
   GetWorkspaceContainerArgs, Workspace, WorkspaceContainer, WorkspaceContainerProps, WorkspaceDb, WorkspaceDbCloudProps, WorkspaceDbManifest, WorkspaceDbName, WorkspaceDbNameAndVersion,
   WorkspaceDbProps, WorkspaceDbVersion, WorkspaceResourceName,
-} from "./Workspace";
-import { WorkspaceSqliteDb } from "../internal/workspace/WorkspaceSqliteDb";
-import { constructWorkspaceEditor } from "../internal/workspace/WorkspaceImpl";
-import { _implementationProhibited } from "../internal/Symbols";
+} from "./Workspace.js";
+import { WorkspaceSqliteDb } from "../internal/workspace/WorkspaceSqliteDb.js";
+import { constructWorkspaceEditor } from "../internal/workspace/WorkspaceImpl.js";
+import { _implementationProhibited } from "../internal/Symbols.js";
 
 /** @beta */
 export namespace WorkspaceEditor {

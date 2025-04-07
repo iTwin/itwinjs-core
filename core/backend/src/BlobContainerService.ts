@@ -9,7 +9,7 @@
 // spell:ignore datacenter
 
 import { AccessToken, GuidString, Id64String } from "@itwin/core-bentley";
-import { SettingsContainer } from "./workspace/Settings";
+import { SettingsContainer } from "./workspace/Settings.js";
 
 /**
  * Types and functions for creating, deleting and authorizing access to cloud-based blob containers for an iTwin.

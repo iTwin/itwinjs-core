@@ -3,8 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { BentleyStatus } from "@itwin/core-bentley";
-import { IModelNative } from "../internal/NativePlatform";
-import { IModelJsFs } from "../IModelJsFs";
+import { IModelNative } from "../internal/NativePlatform.js";
+import { IModelJsFs } from "../IModelJsFs.js";
 
 export interface LzmaParams {
   dictSize?: number;

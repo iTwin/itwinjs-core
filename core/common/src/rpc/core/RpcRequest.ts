@@ -7,16 +7,16 @@
  */
 
 import { BeEvent, BentleyStatus, Guid } from "@itwin/core-bentley";
-import { IModelRpcProps } from "../../IModel";
-import { BackendError, IModelError, NoContentError } from "../../IModelError";
-import { RpcInterface } from "../../RpcInterface";
-import { RpcConfiguration } from "./RpcConfiguration";
-import { RpcProtocolEvent, RpcRequestEvent, RpcRequestStatus, RpcResponseCacheControl } from "./RpcConstants";
-import { RpcNotFoundResponse } from "./RpcControl";
-import { RpcMarshaling, RpcSerializedValue } from "./RpcMarshaling";
-import { RpcOperation } from "./RpcOperation";
-import { RpcManagedStatus, RpcProtocol, RpcProtocolVersion } from "./RpcProtocol";
-import { CURRENT_REQUEST } from "./RpcRegistry";
+import { IModelRpcProps } from "../../IModel.js";
+import { BackendError, IModelError, NoContentError } from "../../IModelError.js";
+import { RpcInterface } from "../../RpcInterface.js";
+import { RpcConfiguration } from "./RpcConfiguration.js";
+import { RpcProtocolEvent, RpcRequestEvent, RpcRequestStatus, RpcResponseCacheControl } from "./RpcConstants.js";
+import { RpcNotFoundResponse } from "./RpcControl.js";
+import { RpcMarshaling, RpcSerializedValue } from "./RpcMarshaling.js";
+import { RpcOperation } from "./RpcOperation.js";
+import { RpcManagedStatus, RpcProtocol, RpcProtocolVersion } from "./RpcProtocol.js";
+import { CURRENT_REQUEST } from "./RpcRegistry.js";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 // cspell:ignore csrf

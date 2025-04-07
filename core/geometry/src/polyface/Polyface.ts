@@ -9,19 +9,19 @@
 
 // cspell:word internaldocs
 
-import { GeometryQuery } from "../curve/GeometryQuery";
-import { Geometry } from "../Geometry";
-import { GeometryHandler } from "../geometry3d/GeometryHandler";
-import { GrowableXYArray } from "../geometry3d/GrowableXYArray";
-import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
-import { Point2d } from "../geometry3d/Point2dVector2d";
-import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
-import { NumberArray } from "../geometry3d/PointHelpers";
-import { Range1d, Range3d } from "../geometry3d/Range";
-import { Transform } from "../geometry3d/Transform";
-import { FacetFaceData } from "./FacetFaceData";
-import { IndexedPolyfaceVisitor } from "./IndexedPolyfaceVisitor";
-import { PolyfaceData } from "./PolyfaceData";
+import { GeometryQuery } from "../curve/GeometryQuery.js";
+import { Geometry } from "../Geometry.js";
+import { GeometryHandler } from "../geometry3d/GeometryHandler.js";
+import { GrowableXYArray } from "../geometry3d/GrowableXYArray.js";
+import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray.js";
+import { Point2d } from "../geometry3d/Point2dVector2d.js";
+import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d.js";
+import { NumberArray } from "../geometry3d/PointHelpers.js";
+import { Range1d, Range3d } from "../geometry3d/Range.js";
+import { Transform } from "../geometry3d/Transform.js";
+import { FacetFaceData } from "./FacetFaceData.js";
+import { IndexedPolyfaceVisitor } from "./IndexedPolyfaceVisitor.js";
+import { PolyfaceData } from "./PolyfaceData.js";
 
 /**
  * A Polyface is an abstract mesh structure (of unspecified implementation) that provides a PolyfaceVisitor

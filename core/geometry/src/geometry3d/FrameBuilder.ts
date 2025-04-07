@@ -7,22 +7,22 @@
  * @module CartesianGeometry
  */
 
-// import { Point2d } from "./Geometry2d";
-import { BSplineCurve3d } from "../bspline/BSplineCurve";
-import { InterpolationCurve3d } from "../bspline/InterpolationCurve3d";
-import { Arc3d } from "../curve/Arc3d";
-import { CurveCollection } from "../curve/CurveCollection";
-import { CurvePrimitive } from "../curve/CurvePrimitive";
-import { LineSegment3d } from "../curve/LineSegment3d";
-import { LineString3d } from "../curve/LineString3d";
-import { AxisOrder, AxisScaleSelect, Geometry } from "../Geometry";
-import { GrowableXYZArray } from "./GrowableXYZArray";
-import { Matrix3d } from "./Matrix3d";
-import { Point3d, Vector3d } from "./Point3dVector3d";
-import { Point3dArray } from "./PointHelpers";
-import { PolygonOps } from "./PolygonOps";
-import { Range3d } from "./Range";
-import { Transform } from "./Transform";
+// import { Point2d } from "./Geometry2d.js";
+import { BSplineCurve3d } from "../bspline/BSplineCurve.js";
+import { InterpolationCurve3d } from "../bspline/InterpolationCurve3d.js";
+import { Arc3d } from "../curve/Arc3d.js";
+import { CurveCollection } from "../curve/CurveCollection.js";
+import { CurvePrimitive } from "../curve/CurvePrimitive.js";
+import { LineSegment3d } from "../curve/LineSegment3d.js";
+import { LineString3d } from "../curve/LineString3d.js";
+import { AxisOrder, AxisScaleSelect, Geometry } from "../Geometry.js";
+import { GrowableXYZArray } from "./GrowableXYZArray.js";
+import { Matrix3d } from "./Matrix3d.js";
+import { Point3d, Vector3d } from "./Point3dVector3d.js";
+import { Point3dArray } from "./PointHelpers.js";
+import { PolygonOps } from "./PolygonOps.js";
+import { Range3d } from "./Range.js";
+import { Transform } from "./Transform.js";
 
 /**
  * Helper class to accumulate points and vectors until there is enough data to define a coordinate system.

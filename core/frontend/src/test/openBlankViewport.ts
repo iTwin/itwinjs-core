@@ -6,12 +6,12 @@
 import { expect } from "vitest";
 import { Dictionary, Id64String, SortedArray } from "@itwin/core-bentley";
 import { ColorDef, Feature, GeometryClass } from "@itwin/core-common";
-import { BlankConnection } from "../IModelConnection";
-import { ScreenViewport, Viewport } from "../Viewport";
-import { ViewRect } from "../common/ViewRect";
-import { SpatialViewState } from "../SpatialViewState";
-import { Pixel } from "../render/Pixel";
-import { createBlankConnection } from "./createBlankConnection";
+import { BlankConnection } from "../IModelConnection.js";
+import { ScreenViewport, Viewport } from "../Viewport.js";
+import { ViewRect } from "../common/ViewRect.js";
+import { SpatialViewState } from "../SpatialViewState.js";
+import { Pixel } from "../render/Pixel.js";
+import { createBlankConnection } from "./createBlankConnection.js";
 
 /** Options for openBlankViewport.
  * @internal

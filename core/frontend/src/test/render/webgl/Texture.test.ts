@@ -6,10 +6,10 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { assert as bAssert } from "@itwin/core-bentley";
 import { EmptyLocalization, ImageBuffer, ImageBufferFormat, ImageSource, ImageSourceFormat, RenderTexture } from "@itwin/core-common";
-import { extractImageSourceDimensions, imageBufferToPngDataUrl, imageElementFromImageSource, imageElementFromUrl } from "../../../common/ImageUtil";
-import { IModelApp } from "../../../IModelApp";
-import { GL } from "../../../internal/render/webgl/GL";
-import { TextureHandle } from "../../../internal/render/webgl/Texture";
+import { extractImageSourceDimensions, imageBufferToPngDataUrl, imageElementFromImageSource, imageElementFromUrl } from "../../../common/ImageUtil.js";
+import { IModelApp } from "../../../IModelApp.js";
+import { GL } from "../../../internal/render/webgl/GL.js";
+import { TextureHandle } from "../../../internal/render/webgl/Texture.js";
 
 // This is an encoded png containing a 3x3 square with white in top left pixel, blue in middle pixel, and green in
 // bottom right pixel.  The rest of the square is red.

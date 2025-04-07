@@ -18,31 +18,31 @@ import {
   ModelClipGroups, Npc, RenderSchedule, SubCategoryOverride,
   ViewDefinition2dProps, ViewDefinition3dProps, ViewDefinitionProps, ViewDetails, ViewDetails3d, ViewFlags, ViewStateProps,
 } from "@itwin/core-common";
-import { AuxCoordSystem2dState, AuxCoordSystem3dState, AuxCoordSystemState } from "./AuxCoordSys";
-import { CategorySelectorState } from "./CategorySelectorState";
-import { DisplayStyle2dState, DisplayStyle3dState, DisplayStyleState } from "./DisplayStyleState";
-import { DrawingViewState } from "./DrawingViewState";
-import { ElementState } from "./EntityState";
-import { Frustum2d } from "./Frustum2d";
-import { IModelApp } from "./IModelApp";
-import { IModelConnection } from "./IModelConnection";
-import { GeometricModel2dState, GeometricModelState } from "./ModelState";
-import { NotifyMessageDetails, OutputMessagePriority } from "./NotificationManager";
-import { RenderClipVolume } from "./render/RenderClipVolume";
-import { RenderMemory } from "./render/RenderMemory";
-import { SheetViewState } from "./SheetViewState";
-import { SpatialViewState } from "./SpatialViewState";
-import { StandardView, StandardViewId } from "./StandardView";
-import { DisclosedTileTreeSet, TileTreeReference } from "./tile/internal";
-import { MarginOptions, OnViewExtentsError } from "./ViewAnimation";
-import { DecorateContext, SceneContext } from "./ViewContext";
-import { areaToEyeHeight, areaToEyeHeightFromGcs, GlobalLocation } from "./ViewGlobalLocation";
-import { ViewingSpace } from "./ViewingSpace";
-import { Viewport } from "./Viewport";
-import { ViewPose, ViewPose2d, ViewPose3d } from "./ViewPose";
-import { ViewStatus } from "./ViewStatus";
-import { EnvironmentDecorations } from "./EnvironmentDecorations";
-import { _scheduleScriptReference } from "./common/internal/Symbols";
+import { AuxCoordSystem2dState, AuxCoordSystem3dState, AuxCoordSystemState } from "./AuxCoordSys.js";
+import { CategorySelectorState } from "./CategorySelectorState.js";
+import { DisplayStyle2dState, DisplayStyle3dState, DisplayStyleState } from "./DisplayStyleState.js";
+import { DrawingViewState } from "./DrawingViewState.js";
+import { ElementState } from "./EntityState.js";
+import { Frustum2d } from "./Frustum2d.js";
+import { IModelApp } from "./IModelApp.js";
+import { IModelConnection } from "./IModelConnection.js";
+import { GeometricModel2dState, GeometricModelState } from "./ModelState.js";
+import { NotifyMessageDetails, OutputMessagePriority } from "./NotificationManager.js";
+import { RenderClipVolume } from "./render/RenderClipVolume.js";
+import { RenderMemory } from "./render/RenderMemory.js";
+import { SheetViewState } from "./SheetViewState.js";
+import { SpatialViewState } from "./SpatialViewState.js";
+import { StandardView, StandardViewId } from "./StandardView.js";
+import { DisclosedTileTreeSet, TileTreeReference } from "./tile/internal.js";
+import { MarginOptions, OnViewExtentsError } from "./ViewAnimation.js";
+import { DecorateContext, SceneContext } from "./ViewContext.js";
+import { areaToEyeHeight, areaToEyeHeightFromGcs, GlobalLocation } from "./ViewGlobalLocation.js";
+import { ViewingSpace } from "./ViewingSpace.js";
+import { Viewport } from "./Viewport.js";
+import { ViewPose, ViewPose2d, ViewPose3d } from "./ViewPose.js";
+import { ViewStatus } from "./ViewStatus.js";
+import { EnvironmentDecorations } from "./EnvironmentDecorations.js";
+import { _scheduleScriptReference } from "./common/internal/Symbols.js";
 
 /** Describes the largest and smallest values allowed for the extents of a [[ViewState]].
  * Attempts to exceed these limits in any dimension will fail, preserving the previous extents.

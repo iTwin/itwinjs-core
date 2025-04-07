@@ -6,15 +6,15 @@
  * @module Polyface
  */
 
-import { Point2d } from "../geometry3d/Point2dVector2d";
-import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
-import { TriangleLocationDetail } from "../geometry3d/BarycentricTriangle";
-import { Geometry, PolygonLocation } from "../Geometry";
-import { PolyfaceVisitor } from "./Polyface";
-import { PolygonLocationDetail, PolygonOps } from "../geometry3d/PolygonOps";
-import { IndexedXYZCollection } from "../geometry3d/IndexedXYZCollection";
-import { IndexedXYCollection } from "../geometry3d/IndexedXYCollection";
-import { NumberArray } from "../geometry3d/PointHelpers";
+import { Point2d } from "../geometry3d/Point2dVector2d.js";
+import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d.js";
+import { TriangleLocationDetail } from "../geometry3d/BarycentricTriangle.js";
+import { Geometry, PolygonLocation } from "../Geometry.js";
+import { PolyfaceVisitor } from "./Polyface.js";
+import { PolygonLocationDetail, PolygonOps } from "../geometry3d/PolygonOps.js";
+import { IndexedXYZCollection } from "../geometry3d/IndexedXYZCollection.js";
+import { IndexedXYCollection } from "../geometry3d/IndexedXYCollection.js";
+import { NumberArray } from "../geometry3d/PointHelpers.js";
 
 /** Callback for processing the detail for an intersected facet.
  * @param detail reference to the intersection data, with `detail.IsInsideOn === true`. Note that `detail` is owned by the caller; to persist, use `detail.clone`.

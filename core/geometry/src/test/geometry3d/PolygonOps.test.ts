@@ -4,27 +4,27 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { describe, expect, it } from "vitest";
-import { GeometryQuery } from "../../curve/GeometryQuery";
-import { LineSegment3d } from "../../curve/LineSegment3d";
-import { LineString3d } from "../../curve/LineString3d";
-import { Loop } from "../../curve/Loop";
-import { ParityRegion } from "../../curve/ParityRegion";
-import { RegionOps } from "../../curve/RegionOps";
-import { UnionRegion } from "../../curve/UnionRegion";
-import { Geometry, PolygonLocation } from "../../Geometry";
-import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray";
-import { Matrix3d } from "../../geometry3d/Matrix3d";
-import { Point3dArrayCarrier } from "../../geometry3d/Point3dArrayCarrier";
-import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
-import { PolygonLocationDetail, PolygonLocationDetailPair, PolygonOps } from "../../geometry3d/PolygonOps";
-import { PolylineOps } from "../../geometry3d/PolylineOps";
-import { Range2d, Range3d } from "../../geometry3d/Range";
-import { Ray3d } from "../../geometry3d/Ray3d";
-import { SortablePolygon } from "../../geometry3d/SortablePolygon";
-import { Transform } from "../../geometry3d/Transform";
-import { Sample } from "../../serialization/GeometrySamples";
-import { Checker } from "../Checker";
-import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
+import { GeometryQuery } from "../../curve/GeometryQuery.js";
+import { LineSegment3d } from "../../curve/LineSegment3d.js";
+import { LineString3d } from "../../curve/LineString3d.js";
+import { Loop } from "../../curve/Loop.js";
+import { ParityRegion } from "../../curve/ParityRegion.js";
+import { RegionOps } from "../../curve/RegionOps.js";
+import { UnionRegion } from "../../curve/UnionRegion.js";
+import { Geometry, PolygonLocation } from "../../Geometry.js";
+import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray.js";
+import { Matrix3d } from "../../geometry3d/Matrix3d.js";
+import { Point3dArrayCarrier } from "../../geometry3d/Point3dArrayCarrier.js";
+import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d.js";
+import { PolygonLocationDetail, PolygonLocationDetailPair, PolygonOps } from "../../geometry3d/PolygonOps.js";
+import { PolylineOps } from "../../geometry3d/PolylineOps.js";
+import { Range2d, Range3d } from "../../geometry3d/Range.js";
+import { Ray3d } from "../../geometry3d/Ray3d.js";
+import { SortablePolygon } from "../../geometry3d/SortablePolygon.js";
+import { Transform } from "../../geometry3d/Transform.js";
+import { Sample } from "../../serialization/GeometrySamples.js";
+import { Checker } from "../Checker.js";
+import { GeometryCoreTestIO } from "../GeometryCoreTestIO.js";
 
 function makeLoop(range: Range2d, close: boolean, ySign: number = 1): GrowableXYZArray {
   const loop = new GrowableXYZArray();

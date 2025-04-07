@@ -11,13 +11,13 @@ import {
   ColorDef, Environment, Gradient, GraphicParams, RenderTexture, RenderTextureParams, SkyCube, SkySphere, TextureImageSpec, TextureMapping,
 } from "@itwin/core-common";
 import { Point2d, Point3d, PolyfaceBuilder, StrokeOptions } from "@itwin/core-geometry";
-import { tryImageElementFromUrl } from "./common/ImageUtil";
-import { IModelApp } from "./IModelApp";
-import { RenderGraphic } from "./render/RenderGraphic";
-import { RenderSkyBoxParams } from "./internal/render/RenderSkyBoxParams";
-import { DecorateContext } from "./ViewContext";
-import { ViewState3d } from "./ViewState";
-import { GraphicType } from "./common/render/GraphicType";
+import { tryImageElementFromUrl } from "./common/ImageUtil.js";
+import { IModelApp } from "./IModelApp.js";
+import { RenderGraphic } from "./render/RenderGraphic.js";
+import { RenderSkyBoxParams } from "./internal/render/RenderSkyBoxParams.js";
+import { DecorateContext } from "./ViewContext.js";
+import { ViewState3d } from "./ViewState.js";
+import { GraphicType } from "./common/render/GraphicType.js";
 
 /** @internal */
 export interface GroundPlaneDecorations {

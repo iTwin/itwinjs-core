@@ -3,21 +3,29 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert } from "chai";
+import { afterAll, afterEach, assert, describe, it } from "vitest";
 import { Guid } from "@itwin/core-bentley";
 import { BriefcaseIdValue } from "@itwin/core-common";
-import { Element } from "../../Element";
-import { HubWrappers, IModelTestUtils } from "../IModelTestUtils";
-import { KnownTestLocations } from "../KnownTestLocations";
-import { HubMock } from "../../HubMock";
-import { TestChangeSetUtility } from "../TestChangeSetUtility";
-import { _nativeDb, ChannelControl } from "../../core-backend";
+import { Element } from "../../Element.js";
+import { HubWrappers, IModelTestUtils } from "../IModelTestUtils.js";
+import { KnownTestLocations } from "../KnownTestLocations.js";
+import { HubMock } from "../../HubMock.js";
+import { TestChangeSetUtility } from "../TestChangeSetUtility.js";
+import { _nativeDb, ChannelControl } from "../../core-backend.js";
+import { TestUtils } from "../TestUtils.js";
 
 describe("BriefcaseManager", async () => {
   const testITwinId: string = Guid.createValue();
   const managerAccessToken = "manager mock token";
   const accessToken = "access token";
 
+  afterAll(async () => {
+    await TestUtils.startBackend();
+  })
+
+  afterAll(async () => {
+    await TestUtils.shutdownBackend();
+  })
   // contested version0 files can cause errors that cause tests to not call shutdown, so always do it here
   afterEach(() => HubMock.shutdown());
 

@@ -8,8 +8,8 @@
 
 import { assert, ByteStream } from "@itwin/core-bentley";
 import { Range3d } from "@itwin/core-geometry";
-import { ElementAlignedBox3d } from "../geometry/Placement";
-import { nextPoint3d64FromByteStream, TileFormat, TileHeader } from "./TileIO";
+import { ElementAlignedBox3d } from "../geometry/Placement.js";
+import { nextPoint3d64FromByteStream, TileFormat, TileHeader } from "./TileIO.js";
 
 /** Flags describing the geometry contained within a tile in iMdl format.
  * @internal

@@ -3,9 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { IModelApp } from "../../../IModelApp";
-import { GL } from "../../../internal/render/webgl/GL";
-import { BufferHandle } from "../../../internal/render/webgl/AttributeBuffers";
+import { IModelApp } from "../../../IModelApp.js";
+import { GL } from "../../../internal/render/webgl/GL.js";
+import { BufferHandle } from "../../../internal/render/webgl/AttributeBuffers.js";
 import { EmptyLocalization } from "@itwin/core-common";
 
 describe("BufferHandle", () => {

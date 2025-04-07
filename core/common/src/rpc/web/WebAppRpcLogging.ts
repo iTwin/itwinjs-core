@@ -7,15 +7,15 @@
  */
 
 import { BentleyStatus, Logger } from "@itwin/core-bentley";
-import { CommonLoggerCategory } from "../../CommonLoggerCategory";
-import { IModelError } from "../../IModelError";
-import { RpcInterfaceDefinition } from "../../RpcInterface";
-import { RpcProtocolEvent } from "../core/RpcConstants";
-import { RpcInvocation } from "../core/RpcInvocation";
-import { RpcOperation } from "../core/RpcOperation";
-import { SerializedRpcOperation, SerializedRpcRequest } from "../core/RpcProtocol";
-import { RpcRequest } from "../core/RpcRequest";
-import { WebAppRpcRequest } from "./WebAppRpcRequest";
+import { CommonLoggerCategory } from "../../CommonLoggerCategory.js";
+import { IModelError } from "../../IModelError.js";
+import { RpcInterfaceDefinition } from "../../RpcInterface.js";
+import { RpcProtocolEvent } from "../core/RpcConstants.js";
+import { RpcInvocation } from "../core/RpcInvocation.js";
+import { RpcOperation } from "../core/RpcOperation.js";
+import { SerializedRpcOperation, SerializedRpcRequest } from "../core/RpcProtocol.js";
+import { RpcRequest } from "../core/RpcRequest.js";
+import { WebAppRpcRequest } from "./WebAppRpcRequest.js";
 
 /* eslint-disable @typescript-eslint/no-deprecated */
 

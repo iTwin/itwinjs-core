@@ -6,8 +6,8 @@
 /** @packageDocumentation
  * @module Serialization
  */
-import { BSplineWrapMode, KnotVector } from "../bspline/KnotVector";
-import { NumberArray } from "../geometry3d/PointHelpers";
+import { BSplineWrapMode, KnotVector } from "../bspline/KnotVector.js";
+import { NumberArray } from "../geometry3d/PointHelpers.js";
 
 /**
  * The `SerializationHelpers` namespace has helper classes for serializing and deserializing geometry, such as B-spline curves and surfaces.

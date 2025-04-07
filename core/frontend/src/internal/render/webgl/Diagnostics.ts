@@ -6,8 +6,8 @@
  * @module WebGL
  */
 
-import { GL } from "./GL";
-import { System } from "./System";
+import { GL } from "./GL.js";
+import { System } from "./System.js";
 
 /** Provides facilities for conditionally executing diagnostic/debug code. By default, all facilities are disabled - they must be explicitly enabled.
  * @internal

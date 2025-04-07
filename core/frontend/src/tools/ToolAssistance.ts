@@ -7,8 +7,8 @@
  * @module Tools
  */
 
-import { IModelApp } from "../IModelApp";
-import { CoreTools } from "./Tool";
+import { IModelApp } from "../IModelApp.js";
+import { CoreTools } from "./Tool.js";
 
 /** Tool Assistance known images
  * @public

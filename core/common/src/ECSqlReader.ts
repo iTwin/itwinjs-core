@@ -5,11 +5,11 @@
 /** @packageDocumentation
  * @module iModels
  */
-import { Base64EncodedString } from "./Base64EncodedString";
+import { Base64EncodedString } from "./Base64EncodedString.js";
 import {
   DbQueryError, DbQueryRequest, DbQueryResponse, DbRequestExecutor, DbRequestKind, DbResponseStatus, DbValueFormat, QueryBinder, QueryOptions, QueryOptionsBuilder,
   QueryPropertyMetaData, QueryRowFormat,
-} from "./ConcurrentQuery";
+} from "./ConcurrentQuery.js";
 
 /** @public */
 export class PropertyMetaDataMap implements Iterable<QueryPropertyMetaData> {

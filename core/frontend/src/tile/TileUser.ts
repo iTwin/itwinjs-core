@@ -6,9 +6,9 @@
  * @module Tiles
  */
 
-import { IModelConnection } from "../IModelConnection";
-import { Viewport } from "../Viewport";
-import { DisclosedTileTreeSet, TileRequest } from "./internal";
+import { IModelConnection } from "../IModelConnection.js";
+import { Viewport } from "../Viewport.js";
+import { DisclosedTileTreeSet, TileRequest } from "./internal.js";
 
 /** Represents some object that makes use of [[Tile]]s in some way - e.g., by requesting and/or displaying their contents, querying their geometry, etc.
  * Each [[Tile]] keeps track of its users via its [[TileUsageMarker]]. A tile with no users is eligible to be discarded view [[Tile.prune]].

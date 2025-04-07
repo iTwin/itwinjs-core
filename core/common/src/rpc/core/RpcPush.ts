@@ -10,7 +10,7 @@
  */
 
 import { assert, BeEvent, BentleyStatus } from "@itwin/core-bentley";
-import { IModelError } from "../../IModelError";
+import { IModelError } from "../../IModelError.js";
 
 /** @internal */
 export type RpcPushMessageListener<T> = (message: T) => void;

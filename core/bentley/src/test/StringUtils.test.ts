@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { describe, expect, it } from "vitest";
-import { utf8ToString } from "../core-bentley";
+import { utf8ToString } from "../core-bentley.js";
 
 function expectString(utf8: number[], expected: string) {
   const bytes = new Uint8Array(utf8);

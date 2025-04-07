@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert, describe, it } from "vitest";
-import { Geometry, ICloneable } from "../Geometry";
+import { Geometry, ICloneable } from "../Geometry.js";
 
 describe("Geometry.isAlmostEqualOptional", () => {
   it("Geometry.isAlmostEqualOptional", () => {

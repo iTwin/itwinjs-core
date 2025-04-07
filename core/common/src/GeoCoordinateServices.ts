@@ -10,7 +10,7 @@
 
 import { GeoServiceStatus } from "@itwin/core-bentley";
 import { XYZProps } from "@itwin/core-geometry";
-import { GeographicCRSProps } from "./geometry/CoordinateReferenceSystem";
+import { GeographicCRSProps } from "./geometry/CoordinateReferenceSystem.js";
 
 /** This enumeration lists all possible status as returned from a coordinate conversion to or from a
  * [[GeographicCRS]] and either another [[GeographicCRS]] or a [[GeodeticDatum]].

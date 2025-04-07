@@ -15,32 +15,32 @@ import { Cartographic, ColorDef, Frustum, LinePixels, NpcCenter } from "@itwin/c
 import {
   DialogItem, DialogProperty, DialogPropertySyncItem, PropertyDescriptionHelper,
 } from "@itwin/appui-abstract";
-import { AccuDraw, AccuDrawHintBuilder } from "../AccuDraw";
-import { BingLocationProvider } from "../BingLocation";
-import { CoordSystem } from "../CoordSystem";
-import { IModelApp } from "../IModelApp";
-import { LengthDescription } from "../properties/LengthDescription";
-import { Pixel } from "../render/Pixel";
-import { StandardViewId } from "../StandardView";
-import { Animator, MarginOptions, OnViewExtentsError, ViewChangeOptions } from "../ViewAnimation";
-import { DecorateContext } from "../ViewContext";
+import { AccuDraw, AccuDrawHintBuilder } from "../AccuDraw.js";
+import { BingLocationProvider } from "../BingLocation.js";
+import { CoordSystem } from "../CoordSystem.js";
+import { IModelApp } from "../IModelApp.js";
+import { LengthDescription } from "../properties/LengthDescription.js";
+import { Pixel } from "../render/Pixel.js";
+import { StandardViewId } from "../StandardView.js";
+import { Animator, MarginOptions, OnViewExtentsError, ViewChangeOptions } from "../ViewAnimation.js";
+import { DecorateContext } from "../ViewContext.js";
 import {
   eyeToCartographicOnGlobeFromGcs, GlobalLocation, queryTerrainElevationOffset, rangeToCartographicArea, viewGlobalLocation,
   ViewGlobalLocationConstants,
-} from "../ViewGlobalLocation";
-import { DepthPointSource, ScreenViewport, Viewport } from "../Viewport";
-import { ViewPose } from "../ViewPose";
-import { ViewRect } from "../common/ViewRect";
-import { ViewState3d } from "../ViewState";
-import { ViewStatus } from "../ViewStatus";
-import { EditManipulator } from "./EditManipulator";
-import { PrimitiveTool } from "./PrimitiveTool";
+} from "../ViewGlobalLocation.js";
+import { DepthPointSource, ScreenViewport, Viewport } from "../Viewport.js";
+import { ViewPose } from "../ViewPose.js";
+import { ViewRect } from "../common/ViewRect.js";
+import { ViewState3d } from "../ViewState.js";
+import { ViewStatus } from "../ViewStatus.js";
+import { EditManipulator } from "./EditManipulator.js";
+import { PrimitiveTool } from "./PrimitiveTool.js";
 import {
   BeButton, BeButtonEvent, BeModifierKeys, BeTouchEvent, BeWheelEvent, CoordSource, CoreTools, EventHandled, InputSource, InteractiveTool,
-} from "./Tool";
-import { ToolAssistance, ToolAssistanceImage, ToolAssistanceInputMethod, ToolAssistanceInstruction, ToolAssistanceSection } from "./ToolAssistance";
-import { ToolSettings } from "./ToolSettings";
-import { GraphicType } from "../common/render/GraphicType";
+} from "./Tool.js";
+import { ToolAssistance, ToolAssistanceImage, ToolAssistanceInputMethod, ToolAssistanceInstruction, ToolAssistanceSection } from "./ToolAssistance.js";
+import { ToolSettings } from "./ToolSettings.js";
+import { GraphicType } from "../common/render/GraphicType.js";
 
 // cspell:ignore wasd, arrowright, arrowleft, pagedown, pageup, arrowup, arrowdown
 /* eslint-disable no-restricted-syntax */

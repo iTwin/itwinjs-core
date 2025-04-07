@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert, describe, it } from "vitest";
 import { Id64 } from "@itwin/core-bentley";
-import { Feature } from "../FeatureTable";
-import { GeometryClass } from "../GeometryParams";
+import { Feature } from "../FeatureTable.js";
+import { GeometryClass } from "../GeometryParams.js";
 
 describe("Feature", () => {
   it("constructor works as expected", () => {

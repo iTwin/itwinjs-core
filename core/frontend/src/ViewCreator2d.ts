@@ -18,12 +18,12 @@ import {
   ViewDefinition2dProps, ViewStateProps,
 } from "@itwin/core-common";
 import { Range3d } from "@itwin/core-geometry";
-import { DrawingViewState } from "./DrawingViewState";
-import { EntityState } from "./EntityState";
-import { IModelConnection } from "./IModelConnection";
-import { DrawingModelState, SectionDrawingModelState, SheetModelState } from "./ModelState";
-import { SheetViewState } from "./SheetViewState";
-import { ViewState, ViewState2d } from "./ViewState";
+import { DrawingViewState } from "./DrawingViewState.js";
+import { EntityState } from "./EntityState.js";
+import { IModelConnection } from "./IModelConnection.js";
+import { DrawingModelState, SectionDrawingModelState, SheetModelState } from "./ModelState.js";
+import { SheetViewState } from "./SheetViewState.js";
+import { ViewState, ViewState2d } from "./ViewState.js";
 
 /** Options for creating a [[ViewState2d]] via [[ViewCreator2d]].
  *  @public

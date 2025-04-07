@@ -3,9 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
-import { imageBufferFromImageSource, imageSourceFromImageBuffer } from "../ImageSourceConversion";
-import { samplePngTexture } from "./imageData";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { TestUtils } from "./TestUtils.js";
+import { imageBufferFromImageSource, imageSourceFromImageBuffer } from "../ImageSourceConversion.js";
+import { samplePngTexture } from "./imageData.js";
 import { BinaryImageSource, ImageBuffer, ImageBufferFormat, ImageSourceFormat } from "@itwin/core-common";
 
 // samplePngTexture encodes this image:
@@ -98,6 +99,14 @@ function computeMaxCompressionError(compressed: ImageBuffer, original: ImageBuff
 }
 
 describe("ImageSource conversion", () => {
+  beforeAll(async () => {
+    await TestUtils.startBackend();
+  });
+
+  afterAll(async () => {
+    await TestUtils.shutdownBackend();
+  });
+
   describe("imageBufferFromImageSource", () => {
     it("decodes PNG", () => {
       const buf = imageBufferFromImageSource({ source: samplePng })!;
@@ -129,7 +138,7 @@ describe("ImageSource conversion", () => {
       expect(img.format).to.equal(ImageBufferFormat.Rgba);
       expectImagePixels(img, [...top, ...middle, ...bottom].map((x) => ((x | 0xff000000) >>> 0)));
     });
-    
+
     it("defaults to RGBA IFF alpha channel is present", () => {
       const transparent = imageSourceFromImageBuffer({ image: makeImage(true), targetFormat: ImageSourceFormat.Png })!;
       expect(imageBufferFromImageSource({ source: transparent })!.format).to.equal(ImageBufferFormat.Rgba);

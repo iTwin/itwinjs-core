@@ -11,11 +11,11 @@ import {
   AlternateUnitLabelsProvider, Format, FormatProps, FormatterSpec, ParseError, ParserSpec, QuantityParseResult,
   UnitConversionProps, UnitProps, UnitsProvider, UnitSystemKey,
 } from "@itwin/core-quantity";
-import { FrontendLoggerCategory } from "../common/FrontendLoggerCategory";
-import { IModelApp } from "../IModelApp";
-import { IModelConnection } from "../IModelConnection";
-import { BasicUnitsProvider, getDefaultAlternateUnitLabels } from "./BasicUnitsProvider";
-import { CustomFormatPropEditorSpec } from "./QuantityTypesEditorSpecs";
+import { FrontendLoggerCategory } from "../common/FrontendLoggerCategory.js";
+import { IModelApp } from "../IModelApp.js";
+import { IModelConnection } from "../IModelConnection.js";
+import { BasicUnitsProvider, getDefaultAlternateUnitLabels } from "./BasicUnitsProvider.js";
+import { CustomFormatPropEditorSpec } from "./QuantityTypesEditorSpecs.js";
 
 // cSpell:ignore FORMATPROPS FORMATKEY ussurvey uscustomary USCUSTOM
 

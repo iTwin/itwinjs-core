@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { Logger } from "@itwin/core-bentley";
-import { BackendLoggerCategory } from "./BackendLoggerCategory";
+import { BackendLoggerCategory } from "./BackendLoggerCategory.js";
 
 /** Wrapper around a promise that allows synchronous queries of it's state
  * @internal

@@ -7,29 +7,29 @@
  * @module CartesianGeometry
  */
 
-import { CurveAndSurfaceLocationDetail, UVSurfaceLocationDetail } from "../bspline/SurfaceLocationDetail";
-import { Clipper } from "../clipping/ClipUtils";
-import { Arc3d } from "../curve/Arc3d";
-import { CurveLocationDetail } from "../curve/CurveLocationDetail";
-import { AnnounceNumberNumber, AnnounceNumberNumberCurvePrimitive } from "../curve/CurvePrimitive";
-import { AxisIndex, AxisOrder, Geometry } from "../Geometry";
-import { Point4d } from "../geometry4d/Point4d";
-import { Order3Bezier } from "../numerics/BezierPolynomials";
-import { Newton2dUnboundedWithDerivative, NewtonEvaluatorRRtoRRD } from "../numerics/Newton";
-import { SineCosinePolynomial, SphereImplicit, TrigPolynomial } from "../numerics/Polynomials";
-import { TriDiagonalSystem } from "../numerics/TriDiagonalSystem";
-import { Angle } from "./Angle";
-import { AngleSweep } from "./AngleSweep";
-import { UVSurface } from "./GeometryHandler";
-import { LongitudeLatitudeNumber } from "./LongitudeLatitudeAltitude";
-import { Matrix3d } from "./Matrix3d";
-import { Plane3dByOriginAndUnitNormal } from "./Plane3dByOriginAndUnitNormal";
-import { Plane3dByOriginAndVectors } from "./Plane3dByOriginAndVectors";
-import { Point3d, Vector3d } from "./Point3dVector3d";
-import { Range1d, Range3d } from "./Range";
-import { Ray3d } from "./Ray3d";
-import { Transform } from "./Transform";
-import { XYAndZ } from "./XYZProps";
+import { CurveAndSurfaceLocationDetail, UVSurfaceLocationDetail } from "../bspline/SurfaceLocationDetail.js";
+import { Clipper } from "../clipping/ClipUtils.js";
+import { Arc3d } from "../curve/Arc3d.js";
+import { CurveLocationDetail } from "../curve/CurveLocationDetail.js";
+import { AnnounceNumberNumber, AnnounceNumberNumberCurvePrimitive } from "../curve/CurvePrimitive.js";
+import { AxisIndex, AxisOrder, Geometry } from "../Geometry.js";
+import { Point4d } from "../geometry4d/Point4d.js";
+import { Order3Bezier } from "../numerics/BezierPolynomials.js";
+import { Newton2dUnboundedWithDerivative, NewtonEvaluatorRRtoRRD } from "../numerics/Newton.js";
+import { SineCosinePolynomial, SphereImplicit, TrigPolynomial } from "../numerics/Polynomials.js";
+import { TriDiagonalSystem } from "../numerics/TriDiagonalSystem.js";
+import { Angle } from "./Angle.js";
+import { AngleSweep } from "./AngleSweep.js";
+import { UVSurface } from "./GeometryHandler.js";
+import { LongitudeLatitudeNumber } from "./LongitudeLatitudeAltitude.js";
+import { Matrix3d } from "./Matrix3d.js";
+import { Plane3dByOriginAndUnitNormal } from "./Plane3dByOriginAndUnitNormal.js";
+import { Plane3dByOriginAndVectors } from "./Plane3dByOriginAndVectors.js";
+import { Point3d, Vector3d } from "./Point3dVector3d.js";
+import { Range1d, Range3d } from "./Range.js";
+import { Ray3d } from "./Ray3d.js";
+import { Transform } from "./Transform.js";
+import { XYAndZ } from "./XYZProps.js";
 
 /**
  * For one component (x,y, or z) on the sphere

@@ -7,8 +7,8 @@
  */
 
 import { assert, PriorityQueue } from "@itwin/core-bentley";
-import { IModelConnection } from "../IModelConnection";
-import { Tile, TileContent, TileRequest } from "./internal";
+import { IModelConnection } from "../IModelConnection.js";
+import { Tile, TileContent, TileRequest } from "./internal.js";
 
 class TileRequestQueue extends PriorityQueue<TileRequest> {
   public constructor() {

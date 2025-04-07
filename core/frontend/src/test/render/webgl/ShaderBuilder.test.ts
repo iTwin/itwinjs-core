@@ -4,11 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { IModelApp } from "../../../IModelApp";
-import { ShaderProgram } from "../../../internal/render/webgl/ShaderProgram";
+import { IModelApp } from "../../../IModelApp.js";
+import { ShaderProgram } from "../../../internal/render/webgl/ShaderProgram.js";
 import {
   ShaderVariable, ShaderVariables, VariablePrecision, VariableScope, VariableType,
-} from "../../../internal/render/webgl/ShaderBuilder";
+} from "../../../internal/render/webgl/ShaderBuilder.js";
 import { EmptyLocalization } from "@itwin/core-common";
 
 describe("ShaderBuilder", () => {

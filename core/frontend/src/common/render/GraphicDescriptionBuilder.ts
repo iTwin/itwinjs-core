@@ -6,13 +6,13 @@
  * @module Rendering
  */
 
-import { GraphicAssembler } from "./GraphicAssembler";
-import { collectGraphicDescriptionTransferables, GraphicDescriptionBuilderImpl } from "../internal/render/GraphicDescriptionBuilderImpl";
+import { GraphicAssembler } from "./GraphicAssembler.js";
+import { collectGraphicDescriptionTransferables, GraphicDescriptionBuilderImpl } from "../internal/render/GraphicDescriptionBuilderImpl.js";
 import { Point3d, Range3d, Transform } from "@itwin/core-geometry";
-import { GraphicType } from "./GraphicType";
-import { PickableGraphicOptions } from "./BatchOptions";
-import { _implementationProhibited } from "../internal/Symbols";
-import { WorkerGraphicDescriptionContext } from "./GraphicDescriptionContext";
+import { GraphicType } from "./GraphicType.js";
+import { PickableGraphicOptions } from "./BatchOptions.js";
+import { _implementationProhibited } from "../internal/Symbols.js";
+import { WorkerGraphicDescriptionContext } from "./GraphicDescriptionContext.js";
 
 /** An opaque representation of a [[RenderGraphic]] created by a [[GraphicDescriptionBuilder]].
  * Unlike `RenderGraphic`, a `GraphicDescription` does not allocate any WebGL resources like textures, vertex buffers, etc, so

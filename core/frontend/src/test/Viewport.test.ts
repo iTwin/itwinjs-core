@@ -9,19 +9,19 @@ import { Point2d, Point3d } from "@itwin/core-geometry";
 import {
   AnalysisStyle, ColorDef, EmptyLocalization, Feature, ImageBuffer, ImageBufferFormat, ImageMapLayerSettings,
 } from "@itwin/core-common";
-import { ViewRect } from "../common/ViewRect";
-import { OffScreenViewport, ReadImageToCanvasOptions, ScreenViewport, Viewport } from "../Viewport";
-import { DisplayStyle3dState } from "../DisplayStyleState";
-import { SpatialViewState } from "../SpatialViewState";
-import { IModelApp } from "../IModelApp";
-import { openBlankViewport, readUniqueFeatures, testBlankViewport, testBlankViewportAsync } from "./openBlankViewport";
-import { createBlankConnection } from "./createBlankConnection";
-import { DecorateContext } from "../ViewContext";
-import { Pixel } from "../render/Pixel";
-import { GraphicType } from "../common/render/GraphicType";
-import { RenderGraphic } from "../render/RenderGraphic";
-import { Decorator } from "../ViewManager";
-import { CanvasDecoration } from "../core-frontend";
+import { ViewRect } from "../common/ViewRect.js";
+import { OffScreenViewport, ReadImageToCanvasOptions, ScreenViewport, Viewport } from "../Viewport.js";
+import { DisplayStyle3dState } from "../DisplayStyleState.js";
+import { SpatialViewState } from "../SpatialViewState.js";
+import { IModelApp } from "../IModelApp.js";
+import { openBlankViewport, readUniqueFeatures, testBlankViewport, testBlankViewportAsync } from "./openBlankViewport.js";
+import { createBlankConnection } from "./createBlankConnection.js";
+import { DecorateContext } from "../ViewContext.js";
+import { Pixel } from "../render/Pixel.js";
+import { GraphicType } from "../common/render/GraphicType.js";
+import { RenderGraphic } from "../render/RenderGraphic.js";
+import { Decorator } from "../ViewManager.js";
+import { CanvasDecoration } from "../core-frontend.js";
 
 describe("Viewport", () => {
   beforeAll(async () => IModelApp.startup({ localization: new EmptyLocalization() }));

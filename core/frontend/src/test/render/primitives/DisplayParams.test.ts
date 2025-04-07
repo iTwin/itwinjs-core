@@ -5,7 +5,7 @@
 
 import { describe, expect, it } from "vitest";
 import { ColorByName, ColorDef, GraphicParams, LinePixels } from "@itwin/core-common";
-import { DisplayParams } from "../../../common/internal/render/DisplayParams";
+import { DisplayParams } from "../../../common/internal/render/DisplayParams.js";
 
 export class FakeDisplayParams extends DisplayParams {
   public constructor() { super(DisplayParams.Type.Linear, ColorDef.black, ColorDef.black); }

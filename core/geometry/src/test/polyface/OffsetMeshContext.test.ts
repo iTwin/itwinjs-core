@@ -3,27 +3,27 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
-import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
-import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
+import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d.js";
+import { GeometryCoreTestIO } from "../GeometryCoreTestIO.js";
+import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder.js";
 import { describe, expect, it } from "vitest";
-import { LineString3d } from "../../curve/LineString3d";
-import { Arc3d } from "../../curve/Arc3d";
-import { StrokeOptions } from "../../curve/StrokeOptions";
-import { GeometryQuery } from "../../curve/GeometryQuery";
-import { Checker } from "../Checker";
-import { IndexedPolyface } from "../../polyface/Polyface";
-import { RFunctions } from "./DrapeLinestring.test";
-import { Sample } from "../../serialization/GeometrySamples";
-import { Geometry } from "../../Geometry";
-import { Angle } from "../../geometry3d/Angle";
-import { HalfEdge, HalfEdgeGraph, HalfEdgeMask } from "../../topology/Graph";
-import { GraphChecker } from "../topology/Graph.test";
-import { OffsetMeshOptions, PolyfaceQuery } from "../../polyface/PolyfaceQuery";
-import { AngleSweep } from "../../geometry3d/AngleSweep";
-import { OffsetMeshContext } from "../../polyface/multiclip/OffsetMeshContext";
-import { LinearSweep } from "../../solid/LinearSweep";
-import { SolidPrimitive } from "../../solid/SolidPrimitive";
+import { LineString3d } from "../../curve/LineString3d.js";
+import { Arc3d } from "../../curve/Arc3d.js";
+import { StrokeOptions } from "../../curve/StrokeOptions.js";
+import { GeometryQuery } from "../../curve/GeometryQuery.js";
+import { Checker } from "../Checker.js";
+import { IndexedPolyface } from "../../polyface/Polyface.js";
+import { RFunctions } from "./DrapeLinestring.test.js";
+import { Sample } from "../../serialization/GeometrySamples.js";
+import { Geometry } from "../../Geometry.js";
+import { Angle } from "../../geometry3d/Angle.js";
+import { HalfEdge, HalfEdgeGraph, HalfEdgeMask } from "../../topology/Graph.js";
+import { GraphChecker } from "../topology/Graph.test.js";
+import { OffsetMeshOptions, PolyfaceQuery } from "../../polyface/PolyfaceQuery.js";
+import { AngleSweep } from "../../geometry3d/AngleSweep.js";
+import { OffsetMeshContext } from "../../polyface/multiclip/OffsetMeshContext.js";
+import { LinearSweep } from "../../solid/LinearSweep.js";
+import { SolidPrimitive } from "../../solid/SolidPrimitive.js";
 
 const globalSeparateFaceEdgeAndVertexOutputs = false;
 function cleanupZero(a: number, tol: number = 1.0e-12): number {

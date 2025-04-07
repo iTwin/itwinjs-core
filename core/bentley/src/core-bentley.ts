@@ -2,44 +2,44 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-export * from "./AccessToken";
-export * from "./Assert";
-export * from "./BeEvent";
-export * from "./BentleyError";
-export * from "./BentleyLoggerCategory";
-export * from "./StatusCategory";
-export * from "./BeSQLite";
-export * from "./ByteStream";
-export * from "./ClassUtils";
-export * from "./Compare";
-export * from "./CompressedId64Set";
-export * from "./Dictionary";
-export * from "./Disposable";
-export * from "./Id";
-export * from "./IndexMap";
-export * from "./JsonSchema";
-export * from "./JsonUtils";
-export * from "./Logger";
-export * from "./LRUMap";
-export * from "./ObservableSet";
-export * from "./OneAtATimeAction";
-export * from "./OrderedId64Iterable";
-export * from "./OrderedSet";
-export * from "./partitionArray";
-export * from "./PriorityQueue";
-export * from "./ProcessDetector";
-export * from "./SortedArray";
-export * from "./StringUtils";
-export * from "./Time";
-export * from "./Tracing";
-export * from "./TupleKeyedMap";
-export * from "./TypedArrayBuilder";
-export * from "./UnexpectedErrors";
-export * from "./UtilityTypes";
-export * from "./YieldManager";
+export * from "./AccessToken.js";
+export * from "./Assert.js";
+export * from "./BeEvent.js";
+export * from "./BentleyError.js";
+export * from "./BentleyLoggerCategory.js";
+export * from "./StatusCategory.js";
+export * from "./BeSQLite.js";
+export * from "./ByteStream.js";
+export * from "./ClassUtils.js";
+export * from "./Compare.js";
+export * from "./CompressedId64Set.js";
+export * from "./Dictionary.js";
+export * from "./Disposable.js";
+export * from "./Id.js";
+export * from "./IndexMap.js";
+export * from "./JsonSchema.js";
+export * from "./JsonUtils.js";
+export * from "./Logger.js";
+export * from "./LRUMap.js";
+export * from "./ObservableSet.js";
+export * from "./OneAtATimeAction.js";
+export * from "./OrderedId64Iterable.js";
+export * from "./OrderedSet.js";
+export * from "./partitionArray.js";
+export * from "./PriorityQueue.js";
+export * from "./ProcessDetector.js";
+export * from "./SortedArray.js";
+export * from "./StringUtils.js";
+export * from "./Time.js";
+export * from "./Tracing.js";
+export * from "./TupleKeyedMap.js";
+export * from "./TypedArrayBuilder.js";
+export * from "./UnexpectedErrors.js";
+export * from "./UtilityTypes.js";
+export * from "./YieldManager.js";
 
 // Temporarily (until 5.0) export top-level internal APIs to avoid breaking callers.
-export * from "./internal/cross-package";
+export * from "./internal/cross-package.js";
 
 /** @docs-package-description
  * The core-bentley package contains classes to solve problems that are common for both client and server use cases.

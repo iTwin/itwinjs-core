@@ -4,8 +4,8 @@
  *--------------------------------------------------------------------------------------------*/
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { ClipPrimitive, ClipShape, ClipVector, Point3d, Transform, UnionOfConvexClipPlaneSets } from "@itwin/core-geometry";
-import { ClipVolume } from "../../../internal/render/webgl/ClipVolume";
-import { IModelApp } from "../../../IModelApp";
+import { ClipVolume } from "../../../internal/render/webgl/ClipVolume.js";
+import { IModelApp } from "../../../IModelApp.js";
 import { EmptyLocalization } from "@itwin/core-common";
 
 describe("ClipVolume", async () => {

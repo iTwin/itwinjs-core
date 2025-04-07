@@ -5,16 +5,16 @@
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { EmptyLocalization, Gradient, ImageSource, ImageSourceFormat, RenderTexture, RgbColorProps, TextureMapping, TextureTransparency } from "@itwin/core-common";
 import { Capabilities } from "@itwin/webgl-compatibility";
-import { IModelApp } from "../../../IModelApp";
-import { CreateRenderMaterialArgs } from "../../../render/CreateRenderMaterialArgs";
-import { IModelConnection } from "../../../IModelConnection";
-import { MockRender } from "../../../internal/render/MockRender";
-import { Material } from "../../../internal/render/webgl/Material";
-import { RenderSystem } from "../../../render/RenderSystem";
-import { TileAdmin } from "../../../tile/internal";
-import { System } from "../../../internal/render/webgl/System";
-import { createBlankConnection } from "../../createBlankConnection";
-import { unpackAndNormalizeMaterialParam } from "./Material.test";
+import { IModelApp } from "../../../IModelApp.js";
+import { CreateRenderMaterialArgs } from "../../../render/CreateRenderMaterialArgs.js";
+import { IModelConnection } from "../../../IModelConnection.js";
+import { MockRender } from "../../../internal/render/MockRender.js";
+import { Material } from "../../../internal/render/webgl/Material.js";
+import { RenderSystem } from "../../../render/RenderSystem.js";
+import { TileAdmin } from "../../../tile/internal.js";
+import { System } from "../../../internal/render/webgl/System.js";
+import { createBlankConnection } from "../../createBlankConnection.js";
+import { unpackAndNormalizeMaterialParam } from "./Material.test.js";
 
 function _createCanvas(): HTMLCanvasElement | undefined {
   const canvas = document.createElement("canvas");

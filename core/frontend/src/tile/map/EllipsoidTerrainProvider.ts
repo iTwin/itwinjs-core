@@ -8,10 +8,10 @@
 
 import { assert } from "@itwin/core-bentley";
 import { Angle, Ellipsoid, EllipsoidPatch, Point2d, Point3d, Range1d, Range3d, Transform } from "@itwin/core-geometry";
-import { RealityMeshParams, RealityMeshParamsBuilder } from "../../render/RealityMeshParams";
+import { RealityMeshParams, RealityMeshParamsBuilder } from "../../render/RealityMeshParams.js";
 import {
   MapCartoRectangle, MapTile, MapTilingScheme, QuadId, ReadMeshArgs, TerrainMeshProvider, TerrainMeshProviderOptions, TileRequest, WebMercatorTilingScheme,
-} from "../internal";
+} from "../internal.js";
 
 const scratchPoint2d = Point2d.createZero();
 const scratchPoint = Point3d.createZero();

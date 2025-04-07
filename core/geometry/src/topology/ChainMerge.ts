@@ -7,14 +7,14 @@
  * @module Topology
  */
 
-import { ConvexClipPlaneSet } from "../clipping/ConvexClipPlaneSet";
-import { LineSegment3d } from "../curve/LineSegment3d";
-import { LineString3d } from "../curve/LineString3d";
-import { Geometry, PlaneAltitudeEvaluator } from "../Geometry";
-import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
-import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
-import { HalfEdge, HalfEdgeGraph, HalfEdgeMask } from "./Graph";
-import { HalfEdgeGraphOps } from "./Merging";
+import { ConvexClipPlaneSet } from "../clipping/ConvexClipPlaneSet.js";
+import { LineSegment3d } from "../curve/LineSegment3d.js";
+import { LineString3d } from "../curve/LineString3d.js";
+import { Geometry, PlaneAltitudeEvaluator } from "../Geometry.js";
+import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray.js";
+import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d.js";
+import { HalfEdge, HalfEdgeGraph, HalfEdgeMask } from "./Graph.js";
+import { HalfEdgeGraphOps } from "./Merging.js";
 
 /**
  * interface containing various options appropriate to merging lines segments into chains.

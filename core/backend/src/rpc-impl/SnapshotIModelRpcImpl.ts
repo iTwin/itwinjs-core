@@ -9,8 +9,8 @@
 import {
   IModelConnectionProps, IModelNotFoundResponse, IModelRpcProps, RpcInterface, RpcManager, SnapshotIModelRpcInterface, SnapshotOpenOptions,
 } from "@itwin/core-common";
-import { SnapshotDb } from "../IModelDb";
-import { IModelHost } from "../IModelHost";
+import { SnapshotDb } from "../IModelDb.js";
+import { IModelHost } from "../IModelHost.js";
 
 /* eslint-disable @typescript-eslint/no-deprecated */
 

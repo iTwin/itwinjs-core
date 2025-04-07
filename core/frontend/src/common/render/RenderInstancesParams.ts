@@ -9,8 +9,8 @@
 import { Id64String } from "@itwin/core-bentley";
 import { Transform } from "@itwin/core-geometry";
 import { Feature, LinePixels, RgbColorProps } from "@itwin/core-common";
-import { _implementationProhibited } from "../internal/Symbols";
-import { collectRenderInstancesParamsTransferables, createRenderInstancesParamsBuilder } from "../../internal/render/RenderInstancesParamsImpl";
+import { _implementationProhibited } from "../internal/Symbols.js";
+import { collectRenderInstancesParamsTransferables, createRenderInstancesParamsBuilder } from "../../internal/render/RenderInstancesParamsImpl.js";
 
 /** Represents a [[RenderInstances]] in a form that supports [structured cloning](https://developer.mozilla.org/en-US/docs/Web/API/structuredClone),
  * e.g., for transferring between Workers and the main JavaScript thread.

@@ -6,7 +6,7 @@
  * @module Views
  */
 
-import { Viewport } from "./Viewport";
+import { Viewport } from "./Viewport.js";
 
 /** A function used by [[connectViewports]] that can synchronize the state of a target [[Viewport]] with
  * changes in the state of a source Viewport.

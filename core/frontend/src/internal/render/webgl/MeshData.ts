@@ -9,14 +9,14 @@
 import { dispose } from "@itwin/core-bentley";
 import { Point3d } from "@itwin/core-geometry";
 import { FeatureIndexType, FillFlags, LinePixels } from "@itwin/core-common";
-import { MeshParams } from "../../../common/internal/render/MeshParams";
-import { SurfaceType } from "../../../common/internal/render/SurfaceParams";
-import { RenderMemory } from "../../../render/RenderMemory";
-import { WebGLDisposable } from "./Disposable";
-import { LineCode } from "./LineCode";
-import { createMaterialInfo, MaterialInfo } from "./Material";
-import { Texture } from "./Texture";
-import { VertexLUT } from "./VertexLUT";
+import { MeshParams } from "../../../common/internal/render/MeshParams.js";
+import { SurfaceType } from "../../../common/internal/render/SurfaceParams.js";
+import { RenderMemory } from "../../../render/RenderMemory.js";
+import { WebGLDisposable } from "./Disposable.js";
+import { LineCode } from "./LineCode.js";
+import { createMaterialInfo, MaterialInfo } from "./Material.js";
+import { Texture } from "./Texture.js";
+import { VertexLUT } from "./VertexLUT.js";
 
 /** @internal */
 export class MeshData implements WebGLDisposable {

@@ -6,7 +6,7 @@
  * @module Entities
  */
 
-import { GeometricElement2dProps, RelatedElementProps } from "../ElementProps";
+import { GeometricElement2dProps, RelatedElementProps } from "../ElementProps.js";
 
 /**
  * @public

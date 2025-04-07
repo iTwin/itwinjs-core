@@ -7,9 +7,9 @@
  */
 
 import { GuidString } from "@itwin/core-bentley";
-import { ChangesetIdWithIndex, ChangesetIndexOrId, LocalFileName } from "./ChangesetProps";
-import { OpenDbKey } from "./IModel";
-import { IModelVersionProps } from "./IModelVersion";
+import { ChangesetIdWithIndex, ChangesetIndexOrId, LocalFileName } from "./ChangesetProps.js";
+import { OpenDbKey } from "./IModel.js";
+import { IModelVersionProps } from "./IModelVersion.js";
 
 /** The Id assigned to a briefcase by iModelHub, or [[BriefcaseIdValue.Unassigned]] .
  * @public

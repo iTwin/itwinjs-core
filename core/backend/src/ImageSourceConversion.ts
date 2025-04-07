@@ -7,7 +7,7 @@
  */
 
 import { BinaryImageSource, ImageBuffer, ImageBufferFormat, ImageSourceFormat } from "@itwin/core-common";
-import { IModelNative } from "./internal/NativePlatform";
+import { IModelNative } from "./internal/NativePlatform.js";
 
 /** Arguments supplied to [[imageBufferFromImageSource]].
  * @public

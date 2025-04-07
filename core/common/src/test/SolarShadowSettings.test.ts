@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { describe, expect, it } from "vitest";
-import { ColorByName } from "../ColorByName";
-import { SolarShadowSettings, SolarShadowSettingsProps } from "../SolarShadows";
+import { ColorByName } from "../ColorByName.js";
+import { SolarShadowSettings, SolarShadowSettingsProps } from "../SolarShadows.js";
 
 describe("SolarShadowSettings", () => {
   it("round-trips through JSON", () => {

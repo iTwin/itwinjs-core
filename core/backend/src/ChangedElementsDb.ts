@@ -9,12 +9,12 @@
 import { AccessToken, DbResult, IModelStatus, OpenMode } from "@itwin/core-bentley";
 import { ChangeData, ChangedElements, ChangedModels, IModelError } from "@itwin/core-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
-import { BriefcaseManager } from "./BriefcaseManager";
-import { ECDbOpenMode } from "./ECDb";
-import { IModelDb } from "./IModelDb";
-import { IModelHost } from "./IModelHost";
-import { IModelNative } from "./internal/NativePlatform";
-import { _hubAccess, _nativeDb } from "./internal/Symbols";
+import { BriefcaseManager } from "./BriefcaseManager.js";
+import { ECDbOpenMode } from "./ECDb.js";
+import { IModelDb } from "./IModelDb.js";
+import { IModelHost } from "./IModelHost.js";
+import { IModelNative } from "./internal/NativePlatform.js";
+import { _hubAccess, _nativeDb } from "./internal/Symbols.js";
 
 /**
  * Options for processChangesets function

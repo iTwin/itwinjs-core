@@ -8,20 +8,20 @@
 
 import { assert, dispose } from "@itwin/core-bentley";
 import { Point3d, Range3d, Transform, XYAndZ } from "@itwin/core-geometry";
-import { InstancedGraphicParams, InstancedGraphicProps, PatternGraphicParams } from "../../../common/render/InstancedGraphicParams";
-import { RenderMemory } from "../../../render/RenderMemory";
-import { AttributeMap } from "./AttributeMap";
-import { CachedGeometry, LUTGeometry } from "./CachedGeometry";
-import { ShaderProgramParams } from "./DrawCommand";
-import { GL } from "./GL";
-import { BufferHandle, BufferParameters, BuffersContainer } from "./AttributeBuffers";
-import { Target } from "./Target";
-import { TechniqueId } from "./TechniqueId";
-import { Matrix4 } from "./Matrix";
-import { RenderInstances } from "../../../render/RenderSystem";
-import { _featureTable, _implementationProhibited, _renderSystem, _transformCenter, _transforms } from "../../../common/internal/Symbols";
+import { InstancedGraphicParams, InstancedGraphicProps, PatternGraphicParams } from "../../../common/render/InstancedGraphicParams.js";
+import { RenderMemory } from "../../../render/RenderMemory.js";
+import { AttributeMap } from "./AttributeMap.js";
+import { CachedGeometry, LUTGeometry } from "./CachedGeometry.js";
+import { ShaderProgramParams } from "./DrawCommand.js";
+import { GL } from "./GL.js";
+import { BufferHandle, BufferParameters, BuffersContainer } from "./AttributeBuffers.js";
+import { Target } from "./Target.js";
+import { TechniqueId } from "./TechniqueId.js";
+import { Matrix4 } from "./Matrix.js";
+import { RenderInstances } from "../../../render/RenderSystem.js";
+import { _featureTable, _implementationProhibited, _renderSystem, _transformCenter, _transforms } from "../../../common/internal/Symbols.js";
 import { BatchType, PackedFeatureTable } from "@itwin/core-common";
-import { RenderInstancesParamsImpl } from "../../../internal/render/RenderInstancesParamsImpl";
+import { RenderInstancesParamsImpl } from "../../../internal/render/RenderInstancesParamsImpl.js";
 
 /** @internal */
 export function isInstancedGraphicParams(params: any): params is InstancedGraphicParams {

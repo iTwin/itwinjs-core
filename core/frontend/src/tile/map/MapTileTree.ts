@@ -13,21 +13,21 @@ import {
 import {
   Angle, AngleSweep, Constant, Ellipsoid, EllipsoidPatch, Point3d, Range1d, Range3d, Ray3d, Transform, Vector3d, XYZProps,
 } from "@itwin/core-geometry";
-import { ApproximateTerrainHeights } from "../../ApproximateTerrainHeights";
-import { TerrainDisplayOverrides } from "../../DisplayStyleState";
-import { HitDetail } from "../../HitDetail";
-import { IModelConnection } from "../../IModelConnection";
-import { IModelApp } from "../../IModelApp";
-import { PlanarClipMaskState } from "../../PlanarClipMaskState";
-import { FeatureSymbology } from "../../render/FeatureSymbology";
-import { DecorateContext, SceneContext } from "../../ViewContext";
-import { MapLayerScaleRangeVisibility, ScreenViewport } from "../../Viewport";
+import { ApproximateTerrainHeights } from "../../ApproximateTerrainHeights.js";
+import { TerrainDisplayOverrides } from "../../DisplayStyleState.js";
+import { HitDetail } from "../../HitDetail.js";
+import { IModelConnection } from "../../IModelConnection.js";
+import { IModelApp } from "../../IModelApp.js";
+import { PlanarClipMaskState } from "../../PlanarClipMaskState.js";
+import { FeatureSymbology } from "../../render/FeatureSymbology.js";
+import { DecorateContext, SceneContext } from "../../ViewContext.js";
+import { MapLayerScaleRangeVisibility, ScreenViewport } from "../../Viewport.js";
 import {
   BingElevationProvider, createDefaultViewFlagOverrides, DisclosedTileTreeSet, EllipsoidTerrainProvider, GeometryTileTreeReference,
   ImageryMapLayerTreeReference, ImageryMapTileTree, ImageryTileTreeState, LayerTileTreeHandler, LayerTileTreeReferenceHandler, MapCartoRectangle, MapFeatureInfoOptions, MapLayerFeatureInfo, MapLayerImageryProvider, MapLayerIndex, MapLayerTileTreeReference, MapLayerTreeSetting, MapTile,
   MapTileLoader, MapTilingScheme, PlanarTilePatch, QuadId,
   RealityTile, RealityTileDrawArgs, RealityTileTree, RealityTileTreeParams, TerrainMeshProviderOptions, Tile, TileDrawArgs, TileLoadPriority, TileParams, TileTree, TileTreeOwner, TileTreeReference, TileTreeSupplier, UpsampledMapTile, WebMercatorTilingScheme,
-} from "../internal";
+} from "../internal.js";
 
 const scratchPoint = Point3d.create();
 const scratchCorners = [Point3d.createZero(), Point3d.createZero(), Point3d.createZero(), Point3d.createZero(), Point3d.createZero(), Point3d.createZero(), Point3d.createZero(), Point3d.createZero()];

@@ -3,17 +3,17 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { describe, expect, it } from "vitest";
-import { BSplineCurve3dH } from "../../bspline/BSplineCurve3dH";
-import { BSplineSurface3dH, UVSelect } from "../../bspline/BSplineSurface";
-import { BSplineWrapMode, KnotVector } from "../../bspline/KnotVector";
-import { GeometryQuery } from "../../curve/GeometryQuery";
-import { Geometry } from "../../Geometry";
-import { Point3d } from "../../geometry3d/Point3dVector3d";
-import { NumberArray, Point3dArray, Point4dArray } from "../../geometry3d/PointHelpers";
-import { Point4d } from "../../geometry4d/Point4d";
-import { SerializationHelpers } from "../../serialization/SerializationHelpers";
-import { Checker } from "../Checker";
-import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
+import { BSplineCurve3dH } from "../../bspline/BSplineCurve3dH.js";
+import { BSplineSurface3dH, UVSelect } from "../../bspline/BSplineSurface.js";
+import { BSplineWrapMode, KnotVector } from "../../bspline/KnotVector.js";
+import { GeometryQuery } from "../../curve/GeometryQuery.js";
+import { Geometry } from "../../Geometry.js";
+import { Point3d } from "../../geometry3d/Point3dVector3d.js";
+import { NumberArray, Point3dArray, Point4dArray } from "../../geometry3d/PointHelpers.js";
+import { Point4d } from "../../geometry4d/Point4d.js";
+import { SerializationHelpers } from "../../serialization/SerializationHelpers.js";
+import { Checker } from "../Checker.js";
+import { GeometryCoreTestIO } from "../GeometryCoreTestIO.js";
 
 function createCurveData(curve: BSplineCurve3dH): SerializationHelpers.BSplineCurveData {
   const params: SerializationHelpers.BSplineParams = { numPoles: curve.numPoles, order: curve.order, knots: curve.copyKnots(false), closed: false, wrapMode: curve.getWrappable() };

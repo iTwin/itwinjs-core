@@ -2,28 +2,31 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { Guid } from "@itwin/core-bentley";
 import { DrawingProps } from "@itwin/core-common";
-import { Drawing } from "../../Element";
-import { DocumentListModel } from "../../Model";
-import { SnapshotDb } from "../../IModelDb";
-import { IModelTestUtils } from "../IModelTestUtils";
+import { Drawing } from "../../Element.js";
+import { DocumentListModel } from "../../Model.js";
+import { SnapshotDb } from "../../IModelDb.js";
+import { IModelTestUtils } from "../IModelTestUtils.js";
+import { TestUtils } from "../TestUtils.js";
 
 describe("Drawing", () => {
   let imodel: SnapshotDb;
   let documentListModelId: string;
 
-  before(() => {
+  beforeAll(() => {
+    TestUtils.startBackend();
     const iModelPath = IModelTestUtils.prepareOutputFile("Drawing", "Drawing.bim");
     imodel = SnapshotDb.createEmpty(iModelPath, { rootSubject: { name: "DrawingTest" } });
     documentListModelId = DocumentListModel.insert(imodel, SnapshotDb.rootSubjectId, "DocumentList");
   });
 
-  after(() => {
+  afterAll(() => {
     imodel.close();
+    TestUtils.shutdownBackend();
   });
-  
+
   class TestDrawing extends Drawing {
     public constructor(props: DrawingProps) {
       super(props, imodel);
@@ -41,7 +44,7 @@ describe("Drawing", () => {
       if (undefined !== scaleFactor) {
         props.scaleFactor = scaleFactor;
       }
-      
+
       return props;
     }
 

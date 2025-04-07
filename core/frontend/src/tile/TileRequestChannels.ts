@@ -6,11 +6,11 @@
  * @module Tiles
  */
 
-import { IpcApp } from "../IpcApp";
-import { IModelConnection } from "../IModelConnection";
+import { IpcApp } from "../IpcApp.js";
+import { IModelConnection } from "../IModelConnection.js";
 import {
   IModelTile, IModelTileRequestChannels, TileRequest, TileRequestChannel, TileRequestChannelStatistics,
-} from "./internal";
+} from "./internal.js";
 
 /** For an [[IpcApp]], allows backend element graphics requests in progress to be canceled. */
 class ElementGraphicsChannel extends TileRequestChannel {

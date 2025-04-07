@@ -6,12 +6,12 @@
 /** @packageDocumentation
  * @module Curve
  */
-import { Geometry } from "../../Geometry";
-import { Plane3dByOriginAndVectors } from "../../geometry3d/Plane3dByOriginAndVectors";
-import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
-import { Ray3d } from "../../geometry3d/Ray3d";
-import { Quadrature } from "../../numerics/Quadrature";
-import { SimpleNewton } from "../../numerics/Newton";
+import { Geometry } from "../../Geometry.js";
+import { Plane3dByOriginAndVectors } from "../../geometry3d/Plane3dByOriginAndVectors.js";
+import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d.js";
+import { Ray3d } from "../../geometry3d/Ray3d.js";
+import { Quadrature } from "../../numerics/Quadrature.js";
+import { SimpleNewton } from "../../numerics/Newton.js";
 /**
  * XYCurveEvaluator is an abstract with methods for evaluating X and Y parts of a curve parameterized by a fraction.
  * * The required methods call for independent X and Y evaluation.

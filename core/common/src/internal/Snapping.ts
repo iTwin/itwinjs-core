@@ -8,9 +8,9 @@
 
 import { Id64Array, Id64String } from "@itwin/core-bentley";
 import { Matrix4dProps, TransformProps, XYZProps } from "@itwin/core-geometry";
-import { GeometryStreamProps } from "../geometry/GeometryStream";
-import { GeometryClass } from "../GeometryParams";
-import { ViewFlagProps } from "../ViewFlags";
+import { GeometryStreamProps } from "../geometry/GeometryStream.js";
+import { GeometryClass } from "../GeometryParams.js";
+import { ViewFlagProps } from "../ViewFlags.js";
 
 /** Information required to request a *snap* to a pickable decoration from the front end to the back end.
  * @internal RPC glue.

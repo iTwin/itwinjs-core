@@ -6,16 +6,16 @@
 /** @packageDocumentation
  * @module CartesianGeometry
  */
-import { CurveCurveApproachType, CurveLocationDetail, CurveLocationDetailPair } from "../curve/CurveLocationDetail";
-import { AxisOrder, BeJSONFunctions, Geometry } from "../Geometry";
-import { SmallSystem } from "../numerics/SmallSystem";
-import { Matrix3d } from "./Matrix3d";
-import { Plane3dByOriginAndUnitNormal } from "./Plane3dByOriginAndUnitNormal";
-import { Vector2d } from "./Point2dVector2d";
-import { Point3d, Vector3d } from "./Point3dVector3d";
-import { Range1d, Range3d } from "./Range";
-import { Transform } from "./Transform";
-import { XYAndZ } from "./XYZProps";
+import { CurveCurveApproachType, CurveLocationDetail, CurveLocationDetailPair } from "../curve/CurveLocationDetail.js";
+import { AxisOrder, BeJSONFunctions, Geometry } from "../Geometry.js";
+import { SmallSystem } from "../numerics/SmallSystem.js";
+import { Matrix3d } from "./Matrix3d.js";
+import { Plane3dByOriginAndUnitNormal } from "./Plane3dByOriginAndUnitNormal.js";
+import { Vector2d } from "./Point2dVector2d.js";
+import { Point3d, Vector3d } from "./Point3dVector3d.js";
+import { Range1d, Range3d } from "./Range.js";
+import { Transform } from "./Transform.js";
+import { XYAndZ } from "./XYZProps.js";
 
 // cspell:word Cramer
 /**

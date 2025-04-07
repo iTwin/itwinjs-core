@@ -2,8 +2,8 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert } from "chai";
-import { Schema } from "../../Schema";
+import { assert, describe, it } from "vitest";
+import { Schema } from "../../Schema.js";
 import * as Semver from "semver";
 
 describe("Schema Utilities Test", () => {

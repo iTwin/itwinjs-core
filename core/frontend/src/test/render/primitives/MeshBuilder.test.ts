@@ -5,22 +5,22 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { Arc3d, AuxChannel, AuxChannelData, AuxChannelDataType, LineString3d, Loop, Point3d, PolyfaceAuxData, PolyfaceBuilder, Range3d, Transform } from "@itwin/core-geometry";
 import { ColorDef, GraphicParams } from "@itwin/core-common";
-import { IModelApp } from "../../../IModelApp";
-import { MockRender } from "../../../internal/render/MockRender";
-import { ScreenViewport } from "../../../Viewport";
-import { PrimitiveBuilder } from "../../../internal/render/PrimitiveBuilder";
-import { openBlankViewport } from "../../openBlankViewport";
-import { GraphicType } from "../../../common/render/GraphicType";
-import { DisplayParams } from "../../../common/internal/render/DisplayParams";
-import { MeshBuilder, MeshEdgeCreationOptions } from "../../../common/internal/render/MeshBuilder";
-import { MeshPrimitiveType } from "../../../common/internal/render/MeshPrimitive";
-import { ToleranceRatio, Triangle } from "../../../common/internal/render/Primitives";
-import { Geometry } from "../../../common/internal/render/GeometryPrimitives";
-import { StrokesPrimitiveList, StrokesPrimitivePointLists } from "../../../common/internal/render/Strokes";
-import { PolyfacePrimitive, PolyfacePrimitiveList } from "../../../common/internal/render/Polyface";
-import { Mesh } from "../../../common/internal/render/MeshPrimitives";
-import { createMeshParams } from "../../../common/internal/render/VertexTableBuilder";
-import { _accumulator } from "../../../common/internal/Symbols";
+import { IModelApp } from "../../../IModelApp.js";
+import { MockRender } from "../../../internal/render/MockRender.js";
+import { ScreenViewport } from "../../../Viewport.js";
+import { PrimitiveBuilder } from "../../../internal/render/PrimitiveBuilder.js";
+import { openBlankViewport } from "../../openBlankViewport.js";
+import { GraphicType } from "../../../common/render/GraphicType.js";
+import { DisplayParams } from "../../../common/internal/render/DisplayParams.js";
+import { MeshBuilder, MeshEdgeCreationOptions } from "../../../common/internal/render/MeshBuilder.js";
+import { MeshPrimitiveType } from "../../../common/internal/render/MeshPrimitive.js";
+import { ToleranceRatio, Triangle } from "../../../common/internal/render/Primitives.js";
+import { Geometry } from "../../../common/internal/render/GeometryPrimitives.js";
+import { StrokesPrimitiveList, StrokesPrimitivePointLists } from "../../../common/internal/render/Strokes.js";
+import { PolyfacePrimitive, PolyfacePrimitiveList } from "../../../common/internal/render/Polyface.js";
+import { Mesh } from "../../../common/internal/render/MeshPrimitives.js";
+import { createMeshParams } from "../../../common/internal/render/VertexTableBuilder.js";
+import { _accumulator } from "../../../common/internal/Symbols.js";
 
 class FakeDisplayParams extends DisplayParams {
   public constructor() {

@@ -12,11 +12,11 @@ import {
   NativeAppFunctions, nativeAppIpcStrings, NativeAppNotifications, OverriddenBy,
   RemoveFunction, RequestNewBriefcaseProps, StorageValue, SyncMode,
 } from "@itwin/core-common";
-import { FrontendLoggerCategory } from "./common/FrontendLoggerCategory";
-import { IpcApp, IpcAppOptions, NotificationHandler } from "./IpcApp";
-import { NativeAppLogger } from "./NativeAppLogger";
-import { OnDownloadProgress } from "./BriefcaseConnection";
-import { _callIpcChannel } from "./common/internal/Symbols";
+import { FrontendLoggerCategory } from "./common/FrontendLoggerCategory.js";
+import { IpcApp, IpcAppOptions, NotificationHandler } from "./IpcApp.js";
+import { NativeAppLogger } from "./NativeAppLogger.js";
+import { OnDownloadProgress } from "./BriefcaseConnection.js";
+import { _callIpcChannel } from "./common/internal/Symbols.js";
 
 /** Properties for specifying the BriefcaseId for downloading. May either specify a BriefcaseId directly (preferable) or, for
  * backwards compatibility, a [SyncMode]($common). If [SyncMode.PullAndPush]($common) is supplied, a new briefcaseId will be acquired.

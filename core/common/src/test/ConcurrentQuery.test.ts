@@ -5,8 +5,9 @@
 
 import { Point2d, Point3d } from "@itwin/core-geometry";
 import { assert, describe, it } from "vitest";
+// @ts-expect-error Ignoring js-base64 import error
 import { Base64 } from "js-base64";
-import { QueryBinder, QueryParamType } from "../ConcurrentQuery";
+import { QueryBinder, QueryParamType } from "../ConcurrentQuery.js";
 
 describe("QueryBinder", () => {
   it("binds values", async () => {

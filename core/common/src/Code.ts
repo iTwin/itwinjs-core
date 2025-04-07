@@ -7,7 +7,7 @@
  */
 
 import { GuidString, Id64, Id64String, JsonUtils } from "@itwin/core-bentley";
-import { IModel } from "./IModel";
+import { IModel } from "./IModel.js";
 
 /**
  * The ElementId of the element that defines the scope for a Code value.

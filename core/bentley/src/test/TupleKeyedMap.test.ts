@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert, describe, expect, it } from "vitest";
-import { TupleKeyedMap } from "../core-bentley";
+import { TupleKeyedMap } from "../core-bentley.js";
 
 describe("TupleKeyedMap", () => {
   it("should maintain mapping between keys and values", () => {

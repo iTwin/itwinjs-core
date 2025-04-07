@@ -9,8 +9,8 @@ import {
 import {
   CheckboxFormatPropEditorSpec, CustomFormatPropEditorSpec,
   TextInputFormatPropEditorSpec, TextSelectFormatPropEditorSpec,
-} from "../quantity-formatting/QuantityTypesEditorSpecs";
-import { CustomQuantityTypeDefinition } from "../quantity-formatting/QuantityFormatter";
+} from "../quantity-formatting/QuantityTypesEditorSpecs.js";
+import { CustomQuantityTypeDefinition } from "../quantity-formatting/QuantityFormatter.js";
 
 interface BearingFormatProps extends CustomFormatProps {
   readonly custom: {

@@ -7,12 +7,12 @@
  * @module Topology
  */
 
-import { LineString3d } from "../curve/LineString3d";
-import { Geometry } from "../Geometry";
-import { Point3d } from "../geometry3d/Point3dVector3d";
-import { Point3dArray } from "../geometry3d/PointHelpers";
-import {PolygonOps} from "../geometry3d/PolygonOps";
-import {PolylineOps} from "../geometry3d/PolylineOps";
+import { LineString3d } from "../curve/LineString3d.js";
+import { Geometry } from "../Geometry.js";
+import { Point3d } from "../geometry3d/Point3dVector3d.js";
+import { Point3dArray } from "../geometry3d/PointHelpers.js";
+import {PolygonOps} from "../geometry3d/PolygonOps.js";
+import {PolylineOps} from "../geometry3d/PolylineOps.js";
 type AnnounceLoopAndTrianglesFunction = (loop: Point3d[], triangles: Point3d[][]) => void;
 
 /**

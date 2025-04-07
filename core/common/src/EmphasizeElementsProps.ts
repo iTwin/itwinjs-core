@@ -7,8 +7,8 @@
  */
 
 import { Id64Array } from "@itwin/core-bentley";
-import { ColorDefProps } from "./ColorDef";
-import { FeatureAppearanceProps } from "./FeatureSymbology";
+import { ColorDefProps } from "./ColorDef.js";
+import { FeatureAppearanceProps } from "./FeatureSymbology.js";
 
 /** Options for overriding element appearance.
  * @see [EmphasizeElements]($frontend)

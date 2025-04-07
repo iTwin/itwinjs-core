@@ -11,10 +11,10 @@ import {
   BackgroundMapProvider, BackgroundMapType, BaseMapLayerSettings, DeprecatedBackgroundMapProps, ImageMapLayerSettings, MapSubLayerProps,
 } from "@itwin/core-common";
 import { Point2d } from "@itwin/core-geometry";
-import { IModelApp } from "../../IModelApp";
-import { IModelConnection } from "../../IModelConnection";
-import { request, RequestBasicCredentials } from "../../request/Request";
-import { ArcGisUtilities, MapCartoRectangle, MapLayerSourceValidation } from "../internal";
+import { IModelApp } from "../../IModelApp.js";
+import { IModelConnection } from "../../IModelConnection.js";
+import { request, RequestBasicCredentials } from "../../request/Request.js";
+import { ArcGisUtilities, MapCartoRectangle, MapLayerSourceValidation } from "../internal.js";
 
 /** Values for return codes from [[MapLayerSource.validateSource]]
  * @public

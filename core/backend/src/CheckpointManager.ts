@@ -8,21 +8,21 @@
 
 // cspell:ignore BLOCKCACHE
 
-import * as path from "path";
+import path from "node:path";
 import { NativeLoggerCategory } from "@bentley/imodeljs-native";
 import { AccessToken, BeEvent, ChangeSetStatus, Guid, GuidString, IModelStatus, Logger, LogLevel, Mutable, OpenMode, StopWatch } from "@itwin/core-bentley";
 import {
   BriefcaseIdValue, ChangesetId, ChangesetIdWithIndex, ChangesetIndexAndId, IModelError, IModelVersion, LocalDirName, LocalFileName, OpenCheckpointArgs,
 } from "@itwin/core-common";
-import { V2CheckpointAccessProps } from "./BackendHubAccess";
-import { BackendLoggerCategory } from "./BackendLoggerCategory";
-import { BriefcaseManager } from "./BriefcaseManager";
-import { CloudSqlite } from "./CloudSqlite";
-import { IModelHost } from "./IModelHost";
-import { IModelJsFs } from "./IModelJsFs";
-import { SnapshotDb, TokenArg } from "./IModelDb";
-import { IModelNative } from "./internal/NativePlatform";
-import { _getCheckpointDb, _hubAccess, _nativeDb, _openCheckpoint } from "./internal/Symbols";
+import { V2CheckpointAccessProps } from "./BackendHubAccess.js";
+import { BackendLoggerCategory } from "./BackendLoggerCategory.js";
+import { BriefcaseManager } from "./BriefcaseManager.js";
+import { CloudSqlite } from "./CloudSqlite.js";
+import { IModelHost } from "./IModelHost.js";
+import { IModelJsFs } from "./IModelJsFs.js";
+import { SnapshotDb, TokenArg } from "./IModelDb.js";
+import { IModelNative } from "./internal/NativePlatform.js";
+import { _getCheckpointDb, _hubAccess, _nativeDb, _openCheckpoint } from "./internal/Symbols.js";
 
 const loggerCategory = BackendLoggerCategory.IModelDb;
 

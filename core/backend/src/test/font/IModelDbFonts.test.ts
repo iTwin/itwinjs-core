@@ -2,20 +2,21 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
-import * as fs from "fs";
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from "vitest";
+import fs from "node:fs";
 import * as sinon from "sinon";
-import { BriefcaseDb, IModelDb } from "../../IModelDb";
-import { IModelTestUtils } from "../IModelTestUtils";
+import { BriefcaseDb, IModelDb } from "../../IModelDb.js";
+import { IModelTestUtils } from "../IModelTestUtils.js";
 import { FontFace, FontType, RscFontEncodingProps } from "@itwin/core-common";
-import { FontFile } from "../../FontFile";
+import { FontFile } from "../../FontFile.js";
 import type { IModelJsNative } from "@bentley/imodeljs-native";
-import { _faceProps, _getData } from "../../internal/Symbols";
-import { CodeService } from "../../CodeService";
-import { HubMock } from "../../HubMock";
-import { KnownTestLocations } from "../KnownTestLocations";
-import { BriefcaseManager } from "../../BriefcaseManager";
-import { QueryMappedFamiliesArgs } from "../../IModelDbFonts";
+import { _faceProps, _getData } from "../../internal/Symbols.js";
+import { CodeService } from "../../CodeService.js";
+import { HubMock } from "../../HubMock.js";
+import { KnownTestLocations } from "../KnownTestLocations.js";
+import { BriefcaseManager } from "../../BriefcaseManager.js";
+import { QueryMappedFamiliesArgs } from "../../IModelDbFonts.js";
+import { TestUtils } from "../TestUtils.js";
 
 describe("IModelDbFonts", () => {
   let db: IModelDb;
@@ -49,10 +50,14 @@ describe("IModelDbFonts", () => {
 
   }
 
-  before(() => {
+  beforeAll(async () => {
     HubMock.startup("IModelDbFontsTest", KnownTestLocations.outputDir);
+    await TestUtils.startBackend();
   });
-  after(() => HubMock.shutdown());
+  afterAll(async () => {
+    HubMock.shutdown();
+    await TestUtils.shutdownBackend();
+  });
 
   beforeEach(async () => {
     CodeService.createForIModel = () => MockCodeService as any;
@@ -174,8 +179,8 @@ describe("IModelDbFonts", () => {
     });
 
     it("throws if font is not embeddable", async () => {
-      await expect(db.fonts.embedFontFile({ file: createTTFile("Karla-Restricted.ttf") })).to.eventually.be.rejectedWith("Font does not permit embedding");
-      await expect(db.fonts.embedFontFile({ file: createTTFile("Karla-Preview-And-Print.ttf") })).to.eventually.be.rejectedWith("Font does not permit embedding");
+      await expect(db.fonts.embedFontFile({ file: createTTFile("Karla-Restricted.ttf") })).rejects.toThrow("Font does not permit embedding");
+      await expect(db.fonts.embedFontFile({ file: createTTFile("Karla-Preview-And-Print.ttf") })).rejects.toThrow("Font does not permit embedding");
     });
 
     it("allocates font Ids unless otherwise specified", async () => {

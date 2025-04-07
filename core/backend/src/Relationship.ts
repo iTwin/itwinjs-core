@@ -8,10 +8,10 @@
 
 import { DbResult, Id64, Id64String, IModelStatus } from "@itwin/core-bentley";
 import { EntityReferenceSet, IModelError, RelationshipProps, SourceAndTarget } from "@itwin/core-common";
-import { ECSqlStatement } from "./ECSqlStatement";
-import { Entity } from "./Entity";
-import { IModelDb } from "./IModelDb";
-import { _nativeDb } from "./internal/Symbols";
+import { ECSqlStatement } from "./ECSqlStatement.js";
+import { Entity } from "./Entity.js";
+import { IModelDb } from "./IModelDb.js";
+import { _nativeDb } from "./internal/Symbols.js";
 
 export type { SourceAndTarget, RelationshipProps } from "@itwin/core-common"; // for backwards compatibility
 

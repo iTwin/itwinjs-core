@@ -6,24 +6,24 @@
  * @module Bspline
  */
 
-import { CurvePrimitive } from "../curve/CurvePrimitive";
-import { CurveOffsetXYHandler } from "../curve/internalContexts/CurveOffsetXYHandler";
-import { PlaneAltitudeRangeContext } from "../curve/internalContexts/PlaneAltitudeRangeContext";
-import { LineString3d } from "../curve/LineString3d";
-import { OffsetOptions } from "../curve/OffsetOptions";
-import { StrokeOptions } from "../curve/StrokeOptions";
-import { Geometry } from "../Geometry";
-import { Angle } from "../geometry3d/Angle";
-import { IStrokeHandler } from "../geometry3d/GeometryHandler";
-import { Plane3dByOriginAndUnitNormal } from "../geometry3d/Plane3dByOriginAndUnitNormal";
-import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
-import { Range1d, Range3d } from "../geometry3d/Range";
-import { Ray3d } from "../geometry3d/Ray3d";
-import { Transform } from "../geometry3d/Transform";
-import { Point4d } from "../geometry4d/Point4d";
-import { UnivariateBezier } from "../numerics/BezierPolynomials";
-import { Bezier1dNd } from "./Bezier1dNd";
-import { KnotVector } from "./KnotVector";
+import { CurvePrimitive } from "../curve/CurvePrimitive.js";
+import { CurveOffsetXYHandler } from "../curve/internalContexts/CurveOffsetXYHandler.js";
+import { PlaneAltitudeRangeContext } from "../curve/internalContexts/PlaneAltitudeRangeContext.js";
+import { LineString3d } from "../curve/LineString3d.js";
+import { OffsetOptions } from "../curve/OffsetOptions.js";
+import { StrokeOptions } from "../curve/StrokeOptions.js";
+import { Geometry } from "../Geometry.js";
+import { Angle } from "../geometry3d/Angle.js";
+import { IStrokeHandler } from "../geometry3d/GeometryHandler.js";
+import { Plane3dByOriginAndUnitNormal } from "../geometry3d/Plane3dByOriginAndUnitNormal.js";
+import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d.js";
+import { Range1d, Range3d } from "../geometry3d/Range.js";
+import { Ray3d } from "../geometry3d/Ray3d.js";
+import { Transform } from "../geometry3d/Transform.js";
+import { Point4d } from "../geometry4d/Point4d.js";
+import { UnivariateBezier } from "../numerics/BezierPolynomials.js";
+import { Bezier1dNd } from "./Bezier1dNd.js";
+import { KnotVector } from "./KnotVector.js";
 
 /**
  * Base class for CurvePrimitive (necessarily 3D) with _polygon.

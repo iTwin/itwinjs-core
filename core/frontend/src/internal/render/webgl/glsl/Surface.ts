@@ -7,44 +7,44 @@
  */
 
 import { assert } from "@itwin/core-bentley";
-import { AttributeMap } from "../AttributeMap";
-import { Material } from "../Material";
-import { Pass, SurfaceBitIndex, SurfaceFlags, TextureUnit } from "../RenderFlags";
+import { AttributeMap } from "../AttributeMap.js";
+import { Material } from "../Material.js";
+import { Pass, SurfaceBitIndex, SurfaceFlags, TextureUnit } from "../RenderFlags.js";
 import {
   FragmentShaderBuilder, FragmentShaderComponent, ProgramBuilder, ShaderBuilder, VariableType, VertexShaderComponent,
-} from "../ShaderBuilder";
-import { System } from "../System";
+} from "../ShaderBuilder.js";
+import { System } from "../System.js";
 import {
   FeatureMode, IsAnimated, IsClassified, IsInstanced, IsShadowable, IsThematic, PositionType, TechniqueFlags,
-} from "../TechniqueFlags";
-import { TechniqueId } from "../TechniqueId";
-import { Texture } from "../Texture";
-import { addAnimation } from "./Animation";
-import { unpackFloat } from "./Clipping";
-import { addColor } from "./Color";
-import { addChooseVec2WithBitFlagsFunction, addChooseVec3WithBitFlagFunction, addExtractNthBit, addFrustum, addShaderFlags } from "./Common";
-import { addUnpackAndNormalize2Bytes, decodeDepthRgb, unquantize2d } from "./Decode";
+} from "../TechniqueFlags.js";
+import { TechniqueId } from "../TechniqueId.js";
+import { Texture } from "../Texture.js";
+import { addAnimation } from "./Animation.js";
+import { unpackFloat } from "./Clipping.js";
+import { addColor } from "./Color.js";
+import { addChooseVec2WithBitFlagsFunction, addChooseVec3WithBitFlagFunction, addExtractNthBit, addFrustum, addShaderFlags } from "./Common.js";
+import { addUnpackAndNormalize2Bytes, decodeDepthRgb, unquantize2d } from "./Decode.js";
 import {
   addFeatureSymbology, addMaxAlpha, addRenderOrder, addRenderOrderConstants, addSurfaceDiscard, addSurfaceHiliter, FeatureSymbologyOptions,
-} from "./FeatureSymbology";
+} from "./FeatureSymbology.js";
 import {
   addAltPickBufferOutputs, addFragColorWithPreMultipliedAlpha, addPickBufferOutputs, addWhiteOnWhiteReversal, assignFragColor,
-} from "./Fragment";
-import { addLighting } from "./Lighting";
-import { addSurfaceMonochrome } from "./Monochrome";
-import { addColorPlanarClassifier, addFeaturePlanarClassifier, addHilitePlanarClassifier, addOverrideClassifierColor } from "./PlanarClassification";
-import { addRenderPass } from "./RenderPass";
-import { addSolarShadowMap } from "./SolarShadowMapping";
-import { addThematicDisplay, getComputeThematicIndex } from "./Thematic";
-import { addTranslucency } from "./Translucency";
-import { addModelViewMatrix, addNormalMatrix, addProjectionMatrix } from "./Vertex";
-import { wantMaterials } from "../SurfaceGeometry";
-import { addWiremesh } from "./Wiremesh";
+} from "./Fragment.js";
+import { addLighting } from "./Lighting.js";
+import { addSurfaceMonochrome } from "./Monochrome.js";
+import { addColorPlanarClassifier, addFeaturePlanarClassifier, addHilitePlanarClassifier, addOverrideClassifierColor } from "./PlanarClassification.js";
+import { addRenderPass } from "./RenderPass.js";
+import { addSolarShadowMap } from "./SolarShadowMapping.js";
+import { addThematicDisplay, getComputeThematicIndex } from "./Thematic.js";
+import { addTranslucency } from "./Translucency.js";
+import { addModelViewMatrix, addNormalMatrix, addProjectionMatrix } from "./Vertex.js";
+import { wantMaterials } from "../SurfaceGeometry.js";
+import { addWiremesh } from "./Wiremesh.js";
 import { Npc } from "@itwin/core-common";
-import { addApplyContours } from "./Contours";
+import { addApplyContours } from "./Contours.js";
 import { Matrix4d } from "@itwin/core-geometry";
-import { Matrix4 } from "../Matrix";
-import { addApplySurfaceDraping } from "./MaplayerDraping";
+import { Matrix4 } from "../Matrix.js";
+import { addApplySurfaceDraping } from "./MaplayerDraping.js";
 
 const constantLodTextureLookup = `
 vec4 constantLodTextureLookup(sampler2D textureSampler) {

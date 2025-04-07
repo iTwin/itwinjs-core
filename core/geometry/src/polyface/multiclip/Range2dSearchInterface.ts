@@ -6,8 +6,8 @@
  * @module RangeSearch
  */
 
-import { Range2d } from "../../geometry3d/Range";
-import { LowAndHighXY } from "../../geometry3d/XYZProps";
+import { Range2d } from "../../geometry3d/Range.js";
+import { LowAndHighXY } from "../../geometry3d/XYZProps.js";
 
 /**
  * Interface for classes that implement optimized search of 2D ranges.

@@ -8,11 +8,11 @@
 
 import { assert } from "@itwin/core-bentley";
 import { ImageMapLayerSettings, MapLayerSettings, ModelMapLayerSettings } from "@itwin/core-common";
-import { HitDetail } from "../../HitDetail";
-import { IModelApp } from "../../IModelApp";
-import { IModelConnection } from "../../IModelConnection";
-import { createModelMapLayerTileTreeReference, MapLayerImageryProvider, TileTreeReference } from "../internal";
-import { DecorateContext } from "../../ViewContext";
+import { HitDetail } from "../../HitDetail.js";
+import { IModelApp } from "../../IModelApp.js";
+import { IModelConnection } from "../../IModelConnection.js";
+import { createModelMapLayerTileTreeReference, MapLayerImageryProvider, TileTreeReference } from "../internal.js";
+import { DecorateContext } from "../../ViewContext.js";
 
 /**
  * A [[TileTreeReference]] to be used specifically for [[MapTileTree]]s.

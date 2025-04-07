@@ -5,16 +5,16 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { Point2d, Point3d, Range3d } from "@itwin/core-geometry";
 import { ColorDef, ColorIndex, EmptyLocalization, FeatureIndex, FillFlags, ImageBuffer, ImageBufferFormat, MeshEdge, QParams3d, QPoint3dList, RenderTexture, TextureTransparency } from "@itwin/core-common";
-import { IModelApp } from "../../../IModelApp";
-import { IModelConnection } from "../../../IModelConnection";
-import { RenderMemory } from "../../../render/RenderMemory";
-import { RenderGraphic } from "../../../render/RenderGraphic";
-import { MeshArgsEdges } from "../../../common/internal/render/MeshPrimitives";
-import { createMeshParams } from "../../../common/internal/render/VertexTableBuilder";
-import { Texture } from "../../../internal/render/webgl/Texture";
-import { createBlankConnection } from "../../createBlankConnection";
-import { InstancedGraphicParams, MeshArgs } from "../../../core-frontend";
-import { RenderGeometry } from "../../../internal/render/RenderGeometry";
+import { IModelApp } from "../../../IModelApp.js";
+import { IModelConnection } from "../../../IModelConnection.js";
+import { RenderMemory } from "../../../render/RenderMemory.js";
+import { RenderGraphic } from "../../../render/RenderGraphic.js";
+import { MeshArgsEdges } from "../../../common/internal/render/MeshPrimitives.js";
+import { createMeshParams } from "../../../common/internal/render/VertexTableBuilder.js";
+import { Texture } from "../../../internal/render/webgl/Texture.js";
+import { createBlankConnection } from "../../createBlankConnection.js";
+import { InstancedGraphicParams, MeshArgs } from "../../../core-frontend.js";
+import { RenderGeometry } from "../../../internal/render/RenderGeometry.js";
 
 function expectMemory(consumer: RenderMemory.Consumers, total: number, max: number, count: number) {
   expect(consumer.totalBytes).toEqual(total);

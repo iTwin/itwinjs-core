@@ -6,14 +6,14 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { BeDuration } from "@itwin/core-bentley";
 import { Range3d, Transform } from "@itwin/core-geometry";
 import { ServerTimeoutError } from "@itwin/core-common";
-import { IModelConnection } from "../../IModelConnection";
-import { IModelApp } from "../../IModelApp";
-import { Viewport } from "../../Viewport";
-import { MockRender } from "../../internal/render/MockRender";
-import { createBlankConnection } from "../createBlankConnection";
+import { IModelConnection } from "../../IModelConnection.js";
+import { IModelApp } from "../../IModelApp.js";
+import { Viewport } from "../../Viewport.js";
+import { MockRender } from "../../internal/render/MockRender.js";
+import { createBlankConnection } from "../createBlankConnection.js";
 import {
   Tile, TileContent, TileContentDecodingStatistics, TileLoadPriority, TileLoadStatus, TileRequest, TileRequestChannel, TileRequestChannelStatistics, TileTree,
-} from "../../tile/internal";
+} from "../../tile/internal.js";
 
 async function runMicroTasks(): Promise<void> {
   return BeDuration.wait(1);

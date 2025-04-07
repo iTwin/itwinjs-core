@@ -8,11 +8,11 @@
 
 import { Id64String } from "@itwin/core-bentley";
 import { BaseMapLayerSettings, MapImagerySettings, MapLayerSettings } from "@itwin/core-common";
-import { DisplayStyleState } from "../../DisplayStyleState";
-import { ViewState } from "../../ViewState";
-import { Viewport } from "../../Viewport";
-import { DisclosedTileTreeSet, MapLayerImageryProvider, MapLayerInfoFromTileTree, MapTileTreeReference, TiledGraphicsProvider, TileTree, TileTreeOwner, TileTreeReference } from "../internal";
-import { IModelApp } from "../../IModelApp";
+import { DisplayStyleState } from "../../DisplayStyleState.js";
+import { ViewState } from "../../ViewState.js";
+import { Viewport } from "../../Viewport.js";
+import { DisclosedTileTreeSet, MapLayerImageryProvider, MapLayerInfoFromTileTree, MapTileTreeReference, TiledGraphicsProvider, TileTree, TileTreeOwner, TileTreeReference } from "../internal.js";
+import { IModelApp } from "../../IModelApp.js";
 
 /** Position of a map-layer in the display style's map (i.e. background/overlay map)
  * @public

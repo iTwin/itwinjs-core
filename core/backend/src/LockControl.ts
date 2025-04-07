@@ -7,7 +7,7 @@
  */
 
 import { Id64Arg, Id64String } from "@itwin/core-bentley";
-import { _close, _elementWasCreated, _implementationProhibited, _releaseAllLocks } from "./internal/Symbols";
+import { _close, _elementWasCreated, _implementationProhibited, _releaseAllLocks } from "./internal/Symbols.js";
 
 /**
  * Interface for acquiring element locks to [coordinate simultaneous edits]($docs/learning/backend/ConcurrencyControl.md) from multiple briefcases.

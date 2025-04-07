@@ -6,7 +6,7 @@
 import { describe, expect, it } from "vitest";
 import { Point3d, Range3d } from "@itwin/core-geometry";
 import { QPoint3dBuffer } from "@itwin/core-common";
-import { RealityMeshParamsBuilder } from "../../render/RealityMeshParams";
+import { RealityMeshParamsBuilder } from "../../render/RealityMeshParams.js";
 
 describe("RealityMeshParamsBuilder", () => {
   it("supports 8-, 16-, and 32-bit indices", () => {

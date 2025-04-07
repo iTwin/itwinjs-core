@@ -6,10 +6,10 @@
  * @module CartesianGeometry
  */
 
-import { Geometry, PerpParallelOptions } from "../Geometry";
-import { Point4d } from "../geometry4d/Point4d";
-import { Angle } from "./Angle";
-import { HasZ, XAndY, XYAndZ, XYZProps } from "./XYZProps";
+import { Geometry, PerpParallelOptions } from "../Geometry.js";
+import { Point4d } from "../geometry4d/Point4d.js";
+import { Angle } from "./Angle.js";
+import { HasZ, XAndY, XYAndZ, XYZProps } from "./XYZProps.js";
 
 // cspell:words CWXY CCWXY arctan Rodrigues
 /**

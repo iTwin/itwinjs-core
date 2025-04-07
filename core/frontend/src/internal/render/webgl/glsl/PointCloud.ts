@@ -7,17 +7,17 @@
  */
 
 import { assert } from "@itwin/core-bentley";
-import { AttributeMap } from "../AttributeMap";
-import { FragmentShaderComponent, ProgramBuilder, VariableType, VertexShaderComponent } from "../ShaderBuilder";
-import { FeatureMode, IsAnimated, IsClassified, IsThematic } from "../TechniqueFlags";
-import { TechniqueId } from "../TechniqueId";
-import { addUniformHiliter } from "./FeatureSymbology";
-import { addColorPlanarClassifier, addFeaturePlanarClassifier, addHilitePlanarClassifier } from "./PlanarClassification";
-import { addModelViewProjectionMatrix } from "./Vertex";
-import { addViewportTransformation } from "./Viewport";
-import { addThematicDisplay } from "./Thematic";
-import { addTexture } from "./Surface";
-import { assignFragColor } from "./Fragment";
+import { AttributeMap } from "../AttributeMap.js";
+import { FragmentShaderComponent, ProgramBuilder, VariableType, VertexShaderComponent } from "../ShaderBuilder.js";
+import { FeatureMode, IsAnimated, IsClassified, IsThematic } from "../TechniqueFlags.js";
+import { TechniqueId } from "../TechniqueId.js";
+import { addUniformHiliter } from "./FeatureSymbology.js";
+import { addColorPlanarClassifier, addFeaturePlanarClassifier, addHilitePlanarClassifier } from "./PlanarClassification.js";
+import { addModelViewProjectionMatrix } from "./Vertex.js";
+import { addViewportTransformation } from "./Viewport.js";
+import { addThematicDisplay } from "./Thematic.js";
+import { addTexture } from "./Surface.js";
+import { assignFragColor } from "./Fragment.js";
 
 // Revert components if color format is BGR instead of RGB.
 const computeColor = `

@@ -5,9 +5,9 @@
 
 import { EmptyLocalization, ImageMapLayerSettings, ServerError } from "@itwin/core-common";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { WmtsCapabilities, WmtsMapLayerImageryProvider } from "../../../tile/internal";
-import { IModelApp } from "../../../IModelApp";
-import { RequestBasicCredentials } from "../../../request/Request";
+import { WmtsCapabilities, WmtsMapLayerImageryProvider } from "../../../tile/internal.js";
+import { IModelApp } from "../../../IModelApp.js";
+import { RequestBasicCredentials } from "../../../request/Request.js";
 
 const wmtsSampleSource = { formatId: "WMTS", url: "https://localhost/wmts", name: "Test WMTS" };
 describe("WmtsMapLayerImageryProvider", () => {

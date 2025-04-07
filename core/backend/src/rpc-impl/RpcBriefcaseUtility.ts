@@ -10,13 +10,13 @@ import { AccessToken, assert, BeDuration, IModelStatus, Logger } from "@itwin/co
 import {
   BriefcaseProps, IModelConnectionProps, IModelError, IModelRpcOpenProps, IModelRpcProps, IModelVersion, RpcActivity, RpcPendingResponse, SyncMode,
 } from "@itwin/core-common";
-import { BackendLoggerCategory } from "../BackendLoggerCategory";
-import { BriefcaseManager, RequestNewBriefcaseArg } from "../BriefcaseManager";
-import { CheckpointManager } from "../CheckpointManager";
-import { BriefcaseDb, IModelDb, SnapshotDb } from "../IModelDb";
-import { IModelHost } from "../IModelHost";
-import { IModelJsFs } from "../IModelJsFs";
-import { _hubAccess } from "../internal/Symbols";
+import { BackendLoggerCategory } from "../BackendLoggerCategory.js";
+import { BriefcaseManager, RequestNewBriefcaseArg } from "../BriefcaseManager.js";
+import { CheckpointManager } from "../CheckpointManager.js";
+import { BriefcaseDb, IModelDb, SnapshotDb } from "../IModelDb.js";
+import { IModelHost } from "../IModelHost.js";
+import { IModelJsFs } from "../IModelJsFs.js";
+import { _hubAccess } from "../internal/Symbols.js";
 
 const loggerCategory: string = BackendLoggerCategory.IModelDb;
 

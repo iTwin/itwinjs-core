@@ -6,7 +6,7 @@ import type {
   ExtensionManifest,
   ExtensionProvider,
   ResolveFunc,
-} from "../Extension";
+} from "../Extension.js";
 
 /**
  * Required props for a local extension provider

@@ -13,16 +13,16 @@ import {
   IModelApp,
   MeshArgs,
   PolylineArgs,
-} from "../../../core-frontend";
-import { MockRender } from "../../../internal/render/MockRender";
-import { createPointStringParams, PointStringParams } from "../../../common/internal/render/PointStringParams";
-import { VertexTable } from "../../../common/internal/render/VertexTable";
-import { SurfaceType } from "../../../common/internal/render/SurfaceParams";
-import { MeshParams } from "../../../common/internal/render/MeshParams";
-import { createMeshParams } from "../../../common/internal/render/VertexTableBuilder";
-import { TesselatedPolyline } from "../../../common/internal/render/PolylineParams";
-import { ComputeAnimationNodeId, IndexBuffer, splitMeshParams, splitPointStringParams } from "../../../common/internal/render/VertexTableSplitter";
-import { EdgeParams, SegmentEdgeParams } from "../../../common/internal/render/EdgeParams";
+} from "../../../core-frontend.js";
+import { MockRender } from "../../../internal/render/MockRender.js";
+import { createPointStringParams, PointStringParams } from "../../../common/internal/render/PointStringParams.js";
+import { VertexTable } from "../../../common/internal/render/VertexTable.js";
+import { SurfaceType } from "../../../common/internal/render/SurfaceParams.js";
+import { MeshParams } from "../../../common/internal/render/MeshParams.js";
+import { createMeshParams } from "../../../common/internal/render/VertexTableBuilder.js";
+import { TesselatedPolyline } from "../../../common/internal/render/PolylineParams.js";
+import { ComputeAnimationNodeId, IndexBuffer, splitMeshParams, splitPointStringParams } from "../../../common/internal/render/VertexTableSplitter.js";
+import { EdgeParams, SegmentEdgeParams } from "../../../common/internal/render/EdgeParams.js";
 
 interface Point {
   x: number; // quantized or unquantized x coordinate - y will be x+1 and z will be x+5.

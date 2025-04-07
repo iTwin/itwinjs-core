@@ -6,9 +6,9 @@
 /** @packageDocumentation
  * @module Curve
  */
-import { Geometry } from "../../Geometry";
-import { SimpleNewton } from "../../numerics/Newton";
-import { CubicEvaluator } from "./CubicEvaluator";
+import { Geometry } from "../../Geometry.js";
+import { SimpleNewton } from "../../numerics/Newton.js";
+import { CubicEvaluator } from "./CubicEvaluator.js";
 /**
  * Polish Cubic.
  * * Construction takes nominal length and end radius.

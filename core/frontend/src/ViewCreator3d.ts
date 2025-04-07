@@ -13,10 +13,10 @@ import {
   ModelSelectorProps, RenderMode, ViewDefinition3dProps, ViewStateProps,
 } from "@itwin/core-common";
 import { Range3d } from "@itwin/core-geometry";
-import { IModelConnection } from "./IModelConnection";
-import { SpatialViewState } from "./SpatialViewState";
-import { StandardViewId } from "./StandardView";
-import { ViewState } from "./ViewState";
+import { IModelConnection } from "./IModelConnection.js";
+import { SpatialViewState } from "./SpatialViewState.js";
+import { StandardViewId } from "./StandardView.js";
+import { ViewState } from "./ViewState.js";
 
 /** Api for creating a 3d default view for an iModel. Either takes in a list of modelIds, or displays all 3d models by default. */
 

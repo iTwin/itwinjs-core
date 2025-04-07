@@ -12,15 +12,15 @@ import {
   BatchType, ContentIdProvider, EdgeOptions, ElementAlignedBox3d, ElementGeometryChange, FeatureAppearanceProvider,
   IModelTileTreeId, IModelTileTreeProps, ModelGeometryChanges, RenderSchedule, TileProps
 } from "@itwin/core-common";
-import { IModelApp } from "../../IModelApp";
-import { IModelConnection } from "../../IModelConnection";
-import { GraphicalEditingScope } from "../../GraphicalEditingScope";
-import { RenderSystem } from "../../render/RenderSystem";
-import { GraphicBranch } from "../../render/GraphicBranch";
+import { IModelApp } from "../../IModelApp.js";
+import { IModelConnection } from "../../IModelConnection.js";
+import { GraphicalEditingScope } from "../../GraphicalEditingScope.js";
+import { RenderSystem } from "../../render/RenderSystem.js";
+import { GraphicBranch } from "../../render/GraphicBranch.js";
 import {
   acquireImdlDecoder, DynamicIModelTile, ImdlDecoder, IModelTile, IModelTileParams, iModelTileParamsFromJSON, Tile,
   TileContent, TileDrawArgs, TileLoadPriority, TileParams, TileRequest, TileRequestChannel, TileTree, TileTreeParams
-} from "../../tile/internal";
+} from "../../tile/internal.js";
 
 export interface IModelTileTreeOptions {
   readonly allowInstancing: boolean;

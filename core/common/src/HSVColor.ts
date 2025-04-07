@@ -6,7 +6,7 @@
  * @module Symbology
  */
 
-import { ColorDef } from "./ColorDef";
+import { ColorDef } from "./ColorDef.js";
 
 /**
  * @public

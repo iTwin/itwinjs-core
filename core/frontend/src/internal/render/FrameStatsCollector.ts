@@ -7,7 +7,7 @@
  */
 
 import { BeEvent } from "@itwin/core-bentley";
-import { FrameStats } from "../../render/FrameStats";
+import { FrameStats } from "../../render/FrameStats.js";
 
 /** An event which will be raised when a new frame statistics object is available. The listeners will receive that frame statistics object.
  * @see [[Viewport.enableFrameStatsListener]]

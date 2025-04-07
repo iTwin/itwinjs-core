@@ -3,25 +3,25 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { describe, expect, it } from "vitest";
-import { Geometry } from "../../Geometry";
-import { Angle } from "../../geometry3d/Angle";
-import { GrowableBlockedArray } from "../../geometry3d/GrowableBlockedArray";
-import { GrowableFloat64Array } from "../../geometry3d/GrowableFloat64Array";
-import { GrowableXYArray } from "../../geometry3d/GrowableXYArray";
-import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray";
-import { Matrix3d } from "../../geometry3d/Matrix3d";
-import { Plane3dByOriginAndUnitNormal } from "../../geometry3d/Plane3dByOriginAndUnitNormal";
-import { Point2d, Vector2d } from "../../geometry3d/Point2dVector2d";
-import { Point3dArrayCarrier } from "../../geometry3d/Point3dArrayCarrier";
-import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
-import { Point3dArray } from "../../geometry3d/PointHelpers";
-import { Transform } from "../../geometry3d/Transform";
-import { ClusterableArray } from "../../numerics/ClusterableArray";
-import { PolyfaceQuery } from "../../polyface/PolyfaceQuery";
-import { Sample } from "../../serialization/GeometrySamples";
-import { Checker } from "../Checker";
-import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
-import { prettyPrint } from "../testFunctions";
+import { Geometry } from "../../Geometry.js";
+import { Angle } from "../../geometry3d/Angle.js";
+import { GrowableBlockedArray } from "../../geometry3d/GrowableBlockedArray.js";
+import { GrowableFloat64Array } from "../../geometry3d/GrowableFloat64Array.js";
+import { GrowableXYArray } from "../../geometry3d/GrowableXYArray.js";
+import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray.js";
+import { Matrix3d } from "../../geometry3d/Matrix3d.js";
+import { Plane3dByOriginAndUnitNormal } from "../../geometry3d/Plane3dByOriginAndUnitNormal.js";
+import { Point2d, Vector2d } from "../../geometry3d/Point2dVector2d.js";
+import { Point3dArrayCarrier } from "../../geometry3d/Point3dArrayCarrier.js";
+import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d.js";
+import { Point3dArray } from "../../geometry3d/PointHelpers.js";
+import { Transform } from "../../geometry3d/Transform.js";
+import { ClusterableArray } from "../../numerics/ClusterableArray.js";
+import { PolyfaceQuery } from "../../polyface/PolyfaceQuery.js";
+import { Sample } from "../../serialization/GeometrySamples.js";
+import { Checker } from "../Checker.js";
+import { GeometryCoreTestIO } from "../GeometryCoreTestIO.js";
+import { prettyPrint } from "../testFunctions.js";
 
 /** point whose coordinates are a function of i only. */
 function testPointI(i: number): Point3d {

@@ -7,26 +7,26 @@
  * @module CartesianGeometry
  */
 
-import { Arc3d } from "../curve/Arc3d";
-import { AnnounceNumberNumber, AnnounceNumberNumberCurvePrimitive } from "../curve/CurvePrimitive";
-import { Geometry } from "../Geometry";
-import { Angle } from "../geometry3d/Angle";
-import { GrowableFloat64Array } from "../geometry3d/GrowableFloat64Array";
-import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
-import { IndexedXYZCollection } from "../geometry3d/IndexedXYZCollection";
-import { Matrix3d } from "../geometry3d/Matrix3d";
-import { Plane3dByOriginAndUnitNormal } from "../geometry3d/Plane3dByOriginAndUnitNormal";
-import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
-import { IndexedXYZCollectionPolygonOps, PolygonOps } from "../geometry3d/PolygonOps";
-import { Range1d, Range3d } from "../geometry3d/Range";
-import { Ray3d } from "../geometry3d/Ray3d";
-import { GrowableXYZArrayCache } from "../geometry3d/ReusableObjectCache";
-import { Transform } from "../geometry3d/Transform";
-import { Matrix4d } from "../geometry4d/Matrix4d";
-import { Polyface, PolyfaceVisitor } from "../polyface/Polyface";
-import { PolyfaceQuery } from "../polyface/PolyfaceQuery";
-import { ClipPlane, ClipPlaneProps } from "./ClipPlane";
-import { Clipper, ClipPlaneContainment, ClipUtilities, PolygonClipper } from "./ClipUtils";
+import { Arc3d } from "../curve/Arc3d.js";
+import { AnnounceNumberNumber, AnnounceNumberNumberCurvePrimitive } from "../curve/CurvePrimitive.js";
+import { Geometry } from "../Geometry.js";
+import { Angle } from "../geometry3d/Angle.js";
+import { GrowableFloat64Array } from "../geometry3d/GrowableFloat64Array.js";
+import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray.js";
+import { IndexedXYZCollection } from "../geometry3d/IndexedXYZCollection.js";
+import { Matrix3d } from "../geometry3d/Matrix3d.js";
+import { Plane3dByOriginAndUnitNormal } from "../geometry3d/Plane3dByOriginAndUnitNormal.js";
+import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d.js";
+import { IndexedXYZCollectionPolygonOps, PolygonOps } from "../geometry3d/PolygonOps.js";
+import { Range1d, Range3d } from "../geometry3d/Range.js";
+import { Ray3d } from "../geometry3d/Ray3d.js";
+import { GrowableXYZArrayCache } from "../geometry3d/ReusableObjectCache.js";
+import { Transform } from "../geometry3d/Transform.js";
+import { Matrix4d } from "../geometry4d/Matrix4d.js";
+import { Polyface, PolyfaceVisitor } from "../polyface/Polyface.js";
+import { PolyfaceQuery } from "../polyface/PolyfaceQuery.js";
+import { ClipPlane, ClipPlaneProps } from "./ClipPlane.js";
+import { Clipper, ClipPlaneContainment, ClipUtilities, PolygonClipper } from "./ClipUtils.js";
 
 /** Wire format describing a [[ConvexClipPlaneSet]].
  * @public

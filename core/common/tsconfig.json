@@ -3,5 +3,9 @@
   "include": ["./src/**/*.ts"],
   "compilerOptions": {
     "lib": ["ES2022"],
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true
   },
 }

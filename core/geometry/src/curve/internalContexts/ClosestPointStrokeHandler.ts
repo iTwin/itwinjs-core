@@ -6,15 +6,15 @@
  * @module Curve
  */
 
-import { Geometry } from "../../Geometry";
-import { IStrokeHandler } from "../../geometry3d/GeometryHandler";
-import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
-import { Ray3d } from "../../geometry3d/Ray3d";
-import { Newton1dUnboundedApproximateDerivative } from "../../numerics/Newton";
-import { CurveExtendOptions, VariantCurveExtendParameter } from "../CurveExtendMode";
-import { CurveLocationDetail } from "../CurveLocationDetail";
-import { CurvePrimitive } from "../CurvePrimitive";
-import { NewtonRtoRStrokeHandler } from "./NewtonRtoRStrokeHandler";
+import { Geometry } from "../../Geometry.js";
+import { IStrokeHandler } from "../../geometry3d/GeometryHandler.js";
+import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d.js";
+import { Ray3d } from "../../geometry3d/Ray3d.js";
+import { Newton1dUnboundedApproximateDerivative } from "../../numerics/Newton.js";
+import { CurveExtendOptions, VariantCurveExtendParameter } from "../CurveExtendMode.js";
+import { CurveLocationDetail } from "../CurveLocationDetail.js";
+import { CurvePrimitive } from "../CurvePrimitive.js";
+import { NewtonRtoRStrokeHandler } from "./NewtonRtoRStrokeHandler.js";
 
 /**
  * Context for searching for the closest point to a CurvePrimitive.

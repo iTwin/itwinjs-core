@@ -3,8 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert } from "chai";
-import * as fs from "fs";
+import { afterAll, assert, beforeAll, describe, it } from "vitest";
+import fs from "node:fs";
 import { DbResult, Id64, Id64Array, Id64String } from "@itwin/core-bentley";
 import {
   Code, ColorDef, ElementGeometryInfo, ElementGeometryOpcode, FillDisplay, GeometryClass, GeometryParams, GeometryPartProps, GeometryStreamBuilder, GeometryStreamProps,
@@ -16,10 +16,11 @@ import {
 import {
   ExportGraphics, ExportGraphicsInfo, ExportGraphicsMeshVisitor, ExportGraphicsOptions, GeometricElement, IModelJsFs, LineStyleDefinition, PhysicalObject,
   RenderMaterialElement, SnapshotDb, Texture,
-} from "../../core-backend";
-import { GeometryPart } from "../../Element";
-import { ExportGraphicsFunction, ExportLinesInfo, ExportPartInfo, ExportPartInstanceInfo, ExportPartLinesInfo } from "../../ExportGraphics";
-import { IModelTestUtils } from "../IModelTestUtils";
+} from "../../core-backend.js";
+import { GeometryPart } from "../../Element.js";
+import { ExportGraphicsFunction, ExportLinesInfo, ExportPartInfo, ExportPartInstanceInfo, ExportPartLinesInfo } from "../../ExportGraphics.js";
+import { IModelTestUtils } from "../IModelTestUtils.js";
+import { TestUtils } from "../TestUtils.js";
 
 describe("exportGraphics", () => {
   let iModel: SnapshotDb;
@@ -56,7 +57,8 @@ describe("exportGraphics", () => {
     });
   }
 
-  before(() => {
+  beforeAll(async () => {
+    await TestUtils.startBackend();
     const seedFileName = IModelTestUtils.resolveAssetFile("CompatibilityTestSeed.bim");
     const testFileName = IModelTestUtils.prepareOutputFile("ExportGraphics", "ExportGraphicsTest.bim");
     iModel = IModelTestUtils.createSnapshotFromSeed(testFileName, seedFileName);
@@ -69,8 +71,9 @@ describe("exportGraphics", () => {
     seedCategory = seedElement.category;
   });
 
-  after(() => {
+  afterAll(async () => {
     iModel.close();
+    await TestUtils.shutdownBackend();
   });
 
   it("resolves element color correctly", () => {

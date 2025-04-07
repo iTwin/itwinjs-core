@@ -3,9 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
-import { IModelTestUtils } from "../IModelTestUtils";
-import { IModelHost } from "../../IModelHost";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { IModelTestUtils } from "../IModelTestUtils.js";
+import { IModelHost } from "../../IModelHost.js";
 
 describe("SettingsSchemas", () => {
 
@@ -15,10 +15,10 @@ describe("SettingsSchemas", () => {
     await IModelHost.shutdown();
     await IModelHost.startup();
   };
-  before(async () => {
+  beforeAll(async () => {
     await restartSession();
   });
-  after(async () => {
+  afterAll(async () => {
     await restartSession();
   });
 

@@ -2,22 +2,22 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert, expect } from "chai";
-import * as path from "path";
+import { afterAll, afterEach, assert, beforeEach, describe, expect, it } from "vitest";
+import path from "node:path";
 import * as sinon from "sinon";
 import { RpcRegistry } from "@itwin/core-common";
-import { BriefcaseManager } from "../BriefcaseManager";
-import { SnapshotDb } from "../IModelDb";
-import { IModelHost, IModelHostOptions, KnownLocations } from "../IModelHost";
-import { Schemas } from "../Schema";
-import { KnownTestLocations } from "./KnownTestLocations";
+import { BriefcaseManager } from "../BriefcaseManager.js";
+import { SnapshotDb } from "../IModelDb.js";
+import { IModelHost, IModelHostOptions, KnownLocations } from "../IModelHost.js";
+import { Schemas } from "../Schema.js";
+import { KnownTestLocations } from "./KnownTestLocations.js";
 import { AzureServerStorage, AzureServerStorageBindings, AzureServerStorageBindingsConfig } from "@itwin/object-storage-azure";
 import { ServerStorage } from "@itwin/object-storage-core";
-import { TestUtils } from "./TestUtils";
-import { IModelTestUtils } from "./IModelTestUtils";
+import { TestUtils } from "./TestUtils.js";
+import { IModelTestUtils } from "./IModelTestUtils.js";
 import { Logger, LogLevel } from "@itwin/core-bentley";
-import { overrideSyncNativeLogLevels } from "../internal/NativePlatform";
-import { _getHubAccess, _hubAccess } from "../internal/Symbols";
+import { overrideSyncNativeLogLevels } from "../internal/NativePlatform.js";
+import { _getHubAccess, _hubAccess } from "../internal/Symbols.js";
 
 describe("IModelHost", () => {
   const opts = { cacheDir: TestUtils.getCacheDir() };
@@ -29,7 +29,7 @@ describe("IModelHost", () => {
     sinon.restore();
   });
 
-  after(async () => {
+  afterAll(async () => {
     await TestUtils.startBackend();
   });
 
@@ -179,7 +179,7 @@ describe("IModelHost", () => {
     };
     config.tileCacheStorage = {} as ServerStorage;
 
-    await expect(IModelHost.startup(config)).to.be.rejectedWith("Cannot use both Azure and custom cloud storage providers for tile cache.");
+    await expect(IModelHost.startup(config)).rejects.toThrow("Cannot use both Azure and custom cloud storage providers for tile cache.");
   });
 
   it("should use local cache if cloud storage provider for tile cache is not set", async () => {

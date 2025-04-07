@@ -3,27 +3,30 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { assert, Mutable, OpenMode } from "@itwin/core-bentley";
-import { SnapshotDb, StandaloneDb } from "../../IModelDb";
-import { IModelHost } from "../../IModelHost";
-import { Setting, SettingsContainer, SettingsPriority } from "../../workspace/Settings";
-import { SettingGroupSchema, SettingSchema } from "../../workspace/SettingsSchemas";
-import { IModelTestUtils } from "../IModelTestUtils";
-import { GcsDbProps, GeoCoordConfig } from "../../GeoCoordConfig";
+import { SnapshotDb, StandaloneDb } from "../../IModelDb.js";
+import { IModelHost } from "../../IModelHost.js";
+import { Setting, SettingsContainer, SettingsPriority } from "../../workspace/Settings.js";
+import { SettingGroupSchema, SettingSchema } from "../../workspace/SettingsSchemas.js";
+import { IModelTestUtils } from "../IModelTestUtils.js";
+import { GcsDbProps, GeoCoordConfig } from "../../GeoCoordConfig.js";
+import { TestUtils } from "../TestUtils.js";
 
 describe("Settings", () => {
   let iModel: SnapshotDb;
 
-  before(() => {
+  beforeAll(async () => {
+    await TestUtils.startBackend();
     IModelHost.settingsSchemas.addFile(IModelTestUtils.resolveAssetFile("TestSettings.schema.json"));
     const seedFileName = IModelTestUtils.resolveAssetFile("CompatibilityTestSeed.bim");
     const testFileName = IModelTestUtils.prepareOutputFile("SettingsTest", "SettingsTest.bim");
     iModel = IModelTestUtils.createSnapshotFromSeed(testFileName, seedFileName);
   });
 
-  after(() => {
+  afterAll(async () => {
     iModel.close();
+    await TestUtils.shutdownBackend();
   });
 
   const app1: SettingGroupSchema = {

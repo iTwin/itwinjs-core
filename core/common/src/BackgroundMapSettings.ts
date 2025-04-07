@@ -6,9 +6,9 @@
  * @module DisplayStyles
  */
 
-import { BackgroundMapProvider, BackgroundMapType } from "./BackgroundMapProvider";
-import { PlanarClipMaskProps, PlanarClipMaskSettings } from "./PlanarClipMask";
-import { TerrainProps, TerrainSettings } from "./TerrainSettings";
+import { BackgroundMapProvider, BackgroundMapType } from "./BackgroundMapProvider.js";
+import { PlanarClipMaskProps, PlanarClipMaskSettings } from "./PlanarClipMask.js";
+import { TerrainProps, TerrainSettings } from "./TerrainSettings.js";
 
 /** Describes the projection of the background map
  * @see [[BackgroundMapProps]]

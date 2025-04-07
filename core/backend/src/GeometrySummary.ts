@@ -14,9 +14,9 @@ import {
   BRepEntity, GeometryParams, GeometryStreamIterator, GeometrySummaryRequestProps, GeometrySummaryVerbosity, ImagePrimitive,
   IModelError, TextStringPrimitive,
 } from "@itwin/core-common";
-import { Element, GeometricElement, GeometryPart } from "./Element";
-import { IModelDb } from "./IModelDb";
-import { _nativeDb } from "./internal/Symbols";
+import { Element, GeometricElement, GeometryPart } from "./Element.js";
+import { IModelDb } from "./IModelDb.js";
+import { _nativeDb } from "./internal/Symbols.js";
 
 interface ElementGeom {
   iterator: GeometryStreamIterator;

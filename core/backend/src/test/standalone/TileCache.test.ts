@@ -2,21 +2,21 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
-import * as path from "path";
+import { describe, expect, it } from "vitest";
+import path from "node:path";
 import * as sinon from "sinon";
 import { Guid, Logger } from "@itwin/core-bentley";
 import {
   BatchType, ContentIdProvider, defaultTileOptions, IModelTileRpcInterface, iModelTileTreeIdToString, RpcActivity, RpcManager, RpcRegistry,
 } from "@itwin/core-common";
-import { IModelDb, SnapshotDb } from "../../IModelDb";
-import { IModelHost } from "../../IModelHost";
-import { IModelJsFs } from "../../IModelJsFs";
-import { GeometricModel3d } from "../../Model";
-import { RpcTrace } from "../../rpc/tracing";
-import { TestUtils } from "../TestUtils";
-import { IModelTestUtils } from "../IModelTestUtils";
-import { _nativeDb } from "../../internal/Symbols";
+import { IModelDb, SnapshotDb } from "../../IModelDb.js";
+import { IModelHost } from "../../IModelHost.js";
+import { IModelJsFs } from "../../IModelJsFs.js";
+import { GeometricModel3d } from "../../Model.js";
+import { RpcTrace } from "../../rpc/tracing.js";
+import { TestUtils } from "../TestUtils.js";
+import { IModelTestUtils } from "../IModelTestUtils.js";
+import { _nativeDb } from "../../internal/Symbols.js";
 
 const fakeRpc: RpcActivity = {
   accessToken: "dummy",

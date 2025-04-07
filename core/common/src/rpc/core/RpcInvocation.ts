@@ -7,18 +7,18 @@
  */
 
 import { AccessToken, BentleyError, BentleyStatus, GuidString, IModelStatus, Logger, RpcInterfaceStatus, StatusCategory, Tracing } from "@itwin/core-bentley";
-import { CommonLoggerCategory } from "../../CommonLoggerCategory";
-import { IModelRpcProps } from "../../IModel";
-import { IModelError } from "../../IModelError";
-import { RpcInterface } from "../../RpcInterface";
-import { SessionProps } from "../../SessionProps";
-import { RpcConfiguration } from "./RpcConfiguration";
-import { RpcProtocolEvent, RpcRequestStatus } from "./RpcConstants";
-import { RpcControlChannel, RpcNotFoundResponse, RpcPendingResponse } from "./RpcControl";
-import { RpcMarshaling, RpcSerializedValue } from "./RpcMarshaling";
-import { RpcOperation } from "./RpcOperation";
-import { RpcManagedStatus, RpcProtocol, RpcProtocolVersion, RpcRequestFulfillment, SerializedRpcRequest } from "./RpcProtocol";
-import { CURRENT_INVOCATION, RpcRegistry } from "./RpcRegistry";
+import { CommonLoggerCategory } from "../../CommonLoggerCategory.js";
+import { IModelRpcProps } from "../../IModel.js";
+import { IModelError } from "../../IModelError.js";
+import { RpcInterface } from "../../RpcInterface.js";
+import { SessionProps } from "../../SessionProps.js";
+import { RpcConfiguration } from "./RpcConfiguration.js";
+import { RpcProtocolEvent, RpcRequestStatus } from "./RpcConstants.js";
+import { RpcControlChannel, RpcNotFoundResponse, RpcPendingResponse } from "./RpcControl.js";
+import { RpcMarshaling, RpcSerializedValue } from "./RpcMarshaling.js";
+import { RpcOperation } from "./RpcOperation.js";
+import { RpcManagedStatus, RpcProtocol, RpcProtocolVersion, RpcRequestFulfillment, SerializedRpcRequest } from "./RpcProtocol.js";
+import { CURRENT_INVOCATION, RpcRegistry } from "./RpcRegistry.js";
 
 /* eslint-disable @typescript-eslint/no-deprecated */
 

@@ -8,12 +8,12 @@
 
 import { Id64, Id64String } from "@itwin/core-bentley";
 import { Point2d, Point3d } from "@itwin/core-geometry";
-import { HitDetail, HitList, HitSource } from "./HitDetail";
-import { IModelApp } from "./IModelApp";
-import { Pixel } from "./render/Pixel";
-import { InputSource, InteractiveTool } from "./tools/Tool";
-import { ScreenViewport, Viewport } from "./Viewport";
-import { ViewRect } from "./common/ViewRect";
+import { HitDetail, HitList, HitSource } from "./HitDetail.js";
+import { IModelApp } from "./IModelApp.js";
+import { Pixel } from "./render/Pixel.js";
+import { InputSource, InteractiveTool } from "./tools/Tool.js";
+import { ScreenViewport, Viewport } from "./Viewport.js";
+import { ViewRect } from "./common/ViewRect.js";
 
 /** The possible actions for which a locate filter can be called.
  * @public
