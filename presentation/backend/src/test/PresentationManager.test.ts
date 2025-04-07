@@ -7,8 +7,8 @@ import deepEqual from "deep-equal";
 import * as path from "path";
 import * as sinon from "sinon";
 import * as moq from "typemoq";
-import { ECSqlStatement, ECSqlValue, IModelDb, IModelHost, IModelJsNative, IModelNative, IpcHost } from "@itwin/core-backend";
-import { DbResult, Id64, Id64String } from "@itwin/core-bentley";
+import { IModelDb, IModelHost, IModelJsNative, IModelNative, IpcHost } from "@itwin/core-backend";
+import { Id64, Id64String } from "@itwin/core-bentley";
 import { SchemaContext } from "@itwin/ecschema-metadata";
 import {
   ArrayTypeDescription,
@@ -115,7 +115,7 @@ describe("PresentationManager", () => {
       try {
         IModelNative.platform;
         isLoaded = true;
-      } catch {}
+      } catch { }
       if (!isLoaded) {
         throw e; // re-throw if startup() failed to set up NativePlatform
       }
@@ -126,27 +126,15 @@ describe("PresentationManager", () => {
     await IModelHost.shutdown();
   });
 
-  const setupIModelForElementKey = (imodelMock: moq.IMock<IModelDb>, key: InstanceKey) => {
+  const setupIModelForElementKey = (imodelMock: moq.IMock<IModelDb>, key: InstanceKey | undefined) => {
     imodelMock
-      .setup((x) => x.withPreparedStatement(moq.It.isAnyString(), moq.It.isAny()))
-      .callback((_q, cb) => {
-        const valueMock = moq.Mock.ofType<ECSqlValue>();
-        valueMock.setup((x) => x.getClassNameForClassId()).returns(() => key.className);
-        const stmtMock = moq.Mock.ofType<ECSqlStatement>();
-        stmtMock.setup((x) => x.step()).returns(() => DbResult.BE_SQLITE_ROW);
-        stmtMock.setup((x) => x.getValue(0)).returns(() => valueMock.object);
-        cb(stmtMock.object);
-      });
-  };
-
-  const setupIModelForNoResultStatement = (imodelMock: moq.IMock<IModelDb>) => {
-    imodelMock
-      .setup((x) => x.withPreparedStatement(moq.It.isAnyString(), moq.It.isAny()))
-      .callback((_q, cb) => {
-        const stmtMock = moq.Mock.ofType<ECSqlStatement>();
-        stmtMock.setup((x) => x.step()).returns(() => DbResult.BE_SQLITE_DONE);
-        cb(stmtMock.object);
-      });
+      .setup((x) => x.elements)
+      .returns(
+        () =>
+          ({
+            tryGetElementProps: () => (key ? { classFullName: key.className } : undefined),
+          }) as unknown as IModelDb.Elements,
+      );
   };
 
   describe("constructor", () => {
@@ -795,6 +783,7 @@ describe("PresentationManager", () => {
     const nativePlatformMock = moq.Mock.ofType<NativePlatformDefinition>();
     const imodelMock = moq.Mock.ofType<IModelDb>();
     let manager: PresentationManager;
+
     beforeEach(async () => {
       testData = {
         rulesetOrId: { id: "test-ruleset", rules: [] },
@@ -810,6 +799,7 @@ describe("PresentationManager", () => {
       nativePlatformMock.setup((x) => x.getImodelAddon(imodelMock.object)).verifiable(moq.Times.atLeastOnce());
       recreateManager();
     });
+
     afterEach(() => {
       manager[Symbol.dispose]();
       nativePlatformMock.verifyAll();
@@ -862,7 +852,7 @@ describe("PresentationManager", () => {
       });
       sinon.stub(manager[_presentation_manager_detail], "rulesets").value(
         sinon.createStubInstance(RulesetManagerImpl, {
-          add: sinon.stub<[Ruleset], RegisteredRuleset>().callsFake((ruleset) => new RegisteredRuleset(ruleset, "", () => {})),
+          add: sinon.stub<[Ruleset], RegisteredRuleset>().callsFake((ruleset) => new RegisteredRuleset(ruleset, "", () => { })),
         }),
       );
     }
@@ -1777,7 +1767,7 @@ describe("PresentationManager", () => {
       it("returns content set for BisCore:Element instances when concrete key is not found", async () => {
         // what the addon receives
         const baseClassKey = { className: "BisCore:Element", id: "0x123" };
-        setupIModelForNoResultStatement(imodelMock);
+        setupIModelForElementKey(imodelMock, undefined);
         const expectedParams = {
           requestId: NativePlatformRequestTypes.GetContentSet,
           params: {
@@ -2117,7 +2107,7 @@ describe("PresentationManager", () => {
       it("returns content for BisCore:Element instances when concrete key is not found", async () => {
         // what the addon receives
         const baseClassKey = { className: "BisCore:Element", id: "0x123" };
-        setupIModelForNoResultStatement(imodelMock);
+        setupIModelForElementKey(imodelMock, undefined);
         const expectedParams = {
           requestId: NativePlatformRequestTypes.GetContent,
           params: {
@@ -2398,6 +2388,7 @@ describe("PresentationManager", () => {
       it("returns no properties for invalid element id", async () => {
         // what the addon receives
         const elementKey = { className: "BisCore:Element", id: "0x123" };
+        setupIModelForElementKey(imodelMock, undefined);
 
         const expectedContentParams = {
           requestId: NativePlatformRequestTypes.GetContent,
@@ -2565,7 +2556,10 @@ describe("PresentationManager", () => {
       });
 
       function setupIModelForBatchedElementIdsQuery(imodel: moq.IMock<IModelDb>, ids: Id64String[]) {
-        imodel.setup((x) => x.withPreparedStatement(moq.It.isAnyString(), moq.It.isAny())).returns(() => ids.length);
+        imodel
+          .setup((x) => x.createQueryReader(moq.It.is((query) => query.trimStart().startsWith("SELECT COUNT(e.ECInstanceId)"))))
+          .returns(() => stubECSqlReader([{ elementCount: ids.length }]));
+
         imodel
           .setup((x) => x.createQueryReader(moq.It.is((query) => query.startsWith("SELECT IdToHex(ECInstanceId)"))))
           .returns(() => stubECSqlReader(ids.map((id) => ({ id }))));
@@ -3425,7 +3419,7 @@ describe("PresentationManager", () => {
         });
         sinon.stub(manager[_presentation_manager_detail], "rulesets").value(
           sinon.createStubInstance(RulesetManagerImpl, {
-            add: sinon.stub<[Ruleset], RegisteredRuleset>().callsFake((ruleset) => new RegisteredRuleset(ruleset, "", () => {})),
+            add: sinon.stub<[Ruleset], RegisteredRuleset>().callsFake((ruleset) => new RegisteredRuleset(ruleset, "", () => { })),
           }),
         );
         // what the addon returns

@@ -115,6 +115,7 @@ function verifyProps(testElement: TestElementProps) {
 
 function getCount(imodel: IModelDb, className: string) {
   let count = 0;
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
   imodel.withPreparedStatement(`SELECT count(*) AS [count] FROM ${className}`, (stmt: ECSqlStatement) => {
     assert.equal(DbResult.BE_SQLITE_ROW, stmt.step());
     const row = stmt.getRow();
@@ -684,6 +685,7 @@ describe("PerformanceElementGetMetadata", () => {
     const sqltemplate = `select min(e.ECInstanceId), max(e.ECInstanceId) from bis.Element e join meta.ECClassDef c on e.ECClassId = c.ECInstanceId join meta.ECSchemaDef s on c.Schema.Id = s.ECInstanceId where s.Name=`;
 
     const bisCoreElements: string[] = [];
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     imodel.withPreparedStatement(`${sqltemplate}'BisCore'`, (stmt: ECSqlStatement) => {
       assert.equal(DbResult.BE_SQLITE_ROW, stmt.step());
       bisCoreElements.push(stmt.getValue(0).getId());
@@ -691,6 +693,7 @@ describe("PerformanceElementGetMetadata", () => {
     });
 
     const genericElements: string[] = [];
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     imodel.withPreparedStatement(`${sqltemplate}'Generic'`, (stmt: ECSqlStatement) => {
       assert.equal(DbResult.BE_SQLITE_ROW, stmt.step());
       genericElements.push(stmt.getValue(0).getId());
