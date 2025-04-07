@@ -127,8 +127,6 @@ describe("Example Code", () => {
     const outFBFileNameBase: string = ""; // Optional, for export to FlatBuffer, e.g., "c:\\tmp\\bar"
     const elementIdArray: Id64Array = []; // Optional, e.g., ["0x2000000000c", "0x2000000000a"]
 
-    if (inBimFilePathName !== "") {
-      assert.isTrue(IModelJsFs.existsSync(inBimFilePathName));
       const myIModel = SnapshotDb.openFile(inBimFilePathName);
 
       // use an ECSQL query to retrieve element ids
