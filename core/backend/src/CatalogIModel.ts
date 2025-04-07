@@ -14,48 +14,54 @@ import { type CatalogIModelTypes, CloudSqliteError, IModelConnectionProps } from
 import { IpcHandler } from "./IpcHost";
 import { StandaloneDb } from "./IModelDb";
 import { OpenMode } from "@itwin/core-bentley";
+import { _nativeDb } from "./internal/Symbols";
 
 interface CatalogCloudCache extends CloudSqlite.CloudCache {
+  writeable: boolean;
   catalogContainers: Map<string, CloudSqlite.CloudContainer>;
 }
 
-let catalogCloudCache: CatalogCloudCache | undefined;
+let readonlyCloudCache: CatalogCloudCache | undefined;
+let writeableCloudCache: CatalogCloudCache | undefined;
 
-const makeCloudCache = (arg: CloudSqlite.CreateCloudCacheArg) => {
+const makeCloudCache = (arg: CloudSqlite.CreateCloudCacheArg, writeable: boolean) => {
   const cache = CloudSqlite.CloudCaches.getCache(arg) as CatalogCloudCache;
-  if (undefined === cache.catalogContainers) // if we just created this container, add the map but make it non-enumerable
+  // if the cache was just created, add the "catalog" members as hidden
+  if (undefined === cache.catalogContainers) {
     CloudSqlite.addHiddenProperty(cache, "catalogContainers", new Map<string, CloudSqlite.CloudContainer>());
+    CloudSqlite.addHiddenProperty(cache, "writeable", writeable);
+  }
+
   return cache;
 }
 
-// get or make the cloud cache for all Catalog containers
-const getCloudCache = () => {
-  return catalogCloudCache ??= makeCloudCache({ cacheName: "standaloneDbs", cacheSize: "10G" });
-}
-
-
-// find and existing CloudContainer for accessing a CatalogIModel, or make a new one and connect it
-const getCatalogContainerObj = async (containerId: string, writeable?: boolean) => {
-  const cache = getCloudCache();
+// find an existing CloudContainer for accessing a CatalogIModel, or make a new one and connect it
+const getCatalogContainerObj = async (cache: CatalogCloudCache, containerId: string) => {
   const cloudContainer = cache.catalogContainers.get(containerId);
   if (undefined !== cloudContainer)
     return cloudContainer;
 
-  const accessLevel = writeable ? "write" : "read";
+  const accessLevel = cache.writeable ? "write" : "read";
   const tokenProps = await CloudSqlite.getBlobService().requestToken({ containerId, accessLevel, userToken: await IModelHost.getAccessToken() });
   const container = CloudSqlite.createCloudContainer({
     accessLevel,
     baseUri: tokenProps.baseUri,
     containerId,
     storageType: tokenProps.provider,
-    writeable: true,
+    writeable: cache.writeable,
     accessToken: tokenProps.token
   });
   cache.catalogContainers.set(containerId, container);
-  container.connect(getCloudCache());
+  container.connect(cache);
   return container;
 }
 
+const getReadonlyCloudCache = () => readonlyCloudCache ??= makeCloudCache({ cacheName: "catalogs", cacheSize: "10G" }, false);
+const getWritableCloudCache = () => writeableCloudCache ??= makeCloudCache({ cacheName: "writeableCatalogs", cacheSize: "10G" }, true);
+const getReadonlyContainer = async (containerId: string) => getCatalogContainerObj(getReadonlyCloudCache(), containerId);
+const getWriteableContainer = async (containerId: string) => getCatalogContainerObj(getWritableCloudCache(), containerId);
+
+// Throw an error if the write lock is not held for the supplied container
 const ensureLocked = (container: CloudSqlite.CloudContainer, reason: string) => {
   if (!container.hasWriteLock)
     CloudSqliteError.throwError("write-lock-not-held", { message: `Write lock must be held to ${reason}` });
@@ -67,7 +73,7 @@ export class CatalogDb extends StandaloneDb {
     if (undefined === args.containerId) // local file?
       return super.openFile(args.dbName, OpenMode.Readonly, args);
 
-    const container = await getCatalogContainerObj(args.containerId);
+    const container = await getReadonlyContainer(args.containerId);
     const fileName = CloudSqlite.makeSemverName(args.dbName, args.version);
 
     if (args.prefetch)
@@ -92,7 +98,7 @@ export class EditableCatalog extends StandaloneDb {
     });
 
     container.initializeContainer({ blockSize: 4 * 1024 * 1024 });
-    container.connect(getCloudCache());
+    container.connect(getWritableCloudCache());
     await CloudSqlite.withWriteLock({ user: "initialize", container }, async () => {
       await CloudSqlite.uploadDb(container, { ...args, localFileName: args.iModelFile });
     });
@@ -100,14 +106,13 @@ export class EditableCatalog extends StandaloneDb {
     return cloudContainerProps;
   }
 
-
   public static async acquireWriteLock(args: { username: string } & CatalogIModelTypes.ContainerArg) {
-    const container = await getCatalogContainerObj(args.containerId, true);
+    const container = await getWriteableContainer(args.containerId);
     container.acquireWriteLock(args.username);
   }
 
   public static async releaseWriteLock(args: CatalogIModelTypes.ContainerArg & { abandon?: true }) {
-    const container = await getCatalogContainerObj(args.containerId, true);
+    const container = await getWriteableContainer(args.containerId);
     if (args.abandon)
       container.abandonChanges();
     container.releaseWriteLock();
@@ -117,7 +122,7 @@ export class EditableCatalog extends StandaloneDb {
     if (undefined === args.containerId) // local file?
       return super.openFile(args.dbFullName, OpenMode.ReadWrite, args);
 
-    const container = await getCatalogContainerObj(args.containerId, true);
+    const container = await getWriteableContainer(args.containerId);
     ensureLocked(container, "open a Catalog for editing");
     if (!CloudSqlite.isSemverEditable(args.dbFullName, container))
       CloudSqliteError.throwError("already-published", { message: "Catalog has already been published and is not editable. Make a new version first.", ...args })
@@ -128,15 +133,23 @@ export class EditableCatalog extends StandaloneDb {
     return super.open({ ...args, fileName: args.dbFullName, container, readonly: false });
   }
 
+  public override beforeClose(): void {
+    // when saved, CatalogIModels should never have any Txns. If we wanted to create a changeset, we'd have to do it here.
+    this[_nativeDb].deleteAllTxns();
+    // might also want to vacuum here?
+    super.beforeClose();
+  }
+
   public static async createNewVersion(args: CatalogIModelTypes.CreateNewVersionArgs): Promise<{ oldDb: CatalogIModelTypes.NameAndVersion, newDb: CatalogIModelTypes.NameAndVersion }> {
-    const container = await getCatalogContainerObj(args.containerId);
+    const container = await getWriteableContainer(args.containerId);
     ensureLocked(container, "create a new version");
     return CloudSqlite.createNewDbVersion(container, args);
   }
 }
 
-export class CatalogIModelIpc extends IpcHandler implements CatalogIModelTypes.IpcMethods {
+export class CatalogIModelHandler extends IpcHandler implements CatalogIModelTypes.IpcMethods {
   public get channelName(): CatalogIModelTypes.IpcChannel { return "catalogIModel/ipc"; }
+
   public async createNewContainer(args: CatalogIModelTypes.CreateNewContainerArgs): Promise<CatalogIModelTypes.NewContainerProps> {
     return EditableCatalog.createNewContainer(args);
   }
