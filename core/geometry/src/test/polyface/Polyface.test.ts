@@ -2197,3 +2197,42 @@ describe("PolyfaceVisitor", () => {
     expect(ck.getNumErrors()).toBe(0);
   });
 });
+
+describe("ClashExamples", () => {
+  it("PolyfaceNegativeVolume", () => {
+    const ck = new Checker(true, true);
+    const allGeometry: GeometryQuery[] = [];
+    // these Civil meshes are volumetric but non-manifold (overlapping facets) and have consistently reversed normals
+    for (const file of ["./src/test/data/polyface/nonManifoldReversedMesh0.fb", "./src/test/data/polyface/nonManifoldReversedMesh1.fb"]) {
+      const geometry = GeometryCoreTestIO.flatBufferFileToGeometry(file);
+      if (ck.testDefined(geometry, "read FB file")) {
+        const polyface = (Array.isArray(geometry) ? geometry[0] : geometry) as IndexedPolyface;
+        if (ck.testDefined(polyface, "FB geometry is a mesh")) {
+          GeometryCoreTestIO.captureCloneGeometry(allGeometry, polyface);
+
+          const computeVolumes = (mesh: Polyface): number => {
+            let vol0 = 0;
+            const momentData = PolyfaceQuery.computePrincipalVolumeMoments(mesh);
+            if (ck.testDefined(momentData, "computed principal volume moments"))
+              vol0 = momentData.quantitySum;
+            const vol1 = PolyfaceQuery.sumTetrahedralVolumes(mesh);
+            ck.testCoordinate(vol0, vol1, "volume computed by two methods should agree");
+            return vol0;
+          };
+
+          ck.testFalse(PolyfaceQuery.isPolyfaceClosedByEdgePairing(polyface), "mesh has topological defects");
+
+          const vol = computeVolumes(polyface);
+          ck.testTrue(vol < 0.0, "mesh volume is negative");
+
+          polyface.reverseIndices();
+          const volReversed = computeVolumes(polyface);
+          ck.testTrue(volReversed > 0.0, "mesh volume is positive after reversing indices");
+          ck.testCoordinate(Math.abs(vol), volReversed, "absolute volumes of mesh and reversed mesh are the same");
+        }
+      }
+    }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "ClashExamples", "PolyfaceNegativeVolume");
+    expect(ck.getNumErrors()).toBe(0);
+  });
+});
