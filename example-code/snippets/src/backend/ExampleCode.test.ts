@@ -3,9 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { BisCoreSchema, BriefcaseDb, ClassRegistry, CodeService, Element, PhysicalModel, StandaloneDb, Subject } from "@itwin/core-backend";
-import { AccessToken, Guid, Id64, Id64String } from "@itwin/core-bentley";
-import { Code, CodeScopeSpec, CodeSpec, CodeSpecProperties, ConflictingLocksError, IModel } from "@itwin/core-common";
+import { BisCoreSchema, BriefcaseDb, ClassRegistry, CodeService, Element, ExportGraphicsInfo, ExportGraphicsOptions, IModelJsFs, PhysicalModel, SnapshotDb, StandaloneDb, Subject } from "@itwin/core-backend";
+import { AccessToken, DbResult, Guid, Id64, Id64Array, Id64String } from "@itwin/core-bentley";
+import { Code, CodeScopeSpec, CodeSpec, CodeSpecProperties, ConflictingLocksError, ElementGeometryInfo, IModel } from "@itwin/core-common";
 import { Range3d } from "@itwin/core-geometry";
 import { assert } from "chai";
 import { IModelTestUtils } from "./IModelTestUtils";
@@ -119,6 +119,55 @@ describe("Example Code", () => {
     assert.notDeepEqual(codeSpec2Id, codeSpecId);
     // __PUBLISH_EXTRACT_END__
 
+  });
+
+  it("export elements from local bim file", async () => {
+    // edit these values to run
+    const inBimFilePathName: string = ""; // e.g., "c:\\tmp\\foo.bim"
+    const outFBFileNameBase: string = ""; // Optional, for export to FlatBuffer, e.g., "c:\\tmp\\bar"
+    const elementIdArray: Id64Array = []; // Optional, e.g., ["0x2000000000c", "0x2000000000a"]
+
+    if (inBimFilePathName !== "") {
+      assert.isTrue(IModelJsFs.existsSync(inBimFilePathName));
+      const myIModel = SnapshotDb.openFile(inBimFilePathName);
+
+      // use an ECSQL query to retrieve element ids
+      if (elementIdArray.length === 0) {
+        const query: string = ""; // e.g., "SELECT DISTINCT Element.id elmId FROM CifCommon.FeatureBaseAspect WHERE DefinitionName = 'Mesh\\Rail\\TC_Rail Ballast'"
+        if (query.length > 0) {
+          const reader = myIModel.createQueryReader(query);
+          while (await reader.step())
+            elementIdArray.push(reader.current.elmId);
+        }
+      }
+
+      if (elementIdArray.length > 0) {
+        // export element geometry in FlatBuffers format
+        if (outFBFileNameBase !== "") {
+          for (const elementId of elementIdArray) {
+            myIModel.elementGeometryRequest({elementId, onGeometry: (info: ElementGeometryInfo) => {
+              for (const entry of info.entryArray) {
+                // if (entry.opcode === ElementGeometryOpcode.BsplineSurface) // e.g., further filtering
+                IModelJsFs.writeFileSync(`${outFBFileNameBase}-${elementId.toString()}.fb`, entry.data);
+              }
+            }});
+          }
+        }
+        // examine element geometry inline
+        const infos: ExportGraphicsInfo[] = [];
+        const exportGraphicsOptions: ExportGraphicsOptions = {
+          elementIdArray,
+          onGraphics: (info: ExportGraphicsInfo) => infos.push(info),
+          // partInstanceArray: [], // uncomment to prevent part instances from being meshed
+        };
+        if (DbResult.BE_SQLITE_OK === myIModel.exportGraphics(exportGraphicsOptions)) {
+          // for (const info of infos)
+          //   console.log(JSON.stringify(IModelJson.Writer.toIModelJson(ExportGraphics.convertToIndexedPolyface(info.mesh))));
+        }
+      }
+
+      myIModel.close();
+    }
   });
 
   it("CodeService", async () => {
