@@ -15,7 +15,7 @@ import { createValidIModelFileName } from "../IModelSetupUtils";
 import { setupTestsOutputDirectory } from "../IntegrationTests";
 import { getFieldByLabel, getOutputRoot, prepareOutputFilePath, waitFor } from "../Utils";
 
-describe.only("Reacting to IModel data changes", () => {
+describe("Reacting to IModel data changes", () => {
   let updatesSpy: sinon.SinonSpy<[string, ...any[]], void>;
 
   before(async () => {
@@ -99,7 +99,7 @@ describe.only("Reacting to IModel data changes", () => {
       });
     });
 
-    it.only(`returns fresh content after "pull changes"`, async function () {
+    it(`returns fresh content after "pull changes"`, async function () {
       await using(await setupBriefcaseDbTest(this), async (test) => {
         const imodel1 = await test.openIModel();
         const imodel2 = await test.openIModel();
