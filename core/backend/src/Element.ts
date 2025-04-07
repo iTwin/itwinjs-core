@@ -607,7 +607,7 @@ export abstract class GeometricElement3d extends GeometricElement {
     const origin = instance.origin ? [instance.origin.x, instance.origin.y, instance.origin.z] : [0, 0, 0];
     let bbox: LowAndHighXYZProps | undefined;
     if ("bBoxHigh" in instance && instance.bBoxHigh !== undefined && "bBoxLow" in instance && instance.bBoxLow !== undefined) {
-      bbox =  {
+      bbox = {
         low: [instance.bBoxLow.x, instance.bBoxLow.y, instance.bBoxLow.z],
         high: [instance.bBoxHigh.x, instance.bBoxHigh.y, instance.bBoxHigh.z],
       }
@@ -748,7 +748,7 @@ export abstract class GeometricElement2d extends GeometricElement {
     const origin = instance.origin ? [instance.origin.x, instance.origin.y] : [0, 0];
     let bbox: LowAndHighXYZProps | undefined;
     if ("bBoxHigh" in instance && instance.bBoxHigh !== undefined && "bBoxLow" in instance && instance.bBoxLow !== undefined) {
-      bbox =  {
+      bbox = {
         low: [instance.bBoxLow.x, instance.bBoxLow.y],
         high: [instance.bBoxHigh.x, instance.bBoxHigh.y],
       }
@@ -1269,6 +1269,25 @@ export abstract class DefinitionElement extends InformationContentElement {
     this.isPrivate = true === props.isPrivate;
   }
 
+  protected static override readonly _customHandledProps: CustomHandledProperty[] = [
+    { propertyName: "isPrivate", source: "Class" },
+  ];
+
+  public static override deserialize(props: InstanceProps): DefinitionElementProps {
+    const elProps = super.deserialize(props) as DefinitionElementProps;
+    if (props.row.isPrivate !== undefined) {
+      elProps.isPrivate = props.row.isPrivate;
+    }
+    return elProps;
+  }
+
+  public static override serialize(props: DefinitionElementProps, iModel: IModelDb): ECSqlRow {
+    const inst = super.serialize(props, iModel);
+    if (undefined !== props.isPrivate) {
+      inst.isPrivate = props.isPrivate;
+    }
+    return inst;
+  }
   public override toJSON(): DefinitionElementProps {
     const val = super.toJSON() as DefinitionElementProps;
     val.isPrivate = this.isPrivate;

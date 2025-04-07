@@ -13,6 +13,7 @@ import {
 import { DefinitionElement } from "./Element";
 import { IModelDb } from "./IModelDb";
 import { CategoryOwnsSubCategories } from "./NavigationRelationship";
+import { CustomHandledProperty, ECSqlRow, InstanceProps } from "./Entity";
 
 /** Defines the appearance for graphics in Geometric elements
  * @public
@@ -28,6 +29,34 @@ export class SubCategory extends DefinitionElement {
     super(props, iModel);
     this.appearance = new SubCategoryAppearance(props.appearance);
     this.description = JsonUtils.asString(props.description);
+  }
+
+  protected static override readonly _customHandledProps: CustomHandledProperty[] = [
+    { propertyName: "description", source: "Class" },
+    { propertyName: "properties", source: "Class" },
+  ];
+
+  public static override deserialize(props: InstanceProps): SubCategoryProps {
+    const elProps = super.deserialize(props) as SubCategoryProps;
+    if (props.row.isPrivate !== undefined) {
+      elProps.description = props.row.description;
+    }
+
+    elProps.appearance = JSON.parse(props.row.properties) as SubCategoryAppearance.Props;
+    return elProps;
+  }
+
+  public static override serialize(props: SubCategoryProps, iModel: IModelDb): ECSqlRow {
+    const inst = super.serialize(props, iModel);
+    if (undefined !== props.description) {
+      inst.description = props.description;
+    }
+
+    if (undefined !== props.appearance) {
+      inst.properties = JSON.stringify(props.appearance);
+    }
+
+    return inst;
   }
 
   public override toJSON(): SubCategoryProps {
@@ -107,7 +136,24 @@ export class Category extends DefinitionElement {
     this.rank = JsonUtils.asInt(props.rank);
     this.description = JsonUtils.asString(props.description);
   }
-
+  protected static override readonly _customHandledProps: CustomHandledProperty[] = [
+    { propertyName: "rank", source: "Class" },
+    { propertyName: "description", source: "Class" },
+  ];
+  public static override deserialize(props: InstanceProps): CategoryProps {
+    const elProps = super.deserialize(props) as CategoryProps;
+    elProps.description = JsonUtils.asString(props.row.description);
+    elProps.rank = JsonUtils.asInt(props.row.rank);
+    return elProps;
+  }
+  public static override serialize(props: CategoryProps, iModel: IModelDb): ECSqlRow {
+    const inst = super.serialize(props, iModel);
+    if (undefined !== props.description) {
+      inst.description = props.description;
+    }
+    inst.rank = props.rank;
+    return inst;
+  }
   public override toJSON(): CategoryProps {
     const val = super.toJSON() as CategoryProps;
     val.rank = this.rank;
