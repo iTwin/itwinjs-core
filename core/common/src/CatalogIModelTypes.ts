@@ -55,10 +55,15 @@ export namespace CatalogIModelTypes {
     readonly version?: VersionRange;
   }
 
-  export interface OpenArgs extends NameAndVersion, SnapshotOpenOptions {
+  export interface OpenArgs extends SnapshotOpenOptions {
     containerId?: string;
-    writeable?: boolean;
     prefetch?: boolean;
+  }
+
+  export type OpenReadonlyArgs = OpenArgs & NameAndVersion;
+
+  export interface OpenEditableArgs extends OpenArgs {
+    dbFullName: string;
   }
 
   export interface CreateNewVersionArgs {
@@ -86,7 +91,9 @@ export namespace CatalogIModelTypes {
     releaseWriteLock(args: ContainerArg & { abandon?: true }): Promise<void>;
     /** create a new version of a CatalogIModel from an existing version. */
     createNewVersion(args: CreateNewVersionArgs): Promise<{ oldDb: NameAndVersion, newDb: NameAndVersion }>;
-    /** Attempt to open a CatalogIModel */
-    openCatalog(args: OpenArgs): Promise<IModelConnectionProps>;
+    /** Attempt to open a CatalogIModel readonly*/
+    openReadonly(args: OpenReadonlyArgs): Promise<IModelConnectionProps>;
+    /** Attempt to open a CatalogIModel for editing */
+    openEditable(args: OpenEditableArgs): Promise<IModelConnectionProps>;
   }
 }
