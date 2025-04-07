@@ -21,7 +21,7 @@ import {
   ViewIdString, ViewQueryParams, ViewStateLoadProps, ViewStateProps, ViewStoreRpc
 } from "@itwin/core-common";
 import { Point3d, Range3d, Range3dProps, Transform, XYAndZ, XYZProps } from "@itwin/core-geometry";
-import type { IModelReadAPI, IModelReadIpcAPI } from "@itwin/imodelread-common";
+import type { IModelReadAPI, IModelReadIpcAPI, QueryArgs } from "@itwin/imodelread-common";
 import { IpcIModelRead } from "@itwin/imodelread-client-ipc";
 import { IModelReadHTTPClient} from "@itwin/imodelread-client-http";
 import { BriefcaseConnection } from "./BriefcaseConnection";
@@ -279,9 +279,9 @@ export abstract class IModelConnection extends IModel {
    * */
   public createQueryReader(ecsql: string, params?: QueryBinder, config?: QueryOptions): ECSqlReader {
     if (config && this.hasUnsupportedQueryOptions(config)) {
-      return this.createRPCQueryReader(ecsql, params, config)
+      return this.createRPCQueryReader(ecsql, params, config);
     }
-    const parsedParams = params ? this.parseBinderToArgs(params) : undefined
+    const parsedParams = params ? this.parseBinderToArgs(params) : undefined;
     return this._iModelReadApi.runQuery({ query: ecsql, args: parsedParams, options: { includeMetadata: config?.includeMetaData }});
   }
 
@@ -294,7 +294,7 @@ export abstract class IModelConnection extends IModel {
       || options.quota !== undefined
       || options.restartToken !== undefined
       || options.rowFormat === QueryRowFormat.UseJsPropertyNames
-      || options.usePrimaryConn !== undefined
+      || options.usePrimaryConn !== undefined;
   }
 
   private createRPCQueryReader(ecsql: string, params?: QueryBinder, config?: QueryOptions): ECSqlReader {
@@ -306,48 +306,57 @@ export abstract class IModelConnection extends IModel {
     return new ECSqlReader(executor, ecsql, params, config);
   }
 
-  private parseBinderToArgs(params: QueryBinder): any[] {
-    const serializedArgs = params.serialize()
-    if (Array.isArray(serializedArgs)) {
-      return serializedArgs
+  private parseBinderToArgs(params: QueryBinder): QueryArgs {
+    const serializedArgs = params.serialize();
+    const allKeys = Object.keys(serializedArgs);
+    if (allKeys.length === 0) {
+      return {};
     }
 
-    const args = []
-    for (const value of Object.values(serializedArgs)) {
-      value.type = this.parseArgumentValue(value.type)
-      args.push(value)
+    const integerRegex = /^\d+$/;
+    if (integerRegex.test(allKeys[0])) {
+      const queryArgs: QueryArgs = [];
+      Object.values(serializedArgs).forEach(value => {
+        queryArgs.push({...value, type: this.parseIdToParamType(value.type)});
+      })
+      return queryArgs
+    } else {
+      const queryArgs: QueryArgs = {};
+      for (const [key, value] of Object.entries(serializedArgs)) {
+        queryArgs[key] = {...value, type: this.parseIdToParamType(value.type)};
+      }
+      return queryArgs;
     }
-    return args
   }
 
-  private parseArgumentValue(index: number): string {
+  private parseIdToParamType(index: number): string {
     switch (index) {
       case QueryParamType.Boolean:
-        return "boolean"
+        return "boolean";
       case QueryParamType.Double:
-        return "double"
+        return "double";
       case QueryParamType.Id:
-        return "id"
+        return "id";
       case QueryParamType.IdSet:
-        return "idSet"
+        return "idSet";
       case QueryParamType.Integer:
-        return "integer"
+        return "integer";
       case QueryParamType.Long:
-        return "long"
+        return "long";
       case QueryParamType.Null:
-        return "null"
+        return "null";
       case QueryParamType.Point2d:
-        return "point2d"
+        return "point2d";
       case QueryParamType.Point3d:
-        return "point3d"
+        return "point3d";
       case QueryParamType.String:
-        return "string"
+        return "string";
       case QueryParamType.Blob:
-        return "blob"
+        return "blob";
       case QueryParamType.Struct:
-        return "struct"
+        return "struct";
       default:
-        throw new TypeError(`No query parameter type matches the provided index ${index}`)
+        throw new TypeError(`No query parameter type matches the provided index ${index}`);
     }
   }
 
