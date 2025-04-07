@@ -417,6 +417,7 @@ export class ECSqlReader implements AsyncIterableIterator<QueryRowProxy> {
         generated: this.isGeneratedProperty(value),
         index: value.index ?? index,
         jsonName: value.jsonName ?? this.createJsonName(value, jsonNameDict),
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         extendType: value.extendType ?? value.extendedType ?? ""
       })
     );
