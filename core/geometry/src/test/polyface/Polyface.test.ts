@@ -2200,7 +2200,7 @@ describe("PolyfaceVisitor", () => {
 
 describe("ClashExamples", () => {
   it("PolyfaceNegativeVolume", () => {
-    const ck = new Checker(true, true);
+    const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
     // these Civil meshes are volumetric but non-manifold (overlapping facets) and have consistently reversed normals
     for (const file of ["./src/test/data/polyface/nonManifoldReversedMesh0.fb", "./src/test/data/polyface/nonManifoldReversedMesh1.fb"]) {
