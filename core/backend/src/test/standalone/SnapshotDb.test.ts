@@ -10,7 +10,7 @@ import { CheckpointManager, V2CheckpointManager } from "../../CheckpointManager"
 import { IModelDb, SnapshotDb } from "../../IModelDb";
 import { Logger } from "@itwin/core-bentley";
 import { IModelHost } from "../../IModelHost";
-import { HubMock } from "../../HubMock";
+import { HubMock } from "../../internal/HubMock";
 import { _hubAccess, _nativeDb, _openCheckpoint } from "../../internal/Symbols";
 
 describe("SnapshotDb.refreshContainerForRpc", () => {
