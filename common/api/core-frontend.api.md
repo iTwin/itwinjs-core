@@ -5350,7 +5350,7 @@ export class LayerTileTreeHandler {
     constructor(ref: LayerTileTree);
     addImageryLayer(tree: ImageryMapTileTree, settings: MapLayerSettings, index: number, baseImageryLayer: boolean): void;
     // (undocumented)
-    addModelLayer(layerTreeRef: ModelMapLayerTileTreeReference, context: SceneContext): void;
+    addModelLayer(layerTreeRef: ModelMapLayerTileTreeReference, context: SceneContext, tileTree: TileTree): void;
     // (undocumented)
     clearLayers(): void;
     // (undocumented)
