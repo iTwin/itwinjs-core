@@ -208,28 +208,16 @@ function produceFrameGeometry(layout: TextBlockLayout, documentTransform: Transf
   const context: GeometryContext = { entries: [] };
 
   if (frameProps?.frame && frameProps?.frame !== "none") {
-    if (frameProps.border) {
-      context.entries.push({
-        border: {
-          shape: frameProps.frame,
-          width: frameProps.borderWeight ?? 1,
-          color: frameProps.border,
-          transform: documentTransform.toJSON(),
-          range: layout.range.toJSON(),
-        }
-      });
-    }
-
-    if (frameProps.fill) {
-      context.entries.push({
-        fill: {
-          shape: frameProps.frame,
-          color: frameProps.fill,
-          transform: documentTransform.toJSON(),
-          range: layout.range.toJSON(),
-        }
-      });
-    }
+    context.entries.push({
+      frame: {
+        shape: frameProps.frame,
+        lineWidth: frameProps.borderWeight ?? 1,
+        lineColor: frameProps.border,
+        fillColor: frameProps.fill,
+        transform: documentTransform.toJSON(),
+        range: layout.range.toJSON(),
+      }
+    });
   }
 
   return { entries: context.entries };

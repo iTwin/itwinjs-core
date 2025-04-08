@@ -22,8 +22,7 @@ export type TextBlockGeometryPropsEntry = {
   text: TextStringProps;
   separator?: never;
   color?: never;
-  border?: never;
-  fill?: never;
+  frame?: never;
 } | {
   text?: never;
   separator: {
@@ -31,33 +30,20 @@ export type TextBlockGeometryPropsEntry = {
     endPoint: XYZProps;
   };
   color?: never;
-  border?: never;
-  fill?: never;
+  frame?: never;
 } | {
   text?: never;
   separator?: never;
   color: TextStyleColor;
-  border?: never;
-  fill?: never;
+  frame?: never;
 } | {
   text?: never;
   separator?: never;
   color?: never;
-  border: {
-    color: TextStyleColor;
-    width: number;
-    shape: TextAnnotationFrame;
-    transform: TransformProps;
-    range: Range2dProps;
-  };
-  fill?: never;
-} | {
-  text?: never;
-  separator?: never;
-  color?: never;
-  border?: never;
-  fill: {
-    color: TextAnnotationFillColor;
+  frame: {
+    fillColor?: TextAnnotationFillColor;
+    lineColor?: TextStyleColor;
+    lineWidth?: number;
     shape: TextAnnotationFrame;
     transform: TransformProps;
     range: Range2dProps;
