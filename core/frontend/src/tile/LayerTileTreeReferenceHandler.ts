@@ -74,8 +74,7 @@ export class LayerTileTreeReferenceHandler {
       this._ref.preInitializeLayers(context);
 
     let hasLoadedTileTree = false;
-    const tileTree = this._ref.treeOwner.load();
-    const layerHandler = tileTree?.layerHandler;
+    const layerHandler = this._ref.treeOwner.load()?.layerHandler;
     if (undefined === layerHandler) {
       return hasLoadedTileTree;     // Not loaded yet - or no layerHandler on tree.
     }
@@ -124,7 +123,7 @@ export class LayerTileTreeReferenceHandler {
         if (layerTree instanceof ImageryMapTileTree) {
           layerHandler.addImageryLayer(layerTree, layerTreeRef.layerSettings, treeIndex, baseImageryLayer);
         } else if (layerTreeRef instanceof ModelMapLayerTileTreeReference)
-          layerHandler.addModelLayer(layerTreeRef, context, tileTree);
+          layerHandler.addModelLayer(layerTreeRef, context, layerTree);
       }
     }
 
