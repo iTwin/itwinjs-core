@@ -63,7 +63,7 @@ export class PropertyMetaDataMap implements Iterable<QueryPropertyMetaData> {
 
 export type MetadataWithOptionalLegacyFields = Omit<QueryPropertyMetaData, 'jsonName' | 'index' | 'generated' | 'extendType'> & Partial<Pick<QueryPropertyMetaData, 'jsonName' | 'index' | 'generated' | 'extendType'>>;
 export type MinimalDbQueryResponse = Omit<DbQueryResponse, 'meta'> & { meta: MetadataWithOptionalLegacyFields[] };
-type ExtendedType = "Id" | "ClassId" | "SourceId" | "TargetId" | "SourceClassId" | "TargetClassId" | "NavId" | "NavRelClassId";
+type SystemExtendedType = "Id" | "ClassId" | "SourceId" | "TargetId" | "SourceClassId" | "TargetClassId" | "NavId" | "NavRelClassId";
 
 /**
  * The format for rows returned by [[ECSqlReader]].
@@ -428,7 +428,7 @@ export class ECSqlReader implements AsyncIterableIterator<QueryRowProxy> {
     let jsName;
     if (this.isGeneratedProperty(meta)) {
       jsName = this.lowerFirstChar(meta.name);
-    } else if (meta.extendedType && this.isExtendedType(meta.extendedType)) {
+    } else if (meta.extendedType && this.isSystemExtendedType(meta.extendedType)) {
       const path = meta.accessString ? meta.accessString.replace(/\[\d*\]/g, "") : "";
       const lastPropertyIndex = path.lastIndexOf(".") + 1;
       if (lastPropertyIndex > 0) {
@@ -478,7 +478,7 @@ export class ECSqlReader implements AsyncIterableIterator<QueryRowProxy> {
     return meta.generated ?? meta.className === "";
   }
 
-  private static isExtendedType(value: string): value is ExtendedType {
+  private static isSystemExtendedType(value: string): value is SystemExtendedType {
     return value === "Id"
       || value === "ClassId"
       || value === "SourceId"
