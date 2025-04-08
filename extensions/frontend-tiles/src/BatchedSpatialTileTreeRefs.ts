@@ -97,6 +97,9 @@ class BatchedSpatialTileTreeReferences implements SpatialTileTreeReferences {
       groups,
       treeOwner: this._treeOwner,
       getCurrentTimePoint: () => this._currentScript ? (this._view.displayStyle.settings.timePoint ?? this._currentScript.duration.low) : 0,
+      getBackgroundBase: () => this._view.displayStyle.settings.mapImagery.backgroundBase,
+      getBackgroundLayers: () => this._view.displayStyle.settings.mapImagery.backgroundLayers,
+      iModel: this._view.iModel,
     };
 
     for (let i = 0; i < groups.length; i++) {

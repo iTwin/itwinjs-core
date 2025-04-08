@@ -6,7 +6,7 @@
  * @module MapLayers
  */
 
-import { assert, Id64Array, Id64String } from "@itwin/core-bentley";
+import { assert, Id64String } from "@itwin/core-bentley";
 import { BackgroundMapProvider, BackgroundMapProviderProps, BackgroundMapType } from "./BackgroundMapProvider";
 import { DeprecatedBackgroundMapProps } from "./BackgroundMapSettings";
 
