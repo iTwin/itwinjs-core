@@ -72,7 +72,7 @@ export class LayerTileTreeReferenceHandler {
   }
 
   public initializeLayers(context: SceneContext): boolean {
-    // map Tile handel refresh logic differently
+    // Map tiles handle refresh logic differently
     if(!this._mapTile){
       const removals = this._detachFromDisplayStyle;
       const mapImagery = context.viewport.displayStyle.settings.mapImagery;
