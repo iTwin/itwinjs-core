@@ -34,7 +34,6 @@ import { ChangesetFileProps } from '@itwin/core-common';
 import { ChangesetId } from '@itwin/core-common';
 import { ChangesetIdWithIndex } from '@itwin/core-common';
 import { ChangesetIndex } from '@itwin/core-common';
-import { ChangesetIndexAndId } from '@itwin/core-common';
 import { ChangesetIndexOrId } from '@itwin/core-common';
 import { ChangesetProps } from '@itwin/core-common';
 import { ChangesetRange } from '@itwin/core-common';
@@ -3127,63 +3126,6 @@ export class GroupModel extends GroupInformationModel {
     static insert(iModelDb: IModelDb, parentSubjectId: Id64String, name: string): Id64String;
 }
 
-// @internal
-export class HubMock {
-    // (undocumented)
-    static acquireLocks(arg: BriefcaseDbArg, locks: LockMap): Promise<void>;
-    // (undocumented)
-    static acquireNewBriefcaseId(arg: AcquireNewBriefcaseIdArg): Promise<number>;
-    static createNewIModel(arg: CreateNewIModelProps): Promise<GuidString>;
-    // (undocumented)
-    static deleteIModel(arg: IModelIdArg & {
-        iTwinId: GuidString;
-    }): Promise<void>;
-    static destroy(iModelId: GuidString): void;
-    // (undocumented)
-    static downloadChangeset(arg: DownloadChangesetArg): Promise<ChangesetFileProps>;
-    // (undocumented)
-    static downloadChangesets(arg: DownloadChangesetRangeArg): Promise<ChangesetFileProps[]>;
-    // (undocumented)
-    static downloadV1Checkpoint(arg: DownloadRequest): Promise<ChangesetIndexAndId>;
-    // (undocumented)
-    static findLocalHub(iModelId: GuidString): LocalHub;
-    static getChangesetFromNamedVersion(arg: IModelIdArg & {
-        versionName: string;
-    }): Promise<ChangesetProps>;
-    // (undocumented)
-    static getChangesetFromVersion(arg: IModelIdArg & {
-        version: IModelVersion;
-    }): Promise<ChangesetProps>;
-    // (undocumented)
-    static getLatestChangeset(arg: IModelIdArg): Promise<ChangesetProps>;
-    // (undocumented)
-    static getMyBriefcaseIds(arg: IModelIdArg): Promise<number[]>;
-    static get isValid(): boolean;
-    // (undocumented)
-    static get iTwinId(): string;
-    // (undocumented)
-    static pushChangeset(arg: IModelIdArg & {
-        changesetProps: ChangesetFileProps;
-    }): Promise<ChangesetIndex>;
-    // (undocumented)
-    static queryAllLocks(_arg: BriefcaseDbArg): Promise<LockProps[]>;
-    // (undocumented)
-    static queryChangeset(arg: ChangesetArg): Promise<ChangesetProps>;
-    // (undocumented)
-    static queryChangesets(arg: IModelIdArg & {
-        range?: ChangesetRange;
-    }): Promise<ChangesetProps[]>;
-    // (undocumented)
-    static queryIModelByName(arg: IModelNameArg): Promise<GuidString | undefined>;
-    // (undocumented)
-    static queryV2Checkpoint(arg: CheckpointProps): Promise<V2CheckpointAccessProps | undefined>;
-    // (undocumented)
-    static releaseAllLocks(arg: BriefcaseDbArg): Promise<void>;
-    static releaseBriefcase(arg: BriefcaseIdArg): Promise<void>;
-    static shutdown(): void;
-    static startup(mockName: LocalDirName, outputDir: string): void;
-}
-
 // @public
 export function imageBufferFromImageSource(args: ImageBufferFromImageSourceArgs): ImageBuffer | undefined;
 
@@ -6151,6 +6093,8 @@ export interface V2CheckpointAccessProps {
 export class V2CheckpointManager {
     // (undocumented)
     static [_getCheckpointDb](request: DownloadRequest): Promise<SnapshotDb>;
+    static [_mockCheckpointAttach]?: (checkpoint: CheckpointProps) => string;
+    static [_mockCheckpointDownload]?: (_request: DownloadRequest) => void;
     // (undocumented)
     static attach(checkpoint: CheckpointProps): Promise<{
         dbName: string;

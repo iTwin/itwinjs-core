@@ -37,7 +37,6 @@ export * from "./ExternalSource";
 export * from "./FontFile";
 export * from "./GeoCoordConfig";
 export * from "./GeographicCRSServices";
-export * from "./HubMock";
 export * from "./ImageSourceConversion";
 export * from "./IModelDb";
 export * from "./IModelDbFonts";
