@@ -7,7 +7,7 @@ import { assert, expect } from "chai";
 import { Suite } from "mocha";
 import { _nativeDb, BriefcaseDb, BriefcaseManager, ChannelControl, CloudSqlite, DrawingCategory, HubMock, IModelDb, IModelHost, SchemaSync, SnapshotDb, SqliteStatement } from "@itwin/core-backend";
 import { AzuriteTest } from "./AzuriteTest.js";
-import { HubWrappers, IModelTestUtils, KnownTestLocations } from "@itwin/core-backend/lib/esm/test/";
+import { HubWrappers, IModelTestUtils, KnownTestLocations } from "@itwin/core-backend/test";
 import { AccessToken, DbResult, Guid, Id64String, OpenMode } from "@itwin/core-bentley";
 import * as path from "path";
 import { EOL } from "os";
