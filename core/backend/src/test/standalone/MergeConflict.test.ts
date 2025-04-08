@@ -13,7 +13,7 @@ import * as chai from "chai";
 import { assert, expect } from "chai";
 import * as chaiAsPromised from "chai-as-promised";
 import { HubWrappers, KnownTestLocations } from "../";
-import { HubMock } from "../../HubMock";
+import { HubMock } from "../../internal/HubMock";
 import {
   BriefcaseDb,
   ChannelControl,
