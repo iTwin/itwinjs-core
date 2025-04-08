@@ -9,7 +9,7 @@ import { BriefcaseIdValue } from "@itwin/core-common";
 import { Element } from "../../Element";
 import { HubWrappers, IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
-import { HubMock } from "../../HubMock";
+import { HubMock } from "../../internal/HubMock";
 import { TestChangeSetUtility } from "../TestChangeSetUtility";
 import { _nativeDb, ChannelControl } from "../../core-backend";
 

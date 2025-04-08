@@ -22,7 +22,7 @@ import { IModelHost } from "./IModelHost";
 import { IModelJsFs } from "./IModelJsFs";
 import { SnapshotDb, TokenArg } from "./IModelDb";
 import { IModelNative } from "./internal/NativePlatform";
-import { _getCheckpointDb, _hubAccess, _nativeDb, _openCheckpoint } from "./internal/Symbols";
+import { _getCheckpointDb, _hubAccess, _mockCheckpointAttach, _mockCheckpointDownload, _nativeDb, _openCheckpoint } from "./internal/Symbols";
 
 const loggerCategory = BackendLoggerCategory.IModelDb;
 
@@ -131,6 +131,16 @@ export class V2CheckpointManager {
   private static _cloudCache?: CloudSqlite.CloudCache;
   private static containers = new Map<string, CloudSqlite.CloudContainer>();
 
+  /** used by HubMock
+   * @internal
+   */
+  public static [_mockCheckpointAttach]?: (checkpoint: CheckpointProps) => string;
+  /** used by HubMock
+   * @internal
+   */
+  public static [_mockCheckpointDownload]?: (_request: DownloadRequest) => void;
+
+
   public static getFolder(): LocalDirName {
     const cloudCachePath = path.join(BriefcaseManager.cacheDir, V2CheckpointManager.cloudCacheName);
     if (!(IModelJsFs.existsSync(cloudCachePath))) {
@@ -187,6 +197,9 @@ export class V2CheckpointManager {
   }
 
   public static async attach(checkpoint: CheckpointProps): Promise<{ dbName: string, container: CloudSqlite.CloudContainer | undefined }> {
+    if (this[_mockCheckpointAttach]) // used by HubMock
+      return { dbName: this[_mockCheckpointAttach](checkpoint), container: undefined };
+
     let v2props: V2CheckpointAccessProps | undefined;
     try {
       v2props = await IModelHost[_hubAccess].queryV2Checkpoint(checkpoint);
@@ -236,13 +249,17 @@ export class V2CheckpointManager {
 
   private static async performDownload(job: DownloadJob): Promise<ChangesetId> {
     const request = job.request;
-    const v2props: V2CheckpointAccessProps | undefined = await IModelHost[_hubAccess].queryV2Checkpoint({ ...request.checkpoint, allowPreceding: true });
-    if (!v2props)
-      throw new IModelError(IModelStatus.NotFound, "V2 checkpoint not found");
+    if (this[_mockCheckpointDownload])
+      this[_mockCheckpointDownload](request);
+    else {
+      const v2props: V2CheckpointAccessProps | undefined = await IModelHost[_hubAccess].queryV2Checkpoint({ ...request.checkpoint, allowPreceding: true });
+      if (!v2props)
+        throw new IModelError(IModelStatus.NotFound, "V2 checkpoint not found");
 
-    CheckpointManager.onDownloadV2.raiseEvent(job);
-    const container = CloudSqlite.createCloudContainer(this.toCloudContainerProps(v2props));
-    await CloudSqlite.transferDb("download", container, { dbName: v2props.dbName, localFileName: request.localFile, onProgress: request.onProgress });
+      CheckpointManager.onDownloadV2.raiseEvent(job);
+      const container = CloudSqlite.createCloudContainer(this.toCloudContainerProps(v2props));
+      await CloudSqlite.transferDb("download", container, { dbName: v2props.dbName, localFileName: request.localFile, onProgress: request.onProgress });
+    }
     return request.checkpoint.changeset.id;
   }
 

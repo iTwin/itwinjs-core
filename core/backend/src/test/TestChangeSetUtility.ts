@@ -6,7 +6,7 @@
 import { AccessToken, GuidString } from "@itwin/core-bentley";
 import { ColorDef, IModel, SubCategoryAppearance } from "@itwin/core-common";
 import { BriefcaseDb, ChannelControl, SpatialCategory } from "../core-backend";
-import { HubMock } from "../HubMock";
+import { HubMock } from "../internal/HubMock";
 import { HubWrappers, IModelTestUtils } from "./IModelTestUtils";
 
 /** Test utility to push an iModel and ChangeSets */
