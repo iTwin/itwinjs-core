@@ -103,12 +103,12 @@ export class EditableCatalog extends StandaloneDb {
     return cloudContainerProps;
   }
 
-  public static async acquireWriteLock(args: { username: string } & CatalogIModelTypes.ContainerArg) {
+  public static async acquireWriteLock(args: { containerId: string, username: string }) {
     const container = await getWriteableContainer(args.containerId);
     container.acquireWriteLock(args.username);
   }
 
-  public static async releaseWriteLock(args: CatalogIModelTypes.ContainerArg & { abandon?: true }) {
+  public static async releaseWriteLock(args: { containerId: string, abandon?: true }) {
     const container = await getWriteableContainer(args.containerId);
     if (args.abandon)
       container.abandonChanges();
@@ -150,10 +150,10 @@ export class CatalogIModelHandler extends IpcHandler implements CatalogIModelTyp
   public async createNewContainer(args: CatalogIModelTypes.CreateNewContainerArgs): Promise<CatalogIModelTypes.NewContainerProps> {
     return EditableCatalog.createNewContainer(args);
   }
-  public async acquireWriteLock(args: CatalogIModelTypes.ContainerArg & { username: string; }): Promise<void> {
+  public async acquireWriteLock(args: { containerId: string, username: string; }): Promise<void> {
     return EditableCatalog.acquireWriteLock(args);
   }
-  public async releaseWriteLock(args: CatalogIModelTypes.ContainerArg & { abandon?: true; }): Promise<void> {
+  public async releaseWriteLock(args: { containerId: string, abandon?: true; }): Promise<void> {
     return EditableCatalog.releaseWriteLock(args);
   }
   public async openReadonly(args: CatalogIModelTypes.OpenReadonlyArgs): Promise<IModelConnectionProps> {

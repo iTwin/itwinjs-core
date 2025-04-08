@@ -22,11 +22,11 @@ export class CatalogConnection extends BriefcaseConnection {
     return NativeApp.catalogIpc.createNewContainer(args);
   }
 
-  public static async acquireWriteLock(args: CatalogIModelTypes.ContainerArg & { username: string; }): Promise<void> {
+  public static async acquireWriteLock(args: { containerId: string, username: string; }): Promise<void> {
     return NativeApp.catalogIpc.acquireWriteLock(args);
   }
 
-  public static async releaseWriteLock(args: CatalogIModelTypes.ContainerArg & { abandon?: true; }): Promise<void> {
+  public static async releaseWriteLock(args: { containerId: string, abandon?: true; }): Promise<void> {
     return NativeApp.catalogIpc.releaseWriteLock(args);
   }
 

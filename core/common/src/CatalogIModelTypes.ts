@@ -32,13 +32,6 @@ export namespace CatalogIModelTypes {
     iModelFile: LocalFileName;
   }
 
-  /** Arguments for accessing an existing CatalogIModel container */
-  export interface ContainerArg {
-    containerId: string;
-    /** If present, the container allows write operations. */
-    writeable?: boolean
-  }
-
   export interface NewContainerProps {
     baseUri: string;
     containerId: string;
@@ -86,9 +79,9 @@ export namespace CatalogIModelTypes {
     /** create a new container from the BlobContainerService for holding a CatalogIModel. Also uploads the seed file */
     createNewContainer(args: CreateNewContainerArgs): Promise<NewContainerProps>;
     /** Acquire the write lock for a CatalogIModel container. */
-    acquireWriteLock(args: ContainerArg & { username: string }): Promise<void>;
+    acquireWriteLock(args: { containerId: string, username: string }): Promise<void>;
     /** Release the write lock for a CatalogIModel container. */
-    releaseWriteLock(args: ContainerArg & { abandon?: true }): Promise<void>;
+    releaseWriteLock(args: { containerId: string, abandon?: true }): Promise<void>;
     /** create a new version of a CatalogIModel from an existing version. */
     createNewVersion(args: CreateNewVersionArgs): Promise<{ oldDb: NameAndVersion, newDb: NameAndVersion }>;
     /** Attempt to open a CatalogIModel readonly*/
