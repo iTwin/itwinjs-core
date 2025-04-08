@@ -82,6 +82,7 @@ type UnquantizedPntsProps = CommonPntsProps & {
 
 type PntsProps = QuantizedPntsProps | UnquantizedPntsProps;
 
+/** @internal exported strictly for tests. */
 export function readPntsColors(stream: ByteStream, dataOffset: number, pnts: PntsProps): Uint8Array | undefined {
   const nPts = pnts.POINTS_LENGTH;
   const nComponents = 3 * nPts;

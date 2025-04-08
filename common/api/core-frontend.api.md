@@ -9113,6 +9113,9 @@ export interface ReadPixelsArgs {
 }
 
 // @internal
+export function readPntsColors(stream: ByteStream, dataOffset: number, pnts: PntsProps): Uint8Array | undefined;
+
+// @internal
 export function readPointCloudTileContent(stream: ByteStream, iModel: IModelConnection, modelId: Id64String, _is3d: boolean, tile: RealityTile, system: RenderSystem): Promise<{
     graphic: RenderGraphic | undefined;
     rtcCenter: Point3d | undefined;
