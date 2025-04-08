@@ -5377,7 +5377,7 @@ export class LayerTileTreeHandler {
 
 // @internal (undocumented)
 export class LayerTileTreeReferenceHandler {
-    constructor(ref: LayerTileTreeReference, pIsOverlay: boolean, baseLayerSettings?: BaseLayerSettings, layerSettings?: MapLayerSettings[]);
+    constructor(ref: LayerTileTreeReference, pIsOverlay: boolean, baseLayerSettings?: BaseLayerSettings, layerSettings?: MapLayerSettings[], mapTile?: boolean);
     // (undocumented)
     get baseColor(): ColorDef | undefined;
     // (undocumented)
