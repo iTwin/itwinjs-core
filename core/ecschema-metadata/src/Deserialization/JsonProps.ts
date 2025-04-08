@@ -299,7 +299,7 @@ export interface FormatSet {
 }
 
 /**
- * @beta
+ * @public @preview
  */
 export interface SchemaItemOverrideFormatProps extends SchemaItemFormatProps {
   readonly parent: string;

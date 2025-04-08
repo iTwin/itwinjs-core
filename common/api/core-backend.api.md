@@ -183,8 +183,8 @@ import { Point3d } from '@itwin/core-geometry';
 import { Polyface } from '@itwin/core-geometry';
 import { PolyfaceData } from '@itwin/core-geometry';
 import { PolyfaceVisitor } from '@itwin/core-geometry';
+import { Property } from '@itwin/ecschema-metadata';
 import { PropertyCallback } from '@itwin/core-common';
-import { PropertyHandler } from '@itwin/ecschema-metadata';
 import { QueryBinder } from '@itwin/core-common';
 import { QueryOptions } from '@itwin/core-common';
 import { QueryRowFormat } from '@itwin/core-common';
@@ -4614,6 +4614,9 @@ export enum ProgressStatus {
     Abort = 1,
     Continue = 0
 }
+
+// @public
+export type PropertyHandler = (name: string, property: Property) => void;
 
 // @beta (undocumented)
 export namespace PropertyStore {

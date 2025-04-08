@@ -37,11 +37,9 @@ export class KindOfQuantity extends SchemaItem {
   /** A list of presentation formats. */
   public get presentationFormats(): Array<Format | OverrideFormat> { return this._presentationFormats; }
 
+  /** Persistence unit */
   public get persistenceUnit(): LazyLoadedUnit | LazyLoadedInvertedUnit | undefined { return this._persistenceUnit; }
-  
-  /**
-   * @internal
-   */
+  /** @internal */
   protected set persistenceUnit(value: LazyLoadedUnit | LazyLoadedInvertedUnit | undefined) { this._persistenceUnit = value; }
 
   public get relativeError() { return this._relativeError; }

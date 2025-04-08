@@ -348,10 +348,7 @@ export abstract class Property implements CustomAttributeContainerProps {
   }
 }
 
-/** A callback function to process properties of an Entity
- * @public @preview
- */
-export type PropertyHandler = (name: string, property: Property) => void;
+
 
 /** @public @preview */
 export abstract class PrimitiveOrEnumPropertyBase extends Property {

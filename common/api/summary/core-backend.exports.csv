@@ -335,6 +335,7 @@ beta;function;produceTextAnnotationGeometry
 beta;interface;ProduceTextAnnotationGeometryArgs
 public;type;ProgressFunction
 public;enum;ProgressStatus
+public;type;PropertyHandler
 beta;namespace;PropertyStore
 public;type;PullChangesArgs
 public;interface;PushChangesArgs
