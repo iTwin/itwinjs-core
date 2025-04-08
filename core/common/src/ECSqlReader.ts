@@ -407,11 +407,12 @@ export class ECSqlReader implements AsyncIterableIterator<QueryRowProxy> {
 
   /**
    * Helper method to populate any of the following missing metadata fields: generated, index, jsonName and extendType
+   *
    * @param meta metadata object array with fields generated, index, jsonName and extendType set as optional
    * @returns array of metadata objects with populated missing values
    */
   private static populateDeprecatedMetadataProps(meta: MetadataWithOptionalLegacyFields[]): QueryPropertyMetaData[] {
-    const jsonNameDict: { [jsonName: string] : number } = {};
+    const jsonNameDict: { [jsonName: string]: number } = {};
     return meta.map((value, index) =>
       Object.assign(value, {
         generated: this.isGeneratedProperty(value),
@@ -423,7 +424,7 @@ export class ECSqlReader implements AsyncIterableIterator<QueryRowProxy> {
     );
   }
 
-  private static createJsonName(meta: MetadataWithOptionalLegacyFields, jsonNameDict: { [jsonName: string] : number }): string {
+  private static createJsonName(meta: MetadataWithOptionalLegacyFields, jsonNameDict: { [jsonName: string]: number }): string {
     let jsName;
     if (this.isGeneratedProperty(meta)) {
       jsName = this.lowerFirstChar(meta.name);
@@ -441,26 +442,24 @@ export class ECSqlReader implements AsyncIterableIterator<QueryRowProxy> {
           jsName += leafEntry;
         }
         jsName = this.lowerFirstChar(jsName);
+      } else if (meta.extendedType === "Id" && meta.name === "ECInstanceId") {
+        jsName = "id";
+      } else if (meta.extendedType === "ClassId" && meta.name === "ECClassId") {
+        jsName = "className";
+      } else if (meta.extendedType === "SourceId" && meta.name === "SourceECInstanceId") {
+        jsName = "sourceId";
+      } else if (meta.extendedType === "TargetId" && meta.name === "TargetECInstanceId") {
+        jsName = "targetId";
+      } else if (meta.extendedType === "SourceClassId" && meta.name === "SourceECClassId") {
+        jsName = "sourceClassName";
+      } else if (meta.extendedType === "TargetClassId" && meta.name === "TargetECClassId") {
+        jsName = "targetClassName";
+      } else if (meta.extendedType === "NavId" && meta.name === "Id") {
+        jsName = "id";
+      } else if (meta.extendedType === "NavRelClassId" && meta.name === "RelECClassId") {
+        jsName = "relClassName";
       } else {
-        if (meta.extendedType === "Id" && meta.name === "ECInstanceId") {
-          jsName = "id";
-        } else if (meta.extendedType === "ClassId" && meta.name === "ECClassId") {
-          jsName = "className";
-        } else if (meta.extendedType === "SourceId" && meta.name === "SourceECInstanceId") {
-          jsName = "sourceId";
-        } else if (meta.extendedType === "TargetId" && meta.name === "TargetECInstanceId") {
-          jsName = "targetId";
-        } else if (meta.extendedType === "SourceClassId" && meta.name === "SourceECClassId") {
-          jsName = "sourceClassName";
-        } else if (meta.extendedType === "TargetClassId" && meta.name === "TargetECClassId") {
-          jsName = "targetClassName";
-        } else if (meta.extendedType === "NavId" && meta.name === "Id") {
-          jsName = "id";
-        } else if (meta.extendedType === "NavRelClassId" && meta.name === "RelECClassId") {
-          jsName = "relClassName";
-        } else {
-          jsName = this.lowerFirstChar(meta.name);
-        }
+        jsName = this.lowerFirstChar(meta.name);
       }
     } else {
       jsName = this.lowerFirstChar(meta.accessString ?? "");
@@ -622,11 +621,11 @@ export class ECSqlReader implements AsyncIterableIterator<QueryRowProxy> {
         memLimit: 0,
         timeLimit: 0,
         memUsed: 0,
-        prepareTime: 0,
+        prepareTime: 0
       },
       status,
       kind: DbResponseKind.ECSql,
-      meta: meta ?? [],
+      meta: meta ?? []
     };
   }
 }

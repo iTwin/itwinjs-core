@@ -308,11 +308,9 @@ export abstract class IModelConnection extends IModel {
 
     const integerRegex = /^\d+$/;
     if (integerRegex.test(allKeys[0])) {
-      const queryArgs: QueryArgs = [];
-      Object.values(serializedArgs).forEach(value => {
-        queryArgs.push({ ...value, type: this.parseIdToParamType(value.type) });
-      });
-      return queryArgs;
+      return Object.values(serializedArgs).map(value => ({
+        ...value, type: this.parseIdToParamType(value.type)
+      }));
     } else {
       const queryArgs: QueryArgs = {};
       for (const [key, value] of Object.entries(serializedArgs)) {
