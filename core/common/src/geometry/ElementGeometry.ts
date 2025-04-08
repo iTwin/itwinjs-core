@@ -467,16 +467,17 @@ export namespace ElementGeometry {
 
           result = this.appendGeometryParamsChange(params);
           result = result && this.appendGeometryQuery(frame);
-
+        } else if (entry.debugSnap) {
           // TODO: remove
-          const p2 = params.clone()
-          p2.lineColor = ColorDef.black;
-          p2.weight = 1;
-          p2.fillColor = ColorDef.black;
-          p2.fillDisplay = FillDisplay.Always;
-          this.appendGeometryParamsChange(p2);
-          const points = FrameGeometry.debugIntervals(entry.frame.shape, entry.frame.range, entry.frame.transform, 0.5, 0.25);
-          points?.forEach(point => this.appendGeometryQuery(point));
+          const params = new GeometryParams(Id64.invalid);
+          params.lineColor = ColorDef.black;
+          params.weight = 1;
+          params.fillColor = ColorDef.white;
+          params.fillDisplay = FillDisplay.Always;
+          this.appendGeometryParamsChange(params);
+          const points = FrameGeometry.debugIntervals(entry.debugSnap.shape, entry.debugSnap.range, entry.debugSnap.transform, 0.5, 0.25);
+          points?.forEach(point => this.appendGeometryQuery(Loop.create(point)));
+          result = true;
         } else {
           result = false;
         }

@@ -357,8 +357,10 @@ export class GeometryStreamBuilder {
         const params = new GeometryParams(Id64.invalid);
         params.elmPriority = 0;
 
-        if (entry.frame.fillColor === "background") {
-          params.backgroundFill = BackgroundFill.Solid;
+        if (entry.frame.fillColor === undefined) {
+          params.fillDisplay = FillDisplay.Never;
+        } else if (entry.frame.fillColor === "background") {
+          params.backgroundFill = BackgroundFill.Outline;
           params.fillDisplay = FillDisplay.Always;
         } else if (entry.frame.fillColor !== "subcategory") {
           params.fillColor = ColorDef.fromJSON(entry.frame.fillColor);
@@ -376,15 +378,17 @@ export class GeometryStreamBuilder {
         result = this.appendGeometryParamsChange(params);
         result = result && this.appendGeometry(frame);
 
+      } else if (entry.debugSnap) {
         // TODO: remove
-        const p2 = params.clone()
-        p2.lineColor = ColorDef.black;
-        p2.weight = 1;
-        p2.fillColor = ColorDef.black;
-        p2.fillDisplay = FillDisplay.Always;
-        this.appendGeometryParamsChange(p2);
-        const points = FrameGeometry.debugIntervals(entry.frame.shape, entry.frame.range, entry.frame.transform, 0.5, 0.25);
-        points?.forEach(point => this.appendGeometry(point));
+        const params = new GeometryParams(Id64.invalid);
+        params.lineColor = ColorDef.black;
+        params.weight = 1;
+        params.fillColor = ColorDef.white;
+        params.fillDisplay = FillDisplay.Always;
+        this.appendGeometryParamsChange(params);
+        const points = FrameGeometry.debugIntervals(entry.debugSnap.shape, entry.debugSnap.range, entry.debugSnap.transform, 0.5, 0.25);
+        points?.forEach(point => this.appendGeometry(Loop.create(point)));
+        result = true;
       } else if (entry.separator) {
         result = this.appendGeometry(LineSegment3d.fromJSON(entry.separator));
       } else {

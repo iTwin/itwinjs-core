@@ -24,7 +24,7 @@ class TextEditor implements Decorator {
   public rotation = 0;
   public offset = { x: 0, y: 0 };
   public anchor: TextAnnotationAnchor = { horizontal: "left", vertical: "top" };
-  public frame: TextFrameStyleProps = {};
+  public frame: TextFrameStyleProps = { border: ColorDef.black.toJSON(), borderWeight: 1, frame: "none" };
   public debugAnchorPointAndRange = false;
 
   // Properties applied to the entire document
@@ -347,10 +347,12 @@ export class TextDecorationTool extends Tool {
       case "frame": {
         const key = inArgs[1];
         const val = inArgs[2];
-        if (key === "style") editor.setFrame({ frame: val as TextAnnotationFrame });
-        else if (key === "fill") editor.setFrame({ fill: (val === "background" || val === "subcategory") ? val : val ? ColorDef.fromString(val).toJSON() : undefined });
+        if (key === "fill") editor.setFrame({ fill: (val === "background" || val === "subcategory") ? val : val ? ColorDef.fromString(val).toJSON() : undefined });
         else if (key === "border") editor.setFrame({ border: val ? ColorDef.fromString(val).toJSON() : undefined });
         else if (key === "borderWeight") editor.setFrame({ borderWeight: Number(val) });
+        else if (key === "debugSnap") editor.setFrame({ debugSnap: !editor.frame.debugSnap });
+        else if (key as TextAnnotationFrame) editor.setFrame({ frame: key as TextAnnotationFrame });
+        else throw new Error("Expected style, fill, border, borderWeight, debugSnap");
 
         break;
       }

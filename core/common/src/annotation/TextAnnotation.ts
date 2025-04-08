@@ -49,6 +49,7 @@ export interface TextFrameStyleProps {
   fill?: TextAnnotationFillColor;
   border?: TextStyleColor;
   borderWeight?: number;
+  debugSnap?: boolean;
 }
 
 /**

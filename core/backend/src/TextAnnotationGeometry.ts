@@ -218,7 +218,19 @@ function produceFrameGeometry(layout: TextBlockLayout, documentTransform: Transf
         range: layout.range.toJSON(),
       }
     });
+
+    if (frameProps?.debugSnap) {
+      context.entries.push({
+        debugSnap: {
+          shape: frameProps.frame,
+          transform: documentTransform.toJSON(),
+          range: layout.range.toJSON(),
+        }
+      });
+    }
   }
+
+
 
   return { entries: context.entries };
 }

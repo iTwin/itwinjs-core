@@ -23,6 +23,7 @@ export type TextBlockGeometryPropsEntry = {
   separator?: never;
   color?: never;
   frame?: never;
+  debugSnap?: never;
 } | {
   text?: never;
   separator: {
@@ -31,11 +32,13 @@ export type TextBlockGeometryPropsEntry = {
   };
   color?: never;
   frame?: never;
+  debugSnap?: never;
 } | {
   text?: never;
   separator?: never;
   color: TextStyleColor;
   frame?: never;
+  debugSnap?: never;
 } | {
   text?: never;
   separator?: never;
@@ -44,6 +47,17 @@ export type TextBlockGeometryPropsEntry = {
     fillColor?: TextAnnotationFillColor;
     lineColor?: TextStyleColor;
     lineWidth?: number;
+    shape: TextAnnotationFrame;
+    transform: TransformProps;
+    range: Range2dProps;
+  };
+  debugSnap?: never;
+} | {
+  text?: never;
+  separator?: never;
+  color?: never;
+  frame?: never;
+  debugSnap: {
     shape: TextAnnotationFrame;
     transform: TransformProps;
     range: Range2dProps;
