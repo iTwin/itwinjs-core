@@ -12,7 +12,7 @@ import {
 } from "@itwin/core-bentley";
 import {
   BaseLayerSettings,
-  BatchType, compareIModelTileTreeIds, FeatureAppearance, FeatureAppearanceProvider, HiddenLine, iModelTileTreeIdToString, MapImagerySettings, MapLayerSettings, ModelMapLayerDrapeTarget, ModelMapLayerSettings,
+  BatchType, compareIModelTileTreeIds, FeatureAppearance, FeatureAppearanceProvider, HiddenLine, iModelTileTreeIdToString, MapLayerSettings, ModelMapLayerDrapeTarget, ModelMapLayerSettings,
   PrimaryTileTreeId, RenderMode, RenderSchedule, SpatialClassifier, ViewFlagOverrides, ViewFlagsProperties,
 } from "@itwin/core-common";
 import { Range3d, StringifiedClipVector, Transform } from "@itwin/core-geometry";
@@ -32,7 +32,6 @@ import {
   TileTreeSupplier,
 } from "../../tile/internal";
 import { _scheduleScriptReference } from "../../common/internal/Symbols";
-import { compareMapLayer } from "../render/webgl/MapLayerParams";
 
 interface PrimaryTreeId {
   treeId: PrimaryTileTreeId;
@@ -143,7 +142,6 @@ class PrimaryTreeReference extends TileTreeReference {
   private readonly _sectionClip?: StringifiedClipVector;
   private readonly _sectionCutAppearanceProvider?: FeatureAppearanceProvider;
   protected readonly _animationTransformNodeId?: number;
-  private readonly _detachFromDisplayStyle: VoidFunction[] = [];
   protected _classifier?: SpatialClassifierTileTreeReference;
   private _layerRefHandler: LayerTileTreeReferenceHandler;
   public readonly iModel: IModelConnection;
@@ -168,7 +166,7 @@ class PrimaryTreeReference extends TileTreeReference {
 
     this.iModel = model.iModel;
 
-    this._layerRefHandler = new LayerTileTreeReferenceHandler(this, false, backgroundBase, backgroundLayers);
+    this._layerRefHandler = new LayerTileTreeReferenceHandler(this, false, backgroundBase, backgroundLayers, false);
     this.view = view;
     this.model = model;
     this._animationTransformNodeId = transformNodeId;
@@ -298,25 +296,6 @@ class PrimaryTreeReference extends TileTreeReference {
       return baseTf;
 
     return displayTf.premultiply ? displayTf.transform.multiplyTransformTransform(baseTf) : baseTf.multiplyTransformTransform(displayTf.transform);
-  }
-
-  public preInitializeLayers(context: SceneContext): void {
-    const removals = this._detachFromDisplayStyle;
-    const mapImagery = context.viewport.displayStyle.settings.mapImagery;
-    if (0 === removals.length) {
-      removals.push(context.viewport.displayStyle.settings.onMapImageryChanged.addListener((imagery: Readonly<MapImagerySettings>) => {
-        this._layerRefHandler.setBaseLayerSettings(imagery.backgroundBase);
-        this._layerRefHandler.setLayerSettings(imagery.backgroundLayers);
-        this._layerRefHandler.clearLayers();
-      }));
-    }
-    removals.push(context.viewport.onChangeView.addListener((vp, previousViewState) => {
-      if(compareMapLayer(previousViewState, vp.view)){
-        this._layerRefHandler.setBaseLayerSettings(mapImagery.backgroundBase);
-        this._layerRefHandler.setLayerSettings(mapImagery.backgroundLayers);
-        this._layerRefHandler.clearLayers();
-      }
-    }));
   }
 
   public override addToScene(context: SceneContext): void {

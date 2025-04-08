@@ -12,7 +12,7 @@ import {
 } from "@itwin/core-bentley";
 import {
   BaseLayerSettings,
-  Cartographic, DefaultSupportedTypes, GeoCoordStatus, MapImagerySettings, MapLayerSettings, ModelMapLayerDrapeTarget, ModelMapLayerSettings, PlanarClipMaskPriority, PlanarClipMaskSettings,
+  Cartographic, DefaultSupportedTypes, GeoCoordStatus, MapLayerSettings, ModelMapLayerDrapeTarget, ModelMapLayerSettings, PlanarClipMaskPriority, PlanarClipMaskSettings,
   RealityDataProvider, RealityDataSourceKey, RealityModelDisplaySettings, ViewFlagOverrides,
 } from "@itwin/core-common";
 import { Angle, Constant, Ellipsoid, Matrix3d, Point3d, Range3d, Ray3d, Transform, TransformProps, Vector3d, XYZ } from "@itwin/core-geometry";
@@ -33,7 +33,6 @@ import {
 } from "../../tile/internal";
 import { SpatialClassifiersState } from "../../SpatialClassifiersState";
 import { RealityDataSourceTilesetUrlImpl } from "../../RealityDataSourceTilesetUrlImpl";
-import { compareMapLayer } from "../render/webgl/MapLayerParams";
 
 function getUrl(content: any) {
   return content ? (content.url ? content.url : content.uri) : undefined;
@@ -582,7 +581,6 @@ export namespace RealityModelTileTree {
     protected _classifier?: SpatialClassifierTileTreeReference;
     protected _mapDrapeTree?: TileTreeReference;
     protected _getDisplaySettings: () => RealityModelDisplaySettings;
-    private readonly _detachFromDisplayStyle: VoidFunction[] = [];
     private _layerRefHandler: LayerTileTreeReferenceHandler;
     public readonly iModel: IModelConnection;
 
@@ -615,7 +613,7 @@ export namespace RealityModelTileTree {
 
       this.iModel = props.iModel;
 
-      this._layerRefHandler = new LayerTileTreeReferenceHandler(this, false, props.getBackgroundBase?.(), props.getBackgroundLayers?.());
+      this._layerRefHandler = new LayerTileTreeReferenceHandler(this, false, props.getBackgroundBase?.(), props.getBackgroundLayers?.(), false);
 
       this._name = undefined !== props.name ? props.name : "";
       let transform;
@@ -652,25 +650,6 @@ export namespace RealityModelTileTree {
           this._isGlobal = range.diagonal().magnitude() > 2 * Constant.earthRadiusWGS84.equator;
       }
       return this._isGlobal === undefined ? false : this._isGlobal;
-    }
-
-    public preInitializeLayers(context: SceneContext): void {
-      const removals = this._detachFromDisplayStyle;
-      const mapImagery = context.viewport.displayStyle.settings.mapImagery;
-      if (0 === removals.length) {
-        removals.push(context.viewport.displayStyle.settings.onMapImageryChanged.addListener((imagery: Readonly<MapImagerySettings>) => {
-          this._layerRefHandler.setBaseLayerSettings(imagery.backgroundBase);
-          this._layerRefHandler.setLayerSettings(imagery.backgroundLayers);
-          this._layerRefHandler.clearLayers();
-        }));
-      }
-      removals.push(context.viewport.onChangeView.addListener((vp, previousViewState) => {
-        if(compareMapLayer(previousViewState, vp.view)){
-          this._layerRefHandler.setBaseLayerSettings(mapImagery.backgroundBase);
-          this._layerRefHandler.setLayerSettings(mapImagery.backgroundLayers);
-          this._layerRefHandler.clearLayers();
-        }
-      }));
     }
 
     public override addToScene(context: SceneContext): void {

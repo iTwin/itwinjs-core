@@ -6,10 +6,10 @@
 import { assert, Id64Set } from "@itwin/core-bentley";
 import {
   BaseLayerSettings,
-  BatchType, FeatureAppearance, FeatureAppearanceProvider, FeatureAppearanceSource, GeometryClass, MapImagerySettings, type MapLayerSettings, ModelMapLayerDrapeTarget, ModelMapLayerSettings, ViewFlagOverrides,
+  BatchType, FeatureAppearance, FeatureAppearanceProvider, FeatureAppearanceSource, GeometryClass, type MapLayerSettings, ModelMapLayerDrapeTarget, ModelMapLayerSettings, ViewFlagOverrides,
 } from "@itwin/core-common";
 import {
-  compareMapLayer, DisclosedTileTreeSet, formatAnimationBranchId,
+  DisclosedTileTreeSet, formatAnimationBranchId,
   IModelConnection, LayerTileTreeReferenceHandler, MapLayerTileTreeReference, RenderClipVolume, SceneContext, TileDrawArgs, TileGraphicType, TileTree, TileTreeOwner, TileTreeReference,
 } from "@itwin/core-frontend";
 import { Range3d, Transform } from "@itwin/core-geometry";
@@ -33,7 +33,6 @@ export class BatchedTileTreeReference extends TileTreeReference implements Featu
   private readonly _branchId?: string;
   private _layerRefHandler: LayerTileTreeReferenceHandler;
   public readonly iModel: IModelConnection;
-  private readonly _detachFromDisplayStyle: VoidFunction[] = [];
 
   public shouldDrapeLayer(layerTreeRef?: MapLayerTileTreeReference): boolean {
     const mapLayerSettings = layerTreeRef?.layerSettings;
@@ -56,7 +55,8 @@ export class BatchedTileTreeReference extends TileTreeReference implements Featu
       this,
       false,
       args.getBackgroundBase?.(),
-      args.getBackgroundLayers?.()
+      args.getBackgroundLayers?.(),
+      false
     );
   }
 
@@ -168,25 +168,6 @@ export class BatchedTileTreeReference extends TileTreeReference implements Featu
     // ###TODO if PlanProjectionSettings.enforceDisplayPriority, createGraphicLayerContainer.
 
     return args;
-  }
-
-  public preInitializeLayers(context: SceneContext): void {
-    const removals = this._detachFromDisplayStyle;
-    const mapImagery = context.viewport.displayStyle.settings.mapImagery;
-    if (0 === removals.length) {
-      removals.push(context.viewport.displayStyle.settings.onMapImageryChanged.addListener((imagery: Readonly<MapImagerySettings>) => {
-        this._layerRefHandler.setBaseLayerSettings(imagery.backgroundBase);
-        this._layerRefHandler.setLayerSettings(imagery.backgroundLayers);
-        this._layerRefHandler.clearLayers();
-      }));
-    }
-    removals.push(context.viewport.onChangeView.addListener((vp, previousViewState) => {
-      if(compareMapLayer(previousViewState, vp.view)){
-        this._layerRefHandler.setBaseLayerSettings(mapImagery.backgroundBase);
-        this._layerRefHandler.setLayerSettings(mapImagery.backgroundLayers);
-        this._layerRefHandler.clearLayers();
-      }
-    }));
   }
 
   public override discloseTileTrees(trees: DisclosedTileTreeSet): void {
