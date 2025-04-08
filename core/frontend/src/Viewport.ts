@@ -762,14 +762,19 @@ export abstract class Viewport implements Disposable, TileUser {
    * - Always/never drawn elements
    * - Symbology overrides.
    */
+  private _firstTimeLoaded = true;
   private maybeInvalidateScene(): void {
     // When shadows are being displayed and the set of displayed categories changes, we must invalidate the scene so that shadows will be regenerated.
     // Same occurs when changing feature symbology overrides (e.g., always/never-drawn element sets, transparency override)
     if (!this._sceneValid)
       return;
 
-    if (this.view.displayStyle.wantShadows || this.view.isSheetView())
+    if (this.view.displayStyle.wantShadows || this.view.isSheetView()) {
       this.invalidateScene();
+    } else if (this._firstTimeLoaded) {
+      this.invalidateScene();
+      this._firstTimeLoaded = false;
+    }
   }
 
   /** Enable or disable display of elements belonging to a set of categories specified by Id.
