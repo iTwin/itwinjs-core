@@ -3283,7 +3283,7 @@ export class FitViewTool extends ViewTool {
     oneShot: boolean;
     // (undocumented)
     onPostInstall(): Promise<void>;
-    // @beta (undocumented)
+    // (undocumented)
     provideToolAssistance(): void;
     // (undocumented)
     static toolId: string;
@@ -3351,8 +3351,10 @@ export class FlyViewTool extends ViewManip {
     // (undocumented)
     static iconSpec: string;
     // (undocumented)
-    onReinitialize(): Promise<void>;
-    // @beta (undocumented)
+    protected get isExitAllowedOnReinitialize(): boolean;
+    // (undocumented)
+    protected provideInitialToolAssistance(): void;
+    // (undocumented)
     provideToolAssistance(mainInstrKey: string): void;
     // (undocumented)
     static toolId: string;
@@ -5452,8 +5454,10 @@ export class LookAndMoveTool extends ViewManip {
     // (undocumented)
     static iconSpec: string;
     // (undocumented)
-    onReinitialize(): Promise<void>;
-    // @beta (undocumented)
+    protected get isExitAllowedOnReinitialize(): boolean;
+    // (undocumented)
+    protected provideInitialToolAssistance(): void;
+    // (undocumented)
     provideToolAssistance(mainInstrKey: string): void;
     // (undocumented)
     static toolId: string;
@@ -5501,7 +5505,9 @@ export class LookViewTool extends ViewManip {
     // (undocumented)
     static iconSpec: string;
     // (undocumented)
-    onReinitialize(): Promise<void>;
+    protected get isExitAllowedOnReinitialize(): boolean;
+    // (undocumented)
+    protected provideInitialToolAssistance(): void;
     // (undocumented)
     static toolId: string;
 }
@@ -7234,7 +7240,9 @@ export class PanViewTool extends ViewManip {
     // (undocumented)
     static iconSpec: string;
     // (undocumented)
-    onReinitialize(): Promise<void>;
+    protected get isExitAllowedOnReinitialize(): boolean;
+    // (undocumented)
+    protected provideInitialToolAssistance(): void;
     // (undocumented)
     static toolId: string;
 }
@@ -8782,7 +8790,9 @@ export class RotateViewTool extends ViewManip {
     // (undocumented)
     static iconSpec: string;
     // (undocumented)
-    onReinitialize(): Promise<void>;
+    protected get isExitAllowedOnReinitialize(): boolean;
+    // (undocumented)
+    protected provideInitialToolAssistance(): void;
     // (undocumented)
     static toolId: string;
 }
@@ -9010,7 +9020,9 @@ export class ScrollViewTool extends ViewManip {
     // (undocumented)
     static iconSpec: string;
     // (undocumented)
-    onReinitialize(): Promise<void>;
+    protected get isExitAllowedOnReinitialize(): boolean;
+    // (undocumented)
+    protected provideInitialToolAssistance(): void;
     // (undocumented)
     static toolId: string;
 }
@@ -9291,7 +9303,7 @@ export class SetupCameraTool extends PrimitiveTool {
     onRestartTool(): Promise<void>;
     // (undocumented)
     onUnsuspend(): Promise<void>;
-    // @beta (undocumented)
+    // (undocumented)
     protected provideToolAssistance(): void;
     // (undocumented)
     requireWriteableTarget(): boolean;
@@ -9356,7 +9368,7 @@ export class SetupWalkCameraTool extends PrimitiveTool {
     onRestartTool(): Promise<void>;
     // (undocumented)
     onUnsuspend(): Promise<void>;
-    // @beta (undocumented)
+    // (undocumented)
     protected provideToolAssistance(): void;
     // (undocumented)
     requireWriteableTarget(): boolean;
@@ -12557,6 +12569,7 @@ export abstract class ViewManip extends ViewTool {
     isDragging: boolean;
     // (undocumented)
     isDraggingRequired: boolean;
+    protected get isExitAllowedOnReinitialize(): boolean;
     isPointVisible(testPt: Point3d): boolean;
     // (undocumented)
     get isZUp(): boolean;
@@ -12610,7 +12623,8 @@ export abstract class ViewManip extends ViewTool {
     processFirstPoint(ev: BeButtonEvent): boolean;
     // (undocumented)
     processPoint(ev: BeButtonEvent, inDynamics: boolean): boolean;
-    // @beta (undocumented)
+    protected provideInitialToolAssistance(): void;
+    // (undocumented)
     provideToolAssistance(mainInstrKey: string, additionalInstr?: ToolAssistanceInstruction[]): void;
     // (undocumented)
     setCameraLensAngle(lensAngle: Angle, retainEyePoint: boolean): ViewStatus;
@@ -13522,8 +13536,10 @@ export class WalkViewTool extends ViewManip {
     // (undocumented)
     static iconSpec: string;
     // (undocumented)
-    onReinitialize(): Promise<void>;
-    // @beta (undocumented)
+    protected get isExitAllowedOnReinitialize(): boolean;
+    // (undocumented)
+    protected provideInitialToolAssistance(): void;
+    // (undocumented)
     provideToolAssistance(mainInstrKey: string): void;
     // (undocumented)
     static toolId: string;
@@ -13589,7 +13605,7 @@ export class WindowAreaTool extends ViewTool {
     onTouchMoveStart(ev: BeTouchEvent, startEv: BeTouchEvent): Promise<EventHandled>;
     // (undocumented)
     onTouchTap(ev: BeTouchEvent): Promise<EventHandled>;
-    // @beta (undocumented)
+    // (undocumented)
     provideToolAssistance(): void;
     // (undocumented)
     static toolId: string;
@@ -13667,7 +13683,9 @@ export class ZoomViewTool extends ViewManip {
     // (undocumented)
     static iconSpec: string;
     // (undocumented)
-    onReinitialize(): Promise<void>;
+    protected get isExitAllowedOnReinitialize(): boolean;
+    // (undocumented)
+    protected provideInitialToolAssistance(): void;
     // (undocumented)
     static toolId: string;
 }
