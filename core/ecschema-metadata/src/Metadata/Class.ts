@@ -29,9 +29,13 @@ import { ECSpecVersion, SchemaReadHelper } from "../Deserialization/Helper";
  */
 export abstract class ECClass extends SchemaItem implements CustomAttributeContainerProps {
   public static override get schemaItemType(): SupportedSchemaItemType { return AbstractSchemaItemType.Class; } // need this so getItem("name", ECClass) in schema works
+  /** @internal */
   protected _modifier: ECClassModifier;
+  /** @internal */
   protected _baseClass?: LazyLoadedECClass;
+  /** @internal */
   protected _derivedClasses?: Map<string, LazyLoadedECClass>;
+  /** @internal */
   protected _properties?: Map<string, Property>;
   private _customAttributes?: Map<string, CustomAttribute>;
   private _mergedPropertyCache?: Property[];
@@ -55,8 +59,18 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
     return this._baseClass;
   }
 
+  public getBaseClassSync(): ECClass | undefined {
+    if (!this.baseClass) {
+      return undefined;
+    }
+
+    return this.schema.lookupItemSync(this.baseClass, ECClass);
+  }
+
   /**
    * Sets the base class of the ECClass. Pass undefined to 'remove' the base class.
+   * 
+   * @internal
    */
   protected async setBaseClass(baseClass: LazyLoadedECClass | undefined) {
     const oldBaseClass = this._baseClass;
@@ -83,6 +97,8 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
    * Convenience method for adding an already loaded ECProperty used by create*Property methods.
    * @param prop The property to add.
    * @return The property that was added.
+   * 
+   * @internal
    */
   protected addProperty<T extends Property>(prop: T): T {
     if (!this._properties)
@@ -96,7 +112,7 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
   /**
    * Deletes a property from within this class.
    * @param name The property name to delete, lookup is case-insensitive
-   * @alpha
+   * @internal
    */
   protected async deleteProperty(name: string): Promise<void> {
     if (this._properties) {
@@ -111,7 +127,7 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
   /**
    * Deletes a property from within this class.
    * @param name The property name to delete, lookup is case-insensitive
-   * @alpha
+   * @internal
    */
   protected deletePropertySync(name: string): void {
     if (this._properties) {
@@ -123,13 +139,7 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
     }
   }
 
-  public getBaseClassSync(): ECClass | undefined {
-    if (!this.baseClass) {
-      return undefined;
-    }
 
-    return this.schema.lookupItemSync(this.baseClass, ECClass);
-  }
 
   /**
    * Searches, case-insensitive, for an ECProperty with given the name on this class and, by default, on
@@ -202,6 +212,8 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
    * @param name The name of property to create.
    * @param primitiveType The primitive type of property to create. If not provided the default is PrimitiveType.Integer
    * @throws ECObjectsStatus DuplicateProperty: thrown if a property with the same name already exists in the class.
+   * 
+   * @internal
    */
   protected async createPrimitiveProperty(name: string, primitiveType: PrimitiveType): Promise<PrimitiveProperty>;
   protected async createPrimitiveProperty(name: string, primitiveType: Enumeration): Promise<EnumerationProperty>;
@@ -221,6 +233,8 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
    * @param name The name of property to create.
    * @param primitiveType The primitive type of property to create. If not provided the default is PrimitiveType.Integer
    * @throws ECObjectsStatus DuplicateProperty: thrown if a property with the same name already exists in the class.
+   * 
+   * @internal
    */
   protected createPrimitivePropertySync(name: string, primitiveType: PrimitiveType): PrimitiveProperty;
   protected createPrimitivePropertySync(name: string, primitiveType: Enumeration): EnumerationProperty;
@@ -239,6 +253,8 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
    * Creates a PrimitiveArrayECProperty.
    * @param name The name of property to create.
    * @param primitiveType The primitive type of property to create. If not provided the default is PrimitiveType.Integer
+   * 
+   * @internal
    */
   protected async createPrimitiveArrayProperty(name: string, primitiveType: PrimitiveType): Promise<PrimitiveArrayProperty>;
   protected async createPrimitiveArrayProperty(name: string, primitiveType: Enumeration): Promise<EnumerationArrayProperty>;
@@ -257,6 +273,8 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
    * Creates a PrimitiveArrayECProperty.
    * @param name The name of property to create.
    * @param primitiveType The primitive type of property to create. If not provided the default is PrimitiveType.Integer
+   * 
+   * @internal
    */
   protected createPrimitiveArrayPropertySync(name: string, primitiveType: PrimitiveType): PrimitiveArrayProperty;
   protected createPrimitiveArrayPropertySync(name: string, primitiveType: Enumeration): EnumerationArrayProperty;
@@ -275,6 +293,8 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
    *
    * @param name The name of property to create.
    * @param structType The struct type of property to create.
+   * 
+   * @internal
    */
   protected async createStructProperty(name: string, structType: string | StructClass): Promise<StructProperty> {
     if (await this.getProperty(name, true))
@@ -287,6 +307,8 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
    *
    * @param name The name of property to create.
    * @param structType The struct type of property to create.
+   * 
+   * @internal
    */
   protected createStructPropertySync(name: string, structType: string | StructClass): StructProperty {
     if (this.getPropertySync(name, true))
@@ -299,6 +321,8 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
    *
    * @param name
    * @param type
+   * 
+   * @internal
    */
   protected async createStructArrayProperty(name: string, structType: string | StructClass): Promise<StructArrayProperty> {
     if (await this.getProperty(name, true))
@@ -311,6 +335,8 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
    *
    * @param name
    * @param type
+   * 
+   * @internal
    */
   protected createStructArrayPropertySync(name: string, structType: string | StructClass): StructArrayProperty {
     if (this.getPropertySync(name, true))
@@ -319,6 +345,14 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
     return this.addProperty(new StructArrayProperty(this, name, this.loadStructTypeSync(structType, this.schema)));
   }
 
+  /**
+   * 
+   * @param structType 
+   * @param schema 
+   * @returns 
+   * 
+   * @internal
+   */
   protected async loadStructType(structType: string | StructClass | undefined, schema: Schema): Promise<StructClass> {
     let correctType: StructClass | undefined;
     if (typeof (structType) === "string") {
@@ -332,6 +366,14 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
     return correctType;
   }
 
+  /**
+   * 
+   * @param structType 
+   * @param schema 
+   * @returns 
+   * 
+   * @internal
+   */
   protected loadStructTypeSync(structType: string | StructClass | undefined, schema: Schema): StructClass {
     let correctType: StructClass | undefined;
     if (typeof (structType) === "string") {
@@ -345,6 +387,14 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
     return correctType;
   }
 
+  /**
+   * 
+   * @param primitiveType 
+   * @param schema 
+   * @returns 
+   * 
+   * @internal
+   */
   protected async loadPrimitiveType(primitiveType: string | PrimitiveType | Enumeration | undefined, schema: Schema): Promise<PrimitiveType | Enumeration> {
     if (primitiveType === undefined)
       return PrimitiveType.Integer;
@@ -368,6 +418,14 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
     return primitiveType;
   }
 
+  /**
+   * 
+   * @param primitiveType 
+   * @param schema 
+   * @returns 
+   * 
+   * @internal
+   */
   protected loadPrimitiveTypeSync(primitiveType: string | PrimitiveType | Enumeration | undefined, schema: Schema): PrimitiveType | Enumeration {
     if (primitiveType === undefined)
       return PrimitiveType.Integer;
@@ -494,6 +552,12 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
     this.fromJSONSync(classProps);
   }
 
+  /**
+   * 
+   * @param customAttribute 
+   * 
+   * @internal
+   */
   protected addCustomAttribute(customAttribute: CustomAttribute) {
     if (!this._customAttributes)
       this._customAttributes = new Map<string, CustomAttribute>();
@@ -548,6 +612,15 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
     }
   }
 
+  /**
+   * 
+   * @param target 
+   * @param existingValues 
+   * @param propertiesToMerge 
+   * @param overwriteExisting 
+   * 
+   * @internal
+   */
   protected static mergeProperties(target: Property[], existingValues: Map<string, number>, propertiesToMerge: Iterable<Property>, overwriteExisting: boolean) {
     for (const property of propertiesToMerge) {
       const upperCaseName = property.name.toUpperCase();
@@ -563,6 +636,14 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
     }
   }
 
+  /**
+   * 
+   * @param result 
+   * @param existingValues 
+   * @returns 
+   * 
+   * @internal
+   */
   protected async buildPropertyCache(result: Property[], existingValues?: Map<string, number>): Promise<void> {
     if (!existingValues) {
       existingValues = new Map<string, number>();
@@ -581,6 +662,14 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
     ECClass.mergeProperties(result, existingValues, [...this._properties.values()], true);
   }
 
+  /**
+   * 
+   * @param result 
+   * @param existingValues 
+   * @returns 
+   * 
+   * @internal
+   */
   protected buildPropertyCacheSync(result: Property[], existingValues?: Map<string, number>): void {
     if (!existingValues) {
       existingValues = new Map<string, number>();
@@ -759,9 +848,9 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
   }
 
   /**
-   * @alpha
    * A setter method for the ECClass modifier, used specifically for schema editing.
    * @param modifier
+   * @internal
    */
   protected setModifier(modifier: ECClassModifier) {
     this._modifier = modifier;

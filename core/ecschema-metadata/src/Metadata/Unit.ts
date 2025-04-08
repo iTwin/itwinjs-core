@@ -26,11 +26,17 @@ import { UnitSystem } from "./UnitSystem";
 export class Unit extends SchemaItem {
   public override readonly schemaItemType = Unit.schemaItemType;
   public static override get schemaItemType() { return SchemaItemType.Unit; }
+  /** @internal */
   protected _phenomenon?: LazyLoadedPhenomenon;
+  /** @internal */
   protected _unitSystem?: LazyLoadedUnitSystem;
+  /** @internal */
   protected _definition: string;
+  /** @internal */
   protected _numerator?: number;
+  /** @internal */
   protected _denominator?: number;
+  /** @internal */
   protected _offset?: number;
 
   constructor(schema: Schema, name: string) {
@@ -164,26 +170,17 @@ export class Unit extends SchemaItem {
     this.fromJSONSync(unitProps);
   }
 
-  /**
-   * @alpha
-   * Used for schema editing.
-   */
+  /** @internal */
   protected async setPhenomenon(phenomenon: LazyLoadedPhenomenon) {
     this._phenomenon = phenomenon;
   }
 
-  /**
-   * @alpha
-   * Used for schema editing.
-   */
+  /** @internal */
   protected async setUnitSystem(unitSystem: LazyLoadedUnitSystem) {
     this._unitSystem = unitSystem;
   }
 
-  /**
-   * @alpha
-   * Used for schema editing.
-   */
+  /** @internal */
   protected async setDefinition(definition: string) {
     this._definition = definition;
   }
@@ -192,6 +189,7 @@ export class Unit extends SchemaItem {
    * Type assertion to check if the SchemaItem is of type Unit.
    * @param item The SchemaItem to check.
    * @returns The item cast to Unit if it is a Unit, undefined otherwise.
+   * @internal
    */
   public static assertIsUnit(item?: SchemaItem): asserts item is Unit {
     if (!this.isUnit(item))

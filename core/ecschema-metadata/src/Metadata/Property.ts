@@ -31,15 +31,24 @@ import { Schema } from "./Schema";
  * @public @preview
  */
 export abstract class Property implements CustomAttributeContainerProps {
+  /** @internal */
   protected _name: ECName;
+  /** @internal */
   protected _type: PropertyType;
 
+  /** @internal */
   protected _class: AnyClass; // TODO: class seems to be unused?
+  /** @internal */
   protected _description?: string;
+  /** @internal */
   protected _label?: string;
+  /** @internal */
   protected _isReadOnly?: boolean;
+  /** @internal */
   protected _priority?: number;
+  /** @internal */
   protected _category?: LazyLoadedPropertyCategory;
+  /** @internal */
   protected _kindOfQuantity?: LazyLoadedKindOfQuantity;
   private _customAttributes?: Map<string, CustomAttribute>;
 
@@ -246,6 +255,7 @@ export abstract class Property implements CustomAttributeContainerProps {
     this.fromJSONSync(propertyProps);
   }
 
+  /** @internal */
   protected addCustomAttribute(customAttribute: CustomAttribute) {
     if (!this._customAttributes)
       this._customAttributes = new Map<string, CustomAttribute>();
@@ -253,6 +263,7 @@ export abstract class Property implements CustomAttributeContainerProps {
     this._customAttributes.set(customAttribute.className, customAttribute);
   }
 
+  /** @internal */
   protected setName(name: ECName) {
     this._name = name;
   }
@@ -344,10 +355,15 @@ export type PropertyHandler = (name: string, property: Property) => void;
 
 /** @public @preview */
 export abstract class PrimitiveOrEnumPropertyBase extends Property {
+  /** @internal */
   protected _extendedTypeName?: string;
+  /** @internal */
   protected _minLength?: number;
+  /** @internal */
   protected _maxLength?: number;
+  /** @internal */
   protected _minValue?: number;
+  /** @internal */
   protected _maxValue?: number;
 
   public get extendedTypeName() { return this._extendedTypeName; }
@@ -497,6 +513,7 @@ export class PrimitiveProperty extends PrimitiveOrEnumPropertyBase {
 
 /** @public @preview */
 export class EnumerationProperty extends PrimitiveOrEnumPropertyBase {
+  /** @internal */
   protected _enumeration?: LazyLoadedEnumeration;
 
   public get enumeration(): LazyLoadedEnumeration | undefined { return this._enumeration; }
@@ -551,6 +568,7 @@ export class EnumerationProperty extends PrimitiveOrEnumPropertyBase {
 
 /** @public @preview */
 export class StructProperty extends Property {
+  /** @internal */
   protected _structClass: StructClass;
 
   public get structClass(): StructClass { return this._structClass; }
@@ -592,7 +610,9 @@ export class StructProperty extends Property {
 
 /** @public @preview */
 export class NavigationProperty extends Property {
+  /** @internal */
   protected _relationshipClass: LazyLoadedRelationshipClass;
+  /** @internal */
   protected _direction: StrengthDirection;
 
   public get relationshipClass(): LazyLoadedRelationshipClass { return this._relationshipClass; }
@@ -644,7 +664,9 @@ const INT32_MAX = 2147483647;
 
 /** @public @preview */
 export abstract class ArrayProperty extends Property {
+  /** @internal */
   protected _minOccurs: number = 0;
+  /** @internal */
   protected _maxOccurs?: number = INT32_MAX;
 
   public get minOccurs() { return this._minOccurs; }
@@ -668,7 +690,9 @@ export abstract class ArrayProperty extends Property {
 // eslint-disable-next-line @typescript-eslint/naming-convention
 const ArrayPropertyMixin = <T extends Constructor<Property>>(Base: T) => {
   return class extends Base {
+    /** @internal */
     protected _minOccurs: number = 0;
+    /** @internal */
     protected _maxOccurs: number = INT32_MAX;
 
     public get minOccurs() { return this._minOccurs; }

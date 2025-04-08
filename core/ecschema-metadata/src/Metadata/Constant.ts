@@ -24,9 +24,13 @@ import { SchemaItem } from "./SchemaItem";
 export class Constant extends SchemaItem {
   public override readonly schemaItemType = Constant.schemaItemType;
   public static override get schemaItemType() { return SchemaItemType.Constant; }
+  /** @internal */
   protected _phenomenon?: LazyLoadedPhenomenon;
+  /** @internal */
   protected _definition: string;
+  /** @internal */
   protected _numerator?: number;
+  /** @internal */
   protected _denominator?: number;
 
   constructor(schema: Schema, name: string) {
@@ -111,29 +115,29 @@ export class Constant extends SchemaItem {
   }
 
   /**
-   * @alpha Used in schema editing.
    * @param phenomenon A LazyLoadedPhenomenon.
+   * @internal
    */
   protected setPhenomenon(phenomenon: LazyLoadedPhenomenon) {
     this._phenomenon = phenomenon;
   }
 
   /**
-   * @alpha Used in schema editing.
+   * @internal
    */
   protected setDefinition(definition: string) {
     this._definition = definition;
   }
 
   /**
-   * @alpha Used in schema editing.
+   * @internal
    */
   protected setNumerator(numerator: number) {
     this._numerator = numerator;
   }
 
   /**
-   * @alpha Used in schema editing.
+   * @internal
    */
   protected setDenominator(denominator: number) {
     this._denominator = denominator;

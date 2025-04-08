@@ -19,6 +19,7 @@ export class PropertyCategory extends SchemaItem {
   public override readonly schemaItemType = PropertyCategory.schemaItemType;
   public static override get schemaItemType() { return SchemaItemType.PropertyCategory; }
   protected _priority: number;
+  /** @internal */
 
   public get priority() { return this._priority; }
 
@@ -54,8 +55,8 @@ export class PropertyCategory extends SchemaItem {
     this.fromJSONSync(propertyCategoryProps);
   }
   /**
-   * @alpha
    * Used for schema editing.
+   * @internal
    */
   protected setPriority(priority: number) {
     this._priority = priority;
@@ -74,6 +75,7 @@ export class PropertyCategory extends SchemaItem {
    * Type assertion to check if the SchemaItem is of type PropertyCategory.
    * @param item The SchemaItem to check.
    * @returns The item cast to PropertyCategory if it is a PropertyCategory, undefined otherwise.
+   * @internal
    */
   public static assertIsPropertyCategory(item?: SchemaItem): asserts item is PropertyCategory {
     if (!this.isPropertyCategory(item))

@@ -33,6 +33,7 @@ export class UnitSystem extends SchemaItem {
    * Type assertion to check if the SchemaItem is of type UnitSystem.
    * @param item The SchemaItem to check.
    * @returns The item cast to UnitSystem if it is a UnitSystem, undefined otherwise.
+   * @internal
    */
   public static assertIsUnitSystem(item?: SchemaItem): asserts item is UnitSystem {
     if (!this.isUnitSystem(item))

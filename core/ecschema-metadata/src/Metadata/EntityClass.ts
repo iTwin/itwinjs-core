@@ -26,6 +26,7 @@ import { SchemaItem } from "./SchemaItem";
 export class EntityClass extends ECClass implements HasMixins {
   public override readonly schemaItemType = EntityClass.schemaItemType;
   public static override get schemaItemType() { return SchemaItemType.EntityClass; }
+  /** @internal */
   protected _mixins?: LazyLoadedMixin[];
 
   public get mixins(): LazyLoadedMixin[] {
@@ -49,7 +50,8 @@ export class EntityClass extends ECClass implements HasMixins {
   /**
    *
    * @param mixin
-   */
+    * @internal
+  */
   protected addMixin(mixin: Mixin) {
     if (!this._mixins)
       this._mixins = [];
@@ -102,6 +104,12 @@ export class EntityClass extends ECClass implements HasMixins {
     return undefined;
   }
 
+  /**
+   * 
+   * @param result 
+   * @param existingValues 
+   * @internal
+   */
   protected override async buildPropertyCache(result: Property[], existingValues?: Map<string, number>): Promise<void> {
     if (!existingValues) {
       existingValues = new Map<string, number>();
@@ -121,6 +129,12 @@ export class EntityClass extends ECClass implements HasMixins {
     ECClass.mergeProperties(result, existingValues, localProps, true);
   }
 
+  /**
+   * 
+   * @param result 
+   * @param existingValues 
+   * @internal
+   */
   protected override buildPropertyCacheSync(result: Property[], existingValues?: Map<string, number>): void {
     if (!existingValues) {
       existingValues = new Map<string, number>();
@@ -144,6 +158,7 @@ export class EntityClass extends ECClass implements HasMixins {
    * @param name
    * @param relationship
    * @param direction
+   * @internal
    */
   protected async createNavigationProperty(name: string, relationship: string | RelationshipClass, direction: string | StrengthDirection): Promise<NavigationProperty> {
     return this.addProperty(await createNavigationProperty(this, name, relationship, direction));
@@ -154,6 +169,7 @@ export class EntityClass extends ECClass implements HasMixins {
    * @param name
    * @param relationship
    * @param direction
+   * @internal
    */
   protected createNavigationPropertySync(name: string, relationship: string | RelationshipClass, direction: string | StrengthDirection): NavigationProperty {
     return this.addProperty(createNavigationPropertySync(this, name, relationship, direction));
@@ -225,6 +241,7 @@ export class EntityClass extends ECClass implements HasMixins {
    * Type assertion to check if the SchemaItem is of type EntityClass.
    * @param item The SchemaItem to check.
    * @returns The item cast to EntityClass if it is an EntityClass, undefined otherwise.
+   * @internal
    */
   public static assertIsEntityClass(item?: SchemaItem): asserts item is EntityClass {
     if (!this.isEntityClass(item))

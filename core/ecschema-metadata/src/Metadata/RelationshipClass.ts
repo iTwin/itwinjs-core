@@ -34,9 +34,13 @@ type AnyConstraintClass = EntityClass | Mixin | RelationshipClass;
 export class RelationshipClass extends ECClass {
   public override readonly schemaItemType = RelationshipClass.schemaItemType;
   public static override get schemaItemType() { return SchemaItemType.RelationshipClass; }
+  /** @internal */
   protected _strength: StrengthType;
+  /** @internal */
   protected _strengthDirection: StrengthDirection;
+  /** @internal */
   protected _source: RelationshipConstraint;
+  /** @internal */
   protected _target: RelationshipConstraint;
 
   constructor(schema: Schema, name: string, modifier?: ECClassModifier) {
@@ -57,38 +61,40 @@ export class RelationshipClass extends ECClass {
    * @param name
    * @param relationship
    * @param direction
+   * @internal
    */
   protected async createNavigationProperty(name: string, relationship: string | RelationshipClass, direction: string | StrengthDirection): Promise<NavigationProperty> {
     return this.addProperty(await createNavigationProperty(this, name, relationship, direction));
   }
 
+  /** @internal */
   protected createNavigationPropertySync(name: string, relationship: string | RelationshipClass, direction: string | StrengthDirection): NavigationProperty {
     return this.addProperty(createNavigationPropertySync(this, name, relationship, direction));
   }
 
   /**
-   * @alpha Used for schema editing.
+   * @internal Used for schema editing.
    */
   protected setStrength(strength: StrengthType) {
     this._strength = strength;
   }
 
   /**
-   * @alpha Used for schema editing.
+   * @internal Used for schema editing.
    */
   protected setStrengthDirection(direction: StrengthDirection) {
     this._strengthDirection = direction;
   }
 
   /**
-   * @alpha Used for schema editing.
+   * @internal Used for schema editing.
    */
   protected setSourceConstraint(source: RelationshipConstraint) {
     this._source = source;
   }
 
   /**
-   * @alpha Used for schema editing.
+   * @internal Used for schema editing.
    */
   protected setTargetConstraint(target: RelationshipConstraint) {
     this._target = target;
@@ -156,6 +162,7 @@ export class RelationshipClass extends ECClass {
    * Type assertion to check if the SchemaItem is of type RelationshipClass.
    * @param item The SchemaItem to check.
    * @returns The item cast to RelationshipClass if it is a RelationshipClass, undefined otherwise.
+   * @internal
    */
   public static assertIsRelationshipClass(item?: SchemaItem): asserts item is RelationshipClass {
     if (!this.isRelationshipClass(item))
@@ -168,12 +175,19 @@ export class RelationshipClass extends ECClass {
  * @public @preview
  */
 export class RelationshipConstraint implements CustomAttributeContainerProps {
+  /** @internal */
   protected _abstractConstraint?: LazyLoadedRelationshipConstraintClass;
+  /** @internal */
   protected _relationshipClass: RelationshipClass;
+  /** @internal */
   protected _relationshipEnd: RelationshipEnd;
+  /** @internal */
   protected _multiplicity?: RelationshipMultiplicity;
+  /** @internal */
   protected _polymorphic?: boolean;
+  /** @internal */
   protected _roleLabel?: string;
+  /** @internal */
   protected _constraintClasses?: LazyLoadedRelationshipConstraintClass[];
   private _customAttributes?: Map<string, CustomAttribute>;
 
@@ -190,16 +204,19 @@ export class RelationshipConstraint implements CustomAttributeContainerProps {
   }
 
   public get multiplicity() { return this._multiplicity ?? RelationshipMultiplicity.zeroOne; }
+  /** @internal */
   protected set multiplicity(multiplicity: RelationshipMultiplicity) {
     this._multiplicity = multiplicity;
   }
 
   public get polymorphic() { return this._polymorphic ?? false; }
+  /** @internal */
   protected set polymorphic(polymorphic: boolean) {
     this._polymorphic = polymorphic;
   }
 
   public get roleLabel() { return this._roleLabel; }
+  /** @internal */
   protected set roleLabel(roleLabel: string | undefined) {
     this._roleLabel = roleLabel;
   }
@@ -209,6 +226,7 @@ export class RelationshipConstraint implements CustomAttributeContainerProps {
   public get relationshipClass() { return this._relationshipClass; }
 
   public get relationshipEnd() { return this._relationshipEnd; }
+  /** @internal */
   protected set relationshipEnd(relationshipEnd: RelationshipEnd) {
     this._relationshipEnd = relationshipEnd;
   }
@@ -243,7 +261,8 @@ export class RelationshipConstraint implements CustomAttributeContainerProps {
   /**
    * Adds the provided class as a constraint class to this constraint.
    * @param constraint The class to add as a constraint class.
-   */
+   * @internal
+  */
   public addClass(constraint: EntityClass | Mixin | RelationshipClass): void {
     // TODO: Ensure we don't start mixing constraint class types
     // TODO: Check that this class is or subclasses abstract constraint?
@@ -258,6 +277,8 @@ export class RelationshipConstraint implements CustomAttributeContainerProps {
   /**
    * Removes the provided class as a constraint class from this constraint.
    * @param constraint The class to add as a constraint class.
+   * 
+   * @internal
    */
   protected removeClass(constraint: EntityClass | Mixin | RelationshipClass): void {
     if (undefined === this._constraintClasses)
@@ -441,6 +462,7 @@ export class RelationshipConstraint implements CustomAttributeContainerProps {
       && relationshipConstraint.relationshipEnd !== undefined && relationshipConstraint._relationshipClass !== undefined;
   }
 
+  /** @internal */
   protected addCustomAttribute(customAttribute: CustomAttribute) {
     if (!this._customAttributes)
       this._customAttributes = new Map<string, CustomAttribute>();

@@ -30,8 +30,11 @@ export abstract class SchemaItem {
    */
   public abstract get schemaItemType(): SchemaItemType;
   public readonly schema: Schema;
+  /** @internal */
   protected _key: SchemaItemKey;
+  /** @internal */
   protected _description?: string;
+  /** @internal */
   protected _label?: string;
 
   constructor(schema: Schema, name: string) {
@@ -157,26 +160,17 @@ export abstract class SchemaItem {
       && schemaItem.schemaItemType !== undefined;
   }
 
-  /**
-   * @alpha
-   * Used for schema editing.
-   */
+  /** @internal */
   protected setName(name: string) {
     this._key = new SchemaItemKey(name, this.schema.schemaKey);
   }
 
-  /**
-   * @alpha
-   * Used for schema editing.
-   */
+  /** @internal */
   protected setDisplayLabel(displayLabel: string) {
     this._label = displayLabel;
   }
 
-  /**
-   * @alpha
-   * Used for schema editing.
-   */
+  /** @internal */
   protected setDescription(description: string) {
     this._description = description;
   }

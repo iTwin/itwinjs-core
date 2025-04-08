@@ -40,9 +40,13 @@ import { ECSchemaNamespaceUris } from "../Constants";
 export class Schema implements CustomAttributeContainerProps {
   private static _currentECSpecVersion = "3.2";
   private _context: SchemaContext;
+  /** @internal */
   protected _schemaKey?: SchemaKey;
+  /** @internal */
   protected _alias?: string;
+  /** @internal */
   protected _label?: string;
+  /** @internal */
   protected _description?: string;
   public readonly references: Schema[];
   private readonly _items: Map<string, SchemaItem>;
@@ -165,6 +169,7 @@ export class Schema implements CustomAttributeContainerProps {
     return new SchemaItemKey(itemName, schemaKey);
   }
 
+  /** @internal */
   protected addItem<T extends SchemaItem>(item: T): void {
     if (undefined !== this.getItemSync(item.name))
       throw new ECObjectsError(ECObjectsStatus.DuplicateItem, `The SchemaItem ${item.name} cannot be added to the schema ${this.name} because it already exists`);
@@ -173,7 +178,7 @@ export class Schema implements CustomAttributeContainerProps {
   }
 
   /**
-   * @alpha
+   * @internal
    */
   protected createClass<T extends AnyClass>(type: (new (_schema: Schema, _name: string, _modifier?: ECClassModifier) => T), name: string, modifier?: ECClassModifier): T {
     const item = new type(this, name, modifier);
@@ -184,7 +189,7 @@ export class Schema implements CustomAttributeContainerProps {
   /**
    * Deletes a class from within this schema.
    * @param name the local (unqualified) class name, lookup is case-insensitive
-   * @alpha
+   * @internal
    */
   protected async deleteClass(name: string): Promise<void> {
     const schemaItem = await this.getItem(name);
@@ -196,7 +201,7 @@ export class Schema implements CustomAttributeContainerProps {
   /**
    * Deletes a class from within this schema.
    * @param name the local (unqualified) class name, lookup is case-insensitive
-   * @alpha
+   * @internal
    */
   protected deleteClassSync(name: string): void {
     const schemaItem = this.getItemSync(name);
@@ -207,7 +212,7 @@ export class Schema implements CustomAttributeContainerProps {
   /**
    * Deletes a SchemaItem from within this schema.
    * @param name the local (unqualified) class name, lookup is case-insensitive
-   * @alpha
+   * @internal
    */
   protected async deleteSchemaItem(name: string): Promise<void> {
     const schemaItem = await this.getItem(name);
@@ -219,7 +224,7 @@ export class Schema implements CustomAttributeContainerProps {
   /**
    * Deletes a SchemaItem from within this schema.
    * @param name the local (unqualified) class name, lookup is case-insensitive
-   * @alpha
+   * @internal
    */
   protected deleteSchemaItemSync(name: string): void {
     const schemaItem = this.getItemSync(name);
@@ -227,15 +232,14 @@ export class Schema implements CustomAttributeContainerProps {
       this._items.delete(name.toUpperCase());
   }
 
-  /**
-   * @alpha
-   */
+  /** @internal */
   protected createItem<T extends SchemaItem>(type: (new (_schema: Schema, _name: string) => T), name: string): T {
     const item = new type(this, name);
     this.addItem(item);
     return item;
   }
 
+  /** @internal */
   protected addCustomAttribute(customAttribute: CustomAttribute) {
     if (!this._customAttributes)
       this._customAttributes = new Map<string, CustomAttribute>();
@@ -247,11 +251,13 @@ export class Schema implements CustomAttributeContainerProps {
    * Creates a EntityClass with the provided name in this schema.
    * @param name
    * @param modifier
+   * @internal
    */
   protected async createEntityClass(name: string, modifier?: ECClassModifier): Promise<EntityClass> {
     return this.createClass<EntityClass>(EntityClass, name, modifier);
   }
 
+  /** @internal */
   protected createEntityClassSync(name: string, modifier?: ECClassModifier): EntityClass {
     return this.createClass<EntityClass>(EntityClass, name, modifier);
   }
@@ -259,19 +265,23 @@ export class Schema implements CustomAttributeContainerProps {
   /**
    * Creates a Mixin with the provided name in this schema.
    * @param name
+   * @internal
    */
   protected async createMixinClass(name: string): Promise<Mixin> { return this.createClass<Mixin>(Mixin, name); }
+  /** @internal */
   protected createMixinClassSync(name: string): Mixin { return this.createClass<Mixin>(Mixin, name); }
 
   /**
    * Creates a StructClass with the provided name in this schema.
    * @param name
    * @param modifier
+   * @internal
    */
   protected async createStructClass(name: string, modifier?: ECClassModifier): Promise<StructClass> {
     return this.createClass<StructClass>(StructClass, name, modifier);
   }
 
+  /** @internal */
   protected createStructClassSync(name: string, modifier?: ECClassModifier): StructClass {
     return this.createClass<StructClass>(StructClass, name, modifier);
   }
@@ -280,11 +290,13 @@ export class Schema implements CustomAttributeContainerProps {
    * Creates a CustomAttributeClass with the provided name in this schema.
    * @param name
    * @param modifier
+   * @internal
    */
   protected async createCustomAttributeClass(name: string, modifier?: ECClassModifier): Promise<CustomAttributeClass> {
     return this.createClass<CustomAttributeClass>(CustomAttributeClass, name, modifier);
   }
 
+  /** @internal */
   protected createCustomAttributeClassSync(name: string, modifier?: ECClassModifier): CustomAttributeClass {
     return this.createClass<CustomAttributeClass>(CustomAttributeClass, name, modifier);
   }
@@ -293,11 +305,13 @@ export class Schema implements CustomAttributeContainerProps {
    * Creates a RelationshipClass with the provided name in this schema.
    * @param name
    * @param modifier
+   * @internal
    */
   protected async createRelationshipClass(name: string, modifier?: ECClassModifier): Promise<RelationshipClass> {
     return this.createRelationshipClassSync(name, modifier);
   }
 
+  /** @internal */
   protected createRelationshipClassSync(name: string, modifier?: ECClassModifier): RelationshipClass {
     return this.createClass<RelationshipClass>(RelationshipClass, name, modifier);
   }
@@ -305,11 +319,15 @@ export class Schema implements CustomAttributeContainerProps {
   /**
    * Creates an Enumeration with the provided name in this schema.
    * @param name
+   * @param primitiveType
+   * 
+   * @internal
    */
   protected async createEnumeration(name: string, primitiveType?: PrimitiveType.Integer | PrimitiveType.String): Promise<Enumeration> {
     return this.createEnumerationSync(name, primitiveType);
   }
 
+  /** @internal */
   protected createEnumerationSync(name: string, primitiveType?: PrimitiveType.Integer | PrimitiveType.String): Enumeration {
     const item = new Enumeration(this, name, primitiveType);
     this.addItem(item);
@@ -319,11 +337,13 @@ export class Schema implements CustomAttributeContainerProps {
   /**
    * Creates an KindOfQuantity with the provided name in this schema.
    * @param name
+   * @internal
    */
   protected async createKindOfQuantity(name: string): Promise<KindOfQuantity> {
     return this.createKindOfQuantitySync(name);
   }
 
+  /** @internal */
   protected createKindOfQuantitySync(name: string): KindOfQuantity {
     return this.createItem<KindOfQuantity>(KindOfQuantity, name);
   }
@@ -331,11 +351,13 @@ export class Schema implements CustomAttributeContainerProps {
   /**
    * Creates a Constant with the provided name in this schema.
    * @param name
+   * @internal
    */
   protected async createConstant(name: string): Promise<Constant> {
     return this.createItem<Constant>(Constant, name);
   }
 
+  /** @internal */
   protected createConstantSync(name: string): Constant {
     return this.createItem<Constant>(Constant, name);
   }
@@ -343,11 +365,13 @@ export class Schema implements CustomAttributeContainerProps {
   /**
    * Creates a Inverted Unit with the provided name in this schema.
    * @param name
+   * @internal
    */
   protected async createInvertedUnit(name: string): Promise<InvertedUnit> {
     return this.createItem<InvertedUnit>(InvertedUnit, name);
   }
 
+  /** @internal */
   protected createInvertedUnitSync(name: string): InvertedUnit {
     return this.createItem<InvertedUnit>(InvertedUnit, name);
   }
@@ -355,11 +379,13 @@ export class Schema implements CustomAttributeContainerProps {
   /**
    * Creates an Format with the provided name in this schema.
    * @param name
+   * @internal
    */
   protected async createFormat(name: string): Promise<Format> {
     return this.createItem<Format>(Format, name);
   }
 
+  /** @internal */
   protected createFormatSync(name: string): Format {
     return this.createItem<Format>(Format, name);
   }
@@ -367,11 +393,13 @@ export class Schema implements CustomAttributeContainerProps {
   /**
    * Creates a UnitSystem with the provided name in this schema.
    * @param name
+   * @internal
    */
   protected async createUnitSystem(name: string): Promise<UnitSystem> {
     return this.createItem<UnitSystem>(UnitSystem, name);
   }
 
+  /** @internal */
   protected createUnitSystemSync(name: string): UnitSystem {
     return this.createItem<UnitSystem>(UnitSystem, name);
   }
@@ -379,11 +407,13 @@ export class Schema implements CustomAttributeContainerProps {
   /**
    * Creates a Phenomenon with the provided name in this schema.
    * @param name
+   * @internal
    */
   protected async createPhenomenon(name: string): Promise<Phenomenon> {
     return this.createItem<Phenomenon>(Phenomenon, name);
   }
 
+  /** @internal */
   protected createPhenomenonSync(name: string): Phenomenon {
     return this.createItem<Phenomenon>(Phenomenon, name);
   }
@@ -391,11 +421,13 @@ export class Schema implements CustomAttributeContainerProps {
   /**
    * Creates a Unit with the provided name in this schema.
    * @param name
+   * @internal
    */
   protected async createUnit(name: string): Promise<Unit> {
     return this.createItem<Unit>(Unit, name);
   }
 
+  /** @internal */
   protected createUnitSync(name: string): Unit {
     return this.createItem<Unit>(Unit, name);
   }
@@ -403,30 +435,33 @@ export class Schema implements CustomAttributeContainerProps {
   /**
    * Creates an PropertyCategory with the provided name in this schema.
    * @param name
+   * @internal
    */
   protected async createPropertyCategory(name: string): Promise<PropertyCategory> {
     return this.createItem<PropertyCategory>(PropertyCategory, name);
   }
 
+  /** @internal */
   protected createPropertyCategorySync(name: string): PropertyCategory {
     return this.createItem<PropertyCategory>(PropertyCategory, name);
   }
+
   /**
    *
    * @param refSchema
+   * @internal
    */
   protected async addReference(refSchema: Schema): Promise<void> {
     // TODO validation of reference schema. For now just adding
     this.addReferenceSync(refSchema);
   }
 
+  /** @internal */
   protected addReferenceSync(refSchema: Schema): void {
     this.references.push(refSchema);
   }
 
-  /**
-   * @alpha Used for schema editing.
-   */
+  /** @internal */
   protected setContext(context: SchemaContext): void {
     this._context = context;
   }
@@ -436,6 +471,7 @@ export class Schema implements CustomAttributeContainerProps {
    * @param readVersion The read version of the schema. If undefined, the value from the existing SchemaKey will be used.
    * @param writeVersion The write version of the schema. If undefined, the value from the existing SchemaKey will be used.
    * @param minorVersion The minor version of the schema. If undefined, the value from the existing SchemaKey will be used.
+   * @internal
    */
   public setVersion(readVersion?: number, writeVersion?: number, minorVersion?: number): void {
     if (!this._schemaKey)
@@ -859,26 +895,17 @@ export class Schema implements CustomAttributeContainerProps {
     return schema !== undefined && schema.schemaKey !== undefined && schema.context !== undefined;
   }
 
-  /**
-   * @alpha
-   * Used for schema editing.
-   */
+  /** @internal */
   protected setDisplayLabel(displayLabel: string) {
     this._label = displayLabel;
   }
 
-  /**
-   * @alpha
-   * Used for schema editing.
-   */
+  /** @internal */
   protected setDescription(description: string) {
     this._description = description;
   }
 
-  /**
-   * @alpha
-   * Used for schema editing.
-   */
+  /** @internal */
   protected setAlias(alias: string) {
     if (!ECName.validate(alias)) {
       throw new ECObjectsError(ECObjectsStatus.InvalidECName, "The specified schema alias is invalid.");

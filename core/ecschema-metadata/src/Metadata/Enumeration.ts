@@ -32,8 +32,11 @@ export type AnyEnumerator = Enumerator<string | number>;
 export class Enumeration extends SchemaItem {
   public override readonly schemaItemType = Enumeration.schemaItemType;
   public static override get schemaItemType() { return SchemaItemType.Enumeration; }
+  /** @internal */
   protected _type?: PrimitiveType.Integer | PrimitiveType.String;
+  /** @internal */
   protected _isStrict: boolean;
+  /** @internal */
   protected _enumerators: AnyEnumerator[];
 
   public get enumerators() { return this._enumerators; }
@@ -90,6 +93,7 @@ export class Enumeration extends SchemaItem {
    * @param label A localized display label that is used instead of the name in a GUI.
    * @param description A localized description for the enumerator.
    * @return AnyEnumerator object
+   * @internal
    */
   public createEnumerator(name: string, value: string | number, label?: string, description?: string): AnyEnumerator {
     if (this.isInt && typeof (value) === "string") // throws if backing type is int and value is string
@@ -105,6 +109,7 @@ export class Enumeration extends SchemaItem {
   /**
    * Adds enumerator to list of enumerators on this Enumeration
    * @param enumerator The enumerator to add
+   * @internal
    */
   protected addEnumerator(enumerator: AnyEnumerator) {
     this.enumerators.push(enumerator);
@@ -186,7 +191,7 @@ export class Enumeration extends SchemaItem {
   }
 
   /**
-   * @alpha Used in schema editing.
+   * @internal
    */
   protected setIsStrict(isStrict: boolean) {
     this._isStrict = isStrict;
@@ -212,8 +217,10 @@ export class Enumeration extends SchemaItem {
   }
 }
 
-/** @internal
+/**
  * An abstract class used for schema editing.
+ * 
+ * @internal
  */
 export abstract class MutableEnumeration extends Enumeration {
   public abstract override addEnumerator(enumerator: AnyEnumerator): void;

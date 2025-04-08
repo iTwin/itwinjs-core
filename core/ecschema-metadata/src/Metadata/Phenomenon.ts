@@ -16,6 +16,7 @@ import { SchemaItem } from "./SchemaItem";
 export class Phenomenon extends SchemaItem {
   public override readonly schemaItemType = Phenomenon.schemaItemType;
   public static override get schemaItemType() { return SchemaItemType.Phenomenon; }
+  /** @internal */
   protected _definition: string; // Contains a combination of Phenomena names which form this Phenomenon. Each Phenomena name is separated by a * and may have an exponent, specified using parentheses
 
   constructor(schema: Schema, name: string) {
@@ -55,6 +56,11 @@ export class Phenomenon extends SchemaItem {
     this.fromJSONSync(phenomenonProps);
   }
 
+  /**
+   * 
+   * @param definition 
+   * @internal
+   */
   protected async setDefinition(definition: string) {
     this._definition = definition;
   }

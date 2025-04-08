@@ -24,8 +24,11 @@ import { Unit } from "./Unit";
 export class KindOfQuantity extends SchemaItem {
   public override readonly schemaItemType = KindOfQuantity.schemaItemType;
   public static override get schemaItemType() { return SchemaItemType.KindOfQuantity; }
+  /** @internal */
   protected _relativeError: number = 1.0;
+  /** @internal */
   protected _presentationFormats: Array<Format | OverrideFormat> = new Array<Format | OverrideFormat>();
+  /** @internal */
   protected _persistenceUnit?: LazyLoadedUnit | LazyLoadedInvertedUnit;
 
   /** The first presentation format in the list of Formats. */
@@ -35,6 +38,10 @@ export class KindOfQuantity extends SchemaItem {
   public get presentationFormats(): Array<Format | OverrideFormat> { return this._presentationFormats; }
 
   public get persistenceUnit(): LazyLoadedUnit | LazyLoadedInvertedUnit | undefined { return this._persistenceUnit; }
+  
+  /**
+   * @internal
+   */
   protected set persistenceUnit(value: LazyLoadedUnit | LazyLoadedInvertedUnit | undefined) { this._persistenceUnit = value; }
 
   public get relativeError() { return this._relativeError; }
@@ -43,6 +50,7 @@ export class KindOfQuantity extends SchemaItem {
    *
    * @param format The Format to add to this KindOfQuantity
    * @param isDefault
+   * @internal
    */
   protected addPresentationFormat(format: Format | OverrideFormat, isDefault: boolean = false) {
     // TODO: Add some sort of validation?
@@ -53,6 +61,7 @@ export class KindOfQuantity extends SchemaItem {
    * @param parent The Format to override.
    * @param precision The precision override
    * @param unitLabelOverrides The list of unit and label overrides.
+   * @internal
    */
   protected createFormatOverride(parent: Format, precision?: number, unitLabelOverrides?: Array<[Unit | InvertedUnit, string | undefined]>): OverrideFormat {
     if (unitLabelOverrides && parent.units && parent.units.length !== unitLabelOverrides.length)
@@ -213,8 +222,8 @@ export class KindOfQuantity extends SchemaItem {
   }
 
   /**
-   * @alpha
    * Used for schema editing.
+   * @internal
    */
   protected setRelativeError(relativeError: number): void {
     this._relativeError = relativeError;

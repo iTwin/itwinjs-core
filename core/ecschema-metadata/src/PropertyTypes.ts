@@ -51,7 +51,7 @@ export enum PropertyType {
   IGeometry_Array = 0xA05, // PrimitiveType.IGeometry | PropertyFlags.Array
 }
 
-/** @public @preview */
+/** @beta */
 export namespace PropertyTypeUtils {
   export function isArray(t: PropertyType) {
     return (t === (PropertyFlags.Array | t));
@@ -79,7 +79,7 @@ export namespace PropertyTypeUtils {
   }
 }
 
-/** @public @preview */
+/** @beta */
 export function propertyTypeToString(type: PropertyType) {
   if (PropertyTypeUtils.isPrimitive(type))
     return (PropertyTypeUtils.isArray(type)) ? "PrimitiveArrayProperty" : "PrimitiveProperty";

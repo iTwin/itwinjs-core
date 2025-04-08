@@ -21,6 +21,7 @@ import { SchemaItem } from "./SchemaItem";
 export class CustomAttributeClass extends ECClass {
   public override readonly schemaItemType = CustomAttributeClass.schemaItemType;
   public static override get schemaItemType() { return SchemaItemType.CustomAttributeClass; }
+  /** @internal */
   protected _appliesTo?: CustomAttributeContainerType;
 
   /**
@@ -67,7 +68,7 @@ export class CustomAttributeClass extends ECClass {
   }
 
   /**
-   * @alpha Used in schema editing.
+   * @internal
    */
   protected setAppliesTo(containerType: CustomAttributeContainerType) {
     this._appliesTo = containerType;

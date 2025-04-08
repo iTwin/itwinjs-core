@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
  * @module Metadata
  */
@@ -11,15 +11,34 @@ import { FormatProps } from "@itwin/core-quantity";
 /**
  * @public @preview
  */
-export type AnyPropertyProps = PrimitivePropertyProps | StructPropertyProps | PrimitiveArrayPropertyProps | StructArrayPropertyProps | NavigationPropertyProps;
+export type AnyPropertyProps =
+  | PrimitivePropertyProps
+  | StructPropertyProps
+  | PrimitiveArrayPropertyProps
+  | StructArrayPropertyProps
+  | NavigationPropertyProps;
 /**
  * @public @preview
  */
-export type AnyClassProps = EntityClassProps | MixinProps | CustomAttributeClassProps | RelationshipClassProps;
+export type AnyClassProps =
+  | EntityClassProps
+  | MixinProps
+  | CustomAttributeClassProps
+  | RelationshipClassProps;
 /**
  * @public @preview
  */
-export type AnySchemaItemProps = AnyClassProps | EnumerationProps | KindOfQuantityProps | PropertyCategoryProps | SchemaItemUnitProps | InvertedUnitProps | ConstantProps | PhenomenonProps | SchemaItemFormatProps | SchemaItemOverrideFormatProps;
+export type AnySchemaItemProps =
+  | AnyClassProps
+  | EnumerationProps
+  | KindOfQuantityProps
+  | PropertyCategoryProps
+  | SchemaItemUnitProps
+  | InvertedUnitProps
+  | ConstantProps
+  | PhenomenonProps
+  | SchemaItemFormatProps
+  | SchemaItemOverrideFormatProps;
 
 /**
  * @public @preview
@@ -67,7 +86,7 @@ export interface SchemaReferenceProps {
 export interface SchemaItemProps {
   // NEEDSWORK: Still need to clarify how single-item deserialization works...
   readonly $schema?: string;
-  readonly schema?: string;  // conditionally required
+  readonly schema?: string; // conditionally required
   readonly schemaVersion?: string;
   readonly name?: string;
   readonly schemaItemType?: string;
@@ -204,7 +223,8 @@ export interface PrimitiveOrEnumPropertyBaseProps extends PropertyProps {
 /**
  * @public @preview
  */
-export interface PrimitivePropertyProps extends PrimitiveOrEnumPropertyBaseProps {
+export interface PrimitivePropertyProps
+  extends PrimitiveOrEnumPropertyBaseProps {
   readonly typeName: string;
 }
 
@@ -218,7 +238,8 @@ export interface StructPropertyProps extends PropertyProps {
 /**
  * @public @preview
  */
-export interface EnumerationPropertyProps extends PrimitiveOrEnumPropertyBaseProps {
+export interface EnumerationPropertyProps
+  extends PrimitiveOrEnumPropertyBaseProps {
   readonly typeName: string;
 }
 
@@ -269,16 +290,16 @@ export type SchemaItemFormatProps = SchemaItemProps & FormatProps;
 
 /**
  * This interface defines properties necessary to support persistence of a set of formats.
- * @public @preview
+ * @beta
  */
 export interface FormatSet {
   name: string;
   label: string;
-  formats: { [kindOfQuantityId: string]: SchemaItemFormatProps }
+  formats: { [kindOfQuantityId: string]: SchemaItemFormatProps };
 }
 
 /**
- * @public @preview
+ * @beta
  */
 export interface SchemaItemOverrideFormatProps extends SchemaItemFormatProps {
   readonly parent: string;

@@ -21,7 +21,6 @@ export namespace XmlSerializationUtils {
    * @param customAttribute The CustomAttribute instance to serialize.
    * @param schemaDoc The Xml Document object holding the serialized EC Schema.
    * @param schema The Schema object being serialized.
-   * @public @preview
    */
   export async function writeCustomAttribute(fullName: string, customAttribute: CustomAttribute, schemaDoc: Document, schema: Schema): Promise<Element> {
     const caClass = await schema.lookupItem(fullName) as CustomAttributeClass;
@@ -46,7 +45,6 @@ export namespace XmlSerializationUtils {
    * @param instance The Property instance.
    * @param instanceElement The XML Element that will contain the serialized property instance.
    * @param schemaDoc The Xml Document object holding the serialized EC Schema.
-   * @public @preview
    */
   export async function writeInstanceProperty(propertyClass: Property, instance: any, instanceElement: Element, schemaDoc: Document): Promise<void> {
     const propertyValue = instance[propertyClass.name];
@@ -71,7 +69,6 @@ export namespace XmlSerializationUtils {
    * @param propertyValue An array holding the property values.
    * @param arrayElement The XML Element that will contain the serialized property instance.
    * @param schemaDoc The Xml Document object holding the serialized EC Schema.
-   * @public @preview
    */
   export async function writeArrayProperty(propertyClass: ArrayProperty, propertyValue: any[], arrayElement: Element, schemaDoc: Document): Promise<void> {
     if (propertyClass.isPrimitive()) {
@@ -98,7 +95,6 @@ export namespace XmlSerializationUtils {
    * @param propertyValue The struct object holding the property values.
    * @param structElement The XML Element that will contain the serialized property instance.
    * @param schemaDoc The Xml Document object holding the serialized EC Schema.
-   * @public @preview
    */
   export async function writeStructProperty(propertyClass: StructProperty, propertyValue: any, structElement: Element, schemaDoc: Document): Promise<void> {
     const structClass = propertyClass.structClass;
@@ -111,7 +107,6 @@ export namespace XmlSerializationUtils {
    * @param propertyClass The Property metadata object.
    * @param propertyValue The struct object holding the property values.
    * @param propertyElement The XML Element that will contain the serialized property instance.
-   * @public @preview
    */
   export async function writePrimitiveProperty(propertyClass: PrimitiveOrEnumPropertyBase, propertyValue: any, propertyElement: Element): Promise<void> {
     let primitiveType: PrimitiveType;

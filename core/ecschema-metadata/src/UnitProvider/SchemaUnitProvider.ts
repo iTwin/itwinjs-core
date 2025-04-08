@@ -14,7 +14,7 @@ import { InvertedUnit } from "../Metadata/InvertedUnit";
 
 /**
  * Class used to find Units in SchemaContext by attributes such as Phenomenon and DisplayLabel.
- * @public @preview
+ * @beta
  */
 export class SchemaUnitProvider implements UnitsProvider {
   private _unitConverter: UnitConverter;

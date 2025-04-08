@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
  * @module Metadata
  */
@@ -16,10 +16,17 @@ if (!(Symbol as any).asyncIterator) {
   (Symbol as any).asyncIterator = Symbol.for("Symbol.asyncIterator");
 }
 
-/** @public @preview */
+/**
+ * Identifies a class as abstract or sealed
+ *
+ * @public @preview
+ */
 export enum ECClassModifier {
+  /* normal, instantiable class, can be subclassed */
   None,
+  /* abstract class, cannot be instantiated, can be subclassed */
   Abstract,
+  /* sealed class, instantiable class, cannot be subclassed */
   Sealed,
 }
 
@@ -51,8 +58,10 @@ export enum SchemaItemType {
  * @public @preview
  */
 export enum AbstractSchemaItemType {
+  /* Item is EntityClass, Mixin, StructClass, CustomAttributeClass, or RelationshipClass */
   Class = "Class",
-  SchemaItem = "SchemaItem"
+  /* Any item type including the Class types */
+  SchemaItem = "SchemaItem",
 }
 
 /**
@@ -84,20 +93,20 @@ export enum PrimitiveType {
  * @public @preview
  */
 export enum CustomAttributeContainerType {
-  Schema = (0x0001 << 0),
-  EntityClass = (0x0001 << 1),
-  CustomAttributeClass = (0x0001 << 2),
-  StructClass = (0x0001 << 3),
-  RelationshipClass = (0x0001 << 4),
+  Schema = 0x0001 << 0,
+  EntityClass = 0x0001 << 1,
+  CustomAttributeClass = 0x0001 << 2,
+  StructClass = 0x0001 << 3,
+  RelationshipClass = 0x0001 << 4,
   AnyClass = EntityClass | CustomAttributeClass | StructClass | RelationshipClass,
-  PrimitiveProperty = (0x0001 << 5),
-  StructProperty = (0x0001 << 6),
-  PrimitiveArrayProperty = (0x0001 << 7),
-  StructArrayProperty = (0x0001 << 8),
-  NavigationProperty = (0x0001 << 9),
+  PrimitiveProperty = 0x0001 << 5,
+  StructProperty = 0x0001 << 6,
+  PrimitiveArrayProperty = 0x0001 << 7,
+  StructArrayProperty = 0x0001 << 8,
+  NavigationProperty = 0x0001 << 9,
   AnyProperty = PrimitiveProperty | StructProperty | PrimitiveArrayProperty | StructArrayProperty | NavigationProperty,
-  SourceRelationshipConstraint = (0x0001 << 10),
-  TargetRelationshipConstraint = (0x0001 << 11),
+  SourceRelationshipConstraint = 0x0001 << 10,
+  TargetRelationshipConstraint = 0x0001 << 11,
   AnyRelationshipConstraint = SourceRelationshipConstraint | TargetRelationshipConstraint,
   Any = Schema | AnyClass | AnyProperty | AnyRelationshipConstraint,
 }
@@ -108,9 +117,9 @@ export enum CustomAttributeContainerType {
  */
 export enum SchemaMatchType {
   /*
-  * Find exact VersionRead, VersionWrite, VersionMinor match as well as Data. NOTE data is not yet matched
-  * @deprecated in 4.10 Use Exact instead.
-  */
+   * Find exact VersionRead, VersionWrite, VersionMinor match as well as Data. NOTE data is not yet matched
+   * @deprecated in 4.10 Use Exact instead.
+   */
   Identical,
   /* Find exact VersionRead, VersionWrite, VersionMinor match. */
   Exact,
@@ -131,16 +140,24 @@ export enum RelationshipEnd {
   Target = 1,
 }
 
-/** @public @preview */
+/**
+ * Defines the how the lifetime of the source and target are related.
+ *
+ * @public @preview */
 export enum StrengthType {
   Referencing,
   Holding,
   Embedding,
 }
 
-/** @public @preview */
+/**
+ * Defines the which side of the relationship is the starting point of the relationship.  This impacts how relationship strength is applied.
+ *
+ * @public @preview */
 export enum StrengthDirection {
+  /** The source is the starting point of the relationship. */
   Forward = 1,
+  /** The target is the starting point of the relationship. */
   Backward = 2,
 }
 
@@ -149,7 +166,7 @@ export enum StrengthDirection {
 /**
  * Parses the provided string into an ECClassModifier if the string is a valid modifier.
  * @param modifier The modifier string to parse.
- * @public @preview
+ * @beta
  */
 export function parseClassModifier(modifier: string): ECClassModifier | undefined {
   const lowerModifier = modifier.toLowerCase();
@@ -163,14 +180,15 @@ export function parseClassModifier(modifier: string): ECClassModifier | undefine
 
 /**
  * @return A string representing the provided ECClassModifier. If the modifier is not valid, an empty string is returned.
- * @public @preview
+ * @beta
  */
 export function classModifierToString(modifier: ECClassModifier): string {
   switch (modifier) {
     case ECClassModifier.Abstract: return "Abstract";
     case ECClassModifier.None: return "None";
     case ECClassModifier.Sealed: return "Sealed";
-    default: throw new ECObjectsError(ECObjectsStatus.InvalidModifier, "An invalid ECClassModifier has been provided.");
+    default:
+      throw new ECObjectsError(ECObjectsStatus.InvalidModifier, "An invalid ECClassModifier has been provided.");
   }
 }
 
@@ -178,7 +196,7 @@ export function classModifierToString(modifier: ECClassModifier): string {
  * Tries to parse the given string as one of the 8 schema item types.
  * @param type The schema item type string to parse.
  * @returns A valid SchemaItemType if successfully parsed. Otherwise, undefined if the provided string is not a valid SchemaItemType.
- * @public @preview
+ * @beta
  */
 export function parseSchemaItemType(type: string): SchemaItemType | undefined {
   switch (type.toLowerCase()) {
@@ -194,7 +212,7 @@ export function parseSchemaItemType(type: string): SchemaItemType | undefined {
     case "invertedunit": return SchemaItemType.InvertedUnit;
     case "constant": return SchemaItemType.Constant;
     case "phenomenon": return SchemaItemType.Phenomenon;
-    case "unitsystem": return SchemaItemType.UnitSystem;
+    case "unitsystem":return SchemaItemType.UnitSystem;
     case "format": return SchemaItemType.Format;
   }
   return undefined;
@@ -204,7 +222,7 @@ export function parseSchemaItemType(type: string): SchemaItemType | undefined {
  * Converts a valid SchemaItemType to a display string.
  * @param value The SchemaItemType to stringify.
  * @return A string representing the provided SchemaItemType. If the type is not valid, an empty string is returned.
- * @public @preview
+ * @beta
  * @deprecated in 4.6.0 SchemaItemType is a string enum so just use it directly
  */
 export function schemaItemTypeToString(value: SchemaItemType): string {
@@ -228,7 +246,8 @@ export function schemaItemTypeToXmlString(value: SchemaItemType): string {
     case SchemaItemType.Phenomenon: return "Phenomenon";
     case SchemaItemType.UnitSystem: return "UnitSystem";
     case SchemaItemType.Format: return "Format";
-    default: throw new ECObjectsError(ECObjectsStatus.InvalidSchemaItemType, "An invalid SchemaItemType has been provided.");
+    default:
+      throw new ECObjectsError(ECObjectsStatus.InvalidSchemaItemType, "An invalid SchemaItemType has been provided.");
   }
 }
 
@@ -236,7 +255,7 @@ export function schemaItemTypeToXmlString(value: SchemaItemType): string {
  * Tries to parse the given string as one of the 10 primitive types.
  * @param type The primitive type string to parse.
  * @returns A valid PrimitiveType if successfully parsed, or undefined if the provided string is not a valid PrimitiveType.
- * @public @preview
+ * @beta
  */
 export function parsePrimitiveType(type: string): PrimitiveType | undefined {
   switch (type.toLowerCase()) {
@@ -255,27 +274,28 @@ export function parsePrimitiveType(type: string): PrimitiveType | undefined {
   return undefined;
 }
 
-/** @public @preview */
+/** @beta */
 export function primitiveTypeToString(type: PrimitiveType): string {
   switch (type) {
     case PrimitiveType.Binary: return "binary";
     case PrimitiveType.Boolean: return "boolean";
     case PrimitiveType.DateTime: return "dateTime";
     case PrimitiveType.Double: return "double";
-    case PrimitiveType.Integer: return "int";
+    case PrimitiveType.Integer:  return "int";
     case PrimitiveType.IGeometry: return "Bentley.Geometry.Common.IGeometry";
     case PrimitiveType.Long: return "long";
     case PrimitiveType.Point2d: return "point2d";
     case PrimitiveType.Point3d: return "point3d";
     case PrimitiveType.String: return "string";
-    default: throw new ECObjectsError(ECObjectsStatus.InvalidPrimitiveType, "An invalid PrimitiveType has been provided.");
+    default:
+      throw new ECObjectsError(ECObjectsStatus.InvalidPrimitiveType, "An invalid PrimitiveType has been provided.");
   }
 }
 
 /**
  * Parses the given string into the appropriate CustomAttributeContainerType if the string is valid.
  * @param type The container type string to parse.
- * @public @preview
+ * @beta
  */
 export function parseCustomAttributeContainerType(type: string): CustomAttributeContainerType | undefined {
   const typeTokens = type.split(/[|,;]+/);
@@ -284,8 +304,7 @@ export function parseCustomAttributeContainerType(type: string): CustomAttribute
 
   typeTokens.forEach((typeToken) => {
     typeToken = typeToken.trim();
-    if (typeToken.length === 0)
-      return;
+    if (typeToken.length === 0) return;
 
     typeToken = typeToken.toLowerCase();
     switch (typeToken) {
@@ -349,12 +368,11 @@ export function parseCustomAttributeContainerType(type: string): CustomAttribute
  * Creates a string representing a valid CustomAttributeContainerType.
  * @param value The CustomAttributeContainerType to stringify.
  * @return A string representing the provided CustomAttributeContainerType. If the type is not valid, an empty string is returned.
- * @public @preview
+ * @beta
  */
 export function containerTypeToString(type: CustomAttributeContainerType): string {
-
   const testContainerTypeValue = (compareType: CustomAttributeContainerType, otherType: CustomAttributeContainerType) => {
-    return (compareType === (compareType & otherType));
+    return compareType === (compareType & otherType);
   };
 
   if (testContainerTypeValue(CustomAttributeContainerType.Any, type))
@@ -362,10 +380,8 @@ export function containerTypeToString(type: CustomAttributeContainerType): strin
 
   let containerType = "";
   const setOrAppend = (val: string) => {
-    if (containerType.length === 0)
-      containerType = val;
-    else
-      containerType = `${containerType}, ${val}`;
+    if (containerType.length === 0) containerType = val;
+    else containerType = `${containerType}, ${val}`;
   };
 
   if (testContainerTypeValue(CustomAttributeContainerType.Schema, type))
@@ -411,7 +427,7 @@ export function containerTypeToString(type: CustomAttributeContainerType): strin
   return containerType;
 }
 
-/** @public @preview */
+/** @beta */
 export function parseRelationshipEnd(end: string): RelationshipEnd | undefined {
   switch (end.toLowerCase()) {
     case "source": return RelationshipEnd.Source;
@@ -420,12 +436,13 @@ export function parseRelationshipEnd(end: string): RelationshipEnd | undefined {
   return undefined;
 }
 
-/** @public @preview */
+/** @beta */
 export function relationshipEndToString(end: RelationshipEnd): string {
   switch (end) {
     case RelationshipEnd.Source: return ECStringConstants.RELATIONSHIP_END_SOURCE;
     case RelationshipEnd.Target: return ECStringConstants.RELATIONSHIP_END_TARGET;
-    default: throw new ECObjectsError(ECObjectsStatus.InvalidRelationshipEnd, `An invalid RelationshipEnd has been provided.`);
+    default:
+      throw new ECObjectsError(ECObjectsStatus.InvalidRelationshipEnd, `An invalid RelationshipEnd has been provided.`);
   }
 }
 
@@ -433,7 +450,7 @@ export function relationshipEndToString(end: RelationshipEnd): string {
  * Takes a string representing a StrengthType, will parse it and return the corresponding StrengthType.
  * @throws ECObjectsStatus.InvalidStrength if the provided string that is not valid
  * @param strength
- * @public @preview
+ * @beta
  */
 export function parseStrength(strength: string): StrengthType | undefined {
   switch (strength.toLowerCase()) {
@@ -444,17 +461,18 @@ export function parseStrength(strength: string): StrengthType | undefined {
   return undefined;
 }
 
-/** @public @preview */
+/** @beta */
 export function strengthToString(strength: StrengthType): string {
   switch (strength) {
     case StrengthType.Embedding: return "Embedding";
     case StrengthType.Holding: return "Holding";
     case StrengthType.Referencing: return "Referencing";
-    default: throw new ECObjectsError(ECObjectsStatus.InvalidStrength, `An invalid Strength has been provided.`);
+    default:
+      throw new ECObjectsError(ECObjectsStatus.InvalidStrength, `An invalid Strength has been provided.`);
   }
 }
 
-/** @public @preview */
+/** @beta */
 export function parseStrengthDirection(direction: string): StrengthDirection | undefined {
   switch (direction.toLowerCase()) {
     case "forward": return StrengthDirection.Forward;
@@ -463,28 +481,28 @@ export function parseStrengthDirection(direction: string): StrengthDirection | u
   return undefined;
 }
 
-/** @public @preview */
+/** @beta */
 export function strengthDirectionToString(direction: StrengthDirection): string {
   switch (direction) {
     case StrengthDirection.Forward: return "Forward";
     case StrengthDirection.Backward: return "Backward";
-    default: throw new ECObjectsError(ECObjectsStatus.InvalidStrengthDirection, `An invalid StrengthDirection has been provided.`);
+    default:
+      throw new ECObjectsError(ECObjectsStatus.InvalidStrengthDirection, `An invalid StrengthDirection has been provided.`);
   }
 }
 
 /** Compares a SchemaItemType against supported type.
- * @public @preview
+ * @beta
  */
 export function isSupportedSchemaItemType(value: SchemaItemType, supported: SupportedSchemaItemType): boolean {
-  if (value === supported)
-    return true;
+  if (value === supported) return true;
 
   if (supported === AbstractSchemaItemType.Class && (
-    value === SchemaItemType.EntityClass ||
-    value === SchemaItemType.Mixin ||
-    value === SchemaItemType.StructClass ||
-    value === SchemaItemType.CustomAttributeClass ||
-    value === SchemaItemType.RelationshipClass)) {
+      value === SchemaItemType.EntityClass ||
+      value === SchemaItemType.Mixin ||
+      value === SchemaItemType.StructClass ||
+      value === SchemaItemType.CustomAttributeClass ||
+      value === SchemaItemType.RelationshipClass)) {
     return true;
   }
 
