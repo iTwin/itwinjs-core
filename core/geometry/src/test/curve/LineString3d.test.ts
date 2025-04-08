@@ -420,7 +420,6 @@ describe("LineString3d", () => {
     ck.testCoordinate(1, tangents!.length, "1 tangent found");
     captureGeometry();
 
-    // 3d line segment
     dy += 10;
     lineSeg = LineSegment3d.create(Point3d.create(-1, 0, -1), Point3d.create(1, 0, 1));
     ls = LineString3d.create(lineSeg.startPoint(), lineSeg.endPoint());
@@ -490,6 +489,17 @@ describe("LineString3d", () => {
     tangent = ls.closestTangent(spacePoint, { hintPoint });
     ck.testDefined(tangent, "tangent is defined");
     ck.testCoordinate(0.8, tangent!.fraction, "closest tangent fraction is 0.8");
+    captureGeometry();
+
+    // corner case: line and vectorToEye are overlapping making the line viewed as a point
+    dy = 0;
+    dx += 20;
+    tangent = undefined;
+    hintPoint = undefined;
+    ls = LineString3d.create(Point3d.create(), Point3d.create(0, 0, 5));
+    spacePoint = Point3d.create(2, 0);
+    tangents = ls.allTangents(spacePoint, { vectorToEye: Vector3d.create(0, 0, 1) });
+    ck.testUndefined(tangents, "tangents is undefined");
     captureGeometry();
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "LineString3d", "AllTangentsAndClosestTangent");
