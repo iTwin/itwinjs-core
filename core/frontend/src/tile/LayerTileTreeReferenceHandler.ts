@@ -142,7 +142,7 @@ export class LayerTileTreeReferenceHandler {
         if (layerTree instanceof ImageryMapTileTree) {
           layerHandler.addImageryLayer(layerTree, layerTreeRef.layerSettings, treeIndex, baseImageryLayer);
         } else if (layerTreeRef instanceof ModelMapLayerTileTreeReference)
-          layerHandler.addModelLayer(layerTreeRef, context, layerTree);
+          layerHandler.addModelLayer(layerTreeRef, context);
       }
     }
 

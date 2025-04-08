@@ -58,8 +58,8 @@ export class LayerTileTreeHandler {
   }
 
   /** @internal */
-  public addModelLayer(layerTreeRef: ModelMapLayerTileTreeReference, context: SceneContext, tileTree: TileTree) {
-    const tileTreeClassName = tileTree.constructor.name;
+  public addModelLayer(layerTreeRef: ModelMapLayerTileTreeReference, context: SceneContext) {
+    const tileTreeClassName = this._ref.rootTile.tree.constructor.name;
     const classifier = context.addPlanarClassifier(`MapLayer ${tileTreeClassName}-${this._ref.modelId}-${layerTreeRef.layerIndex}`, layerTreeRef);
     if (classifier)
       this.layerClassifiers.set(layerTreeRef.layerIndex, classifier);
