@@ -470,10 +470,9 @@ export namespace ElementGeometry {
           }
 
           const frame = FrameGeometry.computeFrame(entry.border.shape, entry.border.range, entry.border.transform);
-          const path = Path.createArray(frame);
 
           result = this.appendGeometryParamsChange(params);
-          result = result && this.appendGeometryQuery(path);
+          result = result && this.appendGeometryQuery(frame);
         } else {
           result = false;
         }

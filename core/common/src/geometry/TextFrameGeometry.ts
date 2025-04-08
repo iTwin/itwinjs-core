@@ -3,23 +3,24 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { Angle, AngleSweep, AnyCurvePrimitive, Arc3d, LineString3d, Point3d, Range2d, Range2dProps, Transform, TransformProps, Vector2d, XYAndZ } from "@itwin/core-geometry";
+import { Angle, AngleSweep, Arc3d, LineString3d, Loop, Point3d, Range2d, Range2dProps, Transform, TransformProps, Vector2d, Vector3d, XYAndZ } from "@itwin/core-geometry";
 import { TextAnnotationFrame } from "../annotation/TextAnnotation";
 
 // I don't love where this is.
 
 export namespace FrameGeometry {
-  export const computeFrame = (frame: TextAnnotationFrame, rangeProps: Range2dProps, transformProps: TransformProps): AnyCurvePrimitive[] => {
+  export const computeFrame = (frame: TextAnnotationFrame, rangeProps: Range2dProps, transformProps: TransformProps): Loop => {
+    const defaultLoop = Loop.create();
     switch (frame) {
-      case "none": return [];
-      case "line": return [];
+      case "none": return defaultLoop;
+      case "line": return defaultLoop;
       case "rectangle": return FrameGeometry.computeRectangle(rangeProps, transformProps);
       case "circle": return FrameGeometry.computeCircle(rangeProps, transformProps);
       case "equilateralTriangle": return FrameGeometry.computeTriangle(rangeProps, transformProps);
       case "diamond": return FrameGeometry.computeDiamond(rangeProps, transformProps);
       case "square": return FrameGeometry.computeSquare(rangeProps, transformProps);
-      case "pentagon": return [];
-      case "hexagon": return [];
+      case "pentagon": return defaultLoop;
+      case "hexagon": return defaultLoop;
       case "capsule": return FrameGeometry.computeCapsule(rangeProps, transformProps);
       case "roundedRectangle": return FrameGeometry.computeRoundedRectangle(rangeProps, transformProps);
     }
@@ -28,24 +29,66 @@ export namespace FrameGeometry {
   // Options: vertices, midpoints, closest point, circle: pi/4 intervals; which side are we connecting to?
   // terminator point; possibly elbow length or no elbow length
 
+  export interface ComputeLeaderStartPointOptions {
+    terminatorPoint: XYAndZ;
+    elbowLength?: number;
+    /** interval = 1, just vertices, interval > 1, number of times to break up each edge */
+    lineIntervals?: number;
+    arcIntervals?: number;
+  }
+
+  export const computeIntervalPoints = (frame: TextAnnotationFrame, rangeProps: Range2dProps, transformProps: TransformProps, lineInterval: number = 0.5, arcInterval: number = Math.PI): Point3d[] | undefined => {
+    const points: Point3d[] = [];
+    const curves = FrameGeometry.computeFrame(frame, rangeProps, transformProps).collectCurvePrimitives(undefined, false, true);
+
+    curves.forEach((curve) => {
+      const end = curve instanceof Arc3d ? arcInterval : lineInterval;
+      for (let interval = 0; interval <= 1; interval += end) {
+        points.push(curve.fractionToPoint(interval));
+      }
+    });
+    return points;
+  }
   /** Returns the closest point on the text frame where a leader can attach to */
-  export const computeLeaderStartPoint = (frame: TextAnnotationFrame, rangeProps: Range2dProps, transformProps: TransformProps, terminatorPoint: XYAndZ, wantElbow?: boolean, elbowLength?: number): Point3d => {
-    return Point3d.create(0, 0, 0);
+  export const computeLeaderStartPoint = (frame: TextAnnotationFrame, rangeProps: Range2dProps, transformProps: TransformProps, terminatorPoint: XYAndZ, options: ComputeLeaderStartPointOptions): Point3d | undefined => {
+    if (options.lineIntervals === undefined || options.arcIntervals === undefined) {
+      const curve = FrameGeometry.computeFrame(frame, rangeProps, transformProps);
+      return curve.closestPoint(Point3d.createFrom(terminatorPoint))?.point;
+    }
+
+    const intervalPoints = FrameGeometry.computeIntervalPoints(frame, rangeProps, transformProps, options.lineIntervals, options.arcIntervals);
+    const terminatorPoint3d = Point3d.createFrom(terminatorPoint);
+
+    const closestPoint = intervalPoints?.reduce((point: Point3d | undefined, intervalPoint: Point3d) => {
+      if (point && terminatorPoint3d.distance(intervalPoint) < terminatorPoint3d.distance(point))
+        return intervalPoint;
+      return point;
+    }, undefined);
+
+    return closestPoint;
+  }
+
+  export const debugIntervals = (frame: TextAnnotationFrame, rangeProps: Range2dProps, transformProps: TransformProps, lineInterval: number = 0.25, arcInterval: number = 0.25): Arc3d[] | undefined => {
+    const points = FrameGeometry.computeIntervalPoints(frame, rangeProps, transformProps, lineInterval, arcInterval);
+    const vector = Vector3d.create(0, 0, 1);
+    const radius = Range2d.fromJSON(rangeProps).yLength() / 30;
+
+    return points?.map(point => Arc3d.createCenterNormalRadius(point, vector, radius));
   }
 
 
   // Rectangle
-  export const computeRectangle = (rangeProps: Range2dProps, transformProps: TransformProps): AnyCurvePrimitive[] => {
+  export const computeRectangle = (rangeProps: Range2dProps, transformProps: TransformProps): Loop => {
     const range = Range2d.fromJSON(rangeProps);
     const points = range.corners3d(true);
     const frame = LineString3d.createPoints(points);
 
     const transform = Transform.fromJSON(transformProps);
-    return [frame.cloneTransformed(transform)];
+    return Loop.create(frame.cloneTransformed(transform));
   }
 
   // RoundedRectangle
-  export const computeRoundedRectangle = (rangeProps: Range2dProps, transformProps: TransformProps, radiusFactor: number = 0.25): AnyCurvePrimitive[] => {
+  export const computeRoundedRectangle = (rangeProps: Range2dProps, transformProps: TransformProps, radiusFactor: number = 0.25): Loop => {
     const range = Range2d.fromJSON(rangeProps);
     const radius = range.yLength() * radiusFactor * Math.sqrt(2);
     // We're going to circumscribe the range with our rounded edges. The corners of the range will fall on 45 degree angles.
@@ -81,21 +124,21 @@ export namespace FrameGeometry {
     ];
 
     const transform = Transform.fromJSON(transformProps);
-    return curves.map((curve) => curve.cloneTransformed(transform));
+    return Loop.createArray(curves.map((curve) => curve.cloneTransformed(transform)))
   }
 
 
   // Circle
-  export const computeCircle = (rangeProps: Range2dProps, transformProps: TransformProps): AnyCurvePrimitive[] => {
+  export const computeCircle = (rangeProps: Range2dProps, transformProps: TransformProps): Loop => {
     const range = Range2d.fromJSON(rangeProps);
     const radius = range.low.distance(range.high) / 2;
     const frame = Arc3d.createXY(Point3d.createFrom(range.center), radius);
     const transform = Transform.fromJSON(transformProps);
-    return [frame.cloneTransformed(transform)];
+    return Loop.create(frame.cloneTransformed(transform));
   }
 
   // Equilateral Triangle
-  export const computeTriangle = (rangeProps: Range2dProps, transformProps: TransformProps): AnyCurvePrimitive[] => {
+  export const computeTriangle = (rangeProps: Range2dProps, transformProps: TransformProps): Loop => {
     const range = Range2d.fromJSON(rangeProps);
 
     const xLength = range.xLength();
@@ -120,11 +163,11 @@ export namespace FrameGeometry {
     const frame = LineString3d.createPoints(points);
 
     const transform = Transform.fromJSON(transformProps);
-    return [frame.cloneTransformed(transform)];
+    return Loop.create(frame.cloneTransformed(transform));
   }
 
   // Diamond
-  export const computeDiamond = (rangeProps: Range2dProps, transformProps: TransformProps): AnyCurvePrimitive[] => {
+  export const computeDiamond = (rangeProps: Range2dProps, transformProps: TransformProps): Loop => {
     const range = Range2d.fromJSON(rangeProps);
     const offset = (range.xLength() + range.yLength()) / 2;
     const center = range.center;
@@ -140,11 +183,11 @@ export namespace FrameGeometry {
     const frame = LineString3d.createPoints(points);
 
     const transform = Transform.fromJSON(transformProps);
-    return [frame.cloneTransformed(transform)];
+    return Loop.create(frame.cloneTransformed(transform));
   }
 
   // Square
-  export const computeSquare = (rangeProps: Range2dProps, transformProps: TransformProps): AnyCurvePrimitive[] => {
+  export const computeSquare = (rangeProps: Range2dProps, transformProps: TransformProps): Loop => {
     const range = Range2d.fromJSON(rangeProps);
 
     // Extend range
@@ -163,7 +206,7 @@ export namespace FrameGeometry {
     const frame = LineString3d.createPoints(points);
 
     const transform = Transform.fromJSON(transformProps);
-    return [frame.cloneTransformed(transform)];
+    return Loop.create(frame.cloneTransformed(transform));
   }
 
   // Pentagon
@@ -171,7 +214,7 @@ export namespace FrameGeometry {
   // Hexagon
 
   // Capsule
-  export const computeCapsule = (rangeProps: Range2dProps, transformProps: TransformProps): AnyCurvePrimitive[] => {
+  export const computeCapsule = (rangeProps: Range2dProps, transformProps: TransformProps): Loop => {
     const range = Range2d.fromJSON(rangeProps);
     const height = range.yLength();
     const radius = height * (Math.sqrt(2) / 2);
@@ -200,6 +243,6 @@ export namespace FrameGeometry {
     ];
 
     const transform = Transform.fromJSON(transformProps);
-    return curves.map((curve) => curve.cloneTransformed(transform));
+    return Loop.createArray(curves.map((curve) => curve.cloneTransformed(transform)))
   }
 }

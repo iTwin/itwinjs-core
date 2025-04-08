@@ -362,14 +362,18 @@ export class GeometryStreamBuilder {
           params.fillDisplay = FillDisplay.Always;
         } else if (entry.fill.color !== "subcategory") {
           params.fillColor = ColorDef.fromJSON(entry.fill.color);
+          params.lineColor = params.fillColor;
           params.fillDisplay = FillDisplay.Always;
         }
 
+        params.weight = 0;
+
+
         const frame = FrameGeometry.computeFrame(entry.fill.shape, entry.fill.range, entry.fill.transform);
-        const loop = Loop.createArray(frame);
 
         result = this.appendGeometryParamsChange(params);
-        result = result && this.appendGeometry(loop);
+        // result = true;
+        result = result && this.appendGeometry(frame);
       } else if (undefined !== entry.border) {
         const params = new GeometryParams(Id64.invalid);
         if (entry.border.color !== "subcategory") {
@@ -378,10 +382,19 @@ export class GeometryStreamBuilder {
         }
 
         const frame = FrameGeometry.computeFrame(entry.border.shape, entry.border.range, entry.border.transform);
-        const path = Path.createArray(frame);
-
         result = this.appendGeometryParamsChange(params);
-        result = result && this.appendGeometry(path);
+        result = result && this.appendGeometry(frame);
+
+
+        // TODO: remove
+        const p2 = params.clone()
+        p2.lineColor = ColorDef.black;
+        p2.weight = 1;
+        p2.fillColor = ColorDef.black;
+        p2.fillDisplay = FillDisplay.Always;
+        this.appendGeometryParamsChange(p2);
+        const points = FrameGeometry.debugIntervals(entry.border.shape, entry.border.range, entry.border.transform, 0.5, 0.25);
+        points?.forEach(point => this.appendGeometry(point));
       } else if (entry.separator) {
         result = this.appendGeometry(LineSegment3d.fromJSON(entry.separator));
       } else {
