@@ -100,7 +100,11 @@
     "webpack": "^5.76.0"
   },
   "dependencies": {
+<<<<<<< HEAD
     "@bentley/imodeljs-native": "4.11.29",
+=======
+    "@bentley/imodeljs-native": "5.0.89",
+>>>>>>> edd34c9d6c (Adjust test to improved native log messages (#7932))
     "@itwin/cloud-agnostic-core": "^2.2.4",
     "@itwin/core-telemetry": "workspace:*",
     "@itwin/object-storage-azure": "^2.3.0",
