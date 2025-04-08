@@ -23,8 +23,8 @@ describe("ECSchemaXmlContext", () => {
 
   it("setSchemaLocater, should call schema locater callback for missing schema references", () => {
     const slm = new SequentialLogMatcher();
-    slm.append().error().category("ECObjectsNative").message(/Unable to locate referenced schema/gm);
-    slm.append().error().category("ECObjectsNative").message(/Failed to read XML file/gm);
+    slm.append().error().category("ECObjectsNative").message(/Unable to locate referenced schema BisCore\.01\.00\.00 while deserializing TestDomain\.01\.00\.00/gm);
+    slm.append().error().category("ECObjectsNative").message(/Failed to read schema 'TestDomain\.01\.00\.00'/gm);
     const testDomainXmlPath = path.join(KnownTestLocations.assetsDir, "TestDomain.ecschema.xml");
     const expectedBisCoreKey = {
       name: "BisCore",
@@ -46,8 +46,8 @@ describe("ECSchemaXmlContext", () => {
 
   it("setFirstSchemaLocater, should call schema locater callback for missing schema references", () => {
     const slm = new SequentialLogMatcher();
-    slm.append().error().category("ECObjectsNative").message(/Unable to locate referenced schema/gm);
-    slm.append().error().category("ECObjectsNative").message(/Failed to read XML file/gm);
+    slm.append().error().category("ECObjectsNative").message(/Unable to locate referenced schema BisCore\.01\.00\.00 while deserializing TestDomain\.01\.00\.00/gm);
+    slm.append().error().category("ECObjectsNative").message(/Failed to read schema 'TestDomain\.01\.00\.00'/gm);
     const testDomainXmlPath = path.join(KnownTestLocations.assetsDir, "TestDomain.ecschema.xml");
     const expectedBisCoreKey = {
       name: "BisCore",
