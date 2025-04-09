@@ -89,19 +89,12 @@ export class BatchedTileTree extends TileTree {
       tile.drawGraphics(args);
 
     args.drawGraphics();
-    this.collectClassifierGraphics(args, tiles)
+    this._layerHandler.collectClassifierGraphics(args, tiles);
   }
 
   public override prune(): void {
     const olderThan = BeTimePoint.now().minus(this.expirationTime);
     this.rootTile.prune(olderThan);
-  }
-
-  protected collectClassifierGraphics(args: TileDrawArgs, selectedTiles: Tile[]): void {
-    const classifier = args.context.planarClassifiers.get(this.modelId);
-    if (classifier)
-      classifier.collectGraphics(args.context, { modelId: this.modelId, tiles: selectedTiles, location: args.location, isPointCloud: this.isPointCloud });
-    this._layerHandler.collectClassifierGraphics(args, selectedTiles);
   }
 
   public override get layerHandler(): LayerTileTreeHandler {

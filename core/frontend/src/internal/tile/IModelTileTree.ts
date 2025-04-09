@@ -430,7 +430,7 @@ export class IModelTileTree extends TileTree {
   public draw(args: TileDrawArgs): void {
     const tiles = this.selectTiles(args);
     this._rootTile.draw(args, tiles, this._numStaticTilesSelected);
-    this.collectClassifierGraphics(args, tiles);
+    this._layerHandler.collectClassifierGraphics(args, tiles);
   }
 
   public prune(): void {
@@ -455,14 +455,5 @@ export class IModelTileTree extends TileTree {
 
   public get containsTransformNodes(): boolean {
     return undefined !== this._transformNodeRanges;
-  }
-
-  /** @internal */
-  protected collectClassifierGraphics(args: TileDrawArgs, selectedTiles: Tile[]) {
-    const classifier = args.context.planarClassifiers.get(this.modelId);
-    if (classifier)
-      classifier.collectGraphics(args.context, { modelId: this.modelId, tiles: selectedTiles, location: args.location, isPointCloud: this.isPointCloud });
-
-    this._layerHandler.collectClassifierGraphics(args, selectedTiles);
   }
 }

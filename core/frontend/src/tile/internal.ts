@@ -112,4 +112,3 @@ export * from "../internal/tile/OPCFormatInterpreter";
 export * from "../internal/tile/FetchCloudStorage";
 export * from "../internal/tile/MeshoptCompression";
 export * from "../internal/render/webgl/MapLayerParams";
-export * from "../internal/tile/GraphicsCollector"
