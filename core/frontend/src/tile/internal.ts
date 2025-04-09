@@ -112,4 +112,4 @@ export * from "../internal/tile/OPCFormatInterpreter";
 export * from "../internal/tile/FetchCloudStorage";
 export * from "../internal/tile/MeshoptCompression";
 export * from "../internal/render/webgl/MapLayerParams";
-export type { MapLayerTreeSetting } from "./LayerTileTreeHandler";
+export * from "../internal/tile/GraphicsCollector"

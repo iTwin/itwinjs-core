@@ -131,7 +131,7 @@ export {
   TileGraphicType, TileTreeReference,
   type TileTreeSupplier,
   TileTreeLoadStatus, TileTree,
-  Tile, TileLoadStatus, TileVisibility, TileLoadPriority, TileBoundingBoxes, LayerTileTreeHandler, GraphicsCollectorDrawArgs, type MapLayerTreeSetting, LayerTileTreeReferenceHandler, compareMapLayer,
+  Tile, TileLoadStatus, TileVisibility, TileLoadPriority, TileBoundingBoxes,
   TileUsageMarker,
   TileUser,
   BingElevationProvider,

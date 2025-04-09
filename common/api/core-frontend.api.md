@@ -4329,7 +4329,7 @@ export interface GraphicPrimitive2d {
     zDepth: number;
 }
 
-// @public (undocumented)
+// @internal (undocumented)
 export class GraphicsCollectorDrawArgs extends TileDrawArgs {
     // (undocumented)
     static create(context: SceneContext, collector: GraphicsCollector, ref: TileTreeReference, planes: FrustumPlanes, worldToViewMap: Map4d): TileDrawArgs | undefined;
@@ -5352,7 +5352,7 @@ export class LayerTileTreeHandler {
     constructor(ref: LayerTileTree);
     addImageryLayer(tree: ImageryMapTileTree, settings: MapLayerSettings, index: number, baseImageryLayer: boolean): void;
     // (undocumented)
-    addModelLayer(layerTreeRef: ModelMapLayerTileTreeReference, context: SceneContext, tileTree: TileTree): void;
+    addModelLayer(layerTreeRef: ModelMapLayerTileTreeReference, context: SceneContext): void;
     // (undocumented)
     clearLayers(): void;
     // (undocumented)

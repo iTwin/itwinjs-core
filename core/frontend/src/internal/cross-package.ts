@@ -48,6 +48,7 @@ export {
  SpatialTileTreeReferences,
  type WGS84Extent,
  WmsUtilities,
+ LayerTileTreeHandler, GraphicsCollectorDrawArgs, type MapLayerTreeSetting, LayerTileTreeReferenceHandler, compareMapLayer,
 } from "../tile/internal";
 
 // Used by display-test-app which currently builds using both ESModules and CommonJS.
