@@ -24,14 +24,10 @@ import { SchemaItem } from "./SchemaItem";
 export class Constant extends SchemaItem {
   public override readonly schemaItemType = Constant.schemaItemType;
   public static override get schemaItemType() { return SchemaItemType.Constant; }
-  /** @internal */
-  protected _phenomenon?: LazyLoadedPhenomenon;
-  /** @internal */
-  protected _definition: string;
-  /** @internal */
-  protected _numerator?: number;
-  /** @internal */
-  protected _denominator?: number;
+  private _phenomenon?: LazyLoadedPhenomenon;
+  private _definition: string;
+  private _numerator?: number;
+  private _denominator?: number;
 
   constructor(schema: Schema, name: string) {
     super(schema, name);

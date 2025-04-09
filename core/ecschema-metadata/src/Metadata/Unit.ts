@@ -26,18 +26,12 @@ import { UnitSystem } from "./UnitSystem";
 export class Unit extends SchemaItem {
   public override readonly schemaItemType = Unit.schemaItemType;
   public static override get schemaItemType() { return SchemaItemType.Unit; }
-  /** @internal */
-  protected _phenomenon?: LazyLoadedPhenomenon;
-  /** @internal */
-  protected _unitSystem?: LazyLoadedUnitSystem;
-  /** @internal */
-  protected _definition: string;
-  /** @internal */
-  protected _numerator?: number;
-  /** @internal */
-  protected _denominator?: number;
-  /** @internal */
-  protected _offset?: number;
+  private _phenomenon?: LazyLoadedPhenomenon;
+  private _unitSystem?: LazyLoadedUnitSystem;
+  private _definition: string;
+  private _numerator?: number;
+  private _denominator?: number;
+  private _offset?: number;
 
   constructor(schema: Schema, name: string) {
     super(schema, name);

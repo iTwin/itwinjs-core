@@ -154,17 +154,17 @@ export class RelationshipClasses extends ECClasses {
 
   public async setConstraintMultiplicity(constraint: RelationshipConstraint, multiplicity: RelationshipMultiplicity): Promise<void> {
     const mutableConstraint = constraint as MutableRelationshipConstraint;
-    mutableConstraint.multiplicity = multiplicity;
+    mutableConstraint.setMultiplicity(multiplicity);
   }
 
   public async setConstraintPolymorphic(constraint: RelationshipConstraint, polymorphic: boolean): Promise<void> {
     const mutableConstraint = constraint as MutableRelationshipConstraint;
-    mutableConstraint.polymorphic = polymorphic;
+    mutableConstraint.setPolymorphic(polymorphic);
   }
 
   public async setConstraintRelationshipEnd(constraint: RelationshipConstraint, relationshipEnd: RelationshipEnd): Promise<void> {
     const mutableConstraint = constraint as MutableRelationshipConstraint;
-    mutableConstraint.relationshipEnd = relationshipEnd;
+    mutableConstraint.setRelationshipEnd(relationshipEnd);
   }
 
   public async setAbstractConstraint(constraint: RelationshipConstraint, abstractConstraint?: EntityClass | Mixin | RelationshipClass): Promise<void> {
@@ -172,22 +172,22 @@ export class RelationshipClasses extends ECClasses {
     const mutableConstraint = constraint as MutableRelationshipConstraint;
 
     if (undefined === abstractConstraint) {
-      mutableConstraint.abstractConstraint = undefined;
+      mutableConstraint.setAbstractConstraint(undefined);
     } else {
-      mutableConstraint.abstractConstraint = new DelayedPromiseWithProps(abstractConstraint.key, async () => abstractConstraint);
+      mutableConstraint.setAbstractConstraint(new DelayedPromiseWithProps(abstractConstraint.key, async () => abstractConstraint));
     }
 
     try {
       await this.validate(constraint.relationshipClass);
     } catch(e: any){
-      mutableConstraint.abstractConstraint = existing;
+      mutableConstraint.setAbstractConstraint(existing);
       throw new SchemaEditingError(ECEditingStatus.SetAbstractConstraint, new RelationshipConstraintId(constraint), e);
     }
 
     try {
       await this.validate(constraint);
     } catch(e: any){
-      mutableConstraint.abstractConstraint = existing;
+      mutableConstraint.setAbstractConstraint(existing);
       throw new SchemaEditingError(ECEditingStatus.SetAbstractConstraint, new RelationshipConstraintId(constraint), e);
     }
   }

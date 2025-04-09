@@ -30,12 +30,9 @@ export abstract class SchemaItem {
    */
   public abstract get schemaItemType(): SchemaItemType;
   public readonly schema: Schema;
-  /** @internal */
-  protected _key: SchemaItemKey;
-  /** @internal */
-  protected _description?: string;
-  /** @internal */
-  protected _label?: string;
+  private _key: SchemaItemKey;
+  private _description?: string;
+  private _label?: string;
 
   constructor(schema: Schema, name: string) {
     this._key = new SchemaItemKey(name, schema.schemaKey);

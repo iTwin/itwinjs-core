@@ -175,20 +175,13 @@ export class RelationshipClass extends ECClass {
  * @public @preview
  */
 export class RelationshipConstraint implements CustomAttributeContainerProps {
-  /** @internal */
-  protected _abstractConstraint?: LazyLoadedRelationshipConstraintClass;
-  /** @internal */
-  protected _relationshipClass: RelationshipClass;
-  /** @internal */
-  protected _relationshipEnd: RelationshipEnd;
-  /** @internal */
-  protected _multiplicity?: RelationshipMultiplicity;
-  /** @internal */
-  protected _polymorphic?: boolean;
-  /** @internal */
-  protected _roleLabel?: string;
-  /** @internal */
-  protected _constraintClasses?: LazyLoadedRelationshipConstraintClass[];
+  private _abstractConstraint?: LazyLoadedRelationshipConstraintClass;
+  private _relationshipClass: RelationshipClass;
+  private _relationshipEnd: RelationshipEnd;
+  private _multiplicity?: RelationshipMultiplicity;
+  private _polymorphic?: boolean;
+  private _roleLabel?: string;
+  private _constraintClasses?: LazyLoadedRelationshipConstraintClass[];
   private _customAttributes?: Map<string, CustomAttribute>;
 
   constructor(relClass: RelationshipClass, relEnd: RelationshipEnd, roleLabel?: string, polymorphic?: boolean) {
@@ -204,32 +197,16 @@ export class RelationshipConstraint implements CustomAttributeContainerProps {
   }
 
   public get multiplicity() { return this._multiplicity ?? RelationshipMultiplicity.zeroOne; }
-  /** @internal */
-  protected set multiplicity(multiplicity: RelationshipMultiplicity) {
-    this._multiplicity = multiplicity;
-  }
 
   public get polymorphic() { return this._polymorphic ?? false; }
-  /** @internal */
-  protected set polymorphic(polymorphic: boolean) {
-    this._polymorphic = polymorphic;
-  }
 
   public get roleLabel() { return this._roleLabel; }
-  /** @internal */
-  protected set roleLabel(roleLabel: string | undefined) {
-    this._roleLabel = roleLabel;
-  }
 
   public get constraintClasses(): LazyLoadedRelationshipConstraintClass[] | undefined { return this._constraintClasses; }
 
   public get relationshipClass() { return this._relationshipClass; }
 
   public get relationshipEnd() { return this._relationshipEnd; }
-  /** @internal */
-  protected set relationshipEnd(relationshipEnd: RelationshipEnd) {
-    this._relationshipEnd = relationshipEnd;
-  }
 
   public get customAttributes(): CustomAttributeSet | undefined { return this._customAttributes; }
 
@@ -247,10 +224,6 @@ export class RelationshipConstraint implements CustomAttributeContainerProps {
       return this.constraintClasses[0];
 
     return this._abstractConstraint;
-  }
-
-  public set abstractConstraint(abstractConstraint: LazyLoadedRelationshipConstraintClass | undefined) {
-    this._abstractConstraint = abstractConstraint;
   }
 
   /**
@@ -277,7 +250,7 @@ export class RelationshipConstraint implements CustomAttributeContainerProps {
   /**
    * Removes the provided class as a constraint class from this constraint.
    * @param constraint The class to add as a constraint class.
-   * 
+   *
    * @internal
    */
   protected removeClass(constraint: EntityClass | Mixin | RelationshipClass): void {
@@ -366,7 +339,7 @@ export class RelationshipConstraint implements CustomAttributeContainerProps {
       const abstractConstraintSchemaItemKey = relClassSchema.getSchemaItemKey(relationshipConstraintProps.abstractConstraint);
       if (!abstractConstraintSchemaItemKey)
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate the abstractConstraint ${relationshipConstraintProps.abstractConstraint}.`);
-      this.abstractConstraint = new DelayedPromiseWithProps<SchemaItemKey, AnyConstraintClass>(abstractConstraintSchemaItemKey,
+      this.setAbstractConstraint(new DelayedPromiseWithProps<SchemaItemKey, AnyConstraintClass>(abstractConstraintSchemaItemKey,
         async () => {
           const tempAbstractConstraint = await relClassSchema.lookupItem(relationshipConstraintProps.abstractConstraint!);
           if (undefined === tempAbstractConstraint ||
@@ -374,7 +347,7 @@ export class RelationshipConstraint implements CustomAttributeContainerProps {
             throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate the abstractConstraint ${relationshipConstraintProps.abstractConstraint}.`);
 
           return tempAbstractConstraint;
-        });
+        }));
     }
 
     const loadEachConstraint = (constraintClassName: any) => {
@@ -470,6 +443,30 @@ export class RelationshipConstraint implements CustomAttributeContainerProps {
     this._customAttributes.set(customAttribute.className, customAttribute);
   }
 
+  /** @internal */
+  protected setRoleLabel(roleLabel: string | undefined) {
+    this._roleLabel = roleLabel;
+  }
+
+  /** @internal */
+  protected setRelationshipEnd(relationshipEnd: RelationshipEnd) {
+    this._relationshipEnd = relationshipEnd;
+  }
+
+  /** @internal */
+  protected setPolymorphic(polymorphic: boolean) {
+    this._polymorphic = polymorphic;
+  }
+
+  /** @internal */
+  protected setMultiplicity(multiplicity: RelationshipMultiplicity) {
+    this._multiplicity = multiplicity;
+  }
+
+  /** @internal */
+  protected setAbstractConstraint(abstractConstraint: LazyLoadedRelationshipConstraintClass | undefined) {
+    this._abstractConstraint = abstractConstraint;
+  }
 }
 
 /**
@@ -478,7 +475,11 @@ export class RelationshipConstraint implements CustomAttributeContainerProps {
  */
 export abstract class MutableRelationshipConstraint extends RelationshipConstraint {
   public abstract override addCustomAttribute(customAttribute: CustomAttribute): void;
-
+  public abstract override setRoleLabel(roleLabel: string | undefined): void;
+  public abstract override setRelationshipEnd(relationshipEnd: RelationshipEnd): void;
+  public abstract override setPolymorphic(polymorphic: boolean): void;
+  public abstract override setMultiplicity(multiplicity: RelationshipMultiplicity): void;
+  public abstract override setAbstractConstraint(abstractConstraint: LazyLoadedRelationshipConstraintClass | undefined): void;
 }
 
 const INT32_MAX = 2147483647;

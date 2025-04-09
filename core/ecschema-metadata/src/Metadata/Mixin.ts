@@ -27,8 +27,7 @@ import { SchemaItem } from "./SchemaItem";
 export class Mixin extends ECClass {
   public override readonly schemaItemType = Mixin.schemaItemType;
   public static override get schemaItemType() { return SchemaItemType.Mixin; }
-  /** @internal */
-  protected _appliesTo?: LazyLoadedEntityClass;
+  private _appliesTo?: LazyLoadedEntityClass;
 
   public get appliesTo(): LazyLoadedEntityClass | undefined {
     return this._appliesTo;
@@ -50,12 +49,12 @@ export class Mixin extends ECClass {
   }
 
   /**
-   * 
-   * @param name 
-   * @param relationship 
-   * @param direction 
-   * @returns 
-   * 
+   *
+   * @param name
+   * @param relationship
+   * @param direction
+   * @returns
+   *
    * @internal
    */
   protected createNavigationPropertySync(name: string, relationship: string | RelationshipClass, direction: string | StrengthDirection): NavigationProperty {
@@ -68,6 +67,7 @@ export class Mixin extends ECClass {
   protected setAppliesTo(appliesTo: LazyLoadedEntityClass) {
     this._appliesTo = appliesTo;
   }
+
   /**
    * Save this Mixin's properties to an object for serializing to JSON.
    * @param standalone Serialization includes only this object (as opposed to the full schema).

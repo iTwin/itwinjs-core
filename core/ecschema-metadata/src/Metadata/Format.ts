@@ -25,10 +25,8 @@ import { Unit } from "./Unit";
 export class Format extends SchemaItem {
   public override readonly schemaItemType = Format.schemaItemType;
   public static override get schemaItemType() { return SchemaItemType.Format; }
-  /** @internal */
-  protected _base: BaseFormat;
-  /** @internal */
-  protected _units?: Array<[Unit | InvertedUnit, string | undefined]>;
+  private _base: BaseFormat;
+  private _units?: Array<[Unit | InvertedUnit, string | undefined]>;
 
   constructor(schema: Schema, name: string) {
     super(schema, name);
@@ -79,8 +77,8 @@ export class Format extends SchemaItem {
   }
 
   /**
-   * 
-   * @param precision 
+   *
+   * @param precision
    * @internal
    */
   protected setPrecision(precision: number) { this._base.precision = precision; }

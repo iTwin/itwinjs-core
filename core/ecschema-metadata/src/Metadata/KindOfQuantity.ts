@@ -24,12 +24,9 @@ import { Unit } from "./Unit";
 export class KindOfQuantity extends SchemaItem {
   public override readonly schemaItemType = KindOfQuantity.schemaItemType;
   public static override get schemaItemType() { return SchemaItemType.KindOfQuantity; }
-  /** @internal */
-  protected _relativeError: number = 1.0;
-  /** @internal */
-  protected _presentationFormats: Array<Format | OverrideFormat> = new Array<Format | OverrideFormat>();
-  /** @internal */
-  protected _persistenceUnit?: LazyLoadedUnit | LazyLoadedInvertedUnit;
+  private _relativeError: number = 1.0;
+  private _presentationFormats: Array<Format | OverrideFormat> = new Array<Format | OverrideFormat>();
+  private _persistenceUnit?: LazyLoadedUnit | LazyLoadedInvertedUnit;
 
   /** The first presentation format in the list of Formats. */
   public get defaultPresentationFormat(): Format | OverrideFormat | undefined { return this.presentationFormats[0]; }
@@ -39,8 +36,6 @@ export class KindOfQuantity extends SchemaItem {
 
   /** Persistence unit */
   public get persistenceUnit(): LazyLoadedUnit | LazyLoadedInvertedUnit | undefined { return this._persistenceUnit; }
-  /** @internal */
-  protected set persistenceUnit(value: LazyLoadedUnit | LazyLoadedInvertedUnit | undefined) { this._persistenceUnit = value; }
 
   public get relativeError() { return this._relativeError; }
 
@@ -228,6 +223,14 @@ export class KindOfQuantity extends SchemaItem {
   }
 
   /**
+   * Used for schema editing.
+   * @internal
+   */
+  protected setPersistenceUnit(value: LazyLoadedUnit | LazyLoadedInvertedUnit | undefined): void {
+    this._persistenceUnit = value;
+  }
+
+  /**
    * Type guard to check if the SchemaItem is of type KindOfQuantity.
    * @param item The SchemaItem to check.
    * @returns True if the item is a KindOfQuantity, false otherwise.
@@ -254,4 +257,6 @@ export abstract class MutableKindOfQuantity extends KindOfQuantity {
   public abstract override addPresentationFormat(format: Format | OverrideFormat, isDefault: boolean): void;
   public abstract override createFormatOverride(parent: Format, precision?: number, unitLabelOverrides?: Array<[Unit | InvertedUnit, string | undefined]>): OverrideFormat;
   public abstract override setDisplayLabel(displayLabel: string): void;
+  public abstract override setPersistenceUnit(value: LazyLoadedUnit | LazyLoadedInvertedUnit | undefined): void;
+  public abstract override setRelativeError(relativeError: number): void;
 }

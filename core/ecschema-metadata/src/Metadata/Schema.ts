@@ -40,19 +40,16 @@ import { ECSchemaNamespaceUris } from "../Constants";
 export class Schema implements CustomAttributeContainerProps {
   private static _currentECSpecVersion = "3.2";
   private _context: SchemaContext;
-  /** @internal */
-  protected _schemaKey?: SchemaKey;
-  /** @internal */
-  protected _alias?: string;
-  /** @internal */
-  protected _label?: string;
-  /** @internal */
-  protected _description?: string;
+  private _schemaKey?: SchemaKey;
+  private _alias?: string;
+  private _label?: string;
+  private _description?: string;
   public readonly references: Schema[];
   private readonly _items: Map<string, SchemaItem>;
   private _customAttributes?: Map<string, CustomAttribute>;
   private _originalECSpecMajorVersion?: number;
   private _originalECSpecMinorVersion?: number;
+
   /**
    * Constructs an empty Schema with the given name and version in the provided context.
    * @param context The SchemaContext that will control the lifetime of the schema
@@ -320,7 +317,7 @@ export class Schema implements CustomAttributeContainerProps {
    * Creates an Enumeration with the provided name in this schema.
    * @param name
    * @param primitiveType
-   * 
+   *
    * @internal
    */
   protected async createEnumeration(name: string, primitiveType?: PrimitiveType.Integer | PrimitiveType.String): Promise<Enumeration> {

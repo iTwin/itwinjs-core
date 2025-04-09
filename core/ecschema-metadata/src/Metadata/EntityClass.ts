@@ -26,8 +26,7 @@ import { SchemaItem } from "./SchemaItem";
 export class EntityClass extends ECClass implements HasMixins {
   public override readonly schemaItemType = EntityClass.schemaItemType;
   public static override get schemaItemType() { return SchemaItemType.EntityClass; }
-  /** @internal */
-  protected _mixins?: LazyLoadedMixin[];
+  private _mixins?: LazyLoadedMixin[];
 
   public get mixins(): LazyLoadedMixin[] {
     if (!this._mixins)
@@ -50,8 +49,8 @@ export class EntityClass extends ECClass implements HasMixins {
   /**
    *
    * @param mixin
-    * @internal
-  */
+   * @internal
+   */
   protected addMixin(mixin: Mixin) {
     if (!this._mixins)
       this._mixins = [];
@@ -105,9 +104,9 @@ export class EntityClass extends ECClass implements HasMixins {
   }
 
   /**
-   * 
-   * @param result 
-   * @param existingValues 
+   *
+   * @param result
+   * @param existingValues
    * @internal
    */
   protected override async buildPropertyCache(result: Property[], existingValues?: Map<string, number>): Promise<void> {
@@ -130,9 +129,9 @@ export class EntityClass extends ECClass implements HasMixins {
   }
 
   /**
-   * 
-   * @param result 
-   * @param existingValues 
+   *
+   * @param result
+   * @param existingValues
    * @internal
    */
   protected override buildPropertyCacheSync(result: Property[], existingValues?: Map<string, number>): void {

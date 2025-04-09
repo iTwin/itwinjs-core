@@ -31,26 +31,18 @@ import { Schema } from "./Schema";
  * @public @preview
  */
 export abstract class Property implements CustomAttributeContainerProps {
-  /** @internal */
-  protected _name: ECName;
-  /** @internal */
-  protected _type: PropertyType;
+  private _name: ECName;
+  private _class: AnyClass; // TODO: class seems to be unused?
+  private _description?: string;
+  private _label?: string;
+  private _isReadOnly?: boolean;
+  private _priority?: number;
+  private _category?: LazyLoadedPropertyCategory;
+  private _kindOfQuantity?: LazyLoadedKindOfQuantity;
+  private _customAttributes?: Map<string, CustomAttribute>;
 
   /** @internal */
-  protected _class: AnyClass; // TODO: class seems to be unused?
-  /** @internal */
-  protected _description?: string;
-  /** @internal */
-  protected _label?: string;
-  /** @internal */
-  protected _isReadOnly?: boolean;
-  /** @internal */
-  protected _priority?: number;
-  /** @internal */
-  protected _category?: LazyLoadedPropertyCategory;
-  /** @internal */
-  protected _kindOfQuantity?: LazyLoadedKindOfQuantity;
-  private _customAttributes?: Map<string, CustomAttribute>;
+  protected _type: PropertyType;
 
   constructor(ecClass: ECClass, name: string, type: PropertyType) {
     this._class = ecClass as AnyClass;
@@ -473,7 +465,7 @@ export abstract class PrimitiveOrEnumPropertyBase extends Property {
 
 /** @public @preview */
 export class PrimitiveProperty extends PrimitiveOrEnumPropertyBase {
-  public get primitiveType(): PrimitiveType { return PropertyTypeUtils.getPrimitiveType(this._type); }
+  public get primitiveType(): PrimitiveType { return PropertyTypeUtils.getPrimitiveType(this.propertyType); }
 
   constructor(ecClass: ECClass, name: string, primitiveType: PrimitiveType = PrimitiveType.Integer) {
     super(ecClass, name, PropertyTypeUtils.fromPrimitiveType(primitiveType));
@@ -697,7 +689,7 @@ const ArrayPropertyMixin = <T extends Constructor<Property>>(Base: T) => {
 
     constructor(...args: any[]) {
       super(...args);
-      this._type = PropertyTypeUtils.asArray(this._type);
+      this._type = PropertyTypeUtils.asArray(this.propertyType);
     }
 
     public override fromJSONSync(arrayPropertyProps: PrimitiveArrayPropertyProps) {

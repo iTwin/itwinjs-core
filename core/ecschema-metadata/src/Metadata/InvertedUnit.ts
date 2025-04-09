@@ -24,10 +24,8 @@ import { UnitSystem } from "./UnitSystem";
 export class InvertedUnit extends SchemaItem {
   public override readonly schemaItemType = InvertedUnit.schemaItemType;
   public static override get schemaItemType() { return SchemaItemType.InvertedUnit; }
-  /** @internal */
-  protected _invertsUnit?: LazyLoadedUnit; // required
-  /** @internal */
-  protected _unitSystem?: LazyLoadedUnitSystem; // required
+  private _invertsUnit?: LazyLoadedUnit; // required
+  private _unitSystem?: LazyLoadedUnitSystem; // required
 
   public get invertsUnit(): LazyLoadedUnit | undefined { return this._invertsUnit; }
   public get unitSystem(): LazyLoadedUnitSystem | undefined { return this._unitSystem; }

@@ -32,12 +32,9 @@ export type AnyEnumerator = Enumerator<string | number>;
 export class Enumeration extends SchemaItem {
   public override readonly schemaItemType = Enumeration.schemaItemType;
   public static override get schemaItemType() { return SchemaItemType.Enumeration; }
-  /** @internal */
-  protected _type?: PrimitiveType.Integer | PrimitiveType.String;
-  /** @internal */
-  protected _isStrict: boolean;
-  /** @internal */
-  protected _enumerators: AnyEnumerator[];
+  private _type?: PrimitiveType.Integer | PrimitiveType.String;
+  private _isStrict: boolean;
+  private _enumerators: AnyEnumerator[];
 
   public get enumerators() { return this._enumerators; }
   public get type() { return this._type; }
@@ -219,7 +216,7 @@ export class Enumeration extends SchemaItem {
 
 /**
  * An abstract class used for schema editing.
- * 
+ *
  * @internal
  */
 export abstract class MutableEnumeration extends Enumeration {
