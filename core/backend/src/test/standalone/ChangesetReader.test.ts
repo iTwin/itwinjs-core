@@ -9,7 +9,7 @@ import { assert, expect } from "chai";
 import * as path from "node:path";
 import { DrawingCategory } from "../../Category";
 import { ChangesetECAdaptor as ECChangesetAdaptor, PartialECChangeUnifier } from "../../ChangesetECAdaptor";
-import { HubMock } from "../../HubMock";
+import { HubMock } from "../../internal/HubMock";
 import { BriefcaseDb, SnapshotDb } from "../../IModelDb";
 import { SqliteChangeOp, SqliteChangesetReader } from "../../SqliteChangesetReader";
 import { HubWrappers, IModelTestUtils } from "../IModelTestUtils";
@@ -171,6 +171,7 @@ describe("Changeset Reader API", async () => {
   });
 
   function getClassIdByName(iModel: BriefcaseDb, className: string): Id64String {
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     return iModel.withPreparedStatement(`SELECT ECInstanceId from meta.ECClassDef where Name=?`, (stmt) => {
       stmt.bindString(1, className);
       assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);

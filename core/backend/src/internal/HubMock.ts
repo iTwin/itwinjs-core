@@ -6,23 +6,38 @@
 import { join } from "path";
 import { Guid, GuidString } from "@itwin/core-bentley";
 import {
-  ChangesetFileProps, ChangesetIndex, ChangesetIndexAndId, ChangesetProps, ChangesetRange, IModelVersion, LocalDirName,
+  ChangesetFileProps, ChangesetIndex, ChangesetIndexOrId, ChangesetProps, ChangesetRange, IModelVersion, LocalDirName,
 } from "@itwin/core-common";
 import {
   AcquireNewBriefcaseIdArg,
   BackendHubAccess, BriefcaseDbArg, BriefcaseIdArg, ChangesetArg, CreateNewIModelProps, DownloadChangesetArg, DownloadChangesetRangeArg, IModelIdArg, IModelNameArg,
   LockMap, LockProps, V2CheckpointAccessProps,
-} from "./BackendHubAccess";
-import { CheckpointProps, DownloadRequest, ProgressFunction, ProgressStatus } from "./CheckpointManager";
-import { IModelHost } from "./IModelHost";
-import { IModelJsFs } from "./IModelJsFs";
-import { LocalHub } from "./LocalHub";
-import { TokenArg } from "./IModelDb";
-import { _getHubAccess, _setHubAccess } from "./internal/Symbols";
+} from "../BackendHubAccess";
+import { CheckpointProps, DownloadRequest, ProgressFunction, ProgressStatus, V2CheckpointManager } from "../CheckpointManager";
+import { IModelHost } from "../IModelHost";
+import { IModelJsFs } from "../IModelJsFs";
+import { LocalHub } from "../LocalHub";
+import { TokenArg } from "../IModelDb";
+import { _getHubAccess, _mockCheckpointAttach, _mockCheckpointDownload, _setHubAccess } from "./Symbols";
+import { BriefcaseManager } from "../BriefcaseManager";
+import * as path from "path";
 
 function wasStarted(val: string | undefined): asserts val is string {
   if (undefined === val)
     throw new Error("Call HubMock.startup first");
+}
+
+function doDownload(args: { iModelId: string, changeset: ChangesetIndexOrId, targetFile: string }) {
+  HubMock.findLocalHub(args.iModelId).downloadCheckpoint(args);
+}
+function mockAttachCheckpoint(checkpoint: CheckpointProps) {
+  const targetFile = path.join(BriefcaseManager.getBriefcaseBasePath(checkpoint.iModelId), `${checkpoint.changeset.index}.bim`);
+  doDownload({ ...checkpoint, targetFile })
+  return targetFile;
+}
+
+function mockDownload(request: DownloadRequest) {
+  doDownload({ ...request.checkpoint, targetFile: request.localFile });
 }
 
 /**
@@ -87,6 +102,9 @@ export class HubMock {
 
     IModelHost[_setHubAccess](this);
     HubMock._iTwinId = Guid.createValue(); // all iModels for this test get the same "iTwinId"
+
+    V2CheckpointManager[_mockCheckpointAttach] = mockAttachCheckpoint;
+    V2CheckpointManager[_mockCheckpointDownload] = mockDownload;
   }
 
   /** Stop a HubMock that was previously started with [[startup]]
@@ -95,6 +113,9 @@ export class HubMock {
   public static shutdown() {
     if (this.mockRoot === undefined)
       return;
+
+    V2CheckpointManager[_mockCheckpointAttach] = undefined;
+    V2CheckpointManager[_mockCheckpointDownload] = undefined;
 
     HubMock._iTwinId = undefined;
     for (const hub of this.hubs)
@@ -214,13 +235,16 @@ export class HubMock {
     return this.findLocalHub(arg.iModelId).addChangeset(arg.changesetProps);
   }
 
-  public static async queryV2Checkpoint(_arg: CheckpointProps): Promise<V2CheckpointAccessProps | undefined> {
-    return undefined;
-  }
-
-
-  public static async downloadV1Checkpoint(arg: DownloadRequest): Promise<ChangesetIndexAndId> {
-    return this.findLocalHub(arg.checkpoint.iModelId).downloadCheckpoint({ changeset: arg.checkpoint.changeset, targetFile: arg.localFile });
+  public static async queryV2Checkpoint(arg: CheckpointProps): Promise<V2CheckpointAccessProps | undefined> {
+    return {
+      accountName: "none",
+      sasToken: "none",
+      containerId: Guid.createValue(),
+      dbName: `${arg.changeset.index ?? 0}.bim`,
+      storageType: "mock",
+      isMock: true,
+      checkpoint: arg,
+    } as V2CheckpointAccessProps;
   }
 
   public static async releaseAllLocks(arg: BriefcaseDbArg) {
@@ -255,7 +279,7 @@ export class HubMock {
 
       const mockProgress = (index: number) => {
         const bytesDownloaded = Math.floor(totalSize * (index / 4));
-        if (!rejected && progressCallback(bytesDownloaded, totalSize) === ProgressStatus.Abort){
+        if (!rejected && progressCallback(bytesDownloaded, totalSize) === ProgressStatus.Abort) {
           rejected = true;
           reject(new Error("AbortError"));
         }

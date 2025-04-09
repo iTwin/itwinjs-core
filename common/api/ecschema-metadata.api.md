@@ -325,8 +325,8 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
     getInheritedPropertySync(name: string): Property | undefined;
     getProperties(excludeInherited?: boolean): Promise<Iterable<Property>>;
     getPropertiesSync(excludeInherited?: boolean): Iterable<Property>;
-    getProperty(name: string, includeInherited?: boolean): Promise<Property | undefined>;
-    getPropertySync(name: string, includeInherited?: boolean): Property | undefined;
+    getProperty(name: string, excludeInherited?: boolean): Promise<Property | undefined>;
+    getPropertySync(name: string, excludeInherited?: boolean): Property | undefined;
     get hasLocalProperties(): boolean;
     is(targetClass: string, schemaName: string): Promise<boolean>;
     // (undocumented)
