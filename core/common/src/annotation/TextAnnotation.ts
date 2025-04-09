@@ -51,6 +51,13 @@ export interface TextFrameStyleProps {
   borderWeight?: number;
 }
 
+export type LeaderAttachmentPoint = "LeftTop" | "LeftMiddle" | "LeftBottom" | "RightTop" | "RightMiddle" | "RightBottom" | "CenterTop" | "CenterMiddle" | "CenterBottom" | "Nearest";
+export interface TextAnnotationLeaderProps {
+  startPoint: Point3d;
+  attachmentPoint: LeaderAttachmentPoint;
+  intermediatePoints?: Point3d[];
+}
+
 /**
  * JSON representation of a [[TextAnnotation]].
  * @beta
@@ -65,7 +72,9 @@ export interface TextAnnotationProps {
   /** See [[TextAnnotation.anchor]]. Default: top-left. */
   anchor?: TextAnnotationAnchor;
   /** TODO */
-  frame?: TextFrameStyleProps
+  frame?: TextFrameStyleProps;
+  /** TODO */
+  leader?: TextAnnotationLeaderProps;
 }
 
 /** Arguments supplied to [[TextAnnotation.create]].
@@ -81,7 +90,9 @@ export interface TextAnnotationCreateArgs {
   /** See [[TextAnnotation.anchor]]. Default: top-left. */
   anchor?: TextAnnotationAnchor;
   /** TODO */
-  frame?: TextFrameStyleProps
+  frame?: TextFrameStyleProps;
+  /** TODO */
+  leader?: TextAnnotationLeaderProps;
 }
 
 /**
@@ -111,12 +122,15 @@ export class TextAnnotation {
   /** The frame type of the text annotation. */
   public frame?: TextFrameStyleProps;
 
-  private constructor(offset: Point3d, angles: YawPitchRollAngles, textBlock: TextBlock, anchor: TextAnnotationAnchor, frame?: TextFrameStyleProps) {
+  public leader?: TextAnnotationLeaderProps;
+
+  private constructor(offset: Point3d, angles: YawPitchRollAngles, textBlock: TextBlock, anchor: TextAnnotationAnchor, frame?: TextFrameStyleProps, leader?: TextAnnotationLeaderProps) {
     this.offset = offset;
     this.orientation = angles;
     this.textBlock = textBlock;
     this.anchor = anchor;
-    this.frame = frame
+    this.frame = frame;
+    this.leader = leader;
   }
 
   /** Creates a new TextAnnotation. */
@@ -126,7 +140,7 @@ export class TextAnnotation {
     const textBlock = args?.textBlock ?? TextBlock.createEmpty();
     const anchor = args?.anchor ?? { vertical: "top", horizontal: "left" };
 
-    return new TextAnnotation(offset, angles, textBlock, anchor, args?.frame);
+    return new TextAnnotation(offset, angles, textBlock, anchor, args?.frame, args?.leader);
   }
 
   /**
@@ -139,6 +153,7 @@ export class TextAnnotation {
       textBlock: props?.textBlock ? TextBlock.create(props.textBlock) : undefined,
       anchor: props?.anchor ? { ...props.anchor } : undefined,
       frame: props?.frame,
+      leader: props?.leader,
     });
   }
 
@@ -165,6 +180,7 @@ export class TextAnnotation {
     }
 
     props.frame = this.frame;
+    props.leader = this.leader;
 
     return props;
   }

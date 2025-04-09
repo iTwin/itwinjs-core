@@ -6,11 +6,14 @@
  * @module ElementGeometry
  */
 
-import { ColorDef, TextAnnotation, TextBlockGeometryProps, TextBlockGeometryPropsEntry, TextFrameStyleProps, TextString, TextStyleColor, TextStyleSettings } from "@itwin/core-common";
+import { ColorDef, TextAnnotation, TextAnnotationLeaderProps, TextBlockGeometryProps, TextBlockGeometryPropsEntry, TextFrameStyleProps, TextString, TextStyleColor, TextStyleSettings } from "@itwin/core-common";
 import { ComputeRangesForTextLayout, FindFontId, FindTextStyle, layoutTextBlock, RunLayout, TextBlockLayout } from "./TextAnnotationLayout";
 import { LineSegment3d, Point3d, Range2d, Transform, Vector2d, Vector3d, XYZProps } from "@itwin/core-geometry";
 import { assert } from "@itwin/core-bentley";
 import { IModelDb } from "./IModelDb";
+// eslint-disable-next-line @itwin/import-within-package
+import { FrameGeometry } from "../../common/src/geometry/TextFrameGeometry";
+
 
 interface GeometryContext {
   curColor?: TextStyleColor;
@@ -126,6 +129,8 @@ function processFractionRun(run: RunLayout, transform: Transform, context: Geome
 }
 
 function processLeaders(startPoint: Point3d, endPoint: Point3d, context: GeometryContext, intermediatePoints?: Point3d[]) {
+
+  // const frame = FrameGeometry.computeFrame(entry.border.shape, entry.border.range, entry.border.transform)
   let firstLeaderSegmentEndpoint;
   if (intermediatePoints) {
     firstLeaderSegmentEndpoint = intermediatePoints[0]
@@ -237,11 +242,21 @@ function produceTextBlockGeometry(layout: TextBlockLayout, documentTransform: Tr
 
     setColor(textColor, context);
 
-    const leaderStartPoint = debugAnchorPt.plusScaled(Vector3d.unitX(), 4)
-    processLeaders(leaderStartPoint, debugAnchorPt, context)
+    // const leaderStartPoint = debugAnchorPt.plusScaled(Vector3d.unitX(), 10)
+    // processLeaders(leaderStartPoint, debugAnchorPt, context)
   }
 
   return { entries: context.entries };
+}
+
+function produceLeaderGeometry(layout: TextBlockLayout, documentTransform: Transform, frameProps?: TextFrameStyleProps, leaderProps?: TextAnnotationLeaderProps): TextBlockGeometryProps {
+  const context: GeometryContext = { entries: [] };
+  if (frameProps?.frame === undefined || leaderProps === undefined) return { entries: [] };
+  const leaderStartPoint = FrameGeometry.computeLeaderStartPoint(leaderProps.attachmentPoint, frameProps.frame, layout.range.toJSON(), documentTransform.toJSON(), leaderProps.startPoint)
+  processLeaders(leaderProps.startPoint, leaderStartPoint, context);
+
+  return { entries: context.entries };
+
 }
 
 function produceFrameGeometry(layout: TextBlockLayout, documentTransform: Transform, frameProps?: TextFrameStyleProps): TextBlockGeometryProps {
@@ -313,6 +328,7 @@ export function produceTextAnnotationGeometry(args: ProduceTextAnnotationGeometr
 
   const textBlockGeometry = produceTextBlockGeometry(layout, transform, anchorPoint, textStyle);
   const frameGeometry = produceFrameGeometry(layout, transform, args.annotation.frame);
-  const entries = [...textBlockGeometry.entries, ...frameGeometry.entries];
+  const leaderGeometry = produceLeaderGeometry(layout, transform, args.annotation.frame, args.annotation.leader);
+  const entries = [...textBlockGeometry.entries, ...frameGeometry.entries, ...leaderGeometry.entries];
   return { entries };
 }

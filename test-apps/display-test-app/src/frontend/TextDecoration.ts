@@ -3,11 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { BaselineShift, ColorDef, FractionRun, GeometryStreamBuilder, IModelTileRpcInterface, LineBreakRun, TextAnnotation, TextAnnotationAnchor, TextAnnotationFrame, TextBlock, TextBlockJustification, TextBlockMargins, TextFrameStyleProps, TextRun, TextStyleSettingsProps } from "@itwin/core-common";
+import { BaselineShift, ColorDef, FractionRun, GeometryStreamBuilder, IModelTileRpcInterface, LineBreakRun, TextAnnotation, TextAnnotationAnchor, TextAnnotationFrame, TextAnnotationLeaderProps, TextBlock, TextBlockJustification, TextBlockMargins, TextFrameStyleProps, TextRun, TextStyleSettingsProps } from "@itwin/core-common";
 import { DecorateContext, Decorator, GraphicType, IModelApp, IModelConnection, readElementGraphics, RenderGraphicOwner, Tool } from "@itwin/core-frontend";
 import { DtaRpcInterface } from "../common/DtaRpcInterface";
 import { Guid, Id64, Id64String } from "@itwin/core-bentley";
-import { Point3d, YawPitchRollAngles } from "@itwin/core-geometry";
+import { Point3d, Vector3d, YawPitchRollAngles } from "@itwin/core-geometry";
 
 // Ignoring the spelling of the keyins. They're case insensitive, so we check against lowercase.
 // cspell:ignore superscript, subscript, widthfactor, fractionscale, fractiontype
@@ -25,6 +25,7 @@ class TextEditor implements Decorator {
   public offset = { x: 0, y: 0 };
   public anchor: TextAnnotationAnchor = { horizontal: "left", vertical: "top" };
   public frame: TextFrameStyleProps = {};
+  public leader: TextAnnotationLeaderProps = { startPoint: Point3d.createZero().plusScaled(Vector3d.unitX(), 10), attachmentPoint: "Nearest" };
   public debugAnchorPointAndRange = false;
 
   // Properties applied to the entire document
@@ -131,6 +132,7 @@ class TextEditor implements Decorator {
       orientation: YawPitchRollAngles.createDegrees(this.rotation, 0, 0).toJSON(),
       offset: this.offset,
       frame: this.frame,
+      leader: this.leader,
     });
 
     const rpcProps = this._iModel.getRpcProps();
