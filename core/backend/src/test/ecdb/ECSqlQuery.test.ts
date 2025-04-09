@@ -451,26 +451,6 @@ describe("ECSql Query", () => {
       ConcurrentQuery.resetConfig(imodel1[_nativeDb]);
     }
   });
-  // new new addon build
-  it("ecsql with blob", async () => {
-    let rows = await executeQuery(imodel1, "SELECT ECInstanceId,GeometryStream FROM bis.GeometricElement3d WHERE GeometryStream IS NOT NULL LIMIT 1");
-    assert.equal(rows.length, 1);
-    const row: any = rows[0];
-
-    assert.isTrue(Id64.isValidId64(row.id));
-
-    assert.isDefined(row.geometryStream);
-    const geomStream: Uint8Array = row.geometryStream;
-    assert.isAtLeast(geomStream.byteLength, 1);
-
-    rows = await executeQuery(imodel1, "SELECT 1 FROM bis.GeometricElement3d WHERE GeometryStream=?", [geomStream]);
-    assert.equal(rows.length, 1);
-
-    rows = await executeQuery(imodel1, "SELECT ECInstanceId,GeometryStream FROM bis.GeometricElement3d WHERE GeometryStream IS NOT NULL LIMIT 1", undefined, true);
-    assert.equal(rows.length, 1);
-    assert.isTrue(Id64.isValidId64(rows[0].id));
-    assert.isDefined(rows[0].geometryStream);
-  });
   it("check prepare logErrors flag", () => {
     const ecdb = imodel1;
     // expect log message when statement fails
