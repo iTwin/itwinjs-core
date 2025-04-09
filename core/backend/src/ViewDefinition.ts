@@ -238,11 +238,31 @@ export abstract class ViewDefinition extends DefinitionElement {
       throw new IModelError(IModelStatus.BadArg, `displayStyleId is invalid`);
   }
 
+  protected static override readonly _customHandledProps: CustomHandledProperty[] = [
+    { propertyName: "categorySelectorId", source: "Class" },
+    { propertyName: "displayStyleId", source: "Class" },
+  ];
+
   public override toJSON(): ViewDefinitionProps {
     const json = super.toJSON() as ViewDefinitionProps;
     json.categorySelectorId = this.categorySelectorId;
     json.displayStyleId = this.displayStyleId;
     return json;
+  }
+
+  public static override deserialize(props: InstanceProps): ViewDefinitionProps {
+    const elProps = super.deserialize(props) as ViewDefinitionProps;
+    const instance = props.row;
+    elProps.categorySelectorId = instance.categorySelector.id;
+    elProps.displayStyleId = instance.displayStyle.id;
+    return elProps;
+  }
+
+  public static override serialize(props: ViewDefinitionProps, _iModel: IModelDb): ECSqlRow {
+    const inst = super.serialize(props, _iModel);
+    inst.categorySelector.id = props.categorySelectorId;
+    inst.displayStyle.id = props.displayStyleId;
+    return inst;
   }
 
   protected override collectReferenceIds(referenceIds: EntityReferenceSet): void {
@@ -427,6 +447,23 @@ export class SpatialViewDefinition extends ViewDefinition3d {
     const json = super.toJSON() as SpatialViewDefinitionProps;
     json.modelSelectorId = this.modelSelectorId;
     return json;
+  }
+
+  protected static override readonly _customHandledProps: CustomHandledProperty[] = [
+    { propertyName: "modelSelectorId", source: "Class" },
+  ];
+
+  public static override deserialize(props: InstanceProps): SpatialViewDefinitionProps {
+    const elProps = super.deserialize(props) as SpatialViewDefinitionProps;
+    const instance = props.row;
+    elProps.modelSelectorId = instance.modelSelector.id;
+    return elProps;
+  }
+
+  public static override serialize(props: SpatialViewDefinitionProps, _iModel: IModelDb): ECSqlRow {
+    const inst = super.serialize(props, _iModel);
+    inst.modelSelector.id = props.modelSelectorId;
+    return inst;
   }
 
   protected override collectReferenceIds(referenceIds: EntityReferenceSet): void {
