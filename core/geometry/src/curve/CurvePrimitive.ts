@@ -101,7 +101,8 @@ export interface TangentOptions {
   /** Stroke options for default stroke-based implementations. */
   strokeOptions?: StrokeOptions,
   /**
-   * Compute tangents to the curve extended according to variant type:
+   * Compute tangents to the curve extended according to variant type.
+   * This option is ignored for linear segments and linestrings.
    * * `false`: do not extend the curve (default).
    * * `true`: extend the curve at both start and end.
    * * CurveExtendMode: extend the curve in the specified manner at both start and end.

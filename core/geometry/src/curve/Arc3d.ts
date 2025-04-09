@@ -927,9 +927,9 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
         const alpha = Math.atan2(centerToLocalPoint.y, centerToLocalPoint.x);
         const beta = Math.atan2(distanceToTangency, 1);
         for (const theta of [alpha + beta, alpha - beta]) {
-          const fraction = this.sweep.radiansToPositivePeriodicFraction(theta);
-          if (options?.extend || (0 <= fraction && fraction <= 1.0)) {
-            const tangent = CurveLocationDetail.createCurveFractionPoint(this, fraction, this.fractionToPoint(fraction));
+          const f = CurveExtendOptions.resolveRadiansToValidSweepFraction(options?.extend ?? false, theta, this.sweep);
+          if (f.isValid) {
+            const tangent = CurveLocationDetail.createCurveFractionPoint(this, f.fraction, this.fractionToPoint(f.fraction));
             announceTangent(tangent);
           }
         }
