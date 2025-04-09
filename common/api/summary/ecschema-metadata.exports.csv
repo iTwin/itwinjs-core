@@ -105,8 +105,8 @@ public;class;PropertyCategory
 public;interface;PropertyCategoryProps
 public;interface;PropertyProps
 public;enum;PropertyType
-beta;function;propertyTypeToString
-beta;namespace;PropertyTypeUtils
+internal;function;propertyTypeToString
+internal;namespace;PropertyTypeUtils
 public;class;RelationshipClass
 public;interface;RelationshipClassProps
 public;class;RelationshipConstraint

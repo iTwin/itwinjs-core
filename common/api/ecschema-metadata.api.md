@@ -1424,27 +1424,27 @@ export enum PropertyType {
     Struct_Array = 6
 }
 
-// @beta (undocumented)
-export function propertyTypeToString(type: PropertyType): "PrimitiveProperty" | "StructProperty" | "StructArrayProperty" | "NavigationProperty" | "PrimitiveArrayProperty";
+// @internal (undocumented)
+export function propertyTypeToString(type: PropertyType): "PrimitiveArrayProperty" | "PrimitiveProperty" | "StructArrayProperty" | "StructProperty" | "NavigationProperty";
 
-// @beta (undocumented)
+// @internal (undocumented)
 export namespace PropertyTypeUtils {
     // (undocumented)
-    export function asArray(t: PropertyType): PropertyType;
+    export function asArray(type: PropertyType): PropertyType;
     // (undocumented)
-    export function fromPrimitiveType(t: PrimitiveType): PropertyType;
+    export function fromPrimitiveType(type: PrimitiveType): PropertyType;
     // (undocumented)
-    export function getPrimitiveType(t: PropertyType): PrimitiveType;
+    export function getPrimitiveType(type: PropertyType): PrimitiveType;
     // (undocumented)
-    export function isArray(t: PropertyType): boolean;
+    export function isArray(type: PropertyType): boolean;
     // (undocumented)
-    export function isEnumeration(t: PropertyType): boolean;
+    export function isEnumeration(type: PropertyType): boolean;
     // (undocumented)
-    export function isNavigation(t: PropertyType): boolean;
+    export function isNavigation(type: PropertyType): boolean;
     // (undocumented)
-    export function isPrimitive(t: PropertyType): boolean;
+    export function isPrimitive(type: PropertyType): boolean;
     // (undocumented)
-    export function isStruct(t: PropertyType): boolean;
+    export function isStruct(type: PropertyType): boolean;
 }
 
 // @public
