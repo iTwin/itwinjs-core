@@ -1176,7 +1176,7 @@ export abstract class IModelDb extends IModel {
    */
   public getInstanceArgs(instanceId?: Id64String, baseClassName?: string, federationGuid?: GuidString, code?: CodeProps): IModelJsNative.ResolveInstanceKeyArgs {
     if (instanceId && baseClassName) {
-      return { partialKey: { id: instanceId, baseClassName }};
+      return { partialKey: { id: instanceId, baseClassName } };
     } else if (federationGuid) {
       return { federationGuid };
     } else if (code) {
@@ -2025,6 +2025,7 @@ export namespace IModelDb {
         if (IModelHost.configuration?.enableWIPNativeInstanceFunctions) {
           const options = {
             useJsNames: true,
+            ...props
           }
           const readProps = this._iModel[_nativeDb].resolveInstanceKey(this._iModel.getInstanceArgs(props.id, "Bis:Element", props.federationGuid, props.code));
           if (undefined === readProps)
@@ -2038,7 +2039,7 @@ export namespace IModelDb {
           return this._iModel[_nativeDb].getElement(props) as T;
         }
       } catch (err: any) {
-        throw new IModelError(err.errorNumber, err.message);
+        throw new IModelError(err.errorNumber, "reading element");
       }
     }
 

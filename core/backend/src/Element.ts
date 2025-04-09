@@ -596,14 +596,7 @@ export abstract class GeometricElement3d extends GeometricElement {
     const elProps = super.deserialize(props) as GeometricElement3dProps;
     const instance = props.row;
     elProps.category = instance.category.id;
-    if (instance.geometryStream) {
-      elProps.geom = props.iModel[_nativeDb].geomSourceToProps({
-        is2d: false,
-        geom: instance.geometryStream,
-        placement: elProps.placement,
-        categoryId: elProps.category
-      }) as GeometryStreamProps;
-    }
+
     const origin = instance.origin ? [instance.origin.x, instance.origin.y, instance.origin.z] : [0, 0, 0];
     let bbox: LowAndHighXYZProps | undefined;
     if ("bBoxHigh" in instance && instance.bBoxHigh !== undefined && "bBoxLow" in instance && instance.bBoxLow !== undefined) {
@@ -612,6 +605,7 @@ export abstract class GeometricElement3d extends GeometricElement {
         high: [instance.bBoxHigh.x, instance.bBoxHigh.y, instance.bBoxHigh.z],
       }
     }
+
     elProps.placement = {
       origin,
       angles: {
@@ -621,6 +615,15 @@ export abstract class GeometricElement3d extends GeometricElement {
       },
       bbox
     };
+
+    if (instance.geometryStream) {
+      elProps.geom = props.iModel[_nativeDb].convertOrUpdateGeometrySource({
+        is2d: false,
+        geom: instance.geometryStream as Uint8Array,
+        placement: elProps.placement,
+        categoryId: elProps.category
+      }, "GeometryStreamProps").geom as GeometryStreamProps;
+    }
 
     if (instance.typeDefinition) {
       elProps.typeDefinition = instance.typeDefinition;
@@ -662,30 +665,33 @@ export abstract class GeometricElement3d extends GeometricElement {
       assignPlacement(props.placement);
     }
 
-    // Need work
     if (props.elementGeometryBuilderParams) {
-      const source = iModel[_nativeDb].builderToGeomSource(
-        props.elementGeometryBuilderParams as any, {
-        is2d: false,
+      const source = iModel[_nativeDb].convertOrUpdateGeometrySource({
+        builder: props.elementGeometryBuilderParams,
+        is2d: true,
         placement: props.placement,
         categoryId: props.category,
-      });
+      }, "BinaryStream");
 
       inst.geometryStream = source.geom;
       if (source.placement) {
         assignPlacement(source.placement as Placement3dProps);
       }
     }
-    // Need work need to send Id/ClassName
+
     if (props.geom) {
-      const source = iModel[_nativeDb].propsToGeomSource(
-        props.geom as any, {
+      const source = iModel[_nativeDb].convertOrUpdateGeometrySource({
+        geom: props.geom as any,
         is2d: false,
         placement: props.placement,
         categoryId: props.category,
-      });
+      }, "BinaryStream");
       inst.geometryStream = source.geom;
+      if (source.placement) {
+        assignPlacement(source.placement as Placement3dProps);
+      }
     }
+
     inst.typeDefinition = props.typeDefinition;
     return inst;
   }
@@ -737,14 +743,6 @@ export abstract class GeometricElement2d extends GeometricElement {
     const elProps = super.deserialize(props) as GeometricElement2dProps;
     const instance = props.row;
     elProps.category = instance.category.id;
-    if (instance.geometryStream) {
-      elProps.geom = props.iModel[_nativeDb].geomSourceToProps({
-        is2d: true,
-        geom: instance.geometryStream,
-        placement: elProps.placement,
-        categoryId: elProps.category
-      }) as GeometryStreamProps;
-    }
     const origin = instance.origin ? [instance.origin.x, instance.origin.y] : [0, 0];
     let bbox: LowAndHighXYZProps | undefined;
     if ("bBoxHigh" in instance && instance.bBoxHigh !== undefined && "bBoxLow" in instance && instance.bBoxLow !== undefined) {
@@ -758,6 +756,19 @@ export abstract class GeometricElement2d extends GeometricElement {
       angle: instance.angle,
       bbox,
     };
+
+    if (instance.geometryStream) {
+      const source = props.iModel[_nativeDb].convertOrUpdateGeometrySource({
+        is2d: true,
+        geom: instance.geometryStream,
+        placement: elProps.placement,
+        categoryId: elProps.category
+      }, "GeometryStreamProps");
+      elProps.geom = source.geom as GeometryStreamProps;
+      if (source.placement) {
+        elProps.placement = source.placement as Placement2dProps;
+      }
+    }
 
     if (instance.typeDefinition) {
       elProps.typeDefinition = instance.typeDefinition;
@@ -797,33 +808,37 @@ export abstract class GeometricElement2d extends GeometricElement {
       assignPlacement(props.placement);
     }
 
-    // Need work
     if (props.elementGeometryBuilderParams) {
-      const source = iModel[_nativeDb].builderToGeomSource(
-        props.elementGeometryBuilderParams as any, {
-        is2d: false,
+      const source = iModel[_nativeDb].convertOrUpdateGeometrySource({
+        builder: props.elementGeometryBuilderParams,
+        is2d: true,
         placement: props.placement,
         categoryId: props.category,
-      });
+      }, "BinaryStream");
 
       inst.geometryStream = source.geom;
       if (source.placement) {
         assignPlacement(source.placement as Placement2dProps);
       }
     }
-    // Need work need to send Id/ClassName
+
     if (props.geom) {
-      const source = iModel[_nativeDb].propsToGeomSource(
-        props.geom as any, {
-        is2d: false,
+      const source = iModel[_nativeDb].convertOrUpdateGeometrySource({
+        geom: props.geom as any,
+        is2d: true,
         placement: props.placement,
         categoryId: props.category,
-      });
+      }, "BinaryStream");
+
       inst.geometryStream = source.geom;
+      if (source.placement) {
+        assignPlacement(source.placement as Placement2dProps);
+      }
     }
     inst.typeDefinition = props.typeDefinition;
     return inst;
   }
+
   protected override collectReferenceIds(referenceIds: EntityReferenceSet): void {
     super.collectReferenceIds(referenceIds);
     if (undefined !== this.typeDefinition)
@@ -1787,6 +1802,63 @@ export class GeometryPart extends DefinitionElement {
     super(props, iModel);
     this.geom = props.geom;
     this.bbox = Range3d.fromJSON(props.bbox);
+  }
+  protected static override readonly _customHandledProps: CustomHandledProperty[] = [
+    { propertyName: "geometryStream", source: "Class" },
+    { propertyName: "bBoxLow", source: "Class" },
+    { propertyName: "bBoxHigh", source: "Class" },
+  ];
+
+  public static override deserialize(props: InstanceProps): GeometryPartProps {
+    const elProps = super.deserialize(props) as GeometryPartProps;
+    const instance = props.row;
+
+    if ("bBoxHigh" in instance && instance.bBoxHigh !== undefined && "bBoxLow" in instance && instance.bBoxLow !== undefined) {
+      elProps.bbox = {
+        low: [instance.bBoxLow.x, instance.bBoxLow.y, instance.bBoxLow.z],
+        high: [instance.bBoxHigh.x, instance.bBoxHigh.y, instance.bBoxHigh.z],
+      };
+    }
+
+    if (instance.geometryStream) {
+      elProps.geom = props.iModel[_nativeDb].convertOrUpdateGeometryPart({
+        geom: instance.geometryStream as Uint8Array,
+        is2d: false,
+        bbox: elProps.bbox,
+      }, "GeometryStreamProps").geom as GeometryStreamProps;
+    }
+
+    return elProps;
+  }
+
+  public static override serialize(props: GeometryPartProps, iModel: IModelDb): ECSqlRow {
+    const inst = super.serialize(props, iModel);
+
+    if (undefined !== props.geom) {
+      const source = inst.geometryStream = iModel[_nativeDb].convertOrUpdateGeometryPart({
+        geom: props.geom as any,
+        is2d: false,
+        bbox: props.bbox,
+      }, "BinaryStream");
+      inst.geometryStream = source.geom as Uint8Array;
+      if (source.bbox) {
+        props.bbox = source.bbox;
+      }
+    }
+
+    if (undefined !== props.bbox) {
+      if (Array.isArray(props.bbox.low)) {
+        inst.bBoxLow = { x: props.bbox.low[0], y: props.bbox.low[1], z: props.bbox.low[2] };
+      } else {
+        inst.bBoxLow = props.bbox.low;
+      }
+      if (Array.isArray(props.bbox.high)) {
+        inst.bBoxHigh = { x: props.bbox.high[0], y: props.bbox.high[1], z: props.bbox.high[2] };
+      } else {
+        inst.bBoxHigh = props.bbox.high;
+      }
+    }
+    return inst;
   }
 
   public override toJSON(): GeometryPartProps {
