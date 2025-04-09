@@ -62,10 +62,15 @@ export class Unit extends SchemaItem {
   }
 
   /**
-   * @alpha
+   * Type guard to check if the SchemaItem is of type Unit.
+   * @param item The SchemaItem to check.
+   * @returns True if the item is a Unit, false otherwise.
    */
-  public static isUnit(object: any): object is Unit {
-    return SchemaItem.isSchemaItem(object) && object.schemaItemType === SchemaItemType.Unit;
+  public static isUnit(item?: SchemaItem): item is Unit {
+    if (item && item.schemaItemType === SchemaItemType.Unit)
+      return true;
+
+    return false;
   }
 
   /**

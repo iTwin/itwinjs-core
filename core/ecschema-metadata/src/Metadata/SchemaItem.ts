@@ -150,8 +150,8 @@ export abstract class SchemaItem {
   /**
   * @internal
   */
-  public static isSchemaItem(object: any): object is SchemaItem {
-    const schemaItem = object as SchemaItem;
+  public static isSchemaItem(item: unknown): item is SchemaItem {
+    const schemaItem = item as Partial<SchemaItem>;
 
     return schemaItem !== undefined && schemaItem.key !== undefined && schemaItem.schema !== undefined
       && schemaItem.schemaItemType !== undefined;

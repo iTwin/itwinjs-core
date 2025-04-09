@@ -69,7 +69,10 @@ export class PropertyCategory extends SchemaItem {
    * @returns True if the item is a PropertyCategory, false otherwise.
    */
   public static isPropertyCategory(item?: SchemaItem): item is PropertyCategory {
-    return item?.schemaItemType === SchemaItemType.PropertyCategory;
+    if (item && item.schemaItemType === SchemaItemType.PropertyCategory)
+      return true;
+
+    return false;
   }
 
   /**

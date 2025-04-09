@@ -770,8 +770,7 @@ export class InvertedUnit extends SchemaItem {
     fromJSONSync(invertedUnitProps: InvertedUnitProps): void;
     // (undocumented)
     get invertsUnit(): LazyLoadedUnit | undefined;
-    // @alpha (undocumented)
-    static isInvertedUnit(object: any): object is InvertedUnit;
+    static isInvertedUnit(item?: SchemaItem): item is InvertedUnit;
     // (undocumented)
     readonly schemaItemType: SchemaItemType;
     // (undocumented)
@@ -1035,7 +1034,7 @@ export class OverrideFormat {
     // (undocumented)
     get includeZero(): boolean | undefined;
     // @internal (undocumented)
-    static isOverrideFormat(object: any): object is OverrideFormat;
+    static isOverrideFormat(format: unknown): format is OverrideFormat;
     // (undocumented)
     get minWidth(): number | undefined;
     readonly name: string;
@@ -1060,7 +1059,7 @@ export class OverrideFormat {
     // (undocumented)
     get type(): FormatType;
     // (undocumented)
-    get units(): [InvertedUnit | Unit, string | undefined][] | undefined;
+    get units(): [Unit | InvertedUnit, string | undefined][] | undefined;
     // (undocumented)
     get uomSeparator(): string;
 }
@@ -1865,7 +1864,7 @@ export abstract class SchemaItem {
     // (undocumented)
     get fullName(): string;
     // @internal (undocumented)
-    static isSchemaItem(object: any): object is SchemaItem;
+    static isSchemaItem(item: unknown): item is SchemaItem;
     // (undocumented)
     get key(): SchemaItemKey;
     // (undocumented)
@@ -2223,8 +2222,7 @@ export class Unit extends SchemaItem {
     get hasNumerator(): boolean;
     // (undocumented)
     get hasOffset(): boolean;
-    // @alpha (undocumented)
-    static isUnit(object: any): object is Unit;
+    static isUnit(item?: SchemaItem): item is Unit;
     // (undocumented)
     get numerator(): number;
     // (undocumented)

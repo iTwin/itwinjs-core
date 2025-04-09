@@ -236,7 +236,10 @@ export class KindOfQuantity extends SchemaItem {
    * @returns True if the item is a KindOfQuantity, false otherwise.
    */
   public static isKindOfQuantity(item?: SchemaItem): item is KindOfQuantity {
-    return item?.schemaItemType === SchemaItemType.KindOfQuantity;
+    if (item && item.schemaItemType === SchemaItemType.KindOfQuantity)
+      return true;
+
+    return false;
   }
 
   /**

@@ -31,10 +31,15 @@ export class InvertedUnit extends SchemaItem {
   public get unitSystem(): LazyLoadedUnitSystem | undefined { return this._unitSystem; }
 
   /**
-   * @alpha
+   * Type guard to check if the SchemaItem is of type InvertedUnit.
+   * @param item The SchemaItem to check.
+   * @returns True if the item is a InvertedUnit, false otherwise.
    */
-  public static isInvertedUnit(object: any): object is InvertedUnit {
-    return SchemaItem.isSchemaItem(object) && object.schemaItemType === SchemaItemType.InvertedUnit;
+  public static isInvertedUnit(item?: SchemaItem): item is InvertedUnit {
+    if (item && item.schemaItemType === SchemaItemType.InvertedUnit)
+      return true;
+
+    return false;
   }
 
   /**
