@@ -17,7 +17,7 @@ import { CurveIntervalRole, CurveLocationDetail, CurveSearchStatus } from "./Cur
 import { GeometryQuery } from "./GeometryQuery";
 import { AppendPlaneIntersectionStrokeHandler } from "./internalContexts/AppendPlaneIntersectionStrokeHandler";
 import { ClosestPointStrokeHandler } from "./internalContexts/ClosestPointStrokeHandler";
-import { AnnounceTangentStrokeHandler, TangentOptions } from "./internalContexts/AnnounceTangentStrokeHandler";
+import { AnnounceTangentStrokeHandler } from "./internalContexts/AnnounceTangentStrokeHandler";
 import { CurveLengthContext } from "./internalContexts/CurveLengthContext";
 import { LineString3d } from "./LineString3d";
 
@@ -81,6 +81,42 @@ export type AnnounceNumberNumber = (a0: number, a1: number) => void;
  * @public
  */
 export type AnnounceCurvePrimitive = (cp: CurvePrimitive) => void;
+
+/**
+ * Options for computing tangents to a curve from a fixed point `P`.
+ * See [[CurvePrimitive.emitTangents]], [[CurvePrimitive.allTangents]], and [[CurvePrimitive.closestTangent]].
+ * @public
+ */
+export interface TangentOptions {
+  /**
+   * The tangent returned by [[CurvePrimitive.closestTangent]] is nearest this point as seen in the view plane.
+   * * Default value is `P`.
+   */
+  hintPoint?: Point3d,
+  /**
+   * Tangents are computed as seen in a view plane perpendicular to this vector.
+   * * Default value is (0,0,1), i.e., tangents are computed as seen in the top view.
+   */
+  vectorToEye?: Vector3d,
+  /** Stroke options for default stroke-based implementations. */
+  strokeOptions?: StrokeOptions,
+  /**
+   * Compute tangents to the curve extended according to variant type:
+   * * `false`: do not extend the curve (default).
+   * * `true`: extend the curve at both start and end.
+   * * CurveExtendMode: extend the curve in the specified manner at both start and end.
+   * * CurveExtendMode[]: first entry applies to curve start; second, to curve end; any other entries ignored.
+   */
+  extend?: VariantCurveExtendParameter,
+  /**
+   * Distance tolerance, interpreted as follows:
+   * * Maximum distance of `P` from the tangent plane at curve point `Q` in order for `Q-P` to be considered a
+   * tangent to the curve.
+   * * Minimum length of a line/stroke segment for which to consider computing a tangent.
+   * * Default value is [[Geometry.smallMetricDistance]].
+   */
+  distanceTol?: number,
+}
 
 /**
  * A curve primitive is bounded.
@@ -530,10 +566,10 @@ export abstract class CurvePrimitive extends GeometryQuery {
    * succeed.
    * @param spacePoint point in space.
    * @param extend (optional) compute the closest point to the curve extended according to variant type:
-   * * false: do not extend the curve (default)
-   * * true: extend the curve at both start and end
-   * * CurveExtendOptions: extend the curve in the specified manner at both start and end
-   * * CurveExtendOptions[]: first entry applies to curve start; second, to curve end; any other entries ignored
+   * * `false`: do not extend the curve (default)
+   * * `true`: extend the curve at both start and end
+   * * CurveExtendMode: extend the curve in the specified manner at both start and end
+   * * CurveExtendMode[]: first entry applies to curve start; second, to curve end; any other entries ignored
    * @param result (optional) pre-allocated detail to populate and return.
    * @returns details of the closest point.
    */
@@ -545,69 +581,69 @@ export abstract class CurvePrimitive extends GeometryQuery {
     return strokeHandler.claimResult();
   }
   /**
-   * Search for all points `P` on the curve such that the line containing `spacePoint` and `P` is tangent to the curve
-   * and emit tangent points according to the given `announceTangent` callback.
-   * * Strictly speaking the tangent line is in the plane through `P` whose normal is the cross product of the curve
-   * tangent at P and the `TangentOptions.vectorToEye` (if not provided, default view normal (0,0,1) is used). This is
-   * equivalent to tangency as seen in a view plane perpendicular to the given `TangentOptions.vectorToEye`.
+   * Announce all points `P` on the curve such that the line containing `spacePoint` and `P` is tangent to the curve in
+   * the view defined by `options.vectorToEye`.
+   * * Strictly speaking, each tangent line lies in the plane through `P` whose normal is the cross product of the curve
+   * tangent at `P` and `options.vectorToEye`. This is equivalent to tangency as seen in a view plane perpendicular to
+   * `options.vectorToEye`.
    * @param spacePoint point in space.
-   * @param announceTangent callback to announce tangent(s). For example, the callback can find all tangents or just
-   * the closest tangent.
-   * @param tangOpts (optional) tangent options.
+   * @param announceTangent callback to announce each computed tangent. The received [[CurveLocationDetail]] is reused
+   * internally, so it should be cloned in the callback if it needs to be saved.
+   * @param options (optional) options for computing tangents. See [[TangentOptions]] for defaults.
    */
   public emitTangents(
-    spacePoint: Point3d, announceTangent: (tangent: CurveLocationDetail) => any, tangOpts?: TangentOptions,
+    spacePoint: Point3d, announceTangent: (tangent: CurveLocationDetail) => any, options?: TangentOptions,
   ): void {
-    const strokeHandler = new AnnounceTangentStrokeHandler(spacePoint, announceTangent, tangOpts?.vectorToEye);
-    this.emitStrokableParts(strokeHandler, tangOpts?.strokeOptions);
+    const strokeHandler = new AnnounceTangentStrokeHandler(spacePoint, announceTangent, options);
+    this.emitStrokableParts(strokeHandler, options?.strokeOptions);
   }
   /**
-   * Search for all points `P` on the curve such that the line containing `spacePoint` and `P` is tangent to the curve.
-   * * Strictly speaking the tangent line is in the plane through `P` whose normal is the cross product of the curve
-   * tangent at P and the `TangentOptions.vectorToEye` (if not provided, default view normal (0,0,1) is used). This is
-   * equivalent to tangency as seen in a view plane perpendicular to the given `TangentOptions.vectorToEye`.
+   * Return all points `P` on the curve such that the line containing `spacePoint` and `P` is tangent to the curve in
+   * the view defined by `options.vectorToEye`.
+   * * See [[emitTangents]] for the definition of tangency employed.
    * @param spacePoint point in space.
-   * @param tangOpts (optional) tangent options.
+   * @param options (optional) options for computing tangents. See [[TangentOptions]] for defaults.
    * @returns an array of details of all tangent points or undefined if no tangent was found.
    */
-  public allTangents(spacePoint: Point3d, tangOpts?: TangentOptions): CurveLocationDetail[] | undefined {
+  public allTangents(spacePoint: Point3d, options?: TangentOptions): CurveLocationDetail[] | undefined {
     const tangents: CurveLocationDetail[] = [];
     const collectAllTangents = (tangent: CurveLocationDetail) => {
-      if (tangents.length > 0) { // avoid adding duplicate tangents
+      if (tangents.length > 0) { // avoid adding duplicate tangents in succession
         const lastFraction = tangents[tangents.length - 1].fraction;
         if (Math.abs(tangent.fraction - lastFraction) < Geometry.smallFloatingPoint)
           return;
       }
-      tangents.push(tangent);
-    }
-    this.emitTangents(spacePoint, collectAllTangents, tangOpts);
+      tangents.push(tangent.clone());
+    };
+    this.emitTangents(spacePoint, collectAllTangents, options);
     return (tangents.length === 0) ? undefined : tangents;
   }
   /**
-   * Search for all points `P` on the curve such that the line containing `spacePoint` and `P` is tangent to the curve
-   * and then find point `P` which is closest to `TangentOptions.hintPoint`. If `TangentOptions.hintPoint` is not
-   * provided, find point `P` which is closest to `spacePoint`.
-   * * Strictly speaking the tangent line is in the plane through `P` whose normal is the cross product of the curve
-   * tangent at P and the `TangentOptions.vectorToEye` (if not provided, default view normal (0,0,1) is used). This is
-   * equivalent to tangency as seen in a view plane perpendicular to the given `TangentOptions.vectorToEye`.
+   * Return the point `P` on the curve such that the line containing `spacePoint` and `P` is tangent to the curve in
+   * the view defined by `options.vectorToEye`, and `P` is closest to `options.hintPoint` in this view.
+   * * See [[emitTangents]] for the definition of tangency employed.
    * @param spacePoint point in space.
-   * @param tangOpts (optional) tangent options.
+   * @param options (optional) options for computing tangents. See [[TangentOptions]] for defaults.
    * @returns the detail of the closest tangent point or undefined if no tangent was found.
    */
-  public closestTangent(spacePoint: Point3d, tangOpts?: TangentOptions): CurveLocationDetail | undefined {
+  public closestTangent(spacePoint: Point3d, options?: TangentOptions): CurveLocationDetail | undefined {
+    const hint = options?.hintPoint ?? spacePoint;
+    let toLocal: Matrix3d| undefined;
+    if (options?.vectorToEye && !options.vectorToEye.isExactEqual({x: 0, y: 0, z: 1}))
+      toLocal = Matrix3d.createRigidViewAxesZTowardsEye(options.vectorToEye.x, options.vectorToEye.y, options.vectorToEye.z);
+    const measureHintDist2 = (pt: Point3d): number => { // measure distance to hint in view plane coordinates
+      return toLocal?.multiplyTransposeXYZ(hint.x - pt.x, hint.y - pt.y, hint.z - pt.z).magnitudeSquaredXY() ?? pt.distanceSquaredXY(hint);
+    };
     let closestTangent: CurveLocationDetail | undefined;
-    const hintPoint = tangOpts?.hintPoint ?? spacePoint;
+    let closestDist2 = Geometry.largeCoordinateResult;
     const collectClosestTangent = (tangent: CurveLocationDetail) => {
-      if (closestTangent === undefined) {
-        closestTangent = tangent;
-      } else {
-        const closestDistance = closestTangent.point.distance(hintPoint);
-        const currentDistance = tangent.point.distance(hintPoint);
-        if (currentDistance < closestDistance)
-          closestTangent = tangent;
+      const dist2 = measureHintDist2(tangent.point);
+      if (!closestTangent || dist2 < closestDist2) {
+        closestTangent = tangent.clone(closestTangent);
+        closestDist2 = dist2;
       }
-    }
-    this.emitTangents(spacePoint, collectClosestTangent, tangOpts);
+    };
+    this.emitTangents(spacePoint, collectClosestTangent, options);
     return closestTangent;
   }
   /**
@@ -754,7 +790,7 @@ export abstract class CurvePrimitive extends GeometryQuery {
   public endPoint(result?: Point3d): Point3d {
     return this.fractionToPoint(1.0, result);
   }
-  /** Add strokes to caller-supplied linestring (function updates `dest`) */
+  /** Append stroke points to caller-supplied linestring. */
   public abstract emitStrokes(dest: LineString3d, options?: StrokeOptions): void;
   /**
    * Ask the curve to announce points and simple subcurve fragments for stroking.

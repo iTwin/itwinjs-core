@@ -12,32 +12,9 @@ import { IStrokeHandler } from "../../geometry3d/GeometryHandler";
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 import { Ray3d } from "../../geometry3d/Ray3d";
 import { Newton1dUnboundedApproximateDerivative } from "../../numerics/Newton";
-import { VariantCurveExtendParameter } from "../CurveExtendMode";
 import { CurveLocationDetail } from "../CurveLocationDetail";
-import { CurvePrimitive } from "../CurvePrimitive";
-import { StrokeOptions } from "../StrokeOptions";
+import { CurvePrimitive, TangentOptions } from "../CurvePrimitive";
 import { NewtonRtoRStrokeHandler } from "./NewtonRtoRStrokeHandler";
-
-/**
- * Optional arguments for to find tangent(s) to curve from a point.
- * @public
- */
-export interface TangentOptions {
-  /** A point to be used to find the closest tangent to that point. */
-  hintPoint?: Point3d,
-  /** Vector to eye. Tangents are seen in a view plane perpendicular to vectorToEye. Default is(0, 0, 1). */
-  vectorToEye?: Vector3d,
-  /** Stroke options. */
-  strokeOptions?: StrokeOptions,
-  /**
-   * Variable to specify how to extend the curve according to variant type:
-   *  false: do not extend the curve (default).
-   *  true: extend the curve at both start and end.
-   *  CurveExtendOptions: extend the curve in the specified manner at both start and end.
-   *  CurveExtendOptions[]: first entry applies to curve start; second, to curve end; any other entries ignored.
-   */
-  extend?: VariantCurveExtendParameter,
-}
 
 /**
  * Context for searching for the tangent(s) to a CurvePrimitive.
@@ -48,6 +25,8 @@ export class AnnounceTangentStrokeHandler extends NewtonRtoRStrokeHandler implem
   private _announceTangent: (tangent: CurveLocationDetail) => any;
   private _spacePoint: Point3d;
   private _vectorToEye: Vector3d;
+  private _distanceTol: number;
+  private _distanceTolSquared: number;
   // fraction and function value on one side of an interval that may bracket a root
   private _fractionA: number = 0;
   private _functionA: number = 0;
@@ -57,28 +36,35 @@ export class AnnounceTangentStrokeHandler extends NewtonRtoRStrokeHandler implem
   private _numThisCurve: number = 0;
   // scratch vars to use within methods
   private _workRay: Ray3d;
+  private _workDetail: CurveLocationDetail | undefined;
   private _newtonSolver: Newton1dUnboundedApproximateDerivative;
   /** Constructor */
-  public constructor(spacePoint: Point3d, announceTangent: (tangent: CurveLocationDetail) => any, vectorToEye?: Vector3d) {
+  public constructor(spacePoint: Point3d, announceTangent: (tangent: CurveLocationDetail) => any, options?: TangentOptions) {
     super();
     this._announceTangent = announceTangent;
     this._spacePoint = spacePoint;
-    this._vectorToEye = vectorToEye ?? Vector3d.unitZ();
+    this._vectorToEye = options?.vectorToEye ?? Vector3d.unitZ();
+    this._distanceTol = options?.distanceTol ?? Geometry.smallMetricDistance;
+    this._distanceTolSquared = this._distanceTol * this._distanceTol;
     this._workRay = Ray3d.createZero();
     this.startCurvePrimitive(undefined);
     this._newtonSolver = new Newton1dUnboundedApproximateDerivative(this);
   }
+  /** Specified by IStrokeHandler. */
   public needPrimaryGeometryForStrokes() {
     return true;
   }
+  /** Specified by IStrokeHandler. */
   public startCurvePrimitive(curve: CurvePrimitive | undefined) {
     this._curve = curve;
     this._fractionA = 0.0;
     this._numThisCurve = 0;
     this._functionA = 0.0;
   }
+  /** Specified by IStrokeHandler. */
   public endCurvePrimitive() {
   }
+  /** Specified by IStrokeHandler. */
   public announceIntervalForUniformStepStrokes(
     cp: CurvePrimitive, numStrokes: number, fraction0: number, fraction1: number,
   ): void {
@@ -93,18 +79,19 @@ export class AnnounceTangentStrokeHandler extends NewtonRtoRStrokeHandler implem
     }
   }
   private announceCandidate(cp: CurvePrimitive, fraction: number, point: Point3d) {
-    const tangent = CurveLocationDetail.createCurveFractionPoint(cp, fraction, point);
-    if (this._parentCurvePrimitive !== undefined)
-      tangent.curve = this._parentCurvePrimitive;
-    this._announceTangent(tangent);
+    this._workDetail = CurveLocationDetail.createCurveFractionPoint(cp, fraction, point, this._workDetail);
+    if (this._parentCurvePrimitive)
+      this._workDetail.curve = this._parentCurvePrimitive;
+    this._announceTangent(this._workDetail);
   }
+  /** Specified by IStrokeHandler. */
   public announceSegmentInterval(
     cp: CurvePrimitive, point0: Point3d, point1: Point3d, _numStrokes: number, fraction0: number, fraction1: number,
   ): void {
     let fraction: number;
     let point: Point3d;
-    const distance0 = this._spacePoint.distance(point0);
-    const distance1 = this._spacePoint.distance(point1);
+    const distance0 = this._spacePoint.distanceSquared(point0);
+    const distance1 = this._spacePoint.distanceSquared(point1);
     if (distance0 < distance1) {
       fraction = fraction0;
       point = point0;
@@ -112,8 +99,9 @@ export class AnnounceTangentStrokeHandler extends NewtonRtoRStrokeHandler implem
       fraction = fraction1;
       point = point1;
     }
+    // evaluate at midpoint; the endpoints may be at corners, which have ambiguous tangent
     const value = this.evaluateFunction(undefined, (fraction0 + fraction1) / 2, cp);
-    if (value !== undefined && Geometry.isSmallMetricDistance(value))
+    if (value !== undefined && Geometry.isDistanceWithinTol(value, this._distanceTol))
       this.announceCandidate(cp, fraction, point);
   }
   /**
@@ -125,12 +113,13 @@ export class AnnounceTangentStrokeHandler extends NewtonRtoRStrokeHandler implem
    * this method can miss a root of `f`.
    */
   private searchInterval() {
-    if (Geometry.isSmallMetricDistanceSquared(this._functionA))
+    // directly announce at endpoint if we are extra certain it's a root; Newton can miss it if it has multiplicity > 1
+    if (Geometry.isDistanceWithinTol(this._functionA, this._distanceTolSquared))
       this.announceSolutionFraction(this._fractionA);
-    if (Geometry.isSmallMetricDistanceSquared(this._functionB))
+    if (Geometry.isDistanceWithinTol(this._functionB, this._distanceTolSquared))
       this.announceSolutionFraction(this._fractionB);
-    // by the Intermediate Value Theorem, a root lies between fractionA and fractionB; use Newton to find it.
     if (this._functionA * this._functionB < 0) {
+      // by the Intermediate Value Theorem, a root lies between fractionA and fractionB; use Newton to find it.
       const fraction = Geometry.inverseInterpolate(this._fractionA, this._functionA, this._fractionB, this._functionB);
       if (fraction) {
         this._newtonSolver.setX(fraction);
@@ -145,12 +134,14 @@ export class AnnounceTangentStrokeHandler extends NewtonRtoRStrokeHandler implem
   }
   /**
    * Evaluate the univariate real-valued function for which we are finding roots.
-   * * For finding the tangents to curve X from point Q as seen in a view plane perpendicular to normal, this
-   * function is `f(t) := (Q - X(t)) dot (X'(t) cross normal)`.
+   * * For finding the tangents to curve `X` from point `Q` as seen in a view plane with normal `N`, this
+   * function is `f(t) := (Q - X(t)) dot (X'(t) cross N)`. The second vector in the dot product defines a
+   * _tangent plane_ at `X(t)`.
    * * Either `pointAndDerivative` must be defined, or both `fraction` and `curve`.
    * @param pointAndDerivative pre-evaluated curve
    * @param fraction fraction at which to evaluate `curve`
    * @param curve curve to evaluate at `fraction`
+   * @returns distance of `Q` from the tangent plane at `X(t)`.
   */
   private evaluateFunction(pointAndDerivative?: Ray3d, fraction?: number, curve?: CurvePrimitive): number | undefined {
     if (pointAndDerivative)
@@ -159,13 +150,12 @@ export class AnnounceTangentStrokeHandler extends NewtonRtoRStrokeHandler implem
       this._workRay = curve.fractionToPointAndDerivative(fraction, this._workRay);
     else
       return undefined;
-    const cross = this._vectorToEye.unitCrossProduct(this._workRay.direction);
+    const cross = this._vectorToEye.unitCrossProduct(this._workRay.direction); // normalized so we return true distance
     return cross ? cross.dotProductStartEnd(this._workRay.origin, this._spacePoint) : undefined;
   }
+  /** Specified by NewtonRtoRStrokeHandler. */
   public evaluate(fraction: number): boolean {
-    let curve = this._curve;
-    if (this._parentCurvePrimitive)
-      curve = this._parentCurvePrimitive;
+    const curve = this._parentCurvePrimitive ?? this._curve;
     const value = this.evaluateFunction(undefined, fraction, curve);
     if (value === undefined)
       return false;
@@ -180,7 +170,8 @@ export class AnnounceTangentStrokeHandler extends NewtonRtoRStrokeHandler implem
     this._functionA = this._functionB;
     this._fractionA = this._fractionB;
   }
+  /** Specified by IStrokeHandler. */
   public announcePointTangent(_point: Point3d, _fraction: number, _tangent: Vector3d) {
-    assert(false, "this should not be called");
+    assert(false, "No callers expected. IStrokeHandler probably didn't need to specify this method.");
   }
 }

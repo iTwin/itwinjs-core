@@ -28,9 +28,8 @@ import { SmallSystem } from "../numerics/SmallSystem";
 import { CurveChain } from "./CurveCollection";
 import { CurveExtendMode, CurveExtendOptions, VariantCurveExtendParameter } from "./CurveExtendMode";
 import { CurveIntervalRole, CurveLocationDetail, CurveSearchStatus } from "./CurveLocationDetail";
-import { AnnounceNumberNumberCurvePrimitive, CurvePrimitive } from "./CurvePrimitive";
+import { AnnounceNumberNumberCurvePrimitive, CurvePrimitive, TangentOptions } from "./CurvePrimitive";
 import { GeometryQuery } from "./GeometryQuery";
-import { TangentOptions } from "./internalContexts/AnnounceTangentStrokeHandler";
 import { CurveOffsetXYHandler } from "./internalContexts/CurveOffsetXYHandler";
 import { EllipticalArcApproximationContext } from "./internalContexts/EllipticalArcApproximationContext";
 import { PlaneAltitudeRangeContext } from "./internalContexts/PlaneAltitudeRangeContext";
@@ -903,37 +902,33 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
   }
   /** Override of [[CurvePrimitive.emitTangents]] for Arc3d. */
   public override emitTangents(
-    spacePoint: Point3d, announceTangent: (tangent: CurveLocationDetail) => any, tangOpts?: TangentOptions,
+    spacePoint: Point3d, announceTangent: (tangent: CurveLocationDetail) => any, options?: TangentOptions,
   ): void {
     const centerToPoint = Vector3d.createStartEnd(this.centerRef, spacePoint);
-    let localCenterToPoint: Vector3d | undefined;
-    const vectorToEye = tangOpts?.vectorToEye;
-    if (vectorToEye) {
-      const arcToView = Matrix3d.createColumns(this.matrixRef.getColumn(0), this.matrixRef.getColumn(1), vectorToEye);
-      localCenterToPoint = arcToView.multiplyInverse(centerToPoint);
+    let centerToLocalPoint: Vector3d | undefined;
+    if (options?.vectorToEye) {
+      const arcToView = Matrix3d.createColumns(this.matrixRef.getColumn(0), this.matrixRef.getColumn(1), options.vectorToEye);
+      centerToLocalPoint = arcToView.multiplyInverse(centerToPoint);
     } else {
-      localCenterToPoint = this.matrixRef.multiplyInverse(centerToPoint)!;
+      centerToLocalPoint = this.matrixRef.multiplyInverse(centerToPoint)!;
     }
-    if (localCenterToPoint === undefined)
+    if (centerToLocalPoint === undefined)
       return;
-    // localCenterToPoint is measured in the (de-skewed and descaled) coordinate system of the arc U and V axes.
-    // that is, the arc is now a unit circle.
-    // angle alpha is from the local x axis to localCenterToPoint.
-    // angle beta is from that to the tangency points.
-    // (the inverse transformation preserves parameter angle in the ellipse sweep)
-    if (localCenterToPoint !== undefined) {
-      const distanceSquaredXYToPoint = localCenterToPoint.magnitudeSquaredXY();
-      if (distanceSquaredXYToPoint < 1.0) {
-        // the point is inside the ellipse
-      } else {
-        // distanceToTangencySquared + unitCircleRadiusSquared = distanceSquaredXYToPoint
-        const unitCircleRadiusSquared = 1.0;
-        const distanceToTangency = Math.sqrt(distanceSquaredXYToPoint - unitCircleRadiusSquared);
-        const alpha = Math.atan2(localCenterToPoint.y, localCenterToPoint.x);
+    // centerToLocalPoint is a vector in the local coordinate system of the as-viewed arc.
+    // In other words, the local arc is the unit circle.
+    // alpha is the angle from the local x-axis to centerToLocalPoint.
+    // beta is the nonnegative angle from centerToLocalPoint to a tangency radial.
+    // Tangency angles are preserved by local <-> world transformation.
+    if (centerToLocalPoint !== undefined) {
+      const hypotenuseSquared = centerToLocalPoint.magnitudeSquaredXY();
+      if (hypotenuseSquared >= 1.0) { // localPoint lies outside the unit circle...
+        // ...and forms a right triangle with unit radial leg to tangent point
+        const distanceToTangency = Math.sqrt(hypotenuseSquared - 1.0);
+        const alpha = Math.atan2(centerToLocalPoint.y, centerToLocalPoint.x);
         const beta = Math.atan2(distanceToTangency, 1);
         for (const theta of [alpha + beta, alpha - beta]) {
           const fraction = this.sweep.radiansToPositivePeriodicFraction(theta);
-          if (tangOpts?.extend || (0 <= fraction && fraction <= 1.0)) {
+          if (options?.extend || (0 <= fraction && fraction <= 1.0)) {
             const tangent = CurveLocationDetail.createCurveFractionPoint(this, fraction, this.fractionToPoint(fraction));
             announceTangent(tangent);
           }
