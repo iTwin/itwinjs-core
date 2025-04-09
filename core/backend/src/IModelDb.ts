@@ -2039,7 +2039,7 @@ export namespace IModelDb {
           return this._iModel[_nativeDb].getElement(props) as T;
         }
       } catch (err: any) {
-        throw new IModelError(err.errorNumber, err.message);
+        throw new IModelError(err.errorNumber, "reading element");
       }
     }
 
