@@ -105,8 +105,7 @@ export class ECVersion {
  */
 export class SchemaKey {
   private _name: ECName;
-  /** @internal */
-  protected _version: ECVersion;
+  private _version: ECVersion;
   // public checksum: number;
   // TODO: need to add a checksum
 
