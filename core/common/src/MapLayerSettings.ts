@@ -195,11 +195,11 @@ export interface ImageMapLayerProps extends CommonMapLayerProps {
  */
 export enum ModelMapLayerDrapeTarget {
   /** Drape only onto the globe. */
-  Globe = 0,
+  Globe = 1 << 0,
   /** Drape only onto all attached reality data. */
-  RealityData = 1,
+  RealityData = 1 << 1,
   /** Drape only onto all models within the iModel. */
-  IModel = 2,
+  IModel = 1 << 2,
 }
 
 /** JSON representation of a [[ModelMapLayerSettings]].
