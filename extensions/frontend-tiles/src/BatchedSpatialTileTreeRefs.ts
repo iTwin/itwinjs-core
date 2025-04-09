@@ -257,6 +257,8 @@ class ProxySpatialTileTreeReferences implements SpatialTileTreeReferences {
     if (this._attachArgs) {
       this._impl.attachToViewport(this._attachArgs);
       this._attachArgs.invalidateSymbologyOverrides();
+      // Force scene invalidation after replacing Proxy with real BatchedTileTree
+      this._attachArgs.invalidateScene();
       this._attachArgs = undefined;
     }
   }

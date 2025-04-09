@@ -756,8 +756,6 @@ export abstract class Viewport implements Disposable, TileUser {
     this.view.displayStyle.settings.dropModelAppearanceOverride(id);
   }
 
-  /** Indicates whether the scene is being loaded for the first time, requiring initial invalidation. */
-  private _firstTimeLoaded = true;
   /** Some changes may or may not require us to invalidate the scene.
    * Specifically, when shadows are enabled or we are displaying view attachments, the following changes may affect the visibility or transparency of elements or features:
    * - Viewed categories and subcategories;
@@ -770,12 +768,8 @@ export abstract class Viewport implements Disposable, TileUser {
     if (!this._sceneValid)
       return;
 
-    if (this.view.displayStyle.wantShadows || this.view.isSheetView()) {
+    if (this.view.displayStyle.wantShadows || this.view.isSheetView())
       this.invalidateScene();
-    } else if (this._firstTimeLoaded) {
-      this.invalidateScene();
-      this._firstTimeLoaded = false;
-    }
   }
 
   /** Enable or disable display of elements belonging to a set of categories specified by Id.
