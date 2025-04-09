@@ -2836,28 +2836,27 @@ export class Matrix3d implements BeJSONFunctions {
     return count === 3;
   }
   /**
-   * Adjust the matrix in place to make is a `rigid` matrix so that:
-   * * columns are perpendicular and have unit length.
-   * * transpose equals inverse.
-   * * mirroring is removed.
-   * * This function internally uses `axisOrderCrossProductsInPlace` to make the matrix rigid.
-   * @param axisOrder how to reorder the matrix columns
-   * @return whether the adjusted matrix is `rigid` on return
+   * Adjust the matrix in place to make it rigid:
+   * * Columns are perpendicular and have unit length.
+   * * Transpose equals inverse.
+   * @param axisOrder how to reorder the matrix columns. A left-handed ordering will return a mirror.
+   * @return whether the adjusted matrix is rigid on return
    */
   public makeRigid(axisOrder: AxisOrder = AxisOrder.XYZ): boolean {
     const maxAbs = this.maxAbs();
     if (Geometry.isSmallMetricDistance(maxAbs))
       return false;
     const scale = 1.0 / maxAbs;
-    this.scaleColumnsInPlace(scale, scale, scale);
+    this.scaleColumnsInPlace(scale, scale, scale); // improve numerical stability
     this.axisOrderCrossProductsInPlace(axisOrder);
     return this.normalizeColumnsInPlace();
   }
   /**
-   * Create a new orthogonal matrix (perpendicular columns, unit length, transpose is inverse).
-   * * Columns are taken from the source Matrix3d in order indicated by the axis order.
-   * * Mirroring in the matrix is removed.
-   * * This function internally uses `axisOrderCrossProductsInPlace` to make the matrix rigid.
+   * Create a new orthogonal matrix by calling [[makeRigid]] on a clone of `source`.
+   * @param source input matrix
+   * @param axisOrder how to reorder the matrix columns. A left-handed ordering will return a mirror.
+   * @param result optional preallocated result to populate and return
+   * @returns rigid matrix, or `undefined` if the operation failed.
    */
   public static createRigidFromMatrix3d(
     source: Matrix3d, axisOrder: AxisOrder = AxisOrder.XYZ, result?: Matrix3d,
