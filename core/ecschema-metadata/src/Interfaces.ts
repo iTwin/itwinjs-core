@@ -101,8 +101,15 @@ export interface HasMixins {
  * @beta
  */
 export interface FormatsProvider {
-  getFormat(name: string, unitSystem?: string): Promise<SchemaItemFormatProps | undefined>;
+  getFormat(name: string): Promise<SchemaItemFormatProps | undefined>;
 
-  onFormatChanged: BeUiEvent<string>;
   onFormatsChanged: BeUiEvent<string[]>;
+}
+
+/** This interface is implemented by a class that would provide and allow creating formats for use in formatting quantities.
+ * @beta
+ */
+export interface MutableFormatsProvider extends FormatsProvider {
+  addFormat(name: string, format: SchemaItemFormatProps): Promise<void>;
+  removeFormat(name: string): Promise<void>;
 }

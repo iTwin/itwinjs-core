@@ -775,9 +775,7 @@ export interface FormatSet {
 // @beta
 export interface FormatsProvider {
     // (undocumented)
-    getFormat(name: string, unitSystem?: string): Promise<SchemaItemFormatProps | undefined>;
-    // (undocumented)
-    onFormatChanged: BeUiEvent<string>;
+    getFormat(name: string): Promise<SchemaItemFormatProps | undefined>;
     // (undocumented)
     onFormatsChanged: BeUiEvent<string[]>;
 }
@@ -1020,6 +1018,14 @@ export class Mixin extends ECClass {
 export interface MixinProps extends ClassProps {
     // (undocumented)
     readonly appliesTo: string;
+}
+
+// @beta
+export interface MutableFormatsProvider extends FormatsProvider {
+    // (undocumented)
+    addFormat(name: string, format: SchemaItemFormatProps): Promise<void>;
+    // (undocumented)
+    removeFormat(name: string): Promise<void>;
 }
 
 // @beta (undocumented)
@@ -1897,19 +1903,15 @@ export class SchemaContext {
 
 // @beta
 export class SchemaFormatsProvider implements FormatsProvider {
-    constructor(contextOrLocater: ISchemaLocater);
-    addFormat(name: string, formatProps: SchemaItemFormatProps): Promise<void>;
+    constructor(contextOrLocater: ISchemaLocater, unitSystem: UnitSystemKey);
     // (undocumented)
-    clearFormatCache(): Promise<void>;
-    getFormat(name: string, unitSystem?: UnitSystemKey): Promise<SchemaItemFormatProps | undefined>;
-    // (undocumented)
-    onCacheCleared: BeUiEvent<void>;
-    // (undocumented)
-    onFormatChanged: BeUiEvent<string>;
+    get context(): SchemaContext;
+    getFormat(name: string): Promise<SchemaItemFormatProps | undefined>;
     // (undocumented)
     onFormatsChanged: BeUiEvent<string[]>;
     // (undocumented)
-    removeFormat(name: string): Promise<void>;
+    get unitSystem(): UnitSystemKey;
+    set unitSystem(unitSystem: UnitSystemKey);
 }
 
 // @internal

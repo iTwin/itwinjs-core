@@ -23,10 +23,8 @@ import { UnitSystemKey } from "@itwin/core-quantity";
  */
 export class SchemaFormatsProvider implements FormatsProvider {
   private _context: SchemaContext;
-  private _formatCache: Map<string, SchemaItemFormatProps> = new Map();
-  public onFormatChanged = new BeUiEvent<string>();
+  private _unitSystem: UnitSystemKey;
   public onFormatsChanged = new BeUiEvent<string[]>();
-  public onCacheCleared = new BeUiEvent<void>();
   /**
    *
    * @param contextOrLocater The SchemaContext or a different ISchemaLocater implementation used to retrieve the schema. The SchemaContext
@@ -34,39 +32,25 @@ export class SchemaFormatsProvider implements FormatsProvider {
    * created and the locater will be added.
    * @param _unitExtraData Additional data like alternate display label not found in Units Schema to match with Units; Defaults to empty array.
    */
-  constructor(contextOrLocater: ISchemaLocater) {
+  constructor(contextOrLocater: ISchemaLocater, unitSystem: UnitSystemKey) {
     if (contextOrLocater instanceof SchemaContext) {
       this._context = contextOrLocater;
     } else {
       this._context = new SchemaContext();
       this._context.addLocater(contextOrLocater);
     }
+    this._unitSystem = unitSystem;
   }
 
-  /**
-   * Try retrieving the format from schemas. If the format is not part of the base Formats schema, but from a KindOfQuantity, the format will be constructed
-   * from the default presentation format of that KindOfQuantity.
-   */
-  private async getFormatFromSchema(id: string, unitSystem?: UnitSystemKey): Promise<SchemaItemFormatProps | undefined> {
-    const [schemaName, schemaItemName] = SchemaItem.parseFullName(id);
-    const schemaKey = new SchemaKey(schemaName);
-    const schema = await this._context.getSchema(schemaKey);
-    if (!schema) {
-      return undefined;
-    }
-    const itemKey = new SchemaItemKey(schemaItemName, schema.schemaKey);
+  public get context() { return this._context; }
+  public get unitSystem() { return this._unitSystem; }
 
-    if (schema.name === "Formats") {
-      const format = await this._context.getSchemaItem(itemKey, Format);
-      if (!format) {
-        return undefined;
-      }
-      return format.toJSON(true);
-    }
-    return this.getKindOfQuantityFormatFromSchema(itemKey, unitSystem);
+  public set unitSystem(unitSystem: UnitSystemKey) {
+    this._unitSystem = unitSystem;
+    this.onFormatsChanged.raiseEvent([this._unitSystem]);
   }
 
-  private async getKindOfQuantityFormatFromSchema(itemKey: SchemaItemKey, unitSystem?: UnitSystemKey): Promise<SchemaItemFormatProps | undefined> {
+  private async getKindOfQuantityFormatFromSchema(itemKey: SchemaItemKey, unitSystem: UnitSystemKey): Promise<SchemaItemFormatProps | undefined> {
     const kindOfQuantity = await this._context.getSchemaItem(itemKey, KindOfQuantity);
 
     if (!kindOfQuantity) {
@@ -97,36 +81,29 @@ export class SchemaFormatsProvider implements FormatsProvider {
     return getFormatProps(defaultFormat);
   }
 
+
   /**
-   * Retrieves a Format from the cache or from the schema. If retrieving from the schema, and the format is part of a KindOfQuantity,
-   * an optional UnitSystemKey can be provided to get the first presentation format in the KindOfQuantity that matches the unit system.
+   * Retrieves a Format from a SchemaContext. If the format is part of a KindOfQuantity, the first presentation format in the KindOfQuantity that matches the current unit system will be retrieved.
    * @param name The full name of the Format or KindOfQuantity.
    * @returns
    */
-  public async getFormat(name: string, unitSystem?: UnitSystemKey): Promise<SchemaItemFormatProps | undefined> {
-    if (this._formatCache.has(name)) {
-      return this._formatCache.get(name);
+  public async getFormat(name: string): Promise<SchemaItemFormatProps | undefined> {
+    const [schemaName, schemaItemName] = SchemaItem.parseFullName(name);
+    const schemaKey = new SchemaKey(schemaName);
+    const schema = await this._context.getSchema(schemaKey);
+    if (!schema) {
+      return undefined;
     }
-    return this.getFormatFromSchema(name, unitSystem);
-  }
+    const itemKey = new SchemaItemKey(schemaItemName, schema.schemaKey);
 
-  /**
-   * Adds a format to the provider's cache. If the cache already has a format with the same name, override the format.
-   */
-  public async addFormat(name: string, formatProps: SchemaItemFormatProps): Promise<void> {
-    this._formatCache.set(name, formatProps);
-    this.onFormatChanged.emit(name);
-  }
-
-  public async removeFormat(name: string): Promise<void> {
-    this._formatCache.delete(name);
-    this.onFormatChanged.emit(name);
-  }
-
-  public async clearFormatCache(): Promise<void> {
-    const keys = Array.from(this._formatCache.keys());
-    this._formatCache.clear();
-    this.onFormatsChanged.emit(keys);
+    if (schema.name === "Formats") {
+      const format = await this._context.getSchemaItem(itemKey, Format);
+      if (!format) {
+        return undefined;
+      }
+      return format.toJSON(true);
+    }
+    return this.getKindOfQuantityFormatFromSchema(itemKey, this._unitSystem);
   }
 }
 

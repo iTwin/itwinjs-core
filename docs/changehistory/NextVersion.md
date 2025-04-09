@@ -62,9 +62,9 @@ Table of contents:
       - [No pending/local changes](#no-pendinglocal-changes)
       - [With pending/local changes](#with-pendinglocal-changes)
     - [Reworked @itwin/ecschema-metadata package](#reworked-itwinecschema-metadata-package)
-      - [Tips for adjusting existing code:](#tips-for-adjusting-existing-code)
+      - [Tips for adjusting existing code](#tips-for-adjusting-existing-code)
   - [Deprecated ECSqlStatement](#deprecated-ecsqlstatement)
-  - [Attach/detach db](#attachdetach-db)
+  - [Attach/detach db](#attachdetach-db-1)
 
 ## Selection set
 
@@ -185,7 +185,7 @@ Allow the attachment of an ECDb/IModel to a connection and running ECSQL that co
 
 ### FormatsProvider
 
-A [FormatsProvider]($ecschema-metadata) interface and [SchemaFormatsProvider]($ecschema-metadata) class have been added. This enables quick setup of [FormatterSpec]($quantity) and [ParserSpec]($quantity) to help with display formatting.
+[FormatsProvider]($ecschema-metadata) and [MutableFormatsProvider] interfaces and a [SchemaFormatsProvider]($ecschema-metadata) class have been added. This enables quick setup of [FormatterSpec]($quantity) and [ParserSpec]($quantity) to help with display formatting.
 
 ### Persistence
 

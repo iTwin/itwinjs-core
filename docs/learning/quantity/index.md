@@ -49,9 +49,9 @@ For a detailed description of all the setting supported by FormatProp see the EC
 
 A [FormatsProvider]($ecschema-metadata) interface helps provide all the necessary formats for displaying formatted quantity values, while also enabling users to add formats of their own.
 
-The [SchemaFormatsProvider]($ecschema-metadata) takes in a [SchemaContext]($ecschema-metadata), to provide default Formats coming from schemas. Users can map a KindOfQuantity to a Format when adding formats to this FormatsProvider.
+A [MutableFormatsProivder]($ecschema-metadata) interface extends the read-only FormatsProvider above by allowing adding or removing Formats to the provider.
 
-> Adding a format to a SchemaFormatsProvider will not modify the schema, it will only populate the format cache of the provider.
+The [SchemaFormatsProvider]($ecschema-metadata) takes in a [SchemaContext]($ecschema-metadata), to provide Formats coming from schemas. The SchemaFormatsProvider also requires a [UnitSystemKey]($quantity) passed in to filter the formatProps returned, according to the current unit system set in the SchemaFormatsProvider.
 
 #### Units Provider
 
@@ -202,19 +202,6 @@ The example below uses the SchemaFormatsProvider, an implementation of a Formats
 
 </details>
 
-When retrieving a format from a schema, users might want to ensure the format they get matches the unit system they are currently using. They can add an optional [UnitSystemKey]($quantity) to the getFormat method, like such:
-
-<details>
-  <summary>Example of Formatting with Unit System</summary>
-
-```ts
-[[include:Quantity_Formatting.Schema_Formats_Provider_Simple_Formatting_With_Unit_System]]
-```
-
-</details>
-
-> If the format was retrieved through the cache of the SchemaFormatsProvider, it won't use the unitSystem provided.
-
 The example below uses the SchemaFormatsProvider, an implementation of a FormatsProvider, found in `ecschema-metadata` to parse values associated with the length of an object.
 
 <details>
@@ -222,6 +209,17 @@ The example below uses the SchemaFormatsProvider, an implementation of a Formats
 
 ```ts
 [[include:Quantity_Formatting.Schema_Formats_Provider_Simple_Parsing]]
+```
+
+</details>
+
+When retrieving a format from a schema, users might want to ensure the format they get matches the unit system they are currently using. They can either pass in the unit system on initialization, or change them after initialization, like so:
+
+<details>
+  <summary>Example of Formatting with Unit System</summary>
+
+```ts
+[[include:Quantity_Formatting.Schema_Formats_Provider_Simple_Formatting_With_Unit_System]]
 ```
 
 </details>

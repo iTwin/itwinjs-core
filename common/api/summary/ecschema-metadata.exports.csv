@@ -79,6 +79,7 @@ beta;type;LazyLoadedUnit
 beta;type;LazyLoadedUnitSystem
 beta;class;Mixin
 beta;interface;MixinProps
+beta;interface;MutableFormatsProvider
 beta;class;NavigationProperty
 beta;interface;NavigationPropertyProps
 beta;interface;NoDelayedPromiseMethods
