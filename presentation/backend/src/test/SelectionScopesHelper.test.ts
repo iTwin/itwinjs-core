@@ -4,13 +4,13 @@
  *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as moq from "typemoq";
-import { DrawingGraphic, ECSqlStatement, ECSqlValue, Element, IModelDb } from "@itwin/core-backend";
-import { DbResult, Id64, Id64String } from "@itwin/core-bentley";
-import { CodeProps, ElementProps, GeometricElement2dProps, IModelError, ModelProps } from "@itwin/core-common";
+import { DrawingGraphic, Element, IModelDb } from "@itwin/core-backend";
+import { Id64, Id64String } from "@itwin/core-bentley";
+import { CodeProps, ElementProps, GeometricElement2dProps, ModelProps } from "@itwin/core-common";
 import { InstanceKey } from "@itwin/presentation-common";
-import { createTestECInstanceKey } from "@itwin/presentation-common/lib/cjs/test";
-import { SelectionScopesHelper } from "../presentation-backend/SelectionScopesHelper";
-
+import { createTestECInstanceKey } from "@itwin/presentation-common/test-utils";
+import { SelectionScopesHelper } from "../presentation-backend/SelectionScopesHelper.js";
+import { stubECSqlReader } from "./Helpers.js";
 describe("SelectionScopesHelper", () => {
   describe("getSelectionScopes", () => {
     it("returns expected selection scopes", async () => {
@@ -20,56 +20,10 @@ describe("SelectionScopesHelper", () => {
   });
 
   describe("computeSelection", () => {
+    let elementIdCounter = 1;
     const imodelMock = moq.Mock.ofType<IModelDb>();
     const elementsMock = moq.Mock.ofType<IModelDb.Elements>();
     const modelsMock = moq.Mock.ofType<IModelDb.Models>();
-
-    const setupIModelForElementKey = (key: InstanceKey) => {
-      // this mock simulates the element key query returning a single row with results for the given key (`getElementKey` in Utils.ts)
-      imodelMock
-        .setup((x) =>
-          x.withPreparedStatement(
-            moq.It.is((q) => typeof q === "string" && q.includes("SELECT ECClassId FROM")),
-            moq.It.isAny(),
-          ),
-        )
-        .callback((_q, cb) => {
-          const valueMock = moq.Mock.ofType<ECSqlValue>();
-          valueMock.setup((x) => x.getClassNameForClassId()).returns(() => key.className);
-          const stmtMock = moq.Mock.ofType<ECSqlStatement>();
-          stmtMock.setup((x) => x.step()).returns(() => DbResult.BE_SQLITE_ROW);
-          stmtMock.setup((x) => x.getValue(0)).returns(() => valueMock.object);
-          cb(stmtMock.object);
-        });
-    };
-
-    const setupIModelForInvalidId = () => {
-      // this mock simulates trying to bind an invalid id to the element key query (`getElementKey` in Utils.ts)
-      imodelMock
-        .setup((x) =>
-          x.withPreparedStatement(
-            moq.It.is((q) => typeof q === "string" && q.includes("SELECT ECClassId FROM")),
-            moq.It.isAny(),
-          ),
-        )
-        .callback((_q, cb) => {
-          const stmtMock = moq.Mock.ofType<ECSqlStatement>();
-          stmtMock.setup((x) => x.bindId(moq.It.isAnyNumber(), moq.It.isAny())).throws(new IModelError(DbResult.BE_SQLITE_ERROR, "Error binding Id"));
-          stmtMock.setup((x) => x.step()).returns(() => DbResult.BE_SQLITE_ERROR);
-          cb(stmtMock.object);
-        });
-    };
-
-    const setupIModelForNoResultStatement = () => {
-      // this mock simulates any kind of query returning no results
-      imodelMock
-        .setup((x) => x.withPreparedStatement(moq.It.isAnyString(), moq.It.isAny()))
-        .callback((_q, cb) => {
-          const stmtMock = moq.Mock.ofType<ECSqlStatement>();
-          stmtMock.setup((x) => x.step()).returns(() => DbResult.BE_SQLITE_DONE);
-          cb(stmtMock.object);
-        });
-    };
 
     const createTestModelProps = (props?: Partial<ModelProps>): ModelProps => ({
       classFullName: "TestSchema:TestClass",
@@ -104,31 +58,32 @@ describe("SelectionScopesHelper", () => {
       ...props,
     });
 
-    const setupIModelForFunctionalKeyQuery = (props: { graphicalElementKey: InstanceKey; stepResult?: DbResult; functionalElementKey?: InstanceKey }) => {
+    const setupIModelForFunctionalKeyQuery = (props: { graphicalElementKey: InstanceKey; functionalElementKey?: InstanceKey }) => {
       const functionalKeyQueryIdentifier = "SELECT funcSchemaDef.Name || '.' || funcClassDef.Name funcElClassName, fe.ECInstanceId funcElId";
       imodelMock
         .setup((x) =>
-          x.withPreparedStatement(
+          x.createQueryReader(
             moq.It.is((q) => typeof q === "string" && q.includes(functionalKeyQueryIdentifier)),
             moq.It.isAny(),
           ),
         )
-        .returns((_q, cb) => {
-          const stmtMock = moq.Mock.ofType<ECSqlStatement>();
-          stmtMock.setup((x) => x.step()).returns(() => props.stepResult ?? DbResult.BE_SQLITE_ROW);
-          stmtMock
-            .setup((x) => x.getRow())
-            .returns(() => ({
+        .returns(() =>
+          stubECSqlReader([
+            {
               funcElClassName: props.functionalElementKey?.className,
               funcElId: props.functionalElementKey?.id,
-            }));
-          return cb(stmtMock.object);
-        });
+            },
+          ]),
+        );
     };
 
-    const setupIModelForElementProps = (props?: { key?: InstanceKey; parentKey?: InstanceKey; isRemoved?: boolean }) => {
-      const key = props?.key ?? createTestECInstanceKey();
-      const elementProps = props?.isRemoved ? undefined : props?.parentKey ? createTestElementProps(props.parentKey.id) : createTestTopmostElementProps();
+    const setupIModelForElementProps = (props?: { key?: InstanceKey; parentKey?: InstanceKey }) => {
+      const key = props?.key ?? createTestECInstanceKey({ id: Id64.fromUint32Pair(elementIdCounter++, 999) });
+      const elementProps = {
+        ...(props?.parentKey ? createTestElementProps(props.parentKey.id) : createTestTopmostElementProps()),
+        classFullName: key.className,
+        id: key.id,
+      };
       elementsMock.setup((x) => x.tryGetElementProps(key.id)).returns(() => elementProps);
       return { key, props: elementProps };
     };
@@ -137,16 +92,12 @@ describe("SelectionScopesHelper", () => {
       const classDerivesFromQueryIdentifier = "SELECT 1";
       imodelMock
         .setup((x) =>
-          x.withPreparedStatement(
+          x.createQueryReader(
             moq.It.is((q) => typeof q === "string" && q.includes(classDerivesFromQueryIdentifier)),
             moq.It.isAny(),
           ),
         )
-        .returns((_q, cb) => {
-          const stmtMock = moq.Mock.ofType<ECSqlStatement>();
-          stmtMock.setup((x) => x.step()).returns(() => (doesDeriveFromSuppliedClass ? DbResult.BE_SQLITE_ROW : DbResult.BE_SQLITE_DONE));
-          return cb(stmtMock.object);
-        });
+        .returns(() => stubECSqlReader(doesDeriveFromSuppliedClass ? [{}] : []));
     };
 
     beforeEach(() => {
@@ -157,6 +108,10 @@ describe("SelectionScopesHelper", () => {
       imodelMock.setup((x) => x.models).returns(() => modelsMock.object);
     });
 
+    afterEach(() => {
+      elementIdCounter = 1;
+    });
+
     it("throws on invalid scopeId", async () => {
       await expect(SelectionScopesHelper.computeSelection({ imodel: imodelMock.object, elementIds: [], scope: { id: "invalid" } })).to.eventually.be.rejected;
     });
@@ -164,7 +119,7 @@ describe("SelectionScopesHelper", () => {
     describe("scope: 'element'", () => {
       it("returns element keys", async () => {
         const keys = [createTestECInstanceKey({ id: "0x111" }), createTestECInstanceKey({ id: "0x222" })];
-        keys.forEach((key) => setupIModelForElementKey(key));
+        keys.forEach((key) => setupIModelForElementProps({ key }));
 
         const result = await SelectionScopesHelper.computeSelection({ imodel: imodelMock.object, elementIds: keys.map((k) => k.id), scope: { id: "element" } });
         expect(result.size).to.eq(2);
@@ -173,15 +128,13 @@ describe("SelectionScopesHelper", () => {
 
       it("skips non-existing element ids", async () => {
         const keys = [createTestECInstanceKey()];
-        setupIModelForNoResultStatement();
-
         const result = await SelectionScopesHelper.computeSelection({ imodel: imodelMock.object, elementIds: keys.map((k) => k.id), scope: { id: "element" } });
         expect(result.size).to.eq(0);
       });
 
       it("skips transient element ids", async () => {
         const keys = [createTestECInstanceKey(), { className: "any:class", id: createTransientElementId() }];
-        setupIModelForElementKey(keys[0]);
+        setupIModelForElementProps({ key: keys[0] });
 
         const result = await SelectionScopesHelper.computeSelection({ imodel: imodelMock.object, elementIds: keys.map((k) => k.id), scope: { id: "element" } });
         expect(result.size).to.eq(1);
@@ -190,9 +143,8 @@ describe("SelectionScopesHelper", () => {
 
       it("handles invalid id", async () => {
         const validKeys = [createTestECInstanceKey({ id: "0x111" }), createTestECInstanceKey({ id: "0x222" })];
-        setupIModelForElementKey(validKeys[0]);
-        setupIModelForInvalidId();
-        setupIModelForElementKey(validKeys[1]);
+        setupIModelForElementProps({ key: validKeys[0] });
+        setupIModelForElementProps({ key: validKeys[1] });
 
         const result = await SelectionScopesHelper.computeSelection({
           imodel: imodelMock.object,
@@ -208,7 +160,7 @@ describe("SelectionScopesHelper", () => {
         const parent2 = setupIModelForElementProps({ key: createTestECInstanceKey(), parentKey: parent3.key });
         const parent1 = setupIModelForElementProps({ key: createTestECInstanceKey(), parentKey: parent2.key });
         const element = setupIModelForElementProps({ key: createTestECInstanceKey(), parentKey: parent1.key });
-        setupIModelForElementKey(parent2.key);
+        setupIModelForElementProps({ key: parent2.key });
 
         const result = await SelectionScopesHelper.computeSelection({
           imodel: imodelMock.object,
@@ -223,14 +175,11 @@ describe("SelectionScopesHelper", () => {
     describe("scope: 'assembly'", () => {
       it("returns parent keys", async () => {
         const parentKeys = [createTestECInstanceKey({ id: "0x111" }), createTestECInstanceKey({ id: "0x222" })];
-        parentKeys.forEach((key) => setupIModelForElementKey(key));
-        const elementProps = parentKeys.map((pk) => createTestElementProps(pk.id));
-        elementProps.forEach((p) => {
-          elementsMock.setup((x) => x.tryGetElementProps(p.id!)).returns(() => p);
-        });
+        parentKeys.forEach((key) => setupIModelForElementProps({ key }));
+        const elementKeys = parentKeys.map((pk) => setupIModelForElementProps({ parentKey: pk }).key);
         const result = await SelectionScopesHelper.computeSelection({
           imodel: imodelMock.object,
-          elementIds: elementProps.map((p) => p.id!),
+          elementIds: elementKeys.map(({ id }) => id),
           scope: { id: "assembly" },
         });
         expect(result.size).to.eq(2);
@@ -238,15 +187,11 @@ describe("SelectionScopesHelper", () => {
       });
 
       it("does not duplicate keys", async () => {
-        const parentKey = createTestECInstanceKey();
-        setupIModelForElementKey(parentKey);
-        const elementProps = [createTestElementProps(parentKey.id), createTestElementProps(parentKey.id)];
-        elementProps.forEach((p) => {
-          elementsMock.setup((x) => x.tryGetElementProps(p.id!)).returns(() => p);
-        });
+        const { key: parentKey } = setupIModelForElementProps();
+        const elementKeys = [setupIModelForElementProps({ parentKey }).key, setupIModelForElementProps({ parentKey }).key];
         const result = await SelectionScopesHelper.computeSelection({
           imodel: imodelMock.object,
-          elementIds: elementProps.map((p) => p.id!),
+          elementIds: elementKeys.map(({ id }) => id),
           scope: { id: "assembly" },
         });
         expect(result.size).to.eq(1);
@@ -255,77 +200,42 @@ describe("SelectionScopesHelper", () => {
 
       it("returns element key if it has no parent", async () => {
         const key = createTestECInstanceKey();
-        setupIModelForElementKey(key);
-        const elementProps = createTestTopmostElementProps();
-        elementsMock.setup((x) => x.tryGetElementProps(key.id)).returns(() => elementProps);
+        setupIModelForElementProps({ key });
         const result = await SelectionScopesHelper.computeSelection({ imodel: imodelMock.object, elementIds: [key.id], scope: { id: "assembly" } });
         expect(result.size).to.eq(1);
         expect(result.has(key)).to.be.true;
       });
 
-      it("skips removed elements", async () => {
-        // set up one existing element with parent
-        const parentKey = createTestECInstanceKey();
-        setupIModelForElementKey(parentKey);
-        const existingElementProps = createTestElementProps(parentKey.id);
-        elementsMock.setup((x) => x.tryGetElementProps(existingElementProps.id!)).returns(() => existingElementProps);
-        // set up removed element props
-        const removedElementProps = createTestElementProps();
-        elementsMock.setup((x) => x.tryGetElementProps(removedElementProps.id!)).returns(() => undefined);
-        setupIModelForNoResultStatement();
-        // request
-        const result = await SelectionScopesHelper.computeSelection({
-          imodel: imodelMock.object,
-          elementIds: [existingElementProps.id!, removedElementProps.id!],
-          scope: { id: "assembly" },
-        });
-        expect(result.size).to.eq(1);
-        expect(result.has(parentKey)).to.be.true;
-      });
-
       it("skips non-existing element ids", async () => {
         const key = createTestECInstanceKey();
-        setupIModelForNoResultStatement();
-        const elementProps = createTestTopmostElementProps();
-        elementsMock.setup((x) => x.tryGetElementProps(key.id)).returns(() => elementProps);
+        elementsMock.setup((x) => x.tryGetElementProps(key.id)).returns(() => undefined);
         const result = await SelectionScopesHelper.computeSelection({ imodel: imodelMock.object, elementIds: [key.id], scope: { id: "assembly" } });
         expect(result.size).to.eq(0);
       });
 
       it("skips transient element ids", async () => {
-        const parentKeys = [createTestECInstanceKey()];
-        setupIModelForElementKey(parentKeys[0]);
-        const elementProps = [createTestElementProps(parentKeys[0].id)];
-        elementsMock.setup((x) => x.tryGetElementProps(elementProps[0].id!)).returns(() => elementProps[0]);
-        const ids = [elementProps[0].id!, createTransientElementId()];
+        const { key: parentKey } = setupIModelForElementProps();
+        const { key: elementKey } = setupIModelForElementProps({ parentKey });
+        const ids = [elementKey.id, createTransientElementId()];
         const result = await SelectionScopesHelper.computeSelection({ imodel: imodelMock.object, elementIds: ids, scope: { id: "assembly" } });
         expect(result.size).to.eq(1);
-        parentKeys.forEach((key) => expect(result.has(key)).to.be.true);
+        expect(result.has(parentKey)).to.be.true;
       });
     });
 
     describe("scope: 'top-assembly'", () => {
       it("returns topmost parent key", async () => {
-        const grandparent = createTestTopmostElementProps();
-        const grandparentKey = createTestECInstanceKey();
-        setupIModelForElementKey(grandparentKey);
-        elementsMock.setup((x) => x.tryGetElementProps(grandparentKey.id)).returns(() => grandparent);
-        const parent = createTestElementProps(grandparentKey.id);
-        const parentKey = createTestECInstanceKey();
-        elementsMock.setup((x) => x.tryGetElementProps(parentKey.id)).returns(() => parent);
-        const element = createTestElementProps(parentKey.id);
-        elementsMock.setup((x) => x.tryGetElementProps(element.id!)).returns(() => element);
+        const { key: grandparentKey } = setupIModelForElementProps();
+        const { key: parentKey } = setupIModelForElementProps({ parentKey: grandparentKey });
+        const { key: elementKey } = setupIModelForElementProps({ parentKey });
 
-        const result = await SelectionScopesHelper.computeSelection({ imodel: imodelMock.object, elementIds: [element.id!], scope: { id: "top-assembly" } });
+        const result = await SelectionScopesHelper.computeSelection({ imodel: imodelMock.object, elementIds: [elementKey.id], scope: { id: "top-assembly" } });
         expect(result.size).to.eq(1);
         expect(result.has(grandparentKey)).to.be.true;
       });
 
       it("returns element key if it has no parent", async () => {
-        const key = createTestECInstanceKey();
-        setupIModelForElementKey(key);
-        const elementProps = createTestTopmostElementProps();
-        elementsMock.setup((x) => x.tryGetElementProps(key.id)).returns(() => elementProps);
+        const { key } = setupIModelForElementProps();
         const result = await SelectionScopesHelper.computeSelection({ imodel: imodelMock.object, elementIds: [key.id], scope: { id: "top-assembly" } });
         expect(result.size).to.eq(1);
         expect(result.has(key)).to.be.true;
@@ -333,21 +243,15 @@ describe("SelectionScopesHelper", () => {
 
       it("skips non-existing element ids", async () => {
         const key = createTestECInstanceKey();
-        setupIModelForNoResultStatement();
-        const elementProps = createTestTopmostElementProps();
-        elementsMock.setup((x) => x.tryGetElementProps(key.id)).returns(() => elementProps);
+        elementsMock.setup((x) => x.tryGetElementProps(key.id)).returns(() => undefined);
         const result = await SelectionScopesHelper.computeSelection({ imodel: imodelMock.object, elementIds: [key.id], scope: { id: "top-assembly" } });
         expect(result.size).to.eq(0);
       });
 
       it("skips transient element ids", async () => {
-        const parent = createTestTopmostElementProps();
-        const parentKey = createTestECInstanceKey();
-        setupIModelForElementKey(parentKey);
-        elementsMock.setup((x) => x.tryGetElementProps(parentKey.id)).returns(() => parent);
-        const elementProps = createTestElementProps(parentKey.id);
-        elementsMock.setup((x) => x.tryGetElementProps(elementProps.id!)).returns(() => elementProps);
-        const ids = [elementProps.id!, createTransientElementId()];
+        const { key: parentKey } = setupIModelForElementProps();
+        const { key: elementKey } = setupIModelForElementProps({ parentKey });
+        const ids = [elementKey.id, createTransientElementId()];
         const result = await SelectionScopesHelper.computeSelection({ imodel: imodelMock.object, elementIds: ids, scope: { id: "top-assembly" } });
         expect(result.size).to.eq(1);
         expect(result.has(parentKey)).to.be.true;
@@ -491,10 +395,9 @@ describe("SelectionScopesHelper", () => {
 
     describe("scope: 'functional-element'", () => {
       it("returns GeometricElement3d key if it doesn't have an associated functional element or parent", async () => {
-        const graphicalElementKey = createTestECInstanceKey();
-        setupIModelDerivesFromClassQuery(true);
+        const { key: graphicalElementKey } = setupIModelForElementProps();
         setupIModelForFunctionalKeyQuery({ graphicalElementKey });
-        setupIModelForElementKey(graphicalElementKey);
+        setupIModelDerivesFromClassQuery(true);
 
         const result = await SelectionScopesHelper.computeSelection({
           imodel: imodelMock.object,
@@ -506,10 +409,10 @@ describe("SelectionScopesHelper", () => {
       });
 
       it("returns functional element key if GeometricElement3d has an associated functional element", async () => {
-        const functionalElementKey = createTestECInstanceKey();
-        const graphicalElementKey = createTestECInstanceKey();
-        setupIModelDerivesFromClassQuery(true);
+        const functionalElementKey = createTestECInstanceKey({ id: "0x111" });
+        const graphicalElementKey = createTestECInstanceKey({ id: "0x222" });
         setupIModelForFunctionalKeyQuery({ graphicalElementKey, functionalElementKey });
+        setupIModelDerivesFromClassQuery(true);
 
         const result = await SelectionScopesHelper.computeSelection({
           imodel: imodelMock.object,
@@ -521,11 +424,9 @@ describe("SelectionScopesHelper", () => {
       });
 
       it("returns GeometricElement2d key if it doesn't have an associated functional element or parent", async () => {
-        const graphicalElementKey = createTestECInstanceKey();
-        setupIModelDerivesFromClassQuery(false);
+        const { key: graphicalElementKey } = setupIModelForElementProps();
         setupIModelForFunctionalKeyQuery({ graphicalElementKey });
-        setupIModelForElementProps({ key: graphicalElementKey });
-        setupIModelForElementKey(graphicalElementKey);
+        setupIModelDerivesFromClassQuery(false);
 
         const result = await SelectionScopesHelper.computeSelection({
           imodel: imodelMock.object,
@@ -537,17 +438,13 @@ describe("SelectionScopesHelper", () => {
       });
 
       it("returns GeometricElement2d key if it has parents but none of them have related functional elements", async () => {
-        const graphicalGrandParentElementKey = createTestECInstanceKey();
-        const graphicalParentElementKey = createTestECInstanceKey();
-        const graphicalElementKey = createTestECInstanceKey();
-        setupIModelDerivesFromClassQuery(false);
+        const { key: graphicalGrandParentElementKey } = setupIModelForElementProps();
+        const { key: graphicalParentElementKey } = setupIModelForElementProps({ parentKey: graphicalGrandParentElementKey });
+        const { key: graphicalElementKey } = setupIModelForElementProps({ parentKey: graphicalParentElementKey });
         setupIModelForFunctionalKeyQuery({ graphicalElementKey });
-        setupIModelForElementProps({ key: graphicalElementKey, parentKey: graphicalParentElementKey });
         setupIModelForFunctionalKeyQuery({ graphicalElementKey: graphicalParentElementKey });
-        setupIModelForElementProps({ key: graphicalParentElementKey, parentKey: graphicalGrandParentElementKey });
         setupIModelForFunctionalKeyQuery({ graphicalElementKey: graphicalGrandParentElementKey });
-        setupIModelForElementProps({ key: graphicalGrandParentElementKey });
-        setupIModelForElementKey(graphicalElementKey);
+        setupIModelDerivesFromClassQuery(false);
 
         const result = await SelectionScopesHelper.computeSelection({
           imodel: imodelMock.object,
@@ -559,10 +456,10 @@ describe("SelectionScopesHelper", () => {
       });
 
       it("returns functional element key if GeometricElement2d has an associated functional element", async () => {
-        const functionalElementKey = createTestECInstanceKey();
-        const graphicalElementKey = createTestECInstanceKey();
-        setupIModelDerivesFromClassQuery(false);
+        const functionalElementKey = createTestECInstanceKey({ id: "0x111" });
+        const graphicalElementKey = createTestECInstanceKey({ id: "0x222" });
         setupIModelForFunctionalKeyQuery({ graphicalElementKey, functionalElementKey });
+        setupIModelDerivesFromClassQuery(false);
 
         const result = await SelectionScopesHelper.computeSelection({
           imodel: imodelMock.object,
@@ -575,15 +472,13 @@ describe("SelectionScopesHelper", () => {
 
       it("returns functional element key of the first GeometricElement2d parent that has related functional element", async () => {
         const functionalElementKey = createTestECInstanceKey();
-        const graphicalGrandParentElementKey = createTestECInstanceKey();
-        const graphicalParentElementKey = createTestECInstanceKey();
-        const graphicalElementKey = createTestECInstanceKey();
-        setupIModelDerivesFromClassQuery(false);
+        const { key: graphicalGrandParentElementKey } = setupIModelForElementProps();
+        const { key: graphicalParentElementKey } = setupIModelForElementProps({ parentKey: graphicalGrandParentElementKey });
+        const { key: graphicalElementKey } = setupIModelForElementProps({ parentKey: graphicalParentElementKey });
         setupIModelForFunctionalKeyQuery({ graphicalElementKey });
-        setupIModelForElementProps({ key: graphicalElementKey, parentKey: graphicalParentElementKey });
         setupIModelForFunctionalKeyQuery({ graphicalElementKey: graphicalParentElementKey });
-        setupIModelForElementProps({ key: graphicalParentElementKey, parentKey: graphicalGrandParentElementKey });
         setupIModelForFunctionalKeyQuery({ graphicalElementKey: graphicalGrandParentElementKey, functionalElementKey });
+        setupIModelDerivesFromClassQuery(false);
 
         const result = await SelectionScopesHelper.computeSelection({
           imodel: imodelMock.object,
@@ -595,11 +490,9 @@ describe("SelectionScopesHelper", () => {
       });
 
       it("skips transient element ids", async () => {
-        const graphicalElementKey = createTestECInstanceKey();
-        setupIModelDerivesFromClassQuery(false);
+        const { key: graphicalElementKey } = setupIModelForElementProps();
         setupIModelForFunctionalKeyQuery({ graphicalElementKey });
-        setupIModelForElementProps({ key: graphicalElementKey });
-        setupIModelForElementKey(graphicalElementKey);
+        setupIModelDerivesFromClassQuery(false);
 
         const result = await SelectionScopesHelper.computeSelection({
           imodel: imodelMock.object,
@@ -609,41 +502,13 @@ describe("SelectionScopesHelper", () => {
         expect(result.size).to.eq(1);
         expect(result.has(graphicalElementKey)).to.be.true;
       });
-
-      it("skips removed GeometricElement2d parents when looking for closest functional element", async () => {
-        setupIModelDerivesFromClassQuery(false);
-
-        // set up one element with existing parent that has a related functional element
-        const functionalElement = setupIModelForElementProps({ key: createTestECInstanceKey({ id: "0x111" }) });
-        const existingParent = setupIModelForElementProps({ key: createTestECInstanceKey({ id: "0x222" }) });
-        const existingElement = setupIModelForElementProps({ key: createTestECInstanceKey({ id: "0x333" }), parentKey: existingParent.key });
-        setupIModelForFunctionalKeyQuery({ graphicalElementKey: existingElement.key });
-        setupIModelForFunctionalKeyQuery({ graphicalElementKey: existingParent.key, functionalElementKey: functionalElement.key });
-
-        // set up one element with removed parent
-        const removedParent = setupIModelForElementProps({ key: createTestECInstanceKey({ id: "0x555" }), isRemoved: true });
-        const elementWithRemovedParent = setupIModelForElementProps({ key: createTestECInstanceKey({ id: "0x666" }), parentKey: removedParent.key });
-        setupIModelForFunctionalKeyQuery({ graphicalElementKey: elementWithRemovedParent.key });
-        setupIModelForElementKey(elementWithRemovedParent.key);
-
-        // request
-        const result = await SelectionScopesHelper.computeSelection({
-          imodel: imodelMock.object,
-          elementIds: [existingElement.key.id, elementWithRemovedParent.key.id],
-          scope: { id: "functional-element" },
-        });
-        expect(result.size).to.eq(2);
-        expect(result.has(functionalElement.key)).to.be.true;
-        expect(result.has(elementWithRemovedParent.key)).to.be.true;
-      });
     });
 
     describe("scope: 'functional-assembly'", () => {
       it("returns GeometricElement3d key if it doesn't have a parent", async () => {
-        const graphicalElementKey = createTestECInstanceKey();
+        const { key: graphicalElementKey } = setupIModelForElementProps();
+        setupIModelForFunctionalKeyQuery({ graphicalElementKey });
         setupIModelDerivesFromClassQuery(true);
-        setupIModelForElementProps({ key: graphicalElementKey });
-        setupIModelForElementKey(graphicalElementKey);
 
         const result = await SelectionScopesHelper.computeSelection({
           imodel: imodelMock.object,
@@ -655,12 +520,10 @@ describe("SelectionScopesHelper", () => {
       });
 
       it("returns GeometricElement3d parent key if it doesn't have a related functional element", async () => {
-        const graphicalParentElementKey = createTestECInstanceKey();
-        const graphicalElementKey = createTestECInstanceKey();
-        setupIModelDerivesFromClassQuery(true);
-        setupIModelForElementProps({ key: graphicalElementKey, parentKey: graphicalParentElementKey });
-        setupIModelForElementKey(graphicalParentElementKey);
+        const { key: graphicalParentElementKey } = setupIModelForElementProps();
+        const { key: graphicalElementKey } = setupIModelForElementProps({ parentKey: graphicalParentElementKey });
         setupIModelForFunctionalKeyQuery({ graphicalElementKey: graphicalParentElementKey });
+        setupIModelDerivesFromClassQuery(true);
 
         const result = await SelectionScopesHelper.computeSelection({
           imodel: imodelMock.object,
@@ -673,13 +536,11 @@ describe("SelectionScopesHelper", () => {
 
       it("returns functional element key of GeometricElement3d parent", async () => {
         const functionalElementKey = createTestECInstanceKey();
-        const graphicalGrandParentElementKey = createTestECInstanceKey();
-        const graphicalParentElementKey = createTestECInstanceKey();
-        const graphicalElementKey = createTestECInstanceKey();
-        setupIModelDerivesFromClassQuery(true);
-        setupIModelForElementProps({ key: graphicalElementKey, parentKey: graphicalParentElementKey });
-        setupIModelForElementKey(graphicalParentElementKey);
+        const { key: graphicalGrandParentElementKey } = setupIModelForElementProps();
+        const { key: graphicalParentElementKey } = setupIModelForElementProps({ parentKey: graphicalGrandParentElementKey });
+        const { key: graphicalElementKey } = setupIModelForElementProps({ parentKey: graphicalParentElementKey });
         setupIModelForFunctionalKeyQuery({ graphicalElementKey: graphicalGrandParentElementKey, functionalElementKey });
+        setupIModelDerivesFromClassQuery(true);
 
         const result = await SelectionScopesHelper.computeSelection({
           imodel: imodelMock.object,
@@ -691,11 +552,9 @@ describe("SelectionScopesHelper", () => {
       });
 
       it("returns GeometricElement2d key if it doesn't have an associated functional element or parent", async () => {
-        const graphicalElementKey = createTestECInstanceKey();
-        setupIModelDerivesFromClassQuery(false);
+        const { key: graphicalElementKey } = setupIModelForElementProps();
         setupIModelForFunctionalKeyQuery({ graphicalElementKey });
-        setupIModelForElementProps({ key: graphicalElementKey });
-        setupIModelForElementKey(graphicalElementKey);
+        setupIModelDerivesFromClassQuery(false);
 
         const result = await SelectionScopesHelper.computeSelection({
           imodel: imodelMock.object,
@@ -707,18 +566,13 @@ describe("SelectionScopesHelper", () => {
       });
 
       it("returns first GeometricElement2d parent key if none of the parents have an associated functional element", async () => {
-        const graphicalGrandParentElementKey = createTestECInstanceKey();
-        const graphicalParentElementKey = createTestECInstanceKey();
-        const graphicalElementKey = createTestECInstanceKey();
-        setupIModelDerivesFromClassQuery(false);
+        const { key: graphicalGrandParentElementKey } = setupIModelForElementProps();
+        const { key: graphicalParentElementKey } = setupIModelForElementProps({ parentKey: graphicalGrandParentElementKey });
+        const { key: graphicalElementKey } = setupIModelForElementProps({ parentKey: graphicalParentElementKey });
         setupIModelForFunctionalKeyQuery({ graphicalElementKey });
-        setupIModelForElementProps({ key: graphicalElementKey, parentKey: graphicalParentElementKey });
         setupIModelForFunctionalKeyQuery({ graphicalElementKey: graphicalParentElementKey });
-        setupIModelForElementProps({ key: graphicalParentElementKey, parentKey: graphicalGrandParentElementKey });
         setupIModelForFunctionalKeyQuery({ graphicalElementKey: graphicalGrandParentElementKey });
-        setupIModelForElementProps({ key: graphicalGrandParentElementKey });
-        setupIModelForElementProps({ key: graphicalElementKey, parentKey: graphicalParentElementKey });
-        setupIModelForElementKey(graphicalParentElementKey);
+        setupIModelDerivesFromClassQuery(false);
 
         const result = await SelectionScopesHelper.computeSelection({
           imodel: imodelMock.object,
@@ -730,18 +584,14 @@ describe("SelectionScopesHelper", () => {
       });
 
       it("returns functional element key of the first GeometricElement2d parent that has a related functional element and the functional element has no parent", async () => {
-        const functionalElementKey = createTestECInstanceKey();
-        const graphicalGrandParentElementKey = createTestECInstanceKey();
-        const graphicalParentElementKey = createTestECInstanceKey();
-        const graphicalElementKey = createTestECInstanceKey();
-        setupIModelDerivesFromClassQuery(false);
+        const { key: graphicalGrandParentElementKey } = setupIModelForElementProps();
+        const { key: graphicalParentElementKey } = setupIModelForElementProps({ parentKey: graphicalGrandParentElementKey });
+        const { key: graphicalElementKey } = setupIModelForElementProps({ parentKey: graphicalParentElementKey });
+        const { key: functionalElementKey } = setupIModelForElementProps();
         setupIModelForFunctionalKeyQuery({ graphicalElementKey });
-        setupIModelForElementProps({ key: graphicalElementKey, parentKey: graphicalParentElementKey });
         setupIModelForFunctionalKeyQuery({ graphicalElementKey: graphicalParentElementKey });
-        setupIModelForElementProps({ key: graphicalParentElementKey, parentKey: graphicalGrandParentElementKey });
         setupIModelForFunctionalKeyQuery({ graphicalElementKey: graphicalGrandParentElementKey, functionalElementKey });
-        setupIModelForElementProps({ key: functionalElementKey });
-        setupIModelForElementKey(functionalElementKey);
+        setupIModelDerivesFromClassQuery(false);
 
         const result = await SelectionScopesHelper.computeSelection({
           imodel: imodelMock.object,
@@ -753,16 +603,13 @@ describe("SelectionScopesHelper", () => {
       });
 
       it("returns functional parent element key of the first GeometricElement2d parent that has a related functional element", async () => {
-        const functionalParentElementKey = createTestECInstanceKey();
-        const functionalElementKey = createTestECInstanceKey();
-        const graphicalParentElementKey = createTestECInstanceKey();
-        const graphicalElementKey = createTestECInstanceKey();
-        setupIModelDerivesFromClassQuery(false);
+        const { key: graphicalParentElementKey } = setupIModelForElementProps();
+        const { key: graphicalElementKey } = setupIModelForElementProps({ parentKey: graphicalParentElementKey });
+        const { key: functionalParentElementKey } = setupIModelForElementProps();
+        const { key: functionalElementKey } = setupIModelForElementProps({ parentKey: functionalParentElementKey });
         setupIModelForFunctionalKeyQuery({ graphicalElementKey });
-        setupIModelForElementProps({ key: graphicalElementKey, parentKey: graphicalParentElementKey });
         setupIModelForFunctionalKeyQuery({ graphicalElementKey: graphicalParentElementKey, functionalElementKey });
-        setupIModelForElementProps({ key: functionalElementKey, parentKey: functionalParentElementKey });
-        setupIModelForElementKey(functionalParentElementKey);
+        setupIModelDerivesFromClassQuery(false);
 
         const result = await SelectionScopesHelper.computeSelection({
           imodel: imodelMock.object,
@@ -776,10 +623,9 @@ describe("SelectionScopesHelper", () => {
 
     describe("scope: 'functional-top-assembly'", () => {
       it("returns GeometricElement3d key if it doesn't have a parent", async () => {
-        const graphicalElementKey = createTestECInstanceKey();
+        const { key: graphicalElementKey } = setupIModelForElementProps();
+        setupIModelForFunctionalKeyQuery({ graphicalElementKey });
         setupIModelDerivesFromClassQuery(true);
-        setupIModelForElementProps({ key: graphicalElementKey });
-        setupIModelForElementKey(graphicalElementKey);
 
         const result = await SelectionScopesHelper.computeSelection({
           imodel: imodelMock.object,
@@ -791,15 +637,11 @@ describe("SelectionScopesHelper", () => {
       });
 
       it("returns topmost GeometricElement3d parent key if it doesn't have a related functional element", async () => {
-        const graphicalGrandParentElementKey = createTestECInstanceKey();
-        const graphicalParentElementKey = createTestECInstanceKey();
-        const graphicalElementKey = createTestECInstanceKey();
-        setupIModelDerivesFromClassQuery(true);
-        setupIModelForElementProps({ key: graphicalElementKey, parentKey: graphicalParentElementKey });
-        setupIModelForElementProps({ key: graphicalParentElementKey, parentKey: graphicalGrandParentElementKey });
-        setupIModelForElementProps({ key: graphicalGrandParentElementKey });
-        setupIModelForElementKey(graphicalGrandParentElementKey);
+        const { key: graphicalGrandParentElementKey } = setupIModelForElementProps();
+        const { key: graphicalParentElementKey } = setupIModelForElementProps({ parentKey: graphicalGrandParentElementKey });
+        const { key: graphicalElementKey } = setupIModelForElementProps({ parentKey: graphicalParentElementKey });
         setupIModelForFunctionalKeyQuery({ graphicalElementKey: graphicalGrandParentElementKey });
+        setupIModelDerivesFromClassQuery(true);
 
         const result = await SelectionScopesHelper.computeSelection({
           imodel: imodelMock.object,
@@ -812,15 +654,11 @@ describe("SelectionScopesHelper", () => {
 
       it("returns functional element key of the topmost GeometricElement3d parent", async () => {
         const functionalElementKey = createTestECInstanceKey();
-        const graphicalGrandParentElementKey = createTestECInstanceKey();
-        const graphicalParentElementKey = createTestECInstanceKey();
-        const graphicalElementKey = createTestECInstanceKey();
-        setupIModelDerivesFromClassQuery(true);
-        setupIModelForElementProps({ key: graphicalElementKey, parentKey: graphicalParentElementKey });
-        setupIModelForElementProps({ key: graphicalParentElementKey, parentKey: graphicalGrandParentElementKey });
-        setupIModelForElementProps({ key: graphicalGrandParentElementKey });
-        setupIModelForElementKey(graphicalGrandParentElementKey);
+        const { key: graphicalGrandParentElementKey } = setupIModelForElementProps();
+        const { key: graphicalParentElementKey } = setupIModelForElementProps({ parentKey: graphicalGrandParentElementKey });
+        const { key: graphicalElementKey } = setupIModelForElementProps({ parentKey: graphicalParentElementKey });
         setupIModelForFunctionalKeyQuery({ graphicalElementKey: graphicalGrandParentElementKey, functionalElementKey });
+        setupIModelDerivesFromClassQuery(true);
 
         const result = await SelectionScopesHelper.computeSelection({
           imodel: imodelMock.object,
@@ -832,11 +670,9 @@ describe("SelectionScopesHelper", () => {
       });
 
       it("returns GeometricElement2d key if it doesn't have an associated functional element or parent", async () => {
-        const graphicalElementKey = createTestECInstanceKey();
-        setupIModelDerivesFromClassQuery(false);
+        const { key: graphicalElementKey } = setupIModelForElementProps();
         setupIModelForFunctionalKeyQuery({ graphicalElementKey });
-        setupIModelForElementProps({ key: graphicalElementKey });
-        setupIModelForElementKey(graphicalElementKey);
+        setupIModelDerivesFromClassQuery(false);
 
         const result = await SelectionScopesHelper.computeSelection({
           imodel: imodelMock.object,
@@ -848,20 +684,13 @@ describe("SelectionScopesHelper", () => {
       });
 
       it("returns topmost GeometricElement2d parent key if none of the parents have an associated functional element", async () => {
-        const graphicalGrandParentElementKey = createTestECInstanceKey();
-        const graphicalParentElementKey = createTestECInstanceKey();
-        const graphicalElementKey = createTestECInstanceKey();
-        setupIModelDerivesFromClassQuery(false);
+        const { key: graphicalGrandParentElementKey } = setupIModelForElementProps();
+        const { key: graphicalParentElementKey } = setupIModelForElementProps({ parentKey: graphicalGrandParentElementKey });
+        const { key: graphicalElementKey } = setupIModelForElementProps({ parentKey: graphicalParentElementKey });
         setupIModelForFunctionalKeyQuery({ graphicalElementKey });
-        setupIModelForElementProps({ key: graphicalElementKey, parentKey: graphicalParentElementKey });
         setupIModelForFunctionalKeyQuery({ graphicalElementKey: graphicalParentElementKey });
-        setupIModelForElementProps({ key: graphicalParentElementKey, parentKey: graphicalGrandParentElementKey });
         setupIModelForFunctionalKeyQuery({ graphicalElementKey: graphicalGrandParentElementKey });
-        setupIModelForElementProps({ key: graphicalGrandParentElementKey }); // done looking for functionals
-        setupIModelForElementProps({ key: graphicalElementKey, parentKey: graphicalParentElementKey });
-        setupIModelForElementProps({ key: graphicalParentElementKey, parentKey: graphicalGrandParentElementKey });
-        setupIModelForElementProps({ key: graphicalGrandParentElementKey });
-        setupIModelForElementKey(graphicalGrandParentElementKey);
+        setupIModelDerivesFromClassQuery(false);
 
         const result = await SelectionScopesHelper.computeSelection({
           imodel: imodelMock.object,
@@ -873,18 +702,14 @@ describe("SelectionScopesHelper", () => {
       });
 
       it("returns functional element key of the first GeometricElement2d parent that has a related functional element and the functional element has no parent", async () => {
-        const functionalElementKey = createTestECInstanceKey();
-        const graphicalGrandParentElementKey = createTestECInstanceKey();
-        const graphicalParentElementKey = createTestECInstanceKey();
-        const graphicalElementKey = createTestECInstanceKey();
-        setupIModelDerivesFromClassQuery(false);
+        const { key: graphicalGrandParentElementKey } = setupIModelForElementProps();
+        const { key: graphicalParentElementKey } = setupIModelForElementProps({ parentKey: graphicalGrandParentElementKey });
+        const { key: graphicalElementKey } = setupIModelForElementProps({ parentKey: graphicalParentElementKey });
+        const { key: functionalElementKey } = setupIModelForElementProps();
         setupIModelForFunctionalKeyQuery({ graphicalElementKey });
-        setupIModelForElementProps({ key: graphicalElementKey, parentKey: graphicalParentElementKey });
         setupIModelForFunctionalKeyQuery({ graphicalElementKey: graphicalParentElementKey });
-        setupIModelForElementProps({ key: graphicalParentElementKey, parentKey: graphicalGrandParentElementKey });
-        setupIModelForFunctionalKeyQuery({ graphicalElementKey: graphicalGrandParentElementKey, functionalElementKey }); // done looking for functionals
-        setupIModelForElementProps({ key: functionalElementKey });
-        setupIModelForElementKey(functionalElementKey);
+        setupIModelForFunctionalKeyQuery({ graphicalElementKey: graphicalGrandParentElementKey, functionalElementKey });
+        setupIModelDerivesFromClassQuery(false);
 
         const result = await SelectionScopesHelper.computeSelection({
           imodel: imodelMock.object,
@@ -896,22 +721,16 @@ describe("SelectionScopesHelper", () => {
       });
 
       it("returns functional topmost parent element key of the first GeometricElement2d parent that has a related functional element", async () => {
-        const functionalGrandParentElementKey = createTestECInstanceKey();
-        const functionalParentElementKey = createTestECInstanceKey();
-        const functionalElementKey = createTestECInstanceKey();
-        const graphicalGrandParentElementKey = createTestECInstanceKey();
-        const graphicalParentElementKey = createTestECInstanceKey();
-        const graphicalElementKey = createTestECInstanceKey();
-        setupIModelDerivesFromClassQuery(false);
+        const { key: graphicalGrandParentElementKey } = setupIModelForElementProps();
+        const { key: graphicalParentElementKey } = setupIModelForElementProps({ parentKey: graphicalGrandParentElementKey });
+        const { key: graphicalElementKey } = setupIModelForElementProps({ parentKey: graphicalParentElementKey });
+        const { key: functionalGrandParentElementKey } = setupIModelForElementProps();
+        const { key: functionalParentElementKey } = setupIModelForElementProps({ parentKey: functionalGrandParentElementKey });
+        const { key: functionalElementKey } = setupIModelForElementProps({ parentKey: functionalParentElementKey });
         setupIModelForFunctionalKeyQuery({ graphicalElementKey });
-        setupIModelForElementProps({ key: graphicalElementKey, parentKey: graphicalParentElementKey });
         setupIModelForFunctionalKeyQuery({ graphicalElementKey: graphicalParentElementKey });
-        setupIModelForElementProps({ key: graphicalParentElementKey, parentKey: graphicalGrandParentElementKey });
-        setupIModelForFunctionalKeyQuery({ graphicalElementKey: graphicalGrandParentElementKey, functionalElementKey }); // done looking for functionals
-        setupIModelForElementProps({ key: functionalElementKey, parentKey: functionalParentElementKey });
-        setupIModelForElementProps({ key: functionalParentElementKey, parentKey: functionalGrandParentElementKey });
-        setupIModelForElementProps({ key: functionalGrandParentElementKey });
-        setupIModelForElementKey(functionalGrandParentElementKey);
+        setupIModelForFunctionalKeyQuery({ graphicalElementKey: graphicalGrandParentElementKey, functionalElementKey });
+        setupIModelDerivesFromClassQuery(false);
 
         const result = await SelectionScopesHelper.computeSelection({
           imodel: imodelMock.object,

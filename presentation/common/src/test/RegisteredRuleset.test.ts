@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as moq from "typemoq";
-import { RegisteredRuleset, Ruleset, RuleTypes } from "../presentation-common";
+import { RegisteredRuleset, Ruleset, RuleTypes } from "../presentation-common.js";
 
 describe("RegisteredRuleset", () => {
   let uniqueIdentifier: string;

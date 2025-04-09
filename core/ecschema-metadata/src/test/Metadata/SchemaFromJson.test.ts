@@ -6,18 +6,19 @@ import { expect } from "chai";
 import { SchemaContext } from "../../Context";
 import { Schema } from "../../Metadata/Schema";
 import { ECObjectsError } from "../../Exception";
+import { ECSchemaNamespaceUris } from "../../Constants";
 
 describe("Schema from json creation with different containers tests", () => {
   let context: SchemaContext;
   const dummyRefJson = {
-    $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+    $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
     name: "DummyReference",
     version: "01.00.01",
     alias: "dumRef",
   };
 
   const schemaAJson = {
-    $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+    $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
     name: "SchemaA",
     version: "1.2.3",
     alias: "a",

@@ -3,8 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-export * from "./LinearReferencingCommon";
-export * from "./LinearReferencingElementProps";
+export * from "./LinearReferencingCommon.js";
+export * from "./LinearReferencingElementProps.js";
 
 /** @docs-package-description
  * The `@itwin/linear-referencing-common` package contains types for working with the LinearReferencing schema on the frontend and backend.

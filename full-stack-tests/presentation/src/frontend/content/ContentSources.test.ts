@@ -4,9 +4,9 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import * as chaiJestSnapshot from "chai-jest-snapshot";
+import chaiJestSnapshot from "chai-jest-snapshot";
 import { Presentation } from "@itwin/presentation-frontend";
-import { describeContentTestSuite } from "./Utils";
+import { describeContentTestSuite } from "./Utils.js";
 
 describeContentTestSuite("Content sources", ({ getDefaultSuiteIModel }) => {
   it("retrieves content sources for given class", async function () {

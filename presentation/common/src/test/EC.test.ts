@@ -4,14 +4,14 @@
  *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { Id64, Id64String } from "@itwin/core-bentley";
-import { InstanceKey, RelationshipPath } from "../presentation-common";
+import { InstanceKey, RelationshipPath } from "../presentation-common.js";
 import {
   RelatedClassInfo,
   RelatedClassInfoWithOptionalRelationship,
   RelatedClassInfoWithOptionalRelationshipJSON,
   StrippedRelatedClassInfo,
-} from "../presentation-common/EC";
-import { createTestECClassInfo, createTestRelatedClassInfo, createTestRelatedClassInfoWithOptionalRelationship } from "./_helpers/EC";
+} from "../presentation-common/EC.js";
+import { createTestECClassInfo, createTestRelatedClassInfo, createTestRelatedClassInfoWithOptionalRelationship } from "./_helpers/EC.js";
 
 describe("InstanceKey", () => {
   describe("compare", () => {

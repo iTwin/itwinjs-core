@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/linear-referencing-common",
+      "comment": "change linear-referencing-common to pure esm",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/linear-referencing-common"
+}

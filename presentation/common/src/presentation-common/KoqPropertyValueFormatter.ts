@@ -81,7 +81,7 @@ export class KoqPropertyValueFormatter {
     this._unitsProvider = new SchemaUnitProvider(_schemaContext);
     this._defaultFormats = defaultFormats
       ? Object.entries(defaultFormats).reduce((acc, [phenomenon, unitSystemFormats]) => ({ ...acc, [phenomenon.toUpperCase()]: unitSystemFormats }), {})
-      : /* istanbul ignore next */ undefined;
+      : /* c8 ignore next */ undefined;
   }
 
   public async format(value: number, options: FormatOptions) {
@@ -133,7 +133,7 @@ async function getFormattingProps(
   }
 
   const persistenceUnit = await koq.persistenceUnit;
-  // istanbul ignore if
+  /* c8 ignore next 3 */
   if (!persistenceUnit) {
     return undefined;
   }
@@ -171,13 +171,12 @@ async function getKoqFormatProps(
   // use one of the formats in default formats map if there is one for matching phenomena and requested unit
   // system combination
   if (defaultFormats && unitSystem) {
-    const actualPersistenceUnit = persistenceUnit instanceof InvertedUnit ? /* istanbul ignore next */ await persistenceUnit.invertsUnit : persistenceUnit;
+    const actualPersistenceUnit = persistenceUnit instanceof InvertedUnit ? /* c8 ignore next */ await persistenceUnit.invertsUnit : persistenceUnit;
     const phenomenon = await actualPersistenceUnit?.phenomenon;
-    // istanbul ignore else
     if (phenomenon && defaultFormats[phenomenon.name.toUpperCase()]) {
       const defaultPhenomenonFormats = defaultFormats[phenomenon.name.toUpperCase()];
       for (const defaultUnitSystemFormat of Array.isArray(defaultPhenomenonFormats)
-        ? /* istanbul ignore next */ defaultPhenomenonFormats
+        ? /* c8 ignore next */ defaultPhenomenonFormats
         : [defaultPhenomenonFormats]) {
         if (defaultUnitSystemFormat.unitSystems.includes(unitSystem)) {
           return defaultUnitSystemFormat.format;
@@ -205,7 +204,7 @@ async function getKoqPresentationFormat(koq: KindOfQuantity, unitSystemMatchers:
   for (const matcher of unitSystemMatchers) {
     for (const format of presentationFormats) {
       const unit = format.units && format.units[0][0];
-      // istanbul ignore if
+      /* c8 ignore next 3 */
       if (!unit) {
         continue;
       }

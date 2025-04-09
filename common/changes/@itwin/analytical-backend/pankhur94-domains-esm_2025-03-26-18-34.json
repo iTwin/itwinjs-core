@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/analytical-backend",
+      "comment": "change analytical-backend to pure esm",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/analytical-backend"
+}

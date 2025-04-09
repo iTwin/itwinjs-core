@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as sinon from "sinon";
-import { Content } from "../../presentation-common/content/Content";
+import { Content } from "../../presentation-common/content/Content.js";
 import {
   addFieldHierarchy,
   combineFieldNames,
@@ -25,17 +25,17 @@ import {
   traverseContent,
   traverseContentItem,
   traverseFieldHierarchy,
-} from "../../presentation-common/content/ContentTraverser";
-import { PropertyValueFormat } from "../../presentation-common/content/TypeDescription";
-import { NestedContentValue } from "../../presentation-common/content/Value";
+} from "../../presentation-common/content/ContentTraverser.js";
+import { PropertyValueFormat } from "../../presentation-common/content/TypeDescription.js";
+import { NestedContentValue } from "../../presentation-common/content/Value.js";
 import {
   createTestCategoryDescription,
   createTestContentDescriptor,
   createTestContentItem,
   createTestNestedContentField,
   createTestSimpleContentField,
-} from "../_helpers/Content";
-import { createTestECInstanceKey } from "../_helpers/EC";
+} from "../_helpers/Content.js";
+import { createTestECInstanceKey } from "../_helpers/EC.js";
 
 describe("ContentTraverser", () => {
   class TestContentVisitor implements IContentVisitor {

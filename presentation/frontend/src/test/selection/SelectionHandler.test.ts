@@ -15,7 +15,7 @@ import {
   SelectionChangeType,
   SelectionHandler,
   SelectionManager,
-} from "../../presentation-frontend";
+} from "../../presentation-frontend.js";
 
 describe("SelectionHandler", () => {
   const selectionManagerMock = moq.Mock.ofType<SelectionManager>();

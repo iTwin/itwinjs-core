@@ -11,6 +11,7 @@ import { CustomAttributeClass } from "../../Metadata/CustomAttributeClass";
 import { Schema } from "../../Metadata/Schema";
 import { createSchemaJsonWithItems } from "../TestUtils/DeserializationHelpers";
 import { createEmptyXmlDocument, getElementChildrenByTagName } from "../TestUtils/SerializationHelper";
+import { ECSchemaNamespaceUris } from "../../Constants";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 
@@ -132,7 +133,7 @@ describe("CustomAttributeClass", () => {
 
     it("async - should succeed with fully defined standalone", async () => {
       const schemaJson = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/schemaitem",
+        $schema: ECSchemaNamespaceUris.SCHEMAITEMURL3_2,
         schema: "TestSchema",
         schemaVersion: "1.0.0",
         schemaItemType: "CustomAttributeClass",
@@ -143,7 +144,7 @@ describe("CustomAttributeClass", () => {
 
       await testClass.fromJSON(schemaJson);
       const caJson = testClass!.toJSON(true, true);
-      assert.strictEqual(caJson.$schema, "https://dev.bentley.com/json_schemas/ec/32/schemaitem");
+      assert.strictEqual(caJson.$schema, ECSchemaNamespaceUris.SCHEMAITEMURL3_2);
       assert.strictEqual(caJson.appliesTo, "Schema, AnyProperty");
       assert.strictEqual(caJson.modifier, "Sealed");
       assert.strictEqual(caJson.name, "TestCustomAttribute");
@@ -153,7 +154,7 @@ describe("CustomAttributeClass", () => {
     });
     it("sync - should succeed with fully defined standalone", () => {
       const schemaJson = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/schemaitem",
+        $schema: ECSchemaNamespaceUris.SCHEMAITEMURL3_2,
         schema: "TestSchema",
         schemaVersion: "1.0.0",
         schemaItemType: "CustomAttributeClass",
@@ -164,7 +165,7 @@ describe("CustomAttributeClass", () => {
 
       testClass.fromJSONSync(schemaJson);
       const caJson = testClass!.toJSON(true, true);
-      assert.strictEqual(caJson.$schema, "https://dev.bentley.com/json_schemas/ec/32/schemaitem");
+      assert.strictEqual(caJson.$schema, ECSchemaNamespaceUris.SCHEMAITEMURL3_2);
       assert.strictEqual(caJson.appliesTo, "Schema, AnyProperty");
       assert.strictEqual(caJson.modifier, "Sealed");
       assert.strictEqual(caJson.name, "TestCustomAttribute");

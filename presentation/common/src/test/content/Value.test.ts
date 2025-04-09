@@ -3,7 +3,15 @@
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { DisplayValue, DisplayValuesArray, DisplayValuesMap, NestedContentValue, Value, ValuesArray, ValuesMap } from "../../presentation-common/content/Value";
+import {
+  DisplayValue,
+  DisplayValuesArray,
+  DisplayValuesMap,
+  NestedContentValue,
+  Value,
+  ValuesArray,
+  ValuesMap,
+} from "../../presentation-common/content/Value.js";
 
 describe("Value", () => {
   describe("type checks", () => {

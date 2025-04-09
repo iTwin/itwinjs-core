@@ -6,7 +6,7 @@ import { assert } from "chai";
 import { DbResult } from "@itwin/core-bentley";
 import { ECSqlReader, QueryBinder, QueryOptionsBuilder, QueryRowFormat } from "@itwin/core-common";
 import { SnapshotDb } from "../../core-backend";
-import { ECSqlStatement } from "../../ECSqlStatement";
+import { ECSqlWriteStatement } from "../../ECSqlStatement";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { ECDbTestHelper } from "./ECDbTestHelper";
@@ -71,15 +71,15 @@ describe("ECSqlReader", (() => {
             <ECProperty propertyName="n" typeName="int"/>
           </ECEntityClass>
         </ECSchema>`)
-        assert.isTrue(ecdb.isOpen);
-        ecdb.saveChanges();
-        const params = new QueryBinder();
-        params.bindIdSet(1, ["50"]);
-        const optionBuilder = new QueryOptionsBuilder();
-        optionBuilder.setRowFormat(QueryRowFormat.UseJsPropertyNames);
-        reader = ecdb.createQueryReader("SELECT ECInstanceId, Name FROM meta.ECClassDef WHERE InVirtualSet(?, ECInstanceId)", params, optionBuilder.getOptions());
-        const rows = await reader.toArray();
-        assert.equal(rows.length, 0);
+      assert.isTrue(ecdb.isOpen);
+      ecdb.saveChanges();
+      const params = new QueryBinder();
+      params.bindIdSet(1, ["50"]);
+      const optionBuilder = new QueryOptionsBuilder();
+      optionBuilder.setRowFormat(QueryRowFormat.UseJsPropertyNames);
+      reader = ecdb.createQueryReader("SELECT ECInstanceId, Name FROM meta.ECClassDef WHERE InVirtualSet(?, ECInstanceId)", params, optionBuilder.getOptions());
+      const rows = await reader.toArray();
+      assert.equal(rows.length, 0);
     });
 
     it("ecsql reader simple using query reader", async () => {
@@ -91,7 +91,7 @@ describe("ECSqlReader", (() => {
         </ECSchema>`);
       assert.isTrue(ecdb.isOpen);
 
-      const r = await ecdb.withStatement("INSERT INTO ts.Foo(n) VALUES(20)", async (stmt: ECSqlStatement) => {
+      const r = await ecdb.withCachedWriteStatement("INSERT INTO ts.Foo(n) VALUES(20)", async (stmt: ECSqlWriteStatement) => {
         return stmt.stepForInsert();
       });
       ecdb.saveChanges();

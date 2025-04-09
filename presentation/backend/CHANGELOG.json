@@ -2,6 +2,12 @@
   "name": "@itwin/presentation-backend",
   "entries": [
     {
+      "version": "4.10.12",
+      "tag": "@itwin/presentation-backend_v4.10.12",
+      "date": "Wed, 02 Apr 2025 19:35:47 GMT",
+      "comments": {}
+    },
+    {
       "version": "4.10.11",
       "tag": "@itwin/presentation-backend_v4.10.11",
       "date": "Wed, 19 Mar 2025 15:30:39 GMT",

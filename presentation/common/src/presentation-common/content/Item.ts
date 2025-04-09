@@ -6,10 +6,10 @@
  * @module Content
  */
 
-import { ClassInfo, InstanceKey } from "../EC";
-import { LabelDefinition } from "../LabelDefinition";
-import { omitUndefined, ValuesDictionary } from "../Utils";
-import { DisplayValue, Value } from "./Value";
+import { ClassInfo, InstanceKey } from "../EC.js";
+import { LabelDefinition } from "../LabelDefinition.js";
+import { omitUndefined, ValuesDictionary } from "../Utils.js";
+import { DisplayValue, Value } from "./Value.js";
 
 /**
  * Serialized [[Item]] JSON representation.
@@ -101,7 +101,7 @@ export class Item {
     mergedFieldNames?: string[],
     extendedData?: { [key: string]: any },
   ) {
-    /* istanbul ignore next */
+    /* c8 ignore next 12 */
     const props = Array.isArray(primaryKeysOrProps)
       ? {
           primaryKeys: primaryKeysOrProps,

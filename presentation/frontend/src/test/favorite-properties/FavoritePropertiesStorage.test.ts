@@ -8,9 +8,9 @@ import * as moq from "typemoq";
 import { AccessToken, BeEvent } from "@itwin/core-bentley";
 import { AuthorizationClient, InternetConnectivityStatus } from "@itwin/core-common";
 import { IModelApp, UserPreferencesAccess } from "@itwin/core-frontend";
-import { ResolvablePromise } from "@itwin/presentation-common/lib/cjs/test";
-import { IConnectivityInformationProvider } from "../../presentation-frontend/ConnectivityInformationProvider";
-import { FavoritePropertiesOrderInfo, PropertyFullName } from "../../presentation-frontend/favorite-properties/FavoritePropertiesManager";
+import { ResolvablePromise } from "@itwin/presentation-common/test-utils";
+import { IConnectivityInformationProvider } from "../../presentation-frontend/ConnectivityInformationProvider.js";
+import { FavoritePropertiesOrderInfo, PropertyFullName } from "../../presentation-frontend/favorite-properties/FavoritePropertiesManager.js";
 import {
   BrowserLocalFavoritePropertiesStorage,
   createFavoritePropertiesStorage,
@@ -22,7 +22,7 @@ import {
   IMODELJS_PRESENTATION_SETTING_NAMESPACE,
   NoopFavoritePropertiesStorage,
   OfflineCachingFavoritePropertiesStorage,
-} from "../../presentation-frontend/favorite-properties/FavoritePropertiesStorage";
+} from "../../presentation-frontend/favorite-properties/FavoritePropertiesStorage.js";
 
 describe("IModelAppFavoritePropertiesStorage", () => {
   let storage: IModelAppFavoritePropertiesStorage;

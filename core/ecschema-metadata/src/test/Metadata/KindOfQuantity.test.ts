@@ -15,6 +15,7 @@ import { DecimalPrecision } from "@itwin/core-quantity";
 import { createSchemaJsonWithItems } from "../TestUtils/DeserializationHelpers";
 import { TestSchemaLocater } from "../TestUtils/FormatTestHelper";
 import { createEmptyXmlDocument } from "../TestUtils/SerializationHelper";
+import { ECSchemaNamespaceUris } from "../../Constants";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 
@@ -577,7 +578,7 @@ describe("KindOfQuantity", () => {
       schema = await Schema.fromJson(createSchemaJson(koqJson), context);
       const testKoq = await schema.getItem(koqJson.name, KindOfQuantity);
       const expectedJson = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/schemaitem",
+        $schema: ECSchemaNamespaceUris.SCHEMAITEMURL3_2,
         schema: "TestSchema",
         schemaVersion: "01.02.03",
         ...koqJson,

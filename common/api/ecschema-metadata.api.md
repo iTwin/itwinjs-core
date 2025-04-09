@@ -327,8 +327,8 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
     getInheritedPropertySync(name: string): Property | undefined;
     getProperties(excludeInherited?: boolean): Promise<Iterable<Property>>;
     getPropertiesSync(excludeInherited?: boolean): Iterable<Property>;
-    getProperty(name: string, includeInherited?: boolean): Promise<Property | undefined>;
-    getPropertySync(name: string, includeInherited?: boolean): Property | undefined;
+    getProperty(name: string, excludeInherited?: boolean): Promise<Property | undefined>;
+    getPropertySync(name: string, excludeInherited?: boolean): Property | undefined;
     get hasLocalProperties(): boolean;
     is(targetClass: string, schemaName: string): Promise<boolean>;
     // (undocumented)
@@ -456,6 +456,16 @@ export enum ECObjectsStatus {
     UnableToLoadSchema = 35080,
     // (undocumented)
     UnableToLocateSchema = 35071
+}
+
+// @internal (undocumented)
+export namespace ECSchemaNamespaceUris {
+    const // (undocumented)
+    SCHEMAURL3_2_JSON = "https://dev.bentley.com/json_schemas/ec/32/ecschema";
+    const // (undocumented)
+    SCHEMAITEMURL3_2 = "https://dev.bentley.com/json_schemas/ec/32/schemaitem";
+    const // (undocumented)
+    SCHEMAURL3_2_XML = "http://www.bentley.com/schemas/Bentley.ECXML.3.2";
 }
 
 // @internal

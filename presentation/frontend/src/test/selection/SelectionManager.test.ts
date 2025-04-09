@@ -10,14 +10,14 @@ import { assert, BeDuration, Id64, Id64String, StopWatch, TransientIdSequence } 
 import { Cartographic } from "@itwin/core-common";
 import { BlankConnection, IModelApp, IModelConnection, SelectionSet, SelectionSetEventType } from "@itwin/core-frontend";
 import { InstanceKey, KeySet, NodeKey, SelectionScope, StandardNodeTypes } from "@itwin/presentation-common";
-import { createTestECInstanceKey, createTestNodeKey, ResolvablePromise, waitForPendingAsyncs } from "@itwin/presentation-common/lib/cjs/test";
+import { createTestECInstanceKey, createTestNodeKey, ResolvablePromise, waitForPendingAsyncs } from "@itwin/presentation-common/test-utils";
 import { createStorage, CustomSelectable, SelectionStorage, TRANSIENT_ELEMENT_CLASSNAME } from "@itwin/unified-selection";
-import { Presentation } from "../../presentation-frontend/Presentation";
-import { PresentationManager } from "../../presentation-frontend/PresentationManager";
-import { HiliteSetProvider } from "../../presentation-frontend/selection/HiliteSetProvider";
-import { SelectionChangeEventArgs, SelectionChangesListener } from "../../presentation-frontend/selection/SelectionChangeEvent";
-import { SelectionManager, ToolSelectionSyncHandler } from "../../presentation-frontend/selection/SelectionManager";
-import { SelectionScopesManager } from "../../presentation-frontend/selection/SelectionScopesManager";
+import { Presentation } from "../../presentation-frontend/Presentation.js";
+import { PresentationManager } from "../../presentation-frontend/PresentationManager.js";
+import { HiliteSetProvider } from "../../presentation-frontend/selection/HiliteSetProvider.js";
+import { SelectionChangeEventArgs, SelectionChangesListener } from "../../presentation-frontend/selection/SelectionChangeEvent.js";
+import { SelectionManager, ToolSelectionSyncHandler } from "../../presentation-frontend/selection/SelectionManager.js";
+import { SelectionScopesManager } from "../../presentation-frontend/selection/SelectionScopesManager.js";
 
 const generateSelection = (): InstanceKey[] => {
   return [createTestECInstanceKey({ id: "0x1" }), createTestECInstanceKey({ id: "0x2" }), createTestECInstanceKey({ id: "0x3" })];

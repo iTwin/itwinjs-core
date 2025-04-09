@@ -76,7 +76,7 @@ export class PolyfaceData {
    * shared edge is hidden, then the mesh has `edgeVisible = [true,true,false, false,true,true]`.
    */
   public edgeVisible: boolean[];
-  /** Boolean tag indicating if the facets are viewable from the back. */
+  /** The [[twoSided]] flag. */
   private _twoSided: boolean;
   /**
    * Flag indicating if the mesh closure is unknown (0), open sheet (1), closed solid (2).
@@ -127,10 +127,10 @@ export class PolyfaceData {
    * @param needNormals `true` to allocate empty normal data and index arrays; `false` (default) to leave undefined.
    * @param needParams `true` to allocate empty uv parameter data and index arrays; `false` (default) to leave undefined.
    * @param needColors `true` to allocate empty color data and index arrays; `false` (default) to leave undefined.
-   * @param twoSided `true` if the facets are to be considered viewable from the back; `false` (default) if not.
+   * @param twoSided `true` (default) if the facets are to be considered viewable from the back; `false` if they are amenable to backface culling.
    */
   public constructor(
-    needNormals: boolean = false, needParams: boolean = false, needColors: boolean = false, twoSided: boolean = false,
+    needNormals: boolean = false, needParams: boolean = false, needColors: boolean = false, twoSided: boolean = true,
   ) {
     this.point = new GrowableXYZArray();
     this.pointIndex = [];
@@ -176,6 +176,8 @@ export class PolyfaceData {
     result.edgeVisible = this.edgeVisible.slice();
     result.twoSided = this.twoSided;
     result.expectedClosure = this.expectedClosure;
+    if (this.edgeMateIndex)
+      result.edgeMateIndex = this.edgeMateIndex.slice();
     return result;
   }
   /** Test for equal indices and nearly equal coordinates. */
@@ -205,6 +207,8 @@ export class PolyfaceData {
     if (this.twoSided !== other.twoSided)
       return false;
     if (this.expectedClosure !== other.expectedClosure)
+      return false;
+    if (!NumberArray.isExactEqual(this.edgeMateIndex, other.edgeMateIndex))
       return false;
     return true;
   }
@@ -268,7 +272,12 @@ export class PolyfaceData {
   public getEdgeVisible(i: number): boolean {
     return this.edgeVisible[i];
   }
-  /** Get boolean tag indicating if the facets are to be considered viewable from the back. */
+  /**
+   * Boolean flag indicating if the facets are viewable from the back.
+   * * Default value is true.
+   * * Set to false only if the mesh is known to be a closed volume with outward normals,
+   * indicating it is amenable to backface culling for improved display performance.
+   */
   public get twoSided(): boolean {
     return this._twoSided;
   }
@@ -397,6 +406,13 @@ export class PolyfaceData {
       for (let i = 0; i < numWrap; i++)
         this.auxData.indices[numEdge + i] = this.auxData.indices[i];
     }
+    // copy wrapped edgeMateIndex
+    if (this.edgeMateIndex && other.edgeMateIndex) {
+      for (let i = 0; i < numEdge; i++)
+        this.edgeMateIndex[i] = other.edgeMateIndex[index0 + i];
+      for (let i = 0; i < numWrap; i++)
+        this.edgeMateIndex[numEdge + i] = this.edgeMateIndex[i];
+    }
   }
   /** Trim the `data` arrays to the stated `length`. */
   private static trimArray(data: any[] | undefined, length: number) {
@@ -420,6 +436,7 @@ export class PolyfaceData {
           PolyfaceData.trimArray(data.values, channel.entriesPerValue * length);
       }
     }
+    PolyfaceData.trimArray(this.edgeMateIndex, length);
   }
   /**
    * Resize all data and index arrays to the specified `length`.
@@ -460,6 +477,9 @@ export class PolyfaceData {
         if (this.auxData.indices)
           this.auxData.indices.push(-1);
       }
+      if (this.edgeMateIndex)
+        while (this.edgeMateIndex.length < length)
+          this.edgeMateIndex.push(undefined);
     } else if (length < this.point.length) {
       this.point.resize(length);
       this.pointIndex.length = length;
@@ -485,6 +505,8 @@ export class PolyfaceData {
         if (this.auxData.indices)
           this.auxData.indices.length = length;
       }
+      if (this.edgeMateIndex)
+        this.edgeMateIndex.length = length;
     }
   }
   /**

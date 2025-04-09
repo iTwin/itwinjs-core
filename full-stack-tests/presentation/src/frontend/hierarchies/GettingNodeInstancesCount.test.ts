@@ -7,9 +7,9 @@ import { expect } from "chai";
 import { IModelConnection } from "@itwin/core-frontend";
 import { ChildNodeSpecificationTypes, ECInstancesNodeKey, getInstancesCount, KeySet, Ruleset, RuleTypes } from "@itwin/presentation-common";
 import { Presentation } from "@itwin/presentation-frontend";
-import { initialize, terminate } from "../../IntegrationTests";
-import { collect } from "../../Utils";
-import { TestIModelConnection } from "../../IModelSetupUtils";
+import { initialize, terminate } from "../../IntegrationTests.js";
+import { collect } from "../../Utils.js";
+import { TestIModelConnection } from "../../IModelSetupUtils.js";
 
 describe("Hierarchies", () => {
   before(async () => {

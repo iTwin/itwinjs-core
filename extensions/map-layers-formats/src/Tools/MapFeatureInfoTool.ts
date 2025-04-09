@@ -6,6 +6,8 @@
  * @module MapLayersFormats
  */
 
+import { BeEvent } from "@itwin/core-bentley";
+import { ImageMapLayerSettings, MapImageryProps, MapImagerySettings, MapLayerProps } from "@itwin/core-common";
 import {
   BeButtonEvent,
   EventHandled,
@@ -25,10 +27,8 @@ import {
   ToolAssistanceSection,
   Viewport,
 } from "@itwin/core-frontend";
-import { BeEvent } from "@itwin/core-bentley";
-import { ImageMapLayerSettings, MapImageryProps, MapImagerySettings, MapLayerProps } from "@itwin/core-common";
-import { MapFeatureInfoDecorator } from "./MapFeatureInfoDecorator";
-import { mapInfoIcon } from "../Icons/MapInfoIcon";
+import { mapInfoIcon } from "../Icons/MapInfoIcon.js";
+import { MapFeatureInfoDecorator } from "./MapFeatureInfoDecorator.js";
 
 /**
  * Data provided every time [[MapFeatureInfoTool]] retrieves feature information.

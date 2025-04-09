@@ -3,9 +3,9 @@
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { Item, ItemJSON } from "../../presentation-common/content/Item";
-import { createTestContentItem, createTestECClassInfo, createTestECInstanceKey, createTestLabelDefinition } from "../_helpers";
-import { NestedContentValue } from "../../presentation-common/content/Value";
+import { Item, ItemJSON } from "../../presentation-common/content/Item.js";
+import { createTestContentItem, createTestECClassInfo, createTestECInstanceKey, createTestLabelDefinition } from "../_helpers/index.js";
+import { NestedContentValue } from "../../presentation-common/content/Value.js";
 
 describe("Item", () => {
   describe("constructor", () => {

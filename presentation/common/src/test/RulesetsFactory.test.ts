@@ -17,9 +17,9 @@ import {
   RulesetsFactory,
   RuleTypes,
   StructTypeDescription,
-} from "../presentation-common";
-import { createTestPropertyInfo } from "./_helpers";
-import { createTestContentItem, createTestNestedContentField, createTestPropertiesContentField, createTestSimpleContentField } from "./_helpers/Content";
+} from "../presentation-common.js";
+import { createTestPropertyInfo } from "./_helpers/index.js";
+import { createTestContentItem, createTestNestedContentField, createTestPropertiesContentField, createTestSimpleContentField } from "./_helpers/Content.js";
 
 describe("RulesetsFactory", () => {
   let factory: RulesetsFactory;

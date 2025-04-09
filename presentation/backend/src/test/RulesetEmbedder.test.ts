@@ -11,13 +11,12 @@ import {
   DefinitionElement,
   DefinitionModel,
   DefinitionPartition,
-  ECSqlStatement,
   IModelDb,
   KnownLocations,
   Model,
   Subject,
 } from "@itwin/core-backend";
-import { DbResult, Id64String } from "@itwin/core-bentley";
+import { Id64String } from "@itwin/core-bentley";
 import {
   BisCodeSpec,
   Code,
@@ -31,11 +30,12 @@ import {
   QueryRowProxy,
 } from "@itwin/core-common";
 import { Ruleset } from "@itwin/presentation-common";
-import { configureForPromiseResult } from "@itwin/presentation-common/lib/cjs/test";
-import { PresentationRules } from "../presentation-backend/domain/PresentationRulesDomain";
-import * as RulesetElements from "../presentation-backend/domain/RulesetElements";
-import { RulesetEmbedder } from "../presentation-backend/RulesetEmbedder";
-import { normalizeVersion } from "../presentation-backend/Utils";
+import { configureForPromiseResult } from "@itwin/presentation-common/test-utils";
+import { PresentationRules } from "../presentation-backend/domain/PresentationRulesDomain.js";
+import * as RulesetElements from "../presentation-backend/domain/RulesetElements.js";
+import { RulesetEmbedder } from "../presentation-backend/RulesetEmbedder.js";
+import { normalizeVersion } from "../presentation-backend/Utils.js";
+import { stubECSqlReader } from "./Helpers.js";
 
 describe("RulesetEmbedder", () => {
   let embedder: RulesetEmbedder;
@@ -510,22 +510,12 @@ describe("RulesetEmbedder", () => {
 
   describe("getRulesets", () => {
     function setupMocksForQueryingAllRulesets(rulesets: Array<{ ruleset: Ruleset; elementId: Id64String }>) {
-      imodelMock
-        .setup((x) => x.withPreparedStatement(moq.It.isAny(), moq.It.isAny()))
-        .callback((_ecsql, callbackFun) => {
-          const statementMock = moq.Mock.ofType<ECSqlStatement>();
-          rulesets.forEach((entry) => {
-            statementMock.setup((x) => x.step()).returns(() => DbResult.BE_SQLITE_ROW);
-            statementMock.setup((x) => x.getRow()).returns(() => ({ id: entry.elementId }));
-
-            const rulesetElementMock = moq.Mock.ofType<RulesetElements.Ruleset>();
-            rulesetElementMock.setup((x) => x.jsonProperties).returns(() => ({ jsonProperties: entry.ruleset }));
-            elementsMock.setup((x) => x.getElement({ id: entry.elementId })).returns(() => rulesetElementMock.object);
-          });
-          statementMock.setup((x) => x.step()).returns(() => DbResult.BE_SQLITE_DONE);
-          callbackFun(statementMock.object);
-        })
-        .returns(() => ({}));
+      rulesets.forEach((entry) => {
+        const rulesetElementMock = moq.Mock.ofType<RulesetElements.Ruleset>();
+        rulesetElementMock.setup((x) => x.jsonProperties).returns(() => ({ jsonProperties: entry.ruleset }));
+        elementsMock.setup((x) => x.getElement({ id: entry.elementId })).returns(() => rulesetElementMock.object);
+      });
+      imodelMock.setup((x) => x.createQueryReader(moq.It.isAnyString())).returns(() => stubECSqlReader(rulesets.map((r) => ({ id: r.elementId }))));
     }
 
     it("checks for prerequisites before getting rulesets", async () => {
