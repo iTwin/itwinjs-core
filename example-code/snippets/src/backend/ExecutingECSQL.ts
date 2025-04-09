@@ -10,6 +10,7 @@ import { NavigationValue } from "@itwin/core-common";
 
 function executeECSql_Binding(iModel: IModelDb) {
   // __PUBLISH_EXTRACT_START__ ExecuteECSql_Binding_ByParameter_Positional
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   iModel.withPreparedStatement("SELECT ECInstanceId,ECClassId,Parent,LastMod FROM bis.Element WHERE CodeValue=? AND LastMod>=?", (stmt: ECSqlStatement) => {
     stmt.bindString(1, "MyCode");
     stmt.bindDateTime(2, "2018-01-01T12:00:00");
@@ -21,6 +22,7 @@ function executeECSql_Binding(iModel: IModelDb) {
   // __PUBLISH_EXTRACT_END__
 
   // __PUBLISH_EXTRACT_START__ ExecuteECSql_Binding_ByParameter_Named
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   iModel.withPreparedStatement("SELECT ECInstanceId,ECClassId,Parent,LastMod FROM bis.Element WHERE CodeValue=:code AND LastMod>=:lastmod", (stmt: ECSqlStatement) => {
     stmt.bindString("code", "MyCode");
     stmt.bindDateTime("lastmod", "2018-01-01T12:00:00Z");
@@ -32,28 +34,29 @@ function executeECSql_Binding(iModel: IModelDb) {
   // __PUBLISH_EXTRACT_END__
 
   // __PUBLISH_EXTRACT_START__ ExecuteECSql_BindValues_Positional
-  iModel.withPreparedStatement("SELECT ECInstanceId,ECClassId,Parent,LastMod FROM bis.Element WHERE CodeValue=? AND LastMod>=?",
-    (stmt: ECSqlStatement) => {
-      stmt.bindValues(["MyCode", "2018-01-01T12:00:00Z"]);
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
+  iModel.withPreparedStatement("SELECT ECInstanceId,ECClassId,Parent,LastMod FROM bis.Element WHERE CodeValue=? AND LastMod>=?", (stmt: ECSqlStatement) => {
+    stmt.bindValues(["MyCode", "2018-01-01T12:00:00Z"]);
 
-      while (stmt.step() === DbResult.BE_SQLITE_ROW) {
-        // do something with the query result
-      }
-    });
+    while (stmt.step() === DbResult.BE_SQLITE_ROW) {
+      // do something with the query result
+    }
+  });
   // __PUBLISH_EXTRACT_END__
 
   // __PUBLISH_EXTRACT_START__ ExecuteECSql_BindValues_Named
-  iModel.withPreparedStatement("SELECT ECInstanceId,ECClassId,Parent,LastMod FROM bis.Element WHERE CodeValue=:code AND LastMod>=:lastmod",
-    (stmt: ECSqlStatement) => {
-      stmt.bindValues({ code: "MyCode", lastmod: "2018-01-01T12:00:00Z" });
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
+  iModel.withPreparedStatement("SELECT ECInstanceId,ECClassId,Parent,LastMod FROM bis.Element WHERE CodeValue=:code AND LastMod>=:lastmod", (stmt: ECSqlStatement) => {
+    stmt.bindValues({ code: "MyCode", lastmod: "2018-01-01T12:00:00Z" });
 
-      while (stmt.step() === DbResult.BE_SQLITE_ROW) {
-        // do something with the query result
-      }
-    });
+    while (stmt.step() === DbResult.BE_SQLITE_ROW) {
+      // do something with the query result
+    }
+  });
   // __PUBLISH_EXTRACT_END__
 
   // __PUBLISH_EXTRACT_START__ ExecuteECSql_Binding_Navigation_ByParameter
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   iModel.withPreparedStatement("SELECT ECInstanceId FROM bis.Element WHERE Parent=?", (stmt: ECSqlStatement) => {
     stmt.bindNavigation(1, { id: "0x132" });
     // ...
@@ -61,6 +64,7 @@ function executeECSql_Binding(iModel: IModelDb) {
   // __PUBLISH_EXTRACT_END__
 
   // __PUBLISH_EXTRACT_START__ ExecuteECSql_BindValues_Navigation
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   iModel.withPreparedStatement("SELECT ECInstanceId FROM bis.Element WHERE Parent=?", (stmt: ECSqlStatement) => {
     stmt.bindValues([{ id: "0x132" }]);
     // ...
@@ -68,6 +72,7 @@ function executeECSql_Binding(iModel: IModelDb) {
   // __PUBLISH_EXTRACT_END__
 
   // __PUBLISH_EXTRACT_START__ ExecuteECSql_Binding_NavigationId_ByParameter
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   iModel.withPreparedStatement("SELECT ECInstanceId FROM bis.Element WHERE Parent.Id=?", (stmt: ECSqlStatement) => {
     stmt.bindId(1, "0x132");
     // ...
@@ -75,6 +80,7 @@ function executeECSql_Binding(iModel: IModelDb) {
   // __PUBLISH_EXTRACT_END__
 
   // __PUBLISH_EXTRACT_START__ ExecuteECSql_BindValues_NavigationId
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   iModel.withPreparedStatement("SELECT ECInstanceId FROM bis.Element WHERE Parent.Id=?", (stmt: ECSqlStatement) => {
     stmt.bindValues(["0x132"]);
     // ...
@@ -82,6 +88,7 @@ function executeECSql_Binding(iModel: IModelDb) {
   // __PUBLISH_EXTRACT_END__
 
   // __PUBLISH_EXTRACT_START__ ExecuteECSql_Binding_Struct_ByParameter
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   iModel.withPreparedStatement("SELECT Name FROM myschema.Company WHERE Location=?", (stmt: ECSqlStatement) => {
     stmt.bindStruct(1, { street: "7123 Main Street", zip: 30211 });
     // ...
@@ -89,6 +96,7 @@ function executeECSql_Binding(iModel: IModelDb) {
   // __PUBLISH_EXTRACT_END__
 
   // __PUBLISH_EXTRACT_START__ ExecuteECSql_BindValues_Struct
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   iModel.withPreparedStatement("SELECT Name FROM myschema.Company WHERE Location=?", (stmt: ECSqlStatement) => {
     stmt.bindValues([{ street: "7123 Main Street", zip: 30211 }]);
     // ...
@@ -96,6 +104,7 @@ function executeECSql_Binding(iModel: IModelDb) {
   // __PUBLISH_EXTRACT_END__
 
   // __PUBLISH_EXTRACT_START__ ExecuteECSql_Binding_StructMembers_ByParameter
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   iModel.withPreparedStatement("SELECT Name FROM myschema.Company WHERE Location.Street=? AND Location.Zip=?", (stmt: ECSqlStatement) => {
     stmt.bindString(1, "7123 Main Street");
     stmt.bindInteger(2, 32443);
@@ -104,6 +113,7 @@ function executeECSql_Binding(iModel: IModelDb) {
   // __PUBLISH_EXTRACT_END__
 
   // __PUBLISH_EXTRACT_START__ ExecuteECSql_BindValues_StructMembers
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   iModel.withPreparedStatement("SELECT Name FROM myschema.Company WHERE Location.Street=? AND Location.Zip=?", (stmt: ECSqlStatement) => {
     stmt.bindValues(["7123 Main Street", 32443]);
     // ...
@@ -111,6 +121,7 @@ function executeECSql_Binding(iModel: IModelDb) {
   // __PUBLISH_EXTRACT_END__
 
   // __PUBLISH_EXTRACT_START__ ExecuteECSql_Binding_Array_ByParameter
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   iModel.withPreparedStatement("SELECT Name FROM myschema.Company WHERE PhoneNumbers=?", (stmt: ECSqlStatement) => {
     stmt.bindArray(1, ["+16134584201", "+16134584202", "+16134584222"]);
     // ...
@@ -118,6 +129,7 @@ function executeECSql_Binding(iModel: IModelDb) {
   // __PUBLISH_EXTRACT_END__
 
   // __PUBLISH_EXTRACT_START__ ExecuteECSql_BindValues_Array
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   iModel.withPreparedStatement("SELECT Name FROM myschema.Company WHERE PhoneNumbers=?", (stmt: ECSqlStatement) => {
     stmt.bindValues([["+16134584201", "+16134584202", "+16134584222"]]);
     // ...
@@ -127,6 +139,7 @@ function executeECSql_Binding(iModel: IModelDb) {
 
 function executeECSql_QueryResult(iModel: IModelDb) {
   // __PUBLISH_EXTRACT_START__ ExecuteECSql_GetRow_IllustrateRowFormat
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   iModel.withPreparedStatement("SELECT ECInstanceId,ECClassId,Parent,LastMod FROM bis.Element WHERE Model.Id=?", (stmt: ECSqlStatement) => {
 
     stmt.bindId(1, "0x113");
@@ -139,6 +152,7 @@ function executeECSql_QueryResult(iModel: IModelDb) {
   // __PUBLISH_EXTRACT_END__
 
   // __PUBLISH_EXTRACT_START__ ExecuteECSql_GetRow
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   iModel.withPreparedStatement("SELECT ECInstanceId,ECClassId,Parent,LastMod FROM bis.Element WHERE Model.Id=?", (stmt: ECSqlStatement) => {
 
     stmt.bindId(1, "0x113");
@@ -158,15 +172,20 @@ function executeECSql_QueryResult(iModel: IModelDb) {
   // __PUBLISH_EXTRACT_END__
 
   // __PUBLISH_EXTRACT_START__ ExecuteECSql_GetValue
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   iModel.withPreparedStatement("SELECT ECInstanceId,ECClassId,Parent,LastMod FROM bis.Element WHERE Model.Id=?", (stmt: ECSqlStatement) => {
     stmt.bindId(1, "0x113");
 
     console.log("ECInstanceId | ClassName | Parent Id | Parent RelClassName | LastMod");
 
     while (stmt.step() === DbResult.BE_SQLITE_ROW) {
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       const idValue: ECSqlValue = stmt.getValue(0);
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       const classIdValue: ECSqlValue = stmt.getValue(1);
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       const parentValue: ECSqlValue = stmt.getValue(2);
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       const lastModValue: ECSqlValue = stmt.getValue(3);
 
       const id: Id64String = idValue.getId();
@@ -180,12 +199,15 @@ function executeECSql_QueryResult(iModel: IModelDb) {
   // __PUBLISH_EXTRACT_END__
 
   // __PUBLISH_EXTRACT_START__ ExecuteECSql_GetValue_PreserveClassIds
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   iModel.withPreparedStatement("SELECT ECClassId,Parent.RelECClassId FROM bis.Element WHERE Model.Id=?", (stmt: ECSqlStatement) => {
     stmt.bindId(1, "0x113");
 
     console.log("ECClassId | Parent RelECClassId");
     while (stmt.step() === DbResult.BE_SQLITE_ROW) {
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       const classIdValue: ECSqlValue = stmt.getValue(0);
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       const parentRelClassIdValue: ECSqlValue = stmt.getValue(1);
 
       const classId: string = classIdValue.getId();
