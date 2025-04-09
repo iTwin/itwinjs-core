@@ -756,13 +756,14 @@ export abstract class Viewport implements Disposable, TileUser {
     this.view.displayStyle.settings.dropModelAppearanceOverride(id);
   }
 
+  /** Indicates whether the scene is being loaded for the first time, requiring initial invalidation. */
+  private _firstTimeLoaded = true;
   /** Some changes may or may not require us to invalidate the scene.
    * Specifically, when shadows are enabled or we are displaying view attachments, the following changes may affect the visibility or transparency of elements or features:
    * - Viewed categories and subcategories;
    * - Always/never drawn elements
    * - Symbology overrides.
    */
-  private _firstTimeLoaded = true;
   private maybeInvalidateScene(): void {
     // When shadows are being displayed and the set of displayed categories changes, we must invalidate the scene so that shadows will be regenerated.
     // Same occurs when changing feature symbology overrides (e.g., always/never-drawn element sets, transparency override)

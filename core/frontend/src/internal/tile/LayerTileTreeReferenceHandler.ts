@@ -7,9 +7,9 @@
  */
 
 import { BaseLayerSettings, ColorDef, MapImagerySettings, MapLayerSettings } from "@itwin/core-common";
-import { SceneContext } from "../ViewContext";
-import { compareMapLayer, createMapLayerTreeReference, DisclosedTileTreeSet, ImageryMapLayerTreeReference, ImageryMapTileTree, MapLayerTileTreeReference, ModelMapLayerTileTreeReference, TileTreeLoadStatus, TileTreeOwner } from "./internal";
-import { IModelConnection } from "../IModelConnection";
+import { SceneContext } from "../../ViewContext";
+import { compareMapLayer, createMapLayerTreeReference, DisclosedTileTreeSet, ImageryMapLayerTreeReference, ImageryMapTileTree, MapLayerTileTreeReference, ModelMapLayerTileTreeReference, TileTreeLoadStatus, TileTreeOwner } from "../../tile/internal";
+import { IModelConnection } from "../../IModelConnection";
 
 /** @internal */
 export interface LayerTileTreeReference {

@@ -28,7 +28,7 @@ import { SceneContext } from "../../ViewContext";
 import { AttachToViewportArgs, ViewState, ViewState3d } from "../../ViewState";
 import {
   DisclosedTileTreeSet,
-  IModelTileTree, IModelTileTreeParams, iModelTileTreeParamsFromJSON, LayerTileTreeReferenceHandler, MapLayerTileTreeReference, SpatialClassifierTileTreeReference, TileDrawArgs, TileGraphicType, TileTree, TileTreeOwner, TileTreeReference,
+  IModelTileTree, IModelTileTreeParams, iModelTileTreeParamsFromJSON, LayerTileTreeReferenceHandler, MapLayerTileTreeReference, TileDrawArgs, TileGraphicType, TileTree, TileTreeOwner, TileTreeReference,
   TileTreeSupplier,
 } from "../../tile/internal";
 import { _scheduleScriptReference } from "../../common/internal/Symbols";
@@ -142,7 +142,6 @@ class PrimaryTreeReference extends TileTreeReference {
   private readonly _sectionClip?: StringifiedClipVector;
   private readonly _sectionCutAppearanceProvider?: FeatureAppearanceProvider;
   protected readonly _animationTransformNodeId?: number;
-  protected _classifier?: SpatialClassifierTileTreeReference;
   private _layerRefHandler: LayerTileTreeReferenceHandler;
   public readonly iModel: IModelConnection;
 
@@ -302,10 +301,6 @@ class PrimaryTreeReference extends TileTreeReference {
     const tree = this.treeOwner.load() as IModelTileTree;
     if (undefined === tree || !this._layerRefHandler.initializeLayers(context))
       return;     // Not loaded yet.
-
-    // NB: The classifier must be added first, so we can find it when adding our own tiles.
-    if (this._classifier && this._classifier.activeClassifier)
-      this._classifier.addToScene(context);
 
     super.addToScene(context);
   }

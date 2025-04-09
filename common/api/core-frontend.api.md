@@ -4329,20 +4329,6 @@ export interface GraphicPrimitive2d {
     zDepth: number;
 }
 
-// @public (undocumented)
-export class GraphicsCollectorDrawArgs extends TileDrawArgs {
-    // (undocumented)
-    static create(context: SceneContext, collector: GraphicsCollector, ref: TileTreeReference, planes: FrustumPlanes, worldToViewMap: Map4d): TileDrawArgs | undefined;
-    // (undocumented)
-    drawGraphics(): void;
-    // (undocumented)
-    drawGraphicsWithType(_graphicType: TileGraphicType, graphics: GraphicBranch): void;
-    // (undocumented)
-    get frustumPlanes(): FrustumPlanes;
-    // (undocumented)
-    get worldToViewMap(): Map4d;
-}
-
 // @internal (undocumented)
 export interface GraphicsGeometryRenderer extends FeatureGeometryRenderer {
     // (undocumented)
@@ -5083,8 +5069,6 @@ export class IModelTileTree extends TileTree {
     // (undocumented)
     get batchType(): BatchType;
     // (undocumented)
-    protected collectClassifierGraphics(args: TileDrawArgs, selectedTiles: Tile[]): void;
-    // (undocumented)
     get containsTransformNodes(): boolean;
     // (undocumented)
     readonly contentIdProvider: ContentIdProvider;
@@ -5352,7 +5336,7 @@ export class LayerTileTreeHandler {
     constructor(ref: LayerTileTree);
     addImageryLayer(tree: ImageryMapTileTree, settings: MapLayerSettings, index: number, baseImageryLayer: boolean): void;
     // (undocumented)
-    addModelLayer(layerTreeRef: ModelMapLayerTileTreeReference, context: SceneContext, tileTree: TileTree): void;
+    addModelLayer(layerTreeRef: ModelMapLayerTileTreeReference, context: SceneContext): void;
     // (undocumented)
     clearLayers(): void;
     // (undocumented)
