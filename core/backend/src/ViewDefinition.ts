@@ -6,7 +6,7 @@
  * @module ViewDefinitions
  */
 
-import { Id64, Id64Array, Id64String, IModelStatus, JsonUtils } from "@itwin/core-bentley";
+import { DbResult, Id64, Id64Array, Id64String, IModelStatus, JsonUtils } from "@itwin/core-bentley";
 import {
   Angle, Matrix3d, Point2d, Point3d, Range2d, Range3d, StandardViewIndex, Transform, Vector3d, YawPitchRollAngles,
 } from "@itwin/core-geometry";
@@ -42,6 +42,30 @@ export class ModelSelector extends DefinitionElement {
     const val = super.toJSON() as ModelSelectorProps;
     val.models = this.models;
     return val;
+  }
+
+  protected static override readonly _customHandledProps: CustomHandledProperty[] = [
+    { propertyName: "models", source: "Class" },
+  ];
+
+  public static override deserialize(props: InstanceProps): ModelSelectorProps {
+    const elProps = super.deserialize(props) as ModelSelectorProps;
+    const instance = props.row;
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    elProps.models = props.iModel.withPreparedStatement("SELECT TargetECInstanceId FROM Bis.ModelSelectorRefersToModels WHERE SourceECInstanceId=?", (statement) => {
+      statement.bindId(1, instance.id);
+      const ids: Id64Array = [];
+      while (DbResult.BE_SQLITE_ROW === statement.step()) {
+        ids.push(statement.getValue(0).getId());
+      }
+      return ids;
+    });
+    return elProps;
+  }
+
+  public static override serialize(props: ModelSelectorProps, _iModel: IModelDb): ECSqlRow {
+    const inst = super.serialize(props, _iModel);
+    return inst;
   }
 
   protected override collectReferenceIds(referenceIds: EntityReferenceSet): void {
@@ -112,6 +136,30 @@ export class CategorySelector extends DefinitionElement {
     const val = super.toJSON() as CategorySelectorProps;
     val.categories = this.categories;
     return val;
+  }
+
+  protected static override readonly _customHandledProps: CustomHandledProperty[] = [
+    { propertyName: "categories", source: "Class" },
+  ];
+
+  public static override deserialize(props: InstanceProps): CategorySelectorProps {
+    const elProps = super.deserialize(props) as CategorySelectorProps;
+    const instance = props.row;
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    elProps.categories = props.iModel.withPreparedStatement("SELECT TargetECInstanceId FROM Bis.CategorySelectorRefersToCategories WHERE SourceECInstanceId=?", (statement) => {
+      statement.bindId(1, instance.id);
+      const ids: Id64Array = [];
+      while (DbResult.BE_SQLITE_ROW === statement.step()) {
+        ids.push(statement.getValue(0).getId());
+      }
+      return ids;
+    });
+    return elProps;
+  }
+
+  public static override serialize(props: CategorySelectorProps, _iModel: IModelDb): ECSqlRow {
+    const inst = super.serialize(props, _iModel);
+    return inst;
   }
 
   protected override collectReferenceIds(referenceIds: EntityReferenceSet): void {
