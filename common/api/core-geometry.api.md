@@ -5851,6 +5851,7 @@ export class TaggedNumericData {
 
 // @public
 export interface TangentOptions {
+    distanceTol?: number;
     extend?: VariantCurveExtendParameter;
     hintPoint?: Point3d;
     strokeOptions?: StrokeOptions;
