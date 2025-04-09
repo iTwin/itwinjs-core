@@ -185,7 +185,7 @@ Allow the attachment of an ECDb/IModel to a connection and running ECSQL that co
 
 ### FormatsProvider
 
-[FormatsProvider]($ecschema-metadata) and [MutableFormatsProvider] interfaces and a [SchemaFormatsProvider]($ecschema-metadata) class have been added. This enables quick setup of [FormatterSpec]($quantity) and [ParserSpec]($quantity) to help with display formatting.
+[FormatsProvider]($ecschema-metadata) and [MutableFormatsProvider]($ecschema-metadata) interfaces and a [SchemaFormatsProvider]($ecschema-metadata) class have been added. This enables quick setup of [FormatterSpec]($quantity) and [ParserSpec]($quantity) to help with display formatting.
 
 ### Persistence
 
