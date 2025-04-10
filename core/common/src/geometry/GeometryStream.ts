@@ -24,6 +24,8 @@ import { Base64EncodedString } from "../Base64EncodedString";
 import { Placement2d, Placement3d } from "./Placement";
 import { TextBlockGeometryProps } from "../annotation/TextBlockGeometryProps";
 import { FrameGeometry } from "../annotation/FrameGeometry";
+import { FrameGeometryProps } from "../annotation/FrameGeometryProps";
+import { TextAnnotationGeometryProps } from "../annotation/TextAnnotationGeometryProps";
 
 /** Establish a non-default [[SubCategory]] or to override [[SubCategoryAppearance]] for the geometry that follows.
  * A GeometryAppearanceProps always signifies a reset to the [[SubCategoryAppearance]] for subsequent [[GeometryStreamProps]] entries for undefined values.
@@ -353,7 +355,24 @@ export class GeometryStreamBuilder {
           this.geometryStream.push({ appearance: { color: entry.color } });
           result = true;
         }
-      } else if (undefined !== entry.frame) {
+      } else if (entry.separator) {
+        result = this.appendGeometry(LineSegment3d.fromJSON(entry.separator));
+      } else {
+        result = false;
+      }
+
+      if (!result) {
+        return false;
+      }
+    }
+
+    return true;
+  }
+
+  public appendFrame(frameProps: FrameGeometryProps): boolean {
+    for (const entry of frameProps.entries) {
+      let result: boolean;
+      if (undefined !== entry.frame) {
         const params = new GeometryParams(Id64.invalid);
         params.elmPriority = 0;
 
@@ -389,8 +408,6 @@ export class GeometryStreamBuilder {
         const points = FrameGeometry.debugIntervals(entry.debugSnap.shape, entry.debugSnap.range, entry.debugSnap.transform, 0.5, 0.25);
         points?.forEach(point => this.appendGeometry(Loop.create(point)));
         result = true;
-      } else if (entry.separator) {
-        result = this.appendGeometry(LineSegment3d.fromJSON(entry.separator));
       } else {
         result = false;
       }
@@ -401,6 +418,15 @@ export class GeometryStreamBuilder {
     }
 
     return true;
+  }
+
+  public appendTextAnnotation(props: TextAnnotationGeometryProps): boolean {
+    let result = this.appendTextBlock(props.textBlockGeometry)
+
+    if (props.frameGeometry)
+      result = result && this.appendFrame(props.frameGeometry);
+    return result;
+
   }
 
   /** Append an [[ImageGraphic]] supplied in either local or world coordinates. */

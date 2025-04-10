@@ -21,8 +21,10 @@ import { ImageGraphic, ImageGraphicCorners, ImageGraphicProps } from "./ImageGra
 import { LineStyle } from "./LineStyle";
 import { ElementAlignedBox3d, Placement2d, Placement3d } from "./Placement";
 import { isPlacement2dProps, PlacementProps } from "../ElementProps";
-import { TextBlockGeometryProps } from "../annotation/TextBlockGeometryProps";
+import { TextBlockGeometryProps, TextBlockGeometryPropsEntry } from "../annotation/TextBlockGeometryProps";
 import { FrameGeometry } from "../annotation/FrameGeometry";
+import { FrameGeometryProps } from "../annotation/FrameGeometryProps";
+import { TextAnnotationGeometryProps } from "../annotation/TextAnnotationGeometryProps";
 
 /** Specifies the type of an entry in a geometry stream.
  * @see [[ElementGeometryDataEntry.opcode]].
@@ -441,11 +443,25 @@ export namespace ElementGeometry {
           if (entry.color !== "subcategory") {
             params.lineColor = ColorDef.fromJSON(entry.color);
           }
-
           result = this.appendGeometryParamsChange(params);
         } else if (entry.separator) {
           result = this.appendGeometryQuery(LineSegment3d.fromJSON(entry.separator));
-        } else if (undefined !== entry.frame) {
+        } else {
+          result = false;
+        }
+
+        if (!result) {
+          return false;
+        }
+      }
+
+      return true;
+    }
+
+    public appendFrame(frameProps: FrameGeometryProps): boolean {
+      for (const entry of frameProps.entries) {
+        let result: boolean;
+        if (undefined !== entry.frame) {
           const params = new GeometryParams(Id64.invalid);
           params.elmPriority = 0;
 
@@ -488,6 +504,15 @@ export namespace ElementGeometry {
       }
 
       return true;
+    }
+
+    public appendTextAnnotation(props: TextAnnotationGeometryProps): boolean {
+      let result = this.appendTextBlock(props.textBlockGeometry)
+
+      if (props.frameGeometry)
+        result = result && this.appendFrame(props.frameGeometry);
+      return result;
+
     }
     /** Append a [[ImageGraphic]] supplied in either local or world coordinates to the [[ElementGeometryDataEntry]] array */
     public appendImageGraphic(image: ImageGraphic): boolean {

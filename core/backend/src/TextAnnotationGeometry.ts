@@ -11,6 +11,8 @@ import { ComputeRangesForTextLayout, FindFontId, FindTextStyle, layoutTextBlock,
 import { LineSegment3d, Point3d, Range2d, Transform, Vector2d } from "@itwin/core-geometry";
 import { assert } from "@itwin/core-bentley";
 import { IModelDb } from "./IModelDb";
+import { FrameGeometryProps } from "@itwin/core-common/lib/cjs/annotation/FrameGeometryProps";
+import { TextAnnotationGeometryProps } from "@itwin/core-common/lib/cjs/annotation/TextAnnotationGeometryProps";
 
 interface GeometryContext {
   curColor?: TextStyleColor;
@@ -204,8 +206,8 @@ function produceTextBlockGeometry(layout: TextBlockLayout, documentTransform: Tr
   return { entries: context.entries };
 }
 
-function produceFrameGeometry(layout: TextBlockLayout, documentTransform: Transform, frameProps?: TextFrameStyleProps): TextBlockGeometryProps {
-  const context: GeometryContext = { entries: [] };
+function produceFrameGeometry(layout: TextBlockLayout, documentTransform: Transform, frameProps?: TextFrameStyleProps): FrameGeometryProps {
+  const context: FrameGeometryProps = { entries: [] };
 
   if (frameProps?.frame && frameProps?.frame !== "none") {
     context.entries.push({
@@ -260,7 +262,7 @@ export interface ProduceTextAnnotationGeometryArgs {
  * @see [[TextAnnotation2d.setAnnotation]] and [[TextAnnotation3d.setAnnotation]] to update the annotation, geometry, and placement of an annotation element.
  * @beta
  */
-export function produceTextAnnotationGeometry(args: ProduceTextAnnotationGeometryArgs): TextBlockGeometryProps {
+export function produceTextAnnotationGeometry(args: ProduceTextAnnotationGeometryArgs): TextAnnotationGeometryProps {
   const layout = layoutTextBlock({
     ...args,
     textBlock: args.annotation.textBlock,
@@ -272,6 +274,5 @@ export function produceTextAnnotationGeometry(args: ProduceTextAnnotationGeometr
   const anchorPoint = args.debugAnchorPointAndRange ? transform.multiplyPoint3d(args.annotation.computeAnchorPoint(dimensions)) : undefined;
   const textBlockGeometry = produceTextBlockGeometry(layout, transform, anchorPoint);
   const frameGeometry = produceFrameGeometry(layout, transform, args.annotation.frame);
-  const entries = [...textBlockGeometry.entries, ...frameGeometry.entries];
-  return { entries };
+  return { textBlockGeometry, frameGeometry };
 }

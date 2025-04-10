@@ -6,32 +6,32 @@
  * @module Annotation
  */
 
-import { XYZProps } from "@itwin/core-geometry";
-import { TextStringProps } from "../geometry/TextString";
+import { Range2dProps, TransformProps } from "@itwin/core-geometry";
 import { TextStyleColor } from "./TextStyle";
+import { TextAnnotationFillColor, TextAnnotationFrame } from "./TextAnnotation";
 
 /**
- * A single entry in a [[TextBlockGeometryProps]], representing one of the following primitive types:
- * - A [[TextString]],
- * - A fraction separator described by a [LineSegment3d]($geometry), or
- * - A change in color, to be applied to all subsequent primitives.
+ * A single entry in a [[FrameGeometryProps]], representing one of the following primitive types:
+ * - TODO
  * @beta
  */
-export type TextBlockGeometryPropsEntry = {
-  text: TextStringProps;
-  separator?: never;
-  color?: never;
-} | {
-  text?: never;
-  separator: {
-    startPoint: XYZProps;
-    endPoint: XYZProps;
+export type FrameGeometryPropsEntry = {
+  frame: {
+    fillColor?: TextAnnotationFillColor;
+    lineColor?: TextStyleColor;
+    lineWidth?: number;
+    shape: TextAnnotationFrame;
+    transform: TransformProps;
+    range: Range2dProps;
   };
-  color?: never;
+  debugSnap?: never;
 } | {
-  text?: never;
-  separator?: never;
-  color: TextStyleColor;
+  frame?: never;
+  debugSnap: {
+    shape: TextAnnotationFrame;
+    transform: TransformProps;
+    range: Range2dProps;
+  };
 };
 
 /**
@@ -40,7 +40,7 @@ export type TextBlockGeometryPropsEntry = {
  * @see [[GeometryStreamBuilder.appendTextBlock]] to add a block of text to a [GeometryStream]($docs/learning/common/GeometryStream.md).
  * @beta
  */
-export interface TextBlockGeometryProps {
+export interface FrameGeometryProps {
   /** The set of geometric primitives representing the contents of the [[TextBlock]]. */
-  entries: TextBlockGeometryPropsEntry[];
+  entries: FrameGeometryPropsEntry[];
 }
