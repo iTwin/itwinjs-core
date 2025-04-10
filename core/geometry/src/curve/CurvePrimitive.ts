@@ -102,11 +102,8 @@ export interface TangentOptions {
   strokeOptions?: StrokeOptions,
   /**
    * Compute tangents to the curve extended according to variant type.
-   * This option is ignored for linear segments and linestrings.
-   * * `false`: do not extend the curve (default).
-   * * `true`: extend the curve at both start and end.
-   * * CurveExtendMode: extend the curve in the specified manner at both start and end.
-   * * CurveExtendMode[]: first entry applies to curve start; second, to curve end; any other entries ignored.
+   * * This option is ignored for linear segments and linestrings.
+   * * Default value is `false`.
    */
   extend?: VariantCurveExtendParameter,
   /**
@@ -566,11 +563,7 @@ export abstract class CurvePrimitive extends GeometryQuery {
    * * Since CurvePrimitive should always have start and end available as candidate points, this method should always
    * succeed.
    * @param spacePoint point in space.
-   * @param extend (optional) compute the closest point to the curve extended according to variant type:
-   * * `false`: do not extend the curve (default)
-   * * `true`: extend the curve at both start and end
-   * * CurveExtendMode: extend the curve in the specified manner at both start and end
-   * * CurveExtendMode[]: first entry applies to curve start; second, to curve end; any other entries ignored
+   * @param extend (optional) compute the closest point to the curve extended according to variant type (default false)
    * @param result (optional) pre-allocated detail to populate and return.
    * @returns details of the closest point.
    */
