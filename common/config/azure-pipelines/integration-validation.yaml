@@ -31,10 +31,10 @@ jobs:
           imageName: macos-latest
           nodeVersion: 20.x
         Linux_node_22_x:
-          imageName: macos-latest
+          imageName: ubuntu-latest
           nodeVersion: 22.x
         Windows_node_22_x:
-          imageName: macos-latest
+          imageName: windows-latest
           nodeVersion: 22.x
         MacOS_node_22_x:
           imageName: macos-latest
