@@ -23,7 +23,7 @@ import { TextString, TextStringProps } from "./TextString";
 import { Base64EncodedString } from "../Base64EncodedString";
 import { Placement2d, Placement3d } from "./Placement";
 import { TextBlockGeometryProps } from "../annotation/TextBlockGeometryProps";
-import { FrameGeometry } from "../annotation/TextFrameGeometry";
+import { FrameGeometry } from "../annotation/FrameGeometry";
 
 /** Establish a non-default [[SubCategory]] or to override [[SubCategoryAppearance]] for the geometry that follows.
  * A GeometryAppearanceProps always signifies a reset to the [[SubCategoryAppearance]] for subsequent [[GeometryStreamProps]] entries for undefined values.
