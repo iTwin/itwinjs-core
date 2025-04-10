@@ -94,7 +94,6 @@ public;class;CheckpointConnection
 public;enum;ClipEventType
 public;class;Cluster
 public;type;CollectTileStatus
-internal;function;compareMapLayer
 public;enum;CompassMode
 public;interface;ComputeChordToleranceArgs
 beta;interface;ComputeDisplayTransformArgs
