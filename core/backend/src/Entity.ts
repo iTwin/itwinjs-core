@@ -7,7 +7,7 @@
  */
 
 import { Id64, Id64String } from "@itwin/core-bentley";
-import { EntityProps, EntityReferenceSet, PropertyCallback, PropertyMetaData } from "@itwin/core-common";
+import { ElementLoadOptions, EntityProps, EntityReferenceSet, PropertyCallback, PropertyMetaData } from "@itwin/core-common";
 import type { IModelDb } from "./IModelDb";
 import { Schema } from "./Schema";
 import { EntityClass, PropertyHandler, SchemaItemKey } from "@itwin/ecschema-metadata";
@@ -20,6 +20,9 @@ export interface ECSqlRow {
 export interface InstanceProps {
   row: ECSqlRow;
   iModel: IModelDb;
+  options?: {
+    element?: ElementLoadOptions;
+  }
 }
 
 export interface CustomHandledProperty {

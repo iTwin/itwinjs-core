@@ -2869,13 +2869,13 @@ describe("iModel", () => {
 
     const code1 = getNumberedCodeValAndProps(1);
     const categ1Id = imodel.elements.insertElement(code1.props);
-    const categ1 = imodel.elements.getElementJson({ id: categ1Id });
+    const categ1 = imodel.elements.getElementProps({ id: categ1Id });
     expect(categ1.code.value).to.equal(code1.trimmedCodeVal);
 
     imodel.codeValueBehavior = "exact";
     const code2 = getNumberedCodeValAndProps(2);
     const categ2Id = imodel.elements.insertElement(code2.props);
-    const categ2 = imodel.elements.getElementJson({ id: categ2Id });
+    const categ2 = imodel.elements.getElementProps({ id: categ2Id });
     expect(categ2.code.value).to.equal(code2.untrimmedCodeVal);
 
     imodel.codeValueBehavior = "trim-unicode-whitespace";

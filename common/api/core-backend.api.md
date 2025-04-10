@@ -3406,7 +3406,7 @@ export namespace IModelDb {
         getAspects(elementId: Id64String, aspectClassFullName?: string, excludedClassFullNames?: Set<string>): ElementAspect[];
         getElement<T extends Element_2>(elementId: Id64String | GuidString | Code | ElementLoadProps, elementClass?: EntityClassType<Element_2>): T;
         // @internal
-        getElementJson<T extends ElementProps>(elementId: ElementLoadProps): T;
+        getElementProps<T extends ElementProps>(elementId: ElementLoadProps): T;
         getElementProps<T extends ElementProps>(props: Id64String | GuidString | Code | ElementLoadProps): T;
         // (undocumented)
         getFederationGuidFromId(id: Id64String): GuidString | undefined;

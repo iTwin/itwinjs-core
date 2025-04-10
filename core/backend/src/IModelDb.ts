@@ -17,16 +17,14 @@ import {
 import {
   AxisAlignedBox3d, BRepGeometryCreate, BriefcaseId, BriefcaseIdValue, CategorySelectorProps, ChangesetIdWithIndex, ChangesetIndexAndId, Code,
   CodeProps, CreateEmptySnapshotIModelProps, CreateEmptyStandaloneIModelProps, CreateSnapshotIModelProps, DbQueryRequest, DisplayStyleProps,
-  DomainOptions, EcefLocation, ECJsNames, ECSchemaProps, ECSqlReader, ElementAspectProps, ElementGeometryCacheOperationRequestProps, ElementGeometryCacheRequestProps, ElementGeometryCacheResponseProps, ElementGeometryRequest, ElementGraphicsRequestProps,
-  ElementLoadOptions,
-  ElementLoadProps, ElementProps, EntityMetaData, EntityProps, EntityQueryParams, FilePropertyProps, FontMap,
+  DomainOptions, EcefLocation, ECJsNames, ECSchemaProps, ECSqlReader, ElementAspectProps, ElementGeometryCacheOperationRequestProps, ElementGeometryCacheRequestProps, ElementGeometryCacheResponseProps, ElementGeometryRequest, ElementGraphicsRequestProps, ElementLoadProps, ElementProps, EntityMetaData, EntityProps, EntityQueryParams, FilePropertyProps, FontMap,
   GeoCoordinatesRequestProps, GeoCoordinatesResponseProps, GeometryContainmentRequestProps, GeometryContainmentResponseProps, IModel,
   IModelCoordinatesRequestProps, IModelCoordinatesResponseProps, IModelError, IModelNotFoundResponse, IModelTileTreeProps, LocalFileName,
   MassPropertiesRequestProps, MassPropertiesResponseProps, ModelExtentsProps, ModelLoadProps, ModelProps, ModelSelectorProps, OpenBriefcaseProps,
   OpenCheckpointArgs, OpenSqliteArgs, ProfileOptions, PropertyCallback, QueryBinder, QueryOptions, QueryRowFormat, SchemaState,
   SheetProps, SnapRequestProps, SnapResponseProps, SnapshotOpenOptions, SpatialViewDefinitionProps, SubCategoryResultRow, TextureData,
   TextureLoadProps, ThumbnailProps, UpgradeOptions, ViewDefinition2dProps, ViewDefinitionProps, ViewIdString, ViewQueryParams, ViewStateLoadProps,
-  ViewStateProps, ViewStoreRpc,
+  ViewStateProps, ViewStoreRpc
 } from "@itwin/core-common";
 import { Range2d, Range3d } from "@itwin/core-geometry";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
@@ -44,7 +42,7 @@ import { ECSqlStatement } from "./ECSqlStatement";
 import { Element, SectionDrawing, Subject } from "./Element";
 import { ElementAspect } from "./ElementAspect";
 import { generateElementGraphics } from "./ElementGraphics";
-import { Entity, EntityClassType } from "./Entity";
+import { ECSqlRow, Entity, EntityClassType } from "./Entity";
 import { ExportGraphicsOptions, ExportPartGraphicsOptions } from "./ExportGraphics";
 import { GeoCoordConfig } from "./GeoCoordConfig";
 import { IModelHost } from "./IModelHost";
@@ -73,6 +71,7 @@ import { createIModelDbFonts } from "./internal/IModelDbFontsImpl";
 import { _close, _hubAccess, _nativeDb, _releaseAllLocks } from "./internal/Symbols";
 import { SchemaContext, SchemaJsonLocater } from "@itwin/ecschema-metadata";
 import { SchemaMap } from "./Schema";
+import { ElementLRUCache, LruCache } from "./LRUCaches";
 
 
 // spell:ignore fontid fontmap
@@ -209,105 +208,6 @@ export interface InlineGeometryPartsResult {
   /** The number of candidate parts that were successfully deleted after inlining. */
   numPartsDeleted: number;
 }
-
-
-export interface CachedElement {
-  args: ElementLoadOptions
-  element: ElementProps;
-}
-
-
-export class ElementLRUCache {
-  public static readonly DefaultCapacity = 2000;
-  private _elementCache = new Map<Id64String, CachedElement>();
-  private _cacheByCode = new Map<Id64String, Id64String>();
-  private _cacheByFederationGuid = new Map<string, Id64String>();
-  private static makeCodeKey(code: CodeProps): string {
-    if (code.value)
-      return `${code.scope}:${code.value}:${code.value}`;
-    return `${code.scope}:${code.value}`;
-  }
-  private findElement(key: ElementLoadProps): CachedElement | undefined {
-    if (key.id) {
-      return this._elementCache.get(key.id);
-    } else if (key.federationGuid) {
-      const id = this._cacheByFederationGuid.get(key.federationGuid);
-      if (id)
-        return this._elementCache.get(id);
-    } else if (key.code) {
-      const id = this._cacheByCode.get(ElementLRUCache.makeCodeKey(key.code));
-      if (id)
-        return this._elementCache.get(id);
-    } else {
-      throw new Error("No key provided");
-    }
-    return undefined;
-  }
-  public constructor(public readonly capacity = ElementLRUCache.DefaultCapacity) { }
-  public clear(): void {
-    this._elementCache.clear();
-    this._cacheByCode.clear();
-    this._cacheByFederationGuid.clear();
-  }
-  public get size(): number {
-    return this._elementCache.size;
-  }
-  public delete(key: ElementLoadProps): boolean {
-    const cachedElement = this.findElement(key);
-    if (cachedElement) {
-      this._elementCache.delete(cachedElement.element.id!);
-      this._cacheByCode.delete(ElementLRUCache.makeCodeKey(cachedElement.element.code));
-      if (cachedElement.element.federationGuid)
-        this._cacheByFederationGuid.delete(cachedElement.element.federationGuid);
-      return true;
-    }
-    return false;
-  }
-  public get(key: ElementLoadProps): CachedElement | undefined {
-    const cachedElement = this.findElement(key);
-    if (cachedElement) {
-      // Move the accessed element to the end of the cache
-      this._elementCache.delete(cachedElement.element.id!);
-      this._elementCache.set(cachedElement.element.id!, cachedElement);
-    }
-
-    if (cachedElement) {
-      if (key.displayStyle !== cachedElement.args.displayStyle ||
-        key.onlyBaseProperties !== cachedElement.args.onlyBaseProperties ||
-        key.renderTimeline !== cachedElement.args.renderTimeline ||
-        key.wantBRepData !== cachedElement.args.wantBRepData ||
-        key.wantGeometry !== cachedElement.args.wantGeometry) {
-        return undefined
-      }
-    }
-    return cachedElement;
-  }
-  public set(el: CachedElement): this {
-    if (!el.element.id)
-      throw new Error("Element must have an id");
-
-    if (this._elementCache.has(el.element.id)) {
-      this._elementCache.delete(el.element.id);
-      this._elementCache.set(el.element.id, el);
-    } else {
-      this._elementCache.set(el.element.id, el);
-    }
-
-    if (el.element.federationGuid) {
-      this._cacheByFederationGuid.set(el.element.federationGuid, el.element.id);
-    }
-
-    this._cacheByCode.set(ElementLRUCache.makeCodeKey(el.element.code), el.element.id);
-    if (this._elementCache.size > this.capacity) {
-      const oldestKey = this._elementCache.keys().next().value as Id64String;
-      this.delete({ id: oldestKey });
-    }
-    return this;
-  }
-  public get [Symbol.toStringTag](): string {
-    return `EntityCache(this.size=${this.size}, capacity=${this.capacity})`;
-  }
-};
 
 /** An iModel database file. The database file can either be a briefcase or a snapshot.
  * @see [Accessing iModels]($docs/learning/backend/AccessingIModels.md)
@@ -842,6 +742,8 @@ export abstract class IModelDb extends IModel {
     this._jsClassMap = undefined;
     this._schemaMap = undefined;
     this._schemaContext = undefined;
+    this.elements.cache.clear();
+    this.models.cache.clear();
   }
 
   /** Update the project extents for this iModel.
@@ -1813,6 +1715,9 @@ export namespace IModelDb {
    */
   export class Models {
     /** @internal */
+    public readonly cache = new LruCache<Id64String, ModelProps>(500);
+
+    /** @internal */
     public constructor(private _iModel: IModelDb) { }
 
     /** Get the ModelProps with the specified identifier.
@@ -1821,7 +1726,10 @@ export namespace IModelDb {
      * @see tryGetModelProps
      */
     public getModelProps<T extends ModelProps>(id: Id64String): T {
-      return this.getModelJson<T>({ id });
+      const model = this.tryGetModelProps<T>(id);
+      if (undefined === model)
+        throw new IModelError(IModelStatus.NotFound, `Model=${id}`);
+      return model;
     }
 
     /** Get the ModelProps with the specified identifier.
@@ -1832,7 +1740,26 @@ export namespace IModelDb {
      * @see getModelProps
      */
     public tryGetModelProps<T extends ModelProps>(id: Id64String): T | undefined {
-      return this.tryGetModelJson({ id });
+      try {
+        const useWip = IModelHost.configuration?.enableWIPNativeInstanceFunctions;
+        if (useWip) {
+          const cachedMdl = this.cache.get(id);
+          if (cachedMdl) {
+            return cachedMdl as T;
+          }
+          const options = { useJsNames: true }
+          const instanceKey = this.resolveModelKey({ id });
+          const rawInstance = this._iModel[_nativeDb].readInstance(instanceKey, options) as ECSqlRow;
+          const classDef = this._iModel.getJsClass<typeof Model>(rawInstance.classFullName);
+          const modelProps = classDef.deserialize({ row: rawInstance, iModel: this._iModel }) as T;
+          this.cache.set(id, modelProps);
+          return modelProps;
+        } else {
+          return this._iModel[_nativeDb].getModel({ id }) as T;
+        }
+      } catch {
+        return undefined;
+      }
     }
 
     /** Query for the last modified time for a [[Model]].
@@ -1885,46 +1812,20 @@ export namespace IModelDb {
       return model instanceof modelClass ? model : undefined;
     }
 
-    /** Read the properties for a Model as a json string.
-     * @param modelIdArg a json string with the identity of the model to load. Must have either "id" or "code".
-     * @returns a json string with the properties of the model.
-     * @throws [[IModelError]] if the model is not found or cannot be loaded.
-     * @see tryGetModelJson
-     * @internal
-     */
-    public getModelJson<T extends ModelProps>(modelIdArg: ModelLoadProps): T {
-      const modelJson = this.tryGetModelJson<T>(modelIdArg);
-      if (undefined === modelJson) {
-        throw new IModelError(IModelStatus.NotFound, `Model=(id: ${modelIdArg.id}, code: ${modelIdArg.code})`);
+    private resolveModelKey(modelIdArg: ModelLoadProps): IModelJsNative.ResolveInstanceKeyResult {
+      const baseClassName = "BisCore:Model";
+      let args: IModelJsNative.ResolveInstanceKeyArgs;
+      if (modelIdArg.id) {
+        args = { partialKey: { id: modelIdArg.id, baseClassName } };
+      } else if (modelIdArg.code) {
+        const modelId = this._iModel.elements.getElementProps<ElementProps>({ code: modelIdArg.code }).id;
+        if (!modelId)
+          throw new IModelError(IModelStatus.NotFound, `Model=(code: ${modelIdArg})`);
+        args = { partialKey: { id: modelId, baseClassName } };
+      } else {
+        throw new IModelError(IModelStatus.InvalidId, `Could find imodel (id/code: ${modelIdArg})`);
       }
-      return modelJson;
-    }
-
-    /** Read the properties for a Model as a json string.
-     * @param modelIdArg a json string with the identity of the model to load. Must have either "id" or "code".
-     * @returns a json string with the properties of the model or `undefined` if the model is not found.
-     * @see getModelJson
-     */
-    private tryGetModelJson<T extends ModelProps>(modelIdArg: ModelLoadProps): T | undefined {
-      try {
-        if (IModelHost.configuration?.enableWIPNativeInstanceFunctions) {
-          const options = {
-            useJsNames: true,
-          }
-          const readProps = this._iModel[_nativeDb].resolveInstanceKey(this._iModel.getInstanceArgs(modelIdArg.id, "Bis:Model", undefined, modelIdArg.code));
-          if (undefined === readProps)
-            throw new IModelError(IModelStatus.NotFound, `Model=${modelIdArg.id}`);
-          const rawInstance = this._iModel[_nativeDb].readInstance(readProps, options) as T;
-          // Deserialize the Model
-          const classDef = this._iModel.getJsClass<typeof Model>(readProps.classFullName);
-          const elementProps = classDef.deserialize({ row: rawInstance, iModel: this._iModel }) as T;
-          return elementProps;
-        } else {
-          return this._iModel[_nativeDb].getModel(modelIdArg) as T;
-        }
-      } catch {
-        return undefined;
-      }
+      return this._iModel[_nativeDb].resolveInstanceKey(args);
     }
 
     /** Get the sub-model of the specified Element.
@@ -1982,6 +1883,9 @@ export namespace IModelDb {
      */
     public updateModel(props: UpdateModelOptions): void {
       try {
+        if (props.id)
+          this.cache.delete(props.id);
+
         this._iModel[_nativeDb].updateModel(props);
       } catch (err: any) {
         throw new IModelError(err.errorNumber, `error updating model [${err.message}] id=${props.id}`);
@@ -2009,6 +1913,7 @@ export namespace IModelDb {
     public deleteModel(ids: Id64Arg): void {
       Id64.toIdSet(ids).forEach((id) => {
         try {
+          this.cache.delete(id);
           this._iModel[_nativeDb].deleteModel(id);
         } catch (err: any) {
           throw new IModelError(err.errorNumber, `error deleting model [${err.message}] id ${id}`);
@@ -2053,7 +1958,9 @@ export namespace IModelDb {
    * @public
    */
   export class Elements implements GuidMapper {
-    private _elementCache = new ElementLRUCache();
+    /** @internal */
+    public cache = new ElementLRUCache();
+
     /** @internal */
     public constructor(private _iModel: IModelDb) { }
 
@@ -2071,89 +1978,38 @@ export namespace IModelDb {
       }) : undefined;
     }
 
-    /** Read element data from the iModel as JSON
-     * @param elementIdArg a json string with the identity of the element to load. Must have one of "id", "federationGuid", or "code".
-     * @returns The JSON properties of the element.
-     * @throws [[IModelError]] if the element is not found or cannot be loaded.
-     * @see tryGetElementJson
-     * @internal
-     */
-    public getElementJson<T extends ElementProps>(elementId: ElementLoadProps): T {
-      const elementProps = this.tryGetElementJson<T>(elementId);
-      if (undefined === elementProps)
-        throw new IModelError(IModelStatus.NotFound, `reading element={id: ${elementId.id} federationGuid: ${elementId.federationGuid}, code: ${elementId.code}}`);
-      return elementProps;
-    }
-
-    /** Read element data from the iModel as JSON
-     * @param loadProps - a json string with the identity of the element to load. Must have one of "id", "federationGuid", or "code".
-     * @returns The JSON properties of the element or `undefined` if the element is not found.
-     * @throws [[IModelError]] if the element exists, but cannot be loaded.
-     * @see getElementJson
-     */
-    private tryGetElementJson<T extends ElementProps>(loadProps: ElementLoadProps): T | undefined {
-      try {
-        const elProp = this._elementCache.get(loadProps);
-        if (elProp) {
-          return elProp.element as T;
-        }
-
-        if (IModelHost.configuration?.enableWIPNativeInstanceFunctions) {
-          const options = {
-            ...loadProps,
-            useJsNames: true,
-          }
-          const readProps = this._iModel[_nativeDb].resolveInstanceKey(this._iModel.getInstanceArgs(loadProps.id, "Bis:Element", loadProps.federationGuid, loadProps.code));
-          if (undefined === readProps)
-            throw new IModelError(IModelStatus.NotFound, `Element=${loadProps.id}`);
-          const rawInstance = this._iModel[_nativeDb].readInstance(readProps, options) as T;
-          // Deserialize the Element
-          const classDef = this._iModel.getJsClass<typeof Element>(readProps.classFullName);
-          const elementProps = classDef.deserialize({ row: rawInstance, iModel: this._iModel }) as T;
-
-          if (elementProps.id)
-            this._elementCache.set({ element: elementProps, args: loadProps });
-
-          return elementProps;
-        } else {
-          return this._iModel[_nativeDb].getElement(loadProps) as T;
-        }
-      } catch {
-        return undefined;
-
-      }
-    }
-
     /** Get properties of an Element by Id, FederationGuid, or Code
      * @throws [[IModelError]] if the element is not found or cannot be loaded.
      * @see tryGetElementProps
      */
     public getElementProps<T extends ElementProps>(props: Id64String | GuidString | Code | ElementLoadProps): T {
+      const elProp = this.tryGetElementProps<T>(props);
+      if (undefined === elProp)
+        throw new IModelError(IModelStatus.NotFound, `element not found`);
+      return elProp;
+    }
+
+    private resolveElementKey(props: Id64String | GuidString | Code | ElementLoadProps): IModelJsNative.ResolveInstanceKeyResult {
+      const baseClassName = "BisCore:Element";
+      let args: IModelJsNative.ResolveInstanceKeyArgs;
       if (typeof props === "string") {
-        props = Id64.isId64(props) ? { id: props } : { federationGuid: props };
+        args = Id64.isId64(props) ? { partialKey: { id: props, baseClassName } } : { federationGuid: props };
       } else if (props instanceof Code) {
-        props = { code: props };
-      }
-      try {
-        if (IModelHost.configuration?.enableWIPNativeInstanceFunctions) {
-          const options = {
-            useJsNames: true,
-            ...props
-          }
-          const readProps = this._iModel[_nativeDb].resolveInstanceKey(this._iModel.getInstanceArgs(props.id, "Bis:Element", props.federationGuid, props.code));
-          if (undefined === readProps)
-            throw new IModelError(IModelStatus.NotFound, `Element=${props.id}`);
-          const rawInstance = this._iModel[_nativeDb].readInstance(readProps, options) as T;
-          // Deserialize the Element
-          const classDef = this._iModel.getJsClass<typeof Element>(readProps.classFullName);
-          const elementProps = classDef.deserialize({ row: rawInstance, iModel: this._iModel }) as T;
-          return elementProps;
-        } else {
-          return this._iModel[_nativeDb].getElement(props) as T;
+        args = { code: props };
+      } else {
+        if (props.id) {
+          args = { partialKey: { id: props.id, baseClassName } };
         }
-      } catch (err: any) {
-        throw new IModelError(err.errorNumber, "reading element");
+        else if (props.federationGuid) {
+          args = { federationGuid: props.federationGuid };
+        }
+        else if (props.code) {
+          args = { code: props.code };
+        } else {
+          throw new IModelError(IModelStatus.InvalidId, "Element Id or FederationGuid or Code is required");
+        }
       }
+      return this._iModel[_nativeDb].resolveInstanceKey(args);
     }
 
     /** Get properties of an Element by Id, FederationGuid, or Code
@@ -2162,13 +2018,31 @@ export namespace IModelDb {
      * @note Useful for cases when an element may or may not exist and throwing an `Error` would be overkill.
      * @see getElementProps
      */
-    public tryGetElementProps<T extends ElementProps>(elementId: Id64String | GuidString | Code | ElementLoadProps): T | undefined {
-      if (typeof elementId === "string") {
-        elementId = Id64.isId64(elementId) ? { id: elementId } : { federationGuid: elementId };
-      } else if (elementId instanceof Code) {
-        elementId = { code: elementId };
+    public tryGetElementProps<T extends ElementProps>(props: Id64String | GuidString | Code | ElementLoadProps): T | undefined {
+      if (typeof props === "string") {
+        props = Id64.isId64(props) ? { id: props } : { federationGuid: props };
+      } else if (props instanceof Code) {
+        props = { code: props };
       }
-      return this.tryGetElementJson<T>(elementId);
+      try {
+        const useWip = IModelHost.configuration?.enableWIPNativeInstanceFunctions;
+        if (useWip) {
+          const cachedElm = this.cache.get(props);
+          if (cachedElm) {
+            return cachedElm.elProps as T;
+          }
+          const options = { ...props, useJsNames: true };
+          const instanceKey = this.resolveElementKey(props);
+          const rawInstance = this._iModel[_nativeDb].readInstance(instanceKey, options) as ECSqlRow;
+          const classDef = this._iModel.getJsClass<typeof Element>(rawInstance.classFullName);
+          const elementProps = classDef.deserialize({ row: rawInstance, iModel: this._iModel, options: { element: props } }) as T;
+          this.cache.set({ elProps: elementProps, loadOptions: props });
+          return elementProps as T;
+        }
+        return this._iModel[_nativeDb].getElement(props) as T;
+      } catch (_err: any) {
+        return undefined;
+      }
     }
 
     /** Get an element by Id, FederationGuid, or Code
@@ -2204,7 +2078,7 @@ export namespace IModelDb {
       else
         elementId.onlyBaseProperties = false; // we must load all properties to construct the element.
 
-      const elementProps = this.tryGetElementJson<ElementProps>(elementId);
+      const elementProps = this.tryGetElementProps<ElementProps>(elementId);
       if (undefined === elementProps)
         return undefined; // no Element with that elementId found
 
@@ -2276,6 +2150,11 @@ export namespace IModelDb {
      */
     public insertElement(elProps: ElementProps, options?: InsertElementOptions): Id64String {
       try {
+        this.cache.delete({
+          id: elProps.id,
+          federationGuid: elProps.federationGuid,
+          code: elProps.code,
+        });
         return elProps.id = this._iModel[_nativeDb].insertElement(elProps, options);
       } catch (err: any) {
         err.message = `Error inserting element [${err.message}]`;
@@ -2297,6 +2176,11 @@ export namespace IModelDb {
      */
     public updateElement<T extends ElementProps>(elProps: Partial<T>): void {
       try {
+        this.cache.delete({
+          id: elProps.id,
+          federationGuid: elProps.federationGuid,
+          code: elProps.code,
+        });
         this._iModel[_nativeDb].updateElement(elProps);
       } catch (err: any) {
         err.message = `Error updating element [${err.message}], id: ${elProps.id}`;
@@ -2314,6 +2198,7 @@ export namespace IModelDb {
       const iModel = this._iModel;
       Id64.toIdSet(ids).forEach((id) => {
         try {
+          this.cache.delete({ id });
           iModel[_nativeDb].deleteElement(id);
         } catch (err: any) {
           err.message = `Error deleting element [${err.message}], id: ${id}`;
