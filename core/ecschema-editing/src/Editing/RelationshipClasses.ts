@@ -194,31 +194,31 @@ export class RelationshipClasses extends ECClasses {
 
   public async addConstraintClass(constraint: RelationshipConstraint, ecClass: EntityClass | Mixin | RelationshipClass): Promise<void> {
     const mutableConstraint = constraint as MutableRelationshipConstraint;
-    mutableConstraint.addClass(ecClass);
+    mutableConstraint.addClass(new DelayedPromiseWithProps(ecClass.key, async () => ecClass));
 
     try {
       await this.validate(constraint.relationshipClass);
     } catch(e: any){
-      mutableConstraint.removeClass(ecClass);
+      mutableConstraint.removeClass(new DelayedPromiseWithProps(ecClass.key, async () => ecClass));
       throw new SchemaEditingError(ECEditingStatus.AddConstraintClass, new RelationshipConstraintId(constraint), e);
     }
 
     try {
       await this.validate(constraint);
     } catch(e: any){
-      mutableConstraint.removeClass(ecClass);
+      mutableConstraint.removeClass(new DelayedPromiseWithProps(ecClass.key, async () => ecClass));
       throw new SchemaEditingError(ECEditingStatus.AddConstraintClass, new RelationshipConstraintId(constraint), e);
     }
   }
 
   public async removeConstraintClass(constraint: RelationshipConstraint, ecClass: EntityClass | Mixin | RelationshipClass): Promise<void> {
     const mutableConstraint = constraint as MutableRelationshipConstraint;
-    mutableConstraint.removeClass(ecClass);
+    mutableConstraint.removeClass(new DelayedPromiseWithProps(ecClass.key, async () => ecClass));
 
     try{
       await this.validate(constraint);
     } catch(e: any) {
-      mutableConstraint.addClass(ecClass);
+      mutableConstraint.addClass(new DelayedPromiseWithProps(ecClass.key, async () => ecClass));
       throw new SchemaEditingError(ECEditingStatus.RemoveConstraintClass, new RelationshipConstraintId(constraint), e);
     }
   }

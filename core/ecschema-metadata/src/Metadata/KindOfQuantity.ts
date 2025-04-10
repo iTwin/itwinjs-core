@@ -97,7 +97,7 @@ export class KindOfQuantity extends SchemaItem {
         }
       }
 
-      const overrideFormat: OverrideFormat = this.createFormatOverride(format, presFormatOverride.precision, unitAndLabels);
+      const overrideFormat = this.createFormatOverride(format, presFormatOverride.precision, unitAndLabels);
       this.addPresentationFormat(overrideFormat);
     }
   }
@@ -131,7 +131,7 @@ export class KindOfQuantity extends SchemaItem {
         }
       }
 
-      const overrideFormat: OverrideFormat = this.createFormatOverride(format, presFormatOverride.precision, unitAndLabels);
+      const overrideFormat = this.createFormatOverride(format, presFormatOverride.precision, unitAndLabels);
       this.addPresentationFormat(overrideFormat);
     }
   }

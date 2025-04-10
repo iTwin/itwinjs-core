@@ -36,7 +36,7 @@ export class EntityClass extends ECClass implements HasMixins {
 
   public *getMixinsSync(): Iterable<Mixin> {
     if (!this._mixins)
-      return function* (): Iterable<Mixin> { }(); // empty iterable
+      return;
 
     for (const mixin of this._mixins) {
       const mObj = this.schema.lookupItemSync(mixin, Mixin);
@@ -190,7 +190,8 @@ export class EntityClass extends ECClass implements HasMixins {
   public override async toXml(schemaXml: Document): Promise<Element> {
     const itemElement = await super.toXml(schemaXml);
 
-    for (const mixin of this.getMixinsSync()) {
+    for (const lazyMixin of this.mixins) {
+      const mixin = await lazyMixin;
       const mixinElement = schemaXml.createElement("BaseClass");
       const mixinName = XmlSerializationUtils.createXmlTypedName(this.schema, mixin.schema, mixin.name);
       mixinElement.textContent = mixinName;

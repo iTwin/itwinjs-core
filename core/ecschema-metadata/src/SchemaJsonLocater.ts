@@ -18,7 +18,7 @@ import { SchemaKey } from "./SchemaKey";
 export type SchemaPropsGetter = (schemaName: string) => SchemaProps | undefined;
 
 /**
- * A  ISchemaLocater implementation for locating and retrieving EC Schema objects using a function
+ * An ISchemaLocater implementation for locating and retrieving EC Schema objects using a function
  * that returns the Schema Json for a given schema name
  * @public @preview
  */
@@ -55,7 +55,7 @@ export class SchemaJsonLocater implements ISchemaLocater {
 
   /** Get a schema by [SchemaKey] synchronously.
    * @param schemaKey The [SchemaKey] that identifies the schema.
-   * * @param matchType The [SchemaMatchType] to used for comparing schema versions.
+   * @param matchType The [SchemaMatchType] to used for comparing schema versions.
    * @param context The [SchemaContext] used to facilitate schema location.
    * @throws [Error]($ecschema-metadata) if the schema exists, but cannot be loaded.
    */

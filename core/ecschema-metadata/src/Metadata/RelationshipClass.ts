@@ -236,7 +236,7 @@ export class RelationshipConstraint implements CustomAttributeContainerProps {
    * @param constraint The class to add as a constraint class.
    * @internal
   */
-  public addClass(constraint: EntityClass | Mixin | RelationshipClass): void {
+  public addClass(constraint: LazyLoadedRelationshipConstraintClass): void {
     // TODO: Ensure we don't start mixing constraint class types
     // TODO: Check that this class is or subclasses abstract constraint?
 
@@ -244,7 +244,7 @@ export class RelationshipConstraint implements CustomAttributeContainerProps {
       this._constraintClasses = [];
 
     // TODO: Handle relationship constraints
-    this._constraintClasses.push(new DelayedPromiseWithProps(constraint.key, async () => constraint));
+    this._constraintClasses.push(constraint);
   }
 
   /**
@@ -253,7 +253,7 @@ export class RelationshipConstraint implements CustomAttributeContainerProps {
    *
    * @internal
    */
-  protected removeClass(constraint: EntityClass | Mixin | RelationshipClass): void {
+  protected removeClass(constraint: LazyLoadedRelationshipConstraintClass): void {
     if (undefined === this._constraintClasses)
       return;
 
@@ -360,7 +360,7 @@ export class RelationshipConstraint implements CustomAttributeContainerProps {
 
     for (const constraintClassName of relationshipConstraintProps.constraintClasses) {
       const constraintClass = loadEachConstraint(constraintClassName);
-      this.addClass(constraintClass);
+      this.addClass(new DelayedPromiseWithProps(constraintClass.key, async () => constraintClass));
     }
   }
 

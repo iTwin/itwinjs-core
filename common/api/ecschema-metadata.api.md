@@ -1059,7 +1059,7 @@ export class OverrideFormat {
     // (undocumented)
     get type(): FormatType;
     // (undocumented)
-    get units(): readonly [InvertedUnit | Unit, string | undefined][] | undefined;
+    get units(): readonly [Unit | InvertedUnit, string | undefined][] | undefined;
     // (undocumented)
     get uomSeparator(): string;
 }
@@ -1511,7 +1511,7 @@ export class RelationshipConstraint implements CustomAttributeContainerProps {
     // (undocumented)
     get abstractConstraint(): LazyLoadedRelationshipConstraintClass | undefined;
     // @internal
-    addClass(constraint: EntityClass | Mixin | RelationshipClass): void;
+    addClass(constraint: LazyLoadedRelationshipConstraintClass): void;
     // @internal (undocumented)
     protected addCustomAttribute(customAttribute: CustomAttribute): void;
     static classCompatibleWithConstraint(constraintClass: ECClass, testClass: ECClass, isPolymorphic: boolean): Promise<boolean>;
@@ -1536,7 +1536,7 @@ export class RelationshipConstraint implements CustomAttributeContainerProps {
     // (undocumented)
     get relationshipEnd(): RelationshipEnd;
     // @internal
-    protected removeClass(constraint: EntityClass | Mixin | RelationshipClass): void;
+    protected removeClass(constraint: LazyLoadedRelationshipConstraintClass): void;
     // (undocumented)
     get roleLabel(): string | undefined;
     get schema(): Schema;
