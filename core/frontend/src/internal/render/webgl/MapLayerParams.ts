@@ -175,7 +175,6 @@ export interface LayerTileData {
  * @param prevView The previous view state.
  * @param newView The new view state.
  * @returns {boolean} True if there is any difference in the model layer configuration; false otherwise.
- * @internal
  */
 export function compareMapLayer(prevView: ViewState, newView: ViewState): boolean {
   const getDrapedModelIds = (view: ViewState): string[] =>

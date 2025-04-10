@@ -1965,9 +1965,6 @@ export class Cluster<T extends Marker> {
 // @public
 export type CollectTileStatus = "accept" | "reject" | "continue";
 
-// @internal
-export function compareMapLayer(prevView: ViewState, newView: ViewState): boolean;
-
 // @public
 export enum CompassMode {
     Polar = 0,
