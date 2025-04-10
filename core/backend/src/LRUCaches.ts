@@ -132,6 +132,11 @@ export class ElementLRUCache {
     if (!el.elProps.id)
       throw new Error("Element must have an id");
 
+    // WIP do not cache this as geom need to be rerender into geom props if any part changes
+    if (el.loadOptions.wantGeometry) {
+      return this;
+    }
+
     if (this._elementCache.has(el.elProps.id)) {
       this._elementCache.delete(el.elProps.id);
       this._elementCache.set(el.elProps.id, el);
