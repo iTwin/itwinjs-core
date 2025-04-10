@@ -6096,9 +6096,11 @@ export interface V2CheckpointAccessProps {
 // @internal
 export class V2CheckpointManager {
     // (undocumented)
-    static [_getCheckpointDb](request: DownloadRequest): Promise<SnapshotDb>;
+    static [_getCheckpointDb](request: DownloadRequest): SnapshotDb | undefined;
     static [_mockCheckpointAttach]?: (checkpoint: CheckpointProps) => string;
     static [_mockCheckpointDownload]?: (_request: DownloadRequest) => void;
+    // (undocumented)
+    static [_performDownload](job: DownloadJob): Promise<ChangesetId>;
     // (undocumented)
     static attach(checkpoint: CheckpointProps): Promise<{
         dbName: string;
@@ -6109,8 +6111,6 @@ export class V2CheckpointManager {
     // (undocumented)
     static readonly cloudCacheName = "Checkpoints";
     static downloadCheckpoint(request: DownloadRequest): Promise<ChangesetId>;
-    // (undocumented)
-    static getContainer(v2Props: V2CheckpointAccessProps, checkpoint: CheckpointProps): CloudSqlite.CloudContainer;
     // (undocumented)
     static getFolder(): LocalDirName;
 }
