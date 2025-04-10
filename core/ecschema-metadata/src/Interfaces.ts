@@ -91,6 +91,6 @@ export interface WithSchemaKey {
  * @public @preview
  */
 export interface HasMixins {
-  mixins: LazyLoadedMixin[];
+  mixins: ReadonlyArray<LazyLoadedMixin>;
   getMixinsSync(): Iterable<Mixin>;
 }

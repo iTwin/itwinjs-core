@@ -47,7 +47,7 @@ export class Format extends SchemaItem {
   public get formatTraits(): FormatTraits { return this._base.formatTraits; }
   public get spacer(): string | undefined { return this._base.spacer; }
   public get includeZero(): boolean | undefined { return this._base.includeZero; }
-  public get units(): Array<[Unit | InvertedUnit, string | undefined]> | undefined { return this._units; }
+  public get units(): ReadonlyArray<[Unit | InvertedUnit, string | undefined]> | undefined { return this._units; }
 
   private parseFormatTraits(formatTraitsFromJson: string | string[]) {
     return this._base.parseFormatTraits(formatTraitsFromJson);

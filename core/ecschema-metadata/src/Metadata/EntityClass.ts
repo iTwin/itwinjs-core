@@ -28,7 +28,7 @@ export class EntityClass extends ECClass implements HasMixins {
   public static override get schemaItemType() { return SchemaItemType.EntityClass; }
   private _mixins?: LazyLoadedMixin[];
 
-  public get mixins(): LazyLoadedMixin[] {
+  public get mixins(): ReadonlyArray<LazyLoadedMixin> {
     if (!this._mixins)
       return [];
     return this._mixins;

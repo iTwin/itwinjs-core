@@ -202,7 +202,7 @@ export class RelationshipConstraint implements CustomAttributeContainerProps {
 
   public get roleLabel() { return this._roleLabel; }
 
-  public get constraintClasses(): LazyLoadedRelationshipConstraintClass[] | undefined { return this._constraintClasses; }
+  public get constraintClasses(): ReadonlyArray<LazyLoadedRelationshipConstraintClass> | undefined { return this._constraintClasses; }
 
   public get relationshipClass() { return this._relationshipClass; }
 

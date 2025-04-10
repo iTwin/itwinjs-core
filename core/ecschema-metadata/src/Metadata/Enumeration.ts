@@ -36,7 +36,7 @@ export class Enumeration extends SchemaItem {
   private _isStrict: boolean;
   private _enumerators: AnyEnumerator[];
 
-  public get enumerators() { return this._enumerators; }
+  public get enumerators(): ReadonlyArray<AnyEnumerator> { return this._enumerators; }
   public get type() { return this._type; }
   public get isStrict() { return this._isStrict; }
 
@@ -109,7 +109,7 @@ export class Enumeration extends SchemaItem {
    * @internal
    */
   protected addEnumerator(enumerator: AnyEnumerator) {
-    this.enumerators.push(enumerator);
+    this._enumerators.push(enumerator);
   }
 
   /**

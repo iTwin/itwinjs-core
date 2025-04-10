@@ -540,7 +540,7 @@ export class EntityClass extends ECClass implements HasMixins {
     getMixinsSync(): Iterable<Mixin>;
     static isEntityClass(item?: SchemaItem): item is EntityClass;
     // (undocumented)
-    get mixins(): LazyLoadedMixin[];
+    get mixins(): ReadonlyArray<LazyLoadedMixin>;
     // (undocumented)
     readonly schemaItemType: SchemaItemType;
     // (undocumented)
@@ -565,7 +565,7 @@ export class Enumeration extends SchemaItem {
     // @internal
     createEnumerator(name: string, value: string | number, label?: string, description?: string): AnyEnumerator;
     // (undocumented)
-    get enumerators(): AnyEnumerator[];
+    get enumerators(): ReadonlyArray<AnyEnumerator>;
     // (undocumented)
     fromJSON(enumerationProps: EnumerationProps): Promise<void>;
     // (undocumented)
@@ -733,7 +733,7 @@ export class Format extends SchemaItem {
     // (undocumented)
     get type(): FormatType;
     // (undocumented)
-    get units(): Array<[Unit | InvertedUnit, string | undefined]> | undefined;
+    get units(): ReadonlyArray<[Unit | InvertedUnit, string | undefined]> | undefined;
     // (undocumented)
     get uomSeparator(): string;
 }
@@ -758,7 +758,7 @@ export interface HasMixins {
     // (undocumented)
     getMixinsSync(): Iterable<Mixin>;
     // (undocumented)
-    mixins: LazyLoadedMixin[];
+    mixins: ReadonlyArray<LazyLoadedMixin>;
 }
 
 // @public
@@ -1059,7 +1059,7 @@ export class OverrideFormat {
     // (undocumented)
     get type(): FormatType;
     // (undocumented)
-    get units(): [Unit | InvertedUnit, string | undefined][] | undefined;
+    get units(): readonly [Unit | InvertedUnit, string | undefined][] | undefined;
     // (undocumented)
     get uomSeparator(): string;
 }
@@ -1516,7 +1516,7 @@ export class RelationshipConstraint implements CustomAttributeContainerProps {
     protected addCustomAttribute(customAttribute: CustomAttribute): void;
     static classCompatibleWithConstraint(constraintClass: ECClass, testClass: ECClass, isPolymorphic: boolean): Promise<boolean>;
     // (undocumented)
-    get constraintClasses(): LazyLoadedRelationshipConstraintClass[] | undefined;
+    get constraintClasses(): ReadonlyArray<LazyLoadedRelationshipConstraintClass> | undefined;
     // (undocumented)
     get customAttributes(): CustomAttributeSet | undefined;
     // (undocumented)
