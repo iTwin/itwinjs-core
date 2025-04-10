@@ -30,14 +30,14 @@ If you're developing a frontend application that takes advantage of the core qua
 - Unit - A named unit of measure which can be located by its name or label. The definition of any unit is represented through its [UnitProps]($quantity).
 - [UnitsProvider]($quantity) - An interface that locates the `UnitProps` for a unit given name or label. This interface also provides methods for [UnitConversion]($quantity) to allow converting from one unit to another.
 - Unit Family/[Phenomenon]($ecschema-metadata) - A physical quantity that can be measured (e.g., length, temperature, pressure).  Only units in the same phenomenon can be converted between.
-- Persistence Unit - The unit used to store the quantity value in memory or to persist the value in an editable iModel. iModels define the persistence unit through [KindOfQuantity]($docs/bis/ec/kindofquantity/) objects.
+- Persistence Unit - The unit used to store the quantity value in memory or to persist the value in an editable [iModel](../../learning/iModels.md). iModels define the persistence unit through [KindOfQuantity]($docs/bis/ec/kindofquantity/) objects.
 - [KindOfQuantity]($docs/bis/ec/kindofquantity/) - An object that defines a persistence unit and presentation formats.
 - [Format]($quantity) - The display format for the quantity value. For example, an angle may be persisted in radians but formatted and shown to user in degrees.
 - CompositeValue - An addition to the format specification that allows the explicit specification of a unit label, it also allows the persisted value to be displayed as up to 4 sub-units. Typical multi-unit composites are used to display `feet'-inches"` and `degree°minutes'seconds"`.
 - [FormatterSpec]($quantity) - Holds the format specification as well as the [UnitConversion]($quantity) between the persistence unit and all units defined in the format. This is done to avoid any async calls by the `UnitsProvider` during the formatting process.
-- [ParserSpec]($quantity) - Holds the format specification as well as the [UnitConversion]($quantity) between the persistence unit and all other units in the same phenomenon. This is done to avoid async calls by the `UnitsProvider` and to allow users to input quantities in different unit systems than specified. For instance, if a metric unit system is set, a user could enter `43in` and have the result properly converted to meters.
-- [Formatter]($quantity) - A class that holds methods to format a quantity value into a text string. Given a `FormatterSpec` object — which includes one or more unit definitions, each with their own conversion information and a specified format — and a single magnitude number, the `Formatter` can convert this number into a text string, adhering to the properties specified in the `formatTraits`.
-- [Parser]($quantity) - A class that holds methods to parse a text string into a single number. Given a `ParserSpec` object containing a Format's Units and their Unit Conversions, as well as an input string, the Parser can either return an object `QuantityParseResult` that contains the magnitude of type `number`, or an object `ParseQuantityError`.
+- [ParserSpec]($quantity) - Holds the format specification as well as the [UnitConversion]($quantity) between the persistence unit and all other units in the same `Phenomenon`. This is done to avoid async calls by the `UnitsProvider` and to allow users to input quantities in different unit systems than specified. For instance, if a metric unit system is set, a user could enter `43in` and have the result properly converted to meters.
+- [Formatter]($quantity) - A class that holds methods to format a quantity value into a text string. Given a `FormatterSpec` object — which includes one or more unit definitions, each with their own conversion information and a specified `Format` — and a single magnitude number, the `Formatter` can convert this number into a text string, adhering to the properties specified in `formatTraits`.
+- [Parser]($quantity) - A class that holds methods to parse a text string into a single number. Given a `ParserSpec` object containing a `Format` `Units` and their unit conversions, as well as an input string, the Parser can either return an object `QuantityParseResult` that contains the magnitude of type `number`, or an object `ParseQuantityError`.
 
 ### FormatProps
 
@@ -47,15 +47,15 @@ For a detailed description of all the setting supported by FormatProp see the EC
 
 #### Formats Provider
 
-A [FormatsProvider]($ecschema-metadata) interface helps provide all the necessary formats for displaying formatted quantity values, while also enabling users to add formats of their own.
+A [FormatsProvider]($ecschema-metadata) interface helps provide all the necessary `Formats` for displaying formatted quantity values, while also enabling users to add formats of their own.
 
-A [MutableFormatsProvider]($ecschema-metadata) interface extends the read-only FormatsProvider above by allowing adding or removing Formats to the provider.
+A [MutableFormatsProvider]($ecschema-metadata) interface extends the read-only `FormatsProvider` above by allowing adding or removing `Formats` to the provider.
 
-The [SchemaFormatsProvider]($ecschema-metadata) takes in a [SchemaContext]($ecschema-metadata), to provide Formats coming from schemas. The SchemaFormatsProvider also requires a [UnitSystemKey]($quantity) passed in to filter the formatProps returned, according to the current unit system set in the SchemaFormatsProvider.
+The [SchemaFormatsProvider]($ecschema-metadata) takes in a [SchemaContext]($ecschema-metadata), to provide `Formats` coming from schemas. The `SchemaFormatsProvider` also requires a [UnitSystemKey]($quantity) passed in to filter the [FormatProps]($quantity) returned, according to the current unit system set in the `SchemaFormatsProvider`.
 
 #### Units Provider
 
-To appropriately parse and output formatted values, a units provider is used to define all available units and provides conversion factors between units. There are several implementations of the UnitsProvider across iTwin.js:
+To appropriately parse and output formatted values, a units provider is used to define all available units and provides conversion factors between units. There are several implementations of the [UnitsProvider]($quantity) across iTwin.js:
 
 The [BasicUnitsProvider]($frontend) holds many common units and their conversions between each other.
 
@@ -73,9 +73,9 @@ We expose APIs and interfaces to support persistence of formats. Different from 
 
 ### FormatSet
 
-[FormatSet]($ecschema-metadata) defines properties necessary to support persistence of a set of formats.
+[FormatSet]($ecschema-metadata) defines properties necessary to support persistence of a set of `Formats`.
 
-Each Format defined in a FormatSet need to be mapped to a valid [ECName](../../bis/ec/ec-name.md) for a [KindOfQuantity](../../bis/ec/kindofquantity.md). During an application's runtime, the format associated to a KindofQuantity within a FormatSet would take precedence and be used over the default presentation formats of that KindOfQuantity.
+Each `Format` defined in a `FormatSet` need to be mapped to a valid [ECName](../../bis/ec/ec-name.md) for a [KindOfQuantity](../../bis/ec/kindofquantity.md). During an application's runtime, the `Format` associated to a `KindofQuantity` within a `FormatSet` would take precedence and be used over the default presentation formats of that `KindOfQuantity`.
 
 > The naming convention for a valid format within a FormatSet is <full-schema-name>:<koq-name>
 .
@@ -155,7 +155,7 @@ Each Format defined in a FormatSet need to be mapped to a valid [ECName](../../b
 
 ### Numeric Format
 
-  The example below uses a simple numeric format and generates a formatted string with 4 decimal place precision. For numeric formats there is no conversion to other units; the unit passed in is the unit returned with the unit label appended if "showUnitLabel" trait is set.
+The example below uses a simple numeric format and generates a formatted string with 4 decimal place precision. For numeric formats there is no conversion to other units; the unit passed in is the unit returned with the unit label appended if `showUnitLabel` trait is set.
 <details>
 <summary>Example Code</summary>
 
@@ -181,7 +181,7 @@ For the composite format below, we provide a unit in meters and produce a format
 ### Parsing Values
 
 <details>
-  <summary>Example Code:</summary>
+  <summary>Example Code</summary>
 
 ```ts
 [[include:Quantity_Formatting.Simple_Parsing]]
@@ -191,7 +191,7 @@ For the composite format below, we provide a unit in meters and produce a format
 
 ### Using a FormatsProvider
 
-The example below uses the SchemaFormatsProvider, an implementation of a FormatsProvider, found in `ecschema-metadata` to format values associated with the length of an object.
+The example below uses the `SchemaFormatsProvider`, an implementation of a `FormatsProvider`, found in `ecschema-metadata` to format values associated with the length of an object.
 
 <details>
   <summary>Example of Formatting</summary>
@@ -202,7 +202,7 @@ The example below uses the SchemaFormatsProvider, an implementation of a Formats
 
 </details>
 
-The example below uses the SchemaFormatsProvider, an implementation of a FormatsProvider, found in `ecschema-metadata` to parse values associated with the length of an object.
+The example below uses the `SchemaFormatsProvider`, an implementation of a `FormatsProvider`, found in `ecschema-metadata` to parse values associated with the length of an object.
 
 <details>
   <summary>Example of Parsing</summary>

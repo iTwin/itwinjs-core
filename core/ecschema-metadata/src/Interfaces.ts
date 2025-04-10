@@ -101,6 +101,9 @@ export interface HasMixins {
  * @beta
  */
 export interface FormatsProvider {
+  /**
+   * @param name The full name of the Format or KindOfQuantity.
+   */
   getFormat(name: string): Promise<SchemaItemFormatProps | undefined>;
 
   onFormatsChanged: BeUiEvent<string[]>;

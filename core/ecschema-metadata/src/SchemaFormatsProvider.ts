@@ -30,7 +30,6 @@ export class SchemaFormatsProvider implements FormatsProvider {
    * @param contextOrLocater The SchemaContext or a different ISchemaLocater implementation used to retrieve the schema. The SchemaContext
    * class implements the ISchemaLocater interface. If the provided locater is not a SchemaContext instance a new SchemaContext will be
    * created and the locater will be added.
-   * @param _unitExtraData Additional data like alternate display label not found in Units Schema to match with Units; Defaults to empty array.
    */
   constructor(contextOrLocater: ISchemaLocater, unitSystem: UnitSystemKey) {
     if (contextOrLocater instanceof SchemaContext) {
@@ -72,7 +71,6 @@ export class SchemaFormatsProvider implements FormatsProvider {
           }
         }
       }
-      return undefined;
     }
     const defaultFormat = kindOfQuantity.defaultPresentationFormat;
     if (!defaultFormat) {
