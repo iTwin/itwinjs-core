@@ -1,5 +1,5 @@
 import { BeUiEvent } from "@itwin/core-bentley";
-import { MutableFormatsProvider } from "../../Interfaces";
+import { FormatsChangedArgs, MutableFormatsProvider } from "../../Interfaces";
 import { SchemaItemFormatProps } from "../../ecschema-metadata";
 import { expect } from "chai";
 import * as Sinon from "sinon";
@@ -9,7 +9,7 @@ import * as Sinon from "sinon";
  */
 class TestFormatProvider implements MutableFormatsProvider {
   private _cache: Map<string, SchemaItemFormatProps> = new Map();
-  public onFormatsChanged = new BeUiEvent<string[]>();
+  public onFormatsChanged = new BeUiEvent<FormatsChangedArgs>();
 
   public async getFormat(name: string): Promise<SchemaItemFormatProps | undefined> {
     return this._cache.get(name);
@@ -17,11 +17,11 @@ class TestFormatProvider implements MutableFormatsProvider {
 
   public async addFormat(name: string, format: SchemaItemFormatProps): Promise<void> {
     this._cache.set(name, format);
-    this.onFormatsChanged.raiseEvent([name]);
+    this.onFormatsChanged.raiseEvent({ formatsChanged: [name] });
   }
   public async removeFormat(name: string): Promise<void> {
     this._cache.delete(name);
-    this.onFormatsChanged.raiseEvent([name]);
+    this.onFormatsChanged.raiseEvent({ formatsChanged: [name] });
   }
 }
 
@@ -51,7 +51,7 @@ describe("MutableFormatsProvider", () => {
     await formatsProvider.addFormat(formatName, format);
     const retrievedFormat = await formatsProvider.getFormat(formatName);
     expect(retrievedFormat).to.equal(format);
-    expect(spy.calledWith([formatName])).to.be.true;
+    expect(spy.calledWith({ formatsChanged: [formatName] })).to.be.true;
     formatsProvider.onFormatsChanged.removeListener(spy);
   });
 
@@ -69,7 +69,7 @@ describe("MutableFormatsProvider", () => {
       await formatsProvider.addFormat(formatName, format);
       const retrievedFormat = await formatsProvider.getFormat(formatName);
       expect(retrievedFormat).to.equal(format);
-      expect(spy.calledWith([formatName])).to.be.true;
+      expect(spy.calledWith({ formatsChanged: [formatName] })).to.be.true;
 
       formatsProvider.onFormatsChanged.removeListener(spy);
     });

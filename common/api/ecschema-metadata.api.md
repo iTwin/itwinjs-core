@@ -761,6 +761,12 @@ export class Format extends SchemaItem {
 }
 
 // @beta
+export interface FormatsChangedArgs {
+    allFormatsChanged?: boolean;
+    formatsChanged?: string[];
+}
+
+// @beta
 export interface FormatSet {
     // (undocumented)
     formats: {
@@ -777,7 +783,7 @@ export interface FormatsProvider {
     // (undocumented)
     getFormat(name: string): Promise<SchemaItemFormatProps | undefined>;
     // (undocumented)
-    onFormatsChanged: BeUiEvent<string[]>;
+    onFormatsChanged: BeUiEvent<FormatsChangedArgs>;
 }
 
 // @internal (undocumented)
@@ -1908,7 +1914,7 @@ export class SchemaFormatsProvider implements FormatsProvider {
     get context(): SchemaContext;
     getFormat(name: string): Promise<SchemaItemFormatProps | undefined>;
     // (undocumented)
-    onFormatsChanged: BeUiEvent<string[]>;
+    onFormatsChanged: BeUiEvent<FormatsChangedArgs>;
     // (undocumented)
     get unitSystem(): UnitSystemKey;
     set unitSystem(unitSystem: UnitSystemKey);

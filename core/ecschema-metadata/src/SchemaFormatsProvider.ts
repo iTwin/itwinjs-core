@@ -7,7 +7,7 @@
  */
 
 import { ISchemaLocater, SchemaContext } from "./Context";
-import { FormatsProvider } from "./Interfaces";
+import { FormatsChangedArgs, FormatsProvider } from "./Interfaces";
 import { SchemaItemKey, SchemaKey } from "./SchemaKey";
 import { SchemaItem } from "./Metadata/SchemaItem";
 import { Format } from "./Metadata/Format";
@@ -24,7 +24,7 @@ import { UnitSystemKey } from "@itwin/core-quantity";
 export class SchemaFormatsProvider implements FormatsProvider {
   private _context: SchemaContext;
   private _unitSystem: UnitSystemKey;
-  public onFormatsChanged = new BeUiEvent<string[]>();
+  public onFormatsChanged = new BeUiEvent<FormatsChangedArgs>();
   /**
    *
    * @param contextOrLocater The SchemaContext or a different ISchemaLocater implementation used to retrieve the schema. The SchemaContext
@@ -46,7 +46,7 @@ export class SchemaFormatsProvider implements FormatsProvider {
 
   public set unitSystem(unitSystem: UnitSystemKey) {
     this._unitSystem = unitSystem;
-    this.onFormatsChanged.raiseEvent([this._unitSystem]);
+    this.onFormatsChanged.raiseEvent({ allFormatsChanged: true });
   }
 
   private async getKindOfQuantityFormatFromSchema(itemKey: SchemaItemKey, unitSystem: UnitSystemKey): Promise<SchemaItemFormatProps | undefined> {

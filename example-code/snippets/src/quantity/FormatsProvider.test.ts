@@ -1,7 +1,7 @@
 import { BeUiEvent } from "@itwin/core-bentley";
 import { Format, FormatterSpec, ParsedQuantity, ParserSpec } from "@itwin/core-quantity";
 import { SchemaXmlFileLocater } from "@itwin/ecschema-locaters";
-import { MutableFormatsProvider, SchemaContext, SchemaFormatsProvider, SchemaItemFormatProps, SchemaUnitProvider } from "@itwin/ecschema-metadata";
+import { FormatsChangedArgs, MutableFormatsProvider, SchemaContext, SchemaFormatsProvider, SchemaItemFormatProps, SchemaUnitProvider } from "@itwin/ecschema-metadata";
 import { assert } from "chai";
 import path from "path";
 
@@ -11,7 +11,7 @@ import path from "path";
  */
 class ExampleFormatProvider implements MutableFormatsProvider {
   private _cache: Map<string, SchemaItemFormatProps> = new Map();
-  public onFormatsChanged = new BeUiEvent<string[]>();
+  public onFormatsChanged = new BeUiEvent<FormatsChangedArgs>();
 
   public async getFormat(name: string): Promise<SchemaItemFormatProps | undefined> {
     return this._cache.get(name);
@@ -19,11 +19,11 @@ class ExampleFormatProvider implements MutableFormatsProvider {
 
   public async addFormat(name: string, format: SchemaItemFormatProps): Promise<void> {
     this._cache.set(name, format);
-    this.onFormatsChanged.raiseEvent([name]);
+    this.onFormatsChanged.raiseEvent({ formatsChanged: [name]});
   }
   public async removeFormat(name: string): Promise<void> {
     this._cache.delete(name);
-    this.onFormatsChanged.raiseEvent([name]);
+    this.onFormatsChanged.raiseEvent({ formatsChanged: [name]});
   }
 }
 // __PUBLISH_EXTRACT_END__

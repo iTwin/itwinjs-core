@@ -86,7 +86,7 @@ describe("SchemaFormatsProvider", () => {
     formatsProvider.onFormatsChanged.addListener(spy);
     formatsProvider.unitSystem = "imperial";
 
-    expect(spy.calledWith(["imperial"])).to.be.true;
+    expect(spy.calledWith({ allFormatsChanged: true })).to.be.true;
     const formatProps = await formatsProvider.getFormat("AecUnits.LENGTH_LONG");
     expect(formatProps).not.to.be.undefined;
     const format = await Format.createFromJSON("testFormat", unitsProvider, formatProps!);
