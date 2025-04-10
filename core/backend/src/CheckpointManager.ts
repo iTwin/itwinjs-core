@@ -22,7 +22,7 @@ import { IModelHost } from "./IModelHost";
 import { IModelJsFs } from "./IModelJsFs";
 import { SnapshotDb, TokenArg } from "./IModelDb";
 import { IModelNative } from "./internal/NativePlatform";
-import { _getCheckpointDb, _hubAccess, _mockCheckpointAttach, _mockCheckpointDownload, _nativeDb, _openCheckpoint } from "./internal/Symbols";
+import { _getCheckpointDb, _hubAccess, _mockCheckpointAttach, _mockCheckpointDownload, _nativeDb, _openCheckpoint, _performDownload } from "./internal/Symbols";
 
 const loggerCategory = BackendLoggerCategory.IModelDb;
 
@@ -178,7 +178,7 @@ export class V2CheckpointManager {
     return { ...from, baseUri: `https://${from.accountName}.blob.core.windows.net`, accessToken: from.sasToken, storageType: "azure" };
   }
 
-  public static getContainer(v2Props: V2CheckpointAccessProps, checkpoint: CheckpointProps) {
+  private static getContainer(v2Props: V2CheckpointAccessProps, checkpoint: CheckpointProps) {
     let container = this.containers.get(v2Props.containerId);
     if (undefined === container) {
       let tokenFn: ((args: CloudSqlite.RequestTokenArgs) => Promise<AccessToken>) | undefined;
@@ -247,7 +247,8 @@ export class V2CheckpointManager {
     }
   }
 
-  private static async performDownload(job: DownloadJob): Promise<ChangesetId> {
+  /** @internal */
+  public static async [_performDownload](job: DownloadJob): Promise<ChangesetId> {
     const request = job.request;
     if (this[_mockCheckpointDownload])
       this[_mockCheckpointDownload](request);
@@ -268,22 +269,12 @@ export class V2CheckpointManager {
    * be the same as the requested changesetId or the most recent checkpoint before it.)
    */
   public static async downloadCheckpoint(request: DownloadRequest): Promise<ChangesetId> {
-    return Downloads.download(request, async (job: DownloadJob) => this.performDownload(job));
+    return Downloads.download(request, async (job: DownloadJob) => this[_performDownload](job));
   }
 
   /** @internal */
-  public static async [_getCheckpointDb](request: DownloadRequest): Promise<SnapshotDb> {
-    const db = SnapshotDb.tryFindByKey(CheckpointManager.getKey(request.checkpoint));
-    return (undefined !== db) ? db : Downloads.download(request, async (job: DownloadJob) => this.downloadAndOpen(job));
-  }
-
-  private static async downloadAndOpen(job: DownloadJob) {
-    const db = CheckpointManager.tryOpenLocalFile(job.request);
-    if (db)
-      return db;
-    await this.performDownload(job);
-    await CheckpointManager.updateToRequestedVersion(job.request);
-    return CheckpointManager[_openCheckpoint](job.request.localFile, job.request.checkpoint);
+  public static [_getCheckpointDb](request: DownloadRequest): SnapshotDb | undefined {
+    return SnapshotDb.tryFindByKey(CheckpointManager.getKey(request.checkpoint));
   }
 }
 

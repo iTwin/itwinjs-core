@@ -18,7 +18,7 @@ import {
 } from "@itwin/core-common";
 import { Box, Cone, LineString3d, Point2d, Point3d, Range2d, Range3d, StandardViewIndex, Vector3d, YawPitchRollAngles } from "@itwin/core-geometry";
 import { RequestNewBriefcaseArg } from "../BriefcaseManager";
-import { CheckpointProps, V2CheckpointManager } from "../CheckpointManager";
+import { CheckpointManager, CheckpointProps, DownloadJob, DownloadRequest, Downloads, V2CheckpointManager } from "../CheckpointManager";
 import { ClassRegistry } from "../ClassRegistry";
 import {
   _nativeDb, AuxCoordSystem2d, BriefcaseDb, BriefcaseLocalValue, BriefcaseManager, CategorySelector, ChannelControl, DisplayStyle2d, DisplayStyle3d, DrawingCategory,
@@ -35,7 +35,7 @@ import { Schema, Schemas } from "../Schema";
 import { HubMock } from "../internal/HubMock";
 import { KnownTestLocations } from "./KnownTestLocations";
 import { BackendHubAccess } from "../BackendHubAccess";
-import { _getCheckpointDb, _hubAccess } from "../internal/Symbols";
+import { _getCheckpointDb, _hubAccess, _openCheckpoint, _performDownload } from "../internal/Symbols";
 
 chai.use(chaiAsPromised);
 
@@ -198,7 +198,18 @@ export class HubWrappers {
 
     const folder = path.join(V2CheckpointManager.getFolder(), checkpoint.iModelId);
     const filename = path.join(folder, `${checkpoint.changeset.id ?? "first"}.bim`);
-    return V2CheckpointManager[_getCheckpointDb]({ checkpoint, localFile: filename });
+    const request: DownloadRequest = { checkpoint, localFile: filename };
+    const db = V2CheckpointManager[_getCheckpointDb](request);
+    return (undefined !== db) ? db : Downloads.download(request, async (job: DownloadJob) => this._downloadAndOpenCheckpoint(job));
+  }
+
+  private static async _downloadAndOpenCheckpoint(job: DownloadJob) {
+    const db = CheckpointManager.tryOpenLocalFile(job.request);
+    if (db)
+      return db;
+    await V2CheckpointManager[_performDownload](job);
+    await CheckpointManager.updateToRequestedVersion(job.request);
+    return CheckpointManager[_openCheckpoint](job.request.localFile, job.request.checkpoint);
   }
 
   /** Opens the specific Checkpoint iModel, `SyncMode.FixedVersion`, through the same workflow the IModelReadRpc.getConnectionProps method will use. Replicates the way a frontend would open the iModel. */
