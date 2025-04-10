@@ -263,7 +263,6 @@ public;interface;GraphicPointString2d
 public;interface;GraphicPolyface
 public;type;GraphicPrimitive
 public;interface;GraphicPrimitive2d
-public;class;GraphicsCollectorDrawArgs
 internal;interface;GraphicsGeometryRenderer
 public;interface;GraphicShape
 public;interface;GraphicShape2d
