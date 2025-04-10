@@ -78,6 +78,7 @@ export type AnyECType = Schema | SchemaItem | AnyProperty | RelationshipConstrai
  * @public @preview
  */
 export interface SchemaInfo {
+  alias: string;
   schemaKey: SchemaKey;
   references: WithSchemaKey[];
 }
