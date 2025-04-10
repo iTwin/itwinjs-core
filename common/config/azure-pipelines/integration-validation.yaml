@@ -23,23 +23,30 @@ jobs:
       matrix:
         Linux_node_20_x:
           imageName: ubuntu-latest
+          poolName:
           nodeVersion: 20.x
         Windows_node_20_x:
           imageName: windows-latest
+          poolName:
           nodeVersion: 20.x
         MacOS_node_20_x:
           imageName: macos-latest
+          poolName: "iModelTechMacArm"
           nodeVersion: 20.x
         Linux_node_22_x:
           imageName: ubuntu-latest
+          poolName:
           nodeVersion: 22.x
         Windows_node_22_x:
           imageName: windows-latest
+          poolName:
           nodeVersion: 22.x
         MacOS_node_22_x:
           imageName: macos-latest
+          poolName: "iModelTechMacArm"
           nodeVersion: 22.x
     pool:
+      name: $(poolName)
       vmImage: $(imageName)
     steps:
       - checkout: self
