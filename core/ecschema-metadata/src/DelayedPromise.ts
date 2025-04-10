@@ -105,7 +105,7 @@ export interface DelayedPromiseWithPropsConstructor {
    *              as if they were readonly properties of the DelayedPromiseWithProps object being constructed.
    * @param startCallback The asynchronous callback to execute when as soon as this DelayedPromise should be "started".
    */
-  new <TProps extends NoDelayedPromiseMethods, TPayload>(props: TProps, startCallback: () => Promise<TPayload>): Readonly<TProps> & DelayedPromise<TPayload>; // eslint-disable-line @typescript-eslint/prefer-function-type
+  new <TProps extends NoDelayedPromiseMethods, TPayload>(props: TProps, startCallback: () => Promise<TPayload>): TProps & DelayedPromise<TPayload>; // eslint-disable-line @typescript-eslint/prefer-function-type
 }
 
 // Because the property getters that wrap `props` are dynamically added, TypeScript isn't aware of them.
@@ -124,7 +124,7 @@ export const DelayedPromiseWithProps = (class <TProps extends NoDelayedPromiseMe
       },
     };
 
-    return new Proxy(props, handler) as Readonly<TProps> & DelayedPromise<TPayload>;
+    return new Proxy(props, handler) as TProps & DelayedPromise<TPayload>;
   }
 }) as DelayedPromiseWithPropsConstructor;
 
@@ -133,4 +133,4 @@ export const DelayedPromiseWithProps = (class <TProps extends NoDelayedPromiseMe
 /** Define the type of a DelayedPromiseWithProps instance
  * @public @preview
  */
-export type DelayedPromiseWithProps<TProps, TPayload> = Readonly<TProps> & DelayedPromise<TPayload>;
+export type DelayedPromiseWithProps<TProps, TPayload> = TProps & DelayedPromise<TPayload>;

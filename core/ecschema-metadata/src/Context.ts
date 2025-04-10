@@ -252,7 +252,7 @@ export class SchemaContext {
     this._fallbackLocaterDefined = false;
   }
 
-  public get locaters(): ISchemaLocater[] { return this._locaters; }
+  public get locaters(): ReadonlyArray<ISchemaLocater> { return this._locaters; }
 
   /**
    * Adds a locater to the context.

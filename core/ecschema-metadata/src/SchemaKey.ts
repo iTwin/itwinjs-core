@@ -227,8 +227,7 @@ export class SchemaKey {
  */
 export class SchemaItemKey {
   private _name: ECName;
-  /** @internal */
-  protected _schemaKey: SchemaKey;
+  private _schemaKey: SchemaKey;
 
   constructor(name: string, schema: SchemaKey) {
     this._name = new ECName(name);

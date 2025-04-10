@@ -248,11 +248,11 @@ export class DelayedPromise<T> implements Promise<T> {
 export const DelayedPromiseWithProps: DelayedPromiseWithPropsConstructor;
 
 // @public
-export type DelayedPromiseWithProps<TProps, TPayload> = Readonly<TProps> & DelayedPromise<TPayload>;
+export type DelayedPromiseWithProps<TProps, TPayload> = TProps & DelayedPromise<TPayload>;
 
 // @public (undocumented)
 export interface DelayedPromiseWithPropsConstructor {
-    new <TProps extends NoDelayedPromiseMethods, TPayload>(props: TProps, startCallback: () => Promise<TPayload>): Readonly<TProps> & DelayedPromise<TPayload>;
+    new <TProps extends NoDelayedPromiseMethods, TPayload>(props: TProps, startCallback: () => Promise<TPayload>): TProps & DelayedPromise<TPayload>;
 }
 
 // @public
@@ -758,7 +758,7 @@ export interface HasMixins {
     // (undocumented)
     getMixinsSync(): Iterable<Mixin>;
     // (undocumented)
-    mixins: ReadonlyArray<LazyLoadedMixin>;
+    readonly mixins: ReadonlyArray<LazyLoadedMixin>;
 }
 
 // @public
@@ -933,7 +933,7 @@ export type LazyLoadedRelationshipConstraintClass = LazyLoadedSchemaItem<EntityC
 export type LazyLoadedSchema = SchemaKey & DelayedPromise<Schema> & Promise<Schema>;
 
 // @public (undocumented)
-export type LazyLoadedSchemaItem<T extends SchemaItem> = Readonly<SchemaItemKey> & DelayedPromise<T> & Promise<T>;
+export type LazyLoadedSchemaItem<T extends SchemaItem> = SchemaItemKey & DelayedPromise<T> & Promise<T>;
 
 // @public (undocumented)
 export type LazyLoadedStructClass = LazyLoadedSchemaItem<StructClass>;
@@ -1059,7 +1059,7 @@ export class OverrideFormat {
     // (undocumented)
     get type(): FormatType;
     // (undocumented)
-    get units(): readonly [Unit | InvertedUnit, string | undefined][] | undefined;
+    get units(): readonly [InvertedUnit | Unit, string | undefined][] | undefined;
     // (undocumented)
     get uomSeparator(): string;
 }
@@ -1424,7 +1424,7 @@ export enum PropertyType {
 }
 
 // @internal (undocumented)
-export function propertyTypeToString(type: PropertyType): "PrimitiveArrayProperty" | "PrimitiveProperty" | "StructArrayProperty" | "StructProperty" | "NavigationProperty";
+export function propertyTypeToString(type: PropertyType): "PrimitiveProperty" | "StructProperty" | "StructArrayProperty" | "NavigationProperty" | "PrimitiveArrayProperty";
 
 // @internal (undocumented)
 export namespace PropertyTypeUtils {
@@ -1826,7 +1826,7 @@ export class SchemaContext {
     getSchemaItemSync<T extends typeof SchemaItem>(schemaNameOrKey: string, itemNameOrCtor: string, itemConstructor?: T): SchemaItem | undefined;
     getSchemaSync(schemaKey: SchemaKey, matchType?: SchemaMatchType): Schema | undefined;
     // (undocumented)
-    get locaters(): ISchemaLocater[];
+    get locaters(): ReadonlyArray<ISchemaLocater>;
     schemaExists(schemaKey: SchemaKey): boolean;
 }
 
@@ -1846,11 +1846,11 @@ export class SchemaGraphUtil {
 // @public
 export interface SchemaInfo {
     // (undocumented)
-    alias: string;
+    readonly alias: string;
     // (undocumented)
-    references: WithSchemaKey[];
+    readonly references: ReadonlyArray<WithSchemaKey>;
     // (undocumented)
-    schemaKey: SchemaKey;
+    readonly schemaKey: SchemaKey;
 }
 
 // @public
@@ -1903,8 +1903,6 @@ export class SchemaItemKey {
     get name(): string;
     // (undocumented)
     get schemaKey(): SchemaKey;
-    // @internal (undocumented)
-    protected _schemaKey: SchemaKey;
     // (undocumented)
     get schemaName(): string;
 }
@@ -2288,7 +2286,7 @@ export type UnitSystemProps = SchemaItemProps;
 // @public (undocumented)
 export interface WithSchemaKey {
     // (undocumented)
-    schemaKey: SchemaKey;
+    readonly schemaKey: SchemaKey;
 }
 
 // @internal (undocumented)

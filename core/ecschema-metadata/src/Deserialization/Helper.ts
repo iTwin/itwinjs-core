@@ -6,7 +6,7 @@
 import { SchemaContext } from "../Context";
 import { parsePrimitiveType, parseSchemaItemType, SchemaItemType, SchemaMatchType } from "../ECObjects";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
-import { AnyClass, AnySchemaItem, SchemaInfo } from "../Interfaces";
+import { AnyClass, AnySchemaItem, SchemaInfo, WithSchemaKey } from "../Interfaces";
 import { ECClass, MutableClass, StructClass } from "../Metadata/Class";
 import { Constant } from "../Metadata/Constant";
 import { CustomAttributeClass } from "../Metadata/CustomAttributeClass";
@@ -84,10 +84,11 @@ export class SchemaReadHelper<T = unknown> {
 
     this._schema = schema;
 
-    const schemaInfo: SchemaInfo = { schemaKey: schema.schemaKey, alias: schema.alias, references: [] };
+    const schemaInfoReferences: WithSchemaKey[] = [];
+    const schemaInfo: SchemaInfo = { schemaKey: schema.schemaKey, alias: schema.alias, references: schemaInfoReferences };
     for (const reference of this._parser.getReferences()) {
       const refKey = new SchemaKey(reference.name, ECVersion.fromString(reference.version));
-      schemaInfo.references.push({ schemaKey: refKey });
+      schemaInfoReferences.push({ schemaKey: refKey });
     }
 
     this._schemaInfo = schemaInfo;

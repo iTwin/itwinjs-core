@@ -32,7 +32,7 @@ import { SchemaItemKey, SchemaKey } from "./SchemaKey";
 export type LazyLoadedSchema = SchemaKey & DelayedPromise<Schema> & Promise<Schema>;
 
 /** @public @preview */
-export type LazyLoadedSchemaItem<T extends SchemaItem> = Readonly<SchemaItemKey> & DelayedPromise<T> & Promise<T>;
+export type LazyLoadedSchemaItem<T extends SchemaItem> = SchemaItemKey & DelayedPromise<T> & Promise<T>;
 /** @public @preview */
 export type LazyLoadedECClass = LazyLoadedSchemaItem<ECClass>;
 /** @public @preview */
@@ -67,31 +67,56 @@ export type LazyLoadedUnitSystem = LazyLoadedSchemaItem<UnitSystem>;
 export type LazyLoadedFormat = LazyLoadedSchemaItem<Format>;
 
 /** @public @preview */
-export type AnyClass = EntityClass | Mixin | StructClass | CustomAttributeClass | RelationshipClass;
+export type AnyClass =
+  EntityClass |
+  Mixin |
+  StructClass |
+  CustomAttributeClass |
+  RelationshipClass;
+
 /** @public @preview */
-export type AnySchemaItem = AnyClass | Enumeration | KindOfQuantity | PropertyCategory | Unit | InvertedUnit | Constant | Phenomenon | UnitSystem | Format;
+export type AnySchemaItem =
+  AnyClass |
+  Enumeration |
+  KindOfQuantity |
+  PropertyCategory |
+  Unit |
+  InvertedUnit |
+  Constant |
+  Phenomenon |
+  UnitSystem |
+  Format;
+
 /** @public @preview */
-export type AnyECType = Schema | SchemaItem | AnyProperty | RelationshipConstraint | CustomAttributeContainerProps | CustomAttribute | OverrideFormat | AnyEnumerator;
+export type AnyECType =
+  Schema |
+  SchemaItem |
+  AnyProperty |
+  RelationshipConstraint |
+  CustomAttributeContainerProps |
+  CustomAttribute |
+  OverrideFormat |
+  AnyEnumerator;
 
 /**
  *  Holds the SchemaKeys for a schema and it's references.  Designed so that Schema fulfills this interface.
  * @public @preview
  */
 export interface SchemaInfo {
-  alias: string;
-  schemaKey: SchemaKey;
-  references: WithSchemaKey[];
+  readonly alias: string;
+  readonly schemaKey: SchemaKey;
+  readonly references: ReadonlyArray<WithSchemaKey>;
 }
 
 /** @public @preview */
 export interface WithSchemaKey {
-  schemaKey: SchemaKey;
+  readonly schemaKey: SchemaKey;
 }
 
 /** This is needed to break a circular dependency between Class and EntityClass.
  * @public @preview
  */
 export interface HasMixins {
-  mixins: ReadonlyArray<LazyLoadedMixin>;
+  readonly mixins: ReadonlyArray<LazyLoadedMixin>;
   getMixinsSync(): Iterable<Mixin>;
 }
