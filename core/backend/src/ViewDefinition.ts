@@ -6,7 +6,7 @@
  * @module ViewDefinitions
  */
 
-import { Id64, Id64Array, Id64String, IModelStatus, JsonUtils } from "@itwin/core-bentley";
+import { DbResult, Id64, Id64Array, Id64String, IModelStatus, JsonUtils } from "@itwin/core-bentley";
 import {
   Angle, Matrix3d, Point2d, Point3d, Range2d, Range3d, StandardViewIndex, Transform, Vector3d, YawPitchRollAngles,
 } from "@itwin/core-geometry";
@@ -42,6 +42,30 @@ export class ModelSelector extends DefinitionElement {
     const val = super.toJSON() as ModelSelectorProps;
     val.models = this.models;
     return val;
+  }
+
+  protected static override readonly _customHandledProps: CustomHandledProperty[] = [
+    { propertyName: "models", source: "Class" },
+  ];
+
+  public static override deserialize(props: InstanceProps): ModelSelectorProps {
+    const elProps = super.deserialize(props) as ModelSelectorProps;
+    const instance = props.row;
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    elProps.models = props.iModel.withPreparedStatement("SELECT TargetECInstanceId FROM Bis.ModelSelectorRefersToModels WHERE SourceECInstanceId=?", (statement) => {
+      statement.bindId(1, instance.id);
+      const ids: Id64Array = [];
+      while (DbResult.BE_SQLITE_ROW === statement.step()) {
+        ids.push(statement.getValue(0).getId());
+      }
+      return ids;
+    });
+    return elProps;
+  }
+
+  public static override serialize(props: ModelSelectorProps, _iModel: IModelDb): ECSqlRow {
+    const inst = super.serialize(props, _iModel);
+    return inst;
   }
 
   protected override collectReferenceIds(referenceIds: EntityReferenceSet): void {
@@ -112,6 +136,30 @@ export class CategorySelector extends DefinitionElement {
     const val = super.toJSON() as CategorySelectorProps;
     val.categories = this.categories;
     return val;
+  }
+
+  protected static override readonly _customHandledProps: CustomHandledProperty[] = [
+    { propertyName: "categories", source: "Class" },
+  ];
+
+  public static override deserialize(props: InstanceProps): CategorySelectorProps {
+    const elProps = super.deserialize(props) as CategorySelectorProps;
+    const instance = props.row;
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    elProps.categories = props.iModel.withPreparedStatement("SELECT TargetECInstanceId FROM Bis.CategorySelectorRefersToCategories WHERE SourceECInstanceId=?", (statement) => {
+      statement.bindId(1, instance.id);
+      const ids: Id64Array = [];
+      while (DbResult.BE_SQLITE_ROW === statement.step()) {
+        ids.push(statement.getValue(0).getId());
+      }
+      return ids;
+    });
+    return elProps;
+  }
+
+  public static override serialize(props: CategorySelectorProps, _iModel: IModelDb): ECSqlRow {
+    const inst = super.serialize(props, _iModel);
+    return inst;
   }
 
   protected override collectReferenceIds(referenceIds: EntityReferenceSet): void {
@@ -190,11 +238,31 @@ export abstract class ViewDefinition extends DefinitionElement {
       throw new IModelError(IModelStatus.BadArg, `displayStyleId is invalid`);
   }
 
+  protected static override readonly _customHandledProps: CustomHandledProperty[] = [
+    { propertyName: "categorySelectorId", source: "Class" },
+    { propertyName: "displayStyleId", source: "Class" },
+  ];
+
   public override toJSON(): ViewDefinitionProps {
     const json = super.toJSON() as ViewDefinitionProps;
     json.categorySelectorId = this.categorySelectorId;
     json.displayStyleId = this.displayStyleId;
     return json;
+  }
+
+  public static override deserialize(props: InstanceProps): ViewDefinitionProps {
+    const elProps = super.deserialize(props) as ViewDefinitionProps;
+    const instance = props.row;
+    elProps.categorySelectorId = instance.categorySelector.id;
+    elProps.displayStyleId = instance.displayStyle.id;
+    return elProps;
+  }
+
+  public static override serialize(props: ViewDefinitionProps, _iModel: IModelDb): ECSqlRow {
+    const inst = super.serialize(props, _iModel);
+    inst.categorySelector.id = props.categorySelectorId;
+    inst.displayStyle.id = props.displayStyleId;
+    return inst;
   }
 
   protected override collectReferenceIds(referenceIds: EntityReferenceSet): void {
@@ -379,6 +447,23 @@ export class SpatialViewDefinition extends ViewDefinition3d {
     const json = super.toJSON() as SpatialViewDefinitionProps;
     json.modelSelectorId = this.modelSelectorId;
     return json;
+  }
+
+  protected static override readonly _customHandledProps: CustomHandledProperty[] = [
+    { propertyName: "modelSelectorId", source: "Class" },
+  ];
+
+  public static override deserialize(props: InstanceProps): SpatialViewDefinitionProps {
+    const elProps = super.deserialize(props) as SpatialViewDefinitionProps;
+    const instance = props.row;
+    elProps.modelSelectorId = instance.modelSelector.id;
+    return elProps;
+  }
+
+  public static override serialize(props: SpatialViewDefinitionProps, _iModel: IModelDb): ECSqlRow {
+    const inst = super.serialize(props, _iModel);
+    inst.modelSelector.id = props.modelSelectorId;
+    return inst;
   }
 
   protected override collectReferenceIds(referenceIds: EntityReferenceSet): void {
