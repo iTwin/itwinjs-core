@@ -639,6 +639,23 @@ export class ViewDefinition2d extends ViewDefinition {
     return val;
   }
 
+  protected static override readonly _customHandledProps: CustomHandledProperty[] = [
+    { propertyName: "baseModelId", source: "Class" },
+  ];
+
+  public static override deserialize(props: InstanceProps): ViewDefinition2dProps {
+    const elProps = super.deserialize(props) as ViewDefinition2dProps;
+    const instance = props.row;
+    elProps.baseModelId = instance.baseModel.id;
+    return elProps;
+  }
+
+  public static override serialize(props: ViewDefinition2dProps, _iModel: IModelDb): ECSqlRow {
+    const inst = super.serialize(props, _iModel);
+    inst.baseModel.id = props.baseModelId;
+    return inst;
+  }
+
   protected override collectReferenceIds(referenceIds: EntityReferenceSet): void {
     super.collectReferenceIds(referenceIds);
     referenceIds.addElement(this.baseModelId);
