@@ -4,16 +4,16 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, BeTimePoint, ByteStream, Logger } from "@itwin/core-bentley";
-import { Transform } from "@itwin/core-geometry";
 import { ColorDef, Tileset3dSchema } from "@itwin/core-common";
 import {
-  GraphicBranch, GraphicBuilder,  IModelApp, RealityTileLoader, RenderSystem, Tile, TileBoundingBoxes, TileContent,
+  GraphicBranch, GraphicBuilder, IModelApp, RealityTileLoader, RenderSystem, Tile, TileBoundingBoxes, TileContent,
   TileDrawArgs, TileParams, TileRequest, TileRequestChannel, TileTreeLoadStatus, TileUser, TileVisibility, Viewport,
 } from "@itwin/core-frontend";
-import { loggerCategory } from "./LoggerCategory";
-import { BatchedTileTree } from "./BatchedTileTree";
-import { frontendTilesOptions } from "./FrontendTiles";
-import { IndexedDBCache, LocalCache, PassThroughCache } from "./IndexedDBCache";
+import { Transform } from "@itwin/core-geometry";
+import { BatchedTileTree } from "./BatchedTileTree.js";
+import { frontendTilesOptions } from "./FrontendTiles.js";
+import { IndexedDBCache, LocalCache, PassThroughCache } from "./IndexedDBCache.js";
+import { loggerCategory } from "./LoggerCategory.js";
 
 /** @internal */
 export interface BatchedTileParams extends TileParams {

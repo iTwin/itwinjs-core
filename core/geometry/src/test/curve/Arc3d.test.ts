@@ -1645,8 +1645,24 @@ describe("Arc3dTangents", () => {
     ck.testUndefined(tangent, "tangent is undefined");
     captureGeometry();
 
-    // test extend = false and true
+    // corner case: vectorToEye is in the arc plane making the arc viewed as a line segment
     dx += 10;
+    dy = 0;
+    tangents = undefined;
+    hintPoint = undefined;
+    arc = Arc3d.create(Point3d.create(0, 0), Vector3d.create(4, 0, 0), Vector3d.create(0, 0, 2));
+    spacePoint = Point3d.create(5, 0, 0);
+    tangents = arc.allTangents(spacePoint, { vectorToEye: Vector3d.create(0, 0, 1) });
+    ck.testUndefined(tangents, "tangents is undefined");
+    captureGeometry();
+    dy += 7;
+    spacePoint = Point3d.create(5, 2, 0);
+    tangents = arc.allTangents(spacePoint, { vectorToEye: Vector3d.create(0, 0, 1) });
+    ck.testUndefined(tangents, "tangents is undefined");
+    captureGeometry();
+
+    // test extend = false and true
+    dx += 12;
     dy = 0;
     tangent = undefined;
     hintPoint = undefined;

@@ -113,14 +113,20 @@ beta;class;DriverBundleElement
 public;class;ECDb
 public;enum;ECDbOpenMode
 public;interface;ECEnumValue
+deprecated;interface;ECEnumValue
 beta;class;ECSchemaXmlContext
 public;class;ECSqlBinder
 public;interface;ECSqlColumnInfo
+deprecated;interface;ECSqlColumnInfo
 public;class;ECSqlInsertResult
 public;interface;ECSqlRowArg
 public;class;ECSqlStatement
+deprecated;class;ECSqlStatement
 public;class;ECSqlValue
+deprecated;class;ECSqlValue
 public;class;ECSqlValueIterator
+deprecated;class;ECSqlValueIterator
+public;class;ECSqlWriteStatement
 beta;interface;EditableWorkspaceContainer
 beta;interface;EditableWorkspaceDb
 public;class;ElementAspect
@@ -231,7 +237,6 @@ public;class;GroupInformationElement
 public;class;GroupInformationModel
 public;class;GroupInformationPartition
 public;class;GroupModel
-internal;class;HubMock
 public;function;imageBufferFromImageSource
 public;interface;ImageBufferFromImageSourceArgs
 public;function;imageSourceFromImageBuffer
@@ -452,7 +457,6 @@ public;class;TypeDefinitionElement
 public;interface;UpdateModelOptions
 beta;function;upgradeCustomAttributesToEC3
 public;class;UrlLink
-internal;class;V1CheckpointManager
 public;interface;V2CheckpointAccessProps
 internal;class;V2CheckpointManager
 public;interface;ValidationError

@@ -11,14 +11,14 @@ import {
   TileTreeLoadStatus, TileTreeOwner, TileTreeReference,
   Viewport,
 } from "@itwin/core-frontend";
-import {  BatchedTileTreeReference, BatchedTileTreeReferenceArgs  } from "./BatchedTileTreeReference";
-import { getBatchedTileTreeOwner } from "./BatchedTileTreeSupplier";
-import { BatchedModels } from "./BatchedModels";
-import { ComputeSpatialTilesetBaseUrl } from "./FrontendTiles";
-import { BatchedTilesetSpec } from "./BatchedTilesetReader";
-import { loggerCategory } from "./LoggerCategory";
-import { BatchedModelGroups } from "./BatchedModelGroups";
 import { Range3d } from "@itwin/core-geometry";
+import { BatchedModelGroups } from "./BatchedModelGroups.js";
+import { BatchedModels } from "./BatchedModels.js";
+import { BatchedTilesetSpec } from "./BatchedTilesetReader.js";
+import { BatchedTileTreeReference, BatchedTileTreeReferenceArgs } from "./BatchedTileTreeReference.js";
+import { getBatchedTileTreeOwner } from "./BatchedTileTreeSupplier.js";
+import { ComputeSpatialTilesetBaseUrl } from "./FrontendTiles.js";
+import { loggerCategory } from "./LoggerCategory.js";
 
 // Obtains tiles pre-published by mesh export service.
 class BatchedSpatialTileTreeReferences implements SpatialTileTreeReferences {

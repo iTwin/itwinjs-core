@@ -7,12 +7,12 @@
  * @module MapLayersFormats
  */
 import { assert } from "@itwin/core-bentley";
-import { IModelApp } from "@itwin/core-frontend";
-import { ArcGisFeatureMapLayerFormat } from "./ArcGisFeature/ArcGisFeatureFormat";
-import { MapFeatureInfoTool } from "./Tools/MapFeatureInfoTool";
 import { Localization } from "@itwin/core-common";
-import { OgcApiFeaturesMapLayerFormat } from "./OgcApiFeatures/OgcApiFeaturesFormat";
-import { GoogleMapsMapLayerFormat } from "./GoogleMaps/GoogleMapsImageryFormat";
+import { IModelApp } from "@itwin/core-frontend";
+import { ArcGisFeatureMapLayerFormat } from "./ArcGisFeature/ArcGisFeatureFormat.js";
+import { GoogleMapsMapLayerFormat } from "./GoogleMaps/GoogleMapsImageryFormat.js";
+import { OgcApiFeaturesMapLayerFormat } from "./OgcApiFeatures/OgcApiFeaturesFormat.js";
+import { MapFeatureInfoTool } from "./Tools/MapFeatureInfoTool.js";
 
 /** Configuration options.
  * @beta
