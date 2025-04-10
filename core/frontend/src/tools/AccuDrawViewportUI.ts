@@ -816,6 +816,7 @@ export class AccuDrawViewportUI extends AccuDraw {
     // NOTE: Using "setSelectionRange" while value is changing in dynamics isn't pretty, use background+caret color instead...
     const itemField = this._controls.itemFields[item];
     itemField.style.backgroundColor = (focusIn ? AccuDrawViewportUI.controlProps.text.focusColor : AccuDrawViewportUI.controlProps.backgroundColor);
+    itemField.style.textEmphasisStyle
     this.updateItemFieldKeyinStatus(itemField, item);
 
     if (!focusIn)
