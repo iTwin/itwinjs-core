@@ -1899,6 +1899,8 @@ export class SchemaGraphUtil {
 // @beta
 export interface SchemaInfo {
     // (undocumented)
+    alias: string;
+    // (undocumented)
     references: WithSchemaKey[];
     // (undocumented)
     schemaKey: SchemaKey;
