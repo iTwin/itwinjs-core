@@ -87,7 +87,17 @@ export class Model extends Entity {
   }
 
   public static override deserialize(props: InstanceProps): ModelProps {
+    const instance = props.row;
     const modelProps = super.deserialize(props) as ModelProps;
+    const modeledElementProps = props.iModel.elements.tryGetElementProps(instance.modeledElement.id);
+    if (modeledElementProps) {
+      // ModeledElement may be undefined in the case of root Element
+      modelProps.name = modeledElementProps.code.value;
+      if (instance.parentModel !== undefined)
+        modelProps.parentModel = instance.parentModel.id;
+      else
+        modelProps.parentModel = modeledElementProps.model;
+    }
     return modelProps;
   }
 
