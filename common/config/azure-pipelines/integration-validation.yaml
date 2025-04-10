@@ -34,7 +34,7 @@ jobs:
           imageName: ubuntu-22.04 # ubuntu-latest is 24.04, and breaks tests using sandbox
           nodeVersion: 22.x
         Windows_node_22_x:
-          imageName: macos-latest
+          imageName: windows-latest
           nodeVersion: 22.x
         MacOS_node_22_x:
           imageName: macos-latest
