@@ -6,11 +6,12 @@
 import { assert, describe, expect, it } from "vitest";
 import { compareNumbers, OrderedSet } from "@itwin/core-bentley";
 import { Constant } from "../../Constant";
-import { CurveFactory, CurveLocationDetail } from "../../core-geometry";
 import { Arc3d, EllipticalArcApproximationOptions, EllipticalArcSampleMethod, FractionMapper } from "../../curve/Arc3d";
 import { CoordinateXYZ } from "../../curve/CoordinateXYZ";
 import { CurveChainWithDistanceIndex } from "../../curve/CurveChainWithDistanceIndex";
 import { CurveChain } from "../../curve/CurveCollection";
+import { CurveFactory } from "../../curve/CurveFactory";
+import { CurveLocationDetail } from "../../curve/CurveLocationDetail";
 import { GeometryQuery } from "../../curve/GeometryQuery";
 import { EllipticalArcApproximationContext, QuadrantFractions } from "../../curve/internalContexts/EllipticalArcApproximationContext";
 import { LineSegment3d } from "../../curve/LineSegment3d";
@@ -32,6 +33,7 @@ import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 import { prettyPrint } from "../testFunctions";
 import { BuildingCodeOffsetOps } from "./BuildingCodeOffsetOps";
+import { CurveExtendMode } from "../../curve/CurveExtendMode";
 
 describe("Arc3d", () => {
   function sampleSweeps(): AngleSweep[] {
@@ -1456,8 +1458,10 @@ describe("ApproximateArc3d", () => {
     GeometryCoreTestIO.saveGeometry(allGeometry, "ApproximateArc3d", "SubdivisionSampler");
     expect(ck.getNumErrors()).toBe(0);
   });
+});
+describe("Arc3dTangents", () => {
   it("AllTangentsAndClosestTangent", () => {
-    const ck = new Checker();
+    const ck = new Checker(true, true);
     const allGeometry: GeometryQuery[] = [];
     let dx = 0;
     let dy = 0;
@@ -1652,11 +1656,11 @@ describe("ApproximateArc3d", () => {
     ck.testUndefined(tangents, "tangents is undefined");
     captureGeometry();
     dy += 7;
-    tangents = arc.allTangents(spacePoint, { extend: true });
+    tangents = arc.allTangents(spacePoint, { extend: [CurveExtendMode.None, CurveExtendMode.OnCurve] });
     ck.testDefined(tangents, "tangents is defined");
     ck.testCoordinate(2, tangents!.length, "2 tangents found");
-    ck.testCoordinate(3, tangents![0].fraction, "first tangent fraction");
-    ck.testCoordinate(2, tangents![1].fraction, "second tangent fraction");
+    ck.testTrue(Geometry.isAlmostEqualEitherNumber(tangents![0].fraction, 2, 3), "first tangent fraction");
+    ck.testTrue(Geometry.isAlmostEqualEitherNumber(tangents![1].fraction, 2, 3), "second tangent fraction");
     captureGeometry();
     dx += 10;
     dy = 0;
@@ -1665,14 +1669,14 @@ describe("ApproximateArc3d", () => {
     ck.testUndefined(tangents, "tangents is undefined");
     captureGeometry();
     dy += 7;
-    tangents = arc.allTangents(spacePoint, { extend: true });
+    tangents = arc.allTangents(spacePoint, { extend: [CurveExtendMode.OnCurve, CurveExtendMode.None] });
     ck.testDefined(tangents, "tangents is defined");
     ck.testCoordinate(2, tangents!.length, "2 tangents found");
-    ck.testCoordinate(2.46010691, tangents![0].fraction, "first tangent fraction");
-    ck.testCoordinate(1.53989309, tangents![1].fraction, "second tangent fraction");
+    ck.testTrue(Geometry.isAlmostEqualEitherNumber(tangents![0].fraction, -2.460106912325232, -1.5398930876747683), "first tangent fraction");
+    ck.testTrue(Geometry.isAlmostEqualEitherNumber(tangents![1].fraction, -2.460106912325232, -1.5398930876747683), "second tangent fraction");
     captureGeometry();
 
-    GeometryCoreTestIO.saveGeometry(allGeometry, "Arc3d", "AllTangentsAndClosestTangent");
+    GeometryCoreTestIO.saveGeometry(allGeometry, "Arc3dTangents", "AllTangentsAndClosestTangent");
     expect(ck.getNumErrors()).toBe(0);
   });
   it("LineTangentPointArc", () => {
@@ -1707,7 +1711,7 @@ describe("ApproximateArc3d", () => {
       }
       dx += 40;
     }
-    GeometryCoreTestIO.saveGeometry(allGeometry, "Arc3d", "LineTangentPointArc");
+    GeometryCoreTestIO.saveGeometry(allGeometry, "Arc3dTangents", "LineTangentPointArc");
     expect(ck.getNumErrors()).toBe(0);
   });
   it("LineTangentPointCircle", () => {
@@ -1736,7 +1740,7 @@ describe("ApproximateArc3d", () => {
       }
       dx += 20;
     }
-    GeometryCoreTestIO.saveGeometry(allGeometry, "Arc3d", "LineTangentPointCircle");
+    GeometryCoreTestIO.saveGeometry(allGeometry, "Arc3dTangents", "LineTangentPointCircle");
     expect(ck.getNumErrors()).toBe(0);
   });
 });
