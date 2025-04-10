@@ -12,12 +12,13 @@ import * as touch from "touch";
 import { IModelJsNative, SchemaWriteStatus } from "@bentley/imodeljs-native";
 import {
   AccessToken, assert, BeEvent, BentleyStatus, ChangeSetStatus, DbChangeStage, DbConflictCause, DbConflictResolution, DbResult,
-  Guid, GuidString, Id64, Id64Arg, Id64Array, Id64Set, Id64String, IModelStatus, JsonUtils, Logger, LogLevel, OpenMode,
+  Guid, GuidString, Id64, Id64Arg, Id64Array, Id64Set, Id64String, IModelStatus, JsonUtils, Logger, LogLevel, OpenMode
 } from "@itwin/core-bentley";
 import {
   AxisAlignedBox3d, BRepGeometryCreate, BriefcaseId, BriefcaseIdValue, CategorySelectorProps, ChangesetIdWithIndex, ChangesetIndexAndId, Code,
   CodeProps, CreateEmptySnapshotIModelProps, CreateEmptyStandaloneIModelProps, CreateSnapshotIModelProps, DbQueryRequest, DisplayStyleProps,
   DomainOptions, EcefLocation, ECJsNames, ECSchemaProps, ECSqlReader, ElementAspectProps, ElementGeometryCacheOperationRequestProps, ElementGeometryCacheRequestProps, ElementGeometryCacheResponseProps, ElementGeometryRequest, ElementGraphicsRequestProps,
+  ElementLoadOptions,
   ElementLoadProps, ElementProps, EntityMetaData, EntityProps, EntityQueryParams, FilePropertyProps, FontMap,
   GeoCoordinatesRequestProps, GeoCoordinatesResponseProps, GeometryContainmentRequestProps, GeometryContainmentResponseProps, IModel,
   IModelCoordinatesRequestProps, IModelCoordinatesResponseProps, IModelError, IModelNotFoundResponse, IModelTileTreeProps, LocalFileName,
@@ -72,6 +73,7 @@ import { createIModelDbFonts } from "./internal/IModelDbFontsImpl";
 import { _close, _hubAccess, _nativeDb, _releaseAllLocks } from "./internal/Symbols";
 import { SchemaContext, SchemaJsonLocater } from "@itwin/ecschema-metadata";
 import { SchemaMap } from "./Schema";
+
 
 // spell:ignore fontid fontmap
 
@@ -208,6 +210,105 @@ export interface InlineGeometryPartsResult {
   numPartsDeleted: number;
 }
 
+
+export interface CachedElement {
+  args: ElementLoadOptions
+  element: ElementProps;
+}
+
+
+export class ElementLRUCache {
+  public static readonly DefaultCapacity = 2000;
+  private _elementCache = new Map<Id64String, CachedElement>();
+  private _cacheByCode = new Map<Id64String, Id64String>();
+  private _cacheByFederationGuid = new Map<string, Id64String>();
+  private static makeCodeKey(code: CodeProps): string {
+    if (code.value)
+      return `${code.scope}:${code.value}:${code.value}`;
+    return `${code.scope}:${code.value}`;
+  }
+  private findElement(key: ElementLoadProps): CachedElement | undefined {
+    if (key.id) {
+      return this._elementCache.get(key.id);
+    } else if (key.federationGuid) {
+      const id = this._cacheByFederationGuid.get(key.federationGuid);
+      if (id)
+        return this._elementCache.get(id);
+    } else if (key.code) {
+      const id = this._cacheByCode.get(ElementLRUCache.makeCodeKey(key.code));
+      if (id)
+        return this._elementCache.get(id);
+    } else {
+      throw new Error("No key provided");
+    }
+    return undefined;
+  }
+  public constructor(public readonly capacity = ElementLRUCache.DefaultCapacity) { }
+  public clear(): void {
+    this._elementCache.clear();
+    this._cacheByCode.clear();
+    this._cacheByFederationGuid.clear();
+  }
+  public get size(): number {
+    return this._elementCache.size;
+  }
+  public delete(key: ElementLoadProps): boolean {
+    const cachedElement = this.findElement(key);
+    if (cachedElement) {
+      this._elementCache.delete(cachedElement.element.id!);
+      this._cacheByCode.delete(ElementLRUCache.makeCodeKey(cachedElement.element.code));
+      if (cachedElement.element.federationGuid)
+        this._cacheByFederationGuid.delete(cachedElement.element.federationGuid);
+      return true;
+    }
+    return false;
+  }
+  public get(key: ElementLoadProps): CachedElement | undefined {
+    const cachedElement = this.findElement(key);
+    if (cachedElement) {
+      // Move the accessed element to the end of the cache
+      this._elementCache.delete(cachedElement.element.id!);
+      this._elementCache.set(cachedElement.element.id!, cachedElement);
+    }
+
+    if (cachedElement) {
+      if (key.displayStyle !== cachedElement.args.displayStyle ||
+        key.onlyBaseProperties !== cachedElement.args.onlyBaseProperties ||
+        key.renderTimeline !== cachedElement.args.renderTimeline ||
+        key.wantBRepData !== cachedElement.args.wantBRepData ||
+        key.wantGeometry !== cachedElement.args.wantGeometry) {
+        return undefined
+      }
+    }
+    return cachedElement;
+  }
+  public set(el: CachedElement): this {
+    if (!el.element.id)
+      throw new Error("Element must have an id");
+
+    if (this._elementCache.has(el.element.id)) {
+      this._elementCache.delete(el.element.id);
+      this._elementCache.set(el.element.id, el);
+    } else {
+      this._elementCache.set(el.element.id, el);
+    }
+
+    if (el.element.federationGuid) {
+      this._cacheByFederationGuid.set(el.element.federationGuid, el.element.id);
+    }
+
+    this._cacheByCode.set(ElementLRUCache.makeCodeKey(el.element.code), el.element.id);
+    if (this._elementCache.size > this.capacity) {
+      const oldestKey = this._elementCache.keys().next().value as Id64String;
+      this.delete({ id: oldestKey });
+    }
+    return this;
+  }
+  public get [Symbol.toStringTag](): string {
+    return `EntityCache(this.size=${this.size}, capacity=${this.capacity})`;
+  }
+};
+
 /** An iModel database file. The database file can either be a briefcase or a snapshot.
  * @see [Accessing iModels]($docs/learning/backend/AccessingIModels.md)
  * @see [About IModelDb]($docs/learning/backend/IModelDb.md)
@@ -217,6 +318,7 @@ export abstract class IModelDb extends IModel {
   private _initialized = false;
   /** Keep track of open imodels to support `tryFind` for RPC purposes */
   private static readonly _openDbs = new Map<string, IModelDb>();
+
   public static readonly defaultLimit = 1000; // default limit for batching queries
   public static readonly maxLimit = 10000; // maximum limit for batching queries
   public readonly models = new IModelDb.Models(this);
@@ -1951,6 +2053,7 @@ export namespace IModelDb {
    * @public
    */
   export class Elements implements GuidMapper {
+    private _elementCache = new ElementLRUCache();
     /** @internal */
     public constructor(private _iModel: IModelDb) { }
 
@@ -1990,6 +2093,11 @@ export namespace IModelDb {
      */
     private tryGetElementJson<T extends ElementProps>(loadProps: ElementLoadProps): T | undefined {
       try {
+        const elProp = this._elementCache.get(loadProps);
+        if (elProp) {
+          return elProp.element as T;
+        }
+
         if (IModelHost.configuration?.enableWIPNativeInstanceFunctions) {
           const options = {
             ...loadProps,
@@ -2002,12 +2110,17 @@ export namespace IModelDb {
           // Deserialize the Element
           const classDef = this._iModel.getJsClass<typeof Element>(readProps.classFullName);
           const elementProps = classDef.deserialize({ row: rawInstance, iModel: this._iModel }) as T;
+
+          if (elementProps.id)
+            this._elementCache.set({ element: elementProps, args: loadProps });
+
           return elementProps;
         } else {
           return this._iModel[_nativeDb].getElement(loadProps) as T;
         }
       } catch {
         return undefined;
+
       }
     }
 
@@ -2735,9 +2848,9 @@ export namespace IModelDb {
   }
 
   /** Represents the current state of a pollable tile content request.
- * Note: lack of a "completed" state because polling a completed request returns the content as a Uint8Array.
- * @internal
- */
+  * Note: lack of a "completed" state because polling a completed request returns the content as a Uint8Array.
+  * @internal
+  */
   export enum TileContentState {
     New, // Request was just created and enqueued.
     Pending, // Request is enqueued but not yet being processed.
