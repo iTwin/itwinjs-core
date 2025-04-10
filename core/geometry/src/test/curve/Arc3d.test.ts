@@ -1461,7 +1461,7 @@ describe("ApproximateArc3d", () => {
 });
 describe("Arc3dTangents", () => {
   it("AllTangentsAndClosestTangent", () => {
-    const ck = new Checker(true, true);
+    const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
     let dx = 0;
     let dy = 0;
@@ -1675,8 +1675,8 @@ describe("Arc3dTangents", () => {
     tangents = arc.allTangents(spacePoint, { extend: [CurveExtendMode.None, CurveExtendMode.OnCurve] });
     ck.testDefined(tangents, "tangents is defined");
     ck.testCoordinate(2, tangents!.length, "2 tangents found");
-    ck.testTrue(Geometry.isAlmostEqualEitherNumber(tangents![0].fraction, 2, 3), "first tangent fraction");
-    ck.testTrue(Geometry.isAlmostEqualEitherNumber(tangents![1].fraction, 2, 3), "second tangent fraction");
+    ck.testTrue(Geometry.isAlmostEqualEitherNumber(2, tangents![0].fraction, tangents![1].fraction), "found first expected tangent");
+    ck.testTrue(Geometry.isAlmostEqualEitherNumber(3, tangents![0].fraction, tangents![1].fraction), "found second expected tangent");
     captureGeometry();
     dx += 10;
     dy = 0;
@@ -1688,8 +1688,8 @@ describe("Arc3dTangents", () => {
     tangents = arc.allTangents(spacePoint, { extend: [CurveExtendMode.OnCurve, CurveExtendMode.None] });
     ck.testDefined(tangents, "tangents is defined");
     ck.testCoordinate(2, tangents!.length, "2 tangents found");
-    ck.testTrue(Geometry.isAlmostEqualEitherNumber(tangents![0].fraction, -2.460106912325232, -1.5398930876747683), "first tangent fraction");
-    ck.testTrue(Geometry.isAlmostEqualEitherNumber(tangents![1].fraction, -2.460106912325232, -1.5398930876747683), "second tangent fraction");
+    ck.testTrue(Geometry.isAlmostEqualEitherNumber(-2.460106912325232, tangents![0].fraction, tangents![1].fraction), "found first expected tangent");
+    ck.testTrue(Geometry.isAlmostEqualEitherNumber(-1.5398930876747683, tangents![0].fraction, tangents![1].fraction), "found second expected tangent");
     captureGeometry();
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "Arc3dTangents", "AllTangentsAndClosestTangent");
