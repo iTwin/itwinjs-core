@@ -203,6 +203,7 @@ export class Element extends Entity {
     const locks = arg.iModel.locks;
     if (locks && !locks.holdsExclusiveLock(arg.model))
       locks[_elementWasCreated](arg.id);
+    arg.iModel.models.cache.delete(arg.model);
   }
 
   /** Called before an Element is updated.
@@ -223,7 +224,10 @@ export class Element extends Entity {
    * @note `this` is the class of the Element that was updated
    * @beta
    */
-  protected static onUpdated(_arg: OnElementIdArg): void { }
+  protected static onUpdated(arg: OnElementIdArg): void {
+    arg.iModel.elements.cache.delete({ id: arg.id })
+    arg.iModel.models.cache.delete(arg.model);
+  }
 
   /** Called before an Element is deleted.
    * @note throw an exception to disallow the delete
@@ -241,7 +245,10 @@ export class Element extends Entity {
    * @note `this` is the class of the Element that was deleted
    * @beta
    */
-  protected static onDeleted(_arg: OnElementIdArg): void { }
+  protected static onDeleted(arg: OnElementIdArg): void {
+    arg.iModel.elements.cache.delete(arg);
+    arg.iModel.models.cache.delete(arg.model);
+  }
 
   /** Called when an element with an instance of this class as its parent is about to be deleted.
    * @note throw an exception if the element should not be deleted
@@ -256,7 +263,10 @@ export class Element extends Entity {
    * @note `this` is the class of the parent Element whose child was deleted
    * @beta
    */
-  protected static onChildDeleted(_arg: OnChildElementIdArg): void { }
+  protected static onChildDeleted(arg: OnChildElementIdArg): void {
+    arg.iModel.elements.cache.delete({ id: arg.parentId });
+    arg.iModel.elements.cache.delete({ id: arg.childId });
+  }
 
   /** Called when a *new element* with an instance of this class as its parent is about to be inserted.
    * @note throw an exception if the element should not be inserted
@@ -269,7 +279,9 @@ export class Element extends Entity {
    * @note `this` is the class of the parent Element.
    * @beta
    */
-  protected static onChildInserted(_arg: OnChildElementIdArg): void { }
+  protected static onChildInserted(arg: OnChildElementIdArg): void {
+    arg.iModel.elements.cache.delete({ id: arg.parentId });
+  }
 
   /** Called when an element with an instance of this class as its parent is about to be updated.
    * @note throw an exception if the element should not be updated
@@ -282,7 +294,9 @@ export class Element extends Entity {
    * @note `this` is the class of the parent Element.
    * @beta
    */
-  protected static onChildUpdated(_arg: OnChildElementIdArg): void { }
+  protected static onChildUpdated(arg: OnChildElementIdArg): void {
+    arg.iModel.elements.cache.delete({ id: arg.parentId });
+  }
 
   /** Called when an *existing element* is about to be updated so that an instance of this class will become its new parent.
    * @note throw an exception if the element should not be added
@@ -295,7 +309,9 @@ export class Element extends Entity {
    * @note `this` is the class of the new parent Element.
    * @beta
    */
-  protected static onChildAdded(_arg: OnChildElementIdArg): void { }
+  protected static onChildAdded(arg: OnChildElementIdArg): void {
+    arg.iModel.elements.cache.delete({ id: arg.parentId });
+  }
 
   /** Called when an element with an instance of this class as its parent is about to be updated change to a different parent.
    * @note throw an exception if the element should not be dropped
@@ -308,7 +324,9 @@ export class Element extends Entity {
    * @note `this` is the class of the previous parent Element.
    * @beta
    */
-  protected static onChildDropped(_arg: OnChildElementIdArg): void { }
+  protected static onChildDropped(arg: OnChildElementIdArg): void {
+    arg.iModel.elements.cache.delete({ id: arg.parentId });
+  }
 
   /** Called when an instance of this class is being *sub-modeled* by a new Model.
    * @note throw an exception if model should not be inserted
@@ -321,7 +339,12 @@ export class Element extends Entity {
    * @note `this` is the class of Element that is now sub-modeled.
    * @beta
    */
-  protected static onSubModelInserted(_arg: OnSubModelIdArg): void { }
+  protected static onSubModelInserted(arg: OnSubModelIdArg): void {
+    const id = arg.subModelId;
+    arg.iModel.elements.cache.delete({ id });
+    arg.iModel.models.cache.delete(id);
+
+  }
 
   /** Called when a sub-model of an instance of this class is being deleted.
    * @note throw an exception if model should not be deleted
@@ -334,7 +357,11 @@ export class Element extends Entity {
    * @note `this` is the class of Element that was sub-modeled.
    * @beta
    */
-  protected static onSubModelDeleted(_arg: OnSubModelIdArg): void { }
+  protected static onSubModelDeleted(arg: OnSubModelIdArg): void {
+    const id = arg.subModelId;
+    arg.iModel.elements.cache.delete({ id });
+    arg.iModel.models.cache.delete(id);
+  }
 
   /** Called during the iModel transformation process after an Element from the source iModel was *cloned* for the target iModel.
    * The transformation process automatically handles remapping BisCore properties and those that are properly described in ECSchema.

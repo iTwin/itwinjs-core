@@ -98,6 +98,12 @@ export class ElementLRUCache {
   public get size(): number {
     return this._elementCache.size;
   }
+  public deleteWithModel(modelId: Id64String): void {
+    this._elementCache.forEach((cachedVal, elementId) => {
+      if (cachedVal.elProps.model === modelId)
+        this.delete({ id: elementId });
+    });
+  }
   public delete(key: ElementLoadProps): boolean {
     const cachedElement = this.findElement(key);
     if (cachedElement) {
