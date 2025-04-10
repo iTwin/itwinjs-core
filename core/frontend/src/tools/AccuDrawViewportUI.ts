@@ -476,10 +476,8 @@ export class AccuDrawViewportUI extends AccuDraw {
   }
 
   private async onKeyboardEvent(ev: KeyboardEvent, isDown: boolean): Promise<void> {
-    if (ev.ctrlKey || ev.altKey || ev.metaKey) {
-      ev.preventDefault(); // Ignore qualifiers other than shift...
-      return;
-    }
+    if (ev.ctrlKey || ev.altKey || ev.metaKey)
+      return; // Ignore qualifiers other than shift...
 
     switch (ev.key) {
       case "Escape":
