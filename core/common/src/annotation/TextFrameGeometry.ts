@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { Angle, AngleSweep, Arc3d, LineString3d, Loop, Point3d, Range2d, Range2dProps, Transform, TransformProps, Vector2d, Vector3d, XYAndZ } from "@itwin/core-geometry";
-import { TextAnnotationFrame } from "../annotation/TextAnnotation";
+import { TextAnnotationFrame } from "./TextAnnotation";
 
 // I don't love where this is.
 
@@ -37,7 +37,7 @@ export namespace FrameGeometry {
     arcIntervals?: number;
   }
 
-  export const computeIntervalPoints = (frame: TextAnnotationFrame, rangeProps: Range2dProps, transformProps: TransformProps, lineInterval: number = 0.5, arcInterval: number = Math.PI): Point3d[] | undefined => {
+  export const computeIntervalPoints = (frame: TextAnnotationFrame, rangeProps: Range2dProps, transformProps: TransformProps, lineInterval: number = 0.5, arcInterval: number = 0.25): Point3d[] | undefined => {
     const points: Point3d[] = [];
     const curves = FrameGeometry.computeFrame(frame, rangeProps, transformProps).collectCurvePrimitives(undefined, false, true);
 

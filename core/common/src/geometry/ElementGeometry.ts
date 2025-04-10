@@ -22,7 +22,7 @@ import { LineStyle } from "./LineStyle";
 import { ElementAlignedBox3d, Placement2d, Placement3d } from "./Placement";
 import { isPlacement2dProps, PlacementProps } from "../ElementProps";
 import { TextBlockGeometryProps } from "../annotation/TextBlockGeometryProps";
-import { FrameGeometry } from "./TextFrameGeometry";
+import { FrameGeometry } from "../annotation/TextFrameGeometry";
 
 /** Specifies the type of an entry in a geometry stream.
  * @see [[ElementGeometryDataEntry.opcode]].
