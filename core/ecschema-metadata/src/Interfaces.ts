@@ -97,34 +97,3 @@ export interface HasMixins {
   mixins: LazyLoadedMixin[];
   getMixinsSync(): Iterable<Mixin>;
 }
-
-/** Argument for [[FormatsProvider.onFormatsChanged]]
- * @beta
- */
-export interface FormatsChangedArgs {
-  /** If true, all formats within the FormatsProvider were changed.  */
-  allFormatsChanged?: boolean;
-
-  /** The names of formats that were changed or removed. */
-  formatsChanged?: string[];
-}
-
-/** This interface is implemented by a class that would provide formats for use in formatting quantities.
- * @beta
- */
-export interface FormatsProvider {
-  /**
-   * @param name The full name of the Format or KindOfQuantity.
-   */
-  getFormat(name: string): Promise<SchemaItemFormatProps | undefined>;
-
-  onFormatsChanged: BeUiEvent<FormatsChangedArgs>;
-}
-
-/** This interface is implemented by a class that would provide and allow creating formats for use in formatting quantities.
- * @beta
- */
-export interface MutableFormatsProvider extends FormatsProvider {
-  addFormat(name: string, format: SchemaItemFormatProps): Promise<void>;
-  removeFormat(name: string): Promise<void>;
-}

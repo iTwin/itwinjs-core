@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/ecschema-metadata",
-      "comment": "Add FormatsProvider, SchemaFormatsProvider to ecschema-metadata",
+      "comment": "Add SchemaFormatsProvider to ecschema-metadata",
       "type": "none"
     }
   ],

@@ -7,7 +7,6 @@
  */
 
 import { ISchemaLocater, SchemaContext } from "./Context";
-import { FormatsChangedArgs, FormatsProvider } from "./Interfaces";
 import { SchemaItemKey, SchemaKey } from "./SchemaKey";
 import { SchemaItem } from "./Metadata/SchemaItem";
 import { Format } from "./Metadata/Format";
@@ -15,7 +14,7 @@ import { SchemaItemFormatProps } from "./Deserialization/JsonProps";
 import { BeUiEvent } from "@itwin/core-bentley";
 import { KindOfQuantity } from "./Metadata/KindOfQuantity";
 import { getFormatProps } from "./Metadata/OverrideFormat";
-import { FormatProps, UnitSystemKey } from "@itwin/core-quantity";
+import { FormatProps, FormatsChangedArgs, FormatsProvider, UnitSystemKey } from "@itwin/core-quantity";
 import { Unit } from "./Metadata/Unit";
 import { InvertedUnit } from "./Metadata/InvertedUnit";
 
@@ -26,6 +25,7 @@ import { InvertedUnit } from "./Metadata/InvertedUnit";
 export class SchemaFormatsProvider implements FormatsProvider {
   private _context: SchemaContext;
   private _unitSystem: UnitSystemKey;
+  private _formatsRetrieved: Set<string> = new Set();
   public onFormatsChanged = new BeUiEvent<FormatsChangedArgs>();
   /**
    *
@@ -48,7 +48,13 @@ export class SchemaFormatsProvider implements FormatsProvider {
 
   public set unitSystem(unitSystem: UnitSystemKey) {
     this._unitSystem = unitSystem;
-    this.onFormatsChanged.raiseEvent({ allFormatsChanged: true });
+    this.clear();
+  }
+
+  private clear(): void {
+    const formatsChanged = Array.from(this._formatsRetrieved);
+    this._formatsRetrieved.clear();
+    this.onFormatsChanged.raiseEvent({ formatsChanged });
   }
 
   private async getKindOfQuantityFormatFromSchema(itemKey: SchemaItemKey, unitSystem: UnitSystemKey): Promise<SchemaItemFormatProps | undefined> {
@@ -70,6 +76,7 @@ export class SchemaFormatsProvider implements FormatsProvider {
           }
           const currentUnitSystem = await unit.unitSystem;
           if (currentUnitSystem && currentUnitSystem.name.toUpperCase() === system) {
+            this._formatsRetrieved.add(itemKey.fullName);
             return getFormatProps(format);
           }
         }
@@ -79,6 +86,7 @@ export class SchemaFormatsProvider implements FormatsProvider {
       const persistenceUnit = await kindOfQuantity.persistenceUnit;
       const persistenceUnitSystem = await persistenceUnit?.unitSystem;
       if (persistenceUnitSystem && unitSystemGroupNames.includes(persistenceUnitSystem.name.toUpperCase())) {
+        this._formatsRetrieved.add(itemKey.fullName);
         return getPersistenceUnitFormatProps(persistenceUnit!);
       }
     }
@@ -87,6 +95,7 @@ export class SchemaFormatsProvider implements FormatsProvider {
     if (!defaultFormat) {
       return undefined;
     }
+    this._formatsRetrieved.add(itemKey.fullName);
     return getFormatProps(defaultFormat);
   }
 

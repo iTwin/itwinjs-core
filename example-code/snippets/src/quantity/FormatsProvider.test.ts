@@ -1,7 +1,7 @@
 import { BeUiEvent } from "@itwin/core-bentley";
-import { Format, FormatterSpec, ParsedQuantity, ParserSpec } from "@itwin/core-quantity";
+import { Format, FormatDefinition, FormatsChangedArgs, FormatterSpec, MutableFormatsProvider, ParsedQuantity, ParserSpec } from "@itwin/core-quantity";
 import { SchemaXmlFileLocater } from "@itwin/ecschema-locaters";
-import { FormatsChangedArgs, MutableFormatsProvider, SchemaContext, SchemaFormatsProvider, SchemaItemFormatProps, SchemaUnitProvider } from "@itwin/ecschema-metadata";
+import {  SchemaContext,  SchemaFormatsProvider,  SchemaUnitProvider } from "@itwin/ecschema-metadata";
 import { assert } from "chai";
 import path from "path";
 
@@ -10,14 +10,14 @@ import path from "path";
  * Implements a formats provider with a cache, to allow adding/removing formats at runtime.
  */
 class ExampleFormatProvider implements MutableFormatsProvider {
-  private _cache: Map<string, SchemaItemFormatProps> = new Map();
+  private _cache: Map<string, FormatDefinition> = new Map();
   public onFormatsChanged = new BeUiEvent<FormatsChangedArgs>();
 
-  public async getFormat(name: string): Promise<SchemaItemFormatProps | undefined> {
+  public async getFormat(name: string): Promise<FormatDefinition | undefined> {
     return this._cache.get(name);
   }
 
-  public async addFormat(name: string, format: SchemaItemFormatProps): Promise<void> {
+  public async addFormat(name: string, format: FormatDefinition): Promise<void> {
     this._cache.set(name, format);
     this.onFormatsChanged.raiseEvent({ formatsChanged: [name]});
   }
@@ -104,7 +104,7 @@ describe("FormatsProvider examples", () => {
   it("adding a format", async () => {
     // __PUBLISH_EXTRACT_START__ Quantity_Formatting.Mutable_Formats_Provider_Adding_A_Format
     const formatsProvider = new ExampleFormatProvider();
-    const format: SchemaItemFormatProps = {
+    const format: FormatDefinition = {
       label: "NewFormat",
       type: "Fractional",
       precision: 8,

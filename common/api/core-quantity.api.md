@@ -5,6 +5,7 @@
 ```ts
 
 import { BentleyError } from '@itwin/core-bentley';
+import { BeUiEvent } from '@itwin/core-bentley';
 
 // @internal
 export function almostEqual(a: number, b: number, tolerance?: number): boolean;
@@ -240,6 +241,16 @@ export class Format extends BaseFormat {
 }
 
 // @beta
+export interface FormatDefinition extends FormatProps {
+    // (undocumented)
+    readonly description?: string;
+    // (undocumented)
+    readonly label?: string;
+    // (undocumented)
+    readonly name?: string;
+}
+
+// @beta
 export interface FormatProps {
     // (undocumented)
     readonly allowMathematicOperations?: boolean;
@@ -279,6 +290,19 @@ export interface FormatProps {
     readonly type: string;
     // (undocumented)
     readonly uomSeparator?: string;
+}
+
+// @beta
+export interface FormatsChangedArgs {
+    formatsChanged: "all" | string[];
+}
+
+// @beta
+export interface FormatsProvider {
+    // (undocumented)
+    getFormat(name: string): Promise<FormatDefinition | undefined>;
+    // (undocumented)
+    onFormatsChanged: BeUiEvent<FormatsChangedArgs>;
 }
 
 // @internal
@@ -383,6 +407,14 @@ export function getTraitString(trait: FormatTraits): "trailZeroes" | "keepSingle
 
 // @beta
 export const isCustomFormatProps: (item: FormatProps) => item is CustomFormatProps;
+
+// @beta
+export interface MutableFormatsProvider extends FormatsProvider {
+    // (undocumented)
+    addFormat(name: string, format: FormatDefinition): Promise<void>;
+    // (undocumented)
+    removeFormat(name: string): Promise<void>;
+}
 
 // @beta (undocumented)
 export function parseDecimalPrecision(jsonObjPrecision: number, formatName: string): DecimalPrecision;

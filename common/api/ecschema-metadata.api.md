@@ -9,6 +9,8 @@ import { BentleyError } from '@itwin/core-bentley';
 import { BeUiEvent } from '@itwin/core-bentley';
 import { DecimalPrecision } from '@itwin/core-quantity';
 import { FormatProps } from '@itwin/core-quantity';
+import { FormatsChangedArgs } from '@itwin/core-quantity';
+import { FormatsProvider } from '@itwin/core-quantity';
 import { FormatTraits } from '@itwin/core-quantity';
 import { FormatType } from '@itwin/core-quantity';
 import { FractionalPrecision } from '@itwin/core-quantity';
@@ -761,12 +763,6 @@ export class Format extends SchemaItem {
 }
 
 // @beta
-export interface FormatsChangedArgs {
-    allFormatsChanged?: boolean;
-    formatsChanged?: string[];
-}
-
-// @beta
 export interface FormatSet {
     // (undocumented)
     formats: {
@@ -776,14 +772,6 @@ export interface FormatSet {
     label: string;
     // (undocumented)
     name: string;
-}
-
-// @beta
-export interface FormatsProvider {
-    // (undocumented)
-    getFormat(name: string): Promise<SchemaItemFormatProps | undefined>;
-    // (undocumented)
-    onFormatsChanged: BeUiEvent<FormatsChangedArgs>;
 }
 
 // @internal (undocumented)
@@ -1024,14 +1012,6 @@ export class Mixin extends ECClass {
 export interface MixinProps extends ClassProps {
     // (undocumented)
     readonly appliesTo: string;
-}
-
-// @beta
-export interface MutableFormatsProvider extends FormatsProvider {
-    // (undocumented)
-    addFormat(name: string, format: SchemaItemFormatProps): Promise<void>;
-    // (undocumented)
-    removeFormat(name: string): Promise<void>;
 }
 
 // @beta (undocumented)

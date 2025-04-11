@@ -1,21 +1,20 @@
 import { BeUiEvent } from "@itwin/core-bentley";
-import { FormatsChangedArgs, MutableFormatsProvider } from "../../Interfaces";
-import { SchemaItemFormatProps } from "../../ecschema-metadata";
-import { expect } from "chai";
 import * as Sinon from "sinon";
+import { FormatDefinition, FormatsChangedArgs, MutableFormatsProvider } from "../core-quantity";
+import { beforeEach, describe, expect, it } from "vitest";
 
 /**
  * For testing. Implements a formats provider with a cache, to allow adding/removing formats at runtime.
  */
 class TestFormatProvider implements MutableFormatsProvider {
-  private _cache: Map<string, SchemaItemFormatProps> = new Map();
+  private _cache: Map<string, FormatDefinition> = new Map();
   public onFormatsChanged = new BeUiEvent<FormatsChangedArgs>();
 
-  public async getFormat(name: string): Promise<SchemaItemFormatProps | undefined> {
+  public async getFormat(name: string): Promise<FormatDefinition | undefined> {
     return this._cache.get(name);
   }
 
-  public async addFormat(name: string, format: SchemaItemFormatProps): Promise<void> {
+  public async addFormat(name: string, format: FormatDefinition): Promise<void> {
     this._cache.set(name, format);
     this.onFormatsChanged.raiseEvent({ formatsChanged: [name] });
   }
@@ -40,7 +39,7 @@ describe("MutableFormatsProvider", () => {
   it("should add a format", async () => {
     const spy = Sinon.spy();
     formatsProvider.onFormatsChanged.addListener(spy);
-    const format: SchemaItemFormatProps = {
+    const format: FormatDefinition = {
       label: "NewFormat",
       type: "Fractional",
       precision: 8,
@@ -58,7 +57,7 @@ describe("MutableFormatsProvider", () => {
     it("should remove a format from cache", async () => {
       const spy = Sinon.spy();
       formatsProvider.onFormatsChanged.addListener(spy);
-      const format: SchemaItemFormatProps = {
+      const format: FormatDefinition = {
         label: "NewFormat",
         type: "Fractional",
         precision: 8,

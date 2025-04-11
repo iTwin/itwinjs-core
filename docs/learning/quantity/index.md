@@ -47,11 +47,13 @@ For a detailed description of all the setting supported by FormatProp see the EC
 
 #### Formats Provider
 
-A [FormatsProvider]($ecschema-metadata) interface helps provide all the necessary `Formats` for displaying formatted quantity values, while also enabling users to add formats of their own.
+The [FormatDefinition]($quantity) interface is an extension of FormatProps to help identify formats.
 
-A [MutableFormatsProvider]($ecschema-metadata) interface extends the read-only `FormatsProvider` above by allowing adding or removing `Formats` to the provider.
+A [FormatsProvider]($quantity) interface helps provide all the necessary `Formats` for displaying formatted quantity values, while also enabling users to add formats of their own.
 
-The [SchemaFormatsProvider]($ecschema-metadata) takes in a [SchemaContext]($ecschema-metadata), to provide `Formats` coming from schemas. The `SchemaFormatsProvider` also requires a [UnitSystemKey]($quantity) passed in to filter the [FormatProps]($quantity) returned, according to the current unit system set in the `SchemaFormatsProvider`.
+A [MutableFormatsProvider]($quantity) interface extends the read-only `FormatsProvider` above by allowing adding or removing `Formats` to the provider.
+
+The [SchemaFormatsProvider]($ecschema-metadata) takes in a [SchemaContext]($ecschema-metadata), to provide `Formats` coming from schemas. The `SchemaFormatsProvider` also requires a [UnitSystemKey]($quantity) passed in to filter the [FormatDefinition]($quantity) returned, according to the current unit system set in the `SchemaFormatsProvider`.
 
 #### Units Provider
 

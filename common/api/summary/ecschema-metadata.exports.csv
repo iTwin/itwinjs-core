@@ -48,9 +48,7 @@ beta;interface;EnumerationProps
 beta;interface;Enumerator
 beta;interface;EnumeratorProps
 beta;class;Format
-beta;interface;FormatsChangedArgs
 beta;interface;FormatSet
-beta;interface;FormatsProvider
 internal;function;getFormatProps
 beta;interface;HasMixins
 beta;class;InvertedUnit
@@ -80,7 +78,6 @@ beta;type;LazyLoadedUnit
 beta;type;LazyLoadedUnitSystem
 beta;class;Mixin
 beta;interface;MixinProps
-beta;interface;MutableFormatsProvider
 beta;class;NavigationProperty
 beta;interface;NavigationPropertyProps
 beta;interface;NoDelayedPromiseMethods

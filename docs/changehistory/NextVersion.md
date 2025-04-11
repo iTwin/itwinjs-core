@@ -24,6 +24,7 @@ Table of contents:
   - [Delete all transactions](#delete-all-transactions)
   - [Attach/detach db](#attachdetach-db)
   - [Quantity Formatting](#quantity-formatting)
+    - [FormatDefinition](#formatdefinition)
     - [FormatsProvider](#formatsprovider)
     - [Persistence](#persistence)
   - [API deprecations](#api-deprecations)
@@ -187,9 +188,13 @@ Allow the attachment of an ECDb/IModel to a connection and running ECSQL that co
 
 ## Quantity Formatting
 
+### FormatDefinition
+
+A [FormatDefinition]($quantity) interface has been added, an extension of FormatProps to help identify formats.
+
 ### FormatsProvider
 
-[FormatsProvider]($ecschema-metadata) and [MutableFormatsProvider]($ecschema-metadata) interfaces and a [SchemaFormatsProvider]($ecschema-metadata) class have been added. This enables quick setup of [FormatterSpec]($quantity) and [ParserSpec]($quantity) to help with display formatting.
+[FormatsProvider]($quantity) and [MutableFormatsProvider]($quantity) interfaces and a [SchemaFormatsProvider]($ecschema-metadata) class have been added. This enables quick setup of [FormatterSpec]($quantity) and [ParserSpec]($quantity) to help with display formatting.
 
 ### Persistence
 
