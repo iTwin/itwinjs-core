@@ -387,25 +387,24 @@ export abstract class ViewDefinition3d extends ViewDefinition {
     const instance = props.row;
     const elProps = super.deserialize(props) as ViewDefinition3dProps;
     // ViewDefinition3dProps
-
     elProps.cameraOn = instance.isCameraOn as boolean;
     elProps.camera = { eye: instance.eyePoint, focusDist: instance.focusDistance, lens: instance.lensAngle };
     elProps.angles = { yaw: instance.yaw, roll: instance.roll, pitch: instance.pitch };
-
     return elProps;
   }
 
   /** @internal */
   public static override serialize(props: ViewDefinition3dProps, _iModel: IModelDb): ECSqlRow {
     const row = super.serialize(props, _iModel);
-    // if (props.isCameraOn !== undefined) {
-    //   props.eyePoint = Instance.eyePoint;
-    //   props.focusDistance = Instance.focusDistance;
-    //   props.lensAngle = Instance.lensAngle;
-    //   props.yaw = Instance.yaw;
-    //   props.roll = Instance.roll;
-    //   props.pitch = Instance.pitch;
-    // }
+    row.isCameraOn = props.cameraOn;
+    row.eyePoint = props.camera.eye;
+    row.focusDistance = props.camera.focusDist;
+    row.lensAngle = props.camera.lens;
+    if (props.angles) {
+      row.yaw = props.angles.yaw;
+      row.roll = props.angles.roll;
+      row.pitch = props.angles.pitch;
+    }
     return row;
   }
 
