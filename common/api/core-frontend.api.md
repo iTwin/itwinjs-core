@@ -5090,6 +5090,10 @@ export class IModelTileTree extends TileTree {
     // (undocumented)
     get isContentUnbounded(): boolean;
     // (undocumented)
+    get layerHandler(): LayerTileTreeHandler;
+    // (undocumented)
+    layerImageryTrees: MapLayerTreeSetting[];
+    // (undocumented)
     get loadPriority(): TileLoadPriority;
     // (undocumented)
     get maxDepth(): number;
@@ -5322,6 +5326,73 @@ export enum KeyinStatus {
     Dynamic = 0,
     // (undocumented)
     Partial = 1
+}
+
+// @internal (undocumented)
+export class LayerTileTreeHandler {
+    constructor(ref: LayerTileTree);
+    addImageryLayer(tree: ImageryMapTileTree, settings: MapLayerSettings, index: number, baseImageryLayer: boolean): void;
+    // (undocumented)
+    addModelLayer(layerTreeRef: ModelMapLayerTileTreeReference, context: SceneContext): void;
+    // (undocumented)
+    clearLayers(): void;
+    // (undocumented)
+    collectClassifierGraphics(args: TileDrawArgs, selectedTiles: Tile[]): void;
+    // (undocumented)
+    get imageryTreeState(): Map<string, ImageryTileTreeState>;
+    // (undocumented)
+    protected _imageryTreeState: Map<string, ImageryTileTreeState>;
+    // (undocumented)
+    layerClassifiers: Map<number, RenderPlanarClassifier>;
+    // (undocumented)
+    get layerImageryTrees(): MapLayerTreeSetting[];
+    // (undocumented)
+    get layerSettings(): Map<string, MapLayerSettings>;
+    // (undocumented)
+    protected _layerSettings: Map<string, MapLayerSettings>;
+    // (undocumented)
+    get modelIdToIndex(): Map<string, number>;
+    // (undocumented)
+    protected _modelIdToIndex: Map<string, number>;
+}
+
+// @internal (undocumented)
+export class LayerTileTreeReferenceHandler {
+    constructor(ref: LayerTileTreeReference, pIsOverlay: boolean, baseLayerSettings?: BaseLayerSettings, layerSettings?: MapLayerSettings[], mapTile?: boolean);
+    // (undocumented)
+    get baseColor(): ColorDef | undefined;
+    // (undocumented)
+    protected _baseColor?: ColorDef;
+    // (undocumented)
+    get baseImageryLayerIncluded(): boolean;
+    // (undocumented)
+    protected _baseImageryLayerIncluded: boolean;
+    // (undocumented)
+    protected _baseLayerSettings?: BaseLayerSettings;
+    // (undocumented)
+    get baseTransparent(): boolean;
+    // (undocumented)
+    protected _baseTransparent: boolean;
+    // (undocumented)
+    clearLayers(): void;
+    // (undocumented)
+    discloseTileTrees(trees: DisclosedTileTreeSet): void;
+    // (undocumented)
+    initializeLayers(context: SceneContext): boolean;
+    // (undocumented)
+    isOverlay: boolean;
+    // (undocumented)
+    get layerSettings(): MapLayerSettings[];
+    // (undocumented)
+    protected _layerSettings: MapLayerSettings[];
+    // (undocumented)
+    get layerTrees(): (MapLayerTileTreeReference | undefined)[];
+    // (undocumented)
+    protected readonly _layerTrees: (MapLayerTileTreeReference | undefined)[];
+    // (undocumented)
+    setBaseLayerSettings(baseLayerSettings: BaseLayerSettings): void;
+    // (undocumented)
+    setLayerSettings(layerSettings: MapLayerSettings[]): void;
 }
 
 // @beta
@@ -5951,6 +6022,16 @@ export interface MapLayerTokenEndpoint {
     getLoginUrl(stateData?: any): string | undefined;
     // (undocumented)
     getUrl(): string;
+}
+
+// @internal
+export interface MapLayerTreeSetting {
+    // (undocumented)
+    baseImageryLayer: boolean;
+    // (undocumented)
+    settings: MapLayerSettings;
+    // (undocumented)
+    tree: ImageryMapTileTree;
 }
 
 // @beta
