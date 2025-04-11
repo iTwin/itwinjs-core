@@ -153,7 +153,6 @@ export class Element extends Entity {
     { propertyName: "lastMod", source: "Class" },
   ];
 
-
   public static override deserialize(props: InstanceProps): ElementProps {
     const elProps = super.deserialize(props) as ElementProps;
     const instance = props.row;
@@ -578,7 +577,6 @@ export abstract class GeometricElement3d extends GeometricElement {
       referenceIds.addElement(this.typeDefinition.id);
   }
 
-
   protected static override readonly _customHandledProps: CustomHandledProperty[] = [
     { propertyName: "category", source: "Class" },
     { propertyName: "geometryStream", source: "Class" },
@@ -590,7 +588,6 @@ export abstract class GeometricElement3d extends GeometricElement {
     { propertyName: "bBoxHigh", source: "Class" },
     { propertyName: "typeDefinition", source: "Class" }
   ];
-
 
   public static override deserialize(props: InstanceProps): GeometricElement3dProps {
     const elProps = super.deserialize(props) as GeometricElement3dProps;
@@ -1303,6 +1300,7 @@ export abstract class DefinitionElement extends InformationContentElement {
     }
     return inst;
   }
+
   public override toJSON(): DefinitionElementProps {
     const val = super.toJSON() as DefinitionElementProps;
     val.isPrivate = this.isPrivate;
@@ -1607,6 +1605,7 @@ export abstract class InformationPartitionElement extends InformationContentElem
   public override toJSON(): InformationPartitionElementProps { // This override only specializes the return type
     return super.toJSON() as InformationPartitionElementProps; // Entity.toJSON takes care of auto-handled properties
   }
+
   /** Create a code that can be used for any subclass of InformationPartitionElement.
    * @param iModelDb The IModelDb
    * @param parentSubjectId The Id of the parent Subject that provides the scope for names of its child InformationPartitionElements.
@@ -1803,6 +1802,7 @@ export class GeometryPart extends DefinitionElement {
     this.geom = props.geom;
     this.bbox = Range3d.fromJSON(props.bbox);
   }
+
   protected static override readonly _customHandledProps: CustomHandledProperty[] = [
     { propertyName: "geometryStream", source: "Class" },
     { propertyName: "bBoxLow", source: "Class" },
@@ -1892,6 +1892,23 @@ export class LineStyle extends DefinitionElement {
     super(props, iModel);
     this.description = props.description;
     this.data = props.data;
+  }
+
+  protected static override readonly _customHandledProps: CustomHandledProperty[] = [
+    { propertyName: "data", source: "Class" },
+  ];
+
+  public static override deserialize(props: InstanceProps): LineStyleProps {
+    const elProps = super.deserialize(props) as LineStyleProps;
+    const instance = props.row;
+    elProps.data = instance.data ?? "";
+    return elProps;
+  }
+
+  public static override serialize(props: LineStyleProps, iModel: IModelDb): ECSqlRow {
+    const inst = super.serialize(props, iModel);
+    inst.data = props.data;
+    return inst;
   }
 
   /** Create a Code for a LineStyle definition given a name that is meant to be unique within the scope of the specified model.
