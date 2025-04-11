@@ -124,7 +124,7 @@ export class Entity {
     }
 
     if (props.row.jsonProperties) {
-      enProps.jsonProperties = JSON.parse(props.iModel[_nativeDb].patchElementProperties(props.row.jsonProperties));
+      enProps.jsonProperties = JSON.parse(props.iModel[_nativeDb].patchJsonProperties(props.row.jsonProperties));
     }
 
     const customHandledProperties = this.getCustomHandledProperties();
