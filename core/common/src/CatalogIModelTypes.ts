@@ -71,8 +71,8 @@ export namespace CatalogIModelTypes {
 
     /** The manifest to be stored in the catalog */
     readonly manifest: CatalogManifest;
-    /** The name for the CatalogIModel database within the container. Should not contain version. */
-    readonly dbName: string,
+    /** The name for the CatalogIModel database within the container. Should not contain version. Default is "catalog-db" */
+    readonly dbName?: string,
     /** version for the catalog created [[catalogFileName]]. Defaults to "0.0.0" */
     readonly version?: string;
     /** The filename that holds the CatalogIModel to upload into the new container */
@@ -88,8 +88,8 @@ export namespace CatalogIModelTypes {
 
 
   export interface NameAndVersion {
-    /** The name of the catalog database */
-    readonly dbName: string;
+    /** The name of the catalog database. Defaults to "catalog-db" for CatalogIModels stored in cloud containers. */
+    readonly dbName?: string;
     /** The range of acceptable versions of the database of the specified [[dbName]].
      * If omitted, it defaults to the newest available version.
      */

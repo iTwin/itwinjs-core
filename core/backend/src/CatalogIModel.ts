@@ -74,6 +74,9 @@ function updateManifest(nativeDb: IModelJsNative.DgnDb, manifest: CatalogIModelT
   nativeDb.saveLocalValue(catalogManifestName, JSON.stringify(manifest));
   nativeDb.saveChanges("update manifest");
 }
+function catalogDbNameWithDefault(dbName?: string): string {
+  return dbName ?? "catalog-db";
+}
 
 export class CatalogDb extends StandaloneDb {
 
@@ -90,19 +93,19 @@ export class CatalogDb extends StandaloneDb {
 
 export class ReadonlyCatalog extends CatalogDb {
   public static async openCatalog(args: CatalogIModelTypes.OpenArgs) {
+    const dbName = catalogDbNameWithDefault(args.dbName);
     if (undefined === args.containerId) // local file?
-      return super.openFile(args.dbName, OpenMode.Readonly, args);
+      return super.openFile(dbName, OpenMode.Readonly, args);
 
     const container = await getReadonlyContainer(args.containerId);
     if (args.syncWithCloud)
       container.checkForChanges();
 
-    const dbName = CloudSqlite.querySemverMatch({ container, ...args });
-
+    const dbFullName = CloudSqlite.querySemverMatch({ container, ...args, dbName });
     if (args.prefetch)
-      CloudSqlite.startCloudPrefetch(container, dbName);
+      CloudSqlite.startCloudPrefetch(container, dbFullName);
 
-    return super.openFile(dbName, OpenMode.Readonly, { container });
+    return super.openFile(dbFullName, OpenMode.Readonly, { container });
   }
 }
 
@@ -110,10 +113,11 @@ export class EditableCatalog extends CatalogDb {
 
   public static async createNewContainer(args: CatalogIModelTypes.CreateNewContainerArgs): Promise<CatalogIModelTypes.NewContainerProps> {
 
-    CloudSqlite.validateDbName(args.dbName);
+    const dbName = catalogDbNameWithDefault(args.dbName);
+    CloudSqlite.validateDbName(dbName);
     CloudSqlite.validateDbVersion(args.version);
 
-    const tmpName = join(KnownLocations.tmpdir, `temp-${args.dbName}`);
+    const tmpName = join(KnownLocations.tmpdir, `temp-${dbName}`);
     try {
       fs.copyFileSync(args.catalogFileName, tmpName);
       const nativeDb = new IModelNative.platform.DgnDb();
@@ -148,7 +152,7 @@ export class EditableCatalog extends CatalogDb {
 
     // upload the initial version of the catalog
     await CloudSqlite.withWriteLock({ user: "initialize", container }, async () => {
-      await CloudSqlite.uploadDb(container, { dbName: CloudSqlite.makeSemverName(args.dbName, args.version), localFileName: tmpName });
+      await CloudSqlite.uploadDb(container, { dbName: CloudSqlite.makeSemverName(dbName, args.version), localFileName: tmpName });
       fs.unlinkSync(tmpName); // delete temporary copy of catalog
     });
     container.disconnect({ detach: true });
@@ -168,13 +172,14 @@ export class EditableCatalog extends CatalogDb {
   }
 
   public static async openEditable(args: CatalogIModelTypes.OpenArgs) {
+    const dbName = catalogDbNameWithDefault(args.dbName);
     if (undefined === args.containerId) // local file?
-      return super.openFile(args.dbName, OpenMode.ReadWrite, args);
+      return super.openFile(dbName, OpenMode.ReadWrite, args);
 
     const container = await getWriteableContainer(args.containerId);
     ensureLocked(container, "open a Catalog for editing");
 
-    const dbFullName = CloudSqlite.querySemverMatch({ container, ...args, version: args.version ?? "*" });
+    const dbFullName = CloudSqlite.querySemverMatch({ container, dbName, version: args.version ?? "*" });
     if (!CloudSqlite.isSemverEditable(dbFullName, container))
       CloudSqliteError.throwError("already-published", { message: "Catalog has already been published and is not editable. Make a new version first.", ...args })
 
@@ -203,7 +208,7 @@ export class EditableCatalog extends CatalogDb {
   public static async createNewVersion(args: CatalogIModelTypes.CreateNewVersionArgs): Promise<{ oldDb: CatalogIModelTypes.NameAndVersion, newDb: CatalogIModelTypes.NameAndVersion }> {
     const container = await getWriteableContainer(args.containerId);
     ensureLocked(container, "create a new version");
-    return CloudSqlite.createNewDbVersion(container, args);
+    return CloudSqlite.createNewDbVersion(container, { ...args, fromDb: { ...args.fromDb, dbName: catalogDbNameWithDefault(args.fromDb.dbName) } });
   }
 }
 
