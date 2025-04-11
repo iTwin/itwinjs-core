@@ -119,11 +119,11 @@ export class EditableCatalog extends CatalogDb {
 
     const tmpName = join(KnownLocations.tmpdir, `temp-${dbName}`);
     try {
-      fs.copyFileSync(args.catalogFileName, tmpName);
+      fs.copyFileSync(args.localCatalogFile, tmpName);
       const nativeDb = new IModelNative.platform.DgnDb();
       nativeDb.openIModel(tmpName, OpenMode.ReadWrite);
       nativeDb.setITwinId(Guid.empty);
-      nativeDb.setIModelId(Guid.empty);
+      nativeDb.setIModelId(Guid.createValue()); // make sure it's unique
       updateManifest(nativeDb, args.manifest);
       nativeDb.deleteAllTxns(); // necessary before resetting briefcaseId
       nativeDb.resetBriefcaseId(BriefcaseIdValue.Unassigned); // catalogs should always be unassigned

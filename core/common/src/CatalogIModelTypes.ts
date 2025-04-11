@@ -76,7 +76,7 @@ export namespace CatalogIModelTypes {
     /** version for the catalog created [[catalogFileName]]. Defaults to "0.0.0" */
     readonly version?: string;
     /** The filename that holds the CatalogIModel to upload into the new container */
-    readonly catalogFileName: LocalFileName;
+    readonly localCatalogFile: LocalFileName;
   }
 
   export interface NewContainerProps {
