@@ -1,7 +1,6 @@
 import { BeUiEvent } from "@itwin/core-bentley";
-import * as Sinon from "sinon";
 import { FormatDefinition, FormatsChangedArgs, MutableFormatsProvider } from "../core-quantity";
-import { beforeEach, describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 /**
  * For testing. Implements a formats provider with a cache, to allow adding/removing formats at runtime.
@@ -37,7 +36,7 @@ describe("MutableFormatsProvider", () => {
   });
 
   it("should add a format", async () => {
-    const spy = Sinon.spy();
+    const spy = vi.fn();
     formatsProvider.onFormatsChanged.addListener(spy);
     const format: FormatDefinition = {
       label: "NewFormat",
@@ -50,12 +49,12 @@ describe("MutableFormatsProvider", () => {
     await formatsProvider.addFormat(formatName, format);
     const retrievedFormat = await formatsProvider.getFormat(formatName);
     expect(retrievedFormat).to.equal(format);
-    expect(spy.calledWith({ formatsChanged: [formatName] })).to.be.true;
+    expect(spy.mock.calls[0][0]).toEqual({ formatsChanged: [formatName] });
     formatsProvider.onFormatsChanged.removeListener(spy);
   });
 
     it("should remove a format from cache", async () => {
-      const spy = Sinon.spy();
+      const spy = vi.fn();
       formatsProvider.onFormatsChanged.addListener(spy);
       const format: FormatDefinition = {
         label: "NewFormat",
@@ -68,7 +67,7 @@ describe("MutableFormatsProvider", () => {
       await formatsProvider.addFormat(formatName, format);
       const retrievedFormat = await formatsProvider.getFormat(formatName);
       expect(retrievedFormat).to.equal(format);
-      expect(spy.calledWith({ formatsChanged: [formatName] })).to.be.true;
+      expect(spy.mock.calls[0][0]).toEqual({ formatsChanged: [formatName] });
 
       formatsProvider.onFormatsChanged.removeListener(spy);
     });
