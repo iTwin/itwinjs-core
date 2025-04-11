@@ -921,7 +921,7 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
     // Tangency angles are preserved by local <-> world transformation.
     if (centerToLocalPoint !== undefined) {
       const hypotenuseSquared = centerToLocalPoint.magnitudeSquaredXY();
-      if (hypotenuseSquared >= 1.0) { // localPoint lies outside the unit circle...
+      if (hypotenuseSquared >= 1.0) { // localPoint lies outside or on the unit circle...
         // ...and forms a right triangle with unit radial leg to tangent point
         const distanceToTangency = Math.sqrt(hypotenuseSquared - 1.0);
         const alpha = Math.atan2(centerToLocalPoint.y, centerToLocalPoint.x);
