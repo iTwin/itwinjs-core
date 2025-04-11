@@ -13,14 +13,16 @@ import { Schema } from "./Schema";
 import { SchemaItem } from "./SchemaItem";
 
 /**
- * @beta
+ * @public @preview
  */
 export class PropertyCategory extends SchemaItem {
   public override readonly schemaItemType = PropertyCategory.schemaItemType;
   public static override get schemaItemType() { return SchemaItemType.PropertyCategory; }
-  protected _priority: number;
+  private _priority: number;
 
-  public get priority() { return this._priority; }
+  public get priority() {
+    return this._priority;
+  }
 
   constructor(schema: Schema, name: string) {
     super(schema, name);
@@ -54,8 +56,8 @@ export class PropertyCategory extends SchemaItem {
     this.fromJSONSync(propertyCategoryProps);
   }
   /**
-   * @alpha
    * Used for schema editing.
+   * @internal
    */
   protected setPriority(priority: number) {
     this._priority = priority;
@@ -67,13 +69,17 @@ export class PropertyCategory extends SchemaItem {
    * @returns True if the item is a PropertyCategory, false otherwise.
    */
   public static isPropertyCategory(item?: SchemaItem): item is PropertyCategory {
-    return item?.schemaItemType === SchemaItemType.PropertyCategory;
+    if (item && item.schemaItemType === SchemaItemType.PropertyCategory)
+      return true;
+
+    return false;
   }
 
   /**
    * Type assertion to check if the SchemaItem is of type PropertyCategory.
    * @param item The SchemaItem to check.
    * @returns The item cast to PropertyCategory if it is a PropertyCategory, undefined otherwise.
+   * @internal
    */
   public static assertIsPropertyCategory(item?: SchemaItem): asserts item is PropertyCategory {
     if (!this.isPropertyCategory(item))

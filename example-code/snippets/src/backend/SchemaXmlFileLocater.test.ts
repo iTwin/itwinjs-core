@@ -152,7 +152,7 @@ describe("SchemaXmlFileLocater - Check fallback locater precedence in schema con
     }
   }
 
-  function assertLocaterPaths(expectedPaths: string[][], actualLocaterPaths: ISchemaLocater[], maxIndexToTest: number, checkFallback: boolean) {
+  function assertLocaterPaths(expectedPaths: string[][], actualLocaterPaths: ReadonlyArray<ISchemaLocater>, maxIndexToTest: number, checkFallback: boolean) {
     assert.equal(expectedPaths.length, actualLocaterPaths.length);
 
     for (let index = 1; index <= maxIndexToTest; ++index)

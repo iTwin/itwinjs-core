@@ -13,7 +13,7 @@ import { Schema } from "@itwin/ecschema-metadata";
 
 /**
  * Utility class to assist in creating serialized EC Schemas on the file system.
- * @beta
+ * @internal
  */
 export namespace SchemaXml {
 

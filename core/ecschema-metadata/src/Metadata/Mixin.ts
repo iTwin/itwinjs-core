@@ -22,12 +22,12 @@ import { SchemaItem } from "./SchemaItem";
 
 /**
  * A Typescript class representation of a Mixin.
- * @beta
+ * @public @preview
  */
 export class Mixin extends ECClass {
   public override readonly schemaItemType = Mixin.schemaItemType;
   public static override get schemaItemType() { return SchemaItemType.Mixin; }
-  protected _appliesTo?: LazyLoadedEntityClass;
+  private _appliesTo?: LazyLoadedEntityClass;
 
   public get appliesTo(): LazyLoadedEntityClass | undefined {
     return this._appliesTo;
@@ -42,21 +42,32 @@ export class Mixin extends ECClass {
    * @param name
    * @param relationship
    * @param direction
+   * @internal
    */
   protected async createNavigationProperty(name: string, relationship: string | RelationshipClass, direction: string | StrengthDirection): Promise<NavigationProperty> {
     return this.addProperty(await createNavigationProperty(this, name, relationship, direction));
   }
 
+  /**
+   *
+   * @param name
+   * @param relationship
+   * @param direction
+   * @returns
+   *
+   * @internal
+   */
   protected createNavigationPropertySync(name: string, relationship: string | RelationshipClass, direction: string | StrengthDirection): NavigationProperty {
     return this.addProperty(createNavigationPropertySync(this, name, relationship, direction));
   }
 
   /**
-   * @alpha Used for schema editing.
+   * @internal
    */
   protected setAppliesTo(appliesTo: LazyLoadedEntityClass) {
     this._appliesTo = appliesTo;
   }
+
   /**
    * Save this Mixin's properties to an object for serializing to JSON.
    * @param standalone Serialization includes only this object (as opposed to the full schema).

@@ -5,7 +5,7 @@
 import type { KindOfQuantityDifference, KindOfQuantityPresentationFormatDifference } from "../Differencing/SchemaDifference";
 import type { MutableKindOfQuantity } from "../Editing/Mutable/MutableKindOfQuantity";
 import type { SchemaMergeContext } from "./SchemaMerger";
-import { Format, InvertedUnit, OverrideFormat, SchemaItemKey, Unit } from "@itwin/ecschema-metadata";
+import { DelayedPromiseWithProps, Format, InvertedUnit, LazyLoadedInvertedUnit, LazyLoadedUnit, OverrideFormat, SchemaItemKey, Unit } from "@itwin/ecschema-metadata";
 import { updateSchemaItemFullName, updateSchemaItemKey } from "./Utils";
 
 /**
@@ -86,13 +86,16 @@ async function updateOverrideFormat(context: SchemaMergeContext, formatString: s
   if (undefined === match.precision && undefined === match.unitAndLabels)
     return format;
 
-  let unitAndLabels: Array<[Unit | InvertedUnit, string | undefined]> | undefined;
+  let unitAndLabels: Array<[LazyLoadedUnit | LazyLoadedInvertedUnit, string | undefined]> | undefined;
   if (undefined !== match.unitAndLabels) {
     unitAndLabels = [];
     for (const unitOverride of match.unitAndLabels) {
       const unitKey = await updateSchemaItemKey(context, unitOverride[0]);
       const unit = await context.targetSchema.lookupItem(unitKey) as Unit | InvertedUnit;
-      unitAndLabels.push([unit, unitOverride[1]]);
+      if(Unit.isUnit(unit))
+        unitAndLabels.push([new DelayedPromiseWithProps(unit.key, async () => unit), unitOverride[1]]);
+      else if(InvertedUnit.isInvertedUnit(unit))
+        unitAndLabels.push([new DelayedPromiseWithProps(unit.key, async () => unit), unitOverride[1]]);
     }
   }
   return context.editor.kindOfQuantities.createFormatOverride(formatKey, match.precision, unitAndLabels);

@@ -15,24 +15,24 @@ import { Schema } from "./Schema";
 
 /**
  * An abstract class that supplies all of the common parts of a SchemaItem.
- * @beta
+ * @public @preview
  */
 export abstract class SchemaItem {
   /**
    * Get the type of item represented by this class
-   * @beta
+   * @public @preview
    */
   public static get schemaItemType(): SupportedSchemaItemType { return AbstractSchemaItemType.SchemaItem }
 
   /**
    * Get the type of item represented by this instance
-   * @beta
+   * @public @preview
    */
   public abstract get schemaItemType(): SchemaItemType;
   public readonly schema: Schema;
-  protected _key: SchemaItemKey;
-  protected _description?: string;
-  protected _label?: string;
+  private _key: SchemaItemKey;
+  private _description?: string;
+  private _label?: string;
 
   constructor(schema: Schema, name: string) {
     this._key = new SchemaItemKey(name, schema.schemaKey);
@@ -150,33 +150,24 @@ export abstract class SchemaItem {
   /**
   * @internal
   */
-  public static isSchemaItem(object: any): object is SchemaItem {
-    const schemaItem = object as SchemaItem;
+  public static isSchemaItem(item: unknown): item is SchemaItem {
+    const schemaItem = item as Partial<SchemaItem>;
 
     return schemaItem !== undefined && schemaItem.key !== undefined && schemaItem.schema !== undefined
-             && schemaItem.schemaItemType !== undefined;
+      && schemaItem.schemaItemType !== undefined;
   }
 
-  /**
-   * @alpha
-   * Used for schema editing.
-   */
+  /** @internal */
   protected setName(name: string) {
     this._key = new SchemaItemKey(name, this.schema.schemaKey);
   }
 
-  /**
-   * @alpha
-   * Used for schema editing.
-   */
+  /** @internal */
   protected setDisplayLabel(displayLabel: string) {
     this._label = displayLabel;
   }
 
-  /**
-   * @alpha
-   * Used for schema editing.
-   */
+  /** @internal */
   protected setDescription(description: string) {
     this._description = description;
   }

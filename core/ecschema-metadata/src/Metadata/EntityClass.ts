@@ -21,14 +21,14 @@ import { SchemaItem } from "./SchemaItem";
 
 /**
  * A Typescript class representation of an ECEntityClass.
- * @beta
+ * @public @preview
  */
 export class EntityClass extends ECClass implements HasMixins {
   public override readonly schemaItemType = EntityClass.schemaItemType;
   public static override get schemaItemType() { return SchemaItemType.EntityClass; }
-  protected _mixins?: LazyLoadedMixin[];
+  private _mixins?: LazyLoadedMixin[];
 
-  public get mixins(): LazyLoadedMixin[] {
+  public get mixins(): ReadonlyArray<LazyLoadedMixin> {
     if (!this._mixins)
       return [];
     return this._mixins;
@@ -36,7 +36,7 @@ export class EntityClass extends ECClass implements HasMixins {
 
   public *getMixinsSync(): Iterable<Mixin> {
     if (!this._mixins)
-      return function* (): Iterable<Mixin> { }(); // empty iterable
+      return;
 
     for (const mixin of this._mixins) {
       const mObj = this.schema.lookupItemSync(mixin, Mixin);
@@ -49,6 +49,7 @@ export class EntityClass extends ECClass implements HasMixins {
   /**
    *
    * @param mixin
+   * @internal
    */
   protected addMixin(mixin: Mixin) {
     if (!this._mixins)
@@ -102,13 +103,19 @@ export class EntityClass extends ECClass implements HasMixins {
     return undefined;
   }
 
+  /**
+   *
+   * @param result
+   * @param existingValues
+   * @internal
+   */
   protected override async buildPropertyCache(result: Property[], existingValues?: Map<string, number>): Promise<void> {
     if (!existingValues) {
       existingValues = new Map<string, number>();
     }
 
     const baseClass = await this.baseClass;
-    if(baseClass) {
+    if (baseClass) {
       ECClass.mergeProperties(result, existingValues, await baseClass.getProperties(), false);
     }
 
@@ -121,6 +128,12 @@ export class EntityClass extends ECClass implements HasMixins {
     ECClass.mergeProperties(result, existingValues, localProps, true);
   }
 
+  /**
+   *
+   * @param result
+   * @param existingValues
+   * @internal
+   */
   protected override buildPropertyCacheSync(result: Property[], existingValues?: Map<string, number>): void {
     if (!existingValues) {
       existingValues = new Map<string, number>();
@@ -144,6 +157,7 @@ export class EntityClass extends ECClass implements HasMixins {
    * @param name
    * @param relationship
    * @param direction
+   * @internal
    */
   protected async createNavigationProperty(name: string, relationship: string | RelationshipClass, direction: string | StrengthDirection): Promise<NavigationProperty> {
     return this.addProperty(await createNavigationProperty(this, name, relationship, direction));
@@ -154,6 +168,7 @@ export class EntityClass extends ECClass implements HasMixins {
    * @param name
    * @param relationship
    * @param direction
+   * @internal
    */
   protected createNavigationPropertySync(name: string, relationship: string | RelationshipClass, direction: string | StrengthDirection): NavigationProperty {
     return this.addProperty(createNavigationPropertySync(this, name, relationship, direction));
@@ -175,7 +190,8 @@ export class EntityClass extends ECClass implements HasMixins {
   public override async toXml(schemaXml: Document): Promise<Element> {
     const itemElement = await super.toXml(schemaXml);
 
-    for (const mixin of this.getMixinsSync()) {
+    for (const lazyMixin of this.mixins) {
+      const mixin = await lazyMixin;
       const mixinElement = schemaXml.createElement("BaseClass");
       const mixinName = XmlSerializationUtils.createXmlTypedName(this.schema, mixin.schema, mixin.name);
       mixinElement.textContent = mixinName;
@@ -225,9 +241,10 @@ export class EntityClass extends ECClass implements HasMixins {
    * Type assertion to check if the SchemaItem is of type EntityClass.
    * @param item The SchemaItem to check.
    * @returns The item cast to EntityClass if it is an EntityClass, undefined otherwise.
+   * @internal
    */
   public static assertIsEntityClass(item?: SchemaItem): asserts item is EntityClass {
-    if(!this.isEntityClass(item))
+    if (!this.isEntityClass(item))
       throw new ECObjectsError(ECObjectsStatus.InvalidSchemaItemType, `Expected '${SchemaItemType.EntityClass}' (EntityClass)`);
   }
 }

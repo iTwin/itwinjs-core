@@ -19,15 +19,15 @@ import { SchemaItem } from "./SchemaItem";
 
 /**
  * A Constant is a specific type of Unit that represents a number.
- * @beta
+ * @public @preview
  */
 export class Constant extends SchemaItem {
   public override readonly schemaItemType = Constant.schemaItemType;
   public static override get schemaItemType() { return SchemaItemType.Constant; }
-  protected _phenomenon?: LazyLoadedPhenomenon;
-  protected _definition: string;
-  protected _numerator?: number;
-  protected _denominator?: number;
+  private _phenomenon?: LazyLoadedPhenomenon;
+  private _definition: string;
+  private _numerator?: number;
+  private _denominator?: number;
 
   constructor(schema: Schema, name: string) {
     super(schema, name);
@@ -111,29 +111,29 @@ export class Constant extends SchemaItem {
   }
 
   /**
-   * @alpha Used in schema editing.
    * @param phenomenon A LazyLoadedPhenomenon.
+   * @internal
    */
   protected setPhenomenon(phenomenon: LazyLoadedPhenomenon) {
     this._phenomenon = phenomenon;
   }
 
   /**
-   * @alpha Used in schema editing.
+   * @internal
    */
   protected setDefinition(definition: string) {
     this._definition = definition;
   }
 
   /**
-   * @alpha Used in schema editing.
+   * @internal
    */
   protected setNumerator(numerator: number) {
     this._numerator = numerator;
   }
 
   /**
-   * @alpha Used in schema editing.
+   * @internal
    */
   protected setDenominator(denominator: number) {
     this._denominator = denominator;

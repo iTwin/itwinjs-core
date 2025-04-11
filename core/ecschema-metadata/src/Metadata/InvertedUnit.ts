@@ -19,22 +19,27 @@ import { UnitSystem } from "./UnitSystem";
 
 /**
  * An InvertedUnit is a specific type of Unit that describes the inverse of a single Unit whose dimensional derivation is unit-less.
- * @beta
+ * @public @preview
  */
 export class InvertedUnit extends SchemaItem {
   public override readonly schemaItemType = InvertedUnit.schemaItemType;
   public static override get schemaItemType() { return SchemaItemType.InvertedUnit; }
-  protected _invertsUnit?: LazyLoadedUnit; // required
-  protected _unitSystem?: LazyLoadedUnitSystem; // required
+  private _invertsUnit?: LazyLoadedUnit; // required
+  private _unitSystem?: LazyLoadedUnitSystem; // required
 
   public get invertsUnit(): LazyLoadedUnit | undefined { return this._invertsUnit; }
   public get unitSystem(): LazyLoadedUnitSystem | undefined { return this._unitSystem; }
 
   /**
-   * @alpha
+   * Type guard to check if the SchemaItem is of type InvertedUnit.
+   * @param item The SchemaItem to check.
+   * @returns True if the item is a InvertedUnit, false otherwise.
    */
-  public static isInvertedUnit(object: any): object is InvertedUnit {
-    return SchemaItem.isSchemaItem(object) && object.schemaItemType === SchemaItemType.InvertedUnit;
+  public static isInvertedUnit(item?: SchemaItem): item is InvertedUnit {
+    if (item && item.schemaItemType === SchemaItemType.InvertedUnit)
+      return true;
+
+    return false;
   }
 
   /**
@@ -43,7 +48,7 @@ export class InvertedUnit extends SchemaItem {
    * @returns The item cast to InvertedUnit if it is an InvertedUnit, undefined otherwise.
    */
   public static assertIsInvertedUnit(item?: SchemaItem): asserts item is InvertedUnit {
-    if(!this.isInvertedUnit(item))
+    if (!this.isInvertedUnit(item))
       throw new ECObjectsError(ECObjectsStatus.InvalidSchemaItemType, `Expected '${SchemaItemType.InvertedUnit}' (InvertedUnit)`);
   }
 
@@ -106,7 +111,7 @@ export class InvertedUnit extends SchemaItem {
   }
 
   /**
-   * @alpha
+   * @internal
    * Used for schema editing
    */
   protected setInvertsUnit(invertsUnit: LazyLoadedUnit) {
@@ -114,7 +119,7 @@ export class InvertedUnit extends SchemaItem {
   }
 
   /**
-   * @alpha
+   * @internal
    * Used for schema editing
    */
   protected setUnitSystem(unitSystem: LazyLoadedUnitSystem) {

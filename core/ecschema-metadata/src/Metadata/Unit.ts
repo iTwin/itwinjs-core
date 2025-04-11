@@ -21,17 +21,17 @@ import { UnitSystem } from "./UnitSystem";
 /**
  * An abstract class that adds the ability to define Units and everything that goes with them, within an ECSchema as a
  * first-class concept is to allow the iModel to not be dependent on any hard-coded Units
- * @beta
+ * @public @preview
  */
 export class Unit extends SchemaItem {
   public override readonly schemaItemType = Unit.schemaItemType;
   public static override get schemaItemType() { return SchemaItemType.Unit; }
-  protected _phenomenon?: LazyLoadedPhenomenon;
-  protected _unitSystem?: LazyLoadedUnitSystem;
-  protected _definition: string;
-  protected _numerator?: number;
-  protected _denominator?: number;
-  protected _offset?: number;
+  private _phenomenon?: LazyLoadedPhenomenon;
+  private _unitSystem?: LazyLoadedUnitSystem;
+  private _definition: string;
+  private _numerator?: number;
+  private _denominator?: number;
+  private _offset?: number;
 
   constructor(schema: Schema, name: string) {
     super(schema, name);
@@ -62,10 +62,15 @@ export class Unit extends SchemaItem {
   }
 
   /**
-   * @alpha
+   * Type guard to check if the SchemaItem is of type Unit.
+   * @param item The SchemaItem to check.
+   * @returns True if the item is a Unit, false otherwise.
    */
-  public static isUnit(object: any): object is Unit {
-    return SchemaItem.isSchemaItem(object) && object.schemaItemType === SchemaItemType.Unit;
+  public static isUnit(item?: SchemaItem): item is Unit {
+    if (item && item.schemaItemType === SchemaItemType.Unit)
+      return true;
+
+    return false;
   }
 
   /**
@@ -164,26 +169,17 @@ export class Unit extends SchemaItem {
     this.fromJSONSync(unitProps);
   }
 
-  /**
-   * @alpha
-   * Used for schema editing.
-   */
+  /** @internal */
   protected async setPhenomenon(phenomenon: LazyLoadedPhenomenon) {
     this._phenomenon = phenomenon;
   }
 
-  /**
-   * @alpha
-   * Used for schema editing.
-   */
+  /** @internal */
   protected async setUnitSystem(unitSystem: LazyLoadedUnitSystem) {
     this._unitSystem = unitSystem;
   }
 
-  /**
-   * @alpha
-   * Used for schema editing.
-   */
+  /** @internal */
   protected async setDefinition(definition: string) {
     this._definition = definition;
   }
@@ -192,9 +188,10 @@ export class Unit extends SchemaItem {
    * Type assertion to check if the SchemaItem is of type Unit.
    * @param item The SchemaItem to check.
    * @returns The item cast to Unit if it is a Unit, undefined otherwise.
+   * @internal
    */
   public static assertIsUnit(item?: SchemaItem): asserts item is Unit {
-    if(!this.isUnit(item))
+    if (!this.isUnit(item))
       throw new ECObjectsError(ECObjectsStatus.InvalidSchemaItemType, `Expected '${SchemaItemType.Unit}' (Unit)`);
   }
 }

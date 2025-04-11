@@ -10,7 +10,7 @@ import { Id64, Id64String } from "@itwin/core-bentley";
 import { EntityProps, EntityReferenceSet, PropertyCallback, PropertyMetaData } from "@itwin/core-common";
 import type { IModelDb } from "./IModelDb";
 import { Schema } from "./Schema";
-import { EntityClass, PropertyHandler, SchemaItemKey } from "@itwin/ecschema-metadata";
+import { EntityClass, Property, SchemaItemKey } from "@itwin/ecschema-metadata";
 
 /** Represents one of the fundamental building block in an [[IModelDb]]: as an [[Element]], [[Model]], or [[Relationship]].
  * Every subclass of Entity represents one BIS [ECClass]($ecschema-metadata).
@@ -35,7 +35,7 @@ export class Entity {
   public static get className(): string { return "Entity"; }
 
   /** Serves as a unique identifier for this class. Typed variant of [[classFullName]].
-   * @beta
+   * @public @preview
    */
   public static get schemaItemKey(): SchemaItemKey {
     // We cannot cache this here because the className gets overridden in subclasses
@@ -148,21 +148,21 @@ export class Entity {
   public get classFullName(): string { return this._ctor.classFullName; }
   /**
    * Get the item key used by the ecschema-metadata package to identify this entity class
-   * @beta
+   * @public @preview
    */
   public get schemaItemKey(): SchemaItemKey { return this._ctor.schemaItemKey; }
 
   /** query metadata for this entity class from the iModel's schema
    * @throws [[IModelError]] if there is a problem querying the schema
    * @returns The metadata for the current entity
-   * @beta
+   * @public @preview
    */
   public async getMetaData(): Promise<EntityClass> {
     if (!this._metadata) {
       this._metadata = await this.iModel.schemaContext.getSchemaItem(this.schemaItemKey, EntityClass);
     }
 
-    if(!this._metadata) {
+    if (!this._metadata) {
       throw new Error(`Cannot get metadata for ${this.classFullName}`);
     }
 
@@ -214,6 +214,11 @@ export class Entity {
     return; // no references by default
   }
 }
+
+/** A callback function to process properties of an Entity
+ * @public @preview
+ */
+export type PropertyHandler = (name: string, property: Property) => void;
 
 /** Parameter type that can accept both abstract constructor types and non-abstract constructor types for `instanceof` to test.
  * @public

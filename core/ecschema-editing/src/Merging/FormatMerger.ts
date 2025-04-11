@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { InvertedUnit, SchemaItemKey, Unit } from "@itwin/ecschema-metadata";
+import { DelayedPromiseWithProps, InvertedUnit, LazyLoadedInvertedUnit, LazyLoadedUnit, SchemaItemKey, Unit } from "@itwin/ecschema-metadata";
 import { FormatTraits, parseFormatTrait, parseScientificType, parseShowSignOption } from "@itwin/core-quantity";
 import { FormatDifference, FormatUnitDifference, FormatUnitLabelDifference } from "../Differencing/SchemaDifference";
 import { MutableFormat } from "../Editing/Mutable/MutableFormat";
@@ -106,14 +106,16 @@ export async function modifyFormat(context: SchemaMergeContext, change: FormatDi
 export async function modifyFormatUnit(context: SchemaMergeContext, change: FormatUnitDifference, itemKey: SchemaItemKey) {
   const format = await context.targetSchema.lookupItem(itemKey) as MutableFormat;
 
-  const units: [Unit | InvertedUnit, string | undefined][] = [];
+  const units: [LazyLoadedUnit | LazyLoadedInvertedUnit, string | undefined][] = [];
   for (const { name, label } of change.difference) {
     const lookupKey = await updateSchemaItemKey(context, name);
     const formatUnit = await context.editor.schemaContext.getSchemaItem(lookupKey);
-    if (formatUnit === undefined || (!Unit.isUnit(formatUnit) && !InvertedUnit.isInvertedUnit(formatUnit))) {
+    if (Unit.isUnit(formatUnit))
+      units.push([new DelayedPromiseWithProps(formatUnit.key, async () => formatUnit), label]);
+    else if (InvertedUnit.isInvertedUnit(formatUnit))
+      units.push([new DelayedPromiseWithProps(formatUnit.key, async () => formatUnit), label]);
+    else
       throw new Error(`Could not find format unit ${lookupKey.fullName} in the current context`);
-    }
-    units.push([formatUnit, label]);
   }
   format.setUnits(units);
 }
@@ -129,7 +131,7 @@ export async function modifyFormatUnitLabel(context: SchemaMergeContext, change:
     const unitKey = await updateSchemaItemKey(context, change.path);
     /* eslint-disable @typescript-eslint/prefer-for-of */
     for (let index = 0; index < format.units.length; index++) {
-      if (format.units[index][0].key.matches(unitKey)) {
+      if (format.units[index][0].matches(unitKey)) {
         format.units[index][1] = change.difference.label;
       }
     }
