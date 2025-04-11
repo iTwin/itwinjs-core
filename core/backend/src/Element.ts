@@ -143,6 +143,7 @@ export class Element extends Entity {
     this.jsonProperties = { ...props.jsonProperties }; // make sure we have our own copy
   }
 
+  /** @internal */
   protected static override readonly _customHandledProps: CustomHandledProperty[] = [
     { propertyName: "codeValue", source: "Class" },
     { propertyName: "codeSpec", source: "Class" },
@@ -153,7 +154,7 @@ export class Element extends Entity {
     { propertyName: "lastMod", source: "Class" },
   ];
 
-
+  /** @internal */
   public static override deserialize(props: InstanceProps): ElementProps {
     const elProps = super.deserialize(props) as ElementProps;
     const instance = props.row;
@@ -167,6 +168,7 @@ export class Element extends Entity {
     return elProps;
   }
 
+  /** @internal */
   public static override serialize(props: ElementProps, iModel: IModelDb): ECSqlRow {
     const inst = super.serialize(props, iModel);
     inst.codeValue = props.code.value;
@@ -561,14 +563,17 @@ export abstract class GeometricElement extends Element {
     category: ConcreteEntityTypes.Element,
   };
 
+  /** @internal */
   protected static override readonly _customHandledProps: CustomHandledProperty[] = [
     { propertyName: "inSpatialIndex", source: "Class" },
   ];
 
+  /** @internal */
   public static override deserialize(props: InstanceProps): GeometricElementProps {
     return super.deserialize(props) as GeometricElementProps;
   }
 
+  /** @internal */
   public static override serialize(props: GeometricElementProps, iModel: IModelDb): ECSqlRow {
     return super.serialize(props, iModel);
   }
@@ -605,7 +610,7 @@ export abstract class GeometricElement3d extends GeometricElement {
       referenceIds.addElement(this.typeDefinition.id);
   }
 
-
+  /** @internal */
   protected static override readonly _customHandledProps: CustomHandledProperty[] = [
     { propertyName: "category", source: "Class" },
     { propertyName: "geometryStream", source: "Class" },
@@ -618,7 +623,7 @@ export abstract class GeometricElement3d extends GeometricElement {
     { propertyName: "typeDefinition", source: "Class" }
   ];
 
-
+  /** @internal */
   public static override deserialize(props: InstanceProps): GeometricElement3dProps {
     const elProps = super.deserialize(props) as GeometricElement3dProps;
     const instance = props.row;
@@ -659,6 +664,7 @@ export abstract class GeometricElement3d extends GeometricElement {
     return elProps;
   }
 
+  /** @internal */
   public static override serialize(props: GeometricElement3dProps, iModel: IModelDb): ECSqlRow {
     const inst = super.serialize(props, iModel);
     inst.category = { id: props.category };
@@ -756,6 +762,7 @@ export abstract class GeometricElement2d extends GeometricElement {
     return val;
   }
 
+  /** @internal */
   protected static override readonly _customHandledProps: CustomHandledProperty[] = [
     { propertyName: "category", source: "Class" },
     { propertyName: "geometryStream", source: "Class" },
@@ -766,6 +773,7 @@ export abstract class GeometricElement2d extends GeometricElement {
     { propertyName: "typeDefinition", source: "Class" }
   ];
 
+  /** @internal */
   public static override deserialize(props: InstanceProps): GeometricElement2dProps {
     const elProps = super.deserialize(props) as GeometricElement2dProps;
     const instance = props.row;
@@ -804,6 +812,7 @@ export abstract class GeometricElement2d extends GeometricElement {
     return elProps;
   }
 
+  /** @internal */
   public static override serialize(props: GeometricElement2dProps, iModel: IModelDb): ECSqlRow {
     const inst = super.serialize(props, iModel);
     inst.category = { id: props.category };
@@ -1311,10 +1320,12 @@ export abstract class DefinitionElement extends InformationContentElement {
     this.isPrivate = true === props.isPrivate;
   }
 
+  /** @internal */
   protected static override readonly _customHandledProps: CustomHandledProperty[] = [
     { propertyName: "isPrivate", source: "Class" },
   ];
 
+  /** @internal */
   public static override deserialize(props: InstanceProps): DefinitionElementProps {
     const elProps = super.deserialize(props) as DefinitionElementProps;
     if (props.row.isPrivate !== undefined) {
@@ -1323,6 +1334,7 @@ export abstract class DefinitionElement extends InformationContentElement {
     return elProps;
   }
 
+  /** @internal */
   public static override serialize(props: DefinitionElementProps, iModel: IModelDb): ECSqlRow {
     const inst = super.serialize(props, iModel);
     if (undefined !== props.isPrivate) {
@@ -1830,12 +1842,15 @@ export class GeometryPart extends DefinitionElement {
     this.geom = props.geom;
     this.bbox = Range3d.fromJSON(props.bbox);
   }
+
+  /** @internal */
   protected static override readonly _customHandledProps: CustomHandledProperty[] = [
     { propertyName: "geometryStream", source: "Class" },
     { propertyName: "bBoxLow", source: "Class" },
     { propertyName: "bBoxHigh", source: "Class" },
   ];
 
+  /** @internal */
   public static override deserialize(props: InstanceProps): GeometryPartProps {
     const elProps = super.deserialize(props) as GeometryPartProps;
     const instance = props.row;
@@ -1858,6 +1873,7 @@ export class GeometryPart extends DefinitionElement {
     return elProps;
   }
 
+  /** @internal */
   public static override serialize(props: GeometryPartProps, iModel: IModelDb): ECSqlRow {
     const inst = super.serialize(props, iModel);
 

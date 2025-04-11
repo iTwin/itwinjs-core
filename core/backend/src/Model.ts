@@ -86,6 +86,7 @@ export class Model extends Entity {
     this.jsonProperties = { ...props.jsonProperties }; // make sure we have our own copy
   }
 
+  /** @internal */
   public static override deserialize(props: InstanceProps): ModelProps {
     const instance = props.row;
     const modelProps = super.deserialize(props) as ModelProps;
@@ -101,6 +102,7 @@ export class Model extends Entity {
     return modelProps;
   }
 
+  /** @internal */
   public static override serialize(props: ModelProps, _iModel: IModelDb): ECSqlRow {
     const inst = super.serialize(props, _iModel);
     return inst;
