@@ -27,7 +27,7 @@ import { UnitSystem } from "./Metadata/UnitSystem";
 /**
  * Interface to allow schema traversal/deserialization workflows to visit
  * each part, item, class, etc. that exists in a given schema.
- * @beta
+ * @public @preview
  */
 export interface ISchemaPartVisitor {
   /**
@@ -293,7 +293,7 @@ function isCustomAttributeContainer(object: any): object is CustomAttributeConta
 
 /**
  * A helper class to call methods on the provided [[ISchemaPartVisitor]].
- * @beta
+ * @public @preview
  */
 export class SchemaPartVisitorDelegate {
   private _visitor: ISchemaPartVisitor;

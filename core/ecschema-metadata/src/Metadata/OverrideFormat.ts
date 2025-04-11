@@ -18,7 +18,7 @@ import { Mutable } from "@itwin/core-bentley";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
 
 /**
- * @beta
+ * @public @preview
  */
 export interface OverrideFormatProps {
   name: string;
@@ -28,7 +28,7 @@ export interface OverrideFormatProps {
 
 /**
  * Overrides of a Format, from a Schema, and is SchemaItem that is used specifically on KindOfQuantity.
- * @beta
+ * @public @preview
  */
 export class OverrideFormat {
   private _precision?: DecimalPrecision | FractionalPrecision;
@@ -182,8 +182,8 @@ export class OverrideFormat {
   /**
    * @internal
    */
-  public static isOverrideFormat(object: any): object is OverrideFormat {
-    const overrideFormat = object as OverrideFormat;
+  public static isOverrideFormat(format: unknown): format is OverrideFormat {
+    const overrideFormat = format as Partial<OverrideFormat>;
 
     return overrideFormat !== undefined && overrideFormat.name !== undefined && overrideFormat.parent !== undefined && overrideFormat.parent.schemaItemType === SchemaItemType.Format;
   }

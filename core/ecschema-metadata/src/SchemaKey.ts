@@ -12,7 +12,7 @@ import { ECObjectsError, ECObjectsStatus } from "./Exception";
 import { ECName } from "./ECName";
 
 /**
- * @beta
+ * @public @preview
  */
 export class ECVersion {
   private _read: number = 0;
@@ -101,11 +101,11 @@ export class ECVersion {
 
 /**
  * The SchemaKey contains a Schemas name and version.
- * @beta
+ * @public @preview
  */
 export class SchemaKey {
   private _name: ECName;
-  protected _version: ECVersion;
+  private _version: ECVersion;
   // public checksum: number;
   // TODO: need to add a checksum
 
@@ -223,11 +223,11 @@ export class SchemaKey {
 
 /**
  * The SchemaItemKey contains a SchemaItem's name and SchemaKey.
- * @beta
+ * @public @preview
  */
 export class SchemaItemKey {
   private _name: ECName;
-  protected _schemaKey: SchemaKey;
+  private _schemaKey: SchemaKey;
 
   constructor(name: string, schema: SchemaKey) {
     this._name = new ECName(name);

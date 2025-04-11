@@ -16,12 +16,12 @@ import { SchemaItem } from "./SchemaItem";
 
 /**
  * A Typescript class representation of an ECCustomAttributeClass.
- * @beta
+ * @public @preview
  */
 export class CustomAttributeClass extends ECClass {
   public override readonly schemaItemType = CustomAttributeClass.schemaItemType;
   public static override get schemaItemType() { return SchemaItemType.CustomAttributeClass; }
-  protected _appliesTo?: CustomAttributeContainerType;
+  private _appliesTo?: CustomAttributeContainerType;
 
   /**
    * @deprecated in 4.8 use [[appliesTo]]
@@ -67,7 +67,7 @@ export class CustomAttributeClass extends ECClass {
   }
 
   /**
-   * @alpha Used in schema editing.
+   * @internal
    */
   protected setAppliesTo(containerType: CustomAttributeContainerType) {
     this._appliesTo = containerType;

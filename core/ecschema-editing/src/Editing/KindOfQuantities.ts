@@ -36,11 +36,11 @@ export class KindOfQuantities extends SchemaItems {
         throw new SchemaEditingError(ECEditingStatus.SchemaItemNotFound, new SchemaItemId(SchemaItemType.Unit, persistenceUnitKey));
 
       if (Unit.isUnit(persistenceUnit)) {
-        koqItem.persistenceUnit = new DelayedPromiseWithProps(persistenceUnit.key, async () => persistenceUnit);
+        koqItem.setPersistenceUnit(new DelayedPromiseWithProps(persistenceUnit.key, async () => persistenceUnit));
       }
 
       if (InvertedUnit.isInvertedUnit(persistenceUnit)) {
-        koqItem.persistenceUnit = new DelayedPromiseWithProps(persistenceUnit.key, async () => persistenceUnit);
+        koqItem.setPersistenceUnit(new DelayedPromiseWithProps(persistenceUnit.key, async () => persistenceUnit));
       }
 
       if (displayLabel !== undefined) {

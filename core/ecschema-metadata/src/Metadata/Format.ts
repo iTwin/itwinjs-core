@@ -20,13 +20,13 @@ import { SchemaItem } from "./SchemaItem";
 import { Unit } from "./Unit";
 
 /**
- * @beta
+ * @public @preview
  */
 export class Format extends SchemaItem {
   public override readonly schemaItemType = Format.schemaItemType;
   public static override get schemaItemType() { return SchemaItemType.Format; }
-  protected _base: BaseFormat;
-  protected _units?: Array<[Unit | InvertedUnit, string | undefined]>;
+  private _base: BaseFormat;
+  private _units?: Array<[Unit | InvertedUnit, string | undefined]>;
 
   constructor(schema: Schema, name: string) {
     super(schema, name);
@@ -47,7 +47,7 @@ export class Format extends SchemaItem {
   public get formatTraits(): FormatTraits { return this._base.formatTraits; }
   public get spacer(): string | undefined { return this._base.spacer; }
   public get includeZero(): boolean | undefined { return this._base.includeZero; }
-  public get units(): Array<[Unit | InvertedUnit, string | undefined]> | undefined { return this._units; }
+  public get units(): ReadonlyArray<[Unit | InvertedUnit, string | undefined]> | undefined { return this._units; }
 
   private parseFormatTraits(formatTraitsFromJson: string | string[]) {
     return this._base.parseFormatTraits(formatTraitsFromJson);
@@ -61,6 +61,7 @@ export class Format extends SchemaItem {
    * Adds a Unit, or InvertedUnit, with an optional label override.
    * @param unit The Unit, or InvertedUnit, to add to this Format.
    * @param label A label that overrides the label defined within the Unit when a value is formatted.
+   * @internal
    */
   protected addUnit(unit: Unit | InvertedUnit, label?: string) {
     if (undefined === this._units)
@@ -75,6 +76,11 @@ export class Format extends SchemaItem {
     this._units.push([unit, label]);
   }
 
+  /**
+   *
+   * @param precision
+   * @internal
+   */
   protected setPrecision(precision: number) { this._base.precision = precision; }
 
   private typecheck(formatProps: SchemaItemFormatProps) {
@@ -234,98 +240,98 @@ export class Format extends SchemaItem {
   }
 
   /**
-   * @alpha Used in schema editing.
+   * @internal
    */
   protected setFormatType(formatType: FormatType) {
     this._base.type = formatType;
   }
 
   /**
-   * @alpha Used in schema editing.
+   * @internal
    */
   protected setRoundFactor(roundFactor: number) {
     this._base.roundFactor = roundFactor;
   }
 
   /**
-   * @alpha Used in schema editing.
+   * @internal
    */
   protected setShowSignOption(signOption: ShowSignOption) {
     this._base.showSignOption = signOption;
   }
 
   /**
-   * @alpha Used in schema editing.
+   * @internal
    */
   protected setDecimalSeparator(separator: string) {
     this._base.decimalSeparator = separator;
   }
 
   /**
-   * @alpha Used in schema editing.
+   * @internal
    */
   protected setThousandSeparator(separator: string) {
     this._base.thousandSeparator = separator;
   }
 
   /**
-   * @alpha Used in schema editing.
+   * @internal
    */
   protected setUomSeparator(separator: string) {
     this._base.uomSeparator = separator;
   }
 
   /**
-   * @alpha Used in schema editing.
+   * @internal
    */
   protected setStationSeparator(separator: string) {
     this._base.stationSeparator = separator;
   }
 
   /**
-   * @alpha Used in schema editing.
+   * @internal
    */
   protected setStationOffsetSize(stationOffsetSize: number) {
     this._base.stationOffsetSize = stationOffsetSize;
   }
 
   /**
-   * @alpha Used in schema editing.
+   * @internal
    */
   protected setScientificType(scientificType: ScientificType) {
     this._base.scientificType = scientificType;
   }
 
   /**
-   * @alpha Used in schema editing.
+   * @internal
    */
   protected setMinWidth(minWidth: number) {
     this._base.minWidth = minWidth;
   }
 
   /**
-   * @alpha Used in schema editing.
+   * @internal
    */
   protected setSpacer(spacer: string) {
     this._base.spacer = spacer;
   }
 
   /**
-   * @alpha Used in schema editing.
+   * @internal
    */
   protected setIncludeZero(includeZero: boolean) {
     this._base.includeZero = includeZero;
   }
 
   /**
-   * @alpha Used in schema editing.
+   * @internal
    */
   protected setFormatTraits(formatTraits: FormatTraits) {
     this._base.formatTraits = formatTraits;
   }
 
   /**
-   * @alpha Used in schema editing.
+   * @internal
    */
   protected setUnits(units: Array<[Unit | InvertedUnit, string | undefined]>) {
     this._units = units;
@@ -336,16 +342,17 @@ export class Format extends SchemaItem {
    * @returns True if the item is a Format, false otherwise.
    */
   public static isFormat(item?: SchemaItem): item is Format {
-  if (item && item.schemaItemType === SchemaItemType.Format)
-    return true;
+    if (item && item.schemaItemType === SchemaItemType.Format)
+      return true;
 
-  return false;
+    return false;
   }
 
   /**
    * Type assertion to check if the SchemaItem is of type Format.
    * @param item The SchemaItem to check.
    * @returns The item cast to Format if it is a Format, undefined otherwise.
+   * @internal
    */
   public static assertIsFormat(item?: SchemaItem): asserts item is Format {
     if (!this.isFormat(item))

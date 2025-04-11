@@ -12,7 +12,7 @@ import { Schema, SchemaContext, SchemaKey, SchemaMatchType } from "@itwin/ecsche
  * A SchemaKey implementation that aids in identifying Schema strings via the
  * addition of the schemaText property. The schemaText is the full XML string
  * representation of the Schema.
- * @beta
+ * @public @preview
  */
 export class StringSchemaKey extends SchemaKey {
   // The text for the schema loaded
@@ -31,7 +31,7 @@ export class StringSchemaKey extends SchemaKey {
 
 /**
  * Abstract class to hold common/overlapping functionality between SchemaJsonStringLocater and SchemaXmlStringLocater
- * @beta
+ * @public @preview
  */
 export abstract class SchemaStringLocater {
   public schemaStrings: string[];

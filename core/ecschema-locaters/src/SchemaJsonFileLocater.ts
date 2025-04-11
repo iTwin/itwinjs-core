@@ -16,7 +16,7 @@ import { FileSchemaKey, SchemaFileLocater } from "./SchemaFileLocater";
 /**
  * A SchemaLocator implementation for locating JSON Schema files
  * from the file system using configurable search paths.
- * @beta
+ * @public @preview
  */
 export class SchemaJsonFileLocater extends SchemaFileLocater implements ISchemaLocater {
 

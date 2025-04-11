@@ -19,14 +19,14 @@ import { SchemaItem } from "./SchemaItem";
 import { Unit } from "./Unit";
 
 /** A Typescript class representation of a KindOfQuantity.
- * @beta
+ * @public @preview
  */
 export class KindOfQuantity extends SchemaItem {
   public override readonly schemaItemType = KindOfQuantity.schemaItemType;
   public static override get schemaItemType() { return SchemaItemType.KindOfQuantity; }
-  protected _relativeError: number = 1.0;
-  protected _presentationFormats: Array<Format | OverrideFormat> = new Array<Format | OverrideFormat>();
-  protected _persistenceUnit?: LazyLoadedUnit | LazyLoadedInvertedUnit;
+  private _relativeError: number = 1.0;
+  private _presentationFormats: Array<Format | OverrideFormat> = new Array<Format | OverrideFormat>();
+  private _persistenceUnit?: LazyLoadedUnit | LazyLoadedInvertedUnit;
 
   /** The first presentation format in the list of Formats. */
   public get defaultPresentationFormat(): Format | OverrideFormat | undefined { return this.presentationFormats[0]; }
@@ -34,8 +34,8 @@ export class KindOfQuantity extends SchemaItem {
   /** A list of presentation formats. */
   public get presentationFormats(): Array<Format | OverrideFormat> { return this._presentationFormats; }
 
+  /** Persistence unit */
   public get persistenceUnit(): LazyLoadedUnit | LazyLoadedInvertedUnit | undefined { return this._persistenceUnit; }
-  protected set persistenceUnit(value: LazyLoadedUnit | LazyLoadedInvertedUnit | undefined) { this._persistenceUnit = value; }
 
   public get relativeError() { return this._relativeError; }
 
@@ -43,6 +43,7 @@ export class KindOfQuantity extends SchemaItem {
    *
    * @param format The Format to add to this KindOfQuantity
    * @param isDefault
+   * @internal
    */
   protected addPresentationFormat(format: Format | OverrideFormat, isDefault: boolean = false) {
     // TODO: Add some sort of validation?
@@ -53,6 +54,7 @@ export class KindOfQuantity extends SchemaItem {
    * @param parent The Format to override.
    * @param precision The precision override
    * @param unitLabelOverrides The list of unit and label overrides.
+   * @internal
    */
   protected createFormatOverride(parent: Format, precision?: number, unitLabelOverrides?: Array<[Unit | InvertedUnit, string | undefined]>): OverrideFormat {
     if (unitLabelOverrides && parent.units && parent.units.length !== unitLabelOverrides.length)
@@ -95,7 +97,7 @@ export class KindOfQuantity extends SchemaItem {
         }
       }
 
-      const overrideFormat: OverrideFormat = this.createFormatOverride(format, presFormatOverride.precision, unitAndLabels);
+      const overrideFormat = this.createFormatOverride(format, presFormatOverride.precision, unitAndLabels);
       this.addPresentationFormat(overrideFormat);
     }
   }
@@ -129,7 +131,7 @@ export class KindOfQuantity extends SchemaItem {
         }
       }
 
-      const overrideFormat: OverrideFormat = this.createFormatOverride(format, presFormatOverride.precision, unitAndLabels);
+      const overrideFormat = this.createFormatOverride(format, presFormatOverride.precision, unitAndLabels);
       this.addPresentationFormat(overrideFormat);
     }
   }
@@ -182,7 +184,7 @@ export class KindOfQuantity extends SchemaItem {
     if (!Unit.isUnit(persistenceUnit) && !InvertedUnit.isInvertedUnit(persistenceUnit))
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The item ${kindOfQuantityProps.persistenceUnit} is not a Unit or InvertedUnit.`);
 
-    if(Unit.isUnit(persistenceUnit))
+    if (Unit.isUnit(persistenceUnit))
       this._persistenceUnit = new DelayedPromiseWithProps(persistenceUnit.key, async () => persistenceUnit);
     else
       this._persistenceUnit = new DelayedPromiseWithProps(persistenceUnit.key, async () => persistenceUnit);
@@ -202,7 +204,7 @@ export class KindOfQuantity extends SchemaItem {
     if (!Unit.isUnit(persistenceUnit) && !InvertedUnit.isInvertedUnit(persistenceUnit))
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The item ${kindOfQuantityProps.persistenceUnit} is not a Unit or InvertedUnit.`);
 
-    if(Unit.isUnit(persistenceUnit))
+    if (Unit.isUnit(persistenceUnit))
       this._persistenceUnit = new DelayedPromiseWithProps(persistenceUnit.key, async () => persistenceUnit);
     else
       this._persistenceUnit = new DelayedPromiseWithProps(persistenceUnit.key, async () => persistenceUnit);
@@ -213,11 +215,19 @@ export class KindOfQuantity extends SchemaItem {
   }
 
   /**
-   * @alpha
    * Used for schema editing.
+   * @internal
    */
   protected setRelativeError(relativeError: number): void {
     this._relativeError = relativeError;
+  }
+
+  /**
+   * Used for schema editing.
+   * @internal
+   */
+  protected setPersistenceUnit(value: LazyLoadedUnit | LazyLoadedInvertedUnit | undefined): void {
+    this._persistenceUnit = value;
   }
 
   /**
@@ -226,7 +236,10 @@ export class KindOfQuantity extends SchemaItem {
    * @returns True if the item is a KindOfQuantity, false otherwise.
    */
   public static isKindOfQuantity(item?: SchemaItem): item is KindOfQuantity {
-    return item?.schemaItemType === SchemaItemType.KindOfQuantity;
+    if (item && item.schemaItemType === SchemaItemType.KindOfQuantity)
+      return true;
+
+    return false;
   }
 
   /**
@@ -247,4 +260,6 @@ export abstract class MutableKindOfQuantity extends KindOfQuantity {
   public abstract override addPresentationFormat(format: Format | OverrideFormat, isDefault: boolean): void;
   public abstract override createFormatOverride(parent: Format, precision?: number, unitLabelOverrides?: Array<[Unit | InvertedUnit, string | undefined]>): OverrideFormat;
   public abstract override setDisplayLabel(displayLabel: string): void;
+  public abstract override setPersistenceUnit(value: LazyLoadedUnit | LazyLoadedInvertedUnit | undefined): void;
+  public abstract override setRelativeError(relativeError: number): void;
 }
