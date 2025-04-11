@@ -8,7 +8,7 @@
 
 import {
   DelayedPromiseWithProps,
-  Format, InvertedUnit, KindOfQuantity, KindOfQuantityProps, OverrideFormat,
+  Format, InvertedUnit, KindOfQuantity, KindOfQuantityProps, LazyLoadedInvertedUnit, LazyLoadedUnit, OverrideFormat,
   SchemaItemKey, SchemaItemType, SchemaKey, Unit,
 } from "@itwin/ecschema-metadata";
 import { SchemaContextEditor } from "./Editor";
@@ -91,7 +91,7 @@ export class KindOfQuantities extends SchemaItems {
    * @param parent A SchemaItemKey of the parent Format.
    * @param unitLabelOverrides The list of Unit (or InvertedUnit) and label overrides. The length of list should be equal to the number of units in the parent Format.
    */
-  public async createFormatOverride(parent: SchemaItemKey, precision?: number, unitLabelOverrides?: Array<[Unit | InvertedUnit, string | undefined]>): Promise<OverrideFormat> {
+  public async createFormatOverride(parent: SchemaItemKey, precision?: number, unitLabelOverrides?: Array<[LazyLoadedUnit | LazyLoadedInvertedUnit, string | undefined]>): Promise<OverrideFormat> {
     try {
       const parentFormat = await this.getSchemaItem(parent, Format);
       return new OverrideFormat(parentFormat, precision, unitLabelOverrides);
