@@ -39,7 +39,7 @@ export class AngleSweep implements BeJSONFunctions {
   }
   /** Read-property for signed start-to-end sweep in degrees. */
   public get sweepDegrees() {
-    return Angle.radiansToDegrees(this._radians1 - this._radians0);
+    return Angle.radiansToDegrees(this.sweepRadians);
   }
   /** Read-property for degrees at the start of this AngleSweep. */
   public get startRadians() {
@@ -221,20 +221,20 @@ export class AngleSweep implements BeJSONFunctions {
   /** Convert fractional position in the sweep to radians. */
   public fractionToRadians(fraction: number): number {
     return fraction < 0.5 ?
-      this._radians0 + fraction * (this._radians1 - this._radians0) :
-      this._radians1 + (fraction - 1.0) * (this._radians1 - this._radians0);
+      this._radians0 + fraction * this.sweepRadians :
+      this._radians1 + (fraction - 1.0) * this.sweepRadians;
   }
   /** Convert fractional position in the sweep to strongly typed Angle object. */
   public fractionToAngle(fraction: number) {
     return Angle.createRadians(this.fractionToRadians(fraction));
   }
   /**
-   * Return 2PI divided by the sweep radians (i.e. 360 degrees divided by sweep angle).
+   * Return 2PI divided by the sweep radians.
    * * This is the number of fractional intervals required to cover a whole circle.
    * @returns period of the sweep, or 1 if sweep is empty.
    */
   public fractionPeriod(): number {
-    return this.isEmpty ? 1.0 : Angle.pi2Radians / Math.abs(this._radians1 - this._radians0);
+    return this.isEmpty ? 1.0 : Angle.pi2Radians / Math.abs(this.sweepRadians);
   }
   /**
    * Return the fractionalized position of the given angle (as Angle) computed without consideration of
@@ -250,7 +250,7 @@ export class AngleSweep implements BeJSONFunctions {
    * @returns unbounded fraction, or 1 if sweep is empty.
    */
   public angleToUnboundedFraction(theta: Angle): number {
-    return this.isEmpty ? 1.0 : (theta.radians - this._radians0) / (this._radians1 - this._radians0);
+    return this.isEmpty ? 1.0 : (theta.radians - this._radians0) / this.sweepRadians;
   }
 
   /**
@@ -547,7 +547,7 @@ export class AngleSweep implements BeJSONFunctions {
   public isAlmostEqualAllowPeriodShift(other: AngleSweep, radianTol: number = Geometry.smallAngleRadians): boolean {
     return this.isCCW === other.isCCW // this rules out equating opposite sweeps like [0,-100] and [0,260]
       && Angle.isAlmostEqualRadiansAllowPeriodShift(this._radians0, other._radians0, radianTol)
-      && Angle.isAlmostEqualRadiansAllowPeriodShift(this._radians1 - this._radians0, other._radians1 - other._radians0, radianTol);
+      && Angle.isAlmostEqualRadiansAllowPeriodShift(this.sweepRadians, other.sweepRadians, radianTol);
   }
   /**
    * Test if two angle sweeps match within the given tolerance.
@@ -557,7 +557,7 @@ export class AngleSweep implements BeJSONFunctions {
    */
   public isAlmostEqualNoPeriodShift(other: AngleSweep, radianTol: number = Geometry.smallAngleRadians): boolean {
     return Angle.isAlmostEqualRadiansNoPeriodShift(this._radians0, other._radians0, radianTol)
-      && Angle.isAlmostEqualRadiansNoPeriodShift(this._radians1 - this._radians0, other._radians1 - other._radians0, radianTol);
+      && Angle.isAlmostEqualRadiansNoPeriodShift(this.sweepRadians, other.sweepRadians, radianTol);
   }
   /**
    * Test if start and end angles match with radians tolerance.
