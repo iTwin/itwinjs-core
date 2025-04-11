@@ -158,7 +158,7 @@ export class Element extends Entity {
   public static override deserialize(props: InstanceProps): ElementProps {
     const elProps = super.deserialize(props) as ElementProps;
     const instance = props.row;
-    elProps.code = { value: instance.codeValue, spec: instance.codeSpec.id, scope: instance.codeScope.id }
+    elProps.code = { value: instance.codeValue ?? "", spec: instance.codeSpec.id, scope: instance.codeScope.id }
     elProps.model = instance.model.id;
     if (instance.parent)
       elProps.parent = instance.parent;
@@ -1773,6 +1773,24 @@ export class UrlLink extends LinkElement {
     super(props, iModel);
     this.description = props.description;
     this.url = props.url;
+  }
+
+  protected static override readonly _customHandledProps: CustomHandledProperty[] = [
+    { propertyName: "description", source: "Class" },
+    { propertyName: "url", source: "Class" },
+  ];
+
+  public static override deserialize(props: InstanceProps): UrlLinkProps {
+    const elProps = super.deserialize(props) as UrlLinkProps;
+    elProps.description = props.row.description ?? "";
+    elProps.url = props.row.url;
+    return elProps;
+  }
+
+  public static override serialize(props: UrlLinkProps, iModel: IModelDb): ECSqlRow {
+    const inst = super.serialize(props, iModel);
+    inst.description = props.description;
+    return inst;
   }
 
   public override toJSON(): UrlLinkProps {

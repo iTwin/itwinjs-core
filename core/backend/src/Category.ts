@@ -41,9 +41,8 @@ export class SubCategory extends DefinitionElement {
   public static override deserialize(props: InstanceProps): SubCategoryProps {
     const elProps = super.deserialize(props) as SubCategoryProps;
     if (props.row.isPrivate !== undefined) {
-      elProps.description = props.row.description;
+      elProps.description = props.row.description ?? "";
     }
-
     elProps.appearance = JSON.parse(props.row.properties) as SubCategoryAppearance.Props;
     return elProps;
   }
@@ -54,11 +53,9 @@ export class SubCategory extends DefinitionElement {
     if (undefined !== props.description) {
       inst.description = props.description;
     }
-
     if (undefined !== props.appearance) {
       inst.properties = JSON.stringify(props.appearance);
     }
-
     return inst;
   }
 
