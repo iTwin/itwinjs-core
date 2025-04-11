@@ -659,7 +659,7 @@ export interface EnumeratorProps {
 export class Format extends SchemaItem {
     constructor(schema: Schema, name: string);
     // @internal
-    protected addUnit(unit: Unit | InvertedUnit, label?: string): void;
+    protected addUnit(unit: LazyLoadedUnit | LazyLoadedInvertedUnit, label?: string): void;
     // @internal
     static assertIsFormat(item?: SchemaItem): asserts item is Format;
     // (undocumented)
@@ -714,7 +714,7 @@ export class Format extends SchemaItem {
     // @internal (undocumented)
     protected setThousandSeparator(separator: string): void;
     // @internal (undocumented)
-    protected setUnits(units: Array<[Unit | InvertedUnit, string | undefined]>): void;
+    protected setUnits(units: Array<[LazyLoadedUnit | LazyLoadedInvertedUnit, string | undefined]>): void;
     // @internal (undocumented)
     protected setUomSeparator(separator: string): void;
     // (undocumented)
@@ -733,7 +733,7 @@ export class Format extends SchemaItem {
     // (undocumented)
     get type(): FormatType;
     // (undocumented)
-    get units(): ReadonlyArray<[Unit | InvertedUnit, string | undefined]> | undefined;
+    get units(): ReadonlyArray<[LazyLoadedUnit | LazyLoadedInvertedUnit, string | undefined]> | undefined;
     // (undocumented)
     get uomSeparator(): string;
 }
@@ -853,18 +853,18 @@ export function isSupportedSchemaItemType(value: SchemaItemType, supported: Supp
 // @public
 export class KindOfQuantity extends SchemaItem {
     // @internal (undocumented)
-    protected addPresentationFormat(format: Format | OverrideFormat, isDefault?: boolean): void;
+    protected addPresentationFormat(format: LazyLoadedFormat | OverrideFormat, isDefault?: boolean): void;
     static assertIsKindOfQuantity(item?: SchemaItem): asserts item is KindOfQuantity;
     // @internal
-    protected createFormatOverride(parent: Format, precision?: number, unitLabelOverrides?: Array<[Unit | InvertedUnit, string | undefined]>): OverrideFormat;
-    get defaultPresentationFormat(): Format | OverrideFormat | undefined;
+    protected createFormatOverride(parent: Format, precision?: number, unitLabelOverrides?: Array<[LazyLoadedUnit | LazyLoadedInvertedUnit, string | undefined]>): OverrideFormat;
+    get defaultPresentationFormat(): LazyLoadedFormat | OverrideFormat | undefined;
     // (undocumented)
     fromJSON(kindOfQuantityProps: KindOfQuantityProps): Promise<void>;
     // (undocumented)
     fromJSONSync(kindOfQuantityProps: KindOfQuantityProps): void;
     static isKindOfQuantity(item?: SchemaItem): item is KindOfQuantity;
     get persistenceUnit(): LazyLoadedUnit | LazyLoadedInvertedUnit | undefined;
-    get presentationFormats(): Array<Format | OverrideFormat>;
+    get presentationFormats(): Array<LazyLoadedFormat | OverrideFormat>;
     // (undocumented)
     get relativeError(): number;
     // (undocumented)
@@ -898,6 +898,9 @@ export type LazyLoadedEntityClass = LazyLoadedSchemaItem<EntityClass>;
 
 // @public (undocumented)
 export type LazyLoadedEnumeration = LazyLoadedSchemaItem<Enumeration>;
+
+// @public (undocumented)
+export type LazyLoadedFormat = LazyLoadedSchemaItem<Format>;
 
 // @public (undocumented)
 export type LazyLoadedInvertedUnit = LazyLoadedSchemaItem<InvertedUnit>;
@@ -1009,15 +1012,16 @@ export interface NoDelayedPromiseMethods {
 
 // @public
 export class OverrideFormat {
-    constructor(parent: Format, precision?: DecimalPrecision | FractionalPrecision, unitAndLabels?: Array<[Unit | InvertedUnit, string | undefined]>);
-    static createOverrideFormatFullName(parent: Format, precision?: DecimalPrecision | FractionalPrecision, unitAndLabels?: Array<[Unit | InvertedUnit, string | undefined]>): string;
+    // @internal
+    constructor(parent: Format, precision?: DecimalPrecision | FractionalPrecision, unitAndLabels?: Array<[LazyLoadedUnit | LazyLoadedInvertedUnit, string | undefined]>);
+    static createOverrideFormatFullName(parent: Format, precision?: DecimalPrecision | FractionalPrecision, unitAndLabels?: Array<[LazyLoadedUnit | LazyLoadedInvertedUnit, string | undefined]>): string;
     // (undocumented)
     get decimalSeparator(): string;
     // (undocumented)
     get formatTraits(): FormatTraits;
     // (undocumented)
     get fullName(): string;
-    // @alpha
+    // @internal
     fullNameXml(koqSchema: Schema): string;
     getFormatProps(): SchemaItemOverrideFormatProps;
     // (undocumented)
@@ -1050,7 +1054,7 @@ export class OverrideFormat {
     // (undocumented)
     get type(): FormatType;
     // (undocumented)
-    get units(): readonly [Unit | InvertedUnit, string | undefined][] | undefined;
+    get units(): readonly [LazyLoadedUnit | LazyLoadedInvertedUnit, string | undefined][] | undefined;
     // (undocumented)
     get uomSeparator(): string;
 }
