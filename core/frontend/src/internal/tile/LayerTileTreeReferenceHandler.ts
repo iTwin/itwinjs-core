@@ -6,10 +6,11 @@
  * @module Tiles
  */
 
-import { BaseLayerSettings, ColorDef, MapImagerySettings, MapLayerSettings } from "@itwin/core-common";
+import { BaseLayerSettings, ColorDef, MapLayerSettings } from "@itwin/core-common";
 import { SceneContext } from "../../ViewContext";
 import { compareMapLayer, createMapLayerTreeReference, DisclosedTileTreeSet, ImageryMapLayerTreeReference, ImageryMapTileTree, MapLayerTileTreeReference, ModelMapLayerTileTreeReference, TileTreeLoadStatus, TileTreeOwner } from "../../tile/internal";
 import { IModelConnection } from "../../IModelConnection";
+import { IModelApp } from "../../IModelApp";
 
 /** @internal */
 export interface LayerTileTreeReference {
@@ -36,6 +37,7 @@ export class LayerTileTreeReferenceHandler {
   public get baseTransparent() { return this._baseTransparent; }
   public get baseImageryLayerIncluded() { return this._baseImageryLayerIncluded; }
   public get layerSettings() { return this._layerSettings; }
+  public get ref() { return this._ref; }
 
   public discloseTileTrees(trees: DisclosedTileTreeSet): void {
     for (const imageryTree of this.layerTrees)
@@ -72,30 +74,51 @@ export class LayerTileTreeReferenceHandler {
   }
 
   public initializeLayers(context: SceneContext): boolean {
-    // Map tiles handle refresh logic differently
-    if(!this._mapTile){
-      const removals = this._detachFromDisplayStyle;
-      const mapImagery = context.viewport.displayStyle.settings.mapImagery;
-      if (0 === removals.length) {
-        removals.push(context.viewport.displayStyle.settings.onMapImageryChanged.addListener((imagery: Readonly<MapImagerySettings>) => {
-          this.setBaseLayerSettings(imagery.backgroundBase);
-          this.setLayerSettings(imagery.backgroundLayers);
-          this.clearLayers();
-        }));
-      }
-      removals.push(context.viewport.onChangeView.addListener((vp, previousViewState) => {
-        if(compareMapLayer(previousViewState, vp.view)){
-          this.setBaseLayerSettings(mapImagery.backgroundBase);
-          this.setLayerSettings(mapImagery.backgroundLayers);
-          this.clearLayers();
-        }
-      }));
-    }
-
     let hasLoadedTileTree = false;
     const layerHandler = this._ref.treeOwner.load()?.layerHandler;
     if (undefined === layerHandler) {
       return hasLoadedTileTree;     // Not loaded yet - or no layerHandler on tree.
+    }
+
+    // Map tiles handle refresh logic differently
+    if(!this._mapTile){
+      const removals = this._detachFromDisplayStyle;
+      const mapImagery = context.viewport.displayStyle.settings.mapImagery;
+
+      // This variable handles the case where tile data loads before this._ref.treeOwner, avoiding incorrect map layer setup.
+      let tileDataLoadedEarly = false;
+
+      const refreshLayers = () => {
+        this.setBaseLayerSettings(mapImagery.backgroundBase);
+        this.setLayerSettings(mapImagery.backgroundLayers);
+        this.clearLayers();
+      };
+
+      if (0 === removals.length) {
+        removals.push(context.viewport.displayStyle.settings.onMapImageryChanged.addListener(() => {
+          refreshLayers();
+        }));
+      }
+      removals.push(context.viewport.onChangeView.addListener((vp, previousViewState) => {
+        tileDataLoadedEarly = false;
+        if(compareMapLayer(previousViewState, vp.view)){
+          refreshLayers();
+        }
+      }));
+
+      removals.push(IModelApp.tileAdmin.onTileDataLoaded.addOnce(() => {
+        tileDataLoadedEarly = true;
+      }));
+
+      const onTileChildrenLoad = () => {
+        // When tile loading finishes, update layers if tile data was loaded beforehand.
+        if (tileDataLoadedEarly && layerHandler.layerClassifiers.size > 0) {
+          refreshLayers();
+          tileDataLoadedEarly = false;
+          IModelApp.tileAdmin.onTileChildrenLoad.removeListener(onTileChildrenLoad);
+        }
+      };
+      IModelApp.tileAdmin.onTileChildrenLoad.addListener(onTileChildrenLoad);
     }
 
     layerHandler.layerImageryTrees.length = 0;
