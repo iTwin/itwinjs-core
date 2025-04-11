@@ -39,6 +39,7 @@ import { ByteStream } from '@itwin/core-bentley';
 import { Camera } from '@itwin/core-common';
 import { Capabilities } from '@itwin/webgl-compatibility';
 import { Cartographic } from '@itwin/core-common';
+import { CatalogIModelTypes } from '@itwin/core-common';
 import { CategorySelectorProps } from '@itwin/core-common';
 import { ChangesetIndex } from '@itwin/core-common';
 import { ChangesetIndexAndId } from '@itwin/core-common';
@@ -1712,6 +1713,8 @@ export class BriefcaseConnection extends IModelConnection {
     static openStandalone(filePath: string, openMode?: OpenMode, opts?: StandaloneOpenOptions): Promise<BriefcaseConnection>;
     pullChanges(toIndex?: ChangesetIndex, options?: PullChangesOptions): Promise<void>;
     pushChanges(description: string): Promise<ChangesetIndexAndId>;
+    // (undocumented)
+    protected requireTimeline(): void;
     saveChanges(description?: string): Promise<void>;
     supportsGraphicalEditing(): Promise<boolean>;
     readonly txns: BriefcaseTxns;
@@ -1852,6 +1855,40 @@ export function canvasToImageBuffer(canvas: HTMLCanvasElement, format?: ImageBuf
 
 // @public
 export function canvasToResizedCanvasWithBars(canvasIn: HTMLCanvasElement, targetSize: Point2d, barSize?: Point2d, barStyle?: string): HTMLCanvasElement;
+
+// @beta (undocumented)
+export class CatalogConnection extends BriefcaseConnection {
+    // (undocumented)
+    static acquireWriteLock(args: {
+        containerId: string;
+        username: string;
+    }): Promise<void>;
+    // (undocumented)
+    static createNewContainer(args: CatalogIModelTypes.CreateNewContainerArgs): Promise<CatalogIModelTypes.NewContainerProps>;
+    // (undocumented)
+    static createNewVersion(args: CatalogIModelTypes.CreateNewVersionArgs): Promise<{
+        oldDb: CatalogIModelTypes.NameAndVersion;
+        newDb: CatalogIModelTypes.NameAndVersion;
+    }>;
+    // (undocumented)
+    getCatalogInfo(): Promise<{
+        manifest: CatalogIModelTypes.CatalogManifest;
+        version: string;
+    }>;
+    // (undocumented)
+    static openEditable(args: CatalogIModelTypes.OpenArgs): Promise<CatalogConnection>;
+    // (undocumented)
+    static openReadonly(args: CatalogIModelTypes.OpenArgs): Promise<CatalogConnection>;
+    // (undocumented)
+    static releaseWriteLock(args: {
+        containerId: string;
+        abandon?: true;
+    }): Promise<void>;
+    // (undocumented)
+    protected requireTimeline(): void;
+    // (undocumented)
+    updateCatalogManifest(manifest: CatalogIModelTypes.CatalogManifest): Promise<void>;
+}
 
 // @public
 export class CategorySelectorState extends ElementState {
@@ -5262,7 +5299,7 @@ export class IpcApp {
     static invoke(channel: string, ...args: any[]): Promise<any>;
     static get isValid(): boolean;
     static makeIpcFunctionProxy<K>(channelName: string, functionName: string): PickAsyncMethods<K>;
-    static makeIpcProxy<K>(channelName: string): PickAsyncMethods<K>;
+    static makeIpcProxy<K, C extends string = string>(channelName: C): PickAsyncMethods<K>;
     static removeListener(channel: string, listener: IpcListener): void;
     static send(channel: string, ...data: any[]): void;
     // @internal (undocumented)
@@ -6886,6 +6923,8 @@ export class MutableChangeFlags extends ChangeFlags {
 
 // @public
 export class NativeApp {
+    // (undocumented)
+    static catalogIpc: PickAsyncMethods<CatalogIModelTypes.IpcMethods>;
     static checkInternetConnectivity(): Promise<InternetConnectivityStatus>;
     static closeStorage(storage: Storage_2, deleteStorage?: boolean): Promise<void>;
     static deleteBriefcase(fileName: string): Promise<void>;

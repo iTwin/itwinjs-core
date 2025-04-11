@@ -85,7 +85,9 @@ export namespace CloudSqliteError {
   }
 }
 
-/** Errors thrown by the ViewStore apis */
+/** Errors thrown by the ViewStore apis
+ * @beta
+ */
 export interface ViewStoreError extends ITwinError {
   /** The name of the ViewStore that generated the error */
   viewStoreName?: string;

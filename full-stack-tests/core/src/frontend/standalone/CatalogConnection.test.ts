@@ -88,7 +88,7 @@ if (ProcessDetector.isElectronAppFrontend) {
       await expect(CatalogConnection.acquireWriteLock({ containerId, username: people.bill })).rejectedWith("unauthorized user");
       // simulate a user with write access to the container
       await coreFullStackTestIpc.setAzTestUser("readWrite");
-      // verify that to create new versions, the write lock must be held
+      // verify that to create a new version, the write lock must be held
       await expect(CatalogConnection.createNewVersion({ containerId, fromDb: { version: "^1" }, versionType: "patch" })).rejectedWith("Write lock must be held");
 
       // get the write lock. The username supplied should become the "last editor" in the manifest.

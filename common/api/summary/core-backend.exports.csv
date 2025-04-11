@@ -481,13 +481,12 @@ beta;interface;WorkspaceDbLoadError
 beta;interface;WorkspaceDbLoadErrors
 beta;interface;WorkspaceDbManifest
 beta;type;WorkspaceDbName
-beta;interface;WorkspaceDbNameAndVersion
+beta;type;WorkspaceDbNameAndVersion
 beta;interface;WorkspaceDbProps
 beta;interface;WorkspaceDbQueryResourcesArgs
 beta;type;WorkspaceDbQueryResourcesCallback
 beta;interface;WorkspaceDbSettingsProps
 beta;type;WorkspaceDbVersion
-beta;type;WorkspaceDbVersionIncrement
 beta;type;WorkspaceDbVersionRange
 beta;namespace;WorkspaceEditor
 beta;interface;WorkspaceEditor

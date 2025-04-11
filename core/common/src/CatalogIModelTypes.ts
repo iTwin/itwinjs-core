@@ -10,6 +10,7 @@ import { Id64String, ITwinError } from "@itwin/core-bentley";
 import { LocalFileName } from "./ChangesetProps";
 import { IModelConnectionProps, SnapshotOpenOptions } from "./IModel";
 
+/** @beta */
 export namespace CatalogError {
   export const scope = "itwin-Catalog";
 
@@ -28,6 +29,7 @@ export namespace CatalogError {
   }
 }
 
+/** @beta */
 export namespace CatalogIModelTypes {
 
   export type IpcChannel = "catalogIModel/ipc";
