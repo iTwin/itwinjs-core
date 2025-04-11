@@ -25,10 +25,10 @@ public;class;CustomAttributeClass
 public;interface;CustomAttributeClassProps
 public;interface;CustomAttributeContainerProps
 public;enum;CustomAttributeContainerType
-public;class;DelayedPromise
-public;const;DelayedPromiseWithProps
-public;type;DelayedPromiseWithProps
-public;interface;DelayedPromiseWithPropsConstructor
+internal;class;DelayedPromise
+internal;const;DelayedPromiseWithProps
+internal;type;DelayedPromiseWithProps
+internal;interface;DelayedPromiseWithPropsConstructor
 public;class;ECClass
 public;enum;ECClassModifier
 public;class;ECName
@@ -80,7 +80,7 @@ public;class;Mixin
 public;interface;MixinProps
 public;class;NavigationProperty
 public;interface;NavigationPropertyProps
-public;interface;NoDelayedPromiseMethods
+internal;interface;NoDelayedPromiseMethods
 public;class;OverrideFormat
 public;interface;OverrideFormatProps
 beta;function;parseClassModifier

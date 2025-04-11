@@ -25,7 +25,7 @@
  * additional (non-lazily-loaded) "nested" properties can be added.
  *
  * [!alert text="*Remember:* Unlike regular Promises in JavaScript, DelayedPromises represent processes that **may not** already be happening." kind="warning"]
- * @public @preview
+ * @internal
  */
 export class DelayedPromise<T> implements Promise<T> {
 
@@ -80,7 +80,7 @@ export class DelayedPromise<T> implements Promise<T> {
 
 // This keeps us from accidentally overriding one of DelayedPromise's methods in the DelayedPromiseWithProps constructor
 /**
- * @public @preview
+ * @internal
  */
 export interface NoDelayedPromiseMethods {
   [propName: string]: any;
@@ -91,7 +91,7 @@ export interface NoDelayedPromiseMethods {
 
 // See definition of DelayedPromiseWithProps below
 /**
- * @public @preview
+ * @internal
  */
 export interface DelayedPromiseWithPropsConstructor {
 
@@ -111,7 +111,7 @@ export interface DelayedPromiseWithPropsConstructor {
 // Because the property getters that wrap `props` are dynamically added, TypeScript isn't aware of them.
 // So by defining this as a class _expression_, we can cast the constructed type to Readonly<TProps> & DelayedPromise<TPayload>
 /**
- * @public @preview
+ * @internal
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export const DelayedPromiseWithProps = (class <TProps extends NoDelayedPromiseMethods, TPayload> extends DelayedPromise<TPayload> {
@@ -130,7 +130,8 @@ export const DelayedPromiseWithProps = (class <TProps extends NoDelayedPromiseMe
 
 /* eslint-disable @typescript-eslint/no-redeclare */
 
-/** Define the type of a DelayedPromiseWithProps instance
- * @public @preview
+/**
+ * Define the type of a DelayedPromiseWithProps instance
+ * @internal
  */
 export type DelayedPromiseWithProps<TProps, TPayload> = TProps & DelayedPromise<TPayload>;

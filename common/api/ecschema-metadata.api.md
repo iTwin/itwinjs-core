@@ -233,7 +233,7 @@ export enum CustomAttributeContainerType {
     TargetRelationshipConstraint = 2048
 }
 
-// @public
+// @internal
 export class DelayedPromise<T> implements Promise<T> {
     // (undocumented)
     readonly [Symbol.toStringTag]: "Promise";
@@ -244,13 +244,13 @@ export class DelayedPromise<T> implements Promise<T> {
     then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): Promise<TResult1 | TResult2>;
 }
 
-// @public (undocumented)
+// @internal (undocumented)
 export const DelayedPromiseWithProps: DelayedPromiseWithPropsConstructor;
 
-// @public
+// @internal
 export type DelayedPromiseWithProps<TProps, TPayload> = TProps & DelayedPromise<TPayload>;
 
-// @public (undocumented)
+// @internal (undocumented)
 export interface DelayedPromiseWithPropsConstructor {
     new <TProps extends NoDelayedPromiseMethods, TPayload>(props: TProps, startCallback: () => Promise<TPayload>): TProps & DelayedPromise<TPayload>;
 }
@@ -1004,7 +1004,7 @@ export interface NavigationPropertyProps extends PropertyProps {
     readonly relationshipName: string;
 }
 
-// @public (undocumented)
+// @internal (undocumented)
 export interface NoDelayedPromiseMethods {
     // (undocumented)
     [propName: string]: any;
@@ -1059,7 +1059,7 @@ export class OverrideFormat {
     // (undocumented)
     get type(): FormatType;
     // (undocumented)
-    get units(): readonly [Unit | InvertedUnit, string | undefined][] | undefined;
+    get units(): readonly [InvertedUnit | Unit, string | undefined][] | undefined;
     // (undocumented)
     get uomSeparator(): string;
 }
