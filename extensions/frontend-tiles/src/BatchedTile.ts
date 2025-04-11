@@ -162,6 +162,11 @@ export class BatchedTile extends Tile {
         isLeaf: this.isLeaf,
         // Don't waste time attempting to split based on model groupings if all models are in the same group.
         modelGroups: modelGroups && modelGroups.length > 1 ? modelGroups : undefined,
+        tileData: {
+          ecefTransform: this.tree.iModel.ecefLocation?.getTransform() ?? Transform.createIdentity(),
+          range: this.range,
+          layerClassifiers: this.tree.layerHandler?.layerClassifiers,
+        },
       });
 
       if (this.transformToRoot) {
