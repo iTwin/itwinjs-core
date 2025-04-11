@@ -1820,10 +1820,10 @@ export namespace IModelDb {
       } else if (modelIdArg.code) {
         const modelId = this._iModel.elements.getElementProps<ElementProps>({ code: modelIdArg.code }).id;
         if (!modelId)
-          throw new IModelError(IModelStatus.NotFound, `Model=(code: ${modelIdArg})`);
+          throw new IModelError(IModelStatus.NotFound, `Model not found with code: [spec:${modelIdArg.code.spec}, scope:${modelIdArg.code.scope}, value:${modelIdArg.code.value}])`);
         args = { partialKey: { id: modelId, baseClassName } };
       } else {
-        throw new IModelError(IModelStatus.InvalidId, `Could find imodel (id/code: ${modelIdArg})`);
+        throw new IModelError(IModelStatus.InvalidId, `Invalid model identifier: ${JSON.stringify(modelIdArg)}`);
       }
       return this._iModel[_nativeDb].resolveInstanceKey(args);
     }
@@ -2038,10 +2038,10 @@ export namespace IModelDb {
           const classDef = this._iModel.getJsClass<typeof Element>(rawInstance.classFullName);
           const elementProps = classDef.deserialize({ row: rawInstance, iModel: this._iModel, options: { element: props } }) as T;
           this.cache.set({ elProps: elementProps, loadOptions: props });
-          return elementProps as T;
+          return elementProps;
         }
         return this._iModel[_nativeDb].getElement(props) as T;
-      } catch (_err: any) {
+      } catch {
         return undefined;
       }
     }

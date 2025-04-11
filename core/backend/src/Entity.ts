@@ -12,11 +12,12 @@ import type { IModelDb } from "./IModelDb";
 import { Schema } from "./Schema";
 import { EntityClass, PropertyHandler, SchemaItemKey } from "@itwin/ecschema-metadata";
 import { _nativeDb } from "./internal/Symbols";
-
+/* @internal */
 export interface ECSqlRow {
   [key: string]: any
 }
 
+/* @internal */
 export interface InstanceProps {
   row: ECSqlRow;
   iModel: IModelDb;
@@ -25,6 +26,7 @@ export interface InstanceProps {
   }
 }
 
+/* @internal */
 export interface CustomHandledProperty {
   readonly propertyName: string;
   readonly source: "Class" | "Computed";

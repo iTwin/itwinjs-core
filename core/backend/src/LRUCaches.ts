@@ -63,7 +63,7 @@ export interface CachedElement {
 
 /* @internal */
 export class ElementLRUCache {
-  public static readonly DefaultCapacity = 2000;
+  public static readonly DEFAULT_CAPACITY = 2000;
   private _elementCache = new Map<Id64String, CachedElement>();
   private _cacheByCode = new Map<Id64String, Id64String>();
   private _cacheByFederationGuid = new Map<string, Id64String>();
@@ -89,7 +89,7 @@ export class ElementLRUCache {
     }
     return undefined;
   }
-  public constructor(public readonly capacity = ElementLRUCache.DefaultCapacity) { }
+  public constructor(public readonly capacity = ElementLRUCache.DEFAULT_CAPACITY) { }
   public clear(): void {
     this._elementCache.clear();
     this._cacheByCode.clear();
@@ -107,7 +107,8 @@ export class ElementLRUCache {
   public delete(key: ElementLoadProps): boolean {
     const cachedElement = this.findElement(key);
     if (cachedElement) {
-      this._elementCache.delete(cachedElement.elProps.id!);
+      if (cachedElement.elProps.id)
+        this._elementCache.delete(cachedElement.elProps.id);
       this._cacheByCode.delete(ElementLRUCache.makeCodeKey(cachedElement.elProps.code));
       if (cachedElement.elProps.federationGuid)
         this._cacheByFederationGuid.delete(cachedElement.elProps.federationGuid);
@@ -118,9 +119,10 @@ export class ElementLRUCache {
   public get(key: ElementLoadProps): CachedElement | undefined {
     const cachedElement = this.findElement(key);
     if (cachedElement) {
-      // Move the accessed element to the end of the cache
-      this._elementCache.delete(cachedElement.elProps.id!);
-      this._elementCache.set(cachedElement.elProps.id!, cachedElement);
+      if (cachedElement.elProps.id) {
+        this._elementCache.delete(cachedElement.elProps.id);
+        this._elementCache.set(cachedElement.elProps.id, cachedElement);
+      }
     }
 
     if (cachedElement) {
