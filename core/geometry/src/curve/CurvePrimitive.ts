@@ -601,15 +601,7 @@ export abstract class CurvePrimitive extends GeometryQuery {
    */
   public allTangents(spacePoint: Point3d, options?: TangentOptions): CurveLocationDetail[] | undefined {
     const tangents: CurveLocationDetail[] = [];
-    const collectAllTangents = (tangent: CurveLocationDetail) => {
-      if (tangents.length > 0) { // avoid adding duplicate tangents in succession
-        const lastFraction = tangents[tangents.length - 1].fraction;
-        if (Math.abs(tangent.fraction - lastFraction) < Geometry.smallFloatingPoint)
-          return;
-      }
-      tangents.push(tangent.clone());
-    };
-    this.emitTangents(spacePoint, collectAllTangents, options);
+    this.emitTangents(spacePoint, (t: CurveLocationDetail) => tangents.push(t.clone()), options);
     return (tangents.length === 0) ? undefined : tangents;
   }
   /**

@@ -35,6 +35,7 @@ export class AnnounceTangentStrokeHandler extends NewtonRtoRStrokeHandler implem
   private _functionB: number = 0;
   private _numThisCurve: number = 0;
   // scratch vars to use within methods
+  private _fractionMRU: number | undefined;
   private _workRay: Ray3d;
   private _workDetail: CurveLocationDetail | undefined;
   private _newtonSolver: Newton1dUnboundedApproximateDerivative;
@@ -60,6 +61,7 @@ export class AnnounceTangentStrokeHandler extends NewtonRtoRStrokeHandler implem
     this._fractionA = 0.0;
     this._numThisCurve = 0;
     this._functionA = 0.0;
+    this._fractionMRU = undefined;
   }
   /** Specified by IStrokeHandler. */
   public endCurvePrimitive() {
@@ -79,10 +81,13 @@ export class AnnounceTangentStrokeHandler extends NewtonRtoRStrokeHandler implem
     }
   }
   private announceCandidate(cp: CurvePrimitive, fraction: number, point: Point3d) {
-    this._workDetail = CurveLocationDetail.createCurveFractionPoint(cp, fraction, point, this._workDetail);
+    if (this._fractionMRU !== undefined && Geometry.isAlmostEqualNumber(this._fractionMRU, fraction, Geometry.smallFloatingPoint))
+      return; // avoid announcing duplicate tangents in succession (e.g., at interior stroke point)
     if (this._parentCurvePrimitive)
-      this._workDetail.curve = this._parentCurvePrimitive;
+      cp = this._parentCurvePrimitive;
+    this._workDetail = CurveLocationDetail.createCurveFractionPoint(cp, fraction, point, this._workDetail);
     this._announceTangent(this._workDetail);
+    this._fractionMRU = fraction;
   }
   /** Specified by IStrokeHandler. */
   public announceSegmentInterval(
