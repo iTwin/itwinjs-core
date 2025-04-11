@@ -649,7 +649,7 @@ export abstract class GeometricElement3d extends GeometricElement {
         geom: instance.geometryStream as Uint8Array,
         placement: elProps.placement,
         categoryId: elProps.category
-      }, "GeometryStreamProps").geom as GeometryStreamProps;
+      }, "GeometryStreamProps", props.options?.element ?? {}).geom as GeometryStreamProps;
     }
 
     if (instance.typeDefinition) {
@@ -698,7 +698,7 @@ export abstract class GeometricElement3d extends GeometricElement {
         is2d: true,
         placement: props.placement,
         categoryId: props.category,
-      }, "BinaryStream");
+      }, "BinaryStream", {});
 
       inst.geometryStream = source.geom;
       if (source.placement) {
@@ -712,7 +712,7 @@ export abstract class GeometricElement3d extends GeometricElement {
         is2d: false,
         placement: props.placement,
         categoryId: props.category,
-      }, "BinaryStream");
+      }, "BinaryStream", {});
       inst.geometryStream = source.geom;
       if (source.placement) {
         assignPlacement(source.placement as Placement3dProps);
@@ -790,7 +790,7 @@ export abstract class GeometricElement2d extends GeometricElement {
         geom: instance.geometryStream,
         placement: elProps.placement,
         categoryId: elProps.category
-      }, "GeometryStreamProps");
+      }, "GeometryStreamProps", props.options?.element ?? {});
       elProps.geom = source.geom as GeometryStreamProps;
       if (source.placement) {
         elProps.placement = source.placement as Placement2dProps;
@@ -841,7 +841,7 @@ export abstract class GeometricElement2d extends GeometricElement {
         is2d: true,
         placement: props.placement,
         categoryId: props.category,
-      }, "BinaryStream");
+      }, "BinaryStream", {});
 
       inst.geometryStream = source.geom;
       if (source.placement) {
@@ -855,7 +855,7 @@ export abstract class GeometricElement2d extends GeometricElement {
         is2d: true,
         placement: props.placement,
         categoryId: props.category,
-      }, "BinaryStream");
+      }, "BinaryStream", {});
 
       inst.geometryStream = source.geom;
       if (source.placement) {
@@ -1852,7 +1852,7 @@ export class GeometryPart extends DefinitionElement {
         geom: instance.geometryStream as Uint8Array,
         is2d: false,
         bbox: elProps.bbox,
-      }, "GeometryStreamProps").geom as GeometryStreamProps;
+      }, "GeometryStreamProps", props.options?.element ?? {}).geom as GeometryStreamProps;
     }
 
     return elProps;
@@ -1866,7 +1866,7 @@ export class GeometryPart extends DefinitionElement {
         geom: props.geom as any,
         is2d: false,
         bbox: props.bbox,
-      }, "BinaryStream");
+      }, "BinaryStream", {});
       inst.geometryStream = source.geom as Uint8Array;
       if (source.bbox) {
         props.bbox = source.bbox;
