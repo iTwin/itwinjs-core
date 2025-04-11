@@ -193,7 +193,7 @@ async function getKoqFormatProps(
 
   // use default presentation format if persistence unit does not match requested unit system
   if (koq.defaultPresentationFormat) {
-    return getFormatProps(koq.defaultPresentationFormat);
+    return getFormatProps(await koq.defaultPresentationFormat);
   }
 
   return undefined;
@@ -202,12 +202,14 @@ async function getKoqFormatProps(
 async function getKoqPresentationFormat(koq: KindOfQuantity, unitSystemMatchers: Array<(unitSystem: UnitSystem) => boolean>) {
   const presentationFormats = koq.presentationFormats;
   for (const matcher of unitSystemMatchers) {
-    for (const format of presentationFormats) {
-      const unit = format.units && format.units[0][0];
+    for (const lazyFormat of presentationFormats) {
+      const format = await lazyFormat;
+      const lazyUnit = format.units && format.units[0][0];
       /* c8 ignore next 3 */
-      if (!unit) {
+      if (!lazyUnit) {
         continue;
       }
+      const unit = await lazyUnit;
       const currentUnitSystem = await unit.unitSystem;
       if (currentUnitSystem && matcher(currentUnitSystem)) {
         return format;
