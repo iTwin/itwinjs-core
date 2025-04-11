@@ -138,8 +138,6 @@ function getPersistenceUnitFormatProps(persistenceUnit: Unit | InvertedUnit): Fo
     formatTraits: ["keepSingleZero", "keepDecimalPoint", "showUnitLabel"],
     precision: 6,
     type: "Decimal",
-    uomSeparator: " ",
-    decimalSeparator: ".",
     composite: {
       units: [
         {
