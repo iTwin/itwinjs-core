@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/ecschema-metadata",
+      "comment": "buildPropertyCache is now return Property[] instead of being a void, it merge properties into a local result[] and then return the final result rather than just mutating mutating the _mergePropertyCache input.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/ecschema-metadata"
+}
