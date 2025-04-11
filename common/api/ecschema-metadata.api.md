@@ -891,12 +891,6 @@ export interface KindOfQuantityProps extends SchemaItemProps {
 }
 
 // @public (undocumented)
-export type LazyLoadedConstant = LazyLoadedSchemaItem<Constant>;
-
-// @public (undocumented)
-export type LazyLoadedCustomAttributeClass = LazyLoadedSchemaItem<CustomAttributeClass>;
-
-// @public (undocumented)
 export type LazyLoadedECClass = LazyLoadedSchemaItem<ECClass>;
 
 // @public (undocumented)
@@ -904,9 +898,6 @@ export type LazyLoadedEntityClass = LazyLoadedSchemaItem<EntityClass>;
 
 // @public (undocumented)
 export type LazyLoadedEnumeration = LazyLoadedSchemaItem<Enumeration>;
-
-// @public (undocumented)
-export type LazyLoadedFormat = LazyLoadedSchemaItem<Format>;
 
 // @public (undocumented)
 export type LazyLoadedInvertedUnit = LazyLoadedSchemaItem<InvertedUnit>;

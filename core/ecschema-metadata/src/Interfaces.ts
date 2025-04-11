@@ -41,8 +41,6 @@ export type LazyLoadedMixin = LazyLoadedSchemaItem<Mixin>;
 /** @public @preview */
 export type LazyLoadedStructClass = LazyLoadedSchemaItem<StructClass>;
 /** @public @preview */
-export type LazyLoadedCustomAttributeClass = LazyLoadedSchemaItem<CustomAttributeClass>;
-/** @public @preview */
 export type LazyLoadedRelationshipClass = LazyLoadedSchemaItem<RelationshipClass>;
 /** @public @preview */
 export type LazyLoadedEnumeration = LazyLoadedSchemaItem<Enumeration>;
@@ -57,13 +55,9 @@ export type LazyLoadedUnit = LazyLoadedSchemaItem<Unit>;
 /** @public @preview */
 export type LazyLoadedInvertedUnit = LazyLoadedSchemaItem<InvertedUnit>;
 /** @public @preview */
-export type LazyLoadedConstant = LazyLoadedSchemaItem<Constant>;
-/** @public @preview */
 export type LazyLoadedPhenomenon = LazyLoadedSchemaItem<Phenomenon>;
 /** @public @preview */
 export type LazyLoadedUnitSystem = LazyLoadedSchemaItem<UnitSystem>;
-/** @public @preview */
-export type LazyLoadedFormat = LazyLoadedSchemaItem<Format>;
 
 /** @public @preview */
 export type AnyClass =
