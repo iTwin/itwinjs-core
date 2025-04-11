@@ -31,24 +31,31 @@ jobs:
           imageName: macos-latest
           nodeVersion: 18.x
         Linux_node_20_x:
-          imageName: ubuntu-latest
+          imageName: ubuntu-22.04 # ubuntu-latest is 24.04, and breaks tests using sandbox
+          poolName:
           nodeVersion: 20.x
         Windows_node_20_x:
           imageName: windows-latest
+          poolName:
           nodeVersion: 20.x
         MacOS_node_20_x:
           imageName: macos-latest
+          poolName: "iModelTechMacArm"
           nodeVersion: 20.x
         Linux_node_22_x:
-          imageName: macos-latest
+          imageName: ubuntu-22.04 # ubuntu-latest is 24.04, and breaks tests using sandbox
+          poolName:
           nodeVersion: 22.x
         Windows_node_22_x:
-          imageName: macos-latest
+          imageName: windows-latest
+          poolName:
           nodeVersion: 22.x
         MacOS_node_22_x:
           imageName: macos-latest
+          poolName: "iModelTechMacArm"
           nodeVersion: 22.x
     pool:
+      name: $(poolName)
       vmImage: $(imageName)
     steps:
       - checkout: self
