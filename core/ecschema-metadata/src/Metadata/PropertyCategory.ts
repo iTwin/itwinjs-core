@@ -17,6 +17,7 @@ import { SchemaItem } from "./SchemaItem";
  */
 export class PropertyCategory extends SchemaItem {
   public override readonly schemaItemType = PropertyCategory.schemaItemType;
+  /** @internal */
   public static override get schemaItemType() { return SchemaItemType.PropertyCategory; }
   private _priority: number;
 
@@ -24,6 +25,7 @@ export class PropertyCategory extends SchemaItem {
     return this._priority;
   }
 
+  /** @internal */
   constructor(schema: Schema, name: string) {
     super(schema, name);
     this._priority = 0;

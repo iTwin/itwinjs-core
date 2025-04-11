@@ -11,6 +11,7 @@ import { ECSchemaRpcInterface } from "./ECSchemaRpcInterface";
  * @public @preview
  */
 export class ECSchemaRpcLocater implements ISchemaLocater {
+  /** @internal */
   public readonly token: IModelRpcProps;
 
   constructor(token: IModelRpcProps) { this.token = token; }

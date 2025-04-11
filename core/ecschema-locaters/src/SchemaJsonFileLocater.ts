@@ -23,6 +23,7 @@ export class SchemaJsonFileLocater extends SchemaFileLocater implements ISchemaL
   /**
    * Constructs a SchemaKey based on the information in the Schema JSON
    * @param data The Schema JSON as a string
+   * @internal
    */
   protected getSchemaKey(data: string): SchemaKey {
     const dataJson = JSON.parse(data);

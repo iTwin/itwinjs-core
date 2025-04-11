@@ -23,12 +23,14 @@ import { SchemaItem } from "./SchemaItem";
  */
 export class Constant extends SchemaItem {
   public override readonly schemaItemType = Constant.schemaItemType;
+  /** @internal */
   public static override get schemaItemType() { return SchemaItemType.Constant; }
   private _phenomenon?: LazyLoadedPhenomenon;
   private _definition: string;
   private _numerator?: number;
   private _denominator?: number;
 
+  /** @internal */
   constructor(schema: Schema, name: string) {
     super(schema, name);
     this._definition = "";
@@ -155,6 +157,7 @@ export class Constant extends SchemaItem {
    * Type assertion to check if the SchemaItem is of type Constant.
    * @param item The SchemaItem to check.
    * @returns The item cast to Constant if it is a Constant, undefined otherwise.
+   * @internal
    */
   public static assertIsConstant(item?: SchemaItem): asserts item is Constant {
     if (!this.isConstant(item))

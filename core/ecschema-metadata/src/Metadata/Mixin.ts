@@ -26,6 +26,7 @@ import { SchemaItem } from "./SchemaItem";
  */
 export class Mixin extends ECClass {
   public override readonly schemaItemType = Mixin.schemaItemType;
+  /** @internal */
   public static override get schemaItemType() { return SchemaItemType.Mixin; }
   private _appliesTo?: LazyLoadedEntityClass;
 
@@ -33,6 +34,7 @@ export class Mixin extends ECClass {
     return this._appliesTo;
   }
 
+  /** @internal */
   constructor(schema: Schema, name: string) {
     super(schema, name, ECClassModifier.Abstract);
   }
@@ -154,6 +156,7 @@ export class Mixin extends ECClass {
    * Type assertion to check if the SchemaItem is of type Mixin.
    * @param item The SchemaItem to check.
    * @returns The item cast to Mixin if it is a Mixin, undefined otherwise.
+   * @internal
    */
   public static assertIsMixin(item?: SchemaItem): asserts item is Mixin {
     if (!this.isMixin(item))

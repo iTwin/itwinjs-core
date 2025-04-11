@@ -15,7 +15,7 @@ import { SchemaStringLocater, StringSchemaKey } from "./SchemaStringLocater";
 /**
  * A SchemaLocator implementation for locating and deserializing EC Schemas from XML strings
  * loaded in memory.
- * @public @preview
+ * @beta
  */
 export class SchemaXmlStringLocater extends SchemaStringLocater implements ISchemaLocater {
 

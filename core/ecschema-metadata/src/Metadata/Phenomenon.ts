@@ -15,9 +15,11 @@ import { SchemaItem } from "./SchemaItem";
 /** @public @preview */
 export class Phenomenon extends SchemaItem {
   public override readonly schemaItemType = Phenomenon.schemaItemType;
+  /** @internal */
   public static override get schemaItemType() { return SchemaItemType.Phenomenon; }
   private _definition: string; // Contains a combination of Phenomena names which form this Phenomenon. Each Phenomena name is separated by a * and may have an exponent, specified using parentheses
 
+  /** @internal */
   constructor(schema: Schema, name: string) {
     super(schema, name);
     this._definition = "";
@@ -80,6 +82,7 @@ export class Phenomenon extends SchemaItem {
    * Type assertion to check if the SchemaItem is of type Phenomenon.
    * @param item The SchemaItem to check.
    * @returns The item cast to Phenomenon if it is a Phenomenon, undefined otherwise.
+   * @internal
    */
   public static assertIsPhenomenon(item?: SchemaItem): asserts item is Phenomenon {
     if (!this.isPhenomenon(item))

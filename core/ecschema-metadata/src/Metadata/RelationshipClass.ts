@@ -33,6 +33,7 @@ type AnyConstraintClass = EntityClass | Mixin | RelationshipClass;
  */
 export class RelationshipClass extends ECClass {
   public override readonly schemaItemType = RelationshipClass.schemaItemType;
+  /** @internal */
   public static override get schemaItemType() { return SchemaItemType.RelationshipClass; }
   /** @internal */
   protected _strength: StrengthType;
@@ -43,6 +44,7 @@ export class RelationshipClass extends ECClass {
   /** @internal */
   protected _target: RelationshipConstraint;
 
+  /** @internal */
   constructor(schema: Schema, name: string, modifier?: ECClassModifier) {
     super(schema, name, modifier);
     this._strengthDirection = StrengthDirection.Forward;
@@ -184,6 +186,7 @@ export class RelationshipConstraint implements CustomAttributeContainerProps {
   private _constraintClasses?: LazyLoadedRelationshipConstraintClass[];
   private _customAttributes?: Map<string, CustomAttribute>;
 
+  /** @internal */
   constructor(relClass: RelationshipClass, relEnd: RelationshipEnd, roleLabel?: string, polymorphic?: boolean) {
     this._relationshipEnd = relEnd;
     if (polymorphic)
@@ -496,6 +499,7 @@ export class RelationshipMultiplicity {
   public readonly lowerLimit: number;
   public readonly upperLimit: number;
 
+  /** @internal */
   constructor(lowerLimit: number, upperLimit: number) {
     this.lowerLimit = lowerLimit;
     this.upperLimit = upperLimit;

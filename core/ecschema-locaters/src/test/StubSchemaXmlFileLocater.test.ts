@@ -9,6 +9,7 @@ import * as path from "path";
 import * as EC from "@itwin/ecschema-metadata";
 import { FileSchemaKey } from "../SchemaFileLocater";
 import { StubSchemaXmlFileLocater } from "../StubSchemaXmlFileLocater";
+import * as fs from "fs"; 
 
 use(chaiAsPromised);
 
@@ -26,7 +27,7 @@ describe("StubSchemaXmlFileLocater tests:", () => {
   it("loadSchema, schema text not provided, schema loaded successfully", async () => {
     const schemaPath = path.join(__dirname, "assets", "SchemaA.02.00.02.ecschema.xml");
     const schemaKey = new FileSchemaKey(new EC.SchemaKey("SchemaA", 2, 0, 2), schemaPath);
-    schemaKey.schemaText = locater.readUtf8FileToStringSync(schemaPath);
+    schemaKey.schemaText = fs.readFileSync(schemaPath, "utf-8");
     const schema = locater.loadSchema(schemaPath);
     expect(schema).is.not.undefined;
     expect(schema.schemaKey).to.deep.equal(schemaKey);
@@ -34,7 +35,7 @@ describe("StubSchemaXmlFileLocater tests:", () => {
 
   it("loadSchema, schema text provided, schema loaded successfully", async () => {
     const schemaPath = path.join(__dirname, "assets", "SchemaA.02.00.02.ecschema.xml");
-    const schemaText = locater.readUtf8FileToStringSync(schemaPath);
+    const schemaText = fs.readFileSync(schemaPath, "utf-8");
     const schemaKey = new FileSchemaKey(new EC.SchemaKey("SchemaA", 2, 0, 2), schemaPath);
     schemaKey.schemaText = schemaText;
 

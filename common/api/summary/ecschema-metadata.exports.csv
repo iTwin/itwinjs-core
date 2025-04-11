@@ -33,7 +33,7 @@ public;class;ECClass
 public;enum;ECClassModifier
 public;class;ECName
 internal;class;ECObjectsError
-public;enum;ECObjectsStatus
+internal;enum;ECObjectsStatus
 internal;namespace;ECSchemaNamespaceUris
 internal;interface;ECSpecVersion
 internal;class;ECStringConstants
@@ -130,7 +130,7 @@ public;interface;SchemaItemUnitProps
 public;class;SchemaJsonLocater
 public;class;SchemaKey
 public;interface;SchemaKeyProps
-public;class;SchemaLoader
+beta;class;SchemaLoader
 public;enum;SchemaMatchType
 public;class;SchemaPartVisitorDelegate
 public;interface;SchemaProps

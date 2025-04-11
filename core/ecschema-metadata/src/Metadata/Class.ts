@@ -28,6 +28,7 @@ import { ECSpecVersion, SchemaReadHelper } from "../Deserialization/Helper";
  * @public @preview
  */
 export abstract class ECClass extends SchemaItem implements CustomAttributeContainerProps {
+  /** @internal */
   public static override get schemaItemType(): SupportedSchemaItemType { return AbstractSchemaItemType.Class; } // need this so getItem("name", ECClass) in schema works
   private _modifier: ECClassModifier;
   private _baseClass?: LazyLoadedECClass;
@@ -39,6 +40,7 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
   public get modifier() { return this._modifier; }
   public get customAttributes(): CustomAttributeSet | undefined { return this._customAttributes; }
 
+  /** @internal */
   constructor(schema: Schema, name: string, modifier?: ECClassModifier) {
     super(schema, name);
 
@@ -895,13 +897,12 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
 export class StructClass extends ECClass {
   /**
    * Get the type of item represented by this instance
-   * @public @preview
    */
   public override readonly schemaItemType = StructClass.schemaItemType;
 
   /**
    * Get the type of item represented by this class
-   * @public @preview
+   * @internal
    */
   public static override get schemaItemType() { return SchemaItemType.StructClass; }
   /**
@@ -920,6 +921,7 @@ export class StructClass extends ECClass {
    * Type assertion to check if the SchemaItem is of type StructClass.
    * @param item The SchemaItem to check.
    * @returns The item cast to StructClass if it is a StructClass, undefined otherwise.
+   * @internal
    */
   public static assertIsStructClass(item?: SchemaItem): asserts item is StructClass {
     if (!this.isStructClass(item))

@@ -23,6 +23,7 @@ import { UnitSystem } from "./UnitSystem";
  */
 export class InvertedUnit extends SchemaItem {
   public override readonly schemaItemType = InvertedUnit.schemaItemType;
+  /** @internal */
   public static override get schemaItemType() { return SchemaItemType.InvertedUnit; }
   private _invertsUnit?: LazyLoadedUnit; // required
   private _unitSystem?: LazyLoadedUnitSystem; // required
@@ -46,6 +47,7 @@ export class InvertedUnit extends SchemaItem {
    * Type assertion to check if the SchemaItem is of type InvertedUnit.
    * @param item The SchemaItem to check.
    * @returns The item cast to InvertedUnit if it is an InvertedUnit, undefined otherwise.
+   * @internal
    */
   public static assertIsInvertedUnit(item?: SchemaItem): asserts item is InvertedUnit {
     if (!this.isInvertedUnit(item))

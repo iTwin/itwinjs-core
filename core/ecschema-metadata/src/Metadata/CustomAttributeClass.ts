@@ -20,6 +20,7 @@ import { SchemaItem } from "./SchemaItem";
  */
 export class CustomAttributeClass extends ECClass {
   public override readonly schemaItemType = CustomAttributeClass.schemaItemType;
+  /** @internal */
   public static override get schemaItemType() { return SchemaItemType.CustomAttributeClass; }
   private _appliesTo?: CustomAttributeContainerType;
 
@@ -89,6 +90,7 @@ export class CustomAttributeClass extends ECClass {
    * Type assertion to check if the SchemaItem is of type CustomAttributeClass.
    * @param item The SchemaItem to check.
    * @returns The item cast to CustomAttributeClass if it is a CustomAttributeClass, undefined otherwise.
+   * @internal
    */
   public static assertIsCustomAttributeClass(item?: SchemaItem): asserts item is CustomAttributeClass {
     if (!this.isCustomAttributeClass(item))

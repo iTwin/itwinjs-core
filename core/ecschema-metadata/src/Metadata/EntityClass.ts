@@ -25,6 +25,7 @@ import { SchemaItem } from "./SchemaItem";
  */
 export class EntityClass extends ECClass implements HasMixins {
   public override readonly schemaItemType = EntityClass.schemaItemType;
+  /** @internal */
   public static override get schemaItemType() { return SchemaItemType.EntityClass; }
   private _mixins?: LazyLoadedMixin[];
 

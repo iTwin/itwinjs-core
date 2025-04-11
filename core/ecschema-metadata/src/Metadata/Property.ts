@@ -44,6 +44,7 @@ export abstract class Property implements CustomAttributeContainerProps {
   /** @internal */
   protected _type: PropertyType;
 
+  /** @internal */
   constructor(ecClass: ECClass, name: string, type: PropertyType) {
     this._class = ecClass as AnyClass;
     this._name = new ECName(name);
@@ -361,6 +362,7 @@ export abstract class PrimitiveOrEnumPropertyBase extends Property {
   public get minValue() { return this._minValue; }
   public get maxValue() { return this._maxValue; }
 
+  /** @internal */
   constructor(ecClass: ECClass, name: string, type: PropertyType) {
     super(ecClass, name, type);
   }
@@ -467,6 +469,7 @@ export abstract class PrimitiveOrEnumPropertyBase extends Property {
 export class PrimitiveProperty extends PrimitiveOrEnumPropertyBase {
   public get primitiveType(): PrimitiveType { return PropertyTypeUtils.getPrimitiveType(this.propertyType); }
 
+  /** @internal */
   constructor(ecClass: ECClass, name: string, primitiveType: PrimitiveType = PrimitiveType.Integer) {
     super(ecClass, name, PropertyTypeUtils.fromPrimitiveType(primitiveType));
   }
@@ -516,6 +519,7 @@ export class EnumerationProperty extends PrimitiveOrEnumPropertyBase {
     return schemaJson;
   }
 
+  /** @internal */
   constructor(ecClass: ECClass, name: string, type: LazyLoadedEnumeration) {
     // TODO: Should we allow specifying the backing type?
     super(ecClass, name, PropertyType.Integer_Enumeration);
@@ -562,6 +566,7 @@ export class StructProperty extends Property {
 
   public get structClass(): StructClass { return this._structClass; }
 
+  /** @internal */
   constructor(ecClass: ECClass, name: string, type: StructClass) {
     super(ecClass, name, PropertyType.Struct);
     this._structClass = type;
@@ -638,6 +643,7 @@ export class NavigationProperty extends Property {
     return itemElement;
   }
 
+  /** @internal */
   constructor(ecClass: ECClass, name: string, relationship: LazyLoadedRelationshipClass, direction?: StrengthDirection) {
     super(ecClass, name, PropertyType.Navigation);
     this._relationshipClass = relationship;
@@ -746,6 +752,7 @@ const ArrayPropertyMixin = <T extends Constructor<Property>>(Base: T) => {
 
 /** @public @preview */
 export class PrimitiveArrayProperty extends ArrayPropertyMixin(PrimitiveProperty) {
+  /** @internal */
   constructor(ecClass: ECClass, name: string, primitiveType: PrimitiveType = PrimitiveType.Integer) {
     super(ecClass, name, primitiveType);
   }
@@ -768,6 +775,7 @@ export class EnumerationArrayProperty extends ArrayPropertyMixin(EnumerationProp
 
 /** @public @preview */
 export class StructArrayProperty extends ArrayPropertyMixin(StructProperty) {
+  /** @internal */
   constructor(ecClass: ECClass, name: string, type: StructClass) {
     super(ecClass, name, type);
   }

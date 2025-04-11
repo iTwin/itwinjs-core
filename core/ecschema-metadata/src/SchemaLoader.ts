@@ -20,7 +20,7 @@ import { ECVersion, SchemaKey } from "./SchemaKey";
  * ```ts
  * [[include:IModelSchemas.loadFromDb]]
  * ```
- * @public @preview
+ * @beta Is this concept needed no that backend and frontend will have contexts cached on the iModel?
  */
 export class SchemaLoader {
   private _context: SchemaContext;

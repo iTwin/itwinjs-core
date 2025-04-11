@@ -15,6 +15,7 @@ import { SchemaItem } from "./SchemaItem";
  */
 export class UnitSystem extends SchemaItem {
   public override readonly schemaItemType = UnitSystem.schemaItemType;
+  /** @internal */
   public static override get schemaItemType() { return SchemaItemType.UnitSystem; }
 
   /**

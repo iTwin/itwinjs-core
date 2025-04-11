@@ -23,6 +23,7 @@ import { Unit } from "./Unit";
  */
 export class KindOfQuantity extends SchemaItem {
   public override readonly schemaItemType = KindOfQuantity.schemaItemType;
+  /** @internal */
   public static override get schemaItemType() { return SchemaItemType.KindOfQuantity; }
   private _relativeError: number = 1.0;
   private _presentationFormats: Array<Format | OverrideFormat> = new Array<Format | OverrideFormat>();
@@ -246,6 +247,7 @@ export class KindOfQuantity extends SchemaItem {
    * Type assertion to check if the SchemaItem is of type KindOfQuantity.
    * @param item The SchemaItem to check.
    * @returns The item cast to KindOfQuantity if it is a KindOfQuantity, undefined otherwise.
+   * @internal
    */
   public static assertIsKindOfQuantity(item?: SchemaItem): asserts item is KindOfQuantity {
     if (!this.isKindOfQuantity(item))

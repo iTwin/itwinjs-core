@@ -20,13 +20,12 @@ import { Schema } from "./Schema";
 export abstract class SchemaItem {
   /**
    * Get the type of item represented by this class
-   * @public @preview
+   * @internal
    */
   public static get schemaItemType(): SupportedSchemaItemType { return AbstractSchemaItemType.SchemaItem }
 
   /**
    * Get the type of item represented by this instance
-   * @public @preview
    */
   public abstract get schemaItemType(): SchemaItemType;
   public readonly schema: Schema;
@@ -34,6 +33,7 @@ export abstract class SchemaItem {
   private _description?: string;
   private _label?: string;
 
+  /** @internal */
   constructor(schema: Schema, name: string) {
     this._key = new SchemaItemKey(name, schema.schemaKey);
     this.schema = schema;

@@ -31,6 +31,7 @@ export type AnyEnumerator = Enumerator<string | number>;
  */
 export class Enumeration extends SchemaItem {
   public override readonly schemaItemType = Enumeration.schemaItemType;
+  /** @internal */
   public static override get schemaItemType() { return SchemaItemType.Enumeration; }
   private _type?: PrimitiveType.Integer | PrimitiveType.String;
   private _isStrict: boolean;
@@ -40,6 +41,7 @@ export class Enumeration extends SchemaItem {
   public get type() { return this._type; }
   public get isStrict() { return this._isStrict; }
 
+  /** @internal */
   constructor(schema: Schema, name: string, primitiveType?: PrimitiveType.Integer | PrimitiveType.String) {
     super(schema, name);
     this._type = primitiveType;
@@ -207,6 +209,7 @@ export class Enumeration extends SchemaItem {
    * Type assertion to check if the SchemaItem is of type Enumeration.
    * @param item The SchemaItem to check.
    * @returns The item cast to Enumeration if it is an Enumeration, undefined otherwise.
+   * @internal
    */
   public static assertIsEnumeration(item?: SchemaItem): asserts item is Enumeration {
     if (!this.isEnumeration(item))

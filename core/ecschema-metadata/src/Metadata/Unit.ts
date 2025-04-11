@@ -25,6 +25,7 @@ import { UnitSystem } from "./UnitSystem";
  */
 export class Unit extends SchemaItem {
   public override readonly schemaItemType = Unit.schemaItemType;
+  /** @internal */
   public static override get schemaItemType() { return SchemaItemType.Unit; }
   private _phenomenon?: LazyLoadedPhenomenon;
   private _unitSystem?: LazyLoadedUnitSystem;
@@ -33,6 +34,7 @@ export class Unit extends SchemaItem {
   private _denominator?: number;
   private _offset?: number;
 
+  /** @internal */
   constructor(schema: Schema, name: string) {
     super(schema, name);
     this._definition = "";
