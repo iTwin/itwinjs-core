@@ -1856,37 +1856,29 @@ export function canvasToImageBuffer(canvas: HTMLCanvasElement, format?: ImageBuf
 // @public
 export function canvasToResizedCanvasWithBars(canvasIn: HTMLCanvasElement, targetSize: Point2d, barSize?: Point2d, barStyle?: string): HTMLCanvasElement;
 
-// @beta (undocumented)
+// @beta
 export class CatalogConnection extends BriefcaseConnection {
-    // (undocumented)
     static acquireWriteLock(args: {
         containerId: string;
         username: string;
     }): Promise<void>;
-    // (undocumented)
     static createNewContainer(args: CatalogIModelTypes.CreateNewContainerArgs): Promise<CatalogIModelTypes.NewContainerProps>;
-    // (undocumented)
     static createNewVersion(args: CatalogIModelTypes.CreateNewVersionArgs): Promise<{
         oldDb: CatalogIModelTypes.NameAndVersion;
         newDb: CatalogIModelTypes.NameAndVersion;
     }>;
-    // (undocumented)
     getCatalogInfo(): Promise<{
         manifest: CatalogIModelTypes.CatalogManifest;
         version: string;
     }>;
-    // (undocumented)
     static openEditable(args: CatalogIModelTypes.OpenArgs): Promise<CatalogConnection>;
-    // (undocumented)
     static openReadonly(args: CatalogIModelTypes.OpenArgs): Promise<CatalogConnection>;
-    // (undocumented)
     static releaseWriteLock(args: {
         containerId: string;
         abandon?: true;
     }): Promise<void>;
     // (undocumented)
     protected requireTimeline(): void;
-    // (undocumented)
     updateCatalogManifest(manifest: CatalogIModelTypes.CatalogManifest): Promise<void>;
 }
 

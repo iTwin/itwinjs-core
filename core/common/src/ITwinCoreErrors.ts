@@ -13,6 +13,7 @@ import { ITwinError } from "@itwin/core-bentley";
  * @beta
  */
 export interface SqliteError extends ITwinError {
+  /** The name of the database for this problem. */
   dbName: string;
 }
 

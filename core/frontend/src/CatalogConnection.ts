@@ -11,29 +11,59 @@ import { BriefcaseConnection } from "./BriefcaseConnection";
 import { IModelStatus, OpenMode } from "@itwin/core-bentley";
 import { NativeApp } from "./NativeApp";
 
-/** @beta */
+/**
+ * A connection to a CatalogIModel.
+ * @note CatalogConnection may only be used in [[NativeApp]]s
+ * @beta
+ */
 export class CatalogConnection extends BriefcaseConnection {
 
   protected override requireTimeline(): void {
     throw new IModelError(IModelStatus.WrongIModel, "Catalogs have no timeline");
   }
 
+  /** Create a new BlobContainer (from the BlobContainerService) to hold versions of a CatalogIModel.
+   * @returns The properties of the newly created container.
+   * @note creating new containers requires "admin" authorization.
+  */
   public static async createNewContainer(args: CatalogIModelTypes.CreateNewContainerArgs): Promise<CatalogIModelTypes.NewContainerProps> {
     return NativeApp.catalogIpc.createNewContainer(args);
   }
 
-  public static async acquireWriteLock(args: { containerId: string, username: string; }): Promise<void> {
+  /** Acquire the write lock for a CatalogIModel container. Only one person may obtain the write lock at a time.
+   * @note this requires "write" authorization to the container
+  */
+  public static async acquireWriteLock(args: {
+    /** The id of the container */
+    containerId: string,
+    /**
+     * The name of the individual acquiring the lock. This will be shown to others who attempt to acquire the lock while it is held.
+     * It is also stored in the "lastEditedBy" field of the manifest of any new version edited while the lock is held.
+     */
+    username: string;
+  }): Promise<void> {
     return NativeApp.catalogIpc.acquireWriteLock(args);
   }
 
+  /** Release the write lock on a CatalogIModel container. This uploads all changes made while the lock is held, so they become visible to other users. */
   public static async releaseWriteLock(args: { containerId: string, abandon?: true; }): Promise<void> {
     return NativeApp.catalogIpc.releaseWriteLock(args);
   }
 
+  /**
+   * Create a new version of a CatalogIModel as a copy of an existing version. Immediately after this operation, the new version will be an exact copy
+   * of the source CatalogIModel. Then, use [[openEditable]] to modify the new version with new content.
+   * @note the write lock must be held for this operation to succeed
+   * @see [[acquireWriteLock]]
+   */
   public static async createNewVersion(args: CatalogIModelTypes.CreateNewVersionArgs): Promise<{ oldDb: CatalogIModelTypes.NameAndVersion; newDb: CatalogIModelTypes.NameAndVersion; }> {
     return NativeApp.catalogIpc.createNewVersion(args);
   }
 
+  /** Open a CatalogIModel for read access.
+   * @returns the [[CatalogConnection]] to access the contents of the Catalog.
+   * @note CatalogConnection extends BriefcaseConnection. When finished reading, call `close` on the connection.
+   */
   public static async openReadonly(args: CatalogIModelTypes.OpenArgs): Promise<CatalogConnection> {
     const openResponse = await NativeApp.catalogIpc.openReadonly(args);
     const connection = new CatalogConnection(openResponse, OpenMode.Readonly);
@@ -41,6 +71,10 @@ export class CatalogConnection extends BriefcaseConnection {
     return connection;
   }
 
+  /** Open a CatalogIModel for write access.
+   * @note Once a version of a CatalogIModel has been published (i.e. the write lock has been released), it is no longer editable, *unless* it is a prerelease version.
+   * @note the write lock must be held for this operation to succeed
+   */
   public static async openEditable(args: CatalogIModelTypes.OpenArgs): Promise<CatalogConnection> {
     const openResponse = await NativeApp.catalogIpc.openEditable(args);
     const connection = new CatalogConnection(openResponse, OpenMode.ReadWrite);
@@ -48,10 +82,12 @@ export class CatalogConnection extends BriefcaseConnection {
     return connection;
   }
 
+  /** Get the CatalogManifest and version information for an open CatalogConnection. */
   public async getCatalogInfo(): Promise<{ manifest: CatalogIModelTypes.CatalogManifest, version: string }> {
     return NativeApp.catalogIpc.getInfo(this.key);
   }
 
+  /** Update the contents of the manifest in a CatalogIModel that is open with [[openEditable]]. */
   public async updateCatalogManifest(manifest: CatalogIModelTypes.CatalogManifest): Promise<void> {
     return NativeApp.catalogIpc.updateCatalogManifest(this.key, manifest);
   }

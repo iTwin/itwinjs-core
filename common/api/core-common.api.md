@@ -1025,7 +1025,7 @@ export class CartographicRange {
     intersectsRange(other: CartographicRange): boolean;
 }
 
-// @public (undocumented)
+// @beta
 export namespace CatalogError {
     const // (undocumented)
     scope = "itwin-Catalog";
@@ -1035,9 +1035,8 @@ export namespace CatalogError {
     export function throwError<T extends ITwinError>(key: Key, e: Omit<T, "name" | "iTwinErrorId">): never;
 }
 
-// @public (undocumented)
+// @beta
 export namespace CatalogIModelTypes {
-    // @beta
     export interface CatalogManifest {
         readonly catalogName: string;
         readonly contactName?: string;
@@ -1059,17 +1058,15 @@ export namespace CatalogIModelTypes {
         };
         readonly version?: string;
     }
-    // (undocumented)
     export interface CreateNewVersionArgs {
-        // (undocumented)
         readonly containerId: string;
         readonly fromDb: NameAndVersion;
         readonly identifier?: string;
         readonly versionType: "major" | "minor" | "patch" | "premajor" | "preminor" | "prepatch" | "prerelease";
     }
-    // (undocumented)
+    // @internal
     export type IpcChannel = "catalogIModel/ipc";
-    // (undocumented)
+    // @internal (undocumented)
     export interface IpcMethods {
         acquireWriteLock(args: {
             containerId: string;
@@ -1080,7 +1077,6 @@ export namespace CatalogIModelTypes {
             oldDb: NameAndVersion;
             newDb: NameAndVersion;
         }>;
-        // (undocumented)
         getInfo(key: string): Promise<{
             manifest: CatalogIModelTypes.CatalogManifest;
             version: string;
@@ -1091,29 +1087,20 @@ export namespace CatalogIModelTypes {
             containerId: string;
             abandon?: true;
         }): Promise<void>;
-        // (undocumented)
         updateCatalogManifest(key: string, manifest: CatalogIModelTypes.CatalogManifest): Promise<void>;
     }
-    // (undocumented)
     export interface NameAndVersion {
         readonly dbName?: string;
         readonly version?: VersionRange;
     }
-    // (undocumented)
     export interface NewContainerProps {
-        // (undocumented)
         readonly baseUri: string;
-        // (undocumented)
         readonly containerId: string;
         readonly provider: "azure" | "google";
     }
-    // (undocumented)
     export interface OpenArgs extends NameAndVersion, SnapshotOpenOptions {
-        // (undocumented)
         containerId?: string;
-        // (undocumented)
         prefetch?: boolean;
-        // (undocumented)
         syncWithCloud?: boolean;
     }
     export type VersionRange = string;
@@ -9617,7 +9604,6 @@ export interface SpatialViewDefinitionProps extends ViewDefinition3dProps {
 
 // @beta
 export interface SqliteError extends ITwinError {
-    // (undocumented)
     dbName: string;
 }
 
@@ -11160,7 +11146,7 @@ export interface ViewStateProps {
     viewDefinitionProps: ViewDefinitionProps;
 }
 
-// @public
+// @beta
 export interface ViewStoreError extends ITwinError {
     viewStoreName?: string;
 }

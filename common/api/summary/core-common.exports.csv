@@ -92,9 +92,10 @@ public;interface;Carto2DDegreesProps
 public;class;Cartographic
 public;interface;CartographicProps
 public;class;CartographicRange
-public;namespace;CatalogError
-public;namespace;CatalogIModelTypes
-beta;interface;CatalogManifest
+beta;namespace;CatalogError
+beta;namespace;CatalogIModelTypes
+internal;type;IpcChannel
+internal;interface;IpcMethods
 public;interface;CategoryProps
 public;interface;CategorySelectorProps
 public;enum;CesiumTerrainAssetId
@@ -955,7 +956,7 @@ public;type;ViewIdString
 public;interface;ViewQueryParams
 public;interface;ViewStateLoadProps
 public;interface;ViewStateProps
-public;interface;ViewStoreError
+beta;interface;ViewStoreError
 beta;namespace;ViewStoreError
 beta;namespace;ViewStoreRpc
 public;type;IdString
