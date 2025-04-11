@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/ecschema-metadata",
+      "comment": "The method buildPropertyCache() now return a Property[] instead of being void and no longer has result: Property[] and existingValues: Map<string,number> as params.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/ecschema-metadata"
+}
