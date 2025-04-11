@@ -86,6 +86,7 @@ export class Model extends Entity {
     this.jsonProperties = { ...props.jsonProperties }; // make sure we have our own copy
   }
 
+  /** @internal */
   public static override deserialize(props: InstanceProps): ModelProps {
     const instance = props.row;
     const modelProps = super.deserialize(props) as ModelProps;
@@ -101,6 +102,7 @@ export class Model extends Entity {
     return modelProps;
   }
 
+  /** @internal */
   public static override serialize(props: ModelProps, _iModel: IModelDb): ECSqlRow {
     const inst = super.serialize(props, _iModel);
     return inst;
@@ -151,7 +153,8 @@ export class Model extends Entity {
    * @note `this` is the class of the Model that was updated.
    * @beta
    */
-  protected static onUpdated(_arg: OnModelIdArg): void {
+  protected static onUpdated(arg: OnModelIdArg): void {
+    arg.iModel.models.cache.delete(arg.id);
   }
 
   /** Called before a Model is deleted.
@@ -170,7 +173,10 @@ export class Model extends Entity {
    * @note `this` is the class of the Model that was deleted
    * @beta
    */
-  protected static onDeleted(_arg: OnModelIdArg): void { }
+  protected static onDeleted(arg: OnModelIdArg): void {
+    arg.iModel.models.cache.delete(arg.id);
+    arg.iModel.elements.cache.deleteWithModel(arg.id);
+  }
 
   /** Called before a prospective Element is to be inserted into an instance of a Model of this class.
    * @note throw an exception to disallow the insert
@@ -185,7 +191,9 @@ export class Model extends Entity {
    * @note `this` is the class of the Model holding the element
    * @beta
    */
-  protected static onInsertedElement(_arg: OnElementInModelIdArg): void { }
+  protected static onInsertedElement(arg: OnElementInModelIdArg): void {
+    arg.iModel.models.cache.delete(arg.id);
+  }
 
   /** Called when an Element in an instance of a Model of this class is about to be updated.
    * @note throw an exception to disallow the update
@@ -200,7 +208,9 @@ export class Model extends Entity {
    * @note `this` is the class of the Model holding the element
    * @beta
    */
-  protected static onUpdatedElement(_arg: OnElementInModelIdArg): void { }
+  protected static onUpdatedElement(arg: OnElementInModelIdArg): void {
+    arg.iModel.models.cache.delete(arg.id);
+  }
 
   /** Called when an Element in an instance of a Model of this class is about to be deleted.
    * @note throw an exception to disallow the delete
@@ -215,7 +225,9 @@ export class Model extends Entity {
    * @note `this` is the class of the Model that held the element
    * @beta
    */
-  protected static onDeletedElement(_arg: OnElementInModelIdArg): void { }
+  protected static onDeletedElement(arg: OnElementInModelIdArg): void {
+    arg.iModel.models.cache.delete(arg.id);
+  }
 
   private getAllUserProperties(): any {
     if (!this.jsonProperties.UserProps)

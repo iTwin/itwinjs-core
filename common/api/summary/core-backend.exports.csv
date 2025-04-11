@@ -71,6 +71,7 @@ beta;interface;CreateFontFileFromShxBlobArgs
 public;interface;CreateNewIModelProps
 beta;interface;CreateNewWorkspaceContainerArgs
 beta;interface;CreateNewWorkspaceDbVersionArgs
+internal;interface;CustomHandledProperty
 public;class;DefinitionContainer
 public;class;DefinitionElement
 public;class;DefinitionGroup
@@ -119,6 +120,7 @@ public;class;ECSqlBinder
 public;interface;ECSqlColumnInfo
 deprecated;interface;ECSqlColumnInfo
 public;class;ECSqlInsertResult
+internal;interface;ECSqlRow
 public;interface;ECSqlRowArg
 public;class;ECSqlStatement
 deprecated;class;ECSqlStatement
@@ -267,6 +269,7 @@ internal;function;initializeTracing
 beta;interface;InlineGeometryPartsResult
 public;interface;InsertElementOptions
 beta;interface;InstanceChange
+internal;interface;InstanceProps
 public;class;IpcHandler
 public;class;IpcHost
 public;interface;IpcHostOpts

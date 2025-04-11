@@ -6,20 +6,12 @@ import { assert } from "chai";
 import { DbResult, Id64 } from "@itwin/core-bentley";
 import { DbQueryRequest, DbQueryResponse, DbRequestExecutor, DbRequestKind, ECSqlReader, QueryBinder, QueryOptionsBuilder, QueryPropertyMetaData, QueryRowFormat } from "@itwin/core-common";
 import { ConcurrentQuery } from "../../ConcurrentQuery";
-import { _nativeDb, ECSqlStatement, IModelDb, SnapshotDb } from "../../core-backend";
+import { _nativeDb, ECSqlStatement, SnapshotDb } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { SequentialLogMatcher } from "../SequentialLogMatcher";
 import * as path from "path";
 
 // cspell:ignore mirukuru ibim
-
-async function executeQuery(iModel: IModelDb, ecsql: string, bindings?: any[] | object, abbreviateBlobs?: boolean): Promise<any[]> {
-  const rows: any[] = [];
-  for await (const queryRow of iModel.createQueryReader(ecsql, QueryBinder.from(bindings), { rowFormat: QueryRowFormat.UseJsPropertyNames, abbreviateBlobs })) {
-    rows.push(queryRow.toRow());
-  }
-  return rows;
-}
 
 describe("ECSql Query", () => {
   let imodel1: SnapshotDb;

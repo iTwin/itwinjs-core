@@ -13,18 +13,21 @@ import { Schema } from "./Schema";
 import { EntityClass, PropertyHandler, SchemaItemKey } from "@itwin/ecschema-metadata";
 import { _nativeDb } from "./internal/Symbols";
 
+/** @internal */
 export interface ECSqlRow {
   [key: string]: any
 }
 
+/** @internal */
 export interface InstanceProps {
-  row: ECSqlRow;
-  iModel: IModelDb;
-  options?: {
-    element?: ElementLoadOptions;
+  readonly row: ECSqlRow;
+  readonly iModel: IModelDb;
+  readonly options?: {
+    readonly element?: ElementLoadOptions;
   }
 }
 
+/** @internal */
 export interface CustomHandledProperty {
   readonly propertyName: string;
   readonly source: "Class" | "Computed";
@@ -96,14 +99,13 @@ export class Entity {
     return new subclass(props, iModel);
   }
 
-  /* @internal */
+  /** @internal */
   protected static readonly _customHandledProps: CustomHandledProperty[] = [
     { propertyName: "id", source: "Class" },
     { propertyName: "className", source: "Class" },
     { propertyName: "jsonProperties", source: "Class" }
   ];
 
-  /* @internal */
   private static getCustomHandledProperties(): readonly CustomHandledProperty[] {
     if (this.name === "Entity") {
       return this._customHandledProps;
@@ -116,7 +118,7 @@ export class Entity {
     ];
   }
 
-  /* @internal */
+  /** @internal */
   public static deserialize(props: InstanceProps): EntityProps {
     const enProps: EntityProps = {
       classFullName: props.row.classFullName,
@@ -135,7 +137,7 @@ export class Entity {
     return enProps;
   }
 
-  /* @internal */
+  /** @internal */
   public static serialize(props: EntityProps, _iModel: IModelDb): ECSqlRow {
     const inst: ECSqlRow = {
       classFullName: props.classFullName,
