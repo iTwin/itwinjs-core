@@ -30,7 +30,7 @@ jobs:
           poolName:
           nodeVersion: 18.x
         MacOS_node_18_x:
-          imageName:
+          imageName: # Leaving blank will default to Pool. Excluding field will cause errors in yml
           poolName: "iModelTechMacArm" # macos-latest is 13.0, and breaks tests using sandbox
           nodeVersion: 18.x
         Linux_node_20_x:
