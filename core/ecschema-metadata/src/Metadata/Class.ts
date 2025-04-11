@@ -33,6 +33,7 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
   protected _properties?: Map<string, Property>;
   private _customAttributes?: Map<string, CustomAttribute>;
   private _mergedPropertyCache?: Property[];
+  private _propertyCachePromise?: Promise<Property[]>;
 
   public get modifier() { return this._modifier; }
   public get baseClass(): LazyLoadedECClass | undefined { return this._baseClass; }
@@ -507,19 +508,18 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
     }
   }
 
-  protected async buildPropertyCache(result: Property[], existingValues?: Map<string, number>, resetBaseCaches: boolean = false): Promise<void> {
-    if (!existingValues) {
-      existingValues = new Map<string, number>();
-    }
+  protected async buildPropertyCache(resetBaseCaches: boolean = false): Promise<Property[]> {
+    const result: Property[] = [];
+    const existingValues = new Map<string, number>();
 
     if (this.baseClass) {
       ECClass.mergeProperties(result, existingValues, await (await this.baseClass).getProperties(resetBaseCaches), false);
     }
 
-    if (!this.properties)
-      return;
-
-    ECClass.mergeProperties(result, existingValues, [...this.properties], true);
+    if (this.properties) {
+      ECClass.mergeProperties(result, existingValues, [...this.properties], true);
+    }
+    return result;
   }
 
   protected buildPropertyCacheSync(result: Property[], existingValues?: Map<string, number>, resetBaseCaches: boolean = false): void {
@@ -558,12 +558,32 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
    * @param resetCache if true, any previously cached results will be dropped and cache will be rebuilt
    */
   public async getProperties(resetCache: boolean = false): Promise<Property[]> {
-    if (!this._mergedPropertyCache || resetCache) {
-      this._mergedPropertyCache = [];
-      await this.buildPropertyCache(this._mergedPropertyCache, undefined, resetCache);
+    if (resetCache) {
+      this._mergedPropertyCache = undefined;
+      this._propertyCachePromise = undefined;
     }
 
-    return this._mergedPropertyCache;
+    //If we already have a cache, just return it
+    if (this._mergedPropertyCache) {
+      return this._mergedPropertyCache;
+    }
+
+    //If we already a promise, just return it
+    //This is to prevent multiple calls to buildPropertyCache()
+    if (this._propertyCachePromise) {
+      return this._propertyCachePromise;
+    }
+
+    //If not then, build the property cache and return it
+    //We use a promise to prevent multiple calls to buildPropertyCache() and to allow the caller to await the result
+    this._propertyCachePromise = this.buildPropertyCache(resetCache).then((result) => {
+      this._mergedPropertyCache = result;
+      return result;
+    }).finally(() => {
+      this._propertyCachePromise = undefined;
+    });
+
+    return this._propertyCachePromise;
   }
 
   /**

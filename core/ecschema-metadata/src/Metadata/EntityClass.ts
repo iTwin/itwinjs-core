@@ -106,10 +106,10 @@ export class EntityClass extends ECClass {
     return undefined;
   }
 
-  protected override async buildPropertyCache(result: Property[], existingValues?: Map<string, number>, resetBaseCaches: boolean = false): Promise<void> {
-    if (!existingValues) {
-      existingValues = new Map<string, number>();
-    }
+  protected override async buildPropertyCache(resetBaseCaches: boolean = false): Promise<Property[]> {
+    const result: Property[] = [];
+    const existingValues = new Map<string, number>();
+
 
     if (this.baseClass) {
       ECClass.mergeProperties(result, existingValues, await (await this.baseClass).getProperties(resetBaseCaches), false);
@@ -119,10 +119,10 @@ export class EntityClass extends ECClass {
       ECClass.mergeProperties(result, existingValues, await (await mixin).getProperties(resetBaseCaches), false);
     }
 
-    if (!this.properties)
-      return;
+    if (this.properties)
+      ECClass.mergeProperties(result, existingValues, [...this.properties], true);
 
-    ECClass.mergeProperties(result, existingValues, [...this.properties], true);
+    return result;
   }
 
   protected override buildPropertyCacheSync(result: Property[], existingValues?: Map<string, number>, resetBaseCaches: boolean = false): void {
