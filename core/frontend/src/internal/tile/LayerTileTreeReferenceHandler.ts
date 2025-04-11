@@ -6,17 +6,16 @@
  * @module Tiles
  */
 
-import { BaseLayerSettings, ColorDef, MapLayerSettings } from "@itwin/core-common";
-import { SceneContext } from "../ViewContext";
-import { createMapLayerTreeReference, ImageryMapLayerTreeReference, ImageryMapTileTree, MapLayerTileTreeReference, ModelMapLayerTileTreeReference, TileTreeLoadStatus, TileTreeOwner } from "./internal";
-import { IModelConnection } from "../IModelConnection";
+import { BaseLayerSettings, ColorDef, MapImagerySettings, MapLayerSettings } from "@itwin/core-common";
+import { SceneContext } from "../../ViewContext";
+import { compareMapLayer, createMapLayerTreeReference, DisclosedTileTreeSet, ImageryMapLayerTreeReference, ImageryMapTileTree, MapLayerTileTreeReference, ModelMapLayerTileTreeReference, TileTreeLoadStatus, TileTreeOwner } from "../../tile/internal";
+import { IModelConnection } from "../../IModelConnection";
 
 /** @internal */
 export interface LayerTileTreeReference {
   iModel: IModelConnection;
   treeOwner: TileTreeOwner;
   shouldDrapeLayer: (layerTreeRef?: MapLayerTileTreeReference) => boolean;
-  preInitializeLayers?: (context: SceneContext) => void;
 }
 
 /** @internal */
@@ -29,6 +28,8 @@ export class LayerTileTreeReferenceHandler {
   protected _baseColor?: ColorDef;
   protected _layerSettings: MapLayerSettings[];
   private _ref: LayerTileTreeReference;
+  private readonly _mapTile: boolean;
+  private readonly _detachFromDisplayStyle: VoidFunction[] = [];
 
   public get layerTrees() { return this._layerTrees; }
   public get baseColor() { return this._baseColor; }
@@ -36,11 +37,18 @@ export class LayerTileTreeReferenceHandler {
   public get baseImageryLayerIncluded() { return this._baseImageryLayerIncluded; }
   public get layerSettings() { return this._layerSettings; }
 
-  public constructor(ref: LayerTileTreeReference, pIsOverlay: boolean, baseLayerSettings?: BaseLayerSettings, layerSettings?: MapLayerSettings[]) {
+  public discloseTileTrees(trees: DisclosedTileTreeSet): void {
+    for (const imageryTree of this.layerTrees)
+      if (imageryTree)
+        trees.disclose(imageryTree);
+  }
+
+  public constructor(ref: LayerTileTreeReference, pIsOverlay: boolean, baseLayerSettings?: BaseLayerSettings, layerSettings?: MapLayerSettings[], mapTile: boolean = false) {
     this._ref = ref;
     this._baseLayerSettings = baseLayerSettings;
     this._layerSettings = layerSettings ? layerSettings : [];
     this.isOverlay = pIsOverlay;
+    this._mapTile = mapTile;
 
     let tree;
     if (!this.isOverlay && this._baseLayerSettings !== undefined) {
@@ -64,11 +72,27 @@ export class LayerTileTreeReferenceHandler {
   }
 
   public initializeLayers(context: SceneContext): boolean {
-    if (undefined !== this._ref.preInitializeLayers)
-      this._ref.preInitializeLayers(context);
+    // Map tiles handle refresh logic differently
+    if(!this._mapTile){
+      const removals = this._detachFromDisplayStyle;
+      const mapImagery = context.viewport.displayStyle.settings.mapImagery;
+      if (0 === removals.length) {
+        removals.push(context.viewport.displayStyle.settings.onMapImageryChanged.addListener((imagery: Readonly<MapImagerySettings>) => {
+          this.setBaseLayerSettings(imagery.backgroundBase);
+          this.setLayerSettings(imagery.backgroundLayers);
+          this.clearLayers();
+        }));
+      }
+      removals.push(context.viewport.onChangeView.addListener((vp, previousViewState) => {
+        if(compareMapLayer(previousViewState, vp.view)){
+          this.setBaseLayerSettings(mapImagery.backgroundBase);
+          this.setLayerSettings(mapImagery.backgroundLayers);
+          this.clearLayers();
+        }
+      }));
+    }
 
     let hasLoadedTileTree = false;
-
     const layerHandler = this._ref.treeOwner.load()?.layerHandler;
     if (undefined === layerHandler) {
       return hasLoadedTileTree;     // Not loaded yet - or no layerHandler on tree.

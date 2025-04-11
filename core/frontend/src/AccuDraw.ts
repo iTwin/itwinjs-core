@@ -8,7 +8,7 @@
  */
 import { BentleyStatus, Id64String } from "@itwin/core-bentley";
 import {
-  Arc3d, AxisOrder, CurveCurve, CurveCurveApproachType, CurvePrimitive, Geometry, IModelJson as GeomJson, LineSegment3d, LineString3d, Matrix3d, Plane3dByOriginAndUnitNormal, Point2d, Point3d,
+  Arc3d, AxisOrder, CurveCurve, CurveCurveApproachType, CurvePrimitive, Geometry, IModelJson as GeomJson, LineSegment3d, Matrix3d, Plane3dByOriginAndUnitNormal, Point2d, Point3d,
   PointString3d, Ray3d, Transform, Vector2d, Vector3d,
 } from "@itwin/core-geometry";
 import { ColorByName, ColorDef, GeometryStreamProps, LinePixels } from "@itwin/core-common";
@@ -1509,66 +1509,39 @@ export class AccuDraw {
   /** @internal */
   public static getSnapRotation(snap: SnapDetail, currentVp: Viewport | undefined, out?: Matrix3d): Matrix3d | undefined {
     const vp = (undefined !== currentVp) ? currentVp : snap.viewport;
+    const snapDetail = snap.primitive?.closestPoint(snap.snapPoint, false);
+    const frame = snapDetail?.curve?.fractionToFrenetFrame(snapDetail.fraction);
+
+    if (undefined === frame && undefined === snap.normal)
+      return undefined;
+
+    const zVec = (vp.view.allow3dManipulations() ? (snap.normal?.clone() ?? frame?.matrix.columnZ()) : Vector3d.unitZ());
+    if (undefined === zVec)
+      return undefined;
+
     const rotation = out ? out : new Matrix3d();
     const viewZ = vp.rotation.rowZ();
-    const snapLoc = (undefined !== snap.primitive ? snap.primitive.closestPoint(snap.snapPoint, false) : undefined);
 
-    if (undefined !== snapLoc) {
-      const frame = snap.primitive!.fractionToFrenetFrame(snapLoc.fraction);
-      const frameZ = (undefined !== frame ? frame.matrix.columnZ() : Vector3d.unitZ());
-      let xVec = (undefined !== frame ? frame.matrix.columnX() : Vector3d.unitX());
-      const zVec = (vp.view.allow3dManipulations() ? (undefined !== snap.normal ? snap.normal.clone() : frameZ.clone()) : Vector3d.unitZ());
+    zVec.normalizeInPlace();
+    if (zVec.dotProduct(viewZ) < 0.0)
+      zVec.negate(zVec);
 
-      if (!vp.isCameraOn && viewZ.isPerpendicularTo(zVec))
-        zVec.setFrom(viewZ);
-
+    if (frame) {
+      const xVec = frame.matrix.columnX();
       xVec.normalizeInPlace();
-      zVec.normalizeInPlace();
-
-      let yVec = xVec.unitCrossProduct(zVec);
+      const yVec = zVec.unitCrossProduct(xVec);
 
       if (undefined !== yVec) {
-        const viewX = vp.rotation.rowX();
-        if (snap.primitive instanceof LineString3d) {
-          if (Math.abs(xVec.dotProduct(viewX)) < Math.abs(yVec.dotProduct(viewX)))
-            xVec = yVec;
-          if (xVec.dotProduct(viewX) < 0.0)
-            xVec.negate(xVec);
-        } else {
-          const ray = snap.primitive!.fractionToPointAndUnitTangent(0.0);
-          if (ray.direction.dotProduct(viewX) < 0.0 && ray.direction.dotProduct(xVec) > 0.0)
-            xVec.negate(xVec);
-        }
-
-        if (zVec.dotProduct(viewZ) < 0.0)
-          zVec.negate(zVec);
-
-        yVec = xVec.unitCrossProduct(zVec);
-
-        if (undefined !== yVec) {
-          rotation.setColumns(xVec, yVec, zVec);
-          Matrix3d.createRigidFromMatrix3d(rotation, AxisOrder.XZY, rotation);
-          rotation.transposeInPlace();
-
-          return rotation;
-        }
+        rotation.setColumns(xVec, yVec, zVec);
+        rotation.makeRigid();
+        rotation.transposeInPlace();
+        return rotation;
       }
     }
 
-    if (undefined !== snap.normal) {
-      const zVec = (vp.view.allow3dManipulations() ? snap.normal.clone() : Vector3d.unitZ());
-
-      if (!vp.isCameraOn && viewZ.isPerpendicularTo(zVec))
-        zVec.setFrom(viewZ);
-
-      zVec.normalizeInPlace();
-      Matrix3d.createRigidHeadsUp(zVec, undefined, rotation);
-      rotation.transposeInPlace();
-
-      return rotation;
-    }
-
-    return undefined;
+    Matrix3d.createRigidHeadsUp(zVec, undefined, rotation);
+    rotation.transposeInPlace();
+    return rotation;
   }
 
   /** @internal */
