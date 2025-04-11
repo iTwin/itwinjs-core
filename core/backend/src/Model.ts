@@ -88,6 +88,8 @@ export class Model extends Entity {
 
   /** @internal */
   protected static override readonly _customHandledProps: CustomHandledProperty[] = [
+    { propertyName: "isPrivate", source: "Class" },
+    { propertyName: "isTemplate", source: "Class" },
     { propertyName: "lastMod", source: "Class" },
   ];
 
@@ -104,12 +106,16 @@ export class Model extends Entity {
       else
         modelProps.parentModel = modeledElementProps.model;
     }
+    modelProps.isPrivate = instance.isPrivate ? true : undefined;
+    modelProps.isTemplate = instance.isTemplate ? true : undefined;
     return modelProps;
   }
 
   /** @internal */
   public static override serialize(props: ModelProps, _iModel: IModelDb): ECSqlRow {
     const inst = super.serialize(props, _iModel);
+    inst.isPrivate = props.isPrivate ?? false;
+    inst.isTemplate = props.isTemplate ?? false;
     return inst;
   }
 
@@ -316,6 +322,29 @@ export abstract class GeometricModel3d extends GeometricModel {
     super(props, iModel);
     this.isNotSpatiallyLocated = JsonUtils.asBool(props.isNotSpatiallyLocated);
     this.isPlanProjection = JsonUtils.asBool(props.isPlanProjection);
+  }
+
+  /** @internal */
+  protected static override readonly _customHandledProps: CustomHandledProperty[] = [
+    { propertyName: "isPlanProjection", source: "Class" },
+    { propertyName: "isNotSpatiallyLocated", source: "Class" },
+  ];
+
+  /** @internal */
+  public static override deserialize(props: InstanceProps): GeometricModel3dProps {
+    const modelProps = super.deserialize(props) as GeometricModel3dProps;
+    const instance = props.row;
+    modelProps.isPrivate = instance.isNotSpatiallyLocated ? true : undefined;
+    modelProps.isTemplate = instance.isPlanProjection ? true : undefined;
+    return modelProps;
+  }
+
+  /** @internal */
+  public static override serialize(props: GeometricModel3dProps, _iModel: IModelDb): ECSqlRow {
+    const inst = super.serialize(props, _iModel);
+    inst.isNotSpatiallyLocated = props.isNotSpatiallyLocated ?? false;
+    inst.isPlanProjection = props.isPlanProjection ?? false;
+    return inst;
   }
 
   public override toJSON(): GeometricModel3dProps {
