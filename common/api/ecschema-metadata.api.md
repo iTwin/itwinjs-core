@@ -733,7 +733,7 @@ export class Format extends SchemaItem {
     // (undocumented)
     get type(): FormatType;
     // (undocumented)
-    get units(): ReadonlyArray<[InvertedUnit | Unit, string | undefined]> | undefined;
+    get units(): ReadonlyArray<[Unit | InvertedUnit, string | undefined]> | undefined;
     // (undocumented)
     get uomSeparator(): string;
 }
@@ -1050,7 +1050,7 @@ export class OverrideFormat {
     // (undocumented)
     get type(): FormatType;
     // (undocumented)
-    get units(): readonly [InvertedUnit | Unit, string | undefined][] | undefined;
+    get units(): readonly [Unit | InvertedUnit, string | undefined][] | undefined;
     // (undocumented)
     get uomSeparator(): string;
 }
