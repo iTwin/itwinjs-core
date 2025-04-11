@@ -246,8 +246,8 @@ export abstract class ViewDefinition extends DefinitionElement {
 
   /** @internal */
   protected static override readonly _customHandledProps: CustomHandledProperty[] = [
-    { propertyName: "categorySelectorId", source: "Class" },
-    { propertyName: "displayStyleId", source: "Class" },
+    { propertyName: "categorySelector", source: "Class" },
+    { propertyName: "displayStyle", source: "Class" },
   ];
 
   /** @internal */
@@ -387,11 +387,11 @@ export abstract class ViewDefinition3d extends ViewDefinition {
     const instance = props.row;
     const elProps = super.deserialize(props) as ViewDefinition3dProps;
     // ViewDefinition3dProps
-    if ("isCameraOn" in props && props.isCameraOn !== undefined) {
-      elProps.cameraOn = props.isCameraOn as boolean;
-      elProps.camera = { eye: instance.eyePoint, focusDist: instance.focusDistance, lens: instance.lensAngle };
-      elProps.angles = { yaw: instance.yaw, roll: instance.roll, pitch: instance.pitch };
-    }
+
+    elProps.cameraOn = instance.isCameraOn as boolean;
+    elProps.camera = { eye: instance.eyePoint, focusDist: instance.focusDistance, lens: instance.lensAngle };
+    elProps.angles = { yaw: instance.yaw, roll: instance.roll, pitch: instance.pitch };
+
     return elProps;
   }
 

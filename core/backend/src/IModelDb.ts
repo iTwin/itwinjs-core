@@ -72,8 +72,7 @@ import { _close, _hubAccess, _nativeDb, _releaseAllLocks } from "./internal/Symb
 import { SchemaContext, SchemaJsonLocater } from "@itwin/ecschema-metadata";
 import { SchemaMap } from "./Schema";
 import { ElementLRUCache, LruCache } from "./LRUCaches";
-
-
+const jsonDiff = require("json-diff");
 // spell:ignore fontid fontmap
 
 const loggerCategory: string = BackendLoggerCategory.IModelDb;
@@ -1753,6 +1752,14 @@ export namespace IModelDb {
           const classDef = this._iModel.getJsClass<typeof Model>(rawInstance.classFullName);
           const modelProps = classDef.deserialize({ row: rawInstance, iModel: this._iModel }) as T;
           this.cache.set(id, modelProps);
+          const oldProps = this._iModel[_nativeDb].getModel({ id }) as T;
+          const diff = jsonDiff.diffString(modelProps, oldProps);
+          if (diff) {
+            console.log("Model props differ");
+            console.log(diff);
+            console.log("New props", JSON.stringify(modelProps, undefined, 2));
+            console.log("Old props", JSON.stringify(oldProps, undefined, 2));
+          }
           return modelProps;
         } else {
           return this._iModel[_nativeDb].getModel({ id }) as T;
@@ -2038,6 +2045,14 @@ export namespace IModelDb {
           const classDef = this._iModel.getJsClass<typeof Element>(rawInstance.classFullName);
           const elementProps = classDef.deserialize({ row: rawInstance, iModel: this._iModel, options: { element: props } }) as T;
           this.cache.set({ elProps: elementProps, loadOptions: props });
+          const oldProps = this._iModel[_nativeDb].getElement(props) as T
+          const diff = jsonDiff.diffString(elementProps, oldProps);
+          if (diff) {
+            console.log("Element props differ");
+            console.log(diff);
+            console.log("New props", JSON.stringify(elementProps, undefined, 2));
+            console.log("Old props", JSON.stringify(oldProps, undefined, 2));
+          }
           return elementProps;
         }
         return this._iModel[_nativeDb].getElement(props) as T;

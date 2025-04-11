@@ -15,7 +15,7 @@ import {
   InformationPartitionElementProps, ModelProps, RelatedElement,
 } from "@itwin/core-common";
 import { DefinitionPartition, DocumentPartition, InformationRecordPartition, PhysicalPartition, SheetIndexPartition, SpatialLocationPartition } from "./Element";
-import { ECSqlRow, Entity, InstanceProps } from "./Entity";
+import { CustomHandledProperty, ECSqlRow, Entity, InstanceProps } from "./Entity";
 import { IModelDb } from "./IModelDb";
 import { SubjectOwnsPartitionElements } from "./NavigationRelationship";
 import { _nativeDb, _verifyChannel } from "./internal/Symbols";
@@ -85,6 +85,11 @@ export class Model extends Entity {
     this.isTemplate = JsonUtils.asBool(props.isTemplate);
     this.jsonProperties = { ...props.jsonProperties }; // make sure we have our own copy
   }
+
+  /** @internal */
+  protected static override readonly _customHandledProps: CustomHandledProperty[] = [
+    { propertyName: "lastMod", source: "Class" },
+  ];
 
   /** @internal */
   public static override deserialize(props: InstanceProps): ModelProps {
