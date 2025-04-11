@@ -478,9 +478,21 @@ export class SchemaComparer {
     const promises: Array<Promise<void>> = [];
 
     if (koqA.presentationFormats) {
-      for (const unitA of koqA.presentationFormats) {
-        if (-1 === koqB.presentationFormats.findIndex((unitB) => this.areOverrideFormatsSameByName(unitA, unitB, koqA.schema.name, koqB.schema.name)))
+      for (const lazyUnitA of koqA.presentationFormats) {
+        const unitA = OverrideFormat.isOverrideFormat(lazyUnitA) ? lazyUnitA : await lazyUnitA;
+
+        let itemFound = false;
+        for(const lazyUnitB of koqB.presentationFormats) {
+          const unitB = OverrideFormat.isOverrideFormat(lazyUnitB) ? lazyUnitB : await lazyUnitB;
+          if (this.areOverrideFormatsSameByName(unitA, unitB, koqA.schema.name, koqB.schema.name)) {
+            itemFound = true;
+            break;
+          }
+        }
+
+        if (!itemFound) {
           promises.push(this._reporter.reportPresentationUnitMissing(koqA, unitA, this._compareDirection));
+        }
       }
     }
 

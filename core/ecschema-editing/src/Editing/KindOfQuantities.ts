@@ -72,7 +72,7 @@ export class KindOfQuantities extends SchemaItems {
     try {
       const kindOfQuantity = await this.getSchemaItem(koqKey, MutableKindOfQuantity);
       const presentationFormat = await this.getSchemaItem(format, Format);
-      kindOfQuantity.addPresentationFormat(presentationFormat, isDefault);
+      kindOfQuantity.addPresentationFormat(new DelayedPromiseWithProps(presentationFormat.key, async () => presentationFormat), isDefault);
     } catch(e: any) {
       throw new SchemaEditingError(ECEditingStatus.AddPresentationUnit, new SchemaItemId(this.schemaItemType, koqKey), e);
     }
