@@ -14,7 +14,7 @@ Table of contents:
     - [Text Block Margins](#text-block-margins)
   - [Display](#display)
     - [Read image to canvas](#read-image-to-canvas)
-    - [Draping models onto reality data](#draping-models-onto-reality-data)
+    - [Draping iModel models onto reality data or other iModel models](#draping-imodel-models-onto-reality-data-or-other-imodel-models)
   - [Back-end image conversion](#back-end-image-conversion)
   - [Presentation](#presentation)
     - [Unified selection move to `@itwin/unified-selection`](#unified-selection-move-to-itwinunified-selection)
@@ -112,13 +112,17 @@ Previously, when using [Viewport.readImageToCanvas]($core-frontend) with a singl
 
 If [ReadImageToCanvasOptions]($core-frontend) are undefined in the call to [Viewport.readImageToCanvas]($core-frontend), previous behavior will persist and canvas decorations will not be included. This means canvas decorations will not be included when there is a single open viewport, but will be included when there are multiple open viewports. All existing calls to [Viewport.readImageToCanvas]($core-frontend) will be unaffected by this change as the inclusion of [ReadImageToCanvasOptions]($core-frontend) is optional, and when they are undefined, previous behavior will persist.
 
-### Draping models onto reality data
+### Draping iModel models onto reality data or other iModel models
 
-A new property titled `drapeTarget` has been added to [ModelMapLayerProps]($common) and [ModelMapLayerSettings]($common). When this property is specified as [ModelMapLayerDrapeTarget.RealityData]($common), the model map layer will be only draped onto all attached reality data. If `drapeTarget` is not specified in the properties, it will default to [ModelMapLayerDrapeTarget.Globe]($common), which will only drape the model map layer onto the globe.
+A new property titled `drapeTarget` has been added to [ModelMapLayerProps]($common) and [ModelMapLayerSettings]($common). When this property is specified as [ModelMapLayerDrapeTarget.RealityData]($common), the model map layer will be only draped onto all attached reality data. When this property is specified as [ModelMapLayerDrapeTarget.IModel]($common), the model map layer will be only draped onto all models within the iModel. If `drapeTarget` is not specified in the properties, the drape target will default to [ModelMapLayerDrapeTarget.Globe]($common), which will only drape the model map layer onto the globe.
 
 Here is a sample screenshot of draping a model from within an iModel (the piping in the air) onto some glTF reality data (the terrain underneath):
 
 ![model onto reality draping example](./assets/model-draping-onto-reality.jpg "Example of draping a model from within an iModel (the piping in the air) onto some glTF reality data (the terrain underneath)")
+
+Here is a sample screenshot of draping a model from within an iModel onto all models from that same iModel. The red piping model is draping onto all models (even itself); all of these models are contained within the same iModel.
+
+![models onto models draping example](./assets/models-draping-onto-models.jpg "Example of draping models from within an iModel onto all models from that same iModel")
 
 ## Back-end image conversion
 
@@ -767,6 +771,7 @@ For more information read [Pull merge & conflict resolution](../learning/backend
   This flag has been removed. The cache is automatically cleared, and in cases when base classes change, there is a new `ECClass.cleanCache()` method.
 - Updated the `ECClass.getProperty` and `ECClass.getPropertySync` method signatures to include inherited properties by default, not exclude them. This aligns
   with `ECClass.getProperties/Sync()` signature.
+
   ```ts
   public async getProperty(name: string, excludeInherited: boolean = false): Promise<Property | undefined>
   ```

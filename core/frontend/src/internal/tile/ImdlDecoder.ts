@@ -13,6 +13,7 @@ import { RenderSystem } from "../../render/RenderSystem";
 import type { ImdlTimeline } from "../../common/imdl/ParseImdlDocument";
 import { acquireImdlParser, ImdlReaderResult, readImdlContent } from "../../tile/internal";
 import { BatchOptions } from "../../common/render/BatchOptions";
+import { LayerTileData } from "../render/webgl/MapLayerParams";
 
 /** Arguments supplied to [[ImdlDecoder.decode]].
  */
@@ -29,6 +30,7 @@ export interface ImdlDecodeArgs {
    * with [[GraphicBranch.groupNodeId]] set to the index of the group to which the model belongs.
    */
   modelGroups?: Id64Set[];
+  tileData?: LayerTileData;
 }
 
 /** An object that can decode graphics in iMdl format.

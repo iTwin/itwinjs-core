@@ -7,10 +7,10 @@
  */
 
 import { Id64String } from "@itwin/core-bentley";
-import { ImageryMapTileTree, ImageryTileTreeState, ModelMapLayerTileTreeReference, Tile, TileDrawArgs } from "./internal";
+import { ImageryMapTileTree, ImageryTileTreeState, ModelMapLayerTileTreeReference, Tile, TileDrawArgs } from "../../tile/internal";
 import { MapLayerSettings } from "@itwin/core-common";
-import { RenderPlanarClassifier } from "../internal/render/RenderPlanarClassifier";
-import { SceneContext } from "../ViewContext";
+import { RenderPlanarClassifier } from "../render/RenderPlanarClassifier";
+import { SceneContext } from "../../ViewContext";
 
 /** Utility interface that ties an imagery tile tree to its corresponding map-layer settings object.
  * @internal
@@ -59,7 +59,8 @@ export class LayerTileTreeHandler {
 
   /** @internal */
   public addModelLayer(layerTreeRef: ModelMapLayerTileTreeReference, context: SceneContext) {
-    const classifier = context.addPlanarClassifier(`MapLayer ${this._ref.modelId}-${layerTreeRef.layerIndex}`, layerTreeRef);
+    const tileTreeClassName = this._ref.rootTile.tree.constructor.name;
+    const classifier = context.addPlanarClassifier(`MapLayer ${tileTreeClassName}-${this._ref.modelId}-${layerTreeRef.layerIndex}`, layerTreeRef);
     if (classifier)
       this.layerClassifiers.set(layerTreeRef.layerIndex, classifier);
   }
