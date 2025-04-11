@@ -23,38 +23,38 @@ jobs:
       matrix:
         Linux_node_18_x:
           imageName: ubuntu-latest
-          poolName: # Leaving blank defaults to image. Excluding field will cause errors in yml
+          poolName: # Leaving blank will default to image. Excluding field will cause errors in yml
           nodeVersion: 18.x
         Windows_node_18_x:
           imageName: windows-latest
-          poolName: # Leaving blank defaults to image. Excluding field will cause errors in yml
+          poolName:
           nodeVersion: 18.x
         MacOS_node_18_x:
-          imageName: # Leaving blank defaults to pool. Excluding field will cause errors in yml
+          imageName:
           poolName: "iModelTechMacArm" # macos-latest is 13.0, and breaks tests using sandbox
           nodeVersion: 18.x
         Linux_node_20_x:
           imageName: ubuntu-22.04 # ubuntu-latest is 24.04, and breaks tests using sandbox
-          poolName: # Leaving blank defaults to image. Excluding field will cause errors in yml
+          poolName:
           nodeVersion: 20.x
         Windows_node_20_x:
           imageName: windows-latest
-          poolName: # Leaving blank defaults to image. Excluding field will cause errors in yml
+          poolName:
           nodeVersion: 20.x
         MacOS_node_20_x:
-          imageName: # Leaving blank defaults to pool. Excluding field will cause errors in yml
+          imageName:
           poolName: "iModelTechMacArm"
           nodeVersion: 20.x
         Linux_node_22_x:
           imageName: ubuntu-22.04 # ubuntu-latest is 24.04, and breaks tests using sandbox
-          poolName: # Leaving blank defaults to image. Excluding field will cause errors in yml
+          poolName:
           nodeVersion: 22.x
         Windows_node_22_x:
           imageName: windows-latest
-          poolName: # Leaving blank defaults to image. Excluding field will cause errors in yml
+          poolName:
           nodeVersion: 22.x
         MacOS_node_22_x:
-          imageName: # Leaving blank defaults to pool. Excluding field will cause errors in yml
+          imageName:
           poolName: "iModelTechMacArm"
           nodeVersion: 22.x
     pool:
