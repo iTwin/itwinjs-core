@@ -800,7 +800,9 @@ export namespace CloudSqlite {
             expires: container.writeLockExpires
           });
 
-        return container.acquireWriteLock(args.user);
+        container.acquireWriteLock(args.user);
+        container.writeLockHeldBy = args.user;
+        return;
       } catch (e: any) {
         if (e.errorNumber === 5 && args.busyHandler && "stop" !== await args.busyHandler(e.lockedBy, e.expires)) // 5 === BE_SQLITE_BUSY
           continue; // busy handler wants to try again
@@ -835,12 +837,12 @@ export namespace CloudSqlite {
   * @returns a Promise with the result of `operation`
   */
   export async function withWriteLock<T>(args: { user: string, container: CloudContainer, busyHandler?: WriteLockBusyHandler }, operation: () => Promise<T>): Promise<T> {
-    await acquireWriteLock(args);
     const containerInternal = args.container as CloudContainerInternal;
+    const wasLockedBy = containerInternal.writeLockHeldBy;
+    await acquireWriteLock(args);
     try {
-      if (containerInternal.writeLockHeldBy === args.user) // If the user already had the write lock, then don't release it.
+      if (wasLockedBy === args.user) // If the user already had the write lock, then don't release it.
         return await operation();
-      containerInternal.writeLockHeldBy = args.user;
       const val = await operation(); // wait for work to finish or fail
       releaseWriteLock(containerInternal);
       return val;
