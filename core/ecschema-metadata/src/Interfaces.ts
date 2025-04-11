@@ -6,7 +6,6 @@
  * @module Metadata
  */
 
-import { DelayedPromise } from "./DelayedPromise";
 import { ECClass, StructClass } from "./Metadata/Class";
 import { Constant } from "./Metadata/Constant";
 import { CustomAttribute, CustomAttributeContainerProps } from "./Metadata/CustomAttribute";
@@ -29,10 +28,10 @@ import { UnitSystem } from "./Metadata/UnitSystem";
 import { SchemaItemKey, SchemaKey } from "./SchemaKey";
 
 /** @public @preview */
-export type LazyLoadedSchema = SchemaKey & DelayedPromise<Schema> & Promise<Schema>;
+export type LazyLoadedSchema = SchemaKey & Promise<Schema>;
 
 /** @public @preview */
-export type LazyLoadedSchemaItem<T extends SchemaItem> = SchemaItemKey & DelayedPromise<T> & Promise<T>;
+export type LazyLoadedSchemaItem<T extends SchemaItem> = SchemaItemKey & Promise<T>;
 /** @public @preview */
 export type LazyLoadedECClass = LazyLoadedSchemaItem<ECClass>;
 /** @public @preview */

@@ -930,10 +930,10 @@ export type LazyLoadedRelationshipClass = LazyLoadedSchemaItem<RelationshipClass
 export type LazyLoadedRelationshipConstraintClass = LazyLoadedSchemaItem<EntityClass | Mixin | RelationshipClass>;
 
 // @public (undocumented)
-export type LazyLoadedSchema = SchemaKey & DelayedPromise<Schema> & Promise<Schema>;
+export type LazyLoadedSchema = SchemaKey & Promise<Schema>;
 
 // @public (undocumented)
-export type LazyLoadedSchemaItem<T extends SchemaItem> = SchemaItemKey & DelayedPromise<T> & Promise<T>;
+export type LazyLoadedSchemaItem<T extends SchemaItem> = SchemaItemKey & Promise<T>;
 
 // @public (undocumented)
 export type LazyLoadedStructClass = LazyLoadedSchemaItem<StructClass>;
