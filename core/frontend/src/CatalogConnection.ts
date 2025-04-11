@@ -34,17 +34,25 @@ export class CatalogConnection extends BriefcaseConnection {
     return NativeApp.catalogIpc.createNewVersion(args);
   }
 
-  public static async openReadonly(args: CatalogIModelTypes.OpenReadonlyArgs): Promise<CatalogConnection> {
+  public static async openReadonly(args: CatalogIModelTypes.OpenArgs): Promise<CatalogConnection> {
     const openResponse = await NativeApp.catalogIpc.openReadonly(args);
     const connection = new CatalogConnection(openResponse, OpenMode.Readonly);
     this.onOpen.raiseEvent(connection);
     return connection;
   }
 
-  public static async openEditable(args: CatalogIModelTypes.OpenEditableArgs): Promise<CatalogConnection> {
+  public static async openEditable(args: CatalogIModelTypes.OpenArgs): Promise<CatalogConnection> {
     const openResponse = await NativeApp.catalogIpc.openEditable(args);
     const connection = new CatalogConnection(openResponse, OpenMode.ReadWrite);
     this.onOpen.raiseEvent(connection);
     return connection;
+  }
+
+  public async getCatalogInfo(): Promise<{ manifest: CatalogIModelTypes.CatalogManifest, version: string }> {
+    return NativeApp.catalogIpc.getInfo(this.key);
+  }
+
+  public async updateCatalogManifest(manifest: CatalogIModelTypes.CatalogManifest): Promise<void> {
+    return NativeApp.catalogIpc.updateCatalogManifest(this.key, manifest);
   }
 }

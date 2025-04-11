@@ -523,7 +523,7 @@ class EditorContainerImpl extends WorkspaceContainerImpl implements EditableWork
     if (undefined === container)
       WorkspaceError.throwError("no-cloud-container", { message: "versions require cloud containers" });
 
-    const fromDb = this.resolveDbFileName(args.fromProps ?? {});
+    const fromDb = { ...args.fromProps, dbName: workspaceDbNameWithDefault(args.fromProps?.dbName) };
     return CloudSqlite.createNewDbVersion(container, { ...args, fromDb });
   }
 

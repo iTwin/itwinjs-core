@@ -6,13 +6,17 @@
  * @module iModels
  */
 
+import * as fs from "fs";
+import { join } from "path";
 import { CloudSqlite } from "./CloudSqlite";
-import { IModelHost } from "./IModelHost";
-import { type CatalogIModelTypes, CloudSqliteError, IModelConnectionProps } from "@itwin/core-common";
+import { IModelHost, KnownLocations } from "./IModelHost";
+import { BriefcaseIdValue, CatalogError, type CatalogIModelTypes, CloudSqliteError, IModelConnectionProps } from "@itwin/core-common";
 import { IpcHandler } from "./IpcHost";
 import { StandaloneDb } from "./IModelDb";
-import { OpenMode } from "@itwin/core-bentley";
+import { Guid, OpenMode } from "@itwin/core-bentley";
 import { _nativeDb } from "./internal/Symbols";
+import { IModelNative } from "./internal/NativePlatform";
+import { IModelJsNative } from "@bentley/imodeljs-native";
 
 interface CatalogCloudCache extends CloudSqlite.CloudCache {
   writeable: boolean;
@@ -21,6 +25,7 @@ interface CatalogCloudCache extends CloudSqlite.CloudCache {
 
 let readonlyCloudCache: CatalogCloudCache | undefined;
 let writeableCloudCache: CatalogCloudCache | undefined;
+const catalogManifestName = "CatalogManifest";
 
 const makeCloudCache = (arg: CloudSqlite.CreateCloudCacheArg, writeable: boolean) => {
   const cache = CloudSqlite.CloudCaches.getCache(arg) as CatalogCloudCache;
@@ -60,44 +65,91 @@ const getReadonlyContainer = async (containerId: string) => getCatalogContainerO
 const getWriteableContainer = async (containerId: string) => getCatalogContainerObj(getWritableCloudCache(), containerId);
 
 // Throw an error if the write lock is not held for the supplied container
-const ensureLocked = (container: CloudSqlite.CloudContainer, reason: string) => {
+function ensureLocked(container: CloudSqlite.CloudContainer, reason: string) {
   if (!container.hasWriteLock)
     CloudSqliteError.throwError("write-lock-not-held", { message: `Write lock must be held to ${reason}` });
 }
 
+function updateManifest(nativeDb: IModelJsNative.DgnDb, manifest: CatalogIModelTypes.CatalogManifest) {
+  nativeDb.saveLocalValue(catalogManifestName, JSON.stringify(manifest));
+  nativeDb.saveChanges("update manifest");
+}
+
 export class CatalogDb extends StandaloneDb {
-  public static async openCatalog(args: CatalogIModelTypes.OpenReadonlyArgs) {
+
+  public getManifest(): CatalogIModelTypes.CatalogManifest {
+    const manifestString = this[_nativeDb].queryLocalValue(catalogManifestName);
+    if (undefined === manifestString)
+      CatalogError.throwError("manifest-missing", { message: "Manifest is missing from Catalog" });
+    return JSON.parse(manifestString) as CatalogIModelTypes.CatalogManifest;
+  }
+  public getVersion(): string {
+    return CloudSqlite.parseDbFileName(this[_nativeDb].getFilePath()).version;
+  }
+}
+
+export class ReadonlyCatalog extends CatalogDb {
+  public static async openCatalog(args: CatalogIModelTypes.OpenArgs) {
     if (undefined === args.containerId) // local file?
       return super.openFile(args.dbName, OpenMode.Readonly, args);
 
     const container = await getReadonlyContainer(args.containerId);
-    const fileName = CloudSqlite.makeSemverName(args.dbName, args.version);
+    if (args.syncWithCloud)
+      container.checkForChanges();
+
+    const dbName = CloudSqlite.querySemverMatch({ container, ...args });
 
     if (args.prefetch)
-      CloudSqlite.startCloudPrefetch(container, fileName);
+      CloudSqlite.startCloudPrefetch(container, dbName);
 
-    return super.open({ ...args, fileName, container, readonly: true });
+    return super.openFile(dbName, OpenMode.Readonly, { container });
   }
 }
 
-export class EditableCatalog extends StandaloneDb {
+export class EditableCatalog extends CatalogDb {
+
   public static async createNewContainer(args: CatalogIModelTypes.CreateNewContainerArgs): Promise<CatalogIModelTypes.NewContainerProps> {
+
+    CloudSqlite.validateDbName(args.dbName);
+    CloudSqlite.validateDbVersion(args.version);
+
+    const tmpName = join(KnownLocations.tmpdir, `temp-${args.dbName}`);
+    try {
+      fs.copyFileSync(args.catalogFileName, tmpName);
+      const nativeDb = new IModelNative.platform.DgnDb();
+      nativeDb.openIModel(tmpName, OpenMode.ReadWrite);
+      nativeDb.setITwinId(Guid.empty);
+      nativeDb.setIModelId(Guid.empty);
+      updateManifest(nativeDb, args.manifest);
+      nativeDb.deleteAllTxns(); // necessary before resetting briefcaseId
+      nativeDb.resetBriefcaseId(BriefcaseIdValue.Unassigned); // catalogs should always be unassigned
+      nativeDb.saveChanges(); // save change to briefcaseId
+      nativeDb.vacuum();
+      nativeDb.closeFile();
+    } catch (e: unknown) {
+      CatalogError.throwError("invalid-seed-catalog", { message: "Illegal seed catalog", ...args, cause: e });
+    }
+
     const userToken = await IModelHost.getAccessToken();
-    const cloudContainerProps = await CloudSqlite.getBlobService().create({ scope: { iTwinId: args.iTwinId }, metadata: { containerType: "CatalogIModel", ...args.metadata }, userToken });
+    const cloudContainerProps = await CloudSqlite.getBlobService().create({ scope: { iTwinId: args.iTwinId }, metadata: { ...args.metadata, containerType: "CatalogIModel" }, userToken });
 
     const container = CloudSqlite.createCloudContainer({
+      accessToken: await CloudSqlite.requestToken(cloudContainerProps),
       accessLevel: "admin",
+      writeable: true,
       baseUri: cloudContainerProps.baseUri,
       containerId: cloudContainerProps.containerId,
       storageType: cloudContainerProps.provider,
-      writeable: true,
-      accessToken: await CloudSqlite.requestToken(cloudContainerProps)
     });
 
+    // initialize the container for use by CloudSqlite
     container.initializeContainer({ blockSize: 4 * 1024 * 1024 });
     container.connect(getWritableCloudCache());
+
+    // upload the initial version of the catalog
     await CloudSqlite.withWriteLock({ user: "initialize", container }, async () => {
-      await CloudSqlite.uploadDb(container, { ...args, localFileName: args.iModelFile });
+      await CloudSqlite.uploadDb(container, { dbName: CloudSqlite.makeSemverName(args.dbName, args.version), localFileName: tmpName });
+      fs.unlinkSync(tmpName); // delete temporary copy of catalog
     });
     container.disconnect({ detach: true });
     return cloudContainerProps;
@@ -105,34 +157,45 @@ export class EditableCatalog extends StandaloneDb {
 
   public static async acquireWriteLock(args: { containerId: string, username: string }) {
     const container = await getWriteableContainer(args.containerId);
-    container.acquireWriteLock(args.username);
+    return CloudSqlite.acquireWriteLock({ container, user: args.username });
   }
 
   public static async releaseWriteLock(args: { containerId: string, abandon?: true }) {
     const container = await getWriteableContainer(args.containerId);
     if (args.abandon)
       container.abandonChanges();
-    container.releaseWriteLock();
+    CloudSqlite.releaseWriteLock(container);
   }
 
-  public static async openEditable(args: CatalogIModelTypes.OpenEditableArgs) {
+  public static async openEditable(args: CatalogIModelTypes.OpenArgs) {
     if (undefined === args.containerId) // local file?
-      return super.openFile(args.dbFullName, OpenMode.ReadWrite, args);
+      return super.openFile(args.dbName, OpenMode.ReadWrite, args);
 
     const container = await getWriteableContainer(args.containerId);
     ensureLocked(container, "open a Catalog for editing");
-    if (!CloudSqlite.isSemverEditable(args.dbFullName, container))
+
+    const dbFullName = CloudSqlite.querySemverMatch({ container, ...args, version: args.version ?? "*" });
+    if (!CloudSqlite.isSemverEditable(dbFullName, container))
       CloudSqliteError.throwError("already-published", { message: "Catalog has already been published and is not editable. Make a new version first.", ...args })
 
     if (args.prefetch)
-      CloudSqlite.startCloudPrefetch(container, args.dbFullName);
+      CloudSqlite.startCloudPrefetch(container, dbFullName);
 
-    return super.open({ ...args, fileName: args.dbFullName, container, readonly: false });
+    return super.open({ ...args, fileName: dbFullName, container, readonly: false });
   }
 
   public override beforeClose(): void {
+    const nativeDb = this[_nativeDb];
+    const manifest = this.getManifest();
+    const container = nativeDb.cloudContainer;
+    if (container && manifest) {
+      manifest.lastEditedBy = CloudSqlite.getWriteLockHeldBy(container);
+      updateManifest(nativeDb, manifest);
+    }
+
     // when saved, CatalogIModels should never have any Txns. If we wanted to create a changeset, we'd have to do it here.
-    this[_nativeDb].deleteAllTxns();
+    nativeDb.deleteAllTxns();
+
     // might also want to vacuum here?
     super.beforeClose();
   }
@@ -142,6 +205,10 @@ export class EditableCatalog extends StandaloneDb {
     ensureLocked(container, "create a new version");
     return CloudSqlite.createNewDbVersion(container, args);
   }
+}
+
+function findCatalogByKey(key: string): CatalogDb {
+  return CatalogDb.findByKey(key) as CatalogDb;
 }
 
 export class CatalogIModelHandler extends IpcHandler implements CatalogIModelTypes.IpcMethods {
@@ -156,13 +223,20 @@ export class CatalogIModelHandler extends IpcHandler implements CatalogIModelTyp
   public async releaseWriteLock(args: { containerId: string, abandon?: true; }): Promise<void> {
     return EditableCatalog.releaseWriteLock(args);
   }
-  public async openReadonly(args: CatalogIModelTypes.OpenReadonlyArgs): Promise<IModelConnectionProps> {
-    return CatalogDb.openCatalog(args);
+  public async openReadonly(args: CatalogIModelTypes.OpenArgs): Promise<IModelConnectionProps> {
+    return ((await ReadonlyCatalog.openCatalog(args)).getConnectionProps());
   }
-  public async openEditable(args: CatalogIModelTypes.OpenEditableArgs): Promise<IModelConnectionProps> {
-    return EditableCatalog.openEditable(args);
+  public async openEditable(args: CatalogIModelTypes.OpenArgs): Promise<IModelConnectionProps> {
+    return (await EditableCatalog.openEditable(args)).getConnectionProps();
   }
   public async createNewVersion(args: CatalogIModelTypes.CreateNewVersionArgs): Promise<{ oldDb: CatalogIModelTypes.NameAndVersion; newDb: CatalogIModelTypes.NameAndVersion; }> {
     return EditableCatalog.createNewVersion(args);
+  }
+  public async getInfo(key: string): Promise<{ manifest: CatalogIModelTypes.CatalogManifest, version: string }> {
+    const db = findCatalogByKey(key);
+    return { manifest: db.getManifest(), version: db.getVersion() };
+  }
+  public async updateCatalogManifest(key: string, manifest: CatalogIModelTypes.CatalogManifest): Promise<void> {
+    updateManifest(findCatalogByKey(key)[_nativeDb], manifest);
   }
 }

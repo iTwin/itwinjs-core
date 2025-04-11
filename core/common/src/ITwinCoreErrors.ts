@@ -52,9 +52,10 @@ export namespace CloudSqliteError {
   export const scope = "itwin-CloudSqlite";
   export type Key =
     "already-published" |
-    "not-a-function" |
+    "copy-error" |
     "invalid-name" |
     "no-version-available" |
+    "not-a-function" |
     "service-not-available" |
     /** The write lock cannot be acquired because it is currently held by somebody else.
      * @see WriteLockHeld for details

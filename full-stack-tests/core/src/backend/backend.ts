@@ -25,6 +25,7 @@ import { exposeBackendCallbacks } from "../certa/certaBackend";
 import { fullstackIpcChannel, FullStackTestIpc } from "../common/FullStackTestIpc";
 import { rpcInterfaces } from "../common/RpcInterfaces";
 import * as testCommands from "./TestEditCommands";
+import { AzuriteTest } from "./AzuriteTest";
 
 /* eslint-disable no-console */
 
@@ -41,6 +42,8 @@ function loadEnv(envFile: string) {
 
   dotenvExpand(envResult);
 }
+
+let electronAuth: ElectronMainAuthorization;
 
 class FullStackTestIpcHandler extends IpcHandler implements FullStackTestIpc {
   public get channelName() { return fullstackIpcChannel; }
@@ -83,7 +86,18 @@ class FullStackTestIpcHandler extends IpcHandler implements FullStackTestIpc {
   public async throwLockError(conflictingLocks: ConflictingLock[], message: string, metaData: LoggingMetaData, logFn: boolean) {
     throw new ConflictingLocksError(message, logFn ? () => metaData : metaData, conflictingLocks);
   }
+
+  public async restoreAuthClient() {
+    IModelHost.authorizationClient = electronAuth;
+  }
+  public async useAzTestAuthClient() {
+    IModelHost.authorizationClient = new AzuriteTest.AuthorizationClient();
+  }
+  public async setAzTestUser(user: "admin" | "readOnly" | "readWrite") {
+    AzuriteTest.userToken = AzuriteTest.service.userToken[user];
+  }
 }
+
 
 async function init() {
   loadEnv(path.join(__dirname, "..", "..", ".env"));
@@ -98,15 +112,15 @@ async function init() {
 
   if (ProcessDetector.isElectronAppBackend) {
     exposeBackendCallbacks();
-    const authClient = new ElectronMainAuthorization({
+    electronAuth = new ElectronMainAuthorization({
       clientId: process.env.IMJS_OIDC_ELECTRON_TEST_CLIENT_ID ?? "testClientId",
       redirectUris: process.env.IMJS_OIDC_ELECTRON_TEST_REDIRECT_URI !== undefined ? [process.env.IMJS_OIDC_ELECTRON_TEST_REDIRECT_URI] : ["testRedirectUri"],
       scopes: process.env.IMJS_OIDC_ELECTRON_TEST_SCOPES ?? "testScope",
     });
-    await authClient.signInSilent();
-    iModelHost.authorizationClient = authClient;
+    await electronAuth.signInSilent();
+    iModelHost.authorizationClient = electronAuth;
     await ElectronHost.startup({ electronHost: { rpcInterfaces }, iModelHost });
-    await authClient.signInSilent();
+    await electronAuth.signInSilent();
 
     EditCommandAdmin.registerModule(testCommands);
     EditCommandAdmin.register(BasicManipulationCommand);

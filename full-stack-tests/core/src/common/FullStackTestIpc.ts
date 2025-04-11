@@ -13,4 +13,7 @@ export interface FullStackTestIpc {
   closeAndReopenDb(key: string): Promise<void>;
   throwLockError(conflictingLocks: ConflictingLock[], message: string, metaData: LoggingMetaData, logFn: boolean): Promise<void>;
   throwChannelError(errorKey: ChannelControlError.Key, message: string, channelKey: string): Promise<void>;
+  restoreAuthClient(): Promise<void>;
+  useAzTestAuthClient(): Promise<void>;
+  setAzTestUser(user: "admin" | "readOnly" | "readWrite"): Promise<void>;
 }

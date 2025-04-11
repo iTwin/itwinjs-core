@@ -307,7 +307,7 @@ export namespace CloudSqlite {
    * Arguments supplied to [[CloudSqlite.createNewDbVersion]].
    */
   export interface CreateNewDbVersionArgs {
-    readonly fromDb: DbFullName;
+    readonly fromDb: DbNameAndVersion;
     /** The type of version increment to apply to the source version. */
     readonly versionType: SemverIncrement;
     /** For prerelease versions, a string that becomes part of the version name. */
@@ -810,6 +810,16 @@ export namespace CloudSqlite {
     }
   }
 
+  export function getWriteLockHeldBy(container: CloudContainer) {
+    return (container as CloudContainerInternal).writeLockHeldBy;
+  }
+
+  /** release the write lock on a container. */
+  export function releaseWriteLock(container: CloudContainer) {
+    container.releaseWriteLock();
+    (container as CloudContainerInternal).writeLockHeldBy = undefined;
+  }
+
   /**
   * Perform an asynchronous write operation on a CloudContainer with the write lock held.
   * 1. if write lock is already held by the current user, refresh write lock's expiry time, call operation and return.
@@ -832,8 +842,7 @@ export namespace CloudSqlite {
         return await operation();
       containerInternal.writeLockHeldBy = args.user;
       const val = await operation(); // wait for work to finish or fail
-      containerInternal.releaseWriteLock();
-      containerInternal.writeLockHeldBy = undefined;
+      releaseWriteLock(containerInternal);
       return val;
     } catch (e) {
       args.container.abandonChanges();  // if operation threw, abandon all changes
@@ -902,13 +911,18 @@ export namespace CloudSqlite {
   }
 
   export async function createNewDbVersion(container: CloudContainer, args: CreateNewDbVersionArgs): Promise<{ oldDb: DbNameAndVersion, newDb: DbNameAndVersion }> {
-    const oldDb = parseDbFileName(args.fromDb);
+    const oldFullName = CloudSqlite.querySemverMatch({ container, ...args.fromDb });
+    const oldDb = CloudSqlite.parseDbFileName(oldFullName);
     const newVersion = semver.inc(oldDb.version, args.versionType, args.identifier);
     if (!newVersion)
-      CloudSqliteError.throwError("invalid-name", { message: `cannot create new version for ${args.fromDb}`, dbName: args.fromDb });
+      CloudSqliteError.throwError("invalid-name", { message: `cannot create new version for ${oldFullName}`, dbName: oldFullName, ...args });
 
     const newName = makeSemverName(oldDb.dbName, newVersion);
-    await container.copyDatabase(args.fromDb, newName);
+    try {
+      await container.copyDatabase(oldFullName, newName);
+    } catch (e: unknown) {
+      CloudSqliteError.throwError("copy-error", { message: `Error attempting to create new version ${newName} from ${oldFullName}`, ...args, cause: e });
+    }
     // return the old and new db names and versions
     return { oldDb, newDb: { dbName: oldDb.dbName, version: newVersion } };
   }
