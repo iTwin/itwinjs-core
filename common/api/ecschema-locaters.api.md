@@ -57,7 +57,7 @@ export class SchemaJsonFileLocater extends SchemaFileLocater implements ISchemaL
     getSchemaSync(schemaKey: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): Schema | undefined;
 }
 
-// @public
+// @internal
 export namespace SchemaXml {
     export function writeFile(schema: Schema, outputPath: string): Promise<void>;
     export function writeString(schema: Schema): Promise<string>;

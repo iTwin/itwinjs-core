@@ -4,7 +4,7 @@ public;class;FileSchemaKey
 public;class;PublishedSchemaXmlFileLocater
 public;class;SchemaFileLocater
 public;class;SchemaJsonFileLocater
-public;namespace;SchemaXml
+internal;namespace;SchemaXml
 public;class;SchemaXmlFileLocater
 public;class;SchemaXmlStringLocater
 internal;class;StubSchemaXmlFileLocater
