@@ -56,7 +56,7 @@ export class KindOfQuantity extends SchemaItem {
    * @param unitLabelOverrides The list of unit and label overrides.
    * @internal
    */
-  protected createFormatOverride(parent: Format, precision?: number, unitLabelOverrides?: Array<[Unit | InvertedUnit, string | undefined]>): OverrideFormat {
+  protected createFormatOverride(parent: Format, precision?: number, unitLabelOverrides?: Array<[LazyLoadedUnit | LazyLoadedInvertedUnit, string | undefined]>): OverrideFormat {
     if (unitLabelOverrides && parent.units && parent.units.length !== unitLabelOverrides.length)
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Cannot add presentation format to KindOfQuantity '${this.name}' because the number of unit overrides is inconsistent with the number in the Format '${parent.name}'.`);
 
@@ -82,7 +82,7 @@ export class KindOfQuantity extends SchemaItem {
         continue;
       }
 
-      let unitAndLabels: Array<[Unit | InvertedUnit, string | undefined]> | undefined;
+      let unitAndLabels: Array<[LazyLoadedUnit | LazyLoadedInvertedUnit, string | undefined]> | undefined;
       if (undefined !== presFormatOverride.unitAndLabels) {
         if (4 < presFormatOverride.unitAndLabels.length)
           throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
@@ -90,10 +90,12 @@ export class KindOfQuantity extends SchemaItem {
         unitAndLabels = [];
         for (const unitOverride of presFormatOverride.unitAndLabels) {
           const unitOrInverted = await this.schema.lookupItem(unitOverride[0]);
-          if (undefined === unitOrInverted || (!Unit.isUnit(unitOrInverted) && !InvertedUnit.isInvertedUnit(unitOrInverted)))
+          if(Unit.isUnit(unitOrInverted))
+            unitAndLabels.push([new DelayedPromiseWithProps(unitOrInverted.key, async () => unitOrInverted), unitOverride[1]]);
+          else if(InvertedUnit.isInvertedUnit(unitOrInverted))
+            unitAndLabels.push([new DelayedPromiseWithProps(unitOrInverted.key, async () => unitOrInverted), unitOverride[1]]);
+          else
             throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate SchemaItem ${unitOverride[0]}.`);
-
-          unitAndLabels.push([unitOrInverted, unitOverride[1]]);
         }
       }
 
@@ -116,7 +118,7 @@ export class KindOfQuantity extends SchemaItem {
         continue;
       }
 
-      let unitAndLabels: Array<[Unit | InvertedUnit, string | undefined]> | undefined;
+      let unitAndLabels: Array<[LazyLoadedUnit | LazyLoadedInvertedUnit, string | undefined]> | undefined;
       if (undefined !== presFormatOverride.unitAndLabels) {
         if (4 < presFormatOverride.unitAndLabels.length)
           throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
@@ -124,10 +126,12 @@ export class KindOfQuantity extends SchemaItem {
         unitAndLabels = [];
         for (const unitOverride of presFormatOverride.unitAndLabels) {
           const unitOrInverted = this.schema.lookupItemSync(unitOverride[0]);
-          if (undefined === unitOrInverted || (!Unit.isUnit(unitOrInverted) && !InvertedUnit.isInvertedUnit(unitOrInverted)))
+          if(Unit.isUnit(unitOrInverted))
+            unitAndLabels.push([new DelayedPromiseWithProps(unitOrInverted.key, async () => unitOrInverted), unitOverride[1]]);
+          else if(InvertedUnit.isInvertedUnit(unitOrInverted))
+            unitAndLabels.push([new DelayedPromiseWithProps(unitOrInverted.key, async () => unitOrInverted), unitOverride[1]]);
+          else
             throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate SchemaItem ${unitOverride[0]}.`);
-
-          unitAndLabels.push([unitOrInverted, unitOverride[1]]);
         }
       }
 
@@ -258,7 +262,7 @@ export class KindOfQuantity extends SchemaItem {
  */
 export abstract class MutableKindOfQuantity extends KindOfQuantity {
   public abstract override addPresentationFormat(format: Format | OverrideFormat, isDefault: boolean): void;
-  public abstract override createFormatOverride(parent: Format, precision?: number, unitLabelOverrides?: Array<[Unit | InvertedUnit, string | undefined]>): OverrideFormat;
+  public abstract override createFormatOverride(parent: Format, precision?: number, unitLabelOverrides?: Array<[LazyLoadedUnit | LazyLoadedInvertedUnit, string | undefined]>): OverrideFormat;
   public abstract override setDisplayLabel(displayLabel: string): void;
   public abstract override setPersistenceUnit(value: LazyLoadedUnit | LazyLoadedInvertedUnit | undefined): void;
   public abstract override setRelativeError(relativeError: number): void;

@@ -10,12 +10,11 @@ import { XmlSerializationUtils } from "../Deserialization/XmlSerializationUtils"
 import { SchemaItemType } from "../ECObjects";
 import { DecimalPrecision, FormatProps, formatStringRgx, FormatTraits, FormatType, FractionalPrecision, ScientificType, ShowSignOption } from "@itwin/core-quantity";
 import { Format } from "./Format";
-import { InvertedUnit } from "./InvertedUnit";
 import { Schema } from "./Schema";
 import { SchemaItemOverrideFormatProps } from "../Deserialization/JsonProps";
-import { Unit } from "./Unit";
 import { Mutable } from "@itwin/core-bentley";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
+import { LazyLoadedInvertedUnit, LazyLoadedUnit } from "../Interfaces";
 
 /**
  * @public @preview
@@ -32,7 +31,7 @@ export interface OverrideFormatProps {
  */
 export class OverrideFormat {
   private _precision?: DecimalPrecision | FractionalPrecision;
-  private _units?: Array<[Unit | InvertedUnit, string | undefined]>;
+  private _units?: Array<[LazyLoadedUnit | LazyLoadedInvertedUnit, string | undefined]>;
 
   /** The Format that this OverrideFormat is extending */
   public readonly parent: Format;
@@ -43,7 +42,8 @@ export class OverrideFormat {
    */
   public readonly name: string;
 
-  constructor(parent: Format, precision?: DecimalPrecision | FractionalPrecision, unitAndLabels?: Array<[Unit | InvertedUnit, string | undefined]>) {
+  /** @internal */
+  constructor(parent: Format, precision?: DecimalPrecision | FractionalPrecision, unitAndLabels?: Array<[LazyLoadedUnit | LazyLoadedInvertedUnit, string | undefined]>) {
     this.parent = parent;
     this.name = OverrideFormat.createOverrideFormatFullName(parent, precision, unitAndLabels);
     this._precision = precision;
@@ -75,7 +75,7 @@ export class OverrideFormat {
   }
 
   /** Returns the format string of this override in the Xml full name format.
-   * @alpha
+   * @internal
    */
   public fullNameXml(koqSchema: Schema): string {
     let fullName = XmlSerializationUtils.createXmlTypedName(koqSchema, this.parent.schema, this.parent.name);
@@ -86,8 +86,12 @@ export class OverrideFormat {
     if (undefined === this._units)
       return fullName;
     for (const [unit, unitLabel] of this._units) {
+      const unitSchema = koqSchema.context.getSchemaSync(unit.schemaKey);
+      if(unitSchema === undefined)
+        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The unit schema ${unit.schemaKey} is not found in the context.`);
+
       fullName += "[";
-      fullName += XmlSerializationUtils.createXmlTypedName(koqSchema, unit.schema, unit.name);
+      fullName += XmlSerializationUtils.createXmlTypedName(koqSchema, unitSchema, unit.name);
       if (unitLabel !== undefined)
         fullName += `|${unitLabel}`;
       fullName += `]`;
@@ -100,7 +104,7 @@ export class OverrideFormat {
    * @param parent The parent Format.
    * @param unitAndLabels The overridden unit and labels collection.
    */
-  public static createOverrideFormatFullName(parent: Format, precision?: DecimalPrecision | FractionalPrecision, unitAndLabels?: Array<[Unit | InvertedUnit, string | undefined]>): string {
+  public static createOverrideFormatFullName(parent: Format, precision?: DecimalPrecision | FractionalPrecision, unitAndLabels?: Array<[LazyLoadedUnit | LazyLoadedInvertedUnit, string | undefined]>): string {
     let fullName = parent.fullName;
 
     if (precision)

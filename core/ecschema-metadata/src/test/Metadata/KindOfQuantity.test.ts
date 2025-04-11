@@ -347,7 +347,7 @@ describe("KindOfQuantity", () => {
       expect(defaultFormat!.units!.length).to.eq(1);
       const unitOverride = defaultFormat!.units![0];
       const unitFromSchema = await schema.lookupItem(unitOverride[0].fullName) as Unit;
-      assert.strictEqual(unitOverride[0], unitFromSchema);
+      assert.strictEqual(await unitOverride[0], unitFromSchema);
 
       expect(defaultOverrideFormat.precision).to.be.equal(defaultOverrideFormat.parent.precision);
 
@@ -363,7 +363,7 @@ describe("KindOfQuantity", () => {
       };
       expect(JSON.parse(JSON.stringify((defaultFormat as OverrideFormat)?.getFormatProps()))).to.be.deep.equal(expectedJson);
     });
-    it("sync - single unit override", () => {
+    it("sync - single unit override", async () => {
       schema = Schema.fromJsonSync(createSchemaJson(singleUnitOverride), context);
       const testKoq = schema.getItemSync("TestKindOfQuantity", KindOfQuantity);
       assert.isDefined(testKoq);
@@ -378,7 +378,7 @@ describe("KindOfQuantity", () => {
       expect(defaultFormat!.units!.length).to.eq(1);
       const unitOverride = defaultFormat!.units![0];
       const unitFromSchema = schema.lookupItemSync(unitOverride[0].fullName) as Unit;
-      assert.strictEqual(unitOverride[0], unitFromSchema);
+      assert.strictEqual(await unitOverride[0], unitFromSchema);
 
       const expectedJson = {
         name: "Formats.DefaultReal[Formats.IN]",
@@ -415,7 +415,7 @@ describe("KindOfQuantity", () => {
       expect(defaultFormat!.units!.length).to.eq(1);
       const unitOverride = defaultFormat!.units![0];
       const unitFromSchema = await schema.lookupItem(unitOverride[0].fullName) as Unit;
-      assert.strictEqual(unitOverride[0], unitFromSchema);
+      assert.strictEqual(await unitOverride[0], unitFromSchema);
       expect(unitOverride[1]).to.be.eq(" in");
 
       const expectedJson = {
@@ -430,7 +430,7 @@ describe("KindOfQuantity", () => {
       };
       expect(JSON.parse(JSON.stringify((defaultFormat as OverrideFormat)?.getFormatProps()))).to.be.deep.equal(expectedJson);
     });
-    it("sync - single unit label override", () => {
+    it("sync - single unit label override", async () => {
       schema = Schema.fromJsonSync(createSchemaJson(singleUnitLabelOverride), context);
       const testKoq = schema.getItemSync("TestKindOfQuantity", KindOfQuantity);
 
@@ -443,7 +443,7 @@ describe("KindOfQuantity", () => {
       expect(defaultFormat!.units!.length).to.eq(1);
       const unitOverride = defaultFormat!.units![0];
       const unitFromSchema = schema.lookupItemSync(unitOverride[0].fullName) as Unit;
-      assert.strictEqual(unitOverride[0], unitFromSchema);
+      assert.strictEqual(await unitOverride[0], unitFromSchema);
       expect(unitOverride[1]).to.be.eq(" in");
 
       const expectedJson = {
@@ -495,7 +495,7 @@ describe("KindOfQuantity", () => {
       while (index < 4) {
         const unitOverride = defaultFormat!.units![index];
         const unitFromSchema = await schema.lookupItem(unitOverride[0].fullName) as Unit;
-        assert.strictEqual(unitOverride[0], unitFromSchema);
+        assert.strictEqual(await unitOverride[0], unitFromSchema);
         expect(unitOverride[1]).to.be.eq(expectedOverrides[index]);
         ++index;
       }
@@ -519,7 +519,7 @@ describe("KindOfQuantity", () => {
       while (index < 4) {
         const unitOverride = defaultFormat!.units![index];
         const unitFromSchema = await schema.lookupItem(unitOverride[0].fullName) as Unit;
-        assert.strictEqual(unitOverride[0], unitFromSchema);
+        assert.strictEqual(await unitOverride[0], unitFromSchema);
         expect(unitOverride[1]).to.be.eq(expectedOverrides[index]);
         ++index;
       }

@@ -841,20 +841,20 @@ export class SchemaComparer {
 
     const promises: Array<Promise<void>> = [];
 
-    for (const unitA of formatA.units) {
-      const unitB = formatB.units ? formatB.units.find((u) => this.areItemsSameByName(unitA[0], u[0], formatA.schema.name, formatB.schema.name)) : undefined;
+    for (const [lazyUnitA, labelA] of formatA.units) {
+      const unitA = await lazyUnitA;
+      const unitB = formatB.units ? formatB.units.find((u) => this.areItemsSameByName(unitA, u[0], formatA.schema.name, formatB.schema.name)) : undefined;
       if (!unitB) {
-        promises.push(this._reporter.reportFormatUnitMissing(formatA, unitA, this._compareDirection));
+        promises.push(this._reporter.reportFormatUnitMissing(formatA, [unitA, labelA], this._compareDirection));
         continue;
       }
 
       if (this._compareDirection === SchemaCompareDirection.Backward)
         continue;
 
-      if (unitA[1] !== unitB[1]) {
-        const labelA = unitA[1];
+      if (labelA !== unitB[1]) {;
         const labelB = unitB[1];
-        promises.push(this._reporter.reportUnitLabelOverrideDelta(formatA, unitA[0], labelA, labelB, this._compareDirection));
+        promises.push(this._reporter.reportUnitLabelOverrideDelta(formatA, unitA, labelA, labelB, this._compareDirection));
       }
     }
 

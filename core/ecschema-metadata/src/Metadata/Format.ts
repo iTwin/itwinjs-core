@@ -18,6 +18,8 @@ import { InvertedUnit } from "./InvertedUnit";
 import { Schema } from "./Schema";
 import { SchemaItem } from "./SchemaItem";
 import { Unit } from "./Unit";
+import { LazyLoadedInvertedUnit, LazyLoadedUnit } from "../Interfaces";
+import { DelayedPromiseWithProps } from "../DelayedPromise";
 
 /**
  * @public @preview
@@ -26,7 +28,7 @@ export class Format extends SchemaItem {
   public override readonly schemaItemType = Format.schemaItemType;
   public static override get schemaItemType() { return SchemaItemType.Format; }
   private _base: BaseFormat;
-  private _units?: Array<[Unit | InvertedUnit, string | undefined]>;
+  private _units?: Array<[LazyLoadedUnit | LazyLoadedInvertedUnit, string | undefined]>;
 
   constructor(schema: Schema, name: string) {
     super(schema, name);
@@ -47,7 +49,9 @@ export class Format extends SchemaItem {
   public get formatTraits(): FormatTraits { return this._base.formatTraits; }
   public get spacer(): string | undefined { return this._base.spacer; }
   public get includeZero(): boolean | undefined { return this._base.includeZero; }
-  public get units(): ReadonlyArray<[Unit | InvertedUnit, string | undefined]> | undefined { return this._units; }
+  public get units(): ReadonlyArray<[LazyLoadedUnit | LazyLoadedInvertedUnit, string | undefined]> | undefined {
+    return this._units;
+  }
 
   private parseFormatTraits(formatTraitsFromJson: string | string[]) {
     return this._base.parseFormatTraits(formatTraitsFromJson);
@@ -63,7 +67,7 @@ export class Format extends SchemaItem {
    * @param label A label that overrides the label defined within the Unit when a value is formatted.
    * @internal
    */
-  protected addUnit(unit: Unit | InvertedUnit, label?: string) {
+  protected addUnit(unit: LazyLoadedUnit | LazyLoadedInvertedUnit, label?: string) {
     if (undefined === this._units)
       this._units = [];
     else { // Validate that a duplicate is not added.
@@ -113,7 +117,12 @@ export class Format extends SchemaItem {
       const newUnit = this.schema.lookupItemSync(unit.name);
       if (undefined === newUnit || (!Unit.isUnit(newUnit) && !InvertedUnit.isInvertedUnit(newUnit)))
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
-      this.addUnit(newUnit, unit.label);
+
+      if(Unit.isUnit(newUnit))
+        this.addUnit(new DelayedPromiseWithProps(newUnit.key, async () => newUnit), unit.label);
+      else if(InvertedUnit.isInvertedUnit(newUnit))
+        this.addUnit(new DelayedPromiseWithProps(newUnit.key, async () => newUnit), unit.label);
+
     }
   }
 
@@ -128,7 +137,11 @@ export class Format extends SchemaItem {
       const newUnit = await this.schema.lookupItem(unit.name);
       if (undefined === newUnit || (!Unit.isUnit(newUnit) && !InvertedUnit.isInvertedUnit(newUnit)))
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
-      this.addUnit(newUnit, unit.label);
+
+      if(Unit.isUnit(newUnit))
+        this.addUnit(new DelayedPromiseWithProps(newUnit.key, async () => newUnit), unit.label);
+      else if(InvertedUnit.isInvertedUnit(newUnit))
+        this.addUnit(new DelayedPromiseWithProps(newUnit.key, async () => newUnit), unit.label);
     }
   }
 
@@ -224,14 +237,15 @@ export class Format extends SchemaItem {
       if (undefined !== this.includeZero)
         compositeElement.setAttribute("includeZero", this.includeZero.toString());
 
-      this.units.forEach(([unit, label]) => {
+      for(const [unit, label] of this.units) {
+        const resolvedUnit = await unit;
         const unitElement = schemaXml.createElement("Unit");
         if (undefined !== label)
           unitElement.setAttribute("label", label);
-        const unitName = XmlSerializationUtils.createXmlTypedName(this.schema, unit.schema, unit.name);
+        const unitName = XmlSerializationUtils.createXmlTypedName(this.schema, resolvedUnit.schema, resolvedUnit.name);
         unitElement.textContent = unitName;
         compositeElement.appendChild(unitElement);
-      });
+      };
 
       itemElement.appendChild(compositeElement);
     }
@@ -333,7 +347,7 @@ export class Format extends SchemaItem {
   /**
    * @internal
    */
-  protected setUnits(units: Array<[Unit | InvertedUnit, string | undefined]>) {
+  protected setUnits(units: Array<[LazyLoadedUnit | LazyLoadedInvertedUnit, string | undefined]>) {
     this._units = units;
   }
 
@@ -365,7 +379,7 @@ export class Format extends SchemaItem {
  * An abstract class used for schema editing.
  */
 export abstract class MutableFormat extends Format {
-  public abstract override addUnit(unit: Unit | InvertedUnit, label?: string): void;
+  public abstract override addUnit(unit: LazyLoadedUnit | LazyLoadedInvertedUnit, label?: string): void;
   public abstract override setPrecision(precision: number): void;
   public abstract override setFormatType(formatType: FormatType): void;
   public abstract override setRoundFactor(roundFactor: number): void;
