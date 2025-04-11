@@ -14,6 +14,8 @@ import { IModelDb } from "./IModelDb";
 // eslint-disable-next-line @itwin/import-within-package
 import { FrameGeometry } from "../../common/src/geometry/TextFrameGeometry";
 
+import { FrameGeometryProps } from "@itwin/core-common/lib/cjs/annotation/FrameGeometryProps";
+import { TextAnnotationGeometryProps } from "@itwin/core-common/lib/cjs/annotation/TextAnnotationGeometryProps";
 
 interface GeometryContext {
   curColor?: TextStyleColor;
@@ -249,43 +251,33 @@ function produceTextBlockGeometry(layout: TextBlockLayout, documentTransform: Tr
   return { entries: context.entries };
 }
 
-function produceLeaderGeometry(layout: TextBlockLayout, documentTransform: Transform, frameProps?: TextFrameStyleProps, leaderProps?: TextAnnotationLeaderProps): TextBlockGeometryProps {
-  const context: GeometryContext = { entries: [] };
-  if (frameProps?.frame === undefined || leaderProps === undefined) return { entries: [] };
-  const leaderStartPoint = FrameGeometry.computeLeaderStartPoint(leaderProps.attachmentPoint, frameProps.frame, layout.range.toJSON(), documentTransform.toJSON(), leaderProps.startPoint)
-  processLeaders(leaderProps.startPoint, leaderStartPoint, context);
-
-  return { entries: context.entries };
-
-}
-
-function produceFrameGeometry(layout: TextBlockLayout, documentTransform: Transform, frameProps?: TextFrameStyleProps): TextBlockGeometryProps {
-  const context: GeometryContext = { entries: [] };
+function produceFrameGeometry(layout: TextBlockLayout, documentTransform: Transform, frameProps?: TextFrameStyleProps): FrameGeometryProps {
+  const context: FrameGeometryProps = { entries: [] };
 
   if (frameProps?.frame && frameProps?.frame !== "none") {
-    if (frameProps.border) {
-      context.entries.push({
-        border: {
-          shape: frameProps.frame,
-          width: frameProps.borderWeight ?? 1,
-          color: frameProps.border,
-          transform: documentTransform.toJSON(),
-          range: layout.range.toJSON(),
-        }
-      });
-    }
+    context.entries.push({
+      frame: {
+        shape: frameProps.frame,
+        lineWidth: frameProps.borderWeight ?? 1,
+        lineColor: frameProps.border,
+        fillColor: frameProps.fill,
+        transform: documentTransform.toJSON(),
+        range: layout.range.toJSON(),
+      }
+    });
 
-    if (frameProps.fill) {
+    if (frameProps?.debugSnap) {
       context.entries.push({
-        fill: {
+        debugSnap: {
           shape: frameProps.frame,
-          color: frameProps.fill,
           transform: documentTransform.toJSON(),
           range: layout.range.toJSON(),
         }
       });
     }
   }
+
+
 
   return { entries: context.entries };
 }
@@ -315,7 +307,7 @@ export interface ProduceTextAnnotationGeometryArgs {
  * @see [[TextAnnotation2d.setAnnotation]] and [[TextAnnotation3d.setAnnotation]] to update the annotation, geometry, and placement of an annotation element.
  * @beta
  */
-export function produceTextAnnotationGeometry(args: ProduceTextAnnotationGeometryArgs): TextBlockGeometryProps {
+export function produceTextAnnotationGeometry(args: ProduceTextAnnotationGeometryArgs): TextAnnotationGeometryProps {
   const layout = layoutTextBlock({
     ...args,
     textBlock: args.annotation.textBlock,
@@ -328,7 +320,5 @@ export function produceTextAnnotationGeometry(args: ProduceTextAnnotationGeometr
 
   const textBlockGeometry = produceTextBlockGeometry(layout, transform, anchorPoint, textStyle);
   const frameGeometry = produceFrameGeometry(layout, transform, args.annotation.frame);
-  const leaderGeometry = produceLeaderGeometry(layout, transform, args.annotation.frame, args.annotation.leader);
-  const entries = [...textBlockGeometry.entries, ...frameGeometry.entries, ...leaderGeometry.entries];
-  return { entries };
+  return { textBlockGeometry, frameGeometry };
 }

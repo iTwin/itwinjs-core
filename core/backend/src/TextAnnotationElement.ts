@@ -21,7 +21,7 @@ function updateAnnotation(element: TextAnnotation2d | TextAnnotation3d, annotati
   }
 
   const props = produceTextAnnotationGeometry({ iModel: element.iModel, annotation });
-  if (!builder.appendTextBlock(props)) {
+  if (!builder.appendTextAnnotation(props)) {
     return false;
   }
 

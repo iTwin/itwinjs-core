@@ -18,6 +18,7 @@ import { DtaConfiguration, getConfig } from "../common/DtaConfiguration";
 import { DtaRpcInterface } from "../common/DtaRpcInterface";
 import { EditCommandAdmin } from "@itwin/editor-backend";
 import * as editorBuiltInCommands from "@itwin/editor-backend";
+import { TextAnnotationGeometryProps } from "@itwin/core-common/lib/cjs/annotation/TextAnnotationGeometryProps";
 
 /** Loads the provided `.env` file into process.env */
 function loadEnv(envFile: string) {
@@ -179,7 +180,7 @@ class DisplayTestAppRpc extends DtaRpcInterface {
     return (await IModelHost.authorizationClient?.getAccessToken()) ?? "";
   }
 
-  public override async produceTextAnnotationGeometry(iModelToken: IModelRpcProps, annotationProps: TextAnnotationProps, debugAnchorPointAndRange?: boolean): Promise<TextBlockGeometryProps> {
+  public override async produceTextAnnotationGeometry(iModelToken: IModelRpcProps, annotationProps: TextAnnotationProps, debugAnchorPointAndRange?: boolean): Promise<TextAnnotationGeometryProps> {
     const iModel = IModelDb.findByKey(iModelToken.key);
     const annotation = TextAnnotation.fromJSON(annotationProps);
     return produceTextAnnotationGeometry({ iModel, annotation, debugAnchorPointAndRange });

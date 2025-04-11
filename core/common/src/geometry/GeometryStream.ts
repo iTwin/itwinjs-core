@@ -23,7 +23,9 @@ import { TextString, TextStringProps } from "./TextString";
 import { Base64EncodedString } from "../Base64EncodedString";
 import { Placement2d, Placement3d } from "./Placement";
 import { TextBlockGeometryProps } from "../annotation/TextBlockGeometryProps";
-import { FrameGeometry } from "./TextFrameGeometry";
+import { FrameGeometry } from "../annotation/FrameGeometry";
+import { FrameGeometryProps } from "../annotation/FrameGeometryProps";
+import { TextAnnotationGeometryProps } from "../annotation/TextAnnotationGeometryProps";
 
 /** Establish a non-default [[SubCategory]] or to override [[SubCategoryAppearance]] for the geometry that follows.
  * A GeometryAppearanceProps always signifies a reset to the [[SubCategoryAppearance]] for subsequent [[GeometryStreamProps]] entries for undefined values.
@@ -353,37 +355,8 @@ export class GeometryStreamBuilder {
           this.geometryStream.push({ appearance: { color: entry.color } });
           result = true;
         }
-      } else if (entry.separator !== undefined) {
+      } else if (entry.separator) {
         result = this.appendGeometry(LineSegment3d.fromJSON(entry.separator));
-      } else if (undefined !== entry.fill) {
-        const params = new GeometryParams(Id64.invalid);
-        params.elmPriority = 0;
-
-        if (entry.fill.color === "background") {
-          params.backgroundFill = BackgroundFill.Solid;
-          params.fillDisplay = FillDisplay.Always;
-        } else if (entry.fill.color !== "subcategory") {
-          params.fillColor = ColorDef.fromJSON(entry.fill.color);
-          params.fillDisplay = FillDisplay.Always;
-        }
-
-        const frame = FrameGeometry.computeFrame(entry.fill.shape, entry.fill.range, entry.fill.transform);
-        const loop = Loop.createArray(frame);
-
-        result = this.appendGeometryParamsChange(params);
-        result = result && this.appendGeometry(loop);
-      } else if (undefined !== entry.border) {
-        const params = new GeometryParams(Id64.invalid);
-        if (entry.border.color !== "subcategory") {
-          params.lineColor = ColorDef.fromJSON(entry.border.color);
-          params.weight = entry.border.width;
-        }
-
-        const frame = FrameGeometry.computeFrame(entry.border.shape, entry.border.range, entry.border.transform);
-        const path = Path.createArray(frame);
-
-        result = this.appendGeometryParamsChange(params);
-        result = result && this.appendGeometry(path);
       } else {
         entry.leader?.terminators.forEach((terminator) => {
           result = this.appendGeometry(LineSegment3d.fromJSON(terminator));
@@ -401,6 +374,66 @@ export class GeometryStreamBuilder {
     }
 
     return true;
+  }
+
+  public appendFrame(frameProps: FrameGeometryProps): boolean {
+    for (const entry of frameProps.entries) {
+      let result: boolean;
+      if (undefined !== entry.frame) {
+        const params = new GeometryParams(Id64.invalid);
+        params.elmPriority = 0;
+
+        if (entry.frame.fillColor === undefined) {
+          params.fillDisplay = FillDisplay.Never;
+        } else if (entry.frame.fillColor === "background") {
+          params.backgroundFill = BackgroundFill.Outline;
+          params.fillDisplay = FillDisplay.Always;
+        } else if (entry.frame.fillColor !== "subcategory") {
+          params.fillColor = ColorDef.fromJSON(entry.frame.fillColor);
+          params.lineColor = params.fillColor;
+          params.fillDisplay = FillDisplay.Always;
+        }
+
+        if (entry.frame.lineColor !== "subcategory") {
+          params.lineColor = ColorDef.fromJSON(entry.frame.lineColor);
+          params.weight = entry.frame.lineWidth;
+        }
+
+        const frame = FrameGeometry.computeFrame(entry.frame.shape, entry.frame.range, entry.frame.transform);
+
+        result = this.appendGeometryParamsChange(params);
+        result = result && this.appendGeometry(frame);
+
+      } else if (entry.debugSnap) {
+        // TODO: remove
+        const params = new GeometryParams(Id64.invalid);
+        params.lineColor = ColorDef.black;
+        params.weight = 1;
+        params.fillColor = ColorDef.white;
+        params.fillDisplay = FillDisplay.Always;
+        this.appendGeometryParamsChange(params);
+        const points = FrameGeometry.debugIntervals(entry.debugSnap.shape, entry.debugSnap.range, entry.debugSnap.transform, 0.5, 0.25);
+        points?.forEach(point => this.appendGeometry(Loop.create(point)));
+        result = true;
+      } else {
+        result = false;
+      }
+
+      if (!result) {
+        return false;
+      }
+    }
+
+    return true;
+  }
+
+  public appendTextAnnotation(props: TextAnnotationGeometryProps): boolean {
+    let result = this.appendTextBlock(props.textBlockGeometry)
+
+    if (props.frameGeometry)
+      result = result && this.appendFrame(props.frameGeometry);
+    return result;
+
   }
 
   /** Append an [[ImageGraphic]] supplied in either local or world coordinates. */
