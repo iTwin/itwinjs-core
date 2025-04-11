@@ -123,7 +123,7 @@ export class IpcApp {
   /** Create a type safe Proxy object to make IPC calls to a registered backend interface.
    * @param channelName the channel registered by the backend handler.
    */
-  public static makeIpcProxy<K>(channelName: string): PickAsyncMethods<K> {
+  public static makeIpcProxy<K, C extends string = string>(channelName: C): PickAsyncMethods<K> {
     return new Proxy({} as PickAsyncMethods<K>, {
       get(_target, methodName: string) {
         return async (...args: any[]) =>
