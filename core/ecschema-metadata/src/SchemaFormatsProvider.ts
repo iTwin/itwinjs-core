@@ -15,7 +15,9 @@ import { SchemaItemFormatProps } from "./Deserialization/JsonProps";
 import { BeUiEvent } from "@itwin/core-bentley";
 import { KindOfQuantity } from "./Metadata/KindOfQuantity";
 import { getFormatProps } from "./Metadata/OverrideFormat";
-import { UnitSystemKey } from "@itwin/core-quantity";
+import { FormatProps, UnitSystemKey } from "@itwin/core-quantity";
+import { Unit } from "./Metadata/Unit";
+import { InvertedUnit } from "./Metadata/InvertedUnit";
 
 /**
  * Provides default formats and kind of quantities from a given SchemaContext or SchemaLocater.
@@ -55,7 +57,8 @@ export class SchemaFormatsProvider implements FormatsProvider {
     if (!kindOfQuantity) {
       return undefined;
     }
-    // Find the first presentation format that matches the provided unit system. Else, use the first entry.
+
+    // Find the first presentation format that matches the provided unit system.
     if (unitSystem) {
       const unitSystemGroupNames = getUnitSystemGroupNames(unitSystem);
       const presentationFormats = kindOfQuantity.presentationFormats;
@@ -71,7 +74,15 @@ export class SchemaFormatsProvider implements FormatsProvider {
           }
         }
       }
+
+      // If no matching presentation format was found, use persistence unit format if it matches unit system.
+      const persistenceUnit = await kindOfQuantity.persistenceUnit;
+      const persistenceUnitSystem = await persistenceUnit?.unitSystem;
+      if (persistenceUnitSystem && unitSystemGroupNames.includes(persistenceUnitSystem.name.toUpperCase())) {
+        return getPersistenceUnitFormatProps(persistenceUnit!);
+      }
     }
+
     const defaultFormat = kindOfQuantity.defaultPresentationFormat;
     if (!defaultFormat) {
       return undefined;
@@ -82,6 +93,8 @@ export class SchemaFormatsProvider implements FormatsProvider {
 
   /**
    * Retrieves a Format from a SchemaContext. If the format is part of a KindOfQuantity, the first presentation format in the KindOfQuantity that matches the current unit system will be retrieved.
+   * If no presentation format matches the current unit system, the persistence unit format will be retrieved if it matches the current unit system.
+   * Else, the default presentation format will be retrieved.
    * @param name The full name of the Format or KindOfQuantity.
    * @returns
    */
@@ -117,4 +130,23 @@ function getUnitSystemGroupNames(unitSystem?: UnitSystemKey) {
       return ["USSURVEY", "USCUSTOM", "INTERNATIONAL", "FINANCE"];
   }
   return [];
+}
+
+function getPersistenceUnitFormatProps(persistenceUnit: Unit | InvertedUnit): FormatProps {
+  // Same as Format "DefaultRealU" in Formats ecschema
+  return {
+    formatTraits: ["keepSingleZero", "keepDecimalPoint", "showUnitLabel"],
+    precision: 6,
+    type: "Decimal",
+    uomSeparator: " ",
+    decimalSeparator: ".",
+    composite: {
+      units: [
+        {
+          name: persistenceUnit.fullName,
+          label: persistenceUnit.label,
+        },
+      ],
+    },
+  };
 }

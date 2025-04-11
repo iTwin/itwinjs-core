@@ -80,7 +80,7 @@ Each `Format` defined in a `FormatSet` need to be mapped to a valid [ECName](../
 > The naming convention for a valid format within a FormatSet is <full-schema-name>:<koq-name>
 .
 <details>
-<summary>Example of a metric-based FormatSet as JSON:</summary>
+<summary>Example of a metric-based FormatSet as JSON</summary>
 
 ```json
 {
@@ -117,7 +117,7 @@ Each `Format` defined in a `FormatSet` need to be mapped to a valid [ECName](../
 </details>
 
 <details>
-<summary>Example of a imperial-based FormatSet as JSON:</summary>
+<summary>Example of a imperial-based FormatSet as JSON</summary>
 
 ```json
 {
@@ -246,7 +246,7 @@ If a Format uses a spacer that conflicts with one of the operators above, additi
 1. Mathematical operations only apply when the operator is in front of whitespace. So `-2FT 6IN + 6IN` is equal to `-2FT-6IN + 6IN`, and `-2FT-6IN - 6IN` is not equal to `-2FT-6IN- 6IN`.
 
 <details>
-<summary>Example:</summary>
+<summary>Example</summary>
 
 ```Typescript
 [[include:Quantity_Formatting.Math_Whitespace_Limitation]]
@@ -257,7 +257,7 @@ If a Format uses a spacer that conflicts with one of the operators above, additi
 2. For a value like `2FT 6IN-0.5`, the `-` sign will be treated as a spacer and not subtraction. However, the `0.5` value will use the default unit conversion provided to the parser, because it's not a part of the composite unit when that composite is made up of only 2 units - `FT` and `IN`.
 
 <details>
-<summary>Example:</summary>
+<summary>Example</summary>
 
 ```Typescript
 [[include:Quantity_Formatting.Math_Composite_Limitation]]
