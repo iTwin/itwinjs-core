@@ -1,6 +1,6 @@
 {
   "name": "@itwin/editor-frontend",
-  "version": "5.0.0-dev.102",
+  "version": "5.0.0-dev.103",
   "description": "iTwin.js frontend components",
   "main": "lib/cjs/editor-frontend.js",
   "module": "lib/esm/editor-frontend.js",
