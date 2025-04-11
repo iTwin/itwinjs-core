@@ -87,38 +87,37 @@ export class LayerTileTreeReferenceHandler {
 
       // This variable handles the case where tile data loads before this._ref.treeOwner, avoiding incorrect map layer setup.
       let tileDataLoadedEarly = false;
-
-      const refreshLayers = () => {
-        this.setBaseLayerSettings(mapImagery.backgroundBase);
-        this.setLayerSettings(mapImagery.backgroundLayers);
-        this.clearLayers();
-      };
-
       if (0 === removals.length) {
+        const refreshLayers = () => {
+          this.setBaseLayerSettings(mapImagery.backgroundBase);
+          this.setLayerSettings(mapImagery.backgroundLayers);
+          this.clearLayers();
+        };
         removals.push(context.viewport.displayStyle.settings.onMapImageryChanged.addListener(() => {
           refreshLayers();
         }));
-      }
-      removals.push(context.viewport.onChangeView.addListener((vp, previousViewState) => {
-        tileDataLoadedEarly = false;
-        if(compareMapLayer(previousViewState, vp.view)){
-          refreshLayers();
-        }
-      }));
 
-      removals.push(IModelApp.tileAdmin.onTileDataLoaded.addOnce(() => {
-        tileDataLoadedEarly = true;
-      }));
-
-      const onTileChildrenLoad = () => {
-        // When tile loading finishes, update layers if tile data was loaded beforehand.
-        if (tileDataLoadedEarly && layerHandler.layerClassifiers.size > 0) {
-          refreshLayers();
+        removals.push(context.viewport.onChangeView.addListener((vp, previousViewState) => {
           tileDataLoadedEarly = false;
-          IModelApp.tileAdmin.onTileChildrenLoad.removeListener(onTileChildrenLoad);
-        }
-      };
-      IModelApp.tileAdmin.onTileChildrenLoad.addListener(onTileChildrenLoad);
+          if(compareMapLayer(previousViewState, vp.view)){
+            refreshLayers();
+          }
+        }));
+
+        removals.push(IModelApp.tileAdmin.onTileDataLoaded.addOnce(() => {
+          tileDataLoadedEarly = true;
+        }));
+
+        const onTileChildrenLoad = () => {
+          // When tile loading finishes, update layers if tile data was loaded beforehand.
+          if (tileDataLoadedEarly && layerHandler.layerClassifiers.size > 0) {
+            refreshLayers();
+            tileDataLoadedEarly = false;
+            IModelApp.tileAdmin.onTileChildrenLoad.removeListener(onTileChildrenLoad);
+          }
+        };
+        IModelApp.tileAdmin.onTileChildrenLoad.addListener(onTileChildrenLoad);
+      }
     }
 
     layerHandler.layerImageryTrees.length = 0;
