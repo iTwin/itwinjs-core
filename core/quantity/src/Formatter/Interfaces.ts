@@ -6,6 +6,7 @@
  * @module Quantity
  */
 
+import { BeUiEvent } from "@itwin/core-bentley";
 import { UnitProps } from "../Interfaces";
 import { DecimalPrecision, FormatTraits, FormatType, FractionalPrecision } from "./FormatEnums";
 
@@ -93,4 +94,44 @@ export interface CloneOptions {
   precision?: DecimalPrecision | FractionalPrecision;
   /** allows primary unit and label to be specified */
   primaryUnit?: CloneUnit;
+}
+
+/** An extension of FormatProps to help identify formats.
+ * @beta
+ */
+export interface FormatDefinition extends FormatProps {
+  readonly name?: string;
+  readonly label?: string;
+  readonly description?: string;
+}
+
+/** Argument for [[FormatsProvider.onFormatsChanged]]
+ * @beta
+ */
+export interface FormatsChangedArgs {
+  /**
+   * If `all` - all formats within the `FormatsProvider` have changed.
+   * If array, the array items list the names of formats that were changed or removed.
+   */
+  formatsChanged: "all" | string[];
+}
+
+/** This interface is implemented by a class that would provide formats for use in formatting quantities.
+ * @beta
+ */
+export interface FormatsProvider {
+  /**
+   * @param name The full name of the Format or KindOfQuantity.
+   */
+  getFormat(name: string): Promise<FormatDefinition | undefined>;
+
+  onFormatsChanged: BeUiEvent<FormatsChangedArgs>;
+}
+
+/** This interface is implemented by a class that would provide and allow creating formats for use in formatting quantities.
+ * @beta
+ */
+export interface MutableFormatsProvider extends FormatsProvider {
+  addFormat(name: string, format: FormatDefinition): Promise<void>;
+  removeFormat(name: string): Promise<void>;
 }

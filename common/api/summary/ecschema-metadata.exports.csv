@@ -118,6 +118,7 @@ beta;class;RelationshipMultiplicity
 beta;class;Schema
 internal;class;SchemaCache
 beta;class;SchemaContext
+beta;class;SchemaFormatsProvider
 internal;class;SchemaGraph
 internal;class;SchemaGraphUtil
 beta;interface;SchemaInfo
