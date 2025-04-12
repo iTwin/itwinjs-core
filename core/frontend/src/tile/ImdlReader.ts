@@ -18,8 +18,9 @@ import { RenderGraphic } from "../render/RenderGraphic";
 import { RenderSystem } from "../render/RenderSystem";
 import { ImdlModel } from "../common/imdl/ImdlModel";
 import { convertFeatureTable, ImdlParseError, ImdlParserOptions, ImdlTimeline, parseImdlDocument } from "../common/imdl/ParseImdlDocument";
-import { decodeImdlGraphics, IModelTileContent, Tile } from "./internal";
+import { decodeImdlGraphics, IModelTileContent } from "./internal";
 import { BatchOptions } from "../common/render/BatchOptions";
+import { LayerTileData } from "../internal/render/webgl/MapLayerParams";
 
 /** @internal */
 export interface ImdlReaderResult extends IModelTileContent {
@@ -66,7 +67,7 @@ export interface ImdlReaderCreateArgs {
   /** Supplied if the graphics in the tile are to be split up based on the nodes in the timeline. */
   timeline?: ImdlTimeline;
   modelGroups?: Id64Set[];
-  tile?: Tile;
+  tileData?: LayerTileData;
 }
 
 /** @internal */
@@ -111,6 +112,7 @@ export async function readImdlContent(args: ImdlReaderCreateArgs & { parseDocume
     iModel: args.iModel,
     document,
     isCanceled: args.isCanceled,
+    tileData: args.tileData,
   });
 
   if (isCanceled())

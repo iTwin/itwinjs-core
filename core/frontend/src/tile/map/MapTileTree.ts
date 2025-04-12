@@ -766,7 +766,7 @@ export class MapTileTreeReference extends TileTreeReference {
     if (this._overrideTerrainDisplay && this._overrideTerrainDisplay()?.produceGeometry)
       this.collectTileGeometry = (collector) => this._collectTileGeometry(collector);
 
-    this._layerRefHandler = new LayerTileTreeReferenceHandler(this, isOverlay, baseLayerSettings, layerSettings);
+    this._layerRefHandler = new LayerTileTreeReferenceHandler(this, isOverlay, baseLayerSettings, layerSettings, true);
   }
 
   public forEachLayerTileTreeRef(func: (ref: TileTreeReference) => void): void {
@@ -931,9 +931,7 @@ export class MapTileTreeReference extends TileTreeReference {
 
   public override discloseTileTrees(trees: DisclosedTileTreeSet): void {
     super.discloseTileTrees(trees);
-    for (const imageryTree of this._layerRefHandler.layerTrees)
-      if (imageryTree)
-        trees.disclose(imageryTree);
+    this._layerRefHandler.discloseTileTrees(trees);
 
     if (this._planarClipMask)
       this._planarClipMask.discloseTileTrees(trees);
