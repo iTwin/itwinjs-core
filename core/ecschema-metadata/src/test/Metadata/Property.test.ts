@@ -370,6 +370,7 @@ describe("Property", () => {
         $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
         name: "TestSchema",
         version: "1.2.3",
+        alias: "ts",
         items: {
           ...customAttributeJson,
           testClass: {

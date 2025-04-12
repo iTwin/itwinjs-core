@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "support draping model map layers onto iModels",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}
