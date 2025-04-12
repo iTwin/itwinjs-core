@@ -926,7 +926,8 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
         const distanceToTangency = Math.sqrt(hypotenuseSquared - 1.0);
         const alpha = Math.atan2(centerToLocalPoint.y, centerToLocalPoint.x);
         const beta = Math.atan2(distanceToTangency, 1);
-        for (const theta of [alpha + beta, alpha - beta]) {
+        const angles = Geometry.isSmallAngleRadians(beta) ? [alpha] : [alpha + beta, alpha - beta];
+        for (const theta of angles) {
           const f = CurveExtendOptions.resolveRadiansToValidSweepFraction(options?.extend ?? false, theta, this.sweep);
           if (f.isValid) {
             const tangent = CurveLocationDetail.createCurveFractionPoint(this, f.fraction, this.fractionToPoint(f.fraction));
