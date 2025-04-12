@@ -125,8 +125,11 @@ function findCatalogByKey(key: string): CatalogDb & EditCatalog {
  * @beta
  */
 export interface ReadCatalog {
+  /** Get the CatalogManifest for an open CatalogIModel. */
   getManifest(): CatalogIModelTypes.CatalogManifest;
+  /** Get the version information for an open CatalogIModel. */
   getVersion(): string;
+  /** Get the CatalogManifest and version information for an open CatalogIModel. */
   getInfo(): { manifest: CatalogIModelTypes.CatalogManifest, version: string };
 }
 
@@ -135,6 +138,7 @@ export interface ReadCatalog {
  * @beta
  */
 export interface EditCatalog extends ReadCatalog {
+  /** Update the contents of the catalog manifest.  */
   updateCatalogManifest(manifest: CatalogIModelTypes.CatalogManifest): void;
 }
 
@@ -142,6 +146,10 @@ export interface EditCatalog extends ReadCatalog {
  * @beta
  */
 export namespace CatalogIModel {
+  /** Create a new BlobContainer (from the BlobContainerService) to hold versions of a CatalogIModel.
+   * @returns The properties of the newly created container.
+   * @note creating new containers requires "admin" authorization.
+  */
   export async function createNewContainer(args: CatalogIModelTypes.CreateNewContainerArgs): Promise<CatalogIModelTypes.NewContainerProps> {
     const dbName = catalogDbNameWithDefault(args.dbName);
     CloudSqlite.validateDbName(dbName);
@@ -189,10 +197,23 @@ export namespace CatalogIModel {
     return cloudContainerProps;
   }
 
-  export async function acquireWriteLock(args: { containerId: string, username: string; }): Promise<void> {
+  /** Acquire the write lock for a CatalogIModel container. Only one person may obtain the write lock at a time.
+   * @note this requires "write" authorization to the container
+   */
+  export async function acquireWriteLock(args: {
+    /** The id of the container */
+    containerId: string,
+    /**
+     * The name of the individual acquiring the lock. This will be shown to others who attempt to acquire the lock while it is held.
+     * It is also stored in the "lastEditedBy" field of the manifest of any new version edited while the lock is held.
+     */
+    username: string;
+  }): Promise<void> {
     const container = await getWriteableContainer(args.containerId);
     return CloudSqlite.acquireWriteLock({ container, user: args.username });
   }
+
+  /** Release the write lock on a CatalogIModel container. This uploads all changes made while the lock is held, so they become visible to other users. */
   export async function releaseWriteLock(args: { containerId: string, abandon?: true; }): Promise<void> {
     const container = await getWriteableContainer(args.containerId);
     if (args.abandon)
@@ -200,6 +221,10 @@ export namespace CatalogIModel {
     CloudSqlite.releaseWriteLock(container);
   }
 
+  /** Open a CatalogIModel for write access.
+   * @note Once a version of a CatalogIModel has been published (i.e. the write lock has been released), it is no longer editable, *unless* it is a prerelease version.
+   * @note the write lock must be held for this operation to succeed
+   */
   export async function openEditable(args: CatalogIModelTypes.OpenArgs): Promise<StandaloneDb & EditCatalog> {
     const dbName = catalogDbNameWithDefault(args.dbName);
     if (undefined === args.containerId) // local file?
@@ -217,6 +242,10 @@ export namespace CatalogIModel {
 
     return EditableCatalogDb.openFile(dbFullName, OpenMode.ReadWrite, { container, ...args }) as EditableCatalogDb;
   }
+
+  /**
+   * Open a CatalogIModel for read access.
+   */
   export async function openReadonly(args: CatalogIModelTypes.OpenArgs): Promise<StandaloneDb & ReadCatalog> {
     const dbName = catalogDbNameWithDefault(args.dbName);
     if (undefined === args.containerId) // local file?
@@ -233,6 +262,12 @@ export namespace CatalogIModel {
     return CatalogDb.openFile(dbFullName, OpenMode.Readonly, { container, ...args }) as CatalogDb;
   }
 
+  /**
+   * Create a new version of a CatalogIModel as a copy of an existing version. Immediately after this operation, the new version will be an exact copy
+   * of the source CatalogIModel. Then, use [[openEditable]] to modify the new version with new content.
+   * @note the write lock must be held for this operation to succeed
+   * @see [[acquireWriteLock]]
+   */
   export async function createNewVersion(args: CatalogIModelTypes.CreateNewVersionArgs): Promise<{ oldDb: CatalogIModelTypes.NameAndVersion; newDb: CatalogIModelTypes.NameAndVersion; }> {
     const container = await getWriteableContainer(args.containerId);
     ensureLocked(container, "create a new version");
