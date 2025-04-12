@@ -88,12 +88,16 @@ describe("White-on-white reversal", () => {
       vp.viewFlags = vp.viewFlags.copy({ renderMode: RenderMode.SmoothShade, lighting: false });
       expectColors(vp, [ColorDef.red, ColorDef.white], ColorDef.red, (ctx) => addSquareDecoration(ctx, ColorDef.white));
       expectColors(vp, [ColorDef.blue, ColorDef.white], ColorDef.white, (ctx) => addSquareDecoration(ctx, ColorDef.blue));
+      expectColors(vp, [ColorDef.red, ColorDef.white], ColorDef.red, (ctx) => addSquareDecoration(ctx, ColorDef.white, undefined, FillFlags.Always));
+      expectColors(vp, [ColorDef.blue, ColorDef.white], ColorDef.white, (ctx) => addSquareDecoration(ctx, ColorDef.blue, undefined, FillFlags.Always));
 
       expectColors(vp, [ColorDef.black, ColorDef.white], ColorDef.white, (ctx) => addSquareDecoration(ctx, ColorDef.white));
       expectColors(vp, [ColorDef.black], ColorDef.white, (ctx) => addSquareDecoration(ctx, ColorDef.white), { rect: new ViewRect(2, 2, 8, 8) });
+      expectColors(vp, [ColorDef.black], ColorDef.white, (ctx) => addSquareDecoration(ctx, ColorDef.white, undefined, FillFlags.Always), { rect: new ViewRect(2, 2, 8, 8) });
 
       expectColors(vp, [ColorDef.black, ColorDef.white], ColorDef.black, (ctx) => addSquareDecoration(ctx, ColorDef.white));
       expectColors(vp, [ColorDef.white], ColorDef.black, (ctx) => addSquareDecoration(ctx, ColorDef.white), { rect: new ViewRect(2, 2, 8, 8) });
+      expectColors(vp, [ColorDef.white], ColorDef.black, (ctx) => addSquareDecoration(ctx, ColorDef.white, undefined, FillFlags.Always), { rect: new ViewRect(2, 2, 8, 8) });
     });
   });
 
@@ -172,7 +176,11 @@ describe("White-on-white reversal", () => {
   });
 
   it("doesn't apply to background fill", () => {
-    
+    testBlankViewport((vp) => {
+      vp.viewFlags = vp.viewFlags.copy({ renderMode: RenderMode.SmoothShade, lighting: false });
+      expectColors(vp, [ColorDef.white], ColorDef.white, (ctx) => addSquareDecoration(ctx, ColorDef.white, undefined, FillFlags.Background));
+      expectColors(vp, [ColorDef.white], ColorDef.white, (ctx) => addSquareDecoration(ctx, ColorDef.white, undefined, FillFlags.Background | FillFlags.Always));
+    })
   });
 
   it("doesn't apply to lit surfaces", () => {
@@ -180,8 +188,10 @@ describe("White-on-white reversal", () => {
       vp.viewFlags = vp.viewFlags.copy({ renderMode: RenderMode.SmoothShade, lighting: true });
       const litWhite = ColorDef.from(177, 177, 177);
       expectColors(vp, [ColorDef.white, litWhite], ColorDef.white, (ctx) => addSquareDecoration(ctx, ColorDef.white));
+      expectColors(vp, [ColorDef.white, litWhite], ColorDef.white, (ctx) => addSquareDecoration(ctx, ColorDef.white, undefined, FillFlags.Always));
       vp.viewFlags = vp.viewFlags.copy({ renderMode: RenderMode.SmoothShade, lighting: false });
       expectColors(vp, [ColorDef.black, ColorDef.white], ColorDef.white, (ctx) => addSquareDecoration(ctx, ColorDef.white));
+      expectColors(vp, [ColorDef.black, ColorDef.white], ColorDef.white, (ctx) => addSquareDecoration(ctx, ColorDef.white, undefined, FillFlags.Always));
     });
   });
 });
