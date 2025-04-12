@@ -59,14 +59,19 @@ describe("White-on-white reversal", () => {
     context.addDecorationFromBuilder(builder);
   }
 
+  type Rgb = { r: number, g: number, b: number };
+  function sortColors(colors: Rgb[]): Rgb[] {
+    return colors.sort((a, b) => a.r - b.r || a.g - b.g || a.b - b.b);
+  }
+
   function expectColors(vp: Viewport, expected: ColorDef[], bgColor: ColorDef, decorate: (context: DecorateContext) => void): void {
     TestDecorator.register(decorate);
     vp.displayStyle.backgroundColor = bgColor;
     vp.invalidateDecorations();
     vp.renderFrame();
 
-    const actualColors = readUniqueColors(vp).array.map((x) => { return { r: x.r, g: x.g, b: x.b } });
-    const expectedColors = expected.map((x) => RgbColor.fromColorDef(x));
+    const actualColors = sortColors(readUniqueColors(vp).array.map((x) => { return { r: x.r, g: x.g, b: x.b } }));
+    const expectedColors = sortColors(expected.map((x) => RgbColor.fromColorDef(x)));
     expect(actualColors).to.deep.equal(expectedColors);
 
     TestDecorator.clearAll();
@@ -75,7 +80,11 @@ describe("White-on-white reversal", () => {
   it("applies to white scene decorations IFF view background is white", () => {
     testBlankViewport((vp) => {
       vp.viewFlags = vp.viewFlags.copy({ renderMode: RenderMode.SmoothShade, lighting: false });
-      expectColors(vp, [ColorDef.red, ColorDef.blue], ColorDef.red, (ctx) => addTriangleDecoration(ctx, ColorDef.blue));
+      expectColors(vp, [ColorDef.red, ColorDef.white], ColorDef.red, (ctx) => addTriangleDecoration(ctx, ColorDef.white));
+      expectColors(vp, [ColorDef.blue, ColorDef.white], ColorDef.white, (ctx) => addTriangleDecoration(ctx, ColorDef.blue));
+
+      expectColors(vp, [ColorDef.black, ColorDef.white], ColorDef.white, (ctx) => addTriangleDecoration(ctx, ColorDef.white));
+      expectColors(vp, [ColorDef.black], ColorDef.black, (ctx) => addTriangleDecoration(ctx, ColorDef.black));
     });
   });
 
