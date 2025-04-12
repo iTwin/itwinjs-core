@@ -20,6 +20,8 @@ public;interface;BriefcaseIdArg
 internal;enum;BriefcaseLocalValue
 public;class;BriefcaseManager
 public;class;Callout
+beta;namespace;CatalogIModel
+internal;class;CatalogIModelHandler
 public;class;Category
 public;class;CategoryOwnsSubCategories
 public;class;CategorySelector
@@ -127,6 +129,7 @@ deprecated;class;ECSqlValue
 public;class;ECSqlValueIterator
 deprecated;class;ECSqlValueIterator
 public;class;ECSqlWriteStatement
+beta;interface;EditableCatalog
 beta;interface;EditableWorkspaceContainer
 beta;interface;EditableWorkspaceDb
 public;class;ElementAspect
@@ -342,6 +345,7 @@ beta;interface;QueryLocalChangesArgs
 beta;interface;QueryMappedFamiliesArgs
 beta;interface;QueryWorkspaceResourcesArgs
 beta;type;QueryWorkspaceResourcesCallback
+beta;interface;ReadonlyCatalog
 beta;class;RecipeDefinitionElement
 public;class;Relationship
 public;class;Relationships

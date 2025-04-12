@@ -23,6 +23,7 @@ import { BriefcaseId } from '@itwin/core-common';
 import { BriefcaseProps } from '@itwin/core-common';
 import { CalloutProps } from '@itwin/core-common';
 import { Camera } from '@itwin/core-common';
+import { CatalogIModelTypes } from '@itwin/core-common';
 import { CategoryProps } from '@itwin/core-common';
 import { CategorySelectorProps } from '@itwin/core-common';
 import { ChangeData } from '@itwin/core-common';
@@ -122,6 +123,7 @@ import { ImageBuffer } from '@itwin/core-common';
 import { ImageBufferFormat } from '@itwin/core-common';
 import { ImageSourceFormat } from '@itwin/core-common';
 import { IModel } from '@itwin/core-common';
+import { IModelConnectionProps } from '@itwin/core-common';
 import { IModelCoordinatesRequestProps } from '@itwin/core-common';
 import { IModelCoordinatesResponseProps } from '@itwin/core-common';
 import { IModelError } from '@itwin/core-common';
@@ -596,6 +598,65 @@ export abstract class Callout extends DetailingSymbol {
     constructor(props: CalloutProps, iModel: IModelDb);
     // (undocumented)
     static get className(): string;
+}
+
+// @beta
+export namespace CatalogIModel {
+    // (undocumented)
+    export function acquireWriteLock(args: {
+        containerId: string;
+        username: string;
+    }): Promise<void>;
+    // (undocumented)
+    export function createNewContainer(args: CatalogIModelTypes.CreateNewContainerArgs): Promise<CatalogIModelTypes.NewContainerProps>;
+    // (undocumented)
+    export function createNewVersion(args: CatalogIModelTypes.CreateNewVersionArgs): Promise<{
+        oldDb: CatalogIModelTypes.NameAndVersion;
+        newDb: CatalogIModelTypes.NameAndVersion;
+    }>;
+    // (undocumented)
+    export function openEditable(args: CatalogIModelTypes.OpenArgs): Promise<StandaloneDb & EditableCatalog>;
+    // (undocumented)
+    export function openReadonly(args: CatalogIModelTypes.OpenArgs): Promise<StandaloneDb & ReadonlyCatalog>;
+    // (undocumented)
+    export function releaseWriteLock(args: {
+        containerId: string;
+        abandon?: true;
+    }): Promise<void>;
+}
+
+// @internal
+export class CatalogIModelHandler extends IpcHandler implements CatalogIModelTypes.IpcMethods {
+    // (undocumented)
+    acquireWriteLock(args: {
+        containerId: string;
+        username: string;
+    }): Promise<void>;
+    // (undocumented)
+    get channelName(): CatalogIModelTypes.IpcChannel;
+    // (undocumented)
+    createNewContainer(args: CatalogIModelTypes.CreateNewContainerArgs): Promise<CatalogIModelTypes.NewContainerProps>;
+    // (undocumented)
+    createNewVersion(args: CatalogIModelTypes.CreateNewVersionArgs): Promise<{
+        oldDb: CatalogIModelTypes.NameAndVersion;
+        newDb: CatalogIModelTypes.NameAndVersion;
+    }>;
+    // (undocumented)
+    getInfo(key: string): Promise<{
+        manifest: CatalogIModelTypes.CatalogManifest;
+        version: string;
+    }>;
+    // (undocumented)
+    openEditable(args: CatalogIModelTypes.OpenArgs): Promise<IModelConnectionProps>;
+    // (undocumented)
+    openReadonly(args: CatalogIModelTypes.OpenArgs): Promise<IModelConnectionProps>;
+    // (undocumented)
+    releaseWriteLock(args: {
+        containerId: string;
+        abandon?: true;
+    }): Promise<void>;
+    // (undocumented)
+    updateCatalogManifest(key: string, manifest: CatalogIModelTypes.CatalogManifest): Promise<void>;
 }
 
 // @public
@@ -2093,6 +2154,12 @@ export class ECSqlWriteStatement {
         status: DbResult;
         message: string;
     };
+}
+
+// @beta
+export interface EditableCatalog extends ReadonlyCatalog {
+    // (undocumented)
+    updateCatalogManifest(manifest: CatalogIModelTypes.CatalogManifest): void;
 }
 
 // @beta
@@ -4766,6 +4833,19 @@ export type QueryWorkspaceResourcesCallback = (resources: Iterable<{
     name: string;
     db: WorkspaceDb;
 }>) => void;
+
+// @beta
+export interface ReadonlyCatalog {
+    // (undocumented)
+    getInfo(): {
+        manifest: CatalogIModelTypes.CatalogManifest;
+        version: string;
+    };
+    // (undocumented)
+    getManifest(): CatalogIModelTypes.CatalogManifest;
+    // (undocumented)
+    getVersion(): string;
+}
 
 // @beta
 export abstract class RecipeDefinitionElement extends DefinitionElement {
