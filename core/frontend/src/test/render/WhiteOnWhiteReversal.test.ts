@@ -6,7 +6,7 @@
 import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 import { IModelApp } from "../../IModelApp";
 import { DecorateContext } from "../../ViewContext";
-import { ColorDef, FillFlags, GraphicParams, RenderMaterial, RenderMode, RenderTexture, RgbColor } from "@itwin/core-common";
+import { ColorDef, FillFlags, GraphicParams, ImageBuffer, ImageBufferFormat, RenderMaterial, RenderMode, RenderTexture, RgbColor } from "@itwin/core-common";
 import { RenderGraphic } from "../../render/RenderGraphic";
 import { Viewport } from "../../Viewport";
 import { Point3d } from "@itwin/core-geometry";
@@ -96,8 +96,28 @@ describe("White-on-white reversal", () => {
     });
   });
 
+  function createTexturedMaterial(color: ColorDef): RenderMaterial {
+    const source = ImageBuffer.create(new Uint8Array(3), ImageBufferFormat.Rgb, 1);
+    source.data[0] = color.colors.r;
+    source.data[1] = color.colors.g;
+    source.data[2] = color.colors.b;
+    const texture = IModelApp.renderSystem.createTexture({ image: { source }, ownership: "external" })!;
+    return IModelApp.renderSystem.createRenderMaterial({ textureMapping: { texture } })!;
+  }
+
   it("only applies to textured meshes if textures are disabled", () => {
-    
+    testBlankViewport((vp) => {
+      vp.viewFlags = vp.viewFlags.copy({ renderMode: RenderMode.SmoothShade, lighting: false, textures: true });
+      const blueMaterial = createTexturedMaterial(ColorDef.blue);
+      expectColors(vp, [ColorDef.white, ColorDef.blue], ColorDef.white, (ctx) => addSquareDecoration(ctx, ColorDef.white, blueMaterial));
+
+      const whiteMaterial = createTexturedMaterial(ColorDef.white);
+      expectColors(vp, [ColorDef.white], ColorDef.white, (ctx) => addSquareDecoration(ctx, ColorDef.white, whiteMaterial));
+
+      vp.viewFlags = vp.viewFlags.with("textures", false);
+      expectColors(vp, [ColorDef.white, ColorDef.black], ColorDef.white, (ctx) => addSquareDecoration(ctx, ColorDef.white, blueMaterial));
+      expectColors(vp, [ColorDef.white, ColorDef.black], ColorDef.white, (ctx) => addSquareDecoration(ctx, ColorDef.white, whiteMaterial));
+    });
   });
 
   it("never applies to ImageGraphics", () => {
