@@ -13,6 +13,7 @@ import { Point3d } from "@itwin/core-geometry";
 import { GraphicBuilder } from "../../render/GraphicBuilder";
 import { readUniqueColors, testBlankViewport } from "../openBlankViewport";
 import { ViewRect } from "../../common";
+import { RenderSystem } from "../../render/RenderSystem";
 
 describe("White-on-white reversal", () => {
   class TestDecorator {
@@ -110,18 +111,51 @@ describe("White-on-white reversal", () => {
       vp.viewFlags = vp.viewFlags.copy({ renderMode: RenderMode.SmoothShade, lighting: false, textures: true });
       const blueMaterial = createTexturedMaterial(ColorDef.blue);
       expectColors(vp, [ColorDef.white, ColorDef.blue], ColorDef.white, (ctx) => addSquareDecoration(ctx, ColorDef.white, blueMaterial));
+      expectColors(vp, [ColorDef.white, ColorDef.blue], ColorDef.white, (ctx) => addSquareDecoration(ctx, ColorDef.white, blueMaterial, FillFlags.Always));
 
       const whiteMaterial = createTexturedMaterial(ColorDef.white);
       expectColors(vp, [ColorDef.white], ColorDef.white, (ctx) => addSquareDecoration(ctx, ColorDef.white, whiteMaterial));
+      expectColors(vp, [ColorDef.white], ColorDef.white, (ctx) => addSquareDecoration(ctx, ColorDef.white, whiteMaterial, FillFlags.Always));
 
       vp.viewFlags = vp.viewFlags.with("textures", false);
       expectColors(vp, [ColorDef.white, ColorDef.black], ColorDef.white, (ctx) => addSquareDecoration(ctx, ColorDef.white, blueMaterial));
       expectColors(vp, [ColorDef.white, ColorDef.black], ColorDef.white, (ctx) => addSquareDecoration(ctx, ColorDef.white, whiteMaterial));
+      expectColors(vp, [ColorDef.white, ColorDef.black], ColorDef.white, (ctx) => addSquareDecoration(ctx, ColorDef.white, blueMaterial, FillFlags.Always));
+      expectColors(vp, [ColorDef.white, ColorDef.black], ColorDef.white, (ctx) => addSquareDecoration(ctx, ColorDef.white, whiteMaterial, FillFlags.Always));
     });
   });
 
-  it("never applies to ImageGraphics", () => {
-    
+  describe("ImageGraphics", () => {
+    // ImageGraphics have the "always display texture" flag applied in tile generator. There's no concept of ImageGraphic on the front-end (e.g., in GraphicBuilder or DisplayParams).
+    // Just set the flag to simulate.
+    let originalFunc: typeof RenderSystem.prototype.createMeshGeometry;
+    beforeAll(() => {
+      originalFunc = IModelApp.renderSystem.createMeshGeometry; // eslint-disable-line @typescript-eslint/unbound-method
+      IModelApp.renderSystem.createMeshGeometry = (params, viOrigin) => {
+        expect(params.surface.textureMapping).not.to.be.undefined;
+        params.surface.textureMapping!.alwaysDisplayed = true;
+        return originalFunc.apply(IModelApp.renderSystem, [params, viOrigin]);
+      };
+    });
+
+    afterAll(() => IModelApp.renderSystem.createMeshGeometry = originalFunc); // eslint-disable-line @typescript-eslint/unbound-method
+  
+    it("are never affected by white-on-white reversal", () => {
+      testBlankViewport((vp) => {
+        vp.viewFlags = vp.viewFlags.copy({ renderMode: RenderMode.SmoothShade, lighting: false, textures: true });
+        const blueMaterial = createTexturedMaterial(ColorDef.blue);
+        expectColors(vp, [ColorDef.white, ColorDef.blue], ColorDef.white, (ctx) => addSquareDecoration(ctx, ColorDef.white, blueMaterial));
+        expectColors(vp, [ColorDef.white, ColorDef.blue], ColorDef.white, (ctx) => addSquareDecoration(ctx, ColorDef.white, blueMaterial, FillFlags.Always));
+
+        const whiteMaterial = createTexturedMaterial(ColorDef.white);
+        expectColors(vp, [ColorDef.white], ColorDef.white, (ctx) => addSquareDecoration(ctx, ColorDef.white, whiteMaterial));
+        expectColors(vp, [ColorDef.white], ColorDef.white, (ctx) => addSquareDecoration(ctx, ColorDef.white, whiteMaterial, FillFlags.Always));
+
+        vp.viewFlags = vp.viewFlags.with("textures", false);
+        expectColors(vp, [ColorDef.white, ColorDef.blue], ColorDef.white, (ctx) => addSquareDecoration(ctx, ColorDef.white, blueMaterial, FillFlags.Always));
+        expectColors(vp, [ColorDef.white], ColorDef.white, (ctx) => addSquareDecoration(ctx, ColorDef.white, whiteMaterial, FillFlags.Always));
+      });
+    });
   });
 
   it("applies to edges but not surfaces if edges are displayed", () => {
