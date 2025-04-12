@@ -270,6 +270,14 @@ export abstract class IModelDb extends IModel {
     return this._workspace;
   }
 
+  /**
+   * get the cloud container for this iModel, if it was opened from one
+   * @beta
+   */
+  public get cloudContainer(): CloudSqlite.CloudContainer | undefined {
+    return this[_nativeDb].cloudContainer;
+  }
+
   /** Acquire the exclusive schema lock on this iModel.
    * @note: To acquire the schema lock, all other briefcases must first release *all* their locks. No other briefcases
    * will be able to acquire *any* locks while the schema lock is held.
@@ -3344,7 +3352,7 @@ class RefreshV2CheckpointSas {
     Logger.logInfo(BackendLoggerCategory.Authorization, "attempting to refresh sasToken for checkpoint");
     try {
       // this exchanges the supplied user accessToken for an expiring blob-store token to read the checkpoint.
-      const container = iModel[_nativeDb].cloudContainer;
+      const container = iModel.cloudContainer;
       if (!container)
         throw new Error("checkpoint is not from a cloud container");
 
@@ -3518,7 +3526,7 @@ export class SnapshotDb extends IModelDb {
     snapshot._restartDefaultTxnTimer = setTimeout(() => {
       snapshot.restartDefaultTxn();
     }, (10 * 60) * 1000).unref(); // 10 minutes
-    const cloudContainer = snapshot[_nativeDb].cloudContainer;
+    const cloudContainer = snapshot.cloudContainer;
     if (cloudContainer !== undefined) {
       snapshot._refreshSas = new RefreshV2CheckpointSas(cloudContainer.accessToken, checkpoint.reattachSafetySeconds);
     }

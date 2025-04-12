@@ -230,7 +230,7 @@ export namespace CatalogIModel {
     if (args.prefetch)
       CloudSqlite.startCloudPrefetch(container, dbFullName);
 
-    return CatalogDb.openFile(dbFullName, OpenMode.Readonly, { container }) as CatalogDb;
+    return CatalogDb.openFile(dbFullName, OpenMode.Readonly, { container, ...args }) as CatalogDb;
   }
 
   export async function createNewVersion(args: CatalogIModelTypes.CreateNewVersionArgs): Promise<{ oldDb: CatalogIModelTypes.NameAndVersion; newDb: CatalogIModelTypes.NameAndVersion; }> {

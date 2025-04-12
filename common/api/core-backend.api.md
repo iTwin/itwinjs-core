@@ -3290,6 +3290,8 @@ export abstract class IModelDb extends IModel {
     // @internal (undocumented)
     clearFontMap(): void;
     close(): void;
+    // @beta
+    get cloudContainer(): CloudSqlite.CloudContainer | undefined;
     // @alpha (undocumented)
     get codeService(): CodeService | undefined;
     // @internal (undocumented)
