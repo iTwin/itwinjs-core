@@ -34,7 +34,6 @@ const makeCloudCache = (arg: CloudSqlite.CreateCloudCacheArg, writeable: boolean
     CloudSqlite.addHiddenProperty(cache, "catalogContainers", new Map<string, CloudSqlite.CloudContainer>());
     CloudSqlite.addHiddenProperty(cache, "writeable", writeable);
   }
-
   return cache;
 }
 
@@ -78,8 +77,7 @@ function catalogDbNameWithDefault(dbName?: string): string {
   return dbName ?? "catalog-db";
 }
 
-export class CatalogDb extends StandaloneDb {
-
+class CatalogDb extends StandaloneDb implements ReadonlyCatalog {
   public getManifest(): CatalogIModelTypes.CatalogManifest {
     const manifestString = this[_nativeDb].queryLocalValue(catalogManifestName);
     if (undefined === manifestString)
@@ -89,13 +87,18 @@ export class CatalogDb extends StandaloneDb {
   public getVersion(): string {
     return CloudSqlite.parseDbFileName(this[_nativeDb].getFilePath()).version;
   }
+
+  public getInfo() {
+    return { manifest: this.getManifest(), version: this.getVersion() };
+  }
+
 }
 
-export class ReadonlyCatalog extends CatalogDb {
-  public static async openCatalog(args: CatalogIModelTypes.OpenArgs) {
+class ReadonlyCatalogDb extends CatalogDb {
+  public static async openCatalog(args: CatalogIModelTypes.OpenArgs): Promise<ReadonlyCatalogDb> {
     const dbName = catalogDbNameWithDefault(args.dbName);
     if (undefined === args.containerId) // local file?
-      return super.openFile(dbName, OpenMode.Readonly, args);
+      return super.openFile(dbName, OpenMode.Readonly, args) as ReadonlyCatalogDb;
 
     const container = await getReadonlyContainer(args.containerId);
     if (args.syncWithCloud)
@@ -105,12 +108,11 @@ export class ReadonlyCatalog extends CatalogDb {
     if (args.prefetch)
       CloudSqlite.startCloudPrefetch(container, dbFullName);
 
-    return super.openFile(dbFullName, OpenMode.Readonly, { container });
+    return super.openFile(dbFullName, OpenMode.Readonly, { container }) as ReadonlyCatalogDb;
   }
 }
 
-export class EditableCatalog extends CatalogDb {
-
+class EditableCatalogDb extends CatalogDb implements EditableCatalog {
   public static async createNewContainer(args: CatalogIModelTypes.CreateNewContainerArgs): Promise<CatalogIModelTypes.NewContainerProps> {
 
     const dbName = catalogDbNameWithDefault(args.dbName);
@@ -159,6 +161,10 @@ export class EditableCatalog extends CatalogDb {
     return cloudContainerProps;
   }
 
+  public updateCatalogManifest(manifest: CatalogIModelTypes.CatalogManifest): void {
+    updateManifest(this[_nativeDb], manifest);
+  }
+
   public static async acquireWriteLock(args: { containerId: string, username: string }) {
     const container = await getWriteableContainer(args.containerId);
     return CloudSqlite.acquireWriteLock({ container, user: args.username });
@@ -171,10 +177,10 @@ export class EditableCatalog extends CatalogDb {
     CloudSqlite.releaseWriteLock(container);
   }
 
-  public static async openEditable(args: CatalogIModelTypes.OpenArgs) {
+  public static async openEditable(args: CatalogIModelTypes.OpenArgs): Promise<StandaloneDb & EditableCatalog> {
     const dbName = catalogDbNameWithDefault(args.dbName);
     if (undefined === args.containerId) // local file?
-      return super.openFile(dbName, OpenMode.ReadWrite, args);
+      return super.openFile(dbName, OpenMode.ReadWrite, args) as EditableCatalogDb;
 
     const container = await getWriteableContainer(args.containerId);
     ensureLocked(container, "open a Catalog for editing");
@@ -186,7 +192,7 @@ export class EditableCatalog extends CatalogDb {
     if (args.prefetch)
       CloudSqlite.startCloudPrefetch(container, dbFullName);
 
-    return super.open({ ...args, fileName: dbFullName, container, readonly: false });
+    return super.openFile(dbFullName, OpenMode.ReadWrite, { container, ...args }) as EditableCatalogDb;
   }
 
   public override beforeClose(): void {
@@ -212,36 +218,81 @@ export class EditableCatalog extends CatalogDb {
   }
 }
 
-function findCatalogByKey(key: string): CatalogDb {
-  return CatalogDb.findByKey(key) as CatalogDb;
+function findCatalogByKey(key: string): StandaloneDb & EditableCatalog {
+  return StandaloneDb.findByKey(key) as StandaloneDb & EditableCatalog;
 }
 
+/**
+ * Methods for reading from an open CatalogIModel
+ * @beta
+ */
+export interface ReadonlyCatalog {
+  getManifest(): CatalogIModelTypes.CatalogManifest;
+  getVersion(): string;
+  getInfo(): { manifest: CatalogIModelTypes.CatalogManifest, version: string };
+}
+
+/**
+ * Methods for reading and modifying a CatalogIModel that was opened by [[CatalogImodel.openEditable]]
+ * @beta
+ */
+export interface EditableCatalog extends ReadonlyCatalog {
+  updateCatalogManifest(manifest: CatalogIModelTypes.CatalogManifest): void;
+}
+
+/** Functions for accessing CatalogIModels either from a local disk or from a cloud container.
+ * @beta
+ */
+export namespace CatalogIModel {
+  export async function createNewContainer(args: CatalogIModelTypes.CreateNewContainerArgs): Promise<CatalogIModelTypes.NewContainerProps> {
+    return EditableCatalogDb.createNewContainer(args);
+  }
+  export async function acquireWriteLock(args: { containerId: string, username: string; }): Promise<void> {
+    return EditableCatalogDb.acquireWriteLock(args);
+  }
+  export async function releaseWriteLock(args: { containerId: string, abandon?: true; }): Promise<void> {
+    return EditableCatalogDb.releaseWriteLock(args);
+  }
+  export async function openReadonly(args: CatalogIModelTypes.OpenArgs): Promise<StandaloneDb & ReadonlyCatalog> {
+    return ReadonlyCatalogDb.openCatalog(args);
+  }
+  export async function openEditable(args: CatalogIModelTypes.OpenArgs): Promise<StandaloneDb & EditableCatalog> {
+    return EditableCatalogDb.openEditable(args);
+  }
+  export async function createNewVersion(args: CatalogIModelTypes.CreateNewVersionArgs): Promise<{ oldDb: CatalogIModelTypes.NameAndVersion; newDb: CatalogIModelTypes.NameAndVersion; }> {
+    return EditableCatalogDb.createNewVersion(args);
+  }
+}
+
+/**
+ * Handler for Ipc access to CatalogIModels. Registered by NativeHost.
+ * @internal
+ */
 export class CatalogIModelHandler extends IpcHandler implements CatalogIModelTypes.IpcMethods {
   public get channelName(): CatalogIModelTypes.IpcChannel { return "catalogIModel/ipc"; }
 
   public async createNewContainer(args: CatalogIModelTypes.CreateNewContainerArgs): Promise<CatalogIModelTypes.NewContainerProps> {
-    return EditableCatalog.createNewContainer(args);
+    return CatalogIModel.createNewContainer(args);
   }
   public async acquireWriteLock(args: { containerId: string, username: string; }): Promise<void> {
-    return EditableCatalog.acquireWriteLock(args);
+    return CatalogIModel.acquireWriteLock(args);
   }
   public async releaseWriteLock(args: { containerId: string, abandon?: true; }): Promise<void> {
-    return EditableCatalog.releaseWriteLock(args);
+    return CatalogIModel.releaseWriteLock(args);
   }
   public async openReadonly(args: CatalogIModelTypes.OpenArgs): Promise<IModelConnectionProps> {
-    return ((await ReadonlyCatalog.openCatalog(args)).getConnectionProps());
+    return ((await CatalogIModel.openReadonly(args)).getConnectionProps());
   }
   public async openEditable(args: CatalogIModelTypes.OpenArgs): Promise<IModelConnectionProps> {
-    return (await EditableCatalog.openEditable(args)).getConnectionProps();
+    return (await CatalogIModel.openEditable(args)).getConnectionProps();
   }
   public async createNewVersion(args: CatalogIModelTypes.CreateNewVersionArgs): Promise<{ oldDb: CatalogIModelTypes.NameAndVersion; newDb: CatalogIModelTypes.NameAndVersion; }> {
-    return EditableCatalog.createNewVersion(args);
+    return CatalogIModel.createNewVersion(args);
   }
   public async getInfo(key: string): Promise<{ manifest: CatalogIModelTypes.CatalogManifest, version: string }> {
-    const db = findCatalogByKey(key);
-    return { manifest: db.getManifest(), version: db.getVersion() };
+    return findCatalogByKey(key).getInfo();
   }
   public async updateCatalogManifest(key: string, manifest: CatalogIModelTypes.CatalogManifest): Promise<void> {
-    updateManifest(findCatalogByKey(key)[_nativeDb], manifest);
+    findCatalogByKey(key).updateCatalogManifest(manifest);
   }
 }
