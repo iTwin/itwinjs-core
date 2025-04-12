@@ -129,9 +129,9 @@ deprecated;class;ECSqlValue
 public;class;ECSqlValueIterator
 deprecated;class;ECSqlValueIterator
 public;class;ECSqlWriteStatement
-beta;interface;EditableCatalog
 beta;interface;EditableWorkspaceContainer
 beta;interface;EditableWorkspaceDb
+beta;interface;EditCatalog
 public;class;ElementAspect
 beta;class;ElementDrivesElement
 beta;interface;ElementDrivesElementProps
@@ -345,7 +345,7 @@ beta;interface;QueryLocalChangesArgs
 beta;interface;QueryMappedFamiliesArgs
 beta;interface;QueryWorkspaceResourcesArgs
 beta;type;QueryWorkspaceResourcesCallback
-beta;interface;ReadonlyCatalog
+beta;interface;ReadCatalog
 beta;class;RecipeDefinitionElement
 public;class;Relationship
 public;class;Relationships

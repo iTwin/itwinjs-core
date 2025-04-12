@@ -615,9 +615,9 @@ export namespace CatalogIModel {
         newDb: CatalogIModelTypes.NameAndVersion;
     }>;
     // (undocumented)
-    export function openEditable(args: CatalogIModelTypes.OpenArgs): Promise<StandaloneDb & EditableCatalog>;
+    export function openEditable(args: CatalogIModelTypes.OpenArgs): Promise<StandaloneDb & EditCatalog>;
     // (undocumented)
-    export function openReadonly(args: CatalogIModelTypes.OpenArgs): Promise<StandaloneDb & ReadonlyCatalog>;
+    export function openReadonly(args: CatalogIModelTypes.OpenArgs): Promise<StandaloneDb & ReadCatalog>;
     // (undocumented)
     export function releaseWriteLock(args: {
         containerId: string;
@@ -2157,12 +2157,6 @@ export class ECSqlWriteStatement {
 }
 
 // @beta
-export interface EditableCatalog extends ReadonlyCatalog {
-    // (undocumented)
-    updateCatalogManifest(manifest: CatalogIModelTypes.CatalogManifest): void;
-}
-
-// @beta
 export interface EditableWorkspaceContainer extends WorkspaceContainer {
     abandonChanges(): void;
     acquireWriteLock(user: string): void;
@@ -2198,6 +2192,12 @@ export interface EditableWorkspaceDb extends WorkspaceDb {
     updateManifest(manifest: WorkspaceDbManifest): void;
     updateSettingsResource(settings: SettingsContainer, rscName?: string): void;
     updateString(rscName: WorkspaceResourceName, val: string): void;
+}
+
+// @beta
+export interface EditCatalog extends ReadCatalog {
+    // (undocumented)
+    updateCatalogManifest(manifest: CatalogIModelTypes.CatalogManifest): void;
 }
 
 // @public
@@ -4835,7 +4835,7 @@ export type QueryWorkspaceResourcesCallback = (resources: Iterable<{
 }>) => void;
 
 // @beta
-export interface ReadonlyCatalog {
+export interface ReadCatalog {
     // (undocumented)
     getInfo(): {
         manifest: CatalogIModelTypes.CatalogManifest;

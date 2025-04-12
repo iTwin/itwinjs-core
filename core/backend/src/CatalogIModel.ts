@@ -77,13 +77,14 @@ function catalogDbNameWithDefault(dbName?: string): string {
   return dbName ?? "catalog-db";
 }
 
-class CatalogDb extends StandaloneDb implements ReadonlyCatalog {
+class CatalogDb extends StandaloneDb implements ReadCatalog {
   public getManifest(): CatalogIModelTypes.CatalogManifest {
     const manifestString = this[_nativeDb].queryLocalValue(catalogManifestName);
     if (undefined === manifestString)
       CatalogError.throwError("manifest-missing", { message: "Manifest is missing from Catalog" });
     return JSON.parse(manifestString) as CatalogIModelTypes.CatalogManifest;
   }
+
   public getVersion(): string {
     return CloudSqlite.parseDbFileName(this[_nativeDb].getFilePath()).version;
   }
@@ -91,30 +92,57 @@ class CatalogDb extends StandaloneDb implements ReadonlyCatalog {
   public getInfo() {
     return { manifest: this.getManifest(), version: this.getVersion() };
   }
-
 }
 
-class ReadonlyCatalogDb extends CatalogDb {
-  public static async openCatalog(args: CatalogIModelTypes.OpenArgs): Promise<ReadonlyCatalogDb> {
-    const dbName = catalogDbNameWithDefault(args.dbName);
-    if (undefined === args.containerId) // local file?
-      return super.openFile(dbName, OpenMode.Readonly, args) as ReadonlyCatalogDb;
+class EditableCatalogDb extends CatalogDb implements EditCatalog {
+  public updateCatalogManifest(manifest: CatalogIModelTypes.CatalogManifest): void {
+    updateManifest(this[_nativeDb], manifest);
+  }
 
-    const container = await getReadonlyContainer(args.containerId);
-    if (args.syncWithCloud)
-      container.checkForChanges();
+  public override beforeClose(): void {
+    const nativeDb = this[_nativeDb];
+    const manifest = this.getManifest();
+    const container = nativeDb.cloudContainer;
+    if (container && manifest) {
+      manifest.lastEditedBy = CloudSqlite.getWriteLockHeldBy(container);
+      updateManifest(nativeDb, manifest);
+    }
 
-    const dbFullName = CloudSqlite.querySemverMatch({ container, ...args, dbName });
-    if (args.prefetch)
-      CloudSqlite.startCloudPrefetch(container, dbFullName);
+    // when saved, CatalogIModels should never have any Txns. If we wanted to create a changeset, we'd have to do it here.
+    nativeDb.deleteAllTxns();
 
-    return super.openFile(dbFullName, OpenMode.Readonly, { container }) as ReadonlyCatalogDb;
+    // might also want to vacuum here?
+    super.beforeClose();
   }
 }
 
-class EditableCatalogDb extends CatalogDb implements EditableCatalog {
-  public static async createNewContainer(args: CatalogIModelTypes.CreateNewContainerArgs): Promise<CatalogIModelTypes.NewContainerProps> {
+function findCatalogByKey(key: string): CatalogDb & EditCatalog {
+  return CatalogDb.findByKey(key) as CatalogDb & EditCatalog;
+}
 
+/**
+ * Methods for reading from an open CatalogIModel
+ * @beta
+ */
+export interface ReadCatalog {
+  getManifest(): CatalogIModelTypes.CatalogManifest;
+  getVersion(): string;
+  getInfo(): { manifest: CatalogIModelTypes.CatalogManifest, version: string };
+}
+
+/**
+ * Methods for reading and modifying a CatalogIModel that was opened by [[CatalogImodel.openEditable]]
+ * @beta
+ */
+export interface EditCatalog extends ReadCatalog {
+  updateCatalogManifest(manifest: CatalogIModelTypes.CatalogManifest): void;
+}
+
+/** Functions for accessing CatalogIModels either from a local disk or from a cloud container.
+ * @beta
+ */
+export namespace CatalogIModel {
+  export async function createNewContainer(args: CatalogIModelTypes.CreateNewContainerArgs): Promise<CatalogIModelTypes.NewContainerProps> {
     const dbName = catalogDbNameWithDefault(args.dbName);
     CloudSqlite.validateDbName(dbName);
     CloudSqlite.validateDbVersion(args.version);
@@ -161,26 +189,21 @@ class EditableCatalogDb extends CatalogDb implements EditableCatalog {
     return cloudContainerProps;
   }
 
-  public updateCatalogManifest(manifest: CatalogIModelTypes.CatalogManifest): void {
-    updateManifest(this[_nativeDb], manifest);
-  }
-
-  public static async acquireWriteLock(args: { containerId: string, username: string }) {
+  export async function acquireWriteLock(args: { containerId: string, username: string; }): Promise<void> {
     const container = await getWriteableContainer(args.containerId);
     return CloudSqlite.acquireWriteLock({ container, user: args.username });
   }
-
-  public static async releaseWriteLock(args: { containerId: string, abandon?: true }) {
+  export async function releaseWriteLock(args: { containerId: string, abandon?: true; }): Promise<void> {
     const container = await getWriteableContainer(args.containerId);
     if (args.abandon)
       container.abandonChanges();
     CloudSqlite.releaseWriteLock(container);
   }
 
-  public static async openEditable(args: CatalogIModelTypes.OpenArgs): Promise<StandaloneDb & EditableCatalog> {
+  export async function openEditable(args: CatalogIModelTypes.OpenArgs): Promise<StandaloneDb & EditCatalog> {
     const dbName = catalogDbNameWithDefault(args.dbName);
     if (undefined === args.containerId) // local file?
-      return super.openFile(dbName, OpenMode.ReadWrite, args) as EditableCatalogDb;
+      return EditableCatalogDb.openFile(dbName, OpenMode.ReadWrite, args) as EditableCatalogDb;
 
     const container = await getWriteableContainer(args.containerId);
     ensureLocked(container, "open a Catalog for editing");
@@ -192,75 +215,28 @@ class EditableCatalogDb extends CatalogDb implements EditableCatalog {
     if (args.prefetch)
       CloudSqlite.startCloudPrefetch(container, dbFullName);
 
-    return super.openFile(dbFullName, OpenMode.ReadWrite, { container, ...args }) as EditableCatalogDb;
+    return EditableCatalogDb.openFile(dbFullName, OpenMode.ReadWrite, { container, ...args }) as EditableCatalogDb;
+  }
+  export async function openReadonly(args: CatalogIModelTypes.OpenArgs): Promise<StandaloneDb & ReadCatalog> {
+    const dbName = catalogDbNameWithDefault(args.dbName);
+    if (undefined === args.containerId) // local file?
+      return CatalogDb.openFile(dbName, OpenMode.Readonly, args) as CatalogDb;
+
+    const container = await getReadonlyContainer(args.containerId);
+    if (args.syncWithCloud)
+      container.checkForChanges();
+
+    const dbFullName = CloudSqlite.querySemverMatch({ container, ...args, dbName });
+    if (args.prefetch)
+      CloudSqlite.startCloudPrefetch(container, dbFullName);
+
+    return CatalogDb.openFile(dbFullName, OpenMode.Readonly, { container }) as CatalogDb;
   }
 
-  public override beforeClose(): void {
-    const nativeDb = this[_nativeDb];
-    const manifest = this.getManifest();
-    const container = nativeDb.cloudContainer;
-    if (container && manifest) {
-      manifest.lastEditedBy = CloudSqlite.getWriteLockHeldBy(container);
-      updateManifest(nativeDb, manifest);
-    }
-
-    // when saved, CatalogIModels should never have any Txns. If we wanted to create a changeset, we'd have to do it here.
-    nativeDb.deleteAllTxns();
-
-    // might also want to vacuum here?
-    super.beforeClose();
-  }
-
-  public static async createNewVersion(args: CatalogIModelTypes.CreateNewVersionArgs): Promise<{ oldDb: CatalogIModelTypes.NameAndVersion, newDb: CatalogIModelTypes.NameAndVersion }> {
+  export async function createNewVersion(args: CatalogIModelTypes.CreateNewVersionArgs): Promise<{ oldDb: CatalogIModelTypes.NameAndVersion; newDb: CatalogIModelTypes.NameAndVersion; }> {
     const container = await getWriteableContainer(args.containerId);
     ensureLocked(container, "create a new version");
     return CloudSqlite.createNewDbVersion(container, { ...args, fromDb: { ...args.fromDb, dbName: catalogDbNameWithDefault(args.fromDb.dbName) } });
-  }
-}
-
-function findCatalogByKey(key: string): StandaloneDb & EditableCatalog {
-  return StandaloneDb.findByKey(key) as StandaloneDb & EditableCatalog;
-}
-
-/**
- * Methods for reading from an open CatalogIModel
- * @beta
- */
-export interface ReadonlyCatalog {
-  getManifest(): CatalogIModelTypes.CatalogManifest;
-  getVersion(): string;
-  getInfo(): { manifest: CatalogIModelTypes.CatalogManifest, version: string };
-}
-
-/**
- * Methods for reading and modifying a CatalogIModel that was opened by [[CatalogImodel.openEditable]]
- * @beta
- */
-export interface EditableCatalog extends ReadonlyCatalog {
-  updateCatalogManifest(manifest: CatalogIModelTypes.CatalogManifest): void;
-}
-
-/** Functions for accessing CatalogIModels either from a local disk or from a cloud container.
- * @beta
- */
-export namespace CatalogIModel {
-  export async function createNewContainer(args: CatalogIModelTypes.CreateNewContainerArgs): Promise<CatalogIModelTypes.NewContainerProps> {
-    return EditableCatalogDb.createNewContainer(args);
-  }
-  export async function acquireWriteLock(args: { containerId: string, username: string; }): Promise<void> {
-    return EditableCatalogDb.acquireWriteLock(args);
-  }
-  export async function releaseWriteLock(args: { containerId: string, abandon?: true; }): Promise<void> {
-    return EditableCatalogDb.releaseWriteLock(args);
-  }
-  export async function openReadonly(args: CatalogIModelTypes.OpenArgs): Promise<StandaloneDb & ReadonlyCatalog> {
-    return ReadonlyCatalogDb.openCatalog(args);
-  }
-  export async function openEditable(args: CatalogIModelTypes.OpenArgs): Promise<StandaloneDb & EditableCatalog> {
-    return EditableCatalogDb.openEditable(args);
-  }
-  export async function createNewVersion(args: CatalogIModelTypes.CreateNewVersionArgs): Promise<{ oldDb: CatalogIModelTypes.NameAndVersion; newDb: CatalogIModelTypes.NameAndVersion; }> {
-    return EditableCatalogDb.createNewVersion(args);
   }
 }
 
