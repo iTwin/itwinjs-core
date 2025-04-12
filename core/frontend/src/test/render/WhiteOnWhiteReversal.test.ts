@@ -6,11 +6,9 @@
 import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 import { IModelApp } from "../../IModelApp";
 import { DecorateContext } from "../../ViewContext";
-import { ColorDef, FillFlags, GraphicParams, ImageBuffer, ImageBufferFormat, RenderMaterial, RenderMode, RenderTexture, RgbColor } from "@itwin/core-common";
-import { RenderGraphic } from "../../render/RenderGraphic";
+import { ColorDef, FillFlags, GraphicParams, ImageBuffer, ImageBufferFormat, RenderMaterial, RenderMode, RgbColor } from "@itwin/core-common";
 import { Viewport } from "../../Viewport";
 import { Point3d } from "@itwin/core-geometry";
-import { GraphicBuilder } from "../../render/GraphicBuilder";
 import { readUniqueColors, testBlankViewport } from "../openBlankViewport";
 import { ViewRect } from "../../common";
 import { RenderSystem } from "../../render/RenderSystem";
@@ -61,7 +59,7 @@ describe("White-on-white reversal", () => {
     context.addDecorationFromBuilder(builder);
   }
 
-  type Rgb = { r: number, g: number, b: number };
+  interface Rgb { r: number, g: number, b: number }
   function sortColors(colors: Rgb[]): Rgb[] {
     return colors.sort((a, b) => a.r - b.r || a.g - b.g || a.b - b.b);
   }
@@ -142,7 +140,7 @@ describe("White-on-white reversal", () => {
       };
     });
 
-    afterAll(() => IModelApp.renderSystem.createMeshGeometry = originalFunc); // eslint-disable-line @typescript-eslint/unbound-method
+    afterAll(() => IModelApp.renderSystem.createMeshGeometry = originalFunc);  
   
     it("are never affected by white-on-white reversal", () => {
       testBlankViewport((vp) => {
