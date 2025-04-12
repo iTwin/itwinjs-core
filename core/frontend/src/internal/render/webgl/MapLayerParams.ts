@@ -175,35 +175,26 @@ export interface LayerTileData {
  * @param prevView The previous view state.
  * @param newView The new view state.
  * @returns {boolean} True if there is any difference in the model layer configuration; false otherwise.
- * @internal
  */
 export function compareMapLayer(prevView: ViewState, newView: ViewState): boolean {
-  const prevLayers = prevView.displayStyle.getMapLayers(false);
-  const newLayers = newView.displayStyle.getMapLayers(false);
+  const getDrapedModelIds = (view: ViewState): string[] =>
+    view.displayStyle
+      .getMapLayers(false)
+      .filter((layer): layer is ModelMapLayerSettings =>
+        layer instanceof ModelMapLayerSettings &&
+        (layer.drapeTarget === ModelMapLayerDrapeTarget.RealityData ||
+         layer.drapeTarget === ModelMapLayerDrapeTarget.IModel))
+      .map(layer => layer.modelId);
 
-  const prevModelIds: string[] = [];
-  const newModelIds: string[] = [];
+  const prev = getDrapedModelIds(prevView);
+  const next = getDrapedModelIds(newView);
 
-  for (const layer of prevLayers) {
-      if (layer instanceof ModelMapLayerSettings && layer.drapeTarget === ModelMapLayerDrapeTarget.RealityData) {
-          prevModelIds.push(layer.modelId);
-      }
-  }
+  if (prev.length !== next.length)
+    return true;
 
-  for (const layer of newLayers) {
-      if (layer instanceof ModelMapLayerSettings && layer.drapeTarget === ModelMapLayerDrapeTarget.RealityData) {
-          newModelIds.push(layer.modelId);
-      }
-  }
-
-  if (prevModelIds.length !== newModelIds.length) {
+  for (let i = 0; i < prev.length; i++) {
+    if (prev[i] !== next[i])
       return true;
-  }
-
-  for (let i = 0; i < prevModelIds.length; i++) {
-      if (prevModelIds[i] !== newModelIds[i]) {
-          return true;
-      }
   }
 
   return false;

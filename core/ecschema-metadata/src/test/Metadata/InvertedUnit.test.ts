@@ -95,6 +95,7 @@ describe("Inverted Unit tests", () => {
         $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
         version: "1.0.0",
         name: "TestSchema",
+        alias: "ts",
         items: {
           HORIZONTAL_PER_VERTICAL: {
             schemaItemType: "InvertedUnit",
@@ -133,6 +134,7 @@ describe("Inverted Unit tests", () => {
         $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
         version: "1.0.0",
         name: "TestSchema",
+        alias: "ts",
         items: {
           HORIZONTAL_PER_VERTICAL: {
             schemaItemType: "InvertedUnit",
@@ -172,6 +174,7 @@ describe("Inverted Unit tests", () => {
         $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
         version: "1.0.0",
         name: "TestSchema",
+        alias: "ts",
         items: {
           HORIZONTAL_PER_VERTICAL: {
             schemaItemType: "InvertedUnit",
@@ -202,6 +205,7 @@ describe("Inverted Unit tests", () => {
         $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
         version: "1.0.0",
         name: "TestSchema",
+        alias: "ts",
         items: {
           HORIZONTAL_PER_VERTICAL: {
             schemaItemType: "InvertedUnit",
@@ -260,6 +264,7 @@ describe("Inverted Unit tests", () => {
         $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
         version: "1.0.0",
         name: "TestSchema",
+        alias: "ts",
         items: {
           HORIZONTAL_PER_VERTICAL: {
             schemaItemType: "InvertedUnit",
@@ -298,6 +303,7 @@ describe("Inverted Unit tests", () => {
         $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
         version: "1.0.0",
         name: "TestSchema",
+        alias: "ts",
         items: {
           HORIZONTAL_PER_VERTICAL: {
             schemaItemType: "InvertedUnit",
@@ -337,6 +343,7 @@ describe("Inverted Unit tests", () => {
         $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
         version: "1.0.0",
         name: "TestSchema",
+        alias: "ts",
         items: {
           HORIZONTAL_PER_VERTICAL: {
             schemaItemType: "InvertedUnit",
@@ -395,6 +402,7 @@ describe("Inverted Unit tests", () => {
       $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
       version: "1.0.0",
       name: "TestSchema",
+      alias: "ts",
       items: {
         HORIZONTAL_PER_VERTICAL: {
           schemaItemType: "InvertedUnit",
@@ -472,6 +480,7 @@ describe("Inverted Unit tests", () => {
       $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
       version: "1.0.0",
       name: "TestSchema",
+      alias: "ts",
       items: {
         HORIZONTAL_PER_VERTICAL: {
           schemaItemType: "InvertedUnit",

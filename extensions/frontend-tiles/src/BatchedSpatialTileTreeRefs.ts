@@ -97,6 +97,9 @@ class BatchedSpatialTileTreeReferences implements SpatialTileTreeReferences {
       groups,
       treeOwner: this._treeOwner,
       getCurrentTimePoint: () => this._currentScript ? (this._view.displayStyle.settings.timePoint ?? this._currentScript.duration.low) : 0,
+      getBackgroundBase: () => this._view.displayStyle.settings.mapImagery.backgroundBase,
+      getBackgroundLayers: () => this._view.displayStyle.settings.mapImagery.backgroundLayers,
+      iModel: this._view.iModel,
     };
 
     for (let i = 0; i < groups.length; i++) {
@@ -254,6 +257,8 @@ class ProxySpatialTileTreeReferences implements SpatialTileTreeReferences {
     if (this._attachArgs) {
       this._impl.attachToViewport(this._attachArgs);
       this._attachArgs.invalidateSymbologyOverrides();
+      // Force scene invalidation after replacing Proxy with real BatchedTileTree
+      this._attachArgs.invalidateScene();
       this._attachArgs = undefined;
     }
   }
