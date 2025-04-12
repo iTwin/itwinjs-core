@@ -3,12 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { BisCoreSchema, BriefcaseDb, ClassRegistry, CodeService, Element, ExportGraphicsInfo, ExportGraphicsOptions, IModelJsFs, PhysicalModel, SnapshotDb, StandaloneDb, Subject } from "@itwin/core-backend";
-import { AccessToken, DbResult, Guid, Id64, Id64Array, Id64String } from "@itwin/core-bentley";
+import { BisCoreSchema, BriefcaseDb, ClassRegistry, CodeService, Element, ExportGraphics, ExportGraphicsInfo, IModelJsFs, PhysicalModel, SnapshotDb, StandaloneDb, Subject } from "@itwin/core-backend";
+import { AccessToken, Guid, Id64, Id64Array, Id64String } from "@itwin/core-bentley";
 import { Code, CodeScopeSpec, CodeSpec, CodeSpecProperties, ConflictingLocksError, ElementGeometryInfo, IModel } from "@itwin/core-common";
-import { Range3d } from "@itwin/core-geometry";
+import { BentleyGeometryFlatBuffer, Geometry, GeometryQuery, IndexedPolyface, PolyfaceQuery, Range3d, Sphere } from "@itwin/core-geometry";
 import { assert } from "chai";
-import { IModelTestUtils } from "./IModelTestUtils";
+import { IModelTestUtils, KnownTestLocations } from "./IModelTestUtils";
 
 /** Example code organized as tests to make sure that it builds and runs successfully. */
 describe("Example Code", () => {
@@ -122,50 +122,42 @@ describe("Example Code", () => {
   });
 
   it("export elements from local bim file", async () => {
-    // edit these values to run
-    const inBimFilePathName: string = ""; // e.g., "c:\\tmp\\foo.bim"
-    const outFBFileNameBase: string = ""; // Optional, for export to FlatBuffer, e.g., "c:\\tmp\\bar"
-    const elementIdArray: Id64Array = []; // Optional, e.g., ["0x2000000000c", "0x2000000000a"]
+    const inFile = `${KnownTestLocations.assetsDir}\\test.bim`; // contains 3 translates of a sphere
+    const elementIds: Id64Array = ["0x1d"]; // one of the spheres
 
-      const myIModel = SnapshotDb.openFile(inBimFilePathName);
+    // __PUBLISH_EXTRACT_START__ IModelDb.exportGeometry
+    // export each element as a mesh
+    const singleMesh: IndexedPolyface[] = [];
+    await Snippets.extractGeometryFromBimFile(inFile, elementIds, singleMesh);
+    assert.strictEqual(1, singleMesh.length, "extracted the mesh");
 
-      // use an ECSQL query to retrieve element ids
-      if (elementIdArray.length === 0) {
-        const query: string = ""; // e.g., "SELECT DISTINCT Element.id elmId FROM CifCommon.FeatureBaseAspect WHERE DefinitionName = 'Mesh\\Rail\\TC_Rail Ballast'"
-        if (query.length > 0) {
-          const reader = myIModel.createQueryReader(query);
-          while (await reader.step())
-            elementIdArray.push(reader.current.elmId);
-        }
-      }
+    // write each element's flatbuffer serialization to a file
+    const outFileBase = `${KnownTestLocations.outputDir}\\geom`;
+    await Snippets.extractGeometryFromBimFile(inFile, elementIds, outFileBase, true);
+    const outFile = `${outFileBase}-${elementIds[0].toString()}.fb`;
+    assert.isTrue(IModelJsFs.existsSync(outFile), "wrote flatbuffer file");
 
-      if (elementIdArray.length > 0) {
-        // export element geometry in FlatBuffers format
-        if (outFBFileNameBase !== "") {
-          for (const elementId of elementIdArray) {
-            myIModel.elementGeometryRequest({elementId, onGeometry: (info: ElementGeometryInfo) => {
-              for (const entry of info.entryArray) {
-                // if (entry.opcode === ElementGeometryOpcode.BsplineSurface) // e.g., further filtering
-                IModelJsFs.writeFileSync(`${outFBFileNameBase}-${elementId.toString()}.fb`, entry.data);
-              }
-            }});
-          }
-        }
-        // examine element geometry inline
-        const infos: ExportGraphicsInfo[] = [];
-        const exportGraphicsOptions: ExportGraphicsOptions = {
-          elementIdArray,
-          onGraphics: (info: ExportGraphicsInfo) => infos.push(info),
-          // partInstanceArray: [], // uncomment to prevent part instances from being meshed
-        };
-        if (DbResult.BE_SQLITE_OK === myIModel.exportGraphics(exportGraphicsOptions)) {
-          // for (const info of infos)
-          //   console.log(JSON.stringify(IModelJson.Writer.toIModelJson(ExportGraphics.convertToIndexedPolyface(info.mesh))));
-        }
-      }
+    // apply ecsql query to generate the ids of elements to export
+    const query = "SELECT ECInstanceId FROM bis.Element WHERE ECClassId=0xe7";
+    const threeMeshes: IndexedPolyface[] = [];
+    await Snippets.extractGeometryFromBimFile(inFile, query, threeMeshes);
+    assert.strictEqual(3, threeMeshes.length, "extracted all three meshes from the model");
+    // __PUBLISH_EXTRACT_END__
 
-      myIModel.close();
-    }
+    // verify outputs
+    const buf = IModelJsFs.readFileSync(outFile);
+    assert.isTrue(buf.length > 0, "read flatbuffer file");
+    const bytes = new Uint8Array(Buffer.isBuffer(buf) ? buf : Buffer.from(buf));
+    const geometry1 = BentleyGeometryFlatBuffer.bytesToGeometry(bytes, true);
+    assert.isTrue(geometry1 !== undefined, "deserialized the geometry");
+    assert.isTrue(geometry1 instanceof Sphere, "geometry is an ellipsoid");
+    const radius = (geometry1 as Sphere).trueSphereRadius();
+    assert.isTrue(radius !== undefined, "ellipsoid is a sphere");
+    const meshVolume = PolyfaceQuery.sumTetrahedralVolumes(singleMesh[0]);
+    const sphereVolume = 4 / 3 * Math.PI * radius! * radius! * radius!;
+    assert.isTrue(Geometry.isAlmostEqualNumber(sphereVolume, meshVolume, 0.005), "mesh and sphere volumes compare");
+    for (const mesh of threeMeshes)
+      assert.isTrue(Geometry.isAlmostEqualNumber(meshVolume, PolyfaceQuery.sumTetrahedralVolumes(mesh)), "all meshes have same volume");
   });
 
   it("CodeService", async () => {
@@ -257,5 +249,49 @@ namespace Snippets {
     iModel.elements.insertAspect(aspectProps);
     // __PUBLISH_EXTRACT_END__
   }
+
+  /**
+   * Given a .bim file and an array of element ids, extract the element geometry into flatbuffer files and/or export them as meshes.
+   * @param bimFilePathName full pathname of input .bim file, e.g., "c:\\tmp\\foo.bim".
+   * @param elementIds array of element ids in the bim file (e.g., ["0x1d", "0x2000000000a"]), or an ECSQL query that collects element ids in the first entry of each row.
+   * @param geometry array to populate with meshes exported via [IModelDb.exportGraphics]($core-backend), or base pathname (e.g., "c:\\tmp\\bar") to extract element
+   * geometry as flatbuffer files with names of the form `${basePathName}-${elementId.toString()}.fb`.
+   * @param noPartMesh optional flag to ignore parts when exporting meshes.
+   * @returns number of elements exported
+   */
+  export async function extractGeometryFromBimFile(bimFilePathName: string, elementIds: Id64Array | string, geometry: IndexedPolyface[] | string, noPartMesh?: boolean) {
+    // __PUBLISH_EXTRACT_START__ IModelDb.extractGeometry
+    const myIModel = SnapshotDb.openFile(bimFilePathName);
+    const elementIdArray = Array.isArray(elementIds) ? elementIds : [];
+    const query = Array.isArray(elementIds) ? "" : elementIds;
+    if (query.length > 0) {
+      const reader = myIModel.createQueryReader(query);
+      while (await reader.step())
+        elementIdArray.push(reader.current[0]);
+    }
+    if (elementIdArray.length === 0)
+      return;
+    const fbFilePathNameBase = Array.isArray(geometry) ? undefined : geometry;
+    if (fbFilePathNameBase) {
+      for (const elementId of elementIdArray) {
+        myIModel.elementGeometryRequest({
+          elementId,
+          onGeometry: (info: ElementGeometryInfo) => {
+            for (const entry of info.entryArray)
+              IModelJsFs.writeFileSync(`${fbFilePathNameBase}-${elementId.toString()}.fb`, entry.data);
+          }});
+      }
+    }
+    const meshes = Array.isArray(geometry) ? geometry : undefined;
+    if (meshes)
+      myIModel.exportGraphics({
+        elementIdArray,
+        onGraphics: (info: ExportGraphicsInfo) => meshes.push(ExportGraphics.convertToIndexedPolyface(info.mesh)),
+        partInstanceArray: noPartMesh ? [] : undefined,
+      });
+    myIModel.close();
+    // __PUBLISH_EXTRACT_END__
+  }
+
 }
 Snippets.elementAspectSnippet;
