@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Fix white pixels of textured surfaces sometimes drawing as black.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}
