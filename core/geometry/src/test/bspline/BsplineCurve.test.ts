@@ -23,7 +23,7 @@ import { AngleSweep } from "../../geometry3d/AngleSweep";
 import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray";
 import { Matrix3d } from "../../geometry3d/Matrix3d";
 import { Plane3dByOriginAndUnitNormal } from "../../geometry3d/Plane3dByOriginAndUnitNormal";
-import { Point3d } from "../../geometry3d/Point3dVector3d";
+import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 import { NumberArray, Point3dArray } from "../../geometry3d/PointHelpers";
 import { Range3d } from "../../geometry3d/Range";
 import { Transform } from "../../geometry3d/Transform";
@@ -922,6 +922,7 @@ describe("BsplineCurve", () => {
     let tangents: CurveLocationDetail[] | undefined;
     let tangent: CurveLocationDetail | undefined;
     let hintPoint: Point3d | undefined;
+    const vectorToEye = Vector3d.createZero();
 
     const captureGeometry = () => {
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, bspline, dx, dy);
@@ -989,6 +990,88 @@ describe("BsplineCurve", () => {
     ck.testCoordinate(2, tangents!.length, "2 tangents found");
     captureGeometry();
 
+    // non-planar curve in different views
+    dy = 0;
+    tangent = undefined;
+    hintPoint = undefined;
+    poleArray = [Point3d.createZero(), Point3d.create(1, -1), Point3d.create(2, 1, 1), Point3d.create(3, 1), Point3d.create(4)];
+    bspline = BSplineCurve3d.createUniformKnots(poleArray, 4)!;
+    const iterator = () => { return { iter: (i: number) => tangents![i].fraction, length: tangents!.length } };
+    // top view "sinusoidal", emitTangents to find horizontal tangent
+    dx += 5;
+    spacePoint.set(2.32842712, 0.82842712);
+    tangents = bspline.allTangents(spacePoint);
+    captureGeometry();
+    if (ck.testDefined(tangents, "tangents is defined")) {
+      if (ck.testExactNumber(3, tangents.length, "3 tangents found in top view"))
+        ck.testTrue(Geometry.isAlmostEqualAnyNumber(0.5, iterator(), Geometry.smallFraction), "found tangent at 0.5");
+    }
+    let foundHorizontalTangent = false;
+    bspline.emitTangents(spacePoint, (t: CurveLocationDetail) => {
+      const xyTangent = Vector3d.createStartEnd(spacePoint, t.point);
+      xyTangent.z = 0;
+      if (xyTangent.isParallelTo(Vector3d.unitX(), true, false, { radianSquaredTol: Geometry.smallAngleRadians })) {
+        ck.testNearNumber(Math.sqrt(2) / 2, t.fraction, 1.0e-7, "horizontal tangent is at expected fraction");
+        foundHorizontalTangent = true;
+      }
+    });
+    ck.testTrue(foundHorizontalTangent, "found horizontal tangent");
+    // front view "gaussian", tangent at apex
+    dx += 5;
+    spacePoint.set(3, -1, 0.5);
+    vectorToEye.set(0, -1);
+    tangents = bspline.allTangents(spacePoint, { vectorToEye });
+    captureGeometry();
+    if (ck.testDefined(tangents, "tangents is defined")) {
+      if (ck.testExactNumber(2, tangents.length, "2 tangents found in front view"))
+        ck.testTrue(Geometry.isAlmostEqualEitherNumber(0.5, tangents[0].fraction, tangents[1].fraction, Geometry.smallFraction), "found tangent at 0.5");
+    }
+    // right view is closed, tangent at virtual seam
+    dx += 5;
+    dy += 5;
+    spacePoint.set(2, 1);
+    vectorToEye.set(1);
+    tangents = bspline.allTangents(spacePoint, { vectorToEye });
+    captureGeometry();
+    if (ck.testDefined(tangents, "tangents is defined")) {
+      if (ck.testExactNumber(3, tangents.length, "3 tangents found in front view")) {
+        ck.testTrue(Geometry.isAlmostEqualAnyNumber(0, iterator(), Geometry.smallFraction), "found tangent at 0");
+        ck.testTrue(Geometry.isAlmostEqualAnyNumber(2/3, iterator(), Geometry.smallFraction), "found tangent at 2/3");
+        ck.testTrue(Geometry.isAlmostEqualAnyNumber(1, iterator(), Geometry.smallFraction), "found tangent at 1");
+      }
+    }
+    // iso view, closestTangent with hintPoint that yields different closest tangent in view vs. 3d
+    dx += 5;
+    dy = 0;
+    spacePoint.setFrom(bspline.endPoint());
+    hintPoint = Point3d.create(0.40527346, -1.51417855, 2);
+    vectorToEye.set(-1, -1, 1);
+    tangents = bspline.allTangents(spacePoint, { hintPoint, vectorToEye });
+    captureGeometry();
+    if (ck.testDefined(tangents, "tangents is defined")) {
+      ck.testExactNumber(3, tangents.length, "3 tangents found in iso view");
+      ck.testTrue(Geometry.isAlmostEqualAnyNumber(1, iterator(), Geometry.smallFraction), "found (trivial!) tangent at 1");
+      const closestFractionXYZ = tangents.toSorted((a, b) => a.point.distanceSquared(hintPoint!) - b.point.distanceSquared(hintPoint!))[0].fraction;
+      tangent = bspline.closestTangent(spacePoint, { hintPoint, vectorToEye });
+      if (ck.testDefined(tangent, "found closest tangent")) {
+        ck.testFraction(0.78309518948453, tangent.fraction, "closest tangent in view has expected fraction");
+        ck.testFalse(Geometry.isAlmostEqualNumber(closestFractionXYZ, tangent.fraction, Geometry.smallFraction), "closest tangent in view is NOT closest tangent in 3D");
+      }
+    }
+    // random view
+    dx += 5;
+    hintPoint = undefined;
+    tangent = undefined;
+    spacePoint.set(0.47839862, 0.95147385);
+    vectorToEye.set(0.64493868, 0.05779699, 0.06203004);
+    tangents = bspline.allTangents(spacePoint, { vectorToEye });
+    captureGeometry();
+    if (ck.testDefined(tangents, "tangents is defined")) {
+      ck.testExactNumber(3, tangents.length, "3 tangents found in random view");
+      ck.testTrue(Geometry.isAlmostEqualAnyNumber(0.058457040789467, iterator(), Geometry.smallFraction), "found first expected tangent");
+      ck.testTrue(Geometry.isAlmostEqualAnyNumber(0.586388071865798, iterator(), Geometry.smallFraction), "found second expected tangent");
+      ck.testTrue(Geometry.isAlmostEqualAnyNumber(0.907531065010458, iterator(), Geometry.smallFraction), "found third expected tangent");
+  }
     GeometryCoreTestIO.saveGeometry(allGeometry, "BsplineCurve", "AllTangentsAndClosestTangent");
     expect(ck.getNumErrors()).toBe(0);
   });
