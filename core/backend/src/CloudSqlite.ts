@@ -860,7 +860,7 @@ export namespace CloudSqlite {
    */
   export function parseDbFileName(dbFileName: DbFullName): { dbName: DbName, version: DbVersion } {
     const parts = dbFileName.split(":");
-    return { dbName: parts[0], version: parts[1] };
+    return { dbName: parts[0], version: parts[1] ?? "" };
   }
 
   export function validateDbVersion(version?: DbVersion) {

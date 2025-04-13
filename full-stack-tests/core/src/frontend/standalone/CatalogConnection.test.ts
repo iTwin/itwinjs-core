@@ -105,9 +105,13 @@ if (ProcessDetector.isElectronAppFrontend) {
       // Attempt to open the new version for editing
       let v101db = await CatalogConnection.openEditable({ version: "1.0.1", containerId });
       info = await v101db.getCatalogInfo();
-      expect(info.version).equal("1.0.1")
+      expect(info.version).equal("1.0.1");
+      expect(info.manifest).not.undefined;
       // change the contact name in the manifest for 1.0.1 (note that 1.0.0 will still have the old value)
-      await v101db.updateCatalogManifest({ ...info.manifest, contactName: people.harold })
+      if (info.manifest) {
+        expect(info.manifest.catalogName).equal(manifest.catalogName);
+        await v101db.updateCatalogManifest({ ...info.manifest, contactName: people.harold });
+      }
 
       // Now add an element to v1.0.1
       const dictModelId = await v101db.models.getDictionaryModel();
@@ -147,8 +151,11 @@ if (ProcessDetector.isElectronAppFrontend) {
       const verifyInfo = async (db: CatalogConnection, version: string, contactName: string, lastEditedBy?: string) => {
         const inf = await db.getCatalogInfo();
         expect(inf.version).equal(version);
-        expect(inf.manifest.contactName).equal(contactName);
-        expect(inf.manifest.lastEditedBy).equal(lastEditedBy);
+        expect(inf.manifest).not.undefined;
+        if (inf.manifest) {
+          expect(inf.manifest.contactName).equal(contactName);
+          expect(inf.manifest.lastEditedBy).equal(lastEditedBy);
+        }
       }
       const verifyCategory = async (db: CatalogConnection, id: string, name?: string) => {
         const props = await db.elements.loadProps(id);

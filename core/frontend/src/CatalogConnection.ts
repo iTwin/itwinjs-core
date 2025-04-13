@@ -83,7 +83,7 @@ export class CatalogConnection extends BriefcaseConnection {
   }
 
   /** Get the CatalogManifest and version information for an open CatalogConnection. */
-  public async getCatalogInfo(): Promise<{ manifest: CatalogIModelTypes.CatalogManifest, version: string }> {
+  public async getCatalogInfo(): Promise<{ manifest?: CatalogIModelTypes.CatalogManifest, version: string }> {
     return NativeApp.catalogIpc.getInfo(this.key);
   }
 

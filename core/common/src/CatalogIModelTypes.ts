@@ -114,7 +114,7 @@ export namespace CatalogIModelTypes {
   export interface OpenArgs extends NameAndVersion, SnapshotOpenOptions {
     /** The ContainerId of the cloud container. If not present, dbName is the name of a file on the local computer. */
     containerId?: string;
-    /** If true, attempt ot synchronize the container with any changes in the cloud. Since this automatically happens the first time a
+    /** If true, attempt to synchronize the container with any changes in the cloud. Since this automatically happens the first time a
      * container is accessed within a session, this is usually not necessary except for tests.
      */
     syncWithCloud?: boolean;
@@ -159,7 +159,7 @@ export namespace CatalogIModelTypes {
     /** Attempt to open a CatalogIModel for editing */
     openEditable(args: OpenArgs): Promise<IModelConnectionProps>;
     /** Get the manifest and version number for an open CatalogConnection. */
-    getInfo(key: string): Promise<{ manifest: CatalogIModelTypes.CatalogManifest, version: string }>;
+    getInfo(key: string): Promise<{ manifest?: CatalogIModelTypes.CatalogManifest, version: string }>;
     /** Update the manifest stored in an open EditableCatalog */
     updateCatalogManifest(key: string, manifest: CatalogIModelTypes.CatalogManifest): Promise<void>;
   }
