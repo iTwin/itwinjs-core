@@ -59,6 +59,61 @@ describe("ECClass", () => {
       expect(await entityClass.getInheritedProperty("PrimProp")).to.be.undefined;
     });
 
+    it("successfully executes multiples calls to getProperties", async() => {
+      const schemaJson = {
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+        name: "TestSchema",
+        version: "1.2.3",
+        items: {
+          Parent: {
+            schemaItemType: "EntityClass",
+            properties: [
+              { name: "ParentPrimProp", type: "PrimitiveProperty", typeName: "string" },
+              { name: "ParentPrimProp2", type: "PrimitiveProperty", typeName: "string" },
+              { name: "ParentPrimProp3", type: "PrimitiveProperty", typeName: "string" },
+            ],
+          },
+          Child: {
+            schemaItemType: "EntityClass",
+            baseClass: "TestSchema.Parent",
+            properties: [
+              { name: "ChildPrimProp", type: "PrimitiveProperty", typeName: "string" },
+              { name: "ChildPrimProp2", type: "PrimitiveProperty", typeName: "string" },
+              { name: "ChildPrimProp3", type: "PrimitiveProperty", typeName: "string" },
+            ],
+          },
+        },
+      };
+
+      schema = await Schema.fromJson(schemaJson, new SchemaContext());
+      assert.isDefined(schema);
+
+      const entityClass = await schema.getItem<EntityClass>("Child");
+      assert.isDefined(entityClass);
+      assert.isDefined(entityClass!.baseClass);
+
+      const baseClass = await schema.getItem<EntityClass>("Parent");
+      assert.isDefined(baseClass);
+      assert.isTrue(baseClass === await entityClass!.baseClass);
+
+      if (entityClass !== undefined) {
+        const [res1,res2,res3] = await Promise.all([entityClass.getProperties().then((x)=>[...x]), entityClass.getProperties().then((x)=>[...x]), entityClass.getProperties().then((x)=>[...x])]);
+        expect(res1).to.have.length(6);
+        expect(res2).to.have.length(6);
+        expect(res3).to.have.length(6);
+
+        const [res4,res5,res6] = await Promise.all([entityClass.getProperties().then((x)=>[...x]), entityClass.getProperties(true).then((x)=>[...x]), entityClass.getProperties(true).then((x)=>[...x])]);
+        expect(res4).to.have.length(6);
+        expect(res5).to.have.length(6);
+        expect(res6).to.have.length(6);
+
+        const [res7,res8,res9] = await Promise.all([entityClass.getProperties(true).then((x)=>[...x]), entityClass.getProperties().then((x)=>[...x]), entityClass.getProperties(true).then((x)=>[...x])]);
+        expect(res7).to.have.length(6);
+        expect(res8).to.have.length(6);
+        expect(res9).to.have.length(6);
+      }
+    });
+
     it("inherited properties from base class synchronously", () => {
       const baseClass = (schema as MutableSchema).createEntityClassSync("TestBase");
       const basePrimProp = (baseClass as ECClass as MutableClass).createPrimitivePropertySync("BasePrimProp");
