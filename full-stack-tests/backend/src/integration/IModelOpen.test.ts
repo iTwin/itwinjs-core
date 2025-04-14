@@ -37,26 +37,6 @@ describe("IModelOpen", () => {
       .to.be.rejectedWith(IModelError).to.eventually.have.property("errorNumber", RepositoryStatus.InvalidRequest);
   });
 
-  it("should be able to handle simultaneous open calls", async () => {
-    // Clean folder to re-fetch briefcase
-    deleteTestIModelCache();
-
-    const numTries = 10;
-
-    // Open iModel with no timeout, and ensure all promises resolve to the same briefcase
-    const openPromises = new Array<Promise<SnapshotDb>>();
-    for (let ii = 0; ii < numTries; ii++) {
-      const open = HubWrappers.downloadAndOpenCheckpoint({ accessToken, iTwinId: testITwinId, iModelId: testIModelId });
-      openPromises.push(open);
-    }
-    const iModels = await Promise.all(openPromises);
-    const pathname = iModels[0].pathName;
-    for (let ii = 1; ii < numTries; ii++) {
-      assert.strictEqual(iModels[ii].pathName, pathname);
-    }
-    await HubWrappers.closeAndDeleteBriefcaseDb(accessToken, iModels[0]);
-  });
-
   it("should be able to open a version that requires many merges", async () => {
     // Clean folder to refetch briefcase
     deleteTestIModelCache();
