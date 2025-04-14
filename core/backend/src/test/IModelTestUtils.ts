@@ -35,7 +35,7 @@ import { Schema, Schemas } from "../Schema";
 import { HubMock } from "../internal/HubMock";
 import { KnownTestLocations } from "./KnownTestLocations";
 import { BackendHubAccess } from "../BackendHubAccess";
-import { _hubAccess, _openCheckpoint } from "../internal/Symbols";
+import { _hubAccess } from "../internal/Symbols";
 
 chai.use(chaiAsPromised);
 
@@ -204,12 +204,12 @@ export class HubWrappers {
   }
 
   private static async _downloadAndOpenCheckpoint(job: DownloadJob) {
-    const db = CheckpointManager.tryOpenLocalFile(job.request);
+    const db = IModelTestUtils.tryOpenLocalFile(job.request);
     if (db)
       return db;
     await V2CheckpointManager.downloadCheckpoint(job.request);
     await CheckpointManager.updateToRequestedVersion(job.request);
-    return CheckpointManager[_openCheckpoint](job.request.localFile, job.request.checkpoint);
+    return IModelTestUtils.openCheckpoint(job.request.localFile, job.request.checkpoint);
   }
 
   /** Opens the specific Checkpoint iModel, `SyncMode.FixedVersion`, through the same workflow the IModelReadRpc.getConnectionProps method will use. Replicates the way a frontend would open the iModel. */
@@ -276,11 +276,28 @@ export class HubWrappers {
 
 export class IModelTestUtils {
 
+
   protected static get knownTestLocations(): { outputDir: string, assetsDir: string } { return KnownTestLocations; }
 
   /** Generate a name for an iModel that's unique using the baseName provided and appending a new GUID.  */
   public static generateUniqueName(baseName: string) {
     return `${baseName} - ${Guid.createValue()}`;
+  }
+
+
+  public static openCheckpoint(fileName: LocalFileName, checkpoint: CheckpointProps) {
+    const snapshot = SnapshotDb.openFile(fileName, { key: CheckpointManager.getKey(checkpoint) });
+    (snapshot as any)._iTwinId = checkpoint.iTwinId;
+    return snapshot;
+  }
+
+  /** try to open an existing local file to satisfy a download request */
+  public static tryOpenLocalFile(request: DownloadRequest): SnapshotDb | undefined {
+    const checkpoint = request.checkpoint;
+    if (CheckpointManager.verifyCheckpoint(checkpoint, request.localFile))
+      return this.openCheckpoint(request.localFile, checkpoint);
+
+    return undefined;
   }
 
   /** Prepare for an output file by:
