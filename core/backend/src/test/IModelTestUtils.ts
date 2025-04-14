@@ -35,7 +35,7 @@ import { Schema, Schemas } from "../Schema";
 import { HubMock } from "../internal/HubMock";
 import { KnownTestLocations } from "./KnownTestLocations";
 import { BackendHubAccess } from "../BackendHubAccess";
-import { _getCheckpointDb, _hubAccess, _openCheckpoint, _performDownload } from "../internal/Symbols";
+import { _hubAccess, _openCheckpoint } from "../internal/Symbols";
 
 chai.use(chaiAsPromised);
 
@@ -184,7 +184,7 @@ export class HubWrappers {
     }
   }
 
-  /** Downloads and opens a checkpoint */
+  /** Downloads a checkpoint and opens it as a SnapShotDb */
   public static async downloadAndOpenCheckpoint(args: { accessToken: AccessToken, iTwinId: GuidString, iModelId: GuidString, asOf?: IModelVersionProps }): Promise<SnapshotDb> {
     if (undefined === args.asOf)
       args.asOf = IModelVersion.latest().toJSON();
@@ -199,7 +199,7 @@ export class HubWrappers {
     const folder = path.join(V2CheckpointManager.getFolder(), checkpoint.iModelId);
     const filename = path.join(folder, `${checkpoint.changeset.id ?? "first"}.bim`);
     const request: DownloadRequest = { checkpoint, localFile: filename };
-    const db = V2CheckpointManager[_getCheckpointDb](request);
+    const db = SnapshotDb.tryFindByKey(CheckpointManager.getKey(request.checkpoint));
     return (undefined !== db) ? db : Downloads.download(request, async (job: DownloadJob) => this._downloadAndOpenCheckpoint(job));
   }
 
@@ -207,7 +207,7 @@ export class HubWrappers {
     const db = CheckpointManager.tryOpenLocalFile(job.request);
     if (db)
       return db;
-    await V2CheckpointManager[_performDownload](job);
+    await V2CheckpointManager.downloadCheckpoint(job.request);
     await CheckpointManager.updateToRequestedVersion(job.request);
     return CheckpointManager[_openCheckpoint](job.request.localFile, job.request.checkpoint);
   }
