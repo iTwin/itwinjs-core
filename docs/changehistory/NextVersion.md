@@ -8,6 +8,7 @@ Table of contents:
 
 - [NextVersion](#nextversion)
   - [Selection set](#selection-set)
+  - [Snapping](#snapping)
   - [Font APIs](#font-apis)
   - [Geometry](#geometry)
     - [Polyface Traversal](#polyface-traversal)
@@ -60,9 +61,8 @@ Table of contents:
       - [No pending/local changes](#no-pendinglocal-changes)
       - [With pending/local changes](#with-pendinglocal-changes)
     - [Reworked @itwin/ecschema-metadata package](#reworked-itwinecschema-metadata-package)
-      - [Tips for adjusting existing code:](#tips-for-adjusting-existing-code)
+      - [Tips for adjusting existing code](#tips-for-adjusting-existing-code)
   - [Deprecated ECSqlStatement](#deprecated-ecsqlstatement)
-  - [Attach/detach db](#attachdetach-db)
 
 ## Selection set
 
@@ -74,6 +74,12 @@ To alleviate this problem, the `SelectionSet`-related APIs have been enhanced to
 - `SelectionSetEvent` attributes `added` and `removed` have been deprecated, but continue to work as before, containing only element ids. In addition, the event object now contains new `additions` and `removals` attributes, which are instances of `SelectableIds` and contain all ids that were added or removed from the selection set, including those of Model and SubCategory.
 
 Because the `SelectionSet` now stores additional types of ids, existing code that listens to `onChange` event may start getting extra invocations that don't affect the element selection (e.g. `SelectAddEvent` with `added: []` and `additions: { models: ["0x1"] }`). Also, the `isActive` getter may return `true` even though `elements` set is empty.
+
+## Snapping
+
+Added `SnapMode.PerpendicularPoint`. Use this snap mode to snap to the closest/perpendicular point on the curve under the cursor from the AccuDraw origin.
+
+![perpendicular point snap](assets/SnapPerpendicularPoint.png "Perpendicular Point Snap")
 
 ## Font APIs
 
@@ -559,6 +565,8 @@ All three `nativeDb` fields and `IModelHost.platform` have always been `@interna
 | `readImage`                                          | Use `readImageBuffer` instead.                                                                                    |
 | `setEventController`                                 | Removed (was for internal use).                                                                                   |
 | `PullChangesOptions.progressCallback`                | Use `downloadProgressCallback` instead.                                                                           |
+| `AccuDrawShortcuts.rotatePerpendicular`              | Use `AccuDrawShortcuts.rotateAxesByPoint` with `SnapMode.PerpendicularPoint` instead.                             |
+| `AccuDrawRotatePerpendicularTool`                    | Use `AccuDrawRotateAxesTool` with `SnapMode.PerpendicularPoint` instead.                                          |
 
 #### @itwin/core-geometry
 
@@ -802,7 +810,3 @@ Following are related classes to ECSqlStatement that are also mark depercate
 - `ECSqlColumnInfo`
 
   In concurrent query `QueryOptions.convertClassIdsToClassNames` & `QueryOptionsBuilder.setConvertClassIdsToNames()` are deprecated. Use ECSQL ec_classname() function to convert class ids to class names.
-
-## Attach/detach db
-
-Allow the attachment of an ECDb/IModel to a connection and running ECSQL that combines data from both databases.
