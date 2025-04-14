@@ -71,17 +71,20 @@ describe("ECClass", () => {
       await (entityClass as ECClass as MutableClass).createPrimitiveProperty("ChildPrimProp3");
       entityClass.baseClass = new DelayedPromiseWithProps(baseClass.key, async () => baseClass);
 
-      const [res1,res2] = await Promise.all([entityClass.getProperties().then((x)=>[...x]), entityClass.getProperties().then((x)=>[...x]), entityClass.getProperties().then((x)=>[...x])]);
+      const [res1,res2,res3] = await Promise.all([entityClass.getProperties().then((x)=>[...x]), entityClass.getProperties().then((x)=>[...x]), entityClass.getProperties().then((x)=>[...x])]);
       expect(res1).to.have.length(6);
       expect(res2).to.have.length(6);
-
-      const [res3,res4] = await Promise.all([entityClass.getProperties().then((x)=>[...x]), entityClass.getProperties(true).then((x)=>[...x]), entityClass.getProperties(true).then((x)=>[...x])]);
       expect(res3).to.have.length(6);
-      expect(res4).to.have.length(6);
 
-      const [res5,res6] = await Promise.all([entityClass.getProperties(true).then((x)=>[...x]), entityClass.getProperties().then((x)=>[...x]), entityClass.getProperties(true).then((x)=>[...x])]);
+      const [res4,res5,res6] = await Promise.all([entityClass.getProperties().then((x)=>[...x]), entityClass.getProperties(true).then((x)=>[...x]), entityClass.getProperties(true).then((x)=>[...x])]);
+      expect(res4).to.have.length(6);
       expect(res5).to.have.length(6);
       expect(res6).to.have.length(6);
+
+      const [res7,res8,res9] = await Promise.all([entityClass.getProperties(true).then((x)=>[...x]), entityClass.getProperties().then((x)=>[...x]), entityClass.getProperties(true).then((x)=>[...x])]);
+      expect(res7).to.have.length(6);
+      expect(res8).to.have.length(6);
+      expect(res9).to.have.length(6);
     });
 
     it("inherited properties from base class synchronously", () => {
