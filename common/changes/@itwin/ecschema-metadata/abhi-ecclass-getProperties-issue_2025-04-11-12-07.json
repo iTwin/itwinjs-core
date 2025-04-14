@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/ecschema-metadata",
-      "comment": "The method buildPropertyCache() now return a Property[] instead of being void and no longer has result: Property[] and existingValues: Map<string,number> as params.",
+      "comment": "**BREAKING:** The signature of protected method `ECClass.buildPropertyCache()` has been changed to take less arguments and return a `Promise<Property[]>`.",
       "type": "none"
     }
   ],
