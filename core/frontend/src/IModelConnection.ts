@@ -231,7 +231,19 @@ export abstract class IModelConnection extends IModel {
     this.hilited = new HiliteSet(this);
 
     this.tiles = new Tiles(this);
+<<<<<<< HEAD
     this.geoServices = GeoServices.createForIModel(this);
+=======
+    this.geoServices = GeoServices.createForIModel(this, this._iModelReadApi);
+    /* eslint-disable-next-line @typescript-eslint/no-deprecated */
+    this.displayedExtents = Range3d.fromJSON(this.projectExtents);
+
+    this.onProjectExtentsChanged.addListener(() => {
+      // Compute new displayed extents as the union of the ranges we previously expanded by with the new project extents.
+      /* eslint-disable-next-line @typescript-eslint/no-deprecated */
+      this.expandDisplayedExtents(this._extentsExpansion);
+    });
+>>>>>>> a0e0f1c3ca (Changed GeoServices to use IModealRead)
 
     this.hilited.onModelSubCategoryModeChanged.addListener(() => {
       IModelApp.viewManager.onSelectionSetChanged(this);

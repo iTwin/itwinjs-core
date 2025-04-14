@@ -17,6 +17,7 @@ import {
 } from "@itwin/core-common";
 import { IModelConnection } from "./IModelConnection";
 import { FrontendLoggerCategory } from "./common/FrontendLoggerCategory";
+import { IModelReadAPI, mapGeoCoordRequestRPCToIModelRead, mapGeoCoordResponseIModelReadToRPC, mapIModelCoordRequestRPCToIModelRead, mapIModelCoordResponseIModelReadToRPC } from "@itwin/imodelread-common";
 
 /** Options used to create a [[CoordinateConverter]].
  * @internal exported strictly for tests.
@@ -358,17 +359,17 @@ export class GeoServices {
   }
 
   /** @internal */
-  public static createForIModel(iModel: IModelConnection): GeoServices {
+  public static createForIModel(iModel: IModelConnection, iModelReadAPI: IModelReadAPI): GeoServices {
     return new GeoServices({
       isIModelClosed: () => iModel.isClosed,
       toIModelCoords: async (request) => {
-        const rpc = IModelReadRpcInterface.getClientForRouting(iModel.routingContext.token);
-        const response = await rpc.getIModelCoordinatesFromGeoCoordinates(iModel.getRpcProps(), request);
+        const remappedRequest = mapIModelCoordRequestRPCToIModelRead(request);
+        const response = mapIModelCoordResponseIModelReadToRPC(await iModelReadAPI.getIModelCoordinatesFromGeoCoordinates(remappedRequest));
         return response.iModelCoords;
       },
       fromIModelCoords: async (request) => {
-        const rpc = IModelReadRpcInterface.getClientForRouting(iModel.routingContext.token);
-        const response = await rpc.getGeoCoordinatesFromIModelCoordinates(iModel.getRpcProps(), request);
+        const remappedRequest = mapGeoCoordRequestRPCToIModelRead(request);
+        const response = mapGeoCoordResponseIModelReadToRPC(await iModelReadAPI.getGeoCoordinatesFromIModelCoordinates(remappedRequest));
         return response.geoCoords;
       },
     });
