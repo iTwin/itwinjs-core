@@ -6,7 +6,7 @@
 import { BisCoreSchema, BriefcaseDb, ClassRegistry, CodeService, Element, ExportGraphics, ExportGraphicsInfo, IModelJsFs, PhysicalModel, SnapshotDb, StandaloneDb, Subject } from "@itwin/core-backend";
 import { AccessToken, Guid, Id64, Id64Array, Id64String } from "@itwin/core-bentley";
 import { Code, CodeScopeSpec, CodeSpec, CodeSpecProperties, ConflictingLocksError, ElementGeometryInfo, IModel } from "@itwin/core-common";
-import { BentleyGeometryFlatBuffer, Geometry, GeometryQuery, IndexedPolyface, PolyfaceQuery, Range3d, Sphere } from "@itwin/core-geometry";
+import { BentleyGeometryFlatBuffer, Geometry, IndexedPolyface, PolyfaceQuery, Range3d, Sphere } from "@itwin/core-geometry";
 import { assert } from "chai";
 import { IModelTestUtils, KnownTestLocations } from "./IModelTestUtils";
 
