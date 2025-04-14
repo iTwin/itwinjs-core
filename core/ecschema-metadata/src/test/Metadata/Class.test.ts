@@ -19,7 +19,6 @@ import { SchemaKey } from "../../SchemaKey";
 import { createSchemaJsonWithItems } from "../TestUtils/DeserializationHelpers";
 import { createEmptyXmlDocument, getElementChildren, getElementChildrenByTagName } from "../TestUtils/SerializationHelper";
 import { StrengthDirection } from "../../ECObjects";
-import { Property } from "../../ecschema-metadata";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 
@@ -60,7 +59,7 @@ describe("ECClass", () => {
       expect(await entityClass.getInheritedProperty("PrimProp")).to.be.undefined;
     });
 
-    it.only("successfully executes multiples calls to getProperties", async() => {
+    it("successfully executes multiples calls to getProperties", async() => {
       const schemaJson = {
         $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
         name: "TestSchema",
