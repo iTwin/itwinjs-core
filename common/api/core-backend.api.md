@@ -829,8 +829,6 @@ export class ChannelRootAspect extends ElementUniqueAspect {
 
 // @internal (undocumented)
 export class CheckpointManager {
-    // (undocumented)
-    static [_openCheckpoint](fileName: LocalFileName, checkpoint: CheckpointProps): SnapshotDb;
     static downloadCheckpoint(request: DownloadRequest): Promise<void>;
     // (undocumented)
     static getKey(checkpoint: CheckpointProps): string;
@@ -838,7 +836,6 @@ export class CheckpointManager {
     static readonly onDownloadV2: BeEvent<(job: DownloadJob) => void>;
     // (undocumented)
     static toCheckpointProps(args: OpenCheckpointArgs): Promise<CheckpointProps>;
-    static tryOpenLocalFile(request: DownloadRequest): SnapshotDb | undefined;
     // (undocumented)
     static updateToRequestedVersion(request: DownloadRequest): Promise<void>;
     static validateCheckpointGuids(checkpoint: CheckpointProps, snapshotDb: SnapshotDb): void;
@@ -4227,6 +4224,14 @@ export class MetaDataRegistry {
     findByClassId(classId: Id64String): EntityMetaData | undefined;
 }
 
+// @internal (undocumented)
+export interface MockCheckpoint {
+    // (undocumented)
+    mockAttach(checkpoint: CheckpointProps): string;
+    // (undocumented)
+    mockDownload(_request: DownloadRequest): void;
+}
+
 // @public
 export class Model extends Entity {
     protected constructor(props: ModelProps, iModel: IModelDb);
@@ -6095,10 +6100,7 @@ export interface V2CheckpointAccessProps {
 
 // @internal
 export class V2CheckpointManager {
-    // (undocumented)
-    static [_getCheckpointDb](request: DownloadRequest): Promise<SnapshotDb>;
-    static [_mockCheckpointAttach]?: (checkpoint: CheckpointProps) => string;
-    static [_mockCheckpointDownload]?: (_request: DownloadRequest) => void;
+    static [_mockCheckpoint]?: MockCheckpoint;
     // (undocumented)
     static attach(checkpoint: CheckpointProps): Promise<{
         dbName: string;
@@ -6109,8 +6111,6 @@ export class V2CheckpointManager {
     // (undocumented)
     static readonly cloudCacheName = "Checkpoints";
     static downloadCheckpoint(request: DownloadRequest): Promise<ChangesetId>;
-    // (undocumented)
-    static getContainer(v2Props: V2CheckpointAccessProps, checkpoint: CheckpointProps): CloudSqlite.CloudContainer;
     // (undocumented)
     static getFolder(): LocalDirName;
 }

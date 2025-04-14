@@ -18,7 +18,7 @@ import {
 } from "@itwin/core-common";
 import { Box, Cone, LineString3d, Point2d, Point3d, Range2d, Range3d, StandardViewIndex, Vector3d, YawPitchRollAngles } from "@itwin/core-geometry";
 import { RequestNewBriefcaseArg } from "../BriefcaseManager";
-import { CheckpointProps, V2CheckpointManager } from "../CheckpointManager";
+import { CheckpointManager, CheckpointProps, DownloadRequest, V2CheckpointManager } from "../CheckpointManager";
 import { ClassRegistry } from "../ClassRegistry";
 import {
   _nativeDb, AuxCoordSystem2d, BriefcaseDb, BriefcaseLocalValue, BriefcaseManager, CategorySelector, ChannelControl, DisplayStyle2d, DisplayStyle3d, DrawingCategory,
@@ -35,7 +35,7 @@ import { Schema, Schemas } from "../Schema";
 import { HubMock } from "../internal/HubMock";
 import { KnownTestLocations } from "./KnownTestLocations";
 import { BackendHubAccess } from "../BackendHubAccess";
-import { _getCheckpointDb, _hubAccess } from "../internal/Symbols";
+import { _hubAccess } from "../internal/Symbols";
 
 chai.use(chaiAsPromised);
 
@@ -184,7 +184,7 @@ export class HubWrappers {
     }
   }
 
-  /** Downloads and opens a checkpoint */
+  /** Downloads a checkpoint and opens it as a SnapShotDb */
   public static async downloadAndOpenCheckpoint(args: { accessToken: AccessToken, iTwinId: GuidString, iModelId: GuidString, asOf?: IModelVersionProps }): Promise<SnapshotDb> {
     if (undefined === args.asOf)
       args.asOf = IModelVersion.latest().toJSON();
@@ -197,8 +197,17 @@ export class HubWrappers {
     };
 
     const folder = path.join(V2CheckpointManager.getFolder(), checkpoint.iModelId);
-    const filename = path.join(folder, `${checkpoint.changeset.id ?? "first"}.bim`);
-    return V2CheckpointManager[_getCheckpointDb]({ checkpoint, localFile: filename });
+    const filename = path.join(folder, `${checkpoint.changeset.id === "" ? "first" : checkpoint.changeset.id}.bim`);
+    const request: DownloadRequest = { checkpoint, localFile: filename };
+    let db = SnapshotDb.tryFindByKey(CheckpointManager.getKey(request.checkpoint));
+    if (undefined !== db)
+      return db;
+    db = IModelTestUtils.tryOpenLocalFile(request);
+    if (db)
+      return db;
+    await V2CheckpointManager.downloadCheckpoint(request);
+    await CheckpointManager.updateToRequestedVersion(request);
+    return IModelTestUtils.openCheckpoint(request.localFile, request.checkpoint);
   }
 
   /** Opens the specific Checkpoint iModel, `SyncMode.FixedVersion`, through the same workflow the IModelReadRpc.getConnectionProps method will use. Replicates the way a frontend would open the iModel. */
@@ -265,11 +274,28 @@ export class HubWrappers {
 
 export class IModelTestUtils {
 
+
   protected static get knownTestLocations(): { outputDir: string, assetsDir: string } { return KnownTestLocations; }
 
   /** Generate a name for an iModel that's unique using the baseName provided and appending a new GUID.  */
   public static generateUniqueName(baseName: string) {
     return `${baseName} - ${Guid.createValue()}`;
+  }
+
+
+  public static openCheckpoint(fileName: LocalFileName, checkpoint: CheckpointProps) {
+    const snapshot = SnapshotDb.openFile(fileName, { key: CheckpointManager.getKey(checkpoint) });
+    (snapshot as any)._iTwinId = checkpoint.iTwinId;
+    return snapshot;
+  }
+
+  /** try to open an existing local file to satisfy a download request */
+  public static tryOpenLocalFile(request: DownloadRequest): SnapshotDb | undefined {
+    const checkpoint = request.checkpoint;
+    if (CheckpointManager.verifyCheckpoint(checkpoint, request.localFile))
+      return this.openCheckpoint(request.localFile, checkpoint);
+
+    return undefined;
   }
 
   /** Prepare for an output file by:
