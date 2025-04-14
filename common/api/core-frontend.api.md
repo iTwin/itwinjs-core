@@ -759,18 +759,6 @@ export class AccuDrawRotateFrontTool extends Tool {
 }
 
 // @beta (undocumented)
-export class AccuDrawRotatePerpendicularTool extends AccuDrawRotateElementTool {
-    // @internal (undocumented)
-    protected onManipulationComplete(): AccuDrawFlags;
-    // (undocumented)
-    static toolId: string;
-    // @internal (undocumented)
-    protected updateOrientation(snap: SnapDetail, viewport: ScreenViewport, isMotion: boolean): boolean;
-    // @internal (undocumented)
-    protected get wantExitOnDataButtonUp(): boolean;
-}
-
-// @beta (undocumented)
 export class AccuDrawRotateSideTool extends Tool {
     // (undocumented)
     run(): Promise<boolean>;
@@ -923,8 +911,6 @@ export class AccuDrawShortcuts {
     static rotateAxesByPoint(isSnapped: boolean, aboutCurrentZ: boolean): boolean;
     // (undocumented)
     static rotateCycle(): void;
-    // (undocumented)
-    static rotatePerpendicular(): Promise<boolean>;
     // (undocumented)
     static rotateToACS(): void;
     // (undocumented)
@@ -9559,6 +9545,7 @@ export class SnapDetail extends HitDetail {
     parentGeomType?: HitParentGeomType;
     primitive?: CurvePrimitive;
     setCurvePrimitive(primitive?: CurvePrimitive, localToWorld?: Transform, geomType?: HitGeomType): void;
+    setSnapMode(snapMode: SnapMode): void;
     setSnapPoint(point: Point3d, heat: SnapHeat): void;
     // (undocumented)
     snapMode: SnapMode;
@@ -9591,7 +9578,9 @@ export enum SnapMode {
     // (undocumented)
     NearestKeypoint = 2,
     // (undocumented)
-    Origin = 16
+    Origin = 16,
+    // (undocumented)
+    PerpendicularPoint = 128
 }
 
 // @public
