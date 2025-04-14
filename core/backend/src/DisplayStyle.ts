@@ -33,7 +33,7 @@ export abstract class DisplayStyle extends DefinitionElement {
   public static override deserialize(props: InstanceProps): DisplayStyleProps {
     const elProps = super.deserialize(props) as DisplayStyleProps;
     // Uncompress excludedElements if they are compressed
-    if (elProps.jsonProperties?.styles?.excludedElements) {
+    if (elProps.jsonProperties?.styles?.excludedElements && !props.options?.element?.displayStyle?.compressExcludedElementIds) {
       const excludedElements = elProps.jsonProperties.styles.excludedElements;
       if (typeof excludedElements === "string" && excludedElements.startsWith("+")) {
         const ids: string[] = [];
