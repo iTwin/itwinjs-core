@@ -325,6 +325,8 @@ beta;interface;ITwinIdArg
 public;const;ITWINJS_CORE_VERSION
 public;enum;KeyinParseError
 internal;enum;KeyinStatus
+internal;class;LayerTileTreeHandler
+internal;class;LayerTileTreeReferenceHandler
 beta;class;LengthDescription
 internal;function;linePlaneIntersect
 alpha;class;LocalExtensionProvider
@@ -373,6 +375,7 @@ public;enum;MapLayerSourceStatus
 public;interface;MapLayerSourceValidation
 beta;class;MapLayerTileTreeReference
 beta;interface;MapLayerTokenEndpoint
+internal;interface;MapLayerTreeSetting
 beta;interface;MapSubLayerFeatureInfo
 public;class;MapTile
 public;class;MapTileProjection

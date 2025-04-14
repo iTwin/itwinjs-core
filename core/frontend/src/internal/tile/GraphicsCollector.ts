@@ -17,6 +17,7 @@ export interface GraphicsCollector {
   addGraphic(graphic: RenderGraphic): void;
 }
 
+/** @internal*/
 export class GraphicsCollectorDrawArgs extends TileDrawArgs {
   private _planes: FrustumPlanes;
   private _worldToViewMap: Map4d;

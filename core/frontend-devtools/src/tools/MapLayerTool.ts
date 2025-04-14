@@ -89,7 +89,12 @@ export class AttachModelMapLayerTool extends Tool {
       const modelProps = await iModel.models.getProps(modelId);
       const modelName = modelProps[0].name ? modelProps[0].name : modelId;
       const name = nameIn ? (modelIds.size > 1 ? `${nameIn}: ${modelName}` : nameIn) : modelName;
-      const settings = ModelMapLayerSettings.fromJSON({ name, modelId, drapeTarget: "reality" === drapeTarget ? ModelMapLayerDrapeTarget.RealityData : undefined });
+      let settingsDrapeTarget: ModelMapLayerDrapeTarget | undefined;
+      if ("reality" === drapeTarget)
+        settingsDrapeTarget = ModelMapLayerDrapeTarget.RealityData;
+      else if ("imodel" === drapeTarget)
+        settingsDrapeTarget = ModelMapLayerDrapeTarget.IModel;
+      const settings = ModelMapLayerSettings.fromJSON({ name, modelId, drapeTarget: settingsDrapeTarget });
       vp.displayStyle.attachMapLayer({ settings, mapLayerIndex: { isOverlay: false, index: -1 } });
     }
     return true;

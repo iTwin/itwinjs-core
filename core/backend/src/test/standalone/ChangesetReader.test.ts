@@ -9,7 +9,7 @@ import { assert, expect } from "chai";
 import * as path from "node:path";
 import { DrawingCategory } from "../../Category";
 import { ChangesetECAdaptor as ECChangesetAdaptor, PartialECChangeUnifier } from "../../ChangesetECAdaptor";
-import { HubMock } from "../../HubMock";
+import { HubMock } from "../../internal/HubMock";
 import { BriefcaseDb, SnapshotDb } from "../../IModelDb";
 import { SqliteChangeOp, SqliteChangesetReader } from "../../SqliteChangesetReader";
 import { HubWrappers, IModelTestUtils } from "../IModelTestUtils";

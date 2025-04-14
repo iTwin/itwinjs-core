@@ -239,7 +239,6 @@ public;class;GroupInformationElement
 public;class;GroupInformationModel
 public;class;GroupInformationPartition
 public;class;GroupModel
-internal;class;HubMock
 public;function;imageBufferFromImageSource
 public;interface;ImageBufferFromImageSourceArgs
 public;function;imageSourceFromImageBuffer
