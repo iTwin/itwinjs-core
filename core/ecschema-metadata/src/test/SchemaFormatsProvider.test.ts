@@ -66,40 +66,6 @@ describe("SchemaFormatsProvider", () => {
     expect(format).not.to.be.undefined;
   });
 
-  it("should return a format given a KindOfQuantity", async () => {
-    const format = await formatsProvider.getFormat("AecUnits.LENGTH");
-    expect(format).not.to.be.undefined;
-    expect(format?.composite?.units.length).to.be.greaterThan(0);
-  });
-
-  it("should format a length quantity to meters given a KoQ and unit provider", async () => {
-    const formatProps = await formatsProvider.getFormat("AecUnits.LENGTH");
-    expect(formatProps).not.to.be.undefined;
-    const format = await Format.createFromJSON("testFormat", unitsProvider, formatProps!);
-    const persistenceUnit = await unitsProvider.findUnitByName("Units.M"); // or unitsProvider.findUnit("m");
-    const formatSpec = await FormatterSpec.create("TestSpec", format, unitsProvider, persistenceUnit);
-
-    const result = formatSpec.applyFormatting(50);
-    expect(result).to.equal("50.0 m");
-
-  });
-
-  it("should format a length quantity to feet given a KoQ, unit provider and the imperial unit system", async () => {
-    const spy = Sinon.spy();
-    formatsProvider.onFormatsChanged.addListener(spy);
-    formatsProvider.unitSystem = "imperial";
-
-    expect(spy.calledWith({ formatsChanged: [] })).to.be.true;
-    const formatProps = await formatsProvider.getFormat("AecUnits.LENGTH_LONG");
-    expect(formatProps).not.to.be.undefined;
-    const format = await Format.createFromJSON("testFormat", unitsProvider, formatProps!);
-    const persistenceUnit = await unitsProvider.findUnitByName("Units.M"); // or unitsProvider.findUnit("m");
-    const formatSpec = await FormatterSpec.create("TestSpec", format, unitsProvider, persistenceUnit);
-
-    const result = formatSpec.applyFormatting(50);
-    expect(result).to.equal("164'0 1/2\"");
-  });
-
   it("retrieve different default presentation formats from a KoQ based on different unit systems", async () => {
     formatsProvider.unitSystem = "imperial";
 

@@ -15,6 +15,7 @@
     - [Composite Format](#composite-format)
     - [Parsing Values](#parsing-values)
     - [Using a FormatsProvider](#using-a-formatsprovider)
+    - [Using a MutableFormatsProvider](#using-a-mutableformatsprovider)
     - [Mathematical Operation Parsing](#mathematical-operation-parsing)
       - [Limitations](#limitations)
 
@@ -53,7 +54,7 @@ A [FormatsProvider]($quantity) interface helps provide all the necessary `Format
 
 A [MutableFormatsProvider]($quantity) interface extends the read-only `FormatsProvider` above by allowing adding or removing `Formats` to the provider.
 
-The [SchemaFormatsProvider]($ecschema-metadata) takes in a [SchemaContext]($ecschema-metadata), to provide `Formats` coming from schemas. The `SchemaFormatsProvider` also requires a [UnitSystemKey]($quantity) passed in to filter the [FormatDefinition]($quantity) returned, according to the current unit system set in the `SchemaFormatsProvider`.
+The [SchemaFormatsProvider]($ecschema-metadata) takes in a [SchemaContext]($ecschema-metadata), to provide `Formats` coming from schemas. The `SchemaFormatsProvider` also requires a [UnitSystemKey]($quantity) passed in to filter the [FormatDefinition]($quantity) returned, according to the current unit system set in the `SchemaFormatsProvider`. When getting a format, the `SchemaFormatsProvider` will throw an error if it receives a non-valid [EC full name](https://www.itwinjs.org/bis/ec/ec-name/#full-name).
 
 #### Units Provider
 
@@ -222,6 +223,23 @@ When retrieving a format from a schema, users might want to ensure the format th
 
 ```ts
 [[include:Quantity_Formatting.Schema_Formats_Provider_Simple_Formatting_With_Unit_System]]
+```
+
+</details>
+
+### Using a MutableFormatsProvider
+
+The example below is of a `MutableFormatsProvider` that lets you add/remove formats during runtime.
+
+<details>
+  <summary>Example of a MutableFormatsProvider implementation</summary>
+
+```ts
+[[include:Quantity_Formatting.Mutable_Formats_Provider]]
+```
+
+```ts
+[[include:Quantity_Formatting.Mutable_Formats_Provider_Adding_A_Format]]
 ```
 
 </details>
