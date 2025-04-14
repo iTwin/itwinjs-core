@@ -14,7 +14,7 @@ import {
   RenderTimelineProps, RepositoryLinkProps, SectionDrawingLocationProps, SectionDrawingProps, SectionType,
   SheetBorderTemplateProps, SheetProps, SheetTemplateProps, SubjectProps, TypeDefinition, TypeDefinitionElementProps, UrlLinkProps
 } from "@itwin/core-common";
-import { ClipVector, LowAndHighXYZProps, Range3d, Transform } from "@itwin/core-geometry";
+import { ClipVector, LowAndHighXYZProps, Range3d, Transform, YawPitchRollAngles } from "@itwin/core-geometry";
 import { CustomHandledProperty, ECSqlRow, Entity, InstanceProps } from "./Entity";
 import { IModelDb } from "./IModelDb";
 import { IModelElementCloneContext } from "./IModelElementCloneContext";
@@ -640,11 +640,7 @@ export abstract class GeometricElement3d extends GeometricElement {
 
     elProps.placement = {
       origin,
-      angles: {
-        roll: instance.roll,
-        yaw: instance.yaw,
-        pitch: instance.pitch,
-      },
+      angles: YawPitchRollAngles.createDegrees(instance.yaw ?? 0, instance.pitch ?? 0, instance.roll ?? 0).toJSON(),
       bbox
     };
 
