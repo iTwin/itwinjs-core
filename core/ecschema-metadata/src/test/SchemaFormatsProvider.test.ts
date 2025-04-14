@@ -5,18 +5,13 @@
 import * as fs from "fs";
 import * as path from "path";
 import { expect } from "chai";
-import { Format, FormatterSpec } from "@itwin/core-quantity";
-import * as Sinon from "sinon";
 import { SchemaContext } from "../Context";
 import { SchemaFormatsProvider } from "../SchemaFormatsProvider";
 import { deserializeXmlSync } from "./TestUtils/DeserializationHelpers";
-import { UNIT_EXTRA_DATA } from "./UnitProvider/UnitData";
-import { SchemaUnitProvider } from "../UnitProvider/SchemaUnitProvider";
 
 describe("SchemaFormatsProvider", () => {
   let context: SchemaContext;
   let formatsProvider: SchemaFormatsProvider;
-  let unitsProvider: SchemaUnitProvider;
 
   before(() => {
     context = new SchemaContext();
@@ -49,7 +44,6 @@ describe("SchemaFormatsProvider", () => {
 
   beforeEach(() => {
     formatsProvider = new SchemaFormatsProvider(context, "metric");
-    unitsProvider = new SchemaUnitProvider(context, UNIT_EXTRA_DATA);
   });
 
   it("should throw an error when format doesn't follow valid name convention", async () => {
