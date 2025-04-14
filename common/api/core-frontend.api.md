@@ -1868,7 +1868,7 @@ export class CatalogConnection extends BriefcaseConnection {
         newDb: CatalogIModelTypes.NameAndVersion;
     }>;
     getCatalogInfo(): Promise<{
-        manifest: CatalogIModelTypes.CatalogManifest;
+        manifest?: CatalogIModelTypes.CatalogManifest;
         version: string;
     }>;
     static openEditable(args: CatalogIModelTypes.OpenArgs): Promise<CatalogConnection>;

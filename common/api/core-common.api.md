@@ -1078,7 +1078,7 @@ export namespace CatalogIModelTypes {
             newDb: NameAndVersion;
         }>;
         getInfo(key: string): Promise<{
-            manifest: CatalogIModelTypes.CatalogManifest;
+            manifest?: CatalogIModelTypes.CatalogManifest;
             version: string;
         }>;
         openEditable(args: OpenArgs): Promise<IModelConnectionProps>;

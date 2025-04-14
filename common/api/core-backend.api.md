@@ -602,23 +602,17 @@ export abstract class Callout extends DetailingSymbol {
 
 // @beta
 export namespace CatalogIModel {
-    // (undocumented)
     export function acquireWriteLock(args: {
         containerId: string;
         username: string;
     }): Promise<void>;
-    // (undocumented)
     export function createNewContainer(args: CatalogIModelTypes.CreateNewContainerArgs): Promise<CatalogIModelTypes.NewContainerProps>;
-    // (undocumented)
     export function createNewVersion(args: CatalogIModelTypes.CreateNewVersionArgs): Promise<{
         oldDb: CatalogIModelTypes.NameAndVersion;
         newDb: CatalogIModelTypes.NameAndVersion;
     }>;
-    // (undocumented)
     export function openEditable(args: CatalogIModelTypes.OpenArgs): Promise<StandaloneDb & EditCatalog>;
-    // (undocumented)
     export function openReadonly(args: CatalogIModelTypes.OpenArgs): Promise<StandaloneDb & ReadCatalog>;
-    // (undocumented)
     export function releaseWriteLock(args: {
         containerId: string;
         abandon?: true;
@@ -643,7 +637,7 @@ export class CatalogIModelHandler extends IpcHandler implements CatalogIModelTyp
     }>;
     // (undocumented)
     getInfo(key: string): Promise<{
-        manifest: CatalogIModelTypes.CatalogManifest;
+        manifest?: CatalogIModelTypes.CatalogManifest;
         version: string;
     }>;
     // (undocumented)
@@ -2196,7 +2190,6 @@ export interface EditableWorkspaceDb extends WorkspaceDb {
 
 // @beta
 export interface EditCatalog extends ReadCatalog {
-    // (undocumented)
     updateCatalogManifest(manifest: CatalogIModelTypes.CatalogManifest): void;
 }
 
@@ -4838,14 +4831,11 @@ export type QueryWorkspaceResourcesCallback = (resources: Iterable<{
 
 // @beta
 export interface ReadCatalog {
-    // (undocumented)
     getInfo(): {
-        manifest: CatalogIModelTypes.CatalogManifest;
+        manifest?: CatalogIModelTypes.CatalogManifest;
         version: string;
     };
-    // (undocumented)
-    getManifest(): CatalogIModelTypes.CatalogManifest;
-    // (undocumented)
+    getManifest(): CatalogIModelTypes.CatalogManifest | undefined;
     getVersion(): string;
 }
 
