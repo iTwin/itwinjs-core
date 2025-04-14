@@ -22,7 +22,7 @@ import { IModelHost } from "./IModelHost";
 import { IModelJsFs } from "./IModelJsFs";
 import { SnapshotDb, TokenArg } from "./IModelDb";
 import { IModelNative } from "./internal/NativePlatform";
-import { _hubAccess, _mockCheckpoint, _nativeDb, _performDownload } from "./internal/Symbols";
+import { _hubAccess, _mockCheckpoint, _nativeDb } from "./internal/Symbols";
 
 const loggerCategory = BackendLoggerCategory.IModelDb;
 
@@ -250,7 +250,7 @@ export class V2CheckpointManager {
   }
 
   /** @internal */
-  public static async [_performDownload](job: DownloadJob): Promise<ChangesetId> {
+  private static async performDownload(job: DownloadJob): Promise<ChangesetId> {
     const request = job.request;
     if (this[_mockCheckpoint])
       this[_mockCheckpoint].mockDownload(request);
@@ -271,7 +271,7 @@ export class V2CheckpointManager {
    * be the same as the requested changesetId or the most recent checkpoint before it.)
    */
   public static async downloadCheckpoint(request: DownloadRequest): Promise<ChangesetId> {
-    return Downloads.download(request, async (job: DownloadJob) => this[_performDownload](job));
+    return Downloads.download(request, async (job: DownloadJob) => this.performDownload(job));
   }
 }
 

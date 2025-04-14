@@ -35,7 +35,7 @@ import { Schema, Schemas } from "../Schema";
 import { HubMock } from "../internal/HubMock";
 import { KnownTestLocations } from "./KnownTestLocations";
 import { BackendHubAccess } from "../BackendHubAccess";
-import { _hubAccess, _performDownload } from "../internal/Symbols";
+import { _hubAccess } from "../internal/Symbols";
 
 chai.use(chaiAsPromised);
 
@@ -199,19 +199,15 @@ export class HubWrappers {
     const folder = path.join(V2CheckpointManager.getFolder(), checkpoint.iModelId);
     const filename = path.join(folder, `${checkpoint.changeset.id === "" ? "first" : checkpoint.changeset.id}.bim`);
     const request: DownloadRequest = { checkpoint, localFile: filename };
-    const db = SnapshotDb.tryFindByKey(CheckpointManager.getKey(request.checkpoint));
+    let db = SnapshotDb.tryFindByKey(CheckpointManager.getKey(request.checkpoint));
     if (undefined !== db)
       return db;
-    return Downloads.download(request, async (job: DownloadJob) => this._downloadAndOpenCheckpoint(job));
-  }
-
-  private static async _downloadAndOpenCheckpoint(job: DownloadJob) {
-    const db = IModelTestUtils.tryOpenLocalFile(job.request);
+    db = IModelTestUtils.tryOpenLocalFile(request);
     if (db)
       return db;
-    await V2CheckpointManager[_performDownload](job);
-    await CheckpointManager.updateToRequestedVersion(job.request);
-    return IModelTestUtils.openCheckpoint(job.request.localFile, job.request.checkpoint);
+    await V2CheckpointManager.downloadCheckpoint(request);
+    await CheckpointManager.updateToRequestedVersion(request);
+    return IModelTestUtils.openCheckpoint(request.localFile, request.checkpoint);
   }
 
   /** Opens the specific Checkpoint iModel, `SyncMode.FixedVersion`, through the same workflow the IModelReadRpc.getConnectionProps method will use. Replicates the way a frontend would open the iModel. */
