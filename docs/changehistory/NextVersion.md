@@ -8,10 +8,12 @@ Table of contents:
 
 - [NextVersion](#nextversion)
   - [Selection set](#selection-set)
+  - [Snapping](#snapping)
   - [Font APIs](#font-apis)
   - [Geometry](#geometry)
     - [Polyface Traversal](#polyface-traversal)
     - [Text Block Margins](#text-block-margins)
+    - [Tangent To Curve](#tangent-to-curve)
   - [Display](#display)
     - [Read image to canvas](#read-image-to-canvas)
     - [Draping iModel models onto reality data or other iModel models](#draping-imodel-models-onto-reality-data-or-other-imodel-models)
@@ -65,7 +67,6 @@ Table of contents:
     - [Reworked @itwin/ecschema-metadata package](#reworked-itwinecschema-metadata-package)
       - [Tips for adjusting existing code](#tips-for-adjusting-existing-code)
   - [Deprecated ECSqlStatement](#deprecated-ecsqlstatement)
-  - [Attach/detach db](#attachdetach-db-1)
 
 ## Selection set
 
@@ -77,6 +78,12 @@ To alleviate this problem, the `SelectionSet`-related APIs have been enhanced to
 - `SelectionSetEvent` attributes `added` and `removed` have been deprecated, but continue to work as before, containing only element ids. In addition, the event object now contains new `additions` and `removals` attributes, which are instances of `SelectableIds` and contain all ids that were added or removed from the selection set, including those of Model and SubCategory.
 
 Because the `SelectionSet` now stores additional types of ids, existing code that listens to `onChange` event may start getting extra invocations that don't affect the element selection (e.g. `SelectAddEvent` with `added: []` and `additions: { models: ["0x1"] }`). Also, the `isActive` getter may return `true` even though `elements` set is empty.
+
+## Snapping
+
+Added `SnapMode.PerpendicularPoint`. Use this snap mode to snap to the closest/perpendicular point on the curve under the cursor from the AccuDraw origin.
+
+![perpendicular point snap](assets/SnapPerpendicularPoint.png "Perpendicular Point Snap")
 
 ## Font APIs
 
@@ -104,6 +111,10 @@ If a walker operation would advance outside the mesh (e.g., `edgeMate` of a boun
 ### Text Block Margins
 
 You can now surround a [TextBlock]($core-common) with padding by setting its [TextBlockMargins]($core-common). When [layoutTextBlock]($core-backend) computes [TextBlockLayout.range]($core-backend), it will expand the bounding box to include the margins. [ProduceTextAnnotationGeometryArgs.debugAnchorPointAndRange]($core-backend) now produces two bounding boxes: one tightly fitted to the text, and a second expanded to include the margins.
+
+### Tangent To Curve
+
+A new API [CurvePrimitive.emitTangents]($core-geometry) is added to announce tangents from a space point to a curve primitive. This API takes a callback to announce each computed tangent so users can specify the callback according to their need. For example, we have created 2 specific APIs to take advantage of the new API. First API is [CurvePrimitive.allTangents]($core-geometry) which returns all tangents from a space point to a curve primitive. Second API is [CurvePrimitive.closestTangent]($core-geometry) which returns the closest tangent from a space point to a curve primitive with respect to a hint point.
 
 ## Display
 
@@ -565,6 +576,8 @@ All three `nativeDb` fields and `IModelHost.platform` have always been `@interna
 | `readImage`                                          | Use `readImageBuffer` instead.                                                                                    |
 | `setEventController`                                 | Removed (was for internal use).                                                                                   |
 | `PullChangesOptions.progressCallback`                | Use `downloadProgressCallback` instead.                                                                           |
+| `AccuDrawShortcuts.rotatePerpendicular`              | Use `AccuDrawShortcuts.rotateAxesByPoint` with `SnapMode.PerpendicularPoint` instead.                             |
+| `AccuDrawRotatePerpendicularTool`                    | Use `AccuDrawRotateAxesTool` with `SnapMode.PerpendicularPoint` instead.                                          |
 
 #### @itwin/core-geometry
 
@@ -808,7 +821,3 @@ Following are related classes to ECSqlStatement that are also mark depercate
 - `ECSqlColumnInfo`
 
   In concurrent query `QueryOptions.convertClassIdsToClassNames` & `QueryOptionsBuilder.setConvertClassIdsToNames()` are deprecated. Use ECSQL ec_classname() function to convert class ids to class names.
-
-## Attach/detach db
-
-Allow the attachment of an ECDb/IModel to a connection and running ECSQL that combines data from both databases.
