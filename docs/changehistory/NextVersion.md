@@ -13,6 +13,7 @@ Table of contents:
   - [Geometry](#geometry)
     - [Polyface Traversal](#polyface-traversal)
     - [Text Block Margins](#text-block-margins)
+    - [Tangent To Curve](#tangent-to-curve)
   - [Display](#display)
     - [Read image to canvas](#read-image-to-canvas)
     - [Draping iModel models onto reality data or other iModel models](#draping-imodel-models-onto-reality-data-or-other-imodel-models)
@@ -309,6 +310,8 @@ const metaData: KindOfQuantity | undefined = await imodelDb.schemaContext.getSch
   - `MapLayerImageryProvider.addLogoCard` : use `addAttributions` method instead
 
 - [IModelConnection.fontMap]($frontend) caches potentially-stale mappings of [FontId]($common)s to font names. If you need access to font Ids on the front-end for some reason, implement an [Ipc method](../learning/IpcInterface.md) that uses [IModelDb.fonts]($backend).
+
+- Added dependency to `@itwin/ecschema-metadata` to allow exposing schema metadata to our frontend APIs.
 
 ### @itwin/presentation-common
 
