@@ -14,6 +14,7 @@ import {
 import { DefinitionElement, RenderTimeline } from "./Element";
 import { IModelDb } from "./IModelDb";
 import { IModelElementCloneContext } from "./IModelElementCloneContext";
+import { ECSqlRow, InstanceProps } from "./Entity";
 
 /** A DisplayStyle defines the parameters for 'styling' the contents of a view.
  * Internally a DisplayStyle consists of a dictionary of several named 'styles' describing specific aspects of the display style as a whole.
@@ -26,6 +27,29 @@ export abstract class DisplayStyle extends DefinitionElement {
 
   protected constructor(props: DisplayStyleProps, iModel: IModelDb) {
     super(props, iModel);
+  }
+
+  /** @internal */
+  public static override deserialize(props: InstanceProps): DisplayStyleProps {
+    const elProps = super.deserialize(props) as DisplayStyleProps;
+    // Uncompress excludedElements if they are compressed
+    if (elProps.jsonProperties?.styles?.excludedElements) {
+      const excludedElements = elProps.jsonProperties.styles.excludedElements;
+      if (typeof excludedElements === "string" && excludedElements.startsWith("+")) {
+        const ids: string[] = [];
+        CompressedId64Set.decompressSet(excludedElements).forEach((id: string) => {
+          ids.push(id);
+        });
+        elProps.jsonProperties.styles.excludedElements = ids;
+      }
+    }
+    return elProps;
+  }
+
+  /** @internal */
+  public static override serialize(props: DisplayStyleProps, iModel: IModelDb): ECSqlRow {
+    const inst = super.serialize(props, iModel);
+    return inst;
   }
 
   /** Create a Code for a DisplayStyle given a name that is meant to be unique within the scope of the specified DefinitionModel.
