@@ -70,13 +70,37 @@ import { AddSeequentRealityModel } from "./RealityDataModel";
 
 class DisplayTestAppAccuSnap extends AccuSnap {
   private readonly _activeSnaps: SnapMode[] = [SnapMode.NearestKeypoint];
+  private _snapModeOverride?: SnapMode;
 
-  public override get keypointDivisor() { return 2; }
-  public override getActiveSnapModes(): SnapMode[] { return this._activeSnaps; }
+  public override get keypointDivisor() {
+    return 2;
+  }
+
+  /** Called after a button event or whenever a new tool is installed. */
+  public override synchSnapMode(): void {
+    this._snapModeOverride = undefined;
+  }
+
+  public override getActiveSnapModes(): SnapMode[] {
+    if (undefined === this._snapModeOverride)
+      return this._activeSnaps;
+
+    return [this._snapModeOverride];
+  }
+
   public setActiveSnapModes(snaps: SnapMode[]): void {
     this._activeSnaps.length = snaps.length;
     for (let i = 0; i < snaps.length; i++)
       this._activeSnaps[i] = snaps[i];
+  }
+
+  /** Demonstrate how to override the active snap mode(s) for the next button event only.
+   * Calling with undefined or the same value as the current override can be used to restore the original snap mode(s).
+   * @note Should also update the UI to indicate when an override is active...
+   */
+  public setSnapModeOverride(snap?: SnapMode): void {
+    this._snapModeOverride = (snap === this._snapModeOverride ? undefined : snap);
+    IModelApp.accuSnap.clear();
   }
 }
 
@@ -399,6 +423,10 @@ export class DisplayTestApp {
     await MapLayersFormats.initialize();
 
     EditTools.registerProjectLocationTools();
+  }
+
+  public static setSnapModeOverride(snap: SnapMode): void {
+    (IModelApp.accuSnap as DisplayTestAppAccuSnap).setSnapModeOverride(snap);
   }
 
   public static setActiveSnapModes(snaps: SnapMode[]): void {
