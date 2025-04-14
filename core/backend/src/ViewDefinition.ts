@@ -380,6 +380,9 @@ export abstract class ViewDefinition3d extends ViewDefinition {
     { propertyName: "yaw", source: "Class" },
     { propertyName: "roll", source: "Class" },
     { propertyName: "pitch", source: "Class" },
+    { propertyName: "origin", source: "Class" },
+    { propertyName: "extents", source: "Class" },
+    { propertyName: "isCameraOn", source: "Class" },
   ];
 
   /** @internal */
@@ -388,8 +391,10 @@ export abstract class ViewDefinition3d extends ViewDefinition {
     const elProps = super.deserialize(props) as ViewDefinition3dProps;
     // ViewDefinition3dProps
     elProps.cameraOn = instance.isCameraOn as boolean;
-    elProps.camera = { eye: instance.eyePoint, focusDist: instance.focusDistance, lens: instance.lensAngle };
-    elProps.angles = { yaw: instance.yaw, roll: instance.roll, pitch: instance.pitch };
+    elProps.origin = [ instance.origin.x, instance.origin.y, instance.origin.z ];
+    elProps.extents = [ instance.extents.x, instance.extents.y, instance.extents.z ];
+    elProps.camera = { eye: [instance.eyePoint.x, instance.eyePoint.y, instance.eyePoint.z], focusDist: instance.focusDistance, lens: Angle.createRadians(instance.lensAngle).toJSON() };
+    elProps.angles = YawPitchRollAngles.createDegrees(instance.yaw ?? 0, instance.pitch ?? 0, instance.roll ?? 0).toJSON();
     return elProps;
   }
 
@@ -462,7 +467,7 @@ export class SpatialViewDefinition extends ViewDefinition3d {
 
   /** @internal */
   protected static override readonly _customHandledProps: CustomHandledProperty[] = [
-    { propertyName: "modelSelectorId", source: "Class" },
+    { propertyName: "modelSelector", source: "Class" },
   ];
 
   /** @internal */
@@ -655,14 +660,19 @@ export class ViewDefinition2d extends ViewDefinition {
 
   /** @internal */
   protected static override readonly _customHandledProps: CustomHandledProperty[] = [
-    { propertyName: "baseModelId", source: "Class" },
+    { propertyName: "baseModel", source: "Class" },
+    { propertyName: "origin", source: "Class" },
+    { propertyName: "extents", source: "Class" },
+    { propertyName: "rotationAngle", source: "Class" },
   ];
 
   /** @internal */
   public static override deserialize(props: InstanceProps): ViewDefinition2dProps {
     const elProps = super.deserialize(props) as ViewDefinition2dProps;
     const instance = props.row;
-    elProps.baseModelId = instance.baseModel.id;
+    elProps.origin = [ instance.origin.x, instance.origin.y];
+    elProps.delta = [ instance.extents.x, instance.extents.y ];
+    elProps.angle = instance.rotationAngle;
     return elProps;
   }
 
@@ -670,6 +680,9 @@ export class ViewDefinition2d extends ViewDefinition {
   public static override serialize(props: ViewDefinition2dProps, _iModel: IModelDb): ECSqlRow {
     const inst = super.serialize(props, _iModel);
     inst.baseModel.id = props.baseModelId;
+    inst.origin = props.origin;
+    inst.extents = props.delta;
+    inst.rotationAngle = props.angle;
     return inst;
   }
 
