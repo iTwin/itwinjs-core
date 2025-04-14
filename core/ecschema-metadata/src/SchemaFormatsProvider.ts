@@ -57,7 +57,7 @@ export class SchemaFormatsProvider implements FormatsProvider {
     this.onFormatsChanged.raiseEvent({ formatsChanged });
   }
 
-  private async getKindOfQuantityFormatFromSchema(itemKey: SchemaItemKey, unitSystem: UnitSystemKey): Promise<SchemaItemFormatProps | undefined> {
+  private async getKindOfQuantityFormatFromSchema(itemKey: SchemaItemKey): Promise<SchemaItemFormatProps | undefined> {
     const kindOfQuantity = await this._context.getSchemaItem(itemKey, KindOfQuantity);
 
     if (!kindOfQuantity) {
@@ -65,30 +65,28 @@ export class SchemaFormatsProvider implements FormatsProvider {
     }
 
     // Find the first presentation format that matches the provided unit system.
-    if (unitSystem) {
-      const unitSystemGroupNames = getUnitSystemGroupNames(unitSystem);
-      const presentationFormats = kindOfQuantity.presentationFormats;
-      for (const system of unitSystemGroupNames) {
-        for (const format of presentationFormats) {
-          const unit = format.units && format.units[0][0];
-          if (!unit) {
-            continue;
-          }
-          const currentUnitSystem = await unit.unitSystem;
-          if (currentUnitSystem && currentUnitSystem.name.toUpperCase() === system) {
-            this._formatsRetrieved.add(itemKey.fullName);
-            return getFormatProps(format);
-          }
+    const unitSystemGroupNames = getUnitSystemGroupNames(this._unitSystem);
+    const presentationFormats = kindOfQuantity.presentationFormats;
+    for (const system of unitSystemGroupNames) {
+      for (const format of presentationFormats) {
+        const unit = format.units && format.units[0][0];
+        if (!unit) {
+          continue;
+        }
+        const currentUnitSystem = await unit.unitSystem;
+        if (currentUnitSystem && currentUnitSystem.name.toUpperCase() === system) {
+          this._formatsRetrieved.add(itemKey.fullName);
+          return getFormatProps(format);
         }
       }
+    }
 
-      // If no matching presentation format was found, use persistence unit format if it matches unit system.
-      const persistenceUnit = await kindOfQuantity.persistenceUnit;
-      const persistenceUnitSystem = await persistenceUnit?.unitSystem;
-      if (persistenceUnitSystem && unitSystemGroupNames.includes(persistenceUnitSystem.name.toUpperCase())) {
-        this._formatsRetrieved.add(itemKey.fullName);
-        return getPersistenceUnitFormatProps(persistenceUnit!);
-      }
+    // If no matching presentation format was found, use persistence unit format if it matches unit system.
+    const persistenceUnit = await kindOfQuantity.persistenceUnit;
+    const persistenceUnitSystem = await persistenceUnit?.unitSystem;
+    if (persistenceUnitSystem && unitSystemGroupNames.includes(persistenceUnitSystem.name.toUpperCase())) {
+      this._formatsRetrieved.add(itemKey.fullName);
+      return getPersistenceUnitFormatProps(persistenceUnit!);
     }
 
     const defaultFormat = kindOfQuantity.defaultPresentationFormat;
@@ -123,7 +121,7 @@ export class SchemaFormatsProvider implements FormatsProvider {
       }
       return format.toJSON(true);
     }
-    return this.getKindOfQuantityFormatFromSchema(itemKey, this._unitSystem);
+    return this.getKindOfQuantityFormatFromSchema(itemKey);
   }
 }
 

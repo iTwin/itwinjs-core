@@ -45,8 +45,6 @@ describe("SchemaFormatsProvider", () => {
     const aecSchemaXml = fs.readFileSync(aecSchemaFile, "utf-8");
     deserializeXmlSync(aecSchemaXml, context);
 
-
-
   });
 
   beforeEach(() => {
@@ -57,6 +55,7 @@ describe("SchemaFormatsProvider", () => {
   it("should throw an error when format doesn't follow valid name convention", async () => {
     await expect(formatsProvider.getFormat("nonExistentFormat")).to.be.rejected;
   });
+
   it("should return undefined when format is not found", async () => {
     const format = await formatsProvider.getFormat("FakeSchema.nonExistentFormat");
     expect(format).to.be.undefined;

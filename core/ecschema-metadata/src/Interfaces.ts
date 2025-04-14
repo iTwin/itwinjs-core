@@ -6,9 +6,7 @@
  * @module Metadata
  */
 
-import { BeUiEvent } from "@itwin/core-bentley";
 import { DelayedPromise } from "./DelayedPromise";
-import { SchemaItemFormatProps } from "./Deserialization/JsonProps";
 import { ECClass, StructClass } from "./Metadata/Class";
 import { Constant } from "./Metadata/Constant";
 import { CustomAttribute, CustomAttributeContainerProps } from "./Metadata/CustomAttribute";

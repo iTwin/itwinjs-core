@@ -111,7 +111,7 @@ describe("FormatsProvider examples", () => {
       formatTraits: ["keepSingleZero", "showUnitLabel"],
       uomSeparator: "",
     };
-    await formatsProvider.addFormat("AecUnits.LENGTH", format); // Add a format with the name "AecUnits.LENGTH". The name could be anything as long as it is unique.
+    await formatsProvider.addFormat("AecUnits.LENGTH", format); // Add a format with the name "AecUnits.LENGTH".
     const retrievedFormat = await formatsProvider.getFormat("AecUnits.LENGTH");
     // retrievedFormat is the format we just added.
     // __PUBLISH_EXTRACT_END__

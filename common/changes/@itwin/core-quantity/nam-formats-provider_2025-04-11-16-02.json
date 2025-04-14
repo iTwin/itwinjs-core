@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-quantity",
-      "comment": "Add FormatDefinition, FormatsProvider interfaces to core-quantity ",
+      "comment": "Add `FormatDefinition`, `FormatsProvider` and `MutableFormatsProvider` interfaces.",
       "type": "none"
     }
   ],
