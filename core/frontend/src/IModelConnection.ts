@@ -232,8 +232,11 @@ export abstract class IModelConnection extends IModel {
 
     this.tiles = new Tiles(this);
 <<<<<<< HEAD
+<<<<<<< HEAD
     this.geoServices = GeoServices.createForIModel(this);
 =======
+=======
+>>>>>>> 0bee1d6187 (Changed GeoServices to use IModealRead)
     this.geoServices = GeoServices.createForIModel(this, this._iModelReadApi);
     /* eslint-disable-next-line @typescript-eslint/no-deprecated */
     this.displayedExtents = Range3d.fromJSON(this.projectExtents);
@@ -751,8 +754,18 @@ export class BlankConnection extends IModelConnection {
     const mockIModelReadApi: IModelReadAPI = {
       getConnectionProps: async () => props,
       getTooltipMessage: async () => ({ lines: [] }),
+<<<<<<< HEAD
       getElementMeshes: () => { throw new IModelError(IModelStatus.BadRequest, "getElementMeshes not available for blank connection") },
       runQuery: () => new ECSqlReader({ execute: async () => ECSqlReader.createDbResponseFromRows([], DbResponseStatus.Done)}, ""),
+=======
+      async *runQuery() { },
+      async getIModelCoordinatesFromGeoCoordinates (_props: IModelCoordinatesRequest): Promise<IModelCoordinatesResponse> {
+        throw new Error("Function not implemented.");
+      },
+      async getGeoCoordinatesFromIModelCoordinates (_props: GeoCoordinatesRequest): Promise<GeoCoordinatesResponse> {
+        throw new Error("Function not implemented.");
+      }
+>>>>>>> 0bee1d6187 (Changed GeoServices to use IModealRead)
     }
 
     super(props, mockIModelReadApi);
