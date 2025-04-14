@@ -278,21 +278,30 @@ export class SurfaceGeometry extends MeshGeometry {
 
   protected _wantWoWReversal(target: Target): boolean {
     const fillFlags = this.fillFlags;
-    if (FillFlags.None !== (fillFlags & FillFlags.Background))
+    if (FillFlags.None !== (fillFlags & FillFlags.Background)) {
       return false; // fill color explicitly from background
+    }
 
-    if (FillFlags.None !== (fillFlags & FillFlags.Always))
-      return true; // fill displayed even in wireframe
+    if (this.wantTextures(target, this.hasTexture)) {
+      // Don't invert white pixels of textures.
+      return false;
+    }
 
     const vf = target.currentViewFlags;
-    if (RenderMode.Wireframe === vf.renderMode || vf.visibleEdges)
+    if (RenderMode.Wireframe === vf.renderMode) {
+      // Fill displayed even in wireframe?
+      return FillFlags.None !== (fillFlags & FillFlags.Always);
+    }
+
+    if (vf.visibleEdges) {
       return false; // never invert surfaces when edges are displayed
+    }
 
-    if (this.isLit && wantLighting(vf))
-      return false;
+    if (this.isLit && wantLighting(vf)) {
+      return false; // the lit color won't be pure white anyway.
+    }
 
-    // Don't invert white pixels of textures...
-    return !this.wantTextures(target, this.hasTexture);
+    return true;
   }
 
   public override get materialInfo(): MaterialInfo | undefined { return this.mesh.materialInfo; }
