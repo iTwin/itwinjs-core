@@ -43,7 +43,11 @@ export class SubCategory extends DefinitionElement {
     if (props.row.isPrivate !== undefined) {
       elProps.description = props.row.description ?? "";
     }
-    elProps.appearance = JSON.parse(props.row.properties) as SubCategoryAppearance.Props;
+    if (props.row.properties !== '') {
+      elProps.appearance = JSON.parse(props.row.properties) as SubCategoryAppearance.Props;
+    } else {
+      elProps.appearance = undefined;
+    }
     return elProps;
   }
 
