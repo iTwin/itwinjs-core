@@ -1476,11 +1476,9 @@ export interface CreateNewWorkspaceDbVersionArgs {
     versionType: WorkspaceDbVersionIncrement;
 }
 
-// @internal (undocumented)
+// @beta
 export interface CustomHandledProperty {
-    // (undocumented)
     readonly propertyName: string;
-    // (undocumented)
     readonly source: "Class" | "Computed";
 }
 
@@ -1937,7 +1935,7 @@ export class ECSqlInsertResult {
     status: DbResult;
 }
 
-// @internal (undocumented)
+// @beta
 export interface ECSqlRow {
     // (undocumented)
     [key: string]: any;
@@ -2430,9 +2428,9 @@ export class Entity {
     get className(): string;
     // @beta
     protected collectReferenceIds(_referenceIds: EntityReferenceSet): void;
-    // @internal (undocumented)
+    // @internal
     protected static readonly _customHandledProps: CustomHandledProperty[];
-    // @internal (undocumented)
+    // @internal
     static deserialize(props: InstanceProps): EntityProps;
     forEach(func: PropertyHandler, includeCustom?: boolean): void;
     // @deprecated
@@ -2457,7 +2455,7 @@ export class Entity {
     // @beta
     get schemaItemKey(): SchemaItemKey;
     get schemaName(): string;
-    // @internal (undocumented)
+    // @internal
     static serialize(props: EntityProps, _iModel: IModelDb): ECSqlRow;
     toJSON(): EntityProps;
 }
@@ -3853,7 +3851,7 @@ export interface InstanceChange {
     summaryId: Id64String;
 }
 
-// @internal (undocumented)
+// @beta
 export interface InstanceProps {
     // (undocumented)
     readonly iModel: IModelDb;
@@ -4941,6 +4939,8 @@ export class RenderTimeline extends InformationRecordElement {
     // (undocumented)
     protected collectReferenceIds(ids: EntityReferenceSet): void;
     description: string;
+    // @internal (undocumented)
+    static deserialize(props: InstanceProps): RenderTimelineProps;
     // (undocumented)
     static fromJSON(props: RenderTimelineProps, iModel: IModelDb): RenderTimeline;
     // @alpha (undocumented)
