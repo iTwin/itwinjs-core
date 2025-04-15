@@ -114,6 +114,7 @@ public;class;RelationshipMultiplicity
 public;class;Schema
 internal;class;SchemaCache
 public;class;SchemaContext
+beta;class;SchemaFormatsProvider
 internal;class;SchemaGraph
 internal;class;SchemaGraphUtil
 public;interface;SchemaInfo

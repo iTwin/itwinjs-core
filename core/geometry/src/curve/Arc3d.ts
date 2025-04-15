@@ -28,7 +28,7 @@ import { SmallSystem } from "../numerics/SmallSystem";
 import { CurveChain } from "./CurveCollection";
 import { CurveExtendMode, CurveExtendOptions, VariantCurveExtendParameter } from "./CurveExtendMode";
 import { CurveIntervalRole, CurveLocationDetail, CurveSearchStatus } from "./CurveLocationDetail";
-import { AnnounceNumberNumberCurvePrimitive, CurvePrimitive } from "./CurvePrimitive";
+import { AnnounceNumberNumberCurvePrimitive, CurvePrimitive, TangentOptions } from "./CurvePrimitive";
 import { GeometryQuery } from "./GeometryQuery";
 import { CurveOffsetXYHandler } from "./internalContexts/CurveOffsetXYHandler";
 import { EllipticalArcApproximationContext } from "./internalContexts/EllipticalArcApproximationContext";
@@ -899,6 +899,43 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
       }
     }
     return result;
+  }
+  /** Override of [[CurvePrimitive.emitTangents]] for Arc3d. */
+  public override emitTangents(
+    spacePoint: Point3d, announceTangent: (tangent: CurveLocationDetail) => any, options?: TangentOptions,
+  ): void {
+    const centerToPoint = Vector3d.createStartEnd(this.centerRef, spacePoint);
+    let centerToLocalPoint: Vector3d | undefined;
+    if (options?.vectorToEye) {
+      const arcToView = Matrix3d.createColumns(this.matrixRef.getColumn(0), this.matrixRef.getColumn(1), options.vectorToEye);
+      centerToLocalPoint = arcToView.multiplyInverse(centerToPoint);
+    } else {
+      centerToLocalPoint = this.matrixRef.multiplyInverse(centerToPoint)!;
+    }
+    if (centerToLocalPoint === undefined)
+      return;
+    // centerToLocalPoint is a vector in the local coordinate system of the as-viewed arc.
+    // In other words, the local arc is the unit circle.
+    // alpha is the angle from the local x-axis to centerToLocalPoint.
+    // beta is the nonnegative angle from centerToLocalPoint to a tangency radial.
+    // Tangency angles are preserved by local <-> world transformation.
+    if (centerToLocalPoint !== undefined) {
+      const hypotenuseSquared = centerToLocalPoint.magnitudeSquaredXY();
+      if (hypotenuseSquared >= 1.0) { // localPoint lies outside or on the unit circle...
+        // ...and forms a right triangle with unit radial leg to tangent point
+        const distanceToTangency = Math.sqrt(hypotenuseSquared - 1.0);
+        const alpha = Math.atan2(centerToLocalPoint.y, centerToLocalPoint.x);
+        const beta = Math.atan2(distanceToTangency, 1);
+        const angles = Geometry.isSmallAngleRadians(beta) ? [alpha] : [alpha + beta, alpha - beta];
+        for (const theta of angles) {
+          const f = CurveExtendOptions.resolveRadiansToValidSweepFraction(options?.extend ?? false, theta, this.sweep);
+          if (f.isValid) {
+            const tangent = CurveLocationDetail.createCurveFractionPoint(this, f.fraction, this.fractionToPoint(f.fraction));
+            announceTangent(tangent);
+          }
+        }
+      }
+    }
   }
   /** Reverse the sweep  of the arc. */
   public reverseInPlace(): void {

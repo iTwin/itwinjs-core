@@ -1179,22 +1179,31 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
     handler.startCurvePrimitive(this);
     if (n > 1) {
       const df = 1.0 / (n - 1);
-      // This is a linestring.
-      // There is no need for chordTol and angleTol within a segment.
-      // Do NOT apply min strokes per primitive.
+      // this is a line string; there is no need for chordTol and angleTol within a segment
+      // DO NOT apply min strokes per primitive
       if (options && options.hasMaxEdgeLength) {
         for (let i = 1; i < n; i++) {
           const numStroke = options.applyMaxEdgeLength(
             1, this._points.getPoint3dAtUncheckedPointIndex(i - 1).distance(this._points.getPoint3dAtUncheckedPointIndex(i)),
           );
           handler.announceSegmentInterval(
-            this, this._points.getPoint3dAtUncheckedPointIndex(i - 1), this._points.getPoint3dAtUncheckedPointIndex(i), numStroke, (i - 1) * df, i * df,
+            this,
+            this._points.getPoint3dAtUncheckedPointIndex(i - 1),
+            this._points.getPoint3dAtUncheckedPointIndex(i),
+            numStroke,
+            (i - 1) * df,
+            i * df,
           );
         }
       } else {
         for (let i = 1; i < n; i++) {
           handler.announceSegmentInterval(
-            this, this._points.getPoint3dAtUncheckedPointIndex(i - 1), this._points.getPoint3dAtUncheckedPointIndex(i), 1, (i - 1) * df, i * df,
+            this,
+            this._points.getPoint3dAtUncheckedPointIndex(i - 1),
+            this._points.getPoint3dAtUncheckedPointIndex(i),
+            1,
+            (i - 1) * df,
+            i * df,
           );
         }
       }

@@ -274,6 +274,7 @@ public;class;SweepContour
 public;class;SweepLineStringToFacetsOptions
 public;namespace;TaggedNumericConstants
 public;class;TaggedNumericData
+public;interface;TangentOptions
 public;class;TorusPipe
 public;class;Transform
 public;type;TransformProps

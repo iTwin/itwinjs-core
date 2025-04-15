@@ -4,9 +4,12 @@
 
 ```ts
 
+import { BeEvent } from '@itwin/core-bentley';
 import { BentleyError } from '@itwin/core-bentley';
 import { DecimalPrecision } from '@itwin/core-quantity';
 import { FormatProps } from '@itwin/core-quantity';
+import { FormatsChangedArgs } from '@itwin/core-quantity';
+import { FormatsProvider } from '@itwin/core-quantity';
 import { FormatTraits } from '@itwin/core-quantity';
 import { FormatType } from '@itwin/core-quantity';
 import { FractionalPrecision } from '@itwin/core-quantity';
@@ -16,6 +19,7 @@ import { UnitConversionProps } from '@itwin/core-quantity';
 import { UnitExtraData } from '@itwin/core-quantity';
 import { UnitProps } from '@itwin/core-quantity';
 import { UnitsProvider } from '@itwin/core-quantity';
+import { UnitSystemKey } from '@itwin/core-quantity';
 
 // @public
 export enum AbstractSchemaItemType {
@@ -404,7 +408,7 @@ export enum ECSchemaStatus {
     // (undocumented)
     DuplicateSchema = 35055,
     // (undocumented)
-    ECOBJECTS_ERROR_BASE = 35052,
+    ECSCHEMA_ERROR_BASE = 35052,
     // (undocumented)
     ImmutableSchema = 35056,
     // (undocumented)
@@ -1842,6 +1846,19 @@ export class SchemaContext {
     // (undocumented)
     get locaters(): ReadonlyArray<ISchemaLocater>;
     schemaExists(schemaKey: SchemaKey): boolean;
+}
+
+// @beta
+export class SchemaFormatsProvider implements FormatsProvider {
+    constructor(contextOrLocater: ISchemaLocater, unitSystem: UnitSystemKey);
+    // (undocumented)
+    get context(): SchemaContext;
+    getFormat(name: string): Promise<SchemaItemFormatProps | undefined>;
+    // (undocumented)
+    onFormatsChanged: BeEvent<(args: FormatsChangedArgs) => void>;
+    // (undocumented)
+    get unitSystem(): UnitSystemKey;
+    set unitSystem(unitSystem: UnitSystemKey);
 }
 
 // @internal
