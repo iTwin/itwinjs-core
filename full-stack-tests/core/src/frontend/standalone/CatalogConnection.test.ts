@@ -6,7 +6,7 @@
 import { expect } from "chai";
 import * as path from "path";
 import { Guid, ProcessDetector } from "@itwin/core-bentley";
-import { CatalogIModelTypes } from "@itwin/core-common";
+import { CatalogIModel } from "@itwin/core-common";
 import { CatalogConnection } from "@itwin/core-frontend";
 import { coreFullStackTestIpc } from "../Editing";
 import { TestUtility } from "../TestUtility";
@@ -47,7 +47,7 @@ if (ProcessDetector.isElectronAppFrontend) {
       const metadata = { label: "PartsCatalog1", description: "catalog for all projects for ClientA" };
       // Every CatalogIModel has a "manifest" that describes its purpose. This manifest is versioned inside
       // the CatalogIModel, so it may be different for each version within a container.
-      const manifest: CatalogIModelTypes.CatalogManifest = {
+      const manifest: CatalogIModel.Manifest = {
         catalogName: "Catalog of Parts",
         contactName: people.fred,
         description: "collection of part definitions",
@@ -103,14 +103,14 @@ if (ProcessDetector.isElectronAppFrontend) {
       expect(v101.newDb.version).equal("1.0.1");
 
       // Attempt to open the new version for editing
-      let v101db = await CatalogConnection.openEditable({ version: "1.0.1", containerId });
+      const v101db = await CatalogConnection.openEditable({ version: "1.0.1", containerId });
       info = await v101db.getCatalogInfo();
       expect(info.version).equal("1.0.1");
       expect(info.manifest).not.undefined;
       // change the contact name in the manifest for 1.0.1 (note that 1.0.0 will still have the old value)
       if (info.manifest) {
         expect(info.manifest.catalogName).equal(manifest.catalogName);
-        await v101db.updateCatalogManifest({ ...info.manifest, contactName: people.harold });
+        await v101db.updateManifest({ ...info.manifest, contactName: people.harold });
       }
 
       // Now add an element to v1.0.1
@@ -128,7 +128,7 @@ if (ProcessDetector.isElectronAppFrontend) {
       expect(v20.oldDb.version).equal("1.0.1");
       expect(v20.newDb.version).equal("2.0.0");
       // open 2.0.0 for editing (we don't supply a version here, but it's the "latest version" )
-      let v20db = await CatalogConnection.openEditable({ containerId });
+      const v20db = await CatalogConnection.openEditable({ containerId });
       info = await v20db.getCatalogInfo();
       expect(info.version).equal("2.0.0");
 
@@ -145,8 +145,8 @@ if (ProcessDetector.isElectronAppFrontend) {
       // Note: ordinarily containers are sync'd with the latest version when they're first accessed. Since we opened the container above, we need
       // to pass "SyncWithCloud=true" to see the changes made above
       const v100db = await CatalogConnection.openReadonly({ containerId, version: "1.0.0", syncWithCloud: true });
-      v101db = await CatalogConnection.openReadonly({ containerId, version: "^1" });
-      v20db = await CatalogConnection.openReadonly({ containerId });
+      const v101dbReadonly = await CatalogConnection.openReadonly({ containerId, version: "^1" });
+      const v20dbReadonly = await CatalogConnection.openReadonly({ containerId });
 
       const verifyInfo = async (db: CatalogConnection, version: string, contactName: string, lastEditedBy?: string) => {
         const inf = await db.getCatalogInfo();
@@ -177,15 +177,15 @@ if (ProcessDetector.isElectronAppFrontend) {
       await v100db.close();
 
       // v1.0.1 was edited by Bill, and we changed the manifest to show Harold as the contact. It only has the first SpatialCategory
-      await verifyInfo(v101db, "1.0.1", people.harold, people.bill);
-      await verifyCategory(v101db, cat1, "Category 1");
-      await verifyCategory(v101db, cat2);
+      await verifyInfo(v101dbReadonly, "1.0.1", people.harold, people.bill);
+      await verifyCategory(v101dbReadonly, cat1, "Category 1");
+      await verifyCategory(v101dbReadonly, cat2);
       await v101db.close();
 
       // v2.0.0 was edited by Sarah. The manifest was not changed, so it should still have Harold as the contact. It has both SpatialCategories
-      await verifyInfo(v20db, "2.0.0", people.harold, people.sarah);
-      await verifyCategory(v20db, cat1, "Category 1");
-      await verifyCategory(v20db, cat2, "Category 2");
+      await verifyInfo(v20dbReadonly, "2.0.0", people.harold, people.sarah);
+      await verifyCategory(v20dbReadonly, cat1, "Category 1");
+      await verifyCategory(v20dbReadonly, cat2, "Category 2");
       await v20db.close();
     });
   });
