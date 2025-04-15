@@ -1857,29 +1857,33 @@ export function canvasToImageBuffer(canvas: HTMLCanvasElement, format?: ImageBuf
 export function canvasToResizedCanvasWithBars(canvasIn: HTMLCanvasElement, targetSize: Point2d, barSize?: Point2d, barStyle?: string): HTMLCanvasElement;
 
 // @beta
-export class CatalogConnection extends BriefcaseConnection {
-    static acquireWriteLock(args: {
-        containerId: string;
-        username: string;
-    }): Promise<void>;
-    static createNewContainer(args: CatalogIModel.CreateNewContainerArgs): Promise<CatalogIModel.NewContainerProps>;
-    static createNewVersion(args: CatalogIModel.CreateNewVersionArgs): Promise<{
-        oldDb: CatalogIModel.NameAndVersion;
-        newDb: CatalogIModel.NameAndVersion;
-    }>;
+export interface CatalogConnection extends BriefcaseConnection {
+    // (undocumented)
     getCatalogInfo(): Promise<{
         manifest?: CatalogIModel.Manifest;
         version: string;
     }>;
-    static openEditable(args: CatalogIModel.OpenArgs): Promise<CatalogConnection>;
-    static openReadonly(args: CatalogIModel.OpenArgs): Promise<CatalogConnection>;
-    static releaseWriteLock(args: {
+    // (undocumented)
+    isEditable(): this is EditableCatalogConnection;
+}
+
+// @beta (undocumented)
+export namespace CatalogConnection {
+    export function acquireWriteLock(args: {
+        containerId: string;
+        username: string;
+    }): Promise<void>;
+    export function createNewContainer(args: CatalogIModel.CreateNewContainerArgs): Promise<CatalogIModel.NewContainerProps>;
+    export function createNewVersion(args: CatalogIModel.CreateNewVersionArgs): Promise<{
+        oldDb: CatalogIModel.NameAndVersion;
+        newDb: CatalogIModel.NameAndVersion;
+    }>;
+    export function openEditable(args: CatalogIModel.OpenArgs): Promise<EditableCatalogConnection>;
+    export function openReadonly(args: CatalogIModel.OpenArgs): Promise<CatalogConnection>;
+    export function releaseWriteLock(args: {
         containerId: string;
         abandon?: true;
     }): Promise<void>;
-    // (undocumented)
-    protected requireTimeline(): void;
-    updateManifest(manifest: CatalogIModel.Manifest): Promise<void>;
 }
 
 // @public
@@ -2761,6 +2765,12 @@ export interface DynamicSpatialClassifier {
     flags: SpatialClassifierFlags;
     name: string;
     tileTreeReference: TileTreeReference;
+}
+
+// @beta
+export interface EditableCatalogConnection extends CatalogConnection {
+    // (undocumented)
+    updateManifest(manifest: CatalogIModel.Manifest): Promise<void>;
 }
 
 // @internal

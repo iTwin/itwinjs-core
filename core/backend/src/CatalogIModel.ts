@@ -89,6 +89,8 @@ export interface CatalogDb extends StandaloneDb {
   getVersion(): string;
   /** Get the CatalogManifest and version information for an open CatalogIModel. */
   getInfo(): { manifest?: CatalogIModel.Manifest, version: string };
+
+  isEditable(): this is EditableCatalogDb;
 }
 
 /**
@@ -102,6 +104,10 @@ export interface EditableCatalogDb extends CatalogDb {
 
 /** A StandaloneDb that holds a CatalogIModel */
 class CatalogDbImpl extends StandaloneDb implements CatalogDb {
+  public isEditable(): this is EditableCatalogDb {
+    return false;
+  }
+
   public getManifest(): CatalogIModel.Manifest | undefined {
     const manifestString = this[_nativeDb].queryLocalValue(catalogManifestName);
     if (undefined === manifestString)
@@ -124,6 +130,10 @@ class CatalogDbImpl extends StandaloneDb implements CatalogDb {
  * It also automatically updates the `lastEditedBy` field in the CatalogManifest.
  */
 class EditableCatalogDbImpl extends CatalogDbImpl implements EditableCatalogDb {
+  public override isEditable(): this is EditableCatalogDb {
+    return true;
+  }
+
   public updateCatalogManifest(manifest: CatalogIModel.Manifest): void {
     updateManifest(this[_nativeDb], manifest);
   }

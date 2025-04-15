@@ -608,6 +608,8 @@ export interface CatalogDb extends StandaloneDb {
     };
     getManifest(): CatalogIModel.Manifest | undefined;
     getVersion(): string;
+    // (undocumented)
+    isEditable(): this is EditableCatalogDb;
 }
 
 // @beta

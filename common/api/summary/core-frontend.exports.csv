@@ -85,7 +85,8 @@ public;interface;CanvasDecoration
 public;type;CanvasDecorationList
 public;function;canvasToImageBuffer
 public;function;canvasToResizedCanvasWithBars
-beta;class;CatalogConnection
+beta;interface;CatalogConnection
+beta;namespace;CatalogConnection
 public;class;CategorySelectorState
 public;enum;ChangeFlag
 public;class;ChangeFlags
@@ -151,6 +152,7 @@ public;class;DrawingModelState
 public;class;DrawingViewState
 public;class;DynamicsContext
 public;interface;DynamicSpatialClassifier
+beta;interface;EditableCatalogConnection
 internal;interface;EditCommandHandler
 public;namespace;EditManipulator
 internal;const;ELEMENT_MARKED_FOR_REMOVAL
