@@ -6,7 +6,7 @@
 import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 import { IModelApp } from "../../IModelApp";
 import { DecorateContext } from "../../ViewContext";
-import { ColorDef, FillFlags, GraphicParams, ImageBuffer, ImageBufferFormat, RenderMaterial, RenderMode, RgbColor } from "@itwin/core-common";
+import { ColorDef, FillFlags, GraphicParams, ImageBuffer, ImageBufferFormat, RenderMaterial, RenderMode, RenderTexture, RgbColor } from "@itwin/core-common";
 import { Viewport } from "../../Viewport";
 import { Point3d } from "@itwin/core-geometry";
 import { readUniqueColors, testBlankViewport } from "../openBlankViewport";
@@ -99,12 +99,12 @@ describe("White-on-white reversal", () => {
     });
   });
 
-  function createTexturedMaterial(color: ColorDef): RenderMaterial {
+  function createTexturedMaterial(color: ColorDef, type?: RenderTexture.Type): RenderMaterial {
     const source = ImageBuffer.create(new Uint8Array(3), ImageBufferFormat.Rgb, 1);
     source.data[0] = color.colors.r;
     source.data[1] = color.colors.g;
     source.data[2] = color.colors.b;
-    const texture = IModelApp.renderSystem.createTexture({ image: { source }, ownership: "external" })!;
+    const texture = IModelApp.renderSystem.createTexture({ image: { source }, ownership: "external", type })!;
     return IModelApp.renderSystem.createRenderMaterial({ textureMapping: { texture } })!;
   }
 
@@ -124,6 +124,24 @@ describe("White-on-white reversal", () => {
       expectColors(vp, [ColorDef.white, ColorDef.black], ColorDef.white, (ctx) => addSquareDecoration(ctx, ColorDef.white, whiteMaterial));
       expectColors(vp, [ColorDef.white, ColorDef.black], ColorDef.white, (ctx) => addSquareDecoration(ctx, ColorDef.white, blueMaterial, FillFlags.Always));
       expectColors(vp, [ColorDef.white, ColorDef.black], ColorDef.white, (ctx) => addSquareDecoration(ctx, ColorDef.white, whiteMaterial, FillFlags.Always));
+    });
+  });
+
+  it("applies to white raster text", () => {
+    testBlankViewport((vp) => {
+      vp.viewFlags = vp.viewFlags.copy({ renderMode: RenderMode.SmoothShade, lighting: false });
+      const blueMaterial = createTexturedMaterial(ColorDef.blue, RenderTexture.Type.Glyph);
+      const blue = ColorDef.from(3, 3, 255); // glyphs are anti-aliased, they won't be precisely blue.
+      expectColors(vp, [ColorDef.white, blue], ColorDef.white, (ctx) => addSquareDecoration(ctx, ColorDef.blue, blueMaterial));
+      expectColors(vp, [ColorDef.white, blue], ColorDef.white, (ctx) => addSquareDecoration(ctx, ColorDef.blue, blueMaterial, FillFlags.Always));
+
+      const whiteMaterial = createTexturedMaterial(ColorDef.white, RenderTexture.Type.Glyph);
+      const black = ColorDef.from(3, 3, 3); // glyphs are anti-aliased, they won't be precisely black.
+      expectColors(vp, [ColorDef.white, black], ColorDef.white, (ctx) => addSquareDecoration(ctx, ColorDef.white, whiteMaterial));
+      expectColors(vp, [ColorDef.white, black], ColorDef.white, (ctx) => addSquareDecoration(ctx, ColorDef.white, whiteMaterial, FillFlags.Always));
+
+      expectColors(vp, [ColorDef.white, ColorDef.red], ColorDef.red, (ctx) => addSquareDecoration(ctx, ColorDef.white, whiteMaterial));
+      expectColors(vp, [ColorDef.white, ColorDef.red], ColorDef.red, (ctx) => addSquareDecoration(ctx, ColorDef.white, whiteMaterial, FillFlags.Always));
     });
   });
 
