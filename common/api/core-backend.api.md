@@ -23,7 +23,7 @@ import { BriefcaseId } from '@itwin/core-common';
 import { BriefcaseProps } from '@itwin/core-common';
 import { CalloutProps } from '@itwin/core-common';
 import { Camera } from '@itwin/core-common';
-import { CatalogIModelTypes } from '@itwin/core-common';
+import { CatalogIModel } from '@itwin/core-common';
 import { CategoryProps } from '@itwin/core-common';
 import { CategorySelectorProps } from '@itwin/core-common';
 import { ChangeData } from '@itwin/core-common';
@@ -603,10 +603,10 @@ export abstract class Callout extends DetailingSymbol {
 // @beta
 export interface CatalogDb extends StandaloneDb {
     getInfo(): {
-        manifest?: CatalogIModelTypes.CatalogManifest;
+        manifest?: CatalogIModel.Manifest;
         version: string;
     };
-    getManifest(): CatalogIModelTypes.CatalogManifest | undefined;
+    getManifest(): CatalogIModel.Manifest | undefined;
     getVersion(): string;
 }
 
@@ -616,13 +616,13 @@ export namespace CatalogDb {
         containerId: string;
         username: string;
     }): Promise<void>;
-    export function createNewContainer(args: CatalogIModelTypes.CreateNewContainerArgs): Promise<CatalogIModelTypes.NewContainerProps>;
-    export function createNewVersion(args: CatalogIModelTypes.CreateNewVersionArgs): Promise<{
-        oldDb: CatalogIModelTypes.NameAndVersion;
-        newDb: CatalogIModelTypes.NameAndVersion;
+    export function createNewContainer(args: CatalogIModel.CreateNewContainerArgs): Promise<CatalogIModel.NewContainerProps>;
+    export function createNewVersion(args: CatalogIModel.CreateNewVersionArgs): Promise<{
+        oldDb: CatalogIModel.NameAndVersion;
+        newDb: CatalogIModel.NameAndVersion;
     }>;
-    export function openEditable(args: CatalogIModelTypes.OpenArgs): Promise<EditableCatalogDb>;
-    export function openReadonly(args: CatalogIModelTypes.OpenArgs): Promise<CatalogDb>;
+    export function openEditable(args: CatalogIModel.OpenArgs): Promise<EditableCatalogDb>;
+    export function openReadonly(args: CatalogIModel.OpenArgs): Promise<CatalogDb>;
     export function releaseWriteLock(args: {
         containerId: string;
         abandon?: true;
@@ -630,37 +630,37 @@ export namespace CatalogDb {
 }
 
 // @internal
-export class CatalogIModelHandler extends IpcHandler implements CatalogIModelTypes.IpcMethods {
+export class CatalogIModelHandler extends IpcHandler implements CatalogIModel.IpcMethods {
     // (undocumented)
     acquireWriteLock(args: {
         containerId: string;
         username: string;
     }): Promise<void>;
     // (undocumented)
-    get channelName(): CatalogIModelTypes.IpcChannel;
+    get channelName(): CatalogIModel.IpcChannel;
     // (undocumented)
-    createNewContainer(args: CatalogIModelTypes.CreateNewContainerArgs): Promise<CatalogIModelTypes.NewContainerProps>;
+    createNewContainer(args: CatalogIModel.CreateNewContainerArgs): Promise<CatalogIModel.NewContainerProps>;
     // (undocumented)
-    createNewVersion(args: CatalogIModelTypes.CreateNewVersionArgs): Promise<{
-        oldDb: CatalogIModelTypes.NameAndVersion;
-        newDb: CatalogIModelTypes.NameAndVersion;
+    createNewVersion(args: CatalogIModel.CreateNewVersionArgs): Promise<{
+        oldDb: CatalogIModel.NameAndVersion;
+        newDb: CatalogIModel.NameAndVersion;
     }>;
     // (undocumented)
     getInfo(key: string): Promise<{
-        manifest?: CatalogIModelTypes.CatalogManifest;
+        manifest?: CatalogIModel.Manifest;
         version: string;
     }>;
     // (undocumented)
-    openEditable(args: CatalogIModelTypes.OpenArgs): Promise<IModelConnectionProps>;
+    openEditable(args: CatalogIModel.OpenArgs): Promise<IModelConnectionProps>;
     // (undocumented)
-    openReadonly(args: CatalogIModelTypes.OpenArgs): Promise<IModelConnectionProps>;
+    openReadonly(args: CatalogIModel.OpenArgs): Promise<IModelConnectionProps>;
     // (undocumented)
     releaseWriteLock(args: {
         containerId: string;
         abandon?: true;
     }): Promise<void>;
     // (undocumented)
-    updateCatalogManifest(key: string, manifest: CatalogIModelTypes.CatalogManifest): Promise<void>;
+    updateCatalogManifest(key: string, manifest: CatalogIModel.Manifest): Promise<void>;
 }
 
 // @public
@@ -2162,7 +2162,7 @@ export class ECSqlWriteStatement {
 
 // @beta
 export interface EditableCatalogDb extends CatalogDb {
-    updateCatalogManifest(manifest: CatalogIModelTypes.CatalogManifest): void;
+    updateCatalogManifest(manifest: CatalogIModel.Manifest): void;
 }
 
 // @beta

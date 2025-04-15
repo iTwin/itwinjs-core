@@ -1036,19 +1036,12 @@ export namespace CatalogError {
 }
 
 // @beta
-export namespace CatalogIModelTypes {
-    export interface CatalogManifest {
-        readonly catalogName: string;
-        readonly contactName?: string;
-        readonly description?: string;
-        readonly iTwinId?: Id64String;
-        lastEditedBy?: string;
-    }
+export namespace CatalogIModel {
     export interface CreateNewContainerArgs {
         readonly dbName?: string;
         readonly iTwinId: Id64String;
         readonly localCatalogFile: LocalFileName;
-        readonly manifest: CatalogManifest;
+        readonly manifest: Manifest;
         readonly metadata: {
             label: string;
             description?: string;
@@ -1078,7 +1071,7 @@ export namespace CatalogIModelTypes {
             newDb: NameAndVersion;
         }>;
         getInfo(key: string): Promise<{
-            manifest?: CatalogIModelTypes.CatalogManifest;
+            manifest?: CatalogIModel.Manifest;
             version: string;
         }>;
         openEditable(args: OpenArgs): Promise<IModelConnectionProps>;
@@ -1087,7 +1080,14 @@ export namespace CatalogIModelTypes {
             containerId: string;
             abandon?: true;
         }): Promise<void>;
-        updateCatalogManifest(key: string, manifest: CatalogIModelTypes.CatalogManifest): Promise<void>;
+        updateCatalogManifest(key: string, manifest: CatalogIModel.Manifest): Promise<void>;
+    }
+    export interface Manifest {
+        readonly catalogName: string;
+        readonly contactName?: string;
+        readonly description?: string;
+        readonly iTwinId?: Id64String;
+        lastEditedBy?: string;
     }
     export interface NameAndVersion {
         readonly dbName?: string;

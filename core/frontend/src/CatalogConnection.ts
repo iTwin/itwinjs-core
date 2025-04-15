@@ -6,7 +6,7 @@
  * @module IModelConnection
  */
 
-import { CatalogIModelTypes, IModelError } from "@itwin/core-common";
+import { CatalogIModel, IModelError } from "@itwin/core-common";
 import { BriefcaseConnection } from "./BriefcaseConnection";
 import { IModelStatus, OpenMode } from "@itwin/core-bentley";
 import { NativeApp } from "./NativeApp";
@@ -26,7 +26,7 @@ export class CatalogConnection extends BriefcaseConnection {
    * @returns The properties of the newly created container.
    * @note creating new containers requires "admin" authorization.
   */
-  public static async createNewContainer(args: CatalogIModelTypes.CreateNewContainerArgs): Promise<CatalogIModelTypes.NewContainerProps> {
+  public static async createNewContainer(args: CatalogIModel.CreateNewContainerArgs): Promise<CatalogIModel.NewContainerProps> {
     return NativeApp.catalogIpc.createNewContainer(args);
   }
 
@@ -56,7 +56,7 @@ export class CatalogConnection extends BriefcaseConnection {
    * @note the write lock must be held for this operation to succeed
    * @see [[acquireWriteLock]]
    */
-  public static async createNewVersion(args: CatalogIModelTypes.CreateNewVersionArgs): Promise<{ oldDb: CatalogIModelTypes.NameAndVersion; newDb: CatalogIModelTypes.NameAndVersion; }> {
+  public static async createNewVersion(args: CatalogIModel.CreateNewVersionArgs): Promise<{ oldDb: CatalogIModel.NameAndVersion; newDb: CatalogIModel.NameAndVersion; }> {
     return NativeApp.catalogIpc.createNewVersion(args);
   }
 
@@ -64,7 +64,7 @@ export class CatalogConnection extends BriefcaseConnection {
    * @returns the [[CatalogConnection]] to access the contents of the Catalog.
    * @note CatalogConnection extends BriefcaseConnection. When finished reading, call `close` on the connection.
    */
-  public static async openReadonly(args: CatalogIModelTypes.OpenArgs): Promise<CatalogConnection> {
+  public static async openReadonly(args: CatalogIModel.OpenArgs): Promise<CatalogConnection> {
     const openResponse = await NativeApp.catalogIpc.openReadonly(args);
     const connection = new CatalogConnection(openResponse, OpenMode.Readonly);
     this.onOpen.raiseEvent(connection);
@@ -75,20 +75,20 @@ export class CatalogConnection extends BriefcaseConnection {
    * @note Once a version of a CatalogIModel has been published (i.e. the write lock has been released), it is no longer editable, *unless* it is a prerelease version.
    * @note the write lock must be held for this operation to succeed
    */
-  public static async openEditable(args: CatalogIModelTypes.OpenArgs): Promise<CatalogConnection> {
+  public static async openEditable(args: CatalogIModel.OpenArgs): Promise<CatalogConnection> {
     const openResponse = await NativeApp.catalogIpc.openEditable(args);
     const connection = new CatalogConnection(openResponse, OpenMode.ReadWrite);
     this.onOpen.raiseEvent(connection);
     return connection;
   }
 
-  /** Get the CatalogManifest and version information for an open CatalogConnection. */
-  public async getCatalogInfo(): Promise<{ manifest?: CatalogIModelTypes.CatalogManifest, version: string }> {
+  /** Get the manifest and version information for an open CatalogConnection. */
+  public async getCatalogInfo(): Promise<{ manifest?: CatalogIModel.Manifest, version: string }> {
     return NativeApp.catalogIpc.getInfo(this.key);
   }
 
   /** Update the contents of the manifest in a CatalogIModel that is open with [[openEditable]]. */
-  public async updateCatalogManifest(manifest: CatalogIModelTypes.CatalogManifest): Promise<void> {
+  public async updateManifest(manifest: CatalogIModel.Manifest): Promise<void> {
     return NativeApp.catalogIpc.updateCatalogManifest(this.key, manifest);
   }
 }

@@ -39,7 +39,7 @@ export namespace CatalogError {
  * CatalogIModels may be stored in `BlobContainers` managed by a "reference data service" that uses [semantic versioning](https://semver.org/), much like [[WorkspaceDb]]s.
  * @beta
  */
-export namespace CatalogIModelTypes {
+export namespace CatalogIModel {
 
   /** Metadata stored inside a CatalogIModel describing its, to help users understand the purpose of the CatalogIModel, the person to
   * contact with questions about it, and so on.
@@ -47,7 +47,7 @@ export namespace CatalogIModelTypes {
   * @note Since the manifest is stored inside of the CatalogIModel, it is versioned along with the rest of the contents.
   * @beta
   */
-  export interface CatalogManifest {
+  export interface Manifest {
     /** The iTwinId for the Catalog */
     readonly iTwinId?: Id64String;
 
@@ -81,7 +81,7 @@ export namespace CatalogIModelTypes {
     }
 
     /** The manifest to be stored in the catalog */
-    readonly manifest: CatalogManifest;
+    readonly manifest: Manifest;
     /** The name for the CatalogIModel database within the container. May not contain a version. Default is "catalog-db" */
     readonly dbName?: string,
     /** version for the catalog created [[localCatalogFile]]. Defaults to "0.0.0" */
@@ -159,8 +159,8 @@ export namespace CatalogIModelTypes {
     /** Attempt to open a CatalogIModel for editing */
     openEditable(args: OpenArgs): Promise<IModelConnectionProps>;
     /** Get the manifest and version number for an open CatalogConnection. */
-    getInfo(key: string): Promise<{ manifest?: CatalogIModelTypes.CatalogManifest, version: string }>;
+    getInfo(key: string): Promise<{ manifest?: CatalogIModel.Manifest, version: string }>;
     /** Update the manifest stored in an open EditableCatalog */
-    updateCatalogManifest(key: string, manifest: CatalogIModelTypes.CatalogManifest): Promise<void>;
+    updateCatalogManifest(key: string, manifest: CatalogIModel.Manifest): Promise<void>;
   }
 }

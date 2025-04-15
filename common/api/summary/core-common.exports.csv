@@ -93,7 +93,7 @@ public;class;Cartographic
 public;interface;CartographicProps
 public;class;CartographicRange
 beta;namespace;CatalogError
-beta;namespace;CatalogIModelTypes
+beta;namespace;CatalogIModel
 internal;type;IpcChannel
 internal;interface;IpcMethods
 public;interface;CategoryProps

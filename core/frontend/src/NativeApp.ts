@@ -8,7 +8,7 @@
 
 import { BeEvent, GuidString, Logger } from "@itwin/core-bentley";
 import {
-  BriefcaseDownloader, BriefcaseProps, CatalogIModelTypes, IModelVersion, InternetConnectivityStatus, IpcSocketFrontend, LocalBriefcaseProps,
+  BriefcaseDownloader, BriefcaseProps, CatalogIModel, IModelVersion, InternetConnectivityStatus, IpcSocketFrontend, LocalBriefcaseProps,
   NativeAppFunctions, nativeAppIpcStrings, NativeAppNotifications, OverriddenBy,
   RemoveFunction, RequestNewBriefcaseProps, StorageValue, SyncMode,
 } from "@itwin/core-common";
@@ -66,7 +66,7 @@ export class NativeApp {
 
   /** A Proxy to call one of the [NativeAppFunctions]($common) functions via IPC. */
   public static nativeAppIpc = IpcApp.makeIpcProxy<NativeAppFunctions>(nativeAppIpcStrings.channelName);
-  public static catalogIpc = IpcApp.makeIpcProxy<CatalogIModelTypes.IpcMethods, CatalogIModelTypes.IpcChannel>("catalogIModel/ipc");
+  public static catalogIpc = IpcApp.makeIpcProxy<CatalogIModel.IpcMethods, CatalogIModel.IpcChannel>("catalogIModel/ipc");
 
   private static _storages = new Map<string, Storage>();
   private static _onOnline = async () => {

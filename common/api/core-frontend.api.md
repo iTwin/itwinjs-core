@@ -39,7 +39,7 @@ import { ByteStream } from '@itwin/core-bentley';
 import { Camera } from '@itwin/core-common';
 import { Capabilities } from '@itwin/webgl-compatibility';
 import { Cartographic } from '@itwin/core-common';
-import { CatalogIModelTypes } from '@itwin/core-common';
+import { CatalogIModel } from '@itwin/core-common';
 import { CategorySelectorProps } from '@itwin/core-common';
 import { ChangesetIndex } from '@itwin/core-common';
 import { ChangesetIndexAndId } from '@itwin/core-common';
@@ -1862,24 +1862,24 @@ export class CatalogConnection extends BriefcaseConnection {
         containerId: string;
         username: string;
     }): Promise<void>;
-    static createNewContainer(args: CatalogIModelTypes.CreateNewContainerArgs): Promise<CatalogIModelTypes.NewContainerProps>;
-    static createNewVersion(args: CatalogIModelTypes.CreateNewVersionArgs): Promise<{
-        oldDb: CatalogIModelTypes.NameAndVersion;
-        newDb: CatalogIModelTypes.NameAndVersion;
+    static createNewContainer(args: CatalogIModel.CreateNewContainerArgs): Promise<CatalogIModel.NewContainerProps>;
+    static createNewVersion(args: CatalogIModel.CreateNewVersionArgs): Promise<{
+        oldDb: CatalogIModel.NameAndVersion;
+        newDb: CatalogIModel.NameAndVersion;
     }>;
     getCatalogInfo(): Promise<{
-        manifest?: CatalogIModelTypes.CatalogManifest;
+        manifest?: CatalogIModel.Manifest;
         version: string;
     }>;
-    static openEditable(args: CatalogIModelTypes.OpenArgs): Promise<CatalogConnection>;
-    static openReadonly(args: CatalogIModelTypes.OpenArgs): Promise<CatalogConnection>;
+    static openEditable(args: CatalogIModel.OpenArgs): Promise<CatalogConnection>;
+    static openReadonly(args: CatalogIModel.OpenArgs): Promise<CatalogConnection>;
     static releaseWriteLock(args: {
         containerId: string;
         abandon?: true;
     }): Promise<void>;
     // (undocumented)
     protected requireTimeline(): void;
-    updateCatalogManifest(manifest: CatalogIModelTypes.CatalogManifest): Promise<void>;
+    updateManifest(manifest: CatalogIModel.Manifest): Promise<void>;
 }
 
 // @public
@@ -7003,7 +7003,7 @@ export class MutableChangeFlags extends ChangeFlags {
 // @public
 export class NativeApp {
     // (undocumented)
-    static catalogIpc: PickAsyncMethods<CatalogIModelTypes.IpcMethods>;
+    static catalogIpc: PickAsyncMethods<CatalogIModel.IpcMethods>;
     static checkInternetConnectivity(): Promise<InternetConnectivityStatus>;
     static closeStorage(storage: Storage_2, deleteStorage?: boolean): Promise<void>;
     static deleteBriefcase(fileName: string): Promise<void>;
