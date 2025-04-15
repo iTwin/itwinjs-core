@@ -40,9 +40,7 @@ export class SubCategory extends DefinitionElement {
   /** @internal */
   public static override deserialize(props: InstanceProps): SubCategoryProps {
     const elProps = super.deserialize(props) as SubCategoryProps;
-    if (props.row.isPrivate !== undefined) {
-      elProps.description = props.row.description ?? "";
-    }
+    elProps.description = JsonUtils.asString(props.row.description);
     if (props.row.properties !== '') {
       elProps.appearance = JSON.parse(props.row.properties) as SubCategoryAppearance.Props;
     } else {
@@ -54,10 +52,10 @@ export class SubCategory extends DefinitionElement {
   /** @internal */
   public static override serialize(props: SubCategoryProps, iModel: IModelDb): ECSqlRow {
     const inst = super.serialize(props, iModel);
-    if (undefined !== props.description) {
+    if (props.description !== undefined) {
       inst.description = props.description;
     }
-    if (undefined !== props.appearance) {
+    if (props.appearance !== undefined) {
       inst.properties = JSON.stringify(props.appearance);
     }
     return inst;
