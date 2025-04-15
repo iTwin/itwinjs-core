@@ -681,10 +681,7 @@ export class AccuSnap implements Decorator {
     // Compute snap from AccuDraw origin when active or set AccuDraw rotation if accepted...
     if (!accuDraw.isActive) {
       accuDraw.setContext(AccuDrawFlags.SmartRotation); // Automatically orient compass to snap location if accepted...
-
-      snap.setSnapPoint(snap.getPoint(), SnapHeat.InRange); // Force hot snap...
       snap.setSnapMode(snapMode);
-
       return SnapStatus.Success;
     }
 
