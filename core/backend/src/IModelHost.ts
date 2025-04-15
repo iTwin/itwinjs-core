@@ -199,7 +199,7 @@ export interface IModelHostOptions {
   /**
    * Use native instance functions for element, model, and aspect CRUD operations.
    */
-  enableWIPNativeInstanceFunctions?: boolean;
+  enableThinnedNativeInstanceWorkflow?: boolean;
 }
 
 /** Configuration of core-backend.
@@ -236,7 +236,7 @@ export class IModelHostConfiguration implements IModelHostOptions {
   /** @internal */
   public crashReportingConfig?: CrashReportingConfig;
   /** @beta */
-  public enableWIPNativeInstanceFunctions?: boolean;
+  public enableThinnedNativeInstanceWorkflow?: boolean;
 }
 
 /**
@@ -476,8 +476,8 @@ export class IModelHost {
 
     this.authorizationClient = options.authorizationClient;
 
-    if (!options.enableWIPNativeInstanceFunctions) {
-      options.enableWIPNativeInstanceFunctions = true;
+    if (!options.enableThinnedNativeInstanceWorkflow) {
+      options.enableThinnedNativeInstanceWorkflow = true;
     }
 
     this.backendVersion = require("../../package.json").version; // eslint-disable-line @typescript-eslint/no-require-imports

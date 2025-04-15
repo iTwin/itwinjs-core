@@ -1739,8 +1739,7 @@ export namespace IModelDb {
      */
     public tryGetModelProps<T extends ModelProps>(id: Id64String): T | undefined {
       try {
-        const useWip = IModelHost.configuration?.enableWIPNativeInstanceFunctions;
-        if (useWip) {
+        if (IModelHost.configuration?.enableThinnedNativeInstanceWorkflow) {
           const cachedMdl = this.cache.get(id);
           if (cachedMdl) {
             return cachedMdl as T;
@@ -2024,8 +2023,7 @@ export namespace IModelDb {
         props = { code: props };
       }
       try {
-        const useWip = IModelHost.configuration?.enableWIPNativeInstanceFunctions;
-        if (useWip) {
+        if (IModelHost.configuration?.enableThinnedNativeInstanceWorkflow) {
           const cachedElm = this.cache.get(props);
           if (cachedElm) {
             return cachedElm.elProps as T;
