@@ -266,6 +266,7 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
     dispatchToGeometryHandler(handler: GeometryHandler): any;
     emitStrokableParts(handler: IStrokeHandler, options?: StrokeOptions): void;
     emitStrokes(dest: LineString3d, options?: StrokeOptions): void;
+    emitTangents(spacePoint: Point3d, announceTangent: (tangent: CurveLocationDetail) => any, options?: TangentOptions): void;
     endPoint(result?: Point3d): Point3d;
     extendRange(range: Range3d, transform?: Transform): void;
     extendRangeInSweep(range: Range3d, sweep: AngleSweep, transform?: Transform): void;
@@ -1623,6 +1624,10 @@ export enum CurveExtendMode {
 export class CurveExtendOptions {
     static correctFraction(extendParam: VariantCurveExtendParameter, fraction: number): number;
     static resolveRadiansToSweepFraction(extendParam: VariantCurveExtendParameter, radians: number, sweep: AngleSweep): number;
+    static resolveRadiansToValidSweepFraction(extendParam: VariantCurveExtendParameter, radians: number, sweep: AngleSweep): {
+        fraction: number;
+        isValid: boolean;
+    };
     static resolveVariantCurveExtendParameterToCurveExtendMode(param: VariantCurveExtendParameter, endIndex: 0 | 1): CurveExtendMode;
 }
 
@@ -1742,12 +1747,14 @@ export class CurveOps {
 export abstract class CurvePrimitive extends GeometryQuery {
     protected constructor();
     addMappedStrokesToLineString3D(map: StrokeCountMap, linestring: LineString3d): number;
+    allTangents(spacePoint: Point3d, options?: TangentOptions): CurveLocationDetail[] | undefined;
     announceClipIntervals(_clipper: Clipper, _announce?: AnnounceNumberNumberCurvePrimitive): boolean;
     appendPlaneIntersectionPoints(plane: PlaneAltitudeEvaluator, result: CurveLocationDetail[]): number;
     abstract clone(): CurvePrimitive;
     clonePartialCurve(_fractionA: number, _fractionB: number): CurvePrimitive | undefined;
     abstract cloneTransformed(transform: Transform): CurvePrimitive | undefined;
-    closestPoint(spacePoint: Point3d, extend: VariantCurveExtendParameter, result?: CurveLocationDetail): CurveLocationDetail | undefined;
+    closestPoint(spacePoint: Point3d, extend?: VariantCurveExtendParameter, result?: CurveLocationDetail): CurveLocationDetail | undefined;
+    closestTangent(spacePoint: Point3d, options?: TangentOptions): CurveLocationDetail | undefined;
     collectCurvePrimitives(collectorArray?: CurvePrimitive[], smallestPossiblePrimitives?: boolean, explodeLinestrings?: boolean): CurvePrimitive[];
     collectCurvePrimitivesGo(collectorArray: CurvePrimitive[], _smallestPossiblePrimitives: boolean, _explodeLinestrings?: boolean): void;
     computeAndAttachRecursiveStrokeCounts(options?: StrokeOptions, parentMap?: StrokeCountMap): void;
@@ -1759,6 +1766,7 @@ export abstract class CurvePrimitive extends GeometryQuery {
     abstract readonly curvePrimitiveType: CurvePrimitiveType;
     abstract emitStrokableParts(dest: IStrokeHandler, options?: StrokeOptions): void;
     abstract emitStrokes(dest: LineString3d, options?: StrokeOptions): void;
+    emitTangents(spacePoint: Point3d, announceTangent: (tangent: CurveLocationDetail) => any, options?: TangentOptions): void;
     // @internal
     endCut?: CurveLocationDetail;
     endPoint(result?: Point3d): Point3d;
@@ -2165,6 +2173,10 @@ export class Geometry {
     static inverseInterpolate01(f0: number, f1: number, fTarget?: number): number | undefined;
     static inverseMetricDistance(distance: number): number | undefined;
     static inverseMetricDistanceSquared(distanceSquared: number): number | undefined;
+    static isAlmostEqualAnyNumber(a: number, values: number[] | {
+        iter: (i: number) => number;
+        length: number;
+    }, tolerance?: number): boolean;
     static isAlmostEqualEitherNumber(a: number, b: number, c: number, tolerance?: number): boolean;
     static isAlmostEqualNumber(a: number, b: number, tolerance?: number): boolean;
     static isAlmostEqualOptional(a: number | undefined, b: number | undefined, tolerance: number): boolean;
@@ -5843,6 +5855,15 @@ export class TaggedNumericData {
     tagB: number;
     tagToIndexedDouble(targetTag: number, minValue: number, maxValue: number, defaultValue: number): number;
     tagToInt(targetTag: number, minValue: number, maxValue: number, defaultValue: number): number;
+}
+
+// @public
+export interface TangentOptions {
+    distanceTol?: number;
+    extend?: VariantCurveExtendParameter;
+    hintPoint?: Point3d;
+    strokeOptions?: StrokeOptions;
+    vectorToEye?: Vector3d;
 }
 
 // @public

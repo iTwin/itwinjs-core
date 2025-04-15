@@ -535,6 +535,20 @@ export class Geometry {
     return this.isAlmostEqualNumber(a, b, tolerance) || this.isAlmostEqualNumber(a, c, tolerance);
   }
   /**
+   * Toleranced test for equality to any of `count` numbers supplied by `iterator`.
+   * @param a value to test
+   * @param values array of values to test against, or an object that provides the i_th value, where 0 <= i < length.
+   * @param tolerance relative tolerance. Default value is [[smallAngleRadians]].
+   * @returns true if and only if `a` is almost equal to at least one value supplied by `iterator`.
+   */
+  public static isAlmostEqualAnyNumber(a: number, values: number[] | { iter: (i: number) => number, length: number }, tolerance: number = Geometry.smallAngleRadians): boolean {
+    const value = Array.isArray(values) ? (i: number) => values[i] : values.iter;
+    for (let i = 0; i < values.length; i++)
+      if (this.isAlmostEqualNumber(a, value(i), tolerance))
+        return true;
+    return false;
+  }
+  /**
    * Toleranced equality test using tolerance `tolerance * ( 1 + abs(a.x) + abs(a.y) + abs(b.x) + abs(b.y) )`.
    * * [[smallAngleRadians]] is used if tolerance is `undefined`.
    */

@@ -11,7 +11,8 @@ import { IModelDb, SnapshotDb } from "../../IModelDb";
 import { Logger } from "@itwin/core-bentley";
 import { IModelHost } from "../../IModelHost";
 import { HubMock } from "../../internal/HubMock";
-import { _hubAccess, _openCheckpoint } from "../../internal/Symbols";
+import { _hubAccess, _nativeDb, _openCheckpoint } from "../../internal/Symbols";
+import { IModelTestUtils } from "../IModelTestUtils";
 
 describe("SnapshotDb.refreshContainerForRpc", () => {
   afterEach(() => sinon.restore());
@@ -170,7 +171,7 @@ describe("SnapshotDb.refreshContainerForRpc", () => {
     sinon.stub(IModelDb.prototype, "initializeIModelDb" as any);
     sinon.stub(IModelDb.prototype, "loadIModelSettings" as any);
 
-    const snapshot = CheckpointManager[_openCheckpoint]("fakeFilePath", { iTwinId: "fakeITwinId", iModelId: "fake1", changeset });
+    const snapshot = IModelTestUtils.openCheckpoint("fakeFilePath", { iTwinId: "fakeITwinId", iModelId: "fake1", changeset });
     const nowStub = sinon.stub(Date, "now");
     await snapshot.refreshContainerForRpc("");
     snapshot.close();

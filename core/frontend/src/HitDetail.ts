@@ -27,6 +27,8 @@ export enum SnapMode {
   Origin = 1 << 4,
   Bisector = 1 << 5,
   Intersection = 1 << 6,
+  PerpendicularPoint = 1 << 7,
+  TangentPoint = 1 << 8,
 }
 
 /**
@@ -397,11 +399,18 @@ export class SnapDetail extends HitDetail {
   public get isHot(): boolean { return this.heat !== SnapHeat.None; }
   /** Determine whether the [[adjustedPoint]] is different than the [[snapPoint]]. This happens, for example, when points are adjusted for grids, acs plane snap, and AccuDraw. */
   public get isPointAdjusted(): boolean { return !this.adjustedPoint.isExactEqual(this.snapPoint); }
+
   /** Change the snap point. */
   public setSnapPoint(point: Point3d, heat: SnapHeat) {
     this.snapPoint.setFrom(point);
     this.adjustedPoint.setFrom(point);
     this.heat = heat;
+  }
+
+  /** Change the snap mode. */
+  public setSnapMode(snapMode: SnapMode) {
+    this.snapMode = snapMode;
+    this.sprite = IconSprites.getSpriteFromUrl(SnapDetail.getSnapSpriteUrl(snapMode));
   }
 
   /** Set curve primitive and HitGeometryType for this SnapDetail. */
@@ -510,6 +519,8 @@ export class SnapDetail extends HitDetail {
       case SnapMode.Origin: return `${IModelApp.publicPath}sprites/SnapOrigin.png`;
       case SnapMode.Bisector: return `${IModelApp.publicPath}sprites/SnapBisector.png`;
       case SnapMode.Intersection: return `${IModelApp.publicPath}sprites/SnapIntersection.png`;
+      case SnapMode.PerpendicularPoint: return `${IModelApp.publicPath}sprites/SnapPerpendicularPoint.png`;
+      case SnapMode.TangentPoint: return `${IModelApp.publicPath}sprites/SnapTangentPoint.png`;
     }
     return "";
   }
