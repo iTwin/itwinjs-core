@@ -7,7 +7,7 @@
  */
 
 import { BeDuration, Id64, Id64Arg, Id64Set } from "@itwin/core-bentley";
-import { CurveCurve, CurvePrimitive, GeometryQuery, IModelJson as GeomJson, Point2d, Point3d, Vector3d, XAndY } from "@itwin/core-geometry";
+import { CurveCurve, CurvePrimitive, Geometry, GeometryQuery, IModelJson as GeomJson, Point2d, Point3d, Vector3d, XAndY } from "@itwin/core-geometry";
 import { SnapRequestProps } from "@itwin/core-common";
 import { ElementLocateManager, HitListHolder, LocateAction, LocateFilterStatus, LocateResponse, SnapStatus } from "./ElementLocateManager";
 import { HitDetail, HitDetailType, HitGeomType, HitList, HitPriority, HitSource, IntersectDetail, SnapDetail, SnapHeat, SnapMode } from "./HitDetail";
@@ -20,6 +20,7 @@ import { DecorateContext } from "./ViewContext";
 import { Decorator } from "./ViewManager";
 import { ScreenViewport, Viewport } from "./Viewport";
 import { _requestSnap } from "./common/internal/Symbols";
+import { AccuDraw, AccuDrawFlags, AccuDrawHintBuilder } from "./AccuDraw";
 
 // cspell:ignore dont primitivetools
 
@@ -661,6 +662,78 @@ export class AccuSnap implements Decorator {
     return intersect;
   }
 
+  private static perpendicularPoint(snap: SnapDetail): SnapStatus {
+    const accuDraw = IModelApp.accuDraw;
+    if (!accuDraw.isEnabled || accuDraw.isDeactivated)
+      return SnapStatus.Disabled; // AccuDraw is require for this snap mode...
+
+    if (HitGeomType.Surface === snap.geomType)
+      return SnapStatus.NoSnapPossible; // Only valid for edge and curve hits...
+
+    const curve = snap.getCurvePrimitive();
+    if (undefined === curve)
+      return SnapStatus.NoSnapPossible;
+
+    const rMatrix = AccuDraw.getSnapRotation(snap, snap.viewport);
+    if (undefined === rMatrix)
+      return SnapStatus.NoSnapPossible;
+
+    // Compute perpendicular from AccuDraw origin when active or set AccuDraw rotation if accepted...
+    if (!accuDraw.isActive) {
+      const origin = snap.getPoint();
+
+      accuDraw.setContext(AccuDrawFlags.SetRMatrix | AccuDrawFlags.AlwaysSetOrigin, origin, rMatrix);
+      accuDraw.adjustPoint(origin, snap.viewport, false); // Update internals for new snap location...
+
+      snap.setSnapPoint(origin, SnapHeat.InRange); // Force hot snap...
+      snap.setSnapMode(SnapMode.PerpendicularPoint);
+
+      return SnapStatus.Success;
+    }
+
+    const zVec = rMatrix.rowZ(); // This is a row matrix...
+    const spacePoint = AccuDrawHintBuilder.projectPointToPlaneInView(accuDraw.origin, snap.getPoint(), zVec, snap.viewport, true);
+    if (undefined === spacePoint)
+      return SnapStatus.NoSnapPossible;
+
+    const detail = curve.closestPoint(spacePoint, true);
+    if (undefined === detail?.curve)
+      return SnapStatus.NoSnapPossible;
+
+    // Close point may not be perpendicular when curve can't be extended (CurveExtendMode.OnTangent isn't supported for all curve types)...
+    if (!curve.isExtensibleFractionSpace) {
+      const curvePlanePoint = AccuDrawHintBuilder.projectPointToPlaneInView(accuDraw.origin, detail.point, zVec, snap.viewport, true);
+      if (undefined === curvePlanePoint)
+        return SnapStatus.NoSnapPossible;
+
+      const curveNormal = detail.point.vectorTo(curvePlanePoint);
+      const curveTangent = curve.fractionToPointAndUnitTangent(detail.fraction);
+      if (!curveTangent.getDirectionRef().isPerpendicularTo(curveNormal)) {
+        const curveExtensionPoint = AccuDrawHintBuilder.projectPointToLineInView(accuDraw.origin, curveTangent.getOriginRef(), curveTangent.getDirectionRef(), snap.viewport, true);
+        if (undefined === curveExtensionPoint)
+          return SnapStatus.NoSnapPossible;
+        detail.point.setFrom(curveExtensionPoint);
+      }
+    }
+
+    const point = AccuDrawHintBuilder.projectPointToPlaneInView(detail.point, accuDraw.origin, zVec, snap.viewport, true);
+    if (undefined === point)
+      return SnapStatus.NoSnapPossible;
+
+    const xVec = new Vector3d();
+    if (accuDraw.origin.vectorTo(point).normalizeWithLength(xVec).mag < Geometry.smallAngleRadians)
+      xVec.setFrom(rMatrix.rowX()); // Closest point and compass origin coincide...
+
+    const yVec = xVec.unitCrossProduct(zVec);
+    if (undefined === yVec)
+      return SnapStatus.NoSnapPossible;
+
+    snap.setSnapPoint(point, SnapHeat.InRange); // Force hot snap...
+    snap.setSnapMode(SnapMode.PerpendicularPoint);
+
+    return SnapStatus.Success;
+  }
+
   /** @internal */
   public static async requestSnap(thisHit: HitDetail, snapModes: SnapMode[], hotDistanceInches: number, keypointDivisor: number, hitList?: HitList<HitDetail>, out?: LocateResponse): Promise<SnapDetail | undefined> {
     if (thisHit.isModelHit || thisHit.isMapHit || thisHit.isClassifier) {
@@ -699,6 +772,15 @@ export class AccuSnap implements Decorator {
         }
         return undefined;
       }
+    }
+
+    const doPerpPointSnap = snapModes.includes(SnapMode.PerpendicularPoint);
+    if (doPerpPointSnap) {
+      // NOTE: This is not a valid backend snap mode. Instead make the snap request using nearest
+      // snap in order to get the candidate curve to use to compute the snap point...
+      snapModes = snapModes.filter(snapMode => snapMode !== SnapMode.PerpendicularPoint);
+      if (!snapModes.includes(SnapMode.Nearest))
+        snapModes.push(SnapMode.Nearest);
     }
 
     const requestProps: SnapRequestProps = {
@@ -804,6 +886,12 @@ export class AccuSnap implements Decorator {
         snap.normal = Vector3d.fromJSON(result.normal);
         displayTransform?.matrix.multiplyVector(snap.normal, snap.normal);
         snap.normal.normalizeInPlace();
+      }
+
+      if (doPerpPointSnap && SnapMode.Nearest === result.snapMode) {
+        if (SnapStatus.Success !== this.perpendicularPoint(snap))
+          return undefined;
+        return snap;
       }
 
       if (SnapMode.Intersection !== snap.snapMode)
@@ -1038,7 +1126,10 @@ export class AccuSnap implements Decorator {
   }
 
   /** @internal */
-  public onPreButtonEvent(ev: BeButtonEvent): boolean { return (undefined !== this.touchCursor) ? this.touchCursor.isButtonHandled(ev) : false; }
+  public onPreButtonEvent(ev: BeButtonEvent): boolean {
+    return (undefined !== this.touchCursor) ? this.touchCursor.isButtonHandled(ev) : false;
+  }
+
   /** @internal */
   public onTouchStart(ev: BeTouchEvent): void {
     if (undefined !== this.touchCursor)

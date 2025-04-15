@@ -743,6 +743,7 @@ export class PolyfaceData {
       if (this.colorIndex !== this.pointIndex)
         PolyfaceData.reverseIndices(facetStartIndex, this.colorIndex, true);
       PolyfaceData.reverseIndices(facetStartIndex, this.edgeVisible, false);
+      // TODO: reverse auxData.indices, edgeMateIndex
     }
   }
   /**
@@ -762,6 +763,7 @@ export class PolyfaceData {
     if (this.colorIndex !== this.pointIndex)
       PolyfaceData.reverseIndicesSingleFacet(facetIndex, facetStartIndex, this.colorIndex, true);
     PolyfaceData.reverseIndicesSingleFacet(facetIndex, facetStartIndex, this.edgeVisible, false);
+    // TODO: reverse auxData.indices, edgeMateIndex
   }
   /** Scale all the normals by -1. */
   public reverseNormals() {
