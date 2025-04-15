@@ -1324,9 +1324,8 @@ export abstract class DefinitionElement extends InformationContentElement {
   /** @internal */
   public static override deserialize(props: InstanceProps): DefinitionElementProps {
     const elProps = super.deserialize(props) as DefinitionElementProps;
-    if (props.row.isPrivate !== undefined) {
-      elProps.isPrivate = props.row.isPrivate;
-    }
+    if (props.row.isPrivate === true)
+      elProps.isPrivate = true;
     return elProps;
   }
 
