@@ -146,10 +146,10 @@ export class Entity {
       .filter((propertyName) => customHandledProperties.find((val) => val.propertyName === propertyName) === undefined)
       .forEach((propertyName) => (enProps as ECSqlRow)[propertyName] = props.row[propertyName]
     );
-    // Handles relClassNames that use the native '.' syntax instead of ':' syntax
+    // Handles custom relClassNames to use '.' instead of ':'
     Object.keys(enProps).forEach((propertyName) => {
-      if ((enProps as ECSqlRow)[propertyName].relClassName !== undefined) {
-        (enProps as ECSqlRow)[propertyName].relClassName.replace('.', ':');
+      if ((enProps as ECSqlRow)[propertyName].relClassName !== undefined && propertyName !== "modeledElement" && propertyName !== "parentModel") {
+        (enProps as ECSqlRow)[propertyName].relClassName = (enProps as ECSqlRow)[propertyName].relClassName.replace(':', '.');
       }
     });
     return enProps;
