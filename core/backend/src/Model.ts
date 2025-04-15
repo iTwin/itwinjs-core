@@ -106,8 +106,10 @@ export class Model extends Entity {
       else
         modelProps.parentModel = modeledElementProps.model;
     }
-    modelProps.isPrivate = instance.isPrivate ? true : undefined;
-    modelProps.isTemplate = instance.isTemplate ? true : undefined;
+    if (instance.isPrivate === true)
+      modelProps.isPrivate = true;
+    if (instance.isTemplate === true)
+      modelProps.isTemplate = true;
     return modelProps;
   }
 
