@@ -672,6 +672,7 @@ export class ViewDefinition2d extends ViewDefinition {
   public static override deserialize(props: InstanceProps): ViewDefinition2dProps {
     const elProps = super.deserialize(props) as ViewDefinition2dProps;
     const instance = props.row;
+    elProps.baseModelId = instance.baseModel.id;
     elProps.origin = [ instance.origin.x, instance.origin.y];
     elProps.delta = [ instance.extents.x, instance.extents.y ];
     elProps.angle = instance.rotationAngle;
