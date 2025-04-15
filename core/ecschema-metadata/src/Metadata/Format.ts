@@ -9,7 +9,7 @@
 import { SchemaItemFormatProps } from "../Deserialization/JsonProps";
 import { XmlSerializationUtils } from "../Deserialization/XmlSerializationUtils";
 import { SchemaItemType } from "../ECObjects";
-import { ECObjectsError, ECObjectsStatus } from "../Exception";
+import { ECSchemaError, ECSchemaStatus } from "../Exception";
 import {
   BaseFormat, DecimalPrecision, FormatTraits, formatTraitsToArray, FormatType, FractionalPrecision,
   ScientificType, ShowSignOption,
@@ -71,7 +71,7 @@ export class Format extends SchemaItem {
     else { // Validate that a duplicate is not added.
       for (const existingUnit of this._units) {
         if (unit.fullName.toLowerCase() === existingUnit[0].fullName.toLowerCase())
-          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Format ${this.fullName} has duplicate units, '${unit.fullName}'.`); // TODO: Validation - this should be a validation error not a hard failure.
+          throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The Format ${this.fullName} has duplicate units, '${unit.fullName}'.`); // TODO: Validation - this should be a validation error not a hard failure.
       }
     }
 
@@ -94,13 +94,13 @@ export class Format extends SchemaItem {
 
       if (undefined !== formatProps.composite.spacer) {
         if (formatProps.composite.spacer.length > 1)
-          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Format ${this.fullName} has a composite with an invalid 'spacer' attribute. It should be an empty or one character string.`);
+          throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The Format ${this.fullName} has a composite with an invalid 'spacer' attribute. It should be an empty or one character string.`);
         this._base.spacer = formatProps.composite.spacer;
       }
 
       // Composite requires 1-4 units
       if (formatProps.composite.units.length <= 0 || formatProps.composite.units.length > 4)
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Format ${this.fullName} has an invalid 'Composite' attribute. It should have 1-4 units.`);
+        throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The Format ${this.fullName} has an invalid 'Composite' attribute. It should have 1-4 units.`);
     }
   }
 
@@ -114,7 +114,7 @@ export class Format extends SchemaItem {
     for (const unit of formatProps.composite.units) {
       const newUnit = this.schema.lookupItemSync(unit.name);
       if (undefined === newUnit || (!Unit.isUnit(newUnit) && !InvertedUnit.isInvertedUnit(newUnit)))
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
+        throw new ECSchemaError(ECSchemaStatus.InvalidECJson, ``);
       this.addUnit(newUnit, unit.label);
     }
   }
@@ -129,7 +129,7 @@ export class Format extends SchemaItem {
     for (const unit of formatProps.composite.units) {
       const newUnit = await this.schema.lookupItem(unit.name);
       if (undefined === newUnit || (!Unit.isUnit(newUnit) && !InvertedUnit.isInvertedUnit(newUnit)))
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
+        throw new ECSchemaError(ECSchemaStatus.InvalidECJson, ``);
       this.addUnit(newUnit, unit.label);
     }
   }
@@ -358,7 +358,7 @@ export class Format extends SchemaItem {
    */
   public static assertIsFormat(item?: SchemaItem): asserts item is Format {
     if (!this.isFormat(item))
-      throw new ECObjectsError(ECObjectsStatus.InvalidSchemaItemType, `Expected '${SchemaItemType.Format}' (Format)`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidSchemaItemType, `Expected '${SchemaItemType.Format}' (Format)`);
   }
 }
 

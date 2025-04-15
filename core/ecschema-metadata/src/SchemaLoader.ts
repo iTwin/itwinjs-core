@@ -5,7 +5,7 @@
 
 import { SchemaContext } from "./Context";
 import { SchemaMatchType } from "./ECObjects";
-import { ECObjectsError, ECObjectsStatus } from "./Exception";
+import { ECSchemaError, ECSchemaStatus } from "./Exception";
 import { Schema } from "./Metadata/Schema";
 import { SchemaJsonLocater, SchemaPropsGetter } from "./SchemaJsonLocater";
 import { ECVersion, SchemaKey } from "./SchemaKey";
@@ -33,19 +33,19 @@ export class SchemaLoader {
 
   /** Get a schema by name
    * @param schemaName a string with the name of the schema to load.
-   * @throws [ECObjectsError]($ecschema-metadata) if the schema is not found or cannot be loaded.
+   * @throws [ECSchemaError]($ecschema-metadata) if the schema is not found or cannot be loaded.
    */
   public getSchema(schemaName: string): Schema {
     const schema = this.tryGetSchema(schemaName);
     if (!schema)
-      throw new ECObjectsError(ECObjectsStatus.UnableToLocateSchema, `reading schema=${schemaName}`);
+      throw new ECSchemaError(ECSchemaStatus.UnableToLocateSchema, `reading schema=${schemaName}`);
 
     return schema;
   }
 
   /** Attempts to get a schema by name
    * @param schemaName a string with the name of the schema to load.
-   * @throws [ECObjectsError]($ecschema-metadata) if the schema exists, but cannot be loaded.
+   * @throws [ECSchemaError]($ecschema-metadata) if the schema exists, but cannot be loaded.
    */
   public tryGetSchema(schemaName: string): Schema | undefined {
     // SchemaKey version is not used when locating schema in an iModel, so the version is arbitrary.

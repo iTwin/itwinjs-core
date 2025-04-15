@@ -29,7 +29,7 @@ export class SchemaJsonLocater implements ISchemaLocater {
    * @param schemaKey The [SchemaKey] that identifies the schema.
    * @param matchType The [SchemaMatchType] to used for comparing schema versions.
    * @param context The [SchemaContext] used to facilitate schema location.
-   * @throws [ECObjectsError]($ecschema-metadata) if the schema exists, but cannot be loaded.
+   * @throws [ECSchemaError]($ecschema-metadata) if the schema exists, but cannot be loaded.
    */
   public async getSchema(schemaKey: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): Promise<Schema | undefined> {
     await this.getSchemaInfo(schemaKey, matchType, context);

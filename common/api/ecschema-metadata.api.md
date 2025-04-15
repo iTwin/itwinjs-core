@@ -373,7 +373,7 @@ export class ECName {
 }
 
 // @internal (undocumented)
-export class ECObjectsError extends BentleyError {
+export class ECSchemaError extends BentleyError {
     constructor(errorNumber: number, message?: string);
     // (undocumented)
     readonly errorNumber: number;
@@ -382,7 +382,17 @@ export class ECObjectsError extends BentleyError {
 }
 
 // @internal (undocumented)
-export enum ECObjectsStatus {
+export namespace ECSchemaNamespaceUris {
+    const // (undocumented)
+    SCHEMAURL3_2_JSON = "https://dev.bentley.com/json_schemas/ec/32/ecschema";
+    const // (undocumented)
+    SCHEMAITEMURL3_2 = "https://dev.bentley.com/json_schemas/ec/32/schemaitem";
+    const // (undocumented)
+    SCHEMAURL3_2_XML = "http://www.bentley.com/schemas/Bentley.ECXML.3.2";
+}
+
+// @public (undocumented)
+export enum ECSchemaStatus {
     // (undocumented)
     ClassNotFound = 35074,
     // (undocumented)
@@ -445,16 +455,6 @@ export enum ECObjectsStatus {
     UnableToLoadSchema = 35080,
     // (undocumented)
     UnableToLocateSchema = 35071
-}
-
-// @internal (undocumented)
-export namespace ECSchemaNamespaceUris {
-    const // (undocumented)
-    SCHEMAURL3_2_JSON = "https://dev.bentley.com/json_schemas/ec/32/ecschema";
-    const // (undocumented)
-    SCHEMAITEMURL3_2 = "https://dev.bentley.com/json_schemas/ec/32/schemaitem";
-    const // (undocumented)
-    SCHEMAURL3_2_XML = "http://www.bentley.com/schemas/Bentley.ECXML.3.2";
 }
 
 // @internal
@@ -1435,7 +1435,7 @@ export enum PropertyType {
 }
 
 // @internal (undocumented)
-export function propertyTypeToString(type: PropertyType): "PrimitiveArrayProperty" | "PrimitiveProperty" | "StructArrayProperty" | "StructProperty" | "NavigationProperty";
+export function propertyTypeToString(type: PropertyType): "PrimitiveProperty" | "StructProperty" | "StructArrayProperty" | "NavigationProperty" | "PrimitiveArrayProperty";
 
 // @internal (undocumented)
 export namespace PropertyTypeUtils {

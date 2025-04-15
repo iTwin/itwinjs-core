@@ -32,9 +32,9 @@ internal;interface;DelayedPromiseWithPropsConstructor
 public;class;ECClass
 public;enum;ECClassModifier
 public;class;ECName
-internal;class;ECObjectsError
-internal;enum;ECObjectsStatus
+internal;class;ECSchemaError
 internal;namespace;ECSchemaNamespaceUris
+public;enum;ECSchemaStatus
 internal;interface;ECSpecVersion
 internal;class;ECStringConstants
 public;class;ECVersion

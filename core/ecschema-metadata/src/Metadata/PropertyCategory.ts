@@ -8,7 +8,7 @@
 
 import { PropertyCategoryProps } from "../Deserialization/JsonProps";
 import { SchemaItemType } from "../ECObjects";
-import { ECObjectsError, ECObjectsStatus } from "../Exception";
+import { ECSchemaError, ECSchemaStatus } from "../Exception";
 import { Schema } from "./Schema";
 import { SchemaItem } from "./SchemaItem";
 
@@ -85,7 +85,7 @@ export class PropertyCategory extends SchemaItem {
    */
   public static assertIsPropertyCategory(item?: SchemaItem): asserts item is PropertyCategory {
     if (!this.isPropertyCategory(item))
-      throw new ECObjectsError(ECObjectsStatus.InvalidSchemaItemType, `Expected '${SchemaItemType.PropertyCategory}' (PropertyCategory)`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidSchemaItemType, `Expected '${SchemaItemType.PropertyCategory}' (PropertyCategory)`);
   }
 }
 

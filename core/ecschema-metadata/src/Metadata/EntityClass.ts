@@ -10,7 +10,7 @@ import { DelayedPromiseWithProps } from "../DelayedPromise";
 import { EntityClassProps } from "../Deserialization/JsonProps";
 import { XmlSerializationUtils } from "../Deserialization/XmlSerializationUtils";
 import { parseStrengthDirection, SchemaItemType, StrengthDirection } from "../ECObjects";
-import { ECObjectsError, ECObjectsStatus } from "../Exception";
+import { ECSchemaError, ECSchemaStatus } from "../Exception";
 import { HasMixins, LazyLoadedMixin } from "../Interfaces";
 import { SchemaItemKey } from "../SchemaKey";
 import { ECClass } from "./Class";
@@ -214,12 +214,12 @@ export class EntityClass extends ECClass implements HasMixins {
       for (const name of entityClassProps.mixins) {
         const mixinSchemaItemKey = this.schema.getSchemaItemKey(name);
         if (!mixinSchemaItemKey)
-          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ECEntityClass ${this.name} has a mixin ("${name}") that cannot be found.`);
+          throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The ECEntityClass ${this.name} has a mixin ("${name}") that cannot be found.`);
         this._mixins.push(new DelayedPromiseWithProps<SchemaItemKey, Mixin>(mixinSchemaItemKey,
           async () => {
             const mixin = await this.schema.lookupItem(mixinSchemaItemKey, Mixin);
             if (undefined === mixin)
-              throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ECEntityClass ${this.name} has a mixin ("${name}") that cannot be found.`);
+              throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The ECEntityClass ${this.name} has a mixin ("${name}") that cannot be found.`);
             return mixin;
           }));
       }
@@ -246,7 +246,7 @@ export class EntityClass extends ECClass implements HasMixins {
    */
   public static assertIsEntityClass(item?: SchemaItem): asserts item is EntityClass {
     if (!this.isEntityClass(item))
-      throw new ECObjectsError(ECObjectsStatus.InvalidSchemaItemType, `Expected '${SchemaItemType.EntityClass}' (EntityClass)`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidSchemaItemType, `Expected '${SchemaItemType.EntityClass}' (EntityClass)`);
   }
 }
 
@@ -264,7 +264,7 @@ export abstract class MutableEntityClass extends EntityClass {
 /** @internal */
 export async function createNavigationProperty(ecClass: ECClass, name: string, relationship: string | RelationshipClass, direction: string | StrengthDirection): Promise<NavigationProperty> {
   if (await ecClass.getProperty(name, true))
-    throw new ECObjectsError(ECObjectsStatus.DuplicateProperty, `An ECProperty with the name ${name} already exists in the class ${ecClass.name}.`);
+    throw new ECSchemaError(ECSchemaStatus.DuplicateProperty, `An ECProperty with the name ${name} already exists in the class ${ecClass.name}.`);
 
   let resolvedRelationship: RelationshipClass | undefined;
   if (typeof (relationship) === "string") {
@@ -273,12 +273,12 @@ export async function createNavigationProperty(ecClass: ECClass, name: string, r
     resolvedRelationship = relationship;
 
   if (!resolvedRelationship)
-    throw new ECObjectsError(ECObjectsStatus.InvalidType, `The provided RelationshipClass, ${relationship}, is not a valid RelationshipClassInterface.`);  // eslint-disable-line @typescript-eslint/no-base-to-string
+    throw new ECSchemaError(ECSchemaStatus.InvalidType, `The provided RelationshipClass, ${relationship}, is not a valid RelationshipClassInterface.`);  // eslint-disable-line @typescript-eslint/no-base-to-string
 
   if (typeof (direction) === "string") {
     const tmpDirection = parseStrengthDirection(direction);
     if (undefined === tmpDirection)
-      throw new ECObjectsError(ECObjectsStatus.InvalidStrengthDirection, `The provided StrengthDirection, ${direction}, is not a valid StrengthDirection.`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidStrengthDirection, `The provided StrengthDirection, ${direction}, is not a valid StrengthDirection.`);
     direction = tmpDirection;
   }
 
@@ -289,7 +289,7 @@ export async function createNavigationProperty(ecClass: ECClass, name: string, r
 /** @internal */
 export function createNavigationPropertySync(ecClass: ECClass, name: string, relationship: string | RelationshipClass, direction: string | StrengthDirection): NavigationProperty {
   if (ecClass.getPropertySync(name))
-    throw new ECObjectsError(ECObjectsStatus.DuplicateProperty, `An ECProperty with the name ${name} already exists in the class ${ecClass.name}.`);
+    throw new ECSchemaError(ECSchemaStatus.DuplicateProperty, `An ECProperty with the name ${name} already exists in the class ${ecClass.name}.`);
 
   let resolvedRelationship: RelationshipClass | undefined;
   if (typeof (relationship) === "string") {
@@ -298,12 +298,12 @@ export function createNavigationPropertySync(ecClass: ECClass, name: string, rel
     resolvedRelationship = relationship;
 
   if (!resolvedRelationship)
-    throw new ECObjectsError(ECObjectsStatus.InvalidType, `The provided RelationshipClass, ${relationship}, is not a valid RelationshipClassInterface.`);  // eslint-disable-line @typescript-eslint/no-base-to-string
+    throw new ECSchemaError(ECSchemaStatus.InvalidType, `The provided RelationshipClass, ${relationship}, is not a valid RelationshipClassInterface.`);  // eslint-disable-line @typescript-eslint/no-base-to-string
 
   if (typeof (direction) === "string") {
     const tmpDirection = parseStrengthDirection(direction);
     if (undefined === tmpDirection)
-      throw new ECObjectsError(ECObjectsStatus.InvalidStrengthDirection, `The provided StrengthDirection, ${direction}, is not a valid StrengthDirection.`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidStrengthDirection, `The provided StrengthDirection, ${direction}, is not a valid StrengthDirection.`);
     direction = tmpDirection;
   }
 

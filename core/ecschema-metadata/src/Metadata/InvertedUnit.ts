@@ -10,7 +10,7 @@ import { DelayedPromiseWithProps } from "../DelayedPromise";
 import { InvertedUnitProps } from "../Deserialization/JsonProps";
 import { XmlSerializationUtils } from "../Deserialization/XmlSerializationUtils";
 import { SchemaItemType } from "../ECObjects";
-import { ECObjectsError, ECObjectsStatus } from "../Exception";
+import { ECSchemaError, ECSchemaStatus } from "../Exception";
 import { LazyLoadedUnit, LazyLoadedUnitSystem } from "../Interfaces";
 import { SchemaItemKey } from "../SchemaKey";
 import { SchemaItem } from "./SchemaItem";
@@ -51,7 +51,7 @@ export class InvertedUnit extends SchemaItem {
    */
   public static assertIsInvertedUnit(item?: SchemaItem): asserts item is InvertedUnit {
     if (!this.isInvertedUnit(item))
-      throw new ECObjectsError(ECObjectsStatus.InvalidSchemaItemType, `Expected '${SchemaItemType.InvertedUnit}' (InvertedUnit)`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidSchemaItemType, `Expected '${SchemaItemType.InvertedUnit}' (InvertedUnit)`);
   }
 
   /**
@@ -92,18 +92,18 @@ export class InvertedUnit extends SchemaItem {
       async () => {
         const invertsUnit = await this.schema.lookupItem(unitSchemaItemKey, Unit);
         if (undefined === invertsUnit)
-          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate the invertsUnit ${invertedUnitProps.invertsUnit}.`);
+          throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `Unable to locate the invertsUnit ${invertedUnitProps.invertsUnit}.`);
         return invertsUnit;
       });
 
     const unitSystemSchemaItemKey = this.schema.getSchemaItemKey(invertedUnitProps.unitSystem);
     if (!unitSystemSchemaItemKey)
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate the unitSystem ${invertedUnitProps.unitSystem}.`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `Unable to locate the unitSystem ${invertedUnitProps.unitSystem}.`);
     this._unitSystem = new DelayedPromiseWithProps<SchemaItemKey, UnitSystem>(unitSystemSchemaItemKey,
       async () => {
         const unitSystem = await this.schema.lookupItem(unitSystemSchemaItemKey, UnitSystem);
         if (undefined === unitSystem)
-          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate the unitSystem ${invertedUnitProps.unitSystem}.`);
+          throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `Unable to locate the unitSystem ${invertedUnitProps.unitSystem}.`);
         return unitSystem;
       });
   }

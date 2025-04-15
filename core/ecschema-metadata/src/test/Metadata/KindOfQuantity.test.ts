@@ -5,7 +5,7 @@
 
 import { assert, expect } from "chai";
 import { SchemaContext } from "../../Context";
-import { ECObjectsError } from "../../Exception";
+import { ECSchemaError } from "../../Exception";
 import { Format } from "../../Metadata/Format";
 import { KindOfQuantity } from "../../Metadata/KindOfQuantity";
 import { OverrideFormat } from "../../Metadata/OverrideFormat";
@@ -173,10 +173,10 @@ describe("KindOfQuantity", () => {
       ],
     };
     it("async - should throw for presentationUnit having a non-existent format", async () => {
-      await expect(Schema.fromJson(createSchemaJson(presentationUnitsNonExistentFormat), context)).to.be.rejectedWith(ECObjectsError, `Unable to locate SchemaItem TestSchema.NonexistentFormat.`);
+      await expect(Schema.fromJson(createSchemaJson(presentationUnitsNonExistentFormat), context)).to.be.rejectedWith(ECSchemaError, `Unable to locate SchemaItem TestSchema.NonexistentFormat.`);
     });
     it("sync - should throw for presentationUnit having a non-existent format", () => {
-      assert.throws(() => Schema.fromJsonSync(createSchemaJson(presentationUnitsNonExistentFormat), context), ECObjectsError, `Unable to locate SchemaItem TestSchema.NonexistentFormat.`);
+      assert.throws(() => Schema.fromJsonSync(createSchemaJson(presentationUnitsNonExistentFormat), context), ECSchemaError, `Unable to locate SchemaItem TestSchema.NonexistentFormat.`);
     });
 
     // should throw for persistenceUnit with non-existent format
@@ -189,10 +189,10 @@ describe("KindOfQuantity", () => {
       ],
     };
     it("async - should throw for persistenceUnit having a non-existent format", async () => {
-      await expect(Schema.fromJson(createSchemaJson(persistenceUnitNonExistentFormat), context)).to.be.rejectedWith(ECObjectsError, `Unable to locate SchemaItem TestSchema.NonexistentFormat.`);
+      await expect(Schema.fromJson(createSchemaJson(persistenceUnitNonExistentFormat), context)).to.be.rejectedWith(ECSchemaError, `Unable to locate SchemaItem TestSchema.NonexistentFormat.`);
     });
     it("sync - should throw for persistenceUnit having a non-existent format", () => {
-      assert.throws(() => Schema.fromJsonSync(createSchemaJson(persistenceUnitNonExistentFormat), context), ECObjectsError, `Unable to locate SchemaItem TestSchema.NonexistentFormat.`);
+      assert.throws(() => Schema.fromJsonSync(createSchemaJson(persistenceUnitNonExistentFormat), context), ECSchemaError, `Unable to locate SchemaItem TestSchema.NonexistentFormat.`);
     });
 
     // should deserialize for persistenceUnit with InvertedUnit
@@ -538,11 +538,11 @@ describe("KindOfQuantity", () => {
       };
 
       it(`async - ${testName}`, async () => {
-        await expect(Schema.fromJson(createSchemaJson(badOverrideString), context)).to.be.rejectedWith(ECObjectsError, expectedErrorMessage);
+        await expect(Schema.fromJson(createSchemaJson(badOverrideString), context)).to.be.rejectedWith(ECSchemaError, expectedErrorMessage);
       });
 
       it(`sync - ${testName}`, () => {
-        assert.throws(() => Schema.fromJsonSync(createSchemaJson(badOverrideString), context), ECObjectsError, expectedErrorMessage);
+        assert.throws(() => Schema.fromJsonSync(createSchemaJson(badOverrideString), context), ECSchemaError, expectedErrorMessage);
       });
     }
 

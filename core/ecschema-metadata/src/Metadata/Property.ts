@@ -13,7 +13,7 @@ import {
 } from "../Deserialization/JsonProps";
 import { XmlSerializationUtils } from "../Deserialization/XmlSerializationUtils";
 import { parsePrimitiveType, PrimitiveType, primitiveTypeToString, SchemaItemType, StrengthDirection, strengthDirectionToString } from "../ECObjects";
-import { ECObjectsError, ECObjectsStatus } from "../Exception";
+import { ECSchemaError, ECSchemaStatus } from "../Exception";
 import { AnyClass, LazyLoadedEnumeration, LazyLoadedKindOfQuantity, LazyLoadedPropertyCategory, LazyLoadedRelationshipClass } from "../Interfaces";
 import { PropertyType, propertyTypeToString, PropertyTypeUtils } from "../PropertyTypes";
 import { SchemaItemKey } from "../SchemaKey";
@@ -220,12 +220,12 @@ export abstract class Property implements CustomAttributeContainerProps {
     if (undefined !== propertyProps.category) {
       const propertyCategorySchemaItemKey = this.class.schema.getSchemaItemKey(propertyProps.category);
       if (!propertyCategorySchemaItemKey)
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Property ${this.name} has a 'category' ("${propertyProps.category}") that cannot be found.`);
+        throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The Property ${this.name} has a 'category' ("${propertyProps.category}") that cannot be found.`);
       this._category = new DelayedPromiseWithProps<SchemaItemKey, PropertyCategory>(propertyCategorySchemaItemKey,
         async () => {
           const category = await this.class.schema.lookupItem(propertyCategorySchemaItemKey, PropertyCategory);
           if (undefined === category)
-            throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Property ${this.name} has a 'category' ("${propertyProps.category}") that cannot be found.`);
+            throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The Property ${this.name} has a 'category' ("${propertyProps.category}") that cannot be found.`);
           return category;
         });
     }
@@ -233,12 +233,12 @@ export abstract class Property implements CustomAttributeContainerProps {
     if (undefined !== propertyProps.kindOfQuantity) {
       const koqSchemaItemKey = this.class.schema.getSchemaItemKey(propertyProps.kindOfQuantity);
       if (!koqSchemaItemKey)
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Property ${this.name} has a 'kindOfQuantity' ("${propertyProps.kindOfQuantity}") that cannot be found.`);
+        throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The Property ${this.name} has a 'kindOfQuantity' ("${propertyProps.kindOfQuantity}") that cannot be found.`);
       this._kindOfQuantity = new DelayedPromiseWithProps<SchemaItemKey, KindOfQuantity>(koqSchemaItemKey,
         async () => {
           const koq = await this.class.schema.lookupItem(koqSchemaItemKey, KindOfQuantity);
           if (undefined === koq)
-            throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Property ${this.name} has a 'kindOfQuantity' ("${propertyProps.kindOfQuantity}") that cannot be found.`);
+            throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The Property ${this.name} has a 'kindOfQuantity' ("${propertyProps.kindOfQuantity}") that cannot be found.`);
           return koq;
         });
     }
@@ -478,7 +478,7 @@ export class PrimitiveProperty extends PrimitiveOrEnumPropertyBase {
     super.fromJSONSync(primitivePropertyProps);
     if (undefined !== primitivePropertyProps.typeName) {
       if (this.primitiveType !== parsePrimitiveType(primitivePropertyProps.typeName))
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
+        throw new ECSchemaError(ECSchemaStatus.InvalidECJson, ``);
     }
   }
 
@@ -530,15 +530,15 @@ export class EnumerationProperty extends PrimitiveOrEnumPropertyBase {
     super.fromJSONSync(enumerationPropertyProps);
     if (undefined !== enumerationPropertyProps.typeName) {
       if (!(this.enumeration!.fullName).match(enumerationPropertyProps.typeName)) // need to match {schema}.{version}.{itemName} on typeName
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
+        throw new ECSchemaError(ECSchemaStatus.InvalidECJson, ``);
       const enumSchemaItemKey = this.class.schema.getSchemaItemKey(this.enumeration!.fullName);
       if (!enumSchemaItemKey)
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate the enumeration ${enumerationPropertyProps.typeName}.`);
+        throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `Unable to locate the enumeration ${enumerationPropertyProps.typeName}.`);
       this._enumeration = new DelayedPromiseWithProps<SchemaItemKey, Enumeration>(enumSchemaItemKey,
         async () => {
           const enumeration = await this.class.schema.lookupItem(enumSchemaItemKey, Enumeration);
           if (undefined === enumeration)
-            throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate the enumeration ${enumerationPropertyProps.typeName}.`);
+            throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `Unable to locate the enumeration ${enumerationPropertyProps.typeName}.`);
           return enumeration;
         });
     }
@@ -593,7 +593,7 @@ export class StructProperty extends Property {
     super.fromJSONSync(structPropertyProps);
     if (undefined !== structPropertyProps.typeName) {
       if (!this.structClass.key.matchesFullName(structPropertyProps.typeName))
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
+        throw new ECSchemaError(ECSchemaStatus.InvalidECJson, ``);
     }
   }
 

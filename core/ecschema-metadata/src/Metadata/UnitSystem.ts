@@ -7,7 +7,7 @@
  */
 
 import { SchemaItemType } from "../ECObjects";
-import { ECObjectsError, ECObjectsStatus } from "../Exception";
+import { ECSchemaError, ECSchemaStatus } from "../Exception";
 import { SchemaItem } from "./SchemaItem";
 
 /**
@@ -38,7 +38,7 @@ export class UnitSystem extends SchemaItem {
    */
   public static assertIsUnitSystem(item?: SchemaItem): asserts item is UnitSystem {
     if (!this.isUnitSystem(item))
-      throw new ECObjectsError(ECObjectsStatus.InvalidSchemaItemType, `Expected '${SchemaItemType.UnitSystem}' (UnitSystem)`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidSchemaItemType, `Expected '${SchemaItemType.UnitSystem}' (UnitSystem)`);
   }
 }
 

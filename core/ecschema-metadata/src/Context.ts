@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { SchemaMatchType } from "./ECObjects";
-import { ECObjectsError, ECObjectsStatus } from "./Exception";
+import { ECSchemaError, ECSchemaStatus } from "./Exception";
 import { SchemaInfo } from "./Interfaces";
 import { MutableSchema, Schema } from "./Metadata/Schema";
 import { SchemaItem } from "./Metadata/SchemaItem";
@@ -111,7 +111,7 @@ export class SchemaCache implements ISchemaLocater {
    */
   public async addSchemaPromise(schemaInfo: SchemaInfo, schema: Schema, schemaPromise: Promise<Schema>) {
     if (this.schemaExists(schemaInfo.schemaKey))
-      throw new ECObjectsError(ECObjectsStatus.DuplicateSchema, `The schema, ${schemaInfo.schemaKey.toString()}, already exists within this cache.`);
+      throw new ECSchemaError(ECSchemaStatus.DuplicateSchema, `The schema, ${schemaInfo.schemaKey.toString()}, already exists within this cache.`);
 
     this._schema.push({ schemaInfo, schema, schemaPromise });
 
@@ -130,7 +130,7 @@ export class SchemaCache implements ISchemaLocater {
    */
   public async addSchema(schema: Schema) {
     if (this.schemaExists(schema.schemaKey))
-      throw new ECObjectsError(ECObjectsStatus.DuplicateSchema, `The schema, ${schema.schemaKey.toString()}, already exists within this cache.`);
+      throw new ECSchemaError(ECSchemaStatus.DuplicateSchema, `The schema, ${schema.schemaKey.toString()}, already exists within this cache.`);
 
     this._schema.push({ schemaInfo: schema, schema });
   }
@@ -141,7 +141,7 @@ export class SchemaCache implements ISchemaLocater {
    */
   public addSchemaSync(schema: Schema) {
     if (this.schemaExists(schema.schemaKey))
-      throw new ECObjectsError(ECObjectsStatus.DuplicateSchema, `The schema, ${schema.schemaKey.toString()}, already exists within this cache.`);
+      throw new ECSchemaError(ECSchemaStatus.DuplicateSchema, `The schema, ${schema.schemaKey.toString()}, already exists within this cache.`);
 
     this._schema.push({ schemaInfo: schema, schema });
   }
@@ -200,7 +200,7 @@ export class SchemaCache implements ISchemaLocater {
     const entry = this.findEntry(schemaKey, matchType);
     if (entry) {
       if (entry.schemaPromise) {
-        throw new ECObjectsError(ECObjectsStatus.UnableToLoadSchema, `The Schema ${schemaKey.toString()} is partially loaded so cannot be loaded synchronously.`);
+        throw new ECSchemaError(ECSchemaStatus.UnableToLoadSchema, `The Schema ${schemaKey.toString()} is partially loaded so cannot be loaded synchronously.`);
       }
       return entry.schema;
     }
@@ -308,7 +308,7 @@ export class SchemaContext {
   public async addSchemaItem(schemaItem: SchemaItem) {
     const schema = await this.getSchema(schemaItem.key.schemaKey, SchemaMatchType.Exact);
     if (!schema)
-      throw new ECObjectsError(ECObjectsStatus.UnableToLocateSchema, `Unable to add the schema item ${schemaItem.name} to the schema ${schemaItem.key.schemaKey.toString()} because the schema could not be located.`);
+      throw new ECSchemaError(ECSchemaStatus.UnableToLocateSchema, `Unable to add the schema item ${schemaItem.name} to the schema ${schemaItem.key.schemaKey.toString()} because the schema could not be located.`);
 
     (schema as MutableSchema).addItem(schemaItem);
   }

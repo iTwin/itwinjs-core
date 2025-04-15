@@ -10,7 +10,7 @@ import { DelayedPromiseWithProps } from "../DelayedPromise";
 import { KindOfQuantityProps } from "../Deserialization/JsonProps";
 import { XmlSerializationUtils } from "../Deserialization/XmlSerializationUtils";
 import { SchemaItemType } from "../ECObjects";
-import { ECObjectsError, ECObjectsStatus } from "../Exception";
+import { ECSchemaError, ECSchemaStatus } from "../Exception";
 import { LazyLoadedInvertedUnit, LazyLoadedUnit } from "../Interfaces";
 import { Format } from "./Format";
 import { InvertedUnit } from "./InvertedUnit";
@@ -59,10 +59,10 @@ export class KindOfQuantity extends SchemaItem {
    */
   protected createFormatOverride(parent: Format, precision?: number, unitLabelOverrides?: Array<[Unit | InvertedUnit, string | undefined]>): OverrideFormat {
     if (unitLabelOverrides && parent.units && parent.units.length !== unitLabelOverrides.length)
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Cannot add presentation format to KindOfQuantity '${this.name}' because the number of unit overrides is inconsistent with the number in the Format '${parent.name}'.`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `Cannot add presentation format to KindOfQuantity '${this.name}' because the number of unit overrides is inconsistent with the number in the Format '${parent.name}'.`);
 
     if (parent.units && 0 === parent.units.length && unitLabelOverrides && 0 < unitLabelOverrides.length)
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Cannot add a presentation format to KindOfQuantity '${this.name}' without any units and no unit overrides.`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `Cannot add a presentation format to KindOfQuantity '${this.name}' without any units and no unit overrides.`);
 
     // TODO: Check compatibility of Unit overrides with the persistence unit
 
@@ -76,7 +76,7 @@ export class KindOfQuantity extends SchemaItem {
 
       const format = await this.schema.lookupItem(presFormatOverride.name, Format);
       if (undefined === format || format.schemaItemType !== SchemaItemType.Format)
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate Format '${presFormatOverride.name}' for the presentation unit on KindOfQuantity ${this.fullName}.`);
+        throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `Unable to locate Format '${presFormatOverride.name}' for the presentation unit on KindOfQuantity ${this.fullName}.`);
 
       if (undefined === presFormatOverride.precision && undefined === presFormatOverride.unitAndLabels) {
         this.addPresentationFormat(format);
@@ -86,13 +86,13 @@ export class KindOfQuantity extends SchemaItem {
       let unitAndLabels: Array<[Unit | InvertedUnit, string | undefined]> | undefined;
       if (undefined !== presFormatOverride.unitAndLabels) {
         if (4 < presFormatOverride.unitAndLabels.length)
-          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
+          throw new ECSchemaError(ECSchemaStatus.InvalidECJson, ``);
 
         unitAndLabels = [];
         for (const unitOverride of presFormatOverride.unitAndLabels) {
           const unitOrInverted = await this.schema.lookupItem(unitOverride[0]);
           if (undefined === unitOrInverted || (!Unit.isUnit(unitOrInverted) && !InvertedUnit.isInvertedUnit(unitOrInverted)))
-            throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate SchemaItem ${unitOverride[0]}.`);
+            throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `Unable to locate SchemaItem ${unitOverride[0]}.`);
 
           unitAndLabels.push([unitOrInverted, unitOverride[1]]);
         }
@@ -110,7 +110,7 @@ export class KindOfQuantity extends SchemaItem {
 
       const format = this.schema.lookupItemSync(presFormatOverride.name, Format);
       if (undefined === format || format.schemaItemType !== SchemaItemType.Format)
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate Format '${presFormatOverride.name}' for the presentation unit on KindOfQuantity ${this.fullName}.`);
+        throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `Unable to locate Format '${presFormatOverride.name}' for the presentation unit on KindOfQuantity ${this.fullName}.`);
 
       if (undefined === presFormatOverride.precision && undefined === presFormatOverride.unitAndLabels) {
         this.addPresentationFormat(format);
@@ -120,13 +120,13 @@ export class KindOfQuantity extends SchemaItem {
       let unitAndLabels: Array<[Unit | InvertedUnit, string | undefined]> | undefined;
       if (undefined !== presFormatOverride.unitAndLabels) {
         if (4 < presFormatOverride.unitAndLabels.length)
-          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
+          throw new ECSchemaError(ECSchemaStatus.InvalidECJson, ``);
 
         unitAndLabels = [];
         for (const unitOverride of presFormatOverride.unitAndLabels) {
           const unitOrInverted = this.schema.lookupItemSync(unitOverride[0]);
           if (undefined === unitOrInverted || (!Unit.isUnit(unitOrInverted) && !InvertedUnit.isInvertedUnit(unitOrInverted)))
-            throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate SchemaItem ${unitOverride[0]}.`);
+            throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `Unable to locate SchemaItem ${unitOverride[0]}.`);
 
           unitAndLabels.push([unitOrInverted, unitOverride[1]]);
         }
@@ -180,10 +180,10 @@ export class KindOfQuantity extends SchemaItem {
 
     const persistenceUnit = this.schema.lookupItemSync(kindOfQuantityProps.persistenceUnit);
     if (undefined === persistenceUnit)
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Unit ${kindOfQuantityProps.persistenceUnit} does not exist.`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The Unit ${kindOfQuantityProps.persistenceUnit} does not exist.`);
 
     if (!Unit.isUnit(persistenceUnit) && !InvertedUnit.isInvertedUnit(persistenceUnit))
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The item ${kindOfQuantityProps.persistenceUnit} is not a Unit or InvertedUnit.`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The item ${kindOfQuantityProps.persistenceUnit} is not a Unit or InvertedUnit.`);
 
     if (Unit.isUnit(persistenceUnit))
       this._persistenceUnit = new DelayedPromiseWithProps(persistenceUnit.key, async () => persistenceUnit);
@@ -200,10 +200,10 @@ export class KindOfQuantity extends SchemaItem {
 
     const persistenceUnit = await this.schema.lookupItem(kindOfQuantityProps.persistenceUnit);
     if (undefined === persistenceUnit)
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Unit ${kindOfQuantityProps.persistenceUnit} does not exist.`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The Unit ${kindOfQuantityProps.persistenceUnit} does not exist.`);
 
     if (!Unit.isUnit(persistenceUnit) && !InvertedUnit.isInvertedUnit(persistenceUnit))
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The item ${kindOfQuantityProps.persistenceUnit} is not a Unit or InvertedUnit.`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The item ${kindOfQuantityProps.persistenceUnit} is not a Unit or InvertedUnit.`);
 
     if (Unit.isUnit(persistenceUnit))
       this._persistenceUnit = new DelayedPromiseWithProps(persistenceUnit.key, async () => persistenceUnit);
@@ -251,7 +251,7 @@ export class KindOfQuantity extends SchemaItem {
    */
   public static assertIsKindOfQuantity(item?: SchemaItem): asserts item is KindOfQuantity {
     if (!this.isKindOfQuantity(item))
-      throw new ECObjectsError(ECObjectsStatus.InvalidSchemaItemType, `Expected '${SchemaItemType.KindOfQuantity}' (KindOfQuantity)`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidSchemaItemType, `Expected '${SchemaItemType.KindOfQuantity}' (KindOfQuantity)`);
   }
 }
 /**

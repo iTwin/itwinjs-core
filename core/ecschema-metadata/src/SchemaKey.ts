@@ -8,7 +8,7 @@
 
 import { SchemaKeyProps } from "./Deserialization/JsonProps";
 import { SchemaMatchType } from "./ECObjects";
-import { ECObjectsError, ECObjectsStatus } from "./Exception";
+import { ECSchemaError, ECSchemaStatus } from "./Exception";
 import { ECName } from "./ECName";
 
 /**
@@ -27,7 +27,7 @@ export class ECVersion {
   public static readonly NO_VERSION = new ECVersion(0, 0, 0);
 
   /**
-   * The constructor will throw an ECObjectsError if any of the parameters below are above the threshold.
+   * The constructor will throw an ECSchemaError if any of the parameters below are above the threshold.
    * @param read Can support up to 999.
    * @param write Can support up to 999.
    * @param minor Can support up to 9999999.
@@ -42,7 +42,7 @@ export class ECVersion {
       this._minor = minor;
 
     if (this._read > 999 || this._read < 0 || this._write > 999 || this._write < 0 || this._minor > 9999999 || this._minor < 0)
-      throw new ECObjectsError(ECObjectsStatus.InvalidECVersion);
+      throw new ECSchemaError(ECSchemaStatus.InvalidECVersion);
   }
 
   public get read() { return this._read; }
@@ -72,13 +72,13 @@ export class ECVersion {
   public static fromString(versionString: string): ECVersion {
     const [read, write, minor] = versionString.split(".");
     if (!read)
-      throw new ECObjectsError(ECObjectsStatus.InvalidECVersion, `The read version is missing from version string, ${versionString}`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidECVersion, `The read version is missing from version string, ${versionString}`);
 
     if (!write)
-      throw new ECObjectsError(ECObjectsStatus.InvalidECVersion, `The write version is missing from version string, ${versionString}`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidECVersion, `The write version is missing from version string, ${versionString}`);
 
     if (!minor)
-      throw new ECObjectsError(ECObjectsStatus.InvalidECVersion, `The minor version is missing from version string, ${versionString}`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidECVersion, `The minor version is missing from version string, ${versionString}`);
 
     return new ECVersion(+read, +write, +minor);
   }
@@ -135,7 +135,7 @@ export class SchemaKey {
   public static parseString(fullName: string) {
     const keyPieces = fullName.split(".");
     if (keyPieces.length !== 4)
-      throw new ECObjectsError(ECObjectsStatus.InvalidECName);
+      throw new ECSchemaError(ECSchemaStatus.InvalidECName);
 
     const schemaName = keyPieces[0];
     const readVer = Number(keyPieces[1]);

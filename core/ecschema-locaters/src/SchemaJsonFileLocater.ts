@@ -9,7 +9,7 @@
 import * as fs from "fs";
 import * as path from "path";
 import {
-  ECObjectsError, ECObjectsStatus, ECVersion, ISchemaLocater, Schema, SchemaContext, SchemaInfo, SchemaKey, SchemaMatchType,
+  ECSchemaError, ECSchemaStatus, ECVersion, ISchemaLocater, Schema, SchemaContext, SchemaInfo, SchemaKey, SchemaMatchType,
 } from "@itwin/ecschema-metadata";
 import { FileSchemaKey, SchemaFileLocater } from "./SchemaFileLocater";
 
@@ -30,11 +30,11 @@ export class SchemaJsonFileLocater extends SchemaFileLocater implements ISchemaL
 
     // Check if the name is present
     if (!(dataJson.name))
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Could not retrieve the ECSchema name in the given file.`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `Could not retrieve the ECSchema name in the given file.`);
 
     // Check if versions is present
     if (!(dataJson.version))
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Could not parse the ECSchema version in the given file.`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `Could not parse the ECSchema version in the given file.`);
 
     // Get the name and version from the JSON
     const schemaName = dataJson.name;

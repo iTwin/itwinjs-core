@@ -8,7 +8,7 @@
 
 import { PhenomenonProps } from "../Deserialization/JsonProps";
 import { SchemaItemType } from "../ECObjects";
-import { ECObjectsError, ECObjectsStatus } from "../Exception";
+import { ECSchemaError, ECSchemaStatus } from "../Exception";
 import { Schema } from "./Schema";
 import { SchemaItem } from "./SchemaItem";
 
@@ -48,7 +48,7 @@ export class Phenomenon extends SchemaItem {
   public override fromJSONSync(phenomenonProps: PhenomenonProps) {
     super.fromJSONSync(phenomenonProps);
     if (this._definition !== "" && phenomenonProps.definition.toLowerCase() !== this._definition.toLowerCase())
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Phenomenon ${this.name} has an invalid 'definition' attribute.`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The Phenomenon ${this.name} has an invalid 'definition' attribute.`);
     else if (this._definition === "")
       this._definition = phenomenonProps.definition;
   }
@@ -86,7 +86,7 @@ export class Phenomenon extends SchemaItem {
    */
   public static assertIsPhenomenon(item?: SchemaItem): asserts item is Phenomenon {
     if (!this.isPhenomenon(item))
-      throw new ECObjectsError(ECObjectsStatus.InvalidSchemaItemType, `Expected '${SchemaItemType.Phenomenon}' (Phenomenon)`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidSchemaItemType, `Expected '${SchemaItemType.Phenomenon}' (Phenomenon)`);
   }
 }
 
