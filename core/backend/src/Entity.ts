@@ -125,15 +125,22 @@ export class Entity {
       id: props.row.id,
     }
 
+    // Handles cases where id64 ints are stored in the jsonProperties and converts them to hex before parsing as a json object in js
     if (props.row.jsonProperties) {
       enProps.jsonProperties = JSON.parse(props.iModel[_nativeDb].patchJsonProperties(props.row.jsonProperties));
     }
-
+    // Auto handles all properties that are not in the 'customHandledProperties' list
     const customHandledProperties = this.getCustomHandledProperties();
     Object.keys(props.row)
       .filter((propertyName) => customHandledProperties.find((val) => val.propertyName === propertyName) === undefined)
       .forEach((propertyName) => (enProps as ECSqlRow)[propertyName] = props.row[propertyName]
-      );
+    );
+    // Handles relClassNames that use the native '.' syntax instead of ':' syntax
+    Object.keys(enProps).forEach((propertyName) => {
+      if ((enProps as ECSqlRow)[propertyName].relClassName !== undefined) {
+        (enProps as ECSqlRow)[propertyName].relClassName.replace('.', ':');
+      }
+    });
     return enProps;
   }
 
