@@ -254,6 +254,8 @@ export abstract class ViewDefinition extends DefinitionElement {
   public static override deserialize(props: InstanceProps): ViewDefinitionProps {
     const elProps = super.deserialize(props) as ViewDefinitionProps;
     const instance = props.row;
+    if (instance.isPrivate  !== undefined)
+      elProps.isPrivate = instance.isPrivate;
     elProps.categorySelectorId = instance.categorySelector.id;
     elProps.displayStyleId = instance.displayStyle.id;
     return elProps;
