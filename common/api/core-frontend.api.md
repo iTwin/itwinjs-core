@@ -9580,7 +9580,9 @@ export enum SnapMode {
     // (undocumented)
     Origin = 16,
     // (undocumented)
-    PerpendicularPoint = 128
+    PerpendicularPoint = 128,
+    // (undocumented)
+    TangentPoint = 256
 }
 
 // @public

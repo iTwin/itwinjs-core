@@ -13,6 +13,7 @@ Table of contents:
   - [Geometry](#geometry)
     - [Polyface Traversal](#polyface-traversal)
     - [Text Block Margins](#text-block-margins)
+    - [Tangent To Curve](#tangent-to-curve)
   - [Display](#display)
     - [Read image to canvas](#read-image-to-canvas)
     - [Draping iModel models onto reality data or other iModel models](#draping-imodel-models-onto-reality-data-or-other-imodel-models)
@@ -25,6 +26,9 @@ Table of contents:
   - [Delete all transactions](#delete-all-transactions)
   - [Attach/detach db](#attachdetach-db)
   - [Quantity Formatting](#quantity-formatting)
+    - [FormatDefinition](#formatdefinition)
+    - [FormatsProvider](#formatsprovider)
+    - [Persistence](#persistence)
   - [API deprecations](#api-deprecations)
     - [@itwin/core-bentley](#itwincore-bentley)
     - [@itwin/core-common](#itwincore-common)
@@ -77,9 +81,13 @@ Because the `SelectionSet` now stores additional types of ids, existing code tha
 
 ## Snapping
 
-Added `SnapMode.PerpendicularPoint`. Use this snap mode to snap to the closest/perpendicular point on the curve under the cursor from the AccuDraw origin.
+Added `SnapMode.PerpendicularPoint`. Snaps to the closest/perpendicular point on the curve under the cursor from the AccuDraw origin.
 
 ![perpendicular point snap](assets/SnapPerpendicularPoint.png "Perpendicular Point Snap")
+
+Added `SnapMode.TangentPoint`. Snaps to the closest point of tangency on the curve under the cursor that will pass through the AccuDraw origin.
+
+![tangent point snap](assets/SnapTangentPoint.png "Tangent Point Snap")
 
 ## Font APIs
 
@@ -194,6 +202,16 @@ Allow the attachment of an ECDb/IModel to a connection and running ECSQL that co
 > Note: There are some reserve alias names that cannot be used. They are 'main', 'schema_sync_db', 'ecchange' & 'temp'
 
 ## Quantity Formatting
+
+### FormatDefinition
+
+A [FormatDefinition]($quantity) interface has been added, an extension of FormatProps to help identify formats.
+
+### FormatsProvider
+
+[FormatsProvider]($quantity) and [MutableFormatsProvider]($quantity) interfaces and a [SchemaFormatsProvider]($ecschema-metadata) class have been added. This enables quick setup of [FormatterSpec]($quantity) and [ParserSpec]($quantity) to help with display formatting.
+
+### Persistence
 
 Following APIs have been added to support persistence:
 
