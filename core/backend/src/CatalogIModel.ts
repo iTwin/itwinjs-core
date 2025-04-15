@@ -79,7 +79,7 @@ function catalogDbNameWithDefault(dbName?: string): string {
 }
 
 /** A StandaloneDb that holds a CatalogIModel */
-class CatalogDb extends StandaloneDb implements ReadCatalog {
+class CatalogDb extends StandaloneDb implements CatalogIModel {
   public getManifest(): CatalogIModelTypes.CatalogManifest | undefined {
     const manifestString = this[_nativeDb].queryLocalValue(catalogManifestName);
     if (undefined === manifestString)
@@ -101,7 +101,7 @@ class CatalogDb extends StandaloneDb implements ReadCatalog {
  * This class ensures that CatalogIModels never have a Txn table when they are published.
  * It also automatically updates the `lastEditedBy` field in the CatalogManifest.
  */
-class EditableCatalogDb extends CatalogDb implements EditCatalog {
+class EditableCatalogDb extends CatalogDb implements EditableCatalogIModel {
   public updateCatalogManifest(manifest: CatalogIModelTypes.CatalogManifest): void {
     updateManifest(this[_nativeDb], manifest);
   }
@@ -125,15 +125,15 @@ class EditableCatalogDb extends CatalogDb implements EditCatalog {
   }
 }
 
-function findCatalogByKey(key: string): CatalogDb & EditCatalog {
-  return CatalogDb.findByKey(key) as CatalogDb & EditCatalog;
+function findCatalogByKey(key: string): CatalogDb & EditableCatalogIModel {
+  return CatalogDb.findByKey(key) as CatalogDb & EditableCatalogIModel;
 }
 
 /**
  * Methods for reading from an open CatalogIModel
  * @beta
  */
-export interface ReadCatalog {
+export interface CatalogIModel extends StandaloneDb {
   /** Get the CatalogManifest for an open CatalogIModel. */
   getManifest(): CatalogIModelTypes.CatalogManifest | undefined;
   /** Get the version information for an open CatalogIModel. */
@@ -146,7 +146,7 @@ export interface ReadCatalog {
  * Methods for reading and modifying a CatalogIModel that was opened by [[CatalogImodel.openEditable]]
  * @beta
  */
-export interface EditCatalog extends ReadCatalog {
+export interface EditableCatalogIModel extends CatalogIModel {
   /** Update the contents of the catalog manifest.  */
   updateCatalogManifest(manifest: CatalogIModelTypes.CatalogManifest): void;
 }
@@ -242,7 +242,7 @@ export namespace CatalogIModel {
    * @note Once a version of a CatalogIModel has been published (i.e. the write lock has been released), it is no longer editable, *unless* it is a prerelease version.
    * @note the write lock must be held for this operation to succeed
    */
-  export async function openEditable(args: CatalogIModelTypes.OpenArgs): Promise<StandaloneDb & EditCatalog> {
+  export async function openEditable(args: CatalogIModelTypes.OpenArgs): Promise<EditableCatalogIModel> {
     const dbName = catalogDbNameWithDefault(args.dbName);
     if (undefined === args.containerId) // local file?
       return EditableCatalogDb.openFile(dbName, OpenMode.ReadWrite, args) as EditableCatalogDb;
@@ -264,7 +264,7 @@ export namespace CatalogIModel {
   /**
    * Open a CatalogIModel for read access.
    */
-  export async function openReadonly(args: CatalogIModelTypes.OpenArgs): Promise<StandaloneDb & ReadCatalog> {
+  export async function openReadonly(args: CatalogIModelTypes.OpenArgs): Promise<CatalogIModel> {
     const dbName = catalogDbNameWithDefault(args.dbName);
     if (undefined === args.containerId) // local file?
       return CatalogDb.openFile(dbName, OpenMode.Readonly, args) as CatalogDb;

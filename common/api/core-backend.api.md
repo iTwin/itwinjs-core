@@ -601,6 +601,16 @@ export abstract class Callout extends DetailingSymbol {
 }
 
 // @beta
+export interface CatalogIModel extends StandaloneDb {
+    getInfo(): {
+        manifest?: CatalogIModelTypes.CatalogManifest;
+        version: string;
+    };
+    getManifest(): CatalogIModelTypes.CatalogManifest | undefined;
+    getVersion(): string;
+}
+
+// @beta
 export namespace CatalogIModel {
     export function acquireWriteLock(args: {
         containerId: string;
@@ -611,8 +621,8 @@ export namespace CatalogIModel {
         oldDb: CatalogIModelTypes.NameAndVersion;
         newDb: CatalogIModelTypes.NameAndVersion;
     }>;
-    export function openEditable(args: CatalogIModelTypes.OpenArgs): Promise<StandaloneDb & EditCatalog>;
-    export function openReadonly(args: CatalogIModelTypes.OpenArgs): Promise<StandaloneDb & ReadCatalog>;
+    export function openEditable(args: CatalogIModelTypes.OpenArgs): Promise<EditableCatalogIModel>;
+    export function openReadonly(args: CatalogIModelTypes.OpenArgs): Promise<CatalogIModel>;
     export function releaseWriteLock(args: {
         containerId: string;
         abandon?: true;
@@ -2151,6 +2161,11 @@ export class ECSqlWriteStatement {
 }
 
 // @beta
+export interface EditableCatalogIModel extends CatalogIModel {
+    updateCatalogManifest(manifest: CatalogIModelTypes.CatalogManifest): void;
+}
+
+// @beta
 export interface EditableWorkspaceContainer extends WorkspaceContainer {
     abandonChanges(): void;
     acquireWriteLock(user: string): void;
@@ -2186,11 +2201,6 @@ export interface EditableWorkspaceDb extends WorkspaceDb {
     updateManifest(manifest: WorkspaceDbManifest): void;
     updateSettingsResource(settings: SettingsContainer, rscName?: string): void;
     updateString(rscName: WorkspaceResourceName, val: string): void;
-}
-
-// @beta
-export interface EditCatalog extends ReadCatalog {
-    updateCatalogManifest(manifest: CatalogIModelTypes.CatalogManifest): void;
 }
 
 // @public
@@ -4828,16 +4838,6 @@ export type QueryWorkspaceResourcesCallback = (resources: Iterable<{
     name: string;
     db: WorkspaceDb;
 }>) => void;
-
-// @beta
-export interface ReadCatalog {
-    getInfo(): {
-        manifest?: CatalogIModelTypes.CatalogManifest;
-        version: string;
-    };
-    getManifest(): CatalogIModelTypes.CatalogManifest | undefined;
-    getVersion(): string;
-}
 
 // @beta
 export abstract class RecipeDefinitionElement extends DefinitionElement {
