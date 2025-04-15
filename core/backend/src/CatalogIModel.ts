@@ -78,8 +78,30 @@ function catalogDbNameWithDefault(dbName?: string): string {
   return dbName ?? "catalog-db";
 }
 
+/**
+ * Methods for reading from an open CatalogIModel
+ * @beta
+ */
+export interface CatalogDb extends StandaloneDb {
+  /** Get the CatalogManifest for an open CatalogIModel. */
+  getManifest(): CatalogIModelTypes.CatalogManifest | undefined;
+  /** Get the version information for an open CatalogIModel. */
+  getVersion(): string;
+  /** Get the CatalogManifest and version information for an open CatalogIModel. */
+  getInfo(): { manifest?: CatalogIModelTypes.CatalogManifest, version: string };
+}
+
+/**
+ * Methods for reading and modifying a CatalogIModel that was opened by [[CatalogImodel.openEditable]]
+ * @beta
+ */
+export interface EditableCatalogDb extends CatalogDb {
+  /** Update the contents of the catalog manifest.  */
+  updateCatalogManifest(manifest: CatalogIModelTypes.CatalogManifest): void;
+}
+
 /** A StandaloneDb that holds a CatalogIModel */
-class CatalogDb extends StandaloneDb implements CatalogIModel {
+class CatalogDbImpl extends StandaloneDb implements CatalogDb {
   public getManifest(): CatalogIModelTypes.CatalogManifest | undefined {
     const manifestString = this[_nativeDb].queryLocalValue(catalogManifestName);
     if (undefined === manifestString)
@@ -101,7 +123,7 @@ class CatalogDb extends StandaloneDb implements CatalogIModel {
  * This class ensures that CatalogIModels never have a Txn table when they are published.
  * It also automatically updates the `lastEditedBy` field in the CatalogManifest.
  */
-class EditableCatalogDb extends CatalogDb implements EditableCatalogIModel {
+class EditableCatalogDbImpl extends CatalogDbImpl implements EditableCatalogDb {
   public updateCatalogManifest(manifest: CatalogIModelTypes.CatalogManifest): void {
     updateManifest(this[_nativeDb], manifest);
   }
@@ -125,36 +147,14 @@ class EditableCatalogDb extends CatalogDb implements EditableCatalogIModel {
   }
 }
 
-function findCatalogByKey(key: string): CatalogDb & EditableCatalogIModel {
-  return CatalogDb.findByKey(key) as CatalogDb & EditableCatalogIModel;
-}
-
-/**
- * Methods for reading from an open CatalogIModel
- * @beta
- */
-export interface CatalogIModel extends StandaloneDb {
-  /** Get the CatalogManifest for an open CatalogIModel. */
-  getManifest(): CatalogIModelTypes.CatalogManifest | undefined;
-  /** Get the version information for an open CatalogIModel. */
-  getVersion(): string;
-  /** Get the CatalogManifest and version information for an open CatalogIModel. */
-  getInfo(): { manifest?: CatalogIModelTypes.CatalogManifest, version: string };
-}
-
-/**
- * Methods for reading and modifying a CatalogIModel that was opened by [[CatalogImodel.openEditable]]
- * @beta
- */
-export interface EditableCatalogIModel extends CatalogIModel {
-  /** Update the contents of the catalog manifest.  */
-  updateCatalogManifest(manifest: CatalogIModelTypes.CatalogManifest): void;
+function findCatalogByKey(key: string): CatalogDbImpl & EditableCatalogDb {
+  return CatalogDbImpl.findByKey(key) as CatalogDbImpl & EditableCatalogDb;
 }
 
 /** Functions for accessing CatalogIModels either from a local disk or from a cloud container.
  * @beta
  */
-export namespace CatalogIModel {
+export namespace CatalogDb {
   /** Create a new BlobContainer (from the BlobContainerService) to hold versions of a CatalogIModel.
    * @returns The properties of the newly created container.
    * @note creating new containers requires "admin" authorization.
@@ -242,10 +242,10 @@ export namespace CatalogIModel {
    * @note Once a version of a CatalogIModel has been published (i.e. the write lock has been released), it is no longer editable, *unless* it is a prerelease version.
    * @note the write lock must be held for this operation to succeed
    */
-  export async function openEditable(args: CatalogIModelTypes.OpenArgs): Promise<EditableCatalogIModel> {
+  export async function openEditable(args: CatalogIModelTypes.OpenArgs): Promise<EditableCatalogDb> {
     const dbName = catalogDbNameWithDefault(args.dbName);
     if (undefined === args.containerId) // local file?
-      return EditableCatalogDb.openFile(dbName, OpenMode.ReadWrite, args) as EditableCatalogDb;
+      return EditableCatalogDbImpl.openFile(dbName, OpenMode.ReadWrite, args) as EditableCatalogDbImpl;
 
     const container = await getWriteableContainer(args.containerId);
     ensureLocked(container, "open a Catalog for editing"); // editing Catalogs requires the write lock
@@ -258,16 +258,16 @@ export namespace CatalogIModel {
     if (args.prefetch)
       CloudSqlite.startCloudPrefetch(container, dbFullName);
 
-    return EditableCatalogDb.openFile(dbFullName, OpenMode.ReadWrite, { container, ...args }) as EditableCatalogDb;
+    return EditableCatalogDbImpl.openFile(dbFullName, OpenMode.ReadWrite, { container, ...args }) as EditableCatalogDbImpl;
   }
 
   /**
    * Open a CatalogIModel for read access.
    */
-  export async function openReadonly(args: CatalogIModelTypes.OpenArgs): Promise<CatalogIModel> {
+  export async function openReadonly(args: CatalogIModelTypes.OpenArgs): Promise<CatalogDb> {
     const dbName = catalogDbNameWithDefault(args.dbName);
     if (undefined === args.containerId) // local file?
-      return CatalogDb.openFile(dbName, OpenMode.Readonly, args) as CatalogDb;
+      return CatalogDbImpl.openFile(dbName, OpenMode.Readonly, args) as CatalogDbImpl;
 
     const container = await getReadonlyContainer(args.containerId);
     if (args.syncWithCloud)
@@ -277,7 +277,7 @@ export namespace CatalogIModel {
     if (args.prefetch)
       CloudSqlite.startCloudPrefetch(container, dbFullName);
 
-    return CatalogDb.openFile(dbFullName, OpenMode.Readonly, { container, ...args }) as CatalogDb;
+    return CatalogDbImpl.openFile(dbFullName, OpenMode.Readonly, { container, ...args }) as CatalogDbImpl;
   }
 
   /**
@@ -301,22 +301,22 @@ export class CatalogIModelHandler extends IpcHandler implements CatalogIModelTyp
   public get channelName(): CatalogIModelTypes.IpcChannel { return "catalogIModel/ipc"; }
 
   public async createNewContainer(args: CatalogIModelTypes.CreateNewContainerArgs): Promise<CatalogIModelTypes.NewContainerProps> {
-    return CatalogIModel.createNewContainer(args);
+    return CatalogDb.createNewContainer(args);
   }
   public async acquireWriteLock(args: { containerId: string, username: string; }): Promise<void> {
-    return CatalogIModel.acquireWriteLock(args);
+    return CatalogDb.acquireWriteLock(args);
   }
   public async releaseWriteLock(args: { containerId: string, abandon?: true; }): Promise<void> {
-    return CatalogIModel.releaseWriteLock(args);
+    return CatalogDb.releaseWriteLock(args);
   }
   public async openReadonly(args: CatalogIModelTypes.OpenArgs): Promise<IModelConnectionProps> {
-    return ((await CatalogIModel.openReadonly(args)).getConnectionProps());
+    return ((await CatalogDb.openReadonly(args)).getConnectionProps());
   }
   public async openEditable(args: CatalogIModelTypes.OpenArgs): Promise<IModelConnectionProps> {
-    return (await CatalogIModel.openEditable(args)).getConnectionProps();
+    return (await CatalogDb.openEditable(args)).getConnectionProps();
   }
   public async createNewVersion(args: CatalogIModelTypes.CreateNewVersionArgs): Promise<{ oldDb: CatalogIModelTypes.NameAndVersion; newDb: CatalogIModelTypes.NameAndVersion; }> {
-    return CatalogIModel.createNewVersion(args);
+    return CatalogDb.createNewVersion(args);
   }
   public async getInfo(key: string): Promise<{ manifest?: CatalogIModelTypes.CatalogManifest, version: string }> {
     return findCatalogByKey(key).getInfo();

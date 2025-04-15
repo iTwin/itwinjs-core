@@ -601,7 +601,7 @@ export abstract class Callout extends DetailingSymbol {
 }
 
 // @beta
-export interface CatalogIModel extends StandaloneDb {
+export interface CatalogDb extends StandaloneDb {
     getInfo(): {
         manifest?: CatalogIModelTypes.CatalogManifest;
         version: string;
@@ -611,7 +611,7 @@ export interface CatalogIModel extends StandaloneDb {
 }
 
 // @beta
-export namespace CatalogIModel {
+export namespace CatalogDb {
     export function acquireWriteLock(args: {
         containerId: string;
         username: string;
@@ -621,8 +621,8 @@ export namespace CatalogIModel {
         oldDb: CatalogIModelTypes.NameAndVersion;
         newDb: CatalogIModelTypes.NameAndVersion;
     }>;
-    export function openEditable(args: CatalogIModelTypes.OpenArgs): Promise<EditableCatalogIModel>;
-    export function openReadonly(args: CatalogIModelTypes.OpenArgs): Promise<CatalogIModel>;
+    export function openEditable(args: CatalogIModelTypes.OpenArgs): Promise<EditableCatalogDb>;
+    export function openReadonly(args: CatalogIModelTypes.OpenArgs): Promise<CatalogDb>;
     export function releaseWriteLock(args: {
         containerId: string;
         abandon?: true;
@@ -2161,7 +2161,7 @@ export class ECSqlWriteStatement {
 }
 
 // @beta
-export interface EditableCatalogIModel extends CatalogIModel {
+export interface EditableCatalogDb extends CatalogDb {
     updateCatalogManifest(manifest: CatalogIModelTypes.CatalogManifest): void;
 }
 

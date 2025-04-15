@@ -20,8 +20,8 @@ public;interface;BriefcaseIdArg
 internal;enum;BriefcaseLocalValue
 public;class;BriefcaseManager
 public;class;Callout
-beta;interface;CatalogIModel
-beta;namespace;CatalogIModel
+beta;interface;CatalogDb
+beta;namespace;CatalogDb
 internal;class;CatalogIModelHandler
 public;class;Category
 public;class;CategoryOwnsSubCategories
@@ -130,7 +130,7 @@ deprecated;class;ECSqlValue
 public;class;ECSqlValueIterator
 deprecated;class;ECSqlValueIterator
 public;class;ECSqlWriteStatement
-beta;interface;EditableCatalogIModel
+beta;interface;EditableCatalogDb
 beta;interface;EditableWorkspaceContainer
 beta;interface;EditableWorkspaceDb
 public;class;ElementAspect
