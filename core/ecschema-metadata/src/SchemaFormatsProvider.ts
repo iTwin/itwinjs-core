@@ -32,6 +32,7 @@ export class SchemaFormatsProvider implements FormatsProvider {
    * @param contextOrLocater The SchemaContext or a different ISchemaLocater implementation used to retrieve the schema. The SchemaContext
    * class implements the ISchemaLocater interface. If the provided locater is not a SchemaContext instance a new SchemaContext will be
    * created and the locater will be added.
+   * @param unitSystem Used to lookup a default format through a schema specific algorithm, when the format retrieved is associated with a KindOfQuantity.
    */
   constructor(contextOrLocater: ISchemaLocater, unitSystem: UnitSystemKey) {
     if (contextOrLocater instanceof SchemaContext) {
