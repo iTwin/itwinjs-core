@@ -72,7 +72,6 @@ import { _close, _hubAccess, _nativeDb, _releaseAllLocks } from "./internal/Symb
 import { SchemaContext, SchemaJsonLocater } from "@itwin/ecschema-metadata";
 import { SchemaMap } from "./Schema";
 import { ElementLRUCache, LruCache } from "./LRUCaches";
-const jsonDiff = require("json-diff");
 // spell:ignore fontid fontmap
 
 const loggerCategory: string = BackendLoggerCategory.IModelDb;
