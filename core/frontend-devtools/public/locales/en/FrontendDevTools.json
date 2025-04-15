@@ -63,6 +63,15 @@
     "ToggleProjectExtents": {
       "keyin": "fdt project extents"
     },
+    "ProjectExtentsShow": {
+      "keyin": "fdt project extents show"
+    },
+    "ProjectExtentsCancel": {
+      "keyin": "fdt project extents cancel"
+    },
+    "ProjectExtentsSave": {
+      "keyin": "fdt project extents save"
+    },
     "ToggleFrustumSnapshot": {
       "keyin": "fdt frustum snapshot"
     },

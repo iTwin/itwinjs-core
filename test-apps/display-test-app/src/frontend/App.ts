@@ -67,6 +67,11 @@ import { ElectronRendererAuthorization } from "@itwin/electron-authorization/Ren
 import { ITwinLocalization } from "@itwin/core-i18n";
 import { getConfigurationString } from "./DisplayTestApp";
 import { AddSeequentRealityModel } from "./RealityDataModel";
+import {
+  ProjectExtentsCancelTool,
+  ProjectExtentsSaveTool,
+  ProjectExtentsShowTool,
+} from "./ProjectExtentsTool";
 
 class DisplayTestAppAccuSnap extends AccuSnap {
   private readonly _activeSnaps: SnapMode[] = [SnapMode.NearestKeypoint];
@@ -409,6 +414,11 @@ export class DisplayTestApp {
       ZoomToSelectedElementsTool,
     ].forEach((tool) => tool.register(svtToolNamespace));
 
+    [
+      ProjectExtentsShowTool,
+      ProjectExtentsCancelTool,
+      ProjectExtentsSaveTool,
+    ].forEach((tool) => tool.register("FrontendDevTools"));
     IModelApp.toolAdmin.defaultToolId = SVTSelectionTool.toolId;
 
     BingTerrainMeshProvider.register();

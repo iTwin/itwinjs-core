@@ -18,6 +18,7 @@ import { DtaConfiguration, getConfig } from "../common/DtaConfiguration";
 import { DtaRpcInterface } from "../common/DtaRpcInterface";
 import { EditCommandAdmin } from "@itwin/editor-backend";
 import * as editorBuiltInCommands from "@itwin/editor-backend";
+import { ProjectExtentsEditCommand } from "./ProjectExtentsEditCommand";
 
 /** Loads the provided `.env` file into process.env */
 function loadEnv(envFile: string) {
@@ -240,12 +241,14 @@ export const initializeDtaBackend = async (hostOpts?: ElectronHostOptions & Mobi
 
   /** register the implementation of our RPCs. */
   RpcManager.registerImpl(DtaRpcInterface, DisplayTestAppRpc);
+  
   const authClient = await initializeAuthorizationClient();
   if (ProcessDetector.isElectronAppBackend) {
     opts.iModelHost.authorizationClient = authClient;
     await ElectronHost.startup(opts);
     await authClient?.signInSilent();
     EditCommandAdmin.registerModule(editorBuiltInCommands);
+    EditCommandAdmin.register(ProjectExtentsEditCommand);
   } else if (ProcessDetector.isMobileAppBackend) {
     await MobileHost.startup(opts);
   } else {

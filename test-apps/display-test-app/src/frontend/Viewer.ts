@@ -33,7 +33,11 @@ import { RealityModelSettingsPanel } from "./RealityModelDisplaySettingsWidget";
 import { ContoursPanel } from "./Contours";
 import { GoogleMapsPanel } from "./GoogleMaps";
 import { DtaConfiguration } from "../common/DtaConfiguration";
-
+import {
+  ProjectExtentsCancelTool,
+  ProjectExtentsSaveTool,
+  ProjectExtentsShowTool,
+} from "./ProjectExtentsTool";
 
 // cspell:ignore savedata topdiv savedview viewtop
 
@@ -436,8 +440,50 @@ export class Viewer extends Window {
       });
     }
 
+    this.toolBar.addItem(
+      createToolButton({
+        iconUnicode: "\ue982", // undo
+        tooltip: "Show Extents",
+        click: async () => {
+          await this.showExtents();
+        },
+      })
+    );
+
+    this.toolBar.addItem(
+      createToolButton({
+        iconUnicode: "\ue983", // redo
+        tooltip: "Hide Extents",
+        click: async () => {
+          await this.cancelExtents();
+        },
+      })
+    );
+
+    this.toolBar.addItem(
+      createToolButton({
+        iconUnicode: "\uea32", // play
+        tooltip: "Save Extents",
+        click: async () => {
+          await this.saveExtents();
+        },
+      })
+    );
+
     this.updateTitle();
     this.updateActiveSettings();
+  }
+
+  private async showExtents() {
+    await IModelApp.tools.run(ProjectExtentsShowTool.toolId);
+  }
+
+  private async cancelExtents() {
+    await IModelApp.tools.run(ProjectExtentsCancelTool.toolId);
+  }
+
+  private async saveExtents() {
+    await IModelApp.tools.run(ProjectExtentsSaveTool.toolId);
   }
 
   private updateTitle(): void {
