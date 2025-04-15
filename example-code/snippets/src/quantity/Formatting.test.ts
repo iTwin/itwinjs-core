@@ -91,6 +91,5 @@ describe('Formatting examples', () => {
 
     assert.equal(formattedValue, "3'-3 3/8\"");
   });
-
 });
 

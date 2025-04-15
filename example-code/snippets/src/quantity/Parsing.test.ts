@@ -140,5 +140,4 @@ describe("Parsing examples", () => {
     assert.equal((result as ParsedQuantity).value, 0.9144);
     assert.equal((result as ParsedQuantity).value,(result2 as ParsedQuantity).value);
   });
-
 });
