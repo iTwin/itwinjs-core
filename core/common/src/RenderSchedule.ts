@@ -1206,6 +1206,18 @@ export namespace RenderSchedule {
     public get maxBatchId(): number {
       return this._maxBatchId ?? (this._maxBatchId = this.modelTimelines.reduce((accum, timeline) => Math.max(accum, timeline.maxBatchId), 0));
     }
+
+    /** @internal */
+    public static removeScheduleScriptElementIds(scheduleScript: RenderSchedule.ScriptProps): RenderSchedule.ScriptProps {
+      scheduleScript.forEach((modelTimeline) => {
+        modelTimeline.elementTimelines.forEach((elementTimeline) => {
+          if (elementTimeline.elementIds) {
+            elementTimeline.elementIds = "";
+          }
+        });
+      });
+      return scheduleScript;
+    }
   }
 
   /** A reference to a [[RenderSchedule.Script]], optionally identifying the source of the script.

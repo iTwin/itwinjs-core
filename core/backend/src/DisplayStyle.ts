@@ -32,8 +32,9 @@ export abstract class DisplayStyle extends DefinitionElement {
   /** @internal */
   public static override deserialize(props: InstanceProps): DisplayStyleProps {
     const elProps = super.deserialize(props) as DisplayStyleProps;
+    const displayOptions = props.options?.element?.displayStyle;
     // Uncompress excludedElements if they are compressed
-    if (elProps.jsonProperties?.styles?.excludedElements && !props.options?.element?.displayStyle?.compressExcludedElementIds) {
+    if (!displayOptions?.compressExcludedElementIds && elProps.jsonProperties?.styles?.excludedElements) {
       const excludedElements = elProps.jsonProperties.styles.excludedElements;
       if (typeof excludedElements === "string" && excludedElements.startsWith("+")) {
         const ids: string[] = [];
@@ -42,6 +43,11 @@ export abstract class DisplayStyle extends DefinitionElement {
         });
         elProps.jsonProperties.styles.excludedElements = ids;
       }
+    }
+    // Omit Schedule Script Element Ids if the option is set
+    if (displayOptions?.omitScheduleScriptElementIds && elProps.jsonProperties?.styles?.scheduleScript) {
+      const scheduleScript: RenderSchedule.ScriptProps = elProps.jsonProperties.styles.scheduleScript;
+      elProps.jsonProperties.styles.scheduleScript = RenderSchedule.Script.removeScheduleScriptElementIds(scheduleScript);
     }
     return elProps;
   }

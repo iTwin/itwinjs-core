@@ -2018,6 +2018,18 @@ export class RenderTimeline extends InformationRecordElement {
     return props;
   }
 
+  /** @internal */
+  public static override deserialize(props: InstanceProps): RenderTimelineProps {
+    const elProps = super.deserialize(props) as RenderTimelineProps;
+    const options = props.options?.element?.renderTimeline;
+    // Omit Schedule Script Element Ids if the option is set
+    if (options?.omitScriptElementIds && elProps.script) {
+      const scriptProps: RenderSchedule.ScriptProps = RenderTimeline.parseScriptProps(elProps.script);
+      elProps.script = JSON.stringify(RenderSchedule.Script.removeScheduleScriptElementIds(scriptProps));
+    }
+    return elProps;
+  }
+
   private static parseScriptProps(json: string): RenderSchedule.ScriptProps {
     try {
       return JSON.parse(json);
