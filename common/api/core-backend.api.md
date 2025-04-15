@@ -3942,15 +3942,15 @@ export class LineStyle extends DefinitionElement {
     // (undocumented)
     static get className(): string;
     static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code;
-    // (undocumented)
+    // @internal (undocumented)
     protected static readonly _customHandledProps: CustomHandledProperty[];
     // (undocumented)
     data: string;
     // (undocumented)
     description?: string;
-    // (undocumented)
+    // @internal (undocumented)
     static deserialize(props: InstanceProps): LineStyleProps;
-    // (undocumented)
+    // @internal (undocumented)
     static serialize(props: LineStyleProps, iModel: IModelDb): ECSqlRow;
 }
 
@@ -4885,16 +4885,16 @@ export class RenderMaterialElement extends DefinitionElement {
     static get className(): string;
     static create(iModelDb: IModelDb, definitionModelId: Id64String, materialName: string, params: RenderMaterialElementParams): RenderMaterialElement;
     static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, name: string): Code;
-    // (undocumented)
+    // @internal (undocumented)
     protected static readonly _customHandledProps: CustomHandledProperty[];
     description?: string;
-    // (undocumented)
+    // @internal (undocumented)
     static deserialize(props: InstanceProps): RenderMaterialProps;
     static insert(iModelDb: IModelDb, definitionModelId: Id64String, materialName: string, params: RenderMaterialElementParams): Id64String;
     // @beta (undocumented)
     protected static onCloned(context: IModelElementCloneContext, sourceProps: ElementProps, targetProps: ElementProps): void;
     paletteName: string;
-    // (undocumented)
+    // @internal (undocumented)
     static serialize(props: RenderMaterialProps, iModel: IModelDb): ECSqlRow;
     // (undocumented)
     toJSON(): RenderMaterialProps;
@@ -6212,13 +6212,13 @@ export class UrlLink extends LinkElement {
     protected constructor(props: UrlLinkProps, iModel: IModelDb);
     // (undocumented)
     static get className(): string;
-    // (undocumented)
+    // @internal (undocumented)
     protected static readonly _customHandledProps: CustomHandledProperty[];
     // (undocumented)
     description?: string;
-    // (undocumented)
+    // @internal (undocumented)
     static deserialize(props: InstanceProps): UrlLinkProps;
-    // (undocumented)
+    // @internal (undocumented)
     static serialize(props: UrlLinkProps, iModel: IModelDb): ECSqlRow;
     // (undocumented)
     toJSON(): UrlLinkProps;
