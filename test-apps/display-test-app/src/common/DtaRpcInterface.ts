@@ -2,11 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { IModelRpcProps, RpcInterface, RpcManager, TextAnnotationProps, TextBlockGeometryProps } from "@itwin/core-common";
+import { FlatBufferGeometryStream, IModelRpcProps, JsonGeometryStream, PlacementProps, RpcInterface, RpcManager, TextAnnotationProps } from "@itwin/core-common";
 import * as http from "http";
 import * as https from "https";
 import { DtaConfiguration } from "./DtaConfiguration";
-import { TextAnnotationGeometryProps } from "@itwin/core-common/lib/cjs/annotation/TextAnnotationGeometryProps";
 
 /** Display Test App RPC interface. */
 export class DtaRpcInterface extends RpcInterface {
@@ -32,5 +31,5 @@ export class DtaRpcInterface extends RpcInterface {
   public async terminate(): Promise<void> { return this.forward(arguments); }
   public async getEnvConfig(): Promise<DtaConfiguration> { return this.forward(arguments); }
   public async getAccessToken(): Promise<string> { return this.forward(arguments); }
-  public async produceTextAnnotationGeometry(_iModelToken: IModelRpcProps, _annotation: TextAnnotationProps, _debugAnchorPointAndRange?: boolean): Promise<TextAnnotationGeometryProps> { return this.forward(arguments); }
+  public async produceTextAnnotationGeometryStroker(_iModelToken: IModelRpcProps, _annotationProps: TextAnnotationProps, _placementProps?: PlacementProps, _debugAnchorPointAndRange?: boolean): Promise<FlatBufferGeometryStream | JsonGeometryStream | undefined> { return this.forward(arguments); }
 }

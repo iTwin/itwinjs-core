@@ -6,27 +6,25 @@
  * @module Elements
  */
 
-import { GeometryParams, GeometryStreamBuilder, TextAnnotation, TextAnnotation2dProps, TextAnnotation3dProps } from "@itwin/core-common";
+import { GeometryParams, TextAnnotation, TextAnnotation2dProps, TextAnnotation3dProps } from "@itwin/core-common";
 import { IModelDb } from "./IModelDb";
 import { AnnotationElement2d, GraphicalElement3d } from "./Element";
-import { produceTextAnnotationGeometry } from "./TextAnnotationGeometry";
 import { Id64String } from "@itwin/core-bentley";
+import { TextAnnotationStroker } from "./strokers/TextAnnotationStroker";
 
 function updateAnnotation(element: TextAnnotation2d | TextAnnotation3d, annotation: TextAnnotation, subCategory: Id64String | undefined): boolean {
-  const builder = new GeometryStreamBuilder();
+  const stroker = new TextAnnotationStroker(element.iModel);
 
   const params = new GeometryParams(element.category, subCategory);
-  if (!builder.appendGeometryParamsChange(params)) {
+  if (!stroker.builder.appendGeometryParamsChange(params)) {
     return false;
   }
 
-  const props = produceTextAnnotationGeometry({ iModel: element.iModel, annotation });
-  if (!builder.appendTextAnnotation(props)) {
-    return false;
-  }
+  const annotationProps = annotation.toJSON();
+  stroker.createGeometry(annotationProps, element.placement);
 
-  element.geom = builder.geometryStream;
-  element.jsonProperties.annotation = annotation.toJSON();
+  element.geom = stroker.builder.geometryStream;
+  element.jsonProperties.annotation = annotationProps;
 
   return true;
 }

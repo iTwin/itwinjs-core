@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { BaselineShift, ColorDef, FractionRun, GeometryStreamBuilder, IModelTileRpcInterface, LineBreakRun, TextAnnotation, TextAnnotationAnchor, TextAnnotationFrame, TextBlock, TextBlockJustification, TextBlockMargins, TextFrameStyleProps, TextRun, TextStyleSettingsProps } from "@itwin/core-common";
+import { BaselineShift, ColorDef, FractionRun, IModelTileRpcInterface, LineBreakRun, TextAnnotation, TextAnnotationAnchor, TextAnnotationFrame, TextBlock, TextBlockJustification, TextBlockMargins, TextFrameStyleProps, TextRun, TextStyleSettingsProps } from "@itwin/core-common";
 import { DecorateContext, Decorator, GraphicType, IModelApp, IModelConnection, readElementGraphics, RenderGraphicOwner, Tool } from "@itwin/core-frontend";
 import { DtaRpcInterface } from "../common/DtaRpcInterface";
 import { Guid, Id64, Id64String } from "@itwin/core-bentley";
@@ -134,9 +134,11 @@ class TextEditor implements Decorator {
     });
 
     const rpcProps = this._iModel.getRpcProps();
-    const geom = await DtaRpcInterface.getClient().produceTextAnnotationGeometry(rpcProps, annotation.toJSON(), this.debugAnchorPointAndRange);
-    const builder = new GeometryStreamBuilder();
-    builder.appendTextAnnotation(geom);
+    const geometry = await DtaRpcInterface.getClient().produceTextAnnotationGeometryStroker(rpcProps, annotation.toJSON(), undefined, this.debugAnchorPointAndRange);
+
+    if (undefined === geometry) {
+      return;
+    }
 
     const gfx = await IModelTileRpcInterface.getClient().requestElementGraphics(rpcProps, {
       id: Guid.createValue(),
@@ -147,10 +149,7 @@ class TextEditor implements Decorator {
         angle: 0,
       },
       categoryId: this._categoryId,
-      geometry: {
-        format: "json",
-        data: builder.geometryStream,
-      },
+      geometry,
     });
 
     const graphic = undefined !== gfx ? await readElementGraphics(gfx, this._iModel, this._entityId, false) : undefined;

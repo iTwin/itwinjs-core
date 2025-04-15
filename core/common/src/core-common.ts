@@ -4,6 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 export * from "./AmbientOcclusion";
 export * from "./AnalysisStyle";
+export * from "./annotation/FrameGeometry";
 export * from "./annotation/TextAnnotation";
 export * from "./annotation/TextBlock";
 export * from "./annotation/TextBlockGeometryProps";

@@ -9,16 +9,16 @@ import { ElectronMainAuthorization } from "@itwin/electron-authorization/Main";
 import { ElectronHost, ElectronHostOptions } from "@itwin/core-electron/lib/cjs/ElectronBackend";
 import { BackendIModelsAccess } from "@itwin/imodels-access-backend";
 import { IModelsClient } from "@itwin/imodels-client-authoring";
-import { IModelDb, IModelHost, IModelHostOptions, LocalhostIpcHost, produceTextAnnotationGeometry } from "@itwin/core-backend";
+import { IModelDb, IModelHost, IModelHostOptions, LocalhostIpcHost, TextAnnotationStroker } from "@itwin/core-backend";
 import {
-  IModelReadRpcInterface, IModelRpcProps, IModelTileRpcInterface, RpcInterfaceDefinition, RpcManager, TextAnnotation, TextAnnotationProps, TextBlockGeometryProps,
+  FlatBufferGeometryStream,
+  IModelReadRpcInterface, IModelRpcProps, IModelTileRpcInterface, JsonGeometryStream, PlacementProps, RpcInterfaceDefinition, RpcManager, TextAnnotationProps,
 } from "@itwin/core-common";
 import { MobileHost, MobileHostOpts } from "@itwin/core-mobile/lib/cjs/MobileBackend";
 import { DtaConfiguration, getConfig } from "../common/DtaConfiguration";
 import { DtaRpcInterface } from "../common/DtaRpcInterface";
 import { EditCommandAdmin } from "@itwin/editor-backend";
 import * as editorBuiltInCommands from "@itwin/editor-backend";
-import { TextAnnotationGeometryProps } from "@itwin/core-common/lib/cjs/annotation/TextAnnotationGeometryProps";
 
 /** Loads the provided `.env` file into process.env */
 function loadEnv(envFile: string) {
@@ -180,10 +180,11 @@ class DisplayTestAppRpc extends DtaRpcInterface {
     return (await IModelHost.authorizationClient?.getAccessToken()) ?? "";
   }
 
-  public override async produceTextAnnotationGeometry(iModelToken: IModelRpcProps, annotationProps: TextAnnotationProps, debugAnchorPointAndRange?: boolean): Promise<TextAnnotationGeometryProps> {
+  public override async produceTextAnnotationGeometryStroker(iModelToken: IModelRpcProps, annotationProps: TextAnnotationProps, placementProps?: PlacementProps, _debugAnchorPointAndRange?: boolean): Promise<FlatBufferGeometryStream | JsonGeometryStream | undefined> {
     const iModel = IModelDb.findByKey(iModelToken.key);
-    const annotation = TextAnnotation.fromJSON(annotationProps);
-    return produceTextAnnotationGeometry({ iModel, annotation, debugAnchorPointAndRange });
+
+    const stroker = new TextAnnotationStroker(iModel);
+    return stroker.createGeometry(annotationProps, placementProps);;
   }
 }
 

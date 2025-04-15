@@ -369,66 +369,6 @@ export class GeometryStreamBuilder {
     return true;
   }
 
-  public appendFrame(frameProps: FrameGeometryProps): boolean {
-    for (const entry of frameProps.entries) {
-      let result: boolean;
-      if (undefined !== entry.frame) {
-        const params = new GeometryParams(Id64.invalid);
-        params.elmPriority = 0;
-
-        if (entry.frame.fillColor === undefined) {
-          params.fillDisplay = FillDisplay.Never;
-        } else if (entry.frame.fillColor === "background") {
-          params.backgroundFill = BackgroundFill.Outline;
-          params.fillDisplay = FillDisplay.Always;
-        } else if (entry.frame.fillColor !== "subcategory") {
-          params.fillColor = ColorDef.fromJSON(entry.frame.fillColor);
-          params.lineColor = params.fillColor;
-          params.fillDisplay = FillDisplay.Always;
-        }
-
-        if (entry.frame.lineColor !== "subcategory") {
-          params.lineColor = ColorDef.fromJSON(entry.frame.lineColor);
-          params.weight = entry.frame.lineWidth;
-        }
-
-        const frame = FrameGeometry.computeFrame(entry.frame.shape, entry.frame.range, entry.frame.transform);
-
-        result = this.appendGeometryParamsChange(params);
-        result = result && this.appendGeometry(frame);
-
-      } else if (entry.debugSnap) {
-        // TODO: remove
-        const params = new GeometryParams(Id64.invalid);
-        params.lineColor = ColorDef.black;
-        params.weight = 1;
-        params.fillColor = ColorDef.white;
-        params.fillDisplay = FillDisplay.Always;
-        this.appendGeometryParamsChange(params);
-        const points = FrameGeometry.debugIntervals(entry.debugSnap.shape, entry.debugSnap.range, entry.debugSnap.transform, 0.5, 0.25);
-        points?.forEach(point => this.appendGeometry(Loop.create(point)));
-        result = true;
-      } else {
-        result = false;
-      }
-
-      if (!result) {
-        return false;
-      }
-    }
-
-    return true;
-  }
-
-  public appendTextAnnotation(props: TextAnnotationGeometryProps): boolean {
-    let result = this.appendTextBlock(props.textBlockGeometry)
-
-    if (props.frameGeometry)
-      result = result && this.appendFrame(props.frameGeometry);
-    return result;
-
-  }
-
   /** Append an [[ImageGraphic]] supplied in either local or world coordinates. */
   public appendImage(image: ImageGraphic): boolean {
     if (undefined !== this._worldToLocal)
