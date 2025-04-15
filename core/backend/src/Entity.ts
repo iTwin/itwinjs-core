@@ -13,12 +13,15 @@ import { Schema } from "./Schema";
 import { EntityClass, PropertyHandler, SchemaItemKey } from "@itwin/ecschema-metadata";
 import { _nativeDb } from "./internal/Symbols";
 
-/** @internal */
+/** Represents a row returned by an ECSql query. The row is returned as a map of property names to values.
+ * ECSqlRows are returned by [[readInstance]] and represent raw instances Entities before they are deserialized during a read.
+ * @beta */
 export interface ECSqlRow {
   [key: string]: any
 }
 
-/** @internal */
+/** Set of properties that are used to deserialize an [[EntityProps]] from an ECSqlRow.
+ * @beta */
 export interface InstanceProps {
   readonly row: ECSqlRow;
   readonly iModel: IModelDb;
@@ -27,9 +30,12 @@ export interface InstanceProps {
   }
 }
 
-/** @internal */
+/** A property that are needs to be custom handled during deserialization and serialization.
+ * @beta */
 export interface CustomHandledProperty {
+  /** The name of the property as it appears in the ECSqlRow */
   readonly propertyName: string;
+  /** Where the property is defined */
   readonly source: "Class" | "Computed";
 }
 
@@ -99,13 +105,17 @@ export class Entity {
     return new subclass(props, iModel);
   }
 
-  /** @internal */
+  /** List of properties that are need to be custom handled during deserialization and serialization.
+   * These properties differ between the ECSql instance of an Entity and the Entity itself.
+   * @internal */
   protected static readonly _customHandledProps: CustomHandledProperty[] = [
     { propertyName: "id", source: "Class" },
     { propertyName: "className", source: "Class" },
     { propertyName: "jsonProperties", source: "Class" }
   ];
 
+  /** Get the list of properties that are custom handled by this class and its superclasses.
+   * @internal */
   private static getCustomHandledProperties(): readonly CustomHandledProperty[] {
     if (this.name === "Entity") {
       return this._customHandledProps;
@@ -118,7 +128,8 @@ export class Entity {
     ];
   }
 
-  /** @internal */
+  /** Converts an ECSqlRow of an Entity to an EntityProps. This is used to deserialize an Entity from the database.
+   * @internal */
   public static deserialize(props: InstanceProps): EntityProps {
     const enProps: EntityProps = {
       classFullName: props.row.classFullName,
@@ -144,7 +155,8 @@ export class Entity {
     return enProps;
   }
 
-  /** @internal */
+  /** Converts an EntityProps to an ECSqlRow. This is used to serialize an Entity to prepare to write it to the database.
+   * @internal */
   public static serialize(props: EntityProps, _iModel: IModelDb): ECSqlRow {
     const inst: ECSqlRow = {
       classFullName: props.classFullName,
