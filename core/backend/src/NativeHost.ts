@@ -17,7 +17,7 @@ import { Downloads, ProgressFunction, ProgressStatus } from "./CheckpointManager
 import { IModelHost } from "./IModelHost";
 import { IpcHandler, IpcHost, IpcHostOpts, throttleProgressCallback } from "./IpcHost";
 import { NativeAppStorage } from "./NativeAppStorage";
-import { CatalogIModelHandler } from "./CatalogIModel";
+import { CatalogIModelHandler } from "./CatalogDb";
 
 /**
  * Implementation of NativeAppFunctions

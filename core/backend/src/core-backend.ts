@@ -8,7 +8,7 @@ export * from "./BackendLoggerCategory";
 export * from "./BisCoreSchema";
 export * from "./BlobContainerService";
 export * from "./BriefcaseManager";
-export * from "./CatalogIModel";
+export * from "./CatalogDb";
 export * from "./Category";
 export * from "./ChangedElementsDb";
 export * from "./ChangeSummaryManager";
