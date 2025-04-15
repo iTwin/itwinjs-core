@@ -662,7 +662,7 @@ export class AccuSnap implements Decorator {
     return intersect;
   }
 
-  private static perpendicularPoint(snap: SnapDetail): SnapStatus {
+  private static doPostProcessSnapMode(snap: SnapDetail, snapMode: SnapMode): SnapStatus {
     const accuDraw = IModelApp.accuDraw;
     if (!accuDraw.isEnabled || accuDraw.isDeactivated)
       return SnapStatus.Disabled; // AccuDraw is require for this snap mode...
@@ -678,15 +678,12 @@ export class AccuSnap implements Decorator {
     if (undefined === rMatrix)
       return SnapStatus.NoSnapPossible;
 
-    // Compute perpendicular from AccuDraw origin when active or set AccuDraw rotation if accepted...
+    // Compute snap from AccuDraw origin when active or set AccuDraw rotation if accepted...
     if (!accuDraw.isActive) {
-      const origin = snap.getPoint();
+      accuDraw.setContext(AccuDrawFlags.SmartRotation); // Automatically orient compass to snap location if accepted...
 
-      accuDraw.setContext(AccuDrawFlags.SetRMatrix | AccuDrawFlags.AlwaysSetOrigin, origin, rMatrix);
-      accuDraw.adjustPoint(origin, snap.viewport, false); // Update internals for new snap location...
-
-      snap.setSnapPoint(origin, SnapHeat.InRange); // Force hot snap...
-      snap.setSnapMode(SnapMode.PerpendicularPoint);
+      snap.setSnapPoint(snap.getPoint(), SnapHeat.InRange); // Force hot snap...
+      snap.setSnapMode(snapMode);
 
       return SnapStatus.Success;
     }
@@ -696,12 +693,17 @@ export class AccuSnap implements Decorator {
     if (undefined === spacePoint)
       return SnapStatus.NoSnapPossible;
 
-    const detail = curve.closestPoint(spacePoint, true);
+    let detail;
+    if (SnapMode.PerpendicularPoint === snapMode)
+      detail = curve.closestPoint(spacePoint, true);
+    else
+      detail = curve.closestTangent(spacePoint, { hintPoint: snap.getPoint(), vectorToEye: zVec, extend: true });
+
     if (undefined === detail?.curve)
       return SnapStatus.NoSnapPossible;
 
-    // Close point may not be perpendicular when curve can't be extended (CurveExtendMode.OnTangent isn't supported for all curve types)...
-    if (!curve.isExtensibleFractionSpace) {
+    // Close point may not be perpendicular when curve can't be extended...
+    if (SnapMode.PerpendicularPoint === snapMode && !curve.isExtensibleFractionSpace) {
       const curvePlanePoint = AccuDrawHintBuilder.projectPointToPlaneInView(accuDraw.origin, detail.point, zVec, snap.viewport, true);
       if (undefined === curvePlanePoint)
         return SnapStatus.NoSnapPossible;
@@ -722,14 +724,14 @@ export class AccuSnap implements Decorator {
 
     const xVec = new Vector3d();
     if (accuDraw.origin.vectorTo(point).normalizeWithLength(xVec).mag < Geometry.smallAngleRadians)
-      xVec.setFrom(rMatrix.rowX()); // Closest point and compass origin coincide...
+      xVec.setFrom(rMatrix.rowX()); // Snap point and compass origin coincide...
 
     const yVec = xVec.unitCrossProduct(zVec);
     if (undefined === yVec)
       return SnapStatus.NoSnapPossible;
 
     snap.setSnapPoint(point, SnapHeat.InRange); // Force hot snap...
-    snap.setSnapMode(SnapMode.PerpendicularPoint);
+    snap.setSnapMode(snapMode);
 
     return SnapStatus.Success;
   }
@@ -774,11 +776,14 @@ export class AccuSnap implements Decorator {
       }
     }
 
-    const doPerpPointSnap = snapModes.includes(SnapMode.PerpendicularPoint);
-    if (doPerpPointSnap) {
-      // NOTE: This is not a valid backend snap mode. Instead make the snap request using nearest
-      // snap in order to get the candidate curve to use to compute the snap point...
-      snapModes = snapModes.filter(snapMode => snapMode !== SnapMode.PerpendicularPoint);
+    const haveTangentPoint = snapModes.includes(SnapMode.TangentPoint);
+    const havePerpendicularPoint = snapModes.includes(SnapMode.PerpendicularPoint);
+    const postProcessSnapMode = (havePerpendicularPoint ? SnapMode.PerpendicularPoint : (haveTangentPoint ? SnapMode.TangentPoint : undefined));
+
+    if (undefined !== postProcessSnapMode) {
+      // NOTE: These are not valid backend snap modes. Instead make the snap request using nearest
+      // snap in order to get the candidate curve to use to compute the desired snap point...
+      snapModes = snapModes.filter(snapMode => (snapMode !== SnapMode.PerpendicularPoint && snapMode !== SnapMode.TangentPoint));
       if (!snapModes.includes(SnapMode.Nearest))
         snapModes.push(SnapMode.Nearest);
     }
@@ -888,8 +893,8 @@ export class AccuSnap implements Decorator {
         snap.normal.normalizeInPlace();
       }
 
-      if (doPerpPointSnap && SnapMode.Nearest === result.snapMode) {
-        if (SnapStatus.Success !== this.perpendicularPoint(snap))
+      if (undefined !== postProcessSnapMode && SnapMode.Nearest === result.snapMode) {
+        if (SnapStatus.Success !== this.doPostProcessSnapMode(snap, postProcessSnapMode))
           return undefined;
         return snap;
       }

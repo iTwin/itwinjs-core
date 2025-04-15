@@ -28,6 +28,7 @@ export enum SnapMode {
   Bisector = 1 << 5,
   Intersection = 1 << 6,
   PerpendicularPoint = 1 << 7,
+  TangentPoint = 1 << 8,
 }
 
 /**
@@ -519,6 +520,7 @@ export class SnapDetail extends HitDetail {
       case SnapMode.Bisector: return `${IModelApp.publicPath}sprites/SnapBisector.png`;
       case SnapMode.Intersection: return `${IModelApp.publicPath}sprites/SnapIntersection.png`;
       case SnapMode.PerpendicularPoint: return `${IModelApp.publicPath}sprites/SnapPerpendicularPoint.png`;
+      case SnapMode.TangentPoint: return `${IModelApp.publicPath}sprites/SnapTangentPoint.png`;
     }
     return "";
   }
