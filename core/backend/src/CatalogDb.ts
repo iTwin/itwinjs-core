@@ -78,23 +78,23 @@ function catalogDbNameWithDefault(dbName?: string): string {
   return dbName ?? "catalog-db";
 }
 
-/**
- * Methods for reading from an open CatalogIModel
+/** A [[StandaloneDb]] that provides read-only access to the contents of a [CatalogIModel]($common).
+ * @see [[CatalogDb.openReadonly]] to instantiate this type.
  * @beta
  */
 export interface CatalogDb extends StandaloneDb {
-  /** Get the CatalogManifest for an open CatalogIModel. */
+  /** Get the catalog's manifest. */
   getManifest(): CatalogIModel.Manifest | undefined;
-  /** Get the version information for an open CatalogIModel. */
+  /** Get the catalog's version information. */
   getVersion(): string;
-  /** Get the CatalogManifest and version information for an open CatalogIModel. */
+  /** Get the catalog's manifest and version. */
   getInfo(): { manifest?: CatalogIModel.Manifest, version: string };
-
+  /** Returns true if the catalog was opened in read-write mode. */
   isEditable(): this is EditableCatalogDb;
 }
 
-/**
- * Methods for reading and modifying a CatalogIModel that was opened by [[CatalogImodel.openEditable]]
+/** A writable [[CatalogDb]].
+ * @see [[CatalogDb.openEditable]] to instantiate this type.
  * @beta
  */
 export interface EditableCatalogDb extends CatalogDb {
@@ -161,11 +161,9 @@ function findCatalogByKey(key: string): CatalogDbImpl & EditableCatalogDb {
   return CatalogDbImpl.findByKey(key) as CatalogDbImpl & EditableCatalogDb;
 }
 
-/** Functions for accessing CatalogIModels either from a local disk or from a cloud container.
- * @beta
- */
+/** @beta */
 export namespace CatalogDb {
-  /** Create a new BlobContainer (from the BlobContainerService) to hold versions of a CatalogIModel.
+  /** Create a new [[BlobContainer]] to hold versions of a [[CatalogDb]].
    * @returns The properties of the newly created container.
    * @note creating new containers requires "admin" authorization.
   */
@@ -219,8 +217,9 @@ export namespace CatalogDb {
     return cloudContainerProps;
   }
 
-  /** Acquire the write lock for a CatalogIModel container. Only one person may obtain the write lock at a time.
-   * @note this requires "write" authorization to the container
+  /** Acquire the write lock for a [CatalogIModel]($common) container. Only one person may obtain the write lock at a time.
+   * You must obtain the lock before attempting to write to the container via functions like [[CatalogDb.openEditable]] and [[CatalogDb.createNewVersion]].
+   * @note This requires "write" authorization to the container
    */
   export async function acquireWriteLock(args: {
     /** The id of the container */
@@ -235,7 +234,7 @@ export namespace CatalogDb {
     return CloudSqlite.acquireWriteLock({ container, user: args.username });
   }
 
-  /** Release the write lock on a CatalogIModel container. This uploads all changes made while the lock is held, so they become visible to other users. */
+  /** Release the write lock on a [CatalogIModel]($common) container. This uploads all changes made while the lock is held, so they become visible to other users. */
   export async function releaseWriteLock(args: {
     /** The id of the container */
     containerId: string,
@@ -248,9 +247,9 @@ export namespace CatalogDb {
     CloudSqlite.releaseWriteLock(container);
   }
 
-  /** Open a CatalogIModel for write access.
-   * @note Once a version of a CatalogIModel has been published (i.e. the write lock has been released), it is no longer editable, *unless* it is a prerelease version.
-   * @note the write lock must be held for this operation to succeed
+  /** Open an [[EditableCatalogDb]] for write access.
+   * @note Once a version of a catalog iModel has been published (i.e. the write lock has been released), it is no longer editable, *unless* it is a prerelease version.
+   * @note The write lock must be held for this operation to succeed
    */
   export async function openEditable(args: CatalogIModel.OpenArgs): Promise<EditableCatalogDb> {
     const dbName = catalogDbNameWithDefault(args.dbName);
@@ -271,9 +270,7 @@ export namespace CatalogDb {
     return EditableCatalogDbImpl.openFile(dbFullName, OpenMode.ReadWrite, { container, ...args }) as EditableCatalogDbImpl;
   }
 
-  /**
-   * Open a CatalogIModel for read access.
-   */
+  /** Open a [[CatalogDb]] for read-only access. */
   export async function openReadonly(args: CatalogIModel.OpenArgs): Promise<CatalogDb> {
     const dbName = catalogDbNameWithDefault(args.dbName);
     if (undefined === args.containerId) // local file?
@@ -291,10 +288,9 @@ export namespace CatalogDb {
   }
 
   /**
-   * Create a new version of a CatalogIModel as a copy of an existing version. Immediately after this operation, the new version will be an exact copy
-   * of the source CatalogIModel. Then, use [[openEditable]] to modify the new version with new content.
-   * @note the write lock must be held for this operation to succeed
-   * @see [[acquireWriteLock]]
+   * Create a new version of a [CatalogIModel]($common) as a copy of an existing version. Immediately after this operation, the new version will be an exact copy
+   * of the source CatalogIModel. Then, use [[CatalogDb.openEditable]] to modify the new version with new content.
+   * @note The write lock must be held for this operation to succeed
    */
   export async function createNewVersion(args: CatalogIModel.CreateNewVersionArgs): Promise<{ oldDb: CatalogIModel.NameAndVersion; newDb: CatalogIModel.NameAndVersion; }> {
     const container = await getWriteableContainer(args.containerId);
