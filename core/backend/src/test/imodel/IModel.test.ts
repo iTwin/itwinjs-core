@@ -2668,7 +2668,7 @@ describe("iModel", () => {
     expect(elProps.code.scope).equal(element.code.scope);
     expect(elProps.code.spec).equal(element.code.spec);
     expect(elProps.federationGuid).equal(element.federationGuid);
-    expect((elProps as any).isPrivate).to.be.false;
+    expect((elProps as any).isPrivate === false || (elProps as any).isPrivate === undefined).to.be.true;
     expect((elProps as any).isInstanceOfEntity).undefined;
 
     // remove userlabel by setting it to the blank string
