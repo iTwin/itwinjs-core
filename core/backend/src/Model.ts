@@ -336,7 +336,7 @@ export abstract class GeometricModel3d extends GeometricModel {
   public static override deserialize(props: InstanceProps): GeometricModel3dProps {
     const modelProps = super.deserialize(props) as GeometricModel3dProps;
     const instance = props.row;
-    if (instance.isNotSpatiallyLocated === true)
+    if (instance.isNotSpatiallyLocated === true || instance.isTemplate === true)
       modelProps.isNotSpatiallyLocated = true;
     if (instance.isPlanProjection === true)
       modelProps.isPlanProjection = true;
