@@ -35,6 +35,7 @@ import { Tiles } from "./Tiles";
 import { ViewState } from "./ViewState";
 import { _requestSnap } from "./common/internal/Symbols";
 import { IpcApp } from "./IpcApp";
+import { SchemaContext } from "@itwin/ecschema-metadata";
 
 const loggerCategory: string = FrontendLoggerCategory.IModelConnection;
 
@@ -156,6 +157,8 @@ export abstract class IModelConnection extends IModel {
    * @deprecated in 5.0.0. If you need font Ids on the front-end for some reason, write an Ipc method that queries [IModelDb.fonts]($backend).
    */
   public fontMap?: FontMap; // eslint-disable-line @typescript-eslint/no-deprecated
+
+  private _schemaContext?: SchemaContext;
 
   /** Load the FontMap for this IModelConnection.
    * @returns Returns a Promise<FontMap> that is fulfilled when the FontMap member of this IModelConnection is valid.
@@ -611,6 +614,20 @@ export abstract class IModelConnection extends IModel {
       }).catch((_error) => this._projectCenterAltitude = 0.0);
     }
     return ("number" === typeof this._projectCenterAltitude) ? this._projectCenterAltitude : undefined;
+  }
+
+  /**
+   * Gets the context that allows accessing the metadata (ecschema-metadata package) of this iModel.
+   * The context is created lazily when this property is accessed for the first time, without any locater registered.
+   */
+  public get schemaContext(): SchemaContext {
+    if (this._schemaContext === undefined)
+      {
+        const context = new SchemaContext();
+        this._schemaContext = context;
+      }
+
+    return this._schemaContext;
   }
 }
 

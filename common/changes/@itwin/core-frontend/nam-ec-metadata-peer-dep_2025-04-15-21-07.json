@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Make ecschema-metadata a peerDep of core-frontend. Add `SchemaContext` to `IModelConnection`",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

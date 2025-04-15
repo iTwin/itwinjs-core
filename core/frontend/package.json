@@ -64,6 +64,7 @@
     "@itwin/core-geometry": "workspace:*",
     "@itwin/core-orbitgt": "workspace:*",
     "@itwin/core-quantity": "workspace:*",
+    "@itwin/ecschema-metadata": "workspace:*",
     "@itwin/eslint-plugin": "5.0.0-dev.1",
     "@types/chai-as-promised": "^7",
     "@vitest/browser": "^3.0.6",
