@@ -1639,10 +1639,14 @@ export abstract class DisplayStyle extends DefinitionElement {
     // (undocumented)
     protected collectReferenceIds(referenceIds: EntityReferenceSet): void;
     static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code;
+    // @internal (undocumented)
+    static deserialize(props: InstanceProps): DisplayStyleProps;
     // (undocumented)
     loadScheduleScript(): RenderSchedule.ScriptReference | undefined;
     // @alpha (undocumented)
     protected static onCloned(context: IModelElementCloneContext, sourceElementProps: DisplayStyleProps, targetElementProps: DisplayStyleProps): void;
+    // @internal (undocumented)
+    static serialize(props: DisplayStyleProps, iModel: IModelDb): ECSqlRow;
     // (undocumented)
     abstract get settings(): DisplayStyleSettings;
 }
@@ -3049,9 +3053,15 @@ export abstract class GeometricModel3d extends GeometricModel {
     protected constructor(props: GeometricModel3dProps, iModel: IModelDb);
     // (undocumented)
     static get className(): string;
+    // @internal (undocumented)
+    protected static readonly _customHandledProps: CustomHandledProperty[];
+    // @internal (undocumented)
+    static deserialize(props: InstanceProps): GeometricModel3dProps;
     readonly isNotSpatiallyLocated: boolean;
     readonly isPlanProjection: boolean;
     get isSpatiallyLocated(): boolean;
+    // @internal (undocumented)
+    static serialize(props: GeometricModel3dProps, _iModel: IModelDb): ECSqlRow;
     // (undocumented)
     toJSON(): GeometricModel3dProps;
 }
@@ -3933,9 +3943,15 @@ export class LineStyle extends DefinitionElement {
     static get className(): string;
     static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code;
     // (undocumented)
+    protected static readonly _customHandledProps: CustomHandledProperty[];
+    // (undocumented)
     data: string;
     // (undocumented)
     description?: string;
+    // (undocumented)
+    static deserialize(props: InstanceProps): LineStyleProps;
+    // (undocumented)
+    static serialize(props: LineStyleProps, iModel: IModelDb): ECSqlRow;
 }
 
 // @public
@@ -4324,6 +4340,8 @@ export class Model extends Entity {
     static get className(): string;
     // (undocumented)
     protected collectReferenceIds(referenceIds: EntityReferenceSet): void;
+    // @internal (undocumented)
+    protected static readonly _customHandledProps: CustomHandledProperty[];
     delete(): void;
     // @internal (undocumented)
     static deserialize(props: InstanceProps): ModelProps;
@@ -4867,11 +4885,17 @@ export class RenderMaterialElement extends DefinitionElement {
     static get className(): string;
     static create(iModelDb: IModelDb, definitionModelId: Id64String, materialName: string, params: RenderMaterialElementParams): RenderMaterialElement;
     static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, name: string): Code;
+    // (undocumented)
+    protected static readonly _customHandledProps: CustomHandledProperty[];
     description?: string;
+    // (undocumented)
+    static deserialize(props: InstanceProps): RenderMaterialProps;
     static insert(iModelDb: IModelDb, definitionModelId: Id64String, materialName: string, params: RenderMaterialElementParams): Id64String;
     // @beta (undocumented)
     protected static onCloned(context: IModelElementCloneContext, sourceProps: ElementProps, targetProps: ElementProps): void;
     paletteName: string;
+    // (undocumented)
+    static serialize(props: RenderMaterialProps, iModel: IModelDb): ECSqlRow;
     // (undocumented)
     toJSON(): RenderMaterialProps;
 }
@@ -6189,7 +6213,13 @@ export class UrlLink extends LinkElement {
     // (undocumented)
     static get className(): string;
     // (undocumented)
+    protected static readonly _customHandledProps: CustomHandledProperty[];
+    // (undocumented)
     description?: string;
+    // (undocumented)
+    static deserialize(props: InstanceProps): UrlLinkProps;
+    // (undocumented)
+    static serialize(props: UrlLinkProps, iModel: IModelDb): ECSqlRow;
     // (undocumented)
     toJSON(): UrlLinkProps;
     // (undocumented)

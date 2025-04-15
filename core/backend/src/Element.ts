@@ -1770,11 +1770,13 @@ export class UrlLink extends LinkElement {
     this.url = props.url;
   }
 
+  /** @internal */
   protected static override readonly _customHandledProps: CustomHandledProperty[] = [
     { propertyName: "description", source: "Class" },
     { propertyName: "url", source: "Class" },
   ];
 
+  /** @internal */
   public static override deserialize(props: InstanceProps): UrlLinkProps {
     const elProps = super.deserialize(props) as UrlLinkProps;
     elProps.description = props.row.description ?? "";
@@ -1782,6 +1784,7 @@ export class UrlLink extends LinkElement {
     return elProps;
   }
 
+  /** @internal */
   public static override serialize(props: UrlLinkProps, iModel: IModelDb): ECSqlRow {
     const inst = super.serialize(props, iModel);
     inst.description = props.description;
@@ -1952,10 +1955,12 @@ export class LineStyle extends DefinitionElement {
     this.data = props.data;
   }
 
+  /** @internal */
   protected static override readonly _customHandledProps: CustomHandledProperty[] = [
     { propertyName: "data", source: "Class" },
   ];
 
+  /** @internal */
   public static override deserialize(props: InstanceProps): LineStyleProps {
     const elProps = super.deserialize(props) as LineStyleProps;
     const instance = props.row;
@@ -1963,6 +1968,7 @@ export class LineStyle extends DefinitionElement {
     return elProps;
   }
 
+  /** @internal */
   public static override serialize(props: LineStyleProps, iModel: IModelDb): ECSqlRow {
     const inst = super.serialize(props, iModel);
     inst.data = props.data;
