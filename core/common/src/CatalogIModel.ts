@@ -11,7 +11,7 @@ import { LocalFileName } from "./ChangesetProps";
 import { IModelConnectionProps, SnapshotOpenOptions } from "./IModel";
 
 /**
- * Errors created by the CatalogIModel apis
+ * Errors produced by the [[CatalogIModel]] API.
  * @beta
  */
 export namespace CatalogError {
@@ -32,21 +32,19 @@ export namespace CatalogError {
   }
 }
 
-/**
- * A CatalogIModel is an iModel that holds "definition" elements (e.g. Component Definitions) that are typically copied into
- * another iModel by applications.
- *
- * CatalogIModels may be stored in `BlobContainers` managed by a "reference data service" that uses [semantic versioning](https://semver.org/), much like [[WorkspaceDb]]s.
+/** A "catalog iModel" is an [[IModel]] containing elements (e.g., component definitions) that are intended to be copied into another iModel by applications.
+ * They can be stored in [BlobContainer]($backend)s managed by a "reference data service" that uses [semantic versioning](https://semver.org/), much like [WorkspaceDb]($backend)s.
+ * @see [CatalogDb]($backend) to interact with catalog iModels on the backend
+ * @see [CatalogConnection]($frontend) to interact with catalog iModels on the frontend.
  * @beta
  */
 export namespace CatalogIModel {
 
-  /** Metadata stored inside a CatalogIModel describing its, to help users understand the purpose of the CatalogIModel, the person to
-  * contact with questions about it, and so on.
-  * @note Only the [[catalogName]] field is required, and users may add additional fields for their own purposes.
-  * @note Since the manifest is stored inside of the CatalogIModel, it is versioned along with the rest of the contents.
-  * @beta
-  */
+  /** Metadata describing a catalog iModel.
+   * @note Only the [[catalogName]] field is required, and users may add additional fields for their own purposes.
+   * @note The manifest is stored inside of the CatalogIModel, so it is versioned along with the rest of the catalog's contents.
+   * @beta
+   */
   export interface Manifest {
     /** The iTwinId for the Catalog */
     readonly iTwinId?: Id64String;
@@ -58,15 +56,15 @@ export namespace CatalogIModel {
      * @note it is possible and valid to change the catalogName between versions of a CatalogIModel (e.g. incorporating a date).
      */
     readonly catalogName: string;
-    /** A description of the contents of this Catalog to help users understand its purpose and appropriate usage. */
+    /** A description of the contents of this catalog to help users understand its purpose and appropriate usage. */
     readonly description?: string;
-    /** The name of the person to contact with questions about this Catalog */
+    /** The name of the person to contact with questions about this catalog */
     readonly contactName?: string;
-    /** The name of the person who last modified this Catalog. */
+    /** The name of the person who last modified this catalog. */
     lastEditedBy?: string;
   }
 
-  /** Arguments for creating a new Container from the BlobContainerService that holds (versions of) a CatalogIModel. */
+  /** Arguments for creating a new [BlobContainer]($backend) that holds (versions of) a CatalogIModel. */
   export interface CreateNewContainerArgs {
     /** supplies the iTwinId for the new container */
     readonly iTwinId: Id64String;
@@ -92,7 +90,7 @@ export namespace CatalogIModel {
 
   /** Properties of a newly created container created from [[CreateNewContainerArgs]]. Most importantly, this holds the ContainerId of the new container. */
   export interface NewContainerProps {
-    /** The ContainerId of the new container (usually a [[Guid]]). Applications should store this value to access the container via the CatalogIModel apis. */
+    /** The ContainerId of the new container (usually a [Guid]($bentley)). Applications should store this value to access the container via the CatalogIModel apis. */
     readonly containerId: string;
     /** the uri of the BlobContainer service where the new container resides. */
     readonly baseUri: string;

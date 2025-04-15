@@ -9,7 +9,7 @@
 import { ITwinError } from "@itwin/core-bentley";
 
 /**
- * An error originating from the [[SqliteDb]] api
+ * An error originating from the [SqliteDb]($backend) API.
  * @beta
  */
 export interface SqliteError extends ITwinError {
@@ -38,7 +38,7 @@ export namespace SqliteError {
 }
 
 /**
- * An error originating from the [[CloudSqlite]] api
+ * An error originating from the [CloudSqlite]($backend) API.
  * @beta
  */
 export interface CloudSqliteError extends ITwinError {
@@ -86,7 +86,7 @@ export namespace CloudSqliteError {
   }
 }
 
-/** Errors thrown by the ViewStore apis
+/** Errors thrown by the [ViewStore]($backend) API.
  * @beta
  */
 export interface ViewStoreError extends ITwinError {
@@ -117,7 +117,7 @@ export namespace ViewStoreError {
 }
 
 /**
- * Errors thrown by the Workspace apis
+ * Errors thrown by the [Workspace]($backend) APIs.
  * @beta
  */
 export namespace WorkspaceError {
@@ -145,7 +145,7 @@ export namespace WorkspaceError {
 }
 
 
-/** Errors originating from the [[ChannelControl]] interface.
+/** Errors originating from the [ChannelControl]($backend) interface.
  * @beta
  */
 export interface ChannelControlError extends ITwinError {
