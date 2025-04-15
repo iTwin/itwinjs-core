@@ -136,8 +136,9 @@ describe("White-on-white reversal", () => {
       expectColors(vp, [ColorDef.white, blue], ColorDef.white, (ctx) => addSquareDecoration(ctx, ColorDef.white, blueMaterial, FillFlags.Always));
 
       const whiteMaterial = createTexturedMaterial(ColorDef.white, RenderTexture.Type.Glyph);
-      expectColors(vp, [ColorDef.white, ColorDef.black], ColorDef.white, (ctx) => addSquareDecoration(ctx, ColorDef.white, whiteMaterial));
-      expectColors(vp, [ColorDef.white, ColorDef.black], ColorDef.white, (ctx) => addSquareDecoration(ctx, ColorDef.white, whiteMaterial, FillFlags.Always));
+      const black = ColorDef.from(3, 3, 3); // glyphs are anti-aliased, they won't be precisely black.
+      expectColors(vp, [ColorDef.white, black], ColorDef.white, (ctx) => addSquareDecoration(ctx, ColorDef.white, whiteMaterial));
+      expectColors(vp, [ColorDef.white, black], ColorDef.white, (ctx) => addSquareDecoration(ctx, ColorDef.white, whiteMaterial, FillFlags.Always));
 
       expectColors(vp, [ColorDef.white, ColorDef.red], ColorDef.red, (ctx) => addSquareDecoration(ctx, ColorDef.white, whiteMaterial));
       expectColors(vp, [ColorDef.white, ColorDef.red], ColorDef.red, (ctx) => addSquareDecoration(ctx, ColorDef.white, whiteMaterial, FillFlags.Always));
