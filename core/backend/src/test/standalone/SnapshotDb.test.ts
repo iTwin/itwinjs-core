@@ -11,7 +11,7 @@ import { IModelDb, SnapshotDb } from "../../IModelDb";
 import { Logger } from "@itwin/core-bentley";
 import { IModelHost } from "../../IModelHost";
 import { HubMock } from "../../internal/HubMock";
-import { _hubAccess, _nativeDb, _openCheckpoint } from "../../internal/Symbols";
+import { _hubAccess, _nativeDb } from "../../internal/Symbols";
 import { IModelTestUtils } from "../IModelTestUtils";
 
 describe("SnapshotDb.refreshContainerForRpc", () => {
