@@ -12,8 +12,9 @@ import { IModelStatus, OpenMode } from "@itwin/core-bentley";
 import { NativeApp } from "./NativeApp";
 
 /**
- * A connection to a CatalogIModel.
+ * A read-only connection to a [CatalogDb]($backend).
  * @note CatalogConnection may only be used in [[NativeApp]]s
+ * @see [[CatalogConnection.openReadonly]] to instantiate this type.
  * @beta
  */
 export interface CatalogConnection extends BriefcaseConnection {
@@ -21,7 +22,8 @@ export interface CatalogConnection extends BriefcaseConnection {
   isEditable(): this is EditableCatalogConnection;
 }
 
-/** ###TODO
+/** A writable connection to an [EditableCatalogDb]($backend).
+ * @see [[CatalogConnection.openEditable]] to instantiate this type.
  * @beta
  */
 export interface EditableCatalogConnection extends CatalogConnection {
@@ -30,7 +32,7 @@ export interface EditableCatalogConnection extends CatalogConnection {
 
 /** @beta */
 export namespace CatalogConnection {
-  /** Create a new BlobContainer (from the BlobContainerService) to hold versions of a CatalogIModel.
+  /** Create a new [BlobContainer]($backend) to hold versions of a [CatalogIModel]($common).
    * @returns The properties of the newly created container.
    * @note creating new containers requires "admin" authorization.
   */
