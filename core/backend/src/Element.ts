@@ -763,7 +763,7 @@ export abstract class GeometricElement2d extends GeometricElement {
     { propertyName: "category", source: "Class" },
     { propertyName: "geometryStream", source: "Class" },
     { propertyName: "origin", source: "Class" },
-    { propertyName: "angle", source: "Class" },
+    { propertyName: "rotation", source: "Class" },
     { propertyName: "bBoxLow", source: "Class" },
     { propertyName: "bBoxHigh", source: "Class" },
     { propertyName: "typeDefinition", source: "Class" }
@@ -784,7 +784,7 @@ export abstract class GeometricElement2d extends GeometricElement {
     }
     elProps.placement = {
       origin,
-      angle: instance.angle,
+      angle: instance.rotation,
       bbox,
     };
 
