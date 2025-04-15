@@ -4,8 +4,8 @@
 
 ```ts
 
+import { BeEvent } from '@itwin/core-bentley';
 import { BentleyError } from '@itwin/core-bentley';
-import { BeUiEvent } from '@itwin/core-bentley';
 
 // @internal
 export function almostEqual(a: number, b: number, tolerance?: number): boolean;
@@ -302,7 +302,7 @@ export interface FormatsProvider {
     // (undocumented)
     getFormat(name: string): Promise<FormatDefinition | undefined>;
     // (undocumented)
-    onFormatsChanged: BeUiEvent<FormatsChangedArgs>;
+    onFormatsChanged: BeEvent<(args: FormatsChangedArgs) => void>;
 }
 
 // @internal

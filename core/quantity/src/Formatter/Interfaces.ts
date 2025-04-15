@@ -6,7 +6,7 @@
  * @module Quantity
  */
 
-import { BeUiEvent } from "@itwin/core-bentley";
+import { BeEvent } from "@itwin/core-bentley";
 import { UnitProps } from "../Interfaces";
 import { DecimalPrecision, FormatTraits, FormatType, FractionalPrecision } from "./FormatEnums";
 
@@ -125,7 +125,7 @@ export interface FormatsProvider {
    */
   getFormat(name: string): Promise<FormatDefinition | undefined>;
 
-  onFormatsChanged: BeUiEvent<FormatsChangedArgs>;
+  onFormatsChanged: BeEvent<(args: FormatsChangedArgs) => void>;
 }
 
 /** This interface is implemented by a class that would provide and allow creating formats for use in formatting quantities.

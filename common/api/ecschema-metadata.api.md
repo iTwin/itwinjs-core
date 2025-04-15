@@ -5,8 +5,8 @@
 ```ts
 
 import { BaseFormat } from '@itwin/core-quantity';
+import { BeEvent } from '@itwin/core-bentley';
 import { BentleyError } from '@itwin/core-bentley';
-import { BeUiEvent } from '@itwin/core-bentley';
 import { DecimalPrecision } from '@itwin/core-quantity';
 import { FormatProps } from '@itwin/core-quantity';
 import { FormatsChangedArgs } from '@itwin/core-quantity';
@@ -1894,7 +1894,7 @@ export class SchemaFormatsProvider implements FormatsProvider {
     get context(): SchemaContext;
     getFormat(name: string): Promise<SchemaItemFormatProps | undefined>;
     // (undocumented)
-    onFormatsChanged: BeUiEvent<FormatsChangedArgs>;
+    onFormatsChanged: BeEvent<(args: FormatsChangedArgs) => void>;
     // (undocumented)
     get unitSystem(): UnitSystemKey;
     set unitSystem(unitSystem: UnitSystemKey);

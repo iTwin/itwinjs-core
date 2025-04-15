@@ -1,4 +1,4 @@
-import { BeUiEvent } from "@itwin/core-bentley";
+import { BeEvent } from "@itwin/core-bentley";
 import { Format, FormatDefinition, FormatsChangedArgs, FormatterSpec, MutableFormatsProvider, ParsedQuantity, ParserSpec } from "@itwin/core-quantity";
 import { SchemaXmlFileLocater } from "@itwin/ecschema-locaters";
 import {  SchemaContext,  SchemaFormatsProvider,  SchemaUnitProvider } from "@itwin/ecschema-metadata";
@@ -11,7 +11,7 @@ import path from "path";
  */
 class ExampleFormatProvider implements MutableFormatsProvider {
   private _cache: Map<string, FormatDefinition> = new Map();
-  public onFormatsChanged = new BeUiEvent<FormatsChangedArgs>();
+  public onFormatsChanged = new BeEvent<(args: FormatsChangedArgs) => void>();
 
   public async getFormat(name: string): Promise<FormatDefinition | undefined> {
     return this._cache.get(name);

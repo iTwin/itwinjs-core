@@ -11,7 +11,7 @@ import { SchemaItemKey, SchemaKey } from "./SchemaKey";
 import { SchemaItem } from "./Metadata/SchemaItem";
 import { Format } from "./Metadata/Format";
 import { SchemaItemFormatProps } from "./Deserialization/JsonProps";
-import { BeUiEvent } from "@itwin/core-bentley";
+import { BeEvent } from "@itwin/core-bentley";
 import { KindOfQuantity } from "./Metadata/KindOfQuantity";
 import { getFormatProps } from "./Metadata/OverrideFormat";
 import { FormatProps, FormatsChangedArgs, FormatsProvider, UnitSystemKey } from "@itwin/core-quantity";
@@ -26,7 +26,7 @@ export class SchemaFormatsProvider implements FormatsProvider {
   private _context: SchemaContext;
   private _unitSystem: UnitSystemKey;
   private _formatsRetrieved: Set<string> = new Set();
-  public onFormatsChanged = new BeUiEvent<FormatsChangedArgs>();
+  public onFormatsChanged = new BeEvent<(args: FormatsChangedArgs) => void>();
   /**
    *
    * @param contextOrLocater The SchemaContext or a different ISchemaLocater implementation used to retrieve the schema. The SchemaContext
