@@ -1071,7 +1071,7 @@ export class OverrideFormat {
     // (undocumented)
     get type(): FormatType;
     // (undocumented)
-    get units(): readonly [LazyLoadedUnit | LazyLoadedInvertedUnit, string | undefined][] | undefined;
+    get units(): ReadonlyArray<[LazyLoadedUnit | LazyLoadedInvertedUnit, string | undefined]> | undefined;
     // (undocumented)
     get uomSeparator(): string;
 }
@@ -1079,11 +1079,11 @@ export class OverrideFormat {
 // @public (undocumented)
 export interface OverrideFormatProps {
     // (undocumented)
-    name: string;
+    readonly name: string;
     // (undocumented)
-    precision?: number;
+    readonly precision?: number;
     // (undocumented)
-    unitAndLabels?: Array<[string, string | undefined]>;
+    readonly unitAndLabels?: Array<[string, string | undefined]>;
 }
 
 // @beta

@@ -20,9 +20,9 @@ import { ECSchemaError, ECSchemaStatus } from "../Exception";
  * @public @preview
  */
 export interface OverrideFormatProps {
-  name: string;
-  precision?: number;
-  unitAndLabels?: Array<[string, string | undefined]>; // Tuple of [unit name | unit label]
+  readonly name: string;
+  readonly precision?: number;
+  readonly unitAndLabels?: Array<[string, string | undefined]>; // Tuple of [unit name | unit label]
 }
 
 /**
@@ -51,8 +51,13 @@ export class OverrideFormat {
   }
 
   // Properties that can be overriden
-  public get precision(): DecimalPrecision | FractionalPrecision { return (undefined === this._precision) ? this.parent.precision : this._precision; }
-  public get units() { return (undefined === this._units) ? this.parent.units : this._units; }
+  public get precision(): DecimalPrecision | FractionalPrecision {
+    return (undefined === this._precision) ? this.parent.precision : this._precision;
+  }
+
+  public get units(): ReadonlyArray<[LazyLoadedUnit | LazyLoadedInvertedUnit, string | undefined]> | undefined {
+    return (undefined === this._units) ? this.parent.units : this._units;
+  }
 
   // Properties that cannot be overriden
   public get fullName(): string { return this.name; }
@@ -128,8 +133,7 @@ export class OverrideFormat {
     if (undefined === match[1])
       throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The format string, ${formatString}, on KindOfQuantity is missing a format.`);
 
-    const returnValue: OverrideFormatProps = { name: match[1] };
-
+    let precision: OverrideFormatProps["precision"];
     if (undefined !== match[2] && undefined !== match[3]) {
       const overrideString = match[2];
       const tokens: string[] = [];
@@ -150,18 +154,17 @@ export class OverrideFormat {
 
       // The first override parameter overrides the default precision of the format
       const precisionIndx: number = 0;
-
       if (tokens.length >= precisionIndx + 1) {
         if (tokens[precisionIndx].length > 0) {
-          const precision = Number.parseInt(tokens[precisionIndx], 10);
+          precision = Number.parseInt(tokens[precisionIndx], 10);
           if (Number.isNaN(precision))
             throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The format string '${formatString}' on KindOfQuantity has a precision override '${tokens[precisionIndx]}' that is not number.`);
-          returnValue.precision = precision;
         }
       }
     }
 
     let i = 4;
+    let unitAndLabels: OverrideFormatProps["unitAndLabels"];
     while (i < match.length - 1) {  // The regex match ends with an empty last value, which causes problems when exactly 4 unit overrides as specified, so ignore this last empty value
       if (undefined === match[i])
         break;
@@ -169,18 +172,18 @@ export class OverrideFormat {
       if (undefined === match[i + 1])
         throw new ECSchemaError(ECSchemaStatus.InvalidECJson, ``);
 
-      if (undefined === returnValue.unitAndLabels)
-        returnValue.unitAndLabels = [];
+      if (undefined === unitAndLabels)
+        unitAndLabels = [];
 
       if (undefined !== match[i + 2]) // matches '|'
-        returnValue.unitAndLabels.push([match[i + 1], match[i + 3] ?? ""]); // add unit name and label override (if '|' matches and next value is undefined, save it as an empty string)
+        unitAndLabels.push([match[i + 1], match[i + 3] ?? ""]); // add unit name and label override (if '|' matches and next value is undefined, save it as an empty string)
       else
-        returnValue.unitAndLabels.push([match[i + 1], undefined]); // add unit name
+        unitAndLabels.push([match[i + 1], undefined]); // add unit name
 
       i += 4;
     }
 
-    return returnValue;
+    return { name: match[1], precision, unitAndLabels };
   }
 
   /**
