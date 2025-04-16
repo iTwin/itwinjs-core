@@ -92,6 +92,7 @@ export class KindOfQuantity extends SchemaItem {
         unitAndLabels = [];
         for (const unitOverride of presFormatOverride.unitAndLabels) {
           const unitOrInverted = await this.schema.lookupItem(unitOverride[0]);
+          
           if(Unit.isUnit(unitOrInverted))
             unitAndLabels.push([new DelayedPromiseWithProps(unitOrInverted.key, async () => unitOrInverted), unitOverride[1]]);
           else if(InvertedUnit.isInvertedUnit(unitOrInverted))

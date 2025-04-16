@@ -119,7 +119,7 @@ export class Format extends SchemaItem {
       const newUnit = this.schema.lookupItemSync(unit.name);
       if (undefined === newUnit || (!Unit.isUnit(newUnit) && !InvertedUnit.isInvertedUnit(newUnit)))
         throw new ECSchemaError(ECSchemaStatus.InvalidECJson, ``);
-
+      
       if(Unit.isUnit(newUnit))
         this.addUnit(new DelayedPromiseWithProps(newUnit.key, async () => newUnit), unit.label);
       else if(InvertedUnit.isInvertedUnit(newUnit))
