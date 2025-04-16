@@ -6,7 +6,7 @@
 import { assert, expect } from "chai";
 import { SchemaContext } from "../../Context";
 import { CustomAttributeContainerType, ECClassModifier, SchemaItemType } from "../../ECObjects";
-import { ECObjectsError } from "../../Exception";
+import { ECSchemaError } from "../../Exception";
 import { CustomAttributeClass } from "../../Metadata/CustomAttributeClass";
 import { Schema } from "../../Metadata/Schema";
 import { createSchemaJsonWithItems } from "../TestUtils/DeserializationHelpers";
@@ -113,7 +113,7 @@ describe("CustomAttributeClass", () => {
         appliesTo: "Schema",
         properties: [{ name: "navProp", type: "NavigationProperty" }],
       });
-      await expect(Schema.fromJson(json, new SchemaContext())).to.be.rejectedWith(ECObjectsError, `The Navigation Property TestCAClass.navProp is invalid, because only EntityClasses, Mixins, and RelationshipClasses can have NavigationProperties.`);
+      await expect(Schema.fromJson(json, new SchemaContext())).to.be.rejectedWith(ECSchemaError, `The Navigation Property TestCAClass.navProp is invalid, because only EntityClasses, Mixins, and RelationshipClasses can have NavigationProperties.`);
     });
   });
 

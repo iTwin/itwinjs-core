@@ -183,8 +183,8 @@ import { Point3d } from '@itwin/core-geometry';
 import { Polyface } from '@itwin/core-geometry';
 import { PolyfaceData } from '@itwin/core-geometry';
 import { PolyfaceVisitor } from '@itwin/core-geometry';
+import { Property } from '@itwin/ecschema-metadata';
 import { PropertyCallback } from '@itwin/core-common';
-import { PropertyHandler } from '@itwin/ecschema-metadata';
 import { QueryBinder } from '@itwin/core-common';
 import { QueryOptions } from '@itwin/core-common';
 import { QueryRowFormat } from '@itwin/core-common';
@@ -1846,7 +1846,7 @@ export interface ECEnumValue {
     value: number | string;
 }
 
-// @beta
+// @public
 export class ECSchemaXmlContext {
     constructor();
     addSchemaPath(searchPath: string): void;
@@ -2391,7 +2391,6 @@ export class Entity {
     forEach(func: PropertyHandler, includeCustom?: boolean): void;
     // @deprecated
     forEachProperty(func: PropertyCallback, includeCustom?: boolean): void;
-    // @beta
     getMetaData(): Promise<EntityClass>;
     // @beta
     getReferenceIds(): EntityReferenceSet;
@@ -2406,9 +2405,7 @@ export class Entity {
     // @internal (undocumented)
     static get protectedOperations(): string[];
     static schema: typeof Schema;
-    // @beta
     static get schemaItemKey(): SchemaItemKey;
-    // @beta
     get schemaItemKey(): SchemaItemKey;
     get schemaName(): string;
     toJSON(): EntityProps;
@@ -3299,7 +3296,6 @@ export abstract class IModelDb extends IModel {
     saveFileProperty(prop: FilePropertyProps, strValue: string | undefined, blobVal?: Uint8Array): void;
     // @beta
     saveSettingDictionary(name: string, dict: SettingsContainer): void;
-    // @beta
     get schemaContext(): SchemaContext;
     get schemaMap(): SchemaMap;
     // @beta
@@ -4623,6 +4619,9 @@ export enum ProgressStatus {
     Abort = 1,
     Continue = 0
 }
+
+// @public
+export type PropertyHandler = (name: string, property: Property) => void;
 
 // @beta (undocumented)
 export namespace PropertyStore {
