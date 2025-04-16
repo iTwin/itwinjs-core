@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/ecschema-metadata",
+      "comment": "The members defaultPresentationFormat and presentationFormats on KindOfQuantity and the member units on Format and OverrideFormat are now LazyLoaded types.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/ecschema-metadata"
+}

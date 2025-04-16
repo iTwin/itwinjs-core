@@ -69,12 +69,13 @@ export class SchemaFormatsProvider implements FormatsProvider {
     const unitSystemGroupNames = getUnitSystemGroupNames(this._unitSystem);
     const presentationFormats = kindOfQuantity.presentationFormats;
     for (const system of unitSystemGroupNames) {
-      for (const format of presentationFormats) {
-        const unit = format.units && format.units[0][0];
+      for (const lazyFormat of presentationFormats) {
+        const format = await lazyFormat;
+        const unit = await (format.units && format.units[0][0]);
         if (!unit) {
           continue;
         }
-        const currentUnitSystem = await unit.unitSystem;
+        const currentUnitSystem = unit.unitSystem;
         if (currentUnitSystem && currentUnitSystem.name.toUpperCase() === system) {
           this._formatsRetrieved.add(itemKey.fullName);
           return getFormatProps(format);
@@ -95,7 +96,7 @@ export class SchemaFormatsProvider implements FormatsProvider {
       return undefined;
     }
     this._formatsRetrieved.add(itemKey.fullName);
-    return getFormatProps(defaultFormat);
+    return getFormatProps(await defaultFormat);
   }
 
 

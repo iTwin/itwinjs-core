@@ -45,6 +45,8 @@ export type LazyLoadedRelationshipClass = LazyLoadedSchemaItem<RelationshipClass
 /** @public @preview */
 export type LazyLoadedEnumeration = LazyLoadedSchemaItem<Enumeration>;
 /** @public @preview */
+export type LazyLoadedFormat = LazyLoadedSchemaItem<Format>;
+/** @public @preview */
 export type LazyLoadedKindOfQuantity = LazyLoadedSchemaItem<KindOfQuantity>;
 /** @public @preview */
 export type LazyLoadedPropertyCategory = LazyLoadedSchemaItem<PropertyCategory>;

@@ -494,7 +494,7 @@ class SchemaDifferenceValidationVisitor implements SchemaDifferenceVisitor {
       });
     };
 
-    const targetUnit = targetFormat.units[0][0];
+    const targetUnit = await targetFormat.units[0][0];
     const targetPhenomenon = InvertedUnit.isInvertedUnit(targetUnit)
       ? (await targetUnit.invertsUnit)?.phenomenon
       : targetUnit.phenomenon;
