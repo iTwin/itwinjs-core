@@ -5415,6 +5415,8 @@ export class LayerTileTreeReferenceHandler {
     // (undocumented)
     protected readonly _layerTrees: (MapLayerTileTreeReference | undefined)[];
     // (undocumented)
+    get ref(): LayerTileTreeReference;
+    // (undocumented)
     setBaseLayerSettings(baseLayerSettings: BaseLayerSettings): void;
     // (undocumented)
     setLayerSettings(layerSettings: MapLayerSettings[]): void;
@@ -10596,6 +10598,7 @@ export class TileAdmin {
     onTileContentDisposed(tile: Tile): void;
     // @internal
     onTileContentLoaded(tile: Tile): void;
+    readonly onTileDataLoaded: BeEvent<() => void>;
     readonly onTileLoad: BeEvent<(tile: Tile) => void>;
     // @internal (undocumented)
     onTilesElided(numElided: number): void;

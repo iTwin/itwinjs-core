@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Fix draping not applying when GLTF loads before layer tile tree for hidden iModels.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}
