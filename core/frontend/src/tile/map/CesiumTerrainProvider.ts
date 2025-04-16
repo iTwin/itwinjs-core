@@ -34,16 +34,10 @@ export function getCesiumAssetUrl(osmAssetId: number, requestKey: string): strin
   return `$CesiumIonAsset=${osmAssetId}:${requestKey}`;
 }
 
-/** Return true if the specified context reality model represents a Cesium OSM Buildings asset.
+/** Return the asset ID for a Cesium OSM Buildings asset. You can use this when calling [[getCesiumAssetUrl]].
  * @beta
  */
-export function isCesiumOSMBuildingsRealityModel(model: ContextRealityModel) {
-  const cesiumUrl = getCesiumOSMBuildingsUrl();
-  if (undefined === cesiumUrl)
-    return false;
-
-  return model.url === cesiumUrl;
-}
+export const cesiumOSMBuildingAssetId = 96188;
 
 /** @internal */
 export function getCesiumOSMBuildingsUrl(): string | undefined {
@@ -51,8 +45,7 @@ export function getCesiumOSMBuildingsUrl(): string | undefined {
   if (undefined === key)
     return undefined;
 
-  const osmBuildingAssetId = 96188;
-  return getCesiumAssetUrl(osmBuildingAssetId, key);
+  return getCesiumAssetUrl(cesiumOSMBuildingAssetId, key);
 }
 
 /** @internal */
