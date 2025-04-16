@@ -26,6 +26,9 @@ Table of contents:
   - [Delete all transactions](#delete-all-transactions)
   - [Attach/detach db](#attachdetach-db)
   - [Quantity Formatting](#quantity-formatting)
+    - [FormatDefinition](#formatdefinition)
+    - [FormatsProvider](#formatsprovider)
+    - [Persistence](#persistence)
   - [API deprecations](#api-deprecations)
     - [@itwin/core-bentley](#itwincore-bentley)
     - [@itwin/core-common](#itwincore-common)
@@ -199,6 +202,16 @@ Allow the attachment of an ECDb/IModel to a connection and running ECSQL that co
 > Note: There are some reserve alias names that cannot be used. They are 'main', 'schema_sync_db', 'ecchange' & 'temp'
 
 ## Quantity Formatting
+
+### FormatDefinition
+
+A [FormatDefinition]($quantity) interface has been added, an extension of FormatProps to help identify formats.
+
+### FormatsProvider
+
+[FormatsProvider]($quantity) and [MutableFormatsProvider]($quantity) interfaces and a [SchemaFormatsProvider]($ecschema-metadata) class have been added. This enables quick setup of [FormatterSpec]($quantity) and [ParserSpec]($quantity) to help with display formatting.
+
+### Persistence
 
 Following APIs have been added to support persistence:
 
