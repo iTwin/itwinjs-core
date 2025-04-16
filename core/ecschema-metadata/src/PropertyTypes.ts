@@ -7,7 +7,7 @@
  */
 
 import { PrimitiveType } from "./ECObjects";
-import { ECObjectsError, ECObjectsStatus } from "./Exception";
+import { ECSchemaError, ECSchemaStatus } from "./Exception";
 
 enum PropertyFlags {
   Primitive = 0x01,
@@ -86,5 +86,5 @@ export function propertyTypeToString(type: PropertyType) {
     return (PropertyTypeUtils.isArray(type)) ? "StructArrayProperty" : "StructProperty";
   if (PropertyTypeUtils.isNavigation(type))
     return "NavigationProperty";
-  throw new ECObjectsError(ECObjectsStatus.InvalidType, "Invalid propertyType");
+  throw new ECSchemaError(ECSchemaStatus.InvalidType, "Invalid propertyType");
 }

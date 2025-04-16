@@ -66,12 +66,12 @@ export class Triangulator {
    * * Return false if clearly negative or almost zero.
    * @param nodeA node on the diagonal edge of candidate for edge flip.
    */
-  public static computeInCircleDeterminantIsStrongPositive(nodeA: HalfEdge): boolean {
+  public static computeCircumcircleDeterminantIsStrongPositive(nodeA: HalfEdge): boolean {
     // Assume triangle A1,A2,B2 is ccw.
     // Shift the triangle to the origin (by negated A coords).
     // The Delaunay condition is computed by projecting the origin and the shifted triangle
     // points up to the paraboloid z = x*x + y*y. Due to the radially symmetric convexity of
-    // this surface and the ccw orientation of this triangle, "A is inside triangle A1,A2,B2"
+    // this surface and the ccw orientation of this triangle, "A is inside the circumcircle of triangle A1,A2,B2"
     // is equivalent to "the volume of the parallelepiped formed by the projected points is
     // negative, as computed by the triple product."
     const nodeA1 = nodeA.faceSuccessor;
@@ -108,7 +108,7 @@ export class Triangulator {
 
   /**
    *  *  Visit each node of the graph array
-   *  *  If a flip would be possible, test the results of flipping using incircle condition
+   *  *  If a flip would be possible, test the results of flipping using circumcircle condition
    *  *  If revealed to be an improvement, conduct the flip, mark involved nodes as unvisited, and repeat until all nodes are visited
    */
   public static flipTriangles(graph: HalfEdgeGraph): number {
@@ -122,7 +122,7 @@ export class Triangulator {
 
   /**
    *  *  Visit each node of the graph array
-   *  *  If a flip would be possible, test the results of flipping using incircle condition
+   *  *  If a flip would be possible, test the results of flipping using circumcircle condition
    *  *  If revealed to be an improvement, conduct the flip, mark involved nodes as unvisited, and repeat until all nodes are visited
    */
   public static flipTrianglesInEdgeSet(graph: HalfEdgeGraph, edgeSet: MarkedEdgeSet): number {
@@ -138,7 +138,7 @@ export class Triangulator {
       if (node.isMaskSet(barrierMasks)) // Flip not allowed
         continue;
 
-      if (Triangulator.computeInCircleDeterminantIsStrongPositive(node)) {
+      if (Triangulator.computeCircumcircleDeterminantIsStrongPositive(node)) {
         // Flip the triangles
         Triangulator.flipEdgeBetweenTriangles(node.edgeMate.faceSuccessor, node.edgeMate.facePredecessor, node.edgeMate, node.faceSuccessor, node, node.facePredecessor);
         // keep looking at the 2 faces
@@ -508,7 +508,7 @@ export class Triangulator {
     //    triangle B1 A1 D is on the other side of AB
     //    The condition for flipping is:
     //           ! both triangles must be TRIANGULATED_NODE_MASK
-    //           ! incircle condition flags D as in the circle of ABC
+    //           ! circumcircle condition flags D as in the circle of ABC
     //     after flip, node A moves to the vertex of D, and is the effective "ear",  with the cap edge C A1
     //      after flip, consider the A1 D (whose nodes are A1 and flipped A!!!)
     //
@@ -528,7 +528,7 @@ export class Triangulator {
     let a0 = b0.facePredecessor;
     let b1 = a0.edgeMate;
     while (Triangulator.isInteriorTriangle(a0) && Triangulator.isInteriorTriangle(b1)) {
-      const detA = Triangulator.computeInCircleDeterminantIsStrongPositive(a0);
+      const detA = Triangulator.computeCircumcircleDeterminantIsStrongPositive(a0);
       if (!detA)
         break;
       // Flip the triangles

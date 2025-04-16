@@ -14,7 +14,7 @@ import {
   ECClassModifier, parseStrength, parseStrengthDirection, RelationshipEnd, SchemaItemType, StrengthDirection, strengthDirectionToString,
   strengthToString, StrengthType,
 } from "../ECObjects";
-import { ECObjectsError, ECObjectsStatus } from "../Exception";
+import { ECSchemaError, ECSchemaStatus } from "../Exception";
 import { LazyLoadedRelationshipConstraintClass } from "../Interfaces";
 import { SchemaItemKey } from "../SchemaKey";
 import { ECClass } from "./Class";
@@ -33,6 +33,7 @@ type AnyConstraintClass = EntityClass | Mixin | RelationshipClass;
  */
 export class RelationshipClass extends ECClass {
   public override readonly schemaItemType = RelationshipClass.schemaItemType;
+  /** @internal */
   public static override get schemaItemType() { return SchemaItemType.RelationshipClass; }
   /** @internal */
   protected _strength: StrengthType;
@@ -43,6 +44,7 @@ export class RelationshipClass extends ECClass {
   /** @internal */
   protected _target: RelationshipConstraint;
 
+  /** @internal */
   constructor(schema: Schema, name: string, modifier?: ECClassModifier) {
     super(schema, name, modifier);
     this._strengthDirection = StrengthDirection.Forward;
@@ -131,12 +133,12 @@ export class RelationshipClass extends ECClass {
       if (SchemaReadHelper.isECSpecVersionNewer({ readVersion: relationshipClassProps.originalECSpecMajorVersion, writeVersion: relationshipClassProps.originalECSpecMinorVersion } as ECSpecVersion))
         strength = StrengthType.Referencing;
       else
-        throw new ECObjectsError(ECObjectsStatus.InvalidStrength, `The RelationshipClass ${this.fullName} has an invalid 'strength' attribute. '${relationshipClassProps.strength}' is not a valid StrengthType.`);
+        throw new ECSchemaError(ECSchemaStatus.InvalidStrength, `The RelationshipClass ${this.fullName} has an invalid 'strength' attribute. '${relationshipClassProps.strength}' is not a valid StrengthType.`);
     }
 
     const strengthDirection = parseStrengthDirection(relationshipClassProps.strengthDirection);
     if (undefined === strengthDirection)
-      throw new ECObjectsError(ECObjectsStatus.InvalidStrength, `The RelationshipClass ${this.fullName} has an invalid 'strengthDirection' attribute. '${relationshipClassProps.strengthDirection}' is not a valid StrengthDirection.`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidStrength, `The RelationshipClass ${this.fullName} has an invalid 'strengthDirection' attribute. '${relationshipClassProps.strengthDirection}' is not a valid StrengthDirection.`);
 
     this._strength = strength;
     this._strengthDirection = strengthDirection;
@@ -166,7 +168,7 @@ export class RelationshipClass extends ECClass {
    */
   public static assertIsRelationshipClass(item?: SchemaItem): asserts item is RelationshipClass {
     if (!this.isRelationshipClass(item))
-      throw new ECObjectsError(ECObjectsStatus.InvalidSchemaItemType, `Expected '${SchemaItemType.RelationshipClass}' (RelationshipClass)`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidSchemaItemType, `Expected '${SchemaItemType.RelationshipClass}' (RelationshipClass)`);
   }
 }
 
@@ -184,6 +186,7 @@ export class RelationshipConstraint implements CustomAttributeContainerProps {
   private _constraintClasses?: LazyLoadedRelationshipConstraintClass[];
   private _customAttributes?: Map<string, CustomAttribute>;
 
+  /** @internal */
   constructor(relClass: RelationshipClass, relEnd: RelationshipEnd, roleLabel?: string, polymorphic?: boolean) {
     this._relationshipEnd = relEnd;
     if (polymorphic)
@@ -330,7 +333,7 @@ export class RelationshipConstraint implements CustomAttributeContainerProps {
 
     const parsedMultiplicity = RelationshipMultiplicity.fromString(relationshipConstraintProps.multiplicity);
     if (!parsedMultiplicity)
-      throw new ECObjectsError(ECObjectsStatus.InvalidMultiplicity, ``);
+      throw new ECSchemaError(ECSchemaStatus.InvalidMultiplicity, ``);
     this._multiplicity = parsedMultiplicity;
 
     const relClassSchema = this.relationshipClass.schema;
@@ -338,13 +341,13 @@ export class RelationshipConstraint implements CustomAttributeContainerProps {
     if (undefined !== relationshipConstraintProps.abstractConstraint) {
       const abstractConstraintSchemaItemKey = relClassSchema.getSchemaItemKey(relationshipConstraintProps.abstractConstraint);
       if (!abstractConstraintSchemaItemKey)
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate the abstractConstraint ${relationshipConstraintProps.abstractConstraint}.`);
+        throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `Unable to locate the abstractConstraint ${relationshipConstraintProps.abstractConstraint}.`);
       this.setAbstractConstraint(new DelayedPromiseWithProps<SchemaItemKey, AnyConstraintClass>(abstractConstraintSchemaItemKey,
         async () => {
           const tempAbstractConstraint = await relClassSchema.lookupItem(relationshipConstraintProps.abstractConstraint!);
           if (undefined === tempAbstractConstraint ||
             (!EntityClass.isEntityClass(tempAbstractConstraint) && !Mixin.isMixin(tempAbstractConstraint) && !RelationshipClass.isRelationshipClass(tempAbstractConstraint)))
-            throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate the abstractConstraint ${relationshipConstraintProps.abstractConstraint}.`);
+            throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `Unable to locate the abstractConstraint ${relationshipConstraintProps.abstractConstraint}.`);
 
           return tempAbstractConstraint;
         }));
@@ -354,7 +357,7 @@ export class RelationshipConstraint implements CustomAttributeContainerProps {
       const tempConstraintClass = relClassSchema.lookupItemSync(constraintClassName);
       if (!tempConstraintClass ||
         (!EntityClass.isEntityClass(tempConstraintClass) && !Mixin.isMixin(tempConstraintClass) && !RelationshipClass.isRelationshipClass(tempConstraintClass)))
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
+        throw new ECSchemaError(ECSchemaStatus.InvalidECJson, ``);
       return tempConstraintClass;
     };
 
@@ -496,6 +499,7 @@ export class RelationshipMultiplicity {
   public readonly lowerLimit: number;
   public readonly upperLimit: number;
 
+  /** @internal */
   constructor(lowerLimit: number, upperLimit: number) {
     this.lowerLimit = lowerLimit;
     this.upperLimit = upperLimit;

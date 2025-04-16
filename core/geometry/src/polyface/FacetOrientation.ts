@@ -33,7 +33,7 @@ export class FacetOrientationFixup {
   private _facetOrientation: number[];
   private _components: OrientedComponentData[];
   private _visitor: PolyfaceVisitor;
-  private _mesh: IndexedPolyface;
+  private _mesh: IndexedPolyface; // we could get by with just a Polyface/Visitor but for the call to reverseSingleFacet
   private constructor(mesh: IndexedPolyface) {
     this._visitor = mesh.createVisitor(1);
     this._edges = PolyfaceQuery.createIndexedEdges(this._visitor);

@@ -10,7 +10,7 @@ import { DelayedPromiseWithProps } from "../DelayedPromise";
 import { SchemaItemUnitProps } from "../Deserialization/JsonProps";
 import { XmlSerializationUtils } from "../Deserialization/XmlSerializationUtils";
 import { SchemaItemType } from "../ECObjects";
-import { ECObjectsError, ECObjectsStatus } from "../Exception";
+import { ECSchemaError, ECSchemaStatus } from "../Exception";
 import { LazyLoadedPhenomenon, LazyLoadedUnitSystem } from "../Interfaces";
 import { SchemaItemKey } from "../SchemaKey";
 import { Phenomenon } from "./Phenomenon";
@@ -25,6 +25,7 @@ import { UnitSystem } from "./UnitSystem";
  */
 export class Unit extends SchemaItem {
   public override readonly schemaItemType = Unit.schemaItemType;
+  /** @internal */
   public static override get schemaItemType() { return SchemaItemType.Unit; }
   private _phenomenon?: LazyLoadedPhenomenon;
   private _unitSystem?: LazyLoadedUnitSystem;
@@ -33,6 +34,7 @@ export class Unit extends SchemaItem {
   private _denominator?: number;
   private _offset?: number;
 
+  /** @internal */
   constructor(schema: Schema, name: string) {
     super(schema, name);
     this._definition = "";
@@ -124,28 +126,28 @@ export class Unit extends SchemaItem {
 
     const phenomenonSchemaItemKey = this.schema.getSchemaItemKey(unitProps.phenomenon);
     if (!phenomenonSchemaItemKey)
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate the phenomenon ${unitProps.phenomenon}.`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `Unable to locate the phenomenon ${unitProps.phenomenon}.`);
     this._phenomenon = new DelayedPromiseWithProps<SchemaItemKey, Phenomenon>(phenomenonSchemaItemKey,
       async () => {
         const phenom = await this.schema.lookupItem(phenomenonSchemaItemKey, Phenomenon);
         if (undefined === phenom)
-          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate the phenomenon ${unitProps.phenomenon}.`);
+          throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `Unable to locate the phenomenon ${unitProps.phenomenon}.`);
         return phenom;
       });
 
     const unitSystemSchemaItemKey = this.schema.getSchemaItemKey(unitProps.unitSystem);
     if (!unitSystemSchemaItemKey)
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate the unitSystem ${unitProps.unitSystem}.`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `Unable to locate the unitSystem ${unitProps.unitSystem}.`);
     this._unitSystem = new DelayedPromiseWithProps<SchemaItemKey, UnitSystem>(unitSystemSchemaItemKey,
       async () => {
         const unitSystem = await this.schema.lookupItem(unitSystemSchemaItemKey, UnitSystem);
         if (undefined === unitSystem)
-          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate the unitSystem ${unitProps.unitSystem}.`);
+          throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `Unable to locate the unitSystem ${unitProps.unitSystem}.`);
         return unitSystem;
       });
 
     if (this._definition !== "" && unitProps.definition.toLowerCase() !== this._definition.toLowerCase())
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Unit ${this.name} has an invalid 'definition' attribute.`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The Unit ${this.name} has an invalid 'definition' attribute.`);
     else if (this._definition === "")
       this._definition = unitProps.definition;
 
@@ -192,7 +194,7 @@ export class Unit extends SchemaItem {
    */
   public static assertIsUnit(item?: SchemaItem): asserts item is Unit {
     if (!this.isUnit(item))
-      throw new ECObjectsError(ECObjectsStatus.InvalidSchemaItemType, `Expected '${SchemaItemType.Unit}' (Unit)`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidSchemaItemType, `Expected '${SchemaItemType.Unit}' (Unit)`);
   }
 }
 /**

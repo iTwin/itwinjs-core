@@ -10,7 +10,7 @@ import { DelayedPromiseWithProps } from "../DelayedPromise";
 import { ConstantProps } from "../Deserialization/JsonProps";
 import { XmlSerializationUtils } from "../Deserialization/XmlSerializationUtils";
 import { SchemaItemType } from "../ECObjects";
-import { ECObjectsError, ECObjectsStatus } from "../Exception";
+import { ECSchemaError, ECSchemaStatus } from "../Exception";
 import { LazyLoadedPhenomenon } from "../Interfaces";
 import { SchemaItemKey } from "../SchemaKey";
 import { Phenomenon } from "./Phenomenon";
@@ -23,12 +23,14 @@ import { SchemaItem } from "./SchemaItem";
  */
 export class Constant extends SchemaItem {
   public override readonly schemaItemType = Constant.schemaItemType;
+  /** @internal */
   public static override get schemaItemType() { return SchemaItemType.Constant; }
   private _phenomenon?: LazyLoadedPhenomenon;
   private _definition: string;
   private _numerator?: number;
   private _denominator?: number;
 
+  /** @internal */
   constructor(schema: Schema, name: string) {
     super(schema, name);
     this._definition = "";
@@ -81,17 +83,17 @@ export class Constant extends SchemaItem {
 
     const schemaItemKey = this.schema.getSchemaItemKey(constantProps.phenomenon);
     if (!schemaItemKey)
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate the phenomenon ${constantProps.phenomenon}.`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `Unable to locate the phenomenon ${constantProps.phenomenon}.`);
     this._phenomenon = new DelayedPromiseWithProps<SchemaItemKey, Phenomenon>(schemaItemKey,
       async () => {
         const phenom = await this.schema.lookupItem(schemaItemKey, Phenomenon);
         if (undefined === phenom)
-          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate the phenomenon ${constantProps.phenomenon}.`);
+          throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `Unable to locate the phenomenon ${constantProps.phenomenon}.`);
         return phenom;
       });
 
     if (this._definition !== "" && constantProps.definition.toLowerCase() !== this._definition.toLowerCase())
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Constant ${this.name} has an invalid 'definition' attribute.`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The Constant ${this.name} has an invalid 'definition' attribute.`);
     else if (this._definition === "")
       this._definition = constantProps.definition;
 
@@ -155,10 +157,11 @@ export class Constant extends SchemaItem {
    * Type assertion to check if the SchemaItem is of type Constant.
    * @param item The SchemaItem to check.
    * @returns The item cast to Constant if it is a Constant, undefined otherwise.
+   * @internal
    */
   public static assertIsConstant(item?: SchemaItem): asserts item is Constant {
     if (!this.isConstant(item))
-      throw new ECObjectsError(ECObjectsStatus.InvalidSchemaItemType, `Expected '${SchemaItemType.Constant}' (Constant)`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidSchemaItemType, `Expected '${SchemaItemType.Constant}' (Constant)`);
   }
 }
 /**

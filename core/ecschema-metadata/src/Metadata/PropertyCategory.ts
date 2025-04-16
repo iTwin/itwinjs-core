@@ -8,7 +8,7 @@
 
 import { PropertyCategoryProps } from "../Deserialization/JsonProps";
 import { SchemaItemType } from "../ECObjects";
-import { ECObjectsError, ECObjectsStatus } from "../Exception";
+import { ECSchemaError, ECSchemaStatus } from "../Exception";
 import { Schema } from "./Schema";
 import { SchemaItem } from "./SchemaItem";
 
@@ -17,6 +17,7 @@ import { SchemaItem } from "./SchemaItem";
  */
 export class PropertyCategory extends SchemaItem {
   public override readonly schemaItemType = PropertyCategory.schemaItemType;
+  /** @internal */
   public static override get schemaItemType() { return SchemaItemType.PropertyCategory; }
   private _priority: number;
 
@@ -24,6 +25,7 @@ export class PropertyCategory extends SchemaItem {
     return this._priority;
   }
 
+  /** @internal */
   constructor(schema: Schema, name: string) {
     super(schema, name);
     this._priority = 0;
@@ -83,7 +85,7 @@ export class PropertyCategory extends SchemaItem {
    */
   public static assertIsPropertyCategory(item?: SchemaItem): asserts item is PropertyCategory {
     if (!this.isPropertyCategory(item))
-      throw new ECObjectsError(ECObjectsStatus.InvalidSchemaItemType, `Expected '${SchemaItemType.PropertyCategory}' (PropertyCategory)`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidSchemaItemType, `Expected '${SchemaItemType.PropertyCategory}' (PropertyCategory)`);
   }
 }
 

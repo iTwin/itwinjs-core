@@ -7,7 +7,7 @@
  */
 
 import { ECStringConstants } from "./Constants";
-import { ECObjectsError, ECObjectsStatus } from "./Exception";
+import { ECSchemaError, ECSchemaStatus } from "./Exception";
 
 export { PropertyType } from "./PropertyTypes";
 
@@ -188,7 +188,7 @@ export function classModifierToString(modifier: ECClassModifier): string {
     case ECClassModifier.None: return "None";
     case ECClassModifier.Sealed: return "Sealed";
     default:
-      throw new ECObjectsError(ECObjectsStatus.InvalidModifier, "An invalid ECClassModifier has been provided.");
+      throw new ECSchemaError(ECSchemaStatus.InvalidModifier, "An invalid ECClassModifier has been provided.");
   }
 }
 
@@ -247,7 +247,7 @@ export function schemaItemTypeToXmlString(value: SchemaItemType): string {
     case SchemaItemType.UnitSystem: return "UnitSystem";
     case SchemaItemType.Format: return "Format";
     default:
-      throw new ECObjectsError(ECObjectsStatus.InvalidSchemaItemType, "An invalid SchemaItemType has been provided.");
+      throw new ECSchemaError(ECSchemaStatus.InvalidSchemaItemType, "An invalid SchemaItemType has been provided.");
   }
 }
 
@@ -288,7 +288,7 @@ export function primitiveTypeToString(type: PrimitiveType): string {
     case PrimitiveType.Point3d: return "point3d";
     case PrimitiveType.String: return "string";
     default:
-      throw new ECObjectsError(ECObjectsStatus.InvalidPrimitiveType, "An invalid PrimitiveType has been provided.");
+      throw new ECSchemaError(ECSchemaStatus.InvalidPrimitiveType, "An invalid PrimitiveType has been provided.");
   }
 }
 
@@ -357,7 +357,7 @@ export function parseCustomAttributeContainerType(type: string): CustomAttribute
         containerType = containerType | CustomAttributeContainerType.Any;
         break;
       default:
-        throw new ECObjectsError(ECObjectsStatus.InvalidContainerType, `${typeToken} is not a valid CustomAttributeContainerType value.`);
+        throw new ECSchemaError(ECSchemaStatus.InvalidContainerType, `${typeToken} is not a valid CustomAttributeContainerType value.`);
     }
   });
 
@@ -442,13 +442,13 @@ export function relationshipEndToString(end: RelationshipEnd): string {
     case RelationshipEnd.Source: return ECStringConstants.RELATIONSHIP_END_SOURCE;
     case RelationshipEnd.Target: return ECStringConstants.RELATIONSHIP_END_TARGET;
     default:
-      throw new ECObjectsError(ECObjectsStatus.InvalidRelationshipEnd, `An invalid RelationshipEnd has been provided.`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidRelationshipEnd, `An invalid RelationshipEnd has been provided.`);
   }
 }
 
 /**
  * Takes a string representing a StrengthType, will parse it and return the corresponding StrengthType.
- * @throws ECObjectsStatus.InvalidStrength if the provided string that is not valid
+ * @throws ECSchemaStatus.InvalidStrength if the provided string that is not valid
  * @param strength
  * @beta
  */
@@ -468,7 +468,7 @@ export function strengthToString(strength: StrengthType): string {
     case StrengthType.Holding: return "Holding";
     case StrengthType.Referencing: return "Referencing";
     default:
-      throw new ECObjectsError(ECObjectsStatus.InvalidStrength, `An invalid Strength has been provided.`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidStrength, `An invalid Strength has been provided.`);
   }
 }
 
@@ -487,7 +487,7 @@ export function strengthDirectionToString(direction: StrengthDirection): string 
     case StrengthDirection.Forward: return "Forward";
     case StrengthDirection.Backward: return "Backward";
     default:
-      throw new ECObjectsError(ECObjectsStatus.InvalidStrengthDirection, `An invalid StrengthDirection has been provided.`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidStrengthDirection, `An invalid StrengthDirection has been provided.`);
   }
 }
 

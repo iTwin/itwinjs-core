@@ -11,7 +11,7 @@ import { DelayedPromiseWithProps } from "../DelayedPromise";
 import { ClassProps } from "../Deserialization/JsonProps";
 import { XmlSerializationUtils } from "../Deserialization/XmlSerializationUtils";
 import { AbstractSchemaItemType, classModifierToString, ECClassModifier, parseClassModifier, parsePrimitiveType, PrimitiveType, SchemaItemType, SupportedSchemaItemType } from "../ECObjects";
-import { ECObjectsError, ECObjectsStatus } from "../Exception";
+import { ECSchemaError, ECSchemaStatus } from "../Exception";
 import { AnyClass, HasMixins, LazyLoadedECClass } from "../Interfaces";
 import { SchemaItemKey, SchemaKey } from "../SchemaKey";
 import { CustomAttribute, CustomAttributeContainerProps, CustomAttributeSet, serializeCustomAttributes } from "./CustomAttribute";
@@ -28,6 +28,7 @@ import { ECSpecVersion, SchemaReadHelper } from "../Deserialization/Helper";
  * @public @preview
  */
 export abstract class ECClass extends SchemaItem implements CustomAttributeContainerProps {
+  /** @internal */
   public static override get schemaItemType(): SupportedSchemaItemType { return AbstractSchemaItemType.Class; } // need this so getItem("name", ECClass) in schema works
   private _modifier: ECClassModifier;
   private _baseClass?: LazyLoadedECClass;
@@ -39,6 +40,7 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
   public get modifier() { return this._modifier; }
   public get customAttributes(): CustomAttributeSet | undefined { return this._customAttributes; }
 
+  /** @internal */
   constructor(schema: Schema, name: string, modifier?: ECClassModifier) {
     super(schema, name);
 
@@ -207,7 +209,7 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
    * Creates a PrimitiveECProperty.
    * @param name The name of property to create.
    * @param primitiveType The primitive type of property to create. If not provided the default is PrimitiveType.Integer
-   * @throws ECObjectsStatus DuplicateProperty: thrown if a property with the same name already exists in the class.
+   * @throws ECSchemaStatus DuplicateProperty: thrown if a property with the same name already exists in the class.
    *
    * @internal
    */
@@ -215,7 +217,7 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
   protected async createPrimitiveProperty(name: string, primitiveType: Enumeration): Promise<EnumerationProperty>;
   protected async createPrimitiveProperty(name: string, primitiveType?: string | PrimitiveType | Enumeration): Promise<Property> {
     if (await this.getProperty(name, true))
-      throw new ECObjectsError(ECObjectsStatus.DuplicateProperty, `An ECProperty with the name ${name} already exists in the class ${this.name}.`);
+      throw new ECSchemaError(ECSchemaStatus.DuplicateProperty, `An ECProperty with the name ${name} already exists in the class ${this.name}.`);
 
     const propType = await this.loadPrimitiveType(primitiveType, this.schema);
     if (typeof (propType) === "number")
@@ -228,7 +230,7 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
    * Creates a PrimitiveECProperty.
    * @param name The name of property to create.
    * @param primitiveType The primitive type of property to create. If not provided the default is PrimitiveType.Integer
-   * @throws ECObjectsStatus DuplicateProperty: thrown if a property with the same name already exists in the class.
+   * @throws ECSchemaStatus DuplicateProperty: thrown if a property with the same name already exists in the class.
    *
    * @internal
    */
@@ -236,7 +238,7 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
   protected createPrimitivePropertySync(name: string, primitiveType: Enumeration): EnumerationProperty;
   protected createPrimitivePropertySync(name: string, primitiveType?: string | PrimitiveType | Enumeration): Property {
     if (this.getPropertySync(name, true))
-      throw new ECObjectsError(ECObjectsStatus.DuplicateProperty, `An ECProperty with the name ${name} already exists in the class ${this.name}.`);
+      throw new ECSchemaError(ECSchemaStatus.DuplicateProperty, `An ECProperty with the name ${name} already exists in the class ${this.name}.`);
 
     const propType = this.loadPrimitiveTypeSync(primitiveType, this.schema);
     if (typeof (propType) === "number")
@@ -256,7 +258,7 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
   protected async createPrimitiveArrayProperty(name: string, primitiveType: Enumeration): Promise<EnumerationArrayProperty>;
   protected async createPrimitiveArrayProperty(name: string, primitiveType?: string | PrimitiveType | Enumeration): Promise<Property> {
     if (await this.getProperty(name, true))
-      throw new ECObjectsError(ECObjectsStatus.DuplicateProperty, `An ECProperty with the name ${name} already exists in the class ${this.name}.`);
+      throw new ECSchemaError(ECSchemaStatus.DuplicateProperty, `An ECProperty with the name ${name} already exists in the class ${this.name}.`);
 
     const propType = await this.loadPrimitiveType(primitiveType, this.schema);
     if (typeof (propType) === "number")
@@ -276,7 +278,7 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
   protected createPrimitiveArrayPropertySync(name: string, primitiveType: Enumeration): EnumerationArrayProperty;
   protected createPrimitiveArrayPropertySync(name: string, primitiveType?: string | PrimitiveType | Enumeration): Property {
     if (this.getPropertySync(name, true))
-      throw new ECObjectsError(ECObjectsStatus.DuplicateProperty, `An ECProperty with the name ${name} already exists in the class ${this.name}.`);
+      throw new ECSchemaError(ECSchemaStatus.DuplicateProperty, `An ECProperty with the name ${name} already exists in the class ${this.name}.`);
 
     const propType = this.loadPrimitiveTypeSync(primitiveType, this.schema);
     if (typeof (propType) === "number")
@@ -294,7 +296,7 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
    */
   protected async createStructProperty(name: string, structType: string | StructClass): Promise<StructProperty> {
     if (await this.getProperty(name, true))
-      throw new ECObjectsError(ECObjectsStatus.DuplicateProperty, `An ECProperty with the name ${name} already exists in the class ${this.name}.`);
+      throw new ECSchemaError(ECSchemaStatus.DuplicateProperty, `An ECProperty with the name ${name} already exists in the class ${this.name}.`);
 
     return this.addProperty(new StructProperty(this, name, await this.loadStructType(structType, this.schema)));
   }
@@ -308,7 +310,7 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
    */
   protected createStructPropertySync(name: string, structType: string | StructClass): StructProperty {
     if (this.getPropertySync(name, true))
-      throw new ECObjectsError(ECObjectsStatus.DuplicateProperty, `An ECProperty with the name ${name} already exists in the class ${this.name}.`);
+      throw new ECSchemaError(ECSchemaStatus.DuplicateProperty, `An ECProperty with the name ${name} already exists in the class ${this.name}.`);
 
     return this.addProperty(new StructProperty(this, name, this.loadStructTypeSync(structType, this.schema)));
   }
@@ -322,7 +324,7 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
    */
   protected async createStructArrayProperty(name: string, structType: string | StructClass): Promise<StructArrayProperty> {
     if (await this.getProperty(name, true))
-      throw new ECObjectsError(ECObjectsStatus.DuplicateProperty, `An ECProperty with the name ${name} already exists in the class ${this.name}.`);
+      throw new ECSchemaError(ECSchemaStatus.DuplicateProperty, `An ECProperty with the name ${name} already exists in the class ${this.name}.`);
 
     return this.addProperty(new StructArrayProperty(this, name, await this.loadStructType(structType, this.schema)));
   }
@@ -336,7 +338,7 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
    */
   protected createStructArrayPropertySync(name: string, structType: string | StructClass): StructArrayProperty {
     if (this.getPropertySync(name, true))
-      throw new ECObjectsError(ECObjectsStatus.DuplicateProperty, `An ECProperty with the name ${name} already exists in the class ${this.name}.`);
+      throw new ECSchemaError(ECSchemaStatus.DuplicateProperty, `An ECProperty with the name ${name} already exists in the class ${this.name}.`);
 
     return this.addProperty(new StructArrayProperty(this, name, this.loadStructTypeSync(structType, this.schema)));
   }
@@ -357,7 +359,7 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
       correctType = structType;
 
     if (!correctType)
-      throw new ECObjectsError(ECObjectsStatus.InvalidType, `The provided Struct type, ${structType}, is not a valid StructClass.`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidType, `The provided Struct type, ${structType}, is not a valid StructClass.`);
 
     return correctType;
   }
@@ -378,7 +380,7 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
       correctType = structType;
 
     if (!correctType)
-      throw new ECObjectsError(ECObjectsStatus.InvalidType, `The provided Struct type, ${structType}, is not a valid StructClass.`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidType, `The provided Struct type, ${structType}, is not a valid StructClass.`);
 
     return correctType;
   }
@@ -402,11 +404,11 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
       }
 
       if (resolvedType === undefined)
-        throw new ECObjectsError(ECObjectsStatus.InvalidType, `The provided primitive type, ${primitiveType}, is not a valid PrimitiveType or Enumeration.`);
+        throw new ECSchemaError(ECSchemaStatus.InvalidType, `The provided primitive type, ${primitiveType}, is not a valid PrimitiveType or Enumeration.`);
 
       // If resolvedType is a SchemaItem, make sure it is an Enumeration- if not, throw an error
       if (typeof (resolvedType) !== "number" && resolvedType.schemaItemType !== SchemaItemType.Enumeration)
-        throw new ECObjectsError(ECObjectsStatus.InvalidType, `The provided primitive type, ${primitiveType}, is not a valid PrimitiveType or Enumeration.`);
+        throw new ECSchemaError(ECSchemaStatus.InvalidType, `The provided primitive type, ${primitiveType}, is not a valid PrimitiveType or Enumeration.`);
 
       return resolvedType;
     }
@@ -433,7 +435,7 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
       }
 
       if (resolvedType === undefined)
-        throw new ECObjectsError(ECObjectsStatus.InvalidType, `The provided primitive type, ${primitiveType}, is not a valid PrimitiveType or Enumeration.`);
+        throw new ECSchemaError(ECSchemaStatus.InvalidType, `The provided primitive type, ${primitiveType}, is not a valid PrimitiveType or Enumeration.`);
 
       return resolvedType;
     }
@@ -506,7 +508,7 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
         if (SchemaReadHelper.isECSpecVersionNewer({ readVersion: classProps.originalECSpecMajorVersion, writeVersion: classProps.originalECSpecMinorVersion } as ECSpecVersion))
           this._modifier = ECClassModifier.None;
         else
-          throw new ECObjectsError(ECObjectsStatus.InvalidModifier, `The string '${classProps.modifier}' is not a valid ECClassModifier.`);
+          throw new ECSchemaError(ECSchemaStatus.InvalidModifier, `The string '${classProps.modifier}' is not a valid ECClassModifier.`);
       } else {
         this._modifier = modifier;
       }
@@ -515,7 +517,7 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
     if (undefined !== classProps.baseClass) {
       const ecClassSchemaItemKey = this.schema.getSchemaItemKey(classProps.baseClass);
       if (!ecClassSchemaItemKey)
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate the baseClass ${classProps.baseClass}.`);
+        throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `Unable to locate the baseClass ${classProps.baseClass}.`);
 
       const baseClass = this.schema.lookupItemSync(ecClassSchemaItemKey);
 
@@ -525,7 +527,7 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
           async () => {
             const baseItem = await this.schema.lookupItem(ecClassSchemaItemKey);
             if (undefined === baseItem || !ECClass.isECClass(baseItem))
-              throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate the baseClass ${classProps.baseClass}.`);
+              throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `Unable to locate the baseClass ${classProps.baseClass}.`);
             return baseItem;
           });
       } else {
@@ -895,13 +897,12 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
 export class StructClass extends ECClass {
   /**
    * Get the type of item represented by this instance
-   * @public @preview
    */
   public override readonly schemaItemType = StructClass.schemaItemType;
 
   /**
    * Get the type of item represented by this class
-   * @public @preview
+   * @internal
    */
   public static override get schemaItemType() { return SchemaItemType.StructClass; }
   /**
@@ -920,10 +921,11 @@ export class StructClass extends ECClass {
    * Type assertion to check if the SchemaItem is of type StructClass.
    * @param item The SchemaItem to check.
    * @returns The item cast to StructClass if it is a StructClass, undefined otherwise.
+   * @internal
    */
   public static assertIsStructClass(item?: SchemaItem): asserts item is StructClass {
     if (!this.isStructClass(item))
-      throw new ECObjectsError(ECObjectsStatus.InvalidSchemaItemType, `Expected '${SchemaItemType.StructClass}' (StructClass)`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidSchemaItemType, `Expected '${SchemaItemType.StructClass}' (StructClass)`);
   }
 }
 

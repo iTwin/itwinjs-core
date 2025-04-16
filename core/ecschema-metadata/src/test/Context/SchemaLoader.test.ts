@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import { SchemaLoader } from "../../SchemaLoader";
-import { ECObjectsError } from "../../Exception";
+import { ECSchemaError } from "../../Exception";
 import { ECSchemaNamespaceUris } from "../../Constants";
 
 describe("SchemaLoader", () => {
@@ -31,9 +31,9 @@ describe("SchemaLoader", () => {
     assert.equal(schema.name, "SchemaD");
   });
 
-  it("load unknown EC Schema by name should throw NotFound ECObjectsError", () => {
+  it("load unknown EC Schema by name should throw NotFound ECSchemaError", () => {
     const schemaLoader = new SchemaLoader(getSchemaProps);
-    assert.throws(() => schemaLoader.getSchema("DoesNotExist"), ECObjectsError);
+    assert.throws(() => schemaLoader.getSchema("DoesNotExist"), ECSchemaError);
   });
 
   it("try load unknown EC Schema by name should return undefined", () => {

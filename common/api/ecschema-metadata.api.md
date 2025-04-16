@@ -4,9 +4,12 @@
 
 ```ts
 
+import { BeEvent } from '@itwin/core-bentley';
 import { BentleyError } from '@itwin/core-bentley';
 import { DecimalPrecision } from '@itwin/core-quantity';
 import { FormatProps } from '@itwin/core-quantity';
+import { FormatsChangedArgs } from '@itwin/core-quantity';
+import { FormatsProvider } from '@itwin/core-quantity';
 import { FormatTraits } from '@itwin/core-quantity';
 import { FormatType } from '@itwin/core-quantity';
 import { FractionalPrecision } from '@itwin/core-quantity';
@@ -16,6 +19,7 @@ import { UnitConversionProps } from '@itwin/core-quantity';
 import { UnitExtraData } from '@itwin/core-quantity';
 import { UnitProps } from '@itwin/core-quantity';
 import { UnitsProvider } from '@itwin/core-quantity';
+import { UnitSystemKey } from '@itwin/core-quantity';
 
 // @public
 export enum AbstractSchemaItemType {
@@ -100,7 +104,9 @@ export interface ClassProps extends SchemaItemProps {
 
 // @public
 export class Constant extends SchemaItem {
+    // @internal
     constructor(schema: Schema, name: string);
+    // @internal
     static assertIsConstant(item?: SchemaItem): asserts item is Constant;
     // (undocumented)
     get definition(): string;
@@ -121,7 +127,7 @@ export class Constant extends SchemaItem {
     get phenomenon(): LazyLoadedPhenomenon | undefined;
     // (undocumented)
     readonly schemaItemType: SchemaItemType;
-    // (undocumented)
+    // @internal (undocumented)
     static get schemaItemType(): SchemaItemType;
     // @internal (undocumented)
     protected setDefinition(definition: string): void;
@@ -163,6 +169,7 @@ export interface CustomAttribute {
 export class CustomAttributeClass extends ECClass {
     // (undocumented)
     get appliesTo(): CustomAttributeContainerType;
+    // @internal
     static assertIsCustomAttributeClass(item?: SchemaItem): asserts item is CustomAttributeClass;
     // @deprecated (undocumented)
     get containerType(): CustomAttributeContainerType;
@@ -173,7 +180,7 @@ export class CustomAttributeClass extends ECClass {
     static isCustomAttributeClass(item?: SchemaItem): item is CustomAttributeClass;
     // (undocumented)
     readonly schemaItemType: SchemaItemType;
-    // (undocumented)
+    // @internal (undocumented)
     static get schemaItemType(): SchemaItemType;
     // @internal (undocumented)
     protected setAppliesTo(containerType: CustomAttributeContainerType): void;
@@ -257,6 +264,7 @@ export interface DelayedPromiseWithPropsConstructor {
 
 // @public
 export abstract class ECClass extends SchemaItem implements CustomAttributeContainerProps {
+    // @internal
     constructor(schema: Schema, name: string, modifier?: ECClassModifier);
     // @internal (undocumented)
     protected addCustomAttribute(customAttribute: CustomAttribute): void;
@@ -336,7 +344,7 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
     protected static mergeProperties(target: Property[], existingValues: Map<string, number>, propertiesToMerge: Iterable<Property>, overwriteExisting: boolean): void;
     // (undocumented)
     get modifier(): ECClassModifier;
-    // (undocumented)
+    // @internal (undocumented)
     static get schemaItemType(): SupportedSchemaItemType;
     // @internal
     protected setBaseClass(baseClass: LazyLoadedECClass | undefined): Promise<void>;
@@ -369,7 +377,7 @@ export class ECName {
 }
 
 // @internal (undocumented)
-export class ECObjectsError extends BentleyError {
+export class ECSchemaError extends BentleyError {
     constructor(errorNumber: number, message?: string);
     // (undocumented)
     readonly errorNumber: number;
@@ -377,8 +385,18 @@ export class ECObjectsError extends BentleyError {
     toDebugString(): string;
 }
 
+// @internal (undocumented)
+export namespace ECSchemaNamespaceUris {
+    const // (undocumented)
+    SCHEMAURL3_2_JSON = "https://dev.bentley.com/json_schemas/ec/32/ecschema";
+    const // (undocumented)
+    SCHEMAITEMURL3_2 = "https://dev.bentley.com/json_schemas/ec/32/schemaitem";
+    const // (undocumented)
+    SCHEMAURL3_2_XML = "http://www.bentley.com/schemas/Bentley.ECXML.3.2";
+}
+
 // @public (undocumented)
-export enum ECObjectsStatus {
+export enum ECSchemaStatus {
     // (undocumented)
     ClassNotFound = 35074,
     // (undocumented)
@@ -390,7 +408,7 @@ export enum ECObjectsStatus {
     // (undocumented)
     DuplicateSchema = 35055,
     // (undocumented)
-    ECOBJECTS_ERROR_BASE = 35052,
+    ECSCHEMA_ERROR_BASE = 35052,
     // (undocumented)
     ImmutableSchema = 35056,
     // (undocumented)
@@ -441,16 +459,6 @@ export enum ECObjectsStatus {
     UnableToLoadSchema = 35080,
     // (undocumented)
     UnableToLocateSchema = 35071
-}
-
-// @internal (undocumented)
-export namespace ECSchemaNamespaceUris {
-    const // (undocumented)
-    SCHEMAURL3_2_JSON = "https://dev.bentley.com/json_schemas/ec/32/ecschema";
-    const // (undocumented)
-    SCHEMAITEMURL3_2 = "https://dev.bentley.com/json_schemas/ec/32/schemaitem";
-    const // (undocumented)
-    SCHEMAURL3_2_XML = "http://www.bentley.com/schemas/Bentley.ECXML.3.2";
 }
 
 // @internal
@@ -543,7 +551,7 @@ export class EntityClass extends ECClass implements HasMixins {
     get mixins(): ReadonlyArray<LazyLoadedMixin>;
     // (undocumented)
     readonly schemaItemType: SchemaItemType;
-    // (undocumented)
+    // @internal (undocumented)
     static get schemaItemType(): SchemaItemType;
     toJSON(standalone?: boolean, includeSchemaVersion?: boolean): EntityClassProps;
     // @internal (undocumented)
@@ -558,9 +566,11 @@ export interface EntityClassProps extends ClassProps {
 
 // @public
 export class Enumeration extends SchemaItem {
+    // @internal
     constructor(schema: Schema, name: string, primitiveType?: PrimitiveType.Integer | PrimitiveType.String);
     // @internal
     protected addEnumerator(enumerator: AnyEnumerator): void;
+    // @internal
     static assertIsEnumeration(item?: SchemaItem): asserts item is Enumeration;
     // @internal
     createEnumerator(name: string, value: string | number, label?: string, description?: string): AnyEnumerator;
@@ -583,7 +593,7 @@ export class Enumeration extends SchemaItem {
     get isString(): boolean;
     // (undocumented)
     readonly schemaItemType: SchemaItemType;
-    // (undocumented)
+    // @internal (undocumented)
     static get schemaItemType(): SchemaItemType;
     // @internal (undocumented)
     protected setIsStrict(isStrict: boolean): void;
@@ -601,6 +611,7 @@ export class EnumerationArrayProperty extends EnumerationArrayProperty_base {
 
 // @public (undocumented)
 export class EnumerationProperty extends PrimitiveOrEnumPropertyBase {
+    // @internal
     constructor(ecClass: ECClass, name: string, type: LazyLoadedEnumeration);
     // (undocumented)
     get enumeration(): LazyLoadedEnumeration | undefined;
@@ -657,6 +668,7 @@ export interface EnumeratorProps {
 
 // @public (undocumented)
 export class Format extends SchemaItem {
+    // @internal
     constructor(schema: Schema, name: string);
     // @internal
     protected addUnit(unit: LazyLoadedUnit | LazyLoadedInvertedUnit, label?: string): void;
@@ -683,7 +695,7 @@ export class Format extends SchemaItem {
     get roundFactor(): number;
     // (undocumented)
     readonly schemaItemType: SchemaItemType;
-    // (undocumented)
+    // @internal (undocumented)
     static get schemaItemType(): SchemaItemType;
     // (undocumented)
     get scientificType(): ScientificType | undefined;
@@ -763,6 +775,7 @@ export interface HasMixins {
 
 // @public
 export class InvertedUnit extends SchemaItem {
+    // @internal
     static assertIsInvertedUnit(item?: SchemaItem): asserts item is InvertedUnit;
     // (undocumented)
     fromJSON(invertedUnitProps: InvertedUnitProps): Promise<void>;
@@ -773,7 +786,7 @@ export class InvertedUnit extends SchemaItem {
     static isInvertedUnit(item?: SchemaItem): item is InvertedUnit;
     // (undocumented)
     readonly schemaItemType: SchemaItemType;
-    // (undocumented)
+    // @internal (undocumented)
     static get schemaItemType(): SchemaItemType;
     // @internal
     protected setInvertsUnit(invertsUnit: LazyLoadedUnit): void;
@@ -854,6 +867,7 @@ export function isSupportedSchemaItemType(value: SchemaItemType, supported: Supp
 export class KindOfQuantity extends SchemaItem {
     // @internal (undocumented)
     protected addPresentationFormat(format: LazyLoadedFormat | OverrideFormat, isDefault?: boolean): void;
+    // @internal
     static assertIsKindOfQuantity(item?: SchemaItem): asserts item is KindOfQuantity;
     // @internal
     protected createFormatOverride(parent: Format, precision?: number, unitLabelOverrides?: Array<[LazyLoadedUnit | LazyLoadedInvertedUnit, string | undefined]>): OverrideFormat;
@@ -869,7 +883,7 @@ export class KindOfQuantity extends SchemaItem {
     get relativeError(): number;
     // (undocumented)
     readonly schemaItemType: SchemaItemType;
-    // (undocumented)
+    // @internal (undocumented)
     static get schemaItemType(): SchemaItemType;
     // @internal
     protected setPersistenceUnit(value: LazyLoadedUnit | LazyLoadedInvertedUnit | undefined): void;
@@ -940,11 +954,13 @@ export type LazyLoadedUnitSystem = LazyLoadedSchemaItem<UnitSystem>;
 
 // @public
 export class Mixin extends ECClass {
+    // @internal
     constructor(schema: Schema, name: string);
     // (undocumented)
     applicableTo(entityClass: EntityClass): Promise<boolean>;
     // (undocumented)
     get appliesTo(): LazyLoadedEntityClass | undefined;
+    // @internal
     static assertIsMixin(item?: SchemaItem): asserts item is Mixin;
     // @internal (undocumented)
     protected createNavigationProperty(name: string, relationship: string | RelationshipClass, direction: string | StrengthDirection): Promise<NavigationProperty>;
@@ -957,7 +973,7 @@ export class Mixin extends ECClass {
     static isMixin(item?: SchemaItem): item is Mixin;
     // (undocumented)
     readonly schemaItemType: SchemaItemType;
-    // (undocumented)
+    // @internal (undocumented)
     static get schemaItemType(): SchemaItemType;
     // @internal (undocumented)
     protected setAppliesTo(appliesTo: LazyLoadedEntityClass): void;
@@ -974,6 +990,7 @@ export interface MixinProps extends ClassProps {
 
 // @public (undocumented)
 export class NavigationProperty extends Property {
+    // @internal
     constructor(ecClass: ECClass, name: string, relationship: LazyLoadedRelationshipClass, direction?: StrengthDirection);
     // (undocumented)
     get direction(): StrengthDirection;
@@ -1092,7 +1109,9 @@ export function parseStrengthDirection(direction: string): StrengthDirection | u
 
 // @public (undocumented)
 export class Phenomenon extends SchemaItem {
+    // @internal
     constructor(schema: Schema, name: string);
+    // @internal
     static assertIsPhenomenon(item?: SchemaItem): asserts item is Phenomenon;
     // (undocumented)
     get definition(): string;
@@ -1103,7 +1122,7 @@ export class Phenomenon extends SchemaItem {
     static isPhenomenon(item?: SchemaItem): item is Phenomenon;
     // (undocumented)
     readonly schemaItemType: SchemaItemType;
-    // (undocumented)
+    // @internal (undocumented)
     static get schemaItemType(): SchemaItemType;
     // @internal (undocumented)
     protected setDefinition(definition: string): Promise<void>;
@@ -1120,6 +1139,7 @@ export interface PhenomenonProps extends SchemaItemProps {
 
 // @public (undocumented)
 export class PrimitiveArrayProperty extends PrimitiveArrayProperty_base {
+    // @internal
     constructor(ecClass: ECClass, name: string, primitiveType?: PrimitiveType);
     toJSON(): PrimitiveArrayPropertyProps;
 }
@@ -1132,6 +1152,7 @@ export interface PrimitiveArrayPropertyProps extends ArrayPropertyProps {
 
 // @public (undocumented)
 export abstract class PrimitiveOrEnumPropertyBase extends Property {
+    // @internal
     constructor(ecClass: ECClass, name: string, type: PropertyType);
     // (undocumented)
     get extendedTypeName(): string | undefined;
@@ -1188,6 +1209,7 @@ export interface PrimitiveOrEnumPropertyBaseProps extends PropertyProps {
 
 // @public (undocumented)
 export class PrimitiveProperty extends PrimitiveOrEnumPropertyBase {
+    // @internal
     constructor(ecClass: ECClass, name: string, primitiveType?: PrimitiveType);
     // (undocumented)
     fromJSON(primitivePropertyProps: PrimitivePropertyProps): Promise<void>;
@@ -1237,6 +1259,7 @@ export function primitiveTypeToString(type: PrimitiveType): string;
 
 // @public
 export abstract class Property implements CustomAttributeContainerProps {
+    // @internal
     constructor(ecClass: ECClass, name: string, type: PropertyType);
     // @internal (undocumented)
     protected addCustomAttribute(customAttribute: CustomAttribute): void;
@@ -1307,6 +1330,7 @@ export abstract class Property implements CustomAttributeContainerProps {
 
 // @public (undocumented)
 export class PropertyCategory extends SchemaItem {
+    // @internal
     constructor(schema: Schema, name: string);
     // @internal
     static assertIsPropertyCategory(item?: SchemaItem): asserts item is PropertyCategory;
@@ -1319,7 +1343,7 @@ export class PropertyCategory extends SchemaItem {
     get priority(): number;
     // (undocumented)
     readonly schemaItemType: SchemaItemType;
-    // (undocumented)
+    // @internal (undocumented)
     static get schemaItemType(): SchemaItemType;
     // @internal
     protected setPriority(priority: number): void;
@@ -1443,6 +1467,7 @@ export namespace PropertyTypeUtils {
 
 // @public
 export class RelationshipClass extends ECClass {
+    // @internal
     constructor(schema: Schema, name: string, modifier?: ECClassModifier);
     // @internal
     static assertIsRelationshipClass(item?: SchemaItem): asserts item is RelationshipClass;
@@ -1457,7 +1482,7 @@ export class RelationshipClass extends ECClass {
     static isRelationshipClass(item?: SchemaItem): item is RelationshipClass;
     // (undocumented)
     readonly schemaItemType: SchemaItemType;
-    // (undocumented)
+    // @internal (undocumented)
     static get schemaItemType(): SchemaItemType;
     // @internal
     protected setSourceConstraint(source: RelationshipConstraint): void;
@@ -1502,6 +1527,7 @@ export interface RelationshipClassProps extends ClassProps {
 
 // @public
 export class RelationshipConstraint implements CustomAttributeContainerProps {
+    // @internal
     constructor(relClass: RelationshipClass, relEnd: RelationshipEnd, roleLabel?: string, polymorphic?: boolean);
     // (undocumented)
     get abstractConstraint(): LazyLoadedRelationshipConstraintClass | undefined;
@@ -1582,6 +1608,7 @@ export function relationshipEndToString(end: RelationshipEnd): string;
 
 // @public (undocumented)
 export class RelationshipMultiplicity {
+    // @internal
     constructor(lowerLimit: number, upperLimit: number);
     // (undocumented)
     equals(rhs: RelationshipMultiplicity): boolean;
@@ -1825,6 +1852,19 @@ export class SchemaContext {
     schemaExists(schemaKey: SchemaKey): boolean;
 }
 
+// @beta
+export class SchemaFormatsProvider implements FormatsProvider {
+    constructor(contextOrLocater: ISchemaLocater, unitSystem: UnitSystemKey);
+    // (undocumented)
+    get context(): SchemaContext;
+    getFormat(name: string): Promise<SchemaItemFormatProps | undefined>;
+    // (undocumented)
+    onFormatsChanged: BeEvent<(args: FormatsChangedArgs) => void>;
+    // (undocumented)
+    get unitSystem(): UnitSystemKey;
+    set unitSystem(unitSystem: UnitSystemKey);
+}
+
 // @internal
 export class SchemaGraph {
     detectCycles(): ReferenceCycle[] | undefined;
@@ -1850,6 +1890,7 @@ export interface SchemaInfo {
 
 // @public
 export abstract class SchemaItem {
+    // @internal
     constructor(schema: Schema, name: string);
     // (undocumented)
     get description(): string | undefined;
@@ -1871,6 +1912,7 @@ export abstract class SchemaItem {
     static parseFullName(fullName: string): [string, string];
     // (undocumented)
     readonly schema: Schema;
+    // @internal
     static get schemaItemType(): SupportedSchemaItemType;
     abstract get schemaItemType(): SchemaItemType;
     // @internal (undocumented)
@@ -2029,7 +2071,7 @@ export interface SchemaKeyProps {
     readonly write: number;
 }
 
-// @public
+// @beta
 export class SchemaLoader {
     constructor(getSchema: SchemaPropsGetter);
     get context(): SchemaContext;
@@ -2151,6 +2193,7 @@ export enum StrengthType {
 
 // @public (undocumented)
 export class StructArrayProperty extends StructArrayProperty_base {
+    // @internal
     constructor(ecClass: ECClass, name: string, type: StructClass);
 }
 
@@ -2162,9 +2205,11 @@ export interface StructArrayPropertyProps extends ArrayPropertyProps {
 
 // @public
 export class StructClass extends ECClass {
+    // @internal
     static assertIsStructClass(item?: SchemaItem): asserts item is StructClass;
     static isStructClass(item?: SchemaItem): item is StructClass;
     readonly schemaItemType: SchemaItemType;
+    // @internal
     static get schemaItemType(): SchemaItemType;
 }
 
@@ -2173,6 +2218,7 @@ export type StructClassProps = ClassProps;
 
 // @public (undocumented)
 export class StructProperty extends Property {
+    // @internal
     constructor(ecClass: ECClass, name: string, type: StructClass);
     // (undocumented)
     fromJSON(structPropertyProps: StructPropertyProps): Promise<void>;
@@ -2198,6 +2244,7 @@ export type SupportedSchemaItemType = SchemaItemType | AbstractSchemaItemType;
 
 // @public
 export class Unit extends SchemaItem {
+    // @internal
     constructor(schema: Schema, name: string);
     // @alpha
     static areCompatible(unitA: Unit, unitB: Unit): Promise<boolean>;
@@ -2226,7 +2273,7 @@ export class Unit extends SchemaItem {
     get phenomenon(): LazyLoadedPhenomenon | undefined;
     // (undocumented)
     readonly schemaItemType: SchemaItemType;
-    // (undocumented)
+    // @internal (undocumented)
     static get schemaItemType(): SchemaItemType;
     // @internal (undocumented)
     protected setDefinition(definition: string): Promise<void>;
@@ -2271,7 +2318,7 @@ export class UnitSystem extends SchemaItem {
     static isUnitSystem(item?: SchemaItem): item is UnitSystem;
     // (undocumented)
     readonly schemaItemType: SchemaItemType;
-    // (undocumented)
+    // @internal (undocumented)
     static get schemaItemType(): SchemaItemType;
 }
 

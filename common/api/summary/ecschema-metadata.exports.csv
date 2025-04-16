@@ -32,9 +32,9 @@ internal;interface;DelayedPromiseWithPropsConstructor
 public;class;ECClass
 public;enum;ECClassModifier
 public;class;ECName
-internal;class;ECObjectsError
-public;enum;ECObjectsStatus
+internal;class;ECSchemaError
 internal;namespace;ECSchemaNamespaceUris
+public;enum;ECSchemaStatus
 internal;interface;ECSpecVersion
 internal;class;ECStringConstants
 public;class;ECVersion
@@ -115,6 +115,7 @@ public;class;RelationshipMultiplicity
 public;class;Schema
 internal;class;SchemaCache
 public;class;SchemaContext
+beta;class;SchemaFormatsProvider
 internal;class;SchemaGraph
 internal;class;SchemaGraphUtil
 public;interface;SchemaInfo
@@ -131,7 +132,7 @@ public;interface;SchemaItemUnitProps
 public;class;SchemaJsonLocater
 public;class;SchemaKey
 public;interface;SchemaKeyProps
-public;class;SchemaLoader
+beta;class;SchemaLoader
 public;enum;SchemaMatchType
 public;class;SchemaPartVisitorDelegate
 public;interface;SchemaProps

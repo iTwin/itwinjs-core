@@ -7,9 +7,10 @@ import { assert } from "chai";
 import * as path from "path";
 import * as sinon from "sinon";
 import { Guid } from "@itwin/core-bentley";
-import { CheckpointManager, V2CheckpointManager } from "../../CheckpointManager";
+import { V2CheckpointManager } from "../../CheckpointManager";
 import { IModelJsFs } from "../../IModelJsFs";
 import { _hubAccess, _nativeDb } from "../../internal/Symbols";
+import { IModelTestUtils } from "../IModelTestUtils";
 
 describe("Checkpoint Manager", () => {
 
@@ -27,7 +28,7 @@ describe("Checkpoint Manager", () => {
       localFile: path.join(V2CheckpointManager.getFolder(), Guid.createValue()),
       checkpoint,
     };
-    const db = CheckpointManager.tryOpenLocalFile(request);
+    const db = IModelTestUtils.tryOpenLocalFile(request);
     assert.isUndefined(db);
   });
 
@@ -54,7 +55,7 @@ describe("Checkpoint Manager", () => {
       localFile: outputFile,
       checkpoint,
     };
-    const db = CheckpointManager.tryOpenLocalFile(request);
+    const db = IModelTestUtils.tryOpenLocalFile(request);
     assert.isUndefined(db);
   });
 });

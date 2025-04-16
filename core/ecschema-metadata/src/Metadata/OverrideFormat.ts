@@ -13,8 +13,8 @@ import { Format } from "./Format";
 import { Schema } from "./Schema";
 import { SchemaItemOverrideFormatProps } from "../Deserialization/JsonProps";
 import { Mutable } from "@itwin/core-bentley";
-import { ECObjectsError, ECObjectsStatus } from "../Exception";
 import { LazyLoadedInvertedUnit, LazyLoadedUnit } from "../Interfaces";
+import { ECSchemaError, ECSchemaStatus } from "../Exception";
 
 /**
  * @public @preview
@@ -88,7 +88,7 @@ export class OverrideFormat {
     for (const [unit, unitLabel] of this._units) {
       const unitSchema = koqSchema.context.getSchemaSync(unit.schemaKey);
       if(unitSchema === undefined)
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The unit schema ${unit.schemaKey} is not found in the context.`);
+        throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The unit schema ${unit.schemaKey} is not found in the context.`);
 
       fullName += "[";
       fullName += XmlSerializationUtils.createXmlTypedName(koqSchema, unitSchema, unit.name);
@@ -126,7 +126,7 @@ export class OverrideFormat {
   public static parseFormatString(formatString: string): OverrideFormatProps {
     const match = formatString.split(formatStringRgx); // split string based on regex groups
     if (undefined === match[1])
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The format string, ${formatString}, on KindOfQuantity is missing a format.`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The format string, ${formatString}, on KindOfQuantity is missing a format.`);
 
     const returnValue: OverrideFormatProps = { name: match[1] };
 
@@ -145,7 +145,7 @@ export class OverrideFormat {
       if (overrideString.length > 0 && undefined === tokens.find((token) => {
         return "" !== token; // there is at least one token that is not empty.
       })) {
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
+        throw new ECSchemaError(ECSchemaStatus.InvalidECJson, ``);
       }
 
       // The first override parameter overrides the default precision of the format
@@ -155,7 +155,7 @@ export class OverrideFormat {
         if (tokens[precisionIndx].length > 0) {
           const precision = Number.parseInt(tokens[precisionIndx], 10);
           if (Number.isNaN(precision))
-            throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The format string '${formatString}' on KindOfQuantity has a precision override '${tokens[precisionIndx]}' that is not number.`);
+            throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The format string '${formatString}' on KindOfQuantity has a precision override '${tokens[precisionIndx]}' that is not number.`);
           returnValue.precision = precision;
         }
       }
@@ -167,7 +167,7 @@ export class OverrideFormat {
         break;
       // Unit override required
       if (undefined === match[i + 1])
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
+        throw new ECSchemaError(ECSchemaStatus.InvalidECJson, ``);
 
       if (undefined === returnValue.unitAndLabels)
         returnValue.unitAndLabels = [];

@@ -291,6 +291,7 @@ internal;interface;LockStatusExclusive
 internal;interface;LockStatusShared
 internal;class;MetaDataRegistry
 deprecated;class;MetaDataRegistry
+internal;interface;MockCheckpoint
 public;class;Model
 public;class;ModelSelector
 internal;class;ModelSelectorRefersToModels

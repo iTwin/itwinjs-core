@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { PrimitiveType, primitiveTypeToString } from "../ECObjects";
-import { ECObjectsError, ECObjectsStatus } from "../Exception";
+import { ECSchemaError, ECSchemaStatus } from "../Exception";
 import { CustomAttribute } from "../Metadata/CustomAttribute";
 import { CustomAttributeClass } from "../Metadata/CustomAttributeClass";
 import { ArrayProperty, EnumerationProperty, PrimitiveOrEnumPropertyBase, PrimitiveProperty, Property, StructProperty } from "../Metadata/Property";
@@ -25,7 +25,7 @@ export namespace XmlSerializationUtils {
   export async function writeCustomAttribute(fullName: string, customAttribute: CustomAttribute, schemaDoc: Document, schema: Schema): Promise<Element> {
     const caClass = await schema.lookupItem(fullName) as CustomAttributeClass;
     if (!caClass)
-      throw new ECObjectsError(ECObjectsStatus.ClassNotFound, `The class '${fullName}' could not be found in the current schema context.`);
+      throw new ECSchemaError(ECSchemaStatus.ClassNotFound, `The class '${fullName}' could not be found in the current schema context.`);
 
     const nameAndNamespace = await resolveCustomAttributeNamespace(fullName, schema);
     const caElement = schemaDoc.createElement(nameAndNamespace[0]);
@@ -113,10 +113,10 @@ export namespace XmlSerializationUtils {
     if (propertyClass.isEnumeration()) {
       const enumeration = await (propertyClass as EnumerationProperty).enumeration;
       if (!enumeration)
-        throw new ECObjectsError(ECObjectsStatus.ClassNotFound, `The enumeration on property class '${propertyClass.fullName}' could not be found in the current schema context.`);
+        throw new ECSchemaError(ECSchemaStatus.ClassNotFound, `The enumeration on property class '${propertyClass.fullName}' could not be found in the current schema context.`);
 
       if (enumeration.type === undefined)
-        throw new ECObjectsError(ECObjectsStatus.InvalidType, `The enumeration on property class '${propertyClass.fullName}' has an invalid primitive type.`);
+        throw new ECSchemaError(ECSchemaStatus.InvalidType, `The enumeration on property class '${propertyClass.fullName}' has an invalid primitive type.`);
 
       primitiveType = enumeration.type;
     } else
@@ -148,7 +148,7 @@ export namespace XmlSerializationUtils {
         propertyElement.textContent = propertyValue;
         return;
       default:
-        throw new ECObjectsError(ECObjectsStatus.InvalidPrimitiveType, `The property '${propertyClass.fullName}' has an invalid primitive type.`);
+        throw new ECSchemaError(ECSchemaStatus.InvalidPrimitiveType, `The property '${propertyClass.fullName}' has an invalid primitive type.`);
     }
   }
 
@@ -159,7 +159,7 @@ export namespace XmlSerializationUtils {
     // Alias is required in Spec. It could be undefined (technically), so
     // throw until fixed.
     if (typeSchema.alias === undefined)
-      throw new ECObjectsError(ECObjectsStatus.InvalidSchemaAlias, `The schema '${typeSchema.name}' has an invalid alias.`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidSchemaAlias, `The schema '${typeSchema.name}' has an invalid alias.`);
 
     return `${typeSchema.alias}:${typeName}`;
   }
@@ -171,7 +171,7 @@ export namespace XmlSerializationUtils {
 
     const attributeSchema = nameParts[0].toUpperCase() === schema.name.toUpperCase() ? schema : await schema.getReference(nameParts[0]);
     if (!attributeSchema)
-      throw new ECObjectsError(ECObjectsStatus.UnableToLocateSchema, `Unable to resolve the namespace for CustomAttribute '${caName}' because the referenced schema '${nameParts[0]}' could not be located.`);
+      throw new ECSchemaError(ECSchemaStatus.UnableToLocateSchema, `Unable to resolve the namespace for CustomAttribute '${caName}' because the referenced schema '${nameParts[0]}' could not be located.`);
 
     return [nameParts[1], `${nameParts[0]}.${attributeSchema.schemaKey.version.toString()}`];
   }
