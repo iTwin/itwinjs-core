@@ -61,6 +61,7 @@ public;interface;KindOfQuantityProps
 public;type;LazyLoadedECClass
 public;type;LazyLoadedEntityClass
 public;type;LazyLoadedEnumeration
+public;type;LazyLoadedFormat
 public;type;LazyLoadedInvertedUnit
 public;type;LazyLoadedKindOfQuantity
 public;type;LazyLoadedMixin
