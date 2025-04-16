@@ -1097,7 +1097,7 @@ export abstract class IModelDb extends IModel {
 
   /**
    * Gets the context that allows accessing the metadata (ecschema-metadata package) of this iModel
-   * @beta
+   * @public @preview
    */
   public get schemaContext(): SchemaContext {
     if (this._schemaContext === undefined) {
