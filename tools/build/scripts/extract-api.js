@@ -63,6 +63,9 @@ const config = {
     reportFolder: path.resolve(apiReportFolder),
     reportTempFolder: path.resolve(apiReportTempFolder),
     includeForgottenExports: !!includeUnexportedApis,
+    tagsToReport: {
+      "@preview": true
+    },
   },
   docModel: {
     enabled: false
