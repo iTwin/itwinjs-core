@@ -88,7 +88,7 @@ export namespace CatalogIModel {
     readonly localCatalogFile: LocalFileName;
   }
 
-  /** Properties of a newly created container created from [[CreateNewContainerArgs]]. Most importantly, this holds the ContainerId of the new container. */
+  /** Properties of a newly created container created from [[CatalogIModel.CreateNewContainerArgs]]. Most importantly, this holds the ContainerId of the new container. */
   export interface NewContainerProps {
     /** The ContainerId of the new container (usually a [Guid]($bentley)). Applications should store this value to access the container via the CatalogIModel apis. */
     readonly containerId: string;
@@ -132,7 +132,7 @@ export namespace CatalogIModel {
     readonly identifier?: string;
   }
 
-  /** A [semver string](https://github.com/npm/node-semver?tab=readme-ov-file#ranges) describing a range of acceptable [[CatalogIModels]]s,
+  /** A [semver string](https://github.com/npm/node-semver?tab=readme-ov-file#ranges) describing a range of acceptable [[CatalogIModel]]s,
    * e.g., ">=1.2.7 <1.3.0".
    */
   export type VersionRange = string;

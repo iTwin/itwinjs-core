@@ -254,16 +254,16 @@ export namespace CloudSqlite {
 
   /** The base name of a CloudSqlite database, without any version information.
    * The name must conform to the following constraints:
-   * - Case-insensitively unique among all databases in the same [[CloudContainer]]
+   * - Case-insensitively unique among all databases in the same [[CloudSqlite.CloudContainer]]
    * - Between 1 and 255 characters in length.
    * - A legal filename on both [Windows](https://learn.microsoft.com/en-us/windows/win32/fileio/naming-a-file#naming-conventions) and UNIX.
    * - Contain none of the following characters: forward or backward slash, period, single or double quote, backtick, colon, and "#".
    * - Begin or end with a whitespace character.
-   * @see [[DbFullName]] for the fully-specified name, including version information.
+   * @see [[CloudSqlite.DbFullName]] for the fully-specified name, including version information.
    */
   export type DbName = string;
 
-  /** The fully-specified name of a CloudSqlite database, combining its [[DbName]] and [[DbVersion]] in the format "name:version".
+  /** The fully-specified name of a CloudSqlite database, combining its [[CloudSqlite.DbName]] and [[CloudSqlite.DbVersion]] in the format "name:version".
    */
   export type DbFullName = string;
 
@@ -298,7 +298,7 @@ export namespace CloudSqlite {
   }
 
   /**
-   * The release increment for a version number, used as part of [[CreateNewDbVersionArgs]] to specify the kind of version to create.
+   * The release increment for a version number, used as part of [[CloudSqlite.CreateNewDbVersionArgs]] to specify the kind of version to create.
    * @see [semver.ReleaseType](https://www.npmjs.com/package/semver)
    */
   export type SemverIncrement = "major" | "minor" | "patch" | "premajor" | "preminor" | "prepatch" | "prerelease";

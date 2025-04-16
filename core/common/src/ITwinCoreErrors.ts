@@ -9,7 +9,7 @@
 import { ITwinError } from "@itwin/core-bentley";
 
 /**
- * An error originating from the [SqliteDb]($backend) API.
+ * An error originating from the [SQLiteDb]($backend) API.
  * @beta
  */
 export interface SqliteError extends ITwinError {
