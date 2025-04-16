@@ -35,7 +35,6 @@ describe("IModelConnection (#integration)", () => {
 
     await TestUtility.initialize(TestUsers.regular);
     IModelApp.authorizationClient = TestUtility.iTwinPlatformEnv.authClient;
-    IModelApp["_hubAccess"] = TestUtility.iTwinPlatformEnv.hubAccess; // eslint-disable-line @typescript-eslint/dot-notation
 
     // Setup a model with a large number of change sets
     const testITwinId = await TestUtility.queryITwinIdByName(TestUtility.testITwinName);
