@@ -8,7 +8,7 @@
  */
 import { assert, BeDuration, BeTimePoint, ByteStream, JsonUtils, utf8ToString } from "@itwin/core-bentley";
 import { Point2d, Point3d, Range1d, Vector3d } from "@itwin/core-geometry";
-import { CesiumTerrainAssetId, nextPoint3d64FromByteStream, OctEncodedNormal, QPoint2d } from "@itwin/core-common";
+import { CesiumTerrainAssetId, ContextRealityModel, nextPoint3d64FromByteStream, OctEncodedNormal, QPoint2d } from "@itwin/core-common";
 import { MessageSeverity } from "@itwin/appui-abstract";
 import { request, RequestOptions } from "../../request/Request";
 import { ApproximateTerrainHeights } from "../../ApproximateTerrainHeights";
@@ -33,6 +33,18 @@ enum QuantizedMeshExtensionIds {
 export function getCesiumAssetUrl(osmAssetId: number, requestKey: string): string {
   return `$CesiumIonAsset=${osmAssetId}:${requestKey}`;
 }
+
+/** Return true if the specified context reality model represents a Cesium OSM Buildings asset.
+ * @beta
+ */
+export function isCesiumOSMBuildingsRealityModel(model: ContextRealityModel) {
+  const cesiumUrl = getCesiumOSMBuildingsUrl();
+  if (undefined === cesiumUrl)
+    return false;
+
+  return model.url === cesiumUrl;
+}
+
 /** @internal */
 export function getCesiumOSMBuildingsUrl(): string | undefined {
   const key = IModelApp.tileAdmin.cesiumIonKey;
