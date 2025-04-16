@@ -800,6 +800,9 @@ importers:
       '@itwin/core-i18n':
         specifier: workspace:*
         version: link:../i18n
+      '@itwin/ecschema-rpcinterface-common':
+        specifier: workspace:*
+        version: link:../ecschema-rpc/common
       '@itwin/object-storage-core':
         specifier: ^2.3.0
         version: 2.3.0(inversify@6.0.1)(reflect-metadata@0.1.13)

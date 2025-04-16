@@ -7,6 +7,7 @@ import { Guid, ProcessDetector } from "@itwin/core-bentley";
 import { IModel } from "@itwin/core-common";
 import { SnapshotConnection } from "@itwin/core-frontend";
 import { TestUtility } from "../TestUtility";
+import { SchemaKey } from "@itwin/ecschema-metadata";
 
 if (ProcessDetector.isElectronAppFrontend) {
 
@@ -85,6 +86,13 @@ if (ProcessDetector.isElectronAppFrontend) {
       assert.isTrue(snapshotR1.isClosed);
       assert.isTrue(snapshotR2.isClosed);
       assert.isTrue(snapshotF1.isClosed);
+
+      assert.isDefined(snapshotR1.schemaContext);
+      assert.isDefined(snapshotR2.schemaContext);
+      assert.isDefined(snapshotF1.schemaContext);
+      const testKey = new SchemaKey("BisCore");
+      const elem = await snapshotF1.schemaContext.getSchema(testKey);
+      assert.isDefined(elem, "BisCore schema should be defined in snapshot iModel");
     });
   });
 };

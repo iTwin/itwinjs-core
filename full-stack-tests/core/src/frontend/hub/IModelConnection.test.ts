@@ -12,6 +12,7 @@ import {
 import { Range3d, Transform } from "@itwin/core-geometry";
 import { TestUsers } from "@itwin/oidc-signin-tool/lib/cjs/frontend";
 import { TestUtility } from "../TestUtility";
+import { SchemaKey } from "@itwin/ecschema-metadata";
 
 async function executeQuery(iModel: IModelConnection, ecsql: string, bindings?: any[] | object): Promise<any[]> {
   const rows: any[] = [];
@@ -208,5 +209,12 @@ describe("IModelConnection (#integration)", () => {
 
     expect(Id64.isTransient(Id64.invalid)).to.be.false;
     expect(Id64.isTransient("0xffffff6789abcdef")).to.be.true;
+  });
+
+  it("should be able to retrieve schema metadata", async () => {
+    assert.exists(iModel.schemaContext);
+    const testKey = new SchemaKey("BisCore");
+    const elem = await iModel.schemaContext.getSchema(testKey);
+    assert.isDefined(elem, "BisCore schema should be defined in snapshot iModel");
   });
 });

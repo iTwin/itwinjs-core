@@ -36,6 +36,8 @@ import { ViewState } from "./ViewState";
 import { _requestSnap } from "./common/internal/Symbols";
 import { IpcApp } from "./IpcApp";
 import { SchemaContext } from "@itwin/ecschema-metadata";
+import { ECSchemaRpcLocater } from '@itwin/ecschema-rpcinterface-common';
+
 
 const loggerCategory: string = FrontendLoggerCategory.IModelConnection;
 
@@ -618,12 +620,15 @@ export abstract class IModelConnection extends IModel {
 
   /**
    * Gets the context that allows accessing the metadata (ecschema-metadata package) of this iModel.
-   * The context is created lazily when this property is accessed for the first time, without any locater registered.
+   * The context is created lazily when this property is accessed for the first time, with an [[ECSchemaRpcLocater]] registered.
+   * @beta
    */
   public get schemaContext(): SchemaContext {
     if (this._schemaContext === undefined)
       {
         const context = new SchemaContext();
+        const locater = new ECSchemaRpcLocater(this._getRpcProps());
+        context.addLocater(locater);
         this._schemaContext = context;
       }
 

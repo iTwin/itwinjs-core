@@ -4906,6 +4906,7 @@ export abstract class IModelConnection extends IModel {
     // @internal @deprecated (undocumented)
     requestSnap(props: SnapRequestProps): Promise<SnapResponseProps>;
     routingContext: IModelRoutingContext;
+    // @beta
     get schemaContext(): SchemaContext;
     readonly selectionSet: SelectionSet;
     spatialFromCartographic(cartographic: Cartographic[]): Promise<Point3d[]>;

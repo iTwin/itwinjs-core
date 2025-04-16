@@ -91,6 +91,7 @@
     "@itwin/object-storage-core": "^2.3.0",
     "@itwin/core-i18n": "workspace:*",
     "@itwin/webgl-compatibility": "workspace:*",
+    "@itwin/ecschema-rpcinterface-common": "workspace:*",
     "@loaders.gl/core": "^3.1.6",
     "@loaders.gl/draco": "^3.1.6",
     "fuse.js": "^3.3.0",
