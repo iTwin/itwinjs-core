@@ -98,10 +98,7 @@ ${computeOtherPos}
 
 // IndexedEdgeGeometry.renderOrder returns Edge or PlanarEdge. Adjust if silhouette for output to pick buffers.
 const computeIndexedRenderOrder = `
-  if (g_isSilhouette)
-    v_renderOrder = kRenderOrder_Edge == u_renderOrder ? kRenderOrder_Silhouette : kRenderOrder_PlanarSilhouette;
-  else
-    v_renderOrder = u_renderOrder;
+  v_renderOrder = g_isSilhouette ? kRenderOrder_Silhouette : u_renderOrder;
 `;
 
 const checkForSilhouetteDiscard = `

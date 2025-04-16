@@ -476,13 +476,14 @@ export function addRenderOrderConstants(builder: ShaderBuilder) {
   builder.addConstant("kRenderOrder_Edge", VariableType.Float, RenderOrder.Edge.toFixed(1));
   builder.addConstant("kRenderOrder_PlanarEdge", VariableType.Float, RenderOrder.PlanarEdge.toFixed(1));
   builder.addConstant("kRenderOrder_Silhouette", VariableType.Float, RenderOrder.Silhouette.toFixed(1));
-  builder.addConstant("kRenderOrder_PlanarSilhouette", VariableType.Float, RenderOrder.PlanarSilhouette.toFixed(1));
   builder.addConstant("kRenderOrder_UnlitSurface", VariableType.Float, RenderOrder.UnlitSurface.toFixed(1));
   builder.addConstant("kRenderOrder_LitSurface", VariableType.Float, RenderOrder.LitSurface.toFixed(1));
   builder.addConstant("kRenderOrder_PlanarUnlitSurface", VariableType.Float, RenderOrder.PlanarUnlitSurface.toFixed(1));
   builder.addConstant("kRenderOrder_PlanarLitSurface", VariableType.Float, RenderOrder.PlanarLitSurface.toFixed(1));
   builder.addConstant("kRenderOrder_PlanarBit", VariableType.Float, RenderOrder.PlanarBit.toFixed(1));
   builder.addConstant("kRenderOrder_Background", VariableType.Float, RenderOrder.Background.toFixed(1));
+  builder.addConstant("kRenderOrder_MajorContour", VariableType.Float, RenderOrder.MajorContour.toFixed(1));
+  builder.addConstant("kRenderOrder_MinorContour", VariableType.Float, RenderOrder.MinorContour.toFixed(1));
 }
 
 /** @internal */

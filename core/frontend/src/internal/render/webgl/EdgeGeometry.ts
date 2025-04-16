@@ -115,7 +115,7 @@ export class SilhouetteEdgeGeometry extends EdgeGeometry {
   }
 
   public override get techniqueId(): TechniqueId { return TechniqueId.SilhouetteEdge; }
-  public override get renderOrder(): RenderOrder { return this.isPlanar ? RenderOrder.PlanarSilhouette : RenderOrder.Silhouette; }
+  public override get renderOrder(): RenderOrder { return RenderOrder.Silhouette; }
   public get normalPairs(): BufferHandle { return this._normalPairs; }
 
   private constructor(indices: BufferHandle, endPointAndQuadsIndices: BufferHandle, normalPairs: BufferHandle, numIndices: number, mesh: MeshData) {

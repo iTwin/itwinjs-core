@@ -124,7 +124,6 @@ export abstract class CachedGeometry implements WebGLDisposable, RenderMemory.Co
       case RenderOrder.Edge:
       case RenderOrder.Silhouette:
       case RenderOrder.PlanarEdge:
-      case RenderOrder.PlanarSilhouette:
         return true;
       default:
         return false;

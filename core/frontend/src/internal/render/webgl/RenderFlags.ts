@@ -200,39 +200,51 @@ export enum TextureUnit {
   SurfaceDraping5 = WebGLRenderingContext.TEXTURE16,
 }
 
-/**
- * Defines the order in which primitives are rendered within a GLESList. This is chiefly
- * used to sort primitives which originate from the same element. e.g., the blanking fill
- * associated with a text field must always render behind the text; the edges of a surface
- * must render in front of the surface; etc.
+/** Defines different types of geometry and their relative display priorities.
+ * Each `CachedGeometry` specifies its own RenderOrder, which is supplied to shader programs as an input.
+ * Shader programs output a RenderOrder for each pixel, which provides information about the kind of geometry that produced each pixel.
+ *
+ * The display priority is used chiefly to sort geometries originating from **the same element**. For example,
+ * the blanking fill associated with a text string must always render behind the text, and the edges of a surface must always
+ * render in front of the surface.
  * An exception to the 'same element' rule is provided for planar surfaces and edges thereof
  * sketched onto non-planar surfaces. When the depth test is ambiguous the planar geometry
  * is always on top of the non-planar surface. This addresses z-fighting when shapes are
  * sketched onto surfaces, e.g. as part of push-pull modeling workflows.
+ *
+ * RenderOrder values must fit in 8 bits. The shader program writes them to one byte of a RGBA texture - the other three bytes encode the depth.
  * @internal
  */
 export const enum RenderOrder {
+  // no geometry. never planar.
   None = 0,
-  Background = 1, // i.e., background map drawn without depth
+  // Background map drawn without depth. never planar.
+  Background = 1,
+  // blanking fill. only ever applies to planar geometry, but the planar bit is never set.
   BlankingRegion = 2,
-  UnlitSurface = 3, // Distinction only made for whether or not to apply ambient occlusion.
+  // Distinguished from LitSurface strictly so the shader program can determine whether or not to apply ambient occlusion.
+  UnlitSurface = 3,
   LitSurface = 4,
+  // A polyline or point string
   Linear = 5,
+  // A "hard" (always visible) edge
   Edge = 6,
+  // A conditionally visible edge of a curved surface. never planar.
   Silhouette = 7,
 
+  // High bit indicating planar geometry. Not compatible with all geometry types.
   PlanarBit = 8,
 
   PlanarUnlitSurface = UnlitSurface | PlanarBit,
   PlanarLitSurface = LitSurface | PlanarBit,
   PlanarLinear = Linear | PlanarBit,
   PlanarEdge = Edge | PlanarBit,
-  PlanarSilhouette = Silhouette | PlanarBit,
-}
 
-/** @internal */
-export function isPlanar(order: RenderOrder): boolean {
-  return order >= RenderOrder.PlanarBit;
+  // The following never serve as shader inputs. They are produced as shader outputs when a pixel
+  // corresponds to a contour line generated in the fragment shader.
+  // They reuse the `PlanarBit`. When read back from shader output, they are interpreted as non-planar unlit surfaces.
+  MinorContour = None | PlanarBit,
+  MajorContour = Background | PlanarBit,
 }
 
 /** Flags indicating operations to be performed by the post-process composite step.
