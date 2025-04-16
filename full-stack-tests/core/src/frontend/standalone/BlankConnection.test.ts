@@ -45,6 +45,7 @@ describe("Blank Connection", () => {
     assert.throws(() => blankConnection.getRpcProps());
     const elementProps: ElementProps[] = await blankConnection.elements.getProps(IModel.rootSubjectId);
     assert.equal(0, elementProps.length);
+    assert.isDefined(blankConnection.schemaContext, "A BlankConnection should always return a valid, defined schemaContext");
   });
 
   it("ScreenViewport with a BlankConnection", async () => {
