@@ -90,12 +90,12 @@ describe("DelayedPromiseWithProps", () => {
     const promise = new DelayedPromiseWithProps(props, async () => undefined);
     expect(promise.realProp).to.be.true;
     expect(promise.getterProp).to.equal(5);
-    expect(promise.classMethod).to.exist;
+    expect(promise.classMethod.bind(promise)).to.exist;
     expect(promise.classMethod()).to.equal(42);
     expect(promise.inheritedGetter).to.equal("value");
-    expect(promise.inheritedMethod).to.exist;
+    expect(promise.inheritedMethod.bind(promise)).to.exist;
     expect(promise.inheritedMethod()).to.equal("something");
-    expect(promise.overriddenMethod).to.exist;
+    expect(promise.overriddenMethod.bind(promise)).to.exist;
     expect(promise.overriddenMethod()).to.equal("that");
 
     props.realProp = false;

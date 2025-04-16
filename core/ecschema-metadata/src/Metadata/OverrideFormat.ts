@@ -15,10 +15,10 @@ import { Schema } from "./Schema";
 import { SchemaItemOverrideFormatProps } from "../Deserialization/JsonProps";
 import { Unit } from "./Unit";
 import { Mutable } from "@itwin/core-bentley";
-import { ECObjectsError, ECObjectsStatus } from "../Exception";
+import { ECSchemaError, ECSchemaStatus } from "../Exception";
 
 /**
- * @beta
+ * @public @preview
  */
 export interface OverrideFormatProps {
   name: string;
@@ -28,7 +28,7 @@ export interface OverrideFormatProps {
 
 /**
  * Overrides of a Format, from a Schema, and is SchemaItem that is used specifically on KindOfQuantity.
- * @beta
+ * @public @preview
  */
 export class OverrideFormat {
   private _precision?: DecimalPrecision | FractionalPrecision;
@@ -122,7 +122,7 @@ export class OverrideFormat {
   public static parseFormatString(formatString: string): OverrideFormatProps {
     const match = formatString.split(formatStringRgx); // split string based on regex groups
     if (undefined === match[1])
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The format string, ${formatString}, on KindOfQuantity is missing a format.`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The format string, ${formatString}, on KindOfQuantity is missing a format.`);
 
     const returnValue: OverrideFormatProps = { name: match[1] };
 
@@ -141,7 +141,7 @@ export class OverrideFormat {
       if (overrideString.length > 0 && undefined === tokens.find((token) => {
         return "" !== token; // there is at least one token that is not empty.
       })) {
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
+        throw new ECSchemaError(ECSchemaStatus.InvalidECJson, ``);
       }
 
       // The first override parameter overrides the default precision of the format
@@ -151,7 +151,7 @@ export class OverrideFormat {
         if (tokens[precisionIndx].length > 0) {
           const precision = Number.parseInt(tokens[precisionIndx], 10);
           if (Number.isNaN(precision))
-            throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The format string '${formatString}' on KindOfQuantity has a precision override '${tokens[precisionIndx]}' that is not number.`);
+            throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The format string '${formatString}' on KindOfQuantity has a precision override '${tokens[precisionIndx]}' that is not number.`);
           returnValue.precision = precision;
         }
       }
@@ -163,7 +163,7 @@ export class OverrideFormat {
         break;
       // Unit override required
       if (undefined === match[i + 1])
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
+        throw new ECSchemaError(ECSchemaStatus.InvalidECJson, ``);
 
       if (undefined === returnValue.unitAndLabels)
         returnValue.unitAndLabels = [];
@@ -182,8 +182,8 @@ export class OverrideFormat {
   /**
    * @internal
    */
-  public static isOverrideFormat(object: any): object is OverrideFormat {
-    const overrideFormat = object as OverrideFormat;
+  public static isOverrideFormat(format: unknown): format is OverrideFormat {
+    const overrideFormat = format as Partial<OverrideFormat>;
 
     return overrideFormat !== undefined && overrideFormat.name !== undefined && overrideFormat.parent !== undefined && overrideFormat.parent.schemaItemType === SchemaItemType.Format;
   }

@@ -1031,9 +1031,9 @@ export interface ITwinError extends Error {
 
 // @beta (undocumented)
 export namespace ITwinError {
-    export function create<T extends ITwinError>(args: Optional<T, "name">): T;
+    export function create<T extends ITwinError>(args: Omit<T, "name">): T;
     export function isError<T extends ITwinError>(error: unknown, scope: string, key?: string): error is T;
-    export function throwError<T extends ITwinError>(args: Optional<T, "name">): never;
+    export function throwError<T extends ITwinError>(args: Omit<T, "name">): never;
 }
 
 // @beta
