@@ -2,6 +2,30 @@
   "name": "@itwin/core-common",
   "entries": [
     {
+      "version": "4.11.0",
+      "tag": "@itwin/core-common_v4.11.0",
+      "date": "Wed, 16 Apr 2025 15:50:28 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Deprecated the property extendType of QueryPropertyMetaData and added new property extendedType to QueryPropertyMetaData"
+          },
+          {
+            "comment": "Deprecate ECSqlStatement API"
+          },
+          {
+            "comment": "Update ECSql reader api to support no stat and error code."
+          },
+          {
+            "comment": "Resolves CVE-2025-27152"
+          },
+          {
+            "comment": "Deprecated `MassPropertiesPerCandidateRequestProps` and `MassPropertiesPerCandidateResponseProps`"
+          }
+        ]
+      }
+    },
+    {
       "version": "4.10.13",
       "tag": "@itwin/core-common_v4.10.13",
       "date": "Thu, 10 Apr 2025 17:47:21 GMT",

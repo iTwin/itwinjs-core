@@ -2,6 +2,18 @@
   "name": "@itwin/core-quantity",
   "entries": [
     {
+      "version": "4.11.0",
+      "tag": "@itwin/core-quantity_v4.11.0",
+      "date": "Wed, 16 Apr 2025 15:50:28 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add limitations to quantity parsing logic"
+          }
+        ]
+      }
+    },
+    {
       "version": "4.10.13",
       "tag": "@itwin/core-quantity_v4.10.13",
       "date": "Thu, 10 Apr 2025 17:47:21 GMT",
