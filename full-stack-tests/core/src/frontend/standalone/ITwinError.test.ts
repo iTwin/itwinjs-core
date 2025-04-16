@@ -1,5 +1,5 @@
 import { BentleyError, IModelHubStatus, ProcessDetector } from "@itwin/core-bentley";
-import { BackendError, ChannelError, ConflictingLock, ConflictingLocksError, LockState } from "@itwin/core-common";
+import { BackendError, ChannelControlError, ConflictingLock, ConflictingLocksError, LockState } from "@itwin/core-common";
 import { expect } from "chai";
 import { coreFullStackTestIpc } from "../Editing";
 import { TestUtility } from "../TestUtility";
@@ -46,7 +46,7 @@ if (ProcessDetector.isElectronAppFrontend) {
       await verify(true);
     });
 
-    it("should receive ChannelError", async () => {
+    it("should receive ChannelControlError", async () => {
       const sentErr = {
         message: "test message",
         channelKey: "123",
@@ -57,8 +57,8 @@ if (ProcessDetector.isElectronAppFrontend) {
         await coreFullStackTestIpc.throwChannelError(errKey, sentErr.message, sentErr.channelKey);
       } catch (err: unknown) {
         caughtError = true;
-        expect(ChannelError.isError(err, errKey)).true;
-        if (ChannelError.isError(err, errKey)) {
+        expect(ChannelControlError.isError(err, errKey)).true;
+        if (ChannelControlError.isError(err, errKey)) {
           expect(err.stack?.includes("backend.ts")).true; // this is where we threw from the backend
           expect(err.message).equal(sentErr.message);
           expect(err.name).equal(errKey);
