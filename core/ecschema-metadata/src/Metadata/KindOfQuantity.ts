@@ -48,7 +48,7 @@ export class KindOfQuantity extends SchemaItem {
    */
   protected addPresentationFormat(format: LazyLoadedFormat | OverrideFormat, isDefault: boolean = false) {
     // TODO: Add some sort of validation?
-
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
     (isDefault) ? this._presentationFormats.splice(0, 0, format) : this._presentationFormats.push(format);
   }
 
