@@ -3652,7 +3652,7 @@ export class IModelHostConfiguration implements IModelHostOptions {
     // (undocumented)
     static defaultTileRequestTimeout: number;
     // @beta (undocumented)
-    enableWIPNativeInstanceFunctions?: boolean;
+    enableThinnedNativeInstanceWorkflow?: boolean;
     // @internal (undocumented)
     hubAccess?: BackendHubAccess;
     // @internal (undocumented)
@@ -3681,7 +3681,7 @@ export interface IModelHostOptions {
     // @internal
     crashReportingConfig?: CrashReportingConfig;
     enableOpenTelemetry?: boolean;
-    enableWIPNativeInstanceFunctions?: boolean;
+    enableThinnedNativeInstanceWorkflow?: boolean;
     hubAccess?: BackendHubAccess;
     // @internal
     logTileLoadTimeThreshold?: number;
