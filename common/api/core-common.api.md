@@ -1039,6 +1039,11 @@ export interface CategorySelectorProps extends DefinitionElementProps {
     categories: Id64Array;
 }
 
+// @beta
+export enum CesiumIonAssetId {
+    OSMBuildings = "96188"
+}
+
 // @public
 export enum CesiumTerrainAssetId {
     Bathymetry = "2426648",

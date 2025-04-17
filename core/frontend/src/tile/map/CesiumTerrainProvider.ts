@@ -8,7 +8,7 @@
  */
 import { assert, BeDuration, BeTimePoint, ByteStream, JsonUtils, utf8ToString } from "@itwin/core-bentley";
 import { Point2d, Point3d, Range1d, Vector3d } from "@itwin/core-geometry";
-import { CesiumTerrainAssetId, ContextRealityModel, nextPoint3d64FromByteStream, OctEncodedNormal, QPoint2d } from "@itwin/core-common";
+import { CesiumIonAssetId, CesiumTerrainAssetId, nextPoint3d64FromByteStream, OctEncodedNormal, QPoint2d } from "@itwin/core-common";
 import { MessageSeverity } from "@itwin/appui-abstract";
 import { request, RequestOptions } from "../../request/Request";
 import { ApproximateTerrainHeights } from "../../ApproximateTerrainHeights";
@@ -34,18 +34,13 @@ export function getCesiumAssetUrl(osmAssetId: number, requestKey: string): strin
   return `$CesiumIonAsset=${osmAssetId}:${requestKey}`;
 }
 
-/** Return the asset ID for a Cesium OSM Buildings asset. You can use this when calling [[getCesiumAssetUrl]].
- * @beta
- */
-export const cesiumOSMBuildingAssetId = 96188;
-
 /** @internal */
 export function getCesiumOSMBuildingsUrl(): string | undefined {
   const key = IModelApp.tileAdmin.cesiumIonKey;
   if (undefined === key)
     return undefined;
 
-  return getCesiumAssetUrl(cesiumOSMBuildingAssetId, key);
+  return getCesiumAssetUrl(+CesiumIonAssetId.OSMBuildings, key);
 }
 
 /** @internal */

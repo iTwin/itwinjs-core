@@ -94,6 +94,7 @@ public;interface;CartographicProps
 public;class;CartographicRange
 public;interface;CategoryProps
 public;interface;CategorySelectorProps
+beta;enum;CesiumIonAssetId
 public;enum;CesiumTerrainAssetId
 internal;interface;ChangeData
 public;interface;ChangedElements
