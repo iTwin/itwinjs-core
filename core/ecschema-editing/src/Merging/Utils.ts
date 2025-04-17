@@ -5,7 +5,7 @@
 import { ECClasses } from "../Editing/ECClasses";
 import { PropertyKey } from "./Edits/NameMapping";
 import type { SchemaMergeContext } from "./SchemaMerger";
-import { ECClass, ECObjectsError, ECObjectsStatus, SchemaContext, SchemaItem, SchemaItemKey, SchemaItemType } from "@itwin/ecschema-metadata";
+import { ECClass, ECSchemaError, ECSchemaStatus, SchemaContext, SchemaItem, SchemaItemKey, SchemaItemType } from "@itwin/ecschema-metadata";
 
 /**
  * Resolves a SchemaItemKey for the given item name.
@@ -75,7 +75,7 @@ export async function locateSchemaItem(context: SchemaMergeContext, itemName: st
   const schemaItemKey = toItemKey(context, itemName);
   const schemaItem = await context.editor.schemaContext.getSchemaItem(schemaItemKey);
   if (schemaItem === undefined) {
-    throw new ECObjectsError(ECObjectsStatus.ClassNotFound, `${schemaType} ${schemaItemKey.fullName} not found in schema context.`);
+    throw new ECSchemaError(ECSchemaStatus.ClassNotFound, `${schemaType} ${schemaItemKey.fullName} not found in schema context.`);
   }
 
   return schemaItem;

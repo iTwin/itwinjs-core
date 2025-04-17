@@ -11,7 +11,7 @@ import { SchemaInfo } from '@itwin/ecschema-metadata';
 import { SchemaKey } from '@itwin/ecschema-metadata';
 import { SchemaMatchType } from '@itwin/ecschema-metadata';
 
-// @beta
+// @internal
 export class FileSchemaKey extends SchemaKey {
     constructor(key: SchemaKey, fileName: string, schemaJson?: string);
     // (undocumented)
@@ -20,50 +20,53 @@ export class FileSchemaKey extends SchemaKey {
     schemaText?: string;
 }
 
-// @beta
+// @public
 export class PublishedSchemaXmlFileLocater extends SchemaXmlFileLocater implements ISchemaLocater {
     constructor(knownBackendAssetsDir: string);
     addSchemaSearchPath(_schemaPath: string): void;
     addSchemaSearchPaths(_schemaPaths: string[]): void;
 }
 
-// @beta
+// @public
 export abstract class SchemaFileLocater {
     constructor();
     addSchemaSearchPath(schemaPath: string): void;
     addSchemaSearchPaths(schemaPaths: string[]): void;
+    // @internal
     compareSchemaKeyByVersion: (lhs: FileSchemaKey, rhs: FileSchemaKey) => number;
-    // (undocumented)
-    fileExists(filePath: string): Promise<boolean | undefined>;
-    // (undocumented)
-    fileExistsSync(filePath: string): boolean | undefined;
+    // @internal (undocumented)
+    protected fileExists(filePath: string): Promise<boolean | undefined>;
+    // @internal (undocumented)
+    protected fileExistsSync(filePath: string): boolean | undefined;
+    // @internal
     protected findEligibleSchemaKeys(desiredKey: SchemaKey, matchType: SchemaMatchType, format: string): FileSchemaKey[];
     abstract getSchema(key: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): Promise<Schema | undefined>;
     // (undocumented)
     protected abstract getSchemaKey(data: string): SchemaKey;
-    // (undocumented)
-    readUtf8FileToString(filePath: string): Promise<string | undefined>;
-    // (undocumented)
-    readUtf8FileToStringSync(filePath: string): string | undefined;
-    // (undocumented)
+    // @internal (undocumented)
+    protected readUtf8FileToString(filePath: string): Promise<string | undefined>;
+    // @internal (undocumented)
+    protected readUtf8FileToStringSync(filePath: string): string | undefined;
+    // @internal (undocumented)
     searchPaths: string[];
 }
 
-// @beta
+// @public
 export class SchemaJsonFileLocater extends SchemaFileLocater implements ISchemaLocater {
     getSchema(schemaKey: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): Promise<Schema | undefined>;
     getSchemaInfo(schemaKey: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): Promise<SchemaInfo | undefined>;
+    // @internal
     protected getSchemaKey(data: string): SchemaKey;
     getSchemaSync(schemaKey: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): Schema | undefined;
 }
 
-// @beta
+// @internal
 export namespace SchemaXml {
     export function writeFile(schema: Schema, outputPath: string): Promise<void>;
     export function writeString(schema: Schema): Promise<string>;
 }
 
-// @beta
+// @public
 export class SchemaXmlFileLocater extends SchemaFileLocater implements ISchemaLocater {
     getSchema(key: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): Promise<Schema | undefined>;
     getSchemaInfo(schemaKey: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): Promise<SchemaInfo | undefined>;

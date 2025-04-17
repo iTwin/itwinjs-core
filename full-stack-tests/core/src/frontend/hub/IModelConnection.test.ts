@@ -28,7 +28,6 @@ describe("IModelConnection (#integration)", () => {
     await TestUtility.shutdownFrontend();
     await TestUtility.startFrontend({
       applicationVersion: "1.2.1.1",
-      hubAccess: TestUtility.iTwinPlatformEnv.hubAccess,
     }, true);
 
     Logger.initializeToConsole();
