@@ -1025,6 +1025,87 @@ export class CartographicRange {
     intersectsRange(other: CartographicRange): boolean;
 }
 
+// @beta
+export namespace CatalogError {
+    const // (undocumented)
+    scope = "itwin-Catalog";
+    export function isError(error: unknown, key?: Key): error is ITwinError;
+    // (undocumented)
+    export type Key = "invalid-seed-catalog" | "manifest-missing";
+    export function throwError<T extends ITwinError>(key: Key, e: Omit<T, "name" | "iTwinErrorId">): never;
+}
+
+// @beta
+export namespace CatalogIModel {
+    export interface CreateNewContainerArgs {
+        readonly dbName?: string;
+        readonly iTwinId: Id64String;
+        readonly localCatalogFile: LocalFileName;
+        readonly manifest: Manifest;
+        readonly metadata: {
+            label: string;
+            description?: string;
+            json?: {
+                [key: string]: any;
+            };
+        };
+        readonly version?: string;
+    }
+    export interface CreateNewVersionArgs {
+        readonly containerId: string;
+        readonly fromDb: NameAndVersion;
+        readonly identifier?: string;
+        readonly versionType: "major" | "minor" | "patch" | "premajor" | "preminor" | "prepatch" | "prerelease";
+    }
+    // @internal
+    export type IpcChannel = "catalogIModel/ipc";
+    // @internal (undocumented)
+    export interface IpcMethods {
+        acquireWriteLock(args: {
+            containerId: string;
+            username: string;
+        }): Promise<void>;
+        createNewContainer(args: CreateNewContainerArgs): Promise<NewContainerProps>;
+        createNewVersion(args: CreateNewVersionArgs): Promise<{
+            oldDb: NameAndVersion;
+            newDb: NameAndVersion;
+        }>;
+        getInfo(key: string): Promise<{
+            manifest?: CatalogIModel.Manifest;
+            version: string;
+        }>;
+        openEditable(args: OpenArgs): Promise<IModelConnectionProps>;
+        openReadonly(args: OpenArgs): Promise<IModelConnectionProps>;
+        releaseWriteLock(args: {
+            containerId: string;
+            abandon?: true;
+        }): Promise<void>;
+        updateCatalogManifest(key: string, manifest: CatalogIModel.Manifest): Promise<void>;
+    }
+    export interface Manifest {
+        readonly catalogName: string;
+        readonly contactName?: string;
+        readonly description?: string;
+        readonly iTwinId?: Id64String;
+        lastEditedBy?: string;
+    }
+    export interface NameAndVersion {
+        readonly dbName?: string;
+        readonly version?: VersionRange;
+    }
+    export interface NewContainerProps {
+        readonly baseUri: string;
+        readonly containerId: string;
+        readonly provider: "azure" | "google";
+    }
+    export interface OpenArgs extends NameAndVersion, SnapshotOpenOptions {
+        containerId?: string;
+        prefetch?: boolean;
+        syncWithCloud?: boolean;
+    }
+    export type VersionRange = string;
+}
+
 // @public
 export interface CategoryProps extends DefinitionElementProps {
     // (undocumented)
@@ -1167,15 +1248,14 @@ export enum ChangesetType {
 }
 
 // @beta
-export interface ChannelError extends ITwinError {
+export interface ChannelControlError extends ITwinError {
     readonly channelKey: string;
 }
 
 // @beta (undocumented)
-export namespace ChannelError {
-    const // (undocumented)
-    scope = "itwin-channel-errors";
-    export function isError(error: unknown, key?: Key): error is ChannelError;
+export namespace ChannelControlError {
+    const scope = "itwin-ChannelControl";
+    export function isError(error: unknown, key?: Key): error is ChannelControlError;
     export type Key =
     /** an attempt to create a channel within an existing channel */
     "may-not-nest" |
@@ -1263,6 +1343,34 @@ export interface ClipStyleProps {
 export interface CloudContainerUri {
     // (undocumented)
     readonly uriParams: string;
+}
+
+// @beta
+export interface CloudSqliteError extends ITwinError {
+    readonly containerId?: string;
+    readonly dbName?: string;
+}
+
+// @beta (undocumented)
+export namespace CloudSqliteError {
+    const // (undocumented)
+    scope = "itwin-CloudSqlite";
+    export function isError<T extends CloudSqliteError>(error: unknown, key?: Key): error is T;
+    // (undocumented)
+    export type Key = "already-published" | "copy-error" | "invalid-name" | "no-version-available" | "not-a-function" | "service-not-available" |
+    /** The write lock cannot be acquired because it is currently held by somebody else.
+    * @see WriteLockHeld for details
+    */
+    "write-lock-held" |
+    /** The write lock on a container is not held, but is required for this operation */
+    "write-lock-not-held";
+    export function throwError<T extends CloudSqliteError>(key: Key, e: Omit<T, "name" | "iTwinErrorId">): never;
+    export interface WriteLockHeld extends CloudSqliteError {
+        // @internal (undocumented)
+        errorNumber: number;
+        expires: string;
+        lockedBy: string;
+    }
 }
 
 // @public
@@ -9496,6 +9604,21 @@ export interface SpatialViewDefinitionProps extends ViewDefinition3dProps {
 }
 
 // @beta
+export interface SqliteError extends ITwinError {
+    dbName: string;
+}
+
+// @beta (undocumented)
+export namespace SqliteError {
+    const // (undocumented)
+    scope = "itwin-Sqlite";
+    export function isError(error: unknown, key?: Key): error is SqliteError;
+    // (undocumented)
+    export type Key = "already-open" | "incompatible-version" | "invalid-versions-property" | "readonly";
+    export function throwError(key: Key, message: string, dbName: string): never;
+}
+
+// @beta
 export type StackedFractionType = "horizontal" | "diagonal";
 
 // @public
@@ -11025,6 +11148,21 @@ export interface ViewStateProps {
 }
 
 // @beta
+export interface ViewStoreError extends ITwinError {
+    viewStoreName?: string;
+}
+
+// @beta (undocumented)
+export namespace ViewStoreError {
+    const // (undocumented)
+    scope = "itwin-ViewStore";
+    export function isError<T extends ViewStoreError>(error: unknown, key?: Key): error is T;
+    // (undocumented)
+    export type Key = "invalid-value" | "invalid-member" | "no-owner" | "not-found" | "not-unique" | "group-error";
+    export function throwError<T extends ViewStoreError>(key: Key, e: Omit<T, "name" | "iTwinErrorId">): never;
+}
+
+// @beta
 export namespace ViewStoreRpc {
     const // @internal
     version = "4.0.0";
@@ -11361,6 +11499,17 @@ export class WhiteOnWhiteReversalSettings {
     static fromJSON(props?: WhiteOnWhiteReversalProps): WhiteOnWhiteReversalSettings;
     readonly ignoreBackgroundColor: boolean;
     toJSON(): WhiteOnWhiteReversalProps | undefined;
+}
+
+// @beta
+export namespace WorkspaceError {
+    const // (undocumented)
+    scope = "itwin-Workspace";
+    export function isError<T extends ITwinError>(error: unknown, key?: Key): error is T;
+    // (undocumented)
+    export type Key = "already-exists" | "container-exists" | "does-not-exist" | "invalid-name" | "no-cloud-container" | "load-error" | "load-errors" | "resource-exists" | "too-large" | "write-error";
+    // (undocumented)
+    export function throwError<T extends ITwinError>(key: Key, e: Omit<T, "name" | "iTwinErrorId">): never;
 }
 
 // @public
