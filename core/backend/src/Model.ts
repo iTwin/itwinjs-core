@@ -100,7 +100,7 @@ export class Model extends Entity {
     const modeledElementProps = props.iModel.elements.tryGetElementProps(instance.modeledElement.id);
     if (modeledElementProps) {
       // ModeledElement may be undefined in the case of root Element
-      modelProps.name = modeledElementProps.code.value;
+      modelProps.name = JsonUtils.asString(modeledElementProps.code.value);
       if (instance.parentModel !== undefined)
         modelProps.parentModel = instance.parentModel.id;
       else
