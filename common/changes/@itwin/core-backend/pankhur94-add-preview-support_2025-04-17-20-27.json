@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "added tsdoc.config file",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}
