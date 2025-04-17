@@ -109,6 +109,7 @@ preview;type;LazyLoadedEntityClass
 public;type;LazyLoadedEnumeration
 preview;type;LazyLoadedEnumeration
 public;type;LazyLoadedFormat
+preview;type;LazyLoadedFormat
 public;type;LazyLoadedInvertedUnit
 preview;type;LazyLoadedInvertedUnit
 public;type;LazyLoadedKindOfQuantity
