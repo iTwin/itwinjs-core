@@ -277,6 +277,11 @@ export class SurfaceGeometry extends MeshGeometry {
   }
 
   protected _wantWoWReversal(target: Target): boolean {
+    if (this.isGlyph) {
+      // Raster text is always subject to white-on-white reversal.
+      return true;
+    }
+
     const fillFlags = this.fillFlags;
     if (FillFlags.None !== (fillFlags & FillFlags.Background)) {
       return false; // fill color explicitly from background

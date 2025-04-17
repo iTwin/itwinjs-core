@@ -10,7 +10,7 @@ import * as path from "path";
 import * as fs from "fs";
 import { DOMParser } from "@xmldom/xmldom";
 import {
-  ECObjectsError, ECObjectsStatus, ECVersion, ISchemaLocater, Schema, SchemaContext, SchemaInfo, SchemaKey, SchemaMatchType, SchemaReadHelper, XmlParser,
+  ECSchemaError, ECSchemaStatus, ECVersion, ISchemaLocater, Schema, SchemaContext, SchemaInfo, SchemaKey, SchemaMatchType, SchemaReadHelper, XmlParser,
 } from "@itwin/ecschema-metadata";
 import { FileSchemaKey, SchemaFileLocater } from "./SchemaFileLocater";
 import { globSync } from "glob";
@@ -18,7 +18,7 @@ import { globSync } from "glob";
 /**
  * A SchemaLocater implementation for locating XML Schema files
  * from the file system using configurable search paths.
- * @beta This is a workaround the current lack of a full xml parser.
+ * @public @preview This is a workaround the current lack of a full xml parser.
  */
 export class SchemaXmlFileLocater extends SchemaFileLocater implements ISchemaLocater {
   /**
@@ -111,12 +111,12 @@ export class SchemaXmlFileLocater extends SchemaFileLocater implements ISchemaLo
   public getSchemaKey(data: string): SchemaKey {
     const matches = data.match(/<ECSchema ([^]+?)>/g);
     if (!matches || matches.length !== 1)
-      throw new ECObjectsError(ECObjectsStatus.InvalidSchemaXML, `Could not find '<ECSchema>' tag in the given file`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidSchemaXML, `Could not find '<ECSchema>' tag in the given file`);
 
     const name = matches[0].match(/schemaName="(.+?)"/);
     const version = matches[0].match(/version="(.+?)"/);
     if (!name || name.length !== 2 || !version || version.length !== 2)
-      throw new ECObjectsError(ECObjectsStatus.InvalidSchemaXML, `Could not find the ECSchema 'schemaName' or 'version' tag in the given file`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidSchemaXML, `Could not find the ECSchema 'schemaName' or 'version' tag in the given file`);
 
     const key = new SchemaKey(name[1], ECVersion.fromString(version[1]));
     return key;
@@ -130,7 +130,7 @@ export class SchemaXmlFileLocater extends SchemaFileLocater implements ISchemaLo
  *
  * @note This locater is read-only and does not allow adding new schema search paths.
  * @note This locater should be used as a fallback/last chance locater in the schema context as any user defined schema should have higher precedence over the standard schema.
- * @beta This is a workaround due to the current lack of a full xml parser.
+ * @public @preview This is a workaround due to the current lack of a full xml parser.
  */
 export class PublishedSchemaXmlFileLocater extends SchemaXmlFileLocater implements ISchemaLocater {
   /**
