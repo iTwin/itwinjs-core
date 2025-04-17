@@ -19,6 +19,11 @@ import { Transform } from "@itwin/core-geometry";
  * @extensions
  */
 export namespace Pixel {
+  /** ###TODO
+   * @beta
+   */
+  export type ContourType = "major" | "minor";
+
   /** Describes a single pixel within a [[Pixel.Buffer]]. */
   export class Data {
     /** The feature that produced the pixel. */
@@ -30,6 +35,10 @@ export namespace Pixel {
     public readonly type: GeometryType;
     /** The planarity of the geometry that produced the pixel. */
     public readonly planarity: Planarity;
+    /** ###TODO
+     * @beta
+     */
+    public readonly contourType?: ContourType;
     /** @internal */
     public readonly batchType?: BatchType;
     /** The iModel from which the geometry producing the pixel originated. */
