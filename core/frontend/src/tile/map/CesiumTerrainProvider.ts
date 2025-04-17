@@ -27,7 +27,7 @@ enum QuantizedMeshExtensionIds {
   Metadata = 4,
 }
 
-/** Return the URL for a Cesium ION asset from its asset ID and request Key.
+/** Return the URL for a Cesium ion asset from its asset ID and request Key.
  * @public
  */
 export function getCesiumAssetUrl(osmAssetId: number, requestKey: string): string {

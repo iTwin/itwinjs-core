@@ -7,10 +7,10 @@
  * @module DisplayStyles
  */
 
-/** Ids of [Cesium ION assets](https://cesium.com/platform/cesium-ion/content/) providing global terrain data.
+/** Ids of [Cesium ion assets](https://cesium.com/platform/cesium-ion/content/) providing global terrain data.
  * These values are appropriate to use with [[TerrainSettings.dataSource]] when [[TerrainSettings.providerName]] is set to "CesiumWorldTerrain".
- * You may alternatively use the Id of any ION asset to which you have access.
- * @see [[TerrainSettings.fromCesiumIonAsset]] to create TerrainSettings that obtain terrain from a specified ION asset.
+ * You may alternatively use the Id of any ion asset to which you have access.
+ * @see [[TerrainSettings.fromCesiumIonAsset]] to create TerrainSettings that obtain terrain from a specified ion asset.
  * @public
  */
 export enum CesiumTerrainAssetId {
@@ -20,7 +20,7 @@ export enum CesiumTerrainAssetId {
   Bathymetry = "2426648",
 }
 
-/** Ids of [Cesium ION assets](https://cesium.com/platform/cesium-ion/content/) providing data not covered by [[CesiumTerrainAssetId]].
+/** Ids of [Cesium ion assets](https://cesium.com/platform/cesium-ion/content/) providing data not covered by [[CesiumTerrainAssetId]].
  * @beta
  */
 export enum CesiumIonAssetId {
