@@ -98,6 +98,7 @@ internal;type;IpcChannel
 internal;interface;IpcMethods
 public;interface;CategoryProps
 public;interface;CategorySelectorProps
+beta;enum;CesiumIonAssetId
 public;enum;CesiumTerrainAssetId
 internal;interface;ChangeData
 public;interface;ChangedElements
