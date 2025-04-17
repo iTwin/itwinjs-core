@@ -67,10 +67,15 @@ if (ProcessDetector.isElectronAppFrontend) {
       assert.isDefined(snapshotR1.schemaContext);
       assert.isDefined(snapshotR2.schemaContext);
       assert.isDefined(snapshotF1.schemaContext);
-      const testKey = new SchemaKey("BisCore");
-      const elem = await snapshotF1.schemaContext.getSchema(testKey);
-      assert.isDefined(elem, "BisCore schema should be defined in snapshot iModel");
 
+
+      const testKey = new SchemaKey("BisCore");
+      const schemaElemR1 = await snapshotR1.schemaContext.getSchema(testKey);
+      assert.isDefined(schemaElemR1, "BisCore schema should be defined in snapshot iModel");
+      const schemaElemR2 = await snapshotR2.schemaContext.getSchema(testKey);
+      assert.isDefined(schemaElemR2, "BisCore schema should be defined in snapshot iModel");
+      const schemaElemF1 = await snapshotF1.schemaContext.getSchema(testKey);
+      assert.isDefined(schemaElemF1, "BisCore schema should be defined in snapshot iModel");
       const elementPropsR1 = await snapshotR1.elements.getProps(IModel.rootSubjectId);
       assert.equal(1, elementPropsR1.length);
       assert.equal(elementPropsR1[0].id, IModel.rootSubjectId);
