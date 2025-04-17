@@ -64,6 +64,13 @@ if (ProcessDetector.isElectronAppFrontend) {
       assert.isFalse(snapshotR2.isCheckpointConnection());
       assert.isFalse(snapshotF1.isCheckpointConnection());
 
+      assert.isDefined(snapshotR1.schemaContext);
+      assert.isDefined(snapshotR2.schemaContext);
+      assert.isDefined(snapshotF1.schemaContext);
+      const testKey = new SchemaKey("BisCore");
+      const elem = await snapshotF1.schemaContext.getSchema(testKey);
+      assert.isDefined(elem, "BisCore schema should be defined in snapshot iModel");
+
       const elementPropsR1 = await snapshotR1.elements.getProps(IModel.rootSubjectId);
       assert.equal(1, elementPropsR1.length);
       assert.equal(elementPropsR1[0].id, IModel.rootSubjectId);
@@ -87,12 +94,7 @@ if (ProcessDetector.isElectronAppFrontend) {
       assert.isTrue(snapshotR2.isClosed);
       assert.isTrue(snapshotF1.isClosed);
 
-      assert.isDefined(snapshotR1.schemaContext);
-      assert.isDefined(snapshotR2.schemaContext);
-      assert.isDefined(snapshotF1.schemaContext);
-      const testKey = new SchemaKey("BisCore");
-      const elem = await snapshotF1.schemaContext.getSchema(testKey);
-      assert.isDefined(elem, "BisCore schema should be defined in snapshot iModel");
+
     });
   });
 };

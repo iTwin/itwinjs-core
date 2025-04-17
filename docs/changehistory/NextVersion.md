@@ -328,7 +328,7 @@ const metaData: KindOfQuantity | undefined = await imodelDb.schemaContext.getSch
 
 - [IModelConnection.fontMap]($frontend) caches potentially-stale mappings of [FontId]($common)s to font names. If you need access to font Ids on the front-end for some reason, implement an [Ipc method](../learning/IpcInterface.md) that uses [IModelDb.fonts]($backend).
 
-- Added dependency to `@itwin/ecschema-metadata` to allow exposing schema metadata to our frontend APIs. Added a `SchemaContext` property to `IModelConnection`.
+- Added peer dependency to `@itwin/ecschema-metadata` to allow exposing schema metadata to our frontend APIs. Added a `SchemaContext` property to `IModelConnection`.
 
 ### @itwin/presentation-common
 

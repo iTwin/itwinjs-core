@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-frontend",
-      "comment": "Make ecschema-metadata a peerDep of core-frontend. Add `SchemaContext` to `IModelConnection`",
+      "comment": "Add `@itwin/ecschema-metadata` peer dependency. Make iModel-specific `SchemaContext` available on `IModelConnection` through the new `schemaContext` getter.",
       "type": "none"
     }
   ],
