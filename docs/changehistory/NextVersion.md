@@ -795,6 +795,16 @@ For more information read [Pull merge & conflict resolution](../learning/backend
   This flag has been removed. The cache is automatically cleared, and in cases when base classes change, there is a new `ECClass.cleanCache()` method.
 - Updated the `ECClass.getProperty` and `ECClass.getPropertySync` method signatures to include inherited properties by default, not exclude them. This aligns
   with `ECClass.getProperties/Sync()` signature.
+- `Format` updated to use Lazy Loaded items to be consistent with other schema items
+  - `addUnit` takes `LazyLoadedUnit | LazyLoadedInvertedUnit` instead of `Unit | InvertedUnit`
+  - `setUnits` takes `LazyLoadedUnit | LazyLoadedInvertedUnit` instead of `Unit | InvertedUnit`
+  - `units` getter returns `ReadonlyArray<[LazyLoadedUnit | LazyLoadedInvertedUnit, string | undefined]>` instead of `ReadonlyArray<[Unit | InvertedUnit, string | undefined]>`
+- `KindOfQuantity` updated to use Lazy Loaded items to be consistent with other schema items
+  - `addPresentationFormat` takes `LazyLoadedFormat` instead of `Format`
+  - `createFormatOverride` takes `Array<[LazyLoadedUnit | LazyLoadedInvertedUnit, string | undefined]>` instead of `Array<[Unit | InvertedUnit, string | undefined]>`
+  - `defaultPresentationFormat` getter returns `LazyLoadedFormat` instead of `Format`
+  - `presentationFormats` getter returns `LazyLoadedFormat` instead of `Format`
+  - `ECObjectsStatus` renamed to `ECSchemaStatus`
 
   ```ts
   public async getProperty(name: string, excludeInherited: boolean = false): Promise<Property | undefined>
