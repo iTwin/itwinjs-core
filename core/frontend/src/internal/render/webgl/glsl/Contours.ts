@@ -12,6 +12,7 @@ import {
 } from "../ShaderBuilder";
 import { addFeatureIndex } from "./FeatureSymbology";
 import { addInstancedRtcMatrix } from "./Vertex";
+import { encodeDepthRgb } from "./Decode";
 
 const computeContourNdx = `
   if (u_contourLUTWidth == 0u)
@@ -41,6 +42,22 @@ const unpackAndNormalize2BytesVec4 = `
 vec4 unpackAndNormalize2BytesVec4(vec4 f, bool upper) {
   return unpack2BytesVec4(f, upper) / 255.0;
 }
+`;
+
+const encodeContourLineInfo = `
+  void encodeContourLineInfo(int groupIndex, bool isMajor, float interval) {
+    // ContourDisplay.maxContourGroups is currently 5. Must change this code if that changes.
+    int groupIndexAndType = groupIndex + (isMajor ? 16 : 8);
+
+    // Find nearest multiple of interval to pixel world height.
+    float elevation = floor((v_height + sign(v_height) * interval / 2.0) / interval) * interval;
+
+    // Convert elevation to a fraction of the frustum's world Z extents
+    elevation = clamp((elevation - u_worldFrustumZRange.x) / u_worldFrustumZRange.y, 0.0, 1.0);
+
+    // Encode elevation in RGB and the rest of the info in A
+    g_contourLineInfo = vec4(encodeDepthRgb(elevation), float(groupIndexAndType));
+  }
 `;
 
 const applyContours = `
@@ -87,8 +104,13 @@ const applyContours = `
   uint msk = 1u << uint(offset);
   contourAlpha *= (patterns[(lineCodeWt / 16) & 0xf] & msk) > 0u ? 1.0 : 0.0;
   contourAlpha = min(contourAlpha, 1.0);
+
+  bool isContourLine = contourAlpha >= 0.5;
+  if (isContourLine)
+    encodeContourLineInfo(contourNdxC, maj, intervals.r);
+
   if (rgbfp.a / 65536.0 < 0.5) { // showGeometry == 0
-    if (contourAlpha < 0.5)
+    if (!isContourLine)
       discard;
     return vec4(rgbf.rgb, 1.0);
   }
@@ -151,9 +173,9 @@ float computeWorldHeight(vec4 rawPosition) {
   });
 
   builder.frag.addGlobal("g_contourLineInfo", VariableType.Vec4, "vec4(0.0)");
+  builder.frag.addFunction(encodeDepthRgb);
+  builder.frag.addFunction(encodeContourLineInfo);
   
-  // ###TODO compute contour line info
-
   builder.frag.addFunction(unpack2BytesVec4);
   builder.frag.addFunction(unpackAndNormalize2BytesVec4);
   builder.frag.set(FragmentShaderComponent.ApplyContours, applyContours);
