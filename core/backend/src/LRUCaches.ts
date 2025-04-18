@@ -53,15 +53,16 @@ export class LruCache<K, V>{
   }
 }
 
-
-
 /* @internal */
 export interface CachedElement {
   loadOptions: ElementLoadOptions
   elProps: ElementProps;
 }
 
-/* @internal */
+/**
+ * A LRU cache for entities. Cache contains the ElementProps and the load options used to load it.
+ * Cache can be searched by id, code or federationGuid.
+ * @internal */
 export class ElementLRUCache {
   public static readonly DEFAULT_CAPACITY = 2000;
   private _elementCache = new Map<Id64String, CachedElement>();
@@ -140,7 +141,8 @@ export class ElementLRUCache {
     if (!el.elProps.id)
       throw new Error("Element must have an id");
 
-    // WIP do not cache this as geom need to be rerender into geom props if any part changes
+    // do not cache this element as geom need to be rerender into geom props if any part changes
+    // TODO: find a way to handle caching geometry
     if (el.loadOptions.wantGeometry) {
       return this;
     }
