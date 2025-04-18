@@ -103,7 +103,7 @@ for (const watchForChanges of [false, true]) {
             }
           });
         }),
-        // Time out in 60 sec to prevent the tests from hanging
+        // Time out to prevent the tests from hanging
         new Promise<void>((_resolve, reject) => {
           setTimeout(() => reject(new Error("Timeout: onBufferedModelChanges did not fire within the specified time")), 120*1000); // 2 min
         }),
