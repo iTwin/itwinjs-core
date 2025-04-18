@@ -103,7 +103,7 @@ export class LayerTileTreeReferenceHandler {
           }
         }));
 
-        removals.push(IModelApp.tileAdmin.onTileDataLoaded.addOnce(() => {
+        removals.push(IModelApp.tileAdmin.onTileDataLoad.addOnce(() => {
           tileDataLoadedEarly = true;
         }));
 

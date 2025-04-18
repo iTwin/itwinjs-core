@@ -768,7 +768,7 @@ export class TileAdmin {
   public readonly onTileChildrenLoad = new BeEvent<(parentTile: Tile) => void>();
 
   /** Event raised when tile data loads. (Only support Reality Tile for now) */
-  public readonly onTileDataLoaded = new BeEvent<() => void>();
+  public readonly onTileDataLoad = new BeEvent<() => void>();
 
   /** Subscribe to [[onTileLoad]], [[onTileTreeLoad]], and [[onTileChildrenLoad]]. */
   public addLoadListener(callback: (imodel: IModelConnection) => void): () => void {

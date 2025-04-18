@@ -94,7 +94,7 @@ export abstract class RealityTileLoader {
   private async loadGraphicsFromStream(tile: RealityTile, streamBuffer: ByteStream, system: RenderSystem, isCanceled?: () => boolean): Promise<TileContent> {
     // Handle case where the tile tree is not fully initialized for the map layer yet
     if(tile.tree.layerHandler?.layerClassifiers.size === 0) {
-      IModelApp.tileAdmin.onTileDataLoaded.raiseEvent();
+      IModelApp.tileAdmin.onTileDataLoad.raiseEvent();
     }
 
     const format = this._getFormat(streamBuffer);
