@@ -10,6 +10,8 @@ By default, any API is also usable by extensions, with the exception of APIs exp
 
 The `@deprecated` tag can be applied to any API to notify users that it may be removed or changed in a breaking way in the future. For `@public` APIs, deprecations must follow our [deprecation policy](../api-support-policies.md#api-deprecation-policy); marking `@beta`, `@alpha`, or `@internal` APIs as deprecated is optional, but recommended for giving users a heads-up.
 
+The `@preview` tag may be used alongside `@public` to indicate that the API is stable for the current major version, but may be removed or changed in a breaking way in the next major version. It provides a signal to users that the API is safe to use in production, but not yet committed for long-term stability beyond the current major version. The `@preview` tag is intended for features that are ready for broader adoption and feedback, but not yet finalized for long-term support.
+
 ## Applying release tags
 
 Every API exported from a package must have a release tag. "Nested" APIs like the members of classes, interfaces, namespaces, and enums inherit the release tag of the containing API, but can override it to be more restrictive. For example, a `@beta` class may contain `@alpha` or `@internal` properties, but may not contain any `@public` properties.
@@ -29,6 +31,16 @@ Add the `@extensions` tag, if relevant, below the release tag:
 /** A prepared query against a SQLite database.
  * @public
  * @extensions
+ */
+export interface SqliteStatement { }
+```
+
+`@preview` tag may be used in conjunction with `@public` release tag:
+
+```ts
+/** A prepared query against a SQLite database.
+ * @public
+ * @preview
  */
 export interface SqliteStatement { }
 ```
@@ -158,7 +170,7 @@ export class Thing {
   public [_close]: () => void {
     // implementation goes here
   }
-  
+
   /** @internal
    * @deprecated in 4.8. The thing will automatically be closed when it is no longer in use. This API is for internal use only and will soon be removed.
    */
