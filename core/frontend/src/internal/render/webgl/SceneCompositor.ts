@@ -64,6 +64,7 @@ class Textures implements WebGLDisposable, RenderMemory.Consumer {
   public featureId?: TextureHandle;
   public depthAndOrder?: TextureHandle;
   public depthAndOrderHidden?: TextureHandle; // only used if AO and multisampling
+  public contours?: TextureHandle;
   public hilite?: TextureHandle;
   public occlusion?: TextureHandle;
   public occlusionBlur?: TextureHandle;
@@ -82,6 +83,7 @@ class Textures implements WebGLDisposable, RenderMemory.Consumer {
       && undefined === this.color
       && undefined === this.featureId
       && undefined === this.depthAndOrder
+      && undefined === this.contours
       && undefined === this.depthAndOrderHidden
       && undefined === this.hilite
       && undefined === this.occlusion
@@ -102,6 +104,7 @@ class Textures implements WebGLDisposable, RenderMemory.Consumer {
     this.color = dispose(this.color);
     this.featureId = dispose(this.featureId);
     this.depthAndOrder = dispose(this.depthAndOrder);
+    this.contours = dispose(this.contours);
     this.depthAndOrderHidden = dispose(this.depthAndOrderHidden);
     this.hilite = dispose(this.hilite);
     this.occlusion = dispose(this.occlusion);
@@ -122,6 +125,7 @@ class Textures implements WebGLDisposable, RenderMemory.Consumer {
     collectTextureStatistics(this.color, stats);
     collectTextureStatistics(this.featureId, stats);
     collectTextureStatistics(this.depthAndOrder, stats);
+    collectTextureStatistics(this.contours, stats);
     collectTextureStatistics(this.depthAndOrderHidden, stats);
     collectTextureStatistics(this.hilite, stats);
     collectTextureStatistics(this.occlusion, stats);
@@ -166,12 +170,14 @@ class Textures implements WebGLDisposable, RenderMemory.Consumer {
 
     this.featureId = TextureHandle.createForAttachment(width, height, GL.Texture.Format.Rgba, GL.Texture.DataType.UnsignedByte);
     this.depthAndOrder = TextureHandle.createForAttachment(width, height, GL.Texture.Format.Rgba, GL.Texture.DataType.UnsignedByte);
+    this.contours = TextureHandle.createForAttachment(width, height, GL.Texture.Format.Rgba, GL.Texture.DataType.UnsignedByte);
 
     let rVal = undefined !== this.accumulation
       && undefined !== this.revealage
       && undefined !== this.color
       && undefined !== this.featureId
       && undefined !== this.depthAndOrder
+      && undefined !== this.contours
       && undefined !== this.hilite;
 
     if (rVal && numSamples > 1) {
@@ -248,6 +254,7 @@ class FrameBuffers implements WebGLDisposable {
   public opaqueColor?: FrameBuffer;
   public opaqueAndCompositeColor?: FrameBuffer;
   public depthAndOrder?: FrameBuffer;
+  public contours?: FrameBuffer;
   public hilite?: FrameBuffer;
   public hiliteUsingStencil?: FrameBuffer;
   public stencilSet?: FrameBuffer;
@@ -274,10 +281,11 @@ class FrameBuffers implements WebGLDisposable {
       return false;
 
     this.depthAndOrder = FrameBuffer.create([textures.depthAndOrder!], depth);
+    this.contours = FrameBuffer.create([textures.contours!], depth);
     this.hilite = FrameBuffer.create([textures.hilite!], depth);
     this.hiliteUsingStencil = FrameBuffer.create([textures.hilite!], depth);
 
-    if (!this.depthAndOrder || !this.hilite || !this.hiliteUsingStencil)
+    if (!this.depthAndOrder || !this.contours || !this.hilite || !this.hiliteUsingStencil)
       return false;
 
     assert(undefined === this.opaqueAll);
@@ -320,15 +328,29 @@ class FrameBuffers implements WebGLDisposable {
 
   private initPotentialMSMRTFbos(textures: Textures, depth: DepthBuffer, depthMs: DepthBuffer | undefined): boolean {
     const boundColor = System.instance.frameBufferStack.currentColorBuffer;
-    assert(undefined !== boundColor && undefined !== textures.color && undefined !== textures.featureId && undefined !== textures.depthAndOrder && undefined !== textures.accumulation && undefined !== textures.revealage);
-    const colorAndPick = [boundColor, textures.featureId, textures.depthAndOrder];
+    assert(
+      undefined !== boundColor &&
+      undefined !== textures.color &&
+      undefined !== textures.featureId &&
+      undefined !== textures.depthAndOrder &&
+      undefined !== textures.contours &&
+      undefined !== textures.accumulation &&
+      undefined !== textures.revealage
+    );
+    const colorAndPick = [boundColor, textures.featureId, textures.depthAndOrder, textures.contours];
 
     if (undefined === depthMs) {
       this.opaqueAll = FrameBuffer.create(colorAndPick, depth);
       colorAndPick[0] = textures.color;
       this.opaqueAndCompositeAll = FrameBuffer.create(colorAndPick, depth);
     } else {
-      assert(undefined !== textures.colorMsBuff && undefined !== textures.featureIdMsBuff && undefined !== textures.featureIdMsBuffHidden && undefined !== textures.depthAndOrderMsBuff && undefined !== textures.depthAndOrderMsBuffHidden);
+      assert(
+        undefined !== textures.colorMsBuff &&
+        undefined !== textures.featureIdMsBuff &&
+        undefined !== textures.featureIdMsBuffHidden &&
+        undefined !== textures.depthAndOrderMsBuff &&
+        undefined !== textures.depthAndOrderMsBuffHidden
+      );
       const colorAndPickMsBuffs = [textures.colorMsBuff, textures.featureIdMsBuff, textures.depthAndOrderMsBuff];
       const colorAndPickFilters = [GL.MultiSampling.Filter.Linear, GL.MultiSampling.Filter.Nearest, GL.MultiSampling.Filter.Nearest];
       this.opaqueAll = FrameBuffer.create(colorAndPick, depth, colorAndPickMsBuffs, colorAndPickFilters, depthMs);
@@ -453,7 +475,7 @@ class FrameBuffers implements WebGLDisposable {
   }
 
   public get isDisposed(): boolean {
-    return undefined === this.opaqueColor && undefined === this.opaqueAndCompositeColor && undefined === this.depthAndOrder
+    return undefined === this.opaqueColor && undefined === this.opaqueAndCompositeColor && undefined === this.depthAndOrder && undefined === this.contours
       && undefined === this.hilite && undefined === this.hiliteUsingStencil && undefined === this.occlusion
       && undefined === this.occlusionBlur && undefined === this.stencilSet && undefined === this.altZOnly
       && undefined === this.volClassCreateBlend && undefined === this.volClassCreateBlendAltZ && undefined === this.opaqueAll
@@ -467,6 +489,7 @@ class FrameBuffers implements WebGLDisposable {
     this.opaqueColor = dispose(this.opaqueColor);
     this.opaqueAndCompositeColor = dispose(this.opaqueAndCompositeColor);
     this.depthAndOrder = dispose(this.depthAndOrder);
+    this.contours = dispose(this.contours);
     this.hilite = dispose(this.hilite);
     this.hiliteUsingStencil = dispose(this.hiliteUsingStencil);
     this.occlusion = dispose(this.occlusion);
