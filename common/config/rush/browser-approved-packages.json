@@ -375,10 +375,6 @@
       "allowedCategories": [ "frontend" ]
     },
     {
-      "name": "@type/json-diff",
-      "allowedCategories": [ "backend" ]
-    },
-    {
       "name": "@typescript-eslint/parser",
       "allowedCategories": [ "internal" ]
     },
@@ -657,10 +653,6 @@
     {
       "name": "jsdom-global",
       "allowedCategories": [ "extensions", "frontend", "internal" ]
-    },
-    {
-      "name": "json-diff",
-      "allowedCategories": [ "backend" ]
     },
     {
       "name": "json-schema-faker",
