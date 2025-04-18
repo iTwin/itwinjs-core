@@ -111,6 +111,7 @@ export * from "./SolarShadows";
 export * from "./SpatialClassification";
 export * from "./SubCategoryAppearance";
 export * from "./SubCategoryOverride";
+export * from "./CesiumIonAssets";
 export * from "./TerrainSettings";
 export * from "./TextureMapping";
 export * from "./TextureProps";

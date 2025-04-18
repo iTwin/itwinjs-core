@@ -1,6 +1,6 @@
 {
   "name": "@itwin/express-server",
-  "version": "5.0.0-dev.106",
+  "version": "5.0.0-dev.108",
   "description": "iTwin.js express utilities",
   "main": "lib/cjs/ExpressServer.js",
   "module": "lib/esm/ExpressServer.js",
