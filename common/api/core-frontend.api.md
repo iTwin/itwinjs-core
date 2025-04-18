@@ -10596,6 +10596,7 @@ export class TileAdmin {
     onTileContentDisposed(tile: Tile): void;
     // @internal
     onTileContentLoaded(tile: Tile): void;
+    readonly onTileDataLoad: BeEvent<() => void>;
     readonly onTileLoad: BeEvent<(tile: Tile) => void>;
     // @internal (undocumented)
     onTilesElided(numElided: number): void;

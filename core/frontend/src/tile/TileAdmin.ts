@@ -767,6 +767,9 @@ export class TileAdmin {
   /** Event raised when a request to load a tile's child tiles completes. */
   public readonly onTileChildrenLoad = new BeEvent<(parentTile: Tile) => void>();
 
+  /** Event raised when the file containing tile data is opened for loading. (Only support Reality Tile for now) */
+  public readonly onTileDataLoad = new BeEvent<() => void>();
+
   /** Subscribe to [[onTileLoad]], [[onTileTreeLoad]], and [[onTileChildrenLoad]]. */
   public addLoadListener(callback: (imodel: IModelConnection) => void): () => void {
     const tileLoad = this.onTileLoad.addListener((tile) => callback(tile.tree.iModel));
