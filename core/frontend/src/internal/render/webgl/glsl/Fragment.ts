@@ -57,8 +57,6 @@ const computePickBufferOutputs = `${multiplyAlpha}
   vec4 output1 = vec4(feature_id_i) / 255.0;
   float linearDepth = computeLinearDepth(v_eyeSpace.z);
   vec4 output2 = vec4(renderOrder * 0.0625, encodeDepthRgb(linearDepth)); // near=1, far=0
-
-  vec4 output3 = vec4(0.0);
 `;
 
 const computeAltPickBufferOutputs = `${multiplyAlpha}
@@ -92,6 +90,10 @@ export function addPickBufferOutputs(frag: FragmentShaderBuilder): void {
   }
 
   prelude.add(computePickBufferOutputs);
+
+  const computeContourLineInfo = frag.get(FragmentShaderComponent.ComputeContourLineInfo) ?? "return vec4(0.0);";
+  frag.addFunction("vec4 computeContourLineInfo()", computeContourLineInfo);
+  prelude.addline("  vec4 output3 = computeContourLineInfo();");
 
   const overrideColor = frag.get(FragmentShaderComponent.OverrideColor);
   if (undefined !== overrideColor) {
