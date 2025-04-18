@@ -620,7 +620,11 @@ export abstract class IModelConnection extends IModel {
 
   /**
    * Gets the context that allows accessing the metadata (ecschema-metadata package) of this iModel.
-   * The context is created lazily when this property is accessed for the first time, with an [[ECSchemaRpcLocater]] registered.
+   * The context is created lazily when this property is accessed for the first time, with an `ECSchemaRpcLocater` registered.
+   * This means to correctly access schema context, client-side applications must register ECSchemaRpcInterface following instructions for [RPC configuration](https://www.itwinjs.org/learning/rpcinterface/#client-side-configuration).
+   * Server-side applications would also [configure RPC](https://www.itwinjs.org/learning/rpcinterface/#server-side-configuration) as needed.
+   *
+   * @note `BlankConnection` `schemaContext` will throw an error when trying to access schema metadata.
    * @beta
    */
   public get schemaContext(): SchemaContext {
