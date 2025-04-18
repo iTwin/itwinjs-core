@@ -37,7 +37,6 @@ export class LayerTileTreeReferenceHandler {
   public get baseTransparent() { return this._baseTransparent; }
   public get baseImageryLayerIncluded() { return this._baseImageryLayerIncluded; }
   public get layerSettings() { return this._layerSettings; }
-  public get ref() { return this._ref; }
 
   public discloseTileTrees(trees: DisclosedTileTreeSet): void {
     for (const imageryTree of this.layerTrees)

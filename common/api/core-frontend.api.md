@@ -5415,8 +5415,6 @@ export class LayerTileTreeReferenceHandler {
     // (undocumented)
     protected readonly _layerTrees: (MapLayerTileTreeReference | undefined)[];
     // (undocumented)
-    get ref(): LayerTileTreeReference;
-    // (undocumented)
     setBaseLayerSettings(baseLayerSettings: BaseLayerSettings): void;
     // (undocumented)
     setLayerSettings(layerSettings: MapLayerSettings[]): void;

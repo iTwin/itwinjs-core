@@ -767,7 +767,7 @@ export class TileAdmin {
   /** Event raised when a request to load a tile's child tiles completes. */
   public readonly onTileChildrenLoad = new BeEvent<(parentTile: Tile) => void>();
 
-  /** Event raised when tile data possibly loads before map layer initialization.*/
+  /** Event raised when tile data loads. (Only support Reality Tile for now) */
   public readonly onTileDataLoaded = new BeEvent<() => void>();
 
   /** Subscribe to [[onTileLoad]], [[onTileTreeLoad]], and [[onTileChildrenLoad]]. */
