@@ -6,7 +6,7 @@
  * @module Elements
  */
 
-import { Id64, Id64String } from "@itwin/core-bentley";
+import { Id64, Id64String, JsonUtils } from "@itwin/core-bentley";
 import {
   BisCodeSpec, Code, CodeScopeProps, CodeSpec, DefinitionElementProps, ElementProps, NormalMapProps, RenderMaterialAssetMapsProps, RenderMaterialProps, RgbFactorProps, TextureMapProps,
 } from "@itwin/core-common";
@@ -82,8 +82,8 @@ export class RenderMaterialElement extends DefinitionElement {
   /** @internal */
   public static override deserialize(props: InstanceProps): RenderMaterialProps {
     const elProps = super.deserialize(props) as RenderMaterialProps;
-    const inst = props.row;
-    elProps.paletteName = inst.paletteName ?? "";
+    const instance = props.row;
+    elProps.paletteName = JsonUtils.asString(instance.paletteName);
     return elProps;
   }
 
