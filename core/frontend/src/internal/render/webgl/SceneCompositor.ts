@@ -9,6 +9,7 @@
 import { assert, dispose, Id64String } from "@itwin/core-bentley";
 import { Transform, Vector2d, Vector3d } from "@itwin/core-geometry";
 import {
+    ContourDisplay,
   ModelFeature, PointCloudDisplaySettings, RenderFeatureTable, RenderMode, SpatialClassifierInsideDisplay, SpatialClassifierOutsideDisplay,
 } from "@itwin/core-common";
 import { RenderType } from "@itwin/webgl-compatibility";
@@ -628,12 +629,18 @@ interface BatchInfo {
   inSectionDrawingAttachment?: boolean;
 }
 
+interface ContourPixels {
+  display: ContourDisplay;
+  data: Uint32Array;
+}
+
 // Represents a view of data read from a region of the frame buffer.
 class PixelBuffer implements Pixel.Buffer {
   private readonly _rect: ViewRect;
   private readonly _selector: Pixel.Selector;
   private readonly _featureId?: Uint32Array;
   private readonly _depthAndOrder?: Uint32Array;
+  private readonly _contours?: ContourPixels;
   private readonly _batchState: BatchState;
   private readonly _scratchModelFeature = ModelFeature.create();
 
@@ -809,6 +816,11 @@ class PixelBuffer implements Pixel.Buffer {
       else
         this._selector &= ~Pixel.Selector.Feature;
     }
+
+    // No selector for contours. This is a no-op unless contours are actually being drawn.
+    if (Pixel.Selector.None !== selector) {
+      this._contours = compositor.readContours(rect);
+    }
   }
 
   public get isEmpty(): boolean { return Pixel.Selector.None === this._selector; }
@@ -837,6 +849,7 @@ export abstract class SceneCompositor implements WebGLDisposable, RenderMemory.C
   public abstract drawForReadPixels(_commands: RenderCommands, sceneOverlays: GraphicList, worldOverlayDecorations: GraphicList | undefined, viewOverlayDecorations: GraphicList | undefined): void;
   public abstract readPixels(rect: ViewRect, selector: Pixel.Selector): Pixel.Buffer | undefined;
   public abstract readDepthAndOrder(rect: ViewRect): Uint8Array | undefined;
+  public abstract readContours(rect: ViewRect): ContourPixels | undefined;
   public abstract readFeatureIds(rect: ViewRect): Uint8Array | undefined;
   public abstract updateSolarShadows(context: SceneContext | undefined): void;
   public abstract drawPrimitive(primitive: Primitive, exec: ShaderProgramExecutor, outputsToPick: boolean): void;
@@ -1610,7 +1623,20 @@ class Compositor extends SceneCompositor {
     return PixelBuffer.create(rect, selector, this);
   }
 
-  public readDepthAndOrder(rect: ViewRect): Uint8Array | undefined { return this.readFrameBuffer(rect, this._fbos.depthAndOrder); }
+  public readDepthAndOrder(rect: ViewRect): Uint8Array | undefined {
+    return this.readFrameBuffer(rect, this._fbos.depthAndOrder);
+  }
+
+  public override readContours(rect: ViewRect): ContourPixels | undefined {
+    // Are we actually drawing any contours? If not, don't bother reading an array of all zeroes off the GPU.
+    const contours = this.target.plan.contours;
+    if (!contours || !contours.displayContours || contours.groups.length === 0) {
+      return undefined;
+    }
+
+    const info = this.readFrameBuffer(rect, this._fbos.contours);
+    return info ? { data: new Uint32Array(info.buffer), display: contours } : undefined;
+  }
 
   public readFeatureIds(rect: ViewRect): Uint8Array | undefined {
     const tex = this._textures.featureId;
