@@ -9,6 +9,7 @@ import { BriefcaseConnection, GenericAbortSignal, NativeApp, OnDownloadProgress 
 import { TestUsers } from "@itwin/oidc-signin-tool/lib/cjs/TestUsers";
 import { assert, expect } from "chai";
 import { TestUtility } from "../TestUtility";
+import { SchemaKey } from "@itwin/ecschema-metadata";
 
 type AbortSignalListener = (this: MockAbortSignal, ev: any) => any;
 
@@ -112,6 +113,28 @@ if (ProcessDetector.isElectronAppFrontend) {
 
       assert.isAbove(lastProgressReport.loaded, 0);
       assert.isBelow(lastProgressReport.loaded, lastProgressReport.total);
+    });
+
+    it("should be able to retrieve BisCore schema from SchemaContext", async () => {
+      const iTwinId = await TestUtility.getTestITwinId();
+      const iModelId = await TestUtility.queryIModelIdByName(iTwinId, TestUtility.testIModelNames.stadium);
+
+      const downloader = await NativeApp.requestDownloadBriefcase(
+        iTwinId,
+        iModelId,
+        { briefcaseId: BriefcaseIdValue.Unassigned },
+        IModelVersion.first(),
+      );
+      await downloader.downloadPromise;
+
+      const fileName = await NativeApp.getBriefcaseFileName({ iModelId, briefcaseId: downloader.briefcaseId });
+      const connection = await BriefcaseConnection.openFile({ fileName, readonly: true });
+      assert.isDefined(connection.schemaContext, "A BriefcaseConnection should always return a valid, defined schemaContext");
+      const bisCoreSchema = await connection.schemaContext.getSchema(new SchemaKey("BisCore"));
+      assert.isDefined(bisCoreSchema, "BisCore schema should be defined in briefcase iModel");
+
+      await connection.close();
+      await NativeApp.deleteBriefcase(fileName);
     });
   });
 }

@@ -8,6 +8,7 @@ import { Point3d, Range3d, Vector3d } from "@itwin/core-geometry";
 import { Cartographic, ElementProps, IModel } from "@itwin/core-common";
 import { BlankConnection, ScreenViewport, SpatialViewState } from "@itwin/core-frontend";
 import { TestUtility } from "../TestUtility";
+import { SchemaKey } from "@itwin/ecschema-metadata";
 
 function createViewDiv() {
   const div = document.createElement("div");
@@ -45,6 +46,8 @@ describe("Blank Connection", () => {
     assert.throws(() => blankConnection.getRpcProps());
     const elementProps: ElementProps[] = await blankConnection.elements.getProps(IModel.rootSubjectId);
     assert.equal(0, elementProps.length);
+    assert.isDefined(blankConnection.schemaContext, "A BlankConnection should always return a valid, defined schemaContext");
+    await assert.isRejected(blankConnection.schemaContext.getSchema(new SchemaKey("BisCore")));
   });
 
   it("ScreenViewport with a BlankConnection", async () => {

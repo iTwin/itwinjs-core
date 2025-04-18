@@ -800,6 +800,9 @@ importers:
       '@itwin/core-i18n':
         specifier: workspace:*
         version: link:../i18n
+      '@itwin/ecschema-rpcinterface-common':
+        specifier: workspace:*
+        version: link:../ecschema-rpc/common
       '@itwin/object-storage-core':
         specifier: ^2.3.0
         version: 2.3.0(inversify@6.0.1)(reflect-metadata@0.1.13)
@@ -840,6 +843,9 @@ importers:
       '@itwin/core-quantity':
         specifier: workspace:*
         version: link:../quantity
+      '@itwin/ecschema-metadata':
+        specifier: workspace:*
+        version: link:../ecschema-metadata
       '@itwin/eslint-plugin':
         specifier: 5.0.0-dev.1
         version: 5.0.0-dev.1(eslint@9.13.0)(typescript@5.6.2)
