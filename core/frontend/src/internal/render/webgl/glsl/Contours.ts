@@ -137,6 +137,12 @@ float computeWorldHeight(vec4 rawPosition) {
     });
   });
 
+  builder.frag.addUniform("u_worldFrustumZRange", VariableType.Vec2, (prog) => {
+    prog.addProgramUniform("u_worldFrustumZRange", (uniform, params) => {
+      uniform.setUniform2fv(params.target.uniforms.frustum.worldFrustumZRange);
+    });
+  });
+
   const contourDefsSize = 8;
   builder.frag.addUniformArray("u_contourDefs", VariableType.Vec4, contourDefsSize, (prog) => {
     prog.addGraphicUniform("u_contourDefs", (uniform, params) => {
@@ -144,7 +150,12 @@ float computeWorldHeight(vec4 rawPosition) {
     });
   });
 
+  builder.frag.addGlobal("g_contourLineInfo", VariableType.Vec4, "vec4(0.0)");
+  
+  // ###TODO compute contour line info
+
   builder.frag.addFunction(unpack2BytesVec4);
   builder.frag.addFunction(unpackAndNormalize2BytesVec4);
   builder.frag.set(FragmentShaderComponent.ApplyContours, applyContours);
+  builder.frag.set(FragmentShaderComponent.ComputeContourLineInfo, "return g_contourLineInfo;");
 }
