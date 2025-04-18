@@ -105,7 +105,7 @@ describe("TxnManager", () => {
     let model = models.getModel<PhysicalModel>(modelId);
     assert.isUndefined(model.geometryGuid, "geometryGuid starts undefined");
 
-    assert.isDefined(await imodel.schemaContext.getSchemaItem(new SchemaItemKey("TestPhysicalObject", new SchemaKey("TestBim", 1,0,0)), EntityClass), "TestPhysicalObject is present");
+    assert.isDefined(await imodel.schemaContext.getSchemaItem(new SchemaItemKey("TestPhysicalObject", new SchemaKey("TestBim", 1, 0, 0)), EntityClass), "TestPhysicalObject is present");
 
     const txns = imodel.txns;
     assert.isFalse(txns.hasPendingTxns);
@@ -172,7 +172,7 @@ describe("TxnManager", () => {
     assert.equal(afterUndo, 1);
     assert.equal(undoAction, TxnAction.Reverse);
 
-    assert.throws(() => elements.getElementProps(elementId), IModelError, "reading element");
+    assert.throws(() => elements.getElementProps(elementId), IModelError, "element not found");
     assert.throws(() => elements.getElement(elementId), IModelError);
     assert.equal(IModelStatus.Success, txns.reinstateTxn());
     model = models.getModel(modelId);

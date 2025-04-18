@@ -167,7 +167,7 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
     const modelJsonArray: ModelProps[] = [];
     for (const id of modelIds) {
       try {
-        const modelProps = iModelDb.models.getModelJson({ id });
+        const modelProps = iModelDb.models.getModelProps(id);
         modelJsonArray.push(modelProps);
       } catch (error) {
         if (modelIds.size === 1)
@@ -188,7 +188,7 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
     const elementProps: ElementProps[] = [];
     for (const id of elementIds) {
       try {
-        elementProps.push(iModelDb.elements.getElementJson({ id }));
+        elementProps.push(iModelDb.elements.getElementProps({ id }));
       } catch (error) {
         if (elementIds.size === 1)
           throw error; // if they're asking for more than one element, don't throw on error.
