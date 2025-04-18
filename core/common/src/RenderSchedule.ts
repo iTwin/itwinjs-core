@@ -1207,7 +1207,10 @@ export namespace RenderSchedule {
       return this._maxBatchId ?? (this._maxBatchId = this.modelTimelines.reduce((accum, timeline) => Math.max(accum, timeline.maxBatchId), 0));
     }
 
-    /** @internal */
+    /**
+     * Replaces all elementIds in a ScriptProps object with an empty string. Returns modified ScriptProps.
+     * @param scheduleScript The script props to modify.
+     * @internal */
     public static removeScheduleScriptElementIds(scheduleScript: RenderSchedule.ScriptProps): RenderSchedule.ScriptProps {
       scheduleScript.forEach((modelTimeline) => {
         modelTimeline.elementTimelines.forEach((elementTimeline) => {
