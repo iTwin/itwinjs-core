@@ -777,15 +777,14 @@ class PixelBuffer implements Pixel.Buffer {
     if (this._contours) {
       const contour32 = this.getPixel32(this._contours.data, index);
       if (contour32) { // undefined means out of bounds; zero means not a contour.
-
-        this._scratchUint32Array[0] = contour32;
-        const groupIndexAndType = this._scratchUint8Array[0];
-        const groupIndex = groupIndexAndType & (8 | 16);
+        const groupIndexAndType = this.decodeRenderOrderRgba(contour32) as number;
+        const groupIndex = groupIndexAndType & ~(8 | 16);
         const group = this._contours.display.groups[groupIndex];
         if (group) {
           contour = {
             group,
-            isMajor: groupIndexAndType > 8,
+            isMajor: groupIndexAndType > 15,
+            // ###TODO scale to world frustum Z range
             elevation: this.decodeDepthRgba(contour32),
           };
         }

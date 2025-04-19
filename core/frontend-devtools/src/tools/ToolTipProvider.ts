@@ -30,6 +30,11 @@ class DebugToolTipProvider implements ToolTipProvider {
       html = `${html + key}: ${value.toString()}<br>`;
     }
 
+    if (hit.contour) {
+      const contourInfo = `${hit.contour.isMajor ? "Major" : "Minor"} contour ${hit.contour.elevation}m`;
+      html = `${html}${contourInfo}<br>`;
+    }
+
     const div = document.createElement("div");
     div.innerHTML = html;
     return div;

@@ -47,7 +47,7 @@ vec4 unpackAndNormalize2BytesVec4(vec4 f, bool upper) {
 const encodeContourLineInfo = `
   void encodeContourLineInfo(int groupIndex, bool isMajor, float interval) {
     // ContourDisplay.maxContourGroups is currently 5. Must change this code if that changes.
-    int groupIndexAndType = groupIndex + (isMajor ? 16 : 8);
+    float groupIndexAndType = float(groupIndex + (isMajor ? 16 : 8));
 
     // Find nearest multiple of interval to pixel world height.
     float elevation = floor((v_height + sign(v_height) * interval / 2.0) / interval) * interval;
@@ -56,7 +56,7 @@ const encodeContourLineInfo = `
     elevation = clamp((elevation - u_worldFrustumZRange.x) / u_worldFrustumZRange.y, 0.0, 1.0);
 
     // Encode elevation in RGB and the rest of the info in A
-    g_contourLineInfo = vec4(encodeDepthRgb(elevation), float(groupIndexAndType));
+    g_contourLineInfo = vec4(encodeDepthRgb(elevation), groupIndexAndType * 0.0625);
   }
 `;
 
