@@ -7,8 +7,8 @@
  */
 
 import { Id64, Id64String } from "@itwin/core-bentley";
-import { BatchType, ContourGroup, Feature, GeometryClass, ModelFeature } from "@itwin/core-common";
-import { HitPath, HitPriority } from "../HitDetail";
+import { BatchType, Feature, GeometryClass, ModelFeature } from "@itwin/core-common";
+import { ContourHit, HitPath, HitPriority } from "../HitDetail";
 import { IModelConnection } from "../IModelConnection";
 import type { Viewport } from "../Viewport";
 import { Transform } from "@itwin/core-geometry";
@@ -19,15 +19,6 @@ import { Transform } from "@itwin/core-geometry";
  * @extensions
  */
 export namespace Pixel {
-  /** ###TODO
-   * @beta
-   */
-  export interface ContourInfo {
-    readonly isMajor: boolean;
-    readonly elevation: number;
-    readonly group: ContourGroup;
-  }
-
   /** Describes a single pixel within a [[Pixel.Buffer]]. */
   export class Data {
     /** The feature that produced the pixel. */
@@ -46,7 +37,7 @@ export namespace Pixel {
     /** ###TODO
      * @beta
      */
-    public readonly contour?: ContourInfo;
+    public readonly contour?: ContourHit;
     /** @internal */
     public readonly transformFromIModel?: Transform;
     /** @internal */
@@ -76,7 +67,7 @@ export namespace Pixel {
       viewAttachmentId?: string;
       inSectionDrawingAttachment?: boolean;
       transformFromIModel?: Transform;
-      contour?: ContourInfo;
+      contour?: ContourHit;
     }) {
       this.distanceFraction = args?.distanceFraction ?? -1;
       this.type = args?.type ?? GeometryType.Unknown;
@@ -168,6 +159,7 @@ export namespace Pixel {
         sourceIModel: this.iModel,
         transformFromSourceIModel: this.transformFromIModel,
         path,
+        contour: this.contour,
       };
     }
   }
@@ -216,6 +208,10 @@ export namespace Pixel {
      * @beta
      */
     path?: HitPath;
+    /** ###TODO
+     * @beta
+     */
+    contour?: ContourHit;
   }
 
   /** Describes the type of geometry that produced the [[Pixel.Data]]. */

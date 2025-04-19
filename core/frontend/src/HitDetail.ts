@@ -7,7 +7,7 @@
  */
 import { assert, Id64, Id64String } from "@itwin/core-bentley";
 import { Arc3d, CurvePrimitive, LineSegment3d, LineString3d, Path, Point3d, Transform, Vector3d, XYZProps } from "@itwin/core-geometry";
-import { GeometryClass, LinePixels } from "@itwin/core-common";
+import { ContourGroup, GeometryClass, LinePixels } from "@itwin/core-common";
 import { IModelApp } from "./IModelApp";
 import { IModelConnection } from "./IModelConnection";
 import { IconSprites, Sprite } from "./Sprites";
@@ -148,6 +148,15 @@ export interface HitPath {
   sectionDrawingAttachment?: SectionDrawingAttachmentHitInfo;
 };
 
+/** ###TODO
+ * @beta
+ */
+export interface ContourHit {
+  readonly isMajor: boolean;
+  readonly elevation: number;
+  readonly group: ContourGroup;
+}
+
 /** Arguments supplied to the [[HitDetail]] constructor.
  * @public
  */
@@ -192,6 +201,10 @@ export interface HitDetailProps {
    * @beta
    */
   readonly path?: HitPath;
+  /** ###TODO
+   * @beta
+   */
+  readonly contour?: ContourHit;
 }
 
 /** A HitDetail stores the result when locating geometry displayed in a view.
@@ -247,6 +260,10 @@ export class HitDetail {
    * @beta
    */
   public get path(): HitPath | undefined { return this._props.path; }
+  /** ###TODO
+   * @beta
+   */
+  public get contour(): ContourHit | undefined { return this._props.contour; }
 
   /** Create a new HitDetail from the inputs to and results of a locate operation. */
   public constructor(props: HitDetailProps);
@@ -298,6 +315,7 @@ export class HitDetail {
         tileId: arg0.tileId,
         isClassifier: arg0.isClassifier,
         path,
+        contour: arg0.contour,
       };
     }
   }

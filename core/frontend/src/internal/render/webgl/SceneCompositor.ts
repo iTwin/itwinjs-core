@@ -15,6 +15,7 @@ import {
 import { RenderType } from "@itwin/webgl-compatibility";
 import { IModelConnection } from "../../../IModelConnection";
 import { SceneContext } from "../../../ViewContext";
+import { ContourHit } from "../../../HitDetail";
 import { ViewRect } from "../../../common/ViewRect";
 import { Pixel } from "../../../render/Pixel";
 import { GraphicList } from "../../../render/RenderGraphic";
@@ -772,7 +773,7 @@ class PixelBuffer implements Pixel.Buffer {
       }
     }
 
-    let contour: Pixel.ContourInfo | undefined;
+    let contour: ContourHit | undefined;
     if (this._contours) {
       const contour32 = this.getPixel32(this._contours.data, index);
       if (contour32) { // undefined means out of bounds; zero means not a contour.
