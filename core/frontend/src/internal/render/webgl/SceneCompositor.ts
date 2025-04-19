@@ -772,6 +772,26 @@ class PixelBuffer implements Pixel.Buffer {
       }
     }
 
+    let contour: Pixel.ContourInfo | undefined;
+    if (this._contours) {
+      const contour32 = this.getPixel32(this._contours.data, index);
+      if (contour32) { // undefined means out of bounds; zero means not a contour.
+
+        this._scratchUint32Array[0] = contour32;
+        const groupIndexAndType = this._scratchUint8Array[0];
+        const groupIndex = groupIndexAndType & (8 | 16);
+        const group = this._contours.display.groups[groupIndex];
+        if (group) {
+          contour = {
+            group,
+            isMajor: groupIndexAndType > 8,
+            elevation: this.decodeDepthRgba(contour32),
+          };
+        }
+      }
+      
+    }
+
     let featureTable, iModel, transformToIModel, tileId, viewAttachmentId, inSectionDrawingAttachment;
     if (undefined !== batchInfo) {
       featureTable = batchInfo.featureTable;
@@ -793,6 +813,7 @@ class PixelBuffer implements Pixel.Buffer {
       tileId,
       viewAttachmentId,
       inSectionDrawingAttachment,
+      contour,
     });
   }
 

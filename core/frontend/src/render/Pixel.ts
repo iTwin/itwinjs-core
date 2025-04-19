@@ -46,7 +46,7 @@ export namespace Pixel {
     /** ###TODO
      * @beta
      */
-    public readonly contourInfo?: ContourInfo;
+    public readonly contour?: ContourInfo;
     /** @internal */
     public readonly transformFromIModel?: Transform;
     /** @internal */
@@ -76,7 +76,7 @@ export namespace Pixel {
       viewAttachmentId?: string;
       inSectionDrawingAttachment?: boolean;
       transformFromIModel?: Transform;
-      contourInfo?: ContourInfo;
+      contour?: ContourInfo;
     }) {
       this.distanceFraction = args?.distanceFraction ?? -1;
       this.type = args?.type ?? GeometryType.Unknown;
@@ -96,7 +96,7 @@ export namespace Pixel {
       this.tileId = args.tileId;
       this.viewAttachmentId = args.viewAttachmentId;
       this.transformFromIModel = args.transformFromIModel;
-      this.contourInfo = args.contourInfo;
+      this.contour = args.contour;
     }
 
     /** The Id of the element that produced the pixel. */
