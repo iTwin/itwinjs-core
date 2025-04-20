@@ -34,7 +34,7 @@ export namespace Pixel {
     public readonly batchType?: BatchType;
     /** The iModel from which the geometry producing the pixel originated. */
     public readonly iModel?: IModelConnection;
-    /** ###TODO
+  /** Information about the [contour line]($docs/learning/display/ContourDisplay.md), if any, that generated this pixel.
      * @beta
      */
     public readonly contour?: ContourHit;
@@ -208,7 +208,7 @@ export namespace Pixel {
      * @beta
      */
     path?: HitPath;
-    /** ###TODO
+  /** Information about the [contour line]($docs/learning/display/ContourDisplay.md), if any, from which the hit originated.
      * @beta
      */
     contour?: ContourHit;

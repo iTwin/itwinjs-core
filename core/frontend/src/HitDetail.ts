@@ -148,13 +148,20 @@ export interface HitPath {
   sectionDrawingAttachment?: SectionDrawingAttachmentHitInfo;
 };
 
-/** ###TODO
+/** Information about a [contour line]($docs/learning/display/ContourDisplay.md) that generated a [[HitDetail]] or [[Pixel]].
+ * @see [[HitDetail.contour]]
+ * @see [[Pixel.Data.contour]]
  * @beta
  */
 export interface ContourHit {
-  readonly isMajor: boolean;
-  readonly elevation: number;
+  /** The contour group that generated the contour line, as specified by [ContourDisplay.groups]]. */
   readonly group: ContourGroup;
+  /** True if the contour is a major contour line as specified by the [[group]] from which it originated, false if it is a minor contour line. */
+  readonly isMajor: boolean;
+  /** The height in world coordinates of the contour line. This is always a multiple of the [Contour.minorInterval]($common) defined for the [[group]].
+   * @note The multiple may be approximate due to the limitations of floating-point precision.
+   */
+  readonly elevation: number;
 }
 
 /** Arguments supplied to the [[HitDetail]] constructor.
@@ -201,7 +208,7 @@ export interface HitDetailProps {
    * @beta
    */
   readonly path?: HitPath;
-  /** ###TODO
+  /** Information about the [contour line]($docs/learning/display/ContourDisplay.md), if any, from which this hit originated.
    * @beta
    */
   readonly contour?: ContourHit;
@@ -260,7 +267,7 @@ export class HitDetail {
    * @beta
    */
   public get path(): HitPath | undefined { return this._props.path; }
-  /** ###TODO
+  /** Information about the [contour line]($docs/learning/display/ContourDisplay.md), if any, from which this hit originated.
    * @beta
    */
   public get contour(): ContourHit | undefined { return this._props.contour; }
