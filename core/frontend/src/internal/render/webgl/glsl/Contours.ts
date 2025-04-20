@@ -53,10 +53,10 @@ const encodeContourLineInfo = `
     float elevation = floor((v_height + sign(v_height) * interval / 2.0) / interval) * interval;
 
     // Convert elevation to a fraction of the frustum's world Z extents
-    elevation = clamp((elevation - u_worldFrustumZRange.x) / u_worldFrustumZRange.y, 0.0, 1.0);
+    elevation = clamp((elevation - u_worldFrustumZRange.x) / (u_worldFrustumZRange.y - u_worldFrustumZRange.x), 0.0, 1.0);
 
     // Encode elevation in RGB and the rest of the info in A
-    g_contourLineInfo = vec4(encodeDepthRgb(elevation), groupIndexAndType * 0.0625);
+    g_contourLineInfo = vec4(groupIndexAndType * 0.0625, encodeDepthRgb(elevation));
   }
 `;
 
