@@ -633,6 +633,8 @@ interface BatchInfo {
 interface ContourPixels {
   display: ContourDisplay;
   data: Uint32Array;
+  zLow: number;
+  zHigh: number;
 }
 
 // Represents a view of data read from a region of the frame buffer.
@@ -781,11 +783,11 @@ class PixelBuffer implements Pixel.Buffer {
         const groupIndex = groupIndexAndType & ~(8 | 16);
         const group = this._contours.display.groups[groupIndex];
         if (group) {
+          const elevationFraction = this.decodeDepthRgba(contour32);
           contour = {
             group,
             isMajor: groupIndexAndType > 15,
-            // ###TODO scale to world frustum Z range
-            elevation: this.decodeDepthRgba(contour32),
+            elevation: elevationFraction * (this._contours.zHigh - this._contours.zLow) + this._contours.zLow,
           };
         }
       }
@@ -1656,7 +1658,16 @@ class Compositor extends SceneCompositor {
     }
 
     const info = this.readFrameBuffer(rect, this._fbos.contours);
-    return info ? { data: new Uint32Array(info.buffer), display: contours } : undefined;
+    if (!info) {
+      return undefined;
+    }
+
+    return {
+      data: new Uint32Array(info.buffer),
+      display: contours,
+      zLow: this.target.uniforms.frustum.worldFrustumZRange[0],
+      zHigh: this.target.uniforms.frustum.worldFrustumZRange[1],
+    };
   }
 
   public readFeatureIds(rect: ViewRect): Uint8Array | undefined {
