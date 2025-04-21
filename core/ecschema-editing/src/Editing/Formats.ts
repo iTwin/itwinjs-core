@@ -6,7 +6,7 @@
  * @module Editing
  */
 
-import { Format, InvertedUnit, SchemaItemFormatProps, SchemaItemKey, SchemaItemType, SchemaKey, Unit } from "@itwin/ecschema-metadata";
+import { DelayedPromiseWithProps, Format, InvertedUnit, SchemaItemFormatProps, SchemaItemKey, SchemaItemType, SchemaKey, Unit } from "@itwin/ecschema-metadata";
 import { FormatType } from "@itwin/core-quantity";
 import { SchemaContextEditor } from "./Editor";
 import { MutableFormat } from "./Mutable/MutableFormat";
@@ -37,11 +37,13 @@ export class Formats extends SchemaItems {
             throw new SchemaEditingError(ECEditingStatus.SchemaItemNotFoundInContext, new SchemaItemId(SchemaItemType.Unit, unit));
           }
 
-          if (!Unit.isUnit(unitItem) && !InvertedUnit.isInvertedUnit(unitItem)) {
+          if (Unit.isUnit(unitItem) ) {
+            newFormat.addUnit(new DelayedPromiseWithProps(unitItem.key, async () => unitItem));
+          } else if (InvertedUnit.isInvertedUnit(unitItem) ) {
+            newFormat.addUnit(new DelayedPromiseWithProps(unitItem.key, async () => unitItem));
+          } else {
             throw new SchemaEditingError(ECEditingStatus.InvalidFormatUnitsSpecified, new SchemaItemId(unitItem.schemaItemType, unitItem.key));
           }
-
-          newFormat.addUnit(unitItem);
         }
       }
 
