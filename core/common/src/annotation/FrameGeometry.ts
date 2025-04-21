@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { Angle, AngleSweep, Arc3d, LineString3d, Loop, Point3d, Range2d, Range2dProps, Transform, TransformProps, Vector2d, Vector3d, XYAndZ } from "@itwin/core-geometry";
+import { Angle, AngleSweep, Arc3d, CurvePrimitive, LineString3d, Loop, Point3d, Range2d, Range2dProps, Transform, TransformProps, Vector2d, XYAndZ } from "@itwin/core-geometry";
 import { TextAnnotationFrameShape } from "./TextAnnotation";
 
 // I don't love where this is.
@@ -19,10 +19,12 @@ export namespace FrameGeometry {
       case "equilateralTriangle": return FrameGeometry.computeTriangle(rangeProps, transformProps);
       case "diamond": return FrameGeometry.computeDiamond(rangeProps, transformProps);
       case "square": return FrameGeometry.computeSquare(rangeProps, transformProps);
-      case "pentagon": return defaultLoop;
-      case "hexagon": return defaultLoop;
+      case "pentagon": return FrameGeometry.computePolygon(5, rangeProps, transformProps, 90);
+      case "hexagon": return FrameGeometry.computePolygon(6, rangeProps, transformProps);
+      case "octagon": return FrameGeometry.computePolygon(8, rangeProps, transformProps, 180 / 8); // or pi/8 in radians
       case "capsule": return FrameGeometry.computeCapsule(rangeProps, transformProps);
       case "roundedRectangle": return FrameGeometry.computeRoundedRectangle(rangeProps, transformProps);
+      default: return defaultLoop;
     }
   }
 
@@ -236,4 +238,29 @@ export namespace FrameGeometry {
     const transform = Transform.fromJSON(transformProps);
     return Loop.createArray(curves.map((curve) => curve.cloneTransformed(transform)))
   }
+
+  // Polygon with n sides
+  export const computePolygon = (n: number, rangeProps: Range2dProps, transformProps: TransformProps, angleOffset: number = 0): Loop => {
+    // These are math terms: cspell:ignore inradius circumradius
+    if (n < 3) throw new Error("A polygon must have at least 3 sides.");
+
+    const range = Range2d.fromJSON(rangeProps);
+    const center = range.center;
+    const inradius = range.low.distance(range.high) / 2; // This will be the in-radius the polygon and the circum-radius of the range.
+    const circumradius = inradius / Math.cos(Math.PI / n);
+
+    const points: Point3d[] = [];
+    const angleIncrement = 360 / n;
+
+    for (let i = 0; i < n; i++) {
+      const angle = Angle.createDegrees(i * angleIncrement + angleOffset);
+      const vector = Vector2d.createPolar(circumradius, angle);
+      points.push(Point3d.create(center.x + vector.x, center.y + vector.y));
+    }
+    points.push(points[0]); // Close the polygon
+
+    const frame = LineString3d.createPoints(points);
+    const transform = Transform.fromJSON(transformProps);
+    return Loop.create(frame.cloneTransformed(transform));
+  };
 }

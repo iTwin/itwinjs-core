@@ -36,7 +36,7 @@ export interface TextAnnotationAnchor {
   horizontal: "left" | "center" | "right";
 }
 
-export type TextAnnotationFrameShape = "none" | "line" | "rectangle" | "circle" | "equilateralTriangle" | "diamond" | "square" | "pentagon" | "hexagon" | "capsule" | "roundedRectangle";
+export type TextAnnotationFrameShape = "none" | "line" | "rectangle" | "circle" | "equilateralTriangle" | "diamond" | "square" | "pentagon" | "hexagon" | "octagon" | "capsule" | "roundedRectangle";
 
 
 /** TODO

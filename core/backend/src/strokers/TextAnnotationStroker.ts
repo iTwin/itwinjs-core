@@ -140,12 +140,11 @@ export class TextAnnotationStroker extends Stroker<TextAnnotationStrokerArgs> {
 
     const params = new GeometryParams(Id64.invalid);
     params.lineColor = ColorDef.black;
-    params.weight = (frame.borderWeight ?? 1) * 5;
+    params.weight = (frame.borderWeight ?? 1) * 5; // We want the dots to be bigger than the frame so we can see them.
     params.fillDisplay = FillDisplay.Always;
 
     result = result && this._builder.appendGeometryParamsChange(params);
     result = result && this._builder.appendGeometry(PointString3d.create(points));
-
     return result;
   }
 }
