@@ -359,6 +359,17 @@ describe("Contour lines", () => {
       setContours(vp, contours);
       vp.renderFrame();
       expectContours(vp, []);
+
+      contours.groups = [contours.groups[contours.groups.length - 1]];
+      setContours(vp, contours);
+      vp.renderFrame();
+      expectContours(vp, [0,1,2,3,4,5,6,7,8,9,10].map((elevation) => {
+        return { elevation, groupName: "A", subCategoryId: "0x1", isMajor: elevation % 2 === 0 }
+      }));
     });
+  });
+
+  it("renders contours but does not read them unless Pixel.Selector.Contours is specified", () => {
+    
   });
 });
