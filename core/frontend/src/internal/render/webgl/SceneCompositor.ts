@@ -784,10 +784,15 @@ class PixelBuffer implements Pixel.Buffer {
         const group = this._contours.display.groups[groupIndex];
         if (group) {
           const elevationFraction = this.decodeDepthRgba(contour32);
+          let elevation = elevationFraction * (this._contours.zHigh - this._contours.zLow) + this._contours.zLow;
+          // The shader rounds to the nearest contour elevation using single-precision arithmetic.
+          // Re-round here using double-precision to get closer.
+          const interval = group.contourDef.minorInterval;
+          elevation = Math.floor((elevation + Math.sign(elevation) * interval / 2) / interval) * interval;
           contour = {
             group,
+            elevation,
             isMajor: groupIndexAndType > 15,
-            elevation: elevationFraction * (this._contours.zHigh - this._contours.zLow) + this._contours.zLow,
           };
         }
       }

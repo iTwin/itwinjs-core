@@ -119,7 +119,6 @@ describe("Contour lines", () => {
         sortColorDefs(expected);
         vp.renderFrame();
         const actual = hexifyColors(readUniqueColors(vp).toColorDefs());
-        console.log(JSON.stringify(actual));
         expect(actual).to.deep.equal(hexifyColors(expected));
       }
 
@@ -219,7 +218,7 @@ describe("Contour lines", () => {
             pixelWidth: 1,
           },
           minorInterval: 1,
-          majorIntervalCount: 2,
+          majorIntervalCount: 1,
           showGeometry: true,
         };
       
@@ -238,7 +237,17 @@ describe("Contour lines", () => {
         contourProps.displayContours = true;
         setContours(vp, contourProps);
         vp.renderFrame();
-        expectContours(vp, []);
+        expectContours(vp, [0,1,2,3,4,5,6,7,8,9,10].map((elevation) => {
+          return { elevation, groupName: "A", subCategoryId: "0x1", isMajor: true }
+        }));
+
+        contourDef.majorIntervalCount = 2;
+        setContours(vp, contourProps);
+        vp.renderFrame();
+        expectContours(vp, [0,1,2,3,4,5,6,7,8,9,10].map((elevation) => {
+          return { elevation, groupName: "A", subCategoryId: "0x1", isMajor: elevation % 2 === 0 }
+        }));
+
       });
     });
   });
