@@ -788,7 +788,7 @@ class PixelBuffer implements Pixel.Buffer {
           // The shader rounds to the nearest contour elevation using single-precision arithmetic.
           // Re-round here using double-precision to get closer.
           const interval = group.contourDef.minorInterval;
-          elevation = Math.floor((elevation + Math.sign(elevation) * interval / 2) / interval) * interval;
+          elevation = (elevation >= 0 ? Math.floor((elevation + interval / 2) / interval) : Math.ceil((elevation - interval / 2) / interval)) * interval;
           contour = {
             group,
             elevation,

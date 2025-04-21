@@ -249,7 +249,7 @@ describe("Contour lines", () => {
         const expectedContours: ContourInfo[] = [];
         for (const elevation of [0,1,2,3,4,5,6,7,8,9,10]) {
           expectedContours.push({ elevation, groupName: "A", subCategoryId: "0x1", isMajor: elevation % 2 === 0 });
-          expectedContours.push({ elevation: -elevation, groupName: "A", subCategoryId: "0x2", isMajor: elevation % 2 === 0 });
+          expectedContours.push({ elevation: elevation !== 0 ? -elevation : elevation, groupName: "A", subCategoryId: "0x2", isMajor: elevation % 2 === 0 });
         }
         vp.renderFrame();
         expectContours(vp, expectedContours);

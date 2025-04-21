@@ -50,7 +50,7 @@ const encodeContourLineInfo = `
     float groupIndexAndType = float(groupIndex + (isMajor ? 16 : 8));
 
     // Find nearest multiple of interval to pixel world height.
-    float elevation = floor((v_height + sign(v_height) * interval / 2.0) / interval) * interval;
+    float elevation = (v_height >= 0.0 ? floor((v_height + interval / 2.0) / interval) : ceil((v_height - interval / 2.0) / interval)) * interval;
 
     // Convert elevation to a fraction of the frustum's world Z extents
     elevation = clamp((elevation - u_worldFrustumZRange.x) / (u_worldFrustumZRange.y - u_worldFrustumZRange.x), 0.0, 1.0);
