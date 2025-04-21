@@ -6,13 +6,10 @@
 import { Angle, AngleSweep, Arc3d, LineString3d, Loop, Point3d, Range2d, Range2dProps, Transform, TransformProps, Vector2d, XYAndZ } from "@itwin/core-geometry";
 import { TextAnnotationFrameShape } from "./TextAnnotation";
 
-// I don't love where this is.
-
 export namespace FrameGeometry {
   export const computeFrame = (frame: TextAnnotationFrameShape, rangeProps: Range2dProps, transformProps: TransformProps): Loop => {
     const defaultLoop = Loop.create();
     switch (frame) {
-      case "none": return defaultLoop;
       case "line": return defaultLoop;
       case "rectangle": return FrameGeometry.computeRectangle(rangeProps, transformProps);
       case "circle": return FrameGeometry.computeCircle(rangeProps, transformProps);
@@ -202,10 +199,6 @@ export namespace FrameGeometry {
     return Loop.create(frame.cloneTransformed(transform));
   }
 
-  // Pentagon
-
-  // Hexagon
-
   // Capsule
   export const computeCapsule = (rangeProps: Range2dProps, transformProps: TransformProps): Loop => {
     const range = Range2d.fromJSON(rangeProps);
@@ -244,22 +237,31 @@ export namespace FrameGeometry {
     // These are math terms: cspell:ignore inradius circumradius
     if (n < 3) throw new Error("A polygon must have at least 3 sides.");
 
+    // We're assuming the polygon is a regular polygon with `n` sides.
     const range = Range2d.fromJSON(rangeProps);
+    // The center of the polygon is the center of the range.
     const center = range.center;
-    const inradius = range.low.distance(range.high) / 2; // This will be the in-radius the polygon and the circum-radius of the range.
+    // The inradius is the distance from the center to the midpoint of each side of the polygon. On our range, this coincides with the distance from the center to one of its corners.
+    const inradius = range.low.distance(range.high) / 2;
+    // The circumradius is the distance from the center to each vertex of the polygon.
     const circumradius = inradius / Math.cos(Math.PI / n);
 
-    const points: Point3d[] = [];
+    // The exterior angles add up to 360 degrees.
     const angleIncrement = 360 / n;
+    const vertices: Point3d[] = [];
 
+    // Add a point for each vertex
     for (let i = 0; i < n; i++) {
       const angle = Angle.createDegrees(i * angleIncrement + angleOffset);
       const vector = Vector2d.createPolar(circumradius, angle);
-      points.push(Point3d.create(center.x + vector.x, center.y + vector.y));
+      vertices.push(Point3d.create(center.x + vector.x, center.y + vector.y));
     }
-    points.push(points[0]); // Close the polygon
 
-    const frame = LineString3d.createPoints(points);
+    // Close the polygon
+    vertices.push(vertices[0]);
+
+    // Finally compute the loop!
+    const frame = LineString3d.createPoints(vertices);
     const transform = Transform.fromJSON(transformProps);
     return Loop.create(frame.cloneTransformed(transform));
   };
