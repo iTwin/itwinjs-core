@@ -1040,7 +1040,7 @@ describe("produceTextAnnotationGeometry", () => {
   function makeGeometry(runs: Run[]): TextBlockGeometryPropsEntry[] {
     const block = makeTextBlock(runs);
     const annotation = TextAnnotation.fromJSON({ textBlock: block.toJSON() });
-    return produceTextAnnotationGeometry({ iModel: mockIModel(), annotation }).textBlockGeometry.entries;
+    return produceTextAnnotationGeometry({ iModel: mockIModel(), annotation }).entries;
   }
 
   it("produces an empty array for an empty text block", () => {
@@ -1118,7 +1118,7 @@ describe("produceTextAnnotationGeometry", () => {
       const annotation = TextAnnotation.fromJSON({ textBlock: block.toJSON() });
       annotation.anchor = anchor;
 
-      const geom = produceTextAnnotationGeometry({ iModel: mockIModel(), annotation }).textBlockGeometry.entries;
+      const geom = produceTextAnnotationGeometry({ iModel: mockIModel(), annotation }).entries;
       return geom[1].text;
     }
 

@@ -21,10 +21,7 @@ import { ImageGraphic, ImageGraphicCorners, ImageGraphicProps } from "./ImageGra
 import { LineStyle } from "./LineStyle";
 import { ElementAlignedBox3d, Placement2d, Placement3d } from "./Placement";
 import { isPlacement2dProps, PlacementProps } from "../ElementProps";
-import { TextBlockGeometryProps, TextBlockGeometryPropsEntry } from "../annotation/TextBlockGeometryProps";
-import { FrameGeometry } from "../annotation/FrameGeometry";
-import { FrameGeometryProps } from "../annotation/FrameGeometryProps";
-import { TextAnnotationGeometryProps } from "../annotation/TextAnnotationGeometryProps";
+import { TextBlockGeometryProps } from "../annotation/TextBlockGeometryProps";
 
 /** Specifies the type of an entry in a geometry stream.
  * @see [[ElementGeometryDataEntry.opcode]].

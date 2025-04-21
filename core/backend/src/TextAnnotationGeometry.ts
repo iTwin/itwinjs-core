@@ -6,13 +6,11 @@
  * @module ElementGeometry
  */
 
-import { ColorDef, TextAnnotation, TextBlockGeometryProps, TextBlockGeometryPropsEntry, TextFrameStyleProps, TextString, TextStyleColor } from "@itwin/core-common";
+import { TextAnnotation, TextBlockGeometryProps, TextBlockGeometryPropsEntry, TextString, TextStyleColor } from "@itwin/core-common";
 import { ComputeRangesForTextLayout, FindFontId, FindTextStyle, layoutTextBlock, RunLayout, TextBlockLayout } from "./TextAnnotationLayout";
 import { LineSegment3d, Point3d, Range2d, Transform, Vector2d } from "@itwin/core-geometry";
 import { assert } from "@itwin/core-bentley";
 import { IModelDb } from "./IModelDb";
-import { FrameGeometryProps } from "@itwin/core-common/lib/cjs/annotation/FrameGeometryProps";
-import { TextAnnotationGeometryProps } from "@itwin/core-common/lib/cjs/annotation/TextAnnotationGeometryProps";
 
 interface GeometryContext {
   curColor?: TextStyleColor;
@@ -127,9 +125,8 @@ function processFractionRun(run: RunLayout, transform: Transform, context: Geome
   }
 }
 
-function produceTextBlockGeometry(layout: TextBlockLayout, documentTransform: Transform, debugAnchorPt?: Point3d): TextBlockGeometryProps {
+export function produceTextBlockGeometry(layout: TextBlockLayout, documentTransform: Transform): TextBlockGeometryProps {
   const context: GeometryContext = { entries: [] };
-
   for (const line of layout.lines) {
     const lineTrans = Transform.createTranslationXYZ(line.offsetFromDocument.x, line.offsetFromDocument.y, 0);
     for (const run of line.runs) {
@@ -147,92 +144,6 @@ function produceTextBlockGeometry(layout: TextBlockLayout, documentTransform: Tr
       }
     }
   }
-
-  if (debugAnchorPt) {
-    context.entries.push({
-      color: ColorDef.blue.toJSON()
-    });
-
-    // Draw a blue box to show the element's margin
-    const marginCorners = layout.range.corners3d(true);
-    documentTransform.multiplyPoint3dArrayInPlace(marginCorners);
-    marginCorners.forEach((corner, index) => {
-      const next = marginCorners[index + 1];
-      if (!next) return;
-
-      context.entries.push({
-        separator: {
-          startPoint: [corner.x, corner.y, 0],
-          endPoint: [next.x, next.y, 0],
-        },
-      });
-    });
-
-    // Draw a blue x to show the anchor point - Rotation occurs around this point. The x will be 1 m by 1 m.
-    context.entries.push({
-      separator: {
-        startPoint: [debugAnchorPt.x - 1, debugAnchorPt.y - 1, 0],
-        endPoint: [debugAnchorPt.x + 1, debugAnchorPt.y + 1, 0],
-      },
-    });
-
-    context.entries.push({
-      separator: {
-        startPoint: [debugAnchorPt.x + 1, debugAnchorPt.y - 1, 0],
-        endPoint: [debugAnchorPt.x - 1, debugAnchorPt.y + 1, 0],
-      },
-    });
-
-    // Draw a red box to show the text range
-    context.entries.push({
-      color: ColorDef.red.toJSON(),
-    });
-
-    const rangeCorners = layout.textRange.corners3d(true);
-    documentTransform.multiplyPoint3dArrayInPlace(rangeCorners);
-    rangeCorners.forEach((corner, index) => {
-      const next = rangeCorners[index + 1];
-      if (!next) return;
-
-      context.entries.push({
-        separator: {
-          startPoint: [corner.x, corner.y, 0],
-          endPoint: [next.x, next.y, 0],
-        },
-      });
-    });
-  }
-
-  return { entries: context.entries };
-}
-
-function produceFrameGeometry(layout: TextBlockLayout, documentTransform: Transform, frameProps?: TextFrameStyleProps): FrameGeometryProps {
-  const context: FrameGeometryProps = { entries: [] };
-
-  if (frameProps?.frame && frameProps?.frame !== "none") {
-    context.entries.push({
-      frame: {
-        shape: frameProps.frame,
-        lineWidth: frameProps.borderWeight ?? 1,
-        lineColor: frameProps.border,
-        fillColor: frameProps.fill,
-        transform: documentTransform.toJSON(),
-        range: layout.range.toJSON(),
-      }
-    });
-
-    if (frameProps?.debugSnap) {
-      context.entries.push({
-        debugSnap: {
-          shape: frameProps.frame,
-          transform: documentTransform.toJSON(),
-          range: layout.range.toJSON(),
-        }
-      });
-    }
-  }
-
-
 
   return { entries: context.entries };
 }
@@ -262,7 +173,7 @@ export interface ProduceTextAnnotationGeometryArgs {
  * @see [[TextAnnotation2d.setAnnotation]] and [[TextAnnotation3d.setAnnotation]] to update the annotation, geometry, and placement of an annotation element.
  * @beta
  */
-export function produceTextAnnotationGeometry(args: ProduceTextAnnotationGeometryArgs): TextAnnotationGeometryProps {
+export function produceTextAnnotationGeometry(args: ProduceTextAnnotationGeometryArgs): TextBlockGeometryProps {
   const layout = layoutTextBlock({
     ...args,
     textBlock: args.annotation.textBlock,
@@ -271,8 +182,5 @@ export function produceTextAnnotationGeometry(args: ProduceTextAnnotationGeometr
   const dimensions = layout.range;
   const transform = args.annotation.computeTransform(dimensions);
 
-  const anchorPoint = args.debugAnchorPointAndRange ? transform.multiplyPoint3d(args.annotation.computeAnchorPoint(dimensions)) : undefined;
-  const textBlockGeometry = produceTextBlockGeometry(layout, transform, anchorPoint);
-  const frameGeometry = produceFrameGeometry(layout, transform, args.annotation.frame);
-  return { textBlockGeometry, frameGeometry };
+  return produceTextBlockGeometry(layout, transform);
 }

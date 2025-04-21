@@ -180,11 +180,11 @@ class DisplayTestAppRpc extends DtaRpcInterface {
     return (await IModelHost.authorizationClient?.getAccessToken()) ?? "";
   }
 
-  public override async produceTextAnnotationGeometryStroker(iModelToken: IModelRpcProps, annotationProps: TextAnnotationProps, placementProps?: PlacementProps, _debugAnchorPointAndRange?: boolean): Promise<FlatBufferGeometryStream | JsonGeometryStream | undefined> {
+  public override async produceTextAnnotationGeometryStroker(iModelToken: IModelRpcProps, annotationProps: TextAnnotationProps, placementProps?: PlacementProps, args?: { debugAnchorPoint?: boolean, debugSnapPoints?: boolean }): Promise<FlatBufferGeometryStream | JsonGeometryStream | undefined> {
     const iModel = IModelDb.findByKey(iModelToken.key);
 
     const stroker = new TextAnnotationStroker(iModel);
-    return stroker.createGeometry(annotationProps, placementProps);;
+    return stroker.createGeometry(annotationProps, placementProps, args);
   }
 }
 

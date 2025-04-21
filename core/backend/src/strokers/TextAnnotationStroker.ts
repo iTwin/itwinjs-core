@@ -3,13 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { BackgroundFill, ColorDef, FillDisplay, FlatBufferGeometryStream, FrameGeometry, GeometryParams, GeometryStreamBuilder, JsonGeometryStream, PlacementProps, TextAnnotation, TextAnnotationProps } from "@itwin/core-common";
+import { BackgroundFill, ColorDef, FillDisplay, FlatBufferGeometryStream, FrameGeometry, GeometryParams, GeometryStreamBuilder, JsonGeometryStream, PlacementProps, TextAnnotation, TextAnnotationProps, TextFrameStyleProps } from "@itwin/core-common";
 import { Stroker } from "./Stroker";
-import { produceTextAnnotationGeometry } from "../TextAnnotationGeometry";
+import { produceTextBlockGeometry } from "../TextAnnotationGeometry";
 import { IModelDb } from "../IModelDb";
-import { FrameGeometryProps } from "@itwin/core-common/lib/cjs/annotation/FrameGeometryProps";
 import { Id64 } from "@itwin/core-bentley";
-import { Loop } from "@itwin/core-geometry";
+import { LineString3d, Loop, Range2d, Transform } from "@itwin/core-geometry";
+import { layoutTextBlock, TextBlockLayout } from "../TextAnnotationLayout";
 
 /** @packageDocumentation
  * @module Strokers
@@ -27,70 +27,117 @@ export class TextAnnotationStroker extends Stroker<TextAnnotationProps> {
 
   public get builder(): GeometryStreamBuilder { return this._builder };
 
-  public createGeometry(props: TextAnnotationProps, placementProps?: PlacementProps): FlatBufferGeometryStream | JsonGeometryStream | undefined {
+  public createGeometry(props: TextAnnotationProps, placementProps?: PlacementProps, args?: { debugAnchorPoint?: boolean, debugSnapPoints?: boolean }): FlatBufferGeometryStream | JsonGeometryStream | undefined {
     if (placementProps) this._builder.setLocalToWorldFromPlacement(placementProps)
 
     const annotation = TextAnnotation.fromJSON(props);
 
-    const { textBlockGeometry, frameGeometry } = produceTextAnnotationGeometry({ iModel: this._iModel, annotation });
+    const layout = layoutTextBlock({
+      iModel: this._iModel,
+      textBlock: annotation.textBlock,
+    });
 
+    const dimensions = layout.range;
+    const transform = annotation.computeTransform(dimensions);
+
+    const textBlockGeometry = produceTextBlockGeometry(layout, transform);
     this._builder.appendTextBlock(textBlockGeometry);
-    if (undefined !== frameGeometry) {
-      this.appendFrame(frameGeometry)
+
+    if (annotation.frame) {
+      this.appendFrame(annotation, layout);
     }
+
+    if (args?.debugSnapPoints && annotation.frame) {
+      this.debugSnapPoints(annotation.frame, dimensions, transform);
+    }
+
+    if (args?.debugAnchorPoint) {
+      this.debugAnchorPoint(annotation, layout, transform);
+    }
+
 
     return { format: "json", data: this._builder.geometryStream };
   }
 
+  private appendFrame(annotation: TextAnnotation, layout: TextBlockLayout): boolean {
+    const range = Range2d.fromJSON(layout.range);
+    const transform = annotation.computeTransform(range);
+    const frame = annotation.frame;
 
-  private appendFrame(frameProps: FrameGeometryProps): boolean {
-    for (const entry of frameProps.entries) {
-      let result: boolean;
-      if (undefined !== entry.frame) {
-        const params = new GeometryParams(Id64.invalid);
-        params.elmPriority = 0;
+    if (!frame || frame.shape === "none") return false;
 
-        if (entry.frame.fillColor === undefined) {
-          params.fillDisplay = FillDisplay.Never;
-        } else if (entry.frame.fillColor === "background") {
-          params.backgroundFill = BackgroundFill.Outline;
-          params.fillDisplay = FillDisplay.Always;
-        } else if (entry.frame.fillColor !== "subcategory") {
-          params.fillColor = ColorDef.fromJSON(entry.frame.fillColor);
-          params.lineColor = params.fillColor;
-          params.fillDisplay = FillDisplay.Always;
-        }
+    let result: boolean;
 
-        if (entry.frame.lineColor !== "subcategory") {
-          params.lineColor = ColorDef.fromJSON(entry.frame.lineColor);
-          params.weight = entry.frame.lineWidth;
-        }
+    const params = new GeometryParams(Id64.invalid);
+    params.elmPriority = 0;
 
-        const frame = FrameGeometry.computeFrame(entry.frame.shape, entry.frame.range, entry.frame.transform);
-
-        result = this._builder.appendGeometryParamsChange(params);
-        result = result && this._builder.appendGeometry(frame);
-
-      } else if (entry.debugSnap) {
-        // TODO: remove
-        const params = new GeometryParams(Id64.invalid);
-        params.lineColor = ColorDef.black;
-        params.weight = 1;
-        params.fillColor = ColorDef.white;
-        params.fillDisplay = FillDisplay.Always;
-        this._builder.appendGeometryParamsChange(params);
-        const points = FrameGeometry.debugIntervals(entry.debugSnap.shape, entry.debugSnap.range, entry.debugSnap.transform, 0.5, 0.25);
-        points?.forEach(point => this._builder.appendGeometry(Loop.create(point)));
-        result = true;
-      } else {
-        result = false;
-      }
-
-      if (!result) {
-        return false;
-      }
+    if (frame.fill === undefined) {
+      params.fillDisplay = FillDisplay.Never;
+    } else if (frame.fill === "background") {
+      params.backgroundFill = BackgroundFill.Outline;
+      params.fillDisplay = FillDisplay.Always;
+    } else if (frame.fill !== "subcategory") {
+      params.fillColor = ColorDef.fromJSON(frame.fill);
+      params.lineColor = params.fillColor;
+      params.fillDisplay = FillDisplay.Always;
     }
 
-    return true;
+    if (frame.border !== "subcategory") {
+      params.lineColor = ColorDef.fromJSON(frame.border);
+      params.weight = frame.borderWeight;
+    }
+
+    const frameGeometry = FrameGeometry.computeFrame(frame.shape, range, transform.toJSON());
+
+    result = this._builder.appendGeometryParamsChange(params);
+    result = result && this._builder.appendGeometry(frameGeometry);
+
+    return result;
+  }
+
+  private debugAnchorPoint(annotation: TextAnnotation, layout: TextBlockLayout, transform: Transform): boolean {
+    let result: boolean = true;
+    const range = Range2d.fromJSON(layout.range);
+    const debugAnchorPt = transform.multiplyPoint3d(annotation.computeAnchorPoint(range));
+
+    // Make it blue
+    const blueLineParams = new GeometryParams(Id64.invalid);
+    blueLineParams.lineColor = ColorDef.blue;
+    result = result && this._builder.appendGeometryParamsChange(blueLineParams);
+
+    // Draw a blue box to show the element's margin
+    const marginCorners = range.corners3d(true);
+    transform.multiplyPoint3dArrayInPlace(marginCorners);
+    result = result && this._builder.appendGeometry(LineString3d.create(marginCorners));
+
+    // Draw a blue x to show the anchor point - Rotation occurs around this point. The x will be 1 m by 1 m.
+    result = result && this._builder.appendGeometry(LineString3d.create([debugAnchorPt.x - 1, debugAnchorPt.y - 1, 0], [debugAnchorPt.x + 1, debugAnchorPt.y + 1, 0]));
+    result = result && this._builder.appendGeometry(LineString3d.create([debugAnchorPt.x + 1, debugAnchorPt.y - 1, 0], [debugAnchorPt.x - 1, debugAnchorPt.y + 1, 0]));
+
+    // Draw a red box to show the text range
+    const redLineParams = new GeometryParams(Id64.invalid);
+    redLineParams.lineColor = ColorDef.red;
+    result = result && this._builder.appendGeometryParamsChange(redLineParams);
+
+    const rangeCorners = layout.textRange.corners3d(true);
+    transform.multiplyPoint3dArrayInPlace(rangeCorners);
+    result = result && this._builder.appendGeometry(LineString3d.create(rangeCorners));
+
+    return result;
+  }
+
+  private debugSnapPoints(frame: TextFrameStyleProps, range: Range2d, transform: Transform): boolean {
+    let result: boolean = true;
+
+    const params = new GeometryParams(Id64.invalid);
+    params.lineColor = ColorDef.black;
+    params.weight = 1;
+    params.fillColor = ColorDef.white;
+    params.fillDisplay = FillDisplay.Always;
+    result = result && this._builder.appendGeometryParamsChange(params);
+    const points = FrameGeometry.debugIntervals(frame.shape, range.toJSON(), transform.toJSON(), 0.5, 0.25);
+    points?.forEach(point => result = result && this._builder.appendGeometry(Loop.create(point)));
+
+    return result;
   }
 }

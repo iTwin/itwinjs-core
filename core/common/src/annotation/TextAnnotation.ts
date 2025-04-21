@@ -36,7 +36,7 @@ export interface TextAnnotationAnchor {
   horizontal: "left" | "center" | "right";
 }
 
-export type TextAnnotationFrame = "none" | "line" | "rectangle" | "circle" | "equilateralTriangle" | "diamond" | "square" | "pentagon" | "hexagon" | "capsule" | "roundedRectangle";
+export type TextAnnotationFrameShape = "none" | "line" | "rectangle" | "circle" | "equilateralTriangle" | "diamond" | "square" | "pentagon" | "hexagon" | "capsule" | "roundedRectangle";
 
 
 /** TODO
@@ -45,7 +45,7 @@ export type TextAnnotationFrame = "none" | "line" | "rectangle" | "circle" | "eq
 export type TextAnnotationFillColor = TextStyleColor | "background";
 
 export interface TextFrameStyleProps {
-  frame?: TextAnnotationFrame;
+  shape: TextAnnotationFrameShape;
   fill?: TextAnnotationFillColor;
   border?: TextStyleColor;
   borderWeight?: number;
@@ -220,7 +220,7 @@ export class TextAnnotation {
 
   /** Returns true if this annotation is logically equivalent to `other`. */
   public equals(other: TextAnnotation): boolean {
-    const framesMatch = this.frame?.frame === other.frame?.frame
+    const framesMatch = this.frame?.shape === other.frame?.shape
       && this.frame?.fill === other.frame?.fill
       && this.frame?.border === other.frame?.border
       && this.frame?.borderWeight === other.frame?.borderWeight;

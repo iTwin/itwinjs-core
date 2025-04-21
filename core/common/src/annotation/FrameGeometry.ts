@@ -4,12 +4,12 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { Angle, AngleSweep, Arc3d, LineString3d, Loop, Point3d, Range2d, Range2dProps, Transform, TransformProps, Vector2d, Vector3d, XYAndZ } from "@itwin/core-geometry";
-import { TextAnnotationFrame } from "./TextAnnotation";
+import { TextAnnotationFrameShape } from "./TextAnnotation";
 
 // I don't love where this is.
 
 export namespace FrameGeometry {
-  export const computeFrame = (frame: TextAnnotationFrame, rangeProps: Range2dProps, transformProps: TransformProps): Loop => {
+  export const computeFrame = (frame: TextAnnotationFrameShape, rangeProps: Range2dProps, transformProps: TransformProps): Loop => {
     const defaultLoop = Loop.create();
     switch (frame) {
       case "none": return defaultLoop;
@@ -37,7 +37,7 @@ export namespace FrameGeometry {
     arcIntervals?: number;
   }
 
-  export const computeIntervalPoints = (frame: TextAnnotationFrame, rangeProps: Range2dProps, transformProps: TransformProps, lineInterval: number = 0.5, arcInterval: number = 0.25): Point3d[] | undefined => {
+  export const computeIntervalPoints = (frame: TextAnnotationFrameShape, rangeProps: Range2dProps, transformProps: TransformProps, lineInterval: number = 0.5, arcInterval: number = 0.25): Point3d[] | undefined => {
     const points: Point3d[] = [];
     const curves = FrameGeometry.computeFrame(frame, rangeProps, transformProps).collectCurvePrimitives(undefined, false, true);
 
@@ -50,7 +50,7 @@ export namespace FrameGeometry {
     return points;
   }
   /** Returns the closest point on the text frame where a leader can attach to */
-  export const computeLeaderStartPoint = (frame: TextAnnotationFrame, rangeProps: Range2dProps, transformProps: TransformProps, terminatorPoint: XYAndZ, options: ComputeLeaderStartPointOptions): Point3d | undefined => {
+  export const computeLeaderStartPoint = (frame: TextAnnotationFrameShape, rangeProps: Range2dProps, transformProps: TransformProps, terminatorPoint: XYAndZ, options: ComputeLeaderStartPointOptions): Point3d | undefined => {
     if (options.lineIntervals === undefined || options.arcIntervals === undefined) {
       const curve = FrameGeometry.computeFrame(frame, rangeProps, transformProps);
       return curve.closestPoint(Point3d.createFrom(terminatorPoint))?.point;
@@ -68,7 +68,7 @@ export namespace FrameGeometry {
     return closestPoint;
   }
 
-  export const debugIntervals = (frame: TextAnnotationFrame, rangeProps: Range2dProps, transformProps: TransformProps, lineInterval: number = 0.25, arcInterval: number = 0.25): Arc3d[] | undefined => {
+  export const debugIntervals = (frame: TextAnnotationFrameShape, rangeProps: Range2dProps, transformProps: TransformProps, lineInterval: number = 0.25, arcInterval: number = 0.25): Arc3d[] | undefined => {
     const points = FrameGeometry.computeIntervalPoints(frame, rangeProps, transformProps, lineInterval, arcInterval);
     const vector = Vector3d.create(0, 0, 1);
     const radius = Range2d.fromJSON(rangeProps).yLength() / 30;
