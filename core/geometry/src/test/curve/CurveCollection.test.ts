@@ -593,3 +593,26 @@ describe("ClosestPoint", () => {
     expect(ck.getNumErrors()).toBe(0);
   });
 });
+
+it("PathGetPackedStrokes", () => {
+  const ck = new Checker();
+
+  const ls = LineString3d.create([new Point3d(), new Point3d(0, 10)]);
+  const arc = Arc3d.createCircularStartMiddleEnd(new Point3d(0, 10), new Point3d(5, 15), new Point3d(10, 10));
+  const path = Path.createArray([ls, arc]);
+  const strokedPts = path.getPackedStrokes()!.getPoint3dArray();
+
+  const hasDuplicates = (arr: Point3d[]): boolean => {
+    const seen = new Set();
+    return arr.some(item => {
+      const key = JSON.stringify(item);
+      if (seen.has(key))
+        return true;
+      seen.add(key);
+      return false;
+    });
+  };
+  ck.testFalse(hasDuplicates(strokedPts));
+
+  expect(ck.getNumErrors()).toBe(0);
+});

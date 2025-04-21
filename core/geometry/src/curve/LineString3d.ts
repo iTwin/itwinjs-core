@@ -1000,15 +1000,16 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
   }
   /**
    * Append (clone of) one point.
-   * * BUT ... skip if duplicates the tail of prior points.
-   * * if fraction is given, "duplicate" considers both point and fraction.
+   * * BUT skip if duplicates the tail of prior points.
+   * * If fraction is given, "duplicate" considers both point and fraction.
+   * * We assume fractions are coming from the same CurvePrimitive.
    */
   public appendStrokePoint(point: Point3d, fraction?: number): void {
     const n = this._points.length;
     let add = true;
-    const addFraction = fraction !== undefined && this._fractions !== undefined;
+    const addFraction = (fraction !== undefined) && (this._fractions !== undefined);
     if (n > 0) {
-      if (addFraction && Geometry.isSameCoordinate(fraction, this._fractions!.back()))
+      if (addFraction && Geometry.isSmallRelative(fraction - this._fractions!.back()))
         add = false;
       if (point.isAlmostEqual(this._points.getPoint3dAtUncheckedPointIndex(n - 1)))
         add = false;
@@ -1043,26 +1044,27 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
       this._derivatives.resize(n1);
   }
   /**
-   * Append a suitable evaluation of a curve ..
-   * * always append the curve point
-   * * if fraction array is present, append the fraction
-   * * if derivative array is present, append the derivative
-   * BUT ... skip if duplicates the tail of prior points.
+   * Append a suitable evaluation of a curve.
+   * * Always append the curve point.
+   * * If fraction array is present, append the fraction.
+   * * If derivative array is present, append the derivative.
+   * BUT skip if duplicates the tail of prior points.
    */
   public appendFractionToPoint(curve: CurvePrimitive, fraction: number) {
-    if (this._derivatives) {
-      const ray = curve.fractionToPointAndDerivative(fraction, LineString3d._workRay);
-      if (this._fractions)
-        this._fractions.push(fraction);
-      this._points.push(ray.origin);
-      if (this._derivatives)
-        this._derivatives.push(ray.direction);
-
-    } else {
-      const point = curve.fractionToPoint(fraction, LineString3d._workPointA);
+    const n = this._points.length;
+    let add = true;
+    const point = curve.fractionToPoint(fraction, LineString3d._workPointA);
+    if (n > 0 && point.isAlmostEqual(this._points.getPoint3dAtUncheckedPointIndex(n - 1)))
+      add = false;
+    if (add) {
       if (this._fractions)
         this._fractions.push(fraction);
       this._points.push(point);
+      if (this._derivatives) {
+        const ray = curve.fractionToPointAndDerivative(fraction, LineString3d._workRay);
+        if (this._derivatives)
+          this._derivatives.push(ray.direction);
+      }
     }
   }
   /**
