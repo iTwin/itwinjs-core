@@ -50,18 +50,14 @@ export class TextAnnotationStroker extends Stroker<TextAnnotationStrokerArgs> {
     const textBlockGeometry = produceTextBlockGeometry(layout, transform);
     this._builder.appendTextBlock(textBlockGeometry);
 
-    if (annotation.frame) {
+    if (annotation.frame)
       this.appendFrame(annotation, layout);
-    }
 
-    if (debugSnapPoints && annotation.frame) {
+    if (debugSnapPoints && annotation.frame)
       this.debugSnapPoints(annotation.frame, dimensions, transform);
-    }
 
-    if (debugAnchorPoint) {
+    if (debugAnchorPoint)
       this.debugAnchorPoint(annotation, layout, transform);
-    }
-
 
     return { format: "json", data: this._builder.geometryStream };
   }
@@ -72,8 +68,6 @@ export class TextAnnotationStroker extends Stroker<TextAnnotationStrokerArgs> {
     const frame = annotation.frame;
 
     if (!frame || frame.shape === "none") return false;
-
-    let result: boolean;
 
     const params = new GeometryParams(Id64.invalid);
     params.elmPriority = 0;
@@ -96,21 +90,18 @@ export class TextAnnotationStroker extends Stroker<TextAnnotationStrokerArgs> {
 
     const frameGeometry = FrameGeometry.computeFrame(frame.shape, range, transform.toJSON());
 
-    result = this._builder.appendGeometryParamsChange(params);
-    result = result && this._builder.appendGeometry(frameGeometry);
-
+    const result = this._builder.appendGeometryParamsChange(params) && this._builder.appendGeometry(frameGeometry);
     return result;
   }
 
   private debugAnchorPoint(annotation: TextAnnotation, layout: TextBlockLayout, transform: Transform): boolean {
-    let result: boolean = true;
     const range = Range2d.fromJSON(layout.range);
     const debugAnchorPt = transform.multiplyPoint3d(annotation.computeAnchorPoint(range));
 
     // Make it blue
     const blueLineParams = new GeometryParams(Id64.invalid);
     blueLineParams.lineColor = ColorDef.blue;
-    result = result && this._builder.appendGeometryParamsChange(blueLineParams);
+    let result = this._builder.appendGeometryParamsChange(blueLineParams);
 
     // Draw a blue box to show the element's margin
     const marginCorners = range.corners3d(true);
@@ -134,8 +125,6 @@ export class TextAnnotationStroker extends Stroker<TextAnnotationStrokerArgs> {
   }
 
   private debugSnapPoints(frame: TextFrameStyleProps, range: Range2d, transform: Transform): boolean {
-    let result: boolean = true;
-
     const points = FrameGeometry.computeIntervalPoints(frame.shape, range.toJSON(), transform.toJSON(), 0.5, 0.25);
 
     const params = new GeometryParams(Id64.invalid);
@@ -143,8 +132,7 @@ export class TextAnnotationStroker extends Stroker<TextAnnotationStrokerArgs> {
     params.weight = (frame.borderWeight ?? 1) * 5; // We want the dots to be bigger than the frame so we can see them.
     params.fillDisplay = FillDisplay.Always;
 
-    result = result && this._builder.appendGeometryParamsChange(params);
-    result = result && this._builder.appendGeometry(PointString3d.create(points));
+    const result = this._builder.appendGeometryParamsChange(params) && this._builder.appendGeometry(PointString3d.create(points));
     return result;
   }
 }
