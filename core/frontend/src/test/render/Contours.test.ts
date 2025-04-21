@@ -9,13 +9,15 @@ import { DecorateContext } from "../../ViewContext";
 import { ColorDef, ContourDisplay, ContourDisplayProps, Feature, FillFlags, GraphicParams, ImageBuffer, ImageBufferFormat, RenderMaterial, RenderMode, RenderTexture, RgbColor } from "@itwin/core-common";
 import { Viewport } from "../../Viewport";
 import { Point3d, Range3d } from "@itwin/core-geometry";
-import { readUniqueColors, readUniqueFeatures, sortColorDefs, testBlankViewport } from "../openBlankViewport";
+import { PixelDataSet, readUniqueColors, readUniqueFeatures, readUniquePixelData, sortColorDefs, testBlankViewport } from "../openBlankViewport";
 import { GraphicType, ViewRect } from "../../common";
 import { RenderSystem } from "../../render/RenderSystem";
 import { StandardViewId } from "../../StandardView";
 import { FeatureOverrideProvider } from "../../FeatureOverrideProvider";
 import { FeatureSymbology } from "../../render/FeatureSymbology";
 import { DisplayStyle3dState } from "../../DisplayStyleState";
+import { ContourHit } from "../../HitDetail";
+import { compareBooleans, compareNumbers, compareStrings } from "@itwin/core-bentley";
 
 describe("Contour lines", () => {
   // Draws a 10x10 square with its bottom-left corner at (x, 0, z)
@@ -105,16 +107,20 @@ describe("Contour lines", () => {
     style.settings.contours = ContourDisplay.fromJSON(props);
   }
 
+  function hexifyColors(defs: ColorDef[]): string[] {
+    return defs.map((x) => x.tbgr.toString(16));
+  }
+
   // ###TODO this test expects specific colors without accounting for the alpha blending applied to contour lines.
   // Make it pass and add a bunch of additional tests.
-  it.skip("renders contours of expected colors", () => {
+  it("renders contours of expected colors", () => {
     testViewport((vp) => {
       function expectColors(expected: ColorDef[]): void {
         sortColorDefs(expected);
         vp.renderFrame();
-        const actual = readUniqueColors(vp).toColorDefs();
+        const actual = hexifyColors(readUniqueColors(vp).toColorDefs());
         console.log(JSON.stringify(actual));
-        expect(actual).to.deep.equal(expected);
+        expect(actual).to.deep.equal(hexifyColors(expected));
       }
 
       lookAt(vp, 0, 0, 10, 10);
@@ -131,7 +137,7 @@ describe("Contour lines", () => {
           pixelWidth: 1,
         },
         minorInterval: 1,
-        majorIntervalCount: 2,
+        majorIntervalCount: 1,
         showGeometry: true,
       };
       
@@ -150,26 +156,89 @@ describe("Contour lines", () => {
       contourProps.displayContours = true;
       setContours(vp, contourProps);
       vp.renderFrame();
-      expectColors([ColorDef.black, ColorDef.red, ColorDef.blue, ColorDef.white]);
+      expectColors([ColorDef.black, ColorDef.red, ColorDef.blue]);
 
-      contourDef.majorIntervalCount = 1;
+      contourDef.majorIntervalCount = 2;
       setContours(vp, contourProps);
       vp.renderFrame();
-      expectColors([ColorDef.black, ColorDef.red, ColorDef.blue]);
+      expectColors([ColorDef.black, ColorDef.red, ColorDef.blue, ColorDef.white]);
     });
   });
 
   describe("readPixels", () => {
-    it("testing...", () => {
+    interface ContourInfo {
+      groupName: string;
+      elevation: number;
+      isMajor: boolean;
+      subCategoryId: string;
+    }
+
+    function sortContours(contours: ContourInfo[]): ContourInfo[] {
+      return contours.sort((a, b) =>
+        compareStrings(a.groupName, b.groupName) || compareNumbers(a.elevation, b.elevation) ||
+        compareBooleans(a.isMajor, b.isMajor) || compareStrings(a.subCategoryId, b.subCategoryId)
+      );
+    }
+
+    function readUniqueContours(vp: Viewport): ContourInfo[] {
+      const pixels = readUniquePixelData(vp);
+      const set = new Set<ContourInfo>();
+      for (const pixel of pixels) {
+        if (pixel.contour) {
+          set.add({
+            groupName: pixel.contour.group.name,
+            elevation: pixel.contour.elevation,
+            isMajor: pixel.contour.isMajor,
+            subCategoryId: pixel.feature!.subCategoryId,
+          });
+        }
+      }
+
+      return sortContours(Array.from(set));
+    }
+
+    function expectContours(vp: Viewport, expected: ContourInfo[]): void {
+      sortContours(expected);
+      expect(readUniqueContours(vp)).to.deep.equal(expected);
+    }
+
+    it("reads contour info", () => {
       testViewport((vp) => {
         lookAt(vp, 0, 0, 10, 10);
         ContourDecorator.register(0, 0, "0x1");
         vp.renderFrame();
-        const colors = readUniqueColors(vp).array;
-        console.log(`colors=${JSON.stringify(colors)}`);
-        const features = readUniqueFeatures(vp).extractArray();
-        console.log(JSON.stringify(features));
-        expect(features).to.deep.equal(["a"]);
+        expectContours(vp, []);
+
+        const contourDef = {
+          majorStyle: {
+            color: { r: 0, g: 0, b: 255 },
+            pixelWidth: 2,
+          },
+          minorStyle: {
+            color: { r: 255, g: 255, b: 255 },
+            pixelWidth: 1,
+          },
+          minorInterval: 1,
+          majorIntervalCount: 2,
+          showGeometry: true,
+        };
+      
+        const contourProps: ContourDisplayProps = {
+          groups: [{
+            name: "A",
+            contourDef,
+          }],
+          displayContours: false,
+        };
+      
+        setContours(vp, contourProps);
+        vp.renderFrame();
+        expectContours(vp, []);
+
+        contourProps.displayContours = true;
+        setContours(vp, contourProps);
+        vp.renderFrame();
+        expectContours(vp, []);
       });
     });
   });
