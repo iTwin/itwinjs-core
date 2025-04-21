@@ -8,7 +8,7 @@ import { Stroker } from "./Stroker";
 import { produceTextBlockGeometry } from "../TextAnnotationGeometry";
 import { IModelDb } from "../IModelDb";
 import { Id64 } from "@itwin/core-bentley";
-import { LineString3d, Loop, Range2d, Transform } from "@itwin/core-geometry";
+import { LineString3d, PointString3d, Range2d, Transform } from "@itwin/core-geometry";
 import { layoutTextBlock, TextBlockLayout } from "../TextAnnotationLayout";
 
 /** @packageDocumentation
@@ -118,8 +118,8 @@ export class TextAnnotationStroker extends Stroker<TextAnnotationStrokerArgs> {
     result = result && this._builder.appendGeometry(LineString3d.create(marginCorners));
 
     // Draw a blue x to show the anchor point - Rotation occurs around this point. The x will be 1 m by 1 m.
-    result = result && this._builder.appendGeometry(LineString3d.create([debugAnchorPt.x - 1, debugAnchorPt.y - 1, 0], [debugAnchorPt.x + 1, debugAnchorPt.y + 1, 0]));
-    result = result && this._builder.appendGeometry(LineString3d.create([debugAnchorPt.x + 1, debugAnchorPt.y - 1, 0], [debugAnchorPt.x - 1, debugAnchorPt.y + 1, 0]));
+    result = result && this._builder.appendGeometry(LineString3d.create(debugAnchorPt.plusXYZ(-1, -1), debugAnchorPt.plusXYZ(1, 1)));
+    result = result && this._builder.appendGeometry(LineString3d.create(debugAnchorPt.plusXYZ(1, -1), debugAnchorPt.plusXYZ(-1, 1)));
 
     // Draw a red box to show the text range
     const redLineParams = new GeometryParams(Id64.invalid);
@@ -136,14 +136,15 @@ export class TextAnnotationStroker extends Stroker<TextAnnotationStrokerArgs> {
   private debugSnapPoints(frame: TextFrameStyleProps, range: Range2d, transform: Transform): boolean {
     let result: boolean = true;
 
+    const points = FrameGeometry.computeIntervalPoints(frame.shape, range.toJSON(), transform.toJSON(), 0.5, 0.25);
+
     const params = new GeometryParams(Id64.invalid);
     params.lineColor = ColorDef.black;
-    params.weight = 1;
-    params.fillColor = ColorDef.white;
+    params.weight = (frame.borderWeight ?? 1) * 5;
     params.fillDisplay = FillDisplay.Always;
+
     result = result && this._builder.appendGeometryParamsChange(params);
-    const points = FrameGeometry.debugIntervals(frame.shape, range.toJSON(), transform.toJSON(), 0.5, 0.25);
-    points?.forEach(point => result = result && this._builder.appendGeometry(Loop.create(point)));
+    result = result && this._builder.appendGeometry(PointString3d.create(points));
 
     return result;
   }

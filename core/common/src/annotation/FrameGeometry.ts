@@ -68,15 +68,6 @@ export namespace FrameGeometry {
     return closestPoint;
   }
 
-  export const debugIntervals = (frame: TextAnnotationFrameShape, rangeProps: Range2dProps, transformProps: TransformProps, lineInterval: number = 0.25, arcInterval: number = 0.25): Arc3d[] | undefined => {
-    const points = FrameGeometry.computeIntervalPoints(frame, rangeProps, transformProps, lineInterval, arcInterval);
-    const vector = Vector3d.create(0, 0, 1);
-    const radius = Range2d.fromJSON(rangeProps).yLength() / 30;
-
-    return points?.map(point => Arc3d.createCenterNormalRadius(point, vector, radius));
-  }
-
-
   // Rectangle
   export const computeRectangle = (rangeProps: Range2dProps, transformProps: TransformProps): Loop => {
     const range = Range2d.fromJSON(rangeProps);
