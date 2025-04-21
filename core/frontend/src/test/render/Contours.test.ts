@@ -324,5 +324,27 @@ describe("Contour lines", () => {
         expectContours(vp, expectedContours);
       });
     });
+
+    it("reads contours from maximum number of groups", () => {
+      testViewport((vp) => {
+        lookAt(vp, 0, 0, 10, 10);
+        ContourDecorator.register(0, 0, "0x1");
+        const contours = getContourProps({ display: true, majorIntervalCount: 2 });
+        for (let numGroups = 1; numGroups < ContourDisplay.maxContourGroups; numGroups++) {
+          setContours(vp, contours);
+          vp.renderFrame();
+          expectContours(vp, [0,1,2,3,4,5,6,7,8,9,10].map((elevation) => {
+            return { elevation, groupName: "A", subCategoryId: "0x1", isMajor: elevation % 2 === 0 }
+          }));
+
+          // prepend a group that will add no contours, so that next time through the loop the index of the group that does draw will be incremented.
+          contours.groups.unshift({
+            name: "no contours",
+            contourDef: getContourDef(),
+            subCategories: "+99999",
+          });
+        }
+      });
+    });
   });
 });
