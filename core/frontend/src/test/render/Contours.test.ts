@@ -253,6 +253,22 @@ describe("Contour lines", () => {
         }
         vp.renderFrame();
         expectContours(vp, expectedContours);
+
+        contourProps.groups!.push({
+          name: "B",
+          contourDef,
+          subCategories: "+2",
+        });
+        contourProps.groups![0].subCategories = "+1";
+        setContours(vp, contourProps);
+        vp.renderFrame();
+        expectContours(vp, expectedContours.map((x) => {
+          if (x.subCategoryId === "0x2") {
+            return { ...x, groupName: "B" };
+          } else {
+            return x;
+          }
+        }));
       });
     });
   });
