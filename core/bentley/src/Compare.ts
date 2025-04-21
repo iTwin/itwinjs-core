@@ -149,6 +149,10 @@ export function compareSimpleArrays (lhs?: SimpleTypesArray, rhs?: SimpleTypesAr
   return cmp;
 }
 
+/** Compare two arrays of the same type `T` using the specified `compare` function to compare each pair of array elements.
+ * @returns 0 if the arrays have the same length and `compare` returns 0 for each pair of elements, or a non-zero value if the arrays differ in length or contents.
+ * @public
+ */
 export function compareArrays<T>(lhs: ReadonlyArray<T>, rhs: ReadonlyArray<T>, compare: (a: T, b: T) => number): number {
   let diff = compareNumbers(lhs.length, rhs.length);
   if (!diff) {

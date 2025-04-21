@@ -6,17 +6,13 @@
 import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 import { IModelApp } from "../../IModelApp";
 import { DecorateContext } from "../../ViewContext";
-import { ColorDef, ContourDisplay, ContourDisplayProps, Feature, FillFlags, GraphicParams, ImageBuffer, ImageBufferFormat, RenderMaterial, RenderMode, RenderTexture, RgbColor } from "@itwin/core-common";
+import { ColorDef, ContourDisplay, ContourDisplayProps, RenderMode } from "@itwin/core-common";
 import { Viewport } from "../../Viewport";
 import { Point3d, Range3d } from "@itwin/core-geometry";
-import { PixelDataSet, readUniqueColors, readUniqueFeatures, readUniquePixelData, sortColorDefs, testBlankViewport } from "../openBlankViewport";
-import { GraphicType, ViewRect } from "../../common";
-import { RenderSystem } from "../../render/RenderSystem";
+import { readUniqueColors, readUniquePixelData, sortColorDefs, testBlankViewport } from "../openBlankViewport";
+import { GraphicType } from "../../common";
 import { StandardViewId } from "../../StandardView";
-import { FeatureOverrideProvider } from "../../FeatureOverrideProvider";
-import { FeatureSymbology } from "../../render/FeatureSymbology";
 import { DisplayStyle3dState } from "../../DisplayStyleState";
-import { ContourHit } from "../../HitDetail";
 import { compareBooleans, compareNumbers, compareStrings } from "@itwin/core-bentley";
 
 describe("Contour lines", () => {

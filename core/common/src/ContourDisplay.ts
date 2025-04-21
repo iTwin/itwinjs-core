@@ -52,6 +52,7 @@ export class ContourStyle {
     return true;
   }
 
+  /** Perform ordered comparison between this and another contour style. */
   public compare(other: ContourStyle): number {
     return ContourStyle.compare(this, other);
   }
@@ -168,10 +169,12 @@ export class Contour {
 
   public static readonly defaults = new Contour({});
 
+  /** Returns true if `this` is logically equivalent to `other`. */
   public equals(other: Contour): boolean {
     return this.compare(other) === 0;
   }
 
+  /** Performs ordered comparison between this and another contour. */
   public compare(other: Contour): number {
     return Contour.compare(this, other);
   }
@@ -301,6 +304,7 @@ export class ContourGroup {
     return this._subCategories === other._subCategories;
   }
 
+  /** Perform ordered comparison between this and another contour group. */
   public compare(other: ContourGroup): number {
     return compareStrings(this.name, other.name) || compareStrings(this._subCategories, other._subCategories) || this.contourDef.compare(other.contourDef);
   }
@@ -392,6 +396,7 @@ export class ContourDisplay {
    */
   public static readonly maxContourGroups = 5;
 
+  /** Perform ordered comparison between this and another `ContourDisplay`. */
   public compare(other: ContourDisplay): number {
     return compareBooleans(this.displayContours, other.displayContours) || compareArrays(this.groups, other.groups, (lhs, rhs) => lhs.compare(rhs));
   }
