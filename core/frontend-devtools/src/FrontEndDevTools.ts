@@ -32,7 +32,7 @@ import {
   ApplyRenderingStyleTool, ChangeBackgroundColorTool, ChangeViewFlagsTool, OverrideSubCategoryTool, SaveRenderingStyleTool, SkyCubeTool,
   SkySphereTool, ToggleSkyboxTool, ToggleWiremeshTool, WoWIgnoreBackgroundTool,
 } from "./tools/DisplayStyleTools";
-import { QueryScheduleScriptTool, ReverseScheduleScriptTool, SetScheduleScriptTool } from "./tools/ScheduleScriptTools";
+import { QueryScheduleScriptTool, ReverseScheduleScriptTool, SetScheduleScriptTool, TestScheduleScriptTool } from "./tools/ScheduleScriptTools";
 import {
   ClearEmphasizedElementsTool, ClearIsolatedElementsTool, EmphasizeSelectedElementsTool, EmphasizeVisibleElementsTool, IsolateSelectedElementsTool,
 } from "./tools/EmphasizeElementsTool";
@@ -167,6 +167,7 @@ export class FrontendDevTools {
       SetAASamplesTool,
       SetAspectRatioSkewTool,
       SetScheduleScriptTool,
+      TestScheduleScriptTool,
       ToggleVolClassIntersect,
       SetMapBaseTool,
       SharpenEffect,

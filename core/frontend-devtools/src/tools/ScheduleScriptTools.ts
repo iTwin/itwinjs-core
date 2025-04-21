@@ -10,6 +10,7 @@
 import { assert, CompressedId64Set } from "@itwin/core-bentley";
 import {
   ElementLoadOptions, RenderSchedule, RenderTimelineProps,
+  RgbColor,
 } from "@itwin/core-common";
 import { _scheduleScriptReference, Viewport } from "@itwin/core-frontend";
 import { copyStringToClipboard } from "../ClipboardUtilities";
@@ -171,6 +172,44 @@ export class SetScheduleScriptTool extends DisplayStyleTool {
 
     try {
       this._script = RenderSchedule.Script.fromJSON(JSON.parse(args[0]));
+    } catch (ex) {
+      if (ex instanceof Error)
+        alert(ex.toString());
+    }
+
+    return undefined !== this._script;
+  }
+
+  public override async execute(vp: Viewport): Promise<boolean> {
+    vp.displayStyle.scheduleScript = this._script;
+    return true;
+  }
+}
+
+/** A tool that creates a very simple [RenderSchedule.Script]($common) associated with the selected [Viewport]($frontend).
+ * @beta
+ */
+export class TestScheduleScriptTool extends DisplayStyleTool {
+  public static override toolId = "TestScheduleScript";
+  public static override get minArgs() { return 0; }
+  public static override get maxArgs() { return 0; }
+
+  private _script?: RenderSchedule.Script;
+
+  public override async parse(args: string[]): Promise<boolean> {
+    if (args.length === 0)
+      return true; // clear schedule script.
+
+    try {
+      /// TODO!!!! add test schedule script code here
+      const now = Date.now();
+      const builder = new RenderSchedule.ScriptBuilder();
+      const modelTimeline = builder.addModelTimeline("0x1c"); // model Id
+      const elementTimeline = modelTimeline.addElementTimeline(["0x1b4"]); // element Id
+      elementTimeline.addColor(now, new RgbColor(255, 0, 0));
+      elementTimeline.addColor(now + 3000, new RgbColor(0, 255, 0));
+      const scriptProps = builder.finish();
+      this._script = RenderSchedule.Script.fromJSON(scriptProps);
     } catch (ex) {
       if (ex instanceof Error)
         alert(ex.toString());
