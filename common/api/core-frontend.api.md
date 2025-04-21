@@ -7617,8 +7617,9 @@ export namespace Pixel {
     }
     export type Receiver = (pixels: Buffer | undefined) => void;
     export enum Selector {
-        All = 5,
-        Feature = 1,// eslint-disable-line @typescript-eslint/no-shadow
+        All = 13,
+        Contours = 8,// eslint-disable-line @typescript-eslint/no-shadow
+        Feature = 1,
         GeometryAndDistance = 4,
         // (undocumented)
         None = 0

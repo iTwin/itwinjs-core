@@ -14,6 +14,7 @@ import { GraphicType } from "../../common";
 import { StandardViewId } from "../../StandardView";
 import { DisplayStyle3dState } from "../../DisplayStyleState";
 import { compareBooleans, compareNumbers, compareStrings } from "@itwin/core-bentley";
+import { Pixel } from "../../core-frontend";
 
 describe("Contour lines", () => {
   // Draws a 10x10 square with its bottom-left corner at (x, 0, z)
@@ -370,6 +371,17 @@ describe("Contour lines", () => {
   });
 
   it("renders contours but does not read them unless Pixel.Selector.Contours is specified", () => {
-    
+    testViewport((vp) => {
+      lookAt(vp, 0, 0, 10, 10);
+      ContourDecorator.register(0, 0, "0x1");
+      setContours(vp, getContourProps({ display: true }));
+      vp.renderFrame();
+      let pixels = readUniquePixelData(vp, undefined, undefined, undefined, Pixel.Selector.Feature | Pixel.Selector.GeometryAndDistance);
+      expect(pixels.array.some((x) => x.contour !== undefined)).to.be.false;
+      pixels = readUniquePixelData(vp, undefined, undefined, undefined, Pixel.Selector.Contours);
+      expect(pixels.array.some((x) => x.contour !== undefined)).to.be.true;
+      pixels = readUniquePixelData(vp, undefined, undefined, undefined, Pixel.Selector.All);
+      expect(pixels.array.some((x) => x.contour !== undefined)).to.be.true;
+    });
   });
 });

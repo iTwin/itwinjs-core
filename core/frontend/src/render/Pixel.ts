@@ -252,8 +252,10 @@ export namespace Pixel {
     Feature = 1 << 0, // eslint-disable-line @typescript-eslint/no-shadow
     /** Select the type and planarity of geometry which produced each pixel as well as the fraction of its distance between the near and far planes. */
     GeometryAndDistance = 1 << 2,
+    /** Select the [[ContourHit]]s describing which if any contour line produced each pixel. */
+    Contours = 1 << 3,
     /** Select all aspects of each pixel. */
-    All = GeometryAndDistance | Feature,
+    All = GeometryAndDistance | Feature | Contours,
   }
 
   /** A rectangular array of pixels as read from a [[Viewport]]'s frame buffer. Each pixel is represented as a [[Pixel.Data]] object.

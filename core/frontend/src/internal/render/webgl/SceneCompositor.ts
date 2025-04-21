@@ -781,7 +781,7 @@ class PixelBuffer implements Pixel.Buffer {
     if (this._contours) {
       const contour32 = this.getPixel32(this._contours.data, index);
       if (contour32) { // undefined means out of bounds; zero means not a contour.
-        const groupIndexAndType = this.decodeUint8(contour32, 32) as number;
+        const groupIndexAndType = this.decodeUint8(contour32, 32);
         const groupIndex = groupIndexAndType & ~(8 | 16);
         const group = this._contours.display.groups[groupIndex];
         if (group) {
@@ -847,8 +847,8 @@ class PixelBuffer implements Pixel.Buffer {
         this._selector &= ~Pixel.Selector.Feature;
     }
 
-    // No selector for contours. This is a no-op unless contours are actually being drawn.
-    if (Pixel.Selector.None !== selector) {
+    // Note: readContours is a no-op unless contours are actually being drawn.
+    if (Pixel.Selector.None !== (selector & Pixel.Selector.Contours)) {
       this._contours = compositor.readContours(rect);
     }
   }

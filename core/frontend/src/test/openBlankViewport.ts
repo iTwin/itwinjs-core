@@ -227,13 +227,14 @@ export class ColorSet extends SortedArray<Color> {
   }
 }
 
-export function processPixels(vp: Viewport, processor: (pixel: Pixel.Data) => void, readRect?: ViewRect, excludeNonLocatable?: boolean, excludedElements?: Iterable<string>): void {
+export function processPixels(vp: Viewport, processor: (pixel: Pixel.Data) => void, readRect?: ViewRect, excludeNonLocatable?: boolean, excludedElements?: Iterable<string>, selector = Pixel.Selector.All): void {
   const rect = undefined !== readRect ? readRect : vp.viewRect;
 
   vp.readPixels({
     rect,
     excludeNonLocatable,
     excludedElements,
+    selector,
     receiver: (pixels) => {
       if (undefined === pixels)
         return;
@@ -255,9 +256,9 @@ export function processPixels(vp: Viewport, processor: (pixel: Pixel.Data) => vo
  * Omit `readRect` to read the contents of the entire viewport.
  * @internal
  */
-export function readUniquePixelData(vp: Viewport, readRect?: ViewRect, excludeNonLocatable = false, excludedElements?: Iterable<string>): PixelDataSet {
+export function readUniquePixelData(vp: Viewport, readRect?: ViewRect, excludeNonLocatable = false, excludedElements?: Iterable<string>, selector = Pixel.Selector.All): PixelDataSet {
   const set = new PixelDataSet();
-  processPixels(vp, (pixel) => set.insert(pixel), readRect, excludeNonLocatable, excludedElements);
+  processPixels(vp, (pixel) => set.insert(pixel), readRect, excludeNonLocatable, excludedElements, selector);
   return set;
 }
 
