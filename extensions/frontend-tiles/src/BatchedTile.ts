@@ -4,16 +4,16 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, BeTimePoint, ByteStream, Logger } from "@itwin/core-bentley";
-import { Transform } from "@itwin/core-geometry";
 import { ColorDef, Tileset3dSchema } from "@itwin/core-common";
 import {
-  GraphicBranch, GraphicBuilder,  IModelApp, RealityTileLoader, RenderSystem, Tile, TileBoundingBoxes, TileContent,
+  GraphicBranch, GraphicBuilder, IModelApp, RealityTileLoader, RenderSystem, Tile, TileBoundingBoxes, TileContent,
   TileDrawArgs, TileParams, TileRequest, TileRequestChannel, TileTreeLoadStatus, TileUser, TileVisibility, Viewport,
 } from "@itwin/core-frontend";
-import { loggerCategory } from "./LoggerCategory";
-import { BatchedTileTree } from "./BatchedTileTree";
-import { frontendTilesOptions } from "./FrontendTiles";
-import { IndexedDBCache, LocalCache, PassThroughCache } from "./IndexedDBCache";
+import { Transform } from "@itwin/core-geometry";
+import { BatchedTileTree } from "./BatchedTileTree.js";
+import { frontendTilesOptions } from "./FrontendTiles.js";
+import { IndexedDBCache, LocalCache, PassThroughCache } from "./IndexedDBCache.js";
+import { loggerCategory } from "./LoggerCategory.js";
 
 /** @internal */
 export interface BatchedTileParams extends TileParams {
@@ -162,6 +162,11 @@ export class BatchedTile extends Tile {
         isLeaf: this.isLeaf,
         // Don't waste time attempting to split based on model groupings if all models are in the same group.
         modelGroups: modelGroups && modelGroups.length > 1 ? modelGroups : undefined,
+        tileData: {
+          ecefTransform: this.tree.iModel.ecefLocation?.getTransform() ?? Transform.createIdentity(),
+          range: this.range,
+          layerClassifiers: this.tree.layerHandler?.layerClassifiers,
+        },
       });
 
       if (this.transformToRoot) {

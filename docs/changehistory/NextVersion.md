@@ -8,32 +8,44 @@ Table of contents:
 
 - [NextVersion](#nextversion)
   - [Selection set](#selection-set)
+  - [Snapping](#snapping)
   - [Font APIs](#font-apis)
   - [Geometry](#geometry)
     - [Polyface Traversal](#polyface-traversal)
-    - [Text Block Margins](#text-Block-margins)
-  - [Display](#graphics)
-    - [Read Image To Canvas](#read-image-to-canvas)
+    - [Text Block Margins](#text-block-margins)
+    - [Tangent To Curve](#tangent-to-curve)
+  - [Display](#display)
+    - [Read image to canvas](#read-image-to-canvas)
+    - [Draping iModel models onto reality data or other iModel models](#draping-imodel-models-onto-reality-data-or-other-imodel-models)
   - [Back-end image conversion](#back-end-image-conversion)
   - [Presentation](#presentation)
     - [Unified selection move to `@itwin/unified-selection`](#unified-selection-move-to-itwinunified-selection)
+    - [Localization assets in `@itwin/presentation-common`](#localization-assets-in-itwinpresentation-common)
+    - [Internal APIs](#internal-apis)
   - [Google Maps 2D tiles API](#google-maps-2d-tiles-api)
   - [Delete all transactions](#delete-all-transactions)
+  - [Attach/detach db](#attachdetach-db)
+  - [Quantity Formatting](#quantity-formatting)
+    - [FormatDefinition](#formatdefinition)
+    - [FormatsProvider](#formatsprovider)
+    - [Persistence](#persistence)
   - [API deprecations](#api-deprecations)
     - [@itwin/core-bentley](#itwincore-bentley)
     - [@itwin/core-common](#itwincore-common)
     - [@itwin/core-backend](#itwincore-backend)
+      - [Deprecated metadata retrieval methods](#deprecated-metadata-retrieval-methods)
     - [@itwin/core-frontend](#itwincore-frontend)
-    - [@itwin/ecschema-metadata](#itwinecschema-metadata)
     - [@itwin/presentation-common](#itwinpresentation-common)
     - [@itwin/presentation-backend](#itwinpresentation-backend)
     - [@itwin/presentation-frontend](#itwinpresentation-frontend)
   - [Breaking Changes](#breaking-changes)
-    - [Opening connection to local snapshot requires IPC](#opening-connection-to-local-snapshot-requires-ipc)
     - [Updated minimum requirements](#updated-minimum-requirements)
       - [Node.js](#nodejs)
       - [Electron](#electron)
       - [ECMAScript](#ecmascript)
+      - [TypeScript](#typescript)
+        - [`target`](#target)
+        - [`useDefineForClassFields`](#usedefineforclassfields)
     - [Deprecated API removals](#deprecated-api-removals)
       - [@itwin/appui-abstract](#itwinappui-abstract)
       - [@itwin/core-backend](#itwincore-backend-1)
@@ -47,15 +59,14 @@ Table of contents:
       - [@itwin/presentation-frontend](#itwinpresentation-frontend-1)
     - [API removals](#api-removals)
       - [@itwin/core-common](#itwincore-common-2)
-      - [@itwin/ecschema-metadata](#itwinecschema-metadata-1)
     - [Packages dropped](#packages-dropped)
+    - [Opening connection to local snapshot requires IPC](#opening-connection-to-local-snapshot-requires-ipc)
     - [Change to pullMerge](#change-to-pullmerge)
       - [No pending/local changes](#no-pendinglocal-changes)
       - [With pending/local changes](#with-pendinglocal-changes)
-    - [TypeScript configuration changes](#typescript-configuration-changes)
-      - [`target`](#target)
-      - [`useDefineForClassFields`](#usedefineforclassfields)
-    - [Attach/detach db](#attachdetach-db)
+    - [Reworked @itwin/ecschema-metadata package](#reworked-itwinecschema-metadata-package)
+      - [Tips for adjusting existing code](#tips-for-adjusting-existing-code)
+  - [Deprecated ECSqlStatement](#deprecated-ecsqlstatement)
 
 ## Selection set
 
@@ -67,6 +78,16 @@ To alleviate this problem, the `SelectionSet`-related APIs have been enhanced to
 - `SelectionSetEvent` attributes `added` and `removed` have been deprecated, but continue to work as before, containing only element ids. In addition, the event object now contains new `additions` and `removals` attributes, which are instances of `SelectableIds` and contain all ids that were added or removed from the selection set, including those of Model and SubCategory.
 
 Because the `SelectionSet` now stores additional types of ids, existing code that listens to `onChange` event may start getting extra invocations that don't affect the element selection (e.g. `SelectAddEvent` with `added: []` and `additions: { models: ["0x1"] }`). Also, the `isActive` getter may return `true` even though `elements` set is empty.
+
+## Snapping
+
+Added `SnapMode.PerpendicularPoint`. Snaps to the closest/perpendicular point on the curve under the cursor from the AccuDraw origin.
+
+![perpendicular point snap](assets/SnapPerpendicularPoint.png "Perpendicular Point Snap")
+
+Added `SnapMode.TangentPoint`. Snaps to the closest point of tangency on the curve under the cursor that will pass through the AccuDraw origin.
+
+![tangent point snap](assets/SnapTangentPoint.png "Tangent Point Snap")
 
 ## Font APIs
 
@@ -95,6 +116,10 @@ If a walker operation would advance outside the mesh (e.g., `edgeMate` of a boun
 
 You can now surround a [TextBlock]($core-common) with padding by setting its [TextBlockMargins]($core-common). When [layoutTextBlock]($core-backend) computes [TextBlockLayout.range]($core-backend), it will expand the bounding box to include the margins. [ProduceTextAnnotationGeometryArgs.debugAnchorPointAndRange]($core-backend) now produces two bounding boxes: one tightly fitted to the text, and a second expanded to include the margins.
 
+### Tangent To Curve
+
+A new API [CurvePrimitive.emitTangents]($core-geometry) is added to announce tangents from a space point to a curve primitive. This API takes a callback to announce each computed tangent so users can specify the callback according to their need. For example, we have created 2 specific APIs to take advantage of the new API. First API is [CurvePrimitive.allTangents]($core-geometry) which returns all tangents from a space point to a curve primitive. Second API is [CurvePrimitive.closestTangent]($core-geometry) which returns the closest tangent from a space point to a curve primitive with respect to a hint point.
+
 ## Display
 
 ### Read image to canvas
@@ -102,6 +127,18 @@ You can now surround a [TextBlock]($core-common) with padding by setting its [Te
 Previously, when using [Viewport.readImageToCanvas]($core-frontend) with a single open viewport, canvas decorations were not included in the saved image. Sometimes this behavior was useful, so an overload to [Viewport.readImageToCanvas]($core-frontend) using the new [ReadImageToCanvasOptions]($core-frontend) interface was [created](https://github.com/iTwin/itwinjs-core/pull/7539). This now allows the option to choose whether or not canvas decorations are omitted in the saved image: if [ReadImageToCanvasOptions.omitCanvasDecorations]($core-frontend) is true, canvas decorations will be omitted.
 
 If [ReadImageToCanvasOptions]($core-frontend) are undefined in the call to [Viewport.readImageToCanvas]($core-frontend), previous behavior will persist and canvas decorations will not be included. This means canvas decorations will not be included when there is a single open viewport, but will be included when there are multiple open viewports. All existing calls to [Viewport.readImageToCanvas]($core-frontend) will be unaffected by this change as the inclusion of [ReadImageToCanvasOptions]($core-frontend) is optional, and when they are undefined, previous behavior will persist.
+
+### Draping iModel models onto reality data or other iModel models
+
+A new property titled `drapeTarget` has been added to [ModelMapLayerProps]($common) and [ModelMapLayerSettings]($common). When this property is specified as [ModelMapLayerDrapeTarget.RealityData]($common), the model map layer will be only draped onto all attached reality data. When this property is specified as [ModelMapLayerDrapeTarget.IModel]($common), the model map layer will be only draped onto all models within the iModel. If `drapeTarget` is not specified in the properties, the drape target will default to [ModelMapLayerDrapeTarget.Globe]($common), which will only drape the model map layer onto the globe.
+
+Here is a sample screenshot of draping a model from within an iModel (the piping in the air) onto some glTF reality data (the terrain underneath):
+
+![model onto reality draping example](./assets/model-draping-onto-reality.jpg "Example of draping a model from within an iModel (the piping in the air) onto some glTF reality data (the terrain underneath)")
+
+Here is a sample screenshot of draping a model from within an iModel onto all models from that same iModel. The red piping model is draping onto all models (even itself); all of these models are contained within the same iModel.
+
+![models onto models draping example](./assets/models-draping-onto-models.jpg "Example of draping models from within an iModel onto all models from that same iModel")
 
 ## Back-end image conversion
 
@@ -115,13 +152,24 @@ The Presentation system is moving towards a more modular approach, with smaller 
 
 The unified selection system has been part of `@itwin/presentation-frontend` for a long time, providing a way for apps to have a single source of truth of what's selected. This system is now deprecated in favor of the new [@itwin/unified-selection](https://www.npmjs.com/package/@itwin/unified-selection) package. See the [migration guide](https://github.com/iTwin/presentation/blob/master/packages/unified-selection/learning/MigrationGuide.md) for migration details.
 
+### Localization assets in `@itwin/presentation-common`
+
+The `@itwin/presentation-common` delivers a localization file used by either `@itwin/presentation-backend` or `@itwin/presentation-frontend`, depending on where the localization is needed. Backend and frontend code expects to find localization assets under different directories:
+
+- Frontend looks for localization assets under `lib/public/locales` directory.
+- Backend used to look for localization assets under `lib/cjs/assets/locales` directory. This directory has been changed to `lib/assets/locales` to avoid duplication between `cjs` and `esm` builds. Anyone looking for localization assets in code can find then using `@itwin/presentation-common/locales/en/Presentation.json` import path.
+
+### Internal APIs
+
+The Presentation packages exported a number of `@internal` APIs through the public barrel files. These APIs were never intended for consumers' use and have been removed from the public barrels to avoid accidental usage.
+
 ## Google Maps 2D tiles API
 
 The `@itwin/map-layers-formats` package now includes an API for consuming Google Maps 2D tiles.
 
 To enable it as a base map, it's simple as:
 
- ```typescript
+```typescript
 import { GoogleMaps } from "@itwin/map-layers-formats";
 const ds = IModelApp.viewManager.selectedView.displayStyle;
 ds.backgroundMapBase = GoogleMaps.createBaseLayerSettings();
@@ -133,7 +181,7 @@ Can also be attached as a map-layer:
 [[include:GoogleMaps_AttachMapLayerSimple]]
 ```
 
-  > ***IMPORTANT***: Make sure to configure your Google Cloud's API key in the `MapLayerOptions` when starting your IModelApp application:
+> **_IMPORTANT_**: Make sure to configure your Google Cloud's API key in the `MapLayerOptions` when starting your IModelApp application:
 
 ```ts
 [[include:GoogleMaps_SetGoogleMapsApiKey]]
@@ -142,6 +190,34 @@ Can also be attached as a map-layer:
 ## Delete all transactions
 
 [BriefcaseDb.txns]($backend) keeps track of all unsaved and/or unpushed local changes made to a briefcase. After pushing your changes, the record of local changes is deleted. In some cases, a user may wish to abandon all of their accumulated changes and start fresh. [TxnManager.deleteAllTxns]($backend) deletes all local changes without pushing them.
+
+## Attach/detach db
+
+Allow the attachment of an ECDb/IModel to a connection and running ECSQL that combines data from both databases.
+
+```ts
+[[include:IModelDb_attachDb.code]]
+```
+
+> Note: There are some reserve alias names that cannot be used. They are 'main', 'schema_sync_db', 'ecchange' & 'temp'
+
+## Quantity Formatting
+
+### FormatDefinition
+
+A [FormatDefinition]($quantity) interface has been added, an extension of FormatProps to help identify formats.
+
+### FormatsProvider
+
+[FormatsProvider]($quantity) and [MutableFormatsProvider]($quantity) interfaces and a [SchemaFormatsProvider]($ecschema-metadata) class have been added. This enables quick setup of [FormatterSpec]($quantity) and [ParserSpec]($quantity) to help with display formatting.
+
+### Persistence
+
+Following APIs have been added to support persistence:
+
+- [FormatSet]($ecschema-metadata) defines an interface to support loading/saving [Format]($ecschema-metadata).
+
+Learn more at the [Quantity](../learning/quantity/index.md#persistence) learnings article for examples and use cases.
 
 ## API deprecations
 
@@ -169,16 +245,72 @@ Can also be attached as a map-layer:
   }
   ```
 
-  > Note that while public types with deterministic cleanup logic in iTwin.js will continue to implement *both* `IDisposable` and `Disposable` until the former is fully removed in iTwin.js 7.0 (in accordance with our [API support policy](../learning/api-support-policies)), disposable objects should still only be disposed once - *either* with [IDisposable.dispose]($core-bentley) *or* `Symbol.dispose()` but not both! Where possible, prefer `using` declarations or the [dispose]($core-bentley) helper function over directly calling either method.
+  > Note that while public types with deterministic cleanup logic in iTwin.js will continue to implement _both_ `IDisposable` and `Disposable` until the former is fully removed in iTwin.js 7.0 (in accordance with our [API support policy](../learning/api-support-policies)), disposable objects should still only be disposed once - _either_ with [IDisposable.dispose]($core-bentley) _or_ `Symbol.dispose()` but not both! Where possible, prefer `using` declarations or the [dispose]($core-bentley) helper function over directly calling either method.
 
 ### @itwin/core-common
 
 - [FontMap]($common) attempts to provide an in-memory cache mapping [FontId]($common)s to [Font](../learning/backend/Fonts.md) names. Use [IModelDb.fonts]($backend) instead.
+- Some types which are now more comprehensively exposed by backend's new `@itwin/ecschema-metadata` integration were made deprecated:
+  - [EntityMetaData]($common)
+  - [EntityMetaDataProps]($common)
+  - [CustomAttribute]($common)
+  - [PropertyMetaData]($common)
+  - [PropertyMetaDataProps]($common)
+
+| **Deprecated class from `@itwin/core-common`** | **Replacement class from `@itwin/ecschema-metadata`** |
+| ---------------------------------------------- | ----------------------------------------------------- |
+| `EntityMetaData`                               | Use `EntityClass` instead.                            |
+| `CustomAttribute`                              | Use `CustomAttribute` instead.                        |
+| `PropertyMetaData`                             | Use `Property` instead.                               |
 
 ### @itwin/core-backend
 
 - Use [IModelDb.fonts]($backend) instead of [IModelDb.fontMap]($backend).
-- Added dependency to ecschema-metadata and expose the metadata from various spots (IModelDb, Entity)
+- Added dependency to `@itwin/ecschema-metadata` and exposed the metadata from various spots (IModelDb, Entity).
+
+#### Deprecated metadata retrieval methods
+
+The `IModelDb.getMetaData(classFullName: string)` method has been deprecated in version 5.0. This method was used to get metadata for a class and would load the metadata from the iModel into the cache, if necessary.
+
+Similarly, other functions to retrieve metadata also have replacements:
+
+| **Deprecated from `@itwin/core-backend`** | **Replacement function**                                         | Usage                                                                          |
+| ----------------------------------------- | ---------------------------------------------------------------- | ------------------------------------------------------------------------------ |
+| `Element.getClassMetaData`                | Use `Element.getMetaData` from `@itwin/core-backend` instead.    | `await entity.getMetaData()`                                                   |
+| `Entity.forEachProperty`                  | Use `Entity.forEach` from `@itwin/core-backend` instead.         | `entity.forEach(callback)`                                                     |
+| `IModelDb.classMetaDataRegistry` getter   | Use `getSchemaItemSync` from `@itwin/ecschema-metadata` instead. | `imodel.schemaContext.getSchemaItemSync("SchemaName.ClassName", EntityClass);` |
+| `IModelDb.getMetaData`                    | Use `getSchemaItemSync` from `@itwin/ecschema-metadata` instead. | `imodel.schemaContext.getSchemaItemSync("SchemaName.ClassName", EntityClass);` |
+| `IModelDb.tryGetMetaData`                 | Use `getSchemaItemSync` from `@itwin/ecschema-metadata` instead. | `schemaContext.getSchemaItemSync("BisCore.Element", EntityClass)`              |
+| `IModelDb.forEachMetaData`                | Use `Entity.forEach` from `@itwin/core-backend` instead.         | `entity.forEach(callback)`                                                     |
+| `MetaDataRegistry` class                  | Use `getSchemaItemSync` from `@itwin/ecschema-metadata` instead. | `imodel.schemaContext.getSchemaItemSync("SchemaName.ClassName", EntityClass);` |
+
+**Example function templates:**
+
+```typescript
+// Deprecated method
+iModelDb.getMetaData("SchemaName:ClassName");
+
+// Replacement using schemaContext with a schema key/schemaName-itemName combination/schema item full name
+await iModelDb.schemaContext.getSchemaItem(schemaItemKey);
+await iModelDb.schemaContext.getSchemaItem("SchemaName", "ClassName");
+await iModelDb.schemaContext.getSchemaItem("SchemaName:ClassName");
+await iModelDb.schemaContext.getSchemaItem("SchemaName.ClassName");
+```
+
+> The `schemaContext.getSchemaItem` function has a synchronous version as well `schemaContext.getSchemaItemSync` which supports all the same parameters as the asynchronous function. Refer to the examples [below](#deprecated-metadata-retrieval-methods).
+
+The deprecated `imodel.getMetaData()` function was limited to only Entity classes.
+The replacement method `schemaContext.getSchemaItem` on the iModel can fetch the metadata for all types of schema items.
+
+**Examples:**
+
+```typescript
+const metaData: RelationshipClass | undefined = await imodelDb.schemaContext.getSchemaItem("BisCore.ElementRefersToElements", RelationshipClass);
+const metaData: Enumeration | undefined = await imodelDb.schemaContext.getSchemaItem("BisCore.AutoHandledPropertyStatementType", Enumeration);
+const metaData: UnitSystem | undefined = await imodelDb.schemaContext.getSchemaItem("Units.SI", UnitSystem);
+const metaData: Format | undefined = await imodelDb.schemaContext.getSchemaItem("Formats.DefaultReal", Format);
+const metaData: KindOfQuantity | undefined = await imodelDb.schemaContext.getSchemaItem("TestSchema.TestKoQ", KindOfQuantity);
+```
 
 ### @itwin/core-frontend
 
@@ -190,18 +322,11 @@ Can also be attached as a map-layer:
 - Deprecated [HiliteSet.setHilite]($core-frontend) - use `add`, `remove`, `replace` methods instead.
 
 - Deprecated synchronous [addLogoCards]($core-frontend)-related APIs in favor of new asynchronous ones:
+
   - `TileTreeReference.addLogoCard` : use `addAttributions` method instead
   - `MapLayerImageryProvider.addLogoCard` : use `addAttributions` method instead
 
 - [IModelConnection.fontMap]($frontend) caches potentially-stale mappings of [FontId]($common)s to font names. If you need access to font Ids on the front-end for some reason, implement an [Ipc method](../learning/IpcInterface.md) that uses [IModelDb.fonts]($backend).
-
-### @itwin/ecschema-metadata
-
-Reworked the ISchemaItemLocater and Schema classes' APIs so it's type-safe.
-The original was never type-safe like it suggested. It just returned any schema item found.
-The new safe overload takes a constructor of a schema item subclass to only return items of that type.
-
-Added type guards and type assertions for every schema item class (they are on the individual classes, e.g. EntityClass.isEntityClass())
 
 ### @itwin/presentation-common
 
@@ -250,10 +375,6 @@ Added type guards and type assertions for every schema item class (they are on t
 
 ## Breaking Changes
 
-### Opening connection to local snapshot requires IPC
-
-[SnapshotConnection.openFile]($frontend) now requires applications to have set up a valid IPC communication. If you're using this API in an Electron or Mobile application, no additional action is needed as long as you call `ElectronHost.startup` or `MobileHost.startup` respectively. This API shouldn't be used in Web applications, so it has no replacement there.
-
 ### Updated minimum requirements
 
 A new major release of iTwin.js affords us the opportunity to update our requirements to continue to provide modern, secure, and rich libraries. Please visit our [Supported Platforms](../learning/SupportedPlatforms) documentation for a full breakdown.
@@ -269,6 +390,59 @@ iTwin.js now supports only the latest Electron release ([Electron 35](https://ww
 #### ECMAScript
 
 `@itwin/build-tools` has bumped the [TypeScript compilation target](https://www.typescriptlang.org/tsconfig#target) from [ES2021](https://262.ecma-international.org/12.0/) to [ES2023](https://262.ecma-international.org/14.0/). This means that JavaScript files provided by core packages should be run in [environments supporting ES2023 features](https://compat-table.github.io/compat-table/es2016plus/).
+
+#### TypeScript
+
+There are number of changes made to base TypeScript configuration available in `@itwin/build-tools` package.
+
+##### `target`
+
+[`target`](https://www.typescriptlang.org/tsconfig/#target) is now set to `ES2023` instead of `ES2021`.
+
+##### `useDefineForClassFields`
+
+Starting `ES2022`, Typescript compile flag [`useDefineForClassFields`](https://www.typescriptlang.org/tsconfig/#useDefineForClassFields) defaults to `true` ([TypeScript release notes on `useDefineForClassFields` flag](https://www.typescriptlang.org/docs/handbook/release-notes/typescript-3-7.html#the-usedefineforclassfields-flag-and-the-declare-property-modifier)).
+
+This may cause issues for classes which have [Entity]($backend) class as an ancestor and initialize their properties using [Entity]($backend) constructor (note: example uses simplified [Element]($backend) class):
+
+```ts
+interface MyElementProps extends ElementProps {
+  property: string;
+}
+
+class MyElement extends Element {
+  public property!: string;
+
+  constructor(props: MyElementProps) {
+    super(props);
+  }
+}
+
+const myElement = new MyElement({ property: "value" });
+console.log(myElement.property); // undefined
+```
+
+To fix this, you can either initialize your properties in your class constructor:
+
+```ts
+class MyElement extends Element {
+  public property: string;
+
+  constructor(props: MyElementProps) {
+    super(props);
+    property = props.property;
+  }
+}
+```
+
+or just define your properties using `declare` keyword:
+
+```ts
+class MyElement extends Element {
+  declare public property: string;
+  ...
+}
+```
 
 ### Deprecated API removals
 
@@ -325,12 +499,25 @@ The following APIs have been removed in `@itwin/appui-abstract`.
 
 #### @itwin/core-backend
 
-| Removed               | Replacement |
-| --------------------- | ----------- |
-| `IModelDb.nativeDb`   | N/A         |
-| `ECDb.nativeDb`       | N/A         |
-| `SQLiteDb.nativeDb`   | N/A         |
-| `IModelHost.platform` | N/A         |
+| Removed                              | Replacement                                                                                                    |
+| ------------------------------------ | -------------------------------------------------------------------------------------------------------------- |
+| `IModelDb.nativeDb`                  | N/A                                                                                                            |
+| `ECDb.nativeDb`                      | N/A                                                                                                            |
+| `SQLiteDb.nativeDb`                  | N/A                                                                                                            |
+| `IModelHost.platform`                | N/A                                                                                                            |
+| `CheckpointArg`                      | `DownloadRequest`                                                                                              |
+| `ECDB.query`                         | Use `createQueryReader` instead (same parameter).                                                              |
+| `ECDB.queryRowCount`                 | Count the number of results using `count(*)` with a subquery, e.g., `SELECT count(*) FROM (<original-query>)`. |
+| `ECDB.restartQuery`                  | Use `createQueryReader`. Pass the restart token in the `config` argument, e.g., `{ restartToken: myToken }`.   |
+| `Element.collectPredecessorIds`      | `Element.collectReferenceIds`                                                                                  |
+| `Element.getPredecessorIds`          | `Element.getReferenceIds`                                                                                      |
+| `ElementAspect.findBySource`         | `ElementAspect.findAllBySource`                                                                                |
+| `Entity.getReferenceConcreteIds`     | `Entity.getReferenceIds`                                                                                       |
+| `Entity.collectReferenceConcreteIds` | `Entity.collectReferenceIds`                                                                                   |
+| `IModelDb.query`                     | Use `createQueryReader` instead (same parameter).                                                              |
+| `IModelDb.queryRowCount`             | Count the number of results using `count(*)` with a subquery, e.g., `SELECT count(*) FROM (<original-query>)`. |
+| `IModelDb.restartQuery`              | Use `createQueryReader`. Pass the restart token in the `config` argument, e.g., `{ restartToken: myToken }`.   |
+| `IModelDb.getViewStateData`          | `IModelDb.getViewStateProps`                                                                                   |
 
 All three `nativeDb` fields and `IModelHost.platform` have always been `@internal`. Use the `@public` APIs instead. If some functionality is missing from those APIs, [let us know](https://github.com/iTwin/itwinjs-core/issues/new?template=feature_request.md).
 
@@ -393,6 +580,8 @@ All three `nativeDb` fields and `IModelHost.platform` have always been `@interna
 | `readImage`                                          | Use `readImageBuffer` instead.                                                                                    |
 | `setEventController`                                 | Removed (was for internal use).                                                                                   |
 | `PullChangesOptions.progressCallback`                | Use `downloadProgressCallback` instead.                                                                           |
+| `AccuDrawShortcuts.rotatePerpendicular`              | Use `AccuDrawShortcuts.rotateAxesByPoint` with `SnapMode.PerpendicularPoint` instead.                             |
+| `AccuDrawRotatePerpendicularTool`                    | Use `AccuDrawRotateAxesTool` with `SnapMode.PerpendicularPoint` instead.                                          |
 
 #### @itwin/core-geometry
 
@@ -543,17 +732,6 @@ The following APIs were re-exported from `@itwin/core-bentley` and have been rem
 | `LogFunction`         |
 | `LoggingMetaData`     |
 
-#### @itwin/ecschema-metadata
-
-- Remove generic type parameter from SchemaLocater/Context's getSchema methods as it was only used by internal editing API
-- Replaced existing generic `getItem()` methods from `schemaItemLocater`, `schemaContext` and `Schema` as it suggested type safety when there was none. The new overload requires either no generic type at all, or providing an additional ctor parameter of the desired schemaItem class.
-
-Existing calls like `context.getSchemaItem<EntityClass>("myName")` have to be adjusted either into
-`context.getSchemaItem("myName", EntityClass)` or `const item = context.getSchemaItem("myName") && EntityClass.isEntityClass(item)`
-A regex can be used to do bulk renaming:
-`getSchemaItem<([^>]+)>\(([^)]+)\)` replace with: `getSchemaItem($2, $1)`
-This applies to SchemaContext.getSchemaItem/Sync, Schema.getItem/Sync and Schema.lookupItem/Sync
-
 ### Packages dropped
 
 As of iTwin.js 5.0, the following packages have been removed and are no longer available:
@@ -563,6 +741,10 @@ As of iTwin.js 5.0, the following packages have been removed and are no longer a
 | `@itwin/backend-webpack-tools` | Previously we recommended bundling backends via tools like webpack to decrease the deployed backend size, however we no longer recommend bundling backends at all. |
 | `@itwin/core-telemetry`        | No consumable APIs were being published therefore this package has been removed, with no replacement available. Please implement your own telemetry client.        |
 | `@itwin/core-webpack-tools`    | We no longer recommend using [webpack](https://webpack.js.org/) and instead recommend using [Vite](https://vite.dev/).                                             |
+
+### Opening connection to local snapshot requires IPC
+
+[SnapshotConnection.openFile]($frontend) now requires applications to have set up a valid IPC communication. If you're using this API in an Electron or Mobile application, no additional action is needed as long as you call `ElectronHost.startup` or `MobileHost.startup` respectively. This API shouldn't be used in Web applications, so it has no replacement there.
 
 ### Change to pullMerge
 
@@ -576,7 +758,7 @@ Starting from version 5.x, iTwin.js has transitioned from using the merge method
 
 The merging process in this method follows these steps:
 
-1. Initially, each incoming change is attempted to be applied using the *fast-forward* method. If successful, the process is complete.
+1. Initially, each incoming change is attempted to be applied using the _fast-forward_ method. If successful, the process is complete.
 2. If the fast-forward method fails for any incoming change, that changeset is abandoned and the rebase method is used instead.
 3. The rebase process is executed as follows:
    - All local transactions are reversed.
@@ -593,65 +775,63 @@ This method offers several advantages:
 
 For more information read [Pull merge & conflict resolution](../learning/backend/PullMerge.md)
 
-### TypeScript configuration changes
+### Reworked @itwin/ecschema-metadata package
 
-There are number of changes made to base TypeScript configuration available in `@itwin/build-tools` package.
+- Removed generic type parameter from SchemaLocater/Context's `getSchema()` methods as it was only used by internal editing API
+- Removed `ISchemaItemLocater` interface, it was only ever used by our own `SchemaContext`.
+- Reworked the `SchemaContext` and `Schema` `getItem()` APIs so they provide a type-safe retrieval method.
+  The original suggested it was type-safe but didn't really verify returned types.
+  The new safe overload takes a constructor of a schema item subclass to only return items of that type.
+- Added type guards and type assertions for every schema item class (they are on the individual classes, e.g. `EntityClass.isEntityClass()`)
+- We now consistently return `Iterable<T>` results. Previously some returned arrays and others `IterableIterator`. Modified methods: `getSchemaItems()`, `getItems()` and `getProperties()`
+  - `SchemaContext.getSchemaItems()` changed from `IterableIterator<SchemaItem>` to `Iterable<SchemaItem>`
+  - `ECClass.getProperties/Sync()` changed from `Property[]` to `Iterable<Property>`
+  - `ECClass.properties` previously `IterableIterator<Property>` has been integrated into `getProperties(excludeInherited: boolean)`
+  - `ECClass.getAllBaseClasses()` changed from `AsyncIterableIterator<ECClass>` to `Iterable<ECClass>`
+  - `Schema.getItems()` changed from `IterableIterator<SchemaItem>` to `Iterable<SchemaItem>`
+- Reworked caching for merged properties on ECClass. Previously there was a boolean flag `ECClass.getProperties(resetCache: boolean)`.
+  This flag has been removed. The cache is automatically cleared, and in cases when base classes change, there is a new `ECClass.cleanCache()` method.
+- Updated the `ECClass.getProperty` and `ECClass.getPropertySync` method signatures to include inherited properties by default, not exclude them. This aligns
+  with `ECClass.getProperties/Sync()` signature.
+- `Format` updated to use Lazy Loaded items to be consistent with other schema items
+  - `addUnit` takes `LazyLoadedUnit | LazyLoadedInvertedUnit` instead of `Unit | InvertedUnit`
+  - `setUnits` takes `LazyLoadedUnit | LazyLoadedInvertedUnit` instead of `Unit | InvertedUnit`
+  - `units` getter returns `ReadonlyArray<[LazyLoadedUnit | LazyLoadedInvertedUnit, string | undefined]>` instead of `ReadonlyArray<[Unit | InvertedUnit, string | undefined]>`
+- `KindOfQuantity` updated to use Lazy Loaded items to be consistent with other schema items
+  - `addPresentationFormat` takes `LazyLoadedFormat` instead of `Format`
+  - `createFormatOverride` takes `Array<[LazyLoadedUnit | LazyLoadedInvertedUnit, string | undefined]>` instead of `Array<[Unit | InvertedUnit, string | undefined]>`
+  - `defaultPresentationFormat` getter returns `LazyLoadedFormat` instead of `Format`
+  - `presentationFormats` getter returns `LazyLoadedFormat` instead of `Format`
+  - `ECObjectsStatus` renamed to `ECSchemaStatus`
 
-#### `target`
+  ```ts
+  public async getProperty(name: string, excludeInherited: boolean = false): Promise<Property | undefined>
+  ```
 
-[`target`](https://www.typescriptlang.org/tsconfig/#target) is now set to `ES2023` instead of `ES2021`.
+#### Tips for adjusting existing code
 
-#### `useDefineForClassFields`
-
-Starting `ES2022`, Typescript compile flag [`useDefineForClassFields`](https://www.typescriptlang.org/tsconfig/#useDefineForClassFields) defaults to `true` ([TypeScript release notes on `useDefineForClassFields` flag](https://www.typescriptlang.org/docs/handbook/release-notes/typescript-3-7.html#the-usedefineforclassfields-flag-and-the-declare-property-modifier)).
-
-This may cause issues for classes which have [Entity]($backend) class as an ancestor and initialize their properties using [Entity]($backend) constructor (note: example uses simplified [Element]($backend) class):
-
-```ts
-interface MyElementProps extends ElementProps {
-  property: string;
-}
-
-class MyElement extends Element {
-  public property!: string;
-
-  constructor(props: MyElementProps) {
-    super(props);
-  }
-}
-
-const myElement = new MyElement({ property: "value" });
-console.log(myElement.property); // undefined
-```
-
-To fix this, you can either initialize your properties in your class constructor:
-
-```ts
-class MyElement extends Element {
-  public property: string;
-
-  constructor(props: MyElementProps) {
-    super(props);
-    property = props.property;
-  }
-}
-```
-
-or just define your properties using `declare` keyword:
+Existing calls like `context.getSchemaItem<EntityClass>("schema:myName")` have to be adjusted either into
+`context.getSchemaItem("schema", "myName", EntityClass)` or more verbose as a general item followed by a type-guard:
 
 ```ts
-class MyElement extends Element {
-  declare public property: string;
-  ...
+const item: SchemaItem = await iModel.schemaContext.getSchemaItem("BisCore", "Element");
+if (item && EntityClass.isEntityClass(item)) {
 }
 ```
 
-## Attach/detach db
+A regex can be used to do bulk renaming:
+`getSchemaItem<([^>]+)>\(([^)]+)\)` replace with: `getSchemaItem($2, $1)`
+This applies to `SchemaContext.getSchemaItem/Sync`, `Schema.getItem/Sync` and `Schema.lookupItem/Sync`.
 
-Allow the attachment of an ECDb/IModel to a connection and running ECSQL that combines data from both databases.
+## Deprecated ECSqlStatement
 
-```ts
-[[include:IModelDb_attachDb.code]]
-```
+`ECSqlStatement` is deprecated in 4.11 Use [IModelDb.createQueryReader]($backend) or [ECDb.createQueryReader]($backend)
 
-> Note: There are some reserve alias names that cannot be used. They are 'main', 'schema_sync_db', 'ecchange' & 'temp'
+Following are related classes to ECSqlStatement that are also mark depercate
+
+- `ECEnumValue`
+- `ECSqlValue`
+- `ECSqlValueIterator`
+- `ECSqlColumnInfo`
+
+  In concurrent query `QueryOptions.convertClassIdsToClassNames` & `QueryOptionsBuilder.setConvertClassIdsToNames()` are deprecated. Use ECSQL ec_classname() function to convert class ids to class names.

@@ -67,6 +67,7 @@ import { queryVisibleFeatures } from "./internal/render/QueryVisibileFeatures";
 import { FlashSettings } from "./FlashSettings";
 import { GeometricModelState } from "./ModelState";
 import { GraphicType } from "./common/render/GraphicType";
+import { compareMapLayer } from "./internal/render/webgl/MapLayerParams";
 
 // cSpell:Ignore rect's ovrs subcat subcats unmounting UI's
 
@@ -435,6 +436,7 @@ export abstract class Viewport implements Disposable, TileUser {
 
   /** Mark the viewport's [[ViewState]] as having changed, so that the next call to [[renderFrame]] will invoke [[setupFromView]] to synchronize with the view.
    * This method is not typically invoked directly - the controller is automatically invalidated in response to events such as a call to [[changeView]].
+   * Additionally, refresh the Reality Tile Tree to reflect changes in the map layer.
    */
   public invalidateController(): void {
     this._controllerValid = this._analysisFractionValid = false;
@@ -1788,7 +1790,9 @@ export abstract class Viewport implements Disposable, TileUser {
     this.updateChangeFlags(view);
     this.doSetupFromView(view);
     this.invalidateController();
-    this.target.reset();
+
+    const isMapLayerChanged = undefined !== prevView && compareMapLayer(prevView, view);
+    this.target.reset(isMapLayerChanged); // Handle Reality Map Tile Map Layer changes & update logic
 
     if (undefined !== prevView && prevView !== view) {
       this.onChangeView.raiseEvent(this, prevView);

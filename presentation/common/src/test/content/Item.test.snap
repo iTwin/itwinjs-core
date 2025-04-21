@@ -19,22 +19,22 @@ Object {
 exports[`Item fromJSON creates valid Item from valid JSON 1`] = `
 Object {
   "classInfo": Object {
-    "id": "0x129780000006fdb",
-    "label": "index synthesizing Checking Account",
-    "name": "indigo",
+    "id": "0x1",
+    "label": "Class Label",
+    "name": "SchemaName:ClassName",
   },
   "displayValues": Object {
-    "key1": "Fork orange",
-    "key2": "Technician capacitor",
+    "key1": "123",
+    "key2": "456",
   },
   "label": Object {
-    "displayValue": "Rustic Soft Fish",
-    "rawValue": "override",
+    "displayValue": "test display value",
+    "rawValue": "test raw value",
     "typeName": "string",
   },
   "labelDefinition": Object {
-    "displayValue": "Rustic Soft Fish",
-    "rawValue": "override",
+    "displayValue": "test display value",
+    "rawValue": "test raw value",
     "typeName": "string",
   },
   "mergedFieldNames": Array [
@@ -42,8 +42,8 @@ Object {
   ],
   "primaryKeys": Array [],
   "values": Object {
-    "key1": 38324,
-    "key2": "Kids",
+    "key1": 123,
+    "key2": "456",
   },
 }
 `;
@@ -51,22 +51,22 @@ Object {
 exports[`Item fromJSON creates valid Item from valid serialized JSON 1`] = `
 Object {
   "classInfo": Object {
-    "id": "0x133b90000017b16",
-    "label": "deposit Rustic port",
-    "name": "optimize",
+    "id": "0x1",
+    "label": "Class Label",
+    "name": "SchemaName:ClassName",
   },
   "displayValues": Object {
-    "key1": "object-oriented Avon deposit",
-    "key2": "Toys Buckinghamshire Generic Frozen Bacon",
+    "key1": "123",
+    "key2": "456",
   },
   "label": Object {
-    "displayValue": "Strategist",
-    "rawValue": "firewall",
+    "displayValue": "test display value",
+    "rawValue": "test raw value",
     "typeName": "string",
   },
   "labelDefinition": Object {
-    "displayValue": "Strategist",
-    "rawValue": "firewall",
+    "displayValue": "test display value",
+    "rawValue": "test raw value",
     "typeName": "string",
   },
   "mergedFieldNames": Array [
@@ -74,8 +74,8 @@ Object {
   ],
   "primaryKeys": Array [],
   "values": Object {
-    "key1": 85626,
-    "key2": "Compatible Checking Account Gloves",
+    "key1": 123,
+    "key2": "456",
   },
 }
 `;
@@ -83,21 +83,21 @@ Object {
 exports[`Item fromJSON creates valid Item with nested content values 1`] = `
 Object {
   "classInfo": Object {
-    "id": "0x48ab0000006470",
-    "label": "Rustic",
-    "name": "cutting-edge",
+    "id": "0x1",
+    "label": "Class Label",
+    "name": "SchemaName:ClassName",
   },
   "displayValues": Object {
     "key1": undefined,
   },
   "label": Object {
-    "displayValue": "bricks-and-clicks",
-    "rawValue": "Mountains",
+    "displayValue": "test display value",
+    "rawValue": "test raw value",
     "typeName": "string",
   },
   "labelDefinition": Object {
-    "displayValue": "bricks-and-clicks",
-    "rawValue": "Mountains",
+    "displayValue": "test display value",
+    "rawValue": "test raw value",
     "typeName": "string",
   },
   "mergedFieldNames": Array [
@@ -111,12 +111,12 @@ Object {
           "nested": "",
         },
         "mergedFieldNames": Array [
-          "Developer",
+          "test-field",
         ],
         "primaryKeys": Array [
           Object {
-            "className": "Refined",
-            "id": "0xdd92000001659c",
+            "className": "SchemaName:ClassName",
+            "id": "0x1",
           },
         ],
         "values": Object {
@@ -131,21 +131,21 @@ Object {
 exports[`Item fromJSON creates valid Item with undefined values 1`] = `
 Object {
   "classInfo": Object {
-    "id": "0x158860000009a00",
-    "label": "Algeria Markets",
-    "name": "one-to-one",
+    "id": "0x1",
+    "label": "Class Label",
+    "name": "SchemaName:ClassName",
   },
   "displayValues": Object {
     "key1": undefined,
   },
   "label": Object {
-    "displayValue": "Handcrafted",
-    "rawValue": "Analyst",
+    "displayValue": "test display value",
+    "rawValue": "test raw value",
     "typeName": "string",
   },
   "labelDefinition": Object {
-    "displayValue": "Handcrafted",
-    "rawValue": "Analyst",
+    "displayValue": "test display value",
+    "rawValue": "test raw value",
     "typeName": "string",
   },
   "mergedFieldNames": Array [

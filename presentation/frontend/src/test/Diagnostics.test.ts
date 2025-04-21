@@ -5,7 +5,7 @@
 import { expect } from "chai";
 import * as sinon from "sinon";
 import { ClientDiagnostics } from "@itwin/presentation-common";
-import { consoleDiagnosticsHandler, createCombinedDiagnosticsHandler } from "../presentation-frontend/Diagnostics";
+import { consoleDiagnosticsHandler, createCombinedDiagnosticsHandler } from "../presentation-frontend/Diagnostics.js";
 
 describe("consoleDiagnosticsHandler", () => {
   const createConsoleSpies = () => ({

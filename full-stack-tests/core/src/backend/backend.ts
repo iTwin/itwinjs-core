@@ -11,7 +11,7 @@ import {
   SpatialCategory, SubjectOwnsPartitionElements,
 } from "@itwin/core-backend";
 import { Id64String, Logger, LoggingMetaData, ProcessDetector } from "@itwin/core-bentley";
-import { BentleyCloudRpcManager, CodeProps, constructDetailedError, constructITwinError, ElementProps, IModel, ITwinError, RelatedElement, RpcConfiguration, SubCategoryAppearance } from "@itwin/core-common";
+import { BentleyCloudRpcManager, ChannelControlError, CodeProps, ConflictingLock, ConflictingLocksError, ElementProps, IModel, RelatedElement, RpcConfiguration, SubCategoryAppearance } from "@itwin/core-common";
 import { ElectronHost } from "@itwin/core-electron/lib/cjs/ElectronBackend";
 import { ECSchemaRpcImpl } from "@itwin/ecschema-rpcinterface-impl";
 import { BasicManipulationCommand, EditCommandAdmin } from "@itwin/editor-backend";
@@ -25,6 +25,7 @@ import { exposeBackendCallbacks } from "../certa/certaBackend";
 import { fullstackIpcChannel, FullStackTestIpc } from "../common/FullStackTestIpc";
 import { rpcInterfaces } from "../common/RpcInterfaces";
 import * as testCommands from "./TestEditCommands";
+import { AzuriteTest } from "./AzuriteTest";
 
 /* eslint-disable no-console */
 
@@ -41,6 +42,8 @@ function loadEnv(envFile: string) {
 
   dotenvExpand(envResult);
 }
+
+let electronAuth: ElectronMainAuthorization;
 
 class FullStackTestIpcHandler extends IpcHandler implements FullStackTestIpc {
   public get channelName() { return fullstackIpcChannel; }
@@ -77,16 +80,24 @@ class FullStackTestIpcHandler extends IpcHandler implements FullStackTestIpc {
     return iModel.executeWritable(async () => undefined);
   }
 
-  public async throwDetailedError<T extends ITwinError>(details: Omit<T, keyof ITwinError>, namespace: string, errorKey: string, message?: string, metaData?: LoggingMetaData): Promise<void> {
-    const error = constructDetailedError<T>(namespace, errorKey, details, message, metaData);
-    throw error;
+  public async throwChannelError(errorKey: ChannelControlError.Key, message: string, channelKey: string) {
+    ChannelControlError.throwError(errorKey, message, channelKey);
+  }
+  public async throwLockError(conflictingLocks: ConflictingLock[], message: string, metaData: LoggingMetaData, logFn: boolean) {
+    throw new ConflictingLocksError(message, logFn ? () => metaData : metaData, conflictingLocks);
   }
 
-  public async throwITwinError(namespace: string, errorKey: string, message?: string, metadata?: LoggingMetaData): Promise<void> {
-    const error = constructITwinError(namespace, errorKey, message, metadata);
-    throw error;
+  public async restoreAuthClient() {
+    IModelHost.authorizationClient = electronAuth;
+  }
+  public async useAzTestAuthClient() {
+    IModelHost.authorizationClient = new AzuriteTest.AuthorizationClient();
+  }
+  public async setAzTestUser(user: "admin" | "readOnly" | "readWrite") {
+    AzuriteTest.userToken = AzuriteTest.service.userToken[user];
   }
 }
+
 
 async function init() {
   loadEnv(path.join(__dirname, "..", "..", ".env"));
@@ -101,15 +112,15 @@ async function init() {
 
   if (ProcessDetector.isElectronAppBackend) {
     exposeBackendCallbacks();
-    const authClient = new ElectronMainAuthorization({
+    electronAuth = new ElectronMainAuthorization({
       clientId: process.env.IMJS_OIDC_ELECTRON_TEST_CLIENT_ID ?? "testClientId",
       redirectUris: process.env.IMJS_OIDC_ELECTRON_TEST_REDIRECT_URI !== undefined ? [process.env.IMJS_OIDC_ELECTRON_TEST_REDIRECT_URI] : ["testRedirectUri"],
       scopes: process.env.IMJS_OIDC_ELECTRON_TEST_SCOPES ?? "testScope",
     });
-    await authClient.signInSilent();
-    iModelHost.authorizationClient = authClient;
+    await electronAuth.signInSilent();
+    iModelHost.authorizationClient = electronAuth;
     await ElectronHost.startup({ electronHost: { rpcInterfaces }, iModelHost });
-    await authClient.signInSilent();
+    await electronAuth.signInSilent();
 
     EditCommandAdmin.registerModule(testCommands);
     EditCommandAdmin.register(BasicManipulationCommand);

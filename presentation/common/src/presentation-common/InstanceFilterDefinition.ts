@@ -6,7 +6,7 @@
  * @module Core
  */
 
-import { StrippedRelationshipPath } from "./EC";
+import { StrippedRelationshipPath } from "./EC.js";
 
 /**
  * Definition of an instance filter that can be used to filter content or hierarchy levels.

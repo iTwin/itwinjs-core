@@ -6,24 +6,21 @@
  * @module Core
  */
 
-import { RulesetVariableJSON } from "./RulesetVariables";
+import { RulesetVariableJSON } from "./RulesetVariables.js";
 
 /** @internal */
 export const PRESENTATION_IPC_CHANNEL_NAME = "itwinjs-presentation/ipc-interface";
 
-/** @internal */
-export interface CommonIpcParams {
+interface CommonIpcParams {
   clientId: string;
 }
 
-/** @internal */
-export interface SetRulesetVariableParams<TVariable> extends CommonIpcParams {
+interface SetRulesetVariableParams<TVariable> extends CommonIpcParams {
   rulesetId: string;
   variable: TVariable;
 }
 
-/** @internal */
-export interface UnsetRulesetVariableParams extends CommonIpcParams {
+interface UnsetRulesetVariableParams extends CommonIpcParams {
   rulesetId: string;
   variableId: string;
 }
@@ -35,4 +32,12 @@ export interface PresentationIpcInterface {
 
   /** Unsets ruleset variable value. */
   unsetRulesetVariable(params: UnsetRulesetVariableParams): Promise<void>;
+}
+
+/** @internal */
+export enum PresentationIpcEvents {
+  /**
+   * ID of an event that's emitted when backend detects changes in presented data.
+   */
+  Update = "presentation.onUpdate",
 }

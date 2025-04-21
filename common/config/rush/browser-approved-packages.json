@@ -8,7 +8,7 @@
     },
     {
       "name": "@bentley/aec-units-schema",
-      "allowedCategories": [ "backend", "internal" ]
+      "allowedCategories": [ "backend", "common", "internal" ]
     },
     {
       "name": "@bentley/architectural-physical-schema",
@@ -84,7 +84,7 @@
     },
     {
       "name": "@bentley/formats-schema",
-      "allowedCategories": [ "backend" ]
+      "allowedCategories": [ "backend", "common", "internal" ]
     },
     {
       "name": "@bentley/icons-generic",
@@ -136,7 +136,7 @@
     },
     {
       "name": "@bentley/units-schema",
-      "allowedCategories": [ "backend", "common" ]
+      "allowedCategories": [ "backend", "common", "internal" ]
     },
     {
       "name": "@itwin/appui-abstract",
@@ -431,6 +431,10 @@
       "allowedCategories": [ "integration-testing", "internal" ]
     },
     {
+      "name": "c8",
+      "allowedCategories": [ "backend", "common", "frontend" ]
+    },
+    {
       "name": "cache-require-paths",
       "allowedCategories": [ "internal" ]
     },
@@ -632,7 +636,7 @@
     },
     {
       "name": "internal-tools",
-      "allowedCategories": [ "backend", "integration-testing", "internal" ]
+      "allowedCategories": [ "backend", "common", "extensions", "frontend", "integration-testing", "internal" ]
     },
     {
       "name": "inversify",

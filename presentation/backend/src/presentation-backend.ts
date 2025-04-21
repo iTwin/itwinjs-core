@@ -8,12 +8,25 @@
  * @docs-group-description Core
  * Common types used for retrieving presentation data from iModels.
  */
-export * from "./presentation-backend/Presentation";
-export * from "./presentation-backend/PresentationManager";
-export * from "./presentation-backend/RulesetManager";
-export * from "./presentation-backend/RulesetVariablesManager";
-export * from "./presentation-backend/RulesetEmbedder";
-export * from "./presentation-backend/Utils";
+export { PresentationProps, MultiManagerPresentationProps, SingleManagerPresentationProps, Presentation } from "./presentation-backend/Presentation.js";
+export {
+  HierarchyCacheMode,
+  HierarchyCacheConfig,
+  MemoryHierarchyCacheConfig,
+  DiskHierarchyCacheConfig,
+  HybridCacheConfig,
+  ContentCacheConfig,
+  PresentationManagerCachingConfig,
+  UnitSystemFormat,
+  MultiElementPropertiesResponse,
+  PresentationAssetsRootConfig,
+  PresentationManagerProps,
+  PresentationManager,
+} from "./presentation-backend/PresentationManager.js";
+export { RulesetManager } from "./presentation-backend/RulesetManager.js";
+export { RulesetVariablesManager } from "./presentation-backend/RulesetVariablesManager.js";
+export { RulesetInsertOptions, RulesetEmbedderProps, RulesetEmbedder } from "./presentation-backend/RulesetEmbedder.js";
+export { BackendDiagnosticsHandler, BackendDiagnosticsOptions, BackendDiagnosticsAttribute } from "./presentation-backend/Utils.js";
 
 /**
  * @module Logging
@@ -21,4 +34,4 @@ export * from "./presentation-backend/Utils";
  * @docs-group-description Logging
  * Types related to logging in this package.
  */
-export * from "./presentation-backend/BackendLoggerCategory";
+export { PresentationBackendLoggerCategory, PresentationBackendNativeLoggerCategory } from "./presentation-backend/BackendLoggerCategory.js";

@@ -10,6 +10,7 @@ import { ECSchemaRpcInterface } from "@itwin/ecschema-rpcinterface-common";
 
 /**
  * Defines the interface how the rows of the iModel query look like.
+ * @internal
  */
 interface SchemaNameRow {
   schemaName: string;

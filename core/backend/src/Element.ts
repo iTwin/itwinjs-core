@@ -6,9 +6,9 @@
  * @module Elements
  */
 
-import { CompressedId64Set, GuidString, Id64, Id64Set, Id64String, JsonUtils, OrderedId64Array } from "@itwin/core-bentley";
+import { CompressedId64Set, GuidString, Id64, Id64String, JsonUtils, OrderedId64Array } from "@itwin/core-bentley";
 import {
-  AxisAlignedBox3d, BisCodeSpec, Code, CodeScopeProps, CodeSpec, ConcreteEntityTypes, DefinitionElementProps, ElementAlignedBox3d,
+  AxisAlignedBox3d, BisCodeSpec, Code, CodeScopeProps, CodeSpec, ConcreteEntityTypes, DefinitionElementProps, DrawingProps, ElementAlignedBox3d,
   ElementProps, EntityMetaData, EntityReferenceSet, GeometricElement2dProps, GeometricElement3dProps, GeometricElementProps,
   GeometricModel2dProps, GeometricModel3dProps, GeometryPartProps, GeometryStreamProps, IModel, InformationPartitionElementProps, LineStyleProps,
   ModelProps, PhysicalElementProps, PhysicalTypeProps, Placement2d, Placement3d, RelatedElement, RenderSchedule, RenderTimelineProps,
@@ -355,14 +355,6 @@ export class Element extends Entity {
     return val;
   }
 
-  /** Collect the Ids of this element's *references* at this level of the class hierarchy.
-   * @deprecated in 3.x. use [[collectReferenceIds]] instead, the use of the term *predecessors* was confusing and became inaccurate when the transformer could handle cycles
-   * @beta
-   */
-  protected collectPredecessorIds(predecessorIds: EntityReferenceSet): void {
-    return this.collectReferenceIds(predecessorIds);
-  }
-
   protected override collectReferenceIds(referenceIds: EntityReferenceSet): void {
     super.collectReferenceIds(referenceIds);
     referenceIds.addModel(this.model); // The modeledElement is a reference
@@ -370,15 +362,6 @@ export class Element extends Entity {
       referenceIds.addElement(this.code.scope); // The element that scopes the code is a reference
     if (this.parent)
       referenceIds.addElement(this.parent.id); // A parent element is a reference
-  }
-
-  /** Get the Ids of this element's *references*. A *reference* is any element whose id is stored in the EC data of this element
-   * This is important for cloning operations but can be useful in other situations as well.
-   * @beta
-   * @deprecated in 3.x. use [[getReferenceIds]] instead, the use of the term *predecessors* was confusing and became inaccurate when the transformer could handle cycles
-   */
-  public getPredecessorIds(): Id64Set {
-    return this.getReferenceIds();
   }
 
   /** A *required reference* is an element that had to be inserted before this element could have been inserted.
@@ -398,7 +381,19 @@ export class Element extends Entity {
     model: ConcreteEntityTypes.Model,
   };
 
-  /** Get the class metadata for this element. */
+  /** Get the class metadata for this element.
+   * @deprecated in 5.0. Please use `getMetaData` provided by the parent class `Entity` instead.
+   *
+   * @example
+   * ```typescript
+   * // Current usage:
+   * const metaData: EntityMetaData | undefined = element.getClassMetaData();
+   *
+   * // Replacement:
+   * const metaData: EntityClass = await element.getMetaData();
+   * ```
+   */
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   public getClassMetaData(): EntityMetaData | undefined { return this.iModel.classMetaDataRegistry.find(this.classFullName); }
 
   private getAllUserProperties(): any {
@@ -768,8 +763,46 @@ export abstract class Document extends InformationContentElement {
  * @public
  */
 export class Drawing extends Document {
+  private _scaleFactor: number;
+
+  /** A factor used by tools to adjust the size of text in [GeometricElement2d]($backend)s in the associated [DrawingModel]($backend) and to compute the
+   * size of the [ViewAttachment]($backend) created when attaching the [Drawing]($backend) to a [Sheet]($backend).
+   * Default: 1.
+   * @note Attempting to set this property to a value less than or equal to zero will produce an exception.
+   * @public
+   */
+  public get scaleFactor(): number { return this._scaleFactor; }
+  public set scaleFactor(factor: number) {
+    if (factor <= 0) {
+      if (this._scaleFactor === undefined) {
+        // Entity constructor calls our setter before our constructor runs...don't throw an exception at that time,
+        // because somebody may have persisted the value as zero.
+        return;
+      }
+
+      throw new Error("Drawing.scaleFactor must be greater than zero");
+    }
+
+    this._scaleFactor = factor;
+  }
+
   public static override get className(): string { return "Drawing"; }
-  protected constructor(props: ElementProps, iModel: IModelDb) { super(props, iModel); }
+
+  protected constructor(props: DrawingProps, iModel: IModelDb) {
+    super(props, iModel);
+
+    this._scaleFactor = typeof props.scaleFactor === "number" && props.scaleFactor > 0 ? props.scaleFactor : 1;
+  }
+
+  public override toJSON(): DrawingProps {
+    const drawingProps: DrawingProps = super.toJSON();
+    // Entity.toJSON auto-magically sets drawingProps.scaleFactor from this.scaleFactor - unset if default value of 1.
+    if (drawingProps.scaleFactor === 1) {
+      delete drawingProps.scaleFactor;
+    }
+
+    return drawingProps;
+  }
 
   /** The name of the DrawingModel class modeled by this element type. */
   protected static get drawingModelFullClassName(): string { return DrawingModel.classFullName; }
@@ -788,15 +821,26 @@ export class Drawing extends Document {
    * @param iModelDb Insert into this iModel
    * @param documentListModelId Insert the new Drawing into this DocumentListModel
    * @param name The name of the Drawing.
+   * @param scaleFactor See [[scaleFactor]]. Must be greater than zero.
    * @returns The Id of the newly inserted Drawing element and the DrawingModel that breaks it down (same value).
    * @throws [[IModelError]] if unable to insert the element.
+   * @throws Error if `scaleFactor` is less than or equal to zero.
    */
-  public static insert(iModelDb: IModelDb, documentListModelId: Id64String, name: string): Id64String {
-    const drawingProps: ElementProps = {
+  public static insert(iModelDb: IModelDb, documentListModelId: Id64String, name: string, scaleFactor?: number): Id64String {
+    const drawingProps: DrawingProps = {
       classFullName: this.classFullName,
       model: documentListModelId,
       code: this.createCode(iModelDb, documentListModelId, name),
     };
+
+    if (scaleFactor !== undefined) {
+      if (scaleFactor <= 0) {
+        throw new Error("Drawing.scaleFactor must be greater than zero");
+      }
+      
+      drawingProps.scaleFactor = scaleFactor;
+    }
+
     const drawingId: Id64String = iModelDb.elements.insertElement(drawingProps);
     const model: DrawingModel = iModelDb.models.createModel({
       classFullName: this.drawingModelFullClassName,

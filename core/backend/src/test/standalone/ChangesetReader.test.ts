@@ -9,7 +9,7 @@ import { assert, expect } from "chai";
 import * as path from "node:path";
 import { DrawingCategory } from "../../Category";
 import { ChangesetECAdaptor as ECChangesetAdaptor, PartialECChangeUnifier } from "../../ChangesetECAdaptor";
-import { HubMock } from "../../HubMock";
+import { HubMock } from "../../internal/HubMock";
 import { BriefcaseDb, SnapshotDb } from "../../IModelDb";
 import { SqliteChangeOp, SqliteChangesetReader } from "../../SqliteChangesetReader";
 import { HubWrappers, IModelTestUtils } from "../IModelTestUtils";
@@ -171,6 +171,7 @@ describe("Changeset Reader API", async () => {
   });
 
   function getClassIdByName(iModel: BriefcaseDb, className: string): Id64String {
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     return iModel.withPreparedStatement(`SELECT ECInstanceId from meta.ECClassDef where Name=?`, (stmt) => {
       stmt.bindString(1, className);
       assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
@@ -617,6 +618,7 @@ describe("Changeset Reader API", async () => {
     assert.isUndefined(findEl(el2));
     assert.isDefined(findEl(el3));
     assert.isDefined(findEl(el4));
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     assert.deepEqual(Object.getOwnPropertyNames(rwIModel.getMetaData("TestDomain:Test2dElement").properties), ["p1", "p2"]);
     // 6. Revert to timeline 2
     await rwIModel.revertAndPushChanges({ toIndex: 2, description: "revert to timeline 2" });
@@ -626,6 +628,7 @@ describe("Changeset Reader API", async () => {
     assert.isUndefined(findEl(el2));
     assert.isUndefined(findEl(el3));
     assert.isUndefined(findEl(el4));
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     assert.deepEqual(Object.getOwnPropertyNames(rwIModel.getMetaData("TestDomain:Test2dElement").properties), ["p1"]);
 
     await rwIModel.revertAndPushChanges({ toIndex: 6, description: "reinstate last reverted changeset" });
@@ -634,6 +637,7 @@ describe("Changeset Reader API", async () => {
     assert.isUndefined(findEl(el2));
     assert.isDefined(findEl(el3));
     assert.isDefined(findEl(el4));
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     assert.deepEqual(Object.getOwnPropertyNames(rwIModel.getMetaData("TestDomain:Test2dElement").properties), ["p1", "p2"]);
 
     await addPropertyAndImportSchema();
@@ -641,6 +645,7 @@ describe("Changeset Reader API", async () => {
     await updateEl(el1, { p1: "test12", p2: "test13", p3: "test114" });
     rwIModel.saveChanges();
     await rwIModel.pushChanges({ description: "import schema, insert element 5 & update element 1" });
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     assert.deepEqual(Object.getOwnPropertyNames(rwIModel.getMetaData("TestDomain:Test2dElement").properties), ["p1", "p2", "p3"]);
 
     // skip schema changes & auto generated comment
@@ -651,6 +656,7 @@ describe("Changeset Reader API", async () => {
     assert.isUndefined(findEl(el3));
     assert.isUndefined(findEl(el4));
     assert.isUndefined(findEl(el5));
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     assert.deepEqual(Object.getOwnPropertyNames(rwIModel.getMetaData("TestDomain:Test2dElement").properties), ["p1", "p2", "p3"]);
 
     await rwIModel.revertAndPushChanges({ toIndex: 9 });
@@ -660,6 +666,7 @@ describe("Changeset Reader API", async () => {
     assert.isDefined(findEl(el3));
     assert.isDefined(findEl(el4));
     assert.isDefined(findEl(el5));
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     assert.deepEqual(Object.getOwnPropertyNames(rwIModel.getMetaData("TestDomain:Test2dElement").properties), ["p1", "p2", "p3"]);
     rwIModel.close();
   });

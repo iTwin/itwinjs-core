@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "deprecate some replaced metadata methods",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}

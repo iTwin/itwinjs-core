@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-quantity",
+      "comment": "Add `FormatDefinition`, `FormatsProvider` and `MutableFormatsProvider` interfaces.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-quantity"
+}

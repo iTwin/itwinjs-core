@@ -4,10 +4,9 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import * as faker from "faker";
 import * as sinon from "sinon";
 import { RegisteredRuleset, Rule, Ruleset, RuleTypes } from "@itwin/presentation-common";
-import { RulesetManagerImpl } from "../presentation-frontend/RulesetManager";
+import { RulesetManagerImpl } from "../presentation-frontend/RulesetManager.js";
 
 describe("RulesetManager", () => {
   let onRulesetModifiedSpy: sinon.SinonSpy<[RegisteredRuleset, Ruleset], Promise<void>>;
@@ -28,7 +27,7 @@ describe("RulesetManager", () => {
 
   describe("get", () => {
     it("returns undefined when ruleset is not registered", async () => {
-      expect(await manager.get(faker.random.word())).to.be.undefined;
+      expect(await manager.get("test-ruleset-id")).to.be.undefined;
     });
 
     it("returns registered ruleset", async () => {
@@ -49,7 +48,7 @@ describe("RulesetManager", () => {
     });
 
     it("allows registering 2 rulesets with the same id", async () => {
-      const rulesetId = faker.random.uuid();
+      const rulesetId = "test ruleset id";
       const rulesets = [createTestRuleset(), createTestRuleset()];
       await Promise.all(
         rulesets.map(async (r) => {
@@ -80,13 +79,13 @@ describe("RulesetManager", () => {
 
   describe("remove", () => {
     it("does nothing if ruleset with the specified id is not registered", async () => {
-      expect(await manager.remove([faker.random.uuid(), faker.random.uuid()])).to.be.false;
+      expect(await manager.remove(["doesn't", "exist"])).to.be.false;
     });
 
     it("does nothing if ruleset with the specified uniqueIdentifier is not registered", async () => {
       const ruleset = createTestRuleset();
       await manager.add(ruleset);
-      expect(await manager.remove([ruleset.id, faker.random.uuid()])).to.be.false;
+      expect(await manager.remove([ruleset.id, "hash"])).to.be.false;
     });
 
     it("removes ruleset with [id, uniqueIdentifier] argument", async () => {

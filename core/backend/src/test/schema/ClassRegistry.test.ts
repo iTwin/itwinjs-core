@@ -6,7 +6,8 @@ import { assert, expect } from "chai";
 import * as sinon from "sinon";
 import * as path from "path";
 import {
-  BisCodeSpec, Code, ConcreteEntityTypes, DefinitionElementProps, ElementAspectProps, ElementProps, EntityMetaData, EntityReferenceSet, ModelProps,
+  BisCodeSpec, Code, ConcreteEntityTypes, DefinitionElementProps, ECJsNames, ElementAspectProps, ElementProps, EntityReferenceSet, ModelProps,
+  PropertyMetaData,
   RelatedElement, RelatedElementProps, RelationshipProps, SchemaState,
 } from "@itwin/core-common";
 import {
@@ -19,6 +20,7 @@ import { Element } from "../../Element";
 import { Schemas } from "../../Schema";
 import { ClassRegistry } from "../../ClassRegistry";
 import { OpenMode } from "@itwin/core-bentley";
+import { EntityClass, NavigationProperty, PrimitiveProperty } from "@itwin/ecschema-metadata";
 
 describe("Class Registry", () => {
   let imodel: SnapshotDb;
@@ -34,45 +36,41 @@ describe("Class Registry", () => {
     imodel?.close();
   });
 
-  it("should verify the Entity metadata of known element subclasses", () => {
+  it("should verify the Entity metadata of known element subclasses", async () => {
     const code1 = new Code({ spec: "0x10", scope: "0x11", value: "RF1.dgn" });
     const el = imodel.elements.getElement(code1);
     assert.exists(el);
     if (el) {
-      const metaData: EntityMetaData | undefined = el.getClassMetaData();
+      const metaData = await el.getMetaData();
       assert.exists(metaData);
-      if (undefined === metaData)
-        return;
-      assert.equal(metaData.ecclass, el.classFullName);
+
+      assert.equal(metaData.fullName, el.classFullName.replace(":", "."));
       // I happen to know that this is a BisCore:RepositoryLink
-      assert.equal(metaData.ecclass, RepositoryLink.classFullName);
+      assert.equal(metaData.fullName, RepositoryLink.classFullName.replace(":", "."));
       //  Check the metadata on the class itself
-      assert.isTrue(metaData.baseClasses.length > 0);
-      assert.equal(metaData.baseClasses[0], UrlLink.classFullName);
-      assert.equal(metaData.customAttributes![0].ecclass, "BisCore:ClassHasHandler");
+      assert.isDefined(metaData.baseClass);
+      assert.equal(metaData.baseClass?.fullName, UrlLink.classFullName.replace(":", "."));
+      assert.isTrue(metaData.customAttributes?.has("BisCore.ClassHasHandler"));
       //  Check the metadata on the one property that RepositoryLink defines, RepositoryGuid
-      assert.exists(metaData.properties);
-      assert.isDefined(metaData.properties.repositoryGuid);
-      const p = metaData.properties.repositoryGuid;
-      assert.equal(p.extendedType, "BeGuid");
-      assert.equal(p.customAttributes![1].ecclass, "CoreCustomAttributes:HiddenProperty");
+      const repositoryGuidProperty = await metaData.getProperty("repositoryGuid") as PrimitiveProperty;
+      assert.isDefined(repositoryGuidProperty);
+      assert.equal(repositoryGuidProperty.extendedTypeName, "BeGuid");
+      assert.isTrue(repositoryGuidProperty.customAttributes?.has("CoreCustomAttributes.HiddenProperty"));
     }
     const el2 = imodel.elements.getElement("0x34");
     assert.exists(el2);
     if (el2) {
-      const metaData = el2.getClassMetaData();
+      const metaData = await el2.getMetaData();
       assert.exists(metaData);
-      if (undefined === metaData)
-        return;
-      assert.equal(metaData.ecclass, el2.classFullName);
+
+      assert.equal(metaData.fullName, el2.classFullName.replace(":", "."));
       // I happen to know that this is a BisCore.SpatialViewDefinition
-      assert.equal(metaData.ecclass, SpatialViewDefinition.classFullName);
-      assert.isTrue(metaData.baseClasses.length > 0);
-      assert.equal(metaData.baseClasses[0], ViewDefinition3d.classFullName);
-      assert.exists(metaData.properties);
-      assert.isDefined(metaData.properties.modelSelector);
-      const n = metaData.properties.modelSelector;
-      assert.equal(n.relationshipClass, "BisCore:SpatialViewDefinitionUsesModelSelector");
+      assert.equal(metaData.fullName, SpatialViewDefinition.classFullName.replace(":", "."));
+      assert.isDefined(metaData.baseClass);
+      assert.equal(metaData.baseClass?.fullName, ViewDefinition3d.classFullName.replace(":", "."));
+      const modelSelectorProperty = await metaData.getProperty("modelSelector") as NavigationProperty;
+      assert.isDefined(modelSelectorProperty);
+      assert.equal(modelSelectorProperty.relationshipClass.fullName, "BisCore.SpatialViewDefinitionUsesModelSelector");
     }
   });
 
@@ -80,20 +78,23 @@ describe("Class Registry", () => {
     const schemaPathname = path.join(KnownTestLocations.assetsDir, "TestDomain.ecschema.xml");
     await imodel.importSchemas([schemaPathname]); // will throw an exception if import fails
 
-    const testDomainClass = imodel.getMetaData("TestDomain:TestDomainClass"); // will throw on failure
+    const testDomainClass = await imodel.schemaContext.getSchemaItem("TestDomain", "TestDomainClass", EntityClass);
+    assert.isDefined(testDomainClass);
 
-    assert.equal(testDomainClass.baseClasses.length, 2);
-    assert.equal(testDomainClass.baseClasses[0], DefinitionElement.classFullName);
-    assert.equal(testDomainClass.baseClasses[1], "TestDomain:IMixin");
+    assert.isDefined(testDomainClass?.baseClass);
+    assert.equal(testDomainClass?.baseClass?.fullName, DefinitionElement.classFullName.replace(":", "."));
 
-    // Ensures the IMixin has been loaded as part of getMetadata call above.
-    assert.isDefined(imodel.classMetaDataRegistry.find("TestDomain:IMixin"));
+    assert.isDefined(testDomainClass?.mixins);
+    assert.equal(testDomainClass?.mixins.length, 1);
+    assert.equal(testDomainClass?.mixins[0].fullName, "TestDomain.IMixin");
 
     // Verify that the forEach method which is called when constructing an entity
     // is picking up all expected properties.
     const testData: string[] = [];
-    IModelDb.forEachMetaData(imodel, "TestDomain:TestDomainClass", true, (propName) => {
-      testData.push(propName);
+
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    IModelDb.forEachMetaData(imodel, "TestDomain:TestDomainClass", true, (propName: string, _property: PropertyMetaData) => {
+      testData.push(ECJsNames.toJsName(propName));
     }, false);
 
     const expectedString = testData.find((testString: string) => {
@@ -502,6 +503,7 @@ describe("Class Registry - generated classes", () => {
         return [MyTestElementWithNavProp, Derived2, Derived3, Derived4, Derived5, Derived6];
       }
     }
+    imodel.jsClassMap.clear();
     MyTestGeneratedClasses.registerSchema();
 
     // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -601,6 +603,7 @@ describe("Class Registry - generated classes", () => {
         return [MyDerived2, MyDerived4];
       }
     }
+    imodel.jsClassMap.clear();
     MyTestGeneratedClasses.registerSchema();
 
     /* eslint-disable @typescript-eslint/naming-convention */
@@ -758,4 +761,69 @@ describe("Static Properties", () => {
 
 });
 
+describe("Global state of ClassRegistry", () => {
+  let imodel1: SnapshotDb;
+  let imodel2: SnapshotDb;
+
+  before(() => {
+    const seedFileName = IModelTestUtils.resolveAssetFile("test.bim");
+    const testFileName1 = IModelTestUtils.prepareOutputFile("ClassRegistry", "GlobalState1.bim");
+    const testFileName2 = IModelTestUtils.prepareOutputFile("ClassRegistry", "GlobalState2.bim");
+    imodel1 = IModelTestUtils.createSnapshotFromSeed(testFileName1, seedFileName);
+    imodel2 = IModelTestUtils.createSnapshotFromSeed(testFileName2, seedFileName);
+    assert.exists(imodel1);
+    assert.exists(imodel2);
+  });
+
+  after(() => {
+    imodel1?.close();
+    imodel2?.close();
+  });
+
+  it("registering a class in different imodels should not affect each other", async () => {
+    await imodel1.importSchemaStrings([
+      `<?xml version="1.0" encoding="UTF-8"?>
+        <ECSchema schemaName="TestSchema" alias="ts" version="01.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
+          <ECSchemaReference name="BisCore" version="01.00" alias="bis"/>
+
+          <ECEntityClass typeName="TestClass">
+            <BaseClass>bis:PhysicalElement</BaseClass>
+            <ECProperty propertyName="foo" typeName="string"/>
+            <ECNavigationProperty propertyName="RelatedTestClass" relationshipName="MyRelationship" direction="backward"/>
+          </ECEntityClass>
+
+          <ECRelationshipClass typeName="MyRelationship" modifier="None" strength="embedding">
+            <Source multiplicity="(0..1)" roleLabel="has" polymorphic="false">
+                <Class class="TestClass"/>
+            </Source>
+            <Target multiplicity="(0..*)" roleLabel="has" polymorphic="false">
+                <Class class="TestClass"/>
+            </Target>
+          </ECRelationshipClass>
+        </ECSchema>
+      `,
+    ]);
+    await imodel2.importSchemaStrings([
+      `<?xml version="1.0" encoding="UTF-8"?>
+        <ECSchema schemaName="TestSchema" alias="ts" version="01.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
+          <ECSchemaReference name="BisCore" version="01.00" alias="bis"/>
+          <ECEntityClass typeName="TestClass">
+            <BaseClass>bis:PhysicalElement</BaseClass>
+            <ECProperty propertyName="bar" typeName="string"/>
+          </ECEntityClass>
+        </ECSchema>
+      `,
+    ]);
+
+    const testClass1 = imodel1.getJsClass("TestSchema:TestClass");
+    assert.isFalse(testClass1.hasOwnProperty("testPropertyGuard"));
+    (testClass1 as any).testPropertyGuard = true;
+    assert.isTrue(testClass1.hasOwnProperty("testPropertyGuard"));
+
+    const testClass2 = imodel2.getJsClass("TestSchema:TestClass");
+    assert.isFalse(testClass2.hasOwnProperty("testPropertyGuard"));
+  });
+
+
+});
 // TODO: add tests on the new model/aspect prefixes

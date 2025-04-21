@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Remove deprecated in 3.x APIs",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}

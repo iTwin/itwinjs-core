@@ -11,14 +11,11 @@ import { IModelApp, IModelConnection, IpcApp } from "@itwin/core-frontend";
 import { UnitSystemKey } from "@itwin/core-quantity";
 import { SchemaContext } from "@itwin/ecschema-metadata";
 import {
-  buildElementProperties,
   ClientDiagnosticsAttribute,
   Content,
   ContentDescriptorRequestOptions,
   ContentFlags,
-  ContentFormatter,
   ContentInstanceKeysRequestOptions,
-  ContentPropertyValueFormatter,
   ContentRequestOptions,
   ContentSourcesRequestOptions,
   ContentUpdateInfo,
@@ -49,8 +46,6 @@ import {
   Paged,
   PagedResponse,
   PageOptions,
-  PresentationIpcEvents,
-  RpcRequestsHandler,
   Ruleset,
   RulesetVariable,
   SelectClassInfo,
@@ -58,12 +53,21 @@ import {
   UpdateInfo,
   VariableValueTypes,
 } from "@itwin/presentation-common";
-import { IpcRequestsHandler } from "./IpcRequestsHandler";
-import { FrontendLocalizationHelper } from "./LocalizationHelper";
-import { RulesetManager, RulesetManagerImpl } from "./RulesetManager";
-import { RulesetVariablesManager, RulesetVariablesManagerImpl } from "./RulesetVariablesManager";
-import { StreamedResponseGenerator } from "./StreamedResponseGenerator";
+import {
+  buildElementProperties,
+  ContentFormatter,
+  ContentPropertyValueFormatter,
+  PresentationIpcEvents,
+  RpcRequestsHandler,
+} from "@itwin/presentation-common/internal";
 import { TRANSIENT_ELEMENT_CLASSNAME } from "@itwin/unified-selection";
+import { IpcRequestsHandler } from "./IpcRequestsHandler.js";
+import { FrontendLocalizationHelper } from "./LocalizationHelper.js";
+import { RulesetManager, RulesetManagerImpl } from "./RulesetManager.js";
+import { RulesetVariablesManager, RulesetVariablesManagerImpl } from "./RulesetVariablesManager.js";
+import { StreamedResponseGenerator } from "./StreamedResponseGenerator.js";
+import { ensureIModelInitialized, startIModelInitialization } from "./IModelConnectionInitialization.js";
+import { _presentation_manager_ipcRequestsHandler, _presentation_manager_rpcRequestsHandler } from "./InternalSymbols.js";
 
 /**
  * Data structure that describes IModel hierarchy change event arguments.
@@ -181,11 +185,11 @@ export interface PresentationManagerProps {
    * @note Only has effect when frontend value formatting is enabled by supplying the `schemaContextProvider` prop.
    */
   defaultFormats?: FormatsMap;
+}
 
-  /** @internal */
+/** @internal */
+interface PresentationManagerInternalProps {
   rpcRequestsHandler?: RpcRequestsHandler;
-
-  /** @internal */
   ipcRequestsHandler?: IpcRequestsHandler;
 }
 
@@ -237,7 +241,8 @@ export class PresentationManager implements Disposable {
     }
 
     this._requestsHandler =
-      props?.rpcRequestsHandler ?? new RpcRequestsHandler(props ? { clientId: props.clientId, timeout: props.requestTimeout } : undefined);
+      (props as PresentationManagerInternalProps)?.rpcRequestsHandler ??
+      new RpcRequestsHandler(props ? { clientId: props.clientId, timeout: props.requestTimeout } : undefined);
     this._rulesetVars = new Map<string, RulesetVariablesManager>();
     this._rulesets = RulesetManagerImpl.create();
     this._localizationHelper = new FrontendLocalizationHelper(props?.activeLocale);
@@ -247,7 +252,7 @@ export class PresentationManager implements Disposable {
     if (IpcApp.isValid) {
       // Ipc only works in ipc apps, so the `onUpdate` callback will only be called there.
       this._clearEventListener = IpcApp.addListener(PresentationIpcEvents.Update, this.onUpdate);
-      this._ipcRequestsHandler = props?.ipcRequestsHandler ?? new IpcRequestsHandler(this._requestsHandler.clientId);
+      this._ipcRequestsHandler = (props as PresentationManagerInternalProps)?.ipcRequestsHandler ?? new IpcRequestsHandler(this._requestsHandler.clientId);
     }
   }
 
@@ -267,7 +272,7 @@ export class PresentationManager implements Disposable {
   }
 
   /** @deprecated in 5.0 Use [Symbol.dispose] instead. */
-  // istanbul ignore next
+  /* c8 ignore next 3 */
   public dispose() {
     this[Symbol.dispose]();
   }
@@ -280,14 +285,14 @@ export class PresentationManager implements Disposable {
   /** @note This is only called in native apps after changes in iModels */
   private async handleUpdateAsync(report: UpdateInfo) {
     for (const imodelKey in report) {
-      // istanbul ignore if
+      /* c8 ignore next 3 */
       if (!report.hasOwnProperty(imodelKey)) {
         continue;
       }
 
       const imodelReport = report[imodelKey];
       for (const rulesetId in imodelReport) {
-        // istanbul ignore if
+        /* c8 ignore next 3 */
         if (!imodelReport.hasOwnProperty(rulesetId)) {
           continue;
         }
@@ -304,19 +309,6 @@ export class PresentationManager implements Disposable {
   }
 
   /**
-   * Function that is called when a new IModelConnection is used to retrieve data.
-   * @internal
-   */
-  public startIModelInitialization(_: IModelConnection) {}
-
-  /**
-   * Function that should be called to finish initialization that was started at [[PresentationManager.startIModelInitialization]].
-   * Can be removed when [[FavoritePropertiesManager.has]] and [[FavoritePropertiesManager.sortFields]] are removed.
-   * @internal
-   */
-  public async ensureIModelInitialized(_: IModelConnection) {}
-
-  /**
    * Create a new PresentationManager instance
    * @param props Optional properties used to configure the manager
    */
@@ -325,12 +317,12 @@ export class PresentationManager implements Disposable {
   }
 
   /** @internal */
-  public get rpcRequestsHandler() {
+  public get [_presentation_manager_rpcRequestsHandler]() {
     return this._requestsHandler;
   }
 
   /** @internal */
-  public get ipcRequestsHandler() {
+  public get [_presentation_manager_ipcRequestsHandler]() {
     return this._ipcRequestsHandler;
   }
 
@@ -407,7 +399,7 @@ export class PresentationManager implements Disposable {
   public async getNodesIterator(
     requestOptions: GetNodesRequestOptions & MultipleValuesRequestOptions,
   ): Promise<{ total: number; items: AsyncIterableIterator<Node> }> {
-    this.startIModelInitialization(requestOptions.imodel);
+    startIModelInitialization(requestOptions.imodel);
     const options = await this.addRulesetAndVariablesToOptions(requestOptions);
     const rpcOptions = this.toRpcTokenOptions({ ...options });
 
@@ -436,7 +428,7 @@ export class PresentationManager implements Disposable {
 
   /** Retrieves nodes count. */
   public async getNodesCount(requestOptions: GetNodesRequestOptions): Promise<number> {
-    this.startIModelInitialization(requestOptions.imodel);
+    startIModelInitialization(requestOptions.imodel);
     const options = await this.addRulesetAndVariablesToOptions(requestOptions);
     const rpcOptions = this.toRpcTokenOptions({ ...options });
     return this._requestsHandler.getNodesCount(rpcOptions);
@@ -461,7 +453,7 @@ export class PresentationManager implements Disposable {
   public async getNodesDescriptor(
     requestOptions: HierarchyLevelDescriptorRequestOptions<IModelConnection, NodeKey, RulesetVariable> & ClientDiagnosticsAttribute,
   ): Promise<Descriptor | undefined> {
-    this.startIModelInitialization(requestOptions.imodel);
+    startIModelInitialization(requestOptions.imodel);
     try {
       const options = await this.addRulesetAndVariablesToOptions(requestOptions);
       const rpcOptions = this.toRpcTokenOptions({ ...options });
@@ -469,7 +461,7 @@ export class PresentationManager implements Disposable {
       const descriptor = Descriptor.fromJSON(result);
       return descriptor ? this._localizationHelper.getLocalizedContentDescriptor(descriptor) : undefined;
     } finally {
-      await this.ensureIModelInitialized(requestOptions.imodel);
+      await ensureIModelInitialized(requestOptions.imodel);
     }
   }
 
@@ -477,7 +469,7 @@ export class PresentationManager implements Disposable {
   public async getNodePaths(
     requestOptions: FilterByInstancePathsHierarchyRequestOptions<IModelConnection, RulesetVariable> & ClientDiagnosticsAttribute,
   ): Promise<NodePathElement[]> {
-    this.startIModelInitialization(requestOptions.imodel);
+    startIModelInitialization(requestOptions.imodel);
     const options = await this.addRulesetAndVariablesToOptions(requestOptions);
     const rpcOptions = this.toRpcTokenOptions({ ...options });
     const result = await this._requestsHandler.getNodePaths(rpcOptions);
@@ -488,7 +480,7 @@ export class PresentationManager implements Disposable {
   public async getFilteredNodePaths(
     requestOptions: FilterByTextHierarchyRequestOptions<IModelConnection, RulesetVariable> & ClientDiagnosticsAttribute,
   ): Promise<NodePathElement[]> {
-    this.startIModelInitialization(requestOptions.imodel);
+    startIModelInitialization(requestOptions.imodel);
     const options = await this.addRulesetAndVariablesToOptions(requestOptions);
     const result = await this._requestsHandler.getFilteredNodePaths(this.toRpcTokenOptions(options));
     return result.map((npe) => this._localizationHelper.getLocalizedNodePathElement(npe));
@@ -500,17 +492,17 @@ export class PresentationManager implements Disposable {
    * @public
    */
   public async getContentSources(requestOptions: ContentSourcesRequestOptions<IModelConnection> & ClientDiagnosticsAttribute): Promise<SelectClassInfo[]> {
-    this.startIModelInitialization(requestOptions.imodel);
+    startIModelInitialization(requestOptions.imodel);
     const rpcOptions = this.toRpcTokenOptions(requestOptions);
     const result = await this._requestsHandler.getContentSources(rpcOptions);
-    return SelectClassInfo.listFromCompressedJSON(result.sources, result.classesMap);
+    return result.sources.map((sourceJson) => SelectClassInfo.fromCompressedJSON(sourceJson, result.classesMap));
   }
 
   /** Retrieves the content descriptor which describes the content and can be used to customize it. */
   public async getContentDescriptor(
     requestOptions: ContentDescriptorRequestOptions<IModelConnection, KeySet, RulesetVariable> & ClientDiagnosticsAttribute,
   ): Promise<Descriptor | undefined> {
-    this.startIModelInitialization(requestOptions.imodel);
+    startIModelInitialization(requestOptions.imodel);
     try {
       const options = await this.addRulesetAndVariablesToOptions(requestOptions);
       const rpcOptions = this.toRpcTokenOptions({
@@ -521,13 +513,13 @@ export class PresentationManager implements Disposable {
       const descriptor = Descriptor.fromJSON(result);
       return descriptor ? this._localizationHelper.getLocalizedContentDescriptor(descriptor) : undefined;
     } finally {
-      await this.ensureIModelInitialized(requestOptions.imodel);
+      await ensureIModelInitialized(requestOptions.imodel);
     }
   }
 
   /** Retrieves overall content set size. */
   public async getContentSetSize(requestOptions: GetContentRequestOptions): Promise<number> {
-    this.startIModelInitialization(requestOptions.imodel);
+    startIModelInitialization(requestOptions.imodel);
     const options = await this.addRulesetAndVariablesToOptions(requestOptions);
     const rpcOptions = this.toRpcTokenOptions({
       ...options,
@@ -570,7 +562,7 @@ export class PresentationManager implements Disposable {
       firstPage = firstPageResponse?.contentSet;
     }
 
-    // istanbul ignore if
+    /* c8 ignore next 3 */
     if (!descriptor) {
       return undefined;
     }
@@ -608,13 +600,13 @@ export class PresentationManager implements Disposable {
   public async getContentIterator(
     requestOptions: GetContentRequestOptions & MultipleValuesRequestOptions,
   ): Promise<{ descriptor: Descriptor; total: number; items: AsyncIterableIterator<Item> } | undefined> {
-    this.startIModelInitialization(requestOptions.imodel);
+    startIModelInitialization(requestOptions.imodel);
     const response = await this.getContentIteratorInternal(requestOptions);
     if (!response) {
       return undefined;
     }
 
-    await this.ensureIModelInitialized(requestOptions.imodel);
+    await ensureIModelInitialized(requestOptions.imodel);
     return response;
   }
 
@@ -651,7 +643,7 @@ export class PresentationManager implements Disposable {
   public async getDistinctValuesIterator(
     requestOptions: GetDistinctValuesRequestOptions & MultipleValuesRequestOptions,
   ): Promise<{ total: number; items: AsyncIterableIterator<DisplayValueGroup> }> {
-    this.startIModelInitialization(requestOptions.imodel);
+    startIModelInitialization(requestOptions.imodel);
     const options = await this.addRulesetAndVariablesToOptions(requestOptions);
     const rpcOptions = {
       ...this.toRpcTokenOptions(options),
@@ -694,7 +686,7 @@ export class PresentationManager implements Disposable {
   public async getElementProperties<TParsedContent = ElementProperties>(
     requestOptions: SingleElementPropertiesRequestOptions<IModelConnection, TParsedContent> & ClientDiagnosticsAttribute,
   ): Promise<TParsedContent | undefined> {
-    this.startIModelInitialization(requestOptions.imodel);
+    startIModelInitialization(requestOptions.imodel);
     type TParser = Required<typeof requestOptions>["contentParser"];
     const { elementId, contentParser, ...optionsNoElementId } = requestOptions;
     const parser: TParser = contentParser ?? (buildElementProperties as TParser);
@@ -720,7 +712,7 @@ export class PresentationManager implements Disposable {
   public async getContentInstanceKeys(
     requestOptions: ContentInstanceKeysRequestOptions<IModelConnection, KeySet, RulesetVariable> & ClientDiagnosticsAttribute & MultipleValuesRequestOptions,
   ): Promise<{ total: number; items: () => AsyncGenerator<InstanceKey> }> {
-    this.startIModelInitialization(requestOptions.imodel);
+    startIModelInitialization(requestOptions.imodel);
     const options = await this.addRulesetAndVariablesToOptions(requestOptions);
     const rpcOptions = {
       ...this.toRpcTokenOptions(options),
@@ -756,7 +748,7 @@ export class PresentationManager implements Disposable {
   public async getDisplayLabelDefinition(
     requestOptions: DisplayLabelRequestOptions<IModelConnection, InstanceKey> & ClientDiagnosticsAttribute,
   ): Promise<LabelDefinition> {
-    this.startIModelInitialization(requestOptions.imodel);
+    startIModelInitialization(requestOptions.imodel);
     const rpcOptions = this.toRpcTokenOptions({ ...requestOptions });
     const result = await this._requestsHandler.getDisplayLabelDefinition(rpcOptions);
     return this._localizationHelper.getLocalizedLabelDefinition(result);
@@ -766,7 +758,7 @@ export class PresentationManager implements Disposable {
   public async getDisplayLabelDefinitionsIterator(
     requestOptions: DisplayLabelsRequestOptions<IModelConnection, InstanceKey> & ClientDiagnosticsAttribute & MultipleValuesRequestOptions,
   ): Promise<{ total: number; items: AsyncIterableIterator<LabelDefinition> }> {
-    this.startIModelInitialization(requestOptions.imodel);
+    startIModelInitialization(requestOptions.imodel);
     const rpcOptions = this.toRpcTokenOptions({ ...requestOptions });
     const generator = new StreamedResponseGenerator({
       ...requestOptions,
@@ -809,7 +801,7 @@ const stripTransientElementKeys = (keys: KeySet) => {
   copy.add(keys, (key) => {
     // the callback is not going to be called with EntityProps as KeySet converts them
     // to InstanceKeys, but we want to keep the EntityProps case for correctness
-    // istanbul ignore next
+    /* c8 ignore next 3 */
     const isTransient =
       (Key.isInstanceKey(key) && key.className === TRANSIENT_ELEMENT_CLASSNAME) ||
       (Key.isEntityProps(key) && key.classFullName === TRANSIENT_ELEMENT_CLASSNAME);
