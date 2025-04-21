@@ -7,7 +7,7 @@
  */
 import { flatbuffers } from "flatbuffers";
 import { BentleyStatus, Id64, Id64String } from "@itwin/core-bentley";
-import { Angle, AngleSweep, Arc3d, BentleyGeometryFlatBuffer, CurveCollection, FrameBuilder, GeometryQuery, LineSegment3d, LineString3d, Loop, Matrix3d, Path, Plane3dByOriginAndUnitNormal, Point2d, Point3d, Point3dArray, PointString3d, Polyface, PolyfaceQuery, Range2d, Range3d, SolidPrimitive, Transform, Vector3d, YawPitchRollAngles } from "@itwin/core-geometry";
+import { Angle, AngleSweep, Arc3d, BentleyGeometryFlatBuffer, CurveCollection, FrameBuilder, GeometryQuery, LineSegment3d, LineString3d, Loop, Matrix3d, Plane3dByOriginAndUnitNormal, Point2d, Point3d, Point3dArray, PointString3d, Polyface, PolyfaceQuery, Range2d, Range3d, SolidPrimitive, Transform, Vector3d, YawPitchRollAngles } from "@itwin/core-geometry";
 import { EGFBAccessors } from "./ElementGeometryFB";
 import { Base64EncodedString } from "../Base64EncodedString";
 import { TextString, TextStringGlyphData, TextStringProps } from "./TextString";
@@ -440,11 +440,10 @@ export namespace ElementGeometry {
           if (entry.color !== "subcategory") {
             params.lineColor = ColorDef.fromJSON(entry.color);
           }
+
           result = this.appendGeometryParamsChange(params);
-        } else if (entry.separator) {
-          result = this.appendGeometryQuery(LineSegment3d.fromJSON(entry.separator));
         } else {
-          result = false;
+          result = this.appendGeometryQuery(LineSegment3d.fromJSON(entry.separator));
         }
 
         if (!result) {
@@ -454,7 +453,6 @@ export namespace ElementGeometry {
 
       return true;
     }
-
     /** Append a [[ImageGraphic]] supplied in either local or world coordinates to the [[ElementGeometryDataEntry]] array */
     public appendImageGraphic(image: ImageGraphic): boolean {
       const entry = ElementGeometry.fromImageGraphic(image.toJSON(), this._worldToLocal);

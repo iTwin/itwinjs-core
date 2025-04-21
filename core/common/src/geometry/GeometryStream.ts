@@ -341,10 +341,7 @@ export class GeometryStreamBuilder {
     for (const entry of block.entries) {
       let result: boolean;
       if (undefined !== entry.text) {
-        const params = new GeometryParams(Id64.invalid);
-        params.elmPriority = 1;
-
-        result = this.appendGeometryParamsChange(params) && this.appendTextString(new TextString(entry.text));
+        result = this.appendTextString(new TextString(entry.text));
       } else if (undefined !== entry.color) {
         if (entry.color === "subcategory") {
           result = this.appendSubCategoryChange(Id64.invalid);
@@ -352,10 +349,8 @@ export class GeometryStreamBuilder {
           this.geometryStream.push({ appearance: { color: entry.color } });
           result = true;
         }
-      } else if (entry.separator) {
-        result = this.appendGeometry(LineSegment3d.fromJSON(entry.separator));
       } else {
-        result = false;
+        result = this.appendGeometry(LineSegment3d.fromJSON(entry.separator));
       }
 
       if (!result) {
