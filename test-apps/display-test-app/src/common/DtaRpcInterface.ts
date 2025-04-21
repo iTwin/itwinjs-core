@@ -31,5 +31,5 @@ export class DtaRpcInterface extends RpcInterface {
   public async terminate(): Promise<void> { return this.forward(arguments); }
   public async getEnvConfig(): Promise<DtaConfiguration> { return this.forward(arguments); }
   public async getAccessToken(): Promise<string> { return this.forward(arguments); }
-  public async produceTextAnnotationGeometryStroker(_iModelToken: IModelRpcProps, _annotationProps: TextAnnotationProps, _placementProps?: PlacementProps, _args?: { debugAnchorPoint?: boolean, debugSnapPoints?: boolean }): Promise<FlatBufferGeometryStream | JsonGeometryStream | undefined> { return this.forward(arguments); }
+  public async generateTextAnnotationGeometry(_iModelToken: IModelRpcProps, _annotationProps: TextAnnotationProps, _placementProps?: PlacementProps, _args?: { debugAnchorPoint?: boolean, debugSnapPoints?: boolean }): Promise<FlatBufferGeometryStream | JsonGeometryStream | undefined> { return this.forward(arguments); }
 }

@@ -133,7 +133,7 @@ class TextEditor implements Decorator {
     });
 
     const rpcProps = this._iModel.getRpcProps();
-    const geometry = await DtaRpcInterface.getClient().produceTextAnnotationGeometryStroker(rpcProps, annotation.toJSON(), undefined, {debugAnchorPoint: this.debugAnchorPointAndRange, debugSnapPoints: this.frame.debugSnap});
+    const geometry = await DtaRpcInterface.getClient().generateTextAnnotationGeometry(rpcProps, annotation.toJSON(), undefined, { debugAnchorPoint: this.debugAnchorPointAndRange, debugSnapPoints: this.frame.debugSnap });
 
     if (undefined === geometry) {
       return;

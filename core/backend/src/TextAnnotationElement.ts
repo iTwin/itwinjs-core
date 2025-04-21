@@ -21,7 +21,7 @@ function updateAnnotation(element: TextAnnotation2d | TextAnnotation3d, annotati
   }
 
   const annotationProps = annotation.toJSON();
-  stroker.createGeometry(annotationProps, element.placement);
+  stroker.createGeometry({ annotationProps, placementProps: element.placement });
 
   element.geom = stroker.builder.geometryStream;
   element.jsonProperties.annotation = annotationProps;

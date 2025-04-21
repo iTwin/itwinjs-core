@@ -15,7 +15,14 @@ import { layoutTextBlock, TextBlockLayout } from "../TextAnnotationLayout";
  * @module Strokers
  */
 
-export class TextAnnotationStroker extends Stroker<TextAnnotationProps> {
+export interface TextAnnotationStrokerArgs {
+  annotationProps: TextAnnotationProps;
+  placementProps?: PlacementProps;
+  debugAnchorPoint?: boolean;
+  debugSnapPoints?: boolean;
+}
+
+export class TextAnnotationStroker extends Stroker<TextAnnotationStrokerArgs> {
   private _iModel: IModelDb;
   private _builder: GeometryStreamBuilder;
 
@@ -27,10 +34,10 @@ export class TextAnnotationStroker extends Stroker<TextAnnotationProps> {
 
   public get builder(): GeometryStreamBuilder { return this._builder };
 
-  public createGeometry(props: TextAnnotationProps, placementProps?: PlacementProps, args?: { debugAnchorPoint?: boolean, debugSnapPoints?: boolean }): FlatBufferGeometryStream | JsonGeometryStream | undefined {
+  public createGeometry({ annotationProps, placementProps, debugAnchorPoint, debugSnapPoints }: TextAnnotationStrokerArgs): FlatBufferGeometryStream | JsonGeometryStream | undefined {
     if (placementProps) this._builder.setLocalToWorldFromPlacement(placementProps)
 
-    const annotation = TextAnnotation.fromJSON(props);
+    const annotation = TextAnnotation.fromJSON(annotationProps);
 
     const layout = layoutTextBlock({
       iModel: this._iModel,
@@ -47,11 +54,11 @@ export class TextAnnotationStroker extends Stroker<TextAnnotationProps> {
       this.appendFrame(annotation, layout);
     }
 
-    if (args?.debugSnapPoints && annotation.frame) {
+    if (debugSnapPoints && annotation.frame) {
       this.debugSnapPoints(annotation.frame, dimensions, transform);
     }
 
-    if (args?.debugAnchorPoint) {
+    if (debugAnchorPoint) {
       this.debugAnchorPoint(annotation, layout, transform);
     }
 
