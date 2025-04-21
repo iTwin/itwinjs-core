@@ -148,3 +148,17 @@ export function compareSimpleArrays (lhs?: SimpleTypesArray, rhs?: SimpleTypesAr
   }
   return cmp;
 }
+
+export function compareArrays<T>(lhs: ReadonlyArray<T>, rhs: ReadonlyArray<T>, compare: (a: T, b: T) => number): number {
+  let diff = compareNumbers(lhs.length, rhs.length);
+  if (!diff) {
+    for (let i = 0; i < lhs.length; i++) {
+      diff = compare(lhs[i], rhs[i]);
+      if (diff) {
+        break;
+      }
+    }
+  }
+
+  return diff;
+}
