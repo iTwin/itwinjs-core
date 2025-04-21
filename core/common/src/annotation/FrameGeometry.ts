@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { Angle, AngleSweep, Arc3d, CurvePrimitive, LineString3d, Loop, Point3d, Range2d, Range2dProps, Transform, TransformProps, Vector2d, XYAndZ } from "@itwin/core-geometry";
+import { Angle, AngleSweep, Arc3d, LineString3d, Loop, Point3d, Range2d, Range2dProps, Transform, TransformProps, Vector2d, XYAndZ } from "@itwin/core-geometry";
 import { TextAnnotationFrameShape } from "./TextAnnotation";
 
 // I don't love where this is.

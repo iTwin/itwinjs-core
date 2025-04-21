@@ -182,26 +182,6 @@ export class TextDecorationTool extends Tool {
     const arg = inArgs[1];
 
     switch (cmd) {
-      case "starwars":
-        await this.parseAndRun("init");
-        await this.parseAndRun("center");
-        await this.parseAndRun("height", "0.25"); // Text size (text height)
-        await this.parseAndRun("width", "6"); // Width of the text box
-        await this.parseAndRun("text", "You were the chosen one! It was said that you would destroy the Sith, not join them. You were to bring balance to the Force, not leave it in darkness.");
-        await this.parseAndRun("break");
-        await this.parseAndRun("break");
-        await this.parseAndRun("text", "— Obi-wan Kenobi, ");
-        await this.parseAndRun("underline");
-        await this.parseAndRun("text", "Revenge of the Sith");
-        await this.parseAndRun("margin", "all", "0.25");
-
-        if (arg === "frame") {
-          await this.parseAndRun("frame", "style", "rectangle");
-          await this.parseAndRun("frame", "border", "orange");
-          await this.parseAndRun("frame", "borderWeight", "10");
-          await this.parseAndRun("frame", "fill", "lightblue");
-        }
-        break;
       case "clear":
         editor.clear();
         return true;
