@@ -197,78 +197,131 @@ describe("Contour lines", () => {
       expect(readUniqueContours(vp)).to.deep.equal(expected);
     }
 
-    it("reads contour info", () => {
+    function getContourDef(args?: {
+      majorIntervalCount?: number;
+    }) {
+      return {
+        majorStyle: {
+          color: { r: 0, g: 0, b: 255 },
+          pixelWidth: 2,
+        },
+        minorStyle: {
+          color: { r: 255, g: 255, b: 255 },
+          pixelWidth: 1,
+        },
+        minorInterval: 1,
+        majorIntervalCount: args?.majorIntervalCount ?? 1,
+        showGeometry: true,
+      };
+    }
+
+    function getContourProps(args?: {
+      display?: boolean;
+      majorIntervalCount?: number;
+      subCategories?: string;
+    }) {
+      return {
+        groups: [{
+          name: "A",
+          contourDef: getContourDef(args),
+          subCategories: args?.subCategories,
+        }],
+        displayContours: args?.display ?? false,
+      };
+    }
+      
+    it("reads no contours if none are drawn", () => {
       testViewport((vp) => {
         lookAt(vp, 0, 0, 10, 10);
         ContourDecorator.register(0, 0, "0x1");
         vp.renderFrame();
         expectContours(vp, []);
+      });
+    });
 
-        const contourDef = {
-          majorStyle: {
-            color: { r: 0, g: 0, b: 255 },
-            pixelWidth: 2,
-          },
-          minorStyle: {
-            color: { r: 255, g: 255, b: 255 },
-            pixelWidth: 1,
-          },
-          minorInterval: 1,
-          majorIntervalCount: 1,
-          showGeometry: true,
-        };
-      
-        const contourProps: ContourDisplayProps = {
-          groups: [{
-            name: "A",
-            contourDef,
-          }],
-          displayContours: false,
-        };
-      
-        setContours(vp, contourProps);
+    it("reads no contours if contour display is disabled", () => {
+      testViewport((vp) => {
+        lookAt(vp, 0, 0, 10, 10);
+        ContourDecorator.register(0, 0, "0x1");
+        setContours(vp, getContourProps());
         vp.renderFrame();
         expectContours(vp, []);
+      });
+    });
 
-        contourProps.displayContours = true;
-        setContours(vp, contourProps);
+    it("reads no contours if no groups are defined", () => {
+      testViewport((vp) => {
+        lookAt(vp, 0, 0, 10, 10);
+        ContourDecorator.register(0, 0, "0x1");
+        const contours = getContourProps({ display: true });
+        contours.groups.length = 0;
+        setContours(vp, contours);
+        vp.renderFrame();
+        expectContours(vp, []);
+      });
+    });
+    
+    it("reads elevations and group", () => {
+      testViewport((vp) => {
+        lookAt(vp, 0, 0, 10, 10);
+        ContourDecorator.register(0, 0, "0x1");
+        setContours(vp, getContourProps({ display: true }));
         vp.renderFrame();
         expectContours(vp, [0,1,2,3,4,5,6,7,8,9,10].map((elevation) => {
           return { elevation, groupName: "A", subCategoryId: "0x1", isMajor: true }
         }));
+      });
+    });
 
-        contourDef.majorIntervalCount = 2;
-        setContours(vp, contourProps);
+    it("distinguishes between major and minor contours", () => {
+      testViewport((vp) => {
+        lookAt(vp, 0, 0, 10, 10);
+        ContourDecorator.register(0, 0, "0x1");
+        setContours(vp, getContourProps({ display: true, majorIntervalCount: 2 }));
         vp.renderFrame();
         expectContours(vp, [0,1,2,3,4,5,6,7,8,9,10].map((elevation) => {
           return { elevation, groupName: "A", subCategoryId: "0x1", isMajor: elevation % 2 === 0 }
         }));
+      });
+    });
 
+    it("reads negative elevations", () => {
+      testViewport((vp) => {
+        ContourDecorator.register(0, 0, "0x1");
         ContourDecorator.register(10, -10, "0x2");
         lookAt(vp, 0, -10, 20, 10);
+        setContours(vp, getContourProps({ display: true, majorIntervalCount: 2 }));
+        vp.renderFrame();
+
         const expectedContours: ContourInfo[] = [];
         for (const elevation of [0,1,2,3,4,5,6,7,8,9,10]) {
           expectedContours.push({ elevation, groupName: "A", subCategoryId: "0x1", isMajor: elevation % 2 === 0 });
           expectedContours.push({ elevation: elevation !== 0 ? -elevation : elevation, groupName: "A", subCategoryId: "0x2", isMajor: elevation % 2 === 0 });
         }
-        vp.renderFrame();
         expectContours(vp, expectedContours);
+      });
+    });
 
-        contourProps.groups!.push({
+    it("reads contours from multiple groups", () => {
+      testViewport((vp) => {
+        ContourDecorator.register(0, 0, "0x1");
+        ContourDecorator.register(10, -10, "0x2");
+        lookAt(vp, 0, -10, 20, 10);
+        const contours = getContourProps({ display: true, majorIntervalCount: 2, subCategories: "+1" });
+        contours.groups.push({
           name: "B",
-          contourDef,
+          contourDef: getContourDef({ majorIntervalCount: 2 }),
           subCategories: "+2",
         });
-        contourProps.groups![0].subCategories = "+1";
-        setContours(vp, contourProps);
+        setContours(vp, contours);
         vp.renderFrame();
-        expectContours(vp, expectedContours.map((x) => {
-          if (x.subCategoryId === "0x2") {
-            return { ...x, groupName: "B" };
-          } else {
-            return x;
-          }
-        }));
+
+        const expectedContours: ContourInfo[] = [];
+        for (const elevation of [0,1,2,3,4,5,6,7,8,9,10]) {
+          expectedContours.push({ elevation, groupName: "A", subCategoryId: "0x1", isMajor: elevation % 2 === 0 });
+          expectedContours.push({ elevation: elevation !== 0 ? -elevation : elevation, groupName: "B", subCategoryId: "0x2", isMajor: elevation % 2 === 0 });
+        }
+        expectContours(vp, expectedContours);
       });
     });
   });
