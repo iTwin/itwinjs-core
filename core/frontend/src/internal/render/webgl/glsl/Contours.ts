@@ -56,7 +56,7 @@ const encodeContourLineInfo = `
     elevation = clamp((elevation - u_worldFrustumZRange.x) / (u_worldFrustumZRange.y - u_worldFrustumZRange.x), 0.0, 1.0);
 
     // Encode elevation in RGB and the rest of the info in A
-    g_contourLineInfo = vec4(groupIndexAndType * 0.0625, encodeDepthRgb(elevation));
+    g_contourLineInfo = vec4(groupIndexAndType * 0.03125, encodeDepthRgb(elevation));
   }
 `;
 

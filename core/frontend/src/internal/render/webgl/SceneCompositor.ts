@@ -714,13 +714,15 @@ class PixelBuffer implements Pixel.Buffer {
     return depth;
   }
 
-  private decodeRenderOrderRgba(depthAndOrder: number): RenderOrder {
-    this._scratchUint32Array[0] = depthAndOrder;
+  private decodeRenderOrderRgba(depthAndOrder: number): RenderOrder { return this.decodeUint8(depthAndOrder, 16); }
+  private decodeUint8(rgba32: number, basis: number): number {
+    this._scratchUint32Array[0] = rgba32;
     const encByte = this._scratchUint8Array[0];
     const enc = encByte / 255.0;
-    const dec = Math.floor(16.0 * enc + 0.5);
+    const dec = Math.floor(basis * enc + 0.5);
     return dec;
   }
+
 
   private readonly _invalidPixelData = new Pixel.Data();
   public getPixel(x: number, y: number): Pixel.Data {
@@ -779,7 +781,7 @@ class PixelBuffer implements Pixel.Buffer {
     if (this._contours) {
       const contour32 = this.getPixel32(this._contours.data, index);
       if (contour32) { // undefined means out of bounds; zero means not a contour.
-        const groupIndexAndType = this.decodeRenderOrderRgba(contour32) as number;
+        const groupIndexAndType = this.decodeUint8(contour32, 32) as number;
         const groupIndex = groupIndexAndType & ~(8 | 16);
         const group = this._contours.display.groups[groupIndex];
         if (group) {
