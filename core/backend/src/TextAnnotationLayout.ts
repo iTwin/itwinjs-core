@@ -522,7 +522,7 @@ export class TextBlockLayout {
   public toResult(): TextBlockLayoutResult {
     return {
       lines: this.lines.map((x) => x.toResult(this.source)),
-      range: this.textRange.toJSON(),
+      range: this.range.toJSON(),
     };
   }
 
