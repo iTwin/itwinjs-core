@@ -449,8 +449,6 @@ export class TxnManager {
   protected _onCommitted() {
     this.touchWatchFile();
     this.onCommitted.raiseEvent();
-    this._iModel.elements.cache.clear();
-    this._iModel.models.cache.clear();
     IpcHost.notifyTxns(this._iModel, "notifyCommitted", this.hasPendingTxns, Date.now());
   }
 
@@ -468,6 +466,7 @@ export class TxnManager {
 
   /** @internal */
   protected _onChangesApplied() {
+    this._iModel.clearCaches();
     ChangedEntitiesProc.process(this._iModel, this);
     this.onChangesApplied.raiseEvent();
     IpcHost.notifyTxns(this._iModel, "notifyChangesApplied");
@@ -491,8 +490,6 @@ export class TxnManager {
   }
 
   private _onRebaseTxnEnd(txn: TxnArgs) {
-    this._iModel.elements.cache.clear();
-    this._iModel.models.cache.clear();
     this.onRebaseTxnEnd.raiseEvent(txn);
   }
 
