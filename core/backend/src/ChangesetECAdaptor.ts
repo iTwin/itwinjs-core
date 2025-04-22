@@ -405,6 +405,205 @@ namespace DateTime {
     return new Date((jd - 2440587.5 + utcOffset) * 86400000);
   }
 }
+
+/**
+ * Represents a cache for unifying EC changes.
+ * @beta
+ */
+export interface ECChangeUnifierCache extends Disposable {
+  /**
+   * Retrieves the value associated with the specified key from the cache.
+   * @param key - The key to retrieve the value for.
+   * @returns The value associated with the key, or undefined if the key is not found.
+   */
+  get(key: string): ChangedECInstance | undefined;
+
+  /**
+   * Sets the value associated with the specified key in the cache.
+   * @param key - The key to set the value for.
+   * @param value - The value to be associated with the key.
+   */
+  set(key: string, value: ChangedECInstance): void;
+
+  /**
+   * Returns an iterator for all the values in the cache.
+   * @returns An iterator for all the values in the cache.
+   */
+  all(): IterableIterator<ChangedECInstance>;
+
+  /**
+   * Returns the number of entries in the cache.
+   * @returns The number of entries in the cache.
+   */
+  count(): number;
+}
+
+/**
+ * In-memory cache for storing changed EC instances.
+ * @beta
+ */
+export class InMemoryInstanceCache implements ECChangeUnifierCache {
+  private readonly _cache = new Map<string, ChangedECInstance>();
+
+  /**
+   * Retrieves the changed EC instance associated with the specified key.
+   * @param key - The key used to retrieve the instance.
+   * @returns The changed EC instance, or undefined if not found.
+   */
+  public get(key: string): ChangedECInstance | undefined {
+    return this._cache.get(key);
+  }
+
+  /**
+   * Sets the changed EC instance associated with the specified key.
+   * @param key - The key used to store the instance.
+   * @param value - The changed EC instance to be stored.
+   */
+  public set(key: string, value: ChangedECInstance): void {
+    this._cache.set(key, value);
+  }
+
+  /**
+   * Returns an iterator over all the changed EC instances in the cache.
+   * @returns An iterator over all the changed EC instances.
+   */
+  public all(): IterableIterator<ChangedECInstance> {
+    return this._cache.values();
+  }
+
+  /**
+   * Returns the number of changed EC instances in the cache.
+   * @returns The number of changed EC instances.
+   */
+  public count(): number {
+    return this._cache.size;
+  }
+
+  /**
+   * Disposes the cache.
+   */
+  public [Symbol.dispose](): void {
+    // Implementation details
+  }
+}
+
+/**
+ * Represents a cache for unifying EC changes in a SQLite-backed instance cache.
+ * @beta
+ */
+export class SqliteBackedInstanceCache implements ECChangeUnifierCache {
+  /**
+   * Creates an instance of SqliteBackedInstanceCache.
+   * @param _db The underlying database connection.
+   * @param bufferedReadInstanceSizeInBytes The size of each read instance in bytes for buffering.
+   * @throws Error if bufferedReadInstanceSizeInBytes is less than or equal to 0.
+   */
+  public constructor(private readonly _db: AnyDb, public readonly bufferedReadInstanceSizeInBytes: number = 1024 * 1024 * 10) {
+    if (bufferedReadInstanceSizeInBytes <= 0)
+      throw new Error("bufferedReadInstanceCount must be greater than 0");
+    this.createTempTable();
+  }
+
+  private readonly _cacheTable = `[temp].[${Guid.createValue()}]`;
+
+  /**
+   * Creates a temporary table in the database for caching instances.
+   * @throws Error if unable to create the temporary table.
+   */
+  private createTempTable(): void {
+    this._db.withPreparedSqliteStatement(`CREATE TABLE ${this._cacheTable} ([key] text primary key, [value] text)`, (stmt) => {
+      if (DbResult.BE_SQLITE_DONE !== stmt.step())
+        throw new Error("unable to create temp table");
+    });
+  }
+
+  /**
+   * Drops the temporary table from the database.
+   * @throws Error if unable to drop the temporary table.
+   */
+  private dropTempTable(): void {
+    this._db.withPreparedSqliteStatement(`DROP TABLE IF EXISTS ${this._cacheTable}`, (stmt) => {
+      if (DbResult.BE_SQLITE_DONE !== stmt.step())
+        throw new Error("unable to drop temp table");
+    });
+  }
+
+  /**
+   * Retrieves the changed EC instance from the cache based on the specified key.
+   * @param key The key of the instance.
+   * @returns The changed EC instance if found, otherwise undefined.
+   */
+  public get(key: string): ChangedECInstance | undefined {
+    return this._db.withPreparedSqliteStatement(`SELECT [value] FROM ${this._cacheTable} WHERE [key]=?`, (stmt) => {
+      stmt.bindString(1, key);
+      if (stmt.step() === DbResult.BE_SQLITE_ROW) {
+        const out = JSON.parse(stmt.getValueString(0), Base64EncodedString.reviver) as ChangedECInstance;
+        return out;
+      }
+      return undefined;
+    });
+  }
+
+  /**
+   * Sets the changed EC instance in the cache with the specified key.
+   * @param key The key of the instance.
+   * @param value The changed EC instance to be set.
+   */
+  public set(key: string, value: ChangedECInstance): void {
+    const shallowCopy = Object.assign({}, value);
+    this._db.withPreparedSqliteStatement(`INSERT INTO ${this._cacheTable} ([key], [value]) VALUES (?, ?) ON CONFLICT ([key]) DO UPDATE SET [value] = [excluded].[value]`, (stmt) => {
+      stmt.bindString(1, key);
+      stmt.bindString(2, JSON.stringify(shallowCopy, Base64EncodedString.replacer));
+      stmt.step();
+    });
+  }
+
+  /**
+   * Returns an iterator for all the changed EC instances in the cache.
+   * @returns An iterator for all the changed EC instances.
+   */
+  public *all(): IterableIterator<ChangedECInstance> {
+    const sql = `
+      SELECT JSON_GROUP_ARRAY (JSON([value]))
+      FROM   (SELECT
+                    [value],
+                    SUM (LENGTH ([value])) OVER (ORDER BY [key] ROWS UNBOUNDED PRECEDING) / ${this.bufferedReadInstanceSizeInBytes} AS [bucket]
+              FROM   ${this._cacheTable})
+      GROUP  BY [bucket]`;
+
+    const stmt = this._db.prepareSqliteStatement(sql);
+    while (stmt.step() === DbResult.BE_SQLITE_ROW) {
+      const instanceBucket = JSON.parse(stmt.getValueString(0), Base64EncodedString.reviver) as ChangedECInstance[];
+      for (const value of instanceBucket) {
+        yield value;
+      }
+    }
+    stmt[Symbol.dispose]();
+  }
+
+  /**
+   * Returns the number of instances in the cache.
+   * @returns The number of instances in the cache.
+   */
+  public count(): number {
+    return this._db.withPreparedSqliteStatement(`SELECT COUNT(*) FROM [temp].[${this._cacheTable}]`, (stmt) => {
+      if (stmt.step() === DbResult.BE_SQLITE_ROW)
+        return stmt.getValue(0).getInteger();
+      return 0;
+    });
+  }
+
+  /**
+   * Disposes the cache by dropping the temporary table.
+   */
+  public [Symbol.dispose](): void {
+    if (this._db.isOpen) {
+      this.dropTempTable();
+    }
+  }
+}
+
+
 /**
  * Combine partial changed instance into single instance.
  * Partial changes is per table and a single instance can
@@ -412,21 +611,14 @@ namespace DateTime {
  * @beta
  */
 export class PartialECChangeUnifier implements Disposable {
-  private readonly _cacheTable = Guid.createValue();
   private _readonly = false;
-  private readonly _defaultbatchSize = 25000;
-
-  public constructor(private _db: AnyDb) {
-    this.createTempTable();
-  }
+  public constructor(private _db: AnyDb, private _cache: ECChangeUnifierCache = new InMemoryInstanceCache()) { }
 
   /**
    * Dispose the instance.
    */
   public [Symbol.dispose](): void {
-    if (this._db.isOpen) {
-      this.dropTempTable();
-    }
+    this._cache[Symbol.dispose]();
   }
 
   /**
@@ -467,6 +659,23 @@ export class PartialECChangeUnifier implements Disposable {
       return classId;
     });
   }
+
+  /**
+   * Checks if the given `rhsClassId` is an instance of the `lhsClassId`.
+   * @param rhsClassId The ID of the right-hand side class.
+   * @param lhsClassId The ID of the left-hand side class.
+   * @returns `true` if `rhsClassId` is an instance of `lhsClassId`, `false` otherwise.
+   */
+  private instanceOf(rhsClassId: Id64String, lhsClassId: Id64String): boolean {
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    return this._db.withPreparedStatement("SELECT ec_instanceof(?,?)", (stmt) => {
+      stmt.bindId(1, rhsClassId);
+      stmt.bindId(2, lhsClassId);
+      stmt.step();
+      return stmt.getValue(0).getInteger() === 1;
+    });
+  }
+
   /**
    * Combine partial instance with instance with same key if already exists.
    * @param rhs partial instance
@@ -476,7 +685,7 @@ export class PartialECChangeUnifier implements Disposable {
       throw new Error("PartialECChange being combine must have '$meta' property");
     }
     const key = this.buildKey(rhs);
-    const lhs = this.getInstance(key);
+    const lhs = this._cache.get(key);
     if (lhs) {
       const { $meta: _, ...restOfRhs } = rhs;
       Object.assign(lhs, restOfRhs);
@@ -488,92 +697,25 @@ export class PartialECChangeUnifier implements Disposable {
         if (rhs.$meta.fallbackClassId && lhs.$meta.fallbackClassId && rhs.$meta.fallbackClassId !== lhs.$meta.fallbackClassId) {
           const lhsClassId = lhs.$meta.fallbackClassId;
           const rhsClassId = rhs.$meta.fallbackClassId;
-          // eslint-disable-next-line @typescript-eslint/no-deprecated
-          const isRhsIsSubClassOfLhs = this._db.withPreparedStatement("SELECT ec_instanceof(?,?)", (stmt) => {
-            stmt.bindId(1, rhsClassId);
-            stmt.bindId(2, lhsClassId);
-            stmt.step();
-            return stmt.getValue(0).getInteger() === 1;
-          });
+          const isRhsIsSubClassOfLhs = this.instanceOf(rhsClassId, lhsClassId);
           if (isRhsIsSubClassOfLhs) {
             lhs.$meta.fallbackClassId = rhs.$meta.fallbackClassId;
             lhs.$meta.classFullName = rhs.$meta.classFullName;
           }
         }
       }
-      this.setInstance(key, lhs);
+      this._cache.set(key, lhs);
     } else {
-      this.setInstance(key, rhs);
+      this._cache.set(key, rhs);
     }
   }
 
-  private getInstance(key: string): ChangedECInstance | undefined {
-    return this._db.withPreparedSqliteStatement(`SELECT [value] FROM [temp].[${this._cacheTable}] WHERE [key]=?`, (stmt) => {
-      stmt.bindString(1, key);
-      if (stmt.step() === DbResult.BE_SQLITE_ROW) {
-        const out = JSON.parse(stmt.getValueString(0)) as ChangedECInstance;
-        PartialECChangeUnifier.replaceBase64WithUint8Array(out);
-        return out;
-      }
-      return undefined;
-    });
-  }
-
-  private static replaceBase64WithUint8Array(row: any): void {
-    for (const key of Object.keys(row)) {
-      const val = row[key];
-      if (typeof val === "string") {
-        if (Base64EncodedString.hasPrefix(val)) {
-          row[key] = Base64EncodedString.toUint8Array(val);
-        }
-      } else if (typeof val === "object" && val !== null) {
-        this.replaceBase64WithUint8Array(val);
-      }
-    }
-  }
-
-  private static replaceUint8ArrayWithBase64(row: any): void {
-    for (const key of Object.keys(row)) {
-      const val = row[key];
-      if (val instanceof Uint8Array) {
-        row[key] = Base64EncodedString.fromUint8Array(val);
-      } else if (typeof val === "object" && val !== null) {
-        this.replaceUint8ArrayWithBase64(val);
-      }
-    }
-  }
-
+  /**
+   * Returns the number of instances in the cache.
+   * @returns The number of instances in the cache.
+   */
   public getInstanceCount(): number {
-    return this._db.withPreparedSqliteStatement(`SELECT COUNT(*) FROM [temp].[${this._cacheTable}]`, (stmt) => {
-      if (stmt.step() === DbResult.BE_SQLITE_ROW)
-        return stmt.getValue(0).getInteger();
-      return 0;
-    });
-  }
-
-  private setInstance(key: string, value: ChangedECInstance): void {
-    const shallowCopy = Object.assign({}, value);
-    PartialECChangeUnifier.replaceUint8ArrayWithBase64(shallowCopy);
-    this._db.withPreparedSqliteStatement(`INSERT INTO [temp].[${this._cacheTable}] ([key], [value]) VALUES (?, ?) ON CONFLICT ([key]) DO UPDATE SET [value] = [excluded].[value]`, (stmt) => {
-      stmt.bindString(1, key);
-      stmt.bindString(2, JSON.stringify(shallowCopy));
-      stmt.step();
-    });
-  }
-
-  private createTempTable(): void {
-    // table name should be unique in case two PartialECChangeUnifiers are made
-    this._db.withPreparedSqliteStatement(`CREATE TABLE [temp].[${this._cacheTable}] ([key] text primary key, [value] text)`, (stmt) => {
-      if (DbResult.BE_SQLITE_DONE !== stmt.step())
-        throw new Error("unable to create temp table");
-    });
-  }
-
-  private dropTempTable(): void {
-    this._db.withPreparedSqliteStatement(`DROP TABLE IF EXISTS [temp].[${this._cacheTable}]`, (stmt) => {
-      if (DbResult.BE_SQLITE_DONE !== stmt.step())
-        throw new Error("unable to drop temp table");
-    });
+    return this._cache.count();
   }
 
   /**
@@ -620,87 +762,13 @@ export class PartialECChangeUnifier implements Disposable {
       this.combine(adaptor.deleted);
     }
   }
-  /**
-   * Delete $meta from all the instances.
-   */
-  public stripMetaData(): void {
-    this._db.withPreparedSqliteStatement(`UPDATE [temp].[${this._cacheTable}] SET [value] = json_remove([value], '$meta')`, (stmt) => {
-      stmt.step();
-    });
-    this._readonly = true;
-  }
-
-  private *getInstances(): IterableIterator<ChangedECInstance> {
-    const stmt = this._db.prepareSqliteStatement(`SELECT [value] FROM [temp].[${this._cacheTable}]`);
-    while (stmt.step() === DbResult.BE_SQLITE_ROW) {
-      const value = JSON.parse(stmt.getValueString(0)) as ChangedECInstance;
-      PartialECChangeUnifier.replaceBase64WithUint8Array(value);
-      yield value;
-    }
-    stmt[Symbol.dispose]();
-  }
 
   /**
    * Returns complete EC change instances.
    * @beta
    */
   public get instances(): IterableIterator<ChangedECInstance> {
-    return this.getInstances();
-  }
-
-  /**
-   * Retrieves EC change instances in batches. Recommended when changeset is known to be very large.
-   * @beta
-   *
-   * This generator function fetches EC change instances in batches of a specified size.
-   * It yields arrays of `ChangedECInstance` objects, each representing a batch of instances.
-   *
-   * @param [in] batchSize The number of instances to include in each batch.
-   *                      If not specified, the default batch size is used.
-   *                      Must be a positive integer.
-   *
-   * @return IterableIterator<ChangedECInstance[]> An iterator that yields arrays of `ChangedECInstance` objects.
-   *                                               Each array represents a batch of instances.
-   *
-   * @throws std::runtime_error If the `batchSize` is not a positive integer.
-   *
-   * @example
-   * ```typescript
-   * const batchSize = 1000;
-   * for (const batch of unifier.getInstancesInBatches(batchSize)) {
-   *   console.log(`Processing a batch with ${batch.length} instances`);
-   *   for (const changedInstance of batch) {
-   *     // Process each instance in the batch
-   *     console.log(`changedInstance: ${changedInstance.ECInstanceId} of class ${changedInstance.ECClassId} with meta ${changedInstance.$meta}`);
-   *   }
-   * }
-   * ```
-   */
-  public *getInstancesInBatches(batchSize?: number): IterableIterator<ChangedECInstance[]> {
-    if (batchSize === undefined)
-      batchSize = this._defaultbatchSize;
-    else if (!Number.isInteger(batchSize) || batchSize <= 0)
-      throw new Error("Invalid batch size specified.");
-
-    const stmt = this._db.prepareSqliteStatement(`SELECT [value] FROM [temp].[${this._cacheTable}]`);
-
-    let batch: ChangedECInstance[] = [];
-    while (stmt.step() === DbResult.BE_SQLITE_ROW) {
-      const value = JSON.parse(stmt.getValueString(0)) as ChangedECInstance;
-      PartialECChangeUnifier.replaceBase64WithUint8Array(value);
-      batch.push(value);
-
-      if (batch.length >= batchSize) {
-        yield batch; // Yield the batch when it reaches the batch size specified
-        batch = [];
-      }
-    }
-
-    // Yield any remaining rows as the final batch
-    if (batch.length > 0)
-      yield batch;
-
-    stmt[Symbol.dispose]();
+    return this._cache.all();
   }
 }
 
