@@ -748,6 +748,7 @@ export abstract class IModelDb extends IModel {
     this._jsClassMap = undefined;
     this._schemaMap = undefined;
     this._schemaContext = undefined;
+    this[_nativeDb].clearECDbCache();
     this.elements.cache.clear();
     this.models.cache.clear();
   }
