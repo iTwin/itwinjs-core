@@ -14,7 +14,7 @@ export interface CustomAttribute {
   [propName: string]: any;
 }
 
-/** @internal */
+/** @public @preview */
 export interface CustomAttributeSet {
   [Symbol.iterator]: () => IterableIterator<[string, CustomAttribute]>;
   has(className: string): boolean;
