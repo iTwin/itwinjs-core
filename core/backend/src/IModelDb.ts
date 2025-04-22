@@ -226,6 +226,7 @@ export abstract class IModelDb extends IModel {
   /** @beta */
   public readonly channels: ChannelControl = createChannelControl(this);
   private _relationships?: Relationships;
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   private readonly _statementCache = new StatementCache<ECSqlStatement>();
   private readonly _sqliteStatementCache = new StatementCache<SqliteStatement>();
   private _codeSpecs?: CodeSpecs;
@@ -267,6 +268,14 @@ export abstract class IModelDb extends IModel {
       this._workspace = constructWorkspace(new IModelSettings());
 
     return this._workspace;
+  }
+
+  /**
+   * get the cloud container for this iModel, if it was opened from one
+   * @beta
+   */
+  public get cloudContainer(): CloudSqlite.CloudContainer | undefined {
+    return this[_nativeDb].cloudContainer;
   }
 
   /** Acquire the exclusive schema lock on this iModel.
@@ -498,8 +507,11 @@ export abstract class IModelDb extends IModel {
    * @returns the value returned by `callback`.
    * @see [[withStatement]]
    * @public
+   * @deprecated in 4.11.  Use [[createQueryReader]] instead.
    */
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   public withPreparedStatement<T>(ecsql: string, callback: (stmt: ECSqlStatement) => T, logErrors = true): T {
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     const stmt = this._statementCache.findAndRemove(ecsql) ?? this.prepareStatement(ecsql, logErrors);
     const release = () => this._statementCache.addOrDispose(stmt);
     try {
@@ -526,8 +538,11 @@ export abstract class IModelDb extends IModel {
    * @returns the value returned by `callback`.
    * @see [[withPreparedStatement]]
    * @public
+   * @deprecated in 4.11.  Use [[createQueryReader]] instead.
    */
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   public withStatement<T>(ecsql: string, callback: (stmt: ECSqlStatement) => T, logErrors = true): T {
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     const stmt = this.prepareStatement(ecsql, logErrors);
     const release = () => stmt[Symbol.dispose]();
     try {
@@ -709,6 +724,7 @@ export abstract class IModelDb extends IModel {
       sql += ` OFFSET ${params.offset}`;
 
     const ids = new Set<string>();
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     this.withPreparedStatement(sql, (stmt) => {
       if (params.bindings)
         stmt.bindValues(params.bindings);
@@ -1089,7 +1105,7 @@ export abstract class IModelDb extends IModel {
 
   /**
    * Gets the context that allows accessing the metadata (ecschema-metadata package) of this iModel
-   * @beta
+   * @public @preview
    */
   public get schemaContext(): SchemaContext {
     if (this._schemaContext === undefined) {
@@ -1116,8 +1132,11 @@ export abstract class IModelDb extends IModel {
    * @param sql The ECSQL statement to prepare
    * @param logErrors Determines if error will be logged if statement fail to prepare
    * @throws [[IModelError]] if there is a problem preparing the statement.
+   * @deprecated in 4.11.  Use [IModelDb.createQueryReader]($backend) or [ECDb.createQueryReader]($backend) to query.
    */
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   public prepareStatement(sql: string, logErrors = true): ECSqlStatement {
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     const stmt = new ECSqlStatement();
     stmt.prepare(this[_nativeDb], sql, logErrors);
     return stmt;
@@ -1126,8 +1145,11 @@ export abstract class IModelDb extends IModel {
   /** Prepare an ECSQL statement.
    * @param sql The ECSQL statement to prepare
    * @returns `undefined` if there is a problem preparing the statement.
+   * @deprecated in 4.11.  Use [IModelDb.createQueryReader]($backend) or [ECDb.createQueryReader]($backend) to query.
    */
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   public tryPrepareStatement(sql: string): ECSqlStatement | undefined {
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     const statement = new ECSqlStatement();
     const result = statement.tryPrepare(this[_nativeDb], sql);
     return DbResult.BE_SQLITE_OK === result.status ? statement : undefined;
@@ -1324,6 +1346,7 @@ export abstract class IModelDb extends IModel {
    */
   public querySchemaVersion(schemaName: string): string | undefined {
     const sql = `SELECT VersionMajor,VersionWrite,VersionMinor FROM ECDbMeta.ECSchemaDef WHERE Name=:schemaName LIMIT 1`;
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     return this.withPreparedStatement(sql, (statement: ECSqlStatement): string | undefined => {
       statement.bindString("schemaName", schemaName);
       if (DbResult.BE_SQLITE_ROW === statement.step()) {
@@ -1708,6 +1731,7 @@ export namespace IModelDb {
      */
     public queryLastModifiedTime(modelId: Id64String): string {
       const sql = `SELECT LastMod FROM ${Model.classFullName} WHERE ECInstanceId=:modelId`;
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       return this._iModel.withPreparedStatement(sql, (statement) => {
         statement.bindId("modelId", modelId);
         if (DbResult.BE_SQLITE_ROW === statement.step()) {
@@ -2043,7 +2067,7 @@ export namespace IModelDb {
 
       if (code.value === undefined)
         throw new IModelError(IModelStatus.InvalidCode, "Invalid Code");
-
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       return this._iModel.withPreparedStatement("SELECT ECInstanceId FROM BisCore:Element WHERE CodeSpec.Id=? AND CodeScope.Id=? AND CodeValue=?", (stmt: ECSqlStatement) => {
         stmt.bindId(1, code.spec);
         stmt.bindId(2, Id64.fromString(code.scope));
@@ -2061,6 +2085,7 @@ export namespace IModelDb {
      */
     public queryLastModifiedTime(elementId: Id64String): string {
       const sql = "SELECT LastMod FROM BisCore:Element WHERE ECInstanceId=:elementId";
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       return this._iModel.withPreparedStatement<string>(sql, (statement: ECSqlStatement): string => {
         statement.bindId("elementId", elementId);
         if (DbResult.BE_SQLITE_ROW === statement.step())
@@ -2221,6 +2246,7 @@ export namespace IModelDb {
      */
     public queryChildren(elementId: Id64String): Id64String[] {
       const sql = "SELECT ECInstanceId FROM BisCore:Element WHERE Parent.Id=:elementId";
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       return this._iModel.withPreparedStatement(sql, (statement: ECSqlStatement): Id64String[] => {
         statement.bindId("elementId", elementId);
         const childIds: Id64String[] = [];
@@ -2237,6 +2263,7 @@ export namespace IModelDb {
      * @throws [[IModelError]] if the element does not exist
      */
     public queryParent(elementId: Id64String): Id64String | undefined {
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       return this._iModel.withPreparedStatement(`select parent.id from ${Element.classFullName} where ecinstanceid=?`, (stmt) => {
         stmt.bindId(1, elementId);
         if (stmt.step() !== DbResult.BE_SQLITE_ROW)
@@ -2255,6 +2282,7 @@ export namespace IModelDb {
 
       // A sub-model will have the same Id value as the element it is describing
       const sql = "SELECT ECInstanceId FROM BisCore:Model WHERE ECInstanceId=:elementId";
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       return this._iModel.withPreparedStatement(sql, (statement: ECSqlStatement): boolean => {
         statement.bindId("elementId", elementId);
         return DbResult.BE_SQLITE_ROW === statement.step();
@@ -2271,6 +2299,7 @@ export namespace IModelDb {
      */
     public _queryAspects(elementId: Id64String, fromClassFullName: string, excludedClassFullNames?: Set<string>): ElementAspect[] { // eslint-disable-line @typescript-eslint/naming-convention
       const sql = `SELECT ECInstanceId,ECClassId FROM ${fromClassFullName} WHERE Element.Id=:elementId ORDER BY ECClassId,ECInstanceId`; // ORDER BY to maximize statement reuse
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       return this._iModel.withPreparedStatement(sql, (statement: ECSqlStatement): ElementAspect[] => {
         statement.bindId("elementId", elementId);
         const aspects: ElementAspect[] = [];
@@ -2290,6 +2319,7 @@ export namespace IModelDb {
      */
     private _queryAspect(aspectInstanceId: Id64String, aspectClassName: string): ElementAspect {
       const sql = `SELECT * FROM ${aspectClassName} WHERE ECInstanceId=:aspectInstanceId`;
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       const aspect: ElementAspectProps | undefined = this._iModel.withPreparedStatement(sql, (statement: ECSqlStatement): ElementAspectProps | undefined => {
         statement.bindId("aspectInstanceId", aspectInstanceId);
         if (DbResult.BE_SQLITE_ROW === statement.step()) {
@@ -2311,6 +2341,7 @@ export namespace IModelDb {
      */
     public getAspect(aspectInstanceId: Id64String): ElementAspect {
       const sql = "SELECT ECClassId FROM BisCore:ElementAspect WHERE ECInstanceId=:aspectInstanceId";
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       const aspectClassFullName = this._iModel.withPreparedStatement(sql, (statement: ECSqlStatement): string | undefined => {
         statement.bindId("aspectInstanceId", aspectInstanceId);
         return (DbResult.BE_SQLITE_ROW === statement.step()) ? statement.getValue(0).getClassNameForClassId().replace(".", ":") : undefined;
@@ -2324,6 +2355,7 @@ export namespace IModelDb {
     private static classMap = new Map<string, string>();
 
     private runInstanceQuery(sql: string, elementId: Id64String, excludedClassFullNames?: Set<string>): ElementAspect[] {
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       return this._iModel.withPreparedStatement(sql, (statement: ECSqlStatement) => {
         statement.bindId("elementId", elementId);
         const aspects: ElementAspect[] = [];
@@ -2375,11 +2407,14 @@ export namespace IModelDb {
       let classIdList = IModelDb.Elements.classMap.get(aspectClassFullName);
       if (classIdList === undefined) {
         const classIds: string[] = [];
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         this._iModel.withPreparedStatement(`select SourceECInstanceId from meta.ClassHasAllBaseClasses where TargetECInstanceId = (select ECInstanceId from meta.ECClassDef where Name='${fullClassName[1]}'
-        and Schema.Id = (select ECInstanceId from meta.ECSchemaDef where Name='${fullClassName[0]}')) and SourceECInstanceId != TargetECInstanceId`, (statement: ECSqlStatement) => {
-          while (statement.step() === DbResult.BE_SQLITE_ROW)
-            classIds.push(statement.getValue(0).getId());
-        });
+        and Schema.Id = (select ECInstanceId from meta.ECSchemaDef where Name='${fullClassName[0]}')) and SourceECInstanceId != TargetECInstanceId`,
+          // eslint-disable-next-line @typescript-eslint/no-deprecated
+          (statement: ECSqlStatement) => {
+            while (statement.step() === DbResult.BE_SQLITE_ROW)
+              classIds.push(statement.getValue(0).getId());
+          });
         if (classIds.length > 0) {
           classIdList = classIds.join(",");
           IModelDb.Elements.classMap.set(aspectClassFullName, classIdList);
@@ -2941,7 +2976,7 @@ export class BriefcaseDb extends IModelDb {
     const file = { path: args.fileName, key: args.key };
     const openMode = (args.readonly || args.watchForChanges) ? OpenMode.Readonly : OpenMode.ReadWrite;
     const nativeDb = this.openDgnDb(file, openMode, undefined, args);
-    const briefcaseDb = new BriefcaseDb({ nativeDb, key: file.key ?? Guid.createValue(), openMode, briefcaseId: nativeDb.getBriefcaseId() });
+    const briefcaseDb = new this({ nativeDb, key: file.key ?? Guid.createValue(), openMode, briefcaseId: nativeDb.getBriefcaseId() });
 
     // If they asked to watch for changes, set an fs.watch on the "-watch" file (only it is modified while we hold this connection.)
     // Whenever there are changes, restart our defaultTxn. That loads the changes from the other connection and sends
@@ -3317,7 +3352,7 @@ class RefreshV2CheckpointSas {
     Logger.logInfo(BackendLoggerCategory.Authorization, "attempting to refresh sasToken for checkpoint");
     try {
       // this exchanges the supplied user accessToken for an expiring blob-store token to read the checkpoint.
-      const container = iModel[_nativeDb].cloudContainer;
+      const container = iModel.cloudContainer;
       if (!container)
         throw new Error("checkpoint is not from a cloud container");
 
@@ -3463,7 +3498,7 @@ export class SnapshotDb extends IModelDb {
       file.key = `${nativeDb.getIModelId()}:${nativeDb.getCurrentChangeset().id}`;
     }
     assert(undefined !== file.key);
-    const db = new SnapshotDb(nativeDb, file.key);
+    const db = new this(nativeDb, file.key);
     this.onOpened.raiseEvent(db);
     return db;
   }
@@ -3491,7 +3526,7 @@ export class SnapshotDb extends IModelDb {
     snapshot._restartDefaultTxnTimer = setTimeout(() => {
       snapshot.restartDefaultTxn();
     }, (10 * 60) * 1000).unref(); // 10 minutes
-    const cloudContainer = snapshot[_nativeDb].cloudContainer;
+    const cloudContainer = snapshot.cloudContainer;
     if (cloudContainer !== undefined) {
       snapshot._refreshSas = new RefreshV2CheckpointSas(cloudContainer.accessToken, checkpoint.reattachSafetySeconds);
     }
@@ -3572,7 +3607,7 @@ export class StandaloneDb extends BriefcaseDb {
     nativeDb.setITwinId(Guid.empty);
     nativeDb.resetBriefcaseId(BriefcaseIdValue.Unassigned);
     nativeDb.saveChanges();
-    const db = new StandaloneDb({ nativeDb, key: Guid.createValue(), briefcaseId: BriefcaseIdValue.Unassigned, openMode: OpenMode.ReadWrite });
+    const db = new this({ nativeDb, key: Guid.createValue(), briefcaseId: BriefcaseIdValue.Unassigned, openMode: OpenMode.ReadWrite });
     db.channels.addAllowedChannel(ChannelControl.sharedChannelName);
     return db;
   }
@@ -3622,7 +3657,7 @@ export class StandaloneDb extends BriefcaseDb {
       if (iTwinId !== Guid.empty) // a "standalone" iModel means it is not associated with an iTwin
         throw new IModelError(IModelStatus.WrongIModel, `${filePath} is not a Standalone iModel. iTwinId=${iTwinId}`);
       assert(undefined !== file.key);
-      const db = new StandaloneDb({ nativeDb, key: file.key, openMode, briefcaseId: BriefcaseIdValue.Unassigned });
+      const db = new this({ nativeDb, key: file.key, openMode, briefcaseId: BriefcaseIdValue.Unassigned });
       return db;
     } catch (error) {
       nativeDb.closeFile();

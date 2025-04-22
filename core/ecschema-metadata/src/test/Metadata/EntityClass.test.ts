@@ -7,7 +7,7 @@ import { assert, expect } from "chai";
 import { SchemaContext } from "../../Context";
 import { DelayedPromiseWithProps } from "../../DelayedPromise";
 import { ECClassModifier, SchemaItemType } from "../../ECObjects";
-import { ECObjectsError } from "../../Exception";
+import { ECSchemaError } from "../../Exception";
 import { ECClass, MutableClass } from "../../Metadata/Class";
 import { EntityClass, MutableEntityClass } from "../../Metadata/EntityClass";
 import { Mixin } from "../../Metadata/Mixin";
@@ -88,13 +88,13 @@ describe("EntityClass", () => {
       await (entityClass as ECClass as MutableClass).setBaseClass(new DelayedPromiseWithProps(baseClass.key, async () => baseClass));
       (entityClass as MutableEntityClass).addMixin(mixin);
 
-      expect(await entityClass.getProperty("MixinPrimProp")).to.be.undefined;
-      expect(await entityClass.getProperty("MixinPrimProp", true)).equal(mixinPrimProp);
+      expect(await entityClass.getProperty("MixinPrimProp", true)).to.be.undefined;
+      expect(await entityClass.getProperty("MixinPrimProp")).equal(mixinPrimProp);
       expect(await entityClass.getInheritedProperty("MixinPrimProp")).equal(mixinPrimProp);
 
-      expect(await entityClass.getProperty("BasePrimProp")).to.be.undefined;
-      expect(await entityClass.getProperty("BasePrimProp", false)).to.be.undefined;
-      expect(await entityClass.getProperty("BasePrimProp", true)).equal(basePrimProp);
+      expect(await entityClass.getProperty("BasePrimProp", true)).to.be.undefined;
+      expect(await entityClass.getProperty("BasePrimProp", true)).to.be.undefined;
+      expect(await entityClass.getProperty("BasePrimProp")).equal(basePrimProp);
       expect(await entityClass.getInheritedProperty("BasePrimProp")).equal(basePrimProp);
       expect(await entityClass.getInheritedProperty("PrimProp")).to.be.undefined;
     });
@@ -111,13 +111,13 @@ describe("EntityClass", () => {
       await (entityClass as ECClass as MutableClass).setBaseClass(new DelayedPromiseWithProps(baseClass.key, async () => baseClass));
       (entityClass as MutableEntityClass).addMixin(mixin);
 
-      expect(entityClass.getPropertySync("MixinPrimProp")).to.be.undefined;
-      expect(entityClass.getPropertySync("MixinPrimProp", true)).equal(mixinPrimProp);
+      expect(entityClass.getPropertySync("MixinPrimProp", true)).to.be.undefined;
+      expect(entityClass.getPropertySync("MixinPrimProp")).equal(mixinPrimProp);
       expect(entityClass.getInheritedPropertySync("MixinPrimProp")).equal(mixinPrimProp);
 
-      expect(entityClass.getPropertySync("BasePrimProp")).to.be.undefined;
-      expect(entityClass.getPropertySync("BasePrimProp", false)).to.be.undefined;
-      expect(entityClass.getPropertySync("BasePrimProp", true)).equal(basePrimProp);
+      expect(entityClass.getPropertySync("BasePrimProp", true)).to.be.undefined;
+      expect(entityClass.getPropertySync("BasePrimProp", true)).to.be.undefined;
+      expect(entityClass.getPropertySync("BasePrimProp")).equal(basePrimProp);
       expect(entityClass.getInheritedPropertySync("BasePrimProp")).equal(basePrimProp);
       expect(entityClass.getInheritedPropertySync("PrimProp")).to.be.undefined;
     });
@@ -373,67 +373,67 @@ describe("EntityClass", () => {
 
     it("should throw for invalid baseClass", async () => {
       const json = createSchemaJson({ baseClass: 0 });
-      await expect(Schema.fromJson(json, new SchemaContext())).to.be.rejectedWith(ECObjectsError, `The ECClass TestSchema.TestEntityClass has an invalid 'baseClass' attribute. It should be of type 'string'.`);
+      await expect(Schema.fromJson(json, new SchemaContext())).to.be.rejectedWith(ECSchemaError, `The ECClass TestSchema.TestEntityClass has an invalid 'baseClass' attribute. It should be of type 'string'.`);
     });
 
     it("should throw for invalid mixins", async () => {
       let json: any = createSchemaJson({ mixins: 0, schema: "TestSchema" });
-      await expect(Schema.fromJson(json, new SchemaContext())).to.be.rejectedWith(ECObjectsError, `The ECEntityClass TestSchema.TestEntityClass has an invalid 'mixins' attribute. It should be of type 'string[]'.`);
+      await expect(Schema.fromJson(json, new SchemaContext())).to.be.rejectedWith(ECSchemaError, `The ECEntityClass TestSchema.TestEntityClass has an invalid 'mixins' attribute. It should be of type 'string[]'.`);
 
       json = createSchemaJson({ mixins: [0], schema: "TestSchema" });
-      await expect(Schema.fromJson(json, new SchemaContext())).to.be.rejectedWith(ECObjectsError, `The ECEntityClass TestSchema.TestEntityClass has an invalid 'mixins' attribute. It should be of type 'string[]'.`);
+      await expect(Schema.fromJson(json, new SchemaContext())).to.be.rejectedWith(ECSchemaError, `The ECEntityClass TestSchema.TestEntityClass has an invalid 'mixins' attribute. It should be of type 'string[]'.`);
     });
 
     it("should throw for invalid properties", async () => {
       let json: any = createSchemaJson({ properties: 0 });
-      await expect(Schema.fromJson(json, new SchemaContext())).to.be.rejectedWith(ECObjectsError, `The ECClass TestSchema.TestEntityClass has an invalid 'properties' attribute. It should be of type 'object[]'.`);
+      await expect(Schema.fromJson(json, new SchemaContext())).to.be.rejectedWith(ECSchemaError, `The ECClass TestSchema.TestEntityClass has an invalid 'properties' attribute. It should be of type 'object[]'.`);
 
       json = createSchemaJson({
         properties: [0],
       });
-      await expect(Schema.fromJson(json, new SchemaContext())).to.be.rejectedWith(ECObjectsError, `An ECProperty in TestSchema.TestEntityClass is an invalid JSON object.`);
+      await expect(Schema.fromJson(json, new SchemaContext())).to.be.rejectedWith(ECSchemaError, `An ECProperty in TestSchema.TestEntityClass is an invalid JSON object.`);
     });
 
     it("should throw for property with missing name", async () => {
       const json = createSchemaJson({
         properties: [{ type: "PrimitiveProperty" }],
       });
-      await expect(Schema.fromJson(json, new SchemaContext())).to.be.rejectedWith(ECObjectsError, `An ECProperty in TestSchema.TestEntityClass is missing the required 'name' attribute.`);
+      await expect(Schema.fromJson(json, new SchemaContext())).to.be.rejectedWith(ECSchemaError, `An ECProperty in TestSchema.TestEntityClass is missing the required 'name' attribute.`);
     });
 
     it("should throw for property with invalid name", async () => {
       const json = createSchemaJson({
         properties: [{ type: "PrimitiveProperty", name: 0 }],
       });
-      await expect(Schema.fromJson(json, new SchemaContext())).to.be.rejectedWith(ECObjectsError, `An ECProperty in TestSchema.TestEntityClass has an invalid 'name' attribute. It should be of type 'string'.`);
+      await expect(Schema.fromJson(json, new SchemaContext())).to.be.rejectedWith(ECSchemaError, `An ECProperty in TestSchema.TestEntityClass has an invalid 'name' attribute. It should be of type 'string'.`);
     });
 
     it("should throw for property with missing type", async () => {
       const json = createSchemaJson({
         properties: [{ name: "badProp" }],
       });
-      await expect(Schema.fromJson(json, new SchemaContext())).to.be.rejectedWith(ECObjectsError, `The ECProperty TestSchema.TestEntityClass.badProp does not have the required 'type' attribute.`);
+      await expect(Schema.fromJson(json, new SchemaContext())).to.be.rejectedWith(ECSchemaError, `The ECProperty TestSchema.TestEntityClass.badProp does not have the required 'type' attribute.`);
     });
 
     it("should throw for property with invalid type", async () => {
       const json = createSchemaJson({
         properties: [{ name: "badProp", type: 0 }],
       });
-      await expect(Schema.fromJson(json, new SchemaContext())).to.be.rejectedWith(ECObjectsError, `The ECProperty TestSchema.TestEntityClass.badProp has an invalid 'type' attribute. It should be of type 'string'.`);
+      await expect(Schema.fromJson(json, new SchemaContext())).to.be.rejectedWith(ECSchemaError, `The ECProperty TestSchema.TestEntityClass.badProp has an invalid 'type' attribute. It should be of type 'string'.`);
     });
 
     it("should throw for property with missing typeName", async () => {
       const json = createSchemaJson({
         properties: [{ name: "badProp", type: "PrimitiveProperty" }],
       });
-      await expect(Schema.fromJson(json, new SchemaContext())).to.be.rejectedWith(ECObjectsError, `The ECProperty TestSchema.TestEntityClass.badProp is missing the required 'typeName' attribute.`);
+      await expect(Schema.fromJson(json, new SchemaContext())).to.be.rejectedWith(ECSchemaError, `The ECProperty TestSchema.TestEntityClass.badProp is missing the required 'typeName' attribute.`);
     });
 
     it("should throw for property with invalid typeName", async () => {
       const json = createSchemaJson({
         properties: [{ name: "badProp", type: "PrimitiveProperty", typeName: 0 }],
       });
-      await expect(Schema.fromJson(json, new SchemaContext())).to.be.rejectedWith(ECObjectsError, `The ECProperty TestSchema.TestEntityClass.badProp has an invalid 'typeName' attribute. It should be of type 'string'.`);
+      await expect(Schema.fromJson(json, new SchemaContext())).to.be.rejectedWith(ECSchemaError, `The ECProperty TestSchema.TestEntityClass.badProp has an invalid 'typeName' attribute. It should be of type 'string'.`);
     });
 
     it("should throw for property with invalid category", async () => {
@@ -447,7 +447,7 @@ describe("EntityClass", () => {
           },
         ],
       });
-      await expect(Schema.fromJson(json, new SchemaContext())).to.be.rejectedWith(ECObjectsError, `The ECProperty TestSchema.TestEntityClass.testProp has an invalid 'category' attribute. It should be of type 'string'.`);
+      await expect(Schema.fromJson(json, new SchemaContext())).to.be.rejectedWith(ECSchemaError, `The ECProperty TestSchema.TestEntityClass.testProp has an invalid 'category' attribute. It should be of type 'string'.`);
     });
 
     it("should throw for property with invalid kindOfQuantity", async () => {
@@ -461,7 +461,7 @@ describe("EntityClass", () => {
           },
         ],
       });
-      await expect(Schema.fromJson(json, new SchemaContext())).to.be.rejectedWith(ECObjectsError, `The ECProperty TestSchema.TestEntityClass.testProp has an invalid 'kindOfQuantity' attribute. It should be of type 'string'.`);
+      await expect(Schema.fromJson(json, new SchemaContext())).to.be.rejectedWith(ECSchemaError, `The ECProperty TestSchema.TestEntityClass.testProp has an invalid 'kindOfQuantity' attribute. It should be of type 'string'.`);
     });
 
     it("should throw for navigation property with missing relationshipName", async () => {
@@ -474,7 +474,7 @@ describe("EntityClass", () => {
           },
         ],
       });
-      await expect(Schema.fromJson(json, new SchemaContext())).to.be.rejectedWith(ECObjectsError, `The Navigation Property TestSchema.TestEntityClass.testNavProp is missing the required 'relationshipName' property.`);
+      await expect(Schema.fromJson(json, new SchemaContext())).to.be.rejectedWith(ECSchemaError, `The Navigation Property TestSchema.TestEntityClass.testNavProp is missing the required 'relationshipName' property.`);
     });
 
     it("should throw for navigation property with invalid relationshipName", async () => {
@@ -488,7 +488,7 @@ describe("EntityClass", () => {
           },
         ],
       });
-      await expect(Schema.fromJson(json, new SchemaContext())).to.be.rejectedWith(ECObjectsError, `The Navigation Property TestSchema.TestEntityClass.testNavProp has an invalid 'relationshipName' property. It should be of type 'string'.`);
+      await expect(Schema.fromJson(json, new SchemaContext())).to.be.rejectedWith(ECSchemaError, `The Navigation Property TestSchema.TestEntityClass.testNavProp has an invalid 'relationshipName' property. It should be of type 'string'.`);
     });
 
     it("should throw for navigation property with nonexistent relationship", async () => {
@@ -502,7 +502,7 @@ describe("EntityClass", () => {
           },
         ],
       });
-      await expect(Schema.fromJson(json, new SchemaContext())).to.be.rejectedWith(ECObjectsError, `Unable to locate SchemaItem BadSchema.ThisDoesNotExist.`);
+      await expect(Schema.fromJson(json, new SchemaContext())).to.be.rejectedWith(ECSchemaError, `Unable to locate SchemaItem BadSchema.ThisDoesNotExist.`);
     });
 
     it("should throw for navigation property with missing direction", async () => {
@@ -515,7 +515,7 @@ describe("EntityClass", () => {
           },
         ],
       });
-      await expect(Schema.fromJson(json, new SchemaContext())).to.be.rejectedWith(ECObjectsError, `The Navigation Property TestSchema.TestEntityClass.testNavProp is missing the required 'direction' property.`);
+      await expect(Schema.fromJson(json, new SchemaContext())).to.be.rejectedWith(ECSchemaError, `The Navigation Property TestSchema.TestEntityClass.testNavProp is missing the required 'direction' property.`);
     });
 
     it("should throw for navigation property with invalid direction", async () => {
@@ -529,7 +529,7 @@ describe("EntityClass", () => {
           },
         ],
       });
-      await expect(Schema.fromJson(json, new SchemaContext())).to.be.rejectedWith(ECObjectsError, `The Navigation Property TestSchema.TestEntityClass.testNavProp has an invalid 'direction' property. It should be of type 'string'.`);
+      await expect(Schema.fromJson(json, new SchemaContext())).to.be.rejectedWith(ECSchemaError, `The Navigation Property TestSchema.TestEntityClass.testNavProp has an invalid 'direction' property. It should be of type 'string'.`);
     });
   });
 
@@ -548,13 +548,13 @@ describe("EntityClass", () => {
     it("should throw for invalid mixins", async () => {
       expect(testClass).to.exist;
       const props = { ...baseJson, mixins: ["DoesNotExist"] };
-      await expect(testClass.fromJSON(props)).to.be.rejectedWith(ECObjectsError, `Unable to find the referenced SchemaItem DoesNotExist.`);
+      await expect(testClass.fromJSON(props)).to.be.rejectedWith(ECSchemaError, `Unable to find the referenced SchemaItem DoesNotExist.`);
     });
 
     it("should throw for invalid mixins synchronously", () => {
       expect(testClass).to.exist;
       const props = { ...baseJson, mixins: ["DoesNotExist"] };
-      expect(() => testClass.fromJSONSync(props)).to.throw(ECObjectsError, `Unable to find the referenced SchemaItem DoesNotExist.`);
+      expect(() => testClass.fromJSONSync(props)).to.throw(ECSchemaError, `Unable to find the referenced SchemaItem DoesNotExist.`);
     });
   });
 

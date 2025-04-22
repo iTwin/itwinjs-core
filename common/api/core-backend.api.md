@@ -23,6 +23,7 @@ import { BriefcaseId } from '@itwin/core-common';
 import { BriefcaseProps } from '@itwin/core-common';
 import { CalloutProps } from '@itwin/core-common';
 import { Camera } from '@itwin/core-common';
+import { CatalogIModel } from '@itwin/core-common';
 import { CategoryProps } from '@itwin/core-common';
 import { CategorySelectorProps } from '@itwin/core-common';
 import { ChangeData } from '@itwin/core-common';
@@ -34,7 +35,6 @@ import { ChangesetFileProps } from '@itwin/core-common';
 import { ChangesetId } from '@itwin/core-common';
 import { ChangesetIdWithIndex } from '@itwin/core-common';
 import { ChangesetIndex } from '@itwin/core-common';
-import { ChangesetIndexAndId } from '@itwin/core-common';
 import { ChangesetIndexOrId } from '@itwin/core-common';
 import { ChangesetProps } from '@itwin/core-common';
 import { ChangesetRange } from '@itwin/core-common';
@@ -123,6 +123,7 @@ import { ImageBuffer } from '@itwin/core-common';
 import { ImageBufferFormat } from '@itwin/core-common';
 import { ImageSourceFormat } from '@itwin/core-common';
 import { IModel } from '@itwin/core-common';
+import { IModelConnectionProps } from '@itwin/core-common';
 import { IModelCoordinatesRequestProps } from '@itwin/core-common';
 import { IModelCoordinatesResponseProps } from '@itwin/core-common';
 import { IModelError } from '@itwin/core-common';
@@ -137,6 +138,7 @@ import { IpcAppNotifications } from '@itwin/core-common';
 import { IpcListener } from '@itwin/core-common';
 import { IpcSocketBackend } from '@itwin/core-common';
 import { IpcWebSocketBackend } from '@itwin/core-common';
+import { ITwinError } from '@itwin/core-bentley';
 import { JSONSchema } from '@itwin/core-bentley';
 import { JSONSchemaType } from '@itwin/core-bentley';
 import { JSONSchemaTypeName } from '@itwin/core-bentley';
@@ -184,8 +186,8 @@ import { Point3d } from '@itwin/core-geometry';
 import { Polyface } from '@itwin/core-geometry';
 import { PolyfaceData } from '@itwin/core-geometry';
 import { PolyfaceVisitor } from '@itwin/core-geometry';
+import { Property } from '@itwin/ecschema-metadata';
 import { PropertyCallback } from '@itwin/core-common';
-import { PropertyHandler } from '@itwin/ecschema-metadata';
 import { QueryBinder } from '@itwin/core-common';
 import { QueryOptions } from '@itwin/core-common';
 import { QueryRowFormat } from '@itwin/core-common';
@@ -598,6 +600,70 @@ export abstract class Callout extends DetailingSymbol {
     static get className(): string;
 }
 
+// @beta
+export interface CatalogDb extends StandaloneDb {
+    getInfo(): {
+        manifest?: CatalogIModel.Manifest;
+        version: string;
+    };
+    getManifest(): CatalogIModel.Manifest | undefined;
+    getVersion(): string;
+    isEditable(): this is EditableCatalogDb;
+}
+
+// @beta (undocumented)
+export namespace CatalogDb {
+    export function acquireWriteLock(args: {
+        containerId: string;
+        username: string;
+    }): Promise<void>;
+    export function createNewContainer(args: CatalogIModel.CreateNewContainerArgs): Promise<CatalogIModel.NewContainerProps>;
+    export function createNewVersion(args: CatalogIModel.CreateNewVersionArgs): Promise<{
+        oldDb: CatalogIModel.NameAndVersion;
+        newDb: CatalogIModel.NameAndVersion;
+    }>;
+    export function openEditable(args: CatalogIModel.OpenArgs): Promise<EditableCatalogDb>;
+    export function openReadonly(args: CatalogIModel.OpenArgs): Promise<CatalogDb>;
+    export function releaseWriteLock(args: {
+        containerId: string;
+        abandon?: true;
+    }): Promise<void>;
+}
+
+// @internal
+export class CatalogIModelHandler extends IpcHandler implements CatalogIModel.IpcMethods {
+    // (undocumented)
+    acquireWriteLock(args: {
+        containerId: string;
+        username: string;
+    }): Promise<void>;
+    // (undocumented)
+    get channelName(): CatalogIModel.IpcChannel;
+    // (undocumented)
+    createNewContainer(args: CatalogIModel.CreateNewContainerArgs): Promise<CatalogIModel.NewContainerProps>;
+    // (undocumented)
+    createNewVersion(args: CatalogIModel.CreateNewVersionArgs): Promise<{
+        oldDb: CatalogIModel.NameAndVersion;
+        newDb: CatalogIModel.NameAndVersion;
+    }>;
+    // (undocumented)
+    getInfo(key: string): Promise<{
+        manifest?: CatalogIModel.Manifest;
+        version: string;
+    }>;
+    // (undocumented)
+    openEditable(args: CatalogIModel.OpenArgs): Promise<IModelConnectionProps>;
+    // (undocumented)
+    openReadonly(args: CatalogIModel.OpenArgs): Promise<IModelConnectionProps>;
+    // (undocumented)
+    releaseWriteLock(args: {
+        containerId: string;
+        abandon?: true;
+    }): Promise<void>;
+    // (undocumented)
+    updateCatalogManifest(key: string, manifest: CatalogIModel.Manifest): Promise<void>;
+}
+
 // @public
 export class Category extends DefinitionElement {
     protected constructor(props: CategoryProps, iModel: IModelDb);
@@ -830,8 +896,6 @@ export class ChannelRootAspect extends ElementUniqueAspect {
 
 // @internal (undocumented)
 export class CheckpointManager {
-    // (undocumented)
-    static [_openCheckpoint](fileName: LocalFileName, checkpoint: CheckpointProps): SnapshotDb;
     static downloadCheckpoint(request: DownloadRequest): Promise<void>;
     // (undocumented)
     static getKey(checkpoint: CheckpointProps): string;
@@ -839,7 +903,6 @@ export class CheckpointManager {
     static readonly onDownloadV2: BeEvent<(job: DownloadJob) => void>;
     // (undocumented)
     static toCheckpointProps(args: OpenCheckpointArgs): Promise<CheckpointProps>;
-    static tryOpenLocalFile(request: DownloadRequest): SnapshotDb | undefined;
     // (undocumented)
     static updateToRequestedVersion(request: DownloadRequest): Promise<void>;
     static validateCheckpointGuids(checkpoint: CheckpointProps, snapshotDb: SnapshotDb): void;
@@ -889,6 +952,7 @@ export namespace CloudSqlite {
         container: CloudContainer;
         busyHandler?: WriteLockBusyHandler;
     }): Promise<void>;
+    export function addHiddenProperty<T>(o: T, p: PropertyKey, value?: any): T;
     // @internal
     export interface BcvHttpLog {
         readonly endTime: string | undefined;
@@ -1048,6 +1112,17 @@ export namespace CloudSqlite {
         accessLevel?: BlobContainer.RequestAccessLevel;
         tokenFn?: (args: RequestTokenArgs) => Promise<AccessToken>;
     }): CloudContainer;
+    // (undocumented)
+    export function createNewDbVersion(container: CloudContainer, args: CreateNewDbVersionArgs): Promise<{
+        oldDb: DbNameAndVersion;
+        newDb: DbNameAndVersion;
+    }>;
+    export interface CreateNewDbVersionArgs {
+        // (undocumented)
+        readonly fromDb: DbNameAndVersion;
+        readonly identifier?: string;
+        readonly versionType: SemverIncrement;
+    }
     export class DbAccess<DbType extends VersionedSqliteDb, ReadMethods = DbType, WriteMethods = DbType> {
         constructor(args: {
             dbType: Constructor<DbType>;
@@ -1093,13 +1168,33 @@ export namespace CloudSqlite {
         }, operation: () => Promise<T>): Promise<T>;
         get writeLocker(): PickAsyncMethods<WriteMethods>;
     }
+    export type DbFullName = string;
+    export type DbName = string;
+    export interface DbNameAndVersion {
+        readonly dbName: DbName;
+        readonly version?: DbVersionRange;
+    }
     export interface DbNameProp {
-        dbName: string;
+        dbName: DbFullName;
     }
-    export interface DbProps extends DbNameProp {
-        localFileName: LocalFileName;
-    }
+    export type DbVersion = string;
+    export type DbVersionRange = string;
     export function downloadDb(container: CloudContainer, props: TransferDbProps): Promise<void>;
+    // (undocumented)
+    export function getBlobService(): BlobContainer.ContainerService;
+    // (undocumented)
+    export function getWriteLockHeldBy(container: CloudContainer): string | undefined;
+    // (undocumented)
+    export function isSemverEditable(dbFullName: string, container: CloudContainer): boolean | readonly (string | number)[];
+    // (undocumented)
+    export function isSemverPrerelease(version: string): true | readonly (string | number)[] | null;
+    // (undocumented)
+    export interface LoadProps extends DbNameAndVersion {
+        // (undocumented)
+        readonly container: CloudContainer;
+        readonly includePrerelease?: boolean;
+        readonly prefetch?: boolean;
+    }
     // @internal (undocumented)
     export interface LockAndOpenArgs extends SQLiteDb.WithOpenDbArgs {
         busyHandler?: WriteLockBusyHandler;
@@ -1116,25 +1211,37 @@ export namespace CloudSqlite {
         LifecycleEvents = 8,
         None = 0
     }
+    export function makeSemverName(dbName: DbName, version?: DbVersion): DbName;
+    // (undocumented)
+    export function noLeadingOrTrailingSpaces(name: string, msg: string): void;
     export interface ObtainLockParams {
         nRetries: number;
         onFailure?: WriteLockBusyHandler;
         retryDelayMs: number;
         user?: string;
     }
+    export function parseDbFileName(dbFileName: DbFullName): {
+        dbName: DbName;
+        version: DbVersion;
+    };
     // (undocumented)
     export interface PrefetchProps extends CloudHttpProps {
         minRequests?: number;
         timeout?: number;
     }
+    export function querySemverMatch(props: LoadProps): DbFullName;
+    export function releaseWriteLock(container: CloudContainer): void;
     export function requestToken(args: RequestTokenArgs): Promise<AccessToken>;
     // (undocumented)
     export type RequestTokenArgs = Optional<BlobContainer.RequestTokenProps, "userToken">;
+    export type SemverIncrement = "major" | "minor" | "patch" | "premajor" | "preminor" | "prepatch" | "prerelease";
     export function startCloudPrefetch(container: CloudContainer, dbName: string, args?: PrefetchProps): CloudPrefetch;
     // @internal (undocumented)
     export function transferDb(direction: TransferDirection, container: CloudContainer, props: TransferDbProps): Promise<void>;
     // (undocumented)
-    export type TransferDbProps = DbProps & TransferProgress & CloudHttpProps;
+    export interface TransferDbProps extends DbNameProp, TransferProgress, CloudHttpProps {
+        localFileName: LocalFileName;
+    }
     // (undocumented)
     export type TransferDirection = "upload" | "download";
     // (undocumented)
@@ -1142,6 +1249,10 @@ export namespace CloudSqlite {
         onProgress?: (loaded: number, total: number) => number;
     }
     export function uploadDb(container: CloudContainer, props: TransferDbProps): Promise<void>;
+    // (undocumented)
+    export function validateDbName(dbName: DbName): void;
+    // (undocumented)
+    export function validateDbVersion(version?: DbVersion): string;
     export function withWriteLock<T>(args: {
         user: string;
         container: CloudContainer;
@@ -1465,7 +1576,7 @@ export interface CreateNewWorkspaceContainerArgs {
 export interface CreateNewWorkspaceDbVersionArgs {
     fromProps?: WorkspaceDbProps;
     identifier?: string;
-    versionType: WorkspaceDbVersionIncrement;
+    versionType: CloudSqlite.SemverIncrement;
 }
 
 // @public
@@ -1810,14 +1921,23 @@ export class ECDb implements Disposable {
     openDb(pathName: string, openMode?: ECDbOpenMode): void;
     // @internal
     prepareSqliteStatement(sql: string, logErrors?: boolean): SqliteStatement;
+    // @deprecated
     prepareStatement(ecsql: string, logErrors?: boolean): ECSqlStatement;
+    // @beta
+    prepareWriteStatement(ecsql: string, logErrors?: boolean): ECSqlWriteStatement;
     // @internal
     resetSqliteCache(size: number): void;
     saveChanges(changesetName?: string): void;
+    // @beta
+    withCachedWriteStatement<T>(ecsql: string, callback: (stmt: ECSqlWriteStatement) => T, logErrors?: boolean): T;
     withPreparedSqliteStatement<T>(sql: string, callback: (stmt: SqliteStatement) => T, logErrors?: boolean): T;
+    // @deprecated
     withPreparedStatement<T>(ecsql: string, callback: (stmt: ECSqlStatement) => T, logErrors?: boolean): T;
     withSqliteStatement<T>(sql: string, callback: (stmt: SqliteStatement) => T, logErrors?: boolean): T;
+    // @deprecated
     withStatement<T>(ecsql: string, callback: (stmt: ECSqlStatement) => T, logErrors?: boolean): T;
+    // @beta
+    withWriteStatement<T>(ecsql: string, callback: (stmt: ECSqlWriteStatement) => T, logErrors?: boolean): T;
 }
 
 // @public
@@ -1829,7 +1949,7 @@ export enum ECDbOpenMode {
     ReadWrite = 1
 }
 
-// @public
+// @public @deprecated
 export interface ECEnumValue {
     // (undocumented)
     key: string;
@@ -1841,7 +1961,7 @@ export interface ECEnumValue {
     value: number | string;
 }
 
-// @beta
+// @public
 export class ECSchemaXmlContext {
     constructor();
     addSchemaPath(searchPath: string): void;
@@ -1879,7 +1999,7 @@ export class ECSqlBinder {
     bindStruct(val: object): void;
 }
 
-// @public
+// @public @deprecated
 export interface ECSqlColumnInfo {
     getAccessString(): string;
     getOriginPropertyName(): string | undefined;
@@ -1908,7 +2028,7 @@ export interface ECSqlRowArg {
     rowFormat?: QueryRowFormat;
 }
 
-// @public
+// @public @deprecated
 export class ECSqlStatement implements IterableIterator<any>, Disposable {
     [Symbol.dispose](): void;
     [Symbol.iterator](): IterableIterator<any>;
@@ -1958,7 +2078,7 @@ export class ECSqlStatement implements IterableIterator<any>, Disposable {
     };
 }
 
-// @public
+// @public @deprecated
 export class ECSqlValue {
     // @internal
     constructor(val: IModelJsNative.ECSqlValue);
@@ -1985,7 +2105,7 @@ export class ECSqlValue {
     get value(): any;
 }
 
-// @public
+// @public @deprecated
 export class ECSqlValueIterator implements IterableIterator<ECSqlValue> {
     // (undocumented)
     [Symbol.iterator](): IterableIterator<ECSqlValue>;
@@ -1993,6 +2113,54 @@ export class ECSqlValueIterator implements IterableIterator<ECSqlValue> {
     constructor(it: IModelJsNative.ECSqlValueIterator);
     // (undocumented)
     next(): IteratorResult<ECSqlValue>;
+}
+
+// @public
+export class ECSqlWriteStatement {
+    constructor(stmt?: ECSqlStatement);
+    bindArray(parameter: number | string, val: any[]): void;
+    bindBlob(parameter: number | string, blob: string | Uint8Array | ArrayBuffer | SharedArrayBuffer): void;
+    bindBoolean(parameter: number | string, val: boolean): void;
+    bindDateTime(parameter: number | string, isoDateTimeString: string): void;
+    bindDouble(parameter: number | string, val: number): void;
+    bindGuid(parameter: number | string, val: GuidString): void;
+    bindId(parameter: number | string, val: Id64String): void;
+    // (undocumented)
+    bindIdSet(parameter: number | string, val: Id64String[]): void;
+    bindInteger(parameter: number | string, val: number | string): void;
+    bindNavigation(parameter: number | string, val: NavigationBindingValue): void;
+    bindNull(parameter: number | string): void;
+    bindPoint2d(parameter: number | string, val: XAndY): void;
+    bindPoint3d(parameter: number | string, val: XYAndZ): void;
+    bindRange3d(parameter: number | string, val: LowAndHighXYZ): void;
+    bindString(parameter: number | string, val: string): void;
+    bindStruct(parameter: number | string, val: object): void;
+    bindValue(parameter: number | string, val: any): void;
+    bindValues(values: any[] | object): void;
+    clearBindings(): void;
+    getBinder(parameter: string | number): ECSqlBinder;
+    getColumnCount(): number;
+    // @internal
+    getNativeSql(): string;
+    get isPrepared(): boolean;
+    // @internal
+    prepare(db: IModelJsNative.ECDb, ecsql: string, logErrors?: boolean): void;
+    reset(): void;
+    // (undocumented)
+    get sql(): string;
+    stepForInsert(): ECSqlInsertResult;
+    // @internal
+    get stmt(): ECSqlStatement;
+    // @internal
+    tryPrepare(db: IModelJsNative.DgnDb | IModelJsNative.ECDb, ecsql: string, logErrors?: boolean): {
+        status: DbResult;
+        message: string;
+    };
+}
+
+// @beta
+export interface EditableCatalogDb extends CatalogDb {
+    updateCatalogManifest(manifest: CatalogIModel.Manifest): void;
 }
 
 // @beta
@@ -2343,7 +2511,6 @@ export class Entity {
     forEach(func: PropertyHandler, includeCustom?: boolean): void;
     // @deprecated
     forEachProperty(func: PropertyCallback, includeCustom?: boolean): void;
-    // @beta
     getMetaData(): Promise<EntityClass>;
     // @beta
     getReferenceIds(): EntityReferenceSet;
@@ -2358,9 +2525,7 @@ export class Entity {
     // @internal (undocumented)
     static get protectedOperations(): string[];
     static schema: typeof Schema;
-    // @beta
     static get schemaItemKey(): SchemaItemKey;
-    // @beta
     get schemaItemKey(): SchemaItemKey;
     get schemaName(): string;
     toJSON(): EntityProps;
@@ -3078,63 +3243,6 @@ export class GroupModel extends GroupInformationModel {
     static insert(iModelDb: IModelDb, parentSubjectId: Id64String, name: string): Id64String;
 }
 
-// @internal
-export class HubMock {
-    // (undocumented)
-    static acquireLocks(arg: BriefcaseDbArg, locks: LockMap): Promise<void>;
-    // (undocumented)
-    static acquireNewBriefcaseId(arg: AcquireNewBriefcaseIdArg): Promise<number>;
-    static createNewIModel(arg: CreateNewIModelProps): Promise<GuidString>;
-    // (undocumented)
-    static deleteIModel(arg: IModelIdArg & {
-        iTwinId: GuidString;
-    }): Promise<void>;
-    static destroy(iModelId: GuidString): void;
-    // (undocumented)
-    static downloadChangeset(arg: DownloadChangesetArg): Promise<ChangesetFileProps>;
-    // (undocumented)
-    static downloadChangesets(arg: DownloadChangesetRangeArg): Promise<ChangesetFileProps[]>;
-    // (undocumented)
-    static downloadV1Checkpoint(arg: DownloadRequest): Promise<ChangesetIndexAndId>;
-    // (undocumented)
-    static findLocalHub(iModelId: GuidString): LocalHub;
-    static getChangesetFromNamedVersion(arg: IModelIdArg & {
-        versionName: string;
-    }): Promise<ChangesetProps>;
-    // (undocumented)
-    static getChangesetFromVersion(arg: IModelIdArg & {
-        version: IModelVersion;
-    }): Promise<ChangesetProps>;
-    // (undocumented)
-    static getLatestChangeset(arg: IModelIdArg): Promise<ChangesetProps>;
-    // (undocumented)
-    static getMyBriefcaseIds(arg: IModelIdArg): Promise<number[]>;
-    static get isValid(): boolean;
-    // (undocumented)
-    static get iTwinId(): string;
-    // (undocumented)
-    static pushChangeset(arg: IModelIdArg & {
-        changesetProps: ChangesetFileProps;
-    }): Promise<ChangesetIndex>;
-    // (undocumented)
-    static queryAllLocks(_arg: BriefcaseDbArg): Promise<LockProps[]>;
-    // (undocumented)
-    static queryChangeset(arg: ChangesetArg): Promise<ChangesetProps>;
-    // (undocumented)
-    static queryChangesets(arg: IModelIdArg & {
-        range?: ChangesetRange;
-    }): Promise<ChangesetProps[]>;
-    // (undocumented)
-    static queryIModelByName(arg: IModelNameArg): Promise<GuidString | undefined>;
-    // (undocumented)
-    static queryV2Checkpoint(arg: CheckpointProps): Promise<V2CheckpointAccessProps | undefined>;
-    // (undocumented)
-    static releaseAllLocks(arg: BriefcaseDbArg): Promise<void>;
-    static releaseBriefcase(arg: BriefcaseIdArg): Promise<void>;
-    static shutdown(): void;
-    static startup(mockName: LocalDirName, outputDir: string): void;
-}
-
 // @public
 export function imageBufferFromImageSource(args: ImageBufferFromImageSourceArgs): ImageBuffer | undefined;
 
@@ -3180,6 +3288,8 @@ export abstract class IModelDb extends IModel {
     // @internal (undocumented)
     clearFontMap(): void;
     close(): void;
+    // @beta
+    get cloudContainer(): CloudSqlite.CloudContainer | undefined;
     // @alpha (undocumented)
     get codeService(): CodeService | undefined;
     // @internal (undocumented)
@@ -3278,6 +3388,7 @@ export abstract class IModelDb extends IModel {
     performCheckpoint(): void;
     // @internal
     prepareSqliteStatement(sql: string, logErrors?: boolean): SqliteStatement;
+    // @deprecated
     prepareStatement(sql: string, logErrors?: boolean): ECSqlStatement;
     // @internal
     queryAllUsedSpatialSubCategories(): Promise<SubCategoryResultRow[]>;
@@ -3307,7 +3418,6 @@ export abstract class IModelDb extends IModel {
     saveFileProperty(prop: FilePropertyProps, strValue: string | undefined, blobVal?: Uint8Array): void;
     // @beta
     saveSettingDictionary(name: string, dict: SettingsContainer): void;
-    // @beta
     get schemaContext(): SchemaContext;
     get schemaMap(): SchemaMap;
     // @beta
@@ -3317,6 +3427,7 @@ export abstract class IModelDb extends IModel {
     static tryFindByKey(key: string): IModelDb | undefined;
     // @deprecated
     tryGetMetaData(classFullName: string): EntityMetaData | undefined;
+    // @deprecated
     tryPrepareStatement(sql: string): ECSqlStatement | undefined;
     updateEcefLocation(ecef: EcefLocation): void;
     // @beta
@@ -3329,8 +3440,10 @@ export abstract class IModelDb extends IModel {
     // @internal
     get watchFilePathName(): LocalFileName;
     withPreparedSqliteStatement<T>(sql: string, callback: (stmt: SqliteStatement) => T, logErrors?: boolean): T;
+    // @deprecated
     withPreparedStatement<T>(ecsql: string, callback: (stmt: ECSqlStatement) => T, logErrors?: boolean): T;
     withSqliteStatement<T>(sql: string, callback: (stmt: SqliteStatement) => T, logErrors?: boolean): T;
+    // @deprecated
     withStatement<T>(ecsql: string, callback: (stmt: ECSqlStatement) => T, logErrors?: boolean): T;
     // @beta
     get workspace(): Workspace;
@@ -4229,6 +4342,14 @@ export class MetaDataRegistry {
     findByClassId(classId: Id64String): EntityMetaData | undefined;
 }
 
+// @internal (undocumented)
+export interface MockCheckpoint {
+    // (undocumented)
+    mockAttach(checkpoint: CheckpointProps): string;
+    // (undocumented)
+    mockDownload(_request: DownloadRequest): void;
+}
+
 // @public
 export class Model extends Entity {
     protected constructor(props: ModelProps, iModel: IModelDb);
@@ -4625,6 +4746,9 @@ export enum ProgressStatus {
     Abort = 1,
     Continue = 0
 }
+
+// @public
+export type PropertyHandler = (name: string, property: Property) => void;
 
 // @beta (undocumented)
 export namespace PropertyStore {
@@ -6102,8 +6226,7 @@ export interface V2CheckpointAccessProps {
 
 // @internal
 export class V2CheckpointManager {
-    // (undocumented)
-    static [_getCheckpointDb](request: DownloadRequest): Promise<SnapshotDb>;
+    static [_mockCheckpoint]?: MockCheckpoint;
     // (undocumented)
     static attach(checkpoint: CheckpointProps): Promise<{
         dbName: string;
@@ -6114,8 +6237,6 @@ export class V2CheckpointManager {
     // (undocumented)
     static readonly cloudCacheName = "Checkpoints";
     static downloadCheckpoint(request: DownloadRequest): Promise<ChangesetId>;
-    // (undocumented)
-    static getContainer(v2Props: V2CheckpointAccessProps, checkpoint: CheckpointProps): CloudSqlite.CloudContainer;
     // (undocumented)
     static getFolder(): LocalDirName;
 }
@@ -6817,13 +6938,13 @@ export type WorkspaceDbCloudProps = WorkspaceDbProps & WorkspaceContainerProps;
 export type WorkspaceDbFullName = string;
 
 // @beta
-export interface WorkspaceDbLoadError extends Error {
+export interface WorkspaceDbLoadError extends ITwinError {
     wsDb?: WorkspaceDb;
     wsDbProps?: WorkspaceDbProps & Partial<WorkspaceDbCloudProps>;
 }
 
 // @beta
-export interface WorkspaceDbLoadErrors extends Error {
+export interface WorkspaceDbLoadErrors extends ITwinError {
     wsLoadErrors?: WorkspaceDbLoadError[];
 }
 
@@ -6839,10 +6960,7 @@ export interface WorkspaceDbManifest {
 export type WorkspaceDbName = string;
 
 // @beta
-export interface WorkspaceDbNameAndVersion {
-    readonly dbName?: WorkspaceDbName;
-    readonly version?: WorkspaceDbVersionRange;
-}
+export type WorkspaceDbNameAndVersion = Optional<CloudSqlite.DbNameAndVersion, "dbName">;
 
 // @beta
 export interface WorkspaceDbProps extends WorkspaceDbNameAndVersion {
@@ -6868,13 +6986,10 @@ export interface WorkspaceDbSettingsProps extends WorkspaceDbCloudProps {
 }
 
 // @beta
-export type WorkspaceDbVersion = string;
+export type WorkspaceDbVersion = CloudSqlite.DbVersion;
 
 // @beta
-export type WorkspaceDbVersionIncrement = "major" | "minor" | "patch" | "premajor" | "preminor" | "prepatch" | "prerelease";
-
-// @beta
-export type WorkspaceDbVersionRange = string;
+export type WorkspaceDbVersionRange = CloudSqlite.DbVersionRange;
 
 // @beta (undocumented)
 export namespace WorkspaceEditor {

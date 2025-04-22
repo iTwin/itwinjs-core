@@ -6,25 +6,41 @@
 import { join } from "path";
 import { Guid, GuidString } from "@itwin/core-bentley";
 import {
-  ChangesetFileProps, ChangesetIndex, ChangesetIndexAndId, ChangesetProps, ChangesetRange, IModelVersion, LocalDirName,
+  ChangesetFileProps, ChangesetIndex, ChangesetIndexOrId, ChangesetProps, ChangesetRange, IModelVersion, LocalDirName,
 } from "@itwin/core-common";
 import {
   AcquireNewBriefcaseIdArg,
   BackendHubAccess, BriefcaseDbArg, BriefcaseIdArg, ChangesetArg, CreateNewIModelProps, DownloadChangesetArg, DownloadChangesetRangeArg, IModelIdArg, IModelNameArg,
   LockMap, LockProps, V2CheckpointAccessProps,
-} from "./BackendHubAccess";
-import { CheckpointProps, DownloadRequest, ProgressFunction, ProgressStatus } from "./CheckpointManager";
-import { IModelHost } from "./IModelHost";
-import { IModelJsFs } from "./IModelJsFs";
-import { LocalHub } from "./LocalHub";
-import { TokenArg } from "./IModelDb";
-import { _getHubAccess, _setHubAccess } from "./internal/Symbols";
-import { CloudSqliteMock } from "./test/CloudSqliteMock";
+} from "../BackendHubAccess";
+import { CheckpointProps, DownloadRequest, MockCheckpoint, ProgressFunction, ProgressStatus, V2CheckpointManager } from "../CheckpointManager";
+import { IModelHost } from "../IModelHost";
+import { IModelJsFs } from "../IModelJsFs";
+import { LocalHub } from "../LocalHub";
+import { TokenArg } from "../IModelDb";
+import { _getHubAccess, _mockCheckpoint, _setHubAccess } from "./Symbols";
+import { BriefcaseManager } from "../BriefcaseManager";
+import * as path from "path";
 
 function wasStarted(val: string | undefined): asserts val is string {
   if (undefined === val)
     throw new Error("Call HubMock.startup first");
 }
+
+function doDownload(args: { iModelId: string, changeset: ChangesetIndexOrId, targetFile: string }) {
+  HubMock.findLocalHub(args.iModelId).downloadCheckpoint(args);
+}
+const mockCheckpoint: MockCheckpoint = {
+  mockAttach: (checkpoint: CheckpointProps) => {
+    const targetFile = path.join(BriefcaseManager.getBriefcaseBasePath(checkpoint.iModelId), `${checkpoint.changeset.index}.bim`);
+    doDownload({ ...checkpoint, targetFile })
+    return targetFile;
+  },
+
+  mockDownload: (request: DownloadRequest) => {
+    doDownload({ ...request.checkpoint, targetFile: request.localFile });
+  }
+};
 
 /**
  * Mocks iModelHub for testing creating Briefcases, downloading checkpoints, and simulating multiple users pushing and pulling changesets, etc.
@@ -88,7 +104,8 @@ export class HubMock {
 
     IModelHost[_setHubAccess](this);
     HubMock._iTwinId = Guid.createValue(); // all iModels for this test get the same "iTwinId"
-    CloudSqliteMock.startup();
+
+    V2CheckpointManager[_mockCheckpoint] = mockCheckpoint;
   }
 
   /** Stop a HubMock that was previously started with [[startup]]
@@ -98,7 +115,8 @@ export class HubMock {
     if (this.mockRoot === undefined)
       return;
 
-    CloudSqliteMock.shutdown();
+    V2CheckpointManager[_mockCheckpoint] = undefined;
+
     HubMock._iTwinId = undefined;
     for (const hub of this.hubs)
       hub[1].cleanup();
@@ -229,11 +247,6 @@ export class HubMock {
     } as V2CheckpointAccessProps;
   }
 
-
-  public static async downloadV1Checkpoint(arg: DownloadRequest): Promise<ChangesetIndexAndId> {
-    return this.findLocalHub(arg.checkpoint.iModelId).downloadCheckpoint({ changeset: arg.checkpoint.changeset, targetFile: arg.localFile });
-  }
-
   public static async releaseAllLocks(arg: BriefcaseDbArg) {
     const hub = this.findLocalHub(arg.iModelId);
     hub.releaseAllLocks({ briefcaseId: arg.briefcaseId, changesetIndex: hub.getIndexFromChangeset(arg.changeset) });
@@ -266,7 +279,7 @@ export class HubMock {
 
       const mockProgress = (index: number) => {
         const bytesDownloaded = Math.floor(totalSize * (index / 4));
-        if (!rejected && progressCallback(bytesDownloaded, totalSize) === ProgressStatus.Abort){
+        if (!rejected && progressCallback(bytesDownloaded, totalSize) === ProgressStatus.Abort) {
           rejected = true;
           reject(new Error("AbortError"));
         }

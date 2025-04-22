@@ -488,6 +488,7 @@ export class PartialECChangeUnifier implements Disposable {
         if (rhs.$meta.fallbackClassId && lhs.$meta.fallbackClassId && rhs.$meta.fallbackClassId !== lhs.$meta.fallbackClassId) {
           const lhsClassId = lhs.$meta.fallbackClassId;
           const rhsClassId = rhs.$meta.fallbackClassId;
+          // eslint-disable-next-line @typescript-eslint/no-deprecated
           const isRhsIsSubClassOfLhs = this._db.withPreparedStatement("SELECT ec_instanceof(?,?)", (stmt) => {
             stmt.bindId(1, rhsClassId);
             stmt.bindId(2, lhsClassId);

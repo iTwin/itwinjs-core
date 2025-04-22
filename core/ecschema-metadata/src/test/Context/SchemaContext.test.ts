@@ -7,7 +7,7 @@ import * as chai from "chai";
 import * as chaiAsPromised from "chai-as-promised";
 import { SchemaCache, SchemaContext } from "../../Context";
 import { SchemaMatchType } from "../../ECObjects";
-import { ECObjectsError } from "../../Exception";
+import { ECSchemaError } from "../../Exception";
 import { Schema } from "../../Metadata/Schema";
 import { SchemaItemKey, SchemaKey } from "../../SchemaKey";
 import { EntityClass } from "../../Metadata/EntityClass";
@@ -49,7 +49,7 @@ describe("Schema Context", () => {
     const schema2 = new Schema(context, "TestSchema", "ts", 1, 0, 5);
 
     await context.addSchema(schema);
-    await expect(context.addSchema(schema2)).to.be.rejectedWith(ECObjectsError);
+    await expect(context.addSchema(schema2)).to.be.rejectedWith(ECSchemaError);
   });
 
   it("schema added, getCachedSchema returns the schema", async () => {

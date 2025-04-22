@@ -7,14 +7,14 @@ import { assert } from "chai";
 import * as fs from "fs";
 import { DbResult, Id64, Id64Array, Id64String } from "@itwin/core-bentley";
 import {
-  Code, ColorDef, ElementGeometryInfo, ElementGeometryOpcode, FillDisplay, GeometryClass, GeometryParams, GeometryPartProps, GeometryStreamBuilder, GeometryStreamProps,
+  Code, ColorDef, FillDisplay, GeometryClass, GeometryParams, GeometryPartProps, GeometryStreamBuilder, GeometryStreamProps,
   ImageSourceFormat, IModel, LineStyle, PhysicalElementProps, Point2dProps, TextureMapProps, TextureMapUnits,
 } from "@itwin/core-common";
 import {
   Angle, Box, GeometryQuery, GrowableXYArray, GrowableXYZArray, LineSegment3d, LineString3d, Loop, Point3d, PolyfaceBuilder, Range3d, Sphere, StrokeOptions, Vector3d,
 } from "@itwin/core-geometry";
 import {
-  ExportGraphics, ExportGraphicsInfo, ExportGraphicsMeshVisitor, ExportGraphicsOptions, GeometricElement, IModelJsFs, LineStyleDefinition, PhysicalObject,
+  ExportGraphics, ExportGraphicsInfo, ExportGraphicsMeshVisitor, ExportGraphicsOptions, GeometricElement, LineStyleDefinition, PhysicalObject,
   RenderMaterialElement, SnapshotDb, Texture,
 } from "../../core-backend";
 import { GeometryPart } from "../../Element";
@@ -355,49 +355,10 @@ describe("exportGraphics", () => {
     testMesh(cube, cubeParams);
   });
 
-  it("export elements from local bim file", () => {
-    // edit these values to run
-    const outBimFileName: string = "out.bim"; // will be written to core\backend\lib\cjs\test\output\ExportGraphics
-    const outFBFileName: string = "";         // e.g., "c:\\tmp\\foo.fb"
-    const inBimFilePathName: string = "";     // e.g., "c:\\tmp\\foo.bim"
-    const elementIds: Id64Array = [];         // e.g., ["0x2000000000c", "0x2000000000a"]
-
-    if (outBimFileName !== "" && inBimFilePathName !== "" && elementIds.length > 0) {
-      const testFileName = IModelTestUtils.prepareOutputFile("ExportGraphics", outBimFileName);
-      const myIModel = IModelTestUtils.createSnapshotFromSeed(testFileName, inBimFilePathName);
-
-      if (outFBFileName !== "") {
-        for (const elementId of elementIds) {
-          myIModel.elementGeometryRequest({elementId, onGeometry: (info: ElementGeometryInfo) => {
-            for (const entry of info.entryArray) {
-              // examine entry here, e.g.:
-              if (entry.opcode === ElementGeometryOpcode.BsplineSurface)
-                IModelJsFs.writeFileSync(outFBFileName, entry.data);
-            }
-          }});
-        }
-      }
-
-      const infos: ExportGraphicsInfo[] = [];
-      const exportGraphicsOptions: ExportGraphicsOptions = {
-        elementIdArray: elementIds,
-        onGraphics: (info: ExportGraphicsInfo) => infos.push(info),
-      };
-      if (DbResult.BE_SQLITE_OK === myIModel.exportGraphics(exportGraphicsOptions)) {
-        // examine infos here, e.g.:
-        // for (const info of infos)
-        //   console.log(JSON.stringify(IModelJson.Writer.toIModelJson(ExportGraphics.convertToIndexedPolyface(info.mesh))));
-      }
-      myIModel.close();
-    }
-  });
-
   it("verifies export of 3d linestyle as parts", () => {
-    const outBimFileName: string = "out.bim";
-    const inBimFilePathName = IModelTestUtils.resolveAssetFile("3dLinestyle.bim");
-    assert.isNotEmpty(inBimFilePathName);
-    const testFileName = IModelTestUtils.prepareOutputFile("ExportGraphics", outBimFileName);
-    const myIModel = IModelTestUtils.createSnapshotFromSeed(testFileName, inBimFilePathName);
+    const resolvedBimFile = IModelTestUtils.resolveAssetFile("3dLinestyle.bim");
+    assert.isNotEmpty(resolvedBimFile);
+    const myIModel = SnapshotDb.openFile(resolvedBimFile);
 
     const elementIdArray: Id64Array = ["0x5a"];
     const infos: ExportGraphicsInfo[] = [];

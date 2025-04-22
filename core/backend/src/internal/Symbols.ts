@@ -25,5 +25,4 @@ export const _verifyChannel = Symbol.for(sym("verifyChannel"));
 export const _hubAccess = Symbol.for(sym("hubAccess"));
 export const _setHubAccess = Symbol.for(sym("setHubAccess"));
 export const _getHubAccess = Symbol.for(sym("getHubAccess"));
-export const _openCheckpoint = Symbol.for(sym("openCheckpoint"));
-export const _getCheckpointDb = Symbol.for(sym("getCheckpointDb"));
+export const _mockCheckpoint = Symbol.for(sym("mockCheckpoint"));

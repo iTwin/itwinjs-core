@@ -6,7 +6,7 @@
  * @module Workspace
  */
 
-import { AccessToken, BeEvent, Logger, Optional, UnexpectedErrors } from "@itwin/core-bentley";
+import { AccessToken, BeEvent, ITwinError, Logger, Optional, UnexpectedErrors } from "@itwin/core-bentley";
 import { LocalDirName, LocalFileName } from "@itwin/core-common";
 import { CloudSqlite } from "../CloudSqlite";
 import { SQLiteDb } from "../SQLiteDb";
@@ -58,25 +58,18 @@ export type WorkspaceDbFullName = string;
 /** A [semver](https://github.com/npm/node-semver) string describing the version of a [[WorkspaceDb]], e.g., "4.2.11".
  * @beta
  */
-export type WorkspaceDbVersion = string;
+export type WorkspaceDbVersion = CloudSqlite.DbVersion;
 
 /** A [semver string](https://github.com/npm/node-semver?tab=readme-ov-file#ranges) describing a range of acceptable [[WorkspaceDbVersion]]s,
  * e.g., ">=1.2.7 <1.3.0".
  * @beta
  */
-export type WorkspaceDbVersionRange = string;
+export type WorkspaceDbVersionRange = CloudSqlite.DbVersionRange;
 
 /** Specifies the name and version of a [[WorkspaceDb]].
  * @beta
  */
-export interface WorkspaceDbNameAndVersion {
-  /** The name of the [[WorkspaceDb]]. If omitted, it defaults to "workspace-db". */
-  readonly dbName?: WorkspaceDbName;
-  /** The range of acceptable versions of the [[WorkspaceDb]] of the specified [[dbName]].
-   * If omitted, it defaults to the newest available version.
-   */
-  readonly version?: WorkspaceDbVersionRange;
-}
+export type WorkspaceDbNameAndVersion = Optional<CloudSqlite.DbNameAndVersion, "dbName">;
 
 /** Properties that specify how to load a [[WorkspaceDb]] within a [[WorkspaceContainer]].
  * @beta
@@ -145,7 +138,7 @@ export interface WorkspaceDbManifest {
  * is not authorized to access its [[WorkspaceContainer]].
  * @beta
  */
-export interface WorkspaceDbLoadError extends Error {
+export interface WorkspaceDbLoadError extends ITwinError {
   /** The properties of the [[WorkspaceDb]] that was attempted to load, including the identity of its [[WorkspaceContainer]]. */
   wsDbProps?: WorkspaceDbProps & Partial<WorkspaceDbCloudProps>;
   /** The [[WorkspaceDb]] in which the error occurred, if available. */
@@ -157,7 +150,7 @@ export interface WorkspaceDbLoadError extends Error {
  * so that the user can be notified of the problems.
  * @beta
  */
-export interface WorkspaceDbLoadErrors extends Error {
+export interface WorkspaceDbLoadErrors extends ITwinError {
   /** An array of problems that were encountered attempting to load [[WorkspaceDb]]s for an [[IModelDb]]. The most common problem
    * is that the user doesn't have read access to one or more [[WorkspaceContainer]]s used by the iModel's [[Workspace]]..
    */

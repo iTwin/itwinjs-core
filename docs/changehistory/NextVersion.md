@@ -8,13 +8,15 @@ Table of contents:
 
 - [NextVersion](#nextversion)
   - [Selection set](#selection-set)
+  - [Snapping](#snapping)
   - [Font APIs](#font-apis)
   - [Geometry](#geometry)
     - [Polyface Traversal](#polyface-traversal)
     - [Text Block Margins](#text-block-margins)
+    - [Tangent To Curve](#tangent-to-curve)
   - [Display](#display)
     - [Read image to canvas](#read-image-to-canvas)
-    - [Draping models onto reality data](#draping-models-onto-reality-data)
+    - [Draping iModel models onto reality data or other iModel models](#draping-imodel-models-onto-reality-data-or-other-imodel-models)
   - [Back-end image conversion](#back-end-image-conversion)
   - [Presentation](#presentation)
     - [Unified selection move to `@itwin/unified-selection`](#unified-selection-move-to-itwinunified-selection)
@@ -24,6 +26,9 @@ Table of contents:
   - [Delete all transactions](#delete-all-transactions)
   - [Attach/detach db](#attachdetach-db)
   - [Quantity Formatting](#quantity-formatting)
+    - [FormatDefinition](#formatdefinition)
+    - [FormatsProvider](#formatsprovider)
+    - [Persistence](#persistence)
   - [API deprecations](#api-deprecations)
     - [@itwin/core-bentley](#itwincore-bentley)
     - [@itwin/core-common](#itwincore-common)
@@ -61,6 +66,7 @@ Table of contents:
       - [With pending/local changes](#with-pendinglocal-changes)
     - [Reworked @itwin/ecschema-metadata package](#reworked-itwinecschema-metadata-package)
       - [Tips for adjusting existing code](#tips-for-adjusting-existing-code)
+  - [Deprecated ECSqlStatement](#deprecated-ecsqlstatement)
 
 ## Selection set
 
@@ -72,6 +78,16 @@ To alleviate this problem, the `SelectionSet`-related APIs have been enhanced to
 - `SelectionSetEvent` attributes `added` and `removed` have been deprecated, but continue to work as before, containing only element ids. In addition, the event object now contains new `additions` and `removals` attributes, which are instances of `SelectableIds` and contain all ids that were added or removed from the selection set, including those of Model and SubCategory.
 
 Because the `SelectionSet` now stores additional types of ids, existing code that listens to `onChange` event may start getting extra invocations that don't affect the element selection (e.g. `SelectAddEvent` with `added: []` and `additions: { models: ["0x1"] }`). Also, the `isActive` getter may return `true` even though `elements` set is empty.
+
+## Snapping
+
+Added `SnapMode.PerpendicularPoint`. Snaps to the closest/perpendicular point on the curve under the cursor from the AccuDraw origin.
+
+![perpendicular point snap](assets/SnapPerpendicularPoint.png "Perpendicular Point Snap")
+
+Added `SnapMode.TangentPoint`. Snaps to the closest point of tangency on the curve under the cursor that will pass through the AccuDraw origin.
+
+![tangent point snap](assets/SnapTangentPoint.png "Tangent Point Snap")
 
 ## Font APIs
 
@@ -100,6 +116,10 @@ If a walker operation would advance outside the mesh (e.g., `edgeMate` of a boun
 
 You can now surround a [TextBlock]($core-common) with padding by setting its [TextBlockMargins]($core-common). When [layoutTextBlock]($core-backend) computes [TextBlockLayout.range]($core-backend), it will expand the bounding box to include the margins. [ProduceTextAnnotationGeometryArgs.debugAnchorPointAndRange]($core-backend) now produces two bounding boxes: one tightly fitted to the text, and a second expanded to include the margins.
 
+### Tangent To Curve
+
+A new API [CurvePrimitive.emitTangents]($core-geometry) is added to announce tangents from a space point to a curve primitive. This API takes a callback to announce each computed tangent so users can specify the callback according to their need. For example, we have created 2 specific APIs to take advantage of the new API. First API is [CurvePrimitive.allTangents]($core-geometry) which returns all tangents from a space point to a curve primitive. Second API is [CurvePrimitive.closestTangent]($core-geometry) which returns the closest tangent from a space point to a curve primitive with respect to a hint point.
+
 ## Display
 
 ### Read image to canvas
@@ -108,13 +128,17 @@ Previously, when using [Viewport.readImageToCanvas]($core-frontend) with a singl
 
 If [ReadImageToCanvasOptions]($core-frontend) are undefined in the call to [Viewport.readImageToCanvas]($core-frontend), previous behavior will persist and canvas decorations will not be included. This means canvas decorations will not be included when there is a single open viewport, but will be included when there are multiple open viewports. All existing calls to [Viewport.readImageToCanvas]($core-frontend) will be unaffected by this change as the inclusion of [ReadImageToCanvasOptions]($core-frontend) is optional, and when they are undefined, previous behavior will persist.
 
-### Draping models onto reality data
+### Draping iModel models onto reality data or other iModel models
 
-A new property titled `drapeTarget` has been added to [ModelMapLayerProps]($common) and [ModelMapLayerSettings]($common). When this property is specified as [ModelMapLayerDrapeTarget.RealityData]($common), the model map layer will be only draped onto all attached reality data. If `drapeTarget` is not specified in the properties, it will default to [ModelMapLayerDrapeTarget.Globe]($common), which will only drape the model map layer onto the globe.
+A new property titled `drapeTarget` has been added to [ModelMapLayerProps]($common) and [ModelMapLayerSettings]($common). When this property is specified as [ModelMapLayerDrapeTarget.RealityData]($common), the model map layer will be only draped onto all attached reality data. When this property is specified as [ModelMapLayerDrapeTarget.IModel]($common), the model map layer will be only draped onto all models within the iModel. If `drapeTarget` is not specified in the properties, the drape target will default to [ModelMapLayerDrapeTarget.Globe]($common), which will only drape the model map layer onto the globe.
 
 Here is a sample screenshot of draping a model from within an iModel (the piping in the air) onto some glTF reality data (the terrain underneath):
 
 ![model onto reality draping example](./assets/model-draping-onto-reality.jpg "Example of draping a model from within an iModel (the piping in the air) onto some glTF reality data (the terrain underneath)")
+
+Here is a sample screenshot of draping a model from within an iModel onto all models from that same iModel. The red piping model is draping onto all models (even itself); all of these models are contained within the same iModel.
+
+![models onto models draping example](./assets/models-draping-onto-models.jpg "Example of draping models from within an iModel onto all models from that same iModel")
 
 ## Back-end image conversion
 
@@ -178,6 +202,16 @@ Allow the attachment of an ECDb/IModel to a connection and running ECSQL that co
 > Note: There are some reserve alias names that cannot be used. They are 'main', 'schema_sync_db', 'ecchange' & 'temp'
 
 ## Quantity Formatting
+
+### FormatDefinition
+
+A [FormatDefinition]($quantity) interface has been added, an extension of FormatProps to help identify formats.
+
+### FormatsProvider
+
+[FormatsProvider]($quantity) and [MutableFormatsProvider]($quantity) interfaces and a [SchemaFormatsProvider]($ecschema-metadata) class have been added. This enables quick setup of [FormatterSpec]($quantity) and [ParserSpec]($quantity) to help with display formatting.
+
+### Persistence
 
 Following APIs have been added to support persistence:
 
@@ -546,6 +580,8 @@ All three `nativeDb` fields and `IModelHost.platform` have always been `@interna
 | `readImage`                                          | Use `readImageBuffer` instead.                                                                                    |
 | `setEventController`                                 | Removed (was for internal use).                                                                                   |
 | `PullChangesOptions.progressCallback`                | Use `downloadProgressCallback` instead.                                                                           |
+| `AccuDrawShortcuts.rotatePerpendicular`              | Use `AccuDrawShortcuts.rotateAxesByPoint` with `SnapMode.PerpendicularPoint` instead.                             |
+| `AccuDrawRotatePerpendicularTool`                    | Use `AccuDrawRotateAxesTool` with `SnapMode.PerpendicularPoint` instead.                                          |
 
 #### @itwin/core-geometry
 
@@ -755,6 +791,22 @@ For more information read [Pull merge & conflict resolution](../learning/backend
   - `Schema.getItems()` changed from `IterableIterator<SchemaItem>` to `Iterable<SchemaItem>`
 - Reworked caching for merged properties on ECClass. Previously there was a boolean flag `ECClass.getProperties(resetCache: boolean)`.
   This flag has been removed. The cache is automatically cleared, and in cases when base classes change, there is a new `ECClass.cleanCache()` method.
+- Updated the `ECClass.getProperty` and `ECClass.getPropertySync` method signatures to include inherited properties by default, not exclude them. This aligns
+  with `ECClass.getProperties/Sync()` signature.
+- `Format` updated to use Lazy Loaded items to be consistent with other schema items
+  - `addUnit` takes `LazyLoadedUnit | LazyLoadedInvertedUnit` instead of `Unit | InvertedUnit`
+  - `setUnits` takes `LazyLoadedUnit | LazyLoadedInvertedUnit` instead of `Unit | InvertedUnit`
+  - `units` getter returns `ReadonlyArray<[LazyLoadedUnit | LazyLoadedInvertedUnit, string | undefined]>` instead of `ReadonlyArray<[Unit | InvertedUnit, string | undefined]>`
+- `KindOfQuantity` updated to use Lazy Loaded items to be consistent with other schema items
+  - `addPresentationFormat` takes `LazyLoadedFormat` instead of `Format`
+  - `createFormatOverride` takes `Array<[LazyLoadedUnit | LazyLoadedInvertedUnit, string | undefined]>` instead of `Array<[Unit | InvertedUnit, string | undefined]>`
+  - `defaultPresentationFormat` getter returns `LazyLoadedFormat` instead of `Format`
+  - `presentationFormats` getter returns `LazyLoadedFormat` instead of `Format`
+  - `ECObjectsStatus` renamed to `ECSchemaStatus`
+
+  ```ts
+  public async getProperty(name: string, excludeInherited: boolean = false): Promise<Property | undefined>
+  ```
 
 #### Tips for adjusting existing code
 
@@ -770,3 +822,16 @@ if (item && EntityClass.isEntityClass(item)) {
 A regex can be used to do bulk renaming:
 `getSchemaItem<([^>]+)>\(([^)]+)\)` replace with: `getSchemaItem($2, $1)`
 This applies to `SchemaContext.getSchemaItem/Sync`, `Schema.getItem/Sync` and `Schema.lookupItem/Sync`.
+
+## Deprecated ECSqlStatement
+
+`ECSqlStatement` is deprecated in 4.11 Use [IModelDb.createQueryReader]($backend) or [ECDb.createQueryReader]($backend)
+
+Following are related classes to ECSqlStatement that are also mark depercate
+
+- `ECEnumValue`
+- `ECSqlValue`
+- `ECSqlValueIterator`
+- `ECSqlColumnInfo`
+
+  In concurrent query `QueryOptions.convertClassIdsToClassNames` & `QueryOptionsBuilder.setConvertClassIdsToNames()` are deprecated. Use ECSQL ec_classname() function to convert class ids to class names.
