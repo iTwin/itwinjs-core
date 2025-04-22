@@ -302,8 +302,7 @@ describe("Contour lines", () => {
     });
   });
 
-  it("renders contours from multiple groups", () => {
-    testViewport((vp) => {
+  function expectMultipleContourGroups(vp: Viewport): void {
       ContourDecorator.register(0, 0, "0x1");
       ContourDecorator.register(10, -10, "0x2");
       lookAt(vp, 0, -10, 20, 10);
@@ -322,6 +321,11 @@ describe("Contour lines", () => {
         expectedContours.push({ elevation: elevation !== 0 ? -elevation : elevation, groupName: "B", subCategoryId: "0x2", isMajor: elevation % 2 === 0 });
       }
       expectContours(vp, expectedContours);
+  }
+    
+  it("renders contours from multiple groups", () => {
+    testViewport((vp) => {
+      expectMultipleContourGroups(vp);
     });
   });
 
@@ -382,6 +386,28 @@ describe("Contour lines", () => {
       expect(pixels.array.some((x) => x.contour !== undefined)).to.be.true;
       pixels = readUniquePixelData(vp, undefined, undefined, undefined, Pixel.Selector.All);
       expect(pixels.array.some((x) => x.contour !== undefined)).to.be.true;
+    });
+  });
+
+  it("works with ambient occlusion enabled", () => {
+    testViewport((vp) => {
+      vp.viewFlags = vp.viewFlags.with("ambientOcclusion", true);
+      expectMultipleContourGroups(vp);
+    });
+  });
+
+  it("works with anti-aliasing enabled", () => {
+    testViewport((vp) => {
+      vp.antialiasSamples = 4;
+      expectMultipleContourGroups(vp);
+    });
+  });
+
+  it("works with AO and AA enabled", () => {
+    testViewport((vp) => {
+      vp.antialiasSamples = 4;
+      vp.viewFlags = vp.viewFlags.with("ambientOcclusion", true);
+      expectMultipleContourGroups(vp);
     });
   });
 });
