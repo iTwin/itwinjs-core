@@ -1000,9 +1000,9 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
   }
   /**
    * Append (clone of) one point.
-   * * BUT skip if duplicates the tail of prior points.
-   * * If fraction is given, "duplicate" considers both point and fraction.
-   * * We assume fractions are coming from the same CurvePrimitive.
+   * @param point the point to append. If same as the last point, nothing is appended.
+   * @param fraction optional associated fraction to append. If same as the last fraction, nothing is appended.
+   * It is assumed that both fractions refer to the same CurvePrimitive.
    */
   public appendStrokePoint(point: Point3d, fraction?: number): void {
     const n = this._points.length;
