@@ -113,6 +113,7 @@ public;class;DrawingGraphicRepresentsFunctionalElement
 public;class;DrawingModel
 public;class;DrawingViewDefinition
 beta;class;DriverBundleElement
+beta;interface;ECChangeUnifierCache
 public;class;ECDb
 public;enum;ECDbOpenMode
 public;interface;ECEnumValue
@@ -268,6 +269,7 @@ public;class;InformationRecordPartition
 public;class;InformationReferenceElement
 internal;function;initializeTracing
 beta;interface;InlineGeometryPartsResult
+beta;class;InMemoryInstanceCache
 public;interface;InsertElementOptions
 beta;interface;InstanceChange
 public;class;IpcHandler
@@ -420,6 +422,7 @@ public;class;SpatialLocationPartition
 public;class;SpatialLocationType
 public;class;SpatialModel
 public;class;SpatialViewDefinition
+beta;class;SqliteBackedInstanceCache
 beta;interface;SqliteChange
 beta;type;SqliteChangeOp
 beta;class;SqliteChangesetReader
