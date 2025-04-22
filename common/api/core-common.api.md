@@ -8040,7 +8040,7 @@ export namespace RenderSchedule {
         // @internal (undocumented)
         modelRequiresBatching(modelId: Id64String): boolean;
         readonly modelTimelines: ReadonlyArray<ModelTimeline>;
-        // @internal (undocumented)
+        // @internal
         static removeScheduleScriptElementIds(scheduleScript: RenderSchedule.ScriptProps): RenderSchedule.ScriptProps;
         // @internal
         readonly requiresBatching: boolean;
