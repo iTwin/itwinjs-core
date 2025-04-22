@@ -109,13 +109,7 @@ export class IModelTile extends Tile {
 
     const sizeMultiplier = this.hasSizeMultiplier ? this.sizeMultiplier : undefined;
 
-    let ecefTransform: Transform;
-    try {
-      ecefTransform = this.tree.iModel.getEcefTransform();
-    } catch {
-      ecefTransform = Transform.createIdentity();
-    }
-
+    const ecefTransform = this.tree.iModel.isGeoLocated ? this.tree.iModel.getEcefTransform() : Transform.createIdentity();
     try {
       content = await this.iModelTree.decoder.decode({
         stream: streamBuffer,
