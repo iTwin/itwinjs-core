@@ -2239,6 +2239,7 @@ describe("iModel", () => {
       getCurrentChangeset: () => changeset,
       setIModelDb: () => { },
       closeFile: () => { },
+      clearECDbCache: () => { },
     };
 
     const errorLogStub = sinon.stub(Logger, "logError").callsFake(() => { });
