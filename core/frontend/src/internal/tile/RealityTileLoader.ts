@@ -103,7 +103,7 @@ export abstract class RealityTileLoader {
 
     try {
       ecefTransform = tile.tree.iModel.getEcefTransform();
-    } catch (err) {
+    } catch {
       ecefTransform = Transform.createIdentity();
     }
 
