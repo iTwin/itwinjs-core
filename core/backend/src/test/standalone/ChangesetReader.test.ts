@@ -16,7 +16,7 @@ import { HubWrappers, IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { _nativeDb, ChannelControl } from "../../core-backend";
 
-describe.only("Changeset Reader API", async () => {
+describe("Changeset Reader API", async () => {
   let iTwinId: GuidString;
 
   before(() => {
@@ -270,24 +270,25 @@ describe.only("Changeset Reader API", async () => {
     if (true || "test local changes") {
       const testChanges = (changes: ChangedECInstance[]) => {
         assert.equal(changes.length, 3);
-        assert.equal(changes[0].ECInstanceId, "0x20000000004");
-        assert.equal(changes[0].$meta?.classFullName, "TestDomain:Test2dElement");
-        assert.equal(changes[0].$meta?.op, "Inserted");
+
+        assert.equal(changes[0].ECInstanceId, "0x20000000001");
+        assert.equal(changes[0].$meta?.classFullName, "BisCore:DrawingModel");
+        assert.equal(changes[0].$meta?.op, "Updated");
         assert.equal(changes[0].$meta?.stage, "New");
+        assert.isNotNull(changes[0].LastMod);
+        assert.isNotNull(changes[0].GeometryGuid);
 
         assert.equal(changes[1].ECInstanceId, "0x20000000001");
         assert.equal(changes[1].$meta?.classFullName, "BisCore:DrawingModel");
         assert.equal(changes[1].$meta?.op, "Updated");
-        assert.equal(changes[1].$meta?.stage, "New");
-        assert.isNotNull(changes[1].LastMod);
-        assert.isNotNull(changes[1].GeometryGuid);
+        assert.equal(changes[1].$meta?.stage, "Old");
+        assert.isNull(changes[1].LastMod);
+        assert.isNull(changes[1].GeometryGuid);
 
-        assert.equal(changes[2].ECInstanceId, "0x20000000001");
-        assert.equal(changes[2].$meta?.classFullName, "BisCore:DrawingModel");
-        assert.equal(changes[2].$meta?.op, "Updated");
-        assert.equal(changes[2].$meta?.stage, "Old");
-        assert.isNull(changes[2].LastMod);
-        assert.isNull(changes[2].GeometryGuid);
+        assert.equal(changes[2].ECInstanceId, "0x20000000004");
+        assert.equal(changes[2].$meta?.classFullName, "TestDomain:Test2dElement");
+        assert.equal(changes[2].$meta?.op, "Inserted");
+        assert.equal(changes[2].$meta?.stage, "New");
 
         const el = changes.filter((x) => x.ECInstanceId === "0x20000000004")[0];
         assert.equal(el.Rotation, 0);
@@ -366,20 +367,20 @@ describe.only("Changeset Reader API", async () => {
         const classId: Id64String = getClassIdByName(rwIModel, "Test2dElement");
 
         // new value
-        assert.equal(changes[0].ECInstanceId, "0x20000000004");
-        assert.equal(changes[0].ECClassId, classId);
-        assert.equal(changes[0].s, "updated property");
-        assert.equal(changes[0].$meta?.classFullName, "TestDomain:Test2dElement");
-        assert.equal(changes[0].$meta?.op, "Updated");
-        assert.equal(changes[0].$meta?.stage, "New");
+        assert.equal(changes[2].ECInstanceId, "0x20000000004");
+        assert.equal(changes[2].ECClassId, classId);
+        assert.equal(changes[2].s, "updated property");
+        assert.equal(changes[2].$meta?.classFullName, "TestDomain:Test2dElement");
+        assert.equal(changes[2].$meta?.op, "Updated");
+        assert.equal(changes[2].$meta?.stage, "New");
 
         // old value
-        assert.equal(changes[1].ECInstanceId, "0x20000000004");
-        assert.equal(changes[1].ECClassId, classId);
-        assert.equal(changes[1].s, "xxxxxxxxx");
-        assert.equal(changes[1].$meta?.classFullName, "TestDomain:Test2dElement");
-        assert.equal(changes[1].$meta?.op, "Updated");
-        assert.equal(changes[1].$meta?.stage, "Old");
+        assert.equal(changes[3].ECInstanceId, "0x20000000004");
+        assert.equal(changes[3].ECClassId, classId);
+        assert.equal(changes[3].s, "xxxxxxxxx");
+        assert.equal(changes[3].$meta?.classFullName, "TestDomain:Test2dElement");
+        assert.equal(changes[3].$meta?.op, "Updated");
+        assert.equal(changes[3].$meta?.stage, "Old");
       };
 
       if (true || "test with InMemoryInstanceCache") {
@@ -409,24 +410,24 @@ describe.only("Changeset Reader API", async () => {
         assert.equal(changes.length, 4);
 
         // new value
-        assert.equal(changes[0].ECInstanceId, "0x20000000004");
-        assert.isUndefined(changes[0].ECClassId);
-        assert.isDefined(changes[0].$meta?.fallbackClassId);
-        assert.equal(changes[0].$meta?.fallbackClassId, "0x3d");
-        assert.isUndefined(changes[0].s);
-        assert.equal(changes[0].$meta?.classFullName, "BisCore:GeometricElement2d");
-        assert.equal(changes[0].$meta?.op, "Updated");
-        assert.equal(changes[0].$meta?.stage, "New");
+        assert.equal(changes[2].ECInstanceId, "0x20000000004");
+        assert.isUndefined(changes[2].ECClassId);
+        assert.isDefined(changes[2].$meta?.fallbackClassId);
+        assert.equal(changes[2].$meta?.fallbackClassId, "0x3d");
+        assert.isUndefined(changes[2].s);
+        assert.equal(changes[2].$meta?.classFullName, "BisCore:GeometricElement2d");
+        assert.equal(changes[2].$meta?.op, "Updated");
+        assert.equal(changes[2].$meta?.stage, "New");
 
         // old value
-        assert.equal(changes[1].ECInstanceId, "0x20000000004");
-        assert.isUndefined(changes[1].ECClassId);
-        assert.isDefined(changes[1].$meta?.fallbackClassId);
-        assert.equal(changes[1].$meta?.fallbackClassId, "0x3d");
-        assert.isUndefined(changes[1].s);
-        assert.equal(changes[1].$meta?.classFullName, "BisCore:GeometricElement2d");
-        assert.equal(changes[1].$meta?.op, "Updated");
-        assert.equal(changes[1].$meta?.stage, "Old");
+        assert.equal(changes[3].ECInstanceId, "0x20000000004");
+        assert.isUndefined(changes[3].ECClassId);
+        assert.isDefined(changes[3].$meta?.fallbackClassId);
+        assert.equal(changes[3].$meta?.fallbackClassId, "0x3d");
+        assert.isUndefined(changes[3].s);
+        assert.equal(changes[3].$meta?.classFullName, "BisCore:GeometricElement2d");
+        assert.equal(changes[3].$meta?.op, "Updated");
+        assert.equal(changes[3].$meta?.stage, "Old");
       };
 
       if (true || "test with InMemoryInstanceCache") {
@@ -453,24 +454,25 @@ describe.only("Changeset Reader API", async () => {
     if (true || "test changeset file") {
       const testChanges = (changes: ChangedECInstance[]) => {
         assert.equal(changes.length, 3);
-        assert.equal(changes[0].ECInstanceId, "0x20000000004");
-        assert.equal(changes[0].$meta?.classFullName, "TestDomain:Test2dElement");
-        assert.equal(changes[0].$meta?.op, "Inserted");
+
+        assert.equal(changes[0].ECInstanceId, "0x20000000001");
+        assert.equal(changes[0].$meta?.classFullName, "BisCore:DrawingModel");
+        assert.equal(changes[0].$meta?.op, "Updated");
         assert.equal(changes[0].$meta?.stage, "New");
+        assert.isNotNull(changes[0].LastMod);
+        assert.isNotNull(changes[0].GeometryGuid);
 
         assert.equal(changes[1].ECInstanceId, "0x20000000001");
         assert.equal(changes[1].$meta?.classFullName, "BisCore:DrawingModel");
         assert.equal(changes[1].$meta?.op, "Updated");
-        assert.equal(changes[1].$meta?.stage, "New");
-        assert.isNotNull(changes[1].LastMod);
-        assert.isNotNull(changes[1].GeometryGuid);
+        assert.equal(changes[1].$meta?.stage, "Old");
+        assert.isNull(changes[1].LastMod);
+        assert.isNull(changes[1].GeometryGuid);
 
-        assert.equal(changes[2].ECInstanceId, "0x20000000001");
-        assert.equal(changes[2].$meta?.classFullName, "BisCore:DrawingModel");
-        assert.equal(changes[2].$meta?.op, "Updated");
-        assert.equal(changes[2].$meta?.stage, "Old");
-        assert.isNull(changes[2].LastMod);
-        assert.isNull(changes[2].GeometryGuid);
+        assert.equal(changes[2].ECInstanceId, "0x20000000004");
+        assert.equal(changes[2].$meta?.classFullName, "TestDomain:Test2dElement");
+        assert.equal(changes[2].$meta?.op, "Inserted");
+        assert.equal(changes[2].$meta?.stage, "New");
 
         const el = changes.filter((x) => x.ECInstanceId === "0x20000000004")[0];
         assert.equal(el.Rotation, 0);

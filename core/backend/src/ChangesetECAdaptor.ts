@@ -460,6 +460,10 @@ export class InMemoryInstanceCache implements ECChangeUnifierCache {
    * @param value - The changed EC instance to be stored.
    */
   public set(key: string, value: ChangedECInstance): void {
+    const meta = value.$meta as any;
+    if (meta) {
+      Object.keys(meta).forEach(key => meta[key] === undefined && delete meta[key]);
+    }
     this._cache.set(key, value);
   }
 
@@ -467,8 +471,9 @@ export class InMemoryInstanceCache implements ECChangeUnifierCache {
    * Returns an iterator over all the changed EC instances in the cache.
    * @returns An iterator over all the changed EC instances.
    */
-  public all(): IterableIterator<ChangedECInstance> {
-    return this._cache.values();
+  public *all(): IterableIterator<ChangedECInstance> {
+    for (const key of Array.from(this._cache.keys()).sort())
+      yield this._cache.get(key)!;
   }
 
   /**
