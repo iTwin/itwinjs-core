@@ -31,13 +31,13 @@ export class SubCategory extends DefinitionElement {
     this.description = JsonUtils.asString(props.description);
   }
 
-  /** @internal */
+  /** @beta */
   protected static override readonly _customHandledProps: CustomHandledProperty[] = [
     { propertyName: "description", source: "Class" },
     { propertyName: "properties", source: "Class" },
   ];
 
-  /** @internal */
+  /** @beta */
   public static override deserialize(props: InstanceProps): SubCategoryProps {
     const elProps = super.deserialize(props) as SubCategoryProps;
     elProps.description = JsonUtils.asString(props.row.description);
@@ -49,7 +49,7 @@ export class SubCategory extends DefinitionElement {
     return elProps;
   }
 
-  /** @internal */
+  /** @beta */
   public static override serialize(props: SubCategoryProps, iModel: IModelDb): ECSqlRow {
     const inst = super.serialize(props, iModel);
     if (props.description !== undefined) {
@@ -139,13 +139,13 @@ export class Category extends DefinitionElement {
     this.description = JsonUtils.asString(props.description);
   }
 
-  /** @internal */
+  /** @beta */
   protected static override readonly _customHandledProps: CustomHandledProperty[] = [
     { propertyName: "rank", source: "Class" },
     { propertyName: "description", source: "Class" },
   ];
 
-  /** @internal */
+  /** @beta */
   public static override deserialize(props: InstanceProps): CategoryProps {
     const elProps = super.deserialize(props) as CategoryProps;
     elProps.description = JsonUtils.asString(props.row.description);
@@ -153,7 +153,7 @@ export class Category extends DefinitionElement {
     return elProps;
   }
 
-  /** @internal */
+  /** @beta */
   public static override serialize(props: CategoryProps, iModel: IModelDb): ECSqlRow {
     const inst = super.serialize(props, iModel);
     if (undefined !== props.description) {

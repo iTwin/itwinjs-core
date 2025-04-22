@@ -74,12 +74,12 @@ export class RenderMaterialElement extends DefinitionElement {
     return val;
   }
 
-  /** @internal */
+  /** @beta */
   protected static override readonly _customHandledProps: CustomHandledProperty[] = [
     { propertyName: "paletteName", source: "Class" },
   ];
 
-  /** @internal */
+  /** @beta */
   public static override deserialize(props: InstanceProps): RenderMaterialProps {
     const elProps = super.deserialize(props) as RenderMaterialProps;
     const instance = props.row;
@@ -87,7 +87,7 @@ export class RenderMaterialElement extends DefinitionElement {
     return elProps;
   }
 
-  /** @internal */
+  /** @beta */
   public static override serialize(props: RenderMaterialProps, iModel: IModelDb): ECSqlRow {
     const inst = super.serialize(props, iModel);
     inst.paletteName = props.paletteName;

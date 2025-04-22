@@ -29,7 +29,7 @@ export abstract class DisplayStyle extends DefinitionElement {
     super(props, iModel);
   }
 
-  /** @internal */
+  /** @beta */
   public static override deserialize(props: InstanceProps): DisplayStyleProps {
     const elProps = super.deserialize(props) as DisplayStyleProps;
     const displayOptions = props.options?.element?.displayStyle;
@@ -52,7 +52,7 @@ export abstract class DisplayStyle extends DefinitionElement {
     return elProps;
   }
 
-  /** @internal */
+  /** @beta */
   public static override serialize(props: DisplayStyleProps, iModel: IModelDb): ECSqlRow {
     const inst = super.serialize(props, iModel);
     return inst;

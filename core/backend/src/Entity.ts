@@ -107,7 +107,7 @@ export class Entity {
 
   /** List of properties that are need to be custom handled during deserialization and serialization.
    * These properties differ between the ECSql instance of an Entity and the Entity itself.
-   * @internal */
+   * @beta */
   protected static readonly _customHandledProps: CustomHandledProperty[] = [
     { propertyName: "id", source: "Class" },
     { propertyName: "className", source: "Class" },
@@ -129,7 +129,7 @@ export class Entity {
   }
 
   /** Converts an ECSqlRow of an Entity to an EntityProps. This is used to deserialize an Entity from the database.
-   * @internal */
+   * @beta */
   public static deserialize(props: InstanceProps): EntityProps {
     const enProps: EntityProps = {
       classFullName: props.row.classFullName,
@@ -156,7 +156,7 @@ export class Entity {
   }
 
   /** Converts an EntityProps to an ECSqlRow. This is used to serialize an Entity to prepare to write it to the database.
-   * @internal */
+   * @beta */
   public static serialize(props: EntityProps, _iModel: IModelDb): ECSqlRow {
     const inst: ECSqlRow = {
       classFullName: props.classFullName,
