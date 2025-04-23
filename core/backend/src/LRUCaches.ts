@@ -70,9 +70,7 @@ export class ElementLRUCache {
   private _cacheByFederationGuid = new Map<string, Id64String>();
 
   private static makeCodeKey(code: CodeProps): string {
-    if (code.value)
-      return `${code.scope}:${code.value}:${code.value}`;
-    return `${code.scope}:${code.value}`;
+    return JSON.stringify(code);
   }
   private findElement(key: ElementLoadProps): CachedElement | undefined {
     if (key.id) {
