@@ -69,7 +69,11 @@ export class ElementLRUCache {
   private _cacheByFederationGuid = new Map<string, Id64String>();
 
   private static makeCodeKey(code: CodeProps): string {
-    return JSON.stringify(code);
+    const keys = [code.scope, code.spec];
+    if (code.value !== undefined) {
+      keys.push(code.value);
+    }
+    return JSON.stringify(keys);
   }
   private findElement(key: ElementLoadProps): CachedElement | undefined {
     if (key.id) {
@@ -158,7 +162,8 @@ export class ElementLRUCache {
     this._cacheByCode.set(ElementLRUCache.makeCodeKey(el.elProps.code), el.elProps.id);
     if (this._elementCache.size > this.capacity) {
       const oldestKey = this._elementCache.keys().next().value as Id64String;
-      this.delete({ id: oldestKey });
+      const oldestElement = this._elementCache.get(oldestKey);
+      this.delete({ id: oldestKey, federationGuid: oldestElement?.elProps.federationGuid, code: oldestElement?.elProps.code });
     }
     return this;
   }
