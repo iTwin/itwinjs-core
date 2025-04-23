@@ -5,7 +5,7 @@
 /** @packageDocumentation
  * @module Tiles
  */
-import { Cartographic, ImageMapLayerSettings, ImageSource, IModelStatus, ServerError } from "@itwin/core-common";
+import { Cartographic, ImageMapLayerSettings, ImageSource, ServerError } from "@itwin/core-common";
 import { IModelApp } from "../../../IModelApp";
 import {
   ArcGisErrorCode, ArcGisGeometryReaderJSON, ArcGISImageryProvider, ArcGISTileMap, ArcGisUtilities,
@@ -14,7 +14,7 @@ import {
 } from "../../internal";
 import { PropertyValueFormat, StandardTypeNames } from "@itwin/appui-abstract";
 import { Point2d, Range2d, Range2dProps, XYProps } from "@itwin/core-geometry";
-import { Logger } from "@itwin/core-bentley";
+import { IModelStatus, Logger } from "@itwin/core-bentley";
 import { HitDetail } from "../../../HitDetail";
 
 const loggerCategory =  "MapLayerImageryProvider.ArcGISMapLayerImageryProvider";

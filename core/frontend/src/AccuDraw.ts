@@ -429,6 +429,16 @@ export class AccuDraw {
       this.currentState = CurrentState.Deactivated;
   }
 
+  /** Whether to show Z input field in 3d. Sub-classes can override to restrict AccuDraw to 2d input when working in overlays where
+   * depth is not important.
+   * @note Intended to be used in conjunction with ViewState.allow3dManipulations returning false to also disable 3d rotation and
+   * ToolAdmin.acsPlaneSnapLock set to true for projecting snapped points to the view's ACS plane.
+   * @see [[ViewState.allow3dManipulations]][[ToolAdmin.acsPlaneSnapLock]]
+   */
+  public is3dCompass(viewport: Viewport): boolean {
+    return viewport.view.is3d();
+  }
+
   /** Change current compass input mode to either polar or rectangular */
   public setCompassMode(mode: CompassMode): void {
     if (mode === this.compassMode)
@@ -622,7 +632,7 @@ export class AccuDraw {
   public isZLocked(vp: Viewport): boolean {
     if (this._fieldLocked[ItemField.Z_Item])
       return true;
-    if (vp.isSnapAdjustmentRequired) //  && TentativeOrAccuSnap.isHot())
+    if (vp.isSnapAdjustmentRequired && TentativeOrAccuSnap.isHot)
       return true;
 
     return false;
@@ -1096,13 +1106,20 @@ export class AccuDraw {
   private stringFromAngle(angle: number): string {
     if (this.isBearingMode && this.flags.bearingFixToPlane2D) {
       const point = Vector3d.create(this.axes.x.x, this.axes.x.y, 0.0);
+      const matrix = Matrix3d.createRows(this.axes.x, this.axes.y, this.axes.z);
+      if (matrix.determinant() < 0)
+        angle = -angle; // Account for left handed rotations...
 
       point.normalizeInPlace();
       let adjustment = Math.acos(point.x);
 
       if (point.y < 0.0)
         adjustment = -adjustment;
-      angle += adjustment;
+      angle += adjustment; // This is the angle measured from design x...
+      angle = (Math.PI / 2) - angle; // Account for bearing direction convention...
+
+      if (angle < 0)
+        angle = (Math.PI * 2) + angle; // Negative bearings aren't valid?
     }
 
     const formatterSpec = this.getAngleFormatter();
@@ -1149,7 +1166,10 @@ export class AccuDraw {
       case ItemField.ANGLE_Item:
         parseResult = this.stringToAngle(input);
         if (Parser.isParsedQuantity(parseResult)) {
-          this._angle = parseResult.value;
+          if (this.isBearingMode && this.flags.bearingFixToPlane2D)
+            this._angle = (Math.PI / 2) - parseResult.value;
+          else
+            this._angle = parseResult.value;
           break;
         }
         return BentleyStatus.ERROR;
@@ -1252,12 +1272,20 @@ export class AccuDraw {
     return true;
   }
 
+  private _acosWithLimitCheck(value: number): number {
+    if (value >= 1.0)
+      return 0.0;
+    if (value <= -1.0)
+      return Math.PI;
+    return Math.acos(value);
+  }
+
   private handleDegeneratePolarCase(): void {
     if (!(this.locked & LockedStates.DIST_BM))
       this._distance = 0.0;
 
     if (this.locked & LockedStates.VEC_BM) {
-      this._angle = Math.acos(this.vector.dotProduct(this.axes.x));
+      this._angle = this._acosWithLimitCheck(this.vector.dotProduct(this.axes.x));
     } else if (this.locked & LockedStates.Y_BM) {
       this.vector.setFrom(this.axes.y);
       this._angle = Math.PI / 2.0;
@@ -1268,7 +1296,7 @@ export class AccuDraw {
       this.indexed = this.locked;
     } else {
       // use last good vector
-      this._angle = Math.acos(this.vector.dotProduct(this.axes.x));
+      this._angle = this._acosWithLimitCheck(this.vector.dotProduct(this.axes.x));
     }
     this.origin.plusScaled(this.vector, this._distance, this.point);
   }

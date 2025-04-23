@@ -7,14 +7,13 @@
  */
 
 import {
-  assert, BeEvent, CompressedId64Set, GeoServiceStatus, GuidString, Id64, Id64Arg, Id64Set, Id64String, Logger, OneAtATimeAction, OpenMode,
+  assert, BeEvent, CompressedId64Set, DbResult, GeoServiceStatus, GuidString, Id64, Id64Arg, Id64Set, Id64String, IModelStatus, Logger, OneAtATimeAction, OpenMode,
   PickAsyncMethods, TransientIdSequence,
 } from "@itwin/core-bentley";
 import {
-  AxisAlignedBox3d, Cartographic, CodeProps, CodeSpec, DbQueryRequest, DbResult, EcefLocation, EcefLocationProps, ECSqlReader, ElementLoadOptions,
-  ElementMeshRequestProps,
+  AxisAlignedBox3d, Cartographic, CodeProps, CodeSpec, DbQueryRequest, EcefLocation, EcefLocationProps, ECSqlReader, ElementLoadOptions, ElementMeshRequestProps,
   ElementProps, EntityQueryParams, FontMap, GeoCoordStatus, GeographicCRSProps, GeometryContainmentRequestProps, GeometryContainmentResponseProps, GeometrySummaryRequestProps, ImageSourceFormat, IModel, IModelConnectionProps, IModelError,
-  IModelReadRpcInterface, IModelStatus, mapToGeoServiceStatus, MassPropertiesPerCandidateRequestProps, MassPropertiesPerCandidateResponseProps,
+  IModelReadRpcInterface, mapToGeoServiceStatus, MassPropertiesPerCandidateRequestProps, MassPropertiesPerCandidateResponseProps,
   MassPropertiesRequestProps, MassPropertiesResponseProps, ModelExtentsProps, ModelProps, ModelQueryParams, NoContentError, Placement, Placement2d,
   Placement3d, QueryBinder, QueryOptions, QueryOptionsBuilder, QueryRowFormat, RpcManager, SnapRequestProps, SnapResponseProps,
   SnapshotIModelRpcInterface, SubCategoryAppearance, SubCategoryResultRow, TextureData, TextureLoadProps, ThumbnailProps, ViewDefinitionProps,
@@ -435,15 +434,15 @@ export abstract class IModelConnection extends IModel {
     return undefined;
   }
 
-  /** Request element mass properties from the backend.
-   * @note For better performance use [[getMassPropertiesPerCandidate]] when called from a loop with identical operations and a single candidate per iteration.
-   */
+  /** Request element mass properties from the backend. */
   public async getMassProperties(requestProps: MassPropertiesRequestProps): Promise<MassPropertiesResponseProps> {
     return IModelReadRpcInterface.getClientForRouting(this.routingContext.token).getMassProperties(this.getRpcProps(), requestProps);
   }
 
-  /** Request mass properties for multiple elements from the backend. */
-  public async getMassPropertiesPerCandidate(requestProps: MassPropertiesPerCandidateRequestProps): Promise<MassPropertiesPerCandidateResponseProps[]> {
+  /** Request mass properties for multiple elements from the backend.
+   * @deprecated in 4.11. Use [[IModelConnection.getMassProperties]].
+   */
+  public async getMassPropertiesPerCandidate(requestProps: MassPropertiesPerCandidateRequestProps): Promise<MassPropertiesPerCandidateResponseProps[]> {  // eslint-disable-line @typescript-eslint/no-deprecated
     return IModelReadRpcInterface.getClientForRouting(this.routingContext.token).getMassPropertiesPerCandidate(this.getRpcProps(), requestProps);
   }
 

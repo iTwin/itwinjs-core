@@ -1,6 +1,62 @@
 # Change Log - @itwin/core-backend
 
-This log was last generated on Fri, 24 Jan 2025 08:03:59 GMT and should not be manually modified.
+This log was last generated on Wed, 16 Apr 2025 15:50:28 GMT and should not be manually modified.
+
+## 4.11.0
+Wed, 16 Apr 2025 15:50:28 GMT
+
+### Updates
+
+- Deprecate ECSqlStatement API
+- Fix issue with concurrent query where it interrupt statement during prepare
+- Resolves CVE-2025-27152
+- new test for 3d linestyle part export
+- Add test for BE_SQLITE_CONSTRAINT_UNIQUE
+- Added SheetIndex classes to Class Registery
+- pulling a changeset with project extents changes now updates the extents of the opened imodel
+- Fix CloudSqlite.DbAccess.createBlobContainer always overwriting containerType with "property-store".
+- Resolve race condition when recursively creating folders.
+
+## 4.10.13
+Thu, 10 Apr 2025 17:47:21 GMT
+
+_Version update only_
+
+## 4.10.12
+Wed, 02 Apr 2025 19:35:47 GMT
+
+_Version update only_
+
+## 4.10.11
+Wed, 19 Mar 2025 15:30:39 GMT
+
+### Updates
+
+- new test for 3d linestyle part export
+
+## 4.10.10
+Tue, 11 Mar 2025 15:25:11 GMT
+
+### Updates
+
+- Resolves CVE-2025-27152
+
+## 4.10.9
+Tue, 11 Mar 2025 05:17:33 GMT
+
+_Version update only_
+
+## 4.10.8
+Thu, 06 Mar 2025 14:13:37 GMT
+
+_Version update only_
+
+## 4.10.7
+Tue, 18 Feb 2025 17:27:03 GMT
+
+### Updates
+
+- Fix issue with concurrent query where it interrupt statement during prepare
 
 ## 4.10.6
 Fri, 24 Jan 2025 08:02:40 GMT

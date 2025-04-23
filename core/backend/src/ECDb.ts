@@ -10,7 +10,7 @@ import { IModelJsNative } from "@bentley/imodeljs-native";
 import { DbQueryRequest, ECSchemaProps, ECSqlReader, IModelError, QueryBinder, QueryOptions, QueryOptionsBuilder } from "@itwin/core-common";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { ConcurrentQuery } from "./ConcurrentQuery";
-import { ECSqlStatement } from "./ECSqlStatement";
+import { ECSqlStatement, ECSqlWriteStatement } from "./ECSqlStatement";
 import { IModelNative } from "./internal/NativePlatform";
 import { SqliteStatement, StatementCache } from "./SqliteStatement";
 import { _nativeDb } from "./internal/Symbols";
@@ -32,6 +32,7 @@ export enum ECDbOpenMode {
  */
 export class ECDb implements IDisposable {
   private _nativeDb?: IModelJsNative.ECDb;
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   private readonly _statementCache = new StatementCache<ECSqlStatement>();
   private _sqliteStatementCache = new StatementCache<SqliteStatement>();
 
@@ -156,10 +157,86 @@ export class ECDb implements IDisposable {
    * @param callback the callback to invoke on the prepared statement
    * @param logErrors Determines if error will be logged if statement fail to prepare
    * @returns the value returned by `callback`.
+   * @see [[withWriteStatement]]
+   * @beta
+   */
+  public withCachedWriteStatement<T>(ecsql: string, callback: (stmt: ECSqlWriteStatement) => T, logErrors = true): T {
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    const stmt = this._statementCache.findAndRemove(ecsql) ?? this.prepareStatement(ecsql, logErrors);
+    const release = () => this._statementCache.addOrDispose(stmt);
+    try {
+      const val = callback(new ECSqlWriteStatement(stmt));
+      if (val instanceof Promise) {
+        val.then(release, release);
+      } else {
+        release();
+      }
+      return val;
+    } catch (err) {
+      release();
+      throw err;
+    }
+  }
+
+  /**
+   * Prepared and execute a callback on an ECSQL statement. After the callback completes the statement is disposed.
+   * Use this method for ECSQL statements are either not expected to be reused, or are not expensive to prepare.
+   * For statements that will be reused often, instead use [[withPreparedStatement]].
+   * @param sql The SQLite SQL statement to execute
+   * @param callback the callback to invoke on the prepared statement
+   * @param logErrors Determines if error will be logged if statement fail to prepare
+   * @returns the value returned by `callback`.
+   * @see [[withCachedWriteStatement]]
+   * @beta
+   */
+  public withWriteStatement<T>(ecsql: string, callback: (stmt: ECSqlWriteStatement) => T, logErrors = true): T {
+    const stmt = this.prepareWriteStatement(ecsql, logErrors);
+    const release = () => stmt.dispose();
+    try {
+      const val = callback(stmt);
+      if (val instanceof Promise) {
+        val.then(release, release);
+      } else {
+        release();
+      }
+      return val;
+    } catch (err) {
+      release();
+      throw err;
+    }
+  }
+
+  /** Prepare an ECSQL statement.
+  * @param ecsql The ECSQL statement to prepare
+  * @param logErrors Determines if error will be logged if statement fail to prepare
+  * @throws [IModelError]($common) if there is a problem preparing the statement.
+  * @beta
+  */
+  public prepareWriteStatement(ecsql: string, logErrors = true): ECSqlWriteStatement {
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    return new ECSqlWriteStatement(this.prepareStatement(ecsql, logErrors));
+  }
+
+  /**
+   * Use a prepared ECSQL statement, potentially from the statement cache. If the requested statement doesn't exist
+   * in the statement cache, a new statement is prepared. After the callback completes, the statement is reset and saved
+   * in the statement cache so it can be reused in the future. Use this method for ECSQL statements that will be
+   * reused often and are expensive to prepare. The statement cache holds the most recently used statements, discarding
+   * the oldest statements as it fills. For statements you don't intend to reuse, instead use [[withStatement]].
+   * @param sql The SQLite SQL statement to execute
+   * @param callback the callback to invoke on the prepared statement
+   * @param logErrors Determines if error will be logged if statement fail to prepare
+   * @returns the value returned by `callback`.
    * @see [[withStatement]]
    * @public
+   * @deprecated in 4.11.  Use [IModelDb.createQueryReader]($backend) or [ECDb.createQueryReader]($backend) to query.
+   * For ECDb, use [ECDb.withCachedWriteStatement]($backend) or [ECDb.withWriteStatement]($backend) to Insert/Update/Delete.
+   * [IModelDb.createQueryReader]($backend) is an asynchronous API. If you encounter a use case that cannot be converted to async, please report an issue at https://github.com/iTwin/itwinjs-core/issues.
+   * Mean while use [ECDb.withPreparedStatement]($backend) for synchronous API calls where conversion to async is not possible.
    */
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   public withPreparedStatement<T>(ecsql: string, callback: (stmt: ECSqlStatement) => T, logErrors = true): T {
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     const stmt = this._statementCache.findAndRemove(ecsql) ?? this.prepareStatement(ecsql, logErrors);
     const release = () => this._statementCache.addOrDispose(stmt);
     try {
@@ -186,8 +263,14 @@ export class ECDb implements IDisposable {
    * @returns the value returned by `callback`.
    * @see [[withPreparedStatement]]
    * @public
+   * @deprecated in 4.11.  Use [IModelDb.createQueryReader]($backend) or [ECDb.createQueryReader]($backend) to query.
+   * For ECDb, use [ECDb.withCachedWriteStatement]($backend) or [ECDb.withWriteStatement]($backend) to Insert/Update/Delete.
+   * [IModelDb.createQueryReader]($backend) is an asynchronous API. If you encounter a use case that cannot be converted to async, please report an issue at https://github.com/iTwin/itwinjs-core/issues.
+   * Mean while use [ECDb.withPreparedStatement]($backend) for synchronous API calls where conversion to async is not possible.
    */
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   public withStatement<T>(ecsql: string, callback: (stmt: ECSqlStatement) => T, logErrors = true): T {
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     const stmt = this.prepareStatement(ecsql, logErrors);
     const release = () => stmt.dispose();
     try {
@@ -208,8 +291,14 @@ export class ECDb implements IDisposable {
    * @param ecsql The ECSQL statement to prepare
    * @param logErrors Determines if error will be logged if statement fail to prepare
    * @throws [IModelError]($common) if there is a problem preparing the statement.
+   * @deprecated in 4.11.  Use [IModelDb.createQueryReader]($backend) or [ECDb.createQueryReader]($backend) to query.
+   * For ECDb, use [ECDb.withCachedWriteStatement]($backend) or [ECDb.withWriteStatement]($backend) to Insert/Update/Delete.
+   * [IModelDb.createQueryReader]($backend) is an asynchronous API. If you encounter a use case that cannot be converted to async, please report an issue at https://github.com/iTwin/itwinjs-core/issues.
+   * Mean while use [ECDb.withPreparedStatement]($backend) for synchronous API calls where conversion to async is not possible.
    */
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   public prepareStatement(ecsql: string, logErrors = true): ECSqlStatement {
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     const stmt = new ECSqlStatement();
     stmt.prepare(this[_nativeDb], ecsql, logErrors);
     return stmt;

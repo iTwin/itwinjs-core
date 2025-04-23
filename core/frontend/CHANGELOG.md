@@ -1,6 +1,61 @@
 # Change Log - @itwin/core-frontend
 
-This log was last generated on Fri, 24 Jan 2025 08:03:59 GMT and should not be manually modified.
+This log was last generated on Wed, 16 Apr 2025 15:50:28 GMT and should not be manually modified.
+
+## 4.11.0
+Wed, 16 Apr 2025 15:50:28 GMT
+
+### Updates
+
+- Fix issue validating ArcGIS service urls
+- Add support for reading and interpreting Cesium tiles containing EXT_mesh_features extension.
+- Resolves CVE-2025-27152
+- Fixed problem causing bg map masking of large models to crash.
+- Fix duplicate Bing map attributions.
+- Deprecated `IModelConnection.getMassPropertiesPerCandidate`
+- Fix decoration graphics failing to use line color for planar region outlines.
+- Fix conversion of RGBA to RGB when decoding point cloud colors.
+
+## 4.10.13
+Thu, 10 Apr 2025 17:47:21 GMT
+
+_Version update only_
+
+## 4.10.12
+Wed, 02 Apr 2025 19:35:47 GMT
+
+_Version update only_
+
+## 4.10.11
+Wed, 19 Mar 2025 15:30:39 GMT
+
+### Updates
+
+- Fixed problem causing bg map masking of large models to crash.
+
+## 4.10.10
+Tue, 11 Mar 2025 15:25:11 GMT
+
+### Updates
+
+- Resolves CVE-2025-27152
+
+## 4.10.9
+Tue, 11 Mar 2025 05:17:33 GMT
+
+### Updates
+
+- Fix issue validating ArcGIS service urls
+
+## 4.10.8
+Thu, 06 Mar 2025 14:13:37 GMT
+
+_Version update only_
+
+## 4.10.7
+Tue, 18 Feb 2025 17:27:03 GMT
+
+_Version update only_
 
 ## 4.10.6
 Fri, 24 Jan 2025 08:02:40 GMT

@@ -123,7 +123,7 @@ export class MeshBuilderMap extends Dictionary<MeshBuilderMap.Key, MeshBuilder> 
 
     const type = isDisjoint ? MeshPrimitiveType.Point : MeshPrimitiveType.Polyline;
     const builder = this.getBuilder(displayParams, type, false, isPlanar);
-    builder.addStrokePointLists(strokes, isDisjoint, displayParams.fillColor.tbgr, feature);
+    builder.addStrokePointLists(strokes, isDisjoint, displayParams.lineColor.tbgr, feature);
   }
 
   public getBuilder(displayParams: DisplayParams, type: MeshPrimitiveType, hasNormals: boolean, isPlanar: boolean): MeshBuilder {

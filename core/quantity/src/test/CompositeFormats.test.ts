@@ -351,7 +351,6 @@ describe("Composite Formats tests:", () => {
       const formattedValue = Formatter.formatQuantity(testEntry.magnitude, spec);
       assert.isTrue(formattedValue.length > 0);
       assert.strictEqual(formattedValue, testEntry.result);
-      // console.log(testEntry.magnitude.toString() + " " + testEntry.unit.label + " => " + formattedValue);
     }
   });
 

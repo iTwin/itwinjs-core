@@ -5895,7 +5895,7 @@ export enum MassPropertiesOperation {
     AccumulateVolumes = 2
 }
 
-// @public
+// @public @deprecated
 export interface MassPropertiesPerCandidateRequestProps {
     // (undocumented)
     candidates: CompressedId64Set;
@@ -5903,7 +5903,7 @@ export interface MassPropertiesPerCandidateRequestProps {
     operations: MassPropertiesOperation[];
 }
 
-// @public
+// @public @deprecated
 export interface MassPropertiesPerCandidateResponseProps extends MassPropertiesResponseProps {
     // (undocumented)
     candidate: Id64String;
@@ -7466,6 +7466,7 @@ export interface QueryLimit {
 // @public
 export interface QueryOptions extends BaseReaderOptions {
     abbreviateBlobs?: boolean;
+    // @deprecated
     convertClassIdsToClassNames?: boolean;
     includeMetaData?: boolean;
     limit?: QueryLimit;
@@ -7479,6 +7480,7 @@ export class QueryOptionsBuilder {
     // (undocumented)
     getOptions(): QueryOptions;
     setAbbreviateBlobs(val: boolean): this;
+    // @deprecated
     setConvertClassIdsToNames(val: boolean): this;
     // @internal
     setDelay(val: number): this;

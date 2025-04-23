@@ -94,6 +94,7 @@ describe("ECSql Query", () => {
     builder.setRowFormat(QueryRowFormat.UseJsPropertyNames);
     let expectedRows = 0;
     for (let i = 0; i < queries.length; i++) {
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       imodel1.withPreparedStatement(queries[i], (stmt: ECSqlStatement) => {
         assert.equal(DbResult.BE_SQLITE_ROW, stmt.step(), "expected DbResult.BE_SQLITE_ROW");
         assert.deepEqual(stmt.getRow(), results[i], `(ECSqlStatement) "${queries[i]}" does not match expected result (${path.basename(imodel1[_nativeDb].getFilePath())})`);
@@ -364,9 +365,11 @@ describe("ECSql Query", () => {
     /* eslint-enable @typescript-eslint/naming-convention  */
     const builder = new QueryOptionsBuilder();
     builder.setRowFormat(QueryRowFormat.UseJsPropertyNames);
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     builder.setConvertClassIdsToNames(true);
     // With ECDb Profile 4002
     for (const testQuery of testQueries) {
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       imodel1.withPreparedStatement(testQuery.query, (stmt: ECSqlStatement) => {
         assert.equal(DbResult.BE_SQLITE_ROW, stmt.step(), "expected DbResult.BE_SQLITE_ROW");
         assert.deepEqual(stmt.getRow(), testQuery.result, `(ECSqlStatement) "${testQuery.query}" does not match expected result (${path.basename(imodel1[_nativeDb].getFilePath())})`);
@@ -381,6 +384,7 @@ describe("ECSql Query", () => {
     }
     // With ECDb Profile 4003
     for (const testQuery of testQueries) {
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       imodel6.withPreparedStatement(testQuery.query, (stmt: ECSqlStatement) => {
         assert.equal(DbResult.BE_SQLITE_ROW, stmt.step(), "expected DbResult.BE_SQLITE_ROW");
         assert.deepEqual(stmt.getRow(), testQuery.result, `(ECSqlStatement) "${testQuery.query}" does not match expected result (${path.basename(imodel1[_nativeDb].getFilePath())})`);
@@ -484,12 +488,14 @@ describe("ECSql Query", () => {
     // expect log message when statement fails
     slm = new SequentialLogMatcher();
     slm.append().error().category("ECDb").message("ECClass 'abc.def' does not exist or could not be loaded.");
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     assert.throw(() => ecdb.withPreparedStatement("SELECT abc FROM abc.def", () => { }), "ECClass 'abc.def' does not exist or could not be loaded.");
     assert.isTrue(slm.finishAndDispose(), "logMatcher should detect log");
 
     // now pass suppress log error which mean we should not get the error
     slm = new SequentialLogMatcher();
     slm.append().error().category("ECDb").message("ECClass 'abc.def' does not exist or could not be loaded.");
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     assert.throw(() => ecdb.withPreparedStatement("SELECT abc FROM abc.def", () => { }, /* logErrors = */ false), "");
     assert.isFalse(slm.finishAndDispose(), "logMatcher should not detect log");
   });

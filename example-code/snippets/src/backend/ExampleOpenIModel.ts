@@ -2,9 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { AccessToken, OpenMode } from "@itwin/core-bentley";
+import { AccessToken, IModelStatus, OpenMode } from "@itwin/core-bentley";
 import { BriefcaseDb } from "@itwin/core-backend";
-import { IModelError, IModelStatus, OpenBriefcaseProps } from "@itwin/core-common";
+import { IModelError, OpenBriefcaseProps } from "@itwin/core-common";
 import { TestUserCredentials, TestUtility } from "@itwin/oidc-signin-tool";
 
 async function getUserAccessToken(userCredentials: TestUserCredentials): Promise<AccessToken> {

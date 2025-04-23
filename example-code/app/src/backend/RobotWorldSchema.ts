@@ -5,7 +5,8 @@
 
 import * as path from "path";
 import { ClassRegistry, IModelDb, IModelHost, Schema, Schemas, SpatialCategory } from "@itwin/core-backend";
-import { ColorByName, IModelError, IModelStatus, SubCategoryAppearance } from "@itwin/core-common";
+import { IModelStatus } from "@itwin/core-bentley";
+import { ColorByName, IModelError, SubCategoryAppearance } from "@itwin/core-common";
 import * as _schemaNames from "../common/RobotWorldSchema";
 import * as obstacles from "./BarrierElement";
 

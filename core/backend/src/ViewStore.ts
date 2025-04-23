@@ -21,6 +21,7 @@ import { Model } from "./Model";
 import { Entity } from "./Entity";
 import { BlobContainer } from "./BlobContainerService";
 import { _nativeDb } from "./internal/Symbols";
+import { ECSqlStatement } from "./ECSqlStatement";
 
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 
@@ -866,7 +867,8 @@ export namespace ViewStore {
 
       const ids = new Set<string>();
       try {
-        this.iModel.withStatement(sql, (stmt) => {
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
+        this.iModel.withPreparedStatement(sql, (stmt: ECSqlStatement) => {
           if (bindings)
             stmt.bindValues(bindings);
           for (const el of stmt) {

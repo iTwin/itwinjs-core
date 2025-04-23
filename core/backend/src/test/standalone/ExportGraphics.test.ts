@@ -5,9 +5,9 @@
 
 import { assert } from "chai";
 import * as fs from "fs";
-import { Id64, Id64Array, Id64String } from "@itwin/core-bentley";
+import { DbResult, Id64, Id64Array, Id64String } from "@itwin/core-bentley";
 import {
-  Code, ColorDef, DbResult, ElementGeometryInfo, ElementGeometryOpcode, FillDisplay, GeometryClass, GeometryParams, GeometryPartProps, GeometryStreamBuilder, GeometryStreamProps,
+  Code, ColorDef, ElementGeometryInfo, ElementGeometryOpcode, FillDisplay, GeometryClass, GeometryParams, GeometryPartProps, GeometryStreamBuilder, GeometryStreamProps,
   ImageSourceFormat, IModel, LineStyle, PhysicalElementProps, Point2dProps, TextureMapProps, TextureMapUnits,
 } from "@itwin/core-common";
 import {
@@ -18,7 +18,7 @@ import {
   RenderMaterialElement, SnapshotDb, Texture,
 } from "../../core-backend";
 import { GeometryPart } from "../../Element";
-import { ExportLinesInfo, ExportPartInfo, ExportPartInstanceInfo, ExportPartLinesInfo } from "../../ExportGraphics";
+import { ExportGraphicsFunction, ExportLinesInfo, ExportPartInfo, ExportPartInstanceInfo, ExportPartLinesInfo } from "../../ExportGraphics";
 import { IModelTestUtils } from "../IModelTestUtils";
 
 describe("exportGraphics", () => {
@@ -384,10 +384,37 @@ describe("exportGraphics", () => {
         onGraphics: (info: ExportGraphicsInfo) => infos.push(info),
       };
       if (DbResult.BE_SQLITE_OK === myIModel.exportGraphics(exportGraphicsOptions)) {
-        // examine infos here
+        // examine infos here, e.g.:
+        // for (const info of infos)
+        //   console.log(JSON.stringify(IModelJson.Writer.toIModelJson(ExportGraphics.convertToIndexedPolyface(info.mesh))));
       }
       myIModel.close();
     }
+  });
+
+  it("verifies export of 3d linestyle as parts", () => {
+    const outBimFileName: string = "out.bim";
+    const inBimFilePathName = IModelTestUtils.resolveAssetFile("3dLinestyle.bim");
+    assert.isNotEmpty(inBimFilePathName);
+    const testFileName = IModelTestUtils.prepareOutputFile("ExportGraphics", outBimFileName);
+    const myIModel = IModelTestUtils.createSnapshotFromSeed(testFileName, inBimFilePathName);
+
+    const elementIdArray: Id64Array = ["0x5a"];
+    const infos: ExportGraphicsInfo[] = [];
+    const partInstanceArray: ExportPartInstanceInfo[] = [];
+    const onGraphics: ExportGraphicsFunction = info => infos.push(info);
+    const countPartIds = (partId: string) => partInstanceArray.reduce((sum, instance) => sum + (instance.partId === partId ? 1 : 0), 0);
+
+    // exportGraphics populates partInstanceArray with any part instances found; onGraphics gets non-part meshes
+    assert.strictEqual(DbResult.BE_SQLITE_OK, myIModel.exportGraphics({elementIdArray, onGraphics, partInstanceArray}), "export with instancing successful");
+    assert.strictEqual(infos.length, 2); // TODO: infos looks like the part 0x4c transformed. Why isn't this geometry instanced and infos empty?
+    assert.strictEqual(partInstanceArray.length, 144, "export with instancing returned expected # part instances");
+    assert.strictEqual(142, countPartIds('0x4c'), "guardrail geometry has expected # post assembly instances");
+    assert.strictEqual(1, countPartIds('0x4d'), "guardrail geometry has expected # start assembly instances");
+    assert.strictEqual(1, countPartIds('0x4e'), "guardrail geometry has expected # end assembly instances");
+    // TODO: why do parts 0x4d and 0x4e look identical?
+
+    myIModel.close();
   });
 
   it("creates meshes with vertices shared as expected", () => {

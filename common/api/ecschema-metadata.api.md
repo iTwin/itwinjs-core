@@ -263,7 +263,7 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
     // (undocumented)
     protected _baseClass?: LazyLoadedECClass;
     // (undocumented)
-    protected buildPropertyCache(result: Property[], existingValues?: Map<string, number>, resetBaseCaches?: boolean): Promise<void>;
+    protected buildPropertyCache(resetBaseCaches?: boolean): Promise<Property[]>;
     // (undocumented)
     protected buildPropertyCacheSync(result: Property[], existingValues?: Map<string, number>, resetBaseCaches?: boolean): void;
     protected createPrimitiveArrayProperty(name: string, primitiveType: PrimitiveType): Promise<PrimitiveArrayProperty>;
@@ -504,7 +504,7 @@ export class EntityClass extends ECClass {
     // (undocumented)
     protected addMixin(mixin: Mixin): void;
     // (undocumented)
-    protected buildPropertyCache(result: Property[], existingValues?: Map<string, number>, resetBaseCaches?: boolean): Promise<void>;
+    protected buildPropertyCache(resetBaseCaches?: boolean): Promise<Property[]>;
     // (undocumented)
     protected buildPropertyCacheSync(result: Property[], existingValues?: Map<string, number>, resetBaseCaches?: boolean): void;
     // (undocumented)

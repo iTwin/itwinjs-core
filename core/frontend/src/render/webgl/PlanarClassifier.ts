@@ -559,6 +559,19 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
     target.uniforms.frustum.changeProjectionMatrix(PlanarClassifier._postProjectionMatrix.multiplyMatrixMatrix(prevProjMatrix));
     target.uniforms.branch.changeRenderPlan(vf, target.plan.is3d, target.plan.hline);
 
+    const addCmds = (oldCmds: DrawCommands, newCmds: DrawCommands) => {
+      if (undefined === newCmds)
+        return oldCmds;
+      if (newCmds.length > 50000) {
+      	// This method is slower for smaller array sizes, but when the size of newCmds gets larger it's performance is ok.
+        return oldCmds.concat(newCmds);
+      } else {
+      	// This method runs faster, but gets a stack overflow when the size of newCmds is too large.
+        oldCmds.push(...newCmds);
+        return oldCmds;
+      }
+    }
+
     const renderCommands = this._renderCommands;
     const getDrawCommands = (graphics: RenderGraphic[]) => {
       this._batchState.reset();
@@ -569,15 +582,15 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
       // When using Display.ElementColor, the color and transparency come from the classifier geometry. Therefore we may need to draw the classified geometry
       // in a different pass - or both passes - depending on the transparency of the classifiers.
       // NB: "Outside" geometry by definition cannot take color/transparency from element...
-      const cmds = renderCommands.getCommands(RenderPass.OpaquePlanar);
+      let cmds = renderCommands.getCommands(RenderPass.OpaquePlanar);
 
       // NB: We don't strictly require the classifier geometry to be planar, and sometimes (e.g., "planar" polyface/bspsurf) we do not detect planarity.
-      cmds.push(...renderCommands.getCommands(RenderPass.OpaqueGeneral));
-      cmds.push(...renderCommands.getCommands(RenderPass.OpaqueLinear));
+      cmds = addCmds(cmds, renderCommands.getCommands(RenderPass.OpaqueGeneral));
+      cmds = addCmds(cmds, renderCommands.getCommands(RenderPass.OpaqueLinear));
       this._anyOpaque = cmds.length > 0;
       const transCmds = renderCommands.getCommands(RenderPass.Translucent);
       if (transCmds.length > 0) {
-        cmds.push(...transCmds);
+        cmds = addCmds(cmds, renderCommands.getCommands(RenderPass.Translucent));
         this._anyTranslucent = true;
       }
       return cmds;
