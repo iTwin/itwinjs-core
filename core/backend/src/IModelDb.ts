@@ -68,7 +68,7 @@ import type { BlobContainer } from "./BlobContainerService";
 import { createNoOpLockControl } from "./internal/NoLocks";
 import { IModelDbFonts } from "./IModelDbFonts";
 import { createIModelDbFonts } from "./internal/IModelDbFontsImpl";
-import { _close, _hubAccess, _nativeDb, _releaseAllLocks } from "./internal/Symbols";
+import { _cache, _close, _hubAccess, _nativeDb, _releaseAllLocks } from "./internal/Symbols";
 import { SchemaContext, SchemaJsonLocater } from "@itwin/ecschema-metadata";
 import { SchemaMap } from "./Schema";
 import { ElementLRUCache, LruCache } from "./internal/LRUCaches";
@@ -748,8 +748,8 @@ export abstract class IModelDb extends IModel {
     this._jsClassMap = undefined;
     this._schemaMap = undefined;
     this._schemaContext = undefined;
-    this.elements.cache.clear();
-    this.models.cache.clear();
+    this.elements[_cache].clear();
+    this.models[_cache].clear();
   }
 
   /** Update the project extents for this iModel.
@@ -1721,7 +1721,7 @@ export namespace IModelDb {
    */
   export class Models {
     /** @internal */
-    public readonly cache = new LruCache<Id64String, ModelProps>(500);
+    public readonly [_cache] = new LruCache<Id64String, ModelProps>(500);
 
     /** @internal */
     public constructor(private _iModel: IModelDb) { }
@@ -1748,7 +1748,7 @@ export namespace IModelDb {
     public tryGetModelProps<T extends ModelProps>(id: Id64String): T | undefined {
       try {
         if (IModelHost.configuration?.enableThinnedNativeInstanceWorkflow) {
-          const cachedMdl = this.cache.get(id);
+          const cachedMdl = this[_cache].get(id);
           if (cachedMdl) {
             return cachedMdl as T;
           }
@@ -1757,7 +1757,7 @@ export namespace IModelDb {
           const rawInstance = this._iModel[_nativeDb].readInstance(instanceKey, options) as ECSqlRow;
           const classDef = this._iModel.getJsClass<typeof Model>(rawInstance.classFullName);
           const modelProps = classDef.deserialize({ row: rawInstance, iModel: this._iModel }) as T;
-          this.cache.set(id, modelProps);
+          this[_cache].set(id, modelProps);
           return modelProps;
         } else {
           return this._iModel[_nativeDb].getModel({ id }) as T;
@@ -1889,7 +1889,7 @@ export namespace IModelDb {
     public updateModel(props: UpdateModelOptions): void {
       try {
         if (props.id)
-          this.cache.delete(props.id);
+          this[_cache].delete(props.id);
 
         this._iModel[_nativeDb].updateModel(props);
       } catch (err: any) {
@@ -1906,7 +1906,7 @@ export namespace IModelDb {
      * @see [[TxnManager.onModelGeometryChanged]] for the event emitted in response to such a change.
      */
     public updateGeometryGuid(modelId: Id64String): void {
-      this._iModel.models.cache.delete(modelId);
+      this._iModel.models[_cache].delete(modelId);
       const error = this._iModel[_nativeDb].updateModelGeometryGuid(modelId);
       if (error !== IModelStatus.Success)
         throw new IModelError(error, `updating geometry guid for model ${modelId}`);
@@ -1919,7 +1919,7 @@ export namespace IModelDb {
     public deleteModel(ids: Id64Arg): void {
       Id64.toIdSet(ids).forEach((id) => {
         try {
-          this.cache.delete(id);
+          this[_cache].delete(id);
           this._iModel[_nativeDb].deleteModel(id);
         } catch (err: any) {
           throw new IModelError(err.errorNumber, `error deleting model [${err.message}] id ${id}`);
@@ -1965,7 +1965,7 @@ export namespace IModelDb {
    */
   export class Elements implements GuidMapper {
     /** @internal */
-    public readonly cache = new ElementLRUCache();
+    public readonly [_cache] = new ElementLRUCache();
 
     /** @internal */
     public constructor(private _iModel: IModelDb) { }
@@ -2032,7 +2032,7 @@ export namespace IModelDb {
       }
       try {
         if (IModelHost.configuration?.enableThinnedNativeInstanceWorkflow) {
-          const cachedElm = this.cache.get(props);
+          const cachedElm = this[_cache].get(props);
           if (cachedElm) {
             return cachedElm.elProps as T;
           }
@@ -2041,7 +2041,7 @@ export namespace IModelDb {
           const rawInstance = this._iModel[_nativeDb].readInstance(instanceKey, options) as ECSqlRow;
           const classDef = this._iModel.getJsClass<typeof Element>(rawInstance.classFullName);
           const elementProps = classDef.deserialize({ row: rawInstance, iModel: this._iModel, options: { element: props } }) as T;
-          this.cache.set({ elProps: elementProps, loadOptions: props });
+          this[_cache].set({ elProps: elementProps, loadOptions: props });
           return elementProps;
         }
         return this._iModel[_nativeDb].getElement(props) as T;
@@ -2155,7 +2155,7 @@ export namespace IModelDb {
      */
     public insertElement(elProps: ElementProps, options?: InsertElementOptions): Id64String {
       try {
-        this.cache.delete({
+        this[_cache].delete({
           id: elProps.id,
           federationGuid: elProps.federationGuid,
           code: elProps.code,
@@ -2181,7 +2181,7 @@ export namespace IModelDb {
      */
     public updateElement<T extends ElementProps>(elProps: Partial<T>): void {
       try {
-        this.cache.delete({
+        this[_cache].delete({
           id: elProps.id,
           federationGuid: elProps.federationGuid,
           code: elProps.code,
@@ -2203,7 +2203,7 @@ export namespace IModelDb {
       const iModel = this._iModel;
       Id64.toIdSet(ids).forEach((id) => {
         try {
-          this.cache.delete({ id });
+          this[_cache].delete({ id });
           iModel[_nativeDb].deleteElement(id);
         } catch (err: any) {
           err.message = `Error deleting element [${err.message}], id: ${id}`;

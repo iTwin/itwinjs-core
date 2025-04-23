@@ -482,8 +482,6 @@ export class TxnManager {
   protected _onAfterUndoRedo(isUndo: boolean) {
     this.touchWatchFile();
     this.onAfterUndoRedo.raiseEvent(isUndo);
-    this._iModel.elements.cache.clear();
-    this._iModel.models.cache.clear();
     IpcHost.notifyTxns(this._iModel, "notifyAfterUndoRedo", isUndo);
   }
 
@@ -492,8 +490,6 @@ export class TxnManager {
   }
 
   private _onRebaseTxnEnd(txn: TxnArgs) {
-    this._iModel.elements.cache.clear();
-    this._iModel.models.cache.clear();
     this.onRebaseTxnEnd.raiseEvent(txn);
   }
 

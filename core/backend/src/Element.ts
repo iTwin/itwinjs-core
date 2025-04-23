@@ -20,7 +20,7 @@ import { IModelDb } from "./IModelDb";
 import { IModelElementCloneContext } from "./IModelElementCloneContext";
 import { DefinitionModel, DrawingModel, PhysicalModel, SectionDrawingModel } from "./Model";
 import { SubjectOwnsSubjects } from "./NavigationRelationship";
-import { _elementWasCreated, _nativeDb, _verifyChannel } from "./internal/Symbols";
+import { _cache, _elementWasCreated, _nativeDb, _verifyChannel } from "./internal/Symbols";
 
 /** Argument for the `Element.onXxx` static methods
  * @beta
@@ -205,7 +205,7 @@ export class Element extends Entity {
     const locks = arg.iModel.locks;
     if (locks && !locks.holdsExclusiveLock(arg.model))
       locks[_elementWasCreated](arg.id);
-    arg.iModel.models.cache.delete(arg.model);
+    arg.iModel.models[_cache].delete(arg.model);
   }
 
   /** Called before an Element is updated.
@@ -227,8 +227,8 @@ export class Element extends Entity {
    * @beta
    */
   protected static onUpdated(arg: OnElementIdArg): void {
-    arg.iModel.elements.cache.delete({ id: arg.id })
-    arg.iModel.models.cache.delete(arg.model);
+    arg.iModel.elements[_cache].delete({ id: arg.id })
+    arg.iModel.models[_cache].delete(arg.model);
   }
 
   /** Called before an Element is deleted.
@@ -248,8 +248,8 @@ export class Element extends Entity {
    * @beta
    */
   protected static onDeleted(arg: OnElementIdArg): void {
-    arg.iModel.elements.cache.delete(arg);
-    arg.iModel.models.cache.delete(arg.model);
+    arg.iModel.elements[_cache].delete(arg);
+    arg.iModel.models[_cache].delete(arg.model);
   }
 
   /** Called when an element with an instance of this class as its parent is about to be deleted.
@@ -266,8 +266,8 @@ export class Element extends Entity {
    * @beta
    */
   protected static onChildDeleted(arg: OnChildElementIdArg): void {
-    arg.iModel.elements.cache.delete({ id: arg.parentId });
-    arg.iModel.elements.cache.delete({ id: arg.childId });
+    arg.iModel.elements[_cache].delete({ id: arg.parentId });
+    arg.iModel.elements[_cache].delete({ id: arg.childId });
   }
 
   /** Called when a *new element* with an instance of this class as its parent is about to be inserted.
@@ -282,7 +282,7 @@ export class Element extends Entity {
    * @beta
    */
   protected static onChildInserted(arg: OnChildElementIdArg): void {
-    arg.iModel.elements.cache.delete({ id: arg.parentId });
+    arg.iModel.elements[_cache].delete({ id: arg.parentId });
   }
 
   /** Called when an element with an instance of this class as its parent is about to be updated.
@@ -297,7 +297,7 @@ export class Element extends Entity {
    * @beta
    */
   protected static onChildUpdated(arg: OnChildElementIdArg): void {
-    arg.iModel.elements.cache.delete({ id: arg.parentId });
+    arg.iModel.elements[_cache].delete({ id: arg.parentId });
   }
 
   /** Called when an *existing element* is about to be updated so that an instance of this class will become its new parent.
@@ -312,7 +312,7 @@ export class Element extends Entity {
    * @beta
    */
   protected static onChildAdded(arg: OnChildElementIdArg): void {
-    arg.iModel.elements.cache.delete({ id: arg.parentId });
+    arg.iModel.elements[_cache].delete({ id: arg.parentId });
   }
 
   /** Called when an element with an instance of this class as its parent is about to be updated change to a different parent.
@@ -327,7 +327,7 @@ export class Element extends Entity {
    * @beta
    */
   protected static onChildDropped(arg: OnChildElementIdArg): void {
-    arg.iModel.elements.cache.delete({ id: arg.parentId });
+    arg.iModel.elements[_cache].delete({ id: arg.parentId });
   }
 
   /** Called when an instance of this class is being *sub-modeled* by a new Model.
@@ -343,8 +343,8 @@ export class Element extends Entity {
    */
   protected static onSubModelInserted(arg: OnSubModelIdArg): void {
     const id = arg.subModelId;
-    arg.iModel.elements.cache.delete({ id });
-    arg.iModel.models.cache.delete(id);
+    arg.iModel.elements[_cache].delete({ id });
+    arg.iModel.models[_cache].delete(id);
 
   }
 
@@ -361,8 +361,8 @@ export class Element extends Entity {
    */
   protected static onSubModelDeleted(arg: OnSubModelIdArg): void {
     const id = arg.subModelId;
-    arg.iModel.elements.cache.delete({ id });
-    arg.iModel.models.cache.delete(id);
+    arg.iModel.elements[_cache].delete({ id });
+    arg.iModel.models[_cache].delete(id);
   }
 
   /** Called during the iModel transformation process after an Element from the source iModel was *cloned* for the target iModel.

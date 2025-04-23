@@ -18,7 +18,7 @@ import { DefinitionPartition, DocumentPartition, InformationRecordPartition, Phy
 import { CustomHandledProperty, DeserializeEntityArgs, ECSqlRow, Entity } from "./Entity";
 import { IModelDb } from "./IModelDb";
 import { SubjectOwnsPartitionElements } from "./NavigationRelationship";
-import { _nativeDb, _verifyChannel } from "./internal/Symbols";
+import { _cache, _nativeDb, _verifyChannel } from "./internal/Symbols";
 
 /** Argument for the `Model.onXxx` static methods
  * @beta
@@ -167,7 +167,7 @@ export class Model extends Entity {
    * @beta
    */
   protected static onUpdated(arg: OnModelIdArg): void {
-    arg.iModel.models.cache.delete(arg.id);
+    arg.iModel.models[_cache].delete(arg.id);
   }
 
   /** Called before a Model is deleted.
@@ -187,8 +187,8 @@ export class Model extends Entity {
    * @beta
    */
   protected static onDeleted(arg: OnModelIdArg): void {
-    arg.iModel.models.cache.delete(arg.id);
-    arg.iModel.elements.cache.deleteWithModel(arg.id);
+    arg.iModel.models[_cache].delete(arg.id);
+    arg.iModel.elements[_cache].deleteWithModel(arg.id);
   }
 
   /** Called before a prospective Element is to be inserted into an instance of a Model of this class.
@@ -205,7 +205,7 @@ export class Model extends Entity {
    * @beta
    */
   protected static onInsertedElement(arg: OnElementInModelIdArg): void {
-    arg.iModel.models.cache.delete(arg.id);
+    arg.iModel.models[_cache].delete(arg.id);
   }
 
   /** Called when an Element in an instance of a Model of this class is about to be updated.
@@ -222,7 +222,7 @@ export class Model extends Entity {
    * @beta
    */
   protected static onUpdatedElement(arg: OnElementInModelIdArg): void {
-    arg.iModel.models.cache.delete(arg.id);
+    arg.iModel.models[_cache].delete(arg.id);
   }
 
   /** Called when an Element in an instance of a Model of this class is about to be deleted.
@@ -239,7 +239,7 @@ export class Model extends Entity {
    * @beta
    */
   protected static onDeletedElement(arg: OnElementInModelIdArg): void {
-    arg.iModel.models.cache.delete(arg.id);
+    arg.iModel.models[_cache].delete(arg.id);
   }
 
   private getAllUserProperties(): any {
