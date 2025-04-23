@@ -106,6 +106,7 @@ public;function;connectViewportViews
 internal;enum;ContextMode
 public;class;ContextRealityModelState
 public;enum;ContextRotationId
+beta;interface;ContourHit
 internal;class;CoordinateConverter
 internal;interface;CoordinateConverterOptions
 public;enum;CoordinateLockOverrides
