@@ -1969,7 +1969,7 @@ export interface ECEnumValue {
     value: number | string;
 }
 
-// @public
+// @public @preview
 export class ECSchemaXmlContext {
     constructor();
     addSchemaPath(searchPath: string): void;
@@ -2519,6 +2519,7 @@ export class Entity {
     forEach(func: PropertyHandler, includeCustom?: boolean): void;
     // @deprecated
     forEachProperty(func: PropertyCallback, includeCustom?: boolean): void;
+    // @preview
     getMetaData(): Promise<EntityClass>;
     // @beta
     getReferenceIds(): EntityReferenceSet;
@@ -2533,7 +2534,9 @@ export class Entity {
     // @internal (undocumented)
     static get protectedOperations(): string[];
     static schema: typeof Schema;
+    // @preview
     static get schemaItemKey(): SchemaItemKey;
+    // @preview
     get schemaItemKey(): SchemaItemKey;
     get schemaName(): string;
     toJSON(): EntityProps;
@@ -3426,6 +3429,7 @@ export abstract class IModelDb extends IModel {
     saveFileProperty(prop: FilePropertyProps, strValue: string | undefined, blobVal?: Uint8Array): void;
     // @beta
     saveSettingDictionary(name: string, dict: SettingsContainer): void;
+    // @preview
     get schemaContext(): SchemaContext;
     get schemaMap(): SchemaMap;
     // @beta
@@ -4761,7 +4765,7 @@ export enum ProgressStatus {
     Continue = 0
 }
 
-// @public
+// @public @preview
 export type PropertyHandler = (name: string, property: Property) => void;
 
 // @beta (undocumented)

@@ -119,6 +119,7 @@ public;enum;ECDbOpenMode
 public;interface;ECEnumValue
 deprecated;interface;ECEnumValue
 public;class;ECSchemaXmlContext
+preview;class;ECSchemaXmlContext
 public;class;ECSqlBinder
 public;interface;ECSqlColumnInfo
 deprecated;interface;ECSqlColumnInfo
@@ -343,6 +344,7 @@ beta;interface;ProduceTextAnnotationGeometryArgs
 public;type;ProgressFunction
 public;enum;ProgressStatus
 public;type;PropertyHandler
+preview;type;PropertyHandler
 beta;namespace;PropertyStore
 public;type;PullChangesArgs
 public;interface;PushChangesArgs
