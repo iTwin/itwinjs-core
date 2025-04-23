@@ -67,6 +67,7 @@ class Textures implements WebGLDisposable, RenderMemory.Consumer {
   public depthAndOrder?: TextureHandle;
   public depthAndOrderHidden?: TextureHandle; // only used if AO and multisampling
   public contours?: TextureHandle;
+  public contoursMsBuff?: RenderBufferMultiSample;
   public hilite?: TextureHandle;
   public occlusion?: TextureHandle;
   public occlusionBlur?: TextureHandle;
@@ -86,6 +87,7 @@ class Textures implements WebGLDisposable, RenderMemory.Consumer {
       && undefined === this.featureId
       && undefined === this.depthAndOrder
       && undefined === this.contours
+      && undefined === this.contoursMsBuff
       && undefined === this.depthAndOrderHidden
       && undefined === this.hilite
       && undefined === this.occlusion
@@ -107,6 +109,7 @@ class Textures implements WebGLDisposable, RenderMemory.Consumer {
     this.featureId = dispose(this.featureId);
     this.depthAndOrder = dispose(this.depthAndOrder);
     this.contours = dispose(this.contours);
+    this.contoursMsBuff = dispose(this.contoursMsBuff);
     this.depthAndOrderHidden = dispose(this.depthAndOrderHidden);
     this.hilite = dispose(this.hilite);
     this.occlusion = dispose(this.occlusion);
@@ -128,6 +131,7 @@ class Textures implements WebGLDisposable, RenderMemory.Consumer {
     collectTextureStatistics(this.featureId, stats);
     collectTextureStatistics(this.depthAndOrder, stats);
     collectTextureStatistics(this.contours, stats);
+    collectMsBufferStatistics(this.contoursMsBuff, stats);
     collectTextureStatistics(this.depthAndOrderHidden, stats);
     collectTextureStatistics(this.hilite, stats);
     collectTextureStatistics(this.occlusion, stats);
@@ -231,12 +235,14 @@ class Textures implements WebGLDisposable, RenderMemory.Consumer {
     this.featureIdMsBuffHidden = RenderBufferMultiSample.create(width, height, WebGL2RenderingContext.RGBA8, numSamples);
     this.depthAndOrderMsBuff = RenderBufferMultiSample.create(width, height, WebGL2RenderingContext.RGBA8, numSamples);
     this.depthAndOrderMsBuffHidden = RenderBufferMultiSample.create(width, height, WebGL2RenderingContext.RGBA8, numSamples);
+    this.contoursMsBuff = RenderBufferMultiSample.create(width, height, WebGL2RenderingContext.RGBA8, numSamples);
     this.hiliteMsBuff = RenderBufferMultiSample.create(width, height, WebGL2RenderingContext.RGBA8, numSamples);
     return undefined !== this.colorMsBuff
       && undefined !== this.featureIdMsBuff
       && undefined !== this.featureIdMsBuffHidden
       && undefined !== this.depthAndOrderMsBuff
       && undefined !== this.depthAndOrderMsBuffHidden
+      && undefined !== this.contoursMsBuff
       && undefined !== this.hiliteMsBuff;
   }
 
@@ -246,6 +252,7 @@ class Textures implements WebGLDisposable, RenderMemory.Consumer {
     this.featureIdMsBuffHidden = dispose(this.featureIdMsBuffHidden);
     this.depthAndOrderMsBuff = dispose(this.depthAndOrderMsBuff);
     this.depthAndOrderMsBuffHidden = dispose(this.depthAndOrderMsBuffHidden);
+    this.contoursMsBuff = dispose(this.contoursMsBuff);
     this.hiliteMsBuff = dispose(this.hiliteMsBuff);
     return true;
   }
@@ -350,10 +357,11 @@ class FrameBuffers implements WebGLDisposable {
         undefined !== textures.colorMsBuff &&
         undefined !== textures.featureIdMsBuff &&
         undefined !== textures.featureIdMsBuffHidden &&
+        undefined !== textures.contoursMsBuff &&
         undefined !== textures.depthAndOrderMsBuff &&
         undefined !== textures.depthAndOrderMsBuffHidden
       );
-      const colorAndPickMsBuffs = [textures.colorMsBuff, textures.featureIdMsBuff, textures.depthAndOrderMsBuff];
+      const colorAndPickMsBuffs = [textures.colorMsBuff, textures.featureIdMsBuff, textures.depthAndOrderMsBuff, textures.contoursMsBuff];
       const colorAndPickFilters = [GL.MultiSampling.Filter.Linear, GL.MultiSampling.Filter.Nearest, GL.MultiSampling.Filter.Nearest];
       this.opaqueAll = FrameBuffer.create(colorAndPick, depth, colorAndPickMsBuffs, colorAndPickFilters, depthMs);
       colorAndPick[0] = textures.color;
