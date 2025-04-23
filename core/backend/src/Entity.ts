@@ -30,7 +30,7 @@ export interface InstanceProps {
   }
 }
 
-/** A property that are needs to be custom handled during deserialization and serialization.
+/** A property of an [[Entity]] that needs to be custom handled during deserialization and serialization.
  * @beta */
 export interface CustomHandledProperty {
   /** The name of the property as it appears in the ECSqlRow */
