@@ -497,19 +497,19 @@ export class InMemoryInstanceCache implements ECChangeUnifierCache {
  * @beta
  */
 export class SqliteBackedInstanceCache implements ECChangeUnifierCache {
+  private readonly _cacheTable = `[temp].[${Guid.createValue()}]`;
+  public static readonly DefaultBufferSize = 1024 * 1024 * 10; // 10MB
   /**
    * Creates an instance of SqliteBackedInstanceCache.
    * @param _db The underlying database connection.
-   * @param bufferedReadInstanceSizeInBytes The size of each read instance in bytes for buffering.
+   * @param bufferedReadInstanceSizeInBytes The size of read instance buffer defaults to 10Mb.
    * @throws Error if bufferedReadInstanceSizeInBytes is less than or equal to 0.
    */
-  public constructor(private readonly _db: AnyDb, public readonly bufferedReadInstanceSizeInBytes: number = 1024 * 1024 * 10) {
+  public constructor(private readonly _db: AnyDb, public readonly bufferedReadInstanceSizeInBytes: number = SqliteBackedInstanceCache.DefaultBufferSize) {
     if (bufferedReadInstanceSizeInBytes <= 0)
       throw new Error("bufferedReadInstanceCount must be greater than 0");
     this.createTempTable();
   }
-
-  private readonly _cacheTable = `[temp].[${Guid.createValue()}]`;
 
   /**
    * Creates a temporary table in the database for caching instances.
@@ -752,11 +752,10 @@ export class PartialECChangeUnifier implements Disposable {
     if (adaptor.disableMetaData) {
       throw new Error("change adaptor property 'disableMetaData' must be set to 'false'");
     }
+
     if (this._readonly) {
       throw new Error("this instance is marked as readonly.");
     }
-
-    // todo: create table here if not exist on adapter.reader.db
 
     if (adaptor.op === "Updated" && adaptor.inserted && adaptor.deleted) {
       this.combine(adaptor.inserted);
@@ -820,6 +819,7 @@ export class ChangesetECAdaptor implements Disposable {
       this._tableFilter.add(table);
     return this;
   }
+
   /**
    * Setup filter that will result in change enumeration restricted to
    * list of op added by acceptOp().
@@ -831,6 +831,7 @@ export class ChangesetECAdaptor implements Disposable {
       this._opFilter.add(op);
     return this;
   }
+
   /**
    * Setup filter that will result in change enumeration restricted to
    * list of class and its derived classes added by acceptClass().
@@ -844,6 +845,7 @@ export class ChangesetECAdaptor implements Disposable {
     this._allowedClasses.clear();
     return this;
   }
+
   private buildClassFilter() {
     if (this._allowedClasses.size !== 0 || this._classFilter.size === 0)
       return;
@@ -854,6 +856,7 @@ export class ChangesetECAdaptor implements Disposable {
       });
     });
   }
+
   /**
    * Construct adaptor with a initialized reader.
    * @note the changeset reader must have disableSchemaCheck
@@ -866,18 +869,21 @@ export class ChangesetECAdaptor implements Disposable {
 
     this._mapCache = new ECDbMap(reader.db);
   }
+
   /**
    * dispose current instance and it will also dispose the changeset reader.
    */
   public [Symbol.dispose](): void {
     this.close();
   }
+
   /**
    * close current instance and it will also close the changeset reader.
    */
   public close(): void {
     this.reader.close();
   }
+
   /**
    * Convert binary GUID into string GUID.
    * @param binaryGUID binary version of guid.
@@ -894,6 +900,7 @@ export class ChangesetECAdaptor implements Disposable {
     return `${hex.slice(0, 4).join("")}-${hex.slice(4, 6).join("")}-${hex.slice(6, 8).join("")}-${hex.slice(8, 10).join("")}-${hex.slice(10, 16).join("")}`;
 
   }
+
   /**
    * Set value use access string in a JS object.
    * @param targetObj object that will be updated.
@@ -927,6 +934,7 @@ export class ChangesetECAdaptor implements Disposable {
   public isECTable(tableName: string) {
     return typeof this._mapCache.getTable(tableName) !== "undefined";
   }
+
   /**
    * Attempt find ECClassId from ECInstanceId for a change of type 'updated'.
    * @param tableName name of the table to find ECClassId from given ECInstanceId
@@ -943,6 +951,7 @@ export class ChangesetECAdaptor implements Disposable {
       return undefined;
     }
   }
+
   /** helper method around reader.op */
   public get op() { return this.reader.op; }
   /** Return true if current change is of type "Inserted" */
@@ -1063,6 +1072,7 @@ export class ChangesetECAdaptor implements Disposable {
     }
     return this.reader.hasRow;
   }
+
   /**
    * Transform nav change column into navigation EC property
    * @param prop navigation property definition.
@@ -1092,6 +1102,7 @@ export class ChangesetECAdaptor implements Disposable {
 
     ChangesetECAdaptor.setValue(out, relClassIdCol.accessString, relClassIdValue);
   }
+
   /**
    * Transform sqlite change into EC change.
    * @param classMap classMap use to deserialize sqlite change into EC change.
