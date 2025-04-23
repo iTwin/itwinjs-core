@@ -147,7 +147,7 @@ console.log("Finished copying changelog files. Checking for any files in temp fo
 const tempFilesRemaining = await $`git ls-files --others --exclude-standard ./temp-target-changelogs`; //test1
 
 //test1 If the temp files are still there (untracked), log a warning
-if (tempFilesRemaining && tempFilesRemaining.trim().length > 0) {
+if (tempFilesRemaining && tempFilesRemaining.length > 0) {
   console.log("Warning: Some changelog files remain untracked in the temp branch (they were not successfully copied):\n", tempFilesRemaining);
 } else {
   console.log("No untracked files in the temp branch. All files copied successfully.");
