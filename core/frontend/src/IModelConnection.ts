@@ -620,7 +620,7 @@ export abstract class IModelConnection extends IModel {
 
   /**
    * Gets the context that allows accessing the metadata (see `@itwin/ecschema-metadata` package) of this iModel.
-   * The context is created lazily when this property is accessed for the first time, with an `ECSchemaRpcLocater` registered.
+   * The context is created lazily when this property is accessed for the first time, with an `ECSchemaRpcLocater` registered as a fallback locater, enabling users to register their own locater that'd take more priority.
    * This means to correctly access schema context, client-side applications must register `ECSchemaRpcInterface` following instructions for [RPC configuration]($docs/learning/rpcinterface/#client-side-configuration).
    * Server-side applications would also [configure RPC]($docs/learning/rpcinterface/#server-side-configuration) as needed.
    *
@@ -631,7 +631,7 @@ export abstract class IModelConnection extends IModel {
     if (this._schemaContext === undefined) {
       const context = new SchemaContext();
       const locater = new ECSchemaRpcLocater(this._getRpcProps());
-      context.addLocater(locater);
+      context.addFallbackLocater(locater);
       this._schemaContext = context;
     }
 
