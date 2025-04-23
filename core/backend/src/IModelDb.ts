@@ -1747,21 +1747,22 @@ export namespace IModelDb {
      */
     public tryGetModelProps<T extends ModelProps>(id: Id64String): T | undefined {
       try {
-        if (IModelHost.configuration?.enableThinnedNativeInstanceWorkflow) {
-          const cachedMdl = this[_cache].get(id);
-          if (cachedMdl) {
-            return cachedMdl as T;
-          }
-          const options = { useJsNames: true }
-          const instanceKey = this.resolveModelKey({ id });
-          const rawInstance = this._iModel[_nativeDb].readInstance(instanceKey, options) as ECSqlRow;
-          const classDef = this._iModel.getJsClass<typeof Model>(rawInstance.classFullName);
-          const modelProps = classDef.deserialize({ row: rawInstance, iModel: this._iModel }) as T;
-          this[_cache].set(id, modelProps);
-          return modelProps;
-        } else {
+        if (!IModelHost.configuration?.enableThinnedNativeInstanceWorkflow) {
           return this._iModel[_nativeDb].getModel({ id }) as T;
         }
+
+        const cachedMdl = this[_cache].get(id);
+        if (cachedMdl) {
+          return cachedMdl as T;
+        }
+
+        const options = { useJsNames: true }
+        const instanceKey = this.resolveModelKey({ id });
+        const rawInstance = this._iModel[_nativeDb].readInstance(instanceKey, options) as ECSqlRow;
+        const classDef = this._iModel.getJsClass<typeof Model>(rawInstance.classFullName);
+        const modelProps = classDef.deserialize({ row: rawInstance, iModel: this._iModel }) as T;
+        this[_cache].set(id, modelProps);
+        return modelProps;
       } catch {
         return undefined;
       }
@@ -2031,20 +2032,22 @@ export namespace IModelDb {
         props = { code: props };
       }
       try {
-        if (IModelHost.configuration?.enableThinnedNativeInstanceWorkflow) {
-          const cachedElm = this[_cache].get(props);
-          if (cachedElm) {
-            return cachedElm.elProps as T;
-          }
-          const options = { ...props, useJsNames: true };
-          const instanceKey = this.resolveElementKey(props);
-          const rawInstance = this._iModel[_nativeDb].readInstance(instanceKey, options) as ECSqlRow;
-          const classDef = this._iModel.getJsClass<typeof Element>(rawInstance.classFullName);
-          const elementProps = classDef.deserialize({ row: rawInstance, iModel: this._iModel, options: { element: props } }) as T;
-          this[_cache].set({ elProps: elementProps, loadOptions: props });
-          return elementProps;
+        if (!IModelHost.configuration?.enableThinnedNativeInstanceWorkflow) {
+          return this._iModel[_nativeDb].getElement(props) as T;
         }
-        return this._iModel[_nativeDb].getElement(props) as T;
+
+        const cachedElm = this[_cache].get(props);
+        if (cachedElm) {
+          return cachedElm.elProps as T;
+        }
+
+        const options = { ...props, useJsNames: true };
+        const instanceKey = this.resolveElementKey(props);
+        const rawInstance = this._iModel[_nativeDb].readInstance(instanceKey, options) as ECSqlRow;
+        const classDef = this._iModel.getJsClass<typeof Element>(rawInstance.classFullName);
+        const elementProps = classDef.deserialize({ row: rawInstance, iModel: this._iModel, options: { element: props } }) as T;
+        this[_cache].set({ elProps: elementProps, loadOptions: props });
+        return elementProps;
       } catch {
         return undefined;
       }
