@@ -1,7 +1,6 @@
 import { Id64String } from "@itwin/core-bentley";
 import { CodeProps, ElementLoadOptions, ElementLoadProps, ElementProps } from "@itwin/core-common";
 
-/* @internal */
 export class LruCache<K, V>{
   private _cache = new Map<K, V>();
   public constructor(public readonly capacity: number) { }
@@ -62,7 +61,7 @@ export interface CachedElement {
 /**
  * A LRU cache for entities. Cache contains the ElementProps and the load options used to load it.
  * Cache can be searched by id, code or federationGuid.
- * @internal */
+ */
 export class ElementLRUCache {
   public static readonly DEFAULT_CAPACITY = 2000;
   private _elementCache = new Map<Id64String, CachedElement>();

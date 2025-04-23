@@ -1,5 +1,5 @@
 import { assert, expect } from "chai";
-import { CachedElement, ElementLRUCache, LruCache } from "../LRUCaches";
+import { CachedElement, ElementLRUCache, LruCache } from "../internal/LRUCaches";
 
 describe('LruCache', () => {
   it('should store and retrieve values', () => {
