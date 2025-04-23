@@ -80,9 +80,9 @@ await $`mkdir ${incomingPath}`
 // find the latest release branch, and make that the target for the changelogs
 let branchVersions = await $`git branch -a --list "origin/release/[0-9]*.[0-9]*.x" | sed "s/  remotes\\/origin\\/release\\///"`;
 branchVersions = String(branchVersions).split("\n");
-// let targetBranch = findLargestVersion(branchVersions);
+// let targetBranch = findLargestVersion(branchVersions); UNCOMMENT
 let targetBranch = 'kacy/test-cherry-pick-changelogs'//test1
-targetBranch = `origin/release/${targetBranch}`;
+//targetBranch = `origin/release/${targetBranch}`; UNCOMMENT
 let currentBranch = await $`git branch --show-current`;
 // the version in the commit message can be extracted from the latest commit with commit message starting with "X.X.X" (except X.X.X-dev.X)
 let commitMessage = await $`git log --grep="^[0-9]\\+\\.[0-9]\\+\\.[0-9]\\+[^-]*$" -n 1 --pretty=format:%s`;
