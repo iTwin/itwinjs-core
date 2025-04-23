@@ -1965,7 +1965,7 @@ export namespace IModelDb {
    */
   export class Elements implements GuidMapper {
     /** @internal */
-    public cache = new ElementLRUCache();
+    public readonly cache = new ElementLRUCache();
 
     /** @internal */
     public constructor(private _iModel: IModelDb) { }
