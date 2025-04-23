@@ -748,7 +748,6 @@ export abstract class IModelDb extends IModel {
     this._jsClassMap = undefined;
     this._schemaMap = undefined;
     this._schemaContext = undefined;
-    this[_nativeDb].clearECDbCache();
     this.elements.cache.clear();
     this.models.cache.clear();
   }
@@ -3043,7 +3042,7 @@ export class BriefcaseDb extends IModelDb {
 
       // Restart default txn to trigger events when watch file is changed by some other process.
       const watcher = fs.watch(briefcaseDb.watchFilePathName, { persistent: false }, () => {
-        briefcaseDb.clearCaches();
+        nativeDb.clearECDbCache();
         nativeDb.restartDefaultTxn();
         briefcaseDb.changeset = briefcaseDb[_nativeDb].getCurrentChangeset();
       });
