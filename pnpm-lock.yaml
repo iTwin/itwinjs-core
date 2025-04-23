@@ -1,5 +1,24 @@
-lockfileVersion: '6.0'
+lockfileVersion: '9.0'
 
 settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
+
+importers:
+
+  .:
+    dependencies:
+      zx:
+        specifier: ^8.5.3
+        version: 8.5.3
+
+packages:
+
+  zx@8.5.3:
+    resolution: {integrity: sha512-TsGLAt8Ngr4wDXLZmN9BT+6FWVLFbqdQ0qpXkV3tIfH7F+MgN/WUeSY7W4nNqAntjWunmnRaznpyxtJRPhCbUQ==}
+    engines: {node: '>= 12.17.0'}
+    hasBin: true
+
+snapshots:
+
+  zx@8.5.3: {}

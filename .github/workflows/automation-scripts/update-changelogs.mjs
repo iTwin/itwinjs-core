@@ -101,7 +101,7 @@ console.log(`commit msg: ${commitMessage}`);
 
 if (targetBranch === `origin/${currentBranch}`) {
   console.log("The current branch is the latest release, so the target will be master branch")
-  targetBranch = 'master'
+  targetBranch = 'kacy/test-cherry-pick-changelogs'
 } else {
   console.log(`The current branch is ${currentBranch}, so the target will be ${targetBranch} branch`)
 }
@@ -139,7 +139,18 @@ const targetFiles = allTargetFiles.filter((file) => {
 fixChangeLogs(targetFiles);
 
 // copy changelogs back to proper file paths and convert names back to: CHANGELOG.json
+console.log("Starting to copy changelog files..."); //test1
+
 await $`find ./temp-target-changelogs/ -type f -name "*CHANGELOG.json" -exec sh -c 'cp "{}" "$(echo "{}" | sed "s|temp-target-changelogs/\\(.*\\)_|./\\1/|; s|_|/|g")"' \\;`;
+console.log("Finished copying changelog files. Checking for any files in temp folders...");//test1
+const tempFilesRemaining = await $`git ls-files --others --exclude-standard`; //test1
+
+//test1 If the temp files are still there (untracked), log a warning
+if (tempFilesRemaining) {
+  console.log("Warning: Some temp files remain untracked in the branch:\n", tempFilesRemaining);
+} else {
+  console.log("No untracked files in the temp branch. All files copied successfully.");
+}
 // delete temps
 await $`rm -r ${targetPath}`;
 await $`rm -r ${incomingPath}`;
@@ -160,12 +171,12 @@ await $`rush publish --regenerate-changelogs`;
 *********************************************************************/
 // await $`git checkout -b finalize-release-X.X.X`;
 // targetBranch = "finalize-release-X.X.X"
-await $`git add .`;
-await $`git commit -m "${commitMessage} Changelogs"`;
-await $`rush change --bulk --message "" --bump-type none`;
-await $`git add .`;
-await $`git commit --amend --no-edit`;
-await $`git push origin HEAD:${targetBranch}`;
+// await $`git add .`;
+// await $`git commit -m "${commitMessage} Changelogs"`;
+// await $`rush change --bulk --message "" --bump-type none`;
+// await $`git add .`;
+// await $`git commit --amend --no-edit`;
+// await $`git push origin HEAD:${targetBranch}`;
 
 
 // Tests:
