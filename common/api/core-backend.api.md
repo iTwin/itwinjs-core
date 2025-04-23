@@ -674,7 +674,7 @@ export class Category extends DefinitionElement {
     // (undocumented)
     description?: string;
     // @beta (undocumented)
-    static deserialize(props: InstanceProps): CategoryProps;
+    static deserialize(props: DeserializeEntityArgs): CategoryProps;
     myDefaultSubCategoryId(): Id64String;
     // (undocumented)
     rank: Rank;
@@ -705,7 +705,7 @@ export class CategorySelector extends DefinitionElement {
     // @beta (undocumented)
     protected static readonly _customHandledProps: CustomHandledProperty[];
     // @beta (undocumented)
-    static deserialize(props: InstanceProps): CategorySelectorProps;
+    static deserialize(props: DeserializeEntityArgs): CategorySelectorProps;
     static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, categories: Id64Array): Id64String;
     // @beta (undocumented)
     static serialize(props: CategorySelectorProps, _iModel: IModelDb): ECSqlRow;
@@ -1613,7 +1613,7 @@ export abstract class DefinitionElement extends InformationContentElement {
     // @beta (undocumented)
     protected static readonly _customHandledProps: CustomHandledProperty[];
     // @beta (undocumented)
-    static deserialize(props: InstanceProps): DefinitionElementProps;
+    static deserialize(props: DeserializeEntityArgs): DefinitionElementProps;
     isPrivate: boolean;
     // @beta (undocumented)
     static serialize(props: DefinitionElementProps, iModel: IModelDb): ECSqlRow;
@@ -1667,6 +1667,15 @@ export interface DeleteElementTreeArgs {
     iModel: IModelDb;
     maxPasses?: number;
     topElement: Id64String;
+}
+
+// @beta
+export interface DeserializeEntityArgs {
+    iModel: IModelDb;
+    options?: {
+        element?: ElementLoadOptions;
+    };
+    row: ECSqlRow;
 }
 
 // @public
@@ -1753,7 +1762,7 @@ export abstract class DisplayStyle extends DefinitionElement {
     protected collectReferenceIds(referenceIds: EntityReferenceSet): void;
     static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code;
     // @beta (undocumented)
-    static deserialize(props: InstanceProps): DisplayStyleProps;
+    static deserialize(props: DeserializeEntityArgs): DisplayStyleProps;
     // (undocumented)
     loadScheduleScript(): RenderSchedule.ScriptReference | undefined;
     // @alpha (undocumented)
@@ -2247,7 +2256,7 @@ class Element_2 extends Entity {
     protected static readonly _customHandledProps: CustomHandledProperty[];
     delete(): void;
     // @beta (undocumented)
-    static deserialize(props: InstanceProps): ElementProps;
+    static deserialize(props: DeserializeEntityArgs): ElementProps;
     federationGuid?: GuidString;
     // @deprecated
     getClassMetaData(): EntityMetaData | undefined;
@@ -2551,7 +2560,7 @@ export class Entity {
     // @beta
     protected static readonly _customHandledProps: CustomHandledProperty[];
     // @beta
-    static deserialize(props: InstanceProps): EntityProps;
+    static deserialize(props: DeserializeEntityArgs): EntityProps;
     forEach(func: PropertyHandler, includeCustom?: boolean): void;
     // @deprecated
     forEachProperty(func: PropertyCallback, includeCustom?: boolean): void;
@@ -3070,7 +3079,7 @@ export abstract class GeometricElement extends Element_2 {
     // @beta (undocumented)
     protected static readonly _customHandledProps: CustomHandledProperty[];
     // @beta (undocumented)
-    static deserialize(props: InstanceProps): GeometricElementProps;
+    static deserialize(props: DeserializeEntityArgs): GeometricElementProps;
     geom?: GeometryStreamProps;
     getPlacementTransform(): Transform;
     is2d(): this is GeometricElement2d;
@@ -3096,7 +3105,7 @@ export abstract class GeometricElement2d extends GeometricElement {
     // @beta (undocumented)
     protected static readonly _customHandledProps: CustomHandledProperty[];
     // @beta (undocumented)
-    static deserialize(props: InstanceProps): GeometricElement2dProps;
+    static deserialize(props: DeserializeEntityArgs): GeometricElement2dProps;
     // (undocumented)
     placement: Placement2d;
     // @beta (undocumented)
@@ -3124,7 +3133,7 @@ export abstract class GeometricElement3d extends GeometricElement {
     // @beta (undocumented)
     protected static readonly _customHandledProps: CustomHandledProperty[];
     // @beta (undocumented)
-    static deserialize(props: InstanceProps): GeometricElement3dProps;
+    static deserialize(props: DeserializeEntityArgs): GeometricElement3dProps;
     // (undocumented)
     placement: Placement3d;
     // @beta (undocumented)
@@ -3171,7 +3180,7 @@ export abstract class GeometricModel3d extends GeometricModel {
     // @beta (undocumented)
     protected static readonly _customHandledProps: CustomHandledProperty[];
     // @beta (undocumented)
-    static deserialize(props: InstanceProps): GeometricModel3dProps;
+    static deserialize(props: DeserializeEntityArgs): GeometricModel3dProps;
     readonly isNotSpatiallyLocated: boolean;
     readonly isPlanProjection: boolean;
     get isSpatiallyLocated(): boolean;
@@ -3192,7 +3201,7 @@ export class GeometryPart extends DefinitionElement {
     // @beta (undocumented)
     protected static readonly _customHandledProps: CustomHandledProperty[];
     // @beta (undocumented)
-    static deserialize(props: InstanceProps): GeometryPartProps;
+    static deserialize(props: DeserializeEntityArgs): GeometryPartProps;
     // (undocumented)
     geom?: GeometryStreamProps;
     // @beta (undocumented)
@@ -3530,10 +3539,10 @@ export abstract class IModelDb extends IModel {
 // @public (undocumented)
 export namespace IModelDb {
     export class Elements implements GuidMapper {
+        // @internal (undocumented)
+        readonly [_cache]: ElementLRUCache;
         // @internal
         constructor(_iModel: IModelDb);
-        // @internal (undocumented)
-        cache: ElementLRUCache;
         createElement<T extends Element_2>(elProps: ElementProps): T;
         deleteAspect(aspectInstanceIds: Id64Arg): void;
         // @beta
@@ -3570,10 +3579,10 @@ export namespace IModelDb {
         getIdFromFederationGuid(guid?: GuidString): Id64String | undefined;
     }
     export class Models {
+        // @internal (undocumented)
+        readonly [_cache]: LruCache<string, ModelProps>;
         // @internal
         constructor(_iModel: IModelDb);
-        // @internal (undocumented)
-        readonly cache: LruCache<string, ModelProps>;
         createModel<T extends Model>(modelProps: ModelProps): T;
         deleteModel(ids: Id64Arg): void;
         getModel<T extends Model>(modelId: Id64String, modelClass?: EntityClassType<Model>): T;
@@ -3769,8 +3778,8 @@ export class IModelHostConfiguration implements IModelHostOptions {
     static defaultMaxTileCacheDbSize: number;
     // (undocumented)
     static defaultTileRequestTimeout: number;
-    // @beta (undocumented)
-    enableThinnedNativeInstanceWorkflow?: boolean;
+    // @beta
+    disableThinnedNativeInstanceWorkflow?: boolean;
     // @internal (undocumented)
     hubAccess?: BackendHubAccess;
     // @internal (undocumented)
@@ -3798,8 +3807,8 @@ export interface IModelHostOptions {
     compressCachedTiles?: boolean;
     // @internal
     crashReportingConfig?: CrashReportingConfig;
+    disableThinnedNativeInstanceWorkflow?: boolean;
     enableOpenTelemetry?: boolean;
-    enableThinnedNativeInstanceWorkflow?: boolean;
     hubAccess?: BackendHubAccess;
     // @internal
     logTileLoadTimeThreshold?: number;
@@ -3969,18 +3978,6 @@ export interface InstanceChange {
     summaryId: Id64String;
 }
 
-// @beta
-export interface InstanceProps {
-    // (undocumented)
-    readonly iModel: IModelDb;
-    // (undocumented)
-    readonly options?: {
-        readonly element?: ElementLoadOptions;
-    };
-    // (undocumented)
-    readonly row: ECSqlRow;
-}
-
 // @public
 export abstract class IpcHandler {
     abstract get channelName(): string;
@@ -4065,7 +4062,7 @@ export class LineStyle extends DefinitionElement {
     // (undocumented)
     description?: string;
     // @beta (undocumented)
-    static deserialize(props: InstanceProps): LineStyleProps;
+    static deserialize(props: DeserializeEntityArgs): LineStyleProps;
     // @beta (undocumented)
     static serialize(props: LineStyleProps, iModel: IModelDb): ECSqlRow;
 }
@@ -4460,7 +4457,7 @@ export class Model extends Entity {
     protected static readonly _customHandledProps: CustomHandledProperty[];
     delete(): void;
     // @beta (undocumented)
-    static deserialize(props: InstanceProps): ModelProps;
+    static deserialize(props: DeserializeEntityArgs): ModelProps;
     // (undocumented)
     getJsonProperty(name: string): any;
     getUserProperties(namespace: string): any;
@@ -4528,7 +4525,7 @@ export class ModelSelector extends DefinitionElement {
     // @beta (undocumented)
     protected static readonly _customHandledProps: CustomHandledProperty[];
     // @beta (undocumented)
-    static deserialize(props: InstanceProps): ModelSelectorProps;
+    static deserialize(props: DeserializeEntityArgs): ModelSelectorProps;
     static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, models: Id64Array): Id64String;
     models: Id64String[];
     // @beta (undocumented)
@@ -5008,7 +5005,7 @@ export class RenderMaterialElement extends DefinitionElement {
     protected static readonly _customHandledProps: CustomHandledProperty[];
     description?: string;
     // @beta (undocumented)
-    static deserialize(props: InstanceProps): RenderMaterialProps;
+    static deserialize(props: DeserializeEntityArgs): RenderMaterialProps;
     static insert(iModelDb: IModelDb, definitionModelId: Id64String, materialName: string, params: RenderMaterialElementParams): Id64String;
     // @beta (undocumented)
     protected static onCloned(context: IModelElementCloneContext, sourceProps: ElementProps, targetProps: ElementProps): void;
@@ -5061,7 +5058,7 @@ export class RenderTimeline extends InformationRecordElement {
     protected collectReferenceIds(ids: EntityReferenceSet): void;
     description: string;
     // @beta (undocumented)
-    static deserialize(props: InstanceProps): RenderTimelineProps;
+    static deserialize(props: DeserializeEntityArgs): RenderTimelineProps;
     // (undocumented)
     static fromJSON(props: RenderTimelineProps, iModel: IModelDb): RenderTimeline;
     // @alpha (undocumented)
@@ -5669,7 +5666,7 @@ export class SpatialViewDefinition extends ViewDefinition3d {
     // @beta (undocumented)
     protected static readonly _customHandledProps: CustomHandledProperty[];
     // @beta (undocumented)
-    static deserialize(props: InstanceProps): SpatialViewDefinitionProps;
+    static deserialize(props: DeserializeEntityArgs): SpatialViewDefinitionProps;
     static fromJSON(props: Omit<SpatialViewDefinitionProps, "classFullName">, iModel: IModelDb): SpatialViewDefinition;
     static insertWithCamera(iModelDb: IModelDb, definitionModelId: Id64String, name: string, modelSelectorId: Id64String, categorySelectorId: Id64String, displayStyleId: Id64String, range: Range3d, standardView?: StandardViewIndex, cameraAngle?: number): Id64String;
     loadModelSelector(): ModelSelector;
@@ -6017,7 +6014,7 @@ export class SubCategory extends DefinitionElement {
     protected static readonly _customHandledProps: CustomHandledProperty[];
     description?: string;
     // @beta (undocumented)
-    static deserialize(props: InstanceProps): SubCategoryProps;
+    static deserialize(props: DeserializeEntityArgs): SubCategoryProps;
     getCategoryId(): Id64String;
     getSubCategoryId(): Id64String;
     getSubCategoryName(): string;
@@ -6338,7 +6335,7 @@ export class UrlLink extends LinkElement {
     // (undocumented)
     description?: string;
     // @beta (undocumented)
-    static deserialize(props: InstanceProps): UrlLinkProps;
+    static deserialize(props: DeserializeEntityArgs): UrlLinkProps;
     // @beta (undocumented)
     static serialize(props: UrlLinkProps, iModel: IModelDb): ECSqlRow;
     // (undocumented)
@@ -6435,7 +6432,7 @@ export abstract class ViewDefinition extends DefinitionElement {
     // @beta (undocumented)
     protected static readonly _customHandledProps: CustomHandledProperty[];
     // @beta (undocumented)
-    static deserialize(props: InstanceProps): ViewDefinitionProps;
+    static deserialize(props: DeserializeEntityArgs): ViewDefinitionProps;
     abstract get details(): ViewDetails;
     displayStyleId: Id64String;
     getAuxiliaryCoordinateSystemId(): Id64String;
@@ -6471,7 +6468,7 @@ export class ViewDefinition2d extends ViewDefinition {
     protected static readonly _customHandledProps: CustomHandledProperty[];
     delta: Point2d;
     // @beta (undocumented)
-    static deserialize(props: InstanceProps): ViewDefinition2dProps;
+    static deserialize(props: DeserializeEntityArgs): ViewDefinition2dProps;
     get details(): ViewDetails;
     loadDisplayStyle2d(): DisplayStyle2d;
     origin: Point2d;
@@ -6492,7 +6489,7 @@ export abstract class ViewDefinition3d extends ViewDefinition {
     // @beta (undocumented)
     protected static readonly _customHandledProps: CustomHandledProperty[];
     // @beta (undocumented)
-    static deserialize(props: InstanceProps): ViewDefinition3dProps;
+    static deserialize(props: DeserializeEntityArgs): ViewDefinition3dProps;
     get details(): ViewDetails3d;
     extents: Vector3d;
     loadDisplayStyle3d(): DisplayStyle3d;

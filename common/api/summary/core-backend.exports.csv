@@ -86,6 +86,7 @@ beta;function;deleteElementSubTrees
 beta;function;deleteElementTree
 beta;function;deleteElementTree
 beta;interface;DeleteElementTreeArgs
+beta;interface;DeserializeEntityArgs
 public;class;DetailCallout
 public;class;DetailingSymbol
 internal;class;DevTools
@@ -272,7 +273,6 @@ internal;function;initializeTracing
 beta;interface;InlineGeometryPartsResult
 public;interface;InsertElementOptions
 beta;interface;InstanceChange
-beta;interface;InstanceProps
 public;class;IpcHandler
 public;class;IpcHost
 public;interface;IpcHostOpts
