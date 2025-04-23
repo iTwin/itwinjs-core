@@ -13,7 +13,7 @@ import {
 import { DefinitionElement } from "./Element";
 import { IModelDb } from "./IModelDb";
 import { IModelElementCloneContext } from "./IModelElementCloneContext";
-import { CustomHandledProperty, ECSqlRow, InstanceProps } from "./Entity";
+import { CustomHandledProperty, ECSqlRow, DeserializeEntityArgs } from "./Entity";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 
@@ -80,7 +80,7 @@ export class RenderMaterialElement extends DefinitionElement {
   ];
 
   /** @beta */
-  public static override deserialize(props: InstanceProps): RenderMaterialProps {
+  public static override deserialize(props: DeserializeEntityArgs): RenderMaterialProps {
     const elProps = super.deserialize(props) as RenderMaterialProps;
     const instance = props.row;
     elProps.paletteName = JsonUtils.asString(instance.paletteName);

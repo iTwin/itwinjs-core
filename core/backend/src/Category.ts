@@ -13,7 +13,7 @@ import {
 import { DefinitionElement } from "./Element";
 import { IModelDb } from "./IModelDb";
 import { CategoryOwnsSubCategories } from "./NavigationRelationship";
-import { CustomHandledProperty, ECSqlRow, InstanceProps } from "./Entity";
+import { CustomHandledProperty, DeserializeEntityArgs, ECSqlRow } from "./Entity";
 
 /** Defines the appearance for graphics in Geometric elements
  * @public
@@ -38,7 +38,7 @@ export class SubCategory extends DefinitionElement {
   ];
 
   /** @beta */
-  public static override deserialize(props: InstanceProps): SubCategoryProps {
+  public static override deserialize(props: DeserializeEntityArgs): SubCategoryProps {
     const elProps = super.deserialize(props) as SubCategoryProps;
     elProps.description = JsonUtils.asString(props.row.description);
     if (props.row.properties !== '') {
@@ -146,7 +146,7 @@ export class Category extends DefinitionElement {
   ];
 
   /** @beta */
-  public static override deserialize(props: InstanceProps): CategoryProps {
+  public static override deserialize(props: DeserializeEntityArgs): CategoryProps {
     const elProps = super.deserialize(props) as CategoryProps;
     elProps.description = JsonUtils.asString(props.row.description);
     elProps.rank = JsonUtils.asInt(props.row.rank);

@@ -22,11 +22,11 @@ export interface ECSqlRow {
 
 /** Set of properties that are used to deserialize an [[EntityProps]] from an ECSqlRow.
  * @beta */
-export interface InstanceProps {
-  readonly row: ECSqlRow;
-  readonly iModel: IModelDb;
-  readonly options?: {
-    readonly element?: ElementLoadOptions;
+export interface DeserializeEntityArgs {
+  row: ECSqlRow;
+  iModel: IModelDb;
+  options?: {
+    element?: ElementLoadOptions;
   }
 }
 
@@ -130,7 +130,7 @@ export class Entity {
 
   /** Converts an ECSqlRow of an Entity to an EntityProps. This is used to deserialize an Entity from the database.
    * @beta */
-  public static deserialize(props: InstanceProps): EntityProps {
+  public static deserialize(props: DeserializeEntityArgs): EntityProps {
     const enProps: EntityProps = {
       classFullName: props.row.classFullName,
       id: props.row.id,

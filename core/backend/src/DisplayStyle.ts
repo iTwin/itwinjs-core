@@ -14,7 +14,7 @@ import {
 import { DefinitionElement, RenderTimeline } from "./Element";
 import { IModelDb } from "./IModelDb";
 import { IModelElementCloneContext } from "./IModelElementCloneContext";
-import { ECSqlRow, InstanceProps } from "./Entity";
+import { DeserializeEntityArgs, ECSqlRow } from "./Entity";
 
 /** A DisplayStyle defines the parameters for 'styling' the contents of a view.
  * Internally a DisplayStyle consists of a dictionary of several named 'styles' describing specific aspects of the display style as a whole.
@@ -30,7 +30,7 @@ export abstract class DisplayStyle extends DefinitionElement {
   }
 
   /** @beta */
-  public static override deserialize(props: InstanceProps): DisplayStyleProps {
+  public static override deserialize(props: DeserializeEntityArgs): DisplayStyleProps {
     const elProps = super.deserialize(props) as DisplayStyleProps;
     const displayOptions = props.options?.element?.displayStyle;
     // Uncompress excludedElements if they are compressed

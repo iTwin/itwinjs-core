@@ -20,7 +20,7 @@ import { DefinitionElement, GraphicalElement2d, SpatialLocationElement } from ".
 import { IModelDb } from "./IModelDb";
 import { DisplayStyle, DisplayStyle2d, DisplayStyle3d } from "./DisplayStyle";
 import { IModelElementCloneContext } from "./IModelElementCloneContext";
-import { CustomHandledProperty, ECSqlRow, InstanceProps } from "./Entity";
+import { CustomHandledProperty, ECSqlRow, DeserializeEntityArgs } from "./Entity";
 
 /** Holds the list of Ids of GeometricModels displayed by a [[SpatialViewDefinition]]. Multiple SpatialViewDefinitions may point to the same ModelSelector.
  * @see [ModelSelectorState]($frontend)
@@ -50,7 +50,7 @@ export class ModelSelector extends DefinitionElement {
   ];
 
   /** @beta */
-  public static override deserialize(props: InstanceProps): ModelSelectorProps {
+  public static override deserialize(props: DeserializeEntityArgs): ModelSelectorProps {
     const elProps = super.deserialize(props) as ModelSelectorProps;
     const instance = props.row;
     // eslint-disable-next-line @typescript-eslint/no-deprecated
@@ -147,7 +147,7 @@ export class CategorySelector extends DefinitionElement {
   ];
 
   /** @beta */
-  public static override deserialize(props: InstanceProps): CategorySelectorProps {
+  public static override deserialize(props: DeserializeEntityArgs): CategorySelectorProps {
     const elProps = super.deserialize(props) as CategorySelectorProps;
     const instance = props.row;
     // eslint-disable-next-line @typescript-eslint/no-deprecated
@@ -251,7 +251,7 @@ export abstract class ViewDefinition extends DefinitionElement {
   ];
 
   /** @beta */
-  public static override deserialize(props: InstanceProps): ViewDefinitionProps {
+  public static override deserialize(props: DeserializeEntityArgs): ViewDefinitionProps {
     const elProps = super.deserialize(props) as ViewDefinitionProps;
     const instance = props.row;
     if (instance.isPrivate  !== undefined)
@@ -388,7 +388,7 @@ export abstract class ViewDefinition3d extends ViewDefinition {
   ];
 
   /** @beta */
-  public static override deserialize(props: InstanceProps): ViewDefinition3dProps {
+  public static override deserialize(props: DeserializeEntityArgs): ViewDefinition3dProps {
     const instance = props.row;
     const elProps = super.deserialize(props) as ViewDefinition3dProps;
     // ViewDefinition3dProps
@@ -473,7 +473,7 @@ export class SpatialViewDefinition extends ViewDefinition3d {
   ];
 
   /** @beta */
-  public static override deserialize(props: InstanceProps): SpatialViewDefinitionProps {
+  public static override deserialize(props: DeserializeEntityArgs): SpatialViewDefinitionProps {
     const elProps = super.deserialize(props) as SpatialViewDefinitionProps;
     const instance = props.row;
     elProps.modelSelectorId = instance.modelSelector.id;
@@ -669,7 +669,7 @@ export class ViewDefinition2d extends ViewDefinition {
   ];
 
   /** @beta */
-  public static override deserialize(props: InstanceProps): ViewDefinition2dProps {
+  public static override deserialize(props: DeserializeEntityArgs): ViewDefinition2dProps {
     const elProps = super.deserialize(props) as ViewDefinition2dProps;
     const instance = props.row;
     elProps.baseModelId = instance.baseModel.id;

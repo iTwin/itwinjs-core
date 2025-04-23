@@ -15,7 +15,7 @@ import {
   InformationPartitionElementProps, ModelProps, RelatedElement,
 } from "@itwin/core-common";
 import { DefinitionPartition, DocumentPartition, InformationRecordPartition, PhysicalPartition, SheetIndexPartition, SpatialLocationPartition } from "./Element";
-import { CustomHandledProperty, ECSqlRow, Entity, InstanceProps } from "./Entity";
+import { CustomHandledProperty, DeserializeEntityArgs, ECSqlRow, Entity } from "./Entity";
 import { IModelDb } from "./IModelDb";
 import { SubjectOwnsPartitionElements } from "./NavigationRelationship";
 import { _nativeDb, _verifyChannel } from "./internal/Symbols";
@@ -94,7 +94,7 @@ export class Model extends Entity {
   ];
 
   /** @beta */
-  public static override deserialize(props: InstanceProps): ModelProps {
+  public static override deserialize(props: DeserializeEntityArgs): ModelProps {
     const instance = props.row;
     const modelProps = super.deserialize(props) as ModelProps;
     const modeledElementProps = props.iModel.elements.tryGetElementProps(instance.modeledElement.id);
@@ -333,7 +333,7 @@ export abstract class GeometricModel3d extends GeometricModel {
   ];
 
   /** @beta */
-  public static override deserialize(props: InstanceProps): GeometricModel3dProps {
+  public static override deserialize(props: DeserializeEntityArgs): GeometricModel3dProps {
     const modelProps = super.deserialize(props) as GeometricModel3dProps;
     const instance = props.row;
     if (instance.isNotSpatiallyLocated === true || instance.isTemplate === true)

@@ -15,7 +15,7 @@ import {
   SheetBorderTemplateProps, SheetProps, SheetTemplateProps, SubjectProps, TypeDefinition, TypeDefinitionElementProps, UrlLinkProps
 } from "@itwin/core-common";
 import { ClipVector, LowAndHighXYZProps, Range3d, Transform, YawPitchRollAngles } from "@itwin/core-geometry";
-import { CustomHandledProperty, ECSqlRow, Entity, InstanceProps } from "./Entity";
+import { CustomHandledProperty, DeserializeEntityArgs, ECSqlRow, Entity } from "./Entity";
 import { IModelDb } from "./IModelDb";
 import { IModelElementCloneContext } from "./IModelElementCloneContext";
 import { DefinitionModel, DrawingModel, PhysicalModel, SectionDrawingModel } from "./Model";
@@ -155,7 +155,7 @@ export class Element extends Entity {
   ];
 
   /** @beta */
-  public static override deserialize(props: InstanceProps): ElementProps {
+  public static override deserialize(props: DeserializeEntityArgs): ElementProps {
     const elProps = super.deserialize(props) as ElementProps;
     const instance = props.row;
     elProps.code = { value: instance.codeValue ?? "", spec: instance.codeSpec.id, scope: instance.codeScope.id }
@@ -569,7 +569,7 @@ export abstract class GeometricElement extends Element {
   ];
 
   /** @beta */
-  public static override deserialize(props: InstanceProps): GeometricElementProps {
+  public static override deserialize(props: DeserializeEntityArgs): GeometricElementProps {
     return super.deserialize(props) as GeometricElementProps;
   }
 
@@ -624,7 +624,7 @@ export abstract class GeometricElement3d extends GeometricElement {
   ];
 
   /** @beta */
-  public static override deserialize(props: InstanceProps): GeometricElement3dProps {
+  public static override deserialize(props: DeserializeEntityArgs): GeometricElement3dProps {
     const elProps = super.deserialize(props) as GeometricElement3dProps;
     const instance = props.row;
     elProps.category = instance.category.id;
@@ -770,7 +770,7 @@ export abstract class GeometricElement2d extends GeometricElement {
   ];
 
   /** @beta */
-  public static override deserialize(props: InstanceProps): GeometricElement2dProps {
+  public static override deserialize(props: DeserializeEntityArgs): GeometricElement2dProps {
     const elProps = super.deserialize(props) as GeometricElement2dProps;
     const instance = props.row;
     elProps.category = instance.category.id;
@@ -1322,7 +1322,7 @@ export abstract class DefinitionElement extends InformationContentElement {
   ];
 
   /** @beta */
-  public static override deserialize(props: InstanceProps): DefinitionElementProps {
+  public static override deserialize(props: DeserializeEntityArgs): DefinitionElementProps {
     const elProps = super.deserialize(props) as DefinitionElementProps;
     if (props.row.isPrivate !== undefined)
       elProps.isPrivate = props.row.isPrivate;
@@ -1777,7 +1777,7 @@ export class UrlLink extends LinkElement {
   ];
 
   /** @beta */
-  public static override deserialize(props: InstanceProps): UrlLinkProps {
+  public static override deserialize(props: DeserializeEntityArgs): UrlLinkProps {
     const elProps = super.deserialize(props) as UrlLinkProps;
     elProps.description = props.row.description ?? "";
     elProps.url = props.row.url;
@@ -1869,7 +1869,7 @@ export class GeometryPart extends DefinitionElement {
   ];
 
   /** @beta */
-  public static override deserialize(props: InstanceProps): GeometryPartProps {
+  public static override deserialize(props: DeserializeEntityArgs): GeometryPartProps {
     const elProps = super.deserialize(props) as GeometryPartProps;
     const instance = props.row;
 
@@ -1961,7 +1961,7 @@ export class LineStyle extends DefinitionElement {
   ];
 
   /** @beta */
-  public static override deserialize(props: InstanceProps): LineStyleProps {
+  public static override deserialize(props: DeserializeEntityArgs): LineStyleProps {
     const elProps = super.deserialize(props) as LineStyleProps;
     const instance = props.row;
     elProps.data = instance.data ?? "";
@@ -2019,7 +2019,7 @@ export class RenderTimeline extends InformationRecordElement {
   }
 
   /** @beta */
-  public static override deserialize(props: InstanceProps): RenderTimelineProps {
+  public static override deserialize(props: DeserializeEntityArgs): RenderTimelineProps {
     const elProps = super.deserialize(props) as RenderTimelineProps;
     const options = props.options?.element?.renderTimeline;
     // Omit Schedule Script Element Ids if the option is set
