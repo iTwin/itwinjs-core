@@ -197,13 +197,12 @@ export interface IModelHostOptions {
   allowSharedChannel?: boolean;
 
   /**
-   * Use native instance functions for element, model, and aspect CRUD operations. While set to true, the getElement(), getModel() and getAspect() functions will use
-   * a thinned down native workflow to read the entities from the database. This workflow performs work previously done on the native side in the TS side, resulting in performance
-   * improvements. Elements will be cached in the TS side as opposed to the native side. Setting this to false will revert to the previous behavior of using the native side for all
-   * CRUD operations.
-   * Will default to `true` in 5.0.
+   * Setting this to true withh revert to the previous behavior of using the native side for all CRUD operations.
+   * While set to false, the getElement(), getModel() and getAspect() functions will use a thinned down native workflow to read the entities from the database.
+   * This workflow performs work previously done on the native side in the TS side, resulting in performance improvements, if errors are detected,
+   * this option can be set to true to revert to old workflow.
    */
-  enableThinnedNativeInstanceWorkflow?: boolean;
+  disableThinnedNativeInstanceWorkflow?: boolean;
 }
 
 /** Configuration of core-backend.
@@ -240,12 +239,11 @@ export class IModelHostConfiguration implements IModelHostOptions {
   /** @internal */
   public crashReportingConfig?: CrashReportingConfig;
   /**
-   * Configuration controlling whether to use the thinned down native instance functions for element, model, and aspect CRUD operations.
-   * or use the previous behavior of using the native side for all CRUD operations. Set to true to use the thinned workflow, false to use the previous behavior.
-   * This is set to true by default.
+   * Configuration controlling whether to use the thinned down native instance functions for element, model, and aspect CRUD operations
+   * or use the previous behavior of using the native side for all CRUD operations. Set to true to revert to the previous behavior.
    * @beta
   */
-  public enableThinnedNativeInstanceWorkflow?: boolean;
+  public disableThinnedNativeInstanceWorkflow?: boolean;
 }
 
 /**
@@ -484,10 +482,6 @@ export class IModelHost {
       this.sessionId = Guid.createValue();
 
     this.authorizationClient = options.authorizationClient;
-
-    if (!options.enableThinnedNativeInstanceWorkflow) {
-      options.enableThinnedNativeInstanceWorkflow = true;
-    }
 
     this.backendVersion = require("../../package.json").version; // eslint-disable-line @typescript-eslint/no-require-imports
     initializeRpcBackend(options.enableOpenTelemetry);

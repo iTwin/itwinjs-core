@@ -1747,7 +1747,7 @@ export namespace IModelDb {
      */
     public tryGetModelProps<T extends ModelProps>(id: Id64String): T | undefined {
       try {
-        if (!IModelHost.configuration?.enableThinnedNativeInstanceWorkflow) {
+        if (IModelHost.configuration?.disableThinnedNativeInstanceWorkflow) {
           return this._iModel[_nativeDb].getModel({ id }) as T;
         }
 
@@ -2032,7 +2032,7 @@ export namespace IModelDb {
         props = { code: props };
       }
       try {
-        if (!IModelHost.configuration?.enableThinnedNativeInstanceWorkflow) {
+        if (IModelHost.configuration?.disableThinnedNativeInstanceWorkflow) {
           return this._iModel[_nativeDb].getElement(props) as T;
         }
 
