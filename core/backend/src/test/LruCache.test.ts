@@ -131,7 +131,7 @@ describe('ElementLruCache', () => {
     cache.set(testElem1);
     const retrievedElem = cache.get({ id: testElem1.elProps.id });
     expect(retrievedElem).to.not.be.undefined;
-    expect(retrievedElem).to.deep.equal(testElem1);
+    expect(retrievedElem).to.equal(testElem1);
   });
 
   it('should overwrite existing valid element', () => {
@@ -140,13 +140,13 @@ describe('ElementLruCache', () => {
     cache.set(testElemModel);
     const retrievedElem = cache.get({ id: testElemModel.elProps.id });
     expect(retrievedElem).to.not.be.undefined;
-    expect(retrievedElem).to.deep.equal(testElemModel);
+    expect(retrievedElem).to.equal(testElemModel);
 
     testElemModel.elProps.model = "newModel";
     cache.set(testElemModel);
     const retrievedElem2 = cache.get({ id: testElemModel.elProps.id });
     expect(retrievedElem2).to.not.be.undefined;
-    expect(retrievedElem2).to.deep.equal(testElemModel);
+    expect(retrievedElem2).to.equal(testElemModel);
   });
 
   it('should store and retrieve a valid element by fedGuid', () => {
@@ -154,7 +154,7 @@ describe('ElementLruCache', () => {
     cache.set(testElemFedGuid);
     const retrievedElem = cache.get({ federationGuid: testElemFedGuid.elProps.federationGuid });
     expect(retrievedElem).to.not.be.undefined;
-    expect(retrievedElem).to.deep.equal(testElemFedGuid);
+    expect(retrievedElem).to.equal(testElemFedGuid);
   });
 
   it('should store and retrieve a valid element by code', () => {
@@ -162,12 +162,12 @@ describe('ElementLruCache', () => {
     cache.set(testElem1);
     const retrievedElem = cache.get({ code: testElem1.elProps.code });
     expect(retrievedElem).to.not.be.undefined;
-    expect(retrievedElem).to.deep.equal(testElem1);
+    expect(retrievedElem).to.equal(testElem1);
 
     cache.set(testElem2);
     const retrievedElem2 = cache.get({ code: testElem2.elProps.code });
     expect(retrievedElem2).to.not.be.undefined;
-    expect(retrievedElem2).to.deep.equal(testElem2);
+    expect(retrievedElem2).to.equal(testElem2);
   });
 
   it('should fail to store an element without id', () => {
@@ -184,14 +184,14 @@ describe('ElementLruCache', () => {
 
     const retrievedElem = cache.get({ id: testElem2.elProps.id });
     expect(retrievedElem).to.not.be.undefined;
-    expect(retrievedElem).to.deep.equal(testElem2);
+    expect(retrievedElem).to.equal(testElem2);
 
     const retrievedElem2 = cache.get({ id: testElem1.elProps.id });
     expect(retrievedElem2).to.be.undefined;
 
     const retrievedElem3 = cache.get({ id: testElem3.elProps.id });
     expect(retrievedElem3).to.not.be.undefined;
-    expect(retrievedElem3).to.deep.equal(testElem3);
+    expect(retrievedElem3).to.equal(testElem3);
   });
 
   it('should delete with id', () => {
@@ -208,7 +208,7 @@ describe('ElementLruCache', () => {
 
     const retrievedElem2 = cache.get({ id: testElem1.elProps.id });
     expect(retrievedElem2).to.not.be.undefined;
-    expect(retrievedElem2).to.deep.equal(testElem1);
+    expect(retrievedElem2).to.equal(testElem1);
   });
 
   it('should delete with federation guid', () => {
@@ -225,7 +225,7 @@ describe('ElementLruCache', () => {
 
     const retrievedElem2 = cache.get({ id: testElem1.elProps.id });
     expect(retrievedElem2).to.not.be.undefined;
-    expect(retrievedElem2).to.deep.equal(testElem1);
+    expect(retrievedElem2).to.equal(testElem1);
   });
 
   it('should delete with code', () => {
@@ -242,7 +242,7 @@ describe('ElementLruCache', () => {
 
     const retrievedElem2 = cache.get({ id: testElem1.elProps.id });
     expect(retrievedElem2).to.not.be.undefined;
-    expect(retrievedElem2).to.deep.equal(testElem1);
+    expect(retrievedElem2).to.equal(testElem1);
   });
 
   it('should delete with model id', () => {
@@ -259,7 +259,7 @@ describe('ElementLruCache', () => {
 
     const retrievedElem2 = cache.get({ id: testElem1.elProps.id });
     expect(retrievedElem2).to.not.be.undefined;
-    expect(retrievedElem2).to.deep.equal(testElem1);
+    expect(retrievedElem2).to.equal(testElem1);
   });
 
   it('should clear the cache', () => {
