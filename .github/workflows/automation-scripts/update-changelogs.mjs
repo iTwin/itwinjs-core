@@ -144,11 +144,11 @@ console.log("Starting to copy changelog files..."); //test1
 
 await $`find ./temp-target-changelogs/ -type f -name "*CHANGELOG.json" -exec sh -c 'cp "{}" "$(echo "{}" | sed "s|temp-target-changelogs/\\(.*\\)_|./\\1/|; s|_|/|g")"' \\;`;
 console.log("Finished copying changelog files. Checking for any files in temp folders...");//test1
-const tempFilesRemaining = await $`git ls-files --others --exclude-standard`; //test1
+const tempFilesRemaining = await $`git ls-files --others --exclude-standard ./temp-target-changelogs`; //test1
 
 //test1 If the temp files are still there (untracked), log a warning
-if (tempFilesRemaining) {
-  console.log("Warning: Some temp files remain untracked in the branch:\n", tempFilesRemaining);
+if (tempFilesRemaining && tempFilesRemaining.trim().length > 0) {
+  console.log("Warning: Some changelog files remain untracked in the temp branch (they were not successfully copied):\n", tempFilesRemaining);
 } else {
   console.log("No untracked files in the temp branch. All files copied successfully.");
 }
