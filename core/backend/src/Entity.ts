@@ -23,9 +23,13 @@ export interface ECSqlRow {
 /** Set of properties that are used to deserialize an [[EntityProps]] from an ECSqlRow.
  * @beta */
 export interface DeserializeEntityArgs {
+  /** Row to deserialize */
   row: ECSqlRow;
+  /** The IModel that contains this Entity */
   iModel: IModelDb;
+  /** The options used when loading */
   options?: {
+    /** Options used when loading an element */
     element?: ElementLoadOptions;
   }
 }
