@@ -154,7 +154,7 @@ export interface HitPath {
  * @beta
  */
 export interface ContourHit {
-  /** The contour group that generated the contour line, as specified by [ContourDisplay.groups]]. */
+  /** The contour group that generated the contour line, as specified by [[ContourDisplay.groups]]. */
   readonly group: ContourGroup;
   /** True if the contour is a major contour line as specified by the [[group]] from which it originated, false if it is a minor contour line. */
   readonly isMajor: boolean;
