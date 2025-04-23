@@ -6,7 +6,7 @@
 import { BeTimePoint, Id64Set, Id64String } from "@itwin/core-bentley";
 import { BatchType, RenderMode, RenderSchedule, ViewFlagOverrides } from "@itwin/core-common";
 import {
-  acquireImdlDecoder, ImdlDecoder, IModelApp, LayerTileTreeHandler, MapLayerTreeSetting, Tile, TileDrawArgs, TileTree, TileTreeParams
+  acquireImdlDecoder, GraphicsCollectorDrawArgs, ImdlDecoder, IModelApp, LayerTileTreeHandler, MapLayerTreeSetting, Tile, TileDrawArgs, TileTree, TileTreeParams
 } from "@itwin/core-frontend";
 import { BatchedTile, BatchedTileParams } from "./BatchedTile.js";
 import { BatchedTilesetReader, ModelMetadata } from "./BatchedTilesetReader.js";
@@ -89,7 +89,8 @@ export class BatchedTileTree extends TileTree {
       tile.drawGraphics(args);
 
     args.drawGraphics();
-    this._layerHandler.collectClassifierGraphics(args, tiles);
+    if(!(args instanceof GraphicsCollectorDrawArgs))
+      this._layerHandler.collectClassifierGraphics(args, tiles);
   }
 
   public override prune(): void {

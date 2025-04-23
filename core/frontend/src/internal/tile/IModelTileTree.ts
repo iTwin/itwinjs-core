@@ -18,7 +18,7 @@ import { GraphicalEditingScope } from "../../GraphicalEditingScope";
 import { RenderSystem } from "../../render/RenderSystem";
 import { GraphicBranch } from "../../render/GraphicBranch";
 import {
-  acquireImdlDecoder, DynamicIModelTile, ImdlDecoder, IModelTile, IModelTileParams, iModelTileParamsFromJSON, LayerTileTreeHandler, MapLayerTreeSetting, Tile,
+  acquireImdlDecoder, DynamicIModelTile, GraphicsCollectorDrawArgs, ImdlDecoder, IModelTile, IModelTileParams, iModelTileParamsFromJSON, LayerTileTreeHandler, MapLayerTreeSetting, Tile,
   TileContent, TileDrawArgs, TileLoadPriority, TileParams, TileRequest, TileRequestChannel, TileTree, TileTreeParams
 } from "../../tile/internal";
 
@@ -430,7 +430,8 @@ export class IModelTileTree extends TileTree {
   public draw(args: TileDrawArgs): void {
     const tiles = this.selectTiles(args);
     this._rootTile.draw(args, tiles, this._numStaticTilesSelected);
-    this._layerHandler.collectClassifierGraphics(args, tiles);
+    if(!(args instanceof GraphicsCollectorDrawArgs))
+      this._layerHandler.collectClassifierGraphics(args, tiles);
   }
 
   public prune(): void {
