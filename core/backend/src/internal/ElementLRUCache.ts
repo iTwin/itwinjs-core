@@ -1,57 +1,6 @@
 import { Id64String } from "@itwin/core-bentley";
 import { CodeProps, ElementLoadOptions, ElementLoadProps, ElementProps } from "@itwin/core-common";
 
-export class LruCache<K, V>{
-  private _cache = new Map<K, V>();
-  public constructor(public readonly capacity: number) { }
-  public get [Symbol.toStringTag](): string {
-    return `LruCache(this.size=${this.size}, capacity=${this.capacity})`;
-  }
-  public clear(): void {
-    this._cache.clear();
-  }
-  public delete(key: K): boolean {
-    if (!this._cache.has(key)) {
-      return false;
-    }
-    return this._cache.delete(key);
-  }
-  public get(key: K): V | undefined {
-    const value = this._cache.get(key);
-    if (value !== undefined) {
-      this._cache.delete(key); // Remove the key from its current position
-      this._cache.set(key, value); // Reinsert it at the end
-    }
-    return value;
-  }
-  public set(key: K, value: V): this {
-    if (this._cache.has(key)) {
-      this._cache.delete(key); // Remove the key from its current position
-    }
-
-    this._cache.set(key, value); // Insert it at the end
-
-    if (this._cache.size > this.capacity) {
-      const oldestKey = this._cache.keys().next().value as K; // Get the first key (oldest)
-
-      this._cache.delete(oldestKey); // Remove the oldest key
-    }
-    return this;
-  }
-  public has(key: K): boolean {
-    return this._cache.has(key);
-  }
-  public get size(): number {
-    return this._cache.size;
-  }
-  public keys() {
-    return this._cache.keys();
-  }
-  public values() {
-    return this._cache.values();
-  }
-}
-
 /* @internal */
 export interface CachedElement {
   loadOptions: ElementLoadOptions

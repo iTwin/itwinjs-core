@@ -12,7 +12,7 @@ import * as touch from "touch";
 import { IModelJsNative, SchemaWriteStatus } from "@bentley/imodeljs-native";
 import {
   AccessToken, assert, BeEvent, BentleyStatus, ChangeSetStatus, DbChangeStage, DbConflictCause, DbConflictResolution, DbResult,
-  Guid, GuidString, Id64, Id64Arg, Id64Array, Id64Set, Id64String, IModelStatus, JsonUtils, Logger, LogLevel, OpenMode
+  Guid, GuidString, Id64, Id64Arg, Id64Array, Id64Set, Id64String, IModelStatus, JsonUtils, Logger, LogLevel, LRUMap, OpenMode
 } from "@itwin/core-bentley";
 import {
   AxisAlignedBox3d, BRepGeometryCreate, BriefcaseId, BriefcaseIdValue, CategorySelectorProps, ChangesetIdWithIndex, ChangesetIndexAndId, Code,
@@ -71,7 +71,7 @@ import { createIModelDbFonts } from "./internal/IModelDbFontsImpl";
 import { _cache, _close, _hubAccess, _nativeDb, _releaseAllLocks } from "./internal/Symbols";
 import { SchemaContext, SchemaJsonLocater } from "@itwin/ecschema-metadata";
 import { SchemaMap } from "./Schema";
-import { ElementLRUCache, LruCache } from "./internal/ElementLRUCache";
+import { ElementLRUCache } from "./internal/ElementLRUCache";
 // spell:ignore fontid fontmap
 
 const loggerCategory: string = BackendLoggerCategory.IModelDb;
@@ -1721,7 +1721,7 @@ export namespace IModelDb {
    */
   export class Models {
     /** @internal */
-    public readonly [_cache] = new LruCache<Id64String, ModelProps>(500);
+    public readonly [_cache] = new LRUMap<Id64String, ModelProps>(500);
 
     /** @internal */
     public constructor(private _iModel: IModelDb) { }
