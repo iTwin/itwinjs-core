@@ -151,8 +151,9 @@ export class EntityClass extends ECClass implements HasMixins {
       }
     }
 
-    if (this._properties) {
-      this._properties.forEach(property => {
+    const localProps = this.getPropertiesSync(true);
+    if (localProps) {
+      Array.from(localProps).forEach(property => {
         cache.set(property.name.toUpperCase(), property);
       });
     }
