@@ -63,12 +63,14 @@ const computeAltPickBufferOutputs = `${multiplyAlpha}
   vec4 output0 = baseColor;
   vec4 output1 = vec4(0.0);
   vec4 output2 = vec4(0.0);
+  vec4 output3 = vec4(0.0);
 `;
 
 const assignPickBufferOutputsMRT = `
   FragColor0 = output0;
   FragColor1 = output1;
   FragColor2 = output2;
+  FragColor3 = output3;
 `;
 
 const reassignFeatureId = "  output1 = overrideFeatureId(output1);";
@@ -89,6 +91,10 @@ export function addPickBufferOutputs(frag: FragmentShaderBuilder): void {
 
   prelude.add(computePickBufferOutputs);
 
+  const computeContourLineInfo = frag.get(FragmentShaderComponent.ComputeContourLineInfo) ?? "return vec4(0.0);";
+  frag.addFunction("vec4 computeContourLineInfo()", computeContourLineInfo);
+  prelude.addline("  vec4 output3 = computeContourLineInfo();");
+
   const overrideColor = frag.get(FragmentShaderComponent.OverrideColor);
   if (undefined !== overrideColor) {
     frag.addFunction("vec4 overrideColor(vec4 currentColor)", overrideColor);
@@ -102,7 +108,7 @@ export function addPickBufferOutputs(frag: FragmentShaderBuilder): void {
   }
 
   addRenderPass(frag);
-  frag.addDrawBuffersExtension(3);
+  frag.addDrawBuffersExtension(4);
   frag.set(FragmentShaderComponent.AssignFragData, prelude.source + assignPickBufferOutputsMRT);
 }
 
@@ -118,7 +124,7 @@ export function addAltPickBufferOutputs(frag: FragmentShaderBuilder): void {
   }
 
   addRenderPass(frag);
-  frag.addDrawBuffersExtension(3);
+  frag.addDrawBuffersExtension(4);
   frag.set(FragmentShaderComponent.AssignFragData, prelude.source + assignPickBufferOutputsMRT);
 }
 

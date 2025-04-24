@@ -219,6 +219,9 @@ export enum ChangeSetStatus {
 // @public
 export type CloneFunction<T> = (value: T) => T;
 
+// @public
+export function compareArrays<T>(lhs: ReadonlyArray<T>, rhs: ReadonlyArray<T>, compare: (a: T, b: T) => number): number;
+
 // @public (undocumented)
 export function compareBooleans(a: boolean, b: boolean): number;
 
