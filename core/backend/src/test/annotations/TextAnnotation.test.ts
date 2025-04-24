@@ -5,7 +5,7 @@
 import { assert, expect } from "chai";
 import { computeGraphemeOffsets, ComputeGraphemeOffsetsArgs, ComputeRangesForTextLayout, ComputeRangesForTextLayoutArgs, FindFontId, FindTextStyle, layoutTextBlock, LineLayout, RunLayout, TextBlockLayout, TextLayoutRanges } from "../../TextAnnotationLayout";
 import { Geometry, Range2d } from "@itwin/core-geometry";
-import { ColorDef, FontType, FractionRun, LineBreakRun, LineLayoutResult, Run, RunLayoutResult, TextAnnotation, TextAnnotation2dProps, TextAnnotation3dProps, TextAnnotationAnchor, TextBlock, TextBlockGeometryPropsEntry, TextBlockMargins, TextRun, TextStringProps, TextStyleSettings } from "@itwin/core-common";
+import { ColorDef, FontType, FractionRun, LineBreakRun, LineLayoutResult, Run, RunLayoutResult, TextAnnotation, TextAnnotation2dProps, TextAnnotation3dProps, TextAnnotationAnchor, TextAnnotationProps, TextBlock, TextBlockGeometryPropsEntry, TextBlockMargins, TextRun, TextStringProps, TextStyleSettings } from "@itwin/core-common";
 import { IModelDb, SnapshotDb } from "../../IModelDb";
 import { TextAnnotation2d, TextAnnotation3d } from "../../TextAnnotationElement";
 import { produceTextAnnotationGeometry } from "../../TextAnnotationGeometry";
@@ -1192,12 +1192,12 @@ describe("TextAnnotation element", () => {
     });
 
     it("extracts from JSON properties", () => {
+      const textAnnotationProps: TextAnnotationProps = {
+        textBlock: TextBlock.create({ styleName: "block" }).toJSON(),
+      }
+
       const elem = makeElement({
-        jsonProperties: {
-          annotation: {
-            textBlock: TextBlock.create({ styleName: "block" }).toJSON(),
-          },
-        },
+        textAnnotationData: JSON.stringify(textAnnotationProps),
       });
 
       const anno = elem.getAnnotation()!;
@@ -1207,12 +1207,12 @@ describe("TextAnnotation element", () => {
     });
 
     it("produces a new object each time it is called", () => {
+      const textAnnotationProps: TextAnnotationProps = {
+        textBlock: TextBlock.create({ styleName: "block" }).toJSON(),
+      }
+
       const elem = makeElement({
-        jsonProperties: {
-          annotation: {
-            textBlock: TextBlock.create({ styleName: "block" }).toJSON(),
-          },
-        },
+        textAnnotationData: JSON.stringify(textAnnotationProps),
       });
 
       const anno1 = elem.getAnnotation()!;
@@ -1226,13 +1226,14 @@ describe("TextAnnotation element", () => {
     it("updates JSON properties and recomputes geometry stream", () => {
       const elem = makeElement();
       expect(elem.geom).to.be.undefined;
+      expect(elem.textAnnotationData).to.be.undefined;
 
       const annotation = { textBlock: TextBlock.create({ styleName: "block" }).toJSON() };
       elem.setAnnotation(TextAnnotation.fromJSON(annotation));
 
       expect(elem.geom).not.to.be.undefined;
-      expect(elem.jsonProperties.annotation).to.deep.equal(annotation);
-      expect(elem.jsonProperties.annotation).not.to.equal(annotation);
+      expect(elem.textAnnotationData).to.deep.equal(annotation);
+      expect(elem.textAnnotationData).not.to.equal(annotation);
     });
 
     it("uses default subcategory by default", () => {
@@ -1298,7 +1299,7 @@ describe("TextAnnotation element", () => {
 
     it("create method does not automatically compute the geometry", () => {
       const annotation = createAnnotation();
-      const el = createElement({ jsonProperties: { annotation: annotation.toJSON() } });
+      const el = createElement({ textAnnotationData: JSON.stringify(annotation.toJSON()) });
       expect(el.getAnnotation()!.equals(annotation)).to.be.true;
       expect(el.geom).to.be.undefined;
     });
@@ -1313,6 +1314,11 @@ describe("TextAnnotation element", () => {
       expect(el.placement.bbox.isNull).to.equal(!expectValidBBox);
     }
 
+    /**
+     * TODO: This test is failing.
+     * Likely because the testing bim is using an old schema, not BisCore.01.00.17.
+     * Change the schema version in the test file after getting the "ok" from the core team.
+     */
     it("inserts and round-trips through JSON", () => {
       function test(annotation?: TextAnnotation): void {
         const el0 = createElement();

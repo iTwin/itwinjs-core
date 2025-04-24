@@ -6,7 +6,7 @@
  * @module Elements
  */
 
-import { GeometryParams, GeometryStreamBuilder, TextAnnotation, TextAnnotation2dProps, TextAnnotation3dProps } from "@itwin/core-common";
+import { GeometryParams, GeometryStreamBuilder, TextAnnotation, TextAnnotation2dProps, TextAnnotation3dProps, TextAnnotationProps } from "@itwin/core-common";
 import { IModelDb } from "./IModelDb";
 import { AnnotationElement2d, GraphicalElement3d } from "./Element";
 import { produceTextAnnotationGeometry } from "./TextAnnotationGeometry";
@@ -26,9 +26,18 @@ function updateAnnotation(element: TextAnnotation2d | TextAnnotation3d, annotati
   }
 
   element.geom = builder.geometryStream;
-  element.jsonProperties.annotation = annotation.toJSON();
+  element.textAnnotationData = annotation.toJSON();
 
   return true;
+}
+
+function parseTextAnnotationData(json: string | undefined): TextAnnotationProps | undefined {
+  if (!json) return undefined;
+  try {
+    return JSON.parse(json);
+  } catch {
+    return undefined;
+  }
 }
 
 /** An element that displays textual content within a 2d model.
@@ -39,22 +48,28 @@ function updateAnnotation(element: TextAnnotation2d | TextAnnotation3d, annotati
 export class TextAnnotation2d extends AnnotationElement2d {
   /** @internal */
   public static override get className(): string { return "TextAnnotation2d"; }
-  protected constructor(props: TextAnnotation2dProps, iModel: IModelDb) { super(props, iModel); }
+  public textAnnotationData?: TextAnnotationProps;
+
+  protected constructor(props: TextAnnotation2dProps, iModel: IModelDb) {
+    super(props, iModel);
+    this.textAnnotationData = parseTextAnnotationData(props.textAnnotationData);
+  }
 
   public static fromJSON(props: TextAnnotation2dProps, iModel: IModelDb): TextAnnotation2d {
     return new TextAnnotation2d(props, iModel);
   }
 
   public override toJSON(): TextAnnotation2dProps {
-    return super.toJSON();
+    const props = super.toJSON() as TextAnnotation2dProps;
+    props.textAnnotationData = JSON.stringify(this.textAnnotationData);
+    return props;
   }
 
   /** Extract the textual content, if present.
    * @see [[setAnnotation]] to change it.
    */
   public getAnnotation(): TextAnnotation | undefined {
-    const json = this.jsonProperties.annotation;
-    return json ? TextAnnotation.fromJSON(json) : undefined;
+    return this.textAnnotationData ? TextAnnotation.fromJSON(this.textAnnotationData) : undefined;
   }
 
   /** Change the textual content, updating the element's geometry and placement accordingly.
@@ -76,22 +91,28 @@ export class TextAnnotation2d extends AnnotationElement2d {
 export class TextAnnotation3d extends GraphicalElement3d {
   /** @internal */
   public static override get className(): string { return "TextAnnotation3d"; }
-  protected constructor(props: TextAnnotation3dProps, iModel: IModelDb) { super(props, iModel); }
+  public textAnnotationData?: TextAnnotationProps;
+
+  protected constructor(props: TextAnnotation3dProps, iModel: IModelDb) {
+    super(props, iModel);
+    this.textAnnotationData = parseTextAnnotationData(props.textAnnotationData);
+  }
 
   public static fromJSON(props: TextAnnotation3dProps, iModel: IModelDb): TextAnnotation3d {
     return new TextAnnotation3d(props, iModel);
   }
 
   public override toJSON(): TextAnnotation3dProps {
-    return super.toJSON();
+    const props = super.toJSON() as TextAnnotation3dProps;
+    props.textAnnotationData = JSON.stringify(this.textAnnotationData);
+    return props;
   }
 
   /** Extract the textual content, if present.
    * @see [[setAnnotation]] to change it.
    */
   public getAnnotation(): TextAnnotation | undefined {
-    const json = this.jsonProperties.annotation;
-    return json ? TextAnnotation.fromJSON(json) : undefined;
+    return this.textAnnotationData ? TextAnnotation.fromJSON(this.textAnnotationData) : undefined;
   }
 
   /** Change the textual content, updating the element's geometry and placement accordingly.

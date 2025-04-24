@@ -16,7 +16,6 @@ import { ElementGeometryBuilderParams, ElementGeometryBuilderParamsForPart } fro
 import { GeometryStreamProps } from "./geometry/GeometryStream";
 import { IModelError } from "./IModelError";
 import { SubCategoryAppearance } from "./SubCategoryAppearance";
-import { TextAnnotationProps } from "./annotation/TextAnnotation";
 
 /** Properties of a NavigationProperty.
  * @public
@@ -169,11 +168,10 @@ export interface GeometricElement3dProps extends GeometricElementProps {
  * @extensions
  */
 export interface TextAnnotation3dProps extends GeometricElement3dProps {
-  jsonProperties?: {
-    [key: string]: any;
-    /** @beta */
-    annotation?: TextAnnotationProps;
-  };
+  /** The stringified JSON representation of the text annotation.
+   * @see [[TextAnnotationProps]]
+   */
+  textAnnotationData?: string;
 }
 
 /** Properties that define a [PhysicalElement]($backend)
@@ -256,11 +254,10 @@ export interface GeometricElement2dProps extends GeometricElementProps {
  * @extensions
  */
 export interface TextAnnotation2dProps extends GeometricElement2dProps {
-  jsonProperties?: {
-    [key: string]: any;
-    /** @beta */
-    annotation?: TextAnnotationProps;
-  };
+  /** The stringified JSON representation of the text annotation.
+   * @see [[TextAnnotationProps]]
+   */
+  textAnnotationData?: string;
 }
 
 /** Properties of a [GeometryPart]($backend)
