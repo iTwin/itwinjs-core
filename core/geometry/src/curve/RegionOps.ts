@@ -142,37 +142,33 @@ export class RegionOps {
     return result;
   }
   /**
-   * Return a Ray3d with (assuming the region in planar):
-   * * `origin` at the centroid of the (3D) region,
-   * * `direction` is the unit vector perpendicular to the plane,
-   * * `a` is the area.
-   * @param region any CurveCollection or CurvePrimitive.
+   * Return a [[Ray3d]] with:
+   * * `origin` is the centroid of the region,
+   * * `direction` is a unit vector perpendicular to the region plane,
+   * * `a` is the region area.
+   * @param region the region to process. Can lie in any plane.
+   * @param result optional pre-allocated result to populate and return.
    */
   public static centroidAreaNormal(region: AnyRegion, result?: Ray3d): Ray3d | undefined {
     const localToWorld = FrameBuilder.createRightHandedFrame(undefined, region);
     if (!localToWorld)
       return undefined;
-    const normal = localToWorld.matrix.columnZ();
-    let regionIsXY = false;
+    const normal = localToWorld.matrix.columnZ(result?.direction);
+    const regionIsXY = normal.isParallelTo(Vector3d.unitZ(), true);
     let regionXY: AnyRegion | undefined = region;
-    if (normal.isParallelTo(Vector3d.unitZ(), true)) // region is parallel to xy-plane
-      regionIsXY = true;
     if (!regionIsXY) { // rotate the region to be parallel to the xy-plane
-      const localToWorldInverse = localToWorld.inverse()!;
-      regionXY = region.cloneTransformed(localToWorldInverse) as AnyRegion;
+      regionXY = region.cloneTransformed(localToWorld.inverse()!) as AnyRegion | undefined;
       if (!regionXY)
         return undefined;
     }
     const momentData = RegionOps.computeXYAreaMoments(regionXY);
     if (!momentData)
       return undefined;
-    const centroid = momentData.origin;
+    const centroid = momentData.origin.clone(result?.origin);
     if (!regionIsXY) // rotate centroid back (area is unchanged)
       localToWorld.multiplyPoint3d(centroid, centroid);
-    if (result)
-      result.set(centroid, normal);
-    else
-      result = Ray3d.create(centroid, normal);
+    if (!result)
+      result = Ray3d.createCapture(centroid, normal);
     result.a = momentData.sums.atIJ(3, 3);
     return result;
   }
