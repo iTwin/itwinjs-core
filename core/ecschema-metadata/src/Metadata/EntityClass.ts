@@ -121,22 +121,28 @@ export class EntityClass extends ECClass implements HasMixins {
     ECClass.mergeProperties(result, existingValues, localProps, true);
   }
 
-  protected override buildPropertyCacheSync(result: Property[], existingValues?: Map<string, number>): void {
-    if (!existingValues) {
-      existingValues = new Map<string, number>();
-    }
-
+  protected override buildPropertyCacheSync(cache: Map<string, Property>): void {
     const baseClass = this.getBaseClassSync();
     if (baseClass) {
-      ECClass.mergeProperties(result, existingValues, baseClass.getPropertiesSync(), false);
+      Array.from(baseClass.getPropertiesSync()).forEach((property) => {
+        if (!cache.has(property.name.toUpperCase()))
+          cache.set(property.name.toUpperCase(), property);
+      });
     }
 
     for (const mixin of this.getMixinsSync()) {
-      ECClass.mergeProperties(result, existingValues, mixin.getPropertiesSync(), false);
+      const mixinProps = mixin.getPropertiesSync();
+      for (const property of mixinProps) {
+        if (!cache.has(property.name.toUpperCase()))
+          cache.set(property.name.toUpperCase(), property);
+      }
     }
 
-    const localProps = this.getPropertiesSync(true);
-    ECClass.mergeProperties(result, existingValues, localProps, true);
+    if (this._properties) {
+      this._properties.forEach(property => {
+        cache.set(property.name.toUpperCase(), property);
+      });
+    }
   }
 
   /**
