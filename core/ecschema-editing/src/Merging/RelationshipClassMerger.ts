@@ -82,7 +82,7 @@ export async function mergeRelationshipConstraint(context: SchemaMergeContext, c
   const item = await locateSchemaItem(context, change.itemName, SchemaItemType.RelationshipClass) as MutableRelationshipClass;
   const constraint = item[parseConstraint(change.path)];
   if(change.difference.roleLabel !== undefined) {
-    constraint.roleLabel = change.difference.roleLabel;
+    constraint.setRoleLabel(change.difference.roleLabel);
   }
   if(change.difference.polymorphic !== undefined) {
     await context.editor.relationships.setConstraintPolymorphic(constraint, change.difference.polymorphic);

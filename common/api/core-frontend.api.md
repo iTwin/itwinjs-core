@@ -39,6 +39,7 @@ import { ByteStream } from '@itwin/core-bentley';
 import { Camera } from '@itwin/core-common';
 import { Capabilities } from '@itwin/webgl-compatibility';
 import { Cartographic } from '@itwin/core-common';
+import { CatalogIModel } from '@itwin/core-common';
 import { CategorySelectorProps } from '@itwin/core-common';
 import { ChangesetIndex } from '@itwin/core-common';
 import { ChangesetIndexAndId } from '@itwin/core-common';
@@ -58,6 +59,7 @@ import { ContentIdProvider } from '@itwin/core-common';
 import { ContextRealityModel } from '@itwin/core-common';
 import { ContextRealityModelProps } from '@itwin/core-common';
 import { ContourDisplay } from '@itwin/core-common';
+import { ContourGroup } from '@itwin/core-common';
 import { ConvexClipPlaneSet } from '@itwin/core-geometry';
 import { CurvePrimitive } from '@itwin/core-geometry';
 import { DeprecatedBackgroundMapProps } from '@itwin/core-common';
@@ -1698,6 +1700,8 @@ export class BriefcaseConnection extends IModelConnection {
     static openStandalone(filePath: string, openMode?: OpenMode, opts?: StandaloneOpenOptions): Promise<BriefcaseConnection>;
     pullChanges(toIndex?: ChangesetIndex, options?: PullChangesOptions): Promise<void>;
     pushChanges(description: string): Promise<ChangesetIndexAndId>;
+    // (undocumented)
+    protected requireTimeline(): void;
     saveChanges(description?: string): Promise<void>;
     supportsGraphicalEditing(): Promise<boolean>;
     readonly txns: BriefcaseTxns;
@@ -1838,6 +1842,36 @@ export function canvasToImageBuffer(canvas: HTMLCanvasElement, format?: ImageBuf
 
 // @public
 export function canvasToResizedCanvasWithBars(canvasIn: HTMLCanvasElement, targetSize: Point2d, barSize?: Point2d, barStyle?: string): HTMLCanvasElement;
+
+// @beta
+export interface CatalogConnection extends BriefcaseConnection {
+    // (undocumented)
+    getCatalogInfo(): Promise<{
+        manifest?: CatalogIModel.Manifest;
+        version: string;
+    }>;
+    // (undocumented)
+    isEditable(): this is EditableCatalogConnection;
+}
+
+// @beta (undocumented)
+export namespace CatalogConnection {
+    export function acquireWriteLock(args: {
+        containerId: string;
+        username: string;
+    }): Promise<void>;
+    export function createNewContainer(args: CatalogIModel.CreateNewContainerArgs): Promise<CatalogIModel.NewContainerProps>;
+    export function createNewVersion(args: CatalogIModel.CreateNewVersionArgs): Promise<{
+        oldDb: CatalogIModel.NameAndVersion;
+        newDb: CatalogIModel.NameAndVersion;
+    }>;
+    export function openEditable(args: CatalogIModel.OpenArgs): Promise<EditableCatalogConnection>;
+    export function openReadonly(args: CatalogIModel.OpenArgs): Promise<CatalogConnection>;
+    export function releaseWriteLock(args: {
+        containerId: string;
+        abandon?: true;
+    }): Promise<void>;
+}
 
 // @public
 export class CategorySelectorState extends ElementState {
@@ -2039,6 +2073,13 @@ export enum ContextRotationId {
     Top = 0,
     // (undocumented)
     View = 6
+}
+
+// @beta
+export interface ContourHit {
+    readonly elevation: number;
+    readonly group: ContourGroup;
+    readonly isMajor: boolean;
 }
 
 // @internal
@@ -2718,6 +2759,12 @@ export interface DynamicSpatialClassifier {
     flags: SpatialClassifierFlags;
     name: string;
     tileTreeReference: TileTreeReference;
+}
+
+// @beta
+export interface EditableCatalogConnection extends CatalogConnection {
+    // (undocumented)
+    updateManifest(manifest: CatalogIModel.Manifest): Promise<void>;
 }
 
 // @internal
@@ -4411,6 +4458,8 @@ export class HitDetail {
     // @deprecated
     constructor(testPoint: Point3d, viewport: ScreenViewport, hitSource: HitSource, hitPoint: Point3d, sourceId: string, priority: HitPriority, distXY: number, distFraction: number, subCategoryId?: string, geometryClass?: GeometryClass, modelId?: string, sourceIModel?: IModelConnection, tileId?: string, isClassifier?: boolean);
     clone(): HitDetail;
+    // @beta
+    get contour(): ContourHit | undefined;
     get distFraction(): number;
     get distXY(): number;
     draw(_context: DecorateContext): void;
@@ -4450,6 +4499,8 @@ export class HitDetail {
 
 // @public
 export interface HitDetailProps {
+    // @beta
+    readonly contour?: ContourHit;
     readonly distFraction: number;
     readonly distXY: number;
     readonly geometryClass?: GeometryClass;
@@ -5254,7 +5305,7 @@ export class IpcApp {
     static invoke(channel: string, ...args: any[]): Promise<any>;
     static get isValid(): boolean;
     static makeIpcFunctionProxy<K>(channelName: string, functionName: string): PickAsyncMethods<K>;
-    static makeIpcProxy<K>(channelName: string): PickAsyncMethods<K>;
+    static makeIpcProxy<K, C extends string = string>(channelName: C): PickAsyncMethods<K>;
     static removeListener(channel: string, listener: IpcListener): void;
     static send(channel: string, ...data: any[]): void;
     // @internal (undocumented)
@@ -6959,6 +7010,8 @@ export class MutableChangeFlags extends ChangeFlags {
 
 // @public
 export class NativeApp {
+    // (undocumented)
+    static catalogIpc: PickAsyncMethods<CatalogIModel.IpcMethods>;
     static checkInternetConnectivity(): Promise<InternetConnectivityStatus>;
     static closeStorage(storage: Storage_2, deleteStorage?: boolean): Promise<void>;
     static deleteBriefcase(fileName: string): Promise<void>;
@@ -7499,10 +7552,13 @@ export namespace Pixel {
             viewAttachmentId?: string;
             inSectionDrawingAttachment?: boolean;
             transformFromIModel?: Transform;
+            contour?: ContourHit;
         });
         // @internal (undocumented)
         readonly batchType?: BatchType;
         computeHitPriority(): HitPriority;
+        // @beta
+        readonly contour?: ContourHit;
         readonly distanceFraction: number;
         get elementId(): Id64String | undefined;
         readonly feature?: Feature;
@@ -7534,6 +7590,8 @@ export namespace Pixel {
         Unknown = 0
     }
     export interface HitProps {
+        // @beta
+        contour?: ContourHit;
         distFraction: number;
         geometryClass?: GeometryClass;
         // @alpha
@@ -7559,8 +7617,9 @@ export namespace Pixel {
     }
     export type Receiver = (pixels: Buffer | undefined) => void;
     export enum Selector {
-        All = 5,
-        Feature = 1,// eslint-disable-line @typescript-eslint/no-shadow
+        All = 13,
+        Contours = 8,// eslint-disable-line @typescript-eslint/no-shadow
+        Feature = 1,
         GeometryAndDistance = 4,
         // (undocumented)
         None = 0
@@ -9580,7 +9639,9 @@ export enum SnapMode {
     // (undocumented)
     Origin = 16,
     // (undocumented)
-    PerpendicularPoint = 128
+    PerpendicularPoint = 128,
+    // (undocumented)
+    TangentPoint = 256
 }
 
 // @public

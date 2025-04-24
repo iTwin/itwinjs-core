@@ -8,7 +8,7 @@ import { CustomAttributeClass } from "../../Metadata/CustomAttributeClass";
 import { RelationshipClass } from "../../Metadata/RelationshipClass";
 import { SchemaContext } from "../../Context";
 import { DelayedPromiseWithProps } from "../../DelayedPromise";
-import { ECObjectsError } from "../../Exception";
+import { ECSchemaError } from "../../Exception";
 import { ECClass, MutableClass, StructClass } from "../../Metadata/Class";
 import { CustomAttributeSet } from "../../Metadata/CustomAttribute";
 import { EntityClass, MutableEntityClass } from "../../Metadata/EntityClass";
@@ -577,7 +577,7 @@ describe("ECClass", () => {
         },
       };
 
-      await expect(Schema.fromJson(schemaJson, new SchemaContext())).to.be.rejectedWith(ECObjectsError);
+      await expect(Schema.fromJson(schemaJson, new SchemaContext())).to.be.rejectedWith(ECSchemaError);
     });
 
     const oneCustomAttributeJson = {
@@ -671,10 +671,10 @@ describe("ECClass", () => {
       },
     };
     it("async - Custom Attributes must be an array", async () => {
-      await expect(Schema.fromJson(mustBeAnArrayJson, new SchemaContext())).to.be.rejectedWith(ECObjectsError, `The ECClass TestSchema.testClass has an invalid 'customAttributes' attribute. It should be of type 'array'.`);
+      await expect(Schema.fromJson(mustBeAnArrayJson, new SchemaContext())).to.be.rejectedWith(ECSchemaError, `The ECClass TestSchema.testClass has an invalid 'customAttributes' attribute. It should be of type 'array'.`);
     });
     it("sync - Custom Attributes must be an array", async () => {
-      assert.throws(() => Schema.fromJsonSync(mustBeAnArrayJson, new SchemaContext()), ECObjectsError, `The ECClass TestSchema.testClass has an invalid 'customAttributes' attribute. It should be of type 'array'.`);
+      assert.throws(() => Schema.fromJsonSync(mustBeAnArrayJson, new SchemaContext()), ECSchemaError, `The ECClass TestSchema.testClass has an invalid 'customAttributes' attribute. It should be of type 'array'.`);
     });
     it("sync - Deserialize Multiple Custom Attributes with additional properties", () => {
       const classJson = {
@@ -1275,7 +1275,7 @@ describe("ECClass", () => {
       childClass.baseClass = new DelayedPromiseWithProps(baseClass!.key, async () => baseClass!);
       (testSchema as MutableSchema).addItem(childClass);
 
-      await expect(childClass!.toXml(newDom)).to.be.rejectedWith(ECObjectsError, `The schema '${refSchema.name}' has an invalid alias.`);
+      await expect(childClass!.toXml(newDom)).to.be.rejectedWith(ECSchemaError, `The schema '${refSchema.name}' has an invalid alias.`);
     }); */
 
     it("Serialization with one custom attribute defined in ref schema, only class name", async () => {

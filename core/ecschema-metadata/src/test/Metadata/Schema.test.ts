@@ -6,7 +6,7 @@
 import { assert, expect } from "chai";
 import { SchemaContext } from "../../Context";
 import { ECClassModifier, PrimitiveType, PropertyType, SchemaItemType, StrengthType } from "../../ECObjects";
-import { ECObjectsError } from "../../Exception";
+import { ECSchemaError } from "../../Exception";
 import { ECClass, StructClass } from "../../Metadata/Class";
 import { EntityClass } from "../../Metadata/EntityClass";
 import { Mixin } from "../../Metadata/Mixin";
@@ -32,9 +32,9 @@ describe("Schema", () => {
 
     it("with invalid version numbers should fail", () => {
       const context = new SchemaContext();
-      expect(() => new Schema(context, "NewSchemaWithInvalidReadVersion", "new", 9999, 4, 5)).to.throw(ECObjectsError);
-      expect(() => new Schema(context, "NewSchemaWithInvalidWriteVersion", "new", 12, 9999, 6)).to.throw(ECObjectsError);
-      expect(() => new Schema(context, "NewSchemaWithInvalidMinorVersion", "new", 12, 34, 56700000)).to.throw(ECObjectsError);
+      expect(() => new Schema(context, "NewSchemaWithInvalidReadVersion", "new", 9999, 4, 5)).to.throw(ECSchemaError);
+      expect(() => new Schema(context, "NewSchemaWithInvalidWriteVersion", "new", 12, 9999, 6)).to.throw(ECSchemaError);
+      expect(() => new Schema(context, "NewSchemaWithInvalidMinorVersion", "new", 12, 34, 56700000)).to.throw(ECSchemaError);
     });
   });
 
@@ -636,11 +636,11 @@ describe("Schema", () => {
     async function testSerialization(schema: Schema, serializationStatus: boolean, expectedError: string) {
       const xmlDoc = new DOMParser().parseFromString(`<?xml version="1.0" encoding="UTF-8"?>`, "application/xml");
       if (serializationStatus) {
-        await expect(schema.toXml(xmlDoc)).to.not.be.rejectedWith(ECObjectsError, expectedError, `Serialization failed for ECXML version ${schema.originalECSpecMajorVersion}.${schema.originalECSpecMinorVersion}`);
-        expect(() => schema.toJSON()).to.not.throw(ECObjectsError, expectedError, `Serialization failed for ECXML version ${schema.originalECSpecMajorVersion}.${schema.originalECSpecMinorVersion}`);
+        await expect(schema.toXml(xmlDoc)).to.not.be.rejectedWith(ECSchemaError, expectedError, `Serialization failed for ECXML version ${schema.originalECSpecMajorVersion}.${schema.originalECSpecMinorVersion}`);
+        expect(() => schema.toJSON()).to.not.throw(ECSchemaError, expectedError, `Serialization failed for ECXML version ${schema.originalECSpecMajorVersion}.${schema.originalECSpecMinorVersion}`);
       } else {
-        await expect(schema.toXml(xmlDoc)).to.be.rejectedWith(ECObjectsError, expectedError, `Serialization failed for ECXML version ${schema.originalECSpecMajorVersion}.${schema.originalECSpecMinorVersion}`);
-        expect(() => schema.toJSON()).to.throw(ECObjectsError, expectedError, `Serialization failed for ECXML version ${schema.originalECSpecMajorVersion}.${schema.originalECSpecMinorVersion}`);
+        await expect(schema.toXml(xmlDoc)).to.be.rejectedWith(ECSchemaError, expectedError, `Serialization failed for ECXML version ${schema.originalECSpecMajorVersion}.${schema.originalECSpecMinorVersion}`);
+        expect(() => schema.toJSON()).to.throw(ECSchemaError, expectedError, `Serialization failed for ECXML version ${schema.originalECSpecMajorVersion}.${schema.originalECSpecMinorVersion}`);
       }
     }
 
@@ -1302,7 +1302,7 @@ describe("Schema", () => {
         };
         const testSchema = new Schema(new SchemaContext());
         expect(testSchema).to.exist;
-        await expect(testSchema.fromJSON(propertyJson)).to.be.rejectedWith(ECObjectsError, "The Schema ValidSchema does not have the required 'alias' attribute.");
+        await expect(testSchema.fromJSON(propertyJson)).to.be.rejectedWith(ECSchemaError, "The Schema ValidSchema does not have the required 'alias' attribute.");
       });
 
       it("should throw for invalid $schema", async () => {
@@ -1314,8 +1314,8 @@ describe("Schema", () => {
         const context = new SchemaContext();
         const testSchema = new Schema(context, "InvalidSchema", "is", 1, 2, 3);
         expect(testSchema).to.exist;
-        await expect(testSchema.fromJSON(schemaJson as any)).to.be.rejectedWith(ECObjectsError, "The Schema 'InvalidSchema' has an unsupported namespace 'https://badmetaschema.com'.");
-        await expect(Schema.fromJson(schemaJson as any, context)).to.be.rejectedWith(ECObjectsError, "The Schema 'InvalidSchema' has an unsupported namespace 'https://badmetaschema.com'.");
+        await expect(testSchema.fromJSON(schemaJson as any)).to.be.rejectedWith(ECSchemaError, "The Schema 'InvalidSchema' has an unsupported namespace 'https://badmetaschema.com'.");
+        await expect(Schema.fromJson(schemaJson as any, context)).to.be.rejectedWith(ECSchemaError, "The Schema 'InvalidSchema' has an unsupported namespace 'https://badmetaschema.com'.");
       });
 
       it("should throw for mismatched name", async () => {
@@ -1327,7 +1327,7 @@ describe("Schema", () => {
         };
         const testSchema = new Schema(new SchemaContext(), "BadSchema", "bad", 1, 2, 3);
         expect(testSchema).to.exist;
-        await expect(testSchema.fromJSON(json)).to.be.rejectedWith(ECObjectsError);
+        await expect(testSchema.fromJSON(json)).to.be.rejectedWith(ECSchemaError);
       });
 
       it("should throw for mismatched version", async () => {
@@ -1339,7 +1339,7 @@ describe("Schema", () => {
         };
         const testSchema = new Schema(new SchemaContext(), "BadSchema", "bad", 1, 2, 3);
         expect(testSchema).to.exist;
-        await expect(testSchema.fromJSON(json)).to.be.rejectedWith(ECObjectsError);
+        await expect(testSchema.fromJSON(json)).to.be.rejectedWith(ECSchemaError);
       });
     });
 
@@ -1347,10 +1347,10 @@ describe("Schema", () => {
       it("Simple JSON serialization of an empty schema", async () => {
         const context = new SchemaContext();
         let schema: Schema = new Schema(context);
-        expect(() => schema.toJSON()).to.throw(ECObjectsError, "The schema has an invalid or missing SchemaKey.");
+        expect(() => schema.toJSON()).to.throw(ECSchemaError, "The schema has an invalid or missing SchemaKey.");
 
         schema = new Schema(context, "EmptySchema", "es", 1, 2, 3);
-        expect(() => schema.toJSON()).to.not.throw(ECObjectsError, "The schema has an invalid or missing SchemaKey.");
+        expect(() => schema.toJSON()).to.not.throw(ECSchemaError, "The schema has an invalid or missing SchemaKey.");
       });
 
       it("Simple serialization", async () => {
@@ -1675,7 +1675,7 @@ describe("Schema", () => {
       const context = new SchemaContext();
       await context.addSchema(refSchema);
 
-      await expect(Schema.fromJson(schemaJson, context)).to.be.rejectedWith(ECObjectsError, "Could not locate the referenced schema, RefSchema.01.00.00, of ValidSchema");
+      await expect(Schema.fromJson(schemaJson, context)).to.be.rejectedWith(ECSchemaError, "Could not locate the referenced schema, RefSchema.01.00.00, of ValidSchema");
     });
 
     describe("toXML", () => {
@@ -1705,10 +1705,10 @@ describe("Schema", () => {
         let schema: Schema = new Schema(context);
         const xmlDoc = new DOMParser().parseFromString(`<?xml version="1.0" encoding="UTF-8"?>`, "application/xml");
 
-        await expect(schema.toXml(xmlDoc)).to.be.rejectedWith(ECObjectsError, `The schema has an invalid or missing SchemaKey.`);
+        await expect(schema.toXml(xmlDoc)).to.be.rejectedWith(ECSchemaError, `The schema has an invalid or missing SchemaKey.`);
 
         schema = new Schema(context, "EmptySchema", "ts", 1, 2, 3);
-        await expect(schema.toXml(xmlDoc)).to.not.be.rejectedWith(ECObjectsError, `The schema has an invalid or missing SchemaKey.`);
+        await expect(schema.toXml(xmlDoc)).to.not.be.rejectedWith(ECSchemaError, `The schema has an invalid or missing SchemaKey.`);
       });
 
       it("Simple serialization", async () => {
