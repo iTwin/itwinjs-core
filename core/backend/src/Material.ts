@@ -13,7 +13,7 @@ import {
 import { DefinitionElement } from "./Element";
 import { IModelDb } from "./IModelDb";
 import { IModelElementCloneContext } from "./IModelElementCloneContext";
-import { CustomHandledProperty, ECSqlRow, DeserializeEntityArgs } from "./Entity";
+import { CustomHandledProperty, DeserializeEntityArgs, ECSqlRow } from "./Entity";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 
@@ -74,12 +74,20 @@ export class RenderMaterialElement extends DefinitionElement {
     return val;
   }
 
-  /** @beta */
+  /**
+   * RenderMaterialElement custom HandledProps includes 'paletteName'.
+   * @inheritdoc
+   * @beta
+   */
   protected static override readonly _customHandledProps: CustomHandledProperty[] = [
     { propertyName: "paletteName", source: "Class" },
   ];
 
-  /** @beta */
+  /**
+   * RenderMaterialElement deserializes 'paletteName'.
+   * @inheritdoc
+   * @beta
+   */
   public static override deserialize(props: DeserializeEntityArgs): RenderMaterialProps {
     const elProps = super.deserialize(props) as RenderMaterialProps;
     const instance = props.row;
@@ -87,7 +95,11 @@ export class RenderMaterialElement extends DefinitionElement {
     return elProps;
   }
 
-  /** @beta */
+  /**
+   * RenderMaterialElement serializes 'paletteName'.
+   * @inheritdoc
+   * @beta
+   */
   public static override serialize(props: RenderMaterialProps, iModel: IModelDb): ECSqlRow {
     const inst = super.serialize(props, iModel);
     inst.paletteName = props.paletteName;

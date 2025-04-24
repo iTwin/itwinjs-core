@@ -20,7 +20,7 @@ import { DefinitionElement, GraphicalElement2d, SpatialLocationElement } from ".
 import { IModelDb } from "./IModelDb";
 import { DisplayStyle, DisplayStyle2d, DisplayStyle3d } from "./DisplayStyle";
 import { IModelElementCloneContext } from "./IModelElementCloneContext";
-import { CustomHandledProperty, ECSqlRow, DeserializeEntityArgs } from "./Entity";
+import { CustomHandledProperty, DeserializeEntityArgs, ECSqlRow } from "./Entity";
 
 /** Holds the list of Ids of GeometricModels displayed by a [[SpatialViewDefinition]]. Multiple SpatialViewDefinitions may point to the same ModelSelector.
  * @see [ModelSelectorState]($frontend)
@@ -44,12 +44,20 @@ export class ModelSelector extends DefinitionElement {
     return val;
   }
 
-  /** @beta */
+  /**
+   * ModelSelector custom HandledProps includes 'models'.
+   * @inheritdoc
+   * @beta
+   */
   protected static override readonly _customHandledProps: CustomHandledProperty[] = [
     { propertyName: "models", source: "Class" },
   ];
 
-  /** @beta */
+  /**
+   * ModelSelector deserializes 'models'.
+   * @inheritdoc
+   * @beta
+   */
   public static override deserialize(props: DeserializeEntityArgs): ModelSelectorProps {
     const elProps = super.deserialize(props) as ModelSelectorProps;
     const instance = props.row;
@@ -63,12 +71,6 @@ export class ModelSelector extends DefinitionElement {
       return ids;
     });
     return elProps;
-  }
-
-  /** @beta */
-  public static override serialize(props: ModelSelectorProps, _iModel: IModelDb): ECSqlRow {
-    const inst = super.serialize(props, _iModel);
-    return inst;
   }
 
   protected override collectReferenceIds(referenceIds: EntityReferenceSet): void {
@@ -141,12 +143,20 @@ export class CategorySelector extends DefinitionElement {
     return val;
   }
 
-  /** @beta */
+  /**
+   * CategorySelector custom HandledProps includes 'categories'.
+   * @inheritdoc
+   * @beta
+   */
   protected static override readonly _customHandledProps: CustomHandledProperty[] = [
     { propertyName: "categories", source: "Class" },
   ];
 
-  /** @beta */
+  /**
+   * CategorySelector deserializes 'categories'.
+   * @inheritdoc
+   * @beta
+   */
   public static override deserialize(props: DeserializeEntityArgs): CategorySelectorProps {
     const elProps = super.deserialize(props) as CategorySelectorProps;
     const instance = props.row;
@@ -160,12 +170,6 @@ export class CategorySelector extends DefinitionElement {
       return ids;
     });
     return elProps;
-  }
-
-  /** @beta */
-  public static override serialize(props: CategorySelectorProps, _iModel: IModelDb): ECSqlRow {
-    const inst = super.serialize(props, _iModel);
-    return inst;
   }
 
   protected override collectReferenceIds(referenceIds: EntityReferenceSet): void {
@@ -244,13 +248,21 @@ export abstract class ViewDefinition extends DefinitionElement {
       throw new IModelError(IModelStatus.BadArg, `displayStyleId is invalid`);
   }
 
-  /** @beta */
+  /**
+   * ViewDefinition custom HandledProps includes 'categorySelector', and 'displayStyle'.
+   * @inheritdoc
+   * @beta
+   */
   protected static override readonly _customHandledProps: CustomHandledProperty[] = [
     { propertyName: "categorySelector", source: "Class" },
     { propertyName: "displayStyle", source: "Class" },
   ];
 
-  /** @beta */
+  /**
+   * ViewDefinition deserializes 'categorySelector', and 'displayStyle'.
+   * @inheritdoc
+   * @beta
+   */
   public static override deserialize(props: DeserializeEntityArgs): ViewDefinitionProps {
     const elProps = super.deserialize(props) as ViewDefinitionProps;
     const instance = props.row;
@@ -261,7 +273,11 @@ export abstract class ViewDefinition extends DefinitionElement {
     return elProps;
   }
 
-  /** @beta */
+  /**
+   * ViewDefinition serializes 'categorySelector', and 'displayStyle'.
+   * @inheritdoc
+   * @beta
+   */
   public static override serialize(props: ViewDefinitionProps, _iModel: IModelDb): ECSqlRow {
     const inst = super.serialize(props, _iModel);
     inst.categorySelector.id = props.categorySelectorId;
@@ -374,7 +390,12 @@ export abstract class ViewDefinition3d extends ViewDefinition {
     this._details = new ViewDetails3d(this.jsonProperties);
   }
 
-  /** @beta */
+  /**
+   * ViewDefinition3d custom HandledProps includes 'eyePoint', 'focusDistance', 'lensAngle', 'yaw', 'pitch', 'roll',
+   * 'origin', 'extents', and 'isCameraOn'.
+   * @inheritdoc
+   * @beta
+   */
   protected static override readonly _customHandledProps: CustomHandledProperty[] = [
     { propertyName: "eyePoint", source: "Class" },
     { propertyName: "focusDistance", source: "Class" },
@@ -387,7 +408,12 @@ export abstract class ViewDefinition3d extends ViewDefinition {
     { propertyName: "isCameraOn", source: "Class" },
   ];
 
-  /** @beta */
+  /**
+   * ViewDefinition3d deserializes 'eyePoint', 'focusDistance', 'lensAngle', 'yaw', 'pitch', 'roll',
+   * 'origin', 'extents', and 'isCameraOn'.
+   * @inheritdoc
+   * @beta
+   */
   public static override deserialize(props: DeserializeEntityArgs): ViewDefinition3dProps {
     const instance = props.row;
     const elProps = super.deserialize(props) as ViewDefinition3dProps;
@@ -400,7 +426,12 @@ export abstract class ViewDefinition3d extends ViewDefinition {
     return elProps;
   }
 
-  /** @beta */
+  /**
+   * ViewDefinition3d serializes 'eyePoint', 'focusDistance', 'lensAngle', 'yaw', 'pitch', 'roll',
+   * 'origin', 'extents', and 'isCameraOn'.
+   * @inheritdoc
+   * @beta
+   */
   public static override serialize(props: ViewDefinition3dProps, _iModel: IModelDb): ECSqlRow {
     const row = super.serialize(props, _iModel);
     row.isCameraOn = props.cameraOn;
@@ -467,12 +498,20 @@ export class SpatialViewDefinition extends ViewDefinition3d {
     return json;
   }
 
-  /** @beta */
+  /**
+   * SpatialViewDefinition custom HandledProps includes 'modelSelector'.
+   * @inheritdoc
+   * @beta
+   */
   protected static override readonly _customHandledProps: CustomHandledProperty[] = [
     { propertyName: "modelSelector", source: "Class" },
   ];
 
-  /** @beta */
+  /**
+   * SpatialViewDefinition deserializes 'modelSelector'.
+   * @inheritdoc
+   * @beta
+   */
   public static override deserialize(props: DeserializeEntityArgs): SpatialViewDefinitionProps {
     const elProps = super.deserialize(props) as SpatialViewDefinitionProps;
     const instance = props.row;
@@ -480,7 +519,11 @@ export class SpatialViewDefinition extends ViewDefinition3d {
     return elProps;
   }
 
-  /** @beta */
+  /**
+   * SpatialViewDefinition serializes 'modelSelector'.
+   * @inheritdoc
+   * @beta
+   */
   public static override serialize(props: SpatialViewDefinitionProps, _iModel: IModelDb): ECSqlRow {
     const inst = super.serialize(props, _iModel);
     inst.modelSelector.id = props.modelSelectorId;
@@ -660,7 +703,11 @@ export class ViewDefinition2d extends ViewDefinition {
     return val;
   }
 
-  /** @beta */
+  /**
+   * ViewDefinition2d custom HandledProps includes 'baseModel', 'origin', 'extents', and 'rotationAngle'.
+   * @inheritdoc
+   * @beta
+   */
   protected static override readonly _customHandledProps: CustomHandledProperty[] = [
     { propertyName: "baseModel", source: "Class" },
     { propertyName: "origin", source: "Class" },
@@ -668,7 +715,11 @@ export class ViewDefinition2d extends ViewDefinition {
     { propertyName: "rotationAngle", source: "Class" },
   ];
 
-  /** @beta */
+  /**
+   * ViewDefinition2d deserializes 'baseModel', 'origin', 'extents', and 'rotationAngle'.
+   * @inheritdoc
+   * @beta
+   */
   public static override deserialize(props: DeserializeEntityArgs): ViewDefinition2dProps {
     const elProps = super.deserialize(props) as ViewDefinition2dProps;
     const instance = props.row;
@@ -679,7 +730,11 @@ export class ViewDefinition2d extends ViewDefinition {
     return elProps;
   }
 
-  /** @beta */
+  /**
+   * ViewDefinition2d serializes 'baseModel', 'origin', 'extents', and 'rotationAngle'.
+   * @inheritdoc
+   * @beta
+   */
   public static override serialize(props: ViewDefinition2dProps, _iModel: IModelDb): ECSqlRow {
     const inst = super.serialize(props, _iModel);
     inst.baseModel.id = props.baseModelId;

@@ -86,14 +86,22 @@ export class Model extends Entity {
     this.jsonProperties = { ...props.jsonProperties }; // make sure we have our own copy
   }
 
-  /** @beta */
+  /**
+   * Model custom HandledProps includes 'isPrivate', 'isTemplate', and 'lastMod'.
+   * @inheritdoc
+   * @beta
+   */
   protected static override readonly _customHandledProps: CustomHandledProperty[] = [
     { propertyName: "isPrivate", source: "Class" },
     { propertyName: "isTemplate", source: "Class" },
     { propertyName: "lastMod", source: "Class" },
   ];
 
-  /** @beta */
+  /**
+   * Model deserializes 'isPrivate', and 'isTemplate', and sets the proper parentModel.
+   * @inheritdoc
+   * @beta
+   */
   public static override deserialize(props: DeserializeEntityArgs): ModelProps {
     const instance = props.row;
     const modelProps = super.deserialize(props) as ModelProps;
@@ -113,7 +121,11 @@ export class Model extends Entity {
     return modelProps;
   }
 
-  /** @beta */
+  /**
+   * Model serializes 'isPrivate', and 'isTemplate'.
+   * @inheritdoc
+   * @beta
+   */
   public static override serialize(props: ModelProps, _iModel: IModelDb): ECSqlRow {
     const inst = super.serialize(props, _iModel);
     inst.isPrivate = props.isPrivate ?? false;
@@ -326,13 +338,21 @@ export abstract class GeometricModel3d extends GeometricModel {
     this.isPlanProjection = JsonUtils.asBool(props.isPlanProjection);
   }
 
-  /** @beta */
+  /**
+   * GeometricModel3d custom HandledProps includes 'isPlanProjection', and 'isNotSpatiallyLocated'.
+   * @inheritdoc
+   * @beta
+   */
   protected static override readonly _customHandledProps: CustomHandledProperty[] = [
     { propertyName: "isPlanProjection", source: "Class" },
     { propertyName: "isNotSpatiallyLocated", source: "Class" },
   ];
 
-  /** @beta */
+  /**
+   * GeometricModel3d deserializes 'isPlanProjection', and 'isNotSpatiallyLocated'.
+   * @inheritdoc
+   * @beta
+   */
   public static override deserialize(props: DeserializeEntityArgs): GeometricModel3dProps {
     const modelProps = super.deserialize(props) as GeometricModel3dProps;
     const instance = props.row;
@@ -343,7 +363,11 @@ export abstract class GeometricModel3d extends GeometricModel {
     return modelProps;
   }
 
-  /** @beta */
+  /**
+   * GeometricModel3d serializes 'isPlanProjection', and 'isNotSpatiallyLocated'.
+   * @inheritdoc
+   * @beta
+   */
   public static override serialize(props: GeometricModel3dProps, _iModel: IModelDb): ECSqlRow {
     const inst = super.serialize(props, _iModel);
     inst.isNotSpatiallyLocated = props.isNotSpatiallyLocated ?? false;
