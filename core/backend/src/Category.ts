@@ -31,13 +31,21 @@ export class SubCategory extends DefinitionElement {
     this.description = JsonUtils.asString(props.description);
   }
 
-  /** @beta */
+  /**
+   * SubCategory custom HandledProps include 'description' and 'properties'.
+   * @inheritdoc
+   * @beta
+   */
   protected static override readonly _customHandledProps: CustomHandledProperty[] = [
     { propertyName: "description", source: "Class" },
     { propertyName: "properties", source: "Class" },
   ];
 
-  /** @beta */
+  /**
+   * SubCategory deserializes 'description' and 'properties'.
+   * @inheritdoc
+   * @beta
+   */
   public static override deserialize(props: DeserializeEntityArgs): SubCategoryProps {
     const elProps = super.deserialize(props) as SubCategoryProps;
     elProps.description = JsonUtils.asString(props.row.description);
@@ -49,7 +57,11 @@ export class SubCategory extends DefinitionElement {
     return elProps;
   }
 
-  /** @beta */
+  /**
+   * SubCategory serialize 'description' and 'properties'.
+   * @inheritdoc
+   * @beta
+   */
   public static override serialize(props: SubCategoryProps, iModel: IModelDb): ECSqlRow {
     const inst = super.serialize(props, iModel);
     if (props.description !== undefined) {
@@ -139,13 +151,21 @@ export class Category extends DefinitionElement {
     this.description = JsonUtils.asString(props.description);
   }
 
-  /** @beta */
+  /**
+   * Category custom HandledProps include 'rank' and 'description'.
+   * @inheritdoc
+   * @beta
+   */
   protected static override readonly _customHandledProps: CustomHandledProperty[] = [
     { propertyName: "rank", source: "Class" },
     { propertyName: "description", source: "Class" },
   ];
 
-  /** @beta */
+  /**
+   * Category deserializes 'rank' and 'description'.
+   * @inheritdoc
+   * @beta
+   */
   public static override deserialize(props: DeserializeEntityArgs): CategoryProps {
     const elProps = super.deserialize(props) as CategoryProps;
     elProps.description = JsonUtils.asString(props.row.description);
@@ -153,7 +173,11 @@ export class Category extends DefinitionElement {
     return elProps;
   }
 
-  /** @beta */
+  /**
+   * Category serialize 'rank' and 'description'.
+   * @inheritdoc
+   * @beta
+   */
   public static override serialize(props: CategoryProps, iModel: IModelDb): ECSqlRow {
     const inst = super.serialize(props, iModel);
     if (undefined !== props.description) {
