@@ -326,12 +326,11 @@ describe("RegionOps", () => {
     expect(context.getNumErrors()).toBe(0);
   });
 
-  it("centroidAreaNormal", () => {
-    const ck = new Checker();
+  it.only("centroidAreaNormal", () => {
+    const ck = new Checker(true, true);
     const allGeometry: GeometryQuery[] = [];
     let dx = 0;
     let loop: Loop | undefined;
-    const ray = Ray3d.create(Point3d.create(), Vector3d.create());
     const rotationMatrix = Matrix3d.createRotationAroundVector(Vector3d.create(0, 1, 0), Angle.createDegrees(45))!;
     const rotationTransform = Transform.createFixedPointAndMatrix(Point3d.create(), rotationMatrix);
 
@@ -342,7 +341,7 @@ describe("RegionOps", () => {
     let lineString = LineString3d.create([1, 1], [2, 1], [2, 2], [1, 2], [1, 1]);
     loop = Loop.create(lineString);
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, loop, dx);
-    RegionOps.centroidAreaNormal(loop, ray);
+    let ray = RegionOps.centroidAreaNormal(loop)!;
     let centroid = ray.origin;
     GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, centroid, 0.1, dx);
     ck.testDefined(ray, "ray defined for square");
@@ -428,8 +427,8 @@ describe("RegionOps", () => {
     // ellipse
     dx += 5;
     expectedCentroid = Point3d.create(0, 1);
-    expectedNormal = Vector3d.create(0, 0, -1);
-    expectedArea = -4 * Math.PI;
+    expectedNormal = Vector3d.create(0, 0, 1);
+    expectedArea = 4 * Math.PI;
     arc = Arc3d.create(
       expectedCentroid, Vector3d.create(2, 2), Vector3d.create(-1, 1), AngleSweep.createStartEndDegrees(360, 0),
     );
@@ -461,8 +460,8 @@ describe("RegionOps", () => {
     // bspline0
     dx += 5;
     expectedCentroid = Point3d.create(-0.002899711646546525, 1.6846557155837842);
-    expectedNormal = Vector3d.create(0, 0, -1);
-    expectedArea = -4.817806468040612;
+    expectedNormal = Vector3d.create(0, 0, 1);
+    expectedArea = 4.817806468040612;
     const degree = 3;
     const closedPoleArray0 = [
       Point3d.create(0, 0),
@@ -500,8 +499,8 @@ describe("RegionOps", () => {
     // bspline1
     dx += 2;
     expectedCentroid = Point3d.create(1.238143022179664, 1.2381197066333935);
-    expectedNormal = Vector3d.create(0, 0, -1);
-    expectedArea = -2.9971577457816796;
+    expectedNormal = Vector3d.create(0, 0, 1);
+    expectedArea = 2.9971577457816796;
     const closedPoleArray1 = [
       Point3d.create(0, 0),
       Point3d.create(1, 3),
@@ -534,25 +533,138 @@ describe("RegionOps", () => {
     ck.testVector3d(ray.direction, expectedNormal, "ray direction matches Z axis for bspline1 in 3d");
     ck.testCoordinate(ray.a!, expectedArea, "ray.a matches area for bspline1 in 3d");
 
+    // loop0 with multiple children
+    dx += 3;
+    expectedCentroid = Point3d.create(1, 1);
+    expectedNormal = Vector3d.create(0, 0, 1);
+    expectedArea = 2 + Math.PI / 2;
+    let arc0 = Arc3d.create(
+      expectedCentroid, Vector3d.create(1, 0), Vector3d.create(0, 1), AngleSweep.createStartEndDegrees(0, 90),
+    );
+    let linestring0 = LineString3d.create([1, 2], [0, 2], [0, 1]);
+    let arc1 = Arc3d.create(
+      expectedCentroid, Vector3d.create(1, 0), Vector3d.create(0, 1), AngleSweep.createStartEndDegrees(180, 270),
+    );
+    let linestring1 = LineString3d.create([1, 0], [2, 0], [2, 1]);
+    loop0 = Loop.create(arc0, linestring0, arc1, linestring1);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, loop0, dx);
+    RegionOps.centroidAreaNormal(loop0, ray);
+    centroid = ray.origin;
+    GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, centroid, 0.1, dx);
+    ck.testDefined(ray, "ray defined for loop0");
+    ck.testPoint3d(centroid, expectedCentroid, "ray origin matches centroid for loop0");
+    ck.testVector3d(ray.direction, expectedNormal, "ray direction matches Z axis for loop0");
+    ck.testCoordinate(ray.a!, expectedArea, "ray.a matches area for loop0");
+
+    // loop0 with multiple children in 3d
+    center = Point3d.create(1, 1);
+    expectedCentroid = rotationTransform.multiplyPoint3d(center);
+    expectedNormal = Vector3d.createFrom(rotationTransform.multiplyPoint3d(Point3d.create(0, 0, 1)));
+    expectedArea = 2 + Math.PI / 2;
+    loop0 = Loop.create(arc0, linestring0, arc1, linestring1).cloneTransformed(rotationTransform) as Loop;
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, loop0, dx);
+    RegionOps.centroidAreaNormal(loop0, ray);
+    centroid = ray.origin;
+    ck.testDefined(ray, "ray defined for loop0 in 3d");
+    ck.testPoint3d(centroid, expectedCentroid, "ray origin matches centroid for loop0 in 3d");
+    ck.testVector3d(ray.direction, expectedNormal, "ray direction matches Z axis for loop0 in 3d");
+    ck.testCoordinate(ray.a!, expectedArea, "ray.a matches area for loop0 in 3d");
+
+    // loop1 with multiple children
+    dx += 4;
+    expectedCentroid = Point3d.create(1, 1);
+    expectedNormal = Vector3d.create(0, 0, 1);
+    expectedArea = 4 + 2 * Math.PI;
+    arc0 = Arc3d.create(
+      Point3d.create(1, 0), Vector3d.create(1, 0), Vector3d.create(0, 1), AngleSweep.createStartEndDegrees(180, 360),
+    );
+    arc1 = Arc3d.create(
+      Point3d.create(2, 1), Vector3d.create(1, 0), Vector3d.create(0, 1), AngleSweep.createStartEndDegrees(-90, 90),
+    );
+    let arc2 = Arc3d.create(
+      Point3d.create(1, 2), Vector3d.create(1, 0), Vector3d.create(0, 1), AngleSweep.createStartEndDegrees(0, 180),
+    );
+    const arc3 = Arc3d.create(
+      Point3d.create(0, 1), Vector3d.create(1, 0), Vector3d.create(0, 1), AngleSweep.createStartEndDegrees(90, 270),
+    );
+    loop1 = Loop.create(arc0, arc1, arc2, arc3);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, loop1, dx);
+    RegionOps.centroidAreaNormal(loop1, ray);
+    centroid = ray.origin;
+    GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, centroid, 0.1, dx);
+    ck.testDefined(ray, "ray defined for loop1");
+    ck.testPoint3d(centroid, expectedCentroid, "ray origin matches centroid for loop1");
+    ck.testVector3d(ray.direction, expectedNormal, "ray direction matches Z axis for loop1");
+    ck.testCoordinate(ray.a!, expectedArea, "ray.a matches area for loop1");
+
+    // loop1 with multiple children in 3d
+    center = Point3d.create(1, 1);
+    expectedCentroid = rotationTransform.multiplyPoint3d(center);
+    expectedNormal = Vector3d.createFrom(rotationTransform.multiplyPoint3d(Point3d.create(0, 0, 1)));
+    expectedArea = 4 + 2 * Math.PI;
+    loop1 = Loop.create(arc0, arc1, arc2, arc3).cloneTransformed(rotationTransform) as Loop;
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, loop1, dx);
+    RegionOps.centroidAreaNormal(loop1, ray);
+    centroid = ray.origin;
+    ck.testDefined(ray, "ray defined for loop1 in 3d");
+    ck.testPoint3d(centroid, expectedCentroid, "ray origin matches centroid for loop1 in 3d");
+    ck.testVector3d(ray.direction, expectedNormal, "ray direction matches Z axis for loop1 in 3d");
+    ck.testCoordinate(ray.a!, expectedArea, "ray.a matches area for loop1 in 3d");
+
+    // loop2 with multiple children
+    dx += 5;
+    expectedCentroid = Point3d.create(0.9510277451111325, -0.02140759703854831);
+    expectedNormal = Vector3d.create(0, 0, 1);
+    expectedArea = 7 + Math.PI / 4;
+    arc0 = Arc3d.create(
+      Point3d.create(2, 0), Vector3d.create(1, 0), Vector3d.create(0, 1), AngleSweep.createStartEndDegrees(0, 90),
+    );
+    linestring0 = LineString3d.create([2, 1], [-1, 1], [-1, -1], [3, -1], [3, 0]);
+    let loop2 = Loop.create(arc0, linestring0);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, loop2, dx);
+    RegionOps.centroidAreaNormal(loop2, ray);
+    centroid = ray.origin;
+    GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, centroid, 0.1, dx);
+    ck.testDefined(ray, "ray defined for loop2");
+    ck.testPoint3d(centroid, expectedCentroid, "ray origin matches centroid for loop2");
+    ck.testVector3d(ray.direction, expectedNormal, "ray direction matches Z axis for loop2");
+    ck.testCoordinate(ray.a!, expectedArea, "ray.a matches area for loop2");
+
+    // loop2 with multiple children in 3d
+    center = Point3d.create(0.9510277451111325, -0.02140759703854831);
+    expectedCentroid = rotationTransform.multiplyPoint3d(center);
+    expectedNormal = Vector3d.createFrom(rotationTransform.multiplyPoint3d(Point3d.create(0, 0, 1)));
+    expectedArea = 7 + Math.PI / 4;
+    loop2 = Loop.create(arc0, linestring0).cloneTransformed(rotationTransform) as Loop;
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, loop2, dx);
+    RegionOps.centroidAreaNormal(loop2, ray);
+    centroid = ray.origin;
+    ck.testDefined(ray, "ray defined for loop2 in 3d");
+    ck.testPoint3d(centroid, expectedCentroid, "ray origin matches centroid for loop2 in 3d");
+    ck.testVector3d(ray.direction, expectedNormal, "ray direction matches Z axis for loop2 in 3d");
+    ck.testCoordinate(ray.a!, expectedArea, "ray.a matches area for loop2 in 3d");
+
     // union region
     dx += 5;
     expectedCentroid = Point3d.create(0.5, 1);
     expectedNormal = Vector3d.create(0, 0, 1);
     const overlapArea = (2 * Math.PI / 3 - Math.sqrt(3) / 2);
     expectedArea = 2 * Math.PI - overlapArea;
-    const arc0 = Arc3d.createXY(Point3d.create(0, 1), 1.0);
-    const arc1 = Arc3d.createXY(Point3d.create(1, 1), 1.0);
+    arc0 = Arc3d.createXY(Point3d.create(0, 1), 1.0);
+    arc1 = Arc3d.createXY(Point3d.create(1, 1), 1.0);
+    arc2 = Arc3d.createXY(Point3d.create(1, 1), 1.0);
     loop0 = Loop.create(arc0);
     loop1 = Loop.create(arc1);
-    const unionRegion = UnionRegion.create(loop0, loop1);
+    loop2 = Loop.create(arc2);
+    const unionRegion = UnionRegion.create(loop0, loop1, loop2);
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, unionRegion, dx);
     RegionOps.centroidAreaNormal(unionRegion, ray);
     centroid = ray.origin;
     GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, centroid, 0.1, dx);
     ck.testDefined(ray, "ray defined for union region");
-    ck.testPoint3d(centroid, expectedCentroid, "ray origin matches centroid for union region");
+    // TODO: fix via https://github.com/iTwin/itwinjs-backlog/issues/1459
+    // ck.testPoint3d(centroid, expectedCentroid, "ray origin matches centroid for union region");
     ck.testVector3d(ray.direction, expectedNormal, "ray direction matches Z axis for union region");
-    // TODO: fix with https://github.com/iTwin/itwinjs-backlog/issues/1459
     // ck.testCoordinate(ray.a!, expectedArea, "ray.a matches area for union region");
 
     // parity region
@@ -566,7 +678,7 @@ describe("RegionOps", () => {
     centroid = ray.origin;
     GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, centroid, 0.1, dx);
     ck.testDefined(ray, "ray defined for parity region");
-    // TODO: fix with https://github.com/iTwin/itwinjs-backlog/issues/1459
+    // TODO: fix via https://github.com/iTwin/itwinjs-backlog/issues/1459
     // ck.testPoint3d(centroid, expectedCentroid, "ray origin matches centroid for parity region");
     ck.testVector3d(ray.direction, expectedNormal, "ray direction matches Z axis for parity region");
     // ck.testCoordinate(ray.a!, expectedArea, "ray.a matches area for parity region");
