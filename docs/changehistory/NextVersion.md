@@ -60,6 +60,8 @@ Table of contents:
       - [@itwin/presentation-frontend](#itwinpresentation-frontend-1)
     - [API removals](#api-removals)
       - [@itwin/core-common](#itwincore-common-2)
+    - [Peer Dependency changes](#peer-dependency-changes)
+      - [@itwin/core-frontend](#itwincore-frontend-2)
     - [Packages dropped](#packages-dropped)
     - [Opening connection to local snapshot requires IPC](#opening-connection-to-local-snapshot-requires-ipc)
     - [Change to pullMerge](#change-to-pullmerge)
@@ -736,6 +738,12 @@ The following APIs were re-exported from `@itwin/core-bentley` and have been rem
 | `GetMetaDataFunction` |
 | `LogFunction`         |
 | `LoggingMetaData`     |
+
+### Peer Dependency changes
+
+#### @itwin/core-frontend
+
+- Added peer dependencies to `@itwin/ecschema-metadata` and `@itwin/ecschema-rpcinterface-common` to allow exposing schema metadata to our frontend APIs. Added a `SchemaContext` property to `IModelConnection`, with an `ECSchemaRpcLocater` registered as a fallback locater. For functionality to work properly, client-side applications must register `ECSchemaRpcInterface` following instructions for [RPC configuration]($docs/learning/rpcinterface/#client-side-configuration).
 
 ### Packages dropped
 

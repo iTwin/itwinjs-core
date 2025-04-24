@@ -840,6 +840,12 @@ importers:
       '@itwin/core-quantity':
         specifier: workspace:*
         version: link:../quantity
+      '@itwin/ecschema-metadata':
+        specifier: workspace:*
+        version: link:../ecschema-metadata
+      '@itwin/ecschema-rpcinterface-common':
+        specifier: workspace:*
+        version: link:../ecschema-rpc/common
       '@itwin/eslint-plugin':
         specifier: 5.0.0-dev.1
         version: 5.0.0-dev.1(eslint@9.13.0)(typescript@5.6.2)
