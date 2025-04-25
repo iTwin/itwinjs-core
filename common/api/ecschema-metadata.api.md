@@ -274,7 +274,7 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
     // @internal (undocumented)
     protected buildPropertyCache(result: Property[], existingValues?: Map<string, number>): Promise<void>;
     // @internal (undocumented)
-    protected buildPropertyCacheSync(result: Property[], existingValues?: Map<string, number>): void;
+    protected buildPropertyCacheSync(cache: Map<string, Property>): void;
     // @internal
     cleanCache(): void;
     // @internal
@@ -533,7 +533,7 @@ export class EntityClass extends ECClass implements HasMixins {
     // @internal (undocumented)
     protected buildPropertyCache(result: Property[], existingValues?: Map<string, number>): Promise<void>;
     // @internal (undocumented)
-    protected buildPropertyCacheSync(result: Property[], existingValues?: Map<string, number>): void;
+    protected buildPropertyCacheSync(cache: Map<string, Property>): void;
     // @internal (undocumented)
     protected createNavigationProperty(name: string, relationship: string | RelationshipClass, direction: string | StrengthDirection): Promise<NavigationProperty>;
     // @internal (undocumented)
