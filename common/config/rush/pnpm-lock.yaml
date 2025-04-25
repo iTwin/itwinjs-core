@@ -17,8 +17,8 @@ importers:
   ../../core/backend:
     dependencies:
       '@bentley/imodeljs-native':
-        specifier: 5.0.92
-        version: 5.0.92
+        specifier: 5.1.5
+        version: 5.1.5
       '@itwin/cloud-agnostic-core':
         specifier: ^2.2.4
         version: 2.2.4(inversify@6.0.1)(reflect-metadata@0.1.13)
@@ -840,6 +840,12 @@ importers:
       '@itwin/core-quantity':
         specifier: workspace:*
         version: link:../quantity
+      '@itwin/ecschema-metadata':
+        specifier: workspace:*
+        version: link:../ecschema-metadata
+      '@itwin/ecschema-rpcinterface-common':
+        specifier: workspace:*
+        version: link:../ecschema-rpc/common
       '@itwin/eslint-plugin':
         specifier: 5.0.0-dev.1
         version: 5.0.0-dev.1(eslint@9.13.0)(typescript@5.6.2)
@@ -4037,7 +4043,7 @@ importers:
         version: 0.26.11(typescript@5.6.2)
       typedoc-plugin-merge-modules:
         specifier: ^6.0.3
-        version: 6.1.0(typedoc@0.26.11(typescript@5.6.2))
+        version: 6.0.3(typedoc@0.26.11(typescript@5.6.2))
       typescript:
         specifier: ~5.6.2
         version: 5.6.2
@@ -4617,8 +4623,8 @@ packages:
   '@bentley/icons-generic@1.0.34':
     resolution: {integrity: sha512-IIs1wDcY2oZ8tJ3EZRw0U51M+0ZL3MvwoDYYmhUXaa9/UZqpFoOyLBGaxjirQteWXqTIMm3mFvmC+Nbn1ok4Iw==}
 
-  '@bentley/imodeljs-native@5.0.92':
-    resolution: {integrity: sha512-j9aENGbkGWoUOQHqAhKDcn6Wx/Een6fDR5gMNri5KugTUiXEVY8XwAqYTHq6CLZfta3Gsp6shTdSc73hg7f24w==}
+  '@bentley/imodeljs-native@5.1.5':
+    resolution: {integrity: sha512-ZBzxLTFUWxeiJXsbaAWRU8B9mnHYFVrqcq/mfTAcgwxmgJBwSxKUYUMLefw4KhBIc2zyYhobpbLZsoSPd/wrbw==}
 
   '@bentley/linear-referencing-schema@2.0.3':
     resolution: {integrity: sha512-2pFIEN4BS7alIDhGous6N2icKAS8ZhVBfoWB8WvSFaYnneGv5YwbbXl46qATDdPO5jUFezkW6uVxdpp1eOgUHQ==}
@@ -10093,10 +10099,10 @@ packages:
   typedarray-to-buffer@3.1.5:
     resolution: {integrity: sha512-zdu8XMNEDepKKR+XYOXAVPtWui0ly0NtohUscw+UmaHiAWT8hrV1rr//H6V+0DvJ3OQ19S979M0laLfX8rm82Q==}
 
-  typedoc-plugin-merge-modules@6.1.0:
-    resolution: {integrity: sha512-AZIyw+H1oG3xpJOq1b2CVnpK7A6OIddi7FsjljsbmQ7vx6dtaorEoz/DQPcGSOzWhWdJPqqdncIzVySuoffS2w==}
+  typedoc-plugin-merge-modules@6.0.3:
+    resolution: {integrity: sha512-66mKhcU3RqjLnFzrC4jObqKpnKg+yCyBmTYfzGHjuVlBb1ZhPyD64kLBR6ZsSx5oy99W/Kizu5xc5NBN2nY3kQ==}
     peerDependencies:
-      typedoc: 0.26.x || ^0.27.1
+      typedoc: 0.26.x
 
   typedoc@0.26.11:
     resolution: {integrity: sha512-sFEgRRtrcDl2FxVP58Ze++ZK2UQAEvtvvH8rRlig1Ja3o7dDaMHmaBfvJmdGnNEFaLTpQsN8dpvZaTqJSu/Ugw==}
@@ -11008,7 +11014,7 @@ snapshots:
 
   '@bentley/icons-generic@1.0.34': {}
 
-  '@bentley/imodeljs-native@5.0.92': {}
+  '@bentley/imodeljs-native@5.1.5': {}
 
   '@bentley/linear-referencing-schema@2.0.3': {}
 
@@ -17190,7 +17196,7 @@ snapshots:
     dependencies:
       is-typedarray: 1.0.0
 
-  typedoc-plugin-merge-modules@6.1.0(typedoc@0.26.11(typescript@5.6.2)):
+  typedoc-plugin-merge-modules@6.0.3(typedoc@0.26.11(typescript@5.6.2)):
     dependencies:
       typedoc: 0.26.11(typescript@5.6.2)
 
