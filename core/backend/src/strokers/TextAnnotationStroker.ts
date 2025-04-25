@@ -48,7 +48,16 @@ export class TextAnnotationStroker extends Stroker<TextAnnotationStrokerArgs> {
     const transform = annotation.computeTransform(dimensions);
 
     const textBlockGeometry = produceTextBlockGeometry(layout, transform);
+
+    // TODO: test these params
+    const highPriorityParams = new GeometryParams(Id64.invalid);
+    highPriorityParams.elmPriority = 1;
+    this._builder.appendGeometryParamsChange(highPriorityParams);
     this._builder.appendTextBlock(textBlockGeometry);
+
+    const lowPriorityParams = new GeometryParams(Id64.invalid);
+    lowPriorityParams.elmPriority = 0;
+    this._builder.appendGeometryParamsChange(lowPriorityParams);
 
     if (annotation.frame)
       this.appendFrame(annotation, layout);
