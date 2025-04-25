@@ -171,7 +171,7 @@ export class RegionOps {
     if (!regionIsXY) // rotate centroid back (area is unchanged)
       localToWorld.multiplyPoint3d(centroid, centroid);
 
-    let area = momentData.sums.atIJ(3, 3);
+    let area = momentData.sums.weight();
     if (area < 0.0) {
       area = -area;
       normal.scale(-1.0, normal);
