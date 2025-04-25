@@ -244,7 +244,6 @@ describe("RenderInstances", () => {
     expect(instances[_featureTable]!.numFeatures).toEqual(4);
 
     let graphic = IModelApp.renderSystem.createGraphicFromTemplate({ template, instances });
-
     const branch = new GraphicBranch();
     branch.add(graphic);
     graphic = IModelApp.renderSystem.createGraphicBranch(branch, Transform.createTranslation(vp.iModel.projectExtents.center));
