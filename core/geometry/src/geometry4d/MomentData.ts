@@ -307,10 +307,11 @@ export class MomentData {
       Point4d.create(0.0, 0.0, 0.0, 1.0, MomentData._vectorA);
     const vectorB = MomentData._vectorB = Point4d.create(pointB.x - x0, pointB.y - y0, 0.0, 1.0, MomentData._vectorB);
     const vectorC = MomentData._vectorC = Point4d.create(pointC.x - x0, pointC.y - y0, 0.0, 1.0, MomentData._vectorC);
-    // Below lines calculate double integral of [x y z 1]^ [x y z 1] dx dy over the triangle created by A,B,C.
-    // To calculate the integrals, linear barycentric transformation comes to play here (change coordinates from
-    // x,y,z to u,v,w). Double integral of u^2 and v^2 over unit triangle (created by points (0,0), (1,0), (0,1)) is
-    // 1/12 and double integral of u*v over unit triangle is 1/24.
+    // Below we calculate 16 double integrals: \iint_T [x y 0 1]^ [x y 0 1] dT over triangle T=(A,B,C).
+    // Each accumulates contributions from 9 scaled outer products. Integration computations use the barycentric
+    // change of variables [B-A C-A][u,v]^ = [x,y]^ with Jacobian detJ = B-A x C-A = twice the area of T.
+    // This converts the integration domain from T to the triangle bounded by u=0, v=0 and v=1-u, yielding e.g.,
+    // \iint_T x^2 dT = detJ \int_0^1 \int_0^{1-u} u^2 dv du = detJ / 12, and similarly \iint_T xy dT = detJ / 24.
     const detJ = Geometry.crossProductXYXY(
       vectorB.x - vectorA.x, vectorB.y - vectorA.y, vectorC.x - vectorA.x, vectorC.y - vectorA.y,
     );
