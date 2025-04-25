@@ -326,8 +326,8 @@ describe("RegionOps", () => {
     expect(context.getNumErrors()).toBe(0);
   });
 
-  it.only("centroidAreaNormal", () => {
-    const ck = new Checker(true, true);
+  it("centroidAreaNormal", () => {
+    const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
     let dx = 0;
     let loop: Loop | undefined;
@@ -393,8 +393,40 @@ describe("RegionOps", () => {
     ck.testVector3d(ray.direction, expectedNormal, "ray direction matches Z axis for rectangle in 3d");
     ck.testCoordinate(ray.a!, expectedArea, "ray.a matches area for rectangle in 3d");
 
-    // circle
+    [Point3d.createZero(), Point3d.create(2, 1), Point3d.create(0.5, 0.5), Point3d.create(1, 2)]
+
+    // dart
     dx += 4;
+    expectedCentroid = Point3d.create(0.6666666666666667, 0.6666666666666667);
+    expectedNormal = Vector3d.create(0, 0, 1);
+    expectedArea = 0.5;
+    lineString = LineString3d.create([0, 0], [2, 1], [0.5, 0.5], [1, 2], [0, 0]);
+    loop = Loop.create(lineString);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, loop, dx);
+    RegionOps.centroidAreaNormal(loop, ray);
+    centroid = ray.origin;
+    GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, centroid, 0.1, dx);
+    ck.testDefined(ray, "ray defined for dart");
+    ck.testPoint3d(centroid, expectedCentroid, "ray origin matches centroid for dart");
+    ck.testVector3d(ray.direction, expectedNormal, "ray direction matches Z axis for dart");
+    ck.testCoordinate(ray.a!, expectedArea, "ray.a matches area for dart");
+
+    // dart in 3d
+    expectedCentroid = rotationTransform.multiplyPoint3d(Point3d.create(0.6666666666666667, 0.6666666666666667));
+    expectedNormal = Vector3d.createFrom(rotationTransform.multiplyPoint3d(Point3d.create(0, 0, 1)));
+    expectedArea = 0.5;
+    lineString = LineString3d.create([0, 0], [2, 1], [0.5, 0.5], [1, 2], [0, 0]);
+    loop = Loop.create(lineString).cloneTransformed(rotationTransform) as Loop;
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, loop, dx);
+    RegionOps.centroidAreaNormal(loop, ray);
+    centroid = ray.origin;
+    ck.testDefined(ray, "ray defined for dart in 3d");
+    ck.testPoint3d(centroid, expectedCentroid, "ray origin matches centroid for dart in 3d");
+    ck.testVector3d(ray.direction, expectedNormal, "ray direction matches Z axis for dart in 3d");
+    ck.testCoordinate(ray.a!, expectedArea, "ray.a matches area for dart in 3d");
+
+    // circle
+    dx += 3;
     expectedCentroid = Point3d.create(1, 2);
     expectedNormal = Vector3d.create(0, 0, 1);
     expectedArea = Math.PI;

@@ -34,9 +34,9 @@ export class RegionMomentsXY extends NullGeometryHandler {
   private _point0 = Point3d.create();
   private _point1 = Point3d.create();
   /**
-   * Accumulate (independent) integrations over area from the origin to this arc.
-   * * If arc is closed, integrations over the arc.
-   * * If arc is not closed, integrations over the closed area created by arc and chord to the end points.
+   * Accumulate (independent) integrations over:
+   * * The area between the arc and the chord connecting its endpoints.
+   * * The triangle with vertices: origin, arc start, arc end.
    */
   public override handleArc3d(arc: Arc3d): void {
     const momentData = this._activeMomentData!;

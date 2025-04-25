@@ -34,17 +34,6 @@ import { Point4d } from "./Point4d";
  *        * the `localToWorldMap` and `radiiOfGyration` are created but have undefined contents.
  *  * Second level: after a call to `inertiaProductsToPrincipalAxes`, the `localToWorldMap`, `absoluteQuantity` and
  *    `radiiOfGyration` are filled in.
- * * Some physical definitions:
- *   * Moment of inertia (or mass moment of inertia) is the ratio between torque (rotational force) applied and the
- * resulting angular acceleration about a rotational axis.
- *   * Moment of inertia is increased if (a) mass is increased, (b) distance from rotational axis is increased. Therefore,
- * it can be formulated as M*R^2 where M is mass and R is the distance from the rotational axis. Higher moment of inertia
- * leads to higher resistance to against rotation.
- *   * There is a similar concept called "area moment of inertia" which is resistance against bending.
- *   * Moment of inertia can be formulated as integral of y^2 over area of the object if rotational axis is x-axis and
- * similarly integral of x^2 over area of the object if rotational axis is y-axis.
- *   * Moment of inertia tensor (the `sums` matrix) summarized all moments of inertia of an object with one quantity. It
- * may be calculated wrt any point in space but for practical purposes, the center of mass is most commonly used.
  * @public
  */
 export class MomentData {
@@ -56,6 +45,17 @@ export class MomentData {
    * Moment sums.
    * * Set to zero at initialization and if requested later.
    * * Accumulated during data entry phase.
+   * * Some physical definitions:
+   *   * Moment of inertia (or mass moment of inertia) is the ratio between torque (rotational force) applied and the
+   * resulting angular acceleration about a rotational axis.
+   *   * Moment of inertia is increased if (a) mass is increased, (b) distance from rotational axis is increased. Therefore,
+   * it can be formulated as M*R^2 where M is mass and R is the distance from the rotational axis. Higher moment of inertia
+   * leads to higher resistance to against rotation.
+   *   * There is a similar concept called "area moment of inertia" which is resistance against bending.
+   *   * Moment of inertia can be formulated as integral of y^2 over area of the object if rotational axis is x-axis and
+   * similarly integral of x^2 over area of the object if rotational axis is y-axis.
+   *   * Moment of inertia tensor (the `sums` matrix) summarized all moments of inertia of an object with one quantity. It
+   * may be calculated wrt any point in space but for practical purposes, the center of mass is most commonly used.
    */
   public sums: Matrix4d;
   /**
@@ -235,14 +235,14 @@ export class MomentData {
    */
   public static areEquivalentPrincipalAxes(dataA: MomentData | undefined, dataB: MomentData | undefined): boolean {
     if (dataA && dataB
-      && Geometry.isSameCoordinate(dataA.quantitySum, dataB.quantitySum)) { // need different tolerance for area, volume?
+      && Geometry.isSameCoordinate(dataA.quantitySum, dataB.quantitySum)) { // TODO: need different tolerance for area, volume?
       if (dataA.localToWorldMap.getOrigin().isAlmostEqual(dataB.localToWorldMap.getOrigin())
         && dataA.radiusOfGyration.isAlmostEqual(dataB.radiusOfGyration)) {
         if (Geometry.isSameCoordinate(dataA.radiusOfGyration.x, dataA.radiusOfGyration.y)) {
           // we have at least xy symmetry
           if (Geometry.isSameCoordinate(dataA.radiusOfGyration.x, dataA.radiusOfGyration.z))
             return true;
-          // just xy; allow opposite z directions; if the z's are aligned, x an dy can spin freely
+          // just xy; allow opposite z directions; if the z's are aligned, x and y can spin freely
           const zA = dataA.localToWorldMap.matrix.columnZ();
           const zB = dataB.localToWorldMap.matrix.columnZ();
           if (zA.isParallelTo(zB, true))
@@ -319,9 +319,9 @@ export class MomentData {
     const vectorB = MomentData._vectorB = Point4d.create(pointB.x - x0, pointB.y - y0, 0.0, 1.0, MomentData._vectorB);
     const vectorC = MomentData._vectorC = Point4d.create(pointC.x - x0, pointC.y - y0, 0.0, 1.0, MomentData._vectorC);
     // Below lines calculate double integral of [x y z 1]^ [x y z 1] dx dy over the triangle created by A,B,C.
-    // To calculate the integrals, linear barycentric transformation comes to play here. Double integral of u^2
-    // and v^2 over unit triangle (created by points (0,0), (1,0), (0,1)) is 1/12 and double integral of u*v over
-    // unit triangle is 1/24. Note that element 3,3 of the matrix is the area of the triangle created by A,B,C.
+    // To calculate the integrals, linear barycentric transformation comes to play here (change coordinates from
+    // x,y,z to u,v,w). Double integral of u^2 and v^2 over unit triangle (created by points (0,0), (1,0), (0,1)) is
+    // 1/12 and double integral of u*v over unit triangle is 1/24.
     const detJ = Geometry.crossProductXYXY(
       vectorB.x - vectorA.x, vectorB.y - vectorA.y, vectorC.x - vectorA.x, vectorC.y - vectorA.y,
     );

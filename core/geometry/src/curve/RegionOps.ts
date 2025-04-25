@@ -88,11 +88,12 @@ export enum RegionBinaryOpType {
 export class RegionOps {
   /**
    * Return moment sums for a loop, parity region, or union region.
-   * * The input region should be rotated parallel to the xy-plane as z-coords will be ignored.
+   * * The input region should lie in a plane parallel to the xy-plane, as z-coords will be ignored.
    * * If `rawMomentData` is the MomentData returned by computeXYAreaMoments, convert to principal axes and moments with
    * call `principalMomentData = MomentData.inertiaProductsToPrincipalAxes(rawMomentData.origin, rawMomentData.sums);`
-   * * `rawMomentData.origin` is the centroid of the loop or region.
-   * @param region any Loop, ParityRegion, or UnionRegion.
+   * * `rawMomentData.origin` is the centroid of `region`.
+   * * `rawMomentData.sums.weight()` is the signed area of `region`.
+   * @param region any [[Loop]], [[ParityRegion]], or [[UnionRegion]].
    */
   public static computeXYAreaMoments(region: AnyRegion): MomentData | undefined {
     const handler = new RegionMomentsXY();
@@ -115,9 +116,9 @@ export class RegionOps {
   }
   /**
    * Return a (signed) xy area for a region.
-   * * The input region should be rotated parallel to the xy-plane as z-coords will be ignored.
+   * * The input region should lie in a plane parallel to the xy-plane, as z-coords will be ignored.
    * * The area is negative if and only if the region is oriented clockwise with respect to the positive z-axis.
-   * @param region any Loop, ParityRegion, or UnionRegion.
+   * @param region any [[Loop]], [[ParityRegion]], or [[UnionRegion]].
    */
   public static computeXYArea(region: AnyRegion): number | undefined {
     const handler = new RegionMomentsXY();
@@ -129,14 +130,16 @@ export class RegionOps {
   }
   /**
    * Return MomentData with the sums of wire moments.
-   * * The input region should be rotated parallel to the xy-plane as z-coords will be ignored.
+   * * The input curve should lie in a plane parallel to the xy-plane, as z-coords will be ignored.
    * * If `rawMomentData` is the MomentData returned by computeXYAreaMoments, convert to principal axes and moments with
    * call `principalMomentData = MomentData.inertiaProductsToPrincipalAxes (rawMomentData.origin, rawMomentData.sums);`
-   * @param region any CurveCollection or CurvePrimitive.
+   * * `rawMomentData.origin` is the wire centroid of `curve`.
+   * * `rawMomentData.sums.weight()` is the signed length of `curve`.
+   * @param curve any [[CurveCollection]] or [[CurvePrimitive]].
    */
-  public static computeXYZWireMomentSums(region: AnyCurve): MomentData | undefined {
+  public static computeXYZWireMomentSums(curve: AnyCurve): MomentData | undefined {
     const handler = new CurveWireMomentsXYZ();
-    handler.visitLeaves(region);
+    handler.visitLeaves(curve);
     const result = handler.momentData;
     result.shiftOriginAndSumsToCentroidOfSums();
     return result;

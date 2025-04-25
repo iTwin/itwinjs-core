@@ -1595,7 +1595,7 @@ export class Vector3d extends XYZ {
     const cross2 = this.crossProductMagnitudeSquared(other);
     // a2,b2,cross2 are squared lengths of respective vectors
     // cross2 = sin^2(theta) * a2 * b2
-    // For small theta, sin^2(theta) =~ theta^2
+    // For small theta, sin^2(theta) ~ theta^2
     return cross2 <= radianSquaredTol * a2 * b2;
   }
   /**
