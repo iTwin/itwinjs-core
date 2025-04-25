@@ -45,17 +45,6 @@ export class MomentData {
    * Moment sums.
    * * Set to zero at initialization and if requested later.
    * * Accumulated during data entry phase.
-   * * Some physical definitions:
-   *   * Moment of inertia (or mass moment of inertia) is the ratio between torque (rotational force) applied and the
-   * resulting angular acceleration about a rotational axis.
-   *   * Moment of inertia is increased if (a) mass is increased, (b) distance from rotational axis is increased. Therefore,
-   * it can be formulated as M*R^2 where M is mass and R is the distance from the rotational axis. Higher moment of inertia
-   * leads to higher resistance to against rotation.
-   *   * There is a similar concept called "area moment of inertia" which is resistance against bending.
-   *   * Moment of inertia can be formulated as integral of y^2 over area of the object if rotational axis is x-axis and
-   * similarly integral of x^2 over area of the object if rotational axis is y-axis.
-   *   * Moment of inertia tensor (the `sums` matrix) summarized all moments of inertia of an object with one quantity. It
-   * may be calculated wrt any point in space but for practical purposes, the center of mass is most commonly used.
    */
   public sums: Matrix4d;
   /**
@@ -91,7 +80,7 @@ export class MomentData {
    * * This is the quantity (i.e. length, area, or volume) summed.
    */
   public get quantitySum(): number {
-    return this.sums.atIJ(3, 3);
+    return this.sums.weight();
   }
   /**
    * Return a scale factor to make these sums match the target orientation sign.
@@ -305,9 +294,9 @@ export class MomentData {
     this.shiftOriginAndSumsByXYZ(newOrigin.x - this.origin.x, newOrigin.y - this.origin.y, newOrigin.z - this.origin.z);
   }
   /**
-   * Compute moments of a triangle from the origin to the given line. Accumulate them to `this.sums`.
+   * Compute moments of a triangle from the origin. Accumulate them to `this.sums`.
+   * * If `this.needOrigin` is set, `this.origin` is set to `pointB`.
    * * If `pointA` is undefined, use `this.origin` as `pointA`.
-   * * If `this.needOrigin` is set, `pointB` is used.
    */
   public accumulateTriangleMomentsXY(pointA: XAndY | undefined, pointB: XAndY, pointC: XAndY) {
     this.setOriginXYZIfNeeded(pointB.x, pointB.y, 0.0);
@@ -315,7 +304,7 @@ export class MomentData {
     const y0 = this.origin.y;
     const vectorA = MomentData._vectorA = (pointA !== undefined) ?
       Point4d.create(pointA.x - x0, pointA.y - y0, 0.0, 1.0, MomentData._vectorA) :
-      Point4d.create(this.origin.x, this.origin.y, 0.0, 1.0, MomentData._vectorA);
+      Point4d.create(0.0, 0.0, 0.0, 1.0, MomentData._vectorA);
     const vectorB = MomentData._vectorB = Point4d.create(pointB.x - x0, pointB.y - y0, 0.0, 1.0, MomentData._vectorB);
     const vectorC = MomentData._vectorC = Point4d.create(pointC.x - x0, pointC.y - y0, 0.0, 1.0, MomentData._vectorC);
     // Below lines calculate double integral of [x y z 1]^ [x y z 1] dx dy over the triangle created by A,B,C.
@@ -372,15 +361,14 @@ export class MomentData {
   }
   /**
    * Compute moments of triangles from a base point to the given linestring. Accumulate them to `this.sums`.
-   * * If `pointA` is undefined, use `this.origin` as pointA.
-   * * If `this.needOrigin` is set, the first point of the array is captured as local origin for subsequent sums.
+   * * If `this.needOrigin` is set, `this.origin` is set to the first point of the array.
+   * * If `sweepBase` is undefined, use `this.origin` as `sweepBase`.
    */
   public accumulateTriangleToLineStringMomentsXY(sweepBase: XAndY | undefined, points: GrowableXYZArray) {
     const n = points.length;
     if (n > 1) {
       points.getPoint3dAtUncheckedPointIndex(0, this._point0);
-      // If linestring is closed, the for loop performs the Shoelace algorithm (triangle form) to find the integral
-      // over linestring. Note that element 3,3 of the matrix is the area of the polygon formed by the linestring.
+      // The linestring forms a polygon with sweepBase. Integrate over this polygon using Shoelace algorithm.
       for (let i = 1; i < n; i++) {
         points.getPoint3dAtUncheckedPointIndex(i, this._point1);
         this.accumulateTriangleMomentsXY(sweepBase, this._point0, this._point1);
