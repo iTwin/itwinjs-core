@@ -315,9 +315,9 @@ describe("RenderInstances", () => {
     expect(range.isNull).toBe(false);
 
     //Using isAlmostEqual due to floating point errors
-    expect(range.low.isAlmostEqual(Point3d.create(-25, -25, 0)));
+    expect(range.low.isAlmostEqual(Point3d.create(-25, -25, 0))).toBe(true);
     //Expect range.high.x to be 30 because the line is 5 pixels long in the x direction starting at 25
-    expect(range.high.isAlmostEqual(Point3d.create(30, 25, 0)));
+    expect(range.high.isAlmostEqual(Point3d.create(30, 25, 0))).toBe(true);
 
     const branch = new GraphicBranch(false);
     branch.add(graphic);
