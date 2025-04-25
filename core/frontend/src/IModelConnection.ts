@@ -11,7 +11,7 @@ import {
   PickAsyncMethods, TransientIdSequence,
 } from "@itwin/core-bentley";
 import {
-  AxisAlignedBox3d, Cartographic, CodeProps, CodeSpec, DbQueryRequest, EcefLocation, EcefLocationProps, ECSqlReader, ElementLoadOptions, ElementMeshRequestProps,
+  AxisAlignedBox3d, Cartographic, CodeProps, CodeSpec, DbQueryRequest, DbResponseStatus, EcefLocation, EcefLocationProps, ECSqlReader, ElementLoadOptions, ElementMeshRequestProps,
   ElementProps, EntityQueryParams, FontMap, GeoCoordStatus, GeographicCRSProps, GeometryContainmentRequestProps, GeometryContainmentResponseProps, GeometrySummaryRequestProps, ImageSourceFormat, IModel, IModelConnectionProps, IModelError,
   IModelReadRpcInterface, mapToGeoServiceStatus, MassPropertiesPerCandidateRequestProps, MassPropertiesPerCandidateResponseProps,
   MassPropertiesRequestProps, MassPropertiesResponseProps, ModelExtentsProps, ModelProps, ModelQueryParams, NoContentError, Placement, Placement2d,
@@ -795,7 +795,7 @@ export class BlankConnection extends IModelConnection {
     const mockIModelReadApi: IModelReadAPI = {
       getConnectionProps: async () => props,
       getTooltipMessage: async () => ({ lines: [] }),
-      async *runQuery () {},
+      runQuery: () => new ECSqlReader({ execute: async () => ECSqlReader.createDbResponseFromRows([], DbResponseStatus.Done)}, ""),
     }
 
     super(props, mockIModelReadApi);
