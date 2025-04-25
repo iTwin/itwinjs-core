@@ -400,7 +400,7 @@ describe("RegionOps", () => {
 
     // dart
     dx += 4;
-    expectedCentroid = Point3d.create(0.6666666666666667, 0.6666666666666667);
+    expectedCentroid = Point3d.create(2 / 3, 2 / 3);
     expectedNormal = Vector3d.create(0, 0, 1);
     expectedArea = 0.5;
     lineString = LineString3d.create([0, 0], [2, 1], [0.5, 0.5], [1, 2], [0, 0]);
@@ -416,7 +416,7 @@ describe("RegionOps", () => {
       ck.testCoordinate(ray.a, expectedArea, "ray.a matches area for dart");
     }
     // dart in 3d
-    expectedCentroid = rotationTransform.multiplyPoint3d(Point3d.create(0.6666666666666667, 0.6666666666666667));
+    expectedCentroid = rotationTransform.multiplyPoint3d(Point3d.create(2 / 3, 2 / 3));
     expectedNormal = Vector3d.createFrom(rotationTransform.multiplyPoint3d(Point3d.create(0, 0, 1)));
     expectedArea = 0.5;
     lineString = LineString3d.create([0, 0], [2, 1], [0.5, 0.5], [1, 2], [0, 0]);
