@@ -17,7 +17,7 @@ import {
 } from "@itwin/core-common";
 import { IModelConnection } from "./IModelConnection";
 import { FrontendLoggerCategory } from "./common/FrontendLoggerCategory";
-import { IModelReadAPI, mapGeoCoordRequestRPCToIModelRead, mapGeoCoordResponseIModelReadToRPC, mapIModelCoordRequestRPCToIModelRead, mapIModelCoordResponseIModelReadToRPC } from "@itwin/imodelread-common";
+import { GeoCoordinatesResponse, IModelCoordinatesResponse, IModelReadAPI, mapGeoCoordExceptionToRPC, mapGeoCoordRequestRPCToIModelRead, mapGeoCoordResponseIModelReadToRPC, mapIModelCoordExceptionToRPC, mapIModelCoordRequestRPCToIModelRead, mapIModelCoordResponseIModelReadToRPC, NoDatumConverterError, NoGCSDefinedError } from "@itwin/imodelread-common";
 
 /** Options used to create a [[CoordinateConverter]].
  * @internal exported strictly for tests.
