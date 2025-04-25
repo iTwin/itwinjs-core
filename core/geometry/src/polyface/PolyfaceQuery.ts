@@ -375,9 +375,9 @@ export class PolyfaceQuery {
     const triangleNormal = Vector3d.create();
     const planeNormal = plane.getNormalRef();
     let h0, hA, hB;
-    let signedVolumeSum = 0.0;
-    let signedTriangleArea;
-    let singleFacetArea;
+    let signedTruncatedPrismVolumeTimes6 = 0.0;
+    let signedProjectedTriangleAreaTimes2;
+    let singleProjectedFacetAreaTimes2;
     const positiveAreaMomentSums = MomentData.create(undefined, true);
     const negativeAreaMomentSums = MomentData.create(undefined, true);
     const singleFacetProducts = Matrix4d.createZero();
@@ -385,47 +385,37 @@ export class PolyfaceQuery {
     source.reset();
     // For each facet:
     // - form triangles from facet origin to each far edge.
-    // - sum signed area and volume contributions.
-    // each projected area contribution is twice the area of a triangle.
-    // each volume contribution is 3 times the actual volume -- (1/3) of the altitude sums was the centroid altitude.
+    // - sum signed area and volume contributions (for non-convex facet, signs can be mixed).
+    // - each projected area contribution is twice the area of a triangle.
+    // - each volume contribution is 3 times the actual volume -- a third of the altitude sum is the centroid altitude.
     while (source.moveToNextFacet()) {
       source.point.getPoint3dAtUncheckedPointIndex(0, facetOrigin);
       h0 = plane.altitude(facetOrigin);
-      singleFacetArea = 0;
-      // within a single facets, the singleFacetArea sum is accumulated with signs of individual triangles.
-      // for a non-convex facet, this can be a mixture of positive and negative areas.
-      // the absoluteProjectedAreaSum contribution is forced positive after the sum for the facet.
+      singleProjectedFacetAreaTimes2 = 0;
       for (let i = 1; i + 1 < source.point.length; i++) {
         source.point.getPoint3dAtUncheckedPointIndex(i, targetA);
         source.point.getPoint3dAtUncheckedPointIndex(i + 1, targetB);
         facetOrigin.crossProductToPoints(targetA, targetB, triangleNormal);
         hA = plane.altitude(targetA);
         hB = plane.altitude(targetB);
-        signedTriangleArea = planeNormal.dotProduct(triangleNormal);
-        singleFacetArea += signedTriangleArea;
-        signedVolumeSum += signedTriangleArea * (h0 + hA + hB);
+        signedProjectedTriangleAreaTimes2 = planeNormal.dotProduct(triangleNormal);
+        singleProjectedFacetAreaTimes2 += signedProjectedTriangleAreaTimes2;
+        signedTruncatedPrismVolumeTimes6 += signedProjectedTriangleAreaTimes2 * (h0 + hA + hB);
       }
       singleFacetProducts.setZero();
       source.point.multiplyTransformInPlace(projectToPlane);
       PolygonOps.addSecondMomentAreaProducts(source.point, facetOrigin, singleFacetProducts);
-      if (singleFacetArea > 0) {
+      if (singleProjectedFacetAreaTimes2 > 0)
         positiveAreaMomentSums.accumulateProductsFromOrigin(facetOrigin, singleFacetProducts, 1.0);
-      } else {
+      else
         negativeAreaMomentSums.accumulateProductsFromOrigin(facetOrigin, singleFacetProducts, 1.0);
-      }
     }
-    positiveAreaMomentSums.shiftOriginAndSumsToCentroidOfSums();
-    negativeAreaMomentSums.shiftOriginAndSumsToCentroidOfSums();
-    const positiveAreaMoments = MomentData.inertiaProductsToPrincipalAxes(
-      positiveAreaMomentSums.origin, positiveAreaMomentSums.sums,
-    );
-    const negativeAreaMoments = MomentData.inertiaProductsToPrincipalAxes(
-      negativeAreaMomentSums.origin, negativeAreaMomentSums.sums,
-    );
+    const pm = MomentData.inertiaProductsToPrincipalAxes(positiveAreaMomentSums.origin, positiveAreaMomentSums.sums);
+    const nm = MomentData.inertiaProductsToPrincipalAxes(negativeAreaMomentSums.origin, negativeAreaMomentSums.sums);
     return {
-      volume: signedVolumeSum / 6.0,
-      positiveProjectedFacetAreaMoments: positiveAreaMoments,
-      negativeProjectedFacetAreaMoments: negativeAreaMoments,
+      volume: signedTruncatedPrismVolumeTimes6 / 6.0,
+      positiveProjectedFacetAreaMoments: pm,
+      negativeProjectedFacetAreaMoments: nm,
     };
   }
 
@@ -1367,6 +1357,7 @@ export class PolyfaceQuery {
    * * If no options are given, the default sweep direction is the z-axis, and chains are assembled and returned.
    * * See [[SweepLineStringToFacetsOptions]] for input and output options, including filtering by forward/side/rear facets.
    * * Facets are ASSUMED to be convex and planar, and not overlap in the sweep direction.
+   * * For vertical sweep, see also [[sweepLineStringToFacetsXY]] which takes a pre-computed range tree for faster searching.
    */
   public static sweepLineStringToFacets(
     linestringPoints: GrowableXYZArray,
