@@ -225,19 +225,19 @@ describe("RenderInstances", () => {
     const instancesBuilder = RenderInstancesParamsBuilder.create({ modelId });
     instancesBuilder.add({
       feature: "0x3",
-      transform: Transform.createTranslationXYZ(-10, 0, 0),
+      transform: Transform.createTranslationXYZ(-1, 0, 0),
     });
     instancesBuilder.add({
       feature: "0x4",
-      transform: Transform.createTranslationXYZ(10, 0, 0),
+      transform: Transform.createTranslationXYZ(1, 0, 0),
     });
     instancesBuilder.add({
       feature: "0x5",
-      transform: Transform.createTranslationXYZ(0, 10, 0),
+      transform: Transform.createTranslationXYZ(0, 1, 0),
     });
     instancesBuilder.add({
       feature: "0x6",
-      transform: Transform.createTranslationXYZ(0, -10, 0),
+      transform: Transform.createTranslationXYZ(0, -1, 0),
       symbology: { color: { r: 0, g: 0, b: 255 } },
     });
     const instances = IModelApp.renderSystem.createRenderInstances(instancesBuilder.finish())!;
