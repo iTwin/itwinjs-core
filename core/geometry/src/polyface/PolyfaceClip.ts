@@ -279,12 +279,10 @@ export class PolyfaceClip {
     const cache = new GrowableXYZArrayCache();
     const outsideParts: GrowableXYZArray[] = [];
     for (visitor.reset(); visitor.moveToNextFacet();) {
-      // !!! currentCandidates and next candidates are empty at this point !!!
       const insidePart = clipper.clipInsidePushOutside(visitor.point, outsideParts, cache);
       if (insidePart === undefined) {
         // everything is out ... outsideParts might be fragmented.  Save only the original polygon
         builderB?.addPolygonGrowableXYZArray(visitor.point);
-        cache.dropToCache(insidePart);
         cache.dropAllToCache(outsideParts);
       }
       this.addPolygonToBuilderAndDropToCache(insidePart, builderA, cache);
@@ -450,8 +448,8 @@ export class PolyfaceClip {
 
   /** Clip each facet of polyface to the ClipPlane or ConvexClipPlaneSet
    * * accumulate inside and outside facets -- to destination.builderA and destination.builderB
-   * * if `destination.buildClosureFaces` is set, and also build closure facets
-   * * This method parses  the variant input types and calls a more specific method.
+   * * if `destination.buildClosureFaces` is set, also build closure facets.
+   * * This method parses the variant input types and calls a more specific method.
    * * WARNING: The new mesh is "points only".
    * * outputSelect applies only for UnionOfConvexClipPlaneSets -- see [[PolyfaceClip.clipPolyfaceUnionOfConvexClipPlaneSetsToBuilders]]
    */
