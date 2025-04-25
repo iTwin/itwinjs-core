@@ -8,69 +8,38 @@
 
 import { BentleyError, BentleyStatus, Logger } from "@itwin/core-bentley";
 import { ImageMapLayerSettings, ImageSource } from "@itwin/core-common";
-import { DecorateContext, IModelApp, MapCartoRectangle, MapLayerImageryProvider, MapLayerSourceStatus, MapLayerSourceValidation, MapTile, ScreenViewport, Tile } from "@itwin/core-frontend";
-import { GoogleMapsUtils } from "../internal/GoogleMapsUtils.js";
+import { DecorateContext, IModelApp, MapCartoRectangle, MapLayerImageryProvider, MapTile, ScreenViewport, Tile } from "@itwin/core-frontend";
 import { GoogleMapsDecorator } from "./GoogleMapDecorator.js";
-import { GoogleMapsCreateSessionOptions, GoogleMapsLayerTypes, GoogleMapsMapTypes, GoogleMapsScaleFactors, GoogleMapsSession } from "./GoogleMaps.js";
+import { GoogleMapsCreateSessionOptions, GoogleMapsLayerTypes, GoogleMapsMapTypes, GoogleMapsScaleFactors, GoogleMapsSession, GoogleMapsSessionManager, ViewportInfo } from "./GoogleMaps.js";
+import { NativeGoogleMapsSessionManager } from "./NativeGoogleMapsSession.js"
+import { GoogleMapsAccessClient } from "./GoogleMapsImageryFormat.js";
 
 const loggerCategory = "MapLayersFormats.GoogleMaps";
-const levelToken = "{level}";
-const rowToken = "{row}";
-const columnToken = "{column}";
-
-const urlTemplate = `https://tile.googleapis.com/v1/2dtiles/${levelToken}/${columnToken}/${rowToken}`;
 
 /*
 * Google Maps imagery provider
-* @internal
+* @beta
 */
 export class GoogleMapsImageryProvider extends MapLayerImageryProvider {
 
   private _decorator: GoogleMapsDecorator;
   private _hadUnrecoverableError = false;
-  private _tileSize = 256
+  private _tileSize = 256;
+  private _sessionManager?: GoogleMapsSessionManager;
+  private _sessionOptions: GoogleMapsCreateSessionOptions|undefined;
+  private _activeSession?: GoogleMapsSession;
   constructor(settings: ImageMapLayerSettings) {
     super(settings, true);
     this._decorator = new GoogleMapsDecorator();
-  }
-  public static validateUrlTemplate(template: string): MapLayerSourceValidation {
-    return { status: (template.indexOf(levelToken) > 0 && template.indexOf(columnToken) > 0 && template.indexOf(rowToken) > 0) ? MapLayerSourceStatus.Valid : MapLayerSourceStatus.InvalidUrl };
-  }
 
-  protected async createSession() : Promise<GoogleMapsSession|undefined> {
-    const sessionOptions = this.createCreateSessionOptions();
-    if (this._settings.accessKey ) {
-      // Create session and store in query parameters
-      const sessionObj = await GoogleMapsUtils.createSession(this._settings.accessKey.value, sessionOptions);
-      this._settings.unsavedQueryParams = {session: sessionObj.session};
-      return sessionObj;
-    } else {
-      Logger.logError(loggerCategory, `Missing GoogleMaps api key`);
-      return undefined;
-    }
   }
   public override get tileSize(): number { return this._tileSize; }
 
   public override async initialize(): Promise<void> {
-
-    const layerPropertyKeys = this._settings.properties ? Object.keys(this._settings.properties) : undefined;
-    if (layerPropertyKeys === undefined ||
-        !layerPropertyKeys.includes("mapType") ||
-        !layerPropertyKeys.includes("language") ||
-        !layerPropertyKeys.includes("region")) {
-      const msg = "Missing session options";
-      Logger.logError(loggerCategory, msg);
-      throw new BentleyError(BentleyStatus.ERROR, msg);
-    }
-
-    const session = await this.createSession();
-    if (!session) {
-      const msg = `Failed to create session`;
-      Logger.logError(loggerCategory, msg);
-      throw new BentleyError(BentleyStatus.ERROR, msg);
-    }
-    this._tileSize = session.tileWidth; // assuming here tiles are square
-
+    this._sessionOptions = this.createCreateSessionOptions();
+    this._sessionManager = await this.getSessionManager();
+    this._activeSession = await this._sessionManager.createSession(this._sessionOptions);;
+    this._tileSize = this._activeSession.getTileSize();
     const isActivated = await this._decorator.activate(this._settings.properties!.mapType as GoogleMapsMapTypes);
     if (!isActivated) {
       const msg = `Failed to activate decorator`;
@@ -79,7 +48,30 @@ export class GoogleMapsImageryProvider extends MapLayerImageryProvider {
     }
   }
 
-  private createCreateSessionOptions(): GoogleMapsCreateSessionOptions {
+  protected async getSessionManager (): Promise<GoogleMapsSessionManager> {
+    const accessClient = IModelApp.mapLayerFormatRegistry.getAccessClient(this._settings.formatId);
+    const googleMapsAccessClient = accessClient as GoogleMapsAccessClient;
+    if (googleMapsAccessClient && googleMapsAccessClient.getSessionManager !== undefined) {
+      const sessionManager = googleMapsAccessClient.getSessionManager();
+      if (!sessionManager) {
+        const msg = `Failed to get session manager`;
+        Logger.logError(loggerCategory, msg);
+        throw new BentleyError(BentleyStatus.ERROR, msg);
+      }
+      return sessionManager;
+    } else {
+      // No access client found, default to native session manager (assuming API key is provided)
+      if (this._settings.accessKey?.value) {
+        return new NativeGoogleMapsSessionManager(this._settings.accessKey.value);
+      } else {
+        const msg = `Missing GoogleMaps api key`;
+        Logger.logError(loggerCategory, msg);
+        throw new BentleyError(BentleyStatus.ERROR, msg);
+      }
+    }
+  }
+
+  protected createCreateSessionOptions(): GoogleMapsCreateSessionOptions {
     const layerPropertyKeys = this._settings.properties ? Object.keys(this._settings.properties) : undefined;
     if (layerPropertyKeys === undefined ||
         !layerPropertyKeys.includes("mapType") ||
@@ -114,16 +106,9 @@ export class GoogleMapsImageryProvider extends MapLayerImageryProvider {
     return createSessionOptions;
   }
 
-  // construct the Url from the desired Tile
-  public async constructUrl(row: number, column: number, level: number): Promise<string> {
-    const tmpUrl = urlTemplate.replace(levelToken, level.toString()).replace(columnToken, column.toString()).replace(rowToken, row.toString());
-    const obj = new URL(tmpUrl);
-    if (this._settings.accessKey ) {
-      obj.searchParams.append("key", this._settings.accessKey.value);
-    }
-
-    // We assume the 'session' param to be already part of the query parameters (checked in initialize)
-    return this.appendCustomParams(obj.toString());
+  // not used, see loadTile
+  public async constructUrl(_row: number, _column: number, _level: number): Promise<string> {
+    return "";
   }
 
   private async fetchAttributions(tiles: Set<Tile>): Promise<string[]> {
@@ -145,16 +130,18 @@ export class GoogleMapsImageryProvider extends MapLayerImageryProvider {
             cartoRect = rect;
         }
       }
-      if (cartoRect) {
+      if (cartoRect && this._activeSession) {
         try {
-          const viewportInfo = await GoogleMapsUtils.getViewportInfo({
-            rectangle: cartoRect,
-            session: this._settings.collectQueryParams().session,
-            key: this._settings.accessKey!.value,
-            zoom});
-          if (viewportInfo?.copyright) {
-            matchingAttributions.push(viewportInfo.copyright);
-          }
+           const url = this._activeSession.getViewportInfoUrl(cartoRect, zoom);
+            const request = new Request(url, {method: "GET"});
+            const response = await fetch (request);
+            if (response.ok) {
+              const json = await response.json();
+              const viewportInfo =  json as ViewportInfo;
+              if (viewportInfo?.copyright) {
+                matchingAttributions.push(viewportInfo.copyright);
+              }
+            }
         } catch (error:any) {
           Logger.logError(loggerCategory, `Error while loading viewport info: ${error?.message??"Unknown error"}`);
         }
@@ -176,16 +163,21 @@ export class GoogleMapsImageryProvider extends MapLayerImageryProvider {
     if (this._hadUnrecoverableError)
       return undefined;
 
+    if (this._activeSession === undefined || this._sessionOptions === undefined) {
+      Logger.logError(loggerCategory, `Session manager is not initialized`);
+      return undefined;
+    }
+
     try {
-      let tileUrl: string = await this.constructUrl(row, column, zoomLevel);
-      let tileResponse: Response = await this.makeTileRequest(tileUrl);
+      let tileUrl = this._activeSession.getTileUrl(row, column, zoomLevel);
+      let tileResponse: Response = await this.makeTileRequest(tileUrl.toString());
       if (!tileResponse.ok) {
-        if (tileResponse.headers.get("content-type")?.includes("application/json")) {
-          // Session might have expired, lets try to re-new it.
-          const isSessionCreated = await this.createSession();
-          if (isSessionCreated) {
-            tileUrl = await this.constructUrl(row, column, zoomLevel);
-            tileResponse = await this.makeTileRequest(tileUrl);
+        if (tileResponse.headers.get("content-type")?.includes("application/json") && this._sessionManager) {
+          try {
+            // Session might have expired, lets try to refresh it
+            this._activeSession = await this._sessionManager.createSession(this._sessionOptions);
+            tileUrl = this._activeSession.getTileUrl(row, column, zoomLevel);
+            tileResponse = await this.makeTileRequest(tileUrl.toString());
             if (!tileResponse.ok) {
               if (tileResponse.headers.get("content-type")?.includes("application/json")) {
                 await this.logJsonError(tileResponse);
@@ -195,7 +187,8 @@ export class GoogleMapsImageryProvider extends MapLayerImageryProvider {
               this._hadUnrecoverableError = true;   // Prevent from doing more invalid requests
               return undefined;
             }
-          } else {
+          }
+          catch {
             await this.logJsonError(tileResponse);
           }
         } else {

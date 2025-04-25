@@ -92,11 +92,8 @@ export interface GoogleMapsCreateSessionOptions {
     apiOptions?: string[];
 };
 
-/**
-* Structure representing a Google Maps session.
-* @beta
-*/
-export interface GoogleMapsSession {
+
+export interface GoogleMapsSessionData {
   /** A session token value that you must include in all of your Map Tiles API requests. */
   session: string;
 
@@ -154,6 +151,25 @@ export interface ViewportInfoRequestParams {
   /** Zoom level of the viewport */
   zoom: number;
 }
+
+/*
+* Google Maps session.
+* @beta
+*/
+export interface GoogleMapsSession {
+  getTileSize: () => number;
+  getTileUrl: (row: number, column: number, level: number) => URL;
+  getViewportInfoUrl (rectangle: MapCartoRectangle, zoomLevel: number): URL
+}
+
+/*
+* Google Maps session manager interface.
+* @beta
+*/
+export interface GoogleMapsSessionManager {
+  createSession: (sessionOptions: GoogleMapsCreateSessionOptions) => Promise<GoogleMapsSession>;
+}
+
 
 /**
  * Google Maps API

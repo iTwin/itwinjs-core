@@ -7,7 +7,7 @@ import { Logger } from "@itwin/core-bentley";
 import { ImageMapLayerProps, MapLayerProviderProperties } from "@itwin/core-common";
 import { IModelApp } from "@itwin/core-frontend";
 import { Angle } from "@itwin/core-geometry";
-import { GoogleMapsCreateSessionOptions, GoogleMapsSession, ViewportInfo, ViewportInfoRequestParams } from "../GoogleMaps/GoogleMaps.js";
+import { GoogleMapsCreateSessionOptions, GoogleMapsSessionData, ViewportInfo, ViewportInfoRequestParams } from "../GoogleMaps/GoogleMaps.js";
 import { GoogleMapsMapLayerFormat } from "../GoogleMaps/GoogleMapsImageryFormat.js";
 
 const loggerCategory = "MapLayersFormats.GoogleMaps";
@@ -21,7 +21,7 @@ export const GoogleMapsUtils = {
    * @param opts Options to create the session
    * @internal
   */
-  createSession: async (apiKey: string, opts: GoogleMapsCreateSessionOptions): Promise<GoogleMapsSession> => {
+  createSession: async (apiKey: string, opts: GoogleMapsCreateSessionOptions): Promise<GoogleMapsSessionData> => {
     const url = `https://tile.googleapis.com/v1/createSession?key=${apiKey}`;
     const request = new Request(url, {method: "POST", body: JSON.stringify(opts)});
     const response = await fetch (request);
