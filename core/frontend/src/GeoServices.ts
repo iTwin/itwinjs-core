@@ -17,7 +17,7 @@ import {
 } from "@itwin/core-common";
 import { IModelConnection } from "./IModelConnection";
 import { FrontendLoggerCategory } from "./common/FrontendLoggerCategory";
-import { IModelReadAPI, mapGeoCoordRequestRPCToIModelRead, mapGeoCoordResponseIModelReadToRPC, mapIModelCoordRequestRPCToIModelRead, mapIModelCoordResponseIModelReadToRPC } from "@itwin/imodelread-common";
+import { GeoCoordinatesResponse, IModelCoordinatesResponse, IModelReadAPI, mapGeoCoordExceptionToRPC, mapGeoCoordRequestRPCToIModelRead, mapGeoCoordResponseIModelReadToRPC, mapIModelCoordExceptionToRPC, mapIModelCoordRequestRPCToIModelRead, mapIModelCoordResponseIModelReadToRPC, NoDatumConverterError, NoGCSDefinedError } from "@itwin/imodelread-common";
 
 /** Options used to create a [[CoordinateConverter]].
  * @internal exported strictly for tests.
@@ -364,13 +364,41 @@ export class GeoServices {
       isIModelClosed: () => iModel.isClosed,
       toIModelCoords: async (request) => {
         const remappedRequest = mapIModelCoordRequestRPCToIModelRead(request);
-        const response = mapIModelCoordResponseIModelReadToRPC(await iModelReadAPI.getIModelCoordinatesFromGeoCoordinates(remappedRequest));
-        return response.iModelCoords;
+        let response: IModelCoordinatesResponse;
+        let remappedResponse: IModelCoordinatesResponseProps;
+        try{
+          response = await iModelReadAPI.getIModelCoordinatesFromGeoCoordinates(remappedRequest)
+          remappedResponse = mapIModelCoordResponseIModelReadToRPC(response);
+        }catch(error){
+          if (error instanceof NoGCSDefinedError) {
+            remappedResponse = mapIModelCoordExceptionToRPC(request.geoCoords.length, GeoCoordStatus.NoGCSDefined);
+          } else if (error instanceof NoDatumConverterError) {
+            remappedResponse = mapIModelCoordExceptionToRPC(request.geoCoords.length, GeoCoordStatus.NoDatumConverter);
+          } else {
+            throw error;
+          }
+        }
+
+        return remappedResponse.iModelCoords;
       },
       fromIModelCoords: async (request) => {
         const remappedRequest = mapGeoCoordRequestRPCToIModelRead(request);
-        const response = mapGeoCoordResponseIModelReadToRPC(await iModelReadAPI.getGeoCoordinatesFromIModelCoordinates(remappedRequest));
-        return response.geoCoords;
+        let response: GeoCoordinatesResponse;
+        let remappedResponse: GeoCoordinatesResponseProps;
+        try{
+          response = await iModelReadAPI.getGeoCoordinatesFromIModelCoordinates(remappedRequest)
+          remappedResponse = mapGeoCoordResponseIModelReadToRPC(response);
+        }catch(error){
+          if (error instanceof NoGCSDefinedError) {
+            remappedResponse = mapGeoCoordExceptionToRPC(request.iModelCoords.length, GeoCoordStatus.NoGCSDefined);
+          } else if (error instanceof NoDatumConverterError) {
+            remappedResponse = mapGeoCoordExceptionToRPC(request.iModelCoords.length, GeoCoordStatus.NoDatumConverter);
+          } else {
+            throw error;
+          }
+        }
+
+        return remappedResponse.geoCoords;
       },
     });
   }
