@@ -91,13 +91,7 @@ export class RegionMomentsXY extends NullGeometryHandler {
     this._activeMomentData = undefined;
     return momentData;
   }
-  /**
-   * Accumulate (as simple addition) products over each component of the parity region.
-   * * ASSUMPTIONS FOR ORIENTATION AND CONTAINMENT ISSUES:
-   *   * Largest area is outer.
-   *   * All others are interior (and not overlapping).
-   *   * Hence outer area signs must be positive -- negate all integrations as needed.
-   */
+  /** Accumulate integrals from origin to the components of the parity region. */
   public override handleParityRegion(region: ParityRegion): MomentData | undefined {
     const allChildMoments: MomentData[] = [];
     let maxAbsArea = 0.0;
@@ -129,7 +123,7 @@ export class RegionMomentsXY extends NullGeometryHandler {
     }
     return undefined;
   }
-  /** Accumulate (as simple addition) products over each component of the union region. */
+  /** Accumulate integrals from origin to the components of the union region. */
   public override handleUnionRegion(region: UnionRegion): MomentData | undefined {
     const summedMoments = MomentData.create();
     for (const child of region.children) {
