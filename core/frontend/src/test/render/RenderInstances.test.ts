@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { Point2d, Range3d, Transform } from "@itwin/core-geometry";
+import { Point2d, Point3d, Range3d, Transform } from "@itwin/core-geometry";
 import { RenderInstancesParamsBuilder } from "../../common/render/RenderInstancesParams";
 import { Id64 } from "@itwin/core-bentley";
 import { RenderInstancesParamsImpl } from "../../internal/render/RenderInstancesParamsImpl";
@@ -225,29 +225,25 @@ describe("RenderInstances", () => {
     const instancesBuilder = RenderInstancesParamsBuilder.create({ modelId });
     instancesBuilder.add({
       feature: "0x3",
-      transform: Transform.createTranslationXYZ(-1, 0, 0),
+      transform: Transform.createTranslationXYZ(-10, 0, 0),
     });
     instancesBuilder.add({
       feature: "0x4",
-      transform: Transform.createTranslationXYZ(1, 0, 0),
+      transform: Transform.createTranslationXYZ(10, 0, 0),
     });
     instancesBuilder.add({
       feature: "0x5",
-      transform: Transform.createTranslationXYZ(0, 1, 0),
+      transform: Transform.createTranslationXYZ(0, 10, 0),
     });
     instancesBuilder.add({
       feature: "0x6",
-      transform: Transform.createTranslationXYZ(0, -1, 0),
+      transform: Transform.createTranslationXYZ(0, -10, 0),
       symbology: { color: { r: 0, g: 0, b: 255 } },
     });
     const instances = IModelApp.renderSystem.createRenderInstances(instancesBuilder.finish())!;
     expect(instances[_featureTable]!.numFeatures).toEqual(4);
 
     let graphic = IModelApp.renderSystem.createGraphicFromTemplate({ template, instances });
-
-    const range = new Range3d();
-    graphic.unionRange(range);
-    expect(range.isNull).toBe(false);
 
     const branch = new GraphicBranch();
     branch.add(graphic);
@@ -314,6 +310,16 @@ describe("RenderInstances", () => {
     expect(instances).toBeDefined();
 
     let graphic = IModelApp.renderSystem.createGraphicFromTemplate({ template, instances });
+
+    const range = new Range3d();
+    graphic.unionRange(range);
+    expect(range.isNull).toBe(false);
+
+    //Using isAlmostEqual due to floating point errors
+    expect(range.low.isAlmostEqual(Point3d.create(-25, -25, 0)));
+    //Expect range.high.x to be 30 because the line is 5 pixels long in the x direction starting at 25
+    expect(range.high.isAlmostEqual(Point3d.create(30, 25, 0)));
+
     const branch = new GraphicBranch(false);
     branch.add(graphic);
     graphic = IModelApp.renderSystem.createBranch(branch, Transform.createTranslationXYZ(50, 50, 0));
