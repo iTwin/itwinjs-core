@@ -20,6 +20,7 @@ public;enum;BriefcaseStatus
 public;class;ByteStream
 public;enum;ChangeSetStatus
 public;type;CloneFunction
+public;function;compareArrays
 public;function;compareBooleans
 public;function;compareBooleansOrUndefined
 public;function;compareNumbers

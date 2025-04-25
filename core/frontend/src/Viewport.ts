@@ -1334,6 +1334,7 @@ export abstract class Viewport implements Disposable, TileUser {
       removals.push(settings.onAmbientOcclusionSettingsChanged.addListener(displayStyleChanged));
       removals.push(settings.onEnvironmentChanged.addListener(displayStyleChanged));
       removals.push(settings.onPlanProjectionSettingsChanged.addListener(displayStyleChanged));
+      removals.push(settings.onContoursChanged.addListener(displayStyleChanged));
     }
   }
 
