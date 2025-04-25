@@ -60,7 +60,7 @@ export class TextAnnotationStroker extends Stroker<TextAnnotationStrokerArgs> {
     this._builder.appendGeometryParamsChange(lowPriorityParams);
 
     if (annotation.frame)
-      this.appendFrame(annotation, layout);
+      this.createFrameGeometry(annotation, layout);
 
     if (debugSnapPoints && annotation.frame)
       this.debugSnapPoints(annotation.frame, dimensions, transform);
@@ -71,7 +71,8 @@ export class TextAnnotationStroker extends Stroker<TextAnnotationStrokerArgs> {
     return { format: "json", data: this._builder.geometryStream };
   }
 
-  private appendFrame(annotation: TextAnnotation, layout: TextBlockLayout): boolean {
+  // Return entries instead
+  private createFrameGeometry(annotation: TextAnnotation, layout: TextBlockLayout): boolean {
     const range = Range2d.fromJSON(layout.range);
     const transform = annotation.computeTransform(range);
     const frame = annotation.frame;
