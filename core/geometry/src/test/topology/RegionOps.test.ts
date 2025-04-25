@@ -6,6 +6,7 @@
 import * as fs from "fs";
 import { describe, expect, it } from "vitest";
 import { BezierCurve3d } from "../../bspline/BezierCurve3d";
+import { BSplineCurve3d } from "../../bspline/BSplineCurve";
 import { BSplineCurve3dH } from "../../bspline/BSplineCurve3dH";
 import { Arc3d } from "../../curve/Arc3d";
 import { BagOfCurves, CurveChain, CurveCollection } from "../../curve/CurveCollection";
@@ -21,9 +22,11 @@ import { LineSegment3d } from "../../curve/LineSegment3d";
 import { LineString3d } from "../../curve/LineString3d";
 import { Loop } from "../../curve/Loop";
 import { JointOptions, OffsetOptions } from "../../curve/OffsetOptions";
+import { ParityRegion } from "../../curve/ParityRegion";
 import { Path } from "../../curve/Path";
 import { RegionOps } from "../../curve/RegionOps";
 import { StrokeOptions } from "../../curve/StrokeOptions";
+import { UnionRegion } from "../../curve/UnionRegion";
 import { Geometry } from "../../Geometry";
 import { Angle } from "../../geometry3d/Angle";
 import { AngleSweep } from "../../geometry3d/AngleSweep";
@@ -47,10 +50,6 @@ import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 import { prettyPrint } from "../testFunctions";
 import { GraphChecker } from "./Graph.test";
-import { BSplineCurve3d } from "../../bspline/BSplineCurve";
-import { UnionRegion } from "../../curve/UnionRegion";
-import { ParityRegion } from "../../curve/ParityRegion";
-import { Ray3d } from "../../core-geometry";
 
 const diegoPathA = [
   {
@@ -341,14 +340,16 @@ describe("RegionOps", () => {
     let lineString = LineString3d.create([1, 1], [2, 1], [2, 2], [1, 2], [1, 1]);
     loop = Loop.create(lineString);
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, loop, dx);
-    let ray = RegionOps.centroidAreaNormal(loop)!;
-    let centroid = ray.origin;
-    GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, centroid, 0.1, dx);
-    ck.testDefined(ray, "ray defined for square");
-    ck.testPoint3d(centroid, expectedCentroid, "ray origin matches centroid for square");
-    ck.testVector3d(ray.direction, expectedNormal, "ray direction matches Z axis for square");
-    ck.testCoordinate(ray.a!, expectedArea, "ray.a matches area for square");
-
+    const ray = RegionOps.centroidAreaNormal(loop);
+    let centroid: Point3d;
+    if (ck.testDefined(ray, "computed centroid and normal") && ck.testDefined(ray.a, "computed area")) {
+      centroid = ray.origin;
+      GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, centroid, 0.1, dx);
+      ck.testDefined(ray, "ray defined for square");
+      ck.testPoint3d(centroid, expectedCentroid, "ray origin matches centroid for square");
+      ck.testVector3d(ray.direction, expectedNormal, "ray direction matches Z axis for square");
+      ck.testCoordinate(ray.a, expectedArea, "ray.a matches area for square");
+    }
     // square in 3d
     expectedCentroid = rotationTransform.multiplyPoint3d(Point3d.create(1.5, 1.5));
     expectedNormal = Vector3d.createFrom(rotationTransform.multiplyPoint3d(Point3d.create(0, 0, 1)));
@@ -357,12 +358,13 @@ describe("RegionOps", () => {
     loop = Loop.create(lineString).cloneTransformed(rotationTransform) as Loop;
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, loop, dx);
     RegionOps.centroidAreaNormal(loop, ray);
-    centroid = ray.origin;
-    ck.testDefined(ray, "ray defined for square in 3d");
-    ck.testPoint3d(centroid, expectedCentroid, "ray origin matches centroid for square in 3d");
-    ck.testVector3d(ray.direction, expectedNormal, "ray direction matches Z axis for square in 3d");
-    ck.testCoordinate(ray.a!, expectedArea, "ray.a matches area for square in 3d");
-
+    if (ck.testDefined(ray, "computed centroid and normal") && ck.testDefined(ray.a, "computed area")) {
+      centroid = ray.origin;
+      ck.testDefined(ray, "ray defined for square in 3d");
+      ck.testPoint3d(centroid, expectedCentroid, "ray origin matches centroid for square in 3d");
+      ck.testVector3d(ray.direction, expectedNormal, "ray direction matches Z axis for square in 3d");
+      ck.testCoordinate(ray.a, expectedArea, "ray.a matches area for square in 3d");
+    }
     // rectangle
     dx += 2;
     expectedCentroid = Point3d.create(2, 1.5);
@@ -372,13 +374,14 @@ describe("RegionOps", () => {
     loop = Loop.create(lineString);
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, loop, dx);
     RegionOps.centroidAreaNormal(loop, ray);
-    centroid = ray.origin;
-    GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, centroid, 0.1, dx);
-    ck.testDefined(ray, "ray defined for rectangle");
-    ck.testPoint3d(centroid, expectedCentroid, "ray origin matches centroid for rectangle");
-    ck.testVector3d(ray.direction, expectedNormal, "ray direction matches Z axis for rectangle");
-    ck.testCoordinate(ray.a!, expectedArea, "ray.a matches area for rectangle");
-
+    if (ck.testDefined(ray, "computed centroid and normal") && ck.testDefined(ray.a, "computed area")) {
+      centroid = ray.origin;
+      GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, centroid, 0.1, dx);
+      ck.testDefined(ray, "ray defined for rectangle");
+      ck.testPoint3d(centroid, expectedCentroid, "ray origin matches centroid for rectangle");
+      ck.testVector3d(ray.direction, expectedNormal, "ray direction matches Z axis for rectangle");
+      ck.testCoordinate(ray.a, expectedArea, "ray.a matches area for rectangle");
+    }
     // rectangle in 3d
     expectedCentroid = rotationTransform.multiplyPoint3d(Point3d.create(2, 1.5));
     expectedNormal = Vector3d.createFrom(rotationTransform.multiplyPoint3d(Point3d.create(0, 0, 1)));
@@ -387,13 +390,13 @@ describe("RegionOps", () => {
     loop = Loop.create(lineString).cloneTransformed(rotationTransform) as Loop;
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, loop, dx);
     RegionOps.centroidAreaNormal(loop, ray);
-    centroid = ray.origin;
-    ck.testDefined(ray, "ray defined for rectangle in 3d");
-    ck.testPoint3d(centroid, expectedCentroid, "ray origin matches centroid for rectangle in 3d");
-    ck.testVector3d(ray.direction, expectedNormal, "ray direction matches Z axis for rectangle in 3d");
-    ck.testCoordinate(ray.a!, expectedArea, "ray.a matches area for rectangle in 3d");
-
-    [Point3d.createZero(), Point3d.create(2, 1), Point3d.create(0.5, 0.5), Point3d.create(1, 2)]
+    if (ck.testDefined(ray, "computed centroid and normal") && ck.testDefined(ray.a, "computed area")) {
+      centroid = ray.origin;
+      ck.testDefined(ray, "ray defined for rectangle in 3d");
+      ck.testPoint3d(centroid, expectedCentroid, "ray origin matches centroid for rectangle in 3d");
+      ck.testVector3d(ray.direction, expectedNormal, "ray direction matches Z axis for rectangle in 3d");
+      ck.testCoordinate(ray.a, expectedArea, "ray.a matches area for rectangle in 3d");
+    }
 
     // dart
     dx += 4;
@@ -404,13 +407,14 @@ describe("RegionOps", () => {
     loop = Loop.create(lineString);
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, loop, dx);
     RegionOps.centroidAreaNormal(loop, ray);
-    centroid = ray.origin;
-    GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, centroid, 0.1, dx);
-    ck.testDefined(ray, "ray defined for dart");
-    ck.testPoint3d(centroid, expectedCentroid, "ray origin matches centroid for dart");
-    ck.testVector3d(ray.direction, expectedNormal, "ray direction matches Z axis for dart");
-    ck.testCoordinate(ray.a!, expectedArea, "ray.a matches area for dart");
-
+    if (ck.testDefined(ray, "computed centroid and normal") && ck.testDefined(ray.a, "computed area")) {
+      centroid = ray.origin;
+      GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, centroid, 0.1, dx);
+      ck.testDefined(ray, "ray defined for dart");
+      ck.testPoint3d(centroid, expectedCentroid, "ray origin matches centroid for dart");
+      ck.testVector3d(ray.direction, expectedNormal, "ray direction matches Z axis for dart");
+      ck.testCoordinate(ray.a, expectedArea, "ray.a matches area for dart");
+    }
     // dart in 3d
     expectedCentroid = rotationTransform.multiplyPoint3d(Point3d.create(0.6666666666666667, 0.6666666666666667));
     expectedNormal = Vector3d.createFrom(rotationTransform.multiplyPoint3d(Point3d.create(0, 0, 1)));
@@ -419,12 +423,13 @@ describe("RegionOps", () => {
     loop = Loop.create(lineString).cloneTransformed(rotationTransform) as Loop;
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, loop, dx);
     RegionOps.centroidAreaNormal(loop, ray);
-    centroid = ray.origin;
-    ck.testDefined(ray, "ray defined for dart in 3d");
-    ck.testPoint3d(centroid, expectedCentroid, "ray origin matches centroid for dart in 3d");
-    ck.testVector3d(ray.direction, expectedNormal, "ray direction matches Z axis for dart in 3d");
-    ck.testCoordinate(ray.a!, expectedArea, "ray.a matches area for dart in 3d");
-
+    if (ck.testDefined(ray, "computed centroid and normal") && ck.testDefined(ray.a, "computed area")) {
+      centroid = ray.origin;
+      ck.testDefined(ray, "ray defined for dart in 3d");
+      ck.testPoint3d(centroid, expectedCentroid, "ray origin matches centroid for dart in 3d");
+      ck.testVector3d(ray.direction, expectedNormal, "ray direction matches Z axis for dart in 3d");
+      ck.testCoordinate(ray.a, expectedArea, "ray.a matches area for dart in 3d");
+    }
     // circle
     dx += 3;
     expectedCentroid = Point3d.create(1, 2);
@@ -434,13 +439,14 @@ describe("RegionOps", () => {
     loop = Loop.create(arc);
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, loop, dx);
     RegionOps.centroidAreaNormal(loop, ray);
-    centroid = ray.origin;
-    GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, centroid, 0.1, dx);
-    ck.testDefined(ray, "ray defined for circle");
-    ck.testPoint3d(centroid, expectedCentroid, "ray origin matches centroid for circle");
-    ck.testVector3d(ray.direction, expectedNormal, "ray direction matches Z axis for circle");
-    ck.testCoordinate(ray.a!, expectedArea, "ray.a matches area for circle");
-
+    if (ck.testDefined(ray, "computed centroid and normal") && ck.testDefined(ray.a, "computed area")) {
+      centroid = ray.origin;
+      GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, centroid, 0.1, dx);
+      ck.testDefined(ray, "ray defined for circle");
+      ck.testPoint3d(centroid, expectedCentroid, "ray origin matches centroid for circle");
+      ck.testVector3d(ray.direction, expectedNormal, "ray direction matches Z axis for circle");
+      ck.testCoordinate(ray.a, expectedArea, "ray.a matches area for circle");
+    }
     // circle in 3d
     let center = Point3d.create(1, 2);
     expectedCentroid = rotationTransform.multiplyPoint3d(center);
@@ -450,12 +456,13 @@ describe("RegionOps", () => {
     loop = Loop.create(arc).cloneTransformed(rotationTransform) as Loop;
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, loop, dx);
     RegionOps.centroidAreaNormal(loop, ray);
-    centroid = ray.origin;
-    ck.testDefined(ray, "ray defined for circle in 3d");
-    ck.testPoint3d(centroid, expectedCentroid, "ray origin matches centroid for circle in 3d");
-    ck.testVector3d(ray.direction, expectedNormal, "ray direction matches Z axis for circle in 3d");
-    ck.testCoordinate(ray.a!, expectedArea, "ray.a matches area for circle in 3d");
-
+    if (ck.testDefined(ray, "computed centroid and normal") && ck.testDefined(ray.a, "computed area")) {
+      centroid = ray.origin;
+      ck.testDefined(ray, "ray defined for circle in 3d");
+      ck.testPoint3d(centroid, expectedCentroid, "ray origin matches centroid for circle in 3d");
+      ck.testVector3d(ray.direction, expectedNormal, "ray direction matches Z axis for circle in 3d");
+      ck.testCoordinate(ray.a, expectedArea, "ray.a matches area for circle in 3d");
+    }
     // ellipse
     dx += 5;
     expectedCentroid = Point3d.create(0, 1);
@@ -467,13 +474,14 @@ describe("RegionOps", () => {
     loop = Loop.create(arc);
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, loop, dx);
     RegionOps.centroidAreaNormal(loop, ray);
-    centroid = ray.origin;
-    GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, centroid, 0.1, dx);
-    ck.testDefined(ray, "ray defined for arc");
-    ck.testPoint3d(centroid, expectedCentroid, "ray origin matches centroid for arc");
-    ck.testVector3d(ray.direction, expectedNormal, "ray direction matches Z axis for arc");
-    ck.testCoordinate(ray.a!, expectedArea, "ray.a matches area for arc");
-
+    if (ck.testDefined(ray, "computed centroid and normal") && ck.testDefined(ray.a, "computed area")) {
+      centroid = ray.origin;
+      GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, centroid, 0.1, dx);
+      ck.testDefined(ray, "ray defined for arc");
+      ck.testPoint3d(centroid, expectedCentroid, "ray origin matches centroid for arc");
+      ck.testVector3d(ray.direction, expectedNormal, "ray direction matches Z axis for arc");
+      ck.testCoordinate(ray.a, expectedArea, "ray.a matches area for arc");
+    }
     // ellipse in 3d
     center = Point3d.create(0, 1);
     expectedCentroid = rotationTransform.multiplyPoint3d(center);
@@ -483,12 +491,13 @@ describe("RegionOps", () => {
     loop = Loop.create(arc).cloneTransformed(rotationTransform) as Loop;
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, loop, dx);
     RegionOps.centroidAreaNormal(loop, ray);
-    centroid = ray.origin;
-    ck.testDefined(ray, "ray defined for arc in 3d");
-    ck.testPoint3d(centroid, expectedCentroid, "ray origin matches centroid for arc in 3d");
-    ck.testVector3d(ray.direction, expectedNormal, "ray direction matches Z axis for arc in 3d");
-    ck.testCoordinate(ray.a!, expectedArea, "ray.a matches area for arc in 3d");
-
+    if (ck.testDefined(ray, "computed centroid and normal") && ck.testDefined(ray.a, "computed area")) {
+      centroid = ray.origin;
+      ck.testDefined(ray, "ray defined for arc in 3d");
+      ck.testPoint3d(centroid, expectedCentroid, "ray origin matches centroid for arc in 3d");
+      ck.testVector3d(ray.direction, expectedNormal, "ray direction matches Z axis for arc in 3d");
+      ck.testCoordinate(ray.a, expectedArea, "ray.a matches area for arc in 3d");
+    }
     // bspline0
     dx += 5;
     expectedCentroid = Point3d.create(-0.002899711646546525, 1.6846557155837842);
@@ -508,13 +517,14 @@ describe("RegionOps", () => {
     let loop0 = Loop.create(bspline0);
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, loop0, dx);
     RegionOps.centroidAreaNormal(loop0, ray);
-    centroid = ray.origin;
-    GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, centroid, 0.1, dx);
-    ck.testDefined(ray, "ray defined for bspline0");
-    ck.testPoint3d(centroid, expectedCentroid, "ray origin matches centroid for bspline0");
-    ck.testVector3d(ray.direction, expectedNormal, "ray direction matches Z axis for bspline0");
-    ck.testCoordinate(ray.a!, expectedArea, "ray.a matches area for bspline0");
-
+    if (ck.testDefined(ray, "computed centroid and normal") && ck.testDefined(ray.a, "computed area")) {
+      centroid = ray.origin;
+      GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, centroid, 0.1, dx);
+      ck.testDefined(ray, "ray defined for bspline0");
+      ck.testPoint3d(centroid, expectedCentroid, "ray origin matches centroid for bspline0");
+      ck.testVector3d(ray.direction, expectedNormal, "ray direction matches Z axis for bspline0");
+      ck.testCoordinate(ray.a, expectedArea, "ray.a matches area for bspline0");
+    }
     // bspline0 in 3d
     expectedCentroid = rotationTransform.multiplyPoint3d(Point3d.create(-0.002899711646546525, 1.6846557155837842));
     expectedNormal = Vector3d.createFrom(rotationTransform.multiplyPoint3d(Point3d.create(0, 0, -1)));
@@ -522,12 +532,13 @@ describe("RegionOps", () => {
     loop0 = Loop.create(bspline0).cloneTransformed(rotationTransform) as Loop;
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, loop0, dx);
     RegionOps.centroidAreaNormal(loop0, ray);
-    centroid = ray.origin;
-    ck.testDefined(ray, "ray defined for bspline0 in 3d");
-    ck.testPoint3d(centroid, expectedCentroid, "ray origin matches centroid for bspline0 in 3d");
-    ck.testVector3d(ray.direction, expectedNormal, "ray direction matches Z axis for bspline0 in 3d");
-    ck.testCoordinate(ray.a!, expectedArea, "ray.a matches area for bspline0 in 3d");
-
+    if (ck.testDefined(ray, "computed centroid and normal") && ck.testDefined(ray.a, "computed area")) {
+      centroid = ray.origin;
+      ck.testDefined(ray, "ray defined for bspline0 in 3d");
+      ck.testPoint3d(centroid, expectedCentroid, "ray origin matches centroid for bspline0 in 3d");
+      ck.testVector3d(ray.direction, expectedNormal, "ray direction matches Z axis for bspline0 in 3d");
+      ck.testCoordinate(ray.a, expectedArea, "ray.a matches area for bspline0 in 3d");
+    }
     // bspline1
     dx += 2;
     expectedCentroid = Point3d.create(1.238143022179664, 1.2381197066333935);
@@ -545,13 +556,14 @@ describe("RegionOps", () => {
     let loop1 = Loop.create(bspline1);
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, loop1, dx);
     RegionOps.centroidAreaNormal(loop1, ray);
-    centroid = ray.origin;
-    GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, centroid, 0.1, dx);
-    ck.testDefined(ray, "ray defined for bspline1");
-    ck.testPoint3d(centroid, expectedCentroid, "ray origin matches centroid for bspline1");
-    ck.testVector3d(ray.direction, expectedNormal, "ray direction matches Z axis for bspline1");
-    ck.testCoordinate(ray.a!, expectedArea, "ray.a matches area for bspline1");
-
+    if (ck.testDefined(ray, "computed centroid and normal") && ck.testDefined(ray.a, "computed area")) {
+      centroid = ray.origin;
+      GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, centroid, 0.1, dx);
+      ck.testDefined(ray, "ray defined for bspline1");
+      ck.testPoint3d(centroid, expectedCentroid, "ray origin matches centroid for bspline1");
+      ck.testVector3d(ray.direction, expectedNormal, "ray direction matches Z axis for bspline1");
+      ck.testCoordinate(ray.a, expectedArea, "ray.a matches area for bspline1");
+    }
     // bspline1 in 3d
     expectedCentroid = rotationTransform.multiplyPoint3d(Point3d.create(1.238143022179664, 1.2381197066333935));
     expectedNormal = Vector3d.createFrom(rotationTransform.multiplyPoint3d(Point3d.create(0, 0, -1)));
@@ -559,12 +571,13 @@ describe("RegionOps", () => {
     loop1 = Loop.create(bspline1).cloneTransformed(rotationTransform) as Loop;
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, loop1, dx);
     RegionOps.centroidAreaNormal(loop1, ray);
-    centroid = ray.origin;
-    ck.testDefined(ray, "ray defined for bspline1 in 3d");
-    ck.testPoint3d(centroid, expectedCentroid, "ray origin matches centroid for bspline1 in 3d");
-    ck.testVector3d(ray.direction, expectedNormal, "ray direction matches Z axis for bspline1 in 3d");
-    ck.testCoordinate(ray.a!, expectedArea, "ray.a matches area for bspline1 in 3d");
-
+    if (ck.testDefined(ray, "computed centroid and normal") && ck.testDefined(ray.a, "computed area")) {
+      centroid = ray.origin;
+      ck.testDefined(ray, "ray defined for bspline1 in 3d");
+      ck.testPoint3d(centroid, expectedCentroid, "ray origin matches centroid for bspline1 in 3d");
+      ck.testVector3d(ray.direction, expectedNormal, "ray direction matches Z axis for bspline1 in 3d");
+      ck.testCoordinate(ray.a, expectedArea, "ray.a matches area for bspline1 in 3d");
+    }
     // loop0 with multiple children
     dx += 3;
     expectedCentroid = Point3d.create(1, 1);
@@ -577,17 +590,18 @@ describe("RegionOps", () => {
     let arc1 = Arc3d.create(
       expectedCentroid, Vector3d.create(1, 0), Vector3d.create(0, 1), AngleSweep.createStartEndDegrees(180, 270),
     );
-    let linestring1 = LineString3d.create([1, 0], [2, 0], [2, 1]);
+    const linestring1 = LineString3d.create([1, 0], [2, 0], [2, 1]);
     loop0 = Loop.create(arc0, linestring0, arc1, linestring1);
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, loop0, dx);
     RegionOps.centroidAreaNormal(loop0, ray);
-    centroid = ray.origin;
-    GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, centroid, 0.1, dx);
-    ck.testDefined(ray, "ray defined for loop0");
-    ck.testPoint3d(centroid, expectedCentroid, "ray origin matches centroid for loop0");
-    ck.testVector3d(ray.direction, expectedNormal, "ray direction matches Z axis for loop0");
-    ck.testCoordinate(ray.a!, expectedArea, "ray.a matches area for loop0");
-
+    if (ck.testDefined(ray, "computed centroid and normal") && ck.testDefined(ray.a, "computed area")) {
+      centroid = ray.origin;
+      GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, centroid, 0.1, dx);
+      ck.testDefined(ray, "ray defined for loop0");
+      ck.testPoint3d(centroid, expectedCentroid, "ray origin matches centroid for loop0");
+      ck.testVector3d(ray.direction, expectedNormal, "ray direction matches Z axis for loop0");
+      ck.testCoordinate(ray.a, expectedArea, "ray.a matches area for loop0");
+    }
     // loop0 with multiple children in 3d
     center = Point3d.create(1, 1);
     expectedCentroid = rotationTransform.multiplyPoint3d(center);
@@ -596,12 +610,13 @@ describe("RegionOps", () => {
     loop0 = Loop.create(arc0, linestring0, arc1, linestring1).cloneTransformed(rotationTransform) as Loop;
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, loop0, dx);
     RegionOps.centroidAreaNormal(loop0, ray);
-    centroid = ray.origin;
-    ck.testDefined(ray, "ray defined for loop0 in 3d");
-    ck.testPoint3d(centroid, expectedCentroid, "ray origin matches centroid for loop0 in 3d");
-    ck.testVector3d(ray.direction, expectedNormal, "ray direction matches Z axis for loop0 in 3d");
-    ck.testCoordinate(ray.a!, expectedArea, "ray.a matches area for loop0 in 3d");
-
+    if (ck.testDefined(ray, "computed centroid and normal") && ck.testDefined(ray.a, "computed area")) {
+      centroid = ray.origin;
+      ck.testDefined(ray, "ray defined for loop0 in 3d");
+      ck.testPoint3d(centroid, expectedCentroid, "ray origin matches centroid for loop0 in 3d");
+      ck.testVector3d(ray.direction, expectedNormal, "ray direction matches Z axis for loop0 in 3d");
+      ck.testCoordinate(ray.a, expectedArea, "ray.a matches area for loop0 in 3d");
+    }
     // loop1 with multiple children
     dx += 4;
     expectedCentroid = Point3d.create(1, 1);
@@ -622,13 +637,14 @@ describe("RegionOps", () => {
     loop1 = Loop.create(arc0, arc1, arc2, arc3);
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, loop1, dx);
     RegionOps.centroidAreaNormal(loop1, ray);
-    centroid = ray.origin;
-    GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, centroid, 0.1, dx);
-    ck.testDefined(ray, "ray defined for loop1");
-    ck.testPoint3d(centroid, expectedCentroid, "ray origin matches centroid for loop1");
-    ck.testVector3d(ray.direction, expectedNormal, "ray direction matches Z axis for loop1");
-    ck.testCoordinate(ray.a!, expectedArea, "ray.a matches area for loop1");
-
+    if (ck.testDefined(ray, "computed centroid and normal") && ck.testDefined(ray.a, "computed area")) {
+      centroid = ray.origin;
+      GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, centroid, 0.1, dx);
+      ck.testDefined(ray, "ray defined for loop1");
+      ck.testPoint3d(centroid, expectedCentroid, "ray origin matches centroid for loop1");
+      ck.testVector3d(ray.direction, expectedNormal, "ray direction matches Z axis for loop1");
+      ck.testCoordinate(ray.a, expectedArea, "ray.a matches area for loop1");
+    }
     // loop1 with multiple children in 3d
     center = Point3d.create(1, 1);
     expectedCentroid = rotationTransform.multiplyPoint3d(center);
@@ -637,12 +653,13 @@ describe("RegionOps", () => {
     loop1 = Loop.create(arc0, arc1, arc2, arc3).cloneTransformed(rotationTransform) as Loop;
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, loop1, dx);
     RegionOps.centroidAreaNormal(loop1, ray);
-    centroid = ray.origin;
-    ck.testDefined(ray, "ray defined for loop1 in 3d");
-    ck.testPoint3d(centroid, expectedCentroid, "ray origin matches centroid for loop1 in 3d");
-    ck.testVector3d(ray.direction, expectedNormal, "ray direction matches Z axis for loop1 in 3d");
-    ck.testCoordinate(ray.a!, expectedArea, "ray.a matches area for loop1 in 3d");
-
+    if (ck.testDefined(ray, "computed centroid and normal") && ck.testDefined(ray.a, "computed area")) {
+      centroid = ray.origin;
+      ck.testDefined(ray, "ray defined for loop1 in 3d");
+      ck.testPoint3d(centroid, expectedCentroid, "ray origin matches centroid for loop1 in 3d");
+      ck.testVector3d(ray.direction, expectedNormal, "ray direction matches Z axis for loop1 in 3d");
+      ck.testCoordinate(ray.a, expectedArea, "ray.a matches area for loop1 in 3d");
+    }
     // loop2 with multiple children
     dx += 5;
     expectedCentroid = Point3d.create(0.9510277451111325, -0.02140759703854831);
@@ -655,13 +672,14 @@ describe("RegionOps", () => {
     let loop2 = Loop.create(arc0, linestring0);
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, loop2, dx);
     RegionOps.centroidAreaNormal(loop2, ray);
-    centroid = ray.origin;
-    GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, centroid, 0.1, dx);
-    ck.testDefined(ray, "ray defined for loop2");
-    ck.testPoint3d(centroid, expectedCentroid, "ray origin matches centroid for loop2");
-    ck.testVector3d(ray.direction, expectedNormal, "ray direction matches Z axis for loop2");
-    ck.testCoordinate(ray.a!, expectedArea, "ray.a matches area for loop2");
-
+    if (ck.testDefined(ray, "computed centroid and normal") && ck.testDefined(ray.a, "computed area")) {
+      centroid = ray.origin;
+      GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, centroid, 0.1, dx);
+      ck.testDefined(ray, "ray defined for loop2");
+      ck.testPoint3d(centroid, expectedCentroid, "ray origin matches centroid for loop2");
+      ck.testVector3d(ray.direction, expectedNormal, "ray direction matches Z axis for loop2");
+      ck.testCoordinate(ray.a, expectedArea, "ray.a matches area for loop2");
+    }
     // loop2 with multiple children in 3d
     center = Point3d.create(0.9510277451111325, -0.02140759703854831);
     expectedCentroid = rotationTransform.multiplyPoint3d(center);
@@ -670,12 +688,13 @@ describe("RegionOps", () => {
     loop2 = Loop.create(arc0, linestring0).cloneTransformed(rotationTransform) as Loop;
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, loop2, dx);
     RegionOps.centroidAreaNormal(loop2, ray);
-    centroid = ray.origin;
-    ck.testDefined(ray, "ray defined for loop2 in 3d");
-    ck.testPoint3d(centroid, expectedCentroid, "ray origin matches centroid for loop2 in 3d");
-    ck.testVector3d(ray.direction, expectedNormal, "ray direction matches Z axis for loop2 in 3d");
-    ck.testCoordinate(ray.a!, expectedArea, "ray.a matches area for loop2 in 3d");
-
+    if (ck.testDefined(ray, "computed centroid and normal") && ck.testDefined(ray.a, "computed area")) {
+      centroid = ray.origin;
+      ck.testDefined(ray, "ray defined for loop2 in 3d");
+      ck.testPoint3d(centroid, expectedCentroid, "ray origin matches centroid for loop2 in 3d");
+      ck.testVector3d(ray.direction, expectedNormal, "ray direction matches Z axis for loop2 in 3d");
+      ck.testCoordinate(ray.a, expectedArea, "ray.a matches area for loop2 in 3d");
+    }
     // union region
     dx += 5;
     expectedCentroid = Point3d.create(0.5, 1);
@@ -691,14 +710,15 @@ describe("RegionOps", () => {
     const unionRegion = UnionRegion.create(loop0, loop1, loop2);
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, unionRegion, dx);
     RegionOps.centroidAreaNormal(unionRegion, ray);
-    centroid = ray.origin;
-    GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, centroid, 0.1, dx);
-    ck.testDefined(ray, "ray defined for union region");
-    // TODO: fix via https://github.com/iTwin/itwinjs-backlog/issues/1459
-    // ck.testPoint3d(centroid, expectedCentroid, "ray origin matches centroid for union region");
-    ck.testVector3d(ray.direction, expectedNormal, "ray direction matches Z axis for union region");
-    // ck.testCoordinate(ray.a!, expectedArea, "ray.a matches area for union region");
-
+    if (ck.testDefined(ray, "computed centroid and normal") && ck.testDefined(ray.a, "computed area")) {
+      centroid = ray.origin;
+      GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, centroid, 0.1, dx);
+      ck.testDefined(ray, "ray defined for union region");
+      // TODO: fix via https://github.com/iTwin/itwinjs-backlog/issues/1459
+      // ck.testPoint3d(centroid, expectedCentroid, "ray origin matches centroid for union region");
+      ck.testVector3d(ray.direction, expectedNormal, "ray direction matches Z axis for union region");
+      // ck.testCoordinate(ray.a, expectedArea, "ray.a matches area for union region");
+    }
     // parity region
     dx += 4;
     expectedCentroid = Point3d.create(0.5, 1);
@@ -707,14 +727,15 @@ describe("RegionOps", () => {
     const parityRegion = ParityRegion.create(loop0, loop1);
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, parityRegion, dx);
     RegionOps.centroidAreaNormal(parityRegion, ray);
-    centroid = ray.origin;
-    GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, centroid, 0.1, dx);
-    ck.testDefined(ray, "ray defined for parity region");
-    // TODO: fix via https://github.com/iTwin/itwinjs-backlog/issues/1459
-    // ck.testPoint3d(centroid, expectedCentroid, "ray origin matches centroid for parity region");
-    ck.testVector3d(ray.direction, expectedNormal, "ray direction matches Z axis for parity region");
-    // ck.testCoordinate(ray.a!, expectedArea, "ray.a matches area for parity region");
-
+    if (ck.testDefined(ray, "computed centroid and normal") && ck.testDefined(ray.a, "computed area")) {
+      centroid = ray.origin;
+      GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, centroid, 0.1, dx);
+      ck.testDefined(ray, "ray defined for parity region");
+      // TODO: fix via https://github.com/iTwin/itwinjs-backlog/issues/1459
+      // ck.testPoint3d(centroid, expectedCentroid, "ray origin matches centroid for parity region");
+      ck.testVector3d(ray.direction, expectedNormal, "ray direction matches Z axis for parity region");
+      // ck.testCoordinate(ray.a, expectedArea, "ray.a matches area for parity region");
+    }
     GeometryCoreTestIO.saveGeometry(allGeometry, "RegionOps", "centroidAreaNormal");
     expect(ck.getNumErrors()).toBe(0);
   });
