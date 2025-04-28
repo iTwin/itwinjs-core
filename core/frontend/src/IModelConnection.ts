@@ -35,6 +35,9 @@ import { Tiles } from "./Tiles";
 import { ViewState } from "./ViewState";
 import { _requestSnap } from "./common/internal/Symbols";
 import { IpcApp } from "./IpcApp";
+import { SchemaContext } from "@itwin/ecschema-metadata";
+import { ECSchemaRpcLocater } from '@itwin/ecschema-rpcinterface-common';
+
 
 const loggerCategory: string = FrontendLoggerCategory.IModelConnection;
 
@@ -156,6 +159,8 @@ export abstract class IModelConnection extends IModel {
    * @deprecated in 5.0.0. If you need font Ids on the front-end for some reason, write an Ipc method that queries [IModelDb.fonts]($backend).
    */
   public fontMap?: FontMap; // eslint-disable-line @typescript-eslint/no-deprecated
+
+  private _schemaContext?: SchemaContext;
 
   /** Load the FontMap for this IModelConnection.
    * @returns Returns a Promise<FontMap> that is fulfilled when the FontMap member of this IModelConnection is valid.
@@ -611,6 +616,26 @@ export abstract class IModelConnection extends IModel {
       }).catch((_error) => this._projectCenterAltitude = 0.0);
     }
     return ("number" === typeof this._projectCenterAltitude) ? this._projectCenterAltitude : undefined;
+  }
+
+  /**
+   * Gets the context that allows accessing the metadata (see `@itwin/ecschema-metadata` package) of this iModel.
+   * The context is created lazily when this property is accessed for the first time, with an `ECSchemaRpcLocater` registered as a fallback locater, enabling users to register their own locater that'd take more priority.
+   * This means to correctly access schema context, client-side applications must register `ECSchemaRpcInterface` following instructions for [RPC configuration]($docs/learning/rpcinterface/#client-side-configuration).
+   * Server-side applications would also [configure RPC]($docs/learning/rpcinterface/#server-side-configuration) as needed.
+   *
+   * @note While a `BlankConnection` returns a valid `schemaContext`, it has an invalid locater registered by default, and will throw an error when trying to call it's methods.
+   * @beta
+   */
+  public get schemaContext(): SchemaContext {
+    if (this._schemaContext === undefined) {
+      const context = new SchemaContext();
+      const locater = new ECSchemaRpcLocater(this._getRpcProps());
+      context.addFallbackLocater(locater);
+      this._schemaContext = context;
+    }
+
+    return this._schemaContext;
   }
 }
 
