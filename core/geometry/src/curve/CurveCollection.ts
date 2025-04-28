@@ -263,6 +263,19 @@ export abstract class CurveCollection extends GeometryQuery {
   public projectedParameterRange(ray: Vector3d | Ray3d, lowHigh?: Range1d): Range1d | undefined {
     return PlaneAltitudeRangeContext.findExtremeFractionsAlongDirection(this, ray, lowHigh);
   }
+  /** Return the immediate parent of the input curve in the instance, or undefined if it is not a descendant. */
+  public findParentOfDescendant(descendant: AnyCurve): CurveCollection | undefined {
+    for (const child of this.children) {
+      if (child === descendant)
+        return this;
+      if (child instanceof CurveCollection) {
+        const parent = child.findParentOfDescendant(descendant);
+        if (parent)
+          return parent;
+      }
+    }
+    return undefined;
+  };
 }
 
 /**

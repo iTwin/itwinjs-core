@@ -1575,6 +1575,7 @@ export abstract class CurveCollection extends GeometryQuery {
     abstract readonly curveCollectionType: CurveCollectionType;
     abstract dgnBoundaryType(): number;
     extendRange(rangeToExtend: Range3d, transform?: Transform): void;
+    findParentOfDescendant(descendant: AnyCurve): CurveCollection | undefined;
     readonly geometryCategory = "curveCollection";
     abstract getChild(i: number): AnyCurve | undefined;
     isAnyRegion(): this is AnyRegion;
