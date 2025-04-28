@@ -80,9 +80,8 @@ await $`mkdir ${incomingPath}`
 // find the latest release branch, and make that the target for the changelogs
 let branchVersions = await $`git branch -a --list "origin/release/[0-9]*.[0-9]*.x" | sed "s/  remotes\\/origin\\/release\\///"`;
 branchVersions = String(branchVersions).split("\n");
-// let targetBranch = findLargestVersion(branchVersions); UNCOMMENT
-let targetBranch = 'kacy/test-cherry-pick-changelogs'//test1
-//targetBranch = `origin/release/${targetBranch}`; UNCOMMENT
+let targetBranch = findLargestVersion(branchVersions);
+targetBranch = `origin/release/${targetBranch}`;
 let currentBranch = await $`git branch --show-current`;
 // the version in the commit message can be extracted from the latest commit with commit message starting with "X.X.X" (except X.X.X-dev.X)
 let commitMessage = await $`git log --grep="^[0-9]\\+\\.[0-9]\\+\\.[0-9]\\+[^-]*$" -n 1 --pretty=format:%s`;
@@ -102,7 +101,7 @@ console.log(`commit msg: ${commitMessage}`);
 
 if (targetBranch === `origin/${currentBranch}`) {
   console.log("The current branch is the latest release, so the target will be master branch")
-  targetBranch = 'kacy/test-cherry-pick-changelogs'
+  targetBranch = 'master'
 } else {
   console.log(`The current branch is ${currentBranch}, so the target will be ${targetBranch} branch`)
 }
@@ -140,18 +139,7 @@ const targetFiles = allTargetFiles.filter((file) => {
 fixChangeLogs(targetFiles);
 
 // copy changelogs back to proper file paths and convert names back to: CHANGELOG.json
-console.log("Starting to copy changelog files..."); //test1
-
 await $`find ./temp-target-changelogs/ -type f -name "*CHANGELOG.json" -exec sh -c 'cp "{}" "$(echo "{}" | sed "s|temp-target-changelogs/\\(.*\\)_|./\\1/|; s|_|/|g")"' \\;`;
-console.log("Finished copying changelog files. Checking for any files in temp folders...");//test1
-const tempFilesRemaining = await $`git ls-files --others --exclude-standard ./temp-target-changelogs`; //test1
-
-//test1 If the temp files are still there (untracked), log a warning
-if (tempFilesRemaining && tempFilesRemaining.length > 0) {
-  console.log("Warning: Some changelog files remain untracked in the temp branch (they were not successfully copied):\n", tempFilesRemaining);
-} else {
-  console.log("No untracked files in the temp branch. All files copied successfully.");
-}
 // delete temps
 await $`rm -r ${targetPath}`;
 await $`rm -r ${incomingPath}`;
@@ -172,12 +160,12 @@ await $`rush publish --regenerate-changelogs`;
 *********************************************************************/
 // await $`git checkout -b finalize-release-X.X.X`;
 // targetBranch = "finalize-release-X.X.X"
-// await $`git add .`;
-// await $`git commit -m "${commitMessage} Changelogs"`;
-// await $`rush change --bulk --message "" --bump-type none`;
-// await $`git add .`;
-// await $`git commit --amend --no-edit`;
-// await $`git push origin HEAD:${targetBranch}`;
+await $`git add .`;
+await $`git commit -m "${commitMessage} Changelogs"`;
+await $`rush change --bulk --message "" --bump-type none`;
+await $`git add .`;
+await $`git commit --amend --no-edit`;
+await $`git push origin HEAD:${targetBranch}`;
 
 
 // Tests:
