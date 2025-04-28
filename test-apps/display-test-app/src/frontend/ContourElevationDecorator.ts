@@ -11,11 +11,11 @@ function compareContours(lhs: ContourHit, rhs: ContourHit): number {
   return lhs.elevation - rhs.elevation || compareBooleans(lhs.isMajor, rhs.isMajor) || lhs.group.compare(rhs.group);
 }
 
-function getNeighborIndices(origin: XAndY, pixels: XAndY[]): number[] {
+function getNeighborIndices(origin: XAndY, pixels: Array<XAndY | undefined>): number[] {
   const neighbors = [];
   for (let i = 0; i < pixels.length; i++) {
     const pixel = pixels[i];
-    if (pixel !== origin && Math.abs(pixel.x - origin.x) <= 1 && Math.abs(pixel.y - origin.y) <= 1) {
+    if (pixel && pixel !== origin && Math.abs(pixel.x - origin.x) <= 1 && Math.abs(pixel.y - origin.y) <= 1) {
       neighbors.push(i);
     }
   }
@@ -38,12 +38,17 @@ class ContourLine {
   }
 }
 
-function populateLine(line: ContourLine, originIndex: number, pixels: XAndY[]): void {
+function populateLine(line: ContourLine, originIndex: number, pixels: Array<XAndY | undefined>): void {
   if (pixels.length === 0) {
     return;
   }
 
-  const origin = pixels.splice(originIndex)[0];
+  const origin = pixels[originIndex];
+  if (!origin) {
+    return;
+  }
+
+  pixels[originIndex] = undefined;
   line.add(origin);
   const neighbors = getNeighborIndices(origin, pixels);
   for (const neighbor of neighbors) {
@@ -51,10 +56,11 @@ function populateLine(line: ContourLine, originIndex: number, pixels: XAndY[]): 
   }
 }
 
-function bucketLines(lines: ContourLine[], contour: ContourHit, pixels: XAndY[], minLineLength: number): void {
+function bucketLines(lines: ContourLine[], contour: ContourHit, pixels: Array<XAndY | undefined>, minLineLength: number): void {
   while(pixels.length > 0) {
     const line = new ContourLine(contour);
     populateLine(line, 0, pixels);
+    pixels = pixels.filter((x) => undefined !== x);
     if (line.points.length >= minLineLength) {
       lines.push(line);
     }
@@ -80,7 +86,7 @@ function bucketContours(pixels: Pixel.Buffer, width: number, height: number): Di
   return buckets;
 }
 
-function readContours(viewport: Viewport, minLineLength = 2): ContourLine[] {
+function readContours(viewport: Viewport, minLineLength = 150): ContourLine[] {
   const lines: ContourLine[] = [];
   const rect = viewport.viewRect;
   viewport.readPixels(rect, Pixel.Selector.Contours, (pixels) => {
@@ -105,7 +111,8 @@ class ContourElevationDecorator implements Decorator {
     }
 
     const lines = readContours(vp);
-    console.log(JSON.stringify(lines));
+    // const debug = lines.map((x) => x.points.length);
+    // console.log(JSON.stringify(debug));
   }
 }
 
