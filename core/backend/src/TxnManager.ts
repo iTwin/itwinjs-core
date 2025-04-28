@@ -466,6 +466,7 @@ export class TxnManager {
 
   /** @internal */
   protected _onChangesApplied() {
+    this._iModel.clearCaches();
     ChangedEntitiesProc.process(this._iModel, this);
     this.onChangesApplied.raiseEvent();
     IpcHost.notifyTxns(this._iModel, "notifyChangesApplied");
