@@ -89,7 +89,8 @@ export class BatchedTileTree extends TileTree {
       tile.drawGraphics(args);
 
     args.drawGraphics();
-    this._layerHandler.collectClassifierGraphics(args, tiles);
+    if (args.shouldCollectClassifierGraphics)
+      this._layerHandler.collectClassifierGraphics(args, tiles);
   }
 
   public override prune(): void {
