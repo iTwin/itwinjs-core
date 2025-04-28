@@ -14,7 +14,7 @@ import { EntityClass, Property, SchemaItemKey } from "@itwin/ecschema-metadata";
 import { _nativeDb } from "./internal/Symbols";
 
 /** Represents a row returned by an ECSql query. The row is returned as a map of property names to values.
- * ECSqlRows are returned by [[readInstance]] and represent raw instances Entities before they are deserialized during a read.
+ * ECSqlRow has same schema as declared in ECSchema for the class and similar to if ECSQL SELECT * FROM <schema>:<class> were executed.
  * @beta */
 export interface ECSqlRow {
   [key: string]: any
@@ -149,7 +149,7 @@ export class Entity {
     Object.keys(props.row)
       .filter((propertyName) => customHandledProperties.find((val) => val.propertyName === propertyName) === undefined)
       .forEach((propertyName) => (enProps as ECSqlRow)[propertyName] = props.row[propertyName]
-    );
+      );
     // Handles custom relClassNames to use '.' instead of ':'
     Object.keys(enProps).forEach((propertyName) => {
       if ((enProps as ECSqlRow)[propertyName].relClassName !== undefined && propertyName !== "modeledElement" && propertyName !== "parentModel") {
