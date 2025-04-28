@@ -52,4 +52,6 @@ export class GraphicsCollectorDrawArgs extends TileDrawArgs {
 
     return new GraphicsCollectorDrawArgs(planes, worldToViewMap, collector, args);
   }
+
+  public override get shouldCollectClassifierGraphics(): boolean { return false; }
 }
