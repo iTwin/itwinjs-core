@@ -108,6 +108,8 @@ export class IModelTile extends Tile {
       return content;
 
     const sizeMultiplier = this.hasSizeMultiplier ? this.sizeMultiplier : undefined;
+
+    const ecefTransform = this.tree.iModel.isGeoLocated ? this.tree.iModel.getEcefTransform() : Transform.createIdentity();
     try {
       content = await this.iModelTree.decoder.decode({
         stream: streamBuffer,
@@ -116,7 +118,7 @@ export class IModelTile extends Tile {
         isCanceled,
         sizeMultiplier,
         tileData: {
-          ecefTransform: this.tree.iModel.ecefLocation?.getTransform() ?? Transform.createIdentity(),
+          ecefTransform,
           range: this.range,
           layerClassifiers: this.tree.layerHandler?.layerClassifiers,
         },
