@@ -46,6 +46,7 @@ describe("SnapshotDb.refreshContainerForRpc", () => {
     restartDefaultTxn: () => { },
     closeFile: () => { },
     getFilePath: () => "fakeFilePath",
+    clearECDbCache: () => { },
   };
 
   it("should restart default txn after inactivity", async () => {

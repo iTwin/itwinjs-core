@@ -518,61 +518,63 @@ export class PolygonOps {
     return s;
   }
   /**
-   * Return a Ray3d with (assuming the polygon is planar and not self-intersecting):
-   * * `origin` at the centroid of the (3D) polygon,
-   * * `direction` is the unit vector perpendicular to the plane,
-   * * `a` is the area.
-   * @param points
+   * Return a [[Ray3d]] with:
+   * * `origin` is the centroid of the polygon,
+   * * `direction` is a unit vector perpendicular to the polygon plane,
+   * * `a` is the polygon area.
+   * @param points the polygon vertices in order. Points can lie in any plane. First and last point do not have to be equal.
+   * @param result optional pre-allocated result to populate and return.
    */
-  public static centroidAreaNormal(points: IndexedXYZCollection | Point3d[]): Ray3d | undefined {
+  public static centroidAreaNormal(points: IndexedXYZCollection | Point3d[], result?: Ray3d): Ray3d | undefined {
     if (Array.isArray(points)) {
       const carrier = new Point3dArrayCarrier(points);
-      return this.centroidAreaNormal(carrier);
+      return this.centroidAreaNormal(carrier, result);
     }
     const n = points.length;
     if (n === 3) {
-      const normal = points.crossProductIndexIndexIndex(0, 1, 2)!;
+      const normal = points.crossProductIndexIndexIndex(0, 1, 2, result?.direction)!;
       const a = 0.5 * normal.magnitude();
-      const centroid = points.getPoint3dAtCheckedPointIndex(0)!;
+      const centroid = points.getPoint3dAtCheckedPointIndex(0, result?.origin)!;
       points.accumulateScaledXYZ(1, 1.0, centroid);
       points.accumulateScaledXYZ(2, 1.0, centroid);
       centroid.scaleInPlace(1.0 / 3.0);
-      const result = Ray3d.createCapture(centroid, normal);
+      if (!result)
+        result = Ray3d.createCapture(centroid, normal);
       if (result.tryNormalizeInPlaceWithAreaWeight(a))
         return result;
       return undefined;
     }
     if (n >= 3) {
-
       const areaNormal = Vector3d.createZero();
       // This will work with or without closure edge.  If closure is given, the last vector is 000.
       for (let i = 2; i < n; i++) {
         points.accumulateCrossProductIndexIndexIndex(0, i - 1, i, areaNormal);
       }
       areaNormal.normalizeInPlace();
-
       const origin = points.getPoint3dAtCheckedPointIndex(0)!;
       const vector0 = Vector3d.create();
       const vector1 = Vector3d.create();
       points.vectorXYAndZIndex(origin, 1, vector0);
       let cross = Vector3d.create();
       const centroidSum = Vector3d.createZero();
-      const normalSum = Vector3d.createZero();
+      const normal = Vector3d.createZero(result?.direction);
       let signedTriangleArea;
-      // This will work with or without closure edge.  If closure is given, the last vector is 000.
+      // This will work with or without closure edge. If closure is given, the last vector is 000.
       for (let i = 2; i < n; i++) {
         points.vectorXYAndZIndex(origin, i, vector1);
         cross = vector0.crossProduct(vector1, cross);
-        signedTriangleArea = areaNormal.dotProduct(cross);    // well, actually twice the area.
-        normalSum.addInPlace(cross); // this grows to twice the area
+        signedTriangleArea = areaNormal.dotProduct(cross); // well, actually twice the area.
+        normal.addInPlace(cross); // this grows to twice the area
         const b = signedTriangleArea / 6.0;
         centroidSum.plus2Scaled(vector0, b, vector1, b, centroidSum);
         vector0.setFrom(vector1);
       }
-      const area = 0.5 * normalSum.magnitude();
+      const area = 0.5 * normal.magnitude();
       const inverseArea = Geometry.conditionalDivideFraction(1, area);
       if (inverseArea !== undefined) {
-        const result = Ray3d.createCapture(origin.plusScaled(centroidSum, inverseArea), normalSum);
+        const centroid = origin.plusScaled(centroidSum, inverseArea, result?.origin);
+        if (!result)
+          result = Ray3d.createCapture(centroid, normal);
         result.tryNormalizeInPlaceWithAreaWeight(area);
         return result;
       }
