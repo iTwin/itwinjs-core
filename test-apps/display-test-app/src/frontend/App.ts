@@ -41,6 +41,7 @@ import { MarkupSelectTestTool } from "./MarkupSelectTestTool";
 import { Notifications } from "./Notifications";
 import { OutputShadersTool } from "./OutputShadersTool";
 import { PathDecorationTestTool } from "./PathDecorationTest";
+import { ContourElevationDecoratorTool } from "./ContourElevationDecorator";
 import { GltfDecorationTool } from "./GltfDecoration";
 import { TextDecorationTool } from "./TextDecoration";
 import { ToggleShadowMapTilesTool } from "./ShadowMapDecoration";
@@ -355,6 +356,7 @@ export class DisplayTestApp {
       CloneViewportTool,
       CloseIModelTool,
       CloseWindowTool,
+      ContourElevationDecoratorTool,
       CreateSectionDrawingTool,
       CreateWindowTool,
       DisableModelTransformsTool,
