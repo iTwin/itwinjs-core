@@ -2,7 +2,7 @@
 #
 # Tests all supported versions of iTwin.js on latest versions of 3 main supported platforms; Windows, Ubuntu, and MacOS.
 #
-# Starts with the minimum Node version (currently 20.9.0) and then follows the tip of each subsequent major LTS (even-numbered) version.
+# Uses minimum supported Node version (currently 20.11.0) documented in SupportedPlatforms.md.
 #
 # The current LTS is tested in all normal CI/PR builds so no need to test it here.
 
