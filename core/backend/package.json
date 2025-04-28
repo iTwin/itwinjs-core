@@ -106,11 +106,7 @@
     "webpack": "^5.97.1"
   },
   "dependencies": {
-<<<<<<< HEAD
-    "@bentley/imodeljs-native": "5.0.95",
-=======
-    "@bentley/imodeljs-native": "5.1.9",
->>>>>>> 8131a89e73 (Use readInstance() and Deserialize Entity Json Directly in TS (#7967))
+    "@bentley/imodeljs-native": "5.0.96",
     "@itwin/cloud-agnostic-core": "^2.2.4",
     "@itwin/object-storage-azure": "^2.3.0",
     "@itwin/object-storage-core": "^2.3.0",

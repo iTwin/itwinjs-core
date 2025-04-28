@@ -10872,6 +10872,8 @@ export class TileDrawArgs {
     readonly readyTiles: Set<Tile>;
     // @internal (undocumented)
     get secondaryClassifiers(): Map<number, RenderPlanarClassifier> | undefined;
+    // (undocumented)
+    get shouldCollectClassifierGraphics(): boolean;
     get symbologyOverrides(): FeatureSymbology.Overrides | undefined;
     get tileSizeModifier(): number;
     // @internal
