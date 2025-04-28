@@ -430,7 +430,7 @@ export class IModelTileTree extends TileTree {
   public draw(args: TileDrawArgs): void {
     const tiles = this.selectTiles(args);
     this._rootTile.draw(args, tiles, this._numStaticTilesSelected);
-    if(!(args instanceof GraphicsCollectorDrawArgs))
+    if(args.shouldCollectClassifierGraphics)
       this._layerHandler.collectClassifierGraphics(args, tiles);
   }
 
