@@ -4361,20 +4361,6 @@ export interface GraphicPrimitive2d {
 }
 
 // @internal (undocumented)
-export class GraphicsCollectorDrawArgs extends TileDrawArgs {
-    // (undocumented)
-    static create(context: SceneContext, collector: GraphicsCollector, ref: TileTreeReference, planes: FrustumPlanes, worldToViewMap: Map4d): TileDrawArgs | undefined;
-    // (undocumented)
-    drawGraphics(): void;
-    // (undocumented)
-    drawGraphicsWithType(_graphicType: TileGraphicType, graphics: GraphicBranch): void;
-    // (undocumented)
-    get frustumPlanes(): FrustumPlanes;
-    // (undocumented)
-    get worldToViewMap(): Map4d;
-}
-
-// @internal (undocumented)
 export interface GraphicsGeometryRenderer extends FeatureGeometryRenderer {
     // (undocumented)
     moveGraphics(): GraphicPrimitive[];
@@ -10886,6 +10872,8 @@ export class TileDrawArgs {
     readonly readyTiles: Set<Tile>;
     // @internal (undocumented)
     get secondaryClassifiers(): Map<number, RenderPlanarClassifier> | undefined;
+    // (undocumented)
+    get shouldCollectClassifierGraphics(): boolean;
     get symbologyOverrides(): FeatureSymbology.Overrides | undefined;
     get tileSizeModifier(): number;
     // @internal
