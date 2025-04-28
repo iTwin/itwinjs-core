@@ -12,20 +12,19 @@ import * as touch from "touch";
 import { IModelJsNative, SchemaWriteStatus } from "@bentley/imodeljs-native";
 import {
   AccessToken, assert, BeEvent, BentleyStatus, ChangeSetStatus, DbChangeStage, DbConflictCause, DbConflictResolution, DbResult,
-  Guid, GuidString, Id64, Id64Arg, Id64Array, Id64Set, Id64String, IModelStatus, JsonUtils, Logger, LogLevel, OpenMode,
+  Guid, GuidString, Id64, Id64Arg, Id64Array, Id64Set, Id64String, IModelStatus, JsonUtils, Logger, LogLevel, LRUMap, OpenMode
 } from "@itwin/core-bentley";
 import {
   AxisAlignedBox3d, BRepGeometryCreate, BriefcaseId, BriefcaseIdValue, CategorySelectorProps, ChangesetIdWithIndex, ChangesetIndexAndId, Code,
   CodeProps, CreateEmptySnapshotIModelProps, CreateEmptyStandaloneIModelProps, CreateSnapshotIModelProps, DbQueryRequest, DisplayStyleProps,
-  DomainOptions, EcefLocation, ECJsNames, ECSchemaProps, ECSqlReader, ElementAspectProps, ElementGeometryCacheOperationRequestProps, ElementGeometryCacheRequestProps, ElementGeometryCacheResponseProps, ElementGeometryRequest, ElementGraphicsRequestProps,
-  ElementLoadProps, ElementProps, EntityMetaData, EntityProps, EntityQueryParams, FilePropertyProps, FontMap,
+  DomainOptions, EcefLocation, ECJsNames, ECSchemaProps, ECSqlReader, ElementAspectProps, ElementGeometryCacheOperationRequestProps, ElementGeometryCacheRequestProps, ElementGeometryCacheResponseProps, ElementGeometryRequest, ElementGraphicsRequestProps, ElementLoadProps, ElementProps, EntityMetaData, EntityProps, EntityQueryParams, FilePropertyProps, FontMap,
   GeoCoordinatesRequestProps, GeoCoordinatesResponseProps, GeometryContainmentRequestProps, GeometryContainmentResponseProps, IModel,
   IModelCoordinatesRequestProps, IModelCoordinatesResponseProps, IModelError, IModelNotFoundResponse, IModelTileTreeProps, LocalFileName,
   MassPropertiesRequestProps, MassPropertiesResponseProps, ModelExtentsProps, ModelLoadProps, ModelProps, ModelSelectorProps, OpenBriefcaseProps,
   OpenCheckpointArgs, OpenSqliteArgs, ProfileOptions, PropertyCallback, QueryBinder, QueryOptions, QueryRowFormat, SchemaState,
   SheetProps, SnapRequestProps, SnapResponseProps, SnapshotOpenOptions, SpatialViewDefinitionProps, SubCategoryResultRow, TextureData,
   TextureLoadProps, ThumbnailProps, UpgradeOptions, ViewDefinition2dProps, ViewDefinitionProps, ViewIdString, ViewQueryParams, ViewStateLoadProps,
-  ViewStateProps, ViewStoreRpc,
+  ViewStateProps, ViewStoreRpc
 } from "@itwin/core-common";
 import { Range2d, Range3d } from "@itwin/core-geometry";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
@@ -43,7 +42,7 @@ import { ECSqlStatement } from "./ECSqlStatement";
 import { Element, SectionDrawing, Subject } from "./Element";
 import { ElementAspect } from "./ElementAspect";
 import { generateElementGraphics } from "./ElementGraphics";
-import { Entity, EntityClassType } from "./Entity";
+import { ECSqlRow, Entity, EntityClassType } from "./Entity";
 import { ExportGraphicsOptions, ExportPartGraphicsOptions } from "./ExportGraphics";
 import { GeoCoordConfig } from "./GeoCoordConfig";
 import { IModelHost } from "./IModelHost";
@@ -69,10 +68,10 @@ import type { BlobContainer } from "./BlobContainerService";
 import { createNoOpLockControl } from "./internal/NoLocks";
 import { IModelDbFonts } from "./IModelDbFonts";
 import { createIModelDbFonts } from "./internal/IModelDbFontsImpl";
-import { _close, _hubAccess, _nativeDb, _releaseAllLocks } from "./internal/Symbols";
+import { _cache, _close, _hubAccess, _nativeDb, _releaseAllLocks } from "./internal/Symbols";
 import { SchemaContext, SchemaJsonLocater } from "@itwin/ecschema-metadata";
 import { SchemaMap } from "./Schema";
-
+import { ElementLRUCache } from "./internal/ElementLRUCache";
 // spell:ignore fontid fontmap
 
 const loggerCategory: string = BackendLoggerCategory.IModelDb;
@@ -217,6 +216,7 @@ export abstract class IModelDb extends IModel {
   private _initialized = false;
   /** Keep track of open imodels to support `tryFind` for RPC purposes */
   private static readonly _openDbs = new Map<string, IModelDb>();
+
   public static readonly defaultLimit = 1000; // default limit for batching queries
   public static readonly maxLimit = 10000; // maximum limit for batching queries
   public readonly models = new IModelDb.Models(this);
@@ -748,6 +748,8 @@ export abstract class IModelDb extends IModel {
     this._jsClassMap = undefined;
     this._schemaMap = undefined;
     this._schemaContext = undefined;
+    this.elements[_cache].clear();
+    this.models[_cache].clear();
   }
 
   /** Update the project extents for this iModel.
@@ -1175,6 +1177,22 @@ export abstract class IModelDb extends IModel {
       // eslint-disable-next-line @typescript-eslint/no-deprecated
       this.loadMetaData(classFullName);
       return ClassRegistry.getClass(classFullName, this) as T;
+    }
+  }
+
+  /** Constructs a ResolveInstanceKeyArgs from given parameters
+   * @throws [[IModelError]] if the combination of supplied parameters is invalid.
+   * @internal
+   */
+  public getInstanceArgs(instanceId?: Id64String, baseClassName?: string, federationGuid?: GuidString, code?: CodeProps): IModelJsNative.ResolveInstanceKeyArgs {
+    if (instanceId && baseClassName) {
+      return { partialKey: { id: instanceId, baseClassName } };
+    } else if (federationGuid) {
+      return { federationGuid };
+    } else if (code) {
+      return { code };
+    } else {
+      throw new IModelError(IModelStatus.InvalidId, "Either instanceId and baseClassName or federationGuid or code must be specified");
     }
   }
 
@@ -1703,6 +1721,9 @@ export namespace IModelDb {
    */
   export class Models {
     /** @internal */
+    public readonly [_cache] = new LRUMap<Id64String, ModelProps>(500);
+
+    /** @internal */
     public constructor(private _iModel: IModelDb) { }
 
     /** Get the ModelProps with the specified identifier.
@@ -1711,7 +1732,10 @@ export namespace IModelDb {
      * @see tryGetModelProps
      */
     public getModelProps<T extends ModelProps>(id: Id64String): T {
-      return this.getModelJson<T>({ id });
+      const model = this.tryGetModelProps<T>(id);
+      if (undefined === model)
+        throw new IModelError(IModelStatus.NotFound, `Model=${id}`);
+      return model;
     }
 
     /** Get the ModelProps with the specified identifier.
@@ -1722,7 +1746,26 @@ export namespace IModelDb {
      * @see getModelProps
      */
     public tryGetModelProps<T extends ModelProps>(id: Id64String): T | undefined {
-      return this.tryGetModelJson({ id });
+      try {
+        if (IModelHost.configuration?.disableThinnedNativeInstanceWorkflow) {
+          return this._iModel[_nativeDb].getModel({ id }) as T;
+        }
+
+        const cachedMdl = this[_cache].get(id);
+        if (cachedMdl) {
+          return cachedMdl as T;
+        }
+
+        const options = { useJsNames: true }
+        const instanceKey = this.resolveModelKey({ id });
+        const rawInstance = this._iModel[_nativeDb].readInstance(instanceKey, options) as ECSqlRow;
+        const classDef = this._iModel.getJsClass<typeof Model>(rawInstance.classFullName);
+        const modelProps = classDef.deserialize({ row: rawInstance, iModel: this._iModel }) as T;
+        this[_cache].set(id, modelProps);
+        return modelProps;
+      } catch {
+        return undefined;
+      }
     }
 
     /** Query for the last modified time for a [[Model]].
@@ -1775,32 +1818,20 @@ export namespace IModelDb {
       return model instanceof modelClass ? model : undefined;
     }
 
-    /** Read the properties for a Model as a json string.
-     * @param modelIdArg a json string with the identity of the model to load. Must have either "id" or "code".
-     * @returns a json string with the properties of the model.
-     * @throws [[IModelError]] if the model is not found or cannot be loaded.
-     * @see tryGetModelJson
-     * @internal
-     */
-    public getModelJson<T extends ModelProps>(modelIdArg: ModelLoadProps): T {
-      const modelJson = this.tryGetModelJson<T>(modelIdArg);
-      if (undefined === modelJson) {
-        throw new IModelError(IModelStatus.NotFound, `Model=(id: ${modelIdArg.id}, code: ${modelIdArg.code})`);
+    private resolveModelKey(modelIdArg: ModelLoadProps): IModelJsNative.ResolveInstanceKeyResult {
+      const baseClassName = "BisCore:Model";
+      let args: IModelJsNative.ResolveInstanceKeyArgs;
+      if (modelIdArg.id) {
+        args = { partialKey: { id: modelIdArg.id, baseClassName } };
+      } else if (modelIdArg.code) {
+        const modelId = this._iModel.elements.getElementProps<ElementProps>({ code: modelIdArg.code }).id;
+        if (!modelId)
+          throw new IModelError(IModelStatus.NotFound, `Model not found with code: [spec:${modelIdArg.code.spec}, scope:${modelIdArg.code.scope}, value:${modelIdArg.code.value}])`);
+        args = { partialKey: { id: modelId, baseClassName } };
+      } else {
+        throw new IModelError(IModelStatus.InvalidId, `Invalid model identifier: ${JSON.stringify(modelIdArg)}`);
       }
-      return modelJson;
-    }
-
-    /** Read the properties for a Model as a json string.
-     * @param modelIdArg a json string with the identity of the model to load. Must have either "id" or "code".
-     * @returns a json string with the properties of the model or `undefined` if the model is not found.
-     * @see getModelJson
-     */
-    private tryGetModelJson<T extends ModelProps>(modelIdArg: ModelLoadProps): T | undefined {
-      try {
-        return this._iModel[_nativeDb].getModel(modelIdArg) as T;
-      } catch {
-        return undefined;
-      }
+      return this._iModel[_nativeDb].resolveInstanceKey(args);
     }
 
     /** Get the sub-model of the specified Element.
@@ -1858,6 +1889,9 @@ export namespace IModelDb {
      */
     public updateModel(props: UpdateModelOptions): void {
       try {
+        if (props.id)
+          this[_cache].delete(props.id);
+
         this._iModel[_nativeDb].updateModel(props);
       } catch (err: any) {
         throw new IModelError(err.errorNumber, `error updating model [${err.message}] id=${props.id}`);
@@ -1873,6 +1907,7 @@ export namespace IModelDb {
      * @see [[TxnManager.onModelGeometryChanged]] for the event emitted in response to such a change.
      */
     public updateGeometryGuid(modelId: Id64String): void {
+      this._iModel.models[_cache].delete(modelId);
       const error = this._iModel[_nativeDb].updateModelGeometryGuid(modelId);
       if (error !== IModelStatus.Success)
         throw new IModelError(error, `updating geometry guid for model ${modelId}`);
@@ -1885,6 +1920,7 @@ export namespace IModelDb {
     public deleteModel(ids: Id64Arg): void {
       Id64.toIdSet(ids).forEach((id) => {
         try {
+          this[_cache].delete(id);
           this._iModel[_nativeDb].deleteModel(id);
         } catch (err: any) {
           throw new IModelError(err.errorNumber, `error deleting model [${err.message}] id ${id}`);
@@ -1930,6 +1966,9 @@ export namespace IModelDb {
    */
   export class Elements implements GuidMapper {
     /** @internal */
+    public readonly [_cache] = new ElementLRUCache();
+
+    /** @internal */
     public constructor(private _iModel: IModelDb) { }
 
     public getFederationGuidFromId(id: Id64String): GuidString | undefined {
@@ -1946,49 +1985,38 @@ export namespace IModelDb {
       }) : undefined;
     }
 
-    /** Read element data from the iModel as JSON
-     * @param elementIdArg a json string with the identity of the element to load. Must have one of "id", "federationGuid", or "code".
-     * @returns The JSON properties of the element.
-     * @throws [[IModelError]] if the element is not found or cannot be loaded.
-     * @see tryGetElementJson
-     * @internal
-     */
-    public getElementJson<T extends ElementProps>(elementId: ElementLoadProps): T {
-      const elementProps = this.tryGetElementJson<T>(elementId);
-      if (undefined === elementProps)
-        throw new IModelError(IModelStatus.NotFound, `reading element={id: ${elementId.id} federationGuid: ${elementId.federationGuid}, code: ${elementId.code}}`);
-      return elementProps;
-    }
-
-    /** Read element data from the iModel as JSON
-     * @param loadProps - a json string with the identity of the element to load. Must have one of "id", "federationGuid", or "code".
-     * @returns The JSON properties of the element or `undefined` if the element is not found.
-     * @throws [[IModelError]] if the element exists, but cannot be loaded.
-     * @see getElementJson
-     */
-    private tryGetElementJson<T extends ElementProps>(loadProps: ElementLoadProps): T | undefined {
-      try {
-        return this._iModel[_nativeDb].getElement(loadProps) as T;
-      } catch {
-        return undefined;
-      }
-    }
-
     /** Get properties of an Element by Id, FederationGuid, or Code
      * @throws [[IModelError]] if the element is not found or cannot be loaded.
      * @see tryGetElementProps
      */
     public getElementProps<T extends ElementProps>(props: Id64String | GuidString | Code | ElementLoadProps): T {
+      const elProp = this.tryGetElementProps<T>(props);
+      if (undefined === elProp)
+        throw new IModelError(IModelStatus.NotFound, `element not found`);
+      return elProp;
+    }
+
+    private resolveElementKey(props: Id64String | GuidString | Code | ElementLoadProps): IModelJsNative.ResolveInstanceKeyResult {
+      const baseClassName = "BisCore:Element";
+      let args: IModelJsNative.ResolveInstanceKeyArgs;
       if (typeof props === "string") {
-        props = Id64.isId64(props) ? { id: props } : { federationGuid: props };
+        args = Id64.isId64(props) ? { partialKey: { id: props, baseClassName } } : { federationGuid: props };
       } else if (props instanceof Code) {
-        props = { code: props };
+        args = { code: props };
+      } else {
+        if (props.id) {
+          args = { partialKey: { id: props.id, baseClassName } };
+        }
+        else if (props.federationGuid) {
+          args = { federationGuid: props.federationGuid };
+        }
+        else if (props.code) {
+          args = { code: props.code };
+        } else {
+          throw new IModelError(IModelStatus.InvalidId, "Element Id or FederationGuid or Code is required");
+        }
       }
-      try {
-        return this._iModel[_nativeDb].getElement(props) as T;
-      } catch (err: any) {
-        throw new IModelError(err.errorNumber, err.message);
-      }
+      return this._iModel[_nativeDb].resolveInstanceKey(args);
     }
 
     /** Get properties of an Element by Id, FederationGuid, or Code
@@ -1997,13 +2025,32 @@ export namespace IModelDb {
      * @note Useful for cases when an element may or may not exist and throwing an `Error` would be overkill.
      * @see getElementProps
      */
-    public tryGetElementProps<T extends ElementProps>(elementId: Id64String | GuidString | Code | ElementLoadProps): T | undefined {
-      if (typeof elementId === "string") {
-        elementId = Id64.isId64(elementId) ? { id: elementId } : { federationGuid: elementId };
-      } else if (elementId instanceof Code) {
-        elementId = { code: elementId };
+    public tryGetElementProps<T extends ElementProps>(props: Id64String | GuidString | Code | ElementLoadProps): T | undefined {
+      if (typeof props === "string") {
+        props = Id64.isId64(props) ? { id: props } : { federationGuid: props };
+      } else if (props instanceof Code) {
+        props = { code: props };
       }
-      return this.tryGetElementJson<T>(elementId);
+      try {
+        if (IModelHost.configuration?.disableThinnedNativeInstanceWorkflow) {
+          return this._iModel[_nativeDb].getElement(props) as T;
+        }
+
+        const cachedElm = this[_cache].get(props);
+        if (cachedElm) {
+          return cachedElm.elProps as T;
+        }
+
+        const options = { ...props, useJsNames: true };
+        const instanceKey = this.resolveElementKey(props);
+        const rawInstance = this._iModel[_nativeDb].readInstance(instanceKey, options) as ECSqlRow;
+        const classDef = this._iModel.getJsClass<typeof Element>(rawInstance.classFullName);
+        const elementProps = classDef.deserialize({ row: rawInstance, iModel: this._iModel, options: { element: props } }) as T;
+        this[_cache].set({ elProps: elementProps, loadOptions: props });
+        return elementProps;
+      } catch {
+        return undefined;
+      }
     }
 
     /** Get an element by Id, FederationGuid, or Code
@@ -2039,7 +2086,7 @@ export namespace IModelDb {
       else
         elementId.onlyBaseProperties = false; // we must load all properties to construct the element.
 
-      const elementProps = this.tryGetElementJson<ElementProps>(elementId);
+      const elementProps = this.tryGetElementProps<ElementProps>(elementId);
       if (undefined === elementProps)
         return undefined; // no Element with that elementId found
 
@@ -2111,6 +2158,11 @@ export namespace IModelDb {
      */
     public insertElement(elProps: ElementProps, options?: InsertElementOptions): Id64String {
       try {
+        this[_cache].delete({
+          id: elProps.id,
+          federationGuid: elProps.federationGuid,
+          code: elProps.code,
+        });
         return elProps.id = this._iModel[_nativeDb].insertElement(elProps, options);
       } catch (err: any) {
         err.message = `Error inserting element [${err.message}]`;
@@ -2132,6 +2184,11 @@ export namespace IModelDb {
      */
     public updateElement<T extends ElementProps>(elProps: Partial<T>): void {
       try {
+        this[_cache].delete({
+          id: elProps.id,
+          federationGuid: elProps.federationGuid,
+          code: elProps.code,
+        });
         this._iModel[_nativeDb].updateElement(elProps);
       } catch (err: any) {
         err.message = `Error updating element [${err.message}], id: ${elProps.id}`;
@@ -2149,6 +2206,7 @@ export namespace IModelDb {
       const iModel = this._iModel;
       Id64.toIdSet(ids).forEach((id) => {
         try {
+          this[_cache].delete({ id });
           iModel[_nativeDb].deleteElement(id);
         } catch (err: any) {
           err.message = `Error deleting element [${err.message}], id: ${id}`;
@@ -2683,9 +2741,9 @@ export namespace IModelDb {
   }
 
   /** Represents the current state of a pollable tile content request.
- * Note: lack of a "completed" state because polling a completed request returns the content as a Uint8Array.
- * @internal
- */
+  * Note: lack of a "completed" state because polling a completed request returns the content as a Uint8Array.
+  * @internal
+  */
   export enum TileContentState {
     New, // Request was just created and enqueued.
     Pending, // Request is enqueued but not yet being processed.
@@ -2987,6 +3045,7 @@ export class BriefcaseDb extends IModelDb {
 
       // Restart default txn to trigger events when watch file is changed by some other process.
       const watcher = fs.watch(briefcaseDb.watchFilePathName, { persistent: false }, () => {
+        nativeDb.clearECDbCache();
         nativeDb.restartDefaultTxn();
         briefcaseDb.changeset = briefcaseDb[_nativeDb].getCurrentChangeset();
       });
