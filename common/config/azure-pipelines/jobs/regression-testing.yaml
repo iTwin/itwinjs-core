@@ -28,21 +28,21 @@ jobs:
 
     strategy:
       matrix:
-        "Windows_Node_22_11_0":
+        "Windows_Node_20_11_0":
           OS: windows-latest
           platform: Windows_NT
           name: $(win_pool)
-          node_version: 22.11.0
-        "Linux_Node_22_11_0":
+          node_version: 20.11.0
+        "Linux_Node_20_11_0":
           OS: ubuntu-latest
           platform: Linux
           name: $(linux_pool)
-          node_version: 22.11.0
-        "MacOS_Node_22_11_0":
+          node_version: 20.11.0
+        "MacOS_Node_20_11_0":
           OS: macOS-latest
           platform: Darwin
           name: $(mac_pool)
-          node_version: 22.11.0
+          node_version: 20.11.0
       maxParallel: 3
 
     pool:
