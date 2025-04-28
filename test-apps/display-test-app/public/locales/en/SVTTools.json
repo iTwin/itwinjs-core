@@ -67,6 +67,9 @@
     "TogglePathDecoration": {
       "keyin": "dta path decoration"
     },
+    "ToggleContourElevationDecorator": {
+      "keyin": "dta contour elevation"
+    },
     "AddGltfDecoration": {
       "keyin": "dta gltf"
     },
