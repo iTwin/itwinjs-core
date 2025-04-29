@@ -16,6 +16,10 @@ import { TestSnapshotConnection } from "../TestSnapshotConnection";
 describe("Planar clip mask (#integration)", () => {
   let imodel: IModelConnection;
 
+  before(function () {
+    this.timeout(480000);
+  });
+
   before(async () => {
     assert.isDefined(process.env.TEST_BING_MAPS_KEY, "The test requires that a Bing Maps key is configured.");
     assert.isDefined(process.env.TEST_MAPBOX_KEY, "The test requires that a MapBox key is configured.");

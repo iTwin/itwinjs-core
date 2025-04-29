@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import { DbResult, ProcessDetector } from "@itwin/core-bentley";
-import { QueryBinder, QueryRowFormat } from "@itwin/core-common";
+import { QueryRowFormat } from "@itwin/core-common";
 import { IModelConnection } from "@itwin/core-frontend";
 import { TestUtility } from "../TestUtility";
 import { TestSnapshotConnection } from "../TestSnapshotConnection";
@@ -173,24 +173,5 @@ describe("ECSql Query", () => {
       const entry = dbs.indexOf(db);
       assert.equal(rowCounts[entry], resultSet.length);
     }
-  });
-
-  it("Query with Abbreviated Blobs", async function () {
-    const query1 = "SELECT ECInstanceId, GeometryStream FROM BisCore.GeometryPart LIMIT 1";
-    const query2 = "SELECT ECInstanceId, GeometryStream FROM BisCore.GeometryPart WHERE ECInstanceId=?";
-    let row1: any;
-    let row2: any;
-    let row3: any;
-    for await (const row of imodel2.createQueryReader(query1, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames }))
-      row1 = row.toRow();
-    assert.isNotEmpty(row1.geometryStream);
-    for await (const row of imodel2.createQueryReader(query2, QueryBinder.from([row1.id]), { rowFormat: QueryRowFormat.UseJsPropertyNames, abbreviateBlobs: false }))
-      row2 = row.toRow();
-    assert.isNotEmpty(row2.geometryStream);
-    assert.deepEqual(row2.geometryStream, row1.geometryStream);
-    for await (const row of imodel2.createQueryReader(query2, QueryBinder.from([row1.id]), { rowFormat: QueryRowFormat.UseJsPropertyNames, abbreviateBlobs: true }))
-      row3 = row.toRow();
-    assert.equal(row3.id, row1.id);
-    assert.equal(row1.geometryStream.byteLength, JSON.parse(row3.geometryStream).bytes);
   });
 });

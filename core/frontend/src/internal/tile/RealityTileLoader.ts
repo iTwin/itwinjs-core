@@ -99,8 +99,9 @@ export abstract class RealityTileLoader {
     const { is3d, yAxisUp, iModel, modelId } = tile.realityRoot;
     let reader: GltfReader | ImdlReader | undefined;
 
+    const ecefTransform = tile.tree.iModel.isGeoLocated ? tile.tree.iModel.getEcefTransform() : Transform.createIdentity();
     const tileData: LayerTileData = {
-      ecefTransform: tile.tree.iModel.ecefLocation?.getTransform() ?? Transform.createIdentity(),
+      ecefTransform,
       range: tile.range,
       layerClassifiers: tile.tree.layerHandler?.layerClassifiers,
     };
