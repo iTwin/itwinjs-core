@@ -76,13 +76,14 @@ export enum RegionBinaryOpType {
 
 /**
  * Class `RegionOps` has static members for calculations on regions (areas).
- * * Regions are represented by these `CurveCollection` subclasses:
- *   * `Loop` -- a single loop
- *   * `ParityRegion` -- a collection of loops, interpreted by parity rules.
- * The common "One outer loop and many Inner loops" is a parity region.
- *   * `UnionRegion` -- a collection of `Loop` and `ParityRegion` objects understood as a (probably disjoint) union.
- * * **NOTE:** Most of the methods in this class ignore z-coordinates, so callers should ensure that input geometry has
- * been rotated parallel to the xy-plane.
+ * * Regions are represented by these [[CurveCollection]] subclasses:
+ *   * [[Loop]] -- a single loop
+ *   * [[ParityRegion]] -- a collection of loops, interpreted by parity rules.
+ * The common "One outer loop and many inner loops" is a parity region.
+ *   * [[UnionRegion]] -- a collection of `Loop` and `ParityRegion` objects understood as a (probably disjoint) union.
+ * * Most of the methods in this class:
+ *   * Ignore z-coordinates, so callers should ensure that input geometry has been rotated parallel to the xy-plane.
+ *   * Assume consistent Loop orientation in input: "solid" Loops have orientation opposite that of "hole" Loops.
  * @public
  */
 export class RegionOps {
@@ -323,10 +324,10 @@ export class RegionOps {
   }
   /**
    * Return areas defined by a boolean operation.
-   * * If there are multiple regions in loopsA, they are treated as a union.
-   * * If there are multiple regions in loopsB, they are treated as a union.
-   * @param loopsA first set of loops
-   * @param loopsB second set of loops
+   * * A common use case of this method is to convert a [[UnionRegion]] with overlapping children into one with
+   * non-overlapping children: `regionOut = RegionOps.regionBooleanXY(regionIn, undefined, RegionBinaryOpType.Union)`.
+   * @param loopsA first set of loops (treated as a union)
+   * @param loopsB second set of loops (treated as a union)
    * @param operation indicates Union, Intersection, Parity, AMinusB, or BMinusA
    * @param mergeTolerance absolute distance tolerance for merging loops
    * @returns a region resulting from merging input loops and the boolean operation. May contain bridge edges added
