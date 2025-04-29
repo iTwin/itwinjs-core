@@ -80,14 +80,12 @@ export class LayerTileTreeReferenceHandler {
         removals.push(context.viewport.displayStyle.settings.onMapImageryChanged.addListener((imagery: Readonly<MapImagerySettings>) => {
           this.setBaseLayerSettings(imagery.backgroundBase);
           this.setLayerSettings(imagery.backgroundLayers);
-          this.clearLayers();
         }));
       }
       removals.push(context.viewport.onChangeView.addListener((vp, previousViewState) => {
         if(compareMapLayer(previousViewState, vp.view)){
           this.setBaseLayerSettings(mapImagery.backgroundBase);
           this.setLayerSettings(mapImagery.backgroundLayers);
-          this.clearLayers();
         }
       }));
     }
