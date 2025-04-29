@@ -10,7 +10,7 @@ import { assert, Logger } from "@itwin/core-bentley";
 import { ImageMapLayerSettings, MapLayerKey, MapLayerSettings, MapSubLayerProps } from "@itwin/core-common";
 import { IModelApp } from "../../IModelApp";
 import { IModelConnection } from "../../IModelConnection";
-import { ImageryMapLayerTreeReference, internalMapLayerImageryFormats, MapLayerAccessClient, MapLayerAuthenticationInfo, MapLayerImageryProvider, MapLayerSource, MapLayerSourceStatus, MapLayerTileTreeReference } from "../internal";
+import { ImageryMapLayerTreeReference, internalMapLayerImageryFormats, MapLayerAccessClient, MapLayerAuthenticationInfo, MapLayerImageryProvider, MapLayerSessionClient, MapLayerSource, MapLayerSourceStatus, MapLayerTileTreeReference } from "../internal";
 const loggerCategory = "ArcGISFeatureProvider";
 
 /**
@@ -116,7 +116,7 @@ export interface MapLayerOptions {
 /** @internal */
 export interface MapLayerFormatEntry {
   type: MapLayerFormatType;
-  accessClient?: MapLayerAccessClient;
+  client?: MapLayerAccessClient|MapLayerSessionClient
 }
 
 /**
@@ -144,7 +144,7 @@ export class MapLayerFormatRegistry {
   public setAccessClient(formatId: string, accessClient: MapLayerAccessClient): boolean {
     const entry = this._formats.get(formatId);
     if (entry !== undefined) {
-      entry.accessClient = accessClient;
+      entry.client = accessClient;
       return true;
     }
     return false;
@@ -155,8 +155,24 @@ export class MapLayerFormatRegistry {
     if (formatId.length === 0)
       return undefined;
 
-    return this._formats.get(formatId)?.accessClient;
+    const accessClient = this._formats.get(formatId)?.client;
+    if (accessClient && typeof((accessClient as any).getAccessToken) === "function") {
+      return accessClient as MapLayerAccessClient;
+    }
+    return undefined;
   }
+
+  public getSessionClient(formatId: string): MapLayerAccessClient | undefined {
+    if (formatId.length === 0)
+      return undefined;
+
+    const accessClient = this._formats.get(formatId)?.client;
+    if (accessClient && typeof((accessClient as any).getSessionManager) === "function") {
+      return accessClient as MapLayerAccessClient;
+    }
+    return undefined;
+  }
+
 
   public get configOptions(): MapLayerOptions {
     return this._configOptions;

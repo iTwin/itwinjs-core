@@ -38,15 +38,22 @@ export interface MapLayerAccessTokenParams {
  *
  * @beta
  *  */
-export interface MapLayerAccessClient {
-  type: string;
-}
+// export interface MapLayerAccessClient {
+//   type: string;
+// }
 
 /**
  *  Interface used to get an access token for a map layer.
  * @beta
  **/
-export interface MapLayerOAuth2Client extends MapLayerAccessClient {
+// export interface MapLayerOAuth2Client extends MapLayerAccessClient {
+//   getAccessToken(params: MapLayerAccessTokenParams): Promise<MapLayerAccessToken | undefined>;
+//   getTokenServiceEndPoint?(mapLayerUrl: string): Promise<MapLayerTokenEndpoint | undefined>;
+//   invalidateToken?(token: MapLayerAccessToken): boolean;
+
+//   onOAuthProcessEnd?: BeEvent<Listener>;
+// }
+export interface MapLayerAccessClient  {
   getAccessToken(params: MapLayerAccessTokenParams): Promise<MapLayerAccessToken | undefined>;
   getTokenServiceEndPoint?(mapLayerUrl: string): Promise<MapLayerTokenEndpoint | undefined>;
   invalidateToken?(token: MapLayerAccessToken): boolean;
@@ -66,6 +73,9 @@ export interface MapLayerSessionManager {
  *  Represents a client handling map layer sessions.
  * @beta
  **/
-export interface MapLayerSessionClient extends MapLayerAccessClient {
+// export interface MapLayerSessionClient extends MapLayerAccessClient {
+//   getSessionManager(): MapLayerSessionManager;
+// }
+export interface MapLayerSessionClient {
   getSessionManager(): MapLayerSessionManager;
 }

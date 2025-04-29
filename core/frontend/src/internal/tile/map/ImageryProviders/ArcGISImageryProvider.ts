@@ -7,7 +7,7 @@
  */
 
 import { ImageMapLayerSettings } from "@itwin/core-common";
-import { ArcGisErrorCode, ArcGISServiceMetadata, ArcGisUtilities, MapLayerAccessClient, MapLayerAccessToken, MapLayerImageryProvider, MapLayerImageryProviderStatus, MapLayerOAuth2Client } from "../../../../tile/internal";
+import { ArcGisErrorCode, ArcGISServiceMetadata, ArcGisUtilities, MapLayerAccessClient, MapLayerAccessToken, MapLayerImageryProvider, MapLayerImageryProviderStatus } from "../../../../tile/internal";
 import { IModelApp } from "../../../../IModelApp";
 import { NotifyMessageDetails, OutputMessagePriority } from "../../../../NotificationManager";
 import { headersIncludeAuthMethod } from "../../../../request/utils";
@@ -21,7 +21,7 @@ import { headersIncludeAuthMethod } from "../../../../request/utils";
  */
 export abstract class ArcGISImageryProvider extends MapLayerImageryProvider {
 
-  protected _accessClient: MapLayerOAuth2Client|undefined;
+  protected _accessClient: MapLayerAccessClient|undefined;
   protected _lastAccessToken: MapLayerAccessToken|undefined;
 
   /** Flag indicating if access token should be added to request.
@@ -36,8 +36,8 @@ export abstract class ArcGISImageryProvider extends MapLayerImageryProvider {
   constructor(settings: ImageMapLayerSettings, usesCachedTiles: boolean) {
     super(settings, usesCachedTiles);
     const ac = IModelApp.mapLayerFormatRegistry?.getAccessClient(settings.formatId);
-    if (ac?.type === "oauth2") {
-      this._accessClient = ac as MapLayerOAuth2Client;
+    if (ac) {
+      this._accessClient = ac;
     }
   }
 
@@ -69,11 +69,10 @@ export abstract class ArcGISImageryProvider extends MapLayerImageryProvider {
     }
     if (metadata && metadata.accessTokenRequired) {
       const accessClient = IModelApp.mapLayerFormatRegistry.getAccessClient(this._settings.formatId);
-      if (accessClient?.type === "oauth2") {
+      if (accessClient) {
         try {
-          const oauth2Client = accessClient as MapLayerOAuth2Client;
           // Keep track of last used access token, so we can invalidate it later when an errors occurs
-          const accessToken = await oauth2Client.getAccessToken({mapLayerUrl: new URL(this._settings.url)});
+          const accessToken = await accessClient.getAccessToken({mapLayerUrl: new URL(this._settings.url)});
           this._lastAccessToken = accessToken;
         } catch {
         }
