@@ -10,9 +10,9 @@ import { BentleyError, BentleyStatus, Logger } from "@itwin/core-bentley";
 import { ImageMapLayerSettings, ImageSource } from "@itwin/core-common";
 import { DecorateContext, IModelApp, MapCartoRectangle, MapLayerImageryProvider, MapTile, ScreenViewport, Tile } from "@itwin/core-frontend";
 import { GoogleMapsDecorator } from "./GoogleMapDecorator.js";
-import { GoogleMapsCreateSessionOptions, GoogleMapsLayerTypes, GoogleMapsMapTypes, GoogleMapsScaleFactors, GoogleMapsSession, GoogleMapsSessionManager, ViewportInfo } from "./GoogleMaps.js";
-import { NativeGoogleMapsSessionManager } from "./NativeGoogleMapsSession.js"
-import { GoogleMapsAccessClient } from "./GoogleMapsImageryFormat.js";
+import { NativeGoogleMapsSessionManager } from "./NativeGoogleMapsSession.js";
+import { QuadIdProps } from "@itwin/core-frontend/lib/cjs/tile/internal.js";
+import { GoogleMapsAccessClient, GoogleMapsCreateSessionOptions, GoogleMapsLayerTypes, GoogleMapsMapTypes, GoogleMapsScaleFactors, GoogleMapsSession, GoogleMapsSessionManager, ViewportInfo } from "./GoogleMapsSession.js";
 
 const loggerCategory = "MapLayersFormats.GoogleMaps";
 
@@ -50,15 +50,14 @@ export class GoogleMapsImageryProvider extends MapLayerImageryProvider {
 
   protected async getSessionManager (): Promise<GoogleMapsSessionManager> {
     const accessClient = IModelApp.mapLayerFormatRegistry.getAccessClient(this._settings.formatId);
-    const googleMapsAccessClient = accessClient as GoogleMapsAccessClient;
-    if (googleMapsAccessClient && googleMapsAccessClient.getSessionManager !== undefined) {
-      const sessionManager = googleMapsAccessClient.getSessionManager();
+    if (accessClient?.type && "GoogleMapsAccessClient") {
+      const sessionManager = (accessClient as GoogleMapsAccessClient).getSessionManager();
       if (!sessionManager) {
         const msg = `Failed to get session manager`;
         Logger.logError(loggerCategory, msg);
         throw new BentleyError(BentleyStatus.ERROR, msg);
       }
-      return sessionManager;
+      return sessionManager
     } else {
       // No access client found, default to native session manager (assuming API key is provided)
       if (this._settings.accessKey?.value) {
@@ -160,6 +159,7 @@ export class GoogleMapsImageryProvider extends MapLayerImageryProvider {
   }
 
   public override async loadTile(row: number, column: number, zoomLevel: number): Promise<ImageSource | undefined> {
+    const tilePos: QuadIdProps = {row, column, level: zoomLevel};
     if (this._hadUnrecoverableError)
       return undefined;
 
@@ -169,14 +169,14 @@ export class GoogleMapsImageryProvider extends MapLayerImageryProvider {
     }
 
     try {
-      let tileUrl = this._activeSession.getTileUrl(row, column, zoomLevel);
+      let tileUrl = this._activeSession.getTileUrl(tilePos);
       let tileResponse: Response = await this.makeTileRequest(tileUrl.toString());
       if (!tileResponse.ok) {
         if (tileResponse.headers.get("content-type")?.includes("application/json") && this._sessionManager) {
           try {
             // Session might have expired, lets try to refresh it
             this._activeSession = await this._sessionManager.createSession(this._sessionOptions);
-            tileUrl = this._activeSession.getTileUrl(row, column, zoomLevel);
+            tileUrl = this._activeSession.getTileUrl(tilePos);
             tileResponse = await this.makeTileRequest(tileUrl.toString());
             if (!tileResponse.ok) {
               if (tileResponse.headers.get("content-type")?.includes("application/json")) {
@@ -237,5 +237,4 @@ export class GoogleMapsImageryProvider extends MapLayerImageryProvider {
       heading: "Google Maps",
       notice: copyrightMsg }));
   }
-
 }

@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { CanvasDecoration, DecorateContext, Decorator, IconSprites, IModelApp, Sprite } from "@itwin/core-frontend";
 import { Point3d } from "@itwin/core-geometry";
-import { GoogleMapsMapTypes } from "./GoogleMaps.js";
+import { GoogleMapsMapTypes } from "./GoogleMapsSession.js";
 
 
 /** A simple decorator that show logo at the a given screen position.

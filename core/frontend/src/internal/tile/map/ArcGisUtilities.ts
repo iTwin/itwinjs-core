@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { Angle, Constant } from "@itwin/core-geometry";
 import { MapSubLayerProps } from "@itwin/core-common";
-import { MapCartoRectangle, MapLayerAccessClient, MapLayerAccessToken, MapLayerAccessTokenParams, MapLayerSource, MapLayerSourceStatus, MapLayerSourceValidation, ValidateSourceArgs} from "../../../tile/internal";
+import { MapCartoRectangle, MapLayerAccessClient, MapLayerAccessToken, MapLayerAccessTokenParams, MapLayerOAuth2Client, MapLayerSource, MapLayerSourceStatus, MapLayerSourceValidation, ValidateSourceArgs} from "../../../tile/internal";
 import { IModelApp } from "../../../IModelApp";
 import { headersIncludeAuthMethod } from "../../../request/utils";
 
@@ -287,9 +287,9 @@ export class ArcGisUtilities {
       // In some cases, caller might already know token is required, so append it immediately
       if (requireToken) {
         const accessClient = IModelApp.mapLayerFormatRegistry.getAccessClient(formatId);
-        if (accessClient) {
+        if (accessClient?.type === "oauth2") {
           accessTokenRequired = true;
-          await ArcGisUtilities.appendSecurityToken(tmpUrl, accessClient, {mapLayerUrl: new URL(url), userName, password});
+          await ArcGisUtilities.appendSecurityToken(tmpUrl, accessClient as MapLayerOAuth2Client, {mapLayerUrl: new URL(url), userName, password});
         }
       }
       let response = await fetch(tmpUrl, { method: "GET" });
@@ -305,9 +305,11 @@ export class ArcGisUtilities {
         accessTokenRequired = true;
         // If token required
         const accessClient = IModelApp.mapLayerFormatRegistry.getAccessClient(formatId);
-        if (accessClient) {
+        if (accessClient?.type === "oauth2") {
+          const oauth2Client = accessClient as MapLayerOAuth2Client;
           tmpUrl = createUrlObj();
-          await ArcGisUtilities.appendSecurityToken(tmpUrl, accessClient, {mapLayerUrl: new URL(url), userName, password});
+          await ArcGisUtilities.appendSecurityToken(tmpUrl, oauth2Client, {mapLayerUrl: new URL(url), userName, password});
+          await ArcGisUtilities.appendSecurityToken(tmpUrl, oauth2Client, {mapLayerUrl: new URL(url), userName, password});
           response = await fetch(tmpUrl.toString(), { method: "GET" });
           errorCode = await ArcGisUtilities.checkForResponseErrorCode(response);
         }
@@ -346,7 +348,7 @@ export class ArcGisUtilities {
   }
 
   // return the appended access token if available.
-  public static async appendSecurityToken(url: URL, accessClient: MapLayerAccessClient, accessTokenParams: MapLayerAccessTokenParams): Promise<MapLayerAccessToken|undefined> {
+  public static async appendSecurityToken(url: URL, accessClient: MapLayerOAuth2Client, accessTokenParams: MapLayerAccessTokenParams): Promise<MapLayerAccessToken|undefined> {
 
     // Append security token if available
     let accessToken: MapLayerAccessToken|undefined;

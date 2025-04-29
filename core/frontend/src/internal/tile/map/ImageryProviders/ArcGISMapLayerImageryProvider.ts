@@ -10,7 +10,7 @@ import { IModelApp } from "../../../../IModelApp";
 import {
   ArcGisErrorCode, ArcGisGeometryReaderJSON, ArcGISImageryProvider, ArcGISTileMap, ArcGisUtilities,
   FeatureGraphicsRenderer, ImageryMapTileTree, MapCartoRectangle, MapFeatureInfoOptions, MapLayerFeature,
-  MapLayerFeatureInfo, MapLayerImageryProviderStatus, MapSubLayerFeatureInfo, QuadId,
+  MapLayerFeatureInfo, MapLayerImageryProviderStatus, MapLayerOAuth2Client, MapSubLayerFeatureInfo, QuadId,
 } from "../../../../tile/internal";
 import { PropertyValueFormat, StandardTypeNames } from "@itwin/appui-abstract";
 import { Point2d, Range2d, Range2dProps, XYProps } from "@itwin/core-geometry";
@@ -145,7 +145,11 @@ export class ArcGISMapLayerImageryProvider extends ArcGISImageryProvider {
   public serviceJson: any;
   constructor(settings: ImageMapLayerSettings) {
     super(settings, false);
-    this._accessClient = IModelApp.mapLayerFormatRegistry.getAccessClient(settings.formatId);
+    const accessClient = IModelApp.mapLayerFormatRegistry.getAccessClient(settings.formatId);
+    if (accessClient?.type === "oauth2") {
+      this._accessClient = accessClient as MapLayerOAuth2Client;
+    }
+
   }
 
   protected override get _filterByCartoRange() { return false; }      // Can't trust footprint ranges (USGS Hydro)
