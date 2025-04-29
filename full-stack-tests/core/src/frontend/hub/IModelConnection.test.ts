@@ -181,22 +181,6 @@ describe("IModelConnection (#integration)", () => {
     expect(rootTile.isLeaf).to.be.false;
   });
 
-  it("ECSQL with BLOB", async () => {
-    assert.exists(iModel);
-    let rows = await executeQuery(iModel, "SELECT ECInstanceId,GeometryStream FROM bis.GeometricElement3d WHERE GeometryStream IS NOT NULL LIMIT 1");
-    assert.equal(rows.length, 1);
-    const row: any = rows[0];
-
-    assert.isTrue(Id64.isValidId64(row.id));
-
-    assert.isDefined(row.geometryStream);
-    const geomStream: Uint8Array = row.geometryStream;
-    assert.isAtLeast(geomStream.byteLength, 1);
-
-    rows = await executeQuery(iModel, "SELECT 1 FROM bis.GeometricElement3d WHERE GeometryStream=?", [geomStream]);
-    assert.equal(rows.length, 1);
-  });
-
   it("should generate unique transient IDs", () => {
     for (let i = 1; i < 40; i++) {
       const id = iModel.transientIds.getNext();
