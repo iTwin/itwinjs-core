@@ -69,6 +69,7 @@ Table of contents:
       - [With pending/local changes](#with-pendinglocal-changes)
     - [Reworked @itwin/ecschema-metadata package](#reworked-itwinecschema-metadata-package)
       - [Tips for adjusting existing code](#tips-for-adjusting-existing-code)
+    - [Change to getElement and getModel](#changes-to-getelement-and-getmodel)
   - [Deprecated ECSqlStatement](#deprecated-ecsqlstatement)
 
 ## Selection set
@@ -312,11 +313,27 @@ The replacement method `schemaContext.getSchemaItem` on the iModel can fetch the
 **Examples:**
 
 ```typescript
-const metaData: RelationshipClass | undefined = await imodelDb.schemaContext.getSchemaItem("BisCore.ElementRefersToElements", RelationshipClass);
-const metaData: Enumeration | undefined = await imodelDb.schemaContext.getSchemaItem("BisCore.AutoHandledPropertyStatementType", Enumeration);
-const metaData: UnitSystem | undefined = await imodelDb.schemaContext.getSchemaItem("Units.SI", UnitSystem);
-const metaData: Format | undefined = await imodelDb.schemaContext.getSchemaItem("Formats.DefaultReal", Format);
-const metaData: KindOfQuantity | undefined = await imodelDb.schemaContext.getSchemaItem("TestSchema.TestKoQ", KindOfQuantity);
+const metaData: RelationshipClass | undefined =
+  await imodelDb.schemaContext.getSchemaItem(
+    "BisCore.ElementRefersToElements",
+    RelationshipClass
+  );
+const metaData: Enumeration | undefined =
+  await imodelDb.schemaContext.getSchemaItem(
+    "BisCore.AutoHandledPropertyStatementType",
+    Enumeration
+  );
+const metaData: UnitSystem | undefined =
+  await imodelDb.schemaContext.getSchemaItem("Units.SI", UnitSystem);
+const metaData: Format | undefined = await imodelDb.schemaContext.getSchemaItem(
+  "Formats.DefaultReal",
+  Format
+);
+const metaData: KindOfQuantity | undefined =
+  await imodelDb.schemaContext.getSchemaItem(
+    "TestSchema.TestKoQ",
+    KindOfQuantity
+  );
 ```
 
 ### @itwin/core-frontend
@@ -811,6 +828,7 @@ For more information read [Pull merge & conflict resolution](../learning/backend
   - `setUnits` takes `LazyLoadedUnit | LazyLoadedInvertedUnit` instead of `Unit | InvertedUnit`
   - `units` getter returns `ReadonlyArray<[LazyLoadedUnit | LazyLoadedInvertedUnit, string | undefined]>` instead of `ReadonlyArray<[Unit | InvertedUnit, string | undefined]>`
 - `KindOfQuantity` updated to use Lazy Loaded items to be consistent with other schema items
+
   - `addPresentationFormat` takes `LazyLoadedFormat` instead of `Format`
   - `createFormatOverride` takes `Array<[LazyLoadedUnit | LazyLoadedInvertedUnit, string | undefined]>` instead of `Array<[Unit | InvertedUnit, string | undefined]>`
   - `defaultPresentationFormat` getter returns `LazyLoadedFormat` instead of `Format`
@@ -827,7 +845,10 @@ Existing calls like `context.getSchemaItem<EntityClass>("schema:myName")` have t
 `context.getSchemaItem("schema", "myName", EntityClass)` or more verbose as a general item followed by a type-guard:
 
 ```ts
-const item: SchemaItem = await iModel.schemaContext.getSchemaItem("BisCore", "Element");
+const item: SchemaItem = await iModel.schemaContext.getSchemaItem(
+  "BisCore",
+  "Element"
+);
 if (item && EntityClass.isEntityClass(item)) {
 }
 ```
@@ -835,6 +856,27 @@ if (item && EntityClass.isEntityClass(item)) {
 A regex can be used to do bulk renaming:
 `getSchemaItem<([^>]+)>\(([^)]+)\)` replace with: `getSchemaItem($2, $1)`
 This applies to `SchemaContext.getSchemaItem/Sync`, `Schema.getItem/Sync` and `Schema.lookupItem/Sync`.
+
+### Changes to getElement and getModel
+
+GetElement and GetModel have been optimized on the backend. Element reads and Model reads should be largely unaffected and should function exactly as they have before, with some minor exceptions listed below.
+
+List of changes to how Entity props are returned by getElement() and getModel():
+
+- GeometricElement3dProps with empty placement.angles:
+  Previously, if placement.angles was [0,0,0], it was omitted entirely from the returned object. Now, placement.angles will always be defined, even if it is an empty object ({}), aligning with how YawPitchRollProps handles [0,0,0].
+
+- Precision Changes in angles:
+  Very small angles values will now be rounded when converted to JavaScript numbers (e.g., -35.0000000000000055 becomes -35.000000000000006).
+
+- Undefined Values in jsonProperties:
+  Undefined values in custom jsonProperties are no longer returned. Previously, such values were explicitly included as undefined.
+
+- GeomStream:
+  GeomStream via ECSql Reader now returns an uncompressed GeomStream buffer instead of a compressed buffer.
+
+A new iModelHost configuration is offered to opt out of these changes: `disableThinnedNativeInstanceWorkflow`
+By setting `disableThinnedNativeInstanceWorkflow` to true, the workflow will function exactly as before.
 
 ## Deprecated ECSqlStatement
 
