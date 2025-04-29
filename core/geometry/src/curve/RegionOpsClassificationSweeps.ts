@@ -18,11 +18,13 @@ import { HalfEdgeGraphSearch } from "../topology/HalfEdgeGraphSearch";
 import { HalfEdgeGraphMerge } from "../topology/Merging";
 import { RegularizationContext } from "../topology/RegularizeFace";
 import { Arc3d } from "./Arc3d";
+import { CurveCollection } from "./CurveCollection";
 import { CurveCurve } from "./CurveCurve";
 import { CurveLocationDetail } from "./CurveLocationDetail";
 import { CurvePrimitive } from "./CurvePrimitive";
 import { AnyRegion } from "./CurveTypes";
 import { GeometryQuery } from "./GeometryQuery";
+import { CloneCurvesContext } from "./internalContexts/CloneCurvesContext";
 import { PlaneAltitudeRangeContext } from "./internalContexts/PlaneAltitudeRangeContext";
 import { LineSegment3d } from "./LineSegment3d";
 import { Loop } from "./Loop";
@@ -244,7 +246,6 @@ export class RegionOpsFaceToFaceSearch {
     }
     return undefined;
   }
-
   /** Complete multi-step process for polygon binary booleans starting with arrays of coordinates.
    * * the manyLoopsAndParitySets input is an array.
    * * Each entry is one or more loops.
@@ -312,6 +313,7 @@ export enum RegionGroupOpType {
   Intersection = 2,
   NonBounding = -1,
 }
+
 /**
  * Each loop or parity region in a `RegionBooleanContext` is recorded as a `RegionGroupMember`, which carries
  * * the Loop or parityRegion object
@@ -330,6 +332,27 @@ class RegionGroupMember {
   }
   public clearState() { this.sweepState = 0; }
 }
+
+/**
+ * Algorithmic class for cloning with each full arc broken down into two half arcs.
+ * @internal
+ */
+class TransferWithSplitArcs extends CloneCurvesContext {
+  public constructor() {
+    super(undefined);
+  }
+  protected override doClone(primitive: CurvePrimitive): CurvePrimitive | CurvePrimitive[] {
+    if (primitive instanceof Arc3d && primitive.sweep.isFullCircle) // replace full arc with two half arcs
+      return [primitive.clonePartialCurve(0.0, 0.5), primitive.clonePartialCurve(0.5, 1)];
+    return primitive;
+  }
+  public static override clone(target: CurveCollection): CurveCollection {
+    const context = new TransferWithSplitArcs();
+    target.announceToCurveProcessor(context);
+    return context._result as CurveCollection;
+  }
+}
+
 /**
  * A `RegionGroup` is
  * * An array of `RegionGroupMembers`, carrying the regions of the Ai or Bi part of the boolean expression.
@@ -367,8 +390,7 @@ export class RegionGroup {
     }
     return range;
   }
-  /** Ask if the current _numIn count qualifies as an "in" for this operation type.
-   */
+  /** Ask if the current _numIn count qualifies as an "in" for this operation type. */
   public getInOut(): boolean {
     // UNION is true if one or more members are IN
     if (this.groupOpType === RegionGroupOpType.Union)
@@ -384,8 +406,9 @@ export class RegionGroup {
   // push new members into the group.
   public addMember(data: AnyRegion | AnyRegion[] | LineSegment3d | undefined, allowLineSegment: boolean = false) {
     if (data instanceof Loop || data instanceof ParityRegion) {
-      const cleanerData = data.clone() as (ParityRegion | Loop);
+      let cleanerData = data.clone() as (ParityRegion | Loop);
       RegionOps.consolidateAdjacentPrimitives(cleanerData);
+      cleanerData = TransferWithSplitArcs.clone(cleanerData) as (ParityRegion | Loop);
       this.members.push(new RegionGroupMember(cleanerData, this));
     } else if (data instanceof UnionRegion) {
       for (const child of data.children) {
@@ -397,7 +420,6 @@ export class RegionGroup {
       }
     } else if (allowLineSegment && data instanceof LineSegment3d) {
       this.members.push(new RegionGroupMember(data, this));
-
     }
   }
   // update the "in" count _numIn according to old and new states (parity counts) for some member region.
@@ -413,22 +435,22 @@ export class RegionGroup {
 /**
  * A `RegionBooleanContext` carries structure and operations for binary operations between two sets of regions.
  * * In the binary operation OP (union, intersection, parity, difference), the left and right operands
- *     are each a composite union, difference, or parity among multiple inputs, i.e.
+ * are each a composite union, difference, or parity among multiple inputs, i.e.,
  *   * (operationA among Ai) OP (operationB among Bi)
  *   * where the Ai are one set of regions, being combined by operationA
- *   * and the Bi are the another set of regions, being combined by operationB
- * * Each group of Ai and Bi is a `RegionGroup`
+ *   * and the Bi are the another set of regions, being combined by operationB.
+ * * Each group of Ai and Bi is a `RegionGroup`.
  * * This is an extremely delicate structure.
  * * Members are public because of the unique variety of queries, but should only be used for queries.
  * * The graph and curves in the booleans are connected by an extended pointer chain:
- *    * (HalfEdge in Graph).edgeTag points to a CurveLocationDetail
- *    * (CurveLocationDetail).curve points to a curve
- *    * (Curve).parent points to RegionGroupMember
- *    * (RegionGroupMember) points to RegionGroup
- *    * (RegionGroup) points to RegionBooleanBinaryContext
- * * So..when a graph sweep crosses an edge,
- *    * the chain leads to a parity count in the RegionGroupMember
- *    * that can change the number of members active in the RegionGroup
+ *    * (HalfEdge in Graph).edgeTag points to a CurveLocationDetail.
+ *    * (CurveLocationDetail).curve points to a curve.
+ *    * (Curve).parent points to RegionGroupMember.
+ *    * (RegionGroupMember) points to RegionGroup.
+ *    * (RegionGroup) points to RegionBooleanBinaryContext.
+ * * So when a graph sweep crosses an edge
+ *    * the chain leads to a parity count in the RegionGroupMember.
+ *    * that can change the number of members active in the RegionGroup.
  *    * which can change the state of the context.
  * @internal
  */
@@ -439,12 +461,12 @@ export class RegionBooleanContext implements RegionOpsFaceToFaceSearchCallbacks 
   public graph!: HalfEdgeGraph;
   public faceAreaFunction!: NodeToNumberFunction;
   public binaryOp: RegionBinaryOpType;
-
+  // private constructor
   private constructor(groupTypeA: RegionGroupOpType, groupTypeB: RegionGroupOpType) {
     this.groupA = new RegionGroup(this, groupTypeA);
     this.groupB = new RegionGroup(this, groupTypeB);
     this.extraGeometry = new RegionGroup(this, RegionGroupOpType.NonBounding);
-    this.binaryOp = RegionBinaryOpType.Union; // it will be revised on can calls.
+    this.binaryOp = RegionBinaryOpType.Union; // it will be revised on can calls
   }
   /**
    * Create a context with both A and B groups empty.
@@ -462,7 +484,6 @@ export class RegionBooleanContext implements RegionOpsFaceToFaceSearchCallbacks 
     // if (doConnectives !== 0)
     this.addConnectives();
   }
-
   private _workSegment?: LineSegment3d;
   private static _bridgeDirection = Vector3d.createNormalized(1.0, -0.12328974132467)!; // magic unit direction to minimize vertex hits
   /**
@@ -482,7 +503,6 @@ export class RegionBooleanContext implements RegionOpsFaceToFaceSearchCallbacks 
     this._workSegment = PlaneAltitudeRangeContext.findExtremePointsInDirection(rangeAB.corners(), RegionBooleanContext._bridgeDirection, this._workSegment);
     if (this._workSegment)
       margin *= this._workSegment.point0Ref.distanceXY(this._workSegment.point1Ref);  // how much further to extend each bridge ray
-
     const maxPoints: Point3d[] = [];
     const findExtremePointsInLoop = (region: Loop) => {
       const area = RegionOps.computeXYArea(region);
@@ -492,7 +512,6 @@ export class RegionBooleanContext implements RegionOpsFaceToFaceSearchCallbacks 
       if (this._workSegment)
         maxPoints.push(this._workSegment.point1Ref);
     };
-
     for (const groupMembers of [this.groupA.members, this.groupB.members]) {
       for (const m of groupMembers) {
         if (m.region instanceof Loop) {
@@ -503,22 +522,20 @@ export class RegionBooleanContext implements RegionOpsFaceToFaceSearchCallbacks 
         }
       }
     }
-
     const ray = Ray3d.createZero();
     for (const p of maxPoints) {
-      // Make a line from...
-      //  1) exactly the max point of the loops to
-      //  2) a point clearly outside the big range
-      // If p came from some inner loop this will...
-      //  1) create a bridge from the inner loop through any containing loops (always)
-      //  2) avoid crossing any containing loop at a vertex. (with high probability, but not absolutely always)
+      // Make a line from
+      //    1) exactly the max point of the loops to
+      //    2) a point clearly outside the big range
+      // If p came from some inner loop this will
+      //    1) create a bridge from the inner loop through any containing loops (always)
+      //    2) avoid crossing any containing loop at a vertex. (with high probability, but not absolutely always)
       const bridgeLength = margin + Ray3d.create(p, RegionBooleanContext._bridgeDirection, ray).intersectionWithRange3d(rangeAB).high;
       const outside = Point3d.createAdd2Scaled(p, 1.0, RegionBooleanContext._bridgeDirection, bridgeLength);
       const bridgeLine = LineSegment3d.createXYXY(p.x, p.y, outside.x, outside.y);
       this.extraGeometry.addMember(bridgeLine, true);
     }
   }
-
   /**
    * Markup and assembly steps for geometry in the RegionGroups.
    * * Annotate connection from group to curves.
@@ -529,7 +546,7 @@ export class RegionBooleanContext implements RegionOpsFaceToFaceSearchCallbacks 
    */
   public annotateAndMergeCurvesInGraph(mergeTolerance: number = Geometry.smallMetricDistance) {
     const allPrimitives: CurvePrimitive[] = [];
-    // ASSUME loops have fine-grained types -- no linestrings !!
+    // ASSUME loops have fine-grained types; no linestrings
     for (const group of [this.groupA, this.groupB, this.extraGeometry]) {
       for (const member of group.members) {
         let k = allPrimitives.length;
@@ -540,7 +557,7 @@ export class RegionBooleanContext implements RegionOpsFaceToFaceSearchCallbacks 
         }
       }
     }
-    //    const range = RegionOps.curveArrayRange(allPrimitives);
+    // const range = RegionOps.curveArrayRange(allPrimitives);
     const intersections = CurveCurve.allIntersectionsAmongPrimitivesXY(allPrimitives, mergeTolerance);
     const graph = PlanarSubdivision.assembleHalfEdgeGraph(allPrimitives, intersections, mergeTolerance);
     this.graph = graph;
@@ -555,9 +572,7 @@ export class RegionBooleanContext implements RegionOpsFaceToFaceSearchCallbacks 
    * @param binaryOp
    * @param announceFaceFunction
    */
-  public runClassificationSweep(
-    binaryOp: RegionBinaryOpType,
-    announceFaceFunction?: AnnounceClassifiedFace) {
+  public runClassificationSweep(binaryOp: RegionBinaryOpType, announceFaceFunction?: AnnounceClassifiedFace): void {
     this._announceFaceFunction = announceFaceFunction;
     this.binaryOp = binaryOp;
     this.graph.clearMask(HalfEdgeMask.EXTERIOR);

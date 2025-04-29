@@ -338,8 +338,8 @@ export class RegionOps {
     operation: RegionBinaryOpType,
     mergeTolerance: number = Geometry.smallMetricDistance,
   ): AnyRegion | undefined {
-    // Always return UnionRegion for now. But keep return type as AnyRegion:
-    // in the future, we might return the *simplest* region type.
+    // always return UnionRegion for now, but keep return type as AnyRegion
+    // in the future, we might return the *simplest* region type
     const result = UnionRegion.create();
     const context = RegionBooleanContext.create(RegionGroupOpType.Union, RegionGroupOpType.Union);
     context.addMembers(loopsA, loopsB);
