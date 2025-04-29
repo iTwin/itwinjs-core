@@ -74,7 +74,7 @@
     "cpx2": "^8.0.0",
     "eslint": "^9.13.0",
     "glob": "^10.3.12",
-    "playwright": "~1.50.0",
+    "playwright": "~1.47.1",
     "rimraf": "^6.0.1",
     "source-map-loader": "^5.0.0",
     "typescript": "~5.6.2",
