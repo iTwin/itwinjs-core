@@ -76,7 +76,6 @@ export class LayerTileTreeReferenceHandler {
     if(!this._mapTile){
       const removals = this._detachFromDisplayStyle;
       const mapImagery = context.viewport.displayStyle.settings.mapImagery;
-      const layers = context.viewport.displayStyle.settings.mapImagery.backgroundLayers;
       if (0 === removals.length) {
         removals.push(context.viewport.displayStyle.settings.onMapImageryChanged.addListener((imagery: Readonly<MapImagerySettings>) => {
           this.setBaseLayerSettings(imagery.backgroundBase);
@@ -84,16 +83,17 @@ export class LayerTileTreeReferenceHandler {
         }));
       }
       removals.push(context.viewport.onChangeView.addListener((vp, previousViewState) => {
-        if(layers.length > 0 && compareMapLayer(previousViewState, vp.view)){
+        if(compareMapLayer(previousViewState, vp.view)){
           this.setBaseLayerSettings(mapImagery.backgroundBase);
           this.setLayerSettings(mapImagery.backgroundLayers);
         }
       }));
-      removals.push(context.viewport.onViewedModelsChanged.addListener(() => {
+      removals.push(context.viewport.onViewedModelsChanged.addListener((viewport) => {
+        const layers = viewport.displayStyle.settings.mapImagery.backgroundLayers;
         if (layers.length > 0) {
           this.setBaseLayerSettings(mapImagery.backgroundBase);
           this.setLayerSettings(mapImagery.backgroundLayers);
-          context.viewport.invalidateScene();
+          viewport.invalidateScene();
         }
       }));
     }
