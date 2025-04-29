@@ -812,7 +812,6 @@ For more information read [Pull merge & conflict resolution](../learning/backend
   - `setUnits` takes `LazyLoadedUnit | LazyLoadedInvertedUnit` instead of `Unit | InvertedUnit`
   - `units` getter returns `ReadonlyArray<[LazyLoadedUnit | LazyLoadedInvertedUnit, string | undefined]>` instead of `ReadonlyArray<[Unit | InvertedUnit, string | undefined]>`
 - `KindOfQuantity` updated to use Lazy Loaded items to be consistent with other schema items
-
   - `addPresentationFormat` takes `LazyLoadedFormat` instead of `Format`
   - `createFormatOverride` takes `Array<[LazyLoadedUnit | LazyLoadedInvertedUnit, string | undefined]>` instead of `Array<[Unit | InvertedUnit, string | undefined]>`
   - `defaultPresentationFormat` getter returns `LazyLoadedFormat` instead of `Format`
