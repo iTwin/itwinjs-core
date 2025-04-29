@@ -35,10 +35,7 @@ export abstract class ArcGISImageryProvider extends MapLayerImageryProvider {
 
   constructor(settings: ImageMapLayerSettings, usesCachedTiles: boolean) {
     super(settings, usesCachedTiles);
-    const ac = IModelApp.mapLayerFormatRegistry?.getAccessClient(settings.formatId);
-    if (ac) {
-      this._accessClient = ac;
-    }
+    this._accessClient = IModelApp.mapLayerFormatRegistry?.getAccessClient(settings.formatId);
   }
 
   /** Updates the accessClient token state whenever the status of the provider change.
