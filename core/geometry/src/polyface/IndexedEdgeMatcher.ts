@@ -8,102 +8,113 @@
  */
 
 /**
- * * For boundary sorting, an edge is a (packed!) Float64Array.
- * * Fixed entry positions are:
- *   * [0] is start vertex index (in CCW order around its facet)
- *   * [1] is end vertex index (in CCW order around its facet)
- *   * [2] is facet index (or another number to associate with this edge).
+ * Represent an [[IndexedPolyface]] edge as:
+ * * vertex start index and vertex end index (CCW order around its facet)
+ * * an additional number to associate with the edge (e.g., facet index)
+ * @public
  */
-export class SortableEdge extends Float64Array {
+export class SortableEdge {
+  private _v: number[];
+  private _a: number;
+
+  /** Constructor. */
+  public constructor(startVertex: number, endVertex: number, facetIndex: number) {
+    this._v = [startVertex, endVertex];
+    this._a = facetIndex;
+  }
+
   /** Return the vertex index that appears first in the order stored.  */
-  public get vertexIndexA(): number {
-    return this[0];
+  public get startVertex(): number {
+    return this._v[0];
   }
   /** Return the vertex index that appears second in the order stored.  */
-  public get vertexIndexB(): number {
-    return this[1];
+  public get endVertex(): number {
+    return this._v[1];
   }
   /**
    * Return the facet index.
    * * This value is carried along during matching. Typically it is a facet index, but it does not have to be.
    */
   public get facetIndex(): number {
-    return this[2];
+    return this._a;
   }
-  /** return true if vertexIndexA is less than vertexIndexB. */
+  /** return true if `startVertex` is less than `endVertex`. */
   public get isLowHigh(): boolean {
-    return this[0] < this[1];
+    return this._v[0] < this._v[1];
   }
   /** Return the vertex index with lower numeric value. */
-  public get lowVertexIndex(): number {
-    return this[0] < this[1] ? this[0] : this[1];
+  public get lowVertex(): number {
+    return this.isLowHigh ? this._v[0] : this._v[1];
   }
   /** Return the vertex index with higher numeric value. */
-  public get highVertexIndex(): number {
-    return this[0] > this[1] ? this[0] : this[1];
+  public get highVertex(): number {
+    return this.isLowHigh ? this._v[1] : this._v[0];
   }
-  /** Return true if the vertices edgeA and edgeB are the same vertex indices in opposite order. */
+  /** Return true if edgeA and edgeB traverse the same edge in the same direction. */
+  private static areSameEdge(edgeA: SortableEdge, edgeB: SortableEdge): boolean {
+    return edgeA._v[0] === edgeB._v[0] && edgeA._v[1] === edgeB._v[1];
+  }
+  /** Return true if edgeA and edgeB traverse the same edge in opposite directions. */
   public static areDirectedPartners(edgeA: SortableEdge, edgeB: SortableEdge): boolean {
-    return edgeA[0] === edgeB[1] && edgeA[1] === edgeB[0];
+    return edgeA._v[0] === edgeB._v[1] && edgeA._v[1] === edgeB._v[0];
   }
-  /** Return true if the vertices edgeA and edgeB are the same vertex indices with no consideration of order. */
+  /** Return true if edgeA and edgeB traverse the same edge in the same or opposite directions. */
   public static areUndirectedPartners(edgeA: SortableEdge, edgeB: SortableEdge): boolean {
-    return (edgeA[0] === edgeB[0] && edgeA[1] === edgeB[1]) || ((edgeA[0] === edgeB[1] && edgeA[1] === edgeB[0]));
+    return this.areSameEdge(edgeA, edgeB) || this.areDirectedPartners(edgeA, edgeB);
   }
   /**
-   * Return numeric relationship of edgeA and edgeB:
-   * * 1 if they share start and end in the same order.
-   * * -1 if they share start and end in reversed order.
+   * Return numeric identifier for the relationship between edgeA and edgeB:
+   * * 1 if they share start and end vertex indices in the same order.
+   * * -1 if they share start and end vertex indices in reversed order.
    * * 0 otherwise.
    */
   public static relativeOrientation(edgeA: SortableEdge, edgeB: SortableEdge): number {
-    if (edgeA[0] === edgeB[0] && edgeA[1] === edgeB[1]) return 1;
-    if (edgeA[0] === edgeB[1] && edgeA[1] === edgeB[0]) return -1;
+    if (this.areSameEdge(edgeA, edgeB))
+      return 1;
+    if (this.areDirectedPartners(edgeA, edgeB))
+      return -1;
     return 0;
   }
-
+  /** Whether the start and end vertex indices are equal. */
   public get isNullEdge(): boolean {
-    return this[0] === this[1];
+    return this._v[0] === this._v[1];
   }
   /**
    * Lexical comparison of two edges.
-   * * If the edges have the same vertex pair (in same or opposite order) they will end up adjacent in a sort.
-   * * If the edges have 0 or 1 shared vertex indices, the one with lowest low comes first.
+   * * If the edges have the same vertex index pair (in same or opposite order) they will end up adjacent in a sort.
    * @param edgeA first edge
    * @param edgeB second edge
    */
   public static lessThan(edgeA: SortableEdge, edgeB: SortableEdge): number {
     // primary compare is based on indirect indices
-    const lowA = edgeA.lowVertexIndex;
-    const lowB = edgeB.lowVertexIndex;
+    const lowA = edgeA.lowVertex;
+    const lowB = edgeB.lowVertex;
     if (lowA < lowB)
       return -1;
     if (lowB < lowA)
       return 1;
-    const highA = edgeA.highVertexIndex;
-    const highB = edgeB.highVertexIndex;
+    const highA = edgeA.highVertex;
+    const highB = edgeB.highVertex;
     if (highA < highB)
       return -1;
     if (highB < highA)
       return 1;
     // undirected indices match ... use directed vertexIndexA
-    return edgeA.vertexIndexA - edgeB.vertexIndexA;
+    return edgeA.startVertex - edgeB.startVertex;
   }
-  public constructor(vertexA: number, vertexB: number, facetIndex: number) {
-    super(3);
-    this[0] = vertexA;
-    this[1] = vertexB;
-    this[2] = facetIndex;
-  }
+  /** Return the edge data as a JSON array. */
   public toJSON(): any {
-    return [this[0], this[1], this[2]];
+    return [this._v[0], this._v[1], this._a];
   }
+  /** Return the edge cluster in JSON format.  */
   public static clusterToJSON(data: SortableEdgeCluster): any {
     if (data instanceof SortableEdge)
       return data.toJSON();
     const result = [];
-    for (const edge of data) result.push(edge.toJSON());
+    for (const edge of data)
+      result.push(edge.toJSON());
   }
+  /** Return the edge cluster array in JSON format. */
   public static clusterArrayToJSON(data: SortableEdgeCluster[]) {
     const result = [];
     for (const cluster of data)
@@ -111,15 +122,23 @@ export class SortableEdge extends Float64Array {
     return result;
   }
 }
-export type SortableEdgeCluster = SortableEdge | SortableEdge[];
+
 /**
- * An IndexedEdgeMatcher carries an array of edge start & end indices for sorting and subsequent analyses
- * (such as testing for closed mesh).
+ * Union type for a single [[SortableEdge]] or a (matched) array of them.
+ * @public
+ */
+export type SortableEdgeCluster = SortableEdge | SortableEdge[];
+
+/**
+ * An IndexedEdgeMatcher carries an array of edge start and end indices for sorting and subsequent analyses,
+ * such as testing for closed mesh.
+ * @public
  */
 export class IndexedEdgeMatcher {
+  /** The array of edges to be sorted. */
   public edges: SortableEdge[];
-
-  constructor() {
+  /** Constructor. Call [[addEdge]] or [[addPath]] to populate `edges`. */
+  public constructor() {
     this.edges = [];
   }
   /**
@@ -135,21 +154,22 @@ export class IndexedEdgeMatcher {
     return edge;
   }
   /**
-   * Push edges all around a facet, returning to vertexArray[0].
-   * @param vertexArray array of vertex indices around facet
-   * @param facetIndex value to carry along during matching
+   * Push edges along a path.
+   * * Typically used to add edges around a facet.
+   * @param vertexIndices array of vertex indices along an open or closed path.
+   * @param facetIndex value to set on each edge pushed.
    * @param closeLoop true to add an edge from last to first vertex.
    */
-  public addPath(vertexArray: number[], facetIndex: number, closeLoop: boolean = true) {
-    if (vertexArray.length === 0) return;
-    const m = vertexArray.length - 1;
-    for (let i = 0; i < m; i++) {
-      this.addEdge(vertexArray[i], vertexArray[i + 1], facetIndex);
-    }
+  public addPath(vertexIndices: number[], facetIndex: number, closeLoop: boolean) {
+    if (vertexIndices.length === 0)
+      return;
+    const m = vertexIndices.length - 1;
+    for (let i = 0; i < m; i++)
+      this.addEdge(vertexIndices[i], vertexIndices[i + 1], facetIndex);
     if (closeLoop)
-      this.addEdge(vertexArray[m], vertexArray[0], facetIndex);
+      this.addEdge(vertexIndices[m], vertexIndices[0], facetIndex);
   }
-  /** Sort the edge index array. */
+  /** Sort the edges. */
   public sort() {
     this.edges.sort((edgeA, edgeB) => SortableEdge.lessThan(edgeA, edgeB));
   }
@@ -167,32 +187,34 @@ export class IndexedEdgeMatcher {
     }
   }
   /**
-   * Sort the edges, and look for three categories of paired edges:
-   * * caller must allocate all result arrays of interest.
-   * * Any combination of the result arrays may be `undefined`, indicating that category is to be ignored.
-   * * Any combination of the result arrays may be aliased as the same target, in which case those to categories are
+   * Sort the edges, and collect up to four categories of edges: manifold pairs, singletons, null edges,
+   * and everything else.
+   * * Caller should allocate arrays of interest.
+   * * Any combination of the arrays may be `undefined`, indicating that category is to be ignored.
+   * * Any combination of the arrays may be aliased as the same target, in which case the aliased categories are
    * merged into the target.
-   * * For instance, to ignore manifold pairs and collect all others (singleton, null, and other) as a single array
-   * `allOther`, create `const allOther = []` as an empty array and call
-   * `sortAndCollectClusters (undefined, allOther, allOther, allOther);`
-   * @param manifoldPairs optional array to receive pairs of properly mated SortableEdgePairs, i.e. simple interior
-   * edges adjacent to two facets in opposing directions.
-   * @param singletons optional array to receive edges that are simple boundary edges.
-   * @param nullEdges optional array to receive arrays of null edges (same start and end vertex)
-   * @param allOtherClusters optional array to receive arrays in which all the edges are partners in an undirected sense
-   * but not a simple directed pair.
+   * * For instance, to ignore manifold pairs and collect all other edges in a single array:
+   * `const foo = []; matcher.sortAndCollectClusters(undefined, foo, foo, foo);`
+   * @param manifoldPairs array to receive pairs of properly mated edges, i.e. mesh interior edges.
+   * @param singletons array to receive edges that have no partner, i.e., mesh boundary edges.
+   * @param nullEdges array to receive arrays of matched null edges, for which start === end vertex index.
+   * @param allOtherClusters array to receive arrays of edges that are partners in an undirected, non-manifold sense.
    */
   public sortAndCollectClusters(
-    manifoldPairs: SortableEdgeCluster[] | undefined,
+    manifoldPairs?: SortableEdgeCluster[],
     singletons?: SortableEdgeCluster[],
     nullEdges?: SortableEdgeCluster[],
     allOtherClusters?: SortableEdgeCluster[],
   ): void {
     this.sort();
-    if (manifoldPairs) manifoldPairs.length = 0;
-    if (singletons) singletons.length = 0;
-    if (nullEdges) nullEdges.length = 0;
-    if (allOtherClusters) allOtherClusters.length = 0;
+    if (manifoldPairs)
+      manifoldPairs.length = 0;
+    if (singletons)
+      singletons.length = 0;
+    if (nullEdges)
+      nullEdges.length = 0;
+    if (allOtherClusters)
+      allOtherClusters.length = 0;
     const n = this.edges.length;
     let clusterLength;
     for (let index0 = 0; index0 < n; index0 += clusterLength) {
@@ -202,15 +224,14 @@ export class IndexedEdgeMatcher {
         SortableEdge.areUndirectedPartners(baseEdge, this.edges[index1]); index1++) {
         clusterLength++;
       }
-      if (this.edges[index0].isNullEdge) {
+      if (this.edges[index0].isNullEdge)
         this.collectSortableEdgeCluster(index0, index0 + clusterLength, nullEdges);
-      } else if (clusterLength === 2 && SortableEdge.areDirectedPartners(baseEdge, this.edges[index0 + 1])) {
+      else if (clusterLength === 2 && SortableEdge.areDirectedPartners(baseEdge, this.edges[index0 + 1]))
         this.collectSortableEdgeCluster(index0, index0 + clusterLength, manifoldPairs);
-      } else if (clusterLength === 1) {
+      else if (clusterLength === 1)
         this.collectSortableEdgeCluster(index0, index0 + 1, singletons);
-      } else {
+      else
         this.collectSortableEdgeCluster(index0, index0 + clusterLength, allOtherClusters);
-      }
     }
   }
 }

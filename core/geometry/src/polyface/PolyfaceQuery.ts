@@ -539,19 +539,20 @@ export class PolyfaceQuery {
     let numNegative = 0;
     const edgeVector = Vector3d.create();
     for (const cluster of manifoldClusters) {
-      const sideA = cluster[0];
-      const sideB = cluster[1];
-      if (sideA instanceof SortableEdge && sideB instanceof SortableEdge
-        && source.data.point.vectorIndexIndex(sideA.vertexIndexA, sideA.vertexIndexB, edgeVector)) {
-        const dihedralAngle = centroidNormal[sideA.facetIndex].direction.signedAngleTo(
-          centroidNormal[sideB.facetIndex].direction, edgeVector,
-        );
-        if (dihedralAngle.isAlmostZero)
-          numPlanar++;
-        else if (dihedralAngle.radians > 0.0)
-          numPositive++;
-        else
-          numNegative++;
+      if (Array.isArray(cluster) && cluster.length === 2) {
+        const sideA = cluster[0];
+        const sideB = cluster[1];
+        if (source.data.point.vectorIndexIndex(sideA.startVertex, sideA.endVertex, edgeVector)) {
+          const facetNormalA = centroidNormal[sideA.facetIndex].direction;
+          const facetNormalB = centroidNormal[sideB.facetIndex].direction;
+          const dihedralAngle = facetNormalA.signedAngleTo(facetNormalB, edgeVector);
+          if (dihedralAngle.isAlmostZero)
+            numPlanar++;
+          else if (dihedralAngle.radians > 0.0)
+            numPositive++;
+          else
+            numNegative++;
+        }
       }
     }
     // categorize the mesh
@@ -649,8 +650,8 @@ export class PolyfaceQuery {
     const pointB = Point3d.create();
     for (const e of boundaryEdges) {
       const e1 = e instanceof SortableEdge ? e : e[0];
-      const indexA = e1.vertexIndexA;
-      const indexB = e1.vertexIndexB;
+      const indexA = e1.startVertex;
+      const indexB = e1.endVertex;
       if (sourcePolyface.data.getPoint(indexA, pointA) && sourcePolyface.data.getPoint(indexB, pointB))
         announceEdge(pointA, pointB, indexA, indexB, e1.facetIndex);
     }
@@ -757,8 +758,8 @@ export class PolyfaceQuery {
     for (const pair of manifoldEdges) {
       if (!Array.isArray(pair) || pair.length !== 2)
         continue;
-      const indexA = pair[0].vertexIndexA;
-      const indexB = pair[0].vertexIndexB;
+      const indexA = pair[0].startVertex;
+      const indexB = pair[0].endVertex;
       if (!mesh.data.getPoint(indexA, pointA) || !mesh.data.getPoint(indexB, pointB))
         continue;
       const face0 = analyzeFace(pair[0].facetIndex);
@@ -1762,10 +1763,10 @@ export class PolyfaceQuery {
   private static setEdgeVisibility(polyface: IndexedPolyface, clusters: SortableEdgeCluster[], value: boolean): void {
     for (const cluster of clusters) {
       if (cluster instanceof SortableEdge) {
-        this.setSingleEdgeVisibility(polyface, cluster.facetIndex, cluster.vertexIndexA, value);
+        this.setSingleEdgeVisibility(polyface, cluster.facetIndex, cluster.startVertex, value);
       } else if (Array.isArray(cluster)) {
         for (const e1 of cluster)
-          this.setSingleEdgeVisibility(polyface, e1.facetIndex, e1.vertexIndexA, value);
+          this.setSingleEdgeVisibility(polyface, e1.facetIndex, e1.startVertex, value);
       }
     }
   }
@@ -1872,8 +1873,8 @@ export class PolyfaceQuery {
             && undefined !== PolyfaceQuery.computeFacetUnitNormal(visitor, e1.facetIndex, normal1)) {
             const edgeAngle = normal0.smallerUnorientedAngleTo(normal1);
             if (edgeAngle.radians > sharpEdgeAngle.radians) {
-              this.setSingleEdgeVisibility(mesh, e0.facetIndex, e0.vertexIndexA, true);
-              this.setSingleEdgeVisibility(mesh, e1.facetIndex, e1.vertexIndexA, true);
+              this.setSingleEdgeVisibility(mesh, e0.facetIndex, e0.startVertex, true);
+              this.setSingleEdgeVisibility(mesh, e1.facetIndex, e1.startVertex, true);
             }
           }
         }

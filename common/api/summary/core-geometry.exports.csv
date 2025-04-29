@@ -141,6 +141,7 @@ public;interface;HoleFillOptions
 public;interface;ICloneable
 public;namespace;IModelJson
 public;class;IndexedCollectionInterval
+public;class;IndexedEdgeMatcher
 public;class;IndexedPolyface
 public;class;IndexedPolyfaceSubsetVisitor
 public;class;IndexedPolyfaceVisitor
@@ -261,6 +262,8 @@ public;class;SmallSystem
 public;class;SmoothTransformBetweenFrusta
 public;class;SolidPrimitive
 public;type;SolidPrimitiveType
+public;class;SortableEdge
+public;type;SortableEdgeCluster
 public;class;SpacePolygonTriangulation
 public;class;Sphere
 public;enum;StandardViewIndex

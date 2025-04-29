@@ -170,11 +170,11 @@ function allEdgesAreVisible(mesh: IndexedPolyface, clusters: SortableEdgeCluster
     allHidden = false;
   for (const cluster of clusters) {
     if (cluster instanceof SortableEdge) {
-      if (allHidden === PolyfaceQuery.getSingleEdgeVisibility(mesh, cluster.facetIndex, cluster.vertexIndexA))
+      if (allHidden === PolyfaceQuery.getSingleEdgeVisibility(mesh, cluster.facetIndex, cluster.startVertex))
         return false;
     } else {
       for (const edge of cluster) {
-        if (allHidden === PolyfaceQuery.getSingleEdgeVisibility(mesh, edge.facetIndex, edge.vertexIndexA))
+        if (allHidden === PolyfaceQuery.getSingleEdgeVisibility(mesh, edge.facetIndex, edge.startVertex))
           return false;
       }
     }

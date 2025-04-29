@@ -2805,6 +2805,16 @@ export class IndexedCollectionInterval<T extends CollectionWithLength> {
 }
 
 // @public
+export class IndexedEdgeMatcher {
+    constructor();
+    addEdge(vertexA: number, vertexB: number, facetIndex: number): SortableEdge;
+    addPath(vertexIndices: number[], facetIndex: number, closeLoop: boolean): void;
+    edges: SortableEdge[];
+    sort(): void;
+    sortAndCollectClusters(manifoldPairs?: SortableEdgeCluster[], singletons?: SortableEdgeCluster[], nullEdges?: SortableEdgeCluster[], allOtherClusters?: SortableEdgeCluster[]): void;
+}
+
+// @public
 export class IndexedPolyface extends Polyface {
     protected constructor(data: PolyfaceData, facetStart?: number[], facetToFaceData?: number[]);
     addColor(color: number): number;
@@ -5654,6 +5664,28 @@ export abstract class SolidPrimitive extends GeometryQuery {
 
 // @public
 export type SolidPrimitiveType = "box" | "cone" | "sphere" | "linearSweep" | "rotationalSweep" | "ruledSweep" | "torusPipe";
+
+// @public
+export class SortableEdge {
+    constructor(startVertex: number, endVertex: number, facetIndex: number);
+    static areDirectedPartners(edgeA: SortableEdge, edgeB: SortableEdge): boolean;
+    static areUndirectedPartners(edgeA: SortableEdge, edgeB: SortableEdge): boolean;
+    static clusterArrayToJSON(data: SortableEdgeCluster[]): any[];
+    static clusterToJSON(data: SortableEdgeCluster): any;
+    get endVertex(): number;
+    get facetIndex(): number;
+    get highVertex(): number;
+    get isLowHigh(): boolean;
+    get isNullEdge(): boolean;
+    static lessThan(edgeA: SortableEdge, edgeB: SortableEdge): number;
+    get lowVertex(): number;
+    static relativeOrientation(edgeA: SortableEdge, edgeB: SortableEdge): number;
+    get startVertex(): number;
+    toJSON(): any;
+}
+
+// @public
+export type SortableEdgeCluster = SortableEdge | SortableEdge[];
 
 // @public
 export class SpacePolygonTriangulation {
