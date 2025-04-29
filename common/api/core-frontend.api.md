@@ -5142,6 +5142,8 @@ export class IModelTileTree extends TileTree {
     // (undocumented)
     readonly maxTilesToSkip: number;
     // (undocumented)
+    get parentsAndChildrenExclusive(): boolean;
+    // (undocumented)
     prune(): void;
     // (undocumented)
     get rootTile(): Tile;
