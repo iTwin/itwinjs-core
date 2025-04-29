@@ -10,9 +10,9 @@ import { BentleyError, BentleyStatus, Logger } from "@itwin/core-bentley";
 import { ImageMapLayerSettings, ImageSource } from "@itwin/core-common";
 import { DecorateContext, IModelApp, MapCartoRectangle, MapLayerImageryProvider, MapTile, ScreenViewport, Tile } from "@itwin/core-frontend";
 import { GoogleMapsDecorator } from "./GoogleMapDecorator.js";
-import { NativeGoogleMapsSessionManager } from "./NativeGoogleMapsSession.js";
 import { QuadIdProps } from "@itwin/core-frontend/lib/cjs/tile/internal.js";
 import { GoogleMapsAccessClient, GoogleMapsCreateSessionOptions, GoogleMapsLayerTypes, GoogleMapsMapTypes, GoogleMapsScaleFactors, GoogleMapsSession, GoogleMapsSessionManager, ViewportInfo } from "./GoogleMapsSession.js";
+import { NativeGoogleMapsSessionManager } from "../internal/NativeGoogleMapsSession.js";
 
 const loggerCategory = "MapLayersFormats.GoogleMaps";
 
