@@ -155,20 +155,38 @@ export interface ViewportInfoRequestParams {
   zoom: number;
 }
 
+
+/*
+* Google Maps Request
+* @beta
+*/
+export interface GoogleMapsRequest {
+  /** The URL of the request */
+  url: URL;
+
+  /* Authorization header for the request */
+  authorization?: string;
+}
+
 /*
 * Google Maps session.
 * @beta
 */
 export interface GoogleMapsSession {
+  /* Tile size in pixels */
   getTileSize: () => number;
-  getTileUrl: (position: QuadIdProps) => URL;
-  getViewportInfoUrl (rectangle: MapCartoRectangle, zoomLevel: number): URL
+
+  /* Tile URL for the given tile position */
+  getTileRequest: (position: QuadIdProps) => GoogleMapsRequest;
+
+  /* Viewport information request */
+  getViewportInfoRequest (rectangle: MapCartoRectangle, zoomLevel: number): GoogleMapsRequest
 }
 
 export abstract class BaseGoogleMapsSession implements GoogleMapsSession {
   protected abstract getTileApiBaseUrl(): string;
 
-  // protected getTilePositionUrl(row: number, column: number, level: number) {
+
   protected getTilePositionUrl(position: QuadIdProps) {
     const baseUrl = this.getTileApiBaseUrl();
     const tmpUrl = `${baseUrl}/${position.level}/${position.column}/${position.row}`;
@@ -176,8 +194,8 @@ export abstract class BaseGoogleMapsSession implements GoogleMapsSession {
   }
 
   public abstract getTileSize(): number;
-  public abstract getTileUrl(position: QuadIdProps): URL;
-  public abstract getViewportInfoUrl (rectangle: MapCartoRectangle, zoomLevel: number): URL
+  public abstract getTileRequest(position: QuadIdProps): GoogleMapsRequest;
+  public abstract getViewportInfoRequest (rectangle: MapCartoRectangle, zoomLevel: number): GoogleMapsRequest
 }
 
 /*
@@ -189,7 +207,6 @@ export abstract class GoogleMapsSessionManager implements MapLayerSessionManager
   public abstract createSession (sessionOptions: GoogleMapsCreateSessionOptions): Promise<GoogleMapsSession>;
 }
 
-export abstract class GoogleMapsAccessClient implements MapLayerSessionClient {
-  public readonly type = "GoogleMapsAccessClient";
+export abstract class GoogleMapsSessionClient implements MapLayerSessionClient {
   public abstract getSessionManager(): GoogleMapsSessionManager;
 }

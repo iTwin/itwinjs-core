@@ -9,7 +9,7 @@
 import { Logger } from "@itwin/core-bentley";
 import { MapCartoRectangle } from "@itwin/core-frontend";
 import { QuadIdProps } from "@itwin/core-frontend/lib/cjs/tile/internal.js";
-import { BaseGoogleMapsSession, GoogleMapsCreateSessionOptions, GoogleMapsSession, GoogleMapsSessionData, GoogleMapsSessionManager } from "../GoogleMaps/GoogleMapsSession.js";
+import { BaseGoogleMapsSession, GoogleMapsCreateSessionOptions, GoogleMapsRequest, GoogleMapsSession, GoogleMapsSessionData, GoogleMapsSessionManager } from "../GoogleMaps/GoogleMapsSession.js";
 
 
 const loggerCategory = "MapLayersFormats.GoogleMaps";
@@ -38,23 +38,23 @@ export class NativeGoogleMapsSession extends BaseGoogleMapsSession {
       return this.json.tileWidth;
   }
 
-  public getTileUrl(position: QuadIdProps): URL {
+  public getTileRequest(position: QuadIdProps): GoogleMapsRequest {
     const url = this.getTilePositionUrl(position);
     url.searchParams.append("key", this.apiKey);
     url.searchParams.append("session", this.json.session);
-    return url;
+    return {url};
   }
 
-  public getViewportInfoUrl (rectangle: MapCartoRectangle, zoomLevel: number): URL {
+  public getViewportInfoRequest (rectangle: MapCartoRectangle, zoomLevel: number): GoogleMapsRequest {
     const degrees = rectangle.toDegrees();
-    const obj = new URL(
+    const url = new URL(
       `${this.getTileApiBaseUrl()}\
       zoom=${zoomLevel}\
       &north=${degrees.north}&south=${degrees.south}&east=${degrees.east}&west=${degrees.west}`
     );
-    obj.searchParams.append("key", this.apiKey);
-    obj.searchParams.append("session", this.json.session);
-    return obj;
+    url.searchParams.append("key", this.apiKey);
+    url.searchParams.append("session", this.json.session);
+    return {url};
   }
 
     /**

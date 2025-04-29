@@ -162,17 +162,33 @@ export class MapLayerFormatRegistry {
     return undefined;
   }
 
-  public getSessionClient(formatId: string): MapLayerAccessClient | undefined {
+  /**
+  * Returns the active session client for a given format.
+  * @beta
+  * */
+  public getSessionClient(formatId: string): MapLayerSessionClient | undefined {
     if (formatId.length === 0)
       return undefined;
 
-    const accessClient = this._formats.get(formatId)?.client;
-    if (accessClient && typeof((accessClient as any).getSessionManager) === "function") {
-      return accessClient as MapLayerAccessClient;
+    const client = this._formats.get(formatId)?.client;
+    if (client && typeof((client as any).getSessionManager) === "function") {
+      return client as MapLayerSessionClient;
     }
     return undefined;
   }
 
+  /**
+  * Set the session client for a specific format.
+  * @beta
+  * */
+  public setSessionClient(formatId: string, client: MapLayerSessionClient): boolean {
+    const entry = this._formats.get(formatId);
+    if (entry !== undefined) {
+      entry.client = client;
+      return true;
+    }
+    return false;
+  }
 
   public get configOptions(): MapLayerOptions {
     return this._configOptions;

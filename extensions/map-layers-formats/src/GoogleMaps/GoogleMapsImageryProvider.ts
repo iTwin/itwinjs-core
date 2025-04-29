@@ -11,7 +11,7 @@ import { ImageMapLayerSettings, ImageSource } from "@itwin/core-common";
 import { DecorateContext, IModelApp, MapCartoRectangle, MapLayerImageryProvider, MapTile, ScreenViewport, Tile } from "@itwin/core-frontend";
 import { GoogleMapsDecorator } from "./GoogleMapDecorator.js";
 import { QuadIdProps } from "@itwin/core-frontend/lib/cjs/tile/internal.js";
-import { GoogleMapsAccessClient, GoogleMapsCreateSessionOptions, GoogleMapsLayerTypes, GoogleMapsMapTypes, GoogleMapsScaleFactors, GoogleMapsSession, GoogleMapsSessionManager, ViewportInfo } from "./GoogleMapsSession.js";
+import {  GoogleMapsCreateSessionOptions, GoogleMapsLayerTypes, GoogleMapsMapTypes, GoogleMapsScaleFactors, GoogleMapsSession, GoogleMapsSessionClient, GoogleMapsSessionManager, ViewportInfo } from "./GoogleMapsSession.js";
 import { NativeGoogleMapsSessionManager } from "../internal/NativeGoogleMapsSession.js";
 
 const loggerCategory = "MapLayersFormats.GoogleMaps";
@@ -49,15 +49,9 @@ export class GoogleMapsImageryProvider extends MapLayerImageryProvider {
   }
 
   protected async getSessionManager (): Promise<GoogleMapsSessionManager> {
-    const accessClient = IModelApp.mapLayerFormatRegistry.getAccessClient(this._settings.formatId);
-    if (accessClient?.type && "GoogleMapsAccessClient") {
-      const sessionManager = (accessClient as GoogleMapsAccessClient).getSessionManager();
-      if (!sessionManager) {
-        const msg = `Failed to get session manager`;
-        Logger.logError(loggerCategory, msg);
-        throw new BentleyError(BentleyStatus.ERROR, msg);
-      }
-      return sessionManager
+    const client = IModelApp.mapLayerFormatRegistry.getSessionClient(this._settings.formatId);
+    if (client instanceof GoogleMapsSessionClient) {
+      return client.getSessionManager();
     } else {
       // No access client found, default to native session manager (assuming API key is provided)
       if (this._settings.accessKey?.value) {
@@ -87,7 +81,7 @@ export class GoogleMapsImageryProvider extends MapLayerImageryProvider {
       language: this._settings.properties!.language as string,
     }
 
-    if (this._settings.properties?.layerTypes !== undefined) {
+    if (Array.isArray(this._settings.properties?.layerTypes) && this._settings.properties.layerTypes.length > 0) {
       createSessionOptions.layerTypes = this._settings.properties.layerTypes as GoogleMapsLayerTypes[];
     }
 
@@ -131,8 +125,12 @@ export class GoogleMapsImageryProvider extends MapLayerImageryProvider {
       }
       if (cartoRect && this._activeSession) {
         try {
-           const url = this._activeSession.getViewportInfoUrl(cartoRect, zoom);
-            const request = new Request(url, {method: "GET"});
+           const req = this._activeSession.getViewportInfoRequest(cartoRect, zoom);
+            const request = new Request(req.url, {method: "GET"});
+            if (req.authorization) {
+              request.headers.set("Authorization", req.authorization);
+            }
+            // Add the session token to the request
             const response = await fetch (request);
             if (response.ok) {
               const json = await response.json();
@@ -169,15 +167,15 @@ export class GoogleMapsImageryProvider extends MapLayerImageryProvider {
     }
 
     try {
-      let tileUrl = this._activeSession.getTileUrl(tilePos);
-      let tileResponse: Response = await this.makeTileRequest(tileUrl.toString());
+      let tileRequest = this._activeSession.getTileRequest(tilePos);
+      let tileResponse: Response = await this.makeTileRequest(tileRequest.url.toString(), undefined, tileRequest.authorization);
       if (!tileResponse.ok) {
         if (tileResponse.headers.get("content-type")?.includes("application/json") && this._sessionManager) {
           try {
             // Session might have expired, lets try to refresh it
             this._activeSession = await this._sessionManager.createSession(this._sessionOptions);
-            tileUrl = this._activeSession.getTileUrl(tilePos);
-            tileResponse = await this.makeTileRequest(tileUrl.toString());
+            tileRequest = this._activeSession.getTileRequest(tilePos);
+            tileResponse = await this.makeTileRequest(tileRequest.url.toString(), undefined, tileRequest.authorization);
             if (!tileResponse.ok) {
               if (tileResponse.headers.get("content-type")?.includes("application/json")) {
                 await this.logJsonError(tileResponse);
