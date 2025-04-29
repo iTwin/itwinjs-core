@@ -313,27 +313,11 @@ The replacement method `schemaContext.getSchemaItem` on the iModel can fetch the
 **Examples:**
 
 ```typescript
-const metaData: RelationshipClass | undefined =
-  await imodelDb.schemaContext.getSchemaItem(
-    "BisCore.ElementRefersToElements",
-    RelationshipClass
-  );
-const metaData: Enumeration | undefined =
-  await imodelDb.schemaContext.getSchemaItem(
-    "BisCore.AutoHandledPropertyStatementType",
-    Enumeration
-  );
-const metaData: UnitSystem | undefined =
-  await imodelDb.schemaContext.getSchemaItem("Units.SI", UnitSystem);
-const metaData: Format | undefined = await imodelDb.schemaContext.getSchemaItem(
-  "Formats.DefaultReal",
-  Format
-);
-const metaData: KindOfQuantity | undefined =
-  await imodelDb.schemaContext.getSchemaItem(
-    "TestSchema.TestKoQ",
-    KindOfQuantity
-  );
+const metaData: RelationshipClass | undefined = await imodelDb.schemaContext.getSchemaItem("BisCore.ElementRefersToElements", RelationshipClass);
+const metaData: Enumeration | undefined = await imodelDb.schemaContext.getSchemaItem("BisCore.AutoHandledPropertyStatementType", Enumeration);
+const metaData: UnitSystem | undefined = await imodelDb.schemaContext.getSchemaItem("Units.SI", UnitSystem);
+const metaData: Format | undefined = await imodelDb.schemaContext.getSchemaItem("Formats.DefaultReal", Format);
+const metaData: KindOfQuantity | undefined = await imodelDb.schemaContext.getSchemaItem("TestSchema.TestKoQ", KindOfQuantity);
 ```
 
 ### @itwin/core-frontend
@@ -845,10 +829,7 @@ Existing calls like `context.getSchemaItem<EntityClass>("schema:myName")` have t
 `context.getSchemaItem("schema", "myName", EntityClass)` or more verbose as a general item followed by a type-guard:
 
 ```ts
-const item: SchemaItem = await iModel.schemaContext.getSchemaItem(
-  "BisCore",
-  "Element"
-);
+const item: SchemaItem = await iModel.schemaContext.getSchemaItem("BisCore", "Element");
 if (item && EntityClass.isEntityClass(item)) {
 }
 ```
