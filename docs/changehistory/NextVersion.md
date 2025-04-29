@@ -389,7 +389,7 @@ A new major release of iTwin.js affords us the opportunity to update our require
 
 #### Node.js
 
-Node 18 will reach [end-of-life](https://github.com/nodejs/release?tab=readme-ov-file#release-schedule) soon and will no longer be supported. iTwin.js 5.0 requires a minimum of Node 20.9.0, though we recommend using the latest long-term-support version.
+Node 18 will reach [end-of-life](https://github.com/nodejs/release?tab=readme-ov-file#release-schedule) soon and will no longer be supported. iTwin.js 5.0 requires a minimum of Node 20.11.0, though we recommend using the latest long-term-support version.
 
 #### Electron
 
