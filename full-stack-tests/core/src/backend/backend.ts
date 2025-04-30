@@ -201,6 +201,7 @@ class FullStackTestIpcHandler extends IpcHandler implements FullStackTestIpc {
       height: 100,
       scale: 1,
     };
+    standaloneModel.saveChanges("insert sheet view definition with attachment");
     standaloneModel.close();
 
     return sheetViewProps;
