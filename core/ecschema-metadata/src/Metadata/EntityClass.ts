@@ -106,35 +106,46 @@ export class EntityClass extends ECClass implements HasMixins {
 
   /**
    *
-   * @param result
-   * @param existingValues
+   * @param cache
+   * @returns
+   *
    * @internal
    */
-  protected override async buildPropertyCache(result: Property[], existingValues?: Map<string, number>): Promise<void> {
-    if (!existingValues) {
-      existingValues = new Map<string, number>();
-    }
-
+protected override async buildPropertyCache(): Promise<Map<string, Property>> {
+  const cache = new Map<string, Property>();
     const baseClass = await this.baseClass;
     if (baseClass) {
-      ECClass.mergeProperties(result, existingValues, await baseClass.getProperties(), false);
+      Array.from(baseClass.getPropertiesSync()).forEach((property) => {
+        if (!cache.has(property.name.toUpperCase()))
+          cache.set(property.name.toUpperCase(), property);
+      });
     }
 
     for (const mixin of this.mixins) {
-      const resolvedMixin = await mixin;
-      ECClass.mergeProperties(result, existingValues, await resolvedMixin.getProperties(), false);
+      const mixinObj = await mixin;
+      const mixinProps = mixinObj.getPropertiesSync();
+      for (const property of mixinProps) {
+        if (!cache.has(property.name.toUpperCase()))
+          cache.set(property.name.toUpperCase(), property);
+      }
     }
 
-    const localProps = await this.getProperties();
-    ECClass.mergeProperties(result, existingValues, localProps, true);
-  }
+    const localProps = this.getPropertiesSync(true);
+    if (localProps) {
+      Array.from(localProps).forEach(property => {
+        cache.set(property.name.toUpperCase(), property);
+      });
+    }
+    return cache;
+}
 
   /**
    *
    * @param cache
    * @internal
    */
-  protected override buildPropertyCacheSync(cache: Map<string, Property>): void {
+  protected override buildPropertyCacheSync(): Map<string, Property> {
+    const cache = new Map<string, Property>();
     const baseClass = this.getBaseClassSync();
     if (baseClass) {
       Array.from(baseClass.getPropertiesSync()).forEach((property) => {
@@ -157,6 +168,7 @@ export class EntityClass extends ECClass implements HasMixins {
         cache.set(property.name.toUpperCase(), property);
       });
     }
+    return cache;
   }
 
   /**
