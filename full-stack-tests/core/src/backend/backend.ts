@@ -89,7 +89,7 @@ class FullStackTestIpcHandler extends IpcHandler implements FullStackTestIpc {
     throw error;
   }
 
-  public async insertViewAttachmentAndGetSheetViewProps(): Promise<ViewStateProps> {
+  public async insertSheetViewWithAttachment(): Promise<Id64String> {
     const filePath = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/cjs/test/assets/sheetViewTest.bim");
     if (fs.existsSync(filePath)) {
       fs.unlinkSync(filePath);
@@ -177,6 +177,7 @@ class FullStackTestIpcHandler extends IpcHandler implements FullStackTestIpc {
     const newElement = standaloneModel.elements.createElement(newAttachmentProps);
     const attachmentId =  standaloneModel.elements.insertElement(newElement.toJSON());
 
+    //create new sheet view
     const displayStyle2dId = DisplayStyle2d.insert(standaloneModel, drawingDefinitionModelId, "DisplayStyle2d");
     const drawingCategorySelectorId = CategorySelector.insert(standaloneModel, drawingDefinitionModelId, "DrawingCategories", [drawingCategoryId]);
     const drawingViewRange = new Range2d(0, 0, 100, 100);
@@ -190,21 +191,14 @@ class FullStackTestIpcHandler extends IpcHandler implements FullStackTestIpc {
       range: drawingViewRange,
     });
 
-    //create new sheet view
-    const sheetViewProps = await standaloneModel.views.getViewStateProps(sheetViewId);
-    const codeProps = { spec: "", scope: "", value: "" };
-    sheetViewProps.sheetProps = {
-      model: "",
-      code: codeProps,
-      classFullName: "",
-      width: 100,
-      height: 100,
-      scale: 1,
-    };
     standaloneModel.saveChanges("insert sheet view definition with attachment");
-    standaloneModel.close();
+    const sheetViewProps = await standaloneModel.views.getViewStateProps(sheetViewId);
+    if (sheetViewProps.sheetAttachments?.length !== 1) {
+      throw new Error("missing view attachments in view props");
+    }
 
-    return sheetViewProps;
+    standaloneModel.close();
+    return sheetViewId;
   }
 }
 

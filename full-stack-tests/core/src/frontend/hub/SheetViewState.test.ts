@@ -250,17 +250,18 @@ describe("Sheet views", () => {
       if (!process.env.IMODELJS_CORE_DIRNAME)
         throw new Error("IMODELJS_CORE_DIRNAME not set");
 
-      const vp = openBlankViewport({ height: 100, width: 100 });
-      const sheetViewStateProps = await coreFullStackTestIpc.insertViewAttachmentAndGetSheetViewProps();
-      expect(sheetViewStateProps.sheetAttachments).not.to.be.undefined;
-      expect(sheetViewStateProps.sheetAttachments!.length).to.equal(1);
-      const newSheetView = SheetViewState.createFromProps(sheetViewStateProps, await BriefcaseConnection.openStandalone(path.join(process.env.IMODELJS_CORE_DIRNAME, "core/backend/lib/cjs/test/assets/sheetViewTest.bim")));
+      const sheetViewId = await coreFullStackTestIpc.insertSheetViewWithAttachment();
+      const iModel = await BriefcaseConnection.openStandalone(path.join(process.env.IMODELJS_CORE_DIRNAME, "core/backend/lib/cjs/test/assets/sheetViewTest.bim"));
+      const vp = openBlankViewport({ height: 100, width: 100, iModel: iModel as unknown as BlankConnection /* hack, remove? */ });
+      const newSheetView = await iModel.views.load(sheetViewId) as SheetViewState;
+
+      expect(newSheetView).instanceof(SheetViewState);
+      expect(newSheetView.viewAttachmentProps.length).to.equal(1);
 
       newSheetView.attachToViewport(vp);
       await newSheetView.load();
 
-      expect(newSheetView).not.to.be.undefined;
-      expect(newSheetView.viewAttachmentProps.length).to.equal(1);
+      expect(newSheetView.attachments).not.to.be.undefined;
       expect(newSheetView.attachments).not.to.be.undefined;
     });
   });

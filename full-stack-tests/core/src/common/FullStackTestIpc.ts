@@ -13,5 +13,5 @@ export interface FullStackTestIpc {
   closeAndReopenDb(key: string): Promise<void>;
   throwDetailedError<T>(details:Omit<T, keyof ITwinError>, namespace: string, errorKey: string, message?: string, metadata?: LoggingMetaData): Promise<void>;
   throwITwinError(namespace: string, errorKey: string, message?: string, metadata?: LoggingMetaData): Promise<void>;
-  insertViewAttachmentAndGetSheetViewProps(): Promise<ViewStateProps>;
+  insertSheetViewWithAttachment(): Promise<Id64String>;
 }
