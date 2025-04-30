@@ -5,9 +5,9 @@
 import { describe, expect, it } from "vitest";
 import { BSplineCurve3d } from "../../bspline/BSplineCurve";
 import { Arc3d } from "../../curve/Arc3d";
-import { AnyRegion } from "../../curve/CurveTypes";
 import { CurveChain, CurveCollection } from "../../curve/CurveCollection";
 import { CurvePrimitive } from "../../curve/CurvePrimitive";
+import { AnyRegion } from "../../curve/CurveTypes";
 import { GeometryQuery } from "../../curve/GeometryQuery";
 import { LineSegment3d } from "../../curve/LineSegment3d";
 import { LineString3d } from "../../curve/LineString3d";
@@ -219,5 +219,4 @@ describe("MomentData", () => {
     GeometryCoreTestIO.saveGeometry(allGeometry, "Moments", "WireMoments");
     expect(ck.getNumErrors()).toBe(0);
   });
-
 });
