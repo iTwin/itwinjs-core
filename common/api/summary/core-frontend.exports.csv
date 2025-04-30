@@ -371,6 +371,8 @@ public;interface;MapLayerIndex
 internal;interface;MapLayerInfoFromTileTree
 public;interface;MapLayerOptions
 beta;interface;MapLayerScaleRangeVisibility
+beta;interface;MapLayerSessionClient
+beta;interface;MapLayerSessionManager
 public;class;MapLayerSource
 public;interface;MapLayerSourceProps
 beta;class;MapLayerSources

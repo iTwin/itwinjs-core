@@ -150,7 +150,9 @@ export class MapLayerFormatRegistry {
     return false;
   }
 
-  /** @beta */
+  /**
+  * Returns the active session client for a given format.
+   *  @beta */
   public getAccessClient(formatId: string): MapLayerAccessClient | undefined {
     if (formatId.length === 0)
       return undefined;
@@ -165,7 +167,7 @@ export class MapLayerFormatRegistry {
   /**
   * Returns the active session client for a given format.
   * @beta
-  * */
+  */
   public getSessionClient(formatId: string): MapLayerSessionClient | undefined {
     if (formatId.length === 0)
       return undefined;
@@ -180,7 +182,7 @@ export class MapLayerFormatRegistry {
   /**
   * Set the session client for a specific format.
   * @beta
-  * */
+  */
   public setSessionClient(formatId: string, client: MapLayerSessionClient): boolean {
     const entry = this._formats.get(formatId);
     if (entry !== undefined) {

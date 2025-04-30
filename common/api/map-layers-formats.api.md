@@ -23,8 +23,11 @@ import { MapCartoRectangle } from '@itwin/core-frontend';
 import { MapFeatureInfo } from '@itwin/core-frontend';
 import { MapFeatureInfoOptions } from '@itwin/core-frontend';
 import { MapLayerFeatureInfo } from '@itwin/core-frontend';
+import { MapLayerSessionClient } from '@itwin/core-frontend';
+import { MapLayerSessionManager } from '@itwin/core-frontend';
 import { PrimitiveTool } from '@itwin/core-frontend';
 import { QuadId } from '@itwin/core-frontend';
+import { QuadIdProps } from '@itwin/core-frontend/lib/cjs/tile/internal.js';
 import { Transform } from '@itwin/core-geometry';
 
 // @internal
@@ -56,6 +59,20 @@ export class ArcGisFeatureProvider extends ArcGISImageryProvider {
     serviceJson: any;
     // (undocumented)
     get tileSize(): number;
+}
+
+// @internal
+export abstract class BaseGoogleMapsSession implements GoogleMapsSession {
+    // (undocumented)
+    protected abstract getTileApiBaseUrl(): string;
+    // (undocumented)
+    protected getTilePositionUrl(position: QuadIdProps): URL;
+    // (undocumented)
+    abstract getTileRequest(position: QuadIdProps): GoogleMapsRequest;
+    // (undocumented)
+    abstract getTileSize(): number;
+    // (undocumented)
+    abstract getViewportInfoRequest(rectangle: MapCartoRectangle, zoomLevel: number): GoogleMapsRequest;
 }
 
 // @internal (undocumented)
@@ -98,15 +115,46 @@ export type GoogleMapsLayerTypes = "layerRoadmap" | "layerStreetview";
 export type GoogleMapsMapTypes = "roadmap" | "satellite" | "terrain";
 
 // @beta
+export interface GoogleMapsRequest {
+    // (undocumented)
+    authorization?: string;
+    url: URL;
+}
+
+// @beta
 export type GoogleMapsScaleFactors = "scaleFactor1x" | "scaleFactor2x" | "scaleFactor4x";
 
 // @beta
 export interface GoogleMapsSession {
+    // (undocumented)
+    getTileRequest: (position: QuadIdProps) => GoogleMapsRequest;
+    // (undocumented)
+    getTileSize: () => number;
+    // (undocumented)
+    getViewportInfoRequest(rectangle: MapCartoRectangle, zoomLevel: number): GoogleMapsRequest;
+}
+
+// @beta
+export abstract class GoogleMapsSessionClient implements MapLayerSessionClient {
+    // (undocumented)
+    abstract getSessionManager(): GoogleMapsSessionManager;
+}
+
+// @beta
+export interface GoogleMapsSessionData {
     expiry: number;
     imageFormat: string;
     session: string;
     tileHeight: number;
     tileWidth: number;
+}
+
+// @beta
+export abstract class GoogleMapsSessionManager implements MapLayerSessionManager {
+    // (undocumented)
+    abstract createSession(sessionOptions: GoogleMapsCreateSessionOptions): Promise<GoogleMapsSession>;
+    // (undocumented)
+    readonly type = "GoogleMapsSessionManager";
 }
 
 // @beta
@@ -181,14 +229,6 @@ export interface MaxZoomRectangle {
 export interface ViewportInfo {
     copyright: string;
     maxZoomRects: MaxZoomRectangle[];
-}
-
-// @beta
-export interface ViewportInfoRequestParams {
-    key: string;
-    rectangle: MapCartoRectangle;
-    session: string;
-    zoom: number;
 }
 
 // (No @packageDocumentation comment for this package)

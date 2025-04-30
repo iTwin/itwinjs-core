@@ -92,7 +92,7 @@ export interface GoogleMapsCreateSessionOptions {
 };
 
 
-/*
+/**
 * Session data returned by the Google Maps API.
 * @beta
 */
@@ -138,7 +138,7 @@ export interface ViewportInfo {
 }
 
 
-/*
+/**
 * Google Maps Request
 * @beta
 */
@@ -150,7 +150,7 @@ export interface GoogleMapsRequest {
   authorization?: string;
 }
 
-/*
+/**
 * Google Maps session.
 * @beta
 */
@@ -165,6 +165,10 @@ export interface GoogleMapsSession {
   getViewportInfoRequest (rectangle: MapCartoRectangle, zoomLevel: number): GoogleMapsRequest
 }
 
+/**
+* Base implementation of Google Maps session.
+* @internal
+*/
 export abstract class BaseGoogleMapsSession implements GoogleMapsSession {
   protected abstract getTileApiBaseUrl(): string;
 
@@ -180,7 +184,7 @@ export abstract class BaseGoogleMapsSession implements GoogleMapsSession {
   public abstract getViewportInfoRequest (rectangle: MapCartoRectangle, zoomLevel: number): GoogleMapsRequest
 }
 
-/*
+/**
 * Google Maps session manager interface.
 * @beta
 */
@@ -189,6 +193,10 @@ export abstract class GoogleMapsSessionManager implements MapLayerSessionManager
   public abstract createSession (sessionOptions: GoogleMapsCreateSessionOptions): Promise<GoogleMapsSession>;
 }
 
+/**
+* Google Maps session manager interface.
+* @beta
+*/
 export abstract class GoogleMapsSessionClient implements MapLayerSessionClient {
   public abstract getSessionManager(): GoogleMapsSessionManager;
 }

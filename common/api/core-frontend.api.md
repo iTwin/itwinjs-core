@@ -5658,6 +5658,13 @@ export class MapCartoRectangle extends Range2d {
     setRadians(west?: number, south?: number, east?: number, north?: number): void;
     get south(): number;
     set south(y: number);
+    // @beta
+    toDegrees(): {
+        north: number;
+        south: number;
+        east: number;
+        west: number;
+    };
     get west(): number;
     set west(x: number);
 }
@@ -5763,14 +5770,18 @@ export class MapLayerFormatRegistry {
     createImageryMapLayerTree(layerSettings: ImageMapLayerSettings, layerIndex: number, iModel: IModelConnection): ImageryMapLayerTreeReference | undefined;
     // @internal
     createImageryProvider(layerSettings: ImageMapLayerSettings): MapLayerImageryProvider | undefined;
-    // @beta (undocumented)
+    // @beta
     getAccessClient(formatId: string): MapLayerAccessClient | undefined;
+    // @beta
+    getSessionClient(formatId: string): MapLayerSessionClient | undefined;
     // (undocumented)
     isRegistered(formatId: string): boolean;
     // (undocumented)
     register(formatClass: MapLayerFormatType): void;
     // @beta (undocumented)
     setAccessClient(formatId: string, accessClient: MapLayerAccessClient): boolean;
+    // @beta
+    setSessionClient(formatId: string, client: MapLayerSessionClient): boolean;
     // @beta (undocumented)
     validateSource(opts: ValidateSourceArgs): Promise<MapLayerSourceValidation>;
     // (undocumented)
@@ -5845,9 +5856,9 @@ export abstract class MapLayerImageryProvider {
     initialize(): Promise<void>;
     loadTile(row: number, column: number, zoomLevel: number): Promise<ImageSource | undefined>;
     // @internal (undocumented)
-    makeRequest(url: string, timeoutMs?: number): Promise<Response>;
+    makeRequest(url: string, timeoutMs?: number, authorization?: string): Promise<Response>;
     // @internal (undocumented)
-    makeTileRequest(url: string, timeoutMs?: number): Promise<Response>;
+    makeTileRequest(url: string, timeoutMs?: number, authorization?: string): Promise<Response>;
     // @internal (undocumented)
     matchesMissingTile(tileData: Uint8Array): boolean;
     // @internal (undocumented)
@@ -5929,6 +5940,18 @@ export interface MapLayerScaleRangeVisibility {
     index: number;
     isOverlay: boolean;
     visibility: MapTileTreeScaleRangeVisibility;
+}
+
+// @beta
+export interface MapLayerSessionClient {
+    // (undocumented)
+    getSessionManager(): MapLayerSessionManager;
+}
+
+// @beta
+export interface MapLayerSessionManager {
+    // (undocumented)
+    type: string;
 }
 
 // @public
@@ -7756,6 +7779,7 @@ export class QuadId {
     static createFromContentId(stringId: string): QuadId;
     // @alpha (undocumented)
     get debugString(): string;
+    static fromJSON(props: QuadIdProps): QuadId;
     // @alpha (undocumented)
     getAngleSweep(mapTilingScheme: MapTilingScheme): {
         longitude: AngleSweep;
@@ -7770,6 +7794,7 @@ export class QuadId {
     get isValid(): boolean;
     level: number;
     row: number;
+    static toJSON(props: QuadIdProps): QuadIdProps;
 }
 
 // @public

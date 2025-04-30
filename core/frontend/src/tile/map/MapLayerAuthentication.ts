@@ -34,6 +34,7 @@ export interface MapLayerAccessTokenParams {
   password?: string;
 }
 
+/** @beta */
 export interface MapLayerAccessClient  {
   getAccessToken(params: MapLayerAccessTokenParams): Promise<MapLayerAccessToken | undefined>;
   getTokenServiceEndPoint?(mapLayerUrl: string): Promise<MapLayerTokenEndpoint | undefined>;
