@@ -8,14 +8,10 @@ import "@itwin/oidc-signin-tool/lib/cjs/certa/certaBackend";
 
 import {
   BriefcaseDb, CategorySelector, DefinitionModel, DisplayStyle2d, DocumentListModel, DocumentPartition, DrawingCategory, DrawingViewDefinition, FileNameResolver, IModelDb, IModelHost, IModelHostOptions, IpcHandler, IpcHost, LocalhostIpcHost, PhysicalModel, PhysicalPartition,
-  Sheet,
-  SheetModel,
-  SnapshotDb,
-  SpatialCategory, StandaloneDb, Subject, SubjectOwnsPartitionElements,
-  ViewAttachment,
+  Sheet, SheetModel, SnapshotDb, SpatialCategory, StandaloneDb, Subject, SubjectOwnsPartitionElements,
 } from "@itwin/core-backend";
-import { Guid, Id64String, Logger, LoggingMetaData, OpenMode, ProcessDetector } from "@itwin/core-bentley";
-import { BentleyCloudRpcManager, Code, CodeProps, constructDetailedError, constructITwinError, ElementProps, GeometricModel2dProps, IModel, ITwinError, RelatedElement, RpcConfiguration, SheetProps, SubCategoryAppearance, ViewAttachmentProps, ViewDefinitionProps, ViewStateProps } from "@itwin/core-common";
+import { Guid, Id64String, Logger, LoggingMetaData, ProcessDetector } from "@itwin/core-bentley";
+import { BentleyCloudRpcManager, Code, CodeProps, constructDetailedError, constructITwinError, ElementProps, GeometricModel2dProps, IModel, ITwinError, RelatedElement, RpcConfiguration, SheetProps, SubCategoryAppearance, ViewAttachmentProps, ViewStateProps } from "@itwin/core-common";
 import { ElectronHost } from "@itwin/core-electron/lib/cjs/ElectronBackend";
 import { ECSchemaRpcImpl } from "@itwin/ecschema-rpcinterface-impl";
 import { BasicManipulationCommand, EditCommandAdmin } from "@itwin/editor-backend";
@@ -29,7 +25,7 @@ import { exposeBackendCallbacks } from "../certa/certaBackend";
 import { fullstackIpcChannel, FullStackTestIpc } from "../common/FullStackTestIpc";
 import { rpcInterfaces } from "../common/RpcInterfaces";
 import * as testCommands from "./TestEditCommands";
-import { IModelConnection, SheetViewState } from "@itwin/core-frontend";
+import { IModelConnection } from "@itwin/core-frontend";
 import { Range2d } from "@itwin/core-geometry";
 
 /* eslint-disable no-console */
@@ -93,12 +89,14 @@ class FullStackTestIpcHandler extends IpcHandler implements FullStackTestIpc {
     throw error;
   }
 
-  public async createViewAttachmentAndInsertIntoSheetView(): Promise<ViewStateProps> {
-    const filePath = "D:/iTwinGraphics/core/itwinjs-core/core/backend/lib/cjs/test/assets/SheetViewTest.bim";
+  public async insertViewAttachmentAndGetSheetViewProps(): Promise<ViewStateProps> {
+    const filePath = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/cjs/test/assets/sheetViewTest.bim");
     if (fs.existsSync(filePath)) {
       fs.unlinkSync(filePath);
     }
-    const standaloneModel = StandaloneDb.createEmpty("D:/iTwinGraphics/core/itwinjs-core/core/backend/lib/cjs/test/assets/sheetViewTest.bim", {
+
+    //create a new StandaloneDb for the test
+    const standaloneModel = StandaloneDb.createEmpty(filePath, {
       rootSubject: { name: "SheetView tests", description: "SheetView tests" },
       client: "integration tests",
       globalOrigin: { x: 0, y: 0 },
@@ -151,9 +149,7 @@ class FullStackTestIpcHandler extends IpcHandler implements FullStackTestIpc {
         classFullName: SheetModel.classFullName,
         modeledElement: { id: sheetElementId, relClassName: "BisCore:ModelModelsElement" } as RelatedElement,
       };
-      const sheetModelId = db.models.insertModel(sheetModelProps);
-
-      return sheetModelId;
+      return db.models.insertModel(sheetModelProps);
     };
 
     function createJobSubjectElement(iModel: IModelDb, name: string): Subject {
@@ -165,11 +161,11 @@ class FullStackTestIpcHandler extends IpcHandler implements FullStackTestIpc {
     const jobSubjectId = createJobSubjectElement(standaloneModel, "Job").insert();
     const drawingDefinitionModelId = DefinitionModel.insert(standaloneModel, jobSubjectId, "DrawingDefinition");
     const drawingCategoryId = DrawingCategory.insert(standaloneModel, drawingDefinitionModelId, "DrawingCategory", new SubCategoryAppearance());
-    const modelId = await insertSheet(standaloneModel, "sheet-1");
+    const sheetModelId = await insertSheet(standaloneModel, "sheet-1");
 
     const newAttachmentProps: ViewAttachmentProps = {
       classFullName: 'BisCore:ViewAttachment',
-      model: modelId,
+      model: sheetModelId,
       code: Code.createEmpty(),
       jsonProperties: { displayPriority: 0},
       view: { id: '0x99', relClassName: 'BisCore.ViewIsAttached' },
@@ -177,15 +173,16 @@ class FullStackTestIpcHandler extends IpcHandler implements FullStackTestIpc {
       placement: { origin: { x: 100, y: 0 }, angle: 0 },
     }
 
-
+    //create new view attachment element
     const newElement = standaloneModel.elements.createElement(newAttachmentProps);
     const attachmentId =  standaloneModel.elements.insertElement(newElement.toJSON());
 
     const displayStyle2dId = DisplayStyle2d.insert(standaloneModel, drawingDefinitionModelId, "DisplayStyle2d");
     const drawingCategorySelectorId = CategorySelector.insert(standaloneModel, drawingDefinitionModelId, "DrawingCategories", [drawingCategoryId]);
     const drawingViewRange = new Range2d(0, 0, 100, 100);
-    const drawingViewId = DrawingViewDefinition.insert(standaloneModel, drawingDefinitionModelId, "Drawing View", modelId, drawingCategorySelectorId, displayStyle2dId, drawingViewRange);
+    const drawingViewId = DrawingViewDefinition.insert(standaloneModel, drawingDefinitionModelId, "Drawing View", sheetModelId, drawingCategorySelectorId, displayStyle2dId, drawingViewRange);
 
+    //create new sheet view
     const sheetViewProps = await standaloneModel.views.getViewStateProps(drawingViewId);
     const codeProps = { spec: "", scope: "", value: "" };
     sheetViewProps.sheetProps = {
@@ -196,7 +193,6 @@ class FullStackTestIpcHandler extends IpcHandler implements FullStackTestIpc {
       height: 100,
       scale: 1,
     };
-    standaloneModel.close();
     sheetViewProps.sheetAttachments = [attachmentId];
 
     return sheetViewProps;
@@ -276,23 +272,3 @@ class BackendTestAssetResolver extends FileNameResolver { // eslint-disable-line
 }
 
 module.exports = init();
-
-class TestIModelConnection extends IModelConnection {
-  constructor(private readonly _db: IModelDb) {
-    super(_db.getConnectionProps());
-    IModelConnection.onOpen.raiseEvent(this);
-  }
-
-  public override get isClosed(): boolean {
-    return !this._db.isOpen;
-  }
-
-  public override async close(): Promise<void> {
-    IModelConnection.onClose.raiseEvent(this);
-    this._db.close();
-  }
-
-  public static openFile(filePath: string): IModelConnection {
-    return new TestIModelConnection(SnapshotDb.openFile(filePath));
-  }
-}

@@ -3,20 +3,15 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { BlankConnection, BriefcaseConnection, CheckpointConnection, IModelApp, IModelConnection, ScreenViewport, SheetViewState, SnapshotConnection, SpatialViewState, ViewState } from "@itwin/core-frontend";
-import { Range3d, XYProps } from "@itwin/core-geometry";
+import { BlankConnection, BriefcaseConnection, CheckpointConnection, IModelApp, ScreenViewport, SheetViewState, SpatialViewState, ViewState } from "@itwin/core-frontend";
 import { TestUsers } from "@itwin/oidc-signin-tool/lib/cjs/TestUsers";
 import { testOnScreenViewport } from "../TestViewport";
 import { TestUtility } from "../TestUtility";
-// import {  Cartographic, Code, GeometricModel2dProps, RelatedElement, SheetProps, SubCategoryAppearance, ViewAttachmentProps } from "@itwin/core-common";
-import { addAllowedChannel, coreFullStackTestIpc, initializeEditTools, makeModelCode } from "../Editing";
+import { coreFullStackTestIpc, initializeEditTools } from "../Editing";
+import * as path from "path";
 import { Cartographic } from "@itwin/core-common";
+import { Range3d } from "@itwin/core-geometry";
 import { Guid } from "@itwin/core-bentley";
-import { DrawingViewDefinition } from "@itwin/core-backend";
-// import { Guid, Id64, Id64String, OpenMode } from "@itwin/core-bentley";
-// import * as path from "path";
-// import { TestSnapshotConnection } from "../TestSnapshotConnection";
-// import { DefinitionModel, DocumentListModel, DocumentPartition, DrawingCategory, IModelDb, Sheet, SheetModel, StandaloneDb, Subject } from "@itwin/core-backend";
 
 describe("Sheet views (#integration)", () => {
   let imodel: CheckpointConnection;
@@ -181,6 +176,66 @@ describe("Sheet views (#integration)", () => {
 
   describe.only("ViewAttachments", () => {
 
+    function createBlankConnection(name = "test-blank-connection",
+      location = Cartographic.fromDegrees({ longitude: -75.686694, latitude: 40.065757, height: 0 }),
+      extents = new Range3d(-1000, -1000, -100, 1000, 1000, 100),
+      iTwinId = Guid.createValue()): BlankConnection {
+      return BlankConnection.create({ name, location, extents, iTwinId });
+    }
+
+    interface BlankViewportOptions {
+      /** Height in pixels. Default 100. */
+      height?: number;
+      /** Width in pixels. Default 100. */
+      width?: number;
+      /** iModel. If undefined, a new blank connection will be created. */
+      iModel?: BlankConnection;
+      /** The position of the containing div. */
+      position?: "absolute";
+    }
+
+    /** Open a viewport for a blank spatial view.
+     * @internal
+     */
+    function openBlankViewport(options?: BlankViewportOptions): ScreenViewport {
+      const height = options?.height ?? 100;
+      const width = options?.width ?? 100;
+      const iModel = options?.iModel ?? createBlankConnection();
+
+      const parentDiv = document.createElement("div");
+      const hPx = `${height}px`;
+      const wPx = `${width}px`;
+
+      parentDiv.setAttribute("height", hPx);
+      parentDiv.setAttribute("width", wPx);
+      parentDiv.style.height = hPx;
+      parentDiv.style.width = wPx;
+
+      if (options?.position)
+        parentDiv.style.position = options.position;
+
+      document.body.appendChild(parentDiv);
+
+      const view = SpatialViewState.createBlank(iModel, { x: 0, y: 0, z: 0 }, { x: 1, y: 1, z: 1 });
+
+      class BlankViewport extends ScreenViewport {
+        public ownedIModel?: BlankConnection;
+
+        public override[Symbol.dispose](): void {
+          if (!this.isDisposed) {
+            document.body.removeChild(this.parentDiv);
+            super[Symbol.dispose]();
+            this.ownedIModel?.closeSync();
+          }
+        }
+      }
+
+      const viewport = BlankViewport.create(parentDiv, view) as BlankViewport;
+      if (undefined === options?.iModel)
+        viewport.ownedIModel = iModel;
+
+      return viewport;
+    }
     before(async () => {
       await initializeEditTools();
       await TestUtility.startFrontend(undefined, undefined, true);
@@ -193,8 +248,14 @@ describe("Sheet views (#integration)", () => {
     });
 
     it("areAllTileTreesLoaded should return true when attachments are outside of the viewed extents", async () => {
-      const sheetViewStateProps = await coreFullStackTestIpc.createViewAttachmentAndInsertIntoSheetView();
-      const newSheetView = SheetViewState.createFromProps(sheetViewStateProps, await BriefcaseConnection.openStandalone("D:/iTwinGraphics/core/itwinjs-core/core/backend/lib/cjs/test/assets/sheetViewTest.bim"));
+      if (!process.env.IMODELJS_CORE_DIRNAME)
+        throw new Error("IMODELJS_CORE_DIRNAME not set");
+
+      const vp = openBlankViewport({ height: 100, width: 100 });
+      const sheetViewStateProps = await coreFullStackTestIpc.insertViewAttachmentAndGetSheetViewProps();
+      const newSheetView = SheetViewState.createFromProps(sheetViewStateProps, await BriefcaseConnection.openStandalone(path.join(process.env.IMODELJS_CORE_DIRNAME, "core/backend/lib/cjs/test/assets/sheetViewTest.bim")));
+
+      newSheetView.attachToViewport(vp);
       await newSheetView.load();
 
       expect(newSheetView).not.to.be.undefined;
