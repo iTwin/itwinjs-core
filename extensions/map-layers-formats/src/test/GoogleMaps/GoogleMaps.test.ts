@@ -3,18 +3,50 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { Frustum, ImageMapLayerSettings } from "@itwin/core-common";
 import { DecorateContext, Decorations, IconSprites, IModelApp, MapCartoRectangle, MapTile, MapTileTree, QuadId, ScreenViewport, Sprite } from "@itwin/core-frontend";
-import { TilePatch } from "@itwin/core-frontend/lib/cjs/tile/internal.js";
-import { Range3d } from "@itwin/core-geometry";
-import { expect } from "chai";
 import sinon from "sinon";
 import { LogoDecoration } from "../../GoogleMaps/GoogleMapDecorator.js";
+import { Frustum, ImageMapLayerSettings } from "@itwin/core-common";
+import { TilePatch } from "@itwin/core-frontend/lib/cjs/tile/internal.js";
+import { Range3d } from "@itwin/core-geometry";
 import { GoogleMapsImageryProvider } from "../../GoogleMaps/GoogleMapsImageryProvider.js";
+import { BaseGoogleMapsSession, GoogleMaps, GoogleMapsCreateSessionOptions, GoogleMapsRequest, GoogleMapsSession, GoogleMapsSessionClient, GoogleMapsSessionData, GoogleMapsSessionManager } from "../../map-layers-formats.js";
 import { GoogleMapsUtils } from "../../internal/GoogleMapsUtils.js";
-import { GoogleMaps, GoogleMapsCreateSessionOptions, GoogleMapsSession, ViewportInfoRequestParams } from "../../map-layers-formats.js";
+import { expect } from "chai";
 import { fakeJsonFetch } from "../TestUtils.js";
+import { NativeGoogleMapsSession } from "../../internal/NativeGoogleMapsSession.js";
 
+class FakeSession extends BaseGoogleMapsSession {
+
+  protected getTileApiBaseUrl() {
+    return "";
+  }
+
+  public getTileSize(): number {
+      return 256;
+  }
+
+  public getTileRequest(): GoogleMapsRequest {
+    return {url: new URL("https://fake.google.com/tile")};
+  }
+
+  public getViewportInfoRequest (): GoogleMapsRequest {
+    return {url: new URL("https://fake.google.com/tile")};
+  }
+}
+
+class FakeSessionManager extends GoogleMapsSessionManager {
+    public async createSession(_sessionOptions: GoogleMapsCreateSessionOptions): Promise<GoogleMapsSession> {
+      return new FakeSession();
+    }
+  }
+
+class FakeGoogleMapsSessionClient extends GoogleMapsSessionClient {
+  public type = "FakeGoogleMapsSessionClient";
+  public getSessionManager() {
+    return new FakeSessionManager();
+  }
+}
 
 class FakeMapTile extends MapTile  {
   public override depth: number;
@@ -35,18 +67,26 @@ const createProvider = (settings: ImageMapLayerSettings) => {
   return new GoogleMapsImageryProvider(settings);
 }
 
-const stubCreateSession = (sandbox:sinon.SinonSandbox,  session: GoogleMapsSession) => sandbox.stub(GoogleMapsUtils, "createSession").callsFake(async function _(_apiKey: string, _opts: GoogleMapsCreateSessionOptions) {
+const stubCreateSession = (sandbox:sinon.SinonSandbox,  session: GoogleMapsSessionData) => sandbox.stub(NativeGoogleMapsSession, "create").callsFake(async function _(_apiKey: string, _opts: GoogleMapsCreateSessionOptions) {
   return session;
 });
+
+const stubFormatRegistry = (sandbox:sinon.SinonSandbox, session?: GoogleMapsSessionClient) => sandbox.stub(IModelApp, "mapLayerFormatRegistry").get(() => ({
+  getSessionClient: ()=> session
+  }));
 
 const minCreateSessionOptions: GoogleMapsCreateSessionOptions = {mapType: "satellite", language: "en-US", region: "US"}
 const createSessionOptions2: GoogleMapsCreateSessionOptions = {...minCreateSessionOptions, layerTypes: ["layerRoadmap"]};
 
 const defaultPngSession = {tileWidth: 256, tileHeight: 256, imageFormat: "image/png", expiry: 0, session: "dummySession"};
+
 describe("GoogleMapsProvider", () => {
   const sandbox = sinon.createSandbox();
 
   beforeEach(async () => {
+    sandbox.stub(IModelApp, "mapLayerFormatRegistry").callsFake(async function _(_sprite: Sprite) {
+      return Promise.resolve(true);
+    });
     sandbox.stub(LogoDecoration.prototype, "activate").callsFake(async function _(_sprite: Sprite) {
       return Promise.resolve(true);
     });
@@ -73,7 +113,7 @@ describe("GoogleMapsProvider", () => {
   });
 
   it("should initialize with required properties", async () => {
-
+    stubFormatRegistry(sandbox);
     fakeJsonFetch(sandbox, defaultPngSession);
     const settings = GoogleMaps.createBaseLayerSettings(minCreateSessionOptions);
 
@@ -86,7 +126,7 @@ describe("GoogleMapsProvider", () => {
   });
 
   it("should initialize with properties", async () => {
-
+    stubFormatRegistry(sandbox);
     fakeJsonFetch(sandbox, defaultPngSession);
     const settings = GoogleMaps.createBaseLayerSettings(createSessionOptions2);
     const createSessionSub = stubCreateSession(sandbox, defaultPngSession);
@@ -96,11 +136,10 @@ describe("GoogleMapsProvider", () => {
     expect(createSessionSub.called).to.be.true;
     expect(createSessionSub.firstCall.args[1]).to.deep.eq(createSessionOptions2);
     expect(provider.tileSize).to.eq(256);
-    expect(settings.unsavedQueryParams).to.deep.eq({session: "dummySession"});
   });
 
   it("should create proper tile url", async () => {
-
+    stubFormatRegistry(sandbox);
     fakeJsonFetch(sandbox, defaultPngSession);
     const settings = GoogleMaps.createBaseLayerSettings(createSessionOptions2);
 
@@ -125,7 +164,7 @@ describe("GoogleMapsProvider", () => {
   });
 
   it("should add attributions", async () => {
-
+    stubFormatRegistry(sandbox);
     fakeJsonFetch(sandbox, defaultPngSession);
     const settings = GoogleMaps.createBaseLayerSettings(createSessionOptions2);
 
@@ -135,7 +174,7 @@ describe("GoogleMapsProvider", () => {
       return set;
     });
 
-    const getViewportInfoStub = sandbox.stub(GoogleMapsUtils, "getViewportInfo").callsFake(async function _(_params: ViewportInfoRequestParams) {
+    const getViewportInfoStub = sandbox.stub(GoogleMapsImageryProvider.prototype, "fetchViewportInfo").callsFake(async function _(_rectangle: MapCartoRectangle, _zoomLevel: number) {
       return {copyright: "fake copyright", maxZoomRects: []};
     });
 
@@ -163,7 +202,7 @@ describe("GoogleMapsProvider", () => {
   });
 
   it("logo should be activated with the 'on non-white' logo", async () => {
-
+    stubFormatRegistry(sandbox);
     fakeJsonFetch(sandbox, defaultPngSession);
     const getSpriteStub = sandbox.stub(IconSprites, "getSpriteFromUrl").callsFake(function _(_url: string) {
       return {} as Sprite;
@@ -176,7 +215,7 @@ describe("GoogleMapsProvider", () => {
   });
 
   it("logo should be activated with the 'on white' logo", async () => {
-
+    stubFormatRegistry(sandbox);
     fakeJsonFetch(sandbox, defaultPngSession);
     const getSpriteStub = sandbox.stub(IconSprites, "getSpriteFromUrl").callsFake(function _(_url: string) {
       return {} as Sprite;
@@ -189,6 +228,7 @@ describe("GoogleMapsProvider", () => {
   });
 
   it("should decorate", async () => {
+    stubFormatRegistry(sandbox);
     fakeJsonFetch(sandbox, defaultPngSession);
     const settings = GoogleMaps.createBaseLayerSettings(minCreateSessionOptions);
 
@@ -203,6 +243,36 @@ describe("GoogleMapsProvider", () => {
     provider.decorate(context);
 
     expect(addCanvasDecorationStub.called).to.be.true;
+  });
+
+  it("should use custom session client", async () => {
+    stubFormatRegistry(sandbox, new FakeGoogleMapsSessionClient());
+    fakeJsonFetch(sandbox, defaultPngSession);
+    const settings = GoogleMaps.createBaseLayerSettings(minCreateSessionOptions);
+
+    const makeTileRequestStub = sandbox.stub(GoogleMapsImageryProvider.prototype, "makeTileRequest").callsFake(async function _(_url: string, _timeoutMs?: number ) {
+      const obj = {
+        headers: { "content-type": "image/jpeg" },
+        arrayBuffer: async () => {
+          return Promise.resolve(new Uint8Array(100));
+        },
+        status: 200,
+      } as unknown;   // By using unknown type, I can define parts of Response I really need
+      return (obj as Response);
+    });
+
+    sandbox.stub(GoogleMapsImageryProvider.prototype as any, "getSelectedTiles").callsFake(function _(_vp: unknown) {
+      const set = new Set<MapTile>();
+      set.add(new FakeMapTile("17_37981_49592"));
+      return set;
+    });
+    stubCreateSession(sandbox, defaultPngSession);
+    const provider = createProvider(settings);
+
+    await provider.initialize();
+    await provider.loadTile(49592, 37981, 17);
+    expect(makeTileRequestStub.called).to.be.true;
+    expect(makeTileRequestStub.firstCall.args[0]).to.eq("https://fake.google.com/tile");
   });
 
 

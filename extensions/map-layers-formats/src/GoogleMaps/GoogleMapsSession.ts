@@ -137,24 +137,6 @@ export interface ViewportInfo {
   maxZoomRects: MaxZoomRectangle[];
 }
 
-/**
- * Request parameters for the getViewportInfo method.
- * @beta
-*/
-export interface ViewportInfoRequestParams {
-  /** Bounding rectangle */
-  rectangle: MapCartoRectangle;
-
-  /** Session token */
-  session: string;
-
-  /** The Google Cloud API key */
-  key: string;
-
-  /** Zoom level of the viewport */
-  zoom: number;
-}
-
 
 /*
 * Google Maps Request

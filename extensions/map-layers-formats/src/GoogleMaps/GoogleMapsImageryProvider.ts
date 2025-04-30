@@ -104,6 +104,26 @@ export class GoogleMapsImageryProvider extends MapLayerImageryProvider {
     return "";
   }
 
+  public async fetchViewportInfo(rectangle: MapCartoRectangle, zoomLevel: number): Promise<ViewportInfo> {
+    if (!this._activeSession) {
+      Logger.logError(loggerCategory, `Session is not initialized`);
+      throw new BentleyError(BentleyStatus.ERROR, "Session is not initialized");
+    }
+
+    const req = this._activeSession.getViewportInfoRequest(rectangle, zoomLevel);
+    const request = new Request(req.url, {method: "GET"});
+    if (req.authorization) {
+      request.headers.set("Authorization", req.authorization);
+    }
+    // Add the session token to the request
+    const response = await fetch(request);
+    if (!response.ok) {
+      Logger.logError(loggerCategory, `Error while loading viewport info: ${response.statusText}`);
+      throw new BentleyError(BentleyStatus.ERROR, `Error while loading viewport info: ${response.statusText}`);
+    }
+    return response.json() as Promise<ViewportInfo>;
+  }
+
   private async fetchAttributions(tiles: Set<Tile>): Promise<string[]> {
     const zooms = new Set<number>();
     const matchingAttributions: string[] = [];
@@ -125,19 +145,9 @@ export class GoogleMapsImageryProvider extends MapLayerImageryProvider {
       }
       if (cartoRect && this._activeSession) {
         try {
-           const req = this._activeSession.getViewportInfoRequest(cartoRect, zoom);
-            const request = new Request(req.url, {method: "GET"});
-            if (req.authorization) {
-              request.headers.set("Authorization", req.authorization);
-            }
-            // Add the session token to the request
-            const response = await fetch (request);
-            if (response.ok) {
-              const json = await response.json();
-              const viewportInfo =  json as ViewportInfo;
-              if (viewportInfo?.copyright) {
-                matchingAttributions.push(viewportInfo.copyright);
-              }
+            const viewportInfo = await this.fetchViewportInfo(cartoRect, zoom);
+            if (viewportInfo?.copyright) {
+              matchingAttributions.push(viewportInfo.copyright);
             }
         } catch (error:any) {
           Logger.logError(loggerCategory, `Error while loading viewport info: ${error?.message??"Unknown error"}`);
