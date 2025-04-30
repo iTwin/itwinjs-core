@@ -253,6 +253,7 @@ describe("Sheet views (#integration)", () => {
 
       const vp = openBlankViewport({ height: 100, width: 100 });
       const sheetViewStateProps = await coreFullStackTestIpc.insertViewAttachmentAndGetSheetViewProps();
+      expect(sheetViewStateProps.sheetAttachments).not.to.be.undefined;
       const newSheetView = SheetViewState.createFromProps(sheetViewStateProps, await BriefcaseConnection.openStandalone(path.join(process.env.IMODELJS_CORE_DIRNAME, "core/backend/lib/cjs/test/assets/sheetViewTest.bim")));
 
       newSheetView.attachToViewport(vp);
