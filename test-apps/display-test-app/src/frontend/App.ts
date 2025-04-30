@@ -11,7 +11,7 @@ import { IModelsClient } from "@itwin/imodels-client-management";
 import { FrontendDevTools } from "@itwin/frontend-devtools";
 import { HyperModeling } from "@itwin/hypermodeling-frontend";
 import {
-  BentleyCloudRpcManager, BentleyCloudRpcParams, IModelReadRpcInterface, IModelTileRpcInterface,
+  BentleyCloudRpcManager, BentleyCloudRpcParams, IModel, IModelReadRpcInterface, IModelTileRpcInterface,
 } from "@itwin/core-common";
 import { EditTools } from "@itwin/editor-frontend";
 import {
@@ -67,6 +67,7 @@ import { ElectronRendererAuthorization } from "@itwin/electron-authorization/Ren
 import { ITwinLocalization } from "@itwin/core-i18n";
 import { getConfigurationString } from "./DisplayTestApp";
 import { AddSeequentRealityModel } from "./RealityDataModel";
+import { CuratedGoogleMapsClient } from "./CuratedGoogleMapsSessionClient";
 
 class DisplayTestAppAccuSnap extends AccuSnap {
   private readonly _activeSnaps: SnapMode[] = [SnapMode.NearestKeypoint];
@@ -421,7 +422,7 @@ export class DisplayTestApp {
     await HyperModeling.initialize();
     await EditTools.initialize();
     await MapLayersFormats.initialize();
-
+    // IModelApp.mapLayerFormatRegistry.setSessionClient("GoogleMaps", new CuratedGoogleMapsClient());
     EditTools.registerProjectLocationTools();
   }
 
