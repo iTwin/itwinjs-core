@@ -173,9 +173,18 @@ describe("Sheet views (#integration)", () => {
     delete (clone.viewAttachmentProps[0] as any).attachedView;
     expect(clone.viewAttachmentProps).to.deep.equal(view.viewAttachmentProps);
   });
+});
+
+describe("Sheet views", () => {
+  before(async () => {
+    await TestUtility.startFrontend(undefined, undefined, true);
+  });
+
+  after(async () => {
+    await TestUtility.shutdownFrontend();
+  });
 
   describe.only("ViewAttachments", () => {
-
     function createBlankConnection(name = "test-blank-connection",
       location = Cartographic.fromDegrees({ longitude: -75.686694, latitude: 40.065757, height: 0 }),
       extents = new Range3d(-1000, -1000, -100, 1000, 1000, 100),
@@ -236,16 +245,6 @@ describe("Sheet views (#integration)", () => {
 
       return viewport;
     }
-    before(async () => {
-      await initializeEditTools();
-      await TestUtility.startFrontend(undefined, undefined, true);
-      await TestUtility.initialize(TestUsers.regular);
-    });
-
-    after(async () => {
-      await TestUtility.shutdownFrontend();
-      await IModelApp.shutdown();
-    });
 
     it("areAllTileTreesLoaded should return true when attachments are outside of the viewed extents", async () => {
       if (!process.env.IMODELJS_CORE_DIRNAME)
