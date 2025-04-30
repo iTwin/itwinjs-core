@@ -8,7 +8,7 @@ import "@itwin/oidc-signin-tool/lib/cjs/certa/certaBackend";
 
 import {
   BriefcaseDb, CategorySelector, DefinitionModel, DisplayStyle2d, DocumentListModel, DocumentPartition, DrawingCategory, DrawingViewDefinition, FileNameResolver, IModelDb, IModelHost, IModelHostOptions, IpcHandler, IpcHost, LocalhostIpcHost, PhysicalModel, PhysicalPartition,
-  Sheet, SheetModel, SnapshotDb, SpatialCategory, StandaloneDb, Subject, SubjectOwnsPartitionElements,
+  Sheet, SheetModel, SheetViewDefinition, SnapshotDb, SpatialCategory, StandaloneDb, Subject, SubjectOwnsPartitionElements,
 } from "@itwin/core-backend";
 import { Guid, Id64String, Logger, LoggingMetaData, ProcessDetector } from "@itwin/core-bentley";
 import { BentleyCloudRpcManager, Code, CodeProps, constructDetailedError, constructITwinError, ElementProps, GeometricModel2dProps, IModel, ITwinError, RelatedElement, RpcConfiguration, SheetProps, SubCategoryAppearance, ViewAttachmentProps, ViewStateProps } from "@itwin/core-common";
@@ -180,10 +180,18 @@ class FullStackTestIpcHandler extends IpcHandler implements FullStackTestIpc {
     const displayStyle2dId = DisplayStyle2d.insert(standaloneModel, drawingDefinitionModelId, "DisplayStyle2d");
     const drawingCategorySelectorId = CategorySelector.insert(standaloneModel, drawingDefinitionModelId, "DrawingCategories", [drawingCategoryId]);
     const drawingViewRange = new Range2d(0, 0, 100, 100);
-    const drawingViewId = DrawingViewDefinition.insert(standaloneModel, drawingDefinitionModelId, "Drawing View", sheetModelId, drawingCategorySelectorId, displayStyle2dId, drawingViewRange);
+    const sheetViewId = SheetViewDefinition.insert({
+      iModel: standaloneModel,
+      definitionModelId: drawingDefinitionModelId,
+      name: "Sheet View",
+      baseModelId: sheetModelId,
+      categorySelectorId: drawingCategorySelectorId,
+      displayStyleId: displayStyle2dId,
+      range: drawingViewRange,
+    });
 
     //create new sheet view
-    const sheetViewProps = await standaloneModel.views.getViewStateProps(drawingViewId);
+    const sheetViewProps = await standaloneModel.views.getViewStateProps(sheetViewId);
     const codeProps = { spec: "", scope: "", value: "" };
     sheetViewProps.sheetProps = {
       model: "",
