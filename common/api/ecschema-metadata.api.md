@@ -272,9 +272,9 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
     protected addProperty<T extends Property>(prop: T): T;
     get baseClass(): LazyLoadedECClass | undefined;
     // @internal (undocumented)
-    protected buildPropertyCache(result: Property[], existingValues?: Map<string, number>): Promise<void>;
+    protected buildPropertyCache(): Promise<Map<string, Property>>;
     // @internal (undocumented)
-    protected buildPropertyCacheSync(cache: Map<string, Property>): void;
+    protected buildPropertyCacheSync(): Map<string, Property>;
     // @internal
     cleanCache(): void;
     // @internal
@@ -340,8 +340,6 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
     protected loadStructType(structType: string | StructClass | undefined, schema: Schema): Promise<StructClass>;
     // @internal (undocumented)
     protected loadStructTypeSync(structType: string | StructClass | undefined, schema: Schema): StructClass;
-    // @internal (undocumented)
-    protected static mergeProperties(target: Property[], existingValues: Map<string, number>, propertiesToMerge: Iterable<Property>, overwriteExisting: boolean): void;
     // (undocumented)
     get modifier(): ECClassModifier;
     // @internal (undocumented)
@@ -531,9 +529,9 @@ export class EntityClass extends ECClass implements HasMixins {
     // @internal
     static assertIsEntityClass(item?: SchemaItem): asserts item is EntityClass;
     // @internal (undocumented)
-    protected buildPropertyCache(result: Property[], existingValues?: Map<string, number>): Promise<void>;
+    protected buildPropertyCache(): Promise<Map<string, Property>>;
     // @internal (undocumented)
-    protected buildPropertyCacheSync(cache: Map<string, Property>): void;
+    protected buildPropertyCacheSync(): Map<string, Property>;
     // @internal (undocumented)
     protected createNavigationProperty(name: string, relationship: string | RelationshipClass, direction: string | StrengthDirection): Promise<NavigationProperty>;
     // @internal (undocumented)
