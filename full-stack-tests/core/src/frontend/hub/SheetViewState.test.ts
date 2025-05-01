@@ -184,7 +184,7 @@ describe("Sheet views", () => {
     await TestUtility.shutdownFrontend();
   });
 
-  describe.only("ViewAttachments", () => {
+  describe("ViewAttachments", () => {
     function createBlankConnection(name = "test-blank-connection",
       location = Cartographic.fromDegrees({ longitude: -75.686694, latitude: 40.065757, height: 0 }),
       extents = new Range3d(-1000, -1000, -100, 1000, 1000, 100),
