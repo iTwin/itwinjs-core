@@ -10,7 +10,7 @@ import { CompressedId64Set, GuidString, Id64, Id64Array, Id64String, Logger, Mar
 import {
   CategorySelectorProps, DisplayStyle3dSettingsProps, DisplayStyleLoadProps, DisplayStyleProps, DisplayStyleSettingsProps,
   DisplayStyleSubCategoryProps, ElementProps, IModel, ModelSelectorProps, PlanProjectionSettingsProps, RenderSchedule,
-  RenderTimelineProps, SpatialViewDefinitionProps, ThumbnailFormatProps, ThumbnailProps, ViewDefinitionProps, ViewStoreRpc,
+  RenderTimelineProps, SpatialViewDefinitionProps, ThumbnailFormatProps, ThumbnailProps, ViewDefinitionProps, ViewStoreError, ViewStoreRpc,
 } from "@itwin/core-common";
 import { CloudSqlite } from "./CloudSqlite";
 import { VersionedSqliteDb } from "./SQLiteDb";
@@ -21,6 +21,7 @@ import { Model } from "./Model";
 import { Entity } from "./Entity";
 import { BlobContainer } from "./BlobContainerService";
 import { _nativeDb } from "./internal/Symbols";
+import { ECSqlStatement } from "./ECSqlStatement";
 
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 
@@ -158,7 +159,7 @@ export namespace ViewStore {
       return id;
 
     if (!ViewStoreRpc.isViewStoreId(id) && !isGuidRowString(id))
-      throw new Error(`invalid value: ${id}`);
+      ViewStoreError.throwError("invalid-value", { message: `invalid value: ${id}` });
     return parseInt(id.slice(1), 36);
   };
 
@@ -174,7 +175,7 @@ export namespace ViewStore {
   };
   const validateName = (name: string, msg: string) => {
     if (name.trim().length === 0 || (/[@^#<>:"/\\"`'|?*\u0000-\u001F]/g.test(name)))
-      throw new Error(`illegal ${msg} name "${name}"`);
+      ViewStoreError.throwError("invalid-value", { message: `illegal ${msg} name "${name}"` });
   };
 
   export const defaultViewGroupId = 1;
@@ -381,7 +382,7 @@ export namespace ViewStore {
     public async deleteViewGroup(args: { name: ViewStoreRpc.ViewGroupSpec }) {
       const rowId = this.findViewGroup(args.name);
       if (rowId === 1)
-        throw new Error("Cannot delete root group");
+        ViewStoreError.throwError("group-error", { message: "Cannot delete root group" });
       return this.deleteFromTable(tableName.viewGroups, rowId);
     }
     public deleteModelSelectorSync(id: RowIdOrString) {
@@ -520,7 +521,7 @@ export namespace ViewStore {
     }
     public async updateViewShared(arg: { viewId: RowIdOrString, isShared: boolean, owner?: string }): Promise<void> {
       if (!arg.isShared && arg.owner === undefined)
-        throw new Error("owner must be defined for private views");
+        ViewStoreError.throwError("no-owner", { message: "owner must be defined for private views" });
 
       this.withSqliteStatement(`UPDATE ${tableName.views} SET private=?,owner=? WHERE Id=?`, (stmt) => {
         stmt.bindBoolean(1, !arg.isShared);
@@ -744,7 +745,7 @@ export namespace ViewStore {
         if (isGuidRowString(id)) {
           // member is already a guid row. Make sure it exists.
           if (undefined === this.getGuid(toRowId(id)))
-            throw new Error(`${memberName} id does not exist`);
+            ViewStoreError.throwError("invalid-member", { message: `${memberName} id does not exist` });
           return;
         }
         const guidRow = this.toGuidRow(id);
@@ -753,7 +754,7 @@ export namespace ViewStore {
           return;
         }
       }
-      throw new Error(`invalid ${memberName}: ${id} `);
+      ViewStoreError.throwError("invalid-member", { message: `invalid ${memberName}: ${id} ` });
     }
 
     private fromGuidRowMember(base: any, memberName: string) {
@@ -767,7 +768,7 @@ export namespace ViewStore {
           return;
         }
       }
-      throw new Error(`invalid ${memberName}: ${id} `);
+      ViewStoreError.throwError("invalid-member", { message: `invalid ${memberName}: ${id} ` });
     }
 
     private verifyRowId(table: string, rowIdString: RowString): RowId {
@@ -776,11 +777,11 @@ export namespace ViewStore {
         this.withSqliteStatement(`SELECT 1 FROM ${table} WHERE Id=?`, (stmt) => {
           stmt.bindInteger(1, rowId);
           if (!stmt.nextRow())
-            throw new Error(`missing: ${rowIdString} `);
+            ViewStoreError.throwError("not-found", { message: `missing: ${rowIdString} ` });
         });
         return rowId;
       } catch (err: any) {
-        throw new Error(`invalid Id for ${table}: ${err.message} `);
+        ViewStoreError.throwError("invalid-value", { message: `invalid Id for ${table}: ${err.message} ` });
       }
     }
     private scriptToGuids(script: RenderSchedule.ScriptProps): RenderSchedule.ScriptProps {
@@ -837,14 +838,14 @@ export namespace ViewStore {
         selector.query = { ...selector.query }; // shallow copy
         selector.query.from = selector.query.from.toLowerCase().replace(".", ":").replace("bis:", "biscore:");
         if (!this.iModel.getJsClass(selector.query.from).is(entity))
-          throw new Error(`query must select from ${entity.classFullName}`);
+          ViewStoreError.throwError("invalid-value", { message: `query must select from ${entity.classFullName}` });
         if (selector.query.adds)
           selector.query.adds = this.toCompressedGuidRows(selector.query.adds);
         if (selector.query.removes)
           selector.query.removes = this.toCompressedGuidRows(selector.query.removes);
       } else {
         if (!(selector.ids.length))
-          throw new Error(`Selector must specify at least one ${entity.className}`);
+          ViewStoreError.throwError("invalid-value", { message: `Selector must specify at least one ${entity.className}` });
         selector.ids = this.toCompressedGuidRows(selector.ids);
       }
 
@@ -853,7 +854,7 @@ export namespace ViewStore {
 
     private querySelectorValues(json: unknown, bindings?: any[] | object): Id64Array {
       if (typeof json !== "object")
-        throw new Error("invalid selector");
+        ViewStoreError.throwError("invalid-value", { message: "invalid selector" });
 
       const props = json as ViewStoreRpc.SelectorProps;
       if (!props.query) {
@@ -866,7 +867,8 @@ export namespace ViewStore {
 
       const ids = new Set<string>();
       try {
-        this.iModel.withStatement(sql, (stmt) => {
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
+        this.iModel.withPreparedStatement(sql, (stmt: ECSqlStatement) => {
           if (bindings)
             stmt.bindValues(bindings);
           for (const el of stmt) {
@@ -901,7 +903,7 @@ export namespace ViewStore {
       const rowId = this.getRowId(tableName.categorySelectors, args);
       const row = this.getCategorySelectorRow(rowId);
       if (undefined === row)
-        throw new Error("CategorySelector not found");
+        ViewStoreError.throwError("not-found", { message: "CategorySelector not found" });
 
       const props = blankElementProps({}, "BisCore:CategorySelector", rowId, row.name) as CategorySelectorProps;
       props.categories = this.querySelectorValues(JSON.parse(row.json), args.bindings);
@@ -925,7 +927,7 @@ export namespace ViewStore {
       const rowId = this.getRowId(tableName.modelSelectors, args);
       const row = this.getModelSelectorRow(rowId);
       if (undefined === row)
-        throw new Error("ModelSelector not found");
+        ViewStoreError.throwError("not-found", { message: "ModelSelector not found" });
 
       const props = blankElementProps({}, "BisCore:ModelSelector", rowId, row?.name) as ModelSelectorProps;
       props.models = this.querySelectorValues(JSON.parse(row.json), args.bindings);
@@ -937,7 +939,7 @@ export namespace ViewStore {
     private makeTimelineJson(timeline: RenderSchedule.ScriptProps): string {
       timeline = cloneProps(timeline);
       if (!Array.isArray(timeline))
-        throw new Error("Timeline has no entries");
+        ViewStoreError.throwError("not-found", { message: "Timeline has no entries" });
 
       return JSON.stringify(this.scriptToGuids(timeline));
     }
@@ -955,7 +957,7 @@ export namespace ViewStore {
       const rowId = this.getRowId(tableName.timelines, args);
       const row = this.getTimelineRow(rowId);
       if (undefined === row)
-        throw new Error("Timeline not found");
+        ViewStoreError.throwError("not-found", { message: "Timeline not found" });
 
       const props = blankElementProps({}, "BisCore:RenderTimeline", rowId, row?.name) as RenderTimelineProps;
       props.script = JSON.stringify(this.scriptFromGuids(JSON.parse(row.json), false));
@@ -1018,7 +1020,7 @@ export namespace ViewStore {
       const rowId = this.getRowId(tableName.displayStyles, args);
       const row = this.getDisplayStyleRow(rowId);
       if (undefined === row)
-        throw new Error("DisplayStyle not found");
+        ViewStoreError.throwError("not-found", { message: "DisplayStyle not found" });
 
       const val = JSON.parse(row.json) as { settings: DisplayStyle3dSettingsProps, className: string };
       const props = blankElementProps({}, val.className, rowId, row.name);
@@ -1087,7 +1089,7 @@ export namespace ViewStore {
     private addViewDefinition(args: { readonly viewDefinition: ViewDefinitionProps, group?: ViewStoreRpc.ViewGroupSpec, owner?: string, isPrivate?: boolean }): RowId {
       const name = args.viewDefinition.code.value;
       if (name === undefined)
-        throw new Error("ViewDefinition must have a name");
+        ViewStoreError.throwError("not-found", { message: "ViewDefinition must have a name" });
       const groupId = args.group ? this.findViewGroup(args.group) : defaultViewGroupId;
       const maybeRow = (rowString: RowString) => rowString ? toRowId(rowString) : undefined;
       const viewDef = this.makeViewDefinitionProps(args.viewDefinition);
@@ -1130,7 +1132,7 @@ export namespace ViewStore {
       const viewId = toRowId(args.viewId);
       const row = this.getViewRow(viewId);
       if (undefined === row)
-        throw new Error("View not found");
+        ViewStoreError.throwError("not-found", { message: "View not found" });
 
       const props = blankElementProps(JSON.parse(row.json), row.className, viewId, row.name) as ViewDefinitionProps;
       this.fromGuidRowMember(props, "baseModelId");
@@ -1144,7 +1146,7 @@ export namespace ViewStore {
     public async addOrReplaceThumbnail(args: { viewId: RowIdOrString, readonly thumbnail: ThumbnailProps, owner?: string }) {
       const viewRow = this.getViewRow(toRowId(args.viewId));
       if (viewRow === undefined)
-        throw new Error("View not found");
+        ViewStoreError.throwError("not-found", { message: "View not found" });
       const format: ThumbnailFormatProps = { format: args.thumbnail.format, height: args.thumbnail.height, width: args.thumbnail.width };
       this.addOrReplaceThumbnailRow({ data: args.thumbnail.image, viewId: toRowId(args.viewId), format, owner: args.owner });
     }
@@ -1226,12 +1228,12 @@ export namespace ViewStore {
       const groupId = args.group ? this.findViewGroup(args.group) : defaultViewGroupId;
       const viewRow = this.getViewRow(toRowId(args.defaultView));
       if (viewRow === undefined)
-        throw new Error("View not found");
+        ViewStoreError.throwError("not-found", { message: "View not found" });
       if (viewRow.groupId !== groupId)
-        throw new Error("View is not in the specified group");
+        ViewStoreError.throwError("not-found", { message: "View is not in the specified group" });
       const groupRow = this.getViewGroup(groupId);
       if (groupRow === undefined)
-        throw new Error("View group not found");
+        ViewStoreError.throwError("not-found", { message: "View group not found" });
       this.withSqliteStatement(`UPDATE ${tableName.viewGroups} SET defaultViewId=? WHERE Id=?`, (stmt) => {
         stmt.bindInteger(1, groupId);
         stmt.bindInteger(2, toRowId(args.defaultView));
@@ -1311,7 +1313,7 @@ export namespace ViewStore {
         this.verifyRowId(tableName.categorySelectors, args.viewDefinition.categorySelectorId);
       } else {
         if (args.categorySelectorProps === undefined)
-          throw new Error("Must supply categorySelector");
+          ViewStoreError.throwError("not-found", { message: "Must supply categorySelector" });
         args.viewDefinition.categorySelectorId = await this.addCategorySelector({ selector: { ids: args.categorySelectorProps.categories }, owner });
       }
       const spatialDef = args.viewDefinition as SpatialViewDefinitionProps;
@@ -1320,13 +1322,13 @@ export namespace ViewStore {
       } else if (args.modelSelectorProps) {
         spatialDef.modelSelectorId = await this.addModelSelector({ selector: { ids: args.modelSelectorProps.models }, owner });
       } else if (args.viewDefinition.classFullName === "BisCore:SpatialViewDefinition") {
-        throw new Error("Must supply modelSelector for Spatial views");
+        ViewStoreError.throwError("not-found", { message: "Must supply modelSelector for Spatial views" });
       }
       if (ViewStoreRpc.isViewStoreId(spatialDef.displayStyleId)) {
         this.verifyRowId(tableName.displayStyles, spatialDef.displayStyleId);
       } else {
         if (args.displayStyleProps === undefined || args.displayStyleProps.jsonProperties?.styles === undefined)
-          throw new Error("Must supply valid displayStyle");
+          ViewStoreError.throwError("not-found", { message: "Must supply valid displayStyle" });
         spatialDef.displayStyleId = await this.addDisplayStyle({ className: args.displayStyleProps.classFullName, settings: args.displayStyleProps.jsonProperties.styles, owner });
       }
       const viewId = this.addViewDefinition(args);
@@ -1342,7 +1344,7 @@ export namespace ViewStore {
       const rowId = toRowId(arg.viewId);
       const viewRow = this.getViewRow(rowId);
       if (viewRow === undefined)
-        throw new Error("View not found");
+        ViewStoreError.throwError("not-found", { message: "View not found" });
 
       this.deleteViewRow(rowId);
       const hasName = (table: string, nameRow: RowId) => {

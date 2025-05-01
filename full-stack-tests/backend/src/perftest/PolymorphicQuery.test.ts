@@ -46,6 +46,7 @@ describe("SchemaDesignPerf Polymorphic query", () => {
   }
   function getCount(imodel: IModelDb, className: string) {
     let count = 0;
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     imodel.withPreparedStatement(`SELECT count(*) AS [count] FROM ${className}`, (stmt: ECSqlStatement) => {
       assert.equal(DbResult.BE_SQLITE_ROW, stmt.step());
       const row = stmt.getRow();
@@ -138,6 +139,7 @@ describe("SchemaDesignPerf Polymorphic query", () => {
         if (undefined === spatialCategoryId)
           spatialCategoryId = SpatialCategory.insert(seedIModel, IModel.dictionaryId, "MySpatialCategory", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() }));
         seedIModel[_nativeDb].resetBriefcaseId(BriefcaseIdValue.Unassigned);
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         assert.isDefined(seedIModel.getMetaData("TestPolySchema:TestElement"), "Base Class is not present in iModel.");
         // create base class elements
         for (let i = 0; i < flatSeedCount; ++i) {
@@ -177,6 +179,7 @@ describe("SchemaDesignPerf Polymorphic query", () => {
       if (undefined === spatialCategoryId)
         spatialCategoryId = SpatialCategory.insert(seedIModel2, IModel.dictionaryId, "MySpatialCategory", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() }));
       seedIModel2[_nativeDb].resetBriefcaseId(BriefcaseIdValue.Unassigned);
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       assert.isDefined(seedIModel2.getMetaData("TestPolySchema:TestElement"), "Base Class is not present in iModel.");
       // create base class elements
       for (let i = 0; i < multiSeedCount; ++i) {
@@ -227,6 +230,7 @@ describe("SchemaDesignPerf Polymorphic query", () => {
         try {
           let sql = "SELECT * from ";
           sql = `${sql}tps.Child${i.toString()}`;
+          // eslint-disable-next-line @typescript-eslint/no-deprecated
           perfimodel.withPreparedStatement(sql, (stmt: ECSqlStatement) => {
             while (stmt.step() === DbResult.BE_SQLITE_ROW) {
               const row = stmt.getRow();
@@ -260,6 +264,7 @@ describe("SchemaDesignPerf Polymorphic query", () => {
         if (i === 0)
           sql = `${sql}ONLY `;
         sql = `${sql}tps.TestElement`;
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         perfimodel.withPreparedStatement(sql, (stmt: ECSqlStatement) => {
           while (stmt.step() === DbResult.BE_SQLITE_ROW) {
             const row = stmt.getRow();

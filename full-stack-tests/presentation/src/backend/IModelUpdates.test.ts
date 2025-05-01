@@ -9,10 +9,11 @@ import * as sinon from "sinon";
 import { IpcHost, StandaloneDb } from "@itwin/core-backend";
 import { IpcSocketBackend } from "@itwin/core-common";
 import { Presentation } from "@itwin/presentation-backend";
-import { KeySet, PresentationIpcEvents } from "@itwin/presentation-common";
-import { createValidIModelFileName } from "../IModelSetupUtils";
-import { setupTestsOutputDirectory } from "../IntegrationTests";
-import { getFieldByLabel, prepareOutputFilePath, waitFor } from "../Utils";
+import { KeySet } from "@itwin/presentation-common";
+import { PresentationIpcEvents } from "@itwin/presentation-common/internal";
+import { createValidIModelFileName } from "../IModelSetupUtils.js";
+import { setupTestsOutputDirectory } from "../IntegrationTests.js";
+import { getFieldByLabel, prepareOutputFilePath, waitFor } from "../Utils.js";
 
 describe("Reacting to IModel data changes", () => {
   let imodelPath: string;
@@ -27,9 +28,9 @@ describe("Reacting to IModel data changes", () => {
     }
     const socketStub = {
       send: sinon.stub(),
-      addListener: sinon.stub().returns(() => {}),
+      addListener: sinon.stub().returns(() => { }),
       removeListener: sinon.stub(),
-      handle: sinon.stub().returns(() => {}),
+      handle: sinon.stub().returns(() => { }),
     };
     await IpcHost.startup({
       ipcHost: {
@@ -90,7 +91,7 @@ describe("Reacting to IModel data changes", () => {
     expect(contentBefore!.contentSet[0].values[codeValueField.name]).to.eq("test");
     expect(contentBefore!.contentSet[0].values[userLabelField.name]).to.be.undefined;
 
-    const rootSubjectProps = imodelDb.elements.getElementJson({ id: "0x1" });
+    const rootSubjectProps = imodelDb.elements.getElementProps({ id: "0x1" });
     imodelDb.elements.updateElement({
       ...rootSubjectProps,
       userLabel: `updated`,
@@ -144,7 +145,7 @@ describe("Reacting to IModel data changes", () => {
         },
       ]);
 
-    const rootSubjectProps = imodelDb.elements.getElementJson({ id: "0x1" });
+    const rootSubjectProps = imodelDb.elements.getElementProps({ id: "0x1" });
     imodelDb.elements.updateElement({
       ...rootSubjectProps,
       userLabel: `updated`,

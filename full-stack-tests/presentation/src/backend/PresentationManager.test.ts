@@ -22,8 +22,8 @@ import {
   Ruleset,
   RuleTypes,
 } from "@itwin/presentation-common";
-import { initialize, terminate, testLocalization } from "../IntegrationTests";
-import { getFieldByLabel } from "../Utils";
+import { initialize, terminate, testLocalization } from "../IntegrationTests.js";
+import { getFieldByLabel } from "../Utils.js";
 
 describe("PresentationManager", () => {
   let imodel: IModelDb;

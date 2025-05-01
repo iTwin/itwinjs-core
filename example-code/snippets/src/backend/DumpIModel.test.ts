@@ -28,6 +28,7 @@ class DumpIModel {
     }
     // Iterate each Model
     const sql = `SELECT ECInstanceId AS id FROM ${Model.classFullName}`;
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     iModel.withPreparedStatement(sql, (statement: ECSqlStatement) => {
       while (DbResult.BE_SQLITE_ROW === statement.step()) {
         const row = statement.getRow();
@@ -42,6 +43,7 @@ class DumpIModel {
     fs.writeFileSync(outputFile, "[");
     // ECSQL to SELECT every Element in the specified Model
     const sql = `SELECT ECInstanceId AS id FROM ${Element.classFullName} WHERE Model.Id=:modelId`;
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     iModel.withPreparedStatement(sql, (statement: ECSqlStatement) => {
       statement.bindId("modelId", modelId);
       let isFirstEntry = true;

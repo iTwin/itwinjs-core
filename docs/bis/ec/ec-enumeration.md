@@ -28,7 +28,7 @@ ECEnumerations share the same namespace as ECClasses so its type name must be un
 
 Defines an individual Label/Value pair in an ECEnumeration definition
 
-#### Attributes
+#### Enumerator Attributes
 
 **name** Defines the name of this ECEnumerator. Must be a valid [ECName](./ec-name.md) and be unique among all other Enumerators in this Enumeration. (Required)
 
@@ -37,3 +37,26 @@ Defines an individual Label/Value pair in an ECEnumeration definition
 **displayLabel** A localized display label that will be used instead of the name in the GUI. If not set the Value will be used. (Optional)
 
 **description** User facing description of the enumerator. Localized and may be shown in the UI. (Optional)
+
+## Example
+
+```xml
+<ECEnumeration typeName="DateTimeKind" backingTypeName="string" isStrict="true">
+    <ECEnumerator value="Unspecified" name="Unspecified"/>
+    <ECEnumerator value="Utc" name="Utc"/>
+    <ECEnumerator value="Local" name="Local"/>
+</ECEnumeration>
+```
+
+```json
+"DateTimeKind": {
+  "schemaItemType": "Enumeration",
+  "type": "string",
+  "isStrict": true,
+  "enumerators": [
+    { "name": "Unspecified", "value": "Unspecified" },
+    { "name": "Utc", "value": "Utc" },
+    { "name": "Local", "value": "Local" }
+  ]
+},
+```

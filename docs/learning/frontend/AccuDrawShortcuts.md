@@ -72,10 +72,6 @@
 
 ![accudraw rotate element](./accudraw-rotate-element.png "Using Rotate Element with AccuSnap")
 
-- [AccuDrawShortcuts.rotatePerpendicular]($frontend) - Rotate compass perpendicular to snapped element.
-
-![accudraw rotate perpendicular](./accudraw-rotate-perpendicular.png "Using Rotate Perpendicular with AccuSnap")
-
 ## Auxiliary Coordinate Systems (ACS)
 
 - [AccuDrawShortcuts.rotateToACS]($frontend) - Set compass orientation to match the view's ACS.

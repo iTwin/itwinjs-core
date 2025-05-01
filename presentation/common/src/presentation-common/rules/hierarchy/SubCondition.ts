@@ -6,8 +6,8 @@
  * @module PresentationRules
  */
 
-import { RequiredSchemaSpecification } from "../SchemasSpecification";
-import { ChildNodeSpecification } from "./ChildNodeSpecification";
+import { RequiredSchemaSpecification } from "../SchemasSpecification.js";
+import { ChildNodeSpecification } from "./ChildNodeSpecification.js";
 
 /**
  * This is a sub-rule which shares *placement attributes* and

@@ -11,9 +11,9 @@ import {
   NestedContentField,
   PropertiesField,
   StructPropertiesField,
-} from "../../presentation-common/content/Fields";
-import { PrimitiveTypeDescription, PropertyValueFormat } from "../../presentation-common/content/TypeDescription";
-import { RelationshipMeaning } from "../../presentation-common/rules/content/modifiers/RelatedPropertiesSpecification";
+} from "../../presentation-common/content/Fields.js";
+import { PrimitiveTypeDescription, PropertyValueFormat } from "../../presentation-common/content/TypeDescription.js";
+import { RelationshipMeaning } from "../../presentation-common/rules/content/modifiers/RelatedPropertiesSpecification.js";
 import {
   createTestArrayPropertiesContentField,
   createTestCategoryDescription,
@@ -21,8 +21,8 @@ import {
   createTestPropertiesContentField,
   createTestSimpleContentField,
   createTestStructPropertiesContentField,
-} from "../_helpers/Content";
-import { createTestECClassInfo, createTestPropertyInfo, createTestRelatedClassInfo } from "../_helpers/EC";
+} from "../_helpers/Content.js";
+import { createTestECClassInfo, createTestPropertyInfo, createTestRelatedClassInfo } from "../_helpers/EC.js";
 
 describe("Field", () => {
   describe("fromJSON", () => {

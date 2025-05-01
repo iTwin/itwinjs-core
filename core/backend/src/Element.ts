@@ -6,22 +6,21 @@
  * @module Elements
  */
 
-import { CompressedId64Set, GuidString, Id64, Id64Set, Id64String, JsonUtils, OrderedId64Array } from "@itwin/core-bentley";
+import { CompressedId64Set, GuidString, Id64, Id64String, JsonUtils, OrderedId64Array } from "@itwin/core-bentley";
 import {
-  AxisAlignedBox3d, BisCodeSpec, Code, CodeScopeProps, CodeSpec, ConcreteEntityTypes, DefinitionElementProps, ElementAlignedBox3d,
+  AxisAlignedBox3d, BisCodeSpec, Code, CodeScopeProps, CodeSpec, ConcreteEntityTypes, DefinitionElementProps, DrawingProps, ElementAlignedBox3d,
   ElementProps, EntityMetaData, EntityReferenceSet, GeometricElement2dProps, GeometricElement3dProps, GeometricElementProps,
-  GeometricModel2dProps, GeometricModel3dProps, GeometryPartProps, GeometryStreamProps, IModel, InformationPartitionElementProps, LineStyleProps,
-  ModelProps, PhysicalElementProps, PhysicalTypeProps, Placement2d, Placement3d, RelatedElement, RenderSchedule, RenderTimelineProps,
-  RepositoryLinkProps, SectionDrawingLocationProps, SectionDrawingProps, SectionType, SheetBorderTemplateProps,
-  SheetProps, SheetTemplateProps, SubjectProps, TypeDefinition, TypeDefinitionElementProps, UrlLinkProps,
+  GeometricModel2dProps, GeometricModel3dProps, GeometryPartProps, GeometryStreamProps, IModel, InformationPartitionElementProps, LineStyleProps, ModelProps, PhysicalElementProps, PhysicalTypeProps, Placement2d, Placement2dProps, Placement3d, Placement3dProps, RelatedElement, RenderSchedule,
+  RenderTimelineProps, RepositoryLinkProps, SectionDrawingLocationProps, SectionDrawingProps, SectionType,
+  SheetBorderTemplateProps, SheetProps, SheetTemplateProps, SubjectProps, TypeDefinition, TypeDefinitionElementProps, UrlLinkProps
 } from "@itwin/core-common";
-import { ClipVector, Range3d, Transform } from "@itwin/core-geometry";
-import { Entity } from "./Entity";
+import { ClipVector, LowAndHighXYZProps, Range3d, Transform, YawPitchRollAngles } from "@itwin/core-geometry";
+import { CustomHandledProperty, DeserializeEntityArgs, ECSqlRow, Entity } from "./Entity";
 import { IModelDb } from "./IModelDb";
 import { IModelElementCloneContext } from "./IModelElementCloneContext";
 import { DefinitionModel, DrawingModel, PhysicalModel, SectionDrawingModel } from "./Model";
 import { SubjectOwnsSubjects } from "./NavigationRelationship";
-import { _elementWasCreated, _verifyChannel } from "./internal/Symbols";
+import { _cache, _elementWasCreated, _nativeDb, _verifyChannel } from "./internal/Symbols";
 
 /** Argument for the `Element.onXxx` static methods
  * @beta
@@ -144,6 +143,55 @@ export class Element extends Entity {
     this.jsonProperties = { ...props.jsonProperties }; // make sure we have our own copy
   }
 
+  /**
+   * Element custom HandledProps include 'codeValue', 'codeSpec', 'codeScope', 'model', 'parent', 'federationGuid', and 'lastMod'.
+   * @inheritdoc
+   * @beta
+   */
+  protected static override readonly _customHandledProps: CustomHandledProperty[] = [
+    { propertyName: "codeValue", source: "Class" },
+    { propertyName: "codeSpec", source: "Class" },
+    { propertyName: "codeScope", source: "Class" },
+    { propertyName: "model", source: "Class" },
+    { propertyName: "parent", source: "Class" },
+    { propertyName: "federationGuid", source: "Class" },
+    { propertyName: "lastMod", source: "Class" },
+  ];
+
+  /**
+   * Element deserializes 'codeValue', 'codeSpec', 'codeScope', 'model', 'parent', and 'federationGuid'.
+   * @inheritdoc
+   * @beta
+   */
+  public static override deserialize(props: DeserializeEntityArgs): ElementProps {
+    const elProps = super.deserialize(props) as ElementProps;
+    const instance = props.row;
+    elProps.code = { value: instance.codeValue ?? "", spec: instance.codeSpec.id, scope: instance.codeScope.id }
+    elProps.model = instance.model.id;
+    if (instance.parent)
+      elProps.parent = instance.parent;
+
+    if (instance.federationGuid)
+      elProps.federationGuid = instance.federationGuid;
+    return elProps;
+  }
+
+  /**
+   * Element serialize 'codeValue', 'codeSpec', 'codeScope', 'model', 'parent', and 'federationGuid'.
+   * @inheritdoc
+   * @beta
+   */
+  public static override serialize(props: ElementProps, iModel: IModelDb): ECSqlRow {
+    const inst = super.serialize(props, iModel);
+    inst.codeValue = props.code.value;
+    inst.codeSpec = { id: props.code.spec };
+    inst.codeScope = { id: props.code.scope };
+    inst.model = { id: props.model };
+    inst.parent = props.parent;
+    inst.federationGuid = props.federationGuid ?? iModel[_nativeDb].newBeGuid();
+    return inst;
+  }
+
   /** Called before a new Element is inserted.
    * @note throw an exception to disallow the insert
    * @note If you override this method, you must call super.
@@ -169,6 +217,7 @@ export class Element extends Entity {
     const locks = arg.iModel.locks;
     if (locks && !locks.holdsExclusiveLock(arg.model))
       locks[_elementWasCreated](arg.id);
+    arg.iModel.models[_cache].delete(arg.model);
   }
 
   /** Called before an Element is updated.
@@ -189,7 +238,10 @@ export class Element extends Entity {
    * @note `this` is the class of the Element that was updated
    * @beta
    */
-  protected static onUpdated(_arg: OnElementIdArg): void { }
+  protected static onUpdated(arg: OnElementIdArg): void {
+    arg.iModel.elements[_cache].delete({ id: arg.id })
+    arg.iModel.models[_cache].delete(arg.model);
+  }
 
   /** Called before an Element is deleted.
    * @note throw an exception to disallow the delete
@@ -207,7 +259,10 @@ export class Element extends Entity {
    * @note `this` is the class of the Element that was deleted
    * @beta
    */
-  protected static onDeleted(_arg: OnElementIdArg): void { }
+  protected static onDeleted(arg: OnElementIdArg): void {
+    arg.iModel.elements[_cache].delete(arg);
+    arg.iModel.models[_cache].delete(arg.model);
+  }
 
   /** Called when an element with an instance of this class as its parent is about to be deleted.
    * @note throw an exception if the element should not be deleted
@@ -222,7 +277,10 @@ export class Element extends Entity {
    * @note `this` is the class of the parent Element whose child was deleted
    * @beta
    */
-  protected static onChildDeleted(_arg: OnChildElementIdArg): void { }
+  protected static onChildDeleted(arg: OnChildElementIdArg): void {
+    arg.iModel.elements[_cache].delete({ id: arg.parentId });
+    arg.iModel.elements[_cache].delete({ id: arg.childId });
+  }
 
   /** Called when a *new element* with an instance of this class as its parent is about to be inserted.
    * @note throw an exception if the element should not be inserted
@@ -235,7 +293,9 @@ export class Element extends Entity {
    * @note `this` is the class of the parent Element.
    * @beta
    */
-  protected static onChildInserted(_arg: OnChildElementIdArg): void { }
+  protected static onChildInserted(arg: OnChildElementIdArg): void {
+    arg.iModel.elements[_cache].delete({ id: arg.parentId });
+  }
 
   /** Called when an element with an instance of this class as its parent is about to be updated.
    * @note throw an exception if the element should not be updated
@@ -248,7 +308,9 @@ export class Element extends Entity {
    * @note `this` is the class of the parent Element.
    * @beta
    */
-  protected static onChildUpdated(_arg: OnChildElementIdArg): void { }
+  protected static onChildUpdated(arg: OnChildElementIdArg): void {
+    arg.iModel.elements[_cache].delete({ id: arg.parentId });
+  }
 
   /** Called when an *existing element* is about to be updated so that an instance of this class will become its new parent.
    * @note throw an exception if the element should not be added
@@ -261,7 +323,9 @@ export class Element extends Entity {
    * @note `this` is the class of the new parent Element.
    * @beta
    */
-  protected static onChildAdded(_arg: OnChildElementIdArg): void { }
+  protected static onChildAdded(arg: OnChildElementIdArg): void {
+    arg.iModel.elements[_cache].delete({ id: arg.parentId });
+  }
 
   /** Called when an element with an instance of this class as its parent is about to be updated change to a different parent.
    * @note throw an exception if the element should not be dropped
@@ -274,7 +338,9 @@ export class Element extends Entity {
    * @note `this` is the class of the previous parent Element.
    * @beta
    */
-  protected static onChildDropped(_arg: OnChildElementIdArg): void { }
+  protected static onChildDropped(arg: OnChildElementIdArg): void {
+    arg.iModel.elements[_cache].delete({ id: arg.parentId });
+  }
 
   /** Called when an instance of this class is being *sub-modeled* by a new Model.
    * @note throw an exception if model should not be inserted
@@ -287,7 +353,12 @@ export class Element extends Entity {
    * @note `this` is the class of Element that is now sub-modeled.
    * @beta
    */
-  protected static onSubModelInserted(_arg: OnSubModelIdArg): void { }
+  protected static onSubModelInserted(arg: OnSubModelIdArg): void {
+    const id = arg.subModelId;
+    arg.iModel.elements[_cache].delete({ id });
+    arg.iModel.models[_cache].delete(id);
+
+  }
 
   /** Called when a sub-model of an instance of this class is being deleted.
    * @note throw an exception if model should not be deleted
@@ -300,7 +371,11 @@ export class Element extends Entity {
    * @note `this` is the class of Element that was sub-modeled.
    * @beta
    */
-  protected static onSubModelDeleted(_arg: OnSubModelIdArg): void { }
+  protected static onSubModelDeleted(arg: OnSubModelIdArg): void {
+    const id = arg.subModelId;
+    arg.iModel.elements[_cache].delete({ id });
+    arg.iModel.models[_cache].delete(id);
+  }
 
   /** Called during the iModel transformation process after an Element from the source iModel was *cloned* for the target iModel.
    * The transformation process automatically handles remapping BisCore properties and those that are properly described in ECSchema.
@@ -355,14 +430,6 @@ export class Element extends Entity {
     return val;
   }
 
-  /** Collect the Ids of this element's *references* at this level of the class hierarchy.
-   * @deprecated in 3.x. use [[collectReferenceIds]] instead, the use of the term *predecessors* was confusing and became inaccurate when the transformer could handle cycles
-   * @beta
-   */
-  protected collectPredecessorIds(predecessorIds: EntityReferenceSet): void {
-    return this.collectReferenceIds(predecessorIds);
-  }
-
   protected override collectReferenceIds(referenceIds: EntityReferenceSet): void {
     super.collectReferenceIds(referenceIds);
     referenceIds.addModel(this.model); // The modeledElement is a reference
@@ -370,15 +437,6 @@ export class Element extends Entity {
       referenceIds.addElement(this.code.scope); // The element that scopes the code is a reference
     if (this.parent)
       referenceIds.addElement(this.parent.id); // A parent element is a reference
-  }
-
-  /** Get the Ids of this element's *references*. A *reference* is any element whose id is stored in the EC data of this element
-   * This is important for cloning operations but can be useful in other situations as well.
-   * @beta
-   * @deprecated in 3.x. use [[getReferenceIds]] instead, the use of the term *predecessors* was confusing and became inaccurate when the transformer could handle cycles
-   */
-  public getPredecessorIds(): Id64Set {
-    return this.getReferenceIds();
   }
 
   /** A *required reference* is an element that had to be inserted before this element could have been inserted.
@@ -398,7 +456,19 @@ export class Element extends Entity {
     model: ConcreteEntityTypes.Model,
   };
 
-  /** Get the class metadata for this element. */
+  /** Get the class metadata for this element.
+   * @deprecated in 5.0. Please use `getMetaData` provided by the parent class `Entity` instead.
+   *
+   * @example
+   * ```typescript
+   * // Current usage:
+   * const metaData: EntityMetaData | undefined = element.getClassMetaData();
+   *
+   * // Replacement:
+   * const metaData: EntityClass = await element.getMetaData();
+   * ```
+   */
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   public getClassMetaData(): EntityMetaData | undefined { return this.iModel.classMetaDataRegistry.find(this.classFullName); }
 
   private getAllUserProperties(): any {
@@ -504,6 +574,33 @@ export abstract class GeometricElement extends Element {
     ...super.requiredReferenceKeyTypeMap,
     category: ConcreteEntityTypes.Element,
   };
+
+  /**
+   * GeometricElement custom HandledProps includes 'inSpatialIndex'.
+   * @inheritdoc
+   * @beta
+   */
+  protected static override readonly _customHandledProps: CustomHandledProperty[] = [
+    { propertyName: "inSpatialIndex", source: "Class" },
+  ];
+
+  /**
+   * GeometricElement deserializes 'inSpatialIndex'.
+   * @inheritdoc
+   * @beta
+   */
+  public static override deserialize(props: DeserializeEntityArgs): GeometricElementProps {
+    return super.deserialize(props) as GeometricElementProps;
+  }
+
+  /**
+   * GeometricElement serialize 'inSpatialIndex'.
+   * @inheritdoc
+   * @beta
+   */
+  public static override serialize(props: GeometricElementProps, iModel: IModelDb): ECSqlRow {
+    return super.serialize(props, iModel);
+  }
 }
 
 /** An abstract base class to model real world entities that intrinsically have 3d geometry.
@@ -535,6 +632,136 @@ export abstract class GeometricElement3d extends GeometricElement {
     super.collectReferenceIds(referenceIds);
     if (undefined !== this.typeDefinition)
       referenceIds.addElement(this.typeDefinition.id);
+  }
+
+  /**
+   * GeometricElement3d custom HandledProps includes 'category', 'geometryStream', 'origin', 'yaw', 'pitch', 'roll',
+   * 'bBoxLow', 'bBoxHigh', and 'typeDefinition'.
+   * @inheritdoc
+   * @beta
+   */
+  protected static override readonly _customHandledProps: CustomHandledProperty[] = [
+    { propertyName: "category", source: "Class" },
+    { propertyName: "geometryStream", source: "Class" },
+    { propertyName: "origin", source: "Class" },
+    { propertyName: "yaw", source: "Class" },
+    { propertyName: "pitch", source: "Class" },
+    { propertyName: "roll", source: "Class" },
+    { propertyName: "bBoxLow", source: "Class" },
+    { propertyName: "bBoxHigh", source: "Class" },
+    { propertyName: "typeDefinition", source: "Class" }
+  ];
+
+  /**
+   * GeometricElement3d deserializes 'category', 'geometryStream', 'origin', 'yaw', 'pitch', 'roll',
+   * 'bBoxLow', 'bBoxHigh', and 'typeDefinition'.
+   * @inheritdoc
+   * @beta
+   */
+  public static override deserialize(props: DeserializeEntityArgs): GeometricElement3dProps {
+    const elProps = super.deserialize(props) as GeometricElement3dProps;
+    const instance = props.row;
+    elProps.category = instance.category.id;
+
+    const origin = instance.origin ? [instance.origin.x, instance.origin.y, instance.origin.z] : [0, 0, 0];
+    let bbox: LowAndHighXYZProps | undefined;
+    if ("bBoxHigh" in instance && instance.bBoxHigh !== undefined && "bBoxLow" in instance && instance.bBoxLow !== undefined) {
+      bbox = {
+        low: [instance.bBoxLow.x, instance.bBoxLow.y, instance.bBoxLow.z],
+        high: [instance.bBoxHigh.x, instance.bBoxHigh.y, instance.bBoxHigh.z],
+      }
+    }
+
+    elProps.placement = {
+      origin,
+      angles: YawPitchRollAngles.createDegrees(instance.yaw ?? 0, instance.pitch ?? 0, instance.roll ?? 0).toJSON(),
+      bbox
+    };
+
+    if (instance.geometryStream) {
+      elProps.geom = props.iModel[_nativeDb].convertOrUpdateGeometrySource({
+        is2d: false,
+        geom: instance.geometryStream as Uint8Array,
+        placement: elProps.placement,
+        categoryId: elProps.category
+      }, "GeometryStreamProps", props.options?.element ?? {}).geom as GeometryStreamProps;
+    }
+
+    if (instance.typeDefinition) {
+      elProps.typeDefinition = instance.typeDefinition;
+    }
+
+    return elProps;
+  }
+
+  /**
+   * GeometricElement3d serializes 'category', 'geometryStream', 'origin', 'yaw', 'pitch', 'roll',
+   * 'bBoxLow', 'bBoxHigh', and 'typeDefinition'.
+   * @inheritdoc
+   * @beta
+   */
+  public static override serialize(props: GeometricElement3dProps, iModel: IModelDb): ECSqlRow {
+    const inst = super.serialize(props, iModel);
+    inst.category = { id: props.category };
+
+    const assignPlacement = (placement: Placement3dProps) => {
+      if (Array.isArray(placement.origin)) {
+        inst.origin = { x: placement.origin[0], y: placement.origin[1], z: placement.origin[2] };
+      } else {
+        inst.origin = placement.origin;
+      }
+      inst.yaw = placement.angles.yaw;
+      inst.pitch = placement.angles.pitch;
+      inst.roll = placement.angles.roll;
+      if (placement.bbox) {
+        if (Array.isArray(placement.bbox.low)) {
+          inst.bBoxLow = { x: placement.bbox.low[0], y: placement.bbox.low[1], z: placement.bbox.low[2] };
+        } else {
+          inst.bBoxLow = placement.bbox.low;
+        }
+
+        if (Array.isArray(placement.bbox.high)) {
+          inst.bBoxHigh = { x: placement.bbox.high[0], y: placement.bbox.high[1], z: placement.bbox.high[2] };
+        } else {
+          inst.bBoxHigh = placement.bbox.high;
+        }
+      }
+    }
+
+
+    if (props.placement) {
+      assignPlacement(props.placement);
+    }
+
+    if (props.elementGeometryBuilderParams) {
+      const source = iModel[_nativeDb].convertOrUpdateGeometrySource({
+        builder: props.elementGeometryBuilderParams,
+        is2d: true,
+        placement: props.placement,
+        categoryId: props.category,
+      }, "BinaryStream", {});
+
+      inst.geometryStream = source.geom;
+      if (source.placement) {
+        assignPlacement(source.placement as Placement3dProps);
+      }
+    }
+
+    if (props.geom) {
+      const source = iModel[_nativeDb].convertOrUpdateGeometrySource({
+        geom: props.geom as any,
+        is2d: false,
+        placement: props.placement,
+        categoryId: props.category,
+      }, "BinaryStream", {});
+      inst.geometryStream = source.geom;
+      if (source.placement) {
+        assignPlacement(source.placement as Placement3dProps);
+      }
+    }
+
+    inst.typeDefinition = props.typeDefinition;
+    return inst;
   }
 }
 
@@ -568,6 +795,134 @@ export abstract class GeometricElement2d extends GeometricElement {
       val.typeDefinition = this.typeDefinition;
 
     return val;
+  }
+
+  /**
+   * GeometricElement2d custom HandledProps includes 'category', 'geometryStream', 'origin', 'rotation',
+   * 'bBoxLow', 'bBoxHigh', and 'typeDefinition'.
+   * @inheritdoc
+   * @beta
+   */
+  protected static override readonly _customHandledProps: CustomHandledProperty[] = [
+    { propertyName: "category", source: "Class" },
+    { propertyName: "geometryStream", source: "Class" },
+    { propertyName: "origin", source: "Class" },
+    { propertyName: "rotation", source: "Class" },
+    { propertyName: "bBoxLow", source: "Class" },
+    { propertyName: "bBoxHigh", source: "Class" },
+    { propertyName: "typeDefinition", source: "Class" }
+  ];
+
+  /**
+   * GeometricElement2d deserialize 'category', 'geometryStream', 'origin', 'rotation',
+   * 'bBoxLow', 'bBoxHigh', and 'typeDefinition'.
+   * @inheritdoc
+   * @beta
+   */
+  public static override deserialize(props: DeserializeEntityArgs): GeometricElement2dProps {
+    const elProps = super.deserialize(props) as GeometricElement2dProps;
+    const instance = props.row;
+    elProps.category = instance.category.id;
+    const origin = instance.origin ? [instance.origin.x, instance.origin.y] : [0, 0];
+    let bbox: LowAndHighXYZProps | undefined;
+    if ("bBoxHigh" in instance && instance.bBoxHigh !== undefined && "bBoxLow" in instance && instance.bBoxLow !== undefined) {
+      bbox = {
+        low: [instance.bBoxLow.x, instance.bBoxLow.y],
+        high: [instance.bBoxHigh.x, instance.bBoxHigh.y],
+      }
+    }
+    elProps.placement = {
+      origin,
+      angle: instance.rotation,
+      bbox,
+    };
+
+    if (instance.geometryStream) {
+      const source = props.iModel[_nativeDb].convertOrUpdateGeometrySource({
+        is2d: true,
+        geom: instance.geometryStream,
+        placement: elProps.placement,
+        categoryId: elProps.category
+      }, "GeometryStreamProps", props.options?.element ?? {});
+      elProps.geom = source.geom as GeometryStreamProps;
+      if (source.placement) {
+        elProps.placement = source.placement as Placement2dProps;
+      }
+    }
+
+    if (instance.typeDefinition) {
+      elProps.typeDefinition = instance.typeDefinition;
+    }
+
+    return elProps;
+  }
+
+  /**
+   * GeometricElement2d serializes 'category', 'geometryStream', 'origin', 'rotation',
+   * 'bBoxLow', 'bBoxHigh', and 'typeDefinition'.
+   * @inheritdoc
+   * @beta
+   */
+  public static override serialize(props: GeometricElement2dProps, iModel: IModelDb): ECSqlRow {
+    const inst = super.serialize(props, iModel);
+    inst.category = { id: props.category };
+
+    const assignPlacement = (placement: Placement2dProps) => {
+      if (Array.isArray(placement.origin)) {
+        inst.origin = { x: placement.origin[0], y: placement.origin[1] };
+      } else {
+        inst.origin = placement.origin;
+      }
+      inst.rotation = placement.angle;
+      if (placement.bbox) {
+        if (Array.isArray(placement.bbox.low)) {
+          inst.bBoxLow = { x: placement.bbox.low[0], y: placement.bbox.low[1] };
+        } else {
+          inst.bBoxLow = placement.bbox.low;
+        }
+
+        if (Array.isArray(placement.bbox.high)) {
+          inst.bBoxHigh = { x: placement.bbox.high[0], y: placement.bbox.high[1] };
+        } else {
+          inst.bBoxHigh = placement.bbox.high;
+        }
+      }
+    }
+
+
+    if (props.placement) {
+      assignPlacement(props.placement);
+    }
+
+    if (props.elementGeometryBuilderParams) {
+      const source = iModel[_nativeDb].convertOrUpdateGeometrySource({
+        builder: props.elementGeometryBuilderParams,
+        is2d: true,
+        placement: props.placement,
+        categoryId: props.category,
+      }, "BinaryStream", {});
+
+      inst.geometryStream = source.geom;
+      if (source.placement) {
+        assignPlacement(source.placement as Placement2dProps);
+      }
+    }
+
+    if (props.geom) {
+      const source = iModel[_nativeDb].convertOrUpdateGeometrySource({
+        geom: props.geom as any,
+        is2d: true,
+        placement: props.placement,
+        categoryId: props.category,
+      }, "BinaryStream", {});
+
+      inst.geometryStream = source.geom;
+      if (source.placement) {
+        assignPlacement(source.placement as Placement2dProps);
+      }
+    }
+    inst.typeDefinition = props.typeDefinition;
+    return inst;
   }
 
   protected override collectReferenceIds(referenceIds: EntityReferenceSet): void {
@@ -768,8 +1123,46 @@ export abstract class Document extends InformationContentElement {
  * @public
  */
 export class Drawing extends Document {
+  private _scaleFactor: number;
+
+  /** A factor used by tools to adjust the size of text in [GeometricElement2d]($backend)s in the associated [DrawingModel]($backend) and to compute the
+   * size of the [ViewAttachment]($backend) created when attaching the [Drawing]($backend) to a [Sheet]($backend).
+   * Default: 1.
+   * @note Attempting to set this property to a value less than or equal to zero will produce an exception.
+   * @public
+   */
+  public get scaleFactor(): number { return this._scaleFactor; }
+  public set scaleFactor(factor: number) {
+    if (factor <= 0) {
+      if (this._scaleFactor === undefined) {
+        // Entity constructor calls our setter before our constructor runs...don't throw an exception at that time,
+        // because somebody may have persisted the value as zero.
+        return;
+      }
+
+      throw new Error("Drawing.scaleFactor must be greater than zero");
+    }
+
+    this._scaleFactor = factor;
+  }
+
   public static override get className(): string { return "Drawing"; }
-  protected constructor(props: ElementProps, iModel: IModelDb) { super(props, iModel); }
+
+  protected constructor(props: DrawingProps, iModel: IModelDb) {
+    super(props, iModel);
+
+    this._scaleFactor = typeof props.scaleFactor === "number" && props.scaleFactor > 0 ? props.scaleFactor : 1;
+  }
+
+  public override toJSON(): DrawingProps {
+    const drawingProps: DrawingProps = super.toJSON();
+    // Entity.toJSON auto-magically sets drawingProps.scaleFactor from this.scaleFactor - unset if default value of 1.
+    if (drawingProps.scaleFactor === 1) {
+      delete drawingProps.scaleFactor;
+    }
+
+    return drawingProps;
+  }
 
   /** The name of the DrawingModel class modeled by this element type. */
   protected static get drawingModelFullClassName(): string { return DrawingModel.classFullName; }
@@ -788,15 +1181,26 @@ export class Drawing extends Document {
    * @param iModelDb Insert into this iModel
    * @param documentListModelId Insert the new Drawing into this DocumentListModel
    * @param name The name of the Drawing.
+   * @param scaleFactor See [[scaleFactor]]. Must be greater than zero.
    * @returns The Id of the newly inserted Drawing element and the DrawingModel that breaks it down (same value).
    * @throws [[IModelError]] if unable to insert the element.
+   * @throws Error if `scaleFactor` is less than or equal to zero.
    */
-  public static insert(iModelDb: IModelDb, documentListModelId: Id64String, name: string): Id64String {
-    const drawingProps: ElementProps = {
+  public static insert(iModelDb: IModelDb, documentListModelId: Id64String, name: string, scaleFactor?: number): Id64String {
+    const drawingProps: DrawingProps = {
       classFullName: this.classFullName,
       model: documentListModelId,
       code: this.createCode(iModelDb, documentListModelId, name),
     };
+
+    if (scaleFactor !== undefined) {
+      if (scaleFactor <= 0) {
+        throw new Error("Drawing.scaleFactor must be greater than zero");
+      }
+
+      drawingProps.scaleFactor = scaleFactor;
+    }
+
     const drawingId: Id64String = iModelDb.elements.insertElement(drawingProps);
     const model: DrawingModel = iModelDb.models.createModel({
       classFullName: this.drawingModelFullClassName,
@@ -964,6 +1368,40 @@ export abstract class DefinitionElement extends InformationContentElement {
   protected constructor(props: DefinitionElementProps, iModel: IModelDb) {
     super(props, iModel);
     this.isPrivate = true === props.isPrivate;
+  }
+
+  /**
+   * DefinitionElement custom HandledProps includes 'isPrivate'.
+   * @inheritdoc
+   * @beta
+   */
+  protected static override readonly _customHandledProps: CustomHandledProperty[] = [
+    { propertyName: "isPrivate", source: "Class" },
+  ];
+
+  /**
+   * DefinitionElement deserializes 'isPrivate'.
+   * @inheritdoc
+   * @beta
+   */
+  public static override deserialize(props: DeserializeEntityArgs): DefinitionElementProps {
+    const elProps = super.deserialize(props) as DefinitionElementProps;
+    if (props.row.isPrivate !== undefined)
+      elProps.isPrivate = props.row.isPrivate;
+    return elProps;
+  }
+
+  /**
+   * DefinitionElement serialize 'isPrivate'.
+   * @inheritdoc
+   * @beta
+   */
+  public static override serialize(props: DefinitionElementProps, iModel: IModelDb): ECSqlRow {
+    const inst = super.serialize(props, iModel);
+    if (undefined !== props.isPrivate) {
+      inst.isPrivate = props.isPrivate;
+    }
+    return inst;
   }
 
   public override toJSON(): DefinitionElementProps {
@@ -1270,6 +1708,7 @@ export abstract class InformationPartitionElement extends InformationContentElem
   public override toJSON(): InformationPartitionElementProps { // This override only specializes the return type
     return super.toJSON() as InformationPartitionElementProps; // Entity.toJSON takes care of auto-handled properties
   }
+
   /** Create a code that can be used for any subclass of InformationPartitionElement.
    * @param iModelDb The IModelDb
    * @param parentSubjectId The Id of the parent Subject that provides the scope for names of its child InformationPartitionElements.
@@ -1397,6 +1836,39 @@ export class UrlLink extends LinkElement {
     this.url = props.url;
   }
 
+  /**
+   * UrlLink custom HandledProps includes 'description', and 'url'.
+   * @inheritdoc
+   * @beta
+   */
+  protected static override readonly _customHandledProps: CustomHandledProperty[] = [
+    { propertyName: "description", source: "Class" },
+    { propertyName: "url", source: "Class" },
+  ];
+
+  /**
+   * UrlLink deserializes 'description', and 'url'.
+   * @inheritdoc
+   * @beta
+   */
+  public static override deserialize(props: DeserializeEntityArgs): UrlLinkProps {
+    const elProps = super.deserialize(props) as UrlLinkProps;
+    elProps.description = props.row.description ?? "";
+    elProps.url = props.row.url;
+    return elProps;
+  }
+
+  /**
+   * UrlLink serializes 'description', and 'url'.
+   * @inheritdoc
+   * @beta
+   */
+  public static override serialize(props: UrlLinkProps, iModel: IModelDb): ECSqlRow {
+    const inst = super.serialize(props, iModel);
+    inst.description = props.description;
+    return inst;
+  }
+
   public override toJSON(): UrlLinkProps {
     const val = super.toJSON() as UrlLinkProps;
     val.description = this.description;
@@ -1467,6 +1939,79 @@ export class GeometryPart extends DefinitionElement {
     this.bbox = Range3d.fromJSON(props.bbox);
   }
 
+  /**
+   * GeometryPart custom HandledProps includes 'geometryStream', 'bBoxHigh', and 'bBoxLow'.
+   * @inheritdoc
+   * @beta
+   */
+  protected static override readonly _customHandledProps: CustomHandledProperty[] = [
+    { propertyName: "geometryStream", source: "Class" },
+    { propertyName: "bBoxLow", source: "Class" },
+    { propertyName: "bBoxHigh", source: "Class" },
+  ];
+
+  /**
+   * GeometryPart deserializes 'geometryStream', 'bBoxHigh', and 'bBoxLow'.
+   * @inheritdoc
+   * @beta
+   */
+  public static override deserialize(props: DeserializeEntityArgs): GeometryPartProps {
+    const elProps = super.deserialize(props) as GeometryPartProps;
+    const instance = props.row;
+
+    if ("bBoxHigh" in instance && instance.bBoxHigh !== undefined && "bBoxLow" in instance && instance.bBoxLow !== undefined) {
+      elProps.bbox = {
+        low: [instance.bBoxLow.x, instance.bBoxLow.y, instance.bBoxLow.z],
+        high: [instance.bBoxHigh.x, instance.bBoxHigh.y, instance.bBoxHigh.z],
+      };
+    }
+
+    if (instance.geometryStream) {
+      elProps.geom = props.iModel[_nativeDb].convertOrUpdateGeometryPart({
+        geom: instance.geometryStream as Uint8Array,
+        is2d: false,
+        bbox: elProps.bbox,
+      }, "GeometryStreamProps", props.options?.element ?? {}).geom as GeometryStreamProps;
+    }
+
+    return elProps;
+  }
+
+  /**
+   * GeometryPart serialize 'geometryStream', 'bBoxHigh', and 'bBoxLow'.
+   * @inheritdoc
+   * @beta
+   */
+  public static override serialize(props: GeometryPartProps, iModel: IModelDb): ECSqlRow {
+    const inst = super.serialize(props, iModel);
+
+    if (undefined !== props.geom) {
+      const source = inst.geometryStream = iModel[_nativeDb].convertOrUpdateGeometryPart({
+        geom: props.geom as any,
+        is2d: false,
+        bbox: props.bbox,
+      }, "BinaryStream", {});
+      inst.geometryStream = source.geom as Uint8Array;
+      if (source.bbox) {
+        props.bbox = source.bbox;
+      }
+    }
+
+    if (undefined !== props.bbox) {
+      if (Array.isArray(props.bbox.low)) {
+        inst.bBoxLow = { x: props.bbox.low[0], y: props.bbox.low[1], z: props.bbox.low[2] };
+      } else {
+        inst.bBoxLow = props.bbox.low;
+      }
+      if (Array.isArray(props.bbox.high)) {
+        inst.bBoxHigh = { x: props.bbox.high[0], y: props.bbox.high[1], z: props.bbox.high[2] };
+      } else {
+        inst.bBoxHigh = props.bbox.high;
+      }
+    }
+    return inst;
+  }
+
   public override toJSON(): GeometryPartProps {
     const val = super.toJSON() as GeometryPartProps;
     val.geom = this.geom;
@@ -1498,6 +2043,38 @@ export class LineStyle extends DefinitionElement {
     super(props, iModel);
     this.description = props.description;
     this.data = props.data;
+  }
+
+  /**
+   * LineStyle custom HandledProps includes 'data'.
+   * @inheritdoc
+   * @beta
+   */
+  protected static override readonly _customHandledProps: CustomHandledProperty[] = [
+    { propertyName: "data", source: "Class" },
+  ];
+
+  /**
+   * LineStyle deserializes 'data'.
+   * @inheritdoc
+   * @beta
+   */
+  public static override deserialize(props: DeserializeEntityArgs): LineStyleProps {
+    const elProps = super.deserialize(props) as LineStyleProps;
+    const instance = props.row;
+    elProps.data = instance.data ?? "";
+    return elProps;
+  }
+
+  /**
+   * LineStyle serializes 'data'.
+   * @inheritdoc
+   * @beta
+   */
+  public static override serialize(props: LineStyleProps, iModel: IModelDb): ECSqlRow {
+    const inst = super.serialize(props, iModel);
+    inst.data = props.data;
+    return inst;
   }
 
   /** Create a Code for a LineStyle definition given a name that is meant to be unique within the scope of the specified model.
@@ -1541,6 +2118,22 @@ export class RenderTimeline extends InformationRecordElement {
 
     props.script = JSON.stringify(this.scriptProps);
     return props;
+  }
+
+  /**
+   * RenderTimeline deserialize checks if Schedule Script Element Ids need to be omitted, and if so, removes them.
+   * @inheritdoc
+   * @beta
+   */
+  public static override deserialize(props: DeserializeEntityArgs): RenderTimelineProps {
+    const elProps = super.deserialize(props) as RenderTimelineProps;
+    const options = props.options?.element?.renderTimeline;
+    // Omit Schedule Script Element Ids if the option is set
+    if (options?.omitScriptElementIds && elProps.script) {
+      const scriptProps: RenderSchedule.ScriptProps = RenderTimeline.parseScriptProps(elProps.script);
+      elProps.script = JSON.stringify(RenderSchedule.Script.removeScheduleScriptElementIds(scriptProps));
+    }
+    return elProps;
   }
 
   private static parseScriptProps(json: string): RenderSchedule.ScriptProps {

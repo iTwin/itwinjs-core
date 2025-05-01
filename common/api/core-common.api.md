@@ -36,6 +36,8 @@ import { IndexedPolyface } from '@itwin/core-geometry';
 import { IndexedPolyfaceVisitor } from '@itwin/core-geometry';
 import { IndexedValue } from '@itwin/core-bentley';
 import { IndexMap } from '@itwin/core-bentley';
+import { ITwinError } from '@itwin/core-bentley';
+import { LegacyITwinErrorWithNumber } from '@itwin/core-bentley';
 import { LoggingMetaData } from '@itwin/core-bentley';
 import { LogLevel } from '@itwin/core-bentley';
 import { LowAndHighXY } from '@itwin/core-geometry';
@@ -1023,6 +1025,87 @@ export class CartographicRange {
     intersectsRange(other: CartographicRange): boolean;
 }
 
+// @beta
+export namespace CatalogError {
+    const // (undocumented)
+    scope = "itwin-Catalog";
+    export function isError(error: unknown, key?: Key): error is ITwinError;
+    // (undocumented)
+    export type Key = "invalid-seed-catalog" | "manifest-missing";
+    export function throwError<T extends ITwinError>(key: Key, e: Omit<T, "name" | "iTwinErrorId">): never;
+}
+
+// @beta
+export namespace CatalogIModel {
+    export interface CreateNewContainerArgs {
+        readonly dbName?: string;
+        readonly iTwinId: Id64String;
+        readonly localCatalogFile: LocalFileName;
+        readonly manifest: Manifest;
+        readonly metadata: {
+            label: string;
+            description?: string;
+            json?: {
+                [key: string]: any;
+            };
+        };
+        readonly version?: string;
+    }
+    export interface CreateNewVersionArgs {
+        readonly containerId: string;
+        readonly fromDb: NameAndVersion;
+        readonly identifier?: string;
+        readonly versionType: "major" | "minor" | "patch" | "premajor" | "preminor" | "prepatch" | "prerelease";
+    }
+    // @internal
+    export type IpcChannel = "catalogIModel/ipc";
+    // @internal (undocumented)
+    export interface IpcMethods {
+        acquireWriteLock(args: {
+            containerId: string;
+            username: string;
+        }): Promise<void>;
+        createNewContainer(args: CreateNewContainerArgs): Promise<NewContainerProps>;
+        createNewVersion(args: CreateNewVersionArgs): Promise<{
+            oldDb: NameAndVersion;
+            newDb: NameAndVersion;
+        }>;
+        getInfo(key: string): Promise<{
+            manifest?: CatalogIModel.Manifest;
+            version: string;
+        }>;
+        openEditable(args: OpenArgs): Promise<IModelConnectionProps>;
+        openReadonly(args: OpenArgs): Promise<IModelConnectionProps>;
+        releaseWriteLock(args: {
+            containerId: string;
+            abandon?: true;
+        }): Promise<void>;
+        updateCatalogManifest(key: string, manifest: CatalogIModel.Manifest): Promise<void>;
+    }
+    export interface Manifest {
+        readonly catalogName: string;
+        readonly contactName?: string;
+        readonly description?: string;
+        readonly iTwinId?: Id64String;
+        lastEditedBy?: string;
+    }
+    export interface NameAndVersion {
+        readonly dbName?: string;
+        readonly version?: VersionRange;
+    }
+    export interface NewContainerProps {
+        readonly baseUri: string;
+        readonly containerId: string;
+        readonly provider: "azure" | "google";
+    }
+    export interface OpenArgs extends NameAndVersion, SnapshotOpenOptions {
+        containerId?: string;
+        prefetch?: boolean;
+        syncWithCloud?: boolean;
+    }
+    export type VersionRange = string;
+}
+
 // @public
 export interface CategoryProps extends DefinitionElementProps {
     // (undocumented)
@@ -1035,6 +1118,11 @@ export interface CategoryProps extends DefinitionElementProps {
 export interface CategorySelectorProps extends DefinitionElementProps {
     // (undocumented)
     categories: Id64Array;
+}
+
+// @beta
+export enum CesiumIonAssetId {
+    OSMBuildings = "96188"
 }
 
 // @public
@@ -1164,6 +1252,25 @@ export enum ChangesetType {
     SchemaSync = 65
 }
 
+// @beta
+export interface ChannelControlError extends ITwinError {
+    readonly channelKey: string;
+}
+
+// @beta (undocumented)
+export namespace ChannelControlError {
+    const scope = "itwin-ChannelControl";
+    export function isError(error: unknown, key?: Key): error is ChannelControlError;
+    export type Key =
+    /** an attempt to create a channel within an existing channel */
+    "may-not-nest" |
+    /** an attempt to use a channel that was not "allowed" */
+    "not-allowed" |
+    /** the root channel already exists */
+    "root-exists";
+    export function throwError(key: Key, message: string, channelKey: string): never;
+}
+
 // @public
 export interface ChannelRootAspectProps extends ElementAspectProps {
     owner: string;
@@ -1241,6 +1348,34 @@ export interface ClipStyleProps {
 export interface CloudContainerUri {
     // (undocumented)
     readonly uriParams: string;
+}
+
+// @beta
+export interface CloudSqliteError extends ITwinError {
+    readonly containerId?: string;
+    readonly dbName?: string;
+}
+
+// @beta (undocumented)
+export namespace CloudSqliteError {
+    const // (undocumented)
+    scope = "itwin-CloudSqlite";
+    export function isError<T extends CloudSqliteError>(error: unknown, key?: Key): error is T;
+    // (undocumented)
+    export type Key = "already-published" | "copy-error" | "invalid-name" | "no-version-available" | "not-a-function" | "service-not-available" |
+    /** The write lock cannot be acquired because it is currently held by somebody else.
+    * @see WriteLockHeld for details
+    */
+    "write-lock-held" |
+    /** The write lock on a container is not held, but is required for this operation */
+    "write-lock-not-held";
+    export function throwError<T extends CloudSqliteError>(key: Key, e: Omit<T, "name" | "iTwinErrorId">): never;
+    export interface WriteLockHeld extends CloudSqliteError {
+        // @internal (undocumented)
+        errorNumber: number;
+        expires: string;
+        lockedBy: string;
+    }
 }
 
 // @public
@@ -1629,25 +1764,27 @@ export namespace ConcreteEntityTypes {
     export function toBisCoreRootClassFullName(type: ConcreteEntityTypes): string;
 }
 
-// @public @deprecated
+// @public
 export interface ConflictingLock {
     briefcaseIds: number[];
     objectId: string;
     state: LockState;
 }
 
-// @public @deprecated
-export class ConflictingLocksError extends IModelError {
-    constructor(message: string, getMetaData?: LoggingMetaData, conflictingLocks?: ConflictingLock[]);
+// @beta
+export interface ConflictingLocks extends LegacyITwinErrorWithNumber {
     // (undocumented)
     conflictingLocks?: ConflictingLock[];
 }
 
-// @beta
-export function constructDetailedError<T extends ITwinError>(namespace: string, errorKey: string, details: Omit<T, keyof ITwinError>, message?: string, metadata?: LoggingMetaData): T;
-
-// @beta
-export function constructITwinError(namespace: string, errorKey: string, message?: string, metadata?: LoggingMetaData): ITwinError;
+// @public
+export class ConflictingLocksError extends IModelError {
+    constructor(message: string, getMetaData?: LoggingMetaData, conflictingLocks?: ConflictingLock[]);
+    // (undocumented)
+    conflictingLocks?: ConflictingLock[];
+    // @beta (undocumented)
+    static isError<T extends ConflictingLocks>(error: any): error is T;
+}
 
 // @alpha
 export enum ContentFlags {
@@ -1790,11 +1927,11 @@ export interface ContextRealityModelsContainer {
 // @public
 export class Contour {
     clone(changedProps?: Partial<ContourProperties>): Contour;
+    compare(other: Contour): number;
     static compare(lhs: Contour, rhs: Contour): number;
     static create(props?: Partial<ContourProperties>): Contour;
     // (undocumented)
     static readonly defaults: Contour;
-    // (undocumented)
     equals(other: Contour): boolean;
     // (undocumented)
     static fromJSON(props?: ContourProps): Contour;
@@ -1810,6 +1947,7 @@ export class Contour {
 // @public
 export class ContourDisplay {
     clone(changedProps?: Partial<ContourDisplayProperties>): ContourDisplay;
+    compare(other: ContourDisplay): number;
     static create(props?: Partial<ContourDisplayProperties>): ContourDisplay;
     readonly displayContours: boolean;
     equals(other: ContourDisplay): boolean;
@@ -1834,6 +1972,7 @@ export interface ContourDisplayProps {
 // @public
 export class ContourGroup {
     clone(changedProps?: Partial<ContourGroupProperties>): ContourGroup;
+    compare(other: ContourGroup): number;
     readonly contourDef: Contour;
     static create(props?: Partial<ContourGroupProperties>): ContourGroup;
     equals(other: ContourGroup | undefined): boolean;
@@ -1873,6 +2012,7 @@ export interface ContourProps {
 export class ContourStyle {
     clone(changedProps?: Partial<ContourStyleProperties>): ContourStyle;
     readonly color: RgbColor;
+    compare(other: ContourStyle): number;
     static compare(lhs: ContourStyle, rhs: ContourStyle): number;
     static create(props?: Partial<ContourStyleProperties>): ContourStyle;
     equals(other: ContourStyle): boolean;
@@ -1908,9 +2048,6 @@ export interface CreateIModelProps extends IModelProps {
     readonly thumbnail?: ThumbnailProps;
 }
 
-// @beta
-export function createITwinErrorTypeAsserter<T extends ITwinError>(namespace: string, errorKey: string): (error: unknown) => error is T;
-
 // @public
 export interface CreateSnapshotIModelProps {
     readonly createClassViews?: boolean;
@@ -1934,7 +2071,7 @@ export enum CurrentImdlVersion {
     Minor = 0
 }
 
-// @beta
+// @beta @deprecated
 export interface CustomAttribute {
     ecclass: string;
     properties: {
@@ -2473,6 +2610,11 @@ export enum DomainOptions {
     CheckRequiredUpgrades = 0,
     SkipCheck = 3,
     Upgrade = 2
+}
+
+// @public
+export interface DrawingProps extends ElementProps {
+    scaleFactor?: number;
 }
 
 // @public
@@ -3063,7 +3205,7 @@ export interface EntityIdAndClassId {
 // @public
 export type EntityIdAndClassIdIterable = Iterable<Readonly<EntityIdAndClassId>>;
 
-// @beta
+// @beta @deprecated
 export class EntityMetaData implements EntityMetaDataProps {
     constructor(jsonObj: EntityMetaDataProps);
     readonly baseClasses: string[];
@@ -3081,7 +3223,7 @@ export class EntityMetaData implements EntityMetaDataProps {
     };
 }
 
-// @beta (undocumented)
+// @beta @deprecated (undocumented)
 export interface EntityMetaDataProps {
     baseClasses: string[];
     // (undocumented)
@@ -4133,9 +4275,6 @@ export enum GeometrySummaryVerbosity {
     Detailed = 20,
     Full = 30
 }
-
-// @beta
-export function getITwinErrorMetaData(error: ITwinError): object | undefined;
 
 // @internal (undocumented)
 export function getMaximumMajorTileFormatVersion(maxMajorVersion: number, formatVersion?: number): number;
@@ -5242,19 +5381,6 @@ export const Interpolation: {
 // @public (undocumented)
 export type InterpolationFunction = (v: any, k: number) => number;
 
-// @beta
-export interface InUseLock {
-    briefcaseIds: BriefcaseId[];
-    objectId: string;
-    state: LockState;
-}
-
-// @beta
-export interface InUseLocksError extends ITwinError {
-    // (undocumented)
-    inUseLocks: InUseLock[];
-}
-
 // @internal (undocumented)
 export const ipcAppChannels: {
     readonly functions: "itwinjs-core/ipc-app";
@@ -5308,28 +5434,9 @@ export interface IpcAppNotifications {
 export type IpcInvokeReturn = {
     result: any;
     error?: never;
-    iTwinError?: never;
 } | {
     result?: never;
-    iTwinError?: never;
-    error: {
-        name: string;
-        message: string;
-        errorNumber: number;
-        stack?: string;
-        metadata?: LoggingMetaData;
-    };
-} | {
-    result?: never;
-    error?: never;
-    iTwinError: {
-        namespace: string;
-        errorKey: string;
-        message: string;
-        stack?: string;
-        metadata?: LoggingMetaData;
-        [key: string]: any;
-    };
+    error: unknown;
 };
 
 // @public
@@ -5460,9 +5567,6 @@ export abstract class IpcWebSocketTransport {
 // @public
 export function isBinaryImageSource(source: ImageSource): source is BinaryImageSource;
 
-// @beta
-export function isITwinError(error: unknown, namespace?: string, errorKey?: string): error is ITwinError;
-
 // @internal
 export function isKnownTileFormat(format: number): boolean;
 
@@ -5480,29 +5584,6 @@ export function isValidImageSourceFormat(format: number): format is ImageSourceF
 
 // @internal
 export const iTwinChannel: (channel: string) => string;
-
-// @beta
-export interface ITwinError extends Error {
-    errorKey: string;
-    message: string;
-    metadata?: LoggingMetaData;
-    namespace: string;
-    stack?: string;
-}
-
-// @beta
-export const iTwinErrorKeys: {
-    readonly inUseLocks: "in-use-locks";
-    readonly channelNest: "channel-may-not-nest";
-    readonly channelNotAllowed: "channel-not-allowed";
-    readonly channelRootExists: "channel-root-exists";
-};
-
-// @beta
-export const iTwinErrorMessages: Record<keyof typeof iTwinErrorKeys, (...args: any[]) => string>;
-
-// @beta
-export const iTwinjsCoreNamespace = "itwinjs-core";
 
 // @public
 export interface JsonGeometryStream {
@@ -6039,10 +6120,19 @@ export interface ModelLoadProps {
     id?: Id64String;
 }
 
+// @beta
+export enum ModelMapLayerDrapeTarget {
+    Globe = 1,
+    IModel = 4,
+    RealityData = 2
+}
+
 // @public
 export interface ModelMapLayerProps extends CommonMapLayerProps {
     // @internal (undocumented)
     accessKey?: never;
+    // @beta
+    drapeTarget?: ModelMapLayerDrapeTarget;
     // @internal (undocumented)
     formatId?: never;
     modelId: Id64String;
@@ -6055,13 +6145,15 @@ export interface ModelMapLayerProps extends CommonMapLayerProps {
 // @public
 export class ModelMapLayerSettings extends MapLayerSettings {
     // @internal
-    protected constructor(modelId: Id64String, name: string, visible?: boolean, transparency?: number, transparentBackground?: boolean);
+    protected constructor(modelId: Id64String, name: string, visible?: boolean, transparency?: number, transparentBackground?: boolean, drapeTarget?: ModelMapLayerDrapeTarget);
     get allSubLayersInvisible(): boolean;
     clone(changedProps: Partial<ModelMapLayerProps>): ModelMapLayerSettings;
     // @internal (undocumented)
     protected cloneProps(changedProps: Partial<ModelMapLayerProps>): ModelMapLayerProps;
     // @internal (undocumented)
     displayMatches(other: MapLayerSettings): boolean;
+    // @beta
+    readonly drapeTarget: ModelMapLayerDrapeTarget;
     static fromJSON(json: ModelMapLayerProps): ModelMapLayerSettings;
     // (undocumented)
     readonly modelId: Id64String;
@@ -7090,10 +7182,10 @@ export interface ProjectionProps {
     zoneNumber?: number;
 }
 
-// @beta
+// @beta @deprecated
 export type PropertyCallback = (name: string, meta: PropertyMetaData) => void;
 
-// @beta
+// @beta @deprecated
 export class PropertyMetaData implements PropertyMetaDataProps {
     constructor(jsonObj: PropertyMetaDataProps);
     createProperty(jsonObj: any): any;
@@ -7153,7 +7245,7 @@ export class PropertyMetaDataMap implements Iterable<QueryPropertyMetaData> {
     readonly properties: QueryPropertyMetaData[];
 }
 
-// @beta (undocumented)
+// @beta @deprecated (undocumented)
 export interface PropertyMetaDataProps {
     // (undocumented)
     customAttributes?: CustomAttribute[];
@@ -7422,6 +7514,7 @@ export interface QueryLimit {
 // @public
 export interface QueryOptions extends BaseReaderOptions {
     abbreviateBlobs?: boolean;
+    // @deprecated
     convertClassIdsToClassNames?: boolean;
     includeMetaData?: boolean;
     limit?: QueryLimit;
@@ -7435,6 +7528,7 @@ export class QueryOptionsBuilder {
     // (undocumented)
     getOptions(): QueryOptions;
     setAbbreviateBlobs(val: boolean): this;
+    // @deprecated
     setConvertClassIdsToNames(val: boolean): this;
     // @internal
     setDelay(val: number): this;
@@ -7949,6 +8043,8 @@ export namespace RenderSchedule {
         // @internal (undocumented)
         modelRequiresBatching(modelId: Id64String): boolean;
         readonly modelTimelines: ReadonlyArray<ModelTimeline>;
+        // @internal
+        static removeScheduleScriptElementIds(scheduleScript: RenderSchedule.ScriptProps): RenderSchedule.ScriptProps;
         // @internal
         readonly requiresBatching: boolean;
         // (undocumented)
@@ -9018,7 +9114,7 @@ export interface SectionDrawingLocationProps extends GeometricElement3dProps {
 }
 
 // @public
-export interface SectionDrawingProps extends ElementProps {
+export interface SectionDrawingProps extends DrawingProps {
     // (undocumented)
     jsonProperties?: {
         drawingToSpatialTransform?: TransformProps;
@@ -9518,6 +9614,21 @@ export interface SpatialViewDefinitionProps extends ViewDefinition3dProps {
 }
 
 // @beta
+export interface SqliteError extends ITwinError {
+    dbName: string;
+}
+
+// @beta (undocumented)
+export namespace SqliteError {
+    const // (undocumented)
+    scope = "itwin-Sqlite";
+    export function isError(error: unknown, key?: Key): error is SqliteError;
+    // (undocumented)
+    export type Key = "already-open" | "incompatible-version" | "invalid-versions-property" | "readonly";
+    export function throwError(key: Key, message: string, dbName: string): never;
+}
+
+// @beta
 export type StackedFractionType = "horizontal" | "diagonal";
 
 // @public
@@ -9772,6 +9883,7 @@ export class TextBlock extends TextBlockComponent {
     equals(other: TextBlockComponent): boolean;
     get isEmpty(): boolean;
     justification: TextBlockJustification;
+    margins: TextBlockMargins;
     readonly paragraphs: Paragraph[];
     stringify(options?: TextBlockStringifyOptions): string;
     // (undocumented)
@@ -9835,8 +9947,17 @@ export interface TextBlockLayoutResult {
 }
 
 // @beta
+export interface TextBlockMargins {
+    bottom: number;
+    left: number;
+    right: number;
+    top: number;
+}
+
+// @beta
 export interface TextBlockProps extends TextBlockComponentProps {
     justification?: TextBlockJustification;
+    margins?: Partial<TextBlockMargins>;
     paragraphs?: ParagraphProps[];
     width?: number;
 }
@@ -11037,6 +11158,21 @@ export interface ViewStateProps {
 }
 
 // @beta
+export interface ViewStoreError extends ITwinError {
+    viewStoreName?: string;
+}
+
+// @beta (undocumented)
+export namespace ViewStoreError {
+    const // (undocumented)
+    scope = "itwin-ViewStore";
+    export function isError<T extends ViewStoreError>(error: unknown, key?: Key): error is T;
+    // (undocumented)
+    export type Key = "invalid-value" | "invalid-member" | "no-owner" | "not-found" | "not-unique" | "group-error";
+    export function throwError<T extends ViewStoreError>(key: Key, e: Omit<T, "name" | "iTwinErrorId">): never;
+}
+
+// @beta
 export namespace ViewStoreRpc {
     const // @internal
     version = "4.0.0";
@@ -11373,6 +11509,17 @@ export class WhiteOnWhiteReversalSettings {
     static fromJSON(props?: WhiteOnWhiteReversalProps): WhiteOnWhiteReversalSettings;
     readonly ignoreBackgroundColor: boolean;
     toJSON(): WhiteOnWhiteReversalProps | undefined;
+}
+
+// @beta
+export namespace WorkspaceError {
+    const // (undocumented)
+    scope = "itwin-Workspace";
+    export function isError<T extends ITwinError>(error: unknown, key?: Key): error is T;
+    // (undocumented)
+    export type Key = "already-exists" | "container-exists" | "does-not-exist" | "invalid-name" | "no-cloud-container" | "load-error" | "load-errors" | "resource-exists" | "too-large" | "write-error";
+    // (undocumented)
+    export function throwError<T extends ITwinError>(key: Key, e: Omit<T, "name" | "iTwinErrorId">): never;
 }
 
 // @public

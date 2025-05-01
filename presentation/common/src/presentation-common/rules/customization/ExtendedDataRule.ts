@@ -6,7 +6,7 @@
  * @module PresentationRules
  */
 
-import { RuleBase } from "../Rule";
+import { RuleBase } from "../Rule.js";
 
 /**
  * Extended data rule is used to inject some arbitrary data into presentation data objects (nodes, content records).

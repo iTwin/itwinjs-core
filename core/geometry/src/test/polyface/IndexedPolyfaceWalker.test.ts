@@ -4,6 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { describe, expect, it } from "vitest";
 import { Point3d } from "../../geometry3d/Point3dVector3d";
+import { NumberArray } from "../../geometry3d/PointHelpers";
 import { IndexedPolyfaceWalker } from "../../polyface/IndexedPolyfaceWalker";
 import { IndexedPolyface } from "../../polyface/Polyface";
 import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
@@ -12,7 +13,7 @@ import { Checker } from "../Checker";
 function verifyStrictlyIncreasingArraySearch(ck: Checker, data: number[], name: string) {
   for (let i0 = 0; i0 + 1 < data.length; i0++) {
     for (let k = data[i0]; k < data[i0 + 1]; k++) {
-      const i = IndexedPolyface.searchStrictlyIncreasingNumbers(data, k);
+      const i = NumberArray.searchStrictlyIncreasingNumbers(data, k);
       if (ck.testDefined(i, "expect searchStrictlyIncreasingNumbers to return defined"))
         ck.testExactNumber(i0, i, `searchStrictlyIncreasingNumbers(${k}) on ${name} indices returns the floor index`);
     }

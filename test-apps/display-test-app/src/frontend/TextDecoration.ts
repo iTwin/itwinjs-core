@@ -3,11 +3,14 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { BaselineShift, ColorDef, FractionRun, GeometryStreamBuilder, IModelTileRpcInterface, LineBreakRun, TextAnnotation, TextAnnotationAnchor, TextBlock, TextBlockJustification, TextRun, TextStyleSettingsProps } from "@itwin/core-common";
+import { BaselineShift, ColorDef, FractionRun, GeometryStreamBuilder, IModelTileRpcInterface, LineBreakRun, TextAnnotation, TextAnnotationAnchor, TextBlock, TextBlockJustification, TextBlockMargins, TextRun, TextStyleSettingsProps } from "@itwin/core-common";
 import { DecorateContext, Decorator, GraphicType, IModelApp, IModelConnection, readElementGraphics, RenderGraphicOwner, Tool } from "@itwin/core-frontend";
 import { DtaRpcInterface } from "../common/DtaRpcInterface";
 import { Guid, Id64, Id64String } from "@itwin/core-bentley";
 import { Point3d, YawPitchRollAngles } from "@itwin/core-geometry";
+
+// Ignoring the spelling of the keyins. They're case insensitive, so we check against lowercase.
+// cspell:ignore superscript, subscript, widthfactor, fractionscale, fractiontype
 
 class TextEditor implements Decorator {
   // Geometry properties
@@ -97,6 +100,15 @@ class TextEditor implements Decorator {
     this._textBlock.justification = justification;
   }
 
+  public setMargins(margins: Partial<TextBlockMargins>): void {
+    this._textBlock.margins = {
+      left: margins.left ?? this._textBlock.margins.left,
+      right: margins.right ?? this._textBlock.margins.right,
+      top: margins.top ?? this._textBlock.margins.top,
+      bottom: margins.bottom ?? this._textBlock.margins.bottom,
+    };
+  }
+
   public async update(): Promise<void> {
     if (!this._iModel) {
       throw new Error("Invoke `dta text init` first");
@@ -169,7 +181,13 @@ export class TextDecorationTool extends Tool {
         editor.clear();
         return true;
       case "init":
-        editor.init(vp.iModel, arg);
+        // Use the first category if the user doesn't specify one. This is just a convenience.
+        const category = arg ?? vp.view.categorySelector.categories.values().next().value;
+        if (undefined === category || category === "") {
+          throw new Error("No category provided.");
+        }
+
+        editor.init(vp.iModel, category);
         break;
       case "center":
         editor.origin = vp.view.getCenter();
@@ -284,6 +302,34 @@ export class TextDecorationTool extends Tool {
             break;
           default:
             throw new Error("Expected top, middle, bottom, left, center, or right");
+        }
+        break;
+      }
+      case "margin": {
+        const marginLocation = inArgs[1].toLowerCase();
+        const val = Number(inArgs[2]);
+        if (isNaN(val)) {
+          throw new Error("Expected margin location followed by a number. Margin location can be left, right, top, bottom, all, horizontal, or vertical");
+        }
+
+        switch (marginLocation) {
+          case "left":
+          case "right":
+          case "top":
+          case "bottom":
+            editor.setMargins({ [marginLocation]: val });
+            break;
+          case "all":
+            editor.setMargins({ left: val, right: val, top: val, bottom: val });
+            break;
+          case "horizontal":
+            editor.setMargins({ left: val, right: val });
+            break;
+          case "vertical":
+            editor.setMargins({ top: val, bottom: val });
+            break;
+          default:
+            throw new Error("Expected left, right, top, bottom, all, horizontal, or vertical");
         }
         break;
       }
