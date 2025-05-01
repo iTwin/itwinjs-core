@@ -3,16 +3,16 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert, CompressedId64Set, Id64String } from "@itwin/core-bentley";
+import { assert, CompressedId64Set } from "@itwin/core-bentley";
 import {
-  Code, ColorDef, ElementGeometry, GeometryStreamProps, PhysicalElementProps,
+  Code, ColorDef, ElementGeometry, PhysicalElementProps,
 } from "@itwin/core-common";
 import {
-  AccuDrawHintBuilder, BeButtonEvent, BriefcaseConnection, CoreTools, DecorateContext, DynamicsContext, EventHandled, GraphicType, HitDetail, IModelApp,
+  AccuDrawHintBuilder, BeButtonEvent, BriefcaseConnection, CoreTools, DynamicsContext, EventHandled, IModelApp,
   NotifyMessageDetails, OutputMessagePriority, Tool, ToolAssistance, ToolAssistanceImage, ToolAssistanceInputMethod, ToolAssistanceInstruction,
   ToolAssistanceSection,
 } from "@itwin/core-frontend";
-import { IModelJson, LineString3d, Point3d, Transform, Vector3d, YawPitchRollAngles } from "@itwin/core-geometry";
+import { LineString3d, Point3d, Transform, Vector3d, YawPitchRollAngles } from "@itwin/core-geometry";
 import { editorBuiltInCmdIds } from "@itwin/editor-common";
 import { basicManipulationIpc, CreateElementTool, EditTools } from "@itwin/editor-frontend";
 import { setTitle } from "./Title";
@@ -50,7 +50,6 @@ export class EditingScopeTool extends Tool {
 export class PlaceLineStringTool extends CreateElementTool {
   public static override toolId = "PlaceLineString";
   private readonly _points: Point3d[] = [];
-  private _snapGeomId?: Id64String;
   protected _startedCmd?: string;
 
   protected override get wantAccuSnap(): boolean { return true; }
@@ -108,6 +107,7 @@ export class PlaceLineStringTool extends CreateElementTool {
     IModelApp.notifications.setToolAssistance(instructions);
   }
 
+  /*
   public override testDecorationHit(id: Id64String): boolean {
     return id === this._snapGeomId;
   }
@@ -132,6 +132,7 @@ export class PlaceLineStringTool extends CreateElementTool {
     builder.addLineString(this._points);
     context.addDecorationFromBuilder(builder);
   }
+  */
 
   public override onDynamicFrame(ev: BeButtonEvent, context: DynamicsContext): void {
     if (this._points.length < 1)
