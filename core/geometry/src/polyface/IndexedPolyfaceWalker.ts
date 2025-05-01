@@ -310,8 +310,8 @@ export class IndexedPolyfaceWalker {
    *     * `polyface.data.pointIndex[kA] === polyface.data.pointIndex[kD]`
    *     * `polyface.data.pointIndex[kB] === polyface.data.pointIndex[kC]`
    *   * Given this relationship, we say that edgeIndices kA and kC are _edge mates_.
-   *   * A non-interior edge either lies on the boundary of the mesh or is non-manifold (having more than two adjacent
-   * facets, or one with the wrong orientation). These edges have no edge mate.
+   *   * A non-interior edge either lies on the boundary of the mesh, or is null (endpoints are equal), or is
+   * non-manifold (having more than 2 adjacent facets, or 1 with the wrong orientation). These edges have no edge mate.
    * * These conditions define a conventional manifold mesh where each edge of a facet has at most one partner edge with
    * opposite orientation in an adjacent facet.
    * * After calling this method, the caller can construct `IndexedPolyfaceWalker` objects to traverse the mesh by
@@ -336,15 +336,11 @@ export class IndexedPolyfaceWalker {
         matcher.addEdge(polyface.data.pointIndex[k0], polyface.data.pointIndex[k1], k0);
     }
     const matchedPairs: SortableEdgeCluster[] = [];
-    const singletons: SortableEdgeCluster[] = [];
-    const nullEdges: SortableEdgeCluster[] = [];
-    const allOtherClusters: SortableEdgeCluster[] = [];
-    matcher.sortAndCollectClusters(matchedPairs, singletons, nullEdges, allOtherClusters);
-
+    matcher.sortAndCollectClusters(matchedPairs, undefined, undefined, undefined);
     const numIndex = polyface.data.pointIndex.length;
     polyface.data.edgeMateIndex = new Array<number | undefined>(numIndex);
     for (let i = 0; i < numIndex; i++)
-      polyface.data.edgeMateIndex[i] = undefined;
+      polyface.data.edgeMateIndex[i] = undefined; // boundary, null, and non-manifold edges have no mate
     for (const pair of matchedPairs) {
       if (Array.isArray(pair) && pair.length === 2) {
         const k0 = pair[0].facetIndex;

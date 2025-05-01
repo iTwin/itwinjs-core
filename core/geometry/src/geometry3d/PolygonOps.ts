@@ -860,8 +860,9 @@ export class PolygonOps {
     return numReverse;
   }
   /**
-   * Reverse and reorder loops in the xy-plane for consistency and containment.
-   * @param loops multiple polygons in any order and orientation, z-coordinates ignored
+   * Reverse and reorder loops in the xy-plane for consistent orientation and containment.
+   * @param loops multiple polygons in any order and orientation, z-coordinates ignored.
+   * * For best results, all overlaps should be containments, i.e., loop boundaries can touch, but should not cross.
    * @returns array of arrays of polygons that capture the input pointers. In each first level array:
    * * The first polygon is an outer loop, oriented counterclockwise.
    * * Any subsequent polygons are holes of the outer loop, oriented clockwise.

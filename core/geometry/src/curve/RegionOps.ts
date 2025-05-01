@@ -83,7 +83,7 @@ export enum RegionBinaryOpType {
  *   * [[UnionRegion]] -- a collection of `Loop` and `ParityRegion` objects understood as a (probably disjoint) union.
  * * Most of the methods in this class:
  *   * Ignore z-coordinates, so callers should ensure that input geometry has been rotated parallel to the xy-plane.
- *   * Assume consistent Loop orientation in input: "solid" Loops have orientation opposite that of "hole" Loops.
+ *   * Assume consistent Loop orientation: "solid" Loops are counterclockwise; "hole" Loops are clockwise.
  * @public
  */
 export class RegionOps {
@@ -324,7 +324,8 @@ export class RegionOps {
   }
   /**
    * Return areas defined by a boolean operation.
-   * * A common use case of this method is to convert a [[UnionRegion]] with overlapping children into one with
+   * @note For best results, input regions should have correctly oriented loops. See [[sortOuterAndHoleLoopsXY]].
+   * @note A common use case of this method is to convert a region with overlapping children into one with
    * non-overlapping children: `regionOut = RegionOps.regionBooleanXY(regionIn, undefined, RegionBinaryOpType.Union)`.
    * @param loopsA first set of loops (treated as a union)
    * @param loopsB second set of loops (treated as a union)
@@ -682,14 +683,15 @@ export class RegionOps {
     curves.dispatchToGeometryHandler(context);
   }
   /**
-   * Reverse and reorder loops in the xy-plane for consistency and containment.
-   * @param loops multiple loops in any order and orientation, z-coordinates ignored
+   * Reverse and reorder loops in the xy-plane for consistent orientation and containment.
+   * @param loops multiple loops in any order and orientation, z-coordinates ignored.
+   * * For best results, all overlaps should be containments, i.e., loop boundaries can touch, but should not cross.
    * @returns a region that captures the input pointers. This region is a:
-   * * `Loop` if there is exactly one input loop. It is oriented counterclockwise.
-   * * `ParityRegion` if input consists of exactly one outer loop with at least one hole loop.
+   * * [[Loop]] if there is exactly one input loop. It is oriented counterclockwise.
+   * * [[ParityRegion]] if input consists of exactly one outer loop with at least one hole loop.
    * Its first child is an outer loop oriented counterclockwise; all subsequent children are holes oriented
    * clockwise.
-   * * `UnionRegion` if any other input configuration. Its children are individually ordered/oriented as in
+   * * [[UnionRegion]] if any other input configuration. Its children are individually ordered/oriented as in
    * the above cases.
    * @see [[PolygonOps.sortOuterAndHoleLoopsXY]]
    */
@@ -716,7 +718,7 @@ export class RegionOps {
    * SignedLoops object.
    * @param curvesAndRegions Any collection of curves. Each Loop/ParityRegion/UnionRegion contributes its curve
    * primitives.
-   * @param tolerance optional distance tolerance for coincidence
+   * @param tolerance optional distance tolerance for coincidence.
    * @returns array of [[SignedLoops]], each entry of which describes the faces in a single connected component:
    *    * `positiveAreaLoops` contains "interior" loops, _including holes in ParityRegion input_. These loops have
    * positive area and counterclockwise orientation.
@@ -878,12 +880,10 @@ export class RegionOps {
   }
   /**
    * Facet the region according to stroke options.
+   * @note For best results, [[UnionRegion]] input should consist of non-overlapping children. See [[regionBooleanXY]].
+   * @note For best results, [[ParityRegion]] input should be correctly oriented. See [[sortOuterAndHoleLoopsXY]].
    * @param region a closed xy-planar region, possibly with holes.
    * * The z-coordinates of the region are ignored. Caller is responsible for rotating the region into plane local coordinates beforehand, and reversing the rotation afterwards.
-   * * For best results, `UnionRegion` input should consist of non-overlapping children.
-   * Caller can ensure this by passing in `region = RegionOps.regionBooleanXY(unionRegion, undefined, RegionBinaryOpType.Union)`.
-   * * For best results, `ParityRegion` input should be correctly oriented (holes have opposite orientation to their containing loop).
-   * Caller can ensure this for non-intersecting loops by passing in `region = RegionOps.sortOuterAndHoleLoopsXY(loops)`.
    * @param options primarily how to stroke the region boundary, but also how to facet the region interior.
    * * By default, a triangulation is returned, but if `options.maximizeConvexFacets === true`, edges between coplanar triangles are removed to return maximally convex facets.
    * @returns facets for the region, or undefined if facetting failed
