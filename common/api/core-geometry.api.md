@@ -2849,6 +2849,10 @@ export class IndexedPolyface extends Polyface {
     protected _facetToFaceData: number[];
     // @deprecated
     getFaceDataByFacetIndex(facetIndex: number): FacetFaceData;
+    static hasEdgeMateIndex(polyface: Polyface | PolyfaceVisitor): {
+        parent: IndexedPolyface;
+        edgeMates: Array<number | undefined>;
+    } | undefined;
     isAlmostEqual(other: any): boolean;
     get isEmpty(): boolean;
     isSameGeometryClass(other: any): boolean;
@@ -2876,7 +2880,7 @@ export class IndexedPolyfaceSubsetVisitor extends IndexedPolyfaceVisitor {
     getVisitableFacetCount(): number;
     moveToNextFacet(): boolean;
     moveToReadIndex(activeIndex: number): boolean;
-    parentFacetIndex(activeIndex?: number): number | undefined;
+    parentFacetIndex(subsetIndex?: number): number | undefined;
     reset(): void;
 }
 
@@ -4679,8 +4683,8 @@ export class PolyfaceData {
 
 // @public
 export class PolyfaceQuery {
-    static announceBoundaryChainsAsLineString3d(mesh: Polyface | PolyfaceVisitor, announceChain: (points: LineString3d) => void): void;
-    static announceBoundaryEdges(source: Polyface | PolyfaceVisitor | undefined, announceEdge: (pointA: Point3d, pointB: Point3d, indexA: number, indexB: number, facetIndex: number) => void, includeTypical?: boolean, includeMismatch?: boolean, includeNull?: boolean): void;
+    static announceBoundaryChainsAsLineString3d(source: Polyface | PolyfaceVisitor, announceChain: (points: LineString3d) => void): void;
+    static announceBoundaryEdges(source: Polyface | PolyfaceVisitor, announceEdge: (pointA: Point3d, pointB: Point3d, indexA: number, indexB: number, facetIndex: number) => void, includeTypical?: boolean, includeMismatch?: boolean, includeNull?: boolean): void;
     static announceDuplicateFacetIndices(polyface: Polyface, announceCluster: (clusterFacetIndices: number[]) => void): void;
     static announceSilhouetteEdges(source: Polyface | PolyfaceVisitor, announce: (pointA: Point3d, pointB: Point3d, vertexIndexA: number, vertexIndexB: number, facetIndex: number) => void, vectorToEye: Vector3d, sideAngle?: Angle): void;
     static announceSweepLinestringToConvexPolyfaceXY(linestringPoints: GrowableXYZArray, polyface: Polyface, announce: AnnounceDrapePanel): any;
@@ -4692,7 +4696,7 @@ export class PolyfaceQuery {
     static get asyncWorkLimit(): number;
     // @internal
     static awaitBlockCount: number;
-    static boundaryEdges(source: Polyface | PolyfaceVisitor | undefined, includeTypical?: boolean, includeMismatch?: boolean, includeNull?: boolean): CurveCollection | undefined;
+    static boundaryEdges(source: Polyface | PolyfaceVisitor, includeTypical?: boolean, includeMismatch?: boolean, includeNull?: boolean): CurveCollection | undefined;
     static boundaryOfVisibleSubset(polyface: IndexedPolyface, visibilitySelect: 0 | 1 | 2, vectorToEye: Vector3d, sideAngleTolerance?: Angle): CurveCollection | undefined;
     static buildAverageNormals(polyface: IndexedPolyface, toleranceAngle?: Angle): void;
     static buildPerFaceNormals(polyface: IndexedPolyface): void;
@@ -4732,7 +4736,7 @@ export class PolyfaceQuery {
     // @internal
     static setAsyncWorkLimit(value: number): number;
     static setSingleEdgeVisibility(polyface: IndexedPolyface, facetIndex: number, vertexIndex: number, value: boolean): void;
-    static sumFacetAreas(source: Polyface | PolyfaceVisitor | undefined, vectorToEye?: Vector3d): number;
+    static sumFacetAreas(source: Polyface | PolyfaceVisitor, vectorToEye?: Vector3d): number;
     static sumFacetSecondAreaMomentProducts(source: Polyface | PolyfaceVisitor, origin: Point3d): Matrix4d;
     static sumFacetSecondVolumeMomentProducts(source: Polyface | PolyfaceVisitor, origin: Point3d): Matrix4d;
     static sumTetrahedralVolumes(source: Polyface | PolyfaceVisitor, origin?: Point3d): number;

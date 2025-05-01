@@ -311,21 +311,21 @@ export class PolyfaceQuery {
    * @param source polyface or visitor.
    * @param vectorToEye compute sum of (signed) facet areas projected to a view plane perpendicular to `vectorToEye`.
    * If `vectorToEye` is not provided, actual facet areas are calculated (without any projection).
-   * @returns the sum of all facet areas. Return 0 if `source` is `undefined`.
+   * @returns the sum of all facet areas.
    */
-  public static sumFacetAreas(source: Polyface | PolyfaceVisitor | undefined, vectorToEye?: Vector3d): number {
+  public static sumFacetAreas(source: Polyface | PolyfaceVisitor, vectorToEye?: Vector3d): number {
     let sum = 0;
-    if (source !== undefined) {
-      if (source instanceof Polyface)
-        return PolyfaceQuery.sumFacetAreas(source.createVisitor(1), vectorToEye);
-      let unitVectorToEye: Vector3d | undefined;
-      if (vectorToEye !== undefined)
-        unitVectorToEye = vectorToEye.normalize();
-      source.reset();
-      while (source.moveToNextFacet()) {
-        const areaNormal = PolygonOps.areaNormal(source.point.getPoint3dArray());
-        sum += unitVectorToEye ? areaNormal.dotProduct(unitVectorToEye) : areaNormal.magnitude();
-      }
+    if (source instanceof Polyface)
+      source = source.createVisitor(1);
+    else
+      source.setNumWrap(1);
+    let unitVectorToEye: Vector3d | undefined;
+    if (vectorToEye !== undefined)
+      unitVectorToEye = vectorToEye.normalize();
+    source.reset();
+    while (source.moveToNextFacet()) {
+      const areaNormal = PolygonOps.areaNormal(source.point.getPoint3dArray());
+      sum += unitVectorToEye ? areaNormal.dotProduct(unitVectorToEye) : areaNormal.magnitude();
     }
     return sum;
   }
@@ -622,13 +622,13 @@ export class PolyfaceQuery {
    * @see [[boundaryEdges]] for boundary edge collection
    */
   public static announceBoundaryEdges(
-    source: Polyface | PolyfaceVisitor | undefined,
+    source: Polyface | PolyfaceVisitor,
     announceEdge: (pointA: Point3d, pointB: Point3d, indexA: number, indexB: number, facetIndex: number) => void,
     includeTypical: boolean = true,
     includeMismatch: boolean = true,
     includeNull: boolean = true,
   ): void {
-    if (source === undefined || (!includeTypical && !includeMismatch && !includeNull))
+    if (!includeTypical && !includeMismatch && !includeNull)
       return;
     const pointA = Point3d.create();
     const pointB = Point3d.create();
@@ -685,7 +685,7 @@ export class PolyfaceQuery {
    * @see [[announceBoundaryEdges]] for boundary edge announcement
    */
   public static boundaryEdges(
-    source: Polyface | PolyfaceVisitor | undefined,
+    source: Polyface | PolyfaceVisitor,
     includeTypical: boolean = true,
     includeMismatch: boolean = true,
     includeNull: boolean = true,
