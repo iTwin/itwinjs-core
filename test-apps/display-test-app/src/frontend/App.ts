@@ -31,6 +31,7 @@ import { GenerateElementGraphicsTool, GenerateTileContentTool } from "./TileCont
 import { ViewClipByElementGeometryTool } from "./ViewClipByElementGeometryTool";
 import { DisplayTestAppShortcutsUI, DrawingAidTestTool } from "./DrawingAidTestTool";
 import { EditingScopeTool, MoveElementTool, PlaceLineStringTool } from "./EditingTools";
+import { CreateLineStringTool, CreateShapeTool } from "./SketchTools"; 
 import { DynamicClassifierTool, DynamicClipMaskTool } from "./DynamicClassifierTool";
 import { FenceClassifySelectedTool } from "./Fence";
 import { RecordFpsTool } from "./FpsMonitor";
@@ -355,7 +356,9 @@ export class DisplayTestApp {
       CloneViewportTool,
       CloseIModelTool,
       CloseWindowTool,
+      CreateLineStringTool,
       CreateSectionDrawingTool,
+      CreateShapeTool,
       CreateWindowTool,
       DisableModelTransformsTool,
       DockWindowTool,

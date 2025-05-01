@@ -162,6 +162,15 @@ export class DynamicGraphicsProvider {
     if (undefined === this.graphic)
       return;
 
+    const modelId = this.modelId;
+    const view = context.viewport.view;
+    if (undefined !== modelId && view.is3d() && Id64.isValidId64(modelId)) {
+      const planProjectionSettings = view.displayStyle.settings.getPlanProjectionSettings(modelId);
+      if (planProjectionSettings?.overlay) {
+        throw new Error("hey implement this");
+      }
+    }
+
     if (undefined === transform) {
       context.addGraphic(this.graphic);
       return;
@@ -359,6 +368,7 @@ export abstract class CreateElementWithDynamicsTool extends CreateElementTool {
     if (ev.viewport)
       this._graphicsProvider.chordTolerance = computeChordToleranceFromPoint(ev.viewport, ev.point);
 
+    this._graphicsProvider.modelId = this.targetModelId;
     await this._graphicsProvider.createGraphic(this.targetCategory, placement, geometry);
   }
 
