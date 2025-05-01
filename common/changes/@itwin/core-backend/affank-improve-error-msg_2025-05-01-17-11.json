@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Improve error message when deleting definition element",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}
