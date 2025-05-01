@@ -3,12 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert, CompressedId64Set } from "@itwin/core-bentley";
+import { CompressedId64Set } from "@itwin/core-bentley";
 import {
-  Code, ColorDef, ElementGeometry, FlatBufferGeometryStream, GeometricElementProps, PlacementProps,
+  Code, ElementGeometry, FlatBufferGeometryStream, GeometricElementProps, PlacementProps,
 } from "@itwin/core-common";
 import {
-  AccuDrawHintBuilder, BeButton, BeButtonEvent, BriefcaseConnection, CoreTools, DynamicsContext, EventHandled, IModelApp,
+  AccuDrawHintBuilder, BeButton, BeButtonEvent, BriefcaseConnection, CoreTools, IModelApp,
   Tool, ToolAssistance, ToolAssistanceImage, ToolAssistanceInputMethod, ToolAssistanceInstruction,
   ToolAssistanceSection,
 } from "@itwin/core-frontend";
@@ -107,44 +107,6 @@ export class PlaceLineStringTool extends CreateElementWithDynamicsTool {
     const instructions = ToolAssistance.createInstructions(mainInstruction, sections);
     IModelApp.notifications.setToolAssistance(instructions);
   }
-
-  /*
-  public override testDecorationHit(id: Id64String): boolean {
-    return id === this._snapGeomId;
-  }
-
-  public override getDecorationGeometry(_hit: HitDetail): GeometryStreamProps | undefined {
-    if (this._points.length < 2)
-      return undefined;
-
-    const geom = IModelJson.Writer.toIModelJson(LineString3d.create(this._points));
-    return geom ? [geom] : undefined;
-  }
-
-  public override decorate(context: DecorateContext): void {
-    if (this._points.length < 2)
-      return;
-
-    if (undefined === this._snapGeomId)
-      this._snapGeomId = this.iModel.transientIds.getNext();
-
-    const builder = context.createGraphicBuilder(GraphicType.WorldDecoration, undefined, this._snapGeomId);
-    builder.setSymbology(context.viewport.getContrastToBackgroundColor(), ColorDef.black, 1);
-    builder.addLineString(this._points);
-    context.addDecorationFromBuilder(builder);
-  }
-
-  public override onDynamicFrame(ev: BeButtonEvent, context: DynamicsContext): void {
-    if (this._points.length < 1)
-      return;
-
-    // Only draw current segment in dynamics - accepted segments are drawn as pickable decorations.
-    const builder = context.createSceneGraphicBuilder();
-    builder.setSymbology(context.viewport.getContrastToBackgroundColor(), ColorDef.black, 1);
-    builder.addLineString([this._points[this._points.length - 1].clone(), ev.point.clone()]);
-    context.addGraphic(builder.finish());
-  }
-  */
 
   public override async updateElementData(ev: BeButtonEvent, isDynamics: boolean): Promise<void> {
     if (!isDynamics) {

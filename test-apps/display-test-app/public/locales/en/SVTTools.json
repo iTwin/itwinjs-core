@@ -151,12 +151,6 @@
     "PlaceLineString": {
       "keyin": "dta place line string"
     },
-    "CreateLineString": {
-      "keyin": "dta create line string"
-    },
-    "CreateShape": {
-      "keyin": "dta create shape"
-    },
     "MoveElement": {
       "keyin": "dta move element"
     },
