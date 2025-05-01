@@ -13,6 +13,7 @@ import { GoogleMapsDecorator } from "./GoogleMapDecorator.js";
 import { QuadIdProps } from "@itwin/core-frontend/lib/cjs/tile/internal.js";
 import {  GoogleMapsCreateSessionOptions, GoogleMapsLayerTypes, GoogleMapsMapTypes, GoogleMapsScaleFactors, GoogleMapsSession, GoogleMapsSessionClient, GoogleMapsSessionManager, ViewportInfo } from "./GoogleMapsSession.js";
 import { NativeGoogleMapsSessionManager } from "../internal/NativeGoogleMapsSession.js";
+import { GoogleMapsUtils } from "../internal/GoogleMapsUtils.js";
 
 const loggerCategory = "MapLayersFormats.GoogleMaps";
 
@@ -36,7 +37,7 @@ export class GoogleMapsImageryProvider extends MapLayerImageryProvider {
   public override get tileSize(): number { return this._tileSize; }
 
   public override async initialize(): Promise<void> {
-    this._sessionOptions = this.createCreateSessionOptions();
+    this._sessionOptions = GoogleMapsUtils.getSessionOptionsFromMapLayer(this._settings);
     this._sessionManager = await this.getSessionManager();
     this._activeSession = await this._sessionManager.createSession(this._sessionOptions);;
     this._tileSize = this._activeSession.getTileSize();
@@ -64,8 +65,8 @@ export class GoogleMapsImageryProvider extends MapLayerImageryProvider {
     }
   }
 
-  protected createCreateSessionOptions(): GoogleMapsCreateSessionOptions {
-    const layerPropertyKeys = this._settings.properties ? Object.keys(this._settings.properties) : undefined;
+  protected createCreateSessionOptions(settings: ImageMapLayerSettings): GoogleMapsCreateSessionOptions {
+    const layerPropertyKeys = settings.properties ? Object.keys(settings.properties) : undefined;
     if (layerPropertyKeys === undefined ||
         !layerPropertyKeys.includes("mapType") ||
         !layerPropertyKeys.includes("language") ||
@@ -76,7 +77,7 @@ export class GoogleMapsImageryProvider extends MapLayerImageryProvider {
     }
 
     const createSessionOptions: GoogleMapsCreateSessionOptions = {
-      mapType: this._settings.properties!.mapType as GoogleMapsMapTypes,
+      mapType: settings.properties!.mapType as GoogleMapsMapTypes,
       region: this._settings.properties!.region as string,
       language: this._settings.properties!.language as string,
     }

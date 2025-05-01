@@ -3,10 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { ImageMapLayerProps, MapLayerProviderProperties } from "@itwin/core-common";
+import { ImageMapLayerProps, ImageMapLayerSettings, MapLayerProviderProperties } from "@itwin/core-common";
 import { IModelApp } from "@itwin/core-frontend";
 import { GoogleMapsMapLayerFormat } from "../GoogleMaps/GoogleMapsImageryFormat.js";
-import { GoogleMapsCreateSessionOptions } from "../map-layers-formats.js";
+import { GoogleMapsCreateSessionOptions, GoogleMapsLayerTypes, GoogleMapsMapTypes, GoogleMapsScaleFactors } from "../map-layers-formats.js";
+import { BentleyError, BentleyStatus, Logger } from "@itwin/core-bentley";
+
+const loggerCategory = "MapLayersFormats.GoogleMaps";
 
 /** @internal */
 // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -69,4 +72,45 @@ export const GoogleMapsUtils = {
 
     return properties;
   },
+
+  /**
+   * Read the session options from the map layer settings.
+   * @param settings Map layer settings
+   * ```
+   * @internal
+  */
+  getSessionOptionsFromMapLayer: (settings: ImageMapLayerSettings): GoogleMapsCreateSessionOptions  => {
+    const layerPropertyKeys = settings.properties ? Object.keys(settings.properties) : undefined;
+    if (layerPropertyKeys === undefined ||
+        !layerPropertyKeys.includes("mapType") ||
+        !layerPropertyKeys.includes("language") ||
+        !layerPropertyKeys.includes("region")) {
+      const msg = "Missing session options";
+      Logger.logError(loggerCategory, msg);
+      throw new BentleyError(BentleyStatus.ERROR, msg);
+    }
+
+    const createSessionOptions: GoogleMapsCreateSessionOptions = {
+      mapType: settings.properties!.mapType as GoogleMapsMapTypes,
+      region: settings.properties!.region as string,
+      language: settings.properties!.language as string,
+    }
+
+    if (Array.isArray(settings.properties?.layerTypes) && settings.properties.layerTypes.length > 0) {
+      createSessionOptions.layerTypes = settings.properties.layerTypes as GoogleMapsLayerTypes[];
+    }
+
+    if (settings.properties?.scale !== undefined) {
+      createSessionOptions.scale = settings.properties.scale as GoogleMapsScaleFactors;
+    }
+
+    if (settings.properties?.overlay !== undefined) {
+      createSessionOptions.overlay = settings.properties.overlay as boolean;
+    }
+
+    if (settings.properties?.apiOptions !== undefined) {
+      createSessionOptions.apiOptions = settings.properties.apiOptions as string[];
+    }
+    return createSessionOptions;
+  }
 }
