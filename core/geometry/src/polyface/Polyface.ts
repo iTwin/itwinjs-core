@@ -685,10 +685,25 @@ export class IndexedPolyface extends Polyface { // more info can be found at geo
   public dispatchToGeometryHandler(handler: GeometryHandler): any {
     return handler.handleIndexedPolyface(this);
   }
+  /** If the input accesses an edgeMateIndex array, return it along with the owning IndexedPolyface. */
+  public static hasEdgeMateIndex(polyface: Polyface | PolyfaceVisitor): { parent: IndexedPolyface, edgeMates: Array<number | undefined> } | undefined {
+    let parent: IndexedPolyface | undefined;
+    if (polyface instanceof Polyface) {
+      if (polyface instanceof IndexedPolyface)
+        parent = polyface;
+    } else if (polyface.clientPolyface() && polyface.clientPolyface() instanceof IndexedPolyface)
+      parent = polyface.clientPolyface() as IndexedPolyface;
+    if (parent) {
+      const edgeMates = parent.data.edgeMateIndex;
+      if (edgeMates && edgeMates.length > 0 && edgeMates.length === parent.data.indexCount)
+        return { parent, edgeMates };
+    }
+  return undefined;
+  }
 }
 
 /**
- * A PolyfaceVisitor manages data while walking through facets.
+ * A PolyfaceVisitor manages data while iterating facets.
  * * The polyface visitor holds data for one facet at a time.
  * * The caller can request the position in the addressed polyfaceData as a "readIndex".
  * * The readIndex values (as numbers) are not assumed to be sequential (i.e., they might be contiguous facet indices
@@ -698,7 +713,7 @@ export class IndexedPolyface extends Polyface { // more info can be found at geo
 export interface PolyfaceVisitor extends PolyfaceData {
   /** Load data for the facet with given index. */
   moveToReadIndex(index: number): boolean;
-  /** Return the readIndex of the currently loaded facet. */
+  /** Return the index of the currently loaded facet. */
   currentReadIndex(): number;
   /** Load data for the next facet. */
   moveToNextFacet(): boolean;
