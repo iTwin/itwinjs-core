@@ -708,6 +708,13 @@ export class IndexedPolyface extends Polyface { // more info can be found at geo
  * * The caller can request the position in the addressed polyfaceData as a "readIndex".
  * * The readIndex values (as numbers) are not assumed to be sequential (i.e., they might be contiguous facet indices
  * or the indexing scheme might have gaps at the whim of the particular PolyfaceVisitor implementation).
+ * * Example usage:
+ * ```
+ * const visitor = myPolyface.createVisitor();
+ * for (visitor.reset(); visitor.moveToNextFacet(); ) {
+ *   // process the current facet
+ * }
+ * ```
  * @public
  */
 export interface PolyfaceVisitor extends PolyfaceData {
@@ -717,7 +724,7 @@ export interface PolyfaceVisitor extends PolyfaceData {
   currentReadIndex(): number;
   /** Load data for the next facet. */
   moveToNextFacet(): boolean;
-  /** Reset to initial state for reading all facets sequentially with moveToNextFacet. */
+  /** Call this before iterating facets with [[moveToNextFacet]]. */
   reset(): void;
   /** Return the point index of vertex i within the currently loaded facet. */
   clientPointIndex(i: number): number;
