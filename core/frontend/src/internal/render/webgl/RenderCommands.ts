@@ -544,9 +544,8 @@ export class RenderCommands implements Iterable<DrawCommands> {
     this.addBackgroundMapGraphics(gfx.background);
     this.addOverlayGraphics(gfx.overlays);
 
-    const dynamics = gfx.dynamics;
-    if (dynamics && dynamics.length > 0)
-      this.addDecorations(dynamics);
+    this.addGraphics(gfx.foregroundDynamics);
+    this.addOverlayGraphics(gfx.overlayDynamics);
 
     const dec = gfx.decorations;
     if (undefined !== dec) {
