@@ -109,18 +109,28 @@ export class RenderContext {
  * @public
  */
 export class DynamicsContext extends RenderContext {
-  private _dynamics?: GraphicList;
+  private _foreground?: GraphicList;
+  private _overlay?: GraphicList;
 
   /** Add a graphic to the list of dynamic graphics to be drawn in this context's [[Viewport]]. */
-  public addGraphic(graphic: RenderGraphic) {
-    if (undefined === this._dynamics)
-      this._dynamics = [];
-    this._dynamics.push(graphic);
+  public addGraphic(graphic: RenderGraphic): void {
+    this.add(graphic, false);
+  }
+
+  /** @internal */
+  public addOverlay(graphic: RenderGraphic): void {
+    this.add(graphic, true);
+  }
+
+  private add(graphic: RenderGraphic, isOverlay: boolean) {
+    const key = isOverlay ? "_overlay" : "_foreground";
+    const list = this[key] ?? (this[key] = []);
+    list.push(graphic);
   }
 
   /** @internal */
   public changeDynamics(): void {
-    this.viewport.changeDynamics(this._dynamics);
+    this.viewport.changeDynamics(this._foreground, this._overlay);
   }
 
   /** Create a builder for producing a [[RenderGraphic]] appropriate for rendering within this context's [[Viewport]].

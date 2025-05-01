@@ -19,18 +19,22 @@ export class TargetGraphics {
   public foreground: GraphicList = [];
   public background: GraphicList = [];
   public overlays: GraphicList = [];
-  private _dynamics?: GraphicList;
+  public foregroundDynamics: GraphicList = [];
+  public overlayDynamics: GraphicList = [];
   private _decorations?: Decorations;
 
   public [Symbol.dispose](): void {
     this.foreground.length = this.background.length = this.overlays.length = 0;
-    this._dynamics = disposeArray(this._dynamics);
+
+    disposeArray(this.foregroundDynamics);
+    disposeArray(this.overlayDynamics);
+
     this._decorations = dispose(this._decorations);
   }
 
   public get isDisposed(): boolean {
     return 0 === this.foreground.length && 0 === this.background.length && 0 === this.overlays.length
-      && undefined === this._dynamics && undefined === this._decorations;
+      && 0 === this.foregroundDynamics.length && 0 === this.overlayDynamics.length && !this._decorations;
   }
 
   public changeScene(scene: Scene): void {
@@ -39,10 +43,12 @@ export class TargetGraphics {
     this.overlays = scene.overlay;
   }
 
-  public get dynamics(): GraphicList | undefined { return this._dynamics; }
-  public set dynamics(dynamics: GraphicList | undefined) {
-    disposeArray(this._dynamics);
-    this._dynamics = dynamics;
+  public changeDynamics(foreground: GraphicList | undefined, overlay: GraphicList | undefined) {
+    disposeArray(this.foregroundDynamics);
+    disposeArray(this.overlayDynamics);
+
+    this.foregroundDynamics = foreground ?? [];
+    this.overlayDynamics = overlay ?? [];
   }
 
   public get decorations(): Decorations | undefined { return this._decorations; }
