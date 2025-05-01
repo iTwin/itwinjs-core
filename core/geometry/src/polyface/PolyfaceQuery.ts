@@ -609,14 +609,17 @@ export class PolyfaceQuery {
     return this.isPolyfaceManifold(source, false);
   }
   /**
-   * Test if the facets in `source` occur in perfectly mated pairs, as is required for a closed manifold volume.
-   * If not, extract the boundary edges as lines.
+   * Announce boundary edges of the facet set as line segments.
    * @param source polyface or visitor.
    * @param announceEdge function to be called with each boundary edge. The announcement is start and end points,
-   * start and end indices, and facet index.
-   * @param includeTypical true to announce typical boundary edges with a single adjacent facet.
-   * @param includeMismatch true to announce edges with more than 2 adjacent facets.
-   * @param includeNull true to announce edges with identical start and end vertex indices.
+   * start and end vertex indices, and facet index.
+   * @param includeTypical true to announce typical boundary edges with a single adjacent facet. Default is true.
+   * @param includeMismatch true to announce non-manifold edges (more than 2 adjacent facets, or mismatched
+   * orientations). Default is true.
+   * @param includeNull true to announce edges with identical start and end vertex indices. Default is true.
+   * @see [[announceBoundaryChainsAsLineString3d]] for boundary linestring announcement
+   * @see [[collectBoundaryEdges]] for boundary chain collection
+   * @see [[boundaryEdges]] for boundary edge collection
    */
   public static announceBoundaryEdges(
     source: Polyface | PolyfaceVisitor | undefined,
@@ -627,11 +630,27 @@ export class PolyfaceQuery {
   ): void {
     if (source === undefined || (!includeTypical && !includeMismatch && !includeNull))
       return;
-    const edges = new IndexedEdgeMatcher();
+    const pointA = Point3d.create();
+    const pointB = Point3d.create();
     const visitor = source instanceof Polyface ? source.createVisitor(1) : source;
     visitor.setNumWrap(1);
-    visitor.reset();
-    while (visitor.moveToNextFacet()) {
+    // use topo cache only if caller wants *all* edges without mates
+    if (includeTypical && includeMismatch && includeNull && IndexedPolyface.hasEdgeMateIndex(source)) {
+      for (visitor.reset(); visitor.moveToNextFacet(); ) {
+        assert(visitor.edgeMateIndex !== undefined);
+        const numEdges = visitor.pointCount - 1;
+        for (let i = 0; i < numEdges; i++) {
+          if (visitor.edgeMateIndex[i] === undefined) {
+            visitor.getPoint(i, pointA);
+            visitor.getPoint(i + 1, pointB);
+            announceEdge(pointA, pointB, visitor.clientPointIndex(i), visitor.clientPointIndex(i + 1), visitor.currentReadIndex());
+          }
+        }
+      }
+      return;
+    }
+    const edges = new IndexedEdgeMatcher();
+    for (visitor.reset(); visitor.moveToNextFacet(); ) {
       const numEdges = visitor.pointCount - 1;
       for (let i = 0; i < numEdges; i++) {
         edges.addEdge(visitor.clientPointIndex(i), visitor.clientPointIndex(i + 1), visitor.currentReadIndex());
@@ -646,8 +665,6 @@ export class PolyfaceQuery {
     if (boundaryEdges.length === 0)
       return;
     const sourcePolyface = visitor.clientPolyface()!;
-    const pointA = Point3d.create();
-    const pointB = Point3d.create();
     for (const e of boundaryEdges) {
       const e1 = e instanceof SortableEdge ? e : e[0];
       const indexA = e1.startVertex;
@@ -657,12 +674,15 @@ export class PolyfaceQuery {
     }
   }
   /**
-   * Construct a CurveCollection containing boundary edges.
-   * * Each edge is a LineSegment3d.
+   * Collect boundary edges of the facet set as an unordered collection of line segments.
    * @param source polyface or visitor.
-   * @param includeTypical true to in include typical boundary edges with a single adjacent facet.
-   * @param includeMismatch true to include edges with more than 2 adjacent facets.
-   * @param includeNull true to include edges with identical start and end vertex indices.
+   * @param includeTypical true to include typical boundary edges with a single adjacent facet. Default is true.
+   * @param includeMismatch true to include non-manifold edges (more than 2 adjacent facets, or mismatched
+   * orientations). Default is true.
+   * @param includeNull true to include edges with identical start and end vertex indices. Default is true.
+   * @see [[announceBoundaryChainsAsLineString3d]] for boundary linestring announcement
+   * @see [[collectBoundaryEdges]] for boundary chain collection
+   * @see [[announceBoundaryEdges]] for boundary edge announcement
    */
   public static boundaryEdges(
     source: Polyface | PolyfaceVisitor | undefined,
@@ -680,12 +700,15 @@ export class PolyfaceQuery {
     return result;
   }
   /**
-   * Collect boundary edges.
-   * * Return the edges as the simplest collection of chains of line segments.
+   * Collect boundary edges of the facet set as the simplest collection of chains of line segments.
    * @param source polyface or visitor.
-   * @param includeTypical true to include typical boundary edges with a single adjacent facet.
-   * @param includeMismatch true to include edges with more than 2 adjacent facets.
-   * @param includeNull true to include edges with identical start and end vertex indices.
+   * @param includeTypical true to include typical boundary edges with a single adjacent facet. Default is true.
+   * @param includeMismatch true to include non-manifold edges (more than 2 adjacent facets, or mismatched
+   * orientations). Default is true.
+   * @param includeNull true to include edges with identical start and end vertex indices. Default is true.
+   * @see [[announceBoundaryChainsAsLineString3d]] for boundary linestring announcement
+   * @see [[announceBoundaryEdges]] for boundary edge announcement
+   * @see [[boundaryEdges]] for boundary edge collection
    */
   public static collectBoundaryEdges(
     source: Polyface | PolyfaceVisitor,
@@ -694,30 +717,20 @@ export class PolyfaceQuery {
     includeNull: boolean = true,
   ): AnyChain | undefined {
     const collector = new MultiChainCollector(Geometry.smallMetricDistance, Geometry.smallMetricDistance);
-    PolyfaceQuery.announceBoundaryEdges(
-      source,
-      (ptA: Point3d, ptB: Point3d) => collector.captureCurve(LineSegment3d.create(ptA, ptB)),
-      includeTypical,
-      includeMismatch,
-      includeNull,
-    );
+    const announceEdge = (ptA: Point3d, ptB: Point3d) => collector.captureCurve(LineSegment3d.create(ptA, ptB));
+    PolyfaceQuery.announceBoundaryEdges(source, announceEdge, includeTypical, includeMismatch, includeNull);
     return collector.grabResult(true);
   }
   /**
-   * Load all half edges from a mesh to an IndexedEdgeMatcher.
-   * @param polyface a mesh or a visitor assumed to have numWrap === 1.
-  */
+   * Load an IndexedEdgeMatcher from the edges of a mesh.
+   * @param polyface a mesh or visitor
+   */
   public static createIndexedEdges(polyface: Polyface | PolyfaceVisitor): IndexedEdgeMatcher {
-    if (polyface instanceof Polyface)
-      return this.createIndexedEdges(polyface.createVisitor(1));
     const edges = new IndexedEdgeMatcher();
-    polyface.reset();
-    while (polyface.moveToNextFacet()) {
-      const numEdges = polyface.pointCount - 1;
-      for (let i = 0; i < numEdges; i++) {
-        edges.addEdge(polyface.clientPointIndex(i), polyface.clientPointIndex(i + 1), polyface.currentReadIndex());
-      }
-    }
+    const visitor = polyface instanceof Polyface ? polyface.createVisitor(1) : polyface;
+    visitor.setNumWrap(1);
+    for (visitor.reset(); visitor.moveToNextFacet(); )
+      edges.addPath(visitor.pointIndex, visitor.currentReadIndex(), false);
     return edges;
   }
   /**
@@ -972,21 +985,20 @@ export class PolyfaceQuery {
     return this.boundaryEdges(visitor, true, false, false);
   }
   /**
-   * Search for edges with only 1 adjacent facet.
-   * * Accumulate them into chains.
-   * * Emit the chains to the `announceChain` callback.
+   * Announce boundary edges of the facet set as linestrings.
+   * * Ignores non-manifold interior edges and null edges.
+   * @param source polyface or visitor.
+   * @param announceChain function to be called with each chain of boundary edges.
+   * @see [[collectBoundaryEdges]] for boundary chain collection
+   * @see [[announceBoundaryEdges]] for boundary edge announcement
+   * @see [[boundaryEdges]] for boundary edge collection
    */
   public static announceBoundaryChainsAsLineString3d(
-    mesh: Polyface | PolyfaceVisitor, announceChain: (points: LineString3d) => void,
+    source: Polyface | PolyfaceVisitor, announceChain: (points: LineString3d) => void,
   ): void {
     const collector = new MultiChainCollector(Geometry.smallMetricDistance); // no planarity tolerance needed
-    PolyfaceQuery.announceBoundaryEdges(
-      mesh,
-      (pointA: Point3d, pointB: Point3d, _indexA: number, _indexB: number) => collector.captureCurve(LineSegment3d.create(pointA, pointB)),
-      true,
-      false,
-      false,
-    );
+    const announceEdge = (ptA: Point3d, ptB: Point3d) => collector.captureCurve(LineSegment3d.create(ptA, ptB));
+    PolyfaceQuery.announceBoundaryEdges(source, announceEdge, true, false, false);
     collector.announceChainsAsLineString3d(announceChain);
   }
   /**
