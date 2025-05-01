@@ -159,20 +159,22 @@ export class DynamicGraphicsProvider {
   }
 
   public addGraphic(context: DynamicsContext, transform?: Transform): void {
-    if (undefined === this.graphic)
+    if (undefined === this.graphic) {
       return;
+    }
 
+    let isOverlay = false;
     const modelId = this.modelId;
     const view = context.viewport.view;
     if (undefined !== modelId && view.is3d() && Id64.isValidId64(modelId)) {
       const planProjectionSettings = view.displayStyle.settings.getPlanProjectionSettings(modelId);
       if (planProjectionSettings?.overlay) {
-        throw new Error("hey implement this");
+        isOverlay = true;
       }
     }
 
     if (undefined === transform) {
-      context.addGraphic(this.graphic);
+      context.add(this.graphic, isOverlay);
       return;
     }
 
@@ -180,7 +182,7 @@ export class DynamicGraphicsProvider {
     branch.add(this.graphic);
 
     const branchGraphic = context.createBranch(branch, transform);
-    context.addGraphic(branchGraphic);
+    context.add(branchGraphic, isOverlay);
   }
 }
 

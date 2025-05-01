@@ -118,11 +118,7 @@ export class DynamicsContext extends RenderContext {
   }
 
   /** @internal */
-  public addOverlay(graphic: RenderGraphic): void {
-    this.add(graphic, true);
-  }
-
-  private add(graphic: RenderGraphic, isOverlay: boolean) {
+  public add(graphic: RenderGraphic, isOverlay: boolean) {
     const key = isOverlay ? "_overlay" : "_foreground";
     const list = this[key] ?? (this[key] = []);
     list.push(graphic);
