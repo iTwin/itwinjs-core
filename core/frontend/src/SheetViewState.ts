@@ -475,7 +475,7 @@ export class SheetViewState extends ViewState2d {
   }
 
   /** @internal */
-  public override async postload(hydrateResponse: HydrateViewStateResponseProps): Promise<void> {
+  protected override async postload(hydrateResponse: HydrateViewStateResponseProps): Promise<void> {
     const promises = [];
     promises.push(super.postload(hydrateResponse));
     promises.push(this._attachmentsInfo.postload(hydrateResponse, this.iModel));
@@ -619,7 +619,7 @@ class AttachmentTarget extends MockRender.OffScreenTarget {
 }
 
 /** Draws the contents of a view attachment into a sheet view. */
-export interface Attachment extends Disposable {
+interface Attachment extends Disposable {
   readonly areAllTileTreesLoaded: boolean;
   addToScene: (context: SceneContext) => void;
   discloseTileTrees: (trees: DisclosedTileTreeSet) => void;

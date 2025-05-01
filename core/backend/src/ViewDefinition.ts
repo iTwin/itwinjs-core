@@ -812,6 +812,9 @@ export class DrawingViewDefinition extends ViewDefinition2d {
   }
 }
 
+/** Arguments to be passed in to [[SheetViewDefinition.create]]
+ * @public
+*/
 export interface CreateSheetViewDefinitionArgs {
   iModel: IModelDb;
   definitionModelId: Id64String;

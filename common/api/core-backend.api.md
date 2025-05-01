@@ -1590,6 +1590,24 @@ export interface CreateNewWorkspaceDbVersionArgs {
     versionType: CloudSqlite.SemverIncrement;
 }
 
+// @public
+export interface CreateSheetViewDefinitionArgs {
+    // (undocumented)
+    baseModelId: Id64String;
+    // (undocumented)
+    categorySelectorId: Id64String;
+    // (undocumented)
+    definitionModelId: Id64String;
+    // (undocumented)
+    displayStyleId: Id64String;
+    // (undocumented)
+    iModel: IModelDb;
+    // (undocumented)
+    name: string;
+    // (undocumented)
+    range: Range2d;
+}
+
 // @beta
 export interface CustomHandledProperty {
     readonly propertyName: string;
@@ -5547,8 +5565,15 @@ export class SheetTemplate extends Document_2 {
 
 // @public
 export class SheetViewDefinition extends ViewDefinition2d {
+    protected constructor(props: ViewDefinition2dProps, iModel: IModelDb);
     // (undocumented)
     static get className(): string;
+    // (undocumented)
+    static create(args: CreateSheetViewDefinitionArgs): SheetViewDefinition;
+    // (undocumented)
+    static fromJSON(props: Omit<ViewDefinition2dProps, "classFullName">, iModel: IModelDb): SheetViewDefinition;
+    // (undocumented)
+    static insert(args: CreateSheetViewDefinitionArgs): Id64String;
 }
 
 // @beta
