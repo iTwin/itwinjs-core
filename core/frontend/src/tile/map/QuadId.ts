@@ -16,7 +16,6 @@ const scratchCartographic2 = Cartographic.createZero();
 
 /** The JSON representation of a [[QuadId]]
  * @public
- * @extensions
  */
 export interface QuadIdProps {
     /** The level of the node within the tree, increasing with each subdivision, as a non-negative integer. */
