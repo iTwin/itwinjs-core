@@ -5,14 +5,14 @@
 
 import { assert, CompressedId64Set, Id64String } from "@itwin/core-bentley";
 import {
-  Code, ColorDef, ElementGeometry, GeometryPartProps, GeometryStreamBuilder, GeometryStreamProps, IModel, PhysicalElementProps,
+  Code, ColorDef, ElementGeometry, GeometryStreamProps, PhysicalElementProps,
 } from "@itwin/core-common";
 import {
   AccuDrawHintBuilder, BeButtonEvent, BriefcaseConnection, CoreTools, DecorateContext, DynamicsContext, EventHandled, GraphicType, HitDetail, IModelApp,
   NotifyMessageDetails, OutputMessagePriority, Tool, ToolAssistance, ToolAssistanceImage, ToolAssistanceInputMethod, ToolAssistanceInstruction,
   ToolAssistanceSection,
 } from "@itwin/core-frontend";
-import { IModelJson, LineString3d, Point3d, Sphere, Transform, Vector3d, YawPitchRollAngles } from "@itwin/core-geometry";
+import { IModelJson, LineString3d, Point3d, Transform, Vector3d, YawPitchRollAngles } from "@itwin/core-geometry";
 import { editorBuiltInCmdIds } from "@itwin/editor-common";
 import { basicManipulationIpc, CreateElementTool, EditTools } from "@itwin/editor-frontend";
 import { setTitle } from "./Title";
@@ -51,8 +51,6 @@ export class PlaceLineStringTool extends CreateElementTool {
   public static override toolId = "PlaceLineString";
   private readonly _points: Point3d[] = [];
   private _snapGeomId?: Id64String;
-  private _testGeomJson = false;
-  private _testGeomParts = false;
   protected _startedCmd?: string;
 
   protected override get wantAccuSnap(): boolean { return true; }
@@ -168,63 +166,18 @@ export class PlaceLineStringTool extends CreateElementTool {
     try {
       this._startedCmd = await this.startCommand();
 
-      if (this._testGeomJson) {
-        const builder = new GeometryStreamBuilder();
-        const primitive = LineString3d.create(this._points);
+      const builder = new ElementGeometry.Builder();
+      const primitive = LineString3d.create(this._points);
 
-        builder.setLocalToWorld3d(origin, angles); // Establish world to local transform...
-        if (!builder.appendGeometry(primitive))
-          return;
+      builder.setLocalToWorld3d(origin, angles); // Establish world to local transform...
+      if (!builder.appendGeometryQuery(primitive))
+        return;
 
-        if (this._testGeomParts) {
-          const partBuilder = new GeometryStreamBuilder();
-          const sphere = Sphere.createCenterRadius(Point3d.createZero(), this._points[0].distance(this._points[1]) * 0.05);
+      const elemProps: PhysicalElementProps = { classFullName: "Generic:PhysicalObject", model, category, code: Code.createEmpty(), placement: { origin, angles } };
+      elemProps.elementGeometryBuilderParams = { entryArray: builder.entries };
+      await basicManipulationIpc.insertGeometricElement(elemProps);
 
-          if (!partBuilder.appendGeometry(sphere))
-            return;
-
-          const partProps: GeometryPartProps = { classFullName: "BisCore:GeometryPart", model: IModel.dictionaryId, code: Code.createEmpty(), geom: partBuilder.geometryStream };
-          const partId = await basicManipulationIpc.insertGeometryPart(partProps);
-
-          for (const pt of this._points) {
-            if (!builder.appendGeometryPart3d(partId, pt))
-              return;
-          }
-        }
-
-        const elemProps: PhysicalElementProps = { classFullName: "Generic:PhysicalObject", model, category, code: Code.createEmpty(), placement: { origin, angles }, geom: builder.geometryStream };
-        await basicManipulationIpc.insertGeometricElement(elemProps);
-        await this.saveChanges();
-      } else {
-        const builder = new ElementGeometry.Builder();
-        const primitive = LineString3d.create(this._points);
-
-        builder.setLocalToWorld3d(origin, angles); // Establish world to local transform...
-        if (!builder.appendGeometryQuery(primitive))
-          return;
-
-        if (this._testGeomParts) {
-          const partBuilder = new ElementGeometry.Builder();
-          const sphere = Sphere.createCenterRadius(Point3d.createZero(), this._points[0].distance(this._points[1]) * 0.05);
-
-          if (!partBuilder.appendGeometryQuery(sphere))
-            return;
-
-          const partProps: GeometryPartProps = { classFullName: "BisCore:GeometryPart", model: IModel.dictionaryId, code: Code.createEmpty() };
-          partProps.elementGeometryBuilderParams = { entryArray: partBuilder.entries };
-          const partId = await basicManipulationIpc.insertGeometryPart(partProps);
-
-          for (const pt of this._points) {
-            if (!builder.appendGeometryPart3d(partId, pt))
-              return;
-          }
-        }
-
-        const elemProps: PhysicalElementProps = { classFullName: "Generic:PhysicalObject", model, category, code: Code.createEmpty(), placement: { origin, angles } };
-        elemProps.elementGeometryBuilderParams = { entryArray: builder.entries };
-        await basicManipulationIpc.insertGeometricElement(elemProps);
-        await this.saveChanges();
-      }
+      await this.saveChanges();
     } catch (err: any) {
       IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, err.toString()));
     }
