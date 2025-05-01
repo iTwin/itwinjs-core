@@ -160,6 +160,9 @@
     "MoveElement": {
       "keyin": "dta move element"
     },
+    "SetEditorToolSettings": {
+      "keyin": "dta editor settings"
+    },
     "SyncViewports": {
       "keyin": "dta viewport sync"
     },

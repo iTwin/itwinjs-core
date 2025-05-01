@@ -16,6 +16,7 @@ import { IModelJson, LineString3d, Point3d, Sphere, Transform, Vector3d, YawPitc
 import { editorBuiltInCmdIds } from "@itwin/editor-common";
 import { basicManipulationIpc, CreateElementTool, EditTools } from "@itwin/editor-frontend";
 import { setTitle } from "./Title";
+import { parseArgs } from "@itwin/frontend-devtools";
 
 // Simple tools for testing interactive editing. They require the iModel to have been opened in read-write mode.
 
@@ -308,5 +309,33 @@ export class MoveElementTool extends Tool {
       z = parseFloat(args[3]);
 
     return this.run(args[0], x, y, z);
+  }
+}
+
+export class SetEditorToolSettingsTool extends Tool {
+  public static override toolId = "SetEditorToolSettings";
+  public static override get minArgs() { return 1; }
+  public static override get maxArgs() { return 2; }
+
+  public override async parseAndRun(...inputArgs: string[]): Promise<boolean> {
+    const args = parseArgs(inputArgs);
+    return this.run(args.get("m"), args.get("c"));
+  }
+
+  public override async run(modelId?: string, categoryId?: string): Promise<boolean> {
+    const iModel = IModelApp.viewManager.selectedView?.iModel;
+    if (!iModel?.isBriefcaseConnection()) {
+      return false;
+    }
+
+    if (modelId) {
+      iModel.editorToolSettings.model = modelId;
+    }
+
+    if (categoryId) {
+      iModel.editorToolSettings.category = categoryId;
+    }
+
+    return true;
   }
 }
