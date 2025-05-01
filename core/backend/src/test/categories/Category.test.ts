@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { Guid, Id64 } from "@itwin/core-bentley";
-import { SubCategoryAppearance } from "@itwin/core-common";
+import { IModelError, SubCategoryAppearance } from "@itwin/core-common";
 import {
   IModelDb, RenderMaterialElement, RenderMaterialElementParams, SpatialCategory, StandaloneDb, SubCategory,
 } from "../../core-backend";
@@ -54,5 +54,7 @@ describe("Category", () => {
     expect(subCat.appearance.priority).to.equal(100);
     expect(subCat.appearance.transparency).to.equal(0.75);
     expect(subCat.appearance.materialId).to.equal(materialId);
+    expect(() => imodel.elements.deleteElement(priCategoryId)).throws(IModelError, "DefinitionElements cannot be deleted directly. Use deleteDefinitionElements() instead.");
+
   });
 });

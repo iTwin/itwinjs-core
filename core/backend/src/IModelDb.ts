@@ -2205,8 +2205,14 @@ export namespace IModelDb {
     public deleteElement(ids: Id64Arg): void {
       const iModel = this._iModel;
       Id64.toIdSet(ids).forEach((id) => {
+        this[_cache].delete({ id });
+        const key = iModel[_nativeDb].resolveInstanceKey({ partialKey: { id, baseClassName: "BisCore:Element" } });
+        const isDefinitionElement = iModel[_nativeDb].isSubClassOf(key.classFullName, "BisCore:DefinitionElement");
+        if (isDefinitionElement) {
+          throw new IModelError(IModelStatus.DeletionProhibited, "DefinitionElements cannot be deleted directly. Use deleteDefinitionElements() instead.");
+        }
+        
         try {
-          this[_cache].delete({ id });
           iModel[_nativeDb].deleteElement(id);
         } catch (err: any) {
           err.message = `Error deleting element [${err.message}], id: ${id}`;
