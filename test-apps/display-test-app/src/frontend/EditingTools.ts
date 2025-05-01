@@ -5,16 +5,16 @@
 
 import { assert, CompressedId64Set } from "@itwin/core-bentley";
 import {
-  Code, ColorDef, ElementGeometry, PhysicalElementProps,
+  Code, ColorDef, ElementGeometry, FlatBufferGeometryStream, GeometricElementProps, PlacementProps,
 } from "@itwin/core-common";
 import {
-  AccuDrawHintBuilder, BeButtonEvent, BriefcaseConnection, CoreTools, DynamicsContext, EventHandled, IModelApp,
-  NotifyMessageDetails, OutputMessagePriority, Tool, ToolAssistance, ToolAssistanceImage, ToolAssistanceInputMethod, ToolAssistanceInstruction,
+  AccuDrawHintBuilder, BeButton, BeButtonEvent, BriefcaseConnection, CoreTools, DynamicsContext, EventHandled, IModelApp,
+  Tool, ToolAssistance, ToolAssistanceImage, ToolAssistanceInputMethod, ToolAssistanceInstruction,
   ToolAssistanceSection,
 } from "@itwin/core-frontend";
 import { LineString3d, Point3d, Transform, Vector3d, YawPitchRollAngles } from "@itwin/core-geometry";
 import { editorBuiltInCmdIds } from "@itwin/editor-common";
-import { basicManipulationIpc, CreateElementTool, EditTools } from "@itwin/editor-frontend";
+import { basicManipulationIpc, CreateElementWithDynamicsTool, EditTools } from "@itwin/editor-frontend";
 import { setTitle } from "./Title";
 import { parseArgs } from "@itwin/frontend-devtools";
 
@@ -47,10 +47,11 @@ export class EditingScopeTool extends Tool {
 }
 
 /** Places a line string. Uses model and category from [[BriefcaseConnection.editorToolSettings]]. */
-export class PlaceLineStringTool extends CreateElementTool {
+export class PlaceLineStringTool extends CreateElementWithDynamicsTool {
   public static override toolId = "PlaceLineString";
   private readonly _points: Point3d[] = [];
-  protected _startedCmd?: string;
+  private _current?: LineString3d;
+  private _startedCmd?: string;
 
   protected override get wantAccuSnap(): boolean { return true; }
   protected override get wantDynamics(): boolean { return true; }
@@ -132,7 +133,6 @@ export class PlaceLineStringTool extends CreateElementTool {
     builder.addLineString(this._points);
     context.addDecorationFromBuilder(builder);
   }
-  */
 
   public override onDynamicFrame(ev: BeButtonEvent, context: DynamicsContext): void {
     if (this._points.length < 1)
@@ -144,53 +144,90 @@ export class PlaceLineStringTool extends CreateElementTool {
     builder.addLineString([this._points[this._points.length - 1].clone(), ev.point.clone()]);
     context.addGraphic(builder.finish());
   }
+  */
 
-  public override async onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled> {
-    this._points.push(ev.point.clone());
-    return super.onDataButtonDown(ev);
-  }
+  public override async updateElementData(ev: BeButtonEvent, isDynamics: boolean): Promise<void> {
+    if (!isDynamics) {
+      this._points.push(ev.point.clone());
+    }
 
-  protected async createElement(): Promise<void> {
-    const vp = this.targetView;
-    assert(undefined !== vp);
-    assert(2 <= this._points.length);
-
-    const model = this.targetModelId;
-    const category = this.targetCategory;
-
-    const origin = this._points[0];
-    const angles = new YawPitchRollAngles();
-
-    const matrix = AccuDrawHintBuilder.getCurrentRotation(vp, true, true);
-    ElementGeometry.Builder.placementAnglesFromPoints(this._points, matrix?.getColumn(2), angles);
-
-    try {
-      this._startedCmd = await this.startCommand();
-
-      const builder = new ElementGeometry.Builder();
-      const primitive = LineString3d.create(this._points);
-
-      builder.setLocalToWorld3d(origin, angles); // Establish world to local transform...
-      if (!builder.appendGeometryQuery(primitive))
-        return;
-
-      const elemProps: PhysicalElementProps = { classFullName: "Generic:PhysicalObject", model, category, code: Code.createEmpty(), placement: { origin, angles } };
-      elemProps.elementGeometryBuilderParams = { entryArray: builder.entries };
-      await basicManipulationIpc.insertGeometricElement(elemProps);
-
-      await this.saveChanges();
-    } catch (err: any) {
-      IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, err.toString()));
+    const pts = isDynamics ? [...this._points, ev.point.clone()] : this._points;
+    this._current = LineString3d.create(pts);
+    if (isDynamics && !this._current && this._graphicsProvider) {
+      this._graphicsProvider.cleanupGraphic(); // Don't continue displaying a prior successful result...
     }
   }
 
-  public override async onResetButtonUp(_ev: BeButtonEvent): Promise<EventHandled> {
-    // Accept on reset if we have at least 2 points, starting another tool will reject accepted segments...
-    if (this._points.length >= 2)
-      await this.createElement();
+  protected override getPlacementProps(): PlacementProps | undefined {
+    const vp = this.targetView;
+    if (!vp || this._points.length < 1) {
+      return undefined;
+    }
 
-    await this.onReinitialize();
-    return EventHandled.No;
+    const origin = this._points[0];
+    const angles = new YawPitchRollAngles();
+    const matrix = AccuDrawHintBuilder.getCurrentRotation(vp, true, true);
+    ElementGeometry.Builder.placementAnglesFromPoints(this._points, matrix?.getColumn(2), angles);
+    return { origin, angles };
+  }
+
+  protected override getGeometryProps(placement: PlacementProps): FlatBufferGeometryStream | undefined {
+    if (!this._current) {
+      return undefined;
+    }
+
+    const builder = new ElementGeometry.Builder();
+    builder.setLocalToWorldFromPlacement(placement);
+    if (!builder.appendGeometryQuery(this._current)) {
+      return undefined;
+    }
+
+    return { format: "flatbuffer", data: builder.entries };
+  }
+
+  protected override getElementProps(placement: PlacementProps): GeometricElementProps | undefined {
+    return {
+      classFullName: "Generic:PhysicalObject",
+      model: this.targetModelId,
+      category: this.targetCategory,
+      code: Code.createEmpty(),
+      placement,
+    };
+  }
+
+  protected override isComplete(ev: BeButtonEvent): boolean {
+    return ev.button === BeButton.Reset && this._points.length > 1;
+  }
+
+  protected override async doCreateElement(props: GeometricElementProps): Promise<void> {
+    this._startedCmd = await this.startCommand();
+    await basicManipulationIpc.insertGeometricElement(props);
+    return this.saveChanges();
+  }
+
+  protected override async cancelPoint(ev: BeButtonEvent): Promise<boolean> {
+    // NOTE: Starting another tool will not create element...require reset or closure...
+    if (this.isComplete(ev)) {
+      await this.updateElementData(ev, false);
+      await this.createElement();
+    }
+
+    return true;
+  }
+
+  protected override setupAccuDraw(): void {
+    const nPts = this._points.length;
+    if (0 === nPts)
+      return;
+
+    const hints = new AccuDrawHintBuilder();
+
+    // Rotate AccuDraw to last segment...
+    if (nPts > 1 && !this._points[nPts - 1].isAlmostEqual(this._points[nPts - 2]))
+      hints.setXAxis(Vector3d.createStartEnd(this._points[nPts - 2], this._points[nPts - 1]));
+
+    hints.setOrigin(this._points[nPts - 1]);
+    hints.sendHints();
   }
 
   public override async onUndoPreviousStep(): Promise<boolean> {
@@ -198,10 +235,11 @@ export class PlaceLineStringTool extends CreateElementTool {
       return false;
 
     this._points.pop();
-    if (0 === this._points.length)
+    if (0 === this._points.length) {
       await this.onReinitialize();
-    else
+    } else {
       this.setupAndPromptForNextAction();
+    }
 
     return true;
   }
