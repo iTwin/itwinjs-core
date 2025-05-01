@@ -95,6 +95,7 @@ export class DefaultArcGiSymbology implements FeatureDefaultSymbology {
 export const GoogleMaps: {
     createMapLayerSettings: (name?: string, opts?: GoogleMapsCreateSessionOptions) => ImageMapLayerSettings;
     createBaseLayerSettings: (opts?: GoogleMapsCreateSessionOptions) => BaseMapLayerSettings;
+    getMapLayerSessionOptions: (settings: ImageMapLayerSettings) => GoogleMapsCreateSessionOptions;
 };
 
 // @beta
