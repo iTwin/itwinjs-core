@@ -35,7 +35,6 @@ export class IndexedPolyfaceVisitor extends PolyfaceData implements PolyfaceVisi
       this.auxData = polyface.data.auxData.createForVisitor();
     if (polyface.data.edgeMateIndex)
       this.edgeMateIndex = [];
-    this.reset();
     this._numEdges = 0;
     this._nextFacetIndex = 0;
     this._currentFacetIndex = -1;
@@ -95,7 +94,7 @@ export class IndexedPolyfaceVisitor extends PolyfaceData implements PolyfaceVisi
     this._nextFacetIndex++;
     return true;
   }
-  /** Reset the iterator to start at the first facet of the polyface. */
+  /** Call this before iterating facets with [[moveToNextFacet]]. */
   public reset(): void {
     this.moveToReadIndex(0);
     this._nextFacetIndex = 0; // so immediate moveToNextFacet stays here.
@@ -210,7 +209,7 @@ export class IndexedPolyfaceVisitor extends PolyfaceData implements PolyfaceVisi
  * @public
  */
 export class IndexedPolyfaceSubsetVisitor extends IndexedPolyfaceVisitor {
-  private _parentFacetIndices?: number[]; // only undefined during super constructor!
+  private _parentFacetIndices: number[];
   private _currentActiveIndex: number;    // index within _parentFacetIndices, or -1 after construction
   private _nextActiveIndex: number;       // index within _parentFacetIndices
 
@@ -221,7 +220,7 @@ export class IndexedPolyfaceSubsetVisitor extends IndexedPolyfaceVisitor {
     this._nextActiveIndex = 0;
   }
   private isValidSubsetIndex(index: number): boolean {
-    return (undefined !== this._parentFacetIndices) && index >= 0 && index < this._parentFacetIndices.length;
+    return index >= 0 && index < this._parentFacetIndices.length;
   }
   /**
    * Create a visitor for iterating a subset of the facets of `polyface`.
@@ -244,7 +243,7 @@ export class IndexedPolyfaceSubsetVisitor extends IndexedPolyfaceVisitor {
     if (this.isValidSubsetIndex(activeIndex)) {
       this._currentActiveIndex = activeIndex;
       this._nextActiveIndex = activeIndex + 1;
-      return super.moveToReadIndex(this._parentFacetIndices![activeIndex]);
+      return super.moveToReadIndex(this._parentFacetIndices[activeIndex]);
     }
     return false;
   }
@@ -258,24 +257,24 @@ export class IndexedPolyfaceSubsetVisitor extends IndexedPolyfaceVisitor {
     this._nextActiveIndex++;
     return true;
   }
-  /** Reset the iterator to start at the first active facet in the subset of client polyface facets. */
+  /** Call this before iterating facets with [[moveToNextFacet]]. */
   public override reset(): void {
     this.moveToReadIndex(0);
     this._nextActiveIndex = 0; // so immediate moveToNextFacet stays here.
   }
   /**
-   * Return the parent facet index of the indicated index within the subset of client polyface facets.
-   * @param activeIndex index of the facet within the subset. Default is the active facet.
-   * @return valid client polyface facet index, or `undefined` if invalid input index.
+   * Return the client polyface facet index (aka "readIndex") for the given subset index.
+   * @param subsetIndex index of the facet within the subset of visitable facets. Default is the currently visited facet.
+   * @return valid client polyface facet index, or `undefined` if invalid subset index.
    */
-  public parentFacetIndex(activeIndex?: number): number | undefined {
-    if (undefined === activeIndex)
-      activeIndex = this._currentActiveIndex;
-    return this.isValidSubsetIndex(activeIndex) ? this._parentFacetIndices![activeIndex] : undefined;
+  public parentFacetIndex(subsetIndex?: number): number | undefined {
+    if (undefined === subsetIndex)
+      subsetIndex = this._currentActiveIndex;
+    return this.isValidSubsetIndex(subsetIndex) ? this._parentFacetIndices[subsetIndex] : undefined;
   }
   /** Return the number of facets this visitor is able to visit. */
   public override getVisitableFacetCount(): number {
-    return this._parentFacetIndices ? this._parentFacetIndices.length : 0;
+    return this._parentFacetIndices.length;
   }
   /**
    * Create a visitor for those mesh facets with normal in the same half-space as the given vector.
