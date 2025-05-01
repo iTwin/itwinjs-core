@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { Id64String, LoggingMetaData } from "@itwin/core-bentley";
-import { CodeProps, ITwinError, SubCategoryAppearance, ViewStateProps } from "@itwin/core-common";
+import { CodeProps, ITwinError, SubCategoryAppearance } from "@itwin/core-common";
 
 export const fullstackIpcChannel = "full-stack-tests/fullStackIpc";
 export interface FullStackTestIpc {

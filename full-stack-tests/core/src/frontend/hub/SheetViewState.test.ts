@@ -3,14 +3,14 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { BlankConnection, BriefcaseConnection, CheckpointConnection, IModelApp, ScreenViewport, SheetViewState, SpatialViewState, ViewState } from "@itwin/core-frontend";
+import { BlankConnection, BriefcaseConnection, CheckpointConnection, ScreenViewport, SheetViewState, SpatialViewState, ViewState } from "@itwin/core-frontend";
 import { TestUsers } from "@itwin/oidc-signin-tool/lib/cjs/TestUsers";
 import { testOnScreenViewport } from "../TestViewport";
 import { TestUtility } from "../TestUtility";
-import { coreFullStackTestIpc, initializeEditTools } from "../Editing";
+import { coreFullStackTestIpc } from "../Editing";
 import * as path from "path";
 import { Cartographic } from "@itwin/core-common";
-import { Range3d } from "@itwin/core-geometry";
+import { Point2d, Point3d, Range2d, Range3d } from "@itwin/core-geometry";
 import { Guid } from "@itwin/core-bentley";
 
 describe("Sheet views (#integration)", () => {
@@ -250,19 +250,56 @@ describe("Sheet views", () => {
       if (!process.env.IMODELJS_CORE_DIRNAME)
         throw new Error("IMODELJS_CORE_DIRNAME not set");
 
+      // Create Sheet View with attachment
       const sheetViewId = await coreFullStackTestIpc.insertSheetViewWithAttachment();
       const iModel = await BriefcaseConnection.openStandalone(path.join(process.env.IMODELJS_CORE_DIRNAME, "core/backend/lib/cjs/test/assets/sheetViewTest.bim"));
-      const vp = openBlankViewport({ height: 100, width: 100, iModel: iModel as unknown as BlankConnection /* hack, remove? */ });
+      const vp = openBlankViewport({ height: 1, width: 1, iModel: iModel as unknown as BlankConnection /* hack, remove? */ });
       const newSheetView = await iModel.views.load(sheetViewId) as SheetViewState;
 
       expect(newSheetView).instanceof(SheetViewState);
       expect(newSheetView.viewAttachmentProps.length).to.equal(1);
 
-      newSheetView.attachToViewport(vp);
+      // Load Shet View
       await newSheetView.load();
+      vp.changeView(newSheetView);;
+      expect(newSheetView.attachments).not.to.be.undefined;
 
-      expect(newSheetView.attachments).not.to.be.undefined;
-      expect(newSheetView.attachments).not.to.be.undefined;
+      // Get Viewed Extents
+      const viewedExtents = newSheetView.getViewedExtentsFromFrustum();
+      expect(viewedExtents).not.to.be.undefined;
+      const viewedExtents2d = new Range2d(viewedExtents.xLow, viewedExtents.yLow, viewedExtents.xHigh, viewedExtents.yHigh);
+
+      // Get Attachment Range
+      const attachment = newSheetView.viewAttachmentProps[0];
+      const origin = Point2d.fromJSON(attachment.placement?.origin);
+      expect(origin).not.to.be.undefined;
+
+      const bbox = Range2d.fromJSON(attachment.placement?.bbox);;
+      expect(bbox).not.to.be.undefined;
+      const attachmentRange = new Range2d(origin.x + bbox.xLow, origin.y + bbox.yLow, origin.x + bbox.xHigh, origin.y + bbox.yHigh);
+
+      // Load Tree Refs
+      for (const ref of newSheetView.getTileTreeRefs()) {
+        ref.treeOwner.load();
+      }
+      await vp.waitForSceneCompletion();
+
+      // Expect areAllTileTreesLoaded to be true when attachment is outside of the viewed extents
+      expect(viewedExtents2d.intersectsRange(attachmentRange)).to.be.false;
+      expect(newSheetView.areAllTileTreesLoaded).to.be.true;;
+
+      //Fit view
+      vp.zoom(new Point3d(attachmentRange.xLow, attachmentRange.yLow, 0), 1)
+      await vp.waitForSceneCompletion();
+
+      // Get new viewed extents
+      const newExtents = newSheetView.getViewedExtentsFromFrustum();
+      expect(newExtents).not.to.be.undefined;
+      const newExtents2d = new Range2d(newExtents.xLow, newExtents.yLow, newExtents.xHigh, newExtents.yHigh);
+
+      //Expect areAllTileTreesLoaded to be true when attachment is inside of the viewed extents
+      expect(newExtents2d.intersectsRange(attachmentRange)).to.be.true;
+      expect(newSheetView.areAllTileTreesLoaded).to.be.true;
     });
   });
 });

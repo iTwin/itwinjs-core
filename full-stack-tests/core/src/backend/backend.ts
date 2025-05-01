@@ -7,11 +7,11 @@ import "./RpcImpl";
 import "@itwin/oidc-signin-tool/lib/cjs/certa/certaBackend";
 
 import {
-  BriefcaseDb, CategorySelector, DefinitionModel, DisplayStyle2d, DocumentListModel, DocumentPartition, DrawingCategory, DrawingViewDefinition, FileNameResolver, IModelDb, IModelHost, IModelHostOptions, IpcHandler, IpcHost, LocalhostIpcHost, PhysicalModel, PhysicalPartition,
-  Sheet, SheetModel, SheetViewDefinition, SnapshotDb, SpatialCategory, StandaloneDb, Subject, SubjectOwnsPartitionElements,
+  BriefcaseDb, CategorySelector, DefinitionModel, DisplayStyle2d, DocumentListModel, DocumentPartition, Drawing, DrawingCategory, DrawingViewDefinition, FileNameResolver, IModelDb, IModelHost, IModelHostOptions, IpcHandler, IpcHost, LocalhostIpcHost, PhysicalModel, PhysicalPartition,
+  Sheet, SheetModel, SheetViewDefinition, SpatialCategory, StandaloneDb, Subject, SubjectOwnsPartitionElements,
 } from "@itwin/core-backend";
 import { Guid, Id64String, Logger, LoggingMetaData, ProcessDetector } from "@itwin/core-bentley";
-import { BentleyCloudRpcManager, Code, CodeProps, constructDetailedError, constructITwinError, ElementProps, GeometricModel2dProps, IModel, ITwinError, RelatedElement, RpcConfiguration, SheetProps, SubCategoryAppearance, ViewAttachmentProps, ViewStateProps } from "@itwin/core-common";
+import { BentleyCloudRpcManager, Code, CodeProps, constructDetailedError, constructITwinError, ElementProps, GeometricModel2dProps, IModel, ITwinError, RelatedElement, RpcConfiguration, SheetProps, SubCategoryAppearance, ViewAttachmentProps } from "@itwin/core-common";
 import { ElectronHost } from "@itwin/core-electron/lib/cjs/ElectronBackend";
 import { ECSchemaRpcImpl } from "@itwin/ecschema-rpcinterface-impl";
 import { BasicManipulationCommand, EditCommandAdmin } from "@itwin/editor-backend";
@@ -25,7 +25,6 @@ import { exposeBackendCallbacks } from "../certa/certaBackend";
 import { fullstackIpcChannel, FullStackTestIpc } from "../common/FullStackTestIpc";
 import { rpcInterfaces } from "../common/RpcInterfaces";
 import * as testCommands from "./TestEditCommands";
-import { IModelConnection } from "@itwin/core-frontend";
 import { Range2d } from "@itwin/core-geometry";
 
 /* eslint-disable no-console */
@@ -163,24 +162,27 @@ class FullStackTestIpcHandler extends IpcHandler implements FullStackTestIpc {
     const drawingCategoryId = DrawingCategory.insert(standaloneModel, drawingDefinitionModelId, "DrawingCategory", new SubCategoryAppearance());
     const sheetModelId = await insertSheet(standaloneModel, "sheet-1");
 
+    const displayStyle2dId = DisplayStyle2d.insert(standaloneModel, drawingDefinitionModelId, "DisplayStyle2d");
+    const drawingCategorySelectorId = CategorySelector.insert(standaloneModel, drawingDefinitionModelId, "DrawingCategories", [drawingCategoryId]);
+    const drawingViewRange = new Range2d(0, 0, 500, 500);
+    const docListModelId = await getOrCreateDocumentList(standaloneModel);
+    const drawingModelId = Drawing.insert(standaloneModel, docListModelId, "Drawing");
+    const drawingViewId = DrawingViewDefinition.insert(standaloneModel, drawingDefinitionModelId, "Drawing View", drawingModelId, drawingCategorySelectorId, displayStyle2dId, drawingViewRange);
+
     const newAttachmentProps: ViewAttachmentProps = {
       classFullName: 'BisCore:ViewAttachment',
       model: sheetModelId,
       code: Code.createEmpty(),
       jsonProperties: { displayPriority: 0},
-      view: { id: '0x99', relClassName: 'BisCore.ViewIsAttached' },
+      view: { id: drawingViewId, relClassName: 'BisCore.ViewIsAttached' },
       category: drawingCategoryId,
-      placement: { origin: { x: 100, y: 0 }, angle: 0 },
+      placement: { origin: { x: 100, y: 100 }, angle: 0, bbox: { low: { x: 0, y: 0 }, high: { x: 1, y: 1 } } },
     }
 
     //create new view attachment element
     const newElement = standaloneModel.elements.createElement(newAttachmentProps);
-    const attachmentId =  standaloneModel.elements.insertElement(newElement.toJSON());
+    standaloneModel.elements.insertElement(newElement.toJSON());
 
-    //create new sheet view
-    const displayStyle2dId = DisplayStyle2d.insert(standaloneModel, drawingDefinitionModelId, "DisplayStyle2d");
-    const drawingCategorySelectorId = CategorySelector.insert(standaloneModel, drawingDefinitionModelId, "DrawingCategories", [drawingCategoryId]);
-    const drawingViewRange = new Range2d(0, 0, 100, 100);
     const sheetViewId = SheetViewDefinition.insert({
       iModel: standaloneModel,
       definitionModelId: drawingDefinitionModelId,
@@ -188,7 +190,7 @@ class FullStackTestIpcHandler extends IpcHandler implements FullStackTestIpc {
       baseModelId: sheetModelId,
       categorySelectorId: drawingCategorySelectorId,
       displayStyleId: displayStyle2dId,
-      range: drawingViewRange,
+      range: new Range2d(0, 0, 50, 50),
     });
 
     standaloneModel.saveChanges("insert sheet view definition with attachment");
