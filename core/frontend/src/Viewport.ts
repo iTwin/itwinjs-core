@@ -1700,8 +1700,8 @@ export abstract class Viewport implements Disposable, TileUser {
   }
 
   /** @internal */
-  public changeDynamics(dynamics: GraphicList | undefined): void {
-    this.target.changeDynamics(dynamics);
+  public changeDynamics(dynamics: GraphicList | undefined, overlay: GraphicList | undefined): void {
+    this.target.changeDynamics(dynamics, overlay);
     this.invalidateDecorations();
   }
 
