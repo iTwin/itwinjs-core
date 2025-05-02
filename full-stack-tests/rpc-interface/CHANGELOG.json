@@ -2,6 +2,27 @@
   "name": "@itwin/rpcinterface-full-stack-tests",
   "entries": [
     {
+      "version": "4.11.1",
+      "tag": "@itwin/rpcinterface-full-stack-tests_v4.11.1",
+      "date": "Wed, 30 Apr 2025 13:13:21 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.11.0",
+      "tag": "@itwin/rpcinterface-full-stack-tests_v4.11.0",
+      "date": "Wed, 16 Apr 2025 15:50:28 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Resolves CVE-2025-27152"
+          },
+          {
+            "comment": "change the assert in the test 'should be able to cancel a snap' to match the error message thrown on the frontend when a snap is successfully cancelled."
+          }
+        ]
+      }
+    },
+    {
       "version": "4.10.13",
       "tag": "@itwin/rpcinterface-full-stack-tests_v4.10.13",
       "date": "Thu, 10 Apr 2025 17:47:21 GMT",

@@ -203,11 +203,11 @@ export class ViewManager implements Iterable<ScreenViewport> {
 
     const cursorVp = IModelApp.toolAdmin.cursorView;
     if (cursorVp)
-      cursorVp.changeDynamics(undefined);
+      cursorVp.changeDynamics(undefined, undefined);
 
     for (const vp of this._viewports) {
       if (vp !== cursorVp)
-        vp.changeDynamics(undefined);
+        vp.changeDynamics(undefined, undefined);
     }
   }
 
