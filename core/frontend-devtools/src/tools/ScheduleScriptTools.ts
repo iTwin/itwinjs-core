@@ -196,10 +196,7 @@ export class TestScheduleScriptTool extends DisplayStyleTool {
 
   private _script?: RenderSchedule.Script;
 
-  public override async parse(args: string[]): Promise<boolean> {
-    if (args.length === 0)
-      return true; // clear schedule script.
-
+  public override async parse(): Promise<boolean> {
     try {
       /// TODO!!!! add test schedule script code here
       const now = Date.now();
