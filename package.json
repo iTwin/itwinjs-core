@@ -28,5 +28,6 @@
     "name": "Bentley Systems, Inc.",
     "url": "http://www.bentley.com"
   },
-  "//dependencies": "NOTE: dependencies will be empty here and instead specified in each package."
+  "//dependencies": "NOTE: dependencies will be empty here and instead specified in each package.",
+  "//devDependencies": "NOTE: devDependencies will be empty here and instead specified in each package."
 }
