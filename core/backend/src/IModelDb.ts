@@ -1720,8 +1720,9 @@ export namespace IModelDb {
    * @public @preview
    */
   export class Models {
+    private readonly _modelCacheSize = 10;
     /** @internal */
-    public readonly [_cache] = new LRUMap<Id64String, ModelProps>(500);
+    public readonly [_cache] = new LRUMap<Id64String, ModelProps>(this._modelCacheSize);
 
     /** @internal */
     public constructor(private _iModel: IModelDb) { }
@@ -1965,8 +1966,9 @@ export namespace IModelDb {
    * @public @preview
    */
   export class Elements implements GuidMapper {
+    private readonly _elementCacheSize = 50;
     /** @internal */
-    public readonly [_cache] = new ElementLRUCache();
+    public readonly [_cache] = new ElementLRUCache(this._elementCacheSize);
 
     /** @internal */
     public constructor(private _iModel: IModelDb) { }
