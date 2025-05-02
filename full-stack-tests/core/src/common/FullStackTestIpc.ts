@@ -16,5 +16,5 @@ export interface FullStackTestIpc {
   restoreAuthClient(): Promise<void>;
   useAzTestAuthClient(): Promise<void>;
   setAzTestUser(user: "admin" | "readOnly" | "readWrite"): Promise<void>;
-  insertSheetViewWithAttachment(): Promise<Id64String>;
+  insertSheetViewWithAttachment(filePath: string): Promise<Id64String>;
 }

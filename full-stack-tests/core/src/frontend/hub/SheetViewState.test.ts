@@ -247,12 +247,10 @@ describe("Sheet views", () => {
     }
 
     it("areAllTileTreesLoaded should return true when attachments are outside of the viewed extents", async () => {
-      if (!process.env.IMODELJS_CORE_DIRNAME)
-        throw new Error("IMODELJS_CORE_DIRNAME not set");
-
       // Create Sheet View with attachment
-      const sheetViewId = await coreFullStackTestIpc.insertSheetViewWithAttachment();
-      const iModel = await BriefcaseConnection.openStandalone(path.join(process.env.IMODELJS_CORE_DIRNAME, "core/backend/lib/cjs/test/assets/sheetViewTest.bim"));
+      const filePath = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/cjs/test/assets/sheetViewTest.bim");
+      const sheetViewId = await coreFullStackTestIpc.insertSheetViewWithAttachment(filePath);
+      const iModel = await BriefcaseConnection.openStandalone(filePath);
       const vp = openBlankViewport({ height: 1, width: 1, iModel: iModel as unknown as BlankConnection /* hack, remove? */ });
       const newSheetView = await iModel.views.load(sheetViewId) as SheetViewState;
 

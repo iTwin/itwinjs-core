@@ -98,8 +98,7 @@ class FullStackTestIpcHandler extends IpcHandler implements FullStackTestIpc {
     AzuriteTest.userToken = AzuriteTest.service.userToken[user];
   }
 
-  public async insertSheetViewWithAttachment(): Promise<Id64String> {
-    const filePath = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/cjs/test/assets/sheetViewTest.bim");
+  public async insertSheetViewWithAttachment(filePath: string): Promise<Id64String> {
     if (fs.existsSync(filePath)) {
       fs.unlinkSync(filePath);
     }
