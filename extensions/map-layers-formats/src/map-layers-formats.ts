@@ -6,6 +6,7 @@
 export * from "./ArcGisFeature/ArcGisFeatureProvider.js";
 export * from "./GoogleMaps/GoogleMaps.js";
 export * from "./GoogleMaps/GoogleMapsSession.js";
+export * from "./GoogleMaps/GoogleMapsImageryFormat.js"
 export * from "./mapLayersFormats.js";
 export * from "./Tools/MapFeatureInfoTool.js";
 

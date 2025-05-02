@@ -6,6 +6,7 @@ internal;class;DefaultArcGiSymbology
 beta;const;GoogleMaps
 beta;interface;GoogleMapsCreateSessionOptions
 beta;type;GoogleMapsLayerTypes
+public;class;GoogleMapsMapLayerFormat
 beta;type;GoogleMapsMapTypes
 beta;interface;GoogleMapsRequest
 beta;type;GoogleMapsScaleFactors

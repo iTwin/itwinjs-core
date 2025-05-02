@@ -13,6 +13,7 @@ import { ColorDef } from '@itwin/core-common';
 import { EventHandled } from '@itwin/core-frontend';
 import { HitDetail } from '@itwin/core-frontend';
 import { ImageMapLayerSettings } from '@itwin/core-common';
+import { ImageryMapLayerFormat } from '@itwin/core-frontend';
 import { ImageryMapTileTree } from '@itwin/core-frontend';
 import { ImageSource } from '@itwin/core-common';
 import { Listener } from '@itwin/core-bentley';
@@ -23,6 +24,7 @@ import { MapCartoRectangle } from '@itwin/core-frontend';
 import { MapFeatureInfo } from '@itwin/core-frontend';
 import { MapFeatureInfoOptions } from '@itwin/core-frontend';
 import { MapLayerFeatureInfo } from '@itwin/core-frontend';
+import { MapLayerImageryProvider } from '@itwin/core-frontend';
 import { MapLayerSessionClient } from '@itwin/core-frontend';
 import { MapLayerSessionManager } from '@itwin/core-frontend';
 import { PrimitiveTool } from '@itwin/core-frontend';
@@ -111,6 +113,13 @@ export interface GoogleMapsCreateSessionOptions {
 
 // @beta
 export type GoogleMapsLayerTypes = "layerRoadmap" | "layerStreetview";
+
+// @public
+export class GoogleMapsMapLayerFormat extends ImageryMapLayerFormat {
+    // @internal (undocumented)
+    static createImageryProvider(settings: ImageMapLayerSettings): MapLayerImageryProvider | undefined;
+    static formatId: string;
+}
 
 // @beta
 export type GoogleMapsMapTypes = "roadmap" | "satellite" | "terrain";
