@@ -161,17 +161,9 @@ describe("Contour lines", () => {
 
     // First check if we find at least one occurence of each expected color.
     let numExpectedColorsFound = 0;
-    // eslint-disable-next-line no-console
-    console.log("checking for expected colors...");
     for (const isExpectedColor of isExpectedColorFuncs) {
-      // eslint-disable-next-line no-console
-      console.log("check for an expected color...");
       for (const c of colors.array) {
-        // eslint-disable-next-line no-console
-        console.log("checking color: ", c.r, c.g, c.b, c.a);
         if (isExpectedColor(c)) {
-          // eslint-disable-next-line no-console
-          console.log("found an expected color!");
           numExpectedColorsFound++;
           break;
         }
@@ -180,23 +172,13 @@ describe("Contour lines", () => {
     expect(numExpectedColorsFound).to.equal(isExpectedColorFuncs.length);
 
     // Now check that we don't find any unexpected colors.
-    // eslint-disable-next-line no-console
-    console.log("checking for unexpected colors...");
     for (const c of colors.array) {
-      // eslint-disable-next-line no-console
-      console.log("checking color: ", c.r, c.g, c.b, c.a);
       let foundExpectedColor = false;
       for (const isExpectedColor of isExpectedColorFuncs) {
         if (isExpectedColor(c)) {
-          // eslint-disable-next-line no-console
-          console.log("found an expected color!");
           foundExpectedColor = true;
           break;
         }
-      }
-      if (!foundExpectedColor) {
-        // eslint-disable-next-line no-console
-        console.log("did not find an expected color!");
       }
       expect(foundExpectedColor).to.be.true;
     }
