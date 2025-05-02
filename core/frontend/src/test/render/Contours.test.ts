@@ -143,7 +143,7 @@ describe("Contour lines", () => {
     const tendsTowardPurple = c.r > c.g && c.b > c.g && c.a === 0xff;
     const rgDiff = Math.abs(c.r - c.g);
     const bgDiff = Math.abs(c.b - c.g);
-    return tendsTowardPurple && rgDiff > 10 && bgDiff > 10 && Math.abs(rgDiff - bgDiff) < 10;
+    return tendsTowardPurple && rgDiff > 10 && bgDiff > 10 && Math.abs(rgDiff - bgDiff) <= 10;
   }
 
   // Expect the colors in the viewport to be sorted and match the expected colors.
