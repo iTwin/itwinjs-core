@@ -65,6 +65,7 @@ export class ChromeTestRunner {
       writeCoverageData(coverage);
 
     process.exitCode = failures;
+    (process as any).emit("chrome-test-runner-done");
   }
 }
 

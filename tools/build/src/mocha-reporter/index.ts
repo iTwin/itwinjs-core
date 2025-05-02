@@ -69,30 +69,21 @@ class BentleyMochaReporter extends Spec {
   constructor(_runner: any, _options: any) {
     super(...arguments);
     this._junitReporter = new MochaJUnitReporter(...arguments);
-  }
-
-  public epilogue(...args: any[]) {
-    // Force test errors to be printed to stderr instead of stdout.
-    // This will allow rush to correctly summarize test failure when running rush test.
-    if (this.stats.failures) {
-      withStdErr(() => super.epilogue(...args));
-    } else {
-      super.epilogue(...args);
-
-      if (0 === this.stats.passes) {
-        logBuildError("There were 0 passing tests.  That doesn't seem right."
-          + "\nIf there are really no passing tests and no failures, then what was even the point?"
-          + "\nIt seems likely that tests were skipped by it.only, it.skip, or grep filters, so I'm going to fail now.");
-        failBuild();
-      }
-    }
 
     // Detect hangs caused by tests that leave timers/other handles open - not possible in electron frontends.
     if (!("electron" in process.versions)) {
+      process.on("chrome-test-runner-done", () => {
+        console.warn("WARNING: chrome-test-runner-done event received");
+        this.waitForExit();
+      });
+    }
+  }
+
+  private waitForExit() {
       // NB: By calling unref() on this timer, we stop it from keeping the process alive, so it will only fire if _something else_ is still keeping
-      // the process alive after 30 seconds.  This also has the benefit of preventing the timer from showing up in wtfnode's dump of open handles.
+      // the process alive after 10 seconds.  This also has the benefit of preventing the timer from showing up in wtfnode's dump of open handles.
       setTimeout(() => {
-        logBuildError(`Handle leak detected. Node was still running 30 seconds after tests completed.`);
+        logBuildError(`Handle leak detected. Node was still running 10 seconds after tests completed.`);
         if (debugLeaks) {
           const wtf = require("wtfnode");
           wtf.setLogger("info", console.error);
@@ -114,7 +105,23 @@ class BentleyMochaReporter extends Spec {
 
         // Not sure why, but process.exit(1) wasn't working here...
         process.kill(process.pid);
-      }, 30 * 1000).unref();
+      }, 10 * 1000).unref();
+  }
+
+  public epilogue(...args: any[]) {
+    // Force test errors to be printed to stderr instead of stdout.
+    // This will allow rush to correctly summarize test failure when running rush test.
+    if (this.stats.failures) {
+      withStdErr(() => super.epilogue(...args));
+    } else {
+      super.epilogue(...args);
+
+      if (0 === this.stats.passes) {
+        logBuildError("There were 0 passing tests.  That doesn't seem right."
+          + "\nIf there are really no passing tests and no failures, then what was even the point?"
+          + "\nIt seems likely that tests were skipped by it.only, it.skip, or grep filters, so I'm going to fail now.");
+        failBuild();
+      }
     }
 
     if (!this.stats.pending)
