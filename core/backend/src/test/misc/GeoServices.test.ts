@@ -869,10 +869,8 @@ describe("GeoServices", () => {
 
     it("should return CRS that are in the specified range (3)", async () => {
       const extent: Range2dProps = { low: { x: 0.3, y: 2.4 }, high: { x: 1.6, y: 3.77 } };
-      const expectationPromises = []
-      expectationPromises.push(validateCRSList({expectedCount: 62, allowedRange: validationRangeSmall, extent}));
-      expectationPromises.push(validateCRSList({expectedCount: 422, allowedRange: validationRangeSmall, extent, includeWorld: true}));
-      await Promise.all(expectationPromises);
+      await validateCRSList({expectedCount: 62, allowedRange: validationRangeSmall, extent});
+      await validateCRSList({expectedCount: 422, allowedRange: validationRangeSmall, extent, includeWorld: true});
     });
 
     it("should retrieve the whole list of CRS and validate the properties for a few selected CRS.", async () => {
