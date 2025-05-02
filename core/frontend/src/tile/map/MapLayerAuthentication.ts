@@ -44,7 +44,8 @@ export interface MapLayerAccessClient  {
 }
 
 /**
- *  Represents a map layer session manager.
+ * Create and maintain a user session for map layer API that are session based.
+ * Implementations of this interface are specific to each map layer format.
  * @beta
  **/
 export interface MapLayerSessionManager {
@@ -52,7 +53,7 @@ export interface MapLayerSessionManager {
 }
 
 /**
- *  Represents a client handling map layer sessions.
+ *  Client for map layer APIs requiring an active session to be consumed.
  * @beta
  **/
 export interface MapLayerSessionClient {
