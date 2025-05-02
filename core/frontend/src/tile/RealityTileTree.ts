@@ -18,7 +18,7 @@ import { GraphicBranch } from "../render/GraphicBranch";
 import { GraphicBuilder } from "../render/GraphicBuilder";
 import { SceneContext } from "../ViewContext";
 import {
-  GraphicsCollectorDrawArgs, MapTile, RealityTile, RealityTileLoader, RealityTileParams, Tile, TileDrawArgs, TileGeometryCollector,
+  MapTile, RealityTile, RealityTileLoader, RealityTileParams, Tile, TileDrawArgs, TileGeometryCollector,
   TileGraphicType, TileParams, TileTree, TileTreeParams,
 } from "./internal";
 
@@ -273,7 +273,7 @@ export class RealityTileTree extends TileTree {
       sortIndices.sort((a, b) => selectedTiles[a].depth - selectedTiles[b].depth);
     }
 
-    if (!(args instanceof GraphicsCollectorDrawArgs))
+    if (args.shouldCollectClassifierGraphics)
       this.collectClassifierGraphics(args, selectedTiles);
 
     assert(selectedTiles.length === displayedTileDescendants.length);

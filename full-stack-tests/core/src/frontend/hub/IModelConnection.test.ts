@@ -12,6 +12,7 @@ import {
 import { Range3d, Transform } from "@itwin/core-geometry";
 import { TestUsers } from "@itwin/oidc-signin-tool/lib/cjs/frontend";
 import { TestUtility } from "../TestUtility";
+import { SchemaKey } from "@itwin/ecschema-metadata";
 
 async function executeQuery(iModel: IModelConnection, ecsql: string, bindings?: any[] | object): Promise<any[]> {
   const rows: any[] = [];
@@ -180,22 +181,6 @@ describe("IModelConnection (#integration)", () => {
     expect(rootTile.isLeaf).to.be.false;
   });
 
-  it("ECSQL with BLOB", async () => {
-    assert.exists(iModel);
-    let rows = await executeQuery(iModel, "SELECT ECInstanceId,GeometryStream FROM bis.GeometricElement3d WHERE GeometryStream IS NOT NULL LIMIT 1");
-    assert.equal(rows.length, 1);
-    const row: any = rows[0];
-
-    assert.isTrue(Id64.isValidId64(row.id));
-
-    assert.isDefined(row.geometryStream);
-    const geomStream: Uint8Array = row.geometryStream;
-    assert.isAtLeast(geomStream.byteLength, 1);
-
-    rows = await executeQuery(iModel, "SELECT 1 FROM bis.GeometricElement3d WHERE GeometryStream=?", [geomStream]);
-    assert.equal(rows.length, 1);
-  });
-
   it("should generate unique transient IDs", () => {
     for (let i = 1; i < 40; i++) {
       const id = iModel.transientIds.getNext();
@@ -207,5 +192,12 @@ describe("IModelConnection (#integration)", () => {
 
     expect(Id64.isTransient(Id64.invalid)).to.be.false;
     expect(Id64.isTransient("0xffffff6789abcdef")).to.be.true;
+  });
+
+  it("should be able to retrieve schema metadata", async () => {
+    assert.exists(iModel.schemaContext);
+    const testKey = new SchemaKey("BisCore");
+    const elem = await iModel.schemaContext.getSchema(testKey);
+    assert.isDefined(elem, "BisCore schema should be defined in snapshot iModel");
   });
 });

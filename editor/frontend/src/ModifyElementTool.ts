@@ -194,6 +194,7 @@ export abstract class ModifyElementWithDynamicsTool extends ModifyElementTool im
     if (ev.viewport)
       this._graphicsProvider.chordTolerance = computeChordToleranceFromPoint(ev.viewport, ev.point);
 
+    this._graphicsProvider.modelId = elemProps.model;
     await this._graphicsProvider.createGraphic(elemProps.category, elemProps.placement, geometry);
   }
 

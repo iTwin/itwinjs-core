@@ -272,6 +272,7 @@ import { RgbColorProps } from '@itwin/core-common';
 import { RootSubjectProps } from '@itwin/core-common';
 import { RpcInterfaceDefinition } from '@itwin/core-common';
 import { RpcRoutingToken } from '@itwin/core-common';
+import { SchemaContext } from '@itwin/ecschema-metadata';
 import { SectionDrawingViewProps } from '@itwin/core-common';
 import { SheetProps } from '@itwin/core-common';
 import { SilhouetteEdgeArgs } from '@itwin/core-common';
@@ -2748,6 +2749,8 @@ export class DrawingViewState extends ViewState2d {
 
 // @public
 export class DynamicsContext extends RenderContext {
+    // @internal (undocumented)
+    add(graphic: RenderGraphic, isOverlay: boolean): void;
     addGraphic(graphic: RenderGraphic): void;
     // @internal (undocumented)
     changeDynamics(): void;
@@ -4956,6 +4959,8 @@ export abstract class IModelConnection extends IModel {
     // @internal @deprecated (undocumented)
     requestSnap(props: SnapRequestProps): Promise<SnapResponseProps>;
     routingContext: IModelRoutingContext;
+    // @beta
+    get schemaContext(): SchemaContext;
     readonly selectionSet: SelectionSet;
     spatialFromCartographic(cartographic: Cartographic[]): Promise<Point3d[]>;
     spatialToCartographic(spatial: XYAndZ, result?: Cartographic): Promise<Cartographic>;
@@ -8804,7 +8809,7 @@ export abstract class RenderTarget implements Disposable, RenderMemory.Consumer 
     // @internal (undocumented)
     abstract changeDecorations(decorations: Decorations): void;
     // @internal (undocumented)
-    abstract changeDynamics(dynamics?: GraphicList): void;
+    abstract changeDynamics(foreground: GraphicList | undefined, overlay: GraphicList | undefined): void;
     // @internal (undocumented)
     abstract changeRenderPlan(plan: RenderPlan): void;
     // @internal (undocumented)
@@ -10018,7 +10023,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     // (undocumented)
     changeDecorations(decs: Decorations): void;
     // (undocumented)
-    changeDynamics(dynamics?: GraphicList): void;
+    changeDynamics(foreground: GraphicList | undefined, overlay: GraphicList | undefined): void;
     // (undocumented)
     changeFrustum(newFrustum: Frustum, newFraction: number, is3d: boolean): void;
     // (undocumented)
@@ -10869,6 +10874,8 @@ export class TileDrawArgs {
     readonly readyTiles: Set<Tile>;
     // @internal (undocumented)
     get secondaryClassifiers(): Map<number, RenderPlanarClassifier> | undefined;
+    // (undocumented)
+    get shouldCollectClassifierGraphics(): boolean;
     get symbologyOverrides(): FeatureSymbology.Overrides | undefined;
     get tileSizeModifier(): number;
     // @internal
@@ -12819,7 +12826,7 @@ export abstract class Viewport implements Disposable, TileUser {
     changeBackgroundMapProvider(props: BackgroundMapProviderProps): void;
     changeCategoryDisplay(categories: Id64Arg, display: boolean, enableAllSubCategories?: boolean): void;
     // @internal (undocumented)
-    changeDynamics(dynamics: GraphicList | undefined): void;
+    changeDynamics(dynamics: GraphicList | undefined, overlay: GraphicList | undefined): void;
     // @internal (undocumented)
     protected _changeFlags: MutableChangeFlags;
     changeModelDisplay(models: Id64Arg, display: boolean): boolean;
