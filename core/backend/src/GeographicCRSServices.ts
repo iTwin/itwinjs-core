@@ -38,6 +38,9 @@ export interface GetAvailableCoordinateReferenceSystemsArgs {
    * Maximum longitude and latitude correspond to extent.high.x and extent.high.y, respectively.
    */
   extent?: Range2dProps;
+  /** If true, returns additional CRS with extents spanning the entire Earth's surface.
+   * @default false
+   */
   includeWorld?: boolean
 }
 
