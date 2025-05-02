@@ -158,7 +158,7 @@ export class MapLayerFormatRegistry {
       return undefined;
 
     const accessClient = this._formats.get(formatId)?.client;
-    if (accessClient && typeof((accessClient as any).getAccessToken) === "function") {
+    if (accessClient && ((accessClient as any).getAccessToken) !== undefined) {
       return accessClient as MapLayerAccessClient;
     }
     return undefined;
@@ -173,7 +173,7 @@ export class MapLayerFormatRegistry {
       return undefined;
 
     const client = this._formats.get(formatId)?.client;
-    if (client && typeof((client as any).getSessionManager) === "function") {
+    if (client && ((client as any).getSessionManager) !== undefined) {
       return client as MapLayerSessionClient;
     }
     return undefined;
