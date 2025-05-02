@@ -38,6 +38,7 @@ export interface GetAvailableCoordinateReferenceSystemsArgs {
    * Maximum longitude and latitude correspond to extent.high.x and extent.high.y, respectively.
    */
   extent?: Range2dProps;
+  includeWorld?: boolean
 }
 
 /** Get a list of Geographic Coordinate Reference Systems.
@@ -46,5 +47,5 @@ export interface GetAvailableCoordinateReferenceSystemsArgs {
  * @beta
  */
 export async function getAvailableCoordinateReferenceSystems(args: GetAvailableCoordinateReferenceSystemsArgs): Promise<AvailableCoordinateReferenceSystemProps[]> {
-  return IModelNative.platform.GeoServices.getListOfCRS(args.extent);
+  return IModelNative.platform.GeoServices.getListOfCRS(args.extent, args.includeWorld);
 }
