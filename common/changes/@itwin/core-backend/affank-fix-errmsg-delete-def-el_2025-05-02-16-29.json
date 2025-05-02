@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-backend",
-      "comment": "Add test for improved error message for when deleting definition element",
+      "comment": "",
       "type": "none"
     }
   ],
