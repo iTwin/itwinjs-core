@@ -115,10 +115,10 @@ protected override async buildPropertyCache(): Promise<Map<string, Property>> {
   const cache = new Map<string, Property>();
     const baseClass = await this.baseClass;
     if (baseClass) {
-      Array.from(baseClass.getPropertiesSync()).forEach((property) => {
+      for (const property of await baseClass.getProperties()) {
         if (!cache.has(property.name.toUpperCase()))
           cache.set(property.name.toUpperCase(), property);
-      });
+      }
     }
 
     for (const mixin of this.mixins) {
@@ -130,11 +130,11 @@ protected override async buildPropertyCache(): Promise<Map<string, Property>> {
       }
     }
 
-    const localProps = this.getPropertiesSync(true);
+    const localProps = await this.getProperties(true);
     if (localProps) {
-      Array.from(localProps).forEach(property => {
+      for (const property of localProps) {
         cache.set(property.name.toUpperCase(), property);
-      });
+      }
     }
     return cache;
 }

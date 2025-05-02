@@ -163,9 +163,7 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
       this._mergedPropertyCache = await this.buildPropertyCache();
     }
 
-    if(this._mergedPropertyCache?.has(upperKey)) {
-      property = this._mergedPropertyCache.get(upperKey);
-    }
+    property = this._mergedPropertyCache.get(upperKey);
 
     return property;
   }
@@ -642,11 +640,11 @@ protected async buildPropertyCache(): Promise<Map<string, Property>> {
   const cache = new Map<string, Property>();
   const baseClass = await this.baseClass;
   if (baseClass) {
-    Array.from(baseClass.getPropertiesSync()).forEach(property => {
+    for (const property of await baseClass.getProperties()) {
       if (!cache.has(property.name.toUpperCase())) {
         cache.set(property.name.toUpperCase(), property);
       }
-    });
+    }
   }
 
   if (this._properties) {
@@ -668,11 +666,11 @@ protected async buildPropertyCache(): Promise<Map<string, Property>> {
     const cache = new Map<string, Property>();
     const baseClass = this.getBaseClassSync();
     if (baseClass) {
-      Array.from(baseClass.getPropertiesSync()).forEach(property => {
+      for (const property of baseClass.getPropertiesSync()) {
         if (!cache.has(property.name.toUpperCase())) {
           cache.set(property.name.toUpperCase(), property);
         }
-      });
+      }
     }
 
     if (this._properties) {
