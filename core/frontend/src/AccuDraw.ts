@@ -2494,6 +2494,8 @@ export class AccuDraw {
   public onFieldKeyinStatusChange(_index: ItemField) { }
   /** Called to request focus change to the specified input field */
   public setFocusItem(_index: ItemField) { }
+  /** Called to get the item field that currently has input focus */
+  public getFocusItem(): ItemField | undefined { return undefined; }
 
   private static getMinPolarMag(origin: Point3d): number {
     return (1.0e-12 * (1.0 + origin.magnitude()));
