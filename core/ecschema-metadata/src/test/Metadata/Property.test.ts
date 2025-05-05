@@ -8,7 +8,7 @@ import { assert, expect } from "chai";
 import { SchemaContext } from "../../Context";
 import { DelayedPromiseWithProps } from "../../DelayedPromise";
 import { PrimitiveType, StrengthDirection } from "../../ECObjects";
-import { ECObjectsError } from "../../Exception";
+import { ECSchemaError } from "../../Exception";
 import { ECClass, MutableClass, StructClass } from "../../Metadata/Class";
 import { CustomAttribute } from "../../Metadata/CustomAttribute";
 import { EntityClass } from "../../Metadata/EntityClass";
@@ -163,7 +163,7 @@ describe("Property", () => {
         category: "TestSchema.NonExistentPropertyCategory",
       };
       await testProp.fromJSON(propertyJson);
-      await expect(testProp.category).to.be.rejectedWith(ECObjectsError, `The Property BadProp has a 'category' ("TestSchema.NonExistentPropertyCategory") that cannot be found.`);
+      await expect(testProp.category).to.be.rejectedWith(ECSchemaError, `The Property BadProp has a 'category' ("TestSchema.NonExistentPropertyCategory") that cannot be found.`);
 
     });
 
@@ -175,7 +175,7 @@ describe("Property", () => {
         kindOfQuantity: "TestSchema.NonExistentKindOfQuantity",
       };
       await testProp.fromJSON(propertyJson);
-      await expect(testProp.kindOfQuantity).to.be.rejectedWith(ECObjectsError, `The Property BadProp has a 'kindOfQuantity' ("TestSchema.NonExistentKindOfQuantity") that cannot be found.`);
+      await expect(testProp.kindOfQuantity).to.be.rejectedWith(ECSchemaError, `The Property BadProp has a 'kindOfQuantity' ("TestSchema.NonExistentKindOfQuantity") that cannot be found.`);
     });
   });
 
@@ -928,7 +928,7 @@ describe("PrimitiveProperty", () => {
         typeName: "string",
       };
       expect(testProperty).to.exist;
-      await expect(testProperty.fromJSON(propertyJson)).to.be.rejectedWith(ECObjectsError);
+      await expect(testProperty.fromJSON(propertyJson)).to.be.rejectedWith(ECSchemaError);
     });
   });
 
@@ -1102,7 +1102,7 @@ describe("EnumerationProperty", () => {
         typeName: "ThisDoesNotMatch",
       };
       expect(testProperty).to.exist;
-      await expect(testProperty.fromJSON(propertyJson)).to.be.rejectedWith(ECObjectsError);
+      await expect(testProperty.fromJSON(propertyJson)).to.be.rejectedWith(ECSchemaError);
     });
   });
 
@@ -1213,7 +1213,7 @@ describe("StructProperty", () => {
         typeName: "ThisDoesNotMatch",
       };
       expect(testProperty).to.exist;
-      await expect(testProperty.fromJSON(propertyJson)).to.be.rejectedWith(ECObjectsError);
+      await expect(testProperty.fromJSON(propertyJson)).to.be.rejectedWith(ECSchemaError);
     });
   });
 

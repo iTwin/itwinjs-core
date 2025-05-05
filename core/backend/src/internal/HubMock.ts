@@ -13,12 +13,12 @@ import {
   BackendHubAccess, BriefcaseDbArg, BriefcaseIdArg, ChangesetArg, CreateNewIModelProps, DownloadChangesetArg, DownloadChangesetRangeArg, IModelIdArg, IModelNameArg,
   LockMap, LockProps, V2CheckpointAccessProps,
 } from "../BackendHubAccess";
-import { CheckpointProps, DownloadRequest, ProgressFunction, ProgressStatus, V2CheckpointManager } from "../CheckpointManager";
+import { CheckpointProps, DownloadRequest, MockCheckpoint, ProgressFunction, ProgressStatus, V2CheckpointManager } from "../CheckpointManager";
 import { IModelHost } from "../IModelHost";
 import { IModelJsFs } from "../IModelJsFs";
 import { LocalHub } from "../LocalHub";
 import { TokenArg } from "../IModelDb";
-import { _getHubAccess, _mockCheckpointAttach, _mockCheckpointDownload, _setHubAccess } from "./Symbols";
+import { _getHubAccess, _mockCheckpoint, _setHubAccess } from "./Symbols";
 import { BriefcaseManager } from "../BriefcaseManager";
 import * as path from "path";
 
@@ -30,15 +30,17 @@ function wasStarted(val: string | undefined): asserts val is string {
 function doDownload(args: { iModelId: string, changeset: ChangesetIndexOrId, targetFile: string }) {
   HubMock.findLocalHub(args.iModelId).downloadCheckpoint(args);
 }
-function mockAttachCheckpoint(checkpoint: CheckpointProps) {
-  const targetFile = path.join(BriefcaseManager.getBriefcaseBasePath(checkpoint.iModelId), `${checkpoint.changeset.index}.bim`);
-  doDownload({ ...checkpoint, targetFile })
-  return targetFile;
-}
+const mockCheckpoint: MockCheckpoint = {
+  mockAttach: (checkpoint: CheckpointProps) => {
+    const targetFile = path.join(BriefcaseManager.getBriefcaseBasePath(checkpoint.iModelId), `${checkpoint.changeset.index}.bim`);
+    doDownload({ ...checkpoint, targetFile })
+    return targetFile;
+  },
 
-function mockDownload(request: DownloadRequest) {
-  doDownload({ ...request.checkpoint, targetFile: request.localFile });
-}
+  mockDownload: (request: DownloadRequest) => {
+    doDownload({ ...request.checkpoint, targetFile: request.localFile });
+  }
+};
 
 /**
  * Mocks iModelHub for testing creating Briefcases, downloading checkpoints, and simulating multiple users pushing and pulling changesets, etc.
@@ -103,8 +105,7 @@ export class HubMock {
     IModelHost[_setHubAccess](this);
     HubMock._iTwinId = Guid.createValue(); // all iModels for this test get the same "iTwinId"
 
-    V2CheckpointManager[_mockCheckpointAttach] = mockAttachCheckpoint;
-    V2CheckpointManager[_mockCheckpointDownload] = mockDownload;
+    V2CheckpointManager[_mockCheckpoint] = mockCheckpoint;
   }
 
   /** Stop a HubMock that was previously started with [[startup]]
@@ -114,8 +115,7 @@ export class HubMock {
     if (this.mockRoot === undefined)
       return;
 
-    V2CheckpointManager[_mockCheckpointAttach] = undefined;
-    V2CheckpointManager[_mockCheckpointDownload] = undefined;
+    V2CheckpointManager[_mockCheckpoint] = undefined;
 
     HubMock._iTwinId = undefined;
     for (const hub of this.hubs)

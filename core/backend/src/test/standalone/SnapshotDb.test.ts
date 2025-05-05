@@ -11,7 +11,8 @@ import { IModelDb, SnapshotDb } from "../../IModelDb";
 import { Logger } from "@itwin/core-bentley";
 import { IModelHost } from "../../IModelHost";
 import { HubMock } from "../../internal/HubMock";
-import { _hubAccess, _nativeDb, _openCheckpoint } from "../../internal/Symbols";
+import { _hubAccess, _nativeDb } from "../../internal/Symbols";
+import { IModelTestUtils } from "../IModelTestUtils";
 
 describe("SnapshotDb.refreshContainerForRpc", () => {
   afterEach(() => sinon.restore());
@@ -45,6 +46,7 @@ describe("SnapshotDb.refreshContainerForRpc", () => {
     restartDefaultTxn: () => { },
     closeFile: () => { },
     getFilePath: () => "fakeFilePath",
+    clearECDbCache: () => { },
   };
 
   it("should restart default txn after inactivity", async () => {
@@ -112,7 +114,7 @@ describe("SnapshotDb.refreshContainerForRpc", () => {
 
     const userAccessToken = "token";
     const checkpoint = await SnapshotDb.openCheckpointFromRpc({ accessToken: userAccessToken, iTwinId, iModelId, changeset, reattachSafetySeconds: 60 });
-    expect(checkpoint[_nativeDb].cloudContainer?.accessToken).equal(mockCheckpointV2.sasToken);
+    expect(checkpoint.cloudContainer?.accessToken).equal(mockCheckpointV2.sasToken);
     expect(openDgnDbStub.calledOnce).to.be.true;
     expect(openDgnDbStub.firstCall.firstArg.path).to.equal("fakeDb");
 
@@ -170,7 +172,7 @@ describe("SnapshotDb.refreshContainerForRpc", () => {
     sinon.stub(IModelDb.prototype, "initializeIModelDb" as any);
     sinon.stub(IModelDb.prototype, "loadIModelSettings" as any);
 
-    const snapshot = CheckpointManager[_openCheckpoint]("fakeFilePath", { iTwinId: "fakeITwinId", iModelId: "fake1", changeset });
+    const snapshot = IModelTestUtils.openCheckpoint("fakeFilePath", { iTwinId: "fakeITwinId", iModelId: "fake1", changeset });
     const nowStub = sinon.stub(Date, "now");
     await snapshot.refreshContainerForRpc("");
     snapshot.close();

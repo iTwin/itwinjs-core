@@ -219,6 +219,9 @@ export enum ChangeSetStatus {
 // @public
 export type CloneFunction<T> = (value: T) => T;
 
+// @public
+export function compareArrays<T>(lhs: ReadonlyArray<T>, rhs: ReadonlyArray<T>, compare: (a: T, b: T) => number): number;
+
 // @public (undocumented)
 export function compareBooleans(a: boolean, b: boolean): number;
 
@@ -1031,9 +1034,9 @@ export interface ITwinError extends Error {
 
 // @beta (undocumented)
 export namespace ITwinError {
-    export function create<T extends ITwinError>(args: Optional<T, "name">): T;
+    export function create<T extends ITwinError>(args: Omit<T, "name">): T;
     export function isError<T extends ITwinError>(error: unknown, scope: string, key?: string): error is T;
-    export function throwError<T extends ITwinError>(args: Optional<T, "name">): never;
+    export function throwError<T extends ITwinError>(args: Omit<T, "name">): never;
 }
 
 // @beta

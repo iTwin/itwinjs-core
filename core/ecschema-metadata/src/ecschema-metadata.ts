@@ -26,7 +26,7 @@ export { Mixin } from "./Metadata/Mixin";
 export * from "./Metadata/OverrideFormat";
 export { Phenomenon } from "./Metadata/Phenomenon";
 export {
-  Property, PropertyHandler, PrimitiveProperty, PrimitiveArrayProperty, EnumerationProperty, StructProperty,
+  Property, PrimitiveProperty, PrimitiveArrayProperty, EnumerationProperty, StructProperty,
   StructArrayProperty, EnumerationArrayProperty, NavigationProperty, AnyArrayProperty, AnyEnumerationProperty,
   AnyPrimitiveProperty, AnyProperty, AnyStructProperty, ArrayProperty, PrimitiveOrEnumPropertyBase,
 } from "./Metadata/Property";
@@ -45,6 +45,7 @@ export * from "./UnitConversion/UnitConverter";
 export * from "./UnitProvider/SchemaUnitProvider";
 export * from "./Validation/SchemaWalker";
 export * from "./SchemaPartVisitorDelegate";
+export * from "./SchemaFormatsProvider";
 export { CustomAttribute, CustomAttributeContainerProps} from "./Metadata/CustomAttribute";
 export { SchemaGraph } from "./utils/SchemaGraph";
 

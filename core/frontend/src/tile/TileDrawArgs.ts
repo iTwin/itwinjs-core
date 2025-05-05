@@ -427,4 +427,7 @@ export class TileDrawArgs {
 
   /* @internal */
   public get maxRealityTreeSelectionCount(): number | undefined { return undefined; }
+
+  /* @internal */
+  public get shouldCollectClassifierGraphics(): boolean { return true; }
 }

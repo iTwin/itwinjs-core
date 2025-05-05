@@ -92,8 +92,13 @@ public;interface;Carto2DDegreesProps
 public;class;Cartographic
 public;interface;CartographicProps
 public;class;CartographicRange
+beta;namespace;CatalogError
+beta;namespace;CatalogIModel
+internal;type;IpcChannel
+internal;interface;IpcMethods
 public;interface;CategoryProps
 public;interface;CategorySelectorProps
+beta;enum;CesiumIonAssetId
 public;enum;CesiumTerrainAssetId
 internal;interface;ChangeData
 public;interface;ChangedElements
@@ -110,8 +115,8 @@ public;type;ChangesetIndexOrId
 public;interface;ChangesetProps
 public;interface;ChangesetRange
 public;enum;ChangesetType
-beta;interface;ChannelError
-beta;namespace;ChannelError
+beta;interface;ChannelControlError
+beta;namespace;ChannelControlError
 public;interface;ChannelRootAspectProps
 internal;interface;ClassifierTileTreeId
 public;class;ClipIntersectionStyle
@@ -120,6 +125,8 @@ public;class;ClipStyle
 public;interface;ClipStyleCreateArgs
 public;interface;ClipStyleProps
 beta;interface;CloudContainerUri
+beta;interface;CloudSqliteError
+beta;namespace;CloudSqliteError
 public;class;Code
 public;interface;CodeProps
 public;type;CodeScopeProps
@@ -826,6 +833,8 @@ public;interface;SpatialClassifierProps
 public;class;SpatialClassifiers
 public;interface;SpatialClassifiersContainer
 public;interface;SpatialViewDefinitionProps
+beta;interface;SqliteError
+beta;namespace;SqliteError
 beta;type;StackedFractionType
 public;type;StandaloneOpenOptions
 beta;type;StorageValue
@@ -948,6 +957,8 @@ public;type;ViewIdString
 public;interface;ViewQueryParams
 public;interface;ViewStateLoadProps
 public;interface;ViewStateProps
+beta;interface;ViewStoreError
+beta;namespace;ViewStoreError
 beta;namespace;ViewStoreRpc
 public;type;IdString
 internal;const;WEB_RPC_CONSTANTS
@@ -956,5 +967,6 @@ internal;class;WebAppRpcProtocol
 internal;class;WebAppRpcRequest
 public;interface;WhiteOnWhiteReversalProps
 public;class;WhiteOnWhiteReversalSettings
+beta;namespace;WorkspaceError
 public;class;XyzRotation
 public;interface;XyzRotationProps
