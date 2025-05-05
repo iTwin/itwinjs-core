@@ -32,7 +32,8 @@ export class ECSchemaRpcLocater implements ISchemaLocater {
     constructor(token: IModelRpcProps);
     getSchema(schemaKey: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): Promise<Schema | undefined>;
     getSchemaInfo(schemaKey: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): Promise<SchemaInfo | undefined>;
-    getSchemaSync(schemaKey: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): Schema | undefined;
+    // @deprecated
+    getSchemaSync(_schemaKey: SchemaKey, _matchType: SchemaMatchType, _context: SchemaContext): Schema | undefined;
     // @internal (undocumented)
     readonly token: IModelRpcProps;
 }
