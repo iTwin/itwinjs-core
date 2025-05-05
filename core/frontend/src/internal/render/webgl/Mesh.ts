@@ -155,7 +155,7 @@ export class MeshGraphic extends Graphic {
 
   public override unionRange(range: Range3d) {
     if (this._instances)
-      range.extendRange(range);
+      range.extendRange(this._instances.range);
     else
       range.extendRange(this._meshRange);
   }

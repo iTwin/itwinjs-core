@@ -1358,11 +1358,11 @@ describe("ApproximateArc3d", () => {
     const eccentricities: number[] = [];
     if (GeometryCoreTestIO.enableLongTests) {
       eccentricities.push(...[0.000001, 0.00001, 0.0001]); // these are essentially circular thus invalid for approximating (not drawn below)
-      eccentricities.push(...[0.001, 0.01, 0.05, 0.1, 0.15, 0.2, 0.25]);
+      eccentricities.push(...[0.001, 0.01, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3]);
     }
-    eccentricities.push(...[0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8]);
+    eccentricities.push(...[0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75]);
     if (GeometryCoreTestIO.enableLongTests) {
-      eccentricities.push(...[0.85, 0.9, 0.95, 0.99, 0.999]);
+      eccentricities.push(...[0.8, 0.85, 0.9, 0.95, 0.99, 0.999]);
       eccentricities.push(...[0.9999, 0.99999, 0.999999]); // these are essentially flat
     }
 
@@ -1415,13 +1415,13 @@ describe("ApproximateArc3d", () => {
       x += delta;
     }
 
-    // Observed: subdivision wins 90.9% of comparisons to n-sample methods (95.7% with enableLongTests)
+    // Observed: subdivision wins 91.7% of comparisons to n-sample methods (95.7% with enableLongTests)
     const winPct = 100 * Geometry.safeDivideFraction(nSubdivisionComparisonWins, nComparisons, 0);
     GeometryCoreTestIO.consoleLog(`Subdivision wins ${nSubdivisionComparisonWins} of ${nComparisons} comparisons (${winPct}%).`);
     const targetWinPct = GeometryCoreTestIO.enableLongTests ? 90 : 85;
     ck.testLE(targetWinPct, winPct, `Subdivision is more accurate than another n-sample method over ${targetWinPct}% of the time.`);
 
-    // Observed: subdivision is most accurate method in 63.6% of ellipses tested (82.8% with enableLongTests)
+    // Observed: subdivision is most accurate method in 66.7% of ellipses tested (82.8% with enableLongTests)
     const winOverallPct = 100 * Geometry.safeDivideFraction(nEllipses - nSubdivisionLosses, nEllipses, 0);
     GeometryCoreTestIO.consoleLog(`Subdivision wins overall for ${nEllipses - nSubdivisionLosses} of ${nEllipses} ellipses (${winOverallPct}%).`);
     const targetNSampleWinPct = GeometryCoreTestIO.enableLongTests ? 80 : 60;

@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "HitDetail and Viewport.readPixels include contour line information.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

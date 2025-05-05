@@ -467,9 +467,10 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     this._planarClassifiers = planarClassifiers;
   }
 
-  public changeDynamics(dynamics?: GraphicList) {
-    this.graphics.dynamics = dynamics;
+  public changeDynamics(foreground: GraphicList | undefined, overlay: GraphicList | undefined) {
+    this.graphics.changeDynamics(foreground, overlay);
   }
+
   public override overrideFeatureSymbology(ovr: FeatureSymbology.Overrides): void {
     this.uniforms.branch.overrideFeatureSymbology(ovr);
   }
