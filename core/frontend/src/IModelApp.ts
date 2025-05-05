@@ -17,6 +17,7 @@ import { UiAdmin } from "@itwin/appui-abstract";
 import { AccessToken, BeDuration, BeEvent, BentleyStatus, DbResult, dispose, Guid, GuidString, IModelStatus, Logger, ProcessDetector } from "@itwin/core-bentley";
 import { AuthorizationClient, Localization, RealityDataAccess, RpcConfiguration, RpcInterfaceDefinition, RpcRequest, SerializedRpcActivity } from "@itwin/core-common";
 import { ITwinLocalization } from "@itwin/core-i18n";
+import { FormatsProvider } from "@itwin/core-quantity";
 import { queryRenderCompatibility, WebGLRenderCompatibilityInfo } from "@itwin/webgl-compatibility";
 import { AccuDraw } from "./AccuDraw";
 import { AccuSnap } from "./AccuSnap";
@@ -119,6 +120,8 @@ export interface IModelAppOptions {
   renderSys?: RenderSystem | RenderSystem.Options;
   /** If present, supplies the [[UiAdmin]] for this session. */
   uiAdmin?: UiAdmin;
+  /** If present, supplies the [[FormatsProvider]] for this session. */
+  formatsProvider?: FormatsProvider;
   /** If present, determines whether iModelApp is a NoRenderApp
    *  @internal
    */
@@ -209,6 +212,7 @@ export class IModelApp {
   private static _hubAccess?: FrontendHubAccess;
   private static _realityDataAccess?: RealityDataAccess;
   private static _publicPath: string;
+  private static _formatsProvider?: FormatsProvider;
 
   // No instances of IModelApp may be created. All members are static and must be on the singleton object IModelApp.
   protected constructor() { }
@@ -292,6 +296,18 @@ export class IModelApp {
    * The path should always end with a trailing `/`.
    */
   public static get publicPath() { return this._publicPath; }
+
+  /** The [[FormatsProvider]] for this session.
+   * @beta
+   */
+  public static get formatsProvider(): FormatsProvider | undefined { return this._formatsProvider; }
+
+  /**
+   * Set the [[FormatsProvider]] for this session.
+   * @beta
+   * @internal
+   */
+  public static set formatsProvider(provider: FormatsProvider | undefined) { this._formatsProvider = provider }
 
   /** @alpha */
   public static readonly extensionAdmin = this._createExtensionAdmin();
@@ -410,6 +426,8 @@ export class IModelApp {
     this._terrainProviderRegistry = new TerrainProviderRegistry();
     this._realityDataSourceProviders = new RealityDataSourceProviderRegistry();
     this._realityDataAccess = opts.realityDataAccess;
+    this._formatsProvider = opts.formatsProvider;
+
     this._publicPath = opts.publicPath ?? "";
 
     [
