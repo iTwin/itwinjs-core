@@ -820,20 +820,20 @@ describe("GeoServices", () => {
       const { expectedCount, allowedRange, extent, includeWorld } = options;
       const listOfCRS = await getAvailableCoordinateReferenceSystems({ extent, includeWorld });
 
-      // Check fields of returned CRS's
+      // Check fields of returned coordinate reference systems
       const extentRange: Range2d = Range2d.fromJSON(extent);
       for (const crs of listOfCRS) {
-      // Validate extent
-      if (extent !== undefined) {
-        const crsExtentRange: Range2d = Range2d.fromJSON(crs.crsExtent);
-        const intersects = extentRange.intersectsRange(crsExtentRange);
-        assert.isTrue(intersects);
-      }
+        // Validate extent
+        if (extent !== undefined) {
+          const crsExtentRange: Range2d = Range2d.fromJSON(crs.crsExtent);
+          const intersects = extentRange.intersectsRange(crsExtentRange);
+          assert.isTrue(intersects);
+        }
 
-      // These fields should always be present
-      assert.isTrue(crs.name !== undefined);
-      assert.isTrue(crs.description !== undefined);
-      assert.isTrue(crs.deprecated === true || crs.deprecated === false);
+        // These fields should always be present
+        assert.isTrue(crs.name !== undefined);
+        assert.isTrue(crs.description !== undefined);
+        assert.isTrue(crs.deprecated === true || crs.deprecated === false);
       }
 
       assert.isTrue(listOfCRS.length > expectedCount - allowedRange && listOfCRS.length < expectedCount + allowedRange);
