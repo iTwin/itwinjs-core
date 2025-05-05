@@ -13,7 +13,7 @@ import {
   FontMap, FontType, GeoCoordinatesRequestProps, GeoCoordStatus, GeographicCRS, GeographicCRSProps, GeometricElementProps, GeometryParams, GeometryStreamBuilder,
   ImageSourceFormat, IModel, IModelCoordinatesRequestProps, IModelError, LightLocationProps, MapImageryProps, PhysicalElementProps,
   PointWithStatus, RelatedElement, RenderMode, SchemaState, SpatialViewDefinitionProps, SubCategoryAppearance, SubjectProps, TextureMapping,
-  TextureMapProps, TextureMapUnits, ViewDefinitionProps, ViewFlagProps, ViewFlags,
+  TextureMapProps, TextureMapUnits, TypeDefinitionElementProps, ViewDefinitionProps, ViewFlagProps, ViewFlags,
 } from "@itwin/core-common";
 import {
   Geometry, GeometryQuery, LineString3d, Loop, Matrix4d, Point3d, PolyfaceBuilder, Range3d, StrokeOptions, Transform, XYZProps, YawPitchRollAngles,
@@ -23,7 +23,7 @@ import { V2CheckpointManager } from "../../CheckpointManager";
 import {
   _nativeDb, BisCoreSchema, Category, ClassRegistry, DefinitionContainer, DefinitionGroup, DefinitionGroupGroupsDefinitions,
   DefinitionModel, DefinitionPartition, DictionaryModel, DisplayStyle3d, DisplayStyleCreationOptions, DocumentPartition, DrawingGraphic, ECSqlStatement,
-  Element, ElementDrivesElement, ElementGroupsMembers, ElementGroupsMembersProps, ElementOwnsChildElements, Entity, GeometricElement2d, GeometricElement3d,
+  Element, ElementDrivesElement, ElementGroupsMembers, ElementGroupsMembersProps, ElementOwnsChildElements, Entity, GenericGraphicalType2d, GeometricElement2d, GeometricElement3d,
   GeometricModel, GroupInformationPartition, IModelDb, IModelHost, IModelJsFs, InformationPartitionElement, InformationRecordElement, LightLocation,
   LinkPartition, Model, PhysicalElement, PhysicalModel, PhysicalObject, PhysicalPartition, RenderMaterialElement, RenderMaterialElementParams, SnapshotDb, SpatialCategory,
   SqliteStatement, SqliteValue, SqliteValueType, StandaloneDb, SubCategory, Subject, Texture, ViewDefinition,
@@ -263,9 +263,9 @@ describe("iModel", () => {
     const newEl = el3.toJSON();
     newEl.federationGuid = undefined;
     newEl.code = { scope: "bad scope", spec: "0x10", value: "new code" };
-    expect(() => imodel2.elements.insertElement(newEl)).throws("invalid code scope").to.have.property("metadata");
+    expect(() => imodel2.elements.insertElement(newEl)).throws("invalid code scope").to.have.property("_metaData");
     newEl.code.scope = "0x34322"; // valid id, but element doesn't exist
-    expect(() => imodel2.elements.insertElement(newEl)).throws("invalid code scope").to.have.property("metadata");
+    expect(() => imodel2.elements.insertElement(newEl)).throws("invalid code scope").to.have.property("_metaData");
 
     newEl.code.scope = el3.federationGuid!;
     const newId = imodel2.elements.insertElement(newEl); // code scope from FederationGuid should get converted to ElementId
@@ -273,7 +273,7 @@ describe("iModel", () => {
     expect(a4.code.scope).equal(el3.id);
 
     a4.code.scope = "0x13343";
-    expect(() => imodel2.elements.updateElement(a4)).throws("invalid code scope").to.have.property("metadata");
+    expect(() => imodel2.elements.updateElement(a4)).throws("invalid code scope").to.have.property("_metaData");
 
     a4.code.scope = "0x1";
     imodel2.elements.updateElement(a4); // should change the code scope to new element
@@ -1014,11 +1014,34 @@ describe("iModel", () => {
     assert.throws(() => imodel4.elements.getElement(elid), IModelError);
   });
 
+  it("should throw iModelErrors on element CRUD opertion fails", async () => {
+    const code = Code.createEmpty();
+    code.value = "foo";
+
+    const props: TypeDefinitionElementProps = {
+      classFullName: GenericGraphicalType2d.classFullName,
+      model: IModel.dictionaryId,
+      code,
+    };
+    const id = imodel1.elements.insertElement(props);
+
+    expect(() => imodel1.elements.insertElement(props)).throws("Error inserting element [duplicate code]").instanceof(IModelError);
+
+    const updateProps: TypeDefinitionElementProps = {
+      id: Id64.fromString("0x111111"),
+      classFullName: GenericGraphicalType2d.classFullName,
+      model: IModel.dictionaryId,
+      code,
+    };
+    expect(() => imodel1.elements.updateElement(updateProps)).throws(`Error updating element [missing id], id: ${updateProps.id}`).instanceof(IModelError);
+    expect(() => imodel1.elements.deleteElement(Id64.fromString(updateProps.id!))).throws(`Error deleting element [missing id], id: ${updateProps.id!}`).instanceof(IModelError);
+  });
+
   it("should handle parent and child deletion properly", () => {
     const categoryId = SpatialCategory.insert(imodel4, IModel.dictionaryId, "MyTestCategory", new SubCategoryAppearance());
     const category = imodel4.elements.getElement<SpatialCategory>(categoryId);
     const subCategory = imodel4.elements.getElement<SubCategory>(category.myDefaultSubCategoryId());
-    expect(() => imodel4.elements.deleteElement(categoryId)).throws("error deleting element").to.have.property("metadata");
+    expect(() => imodel4.elements.deleteElement(categoryId)).throws("error deleting element").to.have.property("_metaData");
     assert.exists(imodel4.elements.getElement(categoryId), "Category deletes should be blocked in native code");
     assert.exists(imodel4.elements.getElement(subCategory.id), "Children should not be deleted if parent delete is blocked");
 
