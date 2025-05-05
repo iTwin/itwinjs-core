@@ -352,7 +352,6 @@ export class DisplayTestApp {
       IModelApp.quantityFormatter.onActiveFormattingUnitSystemChanged.addListener((args) => {
         formatsProvider.unitSystem = args.system;
       });
-      console.log("FormatsProvider initialized with unit system:", IModelApp.quantityFormatter.activeUnitSystem);
     });
     const svtToolNamespace = "SVTTools";
     await IModelApp.localization.registerNamespace(svtToolNamespace);
