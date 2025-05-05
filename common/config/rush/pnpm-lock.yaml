@@ -3618,6 +3618,18 @@ importers:
       '@itwin/core-quantity':
         specifier: workspace:*
         version: link:../../core/quantity
+      '@itwin/ecschema-locaters':
+        specifier: workspace:*
+        version: link:../../core/ecschema-locaters
+      '@itwin/ecschema-metadata':
+        specifier: workspace:*
+        version: link:../../core/ecschema-metadata
+      '@itwin/ecschema-rpcinterface-common':
+        specifier: workspace:*
+        version: link:../../core/ecschema-rpc/common
+      '@itwin/ecschema-rpcinterface-impl':
+        specifier: workspace:*
+        version: link:../../core/ecschema-rpc/impl
       '@itwin/editor-backend':
         specifier: workspace:*
         version: link:../../editor/backend
@@ -3670,6 +3682,15 @@ importers:
         specifier: ^0.0.1
         version: 0.0.1
     devDependencies:
+      '@bentley/aec-units-schema':
+        specifier: ^1.0.3
+        version: 1.0.3
+      '@bentley/formats-schema':
+        specifier: ^1.0.0
+        version: 1.0.0
+      '@bentley/units-schema':
+        specifier: ^1.0.8
+        version: 1.0.8
       '@itwin/build-tools':
         specifier: workspace:*
         version: link:../../tools/build

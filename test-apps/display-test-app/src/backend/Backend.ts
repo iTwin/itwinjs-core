@@ -17,6 +17,8 @@ import { MobileHost, MobileHostOpts } from "@itwin/core-mobile/lib/cjs/MobileBac
 import { DtaConfiguration, getConfig } from "../common/DtaConfiguration";
 import { DtaRpcInterface } from "../common/DtaRpcInterface";
 import { EditCommandAdmin } from "@itwin/editor-backend";
+import { ECSchemaRpcInterface } from '@itwin/ecschema-rpcinterface-common';
+import { ECSchemaRpcImpl } from "@itwin/ecschema-rpcinterface-impl";
 import * as editorBuiltInCommands from "@itwin/editor-backend";
 
 /** Loads the provided `.env` file into process.env */
@@ -191,6 +193,7 @@ export const getRpcInterfaces = (): RpcInterfaceDefinition[] => {
     DtaRpcInterface,
     IModelReadRpcInterface,
     IModelTileRpcInterface,
+    ECSchemaRpcInterface
   ];
 
   return rpcs;
@@ -240,6 +243,7 @@ export const initializeDtaBackend = async (hostOpts?: ElectronHostOptions & Mobi
 
   /** register the implementation of our RPCs. */
   RpcManager.registerImpl(DtaRpcInterface, DisplayTestAppRpc);
+  RpcManager.registerImpl(ECSchemaRpcInterface, ECSchemaRpcImpl)
   const authClient = await initializeAuthorizationClient();
   if (ProcessDetector.isElectronAppBackend) {
     opts.iModelHost.authorizationClient = authClient;
