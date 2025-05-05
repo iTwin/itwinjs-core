@@ -522,6 +522,7 @@ export class AccuDrawViewportUI extends AccuDraw {
     this._controls.overlay.remove();
     this._controls = undefined;
     this.unsuspendToolTips();
+    this.removedControlRect();
   }
 
   private createControlDiv(): HTMLDivElement {
@@ -629,6 +630,12 @@ export class AccuDrawViewportUI extends AccuDraw {
 
     return itemLock;
   }
+
+  /** Called after the controls have been removed from the view. */
+  protected removedControlRect(): void { }
+
+  /** Called after the position of the controls in the supplied view is updated. */
+  protected changedControlRect(_rect: ViewRect, _vp: ScreenViewport): void { }
 
   /** Use to override the position of the controls in the supplied view. */
   protected modifyControlRect(_rect: ViewRect, _vp: ScreenViewport): void { }
@@ -761,6 +768,9 @@ export class AccuDrawViewportUI extends AccuDraw {
 
     this._controls.div.style.left = `${controlRect.left}px`;
     this._controls.div.style.top = `${controlRect.top}px`;
+
+    this.changedControlRect(controlRect, vp);
+    return;
   }
 
   private get _isFocusHome(): boolean {
@@ -786,6 +796,14 @@ export class AccuDrawViewportUI extends AccuDraw {
   public override get hasInputFocus(): boolean {
     // Indicate when keyboard shortcuts can't be used (i.e. focus not at AccuDraw or Home) by changing compass to monochrome...
     return (this._isFocusHome || this._isFocusAccuDraw);
+  }
+
+  /** Get the item field that currently has input focus.
+   */
+  public override getFocusItem(): ItemField | undefined {
+    if (!this._isFocusAccuDraw)
+      return undefined;
+    return this._focusItem;
   }
 
   /** Request to set focus to the specified AccuDraw input field to start entering values.

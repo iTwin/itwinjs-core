@@ -30,7 +30,7 @@ import { ApplyModelClipTool } from "./ModelClipTools";
 import { GenerateElementGraphicsTool, GenerateTileContentTool } from "./TileContentTool";
 import { ViewClipByElementGeometryTool } from "./ViewClipByElementGeometryTool";
 import { DisplayTestAppShortcutsUI, DrawingAidTestTool } from "./DrawingAidTestTool";
-import { EditingScopeTool, MoveElementTool, PlaceLineStringTool } from "./EditingTools";
+import { EditingScopeTool, MoveElementTool, PlaceLineStringTool, SetEditorToolSettingsTool } from "./EditingTools";
 import { DynamicClassifierTool, DynamicClipMaskTool } from "./DynamicClassifierTool";
 import { FenceClassifySelectedTool } from "./Fence";
 import { RecordFpsTool } from "./FpsMonitor";
@@ -403,6 +403,7 @@ export class DisplayTestApp {
       ResizeWindowTool,
       RestoreWindowTool,
       SaveImageTool,
+      SetEditorToolSettingsTool,
       ShutDownTool,
       SignInTool,
       SignOutTool,
