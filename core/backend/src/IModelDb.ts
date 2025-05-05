@@ -2105,9 +2105,7 @@ export namespace IModelDb {
       try {
         return elProps.id = this._iModel[_nativeDb].insertElement(elProps, options);
       } catch (err: any) {
-        err.message = `Error inserting element [${err.message}]`;
-        err.metadata = { elProps };
-        throw err;
+        throw new IModelError(err.errorNumber, `Error inserting element [${err.message}]`, elProps);
       }
     }
 
@@ -2126,9 +2124,7 @@ export namespace IModelDb {
       try {
         this._iModel[_nativeDb].updateElement(elProps);
       } catch (err: any) {
-        err.message = `Error updating element [${err.message}], id: ${elProps.id}`;
-        err.metadata = { elProps };
-        throw err;
+        throw new IModelError(err.errorNumber, `Error updating element [${err.message}], id: ${elProps.id}`, elProps);
       }
     }
 
@@ -2143,9 +2139,7 @@ export namespace IModelDb {
         try {
           iModel[_nativeDb].deleteElement(id);
         } catch (err: any) {
-          err.message = `Error deleting element [${err.message}], id: ${id}`;
-          err.metadata = { elementId: id };
-          throw err;
+          throw new IModelError(err.errorNumber, `Error deleting element [${err.message}], id: ${id}`, { elementId: id });
         }
       });
     }
