@@ -457,8 +457,4 @@ export class IModelTileTree extends TileTree {
   public get containsTransformNodes(): boolean {
     return undefined !== this._transformNodeRanges;
   }
-
-  public override get parentsAndChildrenExclusive() {
-    return false;
-  }
 }
