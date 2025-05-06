@@ -3,14 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import * as path from "path";
-import { BisCoreSchema, ClassRegistry, IModelDb, IModelHost, Schema, Schemas, SnapshotDb, SpatialCategory } from "@itwin/core-backend";
+import { BisCoreSchema, SnapshotDb } from "@itwin/core-backend";
 import { IModelStatus } from "@itwin/core-bentley";
-import { ColorByName, IModelError, SubCategoryAppearance } from "@itwin/core-common";
+import { IModelError } from "@itwin/core-common";
 import { EntityClass } from "@itwin/ecschema-metadata";
-import { assert } from "chai";
-import { DbResult, Id64Set, Id64String } from "@itwin/core-bentley";
-import { ECSqlStatement, Element, IModelDb, PhysicalPartition, SnapshotDb, Subject } from "@itwin/core-backend";
 import { IModelTestUtils } from "../backend/IModelTestUtils";
 
 /** Common usage of ecschema-metadata */
