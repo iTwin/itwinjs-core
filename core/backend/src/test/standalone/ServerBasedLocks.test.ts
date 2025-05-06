@@ -25,7 +25,7 @@ const expect = chai.expect;
 const assert = chai.assert;
 chai.use(chaiAsPromised);
 
-describe.only("Server-based locks", () => {
+describe("Server-based locks", () => {
   const createVersion0 = async () => {
     const dbName = IModelTestUtils.prepareOutputFile("ServerBasedLocks", "ServerBasedLocks.bim");
     const sourceDb = SnapshotDb.createEmpty(dbName, { rootSubject: { name: "server lock test" } });
