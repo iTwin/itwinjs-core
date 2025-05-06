@@ -16,10 +16,6 @@ import { TestSnapshotConnection } from "../TestSnapshotConnection";
 describe("Planar clip mask (#integration)", () => {
   let imodel: IModelConnection;
 
-  before(function () {
-    this.timeout(480000);
-  });
-
   before(async () => {
     assert.isDefined(process.env.TEST_BING_MAPS_KEY, "The test requires that a Bing Maps key is configured.");
     assert.isDefined(process.env.TEST_MAPBOX_KEY, "The test requires that a MapBox key is configured.");
@@ -120,7 +116,8 @@ describe("Planar clip mask (#integration)", () => {
     await expectPixels(undefined, "map");
   });
 
-  it("is masked by specific model", async () => {
+  it("is masked by specific model", async function () {
+    this.timeout(480000);
     const mask: PlanarClipMaskProps = { mode: PlanarClipMaskMode.Models, modelIds: CompressedId64Set.compressArray(["0x1c"]) };
 
     // If the model is visible, it fills the masked region of the mask.
@@ -130,7 +127,8 @@ describe("Planar clip mask (#integration)", () => {
     await expectPixels(mask, "bg", (vp) => vp.changeViewedModels([]));
   });
 
-  it("is masked by DesignModel priority", async () => {
+  it("is masked by DesignModel priority",  async function () {
+    this.timeout(480000);
     const mask: PlanarClipMaskProps = { mode: PlanarClipMaskMode.Priority, priority: PlanarClipMaskPriority.BackgroundMap };
 
     // Models only contribute to the mask in priority mode if they are visible.
