@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Add `formatsProvider` property to IModelApp, update measurement logic in MeasureTool.ts",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

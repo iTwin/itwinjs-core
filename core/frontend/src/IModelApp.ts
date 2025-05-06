@@ -298,15 +298,10 @@ export class IModelApp {
   public static get publicPath() { return this._publicPath; }
 
   /** The [[FormatsProvider]] for this session.
+   * @param provider The provider to use for formatting quantities. If not provided, the provider will be cleared.
    * @beta
    */
   public static get formatsProvider(): FormatsProvider | undefined { return this._formatsProvider; }
-
-  /**
-   * Set the [[FormatsProvider]] for this session.
-   * @beta
-   * @internal
-   */
   public static set formatsProvider(provider: FormatsProvider | undefined) { this._formatsProvider = provider }
 
   /** @alpha */

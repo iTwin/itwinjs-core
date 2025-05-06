@@ -347,6 +347,8 @@ export class DisplayTestApp {
       () => IModelApp.makeLogoCard({ iconSrc: "DTA.png", iconWidth: 100, heading: "Display Test App", notice: "For internal testing" });
 
     IModelConnection.onOpen.addListener((imodel: IModelConnection) => {
+      if (imodel.isBlankConnection()) return;
+
       const formatsProvider = new SchemaFormatsProvider(imodel.schemaContext, IModelApp.quantityFormatter.activeUnitSystem);
       IModelApp.formatsProvider = formatsProvider;
       IModelApp.quantityFormatter.onActiveFormattingUnitSystemChanged.addListener((args) => {
