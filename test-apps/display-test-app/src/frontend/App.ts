@@ -354,7 +354,14 @@ export class DisplayTestApp {
       IModelApp.quantityFormatter.onActiveFormattingUnitSystemChanged.addListener((args) => {
         formatsProvider.unitSystem = args.system;
       });
+
+      IModelConnection.onClose.addOnce(() => {
+        if (IModelApp.formatsProvider === formatsProvider) {
+          IModelApp.formatsProvider = undefined;
+        }
+      });
     });
+
     const svtToolNamespace = "SVTTools";
     await IModelApp.localization.registerNamespace(svtToolNamespace);
     [

@@ -21,7 +21,31 @@ There are nine built-in quantity types (see [QuantityType]($frontend)). The Quan
 
  Custom quantity types that implement the [CustomQuantityTypeDefinition]($frontend) interface may also be registered with the QuantityFormatter, see method `registerQuantityType`. See example implementation of a custom type [here](https://github.com/iTwin/itwinjs-core/blob/5905cb1a48c4d790b5389d7f0ea141bc3ce95f23/test-apps/ui-test-app/src/frontend/api/BearingQuantityType.ts).
 
-#### Overriding Default Formats
+#### Migrating from QuantityType to KindOfQuantity
+
+Starting in iTwin.js 5.0, we encourage developers to move away from using `QuantityType`, and to instead use `KindOfQuantity` [EC full names](https://www.itwinjs.org/bis/ec/ec-name/#full-name).
+
+Here is a table of replacements for each `QuantityType`:
+
+| QuantityType  | Actual KindOfQuantity (EC Full Name) |
+| ------------- | ------------- |
+| Length  |  AecUnits.LENGTH |
+| Angle  | AecUnits.ANGLE  |
+| Area  |  AecUnits.AREA |
+| Volume  | AecUnits.VOLUME  |
+| LatLong | AecUnits.ANGLE |
+| Coordinate | AecUnits.LENGTH |
+| Stationing | RoadRailUnits.STATION |
+| LengthSurvey | RoadRailUnits.LENGTH |
+| LengthEngineering | AecUnits.LENGTH |
+
+[AecUnits](../../bis/domains/AecUnits.ecschema.md) is a Common layer schema that will be present in many iModels. [RoadRailUnits](../../bis/domains/RoadRailUnits.ecschema.md), a Discipline-Physical layer schema, contains Kind of Quantities used by Road & Rail schemas. More information on schemas and their different layers can be found in [Bis Organization](../../bis/guide/intro/bis-organization.md).
+
+iModels might not have AecUnits or RoadRailUnits schemas included, in such cases developers can address this through integrating their tools/components to use a [FormatsProvider]($quantity), and add the missing KindOfQuantity (and associated [FormatProps]($quantity)) through that FormatsProvider, independent from schemas coming from iModels. More information on `FormatsProvider` can be found in this learnings [section](../quantity/index.md/#formats-provider).
+
+We plan to deprecate `QuantityType` in iTwin.js 6.x.
+
+### Overriding Default Formats
 
 The `QuantityFormatter` provides the method `setOverrideFormats` which allows the default format to be overridden.  These overrides may be persisted by implementing the [UnitFormattingSettingsProvider]($frontend) interface in the QuantityFormatter. This provider can then monitor the current session to load the overrides when necessary. The class [LocalUnitFormatProvider]($frontend) can be used to store settings in local storage and to maintain overrides by iModel as shown below:
 
