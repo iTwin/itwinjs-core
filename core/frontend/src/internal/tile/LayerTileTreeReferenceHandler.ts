@@ -88,6 +88,14 @@ export class LayerTileTreeReferenceHandler {
           this.setLayerSettings(mapImagery.backgroundLayers);
         }
       }));
+      removals.push(context.viewport.onViewedModelsChanged.addListener((viewport) => {
+        const layers = viewport.displayStyle.settings.mapImagery.backgroundLayers;
+        if (layers.length > 0) {
+          this.setBaseLayerSettings(mapImagery.backgroundBase);
+          this.setLayerSettings(mapImagery.backgroundLayers);
+          viewport.invalidateScene();
+        }
+      }));
     }
 
     let hasLoadedTileTree = false;
