@@ -1710,6 +1710,9 @@ importers:
       '@itwin/core-geometry':
         specifier: workspace:*
         version: link:../../core/geometry
+      '@itwin/ecschema-metadata':
+        specifier: workspace:*
+        version: link:../../core/ecschema-metadata
       electron:
         specifier: ^35.0.0
         version: 35.0.0
