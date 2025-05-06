@@ -5772,18 +5772,14 @@ export class MapLayerFormatRegistry {
     createImageryMapLayerTree(layerSettings: ImageMapLayerSettings, layerIndex: number, iModel: IModelConnection): ImageryMapLayerTreeReference | undefined;
     // @internal
     createImageryProvider(layerSettings: ImageMapLayerSettings): MapLayerImageryProvider | undefined;
-    // @beta
+    // @beta (undocumented)
     getAccessClient(formatId: string): MapLayerAccessClient | undefined;
-    // @beta
-    getSessionClient(formatId: string): MapLayerSessionClient | undefined;
     // (undocumented)
     isRegistered(formatId: string): boolean;
     // (undocumented)
     register(formatClass: MapLayerFormatType): void;
     // @beta (undocumented)
     setAccessClient(formatId: string, accessClient: MapLayerAccessClient): boolean;
-    // @beta
-    setSessionClient(formatId: string, client: MapLayerSessionClient): boolean;
     // @beta (undocumented)
     validateSource(opts: ValidateSourceArgs): Promise<MapLayerSourceValidation>;
     // (undocumented)
@@ -5942,18 +5938,6 @@ export interface MapLayerScaleRangeVisibility {
     index: number;
     isOverlay: boolean;
     visibility: MapTileTreeScaleRangeVisibility;
-}
-
-// @beta
-export interface MapLayerSessionClient {
-    // (undocumented)
-    getSessionManager(): MapLayerSessionManager;
-}
-
-// @beta
-export interface MapLayerSessionManager {
-    // (undocumented)
-    type: string;
 }
 
 // @public

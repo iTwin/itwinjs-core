@@ -25,8 +25,6 @@ import { MapFeatureInfo } from '@itwin/core-frontend';
 import { MapFeatureInfoOptions } from '@itwin/core-frontend';
 import { MapLayerFeatureInfo } from '@itwin/core-frontend';
 import { MapLayerImageryProvider } from '@itwin/core-frontend';
-import { MapLayerSessionClient } from '@itwin/core-frontend';
-import { MapLayerSessionManager } from '@itwin/core-frontend';
 import { PrimitiveTool } from '@itwin/core-frontend';
 import { QuadId } from '@itwin/core-frontend';
 import { QuadIdProps } from '@itwin/core-frontend/lib/cjs/tile/internal.js';
@@ -125,6 +123,12 @@ export class GoogleMapsMapLayerFormat extends ImageryMapLayerFormat {
 export type GoogleMapsMapTypes = "roadmap" | "satellite" | "terrain";
 
 // @beta
+export interface GoogleMapsOptions {
+    // (undocumented)
+    sessionManager?: GoogleMapsSessionManager;
+}
+
+// @beta
 export interface GoogleMapsRequest {
     // (undocumented)
     authorization?: string;
@@ -145,12 +149,6 @@ export interface GoogleMapsSession {
 }
 
 // @beta
-export abstract class GoogleMapsSessionClient implements MapLayerSessionClient {
-    // (undocumented)
-    abstract getSessionManager(): GoogleMapsSessionManager;
-}
-
-// @beta
 export interface GoogleMapsSessionData {
     expiry: number;
     imageFormat: string;
@@ -160,7 +158,7 @@ export interface GoogleMapsSessionData {
 }
 
 // @beta
-export abstract class GoogleMapsSessionManager implements MapLayerSessionManager {
+export abstract class GoogleMapsSessionManager {
     // (undocumented)
     abstract createSession(sessionOptions: GoogleMapsCreateSessionOptions): Promise<GoogleMapsSession>;
     // (undocumented)
@@ -209,6 +207,8 @@ export interface MapFeatureInfoToolData {
 
 // @beta
 export class MapLayersFormats {
+    // (undocumented)
+    static get googleMapsOpts(): GoogleMapsOptions | undefined;
     static initialize(config?: MapLayersFormatsConfig): Promise<void>;
     // (undocumented)
     static localization: Localization;
@@ -217,6 +217,8 @@ export class MapLayersFormats {
 
 // @beta
 export interface MapLayersFormatsConfig {
+    // (undocumented)
+    googleMapsOpts?: GoogleMapsOptions;
     // (undocumented)
     localization?: Localization;
 }

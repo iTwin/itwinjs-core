@@ -8,10 +8,10 @@ beta;interface;GoogleMapsCreateSessionOptions
 beta;type;GoogleMapsLayerTypes
 public;class;GoogleMapsMapLayerFormat
 beta;type;GoogleMapsMapTypes
+beta;interface;GoogleMapsOptions
 beta;interface;GoogleMapsRequest
 beta;type;GoogleMapsScaleFactors
 beta;interface;GoogleMapsSession
-beta;class;GoogleMapsSessionClient
 beta;interface;GoogleMapsSessionData
 beta;class;GoogleMapsSessionManager
 beta;class;MapFeatureInfoTool
