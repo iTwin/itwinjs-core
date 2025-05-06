@@ -68,11 +68,12 @@ export class ServerBasedLocks implements LockControl {
     });
   }
 
-  private getLockState(id?: Id64String): LockState | undefined {
-    return (id === undefined || !Id64.isValid(id)) ? undefined : this.lockDb.withPreparedSqliteStatement("SELECT state FROM locks WHERE id=?", (stmt) => {
+  private getLockState(id?: Id64String): LockState {
+    const state = (id === undefined || !Id64.isValid(id)) ? undefined : this.lockDb.withPreparedSqliteStatement("SELECT state FROM locks WHERE id=?", (stmt) => {
       stmt.bindId(1, id);
       return (DbResult.BE_SQLITE_ROW === stmt.step()) ? stmt.getValueInteger(0) : undefined;
     });
+    return state ?? LockState.None;
   }
 
   /** Clear the cache of locally held locks.
@@ -118,19 +119,23 @@ export class ServerBasedLocks implements LockControl {
   }
 
   private ownerHoldsExclusiveLock(id: Id64String | undefined): boolean {
+    return this.ownerHoldsLock(id, LockState.Exclusive);
+  }
+
+  private ownerHoldsLock(id: Id64String | undefined, state: LockState.Exclusive | LockState.Shared): boolean {
     if (id === undefined || id === IModel.rootSubjectId)
       return false; // has no owners
 
     const { modelId, parentId } = this.getOwners(id);
-    if (this.getLockState(modelId) === LockState.Exclusive || this.getLockState(parentId) === LockState.Exclusive)
+    if (this.getLockState(modelId) >= state || this.getLockState(parentId) >= state)
       return true;
 
-    // see if this model is exclusively locked by one of its owners. If so, save that fact on modelId so future tests won't have to descend.
-    if (this.ownerHoldsExclusiveLock(modelId))
-      return this.insertLock(modelId, LockState.Exclusive, LockOrigin.Discovered);
+    // see if this model is locked by one of its owners. If so, save that fact on modelId so future tests won't have to descend.
+    if (this.ownerHoldsLock(modelId, state))
+      return this.insertLock(modelId, state, LockOrigin.Discovered);
 
-    // see if the parent is exclusively locked by one of its owners. If so, save that fact on parentId so future tests won't have to descend.
-    return this.ownerHoldsExclusiveLock(parentId) ? this.insertLock(parentId!, LockState.Exclusive, LockOrigin.Discovered) : false; // eslint-disable-line @typescript-eslint/no-non-null-assertion
+    // see if the parent is locked by one of its owners. If so, save that fact on parentId so future tests won't have to descend.
+    return this.ownerHoldsLock(parentId, state) ? this.insertLock(parentId!, state, LockOrigin.Discovered) : false
   }
 
   /** Determine whether an the exclusive lock is already held by an element (or one of its owners) */
@@ -141,8 +146,8 @@ export class ServerBasedLocks implements LockControl {
 
   public holdsSharedLock(id: Id64String): boolean {
     const state = this.getLockState(id);
-    // see if we hold shared or exclusive lock, or if an owner has exclusive lock. If so we implicitly have shared lock, but owner holding shared lock doesn't help.
-    return (state === LockState.Shared || state === LockState.Exclusive) || this.ownerHoldsExclusiveLock(id);
+    // see if we hold shared or exclusive lock, or if an owner has shared or exclusive lock. If so we implicitly have shared lock.
+    return state === LockState.Shared || state === LockState.Exclusive || this.ownerHoldsLock(id, LockState.Shared);
   }
 
   /** if the shared lock on the element supplied is not already held, add it to the set of shared locks required. Then, check owners. */
