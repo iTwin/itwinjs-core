@@ -106,7 +106,11 @@
     "webpack": "^5.97.1"
   },
   "dependencies": {
+<<<<<<< HEAD
     "@bentley/imodeljs-native": "5.0.100",
+=======
+    "@bentley/imodeljs-native": "5.1.15",
+>>>>>>> 5373208e5b (Optionally return world CRS (#8037))
     "@itwin/cloud-agnostic-core": "^2.2.4",
     "@itwin/object-storage-azure": "^2.3.0",
     "@itwin/object-storage-core": "^2.3.0",
