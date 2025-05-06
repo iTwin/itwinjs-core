@@ -9,6 +9,7 @@
 import { ImageMapLayerSettings } from "@itwin/core-common";
 import { ImageryMapLayerFormat, MapLayerImageryProvider } from "@itwin/core-frontend";
 import { GoogleMapsImageryProvider } from "./GoogleMapsImageryProvider.js";
+import { MapLayersFormats } from "../mapLayersFormats.js";
 
 /**
  * Google Maps imagery layer format.
@@ -22,6 +23,6 @@ export class GoogleMapsMapLayerFormat extends ImageryMapLayerFormat {
 
   /** @internal */
   public static override createImageryProvider(settings: ImageMapLayerSettings): MapLayerImageryProvider | undefined {
-    return new GoogleMapsImageryProvider(settings);
+    return new GoogleMapsImageryProvider(settings, MapLayersFormats.googleMapsOpts?.sessionManager);
   }
 }

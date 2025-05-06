@@ -10,7 +10,7 @@ import { Frustum, ImageMapLayerSettings } from "@itwin/core-common";
 import { TilePatch } from "@itwin/core-frontend/lib/cjs/tile/internal.js";
 import { Range3d } from "@itwin/core-geometry";
 import { GoogleMapsImageryProvider } from "../../GoogleMaps/GoogleMapsImageryProvider.js";
-import { BaseGoogleMapsSession, GoogleMaps, GoogleMapsCreateSessionOptions, GoogleMapsRequest, GoogleMapsSession, GoogleMapsSessionClient, GoogleMapsSessionData, GoogleMapsSessionManager } from "../../map-layers-formats.js";
+import { BaseGoogleMapsSession, GoogleMaps, GoogleMapsCreateSessionOptions, GoogleMapsRequest, GoogleMapsSession, GoogleMapsSessionData, GoogleMapsSessionManager, MapLayersFormats } from "../../map-layers-formats.js";
 import { GoogleMapsUtils } from "../../internal/GoogleMapsUtils.js";
 import { expect } from "chai";
 import { fakeJsonFetch } from "../TestUtils.js";
@@ -41,13 +41,6 @@ class FakeSessionManager extends GoogleMapsSessionManager {
     }
   }
 
-class FakeGoogleMapsSessionClient extends GoogleMapsSessionClient {
-  public type = "FakeGoogleMapsSessionClient";
-  public getSessionManager() {
-    return new FakeSessionManager();
-  }
-}
-
 class FakeMapTile extends MapTile  {
   public override depth: number;
   constructor(contentId: string) {
@@ -62,18 +55,14 @@ class FakeMapTile extends MapTile  {
   }
 }
 
-const createProvider = (settings: ImageMapLayerSettings) => {
+const createProvider = (settings: ImageMapLayerSettings, sessionManager?: GoogleMapsSessionManager) => {
   settings.accessKey = {key: "key", value: "dummyKey"};
-  return new GoogleMapsImageryProvider(settings);
+  return new GoogleMapsImageryProvider(settings, sessionManager);
 }
 
 const stubCreateSession = (sandbox:sinon.SinonSandbox,  session: GoogleMapsSessionData) => sandbox.stub(NativeGoogleMapsSession, "create").callsFake(async function _(_apiKey: string, _opts: GoogleMapsCreateSessionOptions) {
   return session;
 });
-
-const stubFormatRegistry = (sandbox:sinon.SinonSandbox, session?: GoogleMapsSessionClient) => sandbox.stub(IModelApp, "mapLayerFormatRegistry").get(() => ({
-  getSessionClient: ()=> session
-  }));
 
 const minCreateSessionOptions: GoogleMapsCreateSessionOptions = {mapType: "satellite", language: "en-US", region: "US"}
 const createSessionOptions2: GoogleMapsCreateSessionOptions = {...minCreateSessionOptions, layerTypes: ["layerRoadmap"]};
@@ -113,7 +102,6 @@ describe("GoogleMapsProvider", () => {
   });
 
   it("should initialize with required properties", async () => {
-    stubFormatRegistry(sandbox);
     fakeJsonFetch(sandbox, defaultPngSession);
     const settings = GoogleMaps.createBaseLayerSettings(minCreateSessionOptions);
 
@@ -126,7 +114,6 @@ describe("GoogleMapsProvider", () => {
   });
 
   it("should initialize with properties", async () => {
-    stubFormatRegistry(sandbox);
     fakeJsonFetch(sandbox, defaultPngSession);
     const settings = GoogleMaps.createBaseLayerSettings(createSessionOptions2);
     const createSessionSub = stubCreateSession(sandbox, defaultPngSession);
@@ -139,7 +126,6 @@ describe("GoogleMapsProvider", () => {
   });
 
   it("should create proper tile url", async () => {
-    stubFormatRegistry(sandbox);
     fakeJsonFetch(sandbox, defaultPngSession);
     const settings = GoogleMaps.createBaseLayerSettings(createSessionOptions2);
 
@@ -164,7 +150,6 @@ describe("GoogleMapsProvider", () => {
   });
 
   it("should add attributions", async () => {
-    stubFormatRegistry(sandbox);
     fakeJsonFetch(sandbox, defaultPngSession);
     const settings = GoogleMaps.createBaseLayerSettings(createSessionOptions2);
 
@@ -202,7 +187,6 @@ describe("GoogleMapsProvider", () => {
   });
 
   it("logo should be activated with the 'on non-white' logo", async () => {
-    stubFormatRegistry(sandbox);
     fakeJsonFetch(sandbox, defaultPngSession);
     const getSpriteStub = sandbox.stub(IconSprites, "getSpriteFromUrl").callsFake(function _(_url: string) {
       return {} as Sprite;
@@ -215,7 +199,6 @@ describe("GoogleMapsProvider", () => {
   });
 
   it("logo should be activated with the 'on white' logo", async () => {
-    stubFormatRegistry(sandbox);
     fakeJsonFetch(sandbox, defaultPngSession);
     const getSpriteStub = sandbox.stub(IconSprites, "getSpriteFromUrl").callsFake(function _(_url: string) {
       return {} as Sprite;
@@ -228,7 +211,6 @@ describe("GoogleMapsProvider", () => {
   });
 
   it("should decorate", async () => {
-    stubFormatRegistry(sandbox);
     fakeJsonFetch(sandbox, defaultPngSession);
     const settings = GoogleMaps.createBaseLayerSettings(minCreateSessionOptions);
 
@@ -246,33 +228,16 @@ describe("GoogleMapsProvider", () => {
   });
 
   it("should use custom session client", async () => {
-    stubFormatRegistry(sandbox, new FakeGoogleMapsSessionClient());
     fakeJsonFetch(sandbox, defaultPngSession);
+    const sessionManager = new FakeSessionManager();
+    const createSessionSpy = sandbox.spy(sessionManager, "createSession");
     const settings = GoogleMaps.createBaseLayerSettings(minCreateSessionOptions);
 
-    const makeTileRequestStub = sandbox.stub(GoogleMapsImageryProvider.prototype, "makeTileRequest").callsFake(async function _(_url: string, _timeoutMs?: number ) {
-      const obj = {
-        headers: { "content-type": "image/jpeg" },
-        arrayBuffer: async () => {
-          return Promise.resolve(new Uint8Array(100));
-        },
-        status: 200,
-      } as unknown;   // By using unknown type, I can define parts of Response I really need
-      return (obj as Response);
-    });
-
-    sandbox.stub(GoogleMapsImageryProvider.prototype as any, "getSelectedTiles").callsFake(function _(_vp: unknown) {
-      const set = new Set<MapTile>();
-      set.add(new FakeMapTile("17_37981_49592"));
-      return set;
-    });
     stubCreateSession(sandbox, defaultPngSession);
-    const provider = createProvider(settings);
+    const provider = createProvider(settings, sessionManager);
 
     await provider.initialize();
-    await provider.loadTile(49592, 37981, 17);
-    expect(makeTileRequestStub.called).to.be.true;
-    expect(makeTileRequestStub.firstCall.args[0]).to.eq("https://fake.google.com/tile");
+    expect(createSessionSpy.called).to.be.true;
   });
 
 

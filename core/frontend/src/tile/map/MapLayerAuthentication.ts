@@ -35,7 +35,7 @@ export interface MapLayerAccessTokenParams {
 }
 
 /** @beta */
-export interface MapLayerAccessClient  {
+export interface MapLayerAccessClient {
   getAccessToken(params: MapLayerAccessTokenParams): Promise<MapLayerAccessToken | undefined>;
   getTokenServiceEndPoint?(mapLayerUrl: string): Promise<MapLayerTokenEndpoint | undefined>;
   invalidateToken?(token: MapLayerAccessToken): boolean;
@@ -43,19 +43,3 @@ export interface MapLayerAccessClient  {
   onOAuthProcessEnd?: BeEvent<Listener>;
 }
 
-/**
- * Create and maintain a user session for map layer API that are session based.
- * Implementations of this interface are specific to each map layer format.
- * @beta
- **/
-export interface MapLayerSessionManager {
-  type: string;
-}
-
-/**
- *  Client for map layer APIs requiring an active session to be consumed.
- * @beta
- **/
-export interface MapLayerSessionClient {
-  getSessionManager(): MapLayerSessionManager;
-}

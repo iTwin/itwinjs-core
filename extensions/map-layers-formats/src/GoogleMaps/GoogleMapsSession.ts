@@ -6,7 +6,7 @@
  * @module MapLayersFormats
  */
 
-import { MapCartoRectangle, MapLayerSessionClient, MapLayerSessionManager } from "@itwin/core-frontend";
+import { MapCartoRectangle} from "@itwin/core-frontend";
 import { QuadIdProps } from "@itwin/core-frontend/lib/cjs/tile/internal.js";
 
 
@@ -188,15 +188,7 @@ export abstract class BaseGoogleMapsSession implements GoogleMapsSession {
 * Google Maps session manager interface.
 * @beta
 */
-export abstract class GoogleMapsSessionManager implements MapLayerSessionManager {
+export abstract class GoogleMapsSessionManager {
   public readonly type = "GoogleMapsSessionManager";
   public abstract createSession (sessionOptions: GoogleMapsCreateSessionOptions): Promise<GoogleMapsSession>;
-}
-
-/**
-* Google Maps session manager interface.
-* @beta
-*/
-export abstract class GoogleMapsSessionClient implements MapLayerSessionClient {
-  public abstract getSessionManager(): GoogleMapsSessionManager;
 }

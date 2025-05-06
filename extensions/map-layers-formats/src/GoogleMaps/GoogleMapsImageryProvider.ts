@@ -11,7 +11,7 @@ import { ImageMapLayerSettings, ImageSource } from "@itwin/core-common";
 import { DecorateContext, IModelApp, MapCartoRectangle, MapLayerImageryProvider, MapTile, ScreenViewport, Tile } from "@itwin/core-frontend";
 import { GoogleMapsDecorator } from "./GoogleMapDecorator.js";
 import { QuadIdProps } from "@itwin/core-frontend/lib/cjs/tile/internal.js";
-import {  GoogleMapsCreateSessionOptions, GoogleMapsLayerTypes, GoogleMapsMapTypes, GoogleMapsScaleFactors, GoogleMapsSession, GoogleMapsSessionClient, GoogleMapsSessionManager, ViewportInfo } from "./GoogleMapsSession.js";
+import {  GoogleMapsCreateSessionOptions, GoogleMapsLayerTypes, GoogleMapsMapTypes, GoogleMapsScaleFactors, GoogleMapsSession, GoogleMapsSessionManager, ViewportInfo } from "./GoogleMapsSession.js";
 import { NativeGoogleMapsSessionManager } from "../internal/NativeGoogleMapsSession.js";
 import { GoogleMapsUtils } from "../internal/GoogleMapsUtils.js";
 
@@ -29,9 +29,10 @@ export class GoogleMapsImageryProvider extends MapLayerImageryProvider {
   private _sessionManager?: GoogleMapsSessionManager;
   private _sessionOptions: GoogleMapsCreateSessionOptions|undefined;
   private _activeSession?: GoogleMapsSession;
-  constructor(settings: ImageMapLayerSettings) {
+  constructor(settings: ImageMapLayerSettings, sessionManager?: GoogleMapsSessionManager) {
     super(settings, true);
     this._decorator = new GoogleMapsDecorator();
+    this._sessionManager = sessionManager;
 
   }
   public override get tileSize(): number { return this._tileSize; }
@@ -50,18 +51,12 @@ export class GoogleMapsImageryProvider extends MapLayerImageryProvider {
   }
 
   protected async getSessionManager (): Promise<GoogleMapsSessionManager> {
-    const client = IModelApp.mapLayerFormatRegistry.getSessionClient(this._settings.formatId);
-    if (client instanceof GoogleMapsSessionClient) {
-      return client.getSessionManager();
+    if (this._settings.accessKey?.value) {
+      return this._sessionManager ?? new NativeGoogleMapsSessionManager(this._settings.accessKey.value);
     } else {
-      // No access client found, default to native session manager (assuming API key is provided)
-      if (this._settings.accessKey?.value) {
-        return new NativeGoogleMapsSessionManager(this._settings.accessKey.value);
-      } else {
-        const msg = `Missing GoogleMaps api key`;
-        Logger.logError(loggerCategory, msg);
-        throw new BentleyError(BentleyStatus.ERROR, msg);
-      }
+      const msg = `Missing GoogleMaps api key`;
+      Logger.logError(loggerCategory, msg);
+      throw new BentleyError(BentleyStatus.ERROR, msg);
     }
   }
 

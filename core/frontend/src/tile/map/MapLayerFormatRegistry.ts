@@ -10,7 +10,7 @@ import { assert, Logger } from "@itwin/core-bentley";
 import { ImageMapLayerSettings, MapLayerKey, MapLayerSettings, MapSubLayerProps } from "@itwin/core-common";
 import { IModelApp } from "../../IModelApp";
 import { IModelConnection } from "../../IModelConnection";
-import { ImageryMapLayerTreeReference, internalMapLayerImageryFormats, MapLayerAccessClient, MapLayerAuthenticationInfo, MapLayerImageryProvider, MapLayerSessionClient, MapLayerSource, MapLayerSourceStatus, MapLayerTileTreeReference } from "../internal";
+import { ImageryMapLayerTreeReference, internalMapLayerImageryFormats, MapLayerAccessClient, MapLayerAuthenticationInfo, MapLayerImageryProvider, MapLayerSource, MapLayerSourceStatus, MapLayerTileTreeReference } from "../internal";
 const loggerCategory = "ArcGISFeatureProvider";
 
 /**
@@ -116,7 +116,7 @@ export interface MapLayerOptions {
 /** @internal */
 export interface MapLayerFormatEntry {
   type: MapLayerFormatType;
-  client?: MapLayerAccessClient|MapLayerSessionClient
+  accessClient?: MapLayerAccessClient;
 }
 
 /**
@@ -144,52 +144,18 @@ export class MapLayerFormatRegistry {
   public setAccessClient(formatId: string, accessClient: MapLayerAccessClient): boolean {
     const entry = this._formats.get(formatId);
     if (entry !== undefined) {
-      entry.client = accessClient;
+      entry.accessClient = accessClient;
       return true;
     }
     return false;
   }
 
-  /**
-  * Returns the active session client for a given format.
-   *  @beta */
+  /** @beta */
   public getAccessClient(formatId: string): MapLayerAccessClient | undefined {
     if (formatId.length === 0)
       return undefined;
 
-    const accessClient = this._formats.get(formatId)?.client;
-    if (accessClient && ((accessClient as any).getAccessToken) !== undefined) {
-      return accessClient as MapLayerAccessClient;
-    }
-    return undefined;
-  }
-
-  /**
-  * Returns the active session client for a given format.
-  * @beta
-  */
-  public getSessionClient(formatId: string): MapLayerSessionClient | undefined {
-    if (formatId.length === 0)
-      return undefined;
-
-    const client = this._formats.get(formatId)?.client;
-    if (client && ((client as any).getSessionManager) !== undefined) {
-      return client as MapLayerSessionClient;
-    }
-    return undefined;
-  }
-
-  /**
-  * Set the session client for a specific format.
-  * @beta
-  */
-  public setSessionClient(formatId: string, client: MapLayerSessionClient): boolean {
-    const entry = this._formats.get(formatId);
-    if (entry !== undefined) {
-      entry.client = client;
-      return true;
-    }
-    return false;
+    return this._formats.get(formatId)?.accessClient;
   }
 
   public get configOptions(): MapLayerOptions {
