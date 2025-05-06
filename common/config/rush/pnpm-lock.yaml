@@ -17,8 +17,8 @@ importers:
   ../../core/backend:
     dependencies:
       '@bentley/imodeljs-native':
-        specifier: 5.1.12
-        version: 5.1.12
+        specifier: 5.1.14
+        version: 5.1.14
       '@itwin/cloud-agnostic-core':
         specifier: ^2.2.4
         version: 2.2.4(inversify@6.0.1)(reflect-metadata@0.1.13)
@@ -4626,8 +4626,8 @@ packages:
   '@bentley/icons-generic@1.0.34':
     resolution: {integrity: sha512-IIs1wDcY2oZ8tJ3EZRw0U51M+0ZL3MvwoDYYmhUXaa9/UZqpFoOyLBGaxjirQteWXqTIMm3mFvmC+Nbn1ok4Iw==}
 
-  '@bentley/imodeljs-native@5.1.12':
-    resolution: {integrity: sha512-wYpDdM6ZD7+rXQq52cQ0gzYshmKPxNA27Yv8/+pCoggsTGpylWFCLhVeo39Q48EYEMPoT8hLPWi4J6Dyl7sudw==}
+  '@bentley/imodeljs-native@5.1.14':
+    resolution: {integrity: sha512-btuk5eMSl51Oz+1TJfu30/icJhCMQyz7hSpk0Sw94xNU38ZGXZZUhE67JBJtbDeH3N7z90G2edaWXJQkI1pm4Q==}
 
   '@bentley/linear-referencing-schema@2.0.3':
     resolution: {integrity: sha512-2pFIEN4BS7alIDhGous6N2icKAS8ZhVBfoWB8WvSFaYnneGv5YwbbXl46qATDdPO5jUFezkW6uVxdpp1eOgUHQ==}
@@ -11017,7 +11017,7 @@ snapshots:
 
   '@bentley/icons-generic@1.0.34': {}
 
-  '@bentley/imodeljs-native@5.1.12': {}
+  '@bentley/imodeljs-native@5.1.14': {}
 
   '@bentley/linear-referencing-schema@2.0.3': {}
 
