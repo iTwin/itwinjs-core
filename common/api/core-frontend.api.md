@@ -429,6 +429,7 @@ export class AccuDraw {
     // @internal (undocumented)
     getDecorationGeometry(hit: HitDetail): GeometryStreamProps | undefined;
     getFieldLock(index: ItemField): boolean;
+    getFocusItem(): ItemField | undefined;
     getFormattedValueByIndex(index: ItemField): string;
     // @internal (undocumented)
     getKeyinStatus(index: ItemField): KeyinStatus;
@@ -943,6 +944,7 @@ export class AccuDrawSuspendToggleTool extends Tool {
 // @beta
 export class AccuDrawViewportUI extends AccuDraw {
     constructor();
+    protected changedControlRect(_rect: ViewRect, _vp: ScreenViewport): void;
     static controlProps: {
         suspendLocateToolTip: boolean;
         fixedLocation: boolean;
@@ -972,6 +974,7 @@ export class AccuDrawViewportUI extends AccuDraw {
         };
     };
     protected currentControlRect(vp: ScreenViewport): ViewRect | undefined;
+    getFocusItem(): ItemField | undefined;
     grabInputFocus(): void;
     get hasInputFocus(): boolean;
     protected modifyControlRect(_rect: ViewRect, _vp: ScreenViewport): void;
@@ -982,6 +985,7 @@ export class AccuDrawViewportUI extends AccuDraw {
     onFieldValueChange(item: ItemField): void;
     onMotion(ev: BeButtonEvent): void;
     refreshControls(): void;
+    protected removedControlRect(): void;
     setFocusItem(index: ItemField): void;
     setHorizontalFixedLayout(): void;
     setVerticalCursorLayout(): void;
@@ -2256,6 +2260,8 @@ export class CurrentInputState {
     lastButton: BeButton;
     // (undocumented)
     lastMotion: Point2d;
+    // (undocumented)
+    lastMotionEvent?: BeButtonEvent;
     // (undocumented)
     lastTouchStart?: BeTouchEvent;
     // (undocumented)
