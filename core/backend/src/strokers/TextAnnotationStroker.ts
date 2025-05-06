@@ -3,11 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { BackgroundFill, ColorDef, FillDisplay, FlatBufferGeometryStream, FrameGeometry, GeometryParams, GeometryStreamBuilder, JsonGeometryStream, PlacementProps, TextAnnotation, TextAnnotationProps, TextFrameStyleProps } from "@itwin/core-common";
-import { Stroker } from "./Stroker";
+import { BackgroundFill, ColorDef, FillDisplay, FlatBufferGeometryStream, FrameGeometry, GeometryParams, PlacementProps, TextAnnotation, TextAnnotationProps, TextBlockLayoutResult, TextFrameStyleProps } from "@itwin/core-common";
+import { Stroker, StrokerGraphicsRequestProps, StrokerResultOptions, StrokerResults } from "./Stroker";
 import { produceTextBlockGeometry } from "../TextAnnotationGeometry";
-import { IModelDb } from "../IModelDb";
-import { Id64 } from "@itwin/core-bentley";
+import { Id64, Id64String } from "@itwin/core-bentley";
 import { LineString3d, PointString3d, Range2d, Transform } from "@itwin/core-geometry";
 import { layoutTextBlock, TextBlockLayout } from "../TextAnnotationLayout";
 
@@ -15,27 +14,29 @@ import { layoutTextBlock, TextBlockLayout } from "../TextAnnotationLayout";
  * @module Strokers
  */
 
-export interface TextAnnotationStrokerArgs {
+export interface TextAnnotationStrokerProps {
   annotationProps: TextAnnotationProps;
   placementProps?: PlacementProps;
   debugAnchorPoint?: boolean;
   debugSnapPoints?: boolean;
 }
 
-export class TextAnnotationStroker extends Stroker<TextAnnotationStrokerArgs> {
-  private _iModel: IModelDb;
-  private _builder: GeometryStreamBuilder;
+export interface TextAnnotationStrokerResults extends StrokerResults {
+  layout?: TextBlockLayoutResult;
+}
 
-  public constructor(iModel: IModelDb) {
-    super();
-    this._iModel = iModel;
-    this._builder = new GeometryStreamBuilder();
-  }
+export interface TextAnnotationStrokerOptions extends StrokerResultOptions {
+  wantLayout?: boolean;
+}
 
-  public get builder(): GeometryStreamBuilder { return this._builder };
-
-  public createGeometry({ annotationProps, placementProps, debugAnchorPoint, debugSnapPoints }: TextAnnotationStrokerArgs): FlatBufferGeometryStream | JsonGeometryStream | undefined {
+export class TextAnnotationStroker extends Stroker<TextAnnotationStrokerProps> {
+  public override createGeometry({ annotationProps, placementProps, debugAnchorPoint, debugSnapPoints }: TextAnnotationStrokerProps, category?: Id64String, subCategory?: Id64String): FlatBufferGeometryStream {
     if (placementProps) this._builder.setLocalToWorldFromPlacement(placementProps)
+
+    if (category) {
+      const params = new GeometryParams(category, subCategory);
+      this._builder.appendGeometryParamsChange(params);
+    }
 
     const annotation = TextAnnotation.fromJSON(annotationProps);
 
@@ -60,7 +61,7 @@ export class TextAnnotationStroker extends Stroker<TextAnnotationStrokerArgs> {
     this._builder.appendGeometryParamsChange(lowPriorityParams);
 
     if (annotation.frame)
-      this.createFrameGeometry(annotation, layout);
+      this.appendFrameToBuilder(annotation, layout);
 
     if (debugSnapPoints && annotation.frame)
       this.debugSnapPoints(annotation.frame, dimensions, transform);
@@ -68,11 +69,36 @@ export class TextAnnotationStroker extends Stroker<TextAnnotationStrokerArgs> {
     if (debugAnchorPoint)
       this.debugAnchorPoint(annotation, layout, transform);
 
-    return { format: "json", data: this._builder.geometryStream };
+    return { format: "flatbuffer", data: this._builder.entries };
   }
 
-  // Return entries instead
-  private createFrameGeometry(annotation: TextAnnotation, layout: TextBlockLayout): boolean {
+  public override async computeLayoutResults(props: TextAnnotationStrokerProps, requestProps: StrokerGraphicsRequestProps, options?: TextAnnotationStrokerOptions): Promise<TextAnnotationStrokerResults> {
+    // Todo: Should this be IModelError?
+    if (!props.annotationProps.textBlock) throw new Error("TextBlock is required");
+
+    const results: TextAnnotationStrokerResults = {};
+
+    // TODO, remove the duplicate call to layoutTextBlock
+    if (undefined === options || options.wantLayout) {
+      const annotation = TextAnnotation.fromJSON(props.annotationProps);
+      const layout = layoutTextBlock({
+        iModel: this._iModel,
+        textBlock: annotation.textBlock,
+      });
+
+      results.layout = layout.toResult();
+    }
+
+    if (undefined === options || options.wantGraphics) {
+      const geometry = this.createGeometry(props);
+      results.graphics = await this.requestGraphics(geometry, requestProps);
+    }
+
+    return results;
+  }
+
+
+  private appendFrameToBuilder(annotation: TextAnnotation, layout: TextBlockLayout): boolean {
     const range = Range2d.fromJSON(layout.range);
     const transform = annotation.computeTransform(range);
     const frame = annotation.frame;
@@ -100,7 +126,7 @@ export class TextAnnotationStroker extends Stroker<TextAnnotationStrokerArgs> {
 
     const frameGeometry = FrameGeometry.computeFrame(frame.shape, range, transform.toJSON());
 
-    const result = this._builder.appendGeometryParamsChange(params) && this._builder.appendGeometry(frameGeometry);
+    const result = this._builder.appendGeometryParamsChange(params) && this._builder.appendGeometryQuery(frameGeometry);
     return result;
   }
 
@@ -116,11 +142,11 @@ export class TextAnnotationStroker extends Stroker<TextAnnotationStrokerArgs> {
     // Draw a blue box to show the element's margin
     const marginCorners = range.corners3d(true);
     transform.multiplyPoint3dArrayInPlace(marginCorners);
-    result = result && this._builder.appendGeometry(LineString3d.create(marginCorners));
+    result = result && this._builder.appendGeometryQuery(LineString3d.create(marginCorners));
 
     // Draw a blue x to show the anchor point - Rotation occurs around this point. The x will be 1 m by 1 m.
-    result = result && this._builder.appendGeometry(LineString3d.create(debugAnchorPt.plusXYZ(-1, -1), debugAnchorPt.plusXYZ(1, 1)));
-    result = result && this._builder.appendGeometry(LineString3d.create(debugAnchorPt.plusXYZ(1, -1), debugAnchorPt.plusXYZ(-1, 1)));
+    result = result && this._builder.appendGeometryQuery(LineString3d.create(debugAnchorPt.plusXYZ(-1, -1), debugAnchorPt.plusXYZ(1, 1)));
+    result = result && this._builder.appendGeometryQuery(LineString3d.create(debugAnchorPt.plusXYZ(1, -1), debugAnchorPt.plusXYZ(-1, 1)));
 
     // Draw a red box to show the text range
     const redLineParams = new GeometryParams(Id64.invalid);
@@ -129,7 +155,7 @@ export class TextAnnotationStroker extends Stroker<TextAnnotationStrokerArgs> {
 
     const rangeCorners = layout.textRange.corners3d(true);
     transform.multiplyPoint3dArrayInPlace(rangeCorners);
-    result = result && this._builder.appendGeometry(LineString3d.create(rangeCorners));
+    result = result && this._builder.appendGeometryQuery(LineString3d.create(rangeCorners));
 
     return result;
   }
@@ -142,7 +168,7 @@ export class TextAnnotationStroker extends Stroker<TextAnnotationStrokerArgs> {
     params.weight = (frame.borderWeight ?? 1) * 5; // We want the dots to be bigger than the frame so we can see them.
     params.fillDisplay = FillDisplay.Always;
 
-    const result = this._builder.appendGeometryParamsChange(params) && this._builder.appendGeometry(PointString3d.create(points));
+    const result = this._builder.appendGeometryParamsChange(params) && this._builder.appendGeometryQuery(PointString3d.create(points));
     return result;
   }
 }

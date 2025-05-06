@@ -6,27 +6,17 @@
  * @module Elements
  */
 
-import { GeometryParams, TextAnnotation, TextAnnotation2dProps, TextAnnotation3dProps } from "@itwin/core-common";
+import { ElementGeometryBuilderParams, PlacementProps, TextAnnotation, TextAnnotation2dProps, TextAnnotation3dProps, TextAnnotationProps } from "@itwin/core-common";
 import { IModelDb } from "./IModelDb";
 import { AnnotationElement2d, GraphicalElement3d } from "./Element";
 import { Id64String } from "@itwin/core-bentley";
 import { TextAnnotationStroker } from "./strokers/TextAnnotationStroker";
 
-function updateAnnotation(element: TextAnnotation2d | TextAnnotation3d, annotation: TextAnnotation, subCategory: Id64String | undefined): boolean {
-  const stroker = new TextAnnotationStroker(element.iModel);
+function getElementGeometryBuilderParams(iModel: IModelDb, placementProps: PlacementProps, annotationProps: TextAnnotationProps, category: Id64String, subCategory?: Id64String): ElementGeometryBuilderParams {
+  const stroker = new TextAnnotationStroker(iModel);
+  const flatbuffer = stroker.createGeometry({ annotationProps, placementProps }, category, subCategory);
 
-  const params = new GeometryParams(element.category, subCategory);
-  if (!stroker.builder.appendGeometryParamsChange(params)) {
-    return false;
-  }
-
-  const annotationProps = annotation.toJSON();
-  stroker.createGeometry({ annotationProps, placementProps: element.placement });
-
-  element.geom = stroker.builder.geometryStream;
-  element.jsonProperties.annotation = annotationProps;
-
-  return true;
+  return { entryArray: flatbuffer.data };
 }
 
 /** An element that displays textual content within a 2d model.
@@ -44,7 +34,10 @@ export class TextAnnotation2d extends AnnotationElement2d {
   }
 
   public override toJSON(): TextAnnotation2dProps {
-    return super.toJSON();
+    const props = super.toJSON();
+    props.elementGeometryBuilderParams = getElementGeometryBuilderParams(this.iModel, this.placement, this.jsonProperties.annotation, this.category);
+
+    return props;
   }
 
   /** Extract the textual content, if present.
@@ -61,8 +54,8 @@ export class TextAnnotation2d extends AnnotationElement2d {
    * @param subCategory If specified, the subcategory on which to define the geometry; otherwise, the default subcategory of the element's category is used.
    * @returns true if the annotation was successfully updated.
    */
-  public setAnnotation(annotation: TextAnnotation, subCategory?: Id64String): boolean {
-    return updateAnnotation(this, annotation, subCategory);
+  public setAnnotation(annotation: TextAnnotation) {
+    this.jsonProperties.annotation = annotation.toJSON();
   }
 }
 
@@ -81,7 +74,10 @@ export class TextAnnotation3d extends GraphicalElement3d {
   }
 
   public override toJSON(): TextAnnotation3dProps {
-    return super.toJSON();
+    const props = super.toJSON();
+    props.elementGeometryBuilderParams = getElementGeometryBuilderParams(this.iModel, this.placement, this.jsonProperties.annotation, this.category);
+
+    return props;
   }
 
   /** Extract the textual content, if present.
@@ -98,7 +94,7 @@ export class TextAnnotation3d extends GraphicalElement3d {
    * @param subCategory If specified, the subcategory on which to define the geometry; otherwise, the default subcategory of the element's category is used.
    * @returns true if the annotation was successfully updated.
    */
-  public setAnnotation(annotation: TextAnnotation, subCategory?: Id64String): boolean {
-    return updateAnnotation(this, annotation, subCategory);
+  public setAnnotation(annotation: TextAnnotation) {
+    this.jsonProperties.annotation = annotation.toJSON();
   }
 }
