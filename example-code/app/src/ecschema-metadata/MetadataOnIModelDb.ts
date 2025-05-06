@@ -37,28 +37,5 @@ async function iterateEntitiesOnBisCore(imodel: IModelDb): Promise<void> {
       console.log(`    Label: ${property.label}`);
     }
   }
-  // Get all schemas in the iModel
-
-
-  // Iterate through each schema
-  for (const schema of schemas) {
-    // Check if the schema is a custom schema
-    if (schema.isCustomSchema()) {
-      console.log(`Schema: ${schema.name}`);
-
-      // Get all classes in the schema
-      const classes = schema.getClasses();
-
-      // Iterate through each class
-      for (const cls of classes) {
-        console.log(`Class: ${cls.name}`);
-      }
-    }
-  }
 }
-// We work on an iModelDb, for the sake of this example, we just use an empty one. See backend docs for details on how to work with imodels.
-let imodel: IModelDb = SnapshotDb.createEmpty("test.bim", { rootSubject: { name: "Test" } });
-
-
-
 // __PUBLISH_EXTRACT_END__
