@@ -586,6 +586,27 @@ export class PolyfaceQuery {
     return this.dihedralAngleSummary(source, ignoreBoundaries) > 0;
   }
   /**
+   * Faster version of isPolyfaceManifold for specific input.
+   * @returns whether the mesh is manifold, or undefined if unsuccessful.
+   */
+  private static isPolyfaceManifoldFast(source: Polyface | PolyfaceVisitor, allowSimpleBoundaries: boolean): boolean | undefined {
+    if (allowSimpleBoundaries)
+      return undefined; // edgeMateIndex does not distinguish boundary edges from non-manifold edges
+    if (!IndexedPolyface.hasEdgeMateIndex(source))
+      return undefined; // no speedup
+    const visitor = source instanceof Polyface ? source.createVisitor(1) : source;
+    visitor.setNumWrap(1);
+    assert(visitor.edgeMateIndex !== undefined);
+    for (visitor.reset(); visitor.moveToNextFacet(); ) {
+      const numEdges = visitor.pointCount - 1;
+      for (let i = 0; i < numEdges; i++) {
+        if (visitor.edgeMateIndex[i] === undefined)
+          return false; // found a boundary or non-manifold edge
+      }
+    }
+    return true;
+  }
+  /**
    * Test edges pairing in `source` mesh.
    * * For `allowSimpleBoundaries === false`, a return value of `true` means this is a closed 2-manifold surface.
    * * For `allowSimpleBoundaries === true`, a return value of `true` means this is a 2-manifold surface which may have
@@ -594,6 +615,9 @@ export class PolyfaceQuery {
    * * Any edge with 2 adjacent facets in the same direction triggers a `false` return.
   */
   public static isPolyfaceManifold(source: Polyface | PolyfaceVisitor, allowSimpleBoundaries: boolean = false): boolean {
+    const isManifold = this.isPolyfaceManifoldFast(source, allowSimpleBoundaries);
+    if (isManifold !== undefined)
+      return isManifold
     const badClusters: SortableEdgeCluster[] = [];
     this.createIndexedEdges(source).sortAndCollectClusters(undefined, allowSimpleBoundaries ? undefined : badClusters, undefined, badClusters);
     return badClusters.length === 0;
@@ -602,13 +626,16 @@ export class PolyfaceQuery {
   public static isPolyfaceClosedByEdgePairing(source: Polyface | PolyfaceVisitor): boolean {
     return this.isPolyfaceManifold(source, false);
   }
-  /** Faster version of announceBoundaryEdges for specific input. */
+  /**
+   * Faster version of announceBoundaryEdges for specific input.
+   * @returns true if successfully announced boundary edges.
+   */
   private static announceBoundaryEdgesFast(
     source: Polyface | PolyfaceVisitor,
     announceEdge: (pointA: Point3d, pointB: Point3d, indexA: number, indexB: number, facetIndex: number) => void,
     includeTypical: boolean,
     includeMismatch: boolean,
-    includeNull: boolean
+    includeNull: boolean,
   ): boolean {
     if (includeTypical !== includeMismatch)
       return false; // edgeMateIndex does not distinguish these
@@ -624,9 +651,9 @@ export class PolyfaceQuery {
     for (visitor.reset(); visitor.moveToNextFacet(); ) {
       const numEdges = visitor.pointCount - 1;
       for (let i = 0; i < numEdges; i++) {
-        const announceTypicalOrMismatchedEdge = includeTypical && visitor.edgeMateIndex[i] === undefined;
+        const announceBoundaryOrNonManifoldEdge = includeTypical && visitor.edgeMateIndex[i] === undefined;
         const announceNullEdge = includeNull && visitor.edgeMateIndex[i] === visitor.clientPointIndex(i);
-        if (announceTypicalOrMismatchedEdge || announceNullEdge) {
+        if (announceBoundaryOrNonManifoldEdge || announceNullEdge) {
           visitor.getPoint(i, pointA);
           visitor.getPoint(i + 1, pointB);
           announceEdge(pointA, pointB, visitor.clientPointIndex(i), visitor.clientPointIndex(i + 1), visitor.currentReadIndex());
