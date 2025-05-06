@@ -136,6 +136,12 @@ class BentleyMochaReporter extends Spec {
       }
     }
 
+    // Detect hangs caused by tests that leave timers/other handles open - not possible in electron frontends.
+    if (!this._electron && !this._chrome) {
+      // Not running in Chrome or Electron, so check for open handles.
+      this.confirmExit(30);
+    }
+
     if (!this.stats.pending)
       return;
 
@@ -153,10 +159,6 @@ class BentleyMochaReporter extends Spec {
         logBuildWarning(`1 test skipped`);
       else
         logBuildWarning(`${this.stats.pending} tests skipped`);
-    }
-    if (!this._electron && !this._chrome) {
-      // Not running in Chrome or Electron, so check for open handles.
-      this.confirmExit(30);
     }
   }
 }
