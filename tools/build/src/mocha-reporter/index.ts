@@ -73,7 +73,6 @@ class BentleyMochaReporter extends Spec {
     // Detect hangs caused by tests that leave timers/other handles open - not possible in electron frontends.
     if (!("electron" in process.versions)) {
       process.on("chrome-test-runner-done", () => {
-        console.warn("WARNING: chrome-test-runner-done event received");
         this.waitForExit();
       });
     }
