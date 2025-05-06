@@ -762,4 +762,6 @@ export interface PolyfaceVisitor extends PolyfaceData {
    * * Allows implementers to improve the efficiency of e.g., [[PolyfaceQuery.visitorClientFacetCount]].
    */
   getVisitableFacetCount?(): number;
+  /** Create a visitor for a subset of the facets visitable by the instance. */
+  createSubsetVisitor?(facetIndices: number[], numWrap: number): PolyfaceVisitor;
 }

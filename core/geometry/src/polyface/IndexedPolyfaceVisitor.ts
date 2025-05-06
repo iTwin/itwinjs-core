@@ -201,7 +201,12 @@ export class IndexedPolyfaceVisitor extends PolyfaceData implements PolyfaceVisi
       this.color.push(Geometry.interpolateColor(other.color[index0], fraction, other.color[index1]));
     // TODO: auxData? taggedNumericData?
   }
+  /** Create a visitor for a subset of the facets visitable by the instance. */
+  public createSubsetVisitor(facetIndices: number[], numWrap: number): IndexedPolyfaceSubsetVisitor {
+    return IndexedPolyfaceSubsetVisitor.createSubsetVisitor(this._polyface, facetIndices, numWrap);
+  }
 }
+
 /**
  * An `IndexedPolyfaceSubsetVisitor` is an `IndexedPolyfaceVisitor` which only visits a subset of facets in the polyface.
  * * The subset is defined by an array of facet indices provided when this visitor is created.
@@ -209,41 +214,40 @@ export class IndexedPolyfaceVisitor extends PolyfaceData implements PolyfaceVisi
  * @public
  */
 export class IndexedPolyfaceSubsetVisitor extends IndexedPolyfaceVisitor {
-  private _parentFacetIndices: number[];
-  private _currentActiveIndex: number;    // index within _parentFacetIndices, or -1 after construction
-  private _nextActiveIndex: number;       // index within _parentFacetIndices
+  private _facetIndices: number[];
+  private _currentSubsetIndex: number;    // index within _facetIndices, or -1 after construction
+  private _nextSubsetIndex: number;       // index within _facetIndices
 
-  private constructor(polyface: IndexedPolyface, activeFacetIndices: number[], numWrap: number) {
+  private constructor(polyface: IndexedPolyface, facetIndices: number[], numWrap: number) {
     super(polyface, numWrap);
-    this._parentFacetIndices = activeFacetIndices.slice();
-    this._currentActiveIndex = -1;
-    this._nextActiveIndex = 0;
+    this._facetIndices = facetIndices.slice();
+    this._currentSubsetIndex = -1;
+    this._nextSubsetIndex = 0;
   }
   private isValidSubsetIndex(index: number): boolean {
-    return index >= 0 && index < this._parentFacetIndices.length;
+    return index >= 0 && index < this._facetIndices.length;
   }
   /**
    * Create a visitor for iterating a subset of the facets of `polyface`.
    * @param polyface reference to the client polyface, supplying facets
-   * @param activeFacetIndices array of indices of facets in the client polyface to visit. This array is cloned.
+   * @param facetIndices array of indices of facets in the client polyface to visit. This array is cloned.
    * @param numWrap number of vertices replicated in the visitor arrays to facilitate simpler caller code. Default is zero.
    */
   public static createSubsetVisitor(
-    polyface: IndexedPolyface, activeFacetIndices: number[], numWrap: number = 0,
+    polyface: IndexedPolyface, facetIndices: number[], numWrap: number = 0,
   ): IndexedPolyfaceSubsetVisitor {
-    return new IndexedPolyfaceSubsetVisitor(polyface, activeFacetIndices, numWrap);
+    return new IndexedPolyfaceSubsetVisitor(polyface, facetIndices, numWrap);
   }
   /**
    * Advance the iterator to a particular facet in the subset of client polyface facets.
-   * @param activeIndex the index of the facet within the subset, not to be confused with the index of the facet within
-   * the client polyface.
+   * @param subsetIndex index into the subset array, not to be confused with the client facet index.
    * @return whether the iterator was successfully moved.
    */
-  public override moveToReadIndex(activeIndex: number): boolean {
-    if (this.isValidSubsetIndex(activeIndex)) {
-      this._currentActiveIndex = activeIndex;
-      this._nextActiveIndex = activeIndex + 1;
-      return super.moveToReadIndex(this._parentFacetIndices[activeIndex]);
+  public override moveToReadIndex(subsetIndex: number): boolean {
+    if (this.isValidSubsetIndex(subsetIndex)) {
+      this._currentSubsetIndex = subsetIndex;
+      this._nextSubsetIndex = subsetIndex + 1;
+      return super.moveToReadIndex(this._facetIndices[subsetIndex]);
     }
     return false;
   }
@@ -252,29 +256,29 @@ export class IndexedPolyfaceSubsetVisitor extends IndexedPolyfaceVisitor {
    * @return whether the iterator was successfully moved.
    */
   public override moveToNextFacet(): boolean {
-    if (this._nextActiveIndex !== this._currentActiveIndex)
-      return this.moveToReadIndex(this._nextActiveIndex);
-    this._nextActiveIndex++;
+    if (this._nextSubsetIndex !== this._currentSubsetIndex)
+      return this.moveToReadIndex(this._nextSubsetIndex);
+    this._nextSubsetIndex++;
     return true;
   }
   /** Call this before iterating facets with [[moveToNextFacet]]. */
   public override reset(): void {
     this.moveToReadIndex(0);
-    this._nextActiveIndex = 0; // so immediate moveToNextFacet stays here.
+    this._nextSubsetIndex = 0; // so immediate moveToNextFacet stays here.
   }
   /**
    * Return the client polyface facet index (aka "readIndex") for the given subset index.
-   * @param subsetIndex index of the facet within the subset of visitable facets. Default is the currently visited facet.
+   * @param subsetIndex index into the subset array. Default is the subset index of the currently visited facet.
    * @return valid client polyface facet index, or `undefined` if invalid subset index.
    */
   public parentFacetIndex(subsetIndex?: number): number | undefined {
     if (undefined === subsetIndex)
-      subsetIndex = this._currentActiveIndex;
-    return this.isValidSubsetIndex(subsetIndex) ? this._parentFacetIndices[subsetIndex] : undefined;
+      subsetIndex = this._currentSubsetIndex;
+    return this.isValidSubsetIndex(subsetIndex) ? this._facetIndices[subsetIndex] : undefined;
   }
   /** Return the number of facets this visitor is able to visit. */
   public override getVisitableFacetCount(): number {
-    return this._parentFacetIndices.length;
+    return this._facetIndices.length;
   }
   /**
    * Create a visitor for those mesh facets with normal in the same half-space as the given vector.

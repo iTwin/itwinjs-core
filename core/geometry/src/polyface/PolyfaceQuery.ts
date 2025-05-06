@@ -47,7 +47,6 @@ import {
 } from "./FacetLocationDetail";
 import { FacetOrientationFixup } from "./FacetOrientation";
 import { IndexedEdgeMatcher, SortableEdge, SortableEdgeCluster } from "./IndexedEdgeMatcher";
-import { IndexedPolyfaceSubsetVisitor } from "./IndexedPolyfaceVisitor";
 import { BuildAverageNormalsContext } from "./multiclip/BuildAverageNormalsContext";
 import { OffsetMeshContext } from "./multiclip/OffsetMeshContext";
 import { Range2dSearchInterface } from "./multiclip/Range2dSearchInterface";
@@ -368,7 +367,9 @@ export class PolyfaceQuery {
     source: Polyface | PolyfaceVisitor, plane: Plane3dByOriginAndUnitNormal,
   ): FacetProjectedVolumeSums {
     if (source instanceof Polyface)
-      return PolyfaceQuery.sumVolumeBetweenFacetsAndPlane(source.createVisitor(0), plane);
+      source = source.createVisitor(0);
+    else
+      source.setNumWrap(0);
     const facetOrigin = Point3d.create();
     const targetA = Point3d.create();
     const targetB = Point3d.create();
@@ -491,7 +492,7 @@ export class PolyfaceQuery {
    * Compute a number summarizing the dihedral angles in the mesh.
    * * A dihedral angle is the signed angle between adjacent facets' normals. This angle is positive when the cross
    * product `normalA x normalB` has the same direction as facetA's traversal of the facets' shared edge.
-   * @param source mesh.
+   * @param source facets.
    * @param ignoreBoundaries if `true` ignore simple boundary edges, i.e., allow unclosed meshes. Default is `false`.
    * See [[isConvexByDihedralAngleCount]] for comments about passing true when there are multiple
    * connected components.
@@ -504,22 +505,24 @@ export class PolyfaceQuery {
    * be computed. A non-manifold condition is a positive-length edge adjacent to more than 2 facets or (if
    * `ignoreBoundaries` is false) adjacent to exactly one facet.
    */
-  public static dihedralAngleSummary(source: Polyface, ignoreBoundaries: boolean = false): number {
+  public static dihedralAngleSummary(source: Polyface | PolyfaceVisitor, ignoreBoundaries: boolean = false): number {
     // more info can be found at geometry/internaldocs/Polyface.md
     const edges = new IndexedEdgeMatcher();
-    const visitor = source.createVisitor(1);
-    visitor.reset();
-    // find centroid normals of all facets
+    const vertices = source instanceof Polyface ? source.data.point : undefined;
+    const visitor = source instanceof Polyface ? source.createVisitor(1) : source;
+    visitor.setNumWrap(1);
     const centroidNormal: Ray3d[] = [];
     let normalCounter = 0;
-    while (visitor.moveToNextFacet()) {
+    for (visitor.reset(); visitor.moveToNextFacet(); ) {
       const numEdges = visitor.pointCount - 1;
       const normal = PolygonOps.centroidAreaNormal(visitor.point);
       if (normal === undefined)
         return -2;
       centroidNormal.push(normal);
       for (let i = 0; i < numEdges; i++) {
-        edges.addEdge(visitor.clientPointIndex(i), visitor.clientPointIndex(i + 1), normalCounter);
+        const edge = edges.addEdge(visitor.clientPointIndex(i), visitor.clientPointIndex(i + 1), normalCounter);
+        if (!vertices) // decorate if we don't have vertices to query later
+          (edge as any).edgeVector = Vector3d.createStartEnd(visitor.point.getPoint3dAtUncheckedPointIndex(i), visitor.point.getPoint3dAtUncheckedPointIndex(i + 1));
       }
       normalCounter++;
     }
@@ -528,9 +531,7 @@ export class PolyfaceQuery {
     // bad clusters are edges adjacent to more than 2 facets or (if ignoreBoundaries is false) adjacent to 1 facet
     const badClusters: SortableEdgeCluster[] = [];
     const manifoldClusters: SortableEdgeCluster[] = [];
-    edges.sortAndCollectClusters(
-      manifoldClusters, ignoreBoundaries ? undefined : badClusters, undefined, badClusters,
-    );
+    edges.sortAndCollectClusters(manifoldClusters, ignoreBoundaries ? undefined : badClusters, undefined, badClusters);
     if (badClusters.length > 0)
       return -2;
     // find angle between facet centroid normals (dihedral angles)
@@ -542,17 +543,19 @@ export class PolyfaceQuery {
       if (Array.isArray(cluster) && cluster.length === 2) {
         const sideA = cluster[0];
         const sideB = cluster[1];
-        if (source.data.point.vectorIndexIndex(sideA.startVertex, sideA.endVertex, edgeVector)) {
-          const facetNormalA = centroidNormal[sideA.facetIndex].direction;
-          const facetNormalB = centroidNormal[sideB.facetIndex].direction;
-          const dihedralAngle = facetNormalA.signedAngleTo(facetNormalB, edgeVector);
-          if (dihedralAngle.isAlmostZero)
-            numPlanar++;
-          else if (dihedralAngle.radians > 0.0)
-            numPositive++;
-          else
-            numNegative++;
-        }
+        if (vertices)
+          vertices.vectorIndexIndex(sideA.startVertex, sideA.endVertex, edgeVector);
+        else
+          edgeVector.setFrom((sideA as any).edgeVector);
+        const facetNormalA = centroidNormal[sideA.facetIndex].direction;
+        const facetNormalB = centroidNormal[sideB.facetIndex].direction;
+        const dihedralAngle = facetNormalA.signedAngleTo(facetNormalB, edgeVector);
+        if (dihedralAngle.isAlmostZero)
+          numPlanar++;
+        else if (dihedralAngle.radians > 0.0)
+          numPositive++;
+        else
+          numNegative++;
       }
     }
     // categorize the mesh
@@ -579,7 +582,7 @@ export class PolyfaceQuery {
  * @param ignoreBoundaries if `true` ignore simple boundary edges, i.e., allow unclosed meshes. Default is `false`.
  * @returns true if all dihedral angles of the mesh are positive.
  */
-  public static isConvexByDihedralAngleCount(source: Polyface, ignoreBoundaries: boolean = false): boolean {
+  public static isConvexByDihedralAngleCount(source: Polyface | PolyfaceVisitor, ignoreBoundaries: boolean = false): boolean {
     return this.dihedralAngleSummary(source, ignoreBoundaries) > 0;
   }
   /**
@@ -590,23 +593,47 @@ export class PolyfaceQuery {
    * * Any edge with 3 or more adjacent facets triggers `false` return.
    * * Any edge with 2 adjacent facets in the same direction triggers a `false` return.
   */
-  public static isPolyfaceManifold(source: Polyface, allowSimpleBoundaries: boolean = false): boolean {
-    const edges = new IndexedEdgeMatcher();
-    const visitor = source.createVisitor(1);
-    visitor.reset();
-    while (visitor.moveToNextFacet()) {
-      const numEdges = visitor.pointCount - 1;
-      for (let i = 0; i < numEdges; i++) {
-        edges.addEdge(visitor.clientPointIndex(i), visitor.clientPointIndex(i + 1), visitor.currentReadIndex());
-      }
-    }
+  public static isPolyfaceManifold(source: Polyface | PolyfaceVisitor, allowSimpleBoundaries: boolean = false): boolean {
     const badClusters: SortableEdgeCluster[] = [];
-    edges.sortAndCollectClusters(undefined, allowSimpleBoundaries ? undefined : badClusters, undefined, badClusters);
+    this.createIndexedEdges(source).sortAndCollectClusters(undefined, allowSimpleBoundaries ? undefined : badClusters, undefined, badClusters);
     return badClusters.length === 0;
   }
   /** Test if the facets in `source` occur in perfectly mated pairs, as is required for a closed manifold volume. */
-  public static isPolyfaceClosedByEdgePairing(source: Polyface): boolean {
+  public static isPolyfaceClosedByEdgePairing(source: Polyface | PolyfaceVisitor): boolean {
     return this.isPolyfaceManifold(source, false);
+  }
+  /** Faster version of announceBoundaryEdges for specific input. */
+  private static announceBoundaryEdgesFast(
+    source: Polyface | PolyfaceVisitor,
+    announceEdge: (pointA: Point3d, pointB: Point3d, indexA: number, indexB: number, facetIndex: number) => void,
+    includeTypical: boolean,
+    includeMismatch: boolean,
+    includeNull: boolean
+  ): boolean {
+    if (includeTypical !== includeMismatch)
+      return false; // edgeMateIndex does not distinguish these
+    if (!includeTypical && !includeNull)
+      return true; // nothing to do
+    if (!IndexedPolyface.hasEdgeMateIndex(source))
+      return false; // no speedup
+    const visitor = source instanceof Polyface ? source.createVisitor(1) : source;
+    visitor.setNumWrap(1);
+    assert(visitor.edgeMateIndex !== undefined);
+    const pointA = Point3d.create();
+    const pointB = Point3d.create();
+    for (visitor.reset(); visitor.moveToNextFacet(); ) {
+      const numEdges = visitor.pointCount - 1;
+      for (let i = 0; i < numEdges; i++) {
+        const announceTypicalOrMismatchedEdge = includeTypical && visitor.edgeMateIndex[i] === undefined;
+        const announceNullEdge = includeNull && visitor.edgeMateIndex[i] === visitor.clientPointIndex(i);
+        if (announceTypicalOrMismatchedEdge || announceNullEdge) {
+          visitor.getPoint(i, pointA);
+          visitor.getPoint(i + 1, pointB);
+          announceEdge(pointA, pointB, visitor.clientPointIndex(i), visitor.clientPointIndex(i + 1), visitor.currentReadIndex());
+        }
+      }
+    }
+    return true;
   }
   /**
    * Announce boundary edges of the facet set as line segments.
@@ -628,49 +655,45 @@ export class PolyfaceQuery {
     includeMismatch: boolean = true,
     includeNull: boolean = true,
   ): void {
+    if (this.announceBoundaryEdgesFast(source, announceEdge, includeTypical, includeMismatch, includeNull))
+      return;
     if (!includeTypical && !includeMismatch && !includeNull)
       return;
-    const pointA = Point3d.create();
-    const pointB = Point3d.create();
+    const vertices = source instanceof Polyface ? source.data.point : undefined;
     const visitor = source instanceof Polyface ? source.createVisitor(1) : source;
     visitor.setNumWrap(1);
-    // use topo cache only if caller wants *all* edges without mates
-    if (includeTypical && includeMismatch && includeNull && IndexedPolyface.hasEdgeMateIndex(source)) {
-      for (visitor.reset(); visitor.moveToNextFacet(); ) {
-        assert(visitor.edgeMateIndex !== undefined);
-        const numEdges = visitor.pointCount - 1;
-        for (let i = 0; i < numEdges; i++) {
-          if (visitor.edgeMateIndex[i] === undefined) {
-            visitor.getPoint(i, pointA);
-            visitor.getPoint(i + 1, pointB);
-            announceEdge(pointA, pointB, visitor.clientPointIndex(i), visitor.clientPointIndex(i + 1), visitor.currentReadIndex());
-          }
-        }
-      }
-      return;
-    }
     const edges = new IndexedEdgeMatcher();
     for (visitor.reset(); visitor.moveToNextFacet(); ) {
       const numEdges = visitor.pointCount - 1;
       for (let i = 0; i < numEdges; i++) {
-        edges.addEdge(visitor.clientPointIndex(i), visitor.clientPointIndex(i + 1), visitor.currentReadIndex());
+        const edge = edges.addEdge(visitor.clientPointIndex(i), visitor.clientPointIndex(i + 1), visitor.currentReadIndex());
+        if (!vertices) { // decorate if we don't have vertices to query later
+          (edge as any).pointA = visitor.point.getPoint3dAtUncheckedPointIndex(i);
+          (edge as any).pointB = visitor.point.getPoint3dAtUncheckedPointIndex(i + 1);
+        }
       }
     }
     const boundaryEdges: SortableEdgeCluster[] = [];
-    edges.sortAndCollectClusters(undefined,
-      includeTypical ? boundaryEdges : undefined,
-      includeNull ? boundaryEdges : undefined,
-      includeMismatch ? boundaryEdges : undefined,
-    );
+    const typicalEdges = includeTypical ? boundaryEdges : undefined;
+    const nullEdges = includeNull ? boundaryEdges : undefined;
+    const mismatchEdges = includeMismatch ? boundaryEdges : undefined;
+    edges.sortAndCollectClusters(undefined, typicalEdges, nullEdges, mismatchEdges);
     if (boundaryEdges.length === 0)
       return;
-    const sourcePolyface = visitor.clientPolyface()!;
+    const pointA = Point3d.create();
+    const pointB = Point3d.create();
     for (const e of boundaryEdges) {
       const e1 = e instanceof SortableEdge ? e : e[0];
       const indexA = e1.startVertex;
       const indexB = e1.endVertex;
-      if (sourcePolyface.data.getPoint(indexA, pointA) && sourcePolyface.data.getPoint(indexB, pointB))
-        announceEdge(pointA, pointB, indexA, indexB, e1.facetIndex);
+      if (vertices) {
+        vertices.getPoint3dAtUncheckedPointIndex(indexA, pointA);
+        vertices.getPoint3dAtUncheckedPointIndex(indexB, pointB);
+      } else {
+        pointA.setFrom((e1 as any).pointA);
+        pointB.setFrom((e1 as any).pointB);
+      }
+      announceEdge(pointA, pointB, indexA, indexB, e1.facetIndex);
     }
   }
   /**
@@ -964,7 +987,7 @@ export class PolyfaceQuery {
   }
   /**
    * Return the boundary of facets that are facing the eye.
-   * @param polyface the indexed polyface
+   * @param source polyface or visitor. Must be capable of constructing a subset visitor.
    * @param visibilitySubset selector among the visible facet sets extracted by partitionFacetIndicesByVisibilityVector
    *   * 0 ==> forward facing
    *   * 1 ==> rear facing
@@ -973,16 +996,19 @@ export class PolyfaceQuery {
    * @param sideAngleTolerance the tolerance of side angle
    */
   public static boundaryOfVisibleSubset(
-    polyface: IndexedPolyface,
+    source: Polyface | PolyfaceVisitor,
     visibilitySelect: 0 | 1 | 2,
     vectorToEye: Vector3d,
     sideAngleTolerance: Angle = Angle.createDegrees(1.0e-3),
   ): CurveCollection | undefined {
-    const partitionedIndices = this.partitionFacetIndicesByVisibilityVector(polyface, vectorToEye, sideAngleTolerance);
+    const visitor = source instanceof Polyface ? source.createVisitor(0) : source;
+    if (!visitor.createSubsetVisitor)
+      return undefined;
+    const partitionedIndices = this.partitionFacetIndicesByVisibilityVector(source, vectorToEye, sideAngleTolerance);
     if (partitionedIndices[visibilitySelect].length === 0)
       return undefined;
-    const visitor = IndexedPolyfaceSubsetVisitor.createSubsetVisitor(polyface, partitionedIndices[visibilitySelect], 1);
-    return this.boundaryEdges(visitor, true, false, false);
+    const subsetVisitor = visitor.createSubsetVisitor(partitionedIndices[visibilitySelect], 1);
+    return this.boundaryEdges(subsetVisitor, true, false, false);
   }
   /**
    * Announce boundary edges of the facet set as linestrings.
