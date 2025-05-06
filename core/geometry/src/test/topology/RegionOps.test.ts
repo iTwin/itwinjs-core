@@ -20,7 +20,7 @@ import { ChainCollectorContext } from "../../curve/internalContexts/ChainCollect
 import { PolygonWireOffsetContext } from "../../curve/internalContexts/PolygonOffsetContext";
 import { LineSegment3d } from "../../curve/LineSegment3d";
 import { LineString3d } from "../../curve/LineString3d";
-import { Loop } from "../../curve/Loop";
+import { Loop, SignedLoops } from "../../curve/Loop";
 import { JointOptions, OffsetOptions } from "../../curve/OffsetOptions";
 import { ParityRegion } from "../../curve/ParityRegion";
 import { Path } from "../../curve/Path";
@@ -934,9 +934,11 @@ describe("RegionOps", () => {
   it("MergeRegionArea", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
+
+    // region with circle hole
     const rectangle = Loop.create(LineString3d.create(Sample.createRectangle(0, 0, 10, 8, 0, true)));
-    const circle = Loop.create(Arc3d.createXY(Point3d.create(5, 5), 2));
-    const region = RegionOps.regionBooleanXY(rectangle, circle, RegionBinaryOpType.AMinusB)!;
+    const hole = Loop.create(Arc3d.createXY(Point3d.create(5, 5), 2));
+    const region = RegionOps.regionBooleanXY(rectangle, hole, RegionBinaryOpType.AMinusB)!;
     const regionArea = RegionOps.computeXYArea(region)!;
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, region);
 
@@ -946,12 +948,67 @@ describe("RegionOps", () => {
     const mergedArea = RegionOps.computeXYArea(merged)!;
 
     const rectangleArea = 80;
-    const circleArea = Math.PI * 4;
-    const expectedArea = rectangleArea - circleArea;
+    const holeArea = Math.PI * 4;
+    const expectedArea = rectangleArea - holeArea;
     ck.testCoordinate(regionArea, expectedArea, "area before merge");
     ck.testCoordinate(mergedArea, expectedArea, "area after merge");
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "RegionOps", "MergeRegionArea");
+    expect(ck.getNumErrors()).toBe(0);
+  });
+
+  function testRegionXYArea(
+    region: AnyRegion,
+    numPositiveLoops: number,
+    numNegativeLoops: number,
+    allGeometry: GeometryQuery[],
+    ck: Checker,
+    dx: number,
+  ) {
+    let signedLoops: SignedLoops[] = [];
+    let positiveAreaLoops: Loop[] = [];
+    let negativeAreaLoops: Loop[] = [];
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, region, dx);
+
+    signedLoops = RegionOps.constructAllXYRegionLoops(region);
+    for (const signedLoop of signedLoops) {
+      positiveAreaLoops = signedLoop.positiveAreaLoops;
+      for (const loop of positiveAreaLoops)
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, loop, dx, 3);
+      ck.testCoordinate(numPositiveLoops, positiveAreaLoops.length, "number of positive loops");
+      negativeAreaLoops = signedLoop.negativeAreaLoops;
+      for (const loop of negativeAreaLoops)
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, loop, dx, 6);
+      ck.testCoordinate(numNegativeLoops, negativeAreaLoops.length, "number of negative loops");
+    }
+  }
+
+  it("constructAllXYRegionLoops", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+
+    // union region
+    let dx = 0;
+    const arc0 = Arc3d.createXY(Point3d.create(0, 1), 1.0);
+    const arc1 = Arc3d.createXY(Point3d.create(1, 1), 1.0);
+    const loop0 = Loop.create(arc0);
+    const loop1 = Loop.create(arc1);
+    const unionRegion = UnionRegion.create(loop0, loop1);
+    testRegionXYArea(unionRegion, 3, 1, allGeometry, ck, dx);
+
+    // parity region
+    dx += 5;
+    const parityRegion = ParityRegion.create(loop0, loop1);
+    testRegionXYArea(parityRegion, 3, 1, allGeometry, ck, dx);
+
+    // region with circle holes
+    dx += 5;
+    const rectangle = Loop.create(LineString3d.create(Sample.createRectangle(0, 0, 3, 2, 0, true)));
+    const hole = Loop.create(Arc3d.createXY(Point3d.create(1.5, 1), 0.5));
+    const region = RegionOps.regionBooleanXY(rectangle, hole, RegionBinaryOpType.AMinusB)!;
+    testRegionXYArea(region, 2, 1, allGeometry, ck, dx);
+
+    GeometryCoreTestIO.saveGeometry(allGeometry, "RegionOps", "constructAllXYRegionLoops");
     expect(ck.getNumErrors()).toBe(0);
   });
 });

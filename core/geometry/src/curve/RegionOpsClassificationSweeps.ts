@@ -18,14 +18,13 @@ import { HalfEdgeGraphSearch } from "../topology/HalfEdgeGraphSearch";
 import { HalfEdgeGraphMerge } from "../topology/Merging";
 import { RegularizationContext } from "../topology/RegularizeFace";
 import { Arc3d } from "./Arc3d";
-import { CurveCollection } from "./CurveCollection";
 import { CurveCurve } from "./CurveCurve";
 import { CurveLocationDetail } from "./CurveLocationDetail";
 import { CurvePrimitive } from "./CurvePrimitive";
 import { AnyRegion } from "./CurveTypes";
 import { GeometryQuery } from "./GeometryQuery";
-import { CloneCurvesContext } from "./internalContexts/CloneCurvesContext";
 import { PlaneAltitudeRangeContext } from "./internalContexts/PlaneAltitudeRangeContext";
+import { TransferWithSplitArcs } from "./internalContexts/TransferWithSplitArcs";
 import { LineSegment3d } from "./LineSegment3d";
 import { Loop } from "./Loop";
 import { ParityRegion } from "./ParityRegion";
@@ -334,26 +333,6 @@ class RegionGroupMember {
 }
 
 /**
- * Algorithmic class for cloning with each full arc broken down into two half arcs.
- * @internal
- */
-class TransferWithSplitArcs extends CloneCurvesContext {
-  public constructor() {
-    super(undefined);
-  }
-  protected override doClone(primitive: CurvePrimitive): CurvePrimitive | CurvePrimitive[] {
-    if (primitive instanceof Arc3d && primitive.sweep.isFullCircle) // replace full arc with two half arcs
-      return [primitive.clonePartialCurve(0.0, 0.5), primitive.clonePartialCurve(0.5, 1)];
-    return primitive;
-  }
-  public static override clone(target: CurveCollection): CurveCollection {
-    const context = new TransferWithSplitArcs();
-    target.announceToCurveProcessor(context);
-    return context._result as CurveCollection;
-  }
-}
-
-/**
  * A `RegionGroup` is
  * * An array of `RegionGroupMembers`, carrying the regions of the Ai or Bi part of the boolean expression.
  * * The `RegionGroupOpType` to be applied among those members.
@@ -461,12 +440,11 @@ export class RegionBooleanContext implements RegionOpsFaceToFaceSearchCallbacks 
   public graph!: HalfEdgeGraph;
   public faceAreaFunction!: NodeToNumberFunction;
   public binaryOp: RegionBinaryOpType;
-  // private constructor
   private constructor(groupTypeA: RegionGroupOpType, groupTypeB: RegionGroupOpType) {
     this.groupA = new RegionGroup(this, groupTypeA);
     this.groupB = new RegionGroup(this, groupTypeB);
     this.extraGeometry = new RegionGroup(this, RegionGroupOpType.NonBounding);
-    this.binaryOp = RegionBinaryOpType.Union; // it will be revised on can calls
+    this.binaryOp = RegionBinaryOpType.Union; // revised in runClassificationSweep
   }
   /**
    * Create a context with both A and B groups empty.
@@ -546,7 +524,7 @@ export class RegionBooleanContext implements RegionOpsFaceToFaceSearchCallbacks 
    */
   public annotateAndMergeCurvesInGraph(mergeTolerance: number = Geometry.smallMetricDistance) {
     const allPrimitives: CurvePrimitive[] = [];
-    // ASSUME loops have fine-grained types; no linestrings
+    // ASSUME loops have fine-grained types (no linestrings)
     for (const group of [this.groupA, this.groupB, this.extraGeometry]) {
       for (const member of group.members) {
         let k = allPrimitives.length;
@@ -557,7 +535,6 @@ export class RegionBooleanContext implements RegionOpsFaceToFaceSearchCallbacks 
         }
       }
     }
-    // const range = RegionOps.curveArrayRange(allPrimitives);
     const intersections = CurveCurve.allIntersectionsAmongPrimitivesXY(allPrimitives, mergeTolerance);
     const graph = PlanarSubdivision.assembleHalfEdgeGraph(allPrimitives, intersections, mergeTolerance);
     this.graph = graph;

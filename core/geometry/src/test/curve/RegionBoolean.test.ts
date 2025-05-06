@@ -1351,7 +1351,7 @@ describe("GeneralSweepBooleans", () => {
     expect(ck.getNumErrors()).toBe(0);
   });
   it("FullCircle", () => {
-    const ck = new Checker(true, true);
+    const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
     let x0 = 0;
 
