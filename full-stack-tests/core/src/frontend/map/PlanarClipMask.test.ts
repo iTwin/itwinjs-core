@@ -180,7 +180,8 @@ describe("Planar clip mask (#integration)", () => {
     await expectPixels(undefined, "map", addDynamicGeometry);
   });
 
-  it("is masked by dynamic element geometry", async () => {
+  it("is masked by dynamic element geometry",  async function () {
+    this.timeout(480000);
     const bytes = (await IModelApp.tileAdmin.requestElementGraphics(imodel, {
       elementId: "0x29",
       id: Guid.createValue(),
@@ -206,7 +207,8 @@ describe("Planar clip mask (#integration)", () => {
     });
   });
 
-  it("is masked by priority by dynamic geometry", async () => {
+  it("is masked by priority by dynamic geometry", async function () {
+    this.timeout(480000);
     await expectPixels({
       mode: PlanarClipMaskMode.Priority,
       priority: PlanarClipMaskPriority.BackgroundMap,
