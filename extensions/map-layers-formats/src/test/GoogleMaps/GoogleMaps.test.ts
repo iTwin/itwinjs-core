@@ -10,7 +10,7 @@ import { Frustum, ImageMapLayerSettings } from "@itwin/core-common";
 import { TilePatch } from "@itwin/core-frontend/lib/cjs/tile/internal.js";
 import { Range3d } from "@itwin/core-geometry";
 import { GoogleMapsImageryProvider } from "../../GoogleMaps/GoogleMapsImageryProvider.js";
-import { BaseGoogleMapsSession, GoogleMaps, GoogleMapsCreateSessionOptions, GoogleMapsRequest, GoogleMapsSession, GoogleMapsSessionData, GoogleMapsSessionManager, MapLayersFormats } from "../../map-layers-formats.js";
+import { BaseGoogleMapsSession, GoogleMaps, GoogleMapsCreateSessionOptions, GoogleMapsRequest, GoogleMapsSession, GoogleMapsSessionData, GoogleMapsSessionManager } from "../../map-layers-formats.js";
 import { GoogleMapsUtils } from "../../internal/GoogleMapsUtils.js";
 import { expect } from "chai";
 import { fakeJsonFetch } from "../TestUtils.js";
