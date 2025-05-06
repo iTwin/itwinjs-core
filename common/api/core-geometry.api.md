@@ -2876,10 +2876,10 @@ export class IndexedPolyface extends Polyface {
 // @public
 export class IndexedPolyfaceSubsetVisitor extends IndexedPolyfaceVisitor {
     static createNormalComparison(mesh: IndexedPolyface | IndexedPolyfaceVisitor, compareVector?: Vector3d, sideAngle?: Angle, numWrap?: number): IndexedPolyfaceSubsetVisitor;
-    static createSubsetVisitor(polyface: IndexedPolyface, activeFacetIndices: number[], numWrap?: number): IndexedPolyfaceSubsetVisitor;
+    static createSubsetVisitor(polyface: IndexedPolyface, facetIndices: number[], numWrap?: number): IndexedPolyfaceSubsetVisitor;
     getVisitableFacetCount(): number;
     moveToNextFacet(): boolean;
-    moveToReadIndex(activeIndex: number): boolean;
+    moveToReadIndex(subsetIndex: number): boolean;
     parentFacetIndex(subsetIndex?: number): number | undefined;
     reset(): void;
 }
@@ -2895,6 +2895,7 @@ export class IndexedPolyfaceVisitor extends PolyfaceData implements PolyfaceVisi
     clientPointIndex(i: number): number;
     clientPolyface(): IndexedPolyface;
     static create(polyface: IndexedPolyface, numWrap: number): IndexedPolyfaceVisitor;
+    createSubsetVisitor(facetIndices: number[], numWrap: number): IndexedPolyfaceSubsetVisitor;
     currentReadIndex(): number;
     getVisitableFacetCount(): number;
     moveToNextFacet(): boolean;
@@ -2918,6 +2919,7 @@ export class IndexedPolyfaceWalker {
     get edgeIndex(): number | undefined;
     edgeMate(result?: IndexedPolyfaceWalker): IndexedPolyfaceWalker;
     isDifferentEdgeInSamePolyface(other: IndexedPolyfaceWalker): boolean;
+    get isNull(): boolean;
     isSameEdge(other: IndexedPolyfaceWalker): boolean;
     get isUndefined(): boolean;
     get isValid(): boolean;
@@ -4697,7 +4699,7 @@ export class PolyfaceQuery {
     // @internal
     static awaitBlockCount: number;
     static boundaryEdges(source: Polyface | PolyfaceVisitor, includeTypical?: boolean, includeMismatch?: boolean, includeNull?: boolean): CurveCollection | undefined;
-    static boundaryOfVisibleSubset(polyface: IndexedPolyface, visibilitySelect: 0 | 1 | 2, vectorToEye: Vector3d, sideAngleTolerance?: Angle): CurveCollection | undefined;
+    static boundaryOfVisibleSubset(source: Polyface | PolyfaceVisitor, visibilitySelect: 0 | 1 | 2, vectorToEye: Vector3d, sideAngleTolerance?: Angle): CurveCollection | undefined;
     static buildAverageNormals(polyface: IndexedPolyface, toleranceAngle?: Angle): void;
     static buildPerFaceNormals(polyface: IndexedPolyface): void;
     static cloneByFacetDuplication(source: Polyface, includeSingletons: boolean, clusterSelector: DuplicateFacetClusterSelector): Polyface;
@@ -4719,14 +4721,14 @@ export class PolyfaceQuery {
     // @internal
     static convertToHalfEdgeGraph(mesh: IndexedPolyface): HalfEdgeGraph;
     static createIndexedEdges(polyface: Polyface | PolyfaceVisitor): IndexedEdgeMatcher;
-    static dihedralAngleSummary(source: Polyface, ignoreBoundaries?: boolean): number;
+    static dihedralAngleSummary(source: Polyface | PolyfaceVisitor, ignoreBoundaries?: boolean): number;
     static fillSimpleHoles(mesh: Polyface | PolyfaceVisitor, options: HoleFillOptions, unfilledChains?: LineString3d[]): IndexedPolyface | undefined;
     static getSingleEdgeVisibility(polyface: IndexedPolyface, facetIndex: number, vertexIndex: number): boolean | undefined;
     static indexedPolyfaceToLoops(polyface: Polyface): BagOfCurves;
     static intersectRay3d(visitor: Polyface | PolyfaceVisitor, ray: Ray3d, options?: FacetIntersectOptions): FacetLocationDetail | undefined;
-    static isConvexByDihedralAngleCount(source: Polyface, ignoreBoundaries?: boolean): boolean;
-    static isPolyfaceClosedByEdgePairing(source: Polyface): boolean;
-    static isPolyfaceManifold(source: Polyface, allowSimpleBoundaries?: boolean): boolean;
+    static isConvexByDihedralAngleCount(source: Polyface | PolyfaceVisitor, ignoreBoundaries?: boolean): boolean;
+    static isPolyfaceClosedByEdgePairing(source: Polyface | PolyfaceVisitor): boolean;
+    static isPolyfaceManifold(source: Polyface | PolyfaceVisitor, allowSimpleBoundaries?: boolean): boolean;
     static markAllEdgeVisibility(mesh: IndexedPolyface, value: boolean): void;
     static markPairedEdgesInvisible(mesh: IndexedPolyface, sharpEdgeAngle?: Angle): void;
     static partitionFacetIndicesByEdgeConnectedComponent(polyface: Polyface | PolyfaceVisitor, stopAtVisibleEdges?: boolean): number[][];
@@ -4777,6 +4779,7 @@ export interface PolyfaceVisitor extends PolyfaceData {
     clientParamIndex(i: number): number;
     clientPointIndex(i: number): number;
     clientPolyface(): Polyface | undefined;
+    createSubsetVisitor?(facetIndices: number[], numWrap: number): PolyfaceVisitor;
     currentReadIndex(): number;
     getVisitableFacetCount?(): number;
     moveToNextFacet(): boolean;
