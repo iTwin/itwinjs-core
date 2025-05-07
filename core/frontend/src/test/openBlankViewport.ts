@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "vitest";
-import { Dictionary, Id64String, SortedArray } from "@itwin/core-bentley";
+import { compareBooleans, compareNumbers, comparePossiblyUndefined, Dictionary, Id64String, SortedArray } from "@itwin/core-bentley";
 import { ColorDef, Feature, GeometryClass } from "@itwin/core-common";
 import { BlankConnection } from "../IModelConnection";
 import { ScreenViewport, Viewport } from "../Viewport";
@@ -12,6 +12,7 @@ import { ViewRect } from "../common/ViewRect";
 import { SpatialViewState } from "../SpatialViewState";
 import { Pixel } from "../render/Pixel";
 import { createBlankConnection } from "./createBlankConnection";
+import { ContourHit } from "../HitDetail";
 
 /** Options for openBlankViewport.
  * @internal
@@ -105,6 +106,12 @@ function compareFeatures(lhs?: Feature, rhs?: Feature): number {
     return lhs.compare(rhs);
 }
 
+function compareContours(lhs?: ContourHit, rhs?: ContourHit): number {
+  return comparePossiblyUndefined((a, b) => 
+    compareBooleans(a.isMajor, b.isMajor) || compareNumbers(a.elevation, b.elevation) || a.group.compare(b.group),
+    lhs, rhs);
+}
+
 function comparePixelData(lhs: Pixel.Data, rhs: Pixel.Data): number {
   let diff = lhs.distanceFraction - rhs.distanceFraction;
   if (0 === diff) {
@@ -113,6 +120,9 @@ function comparePixelData(lhs: Pixel.Data, rhs: Pixel.Data): number {
       diff = lhs.planarity - rhs.planarity;
       if (0 === diff) {
         diff = compareFeatures(lhs.feature, rhs.feature);
+        if (0 === diff) {
+          diff = compareContours(lhs.contour, rhs.contour);
+        }
       }
     }
   }
@@ -195,6 +205,14 @@ export class Color {
     const color = ColorDef.create(this.v);
     return color.toHexString();
   }
+
+  public toColorDef(): ColorDef {
+    return ColorDef.from(this.r, this.g, this.b, 255 - this.a);
+  }
+}
+
+export function sortColorDefs(colors: ColorDef[]): ColorDef[] {
+  return colors.sort((a, b) => a.tbgr - b.tbgr);
 }
 
 /** A set of unique color values read from a viewport - see readUniqueColors.
@@ -204,15 +222,19 @@ export class ColorSet extends SortedArray<Color> {
   public constructor() { super((lhs: Color, rhs: Color) => lhs.compare(rhs)); }
   public get array(): Color[] { return this._array; }
   public containsColorDef(color: ColorDef): boolean { return this.contains(Color.fromColorDef(color)); }
+  public toColorDefs(): ColorDef[] {
+    return sortColorDefs(this.array.map((x) => x.toColorDef()));
+  }
 }
 
-export function processPixels(vp: Viewport, processor: (pixel: Pixel.Data) => void, readRect?: ViewRect, excludeNonLocatable?: boolean, excludedElements?: Iterable<string>): void {
+export function processPixels(vp: Viewport, processor: (pixel: Pixel.Data) => void, readRect?: ViewRect, excludeNonLocatable?: boolean, excludedElements?: Iterable<string>, selector = Pixel.Selector.All): void {
   const rect = undefined !== readRect ? readRect : vp.viewRect;
 
   vp.readPixels({
     rect,
     excludeNonLocatable,
     excludedElements,
+    selector,
     receiver: (pixels) => {
       if (undefined === pixels)
         return;
@@ -234,9 +256,9 @@ export function processPixels(vp: Viewport, processor: (pixel: Pixel.Data) => vo
  * Omit `readRect` to read the contents of the entire viewport.
  * @internal
  */
-export function readUniquePixelData(vp: Viewport, readRect?: ViewRect, excludeNonLocatable = false, excludedElements?: Iterable<string>): PixelDataSet {
+export function readUniquePixelData(vp: Viewport, readRect?: ViewRect, excludeNonLocatable = false, excludedElements?: Iterable<string>, selector = Pixel.Selector.All): PixelDataSet {
   const set = new PixelDataSet();
-  processPixels(vp, (pixel) => set.insert(pixel), readRect, excludeNonLocatable, excludedElements);
+  processPixels(vp, (pixel) => set.insert(pixel), readRect, excludeNonLocatable, excludedElements, selector);
   return set;
 }
 

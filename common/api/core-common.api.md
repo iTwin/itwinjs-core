@@ -1927,11 +1927,11 @@ export interface ContextRealityModelsContainer {
 // @public
 export class Contour {
     clone(changedProps?: Partial<ContourProperties>): Contour;
+    compare(other: Contour): number;
     static compare(lhs: Contour, rhs: Contour): number;
     static create(props?: Partial<ContourProperties>): Contour;
     // (undocumented)
     static readonly defaults: Contour;
-    // (undocumented)
     equals(other: Contour): boolean;
     // (undocumented)
     static fromJSON(props?: ContourProps): Contour;
@@ -1947,6 +1947,7 @@ export class Contour {
 // @public
 export class ContourDisplay {
     clone(changedProps?: Partial<ContourDisplayProperties>): ContourDisplay;
+    compare(other: ContourDisplay): number;
     static create(props?: Partial<ContourDisplayProperties>): ContourDisplay;
     readonly displayContours: boolean;
     equals(other: ContourDisplay): boolean;
@@ -1971,6 +1972,7 @@ export interface ContourDisplayProps {
 // @public
 export class ContourGroup {
     clone(changedProps?: Partial<ContourGroupProperties>): ContourGroup;
+    compare(other: ContourGroup): number;
     readonly contourDef: Contour;
     static create(props?: Partial<ContourGroupProperties>): ContourGroup;
     equals(other: ContourGroup | undefined): boolean;
@@ -2010,6 +2012,7 @@ export interface ContourProps {
 export class ContourStyle {
     clone(changedProps?: Partial<ContourStyleProperties>): ContourStyle;
     readonly color: RgbColor;
+    compare(other: ContourStyle): number;
     static compare(lhs: ContourStyle, rhs: ContourStyle): number;
     static create(props?: Partial<ContourStyleProperties>): ContourStyle;
     equals(other: ContourStyle): boolean;
@@ -8040,6 +8043,8 @@ export namespace RenderSchedule {
         // @internal (undocumented)
         modelRequiresBatching(modelId: Id64String): boolean;
         readonly modelTimelines: ReadonlyArray<ModelTimeline>;
+        // @internal
+        static removeScheduleScriptElementIds(scheduleScript: RenderSchedule.ScriptProps): RenderSchedule.ScriptProps;
         // @internal
         readonly requiresBatching: boolean;
         // (undocumented)

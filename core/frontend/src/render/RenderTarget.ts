@@ -108,7 +108,7 @@ export abstract class RenderTarget implements Disposable, RenderMemory.Consumer 
   /** @internal */
   public abstract changeScene(scene: Scene): void;
   /** @internal */
-  public abstract changeDynamics(dynamics?: GraphicList): void;
+  public abstract changeDynamics(foreground: GraphicList | undefined, overlay: GraphicList | undefined): void;
   /** @internal */
   public abstract changeDecorations(decorations: Decorations): void;
   /** @internal */
