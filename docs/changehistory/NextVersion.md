@@ -39,6 +39,7 @@ Table of contents:
     - [@itwin/presentation-common](#itwinpresentation-common)
     - [@itwin/presentation-backend](#itwinpresentation-backend)
     - [@itwin/presentation-frontend](#itwinpresentation-frontend)
+    - [@itwin/ecschema-rpcinterface-common](#itwinecschema-rpcinterface-common)
   - [Breaking Changes](#breaking-changes)
     - [Updated minimum requirements](#updated-minimum-requirements)
       - [Node.js](#nodejs)
@@ -380,6 +381,26 @@ const metaData: KindOfQuantity | undefined = await imodelDb.schemaContext.getSch
   - `SelectionManagerProps`,
   - `SelectionScopesManager`,
   - `SelectionScopesManagerProps`.
+
+### @itwin/ecschema-rpcinterface-common
+
+- The `getSchemaSync` method in `ECSchemaRpcLocater` has been deprecated in version 5.0. This method is not supported for locating schemas over RPC/HTTP. Instead, use the asynchronous `getSchema` method for schema retrieval.
+
+**Reason for deprecation:**
+The synchronous `getSchemaSync` method is incompatible with the asynchronous nature of RPC/HTTP operations. It always throws an error and should not be used.
+
+**Replacement:**
+Use the `getSchema` method, which is asynchronous and designed for retrieving schemas over RPC/HTTP.
+
+**Example:**
+
+```typescript
+// Deprecated usage
+const schema = context.getSchemaSync(schemaKey, SchemaMatchType.Exact);
+
+// Recommended usage
+const schema = await context.getSchema(schemaKey, SchemaMatchType.Exact);
+```
 
 ## Breaking Changes
 
