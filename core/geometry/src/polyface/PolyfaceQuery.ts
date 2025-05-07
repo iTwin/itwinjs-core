@@ -280,7 +280,7 @@ export enum DuplicateFacetClusterSelector {
  * @public
  */
 export type AnnounceDrapePanel = (
-  linestring: GrowableXYZArray, segmentIndex: number, polyface: Polyface,
+  linestring: IndexedXYZCollection, segmentIndex: number, polyface: Polyface,
   facetIndex: number, points: Point3d[], indexAOnFacet: number, indexBOnFacet: number,
 ) => any;
 
@@ -868,11 +868,7 @@ export class PolyfaceQuery {
    * * Announce each pair of linestring segment and on-facet segment through a callback.
    * * Facets are ASSUMED to be convex and planar, and not overlap in the z direction.
    */
-  public static announceSweepLinestringToConvexPolyfaceXY(
-    linestringPoints: GrowableXYZArray,
-    polyface: Polyface,
-    announce: AnnounceDrapePanel,
-  ): any {
+  public static announceSweepLinestringToConvexPolyfaceXY(linestringPoints: IndexedXYZCollection, polyface: Polyface, announce: AnnounceDrapePanel): void {
     const context = SweepLineStringToFacetContext.create(linestringPoints);
     if (context) {
       const visitor = polyface.createVisitor(0);
@@ -924,7 +920,7 @@ export class PolyfaceQuery {
    * @internal
    */
   public static async asyncAnnounceSweepLinestringToConvexPolyfaceXY(
-    linestringPoints: GrowableXYZArray, polyface: Polyface, announce: AnnounceDrapePanel,
+    linestringPoints: IndexedXYZCollection, polyface: Polyface, announce: AnnounceDrapePanel,
   ): Promise<number> {
     const context = SweepLineStringToFacetContext.create(linestringPoints);
     this.awaitBlockCount = 0;
@@ -1399,12 +1395,12 @@ export class PolyfaceQuery {
    * * Assemble each input segment paired with its projected segment/point as a quad/triangle facet in a new polyface.
    * * Input facets are ASSUMED to be convex and planar, and not overlap in the z direction.
    */
-  public static sweepLineStringToFacetsXYReturnSweptFacets(lineStringPoints: GrowableXYZArray, polyface: Polyface): Polyface {
+  public static sweepLineStringToFacetsXYReturnSweptFacets(lineStringPoints: IndexedXYZCollection, polyface: Polyface): Polyface {
     const builder = PolyfaceBuilder.create();
     this.announceSweepLinestringToConvexPolyfaceXY(
       lineStringPoints,
       polyface,
-      (_linestring: GrowableXYZArray, _segmentIndex: number, _polyface: Polyface, _facetIndex: number, points: Point3d[]) => {
+      (_linestring: IndexedXYZCollection, _segmentIndex: number, _polyface: Polyface, _facetIndex: number, points: Point3d[]) => {
         if (points.length === 4)
           builder.addQuadFacet(points);
         else if (points.length === 3)
@@ -1425,32 +1421,17 @@ export class PolyfaceQuery {
    * * Facets are ASSUMED to be convex and planar, and not overlap in the sweep direction.
    * * For vertical sweep, see also [[sweepLineStringToFacetsXY]] which takes a pre-computed range tree for faster searching.
    */
-  public static sweepLineStringToFacets(
-    linestringPoints: GrowableXYZArray,
-    polyfaceOrVisitor: Polyface | PolyfaceVisitor,
-    options?: SweepLineStringToFacetsOptions,
-  ): LinearCurvePrimitive[] {
+  public static sweepLineStringToFacets(points: IndexedXYZCollection, source: Polyface | PolyfaceVisitor, options?: SweepLineStringToFacetsOptions): LinearCurvePrimitive[] {
     let result: LinearCurvePrimitive[] = [];
-    // setup default options
     if (options === undefined)
-      options = SweepLineStringToFacetsOptions.create(
-        Vector3d.unitZ(),
-        Angle.createRadians(Geometry.smallAngleRadians), // tight geometry tolerance for vertical side facets
-        true,
-        true,
-        true,
-        true,
-      );
+      options = SweepLineStringToFacetsOptions.create();
     let chainContext: ChainMergeContext | undefined;
     if (options.assembleChains)
       chainContext = ChainMergeContext.create();
-    const context = ClipSweptLineStringContext.create(linestringPoints, options.vectorToEye);
+    const context = ClipSweptLineStringContext.create(points, options.vectorToEye);
     if (context) {
-      let visitor: PolyfaceVisitor;
-      if (polyfaceOrVisitor instanceof Polyface)
-        visitor = polyfaceOrVisitor.createVisitor(0);
-      else
-        visitor = polyfaceOrVisitor;
+      const visitor = source instanceof Polyface ? source.createVisitor(0): source;
+      visitor.setNumWrap(0);
       const workNormal = Vector3d.createZero();
       for (visitor.reset(); visitor.moveToNextFacet();) {
         if (options.collectFromThisFacetNormal(PolygonOps.areaNormalGo(visitor.point, workNormal))) {
@@ -1472,9 +1453,9 @@ export class PolyfaceQuery {
   }
   /**
    * Sweep the line string in the z-direction to intersections with a mesh, using a search object for speedup.
-   * @param lineStringPoints input line string to drape on the mesh.
-   * @param polyfaceOrVisitor mesh, or mesh visitor to traverse only part of a mesh.
-   * @param searchByReadIndex object for searching facet 2D ranges tagged by mesh read index.
+   * @param points input line string to drape on the mesh.
+   * @param source mesh, or mesh visitor to traverse only part of a mesh.
+   * @param searcher object for searching facet 2D ranges tagged by mesh read index.
    * @example Using a 5x5 indexed search grid:
    * ```
    * const xyRange = Range2d.createFrom(myPolyface.range());
@@ -1486,24 +1467,13 @@ export class PolyfaceQuery {
    * ```
    * @returns the collected line strings.
    */
-  public static sweepLineStringToFacetsXY(
-    lineStringPoints: GrowableXYZArray | Point3d[],
-    polyfaceOrVisitor: Polyface | PolyfaceVisitor,
-    searchByReadIndex: Range2dSearchInterface<number>,
-  ): LineString3d[] {
+  public static sweepLineStringToFacetsXY(points: IndexedXYZCollection | Point3d[], source: Polyface | PolyfaceVisitor, searcher: Range2dSearchInterface<number>): LineString3d[] {
     const chainContext = ChainMergeContext.create();
     const sweepVector = Vector3d.create(0, 0, 1);
     const searchRange = Range3d.create();
-    let visitor: PolyfaceVisitor;
-    if (polyfaceOrVisitor instanceof Polyface)
-      visitor = polyfaceOrVisitor.createVisitor(0);
-    else
-      visitor = polyfaceOrVisitor;
-    let lineStringSource: IndexedXYZCollection;
-    if (Array.isArray(lineStringPoints))
-      lineStringSource = new Point3dArrayCarrier(lineStringPoints);
-    else
-      lineStringSource = lineStringPoints;
+    const visitor = source instanceof Polyface ? source.createVisitor(0): source;
+    visitor.setNumWrap(0);
+    const lineStringSource = Array.isArray(points) ? new Point3dArrayCarrier(points) : points;
     for (let i = 1; i < lineStringSource.length; i++) {
       const point0 = lineStringSource.getPoint3dAtUncheckedPointIndex(i - 1);
       const point1 = lineStringSource.getPoint3dAtUncheckedPointIndex(i);
@@ -1512,7 +1482,7 @@ export class PolyfaceQuery {
         Range3d.createNull(searchRange);
         searchRange.extendPoint(point0);
         searchRange.extendPoint(point1);
-        searchByReadIndex.searchRange2d(
+        searcher.searchRange2d(
           searchRange,
           (_facetRange, readIndex) => {
             if (visitor.moveToReadIndex(readIndex))
@@ -1544,18 +1514,11 @@ export class PolyfaceQuery {
   /**
    * Find segments (within the linestring) which project to facets.
    * * Return chains.
-   * * This calls [[sweepLineStringToFacets]] with options created by
-   *   `const options = SweepLineStringToFacetsOptions.create(Vector3d.unitZ(), Angle.createSmallAngle(),true, true, true, true);`
+   * * This calls [[sweepLineStringToFacets]] with default options.
    * @deprecated in 4.x. Use [[PolyfaceQuery.sweepLineStringToFacets]] to get further options.
    */
-  public static sweepLinestringToFacetsXYReturnChains(
-    linestringPoints: GrowableXYZArray, polyface: Polyface,
-  ): LineString3d[] {
-    const options = SweepLineStringToFacetsOptions.create(
-      Vector3d.unitZ(), Angle.createSmallAngle(), true, true, true, true,
-    );
-    const result = PolyfaceQuery.sweepLineStringToFacets(linestringPoints, polyface, options);
-    return result as LineString3d[];
+  public static sweepLinestringToFacetsXYReturnChains(linestringPoints: GrowableXYZArray, polyface: Polyface): LineString3d[] {
+    return PolyfaceQuery.sweepLineStringToFacets(linestringPoints, polyface) as LineString3d[];
   }
   /**
    * Find segments (within the linestring) which project to facets.
@@ -1567,14 +1530,14 @@ export class PolyfaceQuery {
    * * Facets are ASSUMED to be convex and planar, and not overlap in the z direction.
    */
   public static async asyncSweepLinestringToFacetsXYReturnChains(
-    linestringPoints: GrowableXYZArray, polyface: Polyface,
+    linestringPoints: IndexedXYZCollection, polyface: Polyface,
   ): Promise<LineString3d[]> {
     const chainContext = ChainMergeContext.create();
     await Promise.resolve(
       this.asyncAnnounceSweepLinestringToConvexPolyfaceXY(
         linestringPoints,
         polyface,
-        (_linestring: GrowableXYZArray, _segmentIndex: number, _polyface: Polyface,
+        (_linestring: IndexedXYZCollection, _segmentIndex: number, _polyface: Polyface,
           _facetIndex: number, points: Point3d[], indexA: number, indexB: number) => {
           chainContext.addSegment(points[indexA], points[indexB]);
         },
