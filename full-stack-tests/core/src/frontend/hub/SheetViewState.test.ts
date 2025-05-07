@@ -236,6 +236,8 @@ describe("Sheet views", () => {
         expect(sheetView.areAllAttachmentsLoaded()).to.be.true;
         expect(sheetView.areAllTileTreesLoaded).to.be.true;
       });
+
+      await iModel.close();
     });
   });
 });
