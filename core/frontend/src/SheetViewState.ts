@@ -547,7 +547,7 @@ export class SheetViewState extends ViewState2d {
     return super.areAllTileTreesLoaded && (!this._attachments || this._attachments.areAllTileTreesLoaded(displayedExtents));
   }
 
-  /** Strictly for testing */
+  /** @internal Strictly for testing */
   public areAllAttachmentsLoaded(): boolean {
     if (this._attachments) {
       return this._attachments.areAllAttachmentsLoaded();
