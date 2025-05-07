@@ -3,10 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { BaselineShift, ColorDef, FractionRun, IModelTileRpcInterface, LineBreakRun, TextAnnotation, TextAnnotationAnchor, TextAnnotationFrameShape, TextBlock, TextBlockJustification, TextBlockMargins, TextFrameStyleProps, TextRun, TextStyleSettingsProps } from "@itwin/core-common";
+import { BaselineShift, ColorDef, FractionRun, LineBreakRun, TextAnnotation, TextAnnotationAnchor, TextAnnotationFrameShape, TextBlock, TextBlockJustification, TextBlockMargins, TextFrameStyleProps, TextRun, TextStyleSettingsProps } from "@itwin/core-common";
 import { DecorateContext, Decorator, GraphicType, IModelApp, IModelConnection, readElementGraphics, RenderGraphicOwner, Tool } from "@itwin/core-frontend";
 import { DtaRpcInterface } from "../common/DtaRpcInterface";
-import { Guid, Id64, Id64String } from "@itwin/core-bentley";
+import { Id64, Id64String } from "@itwin/core-bentley";
 import { Point3d, YawPitchRollAngles } from "@itwin/core-geometry";
 
 // Ignoring the spelling of the keyins. They're case insensitive, so we check against lowercase.
@@ -133,23 +133,19 @@ class TextEditor implements Decorator {
     });
 
     const rpcProps = this._iModel.getRpcProps();
-    const geometry = await DtaRpcInterface.getClient().generateTextAnnotationGeometry(rpcProps, annotation.toJSON(), undefined, { debugAnchorPoint: this.debugAnchorPointAndRange, debugSnapPoints: this.frame.debugSnap });
 
-    if (undefined === geometry) {
-      return;
+    const annotationProps = annotation.toJSON();
+    const placementProps = {
+      origin: this.origin,
+      angle: 0,
     }
-
-    const gfx = await IModelTileRpcInterface.getClient().requestElementGraphics(rpcProps, {
-      id: Guid.createValue(),
-      toleranceLog10: -5,
-      type: "2d",
-      placement: {
-        origin: this.origin.toJSON(), // Point3d.createZero(),
-        angle: 0,
-      },
-      categoryId: this._categoryId,
-      geometry,
-    });
+    const gfx = await DtaRpcInterface.getClient().generateTextAnnotationGeometry(
+      rpcProps,
+      annotationProps,
+      this._categoryId,
+      placementProps,
+      { debugAnchorPoint: this.debugAnchorPointAndRange, debugSnapPoints: this.frame.debugSnap }
+    );
 
     const graphic = undefined !== gfx ? await readElementGraphics(gfx, this._iModel, this._entityId, false) : undefined;
     this._graphic = graphic ? IModelApp.renderSystem.createGraphicOwner(graphic) : undefined;
@@ -182,26 +178,6 @@ export class TextDecorationTool extends Tool {
     const arg = inArgs[1];
 
     switch (cmd) {
-      case "starwars":
-        await this.parseAndRun("init");
-        await this.parseAndRun("center");
-        await this.parseAndRun("height", "0.25"); // Text size (text height)
-        await this.parseAndRun("width", "6"); // Width of the text box
-        await this.parseAndRun("text", "You were the chosen one! It was said that you would destroy the Sith, not join them. You were to bring balance to the Force, not leave it in darkness.");
-        await this.parseAndRun("break");
-        await this.parseAndRun("break");
-        await this.parseAndRun("text", "— Obi-wan Kenobi, ");
-        await this.parseAndRun("underline");
-        await this.parseAndRun("text", "Revenge of the Sith");
-        await this.parseAndRun("margin", "all", "0.25");
-
-        if (arg === "frame") {
-          await this.parseAndRun("frame", "style", "rectangle");
-          await this.parseAndRun("frame", "border", "orange");
-          await this.parseAndRun("frame", "borderWeight", "10");
-          await this.parseAndRun("frame", "fill", "lightblue");
-        }
-        break;
       case "clear":
         editor.clear();
         return true;

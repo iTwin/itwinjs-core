@@ -4,15 +4,14 @@
 *--------------------------------------------------------------------------------------------*/
 import * as fs from "fs";
 import * as path from "path";
-import { Logger, LogLevel, ProcessDetector } from "@itwin/core-bentley";
+import { Guid, Id64String, Logger, LogLevel, ProcessDetector } from "@itwin/core-bentley";
 import { ElectronMainAuthorization } from "@itwin/electron-authorization/Main";
 import { ElectronHost, ElectronHostOptions } from "@itwin/core-electron/lib/cjs/ElectronBackend";
 import { BackendIModelsAccess } from "@itwin/imodels-access-backend";
 import { IModelsClient } from "@itwin/imodels-client-authoring";
 import { IModelDb, IModelHost, IModelHostOptions, LocalhostIpcHost, TextAnnotationStroker } from "@itwin/core-backend";
 import {
-  FlatBufferGeometryStream,
-  IModelReadRpcInterface, IModelRpcProps, IModelTileRpcInterface, JsonGeometryStream, PlacementProps, RpcInterfaceDefinition, RpcManager, TextAnnotationProps,
+  DynamicGraphicsRequest2dProps, IModelReadRpcInterface, IModelRpcProps, IModelTileRpcInterface, Placement2dProps, RpcInterfaceDefinition, RpcManager, TextAnnotationProps,
 } from "@itwin/core-common";
 import { MobileHost, MobileHostOpts } from "@itwin/core-mobile/lib/cjs/MobileBackend";
 import { DtaConfiguration, getConfig } from "../common/DtaConfiguration";
@@ -180,11 +179,21 @@ class DisplayTestAppRpc extends DtaRpcInterface {
     return (await IModelHost.authorizationClient?.getAccessToken()) ?? "";
   }
 
-  public override async generateTextAnnotationGeometry(iModelToken: IModelRpcProps, annotationProps: TextAnnotationProps, placementProps?: PlacementProps, args?: { debugAnchorPoint?: boolean, debugSnapPoints?: boolean }): Promise<FlatBufferGeometryStream | JsonGeometryStream | undefined> {
+  public override async generateTextAnnotationGeometry(iModelToken: IModelRpcProps, annotationProps: TextAnnotationProps, categoryId: Id64String, placementProps: Placement2dProps, args?: { debugAnchorPoint?: boolean, debugSnapPoints?: boolean }): Promise<Uint8Array | undefined> {
     const iModel = IModelDb.findByKey(iModelToken.key);
 
     const stroker = new TextAnnotationStroker(iModel);
-    return stroker.createGeometry({ annotationProps, placementProps, debugAnchorPoint: args?.debugAnchorPoint, debugSnapPoints: args?.debugSnapPoints });
+    const strokerProps = { annotationProps, placementProps, debugAnchorPoint: args?.debugAnchorPoint, debugSnapPoints: args?.debugSnapPoints };
+    const requestProps: Omit<DynamicGraphicsRequest2dProps, "geometry"> = {
+      id: Guid.createValue(),
+      toleranceLog10: -5,
+      type: "2d",
+      placement: placementProps,
+      categoryId,
+    }
+
+    const results = await stroker.computeResults(strokerProps, requestProps, { wantGraphics: true });
+    return results.graphics;
   }
 }
 

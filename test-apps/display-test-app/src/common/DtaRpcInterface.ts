@@ -2,10 +2,11 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { FlatBufferGeometryStream, IModelRpcProps, JsonGeometryStream, PlacementProps, RpcInterface, RpcManager, TextAnnotationProps } from "@itwin/core-common";
+import { IModelRpcProps, PlacementProps, RpcInterface, RpcManager, TextAnnotationProps } from "@itwin/core-common";
 import * as http from "http";
 import * as https from "https";
 import { DtaConfiguration } from "./DtaConfiguration";
+import { Id64String } from "@itwin/core-bentley";
 
 /** Display Test App RPC interface. */
 export class DtaRpcInterface extends RpcInterface {
@@ -31,5 +32,5 @@ export class DtaRpcInterface extends RpcInterface {
   public async terminate(): Promise<void> { return this.forward(arguments); }
   public async getEnvConfig(): Promise<DtaConfiguration> { return this.forward(arguments); }
   public async getAccessToken(): Promise<string> { return this.forward(arguments); }
-  public async generateTextAnnotationGeometry(_iModelToken: IModelRpcProps, _annotationProps: TextAnnotationProps, _placementProps?: PlacementProps, _args?: { debugAnchorPoint?: boolean, debugSnapPoints?: boolean }): Promise<FlatBufferGeometryStream | JsonGeometryStream | undefined> { return this.forward(arguments); }
+  public async generateTextAnnotationGeometry(_iModelToken: IModelRpcProps, _annotationProps: TextAnnotationProps, _categoryId: Id64String, _placementProps: PlacementProps, _args?: { debugAnchorPoint?: boolean, debugSnapPoints?: boolean }): Promise<Uint8Array | undefined> { return this.forward(arguments); }
 }
