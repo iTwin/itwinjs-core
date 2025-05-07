@@ -676,8 +676,12 @@ export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
     }
   }
   /** get range of points. */
-  public override getRange(transform?: Transform): Range3d {
-    const range = Range3d.createNull();
+  public override getRange(transform?: Transform, result?: Range3d): Range3d {
+    let range = result;
+    if (range)
+      range.setNull();
+    else
+      range = Range3d.createNull();
     this.extendRange(range, transform);
     return range;
   }
