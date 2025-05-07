@@ -72,7 +72,7 @@ async function setGoogleMapsApiKey() {
   });
 }
 // __PUBLISH_EXTRACT_END__
-// __PUBLISH_EXTRACT_START__GoogleMaps_SetGoogleMapsApiKey
+// __PUBLISH_EXTRACT_START__GoogleMaps_SetGoogleMapsSessionManager
 async function setGoogleMapsSessionManager() {
   await MapLayersFormats.initialize(
     {
