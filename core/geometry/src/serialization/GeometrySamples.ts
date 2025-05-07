@@ -66,8 +66,6 @@ import { Sphere } from "../solid/Sphere";
 import { TorusPipe } from "../solid/TorusPipe";
 
 // cspell:word CCWXY
-// cspell:word bloss
-// cspell:word Arema
 // cspell:word ABCDA
 /**
  * Function to be called to obtain function value at (i,n), for

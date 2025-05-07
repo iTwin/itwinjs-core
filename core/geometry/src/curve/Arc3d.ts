@@ -753,10 +753,13 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
   public override curveLength(): number {
     return this.curveLengthBetweenFractions(0, 1);
   }
-  // !! misspelled Gauss in the published static !! Declare it ok.
-  // cspell::word Guass
-  /** Gauss point quadrature count for evaluating curve length. (The number of intervals is adjusted to the arc sweep). */
+  /**
+   * Gauss point quadrature count for evaluating curve length. (The number of intervals is adjusted to the arc sweep).
+   * @deprecated in 5.x Use correct spelling quadratureGaussCount.
+   */
   public static readonly quadratureGuassCount = 5;
+  /** Gauss point quadrature count for evaluating curve length. (The number of intervals is adjusted to the arc sweep). */
+  public static readonly quadratureGaussCount = 5;
   /** In quadrature for arc length, use this interval (divided by quickEccentricity). */
   public static readonly quadratureIntervalAngleDegrees = 10.0;
   /**
@@ -783,7 +786,7 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
       numInterval = 400;
     if (numInterval < 1)
       numInterval = 1;
-    return super.curveLengthWithFixedIntervalCountQuadrature(f0, f1, numInterval, Arc3d.quadratureGuassCount);
+    return super.curveLengthWithFixedIntervalCountQuadrature(f0, f1, numInterval, Arc3d.quadratureGaussCount);
   }
   /**
    * Return an approximate (but easy to compute) arc length.

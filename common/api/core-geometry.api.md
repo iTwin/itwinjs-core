@@ -289,6 +289,8 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
     otherArcAsLocalVectors(other: Arc3d): ArcVectors | undefined;
     get perpendicularVector(): Vector3d;
     projectedParameterRange(ray: Vector3d | Ray3d, lowHigh?: Range1d): Range1d | undefined;
+    static readonly quadratureGaussCount = 5;
+    // @deprecated
     static readonly quadratureGuassCount = 5;
     static readonly quadratureIntervalAngleDegrees = 10;
     quickEccentricity(): number;
