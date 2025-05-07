@@ -816,12 +816,19 @@ export class DrawingViewDefinition extends ViewDefinition2d {
  * @public
 */
 export interface CreateSheetViewDefinitionArgs {
+  /** The iModel */
   iModel: IModelDb;
+  /** The [[DefinitionModel]]*/
   definitionModelId: Id64String;
+  /** The name/CodeValue of the view */
   name: string;
+  /** The Id of the Model displayed by this view */
   baseModelId: Id64String;
+  /** The [[CategorySelector]] that this view should use */
   categorySelectorId: Id64String;
+  /** The [[DisplayStyle2d]] that this view should use */
   displayStyleId: Id64String;
+  /** Defines the view origin and extents */
   range: Range2d;
 }
 
@@ -835,6 +842,7 @@ export class SheetViewDefinition extends ViewDefinition2d {
     super(props, iModel);
   }
 
+  /** Create a SheetViewDefinition */
   public static create(args: CreateSheetViewDefinitionArgs): SheetViewDefinition {
     const { baseModelId, categorySelectorId, displayStyleId, range } = args;
     const props: ViewDefinition2dProps = {
@@ -852,11 +860,13 @@ export class SheetViewDefinition extends ViewDefinition2d {
     return new SheetViewDefinition(props, args.iModel);
   }
 
+  /** Insert a SheetViewDefinition into an IModelDb */
   public static insert(args: CreateSheetViewDefinitionArgs): Id64String {
     const view = this.create(args);
     return args.iModel.elements.insertElement(view.toJSON());
   }
 
+  /** Create a SheetViewDefinition from JSON props */
   public static fromJSON(props: Omit<ViewDefinition2dProps, "classFullName">, iModel: IModelDb): SheetViewDefinition {
     return new SheetViewDefinition({ ...props, classFullName: this.classFullName }, iModel);
   }

@@ -3,15 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { BlankConnection, BriefcaseConnection, CheckpointConnection, ScreenViewport, SheetViewState, SpatialViewState, ViewState } from "@itwin/core-frontend";
+import { BriefcaseConnection, CheckpointConnection, SheetViewState, ViewState } from "@itwin/core-frontend";
 import { TestUsers } from "@itwin/oidc-signin-tool/lib/cjs/TestUsers";
 import { testOnScreenViewport } from "../TestViewport";
 import { TestUtility } from "../TestUtility";
 import { coreFullStackTestIpc } from "../Editing";
 import * as path from "path";
-import { Cartographic } from "@itwin/core-common";
-import { Point2d, Point3d, Range2d, Range3d } from "@itwin/core-geometry";
-import { Guid } from "@itwin/core-bentley";
+import { Point2d, Point3d, Range2d } from "@itwin/core-geometry";
 
 describe("Sheet views (#integration)", () => {
   let imodel: CheckpointConnection;
@@ -185,119 +183,58 @@ describe("Sheet views", () => {
   });
 
   describe("ViewAttachments", () => {
-    function createBlankConnection(name = "test-blank-connection",
-      location = Cartographic.fromDegrees({ longitude: -75.686694, latitude: 40.065757, height: 0 }),
-      extents = new Range3d(-1000, -1000, -100, 1000, 1000, 100),
-      iTwinId = Guid.createValue()): BlankConnection {
-      return BlankConnection.create({ name, location, extents, iTwinId });
-    }
-
-    interface BlankViewportOptions {
-      /** Height in pixels. Default 100. */
-      height?: number;
-      /** Width in pixels. Default 100. */
-      width?: number;
-      /** iModel. If undefined, a new blank connection will be created. */
-      iModel?: BlankConnection;
-      /** The position of the containing div. */
-      position?: "absolute";
-    }
-
-    /** Open a viewport for a blank spatial view.
-     * @internal
-     */
-    function openBlankViewport(options?: BlankViewportOptions): ScreenViewport {
-      const height = options?.height ?? 100;
-      const width = options?.width ?? 100;
-      const iModel = options?.iModel ?? createBlankConnection();
-
-      const parentDiv = document.createElement("div");
-      const hPx = `${height}px`;
-      const wPx = `${width}px`;
-
-      parentDiv.setAttribute("height", hPx);
-      parentDiv.setAttribute("width", wPx);
-      parentDiv.style.height = hPx;
-      parentDiv.style.width = wPx;
-
-      if (options?.position)
-        parentDiv.style.position = options.position;
-
-      document.body.appendChild(parentDiv);
-
-      const view = SpatialViewState.createBlank(iModel, { x: 0, y: 0, z: 0 }, { x: 1, y: 1, z: 1 });
-
-      class BlankViewport extends ScreenViewport {
-        public ownedIModel?: BlankConnection;
-
-        public override[Symbol.dispose](): void {
-          if (!this.isDisposed) {
-            document.body.removeChild(this.parentDiv);
-            super[Symbol.dispose]();
-            this.ownedIModel?.closeSync();
-          }
-        }
-      }
-
-      const viewport = BlankViewport.create(parentDiv, view) as BlankViewport;
-      if (undefined === options?.iModel)
-        viewport.ownedIModel = iModel;
-
-      return viewport;
-    }
-
     it("areAllTileTreesLoaded should return true when attachments are outside of the viewed extents", async () => {
       // Create Sheet View with attachment
       const filePath = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/cjs/test/assets/sheetViewTest.bim");
       const sheetViewId = await coreFullStackTestIpc.insertSheetViewWithAttachment(filePath);
       const iModel = await BriefcaseConnection.openStandalone(filePath);
-      const vp = openBlankViewport({ height: 1, width: 1, iModel: iModel as unknown as BlankConnection /* hack, remove? */ });
-      const newSheetView = await iModel.views.load(sheetViewId) as SheetViewState;
 
-      expect(newSheetView).instanceof(SheetViewState);
-      expect(newSheetView.viewAttachmentProps.length).to.equal(1);
+      await testOnScreenViewport(sheetViewId, iModel, 1, 1, async (vp) => {
 
-      // Load Shet View
-      await newSheetView.load();
-      vp.changeView(newSheetView);;
-      expect(newSheetView.attachments).not.to.be.undefined;
+        // get view from viewport
+        const sheetView = vp.view as SheetViewState;
+        expect(sheetView).instanceof(SheetViewState);
+        expect(sheetView.viewAttachmentProps.length).to.equal(1);
+        expect(sheetView.attachments).not.to.be.undefined;
 
-      // Get Viewed Extents
-      const viewedExtents = newSheetView.getViewedExtentsFromFrustum();
-      expect(viewedExtents).not.to.be.undefined;
-      const viewedExtents2d = new Range2d(viewedExtents.xLow, viewedExtents.yLow, viewedExtents.xHigh, viewedExtents.yHigh);
+        // Get Viewed Extents
+        const viewedExtents = sheetView.calculateFrustum()?.toRange();
+        expect(viewedExtents).not.to.be.undefined;
+        const viewedExtents2d = new Range2d(viewedExtents!.xLow, viewedExtents!.yLow, viewedExtents!.xHigh, viewedExtents!.yHigh);
 
-      // Get Attachment Range
-      const attachment = newSheetView.viewAttachmentProps[0];
-      const origin = Point2d.fromJSON(attachment.placement?.origin);
-      expect(origin).not.to.be.undefined;
+        // Get Attachment Range
+        const attachment = sheetView.viewAttachmentProps[0];
+        const origin = Point2d.fromJSON(attachment.placement?.origin);
+        expect(origin).not.to.be.undefined;
 
-      const bbox = Range2d.fromJSON(attachment.placement?.bbox);;
-      expect(bbox).not.to.be.undefined;
-      const attachmentRange = new Range2d(origin.x + bbox.xLow, origin.y + bbox.yLow, origin.x + bbox.xHigh, origin.y + bbox.yHigh);
+        const bbox = Range2d.fromJSON(attachment.placement?.bbox);
+        expect(bbox).not.to.be.undefined;
+        const attachmentRange = new Range2d(origin.x + bbox.xLow, origin.y + bbox.yLow, origin.x + bbox.xHigh, origin.y + bbox.yHigh);
 
-      // Load Tree Refs
-      for (const ref of newSheetView.getTileTreeRefs()) {
-        ref.treeOwner.load();
-      }
-      await vp.waitForSceneCompletion();
+        await vp.waitForSceneCompletion();
 
-      // Expect areAllTileTreesLoaded to be true when attachment is outside of the viewed extents
-      expect(viewedExtents2d.intersectsRange(attachmentRange)).to.be.false;
-      expect(newSheetView.areAllTileTreesLoaded).to.be.true;;
+        // Expect areAllTileTreesLoaded to be true when attachment is outside of the viewed extents and not yet loaded
+        expect(viewedExtents2d.intersectsRange(attachmentRange)).to.be.false;
+        expect(sheetView.areAllAttachmentsLoaded()).to.be.false;
+        expect(sheetView.areAllTileTreesLoaded).to.be.true;
 
-      //Fit view
-      vp.zoom(new Point3d(attachmentRange.xLow, attachmentRange.yLow, 0), 1)
-      await vp.waitForSceneCompletion();
+        //Fit view
+        vp.zoom(new Point3d(attachmentRange.xLow, attachmentRange.yLow, 0), 1)
 
-      // Get new viewed extents
-      const newExtents = newSheetView.getViewedExtentsFromFrustum();
-      expect(newExtents).not.to.be.undefined;
-      const newExtents2d = new Range2d(newExtents.xLow, newExtents.yLow, newExtents.xHigh, newExtents.yHigh);
+        // Expect attachments to not yet be loaded as the scene is not yet complete
+        expect(sheetView.areAllAttachmentsLoaded()).to.be.false;
+        await vp.waitForSceneCompletion();
 
-      //Expect areAllTileTreesLoaded to be true when attachment is inside of the viewed extents
-      expect(newExtents2d.intersectsRange(attachmentRange)).to.be.true;
-      expect(newSheetView.areAllTileTreesLoaded).to.be.true;
+        // Get new viewed extents
+        const newExtents = sheetView.calculateFrustum()?.toRange();
+        expect(newExtents).not.to.be.undefined;
+        const newExtents2d = new Range2d(newExtents!.xLow, newExtents!.yLow, newExtents!.xHigh, newExtents!.yHigh);
+
+        //Expect areAllTileTreesLoaded to be true when attachment is inside of the viewed extents and loaded
+        expect(newExtents2d.intersectsRange(attachmentRange)).to.be.true;
+        expect(sheetView.areAllAttachmentsLoaded()).to.be.true;
+        expect(sheetView.areAllTileTreesLoaded).to.be.true;
+      });
     });
   });
 });

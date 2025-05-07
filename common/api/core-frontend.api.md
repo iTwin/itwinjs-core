@@ -9520,6 +9520,7 @@ export class SheetModelState extends GeometricModel2dState {
 // @public
 export class SheetViewState extends ViewState2d {
     constructor(props: ViewDefinition2dProps, iModel: IModelConnection, categories: CategorySelectorState, displayStyle: DisplayStyle2dState, sheetProps: SheetProps, attachments: Id64Array);
+    areAllAttachmentsLoaded(): boolean;
     // (undocumented)
     get areAllTileTreesLoaded(): boolean;
     // (undocumented)
@@ -9558,8 +9559,6 @@ export class SheetViewState extends ViewState2d {
     getOrigin(): Point3d;
     // (undocumented)
     getViewedExtents(): AxisAlignedBox3d;
-    // (undocumented)
-    getViewedExtentsFromFrustum(): Range3d;
     // (undocumented)
     isDrawingView(): this is DrawingViewState;
     // (undocumented)
