@@ -3,11 +3,20 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { BisCoreSchema, SnapshotDb } from "@itwin/core-backend";
+import { SnapshotDb } from "@itwin/core-backend";
 import { IModelStatus } from "@itwin/core-bentley";
 import { IModelError } from "@itwin/core-common";
-import { EntityClass } from "@itwin/ecschema-metadata";
+import { EntityClass, RelationshipClass, SchemaKey, SchemaMatchType, Unit } from "@itwin/ecschema-metadata";
 import { IModelTestUtils } from "../backend/IModelTestUtils";
+
+/**
+ * A general-purpose method to handle any parameter.
+ * @param _data The data to process.
+ */
+function doSomething(_data: any): void {
+  // Example implementation: log the data to the console
+  // console.log(data);
+}
 
 /** Common usage of ecschema-metadata */
 describe("Metadata examples", () => {
@@ -27,31 +36,57 @@ describe("Metadata examples", () => {
     // Get the schema context from the IModelDb
     const schemaContext = iModel.schemaContext;
 
-    const bisCore = await schemaContext.getSchema(BisCoreSchema.schemaKey);
+    const key = new SchemaKey("BisCore", 1, 0, 19);
+    const bisCore = await schemaContext.getSchema(key, SchemaMatchType.LatestReadCompatible);
     if (bisCore === undefined) {
-      throw new IModelError(IModelStatus.NotFound, "BisCore schema not found");
+      throw new IModelError(IModelStatus.NotFound, "BisCore schema not found.");
     }
 
     for (const entity of bisCore.getItems(EntityClass)) {
-      // console.log(`Entity: ${entity.name}`);
+      // use the entity class to do something
+      doSomething(entity.name);
 
       // Get the properties of the entity
       const properties = await entity.getProperties();
       // Iterate through each property
       for (const property of properties) {
-        // Check if the property is a primitive type
         if (property.isPrimitive()) {
-          // Do something with the primitive property
-          //console.log(`    Property: ${property.name}, Primitive Type: ${property.primitiveType}`);
+          doSomething(property.name);
         }
       }
     }
     // __PUBLISH_EXTRACT_END__
   });
+
+  it("schema item type guard and assertion", async () => {
+    const key = new SchemaKey("BisCore", 1, 0, 19);
+    const bisCore = await iModel.schemaContext.getSchema(key, SchemaMatchType.LatestReadCompatible);
+    if (bisCore === undefined) {
+      throw new IModelError(IModelStatus.NotFound, "BisCore schema not found.");
+    }
+
+    // __PUBLISH_EXTRACT_START__ Metadata.schemaItemTypeGuard
+    for (const item of bisCore.getItems()) {
+      // item is of type SchemaItem
+      if (EntityClass.isEntityClass(item)) {
+        // item is of type EntityClass
+        // count mixins on the entity class
+        const mixinCount = Array.from(item.getMixinsSync()).length;
+        doSomething(`Entity Class: ${item.name} with ${mixinCount} mixins`);
+      } else if (Unit.isUnit(item)) {
+        const unitSystem = await item.unitSystem;
+        doSomething(`Unit: ${item.name} with unit system ${unitSystem?.name}`);
+      } else if (RelationshipClass.isRelationshipClass(item)) {
+        // item is of type RelationshipClass
+        const sourceRoleLabel = item.source.roleLabel;
+        if (sourceRoleLabel)
+          doSomething(`Relationship Class: ${item.name} with source role label ${sourceRoleLabel}`);
+
+        // Alternatively, you can use the assertion method, this one throws an error if the item is not a RelationshipClass
+        RelationshipClass.assertIsRelationshipClass(item);
+      }
+    }
+    // __PUBLISH_EXTRACT_END__
+  });
+
 });
-
-
-
-
-/* eslint-disable @typescript-eslint/naming-convention */
-
