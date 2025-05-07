@@ -74,6 +74,7 @@ beta;interface;CreateFontFileFromShxBlobArgs
 public;interface;CreateNewIModelProps
 beta;interface;CreateNewWorkspaceContainerArgs
 beta;interface;CreateNewWorkspaceDbVersionArgs
+beta;interface;CustomHandledProperty
 public;class;DefinitionContainer
 public;class;DefinitionElement
 public;class;DefinitionGroup
@@ -85,6 +86,7 @@ beta;function;deleteElementSubTrees
 beta;function;deleteElementTree
 beta;function;deleteElementTree
 beta;interface;DeleteElementTreeArgs
+beta;interface;DeserializeEntityArgs
 public;class;DetailCallout
 public;class;DetailingSymbol
 internal;class;DevTools
@@ -118,10 +120,12 @@ public;enum;ECDbOpenMode
 public;interface;ECEnumValue
 deprecated;interface;ECEnumValue
 public;class;ECSchemaXmlContext
+preview;class;ECSchemaXmlContext
 public;class;ECSqlBinder
 public;interface;ECSqlColumnInfo
 deprecated;interface;ECSqlColumnInfo
 public;class;ECSqlInsertResult
+beta;interface;ECSqlRow
 public;interface;ECSqlRowArg
 public;class;ECSqlStatement
 deprecated;class;ECSqlStatement
@@ -341,6 +345,7 @@ beta;interface;ProduceTextAnnotationGeometryArgs
 public;type;ProgressFunction
 public;enum;ProgressStatus
 public;type;PropertyHandler
+preview;type;PropertyHandler
 beta;namespace;PropertyStore
 public;type;PullChangesArgs
 public;interface;PushChangesArgs

@@ -56,7 +56,7 @@ export namespace MockRender {
     public get analysisFraction() { return 0; }
     public set analysisFraction(_fraction: number) { }
     public changeScene(_scene: Scene) { }
-    public changeDynamics(_dynamics?: GraphicList) { }
+    public changeDynamics(_foreground: GraphicList | undefined, _overlay: GraphicList | undefined) { }
     public changeDecorations(_decs: Decorations) { }
     public changeRenderPlan(_plan: RenderPlan) { }
     public drawFrame(_sceneTime?: number) { }

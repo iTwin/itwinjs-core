@@ -593,3 +593,15 @@ describe("ClosestPoint", () => {
     expect(ck.getNumErrors()).toBe(0);
   });
 });
+
+it("PathGetPackedStrokes", () => {
+  const ck = new Checker();
+
+  const ls = LineString3d.create([new Point3d(), new Point3d(0, 10)]);
+  const arc = Arc3d.createCircularStartMiddleEnd(new Point3d(0, 10), new Point3d(5, 15), new Point3d(10, 10));
+  const path = Path.createArray([ls, arc]);
+
+  ck.testExactNumber(0, path.getPackedStrokes()!.findOrderedDuplicates().length);
+
+  expect(ck.getNumErrors()).toBe(0);
+});
