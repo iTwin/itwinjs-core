@@ -14,7 +14,7 @@ import { TextAnnotationStroker } from "./strokers/TextAnnotationStroker";
 
 function getElementGeometryBuilderParams(iModel: IModelDb, placementProps: PlacementProps, annotationProps: TextAnnotationProps, category: Id64String, subCategory?: Id64String): ElementGeometryBuilderParams {
   const stroker = new TextAnnotationStroker(iModel);
-  const flatbuffer = stroker.createGeometry({ annotationProps, placementProps }, category, subCategory);
+  const flatbuffer = stroker.strokeGeometry({ annotationProps, placementProps }, category, subCategory);
 
   return { entryArray: flatbuffer.data };
 }

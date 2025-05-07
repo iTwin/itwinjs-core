@@ -30,7 +30,7 @@ export interface TextAnnotationStrokerOptions extends StrokerResultOptions {
 }
 
 export class TextAnnotationStroker extends Stroker<TextAnnotationStrokerProps> {
-  public override createGeometry({ annotationProps, placementProps, debugAnchorPoint, debugSnapPoints }: TextAnnotationStrokerProps, category?: Id64String, subCategory?: Id64String): FlatBufferGeometryStream {
+  public override strokeGeometry({ annotationProps, placementProps, debugAnchorPoint, debugSnapPoints }: TextAnnotationStrokerProps, category?: Id64String, subCategory?: Id64String): FlatBufferGeometryStream {
     if (placementProps) this._builder.setLocalToWorldFromPlacement(placementProps)
 
     if (category) {
@@ -72,7 +72,7 @@ export class TextAnnotationStroker extends Stroker<TextAnnotationStrokerProps> {
     return { format: "flatbuffer", data: this._builder.entries };
   }
 
-  public override async computeLayoutResults(props: TextAnnotationStrokerProps, requestProps: StrokerGraphicsRequestProps, options?: TextAnnotationStrokerOptions): Promise<TextAnnotationStrokerResults> {
+  public override async computeResult(props: TextAnnotationStrokerProps, requestProps: StrokerGraphicsRequestProps, options?: TextAnnotationStrokerOptions): Promise<TextAnnotationStrokerResults> {
     // Todo: Should this be IModelError?
     if (!props.annotationProps.textBlock) throw new Error("TextBlock is required");
 
@@ -90,7 +90,7 @@ export class TextAnnotationStroker extends Stroker<TextAnnotationStrokerProps> {
     }
 
     if (undefined === options || options.wantGraphics) {
-      const geometry = this.createGeometry(props);
+      const geometry = this.strokeGeometry(props);
       results.graphics = await this.requestGraphics(geometry, requestProps);
     }
 
