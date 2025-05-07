@@ -3229,6 +3229,7 @@ export function getAvailableCoordinateReferenceSystems(args: GetAvailableCoordin
 // @beta
 export interface GetAvailableCoordinateReferenceSystemsArgs {
     extent?: Range2dProps;
+    includeWorld?: boolean;
 }
 
 // @beta

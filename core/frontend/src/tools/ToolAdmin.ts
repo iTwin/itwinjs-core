@@ -152,6 +152,7 @@ export class CurrentInputState {
   public lastButton: BeButton = BeButton.Data;
   public inputSource: InputSource = InputSource.Unknown;
   public lastMotion = new Point2d();
+  public lastMotionEvent?: BeButtonEvent;
   public lastWheelEvent?: BeWheelEvent;
   public lastTouchStart?: BeTouchEvent;
   public touchTapTimer?: number;
@@ -171,7 +172,7 @@ export class CurrentInputState {
   public onStartDrag(button: BeButton) { this.button[button].isDragging = true; }
   public onInstallTool() {
     this.clearKeyQualifiers();
-    this.lastWheelEvent = undefined;
+    this.lastWheelEvent = this.lastMotionEvent = undefined;
     this.lastTouchStart = this.touchTapTimer = this.touchTapCount = undefined;
   }
 
@@ -509,6 +510,10 @@ export class ToolAdmin {
 
     // make sure tools don't think the cursor is still in this viewport.
     this.onMouseLeave(vp);
+
+    // Invalidate last motion if for this viewport...
+    if (this.currentInputState.lastMotionEvent?.viewport === vp)
+      this.currentInputState.lastMotionEvent = undefined;
 
     // Remove any events associated with this viewport.
     ToolAdmin._toolEvents = ToolAdmin._toolEvents.filter((ev) => ev.vp !== vp);
@@ -950,6 +955,8 @@ export class ToolAdmin {
     toolPromise.then(() => {
       if (undefined === this._toolMotionPromise)
         return; // Only early return if canceled, result from a previous motion is preferable to showing nothing...
+
+      this.currentInputState.lastMotionEvent = motion; // Save to use for simulation motion...
 
       // Update decorations when dynamics are inactive...
       if (!IModelApp.viewManager.inDynamicsMode) {
@@ -1852,7 +1859,8 @@ export class ToolAdmin {
 
   /** Can be called by tools to invoke their [[InteractiveTool.onDynamicFrame]] method without requiring a motion event. */
   public simulateMotionEvent(): void {
-    this.updateDynamics(undefined, undefined, true);
+    // NOTE: Prefer last resolved motion over current cursor location which could be out of the view, or moved from last AccuSnap etc.
+    this.updateDynamics(this.currentInputState.lastMotionEvent, undefined, true);
   }
 
   /** @internal */

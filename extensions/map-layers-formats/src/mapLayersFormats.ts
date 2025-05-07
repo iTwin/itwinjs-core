@@ -13,12 +13,21 @@ import { ArcGisFeatureMapLayerFormat } from "./ArcGisFeature/ArcGisFeatureFormat
 import { GoogleMapsMapLayerFormat } from "./GoogleMaps/GoogleMapsImageryFormat.js";
 import { OgcApiFeaturesMapLayerFormat } from "./OgcApiFeatures/OgcApiFeaturesFormat.js";
 import { MapFeatureInfoTool } from "./Tools/MapFeatureInfoTool.js";
+import { GoogleMapsSessionManager } from "./map-layers-formats.js";
 
 /** Configuration options.
  * @beta
  */
 export interface MapLayersFormatsConfig {
   localization?: Localization;
+  googleMapsOpts?: GoogleMapsOptions;
+}
+
+/** Google Maps options.
+ * @beta
+ */
+export interface GoogleMapsOptions {
+  sessionManager?: GoogleMapsSessionManager
 }
 
 /** The primary API for the `@itwin/map-layers-formats` package. It allows the package's features to be [[initialize]]d.
@@ -28,6 +37,8 @@ export class MapLayersFormats {
 
   private static _defaultNs = "mapLayersFormats";
   public static localization: Localization;
+
+  private static _googleMapsOpts?: GoogleMapsOptions;
 
   /** Registers the [MapLayerFormat]($frontend)s provided by this package for use with [IModelApp]($frontend).
    * Typically, an application will call `MapLayersFormats.initialize` immediately after [IModelApp.startup]($frontend).
@@ -48,11 +59,16 @@ export class MapLayersFormats {
     );
 
     MapFeatureInfoTool.register(MapLayersFormats.localizationNamespace);
+    MapLayersFormats._googleMapsOpts = config?.googleMapsOpts;
   }
 
   /** The internationalization service namespace. */
   public static get localizationNamespace(): string {
     return MapLayersFormats._defaultNs;
+  }
+
+  public static get googleMapsOpts() {
+    return MapLayersFormats._googleMapsOpts;
   }
 
 }
