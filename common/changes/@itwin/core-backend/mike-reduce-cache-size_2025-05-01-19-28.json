@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Reduce Model and Element Cache Size",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}
