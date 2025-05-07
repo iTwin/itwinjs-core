@@ -816,19 +816,19 @@ export class DrawingViewDefinition extends ViewDefinition2d {
  * @public
 */
 export interface CreateSheetViewDefinitionArgs {
-  /** The iModel */
+  /** The iModel in which the sheet view will be created. */
   iModel: IModelDb;
-  /** The [[DefinitionModel]]*/
+  /** The  Id of the [[DefinitionModel]] into which the sheet view will be inserted. */
   definitionModelId: Id64String;
-  /** The name/CodeValue of the view */
+  /** The name to use as the view's Code value. */
   name: string;
-  /** The Id of the Model displayed by this view */
+  /** The Id of the sheet model whose contents will be displayed by this view. */
   baseModelId: Id64String;
-  /** The [[CategorySelector]] that this view should use */
+  /** The [[CategorySelector]] that this view should use. */
   categorySelectorId: Id64String;
-  /** The [[DisplayStyle2d]] that this view should use */
+  /** The [[DisplayStyle2d]] that this view should use. */
   displayStyleId: Id64String;
-  /** Defines the view origin and extents */
+  /** Defines the view origin and extents. */
   range: Range2d;
 }
 
