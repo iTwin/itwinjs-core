@@ -6,11 +6,10 @@
  * @module ElementGeometry
  */
 
-import { TextAnnotation, TextBlockGeometryProps, TextBlockGeometryPropsEntry, TextString, TextStyleColor } from "@itwin/core-common";
-import { ComputeRangesForTextLayout, FindFontId, FindTextStyle, layoutTextBlock, RunLayout, TextBlockLayout } from "./TextAnnotationLayout";
+import { TextBlockGeometryProps, TextBlockGeometryPropsEntry, TextString, TextStyleColor } from "@itwin/core-common";
+import { RunLayout, TextBlockLayout } from "./TextAnnotationLayout";
 import { LineSegment3d, Point3d, Range2d, Transform, Vector2d } from "@itwin/core-geometry";
 import { assert } from "@itwin/core-bentley";
-import { IModelDb } from "./IModelDb";
 
 interface GeometryContext {
   curColor?: TextStyleColor;
@@ -146,41 +145,4 @@ export function produceTextBlockGeometry(layout: TextBlockLayout, documentTransf
   }
 
   return { entries: context.entries };
-}
-
-/** Arguments supplied to [[produceTextAnnotationGeometry]].
- * @beta
- */
-export interface ProduceTextAnnotationGeometryArgs {
-  /** The annotation from which to produce the geometry. */
-  annotation: TextAnnotation;
-  /** The iModel from which to obtain fonts and text styles. */
-  iModel: IModelDb;
-  /** For debugging purposes only, whether to include geometry representing the bounding box and anchor point of the annotation.
-   * If true, two red lines indicating the horizontal and vertical extents of the bounding box will be included, intersecting at the anchor point.
-   */
-  debugAnchorPointAndRange?: boolean;
-  /** @internal chiefly for tests */
-  computeTextRange?: ComputeRangesForTextLayout;
-  /** @internal chiefly for tests */
-  findTextStyle?: FindTextStyle;
-  /** @internal chiefly for tests */
-  findFontId?: FindFontId;
-}
-
-/** Produce a geometric representation of a text annotation, with the annotation's anchor point at the origin.
- * The result can be supplied to [GeometryStreamBuilder.appendTextBlock]($common).
- * @see [[TextAnnotation2d.setAnnotation]] and [[TextAnnotation3d.setAnnotation]] to update the annotation, geometry, and placement of an annotation element.
- * @beta
- */
-export function produceTextAnnotationGeometry(args: ProduceTextAnnotationGeometryArgs): TextBlockGeometryProps {
-  const layout = layoutTextBlock({
-    ...args,
-    textBlock: args.annotation.textBlock,
-  });
-
-  const dimensions = layout.range;
-  const transform = args.annotation.computeTransform(dimensions);
-
-  return produceTextBlockGeometry(layout, transform);
 }
