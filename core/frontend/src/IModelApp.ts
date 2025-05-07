@@ -462,6 +462,7 @@ export class IModelApp {
     this._entityClasses.clear();
     this.authorizationClient = undefined;
     this._initialized = false;
+    this._formatsProvider = undefined;
     this.onAfterStartup.clear();
   }
 

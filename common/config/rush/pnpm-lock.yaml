@@ -2324,6 +2324,9 @@ importers:
       '@itwin/core-markup':
         specifier: workspace:*
         version: link:../../core/markup
+      '@itwin/core-quantity':
+        specifier: workspace:*
+        version: link:../../core/quantity
       '@itwin/ecschema-metadata':
         specifier: workspace:*
         version: link:../../core/ecschema-metadata
