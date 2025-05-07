@@ -39,7 +39,7 @@ async function getFormatterSpecByKoQAndPersistenceUnit(koq: string, persistenceU
     return undefined;
   const persistenceUnitProps = await IModelApp.quantityFormatter.unitsProvider.findUnitByName(persistenceUnitName);
   const format = await Format.createFromJSON(koq, IModelApp.quantityFormatter.unitsProvider, formatProps)
-  return FormatterSpec.create(`${koq}_format_spec`, format, IModelApp.quantityFormatter.unitsProvider, persistenceUnitProps); // Name it better than bleh?
+  return FormatterSpec.create(`${koq}_format_spec`, format, IModelApp.quantityFormatter.unitsProvider, persistenceUnitProps);
 }
 
 /** @internal */
