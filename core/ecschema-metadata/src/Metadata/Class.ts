@@ -163,9 +163,7 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
       this._mergedPropertyCache = await this.buildPropertyCache();
     }
 
-    property = this._mergedPropertyCache.get(upperKey);
-
-    return property;
+    return this._mergedPropertyCache.get(upperKey);
   }
 
   /**
@@ -192,11 +190,7 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
       this._mergedPropertyCache = this.buildPropertyCacheSync();
     }
 
-    if(this._mergedPropertyCache?.has(upperKey)) {
-      property = this._mergedPropertyCache.get(upperKey);
-    }
-
-    return property;
+    return this._mergedPropertyCache.get(upperKey);
   }
 
   /**

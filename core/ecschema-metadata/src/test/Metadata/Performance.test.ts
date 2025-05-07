@@ -10,7 +10,7 @@ import { ECSchemaNamespaceUris } from "../../Constants";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 
-describe("ECClass", () => {
+describe("Performance Tests", () => {
   let schema: Schema;
 
   describe("get properties", () => {
