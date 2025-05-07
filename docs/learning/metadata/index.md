@@ -3,7 +3,7 @@
 ## Packages
 
 The metadata packages implement the abstract concepts of EC in typescript [EC overview](../../bis/ec/index.md)
-The following packages exist:
+The API is split into these packages:
 
 - ($ecschema-metadata) is the basic package that exposes metadata objects.
 - ($ecschema-editing) Since the basic package only implements an API for understanding schemas, this package adds editing on top of it.
@@ -60,6 +60,7 @@ Properties in classes can be accessed from the class itself. See [ECClass.getPro
 
 Custom attributes are a way to add information to metadata objects like classes and properties. They are defined in the schema using a [CustomAttributeClass]($ecschema-metadata). See [ECClass.getCustomAttributes]($ecschema-metadata) for more information.
 
+For generic information about custom attributes see [ECCustomAttributes](../../bis/ec/ec-custom-attributes.md).
 
 ```ts
 [[include:Metadata.customAttributes]]
