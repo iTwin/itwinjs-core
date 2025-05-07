@@ -70,8 +70,8 @@ export {
   computeLayoutTextBlockResult,
   ComputeGraphemeOffsetsArgs,
   LayoutTextBlockArgs,
-} from "./TextAnnotationLayout";
-export * from "./TextBlockGeometry";
+} from "./strokers/TextAnnotationLayout";
+export * from "./strokers/TextBlockGeometry";
 export * from "./Texture";
 export * from "./TileStorage";
 export * from "./TxnManager";
