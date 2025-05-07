@@ -302,23 +302,32 @@ export class Transform implements BeJSONFunctions {
   public static createRigidFromOriginAndColumns(
     origin: XYZ | undefined, vectorX: Vector3d, vectorY: Vector3d, axisOrder: AxisOrder, result?: Transform,
   ): Transform | undefined {
-    const matrix = Matrix3d.createRigidFromColumns(vectorX, vectorY, axisOrder, result ? result._matrix : undefined);
+    const matrix = Matrix3d.createRigidFromColumns(vectorX, vectorY, axisOrder, result?._matrix);
     if (!matrix)
       return undefined;
     if (result) {
-      // result._matrix was already modified to become rigid via createRigidFromColumns
       result._origin.setFrom(origin);
       return result;
     }
-    /**
-     * We don't want to pass "origin" to createRefs because createRefs does not clone "origin". That means if "origin"
-     * is changed via Transform at any point, the initial "origin" passed by the user is also changed. To avoid that,
-     * we pass "undefined" to createRefs so that it allocates a new point which then we set it to the "origin" which
-     * is passed by user in the next line.
-     */
-    result = Transform.createRefs(undefined, matrix);
-    result._origin.setFromPoint3d(origin);
-    return result;
+    return Transform.createRefs(origin?.cloneAsPoint3d(), matrix);
+  }
+  /**
+   * Create a Transform with given origin and rigid matrix with z-column in the given direction.
+   * @param origin origin of the local coordinate system. Default is the global origin (zero).
+   * @param vectorZ z-axis of the local coordinate system.
+   * @param result optional pre-allocated result to populate and return.
+   * @returns localToWorld transform for a local coordinate system with given origin and z-axis, or `undefined`
+   * if the rigid matrix could not be created.
+   */
+  public static createRigidFromOriginAndVector(origin: XYZ | undefined, vectorZ: Vector3d, result?: Transform): Transform | undefined {
+    const matrix = Matrix3d.createRigidHeadsUp(vectorZ, undefined, result?._matrix);
+    if (!matrix)
+      return undefined;
+    if (result) {
+      result._origin.setFrom(origin);
+      return result;
+    }
+    return Transform.createRefs(origin?.cloneAsPoint3d(), matrix);
   }
   /**
    * Create a Transform with the specified `matrix`. Compute an `origin` (different from the given `fixedPoint`)

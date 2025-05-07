@@ -83,7 +83,14 @@ export class SweepLineStringToFacetsOptions {
   public assembleChains: boolean;
   /**
    * Optional searcher object for vertical sweep speedup. If provided, `vectorToEye` must be the positive Z vector.
-   * @see [[PolyfaceQuery.sweepLineStringToFacetsXY]] for example construction.
+   * @example To construct a 5x5 indexed search grid:
+   * ````
+   * const xyRange = Range2d.createFrom(myPolyface.range());
+   * const searcher = GriddedRaggedRange2dSetWithOverflow.create<number>(xyRange, 5, 5)!;
+   * for (const visitor = myPolyface.createVisitor(0); visitor.moveToNextFacet();) {
+   *   searcher.addRange(visitor.point.getRange(), visitor.currentReadIndex());
+   * }
+   * ````
    */
   public searcher?: Range2dSearchInterface<number>;
 
@@ -1426,9 +1433,15 @@ export class PolyfaceQuery {
   /**
    * Sweep the line string to intersections with a mesh and return collected line segments.
    * * Facets are ASSUMED to be convex and planar, and not overlap in the sweep direction.
-   * * See [[SweepLineStringToFacetsOptions]] for input and output options, including filtering by forward/side/rear facets.
-   * * If no options are given, the default sweep direction is the z-axis, and chains are assembled and returned.
-   * * For faster vertical sweep, a pre-computed range tree can be supplied in `options.searcher`. See also [[sweepLineStringToFacetsXY]].
+   * @param points the linestring to drape onto the mesh.
+   * @param source target facet set. For best results, facets should be convex and planar.
+   * @param options input, filtering, search, and output options.
+   * * If `undefined`, the default sweep direction is the positive z-axis, and chains are assembled and returned.
+   * * For faster _vertical_ sweep, a pre-computed range tree can be supplied in `options.searcher`.
+   * * For faster _non-vertical_ sweep, first transform `points` and `source` with the inverse of the transform
+   * `T = Transform.createRigidFromOriginAndVector(undefined, options.vectorToEye)`, construct the searcher on these
+   * local facets, call `sweepLineStringToFacets` with these local inputs (and default sweep direction), and lastly,
+   * transform the returned draped linework back to world coordinates with `T`.
    */
   public static sweepLineStringToFacets(points: IndexedXYZCollection, source: Polyface | PolyfaceVisitor, options?: SweepLineStringToFacetsOptions): LinearCurvePrimitive[] {
     let result: LinearCurvePrimitive[] = [];
@@ -1442,7 +1455,7 @@ export class PolyfaceQuery {
     visitor.setNumWrap(0);
     const addSegment = (ptA: Point3d, ptB: Point3d) => chainContext?.addSegment(ptA, ptB) ?? result.push(LineSegment3d.create(ptA, ptB));
     let edgeClipper: EdgeClipData | undefined;
-    const processPolygon = (_facetRange: any, readIndex: number) => {
+    const clipEdgeToConvexPolygon = (_facetRange: any, readIndex: number) => {
       if (visitor.moveToReadIndex(readIndex)) {
         if (options.collectAll || options.collectFromThisFacetNormal(PolygonOps.areaNormalGo(visitor.point, workNormal)))
           edgeClipper?.processPolygon(visitor.point, addSegment);
@@ -1459,7 +1472,7 @@ export class PolyfaceQuery {
         if (edgeClipper = EdgeClipData.createPointPointSweep(workPoint0, workPoint1, options.vectorToEye)) {
           searchRange.setNull();
           searchRange.extend(workPoint0, workPoint1);
-          options.searcher.searchRange2d(searchRange, processPolygon);
+          options.searcher.searchRange2d(searchRange, clipEdgeToConvexPolygon);
         }
       }
     } else {
@@ -1479,18 +1492,9 @@ export class PolyfaceQuery {
   }
   /**
    * Sweep the line string in the z-direction to intersections with a mesh, using a search object for speedup.
-   * @param points input line string to drape on the mesh.
-   * @param source mesh, or mesh visitor to traverse only part of a mesh.
+   * @param points the linestring to drape onto the mesh.
+   * @param source target facet set. For best results, facets should be convex and planar.
    * @param searcher object for searching facet 2D ranges tagged by mesh read index.
-   * @example Using a 5x5 indexed search grid:
-   * ```
-   * const xyRange = Range2d.createFrom(myPolyface.range());
-   * const searcher = GriddedRaggedRange2dSetWithOverflow.create<number>(xyRange, 5, 5)!;
-   * for (const visitor = myPolyface.createVisitor(0); visitor.moveToNextFacet();) {
-   *   searcher.addRange(visitor.point.getRange(), visitor.currentReadIndex());
-   * }
-   * const drapedLineStrings = PolyfaceQuery.sweepLineStringToFacetsXY(lineString, myPolyface, searcher);
-   * ```
    * @returns the collected line strings.
    * @see [[sweepLineStringToFacets]] for further options.
    */
@@ -1503,7 +1507,7 @@ export class PolyfaceQuery {
     const visitor = source instanceof Polyface ? source.createVisitor(0): source;
     visitor.setNumWrap(0);
     let edgeClipper: EdgeClipData | undefined;
-    const processPolygon = (_facetRange: any, readIndex: number) => {
+    const clipEdgeToConvexPolygon = (_facetRange: any, readIndex: number) => {
       if (visitor.moveToReadIndex(readIndex))
         edgeClipper?.processPolygon(visitor.point, (ptA: Point3d, ptB: Point3d) => chainContext.addSegment(ptA, ptB));
       return true;
@@ -1515,7 +1519,7 @@ export class PolyfaceQuery {
       if (edgeClipper = EdgeClipData.createPointPointSweep(workPoint0, workPoint1, vectorToEye)) {
         searchRange.setNull();
         searchRange.extend(workPoint0, workPoint1);
-        searcher.searchRange2d(searchRange, processPolygon);
+        searcher.searchRange2d(searchRange, clipEdgeToConvexPolygon);
       }
     }
     chainContext.clusterAndMergeVerticesXYZ();
