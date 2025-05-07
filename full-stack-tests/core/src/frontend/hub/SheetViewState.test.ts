@@ -223,6 +223,7 @@ describe("Sheet views", () => {
 
         // Expect attachments to not yet be loaded as the scene is not yet complete
         expect(sheetView.areAllAttachmentsLoaded()).to.be.false;
+        expect(sheetView.areAllTileTreesLoaded).to.be.false;
         await vp.waitForSceneCompletion();
 
         // Get new viewed extents
