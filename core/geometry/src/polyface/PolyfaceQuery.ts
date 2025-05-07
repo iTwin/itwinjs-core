@@ -81,6 +81,12 @@ export class SweepLineStringToFacetsOptions {
   public sideAngle: Angle;
   /** Option to assemble lines into chains. */
   public assembleChains: boolean;
+  /**
+   * Optional searcher object for vertical sweep speedup. If provided, `vectorToEye` must be the positive Z vector.
+   * @see [[PolyfaceQuery.sweepLineStringToFacetsXY]] for example construction.
+   */
+  public searcher?: Range2dSearchInterface<number>;
+
   /** Constructor. Captures fully-checked parameters from static create method. */
   private constructor(
     vectorToEye: Vector3d,
@@ -89,6 +95,7 @@ export class SweepLineStringToFacetsOptions {
     collectOnForwardFacets: boolean,
     collectOnSideFacets: boolean,
     collectOnRearFacets: boolean,
+    searcher?: Range2dSearchInterface<number>,
   ) {
     this.vectorToEye = vectorToEye;
     this.sideAngle = sideAngle;
@@ -96,6 +103,7 @@ export class SweepLineStringToFacetsOptions {
     this.collectOnForwardFacets = collectOnForwardFacets;
     this.collectOnSideFacets = collectOnSideFacets;
     this.collectOnRearFacets = collectOnRearFacets;
+    this.searcher = searcher
   }
   /**
    * Create an options structure.
@@ -111,14 +119,16 @@ export class SweepLineStringToFacetsOptions {
     collectOnForwardFacets?: boolean,
     collectOnSideFacets?: boolean,
     collectOnRearFacets?: boolean,
+    searcher?: Range2dSearchInterface<number>,
   ): SweepLineStringToFacetsOptions {
     return new SweepLineStringToFacetsOptions(
-      vectorToEye === undefined ? Vector3d.unitZ() : vectorToEye.clone(),
-      sideAngle === undefined ? Angle.createRadians(Geometry.smallAngleRadians) : sideAngle.clone(),
-      Geometry.resolveValue(assembleChains, true),
-      Geometry.resolveValue(collectOnForwardFacets, true),
-      Geometry.resolveValue(collectOnSideFacets, true),
-      Geometry.resolveValue(collectOnRearFacets, true),
+      (!vectorToEye || searcher) ? Vector3d.unitZ() : vectorToEye.clone(),
+      sideAngle?.clone() ?? Angle.createRadians(Geometry.smallAngleRadians),
+      assembleChains ?? true,
+      collectOnForwardFacets ?? true,
+      collectOnSideFacets ?? true,
+      collectOnRearFacets ?? true,
+      searcher,
     );
   }
   /** Return `true` if all outputs are requested. */
@@ -1414,12 +1424,11 @@ export class PolyfaceQuery {
     return this.sweepLineStringToFacetsXYReturnSweptFacets(linestringPoints, polyface);
   }
   /**
-   * Sweep the line string to intersections with a mesh.
-   * * Return collected line segments.
-   * * If no options are given, the default sweep direction is the z-axis, and chains are assembled and returned.
-   * * See [[SweepLineStringToFacetsOptions]] for input and output options, including filtering by forward/side/rear facets.
+   * Sweep the line string to intersections with a mesh and return collected line segments.
    * * Facets are ASSUMED to be convex and planar, and not overlap in the sweep direction.
-   * * For vertical sweep, see also [[sweepLineStringToFacetsXY]] which takes a pre-computed range tree for faster searching.
+   * * See [[SweepLineStringToFacetsOptions]] for input and output options, including filtering by forward/side/rear facets.
+   * * If no options are given, the default sweep direction is the z-axis, and chains are assembled and returned.
+   * * For faster vertical sweep, a pre-computed range tree can be supplied in `options.searcher`. See also [[sweepLineStringToFacetsXY]].
    */
   public static sweepLineStringToFacets(points: IndexedXYZCollection, source: Polyface | PolyfaceVisitor, options?: SweepLineStringToFacetsOptions): LinearCurvePrimitive[] {
     let result: LinearCurvePrimitive[] = [];
@@ -1428,26 +1437,43 @@ export class PolyfaceQuery {
     let chainContext: ChainMergeContext | undefined;
     if (options.assembleChains)
       chainContext = ChainMergeContext.create();
-    const context = ClipSweptLineStringContext.create(points, options.vectorToEye);
-    if (context) {
-      const visitor = source instanceof Polyface ? source.createVisitor(0): source;
-      visitor.setNumWrap(0);
-      const workNormal = Vector3d.createZero();
-      for (visitor.reset(); visitor.moveToNextFacet();) {
-        if (options.collectFromThisFacetNormal(PolygonOps.areaNormalGo(visitor.point, workNormal))) {
-          context.processPolygon(visitor.point.getArray(),
-            (pointA: Point3d, pointB: Point3d) => {
-              if (chainContext !== undefined)
-                chainContext.addSegment(pointA, pointB);
-              else
-                result.push(LineSegment3d.create(pointA, pointB));
-            });
+    const workNormal = Vector3d.createZero();
+    const visitor = source instanceof Polyface ? source.createVisitor(0): source;
+    visitor.setNumWrap(0);
+    const addSegment = (ptA: Point3d, ptB: Point3d) => chainContext?.addSegment(ptA, ptB) ?? result.push(LineSegment3d.create(ptA, ptB));
+    let edgeClipper: EdgeClipData | undefined;
+    const processPolygon = (_facetRange: any, readIndex: number) => {
+      if (visitor.moveToReadIndex(readIndex)) {
+        if (options.collectAll || options.collectFromThisFacetNormal(PolygonOps.areaNormalGo(visitor.point, workNormal)))
+          edgeClipper?.processPolygon(visitor.point, addSegment);
+      }
+      return true;
+    };
+    if (options.searcher && options.vectorToEye.isParallelTo(Vector3d.unitZ())) {
+      const searchRange = Range3d.createNull();
+      const workPoint0 = Point3d.createZero();
+      const workPoint1 = Point3d.createZero();
+      for (let i = 1; i < points.length; i++) {
+        points.getPoint3dAtUncheckedPointIndex(i - 1, workPoint0);
+        points.getPoint3dAtUncheckedPointIndex(i, workPoint1);
+        if (edgeClipper = EdgeClipData.createPointPointSweep(workPoint0, workPoint1, options.vectorToEye)) {
+          searchRange.setNull();
+          searchRange.extend(workPoint0, workPoint1);
+          options.searcher.searchRange2d(searchRange, processPolygon);
         }
       }
-      if (chainContext !== undefined) {
-        chainContext.clusterAndMergeVerticesXYZ();
-        result = chainContext.collectMaximalChains();
+    } else {
+      const context = ClipSweptLineStringContext.create(points, options.vectorToEye);
+      if (context) {
+        for (visitor.reset(); visitor.moveToNextFacet();) {
+          if (options.collectAll || options.collectFromThisFacetNormal(PolygonOps.areaNormalGo(visitor.point, workNormal)))
+            context.processPolygon(visitor.point.getArray(), addSegment);
+        }
       }
+    }
+    if (chainContext) {
+      chainContext.clusterAndMergeVerticesXYZ();
+      result = chainContext.collectMaximalChains();
     }
     return result;
   }
@@ -1466,30 +1492,30 @@ export class PolyfaceQuery {
    * const drapedLineStrings = PolyfaceQuery.sweepLineStringToFacetsXY(lineString, myPolyface, searcher);
    * ```
    * @returns the collected line strings.
+   * @see [[sweepLineStringToFacets]] for further options.
    */
   public static sweepLineStringToFacetsXY(points: IndexedXYZCollection | Point3d[], source: Polyface | PolyfaceVisitor, searcher: Range2dSearchInterface<number>): LineString3d[] {
     const chainContext = ChainMergeContext.create();
-    const sweepVector = Vector3d.create(0, 0, 1);
+    const vectorToEye = Vector3d.unitZ();
     const searchRange = Range3d.create();
+    const workPoint0 = Point3d.createZero();
+    const workPoint1 = Point3d.createZero();
     const visitor = source instanceof Polyface ? source.createVisitor(0): source;
     visitor.setNumWrap(0);
+    let edgeClipper: EdgeClipData | undefined;
+    const processPolygon = (_facetRange: any, readIndex: number) => {
+      if (visitor.moveToReadIndex(readIndex))
+        edgeClipper?.processPolygon(visitor.point, (ptA: Point3d, ptB: Point3d) => chainContext.addSegment(ptA, ptB));
+      return true;
+    };
     const lineStringSource = Array.isArray(points) ? new Point3dArrayCarrier(points) : points;
     for (let i = 1; i < lineStringSource.length; i++) {
-      const point0 = lineStringSource.getPoint3dAtUncheckedPointIndex(i - 1);
-      const point1 = lineStringSource.getPoint3dAtUncheckedPointIndex(i);
-      const edgeClipper = EdgeClipData.createPointPointSweep(point0, point1, sweepVector);
-      if (edgeClipper !== undefined) {
-        Range3d.createNull(searchRange);
-        searchRange.extendPoint(point0);
-        searchRange.extendPoint(point1);
-        searcher.searchRange2d(
-          searchRange,
-          (_facetRange, readIndex) => {
-            if (visitor.moveToReadIndex(readIndex))
-              edgeClipper.processPolygon(visitor.point, (pointA, pointB) => chainContext.addSegment(pointA, pointB));
-            return true;
-          },
-        );
+      lineStringSource.getPoint3dAtUncheckedPointIndex(i - 1, workPoint0);
+      lineStringSource.getPoint3dAtUncheckedPointIndex(i, workPoint1);
+      if (edgeClipper = EdgeClipData.createPointPointSweep(workPoint0, workPoint1, vectorToEye)) {
+        searchRange.setNull();
+        searchRange.extend(workPoint0, workPoint1);
+        searcher.searchRange2d(searchRange, processPolygon);
       }
     }
     chainContext.clusterAndMergeVerticesXYZ();
@@ -1502,14 +1528,9 @@ export class PolyfaceQuery {
     *   `const options = SweepLineStringToFacetsOptions.create(Vector3d.unitZ(), Angle.createSmallAngle(), false, true, true, true);`
     * @deprecated in 4.x. Use [[PolyfaceQuery.sweepLineStringToFacets]] to get further options.
     */
-  public static sweepLinestringToFacetsXYReturnLines(
-    linestringPoints: GrowableXYZArray, polyface: Polyface,
-  ): LineSegment3d[] {
-    const options = SweepLineStringToFacetsOptions.create(
-      Vector3d.unitZ(), Angle.createSmallAngle(), false, true, true, true,
-    );
-    const result = PolyfaceQuery.sweepLineStringToFacets(linestringPoints, polyface, options);
-    return result as LineSegment3d[];
+  public static sweepLinestringToFacetsXYReturnLines(linestringPoints: GrowableXYZArray, polyface: Polyface): LineSegment3d[] {
+    const options = SweepLineStringToFacetsOptions.create(Vector3d.unitZ(), Angle.createSmallAngle(), false, true, true, true);
+    return PolyfaceQuery.sweepLineStringToFacets(linestringPoints, polyface, options) as LineSegment3d[];
   }
   /**
    * Find segments (within the linestring) which project to facets.
