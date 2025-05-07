@@ -5,7 +5,7 @@
 
 import { BackgroundFill, ColorDef, FillDisplay, FlatBufferGeometryStream, FrameGeometry, GeometryParams, PlacementProps, TextAnnotation, TextAnnotationProps, TextBlockLayoutResult, TextFrameStyleProps } from "@itwin/core-common";
 import { Stroker, StrokerGraphicsRequestProps, StrokerResultOptions, StrokerResults } from "./Stroker";
-import { produceTextBlockGeometry } from "../TextAnnotationGeometry";
+import { produceTextBlockGeometry } from "../TextBlockGeometry";
 import { Id64, Id64String } from "@itwin/core-bentley";
 import { LineString3d, PointString3d, Range2d, Transform } from "@itwin/core-geometry";
 import { layoutTextBlock, TextBlockLayout } from "../TextAnnotationLayout";

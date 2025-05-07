@@ -71,7 +71,7 @@ export {
   ComputeGraphemeOffsetsArgs,
   LayoutTextBlockArgs,
 } from "./TextAnnotationLayout";
-export * from "./TextAnnotationGeometry";
+export * from "./TextBlockGeometry";
 export * from "./Texture";
 export * from "./TileStorage";
 export * from "./TxnManager";
