@@ -6,8 +6,9 @@
 import { SnapshotDb } from "@itwin/core-backend";
 import { IModelStatus } from "@itwin/core-bentley";
 import { IModelError } from "@itwin/core-common";
-import { EntityClass, RelationshipClass, SchemaKey, SchemaMatchType, Unit } from "@itwin/ecschema-metadata";
+import { ECClass, EntityClass, RelationshipClass, SchemaItemKey, SchemaKey, SchemaMatchType, Unit } from "@itwin/ecschema-metadata";
 import { IModelTestUtils } from "../backend/IModelTestUtils";
+import { assert } from "chai";
 
 /**
  * A general-purpose method to handle any parameter.
@@ -15,7 +16,7 @@ import { IModelTestUtils } from "../backend/IModelTestUtils";
  */
 function doSomething(_data: any): void {
   // Example implementation: log the data to the console
-  // console.log(data);
+  // console.log(_data);
 }
 
 /** Common usage of ecschema-metadata */
@@ -36,7 +37,7 @@ describe("Metadata examples", () => {
     // Get the schema context from the IModelDb
     const schemaContext = iModel.schemaContext;
 
-    const key = new SchemaKey("BisCore", 1, 0, 19);
+    const key = new SchemaKey("BisCore", 1, 0, 0);
     const bisCore = await schemaContext.getSchema(key, SchemaMatchType.LatestReadCompatible);
     if (bisCore === undefined) {
       throw new IModelError(IModelStatus.NotFound, "BisCore schema not found.");
@@ -59,7 +60,7 @@ describe("Metadata examples", () => {
   });
 
   it("schema item type guard and assertion", async () => {
-    const key = new SchemaKey("BisCore", 1, 0, 19);
+    const key = new SchemaKey("BisCore", 1, 0, 0);
     const bisCore = await iModel.schemaContext.getSchema(key, SchemaMatchType.LatestReadCompatible);
     if (bisCore === undefined) {
       throw new IModelError(IModelStatus.NotFound, "BisCore schema not found.");
@@ -84,6 +85,66 @@ describe("Metadata examples", () => {
 
         // Alternatively, you can use the assertion method, this one throws an error if the item is not a RelationshipClass
         RelationshipClass.assertIsRelationshipClass(item);
+      }
+    }
+    // __PUBLISH_EXTRACT_END__
+  });
+
+  it("work with properties", async () => {
+    // __PUBLISH_EXTRACT_START__ Metadata.properties
+    const entityClass = await iModel.schemaContext.getSchemaItem("BisCore", "InformationPartitionElement", EntityClass);
+    if (entityClass === undefined) {
+      throw new IModelError(IModelStatus.NotFound, "item not found.");
+    }
+
+    for (const property of await entityClass.getProperties()) {
+      if (property.isPrimitive()) {
+        doSomething(`Primitive Property: ${property.name}, primitive type: ${property.primitiveType}`);
+      }
+    }
+
+    // local properties only
+    for (const property of await entityClass.getProperties(true)) {
+      if (property.isStruct()) {
+        doSomething(`Struct Property: ${property.name}, struct type: ${property.structClass.name}`);
+      }
+    }
+
+    // Get a property by name
+    const property = await entityClass.getProperty("Description");
+    if (property === undefined) {
+      throw new IModelError(IModelStatus.NotFound, "property not found.");
+    }
+    assert.isTrue(property.isPrimitive());
+    // __PUBLISH_EXTRACT_END__
+  });
+
+  it("work with custom attributes", async () => {
+    // __PUBLISH_EXTRACT_START__ Metadata.customAttributes
+    const key = new SchemaKey("BisCore", 1, 0, 0);
+    const bisCore = await iModel.schemaContext.getSchema(key, SchemaMatchType.LatestReadCompatible);
+    if (bisCore === undefined) {
+      throw new IModelError(IModelStatus.NotFound, "BisCore schema not found.");
+    }
+
+    for (const item of bisCore.getItems()) {
+      if (!ECClass.isECClass(item)) {
+        continue;
+      }
+
+      if (item.customAttributes?.has("BisCore.ClassHasHandler")) {
+        doSomething(`Class ${item.name} has BisCore.ClassHasHandler custom attribute`);
+      }
+
+      // Access data within a custom attribute
+      if (item.customAttributes?.has("ECDbMap.ShareColumns")) {
+        const customAttribute = item.customAttributes.get("ECDbMap.ShareColumns");
+        if (customAttribute) {
+          const maxSharedColumns = customAttribute["MaxSharedColumnsBeforeOverflow"];
+          if (maxSharedColumns && typeof maxSharedColumns === "number") {
+            doSomething(`Class ${item.name} has MaxSharedColumnsBeforeOverflow set to ${maxSharedColumns}`);
+          }
+        }
       }
     }
     // __PUBLISH_EXTRACT_END__
