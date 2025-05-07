@@ -210,7 +210,7 @@ describe("IModelConnection (#integration)", () => {
     assert.isDefined(formatProps, "Formats.AmerFI format should be defined in snapshot iModel");
     const persistenceUnitProps = await IModelApp.quantityFormatter.unitsProvider.findUnitByName("Units.M");
     const format = await Format.createFromJSON(formatECName, IModelApp.quantityFormatter.unitsProvider, formatProps!)
-    const spec = await FormatterSpec.create(`${formatECName}_format_spec`, format, IModelApp.quantityFormatter.unitsProvider, persistenceUnitProps); // Name it better than bleh?
+    const spec = await FormatterSpec.create(`${formatECName}_format_spec`, format, IModelApp.quantityFormatter.unitsProvider, persistenceUnitProps);
     const formattedValue = spec.applyFormatting(5.0);
     assert.equal(formattedValue, "5.0 m");
   });
