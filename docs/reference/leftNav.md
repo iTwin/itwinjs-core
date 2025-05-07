@@ -19,7 +19,6 @@ packageClassification:
           "ecschema-editing",
           "ecschema-locaters",
           "ecschema-metadata",
-          "ecschema-rpc",
           "frontend-devtools",
           "hypermodeling-frontend",
           "webgl-compatibility",
