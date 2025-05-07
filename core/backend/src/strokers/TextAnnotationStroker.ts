@@ -56,10 +56,6 @@ export class TextAnnotationStroker extends Stroker<TextAnnotationStrokerProps> {
     this._builder.appendGeometryParamsChange(highPriorityParams);
     this._builder.appendTextBlock(textBlockGeometry);
 
-    const lowPriorityParams = new GeometryParams(Id64.invalid);
-    lowPriorityParams.elmPriority = 0;
-    this._builder.appendGeometryParamsChange(lowPriorityParams);
-
     if (annotation.frame)
       this.appendFrameToBuilder(annotation, layout);
 
@@ -72,7 +68,7 @@ export class TextAnnotationStroker extends Stroker<TextAnnotationStrokerProps> {
     return { format: "flatbuffer", data: this._builder.entries };
   }
 
-  public override async computeResult(props: TextAnnotationStrokerProps, requestProps: StrokerGraphicsRequestProps, options?: TextAnnotationStrokerOptions): Promise<TextAnnotationStrokerResults> {
+  public override async computeResults(props: TextAnnotationStrokerProps, requestProps: StrokerGraphicsRequestProps, options?: TextAnnotationStrokerOptions): Promise<TextAnnotationStrokerResults> {
     // Todo: Should this be IModelError?
     if (!props.annotationProps.textBlock) throw new Error("TextBlock is required");
 

@@ -35,7 +35,7 @@ export abstract class Stroker<T> {
   // get rid of undefined, throw error instead; remove JsonGeometryStream
   public abstract strokeGeometry(props: T, category?: Id64String, subCategory?: Id64String): FlatBufferGeometryStream;
 
-  public async computeResult(props: T, requestProps: StrokerGraphicsRequestProps, options?: StrokerResultOptions): Promise<StrokerResults> {
+  public async computeResults(props: T, requestProps: StrokerGraphicsRequestProps, options?: StrokerResultOptions): Promise<StrokerResults> {
     if (undefined === options || options?.wantGraphics) {
       const geometry = this.strokeGeometry(props, requestProps.categoryId);
       const graphics = await this.requestGraphics(geometry, requestProps);
