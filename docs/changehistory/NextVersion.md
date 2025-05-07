@@ -196,6 +196,12 @@ Can also be attached as a map-layer:
 [[include:GoogleMaps_SetGoogleMapsApiKey]]
 ```
 
+Optionally, a custom session manager can be specified to get control over the session management and request URLs.:
+
+```ts
+[[include:GoogleMaps_SetGoogleMapsSessionManager]]
+```
+
 ## Delete all transactions
 
 [BriefcaseDb.txns]($backend) keeps track of all unsaved and/or unpushed local changes made to a briefcase. After pushing your changes, the record of local changes is deleted. In some cases, a user may wish to abandon all of their accumulated changes and start fresh. [TxnManager.deleteAllTxns]($backend) deletes all local changes without pushing them.

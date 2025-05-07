@@ -3,34 +3,17 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { Logger } from "@itwin/core-bentley";
-import { ImageMapLayerProps, MapLayerProviderProperties } from "@itwin/core-common";
+import { ImageMapLayerProps, ImageMapLayerSettings, MapLayerProviderProperties } from "@itwin/core-common";
 import { IModelApp } from "@itwin/core-frontend";
-import { Angle } from "@itwin/core-geometry";
-import { GoogleMapsCreateSessionOptions, GoogleMapsSession, ViewportInfo, ViewportInfoRequestParams } from "../GoogleMaps/GoogleMaps.js";
 import { GoogleMapsMapLayerFormat } from "../GoogleMaps/GoogleMapsImageryFormat.js";
+import { GoogleMapsCreateSessionOptions, GoogleMapsLayerTypes, GoogleMapsMapTypes, GoogleMapsScaleFactors } from "../map-layers-formats.js";
+import { BentleyError, BentleyStatus, Logger } from "@itwin/core-bentley";
 
 const loggerCategory = "MapLayersFormats.GoogleMaps";
 
 /** @internal */
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export const GoogleMapsUtils = {
-  /**
-   * Creates a Google Maps session.
-   * @param apiKey Google Cloud API key
-   * @param opts Options to create the session
-   * @internal
-  */
-  createSession: async (apiKey: string, opts: GoogleMapsCreateSessionOptions): Promise<GoogleMapsSession> => {
-    const url = `https://tile.googleapis.com/v1/createSession?key=${apiKey}`;
-    const request = new Request(url, {method: "POST", body: JSON.stringify(opts)});
-    const response = await fetch (request);
-    if (!response.ok) {
-      throw new Error(`CreateSession request failed: ${response.status} - ${response.statusText}`);
-    }
-    Logger.logInfo(loggerCategory, `Session created successfully`);
-    return response.json();
-  },
 
   /**
    * Register the google maps format if it is not already registered.
@@ -57,28 +40,6 @@ export const GoogleMapsUtils = {
       name,
       properties: GoogleMapsUtils.createPropertiesFromSessionOptions(opts ?? {mapType: "satellite", language: "en-US", region: "US:", layerTypes: ["layerRoadmap"]}),
     };
-  },
-
-  /**
-  * Retrieves the maximum zoom level available within a bounding rectangle.
-  * @param rectangle The bounding rectangle
-  * @returns The maximum zoom level available within the bounding rectangle.
-  * @internal
-  */
-  getViewportInfo: async (params: ViewportInfoRequestParams): Promise<ViewportInfo | undefined>=> {
-    const {rectangle, session, key, zoom} = params;
-    const north = Angle.radiansToDegrees(rectangle.north);
-    const south = Angle.radiansToDegrees(rectangle.south);
-    const east = Angle.radiansToDegrees(rectangle.east);
-    const west = Angle.radiansToDegrees(rectangle.west);
-    const url = `https://tile.googleapis.com/tile/v1/viewport?session=${session}&key=${key}&zoom=${zoom}&north=${north}&south=${south}&east=${east}&west=${west}`;
-    const request = new Request(url, {method: "GET"});
-    const response = await fetch (request);
-    if (!response.ok) {
-      return undefined;
-    }
-    const json = await response.json();
-    return json as ViewportInfo;;
   },
 
     /**
@@ -111,4 +72,45 @@ export const GoogleMapsUtils = {
 
     return properties;
   },
+
+  /**
+   * Read the session options from the map layer settings.
+   * @param settings Map layer settings
+   * ```
+   * @internal
+  */
+  getSessionOptionsFromMapLayer: (settings: ImageMapLayerSettings): GoogleMapsCreateSessionOptions  => {
+    const layerPropertyKeys = settings.properties ? Object.keys(settings.properties) : undefined;
+    if (layerPropertyKeys === undefined ||
+        !layerPropertyKeys.includes("mapType") ||
+        !layerPropertyKeys.includes("language") ||
+        !layerPropertyKeys.includes("region")) {
+      const msg = "Missing session options";
+      Logger.logError(loggerCategory, msg);
+      throw new BentleyError(BentleyStatus.ERROR, msg);
+    }
+
+    const createSessionOptions: GoogleMapsCreateSessionOptions = {
+      mapType: settings.properties!.mapType as GoogleMapsMapTypes,
+      region: settings.properties!.region as string,
+      language: settings.properties!.language as string,
+    }
+
+    if (Array.isArray(settings.properties?.layerTypes) && settings.properties.layerTypes.length > 0) {
+      createSessionOptions.layerTypes = settings.properties.layerTypes as GoogleMapsLayerTypes[];
+    }
+
+    if (settings.properties?.scale !== undefined) {
+      createSessionOptions.scale = settings.properties.scale as GoogleMapsScaleFactors;
+    }
+
+    if (settings.properties?.overlay !== undefined) {
+      createSessionOptions.overlay = settings.properties.overlay as boolean;
+    }
+
+    if (settings.properties?.apiOptions !== undefined) {
+      createSessionOptions.apiOptions = settings.properties.apiOptions as string[];
+    }
+    return createSessionOptions;
+  }
 }
