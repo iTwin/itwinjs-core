@@ -1,7 +1,7 @@
 sep=;
 Release Tag;API Item Type;API Item Name
 internal;class;ArcGisFeatureProvider
-internal;class;BaseGoogleMapsSession
+beta;class;BaseGoogleMapsSession
 internal;class;DefaultArcGiSymbology
 beta;const;GoogleMaps
 beta;interface;GoogleMapsCreateSessionOptions
