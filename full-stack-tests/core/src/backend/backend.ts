@@ -7,11 +7,11 @@ import "./RpcImpl";
 import "@itwin/oidc-signin-tool/lib/cjs/certa/certaBackend";
 
 import {
-  BriefcaseDb, FileNameResolver, IModelDb, IModelHost, IModelHostOptions, IpcHandler, IpcHost, LocalhostIpcHost, PhysicalModel, PhysicalPartition,
-  SpatialCategory, SubjectOwnsPartitionElements,
+  BriefcaseDb, CategorySelector, DefinitionModel, DisplayStyle2d, DocumentListModel, DocumentPartition, Drawing, DrawingCategory, DrawingViewDefinition, FileNameResolver, IModelDb, IModelHost, IModelHostOptions, IpcHandler, IpcHost, LocalhostIpcHost, PhysicalModel, PhysicalPartition,
+  Sheet, SheetModel, SheetViewDefinition, SpatialCategory, StandaloneDb, Subject, SubjectOwnsPartitionElements,
 } from "@itwin/core-backend";
-import { Id64String, Logger, LoggingMetaData, ProcessDetector } from "@itwin/core-bentley";
-import { BentleyCloudRpcManager, ChannelControlError, CodeProps, ConflictingLock, ConflictingLocksError, ElementProps, IModel, RelatedElement, RpcConfiguration, SubCategoryAppearance } from "@itwin/core-common";
+import { Guid, Id64String, Logger, LoggingMetaData, ProcessDetector } from "@itwin/core-bentley";
+import { BentleyCloudRpcManager, ChannelControlError, Code, CodeProps, ConflictingLock, ConflictingLocksError, ElementProps, GeometricModel2dProps, IModel, RelatedElement, RpcConfiguration, SheetProps, SubCategoryAppearance, ViewAttachmentProps } from "@itwin/core-common";
 import { ElectronHost } from "@itwin/core-electron/lib/cjs/ElectronBackend";
 import { ECSchemaRpcImpl } from "@itwin/ecschema-rpcinterface-impl";
 import { BasicManipulationCommand, EditCommandAdmin } from "@itwin/editor-backend";
@@ -25,6 +25,7 @@ import { exposeBackendCallbacks } from "../certa/certaBackend";
 import { fullstackIpcChannel, FullStackTestIpc } from "../common/FullStackTestIpc";
 import { rpcInterfaces } from "../common/RpcInterfaces";
 import * as testCommands from "./TestEditCommands";
+import { Range2d } from "@itwin/core-geometry";
 import { AzuriteTest } from "./AzuriteTest";
 
 /* eslint-disable no-console */
@@ -95,6 +96,120 @@ class FullStackTestIpcHandler extends IpcHandler implements FullStackTestIpc {
   }
   public async setAzTestUser(user: "admin" | "readOnly" | "readWrite") {
     AzuriteTest.userToken = AzuriteTest.service.userToken[user];
+  }
+
+  public async insertSheetViewWithAttachment(filePath: string): Promise<Id64String> {
+    if (fs.existsSync(filePath)) {
+      fs.unlinkSync(filePath);
+    }
+
+    //create a new StandaloneDb for the test
+    const standaloneModel = StandaloneDb.createEmpty(filePath, {
+      rootSubject: { name: "SheetView tests", description: "SheetView tests" },
+      client: "integration tests",
+      globalOrigin: { x: 0, y: 0 },
+      projectExtents: { low: { x: -500, y: -500, z: -50 }, high: { x: 500, y: 500, z: 50 } },
+      guid: Guid.createValue(),
+    });
+
+    const getOrCreateDocumentList = async (db: IModelDb): Promise<Id64String> => {
+      const documentListName = "SheetList";
+      let documentListModelId: string | undefined;
+
+      // Attempt to find an existing document partition and document list model
+      const ids = db.queryEntityIds({ from: DocumentPartition.classFullName, where: `CodeValue = '${documentListName}'`});
+      if (ids.size === 1) {
+        documentListModelId = ids.values().next().value;
+      }
+
+      // If they do not exist, create the document partition and document list model
+      if (documentListModelId === undefined) {
+        const subjectId = db.elements.getRootSubject().id;
+        await db.locks.acquireLocks({
+          shared: subjectId,
+        });
+        documentListModelId = DocumentListModel.insert(db, subjectId, documentListName);
+      }
+
+      return documentListModelId;
+    };
+
+    const insertSheet = async (db: IModelDb, sheetName: string): Promise<Id64String> => {
+      const createSheetProps = {
+        height: 42,
+        width: 42,
+        scale: 42,
+      };
+      // Get or make documentListModelId
+      const id = await getOrCreateDocumentList(db);
+
+      // Acquire locks and create sheet
+      await db.locks.acquireLocks({ shared: id });
+      const sheetElementProps: SheetProps = {
+        ...createSheetProps,
+        classFullName: Sheet.classFullName,
+        code: Sheet.createCode(db, id, sheetName),
+        model: id,
+      };
+      const sheetElementId = db.elements.insertElement(sheetElementProps);
+
+      const sheetModelProps: GeometricModel2dProps = {
+        classFullName: SheetModel.classFullName,
+        modeledElement: { id: sheetElementId, relClassName: "BisCore:ModelModelsElement" } as RelatedElement,
+      };
+      return db.models.insertModel(sheetModelProps);
+    };
+
+    function createJobSubjectElement(iModel: IModelDb, name: string): Subject {
+      const subj = Subject.create(iModel, iModel.elements.getRootSubject().id, name);
+      subj.setJsonProperty("Subject", { Job: name }); // eslint-disable-line @typescript-eslint/naming-convention
+      return subj;
+    }
+
+    const jobSubjectId = createJobSubjectElement(standaloneModel, "Job").insert();
+    const drawingDefinitionModelId = DefinitionModel.insert(standaloneModel, jobSubjectId, "DrawingDefinition");
+    const drawingCategoryId = DrawingCategory.insert(standaloneModel, drawingDefinitionModelId, "DrawingCategory", new SubCategoryAppearance());
+    const sheetModelId = await insertSheet(standaloneModel, "sheet-1");
+
+    const displayStyle2dId = DisplayStyle2d.insert(standaloneModel, drawingDefinitionModelId, "DisplayStyle2d");
+    const drawingCategorySelectorId = CategorySelector.insert(standaloneModel, drawingDefinitionModelId, "DrawingCategories", [drawingCategoryId]);
+    const drawingViewRange = new Range2d(0, 0, 500, 500);
+    const docListModelId = await getOrCreateDocumentList(standaloneModel);
+    const drawingModelId = Drawing.insert(standaloneModel, docListModelId, "Drawing");
+    const drawingViewId = DrawingViewDefinition.insert(standaloneModel, drawingDefinitionModelId, "Drawing View", drawingModelId, drawingCategorySelectorId, displayStyle2dId, drawingViewRange);
+
+    const newAttachmentProps: ViewAttachmentProps = {
+      classFullName: 'BisCore:ViewAttachment',
+      model: sheetModelId,
+      code: Code.createEmpty(),
+      jsonProperties: { displayPriority: 0},
+      view: { id: drawingViewId, relClassName: 'BisCore.ViewIsAttached' },
+      category: drawingCategoryId,
+      placement: { origin: { x: 100, y: 100 }, angle: 0, bbox: { low: { x: 0, y: 0 }, high: { x: 1, y: 1 } } },
+    }
+
+    //create new view attachment element
+    const newElement = standaloneModel.elements.createElement(newAttachmentProps);
+    standaloneModel.elements.insertElement(newElement.toJSON());
+
+    const sheetViewId = SheetViewDefinition.insert({
+      iModel: standaloneModel,
+      definitionModelId: drawingDefinitionModelId,
+      name: "Sheet View",
+      baseModelId: sheetModelId,
+      categorySelectorId: drawingCategorySelectorId,
+      displayStyleId: displayStyle2dId,
+      range: new Range2d(0, 0, 50, 50),
+    });
+
+    standaloneModel.saveChanges("insert sheet view definition with attachment");
+    const sheetViewProps = await standaloneModel.views.getViewStateProps(sheetViewId);
+    if (sheetViewProps.sheetAttachments?.length !== 1) {
+      throw new Error("missing view attachments in view props");
+    }
+
+    standaloneModel.close();
+    return sheetViewId;
   }
 }
 
