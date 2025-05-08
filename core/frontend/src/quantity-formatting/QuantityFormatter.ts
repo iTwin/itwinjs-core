@@ -61,6 +61,19 @@ export type QuantityTypeKey = string;
 export type UnitNameKey = string;
 
 /**
+ * Interface for the properties required to create a FormatterSpec or ParserSpec.
+ * @beta
+ */
+export interface CreateFormattingSpecProps {
+  /** The name of the persistence unit. */
+  persistenceUnitName: string;
+  /** The format properties to use for the spec. */
+  formatProps: FormatProps;
+  /** Optional name for the format. */
+  formatName?: string;
+}
+
+/**
  * Class that contains alternate Unit Labels. These labels are used when parsing strings to quantities.
  * One use case is to allow a "^", which is easily input, to be used to specify "°".
  * @internal
@@ -887,29 +900,28 @@ export class QuantityFormatter implements UnitsProvider {
   /**
    * Creates a FormatterSpec for a given persistence unit name and format properties, using the unitsProvider to resolve the persistence unit.
    * @beta
-   * @param persistenceUnitName - The name of the persistence unit.
-   * @param formatProps - The format properties to use for the formatter.
-   * @param formatName - Optional name for the format.
+   * @param props - A CreateFormattingSpecProps interface.
    */
-  public async createFormatterSpec(persistenceUnitName: string, formatProps: FormatProps, formatName?: string): Promise<FormatterSpec> {
+  public async createFormatterSpec(props: CreateFormattingSpecProps): Promise<FormatterSpec> {
+    const { persistenceUnitName, formatProps, formatName } = props;
     const persistenceUnitProps = await this._unitsProvider.findUnitByName(persistenceUnitName);
-    const format = await Format.createFromJSON(formatName ?? "temp", this._unitsProvider, formatProps)
+    const format = await Format.createFromJSON(formatName ?? "temp", this._unitsProvider, formatProps);
     return FormatterSpec.create(`${format.name}_format_spec`, format, this._unitsProvider, persistenceUnitProps);
   }
 
   /**
-   *  Creates a ParserSpec for a given persistence unit name and format properties, using the unitsProvider to resolve the persistence unit.
+   * Creates a ParserSpec for a given persistence unit name and format properties, using the unitsProvider to resolve the persistence unit.
    * @beta
-   * @param persistenceUnitName - The name of the persistence unit.
-   * @param formatProps - The format properties to use for the parser.
-   * @param formatName - Optional name for the format.
+   * @param props - A CreateFormattingSpecProps object.
    */
-  public async createParserSpec(persistenceUnitName: string, formatProps: FormatProps, formatName?: string): Promise<ParserSpec> {
+  public async createParserSpec(props: CreateFormattingSpecProps): Promise<ParserSpec> {
+    const { persistenceUnitName, formatProps, formatName } = props;
     const persistenceUnitProps = await this._unitsProvider.findUnitByName(persistenceUnitName);
-    const format = await Format.createFromJSON(formatName ?? "temp", this._unitsProvider, formatProps)
+    const format = await Format.createFromJSON(formatName ?? "temp", this._unitsProvider, formatProps);
     return ParserSpec.create(format, this._unitsProvider, persistenceUnitProps);
   }
 }
+
 
 // ========================================================================================================================================
 // Default Data

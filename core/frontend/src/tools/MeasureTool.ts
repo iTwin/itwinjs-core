@@ -24,7 +24,7 @@ import { PrimitiveTool } from "./PrimitiveTool";
 import { BeButtonEvent, BeModifierKeys, CoreTools, EventHandled, InputSource } from "./Tool";
 import { ToolAssistance, ToolAssistanceImage, ToolAssistanceInputMethod, ToolAssistanceInstruction, ToolAssistanceSection } from "./ToolAssistance";
 import { GraphicType } from "../common/render/GraphicType";
-import { Format, FormatterSpec } from "@itwin/core-quantity";
+import { FormatterSpec } from "@itwin/core-quantity";
 
 function translateBold(key: string) {
   return `<b>${CoreTools.translate(`Measure.Labels.${key}`)}:</b> `;
@@ -37,9 +37,11 @@ async function getFormatterSpecByKoQAndPersistenceUnit(koq: string, persistenceU
   const formatProps = await IModelApp.formatsProvider.getFormat(koq);
   if (undefined === formatProps)
     return undefined;
-  const persistenceUnitProps = await IModelApp.quantityFormatter.unitsProvider.findUnitByName(persistenceUnitName);
-  const format = await Format.createFromJSON(koq, IModelApp.quantityFormatter.unitsProvider, formatProps)
-  return FormatterSpec.create(`${koq}_format_spec`, format, IModelApp.quantityFormatter.unitsProvider, persistenceUnitProps);
+  return IModelApp.quantityFormatter.createFormatterSpec({
+    persistenceUnitName,
+    formatProps,
+    formatName: koq
+  });
 }
 
 /** @internal */

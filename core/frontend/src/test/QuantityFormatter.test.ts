@@ -464,9 +464,13 @@ describe("Quantity formatter", async () => {
       stationSeparator: "+",
     };
     const unitName = "Units.MILE";
-    const formatterSpec = await quantityFormatter.createFormatterSpec(unitName, formatProps, "mile");
+    const formatterSpec = await quantityFormatter.createFormatterSpec({
+      persistenceUnitName: "Units.MILE",
+      formatProps,
+      formatName: "mile",
+    });
     expect(formatterSpec).toBeDefined();
-    expect(formatterSpec.name).toBe("mile");
+    expect(formatterSpec.name).toBe("mile_format_spec");
     expect(formatterSpec.persistenceUnit.name).toBe(unitName);
   });
 
@@ -483,7 +487,11 @@ describe("Quantity formatter", async () => {
       stationSeparator: "+",
     };
     const unitName = "Units.MILE";
-    const parserSpec = await quantityFormatter.createParserSpec(unitName, formatProps, "mile");
+    const parserSpec = await quantityFormatter.createParserSpec({
+      persistenceUnitName: "Units.MILE",
+      formatProps,
+      formatName: "mile",
+    });
     expect(parserSpec).toBeDefined();
     expect(parserSpec.format.name).toBe("mile");
     expect(parserSpec.outUnit.name).toBe(unitName);

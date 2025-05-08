@@ -113,6 +113,7 @@ public;enum;CoordinateLockOverrides
 public;enum;CoordSource
 public;enum;CoordSystem
 internal;class;CoreTools
+beta;interface;CreateFormattingSpecProps
 beta;interface;CreateGraphicFromDescriptionArgs
 beta;interface;CreateGraphicFromTemplateArgs
 beta;interface;CreateRenderInstancesParamsBuilderArgs
