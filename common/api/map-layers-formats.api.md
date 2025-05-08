@@ -27,7 +27,7 @@ import { MapLayerFeatureInfo } from '@itwin/core-frontend';
 import { MapLayerImageryProvider } from '@itwin/core-frontend';
 import { PrimitiveTool } from '@itwin/core-frontend';
 import { QuadId } from '@itwin/core-frontend';
-import { QuadIdProps } from '@itwin/core-frontend/lib/cjs/tile/internal.js';
+import { QuadIdProps } from '@itwin/core-frontend';
 import { Transform } from '@itwin/core-geometry';
 
 // @internal

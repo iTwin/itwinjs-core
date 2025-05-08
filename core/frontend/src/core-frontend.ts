@@ -136,7 +136,7 @@ export {
   TileUsageMarker,
   TileUser,
   BingElevationProvider,
-  QuadId, QuadIdProps,
+  QuadId, type QuadIdProps,
   MapTilingScheme, GeographicTilingScheme, WebMercatorProjection, WebMercatorTilingScheme,
   type MapLayerIndex,
   MapTileProjection, MapTile,
