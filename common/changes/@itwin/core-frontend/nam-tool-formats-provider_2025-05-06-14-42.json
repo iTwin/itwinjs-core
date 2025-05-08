@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-frontend",
-      "comment": "Add `formatsProvider` property to IModelApp, update measurement logic in MeasureTool.ts",
+      "comment": "Add `formatsProvider` property to `IModelApp` and `IModelAppOptions` to allow consumers supply their own format specifications for formatting numeric values.",
       "type": "none"
     }
   ],
