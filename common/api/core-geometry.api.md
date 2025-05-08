@@ -2853,7 +2853,7 @@ export class IndexedPolyface extends Polyface {
     getFaceDataByFacetIndex(facetIndex: number): FacetFaceData;
     static hasEdgeMateIndex(polyface: Polyface | PolyfaceVisitor): {
         parent: IndexedPolyface;
-        edgeMates: Array<number | undefined>;
+        edgeMateIndex: Array<number | undefined>;
     } | undefined;
     isAlmostEqual(other: any): boolean;
     get isEmpty(): boolean;
@@ -5957,7 +5957,7 @@ export class Transform implements BeJSONFunctions {
     static createOriginAndMatrixColumns(origin: XYZ, vectorX: Vector3d, vectorY: Vector3d, vectorZ: Vector3d, result?: Transform): Transform;
     static createRefs(origin: XYZ | undefined, matrix: Matrix3d, result?: Transform): Transform;
     static createRigidFromOriginAndColumns(origin: XYZ | undefined, vectorX: Vector3d, vectorY: Vector3d, axisOrder: AxisOrder, result?: Transform): Transform | undefined;
-    static createRigidFromOriginAndVector(localOrigin: XYZ | undefined, localZ: Vector3d, result?: Transform): Transform | undefined;
+    static createRigidFromOriginAndVector(origin: XYZ | undefined, vectorZ: Vector3d, result?: Transform): Transform | undefined;
     static createRowValues(qxx: number, qxy: number, qxz: number, ax: number, qyx: number, qyy: number, qyz: number, ay: number, qzx: number, qzy: number, qzz: number, az: number, result?: Transform): Transform;
     static createScaleAboutPoint(fixedPoint: Point3d, scale: number, result?: Transform): Transform;
     static createTranslation(translation: XYZ, result?: Transform): Transform;

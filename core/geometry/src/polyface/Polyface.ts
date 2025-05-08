@@ -538,7 +538,7 @@ export class IndexedPolyface extends Polyface { // more info can be found at geo
         messages.push("edgeMateIndex count must equal pointIndex count");
       else if (!this.data.edgeMateIndex.every((i: number | undefined) => i === undefined || this.data.isValidEdgeIndex(i)))
         messages.push("invalid edgeMate encountered");
-      }
+    }
     return 0 === messages.length;
   }
 
@@ -686,7 +686,7 @@ export class IndexedPolyface extends Polyface { // more info can be found at geo
     return handler.handleIndexedPolyface(this);
   }
   /** If the input accesses an edgeMateIndex array, return it along with the owning IndexedPolyface. */
-  public static hasEdgeMateIndex(polyface: Polyface | PolyfaceVisitor): { parent: IndexedPolyface, edgeMates: Array<number | undefined> } | undefined {
+  public static hasEdgeMateIndex(polyface: Polyface | PolyfaceVisitor): { parent: IndexedPolyface, edgeMateIndex: Array<number | undefined> } | undefined {
     let parent: IndexedPolyface | undefined;
     if (polyface instanceof Polyface) {
       if (polyface instanceof IndexedPolyface)
@@ -694,11 +694,11 @@ export class IndexedPolyface extends Polyface { // more info can be found at geo
     } else if (polyface.clientPolyface() && polyface.clientPolyface() instanceof IndexedPolyface)
       parent = polyface.clientPolyface() as IndexedPolyface;
     if (parent) {
-      const edgeMates = parent.data.edgeMateIndex;
-      if (edgeMates && edgeMates.length > 0 && edgeMates.length === parent.data.indexCount)
-        return { parent, edgeMates };
+      const edgeMateIndex = parent.data.edgeMateIndex;
+      if (edgeMateIndex && edgeMateIndex.length > 0 && edgeMateIndex.length === parent.data.indexCount)
+        return { parent, edgeMateIndex };
     }
-  return undefined;
+    return undefined;
   }
 }
 

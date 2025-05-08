@@ -530,7 +530,7 @@ export class PolyfaceQuery {
     visitor.setNumWrap(1);
     const centroidNormal: Ray3d[] = [];
     let normalCounter = 0;
-    for (visitor.reset(); visitor.moveToNextFacet(); ) {
+    for (visitor.reset(); visitor.moveToNextFacet();) {
       const numEdges = visitor.pointCount - 1;
       const normal = PolygonOps.centroidAreaNormal(visitor.point);
       if (normal === undefined)
@@ -602,26 +602,35 @@ export class PolyfaceQuery {
   public static isConvexByDihedralAngleCount(source: Polyface | PolyfaceVisitor, ignoreBoundaries: boolean = false): boolean {
     return this.dihedralAngleSummary(source, ignoreBoundaries) > 0;
   }
+
+  /** Helper function to detect a subset visitor. */
+  private static isSubsetVisitor(visitor: Polyface | PolyfaceVisitor): boolean {
+    if (visitor instanceof Polyface)
+      return false;
+    const parentFacetCount = visitor.clientPolyface()?.facetCount;
+    const visitableFacetCount = visitor.getVisitableFacetCount?.();
+    if (parentFacetCount === undefined || visitableFacetCount === undefined)
+      return false;
+    return parentFacetCount > visitableFacetCount;
+  }
+
   /**
    * Faster version of isPolyfaceManifold for specific input.
    * @returns whether the mesh is manifold, or undefined if unsuccessful.
    */
   private static isPolyfaceManifoldFast(source: Polyface | PolyfaceVisitor, allowSimpleBoundaries: boolean): boolean | undefined {
     if (allowSimpleBoundaries)
-      return undefined; // edgeMateIndex does not distinguish boundary edges from non-manifold edges
-    if (!IndexedPolyface.hasEdgeMateIndex(source))
-      return undefined; // no speedup
-    const visitor = source instanceof Polyface ? source.createVisitor(1) : source;
-    visitor.setNumWrap(1);
-    assert(visitor.edgeMateIndex !== undefined);
-    for (visitor.reset(); visitor.moveToNextFacet(); ) {
-      const numEdges = visitor.pointCount - 1;
-      for (let i = 0; i < numEdges; i++) {
-        if (visitor.edgeMateIndex[i] === undefined)
-          return false; // found a boundary or non-manifold edge
-      }
+      return undefined; // edgeMateIndex does not distinguish boundary edges from non-manifold edges so we can only speed things up if we search for both
+    if (this.isSubsetVisitor(source))
+      return false; // edgeMateIndex doesn't capture the facet subset boundary
+    const parentData = IndexedPolyface.hasEdgeMateIndex(source)
+    if (!parentData)
+      return undefined;
+    for (const edgeMate of parentData.edgeMateIndex) {
+      if (edgeMate === undefined)
+        return false; // found a boundary or non-manifold edge
     }
-    return true;
+    return true; // this is a 2-manifold closed surface
   }
   /**
    * Test edges pairing in `source` mesh.
@@ -655,25 +664,28 @@ export class PolyfaceQuery {
     includeNull: boolean,
   ): boolean {
     if (includeTypical !== includeMismatch)
-      return false; // edgeMateIndex does not distinguish these
+      return false; // edgeMateIndex does not distinguish boundary edges from non-manifold edges
     if (!includeTypical && !includeNull)
-      return true; // nothing to do
-    if (!IndexedPolyface.hasEdgeMateIndex(source))
-      return false; // no speedup
-    const visitor = source instanceof Polyface ? source.createVisitor(1) : source;
-    visitor.setNumWrap(1);
-    assert(visitor.edgeMateIndex !== undefined);
+      return true;
+    if (this.isSubsetVisitor(source))
+      return false; // edgeMateIndex doesn't capture the facet subset boundary
+    const parentData = IndexedPolyface.hasEdgeMateIndex(source);
+    if (!parentData)
+      return false;
     const pointA = Point3d.create();
     const pointB = Point3d.create();
-    for (visitor.reset(); visitor.moveToNextFacet(); ) {
-      const numEdges = visitor.pointCount - 1;
-      for (let i = 0; i < numEdges; i++) {
-        const announceBoundaryOrNonManifoldEdge = includeTypical && visitor.edgeMateIndex[i] === undefined;
-        const announceNullEdge = includeNull && visitor.edgeMateIndex[i] === visitor.clientPointIndex(i);
-        if (announceBoundaryOrNonManifoldEdge || announceNullEdge) {
-          visitor.getPoint(i, pointA);
-          visitor.getPoint(i + 1, pointB);
-          announceEdge(pointA, pointB, visitor.clientPointIndex(i), visitor.clientPointIndex(i + 1), visitor.currentReadIndex());
+    for (let edgeIndex = 0; edgeIndex < parentData.edgeMateIndex.length; edgeIndex++) {
+      const edgeMate = parentData.edgeMateIndex[edgeIndex];
+      const announceBoundaryOrNonManifoldEdge = includeTypical && edgeMate === undefined;
+      const announceNullEdge = includeNull && edgeMate === edgeIndex;
+      if (announceBoundaryOrNonManifoldEdge || announceNullEdge) {
+        const facetIndex = parentData.parent.edgeIndexToFacetIndex(edgeIndex);
+        if (facetIndex !== undefined) { // should always be defined
+          const pointIndexA = parentData.parent.data.pointIndex[edgeIndex];
+          const pointIndexB = parentData.parent.data.pointIndex[edgeIndex + 1];
+          parentData.parent.data.getPoint(pointIndexA, pointA);
+          parentData.parent.data.getPoint(pointIndexB, pointB);
+          announceEdge(pointA, pointB, pointIndexA, pointIndexB, facetIndex);
         }
       }
     }
@@ -707,7 +719,7 @@ export class PolyfaceQuery {
     const visitor = source instanceof Polyface ? source.createVisitor(1) : source;
     visitor.setNumWrap(1);
     const edges = new IndexedEdgeMatcher();
-    for (visitor.reset(); visitor.moveToNextFacet(); ) {
+    for (visitor.reset(); visitor.moveToNextFacet();) {
       const numEdges = visitor.pointCount - 1;
       for (let i = 0; i < numEdges; i++) {
         const edge = edges.addEdge(visitor.clientPointIndex(i), visitor.clientPointIndex(i + 1), visitor.currentReadIndex());
@@ -796,7 +808,7 @@ export class PolyfaceQuery {
     const edges = new IndexedEdgeMatcher();
     const visitor = polyface instanceof Polyface ? polyface.createVisitor(1) : polyface;
     visitor.setNumWrap(1);
-    for (visitor.reset(); visitor.moveToNextFacet(); )
+    for (visitor.reset(); visitor.moveToNextFacet();)
       edges.addPath(visitor.pointIndex, visitor.currentReadIndex(), false);
     return edges;
   }
@@ -1451,7 +1463,7 @@ export class PolyfaceQuery {
     if (options.assembleChains)
       chainContext = ChainMergeContext.create();
     const workNormal = Vector3d.createZero();
-    const visitor = source instanceof Polyface ? source.createVisitor(0): source;
+    const visitor = source instanceof Polyface ? source.createVisitor(0) : source;
     visitor.setNumWrap(0);
     const addSegment = (ptA: Point3d, ptB: Point3d) => chainContext?.addSegment(ptA, ptB) ?? result.push(LineSegment3d.create(ptA, ptB));
     let edgeClipper: EdgeClipData | undefined;
@@ -1504,7 +1516,7 @@ export class PolyfaceQuery {
     const searchRange = Range3d.create();
     const workPoint0 = Point3d.createZero();
     const workPoint1 = Point3d.createZero();
-    const visitor = source instanceof Polyface ? source.createVisitor(0): source;
+    const visitor = source instanceof Polyface ? source.createVisitor(0) : source;
     visitor.setNumWrap(0);
     let edgeClipper: EdgeClipData | undefined;
     const clipEdgeToConvexPolygon = (_facetRange: any, readIndex: number) => {
