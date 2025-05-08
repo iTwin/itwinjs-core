@@ -6,9 +6,9 @@
  * @module QuantityFormatting
  */
 
-import { BentleyError, BeUiEvent, Logger } from "@itwin/core-bentley";
+import { BeEvent, BentleyError, BeUiEvent, Logger } from "@itwin/core-bentley";
 import {
-  AlternateUnitLabelsProvider, Format, FormatProps, FormatterSpec, ParseError, ParserSpec, QuantityParseResult,
+  AlternateUnitLabelsProvider, Format, FormatDefinition, FormatProps, FormatsChangedArgs, FormatsProvider, FormatterSpec, ParseError, ParserSpec, QuantityParseResult,
   UnitConversionProps, UnitProps, UnitsProvider, UnitSystemKey,
 } from "@itwin/core-quantity";
 import { FrontendLoggerCategory } from "../common/FrontendLoggerCategory";
@@ -306,6 +306,37 @@ export interface UnitFormattingSettingsProvider {
   /** property that is set by the implementation to inform the BaseUnitFormattingSettingsProvider if the provider
    *  should trigger reloading of the overrides when the "active" imodel changes. */
   readonly maintainOverridesPerIModel: boolean;
+}
+
+/**
+ * A default formatsProvider, that provides a limited set of FormatDefinitions, associated to a few [[KindOfQuantity]].
+ * Maps each KindOfQuantity to a [[QuantityType]].
+ * When retrieving a valid KindOfQuantity, returns the [[FormatProps]] for the associated [[QuantityType]].
+ * @internal
+ */
+export class BasicFormatsProvider implements FormatsProvider {
+  public onFormatsChanged = new BeEvent<(args: FormatsChangedArgs) => void>();
+
+  public constructor() {
+    IModelApp.quantityFormatter.onActiveFormattingUnitSystemChanged.addListener(() => {
+      this.onFormatsChanged.raiseEvent({ formatsChanged: "all" });
+    });
+  }
+  private _kindOfQuantityMap = new Map<string, QuantityType>([
+    ["AecUnits.LENGTH", QuantityType.Length],
+    ["AecUnits.ANGLE", QuantityType.Angle],
+    ["AecUnits.AREA", QuantityType.Area],
+    ["AecUnits.VOLUME", QuantityType.Volume],
+    ["RoadRailUnits.STATION", QuantityType.Stationing],
+    ["RoadRailUnits.LENGTH", QuantityType.LengthSurvey],
+  ]);
+
+  public async getFormat(name: string): Promise<FormatDefinition | undefined> {
+    const quantityType = this._kindOfQuantityMap.get(name);
+    if (!quantityType) return undefined;
+
+    return IModelApp.quantityFormatter.getFormatPropsByQuantityType(quantityType);
+  }
 }
 
 /** Class that supports formatting quantity values into strings and parsing strings into quantity values. This class also maintains

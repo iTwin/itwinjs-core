@@ -104,7 +104,9 @@ import { FeatureOverrideType } from '@itwin/core-common';
 import { FeatureTable } from '@itwin/core-common';
 import { FillFlags } from '@itwin/core-common';
 import { FontMap } from '@itwin/core-common';
+import { FormatDefinition } from '@itwin/core-quantity';
 import { FormatProps } from '@itwin/core-quantity';
+import { FormatsChangedArgs } from '@itwin/core-quantity';
 import { FormatsProvider } from '@itwin/core-quantity';
 import { FormatterSpec } from '@itwin/core-quantity';
 import type { FrontendStorage } from '@itwin/object-storage-core/lib/frontend';
@@ -1476,6 +1478,15 @@ export abstract class BaseUnitFormattingSettingsProvider implements UnitFormatti
     storeFormatOverrides: ({ typeKey, overrideEntry, unitSystem }: QuantityFormatOverridesChangedArgs) => Promise<void>;
     abstract storeUnitSystemKey(unitSystemKey: UnitSystemKey): Promise<boolean>;
     storeUnitSystemSetting: ({ system }: FormattingUnitSystemChangedArgs) => Promise<void>;
+}
+
+// @internal
+export class BasicFormatsProvider implements FormatsProvider {
+    constructor();
+    // (undocumented)
+    getFormat(name: string): Promise<FormatDefinition | undefined>;
+    // (undocumented)
+    onFormatsChanged: BeEvent<(args: FormatsChangedArgs) => void>;
 }
 
 // @public
@@ -4802,8 +4813,8 @@ export class IModelApp {
     // @alpha
     static formatElementToolTip(msg: string[]): HTMLElement;
     // @beta
-    static get formatsProvider(): FormatsProvider | undefined;
-    static set formatsProvider(provider: FormatsProvider | undefined);
+    static get formatsProvider(): FormatsProvider;
+    static set formatsProvider(provider: FormatsProvider);
     static getAccessToken(): Promise<AccessToken>;
     static get hasRenderSystem(): boolean;
     static get hubAccess(): FrontendHubAccess | undefined;
@@ -4847,6 +4858,8 @@ export class IModelApp {
     static registerModuleEntities(moduleObj: any): void;
     static get renderSystem(): RenderSystem;
     static requestNextAnimation(): void;
+    // @beta
+    static resetFormatsProvider(): void;
     static get securityOptions(): FrontendSecurityOptions;
     static sessionId: GuidString;
     static shutdown(): Promise<void>;

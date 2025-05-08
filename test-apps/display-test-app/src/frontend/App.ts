@@ -356,9 +356,7 @@ export class DisplayTestApp {
       });
 
       IModelConnection.onClose.addOnce(() => {
-        if (IModelApp.formatsProvider === formatsProvider) {
-          IModelApp.formatsProvider = undefined;
-        }
+        IModelApp.resetFormatsProvider();
       });
     });
 

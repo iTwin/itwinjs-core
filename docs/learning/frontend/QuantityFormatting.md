@@ -45,6 +45,8 @@ Here is a table of replacements for each `QuantityType`:
 
 iModels might not have AecUnits or RoadRailUnits schemas included, in such cases developers can address this through integrating their tools/components to use a `FormatsProvider`, and add the missing KindOfQuantity (and associated [FormatProps]($quantity)) through that FormatsProvider, independent from schemas coming from iModels.
 
+To support users with the migration, `IModelApp` by default uses an internal [BasicFormatsProvider]($frontend) that provides default `formatProps` associated to each KindOfQuantity in the table above, ensuring formatProps will always be available for those Kind Of Quantities out of the box. We still strongly encourage developers to either implement their own `FormatsProvider` or set a new [SchemaFormatsProvider]($ecschema-metadata) if possible and the application uses iModels.
+
 We plan to deprecate `QuantityType` during the iTwin.js 5.x lifecycle.
 
 ### Overriding Default Formats

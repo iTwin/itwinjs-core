@@ -33,7 +33,7 @@ import { FrontendLoggerCategory } from "./common/FrontendLoggerCategory";
 import * as modelselector from "./ModelSelectorState";
 import * as modelState from "./ModelState";
 import { NotificationManager } from "./NotificationManager";
-import { QuantityFormatter } from "./quantity-formatting/QuantityFormatter";
+import { BasicFormatsProvider, QuantityFormatter } from "./quantity-formatting/QuantityFormatter";
 import { RenderSystem } from "./render/RenderSystem";
 import { System } from "./internal/render/webgl/System";
 import * as sheetState from "./SheetViewState";
@@ -212,7 +212,7 @@ export class IModelApp {
   private static _hubAccess?: FrontendHubAccess;
   private static _realityDataAccess?: RealityDataAccess;
   private static _publicPath: string;
-  private static _formatsProvider?: FormatsProvider;
+  private static _formatsProvider: FormatsProvider;
 
   // No instances of IModelApp may be created. All members are static and must be on the singleton object IModelApp.
   protected constructor() { }
@@ -301,8 +301,8 @@ export class IModelApp {
    * @param provider The provider to use for formatting quantities. If not provided, the provider will be cleared.
    * @beta
    */
-  public static get formatsProvider(): FormatsProvider | undefined { return this._formatsProvider; }
-  public static set formatsProvider(provider: FormatsProvider | undefined) { this._formatsProvider = provider }
+  public static get formatsProvider(): FormatsProvider { return this._formatsProvider; }
+  public static set formatsProvider(provider: FormatsProvider) { this._formatsProvider = provider }
 
   /** @alpha */
   public static readonly extensionAdmin = this._createExtensionAdmin();
@@ -421,7 +421,7 @@ export class IModelApp {
     this._terrainProviderRegistry = new TerrainProviderRegistry();
     this._realityDataSourceProviders = new RealityDataSourceProviderRegistry();
     this._realityDataAccess = opts.realityDataAccess;
-    this._formatsProvider = opts.formatsProvider;
+    this._formatsProvider = opts.formatsProvider ?? new BasicFormatsProvider();
 
     this._publicPath = opts.publicPath ?? "";
 
@@ -462,7 +462,7 @@ export class IModelApp {
     this._entityClasses.clear();
     this.authorizationClient = undefined;
     this._initialized = false;
-    this._formatsProvider = undefined;
+    this.resetFormatsProvider();
     this.onAfterStartup.clear();
   }
 
@@ -761,6 +761,16 @@ export class IModelApp {
     }
 
     return this.localization.getLocalizedString(`iModelJs:${key.scope}.${key.val}`, key);
+  }
+
+  /**
+   * Resets the formatsProvider back to the default [[BasicFormatsProvider]].
+   * @beta
+   */
+  public static resetFormatsProvider() {
+    const oldFormatsProvider = this.formatsProvider;
+    this.formatsProvider = new BasicFormatsProvider();
+    oldFormatsProvider.onFormatsChanged.raiseEvent({ formatsChanged: "all"})
   }
 
   /**
