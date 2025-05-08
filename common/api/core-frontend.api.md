@@ -5666,6 +5666,13 @@ export class MapCartoRectangle extends Range2d {
     setRadians(west?: number, south?: number, east?: number, north?: number): void;
     get south(): number;
     set south(y: number);
+    // @beta
+    toDegrees(): {
+        north: number;
+        south: number;
+        east: number;
+        west: number;
+    };
     get west(): number;
     set west(x: number);
 }
@@ -5853,9 +5860,9 @@ export abstract class MapLayerImageryProvider {
     initialize(): Promise<void>;
     loadTile(row: number, column: number, zoomLevel: number): Promise<ImageSource | undefined>;
     // @internal (undocumented)
-    makeRequest(url: string, timeoutMs?: number): Promise<Response>;
+    makeRequest(url: string, timeoutMs?: number, authorization?: string): Promise<Response>;
     // @internal (undocumented)
-    makeTileRequest(url: string, timeoutMs?: number): Promise<Response>;
+    makeTileRequest(url: string, timeoutMs?: number, authorization?: string): Promise<Response>;
     // @internal (undocumented)
     matchesMissingTile(tileData: Uint8Array): boolean;
     // @internal (undocumented)
@@ -7764,6 +7771,7 @@ export class QuadId {
     static createFromContentId(stringId: string): QuadId;
     // @alpha (undocumented)
     get debugString(): string;
+    static fromJSON(props: QuadIdProps): QuadId;
     // @alpha (undocumented)
     getAngleSweep(mapTilingScheme: MapTilingScheme): {
         longitude: AngleSweep;
@@ -7776,6 +7784,14 @@ export class QuadId {
     static getTileContentId(level: number, column: number, row: number): string;
     // @alpha (undocumented)
     get isValid(): boolean;
+    level: number;
+    row: number;
+    static toJSON(props: QuadIdProps): QuadIdProps;
+}
+
+// @public
+export interface QuadIdProps {
+    column: number;
     level: number;
     row: number;
 }
@@ -9528,6 +9544,8 @@ export class SheetModelState extends GeometricModel2dState {
 // @public
 export class SheetViewState extends ViewState2d {
     constructor(props: ViewDefinition2dProps, iModel: IModelConnection, categories: CategorySelectorState, displayStyle: DisplayStyle2dState, sheetProps: SheetProps, attachments: Id64Array);
+    // @internal
+    areAllAttachmentsLoaded(): boolean;
     // (undocumented)
     get areAllTileTreesLoaded(): boolean;
     // (undocumented)

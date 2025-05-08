@@ -31,6 +31,61 @@ describe("ECClass", () => {
       schema = new Schema(new SchemaContext(), "TestSchema", "ts", 1, 0, 0);
     });
 
+    it("checks if properties are overridden correctly", async () => {
+      const schemaJson = {
+        $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
+        name: "TestSchema",
+        version: "1.2.3",
+        alias: "ts",
+        items: {
+          TestBase: {
+            schemaItemType: "EntityClass",
+            properties: [
+              {
+                type: "PrimitiveProperty",
+                typeName: "string",
+                name: "PrimProp",
+                label: "BaseProp",
+              },
+            ],
+          },
+          TestClass: {
+            schemaItemType: "EntityClass",
+            baseClass: "TestSchema.TestBase",
+            properties: [
+              {
+                type: "PrimitiveProperty",
+                typeName: "string",
+                name: "PrimProp",
+                label: "DerivedProp",
+              },
+            ],
+          },
+          OneMoreClass: {
+            schemaItemType: "EntityClass",
+            baseClass: "TestSchema.TestClass",
+          },
+        },
+      };
+      schema = await Schema.fromJson(schemaJson, new SchemaContext());
+      const testClass = await schema.getItem("TestClass", EntityClass);
+      const testBase = await schema.getItem("TestBase", EntityClass);
+      const oneMoreClass = await schema.getItem("OneMoreClass", EntityClass);
+      assert.isDefined(testClass);
+      assert.isDefined(testBase);
+      assert.isDefined(oneMoreClass);
+      const testClassPrimProp = await testClass!.getProperty("PrimProp", true);
+      const testBasePrimProp = await testBase!.getProperty("PrimProp");
+      const oneMoreClassPrimProp = await oneMoreClass!.getProperty("PrimProp");
+      assert.isDefined(testClassPrimProp);
+      assert.isDefined(testBasePrimProp);
+      assert.isDefined(oneMoreClassPrimProp);
+      expect(testClassPrimProp).not.to.equal(testBasePrimProp);
+      expect(testClassPrimProp?.label).to.equal("DerivedProp");
+      expect(oneMoreClassPrimProp?.label).to.equal("DerivedProp");
+      expect(oneMoreClassPrimProp).to.equal(testClassPrimProp);
+    });
+
     it("inherited properties from base class", async () => {
       const baseClass = new EntityClass(schema, "TestBase");
       const basePrimProp = await (baseClass as ECClass as MutableClass).createPrimitiveProperty("BasePrimProp");
