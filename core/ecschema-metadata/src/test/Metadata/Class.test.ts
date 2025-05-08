@@ -61,19 +61,29 @@ describe("ECClass", () => {
               },
             ],
           },
+          OneMoreClass: {
+            schemaItemType: "EntityClass",
+            baseClass: "TestSchema.TestClass",
+          },
         },
       };
       schema = await Schema.fromJson(schemaJson, new SchemaContext());
       const testClass = await schema.getItem("TestClass", EntityClass);
       const testBase = await schema.getItem("TestBase", EntityClass);
+      const oneMoreClass = await schema.getItem("OneMoreClass", EntityClass);
       assert.isDefined(testClass);
       assert.isDefined(testBase);
+      assert.isDefined(oneMoreClass);
       const testClassPrimProp = await testClass!.getProperty("PrimProp", true);
-      const testBasePrimProp = await testBase!.getProperty("PrimProp", true);
+      const testBasePrimProp = await testBase!.getProperty("PrimProp");
+      const oneMoreClassPrimProp = await oneMoreClass!.getProperty("PrimProp");
       assert.isDefined(testClassPrimProp);
       assert.isDefined(testBasePrimProp);
+      assert.isDefined(oneMoreClassPrimProp);
       expect(testClassPrimProp).not.to.equal(testBasePrimProp);
       expect(testClassPrimProp?.label).to.equal("DerivedProp");
+      expect(oneMoreClassPrimProp?.label).to.equal("DerivedProp");
+      expect(oneMoreClassPrimProp).to.equal(testClassPrimProp);
     });
 
     it("inherited properties from base class", async () => {
