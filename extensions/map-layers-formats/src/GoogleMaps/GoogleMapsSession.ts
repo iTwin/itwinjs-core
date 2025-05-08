@@ -10,7 +10,7 @@ import { MapCartoRectangle, QuadIdProps} from "@itwin/core-frontend";
 
 
 /**
- * The type of base map.
+ * The type of base map .
  * @beta*/
 export type GoogleMapsLayerTypes = "layerRoadmap" | "layerStreetview";
 
