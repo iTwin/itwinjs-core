@@ -335,6 +335,8 @@ export class IModelTile extends Tile {
 
   public override clearLayers(): void {
     super.clearLayers();
-    this._childrenLoadStatus = TileTreeLoadStatus.NotLoaded;
+    if (this.isDisplayable) {
+      this._childrenLoadStatus = TileTreeLoadStatus.NotLoaded;
+    }
   }
 }
