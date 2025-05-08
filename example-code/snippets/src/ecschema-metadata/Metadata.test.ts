@@ -6,7 +6,7 @@
 import { SnapshotDb } from "@itwin/core-backend";
 import { IModelStatus } from "@itwin/core-bentley";
 import { IModelError } from "@itwin/core-common";
-import { ECClass, EntityClass, RelationshipClass, SchemaItemKey, SchemaKey, SchemaMatchType, Unit } from "@itwin/ecschema-metadata";
+import { ECClass, EntityClass, RelationshipClass, SchemaKey, SchemaMatchType, Unit } from "@itwin/ecschema-metadata";
 import { IModelTestUtils } from "../backend/IModelTestUtils";
 import { assert } from "chai";
 
@@ -111,11 +111,11 @@ describe("Metadata examples", () => {
     }
 
     // Get a property by name
-    const property = await entityClass.getProperty("Description");
-    if (property === undefined) {
+    const singleProperty = await entityClass.getProperty("Description");
+    if (singleProperty === undefined) {
       throw new IModelError(IModelStatus.NotFound, "property not found.");
     }
-    assert.isTrue(property.isPrimitive());
+    assert.isTrue(singleProperty.isPrimitive());
     // __PUBLISH_EXTRACT_END__
   });
 
@@ -140,7 +140,7 @@ describe("Metadata examples", () => {
       if (item.customAttributes?.has("ECDbMap.ShareColumns")) {
         const customAttribute = item.customAttributes.get("ECDbMap.ShareColumns");
         if (customAttribute) {
-          const maxSharedColumns = customAttribute["MaxSharedColumnsBeforeOverflow"];
+          const maxSharedColumns = customAttribute.MaxSharedColumnsBeforeOverflow;
           if (maxSharedColumns && typeof maxSharedColumns === "number") {
             doSomething(`Class ${item.name} has MaxSharedColumnsBeforeOverflow set to ${maxSharedColumns}`);
           }
