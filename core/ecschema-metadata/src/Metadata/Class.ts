@@ -35,7 +35,7 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
   private _derivedClasses?: Map<string, LazyLoadedECClass>;
   private _properties?: Map<string, Property>;
   private _customAttributes?: Map<string, CustomAttribute>;
-  private _mergedPropertyCache?: Property[];
+  private _mergedPropertyCache?: Map<string, Property>;
 
   public get modifier() { return this._modifier; }
   public get customAttributes(): CustomAttributeSet | undefined { return this._customAttributes; }
@@ -138,26 +138,32 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
   }
 
 
-
   /**
    * Searches, case-insensitive, for an ECProperty with given the name on this class and, by default, on
    * all base classes. Set excludeInherited to 'true' to only search the local class.
    * @param name The name of the property to retrieve.
    * @param excludeInherited If true, excludes inherited properties from the results. Defaults to false.
    */
-  public async getProperty(name: string, excludeInherited: boolean = false): Promise<Property | undefined> {
+  public async getProperty(name: string, excludeInherited?: boolean): Promise<Property | undefined> {
+    const upperKey = name.toUpperCase();
+    let property: Property | undefined;
+
     if (this._properties) {
-      const upperKey = name.toUpperCase();
-      const property = this._properties.get(upperKey);
-      if (property)
+      property = this._properties.get(upperKey);
+      if (property) {
         return property;
+      }
     }
 
     if (excludeInherited) {
       return undefined;
     }
 
-    return this.getInheritedProperty(name);
+    if (!this._mergedPropertyCache) {
+      this._mergedPropertyCache = await this.buildPropertyCache();
+    }
+
+    return this._mergedPropertyCache.get(upperKey);
   }
 
   /**
@@ -165,19 +171,26 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
    * @param name The name of the property to retrieve.
    * @param excludeInherited If true, excludes inherited properties from the results. Defaults to false.
    */
-  public getPropertySync(name: string, excludeInherited: boolean = false): Property | undefined {
+  public getPropertySync(name: string, excludeInherited?: boolean): Property | undefined {
+    const upperKey = name.toUpperCase();
+    let property: Property | undefined;
+
     if (this._properties) {
-      const upperKey = name.toUpperCase();
-      const property = this._properties.get(upperKey);
-      if (property)
+      property = this._properties.get(upperKey);
+      if (property) {
         return property;
+      }
     }
 
     if (excludeInherited) {
       return undefined;
     }
 
-    return this.getInheritedPropertySync(name);
+    if (!this._mergedPropertyCache) {
+      this._mergedPropertyCache = this.buildPropertyCacheSync();
+    }
+
+    return this._mergedPropertyCache.get(upperKey);
   }
 
   /**
@@ -612,76 +625,54 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
 
   /**
    *
-   * @param target
-   * @param existingValues
-   * @param propertiesToMerge
-   * @param overwriteExisting
-   *
-   * @internal
-   */
-  protected static mergeProperties(target: Property[], existingValues: Map<string, number>, propertiesToMerge: Iterable<Property>, overwriteExisting: boolean) {
-    for (const property of propertiesToMerge) {
-      const upperCaseName = property.name.toUpperCase();
-      const existing = existingValues.get(upperCaseName);
-      if (existing !== undefined) {
-        if (overwriteExisting) {
-          target[existing] = property;
-        }
-      } else {
-        existingValues.set(upperCaseName, target.length);
-        target.push(property);
-      }
-    }
-  }
-
-  /**
-   *
-   * @param result
-   * @param existingValues
+   * @param cache
    * @returns
    *
    * @internal
    */
-  protected async buildPropertyCache(result: Property[], existingValues?: Map<string, number>): Promise<void> {
-    if (!existingValues) {
-      existingValues = new Map<string, number>();
-    }
-
-    if (this.baseClass) {
-      const baseClass = await this.baseClass;
-      if (baseClass) {
-        ECClass.mergeProperties(result, existingValues, await baseClass.getProperties(), false);
+protected async buildPropertyCache(): Promise<Map<string, Property>> {
+  const cache = new Map<string, Property>();
+  const baseClass = await this.baseClass;
+  if (baseClass) {
+    for (const property of await baseClass.getProperties()) {
+      if (!cache.has(property.name.toUpperCase())) {
+        cache.set(property.name.toUpperCase(), property);
       }
     }
-
-    if (!this._properties)
-      return;
-
-    ECClass.mergeProperties(result, existingValues, [...this._properties.values()], true);
   }
+
+  if (this._properties) {
+    this._properties.forEach(property => {
+      cache.set(property.name.toUpperCase(), property);
+    });
+  }
+  return cache;
+}
 
   /**
    *
-   * @param result
-   * @param existingValues
+   * @param cache
    * @returns
    *
    * @internal
    */
-  protected buildPropertyCacheSync(result: Property[], existingValues?: Map<string, number>): void {
-    if (!existingValues) {
-      existingValues = new Map<string, number>();
-    }
-
+  protected buildPropertyCacheSync(): Map<string, Property> {
+    const cache = new Map<string, Property>();
     const baseClass = this.getBaseClassSync();
     if (baseClass) {
-      ECClass.mergeProperties(result, existingValues, baseClass.getPropertiesSync(), false);
+      for (const property of baseClass.getPropertiesSync()) {
+        if (!cache.has(property.name.toUpperCase())) {
+          cache.set(property.name.toUpperCase(), property);
+        }
+      }
     }
 
-    if (!this._properties)
-      return;
-
-    ECClass.mergeProperties(result, existingValues, [...this._properties.values()], true);
+    if (this._properties) {
+      this._properties.forEach(property => {
+        cache.set(property.name.toUpperCase(), property);
+      });
+    }
+    return cache;
   }
 
   /**
@@ -705,11 +696,10 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
     }
 
     if (!this._mergedPropertyCache) {
-      this._mergedPropertyCache = [];
-      this.buildPropertyCacheSync(this._mergedPropertyCache, undefined);
+      this._mergedPropertyCache = this.buildPropertyCacheSync();
     }
 
-    return this._mergedPropertyCache;
+    return this._mergedPropertyCache.values();
   }
 
   /**
