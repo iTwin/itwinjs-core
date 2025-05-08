@@ -167,11 +167,10 @@ export interface GoogleMapsSession {
 
 /**
 * Base implementation of Google Maps session.
-* @internal
+* @beta
 */
 export abstract class BaseGoogleMapsSession implements GoogleMapsSession {
   protected abstract getTileApiBaseUrl(): string;
-
 
   protected getTilePositionUrl(position: QuadIdProps) {
     const baseUrl = this.getTileApiBaseUrl();
