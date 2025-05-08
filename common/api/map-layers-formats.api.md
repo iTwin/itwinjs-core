@@ -61,7 +61,7 @@ export class ArcGisFeatureProvider extends ArcGISImageryProvider {
     get tileSize(): number;
 }
 
-// @internal
+// @beta
 export abstract class BaseGoogleMapsSession implements GoogleMapsSession {
     // (undocumented)
     protected abstract getTileApiBaseUrl(): string;
