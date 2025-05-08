@@ -2,6 +2,41 @@
   "name": "@itwin/presentation-common",
   "entries": [
     {
+      "version": "4.11.1",
+      "tag": "@itwin/presentation-common_v4.11.1",
+      "date": "Wed, 30 Apr 2025 13:13:21 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.11.0",
+      "tag": "@itwin/presentation-common_v4.11.0",
+      "date": "Wed, 16 Apr 2025 15:50:28 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "KeySet: Always store instance key class name in `Schema:Class` format."
+          },
+          {
+            "comment": "Fixed enum property values formatting issue, where raw value was used instead of enum's display value."
+          },
+          {
+            "comment": "Extend `MultiElementPropertiesRequestOptions` to support specifying input element either through `elementClasses` or `elementIds` arrays."
+          }
+        ],
+        "minor": [
+          {
+            "comment": "All public methods of `PresentationRpcInterface` have been deprecated. Going forward, RPC interfaces should not be called directly. Public wrappers such as `PresentationManager` should be used instead."
+          }
+        ]
+      }
+    },
+    {
+      "version": "4.10.13",
+      "tag": "@itwin/presentation-common_v4.10.13",
+      "date": "Thu, 10 Apr 2025 17:47:21 GMT",
+      "comments": {}
+    },
+    {
       "version": "4.10.12",
       "tag": "@itwin/presentation-common_v4.10.12",
       "date": "Wed, 02 Apr 2025 19:35:47 GMT",

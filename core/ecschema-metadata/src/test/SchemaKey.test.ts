@@ -6,7 +6,7 @@
 import { expect } from "chai";
 import { SchemaKeyProps } from "../Deserialization/JsonProps";
 import { SchemaMatchType } from "../ECObjects";
-import { ECObjectsError } from "../Exception";
+import { ECSchemaError } from "../Exception";
 import { ECVersion, SchemaKey } from "../SchemaKey";
 
 describe("SchemaKey", () => {
@@ -32,12 +32,12 @@ describe("SchemaKey", () => {
     });
 
     it("should throw for invalid string", () => {
-      expect(() => SchemaKey.parseString("invalid")).to.throw(ECObjectsError);
+      expect(() => SchemaKey.parseString("invalid")).to.throw(ECSchemaError);
     });
     it("should throw for out of bounds ECVersions", () => {
-      expect(() => SchemaKey.parseString("SchemaName.01.05.56700000")).to.throw(ECObjectsError);
-      expect(() => SchemaKey.parseString("SchemaName.9999.05.05")).to.throw(ECObjectsError);
-      expect(() => SchemaKey.parseString("SchemaName.01.9999.05")).to.throw(ECObjectsError);
+      expect(() => SchemaKey.parseString("SchemaName.01.05.56700000")).to.throw(ECSchemaError);
+      expect(() => SchemaKey.parseString("SchemaName.9999.05.05")).to.throw(ECSchemaError);
+      expect(() => SchemaKey.parseString("SchemaName.01.9999.05")).to.throw(ECSchemaError);
     });
   });
 

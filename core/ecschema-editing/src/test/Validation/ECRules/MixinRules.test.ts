@@ -20,7 +20,7 @@ describe("Mixin Rule Tests", () => {
   class TestMixin extends Mixin {
     constructor(testSchema: Schema, name: string, appliesTo: EntityClass) {
       super(testSchema, name);
-      this._appliesTo = new DelayedPromiseWithProps(appliesTo.key, async () => appliesTo);
+      this.setAppliesTo(new DelayedPromiseWithProps(appliesTo.key, async () => appliesTo));
     }
   }
 

@@ -6,7 +6,7 @@
 import { assert, expect } from "chai";
 import { SchemaContext } from "../../Context";
 import { SchemaItemType } from "../../ECObjects";
-import { ECObjectsError } from "../../Exception";
+import { ECSchemaError } from "../../Exception";
 import { Constant } from "../../Metadata/Constant";
 import { Phenomenon } from "../../Metadata/Phenomenon";
 import { Schema } from "../../Metadata/Schema";
@@ -178,10 +178,10 @@ describe("Constant", () => {
       definition: "testing",
     };
     it("async - should throw for missing phenomenon", async () => {
-      await expect(Schema.fromJson(createSchemaJson(missingPhenomenon), new SchemaContext())).to.be.rejectedWith(ECObjectsError, `The Constant TestSchema.TestConstant does not have the required 'phenomenon' attribute.`);
+      await expect(Schema.fromJson(createSchemaJson(missingPhenomenon), new SchemaContext())).to.be.rejectedWith(ECSchemaError, `The Constant TestSchema.TestConstant does not have the required 'phenomenon' attribute.`);
     });
     it("sync - should throw for missing phenomenon", () => {
-      assert.throws(() => Schema.fromJsonSync(createSchemaJson(missingPhenomenon), new SchemaContext()), ECObjectsError, `The Constant TestSchema.TestConstant does not have the required 'phenomenon' attribute.`);
+      assert.throws(() => Schema.fromJsonSync(createSchemaJson(missingPhenomenon), new SchemaContext()), ECSchemaError, `The Constant TestSchema.TestConstant does not have the required 'phenomenon' attribute.`);
     });
 
     // Invalid phenomenon
@@ -190,10 +190,10 @@ describe("Constant", () => {
       phenomenon: 5,
     };
     it("async - should throw for invalid phenomenon", async () => {
-      await expect(Schema.fromJson(createSchemaJson(invalidPhenomenon), new SchemaContext())).to.be.rejectedWith(ECObjectsError, `The Constant TestSchema.TestConstant has an invalid 'phenomenon' attribute. It should be of type 'string'.`);
+      await expect(Schema.fromJson(createSchemaJson(invalidPhenomenon), new SchemaContext())).to.be.rejectedWith(ECSchemaError, `The Constant TestSchema.TestConstant has an invalid 'phenomenon' attribute. It should be of type 'string'.`);
     });
     it("sync - should throw for invalid phenomenon", () => {
-      assert.throws(() => Schema.fromJsonSync(createSchemaJson(invalidPhenomenon), new SchemaContext()), ECObjectsError, `The Constant TestSchema.TestConstant has an invalid 'phenomenon' attribute. It should be of type 'string'.`);
+      assert.throws(() => Schema.fromJsonSync(createSchemaJson(invalidPhenomenon), new SchemaContext()), ECSchemaError, `The Constant TestSchema.TestConstant has an invalid 'phenomenon' attribute. It should be of type 'string'.`);
     });
 
     // Not found phenomenon
@@ -202,10 +202,10 @@ describe("Constant", () => {
       phenomenon: "TestSchema.BadPhenomenonName",
     };
     it("async - should throw for phenomenon not found", async () => {
-      await expect(Schema.fromJson(createSchemaJson(nonexistentPhenomenon), new SchemaContext())).to.be.rejectedWith(ECObjectsError, `Unable to locate SchemaItem TestSchema.BadPhenomenonName.`);
+      await expect(Schema.fromJson(createSchemaJson(nonexistentPhenomenon), new SchemaContext())).to.be.rejectedWith(ECSchemaError, `Unable to locate SchemaItem TestSchema.BadPhenomenonName.`);
     });
     it("sync - should throw for phenomenon not found", () => {
-      assert.throws(() => Schema.fromJsonSync(createSchemaJson(nonexistentPhenomenon), new SchemaContext()), ECObjectsError, `Unable to locate SchemaItem TestSchema.BadPhenomenonName.`);
+      assert.throws(() => Schema.fromJsonSync(createSchemaJson(nonexistentPhenomenon), new SchemaContext()), ECSchemaError, `Unable to locate SchemaItem TestSchema.BadPhenomenonName.`);
     });
 
     // Missing definition
@@ -213,10 +213,10 @@ describe("Constant", () => {
       phenomenon: "TestSchema.TestPhenomenon",
     };
     it("async - should throw for missing definition", async () => {
-      await expect(Schema.fromJson(createSchemaJson(missingDefinition), new SchemaContext())).to.be.rejectedWith(ECObjectsError, `The Constant TestSchema.TestConstant does not have the required 'definition' attribute.`);
+      await expect(Schema.fromJson(createSchemaJson(missingDefinition), new SchemaContext())).to.be.rejectedWith(ECSchemaError, `The Constant TestSchema.TestConstant does not have the required 'definition' attribute.`);
     });
     it("sync - should throw for missing definition", () => {
-      assert.throws(() => Schema.fromJsonSync(createSchemaJson(missingDefinition), new SchemaContext()), ECObjectsError, `The Constant TestSchema.TestConstant does not have the required 'definition' attribute.`);
+      assert.throws(() => Schema.fromJsonSync(createSchemaJson(missingDefinition), new SchemaContext()), ECSchemaError, `The Constant TestSchema.TestConstant does not have the required 'definition' attribute.`);
     });
 
     // Invalid definition
@@ -225,10 +225,10 @@ describe("Constant", () => {
       definition: 5,
     };
     it("async - should throw for invalid definition", async () => {
-      await expect(Schema.fromJson(createSchemaJson(invalidDefinition), new SchemaContext())).to.be.rejectedWith(ECObjectsError, `The Constant TestSchema.TestConstant has an invalid 'definition' attribute. It should be of type 'string'.`);
+      await expect(Schema.fromJson(createSchemaJson(invalidDefinition), new SchemaContext())).to.be.rejectedWith(ECSchemaError, `The Constant TestSchema.TestConstant has an invalid 'definition' attribute. It should be of type 'string'.`);
     });
     it("sync - should throw for invalid definition", () => {
-      assert.throws(() => Schema.fromJsonSync(createSchemaJson(invalidDefinition), new SchemaContext()), ECObjectsError, `The Constant TestSchema.TestConstant has an invalid 'definition' attribute. It should be of type 'string'.`);
+      assert.throws(() => Schema.fromJsonSync(createSchemaJson(invalidDefinition), new SchemaContext()), ECSchemaError, `The Constant TestSchema.TestConstant has an invalid 'definition' attribute. It should be of type 'string'.`);
     });
   });
 

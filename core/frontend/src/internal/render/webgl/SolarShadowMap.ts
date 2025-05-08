@@ -376,7 +376,7 @@ export class SolarShadowMap implements RenderMemory.Consumer, WebGLDisposable {
     scratchFrustumPlanes.init(this._shadowFrustum);
     for (const ref of view.getTileTreeRefs()) {
       if (!ref.castsShadows)
-        return;
+        continue;
 
       const drawArgs = createDrawArgs(context, this, ref, scratchFrustumPlanes, (tiles: Tile[]) => {
         for (const tile of tiles)
@@ -384,7 +384,7 @@ export class SolarShadowMap implements RenderMemory.Consumer, WebGLDisposable {
       });
 
       if (undefined === drawArgs)
-        return;
+        continue;
 
       const tileToMapTransform = worldToMapTransform.multiplyTransformTransform(drawArgs.location, this._scratchTransform);
       drawArgs.tree.draw(drawArgs);

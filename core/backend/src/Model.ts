@@ -15,10 +15,10 @@ import {
   InformationPartitionElementProps, ModelProps, RelatedElement,
 } from "@itwin/core-common";
 import { DefinitionPartition, DocumentPartition, InformationRecordPartition, PhysicalPartition, SheetIndexPartition, SpatialLocationPartition } from "./Element";
-import { Entity } from "./Entity";
+import { CustomHandledProperty, DeserializeEntityArgs, ECSqlRow, Entity } from "./Entity";
 import { IModelDb } from "./IModelDb";
 import { SubjectOwnsPartitionElements } from "./NavigationRelationship";
-import { _nativeDb, _verifyChannel } from "./internal/Symbols";
+import { _cache, _nativeDb, _verifyChannel } from "./internal/Symbols";
 
 /** Argument for the `Model.onXxx` static methods
  * @beta
@@ -86,6 +86,53 @@ export class Model extends Entity {
     this.jsonProperties = { ...props.jsonProperties }; // make sure we have our own copy
   }
 
+  /**
+   * Model custom HandledProps includes 'isPrivate', 'isTemplate', and 'lastMod'.
+   * @inheritdoc
+   * @beta
+   */
+  protected static override readonly _customHandledProps: CustomHandledProperty[] = [
+    { propertyName: "isPrivate", source: "Class" },
+    { propertyName: "isTemplate", source: "Class" },
+    { propertyName: "lastMod", source: "Class" },
+  ];
+
+  /**
+   * Model deserializes 'isPrivate', and 'isTemplate', and sets the proper parentModel.
+   * @inheritdoc
+   * @beta
+   */
+  public static override deserialize(props: DeserializeEntityArgs): ModelProps {
+    const instance = props.row;
+    const modelProps = super.deserialize(props) as ModelProps;
+    const modeledElementProps = props.iModel.elements.tryGetElementProps(instance.modeledElement.id);
+    if (modeledElementProps) {
+      // ModeledElement may be undefined in the case of root Element
+      modelProps.name = JsonUtils.asString(modeledElementProps.code.value);
+      if (instance.parentModel !== undefined)
+        modelProps.parentModel = instance.parentModel.id;
+      else
+        modelProps.parentModel = modeledElementProps.model;
+    }
+    if (instance.isPrivate === true)
+      modelProps.isPrivate = true;
+    if (instance.isTemplate === true)
+      modelProps.isTemplate = true;
+    return modelProps;
+  }
+
+  /**
+   * Model serializes 'isPrivate', and 'isTemplate'.
+   * @inheritdoc
+   * @beta
+   */
+  public static override serialize(props: ModelProps, _iModel: IModelDb): ECSqlRow {
+    const inst = super.serialize(props, _iModel);
+    inst.isPrivate = props.isPrivate ?? false;
+    inst.isTemplate = props.isTemplate ?? false;
+    return inst;
+  }
+
   public override toJSON(): ModelProps {
     const val = super.toJSON() as ModelProps;
     val.name = this.name; // for cloning
@@ -131,7 +178,8 @@ export class Model extends Entity {
    * @note `this` is the class of the Model that was updated.
    * @beta
    */
-  protected static onUpdated(_arg: OnModelIdArg): void {
+  protected static onUpdated(arg: OnModelIdArg): void {
+    arg.iModel.models[_cache].delete(arg.id);
   }
 
   /** Called before a Model is deleted.
@@ -150,7 +198,10 @@ export class Model extends Entity {
    * @note `this` is the class of the Model that was deleted
    * @beta
    */
-  protected static onDeleted(_arg: OnModelIdArg): void { }
+  protected static onDeleted(arg: OnModelIdArg): void {
+    arg.iModel.models[_cache].delete(arg.id);
+    arg.iModel.elements[_cache].deleteWithModel(arg.id);
+  }
 
   /** Called before a prospective Element is to be inserted into an instance of a Model of this class.
    * @note throw an exception to disallow the insert
@@ -165,7 +216,9 @@ export class Model extends Entity {
    * @note `this` is the class of the Model holding the element
    * @beta
    */
-  protected static onInsertedElement(_arg: OnElementInModelIdArg): void { }
+  protected static onInsertedElement(arg: OnElementInModelIdArg): void {
+    arg.iModel.models[_cache].delete(arg.id);
+  }
 
   /** Called when an Element in an instance of a Model of this class is about to be updated.
    * @note throw an exception to disallow the update
@@ -180,7 +233,9 @@ export class Model extends Entity {
    * @note `this` is the class of the Model holding the element
    * @beta
    */
-  protected static onUpdatedElement(_arg: OnElementInModelIdArg): void { }
+  protected static onUpdatedElement(arg: OnElementInModelIdArg): void {
+    arg.iModel.models[_cache].delete(arg.id);
+  }
 
   /** Called when an Element in an instance of a Model of this class is about to be deleted.
    * @note throw an exception to disallow the delete
@@ -195,7 +250,9 @@ export class Model extends Entity {
    * @note `this` is the class of the Model that held the element
    * @beta
    */
-  protected static onDeletedElement(_arg: OnElementInModelIdArg): void { }
+  protected static onDeletedElement(arg: OnElementInModelIdArg): void {
+    arg.iModel.models[_cache].delete(arg.id);
+  }
 
   private getAllUserProperties(): any {
     if (!this.jsonProperties.UserProps)
@@ -279,6 +336,43 @@ export abstract class GeometricModel3d extends GeometricModel {
     super(props, iModel);
     this.isNotSpatiallyLocated = JsonUtils.asBool(props.isNotSpatiallyLocated);
     this.isPlanProjection = JsonUtils.asBool(props.isPlanProjection);
+  }
+
+  /**
+   * GeometricModel3d custom HandledProps includes 'isPlanProjection', and 'isNotSpatiallyLocated'.
+   * @inheritdoc
+   * @beta
+   */
+  protected static override readonly _customHandledProps: CustomHandledProperty[] = [
+    { propertyName: "isPlanProjection", source: "Class" },
+    { propertyName: "isNotSpatiallyLocated", source: "Class" },
+  ];
+
+  /**
+   * GeometricModel3d deserializes 'isPlanProjection', and 'isNotSpatiallyLocated'.
+   * @inheritdoc
+   * @beta
+   */
+  public static override deserialize(props: DeserializeEntityArgs): GeometricModel3dProps {
+    const modelProps = super.deserialize(props) as GeometricModel3dProps;
+    const instance = props.row;
+    if (instance.isNotSpatiallyLocated === true || instance.isTemplate === true)
+      modelProps.isNotSpatiallyLocated = true;
+    if (instance.isPlanProjection === true)
+      modelProps.isPlanProjection = true;
+    return modelProps;
+  }
+
+  /**
+   * GeometricModel3d serializes 'isPlanProjection', and 'isNotSpatiallyLocated'.
+   * @inheritdoc
+   * @beta
+   */
+  public static override serialize(props: GeometricModel3dProps, _iModel: IModelDb): ECSqlRow {
+    const inst = super.serialize(props, _iModel);
+    inst.isNotSpatiallyLocated = props.isNotSpatiallyLocated ?? false;
+    inst.isPlanProjection = props.isPlanProjection ?? false;
+    return inst;
   }
 
   public override toJSON(): GeometricModel3dProps {

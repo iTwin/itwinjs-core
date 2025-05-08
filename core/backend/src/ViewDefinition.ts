@@ -6,7 +6,7 @@
  * @module ViewDefinitions
  */
 
-import { Id64, Id64Array, Id64String, IModelStatus, JsonUtils } from "@itwin/core-bentley";
+import { DbResult, Id64, Id64Array, Id64String, IModelStatus, JsonUtils } from "@itwin/core-bentley";
 import {
   Angle, Matrix3d, Point2d, Point3d, Range2d, Range3d, StandardViewIndex, Transform, Vector3d, YawPitchRollAngles,
 } from "@itwin/core-geometry";
@@ -20,6 +20,7 @@ import { DefinitionElement, GraphicalElement2d, SpatialLocationElement } from ".
 import { IModelDb } from "./IModelDb";
 import { DisplayStyle, DisplayStyle2d, DisplayStyle3d } from "./DisplayStyle";
 import { IModelElementCloneContext } from "./IModelElementCloneContext";
+import { CustomHandledProperty, DeserializeEntityArgs, ECSqlRow } from "./Entity";
 
 /** Holds the list of Ids of GeometricModels displayed by a [[SpatialViewDefinition]]. Multiple SpatialViewDefinitions may point to the same ModelSelector.
  * @see [ModelSelectorState]($frontend)
@@ -41,6 +42,35 @@ export class ModelSelector extends DefinitionElement {
     const val = super.toJSON() as ModelSelectorProps;
     val.models = this.models;
     return val;
+  }
+
+  /**
+   * ModelSelector custom HandledProps includes 'models'.
+   * @inheritdoc
+   * @beta
+   */
+  protected static override readonly _customHandledProps: CustomHandledProperty[] = [
+    { propertyName: "models", source: "Class" },
+  ];
+
+  /**
+   * ModelSelector deserializes 'models'.
+   * @inheritdoc
+   * @beta
+   */
+  public static override deserialize(props: DeserializeEntityArgs): ModelSelectorProps {
+    const elProps = super.deserialize(props) as ModelSelectorProps;
+    const instance = props.row;
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    elProps.models = props.iModel.withPreparedStatement("SELECT TargetECInstanceId FROM Bis.ModelSelectorRefersToModels WHERE SourceECInstanceId=?", (statement) => {
+      statement.bindId(1, instance.id);
+      const ids: Id64Array = [];
+      while (DbResult.BE_SQLITE_ROW === statement.step()) {
+        ids.push(statement.getValue(0).getId());
+      }
+      return ids;
+    });
+    return elProps;
   }
 
   protected override collectReferenceIds(referenceIds: EntityReferenceSet): void {
@@ -111,6 +141,35 @@ export class CategorySelector extends DefinitionElement {
     const val = super.toJSON() as CategorySelectorProps;
     val.categories = this.categories;
     return val;
+  }
+
+  /**
+   * CategorySelector custom HandledProps includes 'categories'.
+   * @inheritdoc
+   * @beta
+   */
+  protected static override readonly _customHandledProps: CustomHandledProperty[] = [
+    { propertyName: "categories", source: "Class" },
+  ];
+
+  /**
+   * CategorySelector deserializes 'categories'.
+   * @inheritdoc
+   * @beta
+   */
+  public static override deserialize(props: DeserializeEntityArgs): CategorySelectorProps {
+    const elProps = super.deserialize(props) as CategorySelectorProps;
+    const instance = props.row;
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    elProps.categories = props.iModel.withPreparedStatement("SELECT TargetECInstanceId FROM Bis.CategorySelectorRefersToCategories WHERE SourceECInstanceId=?", (statement) => {
+      statement.bindId(1, instance.id);
+      const ids: Id64Array = [];
+      while (DbResult.BE_SQLITE_ROW === statement.step()) {
+        ids.push(statement.getValue(0).getId());
+      }
+      return ids;
+    });
+    return elProps;
   }
 
   protected override collectReferenceIds(referenceIds: EntityReferenceSet): void {
@@ -187,6 +246,43 @@ export abstract class ViewDefinition extends DefinitionElement {
     this.displayStyleId = Id64.fromJSON(props.displayStyleId);
     if (!Id64.isValid(this.displayStyleId))
       throw new IModelError(IModelStatus.BadArg, `displayStyleId is invalid`);
+  }
+
+  /**
+   * ViewDefinition custom HandledProps includes 'categorySelector', and 'displayStyle'.
+   * @inheritdoc
+   * @beta
+   */
+  protected static override readonly _customHandledProps: CustomHandledProperty[] = [
+    { propertyName: "categorySelector", source: "Class" },
+    { propertyName: "displayStyle", source: "Class" },
+  ];
+
+  /**
+   * ViewDefinition deserializes 'categorySelector', and 'displayStyle'.
+   * @inheritdoc
+   * @beta
+   */
+  public static override deserialize(props: DeserializeEntityArgs): ViewDefinitionProps {
+    const elProps = super.deserialize(props) as ViewDefinitionProps;
+    const instance = props.row;
+    if (instance.isPrivate  !== undefined)
+      elProps.isPrivate = instance.isPrivate;
+    elProps.categorySelectorId = instance.categorySelector.id;
+    elProps.displayStyleId = instance.displayStyle.id;
+    return elProps;
+  }
+
+  /**
+   * ViewDefinition serializes 'categorySelector', and 'displayStyle'.
+   * @inheritdoc
+   * @beta
+   */
+  public static override serialize(props: ViewDefinitionProps, _iModel: IModelDb): ECSqlRow {
+    const inst = super.serialize(props, _iModel);
+    inst.categorySelector.id = props.categorySelectorId;
+    inst.displayStyle.id = props.displayStyleId;
+    return inst;
   }
 
   public override toJSON(): ViewDefinitionProps {
@@ -294,6 +390,62 @@ export abstract class ViewDefinition3d extends ViewDefinition {
     this._details = new ViewDetails3d(this.jsonProperties);
   }
 
+  /**
+   * ViewDefinition3d custom HandledProps includes 'eyePoint', 'focusDistance', 'lensAngle', 'yaw', 'pitch', 'roll',
+   * 'origin', 'extents', and 'isCameraOn'.
+   * @inheritdoc
+   * @beta
+   */
+  protected static override readonly _customHandledProps: CustomHandledProperty[] = [
+    { propertyName: "eyePoint", source: "Class" },
+    { propertyName: "focusDistance", source: "Class" },
+    { propertyName: "lensAngle", source: "Class" },
+    { propertyName: "yaw", source: "Class" },
+    { propertyName: "roll", source: "Class" },
+    { propertyName: "pitch", source: "Class" },
+    { propertyName: "origin", source: "Class" },
+    { propertyName: "extents", source: "Class" },
+    { propertyName: "isCameraOn", source: "Class" },
+  ];
+
+  /**
+   * ViewDefinition3d deserializes 'eyePoint', 'focusDistance', 'lensAngle', 'yaw', 'pitch', 'roll',
+   * 'origin', 'extents', and 'isCameraOn'.
+   * @inheritdoc
+   * @beta
+   */
+  public static override deserialize(props: DeserializeEntityArgs): ViewDefinition3dProps {
+    const instance = props.row;
+    const elProps = super.deserialize(props) as ViewDefinition3dProps;
+    // ViewDefinition3dProps
+    elProps.cameraOn = instance.isCameraOn as boolean;
+    elProps.origin = [ instance.origin.x, instance.origin.y, instance.origin.z ];
+    elProps.extents = [ instance.extents.x, instance.extents.y, instance.extents.z ];
+    elProps.camera = { eye: [instance.eyePoint.x, instance.eyePoint.y, instance.eyePoint.z], focusDist: instance.focusDistance, lens: Angle.createRadians(instance.lensAngle).toJSON() };
+    elProps.angles = YawPitchRollAngles.createDegrees(instance.yaw ?? 0, instance.pitch ?? 0, instance.roll ?? 0).toJSON();
+    return elProps;
+  }
+
+  /**
+   * ViewDefinition3d serializes 'eyePoint', 'focusDistance', 'lensAngle', 'yaw', 'pitch', 'roll',
+   * 'origin', 'extents', and 'isCameraOn'.
+   * @inheritdoc
+   * @beta
+   */
+  public static override serialize(props: ViewDefinition3dProps, _iModel: IModelDb): ECSqlRow {
+    const row = super.serialize(props, _iModel);
+    row.isCameraOn = props.cameraOn;
+    row.eyePoint = props.camera.eye;
+    row.focusDistance = props.camera.focusDist;
+    row.lensAngle = props.camera.lens;
+    if (props.angles) {
+      row.yaw = props.angles.yaw;
+      row.roll = props.angles.roll;
+      row.pitch = props.angles.pitch;
+    }
+    return row;
+  }
+
   public override toJSON(): ViewDefinition3dProps {
     const val = super.toJSON() as ViewDefinition3dProps;
     val.cameraOn = this.cameraOn;
@@ -344,6 +496,38 @@ export class SpatialViewDefinition extends ViewDefinition3d {
     const json = super.toJSON() as SpatialViewDefinitionProps;
     json.modelSelectorId = this.modelSelectorId;
     return json;
+  }
+
+  /**
+   * SpatialViewDefinition custom HandledProps includes 'modelSelector'.
+   * @inheritdoc
+   * @beta
+   */
+  protected static override readonly _customHandledProps: CustomHandledProperty[] = [
+    { propertyName: "modelSelector", source: "Class" },
+  ];
+
+  /**
+   * SpatialViewDefinition deserializes 'modelSelector'.
+   * @inheritdoc
+   * @beta
+   */
+  public static override deserialize(props: DeserializeEntityArgs): SpatialViewDefinitionProps {
+    const elProps = super.deserialize(props) as SpatialViewDefinitionProps;
+    const instance = props.row;
+    elProps.modelSelectorId = instance.modelSelector.id;
+    return elProps;
+  }
+
+  /**
+   * SpatialViewDefinition serializes 'modelSelector'.
+   * @inheritdoc
+   * @beta
+   */
+  public static override serialize(props: SpatialViewDefinitionProps, _iModel: IModelDb): ECSqlRow {
+    const inst = super.serialize(props, _iModel);
+    inst.modelSelector.id = props.modelSelectorId;
+    return inst;
   }
 
   protected override collectReferenceIds(referenceIds: EntityReferenceSet): void {
@@ -519,6 +703,47 @@ export class ViewDefinition2d extends ViewDefinition {
     return val;
   }
 
+  /**
+   * ViewDefinition2d custom HandledProps includes 'baseModel', 'origin', 'extents', and 'rotationAngle'.
+   * @inheritdoc
+   * @beta
+   */
+  protected static override readonly _customHandledProps: CustomHandledProperty[] = [
+    { propertyName: "baseModel", source: "Class" },
+    { propertyName: "origin", source: "Class" },
+    { propertyName: "extents", source: "Class" },
+    { propertyName: "rotationAngle", source: "Class" },
+  ];
+
+  /**
+   * ViewDefinition2d deserializes 'baseModel', 'origin', 'extents', and 'rotationAngle'.
+   * @inheritdoc
+   * @beta
+   */
+  public static override deserialize(props: DeserializeEntityArgs): ViewDefinition2dProps {
+    const elProps = super.deserialize(props) as ViewDefinition2dProps;
+    const instance = props.row;
+    elProps.baseModelId = instance.baseModel.id;
+    elProps.origin = [ instance.origin.x, instance.origin.y ];
+    elProps.delta = [ instance.extents.x, instance.extents.y ];
+    elProps.angle = instance.rotationAngle;
+    return elProps;
+  }
+
+  /**
+   * ViewDefinition2d serializes 'baseModel', 'origin', 'extents', and 'rotationAngle'.
+   * @inheritdoc
+   * @beta
+   */
+  public static override serialize(props: ViewDefinition2dProps, _iModel: IModelDb): ECSqlRow {
+    const inst = super.serialize(props, _iModel);
+    inst.baseModel.id = props.baseModelId;
+    inst.origin = props.origin;
+    inst.extents = props.delta;
+    inst.rotationAngle = props.angle;
+    return inst;
+  }
+
   protected override collectReferenceIds(referenceIds: EntityReferenceSet): void {
     super.collectReferenceIds(referenceIds);
     referenceIds.addElement(this.baseModelId);
@@ -587,11 +812,64 @@ export class DrawingViewDefinition extends ViewDefinition2d {
   }
 }
 
+/** Arguments to be passed in to [[SheetViewDefinition.create]]
+ * @public
+*/
+export interface CreateSheetViewDefinitionArgs {
+  /** The iModel in which the sheet view will be created. */
+  iModel: IModelDb;
+  /** The  Id of the [[DefinitionModel]] into which the sheet view will be inserted. */
+  definitionModelId: Id64String;
+  /** The name to use as the view's Code value. */
+  name: string;
+  /** The Id of the sheet model whose contents will be displayed by this view. */
+  baseModelId: Id64String;
+  /** The [[CategorySelector]] that this view should use. */
+  categorySelectorId: Id64String;
+  /** The [[DisplayStyle2d]] that this view should use. */
+  displayStyleId: Id64String;
+  /** Defines the view origin and extents. */
+  range: Range2d;
+}
+
 /** Defines a view of a [[SheetModel]].
  * @public
  */
 export class SheetViewDefinition extends ViewDefinition2d {
   public static override get className(): string { return "SheetViewDefinition"; }
+
+  protected constructor(props: ViewDefinition2dProps, iModel: IModelDb) {
+    super(props, iModel);
+  }
+
+  /** Create a SheetViewDefinition */
+  public static create(args: CreateSheetViewDefinitionArgs): SheetViewDefinition {
+    const { baseModelId, categorySelectorId, displayStyleId, range } = args;
+    const props: ViewDefinition2dProps = {
+      classFullName: this.classFullName,
+      model: args.definitionModelId,
+      code: this.createCode(args.iModel, args.definitionModelId, args.name),
+      baseModelId,
+      categorySelectorId,
+      displayStyleId,
+      origin: { x: range.low.x, y: range.low.y },
+      delta: range.diagonal(),
+      angle: 0,
+    };
+
+    return new SheetViewDefinition(props, args.iModel);
+  }
+
+  /** Insert a SheetViewDefinition into an IModelDb */
+  public static insert(args: CreateSheetViewDefinitionArgs): Id64String {
+    const view = this.create(args);
+    return args.iModel.elements.insertElement(view.toJSON());
+  }
+
+  /** Create a SheetViewDefinition from JSON props */
+  public static fromJSON(props: Omit<ViewDefinition2dProps, "classFullName">, iModel: IModelDb): SheetViewDefinition {
+    return new SheetViewDefinition({ ...props, classFullName: this.classFullName }, iModel);
+  }
 }
 
 /** A ViewDefinition used to display a 2d template model.
