@@ -106,51 +106,69 @@ export class EntityClass extends ECClass implements HasMixins {
 
   /**
    *
-   * @param result
-   * @param existingValues
+   * @param cache
+   * @returns
+   *
    * @internal
    */
-  protected override async buildPropertyCache(result: Property[], existingValues?: Map<string, number>): Promise<void> {
-    if (!existingValues) {
-      existingValues = new Map<string, number>();
-    }
-
+protected override async buildPropertyCache(): Promise<Map<string, Property>> {
+  const cache = new Map<string, Property>();
     const baseClass = await this.baseClass;
     if (baseClass) {
-      ECClass.mergeProperties(result, existingValues, await baseClass.getProperties(), false);
+      for (const property of await baseClass.getProperties()) {
+        if (!cache.has(property.name.toUpperCase()))
+          cache.set(property.name.toUpperCase(), property);
+      }
     }
 
     for (const mixin of this.mixins) {
-      const resolvedMixin = await mixin;
-      ECClass.mergeProperties(result, existingValues, await resolvedMixin.getProperties(), false);
+      const mixinObj = await mixin;
+      const mixinProps = mixinObj.getPropertiesSync();
+      for (const property of mixinProps) {
+        if (!cache.has(property.name.toUpperCase()))
+          cache.set(property.name.toUpperCase(), property);
+      }
     }
 
-    const localProps = await this.getProperties();
-    ECClass.mergeProperties(result, existingValues, localProps, true);
-  }
+    const localProps = await this.getProperties(true);
+    if (localProps) {
+      for (const property of localProps) {
+        cache.set(property.name.toUpperCase(), property);
+      }
+    }
+    return cache;
+}
 
   /**
    *
-   * @param result
-   * @param existingValues
+   * @param cache
    * @internal
    */
-  protected override buildPropertyCacheSync(result: Property[], existingValues?: Map<string, number>): void {
-    if (!existingValues) {
-      existingValues = new Map<string, number>();
-    }
-
+  protected override buildPropertyCacheSync(): Map<string, Property> {
+    const cache = new Map<string, Property>();
     const baseClass = this.getBaseClassSync();
     if (baseClass) {
-      ECClass.mergeProperties(result, existingValues, baseClass.getPropertiesSync(), false);
+      Array.from(baseClass.getPropertiesSync()).forEach((property) => {
+        if (!cache.has(property.name.toUpperCase()))
+          cache.set(property.name.toUpperCase(), property);
+      });
     }
 
     for (const mixin of this.getMixinsSync()) {
-      ECClass.mergeProperties(result, existingValues, mixin.getPropertiesSync(), false);
+      const mixinProps = mixin.getPropertiesSync();
+      for (const property of mixinProps) {
+        if (!cache.has(property.name.toUpperCase()))
+          cache.set(property.name.toUpperCase(), property);
+      }
     }
 
     const localProps = this.getPropertiesSync(true);
-    ECClass.mergeProperties(result, existingValues, localProps, true);
+    if (localProps) {
+      Array.from(localProps).forEach(property => {
+        cache.set(property.name.toUpperCase(), property);
+      });
+    }
+    return cache;
   }
 
   /**

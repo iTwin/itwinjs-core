@@ -117,6 +117,7 @@ describe("Planar clip mask (#integration)", () => {
   });
 
   it("is masked by specific model", async function () {
+    // These tests can exceed the default timeout due to shader compilation for draping.
     this.timeout(480000);
     const mask: PlanarClipMaskProps = { mode: PlanarClipMaskMode.Models, modelIds: CompressedId64Set.compressArray(["0x1c"]) };
 
@@ -128,6 +129,7 @@ describe("Planar clip mask (#integration)", () => {
   });
 
   it("is masked by DesignModel priority",  async function () {
+    // These tests can exceed the default timeout due to shader compilation for draping.
     this.timeout(480000);
     const mask: PlanarClipMaskProps = { mode: PlanarClipMaskMode.Priority, priority: PlanarClipMaskPriority.BackgroundMap };
 
@@ -180,7 +182,9 @@ describe("Planar clip mask (#integration)", () => {
     await expectPixels(undefined, "map", addDynamicGeometry);
   });
 
-  it("is masked by dynamic element geometry", async () => {
+  it("is masked by dynamic element geometry",  async function () {
+    // These tests can exceed the default timeout due to shader compilation for draping.
+    this.timeout(480000);
     const bytes = (await IModelApp.tileAdmin.requestElementGraphics(imodel, {
       elementId: "0x29",
       id: Guid.createValue(),
@@ -206,7 +210,9 @@ describe("Planar clip mask (#integration)", () => {
     });
   });
 
-  it("is masked by priority by dynamic geometry", async () => {
+  it("is masked by priority by dynamic geometry", async function () {
+    // These tests can exceed the default timeout due to shader compilation for draping.
+    this.timeout(480000);
     await expectPixels({
       mode: PlanarClipMaskMode.Priority,
       priority: PlanarClipMaskPriority.BackgroundMap,
