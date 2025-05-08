@@ -434,7 +434,10 @@ export namespace ElementGeometry {
       for (const entry of block.entries) {
         let result: boolean;
         if (entry.text) {
-          result = this.appendTextString(new TextString(entry.text));
+          // Todo: there should be a better way to do this...
+          const highPriorityParams = new GeometryParams(Id64.invalid);
+          highPriorityParams.elmPriority = 1;
+          result = this.appendGeometryParamsChange(highPriorityParams) && this.appendTextString(new TextString(entry.text));
         } else if (entry.color) {
           const params = new GeometryParams(Id64.invalid);
           if (entry.color !== "subcategory") {

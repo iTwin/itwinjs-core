@@ -50,10 +50,11 @@ export class TextAnnotationStroker extends Stroker<TextAnnotationStrokerProps> {
 
     const textBlockGeometry = produceTextBlockGeometry(layout, transform);
 
-    // TODO: test these params
-    const highPriorityParams = new GeometryParams(Id64.invalid);
-    highPriorityParams.elmPriority = 1;
-    this._builder.appendGeometryParamsChange(highPriorityParams);
+    // TODO: These aren't working here. Only in the builder class itself. I'm probably doing something wrong.
+    // const highPriorityParams = new GeometryParams(Id64.invalid);
+    // highPriorityParams.elmPriority = 1;
+    // this._builder.appendGeometryParamsChange(highPriorityParams);
+
     this._builder.appendTextBlock(textBlockGeometry);
 
     if (annotation.frame)
@@ -101,6 +102,7 @@ export class TextAnnotationStroker extends Stroker<TextAnnotationStrokerProps> {
 
     if (!frame || frame.shape === "none") return false;
 
+    // TODO: I need to clean this up. The geom param changes are straddled between this stroker and ElementGeometry.Builder.
     const params = new GeometryParams(Id64.invalid);
     params.elmPriority = 0;
 
