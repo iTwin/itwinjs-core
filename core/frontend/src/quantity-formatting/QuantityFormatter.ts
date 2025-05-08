@@ -883,6 +883,32 @@ export class QuantityFormatter implements UnitsProvider {
   public async getConversion(fromUnit: UnitProps, toUnit: UnitProps): Promise<UnitConversionProps> {
     return this._unitsProvider.getConversion(fromUnit, toUnit);
   }
+
+  /**
+   * Creates a FormatterSpec for a given persistence unit name and format properties, using the unitsProvider to resolve the persistence unit.
+   * @beta
+   * @param persistenceUnitName - The name of the persistence unit.
+   * @param formatProps - The format properties to use for the formatter.
+   * @param formatName - Optional name for the format.
+   */
+  public async createFormatterSpec(persistenceUnitName: string, formatProps: FormatProps, formatName?: string): Promise<FormatterSpec> {
+    const persistenceUnitProps = await this._unitsProvider.findUnitByName(persistenceUnitName);
+    const format = await Format.createFromJSON(formatName ?? "temp", this._unitsProvider, formatProps)
+    return FormatterSpec.create(`${format.name}_format_spec`, format, this._unitsProvider, persistenceUnitProps);
+  }
+
+  /**
+   *  Creates a ParserSpec for a given persistence unit name and format properties, using the unitsProvider to resolve the persistence unit.
+   * @beta
+   * @param persistenceUnitName - The name of the persistence unit.
+   * @param formatProps - The format properties to use for the parser.
+   * @param formatName - Optional name for the format.
+   */
+  public async createParserSpec(persistenceUnitName: string, formatProps: FormatProps, formatName?: string): Promise<ParserSpec> {
+    const persistenceUnitProps = await this._unitsProvider.findUnitByName(persistenceUnitName);
+    const format = await Format.createFromJSON(formatName ?? "temp", this._unitsProvider, formatProps)
+    return ParserSpec.create(format, this._unitsProvider, persistenceUnitProps);
+  }
 }
 
 // ========================================================================================================================================

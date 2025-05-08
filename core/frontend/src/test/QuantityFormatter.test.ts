@@ -451,6 +451,44 @@ describe("Quantity formatter", async () => {
     expect(imperialFormattedValue).toBe("1076391.0417 ft²");
   });
 
+  it("creates a formatterSpec given a persistence unit name and a formatProps", async () => {
+    const formatProps = {
+      type: "Decimal",
+      precision: 2,
+      roundFactor: 0,
+      showSignOption: "OnlyNegative",
+      formatTraits: ["keepSingleZero", "showUnitLabel"],
+      decimalSeparator: ".",
+      thousandSeparator: ",",
+      uomSeparator: " ",
+      stationSeparator: "+",
+    };
+    const unitName = "Units.MILE";
+    const formatterSpec = await quantityFormatter.createFormatterSpec(unitName, formatProps, "mile");
+    expect(formatterSpec).toBeDefined();
+    expect(formatterSpec.name).toBe("mile");
+    expect(formatterSpec.persistenceUnit.name).toBe(unitName);
+  });
+
+  it("creates a parserSpec given a persistence unit name and a formatProps", async () => {
+    const formatProps = {
+      type: "Decimal",
+      precision: 2,
+      roundFactor: 0,
+      showSignOption: "OnlyNegative",
+      formatTraits: ["keepSingleZero", "showUnitLabel"],
+      decimalSeparator: ".",
+      thousandSeparator: ",",
+      uomSeparator: " ",
+      stationSeparator: "+",
+    };
+    const unitName = "Units.MILE";
+    const parserSpec = await quantityFormatter.createParserSpec(unitName, formatProps, "mile");
+    expect(parserSpec).toBeDefined();
+    expect(parserSpec.format.name).toBe("mile");
+    expect(parserSpec.outUnit.name).toBe(unitName);
+  });
+
   describe("Test native unit conversions", async () => {
     async function testUnitConversion(magnitude: number, fromUnitName: string, expectedValue: number, toUnitName: string, tolerance?: number) {
       const fromUnit = await quantityFormatter.findUnitByName(fromUnitName);
