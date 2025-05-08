@@ -7790,6 +7790,13 @@ export class QuadId {
 }
 
 // @public
+export interface QuadIdProps {
+    column: number;
+    level: number;
+    row: number;
+}
+
+// @public
 export interface QuantityFormatOverridesChangedArgs {
     readonly overrideEntry?: OverrideFormatEntry;
     readonly typeKey: QuantityTypeKey;
