@@ -471,6 +471,7 @@ internal;enum;PrimitiveVisibility
 alpha;interface;PublisherProductInfo
 public;interface;PullChangesOptions
 public;class;QuadId
+public;interface;QuadIdProps
 public;interface;QuantityFormatOverridesChangedArgs
 public;interface;QuantityFormatsChangedArgs
 public;class;QuantityFormatter

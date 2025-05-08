@@ -7,8 +7,7 @@
  */
 
 import { Logger } from "@itwin/core-bentley";
-import { MapCartoRectangle } from "@itwin/core-frontend";
-import { QuadIdProps } from "@itwin/core-frontend/lib/cjs/tile/internal.js";
+import { MapCartoRectangle, QuadIdProps } from "@itwin/core-frontend";
 import { BaseGoogleMapsSession, GoogleMapsCreateSessionOptions, GoogleMapsRequest, GoogleMapsSession, GoogleMapsSessionData, GoogleMapsSessionManager } from "../GoogleMaps/GoogleMapsSession.js";
 
 
