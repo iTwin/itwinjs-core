@@ -14,6 +14,7 @@ import { CloneCurvesContext } from "./CloneCurvesContext";
 
 /**
  * Algorithmic class for shallow-copying a CurveCollection with each full-sweep arc replaced by two half-sweep arcs.
+ * * Often useful for building graphs from loops.
  * @internal
  */
 export class TransferWithSplitArcs extends CloneCurvesContext {

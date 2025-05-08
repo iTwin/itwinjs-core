@@ -729,9 +729,7 @@ export class RegionOps {
     curvesAndRegions: AnyCurve | AnyCurve[], tolerance: number = Geometry.smallMetricDistance,
   ): SignedLoops[] {
     let primitives = RegionOps.collectCurvePrimitives(curvesAndRegions, undefined, true, true);
-    const bagOfCurves = BagOfCurves.create(...primitives);
-    const transferredBagOfCurves = TransferWithSplitArcs.clone(bagOfCurves);
-    primitives = transferredBagOfCurves.children as CurvePrimitive[];
+    primitives = TransferWithSplitArcs.clone(BagOfCurves.create(...primitives)).children as CurvePrimitive[];
     const range = this.curveArrayRange(primitives);
     const areaTol = this.computeXYAreaTolerance(range, tolerance);
     const intersections = CurveCurve.allIntersectionsAmongPrimitivesXY(primitives, tolerance);

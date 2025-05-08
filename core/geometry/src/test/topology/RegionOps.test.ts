@@ -957,7 +957,7 @@ describe("RegionOps", () => {
     expect(ck.getNumErrors()).toBe(0);
   });
 
-  function testRegionXYArea(
+  function testSignedLoops(
     region: AnyRegion,
     numPositiveLoops: number,
     numNegativeLoops: number,
@@ -994,19 +994,19 @@ describe("RegionOps", () => {
     const loop0 = Loop.create(arc0);
     const loop1 = Loop.create(arc1);
     const unionRegion = UnionRegion.create(loop0, loop1);
-    testRegionXYArea(unionRegion, 3, 1, allGeometry, ck, dx);
+    testSignedLoops(unionRegion, 3, 1, allGeometry, ck, dx);
 
     // parity region
     dx += 5;
     const parityRegion = ParityRegion.create(loop0, loop1);
-    testRegionXYArea(parityRegion, 3, 1, allGeometry, ck, dx);
+    testSignedLoops(parityRegion, 3, 1, allGeometry, ck, dx);
 
     // region with circle holes
     dx += 5;
     const rectangle = Loop.create(LineString3d.create(Sample.createRectangle(0, 0, 3, 2, 0, true)));
     const hole = Loop.create(Arc3d.createXY(Point3d.create(1.5, 1), 0.5));
     const region = RegionOps.regionBooleanXY(rectangle, hole, RegionBinaryOpType.AMinusB)!;
-    testRegionXYArea(region, 2, 1, allGeometry, ck, dx);
+    testSignedLoops(region, 2, 1, allGeometry, ck, dx);
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "RegionOps", "constructAllXYRegionLoops");
     expect(ck.getNumErrors()).toBe(0);
