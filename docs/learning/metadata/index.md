@@ -24,7 +24,7 @@ The provided [SchemaMatchType]($ecschema-metadata) specifies what schemas are ac
 ## Items in a schema
 Like schemas are identified by [SchemaKey]($ecschema-metadata), items inside a schema are identified by [SchemaItemKey]($ecschema-metadata).
 
-The methods for getting items inside a schema, like [SchemaContext.getSchemaItem]($ecschema-metadata) or [Schema.getItem]($ecschema-metadata) follow a pattern where you can either get all items, or filter for a specific item type. The latter is done by passing the type of the desired item to the method like with EntityClass in the example in section above.
+The methods for getting items inside a schema, like [SchemaContext.getSchemaItem]($ecschema-metadata) or [Schema.getItem]($ecschema-metadata), follow a pattern where you can either get all items, or filter for a specific item type. The latter is done by passing the type of the desired item to the method like with EntityClass in the example in section above.
 
 Supported item types within a schema are:
 - [EntityClass]($ecschema-metadata)
