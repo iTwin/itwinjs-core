@@ -6,12 +6,11 @@
  * @module MapLayersFormats
  */
 
-import { MapCartoRectangle} from "@itwin/core-frontend";
-import { QuadIdProps } from "@itwin/core-frontend/lib/cjs/tile/internal.js";
+import { MapCartoRectangle, QuadIdProps} from "@itwin/core-frontend";
 
 
 /**
- * The type of base map.
+ * The type of base map .
  * @beta*/
 export type GoogleMapsLayerTypes = "layerRoadmap" | "layerStreetview";
 
@@ -167,11 +166,10 @@ export interface GoogleMapsSession {
 
 /**
 * Base implementation of Google Maps session.
-* @internal
+* @beta
 */
 export abstract class BaseGoogleMapsSession implements GoogleMapsSession {
   protected abstract getTileApiBaseUrl(): string;
-
 
   protected getTilePositionUrl(position: QuadIdProps) {
     const baseUrl = this.getTileApiBaseUrl();

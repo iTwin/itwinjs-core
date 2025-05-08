@@ -8,9 +8,8 @@
 
 import { BentleyError, BentleyStatus, Logger } from "@itwin/core-bentley";
 import { ImageMapLayerSettings, ImageSource } from "@itwin/core-common";
-import { DecorateContext, IModelApp, MapCartoRectangle, MapLayerImageryProvider, MapTile, ScreenViewport, Tile } from "@itwin/core-frontend";
+import { DecorateContext, IModelApp, MapCartoRectangle, MapLayerImageryProvider, MapTile, QuadIdProps, ScreenViewport, Tile } from "@itwin/core-frontend";
 import { GoogleMapsDecorator } from "./GoogleMapDecorator.js";
-import { QuadIdProps } from "@itwin/core-frontend/lib/cjs/tile/internal.js";
 import {  GoogleMapsCreateSessionOptions, GoogleMapsLayerTypes, GoogleMapsMapTypes, GoogleMapsScaleFactors, GoogleMapsSession, GoogleMapsSessionManager, ViewportInfo } from "./GoogleMapsSession.js";
 import { NativeGoogleMapsSessionManager } from "../internal/NativeGoogleMapsSession.js";
 import { GoogleMapsUtils } from "../internal/GoogleMapsUtils.js";
