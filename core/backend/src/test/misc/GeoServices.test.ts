@@ -809,10 +809,18 @@ describe("GeoServices", () => {
     const validationRange = 50;
     const validationRangeSmall = 10;
 
-    const validateCRSList = async (expectedCount: number, allowedRange: number, extent?: Range2dProps): Promise<void> => {
-      const listOfCRS = await getAvailableCoordinateReferenceSystems({ extent });
+    interface CRSValidationOptions {
+      expectedCount: number;
+      allowedRange: number;
+      extent?: Range2dProps;
+      includeWorld?: boolean;
+    }
 
-      // Check fields of returned CRS's
+    const validateCRSList = async (options: CRSValidationOptions): Promise<void> => {
+      const { expectedCount, allowedRange, extent, includeWorld } = options;
+      const listOfCRS = await getAvailableCoordinateReferenceSystems({ extent, includeWorld });
+
+      // Check fields of returned coordinate reference systems
       const extentRange: Range2d = Range2d.fromJSON(extent);
       for (const crs of listOfCRS) {
         // Validate extent
@@ -840,26 +848,33 @@ describe("GeoServices", () => {
     };
 
     it("should get all CRS", async () => {
-      await validateCRSList(11975, validationRange);
+      await validateCRSList({expectedCount: 12_332, allowedRange: validationRange, includeWorld: true});
     });
+
+    it("should get all CRS, excluding world crs", async () => {
+      await validateCRSList({expectedCount: 11_975, allowedRange: validationRange});
+    })
 
     it("should return CRS that are in the specified range (1)", async () => {
       const extent: Range2dProps = { low: { x: 60.1, y: 61.2 }, high: { x: 62.3, y: 63.4 } };
-      await validateCRSList(82, validationRangeSmall, extent);
+      await validateCRSList({expectedCount: 82, allowedRange: validationRangeSmall, extent});
+      await validateCRSList({expectedCount: 439, allowedRange: validationRangeSmall, extent, includeWorld: true});
     });
 
     it("should return CRS that are in the specified range (2)", async () => {
       const extent: Range2dProps = { low: { x: 0, y: 2 }, high: { x: 1, y: 3 } };
-      await validateCRSList(67, validationRangeSmall, extent);
+      await validateCRSList({expectedCount: 67, allowedRange: validationRangeSmall, extent});
+      await validateCRSList({expectedCount: 424, allowedRange: validationRangeSmall, extent, includeWorld: true});
     });
 
     it("should return CRS that are in the specified range (3)", async () => {
       const extent: Range2dProps = { low: { x: 0.3, y: 2.4 }, high: { x: 1.6, y: 3.77 } };
-      await validateCRSList(62, validationRangeSmall, extent);
+      await validateCRSList({expectedCount: 62, allowedRange: validationRangeSmall, extent});
+      await validateCRSList({expectedCount: 419, allowedRange: validationRangeSmall, extent, includeWorld: true});
     });
 
     it("should retrieve the whole list of CRS and validate the properties for a few selected CRS.", async () => {
-      const listOfCRS = await getAvailableCoordinateReferenceSystems({});
+      const listOfCRS = await getAvailableCoordinateReferenceSystems({includeWorld: true});
       let nbFound = 0;
       for (const crs of listOfCRS) {
         switch (crs.name) {
@@ -887,9 +902,17 @@ describe("GeoServices", () => {
             assert.equal(crs.deprecated, false);
             validateExtent(Range2d.fromJSON({ low: { x: -71, y: 43.5 }, high: { x: -66, y: 48 } }), crs.crsExtent);
             break;
+
+          // world CRS
+          case "EPSG:4326":
+            nbFound++;
+            assert.equal(crs.description, "WGS 84");
+            assert.equal(crs.deprecated, false);
+            validateExtent(Range2d.fromJSON({ low: { x: -180, y: -90 }, high: { x: 180, y: 90 } }), crs.crsExtent);
+            break;
         }
       }
-      assert.equal(nbFound, 4);
+      assert.equal(nbFound, 5);
     });
   });
 
