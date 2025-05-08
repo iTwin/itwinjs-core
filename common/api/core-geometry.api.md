@@ -4744,7 +4744,7 @@ export class PolyfaceQuery {
     static sumFacetSecondAreaMomentProducts(source: Polyface | PolyfaceVisitor, origin: Point3d): Matrix4d;
     static sumFacetSecondVolumeMomentProducts(source: Polyface | PolyfaceVisitor, origin: Point3d): Matrix4d;
     static sumTetrahedralVolumes(source: Polyface | PolyfaceVisitor, origin?: Point3d): number;
-    static sumVolumeBetweenFacetsAndPlane(source: Polyface | PolyfaceVisitor, plane: Plane3dByOriginAndUnitNormal): FacetProjectedVolumeSums;
+    static sumVolumeBetweenFacetsAndPlane(source: Polyface | PolyfaceVisitor, plane: Plane3dByOriginAndUnitNormal, skipMoments?: boolean): FacetProjectedVolumeSums;
     static sweepLineStringToFacets(points: IndexedXYZCollection, source: Polyface | PolyfaceVisitor, options?: SweepLineStringToFacetsOptions): LinearCurvePrimitive[];
     static sweepLineStringToFacetsXY(points: IndexedXYZCollection | Point3d[], source: Polyface | PolyfaceVisitor, searcher: Range2dSearchInterface<number>): LineString3d[];
     // @deprecated

@@ -375,14 +375,16 @@ export class PolyfaceQuery {
   }
   /**
    * Sum (signed) volumes between facets and a plane.
-   * Return a structure with multiple sums:
-   * * volume = the sum of (signed) volumes between facets and the plane.
-   * * positiveProjectedFacetAreaMoments, negativeProjectedFacetAreaMoments = moment data with centroid, area, and second
-   * moments with respect to the centroid.
+   * @param source facet set
+   * @param plane infinite plane bounding volume between the input facets and (virtual) side facets perpendicular to the plane.
+   * @param skipMoments whether to skip computation of the area moments. Set to `true` if only volume is needed. Default is `false`.
+   * @returns a structure with multiple sums:
+   * * volume: the sum of (signed) volumes between facets and the plane.
+   * * positiveProjectedFacetAreaMoments, negativeProjectedFacetAreaMoments: area moment data (centroid, signed area,
+   * and second moments with respect to the centroid), separately computed for the input facets that project with
+   * positive/negative area onto the plane.
    */
-  public static sumVolumeBetweenFacetsAndPlane(
-    source: Polyface | PolyfaceVisitor, plane: Plane3dByOriginAndUnitNormal,
-  ): FacetProjectedVolumeSums {
+  public static sumVolumeBetweenFacetsAndPlane(source: Polyface | PolyfaceVisitor, plane: Plane3dByOriginAndUnitNormal, skipMoments?: boolean): FacetProjectedVolumeSums {
     if (source instanceof Polyface)
       source = source.createVisitor(0);
     else
@@ -396,8 +398,8 @@ export class PolyfaceQuery {
     let signedTruncatedPrismVolumeTimes6 = 0.0;
     let signedProjectedTriangleAreaTimes2;
     let singleProjectedFacetAreaTimes2;
-    const positiveAreaMomentSums = MomentData.create(undefined, true);
-    const negativeAreaMomentSums = MomentData.create(undefined, true);
+    const posSums = MomentData.create(undefined, true);
+    const negSums = MomentData.create(undefined, true);
     const singleFacetProducts = Matrix4d.createZero();
     const projectToPlane = plane.getProjectionToPlane();
     source.reset();
@@ -420,16 +422,18 @@ export class PolyfaceQuery {
         singleProjectedFacetAreaTimes2 += signedProjectedTriangleAreaTimes2;
         signedTruncatedPrismVolumeTimes6 += signedProjectedTriangleAreaTimes2 * (h0 + hA + hB);
       }
+      if (skipMoments)
+        continue;
       singleFacetProducts.setZero();
       source.point.multiplyTransformInPlace(projectToPlane);
       PolygonOps.addSecondMomentAreaProducts(source.point, facetOrigin, singleFacetProducts);
       if (singleProjectedFacetAreaTimes2 > 0)
-        positiveAreaMomentSums.accumulateProductsFromOrigin(facetOrigin, singleFacetProducts, 1.0);
+        posSums.accumulateProductsFromOrigin(facetOrigin, singleFacetProducts, 1.0);
       else
-        negativeAreaMomentSums.accumulateProductsFromOrigin(facetOrigin, singleFacetProducts, 1.0);
+        negSums.accumulateProductsFromOrigin(facetOrigin, singleFacetProducts, 1.0);
     }
-    const pm = MomentData.inertiaProductsToPrincipalAxes(positiveAreaMomentSums.origin, positiveAreaMomentSums.sums);
-    const nm = MomentData.inertiaProductsToPrincipalAxes(negativeAreaMomentSums.origin, negativeAreaMomentSums.sums);
+    const pm = skipMoments ? undefined: MomentData.inertiaProductsToPrincipalAxes(posSums.origin, posSums.sums);
+    const nm = skipMoments ? undefined: MomentData.inertiaProductsToPrincipalAxes(negSums.origin, negSums.sums);
     return {
       volume: signedTruncatedPrismVolumeTimes6 / 6.0,
       positiveProjectedFacetAreaMoments: pm,

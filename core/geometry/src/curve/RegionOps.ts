@@ -118,7 +118,8 @@ export class RegionOps {
   /**
    * Return a (signed) xy area for a region.
    * * The input region should lie in a plane parallel to the xy-plane, as z-coords will be ignored.
-   * * The area is negative if and only if the region is oriented clockwise with respect to the positive z-axis.
+   * * For a non-self-intersecting Loop, the returned area is negative if and only if the Loop is oriented clockwise
+   * with respect to the positive z-axis.
    * @param region any [[Loop]], [[ParityRegion]], or [[UnionRegion]].
    */
   public static computeXYArea(region: AnyRegion): number | undefined {
