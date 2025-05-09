@@ -828,27 +828,99 @@ export class QuantityFormatter implements UnitsProvider {
     return this.getParserSpecByQuantityTypeAndSystem(type, requestedSystem);
   }
 
+  /** Generates a formatted string asynchronously for a quantity given the provided properties.
+   * @param props - an object containing value, valueUnitName, and kindOfQuantityName.
+   * @return A promise resolving to a formatted string.
+   */
+  public formatQuantity(props: {
+    value: number;
+    valueUnitName: string;
+    kindOfQuantityName: string;
+  }): Promise<string>;
   /** Generates a formatted string for a quantity given its format spec.
    * @param magnitude       The magnitude of the quantity.
    * @param formatSpec      The format specification. See methods getFormatterSpecByQuantityType and findFormatterSpecByQuantityType.
-   * @return the formatted string.
+   * @return a formatted string.
    */
-  public formatQuantity(magnitude: number, formatSpec: FormatterSpec | undefined): string {
-    /** Format a quantity value. Default FormatterSpec implementation uses Formatter.formatQuantity. */
-    if (formatSpec)
-      return formatSpec.applyFormatting(magnitude);
-    return magnitude.toString();
+  public formatQuantity(magnitude: number, formatSpec?: FormatterSpec): string;
+  // eslint-disable-next-line @typescript-eslint/promise-function-async
+  public formatQuantity(args: number | object, spec?: FormatterSpec): string | Promise<string> {
+    if (typeof args === "number") {
+      /** Format a quantity value. Default FormatterSpec implementation uses Formatter.formatQuantity. */
+      const magnitude = args;
+      if (spec)
+        return spec.applyFormatting(magnitude);
+      return magnitude.toString();
+    }
+
+    return this.formatQuantityAsync(args as {
+      value: number;
+      valueUnitName: string;
+      kindOfQuantityName: string;
+    });
   }
 
+  private async formatQuantityAsync(args: {
+    value: number;
+    valueUnitName: string;
+    kindOfQuantityName: string;
+  }): Promise<string> {
+    const { value, valueUnitName, kindOfQuantityName } = args;
+    const formatProps = await IModelApp.formatsProvider.getFormat(kindOfQuantityName);
+    if (!formatProps) return value.toString();
+    const formatSpec = await this.createFormatterSpec({
+      persistenceUnitName: valueUnitName,
+      formatProps,
+      formatName: kindOfQuantityName,
+    })
+    return formatSpec.applyFormatting(value);
+  }
+
+  /** Parse input string asynchronously into a quantity given the provided properties.
+   * @param props - an object containing value, valueUnitName, and kindOfQuantityName.
+   * @return Promise resolving to a QuantityParseResult object containing either the parsed value or an error value if unsuccessful.
+   */
+  public parseToQuantityValue(props: {
+    value: string;
+    valueUnitName: string;
+    kindOfQuantityName: string;
+  }): Promise<QuantityParseResult>;
   /** Parse input string into quantity given the ParserSpec
    * @param inString       The magnitude of the quantity.
    * @param parserSpec     The parse specification the defines the expected format of the string and the conversion to the output unit.
    * @return QuantityParseResult object containing either the parsed value or an error value if unsuccessful.
    */
-  public parseToQuantityValue(inString: string, parserSpec: ParserSpec | undefined): QuantityParseResult {
-    if (parserSpec)
-      return parserSpec.parseToQuantityValue(inString);
-    return { ok: false, error: ParseError.InvalidParserSpec };
+  public parseToQuantityValue(inString: string, parserSpec?: ParserSpec): QuantityParseResult;
+  // eslint-disable-next-line @typescript-eslint/promise-function-async
+  public parseToQuantityValue(args: string | object, parserSpec?: ParserSpec): QuantityParseResult | Promise<QuantityParseResult> {
+    if (typeof args === "string") {
+      /** Parse a quantity value. Default ParserSpec implementation uses ParserSpec.parseToQuantityValue. */
+      const inString = args;
+      if (parserSpec)
+        return parserSpec.parseToQuantityValue(inString);
+      return { ok: false, error: ParseError.InvalidParserSpec };
+    }
+    return this.parseToQuantityValueAsync(args as {
+      value: string;
+      valueUnitName: string;
+      kindOfQuantityName: string;
+    });
+  }
+
+  private async parseToQuantityValueAsync(args: {
+    value: string;
+    valueUnitName: string;
+    kindOfQuantityName: string;
+  }): Promise<QuantityParseResult> {
+    const { value, valueUnitName, kindOfQuantityName } = args;
+    const formatProps = await IModelApp.formatsProvider.getFormat(kindOfQuantityName);
+    if (!formatProps) return { ok: false, error: ParseError.InvalidParserSpec };
+    const parserSpec = await this.createParserSpec({
+      persistenceUnitName: valueUnitName,
+      formatProps,
+      formatName: kindOfQuantityName,
+    });
+    return parserSpec.parseToQuantityValue(value);
   }
 
   /**
