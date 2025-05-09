@@ -625,7 +625,11 @@ export class ClipPlane extends Plane3d implements Clipper, PolygonClipper {
   }
   /** Project a point in space to the plane. */
   public projectPointToPlane(spacePoint: Point3d, result?: Point3d): Point3d {
-    const d = -this.altitude(spacePoint);
-    return spacePoint.plusXYZ(d * this._inwardNormal.x, d * this._inwardNormal.y, d * this._inwardNormal.z, result);
+    return this.projectXYZToPlane(spacePoint.x, spacePoint.y, spacePoint.z, result);
+  }
+  /** Return the projection of (x,y,z) onto the plane. */
+  public override projectXYZToPlane(x: number, y: number, z: number, result?: Point3d): Point3d {
+    const scale = -this.altitudeXYZ(x, y, z);
+    return Point3d.create(x + scale * this._inwardNormal.x, y + scale * this._inwardNormal.y, z + scale * this._inwardNormal.z, result);
   }
 }

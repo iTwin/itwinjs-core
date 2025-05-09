@@ -378,13 +378,17 @@ export class Point4d extends Plane3d implements BeJSONFunctions {
    * * If the xyz part of `this` are all zero, (a clone of) `spacePoint` is returned.
    */
   public projectPointToPlane(spacePoint: Point3d, result?: Point3d): Point3d {
-    const h = this.altitude(spacePoint);
+    return this.projectXYZToPlane(spacePoint.x, spacePoint.y, spacePoint.z, result);
+  }
+  /** Return the projection of (x,y,z) onto the plane. */
+  public override projectXYZToPlane(x: number, y: number, z: number, result?: Point3d): Point3d {
+    const h = this.altitudeXYZ(x, y, z);
     const nn = this.magnitudeSquaredXYZ();
     // this unusual tol is needed so that toPlane3dByOriginAndUnitNormal agrees with its original implementation
     const alpha = Geometry.conditionalDivideCoordinate(-h, nn, Geometry.largeFractionResult * Geometry.largeFractionResult);
     if (alpha === undefined)
-      return spacePoint.clone(result);
-    return spacePoint.plusXYZ(alpha * this.x, alpha * this.y, alpha * this.z, result);
+      return Point3d.create(x, y, z, result);
+    return Point3d.create(x + alpha * this.x, y + alpha * this.y, z + alpha * this.z, result);
   }
   /** scale all components (including w!!) */
   public scale(scale: number, result?: Point4d): Point4d {
