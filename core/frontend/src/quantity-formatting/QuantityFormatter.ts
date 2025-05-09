@@ -359,6 +359,10 @@ export class FormatsProviderManager implements FormatsProvider {
 
   public set formatsProvider(formatsProvider: FormatsProvider) {
     this._formatsProvider = formatsProvider;
+    this._formatsProvider.onFormatsChanged.addListener((args: FormatsChangedArgs) => {
+      this.onFormatsChanged.raiseEvent(args);
+    });
+    this.onFormatsChanged.raiseEvent({ formatsChanged: "all" });
   }
 }
 /** Class that supports formatting quantity values into strings and parsing strings into quantity values. This class also maintains

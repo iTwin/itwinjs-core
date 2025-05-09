@@ -304,10 +304,6 @@ export class IModelApp {
   public static get formatsProvider(): FormatsProvider { return this._formatsProvider; }
   public static set formatsProvider(provider: FormatsProvider) {
     this._formatsProvider.formatsProvider = provider;
-    this._formatsProvider.formatsProvider.onFormatsChanged.addListener((args: FormatsChangedArgs) => {
-      this._formatsProvider.onFormatsChanged.raiseEvent(args);
-    });
-    this._formatsProvider.onFormatsChanged.raiseEvent({ formatsChanged: "all" });
   }
 
   /** @alpha */
@@ -770,7 +766,7 @@ export class IModelApp {
   }
 
   /**
-   * Resets the formatsProvider back to the default [[BasicFormatsProvider]].
+ * Resets the formatsProvider back to the default [[QuantityTypeFormatsProvider]].
    * @beta
    */
   public static resetFormatsProvider() {
