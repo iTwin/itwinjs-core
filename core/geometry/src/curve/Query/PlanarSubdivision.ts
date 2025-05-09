@@ -51,13 +51,18 @@ class MapCurvePrimitiveToCurveLocationDetailPairArray {
     if (primitiveB)
       this.insertPrimitiveToPair(primitiveB, pair);
   }
-  /** Split closed missing primitives in half and add new intersection pairs */
+  /**
+   * Split closed missing primitives in half and add new intersection pairs.
+   * * When bridge edges aren't included in the primitives array, a closed primitive with no intersections will not be
+   * added to the graph because it isn't in the `primitiveToPair` map. By splitting such a missing primitive in two, we
+   * introduce two intersections for each half, which allows the primitive to be represented in the map.
+   */
   public splitAndAppendMissingClosedPrimitives(primitives: CurvePrimitive[], tolerance: number = Geometry.smallMetricDistance) {
     for (const p of primitives) {
       let closedCurveSplitCandidate = false;
       if (p instanceof Arc3d)
         closedCurveSplitCandidate = p.sweep.isFullCircle;
-      else if (!(p instanceof LineSegment3d) && !(p instanceof LineString3d))
+      else if (!(p instanceof LineSegment3d) && !(p instanceof LineString3d))   // TODO: probably should do this for all types. Lots of spline-type primitives can be closed.
         closedCurveSplitCandidate = p.startPoint().isAlmostEqualXY(p.endPoint(), tolerance);
       if (closedCurveSplitCandidate && !this.primitiveToPair.has(p)) {
         const p0 = p.clonePartialCurve(0.0, 0.5);
