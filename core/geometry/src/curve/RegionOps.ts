@@ -677,9 +677,7 @@ export class RegionOps {
    * @param curves Path or loop (or larger collection containing paths and loops) to be simplified
    * @param options options for tolerance and selective simplification.
    */
-  public static consolidateAdjacentPrimitives(
-    curves: CurveCollection, options?: ConsolidateAdjacentCurvePrimitivesOptions,
-  ): void {
+  public static consolidateAdjacentPrimitives(curves: CurveCollection, options?: ConsolidateAdjacentCurvePrimitivesOptions): void {
     const context = new ConsolidateAdjacentCurvePrimitivesContext(options);
     curves.dispatchToGeometryHandler(context);
   }
@@ -948,16 +946,18 @@ function pushToInOnOutArrays(
 }
 
 /**
- * * Options to control method `RegionOps.consolidateAdjacentPrimitives`
+ * * Options to control method `RegionOps.consolidateAdjacentPrimitives`.
  * @public
  */
 export class ConsolidateAdjacentCurvePrimitivesOptions {
-  /** True to consolidate adjacent linear geometry into a single LineString3d */
+  /** True to consolidate adjacent linear geometry into a single LineString3d. */
   public consolidateLinearGeometry: boolean = true;
-  /** True to consolidate contiguous compatible arcs into a single Arc3d */
+  /** True to consolidate contiguous compatible arcs into a single Arc3d. */
   public consolidateCompatibleArcs: boolean = true;
-  /** Tolerance for collapsing identical points */
-  public duplicatePointTolerance = Geometry.smallMetricDistance;
-  /** Tolerance for removing interior colinear points. */
-  public colinearPointTolerance = Geometry.smallMetricDistance;
+  /** Disable LineSegment3d and LineString3d point compression. */
+  public disableLinearCompression?: boolean = false;
+  /** Tolerance for collapsing identical points (if `!disableLinearCompression`). */
+  public duplicatePointTolerance: number = Geometry.smallMetricDistance;
+  /** Tolerance for removing interior colinear points (if `!disableLinearCompression`). */
+  public colinearPointTolerance: number = Geometry.smallMetricDistance;
 }

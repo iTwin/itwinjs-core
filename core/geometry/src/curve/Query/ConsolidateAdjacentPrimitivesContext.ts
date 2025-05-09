@@ -6,6 +6,7 @@
  * @module Curve
  */
 
+import { Geometry } from "../../Geometry";
 import { NullGeometryHandler } from "../../geometry3d/GeometryHandler";
 import { Point3d } from "../../geometry3d/Point3dVector3d";
 import { PolylineCompressionContext } from "../../geometry3d/PolylineCompressionByEdgeOffset";
@@ -60,7 +61,12 @@ export class ConsolidateAdjacentCurvePrimitivesContext extends NullGeometryHandl
             break;
           }
         }
-        if (points.length > 1) {
+        if (points.length <= 1) {
+          g.children[numAccept++] = basePrimitive;
+        } else if (this._options.disableLinearCompression) {
+          const pointsDeduped = PolylineOps.compressShortEdges(points, Geometry.smallFloatingPoint); // remove only exact duplicate interior points
+          g.children[numAccept++] = LineString3d.createPoints(pointsDeduped);
+        } else { // compress points
           const compressedPointsA = PolylineOps.compressShortEdges(points, this._options.duplicatePointTolerance);
           const compressedPointsB = PolylineOps.compressByPerpendicularDistance(compressedPointsA, this._options.colinearPointTolerance);
           if (i0 === 0 && i1 === numOriginal) {
@@ -75,8 +81,6 @@ export class ConsolidateAdjacentCurvePrimitivesContext extends NullGeometryHandl
           } else {
             g.children[numAccept++] = LineString3d.createPoints(compressedPointsB);
           }
-        } else {
-          g.children[numAccept++] = basePrimitive;
         }
         i0 = i1;
       } else if (this._options.consolidateCompatibleArcs && basePrimitive instanceof Arc3d) {
@@ -86,7 +90,7 @@ export class ConsolidateAdjacentCurvePrimitivesContext extends NullGeometryHandl
           const nextPrimitive = g.children[i0];
           if (!(nextPrimitive instanceof Arc3d))
             break;
-          if (!CurveFactory.appendToArcInPlace(basePrimitive, nextPrimitive))
+          if (!CurveFactory.appendToArcInPlace(basePrimitive, nextPrimitive))   // TODO: use this._options.duplicatePointTolerance
             break;
         }
         // i0 has already advanced
