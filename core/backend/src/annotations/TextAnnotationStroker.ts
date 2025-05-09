@@ -3,12 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { BackgroundFill, ColorDef, FillDisplay, FlatBufferGeometryStream, FrameGeometry, GeometryParams, PlacementProps, TextAnnotation, TextAnnotationProps, TextBlockLayoutResult, TextFrameStyleProps } from "@itwin/core-common";
+import { BackgroundFill, ColorDef, FillDisplay, FlatBufferGeometryStream, GeometryParams, PlacementProps, TextAnnotation, TextAnnotationProps, TextBlockLayoutResult, TextFrameStyleProps } from "@itwin/core-common";
 import { Stroker, StrokerGraphicsRequestProps, StrokerResultOptions, StrokerResults } from "./Stroker";
 import { produceTextBlockGeometry } from "./TextBlockGeometry";
 import { Id64, Id64String } from "@itwin/core-bentley";
 import { LineString3d, PointString3d, Range2d, Transform } from "@itwin/core-geometry";
 import { layoutTextBlock, TextBlockLayout } from "./TextAnnotationLayout";
+import { FrameGeometry } from "./FrameGeometry";
 
 /** @packageDocumentation
  * @module Strokers
@@ -122,7 +123,7 @@ export class TextAnnotationStroker extends Stroker<TextAnnotationStrokerProps> {
       params.weight = frame.borderWeight;
     }
 
-    const frameGeometry = FrameGeometry.computeFrame(frame.shape, range, transform.toJSON());
+    const frameGeometry = FrameGeometry.computeFrame(frame.shape, range, transform);
 
     const result = this._builder.appendGeometryParamsChange(params) && this._builder.appendGeometryQuery(frameGeometry);
     return result;
@@ -159,7 +160,7 @@ export class TextAnnotationStroker extends Stroker<TextAnnotationStrokerProps> {
   }
 
   private debugSnapPoints(frame: TextFrameStyleProps, range: Range2d, transform: Transform): boolean {
-    const points = FrameGeometry.computeIntervalPoints(frame.shape, range.toJSON(), transform.toJSON(), 0.5, 0.25);
+    const points = FrameGeometry.computeIntervalPoints(frame.shape, range, transform, 0.5, 0.25);
 
     const params = new GeometryParams(Id64.invalid);
     params.lineColor = ColorDef.black;

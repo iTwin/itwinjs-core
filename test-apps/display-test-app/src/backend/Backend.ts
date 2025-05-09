@@ -9,9 +9,9 @@ import { ElectronMainAuthorization } from "@itwin/electron-authorization/Main";
 import { ElectronHost, ElectronHostOptions } from "@itwin/core-electron/lib/cjs/ElectronBackend";
 import { BackendIModelsAccess } from "@itwin/imodels-access-backend";
 import { IModelsClient } from "@itwin/imodels-client-authoring";
-import { IModelDb, IModelHost, IModelHostOptions, LocalhostIpcHost, TextAnnotationStroker } from "@itwin/core-backend";
+import { IModelDb, IModelHost, IModelHostOptions, LocalhostIpcHost, TextAnnotationGeometry } from "@itwin/core-backend";
 import {
-  DynamicGraphicsRequest2dProps, IModelReadRpcInterface, IModelRpcProps, IModelTileRpcInterface, Placement2dProps, RpcInterfaceDefinition, RpcManager, TextAnnotationProps,
+  DynamicGraphicsRequest2dProps, ElementGeometry, IModelReadRpcInterface, IModelRpcProps, IModelTileRpcInterface, Placement2dProps, RpcInterfaceDefinition, RpcManager, TextAnnotationProps,
 } from "@itwin/core-common";
 import { MobileHost, MobileHostOpts } from "@itwin/core-mobile/lib/cjs/MobileBackend";
 import { DtaConfiguration, getConfig } from "../common/DtaConfiguration";
@@ -182,18 +182,20 @@ class DisplayTestAppRpc extends DtaRpcInterface {
   public override async generateTextAnnotationGeometry(iModelToken: IModelRpcProps, annotationProps: TextAnnotationProps, categoryId: Id64String, placementProps: Placement2dProps, args?: { debugAnchorPoint?: boolean, debugSnapPoints?: boolean }): Promise<Uint8Array | undefined> {
     const iModel = IModelDb.findByKey(iModelToken.key);
 
-    const stroker = new TextAnnotationStroker(iModel);
-    const strokerProps = { annotationProps, placementProps, debugAnchorPoint: args?.debugAnchorPoint, debugSnapPoints: args?.debugSnapPoints };
-    const requestProps: Omit<DynamicGraphicsRequest2dProps, "geometry"> = {
+    const layout = TextAnnotationGeometry.getTextBlockLayout({ iModel, annotation: annotationProps });
+    const builder = new ElementGeometry.Builder();
+    TextAnnotationGeometry.appendTextAnnotationGeometry({ layout, annotationProps, builder, wantDebugGeometry: args?.debugAnchorPoint || args?.debugSnapPoints });
+
+    const requestProps: DynamicGraphicsRequest2dProps = {
       id: Guid.createValue(),
       toleranceLog10: -5,
       type: "2d",
       placement: placementProps,
       categoryId,
+      geometry: { format: "flatbuffer", data: builder.entries },
     }
 
-    const results = await stroker.computeResults(strokerProps, requestProps, { wantGraphics: true });
-    return results.graphics;
+    return iModel.generateElementGraphics(requestProps);
   }
 }
 

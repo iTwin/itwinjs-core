@@ -6,17 +6,18 @@
  * @module Elements
  */
 
-import { ElementGeometryBuilderParams, PlacementProps, TextAnnotation, TextAnnotation2dProps, TextAnnotation3dProps, TextAnnotationProps } from "@itwin/core-common";
+import { ElementGeometry, ElementGeometryBuilderParams, PlacementProps, TextAnnotation, TextAnnotation2dProps, TextAnnotation3dProps, TextAnnotationProps } from "@itwin/core-common";
 import { IModelDb } from "./IModelDb";
 import { AnnotationElement2d, GraphicalElement3d } from "./Element";
 import { Id64String } from "@itwin/core-bentley";
-import { TextAnnotationStroker } from "./annotations/TextAnnotationStroker";
+import { TextAnnotationGeometry } from "./annotations/TextAnnotationGeometry";
 
-function getElementGeometryBuilderParams(iModel: IModelDb, placementProps: PlacementProps, annotationProps: TextAnnotationProps, category: Id64String, subCategory?: Id64String): ElementGeometryBuilderParams {
-  const stroker = new TextAnnotationStroker(iModel);
-  const flatbuffer = stroker.strokeGeometry({ annotationProps, placementProps }, category, subCategory);
+function getElementGeometryBuilderParams(iModel: IModelDb, _placementProps: PlacementProps, annotationProps: TextAnnotationProps, _category: Id64String, _subCategory?: Id64String): ElementGeometryBuilderParams {
+  const layout = TextAnnotationGeometry.getTextBlockLayout({ iModel, annotation: annotationProps });
+  const builder = new ElementGeometry.Builder();
+  TextAnnotationGeometry.appendTextAnnotationGeometry({ layout, annotationProps, builder })
 
-  return { entryArray: flatbuffer.data };
+  return { entryArray: builder.entries };
 }
 
 /** An element that displays textual content within a 2d model.

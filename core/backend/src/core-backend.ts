@@ -65,6 +65,7 @@ export * from "./SQLiteDb";
 export * from "./SqliteStatement";
 export * from "./annotations/TextAnnotationStroker";
 export * from "./TextAnnotationElement";
+export * from "./annotations/TextAnnotationGeometry";
 export {
   computeGraphemeOffsets,
   computeLayoutTextBlockResult,

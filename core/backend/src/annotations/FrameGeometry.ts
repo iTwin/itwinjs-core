@@ -2,25 +2,56 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+/** @packageDocumentation
+ * @module ElementGeometry
+ */
 
-import { Angle, AngleSweep, Arc3d, LineString3d, Loop, Point3d, Range2d, Range2dProps, Transform, TransformProps, Vector2d, XYAndZ } from "@itwin/core-geometry";
-import { TextAnnotationFrameShape } from "./TextAnnotation";
+
+import { Id64 } from "@itwin/core-bentley";
+import { BackgroundFill, ColorDef, ElementGeometry, FillDisplay, GeometryParams, TextAnnotationFrameShape, TextFrameStyleProps } from "@itwin/core-common";
+import { Angle, AngleSweep, Arc3d, LineString3d, Loop, Point3d, Range2d, Transform, Vector2d, XYAndZ } from "@itwin/core-geometry";
 
 export namespace FrameGeometry {
-  export const computeFrame = (frame: TextAnnotationFrameShape, rangeProps: Range2dProps, transformProps: TransformProps): Loop => {
+  export const appendFrameToBuilder = (builder: ElementGeometry.Builder, frame: TextFrameStyleProps, range: Range2d, transform: Transform): boolean => {
+
+    // TODO: I need to clean this up. The geom param changes are straddled between this stroker and ElementGeometry.Builder.
+    const params = new GeometryParams(Id64.invalid);
+    params.elmPriority = 0;
+
+    if (frame.fill === undefined) {
+      params.fillDisplay = FillDisplay.Never;
+    } else if (frame.fill === "background") {
+      params.backgroundFill = BackgroundFill.Outline;
+      params.fillDisplay = FillDisplay.Always;
+    } else if (frame.fill !== "subcategory") {
+      params.fillColor = ColorDef.fromJSON(frame.fill);
+      params.lineColor = params.fillColor;
+      params.fillDisplay = FillDisplay.Always;
+    }
+
+    if (frame.border !== "subcategory") {
+      params.lineColor = ColorDef.fromJSON(frame.border);
+      params.weight = frame.borderWeight;
+    }
+
+    const frameGeometry = computeFrame(frame.shape, range, transform);
+    return builder.appendGeometryParamsChange(params) && builder.appendGeometryQuery(frameGeometry);
+  }
+
+  export const computeFrame = (frame: TextAnnotationFrameShape, range: Range2d, transform: Transform): Loop => {
     const defaultLoop = Loop.create();
     switch (frame) {
       case "line": return defaultLoop;
-      case "rectangle": return FrameGeometry.computeRectangle(rangeProps, transformProps);
-      case "circle": return FrameGeometry.computeCircle(rangeProps, transformProps);
-      case "equilateralTriangle": return FrameGeometry.computeTriangle(rangeProps, transformProps);
-      case "diamond": return FrameGeometry.computeDiamond(rangeProps, transformProps);
-      case "square": return FrameGeometry.computeSquare(rangeProps, transformProps);
-      case "pentagon": return FrameGeometry.computePolygon(5, rangeProps, transformProps, 90);
-      case "hexagon": return FrameGeometry.computePolygon(6, rangeProps, transformProps);
-      case "octagon": return FrameGeometry.computePolygon(8, rangeProps, transformProps, 180 / 8); // or pi/8 in radians
-      case "capsule": return FrameGeometry.computeCapsule(rangeProps, transformProps);
-      case "roundedRectangle": return FrameGeometry.computeRoundedRectangle(rangeProps, transformProps);
+      case "rectangle": return FrameGeometry.computeRectangle(range, transform);
+      case "circle": return FrameGeometry.computeCircle(range, transform);
+      case "equilateralTriangle": return FrameGeometry.computeTriangle(range, transform);
+      case "diamond": return FrameGeometry.computeDiamond(range, transform);
+      case "square": return FrameGeometry.computeSquare(range, transform);
+      case "pentagon": return FrameGeometry.computePolygon(5, range, transform, 90);
+      case "hexagon": return FrameGeometry.computePolygon(6, range, transform);
+      case "octagon": return FrameGeometry.computePolygon(8, range, transform, 180 / 8); // or pi/8 in radians
+      case "capsule": return FrameGeometry.computeCapsule(range, transform);
+      case "roundedRectangle": return FrameGeometry.computeRoundedRectangle(range, transform);
       default: return defaultLoop;
     }
   }
@@ -36,9 +67,9 @@ export namespace FrameGeometry {
     arcIntervals?: number;
   }
 
-  export const computeIntervalPoints = (frame: TextAnnotationFrameShape, rangeProps: Range2dProps, transformProps: TransformProps, lineInterval: number = 0.5, arcInterval: number = 0.25): Point3d[] | undefined => {
+  export const computeIntervalPoints = (frame: TextAnnotationFrameShape, range: Range2d, transform: Transform, lineInterval: number = 0.5, arcInterval: number = 0.25): Point3d[] | undefined => {
     const points: Point3d[] = [];
-    const curves = FrameGeometry.computeFrame(frame, rangeProps, transformProps).collectCurvePrimitives(undefined, false, true);
+    const curves = FrameGeometry.computeFrame(frame, range, transform).collectCurvePrimitives(undefined, false, true);
 
     curves.forEach((curve) => {
       const end = curve instanceof Arc3d ? arcInterval : lineInterval;
@@ -49,13 +80,13 @@ export namespace FrameGeometry {
     return points;
   }
   /** Returns the closest point on the text frame where a leader can attach to */
-  export const computeLeaderStartPoint = (frame: TextAnnotationFrameShape, rangeProps: Range2dProps, transformProps: TransformProps, terminatorPoint: XYAndZ, options: ComputeLeaderStartPointOptions): Point3d | undefined => {
+  export const computeLeaderStartPoint = (frame: TextAnnotationFrameShape, range: Range2d, transform: Transform, terminatorPoint: XYAndZ, options: ComputeLeaderStartPointOptions): Point3d | undefined => {
     if (options.lineIntervals === undefined || options.arcIntervals === undefined) {
-      const curve = FrameGeometry.computeFrame(frame, rangeProps, transformProps);
+      const curve = FrameGeometry.computeFrame(frame, range, transform);
       return curve.closestPoint(Point3d.createFrom(terminatorPoint))?.point;
     }
 
-    const intervalPoints = FrameGeometry.computeIntervalPoints(frame, rangeProps, transformProps, options.lineIntervals, options.arcIntervals);
+    const intervalPoints = FrameGeometry.computeIntervalPoints(frame, range, transform, options.lineIntervals, options.arcIntervals);
     const terminatorPoint3d = Point3d.createFrom(terminatorPoint);
 
     const closestPoint = intervalPoints?.reduce((point: Point3d | undefined, intervalPoint: Point3d) => {
@@ -67,19 +98,17 @@ export namespace FrameGeometry {
     return closestPoint;
   }
 
+  // TODO: I'm not sure if we need these to be exported or not.
   // Rectangle
-  export const computeRectangle = (rangeProps: Range2dProps, transformProps: TransformProps): Loop => {
-    const range = Range2d.fromJSON(rangeProps);
+  export const computeRectangle = (range: Range2d, transform: Transform): Loop => {
     const points = range.corners3d(true);
     const frame = LineString3d.createPoints(points);
 
-    const transform = Transform.fromJSON(transformProps);
     return Loop.create(frame.cloneTransformed(transform));
   }
 
   // RoundedRectangle
-  export const computeRoundedRectangle = (rangeProps: Range2dProps, transformProps: TransformProps, radiusFactor: number = 0.25): Loop => {
-    const range = Range2d.fromJSON(rangeProps);
+  export const computeRoundedRectangle = (range: Range2d, transform: Transform, radiusFactor: number = 0.25): Loop => {
     const radius = range.yLength() * radiusFactor * Math.sqrt(2);
     // We're going to circumscribe the range with our rounded edges. The corners of the range will fall on 45 degree angles.
     const radiusOffsetFactor = range.yLength() * radiusFactor;
@@ -113,23 +142,19 @@ export namespace FrameGeometry {
       Arc3d.createXY(Point3d.create(inRight, inTop), radius, q1), // top right
     ];
 
-    const transform = Transform.fromJSON(transformProps);
     return Loop.createArray(curves.map((curve) => curve.cloneTransformed(transform)))
   }
 
 
   // Circle
-  export const computeCircle = (rangeProps: Range2dProps, transformProps: TransformProps): Loop => {
-    const range = Range2d.fromJSON(rangeProps);
+  export const computeCircle = (range: Range2d, transform: Transform): Loop => {
     const radius = range.low.distance(range.high) / 2;
     const frame = Arc3d.createXY(Point3d.createFrom(range.center), radius);
-    const transform = Transform.fromJSON(transformProps);
     return Loop.create(frame.cloneTransformed(transform));
   }
 
   // Equilateral Triangle
-  export const computeTriangle = (rangeProps: Range2dProps, transformProps: TransformProps): Loop => {
-    const range = Range2d.fromJSON(rangeProps);
+  export const computeTriangle = (range: Range2d, transform: Transform): Loop => {
 
     const xLength = range.xLength();
     const yLength = range.yLength();
@@ -152,13 +177,11 @@ export namespace FrameGeometry {
 
     const frame = LineString3d.createPoints(points);
 
-    const transform = Transform.fromJSON(transformProps);
     return Loop.create(frame.cloneTransformed(transform));
   }
 
   // Diamond
-  export const computeDiamond = (rangeProps: Range2dProps, transformProps: TransformProps): Loop => {
-    const range = Range2d.fromJSON(rangeProps);
+  export const computeDiamond = (range: Range2d, transform: Transform): Loop => {
     const offset = (range.xLength() + range.yLength()) / 2;
     const center = range.center;
 
@@ -172,13 +195,11 @@ export namespace FrameGeometry {
 
     const frame = LineString3d.createPoints(points);
 
-    const transform = Transform.fromJSON(transformProps);
     return Loop.create(frame.cloneTransformed(transform));
   }
 
   // Square
-  export const computeSquare = (rangeProps: Range2dProps, transformProps: TransformProps): Loop => {
-    const range = Range2d.fromJSON(rangeProps);
+  export const computeSquare = (range: Range2d, transform: Transform): Loop => {
 
     // Extend range
     const xLength = range.xLength() / 2;
@@ -195,13 +216,11 @@ export namespace FrameGeometry {
     const points = range.corners3d(true);
     const frame = LineString3d.createPoints(points);
 
-    const transform = Transform.fromJSON(transformProps);
     return Loop.create(frame.cloneTransformed(transform));
   }
 
   // Capsule
-  export const computeCapsule = (rangeProps: Range2dProps, transformProps: TransformProps): Loop => {
-    const range = Range2d.fromJSON(rangeProps);
+  export const computeCapsule = (range: Range2d, transform: Transform): Loop => {
     const height = range.yLength();
     const radius = height * (Math.sqrt(2) / 2);
 
@@ -228,17 +247,15 @@ export namespace FrameGeometry {
       Arc3d.createXY(Point3d.create(inRight, range.center.y), radius, rightHalfCircle), // right
     ];
 
-    const transform = Transform.fromJSON(transformProps);
     return Loop.createArray(curves.map((curve) => curve.cloneTransformed(transform)))
   }
 
   // Polygon with n sides
-  export const computePolygon = (n: number, rangeProps: Range2dProps, transformProps: TransformProps, angleOffset: number = 0): Loop => {
+  export const computePolygon = (n: number, range: Range2d, transform: Transform, angleOffset: number = 0): Loop => {
     // These are math terms: cspell:ignore inradius circumradius
     if (n < 3) throw new Error("A polygon must have at least 3 sides.");
 
     // We're assuming the polygon is a regular polygon with `n` sides.
-    const range = Range2d.fromJSON(rangeProps);
     // The center of the polygon is the center of the range.
     const center = range.center;
     // The inradius is the distance from the center to the midpoint of each side of the polygon. On our range, this coincides with the distance from the center to one of its corners.
@@ -262,7 +279,6 @@ export namespace FrameGeometry {
 
     // Finally compute the loop!
     const frame = LineString3d.createPoints(vertices);
-    const transform = Transform.fromJSON(transformProps);
     return Loop.create(frame.cloneTransformed(transform));
   };
 }
