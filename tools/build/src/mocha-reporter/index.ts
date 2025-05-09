@@ -91,7 +91,7 @@ class BentleyMochaReporter extends Spec {
     }
   }
 
-  private confirmExit(seconds: number = 10) {
+  private confirmExit(seconds: number = 30) {
     // NB: By calling unref() on this timer, we stop it from keeping the process alive, so it will only fire if _something else_ is still keeping
     // the process alive after n seconds.  This also has the benefit of preventing the timer from showing up in wtfnode's dump of open handles.
     setTimeout(() => {
