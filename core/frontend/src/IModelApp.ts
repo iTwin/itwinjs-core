@@ -774,11 +774,7 @@ export class IModelApp {
    * @beta
    */
   public static resetFormatsProvider() {
-    this._formatsProvider.formatsProvider = new QuantityTypeFormatsProvider();
-    this._formatsProvider.formatsProvider.onFormatsChanged.addListener((args: FormatsChangedArgs) => {
-      this._formatsProvider.onFormatsChanged.raiseEvent(args);
-    });
-    this._formatsProvider.onFormatsChanged.raiseEvent({ formatsChanged: "all" });
+    this.formatsProvider = new QuantityTypeFormatsProvider();
   }
 
   /**
