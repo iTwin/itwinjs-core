@@ -298,6 +298,8 @@ public;type;VariantCurveExtendParameter
 public;class;Vector2d
 public;class;Vector3d
 public;class;Vector3dArray
+public;interface;VolumeBetweenPolygonAndPlaneOptions
+public;interface;VolumeBetweenPolygonAndPlaneOutput
 public;enum;WeightStyle
 public;interface;WritableLowAndHighXY
 public;interface;WritableLowAndHighXYZ

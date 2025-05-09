@@ -1078,6 +1078,7 @@ export class ClipPlane extends Plane3d implements Clipper, PolygonClipper {
     normalZ(): number;
     offsetDistance(offset: number): void;
     projectPointToPlane(spacePoint: Point3d, result?: Point3d): Point3d;
+    projectXYZToPlane(x: number, y: number, z: number, result?: Point3d): Point3d;
     setFlags(invisible: boolean, interior: boolean): void;
     setInvisible(invisible: boolean): void;
     setPlane4d(plane: Point4d): void;
@@ -1374,6 +1375,7 @@ export class ConsolidateAdjacentCurvePrimitivesOptions {
     colinearPointTolerance: number;
     consolidateCompatibleArcs: boolean;
     consolidateLinearGeometry: boolean;
+    disableLinearCompression?: boolean;
     duplicatePointTolerance: number;
 }
 
@@ -2499,6 +2501,7 @@ export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
     get length(): number;
     set length(newLength: number);
     mapComponent(componentIndex: 0 | 1 | 2, func: (x: number, y: number, z: number) => number): void;
+    mapPoint(func: (x: number, y: number, z: number) => XYZ): void;
     moveIndexToIndex(fromIndex: number, toIndex: number): void;
     multiplyAndRenormalizeMatrix3dInverseTransposeInPlace(matrix: Matrix3d): boolean;
     multiplyMatrix3dInPlace(matrix: Matrix3d): void;
@@ -4091,6 +4094,7 @@ export abstract class Plane3d implements PlaneAltitudeEvaluator {
     abstract normalY(): number;
     abstract normalZ(): number;
     abstract projectPointToPlane(spacePoint: Point3d, result?: Point3d): Point3d;
+    projectXYZToPlane(x: number, y: number, z: number, result?: Point3d): Point3d;
     abstract velocity(spaceVector: Vector3d): number;
     abstract velocityXYZ(x: number, y: number, z: number): number;
     abstract weightedAltitude(spacePoint: Point4d): number;
@@ -4129,6 +4133,7 @@ export class Plane3dByOriginAndUnitNormal extends Plane3d implements BeJSONFunct
     normalY(): number;
     normalZ(): number;
     projectPointToPlane(spacePoint: Point3d, result?: Point3d): Point3d;
+    projectXYZToPlane(x: number, y: number, z: number, result?: Point3d): Point3d;
     set(origin: Point3d, normal: Vector3d): void;
     setFrom(source: Plane3dByOriginAndUnitNormal): void;
     setFromJSON(json?: any): void;
@@ -4164,6 +4169,7 @@ export class Plane3dByOriginAndVectors extends Plane3d implements BeJSONFunction
     normalZ(): number;
     origin: Point3d;
     projectPointToPlane(spacePoint: Point3d, result?: Point3d): Point3d;
+    projectXYZToPlane(x: number, y: number, z: number, result?: Point3d): Point3d;
     setFromJSON(json?: any): void;
     setOriginAndVectors(origin: Point3d, vectorU: Vector3d, vectorV: Vector3d): Plane3dByOriginAndVectors;
     setOriginAndVectorsXYZ(x0: number, y0: number, z0: number, ux: number, uy: number, uz: number, vx: number, vy: number, vz: number): Plane3dByOriginAndVectors;
@@ -4427,6 +4433,7 @@ export class Point4d extends Plane3d implements BeJSONFunctions {
     plus3Scaled(vectorA: Point4d, scalarA: number, vectorB: Point4d, scalarB: number, vectorC: Point4d, scalarC: number, result?: Point4d): Point4d;
     plusScaled(vector: Point4d, scaleFactor: number, result?: Point4d): Point4d;
     projectPointToPlane(spacePoint: Point3d, result?: Point3d): Point3d;
+    projectXYZToPlane(x: number, y: number, z: number, result?: Point3d): Point3d;
     radiansToPoint4dXYZW(other: Point4d): number | undefined;
     realDistanceXY(other: Point4d): number | undefined;
     realPoint(result?: Point3d): Point3d | undefined;
@@ -4605,23 +4612,23 @@ export class PolyfaceBuilder extends NullGeometryHandler {
 
 // @public
 export class PolyfaceClip {
-    static clipPolyface(polyface: Polyface, clipper: ClipPlane | ConvexClipPlaneSet): Polyface | undefined;
-    static clipPolyfaceClipPlane(polyface: Polyface, clipper: ClipPlane, insideClip?: boolean, buildClosureFaces?: boolean): IndexedPolyface;
+    static clipPolyface(source: Polyface | PolyfaceVisitor, clipper: ClipPlane | ConvexClipPlaneSet): Polyface | undefined;
+    static clipPolyfaceClipPlane(source: Polyface | PolyfaceVisitor, clipper: ClipPlane, insideClip?: boolean, buildClosureFaces?: boolean): IndexedPolyface;
     // @internal
-    static clipPolyfaceClipPlaneToBuilders(polyface: Polyface, clipper: PlaneAltitudeEvaluator, destination: ClippedPolyfaceBuilders): void;
-    static clipPolyfaceClipPlaneWithClosureFace(polyface: Polyface, clipper: ClipPlane, insideClip?: boolean, buildClosureFaces?: boolean): IndexedPolyface;
-    static clipPolyfaceConvexClipPlaneSet(polyface: Polyface, clipper: ConvexClipPlaneSet): IndexedPolyface;
+    static clipPolyfaceClipPlaneToBuilders(source: Polyface | PolyfaceVisitor, clipper: PlaneAltitudeEvaluator, destination: ClippedPolyfaceBuilders): void;
+    static clipPolyfaceClipPlaneWithClosureFace(source: Polyface | PolyfaceVisitor, clipper: ClipPlane, insideClip?: boolean, buildClosureFaces?: boolean): IndexedPolyface;
+    static clipPolyfaceConvexClipPlaneSet(source: Polyface | PolyfaceVisitor, clipper: ConvexClipPlaneSet): IndexedPolyface;
     // @internal
-    static clipPolyfaceConvexClipPlaneSetToBuilders(polyface: Polyface, clipper: ConvexClipPlaneSet, destination: ClippedPolyfaceBuilders): void;
-    static clipPolyfaceInsideOutside(polyface: Polyface, clipper: ClipPlane | ConvexClipPlaneSet | UnionOfConvexClipPlaneSets, destination: ClippedPolyfaceBuilders, outputSelect?: number): void;
+    static clipPolyfaceConvexClipPlaneSetToBuilders(source: Polyface | PolyfaceVisitor, clipper: ConvexClipPlaneSet, destination: ClippedPolyfaceBuilders): void;
+    static clipPolyfaceInsideOutside(source: Polyface | PolyfaceVisitor, clipper: ClipPlane | ConvexClipPlaneSet | UnionOfConvexClipPlaneSets, destination: ClippedPolyfaceBuilders, outputSelect?: number): void;
     static clipPolyfaceUnderOverConvexPolyfaceIntoBuilders(visitorA: PolyfaceVisitor, visitorB: PolyfaceVisitor, builderAUnderB: PolyfaceBuilder | undefined, builderAOverB: PolyfaceBuilder | undefined): void;
-    static clipPolyfaceUnionOfConvexClipPlaneSetsToBuilders(polyface: Polyface | PolyfaceVisitor, allClippers: UnionOfConvexClipPlaneSets, destination: ClippedPolyfaceBuilders, outputSelector?: number): void;
+    static clipPolyfaceUnionOfConvexClipPlaneSetsToBuilders(source: Polyface | PolyfaceVisitor, allClippers: UnionOfConvexClipPlaneSets, destination: ClippedPolyfaceBuilders, outputSelector?: number): void;
     static computeCutFill(meshA: IndexedPolyface, meshB: IndexedPolyface): {
         meshAUnderB: IndexedPolyface;
         meshAOverB: IndexedPolyface;
     };
     static drapeRegion(mesh: Polyface | PolyfaceVisitor, region: AnyRegion, sweepVector?: Vector3d, options?: StrokeOptions): IndexedPolyface | undefined;
-    static sectionPolyfaceClipPlane(polyface: Polyface, clipper: ClipPlane): LineString3d[];
+    static sectionPolyfaceClipPlane(source: Polyface | PolyfaceVisitor, clipper: ClipPlane): LineString3d[];
 }
 
 // @public
@@ -4744,7 +4751,7 @@ export class PolyfaceQuery {
     static sumFacetSecondAreaMomentProducts(source: Polyface | PolyfaceVisitor, origin: Point3d): Matrix4d;
     static sumFacetSecondVolumeMomentProducts(source: Polyface | PolyfaceVisitor, origin: Point3d): Matrix4d;
     static sumTetrahedralVolumes(source: Polyface | PolyfaceVisitor, origin?: Point3d): number;
-    static sumVolumeBetweenFacetsAndPlane(source: Polyface | PolyfaceVisitor, plane: Plane3dByOriginAndUnitNormal, skipMoments?: boolean): FacetProjectedVolumeSums;
+    static sumVolumeBetweenFacetsAndPlane(source: Polyface | PolyfaceVisitor, plane: Plane3d, skipMoments?: boolean): FacetProjectedVolumeSums;
     static sweepLineStringToFacets(points: IndexedXYZCollection, source: Polyface | PolyfaceVisitor, options?: SweepLineStringToFacetsOptions): LinearCurvePrimitive[];
     static sweepLineStringToFacetsXY(points: IndexedXYZCollection | Point3d[], source: Polyface | PolyfaceVisitor, searcher: Range2dSearchInterface<number>): LineString3d[];
     // @deprecated
@@ -4866,6 +4873,7 @@ export class PolygonOps {
     static sumTriangleAreasXY(points: Point3d[]): number;
     static testXYPolygonTurningDirections(points: Point2d[] | Point3d[]): number;
     static unitNormal(points: IndexedXYZCollection, result: Vector3d): boolean;
+    static volumeBetweenPolygonAndPlane(facetPoints: GrowableXYZArray, plane: Plane3d, options?: VolumeBetweenPolygonAndPlaneOptions): VolumeBetweenPolygonAndPlaneOutput;
 }
 
 // @public
@@ -6353,6 +6361,23 @@ export class Vector3d extends XYZ {
 export class Vector3dArray {
     static cloneVector3dArray(data: XYAndZ[]): Vector3d[];
     static isAlmostEqual(dataA: undefined | Vector3d[], dataB: undefined | Vector3d[]): boolean;
+}
+
+// @public
+export interface VolumeBetweenPolygonAndPlaneOptions {
+    skipMoments?: boolean;
+    workMatrix?: Matrix4d;
+    workPoint0?: Point3d;
+    workPoint1?: Point3d;
+    workVector?: Vector3d;
+}
+
+// @public
+export interface VolumeBetweenPolygonAndPlaneOutput {
+    area2: number;
+    origin?: Point3d;
+    products?: Matrix4d;
+    volume6: number;
 }
 
 // @public
