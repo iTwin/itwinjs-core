@@ -63,15 +63,15 @@ export * from "./SchemaUtils";
 export * from "./SheetIndex";
 export * from "./SQLiteDb";
 export * from "./SqliteStatement";
-export * from "./strokers/TextAnnotationStroker";
+export * from "./annotations/TextAnnotationStroker";
 export * from "./TextAnnotationElement";
 export {
   computeGraphemeOffsets,
   computeLayoutTextBlockResult,
   ComputeGraphemeOffsetsArgs,
   LayoutTextBlockArgs,
-} from "./strokers/TextAnnotationLayout";
-export * from "./strokers/TextBlockGeometry";
+} from "./annotations/TextAnnotationLayout";
+export * from "./annotations/TextBlockGeometry";
 export * from "./Texture";
 export * from "./TileStorage";
 export * from "./TxnManager";

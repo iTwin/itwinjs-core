@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
-import { computeGraphemeOffsets, ComputeGraphemeOffsetsArgs, ComputeRangesForTextLayout, ComputeRangesForTextLayoutArgs, FindFontId, FindTextStyle, layoutTextBlock, LineLayout, RunLayout, TextBlockLayout, TextLayoutRanges } from "../../strokers/TextAnnotationLayout";
+import { computeGraphemeOffsets, ComputeGraphemeOffsetsArgs, ComputeRangesForTextLayout, ComputeRangesForTextLayoutArgs, FindFontId, FindTextStyle, layoutTextBlock, LineLayout, RunLayout, TextBlockLayout, TextLayoutRanges } from "../../annotations/TextAnnotationLayout";
 import { Geometry, Range2d } from "@itwin/core-geometry";
 import { ColorDef, FontType, FractionRun, LineBreakRun, LineLayoutResult, Run, RunLayoutResult, TextAnnotation, TextAnnotation2dProps, TextAnnotation3dProps, TextAnnotationAnchor, TextBlock, TextBlockGeometryPropsEntry, TextBlockMargins, TextRun, TextStringProps, TextStyleSettings } from "@itwin/core-common";
 import { IModelDb, SnapshotDb } from "../../IModelDb";

@@ -10,7 +10,7 @@ import { ElementGeometryBuilderParams, PlacementProps, TextAnnotation, TextAnnot
 import { IModelDb } from "./IModelDb";
 import { AnnotationElement2d, GraphicalElement3d } from "./Element";
 import { Id64String } from "@itwin/core-bentley";
-import { TextAnnotationStroker } from "./strokers/TextAnnotationStroker";
+import { TextAnnotationStroker } from "./annotations/TextAnnotationStroker";
 
 function getElementGeometryBuilderParams(iModel: IModelDb, placementProps: PlacementProps, annotationProps: TextAnnotationProps, category: Id64String, subCategory?: Id64String): ElementGeometryBuilderParams {
   const stroker = new TextAnnotationStroker(iModel);
