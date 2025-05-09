@@ -357,6 +357,8 @@ export class FormatsProviderManager implements FormatsProvider {
     return this._formatsProvider.getFormat(name);
   }
 
+  public get formatsProvider(): FormatsProvider { return this; }
+
   public set formatsProvider(formatsProvider: FormatsProvider) {
     this._formatsProvider = formatsProvider;
     this._formatsProvider.onFormatsChanged.addListener((args: FormatsChangedArgs) => {

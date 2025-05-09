@@ -57,7 +57,6 @@ public;class;AuxCoordSystemSpatialState
 public;class;AuxCoordSystemState
 internal;class;BackgroundMapGeometry
 beta;class;BaseUnitFormattingSettingsProvider
-internal;class;BasicFormatsProvider
 public;interface;BatchOptions
 beta;interface;BatchTableProperties
 public;enum;BeButton
@@ -192,6 +191,7 @@ public;class;FlashSettings
 public;type;FlashSettingsOptions
 public;class;FlyViewTool
 internal;function;formatAnimationBranchId
+internal;class;FormatsProviderManager
 beta;class;FormattedQuantityDescription
 public;interface;FormatterParserSpecsProvider
 public;interface;FormattingUnitSystemChangedArgs
@@ -480,6 +480,7 @@ public;class;QuantityFormatter
 public;enum;QuantityType
 public;type;QuantityTypeArg
 public;interface;QuantityTypeDefinition
+internal;class;QuantityTypeFormatsProvider
 public;type;QuantityTypeKey
 public;interface;QueryScreenFeaturesOptions
 public;function;queryTerrainElevationOffset

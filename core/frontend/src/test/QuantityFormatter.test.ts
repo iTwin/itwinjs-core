@@ -3,13 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
+import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import { assert as bAssert } from "@itwin/core-bentley";
 import { EmptyLocalization } from "@itwin/core-common";
 import { ParsedQuantity, Parser, UnitProps } from "@itwin/core-quantity";
 import { IModelApp } from "../IModelApp";
 import { LocalUnitFormatProvider } from "../quantity-formatting/LocalUnitFormatProvider";
-import { OverrideFormatEntry, QuantityFormatter, QuantityType, QuantityTypeArg } from "../quantity-formatting/QuantityFormatter";
+import { OverrideFormatEntry, QuantityFormatter, QuantityType, QuantityTypeArg, QuantityTypeFormatsProvider } from "../quantity-formatting/QuantityFormatter";
 import { BearingQuantityType } from "./BearingQuantityType";
 
 function withinTolerance(x: number, y: number, tolerance?: number): boolean {
@@ -497,6 +497,28 @@ describe("Quantity formatter", async () => {
     expect(parserSpec.outUnit.name).toBe(unitName);
   });
 
+  it("formats a quantity given a value, a persistence unit name and a koq name", async () => {
+    const quantityString = await quantityFormatter.formatQuantity({
+      value: 0.3048,
+      valueUnitName: "Units.M",
+      kindOfQuantityName: "AecUnits.LENGTH"
+    });
+
+    expect(quantityString).toBe("1'-0\"");
+  });
+
+  it("parses a quantity given a value, a persistence unit name and a koq name", async () => {
+    const parsedQuantity = await quantityFormatter.parseToQuantityValue({
+      value: "1'-0\"",
+      valueUnitName: "Units.M",
+      kindOfQuantityName: "AecUnits.LENGTH"
+    });
+
+    expect(parsedQuantity).toBeDefined();
+    expect(Parser.isParsedQuantity(parsedQuantity)).toBe(true);
+    if (Parser.isParsedQuantity(parsedQuantity))
+      expect(parsedQuantity.value).toBe(0.3048);
+  });
   describe("Test native unit conversions", async () => {
     async function testUnitConversion(magnitude: number, fromUnitName: string, expectedValue: number, toUnitName: string, tolerance?: number) {
       const fromUnit = await quantityFormatter.findUnitByName(fromUnitName);
@@ -548,6 +570,44 @@ describe("Quantity formatter", async () => {
       await testUnitConversion(1.0, "Units.US_SURVEY_CHAIN", 20.11684, "Units.M");
       await testUnitConversion(1.0, "Units.US_SURVEY_YRD", 3.0 * 0.3048006, "Units.M");
       await testUnitConversion(1.0, "Units.US_SURVEY_MILE", 1609.347, "Units.M", 1.0e-3);
+    });
+  });
+
+  describe("FormatsProviderManager", async () => {
+
+    it("Should raise formatsChanged event when updating formatsProvider", () => {
+      const spy = vi.fn();
+      IModelApp.formatsProvider.onFormatsChanged.addListener(spy);
+
+      const testProvider = new QuantityTypeFormatsProvider();
+      IModelApp.formatsProvider = testProvider;
+
+      expect(spy).toHaveBeenCalledTimes(1);
+      expect(spy).toHaveBeenCalledWith({ formatsChanged: "all" });
+    });
+
+    it("should raise formatsChanged event when calling resetFormatsProvider", () => {
+      const spy = vi.fn();
+      IModelApp.formatsProvider.onFormatsChanged.addListener(spy);
+
+      IModelApp.resetFormatsProvider();
+
+      expect(spy).toHaveBeenCalledTimes(1);
+      expect(spy).toHaveBeenCalledWith({ formatsChanged: "all" });
+    });
+
+    it("should raise formatsChanged event when underlying formatsProvider raises formatsChanged event", async () => {
+
+      const testProvider = new QuantityTypeFormatsProvider();
+      IModelApp.formatsProvider = testProvider;
+
+      const spy = vi.fn();
+      IModelApp.formatsProvider.onFormatsChanged.addListener(spy);
+      testProvider.onFormatsChanged.raiseEvent({ formatsChanged: ["foobar"]});
+
+
+      expect(spy).toHaveBeenCalledTimes(1);
+      expect(spy).toHaveBeenCalledWith({ formatsChanged: ["foobar"] });
     });
   });
 });
