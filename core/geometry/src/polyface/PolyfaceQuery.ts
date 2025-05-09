@@ -25,7 +25,7 @@ import { Angle } from "../geometry3d/Angle";
 import { BarycentricTriangle, TriangleLocationDetail } from "../geometry3d/BarycentricTriangle";
 import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
 import { IndexedXYZCollection } from "../geometry3d/IndexedXYZCollection";
-import { Plane3dByOriginAndUnitNormal } from "../geometry3d/Plane3dByOriginAndUnitNormal";
+import { Plane3d } from "../geometry3d/Plane3d";
 import { Point3dArrayCarrier } from "../geometry3d/Point3dArrayCarrier";
 import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
 import { Point3dArray } from "../geometry3d/PointHelpers";
@@ -384,60 +384,37 @@ export class PolyfaceQuery {
    * and second moments with respect to the centroid), separately computed for the input facets that project with
    * positive/negative area onto the plane.
    */
-  public static sumVolumeBetweenFacetsAndPlane(source: Polyface | PolyfaceVisitor, plane: Plane3dByOriginAndUnitNormal, skipMoments?: boolean): FacetProjectedVolumeSums {
-    if (source instanceof Polyface)
-      source = source.createVisitor(0);
-    else
-      source.setNumWrap(0);
-    const facetOrigin = Point3d.create();
-    const targetA = Point3d.create();
-    const targetB = Point3d.create();
-    const triangleNormal = Vector3d.create();
-    const planeNormal = plane.getNormalRef();
-    let h0, hA, hB;
-    let signedTruncatedPrismVolumeTimes6 = 0.0;
-    let signedProjectedTriangleAreaTimes2;
-    let singleProjectedFacetAreaTimes2;
-    const posSums = MomentData.create(undefined, true);
-    const negSums = MomentData.create(undefined, true);
-    const singleFacetProducts = Matrix4d.createZero();
-    const projectToPlane = plane.getProjectionToPlane();
-    source.reset();
+  public static sumVolumeBetweenFacetsAndPlane(source: Polyface | PolyfaceVisitor, plane: Plane3d, skipMoments?: boolean): FacetProjectedVolumeSums {
+    const visitor = source instanceof Polyface ? source.createVisitor(0) : source;
+    visitor.setNumWrap(0);
+    const workPoint0 = Point3d.create();
+    const workPoint1 = Point3d.create();
+    const workVector = Vector3d.create();
+    const workMatrix = Matrix4d.createZero();
+    let signedVolumeTimes6 = 0.0;
+    const posSums = skipMoments ? undefined : MomentData.create(undefined, true);
+    const negSums = skipMoments ? undefined : MomentData.create(undefined, true);
     // For each facet:
     // - form triangles from facet origin to each far edge.
     // - sum signed area and volume contributions (for non-convex facet, signs can be mixed).
     // - each projected area contribution is twice the area of a triangle.
     // - each volume contribution is 3 times the actual volume -- a third of the altitude sum is the centroid altitude.
-    while (source.moveToNextFacet()) {
-      source.point.getPoint3dAtUncheckedPointIndex(0, facetOrigin);
-      h0 = plane.altitude(facetOrigin);
-      singleProjectedFacetAreaTimes2 = 0;
-      for (let i = 1; i + 1 < source.point.length; i++) {
-        source.point.getPoint3dAtUncheckedPointIndex(i, targetA);
-        source.point.getPoint3dAtUncheckedPointIndex(i + 1, targetB);
-        facetOrigin.crossProductToPoints(targetA, targetB, triangleNormal);
-        hA = plane.altitude(targetA);
-        hB = plane.altitude(targetB);
-        signedProjectedTriangleAreaTimes2 = planeNormal.dotProduct(triangleNormal);
-        singleProjectedFacetAreaTimes2 += signedProjectedTriangleAreaTimes2;
-        signedTruncatedPrismVolumeTimes6 += signedProjectedTriangleAreaTimes2 * (h0 + hA + hB);
+    const options = { skipMoments, p0: workPoint0, p1: workPoint1, v0: workVector, m0: workMatrix };
+    for (visitor.reset(); visitor.moveToNextFacet();) {
+      const facetData = PolygonOps.volumeBetweenPolygonAndPlane(visitor.point, plane, options);
+      signedVolumeTimes6 += facetData.volume6;
+      if (!skipMoments) {
+        assert(posSums !== undefined && negSums !== undefined && facetData.origin !== undefined && facetData.products !== undefined);
+        if (facetData.area2 > 0)
+          posSums.accumulateProductsFromOrigin(facetData.origin, facetData.products, 1.0);
+        else
+          negSums.accumulateProductsFromOrigin(facetData.origin, facetData.products, 1.0);
       }
-      if (skipMoments)
-        continue;
-      singleFacetProducts.setZero();
-      source.point.multiplyTransformInPlace(projectToPlane);
-      PolygonOps.addSecondMomentAreaProducts(source.point, facetOrigin, singleFacetProducts);
-      if (singleProjectedFacetAreaTimes2 > 0)
-        posSums.accumulateProductsFromOrigin(facetOrigin, singleFacetProducts, 1.0);
-      else
-        negSums.accumulateProductsFromOrigin(facetOrigin, singleFacetProducts, 1.0);
     }
-    const pm = skipMoments ? undefined: MomentData.inertiaProductsToPrincipalAxes(posSums.origin, posSums.sums);
-    const nm = skipMoments ? undefined: MomentData.inertiaProductsToPrincipalAxes(negSums.origin, negSums.sums);
     return {
-      volume: signedTruncatedPrismVolumeTimes6 / 6.0,
-      positiveProjectedFacetAreaMoments: pm,
-      negativeProjectedFacetAreaMoments: nm,
+      volume: signedVolumeTimes6 / 6.0,
+      positiveProjectedFacetAreaMoments: posSums ? MomentData.inertiaProductsToPrincipalAxes(posSums.origin, posSums.sums) : undefined,
+      negativeProjectedFacetAreaMoments: negSums ? MomentData.inertiaProductsToPrincipalAxes(negSums.origin, negSums.sums) : undefined,
     };
   }
 
