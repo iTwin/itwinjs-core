@@ -206,7 +206,7 @@ describe("IModelConnection (#integration)", () => {
   it("should be able to use IModelApp.formatsProvider and format a quantity", async () => {
     const formatECName = "Formats.DefaultRealU";
     assert.isDefined(IModelApp.formatsProvider, "a SchemaFormatsProvider should be defined in test setup");
-    const formatProps = await IModelApp.formatsProvider!.getFormat(formatECName);
+    const formatProps = await IModelApp.formatsProvider.getFormat(formatECName);
     assert.isDefined(formatProps, "Formats.AmerFI format should be defined in snapshot iModel");
     const persistenceUnitProps = await IModelApp.quantityFormatter.unitsProvider.findUnitByName("Units.M");
     const format = await Format.createFromJSON(formatECName, IModelApp.quantityFormatter.unitsProvider, formatProps!)

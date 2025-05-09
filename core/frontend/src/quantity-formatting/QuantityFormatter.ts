@@ -314,7 +314,7 @@ export interface UnitFormattingSettingsProvider {
  * When retrieving a valid KindOfQuantity, returns the [[FormatProps]] for the associated [[QuantityType]].
  * @internal
  */
-export class BasicFormatsProvider implements FormatsProvider {
+export class QuantityTypeFormatsProvider implements FormatsProvider {
   public onFormatsChanged = new BeEvent<(args: FormatsChangedArgs) => void>();
 
   public constructor() {
@@ -339,6 +339,28 @@ export class BasicFormatsProvider implements FormatsProvider {
   }
 }
 
+/**
+ * An implementation of the [[FormatsProvider]] interface that forwards calls to getFormats to the underlying FormatsProvider.
+ * Also fires the onFormatsChanged event when the underlying FormatsProvider fires its own onFormatsChanged event.
+ * @internal
+ */
+export class FormatsProviderManager implements FormatsProvider {
+  public onFormatsChanged = new BeEvent<(args: FormatsChangedArgs) => void>();
+
+  constructor(private _formatsProvider: FormatsProvider) {
+    this._formatsProvider.onFormatsChanged.addListener((args: FormatsChangedArgs) => {
+      this.onFormatsChanged.raiseEvent(args);
+    });
+  }
+
+  public async getFormat(name: string): Promise<FormatDefinition | undefined> {
+    return this._formatsProvider.getFormat(name);
+  }
+
+  public set formatsProvider(formatsProvider: FormatsProvider) {
+    this._formatsProvider = formatsProvider;
+  }
+}
 /** Class that supports formatting quantity values into strings and parsing strings into quantity values. This class also maintains
  * the "active" unit system and caches FormatterSpecs and ParserSpecs for the "active" unit system to allow synchronous access to
  * parsing and formatting values. The support unit systems are defined by [[UnitSystemKey]] and is kept in synch with the unit systems
