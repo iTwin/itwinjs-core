@@ -7,10 +7,10 @@
  */
 
 import { ElementGeometry, ElementGeometryBuilderParams, PlacementProps, TextAnnotation, TextAnnotation2dProps, TextAnnotation3dProps, TextAnnotationProps } from "@itwin/core-common";
-import { IModelDb } from "./IModelDb";
-import { AnnotationElement2d, GraphicalElement3d } from "./Element";
+import { IModelDb } from "../IModelDb";
+import { AnnotationElement2d, GraphicalElement3d } from "../Element";
 import { Id64String } from "@itwin/core-bentley";
-import { TextAnnotationGeometry } from "./annotations/TextAnnotationGeometry";
+import { TextAnnotationGeometry } from "./TextAnnotationGeometry";
 
 function getElementGeometryBuilderParams(iModel: IModelDb, _placementProps: PlacementProps, annotationProps: TextAnnotationProps, _category: Id64String, _subCategory?: Id64String): ElementGeometryBuilderParams {
   const layout = TextAnnotationGeometry.getTextBlockLayout({ iModel, annotation: annotationProps });

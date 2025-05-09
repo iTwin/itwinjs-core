@@ -7,7 +7,7 @@ import { computeGraphemeOffsets, ComputeGraphemeOffsetsArgs, ComputeRangesForTex
 import { Geometry, Range2d } from "@itwin/core-geometry";
 import { ColorDef, FontType, FractionRun, LineBreakRun, LineLayoutResult, Run, RunLayoutResult, TextAnnotation, TextAnnotation2dProps, TextAnnotation3dProps, TextAnnotationAnchor, TextBlock, TextBlockGeometryPropsEntry, TextBlockMargins, TextRun, TextStringProps, TextStyleSettings } from "@itwin/core-common";
 import { IModelDb, SnapshotDb } from "../../IModelDb";
-import { TextAnnotation2d, TextAnnotation3d } from "../../TextAnnotationElement";
+import { TextAnnotation2d, TextAnnotation3d } from "../../annotations/TextAnnotationElement";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { GeometricElement3d } from "../../Element";
 import { Id64, ProcessDetector } from "@itwin/core-bentley";
