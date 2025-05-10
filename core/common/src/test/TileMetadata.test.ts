@@ -73,6 +73,7 @@ describe("TileMetadata", () => {
         animationId,
         enforceDisplayPriority,
         sectionCut,
+        disablePolyfaceDecimation: false,
       };
     };
 
@@ -81,6 +82,7 @@ describe("TileMetadata", () => {
         type: planar ? BatchType.PlanarClassifier : BatchType.VolumeClassifier,
         expansion,
         animationId,
+        disablePolyfaceDecimation: false,
       };
     };
 
@@ -304,6 +306,7 @@ describe("TileMetadata", () => {
             type: expected.indexedEdges ? "indexed" : "non-indexed",
             smooth: true === expected.allPolyfaceEdges,
           },
+          disablePolyfaceDecimation: false,
         };
 
         expect(TileOptions.fromTreeIdAndContentId(treeId, contentId)).to.deep.equal(options);
@@ -363,7 +366,7 @@ describe("TileMetadata", () => {
     test("0x1d", { type: BatchType.Primary, edges: { type: "non-indexed", smooth: false } } as PrimaryTileTreeId, { depth: 20, i: 50, j: 4, k: 1, multiplier: 1 }, defaultNoEdges);
     test("0x1d", { type: BatchType.Primary, edges: { type: "non-indexed", smooth: false }, enforceDisplayPriority: true } as PrimaryTileTreeId, { depth: 20, i: 50, j: 4, k: 1, multiplier: 1 }, defaultNoEdges);
     test("0x1d", { type: BatchType.Primary, edges: { type: "non-indexed", smooth: false }, animationId: "0x105" } as PrimaryTileTreeId, { depth: 20, i: 50, j: 4, k: 1, multiplier: 1 }, defaultNoEdges);
-    test("0x1000000d", { type: BatchType.Primary, edges: false, animationId: "0x105", animationTransformNodeId: 50 } as PrimaryTileTreeId, { depth: 20, i: 50, j: 4, k: 1, multiplier: 1 }, realDefaultTileOptions);
+    test("0x1000000d", { type: BatchType.Primary, edges: false, animationId: "0x105", animationTransformNodeId: 50, disablePolyfaceDecimation: false } as PrimaryTileTreeId, { depth: 20, i: 50, j: 4, k: 1, multiplier: 1 }, realDefaultTileOptions);
 
     test("0x1d", { type: BatchType.Primary, edges: { type: "non-indexed", smooth: false }, sectionCut: "010_1_0_-5_30_0_-1_5e-11____" } as PrimaryTileTreeId, { depth: 20, i: 50, j: 4, k: 1, multiplier: 1 }, defaultNoEdges);
 
@@ -375,7 +378,7 @@ describe("TileMetadata", () => {
     test("0x1d", { type: BatchType.Primary, edges: { type: "non-indexed", smooth: true } } as PrimaryTileTreeId, { depth: 20, i: 50, j: 4, k: 1, multiplier: 1 }, defaultNoIndexedEdges);
     test("0x1d", { type: BatchType.Primary, edges: { type: "non-indexed", smooth: true }, enforceDisplayPriority: true } as PrimaryTileTreeId, { depth: 20, i: 50, j: 4, k: 1, multiplier: 1 }, defaultNoIndexedEdges);
     test("0x1d", { type: BatchType.Primary, edges: { type: "non-indexed", smooth: true }, animationId: "0x105" } as PrimaryTileTreeId, { depth: 20, i: 50, j: 4, k: 1, multiplier: 1 }, defaultNoIndexedEdges);
-    test("0x1000000d", { type: BatchType.Primary, edges: false, animationId: "0x105", animationTransformNodeId: 50 } as PrimaryTileTreeId, { depth: 20, i: 50, j: 4, k: 1, multiplier: 1 }, realDefaultTileOptions);
+    test("0x1000000d", { type: BatchType.Primary, edges: false, animationId: "0x105", animationTransformNodeId: 50, disablePolyfaceDecimation: false } as PrimaryTileTreeId, { depth: 20, i: 50, j: 4, k: 1, multiplier: 1 }, realDefaultTileOptions);
 
     test("0x1d", { type: BatchType.Primary, edges: { type: "non-indexed", smooth: true }, sectionCut: "010_1_0_-5_30_0_-1_5e-11____" } as PrimaryTileTreeId, { depth: 20, i: 50, j: 4, k: 1, multiplier: 1 }, defaultNoIndexedEdges);
 
@@ -386,11 +389,11 @@ describe("TileMetadata", () => {
 
     test("0x1d", { type: BatchType.VolumeClassifier, expansion: 50 } as ClassifierTileTreeId, { depth: 20, i: 50, j: 4, k: 1, multiplier: 1 }, defaultNoEdges);
     test("0x1000000d", { type: BatchType.VolumeClassifier, expansion: 50, animationId: "0x50000001" } as ClassifierTileTreeId, { depth: 20, i: 50, j: 4, k: 1, multiplier: 1 }, defaultNoEdges);
-    test("0x1000000d", { type: BatchType.VolumeClassifier, expansion: 50, animationId: "0x50000001", animationTransformNodeId: 500 } as ClassifierTileTreeId, { depth: 20, i: 50, j: 4, k: 1, multiplier: 1 }, defaultNoEdges);
+    test("0x1000000d", { type: BatchType.VolumeClassifier, expansion: 50, animationId: "0x50000001", animationTransformNodeId: 500, disablePolyfaceDecimation: false } as ClassifierTileTreeId, { depth: 20, i: 50, j: 4, k: 1, multiplier: 1 }, defaultNoEdges);
 
     test("0x1d", { type: BatchType.PlanarClassifier, expansion: 50 } as ClassifierTileTreeId, { depth: 20, i: 50, j: 4, k: 1, multiplier: 1 }, defaultNoEdges);
     test("0x1000000d", { type: BatchType.PlanarClassifier, expansion: 50, animationId: "0x50000001" } as ClassifierTileTreeId, { depth: 20, i: 50, j: 4, k: 1, multiplier: 1 }, defaultNoEdges);
-    test("0x1000000d", { type: BatchType.PlanarClassifier, expansion: 50, animationId: "0x50000001", animationTransformNodeId: 500 } as ClassifierTileTreeId, { depth: 20, i: 50, j: 4, k: 1, multiplier: 1 }, defaultNoEdges);
+    test("0x1000000d", { type: BatchType.PlanarClassifier, expansion: 50, animationId: "0x50000001", animationTransformNodeId: 500, disablePolyfaceDecimation: false } as ClassifierTileTreeId, { depth: 20, i: 50, j: 4, k: 1, multiplier: 1 }, defaultNoEdges);
 
     const realDefaultNoSmoothEdges: TileOptions  = { ...realDefaultTileOptions, edgeOptions: { type: "compact", smooth: false } };
 
@@ -418,6 +421,7 @@ describe("TileMetadata", () => {
         projectExtents?: boolean;
         optimizeBReps?: boolean;
         largerTiles?: boolean;
+        disablePolyfaceDecimation?: boolean;
       };
     }
 
@@ -439,6 +443,7 @@ describe("TileMetadata", () => {
           edgeOptions: edges ?? { type: "non-indexed", smooth: false },
           optimizeBRepProcessing: true === expected.tileOptions.optimizeBReps,
           useLargerTiles: true === expected.tileOptions.largerTiles,
+          disablePolyfaceDecimation: true === expected.tileOptions.disablePolyfaceDecimation,
         };
         const parsed = parseTileTreeIdAndContentId(treeId, contentId);
 
@@ -478,6 +483,7 @@ describe("TileMetadata", () => {
         sectionCut: "010_1_0_-5_30_0_-1_5e-11____",
         animationId: undefined,
         enforceDisplayPriority: undefined,
+        disablePolyfaceDecimation: false,
       },
       contentId: { depth: 20, i: 50, j: 4, k: 1, multiplier: 1 },
     });
@@ -500,6 +506,7 @@ describe("TileMetadata", () => {
         sectionCut: "010_1_0_-5_30_0_-1_5e-11____",
         animationId: undefined,
         enforceDisplayPriority: undefined,
+        disablePolyfaceDecimation: false,
       },
       contentId: { depth: 20, i: 50, j: 4, k: 1, multiplier: 1 },
     });
@@ -522,10 +529,36 @@ describe("TileMetadata", () => {
         sectionCut: "010_1_0_-5_30_0_-1_5e-11____",
         animationId: undefined,
         enforceDisplayPriority: undefined,
+        disablePolyfaceDecimation: false,
       },
       contentId: { depth: 20, i: 50, j: 4, k: 1, multiplier: 1 },
     });
 
+    test("19_2d-S010_1_0_-5_30_0_-1_5e-11____s0x1d", "-b-14-32-4-1-1", {
+      tileOptions: {
+        elision: true,
+        instancing: true,
+        noPatterns: false,
+        version: 25,
+        projectExtents: true,
+        externalTextures: true,
+        optimizeBReps: true,
+        largerTiles: true,
+        disablePolyfaceDecimation: true,
+      },
+      modelId: "0x1d",
+      treeId: {
+        type: BatchType.Primary,
+        edges: { type: "non-indexed", smooth: false },
+        sectionCut: "010_1_0_-5_30_0_-1_5e-11____",
+        animationId: undefined,
+        enforceDisplayPriority: undefined,
+        disablePolyfaceDecimation: true,
+      },
+      contentId: { depth: 20, i: 50, j: 4, k: 1, multiplier: 1 },
+    });
+
+    
     test("19_1-S010_1_0_-5_30_0_-1_5e-11____0x1d", "-b-14-32-4-1-1", "tree"); // removed 's' after sectionCut
     test("19_1-C50.000000_A:0x50000001_#1f4_0x1000000d", "-b-14-32-4-1-1", "tree"); // removed ':' after C (VolumeClassifier)
     test("19_1-C:50.000000-A:0x50000001_#1f4_0x1000000d", "-b-14-32-4-1-1", "tree"); // replaced '_' with '-'
