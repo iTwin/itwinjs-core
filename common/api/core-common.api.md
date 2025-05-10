@@ -1281,7 +1281,7 @@ export interface ClassifierTileTreeId {
     // (undocumented)
     animationId?: Id64String;
     // (undocumented)
-    disablePolyfaceDecimation: boolean;
+    disablePolyfaceDecimation?: boolean;
     // (undocumented)
     expansion: number;
     // (undocumented)
@@ -7075,7 +7075,7 @@ export interface PositionalVectorTransformProps {
 export interface PrimaryTileTreeId {
     animationId?: Id64String;
     // (undocumented)
-    disablePolyfaceDecimation: boolean;
+    disablePolyfaceDecimation?: boolean;
     edges: EdgeOptions | false;
     enforceDisplayPriority?: boolean;
     sectionCut?: string;

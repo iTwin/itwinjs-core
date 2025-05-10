@@ -459,7 +459,7 @@ export interface PrimaryTileTreeId {
    * @see [ClipVector.toCompactString[($core-geometry).
    */
   sectionCut?: string;
-  disablePolyfaceDecimation: boolean;
+  disablePolyfaceDecimation?: boolean;
 }
 
 /** Describes a tile tree that can classify the contents of other tile trees using the model's geometry.
@@ -469,7 +469,7 @@ export interface ClassifierTileTreeId {
   type: BatchType.VolumeClassifier | BatchType.PlanarClassifier;
   expansion: number;
   animationId?: Id64String;
-  disablePolyfaceDecimation: boolean;
+  disablePolyfaceDecimation?: boolean;
 }
 
 function animationIdToString(animationId: Id64String): string {
