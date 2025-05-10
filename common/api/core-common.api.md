@@ -1281,6 +1281,8 @@ export interface ClassifierTileTreeId {
     // (undocumented)
     animationId?: Id64String;
     // (undocumented)
+    disablePolyfaceDecimation: boolean;
+    // (undocumented)
     expansion: number;
     // (undocumented)
     type: BatchType.VolumeClassifier | BatchType.PlanarClassifier;
@@ -7072,6 +7074,8 @@ export interface PositionalVectorTransformProps {
 // @internal
 export interface PrimaryTileTreeId {
     animationId?: Id64String;
+    // (undocumented)
+    disablePolyfaceDecimation: boolean;
     edges: EdgeOptions | false;
     enforceDisplayPriority?: boolean;
     sectionCut?: string;
@@ -10488,6 +10492,8 @@ export interface TileOptions {
     // (undocumented)
     readonly disableMagnification: boolean;
     // (undocumented)
+    readonly disablePolyfaceDecimation: boolean;
+    // (undocumented)
     readonly edgeOptions: EdgeOptions;
     // (undocumented)
     readonly enableExternalTextures: boolean;
@@ -10718,15 +10724,17 @@ export interface TranslationOptions {
 // @alpha
 export enum TreeFlags {
     // (undocumented)
-    EnforceDisplayPriority = 2,
+    DisablePolyfaceDecimation = 32,
     // (undocumented)
-    ExpandProjectExtents = 16,// Use project extents as the basis of the tile tree's range.
+    EnforceDisplayPriority = 2,// Use project extents as the basis of the tile tree's range.
     // (undocumented)
-    None = 0,// For 3d plan projection models, group graphics into layers based on subcategory.
+    ExpandProjectExtents = 16,// For 3d plan projection models, group graphics into layers based on subcategory.
     // (undocumented)
-    OptimizeBRepProcessing = 4,// Use an optimized pipeline for producing facets from BRep entities.
+    None = 0,// Use an optimized pipeline for producing facets from BRep entities.
     // (undocumented)
-    UseLargerTiles = 8,// Produce tiles of larger size in screen pixels.
+    OptimizeBRepProcessing = 4,// Produce tiles of larger size in screen pixels.
+    // (undocumented)
+    UseLargerTiles = 8,// If UseProjectExtents, round them up/down to nearest powers of ten.
     // (undocumented)
     UseProjectExtents = 1
 }
