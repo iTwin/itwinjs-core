@@ -1944,6 +1944,14 @@ export abstract class DriverBundleElement extends InformationContentElement {
     static get className(): string;
 }
 
+// @beta
+export interface ECChangeUnifierCache extends Disposable {
+    all(): IterableIterator<ChangedECInstance>;
+    count(): number;
+    get(key: string): ChangedECInstance | undefined;
+    set(key: string, value: ChangedECInstance): void;
+}
+
 // @public
 export class ECDb implements Disposable {
     // @internal (undocumented)
@@ -3970,6 +3978,15 @@ export interface InlineGeometryPartsResult {
     numRefsInlined: number;
 }
 
+// @beta
+export class InMemoryInstanceCache implements ECChangeUnifierCache {
+    [Symbol.dispose](): void;
+    all(): IterableIterator<ChangedECInstance>;
+    count(): number;
+    get(key: string): ChangedECInstance | undefined;
+    set(key: string, value: ChangedECInstance): void;
+}
+
 // @public
 export interface InsertElementOptions {
     // @beta
@@ -4709,10 +4726,12 @@ export class OrthographicViewDefinition extends SpatialViewDefinition {
 }
 
 // @beta
-export class PartialECChangeUnifier {
+export class PartialECChangeUnifier implements Disposable {
+    [Symbol.dispose](): void;
+    constructor(_db: AnyDb, _cache?: ECChangeUnifierCache);
     appendFrom(adaptor: ChangesetECAdaptor): void;
+    getInstanceCount(): number;
     get instances(): IterableIterator<ChangedECInstance>;
-    stripMetaData(): void;
 }
 
 // @public
@@ -5696,6 +5715,18 @@ export class SpatialViewDefinition extends ViewDefinition3d {
     static serialize(props: SpatialViewDefinitionProps, _iModel: IModelDb): ECSqlRow;
     // (undocumented)
     toJSON(): SpatialViewDefinitionProps;
+}
+
+// @beta
+export class SqliteBackedInstanceCache implements ECChangeUnifierCache {
+    [Symbol.dispose](): void;
+    constructor(_db: AnyDb, bufferedReadInstanceSizeInBytes?: number);
+    all(): IterableIterator<ChangedECInstance>;
+    // (undocumented)
+    readonly bufferedReadInstanceSizeInBytes: number;
+    count(): number;
+    get(key: string): ChangedECInstance | undefined;
+    set(key: string, value: ChangedECInstance): void;
 }
 
 // @beta
