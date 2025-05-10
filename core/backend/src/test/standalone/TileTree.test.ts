@@ -238,6 +238,7 @@ describe("tile tree", () => {
     const treeId: PrimaryTileTreeId = {
       type: BatchType.Primary,
       edges: false as const,
+      disablePolyfaceDecimation: false,
     };
 
     const options = { ...defaultTileOptions };
@@ -271,6 +272,7 @@ describe("tile tree", () => {
       type: BatchType.Primary,
       edges: false as const,
       animationId: renderTimelineId,
+      disablePolyfaceDecimation: false,
     };
 
     const options = { ...defaultTileOptions };
