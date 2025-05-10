@@ -11,7 +11,7 @@
 import packageJson from "../../package.json";
 /** @public */
 export const ITWINJS_CORE_VERSION = packageJson.version as string;
-const COPYRIGHT_NOTICE = 'Copyright © 2017-2024 <a href="https://www.bentley.com" target="_blank" rel="noopener noreferrer">Bentley Systems, Inc.</a>';
+const COPYRIGHT_NOTICE = 'Copyright © 2017-2025 <a href="https://www.bentley.com" target="_blank" rel="noopener noreferrer">Bentley Systems, Inc.</a>';
 
 import { UiAdmin } from "@itwin/appui-abstract";
 import { AccessToken, BeDuration, BeEvent, BentleyStatus, DbResult, dispose, Guid, GuidString, IModelStatus, Logger, ProcessDetector } from "@itwin/core-bentley";
