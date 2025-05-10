@@ -4,14 +4,14 @@
 *--------------------------------------------------------------------------------------------*/
 import * as fs from "fs";
 import * as path from "path";
-import { Logger, LogLevel, ProcessDetector } from "@itwin/core-bentley";
+import { Guid, Id64String, Logger, LogLevel, ProcessDetector } from "@itwin/core-bentley";
 import { ElectronMainAuthorization } from "@itwin/electron-authorization/Main";
 import { ElectronHost, ElectronHostOptions } from "@itwin/core-electron/lib/cjs/ElectronBackend";
 import { BackendIModelsAccess } from "@itwin/imodels-access-backend";
 import { IModelsClient } from "@itwin/imodels-client-authoring";
-import { IModelDb, IModelHost, IModelHostOptions, LocalhostIpcHost, produceTextAnnotationGeometry } from "@itwin/core-backend";
+import { IModelDb, IModelHost, IModelHostOptions, LocalhostIpcHost, TextAnnotationGeometry } from "@itwin/core-backend";
 import {
-  IModelReadRpcInterface, IModelRpcProps, IModelTileRpcInterface, RpcInterfaceDefinition, RpcManager, TextAnnotation, TextAnnotationProps, TextBlockGeometryProps,
+  DynamicGraphicsRequest2dProps, ElementGeometry, IModelReadRpcInterface, IModelRpcProps, IModelTileRpcInterface, Placement2dProps, RpcInterfaceDefinition, RpcManager, TextAnnotationProps,
 } from "@itwin/core-common";
 import { MobileHost, MobileHostOpts } from "@itwin/core-mobile/lib/cjs/MobileBackend";
 import { DtaConfiguration, getConfig } from "../common/DtaConfiguration";
@@ -179,10 +179,23 @@ class DisplayTestAppRpc extends DtaRpcInterface {
     return (await IModelHost.authorizationClient?.getAccessToken()) ?? "";
   }
 
-  public override async produceTextAnnotationGeometry(iModelToken: IModelRpcProps, annotationProps: TextAnnotationProps, debugAnchorPointAndRange?: boolean): Promise<TextBlockGeometryProps> {
+  public override async generateTextAnnotationGeometry(iModelToken: IModelRpcProps, annotationProps: TextAnnotationProps, categoryId: Id64String, placementProps: Placement2dProps, args?: { debugAnchorPoint?: boolean, debugSnapPoints?: boolean }): Promise<Uint8Array | undefined> {
     const iModel = IModelDb.findByKey(iModelToken.key);
-    const annotation = TextAnnotation.fromJSON(annotationProps);
-    return produceTextAnnotationGeometry({ iModel, annotation, debugAnchorPointAndRange });
+
+    const layout = TextAnnotationGeometry.getTextBlockLayout({ iModel, annotation: annotationProps });
+    const builder = new ElementGeometry.Builder();
+    TextAnnotationGeometry.appendTextAnnotationGeometry({ layout, annotationProps, builder, wantDebugGeometry: args?.debugAnchorPoint || args?.debugSnapPoints });
+
+    const requestProps: DynamicGraphicsRequest2dProps = {
+      id: Guid.createValue(),
+      toleranceLog10: -5,
+      type: "2d",
+      placement: placementProps,
+      categoryId,
+      geometry: { format: "flatbuffer", data: builder.entries },
+    }
+
+    return iModel.generateElementGraphics(requestProps);
   }
 }
 
