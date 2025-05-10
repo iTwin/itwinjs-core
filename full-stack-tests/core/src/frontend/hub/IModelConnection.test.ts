@@ -12,7 +12,8 @@ import {
 import { Range3d, Transform } from "@itwin/core-geometry";
 import { TestUsers } from "@itwin/oidc-signin-tool/lib/cjs/frontend";
 import { TestUtility } from "../TestUtility";
-import { SchemaKey } from "@itwin/ecschema-metadata";
+import { SchemaFormatsProvider, SchemaKey } from "@itwin/ecschema-metadata";
+import { Format, FormatterSpec } from "@itwin/core-quantity";
 
 async function executeQuery(iModel: IModelConnection, ecsql: string, bindings?: any[] | object): Promise<any[]> {
   const rows: any[] = [];
@@ -42,6 +43,7 @@ describe("IModelConnection (#integration)", () => {
     const testIModelId = await TestUtility.queryIModelIdByName(testITwinId, TestUtility.testIModelNames.connectionRead);
 
     iModel = await CheckpointConnection.openRemote(testITwinId, testIModelId);
+    IModelApp.formatsProvider = new SchemaFormatsProvider(iModel.schemaContext, "imperial");
   });
 
   after(async () => {
@@ -199,5 +201,17 @@ describe("IModelConnection (#integration)", () => {
     const testKey = new SchemaKey("BisCore");
     const elem = await iModel.schemaContext.getSchema(testKey);
     assert.isDefined(elem, "BisCore schema should be defined in snapshot iModel");
+  });
+
+  it("should be able to use IModelApp.formatsProvider and format a quantity", async () => {
+    const formatECName = "Formats.DefaultRealU";
+    assert.isDefined(IModelApp.formatsProvider, "a SchemaFormatsProvider should be defined in test setup");
+    const formatProps = await IModelApp.formatsProvider.getFormat(formatECName);
+    assert.isDefined(formatProps, "Formats.AmerFI format should be defined in snapshot iModel");
+    const persistenceUnitProps = await IModelApp.quantityFormatter.unitsProvider.findUnitByName("Units.M");
+    const format = await Format.createFromJSON(formatECName, IModelApp.quantityFormatter.unitsProvider, formatProps!)
+    const spec = await FormatterSpec.create(`${formatECName}_format_spec`, format, IModelApp.quantityFormatter.unitsProvider, persistenceUnitProps);
+    const formattedValue = spec.applyFormatting(5.0);
+    assert.equal(formattedValue, "5.0 m");
   });
 });

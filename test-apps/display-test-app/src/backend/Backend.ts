@@ -17,7 +17,10 @@ import { MobileHost, MobileHostOpts } from "@itwin/core-mobile/lib/cjs/MobileBac
 import { DtaConfiguration, getConfig } from "../common/DtaConfiguration";
 import { DtaRpcInterface } from "../common/DtaRpcInterface";
 import { EditCommandAdmin } from "@itwin/editor-backend";
+import { ECSchemaRpcInterface } from '@itwin/ecschema-rpcinterface-common';
+import { ECSchemaRpcImpl } from "@itwin/ecschema-rpcinterface-impl";
 import * as editorBuiltInCommands from "@itwin/editor-backend";
+import { FormatSet } from "@itwin/ecschema-metadata";
 
 /** Loads the provided `.env` file into process.env */
 function loadEnv(envFile: string) {
@@ -184,6 +187,21 @@ class DisplayTestAppRpc extends DtaRpcInterface {
     const annotation = TextAnnotation.fromJSON(annotationProps);
     return produceTextAnnotationGeometry({ iModel, annotation, debugAnchorPointAndRange });
   }
+
+  public override async getFormatSetFromFile(filename: string): Promise<FormatSet> {
+    if (!fs.existsSync(filename)) {
+      throw new Error(`File not found: ${filename}`);
+    }
+
+    const fileContent = fs.readFileSync(filename, "utf-8");
+    const jsonData = JSON.parse(fileContent);
+
+    if (!jsonData || typeof jsonData !== "object") {
+      throw new Error(`Invalid JSON content in file: ${filename}`);
+    }
+
+    return jsonData as FormatSet;
+  }
 }
 
 export const getRpcInterfaces = (): RpcInterfaceDefinition[] => {
@@ -191,6 +209,7 @@ export const getRpcInterfaces = (): RpcInterfaceDefinition[] => {
     DtaRpcInterface,
     IModelReadRpcInterface,
     IModelTileRpcInterface,
+    ECSchemaRpcInterface
   ];
 
   return rpcs;
@@ -240,6 +259,7 @@ export const initializeDtaBackend = async (hostOpts?: ElectronHostOptions & Mobi
 
   /** register the implementation of our RPCs. */
   RpcManager.registerImpl(DtaRpcInterface, DisplayTestAppRpc);
+  RpcManager.registerImpl(ECSchemaRpcInterface, ECSchemaRpcImpl)
   const authClient = await initializeAuthorizationClient();
   if (ProcessDetector.isElectronAppBackend) {
     opts.iModelHost.authorizationClient = authClient;

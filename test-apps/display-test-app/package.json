@@ -51,6 +51,10 @@
     "@itwin/core-common": "workspace:*",
     "@itwin/core-electron": "workspace:*",
     "@itwin/core-frontend": "workspace:*",
+    "@itwin/ecschema-metadata": "workspace:*",
+    "@itwin/ecschema-rpcinterface-common": "workspace:*",
+    "@itwin/ecschema-rpcinterface-impl": "workspace:*",
+    "@itwin/ecschema-locaters": "workspace:*",
     "@itwin/core-geometry": "workspace:*",
     "@itwin/core-i18n": "workspace:*",
     "@itwin/core-markup": "workspace:*",
@@ -75,6 +79,9 @@
     "vhacd-js": "^0.0.1"
   },
   "devDependencies": {
+    "@bentley/formats-schema": "^1.0.0",
+    "@bentley/units-schema": "^1.0.8",
+    "@bentley/aec-units-schema": "^1.0.3",
     "@itwin/build-tools": "workspace:*",
     "@itwin/eslint-plugin": "5.0.0-dev.1",
     "@types/express": "^4.17.20",
