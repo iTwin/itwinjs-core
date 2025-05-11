@@ -481,6 +481,7 @@ describe("TileMetadata", () => {
         sectionCut: "010_1_0_-5_30_0_-1_5e-11____",
         animationId: undefined,
         enforceDisplayPriority: undefined,
+        disablePolyfaceDecimation: false,
       },
       contentId: { depth: 20, i: 50, j: 4, k: 1, multiplier: 1 },
     });
@@ -503,6 +504,7 @@ describe("TileMetadata", () => {
         sectionCut: "010_1_0_-5_30_0_-1_5e-11____",
         animationId: undefined,
         enforceDisplayPriority: undefined,
+        disablePolyfaceDecimation: false,
       },
       contentId: { depth: 20, i: 50, j: 4, k: 1, multiplier: 1 },
     });
@@ -525,6 +527,7 @@ describe("TileMetadata", () => {
         sectionCut: "010_1_0_-5_30_0_-1_5e-11____",
         animationId: undefined,
         enforceDisplayPriority: undefined,
+        disablePolyfaceDecimation: false,
       },
       contentId: { depth: 20, i: 50, j: 4, k: 1, multiplier: 1 },
     });
