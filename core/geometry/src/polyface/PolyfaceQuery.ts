@@ -140,9 +140,7 @@ export class SweepLineStringToFacetsOptions {
   }
   /** Return `true` if all outputs are requested. */
   public get collectAll(): boolean {
-    return this.collectOnForwardFacets === true &&
-      this.collectOnSideFacets === true &&
-      this.collectOnRearFacets === true;
+    return this.collectOnForwardFacets && this.collectOnSideFacets && this.collectOnRearFacets;
   }
   /**
    * Decide if the instance collector flags accept a facet with the given normal.
@@ -663,7 +661,10 @@ export class PolyfaceQuery {
         const facetIndex = parentData.parent.edgeIndexToFacetIndex(edgeIndex);
         if (facetIndex !== undefined) { // should always be defined
           const pointIndexA = parentData.parent.data.pointIndex[edgeIndex];
-          const pointIndexB = parentData.parent.data.pointIndex[edgeIndex + 1];
+          let nextEdgeIndex = edgeIndex + 1;
+          if (nextEdgeIndex >= parentData.parent.facetIndex1(facetIndex))
+            nextEdgeIndex = parentData.parent.facetIndex0(facetIndex);
+          const pointIndexB = parentData.parent.data.pointIndex[nextEdgeIndex];
           parentData.parent.data.getPoint(pointIndexA, pointA);
           parentData.parent.data.getPoint(pointIndexB, pointB);
           announceEdge(pointA, pointB, pointIndexA, pointIndexB, facetIndex);
@@ -1431,9 +1432,9 @@ export class PolyfaceQuery {
    * @param options input, filtering, search, and output options.
    * * If `undefined`, the default sweep direction is the positive z-axis, and chains are assembled and returned.
    * * For faster _vertical_ sweep, a pre-computed range tree can be supplied in `options.searcher`.
-   * * For faster _non-vertical_ sweep, first transform `points` and `source` with the inverse of the transform
+   * * For faster _non-vertical_ sweep, first transform inputs with the inverse of the transform
    * `T = Transform.createRigidFromOriginAndVector(undefined, options.vectorToEye)`, construct the searcher on these
-   * local facets, call `sweepLineStringToFacets` with these local inputs (and default sweep direction), and lastly,
+   * local facets, call `sweepLineStringToFacets/XY` with these local inputs (and default sweep direction), and lastly,
    * transform the returned draped linework back to world coordinates with `T`.
    */
   public static sweepLineStringToFacets(points: IndexedXYZCollection, source: Polyface | PolyfaceVisitor, options?: SweepLineStringToFacetsOptions): LinearCurvePrimitive[] {
@@ -1443,22 +1444,20 @@ export class PolyfaceQuery {
     let chainContext: ChainMergeContext | undefined;
     if (options.assembleChains)
       chainContext = ChainMergeContext.create();
+    const addSegment = chainContext ? (ptA: Point3d, ptB: Point3d) => chainContext.addSegment(ptA, ptB) : (ptA: Point3d, ptB: Point3d) => result.push(LineSegment3d.create(ptA, ptB));
     const workNormal = Vector3d.createZero();
     const visitor = source instanceof Polyface ? source.createVisitor(0) : source;
     visitor.setNumWrap(0);
-    const addSegment = (ptA: Point3d, ptB: Point3d) => chainContext?.addSegment(ptA, ptB) ?? result.push(LineSegment3d.create(ptA, ptB));
-    let edgeClipper: EdgeClipData | undefined;
-    const clipEdgeToConvexPolygon = (_facetRange: any, readIndex: number) => {
-      if (visitor.moveToReadIndex(readIndex)) {
-        if (options.collectAll || options.collectFromThisFacetNormal(PolygonOps.areaNormalGo(visitor.point, workNormal)))
-          edgeClipper?.processPolygon(visitor.point, addSegment);
-      }
-      return true;
-    };
     if (options.searcher && options.vectorToEye.isParallelTo(Vector3d.unitZ())) {
       const searchRange = Range3d.createNull();
       const workPoint0 = Point3d.createZero();
       const workPoint1 = Point3d.createZero();
+      let edgeClipper: EdgeClipData | undefined;
+      const clipEdgeToConvexPolygon = (_facetRange: any, readIndex: number) => {
+        if (visitor.moveToReadIndex(readIndex) && (options.collectAll || options.collectFromThisFacetNormal(PolygonOps.areaNormalGo(visitor.point, workNormal))))
+          edgeClipper?.processPolygon(visitor.point, (ptA: Point3d, ptB: Point3d) => addSegment(ptA, ptB));
+        return true;
+      };
       for (let i = 1; i < points.length; i++) {
         points.getPoint3dAtUncheckedPointIndex(i - 1, workPoint0);
         points.getPoint3dAtUncheckedPointIndex(i, workPoint1);
