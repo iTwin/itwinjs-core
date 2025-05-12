@@ -180,6 +180,12 @@ export class MeasureDistanceTool extends PrimitiveTool {
   protected _lastMotionPt?: Point3d;
   /** @internal */
   protected _lastMotionAdjustedPt?: Point3d;
+  /** @internal */
+  protected _lengthFormatterSpec?: FormatterSpec;
+  /** @internal */
+  protected _angleFormatterSpec?: FormatterSpec;
+  /** @internal */
+  protected _removeFormatterListener?: () => void;
 
   /** @internal */
   protected allowView(vp: Viewport) { return vp.view.isSpatialView() || vp.view.isDrawingView(); }
@@ -192,7 +198,28 @@ export class MeasureDistanceTool extends PrimitiveTool {
   /** @internal */
   public override async onPostInstall() {
     await super.onPostInstall();
+    this._lengthFormatterSpec  = await getFormatterSpecByKoQAndPersistenceUnit("AecUnits.LENGTH", "Units.M");
+    this._angleFormatterSpec = await getFormatterSpecByKoQAndPersistenceUnit("AecUnits.ANGLE", "Units.RAD");
+
+
+    this._removeFormatterListener = IModelApp.formatsProvider.onFormatsChanged.addListener(async (args) => {
+      if (args.formatsChanged === "all" || args.formatsChanged.includes("AecUnits.LENGTH"))
+        this._lengthFormatterSpec = await getFormatterSpecByKoQAndPersistenceUnit("AecUnits.LENGTH", "Units.M");
+
+      if (args.formatsChanged === "all" || args.formatsChanged.includes("AecUnits.ANGLE"))
+        this._angleFormatterSpec = await getFormatterSpecByKoQAndPersistenceUnit("AecUnits.ANGLE", "Units.RAD");
+    });
     this.setupAndPromptForNextAction();
+  }
+
+  /** @internal */
+  public override async onCleanup(): Promise<void> {
+    if (this._removeFormatterListener) {
+      this._removeFormatterListener();
+      this._removeFormatterListener = undefined;
+    }
+
+    await super.onCleanup();
   }
 
   /** @internal */
@@ -270,14 +297,14 @@ export class MeasureDistanceTool extends PrimitiveTool {
   }
 
   /** @internal */
-  protected async displayDynamicDistance(context: DecorateContext, points: Point3d[], adjustedPoints: Point3d[]): Promise<void> {
+  protected displayDynamicDistance(context: DecorateContext, points: Point3d[], adjustedPoints: Point3d[]): void {
     let totalDistance = 0.0;
     for (let i = 0; i < adjustedPoints.length - 1; i++)
       totalDistance += adjustedPoints[i].distance(adjustedPoints[i + 1]);
     if (0.0 === totalDistance)
       return;
 
-    const formatterSpec = await getFormatterSpecByKoQAndPersistenceUnit("AecUnits.LENGTH", "Units.M");
+    const formatterSpec = this._lengthFormatterSpec;
     if (formatterSpec === undefined)
       return;
     const formattedTotalDistance = IModelApp.quantityFormatter.formatQuantity(totalDistance, formatterSpec);
@@ -365,7 +392,7 @@ export class MeasureDistanceTool extends PrimitiveTool {
       builderDynHid.addLineString(tmpPoints);
 
       context.addDecorationFromBuilder(builderDynHid);
-      void this.displayDynamicDistance(context, tmpPoints, tmpAdjustedPoints);
+      this.displayDynamicDistance(context, tmpPoints, tmpAdjustedPoints);
     }
 
     if (this._acceptedSegments.length > 0) {
@@ -445,7 +472,7 @@ export class MeasureDistanceTool extends PrimitiveTool {
     if (0.0 === this._totalDistance)
       return;
 
-    const formatterSpec = await getFormatterSpecByKoQAndPersistenceUnit("AecUnits.LENGTH", "Units.M");
+    const formatterSpec = this._lengthFormatterSpec;
     if (undefined === formatterSpec)
       return;
 
@@ -460,7 +487,7 @@ export class MeasureDistanceTool extends PrimitiveTool {
     const toolTip = document.createElement("div");
 
 
-    const distanceFormatterSpec = await getFormatterSpecByKoQAndPersistenceUnit("AecUnits.LENGTH", "Units.M");
+    const distanceFormatterSpec = this._lengthFormatterSpec;
     if (undefined === distanceFormatterSpec)
       return toolTip;
 
@@ -469,14 +496,14 @@ export class MeasureDistanceTool extends PrimitiveTool {
     toolTipHtml += `${translateBold("Distance") + formattedDistance}<br>`;
 
     if (is3d) {
-      const angleFormatterSpec = await getFormatterSpecByKoQAndPersistenceUnit("AecUnits.ANGLE", "Units.RAD");
+      const angleFormatterSpec = this._angleFormatterSpec;
       if (undefined !== angleFormatterSpec) {
         const formattedSlope = IModelApp.quantityFormatter.formatQuantity(slope, angleFormatterSpec);
         toolTipHtml += `${translateBold("Slope") + formattedSlope}<br>`;
       }
     }
 
-    const coordFormatterSpec = await getFormatterSpecByKoQAndPersistenceUnit("AecUnits.LENGTH", "Units.M");
+    const coordFormatterSpec = this._lengthFormatterSpec;
 
     if (undefined !== coordFormatterSpec) {
       let startAdjusted = start;
