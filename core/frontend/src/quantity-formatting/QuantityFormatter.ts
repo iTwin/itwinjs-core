@@ -309,9 +309,9 @@ export interface UnitFormattingSettingsProvider {
 }
 
 /**
- * A default formatsProvider, that provides a limited set of FormatDefinitions, associated to a few [[KindOfQuantity]].
+ * A default formatsProvider, that provides a limited set of [[FormatDefinition]], associated to a few [[KindOfQuantity]].
  * Maps each KindOfQuantity to a [[QuantityType]].
- * When retrieving a valid KindOfQuantity, returns the [[FormatProps]] for the associated [[QuantityType]].
+ * When retrieving a valid [[KindOfQuantity]], returns the [[FormatProps]] for the associated [[QuantityType]].
  * @internal
  */
 export class QuantityTypeFormatsProvider implements FormatsProvider {
@@ -371,8 +371,8 @@ export class FormatsProviderManager implements FormatsProvider {
  * the "active" unit system and caches FormatterSpecs and ParserSpecs for the "active" unit system to allow synchronous access to
  * parsing and formatting values. The support unit systems are defined by [[UnitSystemKey]] and is kept in synch with the unit systems
  * provided by the Presentation Manager on the backend. The QuantityFormatter contains a registry of quantity type definitions. These definitions implement
- * the [[QuantityTypeDefinition]] interface, which among other things, provide default [FormatProps]$(core-quantity), and provide methods
- * to generate both a [FormatterSpec]$(core-quantity) and a [ParserSpec]$(core-quantity). There are built-in quantity types that are
+ * the [[QuantityTypeDefinition]] interface, which among other things, provide default [[FormatProps]], and provide methods
+ * to generate both a [[FormatterSpec]] and a [[ParserSpec]]. There are built-in quantity types that are
  * identified by the [[QuantityType]] enum. [[CustomQuantityTypeDefinition]] can be registered to extend the available quantity types available
  * by frontend tools. The QuantityFormatter also allows the default formats to be overriden.
  *
@@ -1029,9 +1029,9 @@ export class QuantityFormatter implements UnitsProvider {
   }
 
   /**
-   * Creates a FormatterSpec for a given persistence unit name and format properties, using the unitsProvider to resolve the persistence unit.
+   * Creates a [[FormatterSpec]] for a given persistence unit name and format properties, using the [[UnitsProvider]] to resolve the persistence unit.
    * @beta
-   * @param props - A CreateFormattingSpecProps interface.
+   * @param props - A [[CreateFormattingSpecProps]] interface.
    */
   public async createFormatterSpec(props: CreateFormattingSpecProps): Promise<FormatterSpec> {
     const { persistenceUnitName, formatProps, formatName } = props;
@@ -1041,9 +1041,9 @@ export class QuantityFormatter implements UnitsProvider {
   }
 
   /**
-   * Creates a ParserSpec for a given persistence unit name and format properties, using the unitsProvider to resolve the persistence unit.
+   * Creates a [[ParserSpec]] for a given persistence unit name and format properties, using the [[UnitsProvider]] to resolve the persistence unit.
    * @beta
-   * @param props - A CreateFormattingSpecProps object.
+   * @param props - A [[CreateFormattingSpecProps]] object.
    */
   public async createParserSpec(props: CreateFormattingSpecProps): Promise<ParserSpec> {
     const { persistenceUnitName, formatProps, formatName } = props;

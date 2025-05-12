@@ -606,8 +606,11 @@ describe("Quantity formatter", async () => {
       testProvider.onFormatsChanged.raiseEvent({ formatsChanged: ["foobar"]});
 
 
-      expect(spy).toHaveBeenCalledTimes(1);
-      expect(spy).toHaveBeenCalledWith({ formatsChanged: ["foobar"] });
+      IModelApp.resetFormatsProvider();
+      expect(spy).toHaveBeenCalledTimes(2);
+      expect(spy.mock.calls[0][0]).toEqual({ formatsChanged: ["foobar"] });
+      expect(spy.mock.calls[1][0]).toEqual({ formatsChanged: "all" });
+
     });
   });
 });

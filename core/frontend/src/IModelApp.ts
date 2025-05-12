@@ -212,7 +212,7 @@ export class IModelApp {
   private static _hubAccess?: FrontendHubAccess;
   private static _realityDataAccess?: RealityDataAccess;
   private static _publicPath: string;
-  private static _formatsProvider: FormatsProviderManager;
+  private static _formatsProviderManager: FormatsProviderManager;
 
   // No instances of IModelApp may be created. All members are static and must be on the singleton object IModelApp.
   protected constructor() { }
@@ -301,9 +301,9 @@ export class IModelApp {
    * @param provider The provider to use for formatting quantities.
    * @beta
    */
-  public static get formatsProvider(): FormatsProvider { return this._formatsProvider; }
+  public static get formatsProvider(): FormatsProvider { return this._formatsProviderManager; }
   public static set formatsProvider(provider: FormatsProvider) {
-    this._formatsProvider.formatsProvider = provider;
+    this._formatsProviderManager.formatsProvider = provider;
   }
 
   /** @alpha */
@@ -423,7 +423,7 @@ export class IModelApp {
     this._terrainProviderRegistry = new TerrainProviderRegistry();
     this._realityDataSourceProviders = new RealityDataSourceProviderRegistry();
     this._realityDataAccess = opts.realityDataAccess;
-    this._formatsProvider = new FormatsProviderManager(opts.formatsProvider ?? new QuantityTypeFormatsProvider());
+    this._formatsProviderManager = new FormatsProviderManager(opts.formatsProvider ?? new QuantityTypeFormatsProvider());
 
     this._publicPath = opts.publicPath ?? "";
 
