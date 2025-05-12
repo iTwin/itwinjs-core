@@ -6,6 +6,8 @@
  * @module IModelApp
  */
 
+ testing
+ 
 // @ts-expect-error package.json will resolve from the lib/{cjs,esm} dir without copying it into the build output we deliver
 // eslint-disable-next-line @itwin/import-within-package
 import packageJson from "../../package.json";
