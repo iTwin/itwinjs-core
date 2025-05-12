@@ -6674,6 +6674,8 @@ export class MeasureDistanceTool extends PrimitiveTool {
     // @internal (undocumented)
     protected allowView(vp: Viewport): boolean;
     // @internal (undocumented)
+    protected _angleFormatterSpec?: FormatterSpec;
+    // @internal (undocumented)
     protected createDecorations(context: DecorateContext, isSuspended: boolean): void;
     // @internal (undocumented)
     decorate(context: DecorateContext): void;
@@ -6682,7 +6684,7 @@ export class MeasureDistanceTool extends PrimitiveTool {
     // @internal (undocumented)
     protected displayDelta(context: DecorateContext, seg: any): void;
     // @internal (undocumented)
-    protected displayDynamicDistance(context: DecorateContext, points: Point3d[], adjustedPoints: Point3d[]): Promise<void>;
+    protected displayDynamicDistance(context: DecorateContext, points: Point3d[], adjustedPoints: Point3d[]): void;
     // @internal (undocumented)
     getDecorationGeometry(_hit: HitDetail): GeometryStreamProps | undefined;
     // (undocumented)
@@ -6702,7 +6704,11 @@ export class MeasureDistanceTool extends PrimitiveTool {
     // @internal (undocumented)
     protected _lastMotionPt?: Point3d;
     // @internal (undocumented)
+    protected _lengthFormatterSpec?: FormatterSpec;
+    // @internal (undocumented)
     protected readonly _locationData: Location_2[];
+    // @internal (undocumented)
+    onCleanup(): Promise<void>;
     // @internal (undocumented)
     onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled>;
     // @internal (undocumented)
@@ -6717,6 +6723,8 @@ export class MeasureDistanceTool extends PrimitiveTool {
     onUndoPreviousStep(): Promise<boolean>;
     // @internal (undocumented)
     onUnsuspend(): Promise<void>;
+    // @internal (undocumented)
+    protected _removeFormatterListener?: () => void;
     // (undocumented)
     protected reportMeasurements(): void;
     // @internal (undocumented)
