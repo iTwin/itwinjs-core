@@ -26,7 +26,7 @@ export class RealityDataSourceTilesetUrlImpl implements RealityDataSource {
   /** For use by all Reality Data. For RD stored on PW Context Share, represents the portion from the root of the Azure Blob Container*/
   private _baseUrl: string = "";
   /** Need to be passed down to child tile requests when requesting from blob storage, e.g. a Cesium export from the Mesh Export Service*/
-  private _searchParams: string = "";
+  private _searchParams?: URLSearchParams;
 
   /** Construct a new reality data source.
    * @param props JSON representation of the reality data source
@@ -78,7 +78,7 @@ export class RealityDataSourceTilesetUrlImpl implements RealityDataSource {
   private setBaseUrl(url: string): void {
     const urlParts = url.split("/");
     const newUrl = new URL(url);
-    this._searchParams = newUrl.search;
+    this._searchParams = newUrl.searchParams
     urlParts.pop();
     if (urlParts.length === 0)
       this._baseUrl = "";
@@ -104,25 +104,31 @@ export class RealityDataSourceTilesetUrlImpl implements RealityDataSource {
     return request(url, "json");
   }
 
-  private isValidURL(url: string){
-    try {
-      new URL(url);
-    } catch {
-      return false;
-    }
-    return true;
-  }
-
-  /** Returns the tile URL.
+  /** Returns the tile URL relative to the base URL.
    * If the tile path is a relative URL, the base URL is prepended to it.
    * For both absolute and relative tile path URLs, the search parameters are checked. If the search params are empty, the base URL's search params are appended to the tile path.
    */
-  private getTileUrl(tilePath: string){
-    if (this.isValidURL(tilePath)) {
-      const url = new URL(tilePath);
-      return url.search === "" ? `${tilePath}${this._searchParams}` : tilePath;
-    }
-    return tilePath.includes("?") ? `${this._baseUrl}${tilePath}` : `${this._baseUrl}${tilePath}${this._searchParams}`;
+  private getTileUrl(tilePath: string): string {
+
+    //&&MM Notes
+    // Spec: https://docs.ogc.org/cs/18-053r2/18-053r2.html 6.4 and 7.8.2
+    //  query params:
+    //    - no mention about propagation/preservation of query params.
+    //    - not sure if absolute url should receive params from base url?
+    // - "When the URI is relative, its base is always relative to the referring tileset JSON file."
+    //     - We are always using the base URL of the root document but we need to use the referring tileset which is nested in the tree structure. In case of google they add the session id.
+    // - What are we breaking by using the URL API instead of a simple concatenation of the base URL and tile path?
+
+    // TODO absolute vs relative URL handling?
+
+    // Build a relative URL where tilePath params will win over base URL params.
+    const url = new URL(tilePath, this._baseUrl);
+    if(this._searchParams === undefined || this._searchParams.size === 0)
+      return url.toString();
+
+    // append the base URL params to the tile path URL
+    const result = url.searchParams.size === 0 ? `${url}?${this._searchParams}` :`${url}&${this._searchParams}`;
+    return result;
   }
 
   /**

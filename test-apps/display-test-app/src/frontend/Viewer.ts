@@ -5,7 +5,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { Id64String } from "@itwin/core-bentley";
 import { ClipPlane, ClipPrimitive, ClipVector, ConvexClipPlaneSet, Vector3d } from "@itwin/core-geometry";
-import { ModelClipGroup, ModelClipGroups } from "@itwin/core-common";
+import { BaseMapLayerSettings, ModelClipGroup, ModelClipGroups } from "@itwin/core-common";
 import {
   IModelApp, IModelConnection, MarginOptions, MarginPercent, NotifyMessageDetails, openImageDataUrlInNewWindow, OutputMessagePriority,
   PaddingPercent, ScreenViewport, Tool, Viewport, ViewState,
@@ -31,9 +31,7 @@ import { openIModel, OpenIModelProps } from "./openIModel";
 import { HubPicker } from "./HubPicker";
 import { RealityModelSettingsPanel } from "./RealityModelDisplaySettingsWidget";
 import { ContoursPanel } from "./Contours";
-import { GoogleMapsPanel } from "./GoogleMaps";
-import { DtaConfiguration } from "../common/DtaConfiguration";
-
+import { CreateSessionOptions, GoogleMaps } from "@itwin/map-layers-formats";
 
 // cspell:ignore savedata topdiv savedview viewtop
 
@@ -268,6 +266,18 @@ export class Viewer extends Window {
     this._viewPicker = new ViewPicker(this.toolBar.element, this.views);
     this._viewPicker.onSelectedViewChanged.addListener(async (id) => this.changeView(id));
     this._viewPicker.element.addEventListener("click", () => this.toolBar.close());
+
+
+    this.toolBar.addItem(createToolButton({
+      iconUnicode: "\ue90e",
+      tooltip: "GoogleMaps 3D Tiles",
+      click: () => {
+        const IMJS_GOOGLE_MAPS_KEY="XXX";
+        this.viewport.displayStyle.attachRealityModel(
+          { tilesetUrl: `https://tile.googleapis.com/v1/3dtiles/root.json?key=${IMJS_GOOGLE_MAPS_KEY}`,
+            name: "googleMap3dTiles" });
+      }
+    }));
 
     this.toolBar.addDropDown({
       iconUnicode: "\ue90b", // "model"
