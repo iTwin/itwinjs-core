@@ -554,7 +554,11 @@
 			repositoryURL = "https://github.com/iTwin/mobile-native-ios";
 			requirement = {
 				kind = exactVersion;
+<<<<<<< HEAD
 				version = 5.0.100;
+=======
+				version = 5.1.18;
+>>>>>>> 913de4104e (Option to disable polyface decimation in tiler (#8071))
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
