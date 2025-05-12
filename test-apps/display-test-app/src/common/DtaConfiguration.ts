@@ -35,6 +35,7 @@ export interface DtaBooleanConfiguration {
   noElectronAuth?: boolean; // if true, don't initialize auth client. It currently has a bug that produces an exception on every attempt to obtain access token, i.e., every RPC call.
   noImdlWorker?: boolean; // if true, parse iMdl content on main thread instead of web worker (easier to debug).
   googleMapsUi?: boolean; // if set, a Google Maps toolbar icon will be displayed in the UI
+  disablePolyfaceDecimation?: boolean; // controls TileAdmin.Options.disablePolyfaceDecimation
 }
 
 export interface DtaStringConfiguration {
@@ -133,6 +134,9 @@ export const getConfig = (): DtaConfiguration => {
 
   if (undefined !== process.env.IMJS_DISABLE_BREP_CACHE)
     configuration.disableBRepCache = true;
+
+  if (undefined !== process.env.IMJS_DISABLE_POLYFACE_DECIMATION)
+    configuration.disablePolyfaceDecimation = true;
 
   if (undefined !== process.env.IMJS_DISABLE_UNIFORM_ERRORS)
     configuration.errorOnMissingUniform = false;
