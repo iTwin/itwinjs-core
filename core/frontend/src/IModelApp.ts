@@ -17,6 +17,7 @@ import { UiAdmin } from "@itwin/appui-abstract";
 import { AccessToken, BeDuration, BeEvent, BentleyStatus, DbResult, dispose, Guid, GuidString, IModelStatus, Logger, ProcessDetector } from "@itwin/core-bentley";
 import { AuthorizationClient, Localization, RealityDataAccess, RpcConfiguration, RpcInterfaceDefinition, RpcRequest, SerializedRpcActivity } from "@itwin/core-common";
 import { ITwinLocalization } from "@itwin/core-i18n";
+import { FormatsProvider } from "@itwin/core-quantity";
 import { queryRenderCompatibility, WebGLRenderCompatibilityInfo } from "@itwin/webgl-compatibility";
 import { AccuDraw } from "./AccuDraw";
 import { AccuSnap } from "./AccuSnap";
@@ -32,7 +33,7 @@ import { FrontendLoggerCategory } from "./common/FrontendLoggerCategory";
 import * as modelselector from "./ModelSelectorState";
 import * as modelState from "./ModelState";
 import { NotificationManager } from "./NotificationManager";
-import { QuantityFormatter } from "./quantity-formatting/QuantityFormatter";
+import { FormatsProviderManager, QuantityFormatter, QuantityTypeFormatsProvider } from "./quantity-formatting/QuantityFormatter";
 import { RenderSystem } from "./render/RenderSystem";
 import { System } from "./internal/render/webgl/System";
 import * as sheetState from "./SheetViewState";
@@ -119,6 +120,8 @@ export interface IModelAppOptions {
   renderSys?: RenderSystem | RenderSystem.Options;
   /** If present, supplies the [[UiAdmin]] for this session. */
   uiAdmin?: UiAdmin;
+  /** If present, supplies the [[FormatsProvider]] for this session. */
+  formatsProvider?: FormatsProvider;
   /** If present, determines whether iModelApp is a NoRenderApp
    *  @internal
    */
@@ -209,6 +212,7 @@ export class IModelApp {
   private static _hubAccess?: FrontendHubAccess;
   private static _realityDataAccess?: RealityDataAccess;
   private static _publicPath: string;
+  private static _formatsProviderManager: FormatsProviderManager;
 
   // No instances of IModelApp may be created. All members are static and must be on the singleton object IModelApp.
   protected constructor() { }
@@ -292,6 +296,15 @@ export class IModelApp {
    * The path should always end with a trailing `/`.
    */
   public static get publicPath() { return this._publicPath; }
+
+  /** The [[FormatsProvider]] for this session.
+   * @param provider The provider to use for formatting quantities.
+   * @beta
+   */
+  public static get formatsProvider(): FormatsProvider { return this._formatsProviderManager; }
+  public static set formatsProvider(provider: FormatsProvider) {
+    this._formatsProviderManager.formatsProvider = provider;
+  }
 
   /** @alpha */
   public static readonly extensionAdmin = this._createExtensionAdmin();
@@ -410,6 +423,8 @@ export class IModelApp {
     this._terrainProviderRegistry = new TerrainProviderRegistry();
     this._realityDataSourceProviders = new RealityDataSourceProviderRegistry();
     this._realityDataAccess = opts.realityDataAccess;
+    this._formatsProviderManager = new FormatsProviderManager(opts.formatsProvider ?? new QuantityTypeFormatsProvider());
+
     this._publicPath = opts.publicPath ?? "";
 
     [
@@ -449,6 +464,7 @@ export class IModelApp {
     this._entityClasses.clear();
     this.authorizationClient = undefined;
     this._initialized = false;
+    this.resetFormatsProvider();
     this.onAfterStartup.clear();
   }
 
@@ -747,6 +763,14 @@ export class IModelApp {
     }
 
     return this.localization.getLocalizedString(`iModelJs:${key.scope}.${key.val}`, key);
+  }
+
+  /**
+ * Resets the formatsProvider back to the default [[QuantityTypeFormatsProvider]].
+   * @beta
+   */
+  public static resetFormatsProvider() {
+    this.formatsProvider = new QuantityTypeFormatsProvider();
   }
 
   /**
