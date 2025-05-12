@@ -10565,6 +10565,8 @@ export class TileAdmin {
     // @internal (undocumented)
     readonly disableMagnification: boolean;
     // @internal (undocumented)
+    readonly disablePolyfaceDecimation: boolean;
+    // @internal (undocumented)
     readonly edgeOptions: EdgeOptions;
     // @internal (undocumented)
     get emptyTileUserSet(): ReadonlyTileUserSet;
@@ -10704,6 +10706,8 @@ export namespace TileAdmin {
         defaultTileSizeModifier?: number;
         // @alpha
         disableMagnification?: boolean;
+        // @beta
+        disablePolyfaceDecimation?: boolean;
         enableExternalTextures?: boolean;
         enableFrontendScheduleScripts?: boolean;
         enableImprovedElision?: boolean;

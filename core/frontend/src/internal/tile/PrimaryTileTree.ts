@@ -281,7 +281,8 @@ class PrimaryTreeReference extends TileTreeReference {
     const edgesRequired = visibleEdges || RenderMode.SmoothShade !== renderMode || IModelApp.tileAdmin.alwaysRequestEdges;
     const edges = edgesRequired ? IModelApp.tileAdmin.edgeOptions : false;
     const sectionCut = this._sectionClip?.clipString;
-    return { type: BatchType.Primary, edges, animationId, sectionCut };
+    const disablePolyfaceDecimation = IModelApp.tileAdmin.disablePolyfaceDecimation;
+    return { type: BatchType.Primary, edges, animationId, sectionCut, disablePolyfaceDecimation };
   }
 
   protected computeBaseTransform(tree: TileTree): Transform {
@@ -487,7 +488,7 @@ class MaskTreeReference extends TileTreeReference {
     return this._owner;
   }
   protected createTreeId(): PrimaryTileTreeId {
-    return { type: BatchType.Primary, edges: false };
+    return { type: BatchType.Primary, edges: false, disablePolyfaceDecimation: IModelApp.tileAdmin.disablePolyfaceDecimation };
   }
 }
 
@@ -513,7 +514,7 @@ export class ModelMapLayerTileTreeReference extends MapLayerTileTreeReference {
   }
 
   protected createTreeId(): PrimaryTileTreeId {
-    return { type: BatchType.Primary, edges: false };
+    return { type: BatchType.Primary, edges: false, disablePolyfaceDecimation: IModelApp.tileAdmin.disablePolyfaceDecimation };
   }
 
   public get treeOwner(): TileTreeOwner {
