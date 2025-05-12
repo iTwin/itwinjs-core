@@ -22,7 +22,10 @@ export class SortableEdge {
     this._v = [startVertex, endVertex];
     this._a = facetIndex;
   }
-
+  /** Clone the edge. */
+  public clone(): SortableEdge {
+    return new SortableEdge(this._v[0], this._v[1], this._a);
+  }
   /** Return the vertex index that appears first in the order stored.  */
   public get startVertex(): number {
     return this._v[0];

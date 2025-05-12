@@ -5687,6 +5687,7 @@ export class SortableEdge {
     constructor(startVertex: number, endVertex: number, facetIndex: number);
     static areDirectedPartners(edgeA: SortableEdge, edgeB: SortableEdge): boolean;
     static areUndirectedPartners(edgeA: SortableEdge, edgeB: SortableEdge): boolean;
+    clone(): SortableEdge;
     static clusterArrayToJSON(data: SortableEdgeCluster[]): any[];
     static clusterToJSON(data: SortableEdgeCluster): any;
     get endVertex(): number;
