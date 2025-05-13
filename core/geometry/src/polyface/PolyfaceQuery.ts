@@ -583,7 +583,7 @@ export class PolyfaceQuery {
   }
 
   /** Helper function to detect a subset visitor. */
-  private static isSubsetVisitor(visitor: Polyface | PolyfaceVisitor): boolean {
+  public static isSubsetVisitor(visitor: Polyface | PolyfaceVisitor): boolean {
     if (visitor instanceof Polyface)
       return false;
     const parentFacetCount = visitor.clientPolyface()?.facetCount;
@@ -612,12 +612,14 @@ export class PolyfaceQuery {
     return true; // this is a 2-manifold closed surface
   }
   /**
-   * Test edges pairing in `source` mesh.
-   * * For `allowSimpleBoundaries === false`, a return value of `true` means this is a closed 2-manifold surface.
-   * * For `allowSimpleBoundaries === true`, a return value of `true` means this is a 2-manifold surface which may have
-   * a boundary, but is still properly matched internally.
+   * Test edge pairing in `source` mesh.
    * * Any edge with 3 or more adjacent facets triggers `false` return.
-   * * Any edge with 2 adjacent facets in the same direction triggers a `false` return.
+   * * Any edge with 2 adjacent facets in the same direction triggers `false` return.
+   * * Null edges are ignored.
+   * @param source facet set to examine
+   * @param allowSimpleBoundaries if `false` (default), a return value of `true` means the facets form a closed
+   * 2-manifold surface; if `true`, a return value of `true` means the facets form a 2-manifold surface which may
+   * have a boundary, but is still properly matched internally.
   */
   public static isPolyfaceManifold(source: Polyface | PolyfaceVisitor, allowSimpleBoundaries: boolean = false): boolean {
     const isManifold = this.isPolyfaceManifoldFast(source, allowSimpleBoundaries);
@@ -721,7 +723,7 @@ export class PolyfaceQuery {
     const pointA = Point3d.create();
     const pointB = Point3d.create();
     for (const e of boundaryEdges) {
-      const e1 = e instanceof SortableEdge ? e : e[0];
+      const e1 = e instanceof SortableEdge ? e : e[0]; // only report the first edge in a cluster!
       const indexA = e1.startVertex;
       const indexB = e1.endVertex;
       if (vertices) {

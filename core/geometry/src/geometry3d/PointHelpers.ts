@@ -138,9 +138,9 @@ export class NumberArray {
     return a;
   }
   /**
-   * Return an array with indicated start and end points, maximum step size internally
-   * @param low low value
-   * @param high high value
+   * Return an array with indicated start and end points, and maximum step size.
+   * @param low first value in returned array
+   * @param high last value in returned array
    * @param step max permitted step
    */
   public static createArrayWithMaxStepSize(low: number, high: number, step: number): number[] {

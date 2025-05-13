@@ -2900,7 +2900,7 @@ export class IndexedPolyfaceVisitor extends PolyfaceData implements PolyfaceVisi
     clientPointIndex(i: number): number;
     clientPolyface(): IndexedPolyface;
     static create(polyface: IndexedPolyface, numWrap: number): IndexedPolyfaceVisitor;
-    createSubsetVisitor(facetIndices: number[], numWrap: number): IndexedPolyfaceSubsetVisitor;
+    createSubsetVisitor(facetIndices: number[], numWrap?: number): IndexedPolyfaceSubsetVisitor;
     currentReadIndex(): number;
     getVisitableFacetCount(): number;
     moveToNextFacet(): boolean;
@@ -2931,7 +2931,7 @@ export class IndexedPolyfaceWalker {
     loadVisitor(visitor: IndexedPolyfaceVisitor): boolean;
     nextAroundFacet(result?: IndexedPolyfaceWalker): IndexedPolyfaceWalker;
     nextAroundVertex(result?: IndexedPolyfaceWalker): IndexedPolyfaceWalker;
-    get polyface(): IndexedPolyface | undefined;
+    get polyface(): IndexedPolyface;
     previousAroundFacet(result?: IndexedPolyfaceWalker): IndexedPolyfaceWalker;
     previousAroundVertex(result?: IndexedPolyfaceWalker): IndexedPolyfaceWalker;
 }
@@ -4738,6 +4738,7 @@ export class PolyfaceQuery {
     static isConvexByDihedralAngleCount(source: Polyface | PolyfaceVisitor, ignoreBoundaries?: boolean): boolean;
     static isPolyfaceClosedByEdgePairing(source: Polyface | PolyfaceVisitor): boolean;
     static isPolyfaceManifold(source: Polyface | PolyfaceVisitor, allowSimpleBoundaries?: boolean): boolean;
+    static isSubsetVisitor(visitor: Polyface | PolyfaceVisitor): boolean;
     static markAllEdgeVisibility(mesh: IndexedPolyface, value: boolean): void;
     static markPairedEdgesInvisible(mesh: IndexedPolyface, sharpEdgeAngle?: Angle): void;
     static partitionFacetIndicesByEdgeConnectedComponent(polyface: Polyface | PolyfaceVisitor, stopAtVisibleEdges?: boolean): number[][];

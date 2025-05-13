@@ -202,7 +202,7 @@ export class IndexedPolyfaceVisitor extends PolyfaceData implements PolyfaceVisi
     // TODO: auxData? taggedNumericData?
   }
   /** Create a visitor for a subset of the facets visitable by the instance. */
-  public createSubsetVisitor(facetIndices: number[], numWrap: number): IndexedPolyfaceSubsetVisitor {
+  public createSubsetVisitor(facetIndices: number[], numWrap: number = 0): IndexedPolyfaceSubsetVisitor {
     return IndexedPolyfaceSubsetVisitor.createSubsetVisitor(this._polyface, facetIndices, numWrap);
   }
 }

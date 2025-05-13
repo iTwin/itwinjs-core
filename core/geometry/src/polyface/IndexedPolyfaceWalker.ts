@@ -92,7 +92,7 @@ export class IndexedPolyfaceWalker {
   }
 
   /** Return the polyface of this walker. */
-  public get polyface(): IndexedPolyface | undefined {
+  public get polyface(): IndexedPolyface {
     return this._polyface;
   }
   /**
