@@ -12,6 +12,7 @@ import { IModelDb } from "../IModelDb";
 import { assert, NonFunctionPropertiesOf } from "@itwin/core-bentley";
 import * as LineBreaker from "linebreak";
 
+
 /** @internal */
 export interface TextLayoutRanges {
   layout: Range2d;

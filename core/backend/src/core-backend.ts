@@ -9,6 +9,7 @@ export {
   computeGraphemeOffsets,
   computeLayoutTextBlockResult,
   ComputeGraphemeOffsetsArgs,
+  layoutTextBlock,
   LayoutTextBlockArgs,
 } from "./annotations/TextBlockLayout";
 export * from "./annotations/TextBlockGeometry";

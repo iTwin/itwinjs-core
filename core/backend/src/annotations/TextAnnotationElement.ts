@@ -11,9 +11,11 @@ import { IModelDb } from "../IModelDb";
 import { AnnotationElement2d, GraphicalElement3d } from "../Element";
 import { Id64String } from "@itwin/core-bentley";
 import { TextAnnotationGeometry } from "./TextAnnotationGeometry";
+import { layoutTextBlock } from "./TextBlockLayout";
 
 function getElementGeometryBuilderParams(iModel: IModelDb, _placementProps: PlacementProps, annotationProps: TextAnnotationProps, _category: Id64String, _subCategory?: Id64String): ElementGeometryBuilderParams {
-  const layout = TextAnnotationGeometry.getTextBlockLayout({ iModel, annotation: annotationProps });
+  const textBlock = TextAnnotation.fromJSON(annotationProps).textBlock;
+  const layout = layoutTextBlock({ iModel, textBlock });
   const builder = new ElementGeometry.Builder();
   TextAnnotationGeometry.appendTextAnnotationGeometry({ layout, annotationProps, builder })
 

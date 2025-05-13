@@ -7,8 +7,7 @@
  */
 
 import { ColorDef, ElementGeometry, FillDisplay, GeometryParams, TextAnnotation, TextAnnotationProps, TextFrameStyleProps } from "@itwin/core-common";
-import { IModelDb } from "../IModelDb";
-import { layoutTextBlock, TextBlockLayout } from "./TextBlockLayout";
+import { TextBlockLayout } from "./TextBlockLayout";
 import { LineString3d, PointString3d, Range2d, Transform } from "@itwin/core-geometry";
 import { Id64 } from "@itwin/core-bentley";
 import { produceTextBlockGeometry } from "./TextBlockGeometry";
@@ -18,7 +17,7 @@ export namespace TextAnnotationGeometry {
   export interface RequestProps {
     /** The annotation to be drawn. Be sure to include a TextBlock with runs or no geometry will be produced. */
     annotationProps: TextAnnotationProps;
-    /** Layout provided by calling [[TextAnnotationGeometry.getTextBlockLayout]] or [[layoutTextBlock]] directly */
+    /** Layout provided by calling [[layoutTextBlock]] */
     layout: TextBlockLayout;
     /** Builder that will be added to in place */
     builder: ElementGeometry.Builder;
@@ -49,17 +48,6 @@ export namespace TextAnnotationGeometry {
       if (annotation.frame) debugSnapPoints(props.builder, annotation.frame, props.layout.range, annotation.computeTransform(props.layout.range));
     }
   };
-
-  /**
-   * Method that exposes the layoutTextBlock function in a convenient place.
-   */
-  export function getTextBlockLayout(props: { iModel: IModelDb, annotation: TextAnnotationProps }): TextBlockLayout {
-    const annotation = TextAnnotation.fromJSON(props.annotation);
-    return layoutTextBlock({
-      iModel: props.iModel,
-      textBlock: annotation.textBlock,
-    });
-  }
 
   /**
    * Draws the anchor point and margins of the text annotation.
