@@ -115,8 +115,8 @@ class TextEditor implements Decorator {
   }
 
   /**
-   * Draws the graphics for the decoration. TextGraphics require a call to the backend to generate the geometry.
-   * In this case, we're using produceTextAnnotationGeometry RPC endpoint that calls [[IModelDb.generateElementGraphics]]
+   * Draws the graphics for the decoration. Text annotation graphics require a call to the backend to generate the geometry.
+   * In this case, we're using the `produceTextAnnotationGeometry` RPC endpoint that calls [[IModelDb.generateElementGraphics]]
    * with the values from [[TextAnnotationGeometry.appendTextAnnotationGeometry]].
    * These graphics can be added to the [[RenderSystem]] via [[readElementGraphics]] and [[RenderSystem.createGraphicOwner]]
    * or via an [[ElementGeometryGraphicsProvider]]. In this case, we're using the former.
