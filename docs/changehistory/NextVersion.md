@@ -226,6 +226,8 @@ A [FormatDefinition]($quantity) interface has been added, an extension of Format
 
 [FormatsProvider]($quantity) and [MutableFormatsProvider]($quantity) interfaces and a [SchemaFormatsProvider]($ecschema-metadata) class have been added. This enables quick setup of [FormatterSpec]($quantity) and [ParserSpec]($quantity) to help with display formatting.
 
+In addition, [IModelApp]($core-frontend) now accepts an optional `FormatsProvider` for use across a frontend application, defaulting to an internal implementation that uses [QuantityType]($core-frontend). The implementation of this default provider will be updated when `QuantityType` is deprecated in 5.x lifecycle.
+
 ### Persistence
 
 Following APIs have been added to support persistence:
@@ -233,6 +235,10 @@ Following APIs have been added to support persistence:
 - [FormatSet]($ecschema-metadata) defines an interface to support loading/saving [Format]($ecschema-metadata).
 
 Learn more at the [Quantity](../learning/quantity/index.md#persistence) learnings article for examples and use cases.
+
+### Migrating From QuantityType to KindOfQuantity
+
+We are moving away from using [QuantityType]($core-frontend) in favor of [KindOfQuantity]($ecschema-metadata) [EC full name](https://www.itwinjs.org/bis/ec/ec-name/#full-name). See [Migrating from QuantityType to KindOfQuantity](../learning/frontend/QuantityFormatting.md#migrating-from-quantitytype-to-kindofquantity) for explanations on replacements to `QuantityType`.
 
 ## API deprecations
 
