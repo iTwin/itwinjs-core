@@ -226,7 +226,7 @@ A [FormatDefinition]($quantity) interface has been added, an extension of Format
 
 [FormatsProvider]($quantity) and [MutableFormatsProvider]($quantity) interfaces and a [SchemaFormatsProvider]($ecschema-metadata) class have been added. This enables quick setup of [FormatterSpec]($quantity) and [ParserSpec]($quantity) to help with display formatting.
 
-In addition, [IModelApp]($core-frontend) now accepts an optional `FormatsProvider` for use across a frontend application, defaulting to an internal implementation that uses [QuantityType]($core-frontend) for now.
+In addition, [IModelApp]($core-frontend) now accepts an optional `FormatsProvider` for use across a frontend application, defaulting to an internal implementation that uses [QuantityType]($core-frontend). The implementation of this default provider will be updated when `QuantityType` is deprecated in 5.x lifecycle.
 
 ### Persistence
 
