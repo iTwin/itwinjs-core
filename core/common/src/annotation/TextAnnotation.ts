@@ -36,20 +36,26 @@ export interface TextAnnotationAnchor {
   horizontal: "left" | "center" | "right";
 }
 
+/** Set of predefined shapes that can be computed and drawn around the margins of a [[TextBlock]] */
 export type TextAnnotationFrameShape = "none" | "line" | "rectangle" | "circle" | "equilateralTriangle" | "diamond" | "square" | "pentagon" | "hexagon" | "octagon" | "capsule" | "roundedRectangle";
 
 
-/** TODO
+/**
+ * Todo.
  * @beta
  */
 export type TextAnnotationFillColor = TextStyleColor | "background";
 
+/**
+ * Describes how to draw the frame around a [[TextBlock]].
+ * The frame can be a simple line, a filled shape, or both.
+ * @beta
+ */
 export interface TextFrameStyleProps {
   shape: TextAnnotationFrameShape;
   fill?: TextAnnotationFillColor;
   border?: TextStyleColor;
   borderWeight?: number;
-  debugSnap?: boolean;
 }
 
 /**

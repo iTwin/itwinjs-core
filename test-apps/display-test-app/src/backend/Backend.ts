@@ -179,12 +179,12 @@ class DisplayTestAppRpc extends DtaRpcInterface {
     return (await IModelHost.authorizationClient?.getAccessToken()) ?? "";
   }
 
-  public override async generateTextAnnotationGeometry(iModelToken: IModelRpcProps, annotationProps: TextAnnotationProps, categoryId: Id64String, placementProps: Placement2dProps, args?: { debugAnchorPoint?: boolean, debugSnapPoints?: boolean }): Promise<Uint8Array | undefined> {
+  public override async generateTextAnnotationGeometry(iModelToken: IModelRpcProps, annotationProps: TextAnnotationProps, categoryId: Id64String, placementProps: Placement2dProps, wantDebugGeometry?: boolean): Promise<Uint8Array | undefined> {
     const iModel = IModelDb.findByKey(iModelToken.key);
 
     const layout = TextAnnotationGeometry.getTextBlockLayout({ iModel, annotation: annotationProps });
     const builder = new ElementGeometry.Builder();
-    TextAnnotationGeometry.appendTextAnnotationGeometry({ layout, annotationProps, builder, wantDebugGeometry: args?.debugAnchorPoint || args?.debugSnapPoints });
+    TextAnnotationGeometry.appendTextAnnotationGeometry({ layout, annotationProps, builder, wantDebugGeometry });
 
     const requestProps: DynamicGraphicsRequest2dProps = {
       id: Guid.createValue(),

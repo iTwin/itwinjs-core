@@ -144,7 +144,7 @@ class TextEditor implements Decorator {
       annotationProps,
       this._categoryId,
       placementProps,
-      { debugAnchorPoint: this.debugAnchorPointAndRange, debugSnapPoints: this.frame.debugSnap }
+      this.debugAnchorPointAndRange
     );
 
     const graphic = undefined !== gfx ? await readElementGraphics(gfx, this._iModel, this._entityId, false) : undefined;
@@ -344,9 +344,8 @@ export class TextDecorationTool extends Tool {
         if (key === "fill") editor.setFrame({ fill: (val === "background" || val === "subcategory") ? val : val ? ColorDef.fromString(val).toJSON() : undefined });
         else if (key === "border") editor.setFrame({ border: val ? ColorDef.fromString(val).toJSON() : undefined });
         else if (key === "borderWeight") editor.setFrame({ borderWeight: Number(val) });
-        else if (key === "debug") editor.setFrame({ debugSnap: !editor.frame.debugSnap });
         else if (key as TextAnnotationFrameShape) editor.setFrame({ shape: key as TextAnnotationFrameShape });
-        else throw new Error("Expected style, fill, border, borderWeight, debugSnap");
+        else throw new Error("Expected style, fill, border, borderWeight");
 
         break;
       }
