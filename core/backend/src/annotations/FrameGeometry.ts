@@ -9,7 +9,7 @@
 
 import { Id64 } from "@itwin/core-bentley";
 import { BackgroundFill, ColorDef, ElementGeometry, FillDisplay, GeometryParams, TextAnnotationFrameShape, TextFrameStyleProps } from "@itwin/core-common";
-import { Angle, AngleSweep, Arc3d, LineString3d, Loop, Point3d, Range2d, Transform, Vector2d } from "@itwin/core-geometry";
+import { Angle, AngleSweep, Arc3d, LineString3d, Loop, Path, Point3d, Range2d, Transform, Vector2d } from "@itwin/core-geometry";
 
 export namespace FrameGeometry {
 
@@ -64,7 +64,7 @@ export namespace FrameGeometry {
    * Computes the frame geometry based on the provided frame shape and range.
    * @returns a [[Loop]] that represents the frame geometry
    */
-  export const computeFrame = ({ frame, range, transform }: ComputeFrameArgs): Loop => {
+  export const computeFrame = ({ frame, range, transform }: ComputeFrameArgs): Loop | Path => {
     switch (frame) {
       case "line": return computeLine(range, transform);
       case "rectangle": return computeRectangle(range, transform);
@@ -107,11 +107,11 @@ export namespace FrameGeometry {
   }
 
   // Line - currently just adds an underline. Once we have leaders, this method may change.
-  const computeLine = (range: Range2d, transform: Transform): Loop => {
+  const computeLine = (range: Range2d, transform: Transform): Path => {
     const points = [Point3d.create(range.low.x, range.low.y), Point3d.create(range.high.x, range.low.y)];
     const frame = LineString3d.createPoints(points);
 
-    return Loop.create(frame.cloneTransformed(transform));
+    return Path.create(frame.cloneTransformed(transform));
   }
 
   // Rectangle
