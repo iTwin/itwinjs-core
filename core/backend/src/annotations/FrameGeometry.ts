@@ -52,10 +52,18 @@ export namespace FrameGeometry {
 
 
   export interface ComputeFrameArgs {
+    /** Frame shape to be calculated */
     frame: Exclude<TextAnnotationFrameShape, "none">;
+    /** Range to be enclosed */
     range: Range2d;
+    /** Transform that translates and rotates the range to world coordinates */
     transform: Transform;
   }
+
+  /**
+   * Computes the frame geometry based on the provided frame shape and range.
+   * @returns a [[Loop]] that represents the frame geometry
+   */
   export const computeFrame = ({ frame, range, transform }: ComputeFrameArgs): Loop => {
     switch (frame) {
       case "line": return computeLine(range, transform);
@@ -80,6 +88,11 @@ export namespace FrameGeometry {
     arcIntervalFactor?: number;
   }
 
+  /**
+   * Computes points along the edges of the frame geometry based on the provided frame shape, range, and interval factors.
+   * These can be used for snapping or attaching leaders.
+   * @returns an array of [[Point3d]] that represent the points along the edges of the frame geometry. Returns `undefined` if the loop created by `computeFrame` is empty.
+   */
   export const computeIntervalPoints = ({ frame, range, transform, lineIntervalFactor = 0.5, arcIntervalFactor = 0.25 }: ComputeIntervalPointsArgs): Point3d[] | undefined => {
     const points: Point3d[] = [];
     const curves = computeFrame({ frame, range, transform }).collectCurvePrimitives(undefined, false, true);
@@ -134,14 +147,14 @@ export namespace FrameGeometry {
 
 
     const curves = [
-      LineString3d.create([Point3d.create(inLeft, exTop), Point3d.create(inRight, exTop)]), // top
-      Arc3d.createXY(Point3d.create(inLeft, inTop), radius, q2), // top left
-      LineString3d.create([Point3d.create(exLeft, inBottom), Point3d.create(exLeft, inTop)]), // left
-      Arc3d.createXY(Point3d.create(inLeft, inBottom), radius, q3), // bottom left
-      LineString3d.create([Point3d.create(inLeft, exBottom), Point3d.create(inRight, exBottom)]), // bottom
-      Arc3d.createXY(Point3d.create(inRight, inBottom), radius, q4), // bottom right
-      LineString3d.create([Point3d.create(exRight, inBottom), Point3d.create(exRight, inTop)]), // right
-      Arc3d.createXY(Point3d.create(inRight, inTop), radius, q1), // top right
+      LineString3d.create([Point3d.create(inLeft, exTop), Point3d.create(inRight, exTop)]),         // top
+      Arc3d.createXY(Point3d.create(inLeft, inTop), radius, q2),                                    // top left
+      LineString3d.create([Point3d.create(exLeft, inBottom), Point3d.create(exLeft, inTop)]),       // left
+      Arc3d.createXY(Point3d.create(inLeft, inBottom), radius, q3),                                 // bottom left
+      LineString3d.create([Point3d.create(inLeft, exBottom), Point3d.create(inRight, exBottom)]),   // bottom
+      Arc3d.createXY(Point3d.create(inRight, inBottom), radius, q4),                                // bottom right
+      LineString3d.create([Point3d.create(exRight, inBottom), Point3d.create(exRight, inTop)]),     // right
+      Arc3d.createXY(Point3d.create(inRight, inTop), radius, q1),                                   // top right
     ];
 
     return Loop.createArray(curves.map((curve) => curve.cloneTransformed(transform)))
@@ -167,10 +180,10 @@ export namespace FrameGeometry {
 
     const v1 = Vector2d.create(0, magnitude);
     const vectors = [
-      v1, // top
-      v1.rotateXY(Angle.createDegrees(120)), // left
-      v1.rotateXY(Angle.createDegrees(240)), // right
-      v1 // top
+      v1,                                     // top
+      v1.rotateXY(Angle.createDegrees(120)),  // left
+      v1.rotateXY(Angle.createDegrees(240)),  // right
+      v1                                      // top
     ];
 
     vectors.forEach((v) => {
@@ -243,10 +256,10 @@ export namespace FrameGeometry {
     const rightHalfCircle = AngleSweep.createStartEndDegrees(-90, 90);
 
     const curves = [
-      LineString3d.create([Point3d.create(inLeft, exTop), Point3d.create(inRight, exTop)]), // top
-      Arc3d.createXY(Point3d.create(inLeft, range.center.y), radius, leftHalfCircle), // left
+      LineString3d.create([Point3d.create(inLeft, exTop), Point3d.create(inRight, exTop)]),       // top
+      Arc3d.createXY(Point3d.create(inLeft, range.center.y), radius, leftHalfCircle),             // left
       LineString3d.create([Point3d.create(inLeft, exBottom), Point3d.create(inRight, exBottom)]), // bottom
-      Arc3d.createXY(Point3d.create(inRight, range.center.y), radius, rightHalfCircle), // right
+      Arc3d.createXY(Point3d.create(inRight, range.center.y), radius, rightHalfCircle),           // right
     ];
 
     return Loop.createArray(curves.map((curve) => curve.cloneTransformed(transform)));
