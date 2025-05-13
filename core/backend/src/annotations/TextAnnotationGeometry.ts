@@ -86,7 +86,9 @@ export namespace TextAnnotationGeometry {
   }
 
   function debugSnapPoints(builder: ElementGeometry.Builder, frame: TextFrameStyleProps, range: Range2d, transform: Transform): boolean {
-    const points = FrameGeometry.computeIntervalPoints(frame.shape, range, transform, 0.5, 0.25);
+    if (frame.shape === "none")
+      return false;
+    const points = FrameGeometry.computeIntervalPoints({ frame: frame.shape, range, transform, lineIntervalFactor: 0.5, arcIntervalFactor: 0.25 });
 
     const params = new GeometryParams(Id64.invalid);
     params.lineColor = ColorDef.black;
