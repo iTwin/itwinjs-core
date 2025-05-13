@@ -58,7 +58,7 @@ export namespace FrameGeometry {
   }
   export const computeFrame = ({ frame, range, transform }: ComputeFrameArgs): Loop => {
     switch (frame) {
-      // case "line": return computeLine;
+      case "line": return computeLine(range, transform);
       case "rectangle": return computeRectangle(range, transform);
       case "circle": return computeCircle(range, transform);
       case "equilateralTriangle": return computeTriangle(range, transform);
@@ -91,6 +91,14 @@ export namespace FrameGeometry {
       }
     });
     return points;
+  }
+
+  // Line - currently just adds an underline. Once we have leaders, this method may change.
+  const computeLine = (range: Range2d, transform: Transform): Loop => {
+    const points = [Point3d.create(range.low.x, range.low.y), Point3d.create(range.high.x, range.low.y)];
+    const frame = LineString3d.createPoints(points);
+
+    return Loop.create(frame.cloneTransformed(transform));
   }
 
   // Rectangle
@@ -244,7 +252,7 @@ export namespace FrameGeometry {
     return Loop.createArray(curves.map((curve) => curve.cloneTransformed(transform)));
   }
 
-  // Polygon with n sides: note, this a generic method that can be used to create any polygon, but the frame will not be as tightly encapsulating. 
+  // Polygon with n sides: note, this a generic method that can be used to create any polygon, but the frame will not be as tightly encapsulating.
   const computePolygon = (n: number, range: Range2d, transform: Transform, angleOffset: number = 0): Loop => {
     // These are math terms: cspell:ignore inradius circumradius
     if (n < 3) throw new Error("A polygon must have at least 3 sides.");
