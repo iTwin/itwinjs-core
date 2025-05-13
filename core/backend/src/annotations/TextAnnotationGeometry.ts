@@ -16,37 +16,43 @@ import { FrameGeometry } from "./FrameGeometry";
 
 export namespace TextAnnotationGeometry {
   export interface RequestProps {
+    /** The annotation to be drawn. Be sure to include a TextBlock with runs or no geometry will be produced. */
     annotationProps: TextAnnotationProps;
+    /** Layout provided by calling [[TextAnnotationGeometry.getTextBlockLayout]] or [[layoutTextBlock]] directly */
     layout: TextBlockLayout;
+    /** Builder that will be added to in place */
     builder: ElementGeometry.Builder;
+    /** Whether or not to draw geometry for things like the snap points, range, and anchor point */
     wantDebugGeometry?: boolean;
-    // categoryId: string;
-    // placementProps: PlacementProps;
   }
 
-  /**
-   *
-   * @param props
+  /** Constructs the TextBlockGeometry and FrameGeometry and appends the geometry to the provided builder.
+   * @returns true if the geometry was successfully appended.
    */
   export function appendTextAnnotationGeometry(props: RequestProps): void {
     const annotation = TextAnnotation.fromJSON(props.annotationProps);
     const range = Range2d.fromJSON(props.layout.range);
     const transform = annotation.computeTransform(range);
 
+    // Construct the TextBlockGeometry
     const entries = produceTextBlockGeometry(props.layout, annotation.computeTransform(props.layout.range));
     props.builder.appendTextBlock(entries);
 
+    // Construct the FrameGeometry
     if (annotation.frame && annotation.frame.shape !== "none") {
       FrameGeometry.appendFrameToBuilder(props.builder, annotation.frame, range, transform);
     }
 
+    // Construct the debug geometry
     if (props.wantDebugGeometry) {
       debugAnchorPoint(props.builder, annotation, props.layout, annotation.computeTransform(props.layout.range));
       if (annotation.frame) debugSnapPoints(props.builder, annotation.frame, props.layout.range, annotation.computeTransform(props.layout.range));
     }
-
   };
 
+  /**
+   * Method that exposes the layoutTextBlock function in a convenient place.
+   */
   export function getTextBlockLayout(props: { iModel: IModelDb, annotation: TextAnnotationProps }): TextBlockLayout {
     const annotation = TextAnnotation.fromJSON(props.annotation);
     return layoutTextBlock({
@@ -55,6 +61,12 @@ export namespace TextAnnotationGeometry {
     });
   }
 
+  /**
+   * Draws the anchor point and margins of the text annotation.
+   * The anchor point is the point around which the text rotates and is drawn as a blue x (1m by 1m).
+   * The margins are drawn as a blue box.
+   * The text range is drawn as a red box.
+   */
   function debugAnchorPoint(builder: ElementGeometry.Builder, annotation: TextAnnotation, layout: TextBlockLayout, transform: Transform): boolean {
     const range = Range2d.fromJSON(layout.range);
     const debugAnchorPt = transform.multiplyPoint3d(annotation.computeAnchorPoint(range));
@@ -85,6 +97,7 @@ export namespace TextAnnotationGeometry {
     return result;
   }
 
+  /** Draws the interval points defined by calling [[FrameGeometry.computeIntervalPoints]]. The points are shown as black dots 5x larger than the borderWeight */
   function debugSnapPoints(builder: ElementGeometry.Builder, frame: TextFrameStyleProps, range: Range2d, transform: Transform): boolean {
     if (frame.shape === "none")
       return false;
