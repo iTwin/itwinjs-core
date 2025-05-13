@@ -122,8 +122,27 @@ export class RealityDataSourceTilesetUrlImpl implements RealityDataSource {
     // TODO absolute vs relative URL handling?
 
     // Build a relative URL where tilePath params will win over base URL params.
-    const url = new URL(tilePath, this._baseUrl);
-    if(this._searchParams === undefined || this._searchParams.size === 0)
+    // const url = new URL(tilePath, this._baseUrl);
+
+    // Temp hardcode this
+    const url = new URL(tilePath, "https://tile.googleapis.com/");
+
+    // If URL is to json file, store search params
+    const isJson = url.pathname.toLowerCase().endsWith("json");
+    if (isJson && url.searchParams.size !== 0) {
+      for (const [key, value] of url.searchParams.entries()) {
+        this._searchParams?.append(key, value);
+      }
+    }
+
+    // console.log("search params:");
+    // if (this._searchParams !== undefined) {
+    //   for (const [key, value] of this._searchParams.entries()) {
+    //     console.log(`${key}, ${value}`);
+    //   }
+    // }
+
+    if (this._searchParams === undefined || this._searchParams.size === 0)
       return url.toString();
 
     // append the base URL params to the tile path URL

@@ -272,9 +272,8 @@ export class Viewer extends Window {
       iconUnicode: "\ue90e",
       tooltip: "GoogleMaps 3D Tiles",
       click: () => {
-        const IMJS_GOOGLE_MAPS_KEY="XXX";
         this.viewport.displayStyle.attachRealityModel(
-          { tilesetUrl: `https://tile.googleapis.com/v1/3dtiles/root.json?key=${IMJS_GOOGLE_MAPS_KEY}`,
+          { tilesetUrl: `https://tile.googleapis.com/v1/3dtiles/root.json?key=${process.env.IMJS_GOOGLE_MAPS_KEY}`,
             name: "googleMap3dTiles" });
       }
     }));
