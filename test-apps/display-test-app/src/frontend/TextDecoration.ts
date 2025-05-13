@@ -114,6 +114,13 @@ class TextEditor implements Decorator {
     this.frame = { ...this.frame, ...frame };
   }
 
+  /**
+   * Draws the graphics for the decoration. TextGraphics require a call to the backend to generate the geometry.
+   * In this case, we're using produceTextAnnotationGeometry RPC endpoint that calls [[IModelDb.generateElementGraphics]]
+   * with the values from [[TextAnnotationGeometry.appendTextAnnotationGeometry]].
+   * These graphics can be added to the [[RenderSystem]] via [[readElementGraphics]] and [[RenderSystem.createGraphicOwner]]
+   * or via an [[ElementGeometryGraphicsProvider]]. In this case, we're using the former.
+   */
   public async update(): Promise<void> {
     if (!this._iModel) {
       throw new Error("Invoke `dta text init` first");
@@ -344,8 +351,8 @@ export class TextDecorationTool extends Tool {
         if (key === "fill") editor.setFrame({ fill: (val === "background" || val === "subcategory") ? val : val ? ColorDef.fromString(val).toJSON() : undefined });
         else if (key === "border") editor.setFrame({ border: val ? ColorDef.fromString(val).toJSON() : undefined });
         else if (key === "borderWeight") editor.setFrame({ borderWeight: Number(val) });
-        else if (key as TextAnnotationFrameShape) editor.setFrame({ shape: key as TextAnnotationFrameShape });
-        else throw new Error("Expected style, fill, border, borderWeight");
+        else if (key === "shape") editor.setFrame({ shape: val as TextAnnotationFrameShape });
+        else throw new Error("Expected shape, fill, border, borderWeight");
 
         break;
       }
