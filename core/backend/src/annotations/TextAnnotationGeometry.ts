@@ -8,7 +8,7 @@
 
 import { ColorDef, ElementGeometry, FillDisplay, GeometryParams, TextAnnotation, TextAnnotationProps, TextFrameStyleProps } from "@itwin/core-common";
 import { IModelDb } from "../IModelDb";
-import { layoutTextBlock, TextBlockLayout } from "./TextAnnotationLayout";
+import { layoutTextBlock, TextBlockLayout } from "./TextBlockLayout";
 import { LineString3d, PointString3d, Range2d, Transform } from "@itwin/core-geometry";
 import { Id64 } from "@itwin/core-bentley";
 import { produceTextBlockGeometry } from "./TextBlockGeometry";

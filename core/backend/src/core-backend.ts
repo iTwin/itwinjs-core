@@ -10,7 +10,7 @@ export {
   computeLayoutTextBlockResult,
   ComputeGraphemeOffsetsArgs,
   LayoutTextBlockArgs,
-} from "./annotations/TextAnnotationLayout";
+} from "./annotations/TextBlockLayout";
 export * from "./annotations/TextBlockGeometry";
 export * from "./BackendHubAccess";
 export * from "./BackendLoggerCategory";
