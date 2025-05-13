@@ -41,7 +41,8 @@ export type TextAnnotationFrameShape = "none" | "line" | "rectangle" | "circle" 
 
 
 /**
- * Todo.
+ * Describes what color to use when filling the frame around a [[TextBlock]].
+ * If `background` is specified, [[GeometryParams.BackgroundFill]] will be set to `BackgroundFill.Outline`.
  * @beta
  */
 export type TextAnnotationFillColor = TextStyleColor | "background";
@@ -71,7 +72,7 @@ export interface TextAnnotationProps {
   textBlock?: TextBlockProps;
   /** See [[TextAnnotation.anchor]]. Default: top-left. */
   anchor?: TextAnnotationAnchor;
-  /** TODO */
+  /** See [[TextAnnotation.frame]]. Default: no frame */
   frame?: TextFrameStyleProps
 }
 
@@ -87,7 +88,7 @@ export interface TextAnnotationCreateArgs {
   textBlock?: TextBlock;
   /** See [[TextAnnotation.anchor]]. Default: top-left. */
   anchor?: TextAnnotationAnchor;
-  /** TODO */
+  /** See [[TextAnnotation.frame]]. Default: no frame */
   frame?: TextFrameStyleProps
 }
 
@@ -115,7 +116,7 @@ export class TextAnnotation {
   public anchor: TextAnnotationAnchor;
   /** An offset applied to the anchor point that can be used to position annotations within the same geometry stream relative to one another. */
   public offset: Point3d;
-  /** The frame type of the text annotation. */
+  /** The frame settings of the text annotation. */
   public frame?: TextFrameStyleProps;
 
   private constructor(offset: Point3d, angles: YawPitchRollAngles, textBlock: TextBlock, anchor: TextAnnotationAnchor, frame?: TextFrameStyleProps) {
