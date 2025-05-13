@@ -18,7 +18,7 @@ import { DisplayValue, Value } from "./Value.js";
 export interface ItemJSON {
   inputKeys?: InstanceKey[];
   primaryKeys: InstanceKey[];
-  /** @deprecated in 5.x. Use [[label]] instead. */
+  /** @deprecated in 5.0. Use [[label]] instead. */
   labelDefinition: LabelDefinition;
   label?: LabelDefinition;
   classInfo?: ClassInfo;
@@ -104,15 +104,15 @@ export class Item {
     /* c8 ignore next 12 */
     const props = Array.isArray(primaryKeysOrProps)
       ? {
-          primaryKeys: primaryKeysOrProps,
-          label: typeof label === "string" ? LabelDefinition.fromLabelString(label) : label!,
-          imageId: imageId!,
-          classInfo,
-          values: values!,
-          displayValues: displayValues!,
-          mergedFieldNames: mergedFieldNames!,
-          extendedData,
-        }
+        primaryKeys: primaryKeysOrProps,
+        label: typeof label === "string" ? LabelDefinition.fromLabelString(label) : label!,
+        imageId: imageId!,
+        classInfo,
+        values: values!,
+        displayValues: displayValues!,
+        mergedFieldNames: mergedFieldNames!,
+        extendedData,
+      }
       : primaryKeysOrProps;
 
     if ("inputKeys" in props) {

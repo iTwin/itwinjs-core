@@ -179,7 +179,7 @@ export interface DistinctValuesRequestOptions<TIModel, TDescriptor, TKeySet, TRu
 /**
  * Request type for element properties requests
  * @public
- * @deprecated in 4.x. Use [[SingleElementPropertiesRequestOptions]] or [[MultiElementPropertiesRequestOptions]] directly.
+ * @deprecated in 4.x - might be removed in next major version. Use [[SingleElementPropertiesRequestOptions]] or [[MultiElementPropertiesRequestOptions]] directly.
  */
 export type ElementPropertiesRequestOptions<TIModel, TParsedContent = ElementProperties> =
   | SingleElementPropertiesRequestOptions<TIModel>
@@ -288,7 +288,7 @@ export interface DisplayLabelsRequestOptions<TIModel, TInstanceKey> extends Requ
  * @public
  * @deprecated in 5.0. Use `computeSelection` from [@itwin/unified-selection](https://github.com/iTwin/presentation/blob/master/packages/unified-selection/README.md#selection-scopes) package instead.
  */
-export interface SelectionScopeRequestOptions<TIModel> extends RequestOptions<TIModel> {} // eslint-disable-line @typescript-eslint/no-empty-object-type
+export interface SelectionScopeRequestOptions<TIModel> extends RequestOptions<TIModel> { } // eslint-disable-line @typescript-eslint/no-empty-object-type
 
 /**
  * Request options used for calculating selection based on given instance keys and selection scope.

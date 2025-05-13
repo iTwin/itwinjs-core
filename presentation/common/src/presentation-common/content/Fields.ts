@@ -215,16 +215,16 @@ export class Field {
       "category" in categoryOrProps
         ? categoryOrProps
         : {
-            category: categoryOrProps,
-            name: name!,
-            label: label!,
-            type: type!,
-            isReadonly: isReadonly!,
-            priority: priority!,
-            editor,
-            renderer,
-            extendedData,
-          };
+          category: categoryOrProps,
+          name: name!,
+          label: label!,
+          type: type!,
+          isReadonly: isReadonly!,
+          priority: priority!,
+          editor,
+          renderer,
+          extendedData,
+        };
     this.category = props.category;
     this.name = props.name;
     this.label = props.label;
@@ -265,7 +265,7 @@ export class Field {
 
   /**
    * Serialize this object to JSON.
-   * @deprecated in 5.x. Use [[toCompressedJSON]] instead.
+   * @deprecated in 5.0. Use [[toCompressedJSON]] instead.
    */
   public toJSON(): FieldJSON {
     return this.toCompressedJSON({});
@@ -288,7 +288,7 @@ export class Field {
 
   /**
    * Deserialize [[Field]] from JSON.
-   * @deprecated in 5.x. Use [[fromCompressedJSON]] instead.
+   * @deprecated in 5.0. Use [[fromCompressedJSON]] instead.
    */
   public static fromJSON(json: FieldJSON | undefined, categories: CategoryDescription[]): Field | undefined {
     if (!json) {
@@ -430,16 +430,16 @@ export class PropertiesField extends Field {
       "category" in categoryOrProps
         ? categoryOrProps
         : {
-            category: categoryOrProps,
-            name: name!,
-            label: label!,
-            type: type!,
-            isReadonly: isReadonly!,
-            priority: priority!,
-            editor,
-            renderer,
-            properties: properties!,
-          };
+          category: categoryOrProps,
+          name: name!,
+          label: label!,
+          type: type!,
+          isReadonly: isReadonly!,
+          priority: priority!,
+          editor,
+          renderer,
+          properties: properties!,
+        };
     super(props);
     this.properties = props.properties;
   }
@@ -461,7 +461,7 @@ export class PropertiesField extends Field {
 
   /**
    * Serialize this object to JSON
-   * @deprecated in 5.x. Use [[toCompressedJSON]] instead.
+   * @deprecated in 5.0. Use [[toCompressedJSON]] instead.
    */
   public override toJSON(): PropertiesFieldJSON {
     return {
@@ -481,7 +481,7 @@ export class PropertiesField extends Field {
 
   /**
    * Deserialize [[PropertiesField]] from JSON.
-   * @deprecated in 5.x. Use [[fromCompressedJSON]] instead.
+   * @deprecated in 5.0. Use [[fromCompressedJSON]] instead.
    */
   public static override fromJSON(json: PropertiesFieldJSON | undefined, categories: CategoryDescription[]): PropertiesField | undefined {
     if (!json) {
@@ -634,17 +634,17 @@ export class ArrayPropertiesField extends PropertiesField {
       "category" in categoryOrProps
         ? categoryOrProps
         : {
-            category: categoryOrProps,
-            name: name!,
-            label: label!,
-            type: type!,
-            isReadonly: isReadonly!,
-            priority: priority!,
-            editor,
-            renderer,
-            properties: properties!,
-            itemsField: itemsField!,
-          };
+          category: categoryOrProps,
+          name: name!,
+          label: label!,
+          type: type!,
+          isReadonly: isReadonly!,
+          priority: priority!,
+          editor,
+          renderer,
+          properties: properties!,
+          itemsField: itemsField!,
+        };
     super(props);
     this.itemsField = props.itemsField;
   }
@@ -661,7 +661,7 @@ export class ArrayPropertiesField extends PropertiesField {
 
   /**
    * Serialize this object to JSON.
-   * @deprecated in 5.x. Use [[toCompressedJSON]] instead.
+   * @deprecated in 5.0. Use [[toCompressedJSON]] instead.
    */
   public override toJSON(): ArrayPropertiesFieldJSON {
     return {
@@ -682,7 +682,7 @@ export class ArrayPropertiesField extends PropertiesField {
 
   /**
    * Deserialize [[ArrayPropertiesField]] from JSON.
-   * @deprecated in 5.x. Use [[fromCompressedJSON]] instead.
+   * @deprecated in 5.0. Use [[fromCompressedJSON]] instead.
    */
   public static override fromJSON(json: ArrayPropertiesFieldJSON, categories: CategoryDescription[]): ArrayPropertiesField {
     return new ArrayPropertiesField({
@@ -761,17 +761,17 @@ export class StructPropertiesField extends PropertiesField {
       "category" in categoryOrProps
         ? categoryOrProps
         : {
-            category: categoryOrProps,
-            name: name!,
-            label: label!,
-            type: type!,
-            isReadonly: isReadonly!,
-            priority: priority!,
-            editor,
-            renderer,
-            properties: properties!,
-            memberFields: memberFields!,
-          };
+          category: categoryOrProps,
+          name: name!,
+          label: label!,
+          type: type!,
+          isReadonly: isReadonly!,
+          priority: priority!,
+          editor,
+          renderer,
+          properties: properties!,
+          memberFields: memberFields!,
+        };
     super(props);
     this.memberFields = props.memberFields;
   }
@@ -788,7 +788,7 @@ export class StructPropertiesField extends PropertiesField {
 
   /**
    * Serialize this object to JSON.
-   * @deprecated in 5.x. Use [[toCompressedJSON]] instead.
+   * @deprecated in 5.0. Use [[toCompressedJSON]] instead.
    */
   public override toJSON(): StructPropertiesFieldJSON {
     return {
@@ -809,7 +809,7 @@ export class StructPropertiesField extends PropertiesField {
 
   /**
    * Deserialize [[StructPropertiesField]] from JSON.
-   * @deprecated in 5.x. Use [[fromCompressedJSON]] instead.
+   * @deprecated in 5.0. Use [[fromCompressedJSON]] instead.
    */
   public static override fromJSON(json: StructPropertiesFieldJSON, categories: CategoryDescription[]): StructPropertiesField {
     return new StructPropertiesField({
@@ -958,19 +958,19 @@ export class NestedContentField extends Field {
       "category" in categoryOrProps
         ? categoryOrProps
         : {
-            category: categoryOrProps,
-            name: name!,
-            label: label!,
-            type: type!,
-            isReadonly: isReadonly!,
-            priority: priority!,
-            editor,
-            renderer,
-            contentClassInfo: contentClassInfo!,
-            pathToPrimaryClass: pathToPrimaryClass!,
-            nestedFields: nestedFields!,
-            autoExpand,
-          };
+          category: categoryOrProps,
+          name: name!,
+          label: label!,
+          type: type!,
+          isReadonly: isReadonly!,
+          priority: priority!,
+          editor,
+          renderer,
+          contentClassInfo: contentClassInfo!,
+          pathToPrimaryClass: pathToPrimaryClass!,
+          nestedFields: nestedFields!,
+          autoExpand,
+        };
     super(props);
     this.contentClassInfo = props.contentClassInfo;
     this.pathToPrimaryClass = props.pathToPrimaryClass;
@@ -1000,7 +1000,7 @@ export class NestedContentField extends Field {
 
   /**
    * Serialize this object to JSON.
-   * @deprecated in 5.x. Use [[toCompressedJSON]] instead.
+   * @deprecated in 5.0. Use [[toCompressedJSON]] instead.
    */
   public override toJSON(): NestedContentFieldJSON {
     return {
