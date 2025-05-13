@@ -6,9 +6,9 @@
  * @module QuantityFormatting
  */
 
-import { BentleyError, BeUiEvent, Logger } from "@itwin/core-bentley";
+import { BeEvent, BentleyError, BeUiEvent, Logger } from "@itwin/core-bentley";
 import {
-  AlternateUnitLabelsProvider, Format, FormatProps, FormatterSpec, ParseError, ParserSpec, QuantityParseResult,
+  AlternateUnitLabelsProvider, Format, FormatDefinition, FormatProps, FormatsChangedArgs, FormatsProvider, FormatterSpec, ParseError, ParserSpec, QuantityParseResult,
   UnitConversionProps, UnitProps, UnitsProvider, UnitSystemKey,
 } from "@itwin/core-quantity";
 import { FrontendLoggerCategory } from "../common/FrontendLoggerCategory";
@@ -59,6 +59,19 @@ export type QuantityTypeKey = string;
  * @public
  */
 export type UnitNameKey = string;
+
+/**
+ * Interface for the properties required to create a FormatterSpec or ParserSpec.
+ * @beta
+ */
+export interface CreateFormattingSpecProps {
+  /** The name of the persistence unit. */
+  persistenceUnitName: string;
+  /** The format properties to use for the spec. */
+  formatProps: FormatProps;
+  /** Optional name for the format. */
+  formatName?: string;
+}
 
 /**
  * Class that contains alternate Unit Labels. These labels are used when parsing strings to quantities.
@@ -295,12 +308,71 @@ export interface UnitFormattingSettingsProvider {
   readonly maintainOverridesPerIModel: boolean;
 }
 
+/**
+ * A default formatsProvider, that provides a limited set of [[FormatDefinition]], associated to a few [[KindOfQuantity]].
+ * Maps each KindOfQuantity to a [[QuantityType]].
+ * When retrieving a valid [[KindOfQuantity]], returns the [[FormatProps]] for the associated [[QuantityType]].
+ * @internal
+ */
+export class QuantityTypeFormatsProvider implements FormatsProvider {
+  public onFormatsChanged = new BeEvent<(args: FormatsChangedArgs) => void>();
+
+  public constructor() {
+    IModelApp.quantityFormatter.onActiveFormattingUnitSystemChanged.addListener(() => {
+      this.onFormatsChanged.raiseEvent({ formatsChanged: "all" });
+    });
+  }
+  private _kindOfQuantityMap = new Map<string, QuantityType>([
+    ["AecUnits.LENGTH", QuantityType.Length],
+    ["AecUnits.ANGLE", QuantityType.Angle],
+    ["AecUnits.AREA", QuantityType.Area],
+    ["AecUnits.VOLUME", QuantityType.Volume],
+    ["RoadRailUnits.STATION", QuantityType.Stationing],
+    ["RoadRailUnits.LENGTH", QuantityType.LengthSurvey],
+  ]);
+
+  public async getFormat(name: string): Promise<FormatDefinition | undefined> {
+    const quantityType = this._kindOfQuantityMap.get(name);
+    if (!quantityType) return undefined;
+
+    return IModelApp.quantityFormatter.getFormatPropsByQuantityType(quantityType);
+  }
+}
+
+/**
+ * An implementation of the [[FormatsProvider]] interface that forwards calls to getFormats to the underlying FormatsProvider.
+ * Also fires the onFormatsChanged event when the underlying FormatsProvider fires its own onFormatsChanged event.
+ * @internal
+ */
+export class FormatsProviderManager implements FormatsProvider {
+  public onFormatsChanged = new BeEvent<(args: FormatsChangedArgs) => void>();
+
+  constructor(private _formatsProvider: FormatsProvider) {
+    this._formatsProvider.onFormatsChanged.addListener((args: FormatsChangedArgs) => {
+      this.onFormatsChanged.raiseEvent(args);
+    });
+  }
+
+  public async getFormat(name: string): Promise<FormatDefinition | undefined> {
+    return this._formatsProvider.getFormat(name);
+  }
+
+  public get formatsProvider(): FormatsProvider { return this; }
+
+  public set formatsProvider(formatsProvider: FormatsProvider) {
+    this._formatsProvider = formatsProvider;
+    this._formatsProvider.onFormatsChanged.addListener((args: FormatsChangedArgs) => {
+      this.onFormatsChanged.raiseEvent(args);
+    });
+    this.onFormatsChanged.raiseEvent({ formatsChanged: "all" });
+  }
+}
 /** Class that supports formatting quantity values into strings and parsing strings into quantity values. This class also maintains
  * the "active" unit system and caches FormatterSpecs and ParserSpecs for the "active" unit system to allow synchronous access to
  * parsing and formatting values. The support unit systems are defined by [[UnitSystemKey]] and is kept in synch with the unit systems
  * provided by the Presentation Manager on the backend. The QuantityFormatter contains a registry of quantity type definitions. These definitions implement
- * the [[QuantityTypeDefinition]] interface, which among other things, provide default [FormatProps]$(core-quantity), and provide methods
- * to generate both a [FormatterSpec]$(core-quantity) and a [ParserSpec]$(core-quantity). There are built-in quantity types that are
+ * the [[QuantityTypeDefinition]] interface, which among other things, provide default [[FormatProps]], and provide methods
+ * to generate both a [[FormatterSpec]] and a [[ParserSpec]]. There are built-in quantity types that are
  * identified by the [[QuantityType]] enum. [[CustomQuantityTypeDefinition]] can be registered to extend the available quantity types available
  * by frontend tools. The QuantityFormatter also allows the default formats to be overriden.
  *
@@ -784,27 +856,99 @@ export class QuantityFormatter implements UnitsProvider {
     return this.getParserSpecByQuantityTypeAndSystem(type, requestedSystem);
   }
 
+  /** Generates a formatted string asynchronously for a quantity given the provided properties.
+   * @param props - an object containing value, valueUnitName, and kindOfQuantityName.
+   * @return A promise resolving to a formatted string.
+   */
+  public formatQuantity(props: {
+    value: number;
+    valueUnitName: string;
+    kindOfQuantityName: string;
+  }): Promise<string>;
   /** Generates a formatted string for a quantity given its format spec.
    * @param magnitude       The magnitude of the quantity.
    * @param formatSpec      The format specification. See methods getFormatterSpecByQuantityType and findFormatterSpecByQuantityType.
-   * @return the formatted string.
+   * @return a formatted string.
    */
-  public formatQuantity(magnitude: number, formatSpec: FormatterSpec | undefined): string {
-    /** Format a quantity value. Default FormatterSpec implementation uses Formatter.formatQuantity. */
-    if (formatSpec)
-      return formatSpec.applyFormatting(magnitude);
-    return magnitude.toString();
+  public formatQuantity(magnitude: number, formatSpec?: FormatterSpec): string;
+  // eslint-disable-next-line @typescript-eslint/promise-function-async
+  public formatQuantity(args: number | object, spec?: FormatterSpec): string | Promise<string> {
+    if (typeof args === "number") {
+      /** Format a quantity value. Default FormatterSpec implementation uses Formatter.formatQuantity. */
+      const magnitude = args;
+      if (spec)
+        return spec.applyFormatting(magnitude);
+      return magnitude.toString();
+    }
+
+    return this.formatQuantityAsync(args as {
+      value: number;
+      valueUnitName: string;
+      kindOfQuantityName: string;
+    });
   }
 
+  private async formatQuantityAsync(args: {
+    value: number;
+    valueUnitName: string;
+    kindOfQuantityName: string;
+  }): Promise<string> {
+    const { value, valueUnitName, kindOfQuantityName } = args;
+    const formatProps = await IModelApp.formatsProvider.getFormat(kindOfQuantityName);
+    if (!formatProps) return value.toString();
+    const formatSpec = await this.createFormatterSpec({
+      persistenceUnitName: valueUnitName,
+      formatProps,
+      formatName: kindOfQuantityName,
+    })
+    return formatSpec.applyFormatting(value);
+  }
+
+  /** Parse input string asynchronously into a quantity given the provided properties.
+   * @param props - an object containing value, valueUnitName, and kindOfQuantityName.
+   * @return Promise resolving to a QuantityParseResult object containing either the parsed value or an error value if unsuccessful.
+   */
+  public parseToQuantityValue(props: {
+    value: string;
+    valueUnitName: string;
+    kindOfQuantityName: string;
+  }): Promise<QuantityParseResult>;
   /** Parse input string into quantity given the ParserSpec
    * @param inString       The magnitude of the quantity.
    * @param parserSpec     The parse specification the defines the expected format of the string and the conversion to the output unit.
    * @return QuantityParseResult object containing either the parsed value or an error value if unsuccessful.
    */
-  public parseToQuantityValue(inString: string, parserSpec: ParserSpec | undefined): QuantityParseResult {
-    if (parserSpec)
-      return parserSpec.parseToQuantityValue(inString);
-    return { ok: false, error: ParseError.InvalidParserSpec };
+  public parseToQuantityValue(inString: string, parserSpec?: ParserSpec): QuantityParseResult;
+  // eslint-disable-next-line @typescript-eslint/promise-function-async
+  public parseToQuantityValue(args: string | object, parserSpec?: ParserSpec): QuantityParseResult | Promise<QuantityParseResult> {
+    if (typeof args === "string") {
+      /** Parse a quantity value. Default ParserSpec implementation uses ParserSpec.parseToQuantityValue. */
+      const inString = args;
+      if (parserSpec)
+        return parserSpec.parseToQuantityValue(inString);
+      return { ok: false, error: ParseError.InvalidParserSpec };
+    }
+    return this.parseToQuantityValueAsync(args as {
+      value: string;
+      valueUnitName: string;
+      kindOfQuantityName: string;
+    });
+  }
+
+  private async parseToQuantityValueAsync(args: {
+    value: string;
+    valueUnitName: string;
+    kindOfQuantityName: string;
+  }): Promise<QuantityParseResult> {
+    const { value, valueUnitName, kindOfQuantityName } = args;
+    const formatProps = await IModelApp.formatsProvider.getFormat(kindOfQuantityName);
+    if (!formatProps) return { ok: false, error: ParseError.InvalidParserSpec };
+    const parserSpec = await this.createParserSpec({
+      persistenceUnitName: valueUnitName,
+      formatProps,
+      formatName: kindOfQuantityName,
+    });
+    return parserSpec.parseToQuantityValue(value);
   }
 
   /**
@@ -883,7 +1027,32 @@ export class QuantityFormatter implements UnitsProvider {
   public async getConversion(fromUnit: UnitProps, toUnit: UnitProps): Promise<UnitConversionProps> {
     return this._unitsProvider.getConversion(fromUnit, toUnit);
   }
+
+  /**
+   * Creates a [[FormatterSpec]] for a given persistence unit name and format properties, using the [[UnitsProvider]] to resolve the persistence unit.
+   * @beta
+   * @param props - A [[CreateFormattingSpecProps]] interface.
+   */
+  public async createFormatterSpec(props: CreateFormattingSpecProps): Promise<FormatterSpec> {
+    const { persistenceUnitName, formatProps, formatName } = props;
+    const persistenceUnitProps = await this._unitsProvider.findUnitByName(persistenceUnitName);
+    const format = await Format.createFromJSON(formatName ?? "temp", this._unitsProvider, formatProps);
+    return FormatterSpec.create(`${format.name}_format_spec`, format, this._unitsProvider, persistenceUnitProps);
+  }
+
+  /**
+   * Creates a [[ParserSpec]] for a given persistence unit name and format properties, using the [[UnitsProvider]] to resolve the persistence unit.
+   * @beta
+   * @param props - A [[CreateFormattingSpecProps]] object.
+   */
+  public async createParserSpec(props: CreateFormattingSpecProps): Promise<ParserSpec> {
+    const { persistenceUnitName, formatProps, formatName } = props;
+    const persistenceUnitProps = await this._unitsProvider.findUnitByName(persistenceUnitName);
+    const format = await Format.createFromJSON(formatName ?? "temp", this._unitsProvider, formatProps);
+    return ParserSpec.create(format, this._unitsProvider, persistenceUnitProps);
+  }
 }
+
 
 // ========================================================================================================================================
 // Default Data
