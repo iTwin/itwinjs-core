@@ -11,9 +11,6 @@ import { CustomFormattedNumberParams, IconEditorParams, ParseResults, PropertyEd
 import { StandardTypeNames } from "../properties/StandardTypeNames";
 import { StandardEditorNames } from "../properties/StandardEditorNames";
 
-
-
-
 /**
  * Base Quantity Property Description
  * @beta

@@ -122,7 +122,7 @@ export class ProjectGeolocationPointTool extends PrimitiveTool {
   private _altitudeProperty: DialogProperty<number> | undefined;
   public get altitudeProperty() {
     if (!this._altitudeProperty)
-      this._altitudeProperty = new DialogProperty<number>(new LengthDescription("altitude", CoreTools.translate("Measure.Labels.Altitude"), "AecUnits.LENGTH"), 0.0);
+      this._altitudeProperty = new DialogProperty<number>(new LengthDescription("altitude", CoreTools.translate("Measure.Labels.Altitude"), undefined, "AecUnits.LENGTH"), 0.0);
     return this._altitudeProperty;
   }
 
@@ -132,7 +132,7 @@ export class ProjectGeolocationPointTool extends PrimitiveTool {
   private _northProperty: DialogProperty<number> | undefined;
   public get northProperty() {
     if (!this._northProperty)
-      this._northProperty = new DialogProperty<number>(new AngleDescription("north", translateMessage("North"), "AecUnits.ANGLE"), 0.0);
+      this._northProperty = new DialogProperty<number>(new AngleDescription("north", translateMessage("North"), undefined, "AecUnits.ANGLE"), 0.0);
     return this._northProperty;
   }
 
