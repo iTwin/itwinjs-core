@@ -8,7 +8,7 @@ import * as sinon from "sinon";
 import { SchemaContext } from "../../Context";
 import { DelayedPromiseWithProps } from "../../DelayedPromise";
 import { StrengthDirection } from "../../ECObjects";
-import { ECObjectsError } from "../../Exception";
+import { ECSchemaError } from "../../Exception";
 import { EntityClass } from "../../Metadata/EntityClass";
 import { Mixin } from "../../Metadata/Mixin";
 import { NavigationProperty } from "../../Metadata/Property";
@@ -210,7 +210,7 @@ describe("Mixin", () => {
       const json = createSchemaJson({
         appliesTo: 0,
       });
-      await expect(Schema.fromJson(json, new SchemaContext())).to.be.rejectedWith(ECObjectsError, `The Mixin TestSchema.TestMixin has an invalid 'appliesTo' attribute. It should be of type 'string'.`);
+      await expect(Schema.fromJson(json, new SchemaContext())).to.be.rejectedWith(ECSchemaError, `The Mixin TestSchema.TestMixin has an invalid 'appliesTo' attribute. It should be of type 'string'.`);
     });
 
     it("applicableTo, wrong entity, fails", async () => {
@@ -267,7 +267,7 @@ describe("Mixin", () => {
     it("should throw for invalid appliesTo", async () => {
       expect(testMixin).to.exist;
       const unloadedAppliesToJson = { ...baseJson, appliesTo: "ThisClassDoesNotExist" };
-      await expect(testMixin.fromJSON(unloadedAppliesToJson)).to.be.rejectedWith(ECObjectsError);
+      await expect(testMixin.fromJSON(unloadedAppliesToJson)).to.be.rejectedWith(ECSchemaError);
     });
   });
   describe("Sync fromJson", () => {
@@ -294,7 +294,7 @@ describe("Mixin", () => {
     it("should throw for invalid appliesTo", async () => {
       expect(testMixin).to.exist;
       const json = { ...baseJson, appliesTo: "ThisClassDoesNotExist" };
-      assert.throws(() => testMixin.fromJSONSync(json), ECObjectsError);
+      assert.throws(() => testMixin.fromJSONSync(json), ECSchemaError);
     });
   });
 

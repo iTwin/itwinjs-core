@@ -2,15 +2,16 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { ISchemaLocater, Schema, SchemaContext, SchemaInfo, SchemaKey, SchemaMatchType, SchemaProps } from "@itwin/ecschema-metadata";
+import { ISchemaLocater, Schema, SchemaContext, SchemaInfo, SchemaKey, SchemaMatchType } from "@itwin/ecschema-metadata";
 import { IModelRpcProps } from "@itwin/core-common";
 import { ECSchemaRpcInterface } from "./ECSchemaRpcInterface";
 
 /**
  * Defines a schema locater that retrieves schemas using an RPC interface.
- * @beta
+ * @public @preview
  */
 export class ECSchemaRpcLocater implements ISchemaLocater {
+  /** @internal */
   public readonly token: IModelRpcProps;
 
   constructor(token: IModelRpcProps) { this.token = token; }
@@ -44,19 +45,15 @@ export class ECSchemaRpcLocater implements ISchemaLocater {
   }
 
   /**
-   * Attempts to get a schema from the schema rpc locater. Yields undefined if no matching schema is found.
-   * @param schemaKey Key to look up
-   * @param matchType How to match key against candidate schemas
-   * @param context The SchemaContext that will control the lifetime of the schema and holds the schema's references, if they exist.
+   * This method is not supported for locating schemas over RPC/HTTP.
+   * Use the asynchronous `getSchema` method instead.
+   * @param _schemaKey Key to look up
+   * @param _matchType How to match key against candidate schemas
+   * @param _context The SchemaContext that will control the lifetime of the schema and holds the schema's references, if they exist.
+   * @throws Error Always throws an error indicating this method is not supported.
+   * @deprecated in 5.0 Use the asynchronous `getSchema` method for schema retrieval.
   */
-  public getSchemaSync(schemaKey: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): Schema | undefined {
-    const schemaJson = ECSchemaRpcInterface.getClient().getSchemaJSON(this.token, schemaKey.name).then((props: SchemaProps) => {
-      return props;
-    });
-    const schema = Schema.fromJsonSync(schemaJson, context || new SchemaContext());
-    if (schema !== undefined && schema.schemaKey.matches(schemaKey, matchType)) {
-      return schema;
-    }
-    return undefined;
+  public getSchemaSync(_schemaKey: SchemaKey, _matchType: SchemaMatchType, _context: SchemaContext): Schema | undefined {
+    throw new Error("getSchemaSync is not supported. Use the asynchronous getSchema method instead.");
   }
 }

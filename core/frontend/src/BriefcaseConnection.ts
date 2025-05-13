@@ -312,7 +312,7 @@ export class BriefcaseConnection extends IModelConnection {
     await IpcApp.appFunctionIpc.closeIModel(this._fileKey);
   }
 
-  private requireTimeline() {
+  protected requireTimeline() {
     if (this.iTwinId === Guid.empty)
       throw new IModelError(IModelStatus.WrongIModel, "iModel has no timeline");
   }

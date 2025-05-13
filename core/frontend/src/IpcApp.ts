@@ -28,6 +28,7 @@ export interface IpcAppOptions {
  */
 export class IpcApp {
   private static _ipc: IpcSocketFrontend | undefined;
+  private static _removeAppNotify: RemoveFunction | undefined;
   /** Get the implementation of the [[IpcSocketFrontend]] interface. */
 
   private static get ipc(): IpcSocketFrontend { return this._ipc!; }
@@ -123,7 +124,7 @@ export class IpcApp {
   /** Create a type safe Proxy object to make IPC calls to a registered backend interface.
    * @param channelName the channel registered by the backend handler.
    */
-  public static makeIpcProxy<K>(channelName: string): PickAsyncMethods<K> {
+  public static makeIpcProxy<K, C extends string = string>(channelName: C): PickAsyncMethods<K> {
     return new Proxy({} as PickAsyncMethods<K>, {
       get(_target, methodName: string) {
         return async (...args: any[]) =>
@@ -152,12 +153,13 @@ export class IpcApp {
    * @note this should not be called directly. It is called by NativeApp.startup */
   public static async startup(ipc: IpcSocketFrontend, opts?: IpcAppOptions) {
     this._ipc = ipc;
-    IpcAppNotifyHandler.register(); // receives notifications from backend
+    this._removeAppNotify = IpcAppNotifyHandler.register(); // receives notifications from backend
     await IModelApp.startup(opts?.iModelApp);
   }
 
   /** @internal */
   public static async shutdown() {
+    this._removeAppNotify?.();
     this._ipc = undefined;
     await IModelApp.shutdown();
   }

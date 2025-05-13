@@ -8,7 +8,7 @@ import { CustomAttributeClass } from "../../Metadata/CustomAttributeClass";
 import { RelationshipClass } from "../../Metadata/RelationshipClass";
 import { SchemaContext } from "../../Context";
 import { DelayedPromiseWithProps } from "../../DelayedPromise";
-import { ECObjectsError } from "../../Exception";
+import { ECSchemaError } from "../../Exception";
 import { ECClass, MutableClass, StructClass } from "../../Metadata/Class";
 import { CustomAttributeSet } from "../../Metadata/CustomAttribute";
 import { EntityClass, MutableEntityClass } from "../../Metadata/EntityClass";
@@ -29,6 +29,61 @@ describe("ECClass", () => {
   describe("get properties", () => {
     beforeEach(() => {
       schema = new Schema(new SchemaContext(), "TestSchema", "ts", 1, 0, 0);
+    });
+
+    it("checks if properties are overridden correctly", async () => {
+      const schemaJson = {
+        $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
+        name: "TestSchema",
+        version: "1.2.3",
+        alias: "ts",
+        items: {
+          TestBase: {
+            schemaItemType: "EntityClass",
+            properties: [
+              {
+                type: "PrimitiveProperty",
+                typeName: "string",
+                name: "PrimProp",
+                label: "BaseProp",
+              },
+            ],
+          },
+          TestClass: {
+            schemaItemType: "EntityClass",
+            baseClass: "TestSchema.TestBase",
+            properties: [
+              {
+                type: "PrimitiveProperty",
+                typeName: "string",
+                name: "PrimProp",
+                label: "DerivedProp",
+              },
+            ],
+          },
+          OneMoreClass: {
+            schemaItemType: "EntityClass",
+            baseClass: "TestSchema.TestClass",
+          },
+        },
+      };
+      schema = await Schema.fromJson(schemaJson, new SchemaContext());
+      const testClass = await schema.getItem("TestClass", EntityClass);
+      const testBase = await schema.getItem("TestBase", EntityClass);
+      const oneMoreClass = await schema.getItem("OneMoreClass", EntityClass);
+      assert.isDefined(testClass);
+      assert.isDefined(testBase);
+      assert.isDefined(oneMoreClass);
+      const testClassPrimProp = await testClass!.getProperty("PrimProp", true);
+      const testBasePrimProp = await testBase!.getProperty("PrimProp");
+      const oneMoreClassPrimProp = await oneMoreClass!.getProperty("PrimProp");
+      assert.isDefined(testClassPrimProp);
+      assert.isDefined(testBasePrimProp);
+      assert.isDefined(oneMoreClassPrimProp);
+      expect(testClassPrimProp).not.to.equal(testBasePrimProp);
+      expect(testClassPrimProp?.label).to.equal("DerivedProp");
+      expect(oneMoreClassPrimProp?.label).to.equal("DerivedProp");
+      expect(oneMoreClassPrimProp).to.equal(testClassPrimProp);
     });
 
     it("inherited properties from base class", async () => {
@@ -577,7 +632,7 @@ describe("ECClass", () => {
         },
       };
 
-      await expect(Schema.fromJson(schemaJson, new SchemaContext())).to.be.rejectedWith(ECObjectsError);
+      await expect(Schema.fromJson(schemaJson, new SchemaContext())).to.be.rejectedWith(ECSchemaError);
     });
 
     const oneCustomAttributeJson = {
@@ -671,10 +726,10 @@ describe("ECClass", () => {
       },
     };
     it("async - Custom Attributes must be an array", async () => {
-      await expect(Schema.fromJson(mustBeAnArrayJson, new SchemaContext())).to.be.rejectedWith(ECObjectsError, `The ECClass TestSchema.testClass has an invalid 'customAttributes' attribute. It should be of type 'array'.`);
+      await expect(Schema.fromJson(mustBeAnArrayJson, new SchemaContext())).to.be.rejectedWith(ECSchemaError, `The ECClass TestSchema.testClass has an invalid 'customAttributes' attribute. It should be of type 'array'.`);
     });
     it("sync - Custom Attributes must be an array", async () => {
-      assert.throws(() => Schema.fromJsonSync(mustBeAnArrayJson, new SchemaContext()), ECObjectsError, `The ECClass TestSchema.testClass has an invalid 'customAttributes' attribute. It should be of type 'array'.`);
+      assert.throws(() => Schema.fromJsonSync(mustBeAnArrayJson, new SchemaContext()), ECSchemaError, `The ECClass TestSchema.testClass has an invalid 'customAttributes' attribute. It should be of type 'array'.`);
     });
     it("sync - Deserialize Multiple Custom Attributes with additional properties", () => {
       const classJson = {
@@ -1275,7 +1330,7 @@ describe("ECClass", () => {
       childClass.baseClass = new DelayedPromiseWithProps(baseClass!.key, async () => baseClass!);
       (testSchema as MutableSchema).addItem(childClass);
 
-      await expect(childClass!.toXml(newDom)).to.be.rejectedWith(ECObjectsError, `The schema '${refSchema.name}' has an invalid alias.`);
+      await expect(childClass!.toXml(newDom)).to.be.rejectedWith(ECSchemaError, `The schema '${refSchema.name}' has an invalid alias.`);
     }); */
 
     it("Serialization with one custom attribute defined in ref schema, only class name", async () => {

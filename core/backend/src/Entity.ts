@@ -7,10 +7,41 @@
  */
 
 import { Id64, Id64String } from "@itwin/core-bentley";
-import { EntityProps, EntityReferenceSet, PropertyCallback, PropertyMetaData } from "@itwin/core-common";
+import { ElementLoadOptions, EntityProps, EntityReferenceSet, PropertyCallback, PropertyMetaData } from "@itwin/core-common";
 import type { IModelDb } from "./IModelDb";
 import { Schema } from "./Schema";
-import { EntityClass, PropertyHandler, SchemaItemKey } from "@itwin/ecschema-metadata";
+import { EntityClass, Property, SchemaItemKey } from "@itwin/ecschema-metadata";
+import { _nativeDb } from "./internal/Symbols";
+
+/** Represents a row returned by an ECSql query. The row is returned as a map of property names to values.
+ * ECSqlRow has same schema as declared in ECSchema for the class and similar to if ECSQL SELECT * FROM <schema>:<class> were executed.
+ * @beta */
+export interface ECSqlRow {
+  [key: string]: any
+}
+
+/** Set of properties that are used to deserialize an [[EntityProps]] from an ECSqlRow.
+ * @beta */
+export interface DeserializeEntityArgs {
+  /** Row to deserialize */
+  row: ECSqlRow;
+  /** The IModel that contains this Entity */
+  iModel: IModelDb;
+  /** The options used when loading */
+  options?: {
+    /** Options used when loading an element */
+    element?: ElementLoadOptions;
+  }
+}
+
+/** A property of an [[Entity]] that needs to be custom handled during deserialization and serialization.
+ * @beta */
+export interface CustomHandledProperty {
+  /** The name of the property as it appears in the ECSqlRow */
+  readonly propertyName: string;
+  /** Where the property is defined */
+  readonly source: "Class" | "Computed";
+}
 
 /** Represents one of the fundamental building block in an [[IModelDb]]: as an [[Element]], [[Model]], or [[Relationship]].
  * Every subclass of Entity represents one BIS [ECClass]($ecschema-metadata).
@@ -35,7 +66,7 @@ export class Entity {
   public static get className(): string { return "Entity"; }
 
   /** Serves as a unique identifier for this class. Typed variant of [[classFullName]].
-   * @beta
+   * @public @preview
    */
   public static get schemaItemKey(): SchemaItemKey {
     // We cannot cache this here because the className gets overridden in subclasses
@@ -76,6 +107,72 @@ export class Entity {
    */
   public static instantiate(subclass: typeof Entity, props: EntityProps, iModel: IModelDb): Entity {
     return new subclass(props, iModel);
+  }
+
+  /** List of properties that are need to be custom handled during deserialization and serialization.
+   * These properties differ between the ECSql instance of an Entity and the Entity itself.
+   * @beta */
+  protected static readonly _customHandledProps: CustomHandledProperty[] = [
+    { propertyName: "id", source: "Class" },
+    { propertyName: "className", source: "Class" },
+    { propertyName: "jsonProperties", source: "Class" }
+  ];
+
+  /** Get the list of properties that are custom handled by this class and its superclasses.
+   * @internal */
+  private static getCustomHandledProperties(): readonly CustomHandledProperty[] {
+    if (this.name === "Entity") {
+      return this._customHandledProps;
+    }
+
+    const superClass = Object.getPrototypeOf(this) as typeof Entity;
+    return [
+      ...superClass.getCustomHandledProperties(),
+      ...this._customHandledProps,
+    ];
+  }
+
+  /** Converts an ECSqlRow of an Entity to an EntityProps. This is used to deserialize an Entity from the database.
+   * @beta */
+  public static deserialize(props: DeserializeEntityArgs): EntityProps {
+    const enProps: EntityProps = {
+      classFullName: props.row.classFullName,
+      id: props.row.id,
+    }
+
+    // Handles cases where id64 ints are stored in the jsonProperties and converts them to hex before parsing as a json object in js
+    if (props.row.jsonProperties) {
+      enProps.jsonProperties = JSON.parse(props.iModel[_nativeDb].patchJsonProperties(props.row.jsonProperties));
+    }
+    // Auto handles all properties that are not in the 'customHandledProperties' list
+    const customHandledProperties = this.getCustomHandledProperties();
+    Object.keys(props.row)
+      .filter((propertyName) => customHandledProperties.find((val) => val.propertyName === propertyName) === undefined)
+      .forEach((propertyName) => (enProps as ECSqlRow)[propertyName] = props.row[propertyName]
+      );
+    // Handles custom relClassNames to use '.' instead of ':'
+    Object.keys(enProps).forEach((propertyName) => {
+      if ((enProps as ECSqlRow)[propertyName].relClassName !== undefined && propertyName !== "modeledElement" && propertyName !== "parentModel") {
+        (enProps as ECSqlRow)[propertyName].relClassName = (enProps as ECSqlRow)[propertyName].relClassName.replace(':', '.');
+      }
+    });
+    return enProps;
+  }
+
+  /** Converts an EntityProps to an ECSqlRow. This is used to serialize an Entity to prepare to write it to the database.
+   * @beta */
+  public static serialize(props: EntityProps, _iModel: IModelDb): ECSqlRow {
+    const inst: ECSqlRow = {
+      classFullName: props.classFullName,
+      id: props.id,
+    }
+
+    const customHandledProperties = this.getCustomHandledProperties();
+    Object.keys(props)
+      .filter((propertyName) => customHandledProperties.find((val) => val.propertyName === propertyName) === undefined)
+      .forEach((propertyName) => inst[propertyName] = (props as ECSqlRow)[propertyName]
+      );
+    return inst;
   }
 
   /** Obtain the JSON representation of this Entity. Subclasses of [[Entity]] typically override this method to return their corresponding sub-type of [EntityProps]($common) -
@@ -148,21 +245,21 @@ export class Entity {
   public get classFullName(): string { return this._ctor.classFullName; }
   /**
    * Get the item key used by the ecschema-metadata package to identify this entity class
-   * @beta
+   * @public @preview
    */
   public get schemaItemKey(): SchemaItemKey { return this._ctor.schemaItemKey; }
 
   /** query metadata for this entity class from the iModel's schema
    * @throws [[IModelError]] if there is a problem querying the schema
    * @returns The metadata for the current entity
-   * @beta
+   * @public @preview
    */
   public async getMetaData(): Promise<EntityClass> {
     if (!this._metadata) {
       this._metadata = await this.iModel.schemaContext.getSchemaItem(this.schemaItemKey, EntityClass);
     }
 
-    if(!this._metadata) {
+    if (!this._metadata) {
       throw new Error(`Cannot get metadata for ${this.classFullName}`);
     }
 
@@ -214,6 +311,11 @@ export class Entity {
     return; // no references by default
   }
 }
+
+/** A callback function to process properties of an Entity
+ * @public @preview
+ */
+export type PropertyHandler = (name: string, property: Property) => void;
 
 /** Parameter type that can accept both abstract constructor types and non-abstract constructor types for `instanceof` to test.
  * @public

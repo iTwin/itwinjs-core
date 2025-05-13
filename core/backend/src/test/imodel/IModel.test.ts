@@ -54,7 +54,18 @@ function expectIModelError(expectedErrorNumber: IModelStatus | DbResult, error: 
   expect(error!.errorNumber).to.equal(expectedErrorNumber);
 }
 
+async function generateTestSnapshot(targetFileName: string, seedAssetName: string): Promise<SnapshotDb> {
+  const seedFile = IModelTestUtils.resolveAssetFile(seedAssetName);
+  const snapshotFile = IModelTestUtils.prepareOutputFile("IModel", targetFileName);
+  const imodel = IModelTestUtils.createSnapshotFromSeed(snapshotFile, seedFile);
+  const schemaPathname = path.join(KnownTestLocations.assetsDir, "TestBim.ecschema.xml");
+  await imodel.importSchemas([schemaPathname]); // will throw an exception if import fails
+  imodel.saveChanges();
+  return imodel;
+}
+
 describe("iModel", () => {
+  //TODO: These imodels are used and modified across multiple tests. This is not a good practice and should be refactored.
   let imodel1: SnapshotDb;
   let imodel2: SnapshotDb;
   let imodel3: SnapshotDb;
@@ -66,14 +77,11 @@ describe("iModel", () => {
     originalEnv = { ...process.env };
 
     IModelTestUtils.registerTestBimSchema();
-    imodel1 = IModelTestUtils.createSnapshotFromSeed(IModelTestUtils.prepareOutputFile("IModel", "test.bim"), IModelTestUtils.resolveAssetFile("test.bim"));
+    imodel1 = await generateTestSnapshot("test.bim", "test.bim");
     imodel2 = IModelTestUtils.createSnapshotFromSeed(IModelTestUtils.prepareOutputFile("IModel", "CompatibilityTestSeed.bim"), IModelTestUtils.resolveAssetFile("CompatibilityTestSeed.bim"));
     imodel3 = SnapshotDb.openFile(IModelTestUtils.resolveAssetFile("GetSetAutoHandledStructProperties.bim"));
     imodel4 = IModelTestUtils.createSnapshotFromSeed(IModelTestUtils.prepareOutputFile("IModel", "GetSetAutoHandledArrayProperties.bim"), IModelTestUtils.resolveAssetFile("GetSetAutoHandledArrayProperties.bim"));
     imodel5 = IModelTestUtils.createSnapshotFromSeed(IModelTestUtils.prepareOutputFile("IModel", "mirukuru.ibim"), IModelTestUtils.resolveAssetFile("mirukuru.ibim"));
-
-    const schemaPathname = path.join(KnownTestLocations.assetsDir, "TestBim.ecschema.xml");
-    await imodel1.importSchemas([schemaPathname]); // will throw an exception if import fails
   });
 
   after(() => {
@@ -2254,6 +2262,7 @@ describe("iModel", () => {
       getCurrentChangeset: () => changeset,
       setIModelDb: () => { },
       closeFile: () => { },
+      clearECDbCache: () => { },
     };
 
     const errorLogStub = sinon.stub(Logger, "logError").callsFake(() => { });
@@ -2367,7 +2376,11 @@ describe("iModel", () => {
   it("Standalone iModel properties", () => {
     const standaloneRootSubjectName = "Standalone";
     const standaloneFile1 = IModelTestUtils.prepareOutputFile("IModel", "Standalone1.bim");
-    let standaloneDb1 = StandaloneDb.createEmpty(standaloneFile1, { rootSubject: { name: standaloneRootSubjectName } });
+    const ecefLocation =  new EcefLocation({ origin: [1, 2, 3], orientation: { yaw: 0, pitch: 0, roll: 0 } })
+    const geographicCoordinateSystem = {
+      horizontalCRS: { id: "10TM115-27" },
+    }
+    let standaloneDb1 = StandaloneDb.createEmpty(standaloneFile1, { rootSubject: { name: standaloneRootSubjectName }, ecefLocation, geographicCoordinateSystem });
     assert.isTrue(standaloneDb1.isStandaloneDb());
     assert.isTrue(standaloneDb1.isStandalone);
     assert.isFalse(standaloneDb1.isReadonly, "Expect standalone iModels to be read-write during create");
@@ -2380,6 +2393,8 @@ describe("iModel", () => {
     assert.equal(standaloneDb1.iTwinId, Guid.empty);
     assert.strictEqual("", standaloneDb1.changeset.id);
     assert.strictEqual(0, standaloneDb1.changeset.index);
+    assert.deepEqual(standaloneDb1.ecefLocation?.origin, ecefLocation.origin, "standalone ecefLocation should be set");
+    assert.strictEqual(standaloneDb1.geographicCoordinateSystem?.horizontalCRS?.id, "10TM115-27", "standalone coordinate system should be set");
     assert.equal(standaloneDb1.openMode, OpenMode.ReadWrite);
     standaloneDb1.close();
     assert.isFalse(standaloneDb1.isOpen);
@@ -2392,14 +2407,19 @@ describe("iModel", () => {
     assert.isUndefined(StandaloneDb.tryFindByKey(standaloneDb1.key));
   });
 
-  it("Snapshot iModel properties", () => {
+  it("Snapshot iModel properties", async () => {
     const snapshotRootSubjectName = "Snapshot";
     const snapshotFile1 = IModelTestUtils.prepareOutputFile("IModel", "Snapshot1.bim");
     const snapshotFile2 = IModelTestUtils.prepareOutputFile("IModel", "Snapshot2.bim");
     const snapshotFile3 = IModelTestUtils.prepareOutputFile("IModel", "Snapshot3.bim");
-    let snapshotDb1 = SnapshotDb.createEmpty(snapshotFile1, { rootSubject: { name: snapshotRootSubjectName }, createClassViews: true });
+    const imodel = await generateTestSnapshot("test_for_snapshot.bim", "test.bim");
+    const ecefLocation =  new EcefLocation({ origin: [1, 2, 3], orientation: { yaw: 0, pitch: 0, roll: 0 } })
+    const geographicCoordinateSystem = {
+      horizontalCRS: { id: "10TM115-27" },
+    }
+    let snapshotDb1 = SnapshotDb.createEmpty(snapshotFile1, { rootSubject: { name: snapshotRootSubjectName }, createClassViews: true, ecefLocation, geographicCoordinateSystem });
     let snapshotDb2 = SnapshotDb.createFrom(snapshotDb1, snapshotFile2);
-    let snapshotDb3 = SnapshotDb.createFrom(imodel1, snapshotFile3, { createClassViews: true });
+    let snapshotDb3 = SnapshotDb.createFrom(imodel, snapshotFile3, { createClassViews: true });
     assert.isTrue(snapshotDb1.isSnapshotDb());
     assert.isTrue(snapshotDb2.isSnapshotDb());
     assert.isTrue(snapshotDb3.isSnapshotDb());
@@ -2412,7 +2432,7 @@ describe("iModel", () => {
     assert.equal(snapshotDb1.getBriefcaseId(), BriefcaseIdValue.Unassigned);
     assert.equal(snapshotDb2.getBriefcaseId(), BriefcaseIdValue.Unassigned);
     assert.equal(snapshotDb3.getBriefcaseId(), BriefcaseIdValue.Unassigned);
-    assert.equal(imodel1.getBriefcaseId(), BriefcaseIdValue.Unassigned);
+    assert.equal(imodel.getBriefcaseId(), BriefcaseIdValue.Unassigned);
     assert.equal(snapshotDb1.pathName, snapshotFile1);
     assert.equal(snapshotDb2.pathName, snapshotFile2);
     assert.equal(snapshotDb3.pathName, snapshotFile3);
@@ -2427,13 +2447,15 @@ describe("iModel", () => {
     const rootSubjectName1 = snapshotDb1.elements.getRootSubject().code.value;
     const rootSubjectName2 = snapshotDb2.elements.getRootSubject().code.value;
     const rootSubjectName3 = snapshotDb3.elements.getRootSubject().code.value;
-    const imodel1RootSubjectName = imodel1.elements.getRootSubject().code.value;
+    const imodelRootSubjectName = imodel.elements.getRootSubject().code.value;
     assert.equal(rootSubjectName1, snapshotRootSubjectName);
     assert.equal(rootSubjectName1, rootSubjectName2, "Expect a snapshot to maintain the root Subject name from its seed");
-    assert.equal(rootSubjectName3, imodel1RootSubjectName, "Expect a snapshot to maintain the root Subject name from its seed");
+    assert.equal(rootSubjectName3, imodelRootSubjectName, "Expect a snapshot to maintain the root Subject name from its seed");
     assert.isTrue(snapshotDb1.isOpen);
     assert.isTrue(snapshotDb2.isOpen);
     assert.isTrue(snapshotDb3.isOpen);
+    assert.deepEqual(snapshotDb1.ecefLocation?.origin, ecefLocation.origin, "snapshot ecefLocation should be set");
+    assert.strictEqual(snapshotDb1.geographicCoordinateSystem?.horizontalCRS?.id, "10TM115-27", "snapshot coordinate system should be set");
     snapshotDb1.close();
     snapshotDb2.close();
     snapshotDb3.close();
@@ -2466,6 +2488,7 @@ describe("iModel", () => {
     assert.isFalse(hasClassView(snapshotDb2, "bis.Element"));
     assert.isTrue(hasClassView(snapshotDb3, "bis.Element"));
 
+    imodel.close();
     snapshotDb1.close();
     snapshotDb2.close();
     snapshotDb3.close();
@@ -2691,7 +2714,7 @@ describe("iModel", () => {
     expect(elProps.code.scope).equal(element.code.scope);
     expect(elProps.code.spec).equal(element.code.spec);
     expect(elProps.federationGuid).equal(element.federationGuid);
-    expect((elProps as any).isPrivate).undefined;
+    expect((elProps as any).isPrivate).to.be.oneOf([false, undefined]);
     expect((elProps as any).isInstanceOfEntity).undefined;
 
     // remove userlabel by setting it to the blank string
@@ -2892,13 +2915,13 @@ describe("iModel", () => {
 
     const code1 = getNumberedCodeValAndProps(1);
     const categ1Id = imodel.elements.insertElement(code1.props);
-    const categ1 = imodel.elements.getElementJson({ id: categ1Id });
+    const categ1 = imodel.elements.getElementProps({ id: categ1Id });
     expect(categ1.code.value).to.equal(code1.trimmedCodeVal);
 
     imodel.codeValueBehavior = "exact";
     const code2 = getNumberedCodeValAndProps(2);
     const categ2Id = imodel.elements.insertElement(code2.props);
-    const categ2 = imodel.elements.getElementJson({ id: categ2Id });
+    const categ2 = imodel.elements.getElementProps({ id: categ2Id });
     expect(categ2.code.value).to.equal(code2.untrimmedCodeVal);
 
     imodel.codeValueBehavior = "trim-unicode-whitespace";
