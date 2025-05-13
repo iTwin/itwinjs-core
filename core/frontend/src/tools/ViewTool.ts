@@ -41,7 +41,6 @@ import {
 import { ToolAssistance, ToolAssistanceImage, ToolAssistanceInputMethod, ToolAssistanceInstruction, ToolAssistanceSection } from "./ToolAssistance";
 import { ToolSettings } from "./ToolSettings";
 import { GraphicType } from "../common/render/GraphicType";
-import { FormatterSpec } from "@itwin/core-quantity";
 
 // cspell:ignore wasd, arrowright, arrowleft, pagedown, pageup, arrowup, arrowdown
 /* eslint-disable no-restricted-syntax */
@@ -4044,35 +4043,14 @@ export class SetupCameraTool extends PrimitiveTool {
   protected _haveEyePt: boolean = false;
   protected _eyePtWorld: Point3d = Point3d.create();
   protected _targetPtWorld: Point3d = Point3d.create();
-    /** @internal */
-  protected _lengthFormatterSpec?: FormatterSpec;
-  /** @internal */
-  protected _removeFormatterListener?: () => void;
 
   public override isCompatibleViewport(vp: Viewport | undefined, isSelectedViewChange: boolean): boolean { return (super.isCompatibleViewport(vp, isSelectedViewChange) && undefined !== vp && vp.view.allow3dManipulations()); }
   public override isValidLocation(_ev: BeButtonEvent, _isButtonEvent: boolean): boolean { return true; }
   public override requireWriteableTarget(): boolean { return false; }
   public override async onPostInstall() {
     await super.onPostInstall();
-    this._lengthFormatterSpec = await this.getFormatterSpecByKoQAndPersistenceUnit("AecUnits.LENGTH", "Units.M");
-
-    this._removeFormatterListener = IModelApp.formatsProvider.onFormatsChanged.addListener(async (args) => {
-      if (args.formatsChanged === "all" || args.formatsChanged.includes("AecUnits.LENGTH"))
-        this._lengthFormatterSpec = await this.getFormatterSpecByKoQAndPersistenceUnit("AecUnits.LENGTH", "Units.M");
-    });
     this.setupAndPromptForNextAction();
   }
-
-  /** @internal */
-  public override async onCleanup(): Promise<void> {
-    if (this._removeFormatterListener) {
-      this._removeFormatterListener();
-      this._removeFormatterListener = undefined;
-    }
-
-    await super.onCleanup();
-  }
-
 
   public override async onUnsuspend() { this.provideToolAssistance(); }
   protected setupAndPromptForNextAction(): void {
@@ -4087,18 +4065,6 @@ export class SetupCameraTool extends PrimitiveTool {
       await this.exitTool();
 
     return EventHandled.Yes;
-  }
-
-  private async getFormatterSpecByKoQAndPersistenceUnit(koq: string, persistenceUnitName: string): Promise<FormatterSpec | undefined> {
-    const formatProps = await IModelApp.formatsProvider.getFormat(koq);
-    if (formatProps) {
-      return IModelApp.quantityFormatter.createFormatterSpec({
-        persistenceUnitName,
-        formatProps,
-        formatName: koq,
-      });
-    }
-    return undefined;
   }
 
   protected provideToolAssistance(): void {
@@ -4285,7 +4251,7 @@ export class SetupCameraTool extends PrimitiveTool {
   private _cameraHeightProperty: DialogProperty<number> | undefined;
   public get cameraHeightProperty() {
     if (!this._cameraHeightProperty)
-      this._cameraHeightProperty = new DialogProperty<number>(new LengthDescription("cameraHeight", ViewTool.translate("SetupCamera.Labels.CameraHeight"), undefined, "AecUnits.LENGTH"),
+      this._cameraHeightProperty = new DialogProperty<number>(new LengthDescription("cameraHeight", ViewTool.translate("SetupCamera.Labels.CameraHeight")),
         0.0, undefined, !this.useCameraHeight);
     return this._cameraHeightProperty;
   }
@@ -4305,7 +4271,7 @@ export class SetupCameraTool extends PrimitiveTool {
   private _targetHeightProperty: DialogProperty<number> | undefined;
   public get targetHeightProperty() {
     if (!this._targetHeightProperty)
-      this._targetHeightProperty = new DialogProperty<number>(new LengthDescription("targetHeight", ViewTool.translate("SetupCamera.Labels.TargetHeight"), undefined, "AecUnits.LENGTH"),
+      this._targetHeightProperty = new DialogProperty<number>(new LengthDescription("targetHeight", ViewTool.translate("SetupCamera.Labels.TargetHeight")),
         0.0, undefined, !this.useTargetHeight);
     return this._targetHeightProperty;
   }
@@ -4313,13 +4279,15 @@ export class SetupCameraTool extends PrimitiveTool {
   public set targetHeight(value: number) { this.targetHeightProperty.value = value; }
 
   private syncCameraHeightState(): void {
-    this.cameraHeightProperty.displayValue = this._lengthFormatterSpec ? this._lengthFormatterSpec.applyFormatting(this.cameraHeight) : this.cameraHeight.toFixed(2);
+    const specs = IModelApp.quantityFormatter.getSpecsByName(this.cameraHeightProperty.description.kindOfQuantityName ?? "AecUnits.LENGTH")
+    this.cameraHeightProperty.displayValue = specs ? specs.formatterSpec.applyFormatting(this.cameraHeight) : this.cameraHeight.toFixed(2);
     this.cameraHeightProperty.isDisabled = !this.useCameraHeight;
     this.syncToolSettingsProperties([this.cameraHeightProperty.syncItem]);
   }
 
   private syncTargetHeightState(): void {
-    this.targetHeightProperty.displayValue = this._lengthFormatterSpec ? this._lengthFormatterSpec.applyFormatting(this.targetHeight) : this.targetHeight.toFixed(2);
+    const specs = IModelApp.quantityFormatter.getSpecsByName(this.targetHeightProperty.description.kindOfQuantityName ?? "AecUnits.LENGTH")
+    this.targetHeightProperty.displayValue = specs ? specs.formatterSpec.applyFormatting(this.targetHeight) : this.targetHeight.toFixed(2);
     this.targetHeightProperty.isDisabled = !this.useTargetHeight;
     this.syncToolSettingsProperties([this.targetHeightProperty.syncItem]);
   }

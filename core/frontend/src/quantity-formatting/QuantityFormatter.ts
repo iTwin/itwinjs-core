@@ -238,6 +238,14 @@ export interface OverrideFormatEntry {
   usSurvey?: FormatProps;
 }
 
+/**
+ * Entries returned when looking up specs from the [[QuantityFormatter._formatSpecsRegistry]]
+ * @internal
+ */
+interface FormattingSpecEntry {
+  formatterSpec: FormatterSpec;
+  parserSpec: ParserSpec;
+}
 /** Interface that defines the functions required to be implemented to provide custom formatting and parsing of a custom quantity type.
  * @public
  */
@@ -383,6 +391,9 @@ export class QuantityFormatter implements UnitsProvider {
   private _alternateUnitLabelsRegistry = new AlternateUnitLabelsRegistry(getDefaultAlternateUnitLabels());
   /** Registry containing available quantity type definitions. */
   protected _quantityTypeRegistry: Map<QuantityTypeKey, QuantityTypeDefinition> = new Map<QuantityTypeKey, QuantityTypeDefinition>();
+  /** Registry containing available FormatterSpec and ParserSpec, mapped by keys. */
+  protected _formatSpecsRegistry: Map<string, FormattingSpecEntry> = new Map<string, FormattingSpecEntry>();
+
   /** Active UnitSystem key - must be one of "imperial", "metric", "usCustomary", or "usSurvey". */
   protected _activeUnitSystem: UnitSystemKey = "imperial";
   /** Map of FormatSpecs for all available QuantityTypes and the active Unit System */
@@ -414,6 +425,7 @@ export class QuantityFormatter implements UnitsProvider {
   /** Fired when the active UnitsProvider is updated. This will allow cached Formatter and Parser specs to be updated if necessary. */
   public readonly onUnitsProviderChanged = new BeUiEvent<void>();
 
+  private _removeFormatsProviderListener?: () => void;
   /**
    * constructor
    * @param showMetricOrUnitSystem - Pass in `true` to show Metric formatted quantity values. Defaults to Imperial. To explicitly
@@ -425,6 +437,16 @@ export class QuantityFormatter implements UnitsProvider {
         this._activeUnitSystem = showMetricOrUnitSystem ? "metric" : "imperial";
       else
         this._activeUnitSystem = showMetricOrUnitSystem;
+    }
+  }
+
+  /**
+   * @internal
+   */
+  public shutdown(): void {
+    if (this._removeFormatsProviderListener) {
+      this._removeFormatsProviderListener();
+      this._removeFormatsProviderListener = undefined;
     }
   }
 
@@ -585,6 +607,40 @@ export class QuantityFormatter implements UnitsProvider {
    */
   public async onInitialized() {
     await this.initializeQuantityTypesRegistry();
+
+    const initialKoQs = [["AecUnits.LENGTH", "Units.M"], ["AecUnits.ANGLE", "Units.RAD"], ["AecUnits.AREA", "Units.SQ_M"], ["AecUnits.VOLUME", "Units.CUB_M"]];
+    for (const entry of initialKoQs) {
+      try {
+        await this.addFormattingSpecsToRegistry(entry[0], entry[1]);
+      } catch (err) {
+        console.log(err);
+      }
+    }
+    this._removeFormatsProviderListener = IModelApp.formatsProvider.onFormatsChanged.addListener(async (args: FormatsChangedArgs) => {
+      if (args.formatsChanged === "all") {
+        this._formatSpecsRegistry.forEach(async (entry, name) => {
+          const formatProps = await IModelApp.formatsProvider.getFormat(name);
+          if (formatProps) {
+            const persistenceUnitName = entry.formatterSpec.persistenceUnit.name;
+            await this.addFormattingSpecsToRegistry(name, persistenceUnitName, formatProps);
+          } else {
+            this._formatSpecsRegistry.delete(name); // clear the specs if format is removed
+          }
+        });
+      } else {
+        for (const name of args.formatsChanged) {
+          if (this._formatSpecsRegistry.has(name)) {
+            const formatProps = await IModelApp.formatsProvider.getFormat(name);
+            if (formatProps) {
+              const persistenceUnitName = this._formatSpecsRegistry.get(name)!.formatterSpec.persistenceUnit.name;
+              await this.addFormattingSpecsToRegistry(name, persistenceUnitName, formatProps);
+            } else {
+              this._formatSpecsRegistry.delete(name);
+            }
+          }
+        }
+      }
+    });
 
     // initialize default format and parsing specs
     await this.loadFormatAndParsingMapsForSystem();
@@ -1051,8 +1107,41 @@ export class QuantityFormatter implements UnitsProvider {
     const format = await Format.createFromJSON(formatName ?? "temp", this._unitsProvider, formatProps);
     return ParserSpec.create(format, this._unitsProvider, persistenceUnitProps);
   }
-}
 
+  /**
+   * @beta
+   * Returns a [[FormattingSpecEntry]] for a given name, typically a KindOfQuantity full name.
+   */
+  public getSpecsByName(name: string): FormattingSpecEntry | undefined {
+    return this._formatSpecsRegistry.get(name);
+  }
+
+    /**
+   * Populates the registry with a new FormatterSpec and ParserSpec entry for the given format name.
+   * @beta
+   * @param name The key used to identify the formatter and parser spec
+   * @param persistenceUnitName The name of the persistence unit
+   * @param formatProps If not supplied, tries to retrieve the [[FormatProps]] from [[IModelApp.formatsProvider]]
+   */
+  public async addFormattingSpecsToRegistry(name: string, persistenceUnitName: string, formatProps?: FormatProps): Promise<void> {
+    if (!formatProps) {
+      formatProps = await IModelApp.formatsProvider.getFormat(name);
+    }
+    if (formatProps) {
+      const formatterSpec = await this.createFormatterSpec({
+        persistenceUnitName,
+        formatProps,
+        formatName: name,
+      });
+      const parserSpec = await this.createParserSpec({
+        persistenceUnitName,
+        formatProps,
+        formatName: name,
+      });
+      this._formatSpecsRegistry.set(name, { formatterSpec, parserSpec });
+    }
+  }
+}
 
 // ========================================================================================================================================
 // Default Data

@@ -7865,6 +7865,8 @@ export class QuantityFormatter implements UnitsProvider {
     get activeUnitSystem(): UnitSystemKey;
     protected _activeUnitSystem: UnitSystemKey;
     addAlternateLabels(key: UnitNameKey, ...labels: string[]): void;
+    // @beta
+    addFormattingSpecsToRegistry(name: string, persistenceUnitName: string, formatProps?: FormatProps): Promise<void>;
     get alternateUnitLabelsProvider(): AlternateUnitLabelsProvider;
     clearAllOverrideFormats(): Promise<void>;
     clearOverrideFormats(type: QuantityTypeArg): Promise<void>;
@@ -7882,6 +7884,7 @@ export class QuantityFormatter implements UnitsProvider {
         kindOfQuantityName: string;
     }): Promise<string>;
     formatQuantity(magnitude: number, formatSpec?: FormatterSpec): string;
+    protected _formatSpecsRegistry: Map<string, FormattingSpecEntry>;
     generateFormatterSpecByType(type: QuantityTypeArg, formatProps: FormatProps): Promise<FormatterSpec>;
     getConversion(fromUnit: UnitProps, toUnit: UnitProps): Promise<UnitConversionProps>;
     getFormatPropsByQuantityType(quantityType: QuantityTypeArg, requestedSystem?: UnitSystemKey, ignoreOverrides?: boolean): FormatProps | undefined;
@@ -7891,6 +7894,8 @@ export class QuantityFormatter implements UnitsProvider {
     getParserSpecByQuantityTypeAndSystem(type: QuantityTypeArg, system?: UnitSystemKey): Promise<ParserSpec | undefined>;
     getQuantityDefinition(type: QuantityTypeArg): QuantityTypeDefinition | undefined;
     getQuantityTypeKey(type: QuantityTypeArg): string;
+    // @beta
+    getSpecsByName(name: string): FormattingSpecEntry | undefined;
     getUnitsByFamily(phenomenon: string): Promise<UnitProps[]>;
     getUnitSystemFromString(inputSystem: string, fallback?: UnitSystemKey): UnitSystemKey;
     hasActiveOverride(type: QuantityTypeArg, checkOnlyActiveUnitSystem?: boolean): boolean;
@@ -7919,6 +7924,8 @@ export class QuantityFormatter implements UnitsProvider {
     setOverrideFormats(type: QuantityTypeArg, overrideEntry: OverrideFormatEntry): Promise<void>;
     setUnitFormattingSettingsProvider(provider: UnitFormattingSettingsProvider): Promise<void>;
     setUnitsProvider(unitsProvider: UnitsProvider): Promise<void>;
+    // @internal (undocumented)
+    shutdown(): void;
     protected _unitFormattingSettingsProvider: UnitFormattingSettingsProvider | undefined;
     get unitsProvider(): UnitsProvider;
     set unitsProvider(unitsProvider: UnitsProvider);
@@ -9516,10 +9523,6 @@ export class SetupCameraTool extends PrimitiveTool {
     isCompatibleViewport(vp: Viewport | undefined, isSelectedViewChange: boolean): boolean;
     // (undocumented)
     isValidLocation(_ev: BeButtonEvent, _isButtonEvent: boolean): boolean;
-    // @internal (undocumented)
-    protected _lengthFormatterSpec?: FormatterSpec;
-    // @internal (undocumented)
-    onCleanup(): Promise<void>;
     // (undocumented)
     onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled>;
     // (undocumented)
@@ -9534,8 +9537,6 @@ export class SetupCameraTool extends PrimitiveTool {
     onUnsuspend(): Promise<void>;
     // (undocumented)
     protected provideToolAssistance(): void;
-    // @internal (undocumented)
-    protected _removeFormatterListener?: () => void;
     // (undocumented)
     requireWriteableTarget(): boolean;
     // (undocumented)
