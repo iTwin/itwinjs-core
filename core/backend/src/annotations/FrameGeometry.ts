@@ -252,7 +252,7 @@ export namespace FrameGeometry {
     return Loop.createArray(curves.map((curve) => curve.cloneTransformed(transform)));
   }
 
-  // Polygon with n sides: note, this a generic method that can be used to create any polygon, but the frame will not be as tightly encapsulating.
+  // Regular polygon with n sides: note, this a generic method that can be used to create any polygon, but the frame will not be as tightly encapsulating.
   const computePolygon = (n: number, range: Range2d, transform: Transform, angleOffset: number = 0): Loop => {
     // These are math terms: cspell:ignore inradius circumradius
     if (n < 3) throw new Error("A polygon must have at least 3 sides.");
