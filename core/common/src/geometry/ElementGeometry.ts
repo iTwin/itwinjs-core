@@ -430,16 +430,13 @@ export namespace ElementGeometry {
     /** Append a series of entries representing a [[TextBlock]] to the [[ElementGeometryDataEntry]] array.
      * @beta
      */
-    public appendTextBlock(block: TextBlockGeometryProps): boolean {
+    public appendTextBlock(block: TextBlockGeometryProps, geomParams?: GeometryParams): boolean {
       for (const entry of block.entries) {
         let result: boolean;
         if (entry.text) {
-          // Todo: there should be a better way to do this...
-          const highPriorityParams = new GeometryParams(Id64.invalid);
-          highPriorityParams.elmPriority = 1;
-          result = this.appendGeometryParamsChange(highPriorityParams) && this.appendTextString(new TextString(entry.text));
+          result = this.appendTextString(new TextString(entry.text));
         } else if (entry.color) {
-          const params = new GeometryParams(Id64.invalid);
+          const params = geomParams?.clone() ?? new GeometryParams(Id64.invalid);
           if (entry.color !== "subcategory") {
             params.lineColor = ColorDef.fromJSON(entry.color);
           }

@@ -21,19 +21,18 @@ export namespace FrameGeometry {
    * @param transform that transform the range to world coordinates
    * @returns `true` if any geometry was appended to the builder
    */
-  export const appendFrameToBuilder = (builder: ElementGeometry.Builder, frame: TextFrameStyleProps, range: Range2d, transform: Transform): boolean => {
+  export const appendFrameToBuilder = (builder: ElementGeometry.Builder, frame: TextFrameStyleProps, range: Range2d, transform: Transform, geomParams?: GeometryParams): boolean => {
     if (frame.shape === "none") {
       return false;
     }
 
     // TODO: I need to clean this up. The geom param changes are straddled between this stroker and ElementGeometry.Builder.
-    const params = new GeometryParams(Id64.invalid);
-    params.elmPriority = 0;
+    const params = geomParams?.clone() ?? new GeometryParams(Id64.invalid);
 
     if (frame.fill === undefined) {
       params.fillDisplay = FillDisplay.Never;
     } else if (frame.fill === "background") {
-      params.backgroundFill = BackgroundFill.Outline;
+      params.backgroundFill = BackgroundFill.Solid;
       params.fillDisplay = FillDisplay.Always;
     } else if (frame.fill !== "subcategory") {
       params.fillColor = ColorDef.fromJSON(frame.fill);
