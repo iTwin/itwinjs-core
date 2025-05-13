@@ -124,6 +124,13 @@ function processFractionRun(run: RunLayout, transform: Transform, context: Geome
   }
 }
 
+/**
+ * Produces the geometry for a text block in a way that can be interpreted by a [[GeometryStreamBuilder]] or [[ElementBuilder.Geometry]].
+ * To build the geometry for a whole [[TextAnnotation]], use [[TextAnnotationGeometry.appendTextAnnotationGeometry]] instead.
+ * @param layout of the text block as computed by [[layoutTextBlock]].
+ * @param documentTransform that positions the text block in world coordinates.
+ * @returns TextBlockGeometryProps.
+ */
 export function produceTextBlockGeometry(layout: TextBlockLayout, documentTransform: Transform): TextBlockGeometryProps {
   const context: GeometryContext = { entries: [] };
   for (const line of layout.lines) {
