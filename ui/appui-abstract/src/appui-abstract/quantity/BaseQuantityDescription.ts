@@ -11,6 +11,9 @@ import { CustomFormattedNumberParams, IconEditorParams, ParseResults, PropertyEd
 import { StandardTypeNames } from "../properties/StandardTypeNames";
 import { StandardEditorNames } from "../properties/StandardEditorNames";
 
+
+
+
 /**
  * Base Quantity Property Description
  * @beta
@@ -20,10 +23,13 @@ export abstract class BaseQuantityDescription implements PropertyDescription {
   public displayLabel: string;
   public typename: string;
   public editor: PropertyEditorInfo;
+  public kindOfQuantityName: string;
 
-  constructor(name: string, displayLabel: string, iconSpec?: string) {
+
+  constructor(name: string, displayLabel: string, kindOfQuantityName: string, iconSpec?: string) {
     this.name = name;
     this.displayLabel = displayLabel;
+    this.kindOfQuantityName = kindOfQuantityName;
     this.typename = StandardTypeNames.Number;
     this.editor = {
       name: StandardEditorNames.NumberCustom,
@@ -55,8 +61,6 @@ export abstract class BaseQuantityDescription implements PropertyDescription {
   public parse = (userInput: string): ParseResults => {
     return this.parseString(userInput);
   };
-
-  public abstract get quantityType(): string;
 
   public abstract get parseError(): string;
 

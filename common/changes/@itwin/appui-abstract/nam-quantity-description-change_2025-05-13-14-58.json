@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/appui-abstract",
+      "comment": "replace `PropertyDescription` `quantityType` property with `kindOfQuantityName`, allow `BaseQuantityDescription` `kindOfQUantityName` to be dynamic",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/appui-abstract"
+}

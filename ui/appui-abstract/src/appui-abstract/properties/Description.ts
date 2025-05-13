@@ -83,11 +83,10 @@ export interface PropertyDescription {
   editor?: PropertyEditorInfo;
   /** Information for a property converter */
   converter?: PropertyConverterInfo;
-  /** Quantity type key used to look up formatting and parsing specs. This is typically either the name of a quantity type used by a tool
-   *  or the full name of a KOQ (schema:koq).
-   * @alpha
+  /** KindOfQuantity full name used to look up [[FormatProps]]
+   * @beta
    */
-  quantityType?: string;
+  kindOfQuantityName?: string;
   /** Get the custom DataController by this name and register it with the property editor */
   dataController?: string;
   /** Should property label for composite (struct & array) properties be rendered. */

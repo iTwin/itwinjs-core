@@ -102,7 +102,7 @@ export class ProjectGeolocationPointTool extends PrimitiveTool {
   private _latitudeProperty: DialogProperty<number> | undefined;
   public get latitudeProperty() {
     if (!this._latitudeProperty)
-      this._latitudeProperty = new DialogProperty<number>(new AngleDescription("latitude", translateMessage("Latitude")), 0.0);
+      this._latitudeProperty = new DialogProperty<number>(new AngleDescription("latitude", translateMessage("Latitude"), undefined, "AecUnits.ANGLE"), 0.0);
     return this._latitudeProperty;
   }
 
@@ -112,7 +112,7 @@ export class ProjectGeolocationPointTool extends PrimitiveTool {
   private _longitudeProperty: DialogProperty<number> | undefined;
   public get longitudeProperty() {
     if (!this._longitudeProperty)
-      this._longitudeProperty = new DialogProperty<number>(new AngleDescription("longitude", translateMessage("Longitude")), 0.0);
+      this._longitudeProperty = new DialogProperty<number>(new AngleDescription("longitude", translateMessage("Longitude"), undefined, "AecUnits.ANGLE"), 0.0);
     return this._longitudeProperty;
   }
 
@@ -122,7 +122,7 @@ export class ProjectGeolocationPointTool extends PrimitiveTool {
   private _altitudeProperty: DialogProperty<number> | undefined;
   public get altitudeProperty() {
     if (!this._altitudeProperty)
-      this._altitudeProperty = new DialogProperty<number>(new LengthDescription("altitude", CoreTools.translate("Measure.Labels.Altitude")), 0.0);
+      this._altitudeProperty = new DialogProperty<number>(new LengthDescription("altitude", CoreTools.translate("Measure.Labels.Altitude"), "AecUnits.LENGTH"), 0.0);
     return this._altitudeProperty;
   }
 
@@ -132,7 +132,7 @@ export class ProjectGeolocationPointTool extends PrimitiveTool {
   private _northProperty: DialogProperty<number> | undefined;
   public get northProperty() {
     if (!this._northProperty)
-      this._northProperty = new DialogProperty<number>(new AngleDescription("north", translateMessage("North")), 0.0);
+      this._northProperty = new DialogProperty<number>(new AngleDescription("north", translateMessage("North"), "AecUnits.ANGLE"), 0.0);
     return this._northProperty;
   }
 
