@@ -3498,6 +3498,10 @@ export class SnapshotDb extends IModelDb {
     snapshotDb.channels.addAllowedChannel(ChannelControl.sharedChannelName);
     if (options.createClassViews)
       snapshotDb._createClassViewsOnClose = true; // save flag that will be checked when close() is called
+    if (options.geographicCoordinateSystem)
+      snapshotDb.setGeographicCoordinateSystem(options.geographicCoordinateSystem);
+    if (options.ecefLocation)
+      snapshotDb.setEcefLocation(options.ecefLocation);
     return snapshotDb;
   }
 
@@ -3669,6 +3673,10 @@ export class StandaloneDb extends BriefcaseDb {
     nativeDb.resetBriefcaseId(BriefcaseIdValue.Unassigned);
     nativeDb.saveChanges();
     const db = new this({ nativeDb, key: Guid.createValue(), briefcaseId: BriefcaseIdValue.Unassigned, openMode: OpenMode.ReadWrite });
+    if (args.geographicCoordinateSystem)
+      db.setGeographicCoordinateSystem(args.geographicCoordinateSystem);
+    if (args.ecefLocation)
+      db.setEcefLocation(args.ecefLocation);
     db.channels.addAllowedChannel(ChannelControl.sharedChannelName);
     return db;
   }

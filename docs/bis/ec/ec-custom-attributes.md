@@ -36,3 +36,5 @@ For example:
 ```
 
 The custom attribute concept allows any custom metadata to be applied because they are defined using a special type of ECClass, see [ECCustomAttributeClass](./ec-custom-attribute-class.md) for more details
+
+Note: The order of custom attributes within its parent container is not guaranteed. Our APIs will return a consistent order, but it may not always be the same as the order in which they were defined in the schema. This should not be a problem since the same custom attribute may only be applied once.

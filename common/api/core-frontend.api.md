@@ -104,7 +104,10 @@ import { FeatureOverrideType } from '@itwin/core-common';
 import { FeatureTable } from '@itwin/core-common';
 import { FillFlags } from '@itwin/core-common';
 import { FontMap } from '@itwin/core-common';
+import { FormatDefinition } from '@itwin/core-quantity';
 import { FormatProps } from '@itwin/core-quantity';
+import { FormatsChangedArgs } from '@itwin/core-quantity';
+import { FormatsProvider } from '@itwin/core-quantity';
 import { FormatterSpec } from '@itwin/core-quantity';
 import type { FrontendStorage } from '@itwin/object-storage-core/lib/frontend';
 import { Frustum } from '@itwin/core-common';
@@ -2183,6 +2186,13 @@ export class CoreTools {
 }
 
 // @beta
+export interface CreateFormattingSpecProps {
+    formatName?: string;
+    formatProps: FormatProps;
+    persistenceUnitName: string;
+}
+
+// @beta
 export interface CreateGraphicFromDescriptionArgs {
     context: GraphicDescriptionContext;
     description: GraphicDescription;
@@ -3404,6 +3414,18 @@ export class FlyViewTool extends ViewManip {
 
 // @internal (undocumented)
 export function formatAnimationBranchId(modelId: Id64String, branchId: number): string;
+
+// @internal
+export class FormatsProviderManager implements FormatsProvider {
+    constructor(_formatsProvider: FormatsProvider);
+    // (undocumented)
+    get formatsProvider(): FormatsProvider;
+    set formatsProvider(formatsProvider: FormatsProvider);
+    // (undocumented)
+    getFormat(name: string): Promise<FormatDefinition | undefined>;
+    // (undocumented)
+    onFormatsChanged: BeEvent<(args: FormatsChangedArgs) => void>;
+}
 
 // @beta
 export abstract class FormattedQuantityDescription extends BaseQuantityDescription {
@@ -4793,6 +4815,9 @@ export class IModelApp {
     static readonly extensionAdmin: ExtensionAdmin;
     // @alpha
     static formatElementToolTip(msg: string[]): HTMLElement;
+    // @beta
+    static get formatsProvider(): FormatsProvider;
+    static set formatsProvider(provider: FormatsProvider);
     static getAccessToken(): Promise<AccessToken>;
     static get hasRenderSystem(): boolean;
     static get hubAccess(): FrontendHubAccess | undefined;
@@ -4836,6 +4861,8 @@ export class IModelApp {
     static registerModuleEntities(moduleObj: any): void;
     static get renderSystem(): RenderSystem;
     static requestNextAnimation(): void;
+    // @beta
+    static resetFormatsProvider(): void;
     static get securityOptions(): FrontendSecurityOptions;
     static sessionId: GuidString;
     static shutdown(): Promise<void>;
@@ -4864,6 +4891,7 @@ export interface IModelAppOptions {
     applicationId?: string;
     applicationVersion?: string;
     authorizationClient?: AuthorizationClient;
+    formatsProvider?: FormatsProvider;
     hubAccess?: FrontendHubAccess;
     localization?: Localization;
     // @internal (undocumented)
@@ -6646,6 +6674,8 @@ export class MeasureDistanceTool extends PrimitiveTool {
     // @internal (undocumented)
     protected allowView(vp: Viewport): boolean;
     // @internal (undocumented)
+    protected _angleFormatterSpec?: FormatterSpec;
+    // @internal (undocumented)
     protected createDecorations(context: DecorateContext, isSuspended: boolean): void;
     // @internal (undocumented)
     decorate(context: DecorateContext): void;
@@ -6674,7 +6704,11 @@ export class MeasureDistanceTool extends PrimitiveTool {
     // @internal (undocumented)
     protected _lastMotionPt?: Point3d;
     // @internal (undocumented)
+    protected _lengthFormatterSpec?: FormatterSpec;
+    // @internal (undocumented)
     protected readonly _locationData: Location_2[];
+    // @internal (undocumented)
+    onCleanup(): Promise<void>;
     // @internal (undocumented)
     onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled>;
     // @internal (undocumented)
@@ -6689,6 +6723,8 @@ export class MeasureDistanceTool extends PrimitiveTool {
     onUndoPreviousStep(): Promise<boolean>;
     // @internal (undocumented)
     onUnsuspend(): Promise<void>;
+    // @internal (undocumented)
+    protected _removeFormatterListener?: () => void;
     // (undocumented)
     protected reportMeasurements(): void;
     // @internal (undocumented)
@@ -7790,6 +7826,13 @@ export class QuadId {
 }
 
 // @public
+export interface QuadIdProps {
+    column: number;
+    level: number;
+    row: number;
+}
+
+// @public
 export interface QuantityFormatOverridesChangedArgs {
     readonly overrideEntry?: OverrideFormatEntry;
     readonly typeKey: QuantityTypeKey;
@@ -7812,11 +7855,20 @@ export class QuantityFormatter implements UnitsProvider {
     get alternateUnitLabelsProvider(): AlternateUnitLabelsProvider;
     clearAllOverrideFormats(): Promise<void>;
     clearOverrideFormats(type: QuantityTypeArg): Promise<void>;
+    // @beta
+    createFormatterSpec(props: CreateFormattingSpecProps): Promise<FormatterSpec>;
+    // @beta
+    createParserSpec(props: CreateFormattingSpecProps): Promise<ParserSpec>;
     findFormatterSpecByQuantityType(type: QuantityTypeArg, _unused?: boolean): FormatterSpec | undefined;
     findParserSpecByQuantityType(type: QuantityTypeArg): ParserSpec | undefined;
     findUnit(unitLabel: string, schemaName?: string, phenomenon?: string, unitSystem?: string): Promise<UnitProps>;
     findUnitByName(unitName: string): Promise<UnitProps>;
-    formatQuantity(magnitude: number, formatSpec: FormatterSpec | undefined): string;
+    formatQuantity(props: {
+        value: number;
+        valueUnitName: string;
+        kindOfQuantityName: string;
+    }): Promise<string>;
+    formatQuantity(magnitude: number, formatSpec?: FormatterSpec): string;
     generateFormatterSpecByType(type: QuantityTypeArg, formatProps: FormatProps): Promise<FormatterSpec>;
     getConversion(fromUnit: UnitProps, toUnit: UnitProps): Promise<UnitConversionProps>;
     getFormatPropsByQuantityType(quantityType: QuantityTypeArg, requestedSystem?: UnitSystemKey, ignoreOverrides?: boolean): FormatProps | undefined;
@@ -7838,7 +7890,12 @@ export class QuantityFormatter implements UnitsProvider {
     readonly onQuantityFormatsChanged: BeUiEvent<QuantityFormatsChangedArgs>;
     readonly onUnitsProviderChanged: BeUiEvent<void>;
     protected _overrideFormatPropsByUnitSystem: Map<UnitSystemKey, Map<string, FormatProps>>;
-    parseToQuantityValue(inString: string, parserSpec: ParserSpec | undefined): QuantityParseResult;
+    parseToQuantityValue(props: {
+        value: string;
+        valueUnitName: string;
+        kindOfQuantityName: string;
+    }): Promise<QuantityParseResult>;
+    parseToQuantityValue(inString: string, parserSpec?: ParserSpec): QuantityParseResult;
     protected _quantityTypeRegistry: Map<QuantityTypeKey, QuantityTypeDefinition>;
     get quantityTypesRegistry(): Map<string, QuantityTypeDefinition>;
     registerQuantityType(entry: CustomQuantityTypeDefinition, replace?: boolean): Promise<boolean>;
@@ -7881,6 +7938,15 @@ export interface QuantityTypeDefinition {
     label: string;
     readonly persistenceUnit: UnitProps;
     readonly type: QuantityTypeArg;
+}
+
+// @internal
+export class QuantityTypeFormatsProvider implements FormatsProvider {
+    constructor();
+    // (undocumented)
+    getFormat(name: string): Promise<FormatDefinition | undefined>;
+    // (undocumented)
+    onFormatsChanged: BeEvent<(args: FormatsChangedArgs) => void>;
 }
 
 // @public
@@ -9537,6 +9603,8 @@ export class SheetModelState extends GeometricModel2dState {
 // @public
 export class SheetViewState extends ViewState2d {
     constructor(props: ViewDefinition2dProps, iModel: IModelConnection, categories: CategorySelectorState, displayStyle: DisplayStyle2dState, sheetProps: SheetProps, attachments: Id64Array);
+    // @internal
+    areAllAttachmentsLoaded(): boolean;
     // (undocumented)
     get areAllTileTreesLoaded(): boolean;
     // (undocumented)
@@ -10558,6 +10626,8 @@ export class TileAdmin {
     // @internal (undocumented)
     readonly disableMagnification: boolean;
     // @internal (undocumented)
+    readonly disablePolyfaceDecimation: boolean;
+    // @internal (undocumented)
     readonly edgeOptions: EdgeOptions;
     // @internal (undocumented)
     get emptyTileUserSet(): ReadonlyTileUserSet;
@@ -10697,6 +10767,8 @@ export namespace TileAdmin {
         defaultTileSizeModifier?: number;
         // @alpha
         disableMagnification?: boolean;
+        // @beta
+        disablePolyfaceDecimation?: boolean;
         enableExternalTextures?: boolean;
         enableFrontendScheduleScripts?: boolean;
         enableImprovedElision?: boolean;
