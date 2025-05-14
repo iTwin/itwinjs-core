@@ -96,7 +96,7 @@ export class Presentation {
   private static _rpcImpl: PresentationRpcImpl | undefined;
 
   /* c8 ignore next */
-  private constructor() { }
+  private constructor() {}
 
   /** Properties used to initialize the presentation framework */
   public static get initProps(): PresentationProps | undefined {
@@ -182,10 +182,10 @@ export class Presentation {
       Presentation._initProps && Presentation._initProps.clientManagerFactory
         ? Presentation._initProps.clientManagerFactory(clientId, Presentation._initProps)
         : new PresentationManager({
-          ...Presentation._initProps,
-          // @ts-expect-error internal prop
-          id: clientId,
-        });
+            ...Presentation._initProps,
+            // @ts-expect-error internal prop
+            id: clientId,
+          });
     manager.onUsed.addListener(onManagerUsed);
     Logger.logInfo(
       PresentationBackendLoggerCategory.PresentationManager,

@@ -671,23 +671,23 @@ export class PresentationManager {
     const { itemBatches, count } =
       "elementIds" in elementsIdentifier
         ? getContentItemsObservableFromElementIds(
-          requestOptions.imodel,
-          descriptorGetter,
-          contentSetGetter,
-          elementsIdentifier.elementIds,
-          classParallelism,
-          batchesParallelism,
-          batchSize,
-        )
+            requestOptions.imodel,
+            descriptorGetter,
+            contentSetGetter,
+            elementsIdentifier.elementIds,
+            classParallelism,
+            batchesParallelism,
+            batchSize,
+          )
         : getContentItemsObservableFromClassNames(
-          requestOptions.imodel,
-          descriptorGetter,
-          contentSetGetter,
-          elementsIdentifier.elementClasses,
-          classParallelism,
-          batchesParallelism,
-          batchSize,
-        );
+            requestOptions.imodel,
+            descriptorGetter,
+            contentSetGetter,
+            elementsIdentifier.elementClasses,
+            classParallelism,
+            batchesParallelism,
+            batchSize,
+          );
     return {
       total: await firstValueFrom(count),
       async *iterator() {

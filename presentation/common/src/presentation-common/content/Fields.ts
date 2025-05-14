@@ -215,16 +215,16 @@ export class Field {
       "category" in categoryOrProps
         ? categoryOrProps
         : {
-          category: categoryOrProps,
-          name: name!,
-          label: label!,
-          type: type!,
-          isReadonly: isReadonly!,
-          priority: priority!,
-          editor,
-          renderer,
-          extendedData,
-        };
+            category: categoryOrProps,
+            name: name!,
+            label: label!,
+            type: type!,
+            isReadonly: isReadonly!,
+            priority: priority!,
+            editor,
+            renderer,
+            extendedData,
+          };
     this.category = props.category;
     this.name = props.name;
     this.label = props.label;
@@ -430,16 +430,16 @@ export class PropertiesField extends Field {
       "category" in categoryOrProps
         ? categoryOrProps
         : {
-          category: categoryOrProps,
-          name: name!,
-          label: label!,
-          type: type!,
-          isReadonly: isReadonly!,
-          priority: priority!,
-          editor,
-          renderer,
-          properties: properties!,
-        };
+            category: categoryOrProps,
+            name: name!,
+            label: label!,
+            type: type!,
+            isReadonly: isReadonly!,
+            priority: priority!,
+            editor,
+            renderer,
+            properties: properties!,
+          };
     super(props);
     this.properties = props.properties;
   }
@@ -634,17 +634,17 @@ export class ArrayPropertiesField extends PropertiesField {
       "category" in categoryOrProps
         ? categoryOrProps
         : {
-          category: categoryOrProps,
-          name: name!,
-          label: label!,
-          type: type!,
-          isReadonly: isReadonly!,
-          priority: priority!,
-          editor,
-          renderer,
-          properties: properties!,
-          itemsField: itemsField!,
-        };
+            category: categoryOrProps,
+            name: name!,
+            label: label!,
+            type: type!,
+            isReadonly: isReadonly!,
+            priority: priority!,
+            editor,
+            renderer,
+            properties: properties!,
+            itemsField: itemsField!,
+          };
     super(props);
     this.itemsField = props.itemsField;
   }
@@ -761,17 +761,17 @@ export class StructPropertiesField extends PropertiesField {
       "category" in categoryOrProps
         ? categoryOrProps
         : {
-          category: categoryOrProps,
-          name: name!,
-          label: label!,
-          type: type!,
-          isReadonly: isReadonly!,
-          priority: priority!,
-          editor,
-          renderer,
-          properties: properties!,
-          memberFields: memberFields!,
-        };
+            category: categoryOrProps,
+            name: name!,
+            label: label!,
+            type: type!,
+            isReadonly: isReadonly!,
+            priority: priority!,
+            editor,
+            renderer,
+            properties: properties!,
+            memberFields: memberFields!,
+          };
     super(props);
     this.memberFields = props.memberFields;
   }
@@ -958,19 +958,19 @@ export class NestedContentField extends Field {
       "category" in categoryOrProps
         ? categoryOrProps
         : {
-          category: categoryOrProps,
-          name: name!,
-          label: label!,
-          type: type!,
-          isReadonly: isReadonly!,
-          priority: priority!,
-          editor,
-          renderer,
-          contentClassInfo: contentClassInfo!,
-          pathToPrimaryClass: pathToPrimaryClass!,
-          nestedFields: nestedFields!,
-          autoExpand,
-        };
+            category: categoryOrProps,
+            name: name!,
+            label: label!,
+            type: type!,
+            isReadonly: isReadonly!,
+            priority: priority!,
+            editor,
+            renderer,
+            contentClassInfo: contentClassInfo!,
+            pathToPrimaryClass: pathToPrimaryClass!,
+            nestedFields: nestedFields!,
+            autoExpand,
+          };
     super(props);
     this.contentClassInfo = props.contentClassInfo;
     this.pathToPrimaryClass = props.pathToPrimaryClass;
