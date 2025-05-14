@@ -160,12 +160,12 @@ export interface BSplineSurface3dQuery {
 export abstract class BSpline2dNd extends GeometryQuery {
   /** String name for schema properties */
   public readonly geometryCategory = "bsurf";
-
   /** Array of (exactly 2) knot vectors for the u, v directions */
   public knots: KnotVector[];
   /** flat array of coordinate data, blocked by poleDimension and row */
   public coffs: Float64Array;
-  /** Number of components per pole.
+  /**
+   * Number of components per pole.
    * * 3 for conventional xyz surface
    * * 4 for weighted (wx, wy, wz, w) surface.
    */

@@ -17,12 +17,14 @@ import { Point3d } from "../geometry3d/Point3dVector3d";
 import { MomentData } from "../geometry4d/MomentData";
 import { Arc3d } from "./Arc3d";
 import { CurvePrimitive } from "./CurvePrimitive";
+import { AnyRegion } from "./CurveTypes";
 import { LineSegment3d } from "./LineSegment3d";
 import { LineString3d } from "./LineString3d";
 import { Loop } from "./Loop";
 import { ParityRegion } from "./ParityRegion";
-import { StrokeOptions } from "./StrokeOptions";
+import { RegionBinaryOpType, RegionOps } from "./RegionOps";
 import { TransitionSpiral3d } from "./spiral/TransitionSpiral3d";
+import { StrokeOptions } from "./StrokeOptions";
 import { UnionRegion } from "./UnionRegion";
 
 /**
@@ -91,49 +93,30 @@ export class RegionMomentsXY extends NullGeometryHandler {
     this._activeMomentData = undefined;
     return momentData;
   }
+  private handleAnyRegion(region: AnyRegion): MomentData | undefined {
+    const summedMoments = MomentData.create();
+    // guarantee there is no overlapping children
+    const merged = RegionOps.regionBooleanXY(region, undefined, RegionBinaryOpType.Union);
+    if (merged) {
+      for (const child of merged.children) {
+        const childMoments = child.dispatchToGeometryHandler(this);
+        if (childMoments) {
+          const sign0 = childMoments.signFactor(1.0);
+          summedMoments.accumulateProducts(childMoments, sign0);
+        }
+      }
+    } else {
+      return undefined;
+    }
+    return summedMoments;
+  }
   /** Accumulate integrals from origin to the components of the parity region. */
   public override handleParityRegion(region: ParityRegion): MomentData | undefined {
-    const allChildMoments: MomentData[] = [];
-    let maxAbsArea = 0.0;
-    let largestChildMoments: MomentData | undefined;
-    for (const child of region.children) {
-      if (child instanceof Loop) {
-        const childMoments = this.handleLoop(child);
-        if (childMoments) {
-          allChildMoments.push(childMoments);
-          const q = Math.abs(childMoments.quantitySum);
-          if (q > maxAbsArea) {
-            maxAbsArea = q;
-            largestChildMoments = childMoments;
-          }
-        }
-      }
-    }
-    if (largestChildMoments) {
-      const summedMoments = MomentData.create();
-      const sign0 = largestChildMoments.signFactor(1.0);
-      summedMoments.accumulateProducts(largestChildMoments, sign0);
-      for (const childMoments of allChildMoments) {
-        if (childMoments !== largestChildMoments) {
-          const sign1 = childMoments.signFactor(-1.0);
-          summedMoments.accumulateProducts(childMoments, sign1);
-        }
-      }
-      return summedMoments;
-    }
-    return undefined;
+    return this.handleAnyRegion(region);
   }
   /** Accumulate integrals from origin to the components of the union region. */
   public override handleUnionRegion(region: UnionRegion): MomentData | undefined {
-    const summedMoments = MomentData.create();
-    for (const child of region.children) {
-      const childMoments = child.dispatchToGeometryHandler(this);
-      if (childMoments) {
-        const sign0 = childMoments.signFactor(1.0);
-        summedMoments.accumulateProducts(childMoments, sign0);
-      }
-    }
-    return summedMoments;
+    return this.handleAnyRegion(region);
   }
 
   private _strokeOptions?: StrokeOptions; // TODO: expose to callers in RegionOps

@@ -6,6 +6,7 @@ import { IModelRpcProps, RpcInterface, RpcManager, TextAnnotationProps, TextBloc
 import * as http from "http";
 import * as https from "https";
 import { DtaConfiguration } from "./DtaConfiguration";
+import { FormatSet } from "@itwin/ecschema-metadata";
 
 /** Display Test App RPC interface. */
 export class DtaRpcInterface extends RpcInterface {
@@ -32,4 +33,5 @@ export class DtaRpcInterface extends RpcInterface {
   public async getEnvConfig(): Promise<DtaConfiguration> { return this.forward(arguments); }
   public async getAccessToken(): Promise<string> { return this.forward(arguments); }
   public async produceTextAnnotationGeometry(_iModelToken: IModelRpcProps, _annotation: TextAnnotationProps, _debugAnchorPointAndRange?: boolean): Promise<TextBlockGeometryProps> { return this.forward(arguments); }
+  public async getFormatSetFromFile(_filename: string): Promise<FormatSet> { return this.forward(arguments); }
 }

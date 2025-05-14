@@ -17,8 +17,8 @@ importers:
   ../../core/backend:
     dependencies:
       '@bentley/imodeljs-native':
-        specifier: 5.1.9
-        version: 5.1.9
+        specifier: 5.1.21
+        version: 5.1.21
       '@itwin/cloud-agnostic-core':
         specifier: ^2.2.4
         version: 2.2.4(inversify@6.0.1)(reflect-metadata@0.1.13)
@@ -2324,6 +2324,9 @@ importers:
       '@itwin/core-markup':
         specifier: workspace:*
         version: link:../../core/markup
+      '@itwin/core-quantity':
+        specifier: workspace:*
+        version: link:../../core/quantity
       '@itwin/ecschema-metadata':
         specifier: workspace:*
         version: link:../../core/ecschema-metadata
@@ -2442,6 +2445,9 @@ importers:
       browserify-zlib:
         specifier: ^0.2.0
         version: 0.2.0
+      cross-env:
+        specifier: ^7.0.3
+        version: 7.0.3
       crypto-browserify:
         specifier: 3.12.0
         version: 3.12.0
@@ -3618,6 +3624,18 @@ importers:
       '@itwin/core-quantity':
         specifier: workspace:*
         version: link:../../core/quantity
+      '@itwin/ecschema-locaters':
+        specifier: workspace:*
+        version: link:../../core/ecschema-locaters
+      '@itwin/ecschema-metadata':
+        specifier: workspace:*
+        version: link:../../core/ecschema-metadata
+      '@itwin/ecschema-rpcinterface-common':
+        specifier: workspace:*
+        version: link:../../core/ecschema-rpc/common
+      '@itwin/ecschema-rpcinterface-impl':
+        specifier: workspace:*
+        version: link:../../core/ecschema-rpc/impl
       '@itwin/editor-backend':
         specifier: workspace:*
         version: link:../../editor/backend
@@ -3670,6 +3688,15 @@ importers:
         specifier: ^0.0.1
         version: 0.0.1
     devDependencies:
+      '@bentley/aec-units-schema':
+        specifier: ^1.0.3
+        version: 1.0.3
+      '@bentley/formats-schema':
+        specifier: ^1.0.0
+        version: 1.0.0
+      '@bentley/units-schema':
+        specifier: ^1.0.8
+        version: 1.0.8
       '@itwin/build-tools':
         specifier: workspace:*
         version: link:../../tools/build
@@ -4623,8 +4650,8 @@ packages:
   '@bentley/icons-generic@1.0.34':
     resolution: {integrity: sha512-IIs1wDcY2oZ8tJ3EZRw0U51M+0ZL3MvwoDYYmhUXaa9/UZqpFoOyLBGaxjirQteWXqTIMm3mFvmC+Nbn1ok4Iw==}
 
-  '@bentley/imodeljs-native@5.1.9':
-    resolution: {integrity: sha512-5Xgyx8iSdzzIp5rIlhc0sGG542g+MCKBbiOKbp1YddHUgiqL/TBFFBnQ9ItWGtnVfgPiBrV5oBMVJmyrDYQuIQ==}
+  '@bentley/imodeljs-native@5.1.21':
+    resolution: {integrity: sha512-aR41YLH0N6TfrYRmUB+fSR0u/aEstf90vMEgO150xPC5eVWmtxwC+RugxJDVBmfXMUL4aW8Lp/+xmAG+OCPBdA==}
 
   '@bentley/linear-referencing-schema@2.0.3':
     resolution: {integrity: sha512-2pFIEN4BS7alIDhGous6N2icKAS8ZhVBfoWB8WvSFaYnneGv5YwbbXl46qATDdPO5jUFezkW6uVxdpp1eOgUHQ==}
@@ -11014,7 +11041,7 @@ snapshots:
 
   '@bentley/icons-generic@1.0.34': {}
 
-  '@bentley/imodeljs-native@5.1.9': {}
+  '@bentley/imodeljs-native@5.1.21': {}
 
   '@bentley/linear-referencing-schema@2.0.3': {}
 

@@ -1720,8 +1720,9 @@ export namespace IModelDb {
    * @public
    */
   export class Models {
+    private readonly _modelCacheSize = 10;
     /** @internal */
-    public readonly [_cache] = new LRUMap<Id64String, ModelProps>(500);
+    public readonly [_cache] = new LRUMap<Id64String, ModelProps>(this._modelCacheSize);
 
     /** @internal */
     public constructor(private _iModel: IModelDb) { }
@@ -1965,8 +1966,9 @@ export namespace IModelDb {
    * @public
    */
   export class Elements implements GuidMapper {
+    private readonly _elementCacheSize = 50;
     /** @internal */
-    public readonly [_cache] = new ElementLRUCache();
+    public readonly [_cache] = new ElementLRUCache(this._elementCacheSize);
 
     /** @internal */
     public constructor(private _iModel: IModelDb) { }
@@ -3496,6 +3498,10 @@ export class SnapshotDb extends IModelDb {
     snapshotDb.channels.addAllowedChannel(ChannelControl.sharedChannelName);
     if (options.createClassViews)
       snapshotDb._createClassViewsOnClose = true; // save flag that will be checked when close() is called
+    if (options.geographicCoordinateSystem)
+      snapshotDb.setGeographicCoordinateSystem(options.geographicCoordinateSystem);
+    if (options.ecefLocation)
+      snapshotDb.setEcefLocation(options.ecefLocation);
     return snapshotDb;
   }
 
@@ -3667,6 +3673,10 @@ export class StandaloneDb extends BriefcaseDb {
     nativeDb.resetBriefcaseId(BriefcaseIdValue.Unassigned);
     nativeDb.saveChanges();
     const db = new this({ nativeDb, key: Guid.createValue(), briefcaseId: BriefcaseIdValue.Unassigned, openMode: OpenMode.ReadWrite });
+    if (args.geographicCoordinateSystem)
+      db.setGeographicCoordinateSystem(args.geographicCoordinateSystem);
+    if (args.ecefLocation)
+      db.setEcefLocation(args.ecefLocation);
     db.channels.addAllowedChannel(ChannelControl.sharedChannelName);
     return db;
   }

@@ -836,6 +836,11 @@ export abstract class Viewport implements Disposable, TileUser {
     this.displayStyle.changeBackgroundMapProvider(props);
   }
 
+  /** A reference to the [[TileTree]] used to display the background map in this viewport, if the background map is being displayed. */
+  public get backgroundMapTileTreeReference(): TileTreeReference | undefined {
+    return this.backgroundMap;
+  }
+
   /** @internal */
   public get backgroundMap(): MapTileTreeReference | undefined { return this._mapTiledGraphicsProvider?.backgroundMap; }
 
@@ -1700,8 +1705,8 @@ export abstract class Viewport implements Disposable, TileUser {
   }
 
   /** @internal */
-  public changeDynamics(dynamics: GraphicList | undefined): void {
-    this.target.changeDynamics(dynamics);
+  public changeDynamics(dynamics: GraphicList | undefined, overlay: GraphicList | undefined): void {
+    this.target.changeDynamics(dynamics, overlay);
     this.invalidateDecorations();
   }
 
