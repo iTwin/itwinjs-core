@@ -8,9 +8,10 @@
 
 import { BaselineShift, FontId, FontType, FractionRun, LineLayoutResult, Paragraph, Run, RunLayoutResult, TextBlock, TextBlockLayoutResult, TextBlockMargins, TextRun, TextStyleSettings, TextStyleSettingsProps } from "@itwin/core-common";
 import { Geometry, Range2d } from "@itwin/core-geometry";
-import { IModelDb } from "./IModelDb";
+import { IModelDb } from "../IModelDb";
 import { assert, NonFunctionPropertiesOf } from "@itwin/core-bentley";
 import * as LineBreaker from "linebreak";
+
 
 /** @internal */
 export interface TextLayoutRanges {
@@ -522,7 +523,7 @@ export class TextBlockLayout {
   public toResult(): TextBlockLayoutResult {
     return {
       lines: this.lines.map((x) => x.toResult(this.source)),
-      range: this.textRange.toJSON(),
+      range: this.range.toJSON(),
     };
   }
 
