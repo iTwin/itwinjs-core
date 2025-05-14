@@ -11,8 +11,6 @@ import { IModelTestUtils } from "../IModelTestUtils";
 import { ProcessDetector } from "@itwin/core-bentley";
 import { produceTextBlockGeometry } from "../../core-backend";
 
-// cspell:ignore
-
 function computeTextRangeAsStringLength(args: ComputeRangesForTextLayoutArgs): TextLayoutRanges {
   const range = new Range2d(0, 0, args.chars.length, args.lineHeight);
   return { layout: range, justification: range };
@@ -204,7 +202,7 @@ describe("layoutTextBlock", () => {
     textBlock.appendRun(makeTextRun("ghi"));
     expect(doLayout(textBlock).lines.length).to.equal(2);
 
-    textBlock.appendRun(makeTextRun("jklmnop")); // cspell:ignore jklmnop
+    textBlock.appendRun(makeTextRun("jklmnop"));
     expect(doLayout(textBlock).lines.length).to.equal(3);
 
     textBlock.appendRun(makeTextRun("q"));
@@ -214,7 +212,7 @@ describe("layoutTextBlock", () => {
     textBlock.appendRun(makeTextRun("stu"));
     expect(doLayout(textBlock).lines.length).to.equal(4);
 
-    textBlock.appendRun(makeTextRun("vwxyz")); // cspell:ignore vwxyz
+    textBlock.appendRun(makeTextRun("vwxyz"));
     expect(doLayout(textBlock).lines.length).to.equal(5);
   });
 
@@ -238,7 +236,7 @@ describe("layoutTextBlock", () => {
     block.appendRun(makeTextRun("abc"));
     expectBlockRange(3, 1);
 
-    block.appendRun(makeTextRun("defg")); // cspell:ignore defg
+    block.appendRun(makeTextRun("defg"));
     expectBlockRange(4, 2);
 
     block.width = 1;
@@ -252,7 +250,7 @@ describe("layoutTextBlock", () => {
 
     block.width = 10;
     expectBlockRange(10, 1);
-    block.appendRun(makeTextRun("hijk")); // cspell:ignore hijk
+    block.appendRun(makeTextRun("hijk"));
     expectBlockRange(10, 2);
   });
 
@@ -712,10 +710,10 @@ describe("layoutTextBlock", () => {
     }
 
     const makeTextBlock = (margins: Partial<TextBlockMargins>) => {
-      const textblock = TextBlock.create({ styleName: "", styleOverrides: { lineSpacingFactor: 0 }, margins });
-      textblock.appendRun(makeTextRun("abc"));
-      textblock.appendRun(makeTextRun("defg"));
-      return textblock;
+      const textBlock = TextBlock.create({ styleName: "", styleOverrides: { lineSpacingFactor: 0 }, margins });
+      textBlock.appendRun(makeTextRun("abc"));
+      textBlock.appendRun(makeTextRun("defg"));
+      return textBlock;
     }
 
     let block = makeTextBlock({});
@@ -1107,15 +1105,10 @@ describe("produceTextBlockGeometry", () => {
       const layout = doLayout(block);
       const geom = produceTextBlockGeometry(layout, annotation.computeTransform(layout.range)).entries;
 
-      console.log("\n\nTest case")
-      console.log("anchor", anchor, "margins", margins);
-      console.log("layout range", layout.toResult().range);
-      console.log("geom", geom[1].text?.origin);
       return geom[1].text;
     }
 
     function testMargins(margins: TextBlockMargins, height: number, width: number) {
-      console.log("margins", margins, "height", height, "width", width);
       // We want to disregard negative margins. Note, I'm not changing the margins object itself. It gets passed into makeGeometryWithMargins as it is.
       const left = margins.left >= 0 ? margins.left : 0;
       const right = margins.right >= 0 ? margins.right : 0;
@@ -1144,10 +1137,14 @@ describe("produceTextBlockGeometry", () => {
       expect(props?.origin, "Expected geometry to be centered in the margins").to.deep.equal({ x, y, z: 0 });
     }
 
-    // xlength will be 4 because of the mock implementation on line 16.
-    // ylength will be 1 because of the mock implementation on line 16.
+    // xLength will be 4 because of the mock implementation on line 16.
+    // yLength will be 1 because of the mock implementation on line 16.
     testMargins({ top: 0, right: 0, bottom: 0, left: 0 }, 1, 4);
     testMargins({ top: 1, right: 2, bottom: 3, left: 4 }, 1, 4);
     testMargins({ top: -1, right: -2, bottom: -3, left: -4 }, 1, 4);
   });
 });
+
+
+// Ignoring the text strings from the spell checker
+// cspell:ignore jklmnop vwxyz defg hijk ghij klmno pqrstu Tanuki aabb eeff nggg amet adipiscing elit Phasellus pretium malesuada venenatis eleifend Donec sapien Nullam commodo accumsan lacinia metus enim pharetra lacus facilisis Duis suscipit quis feugiat fermentum ut augue Mauris iaculis odio rhoncus lorem viverra turpis elementum posuere Consolas अनुच्छेद
