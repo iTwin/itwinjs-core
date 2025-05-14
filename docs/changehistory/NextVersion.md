@@ -240,6 +240,11 @@ Learn more at the [Quantity](../learning/quantity/index.md#persistence) learning
 
 We are moving away from using [QuantityType]($core-frontend) in favor of [KindOfQuantity]($ecschema-metadata) [EC full name](https://www.itwinjs.org/bis/ec/ec-name/#full-name). See [Migrating from QuantityType to KindOfQuantity](../learning/frontend/QuantityFormatting.md#migrating-from-quantitytype-to-kindofquantity) for explanations on replacements to `QuantityType`.
 
+Here are 2 ways to retrieve formats, given an EC Full Name for a `KindOfQuantity`:
+
+1. For async eligible workflows, you can call `IModelApp.formatsProvider.getFormat(kindOfQuantityName)` to get a FormatProps object, and construct the formatting specs ([new helper methods](https://github.com/iTwin/itwinjs-core/blob/master/core/frontend/src/quantity-formatting/QuantityFormatter.ts#L1089-L1111)). There is a concern about having to pass in a valid persistenceUnit name, but the kindOfQuantityName can be used to lookup the KoQ schemaItem and retrieve the persistenceUnit. If this workflow is too expensive, and you're concerned about the time it takes to get formats on demand, you can follow option 2.
+2. For sync only workflows, use [getSpecsByName](https://github.com/iTwin/itwinjs-core/blob/master/core/frontend/src/quantity-formatting/QuantityFormatter.ts#L1113-L1119). The `IModelApp.quantityFormatter` acts as a cache for the formatting specs and listens to formatsChanged events. Applications or tools can call [addFormattingSpecsToRegistry](https://github.com/iTwin/itwinjs-core/blob/master/core/frontend/src/quantity-formatting/QuantityFormatter.ts#L1121-L1148) on startup, or ahead of time.
+
 ## API deprecations
 
 ### @itwin/core-bentley
@@ -349,6 +354,8 @@ const metaData: KindOfQuantity | undefined = await imodelDb.schemaContext.getSch
 
 - [IModelConnection.fontMap]($frontend) caches potentially-stale mappings of [FontId]($common)s to font names. If you need access to font Ids on the front-end for some reason, implement an [Ipc method](../learning/IpcInterface.md) that uses [IModelDb.fonts]($backend).
 
+- Deprecated `quantityType` getter for [LengthDescription]($core-frontend), [SurveyLengthDescription]($core-frontend), [EngineeringLengthDescription]($core-frontend), and [AngleDescription]($core-frontend). Use `kindOfQuantityName` property of those classes instead.
+
 ### @itwin/presentation-common
 
 - All public methods of [PresentationRpcInterface]($presentation-common) have been deprecated. Going forward, RPC interfaces should not be called directly. Public wrappers such as [PresentationManager]($presentation-frontend) should be used instead.
@@ -413,6 +420,10 @@ const schema = context.getSchemaSync(schemaKey, SchemaMatchType.Exact);
 // Recommended usage
 const schema = await context.getSchema(schemaKey, SchemaMatchType.Exact);
 ```
+
+### @itwin/appui-abstract
+
+- The `quantityType` property in `PropertyDescription` has been deprecated, in favor of a new optional property, `kindOfQuantityName`. This was done to follow the [migration away from using QuantityType enums.](#migrating-from-quantitytype-to-kindofquantity)
 
 ## Breaking Changes
 
