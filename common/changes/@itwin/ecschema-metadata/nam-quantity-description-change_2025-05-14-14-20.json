@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/ecschema-metadata",
-      "comment": "Gracefully handle errors, including rpc, when retrieving schema items in SchemaFormatsProvider",
+      "comment": "Gracefully handle errors, including rpc, when retrieving schema items in `SchemaFormatsProvider`",
       "type": "none"
     }
   ],

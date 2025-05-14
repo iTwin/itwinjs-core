@@ -633,7 +633,7 @@ export class QuantityFormatter implements UnitsProvider {
             if (formatProps) {
               const existingEntry = this._formatSpecsRegistry.get(name);
               if (existingEntry) {
-                const persistenceUnitName = this._formatSpecsRegistry.get(name)!.formatterSpec.persistenceUnit.name;
+                const persistenceUnitName = existingEntry.formatterSpec.persistenceUnit.name;
                 await this.addFormattingSpecsToRegistry(name, persistenceUnitName, formatProps);
               }
             } else {
