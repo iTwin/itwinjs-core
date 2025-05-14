@@ -5,7 +5,7 @@ import * as fs from "fs";
 *--------------------------------------------------------------------------------------------*/
 import { describe, expect, it } from "vitest";
 import { OrderedSet, StopWatch } from "@itwin/core-bentley";
-import { IndexedPolyfaceWalker, IndexedXYZCollection } from "../../core-geometry";
+import { CurveLocationDetail } from "../../core-geometry";
 import { Arc3d } from "../../curve/Arc3d";
 import { BagOfCurves } from "../../curve/CurveCollection";
 import { AnyCurve } from "../../curve/CurveTypes";
@@ -16,10 +16,11 @@ import { Loop } from "../../curve/Loop";
 import { JointOptions } from "../../curve/OffsetOptions";
 import { RegionBinaryOpType, RegionOps } from "../../curve/RegionOps";
 import { StrokeOptions } from "../../curve/StrokeOptions";
-import { Geometry, PolygonLocation } from "../../Geometry";
+import { AxisOrder, Geometry, PolygonLocation } from "../../Geometry";
 import { Angle } from "../../geometry3d/Angle";
 import { GrowableXYArray } from "../../geometry3d/GrowableXYArray";
 import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray";
+import { IndexedXYZCollection } from "../../geometry3d/IndexedXYZCollection";
 import { Matrix3d } from "../../geometry3d/Matrix3d";
 import { Point2d } from "../../geometry3d/Point2dVector2d";
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
@@ -31,6 +32,7 @@ import { Transform } from "../../geometry3d/Transform";
 import { TorusImplicit } from "../../numerics/Polynomials";
 import { FacetIntersectOptions, FacetLocationDetail } from "../../polyface/FacetLocationDetail";
 import { SortableEdge, SortableEdgeCluster } from "../../polyface/IndexedEdgeMatcher";
+import { IndexedPolyfaceWalker } from "../../polyface/IndexedPolyfaceWalker";
 import { GriddedRaggedRange2dSetWithOverflow } from "../../polyface/multiclip/GriddedRaggedRange2dSetWithOverflow";
 import { IndexedPolyface, Polyface, PolyfaceVisitor } from "../../polyface/Polyface";
 import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
@@ -1502,8 +1504,8 @@ describe("PolyfaceSpeedup", () => {
         const sweptEdges2 = PolyfaceQuery.sweepLineStringToFacetsXY(drapePath, mesh0, sweepOptions.searcher);
         const elapsedDrapeXY = timer.stop().milliseconds;
 
-        ck.testLT(elapsedDrapeWithSearcher, elapsedDrape, "searcher speeds up drape");
-        ck.testLT(elapsedDrapeXY, elapsedDrape, "drapeXY speeds up vertical drape");
+        ck.testLE(elapsedDrapeWithSearcher, elapsedDrape, "searcher speeds up drape");
+        ck.testLE(elapsedDrapeXY, elapsedDrape, "drapeXY speeds up vertical drape");
 
         const hole0 = BagOfCurves.create(...sweptEdges0).collectCurvePrimitives(undefined, true, true) as LineSegment3d[];
         const hole1 = BagOfCurves.create(...sweptEdges1).collectCurvePrimitives(undefined, true, true) as LineSegment3d[];
@@ -1533,7 +1535,7 @@ describe("PolyfaceSpeedup", () => {
       PolyfaceQuery.announceBoundaryEdges(mesh2, (_p0: any, _p1: any, i0: number, i1: number, a: number) => announce(i0, i1, a, edges1));
       const elapsedAnnounceWithTopo = timer.stop().milliseconds;
 
-      ck.testLT(elapsedAnnounceWithTopo, elapsedAnnounce, "topo cache speeds up announceBoundaryEdges");
+      ck.testLE(elapsedAnnounceWithTopo, elapsedAnnounce, "topo cache speeds up announceBoundaryEdges");
 
       ck.testExactNumber(edges0.size, edges1.size, "same number of announced edges");
       for (const edge of edges0)
@@ -1550,4 +1552,138 @@ describe("PolyfaceSpeedup", () => {
     expect(ck.getNumErrors()).toBe(0);
   });
 
+  it("IsPolyfaceManifold", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    const timer = new StopWatch();
+    const subdivisions = 20;
+
+    const radius = 1.0;
+    const sphere = Sphere.createCenterRadius(Point3d.create(0, 0, 0), radius);
+    const builder = PolyfaceBuilder.create(StrokeOptions.createForFacets());
+    builder.addSphere(sphere, subdivisions);
+    const mesh = builder.claimPolyface();
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, mesh);
+
+    let numNullEdgeClusters = 0;
+    PolyfaceQuery.announceBoundaryEdges(mesh, () => ++numNullEdgeClusters, false, false, true);
+    ck.testExactNumber(numNullEdgeClusters, 2, "sphere has a null edge cluster at each pole");
+
+    // baseline
+    timer.start();
+    let isManifold = PolyfaceQuery.isPolyfaceManifold(mesh, false);
+    const elapsedIsManifold = timer.stop().milliseconds;
+    ck.testTrue(isManifold, "sphere is manifold");
+
+    // subset visitor test
+    const subsetVisitor = mesh.createVisitor().createSubsetVisitor(NumberArray.createArrayWithMaxStepSize(0, subdivisions - 1, 1));
+    ck.testTrue(PolyfaceQuery.isSubsetVisitor(subsetVisitor), "subset visitor is recognized");
+    ck.testFalse(PolyfaceQuery.isSubsetVisitor(mesh), "a polyface is not a subset visitor");
+    ck.testFalse(PolyfaceQuery.isSubsetVisitor(mesh.createVisitor()), "regular visitor is not a subset visitor");
+    const builder1 = PolyfaceBuilder.create();
+    builder1.addFacetsFromVisitor(subsetVisitor);
+    const subsetMesh = builder1.claimPolyface();
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, subsetMesh, 3);
+    isManifold = PolyfaceQuery.isPolyfaceManifold(subsetVisitor, false);
+    ck.testFalse(isManifold, "subset of sphere is not a closed manifold");
+    isManifold = PolyfaceQuery.isPolyfaceManifold(subsetVisitor, true);
+    ck.testTrue(isManifold, "subset of sphere is a manifold surface");
+
+    // test with topology cache
+    IndexedPolyfaceWalker.buildEdgeMateIndices(mesh);
+    const parentData = IndexedPolyface.hasEdgeMateIndex(mesh);
+    if (ck.testDefined(parentData, "parent data found")) {
+      let numNullEdges = 0;
+      for (let iEdge = 0; iEdge < parentData.edgeMateIndex.length; iEdge++) {
+        if (parentData.edgeMateIndex[iEdge] === iEdge)
+          ++numNullEdges;
+      }
+      ck.testExactNumber(numNullEdges, 2 * subdivisions, "sphere has a null edge in each quad facet at the poles");
+      timer.start();
+      isManifold = PolyfaceQuery.isPolyfaceManifold(mesh, false);
+      const elapsedIsManifoldWithTopo = timer.stop().milliseconds;
+      ck.testTrue(isManifold, "sphere is manifold");
+      ck.testLE(elapsedIsManifoldWithTopo, elapsedIsManifold, "topo cache speeds up isPolyfaceManifold");
+    }
+
+    // find a mesh vertex at which to start path
+    const ray = Ray3d.createStartEnd(Point3d.createScale({x: -2, y: -3, z: 4}, sphere.maxAxisRadius()), sphere.cloneCenter());
+    const intersectOptions = new FacetIntersectOptions();
+    let closestHit: FacetLocationDetail | undefined;
+    intersectOptions.acceptIntersection = (detail: FacetLocationDetail): boolean => {
+      if (!closestHit || closestHit.a > detail.a) // we know the ray originates outside the mesh
+        closestHit = detail.clone();
+      return false;
+    };
+    PolyfaceQuery.intersectRay3d(mesh, ray, intersectOptions);
+    ck.testDefined(closestHit, "ray intersects sphere");
+
+    // setup for path traversal. The goal is to justify edge mates for null edges, because otherwise the walker halts at a null edge.
+    const pathStart = Point3d.createZero();
+    const pathEnd = Point3d.createZero();
+    const diameter = LineSegment3d.createCapture(pathStart, pathEnd);
+    let minDist = Geometry.largeCoordinateResult;
+    const getNearPoint = (edge: IndexedPolyfaceWalker): Point3d | undefined => {
+      if (ck.testTrue(edge.isValid, "walker is valid"))
+        return mesh.data.point.getPoint3dAtCheckedPointIndex(mesh.data.pointIndex[edge.edgeIndex!]);
+      return undefined;
+    };
+    const getFarPoint = (edge: IndexedPolyfaceWalker): Point3d | undefined => {
+      return getNearPoint(edge.nextAroundFacet());
+    };
+    const findNextEdgeAtVertex = (vertex: IndexedPolyfaceWalker): IndexedPolyfaceWalker => {
+      const nextEdge = IndexedPolyfaceWalker.createAtEdgeIndex(vertex.polyface); // invalid
+      if (!vertex.isValid)
+        return nextEdge;
+      let minDistAtVertex = Geometry.largeCoordinateResult;
+      const startEdge = vertex;
+      const edge = vertex.clone();
+      const proj = CurveLocationDetail.create();
+      do { // find the next edge in the path at this vertex
+        const edgeEnd = getFarPoint(edge);
+        if (ck.testDefined(edgeEnd, "retrieved edge end point")) {
+          const dist = edgeEnd.distance(pathEnd);
+          const distXY =  localDiameter.closestPoint(localToWorld.multiplyInversePoint3d(edgeEnd, edgeEnd)!, true, proj).point.distanceXY(edgeEnd);
+          if (dist + distXY < minDistAtVertex) {
+            minDistAtVertex = dist + distXY;
+            edge.clone(nextEdge);
+          }
+        }
+        edge.nextAroundVertex(edge);
+      } while (ck.testTrue(edge.isValid, "vSuccessor is valid") && !edge.isSameEdge(startEdge));
+      minDist = minDistAtVertex;
+      return nextEdge;
+    };
+    let walker: IndexedPolyfaceWalker = IndexedPolyfaceWalker.createAtFacetIndex(mesh, closestHit!.facetIndex, closestHit!.closestEdge.startVertexIndex);
+    ck.testDefined(walker.isValid, "walker starts off valid");
+    pathStart.setFrom(getNearPoint(walker));
+    pathEnd.set(-pathStart.x, -pathStart.y, -pathStart.z); // builder symmetry ensures the antipode is a mesh vertex
+    // we compute xy-distance from the diameter in a heads-up LCS in which the sphere's poles lie directly above/below
+    // the diameter, so by minimizing this distance, we ensure a path through a sphere pole
+    const localToWorld = Transform.createRigidFromOriginAndVector(undefined, diameter.fractionToPointAndDerivative(0).direction, AxisOrder.XYZ)!;
+    const localDiameter = diameter.cloneTransformed(localToWorld.inverse()!);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, diameter);
+
+    // walk the mesh from pathStart to pathEnd
+    const path: Point3d[] = [pathStart];
+    let passedThroughPole = false;
+    while (!Geometry.isSmallMetricDistance(minDist)) {
+      walker = findNextEdgeAtVertex(walker);
+      if (!ck.testTrue(walker.isValid, "found next edge in path"))
+        break;
+      walker.nextAroundFacet(walker); // advance to next point in path
+      const point = getNearPoint(walker);
+      if (!ck.testDefined(point, "retrieved point from walker"))
+        break;
+      path.push(point);
+      if (Geometry.isSmallMetricDistance(1.0 - Math.abs(point.z)))
+        passedThroughPole = true;
+    }
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, path);
+    ck.testTrue(passedThroughPole, "traversed through cluster of null edges at pole");
+    ck.testPoint3d(pathEnd, getNearPoint(walker)!, "path ends at antipode");
+
+    GeometryCoreTestIO.saveGeometry(allGeometry, "PolyfaceSpeedup", "IsPolyfaceManifold");
+    expect(ck.getNumErrors()).toBe(0);
+  });
 });
