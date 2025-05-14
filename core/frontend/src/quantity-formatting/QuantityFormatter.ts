@@ -607,7 +607,7 @@ export class QuantityFormatter implements UnitsProvider {
   public async onInitialized() {
     await this.initializeQuantityTypesRegistry();
 
-    const initialKoQs = [["AecUnits.LENGTH", "Units.M"], ["AecUnits.ANGLE", "Units.RAD"], ["AecUnits.AREA", "Units.SQ_M"], ["AecUnits.VOLUME", "Units.CUB_M"]];
+    const initialKoQs = [["AecUnits.LENGTH", "Units.M"], ["AecUnits.ANGLE", "Units.RAD"], ["AecUnits.AREA", "Units.SQ_M"], ["AecUnits.VOLUME", "Units.CUB_M"], ["RoadRailUnits.STATION", "Units.M"], ["RoadRailUnits.LENGTH", "Units.M"]];
     for (const entry of initialKoQs) {
       try {
         await this.addFormattingSpecsToRegistry(entry[0], entry[1]);
@@ -623,7 +623,7 @@ export class QuantityFormatter implements UnitsProvider {
             const persistenceUnitName = entry.formatterSpec.persistenceUnit.name;
             await this.addFormattingSpecsToRegistry(name, persistenceUnitName, formatProps);
           } else {
-            this._formatSpecsRegistry.delete(name); // clear the specs if format was removed
+            this._formatSpecsRegistry.delete(name); // clear the specs if format was removed, or no longer exists.
           }
         }
       } else {
