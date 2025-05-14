@@ -4241,7 +4241,7 @@ export class Point2d extends XY implements BeJSONFunctions {
 // @public
 export class Point2dArray {
     static clonePoint2dArray(data: Point2d[]): Point2d[];
-    static isAlmostEqual(dataA: undefined | Point2d[], dataB: undefined | Point2d[]): boolean;
+    static isAlmostEqual(dataA: Point2d[] | Float64Array | undefined, dataB: Point2d[] | Float64Array | undefined, tolerance?: number): boolean;
     static pointCountExcludingTrailingWraparound(data: XAndY[]): number;
 }
 
@@ -4311,7 +4311,7 @@ export class Point3dArray {
     static evaluateTrilinearWeights(weights: Float64Array, u0: number, u1: number, v0: number, v1: number, w0: number, w1: number): void;
     static indexOfMostDistantPoint(points: Point3d[], spacePoint: XYZ, farVector: Vector3d): number | undefined;
     static indexOfPointWithMaxCrossProductMagnitude(points: Point3d[], spacePoint: Point3d, vector: Vector3d, farVector: Vector3d): number | undefined;
-    static isAlmostEqual(dataA: Point3d[] | Float64Array | undefined, dataB: Point3d[] | Float64Array | undefined): boolean;
+    static isAlmostEqual(dataA: Point3d[] | Float64Array | undefined, dataB: Point3d[] | Float64Array | undefined, tolerance?: number): boolean;
     static isCloseToPlane(data: Point3d[] | Float64Array, plane: Plane3dByOriginAndUnitNormal, tolerance?: number): boolean;
     static minMaxPoints(data: Point3d[]): {
         minXPoint: Point3d;
@@ -4412,8 +4412,8 @@ export class Point4d extends Plane3d implements BeJSONFunctions {
     static fromJSON(json?: Point4dProps): Point4d;
     interpolate(fraction: number, pointB: Point4d, result?: Point4d): Point4d;
     static interpolateQuaternions(quaternion0: Point4d, fractionParameter: number, quaternion1: Point4d, result?: Point4d): Point4d;
-    isAlmostEqual(other: Point4d): boolean;
-    isAlmostEqualXYZW(x: number, y: number, z: number, w: number): boolean;
+    isAlmostEqual(other: Point4d, tolerance?: number): boolean;
+    isAlmostEqualXYZW(x: number, y: number, z: number, w: number, tolerance?: number): boolean;
     get isAlmostZero(): boolean;
     magnitudeSquaredXYZ(): number;
     magnitudeXYZW(): number;
@@ -4467,7 +4467,7 @@ export class Point4d extends Plane3d implements BeJSONFunctions {
 
 // @public
 export class Point4dArray {
-    static isAlmostEqual(dataA: Point4d[] | Float64Array | undefined, dataB: Point4d[] | Float64Array | undefined): boolean;
+    static isAlmostEqual(dataA: Point4d[] | Float64Array | undefined, dataB: Point4d[] | Float64Array | undefined, tolerance?: number): boolean;
     static isCloseToPlane(data: Point4d[] | Float64Array, plane: Plane3dByOriginAndUnitNormal, tolerance?: number): boolean;
     static multiplyInPlace(transform: Transform, xyzw: Float64Array): void;
     static packPointsAndWeightsToFloat64Array(data: Point3d[] | Float64Array | number[], weights: number[] | Float64Array, result?: Float64Array): Float64Array | undefined;
@@ -6362,7 +6362,7 @@ export class Vector3d extends XYZ {
 // @public
 export class Vector3dArray {
     static cloneVector3dArray(data: XYAndZ[]): Vector3d[];
-    static isAlmostEqual(dataA: undefined | Vector3d[], dataB: undefined | Vector3d[]): boolean;
+    static isAlmostEqual(dataA: Vector3d[] | Float64Array | undefined, dataB: Vector3d[] | Float64Array | undefined, tolerance?: number): boolean;
 }
 
 // @public

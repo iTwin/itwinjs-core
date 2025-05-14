@@ -122,11 +122,11 @@ export class Point4d extends Plane3d implements BeJSONFunctions {
     return result;
   }
   /** Near-equality test, using `Geometry.isSameCoordinate` on all 4 x,y,z,w */
-  public isAlmostEqual(other: Point4d): boolean {
-    return Geometry.isSameCoordinate(this.x, other.x)
-      && Geometry.isSameCoordinate(this.y, other.y)
-      && Geometry.isSameCoordinate(this.z, other.z)
-      && Geometry.isSameCoordinate(this.w, other.w);
+  public isAlmostEqual(other: Point4d, tolerance: number = Geometry.smallMetricDistance): boolean {
+    return Geometry.isSameCoordinate(this.x, other.x, tolerance)
+      && Geometry.isSameCoordinate(this.y, other.y, tolerance)
+      && Geometry.isSameCoordinate(this.z, other.z, tolerance)
+      && Geometry.isSameCoordinate(this.w, other.w, tolerance);
   }
   /**
    * Test for same coordinate by direct x,y,z,w args
@@ -135,11 +135,11 @@ export class Point4d extends Plane3d implements BeJSONFunctions {
    * @param z z to test
    * @param w w to test
    */
-  public isAlmostEqualXYZW(x: number, y: number, z: number, w: number): boolean {
-    return Geometry.isSameCoordinate(this.x, x)
-      && Geometry.isSameCoordinate(this.y, y)
-      && Geometry.isSameCoordinate(this.z, z)
-      && Geometry.isSameCoordinate(this.w, w);
+  public isAlmostEqualXYZW(x: number, y: number, z: number, w: number, tolerance: number = Geometry.smallMetricDistance): boolean {
+    return Geometry.isSameCoordinate(this.x, x, tolerance)
+      && Geometry.isSameCoordinate(this.y, y, tolerance)
+      && Geometry.isSameCoordinate(this.z, z, tolerance)
+      && Geometry.isSameCoordinate(this.w, w, tolerance);
   }
 
   /**
