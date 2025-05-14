@@ -130,7 +130,13 @@ export class SchemaFormatsProvider implements FormatsProvider {
     const itemKey = new SchemaItemKey(schemaItemName, schema.schemaKey);
 
     if (schema.name === "Formats") {
-      const format = await this._context.getSchemaItem(itemKey, Format);
+      let format: Format | undefined;
+      try {
+        format = await this._context.getSchemaItem(itemKey, Format);
+      } catch {
+        Logger.logError(loggerCategory, `Failed to find Format ${itemKey.fullName}`);
+        return undefined;
+      }
       if (!format) {
         return undefined;
       }
