@@ -300,7 +300,7 @@ export class Transform implements BeJSONFunctions {
    * @param origin origin of the local coordinate system. Default is the global origin (zero).
    * @param vectorX first axis passed into `Matrix3d.createRigidFromColumns`.
    * @param vectorY second axis passed into `Matrix3d.createRigidFromColumns`.
-   * @param axisOrder order of axis construction in `Matrix3d.createRigidFromColumns`.
+   * @param axisOrder order of axis construction in `Matrix3d.createRigidFromColumns(vectorX, vectorY, axisOrder)`.
    * @param result optional pre-allocated result to populate and return.
    * @returns localToWorld transform for a local coordinate system with given origin and ordered axes, or `undefined`
    * if the rigid matrix could not be created.
@@ -321,14 +321,16 @@ export class Transform implements BeJSONFunctions {
   /**
    * Create a Transform with given origin and a rigid matrix constructed from one column vector.
    * @param origin origin of the local coordinate system. Default is the global origin (zero).
-   * @param vectorZ z-axis of the local coordinate system. The matrix part of the returned transform has z-column in this direction.
+   * @param vector direction of the axis of the local coordinate system indicated by the first letter of `axisOrder`.
+   * @param axisOrder order of axis construction in `Matrix3d.createRigidHeadsUp(vector, axisOrder)`. Default value
+   * is `AxisOrder.ZXY`, which means the z-column of the returned Transform is in the direction of `vector`.
    * @param result optional pre-allocated result to populate and return.
-   * @returns localToWorld transform for a local coordinate system with given origin and z-axis, or `undefined`
+   * @returns localToWorld transform for a local coordinate system with given origin and axis, or `undefined`
    * if the rigid matrix could not be created.
    * @see [[Matrix3d.createRigidHeadsUp]]
    */
-  public static createRigidFromOriginAndVector(origin: XYZ | undefined, vectorZ: Vector3d, result?: Transform): Transform | undefined {
-    const matrix = Matrix3d.createRigidHeadsUp(vectorZ, undefined, result?._matrix);
+  public static createRigidFromOriginAndVector(origin: XYZ | undefined, vector: Vector3d, axisOrder: AxisOrder = AxisOrder.ZXY, result?: Transform): Transform | undefined {
+    const matrix = Matrix3d.createRigidHeadsUp(vector, axisOrder, result?._matrix);
     if (!matrix)
       return undefined;
     if (result) {

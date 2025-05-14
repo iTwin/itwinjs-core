@@ -158,17 +158,16 @@ export class IndexedPolyfaceWalker {
   }
   /**
    * Create a new IndexedPolyfaceWalker from the instance.
-   * * The returned walker refers to the same polyface.
-   * * If `edgeIndex` is undefined, the returned walker refers to the same edge as the instance.
-   * * If `edgeIndex` is defined and valid, the returned walker refers to this edge.
-   * * If `edgeIndex` is defined but invalid, return undefined.
+   * * The returned walker refers to the same polyface and edge as the instance.
+   * @param result optional receiver to modify and return.
    */
-  public clone(edgeIndex?: number): IndexedPolyfaceWalker | undefined {
-    if (edgeIndex === undefined)
-      edgeIndex = this._edgeIndex;
-    if (this._polyface.data.isValidEdgeIndex(edgeIndex))
-      return new IndexedPolyfaceWalker(this._polyface, edgeIndex);
-    return undefined;
+  public clone(result?: IndexedPolyfaceWalker): IndexedPolyfaceWalker {
+    if (result) {
+      result._polyface = this._polyface;
+      result._edgeIndex = this._edgeIndex;
+      return result;
+    }
+    return new IndexedPolyfaceWalker(this._polyface, this._edgeIndex);
   }
   /**
    * Load the walker's facet into the given visitor.

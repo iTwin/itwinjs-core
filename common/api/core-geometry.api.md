@@ -2917,7 +2917,7 @@ export class IndexedPolyfaceVisitor extends PolyfaceData implements PolyfaceVisi
 // @public
 export class IndexedPolyfaceWalker {
     static buildEdgeMateIndices(polyface: IndexedPolyface): void;
-    clone(edgeIndex?: number): IndexedPolyfaceWalker | undefined;
+    clone(result?: IndexedPolyfaceWalker): IndexedPolyfaceWalker;
     static createAtEdgeIndex(polyface: IndexedPolyface, edgeIndex?: number): IndexedPolyfaceWalker;
     static createAtFacetIndex(polyface: IndexedPolyface, facetIndex: number, offsetWithinFacet?: number): IndexedPolyfaceWalker;
     static createAtVisitor(visitor: IndexedPolyfaceVisitor, offsetWithinFacet?: number): IndexedPolyfaceWalker;
@@ -5967,7 +5967,7 @@ export class Transform implements BeJSONFunctions {
     static createOriginAndMatrixColumns(origin: XYZ, vectorX: Vector3d, vectorY: Vector3d, vectorZ: Vector3d, result?: Transform): Transform;
     static createRefs(origin: XYZ | undefined, matrix: Matrix3d, result?: Transform): Transform;
     static createRigidFromOriginAndColumns(origin: XYZ | undefined, vectorX: Vector3d, vectorY: Vector3d, axisOrder: AxisOrder, result?: Transform): Transform | undefined;
-    static createRigidFromOriginAndVector(origin: XYZ | undefined, vectorZ: Vector3d, result?: Transform): Transform | undefined;
+    static createRigidFromOriginAndVector(origin: XYZ | undefined, vector: Vector3d, axisOrder?: AxisOrder, result?: Transform): Transform | undefined;
     static createRowValues(qxx: number, qxy: number, qxz: number, ax: number, qyx: number, qyy: number, qyz: number, ay: number, qzx: number, qzy: number, qzz: number, az: number, result?: Transform): Transform;
     static createScaleAboutPoint(fixedPoint: Point3d, scale: number, result?: Transform): Transform;
     static createTranslation(translation: XYZ, result?: Transform): Transform;
