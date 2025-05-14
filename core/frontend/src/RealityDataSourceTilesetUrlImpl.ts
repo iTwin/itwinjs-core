@@ -13,7 +13,7 @@ import { PublisherProductInfo, RealityDataSource, SpatialLocationAndExtents } fr
 import { ThreeDTileFormatInterpreter } from "./tile/internal";
 
 /** This class provides access to the reality data provider services.
- * It encapsulates access to a reality data weiter it be from local access, http or ProjectWise Context Share.
+ * It encapsulates access to a reality data whether it be from local access, http or ProjectWise Context Share.
  * The key provided at the creation determines if this is ProjectWise Context Share reference.
  * If not then it is considered local (ex: C:\temp\TileRoot.json) or plain http access (http://someserver.com/data/TileRoot.json)
  * There is a one to one relationship between a reality data and the instances of present class.
@@ -23,8 +23,11 @@ export class RealityDataSourceTilesetUrlImpl implements RealityDataSource {
   public readonly key: RealityDataSourceKey;
   /** The URL that supplies the 3d tiles for displaying the reality model. */
   private _tilesetUrl: string | undefined;
-  /** For use by all Reality Data. For RD stored on PW Context Share, represents the portion from the root of the Azure Blob Container*/
-  private _baseUrl: string = "";
+  /** For use by all Reality Data. For RD stored on PW Context Share, represents the portion from the root of the Azure Blob Container. Includes trailing subdirectories. */
+  private _baseUrlWithSubDirs: string = "";
+  /** Same as _baseUrlWithSubDirs, but without any trailing subdirectories (the true website root). */
+  private _baseUrlNoSubDirs: string = "";
+
   /** Need to be passed down to child tile requests when requesting from blob storage, e.g. a Cesium export from the Mesh Export Service*/
   private _searchParams?: URLSearchParams;
 
@@ -80,10 +83,13 @@ export class RealityDataSourceTilesetUrlImpl implements RealityDataSource {
     const newUrl = new URL(url);
     this._searchParams = newUrl.searchParams
     urlParts.pop();
-    if (urlParts.length === 0)
-      this._baseUrl = "";
-    else
-      this._baseUrl = `${urlParts.join("/")}/`;
+    if (urlParts.length === 0) {
+      this._baseUrlWithSubDirs = "";
+      this._baseUrlNoSubDirs = "";
+    } else {
+      this._baseUrlWithSubDirs = `${urlParts.join("/")}/`;
+      this._baseUrlNoSubDirs = `${urlParts[0]}/${urlParts[1]}/${urlParts[2]}/`;
+    }
   }
 
   /**
@@ -121,11 +127,11 @@ export class RealityDataSourceTilesetUrlImpl implements RealityDataSource {
 
     // TODO absolute vs relative URL handling?
 
-    // Build a relative URL where tilePath params will win over base URL params.
-    // const url = new URL(tilePath, this._baseUrl);
+    const baseUrl = tilePath.startsWith("/") ? this._baseUrlWithSubDirs : this._baseUrlNoSubDirs;
 
-    // Temp hardcode this
-    const url = new URL(tilePath, "https://tile.googleapis.com/");
+    // Build a relative URL where tilePath params will win over base URL params.
+
+    const url = new URL(tilePath, baseUrl);
 
     // If URL is to json file, store search params
     const isJson = url.pathname.toLowerCase().endsWith("json");
