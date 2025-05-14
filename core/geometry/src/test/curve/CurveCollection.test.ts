@@ -21,6 +21,7 @@ import { ParityRegion } from "../../curve/ParityRegion";
 import { Path } from "../../curve/Path";
 import { ConsolidateAdjacentCurvePrimitivesOptions, RegionOps } from "../../curve/RegionOps";
 import { UnionRegion } from "../../curve/UnionRegion";
+import { Geometry } from "../../Geometry";
 import { AngleSweep } from "../../geometry3d/AngleSweep";
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 import { Range3d } from "../../geometry3d/Range";
@@ -361,7 +362,7 @@ describe("ConsolidateAdjacentPrimitives", () => {
           }
         }
       }
-      GeometryCoreTestIO.saveGeometry(allGeometry, "ConsolidateAdjacent", filename);
+      GeometryCoreTestIO.saveGeometry(allGeometry, "ConsolidateAdjacentPrimitives", filename);
     }
     expect(ck.getNumErrors()).toBe(0);
   });
@@ -394,6 +395,40 @@ describe("ConsolidateAdjacentPrimitives", () => {
     const singlePointPathB = Path.create(LineString3d.create(Point3d.create(1, 1, 2)));
     RegionOps.consolidateAdjacentPrimitives(singlePointPathB);
     ck.testExactNumber(1, singlePointPathB.children.length, "Single point path consolidates to stub");
+    expect(ck.getNumErrors()).toBe(0);
+  });
+
+  it("CompressionOption", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    let x0 = 0;
+    const eps = Geometry.smallMetricDistance / 10;
+    const seg0 = LineSegment3d.create(Point3d.createZero(), Point3d.create(1));
+    const string0 = LineString3d.create([Point3d.create(1), Point3d.create(1 + eps, 0.3), Point3d.create(1 - eps, 0.7), Point3d.create(1, 1)]);
+    const string1 = LineString3d.create([Point3d.create(1, 1), Point3d.create(0.5, 1), Point3d.create(0, 1), Point3d.create(-1, 1)]);
+    const seg1 = LineSegment3d.create(Point3d.create(-1, 1), Point3d.create(-1, 0));
+    const string2 = LineString3d.create([Point3d.create(-1, 0), Point3d.create(-0.5, eps), Point3d.createZero()]);
+    const originalLoopPoints = 11;
+    const loop = Loop.create(seg0, string0, string1, seg1, string2);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, loop, x0);
+
+    const loop0 = loop.clone();
+    RegionOps.consolidateAdjacentPrimitives(loop0);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, loop0, x0 += 3);
+    if (ck.testExactNumber(1, loop0.children.length, "consolidated all children into one..."))
+      if (ck.testType(loop0.children[0], LineString3d, "...linestring..."))
+        ck.testExactNumber(5, loop0.children[0].packedPoints.length, "...with minimal point count");
+
+    const loop1 = loop.clone();
+    const options = new ConsolidateAdjacentCurvePrimitivesOptions();
+    options.disableLinearCompression = true;
+    RegionOps.consolidateAdjacentPrimitives(loop1, options);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, loop1, x0 += 3);
+    if (ck.testExactNumber(1, loop1.children.length, "consolidated all children into one..."))
+      if (ck.testType(loop1.children[0], LineString3d, "...linestring..."))
+        ck.testExactNumber(originalLoopPoints, loop1.children[0].packedPoints.length, "...with uncompressed points");
+
+    GeometryCoreTestIO.saveGeometry(allGeometry, "ConsolidateAdjacentPrimitives", "CompressionOption");
     expect(ck.getNumErrors()).toBe(0);
   });
 });
