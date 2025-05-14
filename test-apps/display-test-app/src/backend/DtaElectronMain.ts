@@ -5,11 +5,12 @@
 import * as path from "path";
 import { assert } from "@itwin/core-bentley";
 import { ElectronHost } from "@itwin/core-electron/lib/cjs/ElectronBackend";
-import { CreateSectionDrawingViewArgs, CreateSectionDrawingViewResult, dtaChannel, DtaIpcInterface } from "../common/DtaIpcInterface";
+import { CreateSectionDrawingViewArgs, CreateSectionDrawingViewResult, CreateTextBlockArgs, CreateTextStyleArgs, dtaChannel, DtaIpcInterface } from "../common/DtaIpcInterface";
 import { getRpcInterfaces, initializeDtaBackend, loadBackendConfig } from "./Backend";
 import { IpcHandler } from "@itwin/core-backend";
 import { getConfig } from "../common/DtaConfiguration";
 import { createSectionDrawing } from "./SectionDrawingImpl";
+import { deleteTextAnnotations, importSchema, insertAnnotationTextStyle, insertTextAnnotation2d, schemaVersion, updateAnnotationTextStyle, updateTextAnnotation2d, upgradeSchemas } from "./TextAnnotationImpl";
 
 const mainWindowName = "mainWindow";
 const getWindowSize = (winSize?: string) => {
@@ -39,6 +40,39 @@ class DtaHandler extends IpcHandler implements DtaIpcInterface {
 
   public async createSectionDrawing(args: CreateSectionDrawingViewArgs): Promise<CreateSectionDrawingViewResult> {
     return createSectionDrawing(args);
+  }
+
+  public async insertTextAnnotation2d(args: CreateTextBlockArgs): Promise<string> {
+    return insertTextAnnotation2d(args);
+  }
+
+  public async updateTextAnnotation2d(elementId: string, args: CreateTextBlockArgs): Promise<void> {
+    return updateTextAnnotation2d(elementId, args);
+  }
+
+  public async insertAnnotationTextStyle(args: CreateTextStyleArgs): Promise<string> {
+    return insertAnnotationTextStyle(args);
+  }
+
+  public async updateAnnotationTextStyle(elementId: string, args: CreateTextStyleArgs): Promise<void> {
+    return updateAnnotationTextStyle(elementId, args);
+  }
+
+
+  public async deleteTextAnnotations(args: { iModelKey: string }): Promise<void> {
+    return deleteTextAnnotations(args);
+  }
+
+  public async upgradeSchemas(fileName: string): Promise<void> {
+    return upgradeSchemas(fileName);
+  }
+
+  public async schemaVersion(args: { iModelKey: string }): Promise<string | undefined> {
+    return schemaVersion(args);
+  }
+
+  public async importSchema(args: {iModelKey: string}): Promise<string | undefined> {
+    return importSchema(args);
   }
 }
 

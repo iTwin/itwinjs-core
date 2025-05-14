@@ -9,8 +9,9 @@
 import { BaselineShift, FontId, FontType, FractionRun, LineLayoutResult, Paragraph, Run, RunLayoutResult, TextBlock, TextBlockLayoutResult, TextBlockMargins, TextRun, TextStyleSettings, TextStyleSettingsProps } from "@itwin/core-common";
 import { Geometry, Range2d } from "@itwin/core-geometry";
 import { IModelDb } from "./IModelDb";
-import { assert, NonFunctionPropertiesOf } from "@itwin/core-bentley";
+import { assert, Id64String, NonFunctionPropertiesOf } from "@itwin/core-bentley";
 import * as LineBreaker from "linebreak";
+import { AnnotationTextStyle } from "./TextAnnotationElement";
 
 /** @internal */
 export interface TextLayoutRanges {
@@ -43,7 +44,18 @@ export type ComputeRangesForTextLayout = (args: ComputeRangesForTextLayoutArgs) 
 export type FindFontId = (name: string, type?: FontType) => FontId;
 
 /** @internal */
-export type FindTextStyle = (name: string) => TextStyleSettings;
+export type FindTextStyle = (id: Id64String) => TextStyleSettings;
+
+function createFindTextStyleImpl(iModel: IModelDb): FindTextStyle {
+  return function findTextStyleImpl(id: Id64String): TextStyleSettings {
+    const annotationTextStyle = iModel.elements.tryGetElement<AnnotationTextStyle>(id);
+    if (annotationTextStyle && annotationTextStyle instanceof AnnotationTextStyle) {
+      return annotationTextStyle.settings;
+    }
+    // TODO: MUST BE REQUIRED ON TEXTBLOCKS
+    return TextStyleSettings.fromJSON();
+  };
+}
 
 /**
  * Arguments supplied to [[computeLayoutTextBlockResult]].
@@ -75,8 +87,7 @@ export function layoutTextBlock(args: LayoutTextBlockArgs): TextBlockLayout {
   const findFontId = args.findFontId ?? ((name, type) => args.iModel.fonts.findId({ name, type }) ?? 0);
   const computeTextRange = args.computeTextRange ?? ((x) => args.iModel.computeRangesForText(x));
 
-  // ###TODO finding text styles in workspaces.
-  const findTextStyle = args.findTextStyle ?? (() => TextStyleSettings.fromJSON());
+  const findTextStyle = args.findTextStyle ?? createFindTextStyleImpl(args.iModel);
 
   return new TextBlockLayout(args.textBlock, new LayoutContext(args.textBlock, computeTextRange, findTextStyle, findFontId));
 }
@@ -116,7 +127,7 @@ export function computeGraphemeOffsets(args: ComputeGraphemeOffsetsArgs): Range2
   const { textBlock, paragraphIndex, runLayoutResult, graphemeCharIndexes, iModel } = args;
   const findFontId = args.findFontId ?? ((name, type) => iModel.fonts.findId({ name, type }) ?? 0);
   const computeTextRange = args.computeTextRange ?? ((x) => iModel.computeRangesForText(x));
-  const findTextStyle = args.findTextStyle ?? (() => TextStyleSettings.fromJSON());
+  const findTextStyle = args.findTextStyle ?? createFindTextStyleImpl(iModel);
   const source = textBlock.paragraphs[paragraphIndex].runs[runLayoutResult.sourceRunIndex];
 
   if (source.type !== "text" || runLayoutResult.characterCount === 0) {
@@ -157,12 +168,12 @@ function applyBlockSettings(target: TextStyleSettings, source: TextStyleSettings
 }
 
 class LayoutContext {
-  private readonly _textStyles = new Map<string, TextStyleSettings>();
+  private readonly _textStyles = new Map<Id64String, TextStyleSettings>();
   private readonly _fontIds = new Map<string, FontId>();
   public readonly blockSettings: TextStyleSettings;
 
   public constructor(block: TextBlock, private readonly _computeTextRange: ComputeRangesForTextLayout, private readonly _findTextStyle: FindTextStyle, private readonly _findFontId: FindFontId) {
-    const settings = this.findTextStyle(block.styleName);
+    const settings = this.findTextStyle(block.styleId);
     this.blockSettings = applyBlockSettings(settings, block.styleOverrides);
   }
 
@@ -175,17 +186,17 @@ class LayoutContext {
     return fontId;
   }
 
-  public findTextStyle(name: string): TextStyleSettings {
-    let style = this._textStyles.get(name);
+  public findTextStyle(id: Id64String): TextStyleSettings {
+    let style = this._textStyles.get(id);
     if (undefined === style) {
-      this._textStyles.set(name, style = this._findTextStyle(name));
+      this._textStyles.set(id, style = this._findTextStyle(id));
     }
 
     return style;
   }
 
   public createRunSettings(run: Run): TextStyleSettings {
-    let settings = this.findTextStyle(run.styleName);
+    let settings = this.findTextStyle(run.styleId);
     if (run.overridesStyle) {
       settings = settings.clone(run.styleOverrides);
     }

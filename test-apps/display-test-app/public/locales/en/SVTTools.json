@@ -73,6 +73,9 @@
     "AddTextDecoration": {
       "keyin": "dta text"
     },
+    "TextAnnotationTool": {
+      "keyin": "dta anno"
+    },
     "ShutDown": {
       "keyin": "dta shutdown"
     },

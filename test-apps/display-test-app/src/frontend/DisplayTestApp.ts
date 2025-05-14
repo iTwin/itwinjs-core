@@ -12,7 +12,7 @@ import { initializeFrontendTiles } from "@itwin/frontend-tiles";
 import { WebGLExtensionName } from "@itwin/webgl-compatibility";
 import { DtaBooleanConfiguration, DtaConfiguration, DtaNumberConfiguration, DtaStringConfiguration, getConfig } from "../common/DtaConfiguration";
 import { DtaRpcInterface } from "../common/DtaRpcInterface";
-import { DisplayTestApp } from "./App";
+import { DisplayTestApp, dtaIpc} from "./App";
 import { MobileMessenger } from "./FileOpen";
 import { openIModel, OpenIModelProps } from "./openIModel";
 import { signIn } from "./signIn";
@@ -283,6 +283,10 @@ const dtaFrontendMain = async () => {
         console.error(`Error getting hub iModel: ${error}`);
         alert(`Error getting hub iModel: ${error}`);
       }
+    }
+
+    if (iModel) {
+      await dtaIpc.importSchema({ iModelKey: iModel.key });
     }
 
     await uiReady; // Now wait for the HTML UI to finish loading.

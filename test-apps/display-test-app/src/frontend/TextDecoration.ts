@@ -12,9 +12,9 @@ import { Point3d, YawPitchRollAngles } from "@itwin/core-geometry";
 // Ignoring the spelling of the keyins. They're case insensitive, so we check against lowercase.
 // cspell:ignore superscript, subscript, widthfactor, fractionscale, fractiontype
 
-class TextEditor implements Decorator {
+export class TextEditor implements Decorator {
   // Geometry properties
-  private _categoryId: Id64String = Id64.invalid;
+  public categoryId: Id64String = Id64.invalid;
   private _iModel?: IModelConnection;
   private _entityId: Id64String = Id64.invalid;
   private _graphic?: RenderGraphicOwner;
@@ -25,24 +25,25 @@ class TextEditor implements Decorator {
   public offset = { x: 0, y: 0 };
   public anchor: TextAnnotationAnchor = { horizontal: "left", vertical: "top" };
   public debugAnchorPointAndRange = false;
+  public annotation: TextAnnotation | undefined = undefined;
 
   // Properties applied to the entire document
   public get documentStyle(): Pick<TextStyleSettingsProps, "lineHeight" | "widthFactor" | "lineSpacingFactor"> {
-    return this._textBlock.styleOverrides;
+    return this.textBlock.styleOverrides;
   }
 
   // Properties to be applied to the next run
   public runStyle: Omit<TextStyleSettingsProps, "lineHeight" | "widthFactor" | "lineSpacingFactor"> = { fontName: "Arial" };
   public baselineShift: BaselineShift = "none";
 
-  private _textBlock = TextBlock.createEmpty();
+  public textBlock = TextBlock.createEmpty();
 
   public init(iModel: IModelConnection, category: Id64String): void {
     this.clear();
 
     this._iModel = iModel;
     this._entityId = iModel.transientIds.getNext();
-    this._categoryId = category;
+    this.categoryId = category;
 
     IModelApp.viewManager.addDecorator(this);
   }
@@ -53,7 +54,7 @@ class TextEditor implements Decorator {
     this._iModel = undefined;
     this._graphic?.disposeGraphic();
     this._graphic = undefined;
-    this._textBlock = TextBlock.createEmpty();
+    this.textBlock = TextBlock.createEmpty();
     this.origin.setZero();
     this.rotation = 0;
     this.offset.x = this.offset.y = 0;
@@ -64,8 +65,8 @@ class TextEditor implements Decorator {
   }
 
   public appendText(content: string): void {
-    this._textBlock.appendRun(TextRun.create({
-      styleName: "",
+    this.textBlock.appendRun(TextRun.create({
+      styleId: "",
       styleOverrides: this.runStyle,
       content,
       baselineShift: this.baselineShift,
@@ -73,8 +74,8 @@ class TextEditor implements Decorator {
   }
 
   public appendFraction(numerator: string, denominator: string): void {
-    this._textBlock.appendRun(FractionRun.create({
-      styleName: "",
+    this.textBlock.appendRun(FractionRun.create({
+      styleId: "",
       styleOverrides: this.runStyle,
       numerator,
       denominator,
@@ -82,30 +83,30 @@ class TextEditor implements Decorator {
   }
 
   public appendBreak(): void {
-    this._textBlock.appendRun(LineBreakRun.create({
-      styleName: "",
+    this.textBlock.appendRun(LineBreakRun.create({
+      styleId: "",
       styleOverrides: this.runStyle,
     }));
   }
 
   public appendParagraph(): void {
-    this._textBlock.appendParagraph();
+    this.textBlock.appendParagraph();
   }
 
   public setDocumentWidth(width: number): void {
-    this._textBlock.width = width;
+    this.textBlock.width = width;
   }
 
   public justify(justification: TextBlockJustification): void {
-    this._textBlock.justification = justification;
+    this.textBlock.justification = justification;
   }
 
   public setMargins(margins: Partial<TextBlockMargins>): void {
-    this._textBlock.margins = {
-      left: margins.left ?? this._textBlock.margins.left,
-      right: margins.right ?? this._textBlock.margins.right,
-      top: margins.top ?? this._textBlock.margins.top,
-      bottom: margins.bottom ?? this._textBlock.margins.bottom,
+    this.textBlock.margins = {
+      left: margins.left ?? this.textBlock.margins.left,
+      right: margins.right ?? this.textBlock.margins.right,
+      top: margins.top ?? this.textBlock.margins.top,
+      bottom: margins.bottom ?? this.textBlock.margins.bottom,
     };
   }
 
@@ -114,12 +115,12 @@ class TextEditor implements Decorator {
       throw new Error("Invoke `dta text init` first");
     }
 
-    if (this._textBlock.isEmpty) {
+    if (this.textBlock.isEmpty) {
       return;
     }
 
     const annotation = TextAnnotation.fromJSON({
-      textBlock: this._textBlock.toJSON(),
+      textBlock: this.textBlock.toJSON(),
       // origin: this.origin,
       anchor: this.anchor,
       orientation: YawPitchRollAngles.createDegrees(this.rotation, 0, 0).toJSON(),
@@ -139,7 +140,7 @@ class TextEditor implements Decorator {
         origin: this.origin.toJSON(), // Point3d.createZero(),
         angle: 0,
       },
-      categoryId: this._categoryId,
+      categoryId: this.categoryId,
       geometry: {
         format: "json",
         data: builder.geometryStream,
@@ -150,6 +151,7 @@ class TextEditor implements Decorator {
     this._graphic = graphic ? IModelApp.renderSystem.createGraphicOwner(graphic) : undefined;
 
     IModelApp.viewManager.invalidateCachedDecorationsAllViews(this);
+    this.annotation = annotation;
   }
 
   public get useCachedDecorations(): true { return true; }

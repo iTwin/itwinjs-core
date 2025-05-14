@@ -6,6 +6,7 @@ import { BentleyError, GuidString, IModelStatus, ProcessDetector } from "@itwin/
 import { BriefcaseDownloader, IModelError, LocalBriefcaseProps, SyncMode } from "@itwin/core-common";
 import { BriefcaseConnection, DownloadBriefcaseOptions, IModelConnection, NativeApp, SnapshotConnection } from "@itwin/core-frontend";
 import { getConfigurationBoolean } from "./DisplayTestApp";
+import { dtaIpc } from "./App";
 
 export interface OpenFileIModelProps {
   fileName: string;
@@ -60,6 +61,7 @@ async function downloadIModel(iModelId: GuidString, iTwinId: GuidString): Promis
 export async function openIModel(props: OpenIModelProps): Promise<IModelConnection> {
   const { fileName, writable } = props;
   if (fileName !== undefined) {
+    await dtaIpc.upgradeSchemas(fileName);
     return openIModelFile(fileName, writable);
   } else {
     // Since fileName is required to be defined in OpenFileIModelProps, the fact that it is

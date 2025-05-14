@@ -627,3 +627,12 @@ export interface SheetReferenceProps extends SheetIndexEntryProps {
   /** The bis:Sheet that this bis:SheetReference is pointing to. */
   sheet?: RelatedElementProps;
 }
+
+export interface AnnotationTextStyleProps extends DefinitionElementProps {
+  /** An optional human-readable description of the text style.*/
+  description?: string;
+  /** The stringified JSON representation of the text style.
+   * @see [[TextStyleSettingsProps]]
+   */
+  settings?: string;
+}

@@ -3,8 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import { AnnotationTextStyleCreateArgs, TextAnnotation2dCreateArgs } from "@itwin/core-backend";
 import { Id64String } from "@itwin/core-bentley";
-import { DisplayStyle3dProps, SpatialViewDefinitionProps } from "@itwin/core-common";
+import { DisplayStyle3dProps, Placement2dProps, SpatialViewDefinitionProps } from "@itwin/core-common";
 import { TransformProps } from "@itwin/core-geometry";
 
 export const dtaChannel = "display-test-app/dta";
@@ -32,6 +33,26 @@ export interface CreateSectionDrawingViewResult {
   spatialViewId: Id64String;
 }
 
+export interface CreateTextAnnotationArgs {
+  iModelKey: string;
+  annotationCreateArgs: TextAnnotation2dCreateArgs;
+}
+
+export interface UpdateTextAnnotationArgs {
+  iModelKey: string;
+  annotationUpdateArgs: Omit<TextAnnotation2dCreateArgs, "model" | "category" | "placement"> & { placement?: Placement2dProps};
+}
+
+export interface CreateTextStyleArgs {
+  iModelKey: string;
+  textStyleCreateArgs: Omit<AnnotationTextStyleCreateArgs, "iModelDb" | "definitionModelId">;
+}
+
+export interface UpdateTextStyleArgs {
+  iModelKey: string;
+  textStyleUpdateArgs: Omit<AnnotationTextStyleCreateArgs, "iModelDb" | "definitionModelId" | "name"> & { name?: string };
+}
+
 export interface DtaIpcInterface {
   sayHello: () => Promise<string>;
 
@@ -39,4 +60,12 @@ export interface DtaIpcInterface {
    * Returns the Id of the section drawing view.
    */
   createSectionDrawing(args: CreateSectionDrawingViewArgs): Promise<CreateSectionDrawingViewResult>;
+  insertTextAnnotation2d(args: CreateTextAnnotationArgs): Promise<string>;
+  updateTextAnnotation2d(elementId: Id64String, args: UpdateTextAnnotationArgs): Promise<void>;
+  insertAnnotationTextStyle(args: CreateTextStyleArgs): Promise<string>;
+  updateAnnotationTextStyle(elementId: Id64String, args: UpdateTextStyleArgs): Promise<void>;
+  deleteTextAnnotations(args: {iModelKey: string}): Promise<void>;
+  upgradeSchemas(fileName: string): Promise<void>;
+  schemaVersion(args: {iModelKey: string}): Promise<string | undefined>;
+  importSchema(args: {iModelKey: string}): Promise<string | undefined>;
 }
