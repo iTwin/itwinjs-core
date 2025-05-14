@@ -193,7 +193,9 @@ public;class;FlyViewTool
 internal;function;formatAnimationBranchId
 internal;class;FormatsProviderManager
 beta;class;FormattedQuantityDescription
+beta;interface;FormattedQuantityDescriptionArgs
 public;interface;FormatterParserSpecsProvider
+beta;interface;FormattingSpecEntry
 public;interface;FormattingUnitSystemChangedArgs
 internal;interface;FrameBeforeRenderData
 internal;interface;FrameCameraFrustumData
