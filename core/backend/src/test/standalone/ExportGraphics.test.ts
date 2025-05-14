@@ -1179,7 +1179,7 @@ describe("exportGraphics", () => {
     assert.strictEqual(infos[0].mesh.indices.length, 6);
   });
 
-  it.only("verifies subset visitor", () => {
+  it("verifies subset visitor", () => {
     const options = StrokeOptions.createForFacets();
     options.needNormals = options.needParams = options.shouldTriangulate = true;
     const builder = PolyfaceBuilder.create(options);
@@ -1218,7 +1218,7 @@ describe("exportGraphics", () => {
     const visitor = ExportGraphicsMeshVisitor.create(mesh);
     const numFacets = polyface.facetCount;
     const numSubset = Math.floor(numFacets / 2);
-    const subset = Array<number>(numSubset).fill(0).map((_v: number, i: number) => Math.floor(numFacets * i * i / (numSubset * numSubset)));
+    const subset = Array<number>(numSubset).fill(0).map((_v: number, i: number) => Math.floor(numFacets * Math.log2(1 + i / numSubset)));
     const subVisitor = visitor.createSubsetVisitor(subset);
     while (subVisitor.moveToNextFacet()) {
       const facetIndex = subVisitor.parentFacetIndex();
