@@ -4279,33 +4279,25 @@ export class SetupCameraTool extends PrimitiveTool {
   public set targetHeight(value: number) { this.targetHeightProperty.value = value; }
 
   private syncCameraHeightState(): void {
-    const specs = IModelApp.quantityFormatter.getSpecsByName(this.cameraHeightProperty.description.kindOfQuantityName ?? "AecUnits.LENGTH")
-    this.cameraHeightProperty.displayValue = specs ? specs.formatterSpec.applyFormatting(this.cameraHeight) : this.cameraHeight.toFixed(2);
     this.cameraHeightProperty.isDisabled = !this.useCameraHeight;
     this.syncToolSettingsProperties([this.cameraHeightProperty.syncItem]);
   }
 
   private syncTargetHeightState(): void {
-    const specs = IModelApp.quantityFormatter.getSpecsByName(this.targetHeightProperty.description.kindOfQuantityName ?? "AecUnits.LENGTH")
-    this.targetHeightProperty.displayValue = specs ? specs.formatterSpec.applyFormatting(this.targetHeight) : this.targetHeight.toFixed(2);
     this.targetHeightProperty.isDisabled = !this.useTargetHeight;
     this.syncToolSettingsProperties([this.targetHeightProperty.syncItem]);
   }
 
   public override async applyToolSettingPropertyChange(updatedValue: DialogPropertySyncItem): Promise<boolean> {
     if (updatedValue.propertyName === this.useCameraHeightProperty.name) {
-      this.useCameraHeight = updatedValue.value.value as boolean;
       IModelApp.toolAdmin.toolSettingsState.saveToolSettingProperty(this.toolId, this.useCameraHeightProperty.item);
       this.syncCameraHeightState();
     } else if (updatedValue.propertyName === this.useTargetHeightProperty.name) {
-      this.useTargetHeight = updatedValue.value.value as boolean;
       IModelApp.toolAdmin.toolSettingsState.saveToolSettingProperty(this.toolId, this.useTargetHeightProperty.item);
       this.syncTargetHeightState();
     } else if (updatedValue.propertyName === this.cameraHeightProperty.name) {
-      this.cameraHeight = updatedValue.value.value as number;
       IModelApp.toolAdmin.toolSettingsState.saveToolSettingProperty(this.toolId, this.cameraHeightProperty.item);
     } else if (updatedValue.propertyName === this.targetHeightProperty.name) {
-      this.targetHeight = updatedValue.value.value as number;
       IModelApp.toolAdmin.toolSettingsState.saveToolSettingProperty(this.toolId, this.targetHeightProperty.item);
     }
     return true;
