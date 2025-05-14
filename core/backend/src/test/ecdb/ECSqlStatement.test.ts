@@ -1720,7 +1720,7 @@ describe("ECSqlStatement", () => {
       let rowCount: number = 0;
       while (stmt.step() === DbResult.BE_SQLITE_ROW) {
         rowCount++;
-        const row = stmt.getRow();
+      const row = stmt.getRow();
         assert.equal(row.name, `Child ${rowCount}`);
         const parent: NavigationValue = row.parent as NavigationValue;
         assert.equal(parent.id, parentId);
@@ -3337,5 +3337,109 @@ describe("ECSqlStatement", () => {
     reader = ecdb.createQueryReader("SELECT * FROM ts.Baz WHERE structProperty = :structValue", paramsWithStruct);
 
     await assert.isRejected(reader.toArray(), "Struct type binding not supported");
+  });
+
+  it("invalid relClassId in navigation properties", async () => {
+    using ecdb = ECDbTestHelper.createECDb(outDir, "bindnavigation.ecdb",
+      `<ECSchema schemaName="Test" alias="test" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
+        <ECEntityClass typeName="Parent" modifier="Sealed">
+          <ECProperty propertyName="Code" typeName="string"/>
+        </ECEntityClass>
+        <ECEntityClass typeName="Child" modifier="Sealed">
+          <ECProperty propertyName="Name" typeName="string"/>
+          <ECNavigationProperty propertyName="Parent" relationshipName="ParentHasChildren" direction="backward"/>
+        </ECEntityClass>
+        <ECRelationshipClass typeName="ParentHasChildren" modifier="None" strength="embedding">
+          <Source multiplicity="(0..1)" roleLabel="has" polymorphic="false">
+              <Class class="Parent"/>
+          </Source>
+          <Target multiplicity="(0..*)" roleLabel="has" polymorphic="false">
+              <Class class="Child"/>
+          </Target>
+        </ECRelationshipClass>
+      </ECSchema>`);
+
+    assert.isTrue(ecdb.isOpen);
+
+    let reader = ecdb.createQueryReader("SELECT ECInstanceId FROM meta.ECClassDef WHERE Name='Parent'");
+    assert.isTrue(await reader.step());
+    const parentClassId: Id64String = reader.current.ECInstanceId;
+    assert.isTrue(Id64.isValidId64(parentClassId));
+
+    // When the ECSql insert validation is set to true, the invalid relClassId is detected and an error is thrown.
+    reader = ecdb.createQueryReader("PRAGMA validate_ecsql_inserts=true");
+    assert.isTrue(await reader.step());
+
+    try {
+      ecdb.withCachedWriteStatement(`INSERT INTO test.Child(Parent.Id, Parent.RelECClassId) VALUES(1, ${parentClassId})`, () => {});
+      assert.fail("Should have thrown an error");
+    } catch (err: any) {
+      assert.equal(err.message, `The ECSql INSERT statement contains an invalid relationship class id '${parentClassId}'. The id does not correspond to a valid ECRelationship class.`);
+    }
+
+    const anotherParentId: Id64String = ecdb.withCachedWriteStatement("INSERT INTO test.Parent(Code) VALUES('Parent 2')", (stmt: ECSqlWriteStatement) => {
+      const res: ECSqlInsertResult = stmt.stepForInsert();
+      assert.equal(res.status, DbResult.BE_SQLITE_DONE);
+      assert.isDefined(res.id);
+      return res.id!;
+    });
+
+    try {
+      ecdb.withCachedWriteStatement("INSERT INTO test.Child(Parent) VALUES(?)", (stmt: ECSqlWriteStatement) => {
+        stmt.bindNavigation(1, { id: anotherParentId, relClassName: "Test.InvalidClass" });
+        assert.fail("Should have thrown an error");
+      });
+    } catch (err: any) {
+      assert.equal(err.message, "The ECSql INSERT statement contains an invalid relationship class 'Test.InvalidClass'. The name does not correspond to any EC class.");
+    }
+
+    try {
+      ecdb.withCachedWriteStatement("INSERT INTO test.Child(Name,Parent) VALUES(?,?)", (stmt: ECSqlWriteStatement) => {
+        stmt.bindString(1, "Child 1");
+        stmt.bindNavigation(2, { id: anotherParentId, relClassName: "Test.ParentHasChildren" });
+        const res: ECSqlInsertResult = stmt.stepForInsert();
+        assert.equal(res.status, DbResult.BE_SQLITE_DONE);
+      });
+    } catch (err: any) {
+      assert.fail(`Should not have thrown an error: ${err.message}`);
+    }
+
+    // When the ECSql insert validation is set to false (default), the invalid relClassId is ignored
+    // and the insert is executed successfully.
+    // When the ECSql insert validation is set to true, the invalid relClassId is detected and an error is thrown.
+    reader = ecdb.createQueryReader("PRAGMA validate_ecsql_inserts=false");
+    assert.isTrue(await reader.step());
+
+    try {
+      ecdb.withCachedWriteStatement(`INSERT INTO test.Child(Parent.Id, Parent.RelECClassId) VALUES(1, ${parentClassId})`, () => {});
+    } catch (err: any) {
+      assert.fail(`Should not have thrown an error: ${err.message}`);
+    }
+
+    const parentId: Id64String = ecdb.withCachedWriteStatement("INSERT INTO test.Parent(Code) VALUES('Parent 1')", (stmt: ECSqlWriteStatement) => {
+      const res: ECSqlInsertResult = stmt.stepForInsert();
+      assert.equal(res.status, DbResult.BE_SQLITE_DONE);
+      assert.isDefined(res.id);
+      return res.id!;
+    });
+
+    try {
+      ecdb.withCachedWriteStatement("INSERT INTO test.Child(Parent) VALUES(?)", (stmt: ECSqlWriteStatement) => {
+        stmt.bindNavigation(1, { id: parentId, relClassName: "Test.InvalidClass" });
+      });
+    } catch (err: any) {
+      assert.fail(`Should not have thrown an error: ${err.message}`);
+    }
+
+    try {
+      ecdb.withCachedWriteStatement("INSERT INTO test.Child(Name,Parent) VALUES(?,?)", (stmt: ECSqlWriteStatement) => {
+        stmt.bindString(1, "Child 1");
+        stmt.bindNavigation(2, { id: parentId, relClassName: "Test.ParentHasChildren" });
+        const res: ECSqlInsertResult = stmt.stepForInsert();
+        assert.equal(res.status, DbResult.BE_SQLITE_DONE);
+      });
+    } catch (err: any) {
+      assert.fail(`Should not have thrown an error: ${err.message}`);
+    }
   });
 });
