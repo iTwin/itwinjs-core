@@ -8,8 +8,8 @@ import { BaseQuantityDescription, ParseResults } from "../../appui-abstract";
 describe("BaseQuantityDescription", () => {
   it("mock quantity", () => {
     class QuantityDescription extends BaseQuantityDescription {
-      constructor(name: string, displayLabel: string, kindOfQuantityName: string, iconSpec?: string) {
-        super(name, displayLabel, kindOfQuantityName, iconSpec);
+      constructor(name: string, displayLabel: string, iconSpec?: string, kindOfQuantityName?: string) {
+        super(name, displayLabel, iconSpec, kindOfQuantityName);
       }
 
       protected formatValue = (_numberValue: number): string => {
@@ -24,7 +24,7 @@ describe("BaseQuantityDescription", () => {
       public set quantityType(name: string) { this.quantityType = name; }
       public get parseError(): string { return "MockError"; }
     }
-    const sut = new QuantityDescription("mockQuantity", "Mock Quantity", "Mock KoQ Name", "icon-placeholder");
+    const sut = new QuantityDescription("mockQuantity", "Mock Quantity", "icon-placeholder",  "Mock KoQ Name");
     const formattedValue = sut.format(5);
     expect(formattedValue).to.eq("This is the number");
     const results = sut.parse("mock value");

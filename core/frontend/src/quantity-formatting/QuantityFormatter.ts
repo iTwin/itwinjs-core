@@ -240,9 +240,9 @@ export interface OverrideFormatEntry {
 
 /**
  * Entries returned when looking up specs from the [[QuantityFormatter._formatSpecsRegistry]]
- * @internal
+ * @beta
  */
-interface FormattingSpecEntry {
+export interface FormattingSpecEntry {
   formatterSpec: FormatterSpec;
   parserSpec: ParserSpec;
 }
@@ -391,7 +391,9 @@ export class QuantityFormatter implements UnitsProvider {
   private _alternateUnitLabelsRegistry = new AlternateUnitLabelsRegistry(getDefaultAlternateUnitLabels());
   /** Registry containing available quantity type definitions. */
   protected _quantityTypeRegistry: Map<QuantityTypeKey, QuantityTypeDefinition> = new Map<QuantityTypeKey, QuantityTypeDefinition>();
-  /** Registry containing available FormatterSpec and ParserSpec, mapped by keys. */
+  /** Registry containing available FormatterSpec and ParserSpec, mapped by keys.
+   * @beta
+   */
   protected _formatSpecsRegistry: Map<string, FormattingSpecEntry> = new Map<string, FormattingSpecEntry>();
 
   /** Active UnitSystem key - must be one of "imperial", "metric", "usCustomary", or "usSurvey". */
@@ -440,10 +442,7 @@ export class QuantityFormatter implements UnitsProvider {
     }
   }
 
-  /**
-   * @internal
-   */
-  public shutdown(): void {
+  public [Symbol.dispose](): void {
     if (this._removeFormatsProviderListener) {
       this._removeFormatsProviderListener();
       this._removeFormatsProviderListener = undefined;
@@ -612,28 +611,31 @@ export class QuantityFormatter implements UnitsProvider {
     for (const entry of initialKoQs) {
       try {
         await this.addFormattingSpecsToRegistry(entry[0], entry[1]);
-      } catch (err) {
-        console.log(err);
+      } catch (err: any) {
+        Logger.logWarning(`${FrontendLoggerCategory.Package}.QuantityFormatter`, err.toString());
       }
     }
     this._removeFormatsProviderListener = IModelApp.formatsProvider.onFormatsChanged.addListener(async (args: FormatsChangedArgs) => {
       if (args.formatsChanged === "all") {
-        this._formatSpecsRegistry.forEach(async (entry, name) => {
+        for (const [name, entry] of this._formatSpecsRegistry.entries()) {
           const formatProps = await IModelApp.formatsProvider.getFormat(name);
           if (formatProps) {
             const persistenceUnitName = entry.formatterSpec.persistenceUnit.name;
             await this.addFormattingSpecsToRegistry(name, persistenceUnitName, formatProps);
           } else {
-            this._formatSpecsRegistry.delete(name); // clear the specs if format is removed
+            this._formatSpecsRegistry.delete(name); // clear the specs if format was removed
           }
-        });
+        }
       } else {
         for (const name of args.formatsChanged) {
           if (this._formatSpecsRegistry.has(name)) {
             const formatProps = await IModelApp.formatsProvider.getFormat(name);
             if (formatProps) {
-              const persistenceUnitName = this._formatSpecsRegistry.get(name)!.formatterSpec.persistenceUnit.name;
-              await this.addFormattingSpecsToRegistry(name, persistenceUnitName, formatProps);
+              const existingEntry = this._formatSpecsRegistry.get(name);
+              if (existingEntry) {
+                const persistenceUnitName = this._formatSpecsRegistry.get(name)!.formatterSpec.persistenceUnit.name;
+                await this.addFormattingSpecsToRegistry(name, persistenceUnitName, formatProps);
+              }
             } else {
               this._formatSpecsRegistry.delete(name);
             }
@@ -1139,6 +1141,8 @@ export class QuantityFormatter implements UnitsProvider {
         formatName: name,
       });
       this._formatSpecsRegistry.set(name, { formatterSpec, parserSpec });
+    } else {
+      throw new Error(`Unable to find format properties for ${name} with persistence unit ${persistenceUnitName}`);
     }
   }
 }

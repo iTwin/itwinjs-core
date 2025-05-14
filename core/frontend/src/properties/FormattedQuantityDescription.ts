@@ -17,8 +17,8 @@ import { QuantityType } from "../quantity-formatting/QuantityFormatter";
 export interface FormattedQuantityDescriptionArgs {
   name: string;
   displayLabel: string;
-  kindOfQuantityName: string;
   iconSpec?: string;
+  kindOfQuantityName?: string;
 }
 
 /**
@@ -30,13 +30,13 @@ export abstract class FormattedQuantityDescription extends BaseQuantityDescripti
   private _parserSpec?: ParserSpec;
 
   constructor(args: FormattedQuantityDescriptionArgs);
-  constructor(name: string, displayLabel: string, kindOfQuantityName: string, iconSpec?: string);
-  constructor(argsOrName: FormattedQuantityDescriptionArgs | string, displayLabel?: string, kindOfQuantityName?: string, iconSpec?: string) {
+  constructor(name: string, displayLabel: string, iconSpec?: string, kindOfQuantityName?: string);
+  constructor(argsOrName: FormattedQuantityDescriptionArgs | string, displayLabel?: string, iconSpec?: string, kindOfQuantityName?: string) {
     if (typeof argsOrName === "string") {
       // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
-      super(argsOrName, displayLabel!, kindOfQuantityName!, iconSpec);
+      super(argsOrName, displayLabel!, iconSpec, kindOfQuantityName);
     } else {
-      super(argsOrName.name, argsOrName.displayLabel, argsOrName.kindOfQuantityName, argsOrName.iconSpec);
+      super(argsOrName.name, argsOrName.displayLabel, argsOrName.iconSpec, argsOrName.kindOfQuantityName);
     }
   }
   protected formatValue(numberValue: number): string {

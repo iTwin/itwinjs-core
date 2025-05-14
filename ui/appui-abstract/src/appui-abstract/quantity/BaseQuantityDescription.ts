@@ -20,10 +20,10 @@ export abstract class BaseQuantityDescription implements PropertyDescription {
   public displayLabel: string;
   public typename: string;
   public editor: PropertyEditorInfo;
-  public kindOfQuantityName: string;
+  public kindOfQuantityName?: string;
 
 
-  constructor(name: string, displayLabel: string, kindOfQuantityName: string, iconSpec?: string) {
+  constructor(name: string, displayLabel: string, iconSpec?: string, kindOfQuantityName?: string) {
     this.name = name;
     this.displayLabel = displayLabel;
     this.kindOfQuantityName = kindOfQuantityName;

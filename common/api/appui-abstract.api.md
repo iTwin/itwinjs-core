@@ -93,7 +93,7 @@ export interface BasePropertyValue {
 
 // @beta
 export abstract class BaseQuantityDescription implements PropertyDescription {
-    constructor(name: string, displayLabel: string, kindOfQuantityName: string, iconSpec?: string);
+    constructor(name: string, displayLabel: string, iconSpec?: string, kindOfQuantityName?: string);
     // (undocumented)
     displayLabel: string;
     // (undocumented)
@@ -103,7 +103,7 @@ export abstract class BaseQuantityDescription implements PropertyDescription {
     // (undocumented)
     protected abstract formatValue(numberValue: number): string;
     // (undocumented)
-    kindOfQuantityName: string;
+    kindOfQuantityName?: string;
     // (undocumented)
     name: string;
     // (undocumented)
@@ -699,6 +699,8 @@ export interface PropertyDescription {
     // @beta
     kindOfQuantityName?: string;
     name: string;
+    // @alpha @deprecated
+    quantityType?: string;
     renderer?: PropertyRendererInfo;
     typename: string;
 }

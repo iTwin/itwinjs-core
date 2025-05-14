@@ -3430,7 +3430,7 @@ export class FormatsProviderManager implements FormatsProvider {
 // @beta
 export abstract class FormattedQuantityDescription extends BaseQuantityDescription {
     constructor(args: FormattedQuantityDescriptionArgs);
-    constructor(name: string, displayLabel: string, kindOfQuantityName: string, iconSpec?: string);
+    constructor(name: string, displayLabel: string, iconSpec?: string, kindOfQuantityName?: string);
     // (undocumented)
     abstract get formatterQuantityType(): QuantityType;
     // (undocumented)
@@ -3452,7 +3452,7 @@ export interface FormattedQuantityDescriptionArgs {
     // (undocumented)
     iconSpec?: string;
     // (undocumented)
-    kindOfQuantityName: string;
+    kindOfQuantityName?: string;
     // (undocumented)
     name: string;
 }
@@ -3462,6 +3462,14 @@ export interface FormatterParserSpecsProvider {
     createFormatterSpec: (unitSystem: UnitSystemKey) => Promise<FormatterSpec>;
     createParserSpec: (unitSystem: UnitSystemKey) => Promise<ParserSpec>;
     quantityType: QuantityTypeArg;
+}
+
+// @beta
+export interface FormattingSpecEntry {
+    // (undocumented)
+    formatterSpec: FormatterSpec;
+    // (undocumented)
+    parserSpec: ParserSpec;
 }
 
 // @public
@@ -7859,6 +7867,8 @@ export interface QuantityFormatsChangedArgs {
 
 // @public
 export class QuantityFormatter implements UnitsProvider {
+    // (undocumented)
+    [Symbol.dispose](): void;
     constructor(showMetricOrUnitSystem?: boolean | UnitSystemKey);
     protected _activeFormatSpecsByType: Map<string, FormatterSpec>;
     protected _activeParserSpecsByType: Map<string, ParserSpec>;
@@ -7884,6 +7894,7 @@ export class QuantityFormatter implements UnitsProvider {
         kindOfQuantityName: string;
     }): Promise<string>;
     formatQuantity(magnitude: number, formatSpec?: FormatterSpec): string;
+    // @beta
     protected _formatSpecsRegistry: Map<string, FormattingSpecEntry>;
     generateFormatterSpecByType(type: QuantityTypeArg, formatProps: FormatProps): Promise<FormatterSpec>;
     getConversion(fromUnit: UnitProps, toUnit: UnitProps): Promise<UnitConversionProps>;
@@ -7924,8 +7935,6 @@ export class QuantityFormatter implements UnitsProvider {
     setOverrideFormats(type: QuantityTypeArg, overrideEntry: OverrideFormatEntry): Promise<void>;
     setUnitFormattingSettingsProvider(provider: UnitFormattingSettingsProvider): Promise<void>;
     setUnitsProvider(unitsProvider: UnitsProvider): Promise<void>;
-    // @internal (undocumented)
-    shutdown(): void;
     protected _unitFormattingSettingsProvider: UnitFormattingSettingsProvider | undefined;
     get unitsProvider(): UnitsProvider;
     set unitsProvider(unitsProvider: UnitsProvider);
