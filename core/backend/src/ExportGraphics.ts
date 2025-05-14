@@ -58,7 +58,7 @@ export interface ExportGraphicsMesh {
   normals: Float32Array;
   /** Parameters (uvs) for this mesh, laid out in the pattern XYXY */
   params: Float32Array;
-  /** If true, clients should assume both sides of the mesh are visible and not cull backfaces. */
+  /** If true, clients should assume both sides of the mesh are visible and not cull back faces. */
   isTwoSided: boolean;
 }
 
@@ -346,11 +346,11 @@ export class ExportGraphicsMeshVisitor extends PolyfaceData implements PolyfaceV
   }
   /** Create a visitor for iterating the facets of `polyface`, with indicated number of points to be added to each facet to produce closed point arrays
    * Typical wrap counts are:
-   * * 0 -- leave the point arrays with "missing final edge"
+   * * 0 -- leave the point arrays with "missing final edge" (default)
    * * 1 -- add point 0 as closure point
    * * 2 -- add points 0 and 1 as closure and wrap point.  This is useful when vertex visit requires two adjacent vectors, e.g. for cross products.
    */
-  public static create(polyface: ExportGraphicsMesh, numWrap: number): ExportGraphicsMeshVisitor {
+  public static create(polyface: ExportGraphicsMesh, numWrap: number = 0): ExportGraphicsMeshVisitor {
     return new ExportGraphicsMeshVisitor(polyface, numWrap);
   }
   /** Reset the iterator to start at the first facet of the polyface. */
@@ -474,7 +474,7 @@ export class ExportGraphicsMeshVisitor extends PolyfaceData implements PolyfaceV
     return Math.floor(this._polyface.indices.length / 3);
   }
   /** Create a visitor for a subset of the facets visitable by the instance. */
-  public createSubsetVisitor(facetIndices: number[], numWrap: number): ExportGraphicsMeshSubsetVisitor {
+  public createSubsetVisitor(facetIndices: number[], numWrap: number = 0): ExportGraphicsMeshSubsetVisitor {
     return ExportGraphicsMeshSubsetVisitor.createSubsetVisitor(this._polyface, facetIndices, numWrap);
   }
 }
