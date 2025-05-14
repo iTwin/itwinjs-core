@@ -943,7 +943,7 @@ describe("layoutTextBlock", () => {
       expect(computeDimensions({ font: "Arial" })).to.deep.equal(computeDimensions({ font: "Comic Sans" }));
     });
 
-    it.only("computes different ranges for different height and width", () => {
+    it("computes different ranges for different height and width", () => {
       expect(computeDimensions({ height: 2 })).to.deep.equal(computeDimensions({ height: 2 }));
       expect(computeDimensions({ height: 2 })).not.to.deep.equal(computeDimensions({ height: 3 }));
       expect(computeDimensions({ width: 2 })).to.deep.equal(computeDimensions({ width: 2 }));
@@ -954,8 +954,8 @@ describe("layoutTextBlock", () => {
 
       const dims = computeDimensions({ height: 2 });
       expect(computeDimensions({ height: 2, width: 1 })).to.deep.equal(dims);
-      expect(computeDimensions({ height: 2, width: 0.5 }).x).to.deep.equal({ x: 0.5 * dims.x, y: dims.y });
-      expect(computeDimensions({ height: 2, width: 3 }).x).to.equal({ x: 3 * dims.x, y: dims.y });
+      expect(computeDimensions({ height: 2, width: 0.5 })).to.deep.equal({ x: 0.5 * dims.x, y: dims.y });
+      expect(computeDimensions({ height: 2, width: 2 })).to.deep.equal({ x: 2 * dims.x, y: dims.y });
     });
 
     it("excludes trailing blank glyphs from justification ranges", () => {
