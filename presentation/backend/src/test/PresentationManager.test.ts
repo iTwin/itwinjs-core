@@ -107,20 +107,20 @@ import { stubECSqlReader } from "./Helpers.js";
 import { _presentation_manager_detail } from "../presentation-backend/InternalSymbols.js";
 
 describe("PresentationManager", () => {
-  before(async () => {
-    try {
-      await IModelHost.startup({ cacheDir: path.join(import.meta.dirname, ".cache", `${process.pid}`) });
-    } catch (e) {
-      let isLoaded = false;
-      try {
-        IModelNative.platform;
-        isLoaded = true;
-      } catch { }
-      if (!isLoaded) {
-        throw e; // re-throw if startup() failed to set up NativePlatform
-      }
-    }
-  });
+  // before(async () => {
+  //   try {
+  //     await IModelHost.startup({ cacheDir: path.join(import.meta.dirname, ".cache", `${process.pid}`) });
+  //   } catch (e) {
+  //     let isLoaded = false;
+  //     try {
+  //       IModelNative.platform;
+  //       isLoaded = true;
+  //     } catch { }
+  //     if (!isLoaded) {
+  //       throw e; // re-throw if startup() failed to set up NativePlatform
+  //     }
+  //   }
+  // });
 
   after(async () => {
     await IModelHost.shutdown();

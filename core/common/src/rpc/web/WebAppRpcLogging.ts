@@ -134,7 +134,7 @@ export abstract class WebAppRpcLogging {
 
 declare global {
   // eslint-disable-next-line no-var
-  var window: any;
+  var window: Window & typeof globalThis;
 }
 
 class WebAppRpcLoggingFrontend extends WebAppRpcLogging {
