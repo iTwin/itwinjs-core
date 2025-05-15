@@ -241,16 +241,8 @@ const computePositionPrelude = `
   vec4 pos = MAT_MV * rawPos;
 `;
 
-// We used to use gl.polygonOffset() for blanking regions, but that doesn't work with logarithmic depth buffer which overwrites the
-// computed Z. Instead we must manually offset in vertex shader. We do this even if log depth is not enabled/supported.
-// NOTE: If log depth is *not* supported, then the hilite surface vertex shaders previously would still include this logic, but the
-// fragment shaders would not use v_eyeSpace. Some Ubuntu 20.04 graphics drivers cleverly and correctly optimized out the varying and the uniform,
-// causing an exception when gl.getProgramLocation() failed. So, omit this bit in that case.
 const adjustEyeSpace = `
   v_eyeSpace = pos.xyz;
-  const float blankingRegionOffset = 2.0 / 65536.0;
-  if (kRenderOrder_BlankingRegion == u_renderOrder)
-    v_eyeSpace.z -= blankingRegionOffset * (u_frustum.y - u_frustum.x);
 `;
 
 const computeConstantLodUvCustom = `

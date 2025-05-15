@@ -230,9 +230,9 @@ export class RenderCommands implements Iterable<DrawCommands> {
       switch (command.renderOrder) {
         case RenderOrder.PlanarLitSurface:
         case RenderOrder.PlanarUnlitSurface:
-        case RenderOrder.BlankingRegion:
           pass = "opaque-planar";
           break;
+        case RenderOrder.BlankingRegion: // draw behind other planar stuff
         case RenderOrder.LitSurface:
         case RenderOrder.UnlitSurface:
           pass = "opaque";
@@ -253,9 +253,9 @@ export class RenderCommands implements Iterable<DrawCommands> {
         switch (command.renderOrder) {
           case RenderOrder.PlanarLitSurface:
           case RenderOrder.PlanarUnlitSurface:
-          case RenderOrder.BlankingRegion:
             opaquePass = RenderPass.OpaquePlanar;
             break;
+          case RenderOrder.BlankingRegion: // draw behind other planar stuff
           case RenderOrder.LitSurface:
           case RenderOrder.UnlitSurface:
             opaquePass = RenderPass.OpaqueGeneral;
