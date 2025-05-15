@@ -27,8 +27,6 @@ describe("Drop schemas", function (this: Suite) {
     const iTwinId = Guid.createValue();
     const user1AccessToken = "token 1";
     const user2AccessToken = "token 2";
-    Logger.initializeToConsole();
-    Logger.setLevelDefault(LogLevel.Trace);
     HubMock.startup("test", KnownTestLocations.outputDir);
     const version0 = IModelTestUtils.prepareOutputFile("schemaSync", "imodel1.bim");
     SnapshotDb.createEmpty(version0, { rootSubject: { name: "dropschemas" } }).close();
