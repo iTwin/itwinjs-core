@@ -46,7 +46,20 @@ export namespace FrameGeometry {
     }
 
     const frameGeometry = computeFrame({ frame: frame.shape, range, transform });
-    return builder.appendGeometryParamsChange(params) && builder.appendGeometryQuery(frameGeometry);
+    if  (!builder.appendGeometryParamsChange(params) || !builder.appendGeometryQuery(frameGeometry)) {
+      return false;
+    }
+
+    // The tile generator does not produce an outline for shapes with blanking fill. We must add the outline separately.
+    if (params.fillDisplay === FillDisplay.Blanking) {
+      const outlineParams = params.clone();
+      outlineParams.fillDisplay = FillDisplay.Never;
+      if (!builder.appendGeometryParamsChange(outlineParams) || !builder.appendGeometryQuery(frameGeometry)) {
+        return false;
+      }
+    }
+
+    return true;
   }
 
 
