@@ -3,11 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { BaselineShift, ColorDef, FractionRun, GeometryStreamBuilder, IModelTileRpcInterface, LineBreakRun, TextAnnotation, TextAnnotationAnchor, TextBlock, TextBlockJustification, TextBlockMargins, TextRun, TextStyleSettingsProps } from "@itwin/core-common";
+import { BaselineShift, ColorDef, FractionRun, GeometryStreamBuilder, IModelTileRpcInterface, LineBreakRun, TextAnnotation, TextAnnotationAnchor, TextAnnotationFrame, TextAnnotationLeaderProps, TextBlock, TextBlockJustification, TextBlockMargins, TextFrameStyleProps, TextPointOptions, TextRun, TextStyleSettingsProps } from "@itwin/core-common";
 import { DecorateContext, Decorator, GraphicType, IModelApp, IModelConnection, readElementGraphics, RenderGraphicOwner, Tool } from "@itwin/core-frontend";
 import { DtaRpcInterface } from "../common/DtaRpcInterface";
 import { Guid, Id64, Id64String } from "@itwin/core-bentley";
-import { Point3d, YawPitchRollAngles } from "@itwin/core-geometry";
+import { Point3d, Vector3d, YawPitchRollAngles } from "@itwin/core-geometry";
 
 // Ignoring the spelling of the keyins. They're case insensitive, so we check against lowercase.
 // cspell:ignore superscript, subscript, widthfactor, fractionscale, fractiontype
@@ -24,6 +24,10 @@ class TextEditor implements Decorator {
   public rotation = 0;
   public offset = { x: 0, y: 0 };
   public anchor: TextAnnotationAnchor = { horizontal: "left", vertical: "top" };
+
+  public leader: TextAnnotationLeaderProps | undefined = undefined;
+
+  public frame: TextFrameStyleProps = { borderWeight: 1, frame: "none" };
   public debugAnchorPointAndRange = false;
 
   // Properties applied to the entire document
@@ -43,6 +47,8 @@ class TextEditor implements Decorator {
     this._iModel = iModel;
     this._entityId = iModel.transientIds.getNext();
     this._categoryId = category;
+    this.leader = undefined;
+    this.frame = { borderWeight: 1, frame: "none" };
 
     IModelApp.viewManager.addDecorator(this);
   }
@@ -109,6 +115,41 @@ class TextEditor implements Decorator {
     };
   }
 
+  public setFrame(frame: TextFrameStyleProps, wantCompleteOverride: boolean = false) {
+    if (wantCompleteOverride) this.frame = frame;
+    else this.frame = { ...this.frame, ...frame };
+  }
+
+  public setLeaderStartPoint(leader: TextAnnotationLeaderProps, angle: number) {
+    const point = Point3d.createZero();
+    const distance = 10;
+    switch (angle) {
+      case 0: leader.startPoint = point.plusScaled(Vector3d.unitX(), distance * 2).toJSON(); break;
+      case 90: leader.startPoint = point.plusScaled(Vector3d.unitY(), distance).toJSON(); break;
+      case 180: leader.startPoint = point.plusScaled(Vector3d.unitX().negate(), distance * 2).toJSON(); break;
+      case 270: leader.startPoint = point.plusScaled(Vector3d.unitY().negate(), distance).toJSON(); break;
+      case 45: leader.startPoint = point.plusScaled(Vector3d.unitX().plus(Vector3d.unitY()), distance).toJSON(); break;
+      case 135: leader.startPoint = point.plusScaled(Vector3d.unitX().negate().plus(Vector3d.unitY()), distance).toJSON(); break;
+      case 225: leader.startPoint = point.plusScaled(Vector3d.unitX().negate().plus(Vector3d.unitY().negate()), distance).toJSON(); break;
+      case 315: leader.startPoint = point.plusScaled(Vector3d.unitX().plus(Vector3d.unitY().negate()), distance).toJSON(); break;
+      default: leader.startPoint = point.plusScaled(Vector3d.unitX(), distance).toJSON(); break;
+    }
+  }
+
+  public setLeaderProps() {
+    this.leader = { startPoint: Point3d.createZero().plusScaled(Vector3d.unitX().negate(), 20).toJSON(), attachmentMode: { mode: "Nearest" }, styleOverrides: { wantElbow: true, elbowLength: 4, terminatorHeight: 0.5, terminatorWidth: 1, terminatorShape: "Arrow" } };
+  }
+
+  public setLeaderKeyPoint(leader: TextAnnotationLeaderProps, curveIndex: number, fraction: number) {
+    leader.attachmentMode = { mode: "KeyPoint", curveIndex, fraction };
+  }
+  public setLeaderTextPoint(leader: TextAnnotationLeaderProps, arg: TextPointOptions) {
+    leader.attachmentMode = { mode: "TextPoint", position: arg as "TopLeft" | "TopRight" | "BottomLeft" | "BottomRight" };
+  }
+  public setLeaderNearest(leader: TextAnnotationLeaderProps,) {
+    leader.attachmentMode = { mode: "Nearest" };
+  }
+
   public async update(): Promise<void> {
     if (!this._iModel) {
       throw new Error("Invoke `dta text init` first");
@@ -124,12 +165,14 @@ class TextEditor implements Decorator {
       anchor: this.anchor,
       orientation: YawPitchRollAngles.createDegrees(this.rotation, 0, 0).toJSON(),
       offset: this.offset,
+      frame: this.frame,
+      leader: this.leader,
     });
 
     const rpcProps = this._iModel.getRpcProps();
     const geom = await DtaRpcInterface.getClient().produceTextAnnotationGeometry(rpcProps, annotation.toJSON(), this.debugAnchorPointAndRange);
     const builder = new GeometryStreamBuilder();
-    builder.appendTextBlock(geom);
+    builder.appendTextAnnotation(geom);
 
     const gfx = await IModelTileRpcInterface.getClient().requestElementGraphics(rpcProps, {
       id: Guid.createValue(),
@@ -177,6 +220,22 @@ export class TextDecorationTool extends Tool {
     const arg = inArgs[1];
 
     switch (cmd) {
+      case "headstart":
+        const categ = arg ?? vp.view.categorySelector.categories.values().next().value;
+        if (undefined === categ || categ === "") {
+          throw new Error("No category provided.");
+        }
+
+        editor.init(vp.iModel, categ);
+        editor.debugAnchorPointAndRange = !editor.debugAnchorPointAndRange;
+        editor.origin = vp.view.getCenter();
+        editor.appendText("Hello World!");
+        editor.appendBreak();
+        editor.appendText("This is the second line");
+        editor.appendBreak();
+        editor.appendText("This is the third line");
+        editor.setFrame({ frame: "roundedRectangle" as TextAnnotationFrame });
+        break;
       case "clear":
         editor.clear();
         return true;
@@ -337,6 +396,45 @@ export class TextDecorationTool extends Tool {
         editor.debugAnchorPointAndRange = !editor.debugAnchorPointAndRange;
         break;
       }
+      case "frame": {
+        const key = inArgs[1];
+        const val = inArgs[2];
+        if (key === "fill") editor.setFrame({ fill: (val === "background" || val === "subcategory") ? val : val ? ColorDef.fromString(val).toJSON() : undefined });
+        else if (key === "border") editor.setFrame({ border: val ? ColorDef.fromString(val).toJSON() : undefined });
+        else if (key === "borderWeight") editor.setFrame({ borderWeight: Number(val) });
+        else if (key === "debug") editor.setFrame({ debugSnap: !editor.frame.debugSnap });
+        else if (key as TextAnnotationFrame) editor.setFrame({ frame: key as TextAnnotationFrame });
+        else throw new Error("Expected style, fill, border, borderWeight, debugSnap");
+
+        break;
+      }
+      case "leader":
+        const k = inArgs[1];
+        const value = inArgs[2];
+        if (k === "init") {
+          editor.setLeaderProps();
+        } else {
+          if (editor.leader) {
+            if (k === "start") editor.setLeaderStartPoint(editor.leader, Number(value));
+            else if (k === "keypoint") {
+              const curveIndex = inArgs[2];
+              const fraction = inArgs[3]
+              editor.setLeaderKeyPoint(editor.leader, Number(curveIndex), Number(fraction));
+            }
+            else if (k === "nearest") editor.setLeaderNearest(editor.leader);
+            else if (k === "textpoint") {
+              const position = inArgs[2] as "TopLeft" | "TopRight" | "BottomLeft" | "BottomRight";
+              editor.setLeaderTextPoint(editor.leader, position);
+
+            }
+            else throw new Error("Expected start, keypoint, nearest");
+          } else {
+            throw new Error("Leader not initialized. Use dta text leader init first.");
+          }
+
+        }
+
+        break;
 
       default:
         throw new Error(`unrecognized command ${cmd}`);

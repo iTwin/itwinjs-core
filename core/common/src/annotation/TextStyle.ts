@@ -21,6 +21,21 @@ export type StackedFractionType = "horizontal" | "diagonal";
  */
 export type TextStyleColor = ColorDefProps | "subcategory";
 
+export type TerminatorShape = "Arrow" | "filledTriangle" | "slash" | "hollowTriangle";
+
+export interface TerminatorStyleProps {
+  color?: TextStyleColor;
+  terminatorShape: TerminatorShape;
+  terminatorHeight: number;
+  terminatorWidth: number;
+}
+export interface LeaderStyleProps {
+  color?: TextStyleColor;
+  wantElbow?: boolean;
+  elbowLength?: number;
+  terminator: TerminatorStyleProps;
+}
+
 /** Serves both as the JSON representation of a [[TextStyleSettings]], and a way for a [[TextBlockComponent]] to selectively override aspects of a [[TextStyle]]'s properties.
  * @beta
  */
@@ -88,6 +103,15 @@ export interface TextStyleSettingsProps {
    * Default: 1.0
    */
   widthFactor?: number;
+
+  leaderColor?: TextStyleColor; /** The color of the leader line. */
+  wantElbow?: boolean; /** Whether to use an elbow in the leader line. */
+  elbowLength?: number; /** The length of the elbow in the leader line. */
+  terminatorColor?: TextStyleColor; /** The color of the leader line terminator. */
+  terminatorShape?: TerminatorShape; /** The shape of the leader line terminator. */
+  terminatorHeight?: number; /** The height of the leader line terminator. */
+  terminatorWidth?: number; /** The width of the leader line terminator. */
+  /** The style of the leader line. */
 }
 
 /** A description of the formatting to be applied to a [[TextBlockComponent]].
@@ -141,7 +165,14 @@ export class TextStyleSettings {
   public readonly superScriptScale: number;
   /** Multiplier used to compute the width of each glyph, relative to [[lineHeight]]. */
   public readonly widthFactor: number;
-
+  public readonly leaderColor: TextStyleColor; /** The color of the leader line. */
+  public readonly wantElbow: boolean; /** Whether to use an elbow in the leader line. */
+  public readonly elbowLength: number; /** The length of the elbow in the leader line. */
+  public readonly terminatorColor: TextStyleColor; /** The color of the leader line terminator. */
+  public readonly terminatorShape: TerminatorShape; /** The shape of the leader line terminator. */
+  public readonly terminatorHeight: number; /** The height of the leader line terminator. */
+  public readonly terminatorWidth: number; /** The width of the leader line terminator. */
+  /** The style of the leader line. */
   /** A fully-populated JSON representation of the default settings. */
   public static defaultProps: Readonly<Required<TextStyleSettingsProps>> = {
     color: "subcategory",
@@ -158,10 +189,18 @@ export class TextStyleSettings {
     superScriptOffsetFactor: 0.5,
     superScriptScale: 2 / 3,
     widthFactor: 1,
+    leaderColor: "subcategory",
+    wantElbow: false,
+    elbowLength: 0.5,
+    terminatorColor: "subcategory",
+    terminatorShape: "Arrow",
+    terminatorHeight: 0.5,
+    terminatorWidth: 0.5,
+
   };
 
   /** Settings initialized to all default values. */
-  public static defaults: TextStyleSettings = new TextStyleSettings({ });
+  public static defaults: TextStyleSettings = new TextStyleSettings({});
 
   private constructor(props: TextStyleSettingsProps, defaults?: Required<TextStyleSettingsProps>) {
     if (!defaults) {
@@ -182,6 +221,13 @@ export class TextStyleSettings {
     this.superScriptOffsetFactor = props.superScriptOffsetFactor ?? defaults.superScriptOffsetFactor;
     this.superScriptScale = props.superScriptScale ?? defaults.superScriptScale;
     this.widthFactor = props.widthFactor ?? defaults.widthFactor;
+    this.leaderColor = props.leaderColor ?? defaults.leaderColor;
+    this.wantElbow = props.wantElbow ?? defaults.wantElbow;
+    this.elbowLength = props.elbowLength ?? defaults.elbowLength;
+    this.terminatorColor = props.terminatorColor ?? defaults.terminatorColor;
+    this.terminatorShape = props.terminatorShape ?? defaults.terminatorShape;
+    this.terminatorHeight = props.terminatorHeight ?? defaults.terminatorHeight;
+    this.terminatorWidth = props.terminatorWidth ?? defaults.terminatorWidth;
   }
 
   /** Create a copy of these settings, modified according to the properties defined by `alteredProps`. */

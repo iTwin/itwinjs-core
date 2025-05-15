@@ -22,6 +22,10 @@ import { LineStyle } from "./LineStyle";
 import { ElementAlignedBox3d, Placement2d, Placement3d } from "./Placement";
 import { isPlacement2dProps, PlacementProps } from "../ElementProps";
 import { TextBlockGeometryProps } from "../annotation/TextBlockGeometryProps";
+import { FrameGeometry } from "../annotation/FrameGeometry";
+import { FrameGeometryProps } from "../annotation/FrameGeometryProps";
+import { TextAnnotationGeometryProps } from "../annotation/TextAnnotationGeometryProps";
+import { LeaderGeometryProps } from "../annotation/LeaderGeometryProps";
 
 /** Specifies the type of an entry in a geometry stream.
  * @see [[ElementGeometryDataEntry.opcode]].
@@ -440,10 +444,11 @@ export namespace ElementGeometry {
           if (entry.color !== "subcategory") {
             params.lineColor = ColorDef.fromJSON(entry.color);
           }
-
           result = this.appendGeometryParamsChange(params);
-        } else {
+        } else if (entry.separator) {
           result = this.appendGeometryQuery(LineSegment3d.fromJSON(entry.separator));
+        } else {
+          result = false;
         }
 
         if (!result) {
@@ -452,6 +457,89 @@ export namespace ElementGeometry {
       }
 
       return true;
+    }
+
+    public appendLeader(leaderProps: LeaderGeometryProps): boolean {
+      for (const entry of leaderProps.entries) {
+        let result: boolean;
+        if (entry.leader) {
+          entry.leader.terminators.forEach((terminator) => {
+            result = this.appendGeometryQuery(LineSegment3d.fromJSON(terminator));
+          });
+          const leaderLinePointsArray: Point3d[] = []
+          entry.leader.leaderLine.forEach((point) => {
+            leaderLinePointsArray.push(Point3d.fromJSON(point))
+          })
+          result = this.appendGeometryQuery(LineString3d.create(leaderLinePointsArray))
+        } else {
+          result = false;
+        }
+
+        if (!result) {
+          return false;
+        }
+      }
+
+      return true;
+    }
+
+    public appendFrame(frameProps: FrameGeometryProps): boolean {
+      for (const entry of frameProps.entries) {
+        let result: boolean;
+        if (undefined !== entry.frame) {
+          const params = new GeometryParams(Id64.invalid);
+          params.elmPriority = 0;
+
+          if (entry.frame.fillColor === "background") {
+            params.backgroundFill = BackgroundFill.Solid;
+            params.fillDisplay = FillDisplay.Always;
+          } else if (entry.frame.fillColor !== "subcategory") {
+            params.fillColor = ColorDef.fromJSON(entry.frame.fillColor);
+            params.lineColor = params.fillColor;
+            params.fillDisplay = FillDisplay.Always;
+          }
+
+          if (entry.frame.lineColor !== "subcategory") {
+            params.lineColor = ColorDef.fromJSON(entry.frame.lineColor);
+            params.weight = entry.frame.lineWidth;
+          }
+
+          const frame = FrameGeometry.computeFrame(entry.frame.shape, entry.frame.range, entry.frame.transform);
+
+          result = this.appendGeometryParamsChange(params);
+          result = result && this.appendGeometryQuery(frame);
+        } else if (entry.debugSnap) {
+          // TODO: remove
+          const params = new GeometryParams(Id64.invalid);
+          params.lineColor = ColorDef.black;
+          params.weight = 1;
+          params.fillColor = ColorDef.white;
+          params.fillDisplay = FillDisplay.Always;
+          this.appendGeometryParamsChange(params);
+          const points = FrameGeometry.debugIntervals(entry.debugSnap.shape, entry.debugSnap.range, entry.debugSnap.transform, 0.5, 0.25);
+          points?.forEach(point => this.appendGeometryQuery(Loop.create(point)));
+          result = true;
+        } else {
+          result = false;
+        }
+
+        if (!result) {
+          return false;
+        }
+      }
+
+      return true;
+    }
+
+    public appendTextAnnotation(props: TextAnnotationGeometryProps): boolean {
+      let result = this.appendTextBlock(props.textBlockGeometry)
+
+      if (props.frameGeometry)
+        result = result && this.appendFrame(props.frameGeometry);
+      if (props.leaderGeometry)
+        result = result && this.appendLeader(props.leaderGeometry);
+      return result;
+
     }
     /** Append a [[ImageGraphic]] supplied in either local or world coordinates to the [[ElementGeometryDataEntry]] array */
     public appendImageGraphic(image: ImageGraphic): boolean {

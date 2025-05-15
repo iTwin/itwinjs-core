@@ -21,6 +21,7 @@ import { ECSchemaRpcInterface } from '@itwin/ecschema-rpcinterface-common';
 import { ECSchemaRpcImpl } from "@itwin/ecschema-rpcinterface-impl";
 import * as editorBuiltInCommands from "@itwin/editor-backend";
 import { FormatSet } from "@itwin/ecschema-metadata";
+import { TextAnnotationGeometryProps } from "@itwin/core-common/lib/cjs/annotation/TextAnnotationGeometryProps";
 
 /** Loads the provided `.env` file into process.env */
 function loadEnv(envFile: string) {
@@ -182,7 +183,7 @@ class DisplayTestAppRpc extends DtaRpcInterface {
     return (await IModelHost.authorizationClient?.getAccessToken()) ?? "";
   }
 
-  public override async produceTextAnnotationGeometry(iModelToken: IModelRpcProps, annotationProps: TextAnnotationProps, debugAnchorPointAndRange?: boolean): Promise<TextBlockGeometryProps> {
+  public override async produceTextAnnotationGeometry(iModelToken: IModelRpcProps, annotationProps: TextAnnotationProps, debugAnchorPointAndRange?: boolean): Promise<TextAnnotationGeometryProps> {
     const iModel = IModelDb.findByKey(iModelToken.key);
     const annotation = TextAnnotation.fromJSON(annotationProps);
     return produceTextAnnotationGeometry({ iModel, annotation, debugAnchorPointAndRange });
