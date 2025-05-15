@@ -25,7 +25,7 @@ import { addColor } from "./Color";
 import { addChooseVec2WithBitFlagsFunction, addChooseVec3WithBitFlagFunction, addExtractNthBit, addFrustum, addShaderFlags } from "./Common";
 import { addUnpackAndNormalize2Bytes, decodeDepthRgb, unquantize2d } from "./Decode";
 import {
-  addFeatureSymbology, addMaxAlpha, addRenderOrder, addRenderOrderConstants, addSurfaceDiscard, addSurfaceHiliter, FeatureSymbologyOptions,
+  addFeatureSymbology, addMaxAlpha, addSurfaceDiscard, addSurfaceHiliter, FeatureSymbologyOptions,
 } from "./FeatureSymbology";
 import {
   addAltPickBufferOutputs, addFragColorWithPreMultipliedAlpha, addPickBufferOutputs, addWhiteOnWhiteReversal, assignFragColor,
@@ -270,15 +270,12 @@ function createCommon(isInstanced: IsInstanced, animated: IsAnimated, shadowable
   addModelViewMatrix(vert);
 
   let computePosition = computePositionPrelude;
-  if (!isHiliter || System.instance.supportsLogZBuffer) {
+  if (!isHiliter) {
     addFrustum(builder);
-    addRenderOrder(builder.vert);
-    addRenderOrderConstants(builder.vert);
     builder.addVarying("v_eyeSpace", VariableType.Vec3);
-    computePosition += adjustEyeSpace;
+    computePosition += adjustEyeSpace + computeConstantLodUvCustom;
   }
-  if (!isHiliter)
-    computePosition += computeConstantLodUvCustom;
+
   computePosition += computePositionPostlude;
 
   vert.set(VertexShaderComponent.ComputePosition, computePosition);
