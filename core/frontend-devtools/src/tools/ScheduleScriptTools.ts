@@ -201,8 +201,8 @@ export class TestScheduleScriptTool extends DisplayStyleTool {
       /// TODO!!!! add test schedule script code here
       const now = Date.now();
       const builder = new RenderSchedule.ScriptBuilder();
-      const modelTimeline = builder.addModelTimeline("0x1c"); // model Id
-      const elementTimeline = modelTimeline.addElementTimeline(["0x1b4"]); // element Id
+      const modelTimeline = builder.addModelTimeline("0x46"); // model Id
+      const elementTimeline = modelTimeline.addElementTimeline(["0x9a0"]); // element Id
       elementTimeline.addColor(now, new RgbColor(255, 0, 0));
       elementTimeline.addColor(now + 3000, new RgbColor(0, 255, 0));
       const scriptProps = builder.finish();

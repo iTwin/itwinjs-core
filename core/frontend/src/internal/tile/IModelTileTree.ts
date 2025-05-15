@@ -335,7 +335,7 @@ class RootTile extends Tile {
  * @internal exported strictly for display-test-app until we remove CommonJS support.
  */
 export class IModelTileTree extends TileTree {
-  public readonly decoder: ImdlDecoder;
+  public decoder: ImdlDecoder;
   private readonly _rootTile: RootTile;
   private readonly _options: IModelTileTreeOptions;
   private readonly _transformNodeRanges?: Map<number, Range3d>;
@@ -456,5 +456,35 @@ export class IModelTileTree extends TileTree {
 
   public get containsTransformNodes(): boolean {
     return undefined !== this._transformNodeRanges;
+  }
+
+  public notifyScheduleScriptChanged(): void {
+    if (!this.rootTile)
+      return;
+
+    this.pruneAnimatedTiles(this.rootTile);
+    this.decoder = acquireImdlDecoder({
+      type: this.batchType,
+      omitEdges: false === this.edgeOptions,
+      timeline: IModelApp.viewManager.selectedView?.displayStyle.scheduleScript?.find(this.modelId),
+      iModel: this.iModel,
+      batchModelId: this.modelId,
+      is3d: this.is3d,
+      containsTransformNodes: this.containsTransformNodes,
+      noWorker: !IModelApp.tileAdmin.decodeImdlInWorker,
+    });
+  }
+
+  private pruneAnimatedTiles(tile: Tile): void {
+    if (tile instanceof IModelTile) {
+      if (tile.isAffectedByScheduleScript) {
+        tile.disposeContents();
+      }
+   }
+
+    if (tile.children) {
+      for (const child of tile.children)
+        this.pruneAnimatedTiles(child);
+    }
   }
 }

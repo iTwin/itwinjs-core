@@ -49,7 +49,7 @@ import { RenderTarget } from "./render/RenderTarget";
 import { StandardView, StandardViewId } from "./StandardView";
 import { SubCategoriesCache } from "./SubCategoriesCache";
 import {
-  DisclosedTileTreeSet, MapCartoRectangle, MapFeatureInfo, MapFeatureInfoOptions, MapLayerFeatureInfo, MapLayerImageryProvider, MapLayerIndex, MapLayerInfoFromTileTree, MapTiledGraphicsProvider,
+  DisclosedTileTreeSet, IModelTileTree, MapCartoRectangle, MapFeatureInfo, MapFeatureInfoOptions, MapLayerFeatureInfo, MapLayerImageryProvider, MapLayerIndex, MapLayerInfoFromTileTree, MapTiledGraphicsProvider,
   MapTileTreeReference, MapTileTreeScaleRangeVisibility, TileBoundingBoxes, TiledGraphicsProvider, TileTreeLoadStatus, TileTreeReference, TileUser,
 } from "./tile/internal";
 import { EventController } from "./tools/EventController";
@@ -1294,6 +1294,12 @@ export abstract class Viewport implements Disposable, TileUser {
     const scriptChanged = () => {
       scheduleChanged();
       this.invalidateScene();
+      for (const ref of this.getTileTreeRefs()) {
+        const tree = ref.treeOwner.tileTree;
+        if (tree instanceof IModelTileTree && typeof tree.notifyScheduleScriptChanged === "function") {
+          tree.notifyScheduleScriptChanged();
+        }
+      }
     };
 
     removals.push(settings.onTimePointChanged.addListener(scheduleChanged));
