@@ -627,7 +627,7 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
     bezierB: BezierCurve3dH,
     bcurveB: BSplineCurve3dBase,
     _strokeCountB: number,
-    univariateBezierB: UnivariateBezier,  // caller-allocated for univariate coefficients.
+    univariateBezierB: UnivariateBezier, // caller-allocated for univariate coefficients
     reversed: boolean,
   ): void {
     if (!this._xyzwA0)
@@ -676,7 +676,7 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
           const segmentAFraction = SmallSystem.lineSegment3dHXYClosestPointUnbounded(
             this._xyzwA0, this._xyzwA1, this._xyzwB,
           );
-          if (segmentAFraction && Geometry.isIn01WithTolerance(segmentAFraction, intervalTolerance)) {
+          if (segmentAFraction !== undefined && Geometry.isIn01WithTolerance(segmentAFraction, intervalTolerance)) {
             let bezierAFraction = Geometry.interpolate(f0, segmentAFraction, f1);
             // We have a near intersection at fractions on the two beziers
             // Iterate on the curves for a true intersection
@@ -703,11 +703,10 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
               if (errors > 0 && !xyzA1.isAlmostEqual(xyzB1))
                 errors++;
             }
-            if (this.acceptFraction(false, bcurveAFraction, false) && this.acceptFraction(false, bcurveBFraction, false)) {
+            if (this.acceptFraction(false, bcurveAFraction, false) && this.acceptFraction(false, bcurveBFraction, false))
               this.recordPointWithLocalFractions(
                 bcurveAFraction, bcurveA, 0, 1, bcurveBFraction, bcurveB, 0, 1, reversed,
               );
-            }
           }
         }
       }
@@ -716,6 +715,18 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
   private dispatchBSplineCurve3dBSplineCurve3d(
     bcurveA: BSplineCurve3dBase, bcurveB: BSplineCurve3dBase, _reversed: boolean,
   ): void {
+    // test fraction 0 and 1
+    for (const fraction of [0, 1]) {
+      let point = bcurveA.fractionToPoint(fraction);
+      let detail = bcurveB.closestPoint(point, false);
+      if (detail && detail.point.isAlmostEqualXY(point))
+        this.recordPointWithLocalFractions(fraction, bcurveA, 0, 1, detail.fraction, bcurveB, 0, 1, _reversed);
+      point = bcurveB.fractionToPoint(fraction);
+      detail = bcurveA.closestPoint(point, false);
+      if (detail && detail.point.isAlmostEqualXY(point))
+        this.recordPointWithLocalFractions(detail.fraction, bcurveA, 0, 1, fraction, bcurveB, 0, 1, _reversed);
+    }
+    // test all fractions
     const bezierSpanA = bcurveA.collectBezierSpans(true) as BezierCurve3dH[];
     const bezierSpanB = bcurveB.collectBezierSpans(true) as BezierCurve3dH[];
     const numA = bezierSpanA.length;
@@ -733,7 +744,7 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
         if (rangeA[a].intersectsRangeXY(rangeB[b])) {
           const strokeCountA = bezierSpanA[a].computeStrokeCountForOptions();
           const strokeCountB = bezierSpanB[b].computeStrokeCountForOptions();
-          if (strokeCountA < strokeCountB)
+          if (strokeCountA <= strokeCountB)
             this.dispatchBezierBezierStrokeFirst(
               bezierSpanA[a], bcurveA, strokeCountA, bezierSpanB[b], bcurveB, strokeCountB, univariateCoffsB, _reversed,
             );

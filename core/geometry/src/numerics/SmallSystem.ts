@@ -159,21 +159,23 @@ export class SmallSystem {
    * @param spacePoint homogeneous point in space
    */
   public static lineSegment3dHXYClosestPointUnbounded(hA0: Point4d, hA1: Point4d, spacePoint: Point4d): number | undefined {
-    // Considering only x,y,w parts....
+    // Considering only x,y,w parts.
     // weighted difference of (A1 w0 - A0 w1) is (cartesian) tangent vector along the line as viewed.
-    // The perpendicular (pure vector) W = (-y,x) flip is the direction of projection
-    // Point Q along A is (in full homogeneous)  `(1-lambda) A0 + lambda 1 A1`
+    // The perpendicular (pure vector) W = (-y,x) flip is the direction of projection.
+    // Point Q along A is (in full homogeneous) `(1-lambda) A0 + lambda 1 A1`.
     // PointQ is colinear with spacePoint and and W when the xyw homogeneous determinant | Q W spacePoint | is zero.
     const tx = hA1.x * hA0.w - hA0.x * hA1.w;
     const ty = hA1.y * hA0.w - hA0.y * hA1.w;
     const det0 = Geometry.tripleProduct(
       hA0.x, -ty, spacePoint.x,
       hA0.y, tx, spacePoint.y,
-      hA0.w, 0, spacePoint.w);
+      hA0.w, 0, spacePoint.w,
+    );
     const det1 = Geometry.tripleProduct(
       hA1.x, -ty, spacePoint.x,
       hA1.y, tx, spacePoint.y,
-      hA1.w, 0, spacePoint.w);
+      hA1.w, 0, spacePoint.w,
+    );
     return Geometry.conditionalDivideFraction(-det0, det1 - det0);
   }
 

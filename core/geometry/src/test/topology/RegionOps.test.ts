@@ -934,22 +934,76 @@ describe("RegionOps", () => {
   it("MergeRegionArea", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
+    let dx = 0;
 
     // region with circle hole
     const rectangle = Loop.create(LineString3d.create(Sample.createRectangle(0, 0, 10, 8, 0, true)));
-    const hole = Loop.create(Arc3d.createXY(Point3d.create(5, 5), 2));
-    const region = RegionOps.regionBooleanXY(rectangle, hole, RegionBinaryOpType.AMinusB)!;
-    const regionArea = RegionOps.computeXYArea(region)!;
+    let hole = Loop.create(
+      Arc3d.create(
+        Point3d.create(5, 5), Vector3d.create(2, 0), Vector3d.create(0, 2), AngleSweep.createStartEndDegrees(-60, 300),
+      ),
+    );
+    let region = RegionOps.regionBooleanXY(rectangle, hole, RegionBinaryOpType.AMinusB)!;
+    let regionArea = RegionOps.computeXYArea(region)!;
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, region);
 
-    const merged = RegionOps.regionBooleanXY(region, undefined, RegionBinaryOpType.Union)!;
+    let merged = RegionOps.regionBooleanXY(region, undefined, RegionBinaryOpType.Union)!;
     for (const child of merged.children)
-      GeometryCoreTestIO.captureCloneGeometry(allGeometry, child, 0, 10);
-    const mergedArea = RegionOps.computeXYArea(merged)!;
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, child, dx, 10);
+    let mergedArea = RegionOps.computeXYArea(merged)!;
 
     const rectangleArea = 80;
-    const holeArea = Math.PI * 4;
-    const expectedArea = rectangleArea - holeArea;
+    let holeArea = Math.PI * 4;
+    let expectedArea = rectangleArea - holeArea;
+    ck.testCoordinate(regionArea, expectedArea, "area before merge");
+    ck.testCoordinate(mergedArea, expectedArea, "area after merge");
+
+    // region with large B-Spline hole
+    dx += 15;
+    const degree = 2;
+    let poles = [
+      Point3d.create(3, 3),
+      Point3d.create(7, 3),
+      Point3d.create(3, 7),
+      Point3d.create(3, 3),
+    ];
+    let bspline = BSplineCurve3d.createPeriodicUniformKnots(poles, degree + 1)!;
+    hole = Loop.create(bspline);
+    region = RegionOps.regionBooleanXY(rectangle, hole, RegionBinaryOpType.AMinusB)!;
+    regionArea = RegionOps.computeXYArea(region)!;
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, region, dx);
+
+    merged = RegionOps.regionBooleanXY(region, undefined, RegionBinaryOpType.Union)!;
+    for (const child of merged.children)
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, child, dx, 10);
+    mergedArea = RegionOps.computeXYArea(merged)!;
+
+    holeArea = 5.98545846038;
+    expectedArea = rectangleArea - holeArea;
+    ck.testCoordinate(regionArea, expectedArea, "area before merge");
+    ck.testCoordinate(mergedArea, expectedArea, "area after merge");
+
+    // region with small B-Spline hole
+    dx += 15;
+    poles = [
+      Point3d.create(1, 0.5),
+      Point3d.create(2, 1),
+      Point3d.create(1.5, 1.5),
+      Point3d.create(1, 0.5),
+    ];
+    bspline = BSplineCurve3d.createPeriodicUniformKnots(poles, degree + 1)!;
+    hole = Loop.create(bspline);
+    region = RegionOps.regionBooleanXY(rectangle, hole, RegionBinaryOpType.AMinusB)!;
+    regionArea = RegionOps.computeXYArea(region)!;
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, region, dx);
+
+    merged = RegionOps.regionBooleanXY(region, undefined, RegionBinaryOpType.Union)!;
+    for (const child of merged.children)
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, child, dx, 10);
+    mergedArea = RegionOps.computeXYArea(merged)!;
+
+    holeArea = 0.28065082813693;
+    expectedArea = rectangleArea - holeArea;
     ck.testCoordinate(regionArea, expectedArea, "area before merge");
     ck.testCoordinate(mergedArea, expectedArea, "area after merge");
 
@@ -1004,14 +1058,50 @@ describe("RegionOps", () => {
     // region with circle holes
     dx += 5;
     const rectangle = Loop.create(LineString3d.create(Sample.createRectangle(0, 0, 3, 2, 0, true)));
-    const hole = Loop.create(Arc3d.createXY(Point3d.create(1.5, 1), 0.5));
-    const region = RegionOps.regionBooleanXY(rectangle, hole, RegionBinaryOpType.AMinusB)!;
+    let hole = Loop.create(
+      Arc3d.create(
+        Point3d.create(1.5, 1), Vector3d.create(0.5, 0), Vector3d.create(0, 0.5), AngleSweep.createStartEndDegrees(-90, 270),
+      ),
+    );
+    let region = RegionOps.regionBooleanXY(rectangle, hole, RegionBinaryOpType.AMinusB)!;
     testSignedLoops(region, 2, 1, allGeometry, ck, dx);
+
+    // region with large B-Spline holes
+    dx += 5;
+    let degree = 3;
+    let poles = [
+      Point3d.create(0, 0),
+      Point3d.create(3, 0),
+      Point3d.create(3, 2),
+      Point3d.create(1.5, 1.5),
+      Point3d.create(0, 0),
+    ];
+    let bspline = BSplineCurve3d.createPeriodicUniformKnots(poles, degree + 1)!;
+    hole = Loop.create(bspline);
+    region = RegionOps.regionBooleanXY(rectangle, hole, RegionBinaryOpType.AMinusB)!;
+    testSignedLoops(region, 2, 1, allGeometry, ck, dx);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, region, dx);
+
+    // region with small B-Spline holes
+    dx += 5;
+    degree = 2;
+    poles = [
+      Point3d.create(1, 0.5),
+      Point3d.create(2, 1),
+      Point3d.create(1.5, 1.5),
+      Point3d.create(1, 0.5),
+    ];
+    bspline = BSplineCurve3d.createPeriodicUniformKnots(poles, degree + 1)!;
+    hole = Loop.create(bspline);
+    region = RegionOps.regionBooleanXY(rectangle, hole, RegionBinaryOpType.AMinusB)!;
+    testSignedLoops(region, 2, 1, allGeometry, ck, dx);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, region, dx);
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "RegionOps", "constructAllXYRegionLoops");
     expect(ck.getNumErrors()).toBe(0);
   });
 });
+
 /**
  * Exercise PolygonWireOffset and output to a file.
  * @param polygons polygons to offset
