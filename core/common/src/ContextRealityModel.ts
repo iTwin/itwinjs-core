@@ -51,6 +51,10 @@ export enum RealityDataProvider {
    * Will provide Open Street Map Building (OSM) from Cesium Ion (in 3dTile format)
    */
   CesiumIonAsset = "CesiumIonAsset",
+  /**
+   * Will provide Google Photorealistic 3D Tiles (G3DT) from Google (in 3dTile format)
+   */
+  G3DT = "G3DT",
 }
 
 /** Identify the Reality Data storage format
