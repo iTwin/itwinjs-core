@@ -724,7 +724,7 @@ export interface PolyfaceVisitor extends PolyfaceData {
   currentReadIndex(): number;
   /** Load data for the next facet. */
   moveToNextFacet(): boolean;
-  /** Call this before iterating facets with [[moveToNextFacet]]. */
+  /** Restart the visitor at the first facet. */
   reset(): void;
   /** Return the point index of vertex i within the currently loaded facet. */
   clientPointIndex(i: number): number;

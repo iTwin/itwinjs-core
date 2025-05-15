@@ -353,10 +353,10 @@ export class ExportGraphicsMeshVisitor extends PolyfaceData implements PolyfaceV
   public static create(polyface: ExportGraphicsMesh, numWrap: number = 0): ExportGraphicsMeshVisitor {
     return new ExportGraphicsMeshVisitor(polyface, numWrap);
   }
-  /** Reset the iterator to start at the first facet of the polyface. */
+  /** Restart the visitor at the first facet. */
   public reset(): void {
     this.moveToReadIndex(0);
-    this._nextFacetIndex = 0; // so immediate moveToNextFacet stays here.
+    this._nextFacetIndex = 0; // so immediate moveToNextFacet stays here
   }
   /** Select a facet by simple index. */
   public moveToReadIndex(facetIndex: number): boolean {
@@ -420,27 +420,42 @@ export class ExportGraphicsMeshVisitor extends PolyfaceData implements PolyfaceV
     return true;
   }
   /** Set the number of vertices to replicate in visitor arrays. */
-  public setNumWrap(numWrap: number): void { this._numWrap = numWrap; }
+  public setNumWrap(numWrap: number): void {
+    this._numWrap = numWrap;
+  }
 
   /** Return the index (in the client polyface) of the current facet */
-  public currentReadIndex(): number { return this._currentFacetIndex; }
+  public currentReadIndex(): number {
+    return this._currentFacetIndex;
+  }
   /** Return the point index of vertex i within the currently loaded facet */
-  public clientPointIndex(i: number): number { return this.pointIndex[i]; }
+  public clientPointIndex(i: number): number {
+    return this.pointIndex[i];
+  }
   /** Return the param index of vertex i within the currently loaded facet.
    * Use the artificial paramIndex, which matches pointIndex.
    */
-  public clientParamIndex(i: number): number { return this.paramIndex ? this.paramIndex[i] : -1; }
+  public clientParamIndex(i: number): number {
+    return this.paramIndex ? this.paramIndex[i] : -1;
+  }
   /** Return the normal index of vertex i within the currently loaded facet.
    * Use the artificial paramIndex, which matches pointIndex.
    */
-  public clientNormalIndex(i: number): number { return this.normalIndex ? this.normalIndex[i] : -1; }
+  public clientNormalIndex(i: number): number {
+    return this.normalIndex ? this.normalIndex[i] : -1;
+  }
   /** Always returns -1 since we never have colors. */
-  public clientColorIndex(_i: number): number { return -1; }
+  public clientColorIndex(_i: number): number {
+    return -1;
+  }
   /** Always returns -1 since we never have auxiliary data. */
-  public clientAuxIndex(_i: number): number { return -1; }
-
+  public clientAuxIndex(_i: number): number {
+    return -1;
+  }
   /** return the client polyface */
-  public clientPolyface(): Polyface | undefined { return undefined; }
+  public clientPolyface(): Polyface | undefined {
+    return undefined;
+  }
   /** clear the contents of all arrays.  Use this along with transferDataFrom methods to build up new facets */
   public clearArrays(): void {
     if (this.point !== undefined)
@@ -488,8 +503,8 @@ export class ExportGraphicsMeshVisitor extends PolyfaceData implements PolyfaceV
  */
 export class ExportGraphicsMeshSubsetVisitor extends ExportGraphicsMeshVisitor {
   private _facetIndices: number[];
-  private _currentSubsetIndex: number;    // index within _parentFacetIndices, or -1 after construction
-  private _nextSubsetIndex: number;       // index within _parentFacetIndices
+  private _currentSubsetIndex: number; // index within _parentFacetIndices, or -1 after construction
+  private _nextSubsetIndex: number; // index within _parentFacetIndices
 
   private constructor(polyface: ExportGraphicsMesh, facetIndices: number[], numWrap: number) {
     super(polyface, numWrap);
@@ -534,10 +549,10 @@ export class ExportGraphicsMeshSubsetVisitor extends ExportGraphicsMeshVisitor {
     this._nextSubsetIndex++;
     return true;
   }
-  /** Call this before iterating facets with [[moveToNextFacet]]. */
+  /** Restart the visitor at the first facet. */
   public override reset(): void {
     this.moveToReadIndex(0);
-    this._nextSubsetIndex = 0; // so immediate moveToNextFacet stays here.
+    this._nextSubsetIndex = 0; // so immediate moveToNextFacet stays here
   }
   /**
    * Return the client polyface facet index (aka "readIndex") for the given subset index.

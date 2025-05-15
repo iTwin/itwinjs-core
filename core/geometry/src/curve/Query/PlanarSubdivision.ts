@@ -62,7 +62,7 @@ class MapCurvePrimitiveToCurveLocationDetailPairArray {
       let closedCurveSplitCandidate = false;
       if (p instanceof Arc3d)
         closedCurveSplitCandidate = p.sweep.isFullCircle;
-      else if (!(p instanceof LineSegment3d) && !(p instanceof LineString3d))   // TODO: probably should do this for all types. Lots of spline-type primitives can be closed.
+      else if (!(p instanceof LineSegment3d) && !(p instanceof LineString3d)) // TODO: probably should do this for all types. Lots of spline-type primitives can be closed.
         closedCurveSplitCandidate = p.startPoint().isAlmostEqualXY(p.endPoint(), tolerance);
       if (closedCurveSplitCandidate && !this.primitiveToPair.has(p)) {
         const p0 = p.clonePartialCurve(0.0, 0.5);

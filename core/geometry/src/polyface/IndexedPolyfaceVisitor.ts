@@ -94,7 +94,7 @@ export class IndexedPolyfaceVisitor extends PolyfaceData implements PolyfaceVisi
     this._nextFacetIndex++;
     return true;
   }
-  /** Call this before iterating facets with [[moveToNextFacet]]. */
+  /** Restart the visitor at the first facet. */
   public reset(): void {
     this.moveToReadIndex(0);
     this._nextFacetIndex = 0; // so immediate moveToNextFacet stays here.
@@ -215,8 +215,8 @@ export class IndexedPolyfaceVisitor extends PolyfaceData implements PolyfaceVisi
  */
 export class IndexedPolyfaceSubsetVisitor extends IndexedPolyfaceVisitor {
   private _facetIndices: number[];
-  private _currentSubsetIndex: number;    // index within _facetIndices, or -1 after construction
-  private _nextSubsetIndex: number;       // index within _facetIndices
+  private _currentSubsetIndex: number; // index within _facetIndices, or -1 after construction
+  private _nextSubsetIndex: number; // index within _facetIndices
 
   private constructor(polyface: IndexedPolyface, facetIndices: number[], numWrap: number) {
     super(polyface, numWrap);
@@ -261,7 +261,7 @@ export class IndexedPolyfaceSubsetVisitor extends IndexedPolyfaceVisitor {
     this._nextSubsetIndex++;
     return true;
   }
-  /** Call this before iterating facets with [[moveToNextFacet]]. */
+  /** Restart the visitor at the first facet. */
   public override reset(): void {
     this.moveToReadIndex(0);
     this._nextSubsetIndex = 0; // so immediate moveToNextFacet stays here.

@@ -711,13 +711,13 @@ export class RegionOps {
    * Find all xy-areas bounded by the unstructured, possibly intersecting curves.
    * * For best results, input curves should be parallel to the xy-plane, as z-coordinates are ignored.
    * * A common use case of this method is to assemble the bounding "exterior" loop (or loops) containing the
-   * input curves.
+   * input curves. Note that "holes" implied by inputs are _not_ preserved in output.
    * * This method does not add bridge edges to connect outer loops to inner loops. Each disconnected loop,
    * regardless of its containment, is returned as its own SignedLoops object. Pre-process with [[regionBooleanXY]]
    * to add bridge edges so that [[constructAllXYRegionLoops]] will return outer and inner loops in the same
    * SignedLoops object.
    * @param curvesAndRegions Any collection of curves. Each Loop/ParityRegion/UnionRegion contributes its curve
-   * primitives.
+   * primitives, stripped of parity context. This means holes are _not_ preserved in output.
    * @param tolerance optional distance tolerance for coincidence.
    * @returns array of [[SignedLoops]], each entry of which describes the faces in a single connected component:
    *    * `positiveAreaLoops` contains "interior" loops, _including holes in ParityRegion input_. These loops have

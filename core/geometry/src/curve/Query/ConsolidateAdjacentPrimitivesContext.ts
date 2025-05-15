@@ -90,11 +90,11 @@ export class ConsolidateAdjacentCurvePrimitivesContext extends NullGeometryHandl
           const nextPrimitive = g.children[i0];
           if (!(nextPrimitive instanceof Arc3d))
             break;
-          if (!CurveFactory.appendToArcInPlace(basePrimitive, nextPrimitive))   // TODO: use this._options.duplicatePointTolerance
+          if (!CurveFactory.appendToArcInPlace(basePrimitive, nextPrimitive)) // TODO: use this._options.duplicatePointTolerance
             break;
         }
         // i0 has already advanced
-        g.children[numAccept++] = basePrimitive;    // which has been extended 0 or more times.
+        g.children[numAccept++] = basePrimitive; // which has been extended 0 or more times.
       } else {
         g.children[numAccept++] = basePrimitive;
         i0++;

@@ -419,7 +419,7 @@ export class Ray3d implements BeJSONFunctions {
      * Note that we verify 0 <= u,v,w <= 1. To do so we only need to check 0 <= u <= 1, 0 <= v, and u+v <= 1:
      * these 4 checks guarantee that v <= 1 and 0 <= u+v, and so with w = 1-(u+v), we have 0 <= w <= 1.
      *
-     * More info be found at https://en.wikipedia.org/wiki/M%C3%B6ller%E2%80%93Trumbore_intersection_algorithm.
+     * More info be found at https://en.wikipedia.org/wiki/Moller-Trumbore_intersection_algorithm.
      */
     if (distanceTol === undefined || distanceTol < 0) // we explicitly allow zero tolerance
       distanceTol = Geometry.smallMetricDistance;
