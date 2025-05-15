@@ -4278,55 +4278,20 @@ export class SetupCameraTool extends PrimitiveTool {
   public get targetHeight(): number { return this.targetHeightProperty.value; }
   public set targetHeight(value: number) { this.targetHeightProperty.value = value; }
 
-  private syncCameraHeightState(): void {
-    const specs = IModelApp.quantityFormatter.getSpecsByName(this.cameraHeightProperty.description.kindOfQuantityName ?? "AecUnits.LENGTH")
-    this.cameraHeightProperty.displayValue = specs ? specs.formatterSpec.applyFormatting(this.cameraHeight) : this.cameraHeight.toFixed(2);
-    this.cameraHeightProperty.isDisabled = !this.useCameraHeight;
-    this.syncToolSettingsProperties([this.cameraHeightProperty.syncItem]);
-  }
-
-  private syncTargetHeightState(): void {
-    const specs = IModelApp.quantityFormatter.getSpecsByName(this.targetHeightProperty.description.kindOfQuantityName ?? "AecUnits.LENGTH")
-    this.targetHeightProperty.displayValue = specs ? specs.formatterSpec.applyFormatting(this.targetHeight) : this.targetHeight.toFixed(2);
-    this.targetHeightProperty.isDisabled = !this.useTargetHeight;
-    this.syncToolSettingsProperties([this.targetHeightProperty.syncItem]);
+  protected override getToolSettingPropertyLocked(property: DialogProperty<any>): DialogProperty<any> | undefined {
+    if (property === this.useCameraHeightProperty)
+      return this.cameraHeightProperty;
+    else if (property === this.useTargetHeightProperty)
+      return this.targetHeightProperty;
+    return undefined;
   }
 
   public override async applyToolSettingPropertyChange(updatedValue: DialogPropertySyncItem): Promise<boolean> {
-    if (updatedValue.propertyName === this.useCameraHeightProperty.name) {
-      this.useCameraHeight = updatedValue.value.value as boolean;
-      IModelApp.toolAdmin.toolSettingsState.saveToolSettingProperty(this.toolId, this.useCameraHeightProperty.item);
-      this.syncCameraHeightState();
-    } else if (updatedValue.propertyName === this.useTargetHeightProperty.name) {
-      this.useTargetHeight = updatedValue.value.value as boolean;
-      IModelApp.toolAdmin.toolSettingsState.saveToolSettingProperty(this.toolId, this.useTargetHeightProperty.item);
-      this.syncTargetHeightState();
-    } else if (updatedValue.propertyName === this.cameraHeightProperty.name) {
-      this.cameraHeight = updatedValue.value.value as number;
-      IModelApp.toolAdmin.toolSettingsState.saveToolSettingProperty(this.toolId, this.cameraHeightProperty.item);
-    } else if (updatedValue.propertyName === this.targetHeightProperty.name) {
-      this.targetHeight = updatedValue.value.value as number;
-      IModelApp.toolAdmin.toolSettingsState.saveToolSettingProperty(this.toolId, this.targetHeightProperty.item);
-    }
-    return true;
+    return this.changeToolSettingPropertyValue(updatedValue);
   }
 
   public override supplyToolSettingsProperties(): DialogItem[] | undefined {
-    // load latest values from session
-    IModelApp.toolAdmin.toolSettingsState.getInitialToolSettingValues(this.toolId,
-      [
-        this.useCameraHeightProperty.name, this.useTargetHeightProperty.name, this.cameraHeightProperty.name, this.targetHeightProperty.name,
-      ])
-      ?.forEach((value) => {
-        if (value.propertyName === this.useCameraHeightProperty.name)
-          this.useCameraHeightProperty.dialogItemValue = value.value;
-        else if (value.propertyName === this.cameraHeightProperty.name)
-          this.cameraHeightProperty.dialogItemValue = value.value;
-        else if (value.propertyName === this.useTargetHeightProperty.name)
-          this.useTargetHeightProperty.dialogItemValue = value.value;
-        else if (value.propertyName === this.targetHeightProperty.name)
-          this.targetHeightProperty.dialogItemValue = value.value;
-      });
+    this.initializeToolSettingPropertyValues([this.useCameraHeightProperty, this.useTargetHeightProperty, this.cameraHeightProperty, this.targetHeightProperty]);
 
     // ensure controls are enabled/disabled base on current lock property state
     this.targetHeightProperty.isDisabled = !this.useTargetHeight;
