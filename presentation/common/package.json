@@ -39,7 +39,8 @@
       "import": "./lib/assets/locales/*",
       "require": "./lib/assets/locales/*"
     },
-    "./package.json": "./package.json"
+    "./package.json": "./package.json",
+    "./Ruleset.schema.json": "./Ruleset.schema.json"
   },
   "scripts": {
     "build": "npm run -s ruleset-json-schema && npm run -s build:assets && npm run -s build:public && npm run -s build:cjs && npm run -s build:esm",
