@@ -8,7 +8,7 @@
 
 import { DelayedPromiseWithProps } from "../DelayedPromise";
 import { KindOfQuantityProps } from "../Deserialization/JsonProps";
-import { XmlSerializationUtils } from "../Deserialization/XmlSerializationUtils";
+import { XmlCustomAttributesUtils } from "../Deserialization/XmlCustomAttributesUtils";
 import { SchemaItemType } from "../ECObjects";
 import { ECSchemaError, ECSchemaStatus } from "../Exception";
 import { LazyLoadedFormat, LazyLoadedInvertedUnit, LazyLoadedUnit } from "../Interfaces";
@@ -92,7 +92,7 @@ export class KindOfQuantity extends SchemaItem {
         unitAndLabels = [];
         for (const unitOverride of presFormatOverride.unitAndLabels) {
           const unitOrInverted = await this.schema.lookupItem(unitOverride[0]);
-          
+
           if(Unit.isUnit(unitOrInverted))
             unitAndLabels.push([new DelayedPromiseWithProps(unitOrInverted.key, async () => unitOrInverted), unitOverride[1]]);
           else if(InvertedUnit.isInvertedUnit(unitOrInverted))
@@ -163,7 +163,7 @@ export class KindOfQuantity extends SchemaItem {
 
     const persistenceUnit = await this.persistenceUnit;
     if (undefined !== persistenceUnit) {
-      const unitName = XmlSerializationUtils.createXmlTypedName(this.schema, persistenceUnit.schema, persistenceUnit.name);
+      const unitName = XmlCustomAttributesUtils.createXmlTypedName(this.schema, persistenceUnit.schema, persistenceUnit.name);
       itemElement.setAttribute("persistenceUnit", unitName);
     }
 
@@ -172,7 +172,7 @@ export class KindOfQuantity extends SchemaItem {
       for(const format of this.presentationFormats) {
         if (!OverrideFormat.isOverrideFormat(format)) {
           const resolvedFormat = await format;
-          presUnitStrings.push(XmlSerializationUtils.createXmlTypedName(this.schema, resolvedFormat.schema, format.name));
+          presUnitStrings.push(XmlCustomAttributesUtils.createXmlTypedName(this.schema, resolvedFormat.schema, format.name));
           continue;
         }
         presUnitStrings.push(format.fullNameXml(this.schema));

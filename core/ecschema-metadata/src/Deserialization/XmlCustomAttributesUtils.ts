@@ -14,7 +14,7 @@ import { Schema } from "../Metadata/Schema";
  * Namespace holding utility functions for serializing EC types to the EC XML format.
  * @internal
  */
-export namespace XmlSerializationUtils {
+export namespace XmlCustomAttributesUtils {
   /**
    * Serializes a CustomAttribute instance to the EC XML format.
    * @param fullName The full name of the CustomAttribute (qualified by schema name).
@@ -98,7 +98,7 @@ export namespace XmlSerializationUtils {
    */
   export async function writeStructProperty(propertyClass: StructProperty, propertyValue: any, structElement: Element, schemaDoc: Document): Promise<void> {
     const structClass = propertyClass.structClass;
-    for (const propertyMetadata of structClass.getPropertiesSync(true))
+    for (const propertyMetadata of structClass.getPropertiesSync())
       await writeInstanceProperty(propertyMetadata, propertyValue, structElement, schemaDoc);
   }
 

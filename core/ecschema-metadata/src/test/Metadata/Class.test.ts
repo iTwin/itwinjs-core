@@ -1302,46 +1302,6 @@ describe("ECClass", () => {
       assert.strictEqual(properties.length, 4);
     });
 
-    it("Serialization with struct inheritance where derived struct has no properties", async () => {
-      const schemaJson = {
-        $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
-        name: "TestSchema",
-        version: "1.2.3",
-        alias: "ts",
-        items: {
-          testBaseStruct: {
-            schemaItemType: "StructClass",
-            properties: [
-              {
-                type: "PrimitiveProperty",
-                typeName: "double",
-                name: "testPrimProp",
-              },
-            ],
-          },
-          testStruct: {
-            schemaItemType: "StructClass",
-            baseClass: "TestSchema.testBaseStruct",
-          },
-        },
-      };
-
-        const ecSchema = await Schema.fromJson(schemaJson, new SchemaContext());
-        assert.isDefined(ecSchema);
-
-        const testStruct = await ecSchema.getItem("testStruct", StructClass);
-        assert.isDefined(testStruct);
-        const serialized = await testStruct!.toXml(newDom);
-        expect(serialized.nodeName).to.eql("ECStructClass");
-        expect(serialized.getAttribute("typeName")).to.eql("testStruct");
-
-        // check if testStruct has inherited properties from testBaseStruct
-        const properties = getElementChildrenByTagName(serialized, "ECProperty");
-        assert.strictEqual(properties.length, 1);
-        expect(properties[0].getAttribute("typeName")).to.eql("double");
-      }
-    );
-
     it("Serialization with base class in reference Schema, base type reference uses schema alias", async () => {
       const context = new SchemaContext();
       const refSchema = await Schema.fromJson(getSchemaJson(), context);

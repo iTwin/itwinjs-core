@@ -11,7 +11,7 @@ import {
   ArrayPropertyProps, EnumerationPropertyProps, NavigationPropertyProps, PrimitiveArrayPropertyProps, PrimitiveOrEnumPropertyBaseProps,
   PrimitivePropertyProps, PropertyProps, StructPropertyProps,
 } from "../Deserialization/JsonProps";
-import { XmlSerializationUtils } from "../Deserialization/XmlSerializationUtils";
+import { XmlCustomAttributesUtils } from "../Deserialization/XmlCustomAttributesUtils";
 import { parsePrimitiveType, PrimitiveType, primitiveTypeToString, SchemaItemType, StrengthDirection, strengthDirectionToString } from "../ECObjects";
 import { ECSchemaError, ECSchemaStatus } from "../Exception";
 import { AnyClass, LazyLoadedEnumeration, LazyLoadedKindOfQuantity, LazyLoadedPropertyCategory, LazyLoadedRelationshipClass } from "../Interfaces";
@@ -175,7 +175,7 @@ export abstract class Property implements CustomAttributeContainerProps {
 
     if (undefined !== this._category) {
       const category = await this._category;
-      const categoryName = XmlSerializationUtils.createXmlTypedName(this.schema, category.schema, category.name);
+      const categoryName = XmlCustomAttributesUtils.createXmlTypedName(this.schema, category.schema, category.name);
       itemElement.setAttribute("category", categoryName);
     }
 
@@ -184,14 +184,14 @@ export abstract class Property implements CustomAttributeContainerProps {
 
     if (undefined !== this._kindOfQuantity) {
       const kindOfQuantity = await this._kindOfQuantity;
-      const kindOfQuantityName = XmlSerializationUtils.createXmlTypedName(this.schema, kindOfQuantity.schema, kindOfQuantity.name);
+      const kindOfQuantityName = XmlCustomAttributesUtils.createXmlTypedName(this.schema, kindOfQuantity.schema, kindOfQuantity.name);
       itemElement.setAttribute("kindOfQuantity", kindOfQuantityName);
     }
 
     if (this._customAttributes) {
       const caContainerElement = schemaXml.createElement("ECCustomAttributes");
       for (const [name, attribute] of this._customAttributes) {
-        const caElement = await XmlSerializationUtils.writeCustomAttribute(name, attribute, schemaXml, this.schema);
+        const caElement = await XmlCustomAttributesUtils.writeCustomAttribute(name, attribute, schemaXml, this.schema);
         caContainerElement.appendChild(caElement);
       }
       itemElement.appendChild(caContainerElement);
@@ -548,7 +548,7 @@ export class EnumerationProperty extends PrimitiveOrEnumPropertyBase {
   public override async toXml(schemaXml: Document): Promise<Element> {
     const itemElement = await super.toXml(schemaXml);
     const enumeration = await this.enumeration;
-    const enumerationName = XmlSerializationUtils.createXmlTypedName(this.schema, enumeration!.schema, enumeration!.name);
+    const enumerationName = XmlCustomAttributesUtils.createXmlTypedName(this.schema, enumeration!.schema, enumeration!.name);
     itemElement.setAttribute("typeName", enumerationName);
     return itemElement;
   }
@@ -584,7 +584,7 @@ export class StructProperty extends Property {
   /** @internal */
   public override async toXml(schemaXml: Document): Promise<Element> {
     const itemElement = await super.toXml(schemaXml);
-    const structClassName = XmlSerializationUtils.createXmlTypedName(this.schema, this.structClass.schema, this.structClass.name);
+    const structClassName = XmlCustomAttributesUtils.createXmlTypedName(this.schema, this.structClass.schema, this.structClass.name);
     itemElement.setAttribute("typeName", structClassName);
     return itemElement;
   }
@@ -636,7 +636,7 @@ export class NavigationProperty extends Property {
   public override async toXml(schemaXml: Document): Promise<Element> {
     const itemElement = await super.toXml(schemaXml);
     const relationshipClass = await this.relationshipClass;
-    const relationshipClassName = XmlSerializationUtils.createXmlTypedName(this.schema, relationshipClass.schema, relationshipClass.name);
+    const relationshipClassName = XmlCustomAttributesUtils.createXmlTypedName(this.schema, relationshipClass.schema, relationshipClass.name);
     itemElement.setAttribute("relationshipName", relationshipClassName);
     itemElement.setAttribute("direction", strengthDirectionToString(this.direction));
 

@@ -315,6 +315,87 @@ describe("CustomAttributeClass", () => {
 
     const newDom = createEmptyXmlDocument();
 
+    it("should properly serialize custom attributes having struct inheritance", async () => {
+      const schema = {
+        $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
+        name: "TestSchema",
+        version: "1.0.0",
+        alias: "ts",
+        customAttributes: [
+          {
+            className: "TestSchema.HasColors",
+            color: {
+              r: 40,
+              g: 128,
+              b: 68,
+              hexColor: "#288044",
+            },
+          },
+        ],
+        items: {
+          HexColor: {
+            schemaItemType: "StructClass",
+            properties: [
+            {
+              type: "PrimitiveProperty",
+              typeName: "string",
+              name: "hexColor",
+            },
+            ],
+          },
+          RgbColor: {
+            schemaItemType: "StructClass",
+            baseClass: "TestSchema.HexColor",
+            properties: [
+            {
+              type: "PrimitiveProperty",
+              typeName: "int",
+              name: "r",
+            },
+            {
+              type: "PrimitiveProperty",
+              typeName: "int",
+              name: "g",
+            },
+            {
+              type: "PrimitiveProperty",
+              typeName: "int",
+              name: "b",
+            },
+            ],
+          },
+          HasColors: {
+            schemaItemType: "CustomAttributeClass",
+            appliesTo: "Schema",
+            properties: [
+            {
+              name: "color",
+              type: "StructProperty",
+              typeName: "TestSchema.RgbColor",
+            },
+            ],
+          },
+        },
+      };
+
+      const ecschema = await Schema.fromJson(schema, new SchemaContext());
+      assert.isDefined(ecschema);
+
+      const serialized = await ecschema.toXml(newDom);
+      assert.isDefined(serialized);
+      const elements = serialized.lastChild;
+      assert.isDefined(elements);
+      const customAttribute = elements!.firstChild;
+      assert.isDefined(customAttribute);
+      expect(customAttribute!.nodeName).to.eql("ECCustomAttributes");
+      const customAttributesMember = customAttribute!.firstChild;
+      assert.isDefined(customAttributesMember);
+      const structProp = customAttributesMember!.firstChild;
+      assert.isDefined(structProp);
+      const props = structProp?.childNodes;
+      expect(props).to.have.length(4);
+    });
+
     it("should properly serialize", async () => {
       const ecschema = Schema.fromJsonSync(createCustomAttributeJson({}), new SchemaContext());
       assert.isDefined(ecschema);

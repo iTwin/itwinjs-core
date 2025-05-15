@@ -8,7 +8,7 @@
 
 import { DelayedPromiseWithProps } from "../DelayedPromise";
 import { MixinProps } from "../Deserialization/JsonProps";
-import { XmlSerializationUtils } from "../Deserialization/XmlSerializationUtils";
+import { XmlCustomAttributesUtils } from "../Deserialization/XmlCustomAttributesUtils";
 import { ECClassModifier, SchemaItemType, StrengthDirection } from "../ECObjects";
 import { ECSchemaError, ECSchemaStatus } from "../Exception";
 import { LazyLoadedEntityClass } from "../Interfaces";
@@ -100,7 +100,7 @@ export class Mixin extends ECClass {
     const appliesToElement = schemaXml.createElement("AppliesToEntityClass");
     const appliesTo = await this.appliesTo;
     if (undefined !== appliesTo) {
-      const appliesToName = XmlSerializationUtils.createXmlTypedName(this.schema, appliesTo.schema, appliesTo.name);
+      const appliesToName = XmlCustomAttributesUtils.createXmlTypedName(this.schema, appliesTo.schema, appliesTo.name);
       appliesToElement.textContent = appliesToName;
       isMixinElement.appendChild(appliesToElement);
     }

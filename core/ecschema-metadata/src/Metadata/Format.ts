@@ -7,7 +7,7 @@
  */
 
 import { SchemaItemFormatProps } from "../Deserialization/JsonProps";
-import { XmlSerializationUtils } from "../Deserialization/XmlSerializationUtils";
+import { XmlCustomAttributesUtils } from "../Deserialization/XmlCustomAttributesUtils";
 import { SchemaItemType } from "../ECObjects";
 import { ECSchemaError, ECSchemaStatus } from "../Exception";
 import {
@@ -119,7 +119,7 @@ export class Format extends SchemaItem {
       const newUnit = this.schema.lookupItemSync(unit.name);
       if (undefined === newUnit || (!Unit.isUnit(newUnit) && !InvertedUnit.isInvertedUnit(newUnit)))
         throw new ECSchemaError(ECSchemaStatus.InvalidECJson, ``);
-      
+
       if(Unit.isUnit(newUnit))
         this.addUnit(new DelayedPromiseWithProps(newUnit.key, async () => newUnit), unit.label);
       else if(InvertedUnit.isInvertedUnit(newUnit))
@@ -243,7 +243,7 @@ export class Format extends SchemaItem {
         const unitElement = schemaXml.createElement("Unit");
         if (undefined !== label)
           unitElement.setAttribute("label", label);
-        const unitName = XmlSerializationUtils.createXmlTypedName(this.schema, resolvedUnit.schema, resolvedUnit.name);
+        const unitName = XmlCustomAttributesUtils.createXmlTypedName(this.schema, resolvedUnit.schema, resolvedUnit.name);
         unitElement.textContent = unitName;
         compositeElement.appendChild(unitElement);
       };

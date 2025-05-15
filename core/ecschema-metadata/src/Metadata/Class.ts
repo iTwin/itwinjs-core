@@ -9,7 +9,7 @@
 import { assert } from "@itwin/core-bentley";
 import { DelayedPromiseWithProps } from "../DelayedPromise";
 import { ClassProps } from "../Deserialization/JsonProps";
-import { XmlSerializationUtils } from "../Deserialization/XmlSerializationUtils";
+import { XmlCustomAttributesUtils } from "../Deserialization/XmlCustomAttributesUtils";
 import { AbstractSchemaItemType, classModifierToString, ECClassModifier, parseClassModifier, parsePrimitiveType, PrimitiveType, SchemaItemType, SupportedSchemaItemType } from "../ECObjects";
 import { ECSchemaError, ECSchemaStatus } from "../Exception";
 import { AnyClass, HasMixins, LazyLoadedECClass } from "../Interfaces";
@@ -488,20 +488,22 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
     if (undefined !== this.baseClass) {
       const baseClass = await this.baseClass;
       const baseClassElement = schemaXml.createElement("BaseClass");
-      const baseClassName = XmlSerializationUtils.createXmlTypedName(this.schema, baseClass.schema, baseClass.name);
+      const baseClassName = XmlCustomAttributesUtils.createXmlTypedName(this.schema, baseClass.schema, baseClass.name);
       baseClassElement.textContent = baseClassName;
       itemElement.appendChild(baseClassElement);
     }
 
-    for (const prop of this.getPropertiesSync()) {
-      const propXml = await prop.toXml(schemaXml);
-      itemElement.appendChild(propXml);
+    if (this._properties) {
+      for (const prop of this._properties.values()) {
+        const propXml = await prop.toXml(schemaXml);
+        itemElement.appendChild(propXml);
+      }
     }
 
     if (this._customAttributes) {
       const caContainerElement = schemaXml.createElement("ECCustomAttributes");
       for (const [name, attribute] of this._customAttributes) {
-        const caElement = await XmlSerializationUtils.writeCustomAttribute(name, attribute, schemaXml, this.schema);
+        const caElement = await XmlCustomAttributesUtils.writeCustomAttribute(name, attribute, schemaXml, this.schema);
         caContainerElement.appendChild(caElement);
       }
       itemElement.appendChild(caContainerElement);

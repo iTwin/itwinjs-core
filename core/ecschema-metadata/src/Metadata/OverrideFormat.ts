@@ -6,7 +6,7 @@
  * @module Metadata
  */
 
-import { XmlSerializationUtils } from "../Deserialization/XmlSerializationUtils";
+import { XmlCustomAttributesUtils } from "../Deserialization/XmlCustomAttributesUtils";
 import { SchemaItemType } from "../ECObjects";
 import { DecimalPrecision, FormatProps, formatStringRgx, FormatTraits, FormatType, FractionalPrecision, ScientificType, ShowSignOption } from "@itwin/core-quantity";
 import { Format } from "./Format";
@@ -83,7 +83,7 @@ export class OverrideFormat {
    * @internal
    */
   public fullNameXml(koqSchema: Schema): string {
-    let fullName = XmlSerializationUtils.createXmlTypedName(koqSchema, this.parent.schema, this.parent.name);
+    let fullName = XmlCustomAttributesUtils.createXmlTypedName(koqSchema, this.parent.schema, this.parent.name);
 
     if (undefined !== this.precision)
       fullName += `(${this.precision.toString()})`;
@@ -96,7 +96,7 @@ export class OverrideFormat {
         throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The unit schema ${unit.schemaKey} is not found in the context.`);
 
       fullName += "[";
-      fullName += XmlSerializationUtils.createXmlTypedName(koqSchema, unitSchema, unit.name);
+      fullName += XmlCustomAttributesUtils.createXmlTypedName(koqSchema, unitSchema, unit.name);
       if (unitLabel !== undefined)
         fullName += `|${unitLabel}`;
       fullName += `]`;
