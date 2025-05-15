@@ -4251,8 +4251,7 @@ export class SetupCameraTool extends PrimitiveTool {
   private _cameraHeightProperty: DialogProperty<number> | undefined;
   public get cameraHeightProperty() {
     if (!this._cameraHeightProperty)
-      this._cameraHeightProperty = new DialogProperty<number>(new LengthDescription("cameraHeight", ViewTool.translate("SetupCamera.Labels.CameraHeight")),
-        0.0, undefined, !this.useCameraHeight);
+      this._cameraHeightProperty = new DialogProperty<number>(new LengthDescription("cameraHeight", ViewTool.translate("SetupCamera.Labels.CameraHeight")), 0.0);
     return this._cameraHeightProperty;
   }
   public get cameraHeight(): number { return this.cameraHeightProperty.value; }
@@ -4271,18 +4270,17 @@ export class SetupCameraTool extends PrimitiveTool {
   private _targetHeightProperty: DialogProperty<number> | undefined;
   public get targetHeightProperty() {
     if (!this._targetHeightProperty)
-      this._targetHeightProperty = new DialogProperty<number>(new LengthDescription("targetHeight", ViewTool.translate("SetupCamera.Labels.TargetHeight")),
-        0.0, undefined, !this.useTargetHeight);
+      this._targetHeightProperty = new DialogProperty<number>(new LengthDescription("targetHeight", ViewTool.translate("SetupCamera.Labels.TargetHeight")), 0.0);
     return this._targetHeightProperty;
   }
   public get targetHeight(): number { return this.targetHeightProperty.value; }
   public set targetHeight(value: number) { this.targetHeightProperty.value = value; }
 
-  protected override getToolSettingPropertyLocked(property: DialogProperty<any>): DialogProperty<any> | undefined {
-    if (property === this.useCameraHeightProperty)
-      return this.cameraHeightProperty;
-    else if (property === this.useTargetHeightProperty)
-      return this.targetHeightProperty;
+  protected override getToolSettingLockProperty(property: DialogProperty<any>): DialogProperty<boolean> | undefined {
+    if (property === this.cameraHeightProperty)
+      return this.useCameraHeightProperty;
+    else if (property === this.targetHeightProperty)
+      return this.useTargetHeightProperty;
     return undefined;
   }
 
@@ -4292,10 +4290,6 @@ export class SetupCameraTool extends PrimitiveTool {
 
   public override supplyToolSettingsProperties(): DialogItem[] | undefined {
     this.initializeToolSettingPropertyValues([this.useCameraHeightProperty, this.useTargetHeightProperty, this.cameraHeightProperty, this.targetHeightProperty]);
-
-    // ensure controls are enabled/disabled base on current lock property state
-    this.targetHeightProperty.isDisabled = !this.useTargetHeight;
-    this.cameraHeightProperty.isDisabled = !this.useCameraHeight;
 
     const cameraHeightLock = this.useCameraHeightProperty.toDialogItem({ rowPriority: 1, columnIndex: 0 });
     const targetHeightLock = this.useTargetHeightProperty.toDialogItem({ rowPriority: 2, columnIndex: 0 });
