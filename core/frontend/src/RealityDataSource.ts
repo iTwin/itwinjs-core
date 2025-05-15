@@ -214,6 +214,10 @@ export namespace RealityDataSource {
 
     return provider.createRealityDataSource(key, iTwinId);
   }
+
+  export function setBaseUrl(id: string) {
+    throw new Error(`Function not implemented. rdSourceId: ${id}}`);
+  }
 }
 
 /** A named supplier of [RealityDataSource]]s.

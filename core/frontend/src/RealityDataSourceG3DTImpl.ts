@@ -21,11 +21,8 @@ export class RealityDataSourceG3DTImpl implements RealityDataSource {
   public readonly key: RealityDataSourceKey;
   /** The URL that supplies the 3d tiles for displaying the G3DT tileset. */
   private _tilesetUrl: string | undefined;
-  /** Base URL of the G3DT tileset. Includes trailing subdirectories. */
-  private _baseUrlWithSubDirs: string = "";
-  /** Same as _baseUrlWithSubDirs, but without any trailing subdirectories (the true website root). */
-  private _baseUrlNoSubDirs: string = "";
-
+  /** Base URL of the G3DT tileset. Does not include trailing subdirectories. */
+  private _baseUrl: string = ""
   /** Need to be passed down to child tile requests */
   private _searchParams?: URLSearchParams;
 
@@ -74,17 +71,15 @@ export class RealityDataSourceG3DTImpl implements RealityDataSource {
     return this._tilesetUrl;
   }
 
-  private setBaseUrl(url: string): void {
+  protected setBaseUrl(url: string): void {
     const urlParts = url.split("/");
     const newUrl = new URL(url);
     this._searchParams = newUrl.searchParams
     urlParts.pop();
     if (urlParts.length === 0) {
-      this._baseUrlWithSubDirs = "";
-      this._baseUrlNoSubDirs = "";
+      this._baseUrl = "";
     } else {
-      this._baseUrlWithSubDirs = `${urlParts.join("/")}/`;
-      this._baseUrlNoSubDirs = `${urlParts[0]}/${urlParts[1]}/${urlParts[2]}/`;
+      this._baseUrl = newUrl.origin;
     }
   }
 
@@ -109,7 +104,7 @@ export class RealityDataSourceG3DTImpl implements RealityDataSource {
    * If the tile path is a relative URL, the base URL is prepended to it.
    * For both absolute and relative tile path URLs, the search parameters are checked. If the search params are empty, the base URL's search params are appended to the tile path.
    */
-  private getTileUrl(tilePath: string): string {
+  public getTileUrl(tilePath: string): string {
     //&&MM Notes
     // Spec: https://docs.ogc.org/cs/18-053r2/18-053r2.html 6.4 and 7.8.2
     //  query params:
@@ -119,13 +114,11 @@ export class RealityDataSourceG3DTImpl implements RealityDataSource {
     //     - We are always using the base URL of the root document but we need to use the referring tileset which is nested in the tree structure. In case of google they add the session id.
     // - What are we breaking by using the URL API instead of a simple concatenation of the base URL and tile path?
 
-    // TODO absolute vs relative URL handling?
-
-    const baseUrl = tilePath.startsWith("/") ? this._baseUrlWithSubDirs : this._baseUrlNoSubDirs;
-
-    // Build a relative URL where tilePath params will win over base URL params.
-
-    const url = new URL(tilePath, baseUrl);
+    // this._baseUrl does not include the trailing subdirectories.
+    // This is not an issue because the tile path always starts with the appropriate subdirectories.
+    // We also do not need to worry about the tile path starting with a slash.
+    // This happens in these tiles at the second .json level, but the URL API will handle that for us.
+    const url = new URL(tilePath, this._baseUrl);
 
     // maybe use getTileContentType and check for tilset.json?
     // If URL is to json file, store search params
@@ -135,13 +128,6 @@ export class RealityDataSourceG3DTImpl implements RealityDataSource {
         this._searchParams?.append(key, value);
       }
     }
-
-    // console.log("search params:");
-    // if (this._searchParams !== undefined) {
-    //   for (const [key, value] of this._searchParams.entries()) {
-    //     console.log(`${key}, ${value}`);
-    //   }
-    // }
 
     if (this._searchParams === undefined || this._searchParams.size === 0)
       return url.toString();
