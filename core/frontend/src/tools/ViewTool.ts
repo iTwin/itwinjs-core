@@ -4279,13 +4279,15 @@ export class SetupCameraTool extends PrimitiveTool {
   public set targetHeight(value: number) { this.targetHeightProperty.value = value; }
 
   private syncCameraHeightState(): void {
-    this.cameraHeightProperty.displayValue = (this.cameraHeightProperty.description as LengthDescription).format(this.cameraHeight);
+    const specs = IModelApp.quantityFormatter.getSpecsByName(this.cameraHeightProperty.description.kindOfQuantityName ?? "AecUnits.LENGTH")
+    this.cameraHeightProperty.displayValue = specs ? specs.formatterSpec.applyFormatting(this.cameraHeight) : this.cameraHeight.toFixed(2);
     this.cameraHeightProperty.isDisabled = !this.useCameraHeight;
     this.syncToolSettingsProperties([this.cameraHeightProperty.syncItem]);
   }
 
   private syncTargetHeightState(): void {
-    this.targetHeightProperty.displayValue = (this.targetHeightProperty.description as LengthDescription).format(this.targetHeight);
+    const specs = IModelApp.quantityFormatter.getSpecsByName(this.targetHeightProperty.description.kindOfQuantityName ?? "AecUnits.LENGTH")
+    this.targetHeightProperty.displayValue = specs ? specs.formatterSpec.applyFormatting(this.targetHeight) : this.targetHeight.toFixed(2);
     this.targetHeightProperty.isDisabled = !this.useTargetHeight;
     this.syncToolSettingsProperties([this.targetHeightProperty.syncItem]);
   }

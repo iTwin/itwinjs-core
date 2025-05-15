@@ -2353,7 +2353,11 @@ describe("iModel", () => {
   it("Standalone iModel properties", () => {
     const standaloneRootSubjectName = "Standalone";
     const standaloneFile1 = IModelTestUtils.prepareOutputFile("IModel", "Standalone1.bim");
-    let standaloneDb1 = StandaloneDb.createEmpty(standaloneFile1, { rootSubject: { name: standaloneRootSubjectName } });
+    const ecefLocation =  new EcefLocation({ origin: [1, 2, 3], orientation: { yaw: 0, pitch: 0, roll: 0 } })
+    const geographicCoordinateSystem = {
+      horizontalCRS: { id: "10TM115-27" },
+    }
+    let standaloneDb1 = StandaloneDb.createEmpty(standaloneFile1, { rootSubject: { name: standaloneRootSubjectName }, ecefLocation, geographicCoordinateSystem });
     assert.isTrue(standaloneDb1.isStandaloneDb());
     assert.isTrue(standaloneDb1.isStandalone);
     assert.isFalse(standaloneDb1.isReadonly, "Expect standalone iModels to be read-write during create");
@@ -2366,6 +2370,8 @@ describe("iModel", () => {
     assert.equal(standaloneDb1.iTwinId, Guid.empty);
     assert.strictEqual("", standaloneDb1.changeset.id);
     assert.strictEqual(0, standaloneDb1.changeset.index);
+    assert.deepEqual(standaloneDb1.ecefLocation?.origin, ecefLocation.origin, "standalone ecefLocation should be set");
+    assert.strictEqual(standaloneDb1.geographicCoordinateSystem?.horizontalCRS?.id, "10TM115-27", "standalone coordinate system should be set");
     assert.equal(standaloneDb1.openMode, OpenMode.ReadWrite);
     standaloneDb1.close();
     assert.isFalse(standaloneDb1.isOpen);
@@ -2384,7 +2390,11 @@ describe("iModel", () => {
     const snapshotFile2 = IModelTestUtils.prepareOutputFile("IModel", "Snapshot2.bim");
     const snapshotFile3 = IModelTestUtils.prepareOutputFile("IModel", "Snapshot3.bim");
     const imodel = await generateTestSnapshot("test_for_snapshot.bim", "test.bim");
-    let snapshotDb1 = SnapshotDb.createEmpty(snapshotFile1, { rootSubject: { name: snapshotRootSubjectName }, createClassViews: true });
+    const ecefLocation =  new EcefLocation({ origin: [1, 2, 3], orientation: { yaw: 0, pitch: 0, roll: 0 } })
+    const geographicCoordinateSystem = {
+      horizontalCRS: { id: "10TM115-27" },
+    }
+    let snapshotDb1 = SnapshotDb.createEmpty(snapshotFile1, { rootSubject: { name: snapshotRootSubjectName }, createClassViews: true, ecefLocation, geographicCoordinateSystem });
     let snapshotDb2 = SnapshotDb.createFrom(snapshotDb1, snapshotFile2);
     let snapshotDb3 = SnapshotDb.createFrom(imodel, snapshotFile3, { createClassViews: true });
     assert.isTrue(snapshotDb1.isSnapshotDb());
@@ -2421,6 +2431,8 @@ describe("iModel", () => {
     assert.isTrue(snapshotDb1.isOpen);
     assert.isTrue(snapshotDb2.isOpen);
     assert.isTrue(snapshotDb3.isOpen);
+    assert.deepEqual(snapshotDb1.ecefLocation?.origin, ecefLocation.origin, "snapshot ecefLocation should be set");
+    assert.strictEqual(snapshotDb1.geographicCoordinateSystem?.horizontalCRS?.id, "10TM115-27", "snapshot coordinate system should be set");
     snapshotDb1.close();
     snapshotDb2.close();
     snapshotDb3.close();

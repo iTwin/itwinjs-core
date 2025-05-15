@@ -11,13 +11,14 @@ import { SchemaItemKey, SchemaKey } from "./SchemaKey";
 import { SchemaItem } from "./Metadata/SchemaItem";
 import { Format } from "./Metadata/Format";
 import { SchemaItemFormatProps } from "./Deserialization/JsonProps";
-import { BeEvent } from "@itwin/core-bentley";
+import { BeEvent, Logger } from "@itwin/core-bentley";
 import { KindOfQuantity } from "./Metadata/KindOfQuantity";
 import { getFormatProps } from "./Metadata/OverrideFormat";
 import { FormatProps, FormatsChangedArgs, FormatsProvider, UnitSystemKey } from "@itwin/core-quantity";
 import { Unit } from "./Metadata/Unit";
 import { InvertedUnit } from "./Metadata/InvertedUnit";
-
+import { Schema } from "./Metadata/Schema";
+const loggerCategory = "SchemaFormatsProvider";
 /**
  * Provides default formats and kind of quantities from a given SchemaContext or SchemaLocater.
  * @beta
@@ -59,7 +60,13 @@ export class SchemaFormatsProvider implements FormatsProvider {
   }
 
   private async getKindOfQuantityFormatFromSchema(itemKey: SchemaItemKey): Promise<SchemaItemFormatProps | undefined> {
-    const kindOfQuantity = await this._context.getSchemaItem(itemKey, KindOfQuantity);
+    let kindOfQuantity: KindOfQuantity | undefined;
+    try {
+      kindOfQuantity = await this._context.getSchemaItem(itemKey, KindOfQuantity);
+    } catch {
+      Logger.logError(loggerCategory, `Failed to find KindOfQuantity ${itemKey.fullName}`);
+      return undefined;
+    }
 
     if (!kindOfQuantity) {
       return undefined;
@@ -110,14 +117,26 @@ export class SchemaFormatsProvider implements FormatsProvider {
   public async getFormat(name: string): Promise<SchemaItemFormatProps | undefined> {
     const [schemaName, schemaItemName] = SchemaItem.parseFullName(name);
     const schemaKey = new SchemaKey(schemaName);
-    const schema = await this._context.getSchema(schemaKey);
+    let schema: Schema | undefined;
+    try {
+      schema = await this._context.getSchema(schemaKey);
+    } catch {
+      Logger.logError(loggerCategory, `Failed to find schema ${schemaName}`);
+      return undefined;
+    }
     if (!schema) {
       return undefined;
     }
     const itemKey = new SchemaItemKey(schemaItemName, schema.schemaKey);
 
     if (schema.name === "Formats") {
-      const format = await this._context.getSchemaItem(itemKey, Format);
+      let format: Format | undefined;
+      try {
+        format = await this._context.getSchemaItem(itemKey, Format);
+      } catch {
+        Logger.logError(loggerCategory, `Failed to find Format ${itemKey.fullName}`);
+        return undefined;
+      }
       if (!format) {
         return undefined;
       }
