@@ -10,14 +10,14 @@ import { SchemaContext } from "../../Context";
 import { SchemaReadHelper } from "../../Deserialization/Helper";
 import { JsonParser } from "../../Deserialization/JsonParser";
 import { SchemaItemType } from "../../ECObjects";
-import { ECObjectsError } from "../../Exception";
+import { ECSchemaError } from "../../Exception";
 import { AnyClass } from "../../Interfaces";
 import { NavigationProperty } from "../../Metadata/Property";
 import { Schema } from "../../Metadata/Schema";
 import { ISchemaPartVisitor } from "../../SchemaPartVisitorDelegate";
 import { XmlParser } from "../../Deserialization/XmlParser";
 import { deserializeInfoXml, deserializeXml, deserializeXmlSync, ReferenceSchemaLocater } from "../TestUtils/DeserializationHelpers";
-import { Mixin, RelationshipClass } from "../../ecschema-metadata";
+import { ECSchemaNamespaceUris, Mixin, RelationshipClass } from "../../ecschema-metadata";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 
@@ -25,9 +25,10 @@ describe("Full Schema Deserialization", () => {
   describe("basic (empty) schemas", () => {
     it("should successfully deserialize a valid JSON string", async () => {
       const schemaString = JSON.stringify({
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+        $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
         name: "TestSchema",
         version: "1.2.3",
+        alias: "ts",
         description: "This is a test description",
         label: "This is a test label",
       });
@@ -42,9 +43,10 @@ describe("Full Schema Deserialization", () => {
     });
     it("should successfully deserialize a valid JSON string synchronously", () => {
       const schemaString = JSON.stringify({
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+        $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
         name: "TestSchema",
         version: "1.2.3",
+        alias: "ts",
         description: "This is a test description",
         label: "This is a test label",
       });
@@ -60,9 +62,10 @@ describe("Full Schema Deserialization", () => {
 
     it("should successfully deserialize name and version from a valid JSON object", async () => {
       const schemaJson = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+        $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
         name: "TestSchema",
         version: "1.2.3",
+        alias: "ts",
         description: "This is a test description",
         label: "This is a test label",
       };
@@ -78,40 +81,43 @@ describe("Full Schema Deserialization", () => {
 
     it("should throw for invalid schema version", async () => {
       const schemaJson = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+        $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
         name: "TestSchema",
         version: "1.1000.0",
+        alias: "ts",
       };
 
-      await expect(Schema.fromJson(schemaJson, new SchemaContext())).to.be.rejectedWith(ECObjectsError);
+      await expect(Schema.fromJson(schemaJson, new SchemaContext())).to.be.rejectedWith(ECSchemaError);
     });
 
     it("should throw for invalid schema minor version", async () => {
       const schemaJson = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+        $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
         name: "TestSchema",
         version: "1.0.10000000",
+        alias: "ts",
       };
-      await expect(Schema.fromJson(schemaJson, new SchemaContext())).to.be.rejectedWith(ECObjectsError);
+      await expect(Schema.fromJson(schemaJson, new SchemaContext())).to.be.rejectedWith(ECSchemaError);
     });
 
     it("should throw for invalid schema name", async () => {
       const schemaJson = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+        $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
         name: "0TestSchema",
         version: "1.0.0",
+        alias: "ts",
       };
 
-      await expect(Schema.fromJson(schemaJson, new SchemaContext())).to.be.rejectedWith(ECObjectsError);
+      await expect(Schema.fromJson(schemaJson, new SchemaContext())).to.be.rejectedWith(ECSchemaError);
     });
   });
 
   describe("with schema reference", () => {
     const baseJson = {
-      $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+      $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
       name: "TestSchema",
       version: "1.2.3",
-
+      alias: "ts",
     };
     const validSchemaJson = {
       ...baseJson,
@@ -141,15 +147,15 @@ describe("Full Schema Deserialization", () => {
     });
 
     it("should throw if the referenced schema cannot be found", async () => {
-      await expect(Schema.fromJson(validSchemaJson, new SchemaContext())).to.be.rejectedWith(ECObjectsError, "Could not locate the referenced schema, RefSchema.01.00.05, of TestSchema");
+      await expect(Schema.fromJson(validSchemaJson, new SchemaContext())).to.be.rejectedWith(ECSchemaError, "Could not locate the referenced schema, RefSchema.01.00.05, of TestSchema");
     });
 
     it("should throw for invalid references attribute", async () => {
       let json: any = { ...baseJson, references: 0 };
-      await expect(Schema.fromJson(json, new SchemaContext())).to.be.rejectedWith(ECObjectsError, `The schema TestSchema has an invalid 'references' attribute. It should be of type 'object[]'.`);
+      await expect(Schema.fromJson(json, new SchemaContext())).to.be.rejectedWith(ECSchemaError, `The schema TestSchema has an invalid 'references' attribute. It should be of type 'object[]'.`);
 
       json = { ...baseJson, references: [0] };
-      await expect(Schema.fromJson(json, new SchemaContext())).to.be.rejectedWith(ECObjectsError, `The schema TestSchema has an invalid 'references' attribute. It should be of type 'object[]'.`);
+      await expect(Schema.fromJson(json, new SchemaContext())).to.be.rejectedWith(ECSchemaError, `The schema TestSchema has an invalid 'references' attribute. It should be of type 'object[]'.`);
     });
 
     it("should throw for missing reference name", async () => {
@@ -157,7 +163,7 @@ describe("Full Schema Deserialization", () => {
         ...baseJson,
         references: [{ version: "1.0.5" }],
       };
-      await expect(Schema.fromJson(json, new SchemaContext())).to.be.rejectedWith(ECObjectsError, `The schema TestSchema has an invalid 'references' attribute. One of the references is missing the required 'name' attribute.`);
+      await expect(Schema.fromJson(json, new SchemaContext())).to.be.rejectedWith(ECSchemaError, `The schema TestSchema has an invalid 'references' attribute. One of the references is missing the required 'name' attribute.`);
     });
 
     it("should throw for invalid reference name", async () => {
@@ -165,7 +171,7 @@ describe("Full Schema Deserialization", () => {
         ...baseJson,
         references: [{ name: 0, version: "1.0.5" }],
       };
-      await expect(Schema.fromJson(json, new SchemaContext())).to.be.rejectedWith(ECObjectsError, `The schema TestSchema has an invalid 'references' attribute. One of the references has an invalid 'name' attribute. It should be of type 'string'.`);
+      await expect(Schema.fromJson(json, new SchemaContext())).to.be.rejectedWith(ECSchemaError, `The schema TestSchema has an invalid 'references' attribute. One of the references has an invalid 'name' attribute. It should be of type 'string'.`);
     });
 
     it("should throw for missing reference version", async () => {
@@ -173,7 +179,7 @@ describe("Full Schema Deserialization", () => {
         ...baseJson,
         references: [{ name: "RefSchema" }],
       };
-      await expect(Schema.fromJson(json, new SchemaContext())).to.be.rejectedWith(ECObjectsError, `The schema TestSchema has an invalid 'references' attribute. One of the references is missing the required 'version' attribute.`);
+      await expect(Schema.fromJson(json, new SchemaContext())).to.be.rejectedWith(ECSchemaError, `The schema TestSchema has an invalid 'references' attribute. One of the references is missing the required 'version' attribute.`);
     });
 
     it("should throw for invalid reference version", async () => {
@@ -181,21 +187,21 @@ describe("Full Schema Deserialization", () => {
         ...baseJson,
         references: [{ name: "RefSchema", version: 0 }],
       };
-      await expect(Schema.fromJson(json, new SchemaContext())).to.be.rejectedWith(ECObjectsError, `The schema TestSchema has an invalid 'references' attribute. One of the references has an invalid 'version' attribute. It should be of type 'string'.`);
+      await expect(Schema.fromJson(json, new SchemaContext())).to.be.rejectedWith(ECSchemaError, `The schema TestSchema has an invalid 'references' attribute. One of the references has an invalid 'version' attribute. It should be of type 'string'.`);
     });
 
     it("should throw for cyclic references", async () => {
       const context = new SchemaContext();
 
       const schemaAJson = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+        $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
         name: "RefSchemaA",
         version: "1.0.0",
         alias: "a",
       };
 
       const schemaBJson = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+        $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
         name: "RefSchemaB",
         version: "2.0.0",
         alias: "b",
@@ -221,11 +227,11 @@ describe("Full Schema Deserialization", () => {
           { name: "RefSchemaB", version: "2.0.0" },
         ],
       };
-      await expect(Schema.fromJson(json, context)).to.be.rejectedWith(ECObjectsError, `Schema 'RefSchemaB' has reference cycles: TestSchema --> RefSchemaB, RefSchemaB --> TestSchema`);
+      await expect(Schema.fromJson(json, context)).to.be.rejectedWith(ECSchemaError, `Schema 'RefSchemaB' has reference cycles: TestSchema --> RefSchemaB, RefSchemaB --> TestSchema`);
 
       const context2 = new SchemaContext();
       const schemaCJson = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+        $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
         name: "RefSchemaC",
         version: "1.0.0",
         alias: "c",
@@ -242,14 +248,14 @@ describe("Full Schema Deserialization", () => {
       };
 
       const schemaDJson = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+        $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
         name: "RefSchemaD",
         version: "1.0.0",
         alias: "d",
       };
 
       const schemaEJson = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+        $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
         name: "RefSchemaE",
         version: "1.0.0",
         alias: "e",
@@ -262,7 +268,7 @@ describe("Full Schema Deserialization", () => {
       };
 
       const schemaFJson = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+        $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
         name: "RefSchemaF",
         version: "1.0.0",
         alias: "f",
@@ -288,14 +294,14 @@ describe("Full Schema Deserialization", () => {
           { name: "RefSchemaC", version: "1.0.0" },
         ],
       };
-      await expect(Schema.fromJson(json, context2)).to.be.rejectedWith(ECObjectsError, `Schema 'RefSchemaF' has reference cycles: RefSchemaE --> RefSchemaF, RefSchemaC --> RefSchemaE, RefSchemaF --> RefSchemaC`);
+      await expect(Schema.fromJson(json, context2)).to.be.rejectedWith(ECSchemaError, `Schema 'RefSchemaF' has reference cycles: RefSchemaE --> RefSchemaF, RefSchemaC --> RefSchemaE, RefSchemaF --> RefSchemaC`);
     });
 
     it("should not throw cyclic references", async () => {
       const context = new SchemaContext();
 
       const schemaAJson = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+        $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
         name: "RefSchemaA",
         version: "1.0.0",
         alias: "a",
@@ -312,7 +318,7 @@ describe("Full Schema Deserialization", () => {
       };
 
       const schemaBJson = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+        $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
         name: "RefSchemaB",
         version: "1.0.0",
         alias: "b",
@@ -329,14 +335,14 @@ describe("Full Schema Deserialization", () => {
       };
 
       const schemaCJson = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+        $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
         name: "RefSchemaC",
         version: "1.0.0",
         alias: "c",
       };
 
       const schemaDJson = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+        $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
         name: "RefSchemaD",
         version: "1.0.0",
         alias: "d",
@@ -358,7 +364,7 @@ describe("Full Schema Deserialization", () => {
           { name: "RefSchemaB", version: "1.0.0" },
         ],
       };
-      await expect(Schema.fromJson(json, context)).not.to.be.rejectedWith(ECObjectsError);
+      await expect(Schema.fromJson(json, context)).not.to.be.rejectedWith(ECSchemaError);
     });
 
     it("should throw for cyclic references in XML", async () => {
@@ -387,7 +393,7 @@ describe("Full Schema Deserialization", () => {
       <ECSchemaReference name="RefSchemaB" version="02.00.00" alias="b"/>
       </ECSchema>`;
 
-      await expect(deserializeXml(testSchemaXML, context)).to.be.rejectedWith(ECObjectsError, `Schema 'TestSchema' has reference cycles: RefSchemaB --> TestSchema, TestSchema --> RefSchemaB`);
+      await expect(deserializeXml(testSchemaXML, context)).to.be.rejectedWith(ECSchemaError, `Schema 'TestSchema' has reference cycles: RefSchemaB --> TestSchema, TestSchema --> RefSchemaB`);
 
       const context2 = new SchemaContext();
 
@@ -428,7 +434,7 @@ describe("Full Schema Deserialization", () => {
       <ECSchemaReference name="RefSchemaC" version="01.00.00" alias="c"/>
       </ECSchema>`;
 
-      await expect(deserializeXml(testSchemaXML, context2)).to.be.rejectedWith(ECObjectsError, `Schema 'TestSchema' has reference cycles: RefSchemaF --> RefSchemaC, RefSchemaE --> RefSchemaF, RefSchemaC --> RefSchemaE, TestSchema --> RefSchemaC`);
+      await expect(deserializeXml(testSchemaXML, context2)).to.be.rejectedWith(ECSchemaError, `Schema 'TestSchema' has reference cycles: RefSchemaF --> RefSchemaC, RefSchemaE --> RefSchemaF, RefSchemaC --> RefSchemaE, TestSchema --> RefSchemaC`);
     });
 
     it("should not throw cyclic references in XML", async () => {
@@ -472,28 +478,29 @@ describe("Full Schema Deserialization", () => {
       <ECSchemaReference name="RefSchemaB" version="01.00.00" alias="b"/>
       </ECSchema>`;
 
-      await expect(deserializeXml(testSchemaXML, context)).not.to.be.rejectedWith(ECObjectsError);
+      await expect(deserializeXml(testSchemaXML, context)).not.to.be.rejectedWith(ECSchemaError);
     });
   });
 
   describe("with items", () => {
     const baseJson = {
-      $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+      $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
       name: "TestSchema",
       version: "1.2.3",
+      alias: "ts",
     };
 
     it("should throw for invalid items attribute", async () => {
       let json: any = { ...baseJson, items: 0 };
-      await expect(Schema.fromJson(json, new SchemaContext())).to.be.rejectedWith(ECObjectsError, `The schema TestSchema has an invalid 'items' attribute. It should be of type 'object'.`);
+      await expect(Schema.fromJson(json, new SchemaContext())).to.be.rejectedWith(ECSchemaError, `The schema TestSchema has an invalid 'items' attribute. It should be of type 'object'.`);
 
       json = { ...baseJson, items: [{}] };
-      await expect(Schema.fromJson(json, new SchemaContext())).to.be.rejectedWith(ECObjectsError, `The schema TestSchema has an invalid 'items' attribute. It should be of type 'object'.`);
+      await expect(Schema.fromJson(json, new SchemaContext())).to.be.rejectedWith(ECSchemaError, `The schema TestSchema has an invalid 'items' attribute. It should be of type 'object'.`);
     });
 
     it("should throw for item with invalid name", async () => {
       const json = { ...baseJson, items: { "": {} } };
-      await expect(Schema.fromJson(json, new SchemaContext())).to.be.rejectedWith(ECObjectsError, `A SchemaItem in TestSchema has an invalid 'name' attribute. '' is not a valid ECName.`);
+      await expect(Schema.fromJson(json, new SchemaContext())).to.be.rejectedWith(ECSchemaError, `A SchemaItem in TestSchema has an invalid 'name' attribute. '' is not a valid ECName.`);
     });
 
     it("should throw for item with missing schemaItemType", async () => {
@@ -501,7 +508,7 @@ describe("Full Schema Deserialization", () => {
         ...baseJson,
         items: { BadItem: {} },
       };
-      await expect(Schema.fromJson(json, new SchemaContext())).to.be.rejectedWith(ECObjectsError, `The SchemaItem TestSchema.BadItem is missing the required 'schemaItemType' attribute.`);
+      await expect(Schema.fromJson(json, new SchemaContext())).to.be.rejectedWith(ECSchemaError, `The SchemaItem TestSchema.BadItem is missing the required 'schemaItemType' attribute.`);
     });
 
     it("should throw for item with invalid schemaItemType", async () => {
@@ -509,7 +516,7 @@ describe("Full Schema Deserialization", () => {
         ...baseJson,
         items: { BadItem: { schemaItemType: 0 } },
       };
-      await expect(Schema.fromJson(json, new SchemaContext())).to.be.rejectedWith(ECObjectsError, `The SchemaItem TestSchema.BadItem has an invalid 'schemaItemType' attribute. It should be of type 'string'.`);
+      await expect(Schema.fromJson(json, new SchemaContext())).to.be.rejectedWith(ECSchemaError, `The SchemaItem TestSchema.BadItem has an invalid 'schemaItemType' attribute. It should be of type 'string'.`);
     });
 
     it("invalid property type in child class json, reports error correctly", async () => {
@@ -535,7 +542,7 @@ describe("Full Schema Deserialization", () => {
 
       const context = new SchemaContext();
       const reader = new SchemaReadHelper(JsonParser, context);
-      await expect(reader.readSchema(new Schema(context), schemaJson)).to.be.rejectedWith(ECObjectsError, "The ECProperty TestSchema.TestEntity.TestProp has an invalid 'type' attribute. 'BadProperty' is not a valid type.");
+      await expect(reader.readSchema(new Schema(context), schemaJson)).to.be.rejectedWith(ECSchemaError, "The ECProperty TestSchema.TestEntity.TestProp has an invalid 'type' attribute. 'BadProperty' is not a valid type.");
     });
 
     it("invalid property type in class json with mixin, reports error correctly", async () => {
@@ -562,16 +569,17 @@ describe("Full Schema Deserialization", () => {
 
       const context = new SchemaContext();
       const reader = new SchemaReadHelper(JsonParser, context);
-      await expect(reader.readSchema(new Schema(context), schemaJson)).to.be.rejectedWith(ECObjectsError, "The ECProperty TestSchema.TestEntityClass.TestProp has an invalid 'type' attribute. 'BadProperty' is not a valid type.");
+      await expect(reader.readSchema(new Schema(context), schemaJson)).to.be.rejectedWith(ECSchemaError, "The ECProperty TestSchema.TestEntityClass.TestProp has an invalid 'type' attribute. 'BadProperty' is not a valid type.");
     });
 
   });
 
   describe("with visitor", () => {
     const baseJson = {
-      $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+      $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
       name: "TestSchema",
       version: "1.2.3",
+      alias: "ts",
     };
     type Mock<T> = { readonly [P in keyof T]: sinon.SinonSpy; };
     let mockVisitor: Mock<ISchemaPartVisitor>;
@@ -811,7 +819,7 @@ describe("Full Schema Deserialization", () => {
           if (RelationshipClass.isRelationshipClass(c))
             descriptions.push((await c.source.abstractConstraint!).description!);
           else if (c.schemaItemType === SchemaItemType.EntityClass) {
-            const prop = [...c.properties!][0] as NavigationProperty;
+            const prop = [...c.getPropertiesSync(true)][0] as NavigationProperty;
             descriptions.push((await prop.relationshipClass).description!);
           }
         }) as any,
@@ -884,7 +892,7 @@ describe("Full Schema Deserialization", () => {
           if (RelationshipClass.isRelationshipClass(c))
             descriptions.push((await c.source.abstractConstraint!).description!);
           else if (c.schemaItemType === SchemaItemType.EntityClass) {
-            const prop = [...c.properties!][0] as NavigationProperty;
+            const prop = [...c.getPropertiesSync(true)][0] as NavigationProperty;
             descriptions.push((await prop.relationshipClass).description!);
           }
         }) as any,
@@ -918,7 +926,7 @@ describe("Full Schema Deserialization", () => {
 
   describe("with schema custom attributes", () => {
     const baseJson = {
-      $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+      $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
       name: "ValidSchema",
       version: "1.2.3",
       alias: "vs",
@@ -1041,7 +1049,7 @@ describe("Full Schema Deserialization", () => {
       const schema: Schema = new Schema(context);
       const reader = new SchemaReadHelper(XmlParser, context);
 
-      expect(() => reader.readSchemaSync(schema, document)).to.throw(ECObjectsError, "Unable to locate SchemaItem TestSchema.TestAttribute.");
+      expect(() => reader.readSchemaSync(schema, document)).to.throw(ECSchemaError, "Unable to locate SchemaItem TestSchema.TestAttribute.");
     });
   });
 
@@ -1062,7 +1070,7 @@ describe("Full Schema Deserialization", () => {
     const schema: Schema = new Schema(context);
     const reader = new SchemaReadHelper(XmlParser, context);
 
-    expect(() => reader.readSchemaSync(schema, document)).not.to.throw(ECObjectsError, "Custom attribute namespaces must contain a valid 3.2 full schema name in the form <schemaName>.RR.ww.mm.");
+    expect(() => reader.readSchemaSync(schema, document)).not.to.throw(ECSchemaError, "Custom attribute namespaces must contain a valid 3.2 full schema name in the form <schemaName>.RR.ww.mm.");
   });
 
   it("with invalid custom attribute namespace", () => {
@@ -1082,12 +1090,12 @@ describe("Full Schema Deserialization", () => {
     const schema: Schema = new Schema(context);
     const reader = new SchemaReadHelper(XmlParser, context);
 
-    expect(() => reader.readSchemaSync(schema, document)).to.throw(ECObjectsError, "Custom attribute namespaces must contain a valid 3.2 full schema name in the form <schemaName>.RR.ww.mm.");
+    expect(() => reader.readSchemaSync(schema, document)).to.throw(ECSchemaError, "Custom attribute namespaces must contain a valid 3.2 full schema name in the form <schemaName>.RR.ww.mm.");
   });
 
   describe("with property custom attributes", () => {
     const getSchemaJson = (propJson: any) => ({
-      $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+      $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
       name: "ValidSchema",
       version: "1.2.3",
       alias: "vs",
@@ -1121,7 +1129,7 @@ describe("Full Schema Deserialization", () => {
     it("async - single property CustomAttribute", async () => {
       const testSchema = await Schema.fromJson(oneCustomAttributeJson, new SchemaContext());
       expect(testSchema).to.exist;
-      const testProp = [...(await testSchema.getItem("TestClass") as AnyClass).properties!][0];
+      const testProp = [...(await testSchema.getItem("TestClass") as AnyClass).getPropertiesSync(true)][0];
       expect(testProp).to.exist;
       expect(testProp.name).to.eql("TestProp");
       expect(testProp.customAttributes!.get("ValidSchema.TestCAClassA")).to.exist;
@@ -1131,7 +1139,7 @@ describe("Full Schema Deserialization", () => {
     it("sync - single property CustomAttribute", () => {
       const testSchema = Schema.fromJsonSync(oneCustomAttributeJson, new SchemaContext());
       expect(testSchema).to.exist;
-      const testProp = [...(testSchema.getItemSync("TestClass") as AnyClass).properties!][0];
+      const testProp = [...(testSchema.getItemSync("TestClass") as AnyClass).getPropertiesSync(true)][0];
       expect(testProp).to.exist;
       expect(testProp.name).to.eql("TestProp");
       expect(testProp.customAttributes!.get("ValidSchema.TestCAClassA")).to.exist;
@@ -1152,7 +1160,7 @@ describe("Full Schema Deserialization", () => {
     it("async - multiple property CustomAttributes", async () => {
       const testSchema = await Schema.fromJson(twoCustomAttributesJson, new SchemaContext());
       expect(testSchema).to.exist;
-      const testProp = [...(await testSchema.getItem("TestClass") as AnyClass).properties!][0];
+      const testProp = [...(await testSchema.getItem("TestClass") as AnyClass).getPropertiesSync(true)][0];
       expect(testProp).to.exist;
       expect(testProp.name).to.eql("TestProp");
       expect(testProp.customAttributes!.get("ValidSchema.TestCAClassA")).to.exist;
@@ -1162,7 +1170,7 @@ describe("Full Schema Deserialization", () => {
     it("sync - multiple property CustomAttributes", () => {
       const testSchema = Schema.fromJsonSync(twoCustomAttributesJson, new SchemaContext());
       expect(testSchema).to.exist;
-      const testProp = [...(testSchema.getItemSync("TestClass") as AnyClass).properties!][0];
+      const testProp = [...(testSchema.getItemSync("TestClass") as AnyClass).getPropertiesSync(true)][0];
       expect(testProp).to.exist;
       expect(testProp.name).to.eql("TestProp");
       expect(testProp.customAttributes!.get("ValidSchema.TestCAClassA")).to.exist;
@@ -1189,7 +1197,7 @@ describe("Full Schema Deserialization", () => {
 
       const testSchema = Schema.fromJsonSync(getSchemaJson(propertyJson), new SchemaContext());
       expect(testSchema).to.exist;
-      const testProp = [...(testSchema.getItemSync("TestClass") as AnyClass).properties!][0];
+      const testProp = [...(testSchema.getItemSync("TestClass") as AnyClass).getPropertiesSync(true)][0];
       expect(testProp).to.exist;
 
       assert.strictEqual(testProp.customAttributes!.get("ValidSchema.TestCAClassA")!.ShowClasses, 1.2);

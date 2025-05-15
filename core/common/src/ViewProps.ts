@@ -90,7 +90,7 @@ export interface HydrateViewStateResponseProps {
   spatialViewProps?: ViewStateProps;
 }
 
-/** Returned from [IModelDb.Views.getViewStateData]($backend).
+/** Returned from [IModelDb.Views.getViewStateProps]($backend).
  * @public
  * @extensions
  */
@@ -109,7 +109,7 @@ export interface ViewStateProps {
   sectionDrawing?: SectionDrawingViewProps;
 }
 
-/** Options for loading a [[ViewStateProps]] via [IModelConnection.Views.load]($frontend) or [IModelDb.Views.getViewStateData]($backend).
+/** Options for loading a [[ViewStateProps]] via [IModelConnection.Views.load]($frontend) or [IModelDb.Views.getViewStateProps]($backend).
  * @public
  * @extensions
  */

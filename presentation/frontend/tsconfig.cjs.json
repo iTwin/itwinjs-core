@@ -3,4 +3,7 @@
   "compilerOptions": {
     "outDir": "lib/cjs"
   },
+  "exclude": [
+    "src/test/**/*",
+  ]
 }

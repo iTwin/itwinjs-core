@@ -23,7 +23,7 @@ import { GraphicBranch, GraphicBranchOptions } from "../../../render/GraphicBran
 import { CustomGraphicBuilderOptions, GraphicBuilder, ViewportGraphicBuilderOptions } from "../../../render/GraphicBuilder";
 import { InstancedGraphicParams, PatternGraphicParams } from "../../../common/render/InstancedGraphicParams";
 import { PrimitiveBuilder } from "../../../internal/render/PrimitiveBuilder";
-import { RealityMeshGraphicParams } from "../RealityMeshGraphicParams";
+import { MeshMapLayerGraphicParams } from "../MeshMapLayerGraphicParams";
 import { PointCloudArgs } from "../../../common/internal/render/PointCloudPrimitive";
 import { RenderClipVolume } from "../../../render/RenderClipVolume";
 import { RenderGraphic, RenderGraphicOwner } from "../../../render/RenderGraphic";
@@ -469,7 +469,7 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
     return RealityMeshGeometry.createForTerrain(params, transform, disableTextureDisposal);
   }
 
-  public override createRealityMeshGraphic(params: RealityMeshGraphicParams, disableTextureDisposal = false): RenderGraphic | undefined {
+  public override createRealityMeshGraphic(params: MeshMapLayerGraphicParams, disableTextureDisposal = false): RenderGraphic | undefined {
     return RealityMeshGeometry.createGraphic(this, params, disableTextureDisposal);
   }
   public override createRealityMeshGeometry(realityMesh: RealityMeshParams, disableTextureDisposal = false): RealityMeshGeometry | undefined {

@@ -3,8 +3,8 @@
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { CategoryDescription } from "../../presentation-common/content/Category";
-import { createTestCategoryDescription } from "../_helpers/Content";
+import { CategoryDescription } from "../../presentation-common/content/Category.js";
+import { createTestCategoryDescription } from "../_helpers/Content.js";
 
 describe("CategoryDescription", () => {
   describe("toJSON", () => {

@@ -3,9 +3,8 @@
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import * as faker from "faker";
 import * as moq from "typemoq";
-import { RegisteredRuleset, Ruleset, RuleTypes } from "../presentation-common";
+import { RegisteredRuleset, Ruleset, RuleTypes } from "../presentation-common.js";
 
 describe("RegisteredRuleset", () => {
   let uniqueIdentifier: string;
@@ -15,7 +14,7 @@ describe("RegisteredRuleset", () => {
 
   beforeEach(() => {
     managerMock.reset();
-    uniqueIdentifier = faker.random.uuid();
+    uniqueIdentifier = "unique-id";
   });
 
   describe("Ruleset implementation", () => {
@@ -23,24 +22,24 @@ describe("RegisteredRuleset", () => {
     let registered: RegisteredRuleset;
     beforeEach(() => {
       ruleset = {
-        id: faker.random.uuid(),
+        id: "test-ruleset",
         requiredSchemas: [
           {
-            name: faker.random.word(),
+            name: "TestSchema",
           },
         ],
         supplementationInfo: {
-          supplementationPurpose: faker.random.words(),
+          supplementationPurpose: "test-supplementation-purpose",
         },
         rules: [
           {
             ruleType: RuleTypes.RootNodes,
-            autoExpand: faker.random.boolean(),
+            autoExpand: false,
           },
         ],
         vars: [
           {
-            label: faker.random.words(),
+            label: "test label",
             vars: [],
           },
         ],
@@ -61,7 +60,7 @@ describe("RegisteredRuleset", () => {
   describe("dispose", () => {
     it("unregisters ruleset from IRulesetManager", () => {
       const ruleset: Ruleset = {
-        id: faker.random.uuid(),
+        id: "test-ruleset",
         rules: [],
       };
       const registered = new RegisteredRuleset(ruleset, uniqueIdentifier, (r: RegisteredRuleset) => managerMock.object(r));

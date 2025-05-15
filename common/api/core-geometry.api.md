@@ -266,6 +266,7 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
     dispatchToGeometryHandler(handler: GeometryHandler): any;
     emitStrokableParts(handler: IStrokeHandler, options?: StrokeOptions): void;
     emitStrokes(dest: LineString3d, options?: StrokeOptions): void;
+    emitTangents(spacePoint: Point3d, announceTangent: (tangent: CurveLocationDetail) => any, options?: TangentOptions): void;
     endPoint(result?: Point3d): Point3d;
     extendRange(range: Range3d, transform?: Transform): void;
     extendRangeInSweep(range: Range3d, sweep: AngleSweep, transform?: Transform): void;
@@ -1623,6 +1624,10 @@ export enum CurveExtendMode {
 export class CurveExtendOptions {
     static correctFraction(extendParam: VariantCurveExtendParameter, fraction: number): number;
     static resolveRadiansToSweepFraction(extendParam: VariantCurveExtendParameter, radians: number, sweep: AngleSweep): number;
+    static resolveRadiansToValidSweepFraction(extendParam: VariantCurveExtendParameter, radians: number, sweep: AngleSweep): {
+        fraction: number;
+        isValid: boolean;
+    };
     static resolveVariantCurveExtendParameterToCurveExtendMode(param: VariantCurveExtendParameter, endIndex: 0 | 1): CurveExtendMode;
 }
 
@@ -1742,12 +1747,14 @@ export class CurveOps {
 export abstract class CurvePrimitive extends GeometryQuery {
     protected constructor();
     addMappedStrokesToLineString3D(map: StrokeCountMap, linestring: LineString3d): number;
+    allTangents(spacePoint: Point3d, options?: TangentOptions): CurveLocationDetail[] | undefined;
     announceClipIntervals(_clipper: Clipper, _announce?: AnnounceNumberNumberCurvePrimitive): boolean;
     appendPlaneIntersectionPoints(plane: PlaneAltitudeEvaluator, result: CurveLocationDetail[]): number;
     abstract clone(): CurvePrimitive;
     clonePartialCurve(_fractionA: number, _fractionB: number): CurvePrimitive | undefined;
     abstract cloneTransformed(transform: Transform): CurvePrimitive | undefined;
-    closestPoint(spacePoint: Point3d, extend: VariantCurveExtendParameter, result?: CurveLocationDetail): CurveLocationDetail | undefined;
+    closestPoint(spacePoint: Point3d, extend?: VariantCurveExtendParameter, result?: CurveLocationDetail): CurveLocationDetail | undefined;
+    closestTangent(spacePoint: Point3d, options?: TangentOptions): CurveLocationDetail | undefined;
     collectCurvePrimitives(collectorArray?: CurvePrimitive[], smallestPossiblePrimitives?: boolean, explodeLinestrings?: boolean): CurvePrimitive[];
     collectCurvePrimitivesGo(collectorArray: CurvePrimitive[], _smallestPossiblePrimitives: boolean, _explodeLinestrings?: boolean): void;
     computeAndAttachRecursiveStrokeCounts(options?: StrokeOptions, parentMap?: StrokeCountMap): void;
@@ -1759,6 +1766,7 @@ export abstract class CurvePrimitive extends GeometryQuery {
     abstract readonly curvePrimitiveType: CurvePrimitiveType;
     abstract emitStrokableParts(dest: IStrokeHandler, options?: StrokeOptions): void;
     abstract emitStrokes(dest: LineString3d, options?: StrokeOptions): void;
+    emitTangents(spacePoint: Point3d, announceTangent: (tangent: CurveLocationDetail) => any, options?: TangentOptions): void;
     // @internal
     endCut?: CurveLocationDetail;
     endPoint(result?: Point3d): Point3d;
@@ -2165,6 +2173,10 @@ export class Geometry {
     static inverseInterpolate01(f0: number, f1: number, fTarget?: number): number | undefined;
     static inverseMetricDistance(distance: number): number | undefined;
     static inverseMetricDistanceSquared(distanceSquared: number): number | undefined;
+    static isAlmostEqualAnyNumber(a: number, values: number[] | {
+        iter: (i: number) => number;
+        length: number;
+    }, tolerance?: number): boolean;
     static isAlmostEqualEitherNumber(a: number, b: number, c: number, tolerance?: number): boolean;
     static isAlmostEqualNumber(a: number, b: number, tolerance?: number): boolean;
     static isAlmostEqualOptional(a: number | undefined, b: number | undefined, tolerance: number): boolean;
@@ -2628,6 +2640,7 @@ export namespace IModelJson {
         auxData?: AuxDataProps;
         color?: [number];
         colorIndex?: [number];
+        edgeMateIndex?: [number];
         expectedClosure?: number;
         normal?: [XYZProps];
         normalIndex?: [number];
@@ -2820,6 +2833,7 @@ export class IndexedPolyface extends Polyface {
     get facetCount(): number;
     facetIndex0(facetIndex: number): number;
     facetIndex1(facetIndex: number): number;
+    get facetStart(): ReadonlyArray<number>;
     protected _facetStart: number[];
     protected _facetToFaceData: number[];
     // @deprecated
@@ -2836,7 +2850,6 @@ export class IndexedPolyface extends Polyface {
     reverseIndices(): void;
     reverseNormals(): void;
     reverseSingleFacet(facetId: number): void;
-    static searchStrictlyIncreasingNumbers(data: number[], value: number): number | undefined;
     setNewFaceData(endFacetIndex?: number): boolean;
     terminateFacet(validateAllIndices?: boolean): string[] | undefined;
     tryGetFaceData(i: number): FacetFaceData | undefined;
@@ -3828,6 +3841,7 @@ export class NumberArray {
     static maxAbsTwo(a1: number, a2: number): number;
     static pack(source: number[] | number[][] | number[][][]): Float64Array;
     static preciseSum(data: number[]): number;
+    static searchStrictlyIncreasingNumbers(data: ReadonlyArray<number>, value: number): number | undefined;
     static sum(data: number[] | Float64Array): number;
     static unpack2d(source: Float64Array, numPerBlock: number): number[][] | undefined;
     static unpack3d(source: Float64Array, numPerRow: number, numPerBlock: number): number[][][] | undefined;
@@ -4811,7 +4825,7 @@ export class PolygonOps {
     static areaNormalGo(points: IndexedXYZCollection, result?: Vector3d): Vector3d | undefined;
     static areaXY(points: Point3d[] | IndexedXYZCollection): number;
     static centroidAndAreaXY(points: Point2d[], centroid: Point2d): number | undefined;
-    static centroidAreaNormal(points: IndexedXYZCollection | Point3d[]): Ray3d | undefined;
+    static centroidAreaNormal(points: IndexedXYZCollection | Point3d[], result?: Ray3d): Ray3d | undefined;
     static classifyPointInPolygon(x: number, y: number, points: XAndY[]): number | undefined;
     static classifyPointInPolygonXY(x: number, y: number, points: IndexedXYZCollection): number | undefined;
     static closestApproach(polygonA: Point3d[] | IndexedXYZCollection, polygonB: Point3d[] | IndexedXYZCollection, dMax?: number, _searchInterior?: boolean): PolygonLocationDetailPair | undefined;
@@ -5297,6 +5311,7 @@ export class RegionOps {
     static addLoopsToGraph(graph: HalfEdgeGraph, data: MultiLineStringDataVariant, announceIsolatedLoop: (graph: HalfEdgeGraph, seed: HalfEdge) => void): void;
     // @internal
     static addLoopsWithEdgeTagToGraph(graph: HalfEdgeGraph, data: MultiLineStringDataVariant, mask: HalfEdgeMask, edgeTag: any): HalfEdge[] | undefined;
+    static centroidAreaNormal(region: AnyRegion, result?: Ray3d): Ray3d | undefined;
     static cloneCurvesWithXYSplits(curvesToCut: AnyCurve | undefined, cutterCurves: CurveCollection): AnyCurve | undefined;
     static collectChains(fragments: AnyCurve[], gapTolerance?: number): AnyChain | undefined;
     static collectCurvePrimitives(candidates: AnyCurve | AnyCurve[], collectorArray?: CurvePrimitive[], smallestPossiblePrimitives?: boolean, explodeLinestrings?: boolean): CurvePrimitive[];
@@ -5305,10 +5320,10 @@ export class RegionOps {
         outsideOffsets: AnyCurve[];
         chains?: AnyChain;
     };
-    static computeXYArea(root: AnyRegion): number | undefined;
-    static computeXYAreaMoments(root: AnyRegion): MomentData | undefined;
+    static computeXYArea(region: AnyRegion): number | undefined;
+    static computeXYAreaMoments(region: AnyRegion): MomentData | undefined;
     static computeXYAreaTolerance(range: Range3d, distanceTolerance?: number): number;
-    static computeXYZWireMomentSums(root: AnyCurve): MomentData | undefined;
+    static computeXYZWireMomentSums(curve: AnyCurve): MomentData | undefined;
     static consolidateAdjacentPrimitives(curves: CurveCollection, options?: ConsolidateAdjacentCurvePrimitivesOptions): void;
     static constructAllXYRegionLoops(curvesAndRegions: AnyCurve | AnyCurve[], tolerance?: number): SignedLoops[];
     static constructCurveXYOffset(curves: Path | Loop, offsetDistanceOrOptions: number | JointOptions | OffsetOptions): CurveCollection | undefined;
@@ -5534,6 +5549,8 @@ export class Segment1d {
 
 // @public
 export namespace SerializationHelpers {
+    export function announceCompressedZeroBasedReflexiveIndices(sourceIndices: Int32Array, numPerBlock: number, blockSeparator: number, nullValue: number, announceRemappedIndex: (i: number | undefined) => any): boolean;
+    export function announceUncompressedZeroBasedReflexiveIndices(sourceIndices: Array<number | undefined>, sourceStarts: ReadonlyArray<number>, blockSeparator: number, nullValue: number, announceRemappedIndex: (i: number) => any): boolean;
     export function announceZeroBasedIndicesFromSignedOneBasedIndices(sourceIndices: Int32Array, numPerBlock: number, announceZeroBasedIndex: (i0: number, flag?: boolean) => any, terminateBlock?: () => any): void;
     export function announceZeroBasedIndicesWithExternalBlocking(sourceIndices: Int32Array, blockingIndices: Int32Array, numPerBlock: number, announceZeroBasedIndex: (i0: number) => any, terminateBlock?: () => any): void;
     export interface BSplineCurveData {
@@ -5565,6 +5582,10 @@ export namespace SerializationHelpers {
     export function cloneBSplineSurfaceData(source: BSplineSurfaceData): BSplineSurfaceData;
     export function createBSplineCurveData(poles: number[][] | Float64Array, dim: number, knots: number[] | Float64Array, numPoles: number, order: number): BSplineCurveData;
     export function createBSplineSurfaceData(poles: number[][][] | Float64Array, dim: number, uKnots: number[] | Float64Array, uNumPoles: number, uOrder: number, vKnots: number[] | Float64Array, vNumPoles: number, vOrder: number): BSplineSurfaceData;
+    export enum EdgeMateIndex {
+        BlockSeparator = -1,
+        NoEdgeMate = -2
+    }
     export class Export {
         static prepareBSplineCurveData(data: BSplineCurveData, options?: BSplineDataOptions): boolean;
         static prepareBSplineSurfaceData(data: BSplineSurfaceData, options?: BSplineDataOptions): boolean;
@@ -5835,6 +5856,15 @@ export class TaggedNumericData {
     tagB: number;
     tagToIndexedDouble(targetTag: number, minValue: number, maxValue: number, defaultValue: number): number;
     tagToInt(targetTag: number, minValue: number, maxValue: number, defaultValue: number): number;
+}
+
+// @public
+export interface TangentOptions {
+    distanceTol?: number;
+    extend?: VariantCurveExtendParameter;
+    hintPoint?: Point3d;
+    strokeOptions?: StrokeOptions;
+    vectorToEye?: Vector3d;
 }
 
 // @public

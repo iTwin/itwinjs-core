@@ -731,19 +731,19 @@ export class Matrix4d implements BeJSONFunctions {
     this._coffs[15] += scale * beta;
   }
   /**
-   * Multiply and replace contents of this matrix by A*this*AT where
-   * * A is a pure translation with final column [x,y,z,1]
-   * * this is this matrix.
-   * * AT is the transpose of A.
-   * @param ax x part of translation
-   * @param ay y part of translation
-   * @param az z part of translation
+   * Multiply and replace contents of ` this` matrix by `A*this*AT` where
+   * * `A` is a pure translation with final column [x,y,z,1].
+   * * `this` is this matrix.
+   * * `AT` is the transpose of A.
+   * @param ax x part of translation.
+   * @param ay y part of translation.
+   * @param az z part of translation.
    */
-  public multiplyTranslationSandwichInPlace(ax: number, ay: number, az: number) {
+  public multiplyTranslationSandwichInPlace(ax: number, ay: number, az: number) : void {
     const bx = this._coffs[3];
     const by = this._coffs[7];
     const bz = this._coffs[11];
-    // matrixB can be non-symmetric!!
+    // matrixB can be non-symmetric
     const cx = this._coffs[12];
     const cy = this._coffs[13];
     const cz = this._coffs[14];
@@ -770,6 +770,6 @@ export class Matrix4d implements BeJSONFunctions {
     this._coffs[12] += axBeta;
     this._coffs[13] += ayBeta;
     this._coffs[14] += azBeta;
-    // coffs[15] is unchanged !!!
+    // coffs[15] is unchanged
   }
 }

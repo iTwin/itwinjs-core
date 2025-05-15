@@ -8,6 +8,7 @@ import { SchemaContext } from "../../Context";
 import { PrimitiveType } from "../../ECObjects";
 import { ECClass, MutableClass } from "../../Metadata/Class";
 import { MutableSchema, Schema } from "../../Metadata/Schema";
+import { ECSchemaNamespaceUris } from "../../Constants";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 
@@ -21,7 +22,7 @@ describe("Property Inheritance", () => {
     //         |
     //  [TestClass:P4,P3]
     const schemaJson = {
-      $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+      $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
       name: "TestSchema",
       version: "01.00.00",
       alias: "ts",
@@ -55,7 +56,7 @@ describe("Property Inheritance", () => {
     it("async iteration", async () => {
       const schema = (await Schema.fromJson(schemaJson, new SchemaContext())) as MutableSchema;
       const testClass = await schema.getItem("TestClass", ECClass);
-      const props = await testClass!.getProperties();
+      const props = Array.from(await testClass!.getProperties());
       const names = props.map((p) => `${p.name}(${p.class.name})`);
       assert.deepEqual(names, expectedResult);
     });
@@ -63,7 +64,7 @@ describe("Property Inheritance", () => {
     it("sync iteration", () => {
       const schema = Schema.fromJsonSync(schemaJson, new SchemaContext()) as MutableSchema;
       const testClass = schema.getItemSync("TestClass", ECClass);
-      const props = testClass!.getPropertiesSync();
+      const props = Array.from(testClass!.getPropertiesSync());
       const names = props.map((p) => `${p.name}(${p.class.name})`);
       assert.deepEqual(names, expectedResult);
     });
@@ -76,7 +77,7 @@ describe("Property Inheritance", () => {
     //         |
     //  [TestClass:P4,P3]
     const schemaJson = {
-      $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+      $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
       name: "TestSchema",
       version: "01.00.00",
       alias: "ts",
@@ -111,7 +112,7 @@ describe("Property Inheritance", () => {
     it("async iteration", async () => {
       const schema = (await Schema.fromJson(schemaJson, new SchemaContext())) as MutableSchema;
       const testClass = await schema.getItem("TestClass", ECClass);
-      const props = await testClass!.getProperties();
+      const props = Array.from(await testClass!.getProperties());
       const names = props.map((p) => `${p.name}(${p.class.name})`);
       assert.deepEqual(names, expectedResult);
     });
@@ -119,7 +120,7 @@ describe("Property Inheritance", () => {
     it("sync iteration", () => {
       const schema = Schema.fromJsonSync(schemaJson, new SchemaContext()) as MutableSchema;
       const testClass = schema.getItemSync("TestClass", ECClass);
-      const props = testClass!.getPropertiesSync();
+      const props = Array.from(testClass!.getPropertiesSync());
       const names = props.map((p) => `${p.name}(${p.class.name})`);
       assert.deepEqual(names, expectedResult);
     });
@@ -132,7 +133,7 @@ describe("Property Inheritance", () => {
     //         |               /
     //         [TestClass:P4,P3]
     const schemaJson = {
-      $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+      $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
       name: "TestSchema",
       version: "01.00.00",
       alias: "ts",
@@ -157,29 +158,24 @@ describe("Property Inheritance", () => {
       const schema = (await Schema.fromJson(schemaJson, new SchemaContext())) as MutableSchema;
       const testClass = await schema.getItem("TestClass") as MutableClass;
       const rootClass = await schema.getItem("RootClass") as MutableClass;
-      let props = await testClass.getProperties();
+      let props = Array.from(await testClass.getProperties());
       let names = props.map((p) => `${p.name}(${p.class.name})`);
       assert.deepEqual(names, expectedResult);
 
       await rootClass.createPrimitiveProperty("P2", PrimitiveType.String);
 
       // this should use the cache and return old results
-      props = await testClass.getProperties();
+      props = Array.from(await testClass.getProperties());
       names = props.map((p) => `${p.name}(${p.class.name})`);
       assert.deepEqual(names, expectedResult);
 
-      props = await testClass.getProperties(true);
+      testClass.cleanCache();
+      props = Array.from(await testClass.getProperties());
       names = props.map((p) => `${p.name}(${p.class.name})`);
       assert.deepEqual(names, expectedResult2);
 
       await testClass.createPrimitiveProperty("P3", PrimitiveType.String);
-
-      // this should use the cache and return old results
-      props = await testClass.getProperties();
-      names = props.map((p) => `${p.name}(${p.class.name})`);
-      assert.deepEqual(names, expectedResult2);
-
-      props = await testClass.getProperties(true);
+      props = Array.from(await testClass.getProperties());
       names = props.map((p) => `${p.name}(${p.class.name})`);
       assert.deepEqual(names, expectedResult3);
     });
@@ -188,29 +184,25 @@ describe("Property Inheritance", () => {
       const schema = Schema.fromJsonSync(schemaJson, new SchemaContext()) as MutableSchema;
       const testClass = schema.getItemSync("TestClass") as MutableClass;
       const rootClass = schema.getItemSync("RootClass") as MutableClass;
-      let props = testClass.getPropertiesSync();
+      let props = Array.from(testClass.getPropertiesSync());
       let names = props.map((p) => `${p.name}(${p.class.name})`);
       assert.deepEqual(names, expectedResult);
 
       rootClass.createPrimitivePropertySync("P2", PrimitiveType.String);
 
       // this should use the cache and return old results
-      props = testClass.getPropertiesSync();
+      props = Array.from(testClass.getPropertiesSync());
       names = props.map((p) => `${p.name}(${p.class.name})`);
       assert.deepEqual(names, expectedResult);
 
-      props = testClass.getPropertiesSync(true);
+      testClass.cleanCache();
+      props = Array.from(testClass.getPropertiesSync());
       names = props.map((p) => `${p.name}(${p.class.name})`);
       assert.deepEqual(names, expectedResult2);
 
       testClass.createPrimitivePropertySync("P3", PrimitiveType.String);
 
-      // this should use the cache and return old results
-      props = testClass.getPropertiesSync();
-      names = props.map((p) => `${p.name}(${p.class.name})`);
-      assert.deepEqual(names, expectedResult2);
-
-      props = testClass.getPropertiesSync(true);
+      props = Array.from(testClass.getPropertiesSync());
       names = props.map((p) => `${p.name}(${p.class.name})`);
       assert.deepEqual(names, expectedResult3);
     });
@@ -223,7 +215,7 @@ describe("Property Inheritance", () => {
     //         |
     //  [TestClass:P4,P3]
     const schemaJson = {
-      $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+      $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
       name: "TestSchema",
       version: "01.00.00",
       alias: "ts",
@@ -244,29 +236,25 @@ describe("Property Inheritance", () => {
       const schema = (await Schema.fromJson(schemaJson, new SchemaContext())) as MutableSchema;
       const testClass = await schema.getItem("TestClass") as MutableClass;
       const rootClass = await schema.getItem("RootClass") as MutableClass;
-      let props = await testClass.getProperties();
+      let props = Array.from(await testClass.getProperties());
       let names = props.map((p) => `${p.name}(${p.class.name})`);
       assert.deepEqual(names, expectedResult);
 
       await rootClass.createPrimitiveProperty("P2", PrimitiveType.String);
 
       // this should use the cache and return old results
-      props = await testClass.getProperties();
+      props = Array.from(await testClass.getProperties());
       names = props.map((p) => `${p.name}(${p.class.name})`);
       assert.deepEqual(names, expectedResult);
 
-      props = await testClass.getProperties(true);
+      testClass.cleanCache();
+      props = Array.from(await testClass.getProperties());
       names = props.map((p) => `${p.name}(${p.class.name})`);
       assert.deepEqual(names, expectedResult2);
 
       await testClass.createPrimitiveProperty("P3", PrimitiveType.String);
 
-      // this should use the cache and return old results
-      props = await testClass.getProperties();
-      names = props.map((p) => `${p.name}(${p.class.name})`);
-      assert.deepEqual(names, expectedResult2);
-
-      props = await testClass.getProperties(true);
+      props = Array.from(await testClass.getProperties());
       names = props.map((p) => `${p.name}(${p.class.name})`);
       assert.deepEqual(names, expectedResult3);
     });
@@ -275,29 +263,25 @@ describe("Property Inheritance", () => {
       const schema = Schema.fromJsonSync(schemaJson, new SchemaContext()) as MutableSchema;
       const testClass = schema.getItemSync("TestClass") as MutableClass;
       const rootClass = schema.getItemSync("RootClass") as MutableClass;
-      let props = testClass.getPropertiesSync();
+      let props = Array.from(testClass.getPropertiesSync());
       let names = props.map((p) => `${p.name}(${p.class.name})`);
       assert.deepEqual(names, expectedResult);
 
       rootClass.createPrimitivePropertySync("P2", PrimitiveType.String);
 
       // this should use the cache and return old results
-      props = testClass.getPropertiesSync();
+      props = Array.from(testClass.getPropertiesSync());
       names = props.map((p) => `${p.name}(${p.class.name})`);
       assert.deepEqual(names, expectedResult);
 
-      props = testClass.getPropertiesSync(true);
+      testClass.cleanCache();
+      props = Array.from(testClass.getPropertiesSync());
       names = props.map((p) => `${p.name}(${p.class.name})`);
       assert.deepEqual(names, expectedResult2);
 
       testClass.createPrimitivePropertySync("P3", PrimitiveType.String);
 
-      // this should use the cache and return old results
-      props = testClass.getPropertiesSync();
-      names = props.map((p) => `${p.name}(${p.class.name})`);
-      assert.deepEqual(names, expectedResult2);
-
-      props = testClass.getPropertiesSync(true);
+      props = Array.from(testClass.getPropertiesSync());
       names = props.map((p) => `${p.name}(${p.class.name})`);
       assert.deepEqual(names, expectedResult3);
     });
@@ -314,7 +298,7 @@ describe("Property Inheritance", () => {
     //             [H:P2]
     // We are using the labels to tell the properties apart which have been overwritten
     const testSchemaJson = {
-      $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+      $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
       name: "TestSchema",
       version: "01.00.00",
       alias: "ts",
@@ -359,7 +343,7 @@ describe("Property Inheritance", () => {
 
       const testClass = await schema.getItem("H", ECClass);
       expect(testClass).to.exist;
-      const result = await testClass!.getProperties();
+      const result = Array.from(await testClass!.getProperties());
       const names = result.map((p) => `${p.name}(${p.class.name})`);
 
       assert.deepEqual(names, expectedOrder);
@@ -371,7 +355,7 @@ describe("Property Inheritance", () => {
 
       const testClass = schema.getItemSync("H", ECClass);
       expect(testClass).to.exist;
-      const result = testClass!.getPropertiesSync();
+      const result = Array.from(testClass!.getPropertiesSync());
       const names = result.map((p) => `${p.name}(${p.class.name})`);
 
       assert.deepEqual(names, expectedOrder);

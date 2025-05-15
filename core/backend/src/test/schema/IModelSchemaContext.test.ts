@@ -6,12 +6,15 @@ import { assert } from "chai";
 import * as path from "path";
 import { Code } from "@itwin/core-common";
 import {
-  DefinitionElement, IModelDb,
+  DefinitionElement,
+  Element,
+  InformationContentElement,
   RepositoryLink,
   SnapshotDb, SpatialViewDefinition, UrlLink, ViewDefinition3d,
 } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
+import { SchemaKey } from "@itwin/ecschema-metadata";
 
 describe("IModel Schema Context", () => {
   let imodel: SnapshotDb;
@@ -49,7 +52,6 @@ describe("IModel Schema Context", () => {
       assert.exists(ecClass.customAttributes);
       assert.isTrue(ecClass.customAttributes?.has("BisCore.ClassHasHandler"));
       //  Check the metadata on the one property that RepositoryLink defines, RepositoryGuid
-      assert.exists(ecClass.properties);
       const property = await ecClass.getProperty("repositoryGuid");
       assert.exists(property);
       if (undefined === property)
@@ -78,7 +80,6 @@ describe("IModel Schema Context", () => {
         return;
 
       assert.equal(baseClass.fullName, ViewDefinition3d.schemaItemKey.fullName);
-      assert.exists(metaData.properties);
       const prop = metaData.getPropertySync("modelSelector");
       assert.isDefined(prop);
       if(!prop?.isNavigation())
@@ -92,24 +93,21 @@ describe("IModel Schema Context", () => {
     const schemaPathname = path.join(KnownTestLocations.assetsDir, "TestDomain.ecschema.xml");
     await imodel.importSchemas([schemaPathname]); // will throw an exception if import fails
 
-    const testDomainClass = imodel.getMetaData("TestDomain:TestDomainClass"); // will throw on failure
-
-    assert.equal(testDomainClass.baseClasses.length, 2);
-    assert.equal(testDomainClass.baseClasses[0], DefinitionElement.classFullName);
-    assert.equal(testDomainClass.baseClasses[1], "TestDomain:IMixin");
-
-    // Ensures the IMixin has been loaded as part of getMetadata call above.
-    assert.isDefined(imodel.classMetaDataRegistry.find("TestDomain:IMixin"));
+    const testDomain = await imodel.schemaContext.getSchema(new SchemaKey("TestDomain", 1,0,0));
+    const testDomainClass = await testDomain!.getEntityClass("TestDomainClass");
+    const baseClassFullNames = Array.from(testDomainClass!.getAllBaseClassesSync() ?? []).map(baseClass => baseClass.fullName);
+    assert.equal(baseClassFullNames.length, 4);
+    assert.equal(baseClassFullNames[0], DefinitionElement.schemaItemKey.fullName);
+    assert.equal(baseClassFullNames[1], InformationContentElement.schemaItemKey.fullName);
+    assert.equal(baseClassFullNames[2], Element.schemaItemKey.fullName);
+    assert.equal(baseClassFullNames[3], "TestDomain.IMixin");
 
     // Verify that the forEach method which is called when constructing an entity
     // is picking up all expected properties.
-    const testData: string[] = [];
-    IModelDb.forEachMetaData(imodel, "TestDomain:TestDomainClass", true, (propName) => {
-      testData.push(propName);
-    }, false);
-
+    const properties = Array.from(await testDomainClass!.getProperties());
+    const testData = properties.map(property => property.name);
     const expectedString = testData.find((testString: string) => {
-      return testString === "testMixinProperty";
+      return testString === "TestMixinProperty";
     });
 
     assert.isDefined(expectedString);

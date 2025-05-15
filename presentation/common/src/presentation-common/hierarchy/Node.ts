@@ -6,8 +6,8 @@
  * @module Hierarchies
  */
 
-import { LabelDefinition } from "../LabelDefinition";
-import { NodeKey } from "./Key";
+import { LabelDefinition } from "../LabelDefinition.js";
+import { NodeKey } from "./Key.js";
 
 /**
  * Data structure that describes a tree node.

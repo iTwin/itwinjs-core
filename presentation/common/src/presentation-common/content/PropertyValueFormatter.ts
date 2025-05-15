@@ -8,14 +8,14 @@
 
 import { assert } from "@itwin/core-bentley";
 import { UnitSystemKey } from "@itwin/core-quantity";
-import { KindOfQuantityInfo, PropertyInfo } from "../EC";
-import { KoqPropertyValueFormatter } from "../KoqPropertyValueFormatter";
-import { ValuesDictionary } from "../Utils";
-import { Content } from "./Content";
-import { Descriptor } from "./Descriptor";
-import { ArrayPropertiesField, Field, PropertiesField, StructPropertiesField } from "./Fields";
-import { Item } from "./Item";
-import { DisplayValue, DisplayValuesMap, NestedContentValue, Value, ValuesArray, ValuesMap } from "./Value";
+import { KindOfQuantityInfo, PropertyInfo } from "../EC.js";
+import { KoqPropertyValueFormatter } from "../KoqPropertyValueFormatter.js";
+import { ValuesDictionary } from "../Utils.js";
+import { Content } from "./Content.js";
+import { Descriptor } from "./Descriptor.js";
+import { ArrayPropertiesField, Field, PropertiesField, StructPropertiesField } from "./Fields.js";
+import { Item } from "./Item.js";
+import { DisplayValue, DisplayValuesMap, NestedContentValue, Value, ValuesArray, ValuesMap } from "./Value.js";
 
 /** @internal */
 export class ContentFormatter {

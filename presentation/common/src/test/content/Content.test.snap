@@ -5,32 +5,32 @@ Object {
   "contentSet": Array [
     Object {
       "classInfo": Object {
-        "id": "0x8634000001605b",
-        "label": "Associate",
-        "name": "Ergonomic",
+        "id": "0x1",
+        "label": "Class Label",
+        "name": "SchemaName:ClassName",
       },
       "displayValues": Object {
-        "test": "Mayotte Refined Frozen Gloves Lebanese Pound",
+        "test": "123",
       },
       "label": Object {
-        "displayValue": "Jamaica",
-        "rawValue": "Avon",
+        "displayValue": "test display value",
+        "rawValue": "test raw value",
         "typeName": "string",
       },
       "labelDefinition": Object {
-        "displayValue": "Jamaica",
-        "rawValue": "Avon",
+        "displayValue": "test display value",
+        "rawValue": "test raw value",
         "typeName": "string",
       },
       "mergedFieldNames": Array [],
       "primaryKeys": Array [
         Object {
-          "className": "Money Market Account",
-          "id": "0xfab60000016bab",
+          "className": "SchemaName:ClassName",
+          "id": "0x1",
         },
       ],
       "values": Object {
-        "test": 1827,
+        "test": 123,
       },
     },
   ],
@@ -52,32 +52,32 @@ Object {
   "contentSet": Array [
     Object {
       "classInfo": Object {
-        "id": "0xc9b1000000e4ef",
-        "label": "Intuitive",
-        "name": "Handmade Metal Soap",
+        "id": "0x1",
+        "label": "Class Label",
+        "name": "SchemaName:ClassName",
       },
       "displayValues": Object {
-        "test": "Mouse forecast",
+        "test": "123",
       },
       "label": Object {
-        "displayValue": "yellow",
-        "rawValue": "Brand",
+        "displayValue": "test display value",
+        "rawValue": "test raw value",
         "typeName": "string",
       },
       "labelDefinition": Object {
-        "displayValue": "yellow",
-        "rawValue": "Brand",
+        "displayValue": "test display value",
+        "rawValue": "test raw value",
         "typeName": "string",
       },
       "mergedFieldNames": Array [],
       "primaryKeys": Array [
         Object {
-          "className": "enhance",
-          "id": "0x90ae000000ef81",
+          "className": "SchemaName:ClassName",
+          "id": "0x1",
         },
       ],
       "values": Object {
-        "test": 39491,
+        "test": 123,
       },
     },
   ],

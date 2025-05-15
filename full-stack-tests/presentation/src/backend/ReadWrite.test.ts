@@ -8,8 +8,8 @@ import { IModelDb, StandaloneDb } from "@itwin/core-backend";
 import { Logger, LogLevel } from "@itwin/core-bentley";
 import { PresentationManager } from "@itwin/presentation-backend";
 import { ChildNodeSpecificationTypes, Ruleset, RuleTypes } from "@itwin/presentation-common";
-import { initialize, terminate } from "../IntegrationTests";
-import { prepareOutputFilePath } from "../Utils";
+import { initialize, terminate } from "../IntegrationTests.js";
+import { prepareOutputFilePath } from "../Utils.js";
 
 describe("ReadWrite", () => {
   let manager: PresentationManager;

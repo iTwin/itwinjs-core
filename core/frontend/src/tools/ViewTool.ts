@@ -426,7 +426,17 @@ export abstract class ViewManip extends ViewTool {
     return (isValidDepth || isPreview ? result.plane.getOriginRef() : undefined);
   }
 
+  /** In addition to the onReinitialize calls after a tool installs or restarts, it is also
+   * called from the mouseover event to cancel a drag operation if the up event occurred outside the view.
+   * When operating in one shot mode and also requiring dragging, the tool should exit and not restart in ths situation.
+   * A tool must opt in to allowing [[ViewTool.exitTool]] to be called from [[ViewManip.onReinitialize]] by
+   * overriding this method to return true.
+   */
+  protected get isExitAllowedOnReinitialize(): boolean { return false; }
+
   public override async onReinitialize() {
+    const shouldExit = (this.oneShot && this.isDraggingRequired && this.isDragging && 0 !== this.nPts);
+
     if (undefined !== this.viewport) {
       this.viewport.synchWithView(); // make sure we store any changes in view undo buffer.
       this.viewHandles.setFocus(-1);
@@ -438,6 +448,11 @@ export abstract class ViewManip extends ViewTool {
     this._startPose = undefined;
 
     this.viewHandles.onReinitialize();
+
+    if (shouldExit && this.isExitAllowedOnReinitialize)
+      return this.exitTool();
+
+    this.provideInitialToolAssistance();
   }
 
   public override async onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled> {
@@ -606,7 +621,6 @@ export abstract class ViewManip extends ViewTool {
     await this.onReinitialize(); // Call onReinitialize now that tool is installed.
   }
 
-  /** @beta */
   public provideToolAssistance(mainInstrKey: string, additionalInstr?: ToolAssistanceInstruction[]): void {
     const mainInstruction = ToolAssistance.createInstruction(this.iconSpec, ViewTool.translate(mainInstrKey));
     const mouseInstructions: ToolAssistanceInstruction[] = [];
@@ -635,6 +649,9 @@ export abstract class ViewManip extends ViewTool {
     const instructions = ToolAssistance.createInstructions(mainInstruction, sections);
     IModelApp.notifications.setToolAssistance(instructions);
   }
+
+  /** Called from [[ViewManip.onReinitialize]] to allow tools to establish the tool assistance for the first point. */
+  protected provideInitialToolAssistance(): void { }
 
   public override async onCleanup() {
     let restorePrevious = false;
@@ -2934,10 +2951,8 @@ export class PanViewTool extends ViewManip {
   constructor(vp: ScreenViewport | undefined, oneShot = false, isDraggingRequired = false) {
     super(vp, ViewHandleType.Pan, oneShot, isDraggingRequired);
   }
-  public override async onReinitialize() {
-    await super.onReinitialize();
-    this.provideToolAssistance("Pan.Prompts.FirstPoint");
-  }
+  protected override get isExitAllowedOnReinitialize(): boolean { return true; }
+  protected override provideInitialToolAssistance(): void { this.provideToolAssistance("Pan.Prompts.FirstPoint"); }
 }
 
 /** A tool that performs a Rotate view operation
@@ -2949,10 +2964,8 @@ export class RotateViewTool extends ViewManip {
   constructor(vp: ScreenViewport, oneShot = false, isDraggingRequired = false) {
     super(vp, ViewHandleType.Rotate | ViewHandleType.Pan | ViewHandleType.TargetCenter, oneShot, isDraggingRequired);
   }
-  public override async onReinitialize() {
-    await super.onReinitialize();
-    this.provideToolAssistance("Rotate.Prompts.FirstPoint");
-  }
+  protected override get isExitAllowedOnReinitialize(): boolean { return true; }
+  protected override provideInitialToolAssistance(): void { this.provideToolAssistance("Rotate.Prompts.FirstPoint"); }
 }
 
 /** A tool that performs the look operation
@@ -2964,10 +2977,8 @@ export class LookViewTool extends ViewManip {
   constructor(vp: ScreenViewport, oneShot = false, isDraggingRequired = false) {
     super(vp, ViewHandleType.Look | ViewHandleType.Pan, oneShot, isDraggingRequired);
   }
-  public override async onReinitialize() {
-    await super.onReinitialize();
-    this.provideToolAssistance("Look.Prompts.FirstPoint");
-  }
+  protected override get isExitAllowedOnReinitialize(): boolean { return true; }
+  protected override provideInitialToolAssistance(): void { this.provideToolAssistance("Look.Prompts.FirstPoint"); }
 }
 
 /** A tool that performs the scroll operation
@@ -2979,10 +2990,8 @@ export class ScrollViewTool extends ViewManip {
   constructor(vp: ScreenViewport, oneShot = false, isDraggingRequired = false) {
     super(vp, ViewHandleType.Scroll, oneShot, isDraggingRequired);
   }
-  public override async onReinitialize() {
-    await super.onReinitialize();
-    this.provideToolAssistance("Scroll.Prompts.FirstPoint");
-  }
+  protected override get isExitAllowedOnReinitialize(): boolean { return true; }
+  protected override provideInitialToolAssistance(): void { this.provideToolAssistance("Scroll.Prompts.FirstPoint"); }
 }
 
 /** A tool that performs the zoom operation
@@ -2994,10 +3003,8 @@ export class ZoomViewTool extends ViewManip {
   constructor(vp: ScreenViewport, oneShot = false, isDraggingRequired = false) {
     super(vp, ViewHandleType.Zoom | ViewHandleType.Pan, oneShot, isDraggingRequired);
   }
-  public override async onReinitialize() {
-    await super.onReinitialize();
-    this.provideToolAssistance("Zoom.Prompts.FirstPoint");
-  }
+  protected override get isExitAllowedOnReinitialize(): boolean { return true; }
+  protected override provideInitialToolAssistance(): void { this.provideToolAssistance("Zoom.Prompts.FirstPoint"); }
 }
 
 /** A tool that performs the walk operation using mouse+keyboard or touch controls.
@@ -3015,12 +3022,10 @@ export class LookAndMoveTool extends ViewManip {
     const viewport = (undefined === vp ? IModelApp.viewManager.selectedView : vp); // Need vp to enable camera/check lens in onReinitialize...
     super(viewport, ViewHandleType.LookAndMove | ViewHandleType.Pan, oneShot, isDraggingRequired);
   }
-  public override async onReinitialize() {
-    await super.onReinitialize();
-    this.provideToolAssistance("LookAndMove.Prompts.FirstPoint");
-  }
 
-  /** @beta */
+  protected override get isExitAllowedOnReinitialize(): boolean { return true; }
+  protected override provideInitialToolAssistance(): void { this.provideToolAssistance("LookAndMove.Prompts.FirstPoint"); }
+
   public override provideToolAssistance(mainInstrKey: string): void {
     const mainInstruction = ToolAssistance.createInstruction(this.iconSpec, ViewTool.translate(mainInstrKey));
     const mouseInstructions: ToolAssistanceInstruction[] = [];
@@ -3066,12 +3071,10 @@ export class WalkViewTool extends ViewManip {
     const viewport = (undefined === vp ? IModelApp.viewManager.selectedView : vp); // Need vp to enable camera/check lens in onReinitialize...
     super(viewport, ViewHandleType.Walk | ViewHandleType.Pan, oneShot, isDraggingRequired);
   }
-  public override async onReinitialize() {
-    await super.onReinitialize();
-    this.provideToolAssistance("Walk.Prompts.FirstPoint");
-  }
 
-  /** @beta */
+  protected override get isExitAllowedOnReinitialize(): boolean { return true; }
+  protected override provideInitialToolAssistance(): void { this.provideToolAssistance("Walk.Prompts.FirstPoint"); }
+
   public override provideToolAssistance(mainInstrKey: string): void {
     const walkInstructions: ToolAssistanceInstruction[] = [];
     walkInstructions.push(ToolAssistance.createModifierKeyInstruction(ToolAssistance.shiftKey, ToolAssistanceImage.LeftClickDrag, ViewTool.translate("Pan.flyover"), false, ToolAssistanceInputMethod.Mouse));
@@ -3089,12 +3092,10 @@ export class FlyViewTool extends ViewManip {
   constructor(vp: ScreenViewport, oneShot = false, isDraggingRequired = false) {
     super(vp, ViewHandleType.Fly | ViewHandleType.Pan, oneShot, isDraggingRequired);
   }
-  public override async onReinitialize() {
-    await super.onReinitialize();
-    this.provideToolAssistance("Fly.Prompts.FirstPoint");
-  }
 
-  /** @beta */
+  protected override get isExitAllowedOnReinitialize(): boolean { return true; }
+  protected override provideInitialToolAssistance(): void { this.provideToolAssistance("Fly.Prompts.FirstPoint"); }
+
   public override provideToolAssistance(mainInstrKey: string): void {
     const flyInstructions: ToolAssistanceInstruction[] = [];
     flyInstructions.push(ToolAssistance.createModifierKeyInstruction(ToolAssistance.shiftKey, ToolAssistanceImage.LeftClickDrag, ViewTool.translate("Pan.flyover"), false, ToolAssistanceInputMethod.Mouse));
@@ -3120,7 +3121,6 @@ export class FitViewTool extends ViewTool {
     this.isolatedOnly = isolatedOnly;
   }
 
-  /** @beta */
   public provideToolAssistance(): void {
     const mainInstruction = ToolAssistance.createInstruction(this.iconSpec, ViewTool.translate("Fit.Prompts.FirstPoint"));
     const mouseInstructions: ToolAssistanceInstruction[] = [];
@@ -3466,7 +3466,6 @@ export class WindowAreaTool extends ViewTool {
     return super.onResetButtonUp(ev);
   }
 
-  /** @beta */
   public provideToolAssistance(): void {
     const mainInstruction = ToolAssistance.createInstruction(this.iconSpec, ViewTool.translate(this._haveFirstPoint ? "WindowArea.Prompts.NextPoint" : "WindowArea.Prompts.FirstPoint"));
     const mouseInstructions: ToolAssistanceInstruction[] = [];
@@ -4068,7 +4067,6 @@ export class SetupCameraTool extends PrimitiveTool {
     return EventHandled.Yes;
   }
 
-  /** @beta */
   protected provideToolAssistance(): void {
     const mainInstruction = ToolAssistance.createInstruction(this.iconSpec, ViewTool.translate(this._haveEyePt ? "SetupCamera.Prompts.NextPoint" : "SetupCamera.Prompts.FirstPoint"));
     const mouseInstructions: ToolAssistanceInstruction[] = [];
@@ -4280,53 +4278,20 @@ export class SetupCameraTool extends PrimitiveTool {
   public get targetHeight(): number { return this.targetHeightProperty.value; }
   public set targetHeight(value: number) { this.targetHeightProperty.value = value; }
 
-  private syncCameraHeightState(): void {
-    this.cameraHeightProperty.displayValue = (this.cameraHeightProperty.description as LengthDescription).format(this.cameraHeight);
-    this.cameraHeightProperty.isDisabled = !this.useCameraHeight;
-    this.syncToolSettingsProperties([this.cameraHeightProperty.syncItem]);
-  }
-
-  private syncTargetHeightState(): void {
-    this.targetHeightProperty.displayValue = (this.targetHeightProperty.description as LengthDescription).format(this.targetHeight);
-    this.targetHeightProperty.isDisabled = !this.useTargetHeight;
-    this.syncToolSettingsProperties([this.targetHeightProperty.syncItem]);
+  protected override getToolSettingPropertyLocked(property: DialogProperty<any>): DialogProperty<any> | undefined {
+    if (property === this.useCameraHeightProperty)
+      return this.cameraHeightProperty;
+    else if (property === this.useTargetHeightProperty)
+      return this.targetHeightProperty;
+    return undefined;
   }
 
   public override async applyToolSettingPropertyChange(updatedValue: DialogPropertySyncItem): Promise<boolean> {
-    if (updatedValue.propertyName === this.useCameraHeightProperty.name) {
-      this.useCameraHeight = updatedValue.value.value as boolean;
-      IModelApp.toolAdmin.toolSettingsState.saveToolSettingProperty(this.toolId, this.useCameraHeightProperty.item);
-      this.syncCameraHeightState();
-    } else if (updatedValue.propertyName === this.useTargetHeightProperty.name) {
-      this.useTargetHeight = updatedValue.value.value as boolean;
-      IModelApp.toolAdmin.toolSettingsState.saveToolSettingProperty(this.toolId, this.useTargetHeightProperty.item);
-      this.syncTargetHeightState();
-    } else if (updatedValue.propertyName === this.cameraHeightProperty.name) {
-      this.cameraHeight = updatedValue.value.value as number;
-      IModelApp.toolAdmin.toolSettingsState.saveToolSettingProperty(this.toolId, this.cameraHeightProperty.item);
-    } else if (updatedValue.propertyName === this.targetHeightProperty.name) {
-      this.targetHeight = updatedValue.value.value as number;
-      IModelApp.toolAdmin.toolSettingsState.saveToolSettingProperty(this.toolId, this.targetHeightProperty.item);
-    }
-    return true;
+    return this.changeToolSettingPropertyValue(updatedValue);
   }
 
   public override supplyToolSettingsProperties(): DialogItem[] | undefined {
-    // load latest values from session
-    IModelApp.toolAdmin.toolSettingsState.getInitialToolSettingValues(this.toolId,
-      [
-        this.useCameraHeightProperty.name, this.useTargetHeightProperty.name, this.cameraHeightProperty.name, this.targetHeightProperty.name,
-      ])
-      ?.forEach((value) => {
-        if (value.propertyName === this.useCameraHeightProperty.name)
-          this.useCameraHeightProperty.dialogItemValue = value.value;
-        else if (value.propertyName === this.cameraHeightProperty.name)
-          this.cameraHeightProperty.dialogItemValue = value.value;
-        else if (value.propertyName === this.useTargetHeightProperty.name)
-          this.useTargetHeightProperty.dialogItemValue = value.value;
-        else if (value.propertyName === this.targetHeightProperty.name)
-          this.targetHeightProperty.dialogItemValue = value.value;
-      });
+    this.initializeToolSettingPropertyValues([this.useCameraHeightProperty, this.useTargetHeightProperty, this.cameraHeightProperty, this.targetHeightProperty]);
 
     // ensure controls are enabled/disabled base on current lock property state
     this.targetHeightProperty.isDisabled = !this.useTargetHeight;
@@ -4376,7 +4341,6 @@ export class SetupWalkCameraTool extends PrimitiveTool {
     return EventHandled.Yes;
   }
 
-  /** @beta */
   protected provideToolAssistance(): void {
     const mainInstruction = ToolAssistance.createInstruction(this.iconSpec, ViewTool.translate(this._haveEyePt ? "SetupWalkCamera.Prompts.NextPoint" : "SetupWalkCamera.Prompts.FirstPoint"));
     const mouseInstructions: ToolAssistanceInstruction[] = [];

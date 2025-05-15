@@ -14,9 +14,9 @@ import {
   insertPhysicalElement,
   insertPhysicalModelWithPartition,
   insertSpatialCategory,
-} from "../../IModelSetupUtils";
-import { collect, getFieldByLabel } from "../../Utils";
-import { describeContentTestSuite } from "./Utils";
+} from "../../IModelSetupUtils.js";
+import { collect, getFieldByLabel } from "../../Utils.js";
+import { describeContentTestSuite } from "./Utils.js";
 
 describeContentTestSuite("Primitive properties", () => {
   it("sets constraints for numeric type properties", async function () {

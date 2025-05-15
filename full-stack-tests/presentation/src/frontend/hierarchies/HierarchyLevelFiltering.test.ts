@@ -19,9 +19,9 @@ import {
   RuleTypes,
 } from "@itwin/presentation-common";
 import { Presentation } from "@itwin/presentation-frontend";
-import { buildTestIModelConnection, insertDocumentPartition } from "../../IModelSetupUtils";
-import { initialize, terminate } from "../../IntegrationTests";
-import { NodeValidators, validateHierarchy } from "./HierarchyValidation";
+import { buildTestIModelConnection, insertDocumentPartition } from "../../IModelSetupUtils.js";
+import { initialize, terminate } from "../../IntegrationTests.js";
+import { NodeValidators, validateHierarchy } from "./HierarchyValidation.js";
 
 describe("Hierarchies", () => {
   before(async () => {

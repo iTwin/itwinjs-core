@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/presentation-common",
+      "comment": "Export `Ruleset.schema.json` through exports field",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/presentation-common"
+}

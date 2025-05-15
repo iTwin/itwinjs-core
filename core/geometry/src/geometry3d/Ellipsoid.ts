@@ -138,24 +138,25 @@ class EllipsoidComponentExtrema {
 }
 
 /**
- * * An Ellipsoid is a (complete) unit sphere with an arbitrary (possibly skewed) `Transform` to 3d.
+ * A complete unit sphere mapped by an arbitrary [[Transform]].
  * * The (unit) sphere parameterization with respect to longitude `theta` and latitude `phi` is
  *    * `u = cos(theta) * cos (phi)`
  *    * `v = sin(theta) * cos(phi)`
  *    * `w = sin(phi)`
- *  * The sphere (u,v,w) multiply the x,y,z columns of the Ellipsoid transform.
+ * * The sphere (u,v,w) multiply the x,y,z columns of the Ellipsoid transform.
+ * * Compare to [[Sphere]], which has the same parameterization, but is a [[SolidPrimitive]] with latitude sweep.
  * @public
  */
 export class Ellipsoid implements Clipper {
   private _transform: Transform;
-  private _unitVectorA: Vector3d;
-  private _unitVectorB: Vector3d;
+  private _workUnitVectorA: Vector3d;
+  private _workUnitVectorB: Vector3d;
   private _workPointA: Point3d;
   private _workPointB: Point3d;
   private constructor(transform: Transform) {
     this._transform = transform;
-    this._unitVectorA = Vector3d.create();
-    this._unitVectorB = Vector3d.create();
+    this._workUnitVectorA = Vector3d.create();
+    this._workUnitVectorB = Vector3d.create();
     this._workPointA = Point3d.create();
     this._workPointB = Point3d.create();
   }
@@ -377,11 +378,11 @@ export class Ellipsoid implements Clipper {
     thetaARadians: number, phiARadians: number,
     thetaBRadians: number, phiBRadians: number,
     result?: Arc3d): Arc3d | undefined {
-    SphereImplicit.radiansToUnitSphereXYZ(thetaARadians, phiARadians, this._unitVectorA);
-    SphereImplicit.radiansToUnitSphereXYZ(thetaBRadians, phiBRadians, this._unitVectorB);
-    const sweepAngle = this._unitVectorA.angleTo(this._unitVectorB);
+    SphereImplicit.radiansToUnitSphereXYZ(thetaARadians, phiARadians, this._workUnitVectorA);
+    SphereImplicit.radiansToUnitSphereXYZ(thetaBRadians, phiBRadians, this._workUnitVectorB);
+    const sweepAngle = this._workUnitVectorA.angleTo(this._workUnitVectorB);
     // the unit vectors (on unit sphere) are never 0, so this cannot fail.
-    const matrix = Matrix3d.createRigidFromColumns(this._unitVectorA, this._unitVectorB, AxisOrder.XYZ)!;
+    const matrix = Matrix3d.createRigidFromColumns(this._workUnitVectorA, this._workUnitVectorB, AxisOrder.XYZ)!;
     if (matrix !== undefined) {
       const matrix1 = this._transform.matrix.multiplyMatrixMatrix(matrix);
       return Arc3d.create(this._transform.getOrigin(), matrix1.columnX(), matrix1.columnY(),
@@ -473,10 +474,10 @@ export class Ellipsoid implements Clipper {
     thetaARadians: number, phiARadians: number,
     thetaBRadians: number, phiBRadians: number,
     result?: Ellipsoid): Ellipsoid | undefined {
-    SphereImplicit.radiansToUnitSphereXYZ(thetaARadians, phiARadians, this._unitVectorA);
-    SphereImplicit.radiansToUnitSphereXYZ(thetaBRadians, phiBRadians, this._unitVectorB);
+    SphereImplicit.radiansToUnitSphereXYZ(thetaARadians, phiARadians, this._workUnitVectorA);
+    SphereImplicit.radiansToUnitSphereXYZ(thetaBRadians, phiBRadians, this._workUnitVectorB);
 
-    const matrix = Matrix3d.createRigidFromColumns(this._unitVectorA, this._unitVectorB, AxisOrder.XYZ);
+    const matrix = Matrix3d.createRigidFromColumns(this._workUnitVectorA, this._workUnitVectorB, AxisOrder.XYZ);
     if (matrix) {
       if (result) {
         this._transform.multiplyTransformMatrix3d(matrix, result._transform);
@@ -669,14 +670,14 @@ export class Ellipsoid implements Clipper {
     result.direction.setFromPoint3d(result.origin);
     return result;
   }
-  /** Implement the `isPointInOnOrOutside` test fom the `interface` */
+  /** Implementation of [[Clipper.isPointOnOrInside]]. */
   public isPointOnOrInside(point: Point3d): boolean {
     const localPoint = this._transform.multiplyInversePoint3d(point, this._workPointA);
     if (localPoint !== undefined)
       return localPoint.magnitude() <= 1.0;
     return false;
   }
-  /** Announce "in" portions of a line segment.  See `Clipper.announceClippedSegmentIntervals` */
+  /** Announce "in" portions of a line segment. Implementation of [[Clipper.announceClippedSegmentIntervals]]. */
   public announceClippedSegmentIntervals(f0: number, f1: number, pointA: Point3d, pointB: Point3d, announce?: AnnounceNumberNumber): boolean {
     const localA = this._transform.multiplyInversePoint3d(pointA, this._workPointA);
     const localB = this._transform.multiplyInversePoint3d(pointB, this._workPointB);
@@ -714,7 +715,7 @@ export class Ellipsoid implements Clipper {
     }
     return false;
   }
-  /** Announce "in" portions of a line segment.  See `Clipper.announceClippedSegmentIntervals` */
+  /** Announce "in" portions of a line segment. Implementation of [[Clipper.announceClippedArcIntervals]] */
   public announceClippedArcIntervals(arc: Arc3d, announce?: AnnounceNumberNumberCurvePrimitive): boolean {
     const arcData = arc.toVectors();
     let numAnnounce = 0;

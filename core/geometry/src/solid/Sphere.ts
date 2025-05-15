@@ -25,11 +25,13 @@ import { Transform } from "../geometry3d/Transform";
 import { SolidPrimitive } from "./SolidPrimitive";
 
 /**
- * A sphere mapped by an arbitrary transform.
+ * A unit sphere mapped by an arbitrary [[Transform]].
  * * Typically, the stored matrix has orthogonal columns. In this case, if two columns have equal length, the
  * resulting geometry is ellipsoidal; if all three columns have equal length, the resulting geometry is a sphere.
- * * Creating a Sphere without orthogonal columns is possible, but not recommended, for the resulting geometry
+ * * Creating a Sphere without orthogonal columns is possible but not recommended, for the resulting geometry
  * lacks portability; for example, such a Sphere cannot be represented as a DGN element (see [[createDgnSphere]]).
+ * * An optional latitude sweep allows for partial spheres with or without caps.
+ * * Compare to [[Ellipsoid]], which has the same parameterization, but acts as a closed [[Clipper]].
  * @public
  */
 export class Sphere extends SolidPrimitive implements UVSurface {

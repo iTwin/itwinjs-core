@@ -10,7 +10,8 @@
 import { defer, EMPTY, mergeMap, Observable, of, Subject, Subscription, takeUntil, tap } from "rxjs";
 import { Id64, Id64Arg, Id64Array } from "@itwin/core-bentley";
 import { IModelConnection, SelectableIds, SelectionSetEvent, SelectionSetEventType } from "@itwin/core-frontend";
-import { AsyncTasksTracker, BaseNodeKey, InstanceKey, Key, Keys, KeySet, NodeKey, SelectionScope, SelectionScopeProps } from "@itwin/presentation-common";
+import { BaseNodeKey, InstanceKey, Key, Keys, KeySet, NodeKey, SelectionScope, SelectionScopeProps } from "@itwin/presentation-common";
+import { AsyncTasksTracker } from "@itwin/presentation-common/internal";
 import {
   createStorage,
   CustomSelectable,
@@ -21,11 +22,11 @@ import {
   StorageSelectionChangeType,
   TRANSIENT_ELEMENT_CLASSNAME,
 } from "@itwin/unified-selection";
-import { Presentation } from "../Presentation";
-import { HiliteSet, HiliteSetProvider } from "./HiliteSetProvider";
-import { ISelectionProvider } from "./ISelectionProvider";
-import { SelectionChangeEvent, SelectionChangeEventArgs, SelectionChangeType } from "./SelectionChangeEvent";
-import { createSelectionScopeProps, SelectionScopesManager } from "./SelectionScopesManager";
+import { Presentation } from "../Presentation.js";
+import { HiliteSet, HiliteSetProvider } from "./HiliteSetProvider.js";
+import { ISelectionProvider } from "./ISelectionProvider.js";
+import { SelectionChangeEvent, SelectionChangeEventArgs, SelectionChangeType } from "./SelectionChangeEvent.js";
+import { createSelectionScopeProps, SelectionScopesManager } from "./SelectionScopesManager.js";
 
 /**
  * Properties for creating [[SelectionManager]].
@@ -110,7 +111,7 @@ export class SelectionManager implements ISelectionProvider, Disposable {
   }
 
   /** @deprecated in 5.0. Use [Symbol.dispose] instead. */
-  // istanbul ignore next
+  /* c8 ignore next 3 */
   public dispose() {
     this[Symbol.dispose]();
   }
@@ -124,12 +125,6 @@ export class SelectionManager implements ISelectionProvider, Disposable {
       this.clearSelection("Connection Close Event", imodel);
       this.selectionStorage.clearStorage({ imodelKey });
     }
-  }
-
-  /** @internal */
-  // istanbul ignore next
-  public getToolSelectionSyncHandler(imodel: IModelConnection) {
-    return this._imodelToolSelectionSyncHandlers.get(imodel)?.handler;
   }
 
   /**
@@ -404,7 +399,7 @@ export class SelectionManager implements ISelectionProvider, Disposable {
           return this._currentSelection.computeSelection(args.imodelKey, args.level, currentSelectables, args.selectables).pipe(
             mergeMap(({ level, changedSelection }): Observable<SelectionChangeEventArgs> => {
               const imodel = findIModel(this._knownIModels, this._imodelKeyFactory, args.imodelKey);
-              // istanbul ignore if
+              /* c8 ignore next 3 */
               if (!imodel) {
                 return EMPTY;
               }
@@ -661,7 +656,7 @@ class IModelSelectionStorage {
     }
     clearedLevels.forEach((storedLevel) => {
       const entry = this._currentSelection.get(storedLevel);
-      // istanbul ignore if
+      /* c8 ignore next 3 */
       if (!entry) {
         return;
       }
@@ -684,13 +679,12 @@ class IModelSelectionStorage {
 
   private setSelection(level: number, keys: KeySet, disposer: Subject<void>) {
     const currEntry = this._currentSelection.get(level);
-    // istanbul ignore else
     if (currEntry) {
       currEntry.ongoingComputationDisposers.delete(disposer);
     }
     this._currentSelection.set(level, {
       value: keys,
-      ongoingComputationDisposers: currEntry?.ongoingComputationDisposers ?? /* istanbul ignore next */ new Set(),
+      ongoingComputationDisposers: currEntry?.ongoingComputationDisposers ?? /* c8 ignore next */ new Set(),
     });
   }
 

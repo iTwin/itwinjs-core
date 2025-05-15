@@ -8,7 +8,7 @@ import * as sinon from "sinon";
 import { SchemaContext } from "../../Context";
 import { DelayedPromiseWithProps } from "../../DelayedPromise";
 import { RelationshipEnd, StrengthDirection, StrengthType } from "../../ECObjects";
-import { ECObjectsError } from "../../Exception";
+import { ECSchemaError } from "../../Exception";
 import { CustomAttributeClass } from "../../Metadata/CustomAttributeClass";
 import { EntityClass } from "../../Metadata/EntityClass";
 import { Mixin } from "../../Metadata/Mixin";
@@ -16,6 +16,7 @@ import { MutableRelationshipConstraint, RelationshipClass, RelationshipConstrain
 import { MutableSchema, Schema } from "../../Metadata/Schema";
 import { createSchemaJsonWithItems } from "../TestUtils/DeserializationHelpers";
 import { createEmptyXmlDocument, getElementChildrenByTagName } from "../TestUtils/SerializationHelper";
+import { ECSchemaNamespaceUris } from "../../Constants";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 
@@ -180,9 +181,10 @@ describe("RelationshipClass", () => {
 
     function createSchemaJson(relClassJson: any): any {
       return {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+        $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
         name: "TestSchema",
         version: "1.2.3",
+        alias: "ts",
         items: {
           TestRelationship: {
             schemaItemType: "RelationshipClass",
@@ -376,7 +378,7 @@ describe("RelationshipClass", () => {
         strengthDirection: "backward",
         target: validConstraint,
       });
-      await expect(Schema.fromJson(json, new SchemaContext())).to.be.rejectedWith(ECObjectsError, `The RelationshipClass TestSchema.TestRelationship is missing the required source constraint.`);
+      await expect(Schema.fromJson(json, new SchemaContext())).to.be.rejectedWith(ECSchemaError, `The RelationshipClass TestSchema.TestRelationship is missing the required source constraint.`);
     });
 
     it("should throw for missing target constraint", async () => {
@@ -385,7 +387,7 @@ describe("RelationshipClass", () => {
         strengthDirection: "forward",
         source: validConstraint,
       });
-      await expect(Schema.fromJson(json, new SchemaContext())).to.be.rejectedWith(ECObjectsError, `The RelationshipClass TestSchema.TestRelationship is missing the required target constraint.`);
+      await expect(Schema.fromJson(json, new SchemaContext())).to.be.rejectedWith(ECSchemaError, `The RelationshipClass TestSchema.TestRelationship is missing the required target constraint.`);
     });
 
     it("should throw for invalid source constraint", async () => {
@@ -395,7 +397,7 @@ describe("RelationshipClass", () => {
         source: 0,
         target: validConstraint,
       });
-      await expect(Schema.fromJson(json, new SchemaContext())).to.be.rejectedWith(ECObjectsError, `The RelationshipClass TestSchema.TestRelationship has an invalid source constraint. It should be of type 'object'.`);
+      await expect(Schema.fromJson(json, new SchemaContext())).to.be.rejectedWith(ECSchemaError, `The RelationshipClass TestSchema.TestRelationship has an invalid source constraint. It should be of type 'object'.`);
     });
 
     it("should throw for invalid target constraint", async () => {
@@ -405,7 +407,7 @@ describe("RelationshipClass", () => {
         source: validConstraint,
         target: 0,
       });
-      await expect(Schema.fromJson(json, new SchemaContext())).to.be.rejectedWith(ECObjectsError, `The RelationshipClass TestSchema.TestRelationship has an invalid target constraint. It should be of type 'object'.`);
+      await expect(Schema.fromJson(json, new SchemaContext())).to.be.rejectedWith(ECSchemaError, `The RelationshipClass TestSchema.TestRelationship has an invalid target constraint. It should be of type 'object'.`);
     });
 
     it("should throw for invalid abstractConstraint", async () => {
@@ -423,7 +425,7 @@ describe("RelationshipClass", () => {
         },
         target: {},
       });
-      await expect(Schema.fromJson(json, new SchemaContext())).to.be.rejectedWith(ECObjectsError, `The Source Constraint of TestSchema.TestRelationship has an invalid 'abstractConstraint' attribute. It should be of type 'string'.`);
+      await expect(Schema.fromJson(json, new SchemaContext())).to.be.rejectedWith(ECSchemaError, `The Source Constraint of TestSchema.TestRelationship has an invalid 'abstractConstraint' attribute. It should be of type 'string'.`);
     });
 
     it("should throw for invalid constraintClasses", async () => {
@@ -438,7 +440,7 @@ describe("RelationshipClass", () => {
         },
         target: {},
       });
-      await expect(Schema.fromJson(json, new SchemaContext())).to.be.rejectedWith(ECObjectsError, `The Source Constraint of TestSchema.TestRelationship has an invalid 'constraintClasses' attribute. It should be of type 'string[]'.`);
+      await expect(Schema.fromJson(json, new SchemaContext())).to.be.rejectedWith(ECSchemaError, `The Source Constraint of TestSchema.TestRelationship has an invalid 'constraintClasses' attribute. It should be of type 'string[]'.`);
     });
   });
 
@@ -451,9 +453,10 @@ describe("RelationshipClass", () => {
   describe("toJson", () => {
     function createSchemaJson(relClassJson: any): any {
       return {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+        $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
         name: "TestSchema",
         version: "1.2.3",
+        alias: "ts",
         items: {
           TestRelationship: {
             schemaItemType: "RelationshipClass",
@@ -505,7 +508,7 @@ describe("RelationshipClass", () => {
       const schema = await Schema.fromJson(createSchemaJson(validRelationshipJson), new SchemaContext());
       const relClass = await schema.getItem("TestRelationship", RelationshipClass);
       const expectedJson = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/schemaitem",
+        $schema: ECSchemaNamespaceUris.SCHEMAITEMURL3_2,
         name: "TestRelationship",
         schema: "TestSchema",
         schemaVersion: "01.02.03",
@@ -686,9 +689,10 @@ describe("RelationshipClass", () => {
 
     function getSchemaJson(customAttributeJson?: any) {
       return {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+        $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
         name: "TestSchema",
         version: "1.2.3",
+        alias: "ts",
         items: {
           ...customAttributeJson,
           TestRelationship: {
