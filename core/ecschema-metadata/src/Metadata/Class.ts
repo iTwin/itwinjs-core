@@ -493,7 +493,7 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
       itemElement.appendChild(baseClassElement);
     }
 
-    if (undefined !== this._properties) {
+    if (this._properties) {
       for (const prop of this._properties.values()) {
         const propXml = await prop.toXml(schemaXml);
         itemElement.appendChild(propXml);
