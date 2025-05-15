@@ -8,7 +8,7 @@ import { _nativeDb, BriefcaseDb, BriefcaseManager, IModelHost, SnapshotDb } from
 import { AzuriteTest } from "./AzuriteTest";
 import { HubMock } from "@itwin/core-backend/lib/cjs/internal/HubMock";
 import { IModelTestUtils, KnownTestLocations } from "@itwin/core-backend/lib/cjs/test";
-import { AccessToken, Guid, Logger, LogLevel } from "@itwin/core-bentley";
+import { AccessToken, Guid } from "@itwin/core-bentley";
 import { expect } from "chai";
 
 describe("Drop schemas", function (this: Suite) {
