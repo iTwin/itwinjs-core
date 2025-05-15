@@ -33,11 +33,11 @@ export namespace FrameGeometry {
       params.fillDisplay = FillDisplay.Never;
     } else if (frame.fill === "background") {
       params.backgroundFill = BackgroundFill.Solid;
-      params.fillDisplay = FillDisplay.Always;
+      params.fillDisplay = FillDisplay.Blanking;
     } else if (frame.fill !== "subcategory") {
       params.fillColor = ColorDef.fromJSON(frame.fill);
       params.lineColor = params.fillColor;
-      params.fillDisplay = FillDisplay.Always;
+      params.fillDisplay = FillDisplay.Blanking;
     }
 
     if (frame.border !== "subcategory") {

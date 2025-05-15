@@ -62,6 +62,7 @@ class TextEditor implements Decorator {
     this.debugAnchorPointAndRange = false;
     this.runStyle = { fontName: "Arial" };
     this.baselineShift = "none";
+    this.frame = { borderWeight: 1, shape: "none" };
   }
 
   public appendText(content: string): void {

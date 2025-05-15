@@ -34,17 +34,13 @@ export namespace TextAnnotationGeometry {
     const transform = annotation.computeTransform(range);
 
     // Construct the TextBlockGeometry
-    const highPriorityParams = new GeometryParams(Id64.invalid);
-    highPriorityParams.elmPriority = 1;
+    const params = new GeometryParams(Id64.invalid);
     const entries = produceTextBlockGeometry(props.layout, annotation.computeTransform(props.layout.range));
-    props.builder.appendTextBlock(entries, highPriorityParams);
-
-    const lowPriorityParams = new GeometryParams(Id64.invalid);
-    lowPriorityParams.elmPriority = 0;
+    props.builder.appendTextBlock(entries, params);
 
     // Construct the FrameGeometry
     if (annotation.frame && annotation.frame.shape !== "none") {
-      FrameGeometry.appendFrameToBuilder(props.builder, annotation.frame, range, transform, lowPriorityParams);
+      FrameGeometry.appendFrameToBuilder(props.builder, annotation.frame, range, transform, params);
     }
 
     // Construct the debug geometry
