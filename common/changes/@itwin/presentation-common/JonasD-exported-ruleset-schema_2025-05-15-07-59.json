@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/presentation-common",
-      "comment": "Export Ruleset.schema.json through exports field",
+      "comment": "Export `Ruleset.schema.json` through exports field",
       "type": "none"
     }
   ],
