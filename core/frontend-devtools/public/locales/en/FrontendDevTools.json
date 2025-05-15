@@ -82,7 +82,7 @@
       "keyin": "fdt visibility"
     },
     "ToggleRealityTileBounds": {
-      "keyin": "fdt toggle reality bounds"
+      "keyin": "fdt reality bounds"
     },
     "ToggleRealityTilePreload": {
       "keyin": "fdt toggle reality preload"
