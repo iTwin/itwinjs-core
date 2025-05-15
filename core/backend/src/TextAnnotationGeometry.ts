@@ -6,13 +6,16 @@
  * @module ElementGeometry
  */
 
-import { ColorDef, TextAnnotation, TextBlockGeometryProps, TextBlockGeometryPropsEntry, TextFrameStyleProps, TextString, TextStyleColor, TextStyleSettings } from "@itwin/core-common";
+import { ColorDef, TextAnnotation, TextAnnotationFrame, TextAnnotationLeaderProps, TextBlockGeometryProps, TextBlockGeometryPropsEntry, TextFrameStyleProps, TextString, TextStyleColor, TextStyleSettingsProps } from "@itwin/core-common";
 import { ComputeRangesForTextLayout, FindFontId, FindTextStyle, layoutTextBlock, RunLayout, TextBlockLayout } from "./TextAnnotationLayout";
 import { LineSegment3d, Point3d, Range2d, Transform, Vector2d, Vector3d, XYZProps } from "@itwin/core-geometry";
 import { assert } from "@itwin/core-bentley";
 import { IModelDb } from "./IModelDb";
 
 import { FrameGeometryProps } from "@itwin/core-common/lib/cjs/annotation/FrameGeometryProps";
+import { FrameGeometry } from "@itwin/core-common/lib/cjs/annotation/FrameGeometry";
+
+import { LeaderGeometryProps } from "@itwin/core-common/lib/cjs/annotation/LeaderGeometryProps";
 import { TextAnnotationGeometryProps } from "@itwin/core-common/lib/cjs/annotation/TextAnnotationGeometryProps";
 
 interface GeometryContext {
@@ -128,10 +131,23 @@ function processFractionRun(run: RunLayout, transform: Transform, context: Geome
   }
 }
 
-function processLeaders(startPoint: Point3d, endPoint: Point3d, context: GeometryContext, intermediatePoints?: Point3d[]) {
+function processLeaders(startPoint: Point3d, endPoint: Point3d, context: LeaderGeometryProps, intermediatePoints?: Point3d[], styleOverrides?: TextStyleSettingsProps, elbowDirection?: Vector3d): void {
+
+
+  const leaderLinePoints: XYZProps[] = [];
+  leaderLinePoints.push(startPoint.toJSON())
+  intermediatePoints?.forEach((point) => {
+    leaderLinePoints.push(point.toJSON())
+  });
+  if (styleOverrides?.wantElbow && elbowDirection) {
+    const elbowLength = styleOverrides?.elbowLength ?? 4;
+    leaderLinePoints.push(endPoint.plusScaled(elbowDirection, elbowLength).toJSON())
+  }
+  leaderLinePoints.push(endPoint.toJSON())
+
   let firstLeaderSegmentEndpoint;
-  if (intermediatePoints) {
-    firstLeaderSegmentEndpoint = intermediatePoints[0]
+  if (leaderLinePoints.length > 2) {
+    firstLeaderSegmentEndpoint = Point3d.fromJSON(leaderLinePoints[1]);
   } else {
     firstLeaderSegmentEndpoint = endPoint
   }
@@ -140,18 +156,12 @@ function processLeaders(startPoint: Point3d, endPoint: Point3d, context: Geometr
     firstLeaderSegmentEndpoint
   ).normalize();
 
-  const leaderLinePoints: XYZProps[] = [];
-  leaderLinePoints.push(startPoint.toJSON())
-  intermediatePoints?.forEach((point) => {
-    leaderLinePoints.push(point.toJSON())
-  });
-  leaderLinePoints.push(endPoint.toJSON())
-
   const termY = firstLeaderSegmentDirection?.unitCrossProduct(Vector3d.unitZ());
   if (!termY || !firstLeaderSegmentDirection) return;
-  const basePoint = startPoint.plusScaled(firstLeaderSegmentDirection, 1);
-  const point1 = basePoint.plusScaled(termY, 0.5);
-  const point2 = basePoint.plusScaled(termY.negate(), 0.5);
+  const basePoint = startPoint.plusScaled(firstLeaderSegmentDirection, styleOverrides?.terminatorWidth ?? 1);
+  const point1 = basePoint.plusScaled(termY, styleOverrides?.terminatorHeight ?? 0.5);
+  const point2 = basePoint.plusScaled(termY.negate(), styleOverrides?.terminatorHeight ?? 0.5);
+
   context.entries.push({
     leader: {
       terminators:
@@ -162,7 +172,7 @@ function processLeaders(startPoint: Point3d, endPoint: Point3d, context: Geometr
   })
 }
 
-function produceTextBlockGeometry(layout: TextBlockLayout, documentTransform: Transform, debugAnchorPt?: Point3d, textStyleSettings?: TextStyleSettings): TextBlockGeometryProps {
+function produceTextBlockGeometry(layout: TextBlockLayout, documentTransform: Transform, debugAnchorPt?: Point3d): TextBlockGeometryProps {
   const context: GeometryContext = { entries: [] };
 
   for (const line of layout.lines) {
@@ -236,17 +246,26 @@ function produceTextBlockGeometry(layout: TextBlockLayout, documentTransform: Tr
         },
       });
     });
-    const textColor = textStyleSettings?.color ?? ColorDef.black.toJSON();
 
-    setColor(textColor, context);
-
-    const leaderStartPoint = debugAnchorPt.plusScaled(Vector3d.unitX(), 10)
-    processLeaders(leaderStartPoint, debugAnchorPt, context)
   }
 
   return { entries: context.entries };
 }
+function produceLeaderGeometry(layout: TextBlockLayout, documentTransform: Transform, frame: TextAnnotationFrame, leader?: TextAnnotationLeaderProps): LeaderGeometryProps {
+  const context: LeaderGeometryProps = { entries: [] };
+  if (leader) {
+    const startPoint = leader.startPoint;
 
+    const result = FrameGeometry.computeLeaderStartPoint(frame, layout.toResult(), documentTransform.toJSON(), leader);
+    if (result?.endPoint)
+      processLeaders(Point3d.fromJSON(startPoint), result.endPoint, context, undefined, leader.styleOverrides, result.elbowDirection)
+
+  }
+
+
+  return { entries: context.entries };
+
+}
 function produceFrameGeometry(layout: TextBlockLayout, documentTransform: Transform, frameProps?: TextFrameStyleProps): FrameGeometryProps {
   const context: FrameGeometryProps = { entries: [] };
 
@@ -308,13 +327,13 @@ export function produceTextAnnotationGeometry(args: ProduceTextAnnotationGeometr
     ...args,
     textBlock: args.annotation.textBlock,
   });
-  const textStyle = args.findTextStyle ? args.findTextStyle(args.annotation.textBlock.styleName) : undefined;
   const dimensions = layout.range;
   const transform = args.annotation.computeTransform(dimensions);
 
   const anchorPoint = args.debugAnchorPointAndRange ? transform.multiplyPoint3d(args.annotation.computeAnchorPoint(dimensions)) : undefined;
 
-  const textBlockGeometry = produceTextBlockGeometry(layout, transform, anchorPoint, textStyle);
+  const textBlockGeometry = produceTextBlockGeometry(layout, transform, anchorPoint);
   const frameGeometry = produceFrameGeometry(layout, transform, args.annotation.frame);
-  return { textBlockGeometry, frameGeometry };
+  const leaderGeometry = produceLeaderGeometry(layout, transform, args.annotation.frame?.frame ?? 'rectangle', args.annotation.leader);
+  return { textBlockGeometry, frameGeometry, leaderGeometry };
 }

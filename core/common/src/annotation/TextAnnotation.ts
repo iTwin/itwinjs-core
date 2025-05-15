@@ -8,7 +8,7 @@
 
 import { Point3d, Range2d, Transform, XYZProps, YawPitchRollAngles, YawPitchRollProps } from "@itwin/core-geometry";
 import { TextBlock, TextBlockProps } from "./TextBlock";
-import { TextStyleColor } from "./TextStyle";
+import { LeaderStyleProps, TextStyleColor, TextStyleSettingsProps } from "./TextStyle";
 
 /** Describes how to compute the "anchor point" for a [[TextAnnotation]].
  * The anchor point is a point on or inside of the 2d bounding box enclosing the contents of the annotation's [[TextBlock]].
@@ -52,13 +52,22 @@ export interface TextFrameStyleProps {
   debugSnap?: boolean;
 }
 
-export type LeaderAttachmentPoint = "LeftTop" | "LeftMiddle" | "LeftBottom" | "RightTop" | "RightMiddle" | "RightBottom" | "CenterTop" | "CenterMiddle" | "CenterBottom" | "Nearest";
-export interface TextAnnotationLeaderProps {
-  startPoint: Point3d;
-  attachmentPoint: LeaderAttachmentPoint;
-  intermediatePoints?: Point3d[];
-}
 
+export type TextPointOptions = "TopLeft" | "TopRight" | "BottomLeft" | "BottomRight"
+export type LeaderAttachmentMode =
+  | { mode: "KeyPoint"; curveIndex: number; fraction: number }
+  | { mode: "TextPoint"; position: TextPointOptions }
+  | { mode: "Nearest" };
+export interface TextAnnotationLeaderProps {
+  startPoint: XYZProps;
+  attachmentMode: LeaderAttachmentMode;
+  styleOverrides?: TextStyleSettingsProps;
+}
+export interface TextAnnotationLeader {
+  startPoint: Point3d;
+  attachmentMode: LeaderAttachmentMode;
+  styleOverrides?: LeaderStyleProps
+}
 /**
  * JSON representation of a [[TextAnnotation]].
  * @beta

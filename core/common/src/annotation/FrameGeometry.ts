@@ -3,8 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { Angle, AngleSweep, Arc3d, LineString3d, Loop, Point3d, Range2d, Range2dProps, Transform, TransformProps, Vector2d, Vector3d, XYAndZ } from "@itwin/core-geometry";
-import { TextAnnotationFrame } from "./TextAnnotation";
+import { Angle, AngleSweep, Arc3d, CurveCurve, CurvePrimitive, LineSegment3d, LineString3d, Loop, Point3d, Range2d, Range2dProps, Transform, TransformProps, Vector2d, Vector3d, XYAndZ, XYZProps } from "@itwin/core-geometry";
+import { TextAnnotationFrame, TextAnnotationLeaderProps } from "./TextAnnotation";
+import { TextBlockLayoutResult } from "./TextBlockLayoutResult";
 
 // I don't love where this is.
 
@@ -35,6 +36,7 @@ export namespace FrameGeometry {
     /** interval = 1, just vertices, interval > 1, number of times to break up each edge */
     lineIntervals?: number;
     arcIntervals?: number;
+    index?: number;
   }
 
   export const computeIntervalPoints = (frame: TextAnnotationFrame, rangeProps: Range2dProps, transformProps: TransformProps, lineInterval: number = 0.5, arcInterval: number = 0.25): Point3d[] | undefined => {
@@ -50,22 +52,98 @@ export namespace FrameGeometry {
     return points;
   }
   /** Returns the closest point on the text frame where a leader can attach to */
-  export const computeLeaderStartPoint = (frame: TextAnnotationFrame, rangeProps: Range2dProps, transformProps: TransformProps, terminatorPoint: XYAndZ, options: ComputeLeaderStartPointOptions): Point3d | undefined => {
-    if (options.lineIntervals === undefined || options.arcIntervals === undefined) {
-      const curve = FrameGeometry.computeFrame(frame, rangeProps, transformProps);
-      return curve.closestPoint(Point3d.createFrom(terminatorPoint))?.point;
+  export const computeLeaderStartPoint = (frame: TextAnnotationFrame, textLayout: TextBlockLayoutResult, transformProps: TransformProps, leaderProps: TextAnnotationLeaderProps): { endPoint?: Point3d, elbowDirection?: Vector3d } | undefined => {
+    let closestPoint: Point3d | undefined;
+    let curve: Loop;
+    if (leaderProps.attachmentMode.mode === "Nearest") {
+      curve = FrameGeometry.computeFrame(frame, textLayout.range, transformProps);
+      closestPoint = curve.closestPoint(Point3d.fromJSON(leaderProps.startPoint))?.point;
+    } else if (leaderProps.attachmentMode.mode === "KeyPoint") {
+      curve = FrameGeometry.computeFrame(frame, textLayout.range, transformProps)
+      const curves = curve.collectCurvePrimitives(undefined, false, true);
+      const curveIndex = leaderProps.attachmentMode.curveIndex;
+      const fraction = leaderProps.attachmentMode.fraction;
+      if (curveIndex >= curves.length) {
+        closestPoint = curves[curves.length - 1].fractionToPoint(fraction);
+      } else {
+        closestPoint = curves[curveIndex].fractionToPoint(fraction);
+      }
+
+    } else {
+      const transform = Transform.fromJSON(transformProps);
+      let lineRange = Range2d.createNull();
+      let lineOffset: XYZProps;
+      let scaleDirection = transform.matrix.getColumn(0).negate();
+      if (leaderProps.attachmentMode.position.includes("Top")) {
+        lineRange = Range2d.fromJSON(textLayout.lines[0].range);
+        lineOffset = textLayout.lines[0].offsetFromDocument;
+      } else {
+        lineRange = Range2d.fromJSON(textLayout.lines[textLayout.lines.length - 1].range);
+        lineOffset = textLayout.lines[textLayout.lines.length - 1].offsetFromDocument;
+      }
+      const origin = transform.multiplyPoint3d(Point3d.fromJSON(lineOffset));
+      let attachmentPoint = origin.plusScaled(transform.matrix.getColumn(1), ((lineRange.yLength()) / 2));
+
+      if (leaderProps.attachmentMode.position.includes("Right")) {
+        attachmentPoint = attachmentPoint.plusScaled(transform.matrix.getColumn(0), lineRange.xLength());
+        scaleDirection = scaleDirection.negate();
+      }
+
+      // Extend the direction vector to create a target point far along the direction
+      const targetPoint = attachmentPoint.plusScaled(scaleDirection, 1e6); // Scale the direction vector to a large value
+      const lineSegment = LineSegment3d.create(attachmentPoint, targetPoint);
+
+      curve = FrameGeometry.computeFrame(frame, textLayout.range, transformProps);
+      const closestPointDetail = CurveCurve.intersectionXYZPairs(lineSegment, false, curve, false);
+      closestPoint = closestPointDetail[0]?.detailA.point;
+    }
+    let elbowDirection: Vector3d | undefined;
+    if (closestPoint && leaderProps.styleOverrides?.wantElbow) {
+      // Determine the direction based on the closest point's position relative to the frame
+      const isCloserToLeft = Math.abs(closestPoint.x - curve.range().low.x) < Math.abs(closestPoint.x - curve.range().high.x);
+
+      // Decide the direction: left (-X) or right (+X)
+      elbowDirection = isCloserToLeft ? Vector3d.unitX().negate() : Vector3d.unitX();
+
+      const elbowPoint = closestPoint.plusScaled(elbowDirection, leaderProps.styleOverrides.elbowLength ?? 0);
+      const elbowLine = LineSegment3d.create(closestPoint, elbowPoint);
+
+      const primitives = curve.collectCurvePrimitives();
+
+      // Find the closest curve primitive to the closest point
+      let closestPrimitive: CurvePrimitive | undefined;
+      let minDistance = Number.MAX_VALUE;
+
+      for (const primitive of primitives) {
+        const detail = primitive.closestPoint(closestPoint, false);
+        if (detail) {
+          const distance = detail.point.distance(closestPoint);
+          if (distance < minDistance) {
+            minDistance = distance;
+            closestPrimitive = primitive;
+          }
+        }
+      }
+      const closestPointDetail = closestPrimitive?.closestPoint(closestPoint, false);
+
+      const fraction = closestPointDetail?.fraction;
+
+      // Get the tangent vector of the curve at the closest point
+      const derivative = closestPrimitive?.fractionToPointAndDerivative(fraction!);
+
+      const tangentVector = derivative?.direction.normalize(); // Tangent vector at the closest point
+
+      // Get the direction vector of the elbow line
+      const elbowDirection1 = Vector3d.createStartEnd(elbowLine.point0Ref, elbowLine.point1Ref).normalize();
+      // Check if the tangent vector and elbow direction vector are aligned
+      const dotProduct = tangentVector?.dotProduct(elbowDirection1!);
+
+      if (Math.abs(dotProduct!) > 0.999)
+        elbowDirection = undefined;
     }
 
-    const intervalPoints = FrameGeometry.computeIntervalPoints(frame, rangeProps, transformProps, options.lineIntervals, options.arcIntervals);
-    const terminatorPoint3d = Point3d.createFrom(terminatorPoint);
 
-    const closestPoint = intervalPoints?.reduce((point: Point3d | undefined, intervalPoint: Point3d) => {
-      if (point && terminatorPoint3d.distance(intervalPoint) < terminatorPoint3d.distance(point))
-        return intervalPoint;
-      return point;
-    }, undefined);
-
-    return closestPoint;
+    return { endPoint: closestPoint, elbowDirection };
   }
 
   export const debugIntervals = (frame: TextAnnotationFrame, rangeProps: Range2dProps, transformProps: TransformProps, lineInterval: number = 0.25, arcInterval: number = 0.25): Arc3d[] | undefined => {

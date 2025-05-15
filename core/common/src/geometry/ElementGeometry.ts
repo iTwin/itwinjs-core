@@ -7,7 +7,7 @@
  */
 import { flatbuffers } from "flatbuffers";
 import { BentleyStatus, Id64, Id64String } from "@itwin/core-bentley";
-import { Angle, AngleSweep, Arc3d, BentleyGeometryFlatBuffer, CurveCollection, FrameBuilder, GeometryQuery, LineSegment3d, LineString3d, Loop, Matrix3d, Path, Plane3dByOriginAndUnitNormal, Point2d, Point3d, Point3dArray, PointString3d, Polyface, PolyfaceQuery, Range2d, Range3d, SolidPrimitive, Transform, Vector3d, YawPitchRollAngles } from "@itwin/core-geometry";
+import { Angle, AngleSweep, Arc3d, BentleyGeometryFlatBuffer, CurveCollection, FrameBuilder, GeometryQuery, LineSegment3d, LineString3d, Loop, Matrix3d, Plane3dByOriginAndUnitNormal, Point2d, Point3d, Point3dArray, PointString3d, Polyface, PolyfaceQuery, Range2d, Range3d, SolidPrimitive, Transform, Vector3d, YawPitchRollAngles } from "@itwin/core-geometry";
 import { EGFBAccessors } from "./ElementGeometryFB";
 import { Base64EncodedString } from "../Base64EncodedString";
 import { TextString, TextStringGlyphData, TextStringProps } from "./TextString";
@@ -25,6 +25,7 @@ import { TextBlockGeometryProps } from "../annotation/TextBlockGeometryProps";
 import { FrameGeometry } from "../annotation/FrameGeometry";
 import { FrameGeometryProps } from "../annotation/FrameGeometryProps";
 import { TextAnnotationGeometryProps } from "../annotation/TextAnnotationGeometryProps";
+import { LeaderGeometryProps } from "../annotation/LeaderGeometryProps";
 
 /** Specifies the type of an entry in a geometry stream.
  * @see [[ElementGeometryDataEntry.opcode]].
@@ -447,14 +448,31 @@ export namespace ElementGeometry {
         } else if (entry.separator) {
           result = this.appendGeometryQuery(LineSegment3d.fromJSON(entry.separator));
         } else {
-          entry.leader?.terminators.forEach((terminator) => {
+          result = false;
+        }
+
+        if (!result) {
+          return false;
+        }
+      }
+
+      return true;
+    }
+
+    public appendLeader(leaderProps: LeaderGeometryProps): boolean {
+      for (const entry of leaderProps.entries) {
+        let result: boolean;
+        if (entry.leader) {
+          entry.leader.terminators.forEach((terminator) => {
             result = this.appendGeometryQuery(LineSegment3d.fromJSON(terminator));
           });
           const leaderLinePointsArray: Point3d[] = []
-          entry.leader?.leaderLine.forEach((point) => {
+          entry.leader.leaderLine.forEach((point) => {
             leaderLinePointsArray.push(Point3d.fromJSON(point))
           })
           result = this.appendGeometryQuery(LineString3d.create(leaderLinePointsArray))
+        } else {
+          result = false;
         }
 
         if (!result) {
@@ -518,6 +536,8 @@ export namespace ElementGeometry {
 
       if (props.frameGeometry)
         result = result && this.appendFrame(props.frameGeometry);
+      if (props.leaderGeometry)
+        result = result && this.appendLeader(props.leaderGeometry);
       return result;
 
     }

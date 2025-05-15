@@ -8,7 +8,7 @@
 
 import { Id64, Id64String, IModelStatus } from "@itwin/core-bentley";
 import {
-  Angle, AnyGeometryQuery, GeometryQuery, IModelJson as GeomJson, LineSegment3d, LineString3d, Loop, LowAndHighXYZ, Matrix3d, Path, Point2d, Point3d, Range3d, Transform, TransformProps,
+  Angle, AnyGeometryQuery, GeometryQuery, IModelJson as GeomJson, LineSegment3d, LineString3d, Loop, LowAndHighXYZ, Matrix3d, Point2d, Point3d, Range3d, Transform, TransformProps,
   Vector3d, XYZProps, YawPitchRollAngles, YawPitchRollProps,
 } from "@itwin/core-geometry";
 import { ColorDef, ColorDefProps } from "../ColorDef";
@@ -26,6 +26,7 @@ import { TextBlockGeometryProps } from "../annotation/TextBlockGeometryProps";
 import { FrameGeometry } from "../annotation/FrameGeometry";
 import { FrameGeometryProps } from "../annotation/FrameGeometryProps";
 import { TextAnnotationGeometryProps } from "../annotation/TextAnnotationGeometryProps";
+import { LeaderGeometryProps } from "../annotation/LeaderGeometryProps";
 
 /** Establish a non-default [[SubCategory]] or to override [[SubCategoryAppearance]] for the geometry that follows.
  * A GeometryAppearanceProps always signifies a reset to the [[SubCategoryAppearance]] for subsequent [[GeometryStreamProps]] entries for undefined values.
@@ -358,14 +359,7 @@ export class GeometryStreamBuilder {
       } else if (entry.separator) {
         result = this.appendGeometry(LineSegment3d.fromJSON(entry.separator));
       } else {
-        entry.leader?.terminators.forEach((terminator) => {
-          result = this.appendGeometry(LineSegment3d.fromJSON(terminator));
-        });
-        const leaderLinePointsArray: Point3d[] = []
-        entry.leader?.leaderLine.forEach((point) => {
-          leaderLinePointsArray.push(Point3d.fromJSON(point))
-        })
-        result = this.appendGeometry(LineString3d.create(leaderLinePointsArray))
+        result = false;
       }
 
       if (!result) {
@@ -375,6 +369,31 @@ export class GeometryStreamBuilder {
 
     return true;
   }
+
+  public appendLeader(leaderProps: LeaderGeometryProps): boolean {
+    for (const entry of leaderProps.entries) {
+      let result: boolean;
+      if (entry.leader) {
+        entry.leader.terminators.forEach((terminator) => {
+          result = this.appendGeometry(LineSegment3d.fromJSON(terminator));
+        });
+        const leaderLinePointsArray: Point3d[] = []
+        entry.leader.leaderLine.forEach((point) => {
+          leaderLinePointsArray.push(Point3d.fromJSON(point))
+        })
+        result = this.appendGeometry(LineString3d.create(leaderLinePointsArray))
+      } else {
+        result = false;
+      }
+
+      if (!result) {
+        return false;
+      }
+    }
+
+    return true;
+  }
+
 
   public appendFrame(frameProps: FrameGeometryProps): boolean {
     for (const entry of frameProps.entries) {
@@ -432,6 +451,9 @@ export class GeometryStreamBuilder {
 
     if (props.frameGeometry)
       result = result && this.appendFrame(props.frameGeometry);
+
+    if (props.leaderGeometry)
+      result = result && this.appendLeader(props.leaderGeometry);
     return result;
 
   }
