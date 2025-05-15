@@ -8,7 +8,7 @@
 
 import { DelayedPromiseWithProps } from "../DelayedPromise";
 import { ConstantProps } from "../Deserialization/JsonProps";
-import { XmlCustomAttributesUtils } from "../Deserialization/XmlCustomAttributesUtils";
+import { XmlSerializationUtils } from "../Deserialization/XmlSerializationUtils";
 import { SchemaItemType } from "../ECObjects";
 import { ECSchemaError, ECSchemaStatus } from "../Exception";
 import { LazyLoadedPhenomenon } from "../Interfaces";
@@ -71,7 +71,7 @@ export class Constant extends SchemaItem {
 
     const phenomenon = await this.phenomenon;
     if (undefined !== phenomenon) {
-      const phenomenonName = XmlCustomAttributesUtils.createXmlTypedName(this.schema, phenomenon.schema, phenomenon.name);
+      const phenomenonName = XmlSerializationUtils.createXmlTypedName(this.schema, phenomenon.schema, phenomenon.name);
       itemElement.setAttribute("phenomenon", phenomenonName);
     }
 

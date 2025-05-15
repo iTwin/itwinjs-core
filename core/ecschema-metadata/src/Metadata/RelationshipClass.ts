@@ -9,7 +9,7 @@
 import { DelayedPromiseWithProps } from "../DelayedPromise";
 import { ECSpecVersion, SchemaReadHelper } from "../Deserialization/Helper";
 import { RelationshipClassProps, RelationshipConstraintProps } from "../Deserialization/JsonProps";
-import { XmlCustomAttributesUtils } from "../Deserialization/XmlCustomAttributesUtils";
+import { XmlSerializationUtils } from "../Deserialization/XmlSerializationUtils";
 import {
   ECClassModifier, parseStrength, parseStrengthDirection, RelationshipEnd, SchemaItemType, StrengthDirection, strengthDirectionToString,
   strengthToString, StrengthType,
@@ -300,7 +300,7 @@ export class RelationshipConstraint implements CustomAttributeContainerProps {
 
     const abstractConstraint = await this.abstractConstraint;
     if (undefined !== abstractConstraint) {
-      const abstractConstraintName = XmlCustomAttributesUtils.createXmlTypedName(this.schema, abstractConstraint.schema, abstractConstraint.name);
+      const abstractConstraintName = XmlSerializationUtils.createXmlTypedName(this.schema, abstractConstraint.schema, abstractConstraint.name);
       itemElement.setAttribute("abstractConstraint", abstractConstraintName);
     }
 
@@ -308,7 +308,7 @@ export class RelationshipConstraint implements CustomAttributeContainerProps {
       for (const item of this.constraintClasses) {
         const constraintClass = await item;
         const classElement = schemaXml.createElement("Class");
-        const constraintClassName = XmlCustomAttributesUtils.createXmlTypedName(this.schema, constraintClass.schema, constraintClass.name);
+        const constraintClassName = XmlSerializationUtils.createXmlTypedName(this.schema, constraintClass.schema, constraintClass.name);
         classElement.setAttribute("class", constraintClassName);
         itemElement.appendChild(classElement);
       }
@@ -317,7 +317,7 @@ export class RelationshipConstraint implements CustomAttributeContainerProps {
     if (this._customAttributes) {
       const caContainerElement = schemaXml.createElement("ECCustomAttributes");
       for (const [name, attribute] of this._customAttributes) {
-        const caElement = await XmlCustomAttributesUtils.writeCustomAttribute(name, attribute, schemaXml, this.schema);
+        const caElement = await XmlSerializationUtils.writeCustomAttribute(name, attribute, schemaXml, this.schema);
         caContainerElement.appendChild(caElement);
       }
       itemElement.appendChild(caContainerElement);

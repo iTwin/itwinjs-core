@@ -14,7 +14,7 @@ import { Schema } from "../Metadata/Schema";
  * Namespace holding utility functions for serializing EC types to the EC XML format.
  * @internal
  */
-export namespace XmlCustomAttributesUtils {
+export namespace XmlSerializationUtils {
   /**
    * Serializes a CustomAttribute instance to the EC XML format.
    * @param fullName The full name of the CustomAttribute (qualified by schema name).

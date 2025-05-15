@@ -9,8 +9,8 @@ import { CustomAttributeContainerType, ECClassModifier, SchemaItemType } from ".
 import { ECSchemaError } from "../../Exception";
 import { CustomAttributeClass } from "../../Metadata/CustomAttributeClass";
 import { Schema } from "../../Metadata/Schema";
-import { createSchemaJsonWithItems } from "../TestUtils/DeserializationHelpers";
-import { createEmptyXmlDocument, getElementChildrenByTagName } from "../TestUtils/SerializationHelper";
+import { createSchemaJsonWithItems, deserializeXmlSync } from "../TestUtils/DeserializationHelpers";
+import { createEmptyXmlDocument, getElementChildrenByTagName, xmlToString } from "../TestUtils/SerializationHelper";
 import { ECSchemaNamespaceUris } from "../../Constants";
 
 /* eslint-disable @typescript-eslint/naming-convention */
@@ -325,27 +325,16 @@ describe("CustomAttributeClass", () => {
           {
             className: "TestSchema.HasColors",
             color: {
+              a: 255,
               r: 40,
               g: 128,
               b: 68,
-              hexColor: "#288044",
             },
           },
         ],
         items: {
-          HexColor: {
+          ColorRGB: {
             schemaItemType: "StructClass",
-            properties: [
-            {
-              type: "PrimitiveProperty",
-              typeName: "string",
-              name: "hexColor",
-            },
-            ],
-          },
-          RgbColor: {
-            schemaItemType: "StructClass",
-            baseClass: "TestSchema.HexColor",
             properties: [
             {
               type: "PrimitiveProperty",
@@ -364,6 +353,18 @@ describe("CustomAttributeClass", () => {
             },
             ],
           },
+          ColorARGB: {
+            schemaItemType: "StructClass",
+            baseClass: "TestSchema.ColorRGB",
+            properties: [
+            {
+              type: "PrimitiveProperty",
+              typeName: "int",
+              name: "a",
+            },
+            ],
+
+          },
           HasColors: {
             schemaItemType: "CustomAttributeClass",
             appliesTo: "Schema",
@@ -371,7 +372,7 @@ describe("CustomAttributeClass", () => {
             {
               name: "color",
               type: "StructProperty",
-              typeName: "TestSchema.RgbColor",
+              typeName: "TestSchema.ColorARGB",
             },
             ],
           },
@@ -380,20 +381,22 @@ describe("CustomAttributeClass", () => {
 
       const ecschema = await Schema.fromJson(schema, new SchemaContext());
       assert.isDefined(ecschema);
-
-      const serialized = await ecschema.toXml(newDom);
-      assert.isDefined(serialized);
-      const elements = serialized.lastChild;
-      assert.isDefined(elements);
-      const customAttribute = elements!.firstChild;
-      assert.isDefined(customAttribute);
-      expect(customAttribute!.nodeName).to.eql("ECCustomAttributes");
-      const customAttributesMember = customAttribute!.firstChild;
-      assert.isDefined(customAttributesMember);
-      const structProp = customAttributesMember!.firstChild;
-      assert.isDefined(structProp);
-      const props = structProp?.childNodes;
-      expect(props).to.have.length(4);
+      const document = await ecschema.toXml(newDom);
+      assert.isDefined(document);
+      const xmlString = xmlToString(document);
+      assert.isDefined(xmlString);
+      const resultSchema = deserializeXmlSync(xmlString, new SchemaContext());
+      assert.isDefined(resultSchema);
+      const customAttributeSet = resultSchema.customAttributes;
+      assert.isDefined(customAttributeSet);
+      const colorCA = customAttributeSet!.get("TestSchema.HasColors");
+      assert.isDefined(colorCA);
+      const colorStruct = colorCA!.color;
+      assert.isDefined(colorStruct);
+      expect(colorStruct.a).to.equal(255);
+      expect(colorStruct.r).to.equal(40);
+      expect(colorStruct.g).to.equal(128);
+      expect(colorStruct.b).to.equal(68);
     });
 
     it("should properly serialize", async () => {

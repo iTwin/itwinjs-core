@@ -8,7 +8,7 @@
 
 import { DelayedPromiseWithProps } from "../DelayedPromise";
 import { EntityClassProps } from "../Deserialization/JsonProps";
-import { XmlCustomAttributesUtils } from "../Deserialization/XmlCustomAttributesUtils";
+import { XmlSerializationUtils } from "../Deserialization/XmlSerializationUtils";
 import { parseStrengthDirection, SchemaItemType, StrengthDirection } from "../ECObjects";
 import { ECSchemaError, ECSchemaStatus } from "../Exception";
 import { HasMixins, LazyLoadedMixin } from "../Interfaces";
@@ -212,7 +212,7 @@ protected override async buildPropertyCache(): Promise<Map<string, Property>> {
     for (const lazyMixin of this.mixins) {
       const mixin = await lazyMixin;
       const mixinElement = schemaXml.createElement("BaseClass");
-      const mixinName = XmlCustomAttributesUtils.createXmlTypedName(this.schema, mixin.schema, mixin.name);
+      const mixinName = XmlSerializationUtils.createXmlTypedName(this.schema, mixin.schema, mixin.name);
       mixinElement.textContent = mixinName;
       itemElement.appendChild(mixinElement);
     }

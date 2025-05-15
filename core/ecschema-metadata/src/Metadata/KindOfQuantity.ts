@@ -8,7 +8,7 @@
 
 import { DelayedPromiseWithProps } from "../DelayedPromise";
 import { KindOfQuantityProps } from "../Deserialization/JsonProps";
-import { XmlCustomAttributesUtils } from "../Deserialization/XmlCustomAttributesUtils";
+import { XmlSerializationUtils } from "../Deserialization/XmlSerializationUtils";
 import { SchemaItemType } from "../ECObjects";
 import { ECSchemaError, ECSchemaStatus } from "../Exception";
 import { LazyLoadedFormat, LazyLoadedInvertedUnit, LazyLoadedUnit } from "../Interfaces";
@@ -163,7 +163,7 @@ export class KindOfQuantity extends SchemaItem {
 
     const persistenceUnit = await this.persistenceUnit;
     if (undefined !== persistenceUnit) {
-      const unitName = XmlCustomAttributesUtils.createXmlTypedName(this.schema, persistenceUnit.schema, persistenceUnit.name);
+      const unitName = XmlSerializationUtils.createXmlTypedName(this.schema, persistenceUnit.schema, persistenceUnit.name);
       itemElement.setAttribute("persistenceUnit", unitName);
     }
 
@@ -172,7 +172,7 @@ export class KindOfQuantity extends SchemaItem {
       for(const format of this.presentationFormats) {
         if (!OverrideFormat.isOverrideFormat(format)) {
           const resolvedFormat = await format;
-          presUnitStrings.push(XmlCustomAttributesUtils.createXmlTypedName(this.schema, resolvedFormat.schema, format.name));
+          presUnitStrings.push(XmlSerializationUtils.createXmlTypedName(this.schema, resolvedFormat.schema, format.name));
           continue;
         }
         presUnitStrings.push(format.fullNameXml(this.schema));

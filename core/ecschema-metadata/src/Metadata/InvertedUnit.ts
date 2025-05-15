@@ -8,7 +8,7 @@
 
 import { DelayedPromiseWithProps } from "../DelayedPromise";
 import { InvertedUnitProps } from "../Deserialization/JsonProps";
-import { XmlCustomAttributesUtils } from "../Deserialization/XmlCustomAttributesUtils";
+import { XmlSerializationUtils } from "../Deserialization/XmlSerializationUtils";
 import { SchemaItemType } from "../ECObjects";
 import { ECSchemaError, ECSchemaStatus } from "../Exception";
 import { LazyLoadedUnit, LazyLoadedUnitSystem } from "../Interfaces";
@@ -72,13 +72,13 @@ export class InvertedUnit extends SchemaItem {
 
     const unitSystem = await this.unitSystem;
     if (undefined !== unitSystem) {
-      const unitSystemName = XmlCustomAttributesUtils.createXmlTypedName(this.schema, unitSystem.schema, unitSystem.name);
+      const unitSystemName = XmlSerializationUtils.createXmlTypedName(this.schema, unitSystem.schema, unitSystem.name);
       itemElement.setAttribute("unitSystem", unitSystemName);
     }
 
     const invertsUnit = await this.invertsUnit;
     if (undefined !== invertsUnit) {
-      const invertsUnitName = XmlCustomAttributesUtils.createXmlTypedName(this.schema, invertsUnit.schema, invertsUnit.name);
+      const invertsUnitName = XmlSerializationUtils.createXmlTypedName(this.schema, invertsUnit.schema, invertsUnit.name);
       itemElement.setAttribute("invertsUnit", invertsUnitName);
     }
 

@@ -11,7 +11,7 @@ import { ECSpecVersion, SchemaReadHelper } from "../Deserialization/Helper";
 import { JsonParser } from "../Deserialization/JsonParser";
 import { SchemaProps } from "../Deserialization/JsonProps";
 import { XmlParser } from "../Deserialization/XmlParser";
-import { XmlCustomAttributesUtils } from "../Deserialization/XmlCustomAttributesUtils";
+import { XmlSerializationUtils } from "../Deserialization/XmlSerializationUtils";
 import { ECClassModifier, isSupportedSchemaItemType, PrimitiveType } from "../ECObjects";
 import { ECSchemaError, ECSchemaStatus } from "../Exception";
 import { AnyClass, SchemaInfo } from "../Interfaces";
@@ -781,7 +781,7 @@ export class Schema implements CustomAttributeContainerProps {
     if (this._customAttributes) {
       const parentElem = schemaXml.createElement("ECCustomAttributes");
       for (const [name, attribute] of this._customAttributes) {
-        const caElem = await XmlCustomAttributesUtils.writeCustomAttribute(name, attribute, schemaXml, this);
+        const caElem = await XmlSerializationUtils.writeCustomAttribute(name, attribute, schemaXml, this);
         parentElem.appendChild(caElem);
       }
       schemaMetadata.appendChild(parentElem);

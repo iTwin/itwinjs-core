@@ -7,7 +7,7 @@
  */
 
 import { SchemaItemFormatProps } from "../Deserialization/JsonProps";
-import { XmlCustomAttributesUtils } from "../Deserialization/XmlCustomAttributesUtils";
+import { XmlSerializationUtils } from "../Deserialization/XmlSerializationUtils";
 import { SchemaItemType } from "../ECObjects";
 import { ECSchemaError, ECSchemaStatus } from "../Exception";
 import {
@@ -243,7 +243,7 @@ export class Format extends SchemaItem {
         const unitElement = schemaXml.createElement("Unit");
         if (undefined !== label)
           unitElement.setAttribute("label", label);
-        const unitName = XmlCustomAttributesUtils.createXmlTypedName(this.schema, resolvedUnit.schema, resolvedUnit.name);
+        const unitName = XmlSerializationUtils.createXmlTypedName(this.schema, resolvedUnit.schema, resolvedUnit.name);
         unitElement.textContent = unitName;
         compositeElement.appendChild(unitElement);
       };

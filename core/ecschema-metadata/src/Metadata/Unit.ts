@@ -8,7 +8,7 @@
 
 import { DelayedPromiseWithProps } from "../DelayedPromise";
 import { SchemaItemUnitProps } from "../Deserialization/JsonProps";
-import { XmlCustomAttributesUtils } from "../Deserialization/XmlCustomAttributesUtils";
+import { XmlSerializationUtils } from "../Deserialization/XmlSerializationUtils";
 import { SchemaItemType } from "../ECObjects";
 import { ECSchemaError, ECSchemaStatus } from "../Exception";
 import { LazyLoadedPhenomenon, LazyLoadedUnitSystem } from "../Interfaces";
@@ -100,13 +100,13 @@ export class Unit extends SchemaItem {
 
     const phenomenon = await this.phenomenon;
     if (undefined !== phenomenon) {
-      const phenomenonName = XmlCustomAttributesUtils.createXmlTypedName(this.schema, phenomenon.schema, phenomenon.name);
+      const phenomenonName = XmlSerializationUtils.createXmlTypedName(this.schema, phenomenon.schema, phenomenon.name);
       itemElement.setAttribute("phenomenon", phenomenonName);
     }
 
     const unitSystem = await this.unitSystem;
     if (undefined !== unitSystem) {
-      const unitSystemName = XmlCustomAttributesUtils.createXmlTypedName(this.schema, unitSystem.schema, unitSystem.name);
+      const unitSystemName = XmlSerializationUtils.createXmlTypedName(this.schema, unitSystem.schema, unitSystem.name);
       itemElement.setAttribute("unitSystem", unitSystemName);
     }
 
