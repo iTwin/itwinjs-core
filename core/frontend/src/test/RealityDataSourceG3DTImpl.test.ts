@@ -122,8 +122,22 @@ describe("RealityDataSourceG3DTImpl", () => {
       expect(returnedUrl2).toEqual("https://tile.googleapis.com/tile.glb");
     });
 
-    it("should pass down search params", async () => {
+    it("should handle paths with leading subdirectories", async () => {
+      const url = "https://tile.googleapis.com/some/sub/dirs/root.json?key=key&sessionId=id";
+      const rdSource = await TestG3DTImpl.createFromKey({ format: "ThreeDTile", id: url, provider : RealityDataProvider.G3DT });
+      expect(rdSource).toBeDefined();
 
+      if (!rdSource)
+        return;
+
+      const returnedUrl = rdSource.getTileUrl("some/leading/path/tileset.json");
+      expect(returnedUrl).toEqual("https://tile.googleapis.com/some/leading/path/tileset.json?key=key&sessionId=id");
+
+      const returnedUrl2 = rdSource.getTileUrl("some/leading/path/tile.glb");
+      expect(returnedUrl2).toEqual("https://tile.googleapis.com/some/leading/path/tile.glb?key=key&sessionId=id");
+    });
+
+    it("should pass down root search params", async () => {
       const url = "https://tile.googleapis.com/some/sub/dirs/root.json?key=key&sessionId=id";
       const rdSource = await TestG3DTImpl.createFromKey({ format: "ThreeDTile", id: url, provider : RealityDataProvider.G3DT });
       expect(rdSource).toBeDefined();
@@ -138,19 +152,55 @@ describe("RealityDataSourceG3DTImpl", () => {
       expect(returnedUrl2).toEqual("https://tile.googleapis.com/tile.glb?key=key&sessionId=id");
     });
 
-    it("should handle paths with leading subdirectories", async () => {
-      const url = "https://tile.googleapis.com/some/sub/dirs/root.json?key=key&sessionId=id";
+    it("should pass down root search params while preserving tile's search params", async () => {
+      const url = "https://tile.googleapis.com/some/sub/dirs/root.json?key=key";
       const rdSource = await TestG3DTImpl.createFromKey({ format: "ThreeDTile", id: url, provider : RealityDataProvider.G3DT });
       expect(rdSource).toBeDefined();
 
       if (!rdSource)
         return;
 
-      const returnedUrl = rdSource.getTileUrl("some/leading/path/tileset.json");
-      expect(returnedUrl).toEqual("https://tile.googleapis.com/some/leading/path/tileset.json?key=key&sessionId=id");
+      const returnedUrl = rdSource.getTileUrl("tile.glb?sessionId=123");
+      expect(returnedUrl).toEqual("https://tile.googleapis.com/tile.glb?sessionId=123&key=key");
 
-      const returnedUrl2 = rdSource.getTileUrl("some/leading/path/tile.glb");
-      expect(returnedUrl2).toEqual("https://tile.googleapis.com/some/leading/path/tile.glb?key=key&sessionId=id");
+      const returnedUrl2 = rdSource.getTileUrl("tile.glb?sessionId=456");
+      expect(returnedUrl2).toEqual("https://tile.googleapis.com/tile.glb?sessionId=456&key=key");
+    });
+
+    it("should pass down root search params while preserving tileset's search params", async () => {
+      const url = "https://tile.googleapis.com/some/sub/dirs/root.json?key=key";
+      const rdSource = await TestG3DTImpl.createFromKey({ format: "ThreeDTile", id: url, provider : RealityDataProvider.G3DT });
+      expect(rdSource).toBeDefined();
+
+      if (!rdSource)
+        return;
+
+      const returnedUrl = rdSource.getTileUrl("tileset.json?sessionId=123");
+      expect(returnedUrl).toEqual("https://tile.googleapis.com/tileset.json?sessionId=123&key=key");
+
+      const returnedUrl2 = rdSource.getTileUrl("tileset.json?sessionId=456");
+      expect(returnedUrl2).toEqual("https://tile.googleapis.com/tileset.json?sessionId=456&key=key");
+    });
+
+    it("should pass down both root search params and tileset search params", async () => {
+      const url = "https://tile.googleapis.com/some/sub/dirs/root.json?key=key";
+      const rdSource = await TestG3DTImpl.createFromKey({ format: "ThreeDTile", id: url, provider : RealityDataProvider.G3DT });
+      expect(rdSource).toBeDefined();
+
+      if (!rdSource)
+        return;
+
+      const returnedUrl = rdSource.getTileUrl("tileset.json?sessionId=123");
+      expect(returnedUrl).toEqual("https://tile.googleapis.com/tileset.json?sessionId=123&key=key");
+
+      const returnedUrl2 = rdSource.getTileUrl("tileset.json?sessionId=456");
+      expect(returnedUrl2).toEqual("https://tile.googleapis.com/tileset.json?sessionId=456&key=key");
+
+      const returnedUrl3 = rdSource.getTileUrl("tile.glb");
+      // TODO - Because all tileset search params are stored in RealityDataSourceG3DTImpl._searchParams, not just root,
+      // Which session id should this tile recieve?
+      // We have no way of knowing which tileset the tile is referenced from.
+      expect(returnedUrl3).toEqual("https://tile.googleapis.com/tile.glb?key=key&sessionId=123&sessionId=456");
     });
   });
 });

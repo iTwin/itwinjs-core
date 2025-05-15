@@ -120,21 +120,28 @@ export class RealityDataSourceG3DTImpl implements RealityDataSource {
     // This happens in these tiles at the second .json level, but the URL API will handle that for us.
     const url = new URL(tilePath, this._baseUrl);
 
-    // maybe use getTileContentType and check for tilset.json?
-    // If URL is to json file, store search params
-    const isJson = url.pathname.toLowerCase().endsWith("json");
-    if (isJson && url.searchParams.size !== 0) {
+    // If tile is a reference to a tileset, iterate over tileset url's search params and store them in this._searchParams so we can pass them down to children
+    if (this.getTileContentType(url.toString()) === "tileset" && url.searchParams.size !== 0) {
       for (const [key, value] of url.searchParams.entries()) {
         this._searchParams?.append(key, value);
       }
     }
 
-    if (this._searchParams === undefined || this._searchParams.size === 0)
+    if (this._searchParams === undefined || this._searchParams.size === 0) {
       return url.toString();
+    }
 
-    // append the base URL params to the tile path URL
-    const result = url.searchParams.size === 0 ? `${url}?${this._searchParams}` :`${url}&${this._searchParams}`;
-    return result;
+    // Append the stored search params to url's existing ones
+    for (const [key, value] of this._searchParams.entries()) {
+      if (!url.searchParams.has(key)) {
+        // Only append the search param if it does not already exist in the url
+        // TODO not sure if this is correct - this means in the case of this._searchParams containing duplicates, a url will recieve the first one in the list of .entries().
+        // When it should depend on which tileset the tile is referenced from.
+        url.searchParams.append(key, value);
+      }
+    }
+
+    return url.toString();
   }
 
   /**
