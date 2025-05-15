@@ -412,6 +412,7 @@ export class ExportGraphicsMeshVisitor extends PolyfaceData implements PolyfaceV
     }
     return true;
   }
+  /** Load data for the next facet. */
   public moveToNextFacet(): boolean {
     if (this._nextFacetIndex !== this._currentFacetIndex)
       return this.moveToReadIndex(this._nextFacetIndex);
