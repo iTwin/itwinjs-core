@@ -676,13 +676,8 @@ export class RegionOps {
    * to add bridge edges so that [[constructAllXYRegionLoops]] will return outer and inner loops in the same
    * SignedLoops object.
    * @param curvesAndRegions Any collection of curves. Each Loop/ParityRegion/UnionRegion contributes its curve
-<<<<<<< HEAD
-   * primitives.
-   * @param tolerance optional distance tolerance for coincidence
-=======
    * primitives, stripped of parity context. This means holes are _not_ preserved in output.
    * @param tolerance optional distance tolerance for coincidence.
->>>>>>> 168574b454 (Utilize `PolyfaceData.edgeMateIndex` to speed up some `Polyface` methods (#8095))
    * @returns array of [[SignedLoops]], each entry of which describes the faces in a single connected component:
    *    * `positiveAreaLoops` contains "interior" loops, _including holes in ParityRegion input_. These loops have
    * positive area and counterclockwise orientation.
