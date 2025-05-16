@@ -106,11 +106,7 @@
     "webpack": "^5.97.1"
   },
   "dependencies": {
-<<<<<<< HEAD
     "@bentley/imodeljs-native": "5.0.103",
-=======
-    "@bentley/imodeljs-native": "5.1.28",
->>>>>>> 768db1d58c (Session extension could not prepare a SQL to apply change due to reaching max parse depth (#8112))
     "@itwin/cloud-agnostic-core": "^2.2.4",
     "@itwin/object-storage-azure": "^2.3.0",
     "@itwin/object-storage-core": "^2.3.0",
