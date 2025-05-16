@@ -14,7 +14,7 @@
  * @internal
  */
 export async function loadScript(jsUrl: string): Promise<any> {
-  const module = await import(/* @vite-ignore */ jsUrl);
+  const module = await import(/* webpackIgnore: true */ /* @vite-ignore */ jsUrl);
   return execute(module);
 }
 
