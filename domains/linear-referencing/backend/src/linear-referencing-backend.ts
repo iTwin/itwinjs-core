@@ -3,10 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-export * from "./LinearReferencingElementAspects.js";
-export * from "./LinearReferencingElements.js";
-export * from "./LinearReferencingRelationships.js";
-export * from "./LinearReferencingSchema.js";
+export * from "./LinearReferencingElementAspects";
+export * from "./LinearReferencingElements";
+export * from "./LinearReferencingRelationships";
+export * from "./LinearReferencingSchema";
 
 /** @docs-package-description
  * The `@itwin/linear-referencing-backend` package contains classes for working with the LinearReferencing schema on the backend.
