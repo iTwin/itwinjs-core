@@ -113,6 +113,7 @@ public;enum;CoordinateLockOverrides
 public;enum;CoordSource
 public;enum;CoordSystem
 internal;class;CoreTools
+beta;interface;CreateFormattingSpecProps
 beta;interface;CreateGraphicFromDescriptionArgs
 beta;interface;CreateGraphicFromTemplateArgs
 beta;interface;CreateRenderInstancesParamsBuilderArgs
@@ -190,8 +191,11 @@ public;class;FlashSettings
 public;type;FlashSettingsOptions
 public;class;FlyViewTool
 internal;function;formatAnimationBranchId
+internal;class;FormatsProviderManager
 beta;class;FormattedQuantityDescription
+beta;interface;FormattedQuantityDescriptionArgs
 public;interface;FormatterParserSpecsProvider
+beta;interface;FormattingSpecEntry
 public;interface;FormattingUnitSystemChangedArgs
 internal;interface;FrameBeforeRenderData
 internal;interface;FrameCameraFrustumData
@@ -478,6 +482,7 @@ public;class;QuantityFormatter
 public;enum;QuantityType
 public;type;QuantityTypeArg
 public;interface;QuantityTypeDefinition
+internal;class;QuantityTypeFormatsProvider
 public;type;QuantityTypeKey
 public;interface;QueryScreenFeaturesOptions
 public;function;queryTerrainElevationOffset
