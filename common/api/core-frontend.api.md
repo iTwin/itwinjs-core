@@ -9525,6 +9525,8 @@ export class SetupCameraTool extends PrimitiveTool {
     // (undocumented)
     protected getAdjustedTargetPoint(): Point3d;
     // (undocumented)
+    protected getToolSettingPropertyLocked(property: DialogProperty<any>): DialogProperty<any> | undefined;
+    // (undocumented)
     protected _haveEyePt: boolean;
     // (undocumented)
     static iconSpec: string;
