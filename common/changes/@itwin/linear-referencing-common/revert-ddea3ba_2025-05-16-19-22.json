@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/linear-referencing-common",
+      "comment": "Revert \"Domains: ES Modules (#7892)\"",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/linear-referencing-common"
+}
