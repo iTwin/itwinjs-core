@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { BaselineShift, ColorDef, FractionRun, LineBreakRun, TextAnnotation, TextAnnotationAnchor, TextAnnotationFrameShape, TextBlock, TextBlockJustification, TextBlockMargins, TextFrameStyleProps, TextRun, TextStyleSettingsProps } from "@itwin/core-common";
+import { BaselineShift, ColorDef, FractionRun, LineBreakRun, Placement2dProps, TextAnnotation, TextAnnotationAnchor, TextAnnotationFrameShape, TextAnnotationProps, TextBlock, TextBlockJustification, TextBlockMargins, TextFrameStyleProps, TextRun, TextStyleSettingsProps } from "@itwin/core-common";
 import { DecorateContext, Decorator, GraphicType, IModelApp, IModelConnection, readElementGraphics, RenderGraphicOwner, Tool } from "@itwin/core-frontend";
 import { DtaRpcInterface } from "../common/DtaRpcInterface";
 import { Id64, Id64String } from "@itwin/core-bentley";
@@ -30,6 +30,26 @@ class TextEditor implements Decorator {
   // Properties applied to the entire document
   public get documentStyle(): Pick<TextStyleSettingsProps, "lineHeight" | "widthFactor" | "lineSpacingFactor"> {
     return this._textBlock.styleOverrides;
+  }
+
+  public get annotationProps(): TextAnnotationProps {
+    const annotation = TextAnnotation.fromJSON({
+      textBlock: this._textBlock.toJSON(),
+      // origin: this.origin,
+      anchor: this.anchor,
+      orientation: YawPitchRollAngles.createDegrees(this.rotation, 0, 0).toJSON(),
+      offset: this.offset,
+      frame: this.frame,
+    });
+
+    return annotation.toJSON();
+  }
+
+  public get placementProps(): Placement2dProps {
+    return {
+      origin: this.origin,
+      angle: 0,
+    }
   }
 
   // Properties to be applied to the next run
@@ -131,27 +151,13 @@ class TextEditor implements Decorator {
       return;
     }
 
-    const annotation = TextAnnotation.fromJSON({
-      textBlock: this._textBlock.toJSON(),
-      // origin: this.origin,
-      anchor: this.anchor,
-      orientation: YawPitchRollAngles.createDegrees(this.rotation, 0, 0).toJSON(),
-      offset: this.offset,
-      frame: this.frame,
-    });
-
     const rpcProps = this._iModel.getRpcProps();
 
-    const annotationProps = annotation.toJSON();
-    const placementProps = {
-      origin: this.origin,
-      angle: 0,
-    }
     const gfx = await DtaRpcInterface.getClient().generateTextAnnotationGeometry(
       rpcProps,
-      annotationProps,
+      this.annotationProps,
       this._categoryId,
-      placementProps,
+      this.placementProps,
       this.debugAnchorPointAndRange
     );
 
