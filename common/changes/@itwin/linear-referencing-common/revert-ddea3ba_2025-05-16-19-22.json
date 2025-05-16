@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/linear-referencing-common",
-      "comment": "change linear-referencing-common to pure esm",
+      "comment": "",
       "type": "none"
     }
   ],

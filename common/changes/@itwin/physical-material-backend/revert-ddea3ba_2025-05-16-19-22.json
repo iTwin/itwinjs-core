@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/physical-material-backend",
-      "comment": "change physical-material-backend to pure esm",
+      "comment": "",
       "type": "none"
     }
   ],
