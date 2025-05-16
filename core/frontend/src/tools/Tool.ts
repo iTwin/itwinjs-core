@@ -767,7 +767,9 @@ export abstract class InteractiveTool extends Tool {
     throw new Error(`property not found: ${propertyName}`);
   }
 
-  /** Override to return the property that is disabled/enabled if the supplied property is a lock property.
+  /** Override to return the property that is locked by the supplied property if it is a lock property.
+   * Used to enable/disable the returned property according to the current lock state.
+   * @note Only applicable when [[getToolSettingLockProperty]] is not being used automatically enable the lock on a change of value.
    * @see [[changeToolSettingPropertyValue]]
    * @public
    */
@@ -775,9 +777,19 @@ export abstract class InteractiveTool extends Tool {
     return undefined;
   }
 
+  /** Override to return the lock property associated with the supplied non-lock property.
+   * Used to enable the lock property after the value of the supplied property is changed.
+   * @see [[changeToolSettingPropertyValue]]
+   * @beta
+   */
+  protected getToolSettingLockProperty(_property: DialogProperty<any>): DialogProperty<boolean> | undefined {
+    return undefined;
+  }
+
   /** Helper method for responding to a tool setting property value change by updating saved settings.
    * @see [[applyToolSettingPropertyChange]]
    * @see [[getToolSettingPropertyLocked]] to return the corresponding locked property, if any.
+   * @see [[getToolSettingLockProperty]] to return the corresponding property's lock property, if any.
    * @public
    */
   protected changeToolSettingPropertyValue(syncItem: DialogPropertySyncItem): boolean {
@@ -786,9 +798,20 @@ export abstract class InteractiveTool extends Tool {
     if (!this.saveToolSettingPropertyValue(property, syncItem.value))
       return false;
 
-    const lockedProperty = this.getToolSettingPropertyLocked(property);
-    if (undefined !== lockedProperty)
-      this.syncToolSettingPropertyValue(lockedProperty, !property.value);
+    // Either enable lock when corresponding property value changes, or enable/disable property according to value of lock...
+    const lockProperty = this.getToolSettingLockProperty(property);
+    if (undefined !== lockProperty) {
+      if (!lockProperty.value) {
+        this.saveToolSettingPropertyValue(lockProperty, { value: true });
+        this.syncToolSettingPropertyValue(lockProperty);
+      }
+    } else {
+      const propertyToLock = this.getToolSettingPropertyLocked(property);
+      if (undefined !== propertyToLock) {
+        if (undefined === this.getToolSettingLockProperty(propertyToLock))
+          this.syncToolSettingPropertyValue(propertyToLock, !property.value);
+      }
+    }
 
     return true;
   }
