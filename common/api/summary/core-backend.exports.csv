@@ -171,6 +171,7 @@ public;type;ExportGraphicsFunction
 public;interface;ExportGraphicsInfo
 public;interface;ExportGraphicsLines
 public;interface;ExportGraphicsMesh
+public;class;ExportGraphicsMeshSubsetVisitor
 public;class;ExportGraphicsMeshVisitor
 public;interface;ExportGraphicsOptions
 public;type;ExportLinesFunction
