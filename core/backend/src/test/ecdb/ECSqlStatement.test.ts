@@ -1720,7 +1720,7 @@ describe("ECSqlStatement", () => {
       let rowCount: number = 0;
       while (stmt.step() === DbResult.BE_SQLITE_ROW) {
         rowCount++;
-      const row = stmt.getRow();
+        const row = stmt.getRow();
         assert.equal(row.name, `Child ${rowCount}`);
         const parent: NavigationValue = row.parent as NavigationValue;
         assert.equal(parent.id, parentId);
