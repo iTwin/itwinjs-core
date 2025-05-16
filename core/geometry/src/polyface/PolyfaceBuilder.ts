@@ -2016,9 +2016,9 @@ export class PolyfaceBuilder extends NullGeometryHandler {
   private getEdgeIndices(edge: SortableEdge): { edgeIndexA: number, edgeIndexB: number } | undefined {
     let indexA = -1; let indexB = -1;
     for (let i = this._polyface.facetIndex0(edge.facetIndex); i < this._polyface.facetIndex1(edge.facetIndex); ++i) {
-      if (edge.vertexIndexA === this._polyface.data.pointIndex[i])
+      if (edge.startVertex === this._polyface.data.pointIndex[i])
         indexA = i;
-      else if (edge.vertexIndexB === this._polyface.data.pointIndex[i])
+      else if (edge.endVertex === this._polyface.data.pointIndex[i])
         indexB = i;
     }
     return (indexA < 0 || indexB < 0) ? undefined : { edgeIndexA: indexA, edgeIndexB: indexB };

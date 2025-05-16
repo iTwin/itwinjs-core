@@ -13,17 +13,20 @@ import { GrowableFloat64Array } from "./GrowableFloat64Array";
 /**
  * An `AngleSweep` is a pair of angles at start and end of an interval.
  *
- * *  For stroking purposes, the "included interval" is all angles numerically reached
- * by theta = start + f*(end-start), where f is between 0 and 1.
- * *  This stroking formula is simple numbers -- 2PI shifts are not involved.
- * *  2PI shifts do become important in the reverse mapping of an angle to a fraction.
- * *  If "start < end" the angle proceeds CCW around the unit circle.
- * *  If "end < start" the angle proceeds CW around the unit circle.
- * *  Angles beyond 360 are fine as endpoints.
- * *  (350,370) covers the same unit angles as (-10,10).
- * *  (370,350) covers the same unit angles as (10,-10).
- * *  math details related fraction API can be found at docs/learning/geometry/Angle.md
- *  * Visualization can be found at https://www.itwinjs.org/sandbox/SaeedTorabi/AngleSweep
+ * * For stroking purposes, the "included interval" is all angles numerically reached
+ * by `theta = start + f * (end - start)`, where `0 <= f <= 1`.
+ * * This stroking formula is simple numbers -- 2PI shifts are not involved.
+ * * 2PI shifts do become important in the reverse mapping of an angle to a fraction.
+ * * Angles greater than 360 and less than 0 are fine as endpoints.
+ * * An AngleSweep determines orientation only _in concert with a reference vector_, e.g., a plane normal like (0,0,1).
+ *   * Be careful reading orientation from an AngleSweep without a reference vector!
+ *   * If "start < end" the angles in the sweep proceed counterclockwise around the reference vector.
+ *   * If "start > end" the angles in the sweep proceed clockwise around the reference vector.
+ *   * (350,370) covers the same angles as (-10,10), and both sweeps are counterclockwise around the reference vector.
+ *   * (370,350) covers the same angles as (10,-10), and both sweeps are clockwise around the reference vector.
+ *   * (370,350) covers the same angles as (-10,10), but the sweeps have opposite orientation.
+ * * Math details can be found at docs/learning/geometry/Angle.md .
+ * * Visualization can be found at https://www.itwinjs.org/sandbox/SaeedTorabi/AngleSweep .
  * @public
  */
 export class AngleSweep implements BeJSONFunctions {

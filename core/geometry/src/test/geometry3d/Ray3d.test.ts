@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { describe, expect, it } from "vitest";
-
+import { BeDuration, StopWatch } from "@itwin/core-bentley";
 import { CurveFactory } from "../../curve/CurveFactory";
 import { CurveCurveApproachType } from "../../curve/CurveLocationDetail";
 import { GeometryQuery } from "../../curve/GeometryQuery";
@@ -537,26 +537,26 @@ describe("Ray3d.IntersectionWithTriangle", () => {
     let intersectionPoint2: TriangleLocationDetail | undefined;
     let timeByRay3d: number = 0;
     let timeByBarycentricTriangle: number = 0;
-    let startTime: number;
-    let endTime: number;
+    let elapsedTime: BeDuration;
+    const timer = new StopWatch();
 
     for (const ray of rays) {
       for (const triangle of triangles) {
         // shoot ray at triangle using Ray3d class
-        startTime = performance.now();
+        timer.start();
         intersectionPoint1 = ray.intersectionWithTriangle(
           triangle.points[0], triangle.points[1], triangle.points[2],
         );
-        endTime = performance.now();
-        timeByRay3d = timeByRay3d + endTime - startTime;
+        elapsedTime = timer.stop();
+        timeByRay3d += elapsedTime.milliseconds;
         if (intersectionPoint1 !== undefined) {
           intersectionPoints1.push(intersectionPoint1);
         }
         // shoot ray at triangle using BarycentricTriangle class
-        startTime = performance.now();
+        timer.start();
         intersectionPoint2 = triangle.intersectRay3d(ray);
-        endTime = performance.now();
-        timeByBarycentricTriangle = timeByBarycentricTriangle + endTime - startTime;
+        elapsedTime = timer.stop();
+        timeByBarycentricTriangle += elapsedTime.milliseconds;
         if (intersectionPoint2.isInsideOrOn && intersectionPoint2.a >= 0) { // ray intersection not just line intersection
           intersectionPoints2.push(intersectionPoint2.world);
         }
