@@ -343,6 +343,7 @@ export class ExportGraphicsMeshVisitor extends PolyfaceData implements PolyfaceV
     this._numWrap = numWrap;
     this._nextFacetIndex = 0;
     this._currentFacetIndex = -1;
+    this.reset();
   }
   /** Create a visitor for iterating the facets of `polyface`, with indicated number of points to be added to each facet to produce closed point arrays
    * Typical wrap counts are:
@@ -362,54 +363,53 @@ export class ExportGraphicsMeshVisitor extends PolyfaceData implements PolyfaceV
   public moveToReadIndex(facetIndex: number): boolean {
     if (facetIndex < 0 || 2 + facetIndex * 3 >= this._polyface.indices.length)
       return false;
-    this._currentFacetIndex = facetIndex;
-    this._nextFacetIndex = facetIndex + 1;
-    this.point.length = 0;
-    const points = this.point;
-    points.length = 0;
-    this.pointIndex.length = 0;
-    this.point.length = 0;
-    this.edgeVisible.length = 0;
-    const sourcePoints = this._polyface.points;
-    const indices = this._polyface.indices;
-    const i0 = 3 * facetIndex;
-    for (let i = i0; i < i0 + 3; i++) {
-      const k = 3 * indices[i];
-      this.pointIndex.push(indices[i]);
-      this.point.pushXYZ(sourcePoints[k], sourcePoints[k + 1], sourcePoints[k + 2]);
-      this.edgeVisible.push(true);
-    }
-    for (let i = 0; i < this._numWrap; i++) {
-      this.point.pushFromGrowableXYZArray(this.point, i);
-    }
-
-    const sourceParams = this._polyface.params;
-    if (sourceParams.length > 0 && this.paramIndex && this.param) {
-      this.paramIndex.length = 0;
-      this.param.length = 0;
-      for (let i = i0; i < i0 + 3; i++) {
-        const k = 2 * indices[i];
-        this.paramIndex.push(indices[i]);
-        this.param.pushXY(sourceParams[k], sourceParams[k + 1]);
-      }
-      for (let i = 0; i < this._numWrap; i++) {
-        this.param.pushFromGrowableXYArray(this.param, i);
-      }
-    }
-
-    const sourceNormals = this._polyface.normals;
-    if (sourceNormals.length > 0 && this.normalIndex && this.normal) {
-      this.normalIndex.length = 0;
-      this.normal.length = 0;
+    if (this._currentFacetIndex !== facetIndex || 3 + this._numWrap !== this.point.length) {
+      this._currentFacetIndex = facetIndex;
+      this.point.length = 0;
+      this.pointIndex.length = 0;
+      this.edgeVisible.length = 0;
+      const sourcePoints = this._polyface.points;
+      const indices = this._polyface.indices;
+      const i0 = 3 * facetIndex;
       for (let i = i0; i < i0 + 3; i++) {
         const k = 3 * indices[i];
-        this.normalIndex.push(indices[i]);
-        this.normal.pushXYZ(sourceNormals[k], sourceNormals[k + 1], sourceNormals[k + 2]);
+        this.pointIndex.push(indices[i]);
+        this.point.pushXYZ(sourcePoints[k], sourcePoints[k + 1], sourcePoints[k + 2]);
+        this.edgeVisible.push(true);
       }
       for (let i = 0; i < this._numWrap; i++) {
-        this.normal.pushFromGrowableXYZArray(this.normal, i);
+        this.point.pushFromGrowableXYZArray(this.point, i);
+      }
+
+      const sourceParams = this._polyface.params;
+      if (sourceParams.length > 0 && this.paramIndex && this.param) {
+        this.paramIndex.length = 0;
+        this.param.length = 0;
+        for (let i = i0; i < i0 + 3; i++) {
+          const k = 2 * indices[i];
+          this.paramIndex.push(indices[i]);
+          this.param.pushXY(sourceParams[k], sourceParams[k + 1]);
+        }
+        for (let i = 0; i < this._numWrap; i++) {
+          this.param.pushFromGrowableXYArray(this.param, i);
+        }
+      }
+
+      const sourceNormals = this._polyface.normals;
+      if (sourceNormals.length > 0 && this.normalIndex && this.normal) {
+        this.normalIndex.length = 0;
+        this.normal.length = 0;
+        for (let i = i0; i < i0 + 3; i++) {
+          const k = 3 * indices[i];
+          this.normalIndex.push(indices[i]);
+          this.normal.pushXYZ(sourceNormals[k], sourceNormals[k + 1], sourceNormals[k + 2]);
+        }
+        for (let i = 0; i < this._numWrap; i++) {
+          this.normal.pushFromGrowableXYZArray(this.normal, i);
+        }
       }
     }
+    this._nextFacetIndex = facetIndex + 1;
     return true;
   }
   /** Load data for the next facet. */
@@ -511,6 +511,7 @@ export class ExportGraphicsMeshSubsetVisitor extends ExportGraphicsMeshVisitor {
     this._facetIndices = facetIndices.slice();
     this._currentSubsetIndex = -1;
     this._nextSubsetIndex = 0;
+    this.reset();
   }
   private isValidSubsetIndex(index: number): boolean {
     return index >= 0 && index < this._facetIndices.length;
@@ -551,8 +552,10 @@ export class ExportGraphicsMeshSubsetVisitor extends ExportGraphicsMeshVisitor {
   }
   /** Restart the visitor at the first facet. */
   public override reset(): void {
-    this.moveToReadIndex(0);
-    this._nextSubsetIndex = 0; // so immediate moveToNextFacet stays here
+    if (this._facetIndices) { // avoid crash during super ctor when we aren't yet initialized
+      this.moveToReadIndex(0);
+      this._nextSubsetIndex = 0; // so immediate moveToNextFacet stays here
+    }
   }
   /**
    * Return the client polyface facet index (aka "readIndex") for the given subset index.

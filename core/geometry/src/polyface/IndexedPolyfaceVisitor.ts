@@ -38,7 +38,7 @@ export class IndexedPolyfaceVisitor extends PolyfaceData implements PolyfaceVisi
     this._numEdges = 0;
     this._nextFacetIndex = 0;
     this._currentFacetIndex = -1;
-
+    this.reset();
   }
   /** Return the client polyface object. */
   public clientPolyface(): IndexedPolyface {
@@ -75,16 +75,19 @@ export class IndexedPolyfaceVisitor extends PolyfaceData implements PolyfaceVisi
   public moveToReadIndex(facetIndex: number): boolean {
     if (!this._polyface.isValidFacetIndex(facetIndex))
       return false;
-    this._currentFacetIndex = facetIndex;
+    const numEdges = this._polyface.numEdgeInFacet(facetIndex);
+    if (this._currentFacetIndex !== facetIndex || numEdges + this._numWrap !== this.pointCount) {
+      this._currentFacetIndex = facetIndex;
+      this._numEdges = numEdges;
+      this.resizeAllArrays(this._numEdges + this._numWrap);
+      this.gatherIndexedData(
+        this._polyface.data,
+        this._polyface.facetIndex0(this._currentFacetIndex),
+        this._polyface.facetIndex1(this._currentFacetIndex),
+        this._numWrap,
+      );
+    }
     this._nextFacetIndex = facetIndex + 1;
-    this._numEdges = this._polyface.numEdgeInFacet(facetIndex);
-    this.resizeAllArrays(this._numEdges + this._numWrap);
-    this.gatherIndexedData(
-      this._polyface.data,
-      this._polyface.facetIndex0(this._currentFacetIndex),
-      this._polyface.facetIndex1(this._currentFacetIndex),
-      this._numWrap,
-    );
     return true;
   }
   /** Advance the iterator to a the 'next' facet in the client polyface. */
@@ -223,6 +226,7 @@ export class IndexedPolyfaceSubsetVisitor extends IndexedPolyfaceVisitor {
     this._facetIndices = facetIndices.slice();
     this._currentSubsetIndex = -1;
     this._nextSubsetIndex = 0;
+    this.reset();
   }
   private isValidSubsetIndex(index: number): boolean {
     return index >= 0 && index < this._facetIndices.length;
@@ -263,8 +267,10 @@ export class IndexedPolyfaceSubsetVisitor extends IndexedPolyfaceVisitor {
   }
   /** Restart the visitor at the first facet. */
   public override reset(): void {
-    this.moveToReadIndex(0);
-    this._nextSubsetIndex = 0; // so immediate moveToNextFacet stays here.
+    if (this._facetIndices) { // avoid crash during super ctor when we aren't yet initialized
+      this.moveToReadIndex(0);
+      this._nextSubsetIndex = 0; // so immediate moveToNextFacet stays here.
+    }
   }
   /**
    * Return the client polyface facet index (aka "readIndex") for the given subset index.
