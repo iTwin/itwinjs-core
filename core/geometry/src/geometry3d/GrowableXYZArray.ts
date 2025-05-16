@@ -13,7 +13,7 @@ import { IndexedReadWriteXYZCollection, IndexedXYZCollection, MultiLineStringDat
 import { Matrix3d } from "./Matrix3d";
 import { Plane3dByOriginAndUnitNormal } from "./Plane3dByOriginAndUnitNormal";
 import { Point2d } from "./Point2dVector2d";
-import { Point3d, Vector3d } from "./Point3dVector3d";
+import { Point3d, Vector3d, XYZ } from "./Point3dVector3d";
 import { PointStreamGrowableXYZArrayCollector, VariantPointDataStream } from "./PointStreaming";
 import { Range1d, Range3d } from "./Range";
 import { Transform } from "./Transform";
@@ -676,8 +676,12 @@ export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
     }
   }
   /** get range of points. */
-  public override getRange(transform?: Transform): Range3d {
-    const range = Range3d.createNull();
+  public override getRange(transform?: Transform, result?: Range3d): Range3d {
+    let range = result;
+    if (range)
+      range.setNull();
+    else
+      range = Range3d.createNull();
     this.extendRange(range, transform);
     return range;
   }
@@ -1080,12 +1084,27 @@ export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
    * @param componentIndex Index (0,1,2) of component to be replaced.
    * @param func function to be called as `func(x,y,z)`, returning a replacement value for componentIndex
    */
-  public mapComponent(componentIndex: 0 | 1 | 2, func: (x: number, y: number, z: number) => number) {
+  public mapComponent(componentIndex: 0 | 1 | 2, func: (x: number, y: number, z: number) => number): void {
     const n = this._data.length;
     let q;
     for (let i = 0; i + 2 < n; i += 3) {
       q = func(this._data[i], this._data[i + 1], this._data[i + 2]);
       this._data[i + componentIndex] = q;
+    }
+  }
+
+  /**
+   * Pass the (x,y,z) of each point to a function which returns a replacement for the point.
+   * * @param func function to be called as `func(x,y,z)`, returning a replacement point.
+   */
+  public mapPoint(func: (x: number, y: number, z: number) => XYZ): void {
+    const n = this._data.length;
+    let q;
+    for (let i = 0; i + 2 < n; i += 3) {
+      q = func(this._data[i], this._data[i + 1], this._data[i + 2]);
+      this._data[i] = q.x;
+      this._data[i + 1] = q.y;
+      this._data[i + 2] = q.z;
     }
   }
 }
