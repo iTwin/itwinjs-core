@@ -1450,7 +1450,7 @@ describe("PolyfaceSpeedup", () => {
     let x0 = 0;
     let z0 = 0;
     const timer = new StopWatch();
-    const subdivisions = 5;
+    const subdivisions = 10;
 
     const facetOptions = StrokeOptions.createForFacets();
     facetOptions.shouldTriangulate = true;
@@ -1464,7 +1464,7 @@ describe("PolyfaceSpeedup", () => {
     if (ck.testDefined(contour, "created hole contour")) {
       const clipper = contour.sweepToUnionOfConvexClipPlaneSets();
       if (ck.testDefined(clipper, "created clipper")) {
-        const builders = ClippedPolyfaceBuilders.create(false, true);  // we want only the facets inside the clipper
+        const builders = ClippedPolyfaceBuilders.create(false, true);  // we want only the facets outside the clipper
         PolyfaceClip.clipPolyfaceUnionOfConvexClipPlaneSetsToBuilders(mesh0, clipper, builders, 1);
         mesh1 = builders.claimPolyface(1, true);
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, mesh1, x0 += 2, 0, z0);
