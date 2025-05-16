@@ -455,7 +455,11 @@
 			repositoryURL = "https://github.com/iTwin/mobile-native-ios";
 			requirement = {
 				kind = exactVersion;
+<<<<<<< HEAD
 				version = 5.0.103;
+=======
+				version = 5.1.28;
+>>>>>>> 768db1d58c (Session extension could not prepare a SQL to apply change due to reaching max parse depth (#8112))
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
