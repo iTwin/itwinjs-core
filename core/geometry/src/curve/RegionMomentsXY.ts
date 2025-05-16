@@ -144,8 +144,21 @@ export class RegionMomentsXY extends NullGeometryHandler {
     }
     return summedMoments;
   }
+<<<<<<< HEAD
 
   private _strokeOptions?: StrokeOptions;
+=======
+  /** Accumulate integrals from origin to the components of the parity region. */
+  public override handleParityRegion(region: ParityRegion): MomentData | undefined {
+    return this.handleAnyRegion(region);
+  }
+  /** Accumulate integrals from origin to the components of the union region. */
+  public override handleUnionRegion(region: UnionRegion): MomentData | undefined {
+    return this.handleAnyRegion(region);
+  }
+
+  private _strokeOptions?: StrokeOptions; // TODO: expose to callers in RegionOps
+>>>>>>> 168574b454 (Utilize `PolyfaceData.edgeMateIndex` to speed up some `Polyface` methods (#8095))
   private getStrokeOptions(): StrokeOptions {
     if (this._strokeOptions)
       return this._strokeOptions;

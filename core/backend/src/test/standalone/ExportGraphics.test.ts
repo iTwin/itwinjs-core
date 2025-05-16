@@ -7,18 +7,21 @@ import { assert } from "chai";
 import * as fs from "fs";
 import { DbResult, Id64, Id64Array, Id64String } from "@itwin/core-bentley";
 import {
-  Code, ColorDef, FillDisplay, GeometryClass, GeometryParams, GeometryPartProps, GeometryStreamBuilder, GeometryStreamProps,
-  ImageSourceFormat, IModel, LineStyle, PhysicalElementProps, Point2dProps, TextureMapProps, TextureMapUnits,
+  Code, ColorDef, FillDisplay, GeometryClass, GeometryParams, GeometryPartProps, GeometryStreamBuilder, GeometryStreamProps, ImageSourceFormat,
+  IModel, LineStyle, PhysicalElementProps, Point2dProps, TextureMapProps, TextureMapUnits,
 } from "@itwin/core-common";
 import {
-  Angle, Box, GeometryQuery, GrowableXYArray, GrowableXYZArray, LineSegment3d, LineString3d, Loop, Point3d, PolyfaceBuilder, Range3d, Sphere, StrokeOptions, Vector3d,
+  Angle, Box, Geometry, GeometryQuery, GrowableXYArray, GrowableXYZArray, LineSegment3d, LineString3d, Loop, NumberArray, Point2dArray, Point3d,
+  Point3dArray, PolyfaceBuilder, Range3d, Sphere, StrokeOptions, Vector3d, Vector3dArray,
 } from "@itwin/core-geometry";
 import {
   ExportGraphics, ExportGraphicsInfo, ExportGraphicsMeshVisitor, ExportGraphicsOptions, GeometricElement, LineStyleDefinition, PhysicalObject,
   RenderMaterialElement, SnapshotDb, Texture,
 } from "../../core-backend";
 import { GeometryPart } from "../../Element";
-import { ExportGraphicsFunction, ExportLinesInfo, ExportPartInfo, ExportPartInstanceInfo, ExportPartLinesInfo } from "../../ExportGraphics";
+import {
+  ExportGraphicsFunction, ExportGraphicsMesh, ExportLinesInfo, ExportPartInfo, ExportPartInstanceInfo, ExportPartLinesInfo,
+} from "../../ExportGraphics";
 import { IModelTestUtils } from "../IModelTestUtils";
 
 describe("exportGraphics", () => {
@@ -1176,4 +1179,56 @@ describe("exportGraphics", () => {
     assert.strictEqual(infos[0].mesh.indices.length, 6);
   });
 
+  it("verifies subset visitor", () => {
+    const options = StrokeOptions.createForFacets();
+    options.needNormals = options.needParams = options.shouldTriangulate = true;
+    const builder = PolyfaceBuilder.create(options);
+    builder.addSphere(Sphere.createCenterRadius(Point3d.createZero(), 1), 5);
+    const polyface = builder.claimPolyface();
+    assert.isDefined(polyface.data.param);
+    assert.isDefined(polyface.data.paramIndex);
+    assert.strictEqual(polyface.data.paramIndex!.length, polyface.data.pointIndex.length);
+    assert.isDefined(polyface.data.normal);
+    assert.isDefined(polyface.data.normalIndex);
+    assert.strictEqual(polyface.data.normalIndex!.length, polyface.data.pointIndex.length);
+    // compress by-sector uv/normals to by-vertex; last datum wins
+    const paramData = Array<number>(2 * polyface.data.point.length);
+    const normalData = Array<number>(3 * polyface.data.point.length);
+    for (let i = 0; i < polyface.data.pointIndex.length; i++) {
+      const pointIndex = polyface.data.pointIndex[i];
+      const param = polyface.data.getParam(polyface.data.paramIndex![i]);
+      if (param) {
+        paramData[2 * pointIndex] = param.x;
+        paramData[2 * pointIndex + 1] = param.y;
+      }
+      const normal = polyface.data.getNormal(polyface.data.normalIndex![i]);
+      if (normal) {
+        normalData[3 * pointIndex] = normal.x;
+        normalData[3 * pointIndex + 1] = normal.y;
+        normalData[3 * pointIndex + 2] = normal.z;
+      }
+    }
+    const mesh: ExportGraphicsMesh = {
+      points: polyface.data.point.float64Data(),
+      params: new Float32Array(paramData),
+      normals: new Float32Array(normalData),
+      indices: new Int32Array(polyface.data.pointIndex),
+      isTwoSided: false,
+    };
+    const visitor = ExportGraphicsMeshVisitor.create(mesh);
+    const numFacets = polyface.facetCount;
+    const numSubset = Math.floor(numFacets / 2);
+    const subset = Array<number>(numSubset).fill(0).map((_v: number, i: number) => Math.floor(numFacets * Math.log2(1 + i / numSubset)));
+    const subVisitor = visitor.createSubsetVisitor(subset);
+    while (subVisitor.moveToNextFacet()) {
+      const facetIndex = subVisitor.parentFacetIndex();
+      assert.isDefined(facetIndex);
+      const result = visitor.moveToReadIndex(facetIndex!);
+      assert.isTrue(result);
+      assert.isTrue(NumberArray.isAlmostEqual(subVisitor.pointIndex, visitor.pointIndex, Geometry.smallFloatingPoint));
+      assert.isTrue(Point3dArray.isAlmostEqual(subVisitor.point.float64Data(), visitor.point.float64Data(), Geometry.smallFloatingPoint));
+      assert.isTrue(Point2dArray.isAlmostEqual(subVisitor.param?.getPoint2dArray(), visitor.param?.getPoint2dArray(), Geometry.smallFloatingPoint));
+      assert.isTrue(Vector3dArray.isAlmostEqual(subVisitor.normal?.float64Data(), visitor.normal?.float64Data(), Geometry.smallFloatingPoint));
+    }
+  });
 });
