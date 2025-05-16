@@ -464,6 +464,7 @@ export class IModelApp {
     this._entityClasses.clear();
     this.authorizationClient = undefined;
     this._initialized = false;
+    this.quantityFormatter[Symbol.dispose]();
     this.resetFormatsProvider();
     this.onAfterStartup.clear();
   }
