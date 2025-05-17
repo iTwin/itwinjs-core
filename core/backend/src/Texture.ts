@@ -22,7 +22,7 @@ export interface TextureCreateProps extends Omit<TextureProps, "data"> {
 }
 
 /** Defines a rendering texture that is associated with a Material and applied to surface geometry.
- * @public
+ * @public @preview
  */
 export class Texture extends DefinitionElement {
   /** @internal */

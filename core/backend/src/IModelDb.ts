@@ -1717,7 +1717,7 @@ function processSchemaWriteStatus(status: SchemaWriteStatus): void {
 export namespace IModelDb {
 
   /** The collection of models in an [[IModelDb]].
-   * @public
+   * @public @preview
    */
   export class Models {
     private readonly _modelCacheSize = 10;
@@ -1963,7 +1963,7 @@ export namespace IModelDb {
   }
 
   /** The collection of elements in an [[IModelDb]].
-   * @public
+   * @public @preview
    */
   export class Elements implements GuidMapper {
     private readonly _elementCacheSize = 50;
@@ -2539,7 +2539,7 @@ export namespace IModelDb {
   }
 
   /** The collection of views in an [[IModelDb]].
-   * @public
+   * @public @preview
    */
   export class Views {
     /** @internal */
