@@ -6,7 +6,7 @@
  * @module Tiles
  */
 
-import { assert, BentleyError, BeTimePoint, ByteStream } from "@itwin/core-bentley";
+import { assert, BentleyError, BeTimePoint, ByteStream, Id64, Id64String } from "@itwin/core-bentley";
 import { Range3d, Transform } from "@itwin/core-geometry";
 import {
   ColorDef, computeChildTileProps, computeChildTileRanges, computeTileChordTolerance, ElementAlignedBox3d, LinePixels, TileFormat, TileProps,
@@ -49,6 +49,7 @@ export interface IModelTileContent extends TileContent {
   sizeMultiplier?: number;
   /** A bitfield describing empty sub-volumes of this tile's volume. */
   emptySubRangeMask?: number;
+  elementInfos?: { elementId: Id64String; modelId: Id64String }[];
 }
 
 /** A tile belonging to an [[IModelTileTree].
@@ -60,6 +61,7 @@ export class IModelTile extends Tile {
    * the next channel to try.
    */
   public requestChannel?: TileRequestChannel;
+  private _elementInfos?: { elementId: Id64String; modelId: Id64String }[];
 
   public constructor(params: IModelTileParams, tree: IModelTileTree) {
     super(params, tree);
@@ -79,6 +81,9 @@ export class IModelTile extends Tile {
 
   public get sizeMultiplier(): number | undefined { return this._sizeMultiplier; }
   public get hasSizeMultiplier() { return undefined !== this.sizeMultiplier; }
+  public get elementInfos() {
+    return this._elementInfos;
+  }
   public override get maximumSize(): number {
     return super.maximumSize * (this.sizeMultiplier ?? 1.0);
   }
@@ -130,10 +135,30 @@ export class IModelTile extends Tile {
     return content;
   }
 
+  public get isAffectedByScheduleScript(): boolean {
+    const timeline = IModelApp.viewManager.selectedView?.displayStyle.scheduleScript?.find(this.tree.modelId);
+
+    if (!timeline || !this._elementInfos)
+      return false;
+
+    for (const info of this._elementInfos) {
+      if (info.modelId !== timeline.modelId)
+        continue;
+
+      const { lower, upper } = Id64.getUint32Pair(info.elementId);
+      const elTimeline = timeline.getTimelineForElement(lower, upper);
+      if (elTimeline)
+        return true;
+    }
+
+    return false;
+  }
+
   public override setContent(content: IModelTileContent): void {
     super.setContent(content);
 
     this._emptySubRangeMask = content.emptySubRangeMask;
+    this._elementInfos = content.elementInfos;
 
     // NB: If this tile has no graphics, it may or may not have children - but we don't want to load the children until
     // this tile is too coarse for view based on its size in pixels.
