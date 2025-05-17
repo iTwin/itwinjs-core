@@ -243,6 +243,10 @@ const renderingStyles: RenderingStyle[] = [{
   viewflags: renderingStyleViewFlags,
 }];
 
+// ###TODO - make this use display style settings?? Maybe... Depends how "hacky" vs. "real" we want this approach.
+// This is a global right now, which is icky.
+let g_displayingG3DT = false;
+
 export class ViewAttributes {
   private static _expandViewFlags = false;
   private static _expandEdgeDisplay = false;
@@ -485,6 +489,8 @@ export class ViewAttributes {
     this._updates.push((view) => thematic.update(view));
   }
 
+  private getDisplayingG3DT() { return g_displayingG3DT; }
+
   private getBackgroundMap(view: ViewState) { return view.displayStyle.settings.backgroundMap; }
   private addBackgroundMapOrTerrain(): void {
     const isMapSupported = (view: ViewState) => view.is3d() && view.iModel.isGeoLocated;
@@ -498,15 +504,65 @@ export class ViewAttributes {
       backgroundSettingsDiv.style.display = display;
     };
 
+    let checkboxInterfaceG3DT: CheckBox | undefined;
+    let checkboxInterfaceBGMap: CheckBox | undefined;
+
+    const toggleG3DTUI = (enabled: boolean) => {
+      if (undefined === checkboxInterfaceG3DT)
+        return;
+      const checkboxG3DT = checkboxInterfaceG3DT.checkbox;
+      const checkboxLabelG3DT = checkboxInterfaceG3DT.label;
+      if (!enabled) {
+        checkboxG3DT.disabled = true;
+        checkboxLabelG3DT.style.opacity = "0.5";
+      } else {
+        checkboxG3DT.disabled = false;
+        checkboxLabelG3DT.style.opacity = "1.0";
+      }
+      checkboxLabelG3DT.style.fontWeight = checkboxG3DT.checked ? "bold" : "500";
+    };
+
+    const toggleBGMapUI = (enabled: boolean) => {
+      if (undefined === checkboxInterfaceBGMap)
+        return;
+      const checkboxBGMap = checkboxInterfaceBGMap.checkbox;
+      const checkboxLabelBGMap = checkboxInterfaceBGMap.label;
+      if (!enabled) {
+        checkboxBGMap.disabled = true;
+        checkboxLabelBGMap.style.opacity = "0.5";
+      } else {
+        checkboxBGMap.disabled = false;
+        checkboxLabelBGMap.style.opacity = "1.0";
+      }
+      checkboxLabelBGMap.style.fontWeight = checkboxBGMap.checked ? "bold" : "500";
+    };
+
+    const enableG3DT = (enabled: boolean) => {
+      toggleBGMapUI(!enabled);
+      if (undefined === checkboxInterfaceG3DT)
+        return;
+      const checkboxG3DT = checkboxInterfaceG3DT.checkbox;
+      const checkboxLabelG3DT = checkboxInterfaceG3DT.label;
+      checkboxLabelG3DT.style.fontWeight = checkboxG3DT.checked ? "bold" : "500";
+      this.sync();
+    };
+    const checkboxInterfaceG3DT0 = checkboxInterfaceG3DT = this.addCheckbox("Google Photorealistic 3D Tiles", enableG3DT, div);
+    if (this.getDisplayingG3DT())
+      checkboxInterfaceG3DT.checkbox.checked = true;
+    toggleG3DTUI(this.getDisplayingG3DT() || !this._vp.view.viewFlags.backgroundMap);
+
     const enableMap = (enabled: boolean) => {
       this._vp.viewFlags = this._vp.viewFlags.with("backgroundMap", enabled);
       backgroundSettingsDiv.style.display = enabled ? "block" : "none";
       showOrHideSettings(enabled);
+      toggleG3DTUI(!enabled);
       this.sync();
     };
-    const checkboxInterface = this.addCheckbox("Background Map", enableMap, div);
+    const checkboxInterface = checkboxInterfaceBGMap = this.addCheckbox("Background Map", enableMap, div);
     const checkbox = checkboxInterface.checkbox;
     const checkboxLabel = checkboxInterface.label;
+
+    toggleBGMapUI(this._vp.view.viewFlags.backgroundMap || !this.getDisplayingG3DT());
 
     const imageryProviders = createComboBox({
       parent: backgroundSettingsDiv,
@@ -563,6 +619,39 @@ export class ViewAttributes {
       div.style.display = visible ? "block" : "none";
       if (!visible)
         return;
+
+    //   vp.displayStyle.attachRealityModel({
+    //     tilesetUrl: url,
+    //     rdSourceKey: {
+    //       provider: "DtaRealityDataProvider",
+    //       format: "ThreeDTile",
+    //       id: url,
+    //     },
+    //   });
+    // }
+
+      if (checkboxInterfaceG3DT0.checkbox.checked) {
+        if (!this.getDisplayingG3DT()) {
+          const url = `https://tile.googleapis.com/v1/3dtiles/root.json?key=${process.env.IMJS_GOOGLE_MAPS_KEY}`;
+          view.displayStyle.attachRealityModel({
+            tilesetUrl: url,
+            name: "googleMap3dTiles",
+            rdSourceKey: {
+                provider: "G3DT",
+                format: "ThreeDTile",
+                id: url,
+              },
+            });
+          this.sync();
+          g_displayingG3DT = true;
+        }
+      } else {
+        if (this.getDisplayingG3DT()) {
+          view.displayStyle.detachRealityModelByNameAndUrl("googleMap3dTiles", `https://tile.googleapis.com/v1/3dtiles/root.json?key=${process.env.IMJS_GOOGLE_MAPS_KEY}`);
+          this.sync();
+          g_displayingG3DT = false;
+        }
+      }
 
       checkbox.checked = view.viewFlags.backgroundMap;
       checkboxLabel.style.fontWeight = checkbox.checked ? "bold" : "500";
