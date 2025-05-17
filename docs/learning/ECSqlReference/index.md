@@ -42,6 +42,7 @@
   - [help](./Pragmas.md#pragma-help)
   - [ecdb_ver](./Pragmas.md#pragma-ecdb_ver)
   - [experimental_features_enabled](./Pragmas.md#pragma-experimental_features_enabled)
+  - [validate_ecsql_inserts](./Pragmas.md#pragma-validate_ecsql_inserts)
   - [integrity_check (experimental)](./Pragmas.md#pragma-integrity_check-experimental)
 - [ECSQL Keywords](./ECSqlKeywords.md)
   - [Escaping keywords](./ECSqlKeywords.md#escaping-keywords)
