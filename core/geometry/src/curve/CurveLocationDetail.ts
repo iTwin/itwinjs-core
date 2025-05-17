@@ -393,7 +393,7 @@ export class CurveLocationDetail {
     return detailB;
   }
   /** Compare only the curve and fraction of this detail with `other`. */
-  public isSameCurveAndFraction(other: CurveLocationDetail | {curve: CurvePrimitive, fraction: number}): boolean {
+  public isSameCurveAndFraction(other: CurveLocationDetail | { curve: CurvePrimitive, fraction: number }): boolean {
     return this.curve === other.curve && Geometry.isAlmostEqualNumber(this.fraction, other.fraction);
   }
   /**
@@ -542,7 +542,7 @@ export class CurveLocationDetailPair {
 
 /**
  * Data bundle for a pair of arrays of CurveLocationDetail structures.
- * @deprecated in 4.x. Use CurveLocationDetailPair[] instead.
+ * @deprecated in 4.x - might be removed in next major version. Use CurveLocationDetailPair[] instead.
  * @public
  */
 export class CurveLocationDetailArrayPair {
