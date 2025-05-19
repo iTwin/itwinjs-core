@@ -15,10 +15,12 @@ import { HubWrappers, KnownTestLocations } from "..";
 import {
   ChannelControl,
   DictionaryModel,
+  HubMock,
   IModelHost,
   SpatialCategory
 } from "../../core-backend";
-import { HubMock } from "../../internal/HubMock";
+
+
 import { IModelTestUtils, TestUserType } from "../IModelTestUtils";
 import { Suite } from "mocha";
 chai.use(chaiAsPromised);
