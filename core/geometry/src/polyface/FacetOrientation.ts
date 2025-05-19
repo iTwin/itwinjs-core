@@ -50,7 +50,7 @@ export class FacetOrientationFixup {
     return this._facetOrientation[facetIndex];
   }
   /**
-   * RETURN FALSE IF ANY EDGE HAS 3 ORE MORE FACETS
+   * RETURN FALSE IF ANY EDGE HAS 3 OR MORE FACETS
    */
   private setupUnoriented(): boolean {
     this._edges.sort();

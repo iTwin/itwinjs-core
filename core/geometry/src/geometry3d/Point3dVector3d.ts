@@ -1482,7 +1482,7 @@ export class Vector3d extends XYZ {
   /**
    * Return the (strongly-typed) angle from this vector to vectorB, using only the xy parts.
    * * The returned angle is between -180 and 180 degrees.
-   * * Use `planarAngleTo` and `signedAngleTo` to return an angle measured in a specific plane.
+   * * Use [[planarAngleTo]] and [[signedAngleTo]] to return an angle measured in a specific plane.
    * @param vectorB target vector.
    */
   public angleToXY(vectorB: Vector3d): Angle {
@@ -1495,7 +1495,7 @@ export class Vector3d extends XYZ {
    * * If the cross product of `this` vector and `vectorB` lies on the same side of the plane as `vectorW`,
    * this function returns `radiansTo(vectorB)`; otherwise, it returns `-radiansTo(vectorB)`.
    * * `vectorW` does not have to be perpendicular to the plane.
-   * * Use `planarRadiansTo` to measure the angle between vectors that are projected to another plane.
+   * * Use [[planarRadiansTo]] to measure the angle between vectors that are projected to another plane.
    * @param vectorB target vector.
    * @param vectorW determines the side of the plane in which the returned angle is measured
    */
@@ -1515,7 +1515,7 @@ export class Vector3d extends XYZ {
    * * If the cross product of this vector and vectorB lies on the same side of the plane as vectorW,
    * this function returns `angleTo(vectorB)`; otherwise, it returns `-angleTo(vectorB)`.
    * * `vectorW` does not have to be perpendicular to the plane.
-   * * Use `planarAngleTo` to measure the angle between vectors that are projected to another plane.
+   * * Use [[planarAngleTo]] to measure the angle between vectors that are projected to another plane.
    * @param vectorB target vector.
    * @param vectorW determines the side of the plane in which the returned angle is measured
    */
