@@ -197,9 +197,10 @@ describe("RealityDataSourceG3DTImpl", () => {
       expect(returnedUrl2).toEqual("https://tile.googleapis.com/tileset.json?sessionId=456&key=key");
 
       const returnedUrl3 = rdSource.getTileUrl("tile.glb");
-      // TODO - Because all tileset search params are stored in RealityDataSourceG3DTImpl._searchParams, not just root,
-      // Which session id should this tile recieve?
-      // We have no way of knowing which tileset the tile is referenced from.
+      // Because all tileset search params are stored in RealityDataSourceG3DTImpl._searchParams, not just root,
+      // The tile will recieve both session ids.
+      // TODO should we be passing down all search params?
+      // Should we tailor this to G3DT specifically, and just store the first session id?
       expect(returnedUrl3).toEqual("https://tile.googleapis.com/tile.glb?key=key&sessionId=123&sessionId=456");
     });
   });

@@ -131,17 +131,16 @@ export class RealityDataSourceG3DTImpl implements RealityDataSource {
       return url.toString();
     }
 
-    // Append the stored search params to url's existing ones
+    // Append all stored search params to url's existing ones
+    const newUrl = new URL(url.toString());
     for (const [key, value] of this._searchParams.entries()) {
       if (!url.searchParams.has(key)) {
         // Only append the search param if it does not already exist in the url
-        // TODO not sure if this is correct - this means in the case of this._searchParams containing duplicates, a url will recieve the first one in the list of .entries().
-        // When it should depend on which tileset the tile is referenced from.
-        url.searchParams.append(key, value);
+        newUrl.searchParams.append(key, value);
       }
     }
 
-    return url.toString();
+    return newUrl.toString();
   }
 
   /**
