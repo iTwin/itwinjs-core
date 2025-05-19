@@ -50,8 +50,11 @@ export class GoogleMapsImageryProvider extends MapLayerImageryProvider {
   }
 
   protected async getSessionManager (): Promise<GoogleMapsSessionManager> {
+    if (this._sessionManager)
+      return this._sessionManager;
+
     if (this._settings.accessKey?.value) {
-      return this._sessionManager ?? new NativeGoogleMapsSessionManager(this._settings.accessKey.value);
+      return new NativeGoogleMapsSessionManager(this._settings.accessKey.value);
     } else {
       const msg = `Missing GoogleMaps api key`;
       Logger.logError(loggerCategory, msg);

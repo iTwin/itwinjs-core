@@ -284,7 +284,7 @@ export class ChainMergeContext {
     }
     return n;
   }
-  /** Collect chains which have maximum edge count, broken at an vertex with other than 2 edges.
+  /** Collect chains which have maximum edge count, broken at vertices with more than 2 edges.
    * * This is assumed to be preceded by a call to a vertex-cluster step such as `clusterAndMergeVerticesYXZ`
    */
   public collectMaximalChains(): LineString3d[] {
