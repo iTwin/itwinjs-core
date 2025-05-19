@@ -4285,7 +4285,7 @@ export class Point3d extends XYZ {
     interpolateXYZ(fractionX: number, fractionY: number, fractionZ: number, other: Point3d, result?: Point3d): Point3d;
     minus(vector: XYAndZ, result?: Point3d): Point3d;
     plus(vector: XYAndZ, result?: Point3d): Point3d;
-    plus2Scaled(vectorA: XYAndZ, scalarA: number, vectorB: XYZ, scalarB: number, result?: Point3d): Point3d;
+    plus2Scaled(vectorA: XYAndZ, scalarA: number, vectorB: XYAndZ, scalarB: number, result?: Point3d): Point3d;
     plus3Scaled(vectorA: XYAndZ, scalarA: number, vectorB: XYAndZ, scalarB: number, vectorC: XYAndZ, scalarC: number, result?: Point3d): Point3d;
     plusScaled(vector: XYAndZ, scaleFactor: number, result?: Point3d): Point3d;
     plusXYZ(dx?: number, dy?: number, dz?: number, result?: Point3d): Point3d;
@@ -4435,6 +4435,7 @@ export class Point4d extends Plane3d implements BeJSONFunctions {
     projectPointToPlane(spacePoint: Point3d, result?: Point3d): Point3d;
     projectXYZToPlane(x: number, y: number, z: number, result?: Point3d): Point3d;
     radiansToPoint4dXYZW(other: Point4d): number | undefined;
+    realDistanceSquaredXY(other: Point4d): number | undefined;
     realDistanceXY(other: Point4d): number | undefined;
     realPoint(result?: Point3d): Point3d | undefined;
     realPointDefault000(result?: Point3d): Point3d;
