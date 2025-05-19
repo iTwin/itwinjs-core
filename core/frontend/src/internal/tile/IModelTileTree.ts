@@ -9,7 +9,7 @@
 import { assert, BeTimePoint, GuidString, Id64Array, Id64String } from "@itwin/core-bentley";
 import { Range3d, Transform } from "@itwin/core-geometry";
 import {
-  BatchType, ContentIdProvider, EdgeOptions, ElementAlignedBox3d, ElementGeometryChange, FeatureAppearanceProvider,
+  BatchType, computeTileChordTolerance, ContentIdProvider, EdgeOptions, ElementAlignedBox3d, ElementGeometryChange, FeatureAppearanceProvider,
   IModelTileTreeId, IModelTileTreeProps, ModelGeometryChanges, RenderSchedule, TileProps
 } from "@itwin/core-common";
 import { IModelApp } from "../../IModelApp";
@@ -458,29 +458,47 @@ export class IModelTileTree extends TileTree {
     return undefined !== this._transformNodeRanges;
   }
 
-  public notifyScheduleScriptChanged(): void {
+  public async notifyScheduleScriptChanged(): Promise<void> {
     if (!this.rootTile)
       return;
 
-    this.pruneAnimatedTiles(this.rootTile);
-    this.decoder = acquireImdlDecoder({
+    const selectedView = IModelApp.viewManager.selectedView;
+    const displayStyle = selectedView?.displayStyle;
+
+    if (!displayStyle)
+      return;
+
+    await displayStyle.load();
+
+    const script = displayStyle.scheduleScript;
+    const scriptRef = script ? new RenderSchedule.ScriptReference(displayStyle.id, script) : undefined;
+    const scriptInfo = IModelApp.tileAdmin.getScriptInfoForTreeId(this.modelId, scriptRef);
+
+    const sameScript = this.timeline === scriptInfo?.timeline;
+    if (!sameScript) {
+      this.decoder = acquireImdlDecoder({
       type: this.batchType,
       omitEdges: false === this.edgeOptions,
-      timeline: IModelApp.viewManager.selectedView?.displayStyle.scheduleScript?.find(this.modelId),
+      timeline: scriptInfo?.timeline,
       iModel: this.iModel,
       batchModelId: this.modelId,
       is3d: this.is3d,
       containsTransformNodes: this.containsTransformNodes,
       noWorker: !IModelApp.tileAdmin.decodeImdlInWorker,
     });
+    }
+
+    this.pruneAnimatedTiles(this.rootTile);
   }
 
   private pruneAnimatedTiles(tile: Tile): void {
     if (tile instanceof IModelTile) {
-      if (tile.isAffectedByScheduleScript) {
+      const shouldRefresh = tile.hasGraphics && tile.isAffectedByScheduleScript;
+
+      if (shouldRefresh) {
         tile.disposeContents();
       }
-   }
+    }
 
     if (tile.children) {
       for (const child of tile.children)

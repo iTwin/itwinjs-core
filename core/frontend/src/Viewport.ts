@@ -1302,7 +1302,7 @@ export abstract class Viewport implements Disposable, TileUser {
       for (const ref of this.getTileTreeRefs()) {
         const tree = ref.treeOwner.tileTree;
         if (tree instanceof IModelTileTree && typeof tree.notifyScheduleScriptChanged === "function") {
-          tree.notifyScheduleScriptChanged();
+          void tree.notifyScheduleScriptChanged();
         }
       }
     };
