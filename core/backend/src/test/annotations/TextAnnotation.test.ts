@@ -143,7 +143,7 @@ describe("TextAnnotation element", () => {
 
     after(() => imodel.close());
 
-    function createElement(props?: Partial<TextAnnotation3dProps>): TextAnnotation3d {
+    function createElement3d(props?: Partial<TextAnnotation3dProps>): TextAnnotation3d {
       return TextAnnotation3d.fromJSON({
         category: seed.category,
         model: seed.model,
@@ -162,7 +162,7 @@ describe("TextAnnotation element", () => {
 
     it("create method does not automatically compute the geometry", () => {
       const annotation = createAnnotation();
-      const el = createElement({ jsonProperties: { annotation: annotation.toJSON() } });
+      const el = createElement3d({ jsonProperties: { annotation: annotation.toJSON() } });
       expect(el.getAnnotation()!.equals(annotation)).to.be.true;
       expect(el.geom).to.be.undefined;
     });
@@ -180,7 +180,7 @@ describe("TextAnnotation element", () => {
 
     describe("inserts 3d element and round-trips through JSON", async () => {
       async function test(annotation?: TextAnnotation): Promise<void> {
-        const el0 = createElement();
+        const el0 = createElement3d();
         if (annotation) {
           el0.setAnnotation(annotation);
         }
@@ -236,7 +236,7 @@ describe("TextAnnotation element", () => {
 
     after(() => imodel.close());
 
-    function createElement(props?: Partial<TextAnnotation2dProps>): TextAnnotation2d {
+    function createElement2d(props?: Partial<TextAnnotation2dProps>): TextAnnotation2d {
       return TextAnnotation2d.fromJSON({
         category: seed.category,
         model: seed.model,
@@ -257,7 +257,7 @@ describe("TextAnnotation element", () => {
 
     it("create method does not automatically compute the geometry", () => {
       const annotation = createAnnotation();
-      const el = createElement({ jsonProperties: { annotation: annotation.toJSON() } });
+      const el = createElement2d({ jsonProperties: { annotation: annotation.toJSON() } });
       expect(el.getAnnotation()!.equals(annotation)).to.be.true;
       expect(el.geom).to.be.undefined;
     });
@@ -272,7 +272,7 @@ describe("TextAnnotation element", () => {
 
     describe.only("inserts 2d element and round-trips through JSON", async () => {
       async function test(annotation?: TextAnnotation): Promise<void> {
-        const el0 = createElement();
+        const el0 = createElement2d();
         if (annotation) {
           el0.setAnnotation(annotation);
         }
