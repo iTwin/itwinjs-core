@@ -168,14 +168,13 @@ describe("TextAnnotation element", () => {
     });
 
     function expectPlacement(el: GeometricElement3d, expectValidBBox: boolean, expectedOrigin = [0, 0, 0], expectedYPR = [0, 0, 0]): void {
-      const message = "placement should be equal";
-      expect(el.placement.origin.x, message).to.equal(expectedOrigin[0]);
-      expect(el.placement.origin.y, message).to.equal(expectedOrigin[1]);
-      expect(el.placement.origin.z, message).to.equal(expectedOrigin[2]);
-      expect(el.placement.angles.yaw.radians, message).to.equal(expectedYPR[0]);
-      expect(el.placement.angles.pitch.radians, message).to.equal(expectedYPR[1]);
-      expect(el.placement.angles.roll.radians, message).to.equal(expectedYPR[2]);
-      expect(el.placement.bbox.isNull, message).to.equal(!expectValidBBox);
+      expect(el.placement.origin.x).to.equal(expectedOrigin[0]);
+      expect(el.placement.origin.y).to.equal(expectedOrigin[1]);
+      expect(el.placement.origin.z).to.equal(expectedOrigin[2]);
+      expect(el.placement.angles.yaw.radians).to.equal(expectedYPR[0]);
+      expect(el.placement.angles.pitch.radians).to.equal(expectedYPR[1]);
+      expect(el.placement.angles.roll.radians).to.equal(expectedYPR[2]);
+      expect(el.placement.bbox.isNull).to.equal(!expectValidBBox);
     }
 
     describe("inserts 3d element and round-trips through JSON", async () => {
@@ -186,21 +185,21 @@ describe("TextAnnotation element", () => {
         }
 
         expectPlacement(el0, false);
-        expect(el0.toJSON().elementGeometryBuilderParams, "elementGeometryBuilderParams should be set by .toJSON()").not.to.be.undefined;
+        expect(el0.toJSON().elementGeometryBuilderParams).not.to.be.undefined;
         console.log("Claudia Test > ", "elementGeometryBuilderParams", el0.toJSON().elementGeometryBuilderParams?.entryArray);
 
         let elId: string | undefined;
         try {
-          elId = el0.insert();
+          elId = el0.insert(); // This is failing
         } catch (e: any) {
-          console.log("Claudia Test > ", "unable to insert element", e?.errorNumber);
+          console.log("Claudia Test > ", "unable to insert element", e?.errorNumber); // I wanted a more verbose error message
         }
 
-        expect(Id64.isValidId64(elId!), "element should be inserted").to.be.true;
+        expect(Id64.isValidId64(elId!)).to.be.true;
 
         const el1 = imodel.elements.getElement<TextAnnotation3d>(elId!);
-        expect(el1, "element should exist in the iModel").not.to.be.undefined;
-        expect(el1 instanceof TextAnnotation3d, "element class should match what was inserted").to.be.true;
+        expect(el1).not.to.be.undefined;
+        expect(el1 instanceof TextAnnotation3d).to.be.true;
 
         expectPlacement(el1, undefined !== annotation && !annotation.textBlock.isEmpty);
 
@@ -209,8 +208,8 @@ describe("TextAnnotation element", () => {
         if (!annotation) {
           expect(anno, "If no annotation was provided, none should have been inserted to the JSON properties").to.be.undefined;
         } else {
-          expect(anno, "If an annotation was provided, it should be decoded from the JSON properties").not.to.be.undefined;
-          expect(anno!.equals(annotation), "and is this where we're failin?").to.be.true;
+          expect(anno).not.to.be.undefined;
+          expect(anno!.equals(annotation)).to.be.true;
         }
       }
 
@@ -263,11 +262,10 @@ describe("TextAnnotation element", () => {
     });
 
     function expectPlacement(el: GeometricElement2d, expectValidBBox: boolean, expectedOrigin = [0, 0, 0], expectedYPR = [0, 0, 0]): void {
-      const message = "placement should be equal";
-      expect(el.placement.origin.x, message).to.equal(expectedOrigin[0]);
-      expect(el.placement.origin.y, message).to.equal(expectedOrigin[1]);
-      expect(el.placement.angle.degrees, message).to.equal(expectedYPR[0]);
-      expect(el.placement.bbox.isNull, message).to.equal(!expectValidBBox);
+      expect(el.placement.origin.x).to.equal(expectedOrigin[0]);
+      expect(el.placement.origin.y).to.equal(expectedOrigin[1]);
+      expect(el.placement.angle.degrees).to.equal(expectedYPR[0]);
+      expect(el.placement.bbox.isNull).to.equal(!expectValidBBox);
     }
 
     describe.only("inserts 2d element and round-trips through JSON", async () => {
@@ -278,31 +276,32 @@ describe("TextAnnotation element", () => {
         }
 
         expectPlacement(el0, false);
-        expect(el0.toJSON().elementGeometryBuilderParams, "elementGeometryBuilderParams should be set by .toJSON()").not.to.be.undefined;
+        expect(el0.toJSON().elementGeometryBuilderParams).not.to.be.undefined;
         console.log("Claudia Test > ", "elementGeometryBuilderParams", el0.toJSON().elementGeometryBuilderParams?.entryArray);
 
         let elId: string | undefined;
         try {
-          elId = el0.insert();
+          elId = el0.insert(); // This is failing
         } catch (e: any) {
-          console.log("Claudia Test > ", "unable to insert element", e);
+          console.log("Claudia Test > ", "unable to insert element", e); // I wanted a more verbose error message
+          throw e;
         }
 
-        expect(Id64.isValidId64(elId!), "element should be inserted").to.be.true;
+        expect(Id64.isValidId64(elId)).to.be.true;
 
-        const el1 = imodel.elements.getElement<TextAnnotation2d>(elId!);
-        expect(el1, "element should exist in the iModel").not.to.be.undefined;
-        expect(el1 instanceof TextAnnotation2d, "element class should match what was inserted").to.be.true;
+        const el1 = imodel.elements.getElement<TextAnnotation2d>(elId);
+        expect(el1).not.to.be.undefined;
+        expect(el1 instanceof TextAnnotation2d).to.be.true;
 
         expectPlacement(el1, undefined !== annotation && !annotation.textBlock.isEmpty);
 
         const anno = el1.getAnnotation();
 
         if (!annotation) {
-          expect(anno, "If no annotation was provided, none should have been inserted to the JSON properties").to.be.undefined;
+          expect(anno).to.be.undefined;
         } else {
-          expect(anno, "If an annotation was provided, it should be decoded from the JSON properties").not.to.be.undefined;
-          expect(anno!.equals(annotation), "and is this where we're failin?").to.be.true;
+          expect(anno).not.to.be.undefined;
+          expect(anno!.equals(annotation)).to.be.true;
         }
       }
 
