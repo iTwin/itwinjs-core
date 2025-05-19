@@ -141,8 +141,8 @@ export class AngleSweep implements BeJSONFunctions {
     fractionPeriod(): number;
     fractionToAngle(fraction: number): Angle;
     fractionToRadians(fraction: number): number;
-    fractionToSignedPeriodicFraction(fraction: number, toNegativeFraction: boolean): number;
-    static fractionToSignedPeriodicFractionStartEnd(fraction: number, radians0: number, radians1: number, toNegativeFraction: boolean): number;
+    fractionToSignedPeriodicFraction(fraction: number, toNegativeFraction?: boolean): number;
+    static fractionToSignedPeriodicFractionStartEnd(fraction: number, radians0: number, radians1: number, toNegativeFraction?: boolean): number;
     static fromJSON(json?: AngleSweepProps): AngleSweep;
     interpolate(fraction: number, other: AngleSweep): AngleSweep;
     isAlmostEqual(other: AngleSweep): boolean;
