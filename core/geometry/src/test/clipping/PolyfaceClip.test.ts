@@ -195,27 +195,24 @@ describe("PolyfaceClip", () => {
           const area = PolyfaceQuery.sumFacetAreas(polyface);
           const polyfaceA = builders.claimPolyface(0, true);
           const polyfaceB = builders.claimPolyface(1, true);
-          const areaA = PolyfaceQuery.sumFacetAreas(polyfaceA);
-          const areaB = PolyfaceQuery.sumFacetAreas(polyfaceB);
-          GeometryCoreTestIO.captureCloneGeometry(allGeometry, polyface, x0, y0, 0);
-          GeometryCoreTestIO.captureCloneGeometry(allGeometry, clipperEdges, x0, y0, 0);
-          GeometryCoreTestIO.captureCloneGeometry(allGeometry, polyfaceA, x0, y0 + dY, 0);
-          GeometryCoreTestIO.captureCloneGeometry(allGeometry, polyfaceB, x0, y0 + 2 * dY, 0);
-          const boundaryB = PolyfaceQuery.boundaryEdges(polyfaceB);
-          GeometryCoreTestIO.captureCloneGeometry(allGeometry, boundaryB, x0, y0 + 2 * dY, dZ);
-          if (polyfaceB) {
+          if (ck.testDefined(polyfaceA, "inside facets defined") && ck.testDefined(polyfaceB, "outside facets defined")) {
+            const areaA = PolyfaceQuery.sumFacetAreas(polyfaceA);
+            const areaB = PolyfaceQuery.sumFacetAreas(polyfaceB);
+            GeometryCoreTestIO.captureCloneGeometry(allGeometry, polyface, x0, y0, 0);
+            GeometryCoreTestIO.captureCloneGeometry(allGeometry, clipperEdges, x0, y0, 0);
+            GeometryCoreTestIO.captureCloneGeometry(allGeometry, polyfaceA, x0, y0 + dY, 0);
+            GeometryCoreTestIO.captureCloneGeometry(allGeometry, polyfaceB, x0, y0 + 2 * dY, 0);
+            const boundaryB = PolyfaceQuery.boundaryEdges(polyfaceB);
+            GeometryCoreTestIO.captureCloneGeometry(allGeometry, boundaryB, x0, y0 + 2 * dY, dZ);
             const polyfaceB1 = PolyfaceQuery.cloneWithTVertexFixup(polyfaceB);
             GeometryCoreTestIO.captureCloneGeometry(allGeometry, polyfaceB1, x0, y0 + 3 * dY, 0);
             const boundaryB1 = PolyfaceQuery.boundaryEdges(polyfaceB1);
             GeometryCoreTestIO.captureCloneGeometry(allGeometry, boundaryB1, x0, y0 + 3 * dY, dZ);
-
+            if (!ck.testCoordinate(area, areaA + areaB, " sum of inside and outside clip areas")) {
+              GeometryCoreTestIO.captureCloneGeometry(allGeometry, polyface, x0, y0 + 5 * dY, 0);
+              GeometryCoreTestIO.captureCloneGeometry(allGeometry, clipperEdges, x0, y0 + 5 * dY, 0);
+            }
           }
-          if (!ck.testCoordinate(area, areaA + areaB, " sum of inside and outside clip areas")) {
-            GeometryCoreTestIO.captureCloneGeometry(allGeometry, polyface, x0, y0 + 5 * dY, 0);
-            GeometryCoreTestIO.captureCloneGeometry(allGeometry, clipperEdges, x0, y0 + 5 * dY, 0);
-
-          }
-
           x0 += dX;
         }
       }

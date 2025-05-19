@@ -118,7 +118,8 @@ export class RegionMomentsXY extends NullGeometryHandler {
   public override handleUnionRegion(region: UnionRegion): MomentData | undefined {
     return this.handleAnyRegion(region);
   }
-  private _strokeOptions?: StrokeOptions;
+
+  private _strokeOptions?: StrokeOptions; // TODO: expose to callers in RegionOps
   private getStrokeOptions(): StrokeOptions {
     if (this._strokeOptions)
       return this._strokeOptions;
