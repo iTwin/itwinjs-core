@@ -18,7 +18,7 @@ import { RenderSystem } from "../render/RenderSystem";
 import { SceneContext } from "../ViewContext";
 import { Viewport } from "../Viewport";
 import {
-  LRUTileListNode, TileContent, TileDrawArgs, TileParams, TileRequest, TileRequestChannel, TileTree, TileTreeLoadStatus, TileUsageMarker, TileUser, TileUserIdSet,
+LRUTileListNode, TileContent, TileDrawArgs, TileParams, TileRequest, TileRequestChannel, TileTree, TileTreeLoadStatus, TileUsageMarker, TileUser, TileUserIdSet,
 } from "./internal";
 
 // cSpell:ignore undisplayable bitfield
@@ -108,6 +108,11 @@ export abstract class Tile {
   public bytesUsed = 0;
   /** Exclusively for use by LRUTileList. @internal */
   public tileUserIds?: TileUserIdSet;
+
+  protected _copyright?: string;
+
+  /** @internal */
+  public get copyright(): string | undefined { return this._copyright; }
 
   /** Load this tile's children, possibly asynchronously. Pass them to `resolve`, or an error to `reject`. */
   protected abstract _loadChildren(resolve: (children: Tile[] | undefined) => void, reject: (error: Error) => void): void;

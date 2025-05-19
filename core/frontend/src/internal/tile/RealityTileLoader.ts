@@ -32,10 +32,13 @@ export abstract class RealityTileLoader {
   private _containsPointClouds = false;
   public readonly preloadRealityParentDepth: number;
   public readonly preloadRealityParentSkip: number;
+  // ###TODO maybe not needed. Currently we just always add copyright for all glTF tile contents.
+  public readonly collectGltfAttributions: boolean;
 
-  public constructor(private _produceGeometry?: boolean) {
+  public constructor(private _produceGeometry?: boolean, collectGltfAttributions?: boolean) {
     this.preloadRealityParentDepth = IModelApp.tileAdmin.contextPreloadParentDepth;
     this.preloadRealityParentSkip = IModelApp.tileAdmin.contextPreloadParentSkip;
+    this.collectGltfAttributions = collectGltfAttributions ?? false;
   }
 
   public computeTilePriority(tile: Tile, viewports: Iterable<Viewport>, _users: Iterable<TileUser>): number {
