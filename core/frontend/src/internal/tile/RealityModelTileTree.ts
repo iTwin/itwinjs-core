@@ -985,14 +985,35 @@ export class RealityTreeReference extends RealityModelTileTree.Reference {
 
   public override async addAttributions(cards: HTMLTableElement, vp: ScreenViewport): Promise<void> {
     const tiles = IModelApp.tileAdmin.getTilesForUser(vp)?.selected;
-    console.log("begin addAttributions");
-    if (tiles)
+    const copyrightMap = new Map<string, number>();
+    if (tiles) {
       for (const tile of tiles) {
-        console.log(`copyright: ${  tile.copyright}`);
+        if (tile.copyright) {
+          for (const copyright of tile.copyright?.split(";")) {
+            const currentCount = copyrightMap.get(copyright);
+            copyrightMap.set(copyright, currentCount ? currentCount + 1 : 1);
+          }
+        }
       }
-    console.log("end addAttributions");
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
-    return Promise.resolve(this.addLogoCards(cards));
+    }
+
+    // Only add another logo card if the tiles have copyright
+    if (copyrightMap.size > 0) {
+      // Order by most occurances to least
+      // See https://developers.google.com/maps/documentation/tile/create-renderer#display-attributions
+      const sortedCopyrights = [...copyrightMap.entries()].sort((a, b) => b[1] - a[1]);
+
+      let copyrightMsg = "Data provided by:<br><ul>";
+      copyrightMsg += sortedCopyrights.map(([key]) => `<li>${key}</li>`).join("");
+      copyrightMsg += "</ul>";
+
+      const isG3DT = this._rdSourceKey.provider === RealityDataProvider.G3DT;
+      // Only add Google header and icon if the tileset is G3DT
+      cards.appendChild(IModelApp.makeLogoCard({
+        iconSrc: isG3DT ? `${IModelApp.publicPath}images/google_on_white_hdpi.png` : undefined,
+        heading: isG3DT ? "Google Photorealistic 3D Tiles" : "",
+        notice: copyrightMsg
+      }));
+    }
   }
 }
-
