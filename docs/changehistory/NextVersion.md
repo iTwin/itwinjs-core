@@ -6,6 +6,7 @@ publish: false
 
 Table of contents:
 
+<<<<<<< HEAD
 - [NextVersion](#nextversion)
   - [Selection set](#selection-set)
   - [Select by volume](#select-by-volume)
@@ -926,3 +927,10 @@ Following are related classes to ECSqlStatement that are also mark depercate
 - `ECSqlColumnInfo`
 
   In concurrent query `QueryOptions.convertClassIdsToClassNames` & `QueryOptionsBuilder.setConvertClassIdsToNames()` are deprecated. Use ECSQL ec_classname() function to convert class ids to class names.
+=======
+- [Electron 36 support](#electron-36-support)
+
+## Electron 36 support
+
+In addition to [already supported Electron versions](../learning/SupportedPlatforms.md#electron), iTwin.js now supports [Electron 36](https://www.electronjs.org/blog/electron-36-0).
+>>>>>>> c0ec6be1a4 (Add support for Electron 36 (#8119))
