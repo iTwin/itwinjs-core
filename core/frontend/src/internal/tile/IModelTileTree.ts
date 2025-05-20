@@ -9,7 +9,7 @@
 import { assert, BeTimePoint, GuidString, Id64Array, Id64String } from "@itwin/core-bentley";
 import { Range3d, Transform } from "@itwin/core-geometry";
 import {
-  BatchType, computeTileChordTolerance, ContentIdProvider, EdgeOptions, ElementAlignedBox3d, ElementGeometryChange, FeatureAppearanceProvider,
+  BatchType, ContentIdProvider, EdgeOptions, ElementAlignedBox3d, ElementGeometryChange, FeatureAppearanceProvider,
   IModelTileTreeId, IModelTileTreeProps, ModelGeometryChanges, RenderSchedule, TileProps
 } from "@itwin/core-common";
 import { IModelApp } from "../../IModelApp";
@@ -468,7 +468,8 @@ export class IModelTileTree extends TileTree {
     if (!displayStyle)
       return;
 
-    await displayStyle.load();
+    if (!displayStyle.isScheduleScriptLoaded)
+     await displayStyle.load();
 
     const script = displayStyle.scheduleScript;
     const scriptRef = script ? new RenderSchedule.ScriptReference(displayStyle.id, script) : undefined;

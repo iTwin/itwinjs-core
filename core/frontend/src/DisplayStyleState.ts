@@ -54,6 +54,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   /** @internal */
   protected _queryRenderTimelinePropsPromise?: Promise<RenderTimelineProps | undefined>;
   private _assigningScript = false;
+  private _scriptLoaded?: boolean;
 
 
   /** Event raised just before the [[scheduleScriptReference]] property is changed.
@@ -102,6 +103,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     // If we were cloned, we may already have a valid schedule state, and our display style Id may be invalid / different.
     // Preserve it if still usable.
     if (this._scriptReference) {
+      this._scriptLoaded = true;
       if (this.settings.renderTimeline === this._scriptReference.sourceId) {
         // The script came from the same RenderTimeline element. Keep it.
         return;
@@ -795,6 +797,10 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   /** Returns true if solar shadow display is enabled by this display style. */
   public get wantShadows(): boolean {
     return this.is3d() && this.viewFlags.shadows && false !== IModelApp.renderSystem.options.displaySolarShadows;
+  }
+
+  public get isScheduleScriptLoaded(): boolean {
+    return this._scriptLoaded === true;
   }
 
   /** @internal */
