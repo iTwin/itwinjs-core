@@ -53,8 +53,6 @@ describe("SnapshotDb.refreshContainerForRpc", () => {
     clearECDbCache: () => { },
   };
   it("perform checkpoint", async () => {
-    Logger.initializeToConsole();
-    Logger.setLevelDefault(LogLevel.Trace);
     const sourceFileName = path.join(KnownTestLocations.outputDir, "checkpoint1.bim");
     if (IModelJsFs.existsSync(sourceFileName))
       IModelJsFs.removeSync(sourceFileName);
