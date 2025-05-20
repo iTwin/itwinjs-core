@@ -267,7 +267,7 @@ export class ClipUtilities {
     for (const fragment of insideFragments) {
       const loop = Loop.createPolygon(fragment);
       loop.tryTransformInPlace(worldToLocal);
-      const clippedLocalRegion = RegionOps.regionBooleanXY(localRegion, loop, RegionBinaryOpType.Intersection); // HERE
+      const clippedLocalRegion = RegionOps.regionBooleanXY(localRegion, loop, RegionBinaryOpType.Intersection);
       if (clippedLocalRegion) {
         clippedLocalRegion.tryTransformInPlace(localToWorld);
         if (!result)

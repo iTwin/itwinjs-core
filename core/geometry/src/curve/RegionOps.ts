@@ -330,9 +330,9 @@ export class RegionOps {
    * * Invalid inputs (such as childless regions) are not corrected.
    * @param region region to simplify
    * @returns
-   * * The sole [[ParityRegion]] child of a [[UnionRegion]] if the `ParityRegion` has more than one [[Loop]].
-   * * The sole `Loop` grandchild of a [[UnionRegion]].
-   * * The sole `Loop` child of a [[ParityRegion]].
+   * * For a [[UnionRegion]] with exactly one child, return it if it is a [[Loop]],
+   * or if it is a [[ParityRegion]] with multiple children, otherwise return the `ParityRegion`'s `Loop`.
+   * * For a `ParityRegion` with exactly one `Loop`, return it.
    * * All other inputs returned unchanged.
    */
   public static simplifyRegionType(region: AnyRegion): AnyRegion {
