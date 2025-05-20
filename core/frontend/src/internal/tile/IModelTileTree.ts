@@ -21,6 +21,7 @@ import {
   acquireImdlDecoder, DynamicIModelTile, ImdlDecoder, IModelTile, IModelTileParams, iModelTileParamsFromJSON, LayerTileTreeHandler, MapLayerTreeSetting, Tile,
   TileContent, TileDrawArgs, TileLoadPriority, TileParams, TileRequest, TileRequestChannel, TileTree, TileTreeParams
 } from "../../tile/internal";
+import { getScriptDelta } from "../../ScriptUtils";
 
 export interface IModelTileTreeOptions {
   readonly allowInstancing: boolean;
@@ -358,6 +359,7 @@ export class IModelTileTree extends TileTree {
 
   private readonly _layerHandler: LayerTileTreeHandler;
   public override get layerHandler() { return this._layerHandler; }
+  private _lastScheduleScript?: RenderSchedule.Script;
 
   public constructor(params: IModelTileTreeParams, treeId: IModelTileTreeId) {
     super(params);
@@ -471,30 +473,39 @@ export class IModelTileTree extends TileTree {
     if (!displayStyle.isScheduleScriptLoaded)
      await displayStyle.load();
 
-    const script = displayStyle.scheduleScript;
-    const scriptRef = script ? new RenderSchedule.ScriptReference(displayStyle.id, script) : undefined;
+    const newScript = displayStyle.scheduleScript;
+    const scriptRef = newScript ? new RenderSchedule.ScriptReference(displayStyle.id, newScript) : undefined;
     const scriptInfo = IModelApp.tileAdmin.getScriptInfoForTreeId(this.modelId, scriptRef);
+
+    const previousScript = this._lastScheduleScript;
+    this._lastScheduleScript = newScript;
 
     const sameScript = this.timeline === scriptInfo?.timeline;
     if (!sameScript) {
       this.decoder = acquireImdlDecoder({
-      type: this.batchType,
-      omitEdges: false === this.edgeOptions,
-      timeline: scriptInfo?.timeline,
-      iModel: this.iModel,
-      batchModelId: this.modelId,
-      is3d: this.is3d,
-      containsTransformNodes: this.containsTransformNodes,
-      noWorker: !IModelApp.tileAdmin.decodeImdlInWorker,
-    });
+        type: this.batchType,
+        omitEdges: false === this.edgeOptions,
+        timeline: scriptInfo?.timeline,
+        iModel: this.iModel,
+        batchModelId: this.modelId,
+        is3d: this.is3d,
+        containsTransformNodes: this.containsTransformNodes,
+        noWorker: !IModelApp.tileAdmin.decodeImdlInWorker,
+      });
     }
 
-    this.pruneAnimatedTiles(this.rootTile);
+    let changedElementIds: Set<Id64String> | undefined;
+    if (previousScript && newScript) {
+      changedElementIds = getScriptDelta(previousScript, newScript);
+    }
+
+    this.pruneAnimatedTiles(this.rootTile, changedElementIds);
   }
 
-  private pruneAnimatedTiles(tile: Tile): void {
+  private pruneAnimatedTiles(tile: Tile, changedElementIds?: Set<Id64String>): void {
     if (tile instanceof IModelTile) {
-      const shouldRefresh = tile.hasGraphics && tile.isAffectedByScheduleScript;
+      const elements = tile.elementInfos;
+      const shouldRefresh = elements !== undefined && elements.some(info => changedElementIds?.has(info.elementId));
 
       if (shouldRefresh) {
         tile.disposeContents();
