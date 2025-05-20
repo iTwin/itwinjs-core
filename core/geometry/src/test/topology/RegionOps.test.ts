@@ -942,17 +942,23 @@ describe("RegionOps", () => {
     const regionArea = RegionOps.computeXYArea(region)!;
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, region);
 
-    const merged = RegionOps.regionBooleanXY(region, undefined, RegionBinaryOpType.Union)!;
-    for (const child of merged.children)
-      GeometryCoreTestIO.captureCloneGeometry(allGeometry, child, 0, 10);
-    const mergedArea = RegionOps.computeXYArea(merged)!;
-
-    const rectangleArea = 80;
-    const holeArea = Math.PI * 4;
-    const expectedArea = rectangleArea - holeArea;
-    ck.testCoordinate(regionArea, expectedArea, "area before merge");
-    ck.testCoordinate(mergedArea, expectedArea, "area after merge");
-
+    const merged = RegionOps.regionBooleanXY(region, undefined, RegionBinaryOpType.Union)
+    if (ck.testDefined(merged, "merge operation succeeded")) {
+      if (merged instanceof Loop) {
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, merged, 0, 10);
+      } else {
+        for (const child of merged.children)
+          GeometryCoreTestIO.captureCloneGeometry(allGeometry, child, 0, 10);
+      }
+      const mergedArea = RegionOps.computeXYArea(merged);
+      if (ck.testDefined(mergedArea, "area computed for merged region")) {
+        const rectangleArea = 80;
+        const holeArea = Math.PI * 4;
+        const expectedArea = rectangleArea - holeArea;
+        ck.testCoordinate(regionArea, expectedArea, "area before merge");
+        ck.testCoordinate(mergedArea, expectedArea, "area after merge");
+      }
+    }
     GeometryCoreTestIO.saveGeometry(allGeometry, "RegionOps", "MergeRegionArea");
     expect(ck.getNumErrors()).toBe(0);
   });

@@ -325,6 +325,27 @@ export class RegionOps {
     return this.finishGraphToPolyface(graph, triangulate);
   }
   /**
+   * Simplify the type of the region by stripping redundant parent(s).
+   * * No Boolean operations are performed.
+   * * Invalid inputs (such as childless regions) are not corrected.
+   * @param region region to simplify
+   * @returns
+   * * The sole [[ParityRegion]] child of a [[UnionRegion]] if the `ParityRegion` has more than one [[Loop]].
+   * * The sole `Loop` grandchild of a [[UnionRegion]].
+   * * The sole `Loop` child of a [[ParityRegion]].
+   * * All other inputs returned unchanged.
+   */
+  public static simplifyRegionType(region: AnyRegion): AnyRegion {
+    if (region instanceof UnionRegion) {
+      if (region.children.length === 1)
+        return this.simplifyRegionType(region.children[0]);
+    } else if (region instanceof ParityRegion) {
+      if (region.children.length === 1)
+        return region.children[0];
+    }
+    return region;
+  }
+  /**
    * Return areas defined by a boolean operation.
    * @note For best results, input regions should have correctly oriented loops. See [[sortOuterAndHoleLoopsXY]].
    * @note A common use case of this method is to convert a region with overlapping children into one with
@@ -342,8 +363,6 @@ export class RegionOps {
     operation: RegionBinaryOpType,
     mergeTolerance: number = Geometry.smallMetricDistance,
   ): AnyRegion | undefined {
-    // Always return UnionRegion for now, but keep return type as AnyRegion.
-    // In the future, we might return the *simplest* region type.
     const result = UnionRegion.create();
     const context = RegionBooleanContext.create(RegionGroupOpType.Union, RegionGroupOpType.Union);
     context.addMembers(loopsA, loopsB);
@@ -365,7 +384,7 @@ export class RegionOps {
         }
       },
     );
-    return result;
+    return result ? this.simplifyRegionType(result) : undefined;
   }
   /**
    * Return a polyface whose facets are a boolean operation between the input regions.
