@@ -24,7 +24,7 @@ import { IModelConnection } from "../../IModelConnection";
 import { PlanarClipMaskState } from "../../PlanarClipMaskState";
 import { RealityDataSource } from "../../RealityDataSource";
 import { RenderMemory } from "../../render/RenderMemory";
-import { SceneContext } from "../../ViewContext";
+import { DecorateContext, SceneContext } from "../../ViewContext";
 import { ViewState } from "../../ViewState";
 import {
   BatchedTileIdMap, CesiumIonAssetProvider, createClassifierTileTreeReference, createDefaultViewFlagOverrides, DisclosedTileTreeSet, GeometryTileTreeReference,
@@ -34,6 +34,7 @@ import {
 import { SpatialClassifiersState } from "../../SpatialClassifiersState";
 import { RealityDataSourceTilesetUrlImpl } from "../../RealityDataSourceTilesetUrlImpl";
 import { ScreenViewport } from "../../Viewport";
+import { GoogleMapsDecorator } from "../../GoogleMapDecorator";
 
 function getUrl(content: any) {
   return content ? (content.url ? content.url : content.uri) : undefined;
@@ -806,6 +807,7 @@ export class RealityTreeReference extends RealityModelTileTree.Reference {
   protected _rdSourceKey: RealityDataSourceKey;
   private readonly _produceGeometry?: boolean;
   private readonly _modelId: Id64String;
+  private _decorator: GoogleMapsDecorator | undefined;
 
   public constructor(props: RealityModelTileTree.ReferenceProps) {
     super(props);
@@ -827,6 +829,11 @@ export class RealityTreeReference extends RealityModelTileTree.Reference {
     }
 
     this._modelId = modelId ?? props.iModel.transientIds.getNext();
+
+    if (this._rdSourceKey.provider === "GP3DT") {
+      this._decorator = new GoogleMapsDecorator();
+      void this._decorator.activate("satellite");
+    }
   }
 
   public override get modelId() { return this._modelId; }
@@ -1014,6 +1021,12 @@ export class RealityTreeReference extends RealityModelTileTree.Reference {
         heading: isGP3DT ? "Google Photorealistic 3D Tiles" : "",
         notice: copyrightMsg
       }));
+    }
+  }
+
+  public override decorate(_context: DecorateContext): void {
+    if (this._decorator) {
+      this._decorator.decorate(_context);
     }
   }
 }
