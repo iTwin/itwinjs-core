@@ -18,23 +18,23 @@ import { IModelApp } from "./IModelApp";
  * A valid [[TileAdmin.gp3dtKey]] must be configured in the iTwin.js application for this provider to work.
 * @internal
 */
-export class RealityDataSourceG3DTImpl implements RealityDataSource {
+export class RealityDataSourceGP3DTImpl implements RealityDataSource {
   public readonly key: RealityDataSourceKey;
-  /** The URL that supplies the 3d tiles for displaying the G3DT tileset. */
+  /** The URL that supplies the 3d tiles for displaying the GP3DT tileset. */
   private _tilesetUrl: string | undefined;
-  /** Base URL of the G3DT tileset. Does not include trailing subdirectories. */
+  /** Base URL of the GP3DT tileset. Does not include trailing subdirectories. */
   private _baseUrl: string = ""
   /** Need to be passed down to child tile requests */
   private _searchParams?: URLSearchParams;
 
-  /** This is necessary for G3DT tilesets! This tells the iTwin.js tiling system to use the geometric error specified in the G3DT tileset rather than any of our own. */
+  /** This is necessary for GP3DT tilesets! This tells the iTwin.js tiling system to use the geometric error specified in the GP3DT tileset rather than any of our own. */
   public readonly usesGeometricError = true;
 
   /** Construct a new reality data source.
    * @param props JSON representation of the reality data source
    */
   protected constructor(props: RealityDataSourceProps) {
-    assert(props.sourceKey.provider === RealityDataProvider.G3DT);
+    assert(props.sourceKey.provider === RealityDataProvider.GP3DT);
     this.key = props.sourceKey;
     this._tilesetUrl = this.key.id;
   }
@@ -43,9 +43,9 @@ export class RealityDataSourceG3DTImpl implements RealityDataSource {
    * Create an instance of this class from a source key and iTwin context.
    */
   public static async createFromKey(sourceKey: RealityDataSourceKey, _iTwinId: GuidString | undefined): Promise<RealityDataSource | undefined> {
-    if (sourceKey.provider !== RealityDataProvider.G3DT)
+    if (sourceKey.provider !== RealityDataProvider.GP3DT)
       return undefined;
-    const rdSource = new RealityDataSourceG3DTImpl({ sourceKey });
+    const rdSource = new RealityDataSourceGP3DTImpl({ sourceKey });
     return rdSource;
   }
 

@@ -101,7 +101,7 @@ class RealityTreeSupplier implements TileTreeSupplier {
       await iModel.models.load(CompressedId64Set.decompressSet(treeId.maskModelIds));
 
     // ###TODO maybe not needed. Currently we just always add copyright for all glTF tile contents.
-    const opts = { deduplicateVertices: treeId.deduplicateVertices, produceGeometry: treeId.produceGeometry, collectGltfAttributions: treeId.rdSourceKey.provider === RealityDataProvider.G3DT};
+    const opts = { deduplicateVertices: treeId.deduplicateVertices, produceGeometry: treeId.produceGeometry, collectGltfAttributions: treeId.rdSourceKey.provider === RealityDataProvider.GP3DT};
     return RealityModelTileTree.createRealityModelTileTree(treeId.rdSourceKey, iModel, treeId.modelId, treeId.transform, opts);
   }
 
@@ -1007,11 +1007,11 @@ export class RealityTreeReference extends RealityModelTileTree.Reference {
       copyrightMsg += sortedCopyrights.map(([key]) => `<li>${key}</li>`).join("");
       copyrightMsg += "</ul>";
 
-      const isG3DT = this._rdSourceKey.provider === RealityDataProvider.G3DT;
-      // Only add Google header and icon if the tileset is G3DT
+      const isGP3DT = this._rdSourceKey.provider === RealityDataProvider.GP3DT;
+      // Only add Google header and icon if the tileset is GP3DT
       cards.appendChild(IModelApp.makeLogoCard({
-        iconSrc: isG3DT ? `${IModelApp.publicPath}images/google_on_white_hdpi.png` : undefined,
-        heading: isG3DT ? "Google Photorealistic 3D Tiles" : "",
+        iconSrc: isGP3DT ? `${IModelApp.publicPath}images/google_on_white_hdpi.png` : undefined,
+        heading: isGP3DT ? "Google Photorealistic 3D Tiles" : "",
         notice: copyrightMsg
       }));
     }

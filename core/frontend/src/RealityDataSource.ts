@@ -12,7 +12,7 @@ import { CesiumIonAssetProvider, ContextShareProvider, getCesiumAssetUrl } from 
 import { RealityDataSourceTilesetUrlImpl } from "./RealityDataSourceTilesetUrlImpl";
 import { RealityDataSourceContextShareImpl } from "./RealityDataSourceContextShareImpl";
 import { RealityDataSourceCesiumIonAssetImpl } from "./RealityDataSourceCesiumIonAssetImpl";
-import { RealityDataSourceG3DTImpl } from "./RealityDataSourceG3DTImpl";
+import { RealityDataSourceGP3DTImpl } from "./RealityDataSourceGP3DTImpl";
 import { IModelApp } from "./IModelApp";
 import { Range3d } from "@itwin/core-geometry";
 
@@ -258,8 +258,8 @@ export class RealityDataSourceProviderRegistry {
       // ###TODO separate TilesetUrlImpl
       createRealityDataSource: async (key, iTwinId) => RealityDataSourceTilesetUrlImpl.createFromKey(key, iTwinId),
     });
-    this.register(RealityDataProvider.G3DT, {
-      createRealityDataSource: async (key, iTwinId) => RealityDataSourceG3DTImpl.createFromKey(key, iTwinId),
+    this.register(RealityDataProvider.GP3DT, {
+      createRealityDataSource: async (key, iTwinId) => RealityDataSourceGP3DTImpl.createFromKey(key, iTwinId),
     });
   }
 
