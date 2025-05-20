@@ -4074,6 +4074,8 @@ export interface GltfReaderArgs {
 // @internal
 export interface GltfReaderResult extends TileContent {
     // (undocumented)
+    copyright?: string;
+    // (undocumented)
     range?: AxisAlignedBox3d;
     // (undocumented)
     readStatus: TileReadStatus;
@@ -8113,6 +8115,8 @@ export namespace RealityDataSource {
     export function createOrbitGtBlobPropsFromKey(rdSourceKey: RealityDataSourceKey): OrbitGtBlobProps | undefined;
     // @alpha
     export function fromKey(key: RealityDataSourceKey, iTwinId: GuidString | undefined): Promise<RealityDataSource | undefined>;
+    // @alpha
+    export function setBaseUrl(id: string): void;
 }
 
 // @alpha
@@ -8306,9 +8310,11 @@ export interface RealityTileGeometry {
 
 // @internal
 export abstract class RealityTileLoader {
-    constructor(_produceGeometry?: boolean | undefined);
+    constructor(_produceGeometry?: boolean | undefined, collectGltfAttributions?: boolean);
     // (undocumented)
     protected get _batchType(): BatchType;
+    // (undocumented)
+    readonly collectGltfAttributions: boolean;
     // (undocumented)
     static computeTileLocationPriority(tile: Tile, viewports: Iterable<Viewport>, location: Transform): number;
     // (undocumented)
@@ -10549,6 +10555,10 @@ export abstract class Tile {
     protected _contentId: string;
     get contentRange(): ElementAlignedBox3d;
     protected _contentRange?: ElementAlignedBox3d;
+    // @internal (undocumented)
+    get copyright(): string | undefined;
+    // @internal (undocumented)
+    protected _copyright?: string;
     countDescendants(): number;
     readonly depth: number;
     // @deprecated (undocumented)
@@ -10709,6 +10719,8 @@ export class TileAdmin {
     getTilesForUser(user: TileUser): SelectedAndReadyTiles | undefined;
     // @internal
     getTileUserSetForRequest(user: TileUser, users?: ReadonlyTileUserSet): ReadonlyTileUserSet;
+    // @alpha (undocumented)
+    readonly gp3dtKey?: string;
     get gpuMemoryLimit(): GpuMemoryLimit;
     set gpuMemoryLimit(limit: GpuMemoryLimit);
     // @internal (undocumented)
@@ -10811,6 +10823,8 @@ export namespace TileAdmin {
         expandProjectExtents?: boolean;
         // @beta
         generateAllPolyfaceEdges?: boolean;
+        // @alpha
+        gp3dtKey?: string;
         gpuMemoryLimits?: GpuMemoryLimit | GpuMemoryLimits;
         ignoreAreaPatterns?: boolean;
         // @internal

@@ -7683,6 +7683,8 @@ export namespace RealityDataFormat {
 export enum RealityDataProvider {
     CesiumIonAsset = "CesiumIonAsset",
     ContextShare = "ContextShare",
+    // @alpha
+    GP3DT = "GP3DT",
     OrbitGtBlob = "OrbitGtBlob",
     TilesetUrl = "TilesetUrl"
 }
