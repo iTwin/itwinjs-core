@@ -156,7 +156,7 @@ export class Enumeration extends SchemaItem {
     return itemElement;
   }
 
-  public override fromJSONSync(enumerationProps: EnumerationProps) {
+  public override fromJSONSync(enumerationProps: EnumerationProps): void {
     super.fromJSONSync(enumerationProps);
     if (undefined === this._type) {
       if (/int/i.test(enumerationProps.type)) {
@@ -185,7 +185,7 @@ export class Enumeration extends SchemaItem {
     }
   }
 
-  public override async fromJSON(enumerationProps: EnumerationProps) {
+  public override async fromJSON(enumerationProps: EnumerationProps): Promise<void> {
     this.fromJSONSync(enumerationProps);
   }
 

@@ -55,7 +55,7 @@ export class CustomAttributeClass extends ECClass {
     return itemElement;
   }
 
-  public override fromJSONSync(customAttributeProps: CustomAttributeClassProps) {
+  public override fromJSONSync(customAttributeProps: CustomAttributeClassProps): void {
     super.fromJSONSync(customAttributeProps);
     const appliesTo = parseCustomAttributeContainerType(customAttributeProps.appliesTo);
     if (undefined === appliesTo)
@@ -63,7 +63,7 @@ export class CustomAttributeClass extends ECClass {
     this._appliesTo = appliesTo;
   }
 
-  public override async fromJSON(customAttributeProps: CustomAttributeClassProps) {
+  public override async fromJSON(customAttributeProps: CustomAttributeClassProps): Promise<void> {
     this.fromJSONSync(customAttributeProps);
   }
 

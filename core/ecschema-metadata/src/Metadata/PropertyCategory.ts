@@ -49,12 +49,12 @@ export class PropertyCategory extends SchemaItem {
     return itemElement;
   }
 
-  public override fromJSONSync(propertyCategoryProps: PropertyCategoryProps) {
+  public override fromJSONSync(propertyCategoryProps: PropertyCategoryProps): void {
     super.fromJSONSync(propertyCategoryProps);
     this._priority = propertyCategoryProps.priority;
   }
 
-  public override async fromJSON(propertyCategoryProps: PropertyCategoryProps) {
+  public override async fromJSON(propertyCategoryProps: PropertyCategoryProps): Promise<void> {
     this.fromJSONSync(propertyCategoryProps);
   }
   /**

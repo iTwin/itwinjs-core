@@ -14,7 +14,7 @@ import { ECSchemaError, ECSchemaStatus } from "../Exception";
 import { LazyLoadedFormat, LazyLoadedInvertedUnit, LazyLoadedUnit } from "../Interfaces";
 import { Format } from "./Format";
 import { InvertedUnit } from "./InvertedUnit";
-import { OverrideFormat, OverrideFormatProps } from "./OverrideFormat";
+import { OverrideFormat } from "./OverrideFormat";
 import { SchemaItem } from "./SchemaItem";
 import { Unit } from "./Unit";
 
@@ -70,17 +70,23 @@ export class KindOfQuantity extends SchemaItem {
     return new OverrideFormat(parent, precision, unitLabelOverrides);
   }
 
-  private async processPresentationUnits(presentationUnitsJson: string | string[]): Promise<void> {
-    const presUnitsArr = Array.isArray(presentationUnitsJson) ? presentationUnitsJson : presentationUnitsJson.split(";");
+  private processPresentationUnits(presentationUnitsJson: string | string[]): void {
+    const presUnitsArr = Array.isArray(presentationUnitsJson)
+      ? presentationUnitsJson
+      : presentationUnitsJson.split(";");
+
     for (const formatString of presUnitsArr) {
-      const presFormatOverride: OverrideFormatProps = OverrideFormat.parseFormatString(formatString);
+      const presFormatOverride = OverrideFormat.parseFormatString(formatString);
 
-      const format = await this.schema.lookupItem(presFormatOverride.name, Format);
-      if (undefined === format || format.schemaItemType !== SchemaItemType.Format)
-        throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `Unable to locate Format '${presFormatOverride.name}' for the presentation unit on KindOfQuantity ${this.fullName}.`);
-
+      const formatSchemaItemKey = this.schema.getSchemaItemKey(presFormatOverride.name);
       if (undefined === presFormatOverride.precision && undefined === presFormatOverride.unitAndLabels) {
-        this.addPresentationFormat(new DelayedPromiseWithProps(format.key, async () => format));
+        this.addPresentationFormat(new DelayedPromiseWithProps(formatSchemaItemKey, async () => {
+          const formatItem = await this.schema.lookupItem(formatSchemaItemKey, Format);
+          if (undefined === formatItem)
+            throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `Unable to locate Format '${presFormatOverride.name}' for the presentation unit on KindOfQuantity ${this.fullName}.`);
+
+          return formatItem;
+        }))
         continue;
       }
 
@@ -90,54 +96,23 @@ export class KindOfQuantity extends SchemaItem {
           throw new ECSchemaError(ECSchemaStatus.InvalidECJson, ``);
 
         unitAndLabels = [];
-        for (const unitOverride of presFormatOverride.unitAndLabels) {
-          const unitOrInverted = await this.schema.lookupItem(unitOverride[0]);
-          
-          if(Unit.isUnit(unitOrInverted))
-            unitAndLabels.push([new DelayedPromiseWithProps(unitOrInverted.key, async () => unitOrInverted), unitOverride[1]]);
-          else if(InvertedUnit.isInvertedUnit(unitOrInverted))
-            unitAndLabels.push([new DelayedPromiseWithProps(unitOrInverted.key, async () => unitOrInverted), unitOverride[1]]);
-          else
-            throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `Unable to locate SchemaItem ${unitOverride[0]}.`);
+        for (const [unitName, unitLabel] of presFormatOverride.unitAndLabels) {
+          const unitSchemaItemKey = this.schema.getSchemaItemKey(unitName);
+          const lazyLoadedUnit = new DelayedPromiseWithProps(unitSchemaItemKey, async () => {
+            const unitItem = await this.schema.lookupItem(unitSchemaItemKey, Unit)
+              || await this.schema.lookupItem(unitSchemaItemKey, InvertedUnit);
+
+            if (undefined === unitItem)
+              throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `Unable to locate the unit ${unitName}.`);
+            return unitItem;
+          });
+
+          unitAndLabels.push([lazyLoadedUnit as LazyLoadedUnit | LazyLoadedInvertedUnit, unitLabel]);
         }
       }
 
-      const overrideFormat = this.createFormatOverride(format, presFormatOverride.precision, unitAndLabels);
-      this.addPresentationFormat(overrideFormat);
-    }
-  }
-
-  private processPresentationUnitsSync(presentationUnitsJson: string | string[]): void {
-    const presUnitsArr = Array.isArray(presentationUnitsJson) ? presentationUnitsJson : presentationUnitsJson.split(";");
-    for (const formatString of presUnitsArr) {
-      const presFormatOverride: OverrideFormatProps = OverrideFormat.parseFormatString(formatString);
-
-      const format = this.schema.lookupItemSync(presFormatOverride.name, Format);
-      if (undefined === format || format.schemaItemType !== SchemaItemType.Format)
-        throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `Unable to locate Format '${presFormatOverride.name}' for the presentation unit on KindOfQuantity ${this.fullName}.`);
-
-      if (undefined === presFormatOverride.precision && undefined === presFormatOverride.unitAndLabels) {
-        this.addPresentationFormat(new DelayedPromiseWithProps(format.key, async () => format));
-        continue;
-      }
-
-      let unitAndLabels: Array<[LazyLoadedUnit | LazyLoadedInvertedUnit, string | undefined]> | undefined;
-      if (undefined !== presFormatOverride.unitAndLabels) {
-        if (4 < presFormatOverride.unitAndLabels.length)
-          throw new ECSchemaError(ECSchemaStatus.InvalidECJson, ``);
-
-        unitAndLabels = [];
-        for (const unitOverride of presFormatOverride.unitAndLabels) {
-          const unitOrInverted = this.schema.lookupItemSync(unitOverride[0]);
-          if(Unit.isUnit(unitOrInverted))
-            unitAndLabels.push([new DelayedPromiseWithProps(unitOrInverted.key, async () => unitOrInverted), unitOverride[1]]);
-          else if(InvertedUnit.isInvertedUnit(unitOrInverted))
-            unitAndLabels.push([new DelayedPromiseWithProps(unitOrInverted.key, async () => unitOrInverted), unitOverride[1]]);
-          else
-          throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `Unable to locate SchemaItem ${unitOverride[0]}.`);
-        }
-      }
-
+      //TODO: That needs to be lazyloaded still...
+      const format = this.schema.lookupItemSync(formatSchemaItemKey, Format)!;
       const overrideFormat = this.createFormatOverride(format, presFormatOverride.precision, unitAndLabels);
       this.addPresentationFormat(overrideFormat);
     }
@@ -188,41 +163,23 @@ export class KindOfQuantity extends SchemaItem {
     super.fromJSONSync(kindOfQuantityProps);
     this._relativeError = kindOfQuantityProps.relativeError;
 
-    const persistenceUnit = this.schema.lookupItemSync(kindOfQuantityProps.persistenceUnit);
-    if (undefined === persistenceUnit)
-      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The Unit ${kindOfQuantityProps.persistenceUnit} does not exist.`);
+    const unitSchemaItemKey = this.schema.getSchemaItemKey(kindOfQuantityProps.persistenceUnit);
+    this._persistenceUnit = new DelayedPromiseWithProps(unitSchemaItemKey, async () => {
+      const unitItem = await this.schema.lookupItem(unitSchemaItemKey, Unit)
+        || await this.schema.lookupItem(unitSchemaItemKey, InvertedUnit);
 
-    if (!Unit.isUnit(persistenceUnit) && !InvertedUnit.isInvertedUnit(persistenceUnit))
-      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The item ${kindOfQuantityProps.persistenceUnit} is not a Unit or InvertedUnit.`);
+      if (undefined === unitItem)
+        throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `Unable to locate the unit ${kindOfQuantityProps.persistenceUnit}.`);
 
-    if (Unit.isUnit(persistenceUnit))
-      this._persistenceUnit = new DelayedPromiseWithProps(persistenceUnit.key, async () => persistenceUnit);
-    else
-      this._persistenceUnit = new DelayedPromiseWithProps(persistenceUnit.key, async () => persistenceUnit);
+      return unitItem;
+    }) as LazyLoadedUnit | LazyLoadedInvertedUnit;
 
     if (undefined !== kindOfQuantityProps.presentationUnits)
-      this.processPresentationUnitsSync(kindOfQuantityProps.presentationUnits);
+      this.processPresentationUnits(kindOfQuantityProps.presentationUnits);
   }
 
   public override async fromJSON(kindOfQuantityProps: KindOfQuantityProps): Promise<void> {
-    await super.fromJSON(kindOfQuantityProps);
-    this._relativeError = kindOfQuantityProps.relativeError;
-
-    const persistenceUnit = await this.schema.lookupItem(kindOfQuantityProps.persistenceUnit);
-    if (undefined === persistenceUnit)
-      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The Unit ${kindOfQuantityProps.persistenceUnit} does not exist.`);
-
-    if (!Unit.isUnit(persistenceUnit) && !InvertedUnit.isInvertedUnit(persistenceUnit))
-      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The item ${kindOfQuantityProps.persistenceUnit} is not a Unit or InvertedUnit.`);
-
-    if (Unit.isUnit(persistenceUnit))
-      this._persistenceUnit = new DelayedPromiseWithProps(persistenceUnit.key, async () => persistenceUnit);
-    else
-      this._persistenceUnit = new DelayedPromiseWithProps(persistenceUnit.key, async () => persistenceUnit);
-
-
-    if (undefined !== kindOfQuantityProps.presentationUnits)
-      await this.processPresentationUnits(kindOfQuantityProps.presentationUnits);
+    this.fromJSONSync(kindOfQuantityProps);
   }
 
   /**
