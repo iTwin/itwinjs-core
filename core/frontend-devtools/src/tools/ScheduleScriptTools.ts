@@ -198,9 +198,16 @@ export class SetScheduleScriptTool extends DisplayStyleTool {
       const now = Date.now();
       const builder = new RenderSchedule.ScriptBuilder();
       const modelTimeline = builder.addModelTimeline("0x91"); // model Id
-      const elementTimeline = modelTimeline.addElementTimeline(["0xc933"]); // element Id
-      elementTimeline.addColor(now, new RgbColor(255, 255, 0));
-      elementTimeline.addColor(now + 3000, new RgbColor(255, 255, 255));
+
+      // First element: 0xc933
+      const elementTimeline1 = modelTimeline.addElementTimeline(["0xc933"]);
+      elementTimeline1.addColor(now, new RgbColor(255, 255, 0));
+      elementTimeline1.addColor(now + 3000, new RgbColor(255, 255, 255));
+
+      // Second element: 0xca60
+      const elementTimeline2 = modelTimeline.addElementTimeline(["0xca60"]);
+      elementTimeline2.addColor(now, new RgbColor(0, 255, 255));
+      elementTimeline2.addColor(now + 3000, new RgbColor(0, 0, 255));
       const scriptProps = builder.finish();
       this._script = RenderSchedule.Script.fromJSON(scriptProps);
     } catch (ex) {

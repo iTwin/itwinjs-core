@@ -495,7 +495,16 @@ export class IModelTileTree extends TileTree {
     }
 
     let changedElementIds: Set<Id64String> | undefined;
-    if (previousScript && newScript) {
+    if (!previousScript && newScript) {
+      changedElementIds = new Set<Id64String>();
+
+      for (const model of newScript.modelTimelines) {
+        for (const timeline of model.elementTimelines) {
+          for (const id of timeline.elementIds)
+            changedElementIds.add(id);
+        }
+      }
+    } else if (previousScript && newScript) {
       changedElementIds = getScriptDelta(previousScript, newScript);
     }
 
@@ -503,18 +512,17 @@ export class IModelTileTree extends TileTree {
   }
 
   private pruneAnimatedTiles(tile: Tile, changedElementIds?: Set<Id64String>): void {
-    if (tile instanceof IModelTile) {
-      const elements = tile.elementInfos;
-      const shouldRefresh = elements !== undefined && elements.some(info => changedElementIds?.has(info.elementId));
+  if (tile instanceof IModelTile) {
+    const shouldRefresh = tile.hasGraphics && tile.isAffectedByScheduleScript(changedElementIds);
 
-      if (shouldRefresh) {
-        tile.disposeContents();
-      }
-    }
-
-    if (tile.children) {
-      for (const child of tile.children)
-        this.pruneAnimatedTiles(child);
+    if (shouldRefresh) {
+      tile.disposeContents();
     }
   }
+
+  if (tile.children) {
+    for (const child of tile.children)
+      this.pruneAnimatedTiles(child, changedElementIds);
+  }
+}
 }

@@ -135,23 +135,12 @@ export class IModelTile extends Tile {
     return content;
   }
 
-  public get isAffectedByScheduleScript(): boolean {
-    const timeline = IModelApp.viewManager.selectedView?.displayStyle.scheduleScript?.find(this.tree.modelId);
-
-    if (!timeline || !this._elementInfos)
+  public isAffectedByScheduleScript(changedElementIds?: Set<Id64String>): boolean {
+    if (!changedElementIds || !this._elementInfos){
       return false;
-
-    for (const info of this._elementInfos) {
-      if (info.modelId !== timeline.modelId)
-        continue;
-
-      const { lower, upper } = Id64.getUint32Pair(info.elementId);
-      const elTimeline = timeline.getTimelineForElement(lower, upper);
-      if (elTimeline)
-        return true;
     }
 
-    return false;
+    return this._elementInfos.some(info => changedElementIds.has(info.elementId));
   }
 
   public override setContent(content: IModelTileContent): void {
