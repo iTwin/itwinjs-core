@@ -11,10 +11,11 @@ import { IModelError, RealityData, RealityDataFormat, RealityDataProvider, Reali
 import { request } from "./request/Request";
 import { PublisherProductInfo, RealityDataSource, SpatialLocationAndExtents } from "./RealityDataSource";
 import { ThreeDTileFormatInterpreter } from "./tile/internal";
+import { IModelApp } from "./IModelApp";
 
 /** This class provides access to the reality data provider services.
  * It encapsulates access to a reality data from the Google Photorealistic 3D Tiles service.
- * The caller must pass in a valid GP3D key as a parameter of the URL they specify when attaching reality data that uses this data source.
+ * A valid [[TileAdmin.gp3dtKey]] must be configured in the iTwin.js application for this provider to work.
 * @internal
 */
 export class RealityDataSourceG3DTImpl implements RealityDataSource {
@@ -71,6 +72,12 @@ export class RealityDataSourceG3DTImpl implements RealityDataSource {
     return this._tilesetUrl;
   }
 
+  /** Return this URL of the GP3DT tileset with the key from [[TileAdmin.gp3dtKey]] included. */
+  private getTilesetUrlWithKey() {
+    const apiKey = IModelApp.tileAdmin.gp3dtKey;
+    return `${this._tilesetUrl}?key=${apiKey}`;
+  }
+
   protected setBaseUrl(url: string): void {
     const urlParts = url.split("/");
     const newUrl = new URL(url);
@@ -91,8 +98,8 @@ export class RealityDataSourceG3DTImpl implements RealityDataSource {
     return this._tilesetUrl;
   }
 
-  public async getRootDocument(iTwinId: GuidString | undefined): Promise<any> {
-    const url = await this.getServiceUrl(iTwinId);
+  public async getRootDocument(_iTwinId: GuidString | undefined): Promise<any> {
+    const url = this.getTilesetUrlWithKey();
     if (!url)
       throw new IModelError(BentleyStatus.ERROR, "Unable to get service url");
 

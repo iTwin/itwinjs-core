@@ -620,19 +620,9 @@ export class ViewAttributes {
       if (!visible)
         return;
 
-    //   vp.displayStyle.attachRealityModel({
-    //     tilesetUrl: url,
-    //     rdSourceKey: {
-    //       provider: "DtaRealityDataProvider",
-    //       format: "ThreeDTile",
-    //       id: url,
-    //     },
-    //   });
-    // }
-
       if (checkboxInterfaceG3DT0.checkbox.checked) {
         if (!this.getDisplayingG3DT()) {
-          const url = `https://tile.googleapis.com/v1/3dtiles/root.json?key=${process.env.IMJS_GOOGLE_MAPS_KEY}`;
+          const url = `https://tile.googleapis.com/v1/3dtiles/root.json`;
           view.displayStyle.attachRealityModel({
             tilesetUrl: url,
             name: "googleMap3dTiles",
@@ -647,7 +637,7 @@ export class ViewAttributes {
         }
       } else {
         if (this.getDisplayingG3DT()) {
-          view.displayStyle.detachRealityModelByNameAndUrl("googleMap3dTiles", `https://tile.googleapis.com/v1/3dtiles/root.json?key=${process.env.IMJS_GOOGLE_MAPS_KEY}`);
+          view.displayStyle.detachRealityModelByNameAndUrl("googleMap3dTiles", `https://tile.googleapis.com/v1/3dtiles/root.json`);
           this.sync();
           g_displayingG3DT = false;
         }

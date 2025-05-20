@@ -61,10 +61,12 @@ export class DisplayPerfTestApp {
       iModelApp.tileAdmin = {
         minimumSpatialTolerance: 0,
         cesiumIonKey: process.env.IMJS_CESIUM_ION_KEY,
+        gp3dtKey: process.env.IMJS_GP3DT_KEY,
       };
     } else {
       iModelApp.tileAdmin.minimumSpatialTolerance = 0;
       iModelApp.tileAdmin.cesiumIonKey = process.env.IMJS_CESIUM_ION_KEY;
+      iModelApp.tileAdmin.gp3dtKey = process.env.IMJS_GP3DT_KEY;
     }
 
     /* eslint-disable @typescript-eslint/naming-convention */

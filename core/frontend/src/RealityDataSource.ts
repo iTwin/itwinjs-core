@@ -237,7 +237,7 @@ export interface RealityDataSourceProvider {
 
 /** A registry of [[RealityDataSourceProvider]]s identified by their unique names. The registry can be accessed via [[IModelApp.realityDataSourceProviders]].
  * It includes a handful of built-in providers for sources like Cesium ION, ContextShare, OrbitGT, and arbitrary public-accessible URLs.
- * Any number of additional providers can be registered. They should typically be registered just after [[IModelAp.startup]].
+ * Any number of additional providers can be registered. They should typically be registered just after [[IModelApp.startup]].
  * @alpha
  */
 export class RealityDataSourceProviderRegistry {

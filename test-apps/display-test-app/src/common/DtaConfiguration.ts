@@ -50,6 +50,7 @@ export interface DtaStringConfiguration {
   bingMapsKey?: string; // default undefined
   googleMapsKey?: string; // default undefined
   cesiumIonKey?: string; // default undefined
+  gp3dtKey?: string; // default undefined
   logLevel?: string; // default undefined
   windowSize?: string; // default undefined
   iModelId?: GuidString; // default is undefined, the ID of the iModel to download and open from the hub
@@ -155,6 +156,9 @@ export const getConfig = (): DtaConfiguration => {
 
   if (undefined !== process.env.IMJS_CESIUM_ION_KEY)
     configuration.cesiumIonKey = process.env.IMJS_CESIUM_ION_KEY;
+
+  if (undefined !== process.env.IMJS_GP3DT_KEY)
+    configuration.gp3dtKey = process.env.IMJS_GP3DT_KEY;
 
   if (undefined !== process.env.IMJS_LOG_LEVEL)
     configuration.logLevel = process.env.IMJS_LOG_LEVEL;

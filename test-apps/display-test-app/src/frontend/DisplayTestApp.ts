@@ -142,6 +142,7 @@ function setConfigurationResults(): [renderSystemOptions: RenderSystem.Options, 
   tileAdminProps.minimumSpatialTolerance = configuration.minimumSpatialTolerance;
   tileAdminProps.alwaysSubdivideIncompleteTiles = true === configuration.alwaysSubdivideIncompleteTiles;
   tileAdminProps.cesiumIonKey = configuration.cesiumIonKey;
+  tileAdminProps.gp3dtKey = configuration.gp3dtKey;
   tileAdminProps.disablePolyfaceDecimation = true === configuration.disablePolyfaceDecimation;
 
   return [renderSystemOptions, tileAdminProps];
