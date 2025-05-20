@@ -397,41 +397,29 @@ export class Ray3d implements BeJSONFunctions {
     vertex0: Point3d, vertex1: Point3d, vertex2: Point3d, distanceTol?: number, parameterTol?: number, result?: Point3d,
   ): Point3d | undefined {
     /**
-     * Suppose ray is shown by "rayOrigin + t*rayVector" and barycentric coordinate of point
+     * Let (w,u,v) be the barycentric coordinates of point P wrt the triangle (v0,v1,v2), such that
      * P = w*v0 + u*v1 + v*v2 = (1-u-v)*v0 + u*v1 + v*v2 = v0 + u*(v1-v0) + v*(v2-v0)
      *
-     * Then if ray intersects triangle at a point we have
+     * Then if the ray given by rayOrigin + t*rayVector intersects the triangle at P, we have
      * v0 + u*(v1-v0) + v*(v2-v0) = rayOrigin + t*rayVector
-     * or
-     * -t*rayVector + u*(v1-v0) + v*(v2-v0) = rayOrigin - v0
      *
      * This equation can be reformulated as the following linear system:
      *
      * [    |          |      |  ] [t]   [      |       ]
      * [-rayVector  v1-v0   v2-v0] [u] = [rayOrigin - v0]
-     * [   |          |      |   ] [v]   [      |       ]
+     * [    |          |      |  ] [v]   [      |       ]
      *
-     * Then to find t, u, and v use Cramer's Rule and also the fact that if matrix A = [c1,c2,c3], then
-     * det(A) = c1.(c2 x c3) which leads to
+     * Then to find t, u, and v, use Cramer's Rule, the formulation of matrix determinant as column triple product,
+     * and the fact that swapping any 2 vectors in the triple product negates it:
      *
-     * t = [(rayOrigin - v0).((v1-v0) x (v2-v0))] / [-rayVector.((v1-v0) x (v2-v0))]
-     * u = [-rayVector.((rayOrigin - v0) x (v2-v0))] / [-rayVector.((v1-v0) x (v2-v0))]
-     * v = [-rayVector.((v1-v0) x (rayOrigin - v0))] / [-rayVector.((v1-v0) x (v2-v0))]
+     * t = (v2-v0).(rayOrigin - v0) x (v1-v0) / (v1-v0).rayVector x (v2-v0)
+     * u = (rayOrigin - v0).rayVector x (v2-v0) / (v1-v0).rayVector x (v2-v0)
+     * v = -rayVector.(rayOrigin - v0) x (v1-v0) / (v1-v0).rayVector x (v2-v0)
      *
-     * Now note that swapping any 2 vectors c_i and c_j in formula c1.(c2 x c3) negates it. For example:
-     * c1.(c2 x c3) = -c3.(c2 x c1) = c2.(c3 x c1)
+     * Note that we verify 0 <= u,v,w <= 1. To do so we only need to check 0 <= u <= 1, 0 <= v, and u+v <= 1:
+     * these 4 checks guarantee that v <= 1 and 0 <= u+v, and so with w = 1-(u+v), we have 0 <= w <= 1.
      *
-     * This leads to the final formulas used in the following code:
-     * t = [(v2-v0).((rayOrigin - v0) x (v1-v0))] / [(v1-v0).(rayVector x (v2-v0))]
-     * u = [(rayOrigin - v0).(rayVector x (v2-v0))] / [(v1-v0).(rayVector x (v2-v0))]
-     * v = [-rayVector.((rayOrigin - v0) x (v1-v0))] / [(v1-v0).(rayVector x (v2-v0))]
-     *
-     * Note that we should verify 0 <= u,v,w <= 1. To do so we only need to check 0 <= u <= 1, 0 <= v, and u+v <= 1.
-     * That's because w = 1-(u+v) and if we have those 4 checks, it's guaranteed that v <= 1 and 0 <= u+v and so
-     * 0 <= w <= 1.
-     *
-     * More info be found at
-     * https://en.wikipedia.org/wiki/M%C3%B6ller%E2%80%93Trumbore_intersection_algorithm
+     * More info be found at https://en.wikipedia.org/wiki/Moller-Trumbore_intersection_algorithm.
      */
     if (distanceTol === undefined || distanceTol < 0) // we explicitly allow zero tolerance
       distanceTol = Geometry.smallMetricDistance;

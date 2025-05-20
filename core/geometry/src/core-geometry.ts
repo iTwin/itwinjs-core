@@ -240,6 +240,7 @@ export * from "./polyface/BoxTopology";
 export * from "./polyface/FacetFaceData";
 export * from "./polyface/Polyface";
 export * from "./polyface/FacetLocationDetail";
+export * from "./polyface/IndexedEdgeMatcher";
 export * from "./polyface/IndexedPolyfaceVisitor";
 export * from "./polyface/IndexedPolyfaceWalker";
 export * from "./polyface/multiclip/GriddedRaggedRange2dSet";
