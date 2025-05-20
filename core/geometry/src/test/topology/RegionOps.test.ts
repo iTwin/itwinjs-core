@@ -1019,7 +1019,7 @@ describe("RegionOps", () => {
   });
 
   it("RegionBooleanMerge", () => {
-    const ck = new Checker(true, true);
+    const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
     let isArray = false, hasLoopEntries = false;
     const arrayConsistsOfLoops = (a: Array<any>) => a.every((value: any) => value instanceof Loop);
@@ -1077,6 +1077,25 @@ describe("RegionOps", () => {
         }
       }
     GeometryCoreTestIO.saveGeometry(allGeometry, "RegionOps", "RegionBooleanMerge");
+    expect(ck.getNumErrors()).toBe(0);
+  });
+  it("SimplifyRegionType", () => {
+    const ck = new Checker();
+    const loop0 = Loop.create(Arc3d.createUnitCircle());
+    const loop1 = Loop.create(Arc3d.createXY(Point3d.create(1, 1), 1));
+    const parity1 = ParityRegion.create(loop0.clone() as Loop);
+    const parity2 = ParityRegion.create(loop0.clone() as Loop, loop1.clone() as Loop);
+    const union1A = UnionRegion.create(loop0.clone() as Loop);
+    const union1B = UnionRegion.create(parity1.clone());
+    const union1C = UnionRegion.create(parity2.clone());
+    const union2 = UnionRegion.create(loop0.clone() as Loop, parity1.clone());
+    ck.testType(RegionOps.simplifyRegionType(loop0), Loop, "simplifying a Loop returns a Loop");
+    ck.testType(RegionOps.simplifyRegionType(parity1), Loop, "simplifying a ParityRegion with one Loop returns the Loop");
+    ck.testType(RegionOps.simplifyRegionType(parity2), ParityRegion, "simplifying a ParityRegion with two Loops returns the ParityRegion");
+    ck.testType(RegionOps.simplifyRegionType(union1A), Loop, "simplifying a UnionRegion with one Loop returns the Loop");
+    ck.testType(RegionOps.simplifyRegionType(union1B), Loop, "simplifying a UnionRegion with one ParityRegion with one Loop returns the Loop");
+    ck.testType(RegionOps.simplifyRegionType(union1C), ParityRegion, "simplifying a UnionRegion with one ParityRegion with multiple Loops returns the ParityRegion");
+    ck.testType(RegionOps.simplifyRegionType(union2), UnionRegion, "simplifying a UnionRegion with multiple children returns the UnionRegion");
     expect(ck.getNumErrors()).toBe(0);
   });
 });
