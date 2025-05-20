@@ -254,11 +254,11 @@ function produceTextBlockGeometry(layout: TextBlockLayout, documentTransform: Tr
 function produceLeaderGeometry(layout: TextBlockLayout, documentTransform: Transform, frame: TextAnnotationFrame, leader?: TextAnnotationLeaderProps): LeaderGeometryProps {
   const context: LeaderGeometryProps = { entries: [] };
   if (leader) {
-    const startPoint = leader.startPoint;
-
+    let startPoint = Point3d.fromJSON(leader.startPoint);
+    startPoint = documentTransform.multiplyPoint3d(startPoint);
     const result = FrameGeometry.computeLeaderStartPoint(frame, layout.toResult(), documentTransform.toJSON(), leader);
     if (result?.endPoint)
-      processLeaders(Point3d.fromJSON(startPoint), result.endPoint, context, undefined, leader.styleOverrides, result.elbowDirection)
+      processLeaders(startPoint, result.endPoint, context, undefined, leader.styleOverrides, result.elbowDirection)
 
   }
 

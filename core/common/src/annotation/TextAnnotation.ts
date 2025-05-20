@@ -149,14 +149,16 @@ export class TextAnnotation {
     const angles = args?.orientation ?? new YawPitchRollAngles();
     const textBlock = args?.textBlock ?? TextBlock.createEmpty();
     const anchor = args?.anchor ?? { vertical: "top", horizontal: "left" };
+    const leader = args?.leader ?? { startPoint: new Point3d(), attachmentMode: { mode: "Nearest" } };
 
-    return new TextAnnotation(offset, angles, textBlock, anchor, args?.frame, args?.leader);
+    return new TextAnnotation(offset, angles, textBlock, anchor, args?.frame, leader);
   }
 
   /**
    * Creates a new TextAnnotation instance from its JSON representation.
    */
   public static fromJSON(props: TextAnnotationProps | undefined): TextAnnotation {
+    console.log("TextAnnotation.fromJSON", props);
     return TextAnnotation.create({
       offset: props?.offset ? Point3d.fromJSON(props.offset) : undefined,
       orientation: props?.orientation ? YawPitchRollAngles.fromJSON(props.orientation) : undefined,
@@ -190,7 +192,11 @@ export class TextAnnotation {
     }
 
     props.frame = this.frame;
-    props.leader = this.leader;
+    if (this.leader) {
+      console.log(this.leader);
+      props.leader = { startPoint: this.leader.startPoint, attachmentMode: this.leader.attachmentMode, styleOverrides: this.leader.styleOverrides };
+    }
+
 
     return props;
   }
