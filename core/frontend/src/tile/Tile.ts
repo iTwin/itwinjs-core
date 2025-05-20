@@ -109,6 +109,7 @@ export abstract class Tile {
   /** Exclusively for use by LRUTileList. @internal */
   public tileUserIds?: TileUserIdSet;
 
+  /** @internal */
   protected _copyright?: string;
 
   /** @internal */
