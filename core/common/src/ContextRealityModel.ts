@@ -54,6 +54,7 @@ export enum RealityDataProvider {
   /**
    * Will provide Google Photorealistic 3D Tiles (GP3DT) from Google (in 3dTile format).
    * A valid [TileAdmin.gp3dtKey]($frontend) must be configured in the iTwin.js application for this provider to work.
+   * @alpha
    */
   GP3DT = "GP3DT",
 }
