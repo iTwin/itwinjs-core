@@ -202,6 +202,8 @@ export interface IModelHostOptions {
  * @public
  */
 export class IModelHostConfiguration implements IModelHostOptions {
+  public profileName?: string;
+
   public static defaultTileRequestTimeout = 20 * 1000;
   public static defaultLogTileLoadTimeThreshold = 40;
   public static defaultLogTileSizeThreshold = 20 * 1000000;

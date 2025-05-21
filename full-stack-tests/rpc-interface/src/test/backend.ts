@@ -40,7 +40,7 @@ const settings = new Settings(process.env);
   // Start the backend
   const iModelClient = new IModelsClient({ api: { baseUrl: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com/imodels` } });
   const hubAccess = new BackendIModelsAccess(iModelClient);
-  await IModelHost.startup({ hubAccess });
+  await IModelHost.startup({ hubAccess, profileName: "rpc-interface" });
 
   PresentationBackend.initialize();
 
