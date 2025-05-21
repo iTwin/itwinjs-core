@@ -6,7 +6,7 @@
  * @module Tiles
  */
 
-import { assert, BeTimePoint, GuidString, Id64Array, Id64String } from "@itwin/core-bentley";
+import { assert, BeTimePoint, GuidString, Id64Array, Id64String, Logger } from "@itwin/core-bentley";
 import { Range3d, Transform } from "@itwin/core-geometry";
 import {
   BatchType, ContentIdProvider, EdgeOptions, ElementAlignedBox3d, ElementGeometryChange, FeatureAppearanceProvider,
@@ -477,7 +477,7 @@ export class IModelTileTree extends TileTree {
           await new Promise(resolve => setTimeout(resolve, 0));
           await displayStyle.load();
         } catch (err) {
-          console.error("Failed to load displayStyle:", err);
+          Logger.logError("frontend", "Failed to load displayStyle", { error: err });
         } finally {
           this._scriptLoadPromise = undefined;
         }
