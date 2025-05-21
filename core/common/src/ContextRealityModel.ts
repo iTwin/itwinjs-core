@@ -53,7 +53,7 @@ export enum RealityDataProvider {
   CesiumIonAsset = "CesiumIonAsset",
   /**
    * Will provide Google Photorealistic 3D Tiles (GP3DT) from Google (in 3dTile format).
-   * A valid [TileAdmin.gp3dtKey]($frontend) must be configured in the iTwin.js application for this provider to work.
+   * A valid GP3DT authentication key in [IModelApp.realityDataFormatRegistry]($frontend) must be configured on the frontend for this provider to work.
    * @alpha
    */
   GP3DT = "GP3DT",

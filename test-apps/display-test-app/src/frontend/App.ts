@@ -302,6 +302,11 @@ export class DisplayTestApp {
             ? { key: "key", value: configuration.googleMapsKey }
             : undefined,
         },
+        realityDataOptions: {
+          gp3dt: configuration.gp3dtKey
+            ? { key: "key", value: configuration.gp3dtKey }
+            : undefined,
+        },
         /* eslint-enable @typescript-eslint/naming-convention */
         hubAccess: createHubAccess(configuration),
         localization: new ITwinLocalization({ detectorOptions: { order: ["htmlTag"] } }),

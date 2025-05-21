@@ -15,7 +15,7 @@ import { IModelApp } from "./IModelApp";
 
 /** This class provides access to the reality data provider services.
  * It encapsulates access to a reality data from the Google Photorealistic 3D Tiles service.
- * A valid [[TileAdmin.gp3dtKey]] must be configured in the iTwin.js application for this provider to work.
+ * A valid GP3DT authentication key in [[IModelApp.realityDataFormatRegistry]] must be configured for this provider to work.
 * @internal
 */
 export class RealityDataSourceGP3DTImpl implements RealityDataSource {
@@ -72,10 +72,12 @@ export class RealityDataSourceGP3DTImpl implements RealityDataSource {
     return this._tilesetUrl;
   }
 
-  /** Return this URL of the GP3DT tileset with the key from [[TileAdmin.gp3dtKey]] included. */
+  /** Return the URL of the GP3DT tileset with the GP3DT key from the reality data format registry included. */
   private getTilesetUrlWithKey() {
-    const apiKey = IModelApp.tileAdmin.gp3dtKey;
-    return `${this._tilesetUrl}?key=${apiKey}`;
+    let gp3dtKey = "";
+    if (IModelApp.realityDataFormatRegistry.configOptions.gp3dt)
+      gp3dtKey = IModelApp.realityDataFormatRegistry.configOptions.gp3dt.value;
+    return `${this._tilesetUrl}?key=${gp3dtKey}`;
   }
 
   protected setBaseUrl(url: string): void {
