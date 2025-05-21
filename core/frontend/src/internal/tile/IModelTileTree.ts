@@ -471,14 +471,14 @@ export class IModelTileTree extends TileTree {
       return;
 
     if (!displayStyle.isScheduleScriptLoaded)
-     await displayStyle.load();
+      await displayStyle.load();
 
     const newScript = displayStyle.scheduleScript;
-    const scriptRef = newScript ? new RenderSchedule.ScriptReference(displayStyle.id, newScript) : undefined;
-    const scriptInfo = IModelApp.tileAdmin.getScriptInfoForTreeId(this.modelId, scriptRef);
-
     const previousScript = this._lastScheduleScript;
     this._lastScheduleScript = newScript;
+
+    const scriptRef = newScript ? new RenderSchedule.ScriptReference(displayStyle.id, newScript) : undefined;
+    const scriptInfo = IModelApp.tileAdmin.getScriptInfoForTreeId(this.modelId, scriptRef);
 
     const sameScript = this.timeline === scriptInfo?.timeline;
     if (!sameScript) {
@@ -512,17 +512,17 @@ export class IModelTileTree extends TileTree {
   }
 
   private pruneAnimatedTiles(tile: Tile, changedElementIds?: Set<Id64String>): void {
-  if (tile instanceof IModelTile) {
-    const shouldRefresh = tile.hasGraphics && tile.isAffectedByScheduleScript(changedElementIds);
+    if (tile instanceof IModelTile) {
+      const shouldRefresh = tile.hasGraphics && tile.isAffectedByScheduleScript(changedElementIds);
 
-    if (shouldRefresh) {
-      tile.disposeContents();
+      if (shouldRefresh) {
+        tile.disposeContents();
+      }
+    }
+
+    if (tile.children) {
+      for (const child of tile.children)
+        this.pruneAnimatedTiles(child, changedElementIds);
     }
   }
-
-  if (tile.children) {
-    for (const child of tile.children)
-      this.pruneAnimatedTiles(child, changedElementIds);
-  }
-}
 }
