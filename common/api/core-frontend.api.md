@@ -10722,8 +10722,6 @@ export class TileAdmin {
     getTilesForUser(user: TileUser): SelectedAndReadyTiles | undefined;
     // @internal
     getTileUserSetForRequest(user: TileUser, users?: ReadonlyTileUserSet): ReadonlyTileUserSet;
-    // @alpha (undocumented)
-    readonly gp3dtKey?: string;
     get gpuMemoryLimit(): GpuMemoryLimit;
     set gpuMemoryLimit(limit: GpuMemoryLimit);
     // @internal (undocumented)
@@ -10826,8 +10824,6 @@ export namespace TileAdmin {
         expandProjectExtents?: boolean;
         // @beta
         generateAllPolyfaceEdges?: boolean;
-        // @alpha
-        gp3dtKey?: string;
         gpuMemoryLimits?: GpuMemoryLimit | GpuMemoryLimits;
         ignoreAreaPatterns?: boolean;
         // @internal
