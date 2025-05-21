@@ -163,8 +163,6 @@ export class TileAdmin {
   public readonly contextPreloadParentSkip: number;
   /** @beta */
   public readonly cesiumIonKey?: string;
-  /** @alpha */
-  public readonly gp3dtKey?: string;
   private readonly _removeIModelConnectionOnCloseListener: () => void;
   private _totalElided = 0;
   private _rpcInitialized = false;
@@ -251,7 +249,6 @@ export class TileAdmin {
     this.useLargerTiles = options.useLargerTiles ?? defaultTileOptions.useLargerTiles;
     this.mobileRealityTileMinToleranceRatio = Math.max(options.mobileRealityTileMinToleranceRatio ?? 3.0, 1.0);
     this.cesiumIonKey = options.cesiumIonKey;
-    this.gp3dtKey = options.gp3dtKey;
     this._cloudStorage = options.tileStorage;
 
     const gpuMemoryLimits = options.gpuMemoryLimits;
@@ -1265,12 +1262,6 @@ export namespace TileAdmin {
      * @public
      */
     cesiumIonKey?: string;
-
-    /** An API key that can be used to access content from [Google Photorealistic 3D Tiles](https://developers.google.com/maps/documentation/tile/3d-tiles).
-     * If a valid key is not supplied, such content can neither be obtained nor displayed.
-     * @alpha
-     */
-    gp3dtKey?: string;
 
     /** If true, when applying a schedule script to a view, ordinary tiles will be requested and then reprocessed on the frontend to align with the script's
      * animation nodes. This permits the use of schedule scripts not stored in the iModel and improves utilization of the tile cache for animated views.
