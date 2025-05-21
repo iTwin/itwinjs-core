@@ -98,7 +98,7 @@ export namespace XmlSerializationUtils {
    */
   export async function writeStructProperty(propertyClass: StructProperty, propertyValue: any, structElement: Element, schemaDoc: Document): Promise<void> {
     const structClass = propertyClass.structClass;
-    for (const propertyMetadata of structClass.getPropertiesSync(true))
+    for (const propertyMetadata of structClass.getPropertiesSync())
       await writeInstanceProperty(propertyMetadata, propertyValue, structElement, schemaDoc);
   }
 
