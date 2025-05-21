@@ -3765,6 +3765,9 @@ export function getCompressedJpegFromCanvas(canvas: HTMLCanvasElement, maxBytes?
 // @internal (undocumented)
 export function getFrustumPlaneIntersectionDepthRange(frustum: Frustum, plane: Plane3dByOriginAndUnitNormal): Range1d;
 
+// @alpha
+export function getGooglePhotorealistic3DTilesURL(): string;
+
 // @public
 export function getImageSourceFormatForMimeType(mimeType: string): ImageSourceFormat | undefined;
 
@@ -4876,6 +4879,7 @@ export class IModelApp {
     static queryRenderCompatibility(): WebGLRenderCompatibilityInfo;
     // @beta
     static get realityDataAccess(): RealityDataAccess | undefined;
+    // @alpha
     static get realityDataFormatRegistry(): RealityDataFormatRegistry;
     // @alpha
     static get realityDataSourceProviders(): RealityDataSourceProviderRegistry;
@@ -8072,6 +8076,26 @@ export interface ReadPixelsArgs {
 // @alpha
 export class RealityDataError extends BentleyError {
     constructor(errorNumber: RealityDataStatus, message: string, getMetaData?: LoggingMetaData);
+}
+
+// @alpha
+export class RealityDataFormatRegistry {
+    constructor(opts?: RealityDataOptions);
+    // (undocumented)
+    get configOptions(): RealityDataOptions;
+}
+
+// @alpha
+export interface RealityDataKey {
+    // (undocumented)
+    key: string;
+    // (undocumented)
+    value: string;
+}
+
+// @alpha
+export interface RealityDataOptions {
+    gp3dt?: RealityDataKey;
 }
 
 // @beta

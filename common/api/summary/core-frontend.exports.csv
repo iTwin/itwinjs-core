@@ -225,6 +225,7 @@ public;function;getCenteredViewRect
 public;function;getCesiumAssetUrl
 public;function;getCompressedJpegFromCanvas
 internal;function;getFrustumPlaneIntersectionDepthRange
+alpha;function;getGooglePhotorealistic3DTilesURL
 public;function;getImageSourceFormatForMimeType
 public;function;getImageSourceMimeType
 public;interface;GetPixelDataWorldPointArgs
@@ -500,6 +501,9 @@ public;interface;ReadImageToCanvasOptions
 public;interface;ReadMeshArgs
 public;interface;ReadPixelsArgs
 alpha;class;RealityDataError
+alpha;class;RealityDataFormatRegistry
+alpha;interface;RealityDataKey
+alpha;interface;RealityDataOptions
 beta;interface;RealityDataSource
 beta;namespace;RealityDataSource
 internal;function;createCesiumIonAssetKey
