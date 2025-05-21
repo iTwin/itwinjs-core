@@ -360,6 +360,7 @@ export class IModelTileTree extends TileTree {
   private readonly _layerHandler: LayerTileTreeHandler;
   public override get layerHandler() { return this._layerHandler; }
   private _lastScheduleScript?: RenderSchedule.Script;
+  private _scriptLoadPromise?: Promise<void>;
 
   public constructor(params: IModelTileTreeParams, treeId: IModelTileTreeId) {
     super(params);
@@ -470,8 +471,18 @@ export class IModelTileTree extends TileTree {
     if (!displayStyle)
       return;
 
-    // if (!displayStyle.isScheduleScriptLoaded)
-      await displayStyle.load();
+    if (!this._scriptLoadPromise) {
+      this._scriptLoadPromise = Promise.resolve().then(async () => {
+        try {
+          await new Promise(resolve => setTimeout(resolve, 0));
+          await displayStyle.load();
+        } catch (err) {
+          console.error("Failed to load displayStyle:", err);
+        } finally {
+          this._scriptLoadPromise = undefined;
+        }
+      });
+    }
 
     const newScript = displayStyle.scheduleScript;
     const previousScript = this._lastScheduleScript;
