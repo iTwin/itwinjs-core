@@ -17,7 +17,6 @@ import { RenderSystem } from "../render/RenderSystem";
 import { ViewingSpace } from "../ViewingSpace";
 import { Viewport } from "../Viewport";
 import {
-  GltfReaderResult,
   RealityTileRegion, RealityTileTree, Tile, TileContent, TileDrawArgs, TileGeometryCollector, TileGraphicType, TileLoadStatus, TileParams, TileRequest, TileRequestChannel,
   TileTreeLoadStatus, TileUser, TraversalDetails, TraversalSelectionContext,
 } from "./internal";
@@ -44,6 +43,7 @@ export interface RealityTileGeometry {
 /** @internal */
 export interface RealityTileContent extends TileContent {
   geometry?: RealityTileGeometry;
+  copyright?: string;
 }
 
 const scratchLoadedChildren = new Array<RealityTile>();
@@ -73,6 +73,8 @@ export class RealityTile extends Tile {
   protected _reprojectionTransform?: Transform;
   private _reprojectedGraphic?: RenderGraphic;
   private readonly _geometricError?: number;
+  /** @internal */
+  protected _copyright?: string;
 
   /** @internal */
   public constructor(props: RealityTileParams, tree: RealityTileTree) {
@@ -102,7 +104,7 @@ export class RealityTile extends Tile {
   public override setContent(content: RealityTileContent): void {
     super.setContent(content);
     this._geometry = content.geometry;
-    this._copyright = (content as GltfReaderResult).copyright;
+    this._copyright = content.copyright;
   }
 
   /** @internal */
@@ -132,6 +134,8 @@ export class RealityTile extends Tile {
    * This property is only available when using [[TileGeometryCollector]].
    */
   public get geometry(): RealityTileGeometry | undefined { return this._geometry; }
+  /** @internal */
+  public get copyright(): string | undefined { return this._copyright; }
 
   /** @internal */
   public override get isDisplayable(): boolean {

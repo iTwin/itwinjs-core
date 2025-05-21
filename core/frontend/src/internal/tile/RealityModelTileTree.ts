@@ -34,7 +34,7 @@ import {
 import { SpatialClassifiersState } from "../../SpatialClassifiersState";
 import { RealityDataSourceTilesetUrlImpl } from "../../RealityDataSourceTilesetUrlImpl";
 import { ScreenViewport } from "../../Viewport";
-import { GoogleMapsDecorator } from "../../GoogleMapDecorator";
+import { GoogleMapsDecorator } from "../../GoogleMapsDecorator";
 
 function getUrl(content: any) {
   return content ? (content.url ? content.url : content.uri) : undefined;
@@ -991,7 +991,7 @@ export class RealityTreeReference extends RealityModelTileTree.Reference {
     const tiles = IModelApp.tileAdmin.getTilesForUser(vp)?.selected;
     const copyrightMap = new Map<string, number>();
     if (tiles) {
-      for (const tile of tiles) {
+      for (const tile of tiles as Set<RealityTile>) {
         if (tile.copyright) {
           for (const copyright of tile.copyright?.split(";")) {
             const currentCount = copyrightMap.get(copyright);

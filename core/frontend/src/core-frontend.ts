@@ -32,6 +32,7 @@ export * from "./FrustumAnimator";
 export * from "./FuzzySearch";
 export * from "./GeoServices";
 export * from "./GlobeAnimator";
+export * from "./GoogleMapsDecorator";
 export * from "./GraphicalEditingScope";
 export * from "./HitDetail";
 export * from "./IModelApp";

@@ -109,12 +109,6 @@ export abstract class Tile {
   /** Exclusively for use by LRUTileList. @internal */
   public tileUserIds?: TileUserIdSet;
 
-  /** @internal */
-  protected _copyright?: string;
-
-  /** @internal */
-  public get copyright(): string | undefined { return this._copyright; }
-
   /** Load this tile's children, possibly asynchronously. Pass them to `resolve`, or an error to `reject`. */
   protected abstract _loadChildren(resolve: (children: Tile[] | undefined) => void, reject: (error: Error) => void): void;
 
