@@ -114,15 +114,6 @@ export class RealityDataSourceGP3DTImpl implements RealityDataSource {
    * For both absolute and relative tile path URLs, the search parameters are checked. If the search params are empty, the base URL's search params are appended to the tile path.
    */
   public getTileUrl(tilePath: string): string {
-    //&&MM Notes
-    // Spec: https://docs.ogc.org/cs/18-053r2/18-053r2.html 6.4 and 7.8.2
-    //  query params:
-    //    - no mention about propagation/preservation of query params.
-    //    - not sure if absolute url should receive params from base url?
-    // - "When the URI is relative, its base is always relative to the referring tileset JSON file."
-    //     - We are always using the base URL of the root document but we need to use the referring tileset which is nested in the tree structure. In case of google they add the session id.
-    // - What are we breaking by using the URL API instead of a simple concatenation of the base URL and tile path?
-
     // this._baseUrl does not include the trailing subdirectories.
     // This is not an issue because the tile path always starts with the appropriate subdirectories.
     // We also do not need to worry about the tile path starting with a slash.

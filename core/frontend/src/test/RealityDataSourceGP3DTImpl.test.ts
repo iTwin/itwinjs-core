@@ -198,8 +198,7 @@ describe("RealityDataSourceGP3DTImpl", () => {
       const returnedUrl3 = rdSource.getTileUrl("tile.glb");
       // Because all tileset search params are stored in RealityDataSourceGP3DTImpl._searchParams, not just root,
       // The tile will recieve both session ids.
-      // TODO should we be passing down all search params?
-      // Should we tailor this to GP3DT specifically, and just store the first session id?
+      // TODO In the future we might need a way to pass down "subtree" search params only to the tiles that need them.
       expect(returnedUrl3).toEqual("https://tile.googleapis.com/tile.glb?key=key&sessionId=123&sessionId=456");
     });
   });
