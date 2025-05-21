@@ -8313,11 +8313,9 @@ export interface RealityTileGeometry {
 
 // @internal
 export abstract class RealityTileLoader {
-    constructor(_produceGeometry?: boolean | undefined, collectGltfAttributions?: boolean);
+    constructor(_produceGeometry?: boolean | undefined);
     // (undocumented)
     protected get _batchType(): BatchType;
-    // (undocumented)
-    readonly collectGltfAttributions: boolean;
     // (undocumented)
     static computeTileLocationPriority(tile: Tile, viewports: Iterable<Viewport>, location: Transform): number;
     // (undocumented)
