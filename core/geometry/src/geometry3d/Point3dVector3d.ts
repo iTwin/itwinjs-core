@@ -609,7 +609,7 @@ export class Point3d extends XYZ {
     );
   }
   /** Return point + vectorA * scalarA + vectorB * scalarB */
-  public plus2Scaled(vectorA: XYAndZ, scalarA: number, vectorB: XYZ, scalarB: number, result?: Point3d): Point3d {
+  public plus2Scaled(vectorA: XYAndZ, scalarA: number, vectorB: XYAndZ, scalarB: number, result?: Point3d): Point3d {
     return Point3d.create(this.x + vectorA.x * scalarA + vectorB.x * scalarB,
       this.y + vectorA.y * scalarA + vectorB.y * scalarB,
       this.z + vectorA.z * scalarA + vectorB.z * scalarB,
