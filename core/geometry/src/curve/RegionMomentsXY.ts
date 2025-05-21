@@ -91,6 +91,7 @@ export class RegionMomentsXY extends NullGeometryHandler {
     this._activeMomentData = undefined;
     return momentData;
   }
+<<<<<<< HEAD
   /**
    * ASSUMPTIONS FOR ORIENTATION AND CONTAINMENT ISSUES
    * * Largest area is outer
@@ -136,6 +137,17 @@ export class RegionMomentsXY extends NullGeometryHandler {
   public override handleUnionRegion(region: UnionRegion): MomentData | undefined {
     const summedMoments = MomentData.create();
     for (const child of region.children) {
+=======
+  private handleAnyRegion(region: AnyRegion): MomentData | undefined {
+    // guarantee there is no overlapping children
+    const merged = RegionOps.regionBooleanXY(region, undefined, RegionBinaryOpType.Union);
+    if (!merged)
+      return undefined;
+    if (merged instanceof Loop)
+      return this.handleLoop(merged);
+    const summedMoments = MomentData.create();
+    for (const child of merged.children) {
+>>>>>>> 26a4782e2c (`RegionOps.constructAllXYRegionLoops` fails to compute outer boundary (#8123))
       const childMoments = child.dispatchToGeometryHandler(this);
       if (childMoments) {
         const sign0 = childMoments.signFactor(1.0);
@@ -159,12 +171,13 @@ export class RegionMomentsXY extends NullGeometryHandler {
    * * stroke the curve
    * * accumulate stroke array.
    */
-  public handleCurvePrimitive(cp: CurvePrimitive) {
+  public handleCurvePrimitive(cp: CurvePrimitive): void {
     const strokes = LineString3d.create();
     const options = this.getStrokeOptions();
     cp.emitStrokes(strokes, options);
     this.handleLineString3d(strokes);
   }
+<<<<<<< HEAD
   /** handle strongly typed  BSplineCurve3d  as generic curve primitive */
   public override handleBSplineCurve3d(g: BSplineCurve3d) { return this.handleCurvePrimitive(g); }
   /** handle strongly typed  BSplineCurve3dH  as generic curve primitive */
@@ -172,4 +185,18 @@ export class RegionMomentsXY extends NullGeometryHandler {
   /** handle strongly typed  TransitionSpiral as generic curve primitive  */
   public override handleTransitionSpiral(g: TransitionSpiral3d) { return this.handleCurvePrimitive(g); }
 
+=======
+  /** Handle strongly typed  BSplineCurve3d  as generic curve primitive. */
+  public override handleBSplineCurve3d(g: BSplineCurve3d): void {
+    this.handleCurvePrimitive(g);
+  }
+  /** Handle strongly typed  BSplineCurve3dH  as generic curve primitive. */
+  public override handleBSplineCurve3dH(g: BSplineCurve3dH): void {
+    this.handleCurvePrimitive(g);
+  }
+  /** Handle strongly typed  TransitionSpiral as generic curve primitive. */
+  public override handleTransitionSpiral(g: TransitionSpiral3d): void {
+    this.handleCurvePrimitive(g);
+  }
+>>>>>>> 26a4782e2c (`RegionOps.constructAllXYRegionLoops` fails to compute outer boundary (#8123))
 }
