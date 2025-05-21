@@ -117,21 +117,9 @@ export class RegionOps {
   }
   /**
    * Return a (signed) xy area for a region.
-<<<<<<< HEAD
-<<<<<<< HEAD
-   * * The area is negative if and only if the region is oriented clockwise with respect to the positive z-axis.
-   * @param root any Loop, ParityRegion, or UnionRegion.
-=======
-   * * The input region should lie in a plane parallel to the xy-plane, as z-coords will be ignored.
-   * * For a non-self-intersecting Loop, the returned area is negative if and only if the Loop is oriented clockwise
-   * with respect to the positive z-axis.
-   * @param region any [[Loop]], [[ParityRegion]], or [[UnionRegion]].
->>>>>>> 168574b454 (Utilize `PolyfaceData.edgeMateIndex` to speed up some `Polyface` methods (#8095))
-=======
    * * The input region should lie in a plane parallel to the xy-plane, as z-coords will be ignored.
    * * The area is negative if and only if the region is oriented clockwise with respect to the positive z-axis.
    * @param region any [[Loop]], [[ParityRegion]], or [[UnionRegion]].
->>>>>>> fe81b10c1f (Added new API RegionOps.centroidAreaNormal (#7998))
    */
   public static computeXYArea(region: AnyRegion): number | undefined {
     const handler = new RegionMomentsXY();
