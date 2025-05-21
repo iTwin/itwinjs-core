@@ -6,7 +6,7 @@
  * @module Tiles
  */
 
-import { assert, BentleyError, BeTimePoint, ByteStream, Id64, Id64String } from "@itwin/core-bentley";
+import { assert, BentleyError, BeTimePoint, ByteStream, Id64String } from "@itwin/core-bentley";
 import { Range3d, Transform } from "@itwin/core-geometry";
 import {
   ColorDef, computeChildTileProps, computeChildTileRanges, computeTileChordTolerance, ElementAlignedBox3d, LinePixels, TileFormat, TileProps,
