@@ -2930,7 +2930,7 @@ export namespace ElementGeometry {
         appendGeometryQuery(geometry: GeometryQuery): boolean;
         appendGeometryRanges(): boolean;
         appendImageGraphic(image: ImageGraphic): boolean;
-        appendTextBlock(block: TextBlockGeometryProps): boolean;
+        appendTextBlock(block: TextBlockGeometryProps, geomParams?: GeometryParams): boolean;
         appendTextString(text: TextString): boolean;
         readonly entries: ElementGeometryDataEntry[];
         get localToWorld(): Transform | undefined;
@@ -9827,6 +9827,7 @@ export class TextAnnotation {
     computeTransform(boundingBox: Range2d): Transform;
     static create(args?: TextAnnotationCreateArgs): TextAnnotation;
     equals(other: TextAnnotation): boolean;
+    frame?: TextFrameStyleProps;
     static fromJSON(props: TextAnnotationProps | undefined): TextAnnotation;
     offset: Point3d;
     orientation: YawPitchRollAngles;
@@ -9861,14 +9862,22 @@ export interface TextAnnotationAnchor {
 // @beta
 export interface TextAnnotationCreateArgs {
     anchor?: TextAnnotationAnchor;
+    frame?: TextFrameStyleProps;
     offset?: Point3d;
     orientation?: YawPitchRollAngles;
     textBlock?: TextBlock;
 }
 
 // @beta
+export type TextAnnotationFillColor = TextStyleColor | "background";
+
+// @beta
+export type TextAnnotationFrameShape = "none" | "line" | "rectangle" | "circle" | "equilateralTriangle" | "diamond" | "square" | "pentagon" | "hexagon" | "octagon" | "capsule" | "roundedRectangle";
+
+// @beta
 export interface TextAnnotationProps {
     anchor?: TextAnnotationAnchor;
+    frame?: TextFrameStyleProps;
     offset?: XYZProps;
     orientation?: YawPitchRollProps;
     textBlock?: TextBlockProps;
@@ -9971,6 +9980,18 @@ export interface TextBlockStringifyOptions {
     fractionSeparator?: string;
     lineBreak?: string;
     paragraphBreak?: string;
+}
+
+// @beta
+export interface TextFrameStyleProps {
+    // (undocumented)
+    border?: TextStyleColor;
+    // (undocumented)
+    borderWeight?: number;
+    // (undocumented)
+    fill?: TextAnnotationFillColor;
+    // (undocumented)
+    shape: TextAnnotationFrameShape;
 }
 
 // @beta

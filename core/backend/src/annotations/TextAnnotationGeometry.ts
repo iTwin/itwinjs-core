@@ -13,6 +13,9 @@ import { Id64 } from "@itwin/core-bentley";
 import { produceTextBlockGeometry } from "./TextBlockGeometry";
 import { FrameGeometry } from "./FrameGeometry";
 
+/**
+ * @beta
+ */
 export namespace TextAnnotationGeometry {
   export interface RequestProps {
     /** The annotation to be drawn. Be sure to include a TextBlock with runs or no geometry will be produced. */

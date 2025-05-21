@@ -36,7 +36,9 @@ export interface TextAnnotationAnchor {
   horizontal: "left" | "center" | "right";
 }
 
-/** Set of predefined shapes that can be computed and drawn around the margins of a [[TextBlock]] */
+/** Set of predefined shapes that can be computed and drawn around the margins of a [[TextBlock]]
+ * @beta
+*/
 export type TextAnnotationFrameShape = "none" | "line" | "rectangle" | "circle" | "equilateralTriangle" | "diamond" | "square" | "pentagon" | "hexagon" | "octagon" | "capsule" | "roundedRectangle";
 
 

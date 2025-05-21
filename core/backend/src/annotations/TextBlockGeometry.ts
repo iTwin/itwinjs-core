@@ -130,6 +130,7 @@ function processFractionRun(run: RunLayout, transform: Transform, context: Geome
  * @param layout of the text block as computed by [[layoutTextBlock]].
  * @param documentTransform that positions the text block in world coordinates.
  * @returns TextBlockGeometryProps.
+ * @beta
  */
 export function produceTextBlockGeometry(layout: TextBlockLayout, documentTransform: Transform): TextBlockGeometryProps {
   const context: GeometryContext = { entries: [] };

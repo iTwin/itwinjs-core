@@ -281,6 +281,7 @@ public;class;IpcHost
 public;interface;IpcHostOpts
 public;interface;ITwinIdArg
 public;class;KnownLocations
+internal;function;layoutTextBlock
 beta;interface;LayoutTextBlockArgs
 internal;class;LightLocation
 public;class;LineStyle
@@ -342,8 +343,7 @@ public;class;PhysicalTypeIsOfPhysicalMaterial
 public;class;PlanCallout
 public;class;Platform
 internal;interface;ProcessChangesetOptions
-beta;function;produceTextAnnotationGeometry
-beta;interface;ProduceTextAnnotationGeometryArgs
+beta;function;produceTextBlockGeometry
 public;type;ProgressFunction
 public;enum;ProgressStatus
 public;type;PropertyHandler
@@ -455,6 +455,7 @@ internal;class;TemplateViewDefinition2d
 internal;class;TemplateViewDefinition3d
 public;class;TextAnnotation2d
 public;class;TextAnnotation3d
+beta;namespace;TextAnnotationGeometry
 public;class;Texture
 beta;interface;TextureCreateProps
 internal;function;throttleProgressCallback
