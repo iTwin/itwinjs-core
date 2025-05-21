@@ -1100,6 +1100,87 @@ describe("RegionOps", () => {
     GeometryCoreTestIO.saveGeometry(allGeometry, "RegionOps", "constructAllXYRegionLoops");
     expect(ck.getNumErrors()).toBe(0);
   });
+
+  it("RegionBooleanMerge", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    let isArray = false, hasLoopEntries = false;
+    const arrayConsistsOfLoops = (a: Array<any>) => a.every((value: any) => value instanceof Loop);
+    const regions = IModelJson.Reader.parse(JSON.parse(fs.readFileSync("./src/test/data/curve/areaBoolean/unionRegionWithOverlappingLoops.imjs", "utf8")));
+    if (ck.testDefined(regions, "read regions from file")) {
+      if ((isArray = Array.isArray(regions)) && ck.testTrue(isArray, "regions is an array")) {
+        if (ck.testExactNumber(3, regions.length, "regions has 3 entries")) {
+          if ((hasLoopEntries = arrayConsistsOfLoops(regions)) && ck.testTrue(hasLoopEntries, "region entries are Loops")) {
+            const merged = RegionOps.regionBooleanXY(regions, undefined, RegionBinaryOpType.Union);
+            if (ck.testDefined(merged, "merge operation succeeded")) {
+              GeometryCoreTestIO.captureCloneGeometry(allGeometry, merged);
+              if (ck.testType(merged, UnionRegion, "merge operation results in a UnionRegion")) {
+                if (ck.testExactNumber(3, merged.children.length, "merged region has 3 children")) {
+                  if ((hasLoopEntries = arrayConsistsOfLoops(merged.children)) && ck.testTrue(hasLoopEntries, "merged region children are Loops")) {
+                      let totalMergedArea = 0;
+                      for (const loop of merged.children) {
+                        const area = RegionOps.computeXYArea(loop);
+                        if (ck.testDefined(area, "area computed for loop")) {
+                          totalMergedArea += area;
+                          GeometryCoreTestIO.captureCloneGeometry(allGeometry, loop, 0, 0, 50);
+                        }
+                      }
+                      const loopData = RegionOps.constructAllXYRegionLoops(merged);
+                      let totalPosLoopArea = 0;
+                      let totalNegLoopArea = 0;
+                      for (const component of loopData) {
+                        for (const loop of component.positiveAreaLoops) {
+                          GeometryCoreTestIO.captureCloneGeometry(allGeometry, loop, 0, 0, 100);
+                          const area = RegionOps.computeXYArea(loop);
+                          if (ck.testDefined(area, "area computed for interior loop"))
+                            totalPosLoopArea += area;
+                        }
+                        for (const loop of component.negativeAreaLoops) {
+                          GeometryCoreTestIO.captureCloneGeometry(allGeometry, loop, 0, 0, 150);
+                          const area = RegionOps.computeXYArea(loop);
+                          if (ck.testDefined(area, "area computed for exterior loop"))
+                            totalNegLoopArea += area;
+                        }
+                      }
+                      if (ck.testExactNumber(1, loopData.length, "constructAllXYRegionLoops found one component")) {
+                        ck.testExactNumber(3, loopData[0].positiveAreaLoops.length, "constructAllXYRegionLoops found 3 positive area loops");
+                        ck.testExactNumber(1, loopData[0].negativeAreaLoops.length, "constructAllXYRegionLoops found 1 negative area loop");
+                        ck.testExactNumber(4, loopData[0].slivers.length, "constructAllXYRegionLoops found 4 sliver faces");
+                        if (ck.testDefined(loopData[0].edges, "constructAllXYRegionLoops computed edges"))
+                          ck.testExactNumber(24, loopData[0].edges.length, "constructAllXYRegionLoops found 24 edges");
+                      }
+                      ck.testCoordinate(totalPosLoopArea, Math.abs(totalNegLoopArea), "interior and boundary loop areas match");
+                      ck.testCoordinate(totalMergedArea, Math.abs(totalNegLoopArea), "merged region area matches boundary area");
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "RegionOps", "RegionBooleanMerge");
+    expect(ck.getNumErrors()).toBe(0);
+  });
+  it("SimplifyRegionType", () => {
+    const ck = new Checker();
+    const loop0 = Loop.create(Arc3d.createUnitCircle());
+    const loop1 = Loop.create(Arc3d.createXY(Point3d.create(1, 1), 1));
+    const parity1 = ParityRegion.create(loop0.clone() as Loop);
+    const parity2 = ParityRegion.create(loop0.clone() as Loop, loop1.clone() as Loop);
+    const union1A = UnionRegion.create(loop0.clone() as Loop);
+    const union1B = UnionRegion.create(parity1.clone());
+    const union1C = UnionRegion.create(parity2.clone());
+    const union2 = UnionRegion.create(loop0.clone() as Loop, parity1.clone());
+    ck.testType(RegionOps.simplifyRegionType(loop0), Loop, "simplifying a Loop returns a Loop");
+    ck.testType(RegionOps.simplifyRegionType(parity1), Loop, "simplifying a ParityRegion with one Loop returns the Loop");
+    ck.testType(RegionOps.simplifyRegionType(parity2), ParityRegion, "simplifying a ParityRegion with two Loops returns the ParityRegion");
+    ck.testType(RegionOps.simplifyRegionType(union1A), Loop, "simplifying a UnionRegion with one Loop returns the Loop");
+    ck.testType(RegionOps.simplifyRegionType(union1B), Loop, "simplifying a UnionRegion with one ParityRegion with one Loop returns the Loop");
+    ck.testType(RegionOps.simplifyRegionType(union1C), ParityRegion, "simplifying a UnionRegion with one ParityRegion with multiple Loops returns the ParityRegion");
+    ck.testType(RegionOps.simplifyRegionType(union2), UnionRegion, "simplifying a UnionRegion with multiple children returns the UnionRegion");
+    expect(ck.getNumErrors()).toBe(0);
+  });
 });
 
 /**
