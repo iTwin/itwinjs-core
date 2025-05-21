@@ -26,7 +26,6 @@ export namespace FrameGeometry {
       return false;
     }
 
-    // TODO: I need to clean this up. The geom param changes are straddled between this stroker and ElementGeometry.Builder.
     const params = geomParams?.clone() ?? new GeometryParams(Id64.invalid);
 
     if (frame.fill === undefined) {
