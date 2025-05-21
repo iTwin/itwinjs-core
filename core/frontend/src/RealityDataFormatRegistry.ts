@@ -6,6 +6,13 @@
  * @module Tiles
  */
 
+/** Returns the URL used for retrieving Google Photorealistic 3D Tiles.
+ * @alpha
+ */
+export function getGooglePhotorealistic3DTilesURL() {
+  return "https://tile.googleapis.com/v1/3dtiles/root.json";
+}
+
 /** Stores key-value pair to be added to reality data requests.
  * @alpha
  */

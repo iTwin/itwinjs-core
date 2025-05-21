@@ -10,7 +10,7 @@ import {
   BackgroundMapProps, BackgroundMapProviderName, BackgroundMapProviderProps, BackgroundMapType, BaseMapLayerSettings, CesiumTerrainAssetId, ColorDef, DisplayStyle3dSettingsProps,
   GlobeMode, HiddenLine, LinePixels, MonochromeMode, RenderMode, TerrainProps, ThematicDisplayMode, ThematicGradientColorScheme, ThematicGradientMode,
 } from "@itwin/core-common";
-import { DisplayStyle2dState, DisplayStyle3dState, DisplayStyleState, IModelApp, Viewport, ViewState, ViewState3d } from "@itwin/core-frontend";
+import { DisplayStyle2dState, DisplayStyle3dState, DisplayStyleState, getGooglePhotorealistic3DTilesURL, IModelApp, Viewport, ViewState, ViewState3d } from "@itwin/core-frontend";
 import { AmbientOcclusionEditor } from "./AmbientOcclusion";
 import { EnvironmentEditor } from "./EnvironmentEditor";
 import { Settings } from "./FeatureOverrides";
@@ -622,7 +622,7 @@ export class ViewAttributes {
 
       if (checkboxInterfaceGP3DT0.checkbox.checked) {
         if (!this.getDisplayingGP3DT()) {
-          const url = `https://tile.googleapis.com/v1/3dtiles/root.json`;
+          const url = getGooglePhotorealistic3DTilesURL();
           view.displayStyle.attachRealityModel({
             tilesetUrl: url,
             name: "googleMap3dTiles",
@@ -637,7 +637,7 @@ export class ViewAttributes {
         }
       } else {
         if (this.getDisplayingGP3DT()) {
-          view.displayStyle.detachRealityModelByNameAndUrl("googleMap3dTiles", `https://tile.googleapis.com/v1/3dtiles/root.json`);
+          view.displayStyle.detachRealityModelByNameAndUrl("googleMap3dTiles", getGooglePhotorealistic3DTilesURL());
           this.sync();
           displayingGP3DT = false;
         }
