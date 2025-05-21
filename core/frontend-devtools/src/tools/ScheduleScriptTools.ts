@@ -16,6 +16,7 @@ import { _scheduleScriptReference, Viewport } from "@itwin/core-frontend";
 import { copyStringToClipboard } from "../ClipboardUtilities";
 import { parseArgs } from "./parseArgs";
 import { DisplayStyleTool } from "./DisplayStyleTools";
+import { Transform } from "@itwin/core-geometry";
 
 /** Query the schedule script JSON from an element.
  * @beta
@@ -241,6 +242,11 @@ export class TestScheduleScriptTool extends DisplayStyleTool {
       const elementTimeline = modelTimeline.addElementTimeline(["0xc933"]); // element Id
       elementTimeline.addColor(now, new RgbColor(255, 0, 0));
       elementTimeline.addColor(now + 3000, new RgbColor(0, 255, 0));
+      elementTimeline.addTransform(now, Transform.createIdentity());
+      elementTimeline.addTransform(
+        now + 3000,
+        Transform.createTranslationXYZ(10, 0, 0)
+      );
       const scriptProps = builder.finish();
       this._script = RenderSchedule.Script.fromJSON(scriptProps);
     } catch (ex) {

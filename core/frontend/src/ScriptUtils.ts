@@ -1,4 +1,4 @@
-import { Id64, Id64String } from "@itwin/core-bentley";
+import { Id64String } from "@itwin/core-bentley";
 import { RenderSchedule } from "@itwin/core-common";
 
 export function getScriptDelta(prev: RenderSchedule.Script, next: RenderSchedule.Script): Set<Id64String> {

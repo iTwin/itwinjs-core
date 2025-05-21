@@ -470,7 +470,7 @@ export class IModelTileTree extends TileTree {
     if (!displayStyle)
       return;
 
-    if (!displayStyle.isScheduleScriptLoaded)
+    // if (!displayStyle.isScheduleScriptLoaded)
       await displayStyle.load();
 
     const newScript = displayStyle.scheduleScript;
