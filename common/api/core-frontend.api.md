@@ -4098,6 +4098,17 @@ export interface GLTimerResult {
     nanoseconds: number;
 }
 
+// @internal
+export class GoogleMapsDecorator implements Decorator {
+    activate(mapType: GoogleMapsMapTypes): Promise<boolean>;
+    decorate: (context: DecorateContext) => void;
+    // (undocumented)
+    readonly logo: LogoDecoration;
+}
+
+// @internal
+export type GoogleMapsMapTypes = "roadmap" | "satellite" | "terrain";
+
 // @public
 export type GpuMemoryLimit = "none" | "default" | "aggressive" | "relaxed" | number;
 
@@ -5625,6 +5636,20 @@ export enum LockedStates {
     XY_BM = 3,
     // (undocumented)
     Y_BM = 2
+}
+
+// @internal
+export class LogoDecoration implements CanvasDecoration {
+    // (undocumented)
+    activate(sprite: Sprite): Promise<boolean>;
+    // (undocumented)
+    decorate(context: DecorateContext): void;
+    drawDecoration(ctx: CanvasRenderingContext2D): void;
+    get isLoaded(): boolean;
+    moveToLowerLeftCorner(context: DecorateContext): boolean;
+    set offset(offset: Point3d | undefined);
+    get offset(): Point3d | undefined;
+    readonly position: Point3d;
 }
 
 // @public
@@ -8246,6 +8271,10 @@ export class RealityTile extends Tile {
     // @internal (undocumented)
     computeVisibilityFactor(args: TileDrawArgs): number;
     // @internal (undocumented)
+    get copyright(): string | undefined;
+    // @internal (undocumented)
+    protected _copyright?: string;
+    // @internal (undocumented)
     disposeContents(): void;
     // @internal (undocumented)
     protected forceSelectRealityTile(): boolean;
@@ -10580,10 +10609,6 @@ export abstract class Tile {
     protected _contentId: string;
     get contentRange(): ElementAlignedBox3d;
     protected _contentRange?: ElementAlignedBox3d;
-    // @internal (undocumented)
-    get copyright(): string | undefined;
-    // @internal (undocumented)
-    protected _copyright?: string;
     countDescendants(): number;
     readonly depth: number;
     // @deprecated (undocumented)

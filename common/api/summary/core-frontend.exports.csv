@@ -242,6 +242,8 @@ internal;interface;GltfReaderArgs
 internal;interface;GltfReaderResult
 beta;interface;GltfTemplate
 internal;interface;GLTimerResult
+internal;class;GoogleMapsDecorator
+internal;type;GoogleMapsMapTypes
 public;type;GpuMemoryLimit
 public;interface;GpuMemoryLimits
 public;class;GraphicalEditingScope
@@ -347,6 +349,7 @@ public;enum;LocateFilterStatus
 public;class;LocateOptions
 public;class;LocateResponse
 internal;enum;LockedStates
+internal;class;LogoDecoration
 public;class;LookAndMoveTool
 public;interface;LookAtArgs
 public;interface;LookAtOrthoArgs
