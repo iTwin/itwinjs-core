@@ -133,51 +133,6 @@ describe("TextAnnotation element", () => {
     return annotation;
   }
 
-  const getOrCreateDocumentList = async (db: IModelDb): Promise<Id64String> => {
-    const documentListName = "DrawingModel";
-    let documentListModelId: string | undefined;
-
-    // Attempt to find an existing document partition and document list model
-    const ids = db.queryEntityIds({ from: DocumentPartition.classFullName, where: `CodeValue = '${documentListName}'` });
-    if (ids.size === 1) {
-      documentListModelId = ids.values().next().value;
-    }
-
-    // If they do not exist, create the document partition and document list model
-    if (documentListModelId === undefined) {
-      const subjectId = db.elements.getRootSubject().id;
-      await db.locks.acquireLocks({
-        shared: subjectId,
-      });
-      documentListModelId = DocumentListModel.insert(db, subjectId, documentListName);
-    }
-
-
-    return documentListModelId;
-  };
-
-  const insertDrawingElement = async (db: IModelDb, drawingName: string): Promise<Id64String> => {
-    // Get or make documentListModelId
-    const documentListModelId = await getOrCreateDocumentList(db);
-
-    // Acquire locks and create sheet
-    await db.locks.acquireLocks({ shared: documentListModelId });
-    const drawingElementProps: ElementProps = {
-      classFullName: Drawing.classFullName,
-      code: Drawing.createCode(db, documentListModelId, drawingName),
-      model: documentListModelId
-    };
-    return db.elements.insertElement(drawingElementProps);
-  };
-
-  const insertDrawingModel = async (db: IModelDb, drawingElementId: string): Promise<Id64String> => {
-    const drawingModelProps: GeometricModel2dProps = {
-      classFullName: DrawingModel.classFullName,
-      modeledElement: { id: drawingElementId, relClassName: "BisCore:ModelModelsElement" } as RelatedElement,
-    };
-    return db.models.insertModel(drawingModelProps);
-  };
-
   const createJobSubjectElement = (iModel: IModelDb, name: string): Subject => {
     const subj = Subject.create(iModel, iModel.elements.getRootSubject().id, name);
     subj.setJsonProperty("Subject", { Job: name }); // eslint-disable-line @typescript-eslint/naming-convention
@@ -189,22 +144,16 @@ describe("TextAnnotation element", () => {
     const jobSubjectId = createJobSubjectElement(standaloneModel, "Job").insert();
     const drawingDefinitionModelId = DefinitionModel.insert(standaloneModel, jobSubjectId, "DrawingDefinition");
     const drawingCategoryId = DrawingCategory.insert(standaloneModel, drawingDefinitionModelId, "DrawingCategory", new SubCategoryAppearance());
-    const drawingElementId = await insertDrawingElement(standaloneModel, "drawing-1");
-    const drawingModelId = await insertDrawingModel(standaloneModel, drawingElementId);
+    const [_drawingElementId, drawingModelId] = IModelTestUtils.createAndInsertDrawingPartitionAndModel(standaloneModel, Code.createEmpty(), undefined, jobSubjectId)
 
     const displayStyle2dId = DisplayStyle2d.insert(standaloneModel, drawingDefinitionModelId, "DisplayStyle2d");
     const drawingCategorySelectorId = CategorySelector.insert(standaloneModel, drawingDefinitionModelId, "DrawingCategories", [drawingCategoryId]);
     const drawingViewRange = new Range2d(0, 0, 500, 500);
-    const drawingViewId = DrawingViewDefinition.insert(standaloneModel, drawingDefinitionModelId, "Drawing View", drawingModelId, drawingCategorySelectorId, displayStyle2dId, drawingViewRange);
+    const _drawingViewId = DrawingViewDefinition.insert(standaloneModel, drawingDefinitionModelId, "Drawing View", drawingModelId, drawingCategorySelectorId, displayStyle2dId, drawingViewRange);
 
     const drawing = {
-      definitionModel: drawingDefinitionModelId,
       category: drawingCategoryId,
-      element: drawingElementId,
       model: drawingModelId,
-      displayStyle: displayStyle2dId,
-      categorySelector: drawingCategorySelectorId,
-      view: drawingViewId,
     }
 
     return { drawing };
