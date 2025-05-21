@@ -4876,6 +4876,7 @@ export class IModelApp {
     static queryRenderCompatibility(): WebGLRenderCompatibilityInfo;
     // @beta
     static get realityDataAccess(): RealityDataAccess | undefined;
+    static get realityDataFormatRegistry(): RealityDataFormatRegistry;
     // @alpha
     static get realityDataSourceProviders(): RealityDataSourceProviderRegistry;
     // @internal
@@ -4929,6 +4930,8 @@ export interface IModelAppOptions {
     quantityFormatter?: QuantityFormatter;
     // @beta (undocumented)
     realityDataAccess?: RealityDataAccess;
+    // @alpha
+    realityDataOptions?: RealityDataOptions;
     renderSys?: RenderSystem | RenderSystem.Options;
     // @deprecated (undocumented)
     rpcInterfaces?: RpcInterfaceDefinition[];
