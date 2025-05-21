@@ -237,7 +237,9 @@ export class IModelApp {
   public static sessionId: GuidString;
   /** The [[MapLayerFormatRegistry]] for this session. */
   public static get mapLayerFormatRegistry(): MapLayerFormatRegistry { return this._mapLayerFormatRegistry; }
-  /** The [[RealityDataFormatRegistry]] for this session. */
+  /** The [[RealityDataFormatRegistry]] for this session.
+   * @alpha
+   */
   public static get realityDataFormatRegistry(): RealityDataFormatRegistry { return this._realityDataFormatRegistry; }
   /** The [[TerrainProviderRegistry]] for this session. */
   public static get terrainProviderRegistry(): TerrainProviderRegistry { return this._terrainProviderRegistry; }
