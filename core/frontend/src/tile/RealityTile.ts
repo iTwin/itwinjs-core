@@ -102,9 +102,7 @@ export class RealityTile extends Tile {
   public override setContent(content: RealityTileContent): void {
     super.setContent(content);
     this._geometry = content.geometry;
-    const copyright = (content as GltfReaderResult).copyright;
-    if (copyright)
-      this._copyright = copyright;
+    this._copyright = (content as GltfReaderResult).copyright;
   }
 
   /** @internal */

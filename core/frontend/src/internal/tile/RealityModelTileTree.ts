@@ -101,8 +101,7 @@ class RealityTreeSupplier implements TileTreeSupplier {
     if (treeId.maskModelIds)
       await iModel.models.load(CompressedId64Set.decompressSet(treeId.maskModelIds));
 
-    // ###TODO maybe not needed. Currently we just always add copyright for all glTF tile contents.
-    const opts = { deduplicateVertices: treeId.deduplicateVertices, produceGeometry: treeId.produceGeometry, collectGltfAttributions: treeId.rdSourceKey.provider === RealityDataProvider.GP3DT};
+    const opts = { deduplicateVertices: treeId.deduplicateVertices, produceGeometry: treeId.produceGeometry };
     return RealityModelTileTree.createRealityModelTileTree(treeId.rdSourceKey, iModel, treeId.modelId, treeId.transform, opts);
   }
 
@@ -416,9 +415,8 @@ class RealityModelTileLoader extends RealityTileLoader {
   private _viewFlagOverrides: ViewFlagOverrides;
   private readonly _deduplicateVertices: boolean;
 
-  // ###TODO maybe not needed. Currently we just always add copyright for all glTF tile contents.
-  public constructor(tree: RealityModelTileTreeProps, batchedIdMap?: BatchedTileIdMap, opts?: { deduplicateVertices?: boolean, produceGeometry?: boolean, collectGltfAttributions?: boolean }) {
-    super(opts?.produceGeometry ?? false, opts?.collectGltfAttributions ?? false);
+  public constructor(tree: RealityModelTileTreeProps, batchedIdMap?: BatchedTileIdMap, opts?: { deduplicateVertices?: boolean, produceGeometry?: boolean }) {
+    super(opts?.produceGeometry ?? false);
     this.tree = tree;
     this._batchedIdMap = batchedIdMap;
     this._deduplicateVertices = opts?.deduplicateVertices ?? false;
@@ -727,8 +725,7 @@ export namespace RealityModelTileTree {
     iModel: IModelConnection,
     modelId: Id64String,
     tilesetToDb: Transform | undefined,
-    // ###TODO maybe not needed. Currently we just always add copyright for all glTF tile contents.
-    opts?: { deduplicateVertices?: boolean, produceGeometry?: boolean, collectGltfAttributions?: boolean },
+    opts?: { deduplicateVertices?: boolean, produceGeometry?: boolean },
   ): Promise<TileTree | undefined> {
     const rdSource = await RealityDataSource.fromKey(rdSourceKey, iModel.iTwinId);
     // If we can get a valid connection from sourceKey, returns the tile tree
