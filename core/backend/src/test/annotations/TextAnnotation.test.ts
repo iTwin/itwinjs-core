@@ -2,16 +2,16 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert, expect } from "chai";
+import { expect } from "chai";
 import { Angle, Point3d, Range2d, Range3d, YawPitchRollAngles } from "@itwin/core-geometry";
-import { Code, ElementProps, FractionRun, GeometricModel2dProps, RelatedElement, SubCategoryAppearance, TextAnnotation, TextAnnotation2dProps, TextAnnotation3dProps, TextBlock, TextRun } from "@itwin/core-common";
-import { IModelDb, SnapshotDb, StandaloneDb } from "../../IModelDb";
+import { Code, FractionRun, SubCategoryAppearance, TextAnnotation, TextAnnotation2dProps, TextAnnotation3dProps, TextBlock, TextRun } from "@itwin/core-common";
+import { IModelDb, StandaloneDb } from "../../IModelDb";
 import { TextAnnotation2d, TextAnnotation3d } from "../../annotations/TextAnnotationElement";
 import { IModelTestUtils } from "../IModelTestUtils";
-import { DocumentPartition, Drawing, GeometricElement2d, GeometricElement3d, Subject } from "../../Element";
+import { GeometricElement2d, GeometricElement3d, Subject } from "../../Element";
 import { Guid, Id64, Id64String } from "@itwin/core-bentley";
 import { ComputeRangesForTextLayoutArgs, TextLayoutRanges } from "../../annotations/TextBlockLayout";
-import { DefinitionModel, DocumentListModel, DrawingModel } from "../../Model";
+import { DefinitionModel } from "../../Model";
 import { DrawingCategory, SpatialCategory } from "../../Category";
 import { DisplayStyle2d, DisplayStyle3d } from "../../DisplayStyle";
 import { CategorySelector, DrawingViewDefinition, ModelSelector, SpatialViewDefinition } from "../../ViewDefinition";
@@ -167,40 +167,38 @@ describe("TextAnnotation element", () => {
     return { category, model };
   }
 
-  const insertModels = async (standaloneModel: StandaloneDb) => {
-    const jobSubjectId = createJobSubjectElement(standaloneModel, "Job").insert();
+  const createIModel = async (name: string): Promise<StandaloneDb> => {
+    const filePath = IModelTestUtils.prepareOutputFile("annotationTests", `${name}.bim`);
+    const iModel = StandaloneDb.createEmpty(filePath, {
+      rootSubject: { name: `${name} tests`, description: `${name} tests` },
+      client: "integration tests",
+      globalOrigin: { x: 0, y: 0 },
+      projectExtents: { low: { x: -500, y: -500, z: -50 }, high: { x: 500, y: 500, z: 50 } },
+      guid: Guid.createValue(),
+    });
+    await iModel.fonts.embedFontFile({
+      file: FontFile.createFromTrueTypeFileName(IModelTestUtils.resolveFontFile("Karla-Regular.ttf"))
+    })
 
-    const drawing = insertDrawingModel(standaloneModel, jobSubjectId);
-    const spatial = insertSpatialModel(standaloneModel, jobSubjectId);
-
-    return { drawing, spatial };
+    return iModel;
   }
 
-  describe.only("TextAnnotation3d Persistence", () => {
+  describe("TextAnnotation3d Persistence", () => {
     let imodel: StandaloneDb;
     let seedCategoryId: string;
     let seedModelId: string;
 
     before(async () => {
-      const filePath = IModelTestUtils.prepareOutputFile("annotationTests", "TextAnnotation3d.bim");
-      imodel = StandaloneDb.createEmpty(filePath, {
-        rootSubject: { name: "TextAnnotation3d tests", description: "TextAnnotation3d tests" },
-        client: "integration tests",
-        globalOrigin: { x: 0, y: 0 },
-        projectExtents: { low: { x: -500, y: -500, z: -50 }, high: { x: 500, y: 500, z: 50 } },
-        guid: Guid.createValue(),
-      });
+      imodel = await createIModel("TextAnnotation3d");
+      const jobSubjectId = createJobSubjectElement(imodel, "Job").insert();
+      const { category, model } = insertSpatialModel(imodel, jobSubjectId);
 
-      const ids = await insertModels(imodel);
-      await imodel.fonts.embedFontFile({
-        file: FontFile.createFromTrueTypeFileName(IModelTestUtils.resolveFontFile("Karla-Regular.ttf"))
-      })
+      expect(jobSubjectId).not.to.be.undefined;
+      expect(category).not.to.be.undefined;
+      expect(model).not.to.be.undefined;
 
-      expect(ids.spatial).not.to.be.undefined;
-      Object.entries(ids.spatial).forEach((entry => { expect(entry[1], `expected ${entry[0]} to be defined`).not.to.be.undefined; }));
-
-      seedCategoryId = ids.spatial.category;
-      seedModelId = ids.spatial.model;
+      seedCategoryId = category;
+      seedModelId = model;
     });
 
     after(() => imodel.close());
@@ -226,7 +224,7 @@ describe("TextAnnotation element", () => {
       expect(el.geom).to.be.undefined;
     });
 
-    function expectPlacement(el: GeometricElement3d, expectValidBBox: boolean, expectedOrigin = [0, 0, 0], expectedYPR = [0, 0, 0]): void {
+    function expectPlacement3d(el: GeometricElement3d, expectValidBBox: boolean, expectedOrigin = [0, 0, 0], expectedYPR = [0, 0, 0]): void {
       expect(el.placement.origin.x).to.equal(expectedOrigin[0]);
       expect(el.placement.origin.y).to.equal(expectedOrigin[1]);
       expect(el.placement.origin.z).to.equal(expectedOrigin[2]);
@@ -243,7 +241,7 @@ describe("TextAnnotation element", () => {
           el0.setAnnotation(annotation);
         }
 
-        expectPlacement(el0, false);
+        expectPlacement3d(el0, false);
         expect(el0.toJSON().elementGeometryBuilderParams).not.to.be.undefined;
 
 
@@ -255,12 +253,12 @@ describe("TextAnnotation element", () => {
         expect(el1).not.to.be.undefined;
         expect(el1 instanceof TextAnnotation3d).to.be.true;
 
-        expectPlacement(el1, undefined !== annotation && !annotation.textBlock.isEmpty);
+        expectPlacement3d(el1, undefined !== annotation && !annotation.textBlock.isEmpty);
 
         const anno = el1.getAnnotation();
 
         if (!annotation) {
-          expect(anno, "If no annotation was provided, none should have been inserted to the JSON properties").to.be.undefined;
+          expect(anno).to.be.undefined;
         } else {
           expect(anno).not.to.be.undefined;
           expect(anno!.equals(annotation)).to.be.true;
@@ -272,32 +270,22 @@ describe("TextAnnotation element", () => {
       it("roundtrips an annotation with a textBlock", async () => { await test(createAnnotation()); });
     });
   });
-  describe.only("TextAnnotation2d Persistence", () => {
+  describe("TextAnnotation2d Persistence", () => {
     let imodel: StandaloneDb;
     let seedCategoryId: string;
     let seedModelId: string;
 
     before(async () => {
-      const filePath = IModelTestUtils.prepareOutputFile("annotationTests", "TextAnnotation2d.bim");
-      imodel = StandaloneDb.createEmpty(filePath, {
-        rootSubject: { name: "TextAnnotation2d tests", description: "TextAnnotation2d tests" },
-        client: "integration tests",
-        globalOrigin: { x: 0, y: 0 },
-        projectExtents: { low: { x: -500, y: -500, z: -50 }, high: { x: 500, y: 500, z: 50 } },
-        guid: Guid.createValue(),
-      });
+      imodel = await createIModel("TextAnnotation2d");
+      const jobSubjectId = createJobSubjectElement(imodel, "Job").insert();
+      const { category, model } = insertDrawingModel(imodel, jobSubjectId);
 
-      const ids = await insertModels(imodel);
-      await imodel.fonts.embedFontFile({
-        file: FontFile.createFromTrueTypeFileName(IModelTestUtils.resolveFontFile("Karla-Regular.ttf"))
-      })
+      expect(jobSubjectId).not.to.be.undefined;
+      expect(category).not.to.be.undefined;
+      expect(model).not.to.be.undefined;
 
-      expect(ids.drawing).not.to.be.undefined;
-      Object.entries(ids.drawing).forEach((entry => { expect(entry[1], `expected ${entry[0]} to be defined`).not.to.be.undefined; }));
-
-
-      seedCategoryId = ids.drawing.category;
-      seedModelId = ids.drawing.model;
+      seedCategoryId = category;
+      seedModelId = model;
     });
 
     after(() => {
@@ -328,7 +316,7 @@ describe("TextAnnotation element", () => {
       expect(el.geom).to.be.undefined;
     });
 
-    function expectPlacement(el: GeometricElement2d, expectValidBBox: boolean, expectedOrigin = [0, 0, 0], expectedYPR = [0, 0, 0]): void {
+    function expectPlacement2d(el: GeometricElement2d, expectValidBBox: boolean, expectedOrigin = [0, 0, 0], expectedYPR = [0, 0, 0]): void {
       expect(el.placement.origin.x).to.equal(expectedOrigin[0]);
       expect(el.placement.origin.y).to.equal(expectedOrigin[1]);
       expect(el.placement.angle.degrees).to.equal(expectedYPR[0]);
@@ -342,7 +330,7 @@ describe("TextAnnotation element", () => {
           el0.setAnnotation(annotation);
         }
 
-        expectPlacement(el0, false);
+        expectPlacement2d(el0, false);
         expect(el0.toJSON().elementGeometryBuilderParams).not.to.be.undefined;
 
         const elId = el0.insert();
@@ -353,7 +341,7 @@ describe("TextAnnotation element", () => {
         expect(el1).not.to.be.undefined;
         expect(el1 instanceof TextAnnotation2d).to.be.true;
 
-        expectPlacement(el1, undefined !== annotation && !annotation.textBlock.isEmpty);
+        expectPlacement2d(el1, undefined !== annotation && !annotation.textBlock.isEmpty);
 
         const anno = el1.getAnnotation();
 
