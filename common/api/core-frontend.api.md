@@ -4106,9 +4106,6 @@ export class GoogleMapsDecorator implements Decorator {
     readonly logo: LogoDecoration;
 }
 
-// @internal
-export type GoogleMapsMapTypes = "roadmap" | "satellite" | "terrain";
-
 // @public
 export type GpuMemoryLimit = "none" | "default" | "aggressive" | "relaxed" | number;
 

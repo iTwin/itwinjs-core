@@ -13,7 +13,7 @@ import { Point3d } from "@itwin/core-geometry";
  *  Layer types that can be added to the map.
  * @internal
  * */
-export type GoogleMapsMapTypes =  "roadmap" | "satellite" | "terrain";
+type GoogleMapsMapTypes =  "roadmap" | "satellite" | "terrain";
 
 /** A simple decorator that show logo at the a given screen position.
  * @internal
