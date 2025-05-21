@@ -40,11 +40,16 @@ function createConfig(shouldInstrument) {
     resolve: {
       mainFields: ["main", "module"],
       fallback: {
-        assert: require.resolve("assert"),
+        assert: require.resolve("assert/"),
+        buffer: require.resolve("buffer/"),
         crypto: require.resolve("crypto-browserify"),
+        events: require.resolve("events/"),
         http: require.resolve("stream-http"),
         https: require.resolve("https-browserify"),
         path: require.resolve("path-browserify"),
+        punycode: require.resolve("punycode/"),
+        url: require.resolve("url/"),
+        util: require.resolve("util/"),
         stream: require.resolve("stream-browserify"),
         zlib: require.resolve("browserify-zlib"),
       },
