@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { Angle, Point3d, Range2d, Range3d, YawPitchRollAngles } from "@itwin/core-geometry";
-import { Code, FractionRun, SubCategoryAppearance, TextAnnotation, TextAnnotation2dProps, TextAnnotation3dProps, TextBlock, TextRun } from "@itwin/core-common";
+import { Code, ColorDef, FractionRun, SubCategoryAppearance, TextAnnotation, TextAnnotation2dProps, TextAnnotation3dProps, TextBlock, TextRun } from "@itwin/core-common";
 import { IModelDb, StandaloneDb } from "../../IModelDb";
 import { TextAnnotation2d, TextAnnotation3d } from "../../annotations/TextAnnotationElement";
 import { IModelTestUtils } from "../IModelTestUtils";
@@ -121,14 +121,15 @@ describe("TextAnnotation element", () => {
     const styleOverrides = { fontName: "Karla" };
     const block = TextBlock.create({ styleName: "block", styleOverrides });
     block.appendRun(TextRun.create({ content: "Run, Barry,", styleName: "run1", styleOverrides }));
-    block.appendRun(TextRun.create({ content: "RUN!!!", styleName: "run2", styleOverrides }));
+    block.appendRun(TextRun.create({ content: " RUN!!! ", styleName: "run2", styleOverrides }));
     block.appendRun(FractionRun.create({ numerator: "Harrison", denominator: "Wells", styleName: "run3", styleOverrides }));
+    block.margins = { left: 0, right: 1, top: 2, bottom: 3 };
 
     const annotation = TextAnnotation.fromJSON({ textBlock: block.toJSON() });
     annotation.anchor = { vertical: "middle", horizontal: "right" };
     annotation.orientation = YawPitchRollAngles.createDegrees(1, 0, -1);
-    annotation.offset = Point3d.create(0, -5, 100);
-    annotation.frame = { shape: "none" };
+    annotation.offset = Point3d.create(10, -5, 0);
+    annotation.frame = { shape: "rectangle", border: ColorDef.red.toJSON(), fill: ColorDef.green.toJSON(), borderWeight: 2 };
 
     return annotation;
   }
