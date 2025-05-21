@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
-import { Angle, Point3d, Range2d, YawPitchRollAngles } from "@itwin/core-geometry";
+import { Angle, Point3d, Range2d, Range3d, YawPitchRollAngles } from "@itwin/core-geometry";
 import { Code, ElementProps, FractionRun, GeometricModel2dProps, RelatedElement, SubCategoryAppearance, TextAnnotation, TextAnnotation2dProps, TextAnnotation3dProps, TextBlock, TextRun } from "@itwin/core-common";
 import { IModelDb, SnapshotDb, StandaloneDb } from "../../IModelDb";
 import { TextAnnotation2d, TextAnnotation3d } from "../../annotations/TextAnnotationElement";
@@ -12,9 +12,9 @@ import { DocumentPartition, Drawing, GeometricElement2d, GeometricElement3d, Sub
 import { Guid, Id64, Id64String } from "@itwin/core-bentley";
 import { ComputeRangesForTextLayoutArgs, TextLayoutRanges } from "../../annotations/TextBlockLayout";
 import { DefinitionModel, DocumentListModel, DrawingModel } from "../../Model";
-import { DrawingCategory } from "../../Category";
-import { DisplayStyle2d } from "../../DisplayStyle";
-import { CategorySelector, DrawingViewDefinition } from "../../ViewDefinition";
+import { DrawingCategory, SpatialCategory } from "../../Category";
+import { DisplayStyle2d, DisplayStyle3d } from "../../DisplayStyle";
+import { CategorySelector, DrawingViewDefinition, ModelSelector, SpatialViewDefinition } from "../../ViewDefinition";
 import { FontFile } from "../../FontFile";
 
 function computeTextRangeAsStringLength(args: ComputeRangesForTextLayoutArgs): TextLayoutRanges {
@@ -140,50 +140,76 @@ describe("TextAnnotation element", () => {
     return subj;
   }
 
-  const insertModels = async (standaloneModel: StandaloneDb) => {
-    const jobSubjectId = createJobSubjectElement(standaloneModel, "Job").insert();
-    const drawingDefinitionModelId = DefinitionModel.insert(standaloneModel, jobSubjectId, "DrawingDefinition");
-    const drawingCategoryId = DrawingCategory.insert(standaloneModel, drawingDefinitionModelId, "DrawingCategory", new SubCategoryAppearance());
-    const [_drawingElementId, drawingModelId] = IModelTestUtils.createAndInsertDrawingPartitionAndModel(standaloneModel, Code.createEmpty(), undefined, jobSubjectId)
+  const insertDrawingModel = (standaloneModel: StandaloneDb, parentId: Id64String) => {
+    const definitionModel = DefinitionModel.insert(standaloneModel, parentId, "DrawingDefinition");
+    const category = DrawingCategory.insert(standaloneModel, definitionModel, "DrawingCategory", new SubCategoryAppearance());
+    const [_, model] = IModelTestUtils.createAndInsertDrawingPartitionAndModel(standaloneModel, { spec: '0x1', scope: '0x1', value: 'Drawing' }, undefined, parentId);
 
-    const displayStyle2dId = DisplayStyle2d.insert(standaloneModel, drawingDefinitionModelId, "DisplayStyle2d");
-    const drawingCategorySelectorId = CategorySelector.insert(standaloneModel, drawingDefinitionModelId, "DrawingCategories", [drawingCategoryId]);
-    const drawingViewRange = new Range2d(0, 0, 500, 500);
-    const _drawingViewId = DrawingViewDefinition.insert(standaloneModel, drawingDefinitionModelId, "Drawing View", drawingModelId, drawingCategorySelectorId, displayStyle2dId, drawingViewRange);
+    const displayStyle = DisplayStyle2d.insert(standaloneModel, definitionModel, "DisplayStyle2d");
+    const categorySelector = CategorySelector.insert(standaloneModel, definitionModel, "DrawingCategories", [category]);
+    const viewRange = new Range2d(0, 0, 500, 500);
+    DrawingViewDefinition.insert(standaloneModel, definitionModel, "Drawing View", model, categorySelector, displayStyle, viewRange);
 
-    const drawing = {
-      category: drawingCategoryId,
-      model: drawingModelId,
-    }
-
-    return { drawing };
+    return { category, model };
   }
 
+  const insertSpatialModel = (standaloneModel: StandaloneDb, parentId: Id64String) => {
+    const definitionModel = DefinitionModel.insert(standaloneModel, parentId, "SpatialDefinition");
+    const category = SpatialCategory.insert(standaloneModel, definitionModel, "spatialCategory", new SubCategoryAppearance());
+    const [_, model] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(standaloneModel, { spec: '0x1', scope: '0x1', value: 'Spatial' }, undefined, parentId);
+    const modelSelector = ModelSelector.insert(standaloneModel, definitionModel, "SpatialModelSelector", [model]);
+
+    const displayStyle = DisplayStyle3d.insert(standaloneModel, definitionModel, "DisplayStyle3d");
+    const categorySelector = CategorySelector.insert(standaloneModel, definitionModel, "spatialCategories", [category]);
+    const viewRange = new Range3d(0, 0, 0, 500, 500, 500);
+    SpatialViewDefinition.insertWithCamera(standaloneModel, definitionModel, "spatial View", modelSelector, categorySelector, displayStyle, viewRange);
+
+    return { category, model };
+  }
+
+  const insertModels = async (standaloneModel: StandaloneDb) => {
+    const jobSubjectId = createJobSubjectElement(standaloneModel, "Job").insert();
+
+    const drawing = insertDrawingModel(standaloneModel, jobSubjectId);
+    const spatial = insertSpatialModel(standaloneModel, jobSubjectId);
+
+    return { drawing, spatial };
+  }
 
   describe.only("TextAnnotation3d Persistence", () => {
-    let imodel: SnapshotDb;
-    let seed: GeometricElement3d;
+    let imodel: StandaloneDb;
+    let seedCategoryId: string;
+    let seedModelId: string;
 
-    before(() => {
-      const seedFileName = IModelTestUtils.resolveAssetFile("CompatibilityTestSeed.bim");
-      const testFileName = IModelTestUtils.prepareOutputFile("GeometryStream", "GeometryStreamTest.bim");
-      imodel = IModelTestUtils.createSnapshotFromSeed(testFileName, seedFileName);
+    before(async () => {
+      const filePath = IModelTestUtils.prepareOutputFile("annotationTests", "TextAnnotation3d.bim");
+      imodel = StandaloneDb.createEmpty(filePath, {
+        rootSubject: { name: "TextAnnotation3d tests", description: "TextAnnotation3d tests" },
+        client: "integration tests",
+        globalOrigin: { x: 0, y: 0 },
+        projectExtents: { low: { x: -500, y: -500, z: -50 }, high: { x: 500, y: 500, z: 50 } },
+        guid: Guid.createValue(),
+      });
 
-      seed = imodel.elements.getElement<GeometricElement3d>("0x1d");
-      assert.exists(seed);
-      assert.isTrue(seed.federationGuid! === "18eb4650-b074-414f-b961-d9cfaa6c8746");
+      const ids = await insertModels(imodel);
+      await imodel.fonts.embedFontFile({
+        file: FontFile.createFromTrueTypeFileName(IModelTestUtils.resolveFontFile("Karla-Regular.ttf"))
+      })
+
+      expect(ids.spatial).not.to.be.undefined;
+      Object.entries(ids.spatial).forEach((entry => { expect(entry[1], `expected ${entry[0]} to be defined`).not.to.be.undefined; }));
+
+      seedCategoryId = ids.spatial.category;
+      seedModelId = ids.spatial.model;
     });
 
     after(() => imodel.close());
 
     function createElement3d(props?: Partial<TextAnnotation3dProps>): TextAnnotation3d {
       return TextAnnotation3d.fromJSON({
-        category: seed.category,
-        model: seed.model,
-        code: {
-          spec: seed.code.spec,
-          scope: seed.code.scope,
-        },
+        category: seedCategoryId,
+        model: seedModelId,
+        code: Code.createEmpty(),
         placement: {
           origin: { x: 0, y: 0, z: 0 },
           angles: YawPitchRollAngles.createDegrees(0, 0, 0).toJSON(),
