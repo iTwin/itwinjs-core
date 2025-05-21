@@ -1241,10 +1241,14 @@ export namespace IModelConnection {
 
   /** The collection of [[CodeSpec]] entities for an [[IModelConnection]]. */
   export class CodeSpecs {
-    private readonly _loadCodeSpecQuery = "SELECT ECInstanceId AS Id, Name, JsonProperties FROM BisCore.CodeSpec WHERE";
+    private readonly _loadCodeSpecQuery = "SELECT ECInstanceId AS Id, Name, JsonProperties FROM BisCore.CodeSpec";
 
     /** @internal */
     constructor(private _iModel: IModelConnection) { }
+
+    private _buildCodeSpecQuery(whereClause: string): string {
+      return `${this._loadCodeSpecQuery} WHERE ${whereClause}`;
+    }
 
     private _isCodeSpecProperties(x: any): x is CodeSpecProperties{
       if(!x || !x.scopeSpec || !Object.values(CodeScopeSpec.Type).includes(x.scopeSpec.type))
@@ -1299,7 +1303,7 @@ export namespace IModelConnection {
       if (!Id64.isValid(codeSpecId))
         throw new IModelError(IModelStatus.InvalidId, "Invalid codeSpecId", () => ({ codeSpecId }));
 
-      const query = `${this._loadCodeSpecQuery} Id=${codeSpecId}`;
+      const query = this._buildCodeSpecQuery(`Id=${codeSpecId}`);
 
       return this._loadCodeSpec(query);
     }
@@ -1313,7 +1317,7 @@ export namespace IModelConnection {
       if(name === "")
         throw new IModelError(IModelStatus.NotFound, "CodeSpec not found");
 
-      const query = `${this._loadCodeSpecQuery} Name='${name}'`;
+      const query = this._buildCodeSpecQuery(`Name='${name}'`);
 
       return this._loadCodeSpec(query);
     }
