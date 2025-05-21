@@ -161,14 +161,21 @@ export class Point4d extends Plane3d implements BeJSONFunctions {
   public distanceSquaredXYZW(other: Point4d): number {
     return Geometry.hypotenuseSquaredXYZW(other.xyzw[0] - this.xyzw[0], other.xyzw[1] - this.xyzw[1], other.xyzw[2] - this.xyzw[2], other.xyzw[3] - this.xyzw[3]);
   }
-  /** Return the distance between the instance and other after normalizing by weights
-   */
+  /** Return the xy distance between the instance and `other` after normalizing by weights */
   public realDistanceXY(other: Point4d): number | undefined {
     const wA = this.w;
     const wB = other.w;
     if (Geometry.isSmallMetricDistance(wA) || Geometry.isSmallMetricDistance(wB))
       return undefined;
     return Geometry.hypotenuseXY(other.xyzw[0] / wB - this.xyzw[0] / wA, other.xyzw[1] / wB - this.xyzw[1] / wA);
+  }
+  /** Return the xy squared distance between the instance and `other` after normalizing by weights */
+  public realDistanceSquaredXY(other: Point4d): number | undefined {
+    const wA = this.w;
+    const wB = other.w;
+    if (Geometry.isSmallMetricDistance(wA) || Geometry.isSmallMetricDistance(wB))
+      return undefined;
+    return Geometry.hypotenuseSquaredXY(other.xyzw[0] / wB - this.xyzw[0] / wA, other.xyzw[1] / wB - this.xyzw[1] / wA);
   }
   /** Return the largest absolute distance between corresponding components
    * * x,y,z,w all participate without normalization.
