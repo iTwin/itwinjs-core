@@ -4,13 +4,18 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
 import { Angle, Point3d, Range2d, YawPitchRollAngles } from "@itwin/core-geometry";
-import { FractionRun, TextAnnotation, TextAnnotation2dProps, TextAnnotation3dProps, TextBlock, TextRun } from "@itwin/core-common";
-import { IModelDb, SnapshotDb } from "../../IModelDb";
+import { Code, ElementProps, FractionRun, GeometricModel2dProps, RelatedElement, SubCategoryAppearance, TextAnnotation, TextAnnotation2dProps, TextAnnotation3dProps, TextBlock, TextRun } from "@itwin/core-common";
+import { IModelDb, SnapshotDb, StandaloneDb } from "../../IModelDb";
 import { TextAnnotation2d, TextAnnotation3d } from "../../annotations/TextAnnotationElement";
 import { IModelTestUtils } from "../IModelTestUtils";
-import { GeometricElement2d, GeometricElement3d } from "../../Element";
-import { Id64 } from "@itwin/core-bentley";
+import { DocumentPartition, Drawing, GeometricElement2d, GeometricElement3d, Subject } from "../../Element";
+import { Guid, Id64, Id64String } from "@itwin/core-bentley";
 import { ComputeRangesForTextLayoutArgs, TextLayoutRanges } from "../../annotations/TextBlockLayout";
+import { DefinitionModel, DocumentListModel, DrawingModel } from "../../Model";
+import { DrawingCategory } from "../../Category";
+import { DisplayStyle2d } from "../../DisplayStyle";
+import { CategorySelector, DrawingViewDefinition } from "../../ViewDefinition";
+import { FontFile } from "../../FontFile";
 
 function computeTextRangeAsStringLength(args: ComputeRangesForTextLayoutArgs): TextLayoutRanges {
   const range = new Range2d(0, 0, args.chars.length, args.lineHeight);
@@ -113,10 +118,11 @@ describe("TextAnnotation element", () => {
 
   function createAnnotation(): TextAnnotation {
 
-    const block = TextBlock.create({ styleName: "block", styleOverrides: { fontName: "Arial" } });
-    block.appendRun(TextRun.create({ content: "Run, Barry,", styleName: "run1" }));
-    block.appendRun(TextRun.create({ content: "RUN!!!", styleName: "run2" }));
-    block.appendRun(FractionRun.create({ numerator: "Harrison", denominator: "Wells", styleName: "run3" }));
+    const styleOverrides = { fontName: "Karla" };
+    const block = TextBlock.create({ styleName: "block", styleOverrides });
+    block.appendRun(TextRun.create({ content: "Run, Barry,", styleName: "run1", styleOverrides }));
+    block.appendRun(TextRun.create({ content: "RUN!!!", styleName: "run2", styleOverrides }));
+    block.appendRun(FractionRun.create({ numerator: "Harrison", denominator: "Wells", styleName: "run3", styleOverrides }));
 
     const annotation = TextAnnotation.fromJSON({ textBlock: block.toJSON() });
     annotation.anchor = { vertical: "middle", horizontal: "right" };
@@ -127,7 +133,85 @@ describe("TextAnnotation element", () => {
     return annotation;
   }
 
-  describe("TextAnnotation3d Persistence", () => {
+  const getOrCreateDocumentList = async (db: IModelDb): Promise<Id64String> => {
+    const documentListName = "DrawingModel";
+    let documentListModelId: string | undefined;
+
+    // Attempt to find an existing document partition and document list model
+    const ids = db.queryEntityIds({ from: DocumentPartition.classFullName, where: `CodeValue = '${documentListName}'` });
+    if (ids.size === 1) {
+      documentListModelId = ids.values().next().value;
+    }
+
+    // If they do not exist, create the document partition and document list model
+    if (documentListModelId === undefined) {
+      const subjectId = db.elements.getRootSubject().id;
+      await db.locks.acquireLocks({
+        shared: subjectId,
+      });
+      documentListModelId = DocumentListModel.insert(db, subjectId, documentListName);
+    }
+
+
+    return documentListModelId;
+  };
+
+  const insertDrawingElement = async (db: IModelDb, drawingName: string): Promise<Id64String> => {
+    // Get or make documentListModelId
+    const documentListModelId = await getOrCreateDocumentList(db);
+
+    // Acquire locks and create sheet
+    await db.locks.acquireLocks({ shared: documentListModelId });
+    const drawingElementProps: ElementProps = {
+      classFullName: Drawing.classFullName,
+      code: Drawing.createCode(db, documentListModelId, drawingName),
+      model: documentListModelId
+    };
+    return db.elements.insertElement(drawingElementProps);
+  };
+
+  const insertDrawingModel = async (db: IModelDb, drawingElementId: string): Promise<Id64String> => {
+    const drawingModelProps: GeometricModel2dProps = {
+      classFullName: DrawingModel.classFullName,
+      modeledElement: { id: drawingElementId, relClassName: "BisCore:ModelModelsElement" } as RelatedElement,
+    };
+    return db.models.insertModel(drawingModelProps);
+  };
+
+  const createJobSubjectElement = (iModel: IModelDb, name: string): Subject => {
+    const subj = Subject.create(iModel, iModel.elements.getRootSubject().id, name);
+    subj.setJsonProperty("Subject", { Job: name }); // eslint-disable-line @typescript-eslint/naming-convention
+
+    return subj;
+  }
+
+  const insertModels = async (standaloneModel: StandaloneDb) => {
+    const jobSubjectId = createJobSubjectElement(standaloneModel, "Job").insert();
+    const drawingDefinitionModelId = DefinitionModel.insert(standaloneModel, jobSubjectId, "DrawingDefinition");
+    const drawingCategoryId = DrawingCategory.insert(standaloneModel, drawingDefinitionModelId, "DrawingCategory", new SubCategoryAppearance());
+    const drawingElementId = await insertDrawingElement(standaloneModel, "drawing-1");
+    const drawingModelId = await insertDrawingModel(standaloneModel, drawingElementId);
+
+    const displayStyle2dId = DisplayStyle2d.insert(standaloneModel, drawingDefinitionModelId, "DisplayStyle2d");
+    const drawingCategorySelectorId = CategorySelector.insert(standaloneModel, drawingDefinitionModelId, "DrawingCategories", [drawingCategoryId]);
+    const drawingViewRange = new Range2d(0, 0, 500, 500);
+    const drawingViewId = DrawingViewDefinition.insert(standaloneModel, drawingDefinitionModelId, "Drawing View", drawingModelId, drawingCategorySelectorId, displayStyle2dId, drawingViewRange);
+
+    const drawing = {
+      definitionModel: drawingDefinitionModelId,
+      category: drawingCategoryId,
+      element: drawingElementId,
+      model: drawingModelId,
+      displayStyle: displayStyle2dId,
+      categorySelector: drawingCategorySelectorId,
+      view: drawingViewId,
+    }
+
+    return { drawing };
+  }
+
+
+  describe.only("TextAnnotation3d Persistence", () => {
     let imodel: SnapshotDb;
     let seed: GeometricElement3d;
 
@@ -186,18 +270,13 @@ describe("TextAnnotation element", () => {
 
         expectPlacement(el0, false);
         expect(el0.toJSON().elementGeometryBuilderParams).not.to.be.undefined;
-        console.log("Claudia Test > ", "elementGeometryBuilderParams", el0.toJSON().elementGeometryBuilderParams?.entryArray);
 
-        let elId: string | undefined;
-        try {
-          elId = el0.insert(); // This is failing
-        } catch (e: any) {
-          console.log("Claudia Test > ", "unable to insert element", e?.errorNumber); // I wanted a more verbose error message
-        }
 
-        expect(Id64.isValidId64(elId!)).to.be.true;
+        const elId = el0.insert()
 
-        const el1 = imodel.elements.getElement<TextAnnotation3d>(elId!);
+        expect(Id64.isValidId64(elId)).to.be.true;
+
+        const el1 = imodel.elements.getElement<TextAnnotation3d>(elId);
         expect(el1).not.to.be.undefined;
         expect(el1 instanceof TextAnnotation3d).to.be.true;
 
@@ -218,31 +297,44 @@ describe("TextAnnotation element", () => {
       it("roundtrips an annotation with a textBlock", async () => { await test(createAnnotation()); });
     });
   });
+  describe.only("TextAnnotation2d Persistence", () => {
+    let imodel: StandaloneDb;
+    let seedCategoryId: string;
+    let seedModelId: string;
 
-  describe("TextAnnotation2d Persistence", () => {
-    let imodel: SnapshotDb;
-    let seed: GeometricElement2d;
+    before(async () => {
+      const filePath = IModelTestUtils.prepareOutputFile("annotationTests", "TextAnnotation2d.bim");
+      imodel = StandaloneDb.createEmpty(filePath, {
+        rootSubject: { name: "TextAnnotation2d tests", description: "TextAnnotation2d tests" },
+        client: "integration tests",
+        globalOrigin: { x: 0, y: 0 },
+        projectExtents: { low: { x: -500, y: -500, z: -50 }, high: { x: 500, y: 500, z: 50 } },
+        guid: Guid.createValue(),
+      });
 
-    before(() => {
-      const seedFileName = IModelTestUtils.resolveAssetFile("CompatibilityTestSeed.bim");
-      const testFileName = IModelTestUtils.prepareOutputFile("GeometryStream", "GeometryStreamTest.bim");
-      imodel = IModelTestUtils.createSnapshotFromSeed(testFileName, seedFileName);
+      const ids = await insertModels(imodel);
+      await imodel.fonts.embedFontFile({
+        file: FontFile.createFromTrueTypeFileName(IModelTestUtils.resolveFontFile("Karla-Regular.ttf"))
+      })
 
-      seed = imodel.elements.getElement<GeometricElement2d>("0x25");
-      assert.exists(seed);
-      assert.isTrue(seed.federationGuid! === "153f5fa8-c414-491e-aa41-d6a886c098ae");
+      expect(ids.drawing).not.to.be.undefined;
+      Object.entries(ids.drawing).forEach((entry => { expect(entry[1], `expected ${entry[0]} to be defined`).not.to.be.undefined; }));
+
+
+      seedCategoryId = ids.drawing.category;
+      seedModelId = ids.drawing.model;
     });
 
-    after(() => imodel.close());
+    after(() => {
+      imodel.saveChanges("tests");
+      imodel.close();
+    });
 
     function createElement2d(props?: Partial<TextAnnotation2dProps>): TextAnnotation2d {
       return TextAnnotation2d.fromJSON({
-        category: seed.category,
-        model: seed.model,
-        code: {
-          spec: seed.code.spec,
-          scope: seed.code.scope,
-        },
+        category: seedCategoryId,
+        model: seedModelId,
+        code: Code.createEmpty(),
         placement: {
           origin: { x: 0, y: 0 },
           angle: Angle.createDegrees(0).toJSON(),
@@ -268,7 +360,7 @@ describe("TextAnnotation element", () => {
       expect(el.placement.bbox.isNull).to.equal(!expectValidBBox);
     }
 
-    describe.only("inserts 2d element and round-trips through JSON", async () => {
+    describe("inserts 2d element and round-trips through JSON", async () => {
       async function test(annotation?: TextAnnotation): Promise<void> {
         const el0 = createElement2d();
         if (annotation) {
@@ -277,15 +369,8 @@ describe("TextAnnotation element", () => {
 
         expectPlacement(el0, false);
         expect(el0.toJSON().elementGeometryBuilderParams).not.to.be.undefined;
-        console.log("Claudia Test > ", "elementGeometryBuilderParams", el0.toJSON().elementGeometryBuilderParams?.entryArray);
 
-        let elId: string | undefined;
-        try {
-          elId = el0.insert(); // This is failing
-        } catch (e: any) {
-          console.log("Claudia Test > ", "unable to insert element", e); // I wanted a more verbose error message
-          throw e;
-        }
+        const elId = el0.insert();
 
         expect(Id64.isValidId64(elId)).to.be.true;
 
