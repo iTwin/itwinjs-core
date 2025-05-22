@@ -730,18 +730,6 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
   private dispatchBSplineCurve3dBSplineCurve3d(
     bcurveA: BSplineCurve3dBase, bcurveB: BSplineCurve3dBase, reversed: boolean,
   ): void {
-    // test fraction 0 and 1
-    for (const fraction of [0, 1]) {
-      let point = bcurveA.fractionToPoint(fraction);
-      let detail = bcurveB.closestPoint(point, false);
-      if (detail && detail.point.isAlmostEqualXY(point))
-        this.recordPointWithLocalFractions(fraction, bcurveA, 0, 1, detail.fraction, bcurveB, 0, 1, reversed);
-      point = bcurveB.fractionToPoint(fraction);
-      detail = bcurveA.closestPoint(point, false);
-      if (detail && detail.point.isAlmostEqualXY(point))
-        this.recordPointWithLocalFractions(detail.fraction, bcurveA, 0, 1, fraction, bcurveB, 0, 1, reversed);
-    }
-    // test all fractions
     const bezierSpanA = bcurveA.collectBezierSpans(true) as BezierCurve3dH[];
     const bezierSpanB = bcurveB.collectBezierSpans(true) as BezierCurve3dH[];
     const numA = bezierSpanA.length;

@@ -1112,7 +1112,7 @@ describe("BsplineCurve", () => {
     expect(ck.getNumErrors()).toBe(0);
   });
   it("intersectionXYPairs", () => {
-    const ck = new Checker(true, true);
+    const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
 
     // small bspline
@@ -1129,13 +1129,12 @@ describe("BsplineCurve", () => {
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, bspline0);
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, bspline1);
     let intersections = CurveCurve.intersectionXYPairs(bspline0, false, bspline1, false);
-    ck.testLE(2, intersections.length, "2 intersection between the partial curves");
     for (const intersection of intersections)
       GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, intersection.detailA.point, 0.1);
-    let intersection0 = intersections[0].detailA.point;
-    ck.testPoint3d(bspline0.startPoint(), intersection0);
-    let intersection1 = intersections[1].detailA.point;
-    ck.testPoint3d(bspline0.endPoint(), intersection1);
+    if (ck.testExactNumber(2, intersections.length, "2 intersection between the partial curves")) {
+      ck.testPoint3d(bspline0.startPoint(), intersections[0].detailA.point);
+      ck.testPoint3d(bspline0.endPoint(), intersections[1].detailA.point);
+    }
 
     // large bspline
     const dx = 5;
@@ -1151,14 +1150,12 @@ describe("BsplineCurve", () => {
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, bspline0, dx);
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, bspline1, dx);
     intersections = CurveCurve.intersectionXYPairs(bspline0, false, bspline1, false);
-    ck.testLE(2, intersections.length, "2 intersection between the partial curves");
     for (const intersection of intersections)
       GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, intersection.detailA.point, 0.1, dx);
-    intersection0 = intersections[0].detailA.point;
-    ck.testPoint3d(bspline0.startPoint(), intersection0);
-    intersection1 = intersections[1].detailA.point;
-    ck.testPoint3d(bspline0.endPoint(), intersection1);
-
+    if (ck.testExactNumber(2, intersections.length, "2 intersection between the partial curves")) {
+      ck.testPoint3d(bspline0.startPoint(), intersections[0].detailA.point);
+      ck.testPoint3d(bspline0.endPoint(), intersections[1].detailA.point);
+    }
     GeometryCoreTestIO.saveGeometry(allGeometry, "BsplineCurve", "intersectionXYPairs");
     expect(ck.getNumErrors()).toBe(0);
   });
