@@ -38,6 +38,7 @@ import { CurveWireMomentsXYZ } from "./CurveWireMomentsXYZ";
 import { GeometryQuery } from "./GeometryQuery";
 import { ChainCollectorContext } from "./internalContexts/ChainCollectorContext";
 import { PolygonWireOffsetContext } from "./internalContexts/PolygonOffsetContext";
+import { TransferWithSplitArcs } from "./internalContexts/TransferWithSplitArcs";
 import { LineString3d } from "./LineString3d";
 import { Loop, SignedLoops } from "./Loop";
 import { JointOptions, OffsetOptions } from "./OffsetOptions";
@@ -340,8 +341,8 @@ export class RegionOps {
     operation: RegionBinaryOpType,
     mergeTolerance: number = Geometry.smallMetricDistance,
   ): AnyRegion | undefined {
-    // Always return UnionRegion for now. But keep return type as AnyRegion:
-    // in the future, we might return the *simplest* region type.
+    // Always return UnionRegion for now, but keep return type as AnyRegion.
+    // In the future, we might return the *simplest* region type.
     const result = UnionRegion.create();
     const context = RegionBooleanContext.create(RegionGroupOpType.Union, RegionGroupOpType.Union);
     context.addMembers(loopsA, loopsB);
@@ -728,7 +729,8 @@ export class RegionOps {
   public static constructAllXYRegionLoops(
     curvesAndRegions: AnyCurve | AnyCurve[], tolerance: number = Geometry.smallMetricDistance,
   ): SignedLoops[] {
-    const primitives = RegionOps.collectCurvePrimitives(curvesAndRegions, undefined, true, true);
+    let primitives = RegionOps.collectCurvePrimitives(curvesAndRegions, undefined, true, true);
+    primitives = TransferWithSplitArcs.clone(BagOfCurves.create(...primitives)).children as CurvePrimitive[];
     const range = this.curveArrayRange(primitives);
     const areaTol = this.computeXYAreaTolerance(range, tolerance);
     const intersections = CurveCurve.allIntersectionsAmongPrimitivesXY(primitives, tolerance);
