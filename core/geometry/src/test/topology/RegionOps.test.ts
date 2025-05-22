@@ -936,7 +936,7 @@ describe("RegionOps", () => {
     const allGeometry: GeometryQuery[] = [];
     let dx = 0;
     let mergedArea, holeArea, expectedArea;
-    let rectangleArea = 80;
+    const rectangleArea = 80;
 
     // region with circle hole
     const rectangle = Loop.create(LineString3d.create(Sample.createRectangle(0, 0, 10, 8, 0, true)));

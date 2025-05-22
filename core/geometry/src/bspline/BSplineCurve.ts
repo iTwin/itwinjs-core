@@ -311,12 +311,13 @@ export abstract class BSplineCurve3dBase extends CurvePrimitive {
    * @param fractionB end fraction.
    */
   public override clonePartialCurve(fractionA: number, fractionB: number): BSplineCurve3dBase {
+    let clone: BSplineCurve3dBase;
     if (fractionA > fractionB) {
-      const clone = this.clonePartialCurve(fractionB, fractionA);
+      clone = this.clonePartialCurve(fractionB, fractionA);
       clone.reverseInPlace();
       return clone;
     }
-    let clone = this.clone();
+    clone = this.clone();
     const origNumKnots = clone._bcurve.knots.knots.length;
     let knotA = clone._bcurve.knots.fractionToKnot(fractionA);
     let knotB = clone._bcurve.knots.fractionToKnot(fractionB);
