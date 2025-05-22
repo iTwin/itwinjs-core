@@ -1111,7 +1111,7 @@ describe("BsplineCurve", () => {
     GeometryCoreTestIO.saveGeometry(allGeometry, "BsplineCurve", "clonePartialCurve");
     expect(ck.getNumErrors()).toBe(0);
   });
-  it.only("intersectionXYPairs", () => {
+  it("intersectionXYPairs", () => {
     const ck = new Checker(true, true);
     const allGeometry: GeometryQuery[] = [];
 

@@ -167,7 +167,7 @@ export class RegionOpsFaceToFaceSearch {
         // The faceWalker seed is always on the base of the stack.
         // The stack then contains even-odd pairs of (entryNode, faceNode).
         // entryNode is the node where a face was entered.
-        // faceNode is another node around that face (current node).
+        // faceNode is another node around that face.
         facePathStack.push(faceWalker);
         facePathStack.push(mate);
         let faceNode = mate.faceSuccessor;

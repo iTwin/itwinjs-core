@@ -101,8 +101,10 @@ export class PlanarSubdivision {
     const detailByPrimitive = new MapCurvePrimitiveToCurveLocationDetailPairArray();
     for (const pair of allPairs)
       detailByPrimitive.insertPair(pair);
-    if (primitives.length > detailByPrimitive.primitiveToPair.size) // otherwise, these single-primitive loops are missing from the graph
+    if (primitives.length > detailByPrimitive.primitiveToPair.size) {
+      // otherwise, these single-primitive loops are missing from the graph
       detailByPrimitive.splitAndAppendMissingClosedPrimitives(primitives, mergeTolerance);
+    }
     const graph = new HalfEdgeGraph();
     for (const entry of detailByPrimitive.primitiveToPair.entries()) {
       const p = entry[0];

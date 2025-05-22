@@ -717,28 +717,29 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
               if (errors > 0 && !xyzA1.isAlmostEqual(xyzB1))
                 errors++;
             }
-            if (this.acceptFraction(false, bcurveAFraction, false) && this.acceptFraction(false, bcurveBFraction, false))
+            if (this.acceptFraction(false, bcurveAFraction, false) && this.acceptFraction(false, bcurveBFraction, false)) {
               this.recordPointWithLocalFractions(
                 bcurveAFraction, bcurveA, 0, 1, bcurveBFraction, bcurveB, 0, 1, reversed,
               );
+            }
           }
         }
       }
     }
   }
   private dispatchBSplineCurve3dBSplineCurve3d(
-    bcurveA: BSplineCurve3dBase, bcurveB: BSplineCurve3dBase, _reversed: boolean,
+    bcurveA: BSplineCurve3dBase, bcurveB: BSplineCurve3dBase, reversed: boolean,
   ): void {
     // test fraction 0 and 1
     for (const fraction of [0, 1]) {
       let point = bcurveA.fractionToPoint(fraction);
       let detail = bcurveB.closestPoint(point, false);
       if (detail && detail.point.isAlmostEqualXY(point))
-        this.recordPointWithLocalFractions(fraction, bcurveA, 0, 1, detail.fraction, bcurveB, 0, 1, _reversed);
+        this.recordPointWithLocalFractions(fraction, bcurveA, 0, 1, detail.fraction, bcurveB, 0, 1, reversed);
       point = bcurveB.fractionToPoint(fraction);
       detail = bcurveA.closestPoint(point, false);
       if (detail && detail.point.isAlmostEqualXY(point))
-        this.recordPointWithLocalFractions(detail.fraction, bcurveA, 0, 1, fraction, bcurveB, 0, 1, _reversed);
+        this.recordPointWithLocalFractions(detail.fraction, bcurveA, 0, 1, fraction, bcurveB, 0, 1, reversed);
     }
     // test all fractions
     const bezierSpanA = bcurveA.collectBezierSpans(true) as BezierCurve3dH[];
@@ -758,13 +759,13 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
         if (rangeA[a].intersectsRangeXY(rangeB[b])) {
           const strokeCountA = bezierSpanA[a].computeStrokeCountForOptions();
           const strokeCountB = bezierSpanB[b].computeStrokeCountForOptions();
-          if (strokeCountA <= strokeCountB)
+          if (strokeCountA < strokeCountB)
             this.dispatchBezierBezierStrokeFirst(
-              bezierSpanA[a], bcurveA, strokeCountA, bezierSpanB[b], bcurveB, strokeCountB, univariateCoffsB, _reversed,
+              bezierSpanA[a], bcurveA, strokeCountA, bezierSpanB[b], bcurveB, strokeCountB, univariateCoffsB, reversed,
             );
           else
             this.dispatchBezierBezierStrokeFirst(
-              bezierSpanB[b], bcurveB, strokeCountB, bezierSpanA[a], bcurveA, strokeCountA, univariateCoffsA, !_reversed,
+              bezierSpanB[b], bcurveB, strokeCountB, bezierSpanA[a], bcurveA, strokeCountA, univariateCoffsA, !reversed,
             );
         }
       }

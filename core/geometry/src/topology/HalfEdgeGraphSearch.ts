@@ -79,7 +79,8 @@ export class HalfEdgeGraphSearch {
     return result;
   }
   /**
-   * Search the graph for the face with the most negative area (outer face).
+   * Search the graph for the face with the most negative area.
+   * * If the graph has exactly one connected component, this is its outer face.
    * @param oneCandidateNodePerFace graph or an array containing one node from each face to be considered.
    * @returns node on the negative area face with largest absolute area, or `undefined` if no negative area face.
    */
