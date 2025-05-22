@@ -1246,10 +1246,6 @@ export namespace IModelConnection {
     /** @internal */
     constructor(private _iModel: IModelConnection) { }
 
-    private _buildCodeSpecQuery(whereClause: string): string {
-      return `${this._loadCodeSpecQuery} WHERE ${whereClause}`;
-    }
-
     private _isCodeSpecProperties(x: any): x is CodeSpecProperties{
       if(!x || !x.scopeSpec || !Object.values(CodeScopeSpec.Type).includes(x.scopeSpec.type))
         return false;
@@ -1270,7 +1266,9 @@ export namespace IModelConnection {
     }
 
     /** Loads the needed CodeSpec from the remote IModelDb. */
-    private async _loadCodeSpec(query: string): Promise<CodeSpec> {
+    private async _loadCodeSpec(identifier: {name: string} | {id: string}): Promise<CodeSpec> {
+      const query = `${this._loadCodeSpecQuery} WHERE ${"name" in identifier ? ` Name='${identifier.name}'` : ` Id=${identifier.id}`}`;
+
       const queryReader = this._iModel.createQueryReader(query, undefined, { rowFormat: QueryRowFormat.UseECSqlPropertyIndexes});
 
       const queryResult = await queryReader.next();
@@ -1303,9 +1301,7 @@ export namespace IModelConnection {
       if (!Id64.isValid(codeSpecId))
         throw new IModelError(IModelStatus.InvalidId, "Invalid codeSpecId", () => ({ codeSpecId }));
 
-      const query = this._buildCodeSpecQuery(`Id=${codeSpecId}`);
-
-      return this._loadCodeSpec(query);
+      return this._loadCodeSpec({id: codeSpecId});
     }
 
     /** Look up a CodeSpec by name.
@@ -1317,9 +1313,7 @@ export namespace IModelConnection {
       if(name === "")
         throw new IModelError(IModelStatus.NotFound, "CodeSpec not found");
 
-      const query = this._buildCodeSpecQuery(`Name='${name}'`);
-
-      return this._loadCodeSpec(query);
+      return this._loadCodeSpec({name});
     }
   }
 
