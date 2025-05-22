@@ -6,7 +6,7 @@
  * @module Tiles
  */
 
-import { assert, BeTimePoint, GuidString, Id64Array, Id64String, Logger } from "@itwin/core-bentley";
+import { assert, BeTimePoint, GuidString, Id64Array, Id64String } from "@itwin/core-bentley";
 import { Range3d, Transform } from "@itwin/core-geometry";
 import {
   BatchType, ContentIdProvider, EdgeOptions, ElementAlignedBox3d, ElementGeometryChange, FeatureAppearanceProvider,
