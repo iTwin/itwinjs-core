@@ -514,6 +514,7 @@ export abstract class BezierCoffs {
     addInPlace(a: number): void;
     protected allocateToOrder(order: number): void;
     abstract basisFunctions(u: number, result?: Float64Array): Float64Array;
+    clampZero(maxAbs?: number): void;
     abstract clone(): BezierCoffs;
     coffs: Float64Array;
     copyFrom(other: BezierCoffs): void;

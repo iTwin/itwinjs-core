@@ -127,6 +127,7 @@ export abstract class BezierCoffs {
   public roots(targetValue: number, _restrictTo01: boolean): number[] | undefined {
     const bezier = UnivariateBezier.create(this);
     bezier.addInPlace(- targetValue);
+    bezier.clampZero();
     const roots = UnivariateBezier.deflateRoots(bezier);
     return this.filter01(roots, true);
   }
@@ -189,6 +190,16 @@ export abstract class BezierCoffs {
         d = d1;
     }
     return d;
+  }
+  /** Assist Newton with slow-to-converge roots at e.g., Bezier endpoints. */
+  public clampZero(maxAbs: number = Geometry.smallFloatingPoint): void {
+    if (maxAbs > 0) {
+      for (let i = 0; i < this.coffs.length; ++i) {
+        const coff = this.coffs[i];
+        if (coff && Math.abs(coff) < maxAbs)
+          this.coffs[i] = 0.0;
+      }
+    }
   }
 }
 /**
