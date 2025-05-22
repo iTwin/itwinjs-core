@@ -48,14 +48,22 @@ import { UnionRegion } from "./UnionRegion";
  * @internal
  */
 abstract class RegionOpsFaceToFaceSearchCallbacks {
-  /** Announce a representative node on the outer face of a component */
-  public startComponent(_node: HalfEdge): boolean { return true; }
-  /** Announce return to outer face */
-  public finishComponent(_node: HalfEdge): boolean { return true; }
-  /** Announce face entry */
-  public enterFace(_facePathStack: HalfEdge[], _newFaceNode: HalfEdge): boolean { return true; }
-  /** Announce face exit */
-  public leaveFace(_facePathStack: HalfEdge[], _newFaceNode: HalfEdge): boolean { return true; }
+  /** Announce a representative node on the outer face of a component. */
+  public startComponent(_node: HalfEdge): boolean {
+    return true;
+  }
+  /** Announce return to outer face. */
+  public finishComponent(_node: HalfEdge): boolean {
+    return true;
+  }
+  /** Announce face entry. */
+  public enterFace(_facePathStack: HalfEdge[], _newFaceNode: HalfEdge): boolean {
+    return true;
+  }
+  /** Announce face exit. */
+  public leaveFace(_facePathStack: HalfEdge[], _newFaceNode: HalfEdge): boolean {
+    return true;
+  }
 }
 /** Function signature to test if a pair of boolean states is to be accepted by area booleans (during face-to-face sweeps)
  * @internal
@@ -129,16 +137,22 @@ class RegionOpsBinaryBooleanSweepCallbacks extends RegionOpsFaceToFaceSearchCall
  */
 export class RegionOpsFaceToFaceSearch {
   /**
-   * run a DFS with face-to-face step announcements.
+   * Run a DFS with face-to-face step announcements.
    * * false return from any function terminates search immediately.
    * * all reachable nodes assumed to have both visit masks clear.
    * @param graph containing graph.
    * @param seed first node to visit.
    * @param faceHasBeenVisited mask marking faces that have been seen.
    * @param nodeHasBeenVisited mask marking node-to-node step around face.
-   *
+   * @param callbacks callbacks.
    */
-  public static faceToFaceSearchFromOuterLoop(_graph: HalfEdgeGraph, seed: HalfEdge, faceHasBeenVisited: HalfEdgeMask, nodeHasBeenVisited: HalfEdgeMask, callbacks: RegionOpsFaceToFaceSearchCallbacks) {
+  public static faceToFaceSearchFromOuterLoop(
+    _graph: HalfEdgeGraph,
+    seed: HalfEdge,
+    faceHasBeenVisited: HalfEdgeMask,
+    nodeHasBeenVisited: HalfEdgeMask,
+    callbacks: RegionOpsFaceToFaceSearchCallbacks,
+  ): void {
     if (seed.isMaskSet(faceHasBeenVisited))
       return;
     if (!callbacks.startComponent(seed))
@@ -150,10 +164,10 @@ export class RegionOpsFaceToFaceSearch {
       let entryNode = faceWalker;
       let mate = faceWalker.edgeMate;
       if (!mate.isMaskSet(faceHasBeenVisited)) {
-        // the faceWalker seed is always on the base of the stack.
-        // the stack then contains even-odd pairs of (entryNode, currentNode)
-        // * entryNode is the node where a face was entered.
-        // * faceNode is another node around that face.
+        // The faceWalker seed is always on the base of the stack.
+        // The stack then contains even-odd pairs of (entryNode, faceNode).
+        // entryNode is the node where a face was entered.
+        // faceNode is another node around that face.
         facePathStack.push(faceWalker);
         facePathStack.push(mate);
         let faceNode = mate.faceSuccessor;
@@ -184,13 +198,13 @@ export class RegionOpsFaceToFaceSearch {
               entryNode = facePathStack[facePathStack.length - 1];
             }
             if (faceNode.isMaskSet(nodeHasBeenVisited)) {
-              // this is disaster !!!
+              // this is disaster
               return;
             }
           }
         }
       }
-      // continue at outermost level .....
+      // continue at outermost level
       faceWalker = faceWalker.faceSuccessor;
     } while (faceWalker !== seed);
     callbacks.finishComponent(seed);
@@ -329,7 +343,9 @@ class RegionGroupMember {
     this.parentGroup = parentGroup;
     this.sweepState = 0;
   }
-  public clearState() { this.sweepState = 0; }
+  public clearState() {
+    this.sweepState = 0;
+  }
 }
 
 /**
@@ -553,9 +569,8 @@ export class RegionBooleanContext implements RegionOpsFaceToFaceSearchCallbacks 
     this._announceFaceFunction = announceFaceFunction;
     this.binaryOp = binaryOp;
     this.graph.clearMask(HalfEdgeMask.EXTERIOR);
-    for (const group of [this.groupA, this.groupB]) {
+    for (const group of [this.groupA, this.groupB])
       group.clearState();
-    }
     const faceHasBeenVisitedMask = this.graph.grabMask();
     const nodeHasBeenVisitedMask = this.graph.grabMask();
     const componentArray = GraphComponentArray.create(this.graph);
@@ -565,7 +580,9 @@ export class RegionBooleanContext implements RegionOpsFaceToFaceSearchCallbacks 
         const exteriorMask = HalfEdgeMask.EXTERIOR;
         const allMasksToClear = exteriorMask | faceHasBeenVisitedMask | nodeHasBeenVisitedMask;
         this.graph.clearMask(allMasksToClear);
-        RegionOpsFaceToFaceSearch.faceToFaceSearchFromOuterLoop(this.graph, exteriorHalfEdge, faceHasBeenVisitedMask, nodeHasBeenVisitedMask, this);
+        RegionOpsFaceToFaceSearch.faceToFaceSearchFromOuterLoop(
+          this.graph, exteriorHalfEdge, faceHasBeenVisitedMask, nodeHasBeenVisitedMask, this,
+        );
       }
     }
     this.graph.dropMask(faceHasBeenVisitedMask);
@@ -638,18 +655,19 @@ export class RegionBooleanContext implements RegionOpsFaceToFaceSearchCallbacks 
     return undefined;
   }
   // obligations to act as sweep callback ...
-  /** Announce a representative node on the outer face of a component */
+  /** Announce a representative node on the outer face of a component. */
   public startComponent(outerFaceNode: HalfEdge): boolean {
     outerFaceNode.setMaskAroundFace(HalfEdgeMask.EXTERIOR);
     if (this._announceFaceFunction)
       this._announceFaceFunction(this.graph, outerFaceNode, -1, faceAreaFromCurvedEdgeData(outerFaceNode));
     return true;
   }
-  /** Announce return to outer face */
+  /** Announce return to outer face. */
   public finishComponent(_node: HalfEdge): boolean {
     return true;
   }
-  /** Announce entry to a graph face.
+  /**
+   * Announce entry to a graph face.
    * * Both both sides of a graph edge are from the same RegionGroupMember.
    * * Hence "crossing that edge" changes the parity count for the RegionGroupMember that owns that edge by 1.
    * * The parity count for other RegionGroupMembers are never affected by this crossing.
@@ -670,10 +688,13 @@ export class RegionBooleanContext implements RegionOpsFaceToFaceSearchCallbacks 
     return true;
   }
 }
-/** return xy area between a (part of a) curve and the x axis through a reference point.
- * If detail is undefined or does not have both start and end fractions, just do trapezoid area
+/**
+ * Return xy area between (part of) a curve and the x axis through a reference point.
+ * If detail is undefined or does not have both start and end fractions, just do trapezoid area.
  */
-function areaUnderPartialCurveXY(detail: CurveLocationDetail | undefined, xyStart: XAndY, xyEnd: XAndY, referencePoint: XAndY): number {
+function areaUnderPartialCurveXY(
+  detail: CurveLocationDetail | undefined, xyStart: XAndY, xyEnd: XAndY, referencePoint: XAndY,
+): number {
   // area between trapezoid and axis
   let trapezoidArea;
   if (detail && detail.point1) {
@@ -683,16 +704,20 @@ function areaUnderPartialCurveXY(detail: CurveLocationDetail | undefined, xyStar
   }
   let areaToChord = 0.0;
   if (detail && detail.curve && detail.hasFraction1) {
-
     if (detail.curve instanceof LineSegment3d) {
-      // ah .. nothing to do for a line segment
+      // nothing to do for a line segment
     } else if (detail.curve instanceof Arc3d) {
       areaToChord = detail.curve.areaToChordXY(detail.fraction, detail.fraction1!);
+    } else {
+      const partial = detail.curve.clonePartialCurve(detail.fraction, detail.fraction1!);
+      areaToChord = partial ?
+        RegionOps.computeXYArea(Loop.create(partial, LineSegment3d.create(detail.point1!, detail.point))) ?? 0
+        : 0;
     }
   }
   return trapezoidArea + areaToChord;
 }
-/** Compute face area for a face whose edges are decorated with CurveLocationDetail for their (partial) curves */
+/** Compute face area for a face whose edges are decorated with CurveLocationDetail for their (partial) curves. */
 function faceAreaFromCurvedEdgeData(faceSeed: HalfEdge): number {
   let area = 0.0;
   let edge = faceSeed;
@@ -703,7 +728,7 @@ function faceAreaFromCurvedEdgeData(faceSeed: HalfEdge): number {
 }
 
 /**
- * Function to accumulate area under edges
+ * Function to accumulate area under edges.
  * Array of nodes representing faces in a subset of a graph.
  * @internal
  */
@@ -722,8 +747,7 @@ export class GraphComponent {
     this.faceAreas = [];
   }
   /**
-   * visit all vertices and edges in the component to build face area array and composite range.
-   *
+   * Visit all vertices and edges in the component to build face area array and composite range.
    * @param extendRangeForEdge optional function to compute edge range.  If undefined, linear edge is assumed.
    * @param faceAreaFunction optional function to compute face area.  If undefined, linear edges are assumed.
    */
@@ -747,7 +771,8 @@ export class GraphComponent {
     }
   }
 }
-/** build and hold an array of component data for a HalfEdgeGraph.
+/**
+ * Build and hold an array of component data for a HalfEdgeGraph.
  * @internal
  */
 export class GraphComponentArray {
@@ -757,7 +782,9 @@ export class GraphComponentArray {
     this.graph = graph;
     this.components = [];
   }
-  public static create(graph: HalfEdgeGraph, extendRangeForEdge?: (edge: HalfEdge, range: Range2d) => void): GraphComponentArray {
+  public static create(
+    graph: HalfEdgeGraph, extendRangeForEdge?: (edge: HalfEdge, range: Range2d) => void,
+  ): GraphComponentArray {
     const result = new GraphComponentArray(graph);
     const componentArrays = HalfEdgeGraphSearch.collectConnectedComponentsWithExteriorParityMasks(graph, undefined);
     for (const componentFaces of componentArrays) {
