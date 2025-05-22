@@ -58,8 +58,6 @@ class PrimaryTreeSupplier implements TileTreeSupplier {
     // NB: we don't compare isPlanProjection or is3d - they should always have the same value for a given modelId.
     return compareStrings(lhs.modelId, rhs.modelId) || compareIModelTileTreeIds(lhs.treeId, rhs.treeId)
       || comparePossiblyUndefined((x, y) => x.compareTo(y), lhs.timeline, rhs.timeline);
-
-    // return compareStrings(lhs.modelId, rhs.modelId) || compareIModelTileTreeIds(lhs.treeId, rhs.treeId);
   }
 
   public async createTileTree(id: PrimaryTreeId, iModel: IModelConnection): Promise<TileTree | undefined> {
