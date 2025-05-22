@@ -471,18 +471,8 @@ export class IModelTileTree extends TileTree {
     if (!displayStyle)
       return;
 
-    if (!this._scriptLoadPromise) {
-      this._scriptLoadPromise = Promise.resolve().then(async () => {
-        try {
-          await new Promise(resolve => setTimeout(resolve, 0));
-          await displayStyle.load();
-        } catch (err) {
-          Logger.logError("frontend", "Failed to load displayStyle", { error: err });
-        } finally {
-          this._scriptLoadPromise = undefined;
-        }
-      });
-    }
+    await new Promise(resolve => setTimeout(resolve, 0));
+    await displayStyle.load();
 
     const newScript = displayStyle.scheduleScript;
     const previousScript = this._lastScheduleScript;
