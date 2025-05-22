@@ -3,9 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { describe, expect, it } from "vitest";
 import * as fs from "fs";
+import { describe, expect, it } from "vitest";
 import { BezierCurve3d } from "../../bspline/BezierCurve3d";
+import { BSplineCurve3d } from "../../bspline/BSplineCurve";
 import { BSplineCurve3dH } from "../../bspline/BSplineCurve3dH";
 import { Arc3d } from "../../curve/Arc3d";
 import { BagOfCurves, CurveChain, CurveCollection } from "../../curve/CurveCollection";
@@ -19,11 +20,13 @@ import { ChainCollectorContext } from "../../curve/internalContexts/ChainCollect
 import { PolygonWireOffsetContext } from "../../curve/internalContexts/PolygonOffsetContext";
 import { LineSegment3d } from "../../curve/LineSegment3d";
 import { LineString3d } from "../../curve/LineString3d";
-import { Loop } from "../../curve/Loop";
+import { Loop, SignedLoops } from "../../curve/Loop";
 import { JointOptions, OffsetOptions } from "../../curve/OffsetOptions";
+import { ParityRegion } from "../../curve/ParityRegion";
 import { Path } from "../../curve/Path";
-import { RegionOps } from "../../curve/RegionOps";
+import { RegionBinaryOpType, RegionOps } from "../../curve/RegionOps";
 import { StrokeOptions } from "../../curve/StrokeOptions";
+import { UnionRegion } from "../../curve/UnionRegion";
 import { Geometry } from "../../Geometry";
 import { Angle } from "../../geometry3d/Angle";
 import { AngleSweep } from "../../geometry3d/AngleSweep";
@@ -217,6 +220,7 @@ describe("RegionOps", () => {
     context.saveAndReset("RegionOps", "BooleanDisjointRectangles");
     expect(context.getNumErrors()).toBe(0);
   });
+
   it("BooleanFractalAB", () => {
     const context = new PolygonBooleanTests();
     context.setDebugControls(10, 1);
@@ -321,8 +325,6 @@ describe("RegionOps", () => {
     expect(context.getNumErrors()).toBe(0);
   });
 
-<<<<<<< HEAD
-=======
   it("centroidAreaNormal", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
@@ -1096,7 +1098,6 @@ describe("RegionOps", () => {
     ck.testType(RegionOps.simplifyRegionType(union2), UnionRegion, "simplifying a UnionRegion with multiple children returns the UnionRegion");
     expect(ck.getNumErrors()).toBe(0);
   });
->>>>>>> 26a4782e2c (`RegionOps.constructAllXYRegionLoops` fails to compute outer boundary (#8123))
 });
 
 /**
