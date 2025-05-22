@@ -218,7 +218,7 @@ export class IndexedPolyfaceVisitor extends PolyfaceData implements PolyfaceVisi
  */
 export class IndexedPolyfaceSubsetVisitor extends IndexedPolyfaceVisitor {
   private _facetIndices: number[];
-  private _currentSubsetIndex: number; // index within _facetIndices, or -1 after construction
+  private _currentSubsetIndex: number; // index within _facetIndices
   private _nextSubsetIndex: number; // index within _facetIndices
 
   private constructor(polyface: IndexedPolyface, facetIndices: number[], numWrap: number) {
