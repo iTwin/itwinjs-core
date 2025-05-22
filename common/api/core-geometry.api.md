@@ -514,7 +514,6 @@ export abstract class BezierCoffs {
     addInPlace(a: number): void;
     protected allocateToOrder(order: number): void;
     abstract basisFunctions(u: number, result?: Float64Array): Float64Array;
-    clampZero(maxAbs?: number): void;
     abstract clone(): BezierCoffs;
     coffs: Float64Array;
     copyFrom(other: BezierCoffs): void;
@@ -1566,6 +1565,7 @@ export class CurveChainWithDistanceIndex extends CurvePrimitive {
 
 // @public
 export abstract class CurveCollection extends GeometryQuery {
+    allTangents(spacePoint: Point3d, options?: TangentOptions): CurveLocationDetail[] | undefined;
     abstract announceToCurveProcessor(processor: RecursiveCurveProcessor): void;
     checkForNonLinearPrimitives(): boolean;
     abstract get children(): AnyCurve[];
@@ -1575,10 +1575,12 @@ export abstract class CurveCollection extends GeometryQuery {
     cloneTransformed(transform: Transform): CurveCollection | undefined;
     cloneWithExpandedLineStrings(): CurveCollection;
     closestPoint(spacePoint: Point3d, _extend?: VariantCurveExtendParameter, result?: CurveLocationDetail): CurveLocationDetail | undefined;
+    closestTangent(spacePoint: Point3d, options?: TangentOptions): CurveLocationDetail | undefined;
     collectCurvePrimitives(collectorArray?: CurvePrimitive[], smallestPossiblePrimitives?: boolean, explodeLineStrings?: boolean): CurvePrimitive[];
     static createCurveLocationDetailOnAnyCurvePrimitive(source: GeometryQuery | undefined, fraction?: number): CurveLocationDetail | undefined;
     abstract readonly curveCollectionType: CurveCollectionType;
     abstract dgnBoundaryType(): number;
+    emitTangents(spacePoint: Point3d, announceTangent: (tangent: CurveLocationDetail) => any, options?: TangentOptions): void;
     extendRange(rangeToExtend: Range3d, transform?: Transform): void;
     findParentOfDescendant(descendant: AnyCurve): CurveCollection | undefined;
     readonly geometryCategory = "curveCollection";
