@@ -50,7 +50,7 @@ export * from "./NoRenderApp";
 export * from "./NotificationManager";
 export * from "./PerModelCategoryVisibility";
 export * from "./PlanarClipMaskState";
-export * from "./RealityDataFormatRegistry";
+export * from "./RealityDataProviderRegistry";
 export * from "./SelectionSet";
 export * from "./SheetViewState";
 export * from "./SpatialClassifiersState";

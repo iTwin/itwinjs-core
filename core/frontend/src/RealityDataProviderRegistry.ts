@@ -16,7 +16,7 @@ export function getGooglePhotorealistic3DTilesURL() {
 /** Stores key-value pair to be added to reality data requests.
  * @alpha
  */
-export interface RealityDataKey {
+export interface RealityDataProviderKey {
   key: string;
   value: string;
 }
@@ -25,23 +25,25 @@ export interface RealityDataKey {
  * `gp3dt` must have its key value set to `key`
  * @alpha
  */
-export interface RealityDataOptions {
+export interface RealityDataProviderOptions {
   /** Access key for Google Photorealistic 3D Tiles in the format `{ key: "key", value: "your-gp3dt-key" }`. */
-  gp3dt?: RealityDataKey;
+  gp3dt?: RealityDataProviderKey;
+  /** Access keys for additional reality data providers. */
+  [provider: string]: RealityDataProviderKey | undefined;
 }
 
 /**
  * A registry of RealityDataFormats identified by their unique format IDs. The registry can be accessed via [[IModelApp.realityDataFormatRegistry]].
  * @alpha
  */
-export class RealityDataFormatRegistry {
-  private _configOptions: RealityDataOptions;
+export class RealityDataProviderRegistry {
+  private _configOptions: RealityDataProviderOptions;
 
-  constructor(opts?: RealityDataOptions) {
+  constructor(opts?: RealityDataProviderOptions) {
     this._configOptions = opts ?? {};
   }
 
-  public get configOptions(): RealityDataOptions {
+  public get configOptions(): RealityDataProviderOptions {
     return this._configOptions;
   }
 }

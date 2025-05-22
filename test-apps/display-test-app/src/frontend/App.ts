@@ -302,7 +302,7 @@ export class DisplayTestApp {
             ? { key: "key", value: configuration.googleMapsKey }
             : undefined,
         },
-        realityDataOptions: {
+        realityDataProviderOptions: {
           gp3dt: configuration.gp3dtKey
             ? { key: "key", value: configuration.gp3dtKey }
             : undefined,

@@ -53,7 +53,7 @@ import { UserPreferencesAccess } from "./UserPreferences";
 import { ViewManager } from "./ViewManager";
 import * as viewState from "./ViewState";
 import "./IModeljs-css";
-import { RealityDataFormatRegistry, RealityDataOptions } from "./RealityDataFormatRegistry";
+import { RealityDataProviderOptions, RealityDataProviderRegistry } from "./RealityDataProviderRegistry";
 
 // cSpell:ignore noopener noreferrer gprid forin nbsp csrf xsrf
 
@@ -96,7 +96,7 @@ export interface IModelAppOptions {
   /** If present, supplies reality data options for this session such as access keys for services like Google Photorealistic 3D Tiles, for example.
    * @alpha
    */
-  realityDataOptions?: RealityDataOptions;
+  realityDataProviderOptions?: RealityDataProviderOptions;
   /** If present, supplies the properties with which to initialize the [[TileAdmin]] for this session. */
   tileAdmin?: TileAdmin.Props;
   /** If present, supplies the [[NotificationManager]] for this session. */
@@ -212,7 +212,7 @@ export class IModelApp {
   private static _animationIntervalId?: number;
   private static _securityOptions: FrontendSecurityOptions;
   private static _mapLayerFormatRegistry: MapLayerFormatRegistry;
-  private static _realityDataFormatRegistry: RealityDataFormatRegistry;
+  private static _realityDataProviderRegistry: RealityDataProviderRegistry;
   private static _terrainProviderRegistry: TerrainProviderRegistry;
   private static _realityDataSourceProviders: RealityDataSourceProviderRegistry;
   private static _hubAccess?: FrontendHubAccess;
@@ -240,7 +240,7 @@ export class IModelApp {
   /** The [[RealityDataFormatRegistry]] for this session.
    * @alpha
    */
-  public static get realityDataFormatRegistry(): RealityDataFormatRegistry { return this._realityDataFormatRegistry; }
+  public static get realityDataFormatRegistry(): RealityDataProviderRegistry { return this._realityDataProviderRegistry; }
   /** The [[TerrainProviderRegistry]] for this session. */
   public static get terrainProviderRegistry(): TerrainProviderRegistry { return this._terrainProviderRegistry; }
   /** The [[RealityDataSourceProviderRegistry]] for this session.
@@ -430,7 +430,7 @@ export class IModelApp {
     this._quantityFormatter = opts.quantityFormatter ?? new QuantityFormatter();
     this._uiAdmin = opts.uiAdmin ?? new UiAdmin();
     this._mapLayerFormatRegistry = new MapLayerFormatRegistry(opts.mapLayerOptions);
-    this._realityDataFormatRegistry = new RealityDataFormatRegistry(opts.realityDataOptions);
+    this._realityDataProviderRegistry = new RealityDataProviderRegistry(opts.realityDataProviderOptions);
     this._terrainProviderRegistry = new TerrainProviderRegistry();
     this._realityDataSourceProviders = new RealityDataSourceProviderRegistry();
     this._realityDataAccess = opts.realityDataAccess;
