@@ -4,18 +4,17 @@
 *--------------------------------------------------------------------------------------------*/
 import { CanvasDecoration } from "./render/CanvasDecoration";
 import { DecorateContext } from "./ViewContext";
-import { IModelApp } from "./IModelApp"
+import { IModelApp } from "./IModelApp";
 import { Decorator } from "./ViewManager";
 import { IconSprites, Sprite } from "./Sprites";
 import { Point3d } from "@itwin/core-geometry";
 
-/**
- *  Layer types that can be added to the map.
+/** Layer types that can be added to the map.
  * @internal
- * */
+ */
 type GoogleMapsMapTypes =  "roadmap" | "satellite" | "terrain";
 
-/** A simple decorator that show logo at the a given screen position.
+/** A simple decorator that shows the logo at a given screen position.
  * @internal
  */
 export class LogoDecoration implements CanvasDecoration {
@@ -36,12 +35,12 @@ export class LogoDecoration implements CanvasDecoration {
   }
 
   /** Move the logo to the lower left corner of the screen. */
-  public moveToLowerLeftCorner(context: DecorateContext) : boolean{
+  public moveToLowerLeftCorner(context: DecorateContext): boolean {
     if (!this._sprite || !this._sprite.isLoaded)
       return false;
 
     this.position.x = this._offset?.x ?? 0;
-    this.position.y =  context.viewport.parentDiv.clientHeight - this._sprite.size.y;
+    this.position.y = context.viewport.parentDiv.clientHeight - this._sprite.size.y;
     if (this._offset?.y)
       this.position.y -= this._offset.y;
     return true;
@@ -68,8 +67,8 @@ export class LogoDecoration implements CanvasDecoration {
    */
   public drawDecoration(ctx: CanvasRenderingContext2D): void {
     if (this.isLoaded) {
-    // Draw image with an origin at the top left corner
-    ctx.drawImage(this._sprite!.image!, 0, 0);
+      // Draw image with an origin at the top left corner
+      ctx.drawImage(this._sprite!.image!, 0, 0);
     }
   }
 
@@ -80,7 +79,7 @@ export class LogoDecoration implements CanvasDecoration {
 
 /** A decorator that adds the Google Maps logo to the lower left corner of the screen.
  * @internal
-*/
+ */
 export class GoogleMapsDecorator implements Decorator {
   public readonly logo = new LogoDecoration();
 
