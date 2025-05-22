@@ -280,7 +280,7 @@ export abstract class IModelConnection extends IModel {
 
   private hasUnsupportedQueryOptions(options: QueryOptions): boolean {
     return options.abbreviateBlobs !== undefined
-      || options.convertClassIdsToClassNames === true
+      || options.convertClassIdsToClassNames === true // eslint-disable-line @typescript-eslint/no-deprecated
       || options.delay !== undefined
       || options.limit !== undefined
       || options.priority !== undefined
@@ -509,7 +509,7 @@ export abstract class IModelConnection extends IModel {
   /** Request mass properties for multiple elements from the backend.
    * @deprecated in 4.11. Use [[IModelConnection.getMassProperties]].
    */
-  public async getMassPropertiesPerCandidate(requestProps: MassPropertiesPerCandidateRequestProps): Promise<MassPropertiesPerCandidateResponseProps[]> {
+  public async getMassPropertiesPerCandidate(requestProps: MassPropertiesPerCandidateRequestProps): Promise<MassPropertiesPerCandidateResponseProps[]> { // eslint-disable-line @typescript-eslint/no-deprecated
     return IModelReadRpcInterface.getClientForRouting(this.routingContext.token).getMassPropertiesPerCandidate(this.getRpcProps(), requestProps);
   }
 
