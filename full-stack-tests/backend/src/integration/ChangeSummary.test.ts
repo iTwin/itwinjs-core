@@ -14,7 +14,7 @@ import {
   SpatialCategory,
 } from "@itwin/core-backend";
 import { _hubAccess } from "@itwin/core-backend/lib/cjs/internal/Symbols";
-import { HubWrappers, IModelTestUtils, KnownTestLocations, TestChangeSetUtility } from "@itwin/core-backend/lib/cjs/test/index";
+import { HubWrappers, IModelTestUtils, KnownTestLocations, TestChangeSetUtility } from "@itwin/test-support";
 import { HubUtility, TestUserType } from "../HubUtility";
 
 import "./StartupShutdown"; // calls startup/shutdown IModelHost before/after all tests

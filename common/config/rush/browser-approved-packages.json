@@ -96,7 +96,7 @@
     },
     {
       "name": "@bentley/imodeljs-native",
-      "allowedCategories": [ "backend" ]
+      "allowedCategories": [ "backend", "tools" ]
     },
     {
       "name": "@bentley/linear-referencing-schema",
@@ -160,7 +160,7 @@
     },
     {
       "name": "@itwin/cloud-agnostic-core",
-      "allowedCategories": [ "backend", "frontend" ]
+      "allowedCategories": [ "backend", "frontend", "tools" ]
     },
     {
       "name": "@itwin/core-backend",
@@ -232,7 +232,7 @@
     },
     {
       "name": "@itwin/ecsql-common",
-      "allowedCategories": [ "backend", "internal" ]
+      "allowedCategories": [ "backend", "internal", "tools" ]
     },
     {
       "name": "@itwin/editor-backend",
@@ -304,11 +304,11 @@
     },
     {
       "name": "@itwin/object-storage-azure",
-      "allowedCategories": [ "backend" ]
+      "allowedCategories": [ "backend", "tools" ]
     },
     {
       "name": "@itwin/object-storage-core",
-      "allowedCategories": [ "backend", "common", "frontend", "internal" ]
+      "allowedCategories": [ "backend", "common", "frontend", "internal", "tools" ]
     },
     {
       "name": "@itwin/oidc-signin-tool",
@@ -339,6 +339,10 @@
       "allowedCategories": [ "integration-testing", "internal" ]
     },
     {
+      "name": "@itwin/test-support",
+      "allowedCategories": [ "internal" ]
+    },
+    {
       "name": "@itwin/unified-selection",
       "allowedCategories": [ "frontend", "internal" ]
     },
@@ -364,7 +368,7 @@
     },
     {
       "name": "@opentelemetry/api",
-      "allowedCategories": [ "backend", "common" ]
+      "allowedCategories": [ "backend", "common", "tools" ]
     },
     {
       "name": "@sinonjs/fake-timers",
@@ -520,11 +524,11 @@
     },
     {
       "name": "dotenv",
-      "allowedCategories": [ "backend", "integration-testing", "internal" ]
+      "allowedCategories": [ "backend", "integration-testing", "internal", "tools" ]
     },
     {
       "name": "dotenv-expand",
-      "allowedCategories": [ "backend", "integration-testing", "internal" ]
+      "allowedCategories": [ "backend", "integration-testing", "internal", "tools" ]
     },
     {
       "name": "electron",
@@ -588,7 +592,7 @@
     },
     {
       "name": "form-data",
-      "allowedCategories": [ "backend" ]
+      "allowedCategories": [ "backend", "tools" ]
     },
     {
       "name": "fs-extra",
@@ -636,11 +640,11 @@
     },
     {
       "name": "internal-tools",
-      "allowedCategories": [ "backend", "common", "extensions", "frontend", "integration-testing", "internal" ]
+      "allowedCategories": [ "backend", "common", "extensions", "frontend", "integration-testing", "internal", "tools" ]
     },
     {
       "name": "inversify",
-      "allowedCategories": [ "backend" ]
+      "allowedCategories": [ "backend", "tools" ]
     },
     {
       "name": "js-base64",
@@ -660,7 +664,7 @@
     },
     {
       "name": "json5",
-      "allowedCategories": [ "backend" ]
+      "allowedCategories": [ "backend", "tools" ]
     },
     {
       "name": "jsonc-parser",
@@ -668,7 +672,7 @@
     },
     {
       "name": "linebreak",
-      "allowedCategories": [ "backend" ]
+      "allowedCategories": [ "backend", "tools" ]
     },
     {
       "name": "lodash",
@@ -676,7 +680,7 @@
     },
     {
       "name": "marked",
-      "allowedCategories": [ "backend" ]
+      "allowedCategories": [ "backend", "tools" ]
     },
     {
       "name": "memfs",
@@ -700,7 +704,7 @@
     },
     {
       "name": "multiparty",
-      "allowedCategories": [ "backend" ]
+      "allowedCategories": [ "backend", "tools" ]
     },
     {
       "name": "mysql2",
@@ -712,7 +716,7 @@
     },
     {
       "name": "node-simctl",
-      "allowedCategories": [ "backend", "internal" ]
+      "allowedCategories": [ "backend", "internal", "tools" ]
     },
     {
       "name": "nodemon",
@@ -728,7 +732,7 @@
     },
     {
       "name": "null-loader",
-      "allowedCategories": [ "backend", "integration-testing", "internal" ]
+      "allowedCategories": [ "backend", "integration-testing", "internal", "tools" ]
     },
     {
       "name": "nyc",
@@ -772,7 +776,7 @@
     },
     {
       "name": "reflect-metadata",
-      "allowedCategories": [ "backend" ]
+      "allowedCategories": [ "backend", "tools" ]
     },
     {
       "name": "resolve",
@@ -816,11 +820,11 @@
     },
     {
       "name": "semver",
-      "allowedCategories": [ "backend", "internal" ]
+      "allowedCategories": [ "backend", "internal", "tools" ]
     },
     {
       "name": "sinon",
-      "allowedCategories": [ "backend", "common", "extensions", "frontend", "internal" ]
+      "allowedCategories": [ "backend", "common", "extensions", "frontend", "internal", "tools" ]
     },
     {
       "name": "sinon-chai",
@@ -840,7 +844,7 @@
     },
     {
       "name": "sql-formatter",
-      "allowedCategories": [ "backend" ]
+      "allowedCategories": [ "backend", "tools" ]
     },
     {
       "name": "stream-browserify",
@@ -860,7 +864,7 @@
     },
     {
       "name": "touch",
-      "allowedCategories": [ "backend" ]
+      "allowedCategories": [ "backend", "tools" ]
     },
     {
       "name": "tree-kill",
@@ -944,7 +948,7 @@
     },
     {
       "name": "ws",
-      "allowedCategories": [ "backend" ]
+      "allowedCategories": [ "backend", "tools" ]
     },
     {
       "name": "wtfnode",

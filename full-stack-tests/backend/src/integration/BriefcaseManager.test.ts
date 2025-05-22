@@ -11,7 +11,7 @@ import { AccessToken, BriefcaseStatus, GuidString, StopWatch } from "@itwin/core
 import { BriefcaseIdValue, BriefcaseProps, IModelError, IModelVersion } from "@itwin/core-common";
 import { BriefcaseDb, BriefcaseManager, CheckpointManager, IModelHost, IModelJsFs, RequestNewBriefcaseArg, V2CheckpointManager } from "@itwin/core-backend";
 import { _hubAccess } from "@itwin/core-backend/lib/cjs/internal/Symbols";
-import { HubWrappers } from "@itwin/core-backend/lib/cjs/test/index";
+import { HubWrappers } from "@itwin/test-support";
 import { HubUtility, TestUserType } from "../HubUtility";
 
 import "./StartupShutdown"; // calls startup/shutdown IModelHost before/after all tests

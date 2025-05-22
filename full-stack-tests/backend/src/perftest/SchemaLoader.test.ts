@@ -5,7 +5,7 @@
 import * as path from "path";
 import { Reporter } from "@itwin/perf-tools";
 import { _nativeDb, IModelHost, IModelJsFs, KnownLocations, StandaloneDb } from "@itwin/core-backend";
-import { IModelTestUtils, KnownTestLocations } from "@itwin/core-backend/lib/cjs/test";
+import { IModelTestUtils, KnownTestLocations } from "@itwin/test-support";
 import * as fs from "fs";
 import { OpenMode } from "@itwin/core-bentley";
 
