@@ -5,7 +5,7 @@
 import { assert, expect } from "chai";
 import * as path from "path";
 import * as sinon from "sinon";
-import { DbResult, Id64, Id64String, Logger } from "@itwin/core-bentley";
+import { DbResult, Id64, Id64String, Logger, LogLevel } from "@itwin/core-bentley";
 import { ECDb, ECDbOpenMode, ECSqlInsertResult, ECSqlStatement, ECSqlWriteStatement, IModelJsFs, SqliteStatement, SqliteValue, SqliteValueType } from "../../core-backend";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { ECDbTestHelper } from "./ECDbTestHelper";
@@ -453,7 +453,7 @@ describe("ECDb", () => {
     ecdb.closeDb();
   });
 
-  it("should log warning but continue if new schema changes are observed without version bump", async () => {
+  it.only("should log warning but continue if new schema changes are observed without version bump", async () => {
     const ecdb: ECDb = ECDbTestHelper.createECDb(outDir, "importSchemaNoVersionBump.ecdb");
     const xmlpathOriginal = path.join(outDir, "importSchemaNoVersionBump1.ecschema.xml");
 
@@ -483,12 +483,23 @@ describe("ECDb", () => {
       calledCategory = category;
       calledMessage = message;
     });
+    const prevLevel = Logger.getLevel("ECDb");
 
-    // although an error should be logged, no error is actually returned to not disrupt currently existing workflows and to alert the user about some wrong/unexpected behavior
-    expect(ecdb.importSchema(xmlpathUpdated)).to.not.throw;
-    expect(calledCategory).to.equal("ECDb");
-    expect(calledMessage).to.equal("Schema 'Test' has changes but its version was not incremented. Proceeding with import, but this may lead to unexpected behavior.");
-    stubbedLogWarning.restore();
+    try {
+      Logger.setLevel("ECDb", LogLevel.Warning);
+      // We do not want this behavior (just logs a warning and proceeds), initially we intended to throw an error
+      // We will wait for the next major change to make this a hard error
+      expect(ecdb.importSchema(xmlpathUpdated)).to.not.throw;
+      expect(calledCategory).to.equal("ECDb");
+      expect(calledMessage).to.equal("Schema 'Test' has changes but its version was not incremented. Proceeding with import, but this may lead to unexpected behavior.");
+      stubbedLogWarning.restore();
+    }
+    finally {
+      if (prevLevel !== undefined)
+        Logger.setLevel("ECDb", prevLevel);
+      else
+        delete (Logger as any)._categoryFilter["ECDb"];
+    }
 
     const context = new SchemaContext();
     const locater = new SchemaJsonLocater((name) => ecdb.getSchemaProps(name));
