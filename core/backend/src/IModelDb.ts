@@ -1880,11 +1880,9 @@ export namespace IModelDb {
       try {
         return props.id = this._iModel[_nativeDb].insertModel(props);
       } catch (err: any) {
-        if (err.iTwinErrorId !== undefined) {
-          err.message = `Error inserting model [${err.message}], class=${props.classFullName}`;
-          throw err;
-        }
-        throw new IModelError(err.errorNumber, `Error inserting model [${err.message}], class=${props.classFullName}`);
+        const error = new IModelError(err.errorNumber, `Error inserting model [${err.message}], class=${props.classFullName}`);
+        error.cause = err;
+        throw error;
       }
     }
 
@@ -1899,11 +1897,9 @@ export namespace IModelDb {
 
         this._iModel[_nativeDb].updateModel(props);
       } catch (err: any) {
-        if (err.iTwinErrorId !== undefined) {
-          err.message = `Error updating model [${err.message}], id: ${props.id}`;
-          throw err;
-        }
-        throw new IModelError(err.errorNumber, `Error updating model [${err.message}], id: ${props.id}`);
+        const error = new IModelError(err.errorNumber, `Error updating model [${err.message}], id: ${props.id}`);
+        error.cause = err;
+        throw error;
       }
     }
     /** Mark the geometry of [[GeometricModel]] as having changed, by recording an indirect change to its GeometryGuid property.
@@ -1932,11 +1928,9 @@ export namespace IModelDb {
           this[_cache].delete(id);
           this._iModel[_nativeDb].deleteModel(id);
         } catch (err: any) {
-          if (err.iTwinErrorId !== undefined) {
-            err.message = `Error deleting model [${err.message}], id: ${id}`;
-            throw err;
-          }
-          throw new IModelError(err.errorNumber, `Error deleting model [${err.message}], id: ${id}`);
+          const error = new IModelError(err.errorNumber, `Error deleting model [${err.message}], id: ${id}`);
+          error.cause = err;
+          throw error;
         }
       });
     }
