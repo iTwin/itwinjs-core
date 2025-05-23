@@ -2584,7 +2584,7 @@ export namespace IModelDb {
       if (undefined === props) {
         const propsString = this._iModel.queryFilePropertyString(Views.viewStoreProperty);
         if (!propsString)
-          ViewStoreError.throwError("not-found", { message: "iModel does not have a default ViewStore" });
+          ViewStoreError.throwError("no-viewstore", { message: "iModel does not have a default ViewStore" });
 
         props = JSON.parse(propsString) as CloudSqlite.ContainerProps;
       }
