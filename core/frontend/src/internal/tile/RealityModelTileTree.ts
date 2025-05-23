@@ -7,8 +7,9 @@
  */
 
 import {
-  assert, compareBooleans, compareBooleansOrUndefined, compareNumbers, comparePossiblyUndefined, compareStrings,
+  assert, BentleyError, BentleyStatus, compareBooleans, compareBooleansOrUndefined, compareNumbers, comparePossiblyUndefined, compareStrings,
   compareStringsOrUndefined, CompressedId64Set, Id64, Id64String,
+  Logger,
 } from "@itwin/core-bentley";
 import {
   BaseLayerSettings,
@@ -35,6 +36,8 @@ import { SpatialClassifiersState } from "../../SpatialClassifiersState";
 import { RealityDataSourceTilesetUrlImpl } from "../../RealityDataSourceTilesetUrlImpl";
 import { ScreenViewport } from "../../Viewport";
 import { GoogleMapsDecorator } from "../../GoogleMapsDecorator";
+
+const loggerCategory = "RealityModelTileTree";
 
 function getUrl(content: any) {
   return content ? (content.url ? content.url : content.uri) : undefined;
@@ -829,7 +832,11 @@ export class RealityTreeReference extends RealityModelTileTree.Reference {
 
     if (this._rdSourceKey.provider === "GP3DT") {
       this._decorator = new GoogleMapsDecorator();
-      void this._decorator.activate("satellite");
+      this._decorator?.activate("satellite").catch(() => {
+        const msg ="Failed to activate decorator";
+        Logger.logError(loggerCategory, msg);
+        throw new BentleyError(BentleyStatus.ERROR, msg);
+      });
     }
   }
 
@@ -1025,5 +1032,10 @@ export class RealityTreeReference extends RealityModelTileTree.Reference {
     if (this._decorator) {
       this._decorator.decorate(_context);
     }
+  }
+
+  public async initializeDecorator(): Promise<boolean | undefined> {
+    console.log("initializeDecorator called");
+    return this._decorator?.activate("satellite");
   }
 }
