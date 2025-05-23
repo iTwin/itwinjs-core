@@ -9046,5 +9046,17 @@
     "input": 42.42,
     "to": "N",
     "expect": 424.2
+  },
+  {
+    "from": "CUB_M_PER_M",
+    "input": 42.42,
+    "to": "CUB_FT_PER_FT",
+    "expect": 456.6050798768265
+  },
+  {
+    "from": "CUB_FT_PER_FT",
+    "input": 42.42,
+    "to": "CUB_M_PER_M",
+    "expect": 3.9409469568
   }
 ]
