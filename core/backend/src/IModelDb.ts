@@ -2158,7 +2158,7 @@ export namespace IModelDb {
     /** Insert a new element into the iModel.
      * @param elProps The properties of the new element.
      * @returns The newly inserted element's Id.
-     * @throws [[IModelError]] if unable to insert the element.
+     * @throws [[ITwinError]] if unable to insert the element.
      * @note For convenience, the value of `elProps.id` is updated to reflect the resultant element's id.
      * However when `elProps.federationGuid` is not present or undefined, a new Guid will be generated and stored on the resultant element. But
      * the value of `elProps.federationGuid` is *not* updated. Generally, it is best to re-read the element after inserting (e.g. via [[getElementProps]])
@@ -2173,12 +2173,9 @@ export namespace IModelDb {
         });
         return elProps.id = this._iModel[_nativeDb].insertElement(elProps, options);
       } catch (err: any) {
-        if (err.iTwinErrorId !== undefined) {
-          err.message = `Error inserting element [${err.message}]`;
-          err.metadata = { elProps };
-          throw err;
-        }
-        throw new IModelError(err.errorNumber, `Error inserting element [${err.message}]`, elProps);
+        err.message = `Error inserting element [${err.message}]`;
+        err.metadata = { elProps };
+        throw err;
       }
     }
 
@@ -2191,7 +2188,7 @@ export namespace IModelDb {
      * @param elProps the properties of the element to update.
      * @note The values of `classFullName` and `model` *may not be changed* by this method. Further, it will permute the `elProps` object by adding or
      * overwriting their values to the correct values.
-     * @throws [[IModelError]] if unable to update the element.
+     * @throws [[ITwinError]] if unable to update the element.
      */
     public updateElement<T extends ElementProps>(elProps: Partial<T>): void {
       try {
@@ -2202,18 +2199,15 @@ export namespace IModelDb {
         });
         this._iModel[_nativeDb].updateElement(elProps);
       } catch (err: any) {
-        if (err.iTwinErrorId !== undefined) {
-          err.message = `Error updating element [${err.message}], id: ${elProps.id}`;
-          err.metadata = { elProps };
-          throw err;
-        }
-        throw new IModelError(err.errorNumber, `Error updating element [${err.message}], id: ${elProps.id}`, elProps);
+        err.message = `Error updating element [${err.message}], id: ${elProps.id}`;
+        err.metadata = { elProps };
+        throw err;
       }
     }
 
     /** Delete one or more elements from this iModel.
      * @param ids The set of Ids of the element(s) to be deleted
-     * @throws [[IModelError]]
+     * @throws [[ITwinError]]
      * @see deleteDefinitionElements
      */
     public deleteElement(ids: Id64Arg): void {
@@ -2223,12 +2217,9 @@ export namespace IModelDb {
           this[_cache].delete({ id });
           iModel[_nativeDb].deleteElement(id);
         } catch (err: any) {
-          if (err.iTwinErrorId !== undefined) {
-            err.message = `Error deleting element [${err.message}], id: ${id}`;
-            err.metadata = { elementId: id };
-            throw err;
-          }
-          throw new IModelError(err.errorNumber, `Error deleting element [${err.message}], id: ${id}`, { elementId: id });
+          err.message = `Error deleting element [${err.message}], id: ${id}`;
+          err.metadata = { elementId: id };
+          throw err;
         }
       });
     }
