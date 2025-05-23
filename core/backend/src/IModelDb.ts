@@ -2521,11 +2521,9 @@ export namespace IModelDb {
       try {
         return this._iModel[_nativeDb].insertElementAspect(aspectProps);
       } catch (err: any) {
-        if (err.iTwinErrorId !== undefined) {
-          err.message = `Error inserting ElementAspect [${err.message}], class: ${aspectProps.classFullName}`;
-          throw err;
-        }
-        throw new IModelError(err.errorNumber, `Error inserting ElementAspect [${err.message}], class: ${aspectProps.classFullName}`);
+        const error =  new IModelError(err.errorNumber, `Error inserting ElementAspect [${err.message}], class: ${aspectProps.classFullName}`, aspectProps);
+        error.cause = err;
+        throw error;
       }
     }
 
@@ -2537,11 +2535,9 @@ export namespace IModelDb {
       try {
         this._iModel[_nativeDb].updateElementAspect(aspectProps);
       } catch (err: any) {
-        if (err.iTwinErrorId !== undefined) {
-          err.message = `Error updating ElementAspect [${err.message}], id: ${aspectProps.id}`;
-          throw err;
-        }
-        throw new IModelError(err.errorNumber, `Error updating ElementAspect [${err.message}], id: ${aspectProps.id}`);
+        const error =  new IModelError(err.errorNumber, `Error updating ElementAspect [${err.message}], id: ${aspectProps.id}`, aspectProps);
+        error.cause = err;
+        throw error;
       }
     }
 
@@ -2555,11 +2551,9 @@ export namespace IModelDb {
         try {
           iModel[_nativeDb].deleteElementAspect(aspectInstanceId);
         } catch (err: any) {
-          if (err.iTwinErrorId !== undefined) {
-            err.message = `Error deleting ElementAspect [${err.message}], id: ${aspectInstanceId}`;
-            throw err;
-          }
-          throw new IModelError(err.errorNumber, `Error deleting ElementAspect [${err.message}], id: ${aspectInstanceId}`);
+          const error =  new IModelError(err.errorNumber, `Error deleting ElementAspect [${err.message}], id: ${aspectInstanceId}`);
+          error.cause = err;
+          throw error;
         }
       });
     }
