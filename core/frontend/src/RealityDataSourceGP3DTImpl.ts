@@ -11,39 +11,41 @@ import { IModelError, RealityData, RealityDataFormat, RealityDataProvider, Reali
 import { request } from "./request/Request";
 import { PublisherProductInfo, RealityDataSource, SpatialLocationAndExtents } from "./RealityDataSource";
 import { ThreeDTileFormatInterpreter } from "./tile/internal";
+import { IModelApp } from "./IModelApp";
 
 /** This class provides access to the reality data provider services.
- * It encapsulates access to a reality data weiter it be from local access, http or ProjectWise Context Share.
- * The key provided at the creation determines if this is ProjectWise Context Share reference.
- * If not then it is considered local (ex: C:\temp\TileRoot.json) or plain http access (http://someserver.com/data/TileRoot.json)
- * There is a one to one relationship between a reality data and the instances of present class.
+ * It encapsulates access to a reality data from the Google Photorealistic 3D Tiles service.
+ * A valid GP3DT authentication key in [[IModelApp.realityDataFormatRegistry]] must be configured for this provider to work.
 * @internal
 */
-export class RealityDataSourceTilesetUrlImpl implements RealityDataSource {
+export class RealityDataSourceGP3DTImpl implements RealityDataSource {
   public readonly key: RealityDataSourceKey;
-  /** The URL that supplies the 3d tiles for displaying the reality model. */
+  /** The URL that supplies the 3d tiles for displaying the GP3DT tileset. */
   private _tilesetUrl: string | undefined;
-  /** For use by all Reality Data. For RD stored on PW Context Share, represents the portion from the root of the Azure Blob Container*/
-  private _baseUrl: string = "";
-  /** Need to be passed down to child tile requests when requesting from blob storage, e.g. a Cesium export from the Mesh Export Service*/
-  private _searchParams: string = "";
+  /** Base URL of the GP3DT tileset. Does not include trailing subdirectories. */
+  private _baseUrl: string = ""
+  /** Need to be passed down to child tile requests */
+  private _searchParams?: URLSearchParams;
+
+  /** This is necessary for GP3DT tilesets! This tells the iTwin.js tiling system to use the geometric error specified in the GP3DT tileset rather than any of our own. */
+  public readonly usesGeometricError = true;
 
   /** Construct a new reality data source.
    * @param props JSON representation of the reality data source
    */
   protected constructor(props: RealityDataSourceProps) {
-    assert(props.sourceKey.provider === RealityDataProvider.TilesetUrl || props.sourceKey.provider === RealityDataProvider.OrbitGtBlob);
+    assert(props.sourceKey.provider === RealityDataProvider.GP3DT);
     this.key = props.sourceKey;
     this._tilesetUrl = this.key.id;
   }
 
   /**
-   * Create an instance of this class from a source key and iTwin context/
+   * Create an instance of this class from a source key and iTwin context.
    */
   public static async createFromKey(sourceKey: RealityDataSourceKey, _iTwinId: GuidString | undefined): Promise<RealityDataSource | undefined> {
-    if (sourceKey.provider !== RealityDataProvider.TilesetUrl)
+    if (sourceKey.provider !== RealityDataProvider.GP3DT)
       return undefined;
-    const rdSource = new RealityDataSourceTilesetUrlImpl({ sourceKey });
+    const rdSource = new RealityDataSourceGP3DTImpl({ sourceKey });
     return rdSource;
   }
 
@@ -69,21 +71,25 @@ export class RealityDataSourceTilesetUrlImpl implements RealityDataSource {
   public getTilesetUrl(): string | undefined {
     return this._tilesetUrl;
   }
-  // This is to set the root url from the provided root document path.
-  // If the root document is stored on PW Context Share then the root document property of the Reality Data is provided,
-  // otherwise the full path to root document is given.
-  // The base URL contains the base URL from which tile relative path are constructed.
-  // The tile's path root will need to be reinserted for child tiles to return a 200
-  // If the original root tileset url includes search paramaters, they are stored in _searchParams to be reinserted into child tile requests.
-  private setBaseUrl(url: string): void {
+
+  /** Return the URL of the GP3DT tileset with the GP3DT key from the reality data format registry included. */
+  private getTilesetUrlWithKey() {
+    let gp3dtKey = "";
+    if (IModelApp.realityDataFormatRegistry.configOptions.gp3dt)
+      gp3dtKey = IModelApp.realityDataFormatRegistry.configOptions.gp3dt.value;
+    return `${this._tilesetUrl}?key=${gp3dtKey}`;
+  }
+
+  protected setBaseUrl(url: string): void {
     const urlParts = url.split("/");
     const newUrl = new URL(url);
-    this._searchParams = newUrl.search;
+    this._searchParams = newUrl.searchParams
     urlParts.pop();
-    if (urlParts.length === 0)
+    if (urlParts.length === 0) {
       this._baseUrl = "";
-    else
-      this._baseUrl = `${urlParts.join("/")}/`;
+    } else {
+      this._baseUrl = newUrl.origin;
+    }
   }
 
   /**
@@ -94,35 +100,47 @@ export class RealityDataSourceTilesetUrlImpl implements RealityDataSource {
     return this._tilesetUrl;
   }
 
-  public async getRootDocument(iTwinId: GuidString | undefined): Promise<any> {
-    const url = await this.getServiceUrl(iTwinId);
+  public async getRootDocument(_iTwinId: GuidString | undefined): Promise<any> {
+    const url = this.getTilesetUrlWithKey();
     if (!url)
       throw new IModelError(BentleyStatus.ERROR, "Unable to get service url");
 
-    // The following is only if the reality data is not stored on PW Context Share.
     this.setBaseUrl(url);
     return request(url, "json");
   }
 
-  private isValidURL(url: string){
-    try {
-      new URL(url);
-    } catch {
-      return false;
-    }
-    return true;
-  }
-
-  /** Returns the tile URL.
+  /** Returns the tile URL relative to the base URL.
    * If the tile path is a relative URL, the base URL is prepended to it.
    * For both absolute and relative tile path URLs, the search parameters are checked. If the search params are empty, the base URL's search params are appended to the tile path.
    */
-  private getTileUrl(tilePath: string){
-    if (this.isValidURL(tilePath)) {
-      const url = new URL(tilePath);
-      return url.search === "" ? `${tilePath}${this._searchParams}` : tilePath;
+  public getTileUrl(tilePath: string): string {
+    // this._baseUrl does not include the trailing subdirectories.
+    // This is not an issue because the tile path always starts with the appropriate subdirectories.
+    // We also do not need to worry about the tile path starting with a slash.
+    // This happens in these tiles at the second .json level, but the URL API will handle that for us.
+    const url = new URL(tilePath, this._baseUrl);
+
+    // If tile is a reference to a tileset, iterate over tileset url's search params and store them in this._searchParams so we can pass them down to children
+    if (this.getTileContentType(url.toString()) === "tileset" && url.searchParams.size !== 0) {
+      for (const [key, value] of url.searchParams.entries()) {
+        this._searchParams?.append(key, value);
+      }
     }
-    return tilePath.includes("?") ? `${this._baseUrl}${tilePath}` : `${this._baseUrl}${tilePath}${this._searchParams}`;
+
+    if (this._searchParams === undefined || this._searchParams.size === 0) {
+      return url.toString();
+    }
+
+    // Append all stored search params to url's existing ones
+    const newUrl = new URL(url.toString());
+    for (const [key, value] of this._searchParams.entries()) {
+      if (!url.searchParams.has(key)) {
+        // Only append the search param if it does not already exist in the url
+        newUrl.searchParams.append(key, value);
+      }
+    }
+
+    return newUrl.toString();
   }
 
   /**

@@ -3765,6 +3765,9 @@ export function getCompressedJpegFromCanvas(canvas: HTMLCanvasElement, maxBytes?
 // @internal (undocumented)
 export function getFrustumPlaneIntersectionDepthRange(frustum: Frustum, plane: Plane3dByOriginAndUnitNormal): Range1d;
 
+// @alpha
+export function getGooglePhotorealistic3DTilesURL(): string;
+
 // @public
 export function getImageSourceFormatForMimeType(mimeType: string): ImageSourceFormat | undefined;
 
@@ -4074,6 +4077,8 @@ export interface GltfReaderArgs {
 // @internal
 export interface GltfReaderResult extends TileContent {
     // (undocumented)
+    copyright?: string;
+    // (undocumented)
     range?: AxisAlignedBox3d;
     // (undocumented)
     readStatus: TileReadStatus;
@@ -4091,6 +4096,14 @@ export interface GLTimerResult {
     children?: GLTimerResult[];
     label: string;
     nanoseconds: number;
+}
+
+// @internal
+export class GoogleMapsDecorator implements Decorator {
+    activate(mapType: GoogleMapsMapTypes): Promise<boolean>;
+    decorate: (context: DecorateContext) => void;
+    // (undocumented)
+    readonly logo: LogoDecoration;
 }
 
 // @public
@@ -4875,6 +4888,8 @@ export class IModelApp {
     // @beta
     static get realityDataAccess(): RealityDataAccess | undefined;
     // @alpha
+    static get realityDataFormatRegistry(): RealityDataFormatRegistry;
+    // @alpha
     static get realityDataSourceProviders(): RealityDataSourceProviderRegistry;
     // @internal
     static registerEntityState(classFullName: string, classType: typeof EntityState): void;
@@ -4927,6 +4942,8 @@ export interface IModelAppOptions {
     quantityFormatter?: QuantityFormatter;
     // @beta (undocumented)
     realityDataAccess?: RealityDataAccess;
+    // @alpha
+    realityDataOptions?: RealityDataOptions;
     renderSys?: RenderSystem | RenderSystem.Options;
     // @deprecated (undocumented)
     rpcInterfaces?: RpcInterfaceDefinition[];
@@ -5616,6 +5633,20 @@ export enum LockedStates {
     XY_BM = 3,
     // (undocumented)
     Y_BM = 2
+}
+
+// @internal
+export class LogoDecoration implements CanvasDecoration {
+    // (undocumented)
+    activate(sprite: Sprite): Promise<boolean>;
+    // (undocumented)
+    decorate(context: DecorateContext): void;
+    drawDecoration(ctx: CanvasRenderingContext2D): void;
+    get isLoaded(): boolean;
+    moveToLowerLeftCorner(context: DecorateContext): boolean;
+    set offset(offset: Point3d | undefined);
+    get offset(): Point3d | undefined;
+    readonly position: Point3d;
 }
 
 // @public
@@ -8069,6 +8100,26 @@ export class RealityDataError extends BentleyError {
     constructor(errorNumber: RealityDataStatus, message: string, getMetaData?: LoggingMetaData);
 }
 
+// @alpha
+export class RealityDataFormatRegistry {
+    constructor(opts?: RealityDataOptions);
+    // (undocumented)
+    get configOptions(): RealityDataOptions;
+}
+
+// @alpha
+export interface RealityDataKey {
+    // (undocumented)
+    key: string;
+    // (undocumented)
+    value: string;
+}
+
+// @alpha
+export interface RealityDataOptions {
+    gp3dt?: RealityDataKey;
+}
+
 // @beta
 export interface RealityDataSource {
     // @alpha
@@ -8113,6 +8164,8 @@ export namespace RealityDataSource {
     export function createOrbitGtBlobPropsFromKey(rdSourceKey: RealityDataSourceKey): OrbitGtBlobProps | undefined;
     // @alpha
     export function fromKey(key: RealityDataSourceKey, iTwinId: GuidString | undefined): Promise<RealityDataSource | undefined>;
+    // @alpha
+    export function setBaseUrl(id: string): void;
 }
 
 // @alpha
@@ -8214,6 +8267,10 @@ export class RealityTile extends Tile {
     computeLoadPriority(viewports: Iterable<Viewport>, users: Iterable<TileUser>): number;
     // @internal (undocumented)
     computeVisibilityFactor(args: TileDrawArgs): number;
+    // @internal (undocumented)
+    get copyright(): string | undefined;
+    // @internal (undocumented)
+    protected _copyright?: string;
     // @internal (undocumented)
     disposeContents(): void;
     // @internal (undocumented)

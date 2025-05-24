@@ -7,8 +7,9 @@
  */
 
 import {
-  assert, compareBooleans, compareBooleansOrUndefined, compareNumbers, comparePossiblyUndefined, compareStrings,
+  assert, BentleyError, BentleyStatus, compareBooleans, compareBooleansOrUndefined, compareNumbers, comparePossiblyUndefined, compareStrings,
   compareStringsOrUndefined, CompressedId64Set, Id64, Id64String,
+  Logger,
 } from "@itwin/core-bentley";
 import {
   BaseLayerSettings,
@@ -24,7 +25,7 @@ import { IModelConnection } from "../../IModelConnection";
 import { PlanarClipMaskState } from "../../PlanarClipMaskState";
 import { RealityDataSource } from "../../RealityDataSource";
 import { RenderMemory } from "../../render/RenderMemory";
-import { SceneContext } from "../../ViewContext";
+import { DecorateContext, SceneContext } from "../../ViewContext";
 import { ViewState } from "../../ViewState";
 import {
   BatchedTileIdMap, CesiumIonAssetProvider, createClassifierTileTreeReference, createDefaultViewFlagOverrides, DisclosedTileTreeSet, GeometryTileTreeReference,
@@ -33,6 +34,10 @@ import {
 } from "../../tile/internal";
 import { SpatialClassifiersState } from "../../SpatialClassifiersState";
 import { RealityDataSourceTilesetUrlImpl } from "../../RealityDataSourceTilesetUrlImpl";
+import { ScreenViewport } from "../../Viewport";
+import { GoogleMapsDecorator } from "../../GoogleMapsDecorator";
+
+const loggerCategory = "RealityModelTileTree";
 
 function getUrl(content: any) {
   return content ? (content.url ? content.url : content.uri) : undefined;
@@ -802,6 +807,7 @@ export class RealityTreeReference extends RealityModelTileTree.Reference {
   protected _rdSourceKey: RealityDataSourceKey;
   private readonly _produceGeometry?: boolean;
   private readonly _modelId: Id64String;
+  private _decorator: GoogleMapsDecorator | undefined;
 
   public constructor(props: RealityModelTileTree.ReferenceProps) {
     super(props);
@@ -823,6 +829,15 @@ export class RealityTreeReference extends RealityModelTileTree.Reference {
     }
 
     this._modelId = modelId ?? props.iModel.transientIds.getNext();
+
+    if (this._rdSourceKey.provider === "GP3DT") {
+      this._decorator = new GoogleMapsDecorator();
+      this._decorator?.activate("satellite").catch(() => {
+        const msg ="Failed to activate decorator";
+        Logger.logError(loggerCategory, msg);
+        throw new BentleyError(BentleyStatus.ERROR, msg);
+      });
+    }
   }
 
   public override get modelId() { return this._modelId; }
@@ -979,9 +994,48 @@ export class RealityTreeReference extends RealityModelTileTree.Reference {
     }
   }
 
-  public override async addAttributions(cards: HTMLTableElement): Promise<void> {
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
-    return Promise.resolve(this.addLogoCards(cards));
+  public override async addAttributions(cards: HTMLTableElement, vp: ScreenViewport): Promise<void> {
+    const tiles = IModelApp.tileAdmin.getTilesForUser(vp)?.selected;
+    const copyrightMap = new Map<string, number>();
+    if (tiles) {
+      for (const tile of tiles as Set<RealityTile>) {
+        if (tile.copyright) {
+          for (const copyright of tile.copyright?.split(";")) {
+            const currentCount = copyrightMap.get(copyright);
+            copyrightMap.set(copyright, currentCount ? currentCount + 1 : 1);
+          }
+        }
+      }
+    }
+
+    // Only add another logo card if the tiles have copyright
+    if (copyrightMap.size > 0) {
+      // Order by most occurances to least
+      // See https://developers.google.com/maps/documentation/tile/create-renderer#display-attributions
+      const sortedCopyrights = [...copyrightMap.entries()].sort((a, b) => b[1] - a[1]);
+
+      let copyrightMsg = "Data provided by:<br><ul>";
+      copyrightMsg += sortedCopyrights.map(([key]) => `<li>${key}</li>`).join("");
+      copyrightMsg += "</ul>";
+
+      const isGP3DT = this._rdSourceKey.provider === RealityDataProvider.GP3DT;
+      // Only add Google header and icon if the tileset is GP3DT
+      cards.appendChild(IModelApp.makeLogoCard({
+        iconSrc: isGP3DT ? `${IModelApp.publicPath}images/google_on_white_hdpi.png` : undefined,
+        heading: isGP3DT ? "Google Photorealistic 3D Tiles" : "",
+        notice: copyrightMsg
+      }));
+    }
+  }
+
+  public override decorate(_context: DecorateContext): void {
+    if (this._decorator) {
+      this._decorator.decorate(_context);
+    }
+  }
+
+  public async initializeDecorator(): Promise<boolean | undefined> {
+    console.log("initializeDecorator called");
+    return this._decorator?.activate("satellite");
   }
 }
-

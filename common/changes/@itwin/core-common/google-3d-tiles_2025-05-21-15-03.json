@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-common",
+      "comment": "Add GP3DT to RealityDataProvider.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-common"
+}

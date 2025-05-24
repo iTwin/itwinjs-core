@@ -12,6 +12,7 @@ import { CesiumIonAssetProvider, ContextShareProvider, getCesiumAssetUrl } from 
 import { RealityDataSourceTilesetUrlImpl } from "./RealityDataSourceTilesetUrlImpl";
 import { RealityDataSourceContextShareImpl } from "./RealityDataSourceContextShareImpl";
 import { RealityDataSourceCesiumIonAssetImpl } from "./RealityDataSourceCesiumIonAssetImpl";
+import { RealityDataSourceGP3DTImpl } from "./RealityDataSourceGP3DTImpl";
 import { IModelApp } from "./IModelApp";
 import { Range3d } from "@itwin/core-geometry";
 
@@ -213,6 +214,13 @@ export namespace RealityDataSource {
 
     return provider.createRealityDataSource(key, iTwinId);
   }
+
+  /** Implement this function in order to provide the base URL for the specified reality data source.
+   * @alpha
+   */
+  export function setBaseUrl(id: string) {
+    throw new Error(`Function not implemented. rdSourceId: ${id}}`);
+  }
 }
 
 /** A named supplier of [RealityDataSource]]s.
@@ -232,7 +240,7 @@ export interface RealityDataSourceProvider {
 
 /** A registry of [[RealityDataSourceProvider]]s identified by their unique names. The registry can be accessed via [[IModelApp.realityDataSourceProviders]].
  * It includes a handful of built-in providers for sources like Cesium ION, ContextShare, OrbitGT, and arbitrary public-accessible URLs.
- * Any number of additional providers can be registered. They should typically be registered just after [[IModelAp.startup]].
+ * Any number of additional providers can be registered. They should typically be registered just after [[IModelApp.startup]].
  * @alpha
  */
 export class RealityDataSourceProviderRegistry {
@@ -252,6 +260,9 @@ export class RealityDataSourceProviderRegistry {
     this.register(RealityDataProvider.OrbitGtBlob, {
       // ###TODO separate TilesetUrlImpl
       createRealityDataSource: async (key, iTwinId) => RealityDataSourceTilesetUrlImpl.createFromKey(key, iTwinId),
+    });
+    this.register(RealityDataProvider.GP3DT, {
+      createRealityDataSource: async (key, iTwinId) => RealityDataSourceGP3DTImpl.createFromKey(key, iTwinId),
     });
   }
 
