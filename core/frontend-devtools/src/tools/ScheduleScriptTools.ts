@@ -10,11 +10,13 @@
 import { assert, CompressedId64Set } from "@itwin/core-bentley";
 import {
   ElementLoadOptions, RenderSchedule, RenderTimelineProps,
+  RgbColor,
 } from "@itwin/core-common";
 import { _scheduleScriptReference, Viewport } from "@itwin/core-frontend";
 import { copyStringToClipboard } from "../ClipboardUtilities";
 import { parseArgs } from "./parseArgs";
 import { DisplayStyleTool } from "./DisplayStyleTools";
+import { Transform } from "@itwin/core-geometry";
 
 /** Query the schedule script JSON from an element.
  * @beta
@@ -158,19 +160,93 @@ export class ReverseScheduleScriptTool extends DisplayStyleTool {
 /** A tool that changes or removes the [RenderSchedule.Script]($common) associated with the selected [Viewport]($frontend).
  * @beta
  */
+// export class SetScheduleScriptTool extends DisplayStyleTool {
+//   public static override toolId = "SetScheduleScript";
+//   public static override get minArgs() { return 0; }
+//   public static override get maxArgs() { return 1; }
+
+//   private _script?: RenderSchedule.Script;
+
+//   public override async parse(args: string[]): Promise<boolean> {
+//     if (args.length === 0)
+//       return true; // clear schedule script.
+
+//     try {
+//       this._script = RenderSchedule.Script.fromJSON(JSON.parse(args[0]));
+//     } catch (ex) {
+//       if (ex instanceof Error)
+//         alert(ex.toString());
+//     }
+
+//     return undefined !== this._script;
+//   }
+
+//   public override async execute(vp: Viewport): Promise<boolean> {
+//     vp.displayStyle.scheduleScript = this._script;
+//     return true;
+//   }
+// }
 export class SetScheduleScriptTool extends DisplayStyleTool {
   public static override toolId = "SetScheduleScript";
   public static override get minArgs() { return 0; }
-  public static override get maxArgs() { return 1; }
+  public static override get maxArgs() { return 0; }
 
   private _script?: RenderSchedule.Script;
 
-  public override async parse(args: string[]): Promise<boolean> {
-    if (args.length === 0)
-      return true; // clear schedule script.
-
+  public override async parse(): Promise<boolean> {
     try {
-      this._script = RenderSchedule.Script.fromJSON(JSON.parse(args[0]));
+      /// TODO!!!! add test schedule script code here
+      const now = Date.now();
+      const builder = new RenderSchedule.ScriptBuilder();
+      const modelTimeline = builder.addModelTimeline("0x91"); // model Id
+
+      const elementTimeline1 = modelTimeline.addElementTimeline(["0xc933"]);
+      elementTimeline1.addColor(now, new RgbColor(255, 255, 0));
+      elementTimeline1.addColor(now + 3000, new RgbColor(255, 255, 255));
+
+      const elementTimeline2 = modelTimeline.addElementTimeline(["0xca60"]);
+      elementTimeline2.addColor(now, new RgbColor(0, 255, 255));
+      elementTimeline2.addColor(now + 3000, new RgbColor(0, 0, 255));
+      const scriptProps = builder.finish();
+      this._script = RenderSchedule.Script.fromJSON(scriptProps);
+    } catch (ex) {
+      if (ex instanceof Error)
+        alert(ex.toString());
+    }
+
+    return undefined !== this._script;
+  }
+
+  public override async execute(vp: Viewport): Promise<boolean> {
+    vp.displayStyle.scheduleScript = this._script;
+    return true;
+  }
+}
+
+// Temp API
+export class TestScheduleScriptTool extends DisplayStyleTool {
+  public static override toolId = "TestScheduleScript";
+  public static override get minArgs() { return 0; }
+  public static override get maxArgs() { return 0; }
+
+  private _script?: RenderSchedule.Script;
+
+  public override async parse(): Promise<boolean> {
+    try {
+      /// TODO!!!! add test schedule script code here
+      const now = Date.now();
+      const builder = new RenderSchedule.ScriptBuilder();
+      const modelTimeline = builder.addModelTimeline("0x91"); // model Id
+      const elementTimeline = modelTimeline.addElementTimeline(["0xc933"]); // element Id
+      elementTimeline.addColor(now, new RgbColor(255, 0, 0));
+      elementTimeline.addColor(now + 3000, new RgbColor(0, 255, 0));
+      elementTimeline.addTransform(now, Transform.createIdentity());
+      elementTimeline.addTransform(
+        now + 3000,
+        Transform.createTranslationXYZ(10, 0, 0)
+      );
+      const scriptProps = builder.finish();
+      this._script = RenderSchedule.Script.fromJSON(scriptProps);
     } catch (ex) {
       if (ex instanceof Error)
         alert(ex.toString());
