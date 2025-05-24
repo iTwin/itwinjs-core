@@ -93,7 +93,7 @@ async function fetchWithRetry(fetchFunc: () => Promise<Response>, remainingRetri
 
 /**
  * @internal
- * @deprecated in 4.0. Use [[DownloadProgressInfo]].
+ * @deprecated in 4.0 - might be removed in next major version. Use [[DownloadProgressInfo]].
  */
 export interface ProgressInfo {
   percent?: number;
@@ -103,6 +103,6 @@ export interface ProgressInfo {
 
 /**
  * @internal
- * @deprecated in 4.0. Use [[OnDownloadProgress]].
+ * @deprecated in 4.0 - might be removed in next major version. Use [[OnDownloadProgress]].
  */
 export type ProgressCallback = (progress: ProgressInfo) => void;

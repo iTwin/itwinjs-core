@@ -18,7 +18,7 @@ import { DisplayValue, Value } from "./Value.js";
 export interface ItemJSON {
   inputKeys?: InstanceKey[];
   primaryKeys: InstanceKey[];
-  /** @deprecated in 5.x. Use [[label]] instead. */
+  /** @deprecated in 5.0. Use [[label]] instead. */
   labelDefinition: LabelDefinition;
   label?: LabelDefinition;
   classInfo?: ClassInfo;

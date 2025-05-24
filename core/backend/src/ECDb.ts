@@ -258,7 +258,7 @@ export class ECDb implements Disposable {
    * @returns the value returned by `callback`.
    * @see [[withStatement]]
    * @public
-   * @deprecated in 4.11.  Use [[createQueryReader]] for SELECT statements and [[withCachedWriteStatement]] for INSERT/UPDATE/DELETE instead.
+   * @deprecated in 4.11 - might be removed in next major version. Use [[createQueryReader]] for SELECT statements and [[withCachedWriteStatement]] for INSERT/UPDATE/DELETE instead.
    */
   // eslint-disable-next-line @typescript-eslint/no-deprecated
   public withPreparedStatement<T>(ecsql: string, callback: (stmt: ECSqlStatement) => T, logErrors = true): T {
@@ -289,7 +289,7 @@ export class ECDb implements Disposable {
    * @returns the value returned by `callback`.
    * @see [[withPreparedStatement]]
    * @public
-   * @deprecated in 4.11.  Use [[createQueryReader]] for SELECT statements and [[withWriteStatement]] for INSERT/UPDATE/DELETE instead.
+   * @deprecated in 4.11 - might be removed in next major version. Use [[createQueryReader]] for SELECT statements and [[withWriteStatement]] for INSERT/UPDATE/DELETE instead.
    */
   // eslint-disable-next-line @typescript-eslint/no-deprecated
   public withStatement<T>(ecsql: string, callback: (stmt: ECSqlStatement) => T, logErrors = true): T {
@@ -314,7 +314,7 @@ export class ECDb implements Disposable {
    * @param ecsql The ECSQL statement to prepare
    * @param logErrors Determines if error will be logged if statement fail to prepare
    * @throws [IModelError]($common) if there is a problem preparing the statement.
-   * @deprecated in 4.11.  Use [[prepareWriteStatement]] when preparing an INSERT/UPDATE/DELETE statement or [[createQueryReader]] to execute a SELECT statement.
+   * @deprecated in 4.11 - might be removed in next major version. Use [[prepareWriteStatement]] when preparing an INSERT/UPDATE/DELETE statement or [[createQueryReader]] to execute a SELECT statement.
    */
   // eslint-disable-next-line @typescript-eslint/no-deprecated
   public prepareStatement(ecsql: string, logErrors = true): ECSqlStatement {
