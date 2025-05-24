@@ -8,6 +8,7 @@
 
 import { Point3d, Range2d, Transform, XYZProps, YawPitchRollAngles, YawPitchRollProps } from "@itwin/core-geometry";
 import { TextBlock, TextBlockProps } from "./TextBlock";
+import { TextStyleColor } from "./TextStyle";
 
 /** Describes how to compute the "anchor point" for a [[TextAnnotation]].
  * The anchor point is a point on or inside of the 2d bounding box enclosing the contents of the annotation's [[TextBlock]].
@@ -35,6 +36,31 @@ export interface TextAnnotationAnchor {
   horizontal: "left" | "center" | "right";
 }
 
+/** Set of predefined shapes that can be computed and drawn around the margins of a [[TextBlock]]
+ * @beta
+*/
+export type TextAnnotationFrameShape = "none" | "line" | "rectangle" | "circle" | "equilateralTriangle" | "diamond" | "square" | "pentagon" | "hexagon" | "octagon" | "capsule" | "roundedRectangle";
+
+
+/**
+ * Describes what color to use when filling the frame around a [[TextBlock]].
+ * If `background` is specified, [[GeometryParams.BackgroundFill]] will be set to `BackgroundFill.Outline`.
+ * @beta
+ */
+export type TextAnnotationFillColor = TextStyleColor | "background";
+
+/**
+ * Describes how to draw the frame around a [[TextBlock]].
+ * The frame can be a simple line, a filled shape, or both.
+ * @beta
+ */
+export interface TextFrameStyleProps {
+  shape: TextAnnotationFrameShape;
+  fill?: TextAnnotationFillColor;
+  border?: TextStyleColor;
+  borderWeight?: number;
+}
+
 /**
  * JSON representation of a [[TextAnnotation]].
  * @beta
@@ -48,6 +74,8 @@ export interface TextAnnotationProps {
   textBlock?: TextBlockProps;
   /** See [[TextAnnotation.anchor]]. Default: top-left. */
   anchor?: TextAnnotationAnchor;
+  /** See [[TextAnnotation.frame]]. Default: no frame */
+  frame?: TextFrameStyleProps
 }
 
 /** Arguments supplied to [[TextAnnotation.create]].
@@ -62,6 +90,8 @@ export interface TextAnnotationCreateArgs {
   textBlock?: TextBlock;
   /** See [[TextAnnotation.anchor]]. Default: top-left. */
   anchor?: TextAnnotationAnchor;
+  /** See [[TextAnnotation.frame]]. Default: no frame */
+  frame?: TextFrameStyleProps
 }
 
 /**
@@ -88,12 +118,15 @@ export class TextAnnotation {
   public anchor: TextAnnotationAnchor;
   /** An offset applied to the anchor point that can be used to position annotations within the same geometry stream relative to one another. */
   public offset: Point3d;
+  /** The frame settings of the text annotation. */
+  public frame?: TextFrameStyleProps;
 
-  private constructor(offset: Point3d, angles: YawPitchRollAngles, textBlock: TextBlock, anchor: TextAnnotationAnchor) {
+  private constructor(offset: Point3d, angles: YawPitchRollAngles, textBlock: TextBlock, anchor: TextAnnotationAnchor, frame?: TextFrameStyleProps) {
     this.offset = offset;
     this.orientation = angles;
     this.textBlock = textBlock;
     this.anchor = anchor;
+    this.frame = frame
   }
 
   /** Creates a new TextAnnotation. */
@@ -103,7 +136,7 @@ export class TextAnnotation {
     const textBlock = args?.textBlock ?? TextBlock.createEmpty();
     const anchor = args?.anchor ?? { vertical: "top", horizontal: "left" };
 
-    return new TextAnnotation(offset, angles, textBlock, anchor);
+    return new TextAnnotation(offset, angles, textBlock, anchor, args?.frame);
   }
 
   /**
@@ -115,6 +148,7 @@ export class TextAnnotation {
       orientation: props?.orientation ? YawPitchRollAngles.fromJSON(props.orientation) : undefined,
       textBlock: props?.textBlock ? TextBlock.create(props.textBlock) : undefined,
       anchor: props?.anchor ? { ...props.anchor } : undefined,
+      frame: props?.frame,
     });
   }
 
@@ -139,6 +173,8 @@ export class TextAnnotation {
     if (this.anchor.vertical !== "top" || this.anchor.horizontal !== "left") {
       props.anchor = { ...this.anchor };
     }
+
+    props.frame = this.frame;
 
     return props;
   }
@@ -193,8 +229,14 @@ export class TextAnnotation {
 
   /** Returns true if this annotation is logically equivalent to `other`. */
   public equals(other: TextAnnotation): boolean {
+    const framesMatch = this.frame?.shape === other.frame?.shape
+      && this.frame?.fill === other.frame?.fill
+      && this.frame?.border === other.frame?.border
+      && this.frame?.borderWeight === other.frame?.borderWeight;
+
     return this.anchor.horizontal === other.anchor.horizontal && this.anchor.vertical === other.anchor.vertical
       && this.orientation.isAlmostEqual(other.orientation) && this.offset.isAlmostEqual(other.offset)
-      && this.textBlock.equals(other.textBlock);
+      && this.textBlock.equals(other.textBlock)
+      && framesMatch;
   }
 }

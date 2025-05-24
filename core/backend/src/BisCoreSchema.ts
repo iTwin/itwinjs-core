@@ -20,7 +20,7 @@ import { Schema, Schemas } from "./Schema";
 import * as textureMod from "./Texture";
 import * as viewMod from "./ViewDefinition";
 import * as displayStyleMod from "./DisplayStyle";
-import * as annotationsMod from "./TextAnnotationElement";
+import * as annotationsMod from "./annotations/TextAnnotationElement";
 import * as sheetIndex from "./SheetIndex";
 
 /**
