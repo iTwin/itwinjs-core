@@ -46,7 +46,7 @@ export interface CustomHandledProperty {
 /** Represents one of the fundamental building block in an [[IModelDb]]: as an [[Element]], [[Model]], or [[Relationship]].
  * Every subclass of Entity represents one BIS [ECClass]($ecschema-metadata).
  * An Entity is typically instantiated from an [EntityProps]($common) and can be converted back to this representation via [[Entity.toJSON]].
- * @public
+ * @public @preview
  */
 export class Entity {
   /** An immutable property used to discriminate between [[Entity]] and [EntityProps]($common), used to inform the TypeScript compiler that these two types
@@ -318,6 +318,6 @@ export class Entity {
 export type PropertyHandler = (name: string, property: Property) => void;
 
 /** Parameter type that can accept both abstract constructor types and non-abstract constructor types for `instanceof` to test.
- * @public
+ * @public @preview
  */
 export type EntityClassType<T> = Function & { prototype: T }; // eslint-disable-line @typescript-eslint/no-unsafe-function-type
