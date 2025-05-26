@@ -498,7 +498,7 @@ describe("ECDb", () => {
       if (prevLevel !== undefined)
         Logger.setLevel("ECDb", prevLevel);
       else
-        delete (Logger as any)._categoryFilter["ECDb"];
+        delete (Logger as any)._categoryFilter.ECDb;
     }
 
     const context = new SchemaContext();
