@@ -6,7 +6,6 @@ publish: false
 
 Table of contents:
 
-<<<<<<< HEAD
 - [NextVersion](#nextversion)
   - [Selection set](#selection-set)
   - [Select by volume](#select-by-volume)
@@ -450,7 +449,7 @@ Node 18 will reach [end-of-life](https://github.com/nodejs/release?tab=readme-ov
 
 #### Electron
 
-iTwin.js now supports only the latest Electron release ([Electron 35](https://www.electronjs.org/blog/electron-35-0)) and has dropped support for all older Electron releases. This decision was made because Electron releases major updates much more frequently than iTwin.js and it is difficult to support a high number of major versions.
+iTwin.js now supports only [Electron 35](https://www.electronjs.org/blog/electron-35-0) and [Electron 36](https://www.electronjs.org/blog/electron-36-0). Support for all older Electron releases was dropped. This decision was made because Electron releases major updates much more frequently than iTwin.js and it is difficult to support a high number of major versions.
 
 #### ECMAScript
 
@@ -927,10 +926,3 @@ Following are related classes to ECSqlStatement that are also mark depercate
 - `ECSqlColumnInfo`
 
   In concurrent query `QueryOptions.convertClassIdsToClassNames` & `QueryOptionsBuilder.setConvertClassIdsToNames()` are deprecated. Use ECSQL ec_classname() function to convert class ids to class names.
-=======
-- [Electron 36 support](#electron-36-support)
-
-## Electron 36 support
-
-In addition to [already supported Electron versions](../learning/SupportedPlatforms.md#electron), iTwin.js now supports [Electron 36](https://www.electronjs.org/blog/electron-36-0).
->>>>>>> c0ec6be1a4 (Add support for Electron 36 (#8119))
