@@ -16,7 +16,7 @@ import {
   BriefcaseId, BriefcaseIdValue, BriefcaseProps, ChangesetFileProps, ChangesetIndex, ChangesetIndexOrId, ChangesetProps, ChangesetRange, ChangesetType, IModelError, IModelVersion, LocalBriefcaseProps,
   LocalDirName, LocalFileName, RequestNewBriefcaseProps,
 } from "@itwin/core-common";
-import { AcquireNewBriefcaseIdArg, IModelNameArg } from "./BackendHubAccess";
+import { AcquireNewBriefcaseIdArg, DownloadChangesetArg, DownloadChangesetRangeArg, IModelNameArg } from "./BackendHubAccess";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { CheckpointManager, CheckpointProps, ProgressFunction } from "./CheckpointManager";
 import { BriefcaseDb, IModelDb, TokenArg } from "./IModelDb";
@@ -400,6 +400,20 @@ export class BriefcaseManager {
         status = false;
     }
     return status;
+  }
+
+  /** Download all the changesets in the specified range.
+   * @beta
+   */
+  public static async downloadChangesets(arg: DownloadChangesetRangeArg): Promise<ChangesetFileProps[]> {
+    return IModelHost[_hubAccess].downloadChangesets(arg);
+  }
+
+  /** Download a single changeset.
+   * @beta
+   */
+  public static async downloadChangeset(arg: DownloadChangesetArg): Promise<ChangesetFileProps> {
+    return IModelHost[_hubAccess].downloadChangeset(arg);
   }
 
   /** Query the hub for the properties for a ChangesetIndex or ChangesetId  */

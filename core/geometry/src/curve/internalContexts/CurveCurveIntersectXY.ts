@@ -641,7 +641,7 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
     bezierB: BezierCurve3dH,
     bcurveB: BSplineCurve3dBase,
     _strokeCountB: number,
-    univariateBezierB: UnivariateBezier,  // caller-allocated for univariate coefficients.
+    univariateBezierB: UnivariateBezier, // caller-allocated for univariate coefficients
     reversed: boolean,
   ): void {
     if (!this._xyzwA0)
@@ -690,7 +690,7 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
           const segmentAFraction = SmallSystem.lineSegment3dHXYClosestPointUnbounded(
             this._xyzwA0, this._xyzwA1, this._xyzwB,
           );
-          if (segmentAFraction && Geometry.isIn01WithTolerance(segmentAFraction, intervalTolerance)) {
+          if (segmentAFraction !== undefined && Geometry.isIn01WithTolerance(segmentAFraction, intervalTolerance)) {
             let bezierAFraction = Geometry.interpolate(f0, segmentAFraction, f1);
             // We have a near intersection at fractions on the two beziers
             // Iterate on the curves for a true intersection
@@ -728,7 +728,7 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
     }
   }
   private dispatchBSplineCurve3dBSplineCurve3d(
-    bcurveA: BSplineCurve3dBase, bcurveB: BSplineCurve3dBase, _reversed: boolean,
+    bcurveA: BSplineCurve3dBase, bcurveB: BSplineCurve3dBase, reversed: boolean,
   ): void {
     const bezierSpanA = bcurveA.collectBezierSpans(true) as BezierCurve3dH[];
     const bezierSpanB = bcurveB.collectBezierSpans(true) as BezierCurve3dH[];
@@ -749,11 +749,11 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
           const strokeCountB = bezierSpanB[b].computeStrokeCountForOptions();
           if (strokeCountA < strokeCountB)
             this.dispatchBezierBezierStrokeFirst(
-              bezierSpanA[a], bcurveA, strokeCountA, bezierSpanB[b], bcurveB, strokeCountB, univariateCoffsB, _reversed,
+              bezierSpanA[a], bcurveA, strokeCountA, bezierSpanB[b], bcurveB, strokeCountB, univariateCoffsB, reversed,
             );
           else
             this.dispatchBezierBezierStrokeFirst(
-              bezierSpanB[b], bcurveB, strokeCountB, bezierSpanA[a], bcurveA, strokeCountA, univariateCoffsA, !_reversed,
+              bezierSpanB[b], bcurveB, strokeCountB, bezierSpanA[a], bcurveA, strokeCountA, univariateCoffsA, !reversed,
             );
         }
       }
