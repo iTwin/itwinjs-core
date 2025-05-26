@@ -449,7 +449,7 @@ Node 18 will reach [end-of-life](https://github.com/nodejs/release?tab=readme-ov
 
 #### Electron
 
-iTwin.js now supports only the latest Electron release ([Electron 35](https://www.electronjs.org/blog/electron-35-0)) and has dropped support for all older Electron releases. This decision was made because Electron releases major updates much more frequently than iTwin.js and it is difficult to support a high number of major versions.
+iTwin.js now supports only [Electron 35](https://www.electronjs.org/blog/electron-35-0) and [Electron 36](https://www.electronjs.org/blog/electron-36-0). Support for all older Electron releases was dropped. This decision was made because Electron releases major updates much more frequently than iTwin.js and it is difficult to support a high number of major versions.
 
 #### ECMAScript
 
