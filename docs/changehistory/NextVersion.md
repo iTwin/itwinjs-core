@@ -8,6 +8,7 @@ Table of contents:
 
 - [NextVersion](#nextversion)
   - [Selection set](#selection-set)
+  - [Select by volume](#select-by-volume)
   - [Snapping](#snapping)
   - [Font APIs](#font-apis)
   - [Geometry](#geometry)
@@ -30,6 +31,7 @@ Table of contents:
     - [FormatDefinition](#formatdefinition)
     - [FormatsProvider](#formatsprovider)
     - [Persistence](#persistence)
+    - [Migrating From QuantityType to KindOfQuantity](#migrating-from-quantitytype-to-kindofquantity)
   - [API deprecations](#api-deprecations)
     - [@itwin/core-bentley](#itwincore-bentley)
     - [@itwin/core-common](#itwincore-common)
@@ -40,6 +42,7 @@ Table of contents:
     - [@itwin/presentation-backend](#itwinpresentation-backend)
     - [@itwin/presentation-frontend](#itwinpresentation-frontend)
     - [@itwin/ecschema-rpcinterface-common](#itwinecschema-rpcinterface-common)
+    - [@itwin/appui-abstract](#itwinappui-abstract)
   - [Breaking Changes](#breaking-changes)
     - [Updated minimum requirements](#updated-minimum-requirements)
       - [Node.js](#nodejs)
@@ -49,7 +52,7 @@ Table of contents:
         - [`target`](#target)
         - [`useDefineForClassFields`](#usedefineforclassfields)
     - [Deprecated API removals](#deprecated-api-removals)
-      - [@itwin/appui-abstract](#itwinappui-abstract)
+      - [@itwin/appui-abstract](#itwinappui-abstract-1)
       - [@itwin/core-backend](#itwincore-backend-1)
       - [@itwin/core-bentley](#itwincore-bentley-1)
       - [@itwin/core-common](#itwincore-common-1)
@@ -70,7 +73,7 @@ Table of contents:
       - [With pending/local changes](#with-pendinglocal-changes)
     - [Reworked @itwin/ecschema-metadata package](#reworked-itwinecschema-metadata-package)
       - [Tips for adjusting existing code](#tips-for-adjusting-existing-code)
-    - [Change to getElement and getModel](#changes-to-getelement-and-getmodel)
+    - [Changes to getElement and getModel](#changes-to-getelement-and-getmodel)
   - [Deprecated ECSqlStatement](#deprecated-ecsqlstatement)
 
 ## Selection set
@@ -83,6 +86,15 @@ To alleviate this problem, the `SelectionSet`-related APIs have been enhanced to
 - `SelectionSetEvent` attributes `added` and `removed` have been deprecated, but continue to work as before, containing only element ids. In addition, the event object now contains new `additions` and `removals` attributes, which are instances of `SelectableIds` and contain all ids that were added or removed from the selection set, including those of Model and SubCategory.
 
 Because the `SelectionSet` now stores additional types of ids, existing code that listens to `onChange` event may start getting extra invocations that don't affect the element selection (e.g. `SelectAddEvent` with `added: []` and `additions: { models: ["0x1"] }`). Also, the `isActive` getter may return `true` even though `elements` set is empty.
+
+## Select by volume
+
+By default a box select with the selection tool will only identify visible elements (i.e. elements that light up a pixel in the current view). Sometimes it is desirable to select all elements that are inside or overlap the box regardless of whether they are currently obscured by other elements. Applications can now change [ToolSettings.enableVolumeSelection]($core-frontend) to enable box selection by volume in spatial views.
+
+The following protected methods on SelectTool had their signature changed to support volume selection:
+
+- [SelectTool.selectByPointsProcess]($core-frontend)
+- [SelectTool.selectByPointsEnd]($core-frontend)
 
 ## Snapping
 
