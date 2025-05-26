@@ -1278,11 +1278,9 @@ export namespace IModelConnection {
       const codeSpecResult = queryResult.value.toArray();
 
       if (
-        !(
-          typeof codeSpecResult[0] === "string" &&
-          typeof codeSpecResult[1] === "string" &&
-          typeof codeSpecResult[2] === "string"
-        )
+          typeof codeSpecResult[0] !== "string" ||
+          typeof codeSpecResult[1] !== "string" ||
+          typeof codeSpecResult[2] !== "string"
       )
         throw new Error("Invalid CodeSpec was returned");
 
