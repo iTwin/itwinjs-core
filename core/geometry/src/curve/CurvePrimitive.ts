@@ -89,8 +89,8 @@ export type AnnounceCurvePrimitive = (cp: CurvePrimitive) => void;
  */
 export interface TangentOptions {
   /**
-   * The tangent returned by [[CurvePrimitive.closestTangent]] is nearest to this point as seen in the view plane.
-   * * Default value is `spacePoint`.
+   * The tangent point returned by [[CurvePrimitive.closestTangent]] is nearest to this point as seen in the view plane.
+   * * Default value is the fixed point `P`.
    */
   hintPoint?: Point3d,
   /**
