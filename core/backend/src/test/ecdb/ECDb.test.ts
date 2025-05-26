@@ -453,7 +453,7 @@ describe("ECDb", () => {
     ecdb.closeDb();
   });
 
-  it.only("should log warning but continue if new schema changes are observed without version bump", async () => {
+  it("should log warning but continue if new schema changes are observed without version bump", async () => {
     const ecdb: ECDb = ECDbTestHelper.createECDb(outDir, "importSchemaNoVersionBump.ecdb");
     const xmlpathOriginal = path.join(outDir, "importSchemaNoVersionBump1.ecschema.xml");
 
