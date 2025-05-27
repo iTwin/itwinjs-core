@@ -726,17 +726,45 @@ export class Range3d extends RangeBase implements LowAndHighXYZ, BeJSONFunctions
       && other.high.y <= this.high.y
       && other.high.z <= this.high.z;
   }
-  /** Test if there is any intersection with other range */
-  public intersectsRange(other: Range3d): boolean {
-    return !(this.low.x > other.high.x
+  /**
+   * Test if there is any intersection with the other range.
+   * @param other the other range.
+   * @param margin optional signed distance by which to expand/shrink `other` in all directions.
+   */
+  public intersectsRange(other: Range3d, margin?: number): boolean {
+    if (margin) {
+      return !(
+        this.low.x > other.high.x + margin
+        || this.low.y > other.high.y + margin
+        || this.low.z > other.high.z + margin
+        || other.low.x - margin > this.high.x
+        || other.low.y - margin > this.high.y
+        || other.low.z - margin > this.high.z
+      );
+    }
+    return !(
+      this.low.x > other.high.x
       || this.low.y > other.high.y
       || this.low.z > other.high.z
       || other.low.x > this.high.x
       || other.low.y > this.high.y
-      || other.low.z > this.high.z);
+      || other.low.z > this.high.z
+    );
   }
-  /** Test if there is any intersection with other range, ignoring z. */
-  public intersectsRangeXY(other: Range3d): boolean {
+  /**
+   * Test if there is any intersection with the other range, ignoring z.
+   * @param other the other range.
+   * @param margin optional signed distance by which to expand/shrink `other` in all xy-directions.
+   */
+  public intersectsRangeXY(other: Range3d, margin?: number): boolean {
+    if (margin) {
+      return !(
+        this.low.x > other.high.x + margin
+        || this.low.y > other.high.y + margin
+        || other.low.x - margin > this.high.x
+        || other.low.y - margin > this.high.y
+      );
+    }
     return !(
       this.low.x > other.high.x
       || this.low.y > other.high.y
