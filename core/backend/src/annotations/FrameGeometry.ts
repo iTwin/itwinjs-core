@@ -11,6 +11,10 @@ import { Id64 } from "@itwin/core-bentley";
 import { BackgroundFill, ColorDef, ElementGeometry, FillDisplay, GeometryParams, TextAnnotationFrameShape, TextFrameStyleProps } from "@itwin/core-common";
 import { Angle, AngleSweep, Arc3d, LineString3d, Loop, Path, Point3d, Range2d, Transform, Vector2d } from "@itwin/core-geometry";
 
+/**
+ * This namespace contains methods for computing the geometry a frame that encloses the range of a text annotation.
+ * @beta
+ */
 export namespace FrameGeometry {
 
   /**
@@ -20,6 +24,7 @@ export namespace FrameGeometry {
    * @param range to enclose with the frame
    * @param transform that transform the range to world coordinates
    * @returns `true` if any geometry was appended to the builder
+  * @beta
    */
   export const appendFrameToBuilder = (builder: ElementGeometry.Builder, frame: TextFrameStyleProps, range: Range2d, transform: Transform, geomParams?: GeometryParams): boolean => {
     if (frame.shape === "none") {
@@ -61,7 +66,10 @@ export namespace FrameGeometry {
     return true;
   }
 
-
+  /**
+   * Arguments for the [[computeFrame]] method.
+   * @beta
+   */
   export interface ComputeFrameArgs {
     /** Frame shape to be calculated */
     frame: Exclude<TextAnnotationFrameShape, "none">;
@@ -73,7 +81,8 @@ export namespace FrameGeometry {
 
   /**
    * Computes the frame geometry based on the provided frame shape and range.
-   * @returns a [[Loop]] that represents the frame geometry
+   * @returns a [[Loop]] or [[Path]](if it's just a line) that represents the frame geometry
+   * @beta
    */
   export const computeFrame = ({ frame, range, transform }: ComputeFrameArgs): Loop | Path => {
     switch (frame) {
@@ -92,6 +101,10 @@ export namespace FrameGeometry {
     }
   }
 
+  /**
+   * Arguments for the [[computeIntervalPoints]] method.
+   * @beta
+   */
   export interface ComputeIntervalPointsArgs extends ComputeFrameArgs {
     /** A factor applied to divide each straight edge. A value of 1 will place a single point on each vertex. */
     lineIntervalFactor?: number;
@@ -103,6 +116,7 @@ export namespace FrameGeometry {
    * Computes points along the edges of the frame geometry based on the provided frame shape, range, and interval factors.
    * These can be used for snapping or attaching leaders.
    * @returns an array of [[Point3d]] that represent the points along the edges of the frame geometry. Returns `undefined` if the loop created by `computeFrame` is empty.
+   * @beta
    */
   export const computeIntervalPoints = ({ frame, range, transform, lineIntervalFactor = 0.5, arcIntervalFactor = 0.25 }: ComputeIntervalPointsArgs): Point3d[] | undefined => {
     const points: Point3d[] = [];
@@ -117,7 +131,7 @@ export namespace FrameGeometry {
     return points;
   }
 
-  // Line - currently just adds an underline. Once we have leaders, this method may change.
+  /** Line - currently just adds an underline. Once we have leaders, this method may change. */
   const computeLine = (range: Range2d, transform: Transform): Path => {
     const points = [Point3d.create(range.low.x, range.low.y), Point3d.create(range.high.x, range.low.y)];
     const frame = LineString3d.createPoints(points);
@@ -125,7 +139,7 @@ export namespace FrameGeometry {
     return Path.create(frame.cloneTransformed(transform));
   }
 
-  // Rectangle
+  /** Rectangle - simplest frame */
   const computeRectangle = (range: Range2d, transform: Transform): Loop => {
     const points = range.corners3d(true);
     const frame = LineString3d.createPoints(points);
@@ -133,7 +147,7 @@ export namespace FrameGeometry {
     return Loop.create(frame.cloneTransformed(transform));
   }
 
-  // RoundedRectangle
+  /** Rounded Rectangle: each corner will be turned into an arc with the radius of the arc being the @param radiusFactor * the height (yLength) of the range */
   const computeRoundedRectangle = (range: Range2d, transform: Transform, radiusFactor: number = 0.25): Loop => {
     const radius = range.yLength() * radiusFactor * Math.sqrt(2);
     // We're going to circumscribe the range with our rounded edges. The corners of the range will fall on 45 degree angles.
@@ -172,14 +186,14 @@ export namespace FrameGeometry {
   }
 
 
-  // Circle
+  /** Circle */
   const computeCircle = (range: Range2d, transform: Transform): Loop => {
     const radius = range.low.distance(range.high) / 2;
     const frame = Arc3d.createXY(Point3d.createFrom(range.center), radius);
     return Loop.create(frame.cloneTransformed(transform));
   }
 
-  // Equilateral Triangle
+  /** Equilateral Triangle */
   const computeTriangle = (range: Range2d, transform: Transform): Loop => {
 
     const xLength = range.xLength();
@@ -206,7 +220,7 @@ export namespace FrameGeometry {
     return Loop.create(frame.cloneTransformed(transform));
   }
 
-  // Diamond
+  /** Diamond (square rotated 45 degrees) */
   const computeDiamond = (range: Range2d, transform: Transform): Loop => {
     const offset = (range.xLength() + range.yLength()) / 2;
     const center = range.center;
@@ -224,7 +238,7 @@ export namespace FrameGeometry {
     return Loop.create(frame.cloneTransformed(transform));
   }
 
-  // Square
+  /** Square */
   const computeSquare = (range: Range2d, transform: Transform): Loop => {
 
     // Extend range
@@ -245,7 +259,7 @@ export namespace FrameGeometry {
     return Loop.create(frame.cloneTransformed(transform));
   }
 
-  // Capsule (or pill shape)
+  /** Capsule (or pill shape) */
   const computeCapsule = (range: Range2d, transform: Transform): Loop => {
     const height = range.yLength();
     const radius = height * (Math.sqrt(2) / 2);
@@ -276,7 +290,7 @@ export namespace FrameGeometry {
     return Loop.createArray(curves.map((curve) => curve.cloneTransformed(transform)));
   }
 
-  // Regular polygon with n sides: note, this a generic method that can be used to create any polygon, but the frame will not be as tightly encapsulating.
+  /** Regular polygon with n sides: note, this a generic method that can be used to create any polygon, but the frame will not be as tightly encapsulating. */
   const computePolygon = (n: number, range: Range2d, transform: Transform, angleOffset: number = 0): Loop => {
     // These are math terms: cspell:ignore inradius circumradius
     if (n < 3) throw new Error("A polygon must have at least 3 sides.");
