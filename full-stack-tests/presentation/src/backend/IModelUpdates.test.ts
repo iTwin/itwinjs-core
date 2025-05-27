@@ -7,7 +7,7 @@ import * as fs from "fs";
 import path from "path";
 import * as sinon from "sinon";
 import { BriefcaseDb, BriefcaseManager, HubMock, IModelDb, IpcHost, StandaloneDb } from "@itwin/core-backend";
-import { using } from "@itwin/core-bentley";
+import { IModelStatus, using } from "@itwin/core-bentley";
 import { IModel, IpcSocketBackend } from "@itwin/core-common";
 import { Presentation } from "@itwin/presentation-backend";
 import { KeySet, PresentationIpcEvents } from "@itwin/presentation-common";
@@ -71,31 +71,34 @@ describe("Reacting to IModel data changes", () => {
       keys: new KeySet([{ className: "BisCore.Subject", id: "0x1" }]),
     });
 
-    it("returns fresh content after iModel update", async function () {
-      await using(await setupStandaloneDbTest(this), async (test) => {
-        const { imodel } = test;
-
-        const contentBefore = await Presentation.getManager().getContent(createContentRequestProps(imodel));
-        const codeValueField = getFieldByLabel(contentBefore!.descriptor.fields, "Code");
-        const userLabelField = getFieldByLabel(contentBefore!.descriptor.fields, "User Label");
-        expect(contentBefore!.contentSet[0].values[codeValueField.name]).to.eq("test");
-        expect(contentBefore!.contentSet[0].values[userLabelField.name]).to.be.undefined;
-
-        const rootSubjectProps = imodel.elements.getElementJson({ id: "0x1" });
-        imodel.elements.updateElement({
-          ...rootSubjectProps,
-          userLabel: `updated`,
-        });
-        imodel.saveChanges();
+    const validateRootSubject = async (imodel: IModelDb, expectUpdateNotification: boolean, expectedCodeValue: string) => {
+      if (expectUpdateNotification) {
         await waitFor(() => {
           expect(updatesSpy).to.be.calledWith(PresentationIpcEvents.Update, {
             [imodel.getRpcProps().key]: { "content-ruleset": { content: "FULL" } },
           });
         });
+      }
+      const content = await Presentation.getManager().getContent(createContentRequestProps(imodel));
+      const codeValueField = getFieldByLabel(content!.descriptor.fields, "Code");
+      expect(content!.contentSet[0].values[codeValueField.name]).to.eq(expectedCodeValue);
+      updatesSpy.resetHistory();
+    };
 
-        const contentAfter = await Presentation.getManager().getContent(createContentRequestProps(imodel));
-        expect(contentAfter!.contentSet[0].values[codeValueField.name]).to.eq("test");
-        expect(contentAfter!.contentSet[0].values[userLabelField.name]).to.eq("updated");
+    it("returns fresh content after iModel update", async function () {
+      await using(await setupStandaloneDbTest(this), async (test) => {
+        const { imodel } = test;
+
+        await validateRootSubject(imodel, false, "test");
+
+        const rootSubjectProps = imodel.elements.getElementJson({ id: "0x1" });
+        imodel.elements.updateElement({
+          ...rootSubjectProps,
+          code: { ...rootSubjectProps.code, value: "updated" },
+        });
+        imodel.saveChanges();
+
+        await validateRootSubject(imodel, true, "updated");
       });
     });
 
@@ -104,31 +107,42 @@ describe("Reacting to IModel data changes", () => {
         const imodel1 = await test.openIModel();
         const imodel2 = await test.openIModel();
 
-        const contentBefore = await Presentation.getManager().getContent(createContentRequestProps(imodel1));
-        const codeValueField = getFieldByLabel(contentBefore!.descriptor.fields, "Code");
-        const userLabelField = getFieldByLabel(contentBefore!.descriptor.fields, "User Label");
-        expect(contentBefore!.contentSet[0].values[codeValueField.name]).to.eq("test");
-        expect(contentBefore!.contentSet[0].values[userLabelField.name]).to.be.undefined;
+        await validateRootSubject(imodel1, false, "test");
 
         await imodel2.locks.acquireLocks({ exclusive: IModel.rootSubjectId });
         const rootSubjectProps = imodel2.elements.getElementJson({ id: "0x1" });
         imodel2.elements.updateElement({
           ...rootSubjectProps,
-          userLabel: `updated`,
+          code: { ...rootSubjectProps.code, value: "updated" },
         });
         imodel2.saveChanges();
         await imodel2.pushChanges({ description: `updated root subject label` });
 
         await imodel1.pullChanges();
-        await waitFor(() => {
-          expect(updatesSpy).to.be.calledWith(PresentationIpcEvents.Update, {
-            [imodel1.getRpcProps().key]: { "content-ruleset": { content: "FULL" } },
-          });
-        });
 
-        const contentAfter = await Presentation.getManager().getContent(createContentRequestProps(imodel1));
-        expect(contentAfter!.contentSet[0].values[codeValueField.name]).to.eq("test");
-        expect(contentAfter!.contentSet[0].values[userLabelField.name]).to.eq("updated");
+        await validateRootSubject(imodel1, true, "updated");
+      });
+    });
+
+    it(`returns fresh content after "undo" / "redo"`, async function () {
+      await using(await setupStandaloneDbTest(this), async (test) => {
+        const { imodel } = test;
+
+        await validateRootSubject(imodel, false, "test");
+
+        const rootSubjectProps = imodel.elements.getElementJson({ id: "0x1" });
+        imodel.elements.updateElement({
+          ...rootSubjectProps,
+          code: { ...rootSubjectProps.code, value: "updated" },
+        });
+        imodel.saveChanges();
+        await validateRootSubject(imodel, true, "updated");
+
+        expect(imodel.txns.reverseTxns(1)).to.eq(IModelStatus.Success);
+        await validateRootSubject(imodel, true, "test");
+
+        expect(imodel.txns.reinstateTxn()).to.eq(IModelStatus.Success);
+        await validateRootSubject(imodel, true, "updated");
       });
     });
   });
@@ -155,24 +169,36 @@ describe("Reacting to IModel data changes", () => {
       },
     });
 
+    const validateRootSubject = async (imodel: IModelDb, expectUpdateNotification: boolean, expectedLabel: string) => {
+      if (expectUpdateNotification) {
+        await waitFor(() => {
+          expect(updatesSpy).to.be.calledWith(PresentationIpcEvents.Update, {
+            [imodel.getRpcProps().key]: { "hierarchy-ruleset": { hierarchy: "FULL" } },
+          });
+        });
+      }
+      const nodes = await Presentation.getManager().getNodes(createNodesRequestProps(imodel));
+      expect(nodes)
+        .to.have.lengthOf(1)
+        .and.containSubset([
+          {
+            key: {
+              instanceKeys: [{ className: "BisCore:Subject", id: "0x1" }],
+            },
+            label: {
+              displayValue: expectedLabel,
+            },
+          },
+        ]);
+      updatesSpy.resetHistory();
+    };
+
     it("returns fresh hierarchy after iModel update", async function () {
       await using(await setupStandaloneDbTest(this), async (test) => {
         const { imodel } = test;
 
-        const nodesBefore = await Presentation.getManager().getNodes(createNodesRequestProps(imodel));
-        expect(nodesBefore)
-          .to.have.lengthOf(1)
-          .and.containSubset([
-            {
-              key: {
-                instanceKeys: [{ className: "BisCore:Subject", id: "0x1" }],
-              },
-              label: {
-                // UserLabel property is not set, so CodeValue is used instead
-                displayValue: "test",
-              },
-            },
-          ]);
+        // UserLabel property is not set, so CodeValue is used instead
+        await validateRootSubject(imodel, false, "test");
 
         const rootSubjectProps = imodel.elements.getElementJson({ id: "0x1" });
         imodel.elements.updateElement({
@@ -180,26 +206,9 @@ describe("Reacting to IModel data changes", () => {
           userLabel: `updated`,
         });
         imodel.saveChanges();
-        await waitFor(() => {
-          expect(updatesSpy).to.be.calledWith(PresentationIpcEvents.Update, {
-            [imodel.getRpcProps().key]: { "hierarchy-ruleset": { hierarchy: "FULL" } },
-          });
-        });
 
-        const nodesAfter = await Presentation.getManager().getNodes(createNodesRequestProps(imodel));
-        expect(nodesAfter)
-          .to.have.lengthOf(1)
-          .and.containSubset([
-            {
-              key: {
-                instanceKeys: [{ className: "BisCore:Subject", id: "0x1" }],
-              },
-              label: {
-                // UserLabel is now set - using that
-                displayValue: "updated",
-              },
-            },
-          ]);
+        // UserLabel is now set - using that
+        await validateRootSubject(imodel, true, "updated");
       });
     });
 
@@ -208,20 +217,8 @@ describe("Reacting to IModel data changes", () => {
         const imodel1 = await test.openIModel();
         const imodel2 = await test.openIModel();
 
-        const nodesBefore = await Presentation.getManager().getNodes(createNodesRequestProps(imodel1));
-        expect(nodesBefore)
-          .to.have.lengthOf(1)
-          .and.containSubset([
-            {
-              key: {
-                instanceKeys: [{ className: "BisCore:Subject", id: "0x1" }],
-              },
-              label: {
-                // UserLabel property is not set, so CodeValue is used instead
-                displayValue: "test",
-              },
-            },
-          ]);
+        // UserLabel property is not set, so CodeValue is used instead
+        await validateRootSubject(imodel1, false, "test");
 
         await imodel2.locks.acquireLocks({ exclusive: IModel.rootSubjectId });
         const rootSubjectProps = imodel2.elements.getElementJson({ id: "0x1" });
@@ -233,26 +230,32 @@ describe("Reacting to IModel data changes", () => {
         await imodel2.pushChanges({ description: `updated root subject label` });
 
         await imodel1.pullChanges();
-        await waitFor(() => {
-          expect(updatesSpy).to.be.calledWith(PresentationIpcEvents.Update, {
-            [imodel1.getRpcProps().key]: { "hierarchy-ruleset": { hierarchy: "FULL" } },
-          });
-        });
 
-        const nodesAfter = await Presentation.getManager().getNodes(createNodesRequestProps(imodel1));
-        expect(nodesAfter)
-          .to.have.lengthOf(1)
-          .and.containSubset([
-            {
-              key: {
-                instanceKeys: [{ className: "BisCore:Subject", id: "0x1" }],
-              },
-              label: {
-                // UserLabel is now set - using that
-                displayValue: "updated",
-              },
-            },
-          ]);
+        // UserLabel is now set - using that
+        await validateRootSubject(imodel1, true, "updated");
+      });
+    });
+
+    it(`returns fresh hierarchy after "undo" / "redo"`, async function () {
+      await using(await setupStandaloneDbTest(this), async (test) => {
+        const { imodel } = test;
+
+        await validateRootSubject(imodel, false, "test");
+
+        const rootSubjectProps = imodel.elements.getElementJson({ id: "0x1" });
+        imodel.elements.updateElement({
+          ...rootSubjectProps,
+          userLabel: `updated`,
+        });
+        imodel.saveChanges();
+
+        await validateRootSubject(imodel, true, "updated");
+
+        expect(imodel.txns.reverseTxns(1)).to.eq(IModelStatus.Success);
+        await validateRootSubject(imodel, true, "test");
+
+        expect(imodel.txns.reinstateTxn()).to.eq(IModelStatus.Success);
+        await validateRootSubject(imodel, true, "updated");
       });
     });
   });
