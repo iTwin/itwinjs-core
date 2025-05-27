@@ -794,28 +794,18 @@ export class ConvexClipPlaneSet implements Clipper, PolygonClipper {
   ): { clipper: ConvexClipPlaneSet, volume: number } {
     result = this.createEmpty(result);
     let vol = 0;
-    let myMesh: Polyface | undefined;
-    let myVisitor: PolyfaceVisitor;
-    if (convexMesh instanceof Polyface) {
-      myMesh = convexMesh;
-      myVisitor = convexMesh.createVisitor(0);
-    } else {
-      myMesh = convexMesh.clientPolyface();
-      myVisitor = convexMesh;
-    }
-    if (myMesh && myVisitor) {
-      if (PolyfaceQuery.isPolyfaceClosedByEdgePairing(myMesh))
-        vol = PolyfaceQuery.sumTetrahedralVolumes(myVisitor);
-      const scale = vol > 0.0 ? -1.0 : 1.0; // point clipper normals inward if mesh normals point outward
-      const normal = Vector3d.create();
-      const plane = Plane3dByOriginAndUnitNormal.createXYPlane();
-      myVisitor.reset();
-      while (myVisitor.moveToNextFacet()) {
-        if (undefined !== PolygonOps.areaNormalGo(myVisitor.point, normal)) {
-          normal.scaleInPlace(scale);
-          if (undefined !== Plane3dByOriginAndUnitNormal.create(myVisitor.point.front()!, normal, plane))
-            result.addPlaneToConvexSet(plane);
-        }
+    if (PolyfaceQuery.isPolyfaceClosedByEdgePairing(convexMesh))
+      vol = PolyfaceQuery.sumTetrahedralVolumes(convexMesh);
+    const scale = vol > 0.0 ? -1.0 : 1.0; // point clipper normals inward if mesh normals point outward
+    const normal = Vector3d.create();
+    const plane = Plane3dByOriginAndUnitNormal.createXYPlane();
+    const visitor = convexMesh instanceof Polyface ? convexMesh.createVisitor(0) : convexMesh;
+    visitor.setNumWrap(0);
+    for (visitor.reset(); visitor.moveToNextFacet(); ) {
+      if (undefined !== PolygonOps.areaNormalGo(visitor.point, normal)) {
+        normal.scaleInPlace(scale);
+        if (undefined !== Plane3dByOriginAndUnitNormal.create(visitor.point.front()!, normal, plane))
+          result.addPlaneToConvexSet(plane);
       }
     }
     return { clipper: result, volume: vol };

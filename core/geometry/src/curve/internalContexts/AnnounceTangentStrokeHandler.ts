@@ -80,7 +80,7 @@ export class AnnounceTangentStrokeHandler extends NewtonRtoRStrokeHandler implem
       this.announceRay(fraction, this._workRay);
     }
   }
-  private announceCandidate(cp: CurvePrimitive, fraction: number, point: Point3d) {
+  private announceCandidate(cp: CurvePrimitive, fraction: number, point: Point3d): void {
     if (this._parentCurvePrimitive)
       cp = this._parentCurvePrimitive;
     if (this._curveMRU === cp && Geometry.isAlmostEqualOptional(this._fractionMRU, fraction, Geometry.smallFloatingPoint))

@@ -561,6 +561,10 @@ export class BriefcaseManager {
     // @internal
     static deleteChangeSetsFromLocalDisk(iModelId: string): void;
     static downloadBriefcase(arg: RequestNewBriefcaseArg): Promise<LocalBriefcaseProps>;
+    // @beta
+    static downloadChangeset(arg: DownloadChangesetArg): Promise<ChangesetFileProps>;
+    // @beta
+    static downloadChangesets(arg: DownloadChangesetRangeArg): Promise<ChangesetFileProps[]>;
     static getBriefcaseBasePath(iModelId: GuidString): LocalDirName;
     static getCachedBriefcases(iModelId?: GuidString): LocalBriefcaseProps[];
     // @internal (undocumented)
@@ -2681,17 +2685,29 @@ export interface ExportGraphicsMesh {
 }
 
 // @public
+export class ExportGraphicsMeshSubsetVisitor extends ExportGraphicsMeshVisitor {
+    static createSubsetVisitor(polyface: ExportGraphicsMesh, facetIndices: number[], numWrap?: number): ExportGraphicsMeshSubsetVisitor;
+    getVisitableFacetCount(): number;
+    moveToNextFacet(): boolean;
+    moveToReadIndex(subsetIndex: number): boolean;
+    parentFacetIndex(subsetIndex?: number): number | undefined;
+    reset(): void;
+}
+
+// @public
 export class ExportGraphicsMeshVisitor extends PolyfaceData implements PolyfaceVisitor {
+    protected constructor(facets: ExportGraphicsMesh, numWrap: number);
     clearArrays(): void;
     clientAuxIndex(_i: number): number;
     clientColorIndex(_i: number): number;
     clientNormalIndex(i: number): number;
     clientParamIndex(i: number): number;
     clientPointIndex(i: number): number;
-    clientPolyface(): Polyface;
-    static create(polyface: ExportGraphicsMesh, numWrap: number): ExportGraphicsMeshVisitor;
+    clientPolyface(): Polyface | undefined;
+    static create(polyface: ExportGraphicsMesh, numWrap?: number): ExportGraphicsMeshVisitor;
+    createSubsetVisitor(facetIndices: number[], numWrap?: number): ExportGraphicsMeshSubsetVisitor;
     currentReadIndex(): number;
-    // (undocumented)
+    getVisitableFacetCount(): number;
     moveToNextFacet(): boolean;
     moveToReadIndex(facetIndex: number): boolean;
     pushDataFrom(other: PolyfaceVisitor, index: number): void;
