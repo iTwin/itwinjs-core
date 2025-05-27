@@ -10,7 +10,7 @@ import {
   BackgroundMapProps, BackgroundMapProviderName, BackgroundMapProviderProps, BackgroundMapType, BaseMapLayerSettings, CesiumTerrainAssetId, ColorDef, DisplayStyle3dSettingsProps,
   GlobeMode, HiddenLine, LinePixels, MonochromeMode, RenderMode, TerrainProps, ThematicDisplayMode, ThematicGradientColorScheme, ThematicGradientMode,
 } from "@itwin/core-common";
-import { DisplayStyle2dState, DisplayStyle3dState, DisplayStyleState, getGooglePhotorealistic3DTilesURL, IModelApp, Viewport, ViewState, ViewState3d } from "@itwin/core-frontend";
+import { DisplayStyle2dState, DisplayStyle3dState, DisplayStyleState, getGooglePhotorealistic3DTilesURL, IModelApp, RealityDataSourceGP3DTProvider, Viewport, ViewState, ViewState3d } from "@itwin/core-frontend";
 import { AmbientOcclusionEditor } from "./AmbientOcclusion";
 import { EnvironmentEditor } from "./EnvironmentEditor";
 import { Settings } from "./FeatureOverrides";
@@ -623,6 +623,7 @@ export class ViewAttributes {
       if (checkboxInterfaceGP3DT0.checkbox.checked) {
         if (!this.getDisplayingGP3DT()) {
           const url = getGooglePhotorealistic3DTilesURL();
+          IModelApp.realityDataSourceProviders.register("GP3DT", new RealityDataSourceGP3DTProvider(process.env.IMJS_GP3DT_KEY!));
           view.displayStyle.attachRealityModel({
             tilesetUrl: url,
             name: "googleMap3dTiles",

@@ -11,7 +11,7 @@ import { IModelError, RealityData, RealityDataFormat, RealityDataProvider, Reali
 import { request } from "./request/Request";
 import { PublisherProductInfo, RealityDataSource, SpatialLocationAndExtents } from "./RealityDataSource";
 import { ThreeDTileFormatInterpreter } from "./tile/internal";
-import { IModelApp } from "./IModelApp";
+// import { IModelApp } from "./IModelApp";
 
 /** This class provides access to the reality data provider services.
  * It encapsulates access to a reality data from the Google Photorealistic 3D Tiles service.
@@ -27,13 +27,17 @@ export class RealityDataSourceGP3DTImpl implements RealityDataSource {
   /** Need to be passed down to child tile requests */
   private _searchParams?: URLSearchParams;
 
+  private _apiKey?: string;
+
   /** This is necessary for GP3DT tilesets! This tells the iTwin.js tiling system to use the geometric error specified in the GP3DT tileset rather than any of our own. */
   public readonly usesGeometricError = true;
 
   /** Construct a new reality data source.
    * @param props JSON representation of the reality data source
    */
-  protected constructor(props: RealityDataSourceProps) {
+  protected constructor(props: RealityDataSourceProps, apiKey: string | undefined) {
+    this._apiKey = apiKey;
+
     assert(props.sourceKey.provider === RealityDataProvider.GP3DT);
     this.key = props.sourceKey;
     this._tilesetUrl = this.key.id;
@@ -42,10 +46,10 @@ export class RealityDataSourceGP3DTImpl implements RealityDataSource {
   /**
    * Create an instance of this class from a source key and iTwin context.
    */
-  public static async createFromKey(sourceKey: RealityDataSourceKey, _iTwinId: GuidString | undefined): Promise<RealityDataSource | undefined> {
+  public static async createFromKey(sourceKey: RealityDataSourceKey, _iTwinId: GuidString | undefined, apiKey: string | undefined): Promise<RealityDataSource | undefined> {
     if (sourceKey.provider !== RealityDataProvider.GP3DT)
       return undefined;
-    const rdSource = new RealityDataSourceGP3DTImpl({ sourceKey });
+    const rdSource = new RealityDataSourceGP3DTImpl({ sourceKey }, apiKey);
     return rdSource;
   }
 
@@ -74,9 +78,10 @@ export class RealityDataSourceGP3DTImpl implements RealityDataSource {
 
   /** Return the URL of the GP3DT tileset with the GP3DT key from the reality data format registry included. */
   private getTilesetUrlWithKey() {
-    let gp3dtKey = "";
-    if (IModelApp.realityDataFormatRegistry.configOptions.gp3dt)
-      gp3dtKey = IModelApp.realityDataFormatRegistry.configOptions.gp3dt.value;
+    // let gp3dtKey = "";
+    // if (IModelApp.realityDataFormatRegistry.configOptions.gp3dt)
+    //   gp3dtKey = IModelApp.realityDataFormatRegistry.configOptions.gp3dt.value;
+    const gp3dtKey = this._apiKey;
     return `${this._tilesetUrl}?key=${gp3dtKey}`;
   }
 

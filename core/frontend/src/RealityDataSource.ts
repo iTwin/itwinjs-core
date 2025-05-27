@@ -229,6 +229,11 @@ export namespace RealityDataSource {
  * is invoked to produce the reality data source.
  * @alpha
  */
+
+// TODO extend this for GP3DT
+// Then when RealityDataSourceProviderRegistry.register("google 3d tiles", new Google3DTilesProvider()) is called, it'll be on the registry
+// BUT hasn't this already been done on L268?? - "this.register(RealityDataProvider.GP3DT..."
+// But this provider should handle auth key?
 export interface RealityDataSourceProvider {
   /** Produce a RealityDataSource for the specified `key`.
    * @param key Identifies the reality data source.
@@ -261,9 +266,9 @@ export class RealityDataSourceProviderRegistry {
       // ###TODO separate TilesetUrlImpl
       createRealityDataSource: async (key, iTwinId) => RealityDataSourceTilesetUrlImpl.createFromKey(key, iTwinId),
     });
-    this.register(RealityDataProvider.GP3DT, {
-      createRealityDataSource: async (key, iTwinId) => RealityDataSourceGP3DTImpl.createFromKey(key, iTwinId),
-    });
+    // this.register(RealityDataProvider.GP3DT, {
+    //   createRealityDataSource: async (key, iTwinId) => RealityDataSourceGP3DTImpl.createFromKey(key, iTwinId),
+    // });
   }
 
   /** Register `provider` to produce [[RealityDataSource]]s for the specified provider `name`. */
@@ -276,3 +281,18 @@ export class RealityDataSourceProviderRegistry {
     return this._providers.get(name);
   }
 }
+
+/** @alpha */
+export class RealityDataSourceGP3DTProvider implements RealityDataSourceProvider {
+  private _apiKey: string;
+
+  public async createRealityDataSource(key: RealityDataSourceKey, iTwinId: GuidString | undefined): Promise<RealityDataSource | undefined> {
+    return RealityDataSourceGP3DTImpl.createFromKey(key, iTwinId, this._apiKey);
+  }
+
+  public constructor(apiKey: string) {
+    this._apiKey = apiKey;
+  }
+}
+
+// IModelApp.realityDataSourceProviders.register("GP3DT", new RealityDataSourceGP3DTProvider("my api key"));

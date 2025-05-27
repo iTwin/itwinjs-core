@@ -9,7 +9,7 @@ import { RealityDataSourceGP3DTImpl } from "../RealityDataSourceGP3DTImpl";
 
 describe("RealityDataSourceGP3DTImpl", () => {
   it("handle content type of relative urls", async () => {
-    const rdSource = await RealityDataSourceGP3DTImpl.createFromKey({ format: "", id: "", provider : RealityDataProvider.GP3DT }, undefined);
+    const rdSource = await RealityDataSourceGP3DTImpl.createFromKey({ format: "", id: "", provider : RealityDataProvider.GP3DT }, undefined, undefined);
     expect(rdSource).toBeDefined();
     expect(rdSource?.getTileContentType("tileset.json")).toEqual("tileset");
     expect(rdSource?.getTileContentType("tile.glb")).toEqual("tile");
@@ -48,7 +48,7 @@ describe("RealityDataSourceGP3DTImpl", () => {
     expect(rdSource?.getTileContentType("models/tile.glb#fragment")).toEqual("tile");
   });
   it("handle content type of absolute urls", async () => {
-    const rdSource = await RealityDataSourceGP3DTImpl.createFromKey({ format: "", id: "", provider : RealityDataProvider.GP3DT }, undefined);
+    const rdSource = await RealityDataSourceGP3DTImpl.createFromKey({ format: "", id: "", provider : RealityDataProvider.GP3DT }, undefined, undefined);
     expect(rdSource).toBeDefined();
     expect(rdSource?.getTileContentType("https://localhost/tilesets/tileset.json")).toEqual("tileset");
     expect(rdSource?.getTileContentType("https://localhost/models/tile.glb")).toEqual("tile");
@@ -60,7 +60,7 @@ describe("RealityDataSourceGP3DTImpl", () => {
     expect(rdSource?.getTileContentType("https://localhost/models/tile.glb#fragment")).toEqual("tile");
   });
   it("handle content type of other cases", async () => {
-    const rdSource = await RealityDataSourceGP3DTImpl.createFromKey({ format: "", id: "", provider : RealityDataProvider.GP3DT }, undefined);
+    const rdSource = await RealityDataSourceGP3DTImpl.createFromKey({ format: "", id: "", provider : RealityDataProvider.GP3DT }, undefined, undefined);
     expect(rdSource).toBeDefined();
     expect(rdSource?.getTileContentType("")).to.not.equal("tileset");
     expect(rdSource?.getTileContentType("tileset.json/")).to.not.equal("tileset");
@@ -77,7 +77,7 @@ describe("RealityDataSourceGP3DTImpl", () => {
   describe("getTileUrl", () => {
     class TestGP3DTImpl extends RealityDataSourceGP3DTImpl {
       public constructor(props: RealityDataSourceProps) {
-        super(props);
+        super(props, undefined);
       }
 
       public override setBaseUrl(url: string): void {
@@ -85,7 +85,7 @@ describe("RealityDataSourceGP3DTImpl", () => {
       }
 
       public static override async createFromKey(sourceKey: RealityDataSourceKey): Promise<TestGP3DTImpl | undefined> {
-        const rdSource = await RealityDataSourceGP3DTImpl.createFromKey(sourceKey , undefined) as TestGP3DTImpl;
+        const rdSource = await RealityDataSourceGP3DTImpl.createFromKey(sourceKey, undefined, undefined) as TestGP3DTImpl;
         rdSource.setBaseUrl(sourceKey.id);
         return rdSource;
       }
