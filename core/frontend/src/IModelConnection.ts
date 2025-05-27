@@ -20,8 +20,7 @@ import {
   ViewIdString, ViewQueryParams, ViewStateLoadProps, ViewStateProps, ViewStoreRpc,
 } from "@itwin/core-common";
 import { Point3d, Range3d, Range3dProps, Transform, XYAndZ, XYZProps } from "@itwin/core-geometry";
-import { ElementNotFoundError, type IModelReadAPI, type IModelReadIpcAPI, MeshesNotFoundError, type QueryArgs } from "@itwin/imodelread-common";
-import { IpcIModelRead } from "@itwin/imodelread-client-ipc";
+import { ElementNotFoundError, type IModelReadAPI, MeshesNotFoundError, type QueryArgs } from "@itwin/imodelread-common";
 import { BriefcaseConnection } from "./BriefcaseConnection";
 import { CheckpointConnection } from "./CheckpointConnection";
 import { FrontendLoggerCategory } from "./common/FrontendLoggerCategory";
@@ -61,7 +60,7 @@ export interface BlankConnectionProps {
  * @extensions
  */
 export abstract class IModelConnection extends IModel {
-  protected readonly _iModelReadApi: IModelReadAPI;
+  protected readonly _iModelReadApi?: IModelReadAPI;
   /** The [[ModelState]]s in this IModelConnection. */
   public readonly models: IModelConnection.Models;
   /** The [[ElementState]]s in this IModelConnection. */
@@ -216,7 +215,7 @@ export abstract class IModelConnection extends IModel {
   }
 
   /** @internal */
-  protected constructor(iModelProps: IModelConnectionProps, iModelReadApi: IModelReadAPI) {
+  protected constructor(iModelProps: IModelConnectionProps, iModelReadApi?: IModelReadAPI) {
     super(iModelProps);
     this._iModelReadApi = iModelReadApi;
     super.initialize(iModelProps.name!, iModelProps);
@@ -271,11 +270,20 @@ export abstract class IModelConnection extends IModel {
    * @public
    * */
   public createQueryReader(ecsql: string, params?: QueryBinder, config?: QueryOptions): ECSqlReader {
-    if (config && this.hasUnsupportedQueryOptions(config)) {
-      return this.createRPCQueryReader(ecsql, params, config);
+    if (this._iModelReadApi) {
+      if (config && this.hasUnsupportedQueryOptions(config)) {
+        return this.createRPCQueryReader(ecsql, params, config);
+      }
+      const parsedParams = params ? this.parseBinderToArgs(params) : undefined;
+      return this._iModelReadApi.runQuery({ query: ecsql, args: parsedParams, options: { includeMetadata: config?.includeMetaData ?? true }});
     }
-    const parsedParams = params ? this.parseBinderToArgs(params) : undefined;
-    return this._iModelReadApi.runQuery({ query: ecsql, args: parsedParams, options: { includeMetadata: config?.includeMetaData ?? true }});
+
+    const executor = {
+      execute: async (request: DbQueryRequest) => {
+        return IModelReadRpcInterface.getClientForRouting(this.routingContext.token).queryRows(this.getRpcProps(), request);
+      },
+    };
+    return new ECSqlReader(executor, ecsql, params, config);
   }
 
   private hasUnsupportedQueryOptions(options: QueryOptions): boolean {
@@ -464,14 +472,16 @@ export abstract class IModelConnection extends IModel {
     return this[_requestSnap](props);
   }
 
-  private _getTooltip = new OneAtATimeAction<string[]>(async (id: string) =>
-    this._iModelReadApi.getTooltipMessage(id).then((res) => res.lines),
+  private _getToolTip = new OneAtATimeAction<string[]>(async (id: string) =>
+    this._iModelReadApi
+      ? this._iModelReadApi.getTooltipMessage(id).then((res) => res.lines)
+      : IModelReadRpcInterface.getClientForRouting(this.routingContext.token).getToolTipMessage(this.getRpcProps(), id)
   );
   /** Request a tooltip from the backend.
    * @note If another call to this method occurs before preceding call(s) return, all preceding calls will be abandoned - only the most recent will resolve. Therefore callers must gracefully handle Promise rejected with AbandonedError.
    */
   public async getToolTipMessage(id: Id64String): Promise<string[]> {
-    return this.isOpen ? this._getTooltip.request(id) : [];
+    return this.isOpen ? this._getToolTip.request(id) : [];
   }
 
   /** Request element clip containment status from the backend. */
@@ -525,17 +535,17 @@ export abstract class IModelConnection extends IModel {
    * @beta
    */
   public async generateElementMeshes(requestProps: ElementMeshRequestProps): Promise<Uint8Array> {
-    let meshes: Uint8Array;
+    if (!this._iModelReadApi)
+      return IModelReadRpcInterface.getClientForRouting(this.routingContext.token).generateElementMeshes(this.getRpcProps(), requestProps);
+
     try {
-     meshes = await this._iModelReadApi.getElementMeshes(requestProps.source, requestProps);
+     return await this._iModelReadApi.getElementMeshes(requestProps.source, requestProps);
     } catch (error: unknown) {
       if (error instanceof ElementNotFoundError || error instanceof MeshesNotFoundError)
         throw new IModelError(BentleyStatus.ERROR, "Geometric element required");
 
       throw error;
     }
-
-    return meshes;
   }
 
   /** Convert a point in this iModel's Spatial coordinates to a [[Cartographic]] using the Geographic location services for this IModelConnection.
@@ -878,14 +888,15 @@ export class SnapshotConnection extends IModelConnection {
   /** Open an IModelConnection to a read-only snapshot iModel from a file name.
    * @note This method is intended for desktop or mobile applications and should not be used for web applications.
    */
-  public static async openFile(filePath: string): Promise<SnapshotConnection> {
+  public static async openFile(filePath: string, iModelReadApiFactory?: (key: string) => IModelReadAPI): Promise<SnapshotConnection> {
     const routingContext = IModelRoutingContext.current || IModelRoutingContext.default;
     RpcManager.setIModel({ iModelId: "undefined", key: filePath });
 
     const connectionProps = await SnapshotIModelRpcInterface.getClientForRouting(routingContext.token).openFile(filePath);
     Logger.logTrace(loggerCategory, "SnapshotConnection.openFile", () => ({ filePath }));
 
-    const connection = new SnapshotConnection(connectionProps, new IpcIModelRead(connectionProps.key, IpcApp.makeIpcProxy<IModelReadIpcAPI>("iModelRead")));
+    const iModelReadApi = iModelReadApiFactory ? iModelReadApiFactory(connectionProps.key) : undefined;
+    const connection = new SnapshotConnection(connectionProps, iModelReadApi);
     IModelConnection.onOpen.raiseEvent(connection);
     return connection;
   }
@@ -894,13 +905,14 @@ export class SnapshotConnection extends IModelConnection {
    * @note This method is intended for web applications.
    * @deprecated in 4.10. Use [[CheckpointConnection.openRemote]].
    */
-  public static async openRemote(fileKey: string): Promise<SnapshotConnection> {
+  public static async openRemote(fileKey: string, iModelReadApiFactory?: (key: string) => IModelReadAPI): Promise<SnapshotConnection> {
     const routingContext = IModelRoutingContext.current || IModelRoutingContext.default;
     RpcManager.setIModel({ iModelId: "undefined", key: fileKey });
 
     const openResponse = await SnapshotIModelRpcInterface.getClientForRouting(routingContext.token).openRemote(fileKey); // eslint-disable-line @typescript-eslint/no-deprecated
     Logger.logTrace(loggerCategory, "SnapshotConnection.openRemote", () => ({ fileKey }));
-    const connection = new SnapshotConnection(openResponse, new IpcIModelRead(openResponse.key, IpcApp.makeIpcProxy<IModelReadIpcAPI>("iModelRead")));
+    const iModelReadApi = iModelReadApiFactory ? iModelReadApiFactory(openResponse.key) : undefined;
+    const connection = new SnapshotConnection(openResponse, iModelReadApi);
     connection.routingContext = routingContext;
     connection._isRemote = true;
     IModelConnection.onOpen.raiseEvent(connection);

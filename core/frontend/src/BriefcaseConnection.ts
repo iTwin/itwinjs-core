@@ -19,8 +19,7 @@ import { IpcApp } from "./IpcApp";
 import { ProgressCallback } from "./request/Request";
 import { disposeTileTreesForGeometricModels } from "./tile/internal";
 import { Viewport } from "./Viewport";
-import { IpcIModelRead } from "@itwin/imodelread-client-ipc";
-import type { IModelReadIpcAPI } from "@itwin/imodelread-common";
+import type { IModelReadAPI } from "@itwin/imodelread-common";
 
 /**
  * Download progress information.
@@ -273,8 +272,8 @@ export class BriefcaseConnection extends IModelConnection {
   /** The Guid that identifies this iModel. */
   public override get iModelId(): GuidString { return super.iModelId!; } // GuidString | undefined for IModelConnection, but required for BriefcaseConnection
 
-  protected constructor(props: IModelConnectionProps, openMode: OpenMode) {
-    super(props, new IpcIModelRead(props.key, IpcApp.makeIpcProxy<IModelReadIpcAPI>("iModelRead")));
+  protected constructor(props: IModelConnectionProps, openMode: OpenMode, iModelReadApi?: IModelReadAPI) {
+    super(props, iModelReadApi);
     this._openMode = openMode;
     this.txns = new BriefcaseTxns(this);
     this._modelsMonitor = new ModelChangeMonitor(this);
@@ -283,9 +282,10 @@ export class BriefcaseConnection extends IModelConnection {
   }
 
   /** Open a BriefcaseConnection to a [BriefcaseDb]($backend). */
-  public static async openFile(briefcaseProps: OpenBriefcaseProps): Promise<BriefcaseConnection> {
+  public static async openFile(briefcaseProps: OpenBriefcaseProps, iModelReadApiFactory?: (key: string) => IModelReadAPI): Promise<BriefcaseConnection> {
     const iModelProps = await IpcApp.appFunctionIpc.openBriefcase(briefcaseProps);
-    const connection = new this({ ...briefcaseProps, ...iModelProps }, briefcaseProps.readonly ? OpenMode.Readonly : OpenMode.ReadWrite);
+    const iModelReadApi = iModelReadApiFactory ? iModelReadApiFactory(iModelProps.key) : undefined;
+    const connection = new this({ ...briefcaseProps, ...iModelProps }, briefcaseProps.readonly ? OpenMode.Readonly : OpenMode.ReadWrite, iModelReadApi);
     IModelConnection.onOpen.raiseEvent(connection);
     return connection;
   }
@@ -293,9 +293,10 @@ export class BriefcaseConnection extends IModelConnection {
   /** Open a BriefcaseConnection to a [StandaloneDb]($backend)
    * @note StandaloneDbs, by definition, may not push or pull changes. Attempting to do so will throw exceptions.
    */
-  public static async openStandalone(filePath: string, openMode: OpenMode = OpenMode.ReadWrite, opts?: StandaloneOpenOptions): Promise<BriefcaseConnection> {
+  public static async openStandalone(filePath: string, openMode: OpenMode = OpenMode.ReadWrite, opts?: StandaloneOpenOptions, iModelReadApiFactory?: (key: string) => IModelReadAPI): Promise<BriefcaseConnection> {
     const openResponse = await IpcApp.appFunctionIpc.openStandalone(filePath, openMode, opts);
-    const connection = new this(openResponse, openMode);
+    const iModelReadApi = iModelReadApiFactory ? iModelReadApiFactory(openResponse.key) : undefined;
+    const connection = new this(openResponse, openMode, iModelReadApi);
     IModelConnection.onOpen.raiseEvent(connection);
     return connection;
   }

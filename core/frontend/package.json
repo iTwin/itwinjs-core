@@ -50,7 +50,8 @@
     "@itwin/core-common": "workspace:^4.11.0",
     "@itwin/core-geometry": "workspace:^4.11.0",
     "@itwin/core-orbitgt": "workspace:^4.11.0",
-    "@itwin/core-quantity": "workspace:^4.11.0"
+    "@itwin/core-quantity": "workspace:^4.11.0",
+    "@itwin/imodelread-common": "workspace:^"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
@@ -92,8 +93,6 @@
     "@itwin/core-i18n": "workspace:*",
     "@itwin/core-telemetry": "workspace:*",
     "@itwin/webgl-compatibility": "workspace:*",
-    "@itwin/imodelread-client-http": "workspace:^",
-    "@itwin/imodelread-client-ipc": "workspace:^",
     "@loaders.gl/core": "^3.1.6",
     "@loaders.gl/draco": "^3.1.6",
     "fuse.js": "^3.3.0",
