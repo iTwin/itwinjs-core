@@ -6160,10 +6160,9 @@ export class TextAnnotation3d extends GraphicalElement3d {
     toJSON(): TextAnnotation3dProps;
 }
 
-// @beta (undocumented)
+// @beta
 export namespace TextAnnotationGeometry {
-    export function appendTextAnnotationGeometry(props: RequestProps): void;
-    // (undocumented)
+    export function appendTextAnnotationGeometry(props: RequestProps): boolean;
     export interface RequestProps {
         annotationProps: TextAnnotationProps;
         builder: ElementGeometry.Builder;
