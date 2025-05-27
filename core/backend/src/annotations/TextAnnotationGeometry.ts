@@ -14,9 +14,16 @@ import { produceTextBlockGeometry } from "./TextBlockGeometry";
 import { FrameGeometry } from "./FrameGeometry";
 
 /**
+ * This namespace contains methods for computing the geometry a text annotation using an [[ElementBuilder.Geometry]].
+ * It is used to combine the TextBlock geometry ([[produceTextBlockGeometry]]) with the [[FrameGeometry]] and debug geometry.
  * @beta
  */
 export namespace TextAnnotationGeometry {
+  /**
+   * Properties required to compute the geometry of a text annotation.
+   * @beta
+   * @see [[TextAnnotationGeometry.appendTextAnnotationGeometry]] to append the geometry to an [[ElementGeometry.Builder]].
+   */
   export interface RequestProps {
     /** The annotation to be drawn. Be sure to include a TextBlock with runs or no geometry will be produced. */
     annotationProps: TextAnnotationProps;
@@ -30,27 +37,31 @@ export namespace TextAnnotationGeometry {
 
   /** Constructs the TextBlockGeometry and FrameGeometry and appends the geometry to the provided builder.
    * @returns true if the geometry was successfully appended.
+   * @beta
    */
-  export function appendTextAnnotationGeometry(props: RequestProps): void {
+  export function appendTextAnnotationGeometry(props: RequestProps): boolean {
     const annotation = TextAnnotation.fromJSON(props.annotationProps);
     const range = Range2d.fromJSON(props.layout.range);
     const transform = annotation.computeTransform(range);
+    let result = true;
 
     // Construct the TextBlockGeometry
     const params = new GeometryParams(Id64.invalid);
     const entries = produceTextBlockGeometry(props.layout, annotation.computeTransform(props.layout.range));
-    props.builder.appendTextBlock(entries, params);
+    result = result && props.builder.appendTextBlock(entries, params);
 
     // Construct the FrameGeometry
     if (annotation.frame && annotation.frame.shape !== "none") {
-      FrameGeometry.appendFrameToBuilder(props.builder, annotation.frame, range, transform, params);
+      result = result && FrameGeometry.appendFrameToBuilder(props.builder, annotation.frame, range, transform, params);
     }
 
     // Construct the debug geometry
     if (props.wantDebugGeometry) {
-      debugAnchorPoint(props.builder, annotation, props.layout, annotation.computeTransform(props.layout.range));
-      if (annotation.frame) debugSnapPoints(props.builder, annotation.frame, props.layout.range, annotation.computeTransform(props.layout.range));
+      result = result && debugAnchorPoint(props.builder, annotation, props.layout, annotation.computeTransform(props.layout.range));
+      if (annotation.frame) result = result && debugSnapPoints(props.builder, annotation.frame, props.layout.range, annotation.computeTransform(props.layout.range));
     }
+
+    return result;
   };
 
   /**
