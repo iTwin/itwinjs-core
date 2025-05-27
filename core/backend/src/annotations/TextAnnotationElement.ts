@@ -54,8 +54,6 @@ export class TextAnnotation2d extends AnnotationElement2d {
   /** Change the textual content, updating the element's geometry and placement accordingly.
    * @see [[getAnnotation]] to extract the current annotation.
    * @param annotation The new annotation
-   * @param subCategory If specified, the subcategory on which to define the geometry; otherwise, the default subcategory of the element's category is used.
-   * @returns true if the annotation was successfully updated.
    */
   public setAnnotation(annotation: TextAnnotation) {
     this.jsonProperties.annotation = annotation.toJSON();
@@ -94,8 +92,6 @@ export class TextAnnotation3d extends GraphicalElement3d {
   /** Change the textual content, updating the element's geometry and placement accordingly.
    * @see [[getAnnotation]] to extract the current annotation.
    * @param annotation The new annotation
-   * @param subCategory If specified, the subcategory on which to define the geometry; otherwise, the default subcategory of the element's category is used.
-   * @returns true if the annotation was successfully updated.
    */
   public setAnnotation(annotation: TextAnnotation) {
     this.jsonProperties.annotation = annotation.toJSON();
