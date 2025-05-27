@@ -63,6 +63,8 @@ beta;function;computeGraphemeOffsets
 beta;interface;ComputeGraphemeOffsetsArgs
 beta;function;computeLayoutTextBlockResult
 public;interface;ComputeProjectExtentsOptions
+internal;type;ComputeRangesForTextLayout
+internal;interface;ComputeRangesForTextLayoutArgs
 alpha;type;ConcreteEntity
 alpha;type;ConcreteEntityProps
 beta;function;convertEC2SchemasToEC3Schemas
@@ -196,11 +198,14 @@ beta;class;ExternalSourceIsInRepository
 beta;class;ExternalSourceOwnsAttachments
 public;class;FileNameResolver
 deprecated;class;FileNameResolver
+internal;type;FindFontId
+internal;type;FindTextStyle
 beta;class;FolderContainsRepositories
 alpha;class;FolderLink
 beta;interface;FontFile
 beta;namespace;FontFile
 alpha;function;createFromRscFontBlob
+beta;namespace;FrameGeometry
 public;class;FunctionalBreakdownElement
 public;class;FunctionalComponentElement
 public;class;FunctionalComposite
@@ -284,6 +289,7 @@ public;class;KnownLocations
 internal;function;layoutTextBlock
 beta;interface;LayoutTextBlockArgs
 internal;class;LightLocation
+internal;class;LineLayout
 public;class;LineStyle
 public;namespace;LineStyleDefinition
 public;class;LinkElement
@@ -370,6 +376,7 @@ public;type;RevertChangesArgs
 public;class;RoleElement
 public;class;RoleModel
 public;class;RpcTrace
+internal;class;RunLayout
 public;class;Schema
 public;interface;SchemaImportOptions
 internal;type;SchemaKey
@@ -456,6 +463,8 @@ internal;class;TemplateViewDefinition3d
 public;class;TextAnnotation2d
 public;class;TextAnnotation3d
 beta;namespace;TextAnnotationGeometry
+internal;class;TextBlockLayout
+internal;interface;TextLayoutRanges
 public;class;Texture
 beta;interface;TextureCreateProps
 internal;function;throttleProgressCallback

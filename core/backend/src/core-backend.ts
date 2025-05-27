@@ -3,16 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+export * from "./annotations/FrameGeometry";
 export * from "./annotations/TextAnnotationElement";
 export * from "./annotations/TextAnnotationGeometry";
-export {
-  computeGraphemeOffsets,
-  computeLayoutTextBlockResult,
-  ComputeGraphemeOffsetsArgs,
-  layoutTextBlock,
-  LayoutTextBlockArgs,
-} from "./annotations/TextBlockLayout";
 export * from "./annotations/TextBlockGeometry";
+export * from "./annotations/TextBlockLayout";
 export * from "./BackendHubAccess";
 export * from "./BackendLoggerCategory";
 export * from "./BisCoreSchema";
