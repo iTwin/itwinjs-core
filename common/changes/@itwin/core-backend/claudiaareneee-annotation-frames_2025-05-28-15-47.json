@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Refactoring the TextAnnotationGeometry and adding support for frames",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}
