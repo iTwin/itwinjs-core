@@ -4,7 +4,39 @@ import { assert } from "chai";
 import { BisCodeSpec, Code, IModel } from "@itwin/core-common";
 import { Logger, LogLevel } from "@itwin/core-bentley";
 
+const limit = 100000; // Limit for the number of rows to read
+
 describe.only("iModel Read Performance Test", () => {
+  let iModel: SnapshotDb;
+
+  beforeEach(async () => {
+    const sourceFileName = "xl.bim";
+
+    Logger.initializeToConsole();
+    Logger.setLevelDefault(LogLevel.Info);
+
+    Logger.logInfo("ReadPerfTest", "Opening bim file...");
+    IModelTestUtils.registerTestBimSchema();
+    iModel = SnapshotDb.openFile(IModelTestUtils.resolveAssetFile(sourceFileName));
+    Logger.logInfo("ReadPerfTest", "Bim file opened");
+  });
+
+  afterEach(() => {
+    iModel.close();
+  });
+
+  it(`should read ${limit} elements from an iModel`, async () => {
+    Logger.logInfo("ReadPerfTest", "Beginning read test...");
+    let rowCount = 0;
+    for await (const row of iModel.createQueryReader(`SELECT * FROM bis.Element LIMIT ${limit}`)) {
+      Logger.logInfo("ReadPerfTest", `Row: ${++rowCount}`);
+      assert.isDefined(row[0]);
+    }
+  });
+
+});
+
+describe.only("iModel Relationship Insert Performance Test", () => {
   let iModel: SnapshotDb;
 
   beforeEach(async () => {
@@ -23,7 +55,7 @@ describe.only("iModel Read Performance Test", () => {
     iModel.close();
   });
 
-  it("should read 5000 elements from an iModel", async () => {
+  it(`should insert ${limit} relationships to an iModel`, async () => {
     const partitionId = iModel.elements.insertElement({
       classFullName: "BisCore:PhysicalPartition",
       model: IModel.repositoryModelId,
@@ -42,7 +74,7 @@ describe.only("iModel Read Performance Test", () => {
     Logger.logInfo("ReadPerfTest", "Beginning read test...");
 
     let rowCount = 0;
-    for await (const row of iModel.createQueryReader("SELECT * FROM bis.Element LIMIT 5000")) {
+    for await (const row of iModel.createQueryReader(`SELECT * FROM bis.Element LIMIT ${limit}`)) {
       const id =iModel.relationships.insertInstance({
         classFullName: "BisCore:ElementHasLinks",
         sourceId: partitionId,
@@ -53,16 +85,9 @@ describe.only("iModel Read Performance Test", () => {
       assert.isDefined(row[0]);
     }
 
+    Logger.logInfo("ReadPerfTest", `Saving Changes...`);
     iModel.saveChanges();
-    // // eslint-disable-next-line @typescript-eslint/no-deprecated
-    // iModel.withPreparedStatement(`SELECT * FROM bis.Element`, (stmt: ECSqlStatement): number => {
-    //   if (stmt.step() === DbResult.BE_SQLITE_ROW) {
-    //     timePrevious = timeElapsed;
-    //     timeElapsed += Date.now() - timer;
-    //     console.log(`Row: ${rowCount}, Time Elapsed: ${timeElapsed - timePrevious}ms`);
-    //   }
-    //     rowCount++;
-    // });
+    Logger.logInfo("ReadPerfTest", `Changes Saved`);
   });
 
 });
