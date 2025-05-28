@@ -101,7 +101,7 @@ Each `Format` defined in a `FormatSet` need to be mapped to a valid [ECName](../
       "type": "Decimal",
       "decimalSeparator": "."
     },
-    "AecUnits.Angle": {
+    "AecUnits.ANGLE": {
       "description": "degrees (labeled) 2 decimal places",
       "composite": {
         "includeZero": true,
@@ -136,7 +136,7 @@ Each `Format` defined in a `FormatSet` need to be mapped to a valid [ECName](../
       "precision": 4,
       "type": "Decimal",
     },
-    "AecUnits.Angle": {
+    "AecUnits.ANGLE": {
       "description": "degrees minutes seconds (labeled) 0 decimal places",
       "composite": {
         "includeZero": true,
