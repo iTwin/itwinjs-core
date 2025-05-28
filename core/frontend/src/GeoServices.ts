@@ -366,10 +366,10 @@ export class GeoServices {
         const remappedRequest = mapIModelCoordRequestRPCToIModelRead(request);
         let response: IModelCoordinatesResponse;
         let remappedResponse: IModelCoordinatesResponseProps;
-        try{
-          response = await iModelReadAPI.getIModelCoordinatesFromGeoCoordinates(remappedRequest)
+        try {
+          response = await iModelReadAPI.getIModelCoordinatesFromGeoCoordinates(remappedRequest);
           remappedResponse = mapIModelCoordResponseIModelReadToRPC(response);
-        }catch(error){
+        } catch (error) {
           if (error instanceof NoGCSDefinedError) {
             remappedResponse = mapIModelCoordExceptionToRPC(request.geoCoords.length, GeoCoordStatus.NoGCSDefined);
           } else if (error instanceof NoDatumConverterError) {
@@ -385,10 +385,10 @@ export class GeoServices {
         const remappedRequest = mapGeoCoordRequestRPCToIModelRead(request);
         let response: GeoCoordinatesResponse;
         let remappedResponse: GeoCoordinatesResponseProps;
-        try{
-          response = await iModelReadAPI.getGeoCoordinatesFromIModelCoordinates(remappedRequest)
+        try {
+          response = await iModelReadAPI.getGeoCoordinatesFromIModelCoordinates(remappedRequest);
           remappedResponse = mapGeoCoordResponseIModelReadToRPC(response);
-        }catch(error){
+        } catch (error) {
           if (error instanceof NoGCSDefinedError) {
             remappedResponse = mapGeoCoordExceptionToRPC(request.iModelCoords.length, GeoCoordStatus.NoGCSDefined);
           } else if (error instanceof NoDatumConverterError) {
