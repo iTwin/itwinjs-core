@@ -286,10 +286,10 @@ public;class;IpcHost
 public;interface;IpcHostOpts
 public;interface;ITwinIdArg
 public;class;KnownLocations
-internal;function;layoutTextBlock
+beta;function;layoutTextBlock
 beta;interface;LayoutTextBlockArgs
 internal;class;LightLocation
-internal;class;LineLayout
+beta;class;LineLayout
 public;class;LineStyle
 public;namespace;LineStyleDefinition
 public;class;LinkElement
@@ -376,7 +376,7 @@ public;type;RevertChangesArgs
 public;class;RoleElement
 public;class;RoleModel
 public;class;RpcTrace
-internal;class;RunLayout
+beta;class;RunLayout
 public;class;Schema
 public;interface;SchemaImportOptions
 internal;type;SchemaKey
@@ -463,7 +463,7 @@ internal;class;TemplateViewDefinition3d
 public;class;TextAnnotation2d
 public;class;TextAnnotation3d
 beta;namespace;TextAnnotationGeometry
-internal;class;TextBlockLayout
+beta;class;TextBlockLayout
 internal;interface;TextLayoutRanges
 public;class;Texture
 beta;interface;TextureCreateProps

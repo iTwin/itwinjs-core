@@ -4115,7 +4115,7 @@ export class KnownLocations {
     static get tmpdir(): LocalDirName;
 }
 
-// @internal
+// @beta
 export function layoutTextBlock(args: LayoutTextBlockArgs): TextBlockLayout;
 
 // @beta
@@ -4138,7 +4138,7 @@ export class LightLocation extends SpatialLocationElement {
     enabled?: boolean;
 }
 
-// @internal (undocumented)
+// @beta (undocumented)
 export class LineLayout {
     constructor(source: Paragraph);
     // (undocumented)
@@ -5221,7 +5221,7 @@ export class RpcTrace {
     static runWithSpan<T>(activity: RpcActivity, fn: () => Promise<T>): Promise<T>;
 }
 
-// @internal (undocumented)
+// @beta (undocumented)
 export class RunLayout {
     // (undocumented)
     canWrap(): this is {
@@ -6288,7 +6288,7 @@ export namespace TextAnnotationGeometry {
     }
 }
 
-// @internal
+// @beta
 export class TextBlockLayout {
     constructor(source: TextBlock, context: LayoutContext);
     // (undocumented)

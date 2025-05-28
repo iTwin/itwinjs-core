@@ -70,7 +70,7 @@ export interface LayoutTextBlockArgs {
  * If the document specifies a width > 0, individual lines are split to try to avoid exceeding that width.
  * Individual TextRuns can be split onto multiple lines at word boundaries if necessary. Individual FractionRuns are never split.
  * @see [[computeLayoutTextBlockResult]]
- * @internal
+ * @beta
  */
 export function layoutTextBlock(args: LayoutTextBlockArgs): TextBlockLayout {
   const findFontId = args.findFontId ?? ((name, type) => args.iModel.fonts.findId({ name, type }) ?? 0);
@@ -291,7 +291,7 @@ function split(source: string): Segment[] {
   return segments;
 }
 
-/** @internal */
+/** @beta */
 export class RunLayout {
   public source: Run;
   public charOffset: number;
@@ -423,7 +423,7 @@ export class RunLayout {
   }
 }
 
-/** @internal */
+/** @beta */
 export class LineLayout {
   public source: Paragraph;
   public range = new Range2d(0, 0, 0, 0);
@@ -493,7 +493,7 @@ export class LineLayout {
 
 /**
  * Describes the layout of a text block as a collection of lines containing runs.
- * @internal
+ * @beta
  */
 export class TextBlockLayout {
   public source: TextBlock;
