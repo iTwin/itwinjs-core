@@ -74,6 +74,7 @@ beta;interface;CreateFontFileFromShxBlobArgs
 public;interface;CreateNewIModelProps
 beta;interface;CreateNewWorkspaceContainerArgs
 beta;interface;CreateNewWorkspaceDbVersionArgs
+public;interface;CreateSheetViewDefinitionArgs
 beta;interface;CustomHandledProperty
 public;class;DefinitionContainer
 public;class;DefinitionElement
@@ -172,6 +173,7 @@ public;type;ExportGraphicsFunction
 public;interface;ExportGraphicsInfo
 public;interface;ExportGraphicsLines
 public;interface;ExportGraphicsMesh
+public;class;ExportGraphicsMeshSubsetVisitor
 public;class;ExportGraphicsMeshVisitor
 public;interface;ExportGraphicsOptions
 public;type;ExportLinesFunction

@@ -27,7 +27,7 @@ import { MapLayerFeatureInfo } from '@itwin/core-frontend';
 import { MapLayerImageryProvider } from '@itwin/core-frontend';
 import { PrimitiveTool } from '@itwin/core-frontend';
 import { QuadId } from '@itwin/core-frontend';
-import { QuadIdProps } from '@itwin/core-frontend/lib/cjs/tile/internal.js';
+import { QuadIdProps } from '@itwin/core-frontend';
 import { Transform } from '@itwin/core-geometry';
 
 // @internal
@@ -61,7 +61,7 @@ export class ArcGisFeatureProvider extends ArcGISImageryProvider {
     get tileSize(): number;
 }
 
-// @internal
+// @beta
 export abstract class BaseGoogleMapsSession implements GoogleMapsSession {
     // (undocumented)
     protected abstract getTileApiBaseUrl(): string;

@@ -1467,8 +1467,15 @@ describe("GeneralSweepBooleans", () => {
   });
 });
 
-function exerciseAreaBooleans(dataA: AnyRegion[], dataB: AnyRegion[],
-  ck: Checker, allGeometry: GeometryQuery[], x0: number, y0Start: number, showVertexNeighborhoods: boolean) {
+function exerciseAreaBooleans(
+  dataA: AnyRegion[],
+  dataB: AnyRegion[],
+  ck: Checker,
+  allGeometry: GeometryQuery[],
+  x0: number,
+  y0Start: number,
+  showVertexNeighborhoods: boolean,
+) {
   const areas = [];
   const range = RegionOps.curveArrayRange(dataA.concat(dataB));
   const yStep = Math.max(15.0, 2.0 * range.yLength());
@@ -1479,10 +1486,14 @@ function exerciseAreaBooleans(dataA: AnyRegion[], dataB: AnyRegion[],
   const vertexNeighborhoodFunction = (edgeData: VertexNeighborhoodSortData[]) => {
     GeometryCoreTestIO.consoleLog({ nodeCount: edgeData.length });
     for (const data of edgeData) {
-      GeometryCoreTestIO.consoleLog(` id: ${data.node.id}  x: ${data.node.x}, y: ${data.node.y}, theta: ${data.radians}, curvature: ${data.radiusOfCurvature} `);
+      GeometryCoreTestIO.consoleLog(
+        `id: ${data.node.id}  x: ${data.node.x}, y: ${data.node.y}, theta: ${data.radians}, curvature: ${data.radiusOfCurvature}`,
+      );
     }
   };
-  for (const opType of [RegionBinaryOpType.Union, RegionBinaryOpType.Intersection, RegionBinaryOpType.AMinusB, RegionBinaryOpType.BMinusA]) {
+  for (const opType of [
+    RegionBinaryOpType.Union, RegionBinaryOpType.Intersection, RegionBinaryOpType.AMinusB, RegionBinaryOpType.BMinusA,
+  ]) {
     y0 += yStep;
     if (showVertexNeighborhoods && opType === RegionBinaryOpType.Union)
       HalfEdgeGraphMerge.announceVertexNeighborhoodFunction = vertexNeighborhoodFunction;
@@ -1494,7 +1505,7 @@ function exerciseAreaBooleans(dataA: AnyRegion[], dataB: AnyRegion[],
   }
   const area0 = areas[0]; // union
   const area123 = areas[1] + areas[2] + areas[3];
-  ck.testCoordinate(area0, area123, " UnionArea = sum of parts");
+  ck.testCoordinate(area0, area123, "UnionArea = sum of parts");
 }
 /**
  * Return an ellipse the loops around a segment.

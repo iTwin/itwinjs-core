@@ -6,32 +6,32 @@
  * @module Polyface
  */
 
-import { Transform } from "../../geometry3d/Transform";
-import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray";
-import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
-import { Segment1d } from "../../geometry3d/Segment1d";
-import { AnnounceDrapePanel } from "../PolyfaceQuery";
-import { Range3d } from "../../geometry3d/Range";
-import { Geometry } from "../../Geometry";
-import { Polyface } from "../Polyface";
 import { ClipPlane } from "../../clipping/ClipPlane";
 import { ConvexClipPlaneSet } from "../../clipping/ConvexClipPlaneSet";
-import { IndexedXYZCollectionPolygonOps, Point3dArrayPolygonOps } from "../../geometry3d/PolygonOps";
+import { Geometry } from "../../Geometry";
+import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray";
+import { IndexedXYZCollection } from "../../geometry3d/IndexedXYZCollection";
 import { Matrix3d } from "../../geometry3d/Matrix3d";
+import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
+import { IndexedXYZCollectionPolygonOps, Point3dArrayPolygonOps } from "../../geometry3d/PolygonOps";
+import { Range3d } from "../../geometry3d/Range";
+import { Segment1d } from "../../geometry3d/Segment1d";
+import { Transform } from "../../geometry3d/Transform";
+import { Polyface } from "../Polyface";
+import { AnnounceDrapePanel } from "../PolyfaceQuery";
 
 export class SweepLineStringToFacetContext {
-  private _spacePoints: GrowableXYZArray;
+  private _spacePoints: IndexedXYZCollection;
   private _spacePointsRange: Range3d;
   private _numSpacePoints: number;
-  private constructor(spacePoints: GrowableXYZArray) {
+  private constructor(spacePoints: IndexedXYZCollection) {
     this._spacePoints = spacePoints;
-    this._spacePointsRange = new Range3d();
-    spacePoints.setRange(this._spacePointsRange);
+    this._spacePointsRange = spacePoints.getRange();
     this._numSpacePoints = this._spacePoints.length;
   }
-  public static create(xyz: GrowableXYZArray): SweepLineStringToFacetContext | undefined {
+  public static create(xyz: IndexedXYZCollection): SweepLineStringToFacetContext | undefined {
     if (xyz.length > 1) {
-      return new SweepLineStringToFacetContext(xyz.clone());
+      return new SweepLineStringToFacetContext(xyz);
     }
     return undefined;
   }
@@ -139,7 +139,7 @@ export class EdgeClipData {
   }
 
   /** Intersect this edge plane with the given convex polygon and announce the intersection segment to the callback. */
-  public processPolygon(polygon: Point3d[] | GrowableXYZArray, announceEdge: (pointA: Point3d, pointB: Point3d) => void) {
+  public processPolygon(polygon: Point3d[] | IndexedXYZCollection, announceEdge: (pointA: Point3d, pointB: Point3d) => void) {
     this._crossingPoints.length = 0;
     if (Array.isArray(polygon))
       Point3dArrayPolygonOps.polygonPlaneCrossings(this.edgePlane, polygon, this._crossingPoints);
@@ -173,7 +173,7 @@ export class ClipSweptLineStringContext {
       this._localRange = localData.localRange;
     }
   }
-  public static create(xyz: GrowableXYZArray, sweepVector: Vector3d | undefined): ClipSweptLineStringContext | undefined {
+  public static create(xyz: IndexedXYZCollection, sweepVector: Vector3d | undefined): ClipSweptLineStringContext | undefined {
     if (sweepVector === undefined)
       sweepVector = Vector3d.create(0, 0, 1);
     if (xyz.length > 1) {
