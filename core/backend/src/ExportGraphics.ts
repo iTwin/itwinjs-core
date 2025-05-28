@@ -503,8 +503,8 @@ export class ExportGraphicsMeshVisitor extends PolyfaceData implements PolyfaceV
  */
 export class ExportGraphicsMeshSubsetVisitor extends ExportGraphicsMeshVisitor {
   private _facetIndices: number[];
-  private _currentSubsetIndex: number; // index within _parentFacetIndices, or -1 after construction
-  private _nextSubsetIndex: number; // index within _parentFacetIndices
+  private _currentSubsetIndex: number; // index within _facetIndices
+  private _nextSubsetIndex: number; // index within _facetIndices
 
   private constructor(polyface: ExportGraphicsMesh, facetIndices: number[], numWrap: number) {
     super(polyface, numWrap);

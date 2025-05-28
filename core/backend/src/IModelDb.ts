@@ -826,6 +826,9 @@ export abstract class IModelDb extends IModel {
   public performCheckpoint() {
     if (!this.isReadonly) {
       this.saveChanges();
+      this.clearCaches();
+      this[_nativeDb].concurrentQueryShutdown();
+      this[_nativeDb].clearECDbCache();
       this[_nativeDb].performCheckpoint();
     }
   }
