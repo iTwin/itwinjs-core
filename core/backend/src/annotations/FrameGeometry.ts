@@ -67,7 +67,7 @@ export namespace FrameGeometry {
   }
 
   /**
-   * Arguments for the [[computeFrame]] method.
+   * Arguments for the [[FrameGeometry.computeFrame]] method.
    * @beta
    */
   export interface ComputeFrameArgs {
@@ -102,7 +102,7 @@ export namespace FrameGeometry {
   }
 
   /**
-   * Arguments for the [[computeIntervalPoints]] method.
+   * Arguments for the FrameGeometry.computeIntervalPoints]] method.
    * @beta
    */
   export interface ComputeIntervalPointsArgs extends ComputeFrameArgs {
