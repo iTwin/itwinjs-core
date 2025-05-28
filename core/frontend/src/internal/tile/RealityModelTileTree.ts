@@ -133,7 +133,12 @@ class RealityTreeSupplier implements TileTreeSupplier {
 const realityTreeSupplier = new RealityTreeSupplier();
 
 export function createRealityTileTreeReference(props: RealityModelTileTree.ReferenceProps): RealityModelTileTree.Reference {
-  return new RealityTreeReference(props);
+  const treeRef = new RealityTreeReference(props);
+  // if (props.rdSourceKey.format === RealityDataProvider.GP3DT) {
+  //   await treeRef.initializeDecorator();
+  // }
+  return treeRef;
+  // return new RealityTreeReference(props);
 }
 
 const zeroPoint = Point3d.createZero();
@@ -721,6 +726,8 @@ export namespace RealityModelTileTree {
 
       return args;
     }
+
+    // public async initializeDecorator(): Promise<boolean | undefined> { return undefined; }
   }
 
   export async function createRealityModelTileTree(
@@ -1034,8 +1041,8 @@ export class RealityTreeReference extends RealityModelTileTree.Reference {
     }
   }
 
-  public async initializeDecorator(): Promise<boolean | undefined> {
-    console.log("initializeDecorator called");
-    return this._decorator?.activate("satellite");
-  }
+  // public override async initializeDecorator(): Promise<boolean | undefined> {
+  //   console.log("initializeDecorator called");
+  //   return this._decorator?.activate("satellite");
+  // }
 }
