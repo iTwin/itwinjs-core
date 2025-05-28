@@ -2161,6 +2161,7 @@ export class Geometry {
     static cyclic3dAxis(axis: number): number;
     static defined01(value: any): number;
     static determinant4x4(xx: number, xy: number, xz: number, xw: number, yx: number, yy: number, yz: number, yw: number, zx: number, zy: number, zz: number, zw: number, wx: number, wy: number, wz: number, ww: number): number;
+    static distanceSquaredXYXY(x0: number, y0: number, x1: number, y1: number): number;
     static distanceXYXY(x0: number, y0: number, x1: number, y1: number): number;
     static distanceXYZXYZ(x0: number, y0: number, z0: number, x1: number, y1: number, z1: number): number;
     static dotProductXYXY(ux: number, uy: number, vx: number, vy: number): number;
@@ -5136,8 +5137,8 @@ export class Range3d extends RangeBase implements LowAndHighXYZ, BeJSONFunctions
     getNpcToWorldRangeTransform(result?: Transform): Transform;
     high: Point3d;
     intersect(other: Range3d, result?: Range3d): Range3d;
-    intersectsRange(other: Range3d): boolean;
-    intersectsRangeXY(other: Range3d): boolean;
+    intersectsRange(other: Range3d, margin?: number): boolean;
+    intersectsRangeXY(other: Range3d, margin?: number): boolean;
     isAlmostEqual(other: Readonly<Range3d>, tol?: number): boolean;
     get isAlmostZeroX(): boolean;
     get isAlmostZeroY(): boolean;
@@ -5659,7 +5660,16 @@ export class SmallSystem {
     static lineSegment3dHXYTransverseIntersectionUnbounded(hA0: Point4d, hA1: Point4d, hB0: Point4d, hB1: Point4d, result?: Vector2d): Vector2d | undefined;
     static lineSegment3dXYClosestPointUnbounded(pointA0: XAndY, pointA1: XAndY, spacePoint: XAndY): number | undefined;
     static lineSegment3dXYTransverseIntersectionUnbounded(a0: Point3d, a1: Point3d, b0: Point3d, b1: Point3d, result: Vector2d): boolean;
+    static lineSegmentXYUVIntersectionUnbounded(a0: XAndY, aDir: XAndY, b0: XAndY, bDir: XAndY, tol?: number): {
+        f0: WritableXAndY;
+        f1?: WritableXAndY;
+    } | undefined;
+    static lineSegmentXYUVOverlapUnbounded(a0: XAndY, aDir: XAndY, b0: XAndY, bDir: XAndY, tol?: number): {
+        f0: WritableXAndY;
+        f1: WritableXAndY;
+    } | undefined;
     static lineSegmentXYUVTransverseIntersectionUnbounded(ax0: number, ay0: number, ux: number, uy: number, bx0: number, by0: number, vx: number, vy: number, result: Vector2d): boolean;
+    static lineXYUVTransverseIntersection(a0: XAndY, aDir: XAndY, b0: XAndY, bDir: XAndY): WritableXAndY | undefined;
     static ray3dXYZUVWClosestApproachUnbounded(ax: number, ay: number, az: number, au: number, av: number, aw: number, bx: number, by: number, bz: number, bu: number, bv: number, bw: number, result: Vector2d): boolean;
     static solveBilinearPair(a0: number, b0: number, c0: number, d0: number, a1: number, b1: number, c1: number, d1: number): Point2d[] | undefined;
 }
