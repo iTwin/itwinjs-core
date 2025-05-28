@@ -1432,18 +1432,19 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
   public scaleAboutCenterInPlace(scaleFactor: number) {
     this._matrix.scaleColumnsInPlace(scaleFactor, scaleFactor, 1.0);
   }
-  /** Return the (signed!) area between (a fractional portion of) the arc and the chord between those points. */
+  /** Return the (signed) area between (a fractional portion of) the arc and the chord between those points. */
   public areaToChordXY(fraction0: number, fraction1: number): number {
     let detJ = Geometry.crossProductXYXY(
       this._matrix.coffs[0], this._matrix.coffs[3],
-      this._matrix.coffs[1], this._matrix.coffs[4]);
+      this._matrix.coffs[1], this._matrix.coffs[4],
+    );
     // areas in arc of unit circle with radians limits
     const radians0 = this._sweep.fractionToRadians(fraction0);
     const radians1 = this._sweep.fractionToRadians(fraction1);
     // const midRadians = 0.5 * (radians0 + radians1);
     const alpha = 0.5 * (radians1 - radians0);
     if (alpha < 0.0)
-      detJ = - detJ;
+      detJ = -detJ;
     const wedgeArea = Math.cos(alpha) * Math.sin(alpha);
     return (alpha - wedgeArea) * detJ;
   }

@@ -59,19 +59,19 @@ function optionalUpdate<T extends ICloneable<T>>(source: T | undefined, result: 
  * @public
  */
 export class CurveLocationDetail {
-  /** The curve being evaluated */
+  /** The curve being evaluated. */
   public curve?: CurvePrimitive;
-  /** Optional ray */
+  /** Optional ray. */
   public ray?: Ray3d;
-  /** The fractional position along the curve */
+  /** The fractional position along the curve. */
   public fraction: number;
-  /** Detail condition of the role this point has in some context */
+  /** Detail condition of the role this point has in some context. */
   public intervalRole?: CurveIntervalRole;
-  /** The point on the curve */
+  /** The point on the curve. */
   public point: Point3d;
-  /** A vector (e.g. tangent vector) in context */
+  /** A vector (e.g. tangent vector) in context. */
   public vectorInCurveLocationDetail?: Vector3d;
-  /** A context-specific numeric value. (e.g. a distance) */
+  /** A context-specific numeric value (e.g., a distance). */
   public a: number;
   /**
    * Optional CurveLocationDetail with more detail of location. For instance, a detail for fractional position
@@ -81,12 +81,12 @@ export class CurveLocationDetail {
   public childDetail?: CurveLocationDetail;
   /**
    * A status indicator for certain searches.
-   * * e.g. CurvePrimitive.moveSignedDistanceFromFraction
+   * * e.g., CurvePrimitive.moveSignedDistanceFromFraction.
    */
   public curveSearchStatus?: CurveSearchStatus;
-  /** (Optional) second fraction, e.g. end of interval of coincident curves */
+  /** (Optional) second fraction, e.g. end of interval of coincident curves. */
   public fraction1?: number;
-  /** (Optional) second point, e.g. end of interval of coincident curves */
+  /** (Optional) second point, e.g. end of interval of coincident curves. */
   public point1?: Point3d;
   /** A context-specific temporary point, e.g. for intermediate calculations. */
   public pointQ: Point3d;
@@ -97,26 +97,26 @@ export class CurveLocationDetail {
     this.point = Point3d.createZero();
     this.a = 0.0;
   }
-  /** Set the (optional) intervalRole field */
+  /** Set the (optional) intervalRole field. */
   public setIntervalRole(value: CurveIntervalRole): void {
     this.intervalRole = value;
   }
-  /** Set the (optional) fraction1 and point1, using direct assignment (capture!) to point1 */
+  /** Set the (optional) fraction1 and point1, using direct assignment (capture!) to point1. */
   public captureFraction1Point1(fraction1: number, point1: Point3d): void {
     this.fraction1 = fraction1;
     this.point1 = point1;
   }
-  /** Test if this pair has fraction1 defined */
+  /** Test if this pair has fraction1 defined. */
   public get hasFraction1(): boolean {
     return this.fraction1 !== undefined;
   }
-  /** Test if this is an isolated point. This is true if intervalRole is any of (undefined, isolated, isolatedAtVertex) */
+  /** Test if this is an isolated point. This is true if intervalRole is any of (undefined, isolated, isolatedAtVertex). */
   public get isIsolated(): boolean {
     return this.intervalRole === undefined
       || this.intervalRole === CurveIntervalRole.isolated
       || this.intervalRole === CurveIntervalRole.isolatedAtVertex;
   }
-  /** Return the fraction delta. (0 if no fraction1) */
+  /** Return the fraction delta. (0 if no fraction1). */
   public get fractionDelta(): number {
     return this.fraction1 !== undefined ? this.fraction1 - this.fraction : 0.0;
   }
@@ -137,7 +137,7 @@ export class CurveLocationDetail {
     this.point1 = undefined;
   }
   /**
-   * Return a complete copy, WITH CAVEATS . . .
+   * Return a complete copy, WITH CAVEATS.
    * * curve member is copied as a reference.
    * * point and vector members are cloned.
    */
@@ -159,9 +159,9 @@ export class CurveLocationDetail {
   /**
    * Updated in this instance.
    * * Note that if caller omits `vector` and `a`, those fields are updated to the call-list defaults (NOT left as-is)
-   * * point and vector updates are by data copy (not capture of pointers)
-   * @param fraction (required) fraction to install
-   * @param point  (required) point to install
+   * * point and vector updates are by data copy (not capture of pointers).
+   * @param fraction (required) fraction to install.
+   * @param point (required) point to install.
    * @param vector (optional) vector to install.
    * @param a (optional) numeric value to install.
    */
@@ -174,9 +174,9 @@ export class CurveLocationDetail {
   /**
    * Updated in this instance.
    * * Note that if caller omits a`, that field is updated to the call-list default (NOT left as-is)
-   * * point and vector updates are by data copy (not capture of the ray members)
-   * @param fraction (required) fraction to install
-   * @param ray  (required) point and vector to install
+   * * point and vector updates are by data copy (not capture of the ray members).
+   * @param fraction (required) fraction to install.
+   * @param ray  (required) point and vector to install.
    * @param a (optional) numeric value to install.
    */
   public setFR(fraction: number, ray: Ray3d, a: number = 0): void {
@@ -220,7 +220,7 @@ export class CurveLocationDetail {
     result.point.setFromPoint3d(point);
     return result;
   }
-  /** Create with CurvePrimitive pointer, fraction, and point coordinates */
+  /** Create with CurvePrimitive pointer, fraction, and point coordinates. */
   public static createCurveFractionPointDistanceCurveSearchStatus(
     curve: CurvePrimitive | undefined,
     fraction: number,
@@ -341,7 +341,7 @@ export class CurveLocationDetail {
    * @param fraction candidate fraction
    * @param point candidate point
    * @param a candidate distance
-   * @returns true if the given distance is smaller (and hence this detail was updated.)
+   * @returns true if the given distance is smaller (and hence this detail was updated)
    */
   public updateIfCloserCurveFractionPointDistance(
     curve: CurvePrimitive, fraction: number, point: Point3d, a: number,
