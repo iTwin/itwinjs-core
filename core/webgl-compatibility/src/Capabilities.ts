@@ -71,6 +71,8 @@ const buggyIntelMatchers = [
   /ANGLE \(Intel\(R\) (U)?HD Graphics 6(2|3)0 Direct3D11/,
   // New unmasked renderer string circa October 2021.
   /ANGLE \(Intel, Intel\(R\) (U)?HD Graphics 6(2|3)0 Direct3D11/,
+  // Intel 7D40 reported in https://github.com/iTwin/itwinjs-core/issues/815
+  /ANGLE \(Intel, Intel\(\R\) Graphics \(0x00007D40\) Direct3D11/,
 ];
 
 // Regexes to match Mali GPUs known to suffer from GraphicsDriverBugs.msaaWillHang.

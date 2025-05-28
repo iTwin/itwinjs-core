@@ -84,7 +84,7 @@ export interface GraphicsDriverBugs {
    * Early Z elides execution of the fragment shader if the depth test fails; but if the fragment shader contains code that can alter the depth, it
    * must be executed. The primary symptom of this bug is transparent geometry appearing to be behind opaque geometry despite actually being in front of it.
    *
-   * Affects Intel HD/UHD Graphics 620/630.
+   * Affects Intel HD/UHD Graphics 620/630, and Intel Graphics 7D40.
    *
    * The workaround for this bug has minimal impact on performance and no impact on visual fidelity.
    */

@@ -193,6 +193,10 @@ describe("Render Compatibility", () => {
       // Around October 2021 slightly different unmasked renderer strings began showing up, containing "Intel, Intel(R)" instead of just "Intel(R)".
       [ "ANGLE (Intel, Intel(R) HD Graphics 620 Direct3D11 vs_5_0 ps_5_0, D3D11-27.20.100.8681)", true ],
       [ "ANGLE (Intel, Intel(R) UHD Graphics 630 Direct3D11", true ],
+
+      // Reported on Intel Graphics 7D40 https://github.com/iTwin/itwinjs-core/issues/8156
+      [ "ANGLE (Intel, Intel(R) Graphics (0x00007D40) Direct3D11 vs_5_0 ps_5_0, D3D11)", true ],
+      [ "ANGLE (Intel, Intel(R) Graphics (0x00007D40) Direct3D11", true ],
     ];
 
     for (const renderer of renderers) {
