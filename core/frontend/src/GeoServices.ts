@@ -367,7 +367,7 @@ export class GeoServices {
         let response: IModelCoordinatesResponse;
         let remappedResponse: IModelCoordinatesResponseProps;
         try {
-          response = await iModelReadAPI.getIModelCoordinatesFromGeoCoordinates(remappedRequest);
+          response = await iModelReadAPI.convertIModelCoordinatesFromGeoCoordinates(remappedRequest);
           remappedResponse = mapIModelCoordResponseIModelReadToRPC(response);
         } catch (error) {
           if (error instanceof NoGCSDefinedError) {
@@ -386,7 +386,7 @@ export class GeoServices {
         let response: GeoCoordinatesResponse;
         let remappedResponse: GeoCoordinatesResponseProps;
         try {
-          response = await iModelReadAPI.getGeoCoordinatesFromIModelCoordinates(remappedRequest);
+          response = await iModelReadAPI.convertGeoCoordinatesFromIModelCoordinates(remappedRequest);
           remappedResponse = mapGeoCoordResponseIModelReadToRPC(response);
         } catch (error) {
           if (error instanceof NoGCSDefinedError) {
