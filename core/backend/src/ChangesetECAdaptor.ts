@@ -591,7 +591,7 @@ export class SqliteBackedInstanceCache implements ECChangeUnifierCache {
    * @returns The number of instances in the cache.
    */
   public count(): number {
-    return this._db.withPreparedSqliteStatement(`SELECT COUNT(*) FROM [temp].[${this._cacheTable}]`, (stmt) => {
+    return this._db.withPreparedSqliteStatement(`SELECT COUNT(*) FROM ${this._cacheTable}`, (stmt) => {
       if (stmt.step() === DbResult.BE_SQLITE_ROW)
         return stmt.getValue(0).getInteger();
       return 0;
