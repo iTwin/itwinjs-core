@@ -160,6 +160,9 @@ export class SmallSystem {
     b0: XAndY, bDir: XAndY,
     tol: number = Geometry.smallMetricDistance
   ): { f0: WritableXAndY, f1?: WritableXAndY } | undefined {
+    // Normal practice is to do the (quick, simple) transverse intersection first, but the transverse intersector's
+    // notion of coincidence is based on the determinant ratios, which are hard to relate to physical tolerance.
+    // So do the overlap first. This should do a quick exit in non-coincident case.
     const overlap = this.lineSegmentXYUVOverlapUnbounded(a0, aDir, b0, bDir, tol);
     if (overlap)
       return overlap;

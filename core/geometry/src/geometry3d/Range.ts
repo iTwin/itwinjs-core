@@ -796,7 +796,7 @@ export class Range3d extends RangeBase implements LowAndHighXYZ, BeJSONFunctions
       RangeBase._EXTREME_POSITIVE,
     );
   }
-  /** Expand this range by distances a (possibly signed) in all directions */
+  /** Expand this range to include the given point. */
   public extendXYZ(x: number, y: number, z: number): void {
     if (x < this.low.x)
       this.low.x = x;
@@ -829,28 +829,28 @@ export class Range3d extends RangeBase implements LowAndHighXYZ, BeJSONFunctions
         xyz1.z + g * (xyz0.z - xyz1.z));
     }
   }
-  /** Expand this range by distances a in only the x direction.  */
+  /** Expand this range to include the x-coordinate. */
   public extendXOnly(x: number): void {
     if (x < this.low.x)
       this.low.x = x;
     if (x > this.high.x)
       this.high.x = x;
   }
-  /** Expand this range by distances a in only the x direction.  */
+  /** Expand this range to include the y-coordinate. */
   public extendYOnly(y: number): void {
     if (y < this.low.y)
       this.low.y = y;
     if (y > this.high.y)
       this.high.y = y;
   }
-  /** Expand this range by distances a in only the x direction.  */
+  /** Expand this range to include the z-coordinate. */
   public extendZOnly(z: number): void {
     if (z < this.low.z)
       this.low.z = z;
     if (z > this.high.z)
       this.high.z = z;
   }
-  /** Expand one component of this range  */
+  /** Expand this range to include the specified coordinate `a`. */
   public extendSingleAxis(a: number, axisIndex: AxisIndex): void {
     if (axisIndex === AxisIndex.X)
       this.extendXOnly(a);
@@ -864,7 +864,7 @@ export class Range3d extends RangeBase implements LowAndHighXYZ, BeJSONFunctions
     if (!Geometry.isSmallMetricDistance(w))
       this.extendXYZ(x / w, y / w, z / w);
   }
-  /** Expand this range to include a point. */
+  /** Expand this range to include an optionally transformed point. */
   public extendPoint(point: Point3d, transform?: Transform): void {
     if (transform) {
       this.extendTransformedXYZ(transform, point.x, point.y, point.z);
