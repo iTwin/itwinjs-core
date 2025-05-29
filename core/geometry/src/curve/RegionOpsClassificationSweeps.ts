@@ -203,7 +203,7 @@ export class RegionOpsFaceToFaceSearch {
    *   * find crossings among the edges.
    *      * Edges are split as needed, but split preserves the edgeTag
    *   * sort edges around vertices
-   *   * add regularization edges so holes are connected to their parent. TODO: Really?
+   *   * add regularization edges so holes are connected to their parent.
    */
   public static doPolygonBoolean(loopsA: MultiLineStringDataVariant, loopsB: MultiLineStringDataVariant, faceSelectFunction: (inA: boolean, inB: boolean) => boolean, graphCheckPoint?: GraphCheckPointFunction): HalfEdgeGraph | undefined {
     const graph = new HalfEdgeGraph();
@@ -221,7 +221,7 @@ export class RegionOpsFaceToFaceSearch {
       HalfEdgeGraphMerge.clusterAndMergeXYTheta(graph);
       if (graphCheckPoint)
         graphCheckPoint("After clusterAndMergeXYTheta", graph, "M");
-      // add edges to connect various components  (e.g. holes!!!) --- TODO: Is this true? Bridges are added by RegionBooleanContext.addConnectives, not by regularization.
+      // add edges to connect various components  (e.g. holes!!!)
       const context = new RegularizationContext(graph);
       context.regularizeGraph(true, true);
       if (graphCheckPoint)
@@ -310,7 +310,7 @@ export enum RegionGroupOpType {
   Union = 0,
   Parity = 1,
   Intersection = 2,
-  NonBounding = -1, // e.g., bridge edges
+  NonBounding = -1,
 }
 /**
  * Each loop or parity region in a `RegionBooleanContext` is recorded as a `RegionGroupMember`, which carries
@@ -458,6 +458,8 @@ export class RegionBooleanContext implements RegionOpsFaceToFaceSearchCallbacks 
   public addMembers(dataA: AnyRegion | AnyRegion[] | undefined, dataB: AnyRegion | AnyRegion[] | undefined) {
     this.groupA.addMember(dataA);
     this.groupB.addMember(dataB);
+    // const doConnectives = 1;
+    // if (doConnectives !== 0)
     this.addConnectives();
   }
 
@@ -469,7 +471,7 @@ export class RegionBooleanContext implements RegionOpsFaceToFaceSearchCallbacks 
    * This method:
    * * finds the total range
    * * creates parallel rays from the extreme point of each loop and extending beyond the overall range
-   * * places those lines in the extraGeometry group to serve as bridge edges
+   * * places those lines in the extraGeometry group
    */
   public addConnectives() {
     const rangeA = this.groupA.range();
