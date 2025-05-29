@@ -290,12 +290,14 @@ export class RealityDataSourceProviderRegistry {
  */
 export class RealityDataSourceGP3DTProvider implements RealityDataSourceProvider {
   private _apiKey: string;
+  private _getAuthToken?: () => Promise<string | undefined>;
 
   public async createRealityDataSource(key: RealityDataSourceKey, iTwinId: GuidString | undefined): Promise<RealityDataSource | undefined> {
-    return RealityDataSourceGP3DTImpl.createFromKey(key, iTwinId, this._apiKey);
+    return RealityDataSourceGP3DTImpl.createFromKey(key, iTwinId, this._apiKey, this._getAuthToken);
   }
 
-  public constructor(apiKey: string) {
+  public constructor(apiKey: string, getAuthToken?: () => Promise<string | undefined>) {
     this._apiKey = apiKey;
+    this._getAuthToken = getAuthToken;
   }
 }

@@ -35,6 +35,7 @@ export class RealityDataSourceGP3DTImpl implements RealityDataSource {
   private _searchParams?: URLSearchParams;
 
   private _apiKey?: string;
+  private _getAuthToken?: () => Promise<string | undefined>;
 
   /** This is necessary for GP3DT tilesets! This tells the iTwin.js tiling system to use the geometric error specified in the GP3DT tileset rather than any of our own. */
   public readonly usesGeometricError = true;
@@ -42,8 +43,9 @@ export class RealityDataSourceGP3DTImpl implements RealityDataSource {
   /** Construct a new reality data source.
    * @param props JSON representation of the reality data source
    */
-  protected constructor(props: RealityDataSourceProps, apiKey: string | undefined) {
+  protected constructor(props: RealityDataSourceProps, apiKey: string | undefined, _getAuthToken?: () => Promise<string | undefined>) {
     this._apiKey = apiKey;
+    this._getAuthToken = _getAuthToken;
 
     // ###TODO need to figure out a better way to handle this
     assert(props.sourceKey.provider === "GP3DT");
@@ -54,12 +56,12 @@ export class RealityDataSourceGP3DTImpl implements RealityDataSource {
   /**
    * Create an instance of this class from a source key and iTwin context.
    */
-  public static async createFromKey(sourceKey: RealityDataSourceKey, _iTwinId: GuidString | undefined, apiKey: string | undefined): Promise<RealityDataSource | undefined> {
+  public static async createFromKey(sourceKey: RealityDataSourceKey, _iTwinId: GuidString | undefined, apiKey: string | undefined, _getAuthToken?: () => Promise<string | undefined>): Promise<RealityDataSource | undefined> {
     // ###TODO need to figure out a better way to handle this
     if (sourceKey.provider !== "GP3DT")
       return undefined;
-    const rdSource = new RealityDataSourceGP3DTImpl({ sourceKey }, apiKey);
-    return rdSource;
+
+    return new RealityDataSourceGP3DTImpl({ sourceKey }, apiKey, _getAuthToken);
   }
 
   public get isContextShare(): boolean {
@@ -88,7 +90,12 @@ export class RealityDataSourceGP3DTImpl implements RealityDataSource {
   /** Return the URL of the GP3DT tileset with the GP3DT key from the reality data format registry included. */
   private getTilesetUrlWithKey() {
     const gp3dtKey = this._apiKey;
-    return `${this._tilesetUrl}?key=${gp3dtKey}`;
+    if (this._getAuthToken) {
+      // If we have a getAuthToken function, no need to append API key to the URL
+      return this._tilesetUrl;
+    } else {
+      return `${this._tilesetUrl}?key=${gp3dtKey}`;
+    }
   }
 
   protected setBaseUrl(url: string): void {
@@ -117,7 +124,17 @@ export class RealityDataSourceGP3DTImpl implements RealityDataSource {
       throw new IModelError(BentleyStatus.ERROR, "Unable to get service url");
 
     this.setBaseUrl(url);
-    return request(url, "json");
+
+    let authToken;
+    if (this._getAuthToken) {
+      authToken = await this._getAuthToken();
+    }
+
+    return request(url, "json", authToken ? {
+      headers: {
+        "Authorization": `Bearer ${authToken}`
+      }} : undefined
+    );
   }
 
   /** Returns the tile URL relative to the base URL.
@@ -158,14 +175,32 @@ export class RealityDataSourceGP3DTImpl implements RealityDataSource {
    * Returns the tile content. The path to the tile is relative to the base url of present reality data whatever the type.
    */
   public async getTileContent(name: string): Promise<ArrayBuffer> {
-    return request(this.getTileUrl(name), "arraybuffer");
+    let authToken;
+    if (this._getAuthToken) {
+      authToken = await this._getAuthToken();
+    }
+
+    return request(this.getTileUrl(name), "arraybuffer", authToken ? {
+      headers: {
+        "Authorization": `Bearer ${authToken}`
+      }} : undefined
+    );
   }
 
   /**
    * Returns the tile content in json format. The path to the tile is relative to the base url of present reality data whatever the type.
    */
   public async getTileJson(name: string): Promise<any> {
-    return request(this.getTileUrl(name), "json");
+    let authToken;
+    if (this._getAuthToken) {
+      authToken = await this._getAuthToken();
+    }
+
+    return request(this.getTileUrl(name), "json", authToken ? {
+      headers: {
+        "Authorization": `Bearer ${authToken}`
+      }} : undefined
+    );
   }
 
   public getTileContentType(url: string): "tile" | "tileset" {

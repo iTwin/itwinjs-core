@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import sinon from "sinon";
 import { Frustum, RealityDataProvider, RealityModelDisplaySettings } from "@itwin/core-common";
 import { IModelApp } from "../../IModelApp";
@@ -49,6 +49,10 @@ describe("RealityTileTreeReference", () => {
   beforeAll(async () => {
     await IModelApp.startup();
     iModel = createBlankConnection();
+  });
+
+  beforeEach(() => {
+    sinon.stub(IModelApp, "publicPath").get(() => "public/");
   });
 
   afterAll(async () => {
