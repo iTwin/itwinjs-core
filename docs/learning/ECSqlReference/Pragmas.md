@@ -13,7 +13,7 @@ PRAGMA help
 | checksum                      | global | checksum([ecdb_schema\|ecdb_map\|sqlite_schema]) return sha3 checksum for data. |
 | ecdb_ver                      | global | return current and file profile versions                                        |
 | experimental_features_enabled | global | enable/disable experimental features                                            |
-| validate_ecsql_inserts        | global | enable/disable validation for values in an ecsql statement                      |
+| validate_ecsql_writes        | global | enable/disable validation for values in an ecsql statement                      |
 | explain_query                 | global | explain query plan                                                              |
 | help                          | global | return list of pragma supported                                                 |
 | integrity_check               | global | performs integrity checks on ECDb                                               |
@@ -70,27 +70,27 @@ PRAGMA experimental_features_enabled
 | ----------------------------- |
 | False                         |
 
-## `PRAGMA validate_ecsql_inserts`
+## `PRAGMA validate_ecsql_writes`
 
 Enable validation of values in ECSQL insert statement on current connection.
 
 ```sql
-PRAGMA validate_ecsql_inserts=true
+PRAGMA validate_ecsql_writes=true
 ```
 
 to switch off
 
 ```sql
-PRAGMA validate_ecsql_inserts=false
+PRAGMA validate_ecsql_writes=false
 ```
 
 to check if flag is currently set.
 
 ```sql
-PRAGMA validate_ecsql_inserts
+PRAGMA validate_ecsql_writes
 ```
 
-| validate_ecsql_inserts        |
+| validate_ecsql_writes        |
 | ----------------------------- |
 | False                         |
 
