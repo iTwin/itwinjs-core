@@ -278,7 +278,7 @@ export class ClipUtilities {
           result.tryAddChild(clippedLocalRegion);
       }
     }
-    return result ? RegionOps.simplifyRegionType(result) : undefined;
+    return result ? RegionOps.validateRegion(result) : undefined;
   }
   /**
    * Compute and return portions of the input curve or region that are within the clipper.

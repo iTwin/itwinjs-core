@@ -5386,6 +5386,7 @@ export class RegionOps {
     };
     static splitToPathsBetweenBreaks(source: AnyCurve | undefined, makeClones: boolean): AnyChain | undefined;
     static testPointInOnOutRegionXY(curves: AnyRegion, x: number, y: number): number;
+    static validateRegion(region: AnyRegion): AnyRegion | undefined;
 }
 
 // @public

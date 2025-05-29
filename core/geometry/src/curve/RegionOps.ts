@@ -7,6 +7,7 @@
  * @module Curve
  */
 
+import { assert } from "@itwin/core-bentley";
 import { Geometry } from "../Geometry";
 import { FrameBuilder } from "../geometry3d/FrameBuilder";
 import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
@@ -325,15 +326,15 @@ export class RegionOps {
     return this.finishGraphToPolyface(graph, triangulate);
   }
   /**
-   * Simplify the type of the region by stripping redundant parent(s).
+   * Return the region's simplest representation by stripping redundant parent(s).
    * * No Boolean operations are performed.
-   * * Invalid inputs (such as childless regions) are not corrected.
-   * @param region region to simplify
+   * @param region input region (unchanged). Assumed to have at least one child.
    * @returns
-   * * For a [[UnionRegion]] with exactly one child, return it if it is a [[Loop]],
-   * or if it is a [[ParityRegion]] with multiple children, otherwise return the `ParityRegion`'s `Loop`.
-   * * For a `ParityRegion` with exactly one `Loop`, return it.
+   * * For a [[UnionRegion]] with exactly one child, return the child if it is a [[Loop]],
+   * or if it is a [[ParityRegion]] with multiple children; otherwise return the `ParityRegion`'s `Loop`.
+   * * For a `ParityRegion` with exactly one child, return the `Loop`.
    * * All other inputs returned unchanged.
+   * @see [[validateRegion]]
    */
   public static simplifyRegionType(region: AnyRegion): AnyRegion {
     if (region instanceof UnionRegion) {
@@ -343,6 +344,36 @@ export class RegionOps {
       if (region.children.length === 1)
         return region.children[0];
     }
+    return region;
+  }
+  /**
+   * Validate the region's parent/child hierarchy in place:
+   * * Regions with exactly one child are simplified as per [[simplifyRegionType]].
+   * * Regions without children are removed.
+   * * No Boolean operations are performed.
+   * @param region region to validate in place
+   * @returns reference to the updated input region
+   * @see [[simplifyRegionType]]
+   */
+  public static validateRegion(region: AnyRegion): AnyRegion | undefined {
+    if (region instanceof Loop)
+      return region.children.length > 0 ? region : undefined;
+    // remove childless Parity/UnionRegion
+    for (let i = 0; i < region.children.length; ++i) {
+      const child = region.children[i];
+      const newChild = this.validateRegion(child);
+      if (!newChild) {
+        region.children.splice(i--, 1);
+      } else if (newChild !== child) {
+        assert(!(newChild instanceof UnionRegion));
+        region.children.splice(i--, 1, newChild);
+      }
+    }
+    if (region.children.length === 0)
+      return undefined;
+    // remove redundant Parity/UnionRegion parent
+    if (region.children.length === 1)
+      return region.children.splice(0, 1)[0];
     return region;
   }
   /**
@@ -363,7 +394,7 @@ export class RegionOps {
     operation: RegionBinaryOpType,
     mergeTolerance: number = Geometry.smallMetricDistance,
   ): AnyRegion | undefined {
-    const result = UnionRegion.create();
+    let result: AnyRegion | undefined;
     const context = RegionBooleanContext.create(RegionGroupOpType.Union, RegionGroupOpType.Union);
     context.addMembers(loopsA, loopsB);
     context.annotateAndMergeCurvesInGraph(mergeTolerance);
@@ -379,12 +410,15 @@ export class RegionOps {
           return;
         if (faceType === 1) {
           const loop = PlanarSubdivision.createLoopInFace(face);
-          if (loop)
+          if (loop) {
+            if (!result)
+              result = UnionRegion.create();
             result.tryAddChild(loop);
+          }
         }
       },
     );
-    return result ? this.simplifyRegionType(result) : undefined;
+    return result ? this.validateRegion(result) : undefined;
   }
   /**
    * Return a polyface whose facets are a boolean operation between the input regions.
