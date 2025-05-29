@@ -1450,7 +1450,7 @@ describe("PolyfaceSpeedup", () => {
     let x0 = 0;
     let z0 = 0;
     const timer = new StopWatch();
-    const subdivisions = 10;
+    const subdivisions = 50; // large enough to realize a perf difference
 
     const facetOptions = StrokeOptions.createForFacets();
     facetOptions.shouldTriangulate = true;
