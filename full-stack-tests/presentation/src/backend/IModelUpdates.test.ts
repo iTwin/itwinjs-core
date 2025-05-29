@@ -18,7 +18,7 @@ import { createValidIModelFileName } from "../IModelSetupUtils.js";
 import { setupTestsOutputDirectory } from "../IntegrationTests.js";
 import { getFieldByLabel, getOutputRoot, prepareOutputFilePath, waitFor } from "../Utils.js";
 
-describe.only("Reacting to IModel data changes", () => {
+describe("Reacting to IModel data changes", () => {
   let updatesSpy: sinon.SinonSpy<[string, ...any[]], void>;
 
   before(async () => {
