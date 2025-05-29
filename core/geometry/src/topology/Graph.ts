@@ -19,7 +19,6 @@ import { MaskManager } from "./MaskManager";
 // import { GraphChecker } from "../test/topology/Graph.test"; // used for debugging
 
 /* eslint-disable @typescript-eslint/no-this-alias */
-// cspell:word CONSTU CONSTV USEAM VSEAM internaldocs
 
 /**
  * * Each node of the graph has a mask member.
@@ -34,14 +33,6 @@ import { MaskManager } from "./MaskManager";
  * @internal
  */
 export enum HalfEdgeMask {
-  // REMARK: Various mask names are COMMENTED here for reference to native legacy code.
-  // CONSTU_MASK = 0x00000004,
-  // CONSTV_MASK = 0x00000008,
-  // USEAM_MASK = 0x00000010,
-  // VSEAM_MASK = 0x00000020,
-  // BOUNDARY_VERTEX_MASK = 0x00000040,
-  // PRIMARY_VERTEX_MASK = 0x00000080,
-  // DIRECTED_EDGE_MASK = 0x00000100,
   /**
    * Mask commonly set consistently around exterior faces.
    * * A boundary edge with interior to one side, exterior to the other, will have EXTERIOR only on the outside.
@@ -72,18 +63,14 @@ export enum HalfEdgeMask {
   TRIANGULATED_FACE = 0x00000100,
   /** Mask applied in a face with 2 edges. */
   NULL_FACE = 0x00000200,
-  /** Mask used for low level searches to identify previously-visited nodes. */
-  VISITED = 0x00001000,
+  /** Temporary mask used for low level searches to identify previously-visited nodes. */
+  VISITED = 0x00010000,
   /** No mask bits. */
   NULL_MASK = 0x00000000,
   /** The "upper 12" bits of 32 bit integer reserved for grab/drop. */
   ALL_GRAB_DROP_MASKS = 0xFFF00000,
   /** All mask bits */
   ALL_MASK = 0xFFFFFFFF,
-  // informal convention on preassigned mask bit numbers:
-  // byte0-1 (EXTERIOR, BOUNDARY_EDGE, PRIMARY_EDGE, BRIDGE_EDGE, REGULARIZED_EDGE) -- edge properties.
-  // byte2 (TRIANGULATED_FACE, NULL_FACE) -- face properties.
-  // byte3 (VISITED) -- temp masks for algorithms.
 }
 
 /**

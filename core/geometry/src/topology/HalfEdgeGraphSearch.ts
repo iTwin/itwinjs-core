@@ -11,8 +11,6 @@ import { HalfEdge, HalfEdgeGraph, HalfEdgeMask, HalfEdgeToBooleanFunction, NodeF
 import { SignedDataSummary } from "./SignedDataSummary";
 import { XYParitySearchContext } from "./XYParitySearchContext";
 
-// cspell:word internaldocs
-
 /**
  * Interface for an object that executes boolean tests on edges.
  * @internal
