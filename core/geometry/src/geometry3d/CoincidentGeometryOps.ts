@@ -68,7 +68,7 @@ export class CoincidentGeometryQuery {
   /**
    * Given a detail pair representing the projection of each of two colinear line segments onto the other,
    * clamp the details (in place) to the line segments' endpoints according to the given flags.
-   * @param overlap segment overlap as returned by [[coincidentSegmentRangeXY]], modified on return
+   * @param overlap unbounded segment overlap as returned by [[coincidentSegmentRangeXY]], modified and returned
    * @param pointA0 start point of segment A
    * @param pointA1 end point of segment A
    * @param pointB0 start point of segment B
@@ -77,7 +77,7 @@ export class CoincidentGeometryQuery {
    * @param extendA1 whether to extend segment A beyond its end
    * @param extendB0 whether to extend segment B beyond its start
    * @param extendB1 whether to extend segment B beyond its end
-   * @return reference to the input clamped in place, or undefined (leaving interval untouched) if clamping would result in empty interval.
+   * @return reference to the modified input, or undefined (leaving input untouched) if clamping would result in empty interval.
    */
   public clampCoincidentOverlapToSegmentBounds(overlap: CurveLocationDetailPair,
     pointA0: Point3d, pointA1: Point3d, pointB0: Point3d, pointB1: Point3d,
@@ -136,16 +136,17 @@ export class CoincidentGeometryQuery {
   }
   /**
    * Compute whether two line segments have a coincident overlap in xy.
-   * * Project `pointA0` and `pointA1` onto the line formed by `pointB0` and `pointB1` and vice versa
-   * * If all projection distances are sufficiently small, return a detail pair recording the coincident interval, optionally clipped to segment bounds.
+   * * Project `pointA0` and `pointA1` onto the (infinite) line formed by `pointB0` and `pointB1` and vice versa.
+   * * If all projection distances are sufficiently small, return a detail pair recording the coincident interval.
+   * * Caller can follow up with [[clampCoincidentOverlapToSegmentBounds]] to restrict the returned interval by the segments' ranges.
    * @param pointA0 start point of segment A
    * @param pointA1 end point of segment A
    * @param pointB0 start point of segment B
    * @param pointB1 end point of segment B
-   * @param restrictToBounds whether to clip the coincident segment details to the segment bounds
-   * @return detail pair for the coincident interval (`detailA` has fractions along segment A, and `detailB` has fractions along segment B), or undefined if no coincidence
+   * @return detail pair for the coincident interval (`detailA` has fractions along segment A, and `detailB` has
+   * fractions along segment B), or `undefined` if no coincidence.
    */
-  public coincidentSegmentRangeXY(pointA0: Point3d, pointA1: Point3d, pointB0: Point3d, pointB1: Point3d, restrictToBounds: boolean = true): CurveLocationDetailPair | undefined {
+  public coincidentSegmentRangeXY(pointA0: Point3d, pointA1: Point3d, pointB0: Point3d, pointB1: Point3d): CurveLocationDetailPair | undefined {
     const aDir = { x: pointA1.x - pointA0.x, y: pointA1.y - pointA0.y };
     const bDir = { x: pointB1.x - pointB0.x, y: pointB1.y - pointB0.y };
     const fractions = SmallSystem.lineSegmentXYUVOverlapUnbounded(pointA0, aDir, pointB0, bDir, this._tolerance);
@@ -155,8 +156,7 @@ export class CoincidentGeometryQuery {
     detailA.captureFraction1Point1(fractions.f1.x, pointA0.interpolate(fractions.f1.x, pointA1));
     const detailB = CurveLocationDetail.createCurveFractionPoint(undefined, fractions.f0.y, pointB0.interpolate(fractions.f0.y, pointB1));
     detailB.captureFraction1Point1(fractions.f1.y, pointB0.interpolate(fractions.f1.y, pointB1));
-    const overlap = CurveLocationDetailPair.createCapture(detailA, detailB);
-    return restrictToBounds ? this.clampCoincidentOverlapToSegmentBounds(overlap, pointA0, pointA1, pointB0, pointB1) : overlap;
+    return CurveLocationDetailPair.createCapture(detailA, detailB);
   }
   /**
    * Create a CurveLocationDetailPair for a coincident interval of two overlapping curves
