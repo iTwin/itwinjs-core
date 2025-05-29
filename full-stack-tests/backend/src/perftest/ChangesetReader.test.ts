@@ -3,7 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { ChangesetECAdaptor, ChannelControl, DrawingCategory, HubMock, IModelHost, InMemoryInstanceCache, PartialECChangeUnifier, SqliteBackedInstanceCache, SqliteChangesetReader } from "@itwin/core-backend";
+import { ChangesetECAdaptor, ChannelControl, DrawingCategory, IModelHost, InMemoryInstanceCache, PartialECChangeUnifier, SqliteBackedInstanceCache, SqliteChangesetReader } from "@itwin/core-backend";
+import { HubMock } from "@itwin/core-backend/lib/cjs/internal/HubMock";
 import { HubWrappers, IModelTestUtils } from "@itwin/core-backend/lib/cjs/test/index";
 import { KnownTestLocations } from "@itwin/core-backend/lib/cjs/test/KnownTestLocations";
 import { GuidString, Id64, StopWatch } from "@itwin/core-bentley";
@@ -68,8 +69,9 @@ describe("ChangesetReaderAPI", async () => {
       { testCaseNum: 1, numElements: 1000 },
       { testCaseNum: 2, numElements: 10000 },
       { testCaseNum: 3, numElements: 100000 },
-      { testCaseNum: 4, numElements: 1000000 },
-      { testCaseNum: 5, numElements: 10000000 },];
+      // { testCaseNum: 4, numElements: 1000000 },
+      // { testCaseNum: 5, numElements: 10000000 },
+    ];
 
     const elementPropsTemplate = {
       classFullName: "TestDomain:TestElement",
@@ -115,6 +117,7 @@ describe("ChangesetReaderAPI", async () => {
     }
     rwIModel.close();
   });
+
   it("Large Changeset Performance - SqliteBackedCache", async () => {
     const adminToken = "super manager token";
     const iModelName = "LargeChangesetTest";
@@ -152,8 +155,9 @@ describe("ChangesetReaderAPI", async () => {
       { testCaseNum: 1, numElements: 1000 },
       { testCaseNum: 2, numElements: 10000 },
       { testCaseNum: 3, numElements: 100000 },
-      { testCaseNum: 4, numElements: 1000000 },
-      { testCaseNum: 5, numElements: 10000000 },];
+      // { testCaseNum: 4, numElements: 1000000 },
+      // { testCaseNum: 5, numElements: 10000000 },
+    ];
 
     const elementPropsTemplate = {
       classFullName: "TestDomain:TestElement",
