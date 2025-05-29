@@ -1873,6 +1873,7 @@ export class SchemaGraph {
 
 // @internal
 export class SchemaGraphUtil {
+    static buildDependencyOrderedSchemaInfoList(schemaInfos: ReadonlyArray<SchemaInfo>): ReadonlyArray<SchemaInfo>;
     static buildDependencyOrderedSchemaList(insertSchema: Schema, schemas?: Schema[]): Schema[];
 }
 
