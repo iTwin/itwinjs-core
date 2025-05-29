@@ -5741,6 +5741,8 @@ export class SqliteBackedInstanceCache implements ECChangeUnifierCache {
     // (undocumented)
     readonly bufferedReadInstanceSizeInBytes: number;
     count(): number;
+    // (undocumented)
+    static readonly defaultBufferSize: number;
     get(key: string): ChangedECInstance | undefined;
     set(key: string, value: ChangedECInstance): void;
 }
