@@ -3348,13 +3348,19 @@ describe("ECSqlStatement", () => {
     before(async () => {
       ecdb = ECDbTestHelper.createECDb(outDir, "bindnavigation.ecdb",
         `<ECSchema schemaName="Test" alias="test" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
+
           <ECEntityClass typeName="Parent" modifier="Sealed">
             <ECProperty propertyName="Code" typeName="string"/>
           </ECEntityClass>
 
-          <ECEntityClass typeName="Child" modifier="Sealed">
+          <ECEntityClass typeName="ChildTemplate" modifier="Abstract">
             <ECProperty propertyName="Name" typeName="string"/>
             <ECNavigationProperty propertyName="Parent" relationshipName="ParentHasChildren" direction="backward"/>
+          </ECEntityClass>
+
+          <ECEntityClass typeName="Child" modifier="Sealed">
+            <BaseClass>ChildTemplate</BaseClass>
+            <ECProperty propertyName="Age" typeName="int"/>
             <ECNavigationProperty propertyName="Friends" relationshipName="ChildHasFriends" direction="backward"/>
           </ECEntityClass>
 
@@ -3363,7 +3369,7 @@ describe("ECSqlStatement", () => {
                 <Class class="Parent"/>
             </Source>
             <Target multiplicity="(0..*)" roleLabel="has" polymorphic="false">
-                <Class class="Child"/>
+                <Class class="ChildTemplate"/>
             </Target>
           </ECRelationshipClass>
 
@@ -3404,7 +3410,7 @@ describe("ECSqlStatement", () => {
       ecdb.closeDb();
     });
 
-    function testECSqlWithoutBinders(testCaseNumber: number, sqlStmt: string, shouldSucceed: boolean, expectedError: string, isInsert: boolean = true) {
+    function testECSqlWithoutBinders(testCaseNumber: number, sqlStmt: string, shouldSucceed: boolean, expectedError: string, isInsert: boolean = true, expectedResult: DbResult = DbResult.BE_SQLITE_DONE) {
       let id: Id64String | undefined;
       let stmt: ECSqlWriteStatement | undefined;
       try {
@@ -3412,10 +3418,10 @@ describe("ECSqlStatement", () => {
         assert.isDefined(stmt);
         if (isInsert) {
           const res: ECSqlInsertResult = stmt.stepForInsert();
-          assert.equal(res.status, DbResult.BE_SQLITE_DONE);
+          assert.equal(res.status, expectedResult);
           assert.isDefined(res.id);
         } else {
-          assert.equal(stmt.step(), DbResult.BE_SQLITE_DONE);
+          assert.equal(stmt.step(), expectedResult);
         }
       } catch (err: any) {
         if (shouldSucceed)
@@ -3428,7 +3434,7 @@ describe("ECSqlStatement", () => {
       return id;
     };
 
-    function testECSqlWithBinders(testCaseNumber: number, sqlStmt: string, firstBinderValue: string, secondBinderValue: string, shouldSucceed: boolean, expectedError: string, isInsert: boolean = true) {
+    function testECSqlWithBinders(testCaseNumber: number, sqlStmt: string, firstBinderValue: string, secondBinderValue: string, shouldSucceed: boolean, expectedError: string, isInsert: boolean = true, expectedResult: DbResult = DbResult.BE_SQLITE_DONE) {
       let stmt: ECSqlWriteStatement | undefined;
       try {
         stmt = ecdb.prepareWriteStatement(sqlStmt);
@@ -3439,10 +3445,10 @@ describe("ECSqlStatement", () => {
 
         if (isInsert) {
           const res: ECSqlInsertResult = stmt.stepForInsert();
-          assert.equal(res.status, DbResult.BE_SQLITE_DONE);
+          assert.equal(res.status, expectedResult);
           assert.isDefined(res.id);
         } else {
-          assert.equal(stmt.step(), DbResult.BE_SQLITE_DONE);
+          assert.equal(stmt.step(), expectedResult);
         }
       } catch (err: any) {
         if (shouldSucceed)
@@ -3458,9 +3464,9 @@ describe("ECSqlStatement", () => {
 
     it("insert statement with invalid relClassId in navigation properties", async () => {
       // Invalid RelECClassId values
-      testECSqlWithoutBinders(1, `INSERT INTO test.Child(Parent.Id, Parent.RelECClassId) VALUES(1, 9999)`, false, `The ECSql statement contains a relationship class id '9999' that is not a valid relationship class.`);
+      testECSqlWithoutBinders(1, `INSERT INTO test.Child(Parent.Id, Parent.RelECClassId) VALUES(1, 9999)`, false, `The ECSql statement contains a class with id '9999' which is not a valid relationship class.`);
       testECSqlWithoutBinders(2, `INSERT INTO test.Child(Parent.Id, Parent.RelECClassId) VALUES(1, NULL)`, false, `The ECSql statement contains an invalid relationship class id.`);
-      testECSqlWithoutBinders(3, `INSERT INTO test.Child(Parent.Id, Parent.RelECClassId) VALUES(1, ${parentHasChildrenClassId})`, false, `The ECSql statement contains a relationship class id '${parentHasChildrenClassId}' that is not a valid relationship class.`);
+      testECSqlWithoutBinders(3, `INSERT INTO test.Child(Parent.Id, Parent.RelECClassId) VALUES(1, ${parentHasChildrenClassId})`, false, `The ECSql statement contains a class with id '${parentHasChildrenClassId}' which is not a valid relationship class.`);
       testECSqlWithoutBinders(4, `INSERT INTO test.Child(Parent.Id, Parent.RelECClassId) VALUES(1, ${validRelClassId})`, true, "");
 
       // Invalid RelClassName values with binders
@@ -3493,9 +3499,9 @@ describe("ECSqlStatement", () => {
       });
 
       // Invalid RelECClassId values
-      testECSqlWithoutBinders(1, `UPDATE test.Child SET Parent.RelECClassId = 9999`, false, `The ECSql statement contains a relationship class id '9999' that is not a valid relationship class.`, false);
+      testECSqlWithoutBinders(1, `UPDATE test.Child SET Parent.RelECClassId = 9999`, false, `The ECSql statement contains a class with id '9999' which is not a valid relationship class.`, false);
       testECSqlWithoutBinders(2, `UPDATE test.Child SET Parent.RelECClassId = NULL`, false, `The ECSql statement contains an invalid relationship class id.`, false);
-      testECSqlWithoutBinders(3, `UPDATE test.Child SET Parent.RelECClassId = ${parentHasChildrenClassId}`, false, `The ECSql statement contains a relationship class id '${parentHasChildrenClassId}' that is not a valid relationship class.`, false);
+      testECSqlWithoutBinders(3, `UPDATE test.Child SET Parent.RelECClassId = ${parentHasChildrenClassId}`, false, `The ECSql statement contains a class with id '${parentHasChildrenClassId}' which is not a valid relationship class.`, false);
       testECSqlWithoutBinders(4, `UPDATE test.Child SET Parent.RelECClassId = ${validRelClassId}`, true, "", false);
 
       // Invalid RelClassName values with binders
@@ -3512,6 +3518,41 @@ describe("ECSqlStatement", () => {
       // Valid multiple RelClassName values with binders
       testECSqlWithBinders(10, "UPDATE test.Child SET Parent = ?, Friends = ?", "Test.ParentHasChildren", "Test.ChildHasFriends", true, "", false);
       testECSqlWithBinders(11, "UPDATE test.Child SET Friends = ?, Parent = ?", "Test.ParentHasChildren", "Test.ChildHasFriends", false, "The ECSql statement contains a relationship class 'Test.ParentHasChildren' which does not match the relationship class in the navigation property.", false);
+    });
+
+    it("select statement with invalid relClassId in navigation properties", async () => {
+      // insert a value that can be updated in the test suite
+      ecdb.withWriteStatement("INSERT INTO test.Child(Name, Parent, Friends) VALUES('Test123', ?, ?)", (stmt: ECSqlWriteStatement) => {
+        stmt.bindNavigation(1, { id: "1", relClassName: "Test.ParentHasChildren" });
+        stmt.bindNavigation(2, { id: "2", relClassName: "Test.ChildHasFriends" });
+        const res: ECSqlInsertResult = stmt.stepForInsert();
+        assert.equal(res.status, DbResult.BE_SQLITE_DONE);
+        assert.isDefined(res.id);
+        stmt.clearBindings();
+        stmt[Symbol.dispose]();
+        ecdb.saveChanges();
+      });
+
+      // Invalid RelECClassId values
+      testECSqlWithoutBinders(1, `SELECT * from test.Child where Parent.RelECClassId = 9999`, true, "", false);
+      testECSqlWithoutBinders(2, `SELECT * from test.Child where Parent.RelECClassId = NULL`, true, "", false);
+      testECSqlWithoutBinders(3, `SELECT * from test.Child where Parent.RelECClassId = ${parentHasChildrenClassId}`, true, "", false);
+      testECSqlWithoutBinders(4, `SELECT * from test.Child where Parent.RelECClassId = ${validRelClassId}`, true, "", false, DbResult.BE_SQLITE_ROW);
+
+      // Invalid RelClassName values with binders
+      testECSqlWithBinders(5, "SELECT * from test.Child where Parent = ?", "Test.InvalidClass", "", true, "", false);
+
+      // Valid RelClassName values with binders
+      testECSqlWithBinders(6, "SELECT * from test.Child where Parent = ?", "Test.ParentHasChildren", "", true, "", false, DbResult.BE_SQLITE_ROW);
+      testECSqlWithBinders(7, "SELECT * from test.Child where Friends = ?", "Test.ChildHasFriends", "", true, "", false);
+
+      // Valid RelClassName values with binders but invalid relClassId
+      testECSqlWithBinders(8, "SELECT * from test.Child where Parent = ?", "Test.ChildHasFriends", "", true, "", false);
+      testECSqlWithBinders(9, "SELECT * from test.Child where Friends = ?", "Test.ParentHasChildren", "", true, "", false);
+
+      // Valid multiple RelClassName values with binders
+      testECSqlWithBinders(10, "SELECT * from test.Child where Parent = ? and Friends = ?", "Test.ParentHasChildren", "Test.ChildHasFriends", true, "", false, DbResult.BE_SQLITE_ROW);
+      testECSqlWithBinders(11, "SELECT * from test.Child where Friends = ? and Parent = ?", "Test.ParentHasChildren", "Test.ChildHasFriends", true, "", false);
     });
   });
 });
