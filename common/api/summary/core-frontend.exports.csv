@@ -503,9 +503,6 @@ public;interface;ReadImageToCanvasOptions
 public;interface;ReadMeshArgs
 public;interface;ReadPixelsArgs
 alpha;class;RealityDataError
-alpha;class;RealityDataFormatRegistry
-alpha;interface;RealityDataKey
-alpha;interface;RealityDataOptions
 beta;interface;RealityDataSource
 beta;namespace;RealityDataSource
 internal;function;createCesiumIonAssetKey
@@ -514,6 +511,7 @@ alpha;function;createKeyFromOrbitGtBlobProps
 alpha;function;createOrbitGtBlobPropsFromKey
 alpha;function;fromKey
 alpha;function;setBaseUrl
+alpha;class;RealityDataSourceGP3DTProvider
 alpha;interface;RealityDataSourceProvider
 alpha;class;RealityDataSourceProviderRegistry
 public;interface;RealityMeshParams

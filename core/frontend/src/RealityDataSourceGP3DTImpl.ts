@@ -6,7 +6,7 @@
  * @module Tiles
  */
 import { assert, BentleyStatus, GuidString } from "@itwin/core-bentley";
-import { IModelError, RealityData, RealityDataFormat, RealityDataProvider, RealityDataSourceKey, RealityDataSourceProps } from "@itwin/core-common";
+import { IModelError, RealityData, RealityDataFormat, RealityDataSourceKey, RealityDataSourceProps } from "@itwin/core-common";
 
 import { request } from "./request/Request";
 import { PublisherProductInfo, RealityDataSource, SpatialLocationAndExtents } from "./RealityDataSource";

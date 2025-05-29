@@ -4890,8 +4890,6 @@ export class IModelApp {
     // @beta
     static get realityDataAccess(): RealityDataAccess | undefined;
     // @alpha
-    static get realityDataFormatRegistry(): RealityDataFormatRegistry;
-    // @alpha
     static get realityDataSourceProviders(): RealityDataSourceProviderRegistry;
     // @internal
     static registerEntityState(classFullName: string, classType: typeof EntityState): void;
@@ -4944,8 +4942,6 @@ export interface IModelAppOptions {
     quantityFormatter?: QuantityFormatter;
     // @beta (undocumented)
     realityDataAccess?: RealityDataAccess;
-    // @alpha
-    realityDataOptions?: RealityDataOptions;
     renderSys?: RenderSystem | RenderSystem.Options;
     // @deprecated (undocumented)
     rpcInterfaces?: RpcInterfaceDefinition[];
@@ -8102,26 +8098,6 @@ export class RealityDataError extends BentleyError {
     constructor(errorNumber: RealityDataStatus, message: string, getMetaData?: LoggingMetaData);
 }
 
-// @alpha
-export class RealityDataFormatRegistry {
-    constructor(opts?: RealityDataOptions);
-    // (undocumented)
-    get configOptions(): RealityDataOptions;
-}
-
-// @alpha
-export interface RealityDataKey {
-    // (undocumented)
-    key: string;
-    // (undocumented)
-    value: string;
-}
-
-// @alpha
-export interface RealityDataOptions {
-    gp3dt?: RealityDataKey;
-}
-
 // @beta
 export interface RealityDataSource {
     // @alpha
@@ -8168,6 +8144,13 @@ export namespace RealityDataSource {
     export function fromKey(key: RealityDataSourceKey, iTwinId: GuidString | undefined): Promise<RealityDataSource | undefined>;
     // @alpha
     export function setBaseUrl(id: string): void;
+}
+
+// @alpha
+export class RealityDataSourceGP3DTProvider implements RealityDataSourceProvider {
+    constructor(apiKey: string);
+    // (undocumented)
+    createRealityDataSource(key: RealityDataSourceKey, iTwinId: GuidString | undefined): Promise<RealityDataSource | undefined>;
 }
 
 // @alpha

@@ -50,7 +50,9 @@ export * from "./NoRenderApp";
 export * from "./NotificationManager";
 export * from "./PerModelCategoryVisibility";
 export * from "./PlanarClipMaskState";
-export * from "./RealityDataSourceGP3DTImpl";
+export {
+  getGooglePhotorealistic3DTilesURL,
+} from "./RealityDataSourceGP3DTImpl";
 export * from "./SelectionSet";
 export * from "./SheetViewState";
 export * from "./SpatialClassifiersState";
