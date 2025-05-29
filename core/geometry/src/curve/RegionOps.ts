@@ -292,6 +292,8 @@ export class RegionOps {
     operation: RegionBinaryOpType,
     mergeTolerance: number = Geometry.smallMetricDistance,
   ): AnyRegion | undefined {
+    // Always return UnionRegion for now. But keep return type as AnyRegion:
+    // in the future, we might return the *simplest* region type.
     const result = UnionRegion.create();
     const context = RegionBooleanContext.create(RegionGroupOpType.Union, RegionGroupOpType.Union);
     context.addMembers(loopsA, loopsB);
@@ -324,8 +326,7 @@ export class RegionOps {
     //        i. Follow the bridge fSucc chain (vPreding around regularized masked edges) until reach an unvisited unmasked edge to start a new superface search
     //    c. when stack empty, create parity region from loop array
 
-    // return an only child for wider compatibility (e.g., conversion to DGN)
-    return (1 === result.children.length) ? result.children[0] : result;
+    return result;
   }
   /**
    * Return a polyface whose facets are a boolean operation between the input regions.

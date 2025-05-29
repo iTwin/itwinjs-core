@@ -161,6 +161,7 @@ export class StrokeCountMapVisitorApplyMaxCurveLength extends StrokeCountMapMult
  * * `parent` = parent CurveCollection.
  *
  * An instance is normally created with either a `Path` or `Loop` as the parent.
+ * @internal
  */
 export class StrokeCountChain {
   public maps: StrokeCountMap[];
@@ -177,7 +178,7 @@ export class StrokeCountChain {
     this.maps = [];
     this.options = options;
   }
-  public static createForCurveChain(chain: CurveChain, options?: StrokeOptions): StrokeCountChain {
+  public static create(chain: CurveChain, options?: StrokeOptions): StrokeCountChain {
     const result = new StrokeCountChain(chain, options);
     result.parent = chain;
     // A chain can only contain primitives !!!!
@@ -251,14 +252,8 @@ export class StrokeCountSection {
    */
   public static create(parent: CurveCollection, options?: StrokeOptions): StrokeCountSection {
     const result = new StrokeCountSection(parent);
-    const appendCurveChain = (chain: CurveChain) => {
-      result.chains.push(StrokeCountChain.createForCurveChain(chain, options));
-    };
-    const appendParityRegion = (region: ParityRegion) => {
-      for (const child of region.children) {
-        appendCurveChain(child);
-      }
-    };
+    const appendCurveChain = (chain: CurveChain) => result.chains.push(StrokeCountChain.create(chain, options));
+    const appendParityRegion = (region: ParityRegion) => { for (const child of region.children) appendCurveChain(child); }
     if (parent instanceof UnionRegion) {
       for (const child of parent.children) {
         if (child instanceof ParityRegion)
@@ -351,12 +346,12 @@ export class StrokeCountSection {
     for (let chainIndex = 0; chainIndex < numChainPerSection; chainIndex++) {
       const numPrimitive = sections[0].chains[chainIndex].maps.length;
       for (let primitiveIndex = 0; primitiveIndex < numPrimitive; primitiveIndex++) {
-        if (sections[0].chains[chainIndex].maps[primitiveIndex].componentData) {
-          const numComponent = sections[0].chains[chainIndex].maps[primitiveIndex]!.componentData!.length;
-          for (let i = 0; i < numComponent; i++)
+        const numComponent = sections[0].chains[chainIndex].maps[primitiveIndex].componentData?.length ?? 0;
+        if (numComponent > 0) {
+          for (let i = 0; i < numComponent; i++) {
             if (!this.applyMultipassVisitorCallbackNoComponents(sections, chainIndex, primitiveIndex, i, callback))
               return false;
-
+          }
         } else {
           if (!this.applyMultipassVisitorCallbackNoComponents(sections, chainIndex, primitiveIndex, undefined, callback))
             return false;
