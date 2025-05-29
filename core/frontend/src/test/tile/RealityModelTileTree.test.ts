@@ -12,7 +12,7 @@ import { LogoDecoration } from "../../GoogleMapsDecorator";
 import { IconSprites, Sprite } from "../../Sprites";
 import { createRealityTileTreeReference, RealityTile, RealityTileTree, TileAdmin } from "../../tile/internal";
 import { RealityDataSource } from "../../RealityDataSource";
-import { getGooglePhotorealistic3DTilesURL } from "../../RealityDataProviderRegistry";
+import { getGooglePhotorealistic3DTilesURL } from "../../RealityDataSourceGP3DTImpl";
 import { createBlankConnection } from "../createBlankConnection";
 import { DisplayStyle3dState } from "../../DisplayStyleState";
 import { ScreenViewport } from "../../Viewport";

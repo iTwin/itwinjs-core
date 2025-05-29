@@ -13,9 +13,16 @@ import { PublisherProductInfo, RealityDataSource, SpatialLocationAndExtents } fr
 import { ThreeDTileFormatInterpreter } from "./tile/internal";
 // import { IModelApp } from "./IModelApp";
 
+/** Returns the URL used for retrieving Google Photorealistic 3D Tiles.
+ * @alpha
+ */
+export function getGooglePhotorealistic3DTilesURL() {
+  return "https://tile.googleapis.com/v1/3dtiles/root.json";
+}
+
 /** This class provides access to the reality data provider services.
  * It encapsulates access to a reality data from the Google Photorealistic 3D Tiles service.
- * A valid GP3DT authentication key in [[IModelApp.realityDataFormatRegistry]] must be configured for this provider to work.
+ * A valid GP3DT authentication key must be configured for this provider to work (provide the key in the [[RealityDataSourceGP3DTImpl.createFromKey]] method).
 * @internal
 */
 export class RealityDataSourceGP3DTImpl implements RealityDataSource {
@@ -78,9 +85,6 @@ export class RealityDataSourceGP3DTImpl implements RealityDataSource {
 
   /** Return the URL of the GP3DT tileset with the GP3DT key from the reality data format registry included. */
   private getTilesetUrlWithKey() {
-    // let gp3dtKey = "";
-    // if (IModelApp.realityDataFormatRegistry.configOptions.gp3dt)
-    //   gp3dtKey = IModelApp.realityDataFormatRegistry.configOptions.gp3dt.value;
     const gp3dtKey = this._apiKey;
     return `${this._tilesetUrl}?key=${gp3dtKey}`;
   }

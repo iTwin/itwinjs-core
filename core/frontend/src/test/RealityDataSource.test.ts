@@ -7,7 +7,7 @@ import { OrbitGtBlobProps, RealityDataFormat, RealityDataProvider, RealityDataSo
 import { describe, expect, it } from "vitest";
 import { CesiumIonAssetProvider, getCesiumAssetUrl } from "../tile/internal";
 import { RealityDataSource } from "../RealityDataSource";
-import { getGooglePhotorealistic3DTilesURL } from "../RealityDataProviderRegistry";
+import { getGooglePhotorealistic3DTilesURL } from "../RealityDataSourceGP3DTImpl";
 
 describe("RealityDataSource", () => {
   it("should handle creation from empty url", () => {

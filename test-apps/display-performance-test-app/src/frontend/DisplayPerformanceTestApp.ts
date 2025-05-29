@@ -74,10 +74,6 @@ export class DisplayPerfTestApp {
     };
     /* eslint-enable @typescript-eslint/naming-convention */
 
-    iModelApp.realityDataOptions = {
-        gp3dt: process.env.IMJS_GP3DT_KEY ? { key: "key", value: process.env.IMJS_GP3DT_KEY } : undefined,
-    };
-
     iModelApp.hubAccess = process.env.IMJS_URL_PREFIX
       ? new FrontendIModelsAccess(new IModelsClient({ api: { baseUrl: `https://${process.env.IMJS_URL_PREFIX}api.bentley.com/imodels` } }))
       : new FrontendIModelsAccess();
