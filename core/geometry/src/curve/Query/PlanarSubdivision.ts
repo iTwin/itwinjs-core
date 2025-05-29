@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { Geometry } from "../../Geometry";
 import { Point3d } from "../../geometry3d/Point3dVector3d";
-import { HalfEdge, HalfEdgeGraph } from "../../topology/Graph";
+import { HalfEdge, HalfEdgeGraph, HalfEdgeMask } from "../../topology/Graph";
 import { HalfEdgeGraphSearch } from "../../topology/HalfEdgeGraphSearch";
 import { HalfEdgeGraphMerge } from "../../topology/Merging";
 import { Arc3d } from "../Arc3d";
@@ -14,6 +14,7 @@ import { LineSegment3d } from "../LineSegment3d";
 import { LineString3d } from "../LineString3d";
 import { Loop, LoopCurveLoopCurve, SignedLoops } from "../Loop";
 import { RegionOps } from "../RegionOps";
+import { RegionGroupMember, RegionGroupOpType } from "../RegionOpsClassificationSweeps";
 
 /** @packageDocumentation
  * @module Curve
@@ -126,6 +127,8 @@ export class PlanarSubdivision {
     if (point0.isAlmostEqualXY(point1, mergeTolerance))
       return {point: point0, fraction: fraction0};
     const halfEdge = graph.createEdgeXYAndZ(point0, 0, point1, 0);
+    if (p.parent && p.parent instanceof RegionGroupMember && p.parent.parentGroup.groupOpType === RegionGroupOpType.NonBounding)
+      halfEdge.setMaskAroundEdge(HalfEdgeMask.BRIDGE_EDGE); // TODO: solve circular dependency by moving RegionOpsClassificationSweeps to RegionOps.
     const detail01 = CurveLocationDetail.createCurveEvaluatedFractionFraction(p, fraction0, fraction1);
     const mate = halfEdge.edgeMate;
     halfEdge.edgeTag = detail01;

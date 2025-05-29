@@ -319,7 +319,7 @@ export enum RegionGroupOpType {
  * * a reference to the parent group (which in turn leads back to the `RegionBooleanContext`)
  * @internal
  */
-class RegionGroupMember {
+export class RegionGroupMember {
   public region: Loop | ParityRegion | CurvePrimitive | MultiLineStringDataVariant;
   public sweepState: number;
   public parentGroup: RegionGroup;
