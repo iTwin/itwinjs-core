@@ -1025,7 +1025,10 @@ export class RealityTreeReference extends RealityModelTileTree.Reference {
       copyrightMsg += sortedCopyrights.map(([key]) => `<li>${key}</li>`).join("");
       copyrightMsg += "</ul>";
 
-      const isGP3DT = this._rdSourceKey.provider === RealityDataProvider.GP3DT;
+      // ###TODO this depends on the user setting the GP3DT string as the following.
+      // We need a better way to determine if this is a Google Photorealistic 3D Tiles tileset.
+      // doing some kind of instanceof check would work.  But do we have access to the actual provider?
+      const isGP3DT = this._rdSourceKey.provider === "GP3DT";
       // Only add Google header and icon if the tileset is GP3DT
       cards.appendChild(IModelApp.makeLogoCard({
         iconSrc: isGP3DT ? `${IModelApp.publicPath}images/google_on_white_hdpi.png` : undefined,

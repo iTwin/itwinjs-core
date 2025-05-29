@@ -282,7 +282,12 @@ export class RealityDataSourceProviderRegistry {
   }
 }
 
-/** @alpha */
+/**
+ * Will provide Google Photorealistic 3D Tiles (GP3DT) from Google (in 3dTile format).
+ * A valid GP3DT authentication key must be configured when creating and registering this provider.
+ * To use this provider, you must register it with [[IModelApp.realityDataSourceProviders]].
+ * @alpha
+ */
 export class RealityDataSourceGP3DTProvider implements RealityDataSourceProvider {
   private _apiKey: string;
 
@@ -294,5 +299,3 @@ export class RealityDataSourceGP3DTProvider implements RealityDataSourceProvider
     this._apiKey = apiKey;
   }
 }
-
-// IModelApp.realityDataSourceProviders.register("GP3DT", new RealityDataSourceGP3DTProvider("my api key"));

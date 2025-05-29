@@ -45,7 +45,8 @@ export class RealityDataSourceGP3DTImpl implements RealityDataSource {
   protected constructor(props: RealityDataSourceProps, apiKey: string | undefined) {
     this._apiKey = apiKey;
 
-    assert(props.sourceKey.provider === RealityDataProvider.GP3DT);
+    // ###TODO need to figure out a better way to handle this
+    assert(props.sourceKey.provider === "GP3DT");
     this.key = props.sourceKey;
     this._tilesetUrl = this.key.id;
   }
@@ -54,7 +55,8 @@ export class RealityDataSourceGP3DTImpl implements RealityDataSource {
    * Create an instance of this class from a source key and iTwin context.
    */
   public static async createFromKey(sourceKey: RealityDataSourceKey, _iTwinId: GuidString | undefined, apiKey: string | undefined): Promise<RealityDataSource | undefined> {
-    if (sourceKey.provider !== RealityDataProvider.GP3DT)
+    // ###TODO need to figure out a better way to handle this
+    if (sourceKey.provider !== "GP3DT")
       return undefined;
     const rdSource = new RealityDataSourceGP3DTImpl({ sourceKey }, apiKey);
     return rdSource;
