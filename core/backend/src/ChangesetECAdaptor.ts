@@ -461,8 +461,9 @@ export class InMemoryInstanceCache implements ECChangeUnifierCache {
    */
   public set(key: string, value: ChangedECInstance): void {
     const meta = value.$meta as any;
+    // Remove undefined keys
     if (meta) {
-      Object.keys(meta).forEach(key => meta[key] === undefined && delete meta[key]);
+      Object.keys(meta).forEach((k) => meta[k] === undefined && delete meta[k]);
     }
     this._cache.set(key, value);
   }
@@ -472,8 +473,12 @@ export class InMemoryInstanceCache implements ECChangeUnifierCache {
    * @returns An iterator over all the changed EC instances.
    */
   public *all(): IterableIterator<ChangedECInstance> {
-    for (const key of Array.from(this._cache.keys()).sort())
-      yield this._cache.get(key)!;
+    for (const key of Array.from(this._cache.keys()).sort()) {
+      const instance = this._cache.get(key);
+      if (instance) {
+        yield instance;
+      }
+    }
   }
 
   /**
@@ -498,14 +503,14 @@ export class InMemoryInstanceCache implements ECChangeUnifierCache {
  */
 export class SqliteBackedInstanceCache implements ECChangeUnifierCache {
   private readonly _cacheTable = `[temp].[${Guid.createValue()}]`;
-  public static readonly DefaultBufferSize = 1024 * 1024 * 10; // 10MB
+  public static readonly defaultBufferSize = 1024 * 1024 * 10; // 10MB
   /**
    * Creates an instance of SqliteBackedInstanceCache.
    * @param _db The underlying database connection.
    * @param bufferedReadInstanceSizeInBytes The size of read instance buffer defaults to 10Mb.
    * @throws Error if bufferedReadInstanceSizeInBytes is less than or equal to 0.
    */
-  public constructor(private readonly _db: AnyDb, public readonly bufferedReadInstanceSizeInBytes: number = SqliteBackedInstanceCache.DefaultBufferSize) {
+  public constructor(private readonly _db: AnyDb, public readonly bufferedReadInstanceSizeInBytes: number = SqliteBackedInstanceCache.defaultBufferSize) {
     if (bufferedReadInstanceSizeInBytes <= 0)
       throw new Error("bufferedReadInstanceCount must be greater than 0");
     this.createTempTable();
