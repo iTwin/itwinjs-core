@@ -41,8 +41,8 @@ export class WmtsMapLayerImageryProvider extends MapLayerImageryProvider {
       this._capabilities = await WmtsCapabilities.create(this._baseUrl);
       this.initPreferredTileMatrixSet();
       this.initPreferredStyle();
-      this.initCartoRange();
       this.initDisplayedLayer();
+      this.initCartoRange();
       this.initResourceUrl();
 
       if (this._preferredLayerTileMatrixSet.size === 0 || this._preferredLayerStyle.size === 0)
@@ -161,16 +161,17 @@ export class WmtsMapLayerImageryProvider extends MapLayerImageryProvider {
   }
 
   private initCartoRange() {
-    this._capabilities?.contents?.layers.forEach((layer) => {
+    const activeLayer = this._capabilities?.contents?.layers.find((layer)=>layer.identifier === this.displayedLayerName);
 
-      if (layer.wsg84BoundingBox) {
-        if (this.cartoRange)
-          this.cartoRange.extendRange(layer.wsg84BoundingBox);
-        else
-          this.cartoRange = layer.wsg84BoundingBox.clone();
-      }
-    });
+    if (activeLayer?.wsg84BoundingBox) {
+      if (this.cartoRange)
+        this.cartoRange.extendRange(activeLayer.wsg84BoundingBox);
+      else
+        this.cartoRange = activeLayer.wsg84BoundingBox.clone();
+    }
+
   }
+
   private getDisplayedTileMatrixSetAndLimits(): TileMatrixSetAndLimits | undefined {
     return  this._preferredLayerTileMatrixSet.get(this.displayedLayerName);
   }
