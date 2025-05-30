@@ -5,13 +5,13 @@
 
 import { describe, expect, it } from "vitest";
 import { BSplineCurve3d } from "../../bspline/BSplineCurve";
-import { ParityRegion } from "../../core-geometry";
 import { Arc3d } from "../../curve/Arc3d";
 import { ConstructCurveBetweenCurves } from "../../curve/ConstructCurveBetweenCurves";
 import { GeometryQuery } from "../../curve/GeometryQuery";
 import { LineSegment3d } from "../../curve/LineSegment3d";
 import { LineString3d } from "../../curve/LineString3d";
 import { Loop } from "../../curve/Loop";
+import { ParityRegion } from "../../curve/ParityRegion";
 import { Path } from "../../curve/Path";
 import { RegionBinaryOpType, RegionOps } from "../../curve/RegionOps";
 import { StrokeOptions } from "../../curve/StrokeOptions";
@@ -527,30 +527,40 @@ describe("Solids", () => {
   });
 
   it("LinearSweepWithHoles", () => {
-    const ck = new Checker();
+    const ck = new Checker(true, true);
     const allGeometry: GeometryQuery[] = [];
+    let x0 = 0;
     const outer = Loop.create(LineString3d.create(Sample.createRectangleXY(0, 0, 4, 3, 0)));
     const hole = Loop.create(LineString3d.create(Sample.createRectangleXY(1, 1, 1, 1, 0)));
-    const region = RegionOps.regionBooleanXY(outer, hole, RegionBinaryOpType.AMinusB);
-    if (ck.testDefined(region, "created contour with hole")) {
-      ck.testType(region, ParityRegion, "boolean subtract resulted in parity region");
-      const sweep = LinearSweep.create(region!, Vector3d.create(0, 0, 4), true);
+    const sweepVec = Vector3d.create(0, 0, 4);
+    const options = StrokeOptions.createForFacets();
+
+    const testSweepMesh = (sweep: LinearSweep | undefined, expectedNumVisibleEdges: number): void => {
       if (ck.testDefined(sweep, "created sweep")) {
-        GeometryCoreTestIO.captureGeometry(allGeometry, sweep);
-
-        const options = StrokeOptions.createForFacets();
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, sweep, x0 += 10);
         const builder = PolyfaceBuilder.create(options);
-        builder.addLinearSweep(sweep!);
-        const mesh = builder.claimPolyface(false);
-        GeometryCoreTestIO.captureGeometry(allGeometry, mesh, 10);
-
+        builder.addLinearSweep(sweep);
+        const mesh = builder.claimPolyface(true);
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, mesh, x0 += 10);
         ck.testTrue(PolyfaceQuery.isPolyfaceManifold(mesh), "faceted linear sweep has no boundary edges");
-
         let numVisibleEdges = 0;  // double-counted
         for (const visitor = mesh.createVisitor(); visitor.moveToNextFacet(); )
-          numVisibleEdges += visitor.edgeVisible.filter((edgeIsVisible: boolean) => { return edgeIsVisible; }).length;
-        ck.testExactNumber(24, numVisibleEdges / 2, "faceted linear sweep has no extraneous visible edges");
+          numVisibleEdges += visitor.edgeVisible.filter((edgeIsVisible: boolean) => edgeIsVisible).length;
+        ck.testExactNumber(expectedNumVisibleEdges, numVisibleEdges / 2, "faceted linear sweep has no extraneous visible edges");
       }
+    };
+
+    const splitWasherLoop = RegionOps.regionBooleanXY(outer, hole, RegionBinaryOpType.AMinusB);
+    if (ck.testDefined(splitWasherLoop, "created contour with hole")) {
+      ck.testType(splitWasherLoop, Loop, "boolean subtract resulted in a (split washer) Loop");
+      const sweep1 = LinearSweep.create(splitWasherLoop, sweepVec, true);
+      testSweepMesh(sweep1, 24);
+    }
+    const parityRegion = RegionOps.sortOuterAndHoleLoopsXY([outer, hole]);
+    if (ck.testDefined(parityRegion, "created contour with hole")) {
+      ck.testType(parityRegion, ParityRegion, "sortOuterAndHoleLoopsXY resulted in a ParityRegion");
+      const sweep2 = LinearSweep.create(parityRegion, sweepVec, true);
+      testSweepMesh(sweep2, 24);
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "Solids", "LinearSweepWithHoles");
     expect(ck.getNumErrors()).equals(0);
