@@ -24,7 +24,7 @@ import {
   OpenCheckpointArgs, OpenSqliteArgs, ProfileOptions, PropertyCallback, QueryBinder, QueryOptions, QueryRowFormat, SchemaState,
   SheetProps, SnapRequestProps, SnapResponseProps, SnapshotOpenOptions, SpatialViewDefinitionProps, SubCategoryResultRow, TextureData,
   TextureLoadProps, ThumbnailProps, UpgradeOptions, ViewDefinition2dProps, ViewDefinitionProps, ViewIdString, ViewQueryParams, ViewStateLoadProps,
-  ViewStateProps, ViewStoreRpc
+  ViewStateProps, ViewStoreError, ViewStoreRpc
 } from "@itwin/core-common";
 import { Range2d, Range3d } from "@itwin/core-geometry";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
@@ -1883,7 +1883,9 @@ export namespace IModelDb {
       try {
         return props.id = this._iModel[_nativeDb].insertModel(props);
       } catch (err: any) {
-        throw new IModelError(err.errorNumber, `Error inserting model [${err.message}], class=${props.classFullName}`);
+        const error = new IModelError(err.errorNumber, `Error inserting model [${err.message}], class=${props.classFullName}`);
+        error.cause = err;
+        throw error;
       }
     }
 
@@ -1898,7 +1900,9 @@ export namespace IModelDb {
 
         this._iModel[_nativeDb].updateModel(props);
       } catch (err: any) {
-        throw new IModelError(err.errorNumber, `error updating model [${err.message}] id=${props.id}`);
+        const error = new IModelError(err.errorNumber, `Error updating model [${err.message}], id: ${props.id}`);
+        error.cause = err;
+        throw error;
       }
     }
     /** Mark the geometry of [[GeometricModel]] as having changed, by recording an indirect change to its GeometryGuid property.
@@ -1914,7 +1918,7 @@ export namespace IModelDb {
       this._iModel.models[_cache].delete(modelId);
       const error = this._iModel[_nativeDb].updateModelGeometryGuid(modelId);
       if (error !== IModelStatus.Success)
-        throw new IModelError(error, `updating geometry guid for model ${modelId}`);
+        throw new IModelError(error, `Error updating geometry guid for model ${modelId}`);
     }
 
     /** Delete one or more existing models.
@@ -1927,7 +1931,9 @@ export namespace IModelDb {
           this[_cache].delete(id);
           this._iModel[_nativeDb].deleteModel(id);
         } catch (err: any) {
-          throw new IModelError(err.errorNumber, `error deleting model [${err.message}] id ${id}`);
+          const error = new IModelError(err.errorNumber, `Error deleting model [${err.message}], id: ${id}`);
+          error.cause = err;
+          throw error;
         }
       });
     }
@@ -2155,7 +2161,7 @@ export namespace IModelDb {
     /** Insert a new element into the iModel.
      * @param elProps The properties of the new element.
      * @returns The newly inserted element's Id.
-     * @throws [[IModelError]] if unable to insert the element.
+     * @throws [[ITwinError]] if unable to insert the element.
      * @note For convenience, the value of `elProps.id` is updated to reflect the resultant element's id.
      * However when `elProps.federationGuid` is not present or undefined, a new Guid will be generated and stored on the resultant element. But
      * the value of `elProps.federationGuid` is *not* updated. Generally, it is best to re-read the element after inserting (e.g. via [[getElementProps]])
@@ -2185,7 +2191,7 @@ export namespace IModelDb {
      * @param elProps the properties of the element to update.
      * @note The values of `classFullName` and `model` *may not be changed* by this method. Further, it will permute the `elProps` object by adding or
      * overwriting their values to the correct values.
-     * @throws [[IModelError]] if unable to update the element.
+     * @throws [[ITwinError]] if unable to update the element.
      */
     public updateElement<T extends ElementProps>(elProps: Partial<T>): void {
       try {
@@ -2204,7 +2210,7 @@ export namespace IModelDb {
 
     /** Delete one or more elements from this iModel.
      * @param ids The set of Ids of the element(s) to be deleted
-     * @throws [[IModelError]]
+     * @throws [[ITwinError]]
      * @see deleteDefinitionElements
      */
     public deleteElement(ids: Id64Arg): void {
@@ -2509,7 +2515,9 @@ export namespace IModelDb {
       try {
         return this._iModel[_nativeDb].insertElementAspect(aspectProps);
       } catch (err: any) {
-        throw new IModelError(err.errorNumber, `Error inserting ElementAspect [${err.message}], class: ${aspectProps.classFullName}`);
+        const error =  new IModelError(err.errorNumber, `Error inserting ElementAspect [${err.message}], class: ${aspectProps.classFullName}`, aspectProps);
+        error.cause = err;
+        throw error;
       }
     }
 
@@ -2521,7 +2529,9 @@ export namespace IModelDb {
       try {
         this._iModel[_nativeDb].updateElementAspect(aspectProps);
       } catch (err: any) {
-        throw new IModelError(err.errorNumber, `Error updating ElementAspect [${err.message}], id: ${aspectProps.id}`);
+        const error =  new IModelError(err.errorNumber, `Error updating ElementAspect [${err.message}], id: ${aspectProps.id}`, aspectProps);
+        error.cause = err;
+        throw error;
       }
     }
 
@@ -2535,7 +2545,9 @@ export namespace IModelDb {
         try {
           iModel[_nativeDb].deleteElementAspect(aspectInstanceId);
         } catch (err: any) {
-          throw new IModelError(err.errorNumber, `Error deleting ElementAspect [${err.message}], id: ${aspectInstanceId}`);
+          const error =  new IModelError(err.errorNumber, `Error deleting ElementAspect [${err.message}], id: ${aspectInstanceId}`);
+          error.cause = err;
+          throw error;
         }
       });
     }
@@ -2566,7 +2578,7 @@ export namespace IModelDb {
       if (undefined === props) {
         const propsString = this._iModel.queryFilePropertyString(Views.viewStoreProperty);
         if (!propsString)
-          throw new Error("iModel does not have a default ViewStore");
+          ViewStoreError.throwError("no-viewstore", { message: "iModel does not have a default ViewStore" });
 
         props = JSON.parse(propsString) as CloudSqlite.ContainerProps;
       }
@@ -2698,7 +2710,7 @@ export namespace IModelDb {
 
     private getViewThumbnailArg(viewDefinitionId: ViewIdString): FilePropertyProps {
       if (!Id64.isValid(viewDefinitionId))
-        throw new Error("illegal thumbnail id");
+        throw new IModelError(IModelStatus.BadArg, "illegal thumbnail id");
 
       return { namespace: "dgn_View", name: "Thumbnail", id: viewDefinitionId };
     }
