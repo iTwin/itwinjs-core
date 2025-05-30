@@ -556,6 +556,9 @@ public;class;TextAnnotation2d
 preview;class;TextAnnotation2d
 public;class;TextAnnotation3d
 preview;class;TextAnnotation3d
+beta;namespace;TextAnnotationGeometry
+beta;class;TextBlockLayout
+internal;interface;TextLayoutRanges
 public;class;Texture
 preview;class;Texture
 beta;interface;TextureCreateProps

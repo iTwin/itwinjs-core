@@ -4143,6 +4143,33 @@ export class LightLocation extends SpatialLocationElement {
     enabled?: boolean;
 }
 
+// @beta (undocumented)
+export class LineLayout {
+    constructor(source: Paragraph);
+    // (undocumented)
+    append(run: RunLayout): void;
+    // (undocumented)
+    get back(): RunLayout;
+    // (undocumented)
+    get isEmpty(): boolean;
+    // (undocumented)
+    justificationRange: Range2d;
+    // (undocumented)
+    offsetFromDocument: {
+        x: number;
+        y: number;
+    };
+    // (undocumented)
+    range: Range2d;
+    // (undocumented)
+    get runs(): ReadonlyArray<RunLayout>;
+    // (undocumented)
+    source: Paragraph;
+    stringify(): string;
+    // (undocumented)
+    toResult(textBlock: TextBlock): LineLayoutResult;
+}
+
 // @public @preview
 export class LineStyle extends DefinitionElement {
     protected constructor(props: LineStyleProps, iModel: IModelDb);
@@ -6253,6 +6280,39 @@ export class TextAnnotation3d extends GraphicalElement3d {
     setAnnotation(annotation: TextAnnotation): void;
     // (undocumented)
     toJSON(): TextAnnotation3dProps;
+}
+
+// @beta
+export namespace TextAnnotationGeometry {
+    export function appendTextAnnotationGeometry(props: RequestProps): boolean;
+    export interface RequestProps {
+        annotationProps: TextAnnotationProps;
+        builder: ElementGeometry.Builder;
+        layout: TextBlockLayout;
+        wantDebugGeometry?: boolean;
+    }
+}
+
+// @beta
+export class TextBlockLayout {
+    constructor(source: TextBlock, context: LayoutContext);
+    // (undocumented)
+    lines: LineLayout[];
+    range: Range2d;
+    // (undocumented)
+    source: TextBlock;
+    stringify(): string;
+    textRange: Range2d;
+    // (undocumented)
+    toResult(): TextBlockLayoutResult;
+}
+
+// @internal (undocumented)
+export interface TextLayoutRanges {
+    // (undocumented)
+    justification: Range2d;
+    // (undocumented)
+    layout: Range2d;
 }
 
 // @public @preview
