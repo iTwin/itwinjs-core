@@ -5,7 +5,7 @@
 /** @packageDocumentation
  * @module Tiles
  */
-import { assert, BentleyStatus, GuidString } from "@itwin/core-bentley";
+import { BentleyStatus, GuidString } from "@itwin/core-bentley";
 import { IModelError, RealityData, RealityDataFormat, RealityDataSourceKey, RealityDataSourceProps } from "@itwin/core-common";
 
 import { request } from "./request/Request";
@@ -45,13 +45,10 @@ export class RealityDataSourceGP3DTImpl implements RealityDataSource {
    * @param props JSON representation of the reality data source
    */
   protected constructor(props: RealityDataSourceProps, apiKey: string | undefined, _getAuthToken?: () => Promise<string | undefined>) {
-    this._apiKey = apiKey;
-    this._getAuthToken = _getAuthToken;
-
-    // ###TODO need to figure out a better way to handle this
-    assert(props.sourceKey.provider === "GP3DT");
     this.key = props.sourceKey;
     this._tilesetUrl = this.key.id;
+    this._apiKey = apiKey;
+    this._getAuthToken = _getAuthToken;
   }
 
   /**

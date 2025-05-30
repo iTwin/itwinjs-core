@@ -614,16 +614,19 @@ export class ViewAttributes {
     backgroundSettingsDiv.appendChild(mapSettings);
     backgroundSettingsDiv.appendChild(terrainSettings);
 
-    this._updates.push((view) => {
+    this._updates.push(async (view) => {
       const visible = isMapSupported(view);
       div.style.display = visible ? "block" : "none";
       if (!visible)
         return;
 
       if (checkboxInterfaceGP3DT0.checkbox.checked) {
+        // Only create and initialize the provider once
+        const provider = new RealityDataSourceGP3DTProvider({ apiKey: process.env.IMJS_GP3DT_KEY! });
+        await provider.initialize();
+
         if (!this.getDisplayingGP3DT()) {
           const url = getGooglePhotorealistic3DTilesURL();
-          const provider = new RealityDataSourceGP3DTProvider({ apiKey: process.env.IMJS_GP3DT_KEY! });
           IModelApp.realityDataSourceProviders.register("GP3DT", provider);
           view.displayStyle.attachRealityModel({
             tilesetUrl: url,

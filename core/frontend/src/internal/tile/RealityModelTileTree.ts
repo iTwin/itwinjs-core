@@ -7,9 +7,8 @@
  */
 
 import {
-  assert, BentleyError, BentleyStatus, compareBooleans, compareBooleansOrUndefined, compareNumbers, comparePossiblyUndefined, compareStrings,
+  assert, compareBooleans, compareBooleansOrUndefined, compareNumbers, comparePossiblyUndefined, compareStrings,
   compareStringsOrUndefined, CompressedId64Set, Id64, Id64String,
-  Logger,
 } from "@itwin/core-bentley";
 import {
   BaseLayerSettings,
@@ -34,10 +33,8 @@ import {
 } from "../../tile/internal";
 import { SpatialClassifiersState } from "../../SpatialClassifiersState";
 import { RealityDataSourceTilesetUrlImpl } from "../../RealityDataSourceTilesetUrlImpl";
+import { RealityDataSourceGP3DTImpl } from "../../RealityDataSourceGP3DTImpl";
 import { ScreenViewport } from "../../Viewport";
-import { GoogleMapsDecorator } from "../../GoogleMapsDecorator";
-
-const loggerCategory = "RealityModelTileTree";
 
 function getUrl(content: any) {
   return content ? (content.url ? content.url : content.uri) : undefined;
@@ -133,12 +130,7 @@ class RealityTreeSupplier implements TileTreeSupplier {
 const realityTreeSupplier = new RealityTreeSupplier();
 
 export function createRealityTileTreeReference(props: RealityModelTileTree.ReferenceProps): RealityModelTileTree.Reference {
-  const treeRef = new RealityTreeReference(props);
-  // if (props.rdSourceKey.format === RealityDataProvider.GP3DT) {
-  //   await treeRef.initializeDecorator();
-  // }
-  return treeRef;
-  // return new RealityTreeReference(props);
+  return new RealityTreeReference(props);
 }
 
 const zeroPoint = Point3d.createZero();
@@ -726,8 +718,6 @@ export namespace RealityModelTileTree {
 
       return args;
     }
-
-    // public async initializeDecorator(): Promise<boolean | undefined> { return undefined; }
   }
 
   export async function createRealityModelTileTree(
@@ -814,7 +804,6 @@ export class RealityTreeReference extends RealityModelTileTree.Reference {
   protected _rdSourceKey: RealityDataSourceKey;
   private readonly _produceGeometry?: boolean;
   private readonly _modelId: Id64String;
-  private _decorator: GoogleMapsDecorator | undefined;
 
   public constructor(props: RealityModelTileTree.ReferenceProps) {
     super(props);
@@ -836,15 +825,6 @@ export class RealityTreeReference extends RealityModelTileTree.Reference {
     }
 
     this._modelId = modelId ?? props.iModel.transientIds.getNext();
-
-    if (this._rdSourceKey.provider === "GP3DT") {
-      this._decorator = new GoogleMapsDecorator();
-      this._decorator?.activate("satellite").catch(() => {
-        const msg ="Failed to activate decorator";
-        Logger.logError(loggerCategory, msg);
-        throw new BentleyError(BentleyStatus.ERROR, msg);
-      });
-    }
   }
 
   public override get modelId() { return this._modelId; }
@@ -1025,10 +1005,9 @@ export class RealityTreeReference extends RealityModelTileTree.Reference {
       copyrightMsg += sortedCopyrights.map(([key]) => `<li>${key}</li>`).join("");
       copyrightMsg += "</ul>";
 
-      // ###TODO this depends on the user setting the GP3DT string as the following.
-      // We need a better way to determine if this is a Google Photorealistic 3D Tiles tileset.
-      // doing some kind of instanceof check would work.  But do we have access to the actual provider?
-      const isGP3DT = this._rdSourceKey.provider === "GP3DT";
+      const rdSource = await RealityDataSource.fromKey(this._rdSourceKey, this.iModel.iTwinId);
+      const isGP3DT = rdSource instanceof RealityDataSourceGP3DTImpl;
+
       // Only add Google header and icon if the tileset is GP3DT
       cards.appendChild(IModelApp.makeLogoCard({
         iconSrc: isGP3DT ? `${IModelApp.publicPath}images/google_on_white_hdpi.png` : undefined,
@@ -1039,13 +1018,9 @@ export class RealityTreeReference extends RealityModelTileTree.Reference {
   }
 
   public override decorate(_context: DecorateContext): void {
-    if (this._decorator) {
-      this._decorator.decorate(_context);
+    const provider = IModelApp.realityDataSourceProviders.find(this._rdSourceKey.provider);
+    if (provider && provider.decorate) {
+      provider.decorate(_context);
     }
   }
-
-  // public override async initializeDecorator(): Promise<boolean | undefined> {
-  //   console.log("initializeDecorator called");
-  //   return this._decorator?.activate("satellite");
-  // }
 }

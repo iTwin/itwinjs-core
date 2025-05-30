@@ -5,7 +5,7 @@
 /** @packageDocumentation
  * @module Tiles
  */
-import { BentleyError, GuidString, Logger, LoggingMetaData, RealityDataStatus } from "@itwin/core-bentley";
+import { BentleyError, BentleyStatus, GuidString, Logger, LoggingMetaData, RealityDataStatus } from "@itwin/core-bentley";
 import { Cartographic, EcefLocation, OrbitGtBlobProps, RealityData, RealityDataFormat, RealityDataProvider, RealityDataSourceKey } from "@itwin/core-common";
 import { FrontendLoggerCategory } from "./common/FrontendLoggerCategory";
 import { CesiumIonAssetProvider, ContextShareProvider, getCesiumAssetUrl } from "./tile/internal";
@@ -15,6 +15,8 @@ import { RealityDataSourceCesiumIonAssetImpl } from "./RealityDataSourceCesiumIo
 import { RealityDataSourceGP3DTImpl } from "./RealityDataSourceGP3DTImpl";
 import { IModelApp } from "./IModelApp";
 import { Range3d } from "@itwin/core-geometry";
+import { GoogleMapsDecorator } from "./GoogleMapsDecorator";
+import { DecorateContext } from "./ViewContext";
 
 const loggerCategory: string = FrontendLoggerCategory.RealityData;
 
@@ -237,6 +239,10 @@ export interface RealityDataSourceProvider {
    * @returns the requested reality data source, or `undefined` if it could not be produced.
    */
   createRealityDataSource(key: RealityDataSourceKey, iTwinId: GuidString | undefined): Promise<RealityDataSource | undefined>;
+  /** Optionally add any decorations specific to this reality data source provider.
+   * For example, the Google Photorealistic 3D Tiles reality data source provider will add the Google logo.
+   */
+  decorate?(_context: DecorateContext): void;
 }
 
 /** A registry of [[RealityDataSourceProvider]]s identified by their unique names. The registry can be accessed via [[IModelApp.realityDataSourceProviders]].
@@ -297,6 +303,8 @@ export class RealityDataSourceGP3DTProvider implements RealityDataSourceProvider
   private _apiKey?: string;
   /** Function that returns an OAuth token for authenticating with GP3DT. This token is expected to not contain the "Bearer" prefix. */
   private _getAuthToken?: () => Promise<string | undefined>;
+  /** Decorator for Google Maps logos */
+  private _decorator: GoogleMapsDecorator;
 
   public async createRealityDataSource(key: RealityDataSourceKey, iTwinId: GuidString | undefined): Promise<RealityDataSource | undefined> {
     if (!this._apiKey && !this._getAuthToken) {
@@ -309,5 +317,21 @@ export class RealityDataSourceGP3DTProvider implements RealityDataSourceProvider
   public constructor(options: RealityDataSourceGP3DTProviderOptions) {
     this._apiKey = options.apiKey;
     this._getAuthToken = options.getAuthToken;
+    this._decorator = new GoogleMapsDecorator();
+  }
+
+  public async initialize(): Promise<boolean | undefined> {
+    const isActivated = await this._decorator.activate("satellite");
+    if (!isActivated) {
+      const msg = `Failed to activate decorator`;
+      Logger.logError(loggerCategory, msg);
+      throw new BentleyError(BentleyStatus.ERROR, msg);
+    }
+    return isActivated;
+  }
+
+  public decorate(_context: DecorateContext): void {
+    if (this._decorator)
+      this._decorator.decorate(_context);
   }
 }
