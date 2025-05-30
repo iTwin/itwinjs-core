@@ -81,7 +81,7 @@ export namespace FrameGeometry {
 
   /**
    * Computes the frame geometry based on the provided frame shape and range.
-   * @returns a [[Loop]] or [[Path]](if it's just a line) that represents the frame geometry
+   * @returns a [Loop]($geometry) or [Path]($geometry) (if it's just a line) that represents the frame geometry
    * @beta
    */
   export const computeFrame = ({ frame, range, transform }: ComputeFrameArgs): Loop | Path => {
@@ -102,7 +102,7 @@ export namespace FrameGeometry {
   }
 
   /**
-   * Arguments for the FrameGeometry.computeIntervalPoints]] method.
+   * Arguments for the [[FrameGeometry.computeIntervalPoints]] method.
    * @beta
    */
   export interface ComputeIntervalPointsArgs extends ComputeFrameArgs {
