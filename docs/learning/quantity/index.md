@@ -141,7 +141,7 @@ Each `Format` defined in a `FormatSet` need to be mapped to a valid [ECName](../
       "composite": {
         "includeZero": true,
         "spacer": "",
-        "units": [{ "label": "°", "name": "Units.ARC_DEG" }, { "label": "'", "name": "Units.ARC_MINUTE" }, { "label": "\"", "name": "Units.ARC_SECOND" }],
+        "units": [{ "label": "°", "name": "Units.ARC_DEG" }, { "label": "'", "name": "Units.ARC_MINUTE" }, { "label": "\"", "name": "Units.ARC_SECOND" }]
       },
       "formatTraits": ["keepSingleZero", "showUnitLabel"],
       "precision": 2,

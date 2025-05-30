@@ -948,6 +948,14 @@ describe("layoutTextBlock", () => {
       expect(computeDimensions({ height: 2 })).not.to.deep.equal(computeDimensions({ height: 3 }));
       expect(computeDimensions({ width: 2 })).to.deep.equal(computeDimensions({ width: 2 }));
       expect(computeDimensions({ width: 2 })).not.to.deep.equal(computeDimensions({ width: 3 }));
+
+      expect(computeDimensions({ height: 2 }).y).to.equal(2);
+      expect(computeDimensions({ height: 3 }).y).to.equal(3);
+
+      const dims = computeDimensions({ height: 2 });
+      expect(computeDimensions({ height: 2, width: 1 })).to.deep.equal(dims);
+      expect(computeDimensions({ height: 2, width: 0.5 })).to.deep.equal({ x: 0.5 * dims.x, y: dims.y });
+      expect(computeDimensions({ height: 2, width: 2 })).to.deep.equal({ x: 2 * dims.x, y: dims.y });
     });
 
     it("excludes trailing blank glyphs from justification ranges", () => {

@@ -812,11 +812,64 @@ export class DrawingViewDefinition extends ViewDefinition2d {
   }
 }
 
+/** Arguments to be passed in to [[SheetViewDefinition.create]]
+ * @public
+*/
+export interface CreateSheetViewDefinitionArgs {
+  /** The iModel in which the sheet view will be created. */
+  iModel: IModelDb;
+  /** The  Id of the [[DefinitionModel]] into which the sheet view will be inserted. */
+  definitionModelId: Id64String;
+  /** The name to use as the view's Code value. */
+  name: string;
+  /** The Id of the sheet model whose contents will be displayed by this view. */
+  baseModelId: Id64String;
+  /** The [[CategorySelector]] that this view should use. */
+  categorySelectorId: Id64String;
+  /** The [[DisplayStyle2d]] that this view should use. */
+  displayStyleId: Id64String;
+  /** Defines the view origin and extents. */
+  range: Range2d;
+}
+
 /** Defines a view of a [[SheetModel]].
  * @public @preview
  */
 export class SheetViewDefinition extends ViewDefinition2d {
   public static override get className(): string { return "SheetViewDefinition"; }
+
+  protected constructor(props: ViewDefinition2dProps, iModel: IModelDb) {
+    super(props, iModel);
+  }
+
+  /** Create a SheetViewDefinition */
+  public static create(args: CreateSheetViewDefinitionArgs): SheetViewDefinition {
+    const { baseModelId, categorySelectorId, displayStyleId, range } = args;
+    const props: ViewDefinition2dProps = {
+      classFullName: this.classFullName,
+      model: args.definitionModelId,
+      code: this.createCode(args.iModel, args.definitionModelId, args.name),
+      baseModelId,
+      categorySelectorId,
+      displayStyleId,
+      origin: { x: range.low.x, y: range.low.y },
+      delta: range.diagonal(),
+      angle: 0,
+    };
+
+    return new SheetViewDefinition(props, args.iModel);
+  }
+
+  /** Insert a SheetViewDefinition into an IModelDb */
+  public static insert(args: CreateSheetViewDefinitionArgs): Id64String {
+    const view = this.create(args);
+    return args.iModel.elements.insertElement(view.toJSON());
+  }
+
+  /** Create a SheetViewDefinition from JSON props */
+  public static fromJSON(props: Omit<ViewDefinition2dProps, "classFullName">, iModel: IModelDb): SheetViewDefinition {
+    return new SheetViewDefinition({ ...props, classFullName: this.classFullName }, iModel);
+  }
 }
 
 /** A ViewDefinition used to display a 2d template model.

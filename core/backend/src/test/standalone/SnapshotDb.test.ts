@@ -7,12 +7,16 @@ import { expect } from "chai";
 import * as sinon from "sinon";
 import { ChangesetIdWithIndex } from "@itwin/core-common";
 import { CheckpointManager, V2CheckpointManager } from "../../CheckpointManager";
-import { IModelDb, SnapshotDb } from "../../IModelDb";
+import { IModelDb, SnapshotDb, StandaloneDb } from "../../IModelDb";
 import { Logger } from "@itwin/core-bentley";
 import { IModelHost } from "../../IModelHost";
 import { HubMock } from "../../internal/HubMock";
-import { _hubAccess, _nativeDb } from "../../internal/Symbols";
+import { _hubAccess } from "../../internal/Symbols";
 import { IModelTestUtils } from "../IModelTestUtils";
+import { SpatialCategory } from "../../Category";
+import { KnownTestLocations } from "../KnownTestLocations";
+import * as path from "path";
+import { IModelJsFs } from "../../IModelJsFs";
 
 describe("SnapshotDb.refreshContainerForRpc", () => {
   afterEach(() => sinon.restore());
@@ -48,7 +52,29 @@ describe("SnapshotDb.refreshContainerForRpc", () => {
     getFilePath: () => "fakeFilePath",
     clearECDbCache: () => { },
   };
+  it("perform checkpoint", async () => {
+    const sourceFileName = path.join(KnownTestLocations.outputDir, "checkpoint1.bim");
+    if (IModelJsFs.existsSync(sourceFileName))
+      IModelJsFs.removeSync(sourceFileName);
 
+    const iModel = StandaloneDb.createEmpty(sourceFileName, {
+      rootSubject: { name: sourceFileName },
+    });
+
+    iModel.clearCaches();
+    iModel.performCheckpoint();
+
+    SpatialCategory.insert(
+      iModel,
+      IModelDb.dictionaryId,
+      "spatial category",
+      {}
+    );
+
+    // Use to throw error SQLITE_LOCKED
+    iModel.performCheckpoint();
+    iModel.close();
+  });
   it("should restart default txn after inactivity", async () => {
     const clock = sinon.useFakeTimers();
     clock.setSystemTime(Date.parse("2021-01-01T00:00:00Z"));

@@ -1,6 +1,18 @@
 # Change Log - @itwin/core-backend
 
-This log was last generated on Wed, 30 Apr 2025 13:16:15 GMT and should not be manually modified.
+This log was last generated on Wed, 28 May 2025 13:59:25 GMT and should not be manually modified.
+
+## 4.11.3
+Wed, 28 May 2025 13:56:22 GMT
+
+_Version update only_
+
+## 4.11.2
+Tue, 20 May 2025 20:14:45 GMT
+
+### Updates
+
+- Fix applychangeset issue
 
 ## 4.11.1
 Wed, 30 Apr 2025 13:13:21 GMT
