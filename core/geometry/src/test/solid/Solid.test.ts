@@ -530,18 +530,20 @@ describe("Solids", () => {
     const ck = new Checker(true, true);
     const allGeometry: GeometryQuery[] = [];
     let x0 = 0;
+    let y0 = 0;
     const outer = Loop.create(LineString3d.create(Sample.createRectangleXY(0, 0, 4, 3, 0)));
-    const hole = Loop.create(LineString3d.create(Sample.createRectangleXY(1, 1, 1, 1, 0)));
+    const hole0 = Loop.create(LineString3d.create(Sample.createRectangleXY(1, 1, 1, 1, 0)));
+    const hole1 = Loop.create(LineString3d.create(Sample.createRectangleXY(2.5, 0.5, 1, 1, 0)));
     const sweepVec = Vector3d.create(0, 0, 4);
     const options = StrokeOptions.createForFacets();
 
     const testSweepMesh = (sweep: LinearSweep | undefined, expectedNumVisibleEdges: number): void => {
       if (ck.testDefined(sweep, "created sweep")) {
-        GeometryCoreTestIO.captureCloneGeometry(allGeometry, sweep, x0 += 10);
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, sweep, x0 += 10, y0);
         const builder = PolyfaceBuilder.create(options);
         builder.addLinearSweep(sweep);
         const mesh = builder.claimPolyface(true);
-        GeometryCoreTestIO.captureCloneGeometry(allGeometry, mesh, x0 += 10);
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, mesh, x0 += 10, y0);
         ck.testTrue(PolyfaceQuery.isPolyfaceManifold(mesh), "faceted linear sweep has no boundary edges");
         let numVisibleEdges = 0;  // double-counted
         for (const visitor = mesh.createVisitor(); visitor.moveToNextFacet(); )
@@ -550,14 +552,20 @@ describe("Solids", () => {
       }
     };
 
-    const splitWasherLoop = RegionOps.regionBooleanXY(outer, hole, RegionBinaryOpType.AMinusB);
+    // this creates a mesh with extraneous visible edges and incorrect topology
+    const splitWasherLoop = RegionOps.regionBooleanXY(outer, [hole0, hole1], RegionBinaryOpType.AMinusB);
     if (ck.testDefined(splitWasherLoop, "created contour with hole")) {
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, splitWasherLoop, x0, y0);
       ck.testType(splitWasherLoop, Loop, "boolean subtract resulted in a (split washer) Loop");
       const sweep1 = LinearSweep.create(splitWasherLoop, sweepVec, true);
       testSweepMesh(sweep1, 24);
     }
-    const parityRegion = RegionOps.sortOuterAndHoleLoopsXY([outer, hole]);
+    x0 = 0;
+    y0 += 10;
+    // this mesh has no extraneous visible edges
+    const parityRegion = RegionOps.sortOuterAndHoleLoopsXY([outer, hole0, hole1]);
     if (ck.testDefined(parityRegion, "created contour with hole")) {
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, parityRegion, x0, y0);
       ck.testType(parityRegion, ParityRegion, "sortOuterAndHoleLoopsXY resulted in a ParityRegion");
       const sweep2 = LinearSweep.create(parityRegion, sweepVec, true);
       testSweepMesh(sweep2, 24);
