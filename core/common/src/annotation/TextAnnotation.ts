@@ -148,7 +148,7 @@ export class TextAnnotation {
       orientation: props?.orientation ? YawPitchRollAngles.fromJSON(props.orientation) : undefined,
       textBlock: props?.textBlock ? TextBlock.create(props.textBlock) : undefined,
       anchor: props?.anchor ? { ...props.anchor } : undefined,
-      frame: props?.frame,
+      frame: props?.frame ? { ...props.frame } : undefined,
     });
   }
 
@@ -174,7 +174,8 @@ export class TextAnnotation {
       props.anchor = { ...this.anchor };
     }
 
-    props.frame = this.frame;
+    // Default frame to "none"
+    props.frame = { shape: "none", ...this.frame };
 
     return props;
   }
