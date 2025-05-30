@@ -623,7 +623,8 @@ export class ViewAttributes {
       if (checkboxInterfaceGP3DT0.checkbox.checked) {
         if (!this.getDisplayingGP3DT()) {
           const url = getGooglePhotorealistic3DTilesURL();
-          IModelApp.realityDataSourceProviders.register("GP3DT", new RealityDataSourceGP3DTProvider(process.env.IMJS_GP3DT_KEY!));
+          const provider = new RealityDataSourceGP3DTProvider({ apiKey: process.env.IMJS_GP3DT_KEY! });
+          IModelApp.realityDataSourceProviders.register("GP3DT", provider);
           view.displayStyle.attachRealityModel({
             tilesetUrl: url,
             name: "googleMap3dTiles",

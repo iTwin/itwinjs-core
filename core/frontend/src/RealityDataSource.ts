@@ -230,10 +230,6 @@ export namespace RealityDataSource {
  * @alpha
  */
 
-// TODO extend this for GP3DT
-// Then when RealityDataSourceProviderRegistry.register("google 3d tiles", new Google3DTilesProvider()) is called, it'll be on the registry
-// BUT hasn't this already been done on L268?? - "this.register(RealityDataProvider.GP3DT..."
-// But this provider should handle auth key?
 export interface RealityDataSourceProvider {
   /** Produce a RealityDataSource for the specified `key`.
    * @param key Identifies the reality data source.
@@ -266,9 +262,6 @@ export class RealityDataSourceProviderRegistry {
       // ###TODO separate TilesetUrlImpl
       createRealityDataSource: async (key, iTwinId) => RealityDataSourceTilesetUrlImpl.createFromKey(key, iTwinId),
     });
-    // this.register(RealityDataProvider.GP3DT, {
-    //   createRealityDataSource: async (key, iTwinId) => RealityDataSourceGP3DTImpl.createFromKey(key, iTwinId),
-    // });
   }
 
   /** Register `provider` to produce [[RealityDataSource]]s for the specified provider `name`. */
@@ -283,21 +276,38 @@ export class RealityDataSourceProviderRegistry {
 }
 
 /**
+ * Options for creating a Google Photorealistic 3D Tiles (GP3DT) reality data source provider.
+ * @param apiKey Google Map Tiles API Key used to access GP3DT.
+ * @param getAuthToken Function that returns an OAuth token for authenticating with GP3DT. This token is expected to not contain the "Bearer" prefix.
+ * @alpha
+ */
+interface RealityDataSourceGP3DTProviderOptions {
+  apiKey?: string;
+  getAuthToken?: () => Promise<string | undefined>;
+}
+
+/**
  * Will provide Google Photorealistic 3D Tiles (GP3DT) from Google (in 3dTile format).
  * A valid GP3DT authentication key must be configured when creating and registering this provider.
  * To use this provider, you must register it with [[IModelApp.realityDataSourceProviders]].
  * @alpha
  */
 export class RealityDataSourceGP3DTProvider implements RealityDataSourceProvider {
-  private _apiKey: string;
+  /** Google Map Tiles API Key used to access GP3DT. */
+  private _apiKey?: string;
+  /** Function that returns an OAuth token for authenticating with GP3DT. This token is expected to not contain the "Bearer" prefix. */
   private _getAuthToken?: () => Promise<string | undefined>;
 
   public async createRealityDataSource(key: RealityDataSourceKey, iTwinId: GuidString | undefined): Promise<RealityDataSource | undefined> {
+    if (!this._apiKey && !this._getAuthToken) {
+      Logger.logError(loggerCategory, "Either an API key or getAuthToken function are required to create a GP3DT reality data source.");
+      return undefined;
+    }
     return RealityDataSourceGP3DTImpl.createFromKey(key, iTwinId, this._apiKey, this._getAuthToken);
   }
 
-  public constructor(apiKey: string, getAuthToken?: () => Promise<string | undefined>) {
-    this._apiKey = apiKey;
-    this._getAuthToken = getAuthToken;
+  public constructor(options: RealityDataSourceGP3DTProviderOptions) {
+    this._apiKey = options.apiKey;
+    this._getAuthToken = options.getAuthToken;
   }
 }

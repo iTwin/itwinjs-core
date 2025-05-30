@@ -31,10 +31,11 @@ export class RealityDataSourceGP3DTImpl implements RealityDataSource {
   private _tilesetUrl: string | undefined;
   /** Base URL of the GP3DT tileset. Does not include trailing subdirectories. */
   private _baseUrl: string = ""
-  /** Need to be passed down to child tile requests */
+  /** Search parameters that must be passed down to child tile requests. */
   private _searchParams?: URLSearchParams;
-
+  /** Google Map Tiles API Key used to access GP3DT. */
   private _apiKey?: string;
+  /** Function that returns an OAuth token for authenticating with GP3sDT. This token is expected to not contain the "Bearer" prefix. */
   private _getAuthToken?: () => Promise<string | undefined>;
 
   /** This is necessary for GP3DT tilesets! This tells the iTwin.js tiling system to use the geometric error specified in the GP3DT tileset rather than any of our own. */
