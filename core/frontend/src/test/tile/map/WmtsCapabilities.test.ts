@@ -244,6 +244,28 @@ describe("WmtsCapabilities", () => {
     expect(googleTms?.length).toEqual(2);
   });
 
+  it("should parse resource urls", async () => {
+    const response = await fetch(`/assets/wmts_capabilities/wmts_resource_url.xml`);
+    const text = await response.text();
+    fakeTextFetch(text);
+
+    const capabilities = await WmtsCapabilities.create("https://fake/url2");
+    // I check only things that are different from other datasets
+
+    //  Check the layer styles
+    expect(capabilities?.contents?.layers).toBeDefined();
+    expect(capabilities?.contents?.layers.length).toEqual(1); // this sample capabilities has 2 layers
+    const resourceUrls = capabilities?.contents?.layers[0].resourceUrls;
+    expect(resourceUrls).toBeDefined();
+    expect(resourceUrls).toEqual(3);
+    resourceUrls?.forEach((resourceUrl) => {
+      expect(resourceUrl.resourceType).toBeDefined();
+      expect(resourceUrl.resourceType).toEqual("tile");
+      expect(resourceUrl.template).toBeDefined();
+      expect(resourceUrl.template).to.contain("TileMatrix}/{TileRow}/{TileCol}");
+    });
+  });
+
   it("should request proper URL", async () => {
     const fetchStub = vi.spyOn(globalThis, "fetch").mockResolvedValue(new Response());
     const sampleUrl = "https://service.server.com/rest/WMTS";
