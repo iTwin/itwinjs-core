@@ -3,10 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import * as sinon from "sinon";
-import { NeptuneCoastlineDataset } from "./NeptuneCoastlineDataset";
-import * as chai from "chai";
-import { EsriUniqueValueRenderer } from "../../ArcGisFeature/EsriSymbology";
+import chai from "chai";
+import sinon from "sinon";
+import { EsriUniqueValueRenderer } from "../../ArcGisFeature/EsriSymbology.js";
+import { NeptuneCoastlineDataset } from "./NeptuneCoastlineDataset.js";
+
 const expect = chai.expect;
 
 describe("EsriSymbology", () => {

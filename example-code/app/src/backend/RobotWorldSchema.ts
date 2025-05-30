@@ -5,7 +5,8 @@
 
 import * as path from "path";
 import { ClassRegistry, IModelDb, IModelHost, Schema, Schemas, SpatialCategory } from "@itwin/core-backend";
-import { ColorByName, IModelError, IModelStatus, SubCategoryAppearance } from "@itwin/core-common";
+import { IModelStatus } from "@itwin/core-bentley";
+import { ColorByName, IModelError, SubCategoryAppearance } from "@itwin/core-common";
 import * as _schemaNames from "../common/RobotWorldSchema";
 import * as obstacles from "./BarrierElement";
 
@@ -79,7 +80,7 @@ export class RobotWorld extends Schema {
 }
 
 /** Export the schema names so that they appear to be enums nested in the RobotWorldSchema class/ns */
-export namespace RobotWorld { // eslint-disable-line no-redeclare
+export namespace RobotWorld {
   /** The full names of the classes in the RobotWorld schema */
   export const Class = _schemaNames.Class;
 

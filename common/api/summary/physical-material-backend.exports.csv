@@ -1,8 +1,8 @@
 sep=;
-Release Tag;API Item
-public;Aggregate 
-public;Aluminum 
-public;Asphalt 
-public;Concrete 
-public;PhysicalMaterialSchema 
-public;Steel 
+Release Tag;API Item Type;API Item Name
+public;class;Aggregate
+public;class;Aluminum
+public;class;Asphalt
+public;class;Concrete
+public;class;PhysicalMaterialSchema
+public;class;Steel

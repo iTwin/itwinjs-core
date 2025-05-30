@@ -19,13 +19,14 @@ import { CoordSystem } from "../CoordSystem";
 import { LocateResponse } from "../ElementLocateManager";
 import { HitDetail } from "../HitDetail";
 import { IModelApp } from "../IModelApp";
-import { GraphicBuilder, GraphicType } from "../render/GraphicBuilder";
+import { GraphicBuilder } from "../render/GraphicBuilder";
 import { DecorateContext } from "../ViewContext";
 import { ScreenViewport, Viewport } from "../Viewport";
 import { EditManipulator } from "./EditManipulator";
 import { PrimitiveTool } from "./PrimitiveTool";
 import { BeButtonEvent, CoordinateLockOverrides, CoreTools, EventHandled } from "./Tool";
 import { ToolAssistance, ToolAssistanceImage, ToolAssistanceInputMethod, ToolAssistanceInstruction, ToolAssistanceSection } from "./ToolAssistance";
+import { GraphicType } from "../common/render/GraphicType";
 
 // cSpell:ignore geti
 
@@ -1177,8 +1178,8 @@ export class ViewClipShapeModifyTool extends ViewClipModifyTool {
     for (let i = 0; i < shapePts.length; i++) {
       const prevFace = (0 === i ? shapePts.length - 2 : i - 1);
       const nextFace = (shapePts.length - 1 === i ? 0 : i);
-      const prevSelected = offsetAll || (prevFace === this._anchorIndex || this.manipulator.iModel.selectionSet.has(this._ids[prevFace]));
-      const nextSelected = offsetAll || (nextFace === this._anchorIndex || this.manipulator.iModel.selectionSet.has(this._ids[nextFace]));
+      const prevSelected = offsetAll || (prevFace === this._anchorIndex || this.manipulator.iModel.selectionSet.elements.has(this._ids[prevFace]));
+      const nextSelected = offsetAll || (nextFace === this._anchorIndex || this.manipulator.iModel.selectionSet.elements.has(this._ids[nextFace]));
       if (prevSelected && nextSelected) {
         const prevPt = shapePts[i].plusScaled(this._controls[prevFace].direction, localOffset);
         const nextPt = shapePts[i].plusScaled(this._controls[nextFace].direction, localOffset);
@@ -1200,8 +1201,8 @@ export class ViewClipShapeModifyTool extends ViewClipModifyTool {
     let zHigh = clipShape.zHigh;
     const zLowIndex = this._controls.length - 2;
     const zHighIndex = this._controls.length - 1;
-    const zLowSelected = offsetAll || (zLowIndex === this._anchorIndex || this.manipulator.iModel.selectionSet.has(this._ids[zLowIndex]));
-    const zHighSelected = offsetAll || (zHighIndex === this._anchorIndex || this.manipulator.iModel.selectionSet.has(this._ids[zHighIndex]));
+    const zLowSelected = offsetAll || (zLowIndex === this._anchorIndex || this.manipulator.iModel.selectionSet.elements.has(this._ids[zLowIndex]));
+    const zHighSelected = offsetAll || (zHighIndex === this._anchorIndex || this.manipulator.iModel.selectionSet.elements.has(this._ids[zHighIndex]));
 
     if (zLowSelected || zHighSelected) {
       const clipExtents = ViewClipTool.getClipShapeExtents(clipShape, this._viewRange);
@@ -1244,7 +1245,7 @@ export class ViewClipPlanesModifyTool extends ViewClipModifyTool {
     const offsetAll = ev.isShiftKey;
     const planeSet = ConvexClipPlaneSet.createEmpty();
     for (let i: number = 0; i < this._controls.length; i++) {
-      const selected = offsetAll || (i === this._anchorIndex || this.manipulator.iModel.selectionSet.has(this._ids[i]));
+      const selected = offsetAll || (i === this._anchorIndex || this.manipulator.iModel.selectionSet.elements.has(this._ids[i]));
       const origin = this._controls[i].origin.clone();
       const direction = this._controls[i].direction;
       if (selected)
@@ -1339,7 +1340,7 @@ export class ViewClipDecoration extends EditManipulator.HandleProvider {
   public getControlIndex(id: string): number { return this._controlIds.indexOf(id); }
 
   protected override stop(): void {
-    const selectedId = (undefined !== this._clipId && this.iModel.selectionSet.has(this._clipId)) ? this._clipId : undefined;
+    const selectedId = (undefined !== this._clipId && this.iModel.selectionSet.elements.has(this._clipId)) ? this._clipId : undefined;
     this._clipId = undefined; // Invalidate id so that decorator will be dropped...
     super.stop();
     if (undefined !== selectedId)
@@ -1527,7 +1528,7 @@ export class ViewClipDecoration extends EditManipulator.HandleProvider {
 
     // Show controls if only range box and it's controls are selected, selection set doesn't include any other elements...
     let showControls = false;
-    if (this.iModel.selectionSet.size <= this._controlIds.length + 1 && this.iModel.selectionSet.has(this._clipId)) {
+    if (this.iModel.selectionSet.size <= this._controlIds.length + 1 && this.iModel.selectionSet.elements.has(this._clipId)) {
       showControls = true;
       if (this.iModel.selectionSet.size > 1) {
         this.iModel.selectionSet.elements.forEach((val) => {
@@ -1914,7 +1915,7 @@ export class ViewClipDecoration extends EditManipulator.HandleProvider {
 
       const arrowVisBuilder = context.createGraphicBuilder(GraphicType.WorldOverlay, transform, this._controlIds[iFace]);
       const arrowHidBuilder = context.createGraphicBuilder(GraphicType.WorldDecoration, transform);
-      const isSelected = this.iModel.selectionSet.has(this._controlIds[iFace]);
+      const isSelected = this.iModel.selectionSet.elements.has(this._controlIds[iFace]);
 
       let outlineColorOvr = this._controls[iFace].outline;
       if (undefined !== outlineColorOvr) {

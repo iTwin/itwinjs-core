@@ -18,22 +18,22 @@ import {
   RuleTypes,
 } from "@itwin/presentation-common";
 import { Presentation } from "@itwin/presentation-frontend";
-import { collect, getFieldByLabel } from "../../Utils";
+import { collect, getFieldByLabel } from "../../Utils.js";
 import {
   buildTestIModelConnection,
   insertDocumentPartition,
   insertPhysicalElement,
   insertPhysicalModelWithPartition,
   insertSpatialCategory,
-} from "../../IModelSetupUtils";
-import { describeContentTestSuite } from "./Utils";
+} from "../../IModelSetupUtils.js";
+import { describeContentTestSuite } from "./Utils.js";
 
 describeContentTestSuite("Distinct Values", ({ getDefaultSuiteIModel }) => {
   async function validatePagedDistinctValuesResponse(
     db: IModelConnection,
     ruleset: Ruleset,
     keys: KeySet,
-    descriptor: Descriptor | {},
+    descriptor: Descriptor | object,
     fieldDescriptor: FieldDescriptor,
     expectedResult: DisplayValueGroup[],
   ) {

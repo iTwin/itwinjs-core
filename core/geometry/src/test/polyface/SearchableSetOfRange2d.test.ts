@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
+import { describe, expect, it } from "vitest";
 import { BagOfCurves } from "../../curve/CurveCollection";
 import { CurvePrimitive } from "../../curve/CurvePrimitive";
 import { GeometryQuery } from "../../curve/GeometryQuery";
@@ -142,7 +142,7 @@ describe("LinearSearchRange2dArray", () => {
       });
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "LinearSearchRange2dArray", "HelloWorld");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });
 
@@ -299,7 +299,7 @@ describe("GriddedRaggedRange2dSet", () => {
     }
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "GriddedRaggedRange2dSet", "HelloWorld");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("FacetGrid", () => {
     if (!GeometryCoreTestIO.enableLongTests)
@@ -412,7 +412,7 @@ describe("GriddedRaggedRange2dSet", () => {
     }
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "GriddedRaggedRange2dSet", "FacetGrid");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
 });

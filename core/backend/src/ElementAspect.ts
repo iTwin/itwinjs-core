@@ -11,6 +11,7 @@ import { Entity } from "./Entity";
 import { IModelDb } from "./IModelDb";
 import { ECSqlStatement } from "./ECSqlStatement";
 import { DbResult, Id64String } from "@itwin/core-bentley";
+import { _verifyChannel } from "./internal/Symbols";
 
 /** Argument for the `ElementAspect.onXxx` static methods
  * @beta
@@ -42,7 +43,6 @@ export interface OnAspectIdArg extends OnAspectArg {
  * @public
  */
 export class ElementAspect extends Entity {
-  /** @internal */
   public static override get className(): string { return "ElementAspect"; }
   public element: RelatedElement;
 
@@ -65,7 +65,7 @@ export class ElementAspect extends Entity {
    */
   protected static onInsert(arg: OnAspectPropsArg): void {
     const { props, iModel } = arg;
-    iModel.channels.verifyChannel(arg.model);
+    iModel.channels[_verifyChannel](arg.model);
     iModel.locks.checkExclusiveLock(props.element.id, "element", "insert aspect");
   }
 
@@ -82,7 +82,7 @@ export class ElementAspect extends Entity {
    */
   protected static onUpdate(arg: OnAspectPropsArg): void {
     const { props, iModel } = arg;
-    iModel.channels.verifyChannel(arg.model);
+    iModel.channels[_verifyChannel](arg.model);
     iModel.locks.checkExclusiveLock(props.element.id, "element", "update aspect");
   }
 
@@ -99,7 +99,7 @@ export class ElementAspect extends Entity {
    */
   protected static onDelete(arg: OnAspectIdArg): void {
     const { aspectId, iModel } = arg;
-    iModel.channels.verifyChannel(arg.model);
+    iModel.channels[_verifyChannel](arg.model);
     const { element } = iModel.elements.getAspect(aspectId);
     iModel.locks.checkExclusiveLock(element.id, "element", "delete aspect");
   }
@@ -114,7 +114,6 @@ export class ElementAspect extends Entity {
  * @public
  */
 export class ElementUniqueAspect extends ElementAspect {
-  /** @internal */
   public static override get className(): string { return "ElementUniqueAspect"; }
 }
 
@@ -122,7 +121,6 @@ export class ElementUniqueAspect extends ElementAspect {
  * @public
  */
 export class ElementMultiAspect extends ElementAspect {
-  /** @internal */
   public static override get className(): string { return "ElementMultiAspect"; }
 }
 
@@ -130,7 +128,6 @@ export class ElementMultiAspect extends ElementAspect {
  * @public
  */
 export class ChannelRootAspect extends ElementUniqueAspect {
-  /** @internal */
   public static override get className(): string { return "ChannelRootAspect"; }
   /** Insert a ChannelRootAspect on the specified element.
    * @deprecated in 4.0 use [[ChannelControl.makeChannelRoot]]. This method does not enforce the rule that channels may not nest and is therefore dangerous.
@@ -146,7 +143,6 @@ export class ChannelRootAspect extends ElementUniqueAspect {
  * @public
  */
 export class ExternalSourceAspect extends ElementMultiAspect {
-  /** @internal */
   public static override get className(): string { return "ExternalSourceAspect"; }
 
   /** An element that scopes the combination of `kind` and `identifier` to uniquely identify the object from the external source.
@@ -185,23 +181,6 @@ export class ExternalSourceAspect extends ElementMultiAspect {
     this.jsonProperties = props.jsonProperties;
   }
 
-  /** @deprecated in 3.x. findAllBySource */
-  public static findBySource(iModelDb: IModelDb, scope: Id64String, kind: string, identifier: string): { elementId?: Id64String, aspectId?: Id64String } {
-    const sql = `SELECT Element.Id, ECInstanceId FROM ${ExternalSourceAspect.classFullName} WHERE (Scope.Id=:scope AND Kind=:kind AND Identifier=:identifier)`;
-    let elementId: Id64String | undefined;
-    let aspectId: Id64String | undefined;
-    iModelDb.withPreparedStatement(sql, (statement: ECSqlStatement) => {
-      statement.bindId("scope", scope);
-      statement.bindString("kind", kind);
-      statement.bindString("identifier", identifier);
-      if (DbResult.BE_SQLITE_ROW === statement.step()) {
-        elementId = statement.getValue(0).getId();
-        aspectId = statement.getValue(1).getId();
-      }
-    });
-    return { elementId, aspectId };
-  }
-
   /** Look up the elements that contain one or more ExternalSourceAspect with the specified Scope, Kind, and Identifier.
    * The result of this function is an array of all of the ExternalSourceAspects that were found, each associated with the owning element.
    * A given element could have more than one ExternalSourceAspect with the given scope, kind, and identifier.
@@ -217,6 +196,7 @@ export class ExternalSourceAspect extends ElementMultiAspect {
   public static findAllBySource(iModelDb: IModelDb, scope: Id64String, kind: string, identifier: string): Array<{ elementId: Id64String, aspectId: Id64String }> {
     const sql = `SELECT Element.Id, ECInstanceId FROM ${ExternalSourceAspect.classFullName} WHERE (Scope.Id=:scope AND Kind=:kind AND Identifier=:identifier)`;
     const found: Array<{ elementId: Id64String, aspectId: Id64String }> = [];
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     iModelDb.withPreparedStatement(sql, (statement: ECSqlStatement) => {
       statement.bindId("scope", scope);
       statement.bindString("kind", kind);
@@ -251,7 +231,7 @@ export class ExternalSourceAspect extends ElementMultiAspect {
 }
 
 /** @public */
-export namespace ExternalSourceAspect { // eslint-disable-line no-redeclare
+export namespace ExternalSourceAspect {
   /** Standard values for the `Kind` property of `ExternalSourceAspect`.
    * @public
    */

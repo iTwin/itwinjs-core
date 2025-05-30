@@ -9,7 +9,8 @@
 import { QuantityConstants } from "../Constants";
 import { QuantityError, QuantityStatus } from "../Exception";
 import { FormatterSpec } from "./FormatterSpec";
-import { DecimalPrecision, FormatTraits, FormatType, FractionalPrecision, ScientificType, ShowSignOption } from "./FormatEnums";
+import { DecimalPrecision, FormatTraits, FormatType, FractionalPrecision, RatioType, ScientificType, ShowSignOption } from "./FormatEnums";
+import { applyConversion, Quantity } from "../Quantity";
 
 /**  rounding additive
  * @internal
@@ -42,14 +43,14 @@ class FractionalNumeric {
       this._numerator = 0;
       this._integral += 1;
     } else {
-      this._greatestCommonFactor = this.getGreatestCommonFactor(this._numerator, this._denominator);
+      this._greatestCommonFactor = FractionalNumeric.getGreatestCommonFactor(this._numerator, this._denominator);
     }
   }
 
   /** Determine the GCD given two values. This value can be used to reduce a fraction.
    * See algorithm description http://en.wikipedia.org/wiki/Euclidean_algorithm
    */
-  private getGreatestCommonFactor(numerator: number, denominator: number): number {
+  public static getGreatestCommonFactor(numerator: number, denominator: number): number {
     let r;
     while (denominator !== 0) {
       r = numerator % denominator;
@@ -105,7 +106,6 @@ class FractionalNumeric {
  * @beta
  */
 export class Formatter {
-  // eslint-disable-next-line @typescript-eslint/naming-convention
   private static FPV_MINTHRESHOLD = 1.0e-14;
 
   private static isNegligible(value: number): boolean { return (Math.abs(value) < Formatter.FPV_MINTHRESHOLD); }
@@ -179,15 +179,15 @@ export class Formatter {
     let componentText = "";
     if (!isLastPart) {
       componentText = Formatter.integerPartToText(compositeValue, spec);
+      if(spec.format.minWidth) { // integerPartToText does not do this padding
+        componentText = this.countAndPad(componentText, spec.format.minWidth);
+      }
     } else {
       componentText = Formatter.formatMagnitude(compositeValue, spec);
     }
 
     if (spec.format.hasFormatTraitSet(FormatTraits.ShowUnitLabel)) {
       componentText = componentText + spec.format.uomSeparator + label;
-    } else {
-      if (!isLastPart)
-        componentText = `${componentText}:`;
     }
 
     return componentText;
@@ -203,17 +203,36 @@ export class Formatter {
     // Caller will deal with appending +||-||() value sign as specified by formatting options so just format positive value
     let posMagnitude = Math.abs(magnitude);
 
-    // eslint-disable-next-line @typescript-eslint/prefer-for-of
     for (let i = 0; i < spec.unitConversions.length; i++) {
       const currentLabel = spec.unitConversions[i].label;
       const unitConversion = spec.unitConversions[i].conversion;
 
       if (i > 0 && unitConversion.factor < 1.0)
-        throw new QuantityError(QuantityStatus.InvalidCompositeFormat, `The Format ${spec.format.name} has a invalid unit specification..`);
-      if (i > 0 && unitConversion.offset !== 0)
-        throw new QuantityError(QuantityStatus.InvalidCompositeFormat, `The Format ${spec.format.name} has a invalid unit specification..`);
+        throw new QuantityError(QuantityStatus.InvalidCompositeFormat, `The Format ${spec.format.name} has a invalid unit specification.`);
+      if (i > 0 && unitConversion.offset !== 0) // offset should only ever be defined for major unit
+        throw new QuantityError(QuantityStatus.InvalidCompositeFormat, `The Format ${spec.format.name} has a invalid unit specification.`);
 
-      let unitValue = (posMagnitude * unitConversion.factor) + unitConversion.offset + Formatter.FPV_MINTHRESHOLD; // offset should only ever be defined for major unit
+      let unitValue = 0.0;
+      if (spec.format.type === FormatType.Ratio){
+        if (1 !== spec.format.units!.length)
+          throw new QuantityError(QuantityStatus.InvalidCompositeFormat, `The Format ${spec.format.name} has an invalid unit specification, we require single presentation unit when using format type 'ratio'`);
+
+        try {
+          unitValue = applyConversion(posMagnitude, unitConversion) + this.FPV_MINTHRESHOLD;
+        } catch (e) {
+          // The "InvertingZero" error is thrown when the value is zero and the conversion factor is inverted.
+          // For ratio, we actually want to support this corner case and return "1:0" as the formatted value.
+          if (e instanceof QuantityError && e.errorNumber === QuantityStatus.InvertingZero) {
+            return "1:0";
+          }
+        }
+
+        compositeStrings.push(this.formatRatio(unitValue, spec));
+        continue;
+      }
+
+      unitValue = applyConversion(posMagnitude, unitConversion) + this.FPV_MINTHRESHOLD;
+
       if (0 === i) {
         const precisionScale = Math.pow(10, 8);  // use a fixed round off precision of 8 to avoid loss of precision in actual magnitude
         unitValue = Math.floor(unitValue * precisionScale + FPV_ROUNDFACTOR) / precisionScale;
@@ -232,7 +251,7 @@ export class Formatter {
       }
     }
 
-    return compositeStrings.join(spec.format.spacer ? spec.format.spacer : "");
+    return compositeStrings.join(spec.format.spacerOrDefault);
   }
 
   /** Format a quantity value into a single text string. Imitate how formatting done by server method NumericFormatSpec::FormatDouble.
@@ -247,7 +266,7 @@ export class Formatter {
       posMagnitude = Math.abs(Formatter.roundDouble(magnitude, spec.format.roundFactor));
 
     const isSci = ((posMagnitude > 1.0e12) || spec.format.type === FormatType.Scientific);
-    const isDecimal = (isSci || spec.format.type === FormatType.Decimal);
+    const isDecimal = (isSci || spec.format.type === FormatType.Decimal || spec.format.type === FormatType.Bearing || spec.format.type === FormatType.Azimuth) || spec.format.type === FormatType.Ratio;
     const isFractional = (!isDecimal && spec.format.type === FormatType.Fractional);
     /* const usesStops = spec.format.type === FormatType.Station; */
     const isPrecisionZero = spec.format.precision === DecimalPrecision.Zero;
@@ -355,7 +374,22 @@ export class Formatter {
         formattedValue = stationString + fractionString;
       }
     }
+
+    if(spec.format.minWidth) {
+      formattedValue = this.countAndPad(formattedValue, spec.format.minWidth);
+    }
+
     return formattedValue;
+  }
+
+  private static countAndPad(value: string, minWidth: number): string {
+    const regex = /[\d,.]/g;
+    const matches = value.match(regex);
+    const count = matches ? matches.length : 0;
+    if (count < minWidth) {
+      value = value.padStart(minWidth, "0");
+    }
+    return value;
   }
 
   /** Format a quantity value into a single text string based on the current format specification of this class.
@@ -367,25 +401,32 @@ export class Formatter {
     let prefix = "";
     let suffix = "";
     let formattedValue = "";
+    if(spec.format.type === FormatType.Bearing || spec.format.type === FormatType.Azimuth) {
+      const result = this.processBearingAndAzimuth(magnitude, spec);
+      magnitude = result.magnitude;
+      prefix = result.prefix ?? "";
+      suffix = result.suffix ?? "";
+    }
+
     switch (spec.format.showSignOption) {
       case ShowSignOption.NegativeParentheses:
         if (valueIsNegative) {
-          prefix = "(";
-          suffix = ")";
+          prefix += "(";
+          suffix = `)${suffix}`;
         }
         break;
 
       case ShowSignOption.OnlyNegative:
         if (valueIsNegative)
-          prefix = "-";
+          prefix += "-";
 
         break;
 
       case ShowSignOption.SignAlways:
         if (valueIsNegative)
-          prefix = "-";
+          prefix += "-";
         else
-          prefix = "+";
+          prefix += "+";
 
         break;
 
@@ -414,10 +455,151 @@ export class Formatter {
     else
       formattedValue = formattedMagnitude;
 
-    if (spec.format.minWidth && spec.format.minWidth < formattedValue.length)
-      formattedValue.padStart(spec.format.minWidth, " ");
-
     return formattedValue;
   }
 
+  private static processBearingAndAzimuth(magnitude: number, spec: FormatterSpec): {magnitude: number, prefix?: string, suffix?: string} {
+    const type = spec.format.type;
+    if (type !== FormatType.Bearing && type !== FormatType.Azimuth)
+      return {magnitude};
+
+    const revolution = this.getRevolution(spec);
+    magnitude = this.normalizeAngle(magnitude, revolution);
+    const quarterRevolution = revolution / 4;
+
+    if (type === FormatType.Bearing) {
+      let quadrant = 0;
+      while (magnitude > quarterRevolution) {
+        magnitude -= quarterRevolution;
+        quadrant++;
+      }
+      let prefix, suffix: string;
+
+      // Quadrants are
+      // 3 0
+      // 2 1
+      // For quadrants 1 and 3 we have to subtract the angle from quarterRevolution degrees because they go counter-clockwise
+      if (quadrant === 1 || quadrant === 3)
+        magnitude = quarterRevolution - magnitude;
+
+      // TODO: at some point we will want to open this for localization, in the first release it's going to be hard coded
+      if (quadrant === 0 || quadrant === 3)
+        prefix = "N";
+
+      if (quadrant === 2 || quadrant === 1)
+        prefix = "S";
+
+      if (quadrant === 0 || quadrant === 1)
+        suffix = "E";
+
+      if (quadrant === 3 || quadrant === 2)
+        suffix = "W";
+
+      // special case, if in quadrant 2 and value is very close to quarter revolution (90°), turn prefix to N because N90:00:00W is preferred over S90:00:00W
+      if (quadrant === 2 && spec.unitConversions.length > 0) {
+        // To determine if value is small, we need to convert it to the smallest unit presented and use the provided precision on it
+        const unitConversion = spec.unitConversions[spec.unitConversions.length - 1].conversion;
+        const smallestFormattedDelta = applyConversion((quarterRevolution - magnitude), unitConversion) + this.FPV_MINTHRESHOLD;
+
+        const precisionScale = Math.pow(10.0, spec.format.precision);
+        const floor = Math.floor((smallestFormattedDelta) * precisionScale + FPV_ROUNDFACTOR) / precisionScale;
+        if(floor === 0) {
+          prefix = "N";
+        }
+      }
+
+      return {magnitude, prefix, suffix: suffix!};
+    }
+
+    if (type === FormatType.Azimuth) {
+      let azimuthBase = 0; // default base is North
+      if (spec.format.azimuthBase !== undefined) {
+        if (spec.azimuthBaseConversion === undefined) {
+          throw new QuantityError(QuantityStatus.MissingRequiredProperty, `Missing azimuth base conversion for interpreting ${spec.name}'s azimuth base.`);
+        }
+        const azBaseQuantity: Quantity = new Quantity(spec.format.azimuthBaseUnit, spec.format.azimuthBase);
+        const azBaseConverted = azBaseQuantity.convertTo(spec.persistenceUnit, spec.azimuthBaseConversion);
+        if (azBaseConverted === undefined || !azBaseConverted.isValid) {
+          throw new QuantityError(QuantityStatus.UnsupportedUnit, `Failed to convert azimuth base unit to ${spec.persistenceUnit.name}.`);
+        }
+        azimuthBase = this.normalizeAngle(azBaseConverted.magnitude, revolution);
+      }
+
+      if (azimuthBase === 0.0 && spec.format.azimuthClockwiseOrDefault)
+        return {magnitude}; // no conversion necessary, the input is already using the result parameters (north base and clockwise)
+
+      // subtract the base from the actual value
+      magnitude -= azimuthBase;
+      if (spec.format.azimuthClockwiseOrDefault)
+        return {magnitude: this.normalizeAngle(magnitude, revolution)};
+
+      // turn it into a counter-clockwise angle
+      magnitude = revolution - magnitude;
+      // normalize the result as it may have become negative or exceed the revolution
+      magnitude = this.normalizeAngle(magnitude, revolution);
+    }
+
+    return {magnitude};
+  }
+
+  private static normalizeAngle(magnitude: number, revolution: number): number {
+    magnitude = magnitude % revolution; // Strip anything that goes around more than once
+
+    if (magnitude < 0) // If the value is negative, we want to normalize it to a positive angle
+      magnitude += revolution;
+
+    return magnitude;
+  }
+
+  private static getRevolution(spec: FormatterSpec): number {
+    if (spec.revolutionConversion === undefined) {
+      throw new QuantityError(QuantityStatus.MissingRequiredProperty, `Missing revolution unit conversion for calculating ${spec.name}'s revolution.`);
+    }
+
+    const revolution: Quantity = new Quantity(spec.format.revolutionUnit, 1.0);
+    const converted = revolution.convertTo(spec.persistenceUnit, spec.revolutionConversion);
+    if (converted === undefined || !converted.isValid) {
+      throw new QuantityError(QuantityStatus.UnsupportedUnit, `Failed to convert revolution unit to ${spec.persistenceUnit.name}.`);
+    }
+
+    return converted.magnitude;
+  }
+
+  private static formatRatio(magnitude: number, spec: FormatterSpec): string {
+    if (null === spec.format.ratioType)
+      throw new QuantityError(QuantityStatus.InvalidCompositeFormat, `The Format ${spec.format.name} must have a ratio type specified.`);
+
+    const precisionScale = Math.pow(10.0, spec.format.precision);
+
+    let reciprocal = 0;
+
+    if (magnitude === 0.0)
+      return "0:1";
+    else
+      reciprocal = 1.0/magnitude;
+
+    switch (spec.format.ratioType) {
+      case RatioType.OneToN:
+        return `1:${this.formatMagnitude(reciprocal, spec)}`;
+      case RatioType.NToOne:
+        return `${this.formatMagnitude(magnitude, spec)}:1`;
+      case RatioType.ValueBased:
+        if (magnitude > 1.0)
+          return `${this.formatMagnitude(magnitude, spec)}:1`;
+        else
+          return `1:${this.formatMagnitude(reciprocal, spec)}`;
+      case RatioType.UseGreatestCommonDivisor:
+        magnitude = Math.round(magnitude * precisionScale)/precisionScale;
+        let numerator = magnitude * precisionScale;
+        let denominator = precisionScale;
+
+        const gcd = FractionalNumeric.getGreatestCommonFactor(numerator, denominator);
+        numerator /= gcd;
+        denominator /= gcd;
+
+        return `${this.formatMagnitude(numerator, spec)}:${this.formatMagnitude(denominator, spec)}`;
+      default:
+        throw new QuantityError(QuantityStatus.InvalidCompositeFormat, `The Format ${spec.format.name} has an invalid ratio type specified.`);
+    }
+  }
 }

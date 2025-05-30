@@ -36,8 +36,12 @@ export const electronHostTestSuite: TestSuite = {
       func: testOpenMainWindow,
     },
     {
-      title: "Should open provided URL in main window.",
-      func: testMainWindowUrl,
+      title: "Should open provided Web URL in main window.",
+      func: testMainWindowOpenedWithWebUrl,
+    },
+    {
+      title: "Should open local index.html in main window.",
+      func: testMainWindowOpenedWithLocalFile,
     },
     {
       title: "Should save main window size, position and maximized flag.",
@@ -119,7 +123,7 @@ async function testOpenMainWindow() {
   assert(ElectronHost.mainWindow?.id === windows[0].id);
 }
 
-async function testMainWindowUrl() {
+async function testMainWindowOpenedWithWebUrl() {
   const url = "https://www.itwinjs.org/";
 
   await ElectronHost.startup({
@@ -132,15 +136,45 @@ async function testMainWindowUrl() {
   const window = ElectronHost.electron.BrowserWindow.getAllWindows()[0];
   assert(window !== undefined);
 
-  await new Promise((resolve) => window.webContents.once("did-finish-load", resolve));
+  await new Promise((resolve) => window.webContents.once("did-finish-load", () => resolve(undefined)));
   assert(url === window.webContents.getURL());
+
+  const html: string = await window.webContents.executeJavaScript('document.documentElement.outerHTML');
+  assert(html.includes("iTwin.js"));
+}
+
+async function testMainWindowOpenedWithLocalFile() {
+  await ElectronHost.startup({
+    electronHost: {
+      webResourcesPath: path.join(__dirname, "..", "assets"),
+    },
+  });
+
+  await ElectronHost.openMainWindow();
+
+  assert(ElectronHost.electron.protocol.isProtocolHandled("electron"));
+  assert(ElectronHost.mainWindow !== undefined);
+
+  const window = ElectronHost.mainWindow;
+  await new Promise((resolve) => window.webContents.once("did-finish-load", () => resolve(undefined)));
+
+  const url = window.webContents.getURL();
+  assert(url.startsWith("electron://"));
+  assert(url.endsWith("index.html"));
+
+  const html: string = await window.webContents.executeJavaScript('document.documentElement.outerHTML');
+  assert(html.includes("Electron test window"));
 }
 
 async function testWindowSizeSettings() {
   const storeWindowName = "settingsTestWindow";
   const isXvfbRunning = await isXvfbProcessRunning();
 
-  await ElectronHost.startup();
+  await ElectronHost.startup({
+    electronHost: {
+      webResourcesPath: path.join(__dirname, "..", "assets"),
+    },
+  });
 
   NativeHost.settingsStore.removeData(`windowMaximized-${storeWindowName}`);
   NativeHost.settingsStore.removeData(`windowSizeAndPos-${storeWindowName}`);
@@ -164,7 +198,7 @@ async function testWindowSizeSettings() {
   if (isXvfbRunning)
     window.emit("maximize"); // "maximize" event is not emitted when running with xvfb (linux)
   else
-    await BeDuration.wait(100); // "maximize" event is not always emitted immediately
+    await BeDuration.wait(250); // "maximize" event is not always emitted immediately
 
   isMaximized = ElectronHost.getWindowMaximizedSetting(storeWindowName);
   assert(isMaximized);
@@ -173,10 +207,10 @@ async function testWindowSizeSettings() {
   if (isXvfbRunning)
     window.emit("unmaximize"); // "unmaximize" event is not emitted when running with xvfb (linux)
   else
-    await BeDuration.wait(100); // "unmaximize" event is not always emitted immediately
+    await BeDuration.wait(250); // "unmaximize" event is not always emitted immediately
 
   isMaximized = ElectronHost.getWindowMaximizedSetting(storeWindowName);
-  assert(!isMaximized);
+  assert(isMaximized === false);
 
   const width = 250;
   const height = 251;
@@ -186,8 +220,8 @@ async function testWindowSizeSettings() {
   assert(sizeAndPos?.width === width);
   assert(sizeAndPos?.height === height);
 
-  const x = 15;
-  const y = 25;
+  const x = 50;
+  const y = 75;
   window.setPosition(x, y);
   await BeDuration.wait(250); // wait for new position to be saved to settings file
   sizeAndPos = ElectronHost.getWindowSizeAndPositionSetting(storeWindowName);

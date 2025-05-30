@@ -69,7 +69,15 @@ export interface FeatureQueryQuantizationParams {
 }
 
 /** @internal */
-export type ArcGisFeatureFormat = "JSON" | "PBF";
+export type ArcGisFeatureFormat = "json" | "pbf";
+
+/**
+* @internal
+*/
+export const arcgisFeatureFormats = {
+  json: "json" as ArcGisFeatureFormat,
+  pbf: "pbf"  as ArcGisFeatureFormat,
+}
 
 // Based on official documentation:
 // https://developers.arcgis.com/rest/services-reference/query-feature-service-layer-.htm

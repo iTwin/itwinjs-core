@@ -46,9 +46,9 @@ The memory cache uses SQLite's feature that allows creating [in-memory databases
 
 Disk-based cache stores the database on disk, which makes the cache persistent and allows it to be shared between multiple instances of presentation manager.
 
-The location of the database file defaults to the directory of the iModel and may be configured using the [DiskHierarchyCacheConfig.directory] configuration attribute when initializing [Presentation]($presentation-backend) or creating [PresentationManager]($presentation-backend).
+The location of the database file defaults to the directory of the iModel and may be configured using the [DiskHierarchyCacheConfig.directory]($presentation-backend) configuration attribute when initializing [Presentation]($presentation-backend) or creating [PresentationManager]($presentation-backend).
 
-Size of the in-memory page cache defaults to 32 MB and may be configured using [DiskHierarchyCacheConfig.memoryCacheSize] configuration attribute.
+Size of the in-memory page cache defaults to 32 MB and may be configured using [DiskHierarchyCacheConfig.memoryCacheSize]($presentation-backend) configuration attribute.
 
 ### Hybrid cache
 

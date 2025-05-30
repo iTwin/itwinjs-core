@@ -6,11 +6,11 @@
 import { BeTimePoint, Id64Set, Id64String } from "@itwin/core-bentley";
 import { BatchType, RenderMode, RenderSchedule, ViewFlagOverrides } from "@itwin/core-common";
 import {
-  acquireImdlDecoder, ImdlDecoder, IModelApp, Tile, TileDrawArgs, TileTree, TileTreeParams,
+  acquireImdlDecoder, ImdlDecoder, IModelApp, LayerTileTreeHandler, MapLayerTreeSetting, Tile, TileDrawArgs, TileTree, TileTreeParams
 } from "@itwin/core-frontend";
-import { BatchedTile, BatchedTileParams } from "./BatchedTile";
-import { BatchedTilesetReader, ModelMetadata } from "./BatchedTilesetReader";
-import { frontendTilesOptions } from "./FrontendTiles";
+import { BatchedTile, BatchedTileParams } from "./BatchedTile.js";
+import { BatchedTilesetReader, ModelMetadata } from "./BatchedTilesetReader.js";
+import { frontendTilesOptions } from "./FrontendTiles.js";
 
 const defaultViewFlags: ViewFlagOverrides = {
   renderMode: RenderMode.SmoothShade,
@@ -33,6 +33,8 @@ export class BatchedTileTree extends TileTree {
   public readonly scheduleScript?: RenderSchedule.Script;
   public readonly decoder: ImdlDecoder;
   public readonly modelGroups: Id64Set[] | undefined;
+  public layerImageryTrees: MapLayerTreeSetting[] = [];
+  private readonly _layerHandler: LayerTileTreeHandler;
 
   public constructor(params: BatchedTileTreeParams) {
     super(params);
@@ -40,6 +42,7 @@ export class BatchedTileTree extends TileTree {
     this.reader = params.reader;
     this.scheduleScript = params.script;
     this.modelGroups = params.modelGroups;
+    this._layerHandler = new LayerTileTreeHandler(this);
 
     this.decoder = acquireImdlDecoder({
       type: BatchType.Primary,
@@ -52,9 +55,9 @@ export class BatchedTileTree extends TileTree {
     });
   }
 
-  public override dispose(): void {
+  public override[Symbol.dispose](): void {
     this.decoder.release();
-    super.dispose();
+    super[Symbol.dispose]();
   }
 
   public override get rootTile(): BatchedTile {
@@ -70,7 +73,7 @@ export class BatchedTileTree extends TileTree {
   }
 
   public override get viewFlagOverrides(): ViewFlagOverrides {
-    return frontendTilesOptions.enableEdges ?{ } : defaultViewFlags;
+    return frontendTilesOptions.enableEdges ? {} : defaultViewFlags;
   }
 
   // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -86,10 +89,16 @@ export class BatchedTileTree extends TileTree {
       tile.drawGraphics(args);
 
     args.drawGraphics();
+    if (args.shouldCollectClassifierGraphics)
+      this._layerHandler.collectClassifierGraphics(args, tiles);
   }
 
   public override prune(): void {
     const olderThan = BeTimePoint.now().minus(this.expirationTime);
     this.rootTile.prune(olderThan);
+  }
+
+  public override get layerHandler(): LayerTileTreeHandler {
+    return this._layerHandler;
   }
 }

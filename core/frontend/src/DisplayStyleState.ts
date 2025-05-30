@@ -22,6 +22,7 @@ import { IModelApp } from "./IModelApp";
 import { IModelConnection } from "./IModelConnection";
 import { PlanarClipMaskState } from "./PlanarClipMaskState";
 import { getCesiumOSMBuildingsUrl, MapLayerIndex, TileTreeReference } from "./tile/internal";
+import { _onScheduleScriptReferenceChanged, _scheduleScriptReference } from './common/internal/Symbols';
 
 /** @internal */
 export class TerrainDisplayOverrides {
@@ -48,17 +49,20 @@ export interface OsmBuildingDisplayOptions {
  */
 export abstract class DisplayStyleState extends ElementState implements DisplayStyleProps {
   public static override get className() { return "DisplayStyle"; }
-  private _scriptReference?: RenderSchedule.ScriptReference;
   private _ellipsoidMapGeometry: BackgroundMapGeometry | undefined;
   private _attachedRealityModelPlanarClipMasks = new Map<Id64String, PlanarClipMaskState>();
   /** @internal */
   protected _queryRenderTimelinePropsPromise?: Promise<RenderTimelineProps | undefined>;
   private _assigningScript = false;
 
+
   /** Event raised just before the [[scheduleScriptReference]] property is changed.
-   * @deprecated in 3.x. use [[onScheduleScriptChanged]].
-   */
-  public readonly onScheduleScriptReferenceChanged = new BeEvent<(newScriptReference: RenderSchedule.ScriptReference | undefined) => void>();
+  * @internal as of 5.0, use [[onScheduleScriptChanged]].
+  */
+  public readonly [_onScheduleScriptReferenceChanged] = new BeEvent<(newScriptReference: RenderSchedule.ScriptReference | undefined) => void>();
+
+  private _scriptReference?: RenderSchedule.ScriptReference;
+
   /** Event raised just before the [[scheduleScript]] property is changed. */
   public readonly onScheduleScriptChanged = new BeEvent<(newScript: RenderSchedule.Script | undefined) => void>();
   /** Event raised just after [[setOSMBuildingDisplay]] changes the enabled state of the OSM buildings. */
@@ -123,12 +127,12 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
       const script = RenderSchedule.Script.fromJSON(scriptProps);
       if (script)
         newState = new RenderSchedule.ScriptReference(this.id, script);
-    } catch (_) {
+    } catch {
       // schedule state is undefined.
     }
 
     if (newState !== this._scriptReference) {
-      this.onScheduleScriptReferenceChanged.raiseEvent(newState); // eslint-disable-line deprecation/deprecation
+      this[_onScheduleScriptReferenceChanged].raiseEvent(newState);
       this.onScheduleScriptChanged.raiseEvent(newState?.script);
       this._scriptReference = newState;
     }
@@ -150,14 +154,14 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
           if (script)
             newState = new RenderSchedule.ScriptReference(timelineId, script);
         }
-      } catch (_) {
+      } catch {
         // schedule state is undefined.
       }
     }
 
     this._queryRenderTimelinePropsPromise = undefined;
     if (newState !== this._scriptReference) {
-      this.onScheduleScriptReferenceChanged.raiseEvent(newState); // eslint-disable-line deprecation/deprecation
+      this[_onScheduleScriptReferenceChanged].raiseEvent(newState);
       this.onScheduleScriptChanged.raiseEvent(newState?.script);
       this._scriptReference = newState;
     }
@@ -168,7 +172,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     try {
       const omitScriptElementIds = !IModelApp.tileAdmin.enableFrontendScheduleScripts;
       return await this.iModel.elements.loadProps(timelineId, { renderTimeline: { omitScriptElementIds } }) as RenderTimelineProps;
-    } catch (_) {
+    } catch {
       return undefined;
     }
   }
@@ -255,13 +259,12 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   }
 
   /** @internal */
-  public forEachRealityTileTreeRef(func: (ref: TileTreeReference) => void): void {
-    this.forEachRealityModel((model) => func(model.treeRef));
-  }
-
-  /** @internal */
-  public forEachTileTreeRef(func: (ref: TileTreeReference) => void): void {
-    this.forEachRealityTileTreeRef(func);
+  public * getTileTreeRefs(): Iterable<TileTreeReference> {
+    for (const model of this.realityModels) {
+      if (!model.invisible) {
+        yield model.treeRef;
+      }
+    }
   }
 
   /** Performs logical comparison against another display style. Two display styles are logically equivalent if they have the same name, Id, and settings.
@@ -305,7 +308,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
 
     try {
       const scriptRef = script ? new RenderSchedule.ScriptReference(script) : undefined;
-      this.onScheduleScriptReferenceChanged.raiseEvent(scriptRef); // eslint-disable-line deprecation/deprecation
+      this[_onScheduleScriptReferenceChanged].raiseEvent(scriptRef);
       this.onScheduleScriptChanged.raiseEvent(script);
       this._scriptReference = scriptRef;
 
@@ -321,9 +324,9 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
 
   /** The [RenderSchedule.Script]($common) that animates the contents of the view, if any, along with the Id of the element that hosts the script.
    * @note The host element may be a [RenderTimeline]($backend) or a [DisplayStyle]($backend).
-   * @deprecated in 3.x. Use [[scheduleScript]].
+   * @internal
    */
-  public get scheduleScriptReference(): RenderSchedule.ScriptReference | undefined {
+  public get [_scheduleScriptReference](): RenderSchedule.ScriptReference | undefined {
     return this._scriptReference;
   }
 

@@ -16,9 +16,9 @@ import {
   IModelHubStatus,
   IModelStatus,
   RealityDataStatus,
-  RepositoryStatus,
   RpcInterfaceStatus,
 } from "./BentleyError";
+import { RepositoryStatus } from "./internal/RepositoryStatus";
 
 /* eslint-disable @typescript-eslint/no-shadow */
 
@@ -342,7 +342,7 @@ function lookupHttpStatusCategory(statusCode: number): StatusCategory {
     case GeoServiceStatus.NoDatumConverter: return new OperationFailed();
     case GeoServiceStatus.VerticalDatumConvertError: return new OperationFailed();
     case GeoServiceStatus.CSMapError: return new InternalError();
-    case GeoServiceStatus.Pending: return new Pending();
+    case GeoServiceStatus.Pending: return new Pending(); // eslint-disable-line @typescript-eslint/no-deprecated
 
     case RealityDataStatus.Success: return new Success();
     case RealityDataStatus.InvalidData: return new InvalidData();

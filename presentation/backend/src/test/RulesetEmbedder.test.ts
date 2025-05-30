@@ -3,7 +3,6 @@
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import faker from "faker";
 import sinon from "sinon";
 import * as moq from "typemoq";
 import {
@@ -12,13 +11,12 @@ import {
   DefinitionElement,
   DefinitionModel,
   DefinitionPartition,
-  ECSqlStatement,
   IModelDb,
   KnownLocations,
   Model,
   Subject,
 } from "@itwin/core-backend";
-import { DbResult, Id64String } from "@itwin/core-bentley";
+import { Id64String } from "@itwin/core-bentley";
 import {
   BisCodeSpec,
   Code,
@@ -26,16 +24,18 @@ import {
   CodeSpec,
   DefinitionElementProps,
   ECSqlReader,
+  IModel,
   QueryBinder,
   QueryRowFormat,
   QueryRowProxy,
 } from "@itwin/core-common";
 import { Ruleset } from "@itwin/presentation-common";
-import { configureForPromiseResult } from "@itwin/presentation-common/lib/cjs/test";
-import { PresentationRules } from "../presentation-backend/domain/PresentationRulesDomain";
-import * as RulesetElements from "../presentation-backend/domain/RulesetElements";
-import { RulesetEmbedder } from "../presentation-backend/RulesetEmbedder";
-import { normalizeVersion } from "../presentation-backend/Utils";
+import { configureForPromiseResult } from "@itwin/presentation-common/test-utils";
+import { PresentationRules } from "../presentation-backend/domain/PresentationRulesDomain.js";
+import * as RulesetElements from "../presentation-backend/domain/RulesetElements.js";
+import { RulesetEmbedder } from "../presentation-backend/RulesetEmbedder.js";
+import { normalizeVersion } from "../presentation-backend/Utils.js";
+import { stubECSqlReader } from "./Helpers.js";
 
 describe("RulesetEmbedder", () => {
   let embedder: RulesetEmbedder;
@@ -86,10 +86,10 @@ describe("RulesetEmbedder", () => {
 
   function initializeMocks() {
     // ids
-    rootSubjectId = faker.random.uuid();
-    presentationRulesSubjectId = faker.random.uuid();
-    definitionPartitionId = faker.random.uuid();
-    modelId = faker.random.uuid();
+    rootSubjectId = "0x1";
+    presentationRulesSubjectId = "0x123";
+    definitionPartitionId = "0x456";
+    modelId = "0x789";
 
     // create mocks
     imodelMock = moq.Mock.ofType<IModelDb>();
@@ -106,10 +106,10 @@ describe("RulesetEmbedder", () => {
     rulesetCodeSpec = CodeSpec.create(imodelMock.object, PresentationRules.CodeSpec.Ruleset, CodeScopeSpec.Type.Model);
 
     subjectCodeSpec = CodeSpec.create(imodelMock.object, BisCodeSpec.subject, CodeScopeSpec.Type.ParentElement);
-    subjectCodeSpec.id = faker.random.uuid();
+    subjectCodeSpec.id = "0x999";
 
     informationPartitionCodeSpec = CodeSpec.create(imodelMock.object, BisCodeSpec.informationPartitionElement, CodeScopeSpec.Type.ParentElement);
-    informationPartitionCodeSpec.id = faker.random.uuid();
+    informationPartitionCodeSpec.id = "0x888";
 
     // set up mocks
     imodelMock.setup((x) => x.codeSpecs).returns(() => codeSpecsMock.object);
@@ -120,7 +120,7 @@ describe("RulesetEmbedder", () => {
     codeSpecsMock.setup((x) => x.getByName(BisCodeSpec.subject)).returns(() => subjectCodeSpec);
     codeSpecsMock.setup((x) => x.getByName(BisCodeSpec.informationPartitionElement)).returns(() => informationPartitionCodeSpec);
 
-    elementsMock.setup((x) => x.getRootSubject()).returns(() => rootSubjectMock.object);
+    elementsMock.setup((x) => x.getElement(IModel.rootSubjectId)).returns(() => rootSubjectMock.object);
 
     rootSubjectMock.setup((x) => x.id).returns(() => rootSubjectId);
     rootSubjectMock.setup((x) => x.model).returns(() => modelId);
@@ -145,7 +145,7 @@ describe("RulesetEmbedder", () => {
   function setupMocksForHandlingPrerequisites() {
     imodelMock.setup((x) => x.containsClass(RulesetElements.Ruleset.classFullName)).returns(() => false);
     imodelMock.setup(async (x) => x.importSchemas(moq.It.isAny())).returns(async () => undefined);
-    codeSpecsMock.setup((x) => x.insert(rulesetCodeSpec)).returns(() => faker.random.uuid());
+    codeSpecsMock.setup((x) => x.insert(rulesetCodeSpec)).returns(() => "0x2025");
   }
 
   function setupMocksForGettingRulesetModel() {
@@ -242,7 +242,7 @@ describe("RulesetEmbedder", () => {
   describe("insertRuleset", () => {
     it("sets up prerequisites when inserting element", async () => {
       const ruleset: Ruleset = { id: "test", rules: [] };
-      const rulesetElementId = "0x123";
+      const rulesetElementId = "0x111";
 
       setupMocksForHandlingPrerequisites();
       setupMocksForCreatingRulesetModel();
@@ -259,7 +259,7 @@ describe("RulesetEmbedder", () => {
 
     it("calls `onElementInsert` and `onModelInsert` callbacks when creating RulesetModel", async () => {
       const ruleset: Ruleset = { id: "test", rules: [] };
-      const rulesetElementId = "0x123";
+      const rulesetElementId = "0x111";
 
       setupMocksForCreatingRulesetModel();
       setupMocksForQueryingExistingRulesets("test", []);
@@ -267,13 +267,13 @@ describe("RulesetEmbedder", () => {
 
       await embedder.insertRuleset(ruleset, { onEntityInsert });
 
-      expect(onEntityInsert.onBeforeInsert.callCount).to.be.eq(4);
-      expect(onEntityInsert.onAfterInsert.callCount).to.be.eq(4);
+      expect(onEntityInsert.onBeforeInsert.callCount).to.eq(4);
+      expect(onEntityInsert.onAfterInsert.callCount).to.eq(4);
     });
 
     it("inserts a single ruleset", async () => {
       const ruleset: Ruleset = { id: "test", rules: [] };
-      const rulesetElementId = "0x123";
+      const rulesetElementId = "0x111";
 
       setupMocksForGettingRulesetModel();
       setupMocksForQueryingExistingRulesets("test", []);
@@ -285,9 +285,58 @@ describe("RulesetEmbedder", () => {
       expect(onEntityInsert.onAfterInsert).to.have.been.calledOnce;
     });
 
+    it("inserts into model under specified parent subject id", async () => {
+      const ruleset: Ruleset = { id: "test", version: "4.5.6", rules: [] };
+      const parentSubjectId = "0x111";
+      const rulesetElementId = "0x222";
+
+      elementsMock.setup((x) => x.getElement(parentSubjectId)).returns(() => rootSubjectMock.object);
+      setupMocksForGettingRulesetModel();
+      setupMocksForQueryingExistingRulesets("test", []);
+      setupMocksForInsertingNewRuleset(ruleset, rulesetElementId);
+
+      embedder = new RulesetEmbedder({ imodel: imodelMock.object, parentSubjectId });
+      const insertId = await embedder.insertRuleset(ruleset, { onEntityInsert });
+      expect(insertId).to.eq(rulesetElementId);
+      expect(onEntityInsert.onBeforeInsert).to.be.calledOnce;
+      expect(onEntityInsert.onAfterInsert).to.be.calledOnce;
+    });
+
+    it("creates missing subject, partition and model under specified parent subject id", async () => {
+      const ruleset: Ruleset = { id: "test", version: "4.5.6", rules: [] };
+      const parentSubjectId = "0x111";
+      const rulesetElementId = "0x222";
+
+      elementsMock.setup((x) => x.getElement(parentSubjectId)).returns(() => rootSubjectMock.object);
+      setupMocksForCreatingRulesetModel();
+      setupMocksForQueryingExistingRulesets("test", []);
+      setupMocksForInsertingNewRuleset(ruleset, rulesetElementId);
+
+      embedder = new RulesetEmbedder({ imodel: imodelMock.object, parentSubjectId });
+      const insertId = await embedder.insertRuleset(ruleset, { onEntityInsert });
+      expect(insertId).to.eq(rulesetElementId);
+      expect(onEntityInsert.onBeforeInsert).to.have.callCount(4);
+      expect(onEntityInsert.onAfterInsert).to.have.callCount(4);
+    });
+
+    it("throws error if specified parent subject id is not found", async () => {
+      const ruleset: Ruleset = { id: "test", version: "4.5.6", rules: [] };
+      const parentSubjectId = "0x111";
+      const rulesetElementId = "0x222";
+
+      setupMocksForGettingRulesetModel();
+      setupMocksForQueryingExistingRulesets("test", []);
+      setupMocksForInsertingNewRuleset(ruleset, rulesetElementId);
+
+      embedder = new RulesetEmbedder({ imodel: imodelMock.object, parentSubjectId });
+      await expect(embedder.insertRuleset(ruleset, { onEntityInsert })).to.be.rejected;
+      expect(onEntityInsert.onBeforeInsert).not.to.be.called;
+      expect(onEntityInsert.onAfterInsert).not.to.be.called;
+    });
+
     it("skips inserting ruleset with same id", async () => {
       const ruleset: Ruleset = { id: "test", rules: [] };
-      const rulesetElementId = "0x123";
+      const rulesetElementId = "0x111";
 
       setupMocksForGettingRulesetModel();
       setupMocksForQueryingExistingRulesets("test", [
@@ -304,7 +353,7 @@ describe("RulesetEmbedder", () => {
 
     it("doesn't skip inserting ruleset with different id", async () => {
       const ruleset: Ruleset = { id: "test", rules: [] };
-      const rulesetElementId = "123";
+      const rulesetElementId = "0x111";
 
       setupMocksForGettingRulesetModel();
       setupMocksForQueryingExistingRulesets("test", []);
@@ -316,7 +365,7 @@ describe("RulesetEmbedder", () => {
 
     it("skips inserting ruleset with same id and version", async () => {
       const ruleset: Ruleset = { id: "test", version: "1.2.3", rules: [] };
-      const rulesetElementId = "0x123";
+      const rulesetElementId = "0x111";
 
       setupMocksForGettingRulesetModel();
       setupMocksForQueryingExistingRulesets("test", [
@@ -333,7 +382,7 @@ describe("RulesetEmbedder", () => {
 
     it("doesn't skip inserting ruleset with same id and different version", async () => {
       const ruleset: Ruleset = { id: "test", version: "1.2.3", rules: [] };
-      const rulesetElementId = "0x123";
+      const rulesetElementId = "0x111";
 
       setupMocksForGettingRulesetModel();
       setupMocksForQueryingExistingRulesets("test", [
@@ -355,32 +404,32 @@ describe("RulesetEmbedder", () => {
       setupMocksForQueryingExistingRulesets("test", [
         {
           ruleset: { id: "test", version: "1.2.3", rules: [] },
-          elementId: "0x123",
+          elementId: "0x111",
         },
         {
           ruleset: { id: "test", version: "4.5.6", rules: [] },
-          elementId: "0x456",
+          elementId: "0x222",
         },
         {
           ruleset: { id: "test", version: "7.8.9", rules: [] },
-          elementId: "0x789",
+          elementId: "0x333",
         },
       ]);
 
       const insertId = await embedder.insertRuleset(ruleset, { skip: "same-id-and-version-gte" });
-      expect(insertId).to.eq("0x789");
+      expect(insertId).to.eq("0x333");
       elementsMock.verify((x) => x.insertElement(createRulesetElementProps(ruleset)), moq.Times.never());
     });
 
     it("doesn't skip inserting ruleset with same id and higher version", async () => {
       const ruleset: Ruleset = { id: "test", version: "4.5.6", rules: [] };
-      const rulesetElementId = "0x456";
+      const rulesetElementId = "0x222";
 
       setupMocksForGettingRulesetModel();
       setupMocksForQueryingExistingRulesets("test", [
         {
           ruleset: { id: "test", version: "1.2.3", rules: [] },
-          elementId: "0x123",
+          elementId: "0x111",
         },
       ]);
       setupMocksForInsertingNewRuleset(ruleset, rulesetElementId);
@@ -391,7 +440,7 @@ describe("RulesetEmbedder", () => {
 
     it("updates a duplicate ruleset with same id and version", async () => {
       const ruleset: Ruleset = { id: "test", rules: [] };
-      const rulesetElementId = "0x123";
+      const rulesetElementId = "0x111";
 
       setupMocksForGettingRulesetModel();
       setupMocksForQueryingExistingRulesets("test", [
@@ -414,17 +463,17 @@ describe("RulesetEmbedder", () => {
 
     it("removes rulesets with same id", async () => {
       const ruleset: Ruleset = { id: "test", rules: [] };
-      const rulesetElementId = "0x123";
+      const rulesetElementId = "0x111";
 
       setupMocksForGettingRulesetModel();
       setupMocksForQueryingExistingRulesets("test", [
         {
           ruleset: { ...ruleset, version: "4.5.6" },
-          elementId: "0x456",
+          elementId: "0x222",
         },
         {
           ruleset: { ...ruleset, version: "7.8.9" },
-          elementId: "0x789",
+          elementId: "0x333",
         },
       ]);
 
@@ -432,22 +481,22 @@ describe("RulesetEmbedder", () => {
 
       const insertId = await embedder.insertRuleset(ruleset, { replaceVersions: "all" });
       expect(insertId).to.eq(rulesetElementId);
-      elementsMock.verify((x) => x.deleteElement(["0x456", "0x789"]), moq.Times.once());
+      elementsMock.verify((x) => x.deleteElement(["0x222", "0x333"]), moq.Times.once());
     });
 
     it("removes older rulesets with same id", async () => {
       const ruleset: Ruleset = { id: "test", version: "4.5.6", rules: [] };
-      const rulesetElementId = "0x456";
+      const rulesetElementId = "0x222";
 
       setupMocksForGettingRulesetModel();
       setupMocksForQueryingExistingRulesets("test", [
         {
           ruleset: { ...ruleset, version: "1.2.3" },
-          elementId: "0x123",
+          elementId: "0x111",
         },
         {
           ruleset: { ...ruleset, version: "7.8.9" },
-          elementId: "0x789",
+          elementId: "0x333",
         },
       ]);
 
@@ -455,28 +504,18 @@ describe("RulesetEmbedder", () => {
 
       const insertId = await embedder.insertRuleset(ruleset, { replaceVersions: "all-lower" });
       expect(insertId).to.eq(rulesetElementId);
-      elementsMock.verify((x) => x.deleteElement(["0x123"]), moq.Times.once());
+      elementsMock.verify((x) => x.deleteElement(["0x111"]), moq.Times.once());
     });
   });
 
   describe("getRulesets", () => {
     function setupMocksForQueryingAllRulesets(rulesets: Array<{ ruleset: Ruleset; elementId: Id64String }>) {
-      imodelMock
-        .setup((x) => x.withPreparedStatement(moq.It.isAny(), moq.It.isAny()))
-        .callback((_ecsql, callbackFun) => {
-          const statementMock = moq.Mock.ofType<ECSqlStatement>();
-          rulesets.forEach((entry) => {
-            statementMock.setup((x) => x.step()).returns(() => DbResult.BE_SQLITE_ROW);
-            statementMock.setup((x) => x.getRow()).returns(() => ({ id: entry.elementId }));
-
-            const rulesetElementMock = moq.Mock.ofType<RulesetElements.Ruleset>();
-            rulesetElementMock.setup((x) => x.jsonProperties).returns(() => ({ jsonProperties: entry.ruleset }));
-            elementsMock.setup((x) => x.getElement({ id: entry.elementId })).returns(() => rulesetElementMock.object);
-          });
-          statementMock.setup((x) => x.step()).returns(() => DbResult.BE_SQLITE_DONE);
-          callbackFun(statementMock.object);
-        })
-        .returns(() => ({}));
+      rulesets.forEach((entry) => {
+        const rulesetElementMock = moq.Mock.ofType<RulesetElements.Ruleset>();
+        rulesetElementMock.setup((x) => x.jsonProperties).returns(() => ({ jsonProperties: entry.ruleset }));
+        elementsMock.setup((x) => x.getElement({ id: entry.elementId })).returns(() => rulesetElementMock.object);
+      });
+      imodelMock.setup((x) => x.createQueryReader(moq.It.isAnyString())).returns(() => stubECSqlReader(rulesets.map((r) => ({ id: r.elementId }))));
     }
 
     it("checks for prerequisites before getting rulesets", async () => {

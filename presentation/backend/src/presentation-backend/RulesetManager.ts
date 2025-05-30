@@ -7,7 +7,7 @@
  */
 
 import { RegisteredRuleset, Ruleset } from "@itwin/presentation-common";
-import { NativePlatformDefinition } from "./NativePlatform";
+import { NativePlatformDefinition } from "./NativePlatform.js";
 
 /**
  * Presentation ruleset registry.

@@ -15,13 +15,13 @@ export class SchemaXmlSerializer {
     // __PUBLISH_EXTRACT_START__ Serialize_Schema_To_XML_Create
     const context = new SchemaContext();
     const editor = new SchemaContextEditor(context);
-    const results = await editor.createSchema("sampleSchema", "sampleAlias", 1, 0, 0);
-    const sampleSchema = await editor.getSchema(results.schemaKey!);
+    const schemaKey = await editor.createSchema("sampleSchema", "sampleAlias", 1, 0, 0);
+    const sampleSchema = await editor.getSchema(schemaKey);
     // __PUBLISH_EXTRACT_END__
 
     // __PUBLISH_EXTRACT_START__ Serialize_Schema_To_XML
     let xmlDoc = new DOMParser().parseFromString(`<?xml version="1.0" encoding="UTF-8"?>`, "application/xml");
-    xmlDoc = await sampleSchema!.toXml(xmlDoc);
+    xmlDoc = await sampleSchema.toXml(xmlDoc);
     const serializer = new XMLSerializer();
     const xml = serializer.serializeToString(xmlDoc);
     // __PUBLISH_EXTRACT_END__

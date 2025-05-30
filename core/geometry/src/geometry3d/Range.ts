@@ -652,7 +652,7 @@ export class Range3d extends RangeBase implements LowAndHighXYZ, BeJSONFunctions
    * @param zFraction plane altitude within the 0..1 z fraction range
    * @param upwardNormal true for CCW as viewed from above
    * @param addClosure true to add closure edge back to the start
-   * @returns
+   * @returns rectangle points
    */
   public rectangleXY(
     zFraction: number = 0.0, upwardNormal: boolean = true, addClosure: boolean = true,
@@ -1211,9 +1211,16 @@ export class Range1d extends RangeBase {
   }
   /** Test if a number is within the range. */
   public containsX(x: number): boolean {
-    return x >= this.low
-      && x <= this.high;
+    return x >= this.low && x <= this.high;
   }
+  /**
+   * Test if a number is in within the open range.
+   * * This method differs from `containsX` by returning false if x equals either range extreme.
+   */
+  public containsXOpen(x: number): boolean {
+    return x > this.low && x < this.high;
+  }
+
   /** Test of other range is within this range */
   public containsRange(other: Range1d): boolean {
     return other.low >= this.low
@@ -1493,6 +1500,22 @@ export class Range2d extends RangeBase implements LowAndHighXY {
     result.setDirect(this.low.x, this.low.y, this.high.x, this.high.y, false);
     return result;
   }
+
+  /**
+   * Return a copy, translated by adding `shift` components in all directions.
+   * @note The translation of a null range is also a null range.
+   */
+  public cloneTranslated(shift: XAndY, result?: this): this {
+    result = result ? result : new (this.constructor as any)() as this;
+    if (!this.isNull)
+      result.setDirect(
+        this.low.x + shift.x, this.low.y + shift.y,
+        this.high.x + shift.x, this.high.y + shift.y,
+        false,
+      );
+    return result;
+  }
+
   /** Create a range with no content. */
   public static createNull<T extends Range2d>(result?: T): T {
     result = result ? result : new this() as T;

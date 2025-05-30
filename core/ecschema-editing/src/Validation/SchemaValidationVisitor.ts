@@ -540,7 +540,7 @@ export class SchemaValidationVisitor implements ISchemaPartVisitor {
     }
   }
 
-  private findSuppressionRule<T extends AnyECType, U = {}>(suppressionSet: Array<IRuleSuppressionMap<T, U>>, code: string): ISuppressionRule<T, U> | undefined {
+  private findSuppressionRule<T extends AnyECType, U = object>(suppressionSet: Array<IRuleSuppressionMap<T, U>>, code: string): ISuppressionRule<T, U> | undefined {
     if (!suppressionSet)
       return;
 
@@ -560,7 +560,7 @@ export class SchemaValidationVisitor implements ISchemaPartVisitor {
     return ruleSet.schemaExclusionSet.includes(schema.name);
   }
 
-  private async reportDiagnostics<T extends AnyECType, U = {}>(diagnostic: AnyDiagnostic, ecType: T, suppressionMap: Array<IRuleSuppressionMap<T, U>> | undefined) {
+  private async reportDiagnostics<T extends AnyECType, U = object>(diagnostic: AnyDiagnostic, ecType: T, suppressionMap: Array<IRuleSuppressionMap<T, U>> | undefined) {
     if (!diagnostic)
       return;
 

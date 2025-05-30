@@ -2,11 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { IModelConnection, QuantityFormatter, SnapshotConnection } from "@itwin/core-frontend";
+import { IModelConnection, QuantityFormatter } from "@itwin/core-frontend";
 import { TestUtility } from "../TestUtility";
 import { SchemaContext, SchemaUnitProvider } from "@itwin/ecschema-metadata";
 import { ECSchemaRpcLocater } from "@itwin/ecschema-rpcinterface-common";
 import { assert } from "chai";
+import { TestSnapshotConnection } from "../TestSnapshotConnection";
 
 describe("QuantityFormatter", () => {
   let context = new SchemaContext();
@@ -14,7 +15,7 @@ describe("QuantityFormatter", () => {
 
   before(async () => {
     await TestUtility.startFrontend();
-    imodel = await SnapshotConnection.openFile("testImodel.bim"); // relative path resolved by BackendTestAssetResolver
+    imodel = await TestSnapshotConnection.openFile("testImodel.bim"); // relative path resolved by BackendTestAssetResolver
     const schemaLocater = new ECSchemaRpcLocater(imodel);
     context = new SchemaContext();
     context.addLocater(schemaLocater);

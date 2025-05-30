@@ -8,7 +8,7 @@
 
 import { BentleyError, Logger } from "@itwin/core-bentley";
 import { CommonLoggerCategory } from "../../CommonLoggerCategory";
-import { BackendReadable, BackendWritable } from "../../BackendTypes";
+import { BackendReadable, BackendWritable } from "../../internal/BackendTypes";
 import { RpcConfiguration } from "../core/RpcConfiguration";
 import { RpcContentType, RpcRequestStatus, WEB_RPC_CONSTANTS } from "../core/RpcConstants";
 import { RpcOperation } from "../core/RpcOperation";
@@ -17,7 +17,7 @@ import { OpenAPIInfo, OpenAPIParameter, RpcOpenAPIDescription } from "./OpenAPI"
 import { WebAppRpcLogging } from "./WebAppRpcLogging";
 import { WebAppRpcRequest } from "./WebAppRpcRequest";
 
-/* eslint-disable deprecation/deprecation */
+/* eslint-disable @typescript-eslint/no-deprecated */
 
 /** An HTTP server request object.
  * @public

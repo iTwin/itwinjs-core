@@ -17,7 +17,7 @@ import { SerializedRpcOperation, SerializedRpcRequest } from "../core/RpcProtoco
 import { RpcRequest } from "../core/RpcRequest";
 import { WebAppRpcRequest } from "./WebAppRpcRequest";
 
-/* eslint-disable deprecation/deprecation */
+/* eslint-disable @typescript-eslint/no-deprecated */
 
 /** @internal */
 const BACKEND = Symbol.for("@itwin.WebAppRpcLogging.Backend");
@@ -132,6 +132,11 @@ export abstract class WebAppRpcLogging {
   }
 }
 
+declare global {
+  // eslint-disable-next-line no-var
+  var window: any;
+}
+
 class WebAppRpcLoggingFrontend extends WebAppRpcLogging {
   protected override async logProtocolEvent(event: RpcProtocolEvent, object: WebAppRpcRequest): Promise<void> {
     switch (event) {
@@ -143,11 +148,7 @@ class WebAppRpcLoggingFrontend extends WebAppRpcLogging {
   }
 
   protected override getHostname(): string {
-    if (globalThis.window) {
-      return globalThis.window.location.host;
-    } else {
-      return "imodeljs-mobile";
-    }
+    return globalThis.window?.location?.host ?? "imodeljs-mobile";
   }
 
   private logErrorFrontend(message: string, request: WebAppRpcRequest): void {

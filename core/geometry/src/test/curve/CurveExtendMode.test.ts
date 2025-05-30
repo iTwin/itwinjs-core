@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
+import { describe, expect, it } from "vitest";
 import { CurveExtendMode, CurveExtendOptions } from "../../curve/CurveExtendMode";
 import { AngleSweep } from "../../geometry3d/AngleSweep";
 import { Checker } from "../Checker";
@@ -60,6 +60,6 @@ describe("CurveExtendMode", () => {
       ck.testCoordinate(fraction < 0 ? 0 : fraction, CurveExtendOptions.correctFraction(extend1, fraction), "extend1");
     }
 
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });

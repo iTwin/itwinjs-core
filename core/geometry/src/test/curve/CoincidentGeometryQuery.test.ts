@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
+import { describe, expect, it } from "vitest";
 import { Arc3d } from "../../curve/Arc3d";
 import { CurveLocationDetail } from "../../curve/CurveLocationDetail";
 import { GeometryQuery } from "../../curve/GeometryQuery";
@@ -71,7 +71,7 @@ describe("CoincidentGeometryQuery", () => {
       x0 += xStep;
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "CoincidentGeometryQuery", "SegmentSegment");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("DetailSwap", () => {
@@ -88,7 +88,7 @@ describe("CoincidentGeometryQuery", () => {
     ck.testExactNumber(detailA.fraction1!, detailB.fraction1!);
     ck.testPoint3d(detailA.point, detailB.point);
     ck.testPoint3d(detailA.point1!, detailB.point1!);
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("ArcArc", () => {
@@ -148,7 +148,7 @@ describe("CoincidentGeometryQuery", () => {
       x0 += 2 * xStep;
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "CoincidentGeometryQuery", "ArcArc");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
 });

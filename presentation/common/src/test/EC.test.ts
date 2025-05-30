@@ -4,15 +4,14 @@
  *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { Id64, Id64String } from "@itwin/core-bentley";
-import { InstanceKey, RelationshipPath } from "../presentation-common";
+import { InstanceKey, RelationshipPath } from "../presentation-common.js";
 import {
   RelatedClassInfo,
   RelatedClassInfoWithOptionalRelationship,
   RelatedClassInfoWithOptionalRelationshipJSON,
   StrippedRelatedClassInfo,
-} from "../presentation-common/EC";
-import { createTestECClassInfo, createTestRelatedClassInfo, createTestRelatedClassInfoWithOptionalRelationship } from "./_helpers/EC";
-import { createRandomECClassInfo } from "./_helpers/random";
+} from "../presentation-common/EC.js";
+import { createTestECClassInfo, createTestRelatedClassInfo, createTestRelatedClassInfoWithOptionalRelationship } from "./_helpers/EC.js";
 
 describe("InstanceKey", () => {
   describe("compare", () => {
@@ -49,17 +48,6 @@ describe("InstanceKey", () => {
 });
 
 describe("RelatedClassInfo", () => {
-  describe("to/from JSON", () => {
-    it("passes roundtrip", () => {
-      const src = createTestRelatedClassInfo();
-      // eslint-disable-next-line deprecation/deprecation
-      const json = RelatedClassInfo.toJSON(src);
-      // eslint-disable-next-line deprecation/deprecation
-      const res = RelatedClassInfo.fromJSON(json);
-      expect(res).to.deep.eq(src);
-    });
-  });
-
   describe("to/from compressed JSON", () => {
     it("passes roundtrip", () => {
       const src = createTestRelatedClassInfo();
@@ -75,9 +63,9 @@ describe("RelatedClassInfo", () => {
       const lhs: RelatedClassInfo = {
         isForwardRelationship: true,
         isPolymorphicRelationship: true,
-        relationshipInfo: createRandomECClassInfo(),
-        sourceClassInfo: createRandomECClassInfo(),
-        targetClassInfo: createRandomECClassInfo(),
+        relationshipInfo: createTestECClassInfo(),
+        sourceClassInfo: createTestECClassInfo(),
+        targetClassInfo: createTestECClassInfo(),
         isPolymorphicTargetClass: true,
       };
       const rhs = { ...lhs };
@@ -88,9 +76,9 @@ describe("RelatedClassInfo", () => {
       const lhs: RelatedClassInfo = {
         isForwardRelationship: true,
         isPolymorphicRelationship: true,
-        relationshipInfo: createRandomECClassInfo(),
-        sourceClassInfo: createRandomECClassInfo(),
-        targetClassInfo: createRandomECClassInfo(),
+        relationshipInfo: createTestECClassInfo(),
+        sourceClassInfo: createTestECClassInfo(),
+        targetClassInfo: createTestECClassInfo(),
         isPolymorphicTargetClass: true,
       };
       const rhs = { ...lhs, sourceClassInfo: { ...lhs.sourceClassInfo, name: "different" } };
@@ -101,9 +89,9 @@ describe("RelatedClassInfo", () => {
       const lhs: RelatedClassInfo = {
         isForwardRelationship: true,
         isPolymorphicRelationship: true,
-        relationshipInfo: createRandomECClassInfo(),
-        sourceClassInfo: createRandomECClassInfo(),
-        targetClassInfo: createRandomECClassInfo(),
+        relationshipInfo: createTestECClassInfo(),
+        sourceClassInfo: createTestECClassInfo(),
+        targetClassInfo: createTestECClassInfo(),
         isPolymorphicTargetClass: true,
       };
       const rhs: StrippedRelatedClassInfo = {
@@ -119,9 +107,9 @@ describe("RelatedClassInfo", () => {
       const lhs: RelatedClassInfo = {
         isForwardRelationship: true,
         isPolymorphicRelationship: true,
-        relationshipInfo: createRandomECClassInfo(),
-        sourceClassInfo: createRandomECClassInfo(),
-        targetClassInfo: createRandomECClassInfo(),
+        relationshipInfo: createTestECClassInfo(),
+        sourceClassInfo: createTestECClassInfo(),
+        targetClassInfo: createTestECClassInfo(),
         isPolymorphicTargetClass: true,
       };
       const rhs: StrippedRelatedClassInfo = {
@@ -139,9 +127,9 @@ describe("RelatedClassInfo", () => {
       const source: RelatedClassInfo = {
         isForwardRelationship: true,
         isPolymorphicRelationship: true,
-        relationshipInfo: createRandomECClassInfo(),
-        sourceClassInfo: createRandomECClassInfo(),
-        targetClassInfo: createRandomECClassInfo(),
+        relationshipInfo: createTestECClassInfo(),
+        sourceClassInfo: createTestECClassInfo(),
+        targetClassInfo: createTestECClassInfo(),
         isPolymorphicTargetClass: true,
       };
       expect(RelatedClassInfo.strip(source)).to.deep.eq({
@@ -204,9 +192,9 @@ describe("RelatedClassInfoWithOptionalRelationship", () => {
 describe("RelationshipPath", () => {
   describe("reverse", () => {
     it("reverses single-step path", () => {
-      const src = createRandomECClassInfo();
-      const tgt = createRandomECClassInfo();
-      const rel = { ...createRandomECClassInfo(), name: "src-to-tgt" };
+      const src = createTestECClassInfo();
+      const tgt = createTestECClassInfo();
+      const rel = { ...createTestECClassInfo(), name: "src-to-tgt" };
       const path: RelationshipPath = [
         {
           sourceClassInfo: src,
@@ -232,11 +220,11 @@ describe("RelationshipPath", () => {
     });
 
     it("reverses multi-step path", () => {
-      const src = createRandomECClassInfo();
-      const mid = createRandomECClassInfo();
-      const tgt = createRandomECClassInfo();
-      const rel1 = { ...createRandomECClassInfo(), name: "src-to-mid" };
-      const rel2 = { ...createRandomECClassInfo(), name: "tgt-to-mid" };
+      const src = createTestECClassInfo();
+      const mid = createTestECClassInfo();
+      const tgt = createTestECClassInfo();
+      const rel1 = { ...createTestECClassInfo(), name: "src-to-mid" };
+      const rel2 = { ...createTestECClassInfo(), name: "tgt-to-mid" };
       const path: RelationshipPath = [
         {
           sourceClassInfo: src,
@@ -284,9 +272,9 @@ describe("RelationshipPath", () => {
         {
           isForwardRelationship: true,
           isPolymorphicRelationship: true,
-          relationshipInfo: createRandomECClassInfo(),
-          sourceClassInfo: createRandomECClassInfo(),
-          targetClassInfo: createRandomECClassInfo(),
+          relationshipInfo: createTestECClassInfo(),
+          sourceClassInfo: createTestECClassInfo(),
+          targetClassInfo: createTestECClassInfo(),
           isPolymorphicTargetClass: true,
         },
       ];
@@ -299,9 +287,9 @@ describe("RelationshipPath", () => {
         {
           isForwardRelationship: true,
           isPolymorphicRelationship: true,
-          relationshipInfo: createRandomECClassInfo(),
-          sourceClassInfo: createRandomECClassInfo(),
-          targetClassInfo: createRandomECClassInfo(),
+          relationshipInfo: createTestECClassInfo(),
+          sourceClassInfo: createTestECClassInfo(),
+          targetClassInfo: createTestECClassInfo(),
           isPolymorphicTargetClass: true,
         },
       ];
@@ -310,9 +298,9 @@ describe("RelationshipPath", () => {
         {
           isForwardRelationship: true,
           isPolymorphicRelationship: true,
-          relationshipInfo: createRandomECClassInfo(),
-          sourceClassInfo: createRandomECClassInfo(),
-          targetClassInfo: createRandomECClassInfo(),
+          relationshipInfo: createTestECClassInfo(),
+          sourceClassInfo: createTestECClassInfo(),
+          targetClassInfo: createTestECClassInfo(),
           isPolymorphicTargetClass: true,
         },
       ];
@@ -324,9 +312,9 @@ describe("RelationshipPath", () => {
         {
           isForwardRelationship: true,
           isPolymorphicRelationship: true,
-          relationshipInfo: createRandomECClassInfo(),
-          sourceClassInfo: createRandomECClassInfo(),
-          targetClassInfo: createRandomECClassInfo(),
+          relationshipInfo: createTestECClassInfo(),
+          sourceClassInfo: createTestECClassInfo(),
+          targetClassInfo: createTestECClassInfo(),
           isPolymorphicTargetClass: true,
         },
       ];
@@ -349,9 +337,9 @@ describe("RelationshipPath", () => {
         {
           isForwardRelationship: true,
           isPolymorphicRelationship: true,
-          relationshipInfo: createRandomECClassInfo(),
-          sourceClassInfo: createRandomECClassInfo(),
-          targetClassInfo: createRandomECClassInfo(),
+          relationshipInfo: createTestECClassInfo(),
+          sourceClassInfo: createTestECClassInfo(),
+          targetClassInfo: createTestECClassInfo(),
           isPolymorphicTargetClass: true,
         },
       ];

@@ -1,6 +1,6 @@
 # Getting started with iTwin.js
 
-Welcome to the documentation site for the iTwin Platform's digital twin open-source JavaScript library, iTwin.js. iTwin.js offers a versatile and comprehensive set of APIs that can be utilized across various platforms, including web frontends and backends, web services, and desktop, in any context an [iModel](./imodels.md) is used. As a large library, your starting point will depend on the specific development project you have in mind. If you are interested in extending the user interface of an iTwin viewer by adding a new tool or widget, we recommend consulting [the frontend guide](./frontend/index). For higher-level React components, [AppUI](./ui/appui/index.md) may be of interest to you. If you're working on a service or on the server and want to query an iModel's data, you'll want to head over to our [backend documentation](./backend/index). While we're on the subject of querying data, we have a great [tutorial to get you up to speed on ECSQL](./ECSQLTutorial/index.md).
+Welcome to the documentation site for the iTwin Platform's digital twin open-source JavaScript library, iTwin.js. iTwin.js offers a versatile and comprehensive set of APIs that can be utilized across various platforms, including web frontends and backends, web services, and desktop, in any context an [iModel](./imodels.md) is used. As a large library, your starting point will depend on the specific development project you have in mind. If you are interested in extending the user interface of an iTwin viewer by adding a new tool or widget, we recommend consulting [the frontend guide](./frontend/index). For higher-level React components, [AppUI](../ui/appui/index.md) may be of interest to you. If you're working on a service or on the server and want to query an iModel's data, you'll want to head over to our [backend documentation](./backend/index). While we're on the subject of querying data, we have a great [tutorial to get you up to speed on ECSQL](./ECSQLTutorial/index.md).
 
 There's quite a bit to explore. The sections to the left and the [helpful articles at the bottom of this page](#helpful-articles) can help guide your iTwin.js application development.
 
@@ -21,7 +21,7 @@ This website is organized into sections by tabs at the top of each page.
 
 - The [BIS](../bis/index.md) section explains the Base Infrastructure Schemas. Understanding BIS is essential to making sense of the iTwin.js APIs. Depending on your familiarity with database design, this is often the best starting point for understanding iModels and iTwin.js.
 - The _Learning_ tab (this page) introduces the building blocks of iTwin.js and provides step-by-step instructions for creating applications.
-- The [API Reference](../reference/index) tab explains the API in more detail with package/class/function level documentation.
+- The [API Reference](../reference/index.md) tab explains the API in more detail with package/class/function level documentation.
 
 ## iTwin.js vs. iModelHub
 
@@ -56,6 +56,7 @@ The iTwin.js library requires a JavaScript engine with es2017 support.
 - [GeoLocation in iModels](./GeoLocation.md)
 - [Change summaries](./ChangeSummaries.md)
 - [Remote procedure call ("RPC") Interfaces](./RpcInterface)
+- [EC Schema XML File Locaters](./schema-xml-file-locaters.md)
 
 Step by step instructions to:
 

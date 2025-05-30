@@ -21,8 +21,7 @@ module.exports = [
         "error",
         {
           "releaseTags": [
-            "public",
-            "preview"
+            "public"
           ],
           "outputApiFile": false
         }

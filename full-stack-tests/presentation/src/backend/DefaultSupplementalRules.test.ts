@@ -9,9 +9,9 @@ import { assert, Id64String } from "@itwin/core-bentley";
 import { BisCodeSpec, Code, ElementAspectProps, ElementProps, IModel } from "@itwin/core-common";
 import { Presentation } from "@itwin/presentation-backend";
 import { DefaultContentDisplayTypes, InstanceKey, KeySet, Ruleset } from "@itwin/presentation-common";
-import { initialize, terminate } from "../IntegrationTests";
-import { getFieldByLabel } from "../Utils";
-import { buildTestIModelDb } from "../IModelSetupUtils";
+import { initialize, terminate } from "../IntegrationTests.js";
+import { getFieldByLabel } from "../Utils.js";
+import { buildTestIModelDb } from "../IModelSetupUtils.js";
 
 describe("Default supplemental rules", async () => {
   before(async () => {

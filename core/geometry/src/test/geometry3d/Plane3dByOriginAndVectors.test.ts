@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
+import { describe, expect, it } from "vitest";
 import { Plane3dByOriginAndVectors } from "../../geometry3d/Plane3dByOriginAndVectors";
 import { Vector2d } from "../../geometry3d/Point2dVector2d";
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
@@ -76,7 +76,7 @@ describe("Plane3dByOriginAndVectors", () => {
       new Float64Array([4, 9, 1, 1]));
     ck.testTrue(errorPlane1.isAlmostEqual(Plane3dByOriginAndVectors.createXYPlane()));
     ck.checkpoint("Plane3dByOriginAndVectors.HelloWorld");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("CreateFromTransform", () => {
     const ck = new Checker();
@@ -103,7 +103,7 @@ describe("Plane3dByOriginAndVectors", () => {
     const plane3 = Plane3dByOriginAndVectors.createFromTransformColumnsXYAndLengths(transform, undefined, undefined);
     ck.testVector3d(plane3.vectorU, transform.matrix.columnX());
     ck.testVector3d(plane3.vectorV, transform.matrix.columnY());
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
 
   });
   it("Orthogonalize", () => {
@@ -118,7 +118,7 @@ describe("Plane3dByOriginAndVectors", () => {
 
     const singularPlane = Plane3dByOriginAndVectors.createOriginAndVectorsXYZ(3, 2, 4, 1, 2, 3, 1, 2, 3);
     ck.testUndefined(singularPlane.unitNormalRay(), "Singular plane unit normal fails");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
 
   });
 

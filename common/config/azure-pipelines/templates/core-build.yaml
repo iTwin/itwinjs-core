@@ -25,10 +25,10 @@ parameters:
     default: false
 
 steps:
-  - task: NodeTool@0
+  - task: UseNode@1
     displayName: "Use Node ${{ parameters.nodeVersion }}"
     inputs:
-      versionSpec: ${{ parameters.nodeVersion }}
+      version: ${{ parameters.nodeVersion }}
       checkLatest: true
 
   - script: |
@@ -74,7 +74,7 @@ steps:
   - script: node common/scripts/install-run-rush.js audit
     displayName: rush audit
     workingDirectory: ${{ parameters.workingDir }}
-    condition: and(succeeded(), ${{ parameters.runRushAudit }}, ne('${{ parameters.targetBranch }}', 'imodel02'))
+    condition: and(succeeded(), ${{ parameters.runRushAudit }})
 
   - script: node common/scripts/install-run-rush.js build -v -p max
     displayName: rush build

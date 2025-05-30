@@ -12,7 +12,7 @@ import { OpenBriefcaseProps, OpenCheckpointArgs } from "./BriefcaseTypes";
 import { ChangedEntities } from "./ChangedEntities";
 import { ChangesetIndex, ChangesetIndexAndId } from "./ChangesetProps";
 import { GeographicCRSProps } from "./geometry/CoordinateReferenceSystem";
-import { EcefLocationProps, IModelConnectionProps, IModelRpcProps, RootSubjectProps, StandaloneOpenOptions } from "./IModel";
+import { EcefLocationProps, IModelConnectionProps, IModelRpcProps, RootSubjectProps, SnapshotOpenOptions, StandaloneOpenOptions } from "./IModel";
 import { ModelGeometryChangesProps } from "./ModelGeometryChanges";
 
 /** Options for pulling changes into iModel.
@@ -70,14 +70,39 @@ export interface IpcAppNotifications {
   notifyApp: () => void;
 }
 
+/** @internal */
+export interface NotifyEntitiesChangedMetadata {
+  /** Class full name ("Schema:Class") */
+  name: string;
+  /** The indices in [[NotifyEntitiesChangedArgs.meta]] of each of this class's **direct** base classes. */
+  bases: number[];
+}
+
+/** Arguments supplied to [[TxnNotifications.notifyElementsChanged]] and [[TxnNotifications.notifyModelsChanged]].
+ * @internal
+ */
+export interface NotifyEntitiesChangedArgs extends ChangedEntities {
+  /** An array of the same length as [[ChangedEntities.inserted]] (or empty if that array is undefined), containing the index in the [[meta]] array at which the
+   * metadata for each entity's class is located.
+   */
+  insertedMeta: number[];
+  /** See insertedMeta. */
+  updatedMeta: number[];
+  /** See insertedMeta. */
+  deletedMeta: number[];
+
+  /** Metadata describing each unique class of entity in this set of changes, followed by each unique direct or indirect base class of those classes. */
+  meta: NotifyEntitiesChangedMetadata[];
+}
+
 /** Interface implemented by the frontend [NotificationHandler]($common) to be notified of changes to an iModel.
  * @see [TxnManager]($backend) for the source of these events.
  * @see [BriefcaseTxns]($frontend) for the frontend implementation.
  * @internal
  */
 export interface TxnNotifications {
-  notifyElementsChanged: (changes: ChangedEntities) => void;
-  notifyModelsChanged: (changes: ChangedEntities) => void;
+  notifyElementsChanged: (changes: NotifyEntitiesChangedArgs) => void;
+  notifyModelsChanged: (changes: NotifyEntitiesChangedArgs) => void;
   notifyGeometryGuidsChanged: (changes: ModelIdAndGeometryGuid[]) => void;
   notifyCommit: () => void;
   notifyCommitted: (hasPendingTxns: boolean, time: number) => void;
@@ -124,10 +149,14 @@ export interface IpcAppFunctions {
   openCheckpoint: (args: OpenCheckpointArgs) => Promise<IModelConnectionProps>;
   /** see BriefcaseConnection.openStandalone */
   openStandalone: (filePath: string, openMode: OpenMode, opts?: StandaloneOpenOptions) => Promise<IModelConnectionProps>;
+  /** see SnapshotConnection.openFile */
+  openSnapshot: (filePath: string, opts?: SnapshotOpenOptions) => Promise<IModelConnectionProps>;
   /** see BriefcaseConnection.close */
   closeIModel: (key: string) => Promise<void>;
   /** see BriefcaseConnection.saveChanges */
   saveChanges: (key: string, description?: string) => Promise<void>;
+  /** see BriefcaseConnection.abandonChanges */
+  abandonChanges: (key: string) => Promise<void>;
   /** see BriefcaseTxns.hasPendingTxns */
   hasPendingTxns: (key: string) => Promise<boolean>;
   /** see BriefcaseTxns.isUndoPossible */

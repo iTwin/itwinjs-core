@@ -24,11 +24,11 @@ const formatString = (format: string, ...args: string[]) => {
  */
 export enum DiagnosticType {
   None,
-  Schema, // eslint-disable-line @typescript-eslint/no-shadow
-  SchemaItem, // eslint-disable-line @typescript-eslint/no-shadow
+  Schema,
+  SchemaItem,
   Property,
   CustomAttributeContainer,
-  RelationshipConstraint, // eslint-disable-line @typescript-eslint/no-shadow
+  RelationshipConstraint,
 }
 
 /**

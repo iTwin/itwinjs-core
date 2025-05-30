@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert } from "chai";
+import { assert, expect } from "chai";
 import { IModelJsFs } from "../../IModelJsFs";
 import { NativeHost } from "../../NativeHost";
 import { NativeAppStorage } from "../../NativeAppStorage";
@@ -124,4 +124,11 @@ describe("NativeApp storage backend", () => {
     });
   });
 
+  it("should not allow null in the name", async () => {
+    expect(() => NativeAppStorage.open("my-storage\x00-name")).to.throw();
+  });
+
+  it("should not allow names which points to the parent directory", async () => {
+    expect(() => NativeAppStorage.open("dir/../../storage")).to.throw();
+  });
 });

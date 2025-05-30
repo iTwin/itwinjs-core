@@ -116,7 +116,7 @@ export abstract class Plane3d implements PlaneAltitudeEvaluator {
    * * Classes with a purely implicit equation of their plane can accept the default implementation
    */
   public getAnyPointOnPlane(result?: Point3d): Point3d {
-    return this.projectPointToPlane(Point3d.create(0, 0, 0), result);
+    return this.projectXYZToPlane(0, 0, 0, result);
   }
   /**
    * Return the altitude of weighted spacePoint above or below the plane.  (Below is negative)
@@ -149,4 +149,9 @@ export abstract class Plane3d implements PlaneAltitudeEvaluator {
    * * MUST BE IMPLEMENTED BY DERIVED CLASSES
    */
   public abstract projectPointToPlane(spacePoint: Point3d, result?: Point3d): Point3d;
+  /** Return the projection of (x,y,z) onto the plane. */
+  public projectXYZToPlane(x: number, y: number, z: number, result?: Point3d): Point3d {
+    const point = Point3d.create(x, y, z, result);
+    return this.projectPointToPlane(point, point);
+  }
 }

@@ -6,6 +6,7 @@
  * @module Curve
  */
 
+import { Geometry } from "../../Geometry";
 import { NullGeometryHandler } from "../../geometry3d/GeometryHandler";
 import { Point3d } from "../../geometry3d/Point3dVector3d";
 import { PolylineCompressionContext } from "../../geometry3d/PolylineCompressionByEdgeOffset";
@@ -60,13 +61,17 @@ export class ConsolidateAdjacentCurvePrimitivesContext extends NullGeometryHandl
             break;
           }
         }
-        if (points.length > 1) {
-          const tolerance = this._options.colinearPointTolerance;
-          const compressedPointsA = PolylineOps.compressShortEdges(points, tolerance);
-          const compressedPointsB = PolylineOps.compressByPerpendicularDistance(compressedPointsA, tolerance);
+        if (points.length <= 1) {
+          g.children[numAccept++] = basePrimitive;
+        } else if (this._options.disableLinearCompression) {
+          const pointsDeduped = PolylineOps.compressShortEdges(points, Geometry.smallFloatingPoint); // remove only exact duplicate interior points
+          g.children[numAccept++] = LineString3d.createPoints(pointsDeduped);
+        } else { // compress points
+          const compressedPointsA = PolylineOps.compressShortEdges(points, this._options.duplicatePointTolerance);
+          const compressedPointsB = PolylineOps.compressByPerpendicularDistance(compressedPointsA, this._options.colinearPointTolerance);
           if (i0 === 0 && i1 === numOriginal) {
             // points is the entire curve, and the curve is closed.   Maybe the first and last segments are colinear.
-            PolylineCompressionContext.compressColinearWrapInPlace(compressedPointsB, tolerance);
+            PolylineCompressionContext.compressColinearWrapInPlace(compressedPointsB, this._options.duplicatePointTolerance, this._options.colinearPointTolerance);
           }
           if (compressedPointsB.length < 2) {
             // Collapsed to a point?  Make a single point linestring
@@ -76,8 +81,6 @@ export class ConsolidateAdjacentCurvePrimitivesContext extends NullGeometryHandl
           } else {
             g.children[numAccept++] = LineString3d.createPoints(compressedPointsB);
           }
-        } else {
-          g.children[numAccept++] = basePrimitive;
         }
         i0 = i1;
       } else if (this._options.consolidateCompatibleArcs && basePrimitive instanceof Arc3d) {
@@ -87,11 +90,11 @@ export class ConsolidateAdjacentCurvePrimitivesContext extends NullGeometryHandl
           const nextPrimitive = g.children[i0];
           if (!(nextPrimitive instanceof Arc3d))
             break;
-          if (!CurveFactory.appendToArcInPlace(basePrimitive, nextPrimitive))
+          if (!CurveFactory.appendToArcInPlace(basePrimitive, nextPrimitive)) // TODO: use this._options.duplicatePointTolerance
             break;
         }
         // i0 has already advanced
-        g.children[numAccept++] = basePrimitive;    // which has been extended 0 or more times.
+        g.children[numAccept++] = basePrimitive; // which has been extended 0 or more times.
       } else {
         g.children[numAccept++] = basePrimitive;
         i0++;

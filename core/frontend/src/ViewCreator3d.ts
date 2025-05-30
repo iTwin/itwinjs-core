@@ -90,6 +90,7 @@ export class ViewCreator3d {
 
     const viewState = SpatialViewState.createFromProps(props, this._imodel);
     try {
+      await viewState.iModel.subcategories.loadAllUsedSpatialSubCategories();
       await viewState.load();
     } catch {
     }
@@ -241,7 +242,7 @@ export class ViewCreator3d {
    * Get the Id of the default view.
    */
   private async _getDefaultViewId(): Promise<Id64String | undefined> {
-    // eslint-disable-next-line deprecation/deprecation
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     const viewId = await this._imodel.views.queryDefaultViewId();
     if (viewId !== Id64.invalid)
       return viewId;

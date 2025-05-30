@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
+import { describe, expect, it } from "vitest";
 import {
   PointCloudDisplayProps, PointCloudDisplaySettings, RealityModelDisplayProps, RealityModelDisplaySettings,
 } from "../RealityModelDisplaySettings";

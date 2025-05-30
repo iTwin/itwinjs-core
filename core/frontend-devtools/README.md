@@ -74,10 +74,11 @@ The key-ins below enable, disable, or toggle a specific feature. They take at mo
 * `fdt drawing graphics` - When enabled, 2d graphics in any drawing view will not be displayed. Useful for inspecting 3d graphics of attached section view, if any.
 * `fdt sectiondrawing spatial view` - When enabled, 3d graphics for a section drawing will be displayed in the drawing view, even if they otherwise wouldn't be.
 * `fdt toggle drapefrustum` - Toggles display of frustum that is used to drape classifiers and background map.
+* `fdt toggle maskfrustum` - Toggles display of frustum that is used for planar masks.
 * `fdt toggle reality preload` - Toggles the display of preloaded reality tile bounding boxes.
 * `fdt toggle reality freeze`  - Toggles the freezing of reality tile loading, when the reality tiles are frozen new reality tiles are not downloaded or purged.
 * `fdt toggle reality logging` - Toggle the logging of reality tile loading and selection diagnostics to the console.
-* `fdt toggle reality bounds` - Toggle the display of bounding boxes for reality tiles.
+* `fdt reality bounds` - Toggle the display of bounding boxes for reality tiles.
 * `fdt set building display` Toggle the display of the worldwide OpenStreetMap worldwide buildingslayer by attaching or displaying as a reality model in the current viewport.  The OSM buildings are aggregated and supplied from Cesium Ion <https://cesium.com/content/cesium-osm-buildings/>. The first argument is required on|off - the second optional argument is a value for transparency between 0 and 1.
 * `fdt wow ignore background` Toggle whether the background color needs to be white for white-on-white reversal to apply.
 
@@ -129,7 +130,7 @@ This package provides several keyins to control the display of background maps, 
 
 * `fdt attach maplayer <name>` - Attach a background map layer from name within the map layer source list.  Partial names may be used.
 * `fdt attach mapoverlay <name>` - Attach an overlay map layer from name within the map layer source list.  Partial names may be used.
-* `fdt attach model maplayer <name>` - Attach a model map layer for each unique model of the currently selected elements.
+* `fdt attach model maplayer [name] [globe|reality|imodel]` - Attach a model map layer for each unique model of the currently selected elements to either the globe, attached reality models, or iModel. If `globe`, `reality`, or `imodel` is not specified, the attachment will default to `globe`. If name is specified, use that as the user-friendly name for the new map layer. If `name` is specified as `0`, that is considered `undefined` or unspecified.
 
 * `fdt set map base <name>` - Set the background base map from name within the map layer source list.  Partial names may be used.
 * `fdt set map base color <red, green, blue>` - Set map base color by red, green and blue values [0..255].
@@ -153,11 +154,12 @@ Several keyins enable attaching map layers of a particular format. Each takes th
 
 These keyins take the form `fdt attach <format> maplayer <arguments>` where `format` is one of the following:
 
-* `wms` - a very common OGC standard Web Map Service that produces images on demand.
-* `wmts` - a Web Map Tile Service that produces cached tiles.
-* `arcgis` - uses the ArcGIS REST API directly. The URL typically ends with "MapServer".
-* `arcgisfeature` - obtains vector data from the ArcGIS REST API and converts it to tiles.
-* `tileurl` - obtains tailes directly from a file server using a supplied URL template.
+* `WMS` - a very common OGC standard Web Map Service that produces images on demand.
+* `WMTS` - a Web Map Tile Service that produces cached tiles.
+* `ArcGIS` - uses the ArcGIS REST API directly. The URL typically ends with "MapServer".
+* `ArcGISFeature` - obtains vector data from the ArcGIS REST API and converts it to tiles. (Requires `@itwin/map-layers-formats)
+* `TileURL` - obtains tailes directly from a file server using a supplied URL template.
+* `OgcApiFeatures` - obtains vector data from a OGC API - Feature server converts it to tiles (Requires `@itwin/map-layers-formats)
 
 ### Reality model key-ins
 

@@ -17,8 +17,6 @@ import { RpcInterfaceEndpoints } from "../../RpcManager";
 import { RpcControlChannel } from "./RpcControl";
 import { RpcOperation, RpcOperationPolicy } from "./RpcOperation";
 
-/* eslint-disable deprecation/deprecation */
-
 /** @internal */
 export const REGISTRY = Symbol.for("@itwin/core-common/RpcRegistry");
 
@@ -36,6 +34,9 @@ export const CURRENT_REQUEST = Symbol.for("@itwin/core-common/RpcRequest/__curre
 
 /** @internal */
 export const CURRENT_INVOCATION = Symbol.for("@itwin/core-common/RpcInvocation/__current__");
+
+declare const self: any;
+declare const window: any;
 
 /** @internal */
 export class RpcRegistry {
@@ -209,7 +210,6 @@ export class RpcRegistry {
 
   private interceptOperation(proxy: RpcInterface, operation: string) {
     const clientFunction = (proxy as any)[operation];
-    // eslint-disable-next-line prefer-arrow/prefer-arrow-functions
     (proxy as any)[operation] = function () {
       const args = Array.from(arguments);
       args.push(operation);

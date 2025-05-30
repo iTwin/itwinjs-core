@@ -6,7 +6,7 @@
 import { expect } from "chai";
 import { assert, Guid, Id64String, OrderedId64Iterable, StopWatch } from "@itwin/core-bentley";
 import { QueryBinder, QueryRowFormat } from "@itwin/core-common";
-import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
+import { IModelConnection } from "@itwin/core-frontend";
 import {
   ChildNodeSpecificationTypes,
   ClassInfo,
@@ -30,9 +30,10 @@ import {
   Value,
 } from "@itwin/presentation-common";
 import { Presentation } from "@itwin/presentation-frontend";
-import { ECClassHierarchy, ECClassInfo } from "../ECClasHierarchy";
-import { initialize, terminate } from "../IntegrationTests";
-import { collect, getFieldsByLabel } from "../Utils";
+import { ECClassHierarchy, ECClassInfo } from "../ECClasHierarchy.js";
+import { initialize, terminate } from "../IntegrationTests.js";
+import { collect, getFieldsByLabel } from "../Utils.js";
+import { TestIModelConnection } from "../IModelSetupUtils.js";
 
 /**
  * The below specifies what iModel to use and what Fields (properties) to use for simulating DataViz
@@ -56,7 +57,7 @@ describe("#performance DataViz requests", () => {
 
   before(async () => {
     await initialize();
-    iModel = await SnapshotConnection.openFile(PATH_TO_IMODEL);
+    iModel = TestIModelConnection.openFile(PATH_TO_IMODEL);
     classHierarchy = await ECClassHierarchy.create(iModel);
     descriptor = (await Presentation.presentation.getContentDescriptor({
       imodel: iModel,
@@ -209,6 +210,7 @@ describe("#performance DataViz requests", () => {
               });
 
               for await (const dv of items) {
+                // eslint-disable-next-line @typescript-eslint/no-base-to-string
                 const displayValue = dv.displayValue ? dv.displayValue.toString() : "";
                 pushValues(distinctValues, displayValue, dv.groupedRawValues);
               }
@@ -277,6 +279,7 @@ describe("#performance DataViz requests", () => {
           });
 
           for await (const dv of items) {
+            // eslint-disable-next-line @typescript-eslint/no-base-to-string
             const displayValue = dv.displayValue ? dv.displayValue.toString() : "";
             pushValues(distinctValues, displayValue, dv.groupedRawValues);
           }
@@ -355,6 +358,7 @@ describe("#performance DataViz requests", () => {
             if (rawValue === undefined || rawValue === null) {
               filter += " IS NULL";
             } else {
+              // eslint-disable-next-line @typescript-eslint/no-base-to-string
               filter += ` = ${filteredProperty.type.toLowerCase() === "string" ? `'${rawValue}'` : rawValue}`;
             }
             return filter;
@@ -456,8 +460,10 @@ describe("#performance DataViz requests", () => {
                           if (rawValue === undefined || rawValue === null) {
                             filter += "NULL";
                           } else if (filteredProperty.type.toLowerCase() === "string") {
+                            // eslint-disable-next-line @typescript-eslint/no-base-to-string
                             filter += `"${rawValue}"`;
                           } else {
+                            // eslint-disable-next-line @typescript-eslint/no-base-to-string
                             filter += rawValue;
                           }
                           return filter;
@@ -649,8 +655,8 @@ describe("#performance DataViz requests", () => {
                   break;
                 }
                 assert(Value.isNestedContent(nestedContent));
-                rawValues = nestedContent[0]!.values;
-                displayValues = nestedContent[0]!.displayValues;
+                rawValues = nestedContent[0].values;
+                displayValues = nestedContent[0].displayValues;
               }
               if (!containsValue) {
                 continue;
@@ -659,6 +665,7 @@ describe("#performance DataViz requests", () => {
                 continue;
               }
 
+              // eslint-disable-next-line @typescript-eslint/no-base-to-string
               const displayValue = (displayValues[filteredField.name] ?? "").toString();
               assert(distinctValues.has(displayValue));
               pushValues(

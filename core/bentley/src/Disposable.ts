@@ -6,6 +6,10 @@
  * @module Utils
  */
 
+/* eslint-disable @typescript-eslint/no-deprecated */
+(Symbol as any).dispose ??= Symbol("Symbol.dispose");
+(Symbol as any).asyncDispose ??= Symbol("Symbol.asyncDispose");
+
 /** Interface adopted by a type which has deterministic cleanup logic.
  * For example:
  *  - Most rendering-related types, such as [[RenderGraphic]] and [[Viewport]], own WebGL resources which must be explicitly released when no longer needed.
@@ -19,6 +23,7 @@
  *
  * Implementations of IDisposable tend to be more "low-level" types. The disposal of such types is often handled on your behalf.
  * However, always consult the documentation for an IDisposable type to determine under what circumstances you are expected to explicitly dispose of it.
+ * @deprecated in 5.0 Use builtin Disposable type instead.
  * @public
  */
 export interface IDisposable {
@@ -30,11 +35,19 @@ export interface IDisposable {
 
 /**
  * A type guard that checks whether the given argument implements `IDisposable` interface
+ * @deprecated in 5.0 Use isDisposable instead.
  * @public
  */
 export function isIDisposable(obj: unknown): obj is IDisposable {
-  // eslint-disable-next-line @typescript-eslint/unbound-method
   return !!obj && (obj instanceof Object) && !!(obj as IDisposable).dispose && (typeof (obj as IDisposable).dispose === "function");
+}
+
+/**
+ * A type guard that checks whether the given argument implements `Disposable` interface
+ * @public
+ */
+export function isDisposable(obj: unknown): obj is Disposable {
+  return !!obj && (obj instanceof Object) && !!(obj as Disposable)[Symbol.dispose] && (typeof (obj as Disposable)[Symbol.dispose] === "function");
 }
 
 /** Convenience function for disposing of a disposable object that may be undefined.
@@ -55,9 +68,19 @@ export function isIDisposable(obj: unknown): obj is IDisposable {
  * @returns undefined
  * @public
  */
-export function dispose(disposable?: IDisposable): undefined {
-  if (undefined !== disposable)
-    disposable.dispose();
+export function dispose(disposable?: Disposable): undefined;
+/**
+ * @deprecated in 5.0 Use builtin Disposable type instead.
+ * @public
+ */
+export function dispose(disposable?: IDisposable): undefined; // eslint-disable-line @typescript-eslint/unified-signatures
+export function dispose(disposable?: Disposable | IDisposable): undefined {
+  if (undefined !== disposable) {
+    if (Symbol.dispose in disposable)
+      disposable[Symbol.dispose]();
+    else
+      disposable.dispose();
+  }
   return undefined;
 }
 
@@ -66,12 +89,22 @@ export function dispose(disposable?: IDisposable): undefined {
  * @returns undefined
  * @public
  */
-export function disposeArray(list?: IDisposable[]): undefined {
+export function disposeArray(list?: Disposable[]): undefined;
+/**
+ * @deprecated in 5.0 Use builtin Disposable type instead.
+ * @public
+ */
+export function disposeArray(list?: IDisposable[]): undefined; // eslint-disable-line @typescript-eslint/unified-signatures
+export function disposeArray(list?: Disposable[] | IDisposable[]): undefined {
   if (undefined === list)
     return undefined;
 
-  for (const entry of list)
-    dispose(entry);
+  for (const entry of list) {
+    if (Symbol.dispose in entry)
+      entry[Symbol.dispose]();
+    else
+      entry.dispose();
+  }
 
   list.length = 0;
   return undefined;
@@ -82,6 +115,7 @@ export function disposeArray(list?: IDisposable[]): undefined {
  * of this function is equal to return value of func. If func throws, this function also throws (after
  * disposing the resource).
  * @public
+ * @deprecated in 5.0 Use `using` declarations instead.
  */
 export function using<T extends IDisposable, TResult>(resources: T | T[], func: (...r: T[]) => TResult): TResult {
   if (!Array.isArray(resources))

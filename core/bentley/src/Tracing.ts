@@ -80,7 +80,7 @@ function flattenObject(obj: object): SpanAttributes {
   return Object.fromEntries(getFlatEntries(obj));
 }
 
-/* eslint-disable deprecation/deprecation -- lots of self-references here... */
+/* eslint-disable @typescript-eslint/no-deprecated -- lots of self-references here... */
 
 /**
  * Enables OpenTelemetry tracing in addition to traditional logging.
@@ -130,7 +130,6 @@ export class Tracing {
   /**
    * Adds a span event describing a runtime exception, as advised in OpenTelemetry documentation
    * @param e error (exception) object
-   * @internal
    */
   public static recordException(e: Error) {
     Tracing._openTelemetry?.trace.getSpan(Tracing._openTelemetry.context.active())?.recordException(e);
@@ -166,7 +165,7 @@ export class Tracing {
               error: isError,
               loggerCategory: category,
             });
-        } catch (_e) { } // avoid throwing random errors (with stack trace mangled by async hooks) when openTelemetry collector doesn't work
+        } catch { } // avoid throwing random errors (with stack trace mangled by async hooks) when openTelemetry collector doesn't work
 
         const spanContext = Tracing._openTelemetry.trace.getSpan(oTelContext)?.spanContext();
         base(category, message, {
@@ -189,4 +188,4 @@ export class Tracing {
   }
 }
 
-/* eslint-enable deprecation/deprecation */
+/* eslint-enable @typescript-eslint/no-deprecated */

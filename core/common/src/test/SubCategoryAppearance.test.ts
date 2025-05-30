@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert } from "chai";
+import { assert, describe, it } from "vitest";
 import { Id64 } from "@itwin/core-bentley";
 import { ColorByName, ColorDef, SubCategoryAppearance, SubCategoryOverride } from "../core-common";
 

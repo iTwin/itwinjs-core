@@ -8,15 +8,15 @@
 
 import { BeEvent, Id64String } from "@itwin/core-bentley";
 import { UnitSystemKey } from "@itwin/core-quantity";
-import { Descriptor, SelectionInfo } from "./content/Descriptor";
-import { FieldDescriptor } from "./content/Fields";
-import { InstanceKey } from "./EC";
-import { InstanceFilterDefinition } from "./InstanceFilterDefinition";
-import { Ruleset } from "./rules/Ruleset";
-import { RulesetVariable } from "./RulesetVariables";
-import { SelectionScopeProps } from "./selection/SelectionScope";
-import { Item } from "./content/Item";
-import { ElementProperties } from "./ElementProperties";
+import { Descriptor, SelectionInfo } from "./content/Descriptor.js";
+import { FieldDescriptor } from "./content/Fields.js";
+import { Item } from "./content/Item.js";
+import { InstanceKey } from "./EC.js";
+import { ElementProperties } from "./ElementProperties.js";
+import { InstanceFilterDefinition } from "./InstanceFilterDefinition.js";
+import { Ruleset } from "./rules/Ruleset.js";
+import { RulesetVariable } from "./RulesetVariables.js";
+import { SelectionScopeProps } from "./selection/SelectionScope.js";
 
 /**
  * A generic request options type used for both hierarchy and content requests.
@@ -34,13 +34,6 @@ export interface RequestOptions<TIModel> {
    * unit is used if unit system is not specified.
    */
   unitSystem?: UnitSystemKey;
-
-  /**
-   * Expected form of response. This property is set automatically on newer frontends.
-   * `unparsed-json` — deliver response from native addon without parsing it.
-   * @internal
-   */
-  transport?: "unparsed-json";
 }
 
 /**
@@ -70,8 +63,6 @@ export interface HierarchyRequestOptions<TIModel, TNodeKey, TRulesetVariable = R
    *
    * **Note:** May only be used on hierarchy levels that support filtering - check [[NavNode.supportsFiltering]] before
    * requesting filtered children.
-   *
-   * @beta
    */
   instanceFilter?: InstanceFilterDefinition;
 
@@ -84,14 +75,13 @@ export interface HierarchyRequestOptions<TIModel, TNodeKey, TRulesetVariable = R
    * be useful to be displayed to end users.
    *
    * @see [Hierarchies' filtering and limiting]($docs/presentation/hierarchies/FilteringLimiting.md)
-   * @beta
    */
   sizeLimit?: number;
 }
 
 /**
  * Params for hierarchy level descriptor requests.
- * @beta
+ * @public
  */
 export interface HierarchyLevelDescriptorRequestOptions<TIModel, TNodeKey, TRulesetVariable = RulesetVariable>
   extends RequestOptionsWithRuleset<TIModel, TRulesetVariable> {
@@ -166,9 +156,8 @@ export interface ContentRequestOptions<TIModel, TDescriptor, TKeySet, TRulesetVa
   /** Input keys for getting the content */
   keys: TKeySet;
   /**
-   * Flag that specifies whether value formatting should be emitted or not.
+   * Flag that specifies whether value formatting should be omitted or not.
    * Content is returned without `displayValues` when this is set to `true`.
-   * @alpha
    */
   omitFormattedValues?: boolean;
 }
@@ -200,27 +189,25 @@ export type ElementPropertiesRequestOptions<TIModel, TParsedContent = ElementPro
  * Request type for single element properties requests.
  * @public
  */
-export interface SingleElementPropertiesRequestOptions<TIModel> extends RequestOptions<TIModel> {
+export interface SingleElementPropertiesRequestOptions<TIModel, TParsedContent = ElementProperties> extends RequestOptions<TIModel> {
   /** ID of the element to get properties for. */
   elementId: Id64String;
-}
-
-/**
- * Request type for multiple elements properties requests.
- * @public
- */
-export interface MultiElementPropertiesRequestOptions<TIModel, TParsedContent = ElementProperties> extends RequestOptions<TIModel> {
-  /**
-   * Classes of the elements to get properties for. If [[elementClasses]] is `undefined`, all classes
-   * are used. Classes should be specified in one of these formats: "<schema name or alias>.<class_name>" or
-   * "<schema name or alias>:<class_name>".
-   */
-  elementClasses?: string[];
 
   /**
    * Content parser that creates a result item based on given content descriptor and content item. Defaults
    * to a parser that creates [[ElementProperties]] objects.
-   * @beta
+   */
+  contentParser?: (descriptor: Descriptor, item: Item) => TParsedContent;
+}
+
+/**
+ * Base request type for multiple elements properties requests.
+ * @public
+ */
+export interface MultiElementPropertiesBaseRequestOptions<TIModel, TParsedContent = ElementProperties> extends RequestOptions<TIModel> {
+  /**
+   * Content parser that creates a result item based on given content descriptor and content item. Defaults
+   * to a parser that creates [[ElementProperties]] objects.
    */
   contentParser?: (descriptor: Descriptor, item: Item) => TParsedContent;
 
@@ -231,6 +218,37 @@ export interface MultiElementPropertiesRequestOptions<TIModel, TParsedContent = 
    */
   batchSize?: number;
 }
+/**
+ * Request type for multiple elements properties requests, where elements are specified by class.
+ * @public
+ */
+export interface MultiElementPropertiesByClassRequestOptions<TIModel, TParsedContent = ElementProperties>
+  extends MultiElementPropertiesBaseRequestOptions<TIModel, TParsedContent> {
+  /**
+   * Classes of the elements to get properties for. If [[elementClasses]] is `undefined`, all classes
+   * are used. Classes should be specified in one of these formats: "<schema name or alias>.<class_name>" or
+   * "<schema name or alias>:<class_name>".
+   */
+  elementClasses?: string[];
+}
+/**
+ * Request type for multiple elements properties requests, where elements are specified by element id.
+ * @public
+ */
+export interface MultiElementPropertiesByIdsRequestOptions<TIModel, TParsedContent = ElementProperties>
+  extends MultiElementPropertiesBaseRequestOptions<TIModel, TParsedContent> {
+  /**
+   * A list of `bis.Element` IDs to get properties for.
+   */
+  elementIds?: Id64String[];
+}
+/**
+ * Request type for multiple elements properties requests.
+ * @public
+ */
+export type MultiElementPropertiesRequestOptions<TIModel, TParsedContent = ElementProperties> =
+  | MultiElementPropertiesByClassRequestOptions<TIModel, TParsedContent>
+  | MultiElementPropertiesByIdsRequestOptions<TIModel, TParsedContent>;
 
 /**
  * Request type for content instance keys' requests.
@@ -268,22 +286,19 @@ export interface DisplayLabelsRequestOptions<TIModel, TInstanceKey> extends Requ
 /**
  * Request options used for selection scope related requests
  * @public
+ * @deprecated in 5.0. Use `computeSelection` from [@itwin/unified-selection](https://github.com/iTwin/presentation/blob/master/packages/unified-selection/README.md#selection-scopes) package instead.
  */
-export interface SelectionScopeRequestOptions<TIModel> extends RequestOptions<TIModel> {} // eslint-disable-line @typescript-eslint/no-empty-interface
+export interface SelectionScopeRequestOptions<TIModel> extends RequestOptions<TIModel> {} // eslint-disable-line @typescript-eslint/no-empty-object-type
 
 /**
  * Request options used for calculating selection based on given instance keys and selection scope.
  * @public
+ * @deprecated in 5.0. Use `computeSelection` from [@itwin/unified-selection](https://github.com/iTwin/presentation/blob/master/packages/unified-selection/README.md#selection-scopes) package instead.
  */
 export interface ComputeSelectionRequestOptions<TIModel> extends RequestOptions<TIModel> {
   elementIds: Id64String[];
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   scope: SelectionScopeProps;
-}
-/** @internal */
-export function isComputeSelectionRequestOptions<TIModel>(
-  options: ComputeSelectionRequestOptions<TIModel> | SelectionScopeRequestOptions<TIModel>,
-): options is ComputeSelectionRequestOptions<TIModel> {
-  return !!(options as ComputeSelectionRequestOptions<TIModel>).elementIds;
 }
 
 /**
@@ -318,7 +333,7 @@ export interface PageOptions {
  * A wrapper type that injects [[PageOptions]] into supplied type
  * @public
  */
-export type Paged<TOptions extends {}> = TOptions & {
+export type Paged<TOptions extends object> = TOptions & {
   /** Optional paging parameters */
   paging?: PageOptions;
 };
@@ -327,7 +342,7 @@ export type Paged<TOptions extends {}> = TOptions & {
  * A wrapper type that injects priority into supplied type.
  * @public
  */
-export type Prioritized<TOptions extends {}> = TOptions & {
+export type Prioritized<TOptions extends object> = TOptions & {
   /** Optional priority */
   priority?: number;
 };
@@ -346,7 +361,7 @@ export function isSingleElementPropertiesRequestOptions<TIModel, TParsedContent 
  * A wrapper type that injects cancelEvent into supplied type.
  * @public
  */
-export type WithCancelEvent<TOptions extends {}> = TOptions & {
+export type WithCancelEvent<TOptions extends object> = TOptions & {
   /** Event which is triggered when the request is canceled */
   cancelEvent?: BeEvent<() => void>;
 };

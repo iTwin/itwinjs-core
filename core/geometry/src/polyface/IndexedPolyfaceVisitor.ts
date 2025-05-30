@@ -8,11 +8,12 @@
  */
 
 import { Geometry } from "../Geometry";
+import { Angle } from "../geometry3d/Angle";
 import { Point2d } from "../geometry3d/Point2dVector2d";
-import { IndexedPolyface, Polyface, PolyfaceVisitor } from "./Polyface";
+import { Vector3d } from "../geometry3d/Point3dVector3d";
+import { PolygonOps } from "../geometry3d/PolygonOps";
+import { IndexedPolyface, PolyfaceVisitor } from "./Polyface";
 import { PolyfaceData } from "./PolyfaceData";
-
-/* eslint-disable @itwin/prefer-get */
 
 /**
  * An `IndexedPolyfaceVisitor` is an iterator-like object that "visits" facets of a mesh.
@@ -32,15 +33,20 @@ export class IndexedPolyfaceVisitor extends PolyfaceData implements PolyfaceVisi
     this._numWrap = numWrap;
     if (polyface.data.auxData)
       this.auxData = polyface.data.auxData.createForVisitor();
-    this.reset();
+    if (polyface.data.edgeMateIndex)
+      this.edgeMateIndex = [];
     this._numEdges = 0;
     this._nextFacetIndex = 0;
     this._currentFacetIndex = -1;
-
+    this.reset();
   }
   /** Return the client polyface object. */
-  public clientPolyface(): Polyface {
+  public clientPolyface(): IndexedPolyface {
     return this._polyface;
+  }
+  /** Return the number of facets this visitor is able to visit. */
+  public getVisitableFacetCount(): number {
+    return this._polyface.facetCount;
   }
   /**
    * Set the number of vertices replicated in visitor arrays (both data and index arrays).
@@ -48,7 +54,8 @@ export class IndexedPolyfaceVisitor extends PolyfaceData implements PolyfaceVisi
    * * Example: suppose `[6,7,8]` is the pointIndex array representing a triangle. First edge would be `6,7`. Second
    * edge is `7,8`. Third edge is `8,6`. To access `6` for the third edge, we have to go back to the start of array.
    * Therefore, it is useful to store `6` at the end of pointIndex array, i.e., `[6,7,8,6]` meaning `numWrap = 1`.
-   * * `numWrap = 2` is useful when vertex visit requires two adjacent vectors, e.g. for cross products.
+   * Continuing this example, `numWrap = 2` (i.e., `[6,7,8,6,7]`) is useful when each vertex visit requires the next
+   * two points, e.g., to form two adjacent vectors for a cross product.
    */
   public setNumWrap(numWrap: number) {
     this._numWrap = numWrap;
@@ -68,16 +75,19 @@ export class IndexedPolyfaceVisitor extends PolyfaceData implements PolyfaceVisi
   public moveToReadIndex(facetIndex: number): boolean {
     if (!this._polyface.isValidFacetIndex(facetIndex))
       return false;
-    this._currentFacetIndex = facetIndex;
+    const numEdges = this._polyface.numEdgeInFacet(facetIndex);
+    if (this._currentFacetIndex !== facetIndex || numEdges + this._numWrap !== this.pointCount) {
+      this._currentFacetIndex = facetIndex;
+      this._numEdges = numEdges;
+      this.resizeAllArrays(this._numEdges + this._numWrap);
+      this.gatherIndexedData(
+        this._polyface.data,
+        this._polyface.facetIndex0(this._currentFacetIndex),
+        this._polyface.facetIndex1(this._currentFacetIndex),
+        this._numWrap,
+      );
+    }
     this._nextFacetIndex = facetIndex + 1;
-    this._numEdges = this._polyface.numEdgeInFacet(facetIndex);
-    this.resizeAllArrays(this._numEdges + this._numWrap);
-    this.gatherIndexedData(
-      this._polyface.data,
-      this._polyface.facetIndex0(this._currentFacetIndex),
-      this._polyface.facetIndex1(this._currentFacetIndex),
-      this._numWrap,
-    );
     return true;
   }
   /** Advance the iterator to a the 'next' facet in the client polyface. */
@@ -87,7 +97,7 @@ export class IndexedPolyfaceVisitor extends PolyfaceData implements PolyfaceVisi
     this._nextFacetIndex++;
     return true;
   }
-  /** Reset the iterator to start at the first facet of the polyface. */
+  /** Restart the visitor at the first facet. */
   public reset(): void {
     this.moveToReadIndex(0);
     this._nextFacetIndex = 0; // so immediate moveToNextFacet stays here.
@@ -128,7 +138,7 @@ export class IndexedPolyfaceVisitor extends PolyfaceData implements PolyfaceVisi
       result,
     );
   }
-  /** Return the index (in the client polyface) of the current facet. */
+  /** Return the facetIndex of the currently referenced facet in the client polyface. */
   public currentReadIndex(): number {
     return this._currentFacetIndex;
   }
@@ -152,94 +162,163 @@ export class IndexedPolyfaceVisitor extends PolyfaceData implements PolyfaceVisi
   public clientAuxIndex(i: number): number {
     return this.auxData ? this.auxData.indices[i] : -1;
   }
-  /** Clear the contents of all arrays. */
+  /** Clear the contents of the data arrays. */
   public clearArrays(): void {
-    if (this.point !== undefined)
-      this.point.length = 0;
+    this.point.length = 0;
+    this.edgeVisible.length = 0;
     if (this.param !== undefined)
       this.param.length = 0;
     if (this.normal !== undefined)
       this.normal.length = 0;
     if (this.color !== undefined)
       this.color.length = 0;
+    // TODO: auxData? taggedNumericData?
   }
   /** Transfer data from a specified `index` of the `other` visitor as new data in this visitor. */
   public pushDataFrom(other: PolyfaceVisitor, index: number): void {
     this.point.pushFromGrowableXYZArray(other.point, index);
+    this.edgeVisible.push(other.edgeVisible[index]);
     if (this.param && other.param && index < other.param.length)
       this.param.pushFromGrowableXYArray(other.param, index);
     if (this.normal && other.normal && index < other.normal.length)
       this.normal.pushFromGrowableXYZArray(other.normal, index);
     if (this.color && other.color && index < other.color.length)
       this.color.push(other.color[index]);
+    // TODO: auxData? taggedNumericData?
   }
   /**
    * Transfer interpolated data from the other visitor.
    * * All data values are interpolated at `fraction` between `other` values at `index0` and `index1`.
    */
   public pushInterpolatedDataFrom(other: PolyfaceVisitor, index0: number, fraction: number, index1: number): void {
+    if (index0 > index1)
+      this.pushInterpolatedDataFrom(other, index1, 1.0 - fraction, index0);
     this.point.pushInterpolatedFromGrowableXYZArray(other.point, index0, fraction, index1);
+    const newVisibility = (((index0 + 1) % other.edgeVisible.length) === index1) ? other.edgeVisible[index0] : false;
+    this.edgeVisible.push(newVisibility); // interpolation along an edge preserves visibility of original edge
     if (this.param && other.param && index0 < other.param.length && index1 < other.param.length)
       this.param.pushInterpolatedFromGrowableXYArray(other.param, index0, fraction, index1);
     if (this.normal && other.normal && index0 < other.normal.length && index1 < other.normal.length)
       this.normal.pushInterpolatedFromGrowableXYZArray(other.normal, index0, fraction, index1);
     if (this.color && other.color && index0 < other.color.length && index1 < other.color.length)
       this.color.push(Geometry.interpolateColor(other.color[index0], fraction, other.color[index1]));
+    // TODO: auxData? taggedNumericData?
+  }
+  /** Create a visitor for a subset of the facets visitable by the instance. */
+  public createSubsetVisitor(facetIndices: number[], numWrap: number = 0): IndexedPolyfaceSubsetVisitor {
+    return IndexedPolyfaceSubsetVisitor.createSubsetVisitor(this._polyface, facetIndices, numWrap);
   }
 }
+
 /**
  * An `IndexedPolyfaceSubsetVisitor` is an `IndexedPolyfaceVisitor` which only visits a subset of facets in the polyface.
  * * The subset is defined by an array of facet indices provided when this visitor is created.
- * * Within the subset visitor, `facetIndex` is understood as index within the subset array:
- *   * `moveToNextFacet` moves only within the subset.
- *   * `moveToReadIndex(i)` moves underlying visitor's `parentFacetIndex(i)`.
+ * * Input indices (e.g., for `moveToReadIndex`) are understood to be indices into the subset array.
  * @public
  */
 export class IndexedPolyfaceSubsetVisitor extends IndexedPolyfaceVisitor {
-  private _parentFacetIndices: number[];
-  private _nextActiveIndex: number; // index WITHIN _parentFacetIndices array
-  private constructor(polyface: IndexedPolyface, activeFacetIndices: number[], numWrap: number) {
+  private _facetIndices: number[];
+  private _currentSubsetIndex: number; // index within _facetIndices
+  private _nextSubsetIndex: number; // index within _facetIndices
+
+  private constructor(polyface: IndexedPolyface, facetIndices: number[], numWrap: number) {
     super(polyface, numWrap);
-    this._parentFacetIndices = activeFacetIndices.slice();
-    this._nextActiveIndex = 0;
+    this._facetIndices = facetIndices.slice();
+    this._currentSubsetIndex = -1;
+    this._nextSubsetIndex = 0;
+    this.reset();
+  }
+  private isValidSubsetIndex(index: number): boolean {
+    return index >= 0 && index < this._facetIndices.length;
   }
   /**
    * Create a visitor for iterating a subset of the facets of `polyface`.
-   * * The `activeFacetIndices` array indicates all facets to be visited.
+   * @param polyface reference to the client polyface, supplying facets
+   * @param facetIndices array of indices of facets in the client polyface to visit. This array is cloned.
+   * @param numWrap number of vertices replicated in the visitor arrays to facilitate simpler caller code. Default is zero.
    */
   public static createSubsetVisitor(
-    polyface: IndexedPolyface, activeFacetIndices: number[], numWrap: number,
+    polyface: IndexedPolyface, facetIndices: number[], numWrap: number = 0,
   ): IndexedPolyfaceSubsetVisitor {
-    return new IndexedPolyfaceSubsetVisitor(polyface, activeFacetIndices, numWrap);
+    return new IndexedPolyfaceSubsetVisitor(polyface, facetIndices, numWrap);
   }
-  /** Advance the iterator to a particular facet in the client polyface. */
-  public override moveToReadIndex(activeIndex: number): boolean {
-    if (activeIndex >= 0 && activeIndex <= this._parentFacetIndices.length) {
-      this._nextActiveIndex = activeIndex;
-      return super.moveToReadIndex(this._parentFacetIndices[activeIndex++]);
+  /**
+   * Advance the iterator to a particular facet in the subset of client polyface facets.
+   * @param subsetIndex index into the subset array, not to be confused with the client facet index.
+   * @return whether the iterator was successfully moved.
+   */
+  public override moveToReadIndex(subsetIndex: number): boolean {
+    if (this.isValidSubsetIndex(subsetIndex)) {
+      this._currentSubsetIndex = subsetIndex;
+      this._nextSubsetIndex = subsetIndex + 1;
+      return super.moveToReadIndex(this._facetIndices[subsetIndex]);
     }
     return false;
   }
-  /** Advance the iterator to the next facet in the client polyface. */
+  /**
+   * Advance the iterator to the next facet in the subset of client polyface facets.
+   * @return whether the iterator was successfully moved.
+   */
   public override moveToNextFacet(): boolean {
-    if (this._nextActiveIndex < this._parentFacetIndices.length) {
-      const result = this.moveToReadIndex(this._nextActiveIndex);
-      if (result) {
-        this._nextActiveIndex++;
-        return true;
-      }
-    }
-    return false;
+    if (this._nextSubsetIndex !== this._currentSubsetIndex)
+      return this.moveToReadIndex(this._nextSubsetIndex);
+    this._nextSubsetIndex++;
+    return true;
   }
-  /** Reset the iterator to start at the first active facet in the polyface. */
+  /** Restart the visitor at the first facet. */
   public override reset(): void {
-    this._nextActiveIndex = 0;
-  }
-  /** Return the parent facet index of the indicated index within the active facets. */
-  public parentFacetIndex(activeIndex: number): number | undefined {
-    if (activeIndex >= 0 && activeIndex <= this._nextActiveIndex) {
-      return this._parentFacetIndices[activeIndex];
+    if (this._facetIndices) { // avoid crash during super ctor when we aren't yet initialized
+      this.moveToReadIndex(0);
+      this._nextSubsetIndex = 0; // so immediate moveToNextFacet stays here.
     }
-    return undefined;
+  }
+  /**
+   * Return the client polyface facet index (aka "readIndex") for the given subset index.
+   * @param subsetIndex index into the subset array. Default is the subset index of the currently visited facet.
+   * @return valid client polyface facet index, or `undefined` if invalid subset index.
+   */
+  public parentFacetIndex(subsetIndex?: number): number | undefined {
+    if (undefined === subsetIndex)
+      subsetIndex = this._currentSubsetIndex;
+    return this.isValidSubsetIndex(subsetIndex) ? this._facetIndices[subsetIndex] : undefined;
+  }
+  /** Return the number of facets this visitor is able to visit. */
+  public override getVisitableFacetCount(): number {
+    return this._facetIndices.length;
+  }
+  /**
+   * Create a visitor for those mesh facets with normal in the same half-space as the given vector.
+   * * For example, to visit the top facets of a tiled terrain mesh but skip the "skirt" facets, pass
+   * `compareVector = Vector3d.unitZ()` and a suitable `sideAngle` tolerance. Note that this will also
+   * filter out *interior* facets that are nearly vertical, not just the "skirt" facets on the boundary.
+   * @param mesh the mesh from which to select facets
+   * @param compareVector vector to which to compare facet normals. The visitor will visit only those facets
+   * with normals in the same half-space as this vector. Default is 001.
+   * @param sideAngle optional angular tolerance to filter the facets near the border between half-spaces.
+   * The visitor will *not* visit facets whose normals are nearly perpendicular to `compareVector`.
+   * Default is [[Geometry.smallAngleRadians]].
+   * @param numWrap optional number of entries replicated in visitor arrays. Default is 0.
+  */
+  public static createNormalComparison(
+    mesh: IndexedPolyface | IndexedPolyfaceVisitor,
+    compareVector: Vector3d = Vector3d.unitZ(),
+    sideAngle: Angle = Angle.createSmallAngle(),
+    numWrap: number = 0,
+  ): IndexedPolyfaceSubsetVisitor {
+    if (mesh instanceof IndexedPolyface)
+      return this.createNormalComparison(mesh.createVisitor(), compareVector, sideAngle, numWrap);
+    const visitor = mesh;
+    const facets: number[] = [];
+    const facetNormal = Vector3d.createZero();
+    for (visitor.reset(); visitor.moveToNextFacet();) {
+      if (!PolygonOps.unitNormal(visitor.point, facetNormal))
+        continue; // degenerate facet
+      if (facetNormal.dotProduct(compareVector) < 0.0)
+        continue; // ignore facet facing other half-space
+      if (facetNormal.angleFromPerpendicular(compareVector).isMagnitudeLessThanOrEqual(sideAngle))
+        continue; // ignore side facet
+      facets.push(visitor.currentReadIndex());
+    }
+    return IndexedPolyfaceSubsetVisitor.createSubsetVisitor(visitor.clientPolyface(), facets, numWrap);
   }
 }

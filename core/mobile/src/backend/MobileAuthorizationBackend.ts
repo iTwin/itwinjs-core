@@ -39,7 +39,7 @@ export class MobileAuthorizationBackend implements AuthorizationClient {
         this._accessToken = result[0];
         this._expirationDate = result[1] ? new Date(result[1]) : undefined;
         return this._accessToken;
-      } catch (_ex) {
+      } catch {
         return "";
       } finally {
         this._fetchingToken = false;

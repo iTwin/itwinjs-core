@@ -2,8 +2,8 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert, expect } from "chai";
-import { OnScreenTarget } from "../core-frontend";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { OnScreenTarget } from "../internal/render/webgl/Target";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
 import { createBlankConnection } from "./createBlankConnection";
@@ -25,14 +25,13 @@ describe("ViewManager", () => {
   });
 
   it("should resize fbo properly after dropping a recently-resized viewport", async () => {
-    const vp = openBlankViewport({ width: 32, height: 32 });
+    using vp = openBlankViewport({ width: 32, height: 32 });
     IModelApp.viewManager.addViewport(vp);
     vp.renderFrame();
     vp.vpDiv.style.width = vp.vpDiv.style.height = "3px";
     IModelApp.viewManager.dropViewport(vp, false);
     vp.renderFrame();
-    expect((vp.target as OnScreenTarget).checkFboDimensions()).to.be.true;
-    vp.dispose();
+    expect((vp.target as OnScreenTarget).checkFboDimensions()).toBe(true);
   });
 
   /** Dropping and immediately re-adding an unresized viewport to the view manager would result in a black rendering
@@ -48,7 +47,7 @@ describe("ViewManager", () => {
    * This test verifies that this problem has been resolved.
    */
   it("should not render black when dropping and re-adding viewport with same dimensions", async () => {
-    const vp = openBlankViewport({ width: 32, height: 32 });
+    using vp = openBlankViewport({ width: 32, height: 32 });
     vp.displayStyle.backgroundColor = ColorDef.red;
     IModelApp.viewManager.addViewport(vp);
     vp.renderFrame();
@@ -57,7 +56,6 @@ describe("ViewManager", () => {
     IModelApp.viewManager.addViewport(vp);
     vp.renderFrame();
     expectColors(vp, [ColorDef.red]);
-    vp.dispose();
   });
 
   it("should dispose of viewport when onShutdown is called", async () => {
@@ -65,6 +63,6 @@ describe("ViewManager", () => {
     IModelApp.viewManager.addViewport(vp);
     await IModelApp.shutdown();
 
-    assert.isTrue(vp.isDisposed);
+    expect(vp.isDisposed).toBe(true);
   });
 });

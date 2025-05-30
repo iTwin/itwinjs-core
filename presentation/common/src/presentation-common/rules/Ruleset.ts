@@ -6,9 +6,9 @@
  * @module PresentationRules
  */
 
-import { Rule } from "./Rule";
-import { RequiredSchemaSpecification } from "./SchemasSpecification";
-import { VariablesGroup } from "./Variables";
+import { Rule } from "./Rule.js";
+import { RequiredSchemaSpecification } from "./SchemasSpecification.js";
+import { VariablesGroup } from "./Variables.js";
 
 /**
  * Presentation ruleset is a list of rules that define tree hierarchy and content provided by
@@ -43,7 +43,6 @@ export interface Ruleset {
    * Defaults to `0.0.0`.
    *
    * @pattern ^[\d]+\.[\d]+\.[\d]+$
-   * @beta
    */
   version?: string;
 

@@ -1,3 +1,4 @@
+
 /*---------------------------------------------------------------------------------------------
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
@@ -29,6 +30,12 @@ import { Window } from "./Window";
 import { openIModel, OpenIModelProps } from "./openIModel";
 import { HubPicker } from "./HubPicker";
 import { RealityModelSettingsPanel } from "./RealityModelDisplaySettingsWidget";
+import { ContoursPanel } from "./Contours";
+import { GoogleMapsPanel } from "./GoogleMaps";
+import { DtaConfiguration } from "../common/DtaConfiguration";
+import { DtaRpcInterface } from "../common/DtaRpcInterface";
+import { LocalFormatsProvider } from "./LocalFormatsProvider";
+
 
 // cspell:ignore savedata topdiv savedview viewtop
 
@@ -158,6 +165,7 @@ export interface ViewerProps {
   iModel: IModelConnection;
   defaultViewName?: string;
   disableEdges?: boolean;
+  configuration: DtaConfiguration;
 }
 
 export class Viewer extends Window {
@@ -170,6 +178,7 @@ export class Viewer extends Window {
   private readonly _3dOnly: HTMLElement[] = [];
   private _isSavedView = false;
   private _debugWindow?: DebugWindow;
+  private _configuration: DtaConfiguration;
 
   public static async create(surface: Surface, props: ViewerProps): Promise<Viewer> {
     const views = await ViewList.create(props.iModel, props.defaultViewName);
@@ -183,6 +192,7 @@ export class Viewer extends Window {
     const viewer = new Viewer(Surface.instance, view, this.views, {
       iModel: view.iModel,
       disableEdges: this.disableEdges,
+      configuration: this._configuration
     });
 
     if (!this.isDocked) {
@@ -208,6 +218,8 @@ export class Viewer extends Window {
 
   private constructor(surface: Surface, view: ViewState, views: ViewList, props: ViewerProps) {
     super(surface, { scrollbars: true });
+
+    this._configuration = props.configuration;
 
     // Allow HTMLElements beneath viewport to be visible if background color has transparency.
     this.contentDiv.style.backgroundColor = "transparent";
@@ -406,6 +418,34 @@ export class Viewer extends Window {
       tooltip: "Point cloud settings",
     });
 
+    this.toolBar.addDropDown({
+      iconUnicode: "\ue94b",
+      createDropDown: async (container: HTMLElement) => {
+        const panel = new ContoursPanel(this.viewport, container);
+        return panel;
+      },
+      tooltip: "Contour display",
+    });
+
+    this.toolBar.addItem(createToolButton({
+      iconUnicode: "\ue9cc",
+      tooltip: "Load Format Set from JSON file",
+      click: async () => {
+        await this.loadFormatSetFromFile();
+      },
+    }));
+
+    if(this._configuration.googleMapsUi) {
+      this.toolBar.addDropDown({
+        iconUnicode: "\ue9e8",
+        createDropDown: async (container: HTMLElement) => {
+          const panel = new GoogleMapsPanel(this.viewport, container);
+          return panel;
+        },
+        tooltip: "Google Maps",
+      });
+    }
+
     this.updateTitle();
     this.updateActiveSettings();
   }
@@ -520,6 +560,21 @@ export class Viewer extends Window {
     return undefined !== fileName ? this.openIModel({ fileName, writable: this.surface.openReadWrite }) : Promise.resolve();
   }
 
+  private async loadFormatSetFromFile(): Promise<void> {
+    const filename = await this.surface.selectJsonConfigFilename();
+
+    if (!filename) {
+      return;
+    }
+    const formatSet = await DtaRpcInterface.getClient().getFormatSetFromFile(filename)
+
+    const localFormatsProvider = new LocalFormatsProvider({
+      fallbackFormatsProvider: IModelApp.formatsProvider,
+      formatSet
+    });
+    IModelApp.formatsProvider = localFormatsProvider;
+  }
+
   private async openIModel(props: OpenIModelProps): Promise<void> {
     try {
       await this.resetIModel(props);
@@ -555,9 +610,9 @@ export class Viewer extends Window {
   public get windowId(): string { return this.viewport.viewportId.toString(); }
 
   public override onClosing(): void {
-    this.toolBar.dispose();
+    this.toolBar[Symbol.dispose]();
     if (this._debugWindow) {
-      this._debugWindow.dispose();
+      this._debugWindow[Symbol.dispose]();
       this._debugWindow = undefined;
     }
 

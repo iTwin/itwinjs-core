@@ -9,36 +9,15 @@
 import { BadgeType } from "../items/BadgeType";
 import { ConditionalBooleanValue } from "../items/ConditionalBooleanValue";
 import { ConditionalStringValue } from "../items/ConditionalStringValue";
-import { ProvidedItem } from "../items/ProvidedItem";
-
-/** Used to specify the usage of the toolbar which determine the toolbar position.
- * @deprecated in 3.6. Use [ToolbarUsage]($appui-react) instead.
- * @public
- */
-export enum ToolbarUsage {
-  /** Contains tools to Create Update and Delete content - in ninezone this is in top left of content area. */
-  ContentManipulation = 0,
-  /** Manipulate view/camera - in ninezone this is in top right of content area. */
-  ViewNavigation = 1,
-}
-
-/** Used to specify the orientation of the toolbar.
- * @deprecated in 3.6. Use [ToolbarOrientation]($appui-react) instead.
- * @public
- */
-export enum ToolbarOrientation {
-  /** Horizontal toolbar. */
-  Horizontal = 0,
-  /** Vertical toolbar. */
-  Vertical = 1,
-}
 
 /** Describes the data needed to insert a UI items into an existing set of UI items.
  * @public
  */
-export interface ToolbarItem extends ProvidedItem { // eslint-disable-line deprecation/deprecation
+export interface ToolbarItem {
   /** can be used by application to store miscellaneous data. */
   readonly applicationData?: any;
+  /** id of UiItemsProvider */
+  readonly providerId?: string;
   /** Describes badge. Renders no badge if not specified. */
   readonly badgeType?: BadgeType;
   /** Optional description */
@@ -92,7 +71,7 @@ export interface GroupButton extends ToolbarItem {
   /** label shown as the title in at top of group panel. */
   readonly panelLabel?: string | ConditionalStringValue;
   /** children of the group */
-  readonly items: ReadonlyArray<ActionButton | GroupButton>; // eslint-disable-line deprecation/deprecation
+  readonly items: ReadonlyArray<ActionButton | GroupButton>;
 }
 
 /** Describes the data needed to insert a custom button into a toolbar.
@@ -111,12 +90,6 @@ export interface CustomButtonDefinition extends ToolbarItem {
  * @public
  */
 export type CommonToolbarItem = ActionButton | GroupButton | CustomButtonDefinition;
-
-/** Type for Toolbar Item Id
- * @deprecated in 3.6. Please use `ToolbarItem["id"]` from @itwin/appui-react.
- * @public
- */
-export type ToolbarItemId = CommonToolbarItem["id"]; // eslint-disable-line deprecation/deprecation
 
 /** Helper class to create Abstract StatusBar Item definitions.
  * @public

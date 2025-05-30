@@ -1,20 +1,35 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
+import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import { EmptyLocalization } from "@itwin/core-common";
 import { IModelApp } from "../IModelApp";
+import { IModelConnection } from "../IModelConnection";
 import { createBlankConnection } from "./createBlankConnection";
 
 describe("BlankConnection", async () => {
-  before(async () => IModelApp.startup({ localization: new EmptyLocalization() }));
-  after(async () => IModelApp.shutdown());
+  beforeAll(async () => IModelApp.startup({ localization: new EmptyLocalization() }));
+  afterAll(async () => IModelApp.shutdown());
 
   it("preserves name", async () => {
     const name = "my-blank-connection";
     const imodel = createBlankConnection(name);
-    expect(imodel.name).to.equal(name);
-    await imodel.close();
+    try {
+      expect(imodel.name).toEqual(name);
+    } finally {
+      await imodel.close();
+    }
+  });
+
+  it("raises `onOpen` event when a new `BlankConnection` is created", async () => {
+    const spy = vi.fn();
+    IModelConnection.onOpen.addListener(spy);
+    const connection = createBlankConnection();
+    try {
+      expect(spy).toHaveBeenCalled();
+    } finally {
+      await connection.close();
+    }
   });
 });

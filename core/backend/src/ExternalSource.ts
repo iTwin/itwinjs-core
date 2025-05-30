@@ -45,7 +45,7 @@ export class ExternalSource extends InformationReferenceElement {
     try {
       const codeSpec = iModelDb.codeSpecs.getByName(BisCodeSpec.externalSource);
       return codeSpec.id;
-    } catch (e) {
+    } catch {
       return iModelDb.codeSpecs.insert(BisCodeSpec.externalSource, CodeScopeSpec.Type.Repository);
     }
   }
@@ -108,7 +108,7 @@ export class ExternalSourceAttachment extends InformationReferenceElement {
     try {
       const codeSpec = iModelDb.codeSpecs.getByName(BisCodeSpec.externalSourceAttachment);
       return codeSpec.id;
-    } catch (e) {
+    } catch {
       return iModelDb.codeSpecs.insert(BisCodeSpec.externalSourceAttachment, CodeScopeSpec.Type.ParentElement);
     }
   }

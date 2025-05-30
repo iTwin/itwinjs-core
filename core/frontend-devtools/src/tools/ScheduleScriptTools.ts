@@ -11,7 +11,7 @@ import { assert, CompressedId64Set } from "@itwin/core-bentley";
 import {
   ElementLoadOptions, RenderSchedule, RenderTimelineProps,
 } from "@itwin/core-common";
-import { Viewport } from "@itwin/core-frontend";
+import { _scheduleScriptReference, Viewport } from "@itwin/core-frontend";
 import { copyStringToClipboard } from "../ClipboardUtilities";
 import { parseArgs } from "./parseArgs";
 import { DisplayStyleTool } from "./DisplayStyleTools";
@@ -33,8 +33,7 @@ export class QueryScheduleScriptTool extends DisplayStyleTool {
   public async parse(input: string[], vp: Viewport) {
     const args = parseArgs(input);
 
-    // eslint-disable-next-line deprecation/deprecation
-    this._sourceId = args.get("i") ?? vp.displayStyle.scheduleScriptReference?.sourceId;
+    this._sourceId = args.get("i") ?? vp.displayStyle[_scheduleScriptReference]?.sourceId;
     if (!this._sourceId)
       return false;
 

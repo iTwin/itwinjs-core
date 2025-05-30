@@ -60,7 +60,7 @@ const argv = yargs
     await importer.import();
     process.stdout.write(`IModel: ${argv.output} Created for GeoJson: ${argv.input}\n`);
     await IModelHost.shutdown();
-  } catch (_error) {
+  } catch {
     process.stdout.write("Error occurred\n");
   }
 })();

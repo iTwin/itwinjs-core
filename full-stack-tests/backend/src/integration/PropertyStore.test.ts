@@ -7,16 +7,7 @@ import { expect } from "chai";
 import { Suite } from "mocha";
 import { CloudSqlite, IModelHost, PropertyStore } from "@itwin/core-backend";
 import { AzuriteTest } from "./AzuriteTest";
-
-const propContainer = "properties-itwin1";
-const storageType = "azure" as const;
-
-async function initializeContainer(containerId: string) {
-  await AzuriteTest.Sqlite.createAzContainer({ containerId });
-  const props = { baseUri: AzuriteTest.baseUri, storageType, containerId, writeable: true };
-  const accessToken = await CloudSqlite.requestToken(props);
-  await PropertyStore.CloudAccess.initializeDb({ props: { ...props, accessToken } });
-}
+import { Guid } from "@itwin/core-bentley";
 
 function countProperties(values: any, filter?: PropertyStore.PropertyFilter) {
   let count = 0;
@@ -26,10 +17,12 @@ function countProperties(values: any, filter?: PropertyStore.PropertyFilter) {
   return count;
 }
 
+const iTwinId = Guid.createValue();
+let cloudProps: CloudSqlite.ContainerProps;
+
 async function makePropertyStore(user: string) {
-  const props = { baseUri: AzuriteTest.baseUri, storageType, containerId: propContainer, writeable: true };
-  const accessToken = await CloudSqlite.requestToken(props);
-  const propStore = new PropertyStore.CloudAccess({ ...props, accessToken });
+  const accessToken = await CloudSqlite.requestToken(cloudProps);
+  const propStore = new PropertyStore.CloudAccess({ ...cloudProps, accessToken });
   propStore.setCache(CloudSqlite.CloudCaches.getCache({ cacheName: user }));
   propStore.lockParams.user = user;
   return propStore;
@@ -43,9 +36,10 @@ describe("PropertyStore", function (this: Suite) {
 
   before(async () => {
     IModelHost.authorizationClient = new AzuriteTest.AuthorizationClient();
-    AzuriteTest.userToken = AzuriteTest.service.userToken.readWrite;
+    AzuriteTest.userToken = AzuriteTest.service.userToken.admin; // only admins may create containers
 
-    await initializeContainer(propContainer);
+    cloudProps = await PropertyStore.CloudAccess.createNewContainer({ metadata: { label: "for PropertyStore tests" }, scope: { iTwinId } });
+    AzuriteTest.userToken = AzuriteTest.service.userToken.readWrite;
 
     ps1 = await makePropertyStore("propertyStore1");
     ps2 = await makePropertyStore("propertyStore2");

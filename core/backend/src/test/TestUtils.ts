@@ -5,9 +5,10 @@
 
 import * as path from "path";
 import { IModelJsNative, NativeLoggerCategory } from "@bentley/imodeljs-native";
-import { BentleyLoggerCategory, IDisposable, Logger, LogLevel, ProcessDetector } from "@itwin/core-bentley";
+import { BentleyLoggerCategory, Logger, LogLevel, ProcessDetector } from "@itwin/core-bentley";
 import { BackendLoggerCategory } from "../BackendLoggerCategory";
 import { IModelHost, IModelHostOptions } from "../IModelHost";
+import { IModelNative } from "../internal/NativePlatform";
 
 /** Class for simple test timing */
 export class Timer {
@@ -32,19 +33,24 @@ export class Timer {
  * would fail unexpectedly in a debug build. In that case the native code assertions can be disabled with
  * this class.
  */
-export class DisableNativeAssertions implements IDisposable {
+export class DisableNativeAssertions implements Disposable {
   private _native: IModelJsNative.DisableNativeAssertions | undefined;
 
   constructor() {
-    this._native = new IModelHost.platform.DisableNativeAssertions();
+    this._native = new IModelNative.platform.DisableNativeAssertions();
   }
 
-  public dispose(): void {
+  public [Symbol.dispose](): void {
     if (!this._native)
       return;
 
     this._native.dispose();
     this._native = undefined;
+  }
+
+  /** @deprecated in 5.0 Use [Symbol.dispose] instead. */
+  public dispose(): void {
+    this[Symbol.dispose]();
   }
 }
 

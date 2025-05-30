@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
+import { describe, expect, it } from "vitest";
 import * as fs from "fs";
 import { BooleanClipFactory } from "../../clipping/BooleanClipFactory";
 import { BooleanClipNode } from "../../clipping/BooleanClipNode";
@@ -182,12 +182,12 @@ describe("ClipNodes", () => {
           const outsideClip: GrowableXYZArray[] = [];
           clipper.appendPolygonClip(polygon, insideClip, outsideClip, cache);
           GeometryCoreTestIO.createAndCaptureLoops(allGeometry, insideClip, x0, y0, z0);
-          }
         }
+      }
     }
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "ClipNode", "ClipManyBooleans");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("ClipManyBoxes", () => {
     const ck = new Checker();
@@ -208,7 +208,7 @@ describe("ClipNodes", () => {
     (clipperA as BooleanClipNode).toggleResult();
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, ls, x0, y0);
     GeometryCoreTestIO.saveGeometry(allGeometry, "ClipNode", "ClipManyBoxes");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
 });
@@ -238,13 +238,13 @@ it("MichaelBCover", () => {
   const ck = new Checker();
   const allGeometry: GeometryQuery[] = [];
   const shape0 = IModelJson.Reader.parse(JSON.parse(fs.readFileSync(
-    "./src/test/testInputs/clipping/base_shape.imjs", "utf8")));
+    "./src/test/data/clipping/base_shape.imjs", "utf8")));
   const shape1 = IModelJson.Reader.parse(JSON.parse(fs.readFileSync(
-    "./src/test/testInputs/clipping/shape1.imjs", "utf8")));
+    "./src/test/data/clipping/shape1.imjs", "utf8")));
   const shape2 = IModelJson.Reader.parse(JSON.parse(fs.readFileSync(
-    "./src/test/testInputs/clipping/shape2.imjs", "utf8")));
+    "./src/test/data/clipping/shape2.imjs", "utf8")));
   const shape3 = IModelJson.Reader.parse(JSON.parse(fs.readFileSync(
-    "./src/test/testInputs/clipping/shape3.imjs", "utf8")));
+    "./src/test/data/clipping/shape3.imjs", "utf8")));
   // we expect 3 loops
   let x0 = -10;
   const dy = 100;
@@ -342,6 +342,6 @@ it("MichaelBCover", () => {
     }
   }
   GeometryCoreTestIO.saveGeometry(allGeometry, "clipping", "MichaelBCover");
-  expect(ck.getNumErrors()).equals(0);
+  expect(ck.getNumErrors()).toBe(0);
 
 });

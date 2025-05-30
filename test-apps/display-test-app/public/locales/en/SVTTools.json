@@ -70,6 +70,9 @@
     "AddGltfDecoration": {
       "keyin": "dta gltf"
     },
+    "AddTextDecoration": {
+      "keyin": "dta text"
+    },
     "ShutDown": {
       "keyin": "dta shutdown"
     },
@@ -148,6 +151,12 @@
     "PlaceLineString": {
       "keyin": "dta place line string"
     },
+    "MoveElement": {
+      "keyin": "dta move element"
+    },
+    "SetEditorToolSettings": {
+      "keyin": "dta editor settings"
+    },
     "SyncViewports": {
       "keyin": "dta viewport sync"
     },
@@ -165,6 +174,9 @@
     },
     "RecordTileSizes": {
       "keyin": "dta record tilesize"
+    },
+    "AddSeequentRealityModel": {
+      "keyin": "dta add seequent reality model"
     },
     "TerrainDrape": {
       "keyin": "dta drape terrain",
@@ -184,6 +196,15 @@
     },
     "DtaClassify": {
       "keyin": "dta classify"
+    },
+    "DtaClipMask": {
+      "keyin": "dta clip mask"
+    },
+    "CreateSectionDrawing": {
+      "keyin": "dta create section drawing"
+    },
+    "ToggleSecondaryIModel": {
+      "keyin": "dta imodel attach"
     }
   }
 }

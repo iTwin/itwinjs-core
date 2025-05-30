@@ -35,8 +35,6 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 import { RpcSerializedValue } from "../../core/RpcMarshaling";
 
-/* eslint-disable deprecation/deprecation */
-
 const START = 0;
 const START_BOUNDARY = 1;
 const HEADER_FIELD_START = 2;
@@ -67,8 +65,6 @@ export class RpcMultipartParser {
   private _headerValueMark: number | null;
   private _partDataMark: number | null;
   private _partBoundaryFlag: boolean;
-  private _headerFieldDecoder: TextDecoder | null;
-  private _headerValueDecoder: TextDecoder | null;
   private _headerField: string;
   private _partHeaders: { [index: string]: string };
   private _partName: string | null;
@@ -98,8 +94,6 @@ export class RpcMultipartParser {
       throw new Error("content-type missing boundary");
     }
 
-    this._headerFieldDecoder = null;
-    this._headerValueDecoder = null;
     this._headerField = "";
     this._partHeaders = {};
     this._partName = null;
@@ -354,18 +348,16 @@ export class RpcMultipartParser {
     this._partName = null;
     this._partChunks.length = 0;
 
-    this._headerFieldDecoder = new TextDecoder("utf8");
     this._headerField = "";
-    this._headerValueDecoder = new TextDecoder("utf8");
     this._headerValue = "";
   }
 
   private _onParseHeaderField(b: Uint8Array) {
-    this._headerField += this._headerFieldDecoder!.decode(b);
+    this._headerField += new TextDecoder("utf8").decode(b);
   }
 
   private _onParseHeaderValue(b: Uint8Array) {
-    this._headerValue += this._headerValueDecoder!.decode(b);
+    this._headerValue += new TextDecoder("utf8").decode(b);
   }
 
   private _onParseHeaderEnd() {
@@ -382,9 +374,7 @@ export class RpcMultipartParser {
       // this._partTransferEncoding = this._headerValue.toLowerCase();
     }
 
-    this._headerFieldDecoder = new TextDecoder("utf8");
     this._headerField = "";
-    this._headerValueDecoder = new TextDecoder("utf8");
     this._headerValue = "";
   }
 

@@ -2,6 +2,7 @@
  * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
+/* eslint-disable @typescript-eslint/no-deprecated */
 /** @packageDocumentation
  * @module UnifiedSelection
  */
@@ -9,6 +10,7 @@
 /**
  * Data structure that describes a [selection scope]($docs/presentation/unified-selection/index#selection-scopes).
  * @public
+ * @deprecated in 5.0. Use `Props<typeof computeSelection>["scope"]` from [@itwin/unified-selection](https://github.com/iTwin/presentation/blob/master/packages/unified-selection/README.md#selection-scopes) package instead.
  */
 export interface SelectionScope {
   /** Unique ID of the selection scope */
@@ -22,6 +24,7 @@ export interface SelectionScope {
 /**
  * A data structure that defines properties for applying element selection scope.
  * @public
+ * @deprecated in 5.0. Use `Props<typeof computeSelection>["scope"]` from [@itwin/unified-selection](https://github.com/iTwin/presentation/blob/master/packages/unified-selection/README.md#selection-scopes) package instead.
  */
 export interface ElementSelectionScopeProps {
   /** Identifies this as the "element" selection scope */
@@ -39,5 +42,6 @@ export interface ElementSelectionScopeProps {
 /**
  * A data structure that defines properties for applying a selection scope.
  * @public
+ * @deprecated in 5.0. Use `Props<typeof computeSelection>["scope"]` from [@itwin/unified-selection](https://github.com/iTwin/presentation/blob/master/packages/unified-selection/README.md#selection-scopes) package instead.
  */
 export type SelectionScopeProps = ElementSelectionScopeProps | { id: string };

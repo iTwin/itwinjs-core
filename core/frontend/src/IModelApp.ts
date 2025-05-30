@@ -10,17 +10,14 @@
 // eslint-disable-next-line @itwin/import-within-package
 import packageJson from "../../package.json";
 /** @public */
-// eslint-disable-next-line @typescript-eslint/no-var-requires
 export const ITWINJS_CORE_VERSION = packageJson.version as string;
-const COPYRIGHT_NOTICE = 'Copyright © 2017-2024 <a href="https://www.bentley.com" target="_blank" rel="noopener noreferrer">Bentley Systems, Inc.</a>';
+const COPYRIGHT_NOTICE = `Copyright © 2017-${new Date().getFullYear()} <a href="https://www.bentley.com" target="_blank" rel="noopener noreferrer">Bentley Systems, Inc.</a>`;
 
 import { UiAdmin } from "@itwin/appui-abstract";
-import { AccessToken, BeDuration, BeEvent, BentleyStatus, DbResult, dispose, Guid, GuidString, Logger, ProcessDetector } from "@itwin/core-bentley";
-import {
-  AuthorizationClient, IModelStatus, Localization, RealityDataAccess, RpcConfiguration, RpcInterfaceDefinition, RpcRequest, SerializedRpcActivity,
-} from "@itwin/core-common";
+import { AccessToken, BeDuration, BeEvent, BentleyStatus, DbResult, dispose, Guid, GuidString, IModelStatus, Logger, ProcessDetector } from "@itwin/core-bentley";
+import { AuthorizationClient, Localization, RealityDataAccess, RpcConfiguration, RpcInterfaceDefinition, RpcRequest, SerializedRpcActivity } from "@itwin/core-common";
 import { ITwinLocalization } from "@itwin/core-i18n";
-import { TelemetryManager } from "@itwin/core-telemetry";
+import { FormatsProvider } from "@itwin/core-quantity";
 import { queryRenderCompatibility, WebGLRenderCompatibilityInfo } from "@itwin/webgl-compatibility";
 import { AccuDraw } from "./AccuDraw";
 import { AccuSnap } from "./AccuSnap";
@@ -36,9 +33,9 @@ import { FrontendLoggerCategory } from "./common/FrontendLoggerCategory";
 import * as modelselector from "./ModelSelectorState";
 import * as modelState from "./ModelState";
 import { NotificationManager } from "./NotificationManager";
-import { QuantityFormatter } from "./quantity-formatting/QuantityFormatter";
+import { FormatsProviderManager, QuantityFormatter, QuantityTypeFormatsProvider } from "./quantity-formatting/QuantityFormatter";
 import { RenderSystem } from "./render/RenderSystem";
-import { System } from "./render/webgl/System";
+import { System } from "./internal/render/webgl/System";
 import * as sheetState from "./SheetViewState";
 import * as spatialViewState from "./SpatialViewState";
 import { TentativePoint } from "./TentativePoint";
@@ -123,20 +120,23 @@ export interface IModelAppOptions {
   renderSys?: RenderSystem | RenderSystem.Options;
   /** If present, supplies the [[UiAdmin]] for this session. */
   uiAdmin?: UiAdmin;
+  /** If present, supplies the [[FormatsProvider]] for this session. */
+  formatsProvider?: FormatsProvider;
   /** If present, determines whether iModelApp is a NoRenderApp
    *  @internal
    */
   noRender?: boolean;
-  /**
+
+   /**
    * @deprecated in 3.7. Specify desired RPC interfaces in the platform-specific RPC manager call instead.
    * See [[MobileRpcManager.initializeClient]], [[ElectronRpcManager.initializeFrontend]], [[BentleyCloudRpcManager.initializeClient]].
    */
-  rpcInterfaces?: RpcInterfaceDefinition[];
+   rpcInterfaces?: RpcInterfaceDefinition[];
+
   /** @beta */
   realityDataAccess?: RealityDataAccess;
   /** If present, overrides where public assets are fetched. The default is to fetch assets relative to the current URL.
    * The path should always end with a trailing `/`.
-   * @beta
    */
   publicPath?: string;
 }
@@ -212,6 +212,7 @@ export class IModelApp {
   private static _hubAccess?: FrontendHubAccess;
   private static _realityDataAccess?: RealityDataAccess;
   private static _publicPath: string;
+  private static _formatsProviderManager: FormatsProviderManager;
 
   // No instances of IModelApp may be created. All members are static and must be on the singleton object IModelApp.
   protected constructor() { }
@@ -290,14 +291,20 @@ export class IModelApp {
   public static get uiAdmin() { return this._uiAdmin; }
   /** The requested security options for the frontend. */
   public static get securityOptions() { return this._securityOptions; }
-  /** The root URL for the assets 'public' folder.
-   * @beta
+
+  /** If present, overrides where public assets are fetched. The default is to fetch assets relative to the current URL.
+   * The path should always end with a trailing `/`.
    */
   public static get publicPath() { return this._publicPath; }
-  /** The [[TelemetryManager]] for this session
-   * @internal
+
+  /** The [[FormatsProvider]] for this session.
+   * @param provider The provider to use for formatting quantities.
+   * @beta
    */
-  public static readonly telemetry: TelemetryManager = new TelemetryManager();
+  public static get formatsProvider(): FormatsProvider { return this._formatsProviderManager; }
+  public static set formatsProvider(provider: FormatsProvider) {
+    this._formatsProviderManager.formatsProvider = provider;
+  }
 
   /** @alpha */
   public static readonly extensionAdmin = this._createExtensionAdmin();
@@ -416,6 +423,8 @@ export class IModelApp {
     this._terrainProviderRegistry = new TerrainProviderRegistry();
     this._realityDataSourceProviders = new RealityDataSourceProviderRegistry();
     this._realityDataAccess = opts.realityDataAccess;
+    this._formatsProviderManager = new FormatsProviderManager(opts.formatsProvider ?? new QuantityTypeFormatsProvider());
+
     this._publicPath = opts.publicPath ?? "";
 
     [
@@ -455,6 +464,8 @@ export class IModelApp {
     this._entityClasses.clear();
     this.authorizationClient = undefined;
     this._initialized = false;
+    this.quantityFormatter[Symbol.dispose]();
+    this.resetFormatsProvider();
     this.onAfterStartup.clear();
   }
 
@@ -551,7 +562,7 @@ export class IModelApp {
   public static async getAccessToken(): Promise<AccessToken> {
     try {
       return (await this.authorizationClient?.getAccessToken()) ?? "";
-    } catch (e) {
+    } catch {
       return "";
     }
   }
@@ -564,9 +575,9 @@ export class IModelApp {
       return Guid.createValue();
     };
 
-    RpcConfiguration.requestContext.serialize = async (_request: RpcRequest): Promise<SerializedRpcActivity> => { // eslint-disable-line deprecation/deprecation
+    RpcConfiguration.requestContext.serialize = async (_request: RpcRequest): Promise<SerializedRpcActivity> => {
       const id = _request.id;
-      const serialized: SerializedRpcActivity = { // eslint-disable-line deprecation/deprecation
+      const serialized: SerializedRpcActivity = {
         id,
         applicationId: this.applicationId,
         applicationVersion: this.applicationVersion,
@@ -753,6 +764,14 @@ export class IModelApp {
     }
 
     return this.localization.getLocalizedString(`iModelJs:${key.scope}.${key.val}`, key);
+  }
+
+  /**
+ * Resets the formatsProvider back to the default [[QuantityTypeFormatsProvider]].
+   * @beta
+   */
+  public static resetFormatsProvider() {
+    this.formatsProvider = new QuantityTypeFormatsProvider();
   }
 
   /**

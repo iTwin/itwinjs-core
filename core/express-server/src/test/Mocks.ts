@@ -5,12 +5,11 @@
 import { BentleyCloudRpcConfiguration, BentleyCloudRpcProtocol, OpenAPIInfo } from "@itwin/core-common";
 import * as http from "http";
 import * as sinon from "sinon";
-import { IModelJsExpressServer } from "../ExpressServer";
+import { IModelJsExpressServer } from "../express-server";
 
 export class FakeBentleyCloudRpcConfiguration extends BentleyCloudRpcConfiguration {
 
-  // eslint-disable-next-line @typescript-eslint/naming-convention
-  private static info: OpenAPIInfo = { title: "randomTitle", version: "randomVersion" }; // eslint-disable-line deprecation/deprecation
+  private static info: OpenAPIInfo = { title: "randomTitle", version: "randomVersion" }; // eslint-disable-line @typescript-eslint/no-deprecated
 
   // eslint-disable-next-line @typescript-eslint/naming-convention
   private protocolClass = class extends BentleyCloudRpcProtocol {

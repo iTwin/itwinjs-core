@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
  * @module Metadata
  */
@@ -9,20 +9,39 @@
 import { FormatProps } from "@itwin/core-quantity";
 
 /**
- * @beta
+ * @public @preview
  */
-export type AnyPropertyProps = PrimitivePropertyProps | StructPropertyProps | PrimitiveArrayPropertyProps | StructArrayPropertyProps | NavigationPropertyProps;
+export type AnyPropertyProps =
+  | PrimitivePropertyProps
+  | StructPropertyProps
+  | PrimitiveArrayPropertyProps
+  | StructArrayPropertyProps
+  | NavigationPropertyProps;
 /**
- * @beta
+ * @public @preview
  */
-export type AnyClassProps = EntityClassProps | MixinProps | CustomAttributeClassProps | RelationshipClassProps;
+export type AnyClassProps =
+  | EntityClassProps
+  | MixinProps
+  | CustomAttributeClassProps
+  | RelationshipClassProps;
 /**
- * @beta
+ * @public @preview
  */
-export type AnySchemaItemProps = AnyClassProps | EnumerationProps | KindOfQuantityProps | PropertyCategoryProps | SchemaItemUnitProps | InvertedUnitProps | ConstantProps | PhenomenonProps | SchemaItemFormatProps | SchemaItemOverrideFormatProps;
+export type AnySchemaItemProps =
+  | AnyClassProps
+  | EnumerationProps
+  | KindOfQuantityProps
+  | PropertyCategoryProps
+  | SchemaItemUnitProps
+  | InvertedUnitProps
+  | ConstantProps
+  | PhenomenonProps
+  | SchemaItemFormatProps
+  | SchemaItemOverrideFormatProps;
 
 /**
- * @beta
+ * @public @preview
  */
 export interface SchemaProps {
   readonly $schema: string;
@@ -34,11 +53,13 @@ export interface SchemaProps {
   readonly references?: SchemaReferenceProps[];
   readonly items?: { [name: string]: SchemaItemProps };
   readonly customAttributes?: Array<{ [value: string]: any }>;
+  readonly ecSpecMajorVersion?: number;
+  readonly ecSpecMinorVersion?: number;
 }
 
 /**
  * JSON Object interface used to deserialize into a [[SchemaKey]].
- * @beta
+ * @public @preview
  */
 export interface SchemaKeyProps {
   /** The schema name */
@@ -52,7 +73,7 @@ export interface SchemaKeyProps {
 }
 
 /**
- * @beta
+ * @public @preview
  */
 export interface SchemaReferenceProps {
   readonly name: string;
@@ -60,22 +81,24 @@ export interface SchemaReferenceProps {
 }
 
 /**
- * @beta
+ * @public @preview
  */
 export interface SchemaItemProps {
   // NEEDSWORK: Still need to clarify how single-item deserialization works...
   readonly $schema?: string;
-  readonly schema?: string;  // conditionally required
+  readonly schema?: string; // conditionally required
   readonly schemaVersion?: string;
   readonly name?: string;
   readonly schemaItemType?: string;
   readonly label?: string;
   readonly description?: string;
   readonly customAttributes?: Array<{ [value: string]: any }>;
+  readonly originalECSpecMajorVersion?: number;
+  readonly originalECSpecMinorVersion?: number;
 }
 
 /**
- * @beta
+ * @public @preview
  */
 export interface ClassProps extends SchemaItemProps {
   readonly modifier?: string;
@@ -84,33 +107,37 @@ export interface ClassProps extends SchemaItemProps {
 }
 
 /**
- * @beta
+ * @public @preview
  */
 export interface EntityClassProps extends ClassProps {
   readonly mixins?: string[];
 }
 
 /**
- * @beta
+ * @public @preview
  */
 export interface MixinProps extends ClassProps {
   readonly appliesTo: string;
 }
 
 /**
- * @beta
+ * @public @preview
  */
 export type StructClassProps = ClassProps;
 
 /**
- * @beta
+ * @public @preview
  */
 export interface CustomAttributeClassProps extends ClassProps {
+  /**
+   * Can be any combination of the [CustomAttributeContainerType]$(docs/bis/ec/customattribute-container-types.md) string values
+   * separated by commas.
+   */
   readonly appliesTo: string;
 }
 
 /**
- * @beta
+ * @public @preview
  */
 export interface RelationshipClassProps extends ClassProps {
   readonly strength: string;
@@ -120,7 +147,7 @@ export interface RelationshipClassProps extends ClassProps {
 }
 
 /**
- * @beta
+ * @public @preview
  */
 export interface RelationshipConstraintProps {
   readonly multiplicity: string;
@@ -128,10 +155,11 @@ export interface RelationshipConstraintProps {
   readonly polymorphic: boolean;
   readonly abstractConstraint?: string;
   readonly constraintClasses: string[];
+  readonly customAttributes?: Array<{ [value: string]: any }>;
 }
 
 /**
- * @beta
+ * @public @preview
  */
 export interface EnumerationProps extends SchemaItemProps {
   readonly type: string;
@@ -140,7 +168,7 @@ export interface EnumerationProps extends SchemaItemProps {
 }
 
 /**
- * @beta
+ * @public @preview
  */
 export interface EnumeratorProps {
   readonly name: string;
@@ -150,7 +178,7 @@ export interface EnumeratorProps {
 }
 
 /**
- * @beta
+ * @public @preview
  */
 export interface KindOfQuantityProps extends SchemaItemProps {
   readonly persistenceUnit: string;
@@ -159,14 +187,14 @@ export interface KindOfQuantityProps extends SchemaItemProps {
 }
 
 /**
- * @beta
+ * @public @preview
  */
 export interface PropertyCategoryProps extends SchemaItemProps {
   readonly priority: number;
 }
 
 /**
- * @beta
+ * @public @preview
  */
 export interface PropertyProps {
   readonly name: string;
@@ -182,7 +210,7 @@ export interface PropertyProps {
 }
 
 /**
- * @beta
+ * @public @preview
  */
 export interface PrimitiveOrEnumPropertyBaseProps extends PropertyProps {
   readonly extendedTypeName?: string;
@@ -193,28 +221,30 @@ export interface PrimitiveOrEnumPropertyBaseProps extends PropertyProps {
 }
 
 /**
- * @beta
+ * @public @preview
  */
-export interface PrimitivePropertyProps extends PrimitiveOrEnumPropertyBaseProps {
+export interface PrimitivePropertyProps
+  extends PrimitiveOrEnumPropertyBaseProps {
   readonly typeName: string;
 }
 
 /**
- * @beta
+ * @public @preview
  */
 export interface StructPropertyProps extends PropertyProps {
   readonly typeName: string;
 }
 
 /**
- * @beta
+ * @public @preview
  */
-export interface EnumerationPropertyProps extends PrimitiveOrEnumPropertyBaseProps {
+export interface EnumerationPropertyProps
+  extends PrimitiveOrEnumPropertyBaseProps {
   readonly typeName: string;
 }
 
 /**
- * @beta
+ * @public @preview
  */
 export interface ArrayPropertyProps extends PrimitiveOrEnumPropertyBaseProps {
   readonly minOccurs?: number;
@@ -222,21 +252,21 @@ export interface ArrayPropertyProps extends PrimitiveOrEnumPropertyBaseProps {
 }
 
 /**
- * @beta
+ * @public @preview
  */
 export interface PrimitiveArrayPropertyProps extends ArrayPropertyProps {
   readonly typeName: string;
 }
 
 /**
- * @beta
+ * @public @preview
  */
 export interface StructArrayPropertyProps extends ArrayPropertyProps {
   readonly typeName: string;
 }
 
 /**
- * @beta
+ * @public @preview
  */
 export interface NavigationPropertyProps extends PropertyProps {
   readonly relationshipName: string;
@@ -244,7 +274,7 @@ export interface NavigationPropertyProps extends PropertyProps {
 }
 
 /**
- * @beta
+ * @public @preview
  */
 export interface ConstantProps extends SchemaItemProps {
   readonly phenomenon: string;
@@ -254,19 +284,29 @@ export interface ConstantProps extends SchemaItemProps {
 }
 
 /**
- * @beta
+ * @public @preview
  */
 export type SchemaItemFormatProps = SchemaItemProps & FormatProps;
 
 /**
+ * This interface defines properties necessary to support persistence of a set of formats.
  * @beta
+ */
+export interface FormatSet {
+  name: string;
+  label: string;
+  formats: { [kindOfQuantityId: string]: SchemaItemFormatProps };
+}
+
+/**
+ * @public @preview
  */
 export interface SchemaItemOverrideFormatProps extends SchemaItemFormatProps {
   readonly parent: string;
 }
 
 /**
- * @beta
+ * @public @preview
  */
 export interface InvertedUnitProps extends SchemaItemProps {
   readonly invertsUnit: string;
@@ -274,19 +314,19 @@ export interface InvertedUnitProps extends SchemaItemProps {
 }
 
 /**
- * @beta
+ * @public @preview
  */
 export interface PhenomenonProps extends SchemaItemProps {
   readonly definition: string;
 }
 
 /**
- * @beta
+ * @public @preview
  */
 export type UnitSystemProps = SchemaItemProps;
 
 /**
- * @beta
+ * @public @preview
  */
 export interface SchemaItemUnitProps extends SchemaItemProps {
   readonly phenomenon: string;

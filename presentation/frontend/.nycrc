@@ -4,12 +4,15 @@
   "functions": 100,
   "branches": 100,
   "lines": 100,
-  "require": [
-    "jsdom-global/register"
+  "include": [
+    "src/presentation-frontend/**/*",
+    "lib/esm/presentation-frontend/**/*"
   ],
-  "exclude": [
-    "src/presentation-frontend.ts",
-    "src/test/**",
-    "lib/cjs/test/**"
+  "temp-dir": "./lib/test/coverage/.nyc_output",
+  "report-dir": "./lib/test/coverage",
+  "reporter": [
+    "text-summary",
+    "lcov",
+    "cobertura"
   ]
 }

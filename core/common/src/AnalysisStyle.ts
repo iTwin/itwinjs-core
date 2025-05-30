@@ -36,7 +36,6 @@ export class AnalysisStyleDisplacement {
    */
   public readonly scale: number;
 
-  /** @internal */
   private constructor(channelName: string, scale = 1) {
     this.channelName = channelName;
     this.scale = scale;
@@ -95,7 +94,6 @@ export class AnalysisStyleThematic {
   public readonly thematicSettings: ThematicGradientSettings;
   private _gradient?: Gradient.Symb;
 
-  /** @internal */
   private constructor(props: AnalysisStyleThematicProps) {
     this.channelName = props.channelName;
     this.range = Range1d.fromJSON(props.range);
@@ -220,7 +218,6 @@ export class AnalysisStyle {
     return new AnalysisStyle(props);
   }
 
-  /** @internal */
   private constructor(props: AnalysisStyleProps) {
     this.normalChannelName = props.normalChannelName;
     if (props.displacement)

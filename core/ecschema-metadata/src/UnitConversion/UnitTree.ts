@@ -52,6 +52,7 @@ export class GraphUtils {
 /** @internal */
 export class UnitGraph {
   private _graph = new Graph<Unit | Constant>();
+  private _unitsInProgress = new Map<string, Promise<void>>();
 
   constructor(private _context: SchemaContext) {
     this._graph.setGraph("Unit tree processor");
@@ -120,6 +121,9 @@ export class UnitGraph {
    * @param unit Current unit to be added to graph
    */
   public async addUnit(unit: Unit | Constant): Promise<void> {
+    if(this._unitsInProgress.has(unit.key.fullName))
+      return this._unitsInProgress.get(unit.key.fullName);
+
     if (this._graph.hasNode(unit.key.fullName))
       return;
 
@@ -127,6 +131,14 @@ export class UnitGraph {
     if (this.isIdentity(unit))
       return;
 
+    const promise = this.addUnitToGraph(unit);
+    this._unitsInProgress.set(unit.key.fullName, promise);
+
+    await promise
+      .finally(() => this._unitsInProgress.delete(unit.key.fullName));
+  }
+
+  private async addUnitToGraph(unit: Unit | Constant) {
     const umap = parseDefinition(unit.definition);
 
     const promiseArray: Promise<[Unit | Constant, DefinitionFragment]>[] = [];

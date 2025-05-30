@@ -5,7 +5,7 @@
 // NB: This file is not a CommonJs module - it needs to run in the browser. Do not import or export modules here!
 
 type CertaConfig = import("../CertaConfig").CertaConfig;
-declare let _CERTA_CONFIG: CertaConfig; // eslint-disable-line @typescript-eslint/naming-convention
+declare let _CERTA_CONFIG: CertaConfig;
 
 ((config: CertaConfig) => {
   const mochaOpts = config.mochaOptions;

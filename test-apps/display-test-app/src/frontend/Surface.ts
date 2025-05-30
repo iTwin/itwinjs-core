@@ -7,7 +7,7 @@ import { Range3d } from "@itwin/core-geometry";
 import { Cartographic } from "@itwin/core-common";
 import { BlankConnection, BlankConnectionProps, IModelApp, Tool } from "@itwin/core-frontend";
 import { DisplayTestApp } from "./App";
-import { BrowserFileSelector, selectFileName } from "./FileOpen";
+import { BrowserFileSelector, selectFileName, selectJsonConfigFilename } from "./FileOpen";
 import { FpsMonitor } from "./FpsMonitor";
 import { NotificationsWindow } from "./Notifications";
 import { addSnapModes } from "./SnapModes";
@@ -19,6 +19,7 @@ import { openIModel, OpenIModelProps } from "./openIModel";
 import { setTitle } from "./Title";
 import { openAnalysisStyleExample } from "./AnalysisStyleExample";
 import { openDecorationGeometryExample } from "./DecorationGeometryExample";
+import { DtaConfiguration } from "../common/DtaConfiguration";
 
 // cspell:ignore textbox topdiv
 
@@ -32,13 +33,15 @@ export class Surface {
   private readonly _toolbar: ToolBar;
   public readonly browserFileSelector?: BrowserFileSelector;
   public readonly openReadWrite: boolean;
+  public readonly configuration: DtaConfiguration;
 
   public static get instance() { return DisplayTestApp.surface; }
 
-  public constructor(surfaceDiv: HTMLElement, toolbarDiv: HTMLElement, browserFileSelector: BrowserFileSelector | undefined, openReadWrite: boolean) {
+  public constructor(configuration: DtaConfiguration, surfaceDiv: HTMLElement, toolbarDiv: HTMLElement, browserFileSelector: BrowserFileSelector | undefined, openReadWrite: boolean) {
     // Ensure iModel gets closed on page close/reload
     window.onbeforeunload = () => this.closeAllViewers();
 
+    this.configuration = configuration;
     this.element = surfaceDiv;
     this.openReadWrite = openReadWrite;
     this.browserFileSelector = browserFileSelector;
@@ -171,7 +174,7 @@ export class Surface {
       name: props?.name ?? "blank connection test",
     });
 
-    const viewer = await this.createViewer({ iModel });
+    const viewer = await this.createViewer({ iModel, configuration: this.configuration });
     viewer.dock(Dock.Full);
     return viewer;
   }
@@ -190,7 +193,7 @@ export class Surface {
     try {
       const iModel = await openIModel(props);
       setTitle(iModel);
-      const viewer = await this.createViewer({ iModel });
+      const viewer = await this.createViewer({ iModel, configuration: this.configuration });
       viewer.dock(Dock.Full);
     } catch (err: any) {
       alert(`Error opening iModel: ${err.toString()}`);
@@ -269,7 +272,7 @@ export class Surface {
     }
 
     if (undefined !== dock)
-      return () => focused.addDock(dock!);
+      return () => focused.addDock(dock);
 
     return undefined;
   }
@@ -419,6 +422,10 @@ export class Surface {
 
   public async selectFileName(): Promise<string | undefined> {
     return selectFileName(this.browserFileSelector);
+  }
+
+  public async selectJsonConfigFilename(): Promise<string | undefined> {
+    return selectJsonConfigFilename(this.browserFileSelector);
   }
 
   public async selectHubIModel(): Promise<OpenIModelProps | undefined> {

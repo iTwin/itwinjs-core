@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
+import { describe, expect, it } from "vitest";
 import { Geometry } from "../../Geometry";
 import { Angle } from "../../geometry3d/Angle";
 import { BilinearPatch } from "../../geometry3d/BilinearPatch";
@@ -58,7 +58,7 @@ describe("BilinearPatch", () => {
     verifyPatch(ck, BilinearPatch.createXYZ(0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 1, 1));
     verifyPatch(ck, BilinearPatch.createXYZ(1, 2, 3, 5, 2, -1, 6, 7, 10, -4, 2, 1));
     ck.checkpoint("BilinearPatch.Create");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("Nonconvex", () => {
@@ -66,7 +66,7 @@ describe("BilinearPatch", () => {
     const allGeometry: GeometryQuery[] = [];
     let x0 = 0.0;
     for (const z11 of [0.0, 0.5]) {
-      const patch = BilinearPatch.createXYZ(0,0,0, 1,0,0, 0,1,0, 0.25,0.25,z11);
+      const patch = BilinearPatch.createXYZ(0, 0, 0, 1, 0, 0, 0, 1, 0, 0.25, 0.25, z11);
       const options = StrokeOptions.createForFacets();
       const builder = PolyfaceBuilder.create(options);
       builder.addUVGridBody(patch, 10, 10);
@@ -75,7 +75,7 @@ describe("BilinearPatch", () => {
       x0 += 2;
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "BilinearPatch", "Nonconvex");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("IntersectRay", () => {
@@ -114,7 +114,7 @@ describe("BilinearPatch", () => {
       }
     }
     ck.checkpoint("BilinearPatch.IntersectRay");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
 });

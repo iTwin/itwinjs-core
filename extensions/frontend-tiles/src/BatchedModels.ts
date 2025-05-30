@@ -4,9 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { Id64, Id64String } from "@itwin/core-bentley";
-import { Range3d } from "@itwin/core-geometry";
 import { SpatialViewState } from "@itwin/core-frontend";
-import { ModelMetadata } from "./BatchedTilesetReader";
+import { Range3d } from "@itwin/core-geometry";
+import { ModelMetadata } from "./BatchedTilesetReader.js";
 
 export class BatchedModels {
   private _viewedModels!: Set<Id64String>;
@@ -34,6 +34,10 @@ export class BatchedModels {
     }
 
     this._viewedExtents.intersect(this._projectExtents, this._viewedExtents);
+  }
+
+  public getModelExtents(modelId: Id64String): Range3d | undefined {
+    return this._metadata.get(modelId)?.extents;
   }
 
   public views(modelId: Id64String): boolean {

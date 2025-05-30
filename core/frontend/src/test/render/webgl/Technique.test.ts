@@ -2,18 +2,18 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert, expect } from "chai";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { IModelApp } from "../../../IModelApp";
-import { AttributeMap } from "../../../render/webgl/AttributeMap";
-import { CompileStatus } from "../../../render/webgl/ShaderProgram";
-import { DrawParams, ShaderProgramParams } from "../../../render/webgl/DrawCommand";
-import { FeatureMode, TechniqueFlags } from "../../../render/webgl/TechniqueFlags";
-import { FragmentShaderComponent, ProgramBuilder, VariableType, VertexShaderComponent } from "../../../render/webgl/ShaderBuilder";
-import { SingularTechnique, Techniques } from "../../../render/webgl/Technique";
-import { System } from "../../../render/webgl/System";
-import { Target } from "../../../render/webgl/Target";
-import { TechniqueId } from "../../../render/webgl/TechniqueId";
-import { ViewportQuadGeometry } from "../../../render/webgl/CachedGeometry";
+import { AttributeMap } from "../../../internal/render/webgl/AttributeMap";
+import { CompileStatus } from "../../../internal/render/webgl/ShaderProgram";
+import { DrawParams, ShaderProgramParams } from "../../../internal/render/webgl/DrawCommand";
+import { FeatureMode, TechniqueFlags } from "../../../internal/render/webgl/TechniqueFlags";
+import { FragmentShaderComponent, ProgramBuilder, VariableType, VertexShaderComponent } from "../../../internal/render/webgl/ShaderBuilder";
+import { SingularTechnique, Techniques } from "../../../internal/render/webgl/Technique";
+import { System } from "../../../internal/render/webgl/System";
+import { Target } from "../../../internal/render/webgl/Target";
+import { TechniqueId } from "../../../internal/render/webgl/TechniqueId";
+import { ViewportQuadGeometry } from "../../../internal/render/webgl/CachedGeometry";
 import { Logger, LogLevel } from "@itwin/core-bentley";
 import { EmptyLocalization } from "@itwin/core-common";
 
@@ -44,12 +44,12 @@ function createTarget(): Target | undefined {
   }
   canvas.width = 300;
   canvas.height = 150;
-  assert(undefined !== canvas);
+  expect(canvas).not.toBeUndefined();
   return System.instance.createTarget(canvas) as Target;
 }
 
 describe("Techniques", () => {
-  before(async () => {
+  beforeAll(async () => {
     await IModelApp.startup({
       renderSys: { errorOnMissingUniform: true },
       localization: new EmptyLocalization(),
@@ -58,28 +58,28 @@ describe("Techniques", () => {
     Logger.setLevel("core-frontend.Render", LogLevel.Error);
   });
 
-  after(async () => {
+  afterAll(async () => {
     await IModelApp.shutdown();
   });
 
   it("should produce a simple dynamic rendering technique", () => {
     const target = createTarget();
-    assert(undefined !== target);
+    expect(target).toBeDefined();
 
     const techId = createPurpleQuadTechnique();
-    expect(techId).to.equal(TechniqueId.NumBuiltIn);
+    expect(techId).toEqual(TechniqueId.NumBuiltIn);
   });
 
   it("should render a purple quad", () => {
     const target = createTarget();
-    assert(undefined !== target);
+    expect(target).toBeDefined();
     if (undefined === target) {
       return;
     }
 
     const techId = createPurpleQuadTechnique();
     const geom = ViewportQuadGeometry.create(techId);
-    assert.isDefined(geom);
+    expect(geom).toBeDefined();
 
     const progParams = new ShaderProgramParams();
     progParams.init(target);
@@ -88,16 +88,15 @@ describe("Techniques", () => {
     target.techniques.draw(drawParams);
   });
 
-  // NB: compiling all shaders can potentially take a long time, especially on our mac build machines.
-  // A timeout of zero means no timeout.
-  const compileTimeout = 0;
   async function compileAllShaders(): Promise<void> {
-    expect(System.instance.techniques.compileShaders()).to.be.true;
+    expect(System.instance.techniques.compileShaders()).toBe(true);
   }
 
-  it("should compile all shader programs", async () => {
+  // NB: compiling all shaders can potentially take a long time, especially on our mac build machines.
+  // A timeout of zero means no timeout.
+  it("should compile all shader programs", { timeout: 0 }, async () => {
     await compileAllShaders();
-  }).timeout(compileTimeout);
+  });
 
   it("should successfully compile surface shader with clipping planes", () => {
     const flags = new TechniqueFlags(true);
@@ -106,7 +105,7 @@ describe("Techniques", () => {
 
     const tech = System.instance.techniques.getTechnique(TechniqueId.Surface);
     const prog = tech.getShader(flags);
-    expect(prog.compile() === CompileStatus.Success).to.be.true;
+    expect(prog.compile() === CompileStatus.Success).toBe(true);
   });
 
   it("should produce exception on syntax error", () => {
@@ -122,12 +121,12 @@ describe("Techniques", () => {
       ex = err;
     }
 
-    expect(compiled).to.be.false;
-    expect(ex).not.to.be.undefined;
+    expect(compiled).toBe(false);
+    expect(ex).toBeDefined();
     const msg = ex!.toString();
-    expect(msg.includes("blah")).to.be.true;
-    expect(msg.includes("Fragment shader failed to compile")).to.be.true;
-    expect(msg.includes("Program description: // My Naughty Program")).to.be.true;
+    expect(msg.includes("blah")).toBe(true);
+    expect(msg.includes("Fragment shader failed to compile")).toBe(true);
+    expect(msg.includes("Program description: // My Naughty Program")).toBe(true);
   });
 
   // NB: We may run across some extremely poor webgl implementation that fails to remove clearly-unused uniforms, which would cause this test to fail.
@@ -149,14 +148,14 @@ describe("Techniques", () => {
       ex = err;
     }
 
-    expect(compiled).to.be.false;
-    expect(ex).not.to.be.undefined;
-    expect(ex!.toString().includes("uniform u_unused not found")).to.be.true;
+    expect(compiled).toBe(false);
+    expect(ex).toBeDefined();
+    expect(ex!.toString().includes("uniform u_unused not found")).toBe(true);
   });
 
   describe("Number of varying vectors", () => {
     const buildProgram = ProgramBuilder.prototype.buildProgram; // eslint-disable-line @typescript-eslint/unbound-method
-    after(() => ProgramBuilder.prototype.buildProgram = buildProgram);
+    afterAll(() => (ProgramBuilder.prototype.buildProgram = buildProgram));
 
     it("does not exceed minimum guaranteed", () => {
       // GL_MAX_VARYING_VECTORS must be at least 8 on WebGL 1 and 15 on WebGL 2.

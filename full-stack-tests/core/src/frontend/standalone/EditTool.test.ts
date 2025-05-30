@@ -5,17 +5,18 @@
 import * as chai from "chai";
 import * as chaiAsPromised from "chai-as-promised";
 import { ProcessDetector } from "@itwin/core-bentley";
-import { IModelApp, PrimitiveTool, SnapshotConnection, Viewport } from "@itwin/core-frontend";
+import { IModelApp, PrimitiveTool, Viewport } from "@itwin/core-frontend";
 import { EditTools, makeEditToolIpc } from "@itwin/editor-frontend";
 import { testCmdIds, TestCmdOjb1, TestCmdResult, TestCommandIpc } from "../../common/TestEditCommandIpc";
 import { TestUtility } from "../TestUtility";
+import { TestSnapshotConnection } from "../TestSnapshotConnection";
 
 const expect = chai.expect;
 const assert = chai.assert;
 
 chai.use(chaiAsPromised);
 
-let iModel: SnapshotConnection;
+let iModel: TestSnapshotConnection;
 let testOut: TestCmdResult;
 const cmdArg = "test command arg";
 let cmdStr: string;
@@ -47,7 +48,7 @@ if (!ProcessDetector.isMobileAppFrontend) {
         expect(msg).equals("edit command is busy");
         return 0;
       };
-      iModel = await SnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
+      iModel = await TestSnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
 
     });
 

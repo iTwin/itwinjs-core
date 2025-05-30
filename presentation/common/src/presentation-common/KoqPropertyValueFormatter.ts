@@ -55,13 +55,21 @@ export interface FormatsMap {
   [phenomenon: string]: UnitSystemFormat | UnitSystemFormat[];
 }
 
-/** @alpha */
+/**
+ * Options for finding a formatter spec to use in [[KoqPropertyValueFormatter]].
+ * @public
+ */
 export interface FormatOptions {
+  /** Full name of the `KindOfQuantity`, e.g. `SchemaName:KoqName`. */
   koqName: string;
+  /** Unit system to use for formatting. */
   unitSystem?: UnitSystemKey;
 }
 
-/** @alpha */
+/**
+ * An utility for formatting property values based on `KindOfQuantity` and unit system.
+ * @public
+ */
 export class KoqPropertyValueFormatter {
   private _unitsProvider: UnitsProvider;
   private _defaultFormats?: FormatsMap;
@@ -73,7 +81,7 @@ export class KoqPropertyValueFormatter {
     this._unitsProvider = new SchemaUnitProvider(_schemaContext);
     this._defaultFormats = defaultFormats
       ? Object.entries(defaultFormats).reduce((acc, [phenomenon, unitSystemFormats]) => ({ ...acc, [phenomenon.toUpperCase()]: unitSystemFormats }), {})
-      : /* istanbul ignore next */ undefined;
+      : /* c8 ignore next */ undefined;
   }
 
   public async format(value: number, options: FormatOptions) {
@@ -125,7 +133,7 @@ async function getFormattingProps(
   }
 
   const persistenceUnit = await koq.persistenceUnit;
-  // istanbul ignore if
+  /* c8 ignore next 3 */
   if (!persistenceUnit) {
     return undefined;
   }
@@ -144,7 +152,7 @@ async function getKoq(schemaLocater: SchemaContext, fullName: string) {
   if (!schema) {
     return undefined;
   }
-  return schema.getItem<KindOfQuantity>(propKoqName);
+  return schema.getItem(propKoqName, KindOfQuantity);
 }
 
 async function getKoqFormatProps(
@@ -163,13 +171,12 @@ async function getKoqFormatProps(
   // use one of the formats in default formats map if there is one for matching phenomena and requested unit
   // system combination
   if (defaultFormats && unitSystem) {
-    const actualPersistenceUnit = persistenceUnit instanceof InvertedUnit ? /* istanbul ignore next */ await persistenceUnit.invertsUnit : persistenceUnit;
+    const actualPersistenceUnit = persistenceUnit instanceof InvertedUnit ? /* c8 ignore next */ await persistenceUnit.invertsUnit : persistenceUnit;
     const phenomenon = await actualPersistenceUnit?.phenomenon;
-    // istanbul ignore else
     if (phenomenon && defaultFormats[phenomenon.name.toUpperCase()]) {
       const defaultPhenomenonFormats = defaultFormats[phenomenon.name.toUpperCase()];
       for (const defaultUnitSystemFormat of Array.isArray(defaultPhenomenonFormats)
-        ? /* istanbul ignore next */ defaultPhenomenonFormats
+        ? /* c8 ignore next */ defaultPhenomenonFormats
         : [defaultPhenomenonFormats]) {
         if (defaultUnitSystemFormat.unitSystems.includes(unitSystem)) {
           return defaultUnitSystemFormat.format;
@@ -186,7 +193,7 @@ async function getKoqFormatProps(
 
   // use default presentation format if persistence unit does not match requested unit system
   if (koq.defaultPresentationFormat) {
-    return getFormatProps(koq.defaultPresentationFormat);
+    return getFormatProps(await koq.defaultPresentationFormat);
   }
 
   return undefined;
@@ -195,12 +202,14 @@ async function getKoqFormatProps(
 async function getKoqPresentationFormat(koq: KindOfQuantity, unitSystemMatchers: Array<(unitSystem: UnitSystem) => boolean>) {
   const presentationFormats = koq.presentationFormats;
   for (const matcher of unitSystemMatchers) {
-    for (const format of presentationFormats) {
-      const unit = format.units && format.units[0][0];
-      // istanbul ignore if
-      if (!unit) {
+    for (const lazyFormat of presentationFormats) {
+      const format = await lazyFormat;
+      const lazyUnit = format.units && format.units[0][0];
+      /* c8 ignore next 3 */
+      if (!lazyUnit) {
         continue;
       }
+      const unit = await lazyUnit;
       const currentUnitSystem = await unit.unitSystem;
       if (currentUnitSystem && matcher(currentUnitSystem)) {
         return format;

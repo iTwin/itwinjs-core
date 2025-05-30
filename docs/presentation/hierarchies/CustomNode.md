@@ -12,7 +12,6 @@ Returns a static custom-defined node that's not based on an ECInstance.
 | [`type`](#attribute-type)                                                   | Yes       | `string`                                         |             |
 | [`label`](#attribute-label)                                                 | Yes       | `string`                                         |             |
 | [`description`](#attribute-description)                                     | No        | `string`                                         | `""`        |
-| [`imageId`](#attribute-imageid)                                             | No        | `string`                                         | `""`        |
 | *Filtering*                                                                 |
 | [`hideExpression`](#attribute-hideexpression)                               | No        | [ECExpression](./ECExpressions.md#specification) | `""`        |
 | [`hideIfNoChildren`](#attribute-hideifnochildren)                           | No        | `boolean`                                        | `false`     |
@@ -75,7 +74,7 @@ Specifies the value of [Node.description]($presentation-common) property, which 
 
 ![Example of using "description" attribute](./media/hierarchy-with-specification-description-attribute.png)
 
-### Attribute: `imageId`
+### Attribute: `imageId` (deprecated)
 
 Specifies node's image ID. If set, the ID is assigned to [Node.imageId]($presentation-common) and it's up to the UI component
 to decide what to do with it.

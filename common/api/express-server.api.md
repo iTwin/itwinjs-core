@@ -4,8 +4,6 @@
 
 ```ts
 
-/// <reference types="node" />
-
 import { Application } from 'express';
 import { RpcConfiguration } from '@itwin/core-common';
 import { Server } from 'http';

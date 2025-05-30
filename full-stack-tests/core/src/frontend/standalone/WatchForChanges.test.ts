@@ -8,8 +8,9 @@ import { Guid, Id64, OpenMode, ProcessDetector } from "@itwin/core-bentley";
 import { ColorDef, ElementAlignedBox3d, PackedFeature, RenderFeatureTable } from "@itwin/core-common";
 import { Point3d, Transform } from "@itwin/core-geometry";
 import {
-  BriefcaseConnection, GeometricModelState, IModelApp, MockRender, RenderGraphic, TileTree, ViewCreator3d,
+  BriefcaseConnection, GeometricModelState, IModelApp, RenderGraphic, TileTree, ViewCreator3d,
 } from "@itwin/core-frontend";
+import { MockRender } from "@itwin/core-frontend/lib/cjs/internal/render/MockRender"
 import { addAllowedChannel, coreFullStackTestIpc, deleteElements, initializeEditTools, insertLineStringElement, makeModelCode, transformElements } from "../Editing";
 import { TestUtility } from "../TestUtility";
 
@@ -89,13 +90,24 @@ for (const watchForChanges of [false, true]) {
     });
 
     async function expectModelChanges(func: () => Promise<void>): Promise<void> {
-      const promise = new Promise<void>((resolve) => {
-        roConn.onBufferedModelChanges.addOnce((modelIds) => {
-          expect(modelIds.size).to.equal(1);
-          expect(modelIds.has(modelId)).to.be.true;
-          resolve();
-        });
-      });
+      const promise = Promise.race([
+        // Wait for onBufferedModelChanges to be triggered
+        new Promise<void>((resolve, reject) => {
+          roConn.onBufferedModelChanges.addOnce((modelIds) => {
+            try {
+              expect(modelIds.size).to.equal(1);
+              expect(modelIds.has(modelId)).to.be.true;
+              resolve();
+            } catch (error: any) {
+              reject(new Error(error));
+            }
+          });
+        }),
+        // Time out to prevent the tests from hanging
+        new Promise<void>((_resolve, reject) => {
+          setTimeout(() => reject(new Error("Timeout: onBufferedModelChanges did not fire within the specified time")), 120*1000); // 2 min
+        }),
+      ]);
 
       await func();
       return promise;

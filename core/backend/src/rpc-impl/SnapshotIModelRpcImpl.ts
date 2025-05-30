@@ -12,10 +12,13 @@ import {
 import { SnapshotDb } from "../IModelDb";
 import { IModelHost } from "../IModelHost";
 
+/* eslint-disable @typescript-eslint/no-deprecated */
+
 /** The backend implementation of SnapshotIModelRpcInterface.
  * @internal
+ * @deprecated in 5.0. Check [[IpcAppFunctions]] for replacements.
  */
-export class SnapshotIModelRpcImpl extends RpcInterface implements SnapshotIModelRpcInterface { // eslint-disable-line deprecation/deprecation
+export class SnapshotIModelRpcImpl extends RpcInterface implements SnapshotIModelRpcInterface {
   public static register() { RpcManager.registerImpl(SnapshotIModelRpcInterface, SnapshotIModelRpcImpl); }
 
   /** Ask the backend to open a snapshot iModel from a file name that is resolved by the backend. */
@@ -24,7 +27,7 @@ export class SnapshotIModelRpcImpl extends RpcInterface implements SnapshotIMode
     if (IModelHost.snapshotFileNameResolver) {
       resolvedFileName = IModelHost.snapshotFileNameResolver.tryResolveFileName(filePath);
       if (undefined === resolvedFileName)
-        throw new IModelNotFoundResponse();
+        throw new IModelNotFoundResponse(); // eslint-disable-line @typescript-eslint/only-throw-error
     }
     return SnapshotDb.openFile(resolvedFileName, opts).getConnectionProps();
   }
@@ -33,7 +36,7 @@ export class SnapshotIModelRpcImpl extends RpcInterface implements SnapshotIMode
   public async openRemote(fileKey: string, opts?: SnapshotOpenOptions): Promise<IModelConnectionProps> {
     const resolvedFileName = IModelHost.snapshotFileNameResolver?.resolveKey(fileKey);
     if (undefined === resolvedFileName)
-      throw new IModelNotFoundResponse();
+      throw new IModelNotFoundResponse(); // eslint-disable-line @typescript-eslint/only-throw-error
 
     return SnapshotDb.openFile(resolvedFileName, { key: fileKey, ...opts }).getConnectionProps();
   }

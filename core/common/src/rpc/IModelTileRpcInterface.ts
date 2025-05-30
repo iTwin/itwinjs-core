@@ -17,7 +17,7 @@ import { ElementGraphicsRequestProps } from "../tile/ElementGraphics";
 import { IModelTileTreeProps, TileContentIdentifier, TileContentSource, TileVersionInfo } from "../TileProps";
 
 /** @public */
-export abstract class IModelTileRpcInterface extends RpcInterface { // eslint-disable-line deprecation/deprecation
+export abstract class IModelTileRpcInterface extends RpcInterface {
   public static getClient(): IModelTileRpcInterface { return RpcManager.getClientForInterface(IModelTileRpcInterface); }
 
   /** The immutable name of the interface. */
@@ -41,7 +41,7 @@ export abstract class IModelTileRpcInterface extends RpcInterface { // eslint-di
   }
 
   /** @internal */
-  @RpcOperation.allowResponseCaching(RpcResponseCacheControl.Immutable) // eslint-disable-line deprecation/deprecation
+  @RpcOperation.allowResponseCaching(RpcResponseCacheControl.Immutable)
   public async requestTileTreeProps(_tokenProps: IModelRpcProps, _id: string): Promise<IModelTileTreeProps> { return this.forward(arguments); }
 
   /** Ask the backend to generate content for the specified tile. This function, unlike the deprecated `requestTileContent`, does not check the cloud storage tile cache -

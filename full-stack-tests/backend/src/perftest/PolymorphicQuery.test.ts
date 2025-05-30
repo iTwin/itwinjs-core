@@ -10,7 +10,7 @@ import {
   BriefcaseIdValue, Code, ColorDef, GeometricElementProps, GeometryStreamProps, IModel, SubCategoryAppearance,
 } from "@itwin/core-common";
 import { Reporter } from "@itwin/perf-tools";
-import { ECSqlStatement, IModelDb, IModelJsFs, SnapshotDb, SpatialCategory } from "@itwin/core-backend";
+import { _nativeDb, ECSqlStatement, IModelDb, IModelHost, IModelJsFs, SnapshotDb, SpatialCategory } from "@itwin/core-backend";
 import { IModelTestUtils, KnownTestLocations } from "@itwin/core-backend/lib/cjs/test/index";
 
 describe("SchemaDesignPerf Polymorphic query", () => {
@@ -46,6 +46,7 @@ describe("SchemaDesignPerf Polymorphic query", () => {
   }
   function getCount(imodel: IModelDb, className: string) {
     let count = 0;
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     imodel.withPreparedStatement(`SELECT count(*) AS [count] FROM ${className}`, (stmt: ECSqlStatement) => {
       assert.equal(DbResult.BE_SQLITE_ROW, stmt.step());
       const row = stmt.getRow();
@@ -113,7 +114,7 @@ describe("SchemaDesignPerf Polymorphic query", () => {
     return schemaPath;
   }
   before(async () => {
-    const configData = require(path.join(__dirname, "SchemaPerfConfig.json")); // eslint-disable-line @typescript-eslint/no-var-requires
+    const configData = require(path.join(__dirname, "SchemaPerfConfig.json")); // eslint-disable-line @typescript-eslint/no-require-imports
     multiHierarchyCount = configData.polymorphic.multi.hierarchyCount;
     multiSeedCount = configData.polymorphic.multi.seedCount;
     multiOpCount = configData.polymorphic.multi.opCount;
@@ -129,6 +130,7 @@ describe("SchemaDesignPerf Polymorphic query", () => {
       assert(IModelJsFs.existsSync(st));
       const seedName = path.join(outDir, `poly_flat_${hCount}.bim`);
       if (!IModelJsFs.existsSync(seedName)) {
+        await IModelHost.startup();
         const seedIModel = SnapshotDb.createEmpty(IModelTestUtils.prepareOutputFile("PolymorphicPerformance", `poly_flat_${hCount}.bim`), { rootSubject: { name: "PerfTest" } });
         await seedIModel.importSchemas([st]);
         // first create Elements and then Relationship
@@ -136,7 +138,8 @@ describe("SchemaDesignPerf Polymorphic query", () => {
         let spatialCategoryId = SpatialCategory.queryCategoryIdByName(seedIModel, IModel.dictionaryId, "MySpatialCategory");
         if (undefined === spatialCategoryId)
           spatialCategoryId = SpatialCategory.insert(seedIModel, IModel.dictionaryId, "MySpatialCategory", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() }));
-        seedIModel.nativeDb.resetBriefcaseId(BriefcaseIdValue.Unassigned);
+        seedIModel[_nativeDb].resetBriefcaseId(BriefcaseIdValue.Unassigned);
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         assert.isDefined(seedIModel.getMetaData("TestPolySchema:TestElement"), "Base Class is not present in iModel.");
         // create base class elements
         for (let i = 0; i < flatSeedCount; ++i) {
@@ -159,6 +162,7 @@ describe("SchemaDesignPerf Polymorphic query", () => {
         assert.equal(getCount(seedIModel, "TestPolySchema:TestElement"), ((hCount + 1) * flatSeedCount));
         seedIModel.saveChanges();
         seedIModel.close();
+        await IModelHost.shutdown();
       }
     }
     // now create single multiHierarchy based schema and iModel
@@ -166,6 +170,7 @@ describe("SchemaDesignPerf Polymorphic query", () => {
     assert(IModelJsFs.existsSync(st2));
     const seedName2 = path.join(outDir, `poly_multi_${multiHierarchyCount.toString()}.bim`);
     if (!IModelJsFs.existsSync(seedName2)) {
+      await IModelHost.startup();
       const seedIModel2 = SnapshotDb.createEmpty(IModelTestUtils.prepareOutputFile("PolymorphicPerformance", `poly_multi_${multiHierarchyCount.toString()}.bim`), { rootSubject: { name: "PerfTest" } });
       await seedIModel2.importSchemas([st2]);
       // first create Elements and then Relationship
@@ -173,7 +178,8 @@ describe("SchemaDesignPerf Polymorphic query", () => {
       let spatialCategoryId = SpatialCategory.queryCategoryIdByName(seedIModel2, IModel.dictionaryId, "MySpatialCategory");
       if (undefined === spatialCategoryId)
         spatialCategoryId = SpatialCategory.insert(seedIModel2, IModel.dictionaryId, "MySpatialCategory", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() }));
-      seedIModel2.nativeDb.resetBriefcaseId(BriefcaseIdValue.Unassigned);
+      seedIModel2[_nativeDb].resetBriefcaseId(BriefcaseIdValue.Unassigned);
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       assert.isDefined(seedIModel2.getMetaData("TestPolySchema:TestElement"), "Base Class is not present in iModel.");
       // create base class elements
       for (let i = 0; i < multiSeedCount; ++i) {
@@ -196,12 +202,22 @@ describe("SchemaDesignPerf Polymorphic query", () => {
       assert.equal(getCount(seedIModel2, "TestPolySchema:TestElement"), ((multiHierarchyCount + 1) * multiSeedCount));
       seedIModel2.saveChanges();
       seedIModel2.close();
+      await IModelHost.shutdown();
     }
   });
   after(() => {
     const csvPath = path.join(outDir, "PerformanceResults.csv");
     reporter.exportCSV(csvPath);
   });
+
+  beforeEach(async () => {
+    await IModelHost.startup();
+  });
+
+  afterEach(async () => {
+    await IModelHost.shutdown();
+  });
+
   it("Flat Read", async () => {
     for (const fhCount of flatHierarchyCounts) {
       const seedFileName = path.join(outDir, `poly_flat_${fhCount}.bim`);
@@ -214,6 +230,7 @@ describe("SchemaDesignPerf Polymorphic query", () => {
         try {
           let sql = "SELECT * from ";
           sql = `${sql}tps.Child${i.toString()}`;
+          // eslint-disable-next-line @typescript-eslint/no-deprecated
           perfimodel.withPreparedStatement(sql, (stmt: ECSqlStatement) => {
             while (stmt.step() === DbResult.BE_SQLITE_ROW) {
               const row = stmt.getRow();
@@ -223,7 +240,7 @@ describe("SchemaDesignPerf Polymorphic query", () => {
           const endTime = new Date().getTime();
           const elapsedTime = (endTime - startTime) / 1000.0;
           totalTime = totalTime + elapsedTime;
-        } catch (err) {
+        } catch {
           assert.isTrue(false);
         }
       }
@@ -247,6 +264,7 @@ describe("SchemaDesignPerf Polymorphic query", () => {
         if (i === 0)
           sql = `${sql}ONLY `;
         sql = `${sql}tps.TestElement`;
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         perfimodel.withPreparedStatement(sql, (stmt: ECSqlStatement) => {
           while (stmt.step() === DbResult.BE_SQLITE_ROW) {
             const row = stmt.getRow();
@@ -259,7 +277,7 @@ describe("SchemaDesignPerf Polymorphic query", () => {
           parentTime = elapsedTime;
         else
           totalTime = totalTime + elapsedTime;
-      } catch (err) {
+      } catch {
         assert.isTrue(false);
       }
     }

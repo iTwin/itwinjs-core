@@ -6,6 +6,8 @@
  * @module MapLayersFormats
  */
 
+import { BeEvent } from "@itwin/core-bentley";
+import { ImageMapLayerSettings, MapImageryProps, MapImagerySettings, MapLayerProps } from "@itwin/core-common";
 import {
   BeButtonEvent,
   EventHandled,
@@ -25,10 +27,8 @@ import {
   ToolAssistanceSection,
   Viewport,
 } from "@itwin/core-frontend";
-import { BeEvent } from "@itwin/core-bentley";
-import { ImageMapLayerSettings, MapImageryProps, MapImagerySettings, MapLayerProps } from "@itwin/core-common";
-import { MapFeatureInfoDecorator } from "./MapFeatureInfoDecorator";
-import { mapInfoIcon } from "../Icons/MapInfoIcon";
+import { mapInfoIcon } from "../Icons/MapInfoIcon.js";
+import { MapFeatureInfoDecorator } from "./MapFeatureInfoDecorator.js";
 
 /**
  * Data provided every time [[MapFeatureInfoTool]] retrieves feature information.
@@ -144,7 +144,7 @@ export class MapFeatureInfoTool extends PrimitiveTool {
     } else {
       // Flush existing decorations until a new selection is made
       this.onInfoCleared.raiseEvent();
-      this._decorator.clearState();
+      this._decorator.clearData();
     }
     vp.invalidateDecorations();
   }
@@ -273,9 +273,11 @@ export class MapFeatureInfoTool extends PrimitiveTool {
           const pixelRadius = Math.floor(aperture + 0.5);
           mapInfo = await hit.viewport.getMapFeatureInfo(hit, {tolerance: pixelRadius});
           if (mapInfo) {
-            this._decorator.setState({ hit, mapInfo });
+            this._decorator.setData({ hit, mapInfo });
+          } else {
+            IModelApp.toolAdmin.setCursor(undefined);
           }
-        } finally {
+        } catch {
           IModelApp.toolAdmin.setCursor(undefined);
         }
       }

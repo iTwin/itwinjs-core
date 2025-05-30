@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
+import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 import { Id64, Id64String } from "@itwin/core-bentley";
 import {
   Code, EmptyLocalization, PlanarClipMaskMode, PlanarClipMaskProps, PlanarClipMaskSettings, RealityModelDisplaySettings,
@@ -19,7 +19,7 @@ import { createBlankConnection } from "./createBlankConnection";
 describe("ContextRealityModelState", () => {
   let imodel: IModelConnection;
 
-  before(async () => {
+  beforeAll(async () => {
     await IModelApp.startup({ localization: new EmptyLocalization() });
     imodel = createBlankConnection();
   });
@@ -28,7 +28,7 @@ describe("ContextRealityModelState", () => {
     imodel.tiles.reset();
   });
 
-  after(async () => {
+  afterAll(async () => {
     await imodel.close();
     await IModelApp.shutdown();
   });
@@ -59,15 +59,15 @@ describe("ContextRealityModelState", () => {
         },
       });
 
-      expect(model.treeRef).instanceof(OrbitGtTreeReference);
+      expect(model.treeRef).toBeInstanceOf(OrbitGtTreeReference);
       return model;
     }
 
     public get trees(): Tree[] {
       const trees: Tree[] = [];
       this.forEachRealityModel((model) => {
-        expect(model.modelId).not.to.be.undefined;
-        expect(Id64.isTransient(model.modelId!)).to.be.true;
+        expect(model.modelId).toBeDefined();
+        expect(Id64.isTransient(model.modelId!)).toBe(true);
         trees.push({
           id: model.modelId!,
           owner: model.treeRef.treeOwner,
@@ -79,12 +79,12 @@ describe("ContextRealityModelState", () => {
 
     public expectTrees(modelIds: Id64String[]): void {
       const trees = this.trees;
-      expect(trees.map((tree) => tree.id)).to.deep.equal(modelIds);
+      expect(trees.map((tree) => tree.id)).toEqual(modelIds);
 
       // Any context reality models with the same modelId should point to the same TileTreeOwner.
       for (const a of trees)
         for (const b of trees)
-          expect(a.id === b.id).to.equal(a.owner === b.owner);
+          expect(a.id === b.id).toEqual(a.owner === b.owner);
     }
   }
 
@@ -148,7 +148,7 @@ describe("ContextRealityModelState", () => {
         getDisplaySettings,
         rdSourceKey,
       });
-      expect(persistentRef1.modelId).to.equal("0x123");
+      expect(persistentRef1.modelId).toEqual("0x123");
 
       const persistentRef2 = createRealityTileTreeReference({
         source: style,
@@ -158,14 +158,14 @@ describe("ContextRealityModelState", () => {
         getDisplaySettings,
         rdSourceKey,
       });
-      expect(persistentRef2.modelId).to.equal("0x456");
-      expect(persistentRef2.treeOwner).not.to.equal(persistentRef1.treeOwner);
+      expect(persistentRef2.modelId).toEqual("0x456");
+      expect(persistentRef2.treeOwner).not.toEqual(persistentRef1.treeOwner);
 
       const transientId = imodel.transientIds.peekNext();
       style.attachRealityModel({ tilesetUrl: "a" });
       style.expectTrees([transientId]);
-      expect(style.trees[0].owner).not.to.equal(persistentRef1.treeOwner);
-      expect(style.trees[0].owner).not.to.equal(persistentRef2.treeOwner);
+      expect(style.trees[0].owner).not.toEqual(persistentRef1.treeOwner);
+      expect(style.trees[0].owner).not.toEqual(persistentRef2.treeOwner);
 
       const transientRef = createRealityTileTreeReference({
         source: style,
@@ -175,8 +175,8 @@ describe("ContextRealityModelState", () => {
         getDisplaySettings,
         rdSourceKey,
       });
-      expect(transientRef.modelId).to.equal(transientId);
-      expect(transientRef.treeOwner).to.equal(style.trees[0].owner);
+      expect(transientRef.modelId).toEqual(transientId);
+      expect(transientRef.treeOwner).toEqual(style.trees[0].owner);
     });
 
     it("keeps same modelId but gets new TileTreeOwner when settings change", () => {
@@ -186,14 +186,14 @@ describe("ContextRealityModelState", () => {
       style.expectTrees([id]);
       const a = style.trees[0].owner;
 
-      style.forEachRealityModel((model) => model.planarClipMaskSettings = PlanarClipMaskSettings.fromJSON(planarClipMask));
+      style.forEachRealityModel((model) => (model.planarClipMaskSettings = PlanarClipMaskSettings.fromJSON(planarClipMask)));
       style.expectTrees([id]);
       const b = style.trees[0].owner;
-      expect(b).not.to.equal(a);
+      expect(b).not.toEqual(a);
 
       style.forEachRealityModel((model) => model.planarClipMaskSettings = undefined);
       style.expectTrees([id]);
-      expect(style.trees[0].owner).to.equal(a);
+      expect(style.trees[0].owner).toEqual(a);
     });
   });
 
@@ -256,7 +256,7 @@ describe("ContextRealityModelState", () => {
         getDisplaySettings,
         rdSourceKey,
       });
-      expect(persistentRef1.modelId).to.equal("0x123");
+      expect(persistentRef1.modelId).toEqual("0x123");
 
       const persistentRef2 = createOrbitGtTileTreeReference({
         source: style,
@@ -265,14 +265,14 @@ describe("ContextRealityModelState", () => {
         getDisplaySettings,
         rdSourceKey,
       });
-      expect(persistentRef2.modelId).to.equal("0x456");
-      expect(persistentRef2.treeOwner).not.to.equal(persistentRef1.treeOwner);
+      expect(persistentRef2.modelId).toEqual("0x456");
+      expect(persistentRef2.treeOwner).not.toEqual(persistentRef1.treeOwner);
 
       const transientId = imodel.transientIds.peekNext();
       style.attachOrbit("a");
       style.expectTrees([transientId]);
-      expect(style.trees[0].owner).not.to.equal(persistentRef1.treeOwner);
-      expect(style.trees[0].owner).not.to.equal(persistentRef2.treeOwner);
+      expect(style.trees[0].owner).not.toEqual(persistentRef1.treeOwner);
+      expect(style.trees[0].owner).not.toEqual(persistentRef2.treeOwner);
 
       const transientRef = createOrbitGtTileTreeReference({
         source: style,
@@ -281,8 +281,8 @@ describe("ContextRealityModelState", () => {
         getDisplaySettings,
         rdSourceKey,
       });
-      expect(transientRef.modelId).to.equal(transientId);
-      expect(transientRef.treeOwner).to.equal(style.trees[0].owner);
+      expect(transientRef.modelId).toEqual(transientId);
+      expect(transientRef.treeOwner).toEqual(style.trees[0].owner);
     });
   });
 });

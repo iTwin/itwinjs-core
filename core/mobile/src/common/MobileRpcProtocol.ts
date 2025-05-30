@@ -17,7 +17,7 @@ import { MobilePushConnection, MobilePushTransport } from "./MobilePush";
 import { MobileRpcConfiguration } from "./MobileRpcManager";
 import { MobileRpcRequest } from "./MobileRpcRequest";
 
-/* eslint-disable deprecation/deprecation */
+/* eslint-disable @typescript-eslint/no-deprecated */
 
 /** @internal */
 export type MobileRpcChunks = Array<string | Uint8Array>;

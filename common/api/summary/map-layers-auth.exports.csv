@@ -1,15 +1,15 @@
 sep=;
-Release Tag;API Item
-beta;ArcGisAccessClient 
-beta;ArcGisEnterpriseClientId
-internal;ArcGisGenerateTokenOptions
-internal;ArcGisOAuth2Endpoint 
-internal;ArcGisOAuth2EndpointType
-internal;ArcGisOAuth2Token 
-beta;ArcGisOAuthClientIds
-beta;ArcGisOAuthConfig
-internal;ArcGisToken 
-internal;ArcGisTokenClientType
-internal;ArcGisTokenGenerator
-internal;ArcGisTokenManager
-internal;ArcGisUrl
+Release Tag;API Item Type;API Item Name
+beta;class;ArcGisAccessClient
+beta;interface;ArcGisEnterpriseClientId
+internal;interface;ArcGisGenerateTokenOptions
+internal;class;ArcGisOAuth2Endpoint
+internal;enum;ArcGisOAuth2EndpointType
+internal;interface;ArcGisOAuth2Token
+beta;interface;ArcGisOAuthClientIds
+beta;interface;ArcGisOAuthConfig
+internal;interface;ArcGisToken
+internal;enum;ArcGisTokenClientType
+internal;class;ArcGisTokenGenerator
+internal;class;ArcGisTokenManager
+internal;class;ArcGisUrl

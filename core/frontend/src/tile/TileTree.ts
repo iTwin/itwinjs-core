@@ -14,7 +14,7 @@ import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
 import { RenderClipVolume } from "../render/RenderClipVolume";
 import { RenderMemory } from "../render/RenderMemory";
-import { Tile, TileDrawArgs, TileGeometryCollector, TileLoadPriority, TileTreeParams } from "./internal";
+import { LayerTileTreeHandler, Tile, TileDrawArgs, TileGeometryCollector, TileLoadPriority, TileTreeParams } from "./internal";
 
 /** Describes the current state of a [[TileTree]]. TileTrees are loaded asynchronously and may be unloaded after a period of disuse.
  * @see [[TileTreeOwner]].
@@ -112,6 +112,9 @@ export abstract class TileTree {
    */
   public get parentsAndChildrenExclusive(): boolean { return true; }
 
+  /** @internal */
+  public get layerHandler(): LayerTileTreeHandler | undefined { return undefined; }
+
   /** Constructor */
   protected constructor(params: TileTreeParams) {
     this._lastSelected = BeTimePoint.now();
@@ -142,12 +145,17 @@ export abstract class TileTree {
   public get isDisposed(): boolean { return this._isDisposed; }
 
   /** Dispose of this tree and any resources owned by it. This is typically invoked by a [[TileTreeOwner]]. */
-  public dispose(): void {
+  public [Symbol.dispose](): void {
     if (this.isDisposed)
       return;
 
     this._isDisposed = true;
     dispose(this.rootTile);
+  }
+
+  /** @deprecated in 5.0 Use [Symbol.dispose] instead. */
+  public dispose() {
+    this[Symbol.dispose]();
   }
 
   /** @internal */

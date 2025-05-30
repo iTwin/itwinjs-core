@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { RpcInterface } from "../RpcInterface";
-import { expect } from "chai";
+import { describe, expect, it } from "vitest";
 
 describe("isVersionCompatible", () => {
   it("pass when versions match exactly with prerelease tags", () => {

@@ -8,7 +8,7 @@
  */
 import { assert, BeDuration, BeTimePoint, ByteStream, JsonUtils, utf8ToString } from "@itwin/core-bentley";
 import { Point2d, Point3d, Range1d, Vector3d } from "@itwin/core-geometry";
-import { CesiumTerrainAssetId, nextPoint3d64FromByteStream, OctEncodedNormal, QPoint2d } from "@itwin/core-common";
+import { CesiumIonAssetId, CesiumTerrainAssetId, nextPoint3d64FromByteStream, OctEncodedNormal, QPoint2d } from "@itwin/core-common";
 import { MessageSeverity } from "@itwin/appui-abstract";
 import { request, RequestOptions } from "../../request/Request";
 import { ApproximateTerrainHeights } from "../../ApproximateTerrainHeights";
@@ -18,6 +18,7 @@ import {
   GeographicTilingScheme, MapTile, MapTilingScheme, QuadId, ReadMeshArgs, RequestMeshDataArgs, TerrainMeshProvider,
   TerrainMeshProviderOptions, Tile, TileAvailability,
 } from "../internal";
+import { ScreenViewport } from "../../Viewport";
 
 /** @internal */
 enum QuantizedMeshExtensionIds {
@@ -26,20 +27,20 @@ enum QuantizedMeshExtensionIds {
   Metadata = 4,
 }
 
-/** Return the URL for a Cesium ION asset from its asset ID and request Key.
+/** Return the URL for a Cesium ion asset from its asset ID and request Key.
  * @public
  */
 export function getCesiumAssetUrl(osmAssetId: number, requestKey: string): string {
   return `$CesiumIonAsset=${osmAssetId}:${requestKey}`;
 }
+
 /** @internal */
 export function getCesiumOSMBuildingsUrl(): string | undefined {
   const key = IModelApp.tileAdmin.cesiumIonKey;
   if (undefined === key)
     return undefined;
 
-  const osmBuildingAssetId = 96188;
-  return getCesiumAssetUrl(osmBuildingAssetId, key);
+  return getCesiumAssetUrl(+CesiumIonAssetId.OSMBuildings, key);
 }
 
 /** @internal */
@@ -60,7 +61,7 @@ export async function getCesiumAccessTokenAndEndpointUrl(assetId: string, reques
       return {};
     }
     return { token: apiResponse.accessToken, url: apiResponse.url };
-  } catch (error) {
+  } catch {
     assert(false);
     return {};
   }
@@ -90,7 +91,7 @@ export async function getCesiumTerrainProvider(opts: TerrainMeshProviderOptions)
     const layerRequestOptions: RequestOptions = { headers: { authorization: `Bearer ${accessTokenAndEndpointUrl.token}` } };
     const layerUrl = `${accessTokenAndEndpointUrl.url}layer.json`;
     layers = await request(layerUrl, "json", layerRequestOptions);
-  } catch (error) {
+  } catch {
     notifyTerrainError();
     return undefined;
   }
@@ -102,7 +103,13 @@ export async function getCesiumTerrainProvider(opts: TerrainMeshProviderOptions)
 
   const tilingScheme = new GeographicTilingScheme();
   let tileAvailability;
-  if (undefined !== layers.available) {
+  // When collecting tiles, only the highest resolution tiles are downloaded.
+  // Because of that, the tile availability is often only populated by the
+  // "layer" metadata. (i.e. not from higher resolution tiles metadata).
+  // Unfortunately the "layer" metadata only cover the first 16 levels,
+  // preventing the geometry collector from accessing to higher resolution tiles.
+  // For now, the solution is to turn off tile availability check when collecting geometries.
+  if (undefined !== layers.available && !opts.produceGeometry) {
     const availableTiles = layers.available;
     tileAvailability = new TileAvailability(tilingScheme, availableTiles.length);
     for (let level = 0; level < layers.available.length; level++) {
@@ -193,6 +200,7 @@ class CesiumTerrainProvider extends TerrainMeshProvider {
     this._tokenTimeOut = BeTimePoint.now().plus(CesiumTerrainProvider._tokenTimeoutInterval);
   }
 
+  /** @deprecated in 5.0 Use [addAttributions] instead. */
   public override addLogoCards(cards: HTMLTableElement): void {
     if (cards.dataset.cesiumIonLogoCard)
       return;
@@ -205,6 +213,12 @@ class CesiumTerrainProvider extends TerrainMeshProvider {
     const card = IModelApp.makeLogoCard({ iconSrc: `${IModelApp.publicPath}images/cesium-ion.svg`, heading: "Cesium Ion", notice });
     cards.appendChild(card);
   }
+
+  public override async addAttributions(cards: HTMLTableElement, _vp: ScreenViewport): Promise<void> {
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    return Promise.resolve(this.addLogoCards(cards));
+  }
+
 
   public get maxDepth(): number { return this._maxDepth; }
   public get tilingScheme(): MapTilingScheme { return this._tilingScheme; }
@@ -230,7 +244,7 @@ class CesiumTerrainProvider extends TerrainMeshProvider {
     try {
       const response = await request(tileUrl, "arraybuffer", requestOptions);
       return new Uint8Array(response);
-    } catch (_) {
+    } catch {
       return undefined;
     }
   }

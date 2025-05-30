@@ -6,12 +6,12 @@
  * @module PresentationRules
  */
 
-import { SingleSchemaClassSpecification } from "../../ClassSpecifications";
-import { RuleBase } from "../../Rule";
-import { PropertySpecification } from "../PropertySpecification";
-import { CalculatedPropertiesSpecification } from "./CalculatedPropertiesSpecification";
-import { PropertyCategorySpecification } from "./PropertyCategorySpecification";
-import { RelatedPropertiesSpecification } from "./RelatedPropertiesSpecification";
+import { SingleSchemaClassSpecification } from "../../ClassSpecifications.js";
+import { RuleBase } from "../../Rule.js";
+import { PropertySpecification } from "../PropertySpecification.js";
+import { CalculatedPropertiesSpecification } from "./CalculatedPropertiesSpecification.js";
+import { PropertyCategorySpecification } from "./PropertyCategorySpecification.js";
+import { RelatedPropertiesSpecification } from "./RelatedPropertiesSpecification.js";
 
 /**
  * Contains various rule attributes that allow modifying returned content.
@@ -70,7 +70,6 @@ export interface ContentModifier extends RuleBase, ContentModifiersList {
    * Specifies whether [`calculatedProperties`]($docs/presentation/content/CalculatedPropertiesSpecification.md) and
    * [`relatedProperties`]($docs/presentation/content/RelatedPropertiesSpecification.md) specifications should also be applied on
    * [nested content]($docs/presentation/content/Terminology.md#nested-content).
-   * @beta
    */
   applyOnNestedContent?: boolean;
 }

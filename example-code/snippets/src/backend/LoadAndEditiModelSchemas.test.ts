@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { IModelTestUtils } from "./IModelTestUtils";
-import { ECClassModifier, PrimitiveType, SchemaLoader } from "@itwin/ecschema-metadata";
+import { ECClassModifier, PrimitiveType, SchemaKey } from "@itwin/ecschema-metadata";
 import { SchemaXml } from "@itwin/ecschema-locaters";
 import { SchemaContextEditor } from "@itwin/ecschema-editing";
 import { StandaloneDb } from "@itwin/core-backend";
@@ -28,40 +28,30 @@ describe("SchemaLoadAndEdit", () => {
 
   it("Load schema from iModel and Edit", async () => {
     // __PUBLISH_EXTRACT_START__ IModelSchemas.loadFromDb
-    // To use the schemas already in an iModel create a SchemaLoader that pulls schemas from the iModel
-    // The SchemaLoader can load schemas from another location or you can create an empty context using the
-    // SchemaContext constructor
-    const loader = new SchemaLoader((name) => iModelDb.getSchemaProps(name));
-    const editor = new SchemaContextEditor(loader.context);
+    // To use the schemas already in an iModel we can use the integrated schemaContext.
+    const context = iModelDb.schemaContext;
+    const editor = new SchemaContextEditor(context);
     // __PUBLISH_EXTRACT_END__
 
     // __PUBLISH_EXTRACT_START__ IModelSchemas.editSchemas
-    const createSchemaResult = await editor.createSchema("PipingSchema", "PS", 1,0,42);
-    if (createSchemaResult.errorMessage !== undefined) {
-      throw new Error("Failed to create schema");
-    }
+    const schemaKey = await editor.createSchema("PipingSchema", "PS", 1, 0, 42);
 
-    const bisSchema = loader.getSchema("BisCore");
-    const addRefResult = await editor.addSchemaReference(createSchemaResult.schemaKey!, bisSchema);
-    if(addRefResult.errorMessage !== undefined) {
-      throw new Error(`failed to add reference schema: ${addRefResult.errorMessage}`);
+    const bisSchema = await context.getSchema(new SchemaKey("BisCore"));
+    if (bisSchema === undefined) {
+      throw new Error("BisCore schema not found");
     }
+    await editor.addSchemaReference(schemaKey, bisSchema);
 
-    const createClassResult = await editor.entities.createElement(createSchemaResult.schemaKey!, "Pipe", ECClassModifier.None, bisSchema.getSchemaItemKey("BisCore.PhysicalElement"));
-    if (createClassResult.errorMessage !== undefined) {
-      throw new Error(`Failed to create class: ${createClassResult.errorMessage}`);
-    }
+    const elementKey = await editor.entities.createElement(schemaKey, "Pipe", ECClassModifier.None, bisSchema.getSchemaItemKey("BisCore.PhysicalElement"));
 
-    const createPropResult = await editor.entities.createProperty(createClassResult.itemKey!, "Diameter", PrimitiveType.Double, "cgk");
-    if (createPropResult.errorMessage !== undefined) {
-      throw new Error(`Failed to create property: ${createPropResult.errorMessage}`);
-    }
+    await editor.entities.createProperty(elementKey, "Diameter", PrimitiveType.Double, "cgk");
+
     // __PUBLISH_EXTRACT_END__
 
     // __PUBLISH_EXTRACT_START__ IModelSchemas.importToIModel
-    const pipingSchema = await editor.getSchema(createSchemaResult.schemaKey!);
+    const pipingSchema = await editor.getSchema(schemaKey);
     if (pipingSchema === undefined) {
-      throw new Error(`Schema Key ${createSchemaResult.schemaKey!.toString(true)} not found in context`);
+      throw new Error(`Schema Key ${schemaKey.toString(true)} not found in context`);
     }
     const schemaXml = await SchemaXml.writeString(pipingSchema);
     await iModelDb.importSchemaStrings([schemaXml]);

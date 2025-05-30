@@ -8,8 +8,6 @@ import { DevToolsRpcInterface, IModelReadRpcInterface, IModelTileRpcInterface } 
 import { TestUserCredentials } from "@itwin/oidc-signin-tool";
 import { PresentationRpcInterface } from "@itwin/presentation-common";
 
-/* eslint-disable @typescript-eslint/indent */
-
 export interface Backend {
   version: string;
   location: string;
@@ -81,9 +79,9 @@ export class Settings {
   constructor(env: NodeJS.ProcessEnv) {
     const isFrontend = (typeof (process) === "undefined");
     if (!isFrontend && undefined === env.TF_BUILD) {
-      const path = require("path"); // eslint-disable-line @typescript-eslint/no-var-requires
-      const dotenv = require("dotenv"); // eslint-disable-line @typescript-eslint/no-var-requires
-      const dotenvExpand = require("dotenv-expand"); // eslint-disable-line @typescript-eslint/no-var-requires
+      const path = require("path"); // eslint-disable-line @typescript-eslint/no-require-imports
+      const dotenv = require("dotenv"); // eslint-disable-line @typescript-eslint/no-require-imports
+      const dotenvExpand = require("dotenv-expand"); // eslint-disable-line @typescript-eslint/no-require-imports
       // First check in process.cwd() for the config
       let result = dotenv.config();
       if (result.error) {

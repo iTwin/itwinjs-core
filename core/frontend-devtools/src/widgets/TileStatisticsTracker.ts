@@ -106,7 +106,7 @@ export class TileStatisticsTracker {
     parent.appendChild(this._div);
   }
 
-  public dispose(): void {
+  public [Symbol.dispose](): void {
     this.clearInterval();
   }
 

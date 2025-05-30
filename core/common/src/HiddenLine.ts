@@ -14,27 +14,27 @@ import { LinePixels } from "./LinePixels";
  * @public
  */
 export namespace HiddenLine {
-  /** Describes the symbology with which edges should be drawn. */
+  /** Describes the symbology with which edges should be drawn.
+   * This JSON representation is awkward, but it must match that used in the db.
+   * If the JSON came from the db then all members are present and:
+   *  - color is overridden only if ovrColor = true.
+   *  - width is overridden only if width != 0
+   *  - pattern is overridden only if pattern != LinePixels.Invalid
+   * The 'public' JSON representation is more sensible:
+   *  - Color, width, and pattern are each overridden iff they are not undefined.
+   * To make this work for both scenarios, the rules are:
+   *  - color is overridden if color != undefined and ovrColor != false
+   *  - width is overridden if width != undefined and width != 0
+   *  - pattern is overridden if pattern != undefined and pattern != LinePixels.Invalid
+   */
   export interface StyleProps {
-    /** @internal
-     * This JSON representation is awkward, but it must match that used in the db.
-     * If the JSON came from the db then all members are present and:
-     *  - color is overridden only if ovrColor = true.
-     *  - width is overridden only if width != 0
-     *  - pattern is overridden only if pattern != LinePixels.Invalid
-     * The 'public' JSON representation is more sensible:
-     *  - Color, width, and pattern are each overridden iff they are not undefined.
-     * To make this work for both scenarios, the rules are:
-     *  - color is overridden if color != undefined and ovrColor != false
-     *  - width is overridden if width != undefined and width != 0
-     *  - pattern is overridden if pattern != undefined and pattern != LinePixels.Invalid
-     */
+    /** If true, and [[color]] is defined, then the edge color is overridden. */
     ovrColor?: boolean;
-    /** If defined, the color used to draw the edges. If undefined, edges are drawn using the element's line color. */
+    /** If defined, and [[ovrColor]] is not `false`, the color used to draw the edges. If undefined, edges are drawn using the element's line color. */
     color?: ColorDefProps;
-    /** If defined, the pixel pattern used to draw the edges. If undefined, edges are drawn using the element's line pattern. */
+    /** If defined and not equal to [[LinePixels.Invalid]], the pixel pattern used to draw the edges. If undefined, edges are drawn using the element's line pattern. */
     pattern?: LinePixels;
-    /** If defined, the width of the edges in pixels. If undefined (or 0), edges are drawn using the element's line width.
+    /** If defined and non-zero, the width of the edges in pixels. If undefined (or 0), edges are drawn using the element's line width.
      * @note Non-integer values are truncated, and values are clamped to the range [1, 32].
      */
     width?: number;
@@ -42,7 +42,6 @@ export namespace HiddenLine {
 
   /** Describes the symbology with which edges should be drawn. */
   export class Style {
-    /** @internal */
     public get ovrColor(): boolean { return undefined !== this.color; }
     /** If defined, the color used to draw the edges. If undefined, edges are drawn using the element's line color. */
     public readonly color?: ColorDef;

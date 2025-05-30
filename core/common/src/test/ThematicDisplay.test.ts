@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { Point3d, Range1d, Vector3d } from "@itwin/core-geometry";
-import { expect } from "chai";
+import { describe, expect, it } from "vitest";
 import { ColorDef } from "../ColorDef";
 import { ThematicDisplay, ThematicDisplayMode, ThematicDisplayProps, ThematicDisplaySensorSettings, ThematicGradientColorScheme, ThematicGradientMode } from "../ThematicDisplay";
 

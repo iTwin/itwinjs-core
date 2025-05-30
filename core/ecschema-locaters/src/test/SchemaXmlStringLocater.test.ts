@@ -6,8 +6,8 @@
 import { assert, expect } from "chai";
 import * as path from "path";
 import * as fs from "fs";
-import * as glob from "glob";
-import { ECObjectsError, ECObjectsStatus, ECVersion, SchemaContext, SchemaKey, SchemaMatchType } from "@itwin/ecschema-metadata";
+import { globSync } from "glob";
+import { ECSchemaError, ECSchemaStatus, ECVersion, SchemaContext, SchemaKey, SchemaMatchType } from "@itwin/ecschema-metadata";
 import { SchemaXmlStringLocater } from "../SchemaXmlStringLocater";
 import { StringSchemaKey } from "../SchemaStringLocater";
 
@@ -25,8 +25,8 @@ describe("SchemaXmlStringLocater tests:", () => {
   const loadSchemaStrings = () => {
     const schemas: string [] = [];
     const searchPath = path.join(__dirname, "assets", "Schema*.ecschema.xml");
-    const result = new glob.GlobSync(searchPath, { sync: true });
-    for (const match of result.found) {
+    const result = globSync(searchPath, { windowsPathsNoEscape: true });
+    for (const match of result) {
       const file = fs.readFileSync(match);
       if (!file)
         continue;
@@ -89,8 +89,8 @@ describe("SchemaXmlStringLocater tests:", () => {
     try {
       locater.addSchemaString(schemaString);
     } catch (e) {
-      const error = e as ECObjectsError;
-      assert.strictEqual(error.errorNumber, ECObjectsStatus.InvalidSchemaXML);
+      const error = e as ECSchemaError;
+      assert.strictEqual(error.errorNumber, ECSchemaStatus.InvalidSchemaXML);
       return;
     }
 
@@ -102,8 +102,8 @@ describe("SchemaXmlStringLocater tests:", () => {
     try {
       locater.addSchemaString(schemaString);
     } catch (e) {
-      const error = e as ECObjectsError;
-      assert.strictEqual(error.errorNumber, ECObjectsStatus.InvalidSchemaXML);
+      const error = e as ECSchemaError;
+      assert.strictEqual(error.errorNumber, ECSchemaStatus.InvalidSchemaXML);
       return;
     }
 
@@ -115,8 +115,8 @@ describe("SchemaXmlStringLocater tests:", () => {
     try {
       locater.addSchemaString(schemaString);
     } catch (e) {
-      const error = e as ECObjectsError;
-      assert.strictEqual(error.errorNumber, ECObjectsStatus.InvalidSchemaXML);
+      const error = e as ECSchemaError;
+      assert.strictEqual(error.errorNumber, ECSchemaStatus.InvalidSchemaXML);
       return;
     }
 
@@ -138,8 +138,8 @@ describe("SchemaXmlStringLocater tests:", () => {
     try {
       await locater.getSchema(new SchemaKey("RefDoesNotExist", 1, 1, 1), SchemaMatchType.Exact, context);
     } catch (e) {
-      const error = e as ECObjectsError;
-      assert.strictEqual(error.errorNumber, ECObjectsStatus.UnableToLocateSchema);
+      const error = e as ECSchemaError;
+      assert.strictEqual(error.errorNumber, ECSchemaStatus.UnableToLocateSchema);
       return;
     }
 
@@ -237,27 +237,27 @@ describe("SchemaXmlStringLocater tests:", () => {
 
   it("getSchemaKey, invalid xml, throws", () => {
     const schemaXml = `<ECSchemaBad schemaName="SchemaA" version="1.1.1"> </ECSchemaBad>`;
-    expect(() => locater.getSchemaKey(schemaXml)).to.throw(ECObjectsError, `Could not find '<ECSchema>' tag in the given string`);
+    expect(() => locater.getSchemaKey(schemaXml)).to.throw(ECSchemaError, `Could not find '<ECSchema>' tag in the given string`);
   });
 
   it("getSchemaKey, invalid schemaName attribute, throws", () => {
     const schemaXml = `<ECSchema schemaNameBad="SchemaA" version="1.1.1"> </ECSchema>`;
-    expect(() => locater.getSchemaKey(schemaXml)).to.throw(ECObjectsError, `Could not find the ECSchema 'schemaName' or 'version' tag in the given string`);
+    expect(() => locater.getSchemaKey(schemaXml)).to.throw(ECSchemaError, `Could not find the ECSchema 'schemaName' or 'version' tag in the given string`);
   });
 
   it("getSchemaKey, invalid schemaName, throws", () => {
     const schemaXml = `<ECSchema version="1.1.1" schemaName=""> </ECSchema>`;
-    expect(() => locater.getSchemaKey(schemaXml)).to.throw(ECObjectsError, `Could not find the ECSchema 'schemaName' or 'version' tag in the given string`);
+    expect(() => locater.getSchemaKey(schemaXml)).to.throw(ECSchemaError, `Could not find the ECSchema 'schemaName' or 'version' tag in the given string`);
   });
 
   it("getSchemaKey, invalid version attribute, throws", () => {
     const schemaXml = `<ECSchema schemaName="SchemaA" versionBad="1.1.1"> </ECSchema>`;
-    expect(() => locater.getSchemaKey(schemaXml)).to.throw(ECObjectsError, `Could not find the ECSchema 'schemaName' or 'version' tag in the given string`);
+    expect(() => locater.getSchemaKey(schemaXml)).to.throw(ECSchemaError, `Could not find the ECSchema 'schemaName' or 'version' tag in the given string`);
   });
 
   it("getSchemaKey, invalid version, throws", () => {
     const schemaXml = `<ECSchema schemaName="SchemaA" version=""> </ECSchema>`;
-    expect(() => locater.getSchemaKey(schemaXml)).to.throw(ECObjectsError, `Could not find the ECSchema 'schemaName' or 'version' tag in the given string`);
+    expect(() => locater.getSchemaKey(schemaXml)).to.throw(ECSchemaError, `Could not find the ECSchema 'schemaName' or 'version' tag in the given string`);
   });
 });
 

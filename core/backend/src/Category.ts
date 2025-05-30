@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
- * @module Categories
+ * @module iModels
  */
 
 import { Id64, Id64String, JsonUtils } from "@itwin/core-bentley";
@@ -13,12 +13,12 @@ import {
 import { DefinitionElement } from "./Element";
 import { IModelDb } from "./IModelDb";
 import { CategoryOwnsSubCategories } from "./NavigationRelationship";
+import { CustomHandledProperty, DeserializeEntityArgs, ECSqlRow } from "./Entity";
 
 /** Defines the appearance for graphics in Geometric elements
  * @public
  */
 export class SubCategory extends DefinitionElement {
-  /** @internal */
   public static override get className(): string { return "SubCategory"; }
   /** The Appearance parameters for this SubCategory */
   public appearance: SubCategoryAppearance;
@@ -31,7 +31,48 @@ export class SubCategory extends DefinitionElement {
     this.description = JsonUtils.asString(props.description);
   }
 
-  /** @internal */
+  /**
+   * SubCategory custom HandledProps include 'description' and 'properties'.
+   * @inheritdoc
+   * @beta
+   */
+  protected static override readonly _customHandledProps: CustomHandledProperty[] = [
+    { propertyName: "description", source: "Class" },
+    { propertyName: "properties", source: "Class" },
+  ];
+
+  /**
+   * SubCategory deserializes 'description' and 'properties'.
+   * @inheritdoc
+   * @beta
+   */
+  public static override deserialize(props: DeserializeEntityArgs): SubCategoryProps {
+    const elProps = super.deserialize(props) as SubCategoryProps;
+    elProps.description = JsonUtils.asString(props.row.description);
+    if (props.row.properties !== '') {
+      elProps.appearance = JSON.parse(props.row.properties) as SubCategoryAppearance.Props;
+    } else {
+      elProps.appearance = undefined;
+    }
+    return elProps;
+  }
+
+  /**
+   * SubCategory serialize 'description' and 'properties'.
+   * @inheritdoc
+   * @beta
+   */
+  public static override serialize(props: SubCategoryProps, iModel: IModelDb): ECSqlRow {
+    const inst = super.serialize(props, iModel);
+    if (props.description !== undefined) {
+      inst.description = props.description;
+    }
+    if (props.appearance !== undefined) {
+      inst.properties = JSON.stringify(props.appearance);
+    }
+    return inst;
+  }
+
   public override toJSON(): SubCategoryProps {
     const val = super.toJSON() as SubCategoryProps;
     val.appearance = this.appearance.toJSON();
@@ -100,7 +141,6 @@ export class SubCategory extends DefinitionElement {
  * @public
  */
 export class Category extends DefinitionElement {
-  /** @internal */
   public static override get className(): string { return "Category"; }
   public rank: Rank = Rank.User;
   public description?: string;
@@ -111,7 +151,41 @@ export class Category extends DefinitionElement {
     this.description = JsonUtils.asString(props.description);
   }
 
-  /** @internal */
+  /**
+   * Category custom HandledProps include 'rank' and 'description'.
+   * @inheritdoc
+   * @beta
+   */
+  protected static override readonly _customHandledProps: CustomHandledProperty[] = [
+    { propertyName: "rank", source: "Class" },
+    { propertyName: "description", source: "Class" },
+  ];
+
+  /**
+   * Category deserializes 'rank' and 'description'.
+   * @inheritdoc
+   * @beta
+   */
+  public static override deserialize(props: DeserializeEntityArgs): CategoryProps {
+    const elProps = super.deserialize(props) as CategoryProps;
+    elProps.description = JsonUtils.asString(props.row.description);
+    elProps.rank = JsonUtils.asInt(props.row.rank);
+    return elProps;
+  }
+
+  /**
+   * Category serialize 'rank' and 'description'.
+   * @inheritdoc
+   * @beta
+   */
+  public static override serialize(props: CategoryProps, iModel: IModelDb): ECSqlRow {
+    const inst = super.serialize(props, iModel);
+    if (undefined !== props.description) {
+      inst.description = props.description;
+    }
+    inst.rank = props.rank;
+    return inst;
+  }
   public override toJSON(): CategoryProps {
     const val = super.toJSON() as CategoryProps;
     val.rank = this.rank;
@@ -138,7 +212,6 @@ export class Category extends DefinitionElement {
  * @public
  */
 export class DrawingCategory extends Category {
-  /** @internal */
   public static override get className(): string { return "DrawingCategory"; }
 
   protected constructor(opts: ElementProps, iModel: IModelDb) { super(opts, iModel); }
@@ -201,7 +274,6 @@ export class DrawingCategory extends Category {
  * @public
  */
 export class SpatialCategory extends Category {
-  /** @internal */
   public static override get className(): string { return "SpatialCategory"; }
   protected constructor(opts: ElementProps, iModel: IModelDb) { super(opts, iModel); }
 

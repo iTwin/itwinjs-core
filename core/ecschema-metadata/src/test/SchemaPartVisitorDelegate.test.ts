@@ -22,8 +22,8 @@ import { Schema } from "../Metadata/Schema";
 import { Unit } from "../Metadata/Unit";
 import { UnitSystem } from "../Metadata/UnitSystem";
 import { SchemaPartVisitorDelegate } from "../SchemaPartVisitorDelegate";
+import * as sinon from "sinon";
 
-import sinon = require("sinon");
 describe("SchemaPartVisitorDelegate Tests", () => {
   let schema: Schema;
   let helper: SchemaPartVisitorDelegate;

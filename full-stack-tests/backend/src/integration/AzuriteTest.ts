@@ -7,15 +7,16 @@ import { expect } from "chai";
 import { emptyDirSync, mkdirsSync } from "fs-extra";
 import { join } from "path";
 import * as azureBlob from "@azure/storage-blob";
-import { BlobContainer, CloudSqlite, IModelHost, SettingObject } from "@itwin/core-backend";
+import { BlobContainer, CloudSqlite, IModelHost, SettingsContainer } from "@itwin/core-backend";
 import { AccessToken, Guid } from "@itwin/core-bentley";
 import { LocalDirName, LocalFileName } from "@itwin/core-common";
+import * as crypto from "crypto";
 
 // spell:ignore imodelid itwinid mkdirs devstoreaccount racwdl
 
 export namespace AzuriteTest {
 
-  export const storageType = "azure" as const;
+  export const storageType = "azure";
   export const httpAddr = "127.0.0.1:10000";
   export const accountName = "devstoreaccount1";
   export const baseUri = `http://${httpAddr}/${accountName}`;
@@ -33,8 +34,27 @@ export namespace AzuriteTest {
   export namespace Sqlite {
     export type TestContainer = CloudSqlite.CloudContainer;
 
+    export const uploadDummyBlock = async (container: CloudSqlite.CloudContainer, blockNameSize: number): Promise<string> => {
+      const generateRandomHexString = (length: number) => {
+        const bytes = crypto.randomBytes(length);
+        const hexString = bytes.toString("hex");
+        return hexString.toUpperCase();
+      };
+      const azClient = createAzClient(container.containerId);
+      const blockName = `${generateRandomHexString(blockNameSize)}.bcv`;
+      const blobClient = azClient.getBlockBlobClient(blockName);
+      await blobClient.uploadData(Buffer.alloc(0));
+      return blockName;
+    };
+
+    export const checkBlockExists = async (container: CloudSqlite.CloudContainer, blockName: string): Promise<boolean> => {
+      const azClient = createAzClient(container.containerId);
+      const blobClient = azClient.getBlockBlobClient(blockName);
+      return blobClient.exists();
+    };
+
     export const setSasToken = async (container: CloudSqlite.CloudContainer, accessLevel: BlobContainer.RequestAccessLevel) => {
-      container.accessToken = await CloudSqlite.requestToken({ baseUri, containerId: container.containerId, accessLevel });
+      container.accessToken = await CloudSqlite.requestToken({ containerId: container.containerId, accessLevel });
     };
 
     export const createAzContainer = async (container: { containerId: string, isPublic?: boolean }) => {
@@ -58,8 +78,7 @@ export namespace AzuriteTest {
       const containerService = BlobContainer.service!;
       try {
         await containerService.delete({ containerId: createProps.containerId!, baseUri, userToken: createProps.userToken });
-      } catch (e) {
-      }
+      } catch { }
 
       return containerService.create(createProps);
     };
@@ -77,7 +96,7 @@ export namespace AzuriteTest {
     export interface TestContainerProps { containerId: string, logId?: string, isPublic?: boolean, writeable?: boolean }
 
     export const makeContainer = async (arg: TestContainerProps): Promise<TestContainer> => {
-      const containerProps = { ...arg, writeable: true, baseUri, storageType };
+      const containerProps = { ...arg, writeable: true, baseUri, storageType } as const;
       const accessToken = await CloudSqlite.requestToken(containerProps);
       return CloudSqlite.createCloudContainer({ ...containerProps, accessToken });
     };
@@ -128,7 +147,7 @@ export namespace AzuriteTest {
       if (arg.userToken !== service.userToken.admin)
         throw new Error("only admins may create containers");
 
-      const address = { containerId: arg.containerId ?? Guid.createValue(), baseUri, provider: storageType };
+      const address = { containerId: arg.containerId ?? Guid.createValue(), baseUri, provider: storageType } as const;
       const azCont = createAzClient(address.containerId);
       const opts: azureBlob.ContainerCreateOptions = {
         metadata: {
@@ -167,6 +186,9 @@ export namespace AzuriteTest {
         ownerGuid: metadata.ownerguid,
       };
     },
+    queryContainersMetadata: async (_userToken: AccessToken, _args: BlobContainer.QueryContainerProps): Promise<BlobContainer.MetadataResponse[]> => {
+      throw new Error("Querying containers not supported in this test service");
+    },
     queryMetadata: async (container: BlobContainer.AccessContainerProps): Promise<BlobContainer.Metadata> => {
       const metadata = (await createAzClient(container.containerId).getProperties()).metadata!;
       return {
@@ -176,7 +198,7 @@ export namespace AzuriteTest {
         json: metadata.json ? JSON.parse(metadata.json) : undefined,
       };
     },
-    updateJson: async (container: BlobContainer.AccessContainerProps, props: SettingObject): Promise<void> => {
+    updateJson: async (container: BlobContainer.AccessContainerProps, props: SettingsContainer): Promise<void> => {
       const client = createAzClient(container.containerId);
       const metadata = (await client.getProperties()).metadata!;
       metadata.json = JSON.stringify(props);
@@ -219,6 +241,7 @@ export namespace AzuriteTest {
         token: sasUrl.split("?")[1],
         provider: "azure",
         expiration: expiresOn,
+        baseUri
       };
     },
   };

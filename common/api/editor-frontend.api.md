@@ -159,6 +159,8 @@ export namespace EditTools {
 export class EditTools {
     // (undocumented)
     static busyRetry?: EditTools.BusyRetry;
+    // @internal (undocumented)
+    static finishCommand(): Promise<string>;
     static initialize(): Promise<void>;
     // (undocumented)
     static readonly namespace = "Editor";
@@ -232,6 +234,8 @@ export abstract class ModifyElementWithDynamicsTool extends ModifyElementTool im
     protected _firstResult: boolean;
     // (undocumented)
     protected _graphicsProvider?: DynamicGraphicsProvider;
+    // (undocumented)
+    protected onAgendaModified(): Promise<void>;
     // (undocumented)
     onCleanup(): Promise<void>;
     // (undocumented)
@@ -395,8 +399,6 @@ export class ProjectGeolocationMoveTool extends PrimitiveTool {
     // (undocumented)
     onInstall(): Promise<boolean>;
     // (undocumented)
-    onKeyTransition(wentDown: boolean, keyEvent: KeyboardEvent): Promise<EventHandled>;
-    // (undocumented)
     onMouseMotion(ev: BeButtonEvent): Promise<void>;
     // (undocumented)
     onPostInstall(): Promise<void>;
@@ -438,8 +440,6 @@ export class ProjectGeolocationNorthTool extends PrimitiveTool {
     onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled>;
     // (undocumented)
     onInstall(): Promise<boolean>;
-    // (undocumented)
-    onKeyTransition(wentDown: boolean, keyEvent: KeyboardEvent): Promise<EventHandled>;
     // (undocumented)
     onMouseMotion(ev: BeButtonEvent): Promise<void>;
     // (undocumented)

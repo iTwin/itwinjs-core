@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
+import { describe, expect, it } from "vitest";
 import { Arc3d } from "../../curve/Arc3d";
 import { GeometryQuery } from "../../curve/GeometryQuery";
 import { LineSegment3d } from "../../curve/LineSegment3d";
@@ -103,7 +103,7 @@ describe("PolarData", () => {
 
     ck.testLE(0.00001, PolarData.defaultRadius, "PolarData static defined");
     GeometryCoreTestIO.saveGeometry(allGeometry, "PolarData", "ConstraintSolver");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
 });

@@ -3,17 +3,18 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { IModelApp } from "../../../IModelApp";
 import { EmptyLocalization, FeatureTable, PackedFeatureTable } from "@itwin/core-common";
 import { RenderGraphic } from "../../../render/RenderGraphic";
 import { Point3d, Range3d, Transform } from "@itwin/core-geometry";
-import { GraphicBuilder, GraphicType } from "../../../render/GraphicBuilder";
+import { GraphicBuilder } from "../../../render/GraphicBuilder";
 import { GraphicBranch } from "../../../render/GraphicBranch";
+import { GraphicType } from "../../../common/render/GraphicType";
 
 describe("Graphic", () => {
-  before(async () => IModelApp.startup({ localization: new EmptyLocalization() }));
-  after(async () => IModelApp.shutdown());
+  beforeAll(async () => IModelApp.startup({ localization: new EmptyLocalization() }));
+  afterAll(async () => IModelApp.shutdown());
 
   function computeRange(graphic: RenderGraphic): Range3d {
     const range = new Range3d();
@@ -23,7 +24,7 @@ describe("Graphic", () => {
 
   function expectRange(graphic: RenderGraphic, expected: Range3d): Range3d {
     const range = computeRange(graphic);
-    expect(range.isAlmostEqual(expected)).to.be.true;
+    expect(range.isAlmostEqual(expected)).toBe(true);
     return range;
   }
 

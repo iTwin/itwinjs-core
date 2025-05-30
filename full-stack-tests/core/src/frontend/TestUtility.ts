@@ -6,9 +6,10 @@ import { assert } from "chai";
 import { AccessToken, GuidString, Logger, ProcessDetector } from "@itwin/core-bentley";
 import { ITwin } from "@itwin/itwins-client";
 import { AuthorizationClient } from "@itwin/core-common";
-import { ElectronRendererAuthorization } from "@itwin/electron-authorization/lib/cjs/ElectronRenderer";
+import { ElectronRendererAuthorization } from "@itwin/electron-authorization/Renderer";
 import { ElectronApp } from "@itwin/core-electron/lib/cjs/ElectronFrontend";
-import { IModelApp, IModelAppOptions, LocalhostIpcApp, MockRender, NativeApp } from "@itwin/core-frontend";
+import { IModelApp, IModelAppOptions, LocalhostIpcApp, NativeApp } from "@itwin/core-frontend";
+import { MockRender } from "@itwin/core-frontend/lib/cjs/internal/render/MockRender"
 import { getAccessTokenFromBackend, TestBrowserAuthorizationClientConfiguration, TestUserCredentials } from "@itwin/oidc-signin-tool/lib/cjs/frontend";
 import { IModelHubUserMgr } from "../common/IModelHubUserMgr";
 import { rpcInterfaces } from "../common/RpcInterfaces";
@@ -43,7 +44,8 @@ export class TestUtility {
   public static async getTestITwinId(): Promise<GuidString> {
     if (undefined !== TestUtility.iTwinId)
       return TestUtility.iTwinId;
-    return TestUtility.queryITwinIdByName(TestUtility.testITwinName);
+    TestUtility.iTwinId = await TestUtility.queryITwinIdByName(TestUtility.testITwinName);
+    return TestUtility.iTwinId;
   }
 
   public static iTwinPlatformEnv: ITwinPlatformAbstraction;
@@ -67,7 +69,7 @@ export class TestUtility {
     let authorizationClient: AuthorizationClient | undefined;
     if (NativeApp.isValid) {
       authorizationClient = new ElectronRendererAuthorization(
-        {clientId: process.env.IMJS_OIDC_ELECTRON_TEST_CLIENT_ID!},
+        { clientId: process.env.IMJS_OIDC_ELECTRON_TEST_CLIENT_ID! },
       );
       IModelApp.authorizationClient = authorizationClient;
       const accessToken = await setBackendAccessToken(user);

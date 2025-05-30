@@ -7,7 +7,7 @@
  */
 
 import { ClassRegistry, Schema, Schemas } from "@itwin/core-backend";
-import * as RulesetElements from "./RulesetElements";
+import * as RulesetElements from "./RulesetElements.js";
 
 /** @internal */
 export class PresentationRules extends Schema {
@@ -25,9 +25,8 @@ export class PresentationRules extends Schema {
 }
 
 /** @internal */
-/* istanbul ignore next */
+/* c8 ignore next 5 */
 export namespace PresentationRules {
-  // eslint-disable-line no-redeclare
   export enum CodeSpec {
     Ruleset = "PresentationRules:Ruleset",
   }

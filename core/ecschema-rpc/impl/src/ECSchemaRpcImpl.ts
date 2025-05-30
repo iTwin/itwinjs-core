@@ -10,6 +10,7 @@ import { ECSchemaRpcInterface } from "@itwin/ecschema-rpcinterface-common";
 
 /**
  * Defines the interface how the rows of the iModel query look like.
+ * @internal
  */
 interface SchemaNameRow {
   schemaName: string;
@@ -22,7 +23,7 @@ interface SchemaNameRow {
  * Implementation of the SchemaRpcInterface.
  * @internal
  */
-export class ECSchemaRpcImpl extends RpcInterface implements ECSchemaRpcInterface { // eslint-disable-line deprecation/deprecation
+export class ECSchemaRpcImpl extends RpcInterface implements ECSchemaRpcInterface {
   /**
    * Registers the RPC interface with its corresponding implementation class.
    */
@@ -78,6 +79,6 @@ export class ECSchemaRpcImpl extends RpcInterface implements ECSchemaRpcInterfac
     }
 
     const iModelDb = await this.getIModelDatabase(tokenProps);
-    return iModelDb.nativeDb.getSchemaProps(schemaName);
+    return iModelDb[backend._nativeDb].getSchemaProps(schemaName);
   }
 }

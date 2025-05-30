@@ -16,7 +16,7 @@ import { BaseDiagnostic } from "./Diagnostic";
  * Interface used for all rule implementations used during schema validation.
  * @beta
  */
-export type IRule<T extends AnyECType, U = {}> = (ecDefinition: T, ...args: U[]) => AsyncIterable<BaseDiagnostic<T, any[]>>;
+export type IRule<T extends AnyECType, U = object> = (ecDefinition: T, ...args: U[]) => AsyncIterable<BaseDiagnostic<T, any[]>>;
 
 /** @beta */
 export type BaseRule<T extends AnyECType, U extends AnyECType> = IRule<T, U>;

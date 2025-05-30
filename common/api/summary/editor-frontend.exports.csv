@@ -1,28 +1,28 @@
 sep=;
-Release Tag;API Item
-internal;basicManipulationIpc: PickAsyncMethods
-beta;computeChordToleranceFromPoint(vp: Viewport, pt: Point3d, radius?: number): number
-beta;computeChordToleranceFromRange(vp: Viewport, range: Range3d): number
-beta;class CreateElementTool 
-beta;class CreateElementWithDynamicsTool 
-beta;DynamicGraphicsProvider
-beta;EditTools
-beta;EditTools
-beta;makeEditToolIpc
-beta;class ModifyElementTool 
-beta;class ModifyElementWithDynamicsTool 
-beta;ProjectExtentsClipDecoration 
-beta;ProjectGeolocationMoveTool 
-beta;ProjectGeolocationNorthTool 
-beta;ProjectGeolocationPointTool 
-beta;ProjectLocationCancelTool 
-beta;ProjectLocationChanged
-beta;ProjectLocationHideTool 
-beta;ProjectLocationSaveTool 
-beta;ProjectLocationShowTool 
-beta;RedoTool 
-beta;class TransformElementsTool 
-beta;TransformGraphicsData
-beta;TransformGraphicsProvider
-beta;UndoAllTool 
-beta;UndoTool 
+Release Tag;API Item Type;API Item Name
+internal;const;basicManipulationIpc
+beta;function;computeChordToleranceFromPoint
+beta;function;computeChordToleranceFromRange
+beta;class;CreateElementTool
+beta;class;CreateElementWithDynamicsTool
+beta;class;DynamicGraphicsProvider
+beta;namespace;EditTools
+beta;class;EditTools
+beta;function;makeEditToolIpc
+beta;class;ModifyElementTool
+beta;class;ModifyElementWithDynamicsTool
+beta;class;ProjectExtentsClipDecoration
+beta;class;ProjectGeolocationMoveTool
+beta;class;ProjectGeolocationNorthTool
+beta;class;ProjectGeolocationPointTool
+beta;class;ProjectLocationCancelTool
+beta;enum;ProjectLocationChanged
+beta;class;ProjectLocationHideTool
+beta;class;ProjectLocationSaveTool
+beta;class;ProjectLocationShowTool
+beta;class;RedoTool
+beta;class;TransformElementsTool
+beta;interface;TransformGraphicsData
+beta;class;TransformGraphicsProvider
+beta;class;UndoAllTool
+beta;class;UndoTool

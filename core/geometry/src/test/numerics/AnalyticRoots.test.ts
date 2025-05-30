@@ -3,8 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
-
+import { describe, expect, it } from "vitest";
 import { Arc3d } from "../../curve/Arc3d";
 import { Geometry } from "../../Geometry";
 import { AngleSweep } from "../../geometry3d/AngleSweep";
@@ -13,7 +12,10 @@ import { Point2d, Vector2d } from "../../geometry3d/Point2dVector2d";
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 import { NumberArray } from "../../geometry3d/PointHelpers";
 import { Point4d } from "../../geometry4d/Point4d";
-import { AnalyticRoots, BilinearPolynomial, Degree2PowerPolynomial, Degree3PowerPolynomial, PowerPolynomial, SmallSystem, TrigPolynomial } from "../../numerics/Polynomials";
+import {
+  AnalyticRoots, BilinearPolynomial, Degree2PowerPolynomial, Degree3PowerPolynomial, PowerPolynomial, TrigPolynomial,
+} from "../../numerics/Polynomials";
+import { SmallSystem } from "../../numerics/SmallSystem";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 
@@ -40,7 +42,7 @@ describe("AnalyticRoots.SolveLinear", () => {
       }
     }
     ck.checkpoint("SolveLinear");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });
 describe("AnalyticRoots.SolveQuadric", () => {
@@ -58,7 +60,7 @@ describe("AnalyticRoots.SolveQuadric", () => {
       }
     }
     ck.checkpoint("DoubleRoot");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("SolveQuadric.NoSolution", () => {
     const ck = new Checker();
@@ -68,7 +70,7 @@ describe("AnalyticRoots.SolveQuadric", () => {
       AnalyticRoots.appendQuadraticRoots(Float64Array.from([c, Math.sqrt(4.0 * a * c / 7), a]), roots);
       ck.testExactNumber(roots.length, 0, "Expect no roots from quadratic");
     }
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("SolveQuadric.TwoSolutions", () => {
@@ -86,7 +88,7 @@ describe("AnalyticRoots.SolveQuadric", () => {
         }
       }
     }
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("ImplicitLineUnitCircle", () => {
     const ck = new Checker();
@@ -100,7 +102,7 @@ describe("AnalyticRoots.SolveQuadric", () => {
     ck.testExactNumber(-1, AnalyticRoots.appendImplicitLineUnitCircleIntersections(1, 0, 0, cosValues, sinValues, radiansValues, -1));
 
     ck.checkpoint("ImplicitLineUnitCircle");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("PowerPolynomial", () => {
     const ck = new Checker();
@@ -115,7 +117,7 @@ describe("AnalyticRoots.SolveQuadric", () => {
     ck.testExactNumber(4, z3.coffs.length);
     ck.testExactNumber(3, z2.coffs.length);
     ck.checkpoint("PowerPolynomial");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("SmallSystemFailures", () => {
     const ck = new Checker();
@@ -140,7 +142,7 @@ describe("AnalyticRoots.SolveQuadric", () => {
       Point2d.create(0, 0), Point2d.create(1, 0),
       Point2d.create(1, 0), Point2d.create(2, 0), result));
     ck.checkpoint("SmallSystemFailures");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("lineSegment3dClosestPointUnbounded", () => {
@@ -149,12 +151,12 @@ describe("AnalyticRoots.SolveQuadric", () => {
     const pointB = Point3d.create(3, 2, -1);
     const pointC = Point3d.create(2, 1, 0.4);
     const r = SmallSystem.lineSegment3dClosestPointUnbounded(pointA, pointB, pointC);
-    if (ck.testDefined(r) && r !== undefined) {
+    if (ck.testDefined(r)) {
       const pointD = pointA.interpolate(r, pointB);
       ck.testPerpendicular(Vector3d.createStartEnd(pointA, pointB), Vector3d.createStartEnd(pointC, pointD), "Closest approach vector is perpendicular");
     }
     ck.checkpoint("lineSegment3dClosestPointUnbounded");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("BilinearSystemXY", () => {
@@ -177,7 +179,7 @@ describe("AnalyticRoots.SolveQuadric", () => {
           // Although we have set up function values at uv0 as a known point,
           // it is still possible for some degenerate cases to return undefined.
           // What are these cases? overlapping asymptotes?
-          if (uvArray && ck.testDefined(uvArray, uv0, [pValue, qValue], p, q)) {
+          if (ck.testDefined(uvArray, uv0, [pValue, qValue], p, q)) {
             let numMatch = 0;
             for (const uv1 of uvArray) {
               ck.testCoordinate(pValue, p.evaluate(uv1.x, uv1.y));
@@ -186,13 +188,13 @@ describe("AnalyticRoots.SolveQuadric", () => {
             }
             ck.testLE(1, numMatch, "evaluate point appears in roots.");
             const uvArrayB = BilinearPolynomial.solvePair(q, qValue, p, pValue);
-            if (ck.testDefined(uvArrayB) && uvArrayB !== undefined)
+            if (ck.testDefined(uvArrayB))
               ck.testExactNumber(uvArray.length, uvArrayB.length);
           }
         }
       }
     }
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("RowElimination", () => {
     const ck = new Checker();
@@ -210,7 +212,7 @@ describe("AnalyticRoots.SolveQuadric", () => {
         ck.testTrue(Geometry.isAlmostEqualNumber(1, 1 + q));
       }
     }
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
 });
@@ -288,12 +290,12 @@ describe("AnalyticRoots.SolveCubic", () => {
 
         if (Checker.noisy.cubicRoots) {
           GeometryCoreTestIO.consoleLog(`  (target ${a}) (b ${b} + )`);
-          GeometryCoreTestIO.consoleLog(`  (actual ${actual}) (eMax ${eMax})`);
+          GeometryCoreTestIO.consoleLog(`  (actual ${JSON.stringify(actual)}) (eMax ${eMax})`);
         }
       }
     }
     ck.checkpoint("SolveCubic");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("SolveCubic.Cubic3", () => {
@@ -336,7 +338,7 @@ describe("AnalyticRoots.SolveCubic", () => {
         }
 
         ck.checkpoint("SolveCubic");
-        expect(ck.getNumErrors()).equals(0);
+        expect(ck.getNumErrors()).toBe(0);
       }
     }
   });
@@ -399,7 +401,7 @@ describe("AnalyticRoots.SolveCubic", () => {
             GeometryCoreTestIO.consoleLog("    NewtonDX " + NewtonStep(coffs, actual[0]));
           }
           ck.checkpoint("SolveCubic");
-          expect(ck.getNumErrors()).equals(0);
+          expect(ck.getNumErrors()).toBe(0);
         }
       }
     });
@@ -462,7 +464,7 @@ describe("AnalyticRoots.CheckQuartic", () => {
     const tightTol = 1.0e-15;
     checkQuartic(0, 1, 2, 3, tightTol, ck);
     ck.checkpoint("SolveQuartic");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("CheckQuartic.MediumTol", () => {
@@ -477,7 +479,7 @@ describe("AnalyticRoots.CheckQuartic", () => {
       // CheckQuartic(-100, -100 + delta, 100 - delta, 100, mediumTol, ck);
     }
     ck.checkpoint("SolveQuartic");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("CheckQuartic.LooseTol", () => {
@@ -492,7 +494,7 @@ describe("AnalyticRoots.CheckQuartic", () => {
       // CheckQuartic (a * factor1, (a + e) * factor1, b * factor1, (b + e / factor) * factor1, looseTol, ck);
     }
     ck.checkpoint("SolveQuartic");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   function testRoots4(coff: Float64Array, roots: GrowableFloat64Array): boolean {
@@ -526,7 +528,7 @@ describe("AnalyticRoots.CheckQuartic", () => {
     if (ck.testPointer(roots, "expect two roots") && roots) {
       ck.testTrue(testRoots4(coff, roots), "Verify quartic roots");
     }
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
 
   });
 });
@@ -635,7 +637,7 @@ describe("Geometry", () => {
       ck.testExactNumber(0, Geometry.curvatureMagnitude(derivatives.vectorU.x, derivatives.vectorU.y, derivatives.vectorU.z, 0, 0, 0), "line curvature");
     }
     ck.testExactNumber(0, Geometry.curvatureMagnitude(0, 0, 0, 1, 2, 3), "curvature with no first derivative");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("Misc", () => {
     const ck = new Checker();
@@ -666,7 +668,7 @@ describe("Geometry", () => {
     ck.testFalse(Geometry.isSamePoint3dXY(point0, point1.plus(Vector3d.create(1, 0))));
     ck.testFalse(Geometry.isSamePoint3dXY(point0, point1.plus(Vector3d.create(0, 1))));
 
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
 });
@@ -688,7 +690,7 @@ it("NickelsA", () => {
     }
   }
 
-  expect(ck.getNumErrors()).equals(0);
+  expect(ck.getNumErrors()).toBe(0);
 });
 function findRoot(r: number, roots: GrowableFloat64Array, tol: number = 1.0e-10): boolean {
   for (let i = 0; i < roots.length; i++) {
@@ -722,5 +724,5 @@ it("NickelsThreeRootCases", () => {
       }
     }
   }
-  expect(ck.getNumErrors()).equals(0);
+  expect(ck.getNumErrors()).toBe(0);
 });

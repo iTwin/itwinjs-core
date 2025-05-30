@@ -146,7 +146,7 @@ export class SubCategoryAppearance {
 }
 
 /** @public */
-export namespace SubCategoryAppearance { // eslint-disable-line no-redeclare
+export namespace SubCategoryAppearance {
   /** Properties used to create a SubCategoryAppearance
    * See [[SubCategoryAppearance]]
    */

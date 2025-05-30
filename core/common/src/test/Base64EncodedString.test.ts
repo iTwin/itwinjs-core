@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
+import { describe, expect, it } from "vitest";
 import { Base64EncodedString } from "../Base64EncodedString";
 
 function expectEqualUint8Arrays(actual: Uint8Array, expected: Uint8Array) {

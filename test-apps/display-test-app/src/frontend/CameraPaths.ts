@@ -493,7 +493,7 @@ export class CameraPathsMenu extends ToolBarDropDown {
 
     try {
       this._paths = JSON.parse(externalCameraPathsString).map((path: CameraPathProps) => CameraPath.fromJSON(path));
-    } catch (_e) {
+    } catch {
       this._paths = [];
     }
   }
@@ -509,7 +509,7 @@ export class CameraPathsMenu extends ToolBarDropDown {
 
   private findPath(name: string): CameraPath | undefined {
     const index = this._paths.findIndex((path) => name === path.name);
-    return -1 !== index ? this._paths[index]! : undefined;
+    return -1 !== index ? this._paths[index] : undefined;
 
   }
 

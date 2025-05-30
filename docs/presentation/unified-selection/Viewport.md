@@ -1,5 +1,7 @@
 # Setting up a Viewport component for Unified Selection
 
+> **Warning:** The page refers to a deprecated unified selection system. Please see [`@itwin/unified-selection`](https://www.npmjs.com/package/@itwin/unified-selection) and [Migrating from `@itwin/presentation-frontend` unified selection API](https://github.com/iTwin/presentation/blob/master/packages/unified-selection/learning/MigrationGuide.md) learning page for details on how to migrate to new system.
+
 As described in the [Viewport selection handling section](./index.md#viewport), selection in a Viewport component and Unified Selection are synchronized in a two-way manner:
 
 - When an element in the Viewport is selected, it (or anything that comes from it after applying active [selection scope](./index.md#selection-scopes)) is added to unified selection.

@@ -142,7 +142,11 @@ export class TileAdmin {
   /** @internal */
   public readonly useProjectExtents: boolean;
   /** @internal */
+  public readonly expandProjectExtents: boolean;
+  /** @internal */
   public readonly optimizeBRepProcessing: boolean;
+  /** @internal */
+  public readonly disablePolyfaceDecimation: boolean;
   /** @internal */
   public readonly useLargerTiles: boolean;
   /** @internal */
@@ -239,7 +243,9 @@ export class TileAdmin {
     this.alwaysSubdivideIncompleteTiles = options.alwaysSubdivideIncompleteTiles ?? defaultTileOptions.alwaysSubdivideIncompleteTiles;
     this.maximumMajorTileFormatVersion = options.maximumMajorTileFormatVersion ?? defaultTileOptions.maximumMajorTileFormatVersion;
     this.useProjectExtents = options.useProjectExtents ?? defaultTileOptions.useProjectExtents;
+    this.expandProjectExtents = options.expandProjectExtents ?? defaultTileOptions.expandProjectExtents;
     this.optimizeBRepProcessing = options.optimizeBRepProcessing ?? defaultTileOptions.optimizeBRepProcessing;
+    this.disablePolyfaceDecimation = options.disablePolyfaceDecimation ?? defaultTileOptions.disablePolyfaceDecimation;
     this.useLargerTiles = options.useLargerTiles ?? defaultTileOptions.useLargerTiles;
     this.mobileRealityTileMinToleranceRatio = Math.max(options.mobileRealityTileMinToleranceRatio ?? 3.0, 1.0);
     this.cesiumIonKey = options.cesiumIonKey;
@@ -577,7 +583,7 @@ export class TileAdmin {
     this._tileUserSetsForRequests.clear();
     this._tileUsagePerUser.clear();
     this._tileTreePropsRequests.length = 0;
-    this._lruList.dispose();
+    this._lruList[Symbol.dispose]();
   }
 
   /** Returns the union of the input set and the input TileUser, to be associated with a [[TileRequest]].
@@ -605,7 +611,6 @@ export class TileAdmin {
    * @internal
    */
   public isTileInUse(marker: TileUsageMarker): boolean {
-    // eslint-disable-next-line @typescript-eslint/naming-convention
     for (const [_user, markers] of this._tileUsagePerUser)
       if (markers.has(marker))
         return true;
@@ -948,12 +953,12 @@ export class TileAdmin {
 
     const policy = RpcOperation.lookup(IModelTileRpcInterface, "generateTileContent").policy;
     policy.retryInterval = () => retryInterval;
-    policy.allowResponseCaching = () => RpcResponseCacheControl.Immutable; // eslint-disable-line deprecation/deprecation
+    policy.allowResponseCaching = () => RpcResponseCacheControl.Immutable;
   }
 }
 
 /** @public */
-export namespace TileAdmin { // eslint-disable-line no-redeclare
+export namespace TileAdmin {
   /** Statistics regarding the current and cumulative state of the [[TileAdmin]]. Useful for monitoring performance and diagnosing problems.
    * @public
    */
@@ -1096,6 +1101,9 @@ export namespace TileAdmin { // eslint-disable-line no-redeclare
      * @internal
      */
     useProjectExtents?: boolean;
+
+    /** @internal See TreeFlags.ExpandProjectExtents. Default: true. */
+    expandProjectExtents?: boolean;
 
     /** When producing facets from BRep entities, use an optimized pipeline to improve performance.
      * Default value: true
@@ -1268,6 +1276,15 @@ export namespace TileAdmin { // eslint-disable-line no-redeclare
      * @alpha This was primarily introduced because the electron version of certa does not serve local assets, so the tests can't locate the worker script.
      */
     decodeImdlInWorker?: boolean;
+
+    /** If true, disable polyface decimation during tile generation.
+     * When the tiler encounters a [Polyface]($geometry) in an element's geometry stream, it may attempt to reduce the number of vertices
+     * to match the tile's level of detail ("LOD"). This can deform the mesh, though the deformation is generally not noticeable at the tile's LOD.
+     * If `disablePolyfaceDecimation` is `true`, the tiler will never attempt to decimate polyfaces.
+     * Default value: false.
+     * @beta
+     */
+    disablePolyfaceDecimation?: boolean;
   }
 
   /** The number of bytes of GPU memory associated with the various [[GpuMemoryLimit]]s for non-mobile devices.

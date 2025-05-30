@@ -9,7 +9,7 @@
 import { assert } from "@itwin/core-bentley";
 import { IModelError } from "@itwin/core-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
-import { IModelHost } from "./IModelHost";
+import { IModelNative } from "./internal/NativePlatform";
 
 /** @internal */
 export type SchemaKey = IModelJsNative.ECSchemaXmlContext.SchemaKey;
@@ -23,14 +23,14 @@ export type SchemaMatchType = IModelJsNative.ECSchemaXmlContext.SchemaMatchType;
  * When a referenced schema needs to be located, the list of directories is searched in the order in which each was added.
  * Once located, the schema is cached to avoid performing repeated lookups in the file system.
  * @see [[readSchemaFromXmlFile]] to deserialize a schema.
- * @beta
+ * @public @preview
  */
 export class ECSchemaXmlContext {
   private _nativeContext: IModelJsNative.ECSchemaXmlContext | undefined;
 
   /** Construct a context with an empty list of search paths. */
   constructor() {
-    this._nativeContext = new IModelHost.platform.ECSchemaXmlContext();
+    this._nativeContext = new IModelNative.platform.ECSchemaXmlContext();
   }
 
   /** @internal */

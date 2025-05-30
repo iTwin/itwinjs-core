@@ -5,19 +5,20 @@
 
 import { ProcessDetector } from "@itwin/core-bentley";
 import { Point2d } from "@itwin/core-geometry";
-import { imageBufferToPngDataUrl, IModelApp, openImageDataUrlInNewWindow, Tool } from "@itwin/core-frontend";
+import { IModelApp, openImageDataUrlInNewWindow, Tool } from "@itwin/core-frontend";
 import { parseArgs } from "@itwin/frontend-devtools";
 
 interface SaveImageOptions {
   copyToClipboard?: boolean;
   width?: number;
   height?: number;
+  omitCanvasDecorations?: boolean;
 }
 
 export class SaveImageTool extends Tool {
   public static override toolId = "SaveImage";
   public static override get minArgs() { return 0; }
-  public static override get maxArgs() { return 3; }
+  public static override get maxArgs() { return 4; }
 
   public override async run(opts?: SaveImageOptions): Promise<boolean> {
     const vp = IModelApp.viewManager.selectedView;
@@ -40,7 +41,9 @@ export class SaveImageTool extends Tool {
       return true;
     }
 
-    const url = imageBufferToPngDataUrl(buffer, false);
+    const canvas = vp.readImageToCanvas({omitCanvasDecorations: !!opts?.omitCanvasDecorations});
+    const url = canvas.toDataURL();
+
     if (!url) {
       alert("Failed to produce PNG");
       return true;
@@ -65,7 +68,7 @@ export class SaveImageTool extends Tool {
           "image/png": blob,
         }),
       ]);
-    } catch (_) {
+    } catch {
       alert("Failed to copy to clipboard");
     }
 
@@ -85,6 +88,8 @@ export class SaveImageTool extends Tool {
       opts.width = args.getInteger("w");
       opts.height = args.getInteger("h");
     }
+
+    opts.omitCanvasDecorations = args.getBoolean("o");
 
     return this.run(opts);
   }

@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
+import { describe, expect, it } from "vitest";
 import { CurvePrimitive } from "../../curve/CurvePrimitive";
 import { LineString3d } from "../../curve/LineString3d";
 import { StrokeOptions } from "../../curve/StrokeOptions";
@@ -94,6 +94,6 @@ describe("EmitStrokableParts", () => {
       c.emitStrokableParts(handler, options);
     }
     ck.checkpoint("EmitStrokableParts.MaxEdgeLength", { curves: curves.length });
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });

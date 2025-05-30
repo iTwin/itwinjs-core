@@ -2,7 +2,7 @@
 
 _Change Summaries_ are summaries of changes of ECInstances in an _iModel Changeset_. **Please read [Change Summaries](../ChangeSummaries.md) first, before doing this section of the tutorial.**
 
-[!alert text="The console does not support write operations, this functionality has been deprecated. This page is kept for historical and educational purposes" kind="danger"]
+[!alert text="The console does not support write operations, this functionality has been deprecated. This page is kept for historical and educational purposes" kind="negative"]
 
 ## Generate the Change Summaries
 
@@ -461,4 +461,4 @@ In the third changeset the Device with code `DEV-A-G-3` which was inserted in th
 
 ---
 
-[**< Previous**](./MetaQueries.md) &nbsp; | &nbsp; [**Next >**](./ClassFilter.md)
+[< Previous](./MetaQueries.md) &nbsp; | &nbsp; [Next >](./ClassFilter.md)

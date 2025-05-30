@@ -5,25 +5,30 @@
 import * as fs from "fs";
 import * as path from "path";
 import { Logger, LogLevel, ProcessDetector } from "@itwin/core-bentley";
-import { ElectronMainAuthorization } from "@itwin/electron-authorization/lib/cjs/ElectronMain";
+import { ElectronMainAuthorization } from "@itwin/electron-authorization/Main";
 import { ElectronHost, ElectronHostOptions } from "@itwin/core-electron/lib/cjs/ElectronBackend";
 import { BackendIModelsAccess } from "@itwin/imodels-access-backend";
 import { IModelsClient } from "@itwin/imodels-client-authoring";
-import { IModelHost, IModelHostOptions, LocalhostIpcHost } from "@itwin/core-backend";
-import { IModelReadRpcInterface, IModelTileRpcInterface, RpcInterfaceDefinition, RpcManager, SnapshotIModelRpcInterface } from "@itwin/core-common";
+import { IModelDb, IModelHost, IModelHostOptions, LocalhostIpcHost, produceTextAnnotationGeometry } from "@itwin/core-backend";
+import {
+  IModelReadRpcInterface, IModelRpcProps, IModelTileRpcInterface, RpcInterfaceDefinition, RpcManager, TextAnnotation, TextAnnotationProps, TextBlockGeometryProps,
+} from "@itwin/core-common";
 import { MobileHost, MobileHostOpts } from "@itwin/core-mobile/lib/cjs/MobileBackend";
 import { DtaConfiguration, getConfig } from "../common/DtaConfiguration";
 import { DtaRpcInterface } from "../common/DtaRpcInterface";
 import { EditCommandAdmin } from "@itwin/editor-backend";
+import { ECSchemaRpcInterface } from '@itwin/ecschema-rpcinterface-common';
+import { ECSchemaRpcImpl } from "@itwin/ecschema-rpcinterface-impl";
 import * as editorBuiltInCommands from "@itwin/editor-backend";
+import { FormatSet } from "@itwin/ecschema-metadata";
 
 /** Loads the provided `.env` file into process.env */
 function loadEnv(envFile: string) {
   if (!fs.existsSync(envFile))
     return;
 
-  const dotenv = require("dotenv"); // eslint-disable-line @typescript-eslint/no-var-requires
-  const dotenvExpand = require("dotenv-expand"); // eslint-disable-line @typescript-eslint/no-var-requires
+  const dotenv = require("dotenv"); // eslint-disable-line @typescript-eslint/no-require-imports
+  const dotenvExpand = require("dotenv-expand"); // eslint-disable-line @typescript-eslint/no-require-imports
   const envResult = dotenv.config({ path: envFile });
   if (envResult.error) {
     throw envResult.error;
@@ -161,7 +166,7 @@ class DisplayTestAppRpc extends DtaRpcInterface {
 
     // Electron only
     try {
-      const { app } = require("electron"); // eslint-disable-line @typescript-eslint/no-var-requires
+      const { app } = require("electron"); // eslint-disable-line @typescript-eslint/no-require-imports
       if (app !== undefined)
         app.exit();
     } catch {
@@ -176,6 +181,27 @@ class DisplayTestAppRpc extends DtaRpcInterface {
   public override async getAccessToken(): Promise<string> {
     return (await IModelHost.authorizationClient?.getAccessToken()) ?? "";
   }
+
+  public override async produceTextAnnotationGeometry(iModelToken: IModelRpcProps, annotationProps: TextAnnotationProps, debugAnchorPointAndRange?: boolean): Promise<TextBlockGeometryProps> {
+    const iModel = IModelDb.findByKey(iModelToken.key);
+    const annotation = TextAnnotation.fromJSON(annotationProps);
+    return produceTextAnnotationGeometry({ iModel, annotation, debugAnchorPointAndRange });
+  }
+
+  public override async getFormatSetFromFile(filename: string): Promise<FormatSet> {
+    if (!fs.existsSync(filename)) {
+      throw new Error(`File not found: ${filename}`);
+    }
+
+    const fileContent = fs.readFileSync(filename, "utf-8");
+    const jsonData = JSON.parse(fileContent);
+
+    if (!jsonData || typeof jsonData !== "object") {
+      throw new Error(`Invalid JSON content in file: ${filename}`);
+    }
+
+    return jsonData as FormatSet;
+  }
 }
 
 export const getRpcInterfaces = (): RpcInterfaceDefinition[] => {
@@ -183,7 +209,7 @@ export const getRpcInterfaces = (): RpcInterfaceDefinition[] => {
     DtaRpcInterface,
     IModelReadRpcInterface,
     IModelTileRpcInterface,
-    SnapshotIModelRpcInterface,
+    ECSchemaRpcInterface
   ];
 
   return rpcs;
@@ -233,6 +259,7 @@ export const initializeDtaBackend = async (hostOpts?: ElectronHostOptions & Mobi
 
   /** register the implementation of our RPCs. */
   RpcManager.registerImpl(DtaRpcInterface, DisplayTestAppRpc);
+  RpcManager.registerImpl(ECSchemaRpcInterface, ECSchemaRpcImpl)
   const authClient = await initializeAuthorizationClient();
   if (ProcessDetector.isElectronAppBackend) {
     opts.iModelHost.authorizationClient = authClient;

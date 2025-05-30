@@ -6,7 +6,7 @@
  * @module Rendering
  */
 
-import { dispose, disposeArray, IDisposable } from "@itwin/core-bentley";
+import { dispose, disposeArray } from "@itwin/core-bentley";
 import { CanvasDecorationList } from "./CanvasDecoration";
 import { GraphicList, RenderGraphic } from "./RenderGraphic";
 
@@ -14,7 +14,7 @@ import { GraphicList, RenderGraphic } from "./RenderGraphic";
  * @public
  * @extensions
  */
-export class Decorations implements IDisposable {
+export class Decorations implements Disposable {
   private _skyBox?: RenderGraphic;
   private _viewBackground?: RenderGraphic; // drawn first, view units, with no zbuffer, smooth shading, default lighting. e.g., a skybox
   private _normal?: GraphicList;       // drawn with zbuffer, with scene lighting
@@ -66,12 +66,17 @@ export class Decorations implements IDisposable {
     this._viewOverlay = viewOverlay;
   }
 
-  public dispose() {
+  public [Symbol.dispose]() {
     this.skyBox = undefined;
     this.viewBackground = undefined;
     this.world = undefined;
     this.worldOverlay = undefined;
     this.viewOverlay = undefined;
     this.normal = undefined;
+  }
+
+  /** @deprecated in 5.0 Use [Symbol.dispose] instead. */
+  public dispose() {
+    this[Symbol.dispose]();
   }
 }

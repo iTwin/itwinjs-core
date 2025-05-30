@@ -169,7 +169,7 @@ export class ThematicDisplayEditor {
 
     const div = document.createElement("div");
 
-    const thematicControlsDiv = document.createElement("div")!;
+    const thematicControlsDiv = document.createElement("div");
 
     const showHideControls = (show: boolean) => {
       const display = show ? "block" : "none";
@@ -610,7 +610,7 @@ export class ThematicDisplayEditor {
       name: "Sensor Value: ",
     });
 
-    const sensorsControlsDiv = document.createElement("div")!;
+    const sensorsControlsDiv = document.createElement("div");
 
     createButton({
       parent: sensorsControlsDiv,

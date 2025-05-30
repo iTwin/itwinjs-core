@@ -7,9 +7,9 @@ import { join } from "path";
 import { DbResult, GuidString, Id64String, IModelHubStatus, IModelStatus, OpenMode } from "@itwin/core-bentley";
 import {
   BriefcaseId, BriefcaseIdValue, ChangesetFileProps, ChangesetId, ChangesetIdWithIndex, ChangesetIndex, ChangesetIndexOrId, ChangesetProps,
-  ChangesetRange, IModelError, LocalDirName, LocalFileName,
+  ChangesetRange, IModelError, LocalDirName, LocalFileName, LockState,
 } from "@itwin/core-common";
-import { LockConflict, LockMap, LockProps, LockState } from "./BackendHubAccess";
+import { LockConflict, LockMap, LockProps } from "./BackendHubAccess";
 import { BriefcaseManager } from "./BriefcaseManager";
 import { BriefcaseLocalValue, IModelDb, SnapshotDb } from "./IModelDb";
 import { IModelJsFs } from "./IModelJsFs";
@@ -576,7 +576,7 @@ export class LocalHub {
         } else {
           // if requester is the only one holding a shared lock, "upgrade" the lock from shared to exclusive
           if (lockStatus.sharedBy.size > 1 || !lockStatus.sharedBy.has(briefcase.briefcaseId)) {
-            const id = lockStatus.sharedBy.values().next().value;
+            const id = lockStatus.sharedBy.values().next().value!; // eslint-disable-line @typescript-eslint/no-non-null-assertion
             throw new LockConflict(id, this.getBriefcase(id).alias, "shared lock is held");
           }
           this.removeSharedLock(props.id, briefcase.briefcaseId);
@@ -704,7 +704,7 @@ export class LocalHub {
     try {
       this.removeDir(BriefcaseManager.getIModelPath(this.iModelId));
       this.removeDir(this.rootDir);
-    } catch (err) {
+    } catch {
       // eslint-disable-next-line no-console
       console.log(`ERROR: test left an iModel open for [${this.iModelName}]. LocalMock cannot clean up - make sure you call imodel.close() in your test`);
     }

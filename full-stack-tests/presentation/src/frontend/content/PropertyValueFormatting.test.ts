@@ -4,11 +4,11 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { Guid, using } from "@itwin/core-bentley";
+import { Guid } from "@itwin/core-bentley";
 import { IModelConnection } from "@itwin/core-frontend";
 import { Content, ContentSpecificationTypes, DisplayValue, FormatsMap, InstanceKey, KeySet, Ruleset, RuleTypes } from "@itwin/presentation-common";
 import { PresentationManager, PresentationManagerProps } from "@itwin/presentation-frontend";
-import { collect, getFieldByLabel } from "../../Utils";
+import { collect, getFieldByLabel } from "../../Utils.js";
 import {
   buildTestIModelConnection,
   importSchema,
@@ -16,11 +16,11 @@ import {
   insertPhysicalElement,
   insertPhysicalModelWithPartition,
   insertSpatialCategory,
-} from "../../IModelSetupUtils";
+} from "../../IModelSetupUtils.js";
 import { UnitSystemKey } from "@itwin/core-quantity";
 import { SchemaContext } from "@itwin/ecschema-metadata";
 import { ECSchemaRpcLocater } from "@itwin/ecschema-rpcinterface-common";
-import { describeContentTestSuite, getDisplayValue } from "./Utils";
+import { describeContentTestSuite, getDisplayValue } from "./Utils.js";
 
 describeContentTestSuite("Property value formatting", ({ getDefaultSuiteIModel }) => {
   const ruleset: Ruleset = {
@@ -305,20 +305,19 @@ describeContentTestSuite("Property value formatting", ({ getDefaultSuiteIModel }
         return schemas;
       },
     };
-    return using(PresentationManager.create(props), async (manager) => {
-      const descriptor = await manager.getContentDescriptor({
-        imodel,
-        rulesetOrId: ruleset,
-        keys,
-        displayType: "Grid",
-        unitSystem,
-      });
-      expect(descriptor).to.not.be.undefined;
-      const content = await manager
-        .getContentIterator({ imodel, rulesetOrId: ruleset, keys, descriptor: descriptor!, unitSystem })
-        .then(async (x) => x && new Content(x.descriptor, await collect(x.items)));
-      expect(content).to.not.be.undefined;
-      return content!;
+    using manager = PresentationManager.create(props);
+    const descriptor = await manager.getContentDescriptor({
+      imodel,
+      rulesetOrId: ruleset,
+      keys,
+      displayType: "Grid",
+      unitSystem,
     });
+    expect(descriptor).to.not.be.undefined;
+    const content = await manager
+      .getContentIterator({ imodel, rulesetOrId: ruleset, keys, descriptor: descriptor!, unitSystem })
+      .then(async (x) => x && new Content(x.descriptor, await collect(x.items)));
+    expect(content).to.not.be.undefined;
+    return content!;
   }
 });

@@ -1,52 +1,94 @@
 {
-  "$id": "http://itwinjs.org/json-schema/workspace",
-  "$schema": "http://json-schema.org/draft-07/schema",
-  "title": "Workspace settings",
-  "description": "settings for accessing data from workspaces",
-  "type": "object",
-  "groupName": "workspace",
-  "properties": {
-    "workspace/databases": {
+  "$schema": "./Base.Schema.json",
+  "description": "settings for workspaces",
+  "schemaPrefix": "itwin/core/workspace",
+  "settingDefs": {
+    "settingsWorkspaces": {
+      "description": "An array of resourceName, WorkspaceDb properties, each of which holds a Settings.Dictionary. Each entry also holds the settings priority for loading the dictionary.",
       "type": "array",
-      "cumulative": true,
-      "description": "array of workspace databases",
       "items": {
         "type": "object",
-        "required": [
-          "name",
-          "dbName",
-          "containerName"
-        ],
+        "extends": "itwin/core/workspace/workspaceDb",
         "properties": {
-          "name": {
+          "resourceName": {
             "type": "string",
-            "description": "the alias name of the workspace database"
-          },
-          "dbName": {
-            "type": "string",
-            "description": "the name of the database within its cloud container"
-          },
-          "containerName": {
-            "type": "string",
-            "description": "the container name"
-          },
-          "version": {
-            "type": "string",
-            "description": "the (semver) range of acceptable versions"
-          },
-          "includePrerelease": {
-            "type": "boolean",
-            "description": "include prerelease version as acceptable versions"
+            "description": "the name of the string resource holding the settings dictionary in this WorkspaceDb",
+            "default": "settingsDictionary"
           },
           "priority": {
             "type": "number",
-            "description": "for sorted databases, higher values are searched first"
-          },
-          "prefetch": {
-            "type": "boolean",
-            "description": "if true, pre-fetch all of the data from the cloud in the background"
+            "description": "the SettingsPriority for the settingsDictionary",
+            "default": 500
           }
         }
+      }
+    }
+  },
+  "typeDefs": {
+    "workspaceDb": {
+      "type": "object",
+      "description": "WorkspaceDb properties",
+      "required": [
+        "containerId",
+        "baseUri"
+      ],
+      "properties": {
+        "dbName": {
+          "type": "string",
+          "description": "the name of the database within its cloud container. If not present, defaults to 'workspace-db'."
+        },
+        "baseUri": {
+          "type": "string",
+          "description": "the baseUri for the container, without trailing slash (e.g., https://containers.itwinjs.org)"
+        },
+        "containerId": {
+          "type": "string",
+          "description": "the containerId of this cloud container. Usually a Guid"
+        },
+        "storageType": {
+          "type": "string",
+          "description": "one of: 'azure', 'aws', 'google'",
+          "default": "azure"
+        },
+        "description": {
+          "type": "string",
+          "description": "information about what is in this workspace"
+        },
+        "loadingHelp": {
+          "type": "string",
+          "description": "in case there is a problem loading this workspace, show this message"
+        },
+        "isPublic": {
+          "type": "boolean",
+          "description": "whether the cloud container is public (doesn't require authentication)",
+          "default": false
+        },
+        "version": {
+          "type": "string",
+          "description": "the (semver) range of acceptable versions",
+          "default": "^1"
+        },
+        "includePrerelease": {
+          "type": "boolean",
+          "description": "include prerelease in acceptable versions"
+        },
+        "prefetch": {
+          "type": "boolean",
+          "description": "if true, pre-fetch all of the data from the cloud in the background"
+        },
+        "syncOnConnect": {
+          "type": "boolean",
+          "description": "if false, do not attempt to synchronize with cloud when workspace is loaded",
+          "hidden": true
+        }
+      }
+    },
+    "workspaceDbList": {
+      "type": "array",
+      "combineArray": true,
+      "items": {
+        "type": "object",
+        "extends": "itwin/core/workspace/workspaceDb"
       }
     }
   }

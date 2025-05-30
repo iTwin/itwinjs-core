@@ -49,7 +49,6 @@ export const TestDiagnosticCodes = {
   FailingConstantDiagnostic: getCode(20),
 };
 
-// eslint-disable-next-line @typescript-eslint/naming-convention
 export const TestDiagnostics = {
   FailingSchemaDiagnostic: Diagnostics.createSchemaDiagnosticClass<[string, string]>(TestDiagnosticCodes.FailingSchemaDiagnostic,
     "Failed with param {0} {1}"),

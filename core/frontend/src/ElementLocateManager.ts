@@ -6,7 +6,7 @@
  * @module LocatingElements
  */
 
-import { Id64 } from "@itwin/core-bentley";
+import { Id64, Id64String } from "@itwin/core-bentley";
 import { Point2d, Point3d } from "@itwin/core-geometry";
 import { HitDetail, HitList, HitSource } from "./HitDetail";
 import { IModelApp } from "./IModelApp";
@@ -169,8 +169,13 @@ export class ElementPicker {
   }
 
   private comparePixel(pixel1: Pixel.Data, pixel2: Pixel.Data, distXY1: number, distXY2: number) {
-    const priority1 = pixel1.computeHitPriority();
-    const priority2 = pixel2.computeHitPriority();
+    let priority1 = pixel1.computeHitPriority();
+    let priority2 = pixel2.computeHitPriority();
+
+    // If two hits have the same priority, prefer a contour over a non-contour.
+    priority1 -= pixel1.contour ? 0.5 : 0;
+    priority2 -= pixel2.contour ? 0.5 : 0;
+
     if (priority1 < priority2)
       return -1;
     if (priority1 > priority2)
@@ -188,9 +193,14 @@ export class ElementPicker {
   }
 
   /** Generate a list of elements that are close to a given point.
+   * @param vp Viewport to use for pick
+   * @param pickPointWorld Pick location in world coordinates
+   * @param pickRadiusView Pick radius in pixels
+   * @param options Pick options to use
+   * @param excludedElements Optional ids to not draw during pick. Allows hits for geometry obscured by these ids to be returned.
    * @returns The number of hits in the hitList of this object.
    */
-  public doPick(vp: ScreenViewport, pickPointWorld: Point3d, pickRadiusView: number, options: LocateOptions): number {
+  public doPick(vp: ScreenViewport, pickPointWorld: Point3d, pickRadiusView: number, options: LocateOptions, excludedElements?: Iterable<Id64String>): number {
     if (this.hitList && this.hitList.length > 0 && vp === this.viewport && pickPointWorld.isAlmostEqual(this.pickPointWorld)) {
       this.hitList.resetCurrentHit();
       return this.hitList.length;
@@ -206,8 +216,7 @@ export class ElementPicker {
     const rect = new ViewRect(testPointView.x - pixelRadius, testPointView.y - pixelRadius, testPointView.x + pixelRadius, testPointView.y + pixelRadius);
     if (rect.isNull)
       return 0;
-    let result: number = 0;
-    vp.readPixels(rect, Pixel.Selector.All, (pixels) => {
+    const receiver = (pixels: Pixel.Buffer | undefined) => {
       if (undefined === pixels)
         return;
 
@@ -269,7 +278,17 @@ export class ElementPicker {
       }
 
       result = this.hitList!.length;
-    }, !options.allowNonLocatable);
+    };
+
+    const args = {
+      receiver,
+      rect,
+      selector: Pixel.Selector.All,
+      excludeNonLocatable: !options.allowNonLocatable,
+      excludedElements,
+    };
+    let result: number = 0;
+    vp.readPixels(args);
 
     return result;
   }
@@ -306,13 +325,27 @@ export class ElementLocateManager {
   /** return the current path from either the snapping logic or the pre-locating systems. */
   public getPreLocatedHit(): HitDetail | undefined {
     // NOTE: Check AccuSnap first as Tentative is used to build intersect snap. For normal snaps when a Tentative is active there should be no AccuSnap.
-    let preLocated = IModelApp.accuSnap.getHitAndList(this);
+    const fromAccuSnap = IModelApp.accuSnap.getHitAndList(this);
+    const preLocated = fromAccuSnap ?? IModelApp.tentativePoint.getHitAndList(this);
 
-    if (!preLocated && !!(preLocated = IModelApp.tentativePoint.getHitAndList(this))) {
-      const vp = preLocated.viewport;
-      this.picker.empty(); // Get new hit list at hit point; want reset to cycle hits using adjusted point location...
-      this.picker.doPick(vp, preLocated.getPoint(), (vp.pixelsFromInches(this.apertureInches) / 2.0) + 1.5, this.options);
-      this.setHitList(this.picker.getHitList(true));
+    if (preLocated) {
+      const excludedElements = (preLocated.isElementHit ? new Set<string>([preLocated.sourceId]) : undefined);
+
+      if (excludedElements || !fromAccuSnap) {
+        // NOTE: For tentative snap, get new hit list at snap point; want reset to cycle hits using adjusted point location...
+        const point = (fromAccuSnap ? preLocated.hitPoint : preLocated.getPoint());
+        const vp = preLocated.viewport;
+
+        this.picker.empty();
+        this.picker.doPick(vp, point, (vp.pixelsFromInches(this.apertureInches) / 2.0) + 1.5, this.options, excludedElements);
+        this.setHitList(this.picker.getHitList(true));
+
+        if (excludedElements) {
+          if (undefined === this.hitList)
+            this.hitList = new HitList<HitDetail>();
+          this.hitList.insertHit(0, preLocated);
+        }
+      }
     }
 
     if (this.hitList)

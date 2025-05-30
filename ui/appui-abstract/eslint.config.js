@@ -19,7 +19,7 @@ module.exports = [
   {
     files: ["src/test/**/*"],
     rules: {
-      "deprecation/deprecation": "off"
+      "@typescript-eslint/no-deprecated": "off"
     }
   },
   ...eslintBaseConfig,

@@ -1,8 +1,8 @@
-const iTwinPlugin = require("@itwin/eslint-plugin");
+import iTwinPlugin from "@itwin/eslint-plugin";
 
-module.exports = [
+export default [
   {
     files: ["**/*.ts"],
     ...iTwinPlugin.configs.iTwinjsRecommendedConfig,
-  }
+  },
 ];

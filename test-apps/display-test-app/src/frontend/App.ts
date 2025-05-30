@@ -11,11 +11,11 @@ import { IModelsClient } from "@itwin/imodels-client-management";
 import { FrontendDevTools } from "@itwin/frontend-devtools";
 import { HyperModeling } from "@itwin/hypermodeling-frontend";
 import {
-  BentleyCloudRpcManager, BentleyCloudRpcParams, IModelReadRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface,
+  BentleyCloudRpcManager, BentleyCloudRpcParams, IModelReadRpcInterface, IModelTileRpcInterface,
 } from "@itwin/core-common";
 import { EditTools } from "@itwin/editor-frontend";
 import {
-  AccuDrawHintBuilder, AccuDrawShortcuts, AccuSnap, IModelApp, IpcApp, LocalhostIpcApp, LocalHostIpcAppOpts, RenderSystem, SelectionTool, SnapMode,
+  AccuDrawHintBuilder, AccuDrawViewportUI, AccuSnap, IModelApp, IModelConnection, IpcApp, LocalhostIpcApp, LocalHostIpcAppOpts, RenderSystem, SelectionTool, SnapMode,
   TileAdmin, Tool, ToolAdmin,
 } from "@itwin/core-frontend";
 import { MobileApp, MobileAppOpts } from "@itwin/core-mobile/lib/cjs/MobileFrontend";
@@ -29,9 +29,9 @@ import { ApplyModelTransformTool, ClearModelTransformsTool, DisableModelTransfor
 import { ApplyModelClipTool } from "./ModelClipTools";
 import { GenerateElementGraphicsTool, GenerateTileContentTool } from "./TileContentTool";
 import { ViewClipByElementGeometryTool } from "./ViewClipByElementGeometryTool";
-import { DrawingAidTestTool } from "./DrawingAidTestTool";
-import { EditingScopeTool, PlaceLineStringTool } from "./EditingTools";
-import { DynamicClassifierTool } from "./DynamicClassifierTool";
+import { DisplayTestAppShortcutsUI, DrawingAidTestTool } from "./DrawingAidTestTool";
+import { EditingScopeTool, MoveElementTool, PlaceLineStringTool, SetEditorToolSettingsTool } from "./EditingTools";
+import { DynamicClassifierTool, DynamicClipMaskTool } from "./DynamicClassifierTool";
 import { FenceClassifySelectedTool } from "./Fence";
 import { RecordFpsTool } from "./FpsMonitor";
 import { FrameStatsTool } from "./FrameStatsTool";
@@ -42,12 +42,14 @@ import { Notifications } from "./Notifications";
 import { OutputShadersTool } from "./OutputShadersTool";
 import { PathDecorationTestTool } from "./PathDecorationTest";
 import { GltfDecorationTool } from "./GltfDecoration";
+import { TextDecorationTool } from "./TextDecoration";
 import { ToggleShadowMapTilesTool } from "./ShadowMapDecoration";
 import { signIn, signOut } from "./signIn";
 import {
   CloneViewportTool, CloseIModelTool, CloseWindowTool, CreateWindowTool, DockWindowTool, FocusWindowTool, MaximizeWindowTool, OpenIModelTool,
   ReopenIModelTool, ResizeWindowTool, RestoreWindowTool, Surface,
 } from "./Surface";
+import { CreateSectionDrawingTool } from "./CreateSectionDrawingTool";
 import { SyncViewportFrustaTool, SyncViewportsTool } from "./SyncViewportsTool";
 import { TimePointComparisonTool } from "./TimePointComparison";
 import { UiManager } from "./UiManager";
@@ -56,32 +58,68 @@ import { MacroTool } from "./MacroTools";
 import { RecordTileSizesTool } from "./TileSizeRecorder";
 import { TerrainDrapeTool } from "./TerrainDrapeTool";
 import { SaveImageTool } from "./SaveImageTool";
+import { ToggleSecondaryIModelTool } from "./TiledGraphics";
 import { BingTerrainMeshProvider } from "./BingTerrainProvider";
 import { AttachCustomRealityDataTool, registerRealityDataSourceProvider } from "./RealityDataProvider";
 import { MapLayersFormats } from "@itwin/map-layers-formats";
 import { OpenRealityModelSettingsTool } from "./RealityModelDisplaySettingsWidget";
-import { ElectronRendererAuthorization } from "@itwin/electron-authorization/lib/cjs/ElectronRenderer";
+import { ElectronRendererAuthorization } from "@itwin/electron-authorization/Renderer";
 import { ITwinLocalization } from "@itwin/core-i18n";
 import { getConfigurationString } from "./DisplayTestApp";
+import { AddSeequentRealityModel } from "./RealityDataModel";
+import { SchemaFormatsProvider } from "@itwin/ecschema-metadata";
+import { ECSchemaRpcInterface } from '@itwin/ecschema-rpcinterface-common';
 
 class DisplayTestAppAccuSnap extends AccuSnap {
   private readonly _activeSnaps: SnapMode[] = [SnapMode.NearestKeypoint];
+  private _snapModeOverride?: SnapMode;
 
-  public override get keypointDivisor() { return 2; }
-  public override getActiveSnapModes(): SnapMode[] { return this._activeSnaps; }
+  public override get keypointDivisor() {
+    return 2;
+  }
+
+  /** Called after a button event or whenever a new tool is installed. */
+  public override synchSnapMode(): void {
+    this._snapModeOverride = undefined;
+  }
+
+  public override getActiveSnapModes(): SnapMode[] {
+    if (undefined === this._snapModeOverride)
+      return this._activeSnaps;
+
+    return [this._snapModeOverride];
+  }
+
   public setActiveSnapModes(snaps: SnapMode[]): void {
     this._activeSnaps.length = snaps.length;
     for (let i = 0; i < snaps.length; i++)
       this._activeSnaps[i] = snaps[i];
   }
+
+  /** Demonstrate how to override the active snap mode(s) for the next button event only.
+   * Calling with undefined or the same value as the current override can be used to restore the original snap mode(s).
+   * @note Should also update the UI to indicate when an override is active...
+   */
+  public setSnapModeOverride(snap?: SnapMode): void {
+    this._snapModeOverride = (snap === this._snapModeOverride ? undefined : snap);
+    IModelApp.accuSnap.clear();
+  }
 }
 
 class DisplayTestAppToolAdmin extends ToolAdmin {
+  private _shortcuts?: DisplayTestAppShortcutsUI;
+
   /** Process shortcut key events */
   public override async processShortcutKey(keyEvent: KeyboardEvent, wentDown: boolean): Promise<boolean> {
-    if (wentDown && AccuDrawHintBuilder.isEnabled)
-      return AccuDrawShortcuts.processShortcutKey(keyEvent);
-    return false;
+    if (!wentDown || !AccuDrawHintBuilder.isEnabled)
+      return false;
+
+    if (undefined === this._shortcuts) {
+      this._shortcuts = new DisplayTestAppShortcutsUI();
+      this._shortcuts.populateDefaultShortcuts();
+    }
+
+    return this._shortcuts.processShortcutKey(keyEvent);
   }
 }
 
@@ -238,6 +276,7 @@ export class DisplayTestApp {
     };
     const opts: ElectronAppOpts | LocalHostIpcAppOpts = {
       iModelApp: {
+        accuDraw: new AccuDrawViewportUI(),
         accuSnap: new DisplayTestAppAccuSnap(),
         notifications: new Notifications(),
         tileAdmin,
@@ -249,7 +288,7 @@ export class DisplayTestApp {
           DtaRpcInterface,
           IModelReadRpcInterface,
           IModelTileRpcInterface,
-          SnapshotIModelRpcInterface,
+          ECSchemaRpcInterface
         ],
         /* eslint-disable @typescript-eslint/naming-convention */
         mapLayerOptions: {
@@ -258,6 +297,9 @@ export class DisplayTestApp {
             : undefined,
           BingMaps: configuration.bingMapsKey
             ? { key: "key", value: configuration.bingMapsKey }
+            : undefined,
+          GoogleMaps: configuration.googleMapsKey
+            ? { key: "key", value: configuration.googleMapsKey }
             : undefined,
         },
         /* eslint-enable @typescript-eslint/naming-convention */
@@ -296,13 +338,27 @@ export class DisplayTestApp {
       }
 
       const rpcParams: BentleyCloudRpcParams = { info: { title: "ui-test-app", version: "v1.0" }, uriPrefix: configuration.customOrchestratorUri || "http://localhost:3001" };
-      if (opts.iModelApp?.rpcInterfaces) // eslint-disable-line deprecation/deprecation
-        BentleyCloudRpcManager.initializeClient(rpcParams, opts.iModelApp.rpcInterfaces); // eslint-disable-line deprecation/deprecation
+      if (opts.iModelApp?.rpcInterfaces) // eslint-disable-line @typescript-eslint/no-deprecated
+        BentleyCloudRpcManager.initializeClient(rpcParams, opts.iModelApp.rpcInterfaces); // eslint-disable-line @typescript-eslint/no-deprecated
       await LocalhostIpcApp.startup(opts);
     }
 
     IModelApp.applicationLogoCard =
       () => IModelApp.makeLogoCard({ iconSrc: "DTA.png", iconWidth: 100, heading: "Display Test App", notice: "For internal testing" });
+
+    IModelConnection.onOpen.addListener((imodel: IModelConnection) => {
+      if (imodel.isBlankConnection()) return;
+
+      const formatsProvider = new SchemaFormatsProvider(imodel.schemaContext, IModelApp.quantityFormatter.activeUnitSystem);
+      IModelApp.formatsProvider = formatsProvider;
+      IModelApp.quantityFormatter.onActiveFormattingUnitSystemChanged.addListener((args) => {
+        formatsProvider.unitSystem = args.system;
+      });
+
+      IModelConnection.onClose.addOnce(() => {
+        IModelApp.resetFormatsProvider();
+      });
+    });
 
     const svtToolNamespace = "SVTTools";
     await IModelApp.localization.registerNamespace(svtToolNamespace);
@@ -316,6 +372,7 @@ export class DisplayTestApp {
       CloneViewportTool,
       CloseIModelTool,
       CloseWindowTool,
+      CreateSectionDrawingTool,
       CreateWindowTool,
       DisableModelTransformsTool,
       DockWindowTool,
@@ -335,14 +392,17 @@ export class DisplayTestApp {
       MarkupTool,
       MaximizeWindowTool,
       ModelClipTool,
+      MoveElementTool,
       OpenIModelTool,
       OpenRealityModelSettingsTool,
       OutputShadersTool,
       PlaceLineStringTool,
       DynamicClassifierTool,
+      DynamicClipMaskTool,
       PullChangesTool,
       PushChangesTool,
       PurgeTileTreesTool,
+      AddSeequentRealityModel,
       RecordFpsTool,
       RecordTileSizesTool,
       RefreshTilesTool,
@@ -350,6 +410,7 @@ export class DisplayTestApp {
       ResizeWindowTool,
       RestoreWindowTool,
       SaveImageTool,
+      SetEditorToolSettingsTool,
       ShutDownTool,
       SignInTool,
       SignOutTool,
@@ -357,7 +418,9 @@ export class DisplayTestApp {
       SyncViewportFrustaTool,
       SyncViewportsTool,
       TerrainDrapeTool,
+      TextDecorationTool,
       ToggleAspectRatioSkewDecoratorTool,
+      ToggleSecondaryIModelTool,
       TimePointComparisonTool,
       ToggleShadowMapTilesTool,
       ViewClipByElementGeometryTool,
@@ -378,6 +441,10 @@ export class DisplayTestApp {
     await MapLayersFormats.initialize();
 
     EditTools.registerProjectLocationTools();
+  }
+
+  public static setSnapModeOverride(snap: SnapMode): void {
+    (IModelApp.accuSnap as DisplayTestAppAccuSnap).setSnapModeOverride(snap);
   }
 
   public static setActiveSnapModes(snaps: SnapMode[]): void {

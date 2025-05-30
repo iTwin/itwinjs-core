@@ -9,7 +9,10 @@
       "@typescript-eslint/parser"
     ]
   },
-  "globalOverrides": {},
+  "globalOverrides": {
+    "rollup-plugin-copy>globby": "^11.0.0", // https://github.com/vladshcherbin/rollup-plugin-copy/issues/77
+    "elliptic": "^6.6.1" // https://github.com/advisories/GHSA-vjh7-7g9h-fjfh crypto-browserify>browserify-sign>elliptic
+  },
   // A list of temporary advisories excluded from the High and Critical list.
   // Warning this should only be used as a temporary measure to avoid build failures
   // for development dependencies only.
@@ -19,7 +22,10 @@
   "unsupportedPackageJsonSettings": {
     "pnpm": {
       "auditConfig": {
-        "ignoreCves": []
+        "ignoreCves": [
+          "CVE-2024-45296", // https://github.com/advisories/GHSA-9wv6-86v2-598j sinon>nise>path-to-regexp
+          "CVE-2025-27152" // https://github.com/advisories/GHSA-jr5f-v2jv-69x6 azurite>@azure/ms-rest-js>axios
+        ]
       }
     }
   }

@@ -5,10 +5,11 @@
 
 import { expect } from "chai";
 import { Id64 } from "@itwin/core-bentley";
-import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
+import { IModelConnection } from "@itwin/core-frontend";
 import { ChildNodeSpecificationTypes, InstanceKey, RelationshipDirection, Ruleset, RuleTypes } from "@itwin/presentation-common";
 import { Presentation } from "@itwin/presentation-frontend";
-import { initialize, terminate } from "../../IntegrationTests";
+import { initialize, terminate } from "../../IntegrationTests.js";
+import { TestIModelConnection } from "../../IModelSetupUtils.js";
 
 describe("Hierarchies", () => {
   before(async () => {
@@ -24,7 +25,7 @@ describe("Hierarchies", () => {
 
     before(async () => {
       const testIModelName: string = "assets/datasets/Properties_60InstancesWithUrl2.ibim";
-      imodel = await SnapshotConnection.openFile(testIModelName);
+      imodel = TestIModelConnection.openFile(testIModelName);
     });
 
     after(async () => {

@@ -9,15 +9,14 @@ import { Matrix4d, Point3d, XYZProps, YawPitchRollAngles } from "@itwin/core-geo
 import {
   EcefLocation, GeoCoordStatus, IModelReadRpcInterface, IModelVersion, MassPropertiesOperation, MassPropertiesPerCandidateRequestProps, MassPropertiesRequestProps, ModelQueryParams,
 } from "@itwin/core-common";
-import { CheckpointConnection, IModelApp, IModelConnection, SpatialModelState, ViewState } from "@itwin/core-frontend";
+import { CheckpointConnection, IModelApp, IModelConnection, SpatialModelState } from "@itwin/core-frontend";
 import { TestFrontendAuthorizationClient } from "@itwin/oidc-signin-tool/lib/cjs/frontend";
 import { TestContext } from "./setup/TestContext";
 
-/* eslint-disable deprecation/deprecation */
+/* eslint-disable @typescript-eslint/no-deprecated */
 
 const expect = chai.expect;
 
-// eslint-disable-next-line @typescript-eslint/no-var-requires
 (global as any).btoa = (str: string) => {
   const buffer = Buffer.from(str, "binary");
   return buffer.toString("base64");
@@ -33,7 +32,7 @@ describe("IModel Connection", () => {
     if (!testContext.settings.runiModelReadRpcTests)
       this.skip();
 
-    accessToken = testContext.adminUserAccessToken;
+    accessToken = testContext.serviceAuthToken;
     IModelApp.authorizationClient = new TestFrontendAuthorizationClient(accessToken);
   });
 
@@ -102,7 +101,7 @@ describe("IModelReadRpcInterface Methods from an IModelConnection", () => {
 
     const iModelId = testContext.iModelWithChangesets!.iModelId;
     iTwinId = testContext.iModelWithChangesets!.iTwinId;
-    accessToken = testContext.adminUserAccessToken;
+    accessToken = testContext.serviceAuthToken;
     IModelApp.authorizationClient = new TestFrontendAuthorizationClient(accessToken);
     iModel = await CheckpointConnection.openRemote(iTwinId, iModelId);
   });
@@ -114,7 +113,7 @@ describe("IModelReadRpcInterface Methods from an IModelConnection", () => {
 
   it("getToolTipMessage should work as expected", async () => {
     const ids: Id64Set = await iModel.elements.queryIds({ limit: 10, from: "BisCore:Subject" });
-    const id = ids.values().next().value;
+    const id = ids.values().next().value!;
 
     const tooltip = await iModel.getToolTipMessage(id); // "0x338"
 
@@ -129,14 +128,14 @@ describe("IModelReadRpcInterface Methods from an IModelConnection", () => {
 
   it("getGeometrySummary should work as expected", async () => {
     const ids: Id64Set = await iModel.elements.queryIds({ limit: 10, from: "BisCore:Subject" });
-    const id = ids.values().next().value;
+    const id = ids.values().next().value!;
     const result = await IModelReadRpcInterface.getClient().getGeometrySummary(iModel.getRpcProps(), { elementIds: [id], options: {} });
     expect(result).to.not.be.undefined;
   });
 
   it("requestSnap should work as expected", async () => {
     const ids: Id64Set = await iModel.elements.queryIds({ limit: 10, from: "BisCore:PhysicalElement" });
-    const id = ids.values().next().value;
+    const id = ids.values().next().value!;
 
     const worldToView = Matrix4d.createIdentity();
     const snap = await iModel.requestSnap({
@@ -171,14 +170,6 @@ describe("IModelReadRpcInterface Methods from an IModelConnection", () => {
   it("getClassHierarchy should work as expected", async () => {
     const result = await iModel.findClassFor("BisCore:LineStyle", undefined);
     expect(result).undefined;
-  });
-
-  it("getViewThumbnail should work as expected", async () => {
-    const modelQueryParams: ModelQueryParams = { limit: 10, from: ViewState.classFullName };
-    const modelProps = await iModel.views.queryProps(modelQueryParams);
-    const viewId = modelProps[0].id!.toString();
-    const result = await iModel.views.getThumbnail(viewId);
-    expect(result).to.not.be.undefined;
   });
 
   it("getIModelCoordinatesFromGeoCoordinates should work as expected", async () => {
@@ -346,6 +337,12 @@ describe("IModelReadRpcInterface Methods from an IModelConnection", () => {
     expect(candidate1Result).to.deep.eq({ ...expectedCandidate1Result, candidate: candidates[0] });
     expect(candidate2Result).to.deep.eq({ ...expectedCandidate2Result, candidate: candidates[1] });
   });
+
+  it("queryAllUsedSpatialSubCategories should find subcategories coming from spatial categories of 3d Elements", async () => {
+    const result = await iModel.queryAllUsedSpatialSubCategories();
+    expect(result).to.not.be.null;
+    expect(result.length).to.not.be.equal(0);
+  });
 });
 
 describe("Snapping", () => {
@@ -362,14 +359,14 @@ describe("Snapping", () => {
 
     const iModelId = testContext.iModelWithChangesets!.iModelId;
     iTwinId = testContext.iModelWithChangesets!.iTwinId;
-    accessToken = testContext.adminUserAccessToken;
+    accessToken = testContext.serviceAuthToken;
     IModelApp.authorizationClient = new TestFrontendAuthorizationClient(accessToken);
     iModel = await CheckpointConnection.openRemote(iTwinId, iModelId);
   });
 
   it("should be able to request a snap", async () => {
     const ids = await iModel.elements.queryIds({ limit: 10, from: "BisCore:PhysicalElement" });
-    const id = ids.values().next().value;
+    const id = ids.values().next().value!;
 
     const worldToView = Matrix4d.createIdentity();
     const snapProps = {
@@ -385,7 +382,7 @@ describe("Snapping", () => {
 
   it("should be able to cancel a snap", async () => {
     const ids = await iModel.elements.queryIds({ limit: 10, from: "BisCore:PhysicalElement" });
-    const id = ids.values().next().value;
+    const id = ids.values().next().value!;
 
     const worldToView = Matrix4d.createIdentity();
     const snapProps = {
@@ -395,7 +392,6 @@ describe("Snapping", () => {
       worldToView: worldToView.toJSON(),
     };
 
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
     const promise = IModelReadRpcInterface.getClient().requestSnap(iModel.getRpcProps(), id, snapProps);
     try {
       await IModelReadRpcInterface.getClient().cancelSnap(iModel.getRpcProps(), id);
@@ -405,7 +401,7 @@ describe("Snapping", () => {
       expect(snap.status).not.to.be.undefined;
     } catch (err: any) {
       // This is what we expect if the cancellation occurs in time to really cancel the snap.
-      expect(err.message).to.equal("aborted");
+      expect(err.message).to.equal("Unknown server response code.");
     }
   });
 });

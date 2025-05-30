@@ -8,9 +8,10 @@
 
 import { Id64, Id64String } from "@itwin/core-bentley";
 import { BatchType, Feature, GeometryClass, ModelFeature } from "@itwin/core-common";
-import { HitPriority, ViewAttachmentHitInfo } from "../HitDetail";
+import { ContourHit, HitPath, HitPriority } from "../HitDetail";
 import { IModelConnection } from "../IModelConnection";
 import type { Viewport } from "../Viewport";
+import { Transform } from "@itwin/core-geometry";
 
 /** Describes aspects of a pixel as read from a [[Viewport]].
  * @see [[Viewport.readPixels]].
@@ -33,12 +34,22 @@ export namespace Pixel {
     public readonly batchType?: BatchType;
     /** The iModel from which the geometry producing the pixel originated. */
     public readonly iModel?: IModelConnection;
+  /** Information about the [contour line]($docs/learning/display/ContourDisplay.md), if any, that generated this pixel.
+     * @beta
+     */
+    public readonly contour?: ContourHit;
+    /** @internal */
+    public readonly transformFromIModel?: Transform;
     /** @internal */
     public readonly tileId?: string;
     /** The Id of the [ViewAttachment]($backend), if any, from which the pixel originated.
      * @beta
      */
     public readonly viewAttachmentId?: Id64String;
+    /** True if the pixel originated from a [[SpatialViewState]] attached via a [SectionDrawing]($backend).
+     * @beta
+     */
+    public readonly inSectionDrawingAttachment: boolean;
     /** @internal */
     public get isClassifier(): boolean {
       return undefined !== this.batchType && BatchType.Primary !== this.batchType;
@@ -54,17 +65,29 @@ export namespace Pixel {
       iModel?: IModelConnection;
       tileId?: string;
       viewAttachmentId?: string;
+      inSectionDrawingAttachment?: boolean;
+      transformFromIModel?: Transform;
+      contour?: ContourHit;
     }) {
-      if (args?.feature)
-        this.feature = new Feature(args.feature.elementId, args.feature.subCategoryId, args.feature.geometryClass);
-
-      this.modelId = args?.feature?.modelId;
       this.distanceFraction = args?.distanceFraction ?? -1;
       this.type = args?.type ?? GeometryType.Unknown;
       this.planarity = args?.planarity ?? Planarity.Unknown;
-      this.iModel = args?.iModel;
-      this.tileId = args?.tileId;
-      this.viewAttachmentId = args?.viewAttachmentId;
+      this.inSectionDrawingAttachment = true === args?.inSectionDrawingAttachment;
+
+      if (!args) {
+        return;
+      }
+
+      if (args.feature) {
+        this.feature = new Feature(args.feature.elementId, args.feature.subCategoryId, args.feature.geometryClass);
+      }
+
+      this.modelId = args.feature?.modelId;
+      this.iModel = args.iModel;
+      this.tileId = args.tileId;
+      this.viewAttachmentId = args.viewAttachmentId;
+      this.transformFromIModel = args.transformFromIModel;
+      this.contour = args.contour;
     }
 
     /** The Id of the element that produced the pixel. */
@@ -102,11 +125,26 @@ export namespace Pixel {
      * @param viewport The viewport in which the hit originated.
      */
     public toHitProps(viewport: Viewport): Pixel.HitProps {
-      let viewAttachment: ViewAttachmentHitInfo | undefined;
+      let path: HitPath | undefined;
       if (this.viewAttachmentId) {
-        const attachmentViewport = viewport.view.getAttachmentViewport(this.viewAttachmentId);
-        if (attachmentViewport)
-          viewAttachment = { viewport: attachmentViewport, id: this.viewAttachmentId };
+        const attachmentViewport = viewport.view.getAttachmentViewport({ viewAttachmentId: this.viewAttachmentId });
+        if (attachmentViewport) {
+          path = {
+            viewAttachment: {
+              viewport: attachmentViewport,
+              id: this.viewAttachmentId,
+            },
+          };
+        }
+      }
+
+      if (this.inSectionDrawingAttachment) {
+        const checkVp = path?.viewAttachment?.viewport ?? viewport;
+        const attachVp = checkVp.view.getAttachmentViewport({ inSectionDrawingAttachment: true });
+        if (attachVp) {
+          path = path ?? { };
+          path.sectionDrawingAttachment = { viewport: attachVp };
+        }
       }
 
       return {
@@ -119,7 +157,9 @@ export namespace Pixel {
         tileId: this.tileId,
         isClassifier: this.isClassifier,
         sourceIModel: this.iModel,
-        viewAttachment,
+        transformFromSourceIModel: this.transformFromIModel,
+        path,
+        contour: this.contour,
       };
     }
   }
@@ -156,17 +196,22 @@ export namespace Pixel {
      * @internal
      */
     sourceIModel?: IModelConnection;
+    /** @internal */
+    transformFromSourceIModel?: Transform;
     /** @internal chiefly for debugging */
     tileId?: string;
     /** True if the hit originated from a reality model classifier.
      * @alpha
      */
     isClassifier?: boolean;
-    /** Information about the [ViewAttachment]($backend) within which the hit geometry resides, if any.
-     * @note Only [[SheetViewState]]s can have view attachments.
+    /** Path through which the hit was located.
      * @beta
      */
-    viewAttachment?: ViewAttachmentHitInfo;
+    path?: HitPath;
+  /** Information about the [contour line]($docs/learning/display/ContourDisplay.md), if any, from which the hit originated.
+     * @beta
+     */
+    contour?: ContourHit;
   }
 
   /** Describes the type of geometry that produced the [[Pixel.Data]]. */
@@ -207,8 +252,10 @@ export namespace Pixel {
     Feature = 1 << 0, // eslint-disable-line @typescript-eslint/no-shadow
     /** Select the type and planarity of geometry which produced each pixel as well as the fraction of its distance between the near and far planes. */
     GeometryAndDistance = 1 << 2,
+    /** Select the [[ContourHit]]s describing which if any contour line produced each pixel. */
+    Contours = 1 << 3,
     /** Select all aspects of each pixel. */
-    All = GeometryAndDistance | Feature,
+    All = GeometryAndDistance | Feature | Contours,
   }
 
   /** A rectangular array of pixels as read from a [[Viewport]]'s frame buffer. Each pixel is represented as a [[Pixel.Data]] object.

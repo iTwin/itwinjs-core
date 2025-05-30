@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
+import { describe, expect, it } from "vitest";
 import { CompressedId64Set } from "@itwin/core-bentley";
 import { Matrix3d, Point3d, Point4d, Transform, TransformProps } from "@itwin/core-geometry";
 import { RenderSchedule as RS } from "../RenderSchedule";

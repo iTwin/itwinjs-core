@@ -1,0 +1,13 @@
+{
+  "extends": "../node_modules/@itwin/build-tools/tsconfig-base.json",
+  "compilerOptions": {
+    "allowJs": true,
+    "checkJs": true,
+    "esModuleInterop": false,
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "noEmit": true,
+    "outDir": "../lib",
+  },
+  "include": ["./*.mjs"]
+}

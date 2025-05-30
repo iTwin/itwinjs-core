@@ -5,6 +5,7 @@
 ```ts
 
 import { ArcGISImageryProvider } from '@itwin/core-frontend';
+import { BaseMapLayerSettings } from '@itwin/core-common';
 import { BeButtonEvent } from '@itwin/core-frontend';
 import { BeEvent } from '@itwin/core-bentley';
 import { Cartographic } from '@itwin/core-common';
@@ -12,17 +13,21 @@ import { ColorDef } from '@itwin/core-common';
 import { EventHandled } from '@itwin/core-frontend';
 import { HitDetail } from '@itwin/core-frontend';
 import { ImageMapLayerSettings } from '@itwin/core-common';
+import { ImageryMapLayerFormat } from '@itwin/core-frontend';
 import { ImageryMapTileTree } from '@itwin/core-frontend';
 import { ImageSource } from '@itwin/core-common';
 import { Listener } from '@itwin/core-bentley';
 import { Localization } from '@itwin/core-common';
 import { LocateFilterStatus } from '@itwin/core-frontend';
 import { LocateResponse } from '@itwin/core-frontend';
+import { MapCartoRectangle } from '@itwin/core-frontend';
 import { MapFeatureInfo } from '@itwin/core-frontend';
 import { MapFeatureInfoOptions } from '@itwin/core-frontend';
 import { MapLayerFeatureInfo } from '@itwin/core-frontend';
+import { MapLayerImageryProvider } from '@itwin/core-frontend';
 import { PrimitiveTool } from '@itwin/core-frontend';
 import { QuadId } from '@itwin/core-frontend';
+import { QuadIdProps } from '@itwin/core-frontend';
 import { Transform } from '@itwin/core-geometry';
 
 // @internal
@@ -39,8 +44,6 @@ export class ArcGisFeatureProvider extends ArcGISImageryProvider {
     // (undocumented)
     get format(): ArcGisFeatureFormat | undefined;
     // (undocumented)
-    static getDefaultSymbology(geomType: ArcGisFeatureGeometryType): EsriSFS | EsriSLS | EsriPMS | undefined;
-    // (undocumented)
     getFeatureInfo(featureInfos: MapLayerFeatureInfo[], quadId: QuadId, carto: Cartographic, _tree: ImageryMapTileTree, hit: HitDetail, options?: MapFeatureInfoOptions): Promise<void>;
     // (undocumented)
     protected getLayerMetadata(layerId: number): Promise<any>;
@@ -56,6 +59,110 @@ export class ArcGisFeatureProvider extends ArcGISImageryProvider {
     serviceJson: any;
     // (undocumented)
     get tileSize(): number;
+}
+
+// @beta
+export abstract class BaseGoogleMapsSession implements GoogleMapsSession {
+    // (undocumented)
+    protected abstract getTileApiBaseUrl(): string;
+    // (undocumented)
+    protected getTilePositionUrl(position: QuadIdProps): URL;
+    // (undocumented)
+    abstract getTileRequest(position: QuadIdProps): GoogleMapsRequest;
+    // (undocumented)
+    abstract getTileSize(): number;
+    // (undocumented)
+    abstract getViewportInfoRequest(rectangle: MapCartoRectangle, zoomLevel: number): GoogleMapsRequest;
+}
+
+// @internal (undocumented)
+export class DefaultArcGiSymbology implements FeatureDefaultSymbology {
+    // (undocumented)
+    static readonly defaultPMS: EsriPMS;
+    // (undocumented)
+    static readonly defaultSFS: EsriSFS;
+    // (undocumented)
+    static readonly defaultSLS: EsriSLS;
+    // (undocumented)
+    static readonly defaultSLSProps: EsriSLSProps;
+    // (undocumented)
+    getSymbology(geomType: string): EsriSymbol;
+    // (undocumented)
+    initialize(): Promise<void>;
+}
+
+// @beta
+export const GoogleMaps: {
+    createMapLayerSettings: (name?: string, opts?: GoogleMapsCreateSessionOptions) => ImageMapLayerSettings;
+    createBaseLayerSettings: (opts?: GoogleMapsCreateSessionOptions) => BaseMapLayerSettings;
+    getMapLayerSessionOptions: (settings: ImageMapLayerSettings) => GoogleMapsCreateSessionOptions;
+};
+
+// @beta
+export interface GoogleMapsCreateSessionOptions {
+    apiOptions?: string[];
+    language: string;
+    layerTypes?: GoogleMapsLayerTypes[];
+    mapType: GoogleMapsMapTypes;
+    overlay?: boolean;
+    region: string;
+    scale?: GoogleMapsScaleFactors;
+}
+
+// @beta
+export type GoogleMapsLayerTypes = "layerRoadmap" | "layerStreetview";
+
+// @public
+export class GoogleMapsMapLayerFormat extends ImageryMapLayerFormat {
+    // @internal (undocumented)
+    static createImageryProvider(settings: ImageMapLayerSettings): MapLayerImageryProvider | undefined;
+    static formatId: string;
+}
+
+// @beta
+export type GoogleMapsMapTypes = "roadmap" | "satellite" | "terrain";
+
+// @beta
+export interface GoogleMapsOptions {
+    // (undocumented)
+    sessionManager?: GoogleMapsSessionManager;
+}
+
+// @beta
+export interface GoogleMapsRequest {
+    // (undocumented)
+    authorization?: string;
+    url: URL;
+}
+
+// @beta
+export type GoogleMapsScaleFactors = "scaleFactor1x" | "scaleFactor2x" | "scaleFactor4x";
+
+// @beta
+export interface GoogleMapsSession {
+    // (undocumented)
+    getTileRequest: (position: QuadIdProps) => GoogleMapsRequest;
+    // (undocumented)
+    getTileSize: () => number;
+    // (undocumented)
+    getViewportInfoRequest(rectangle: MapCartoRectangle, zoomLevel: number): GoogleMapsRequest;
+}
+
+// @beta
+export interface GoogleMapsSessionData {
+    expiry: number;
+    imageFormat: string;
+    session: string;
+    tileHeight: number;
+    tileWidth: number;
+}
+
+// @beta
+export abstract class GoogleMapsSessionManager {
+    // (undocumented)
+    abstract createSession(sessionOptions: GoogleMapsCreateSessionOptions): Promise<GoogleMapsSession>;
+    // (undocumented)
+    readonly type = "GoogleMapsSessionManager";
 }
 
 // @beta
@@ -100,6 +207,8 @@ export interface MapFeatureInfoToolData {
 
 // @beta
 export class MapLayersFormats {
+    // (undocumented)
+    static get googleMapsOpts(): GoogleMapsOptions | undefined;
     static initialize(config?: MapLayersFormatsConfig): Promise<void>;
     // (undocumented)
     static localization: Localization;
@@ -109,7 +218,29 @@ export class MapLayersFormats {
 // @beta
 export interface MapLayersFormatsConfig {
     // (undocumented)
+    googleMapsOpts?: GoogleMapsOptions;
+    // (undocumented)
     localization?: Localization;
+}
+
+// @beta
+export interface MaxZoomRectangle {
+    // (undocumented)
+    east: number;
+    // (undocumented)
+    maxZoom: number;
+    // (undocumented)
+    north: number;
+    // (undocumented)
+    south: number;
+    // (undocumented)
+    west: number;
+}
+
+// @beta
+export interface ViewportInfo {
+    copyright: string;
+    maxZoomRects: MaxZoomRectangle[];
 }
 
 // (No @packageDocumentation comment for this package)

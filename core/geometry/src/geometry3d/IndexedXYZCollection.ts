@@ -10,6 +10,7 @@
 import { Geometry } from "../Geometry";
 import { Point3d, Vector3d, XYZ } from "./Point3dVector3d";
 import { Range3d } from "./Range";
+import { Transform } from "./Transform";
 import { XAndY, XYAndZ } from "./XYZProps";
 
 class PointsIterator implements Iterator<Point3d>, Iterable<Point3d> {
@@ -204,41 +205,57 @@ export abstract class IndexedXYZCollection {
    * @param index1 second point index
    */
   public abstract distanceIndexIndex(index0: number, index1: number): number | undefined;
-
+  /**
+   * Test if index is valid for an xyz within this array.
+   * @param index xyz index to test.
+   */
+  public isIndexValid(index: number): boolean {
+    return index >= 0 && index < this.length;
+  }
   /** Adjust index into range by modulo with the length. */
   public cyclicIndex(i: number): number {
     return (i % this.length);
   }
   /** Return the range of the points. */
-  public getRange(): Range3d {
-    const range = Range3d.createNull();
+  public getRange(transform?: Transform, result?: Range3d): Range3d {
+    let range = result;
+    if (range)
+      range.setNull();
+    else
+      range = Range3d.createNull();
     const n = this.length;
     const point = Point3d.create();
     for (let i = 0; i < n; i++) {
       this.getPoint3dAtUncheckedPointIndex(i, point);
-      range.extendPoint(point);
+      range.extendPoint(point, transform);
     }
     return range;
   }
 
   /**
-   * For each run of points with indices i+1 to i+n within distance tolerance of points[i], return the indices i+1, ..., i+n.
+   * For each subset of `k` successive points within tolerance of the first point in the subset, return the indices of
+   * the last `k-1` duplicates.
+   * * Index `0` is never returned.
+   * @param tolerance optional distance tol for compression (default [[Geometry.smallMetricDistance]])
+   * @param preserveLast if the last `k < this.length` points of the instance are duplicates, whether to return the
+   * indices of the *first* `k-1` duplicates for this last run. If true, index `this.length - 1` is not returned
+   * unless all points are duplicates, in which case all indices but `0` are returned. Default value is false.
    * @return ordered array of 0-based indices of duplicate points
    */
-  public findOrderedDuplicates(tolerance: number = Geometry.smallMetricDistance): number[] {
-    const tol2 = tolerance * tolerance;
+  public findOrderedDuplicates(tolerance: number = Geometry.smallMetricDistance, preserveLast: boolean = false): number[] {
     const indices: number[] = [];
     if (this.length > 1) {
       for (let i = 0; i < this.length - 1;) {
         let j = i + 1;
-        for (; j < this.length; ++j) {
-          const dist2 = this.distanceSquaredIndexIndex(i, j);
-          if (dist2 !== undefined && dist2 < tol2)
-            indices.push(j);
-          else
-            break;
-        }
+        for (; this.almostEqualIndexIndex(i, j, tolerance); ++j)
+          indices.push(j);
         i = j; // found next unique point
+      }
+      if (preserveLast && indices.length > 0 && indices.length < this.length - 1) { // not all points are duplicate
+        let numLastRun = 0;
+        for (; numLastRun <= indices.length - 1 && indices[indices.length - 1 - numLastRun] === this.length - 1 - numLastRun; ++numLastRun);
+        for (let i = 0; i < numLastRun; ++i)
+          indices[indices.length - 1 - i] -= 1; // decrement the indices of the last run so that the last point is preserved
       }
     }
     return indices;

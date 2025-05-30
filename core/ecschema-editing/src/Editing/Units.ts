@@ -6,66 +6,53 @@
  * @module Editing
  */
 
-import { DelayedPromiseWithProps, Phenomenon, SchemaItemKey, SchemaItemType, SchemaItemUnitProps, SchemaKey, UnitSystem } from "@itwin/ecschema-metadata";
-import { SchemaContextEditor, SchemaItemEditResults } from "./Editor";
+import { DelayedPromiseWithProps, Phenomenon, SchemaItemKey, SchemaItemType, SchemaItemUnitProps, SchemaKey, Unit, UnitSystem } from "@itwin/ecschema-metadata";
+import { SchemaContextEditor } from "./Editor";
 import { MutableUnit } from "./Mutable/MutableUnit";
+import { ECEditingStatus, SchemaEditingError, SchemaItemId } from "./Exception";
+import { SchemaItems } from "./SchemaItems";
 
 /**
  * @alpha
  * A class allowing you to create schema items of type Unit.
  */
-export class Units {
-  // TODO: Add more setters for all attributes.
-  public constructor(protected _schemaEditor: SchemaContextEditor) { }
-
-  public async create(schemaKey: SchemaKey, name: string, definition: string, phenomenon: SchemaItemKey, unitSystem: SchemaItemKey, displayLabel?: string): Promise<SchemaItemEditResults> {
-    const schema = await this._schemaEditor.getSchema(schemaKey);
-    if (schema === undefined)
-      return { errorMessage: `Schema Key ${schemaKey.toString(true)} not found in context` };
-
-    const newUnit = (await schema.createUnit(name)) as MutableUnit;
-    if (newUnit === undefined)
-      return { errorMessage: `Failed to create class ${name} in schema ${schemaKey.toString(true)}.` };
-
-    const phenomenonItem = await schema.lookupItem<Phenomenon>(phenomenon);
-    if (phenomenonItem === undefined)
-      return { errorMessage: `Unable to locate phenomenon ${phenomenon.fullName} in schema ${schema.fullName}.` };
-
-    if (phenomenonItem.schemaItemType !== SchemaItemType.Phenomenon)
-      return { errorMessage: `${phenomenon.fullName} is not of type Phenomenon.` };
-
-    await newUnit.setPhenomenon(new DelayedPromiseWithProps<SchemaItemKey, Phenomenon>(phenomenon, async () => phenomenonItem));
-
-    const unitSystemItem = await schema.lookupItem<UnitSystem>(unitSystem);
-    if (unitSystemItem === undefined)
-      return { errorMessage: `Unable to locate unit system ${unitSystem.fullName} in schema ${schema.fullName}.` };
-
-    if (unitSystemItem.schemaItemType !== SchemaItemType.UnitSystem)
-      return { errorMessage: `${unitSystem.fullName} is not of type UnitSystem.` };
-
-    await newUnit.setUnitSystem(new DelayedPromiseWithProps<SchemaItemKey, UnitSystem>(unitSystem, async () => unitSystemItem));
-
-    await newUnit.setDefinition(definition);
-
-    if (displayLabel)
-      newUnit.setDisplayLabel(displayLabel);
-
-    return { itemKey: newUnit.key };
+export class Units extends SchemaItems {
+  protected override get itemTypeClass(): typeof Unit {
+    return Unit;
   }
 
-  public async createFromProps(schemaKey: SchemaKey, unitProps: SchemaItemUnitProps): Promise<SchemaItemEditResults> {
-    const schema = await this._schemaEditor.getSchema(schemaKey);
-    if (schema === undefined)
-      return { errorMessage: `Schema Key ${schemaKey.toString(true)} not found in context` };
+  // TODO: Add more setters for all attributes.
+  public constructor(schemaEditor: SchemaContextEditor) {
+    super(SchemaItemType.Unit, schemaEditor);
+  }
 
-    if (unitProps.name === undefined)
-      return { errorMessage: `No name was supplied within props.` };
+  public async create(schemaKey: SchemaKey, name: string, definition: string, phenomenon: SchemaItemKey, unitSystem: SchemaItemKey, displayLabel?: string): Promise<SchemaItemKey> {
+    try {
+      const newUnit = await this.createSchemaItem<Unit>(schemaKey, this.schemaItemType, (schema) => schema.createUnit.bind(schema), name) as MutableUnit;
 
-    const newUnit = (await schema.createUnit(unitProps.name));
-    if (newUnit === undefined)
-      return { errorMessage: `Failed to create class ${unitProps.name} in schema ${schemaKey.toString(true)}.` };
+      const phenomenonItem = await this.getSchemaItem(phenomenon, Phenomenon);
+      await newUnit.setPhenomenon(new DelayedPromiseWithProps<SchemaItemKey, Phenomenon>(phenomenon, async () => phenomenonItem));
 
-    await newUnit.fromJSON(unitProps);
-    return { itemKey: newUnit.key };
+      const unitSystemItem = await this.getSchemaItem(unitSystem, UnitSystem);
+      await newUnit.setUnitSystem(new DelayedPromiseWithProps<SchemaItemKey, UnitSystem>(unitSystem, async () => unitSystemItem));
+
+      await newUnit.setDefinition(definition);
+
+      if (displayLabel)
+        newUnit.setDisplayLabel(displayLabel);
+
+      return newUnit.key;
+    } catch (e: any) {
+      throw new SchemaEditingError(ECEditingStatus.CreateSchemaItemFailed, new SchemaItemId(this.schemaItemType, name, schemaKey), e);
+    }
+  }
+
+  public async createFromProps(schemaKey: SchemaKey, unitProps: SchemaItemUnitProps): Promise<SchemaItemKey> {
+    try {
+      const newUnit = await this.createSchemaItemFromProps(schemaKey, this.schemaItemType, (schema) => schema.createUnit.bind(schema), unitProps);
+      return newUnit.key;
+    } catch (e: any) {
+      throw new SchemaEditingError(ECEditingStatus.CreateSchemaItemFromProps, new SchemaItemId(this.schemaItemType, unitProps.name!, schemaKey), e);
+    }
   }
 }

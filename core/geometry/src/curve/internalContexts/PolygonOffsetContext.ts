@@ -42,25 +42,25 @@ enum JointMode {
  * @internal
  */
 class Joint {
-  /** Enumeration of how the joint is constructed */
+  /** Enumeration of how the joint is constructed. */
   public flexure: JointMode;
-  /** Curve before the joint */
+  /** Curve before the joint. */
   public curve0?: CurvePrimitive;
-  /** Fractional position on curve0 (may be a trim or extension) */
+  /** Fractional position on curve0 (may be a trim or extension). */
   public fraction0?: number;
-  /** Curve after the joint (may be a trim or extension) */
+  /** Curve after the joint (may be a trim or extension). */
   public curve1?: CurvePrimitive;
-  /** Fractional position on curve1 */
+  /** Fractional position on curve1. */
   public fraction1?: number;
-  /** Curve to be added within the joint */
+  /** Curve to be added within the joint. */
   public jointCurve?: CurvePrimitive;
-  /** Common point on the original curves */
+  /** Common point on the original curves. */
   public swingPoint?: Point3d;
-  /** Pointer to next joint */
+  /** Pointer to next joint. */
   public nextJoint?: Joint;
-  /** Pointer to previous joint */
+  /** Pointer to previous joint. */
   public previousJoint?: Joint;
-  // capture references to all data . . .
+  // capture references to all data members
   public constructor(
     curve0: CurvePrimitive | undefined, curve1: CurvePrimitive | undefined, swingPoint: Point3d | undefined,
   ) {
@@ -182,7 +182,6 @@ class Joint {
       (joint: Joint) => {
         this.adjustJointToPrimitives(joint);
         this.collectPrimitive(destination, joint.jointCurve);
-
         if (joint.curve1 && joint.fraction1 !== undefined) {
           const fA = joint.fraction1;
           const fB = joint.nextJointFraction0(1.0);
@@ -208,9 +207,10 @@ class Joint {
   }
   /**
    * Visit joints on a chain.
-   * * terminate on `false` return from `callback`
-   * @param start first (and, for cyclic chain, final) joint
+   * * Terminates if `callback` returns `false`.
+   * @param start first (and, for cyclic chain, final) joint.
    * @param callback function to call with each Joint as a single parameter.
+   * @param maxTest
    */
   public static visitJointsOnChain(start: Joint, callback: (joint: Joint) => boolean, maxTest: number = 100): boolean {
     let joint: Joint | undefined = start;
@@ -233,7 +233,7 @@ class Joint {
     if (this.curve0 && this.curve1) {
       const ray0 = this.curve0.fractionToPointAndDerivative(1.0);
       const ray1 = this.curve1.fractionToPointAndDerivative(0.0);
-      ray0.direction.z = ray1.direction.z = 0.0;  // xy-offset
+      ray0.direction.z = ray1.direction.z = 0.0; // xy-offset
       const intersection = Ray3d.closestApproachRay3dRay3d(ray0, ray1); // intersection of the 2 ray lines
       if (intersection.approachType === CurveCurveApproachType.Intersection) {
         if (intersection.detailA.fraction >= 0.0 && intersection.detailB.fraction <= 0.0) {
@@ -603,7 +603,7 @@ export class CurveChainWireOffsetContext {
     for (const c of curves.children) {
       const c1 = CurveChainWireOffsetContext.createSingleOffsetPrimitiveXY(c, offsetOptions);
       if (c1 === undefined) {
-        // bad .. maybe arc to inside?
+        // bad; maybe arc to inside?
       } else if (c1 instanceof CurvePrimitive) {
         simpleOffsets.push(c1);
       } else if (Array.isArray(c1)) {

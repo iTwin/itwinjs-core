@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
+import { describe, expect, it } from "vitest";
 import { Point3d } from "../../geometry3d/Point3dVector3d";
 import { TriDiagonalSystem } from "../../numerics/TriDiagonalSystem";
 import { Checker } from "../Checker";
@@ -223,27 +223,27 @@ describe("TriDiagonalSystem", () => {
     const tf = new TestFixture();
     tf.testOrder3();
     tf.testOrder3();
-    expect(tf.ck.getNumErrors()).equals(0);
+    expect(tf.ck.getNumErrors()).toBe(0);
   });
   it("TriDiagonalSystem.testOrder4onex", () => {
     const tf = new TestFixture();
     tf.testOrder4OneX();
-    expect(tf.ck.getNumErrors()).equals(0);
+    expect(tf.ck.getNumErrors()).toBe(0);
   });
   it("TriDiagonalSystem.testOrder4", () => {
     const tf = new TestFixture();
     tf.testOrder4();
-    expect(tf.ck.getNumErrors()).equals(0);
+    expect(tf.ck.getNumErrors()).toBe(0);
   });
   it("TriDiagonalSystem.testLargeSystem", () => {
     const tf = new TestFixture();
     tf.testLargeSystem();
-    expect(tf.ck.getNumErrors()).equals(0);
+    expect(tf.ck.getNumErrors()).toBe(0);
   });
   it("TriDiagonalSystem.rareConditions", () => {
     const tf = new TestFixture();
     tf.testRareConditions();
-    expect(tf.ck.getNumErrors()).equals(0);
+    expect(tf.ck.getNumErrors()).toBe(0);
   });
 
 });

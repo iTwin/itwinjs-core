@@ -26,52 +26,9 @@ export enum DbOpcode {
   Update = 23,
 }
 
-/** Change value stage.
- * @internal
- */
-export enum DbChangeStage {
-  Old = 0,
-  New = 1
-}
-
-/** Change value type.
- * @internal
- */
-export enum DbValueType {
-  IntegerVal = 1,
-  FloatVal = 2,
-  TextVal = 3,
-  BlobVal = 4,
-  NullVal = 5
-}
-
-/** Cause of conflict when applying a changeset
- * @internal
- */
-export enum DbConflictCause {
-  Data = 1,
-  NotFound = 2,
-  Conflict = 3,
-  Constraint = 4,
-  ForeignKey = 5,
-}
-
-/** Conflict resolution strategy
- * @internal
- */
-export enum DbConflictResolution {
-  /** Skip incoming change */
-  Skip = 0,
-  /** Replace local row with incoming changed row */
-  Replace = 1,
-  /** Abort apply changeset */
-  Abort = 2,
-}
-
 /** Values for return codes from BeSQLite functions. Consult SQLite documentation for further explanations.
  * @public
  */
-/* eslint-disable @typescript-eslint/naming-convention */
 //  Disabling for the rest of the file since eslint does not correctly parse the entire enum, only parts of it
 export enum DbResult {
   /** Success */
@@ -224,4 +181,3 @@ export enum DbResult {
   BE_SQLITE_CONSTRAINT_UNIQUE = (BE_SQLITE_CONSTRAINT_BASE | (8 << 8)),
   BE_SQLITE_CONSTRAINT_VTAB = (BE_SQLITE_CONSTRAINT_BASE | (9 << 8)),
 }
-/* eslint-enable @typescript-eslint/naming-convention */

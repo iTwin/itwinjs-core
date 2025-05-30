@@ -53,6 +53,8 @@ export enum ChangesetType {
   Regular = 0,
   /** changeset *does* contain schema changes. */
   Schema = 1,
+  /** Schema changeset pushed by iModel with SchemaSync enabled */
+  SchemaSync = Schema | 64,
 }
 
 /** Properties of a changeset
@@ -80,7 +82,7 @@ export interface ChangesetProps {
 }
 
 /** Properties of a changeset file
- * @internal
+ * @public
  */
 export interface ChangesetFileProps extends ChangesetProps {
   /** The full pathname of the local file holding this changeset. */

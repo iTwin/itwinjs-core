@@ -27,6 +27,7 @@ This documentation concerns itself primarily with the frontend portion of the di
 - [Element graphics](./ElementGraphics.md)
 - [Multi-sample anti-aliasing](./MSAA.md)
 - [Wiremesh display](./Wiremesh.md)
+- [Contour lines](./ContourDisplay.md)
 
 ## Configuration
 

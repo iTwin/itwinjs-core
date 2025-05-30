@@ -5,18 +5,19 @@
 
 import { expect } from "chai";
 import { ColorDef } from "@itwin/core-common";
-import { IModelApp, Pixel, SnapshotConnection, VaryingType } from "@itwin/core-frontend";
+import { IModelApp, Pixel, VaryingType } from "@itwin/core-frontend";
 import { TestUtility } from "../TestUtility";
 import { Color, TestViewport, testViewports } from "../TestViewport";
+import { TestSnapshotConnection } from "../TestSnapshotConnection";
 
 describe("Screen-space effects", () => {
-  let imodel: SnapshotConnection;
+  let imodel: TestSnapshotConnection;
   let disabledEffectName: string | undefined;
 
   before(async () => {
     await TestUtility.startFrontend();
     registerEffects();
-    imodel = await SnapshotConnection.openFile("mirukuru.ibim");
+    imodel = await TestSnapshotConnection.openFile("mirukuru.ibim");
   });
 
   after(async () => {

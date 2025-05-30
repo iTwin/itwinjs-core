@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
+import { describe, expect, it } from "vitest";
 import { GeometryQuery } from "../../curve/GeometryQuery";
 import { LineSegment3d } from "../../curve/LineSegment3d";
 import { LineString3d } from "../../curve/LineString3d";
@@ -116,7 +116,7 @@ describe("FrustumAnimation", () => {
     }
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "Geometry3d", "FrustumAnimation.General");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("PureRotation", () => {
@@ -175,7 +175,7 @@ describe("FrustumAnimation", () => {
     }
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "Geometry3d", "FrustumAnimation.PureRotation");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });
 
@@ -222,6 +222,6 @@ describe("FrustumSwing", () => {
       ck.testPoint3d(pointA.interpolate(f, pointB), data.eye);
     }
     // GeometryCoreTestIO.saveGeometry(allGeometry, "FrustumSwing", "MoveLinear");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });

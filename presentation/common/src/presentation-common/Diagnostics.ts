@@ -8,7 +8,7 @@
 
 /**
  * Type of diagnostics logger severity.
- * @beta
+ * @public
  */
 export type DiagnosticsLoggerSeverity = "error" | "warning" | "info" | "debug" | "trace";
 
@@ -73,7 +73,7 @@ export function compareDiagnosticsSeverities(lhs: undefined | boolean | Diagnost
 
 /**
  * Data structure for diagnostics information.
- * @beta
+ * @public
  */
 export interface Diagnostics {
   logs?: DiagnosticsScopeLogs[];
@@ -81,7 +81,7 @@ export interface Diagnostics {
 
 /**
  * Data structure with client diagnostics information.
- * @beta
+ * @public
  */
 export interface ClientDiagnostics extends Diagnostics {
   backendVersion?: string;
@@ -89,7 +89,7 @@ export interface ClientDiagnostics extends Diagnostics {
 
 /**
  * Data structure for diagnostics options.
- * @beta
+ * @public
  */
 export interface DiagnosticsOptions {
   /**
@@ -105,13 +105,13 @@ export interface DiagnosticsOptions {
 
 /**
  * A function that can be called after receiving diagnostics.
- * @beta
+ * @public
  */
 export type ClientDiagnosticsHandler = (logs: ClientDiagnostics) => void;
 
 /**
  * Data structure for client diagnostics options.
- * @beta
+ * @public
  */
 export interface ClientDiagnosticsOptions extends DiagnosticsOptions {
   backendVersion?: boolean;
@@ -125,14 +125,13 @@ export interface ClientDiagnosticsOptions extends DiagnosticsOptions {
 export interface ClientDiagnosticsAttribute {
   /**
    * Diagnostics options.
-   * @beta
    */
   diagnostics?: ClientDiagnosticsOptions;
 }
 
 /**
  * Data structure for diagnostics log message information.
- * @beta
+ * @public
  */
 export interface DiagnosticsLogMessage {
   severity: {
@@ -146,7 +145,7 @@ export interface DiagnosticsLogMessage {
 
 /**
  * Data structure for diagnostics scope information.
- * @beta
+ * @public
  */
 export interface DiagnosticsScopeLogs {
   scope: string;
@@ -158,13 +157,13 @@ export interface DiagnosticsScopeLogs {
 
 /**
  * Data structure for diagnostics log entry.
- * @beta
+ * @public
  */
 export type DiagnosticsLogEntry = DiagnosticsLogMessage | DiagnosticsScopeLogs;
 
 /**
  * Functions related to diagnostics log entry.
- * @beta
+ * @public
  */
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export namespace DiagnosticsLogEntry {

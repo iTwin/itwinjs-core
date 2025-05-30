@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
+import { describe, expect, it } from "vitest";
 import { LineSegment3d } from "../../curve/LineSegment3d";
 import { LineString3d } from "../../curve/LineString3d";
 import { Loop } from "../../curve/Loop";
@@ -24,7 +24,7 @@ describe("Regions", () => {
     ck.testTrue(region.tryAddChild(loop));
     ck.testPointer(region.getChild(0));
     ck.testUndefined(region.getChild(3));
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("ParityRegion", () => {
@@ -38,6 +38,6 @@ describe("Regions", () => {
     ck.testTrue(region.tryAddChild(loop));
     ck.testPointer(region.getChild(0));
     ck.testUndefined(region.getChild(3));
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });
