@@ -16,6 +16,7 @@ import {
 
 interface TileMatrixSetAndLimits { tileMatrixSet: WmtsCapability.TileMatrixSet, limits: WmtsCapability.TileMatrixSetLimits[] | undefined }
 
+const tileMatrixSetToken = "{TileMatrixSet}";
 const tileMatrixToken = "{TileMatrix}";
 const tileColToken = "{TileCol}";
 const tileRowToken = "{TileRow}";
@@ -215,7 +216,11 @@ export class WmtsMapLayerImageryProvider extends MapLayerImageryProvider {
       tileMatrix = matrixSetAndLimits.tileMatrixSet.tileMatrix[zoomLevel].identifier;
 
     if (this._resourceUrlTemplate) {
-      const tmpUrl = this._resourceUrlTemplate.replace(tileMatrixToken, tileMatrix??zoomLevel.toString()).replace(tileColToken, column.toString()).replace(tileRowToken, row.toString());
+      const tmpUrl = this._resourceUrlTemplate
+      .replace(tileMatrixSetToken, matrixSetAndLimits?.tileMatrixSet.identifier??"")
+      .replace(tileMatrixToken, tileMatrix??zoomLevel.toString())
+      .replace(tileColToken, column.toString())
+      .replace(tileRowToken, row.toString());
       return this.appendCustomParams(tmpUrl);
     }
 

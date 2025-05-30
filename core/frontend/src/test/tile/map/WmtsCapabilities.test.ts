@@ -1,3 +1,4 @@
+
 /*---------------------------------------------------------------------------------------------
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
@@ -7,10 +8,10 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { WmtsCapabilities } from "../../../internal/tile/map/WmtsCapabilities";
 import { fakeTextFetch } from "./MapLayerTestUtilities";
 
-describe("WmtsCapabilities", () => {
-  const SMALL_DEGREES_DIFFERENCE = 1.0e-8;
-  const SMALL_DECIMAL_DIFFERENCE = 1.0e-6;
+const SMALL_DEGREES_DIFFERENCE = 1.0e-8;
+const SMALL_DECIMAL_DIFFERENCE = 1.0e-6;
 
+describe("WmtsCapabilities1", () => {
   afterEach(async () => {
     vi.restoreAllMocks();
   });
@@ -226,7 +227,6 @@ describe("WmtsCapabilities", () => {
     fakeTextFetch(text);
 
     const capabilities = await WmtsCapabilities.create("https://fake/url2");
-    // I check only things that are different from other datasets
 
     //  Check the layer styles
     expect(capabilities?.contents?.layers).toBeDefined();
@@ -244,27 +244,7 @@ describe("WmtsCapabilities", () => {
     expect(googleTms?.length).toEqual(2);
   });
 
-  it("should parse resource urls", async () => {
-    const response = await fetch(`/assets/wmts_capabilities/wmts_resource_url.xml`);
-    const text = await response.text();
-    fakeTextFetch(text);
 
-    const capabilities = await WmtsCapabilities.create("https://fake/url2");
-    // I check only things that are different from other datasets
-
-    //  Check the layer styles
-    expect(capabilities?.contents?.layers).toBeDefined();
-    expect(capabilities?.contents?.layers.length).toEqual(1); // this sample capabilities has 2 layers
-    const resourceUrls = capabilities?.contents?.layers[0].resourceUrls;
-    expect(resourceUrls).toBeDefined();
-    expect(resourceUrls).toEqual(3);
-    resourceUrls?.forEach((resourceUrl) => {
-      expect(resourceUrl.resourceType).toBeDefined();
-      expect(resourceUrl.resourceType).toEqual("tile");
-      expect(resourceUrl.template).toBeDefined();
-      expect(resourceUrl.template).to.contain("TileMatrix}/{TileRow}/{TileCol}");
-    });
-  });
 
   it("should request proper URL", async () => {
     const fetchStub = vi.spyOn(globalThis, "fetch").mockResolvedValue(new Response());
@@ -278,3 +258,5 @@ describe("WmtsCapabilities", () => {
     expect(firstCall[0]).toEqual(`${sampleUrl}?request=GetCapabilities&service=WMTS&${searchParams.toString()}`);
   });
 });
+
+

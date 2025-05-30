@@ -32,11 +32,12 @@
       <TileMatrixSetLink>
         <TileMatrixSet>PropellerAeroTileMatrix</TileMatrixSet>
       </TileMatrixSetLink>
-      <ResourceURL format="image/png" resourceType="tile" template="https://xyz.com/z4Q8VO7RRaAd9Lcao7Aa_9BrezD2tYwqkOVGHSX96Sc/{TileMatrix}/{TileCol}/{TileRow}.png"/>
-      <ResourceURL format="image/jpeg" resourceType="tile" template="https://xyz.com/z4Q8VO7RRaAd9Lcao7Aa_9BrezD2tYwqkOVGHSX96Sc/{TileMatrix}/{TileCol}/{TileRow}.jpg"/>
-      <ResourceURL format="image/xyz" resourceType="tile" template="https://xyz.com/z4Q8VO7RRaAd9Lcao7Aa_9BrezD2tYwqkOVGHSX96Sc/{TileMatrix}/{TileCol}/{TileRow}.xyz"/>
+<ResourceURL format="image/png" resourceType="tile" template="https://xyz.com/z4Q8VO7RRaAd9Lcao7Aa_9BrezD2tYwqkOVGHSX96Sc/{TileMatrixSet}/{TileMatrix}/{TileCol}/{TileRow}.png"/>
+<ResourceURL format="image/jpeg" resourceType="tile" template="https://xyz.com/z4Q8VO7RRaAd9Lcao7Aa_9BrezD2tYwqkOVGHSX96Sc/{TileMatrixSet}/{TileMatrix}/{TileCol}/{TileRow}.jpg"/>
+<ResourceURL format="image/xyz" resourceType="tile" template="https://xyz.com/z4Q8VO7RRaAd9Lcao7Aa_9BrezD2tYwqkOVGHSX96Sc/{TileMatrixSet}/{TileMatrix}/{TileCol}/{TileRow}.xyz"/>
+
     </Layer>
-   
+
     <TileMatrixSet>
       <ows:Title>PropellerAeroTileMatrix</ows:Title>
       <ows:Identifier>PropellerAeroTileMatrix</ows:Identifier>

@@ -137,10 +137,11 @@ describe("WmtsMapLayerImageryProvider", () => {
     let provider = new WmtsMapLayerImageryProvider(settings);
     await provider.initialize();
     const level = 2;
+    const tileMatrixSet = "PropellerAeroTileMatrix"
     const row = 1;
     const column = 0;
     let url = await provider.constructUrl(row, column, level);
-    const refUrl = `https://xyz.com/z4Q8VO7RRaAd9Lcao7Aa_9BrezD2tYwqkOVGHSX96Sc/${level}/${column}/${row}.png`;
+    const refUrl = `https://xyz.com/z4Q8VO7RRaAd9Lcao7Aa_9BrezD2tYwqkOVGHSX96Sc/${tileMatrixSet}/${level}/${column}/${row}.png`;
     expect(url).toEqual(refUrl);
 
     // Now test with custom parameters
