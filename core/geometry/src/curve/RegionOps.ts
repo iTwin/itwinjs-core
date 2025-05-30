@@ -385,15 +385,17 @@ export class RegionOps {
       },
     );
 
-    // START HERE:
-    // 1. in PlanarSubdivision.assembleHalfEdgeGraph, mask the HalfEdges from curves whose parent's parentGroup's groupOpType is NonBounding (these are bridges)
+    // START HERE: convert split-washer loops into parity regions
+    // + 1. in PlanarSubdivision.assembleHalfEdgeGraph, mask the HalfEdges from curves whose parent's parentGroup's groupOpType is NonBounding (these are bridges)
     // 2. instead of createLoopInFace above, call new PlanarSubdivision.createLoopOrParityRegionInFace:
-    //    a. collect superface by vPreding past nodes with bridge/regularized mask and following fSuccs of unmasked nodes
-    //        i. Push each bridge-masked node vPreded past onto stack.
-    //        ii. For each complete superface, create Loop and push to Loop array. (The first Loop will be the outermost in a parity region)
-    //    b. pop bridge stack:
-    //        i. Follow the bridge fSucc chain (vPreding around regularized masked edges) until reach an unvisited unmasked edge to start a new superface search
-    //    c. when stack empty, create parity region from loop array
+    //    a. if no bridge/regularized masked edges in face, return the Loop
+    //    b. if a masked edge's mate isn't masked or isn't in the face loop, return the Loop
+    //    b. collect super faces (each masked edge has a mate in the face loop):
+    //        i. visit nodes around the face (fSucc) but vPred past masked nodes until reach start node. Create a Loop.
+    //        ii. When encounter a masked node, push it onto a stack.
+    //    c. pop bridge stack:
+    //        i. Follow the bridge fSucc chain until reach an unvisited unmasked edge to start a new super face search
+    //    d. when stack empty, call sortOuterAndHoleLoopsXY on the Loops
 
     return result ? this.simplifyRegionType(result) : undefined;
   }
