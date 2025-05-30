@@ -529,22 +529,6 @@ export class RegionBooleanContext implements RegionOpsFaceToFaceSearchCallbacks 
       this.extraGeometry.addMember(bridgeLine, true);
     }
   }
-  /** Simplify the graph by removing bridge edges that do not serve to connect inner and outer loops. */
-  private removeExtraneousBridgeEdges() {
-    this.graph.yankAndDeleteEdges((node: HalfEdge) => {
-      if (!(node.edgeTag instanceof CurveLocationDetail))
-        return false;
-      const detail = node.edgeTag;
-      if (!detail.curve)
-        return false;
-      if (!(detail.curve.parent instanceof RegionGroupMember))
-        return false;
-      const groupMember = detail.curve.parent;
-      if (groupMember.parentGroup !== this.extraGeometry)
-        return false; // not a bridge
-      return !node.findAroundFace(node.edgeMate); // remove bridge edge if adjacent faces are different
-    });
-  }
   /**
    * Markup and assembly steps for geometry in the RegionGroups.
    * * Annotate connection from group to curves.
@@ -570,7 +554,6 @@ export class RegionBooleanContext implements RegionOpsFaceToFaceSearchCallbacks 
     const graph = PlanarSubdivision.assembleHalfEdgeGraph(allPrimitives, intersections, mergeTolerance);
     this.graph = graph;
     this.faceAreaFunction = faceAreaFromCurvedEdgeData;
-    this.removeExtraneousBridgeEdges();
   }
   private _announceFaceFunction?: AnnounceClassifiedFace;
   /**
