@@ -10,6 +10,7 @@
 import { Geometry } from "../Geometry";
 import { Point3d, Vector3d, XYZ } from "./Point3dVector3d";
 import { Range3d } from "./Range";
+import { Transform } from "./Transform";
 import { XAndY, XYAndZ } from "./XYZProps";
 
 class PointsIterator implements Iterator<Point3d>, Iterable<Point3d> {
@@ -216,13 +217,17 @@ export abstract class IndexedXYZCollection {
     return (i % this.length);
   }
   /** Return the range of the points. */
-  public getRange(): Range3d {
-    const range = Range3d.createNull();
+  public getRange(transform?: Transform, result?: Range3d): Range3d {
+    let range = result;
+    if (range)
+      range.setNull();
+    else
+      range = Range3d.createNull();
     const n = this.length;
     const point = Point3d.create();
     for (let i = 0; i < n; i++) {
       this.getPoint3dAtUncheckedPointIndex(i, point);
-      range.extendPoint(point);
+      range.extendPoint(point, transform);
     }
     return range;
   }

@@ -5,11 +5,12 @@
 import { assert, expect } from "chai";
 import * as path from "path";
 import * as sinon from "sinon";
-import { DbResult, Id64, Id64String, Logger } from "@itwin/core-bentley";
+import { DbResult, Id64, Id64String, Logger, LogLevel } from "@itwin/core-bentley";
 import { ECDb, ECDbOpenMode, ECSqlInsertResult, ECSqlStatement, ECSqlWriteStatement, IModelJsFs, SqliteStatement, SqliteValue, SqliteValueType } from "../../core-backend";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { ECDbTestHelper } from "./ECDbTestHelper";
 import { QueryOptionsBuilder } from "@itwin/core-common";
+import { EntityClass, SchemaContext, SchemaJsonLocater, SchemaKey } from "@itwin/ecschema-metadata";
 
 describe("ECDb", () => {
   const outDir = KnownTestLocations.outputDir;
@@ -452,7 +453,7 @@ describe("ECDb", () => {
     ecdb.closeDb();
   });
 
-  it("should make importSchema fail if new schema changes are observed without version bump", () => {
+  it("should log warning but continue if new schema changes are observed without version bump", async () => {
     const ecdb: ECDb = ECDbTestHelper.createECDb(outDir, "importSchemaNoVersionBump.ecdb");
     const xmlpathOriginal = path.join(outDir, "importSchemaNoVersionBump1.ecschema.xml");
 
@@ -478,17 +479,38 @@ describe("ECDb", () => {
 
     let calledCategory = "";
     let calledMessage = "";
-    const stubbedLogError = sinon.stub(Logger, "logError").callsFake((category: string, message: string) => {
+    const stubbedLogWarning = sinon.stub(Logger, "logWarning").callsFake((category: string, message: string) => {
       calledCategory = category;
       calledMessage = message;
     });
+    const prevLevel = Logger.getLevel("ECDb");
 
-    // although an error should be logged, no error is actually returned to not disrupt currently existing workflows and to alert the user about some wrong/unexpected behavior
-    expect(ecdb.importSchema(xmlpathUpdated)).to.not.throw;
-    expect(calledCategory).to.equal("ECDb");
-    expect(calledMessage).to.equal("ECSchema import has failed. Schema Test has new changes, but the schema version is not incremented.");
+    try {
+      Logger.setLevel("ECDb", LogLevel.Warning);
+      // We do not want this behavior (just logs a warning and proceeds), initially we intended to throw an error
+      // We will wait for the next major change to make this a hard error
+      expect(ecdb.importSchema(xmlpathUpdated)).to.not.throw;
+      expect(calledCategory).to.equal("ECDb");
+      expect(calledMessage).to.equal("Schema 'Test' has changes but its version was not incremented. Proceeding with import, but this may lead to unexpected behavior.");
+      stubbedLogWarning.restore();
+    }
+    finally {
+      if (prevLevel !== undefined)
+        Logger.setLevel("ECDb", prevLevel);
+      else
+        delete (Logger as any)._categoryFilter.ECDb;
+    }
 
-    stubbedLogError.restore();
+    const context = new SchemaContext();
+    const locater = new SchemaJsonLocater((name) => ecdb.getSchemaProps(name));
+    context.addLocater(locater);
+    const schema = await context.getSchema(new SchemaKey("Test", 1, 0, 0));
+    assert.isDefined(schema);
+    const personClass = await schema!.getItem("Person", EntityClass);
+    assert.isDefined(personClass);
+    const heightProp = personClass!.getProperty("Height");
+    assert.isDefined(heightProp);
+
     ecdb.closeDb();
   });
 });

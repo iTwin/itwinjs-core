@@ -133,7 +133,9 @@ export abstract class TwoTreeDistanceMinimizationSearchHandler<AppDataType> exte
     return false;
   }
 }
+
 let numNodeCreated = 0;
+
 /**
  * * TREE STRUCTURE
  *   * A RangeTreeNode is part of a range tree.
@@ -147,14 +149,14 @@ let numNodeCreated = 0;
  *     * _range = the union of ranges below in the heap
  *     * _appData = application data associated with the node.
  *       * Construction methods may place multiple _appData items in each node.
- * * In common use, only the leaves will have _appData. However, the class definitions allow _appData at all nodes, and search algorithms must include them.
+ *       * In common use, only the leaves will have _appData. However, the class definitions allow _appData at all nodes, and search algorithms must include them.
  * * CONSTRUCTION
  *   * The RangeTreeNode.createByIndexSplits method constructs the tree with simple right-left splits within an array of input items.
  *     * The appData is placed entirely in the leaves.
- *     * caller can specify:
+ *     * The caller can specify:
  *       * the number of _appData items per leaf
  *       * the number of children per node within the tree.
- *     * "deep" trees (2 children per node and one appData per leaf) may have (compared to shallow trees with many children per node and many appData per leaf)
+ *     * Compared to "shallow" trees with many children per node and many appData per leaf, "deep" trees with 2 children per node and 1 appData per leaf may have:
  *       * faster search because lower nodes have smaller ranges that will be skipped by search algorithms.
  *       * larger memory use because of more nodes
  *   * For future construction methods:

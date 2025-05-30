@@ -77,4 +77,9 @@ export class ToolSettings {
   };
   /** Maximum number of times in a second the accuSnap tool's onMotion function is called. */
   public static maxOnMotionSnapCallPerSecond = 15;
+  /** If true, drag box selection will accept spatial elements that are inside or overlap a clip volume instead of only what is visible in the view.
+   * @note Enabling is not recommended for web applications.
+   * @beta
+   */
+  public static enableVolumeSelection = false;
 }

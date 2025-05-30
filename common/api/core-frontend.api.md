@@ -2973,6 +2973,8 @@ export abstract class ElementSetTool extends PrimitiveTool {
     filterHit(hit: HitDetail, out?: LocateResponse): Promise<LocateFilterStatus>;
     protected gatherElements(ev: BeButtonEvent): Promise<EventHandled | undefined>;
     protected gatherInput(ev: BeButtonEvent): Promise<EventHandled | undefined>;
+    // @internal
+    static getAreaOrVolumeSelectionCandidates(vp: Viewport, origin: XAndY, corner: XAndY, method: SelectionMethod, allowOverlaps: boolean, filter?: (id: Id64String) => boolean, includeDecorationsForVolume?: boolean): Promise<Set<Id64String>>;
     protected getDragSelectCandidates(vp: Viewport, origin: Point3d, corner: Point3d, method: SelectionMethod, overlap: boolean): Promise<Id64Arg>;
     protected getGroupIds(id: Id64String): Promise<Id64Arg>;
     protected getLocateCandidates(hit: HitDetail): Promise<Id64Arg>;
@@ -5289,6 +5291,8 @@ export abstract class InteractiveTool extends Tool {
     filterHit(_hit: HitDetail, _out?: LocateResponse): Promise<LocateFilterStatus>;
     getCurrentButtonEvent(ev: BeButtonEvent): void;
     getDecorationGeometry(_hit: HitDetail): GeometryStreamProps | undefined;
+    // @beta
+    protected getToolSettingLockProperty(_property: DialogProperty<any>): DialogProperty<boolean> | undefined;
     // @internal (undocumented)
     protected getToolSettingPropertyByName(propertyName: string): DialogProperty<any>;
     protected getToolSettingPropertyLocked(_property: DialogProperty<any>): DialogProperty<any> | undefined;
@@ -9437,9 +9441,9 @@ export class SelectionTool extends PrimitiveTool {
     // (undocumented)
     requireWriteableTarget(): boolean;
     // (undocumented)
-    protected selectByPointsEnd(ev: BeButtonEvent): boolean;
+    protected selectByPointsEnd(ev: BeButtonEvent): Promise<boolean>;
     // (undocumented)
-    protected selectByPointsProcess(origin: Point3d, corner: Point3d, ev: BeButtonEvent, method: SelectionMethod, overlap: boolean): void;
+    protected selectByPointsProcess(origin: Point3d, corner: Point3d, ev: BeButtonEvent, method: SelectionMethod, overlap: boolean): Promise<boolean>;
     // (undocumented)
     protected selectByPointsStart(ev: BeButtonEvent): boolean;
     // (undocumented)
@@ -9524,6 +9528,8 @@ export class SetupCameraTool extends PrimitiveTool {
     protected getAdjustedEyePoint(): Point3d;
     // (undocumented)
     protected getAdjustedTargetPoint(): Point3d;
+    // (undocumented)
+    protected getToolSettingLockProperty(property: DialogProperty<any>): DialogProperty<boolean> | undefined;
     // (undocumented)
     protected _haveEyePt: boolean;
     // (undocumented)
@@ -11721,6 +11727,8 @@ export class ToolSettings {
     static doubleTapTimeout: BeDuration;
     // @beta
     static enableVirtualCursorForLocate: boolean;
+    // @beta
+    static enableVolumeSelection: boolean;
     static maxOnMotionSnapCallPerSecond: number;
     static preserveWorldUp: boolean;
     static scrollSpeed: number;

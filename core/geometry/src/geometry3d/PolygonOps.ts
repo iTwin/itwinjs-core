@@ -16,6 +16,7 @@ import { FrameBuilder } from "./FrameBuilder";
 import { GrowableXYZArray } from "./GrowableXYZArray";
 import { IndexedReadWriteXYZCollection, IndexedXYZCollection } from "./IndexedXYZCollection";
 import { Matrix3d } from "./Matrix3d";
+import { Plane3d } from "./Plane3d";
 import { Plane3dByOriginAndUnitNormal } from "./Plane3dByOriginAndUnitNormal";
 import { Point2d, Vector2d } from "./Point2dVector2d";
 import { Point3dArrayCarrier } from "./Point3dArrayCarrier";
@@ -338,6 +339,37 @@ export class CutLoopMergeContext {
         outputs.push(p);
     }
   }
+}
+/**
+ * Bundle of options for [[PolygonOps.volumeBetweenPolygonAndPlane]].
+ * @public
+ * @see [[VolumeBetweenPolygonAndPlaneOutput]]
+ */
+export interface VolumeBetweenPolygonAndPlaneOptions {
+  /** Whether to skip computation of the area moments. If `true` only volume and area are returned. Default is `false`. */
+  skipMoments?: boolean;
+  /** Work point. If `skipMoments` is undefined/false, this point is returned as the area moment origin. */
+  workPoint0?: Point3d;
+  /** Another work point. */
+  workPoint1?: Point3d;
+  /** Work vector. */
+  workVector?: Vector3d;
+  /** Work matrix. If `skipMoments` is undefined/false, this matrix is returned as the area moment products. */
+  workMatrix?: Matrix4d;
+}
+/**
+ * Bundle of output data for [[PolygonOps.volumeBetweenPolygonAndPlane]].
+ * @public
+ */
+export interface VolumeBetweenPolygonAndPlaneOutput {
+  /** Six times the signed volume of the truncated prism between the polygon and the plane. */
+  volume6: number;
+  /** Two times the signed area of the polygon's projection onto the plane. */
+  area2: number;
+  /** Origin of the facet used to accumulate `products`. */
+  origin?: Point3d;
+  /** Raw accumulated second moment area products of the polygon's projection onto the plane. */
+  products?: Matrix4d;
 }
 /**
  * Various static methods to perform computations on an array of points interpreted as a polygon.
@@ -705,7 +737,41 @@ export class PolygonOps {
       }
     }
   }
-
+  /**
+   * Compute the signed volume of the truncated prism between a facet and a plane.
+   * * Useful for parallel algorithms.
+   * @param facetPoints input 3D polygon; on return the points are projected onto the plane. Wraparound point is optional.
+   * @param plane infinite plane bounding volume between the facet and (virtual) side facets perpendicular to the plane (unmodified).
+   * @param options optional flags and pre-allocated temporary storage.
+   * @returns computed data for this facet:
+   * * `volume6`: six times the signed volume of the truncated prism between the facet and the plane.
+   * * `area2`: two times the signed area of the facet's projection onto the plane.
+   * * `origin`: origin of the facet used to accumulate area moments.
+   * * `products`: raw accumulated second moment area products of the facet's projection onto the plane.
+   * @see [[PolyfaceQuery.sumVolumeBetweenFacetsAndPlane]]
+   */
+  public static volumeBetweenPolygonAndPlane(facetPoints: GrowableXYZArray, plane: Plane3d, options?: VolumeBetweenPolygonAndPlaneOptions): VolumeBetweenPolygonAndPlaneOutput {
+    let origin: Point3d | undefined;
+    let products: Matrix4d | undefined;
+    let singleProjectedFacetAreaTimes2 = 0.0;
+    let signedTruncatedPrismVolumeTimes6 = 0.0;
+    const h0 = facetPoints.evaluateUncheckedIndexPlaneAltitude(0, plane);
+    for (let i = 1; i + 1 < facetPoints.length; i++) {
+      const triangleNormal = facetPoints.crossProductIndexIndexIndex(0, i, i + 1, options?.workVector)!;
+      const hA = facetPoints.evaluateUncheckedIndexPlaneAltitude(i, plane);
+      const hB = facetPoints.evaluateUncheckedIndexPlaneAltitude(i + 1, plane);
+      const signedProjectedTriangleAreaTimes2 = triangleNormal.dotProductXYZ(plane.normalX(), plane.normalY(), plane.normalZ());
+      singleProjectedFacetAreaTimes2 += signedProjectedTriangleAreaTimes2;
+      signedTruncatedPrismVolumeTimes6 += signedProjectedTriangleAreaTimes2 * (h0 + hA + hB);
+    }
+    if (!options?.skipMoments) {
+      origin = facetPoints.getPoint3dAtUncheckedPointIndex(0, options?.workPoint0);
+      products = Matrix4d.createZero(options?.workMatrix);
+      facetPoints.mapPoint((x: number, y: number, z: number) => plane.projectXYZToPlane(x, y, z, options?.workPoint1));
+      PolygonOps.addSecondMomentAreaProducts(facetPoints, origin, products);
+    }
+    return { volume6: signedTruncatedPrismVolumeTimes6, area2: singleProjectedFacetAreaTimes2, origin, products };
+  }
   /** Test the direction of turn at the vertices of the polygon, ignoring z-coordinates.
    * * For a polygon without self-intersections and successive colinear edges, this is a convexity and orientation test: all positive is convex and counterclockwise, all negative is convex and clockwise.
    * * Beware that a polygon which turns through more than a full turn can cross itself and close, but is not convex.
@@ -860,8 +926,9 @@ export class PolygonOps {
     return numReverse;
   }
   /**
-   * Reverse and reorder loops in the xy-plane for consistency and containment.
-   * @param loops multiple polygons in any order and orientation, z-coordinates ignored
+   * Reverse and reorder loops in the xy-plane for consistent orientation and containment.
+   * @param loops multiple polygons in any order and orientation, z-coordinates ignored.
+   * * For best results, all overlaps should be containments, i.e., loop boundaries can touch, but should not cross.
    * @returns array of arrays of polygons that capture the input pointers. In each first level array:
    * * The first polygon is an outer loop, oriented counterclockwise.
    * * Any subsequent polygons are holes of the outer loop, oriented clockwise.
