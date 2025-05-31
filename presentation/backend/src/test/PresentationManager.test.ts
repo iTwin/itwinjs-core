@@ -115,7 +115,7 @@ describe("PresentationManager", () => {
       try {
         IModelNative.platform;
         isLoaded = true;
-      } catch { }
+      } catch {}
       if (!isLoaded) {
         throw e; // re-throw if startup() failed to set up NativePlatform
       }
@@ -852,7 +852,7 @@ describe("PresentationManager", () => {
       });
       sinon.stub(manager[_presentation_manager_detail], "rulesets").value(
         sinon.createStubInstance(RulesetManagerImpl, {
-          add: sinon.stub<[Ruleset], RegisteredRuleset>().callsFake((ruleset) => new RegisteredRuleset(ruleset, "", () => { })),
+          add: sinon.stub<[Ruleset], RegisteredRuleset>().callsFake((ruleset) => new RegisteredRuleset(ruleset, "", () => {})),
         }),
       );
     }
@@ -3419,7 +3419,7 @@ describe("PresentationManager", () => {
         });
         sinon.stub(manager[_presentation_manager_detail], "rulesets").value(
           sinon.createStubInstance(RulesetManagerImpl, {
-            add: sinon.stub<[Ruleset], RegisteredRuleset>().callsFake((ruleset) => new RegisteredRuleset(ruleset, "", () => { })),
+            add: sinon.stub<[Ruleset], RegisteredRuleset>().callsFake((ruleset) => new RegisteredRuleset(ruleset, "", () => {})),
           }),
         );
         // what the addon returns

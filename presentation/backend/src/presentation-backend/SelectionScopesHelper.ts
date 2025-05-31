@@ -29,7 +29,7 @@ import { getElementKey } from "./Utils.js";
  */
 export class SelectionScopesHelper {
   /* c8 ignore next */
-  private constructor() { }
+  private constructor() {}
 
   public static getSelectionScopes(): SelectionScope[] {
     const createSelectionScope = (scopeId: string, label: string, description: string): SelectionScope => ({

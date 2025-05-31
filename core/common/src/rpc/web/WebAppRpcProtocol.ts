@@ -21,7 +21,7 @@ import { WebAppRpcRequest } from "./WebAppRpcRequest";
 
 /** An HTTP server request object.
  * @public
- * @deprecated in 3.6. The RPC system will be significantly refactored (or replaced) in the future.
+ * @deprecated in 3.6 - might be removed in next major version. The RPC system will be significantly refactored (or replaced) in the future.
  */
 export interface HttpServerRequest extends BackendReadable {
   aborted: boolean;
@@ -52,7 +52,7 @@ export interface HttpServerRequest extends BackendReadable {
 
 /** An HTTP server response object.
  * @public
- * @deprecated in 3.6. The RPC system will be significantly refactored (or replaced) in the future.
+ * @deprecated in 3.6 - might be removed in next major version. The RPC system will be significantly refactored (or replaced) in the future.
  */
 export interface HttpServerResponse extends BackendWritable {
   send(body?: any): HttpServerResponse;
