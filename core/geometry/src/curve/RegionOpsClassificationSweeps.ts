@@ -452,6 +452,7 @@ export class RegionGroup {
 export class RegionBooleanContext implements RegionOpsFaceToFaceSearchCallbacks {
   public groupA!: RegionGroup;
   public groupB!: RegionGroup;
+  /** bridge edges */
   public extraGeometry!: RegionGroup;
   public graph!: HalfEdgeGraph;
   public faceAreaFunction!: NodeToNumberFunction;
@@ -474,8 +475,6 @@ export class RegionBooleanContext implements RegionOpsFaceToFaceSearchCallbacks 
   public addMembers(dataA: AnyRegion | AnyRegion[] | undefined, dataB: AnyRegion | AnyRegion[] | undefined) {
     this.groupA.addMember(dataA);
     this.groupB.addMember(dataB);
-    // const doConnectives = 1;
-    // if (doConnectives !== 0)
     this.addConnectives();
   }
   private _workSegment?: LineSegment3d;

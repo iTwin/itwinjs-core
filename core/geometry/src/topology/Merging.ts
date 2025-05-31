@@ -13,14 +13,16 @@ import { LineSegment3d } from "../curve/LineSegment3d";
 import { Geometry } from "../Geometry";
 import { Angle } from "../geometry3d/Angle";
 import { MultiLineStringDataVariant } from "../geometry3d/IndexedXYZCollection";
-import { Point2d, Vector2d } from "../geometry3d/Point2dVector2d";
 import { Range3d } from "../geometry3d/Range";
+import { XAndY } from "../geometry3d/XYZProps";
 import { ClusterableArray } from "../numerics/ClusterableArray";
 import { SmallSystem } from "../numerics/SmallSystem";
 import { HalfEdge, HalfEdgeGraph, HalfEdgeMask } from "./Graph";
 import { HalfEdgePriorityQueueWithPartnerArray } from "./HalfEdgePriorityQueue";
 import { RegularizationContext } from "./RegularizeFace";
 import { Triangulator } from "./Triangulation";
+
+// cspell:word XYUV
 
 export class GraphSplitData {
   public numUpEdge = 0;
@@ -490,36 +492,40 @@ export class HalfEdgeGraphMerge {
     }
     return sweepHeap;
   }
-  private static snapFractionToNode(xy: Point2d, fraction: number, node: HalfEdge, nodeFraction: number): number {
-    if (Geometry.isSameCoordinate(xy.x, node.x) && Geometry.isSameCoordinate(xy.y, node.y))
-      return nodeFraction;
-    return fraction;
-  }
-  private static computeIntersectionFractionsOnEdges(nodeA0: HalfEdge, nodeB0: HalfEdge, fractions: Vector2d, pointA: Point2d, pointB: Point2d): boolean {
+
+  private static computeIntersectionFractionsOnEdges(nodeA0: HalfEdge, nodeB0: HalfEdge, tol: number = Geometry.smallMetricDistance): { f0: XAndY, f1?: XAndY} | undefined {
     const nodeA1 = nodeA0.faceSuccessor;
-    const ax0 = nodeA0.x;
-    const ay0 = nodeA0.y;
-    const ux = nodeA1.x - ax0;
-    const uy = nodeA1.y - ay0;
+    const aDir = { x: nodeA1.x - nodeA0.x, y: nodeA1.y - nodeA0.y };
     const nodeB1 = nodeB0.faceSuccessor;
-    const bx0 = nodeB0.x;
-    const by0 = nodeB0.y;
-    const vx = nodeB1.x - bx0;
-    const vy = nodeB1.y - by0;
-    // cspell:word lineSegmentXYUVTransverseIntersectionUnbounded
-    if (SmallSystem.lineSegmentXYUVTransverseIntersectionUnbounded(ax0, ay0, ux, uy,
-      bx0, by0, vx, vy, fractions)) {
-      pointA.x = ax0 + fractions.x * ux;
-      pointA.y = ay0 + fractions.x * uy;
-      pointB.x = bx0 + fractions.y * vx;
-      pointB.y = by0 + fractions.y * vy;
-      fractions.x = this.snapFractionToNode(pointA, fractions.x, nodeA0, 0.0);
-      fractions.x = this.snapFractionToNode(pointA, fractions.x, nodeA1, 1.0);
-      fractions.y = this.snapFractionToNode(pointB, fractions.y, nodeB0, 0.0);
-      fractions.y = this.snapFractionToNode(pointB, fractions.y, nodeB1, 1.0);
-      return Geometry.isIn01(fractions.x) && Geometry.isIn01(fractions.y);
+    const bDir = { x: nodeB1.x - nodeB0.x, y: nodeB1.y - nodeB0.y };
+    let fractions = SmallSystem.lineSegmentXYUVIntersectionUnbounded(nodeA0, aDir, nodeB0, bDir, tol);
+    if (fractions) {
+      const snapFractionToSegment = (fraction: number, segStart: XAndY, segEnd: XAndY): number => {
+        const x = Geometry.interpolate(segStart.x, fraction, segEnd.x);
+        const y = Geometry.interpolate(segStart.y, fraction, segEnd.y);
+        if (Geometry.isSameCoordinateXY(x, y, segStart.x, segStart.y, tol))
+          return 0.0;
+        if (Geometry.isSameCoordinateXY(x, y, segEnd.x, segEnd.y, tol))
+          return 1.0;
+        return fraction;
+      };
+      fractions.f0.x = snapFractionToSegment(fractions.f0.x, nodeA0, nodeA1);
+      fractions.f0.y = snapFractionToSegment(fractions.f0.y, nodeB0, nodeB1);
+      if (fractions.f1) {
+        fractions.f1.x = snapFractionToSegment(fractions.f1.x, nodeA0, nodeA1);
+        fractions.f1.y = snapFractionToSegment(fractions.f1.y, nodeB0, nodeB1);
+      }
+      if (fractions.f1 && !(Geometry.isIn01(fractions.f1.x) && Geometry.isIn01(fractions.f1.y)))
+        fractions.f1 = undefined; // overlap ends beyond a segment; downgrade to simple intersection
+      if (!(Geometry.isIn01(fractions.f0.x) && Geometry.isIn01(fractions.f0.y))) {
+        if (fractions.f1) {
+          fractions.f0 = fractions.f1; // overlap starts beyond a segment; downgrade to simple intersection
+          fractions.f1 = undefined;
+        } else
+          fractions = undefined; // intersection/overlap is outside both segments
+      }
     }
-    return false;
+    return fractions;
   }
   /**
    * Split edges at intersections.
@@ -533,37 +539,35 @@ export class HalfEdgeGraphMerge {
     const smallFraction = 1.0e-8;
     const largeFraction = 1.0 - smallFraction;
     let i;
-    const fractions = Vector2d.create();
-    const pointA = Point2d.create();
-    const pointB = Point2d.create();
     let nodeB0;
-    const popTolerance = Geometry.smallMetricDistance;
+    const distTol = Geometry.smallMetricDistance;
     while (undefined !== (nodeA0 = sweepHeap.priorityQueue.pop())) {
       data.numUpEdge++;
       const n0 = sweepHeap.activeEdges.length;
-      sweepHeap.removeArrayMembersWithY1Below(nodeA0.y - popTolerance);
+      sweepHeap.removeArrayMembersWithY1Below(nodeA0.y - distTol);
       data.numPopOut += n0 - sweepHeap.activeEdges.length;
       for (i = 0; i < sweepHeap.activeEdges.length; i++) {
         nodeB0 = sweepHeap.activeEdges[i];
         nodeB1 = nodeB0.faceSuccessor;
-        // const nodeB1 = nodeB0.faceSuccessor;
-        if (Geometry.isSameCoordinateXY(nodeA0.x, nodeA0.y, nodeB0.x, nodeB0.y)) {
+        if (Geometry.isSameCoordinateXY(nodeA0.x, nodeA0.y, nodeB0.x, nodeB0.y, distTol)) {
           data.numA0B0++;
-        } else if (Geometry.isSameCoordinateXY(nodeB1.x, nodeB1.y, nodeA0.x, nodeA0.y)) {
+        } else if (Geometry.isSameCoordinateXY(nodeB1.x, nodeB1.y, nodeA0.x, nodeA0.y, distTol)) {
           data.numA0B1++;
         } else {
           data.numIntersectionTest++;
-          if (this.computeIntersectionFractionsOnEdges(nodeA0, nodeB0, fractions, pointA, pointB)) {
-            if (fractions.x > smallFraction && fractions.x < largeFraction) {
-              const nodeC0 = graph.splitEdgeAtFraction(nodeA0, fractions.x);
-              sweepHeap.priorityQueue.push(nodeC0);  // The upper portion will be reviewed as a nodeA0 later !!!
-              data.numSplit++;
-            }
-            if (fractions.y > smallFraction && fractions.y < largeFraction) {
-              const nodeD0 = graph.splitEdgeAtFraction(nodeB0, fractions.y);
-              sweepHeap.priorityQueue.push(nodeD0);  // The upper portion will be reviewed as a nodeA0 later !!!
-              data.numSplit++;
-            }
+          const fractions = this.computeIntersectionFractionsOnEdges(nodeA0, nodeB0, distTol);
+          if (fractions) {
+            const splitAndPush = (node: HalfEdge, fraction?: number): void => {
+              if (fraction !== undefined && fraction > smallFraction && fraction < largeFraction) {
+                const newNode = graph.splitEdgeAtFraction(node, fraction);
+                sweepHeap.priorityQueue.push(newNode);  // will be popped as a nodeA0 later
+                data.numSplit++;
+              }
+            };
+            splitAndPush(nodeA0, fractions.f0.x);
+            splitAndPush(nodeA0, fractions.f1?.x);
+            splitAndPush(nodeB0, fractions.f0.y);
+            splitAndPush(nodeB0, fractions.f1?.y);
             // existing nodeA0 and its shortened edge remain for further intersections
           }
         }

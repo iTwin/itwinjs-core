@@ -257,9 +257,8 @@ export class UnionOfConvexClipPlaneSets implements Clipper, PolygonClipper {
   }
   /**
    * Collect the output from computePlanePlanePlaneIntersections in all the contained convex sets.
-   * @param transform (optional) transform to apply to the points.
    * @param points (optional) array to which computed points are to be added.
-   * @param range (optional) range to be extended by the computed points.
+   * @param rangeToExtend (optional) range to be extended by the computed points.
    * @param transform (optional) transform to apply to the accepted points.
    * @param testContainment if true, test each point to see if it is within the convex set (send false if confident
    * that the convex set is rectilinear set such as a slab. Send true if chiseled corners are possible).

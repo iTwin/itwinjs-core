@@ -42,8 +42,6 @@ import { IntegratedSpiral3d } from "./spiral/IntegratedSpiral3d";
 import { IntegratedSpiralTypeName } from "./spiral/TransitionSpiral3d";
 import { StrokeOptions } from "./StrokeOptions";
 
-// cspell:word CCWXY
-
 /**
  * Interface to carry parallel arrays of planes and sections, and optional geometry assembled from them,
  * as returned by [CurveFactory.createMiteredSweepSections].

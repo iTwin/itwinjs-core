@@ -22,8 +22,6 @@ import { JointOptions, OffsetOptions } from "../OffsetOptions";
 import { Path } from "../Path";
 import { RegionOps } from "../RegionOps";
 
-// cspell:word CCWXY
-
 /**
  * Classification of how the joint is constructed.
  * @internal

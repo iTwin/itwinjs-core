@@ -11,7 +11,6 @@ import { Point4d } from "../geometry4d/Point4d";
 import { Angle } from "./Angle";
 import { HasZ, XAndY, XYAndZ, XYZProps } from "./XYZProps";
 
-// cspell:words CWXY CCWXY arctan Rodrigues
 /**
  * * `XYZ` is a minimal object containing x,y,z and operations that are meaningful without change in both
  * point and vector.
@@ -882,7 +881,7 @@ export class Vector3d extends XYZ {
    * @returns undefined if axis has no length.
    */
   public static createRotateVectorAroundVector(vector: Vector3d, axis: Vector3d, angle?: Angle): Vector3d | undefined {
-    // Rodriguez formula, https://en.wikipedia.org/wiki/Rodrigues'_rotation_formula
+    // cf. https://en.wikipedia.org/wiki/Rodrigues_rotation_formula
     const unitAxis = axis.normalize();
     if (unitAxis) {
       const xProduct = unitAxis.crossProduct(vector);
