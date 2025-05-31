@@ -40,7 +40,7 @@
     "get-system-fonts": "^2.0.2"
   },
   "devDependencies": {
-    "@bentley/units-schema": "^1.0.8",
+    "@bentley/units-schema": "^1.0.9",
     "@bentley/formats-schema": "^1.0.0",
     "@bentley/aec-units-schema": "^1.0.3",
     "@itwin/build-tools": "workspace:*",
