@@ -74,6 +74,7 @@ import { ECSqlValueType } from '@itwin/core-common';
 import { EditingScopeNotifications } from '@itwin/core-common';
 import { ElementAlignedBox3d } from '@itwin/core-common';
 import { ElementAspectProps } from '@itwin/core-common';
+import { ElementGeometry } from '@itwin/core-common';
 import { ElementGeometryCacheOperationRequestProps } from '@itwin/core-common';
 import { ElementGeometryCacheRequestProps } from '@itwin/core-common';
 import { ElementGeometryCacheResponseProps } from '@itwin/core-common';
@@ -101,6 +102,7 @@ import { FontId } from '@itwin/core-common';
 import { FontMap } from '@itwin/core-common';
 import { FontProps } from '@itwin/core-common';
 import { FontType } from '@itwin/core-common';
+import { FractionRun } from '@itwin/core-common';
 import { FunctionalElementProps } from '@itwin/core-common';
 import { GeoCoordinatesRequestProps } from '@itwin/core-common';
 import { GeoCoordinatesResponseProps } from '@itwin/core-common';
@@ -113,6 +115,7 @@ import { GeometricModelProps } from '@itwin/core-common';
 import { GeometryClass } from '@itwin/core-common';
 import { GeometryContainmentRequestProps } from '@itwin/core-common';
 import { GeometryContainmentResponseProps } from '@itwin/core-common';
+import { GeometryParams } from '@itwin/core-common';
 import { GeometryPartProps } from '@itwin/core-common';
 import { GeometryStreamProps } from '@itwin/core-common';
 import { GuidString } from '@itwin/core-bentley';
@@ -144,6 +147,7 @@ import { JSONSchema } from '@itwin/core-bentley';
 import { JSONSchemaType } from '@itwin/core-bentley';
 import { JSONSchemaTypeName } from '@itwin/core-bentley';
 import { LightLocationProps } from '@itwin/core-common';
+import { LineLayoutResult } from '@itwin/core-common';
 import { LinePixels } from '@itwin/core-common';
 import { LineStyleProps } from '@itwin/core-common';
 import { LocalBriefcaseProps } from '@itwin/core-common';
@@ -151,6 +155,7 @@ import { LocalDirName } from '@itwin/core-common';
 import { LocalFileName } from '@itwin/core-common';
 import { LockState as LockState_2 } from '@itwin/core-common';
 import { LogLevel } from '@itwin/core-bentley';
+import { Loop } from '@itwin/core-geometry';
 import { LowAndHighXYZ } from '@itwin/core-geometry';
 import { LRUMap } from '@itwin/core-bentley';
 import { MarkRequired } from '@itwin/core-bentley';
@@ -176,6 +181,8 @@ import { OpenSqliteArgs } from '@itwin/core-common';
 import { Optional } from '@itwin/core-bentley';
 import * as os from 'os';
 import { OverriddenBy } from '@itwin/core-common';
+import { Paragraph } from '@itwin/core-common';
+import { Path } from '@itwin/core-geometry';
 import { PhysicalElementProps } from '@itwin/core-common';
 import { PhysicalTypeProps } from '@itwin/core-common';
 import { PickAsyncMethods } from '@itwin/core-bentley';
@@ -209,6 +216,7 @@ import { RgbFactorProps } from '@itwin/core-common';
 import { RpcActivity } from '@itwin/core-common';
 import { RpcInterfaceEndpoints } from '@itwin/core-common';
 import { RscFontEncodingProps } from '@itwin/core-common';
+import { Run } from '@itwin/core-common';
 import { RunLayoutResult } from '@itwin/core-common';
 import { SchemaContext } from '@itwin/ecschema-metadata';
 import { SchemaItemKey } from '@itwin/ecschema-metadata';
@@ -240,9 +248,13 @@ import { SynchronizationConfigLinkProps } from '@itwin/core-common';
 import { TextAnnotation } from '@itwin/core-common';
 import { TextAnnotation2dProps } from '@itwin/core-common';
 import { TextAnnotation3dProps } from '@itwin/core-common';
+import { TextAnnotationFrameShape } from '@itwin/core-common';
+import { TextAnnotationProps } from '@itwin/core-common';
 import { TextBlock } from '@itwin/core-common';
 import { TextBlockGeometryProps } from '@itwin/core-common';
 import { TextBlockLayoutResult } from '@itwin/core-common';
+import { TextFrameStyleProps } from '@itwin/core-common';
+import { TextRun } from '@itwin/core-common';
 import { TextStyleSettings } from '@itwin/core-common';
 import { TextureData } from '@itwin/core-common';
 import { TextureLoadProps } from '@itwin/core-common';
@@ -1518,6 +1530,27 @@ export function computeLayoutTextBlockResult(args: LayoutTextBlockArgs): TextBlo
 export interface ComputeProjectExtentsOptions {
     reportExtentsWithOutliers?: boolean;
     reportOutliers?: boolean;
+}
+
+// @internal
+export type ComputeRangesForTextLayout = (args: ComputeRangesForTextLayoutArgs) => TextLayoutRanges;
+
+// @internal
+export interface ComputeRangesForTextLayoutArgs {
+    // (undocumented)
+    baselineShift: BaselineShift;
+    // (undocumented)
+    bold: boolean;
+    // (undocumented)
+    chars: string;
+    // (undocumented)
+    fontId: FontId;
+    // (undocumented)
+    italic: boolean;
+    // (undocumented)
+    lineHeight: number;
+    // (undocumented)
+    widthFactor: number;
 }
 
 // @alpha
@@ -2918,6 +2951,12 @@ export abstract class FileNameResolver {
     tryResolveKey(_fileKey: string): string | undefined;
 }
 
+// @internal
+export type FindFontId = (name: string, type?: FontType) => FontId;
+
+// @internal (undocumented)
+export type FindTextStyle = (name: string) => TextStyleSettings;
+
 // @beta
 export class FolderContainsRepositories extends ElementOwnsChildElements {
     constructor(parentId: Id64String, relClassName?: string);
@@ -2952,6 +2991,22 @@ export namespace FontFile {
     export function createFromRscFontBlob(args: CreateFontFileFromRscBlobArgs): FontFile;
     export function createFromShxFontBlob(args: CreateFontFileFromShxBlobArgs): FontFile;
     export function createFromTrueTypeFileName(fileName: LocalFileName): FontFile;
+}
+
+// @beta
+export namespace FrameGeometry {
+    const appendFrameToBuilder: (builder: ElementGeometry.Builder, frame: TextFrameStyleProps, range: Range2d, transform: Transform, geomParams?: GeometryParams) => boolean;
+    export interface ComputeFrameArgs {
+        frame: Exclude<TextAnnotationFrameShape, "none">;
+        range: Range2d;
+        transform: Transform;
+    }
+    const computeFrame: ({ frame, range, transform }: ComputeFrameArgs) => Loop | Path;
+    export interface ComputeIntervalPointsArgs extends ComputeFrameArgs {
+        arcIntervalFactor?: number;
+        lineIntervalFactor?: number;
+    }
+    const computeIntervalPoints: ({ frame, range, transform, lineIntervalFactor, arcIntervalFactor }: ComputeIntervalPointsArgs) => Point3d[] | undefined;
 }
 
 // @public
@@ -4066,6 +4121,9 @@ export class KnownLocations {
 }
 
 // @beta
+export function layoutTextBlock(args: LayoutTextBlockArgs): TextBlockLayout;
+
+// @beta
 export interface LayoutTextBlockArgs {
     // @internal
     computeTextRange?: ComputeRangesForTextLayout;
@@ -4083,6 +4141,33 @@ export class LightLocation extends SpatialLocationElement {
     // (undocumented)
     static get className(): string;
     enabled?: boolean;
+}
+
+// @beta (undocumented)
+export class LineLayout {
+    constructor(source: Paragraph);
+    // (undocumented)
+    append(run: RunLayout): void;
+    // (undocumented)
+    get back(): RunLayout;
+    // (undocumented)
+    get isEmpty(): boolean;
+    // (undocumented)
+    justificationRange: Range2d;
+    // (undocumented)
+    offsetFromDocument: {
+        x: number;
+        y: number;
+    };
+    // (undocumented)
+    range: Range2d;
+    // (undocumented)
+    get runs(): ReadonlyArray<RunLayout>;
+    // (undocumented)
+    source: Paragraph;
+    stringify(): string;
+    // (undocumented)
+    toResult(textBlock: TextBlock): LineLayoutResult;
 }
 
 // @public @preview
@@ -4860,20 +4945,7 @@ export interface ProcessChangesetOptions {
 }
 
 // @beta
-export function produceTextAnnotationGeometry(args: ProduceTextAnnotationGeometryArgs): TextBlockGeometryProps;
-
-// @beta
-export interface ProduceTextAnnotationGeometryArgs {
-    annotation: TextAnnotation;
-    // @internal
-    computeTextRange?: ComputeRangesForTextLayout;
-    debugAnchorPointAndRange?: boolean;
-    // @internal
-    findFontId?: FindFontId;
-    // @internal
-    findTextStyle?: FindTextStyle;
-    iModel: IModelDb;
-}
+export function produceTextBlockGeometry(layout: TextBlockLayout, documentTransform: Transform): TextBlockGeometryProps;
 
 // @public
 export type ProgressFunction = (loaded: number, total: number) => ProgressStatus;
@@ -5152,6 +5224,44 @@ export class RpcTrace {
     static get expectCurrentActivity(): RpcActivity;
     static run<T>(activity: RpcActivity, fn: () => Promise<T>): Promise<T>;
     static runWithSpan<T>(activity: RpcActivity, fn: () => Promise<T>): Promise<T>;
+}
+
+// @beta (undocumented)
+export class RunLayout {
+    // (undocumented)
+    canWrap(): this is {
+        source: TextRun;
+    };
+    // (undocumented)
+    charOffset: number;
+    // (undocumented)
+    static create(source: Run, context: LayoutContext): RunLayout;
+    // (undocumented)
+    denominatorRange?: Range2d;
+    // (undocumented)
+    fontId: FontId;
+    // (undocumented)
+    justificationRange?: Range2d;
+    // (undocumented)
+    numChars: number;
+    // (undocumented)
+    numeratorRange?: Range2d;
+    // (undocumented)
+    offsetFromLine: {
+        x: number;
+        y: number;
+    };
+    // (undocumented)
+    range: Range2d;
+    // (undocumented)
+    source: Run;
+    // (undocumented)
+    split(context: LayoutContext): RunLayout[];
+    stringify(): string;
+    // (undocumented)
+    style: TextStyleSettings;
+    // (undocumented)
+    toResult(paragraph: Paragraph): RunLayoutResult;
 }
 
 // @public
@@ -6154,7 +6264,7 @@ export class TextAnnotation2d extends AnnotationElement2d {
     // (undocumented)
     static fromJSON(props: TextAnnotation2dProps, iModel: IModelDb): TextAnnotation2d;
     getAnnotation(): TextAnnotation | undefined;
-    setAnnotation(annotation: TextAnnotation, subCategory?: Id64String): boolean;
+    setAnnotation(annotation: TextAnnotation): void;
     // (undocumented)
     toJSON(): TextAnnotation2dProps;
 }
@@ -6167,9 +6277,42 @@ export class TextAnnotation3d extends GraphicalElement3d {
     // (undocumented)
     static fromJSON(props: TextAnnotation3dProps, iModel: IModelDb): TextAnnotation3d;
     getAnnotation(): TextAnnotation | undefined;
-    setAnnotation(annotation: TextAnnotation, subCategory?: Id64String): boolean;
+    setAnnotation(annotation: TextAnnotation): void;
     // (undocumented)
     toJSON(): TextAnnotation3dProps;
+}
+
+// @beta
+export namespace TextAnnotationGeometry {
+    export function appendTextAnnotationGeometry(props: RequestProps): boolean;
+    export interface RequestProps {
+        annotationProps: TextAnnotationProps;
+        builder: ElementGeometry.Builder;
+        layout: TextBlockLayout;
+        wantDebugGeometry?: boolean;
+    }
+}
+
+// @beta
+export class TextBlockLayout {
+    constructor(source: TextBlock, context: LayoutContext);
+    // (undocumented)
+    lines: LineLayout[];
+    range: Range2d;
+    // (undocumented)
+    source: TextBlock;
+    stringify(): string;
+    textRange: Range2d;
+    // (undocumented)
+    toResult(): TextBlockLayoutResult;
+}
+
+// @internal (undocumented)
+export interface TextLayoutRanges {
+    // (undocumented)
+    justification: Range2d;
+    // (undocumented)
+    layout: Range2d;
 }
 
 // @public @preview

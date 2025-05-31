@@ -8,9 +8,10 @@
 
 import { BaselineShift, FontId, FontType, FractionRun, LineLayoutResult, Paragraph, Run, RunLayoutResult, TextBlock, TextBlockLayoutResult, TextBlockMargins, TextRun, TextStyleSettings, TextStyleSettingsProps } from "@itwin/core-common";
 import { Geometry, Range2d } from "@itwin/core-geometry";
-import { IModelDb } from "./IModelDb";
+import { IModelDb } from "../IModelDb";
 import { assert, NonFunctionPropertiesOf } from "@itwin/core-bentley";
 import * as LineBreaker from "linebreak";
+
 
 /** @internal */
 export interface TextLayoutRanges {
@@ -69,7 +70,7 @@ export interface LayoutTextBlockArgs {
  * If the document specifies a width > 0, individual lines are split to try to avoid exceeding that width.
  * Individual TextRuns can be split onto multiple lines at word boundaries if necessary. Individual FractionRuns are never split.
  * @see [[computeLayoutTextBlockResult]]
- * @internal
+ * @beta
  */
 export function layoutTextBlock(args: LayoutTextBlockArgs): TextBlockLayout {
   const findFontId = args.findFontId ?? ((name, type) => args.iModel.fonts.findId({ name, type }) ?? 0);
@@ -84,7 +85,7 @@ export function layoutTextBlock(args: LayoutTextBlockArgs): TextBlockLayout {
 /**
  * Gets the result of laying out the the contents of a TextBlock into a series of lines containing runs.
  * The visual layout accounts for the [TextStyle]($common)s, fonts, and [TextBlock.width]($common). It applies word-wrapping if needed.
- * The layout returned matches the visual layout of the geometry produced by [[produceTextAnnotationGeometry]].
+ * The layout returned matches the visual layout of the geometry produced by [[TextAnnotationGeometry]].
  * @beta
  */
 export function computeLayoutTextBlockResult(args: LayoutTextBlockArgs): TextBlockLayoutResult {
@@ -290,7 +291,7 @@ function split(source: string): Segment[] {
   return segments;
 }
 
-/** @internal */
+/** @beta */
 export class RunLayout {
   public source: Run;
   public charOffset: number;
@@ -422,7 +423,7 @@ export class RunLayout {
   }
 }
 
-/** @internal */
+/** @beta */
 export class LineLayout {
   public source: Paragraph;
   public range = new Range2d(0, 0, 0, 0);
@@ -492,7 +493,7 @@ export class LineLayout {
 
 /**
  * Describes the layout of a text block as a collection of lines containing runs.
- * @internal
+ * @beta
  */
 export class TextBlockLayout {
   public source: TextBlock;
@@ -522,7 +523,7 @@ export class TextBlockLayout {
   public toResult(): TextBlockLayoutResult {
     return {
       lines: this.lines.map((x) => x.toResult(this.source)),
-      range: this.textRange.toJSON(),
+      range: this.range.toJSON(),
     };
   }
 

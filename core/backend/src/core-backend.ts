@@ -3,6 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+export * from "./annotations/FrameGeometry";
+export * from "./annotations/TextAnnotationElement";
+export * from "./annotations/TextAnnotationGeometry";
+export * from "./annotations/TextBlockGeometry";
+export * from "./annotations/TextBlockLayout";
 export * from "./BackendHubAccess";
 export * from "./BackendLoggerCategory";
 export * from "./BisCoreSchema";
@@ -63,14 +68,6 @@ export * from "./SchemaUtils";
 export * from "./SheetIndex";
 export * from "./SQLiteDb";
 export * from "./SqliteStatement";
-export * from "./TextAnnotationElement";
-export {
-  computeGraphemeOffsets,
-  computeLayoutTextBlockResult,
-  ComputeGraphemeOffsetsArgs,
-  LayoutTextBlockArgs,
-} from "./TextAnnotationLayout";
-export * from "./TextAnnotationGeometry";
 export * from "./Texture";
 export * from "./TileStorage";
 export * from "./TxnManager";
