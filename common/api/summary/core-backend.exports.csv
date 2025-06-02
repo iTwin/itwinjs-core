@@ -4,6 +4,8 @@ public;interface;AcquireNewBriefcaseIdArg
 public;class;AnnotationElement2d
 preview;class;AnnotationElement2d
 beta;type;AnyDb
+beta;const;appendFrameToBuilder
+beta;function;appendTextAnnotationGeometry
 public;class;AuxCoordSystem
 preview;class;AuxCoordSystem
 public;class;AuxCoordSystem2d
@@ -68,8 +70,12 @@ internal;interface;FontIndexProps
 public;class;CodeSpecs
 preview;class;CodeSpecs
 public;interface;ComputedProjectExtents
+beta;const;computeFrame
+beta;interface;ComputeFrameArgs
 beta;function;computeGraphemeOffsets
 beta;interface;ComputeGraphemeOffsetsArgs
+beta;const;computeIntervalPoints
+beta;interface;ComputeIntervalPointsArgs
 beta;function;computeLayoutTextBlockResult
 public;interface;ComputeProjectExtentsOptions
 internal;type;ComputeRangesForTextLayout
@@ -240,7 +246,6 @@ alpha;class;FolderLink
 beta;interface;FontFile
 beta;namespace;FontFile
 alpha;function;createFromRscFontBlob
-beta;namespace;FrameGeometry
 public;class;FunctionalBreakdownElement
 public;class;FunctionalComponentElement
 public;class;FunctionalComposite
@@ -444,6 +449,7 @@ preview;class;RepositoryLink
 public;class;RepositoryModel
 preview;class;RepositoryModel
 public;interface;RequestNewBriefcaseArg
+beta;interface;RequestProps
 public;type;RevertChangesArgs
 public;class;RoleElement
 preview;class;RoleElement
@@ -556,7 +562,6 @@ public;class;TextAnnotation2d
 preview;class;TextAnnotation2d
 public;class;TextAnnotation3d
 preview;class;TextAnnotation3d
-beta;namespace;TextAnnotationGeometry
 beta;class;TextBlockLayout
 internal;interface;TextLayoutRanges
 public;class;Texture

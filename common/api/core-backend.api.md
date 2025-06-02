@@ -303,6 +303,12 @@ export class AnnotationElement2d extends GraphicalElement2d {
 // @beta
 export type AnyDb = IModelDb | ECDb;
 
+// @beta
+export const appendFrameToBuilder: (builder: ElementGeometry.Builder, frame: TextFrameStyleProps, range: Range2d, transform: Transform, geomParams?: GeometryParams) => boolean;
+
+// @beta
+export function appendTextAnnotationGeometry(props: RequestProps): boolean;
+
 // @public @preview
 export abstract class AuxCoordSystem extends DefinitionElement {
     constructor(props: AuxCoordSystemProps, iModel: IModelDb);
@@ -1514,6 +1520,16 @@ export interface ComputedProjectExtents {
 }
 
 // @beta
+export const computeFrame: (args: ComputeFrameArgs) => Loop | Path;
+
+// @beta
+export interface ComputeFrameArgs {
+    frame: Exclude<TextAnnotationFrameShape, "none">;
+    range: Range2d;
+    transform: Transform;
+}
+
+// @beta
 export function computeGraphemeOffsets(args: ComputeGraphemeOffsetsArgs): Range2d[];
 
 // @beta
@@ -1521,6 +1537,15 @@ export interface ComputeGraphemeOffsetsArgs extends LayoutTextBlockArgs {
     graphemeCharIndexes: number[];
     paragraphIndex: number;
     runLayoutResult: RunLayoutResult;
+}
+
+// @beta
+export const computeIntervalPoints: ({ frame, range, transform, lineIntervalFactor, arcIntervalFactor }: ComputeIntervalPointsArgs) => Point3d[] | undefined;
+
+// @beta
+export interface ComputeIntervalPointsArgs extends ComputeFrameArgs {
+    arcIntervalFactor?: number;
+    lineIntervalFactor?: number;
 }
 
 // @beta
@@ -2991,22 +3016,6 @@ export namespace FontFile {
     export function createFromRscFontBlob(args: CreateFontFileFromRscBlobArgs): FontFile;
     export function createFromShxFontBlob(args: CreateFontFileFromShxBlobArgs): FontFile;
     export function createFromTrueTypeFileName(fileName: LocalFileName): FontFile;
-}
-
-// @beta
-export namespace FrameGeometry {
-    const appendFrameToBuilder: (builder: ElementGeometry.Builder, frame: TextFrameStyleProps, range: Range2d, transform: Transform, geomParams?: GeometryParams) => boolean;
-    export interface ComputeFrameArgs {
-        frame: Exclude<TextAnnotationFrameShape, "none">;
-        range: Range2d;
-        transform: Transform;
-    }
-    const computeFrame: ({ frame, range, transform }: ComputeFrameArgs) => Loop | Path;
-    export interface ComputeIntervalPointsArgs extends ComputeFrameArgs {
-        arcIntervalFactor?: number;
-        lineIntervalFactor?: number;
-    }
-    const computeIntervalPoints: ({ frame, range, transform, lineIntervalFactor, arcIntervalFactor }: ComputeIntervalPointsArgs) => Point3d[] | undefined;
 }
 
 // @public
@@ -5199,6 +5208,14 @@ export interface RequestNewBriefcaseArg extends TokenArg, RequestNewBriefcasePro
     onProgress?: ProgressFunction;
 }
 
+// @beta
+export interface RequestProps {
+    annotationProps: TextAnnotationProps;
+    builder: ElementGeometry.Builder;
+    layout: TextBlockLayout;
+    wantDebugGeometry?: boolean;
+}
+
 // @public
 export type RevertChangesArgs = Optional<PushChangesArgs, "description"> & {
     onProgress?: ProgressFunction;
@@ -6280,17 +6297,6 @@ export class TextAnnotation3d extends GraphicalElement3d {
     setAnnotation(annotation: TextAnnotation): void;
     // (undocumented)
     toJSON(): TextAnnotation3dProps;
-}
-
-// @beta
-export namespace TextAnnotationGeometry {
-    export function appendTextAnnotationGeometry(props: RequestProps): boolean;
-    export interface RequestProps {
-        annotationProps: TextAnnotationProps;
-        builder: ElementGeometry.Builder;
-        layout: TextBlockLayout;
-        wantDebugGeometry?: boolean;
-    }
 }
 
 // @beta
