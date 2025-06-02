@@ -291,7 +291,12 @@ function split(source: string): Segment[] {
   return segments;
 }
 
-/** @beta */
+/**
+ * Represents the layout of a single run (text, fraction, or line break) within a line of text.
+ * Stores information about the run's position, style, and font within the line.
+ * Provides utilities for splitting text runs for word wrapping and converting to result objects.
+ * @beta
+ */
 export class RunLayout {
   public source: Run;
   public charOffset: number;
@@ -423,7 +428,12 @@ export class RunLayout {
   }
 }
 
-/** @beta */
+/**
+ * Represents the layout of a single line within a paragraph of a text block.
+ * Contains a sequence of RunLayout objects, the computed range of the line, and its offset from the document origin.
+ * Provides utilities for appending runs, computing ranges, and converting to result objects.
+ * @beta
+ */
 export class LineLayout {
   public source: Paragraph;
   public range = new Range2d(0, 0, 0, 0);
@@ -493,6 +503,8 @@ export class LineLayout {
 
 /**
  * Describes the layout of a text block as a collection of lines containing runs.
+ * Computes the visual layout of the text block, including word wrapping, justification, and margins.
+ * Provides access to the computed lines, ranges, and utilities for converting to result objects.
  * @beta
  */
 export class TextBlockLayout {

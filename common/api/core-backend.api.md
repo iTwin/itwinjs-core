@@ -4160,7 +4160,7 @@ export class LightLocation extends SpatialLocationElement {
     enabled?: boolean;
 }
 
-// @beta (undocumented)
+// @beta
 export class LineLayout {
     constructor(source: Paragraph);
     // (undocumented)
@@ -5243,7 +5243,7 @@ export class RpcTrace {
     static runWithSpan<T>(activity: RpcActivity, fn: () => Promise<T>): Promise<T>;
 }
 
-// @beta (undocumented)
+// @beta
 export class RunLayout {
     // (undocumented)
     canWrap(): this is {
