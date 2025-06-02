@@ -217,6 +217,38 @@ describe("Bearing format tests:", () => {
     }
 
   });
+  it("should correctly format negative bearing angle (simulate bug)", async () => {
+    const value = -45;
+    const formatProps: FormatProps = {
+      minWidth: 2,
+      precision: 0,
+      type: "Bearing",
+      revolutionUnit: "Units.REVOLUTION",
+      formatTraits: ["showUnitLabel"],
+      uomSeparator: "",
+      composite: {
+        includeZero: true,
+        spacer: "",
+        units: [
+          { name: "Units.ARC_DEG", label: "°" },
+          { name: "Units.ARC_MINUTE", label: "'" },
+          { name: "Units.ARC_SECOND", label: "\"" },
+        ],
+      },
+    };
+    const format = new Format("bearing-test");
+    await format.fromJSON(new TestUnitsProvider(), formatProps);
+    const inputUnit = {
+      name: "Units.ARC_DEG",
+      label: "°",
+      phenomenon: "Angle",
+      system: "si",
+      isValid: true,
+    };
+    const formatterSpec = await FormatterSpec.create("bearing-test", format, new TestUnitsProvider(), inputUnit);
+    const result = Formatter.formatQuantity(value, formatterSpec);
+    expect(result).to.equal("N45°00'00\"W");
+  });
 
   it("should return ParseQuantityError if input string is incomplete", async () => {
     const bearingDMSParser = await ParserSpec.create(bearingDMS, unitsProvider, rad);
