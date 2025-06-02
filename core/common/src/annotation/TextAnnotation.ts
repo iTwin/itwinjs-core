@@ -175,7 +175,7 @@ export class TextAnnotation {
     }
 
     // Default frame to "none"
-    props.frame = this.frame ? { ...this.frame } : undefined;;
+    props.frame = this.frame ? { ...this.frame } : undefined;
 
     return props;
   }
