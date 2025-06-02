@@ -217,7 +217,7 @@ describe("Bearing format tests:", () => {
     }
 
   });
-  it("should correctly format negative bearing angle (simulate bug)", async () => {
+  it("should correctly format negative bearing angle", async () => {
     const value = -45;
     const formatProps: FormatProps = {
       minWidth: 2,
