@@ -1206,7 +1206,7 @@ describe("RegionOps", () => {
     const testValidate = (inputRegion: AnyRegion, expectedResult: AnyRegion | CurvePrimitive | undefined, msg: string): AnyRegion => {
       const saveInput = inputRegion.clone() as AnyRegion;
       const expectedChildCount = expectedResult?.children?.length ?? 0;
-      const result = RegionOps.validateRegion(inputRegion); // mutates inputRegion
+      const result = RegionOps.simplifyRegion(inputRegion); // mutates inputRegion
       ck.testTrue(result === expectedResult, msg);
       ck.testExactNumber(expectedChildCount, result?.children.length ?? 0, `${msg} (with expected child count)`);
       return saveInput; // so caller can restore inputRegion

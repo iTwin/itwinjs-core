@@ -5377,6 +5377,7 @@ export class RegionOps {
     static regionBooleanXY(loopsA: AnyRegion | AnyRegion[] | undefined, loopsB: AnyRegion | AnyRegion[] | undefined, operation: RegionBinaryOpType, mergeTolerance?: number): AnyRegion | undefined;
     // @internal
     static setCheckPointFunction(f?: GraphCheckPointFunction): void;
+    static simplifyRegion(region: AnyRegion): AnyRegion | undefined;
     static simplifyRegionType(region: AnyRegion): AnyRegion;
     static sortOuterAndHoleLoopsXY(loops: Array<Loop | IndexedXYZCollection>): AnyRegion;
     static splitPathsByRegionInOnOutXY(curvesToCut: AnyCurve | undefined, region: AnyRegion): {
@@ -5386,7 +5387,6 @@ export class RegionOps {
     };
     static splitToPathsBetweenBreaks(source: AnyCurve | undefined, makeClones: boolean): AnyChain | undefined;
     static testPointInOnOutRegionXY(curves: AnyRegion, x: number, y: number): number;
-    static validateRegion(region: AnyRegion): AnyRegion | undefined;
 }
 
 // @public

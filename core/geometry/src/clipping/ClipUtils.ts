@@ -278,7 +278,7 @@ export class ClipUtilities {
           result.tryAddChild(clippedLocalRegion);
       }
     }
-    return result ? RegionOps.validateRegion(result) : undefined;
+    return result ? RegionOps.simplifyRegion(result) : undefined;
   }
   /**
    * Compute and return portions of the input curve or region that are within the clipper.
@@ -669,7 +669,7 @@ export class ClipUtilities {
       (f0: number, f1: number, cp: CurvePrimitive) => {
         intersection.extendPoint(cp.fractionToPoint(f0), localToWorld);
         intersection.extendPoint(cp.fractionToPoint(f1), localToWorld);
-        } : undefined;
+      } : undefined;
     let hasIntersection = false;
     if (points.length > 1) {
       const segment = LineSegment3d.createCapture(points[0], points[1]);

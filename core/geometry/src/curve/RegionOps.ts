@@ -334,7 +334,7 @@ export class RegionOps {
    * or if it is a [[ParityRegion]] with multiple children; otherwise return the `ParityRegion`'s `Loop`.
    * * For a `ParityRegion` with exactly one child, return the `Loop`.
    * * All other inputs returned unchanged.
-   * @see [[validateRegion]]
+   * @see [[simplifyRegion]]
    */
   public static simplifyRegionType(region: AnyRegion): AnyRegion {
     if (region instanceof UnionRegion) {
@@ -347,21 +347,21 @@ export class RegionOps {
     return region;
   }
   /**
-   * Validate the region's parent/child hierarchy in place:
+   * Simplify the region's parent/child hierarchy in place:
    * * Regions with exactly one child are simplified as per [[simplifyRegionType]].
    * * Regions without children are removed.
    * * No Boolean operations are performed.
-   * @param region region to validate in place
+   * @param region region to simplify in place
    * @returns reference to the updated input region
    * @see [[simplifyRegionType]]
    */
-  public static validateRegion(region: AnyRegion): AnyRegion | undefined {
+  public static simplifyRegion(region: AnyRegion): AnyRegion | undefined {
     if (region instanceof Loop)
       return region.children.length > 0 ? region : undefined;
     // remove childless Parity/UnionRegion
     for (let i = 0; i < region.children.length; ++i) {
       const child = region.children[i];
-      const newChild = this.validateRegion(child);
+      const newChild = this.simplifyRegion(child);
       if (!newChild) {
         region.children.splice(i--, 1);
       } else if (newChild !== child) {
@@ -418,7 +418,7 @@ export class RegionOps {
         }
       },
     );
-    return result ? this.validateRegion(result) : undefined;
+    return result ? this.simplifyRegion(result) : undefined;
   }
   /**
    * Return a polyface whose facets are a boolean operation between the input regions.

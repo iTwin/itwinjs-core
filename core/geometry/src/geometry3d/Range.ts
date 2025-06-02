@@ -737,9 +737,9 @@ export class Range3d extends RangeBase implements LowAndHighXYZ, BeJSONFunctions
         this.low.x > other.high.x + margin
         || this.low.y > other.high.y + margin
         || this.low.z > other.high.z + margin
-        || other.low.x - margin > this.high.x
-        || other.low.y - margin > this.high.y
-        || other.low.z - margin > this.high.z
+        || other.low.x > this.high.x + margin
+        || other.low.y > this.high.y + margin
+        || other.low.z > this.high.z + margin
       );
     }
     return !(
@@ -761,8 +761,8 @@ export class Range3d extends RangeBase implements LowAndHighXYZ, BeJSONFunctions
       return !(
         this.low.x > other.high.x + margin
         || this.low.y > other.high.y + margin
-        || other.low.x - margin > this.high.x
-        || other.low.y - margin > this.high.y
+        || other.low.x > this.high.x + margin
+        || other.low.y > this.high.y + margin
       );
     }
     return !(
