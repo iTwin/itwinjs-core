@@ -543,7 +543,7 @@ export class RegionBooleanContext implements RegionOpsFaceToFaceSearchCallbacks 
           if (node.edgeTag.curve) {
             if (node.edgeTag.curve.parent instanceof RegionGroupMember) {
               if (node.edgeTag.curve.parent.parentGroup === this.extraGeometry) {
-                if (!node.findAroundFace(node.edgeMate) || node.isDangling) {
+                if (!node.findAroundFace(node.edgeMate) || node.isDangling || node.edgeMate.isDangling) {
                   toHeal.push(node.vertexSuccessor);
                   toHeal.push(node.edgeMate.vertexSuccessor);
                   node.isolateEdge();
@@ -555,8 +555,34 @@ export class RegionBooleanContext implements RegionOpsFaceToFaceSearchCallbacks 
       }
       return true;
     });
-    for (const node of toHeal)
-      HalfEdge.healEdge(node);
+    for (const doomedA of toHeal) {
+      let endFractionA, endFractionB, endPointA, endPointB;
+      if (doomedA.edgeTag instanceof CurveLocationDetail && doomedA.sortData !== undefined) {
+        endFractionA = (doomedA.sortData > 0) ? doomedA.edgeTag.fraction1 : doomedA.edgeTag.fraction;
+        endPointA = (doomedA.sortData > 0) ? doomedA.edgeTag.point1 : doomedA.edgeTag.point;
+      }
+      const doomedB = doomedA.vertexSuccessor;
+      if (doomedB.edgeTag instanceof CurveLocationDetail && doomedB.sortData !== undefined) {
+        endFractionB = (doomedB.sortData > 0) ? doomedB.edgeTag.fraction1 : doomedB.edgeTag.fraction;
+        endPointB = (doomedB.sortData > 0) ? doomedB.edgeTag.point1 : doomedB.edgeTag.point;
+      }
+      const survivorA = HalfEdge.healEdge(doomedA);
+      if (survivorA) {
+        if (survivorA.edgeTag instanceof CurveLocationDetail && survivorA.sortData !== undefined && endFractionA !== undefined && endPointA) {
+          if (survivorA.sortData > 0)
+            survivorA.edgeTag.captureFraction1Point1(endFractionA, endPointA);
+          else
+            survivorA.edgeTag.captureFractionPoint(endFractionA, endPointA);
+        }
+        const survivorB = survivorA.edgeMate;
+        if (survivorB.edgeTag instanceof CurveLocationDetail && survivorB.sortData !== undefined && endFractionB !== undefined && endPointB) {
+          if (survivorB.sortData > 0)
+            survivorB.edgeTag.captureFraction1Point1(endFractionB, endPointB);
+          else
+            survivorB.edgeTag.captureFractionPoint(endFractionB, endPointB);
+        }
+      }
+    }
     return this.graph.deleteIsolatedEdges();
   }
   /**
