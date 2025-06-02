@@ -4,7 +4,7 @@ public;interface;AcquireNewBriefcaseIdArg
 public;class;AnnotationElement2d
 preview;class;AnnotationElement2d
 beta;type;AnyDb
-beta;const;appendFrameToBuilder
+beta;function;appendFrameToBuilder
 beta;function;appendTextAnnotationGeometry
 beta;interface;AppendTextAnnotationGeometryArgs
 public;class;AuxCoordSystem
@@ -71,11 +71,11 @@ internal;interface;FontIndexProps
 public;class;CodeSpecs
 preview;class;CodeSpecs
 public;interface;ComputedProjectExtents
-beta;const;computeFrame
+beta;function;computeFrame
 beta;interface;ComputeFrameArgs
 beta;function;computeGraphemeOffsets
 beta;interface;ComputeGraphemeOffsetsArgs
-beta;const;computeIntervalPoints
+beta;function;computeIntervalPoints
 beta;interface;ComputeIntervalPointsArgs
 beta;function;computeLayoutTextBlockResult
 public;interface;ComputeProjectExtentsOptions

@@ -304,7 +304,7 @@ export class AnnotationElement2d extends GraphicalElement2d {
 export type AnyDb = IModelDb | ECDb;
 
 // @beta
-export const appendFrameToBuilder: (builder: ElementGeometry.Builder, frame: TextFrameStyleProps, range: Range2d, transform: Transform, geomParams?: GeometryParams) => boolean;
+export function appendFrameToBuilder(builder: ElementGeometry.Builder, frame: TextFrameStyleProps, range: Range2d, transform: Transform, geomParams?: GeometryParams): boolean;
 
 // @beta
 export function appendTextAnnotationGeometry(props: AppendTextAnnotationGeometryArgs): boolean;
@@ -1528,7 +1528,7 @@ export interface ComputedProjectExtents {
 }
 
 // @beta
-export const computeFrame: (args: ComputeFrameArgs) => Loop | Path;
+export function computeFrame(args: ComputeFrameArgs): Loop | Path;
 
 // @beta
 export interface ComputeFrameArgs {
@@ -1548,7 +1548,7 @@ export interface ComputeGraphemeOffsetsArgs extends LayoutTextBlockArgs {
 }
 
 // @beta
-export const computeIntervalPoints: ({ frame, range, transform, lineIntervalFactor, arcIntervalFactor }: ComputeIntervalPointsArgs) => Point3d[] | undefined;
+export function computeIntervalPoints({ frame, range, transform, lineIntervalFactor, arcIntervalFactor }: ComputeIntervalPointsArgs): Point3d[] | undefined;
 
 // @beta
 export interface ComputeIntervalPointsArgs extends ComputeFrameArgs {

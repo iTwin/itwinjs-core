@@ -20,7 +20,7 @@ import { Angle, AngleSweep, Arc3d, LineString3d, Loop, Path, Point3d, Range2d, T
  * @returns `true` if any geometry was appended to the builder
 * @beta
  */
-export const appendFrameToBuilder = (builder: ElementGeometry.Builder, frame: TextFrameStyleProps, range: Range2d, transform: Transform, geomParams?: GeometryParams): boolean => {
+export function appendFrameToBuilder(builder: ElementGeometry.Builder, frame: TextFrameStyleProps, range: Range2d, transform: Transform, geomParams?: GeometryParams): boolean {
   if (frame.shape === "none") {
     return false;
   }
@@ -78,7 +78,7 @@ export interface ComputeFrameArgs {
  * @returns a [Loop]($geometry) or [Path]($geometry) (if it's just a line) that represents the frame geometry
  * @beta
  */
-export const computeFrame = (args: ComputeFrameArgs): Loop | Path => {
+export function computeFrame(args: ComputeFrameArgs): Loop | Path {
   switch (args.frame) {
     case "line": return computeLine(args.range, args.transform);
     case "rectangle": return computeRectangle(args.range, args.transform);
@@ -112,7 +112,7 @@ export interface ComputeIntervalPointsArgs extends ComputeFrameArgs {
  * @returns an array of [[Point3d]] that represent the points along the edges of the frame geometry. Returns `undefined` if the loop created by `computeFrame` is empty.
  * @beta
  */
-export const computeIntervalPoints = ({ frame, range, transform, lineIntervalFactor = 0.5, arcIntervalFactor = 0.25 }: ComputeIntervalPointsArgs): Point3d[] | undefined => {
+export function computeIntervalPoints({ frame, range, transform, lineIntervalFactor = 0.5, arcIntervalFactor = 0.25 }: ComputeIntervalPointsArgs): Point3d[] | undefined {
   const points: Point3d[] = [];
   const curves = computeFrame({ frame, range, transform }).collectCurvePrimitives(undefined, false, true);
 
