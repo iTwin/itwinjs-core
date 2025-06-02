@@ -14,7 +14,7 @@ import { RelatedElement } from "./ElementProps";
  * between the backend and frontend.
  * EntityProps and all of its sub-types like [[ElementProps]] are "plain old Javascript objects" - that is, objects containing
  * no methods and no properties of `class` type.
- * @public
+ * @public @preview
  * @extensions
  */
 export interface EntityProps {
@@ -31,7 +31,7 @@ export interface EntityProps {
 }
 
 /** Specifies the source and target elements of a [[Relationship]] instance.
- * @public
+ * @public @preview
  * @extensions
  */
 export interface SourceAndTarget {
@@ -40,14 +40,14 @@ export interface SourceAndTarget {
 }
 
 /** Properties that are common to all types of link table ECRelationships
- * @public
+ * @public @preview
  * @extensions
  */
 export interface RelationshipProps extends EntityProps, SourceAndTarget {
 }
 
 /** Parameters for performing a query on [Entity]($backend) classes.
- * @public
+ * @public @preview
  * @extensions
  */
 export interface EntityQueryParams {

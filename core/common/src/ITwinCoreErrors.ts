@@ -103,6 +103,7 @@ export namespace ViewStoreError {
     "no-owner" |
     "not-found" |
     "not-unique" |
+    "no-viewstore" |
     "group-error";
 
   /** Determine whether an error object is a ViewStoreError */
