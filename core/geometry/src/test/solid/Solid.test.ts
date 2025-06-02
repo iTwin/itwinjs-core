@@ -558,7 +558,7 @@ describe("Solids", () => {
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, splitWasherLoop, x0, y0);
       ck.testType(splitWasherLoop, Loop, "boolean subtract resulted in a (split washer) Loop");
       const sweep1 = LinearSweep.create(splitWasherLoop, sweepVec, true);
-      testSweepMesh(sweep1, 24);
+      testSweepMesh(sweep1, 36);
     }
     x0 = 0;
     y0 += 10;
@@ -568,7 +568,7 @@ describe("Solids", () => {
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, parityRegion, x0, y0);
       ck.testType(parityRegion, ParityRegion, "sortOuterAndHoleLoopsXY resulted in a ParityRegion");
       const sweep2 = LinearSweep.create(parityRegion, sweepVec, true);
-      testSweepMesh(sweep2, 24);
+      testSweepMesh(sweep2, 36);
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "Solids", "LinearSweepWithHoles");
     expect(ck.getNumErrors()).equals(0);

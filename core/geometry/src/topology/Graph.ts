@@ -326,6 +326,31 @@ export class HalfEdge implements HalfEdgeUserData {
     return newA;
   }
   /**
+   * Reverse of [[splitEdge]].
+   * @param doomed one of two nodes added by [[splitEdge]]. On successful return this node and its mate are isolated.
+   * @returns the former (surviving) face predecessor of `doomed`, or undefined if the edge can't be healed.
+   */
+  public static healEdge(doomed: HalfEdge): HalfEdge | undefined {
+    if (doomed.isIsolatedEdge)
+      return undefined;
+    const doomed1 = doomed.vertexSuccessor;
+    if (doomed1.vertexSuccessor !== doomed)
+      return undefined; // v-loop not a 2-cycle
+    if (!doomed.vectorToFaceSuccessor().isParallelTo(doomed.vectorToFacePredecessor(), true, true))
+      return undefined; // not healable
+    const fPred = doomed.facePredecessor;
+    const fSucc = doomed.faceSuccessor;
+    const fPred1 = doomed1.facePredecessor;
+    const fSucc1 = doomed1.faceSuccessor;
+    this.setFaceLinks(fPred, fSucc);
+    this.setFaceLinks(fPred1, fSucc1);
+    this.setEdgeMates(fPred, fPred1);
+    this.setFaceLinks(doomed, doomed1);
+    this.setFaceLinks(doomed1, doomed);
+    this.setEdgeMates(doomed, doomed1);
+    return fPred;
+  }
+  /**
    * Create a new sliver face "inside" an existing edge.
    * * This creates two nodes that are each face predecessor and successor to the other.
    * * Existing nodes stay in their face and vertex loops and retain xyz and i values.
@@ -355,14 +380,14 @@ export class HalfEdge implements HalfEdgeUserData {
     newB.copyDataFrom(baseB, true, true, false, false);
     return newA;
   }
-  /** Edge property masks. */
+  /** Masks copied when an edge is split. */
   private static _edgePropertyMasks: HalfEdgeMask[] = [
-    HalfEdgeMask.BOUNDARY_EDGE, HalfEdgeMask.EXTERIOR, HalfEdgeMask.PRIMARY_EDGE, HalfEdgeMask.NULL_FACE,
+    HalfEdgeMask.EXTERIOR, HalfEdgeMask.BOUNDARY_EDGE, HalfEdgeMask.PRIMARY_EDGE, HalfEdgeMask.BRIDGE_EDGE, HalfEdgeMask.REGULARIZED_EDGE, HalfEdgeMask.NULL_FACE
   ];
   /**
    * Copy "edge based" content of `fromNode` to `toNode`:
    * * edgeTag
-   * * masks EXTERIOR, BOUNDARY_EDGE, NULL_FACE, PRIMARY_EDGE
+   * * edge masks
    */
   public static transferEdgeProperties(fromNode: HalfEdge, toNode: HalfEdge): void {
     toNode.edgeTag = fromNode.edgeTag;
@@ -708,6 +733,10 @@ export class HalfEdge implements HalfEdgeUserData {
       predB._faceSuccessor = nodeA;
       predA._faceSuccessor = nodeB;
     }
+  }
+  /** Return whether the node is dangling. */
+  public get isDangling(): boolean {
+    return this.edgeMate.faceSuccessor === this;
   }
   /**
    * Pinch this half edge out of its base vertex loop.
@@ -1285,16 +1314,12 @@ export class HalfEdge implements HalfEdgeUserData {
       this.y = source.y;
       this.z = source.z;
     }
-    if (copyVertexData) {
+    if (copyVertexData)
       this.i = source.i;
-    }
-    if (copyEdgeData) {
+    if (copyEdgeData)
       HalfEdge.transferEdgeProperties(source, this);
-      this.edgeTag = source.edgeTag;
-    }
-    if (copyFaceData) {
+    if (copyFaceData)
       this.faceTag = source.faceTag;
-    }
   }
 }
 

@@ -530,21 +530,34 @@ export class RegionBooleanContext implements RegionOpsFaceToFaceSearchCallbacks 
       this.extraGeometry.addMember(bridgeLine, true);
     }
   }
-  /** Simplify the graph by removing bridge edges that do not serve to connect inner and outer loops. */
+  /**
+   * Simplify the graph by removing bridge edges that do not serve to connect inner and outer loops:
+   * * the bridge edge is dangling
+   * * the bridge edge is adjacent to two faces
+   */
   private removeExtraneousBridgeEdges(): number {
-    return this.graph.yankAndDeleteEdges((node: HalfEdge) => {
-      if (!(node.edgeTag instanceof CurveLocationDetail))
-        return false;
-      const detail = node.edgeTag;
-      if (!detail.curve)
-        return false;
-      if (!(detail.curve.parent instanceof RegionGroupMember))
-        return false;
-      const groupMember = detail.curve.parent;
-      if (groupMember.parentGroup !== this.extraGeometry)
-        return false; // not a bridge
-      return !node.findAroundFace(node.edgeMate); // remove bridge edge if adjacent faces are different. TODO: remove dangler too?
+    const toHeal: HalfEdge[] = [];
+    this.graph.announceEdges((_graph: HalfEdgeGraph, node: HalfEdge): boolean => {
+      if (node.edgeTag !== undefined) {
+        if (node.edgeTag instanceof CurveLocationDetail) {
+          if (node.edgeTag.curve) {
+            if (node.edgeTag.curve.parent instanceof RegionGroupMember) {
+              if (node.edgeTag.curve.parent.parentGroup === this.extraGeometry) {
+                if (!node.findAroundFace(node.edgeMate) || node.isDangling) {
+                  toHeal.push(node.vertexSuccessor);
+                  toHeal.push(node.edgeMate.vertexSuccessor);
+                  node.isolateEdge();
+                }
+              }
+            }
+          }
+        }
+      }
+      return true;
     });
+    for (const node of toHeal)
+      HalfEdge.healEdge(node);
+    return this.graph.deleteIsolatedEdges();
   }
   /**
    * Markup and assembly steps for geometry in the RegionGroups.
