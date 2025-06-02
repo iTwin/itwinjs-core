@@ -307,7 +307,15 @@ export type AnyDb = IModelDb | ECDb;
 export const appendFrameToBuilder: (builder: ElementGeometry.Builder, frame: TextFrameStyleProps, range: Range2d, transform: Transform, geomParams?: GeometryParams) => boolean;
 
 // @beta
-export function appendTextAnnotationGeometry(props: RequestProps): boolean;
+export function appendTextAnnotationGeometry(props: AppendTextAnnotationGeometryArgs): boolean;
+
+// @beta
+export interface AppendTextAnnotationGeometryArgs {
+    annotationProps: TextAnnotationProps;
+    builder: ElementGeometry.Builder;
+    layout: TextBlockLayout;
+    wantDebugGeometry?: boolean;
+}
 
 // @public @preview
 export abstract class AuxCoordSystem extends DefinitionElement {
@@ -5206,14 +5214,6 @@ export class RepositoryModel extends DefinitionModel {
 // @public
 export interface RequestNewBriefcaseArg extends TokenArg, RequestNewBriefcaseProps {
     onProgress?: ProgressFunction;
-}
-
-// @beta
-export interface RequestProps {
-    annotationProps: TextAnnotationProps;
-    builder: ElementGeometry.Builder;
-    layout: TextBlockLayout;
-    wantDebugGeometry?: boolean;
 }
 
 // @public

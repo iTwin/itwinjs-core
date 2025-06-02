@@ -18,7 +18,7 @@ import { appendFrameToBuilder, computeIntervalPoints } from "./FrameGeometry";
  * @beta
  * @see [[appendTextAnnotationGeometry]] to append the geometry to an [[ElementGeometry.Builder]].
  */
-export interface RequestProps {
+export interface AppendTextAnnotationGeometryArgs {
   /** The annotation to be drawn. Be sure to include a TextBlock with runs or no geometry will be produced. */
   annotationProps: TextAnnotationProps;
   /** Layout provided by calling [[layoutTextBlock]] */
@@ -33,7 +33,7 @@ export interface RequestProps {
  * @returns true if the geometry was successfully appended.
  * @beta
  */
-export function appendTextAnnotationGeometry(props: RequestProps): boolean {
+export function appendTextAnnotationGeometry(props: AppendTextAnnotationGeometryArgs): boolean {
   const annotation = TextAnnotation.fromJSON(props.annotationProps);
   const range = Range2d.fromJSON(props.layout.range);
   const transform = annotation.computeTransform(range);
