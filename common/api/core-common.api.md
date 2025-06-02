@@ -9988,7 +9988,7 @@ export interface TextFrameStyleProps {
     border?: TextStyleColor;
     borderWeight?: number;
     fill?: TextAnnotationFillColor;
-    shape: TextAnnotationFrameShape;
+    shape?: TextAnnotationFrameShape;
 }
 
 // @beta

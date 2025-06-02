@@ -55,8 +55,8 @@ export type TextAnnotationFillColor = TextStyleColor | "background";
  * @beta
  */
 export interface TextFrameStyleProps {
-  /** Shape of the frame. */
-  shape: TextAnnotationFrameShape;
+  /** Shape of the frame. Default: "rectangle" */
+  shape?: TextAnnotationFrameShape;
   /** The color to fill the shape of the text frame. This fill will is applied using [[FillDisplay.Blanking]]. Default: no fill */
   fill?: TextAnnotationFillColor;
   /** The color of the text frame's outline. Default: black */
@@ -139,8 +139,11 @@ export class TextAnnotation {
     const angles = args?.orientation ?? new YawPitchRollAngles();
     const textBlock = args?.textBlock ?? TextBlock.createEmpty();
     const anchor = args?.anchor ?? { vertical: "top", horizontal: "left" };
+    // If the user supplies a frame, but doesn't supply a shape, default the shape to "rectangle"
+    const shape: TextAnnotationFrameShape = args?.frame?.shape ?? "rectangle";
+    const frame = args?.frame ? { shape, ...args.frame } : undefined;
 
-    return new TextAnnotation(offset, angles, textBlock, anchor, args?.frame);
+    return new TextAnnotation(offset, angles, textBlock, anchor, frame);
   }
 
   /**
@@ -152,7 +155,7 @@ export class TextAnnotation {
       orientation: props?.orientation ? YawPitchRollAngles.fromJSON(props.orientation) : undefined,
       textBlock: props?.textBlock ? TextBlock.create(props.textBlock) : undefined,
       anchor: props?.anchor ? { ...props.anchor } : undefined,
-      frame: props?.frame ? { ...props.frame } : undefined,
+      frame: props?.frame ? { shape: "rectangle", ...props.frame } : undefined,
     });
   }
 

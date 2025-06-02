@@ -21,7 +21,7 @@ import { Angle, AngleSweep, Arc3d, LineString3d, Loop, Path, Point3d, Range2d, T
 * @beta
  */
 export function appendFrameToBuilder(builder: ElementGeometry.Builder, frame: TextFrameStyleProps, range: Range2d, transform: Transform, geomParams?: GeometryParams): boolean {
-  if (frame.shape === "none") {
+  if (undefined === frame.shape || frame.shape === "none") {
     return false;
   }
 

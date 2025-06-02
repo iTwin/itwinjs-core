@@ -96,7 +96,7 @@ function debugAnchorPoint(builder: ElementGeometry.Builder, annotation: TextAnno
 
 /** Draws the interval points defined by calling [[computeIntervalPoints]]. The points are shown as black dots 5x larger than the borderWeight */
 function debugSnapPoints(builder: ElementGeometry.Builder, frame: TextFrameStyleProps, range: Range2d, transform: Transform): boolean {
-  if (frame.shape === "none")
+  if (undefined === frame.shape || frame.shape === "none")
     return false;
   const points = computeIntervalPoints({ frame: frame.shape, range, transform, lineIntervalFactor: 0.5, arcIntervalFactor: 0.25 });
 
