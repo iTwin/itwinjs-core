@@ -6,7 +6,7 @@
  * @module Tiles
  */
 
-import { assert, BeTimePoint, GuidString, Id64Array, Id64String } from "@itwin/core-bentley";
+import { assert, BeTimePoint, DbOpcode, GuidString, Id64Array, Id64String } from "@itwin/core-bentley";
 import { Range3d, Transform } from "@itwin/core-geometry";
 import {
   BatchType, ContentIdProvider, EdgeOptions, ElementAlignedBox3d, ElementGeometryChange, FeatureAppearanceProvider,
@@ -158,6 +158,22 @@ class DynamicState {
   }
 }
 
+class DynamicTestState {
+  public readonly type = "dynamic";
+  public readonly rootTile: DynamicIModelTile;
+  private _dispose: () => void;
+
+  public [Symbol.dispose](): void {
+    this._dispose();
+    this.rootTile[Symbol.dispose]();
+  }
+
+  public constructor(root: RootTile, elemChanges: Iterable<ElementGeometryChange>) {
+    this.rootTile = DynamicIModelTile.create(root, elemChanges);
+    this._dispose = () => {};
+  }
+}
+
 /** The tile tree has been disposed. */
 class DisposedState {
   public readonly type = "disposed";
@@ -167,7 +183,7 @@ class DisposedState {
 const disposedState = new DisposedState();
 
 /** The current state of an [[IModelTileTree]]'s [[RootTile]]. The tile transitions between these states primarily in response to GraphicalEditingScope events. */
-type RootTileState = StaticState | InteractiveState | DynamicState | DisposedState;
+type RootTileState = StaticState | InteractiveState | DynamicState | DisposedState | DynamicTestState ;
 
 /** The root tile for an [[IModelTileTree]].
  */
@@ -267,7 +283,7 @@ class RootTile extends Tile {
       let appearanceProvider = this._tileState.rootTile.appearanceProvider;
       if (args.appearanceProvider)
         appearanceProvider = FeatureAppearanceProvider.chain(args.appearanceProvider, appearanceProvider);
-
+      console.log(appearanceProvider);
       args.graphics.clear();
       args.graphics.add(args.context.createGraphicBranch(staticBranch, Transform.createIdentity(), { appearanceProvider }));
     }
@@ -509,7 +525,28 @@ export class IModelTileTree extends TileTree {
       changedElementIds = getScriptDelta(previousScript, newScript);
     }
 
-    this.pruneAnimatedTiles(this.rootTile, changedElementIds);
+    // this.pruneAnimatedTiles(this.rootTile, changedElementIds);
+
+    if (changedElementIds && changedElementIds.size > 0) {
+      const elemChanges: ElementGeometryChange[] = [];
+      for (const id of changedElementIds) {
+        const range = new Range3d(0, 0, 0, 1, 1, 1);
+
+        elemChanges.push({
+          id,
+          type: DbOpcode.Update,
+          range,
+        });
+      }
+
+      console.log("Switching to DynamicTestState with", elemChanges.length, "element(s)");
+
+      // Switch to dynamic state
+      this._rootTile.transition(new DynamicTestState(this._rootTile, elemChanges));
+      return;
+    }
+
+    // this.pruneAnimatedTiles(this.rootTile, changedElementIds);
   }
 
   private pruneAnimatedTiles(tile: Tile, changedElementIds?: Set<Id64String>): void {

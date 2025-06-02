@@ -198,9 +198,9 @@ export class SetScheduleScriptTool extends DisplayStyleTool {
       /// TODO!!!! add test schedule script code here
       const now = Date.now();
       const builder = new RenderSchedule.ScriptBuilder();
-      const modelTimeline = builder.addModelTimeline("0x20000000018"); // model Id
+      const modelTimeline = builder.addModelTimeline("0x20000000010"); // model Id
 
-      const elementTimeline1 = modelTimeline.addElementTimeline(["0x2000008cda1"]);
+      const elementTimeline1 = modelTimeline.addElementTimeline(["0x2000003abfc"]);
       elementTimeline1.addColor(now, new RgbColor(255, 255, 0));
       elementTimeline1.addColor(now + 3000, new RgbColor(255, 255, 255));
 
@@ -236,8 +236,8 @@ export class TestScheduleScriptTool extends DisplayStyleTool {
       /// TODO!!!! add test schedule script code here
       const now = Date.now();
       const builder = new RenderSchedule.ScriptBuilder();
-      const modelTimeline = builder.addModelTimeline("0x20000000018"); // model Id
-      const elementTimeline = modelTimeline.addElementTimeline(["0x2000008cda1"]); // element Id
+      const modelTimeline = builder.addModelTimeline("0x20000000010"); // model Id
+      const elementTimeline = modelTimeline.addElementTimeline(["0x2000003abfc"]); // element Id
       elementTimeline.addColor(now, new RgbColor(255, 0, 0));
       elementTimeline.addColor(now + 3000, new RgbColor(0, 255, 0));
       elementTimeline.addTransform(now, Transform.createIdentity());
