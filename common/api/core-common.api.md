@@ -11177,7 +11177,7 @@ export namespace ViewStoreError {
     scope = "itwin-ViewStore";
     export function isError<T extends ViewStoreError>(error: unknown, key?: Key): error is T;
     // (undocumented)
-    export type Key = "invalid-value" | "invalid-member" | "no-owner" | "not-found" | "not-unique" | "group-error";
+    export type Key = "invalid-value" | "invalid-member" | "no-owner" | "not-found" | "not-unique" | "no-viewstore" | "group-error";
     export function throwError<T extends ViewStoreError>(key: Key, e: Omit<T, "name" | "iTwinErrorId">): never;
 }
 
