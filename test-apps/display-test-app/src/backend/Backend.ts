@@ -9,7 +9,7 @@ import { ElectronMainAuthorization } from "@itwin/electron-authorization/Main";
 import { ElectronHost, ElectronHostOptions } from "@itwin/core-electron/lib/cjs/ElectronBackend";
 import { BackendIModelsAccess } from "@itwin/imodels-access-backend";
 import { IModelsClient } from "@itwin/imodels-client-authoring";
-import { IModelDb, IModelHost, IModelHostOptions, layoutTextBlock, LocalhostIpcHost, TextAnnotationGeometry } from "@itwin/core-backend";
+import { appendTextAnnotationGeometry, IModelDb, IModelHost, IModelHostOptions, layoutTextBlock, LocalhostIpcHost } from "@itwin/core-backend";
 import {
   DynamicGraphicsRequest2dProps, ElementGeometry, IModelReadRpcInterface, IModelRpcProps, IModelTileRpcInterface, Placement2dProps, RpcInterfaceDefinition, RpcManager, TextAnnotation, TextAnnotationProps,
 } from "@itwin/core-common";
@@ -188,7 +188,7 @@ class DisplayTestAppRpc extends DtaRpcInterface {
     const textBlock = TextAnnotation.fromJSON(annotationProps).textBlock;
     const layout = layoutTextBlock({ iModel, textBlock });
     const builder = new ElementGeometry.Builder();
-    TextAnnotationGeometry.appendTextAnnotationGeometry({ layout, annotationProps, builder, wantDebugGeometry });
+    appendTextAnnotationGeometry({ layout, annotationProps, builder, wantDebugGeometry });
 
     const requestProps: DynamicGraphicsRequest2dProps = {
       id: Guid.createValue(),

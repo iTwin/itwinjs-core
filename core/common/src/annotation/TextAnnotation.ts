@@ -104,7 +104,7 @@ export interface TextAnnotationCreateArgs {
  * edges, or in the center of the box.
  * - The [[orientation]] is applied to rotate the box around the anchor point.
  * - Finally, the [[offset]] is added to the anchor point to apply translation.
- * @see [TextAnnotationGeometry]($backend) to decompose the annotation into a set of geometric primitives suitable for use with [[GeometryStreamBuilder.appendTextBlock]].
+ * @see [appendTextAnnotationGeometry]($backend) to construct the geometry and append it to an [[ElementGeometry.Builder]].
  * @beta
  */
 export class TextAnnotation {
@@ -175,7 +175,7 @@ export class TextAnnotation {
     }
 
     // Default frame to "none"
-    props.frame = { shape: "none", ...this.frame };
+    props.frame = this.frame ? { ...this.frame } : undefined;;
 
     return props;
   }

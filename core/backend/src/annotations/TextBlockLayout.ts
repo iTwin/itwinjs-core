@@ -85,7 +85,7 @@ export function layoutTextBlock(args: LayoutTextBlockArgs): TextBlockLayout {
 /**
  * Gets the result of laying out the the contents of a TextBlock into a series of lines containing runs.
  * The visual layout accounts for the [TextStyle]($common)s, fonts, and [TextBlock.width]($common). It applies word-wrapping if needed.
- * The layout returned matches the visual layout of the geometry produced by [[TextAnnotationGeometry]].
+ * The layout returned matches the visual layout of the geometry produced by [[appendTextAnnotationGeometry]].
  * @beta
  */
 export function computeLayoutTextBlockResult(args: LayoutTextBlockArgs): TextBlockLayoutResult {
