@@ -9985,13 +9985,9 @@ export interface TextBlockStringifyOptions {
 
 // @beta
 export interface TextFrameStyleProps {
-    // (undocumented)
     border?: TextStyleColor;
-    // (undocumented)
     borderWeight?: number;
-    // (undocumented)
     fill?: TextAnnotationFillColor;
-    // (undocumented)
     shape: TextAnnotationFrameShape;
 }
 
