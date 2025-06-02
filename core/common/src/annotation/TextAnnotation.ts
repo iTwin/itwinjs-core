@@ -55,9 +55,13 @@ export type TextAnnotationFillColor = TextStyleColor | "background";
  * @beta
  */
 export interface TextFrameStyleProps {
+  /** Shape of the frame. */
   shape: TextAnnotationFrameShape;
+  /** The color to fill the shape of the text frame. This fill will is applied using [[FillDisplay.Blanking]]. Default: no fill */
   fill?: TextAnnotationFillColor;
+  /** The color of the text frame. Default: black */
   border?: TextStyleColor;
+  /** This will be used to set the [[GeometryParams.weight]] property of the frame (in pixels). Default: 1px */
   borderWeight?: number;
 }
 
