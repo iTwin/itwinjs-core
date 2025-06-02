@@ -8148,14 +8148,18 @@ export namespace RealityDataSource {
 
 // @alpha
 export class RealityDataSourceGP3DTProvider implements RealityDataSourceProvider {
-    constructor(apiKey: string);
+    constructor(options: RealityDataSourceGP3DTProviderOptions);
     // (undocumented)
     createRealityDataSource(key: RealityDataSourceKey, iTwinId: GuidString | undefined): Promise<RealityDataSource | undefined>;
+    // (undocumented)
+    decorate(_context: DecorateContext): void;
+    initialize(): Promise<boolean>;
 }
 
 // @alpha
 export interface RealityDataSourceProvider {
     createRealityDataSource(key: RealityDataSourceKey, iTwinId: GuidString | undefined): Promise<RealityDataSource | undefined>;
+    decorate?(_context: DecorateContext): void;
 }
 
 // @alpha

@@ -320,7 +320,11 @@ export class RealityDataSourceGP3DTProvider implements RealityDataSourceProvider
     this._decorator = new GoogleMapsDecorator();
   }
 
-  public async initialize(): Promise<boolean | undefined> {
+  /**
+   * Initialize the GP3DT reality data source provider by activating its decorator, which consists of loading the correct Google Maps logo.
+   * @returns `true` if the decorator was successfully activated, otherwise `false`.
+   */
+  public async initialize(): Promise<boolean> {
     const isActivated = await this._decorator.activate("satellite");
     if (!isActivated) {
       const msg = `Failed to activate decorator`;
@@ -331,7 +335,6 @@ export class RealityDataSourceGP3DTProvider implements RealityDataSourceProvider
   }
 
   public decorate(_context: DecorateContext): void {
-    if (this._decorator)
-      this._decorator.decorate(_context);
+    this._decorator.decorate(_context);
   }
 }

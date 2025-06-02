@@ -11,7 +11,7 @@ import { IModelConnection } from "../../IModelConnection";
 import { LogoDecoration } from "../../GoogleMapsDecorator";
 import { IconSprites, Sprite } from "../../Sprites";
 import { createRealityTileTreeReference, RealityTile, RealityTileTree, TileAdmin } from "../../tile/internal";
-import { RealityDataSource } from "../../RealityDataSource";
+import { RealityDataSource, RealityDataSourceGP3DTProvider } from "../../RealityDataSource";
 import { getGooglePhotorealistic3DTilesURL } from "../../RealityDataSourceGP3DTImpl";
 import { createBlankConnection } from "../createBlankConnection";
 import { DisplayStyle3dState } from "../../DisplayStyleState";
@@ -53,6 +53,10 @@ describe("RealityTileTreeReference", () => {
 
   beforeEach(() => {
     sinon.stub(IModelApp, "publicPath").get(() => "public/");
+    sandbox.stub(LogoDecoration.prototype, "activate").callsFake(async function _(_sprite: Sprite) {
+      return Promise.resolve(true);
+    });
+    sinon.stub(LogoDecoration.prototype, "isLoaded").get(() => true);
   });
 
   afterAll(async () => {
@@ -62,69 +66,79 @@ describe("RealityTileTreeReference", () => {
 
   afterEach(async () => {
     sandbox.restore();
+    sinon.restore();
   });
 
-  // ###TODO make use new API
-  // it("should add attributions for Google Photorealistic 3D Tiles", async () => {
-  //   sandbox.stub(TileAdmin.prototype as any, "getTilesForUser").callsFake(function _(_vp: unknown) {
-  //     const set = {
-  //       selected: new Set<RealityTile>()
-  //     };
-  //     set.selected.add(new FakeRealityTile("testId1", "Bentley Systems, Inc."));
-  //     set.selected.add(new FakeRealityTile("testId2", "Google"));
-  //     set.selected.add(new FakeRealityTile("testId3", "Google"));
-  //     return set;
-  //   });
+  it("should add attributions for Google Photorealistic 3D Tiles", async () => {
+    sandbox.stub(TileAdmin.prototype as any, "getTilesForUser").callsFake(function _(_vp: unknown) {
+      const set = {
+        selected: new Set<RealityTile>()
+      };
+      set.selected.add(new FakeRealityTile("testId1", "Bentley Systems, Inc."));
+      set.selected.add(new FakeRealityTile("testId2", "Google"));
+      set.selected.add(new FakeRealityTile("testId3", "Google"));
+      return set;
+    });
 
-  //   sinon.stub(IModelApp, "publicPath").get(() => "public/");
-  //   const rdSourceKey = RealityDataSource.createKeyFromUrl(getGooglePhotorealistic3DTilesURL(), RealityDataProvider.GP3DT);
-  //   const getDisplaySettings = () => RealityModelDisplaySettings.defaults;
-  //   const props = {
-  //     iModel,
-  //     source: new DisplayStyle3dState({} as any, iModel),
-  //     rdSourceKey,
-  //     getDisplaySettings,
-  //   };
-  //   const treeRef = createRealityTileTreeReference(props);
-  //   expect(treeRef).to.not.be.undefined;
+    const provider = new RealityDataSourceGP3DTProvider({ apiKey: "testApiKey" });
+    expect(await provider.initialize()).to.be.true;
 
-  //   const table = document.createElement("table");
-  //   await treeRef.addAttributions(table, {} as ScreenViewport);
+    IModelApp.realityDataSourceProviders.register("GP3DT", provider);
+    const rdSourceKey = {
+      provider: "GP3DT",
+      format: "ThreeDTile",
+      id: getGooglePhotorealistic3DTilesURL()
+    }
 
-  //   expect(table.innerHTML).to.includes(`<img src="public/images/google_on_white_hdpi.png" width="64">`);
-  //   expect(table.innerHTML).to.includes(`<h2 class="logo-card-header">Google Photorealistic 3D Tiles</h2>`);
-  //   expect(table.innerHTML).to.includes(`Data provided by:<br><ul><li>Google</li><li>Bentley Systems, Inc.</li></ul>`);
-  // });
+    const getDisplaySettings = () => RealityModelDisplaySettings.defaults;
+    const props = {
+      iModel,
+      source: new DisplayStyle3dState({} as any, iModel),
+      rdSourceKey,
+      getDisplaySettings,
+    };
+    const treeRef = createRealityTileTreeReference(props);
 
-  // ###TODO make use new API
-  // it("should decorate Google logo for Google Photorealistic 3D Tiles", async () => {
-  //   const rdSourceKey = RealityDataSource.createKeyFromUrl(getGooglePhotorealistic3DTilesURL(), RealityDataProvider.GP3DT);
-  //   const getDisplaySettings = () => RealityModelDisplaySettings.defaults;
-  //   const props = {
-  //     iModel,
-  //     source: new DisplayStyle3dState({} as any, iModel),
-  //     rdSourceKey,
-  //     getDisplaySettings,
-  //   };
-  //   const treeRef = createRealityTileTreeReference(props);
-  //   expect(treeRef).to.not.be.undefined;
+    const table = document.createElement("table");
+    await treeRef.addAttributions(table, {} as ScreenViewport);
 
-  //   fakeJsonFetch(sandbox, defaultPngSession);
-  //   const getSpriteStub = sandbox.stub(IconSprites, "getSpriteFromUrl").callsFake(function _(_url: string) {
-  //     console.log("getSpriteFromUrl called");
-  //     return { loadPromise: new Promise<HTMLElement>(() => { return new HTMLImageElement; }) } as Sprite;
-  //   });
-  //   const addCanvasDecorationStub = sinon.stub(DecorateContext.prototype, "addCanvasDecoration");
-  //   sinon.stub(LogoDecoration.prototype, "isLoaded").get(() => true);
+    expect(table.innerHTML).to.includes(`<img src="public/images/google_on_white_hdpi.png" width="64">`);
+    expect(table.innerHTML).to.includes(`<h2 class="logo-card-header">Google Photorealistic 3D Tiles</h2>`);
+    expect(table.innerHTML).to.includes(`Data provided by:<br><ul><li>Google</li><li>Bentley Systems, Inc.</li></ul>`);
+  });
 
-  //   const context = DecorateContext.create({ viewport: {getFrustum: () => new Frustum()} as ScreenViewport, output: new Decorations() });
-  //   // await treeRef.initializeDecorator();
-  //   treeRef.decorate(context);
+  it("should decorate Google logo for Google Photorealistic 3D Tiles", async () => {
+    fakeJsonFetch(sandbox, defaultPngSession);
+    const getSpriteStub = sandbox.stub(IconSprites, "getSpriteFromUrl").callsFake(function _(_url: string) {
+      return {} as Sprite;
+    });
+    const addCanvasDecorationStub = sinon.stub(DecorateContext.prototype, "addCanvasDecoration");
+    const context = DecorateContext.create({ viewport: {getFrustum: () => new Frustum()} as ScreenViewport, output: new Decorations() });
 
-  //   // WIP - not working unless you call initializeDecorator - issue with calling decorator.activate in RealityTileTreeRef
-  //   expect(addCanvasDecorationStub.called).to.be.true;
-  //   // expect(getSpriteStub.firstCall.args[0]).to.eq("public/images/google_on_non_white.png");
-  // });
+    // TODO test provider api key and auth token functionality in a separate file?
+    const provider = new RealityDataSourceGP3DTProvider({ apiKey: "testApiKey" });
+    expect(await provider.initialize()).to.be.true;
+
+    IModelApp.realityDataSourceProviders.register("GP3DT", provider);
+    const rdSourceKey = {
+      provider: "GP3DT",
+      format: "ThreeDTile",
+      id: getGooglePhotorealistic3DTilesURL()
+    }
+
+    const getDisplaySettings = () => RealityModelDisplaySettings.defaults;
+    const props = {
+      iModel,
+      source: new DisplayStyle3dState({} as any, iModel),
+      rdSourceKey,
+      getDisplaySettings,
+    };
+    const treeRef = createRealityTileTreeReference(props);
+    treeRef.decorate(context);
+
+    expect(addCanvasDecorationStub.called).to.be.true;
+    expect(getSpriteStub.firstCall.args[0]).to.eq("public/images/google_on_non_white.png");
+  });
 
   it("should add attributions for other types of reality tile trees", async () => {
     sandbox.stub(TileAdmin.prototype as any, "getTilesForUser").callsFake(function _(_vp: unknown) {
@@ -137,7 +151,6 @@ describe("RealityTileTreeReference", () => {
       return set;
     });
 
-    sinon.stub(IModelApp, "publicPath").get(() => "public/");
     const rdSourceKey = RealityDataSource.createKeyFromUrl("test.com/tileset.json", RealityDataProvider.TilesetUrl);
     const getDisplaySettings = () => RealityModelDisplaySettings.defaults;
     const props = {
@@ -147,8 +160,6 @@ describe("RealityTileTreeReference", () => {
       getDisplaySettings,
     };
     const treeRef = createRealityTileTreeReference(props);
-    expect(treeRef).to.not.be.undefined;
-
     const table = document.createElement("table");
     await treeRef.addAttributions(table, {} as ScreenViewport);
 
@@ -158,6 +169,25 @@ describe("RealityTileTreeReference", () => {
   });
 
   it("should not decorate Google logo for other types of reality tile trees", async () => {
+    const getSpriteStub = sandbox.stub(IconSprites, "getSpriteFromUrl").callsFake(function _(_url: string) {
+      return {} as Sprite;
+    });
+    const addCanvasDecorationStub = sinon.stub(DecorateContext.prototype, "addCanvasDecoration");
+    const context = DecorateContext.create({ viewport: {getFrustum: () => new Frustum()} as ScreenViewport, output: new Decorations() });
 
+    const rdSourceKey = RealityDataSource.createKeyFromUrl("test.com/tileset.json", RealityDataProvider.TilesetUrl);
+    const getDisplaySettings = () => RealityModelDisplaySettings.defaults;
+    const props = {
+      iModel,
+      source: new DisplayStyle3dState({} as any, iModel),
+      rdSourceKey,
+      getDisplaySettings,
+    };
+    const treeRef = createRealityTileTreeReference(props);
+
+    treeRef.decorate(context);
+
+    expect(addCanvasDecorationStub.called).to.not.be.true;
+    expect(getSpriteStub.called).to.not.be.true;
   });
 });
