@@ -722,6 +722,16 @@ export class Geometry {
     return Geometry.hypotenuseXY(x1 - x0, y1 - y0);
   }
   /**
+   * Return the squared distance between xy points given as numbers.
+   * @param x0 x coordinate of point 0
+   * @param y0 y coordinate of point 0
+   * @param x1 x coordinate of point 1
+   * @param y1 y coordinate of point 1
+   */
+  public static distanceSquaredXYXY(x0: number, y0: number, x1: number, y1: number): number {
+    return Geometry.hypotenuseSquaredXY(x1 - x0, y1 - y0);
+  }
+  /**
    * Return the distance between xyz points given as numbers.
    * @param x0 x coordinate of point 0
    * @param y0 y coordinate of point 0
