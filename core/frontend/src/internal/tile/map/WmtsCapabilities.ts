@@ -333,7 +333,7 @@ export namespace WmtsCapability {
     }
   }
 
-    export class ResourceURL {
+  export class ResourceURL {
     public readonly format: string;
     public readonly resourceType: string
     public readonly template: string;
@@ -505,8 +505,6 @@ export namespace WmtsCapability {
       for (const tmsl of tileMatrixSetLink)
         this.tileMatrixSetLinks.push(new TileMatrixSetLink(tmsl));
 
-
-      // ResourceURL
       // ResourceURL are optional.  It can be repeated for different resource types.
       const resourceUrls = elem.getElementsByTagName(XmlConstants.RESOURCEURL_XMLTAG);
 
