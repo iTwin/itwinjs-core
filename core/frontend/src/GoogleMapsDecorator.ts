@@ -8,6 +8,7 @@ import { IModelApp } from "./IModelApp";
 import { Decorator } from "./ViewManager";
 import { IconSprites, Sprite } from "./Sprites";
 import { Point3d } from "@itwin/core-geometry";
+import { RealityTile } from "./tile/internal";
 
 /** Layer types that can be added to the map.
  * @internal
@@ -23,11 +24,11 @@ export class LogoDecoration implements CanvasDecoration {
   /** The current position of the logo in view coordinates. */
   public readonly position = new Point3d();
 
-  private _offset: Point3d|undefined;
+  private _offset: Point3d | undefined;
 
-  public set offset(offset: Point3d|undefined) {
-      this._offset = offset;
-    }
+  public set offset(offset: Point3d | undefined) {
+    this._offset = offset;
+  }
 
   /** The logo offset in view coordinates.*/
   public get offset() {
@@ -82,6 +83,31 @@ export class LogoDecoration implements CanvasDecoration {
  */
 export class GoogleMapsDecorator implements Decorator {
   public readonly logo = new LogoDecoration();
+  private _showCreditsOnScreen?: boolean;
+
+  /** Create a new GoogleMapsDecorator.
+   * @param showCreditsOnScreen If true, the data attributions/copyrights from the Google Photorealistic 3D Tiles will be displayed on screen. The Google Maps logo will always be displayed.
+   */
+  constructor(showCreditsOnScreen?: boolean) {
+    this._showCreditsOnScreen = showCreditsOnScreen;
+  }
+
+  /** Get copyrights from tiles currently in the viewport */
+  private getCopyrights(context: DecorateContext): Map<string, number> {
+    const tiles = IModelApp.tileAdmin.getTilesForUser(context.viewport)?.selected;
+    const copyrightMap = new Map<string, number>();
+    if (tiles) {
+      for (const tile of tiles as Set<RealityTile>) {
+        if (tile.copyright) {
+          for (const copyright of tile.copyright?.split(";")) {
+            const currentCount = copyrightMap.get(copyright);
+            copyrightMap.set(copyright, currentCount ? currentCount + 1 : 1);
+          }
+        }
+      }
+    }
+    return copyrightMap;
+  }
 
   /** Activate the logo based on the given map type. */
   public async activate(mapType: GoogleMapsMapTypes): Promise<boolean> {
@@ -102,5 +128,25 @@ export class GoogleMapsDecorator implements Decorator {
       return;
     this.logo.moveToLowerLeftCorner(context);
     this.logo.decorate(context);
+
+    if (!this._showCreditsOnScreen)
+      return;
+
+    // Get data attribution (copyright) text
+    const copyrightMap = this.getCopyrights(context);
+    const sortedCopyrights = [...copyrightMap.entries()].sort((a, b) => b[1] - a[1]);
+    const copyrightText = sortedCopyrights.map(([key]) => ` • ${key}`).join("");
+
+    // Create and add element, offset to leave space for i.js and Google logos
+    const elem = document.createElement("div");
+    elem.innerHTML = copyrightText;
+    elem.style.color = "white";
+    elem.style.fontSize = "10px";
+    elem.style.textWrap = "wrap";
+    elem.style.position = "absolute";
+    elem.style.bottom = "10px";
+    elem.style.left = "107px";
+
+    context.addHtmlDecoration(elem);
   };
 }

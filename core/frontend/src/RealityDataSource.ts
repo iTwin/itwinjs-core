@@ -285,11 +285,13 @@ export class RealityDataSourceProviderRegistry {
  * Options for creating a Google Photorealistic 3D Tiles (GP3DT) reality data source provider.
  * @param apiKey Google Map Tiles API Key used to access GP3DT.
  * @param getAuthToken Function that returns an OAuth token for authenticating with GP3DT. This token is expected to not contain the "Bearer" prefix.
+ * @param showCreditsOnScreen If true, the data attributions/copyrights from the GP3DT will be displayed on screen. The Google Maps logo will always be displayed. Defaults to `true`.
  * @alpha
  */
 interface RealityDataSourceGP3DTProviderOptions {
   apiKey?: string;
   getAuthToken?: () => Promise<string | undefined>;
+  showCreditsOnScreen?: boolean;
 }
 
 /**
@@ -317,7 +319,7 @@ export class RealityDataSourceGP3DTProvider implements RealityDataSourceProvider
   public constructor(options: RealityDataSourceGP3DTProviderOptions) {
     this._apiKey = options.apiKey;
     this._getAuthToken = options.getAuthToken;
-    this._decorator = new GoogleMapsDecorator();
+    this._decorator = new GoogleMapsDecorator(options.showCreditsOnScreen ?? true);
   }
 
   /**
