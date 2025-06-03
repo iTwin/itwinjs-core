@@ -1836,7 +1836,15 @@ export namespace IModelDb {
       } else {
         throw new IModelError(IModelStatus.InvalidId, `Invalid model identifier: ${JSON.stringify(modelIdArg)}`);
       }
-      return this._iModel[_nativeDb].resolveInstanceKey(args);
+      // Check the cache to avoid unnecessary native calls
+      const cachedResult = this[_instanceKeyCache].get(args);
+      if (cachedResult) {
+        return cachedResult;
+      } else {
+        const instanceKey = this._iModel[_nativeDb].resolveInstanceKey(args);
+        this[_instanceKeyCache].set(args, instanceKey);
+        return instanceKey;
+      }
     }
 
     /** Get the sub-model of the specified Element.
@@ -2029,7 +2037,15 @@ export namespace IModelDb {
           throw new IModelError(IModelStatus.InvalidId, "Element Id or FederationGuid or Code is required");
         }
       }
-      return this._iModel[_nativeDb].resolveInstanceKey(args);
+      // Check the cache to avoid unnecessary native calls
+      const cachedResult = this[_instanceKeyCache].get(args);
+      if (cachedResult) {
+        return cachedResult;
+      } else {
+        const instanceKey = this._iModel[_nativeDb].resolveInstanceKey(args);
+        this[_instanceKeyCache].set(args, instanceKey);
+        return instanceKey;
+      }
     }
 
     /** Get properties of an Element by Id, FederationGuid, or Code
