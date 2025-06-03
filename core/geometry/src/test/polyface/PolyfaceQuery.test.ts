@@ -1450,7 +1450,7 @@ describe("PolyfaceSpeedup", () => {
     let x0 = 0;
     let z0 = 0;
     const timer = new StopWatch();
-    const subdivisions = 10;
+    const subdivisions = 50; // large enough to realize a perf difference
 
     const facetOptions = StrokeOptions.createForFacets();
     facetOptions.shouldTriangulate = true;
@@ -1556,7 +1556,7 @@ describe("PolyfaceSpeedup", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
     const timer = new StopWatch();
-    const subdivisions = 20;
+    const subdivisions = 50; // large enough to realize a perf difference
 
     const radius = 1.0;
     const sphere = Sphere.createCenterRadius(Point3d.create(0, 0, 0), radius);
@@ -1576,7 +1576,8 @@ describe("PolyfaceSpeedup", () => {
     ck.testTrue(isManifold, "sphere is manifold");
 
     // subset visitor test
-    const subsetVisitor = mesh.createVisitor().createSubsetVisitor(NumberArray.createArrayWithMaxStepSize(0, subdivisions - 1, 1));
+    const southPoleFacets = NumberArray.createArrayWithMaxStepSize(0, subdivisions - 1, 1).map((facet: number) => Math.ceil(facet));
+    const subsetVisitor = mesh.createVisitor().createSubsetVisitor(southPoleFacets);
     ck.testTrue(PolyfaceQuery.isSubsetVisitor(subsetVisitor), "subset visitor is recognized");
     ck.testFalse(PolyfaceQuery.isSubsetVisitor(mesh), "a polyface is not a subset visitor");
     ck.testFalse(PolyfaceQuery.isSubsetVisitor(mesh.createVisitor()), "regular visitor is not a subset visitor");
