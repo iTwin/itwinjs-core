@@ -165,8 +165,9 @@ These keyins take the form `fdt attach <format> maplayer <arguments>` where `for
 
 Reality models can be attached to a display style to provide context when that display style is used.  These are sometimes referred to as "contextual" reality models to differentiate them from reality models that are attached to the project as spatial models.   The keyins below provide methods to attach, detach and control their display.
 
-* `fdt attach reality model` - Attach a "context" reality model to the currently selected viewport.
+* `fdt attach reality model` - Attach a "context" reality model to the currently selected viewport. Arguments, in order, include:
   * the URL for the reality model root JSON file.
+  * optionally, a boolean, which when "true" will skip the backend GCS conversion when displaying this reality model.
 * `fdt attach cesium asset` - Attach a "context" reality model from Cesium ion.
   * the asset ID.
   * the authorization token.
