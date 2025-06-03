@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-quantity",
-      "comment": "",
+      "comment": "Fix bearing quantity formatting to properly handle negative inputs",
       "type": "none"
     }
   ],
