@@ -18,7 +18,7 @@ describe("WmtsCapabilities2", () => {
   });
 
   it("should parse resource urls", async () => {
-    const response = await globalThis.fetch(`/assets/wmts_capabilities/wmts_resource_url.xml`);
+    const response = await fetch(`/assets/wmts_capabilities/wmts_resource_url.xml`);
     const text = await response.text();
     fakeTextFetch(text);
 

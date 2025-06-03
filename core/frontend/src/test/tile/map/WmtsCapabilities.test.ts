@@ -14,6 +14,7 @@ const SMALL_DECIMAL_DIFFERENCE = 1.0e-6;
 describe("WmtsCapabilities1", () => {
   afterEach(async () => {
     vi.restoreAllMocks();
+    vi.unstubAllGlobals();
   });
 
   it("should parse USGS WMTS capabilities", async () => {
@@ -257,6 +258,7 @@ describe("WmtsCapabilities1", () => {
     const firstCall = fetchStub.mock.calls[0];
     expect(firstCall[0]).toEqual(`${sampleUrl}?request=GetCapabilities&service=WMTS&${searchParams.toString()}`);
   });
+
 });
 
 
