@@ -30,18 +30,6 @@ class FakeRealityTile extends RealityTile {
   }
 }
 
-export const fakeJsonFetch = (sandbox: sinon.SinonSandbox, data: any) => {
-  return sandbox.stub(globalThis, "fetch").callsFake(async function (_input: RequestInfo | URL, _init?: RequestInit) {
-    return Promise.resolve((({
-      json: async () => data,
-      ok: true,
-      status: 200,
-    } as unknown) as Response));
-  });
-};
-
-const defaultPngSession = {tileWidth: 256, tileHeight: 256, imageFormat: "image/png", expiry: 0, session: "dummySession"};
-
 describe("RealityDataSourceGP3DTProvider", () => {
   const sandbox = sinon.createSandbox();
   let iModel: IModelConnection;
@@ -70,6 +58,9 @@ describe("RealityDataSourceGP3DTProvider", () => {
   });
 
   it("should add attributions for Google Photorealistic 3D Tiles", async () => {
+    sandbox.stub(IconSprites, "getSpriteFromUrl").callsFake(function _(_url: string) {
+      return {} as Sprite;
+    });
     sandbox.stub(TileAdmin.prototype as any, "getTilesForUser").callsFake(function _(_vp: unknown) {
       const set = {
         selected: new Set<RealityTile>()
@@ -108,7 +99,6 @@ describe("RealityDataSourceGP3DTProvider", () => {
   });
 
   it("should decorate Google logo for Google Photorealistic 3D Tiles", async () => {
-    fakeJsonFetch(sandbox, defaultPngSession);
     const getSpriteStub = sandbox.stub(IconSprites, "getSpriteFromUrl").callsFake(function _(_url: string) {
       return {} as Sprite;
     });
