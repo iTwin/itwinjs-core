@@ -11,7 +11,6 @@ import { IModelError, RealityData, RealityDataFormat, RealityDataSourceKey, Real
 import { request } from "./request/Request";
 import { PublisherProductInfo, RealityDataSource, SpatialLocationAndExtents } from "./RealityDataSource";
 import { ThreeDTileFormatInterpreter } from "./tile/internal";
-// import { IModelApp } from "./IModelApp";
 
 /** Returns the URL used for retrieving Google Photorealistic 3D Tiles.
  * @alpha
@@ -55,10 +54,6 @@ export class RealityDataSourceGP3DTImpl implements RealityDataSource {
    * Create an instance of this class from a source key and iTwin context.
    */
   public static async createFromKey(sourceKey: RealityDataSourceKey, _iTwinId: GuidString | undefined, apiKey: string | undefined, _getAuthToken?: () => Promise<string | undefined>): Promise<RealityDataSource | undefined> {
-    // ###TODO need to figure out a better way to handle this
-    if (sourceKey.provider !== "GP3DT")
-      return undefined;
-
     return new RealityDataSourceGP3DTImpl({ sourceKey }, apiKey, _getAuthToken);
   }
 

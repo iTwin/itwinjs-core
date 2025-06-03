@@ -6,7 +6,7 @@
 import { OrbitGtBlobProps, RealityDataFormat, RealityDataProvider, RealityDataSourceKey } from "@itwin/core-common";
 import { describe, expect, it } from "vitest";
 import { CesiumIonAssetProvider, getCesiumAssetUrl } from "../tile/internal";
-import { RealityDataSource } from "../RealityDataSource";
+import { RealityDataSource, RealityDataSourceGP3DTProvider } from "../RealityDataSource";
 import { getGooglePhotorealistic3DTilesURL } from "../RealityDataSourceGP3DTImpl";
 
 describe("RealityDataSource", () => {
@@ -287,10 +287,13 @@ describe("RealityDataSource", () => {
     const rdSourceKeyStr = RealityDataSourceKey.convertToString(rdSourceKey);
     expect(rdSourceKeyStr).toEqual("ContextShare:OPC:994fc408-401f-4ee1-91f0-3d7bfba50136:5b4ebd22-d94b-456b-8bd8-d59563de9acd");
   });
-  // ###TODO make work with new API
-  // it("should handle creation from Google Photorealistic 3D Tiles provider", () => {
-  //   const rdSourceKey = RealityDataSource.createKeyFromUrl(getGooglePhotorealistic3DTilesURL(), RealityDataProvider.GP3DT);
-  //   expect(rdSourceKey.provider).toEqual(RealityDataProvider.GP3DT);
-  //   expect(rdSourceKey.format).toEqual(RealityDataFormat.ThreeDTile);
-  // });
+  it("should handle creation from Google Photorealistic 3D Tiles provider", async () => {
+    const provider = new RealityDataSourceGP3DTProvider({ apiKey: "testApiKey" });
+    const rdSourceKey = RealityDataSource.createKeyFromUrl(getGooglePhotorealistic3DTilesURL());
+    const rdSource = await provider.createRealityDataSource(rdSourceKey, undefined);
+    expect(rdSource).to.be.toBeDefined;
+    expect(rdSourceKey.provider).toEqual("TilesetUrl");
+    expect(rdSourceKey.format).toEqual(RealityDataFormat.ThreeDTile);
+    expect(rdSourceKey.id).toEqual(getGooglePhotorealistic3DTilesURL());
+  });
 });

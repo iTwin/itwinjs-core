@@ -3,204 +3,212 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-// import { describe, expect, it } from "vitest";
-// import { RealityDataProvider, RealityDataSourceKey, RealityDataSourceProps } from "@itwin/core-common";
-// import { RealityDataSourceGP3DTImpl } from "../RealityDataSourceGP3DTImpl";
+import { describe, expect, it } from "vitest";
+import { RealityDataSourceKey, RealityDataSourceProps } from "@itwin/core-common";
+import { getGooglePhotorealistic3DTilesURL, RealityDataSourceGP3DTImpl } from "../RealityDataSourceGP3DTImpl";
+import { RealityDataSourceGP3DTProvider } from "../RealityDataSource";
 
-// ###TODO handle the new API
-// describe("RealityDataSourceGP3DTImpl", () => {
-//   it("handle content type of relative urls", async () => {
-//     const rdSource = await RealityDataSourceGP3DTImpl.createFromKey({ format: "", id: "", provider : RealityDataProvider.GP3DT }, undefined, undefined);
-//     expect(rdSource).toBeDefined();
-//     expect(rdSource?.getTileContentType("tileset.json")).toEqual("tileset");
-//     expect(rdSource?.getTileContentType("tile.glb")).toEqual("tile");
-//     expect(rdSource?.getTileContentType("./tileset.json")).toEqual("tileset");
-//     expect(rdSource?.getTileContentType("./tile.glb")).toEqual("tile");
-//     expect(rdSource?.getTileContentType("../tilesets/tileset.json")).toEqual("tileset");
-//     expect(rdSource?.getTileContentType("../models/tile.glb")).toEqual("tile");
-//     expect(rdSource?.getTileContentType("tilesets/tileset.json")).toEqual("tileset");
-//     expect(rdSource?.getTileContentType("models/tile.glb")).toEqual("tile");
+describe("RealityDataSourceGP3DTImpl", async () => {
+  const provider = new RealityDataSourceGP3DTProvider({ apiKey: "testApiKey" });
+  const rdSourceKey = {
+    provider: "Test GP3DT provider",
+    format: "ThreeDTile",
+    id: getGooglePhotorealistic3DTilesURL()
+  }
+  const rdSource = await provider.createRealityDataSource(rdSourceKey, undefined);
 
-//     expect(rdSource?.getTileContentType("tileset.json?a=b&c=d")).toEqual("tileset");
-//     expect(rdSource?.getTileContentType("tile.glb?a=b&c=d")).toEqual("tile");
-//     expect(rdSource?.getTileContentType("./tileset.json?a=b&c=d")).toEqual("tileset");
-//     expect(rdSource?.getTileContentType("./tile.glb?a=b&c=d")).toEqual("tile");
-//     expect(rdSource?.getTileContentType("../tilesets/tileset.json?a=b&c=d")).toEqual("tileset");
-//     expect(rdSource?.getTileContentType("../models/tile.glb?a=b&c=d")).toEqual("tile");
-//     expect(rdSource?.getTileContentType("tilesets/tileset.json?a=b&c=d")).toEqual("tileset");
-//     expect(rdSource?.getTileContentType("models/tile.glb?a=b&c=d")).toEqual("tile");
+  it("handle content type of relative urls", async () => {
+    expect(rdSource).toBeDefined();
+    expect(rdSource?.getTileContentType("tileset.json")).toEqual("tileset");
+    expect(rdSource?.getTileContentType("tile.glb")).toEqual("tile");
+    expect(rdSource?.getTileContentType("./tileset.json")).toEqual("tileset");
+    expect(rdSource?.getTileContentType("./tile.glb")).toEqual("tile");
+    expect(rdSource?.getTileContentType("../tilesets/tileset.json")).toEqual("tileset");
+    expect(rdSource?.getTileContentType("../models/tile.glb")).toEqual("tile");
+    expect(rdSource?.getTileContentType("tilesets/tileset.json")).toEqual("tileset");
+    expect(rdSource?.getTileContentType("models/tile.glb")).toEqual("tile");
 
-//     expect(rdSource?.getTileContentType("tileset.json?a=b&c=d#fragment")).toEqual("tileset");
-//     expect(rdSource?.getTileContentType("tile.glb?a=b&c=d#fragment")).toEqual("tile");
-//     expect(rdSource?.getTileContentType("./tileset.json?a=b&c=d#fragment")).toEqual("tileset");
-//     expect(rdSource?.getTileContentType("./tile.glb?a=b&c=d#fragment")).toEqual("tile");
-//     expect(rdSource?.getTileContentType("../tilesets/tileset.json?a=b&c=d#fragment")).toEqual("tileset");
-//     expect(rdSource?.getTileContentType("../models/tile.glb?a=b&c=d#fragment")).toEqual("tile");
-//     expect(rdSource?.getTileContentType("tilesets/tileset.json?a=b&c=d#fragment")).toEqual("tileset");
-//     expect(rdSource?.getTileContentType("models/tile.glb?a=b&c=d#fragment")).toEqual("tile");
+    expect(rdSource?.getTileContentType("tileset.json?a=b&c=d")).toEqual("tileset");
+    expect(rdSource?.getTileContentType("tile.glb?a=b&c=d")).toEqual("tile");
+    expect(rdSource?.getTileContentType("./tileset.json?a=b&c=d")).toEqual("tileset");
+    expect(rdSource?.getTileContentType("./tile.glb?a=b&c=d")).toEqual("tile");
+    expect(rdSource?.getTileContentType("../tilesets/tileset.json?a=b&c=d")).toEqual("tileset");
+    expect(rdSource?.getTileContentType("../models/tile.glb?a=b&c=d")).toEqual("tile");
+    expect(rdSource?.getTileContentType("tilesets/tileset.json?a=b&c=d")).toEqual("tileset");
+    expect(rdSource?.getTileContentType("models/tile.glb?a=b&c=d")).toEqual("tile");
 
-//     expect(rdSource?.getTileContentType("tileset.json#fragment")).toEqual("tileset");
-//     expect(rdSource?.getTileContentType("tile.glb#fragment")).toEqual("tile");
-//     expect(rdSource?.getTileContentType("./tileset.json#fragment")).toEqual("tileset");
-//     expect(rdSource?.getTileContentType("./tile.glb#fragment")).toEqual("tile");
-//     expect(rdSource?.getTileContentType("../tilesets/tileset.json#fragment")).toEqual("tileset");
-//     expect(rdSource?.getTileContentType("../models/tile.glb#fragment")).toEqual("tile");
-//     expect(rdSource?.getTileContentType("tilesets/tileset.json#fragment")).toEqual("tileset");
-//     expect(rdSource?.getTileContentType("models/tile.glb#fragment")).toEqual("tile");
-//   });
-//   it("handle content type of absolute urls", async () => {
-//     const rdSource = await RealityDataSourceGP3DTImpl.createFromKey({ format: "", id: "", provider : RealityDataProvider.GP3DT }, undefined, undefined);
-//     expect(rdSource).toBeDefined();
-//     expect(rdSource?.getTileContentType("https://localhost/tilesets/tileset.json")).toEqual("tileset");
-//     expect(rdSource?.getTileContentType("https://localhost/models/tile.glb")).toEqual("tile");
-//     expect(rdSource?.getTileContentType("https://localhost/tilesets/tileset.json?a=b&c=d")).toEqual("tileset");
-//     expect(rdSource?.getTileContentType("https://localhost/models/tile.glb?a=b&c=d")).toEqual("tile");
-//     expect(rdSource?.getTileContentType("https://localhost/tilesets/tileset.json?a=b&c=d#fragment")).toEqual("tileset");
-//     expect(rdSource?.getTileContentType("https://localhost/models/tile.glb?a=b&c=d#fragment")).toEqual("tile");
-//     expect(rdSource?.getTileContentType("https://localhost/tilesets/tileset.json#fragment")).toEqual("tileset");
-//     expect(rdSource?.getTileContentType("https://localhost/models/tile.glb#fragment")).toEqual("tile");
-//   });
-//   it("handle content type of other cases", async () => {
-//     const rdSource = await RealityDataSourceGP3DTImpl.createFromKey({ format: "", id: "", provider : RealityDataProvider.GP3DT }, undefined, undefined);
-//     expect(rdSource).toBeDefined();
-//     expect(rdSource?.getTileContentType("")).to.not.equal("tileset");
-//     expect(rdSource?.getTileContentType("tileset.json/")).to.not.equal("tileset");
-//     expect(rdSource?.getTileContentType("tileset.json2")).toEqual("tile");
-//     expect(rdSource?.getTileContentType("tileset.json/tileset.js")).toEqual("tile");
-//     expect(rdSource?.getTileContentType("TILESET.JSON")).toEqual("tileset");
-//     expect(rdSource?.getTileContentType("..\\tilesets\\tileset.json")).toEqual("tileset");
-//     expect(rdSource?.getTileContentType("/path/../tilesets/tileset.json")).toEqual("tileset");
-//     expect(rdSource?.getTileContentType("/path/../models/json.glb")).toEqual("tile");
-//     expect(rdSource?.getTileContentType("tile.glb?referer=tileset.json")).toEqual("tile");
-//     expect(rdSource?.getTileContentType("file:///c:/path/to/tileset.json")).toEqual("tileset");
-//   });
+    expect(rdSource?.getTileContentType("tileset.json?a=b&c=d#fragment")).toEqual("tileset");
+    expect(rdSource?.getTileContentType("tile.glb?a=b&c=d#fragment")).toEqual("tile");
+    expect(rdSource?.getTileContentType("./tileset.json?a=b&c=d#fragment")).toEqual("tileset");
+    expect(rdSource?.getTileContentType("./tile.glb?a=b&c=d#fragment")).toEqual("tile");
+    expect(rdSource?.getTileContentType("../tilesets/tileset.json?a=b&c=d#fragment")).toEqual("tileset");
+    expect(rdSource?.getTileContentType("../models/tile.glb?a=b&c=d#fragment")).toEqual("tile");
+    expect(rdSource?.getTileContentType("tilesets/tileset.json?a=b&c=d#fragment")).toEqual("tileset");
+    expect(rdSource?.getTileContentType("models/tile.glb?a=b&c=d#fragment")).toEqual("tile");
 
-//   describe("getTileUrl", () => {
-//     class TestGP3DTImpl extends RealityDataSourceGP3DTImpl {
-//       public constructor(props: RealityDataSourceProps) {
-//         super(props, undefined);
-//       }
+    expect(rdSource?.getTileContentType("tileset.json#fragment")).toEqual("tileset");
+    expect(rdSource?.getTileContentType("tile.glb#fragment")).toEqual("tile");
+    expect(rdSource?.getTileContentType("./tileset.json#fragment")).toEqual("tileset");
+    expect(rdSource?.getTileContentType("./tile.glb#fragment")).toEqual("tile");
+    expect(rdSource?.getTileContentType("../tilesets/tileset.json#fragment")).toEqual("tileset");
+    expect(rdSource?.getTileContentType("../models/tile.glb#fragment")).toEqual("tile");
+    expect(rdSource?.getTileContentType("tilesets/tileset.json#fragment")).toEqual("tileset");
+    expect(rdSource?.getTileContentType("models/tile.glb#fragment")).toEqual("tile");
+  });
+  it("handle content type of absolute urls", async () => {
+    expect(rdSource).toBeDefined();
+    expect(rdSource?.getTileContentType("https://localhost/tilesets/tileset.json")).toEqual("tileset");
+    expect(rdSource?.getTileContentType("https://localhost/models/tile.glb")).toEqual("tile");
+    expect(rdSource?.getTileContentType("https://localhost/tilesets/tileset.json?a=b&c=d")).toEqual("tileset");
+    expect(rdSource?.getTileContentType("https://localhost/models/tile.glb?a=b&c=d")).toEqual("tile");
+    expect(rdSource?.getTileContentType("https://localhost/tilesets/tileset.json?a=b&c=d#fragment")).toEqual("tileset");
+    expect(rdSource?.getTileContentType("https://localhost/models/tile.glb?a=b&c=d#fragment")).toEqual("tile");
+    expect(rdSource?.getTileContentType("https://localhost/tilesets/tileset.json#fragment")).toEqual("tileset");
+    expect(rdSource?.getTileContentType("https://localhost/models/tile.glb#fragment")).toEqual("tile");
+  });
+  it("handle content type of other cases", async () => {
+    expect(rdSource).toBeDefined();
+    expect(rdSource?.getTileContentType("")).to.not.equal("tileset");
+    expect(rdSource?.getTileContentType("tileset.json/")).to.not.equal("tileset");
+    expect(rdSource?.getTileContentType("tileset.json2")).toEqual("tile");
+    expect(rdSource?.getTileContentType("tileset.json/tileset.js")).toEqual("tile");
+    expect(rdSource?.getTileContentType("TILESET.JSON")).toEqual("tileset");
+    expect(rdSource?.getTileContentType("..\\tilesets\\tileset.json")).toEqual("tileset");
+    expect(rdSource?.getTileContentType("/path/../tilesets/tileset.json")).toEqual("tileset");
+    expect(rdSource?.getTileContentType("/path/../models/json.glb")).toEqual("tile");
+    expect(rdSource?.getTileContentType("tile.glb?referer=tileset.json")).toEqual("tile");
+    expect(rdSource?.getTileContentType("file:///c:/path/to/tileset.json")).toEqual("tileset");
+  });
 
-//       public override setBaseUrl(url: string): void {
-//         super.setBaseUrl(url);
-//       }
+  describe("getTileUrl", () => {
+    const sourceKey = {
+      provider: "Test GP3DT provider",
+      format: "ThreeDTile",
+    }
+    class TestGP3DTImpl extends RealityDataSourceGP3DTImpl {
+      public constructor(props: RealityDataSourceProps) {
+        super(props, undefined);
+      }
 
-//       public static override async createFromKey(sourceKey: RealityDataSourceKey): Promise<TestGP3DTImpl | undefined> {
-//         const rdSource = await RealityDataSourceGP3DTImpl.createFromKey(sourceKey, undefined, undefined) as TestGP3DTImpl;
-//         rdSource.setBaseUrl(sourceKey.id);
-//         return rdSource;
-//       }
-//     }
+      public override setBaseUrl(url: string): void {
+        super.setBaseUrl(url);
+      }
 
-//     it("should get correct URL", async () => {
-//       const url = "https://tile.googleapis.com/some/sub/dirs/root.json";
-//       const rdSource = await TestGP3DTImpl.createFromKey({ format: "ThreeDTile", id: url, provider : RealityDataProvider.GP3DT });
-//       expect(rdSource).toBeDefined();
+      public static override async createFromKey(key: RealityDataSourceKey): Promise<TestGP3DTImpl | undefined> {
+        const source = await RealityDataSourceGP3DTImpl.createFromKey(key, undefined, undefined) as TestGP3DTImpl;
+        source.setBaseUrl(key.id);
+        return source;
+      }
+    }
 
-//       if (!rdSource)
-//         return;
+    it("should get correct URL", async () => {
+      const url = "https://tile.googleapis.com/some/sub/dirs/root.json";
+      const source = await TestGP3DTImpl.createFromKey({ ...sourceKey, id: url });
+      expect(source).toBeDefined();
 
-//       let returnedUrl = rdSource.getTileUrl("tileset.json");
-//       expect(returnedUrl).toEqual("https://tile.googleapis.com/tileset.json");
+      if (!source)
+        return;
 
-//       returnedUrl = rdSource.getTileUrl("tile.glb");
-//       expect(returnedUrl).toEqual("https://tile.googleapis.com/tile.glb");
-//     });
+      const returnedUrl = source.getTileUrl("tileset.json");
+      expect(returnedUrl).toEqual("https://tile.googleapis.com/tileset.json");
 
-//     it("should handle tile path starting with slash", async () => {
-//       const url = "https://tile.googleapis.com/some/sub/dirs/root.json";
-//       const rdSource = await TestGP3DTImpl.createFromKey({ format: "ThreeDTile", id: url, provider : RealityDataProvider.GP3DT });
-//       expect(rdSource).toBeDefined();
+      const returnedUrl2 = source.getTileUrl("tile.glb");
+      expect(returnedUrl2).toEqual("https://tile.googleapis.com/tile.glb");
+    });
 
-//       if (!rdSource)
-//         return;
+    it("should handle tile path starting with slash", async () => {
+      const url = "https://tile.googleapis.com/some/sub/dirs/root.json";
+      const source = await TestGP3DTImpl.createFromKey({ ...sourceKey, id: url });
+      expect(source).toBeDefined();
 
-//       const returnedUrl = rdSource.getTileUrl("/tileset.json");
-//       expect(returnedUrl).toEqual("https://tile.googleapis.com/tileset.json");
+      if (!source)
+        return;
 
-//       const returnedUrl2 = rdSource.getTileUrl("/tile.glb");
-//       expect(returnedUrl2).toEqual("https://tile.googleapis.com/tile.glb");
-//     });
+      const returnedUrl = source.getTileUrl("/tileset.json");
+      expect(returnedUrl).toEqual("https://tile.googleapis.com/tileset.json");
 
-//     it("should handle paths with leading subdirectories", async () => {
-//       const url = "https://tile.googleapis.com/some/sub/dirs/root.json?key=key&sessionId=id";
-//       const rdSource = await TestGP3DTImpl.createFromKey({ format: "ThreeDTile", id: url, provider : RealityDataProvider.GP3DT });
-//       expect(rdSource).toBeDefined();
+      const returnedUrl2 = source.getTileUrl("/tile.glb");
+      expect(returnedUrl2).toEqual("https://tile.googleapis.com/tile.glb");
+    });
 
-//       if (!rdSource)
-//         return;
+    it("should handle paths with leading subdirectories", async () => {
+      const url = "https://tile.googleapis.com/some/sub/dirs/root.json?key=key&sessionId=id";
+      const source = await TestGP3DTImpl.createFromKey({ ...sourceKey, id: url });
+      expect(source).toBeDefined();
 
-//       const returnedUrl = rdSource.getTileUrl("some/leading/path/tileset.json");
-//       expect(returnedUrl).toEqual("https://tile.googleapis.com/some/leading/path/tileset.json?key=key&sessionId=id");
+      if (!source)
+        return;
 
-//       const returnedUrl2 = rdSource.getTileUrl("some/leading/path/tile.glb");
-//       expect(returnedUrl2).toEqual("https://tile.googleapis.com/some/leading/path/tile.glb?key=key&sessionId=id");
-//     });
+      const returnedUrl = source.getTileUrl("some/leading/path/tileset.json");
+      expect(returnedUrl).toEqual("https://tile.googleapis.com/some/leading/path/tileset.json?key=key&sessionId=id");
 
-//     it("should pass down root search params", async () => {
-//       const url = "https://tile.googleapis.com/some/sub/dirs/root.json?key=key&sessionId=id";
-//       const rdSource = await TestGP3DTImpl.createFromKey({ format: "ThreeDTile", id: url, provider : RealityDataProvider.GP3DT });
-//       expect(rdSource).toBeDefined();
+      const returnedUrl2 = source.getTileUrl("some/leading/path/tile.glb");
+      expect(returnedUrl2).toEqual("https://tile.googleapis.com/some/leading/path/tile.glb?key=key&sessionId=id");
+    });
 
-//       if (!rdSource)
-//         return;
+    it("should pass down root search params", async () => {
+      const url = "https://tile.googleapis.com/some/sub/dirs/root.json?key=key&sessionId=id";
+      const source = await TestGP3DTImpl.createFromKey({ ...sourceKey, id: url });
+      expect(source).toBeDefined();
 
-//       const returnedUrl = rdSource.getTileUrl("tileset.json");
-//       expect(returnedUrl).toEqual("https://tile.googleapis.com/tileset.json?key=key&sessionId=id");
+      if (!source)
+        return;
 
-//       const returnedUrl2 = rdSource.getTileUrl("tile.glb");
-//       expect(returnedUrl2).toEqual("https://tile.googleapis.com/tile.glb?key=key&sessionId=id");
-//     });
+      const returnedUrl = source.getTileUrl("tileset.json");
+      expect(returnedUrl).toEqual("https://tile.googleapis.com/tileset.json?key=key&sessionId=id");
 
-//     it("should pass down root search params while preserving tile's search params", async () => {
-//       const url = "https://tile.googleapis.com/some/sub/dirs/root.json?key=key";
-//       const rdSource = await TestGP3DTImpl.createFromKey({ format: "ThreeDTile", id: url, provider : RealityDataProvider.GP3DT });
-//       expect(rdSource).toBeDefined();
+      const returnedUrl2 = source.getTileUrl("tile.glb");
+      expect(returnedUrl2).toEqual("https://tile.googleapis.com/tile.glb?key=key&sessionId=id");
+    });
 
-//       if (!rdSource)
-//         return;
+    it("should pass down root search params while preserving tile's search params", async () => {
+      const url = "https://tile.googleapis.com/some/sub/dirs/root.json?key=key";
+      const source = await TestGP3DTImpl.createFromKey({ ...sourceKey, id: url });
+      expect(source).toBeDefined();
 
-//       const returnedUrl = rdSource.getTileUrl("tile.glb?sessionId=123");
-//       expect(returnedUrl).toEqual("https://tile.googleapis.com/tile.glb?sessionId=123&key=key");
+      if (!source)
+        return;
 
-//       const returnedUrl2 = rdSource.getTileUrl("tile.glb?sessionId=456");
-//       expect(returnedUrl2).toEqual("https://tile.googleapis.com/tile.glb?sessionId=456&key=key");
-//     });
+      const returnedUrl = source.getTileUrl("tile.glb?sessionId=123");
+      expect(returnedUrl).toEqual("https://tile.googleapis.com/tile.glb?sessionId=123&key=key");
 
-//     it("should pass down root search params while preserving tileset's search params", async () => {
-//       const url = "https://tile.googleapis.com/some/sub/dirs/root.json?key=key";
-//       const rdSource = await TestGP3DTImpl.createFromKey({ format: "ThreeDTile", id: url, provider : RealityDataProvider.GP3DT });
-//       expect(rdSource).toBeDefined();
+      const returnedUrl2 = source.getTileUrl("tile.glb?sessionId=456");
+      expect(returnedUrl2).toEqual("https://tile.googleapis.com/tile.glb?sessionId=456&key=key");
+    });
 
-//       if (!rdSource)
-//         return;
+    it("should pass down root search params while preserving tileset's search params", async () => {
+      const url = "https://tile.googleapis.com/some/sub/dirs/root.json?key=key";
+      const source = await TestGP3DTImpl.createFromKey({ ...sourceKey, id: url });
+      expect(source).toBeDefined();
 
-//       const returnedUrl = rdSource.getTileUrl("tileset.json?sessionId=123");
-//       expect(returnedUrl).toEqual("https://tile.googleapis.com/tileset.json?sessionId=123&key=key");
+      if (!source)
+        return;
 
-//       const returnedUrl2 = rdSource.getTileUrl("tileset.json?sessionId=456");
-//       expect(returnedUrl2).toEqual("https://tile.googleapis.com/tileset.json?sessionId=456&key=key");
-//     });
+      const returnedUrl = source.getTileUrl("tileset.json?sessionId=123");
+      expect(returnedUrl).toEqual("https://tile.googleapis.com/tileset.json?sessionId=123&key=key");
 
-//     it("should pass down both root search params and tileset search params", async () => {
-//       const url = "https://tile.googleapis.com/some/sub/dirs/root.json?key=key";
-//       const rdSource = await TestGP3DTImpl.createFromKey({ format: "ThreeDTile", id: url, provider : RealityDataProvider.GP3DT });
-//       expect(rdSource).toBeDefined();
+      const returnedUrl2 = source.getTileUrl("tileset.json?sessionId=456");
+      expect(returnedUrl2).toEqual("https://tile.googleapis.com/tileset.json?sessionId=456&key=key");
+    });
 
-//       if (!rdSource)
-//         return;
+    it("should pass down both root search params and tileset search params", async () => {
+      const url = "https://tile.googleapis.com/some/sub/dirs/root.json?key=key";
+      const source = await TestGP3DTImpl.createFromKey({ ...sourceKey, id: url });
+      expect(source).toBeDefined();
 
-//       const returnedUrl = rdSource.getTileUrl("tileset.json?sessionId=123");
-//       expect(returnedUrl).toEqual("https://tile.googleapis.com/tileset.json?sessionId=123&key=key");
+      if (!source)
+        return;
 
-//       const returnedUrl2 = rdSource.getTileUrl("tileset.json?sessionId=456");
-//       expect(returnedUrl2).toEqual("https://tile.googleapis.com/tileset.json?sessionId=456&key=key");
+      const returnedUrl = source.getTileUrl("tileset.json?sessionId=123");
+      expect(returnedUrl).toEqual("https://tile.googleapis.com/tileset.json?sessionId=123&key=key");
 
-//       const returnedUrl3 = rdSource.getTileUrl("tile.glb");
-//       // Because all tileset search params are stored in RealityDataSourceGP3DTImpl._searchParams, not just root,
-//       // The tile will recieve both session ids.
-//       // TODO In the future we might need a way to pass down "subtree" search params only to the tiles that need them.
-//       expect(returnedUrl3).toEqual("https://tile.googleapis.com/tile.glb?key=key&sessionId=123&sessionId=456");
-//     });
-//   });
-// });
+      const returnedUrl2 = source.getTileUrl("tileset.json?sessionId=456");
+      expect(returnedUrl2).toEqual("https://tile.googleapis.com/tileset.json?sessionId=456&key=key");
+
+      const returnedUrl3 = source.getTileUrl("tile.glb");
+      // Because all tileset search params are stored in RealityDataSourceGP3DTImpl._searchParams, not just root, the tile will recieve both session ids.
+      // In the future we might need a way to pass down "subtree" search params only to the tiles that need them.
+      expect(returnedUrl3).toEqual("https://tile.googleapis.com/tile.glb?key=key&sessionId=123&sessionId=456");
+    });
+  });
+});

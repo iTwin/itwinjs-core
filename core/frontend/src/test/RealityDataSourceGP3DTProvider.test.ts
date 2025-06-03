@@ -6,19 +6,19 @@
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import sinon from "sinon";
 import { Frustum, RealityDataProvider, RealityModelDisplaySettings } from "@itwin/core-common";
-import { IModelApp } from "../../IModelApp";
-import { IModelConnection } from "../../IModelConnection";
-import { LogoDecoration } from "../../GoogleMapsDecorator";
-import { IconSprites, Sprite } from "../../Sprites";
-import { createRealityTileTreeReference, RealityTile, RealityTileTree, TileAdmin } from "../../tile/internal";
-import { RealityDataSource, RealityDataSourceGP3DTProvider } from "../../RealityDataSource";
-import { getGooglePhotorealistic3DTilesURL } from "../../RealityDataSourceGP3DTImpl";
-import { createBlankConnection } from "../createBlankConnection";
-import { DisplayStyle3dState } from "../../DisplayStyleState";
-import { ScreenViewport } from "../../Viewport";
-import { DecorateContext } from "../../ViewContext";
-import { Decorations } from "../../render/Decorations";
 import { Range3d } from "@itwin/core-geometry";
+import { IModelApp } from "../IModelApp";
+import { IModelConnection } from "../IModelConnection";
+import { LogoDecoration } from "../GoogleMapsDecorator";
+import { IconSprites, Sprite } from "../Sprites";
+import { createRealityTileTreeReference, RealityTile, RealityTileTree, TileAdmin } from "../tile/internal";
+import { RealityDataSource, RealityDataSourceGP3DTProvider } from "../RealityDataSource";
+import { getGooglePhotorealistic3DTilesURL } from "../RealityDataSourceGP3DTImpl";
+import { createBlankConnection } from "./createBlankConnection";
+import { DisplayStyle3dState } from "../DisplayStyleState";
+import { ScreenViewport } from "../Viewport";
+import { DecorateContext } from "../ViewContext";
+import { Decorations } from "../render/Decorations";
 
 class FakeRealityTile extends RealityTile {
   constructor(contentId: string, copyright?: string) {
@@ -42,7 +42,7 @@ export const fakeJsonFetch = (sandbox: sinon.SinonSandbox, data: any) => {
 
 const defaultPngSession = {tileWidth: 256, tileHeight: 256, imageFormat: "image/png", expiry: 0, session: "dummySession"};
 
-describe("RealityTileTreeReference", () => {
+describe("RealityDataSourceGP3DTProvider", () => {
   const sandbox = sinon.createSandbox();
   let iModel: IModelConnection;
 
@@ -115,7 +115,6 @@ describe("RealityTileTreeReference", () => {
     const addCanvasDecorationStub = sinon.stub(DecorateContext.prototype, "addCanvasDecoration");
     const context = DecorateContext.create({ viewport: {getFrustum: () => new Frustum()} as ScreenViewport, output: new Decorations() });
 
-    // TODO test provider api key and auth token functionality in a separate file?
     const provider = new RealityDataSourceGP3DTProvider({ apiKey: "testApiKey" });
     expect(await provider.initialize()).to.be.true;
 
