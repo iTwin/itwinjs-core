@@ -188,7 +188,7 @@ class DisplayTestAppRpc extends DtaRpcInterface {
     const textBlock = TextAnnotation.fromJSON(annotationProps).textBlock;
     const layout = layoutTextBlock({ iModel, textBlock });
     const builder = new ElementGeometry.Builder();
-    appendTextAnnotationGeometry({ layout, annotationProps, builder, wantDebugGeometry });
+    appendTextAnnotationGeometry({ layout, annotationProps, builder, categoryId, wantDebugGeometry });
 
     const requestProps: DynamicGraphicsRequest2dProps = {
       id: Guid.createValue(),

@@ -7,25 +7,25 @@
  */
 
 
-import { Id64 } from "@itwin/core-bentley";
 import { BackgroundFill, ColorDef, ElementGeometry, FillDisplay, GeometryParams, TextAnnotationFrameShape, TextFrameStyleProps } from "@itwin/core-common";
 import { Angle, AngleSweep, Arc3d, LineString3d, Loop, Path, Point3d, Range2d, Transform, Vector2d } from "@itwin/core-geometry";
 
 /**
  * Based on the frame style, this method will construct and append [[GeometryParams]] (for line style) and a [[Loop]] (for the frame shape) to the builder.
  * @param builder that will be appended to in place
+ * @param category to which the frame belongs, used for the [[GeometryParams]].
  * @param frame
  * @param range to enclose with the frame
  * @param transform that transform the range to world coordinates
  * @returns `true` if any geometry was appended to the builder
 * @beta
  */
-export function appendFrameToBuilder(builder: ElementGeometry.Builder, frame: TextFrameStyleProps, range: Range2d, transform: Transform, geomParams?: GeometryParams): boolean {
+export function appendFrameToBuilder(builder: ElementGeometry.Builder, frame: TextFrameStyleProps, range: Range2d, transform: Transform, geomParams: GeometryParams): boolean {
   if (undefined === frame.shape || frame.shape === "none") {
     return false;
   }
 
-  const params = geomParams?.clone() ?? new GeometryParams(Id64.invalid);
+  const params = geomParams.clone();
 
   if (frame.fill === undefined) {
     params.fillDisplay = FillDisplay.Never;

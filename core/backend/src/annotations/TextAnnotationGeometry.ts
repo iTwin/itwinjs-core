@@ -9,7 +9,7 @@
 import { ColorDef, ElementGeometry, FillDisplay, GeometryParams, TextAnnotation, TextAnnotationProps, TextFrameStyleProps } from "@itwin/core-common";
 import { TextBlockLayout } from "./TextBlockLayout";
 import { LineString3d, PointString3d, Range2d, Transform } from "@itwin/core-geometry";
-import { Id64 } from "@itwin/core-bentley";
+import { Id64, Id64String } from "@itwin/core-bentley";
 import { produceTextBlockGeometry } from "./TextBlockGeometry";
 import { appendFrameToBuilder, computeIntervalPoints } from "./FrameGeometry";
 
@@ -25,6 +25,10 @@ export interface AppendTextAnnotationGeometryArgs {
   layout: TextBlockLayout;
   /** Builder that will be added to in place */
   builder: ElementGeometry.Builder;
+  /** The category the element will belong to. This will passed into the [[GeometryParams]] */
+  categoryId: Id64String
+  /** The optional sub-category the element will belong to. This will passed into the [[GeometryParams]] */
+  subCategoryId?: Id64String
   /** Whether or not to draw geometry for things like the snap points, range, and anchor point */
   wantDebugGeometry?: boolean;
 }
@@ -40,7 +44,7 @@ export function appendTextAnnotationGeometry(props: AppendTextAnnotationGeometry
   let result = true;
 
   // Construct the TextBlockGeometry
-  const params = new GeometryParams(Id64.invalid);
+  const params = new GeometryParams(props.categoryId, props.subCategoryId);
   const entries = produceTextBlockGeometry(props.layout, annotation.computeTransform(props.layout.range));
   result = result && props.builder.appendTextBlock(entries, params);
 

@@ -304,7 +304,7 @@ export class AnnotationElement2d extends GraphicalElement2d {
 export type AnyDb = IModelDb | ECDb;
 
 // @beta
-export function appendFrameToBuilder(builder: ElementGeometry.Builder, frame: TextFrameStyleProps, range: Range2d, transform: Transform, geomParams?: GeometryParams): boolean;
+export function appendFrameToBuilder(builder: ElementGeometry.Builder, frame: TextFrameStyleProps, range: Range2d, transform: Transform, geomParams: GeometryParams): boolean;
 
 // @beta
 export function appendTextAnnotationGeometry(props: AppendTextAnnotationGeometryArgs): boolean;
@@ -313,7 +313,9 @@ export function appendTextAnnotationGeometry(props: AppendTextAnnotationGeometry
 export interface AppendTextAnnotationGeometryArgs {
     annotationProps: TextAnnotationProps;
     builder: ElementGeometry.Builder;
+    categoryId: Id64String;
     layout: TextBlockLayout;
+    subCategoryId?: Id64String;
     wantDebugGeometry?: boolean;
 }
 
