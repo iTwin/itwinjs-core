@@ -53,7 +53,7 @@ import { Relationships } from "./Relationship";
 import { SchemaSync } from "./SchemaSync";
 import { createServerBasedLocks } from "./internal/ServerBasedLocks";
 import { SqliteStatement, StatementCache } from "./SqliteStatement";
-import { ComputeRangesForTextLayoutArgs, TextLayoutRanges } from "./TextAnnotationLayout";
+import { ComputeRangesForTextLayoutArgs, TextLayoutRanges } from "./annotations/TextBlockLayout";
 import { TxnManager } from "./TxnManager";
 import { DrawingViewDefinition, SheetViewDefinition, ViewDefinition } from "./ViewDefinition";
 import { ViewStore } from "./ViewStore";
