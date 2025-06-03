@@ -12,7 +12,7 @@ import { IModelDb } from "./IModelDb";
 import { CodeService } from "./CodeService";
 
 /** Manages [CodeSpecs]($docs/BIS/guide/fundamentals/element-fundamentals.md#codespec) within an [[IModelDb]]
- * @public
+ * @public @preview
  */
 export class CodeSpecs {
   private static tableName = "bis_CodeSpec";

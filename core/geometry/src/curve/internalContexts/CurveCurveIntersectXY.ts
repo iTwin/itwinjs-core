@@ -17,7 +17,6 @@ import { CoincidentGeometryQuery } from "../../geometry3d/CoincidentGeometryOps"
 import { RecurseToCurvesGeometryHandler } from "../../geometry3d/GeometryHandler";
 import { GrowableFloat64Array } from "../../geometry3d/GrowableFloat64Array";
 import { Matrix3d } from "../../geometry3d/Matrix3d";
-import { Vector2d } from "../../geometry3d/Point2dVector2d";
 import { Point3d } from "../../geometry3d/Point3dVector3d";
 import { Range3d } from "../../geometry3d/Range";
 import { Transform } from "../../geometry3d/Transform";
@@ -57,7 +56,6 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
   private _worldToLocalPerspective: Matrix4d | undefined;
   private _worldToLocalAffine: Transform | undefined;
   private _coincidentGeometryContext: CoincidentGeometryQuery;
-  private static _workVector2dA = Vector2d.create();
   private static _workPointA0H = Point4d.create();
   private static _workPointA1H = Point4d.create();
   private static _workPointB0H = Point4d.create();
@@ -252,27 +250,24 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
     extendB1: boolean,
     reversed: boolean,
   ): void {
-    const uv = CurveCurveIntersectXY._workVector2dA;
-    // Problem: Normal practice is to do the (quick, simple) transverse intersection first
-    // But the transverse intersector notion of coincidence is based on the determinant ratios, which are hard
-    // to relate to physical tolerance.
-    //  So do the overlap first.  This should do a quick exit in non-coincident case.
-    const overlap = this._coincidentGeometryContext.coincidentSegmentRangeXY(pointA0, pointA1, pointB0, pointB1, false);
-    if (overlap) { // the lines are coincident
-      if (this._coincidentGeometryContext.clampCoincidentOverlapToSegmentBounds(
-        overlap, pointA0, pointA1, pointB0, pointB1,
-        extendA0, extendA1, extendB0, extendB1,
-      )) {
-        this.recordPointWithLocalFractions(
-          overlap.detailA.fraction, cpA, fractionA0, fractionA1,
-          overlap.detailB.fraction, cpB, fractionB0, fractionB1,
-          reversed, overlap,
-        );
-      }
-    } else if (SmallSystem.lineSegment3dXYTransverseIntersectionUnbounded(pointA0, pointA1, pointB0, pointB1, uv)) {
-      if (this.acceptFractionOnLine(extendA0, uv.x, extendA1, pointA0, pointA1, this._coincidentGeometryContext.tolerance) &&
-        this.acceptFractionOnLine(extendB0, uv.y, extendB1, pointB0, pointB1, this._coincidentGeometryContext.tolerance)) {
-        this.recordPointWithLocalFractions(uv.x, cpA, fractionA0, fractionA1, uv.y, cpB, fractionB0, fractionB1, reversed);
+    const aDir = { x: pointA1.x - pointA0.x, y: pointA1.y - pointA0.y };
+    const bDir = { x: pointB1.x - pointB0.x, y: pointB1.y - pointB0.y };
+    const tol = this._coincidentGeometryContext.tolerance;
+    const fractions = SmallSystem.lineSegmentXYUVIntersectionUnbounded(pointA0, aDir, pointB0, bDir, tol);
+    if (!fractions)
+      return;
+    if (fractions.f1) { // the lines are coincident
+      const detailA = CurveLocationDetail.createCurveFractionPoint(undefined, fractions.f0.x, pointA0.interpolate(fractions.f0.x, pointA1));
+      detailA.captureFraction1Point1(fractions.f1.x, pointA0.interpolate(fractions.f1.x, pointA1));
+      const detailB = CurveLocationDetail.createCurveFractionPoint(undefined, fractions.f0.y, pointB0.interpolate(fractions.f0.y, pointB1));
+      detailB.captureFraction1Point1(fractions.f1.y, pointB0.interpolate(fractions.f1.y, pointB1));
+      const overlap = CurveLocationDetailPair.createCapture(detailA, detailB);
+      if (this._coincidentGeometryContext.clampCoincidentOverlapToSegmentBounds(overlap, pointA0, pointA1, pointB0, pointB1, extendA0, extendA1, extendB0, extendB1))
+        this.recordPointWithLocalFractions(overlap.detailA.fraction, cpA, fractionA0, fractionA1, overlap.detailB.fraction, cpB, fractionB0, fractionB1, reversed, overlap);
+    } else { // the lines have a transverse intersection
+      if (this.acceptFractionOnLine(extendA0, fractions.f0.x, extendA1, pointA0, pointA1, tol)) {
+        if (this.acceptFractionOnLine(extendB0, fractions.f0.y, extendB1, pointB0, pointB1, tol))
+          this.recordPointWithLocalFractions(fractions.f0.x, cpA, fractionA0, fractionA1, fractions.f0.y, cpB, fractionB0, fractionB1, reversed);
       }
     }
   }
@@ -641,7 +636,7 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
     bezierB: BezierCurve3dH,
     bcurveB: BSplineCurve3dBase,
     _strokeCountB: number,
-    univariateBezierB: UnivariateBezier,  // caller-allocated for univariate coefficients.
+    univariateBezierB: UnivariateBezier, // caller-allocated for univariate coefficients
     reversed: boolean,
   ): void {
     if (!this._xyzwA0)
@@ -690,7 +685,7 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
           const segmentAFraction = SmallSystem.lineSegment3dHXYClosestPointUnbounded(
             this._xyzwA0, this._xyzwA1, this._xyzwB,
           );
-          if (segmentAFraction && Geometry.isIn01WithTolerance(segmentAFraction, intervalTolerance)) {
+          if (segmentAFraction !== undefined && Geometry.isIn01WithTolerance(segmentAFraction, intervalTolerance)) {
             let bezierAFraction = Geometry.interpolate(f0, segmentAFraction, f1);
             // We have a near intersection at fractions on the two beziers
             // Iterate on the curves for a true intersection
@@ -728,7 +723,7 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
     }
   }
   private dispatchBSplineCurve3dBSplineCurve3d(
-    bcurveA: BSplineCurve3dBase, bcurveB: BSplineCurve3dBase, _reversed: boolean,
+    bcurveA: BSplineCurve3dBase, bcurveB: BSplineCurve3dBase, reversed: boolean,
   ): void {
     const bezierSpanA = bcurveA.collectBezierSpans(true) as BezierCurve3dH[];
     const bezierSpanB = bcurveB.collectBezierSpans(true) as BezierCurve3dH[];
@@ -749,11 +744,11 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
           const strokeCountB = bezierSpanB[b].computeStrokeCountForOptions();
           if (strokeCountA < strokeCountB)
             this.dispatchBezierBezierStrokeFirst(
-              bezierSpanA[a], bcurveA, strokeCountA, bezierSpanB[b], bcurveB, strokeCountB, univariateCoffsB, _reversed,
+              bezierSpanA[a], bcurveA, strokeCountA, bezierSpanB[b], bcurveB, strokeCountB, univariateCoffsB, reversed,
             );
           else
             this.dispatchBezierBezierStrokeFirst(
-              bezierSpanB[b], bcurveB, strokeCountB, bezierSpanA[a], bcurveA, strokeCountA, univariateCoffsA, !_reversed,
+              bezierSpanB[b], bcurveB, strokeCountB, bezierSpanA[a], bcurveA, strokeCountA, univariateCoffsA, !reversed,
             );
         }
       }
