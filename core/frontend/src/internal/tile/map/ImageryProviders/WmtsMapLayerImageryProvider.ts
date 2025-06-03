@@ -63,9 +63,10 @@ export class WmtsMapLayerImageryProvider extends MapLayerImageryProvider {
   public override get maximumZoomLevel(): number { return this._maximumZoomLevel; }
 
   private initDisplayedLayer() {
-    if (0 === this._settings.subLayers.length && this._capabilities?.contents?.layers && this._capabilities.contents.layers.length > 0) {
+    const layers = this._capabilities?.contents?.layers;
+    if (0 === this._settings.subLayers.length && layers && layers.length > 0) {
       // No sub-layers defined in settings, pick first layer from capabilities.
-      this.displayedLayerName = this._capabilities.contents.layers[0].identifier;
+      this.displayedLayerName = layers[0].identifier;
       return;
     }
 
