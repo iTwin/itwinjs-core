@@ -224,6 +224,7 @@ internal;interface;GetAttachmentViewportArgs
 public;function;getCenteredViewRect
 public;function;getCesiumAssetUrl
 public;function;getCompressedJpegFromCanvas
+internal;function;getCopyrights
 internal;function;getFrustumPlaneIntersectionDepthRange
 alpha;function;getGooglePhotorealistic3DTilesURL
 public;function;getImageSourceFormatForMimeType

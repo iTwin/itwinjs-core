@@ -3764,6 +3764,9 @@ export function getCesiumAssetUrl(osmAssetId: number, requestKey: string): strin
 // @public
 export function getCompressedJpegFromCanvas(canvas: HTMLCanvasElement, maxBytes?: number, minCompressionQuality?: number): string | undefined;
 
+// @internal
+export function getCopyrights(vp: ScreenViewport): Map<string, number>;
+
 // @internal (undocumented)
 export function getFrustumPlaneIntersectionDepthRange(frustum: Frustum, plane: Plane3dByOriginAndUnitNormal): Range1d;
 
@@ -4102,6 +4105,7 @@ export interface GLTimerResult {
 
 // @internal
 export class GoogleMapsDecorator implements Decorator {
+    constructor(showCreditsOnScreen?: boolean);
     activate(mapType: GoogleMapsMapTypes): Promise<boolean>;
     decorate: (context: DecorateContext) => void;
     // (undocumented)
