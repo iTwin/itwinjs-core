@@ -216,7 +216,7 @@ export class InstanceKeyLRUCache {
     if (this._resultToArgsCache.size > this.capacity) {
       const oldestKey = this._resultToArgsCache.keys().next().value as Id64String;
       const oldestArgs = this._resultToArgsCache.get(oldestKey);
-      this.deleteCachedArgs(oldestArgs);
+      this.deleteCachedArgs({...oldestArgs});
     }
     return this;
   }
@@ -227,7 +227,7 @@ export class InstanceKeyLRUCache {
       // Pop the cached result to the end of the cache to mark it as recently used
       const cachedArgs = this._resultToArgsCache.get(cachedResult.id);
       this._resultToArgsCache.delete(cachedResult.id);
-      this._resultToArgsCache.set(cachedResult.id, cachedArgs);
+      this._resultToArgsCache.set(cachedResult.id, {...cachedArgs});
     }
     return cachedResult;
   }
@@ -238,7 +238,7 @@ export class InstanceKeyLRUCache {
   private deleteCachedArgs(key: CachedArgs): boolean {
     const result = this._argsToResultCache.get(key);
     if (result) {
-      this._argsToResultCache.delete(this._resultToArgsCache.get(result.id));
+      this._argsToResultCache.delete({...this._resultToArgsCache.get(result.id)});
       this._resultToArgsCache.delete(result.id);
       return true;
     }
