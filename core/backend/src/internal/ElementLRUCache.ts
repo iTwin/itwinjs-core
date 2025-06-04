@@ -1,4 +1,5 @@
-import { Id64String } from "@itwin/core-bentley";
+import { IModelJsNative } from "@bentley/imodeljs-native";
+import { Id64String, ITwinError } from "@itwin/core-bentley";
 import { CodeProps, ElementLoadOptions, ElementLoadProps, ElementProps } from "@itwin/core-common";
 
 /* @internal */
@@ -118,5 +119,156 @@ export class ElementLRUCache {
   }
   public get [Symbol.toStringTag](): string {
     return `EntityCache(this.size=${this.size}, capacity=${this.capacity})`;
+  }
+};
+
+/* @internal */
+interface CachedArgs {
+  id?: Id64String;
+  code?: string;
+  federationGuid?: Id64String;
+}
+
+/**
+ * A map to store instance keys based on different optional arguments like id, code, or federationGuid.
+ * This allows the cache to be searched by any combination of arguments.
+ */
+class ArgumentsToResultMap {
+  private _idToResult = new Map<Id64String, IModelJsNative.ResolveInstanceKeyResult>();
+  private _codeToResult = new Map<string, IModelJsNative.ResolveInstanceKeyResult>();
+  private _federationGuidToResult = new Map<Id64String, IModelJsNative.ResolveInstanceKeyResult>();
+
+  public constructor() { }
+
+  public set(args: CachedArgs, result: IModelJsNative.ResolveInstanceKeyResult): void {
+    if (!args.id && !args.code && !args.federationGuid)
+      ITwinError.throwError<ITwinError>({ ...new Error("At least one id, code, or federationGuid must be provided"), iTwinErrorId: { scope: "imodel-cache", key: "invalid-arguments" } });
+
+    if (args.id)
+      this._idToResult.set(args.id, result);
+    if (args.code)
+      this._codeToResult.set(args.code, result);
+    if (args.federationGuid)
+      this._federationGuidToResult.set(args.federationGuid, result);
+  }
+  public get(args: CachedArgs): IModelJsNative.ResolveInstanceKeyResult | undefined {
+    if (!args.id && !args.code && !args.federationGuid)
+      ITwinError.throwError<ITwinError>({ ...new Error("At least one id, code, or federationGuid must be provided"), iTwinErrorId: { scope: "imodel-cache", key: "invalid-arguments" } });
+
+    if (args.id)
+      return this._idToResult.get(args.id);
+    else if (args.code)
+      return this._codeToResult.get(args.code);
+    else if (args.federationGuid)
+      return this._federationGuidToResult.get(args.federationGuid);
+    return undefined;
+  }
+  public delete(args: CachedArgs): boolean {
+    if (!args.id && !args.code && !args.federationGuid)
+      ITwinError.throwError<ITwinError>({ ...new Error("At least one id, code, or federationGuid must be provided"), iTwinErrorId: { scope: "imodel-cache", key: "invalid-arguments" } });
+
+    let deleted = false;
+    if (args.id)
+      deleted = this._idToResult.delete(args.id) ? true : deleted;
+    if (args.code)
+      deleted = this._codeToResult.delete(args.code) ? true : deleted;
+    if (args.federationGuid)
+      deleted = this._federationGuidToResult.delete(args.federationGuid) ? true : deleted;
+    return deleted;
+  }
+  public clear(): void {
+    this._idToResult.clear();
+    this._codeToResult.clear();
+    this._federationGuidToResult.clear();
+  }
+  public get size(): number {
+    return this._idToResult.size; // Id to key will always be stored even if code or federationGuid are not provided.
+  }
+  public get [Symbol.toStringTag](): string {
+    return `idCacheSize=${this._idToResult.size}, codeCacheSize=${this._codeToResult.size}, federationGuidCacheSize=${this._federationGuidToResult.size}`;
+  }
+}
+
+/**
+ * A LRU cache for entities. Cache contains the ElementProps and the load options used to load it.
+ * Cache can be searched by id, code or federationGuid.
+ */
+export class InstanceKeyLRUCache {
+  public static readonly DEFAULT_CAPACITY = 2000;
+  private _argsToResultCache = new ArgumentsToResultMap();
+  private _resultToArgsCache = new Map<Id64String, CachedArgs>();
+
+  public constructor(public readonly capacity = ElementLRUCache.DEFAULT_CAPACITY) { }
+
+  public set(key: IModelJsNative.ResolveInstanceKeyArgs, result: IModelJsNative.ResolveInstanceKeyResult): this {
+    const cacheArgs: CachedArgs = InstanceKeyLRUCache.makeCachedArgs(key);
+    const existingArgs = this._resultToArgsCache.get(result.id);
+    if (existingArgs) {
+      // Combine existing args with new args for more complete key
+      this._argsToResultCache.delete(existingArgs);
+      this._argsToResultCache.set({ ...existingArgs, ...cacheArgs}, result);
+      this._resultToArgsCache.set(result.id, { ...existingArgs, ...cacheArgs });
+    } else {
+      this._argsToResultCache.set(cacheArgs, result);
+      this._resultToArgsCache.set(result.id, cacheArgs);
+    }
+
+    if (this._resultToArgsCache.size > this.capacity) {
+      const oldestKey = this._resultToArgsCache.keys().next().value as Id64String;
+      const oldestArgs = this._resultToArgsCache.get(oldestKey);
+      this.deleteCachedArgs(oldestArgs);
+    }
+    return this;
+  }
+  public get(key: IModelJsNative.ResolveInstanceKeyArgs): IModelJsNative.ResolveInstanceKeyResult | undefined {
+    const args = InstanceKeyLRUCache.makeCachedArgs(key);
+    const cachedResult = this._argsToResultCache.get(args);
+    if (cachedResult) {
+      // Pop the cached result to the end of the cache to mark it as recently used
+      const cachedArgs = this._resultToArgsCache.get(cachedResult.id);
+      this._resultToArgsCache.delete(cachedResult.id);
+      this._resultToArgsCache.set(cachedResult.id, cachedArgs);
+    }
+    return cachedResult;
+  }
+  public delete(key: IModelJsNative.ResolveInstanceKeyArgs): boolean {
+    const cacheArgs = InstanceKeyLRUCache.makeCachedArgs(key);
+    return this.deleteCachedArgs(cacheArgs);
+  }
+  private deleteCachedArgs(key: CachedArgs): boolean {
+    const result = this._argsToResultCache.get(key);
+    if (result) {
+      this._argsToResultCache.delete(this._resultToArgsCache.get(result.id));
+      this._resultToArgsCache.delete(result.id);
+      return true;
+    }
+    return false;
+  }
+  private static makeCachedArgs(args: IModelJsNative.ResolveInstanceKeyArgs): CachedArgs {
+    if (!args.partialKey && !args.code && !args.federationGuid)
+      ITwinError.throwError<ITwinError>({ ...new Error("ResolveInstanceKeyArgs must have a partialKey, code, or federationGuid"), iTwinErrorId: { scope: "imodel-cache", key: "invalid-arguments" } });
+
+    return {
+      id: args.partialKey?.id,
+      code: args.code ? InstanceKeyLRUCache.makeCodeKey(args.code) : undefined,
+      federationGuid: args.federationGuid,
+    };
+  }
+  private static makeCodeKey(code: CodeProps): string {
+    const keys = [code.scope, code.spec];
+    if (code.value !== undefined) {
+      keys.push(code.value);
+    }
+    return JSON.stringify(keys);
+  }
+  public clear(): void {
+    this._argsToResultCache.clear();
+    this._resultToArgsCache.clear();
+  }
+  public get size(): number {
+    return this._argsToResultCache.size;
+  }
+  public get [Symbol.toStringTag](): string {
+    return `InstanceKeyCache(size=${this.size}, capacity=${this.capacity})`;
   }
 };
