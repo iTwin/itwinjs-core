@@ -168,7 +168,7 @@ importers:
         specifier: ^5.97.1
         version: 5.97.1(webpack-cli@5.0.1)
 
-  ../../core/backend-test:
+  ../../core/backend-tests:
     dependencies:
       '@bentley/imodeljs-native':
         specifier: 5.1.29

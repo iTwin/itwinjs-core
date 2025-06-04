@@ -270,8 +270,8 @@
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
-      "packageName": "@itwin/core-backend-test",
-      "projectFolder": "core/backend-test",
+      "packageName": "@itwin/core-backend-tests",
+      "projectFolder": "core/backend-tests",
       "reviewCategory": "internal",
       "shouldPublish": false,
       "versionPolicyName": "prerelease-monorepo-lockStep"

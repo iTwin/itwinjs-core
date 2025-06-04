@@ -12,4 +12,4 @@ const imodelJsCoreDirname = path.join(__dirname, `../../../../..`);
 // top level of this file DOES work.
 
 // Configure KnownTestLocations before any tests run.
-KnownTestLocations.setRootDir(path.join(imodelJsCoreDirname, "core/backend-test/lib/cjs/test"));
+KnownTestLocations.setRootDir(path.join(imodelJsCoreDirname, "core/backend-tests/lib/cjs/test"));
