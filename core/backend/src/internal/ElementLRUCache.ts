@@ -37,7 +37,7 @@ export class ElementLRUCache {
       if (id)
         return this._elementCache.get(id);
     } else {
-      throw new Error("No key provided");
+      ITwinError.throwError<ITwinError>({ ...new Error("No key provided"), iTwinErrorId: { scope: "imodel-cache", key: "invalid-arguments" } });
     }
     return undefined;
   }
@@ -90,7 +90,7 @@ export class ElementLRUCache {
   }
   public set(el: CachedElement): this {
     if (!el.elProps.id)
-      throw new Error("Element must have an id");
+      ITwinError.throwError<ITwinError>({ ...new Error("Element must have an id"), iTwinErrorId: { scope: "imodel-cache", key: "invalid-arguments" } });
 
     // do not cache this element as geom need to be rerender into geom props if any part changes
     // TODO: find a way to handle caching geometry
