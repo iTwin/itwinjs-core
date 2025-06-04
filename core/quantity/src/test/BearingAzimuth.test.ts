@@ -204,7 +204,6 @@ describe("Bearing format tests:", () => {
 
     const testData = [
       {input: "N-45:00:00E", expected: 315.0},
-      {input: "S361:00:00E", expected: 179.0},
       {input: "S45:99:00E", expected: 133.35}, // 180 - 45 - 99/60 = 133.35
     ]
 
@@ -216,6 +215,57 @@ describe("Bearing format tests:", () => {
       expect(parseResult.value).closeTo(entry.expected, 0.01);
     }
 
+  });
+
+  it("should correctly parse valid and reject invalid bearing values", async () => {
+    const bearingFormatProps: FormatProps = {
+      minWidth: 2,
+      precision: 0,
+      type: "Bearing",
+      revolutionUnit: "Units.REVOLUTION",
+      formatTraits: ["showUnitLabel"],
+      uomSeparator: "",
+      composite: {
+        includeZero: true,
+        spacer: "",
+        units: [
+          { name: "Units.ARC_DEG", label: "°" },
+          { name: "Units.ARC_MINUTE", label: "'" },
+          { name: "Units.ARC_SECOND", label: "\"" },
+        ],
+      },
+    };
+
+    const bearingFormat = new Format("bearing-dms");
+    await bearingFormat.fromJSON(unitsProvider, bearingFormatProps);
+    const bearingDMSParser = await ParserSpec.create(bearingFormat, unitsProvider, degree);
+
+    // Valid inputs
+    const validTestData = [
+      { input: "N45:00:00E", expected: 45.0 },
+      { input: "N-45:00:00E", expected: 315.0 }, // negative input should wrap
+      { input: "S90:00:00W", expected: 270.0 },
+    ];
+
+    for (const { input, expected } of validTestData) {
+      const result = Parser.parseQuantityString(input, bearingDMSParser);
+      if (!Parser.isParsedQuantity(result)) {
+        expect.fail(`Expected a parsed quantity for input "${input}"`);
+      }
+    expect(result.value).to.be.closeTo(expected, 0.01);
+    }
+
+  //  Invalid inputs
+    const invalidTestData = [
+      "N200E",        // over 90° in quadrant
+      "S361:00:00E",  // total degrees > 360
+      "N-200E",       // negative overbound
+    ];
+
+    for (const input of invalidTestData) {
+      const result = Parser.parseQuantityString(input, bearingDMSParser);
+    expect(Parser.isParsedQuantity(result), `Expected input "${input}" to be invalid`).to.be.false;
+    }
   });
 
   it("should return ParseQuantityError if input string is incomplete", async () => {
