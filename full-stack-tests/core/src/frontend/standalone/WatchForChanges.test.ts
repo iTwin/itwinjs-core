@@ -56,7 +56,7 @@ for (const watchForChanges of [false, true]) {
     after(async () => TestUtility.shutdownFrontend());
 
     beforeEach(async () => {
-      const filePath = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/cjs/test/assets/planprojection.bim");
+      const filePath = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend-test/lib/cjs/test/assets/planprojection.bim");
 
       // Populate the iModel with some initial geometry.
       rwConn = await BriefcaseConnection.openStandalone(filePath, OpenMode.ReadWrite);

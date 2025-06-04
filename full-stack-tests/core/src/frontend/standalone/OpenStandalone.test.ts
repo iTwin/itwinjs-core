@@ -20,7 +20,7 @@ if (ProcessDetector.isElectronAppFrontend) { // BriefcaseConnection tests only r
     });
 
     it("openStandalone properties", async () => {
-      const filePath = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/cjs/test/assets/test.bim");
+      const filePath = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend-test/lib/cjs/test/assets/test.bim");
       const connection = await BriefcaseConnection.openStandalone(filePath);
 
       assert.isTrue(connection.isOpen);

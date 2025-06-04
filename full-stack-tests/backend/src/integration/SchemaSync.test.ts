@@ -527,7 +527,7 @@ describe("Schema synchronization", function (this: Suite) {
     HubMock.startup("test", KnownTestLocations.outputDir);
 
     // Setup seed file from existing 4.0.0.3 imodel
-    const testFile = SnapshotDb.openDgnDb({ path: path.join(imodelJsCoreDirname, "core/backend/lib/cjs/test/assets/test_ec_4001.bim") }, OpenMode.ReadWrite);
+    const testFile = SnapshotDb.openDgnDb({ path: path.join(imodelJsCoreDirname, "core/backend-test/lib/cjs/test/assets/test_ec_4001.bim") }, OpenMode.ReadWrite);
     const version0 = testFile.getFilePath();
     testFile.closeFile();
 
@@ -878,7 +878,7 @@ describe("Schema synchronization", function (this: Suite) {
     HubMock.startup("test", KnownTestLocations.outputDir);
 
     // Setup seed file from existing 4.0.0.3 imodel
-    const testFile = SnapshotDb.openDgnDb({ path: path.join(imodelJsCoreDirname, "core/backend/lib/cjs/test/assets/test_ec_4003.bim") }, OpenMode.ReadWrite);
+    const testFile = SnapshotDb.openDgnDb({ path: path.join(imodelJsCoreDirname, "core/backend-test/lib/cjs/test/assets/test_ec_4003.bim") }, OpenMode.ReadWrite);
     const version0 = testFile.getFilePath();
     testFile.closeFile();
 

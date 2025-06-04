@@ -35,9 +35,9 @@ describe("GraphicalEditingScope", () => {
   if (!ProcessDetector.isMobileAppFrontend) {
     let imodel: BriefcaseConnection | undefined;
     // Editable; BisCore version < 1.0.11
-    const oldFilePath = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/cjs/test/assets/test.bim");
+    const oldFilePath = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend-test/lib/cjs/test/assets/test.bim");
     // Editable; BisCore version == 1.0.11
-    const newFilePath = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/cjs/test/assets/planprojection.bim");
+    const newFilePath = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend-test/lib/cjs/test/assets/planprojection.bim");
 
     async function closeIModel(): Promise<void> {
       if (imodel) {
