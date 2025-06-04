@@ -35,6 +35,7 @@ import { SpatialClassifiersState } from "../../SpatialClassifiersState";
 import { RealityDataSourceTilesetUrlImpl } from "../../RealityDataSourceTilesetUrlImpl";
 import { RealityDataSourceGP3DTImpl } from "../../RealityDataSourceGP3DTImpl";
 import { ScreenViewport } from "../../Viewport";
+import { getCopyrights } from "../../GoogleMapsDecorator";
 
 function getUrl(content: any) {
   return content ? (content.url ? content.url : content.uri) : undefined;
@@ -982,18 +983,7 @@ export class RealityTreeReference extends RealityModelTileTree.Reference {
   }
 
   public override async addAttributions(cards: HTMLTableElement, vp: ScreenViewport): Promise<void> {
-    const tiles = IModelApp.tileAdmin.getTilesForUser(vp)?.selected;
-    const copyrightMap = new Map<string, number>();
-    if (tiles) {
-      for (const tile of tiles as Set<RealityTile>) {
-        if (tile.copyright) {
-          for (const copyright of tile.copyright?.split(";")) {
-            const currentCount = copyrightMap.get(copyright);
-            copyrightMap.set(copyright, currentCount ? currentCount + 1 : 1);
-          }
-        }
-      }
-    }
+    const copyrightMap = getCopyrights(vp);
 
     // Only add another logo card if the tiles have copyright
     if (copyrightMap.size > 0) {

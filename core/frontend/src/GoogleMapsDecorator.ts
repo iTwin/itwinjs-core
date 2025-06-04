@@ -2,13 +2,15 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+
+import { Point3d } from "@itwin/core-geometry";
 import { CanvasDecoration } from "./render/CanvasDecoration";
 import { DecorateContext } from "./ViewContext";
 import { IModelApp } from "./IModelApp";
 import { Decorator } from "./ViewManager";
 import { IconSprites, Sprite } from "./Sprites";
-import { Point3d } from "@itwin/core-geometry";
 import { RealityTile } from "./tile/internal";
+import { ScreenViewport } from "./Viewport";
 
 /** Layer types that can be added to the map.
  * @internal
@@ -92,23 +94,6 @@ export class GoogleMapsDecorator implements Decorator {
     this._showCreditsOnScreen = showCreditsOnScreen;
   }
 
-  /** Get copyrights from tiles currently in the viewport */
-  private getCopyrights(context: DecorateContext): Map<string, number> {
-    const tiles = IModelApp.tileAdmin.getTilesForUser(context.viewport)?.selected;
-    const copyrightMap = new Map<string, number>();
-    if (tiles) {
-      for (const tile of tiles as Set<RealityTile>) {
-        if (tile.copyright) {
-          for (const copyright of tile.copyright?.split(";")) {
-            const currentCount = copyrightMap.get(copyright);
-            copyrightMap.set(copyright, currentCount ? currentCount + 1 : 1);
-          }
-        }
-      }
-    }
-    return copyrightMap;
-  }
-
   /** Activate the logo based on the given map type. */
   public async activate(mapType: GoogleMapsMapTypes): Promise<boolean> {
     // Pick the logo that is the most visible on the background map
@@ -133,7 +118,9 @@ export class GoogleMapsDecorator implements Decorator {
       return;
 
     // Get data attribution (copyright) text
-    const copyrightMap = this.getCopyrights(context);
+    const copyrightMap = getCopyrights(context.viewport);
+    // Order by most occurances to least
+    // See https://developers.google.com/maps/documentation/tile/create-renderer#display-attributions
     const sortedCopyrights = [...copyrightMap.entries()].sort((a, b) => b[1] - a[1]);
     const copyrightText = sortedCopyrights.map(([key]) => ` • ${key}`).join("");
 
@@ -149,4 +136,23 @@ export class GoogleMapsDecorator implements Decorator {
 
     context.addHtmlDecoration(elem);
   };
+}
+
+/** Get copyrights from tiles currently in the viewport.
+ * @internal
+ */
+export function getCopyrights(vp: ScreenViewport): Map<string, number> {
+  const tiles = IModelApp.tileAdmin.getTilesForUser(vp)?.selected;
+  const copyrightMap = new Map<string, number>();
+  if (tiles) {
+    for (const tile of tiles as Set<RealityTile>) {
+      if (tile.copyright) {
+        for (const copyright of tile.copyright?.split(";")) {
+          const currentCount = copyrightMap.get(copyright);
+          copyrightMap.set(copyright, currentCount ? currentCount + 1 : 1);
+        }
+      }
+    }
+  }
+  return copyrightMap;
 }
