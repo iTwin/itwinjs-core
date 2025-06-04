@@ -7,6 +7,7 @@
  * @module Topology
  */
 
+import { OrderedSet } from "@itwin/core-bentley";
 import { LineSegment3d } from "../curve/LineSegment3d";
 import { Geometry } from "../Geometry";
 import { Angle } from "../geometry3d/Angle";
@@ -560,7 +561,7 @@ export class HalfEdge implements HalfEdgeUserData {
   /**
    * Returns the number of nodes that match (or do not match) the given mask value around this face loop.
    * @param mask the mask to check.
-   * @param value true for mask match and false for mask not match.
+   * @param value true for mask match and false for mask not match. Default is `true`.
    */
   public countMaskAroundFace(mask: HalfEdgeMask, value: boolean = true): number {
     let count = 0;
@@ -605,16 +606,17 @@ export class HalfEdge implements HalfEdgeUserData {
   }
   /**
    * Returns the first node that matches (or does not match) the given mask value around this vertex loop, starting
-   * with the instance node and proceeding via vertex successors.
+   * with the instance node and proceeding via `vertexSuccessor`.
    * @param mask the mask to check.
-   * @param value true for mask match and false for mask not match.
+   * @param value true for mask match and false for mask not match. Default is `true`.
+   * @param reverse if true, search in reverse order via `vertexPredecessor`. Default is `false`.
    */
-  public findMaskAroundVertex(mask: HalfEdgeMask, value: boolean = true): HalfEdge | undefined {
+  public findMaskAroundVertex(mask: HalfEdgeMask, value: boolean = true, reverse: boolean = false): HalfEdge | undefined {
     let node: HalfEdge = this;
     do {
       if (node.isMaskSet(mask) === value)
         return node;
-      node = node.vertexSuccessor;
+      node = reverse ? node.vertexPredecessor : node.vertexSuccessor;
     } while (node !== this);
     return undefined;
   }
@@ -622,7 +624,7 @@ export class HalfEdge implements HalfEdgeUserData {
    * Returns the first node that matches (or does not match) the given mask value around this face loop, starting
    * with the instance node and proceeding via face successors.
    * @param mask the mask to check.
-   * @param value true for mask match and false for mask not match.
+   * @param value true for mask match and false for mask not match. Default is `true`.
    */
   public findMaskAroundFace(mask: HalfEdgeMask, value: boolean = true): HalfEdge | undefined {
     let node: HalfEdge = this;
@@ -1012,6 +1014,60 @@ export class HalfEdge implements HalfEdgeUserData {
     return Geometry.distanceXYZXYZ(this.x, this.y, this.z, other.x, other.y, other.z);
   }
   /**
+   * Search around the instance's face loop for nodes with the specified mask value.
+   * * Returned nodes satisfy `node.isMaskSet(mask) === value`.
+   * @param mask target mask.
+   * @param value target boolean value for mask on half edges (default `true`).
+   * @param result optional array to be cleared, populated with masked nodes, and returned.
+   * @return array of masked half edges
+   */
+  public collectMaskedEdgesAroundFace(mask: HalfEdgeMask, value: boolean = true, result?: HalfEdge[]): HalfEdge[] {
+    if (result === undefined)
+      result = [];
+    else
+      result.length = 0;
+    let node: HalfEdge = this;
+    do {
+      if (node.isMaskSet(mask) === value)
+        result.push(node);
+      node = node.faceSuccessor;
+    } while (node !== this);
+    return result;
+  }
+  /**
+   * Announce edges in the super face loop, starting with the instance.
+   * * A super face admits a `faceSuccessor` traversal, where the next edge at the far vertex is the first one lacking `skipMask` in a `vertexPredecessor` traversal.
+   * @param skipMask mask on edges to skip.
+   * @param announceEdge function to call at each edge that is not skipped.
+   * @param announceSkipped optional function to call at each edge that is skipped.
+   * @return whether a super face was found. Specifically, if a vertex loop has all edges with `skipMask` set, the return value is `false`.
+   */
+  public announceEdgesInSuperFace(skipMask: HalfEdgeMask, announceEdge: NodeFunction, announceSkipped?: NodeFunction): boolean {
+    const maxIter = 1000; // safeguard against infinite loops
+    let iter = 0;
+    const findNextNodeAroundVertex = (he: HalfEdge): HalfEdge | undefined => {
+      let vNode = he;
+      do {
+        if (!vNode.isMaskSet(skipMask))
+          return vNode;
+        announceSkipped?.(vNode);
+        vNode = vNode.vertexPredecessor;
+      } while (vNode !== he);
+      return undefined;
+    };
+    const firstNode = findNextNodeAroundVertex(this);
+    if (!firstNode)
+      return false;
+    let node: HalfEdge | undefined = firstNode;
+    do {
+      announceEdge(node);
+      node = findNextNodeAroundVertex(node.faceSuccessor);
+      if (!node)
+        return false;
+    } while (node !== firstNode && iter++ < maxIter);
+    return iter < maxIter;
+  }
+  /**
    * Evaluate `f(node)` at each node around `this` node's face loop. Collect the function values.
    * @param f optional node function. If `undefined`, collect the nodes themselves.
    * @returns the array of function values.
@@ -1321,6 +1377,31 @@ export class HalfEdge implements HalfEdgeUserData {
     if (copyFaceData)
       this.faceTag = source.faceTag;
   }
+  /**
+   * Is the instance's face loop a split-washer type face?
+   * * A split-washer face contains at least one bridge edge.
+   * * A bridge edge and its edge mate have the same mask and live in the same face loop.
+   * * By connecting hole/outer loops with bridge edges, a split-washer face can represent a parity region.
+   * @param bridgeMask mask on bridge edges (default is `HalfEdgeMask.BRIDGE_EDGE`).
+   */
+  public isSplitWasherFace(bridgeMask: HalfEdgeMask = HalfEdgeMask.BRIDGE_EDGE): boolean {
+    if (!this.countMaskAroundFace(HalfEdgeMask.BRIDGE_EDGE))
+      return false;
+    const bridges = new OrderedSet<HalfEdge>((a: HalfEdge, b: HalfEdge) => a.id - b.id);
+    let node: HalfEdge = this;
+    do {
+      if (node.isMaskSet(bridgeMask))
+        bridges.add(node);
+      node = node.faceSuccessor;
+    } while (node !== this);
+    if (bridges.size === 0)
+      return false;
+    for (const bridge of bridges) {
+      if (!bridges.has(bridge.edgeMate) || !bridge.edgeMate.isMaskSet(bridgeMask))
+        return false;
+    }
+    return true;
+  }
 }
 
 /**
@@ -1340,7 +1421,7 @@ export class HalfEdgeGraph {
   }
   /**
    * Ask for a mask (from the graph's free pool) for caller's use.
-   * * Optionally clear the mask throughout the graph.
+   * @param clearInAllHalfEdges optionally clear the mask throughout the graph (default `true`).
    */
   public grabMask(clearInAllHalfEdges: boolean = true): HalfEdgeMask {
     const mask = this._maskManager.grabMask();

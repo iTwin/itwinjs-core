@@ -2,6 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { assert } from "@itwin/core-bentley";
 import { Geometry } from "../../Geometry";
 import { Point3d } from "../../geometry3d/Point3dVector3d";
 import { HalfEdge, HalfEdgeGraph, HalfEdgeMask } from "../../topology/Graph";
@@ -13,6 +14,7 @@ import { CurvePrimitive } from "../CurvePrimitive";
 import { LineSegment3d } from "../LineSegment3d";
 import { LineString3d } from "../LineString3d";
 import { Loop, LoopCurveLoopCurve, SignedLoops } from "../Loop";
+import { ParityRegion } from "../ParityRegion";
 import { RegionOps } from "../RegionOps";
 import { RegionGroupMember, RegionGroupOpType } from "../RegionOpsClassificationSweeps";
 
@@ -163,7 +165,7 @@ export class PlanarSubdivision {
       return { point: point0, fraction: fraction0 };
     const halfEdge = graph.createEdgeXYAndZ(point0, 0, point1, 0);
     if (p.parent && p.parent instanceof RegionGroupMember && p.parent.parentGroup.groupOpType === RegionGroupOpType.NonBounding)
-      halfEdge.setMaskAroundEdge(HalfEdgeMask.BRIDGE_EDGE); // TODO: solve circular dependency by moving RegionOpsClassificationSweeps to RegionOps.
+      halfEdge.setMaskAroundEdge(HalfEdgeMask.BRIDGE_EDGE);
     const detail01 = CurveLocationDetail.createCurveEvaluatedFractionFraction(p, fraction0, fraction1);
     const mate = halfEdge.edgeMate;
     halfEdge.edgeTag = detail01;
@@ -198,30 +200,139 @@ export class PlanarSubdivision {
       outLoops.slivers.push(loop);
     return area;
   }
-  public static createLoopInFace(
-    faceSeed: HalfEdge, announce?: (he: HalfEdge, curve: CurvePrimitive, loop: Loop) => void,
-  ): Loop {
+  /** Extract geometric info from a topological edge. */
+  private static extractGeometryFromEdge(edge: HalfEdge): { detail: CurveLocationDetail, reversed: boolean } | undefined {
+    if (edge.sortData !== undefined && edge.edgeTag && edge.edgeTag instanceof CurveLocationDetail) {
+      const detail = edge.edgeTag;
+      if (detail.curve && detail.fraction1 !== undefined) {
+        const reversed = edge.sortData < 0;
+        return { detail, reversed };
+      }
+    }
+    return undefined;
+  }
+  /** Create the geometry for a topological edge. */
+  private static createCurveInEdge(edge: HalfEdge): CurvePrimitive | undefined {
+    const info = this.extractGeometryFromEdge(edge);
+    if (info) {
+      if (info.reversed)
+        return info.detail.curve!.clonePartialCurve(info.detail.fraction1!, info.detail.fraction);
+      return info.detail.curve!.clonePartialCurve(info.detail.fraction, info.detail.fraction1!);
+    }
+    return undefined;
+  }
+  /**
+   * Create a [[Loop]] for the given face.
+   * @param faceSeed a node in the face loop.
+   * @param announce optional callback invoked on each edge/curve of the face/Loop.
+   */
+  public static createLoopInFace(faceSeed: HalfEdge, announce?: (he: HalfEdge, curve: CurvePrimitive, loop: Loop) => void): Loop {
     let he = faceSeed;
     const loop = Loop.create();
     do {
-      const detail = he.edgeTag as CurveLocationDetail;
-      if (detail) {
-        let curve;
-        if (he.sortData! > 0)
-          curve = detail.curve!.clonePartialCurve(detail.fraction, detail.fraction1!);
-        else
-          curve = detail.curve!.clonePartialCurve(detail.fraction1!, detail.fraction);
-        if (curve) {
-          if (announce !== undefined)
-            announce(he, curve, loop);
-          loop.tryAddChild(curve);
-        }
+      const curve = this.createCurveInEdge(he);
+      if (curve) {
+        announce?.(he, curve, loop);
+        loop.tryAddChild(curve);
       }
       he = he.faceSuccessor;
     } while (he !== faceSeed);
     return loop;
   }
-  // Return true if there are only two edges in the face loop, and their start curvatures are the same.
+  /**
+   * Create a [[Loop]] for the given cyclic array of edges.
+   * * Edge geometry is extracted from a CurveLocationDetail.
+   * * Adjacent intervals in the same curve are compressed.
+   * @param edges cyclic array of HalfEdges.
+   */
+  private static createLoopInEdgeArray(edges: HalfEdge[]): Loop | undefined{
+    if (edges.length < 2)
+      return undefined;
+    const details: CurveLocationDetail[] = [];
+    for (const edge of edges) {
+      const info = this.extractGeometryFromEdge(edge);
+      if (!info)
+        return undefined;
+      info.detail.a = info.reversed ? -1.0 : 1.0;
+      details.push(info.detail);
+    }
+    const mergeDetails = (surviving: CurveLocationDetail, other: Readonly<CurveLocationDetail>): boolean => {
+      if (surviving.curve === other.curve && surviving.a === other.a) {
+        if (surviving.a > 0 && surviving.fraction1 === other.fraction) {
+          surviving.fraction1 = other.fraction1;
+          return true;
+        }
+        if (surviving.a < 0 && surviving.fraction === other.fraction1) {
+          surviving.fraction = other.fraction;
+          return true;
+        }
+      }
+      return false;
+    };
+    // merge details with same curve and adjacent intervals
+    for (let i = 0; i < details.length - 1; ) {
+      if (mergeDetails(details[i], details[i + 1]))
+        details.splice(i + 1, 1);
+      else
+        ++i;
+    }
+    // merge the end details (into the tail)
+    if (details.length > 1 && mergeDetails(details[details.length - 1], details[0]))
+      details.splice(0, 1);
+    const loop = new Loop()
+    for (const detail of details) {
+      let curve: CurvePrimitive | undefined;
+      if (detail.a > 0)
+        curve = detail.curve!.clonePartialCurve(detail.fraction, detail.fraction1!);
+      else
+        curve = detail.curve!.clonePartialCurve(detail.fraction1!, detail.fraction);
+      if (curve)
+        loop.tryAddChild(curve);
+    }
+    return loop.isPhysicallyClosed() ? loop : undefined;
+  }
+  /**
+   * Create a [[Loop]] or [[ParityRegion]] for the given face.
+   * * A ParityRegion is created for a split-washer type face by removing bridge edges.
+   * @param faceSeed a node in the face loop
+   * @param bridgeMask mask on bridge edges (default is `HalfEdgeMask.BRIDGE_EDGE`).
+   * @param visitMask mask to use for visiting edges in the face loop (default is `HalfEdgeMask.VISITED`).
+   */
+  public static createLoopOrParityRegionInFace(faceSeed: HalfEdge, bridgeMask: HalfEdgeMask = HalfEdgeMask.BRIDGE_EDGE, visitMask: HalfEdgeMask = HalfEdgeMask.VISITED): Loop | ParityRegion {
+    if (!faceSeed.isSplitWasherFace(bridgeMask))
+      return this.createLoopInFace(faceSeed); // not a split-washer face, so a Loop suffices
+    const loops: Loop[] = [];
+    const loopEdges: HalfEdge[] = [];
+    const bridgeStack: HalfEdge[] = [faceSeed.findMaskAroundFace(bridgeMask, true)!];
+    const announceEdge = (he: HalfEdge) => { he.setMask(visitMask); loopEdges.push(he); };
+    const announceBridge = (he: HalfEdge) => { if (!he.isMaskSet(visitMask)) bridgeStack.push(he); };
+    faceSeed.clearMaskAroundFace(visitMask);
+    let bridge: HalfEdge | undefined;
+    while (undefined !== (bridge = bridgeStack.pop())) {
+      bridge.setMask(visitMask);
+      const loopSeed = bridge.findMaskAroundFace(bridgeMask, false); // advance to next loop
+      if (loopSeed) {
+        if (loopSeed.isMaskSet(visitMask))
+          continue;
+        loopEdges.length = 0;
+        if (loopSeed.announceEdgesInSuperFace(bridgeMask, announceEdge, announceBridge)) {
+          const loop = this.createLoopInEdgeArray(loopEdges);
+          if (loop) {
+            loops.push(loop);
+            continue;
+          }
+        }
+      }
+      loops.length = 0; // unexpected, fall through to default
+      break;
+    }
+    const region = RegionOps.sortOuterAndHoleLoopsXY(loops);
+    if (region instanceof ParityRegion || region instanceof Loop)
+      return region;
+    assert(false, "ParityRegion creation failed in PlanarSubdivision.createLoopOrParityRegionInFace.");
+    return this.createLoopInFace(faceSeed); // fall back on split-washer loop
+  }
+  /** Return true if there are only two edges in the face loop, and their start curvatures are the same. */
   private static isNullFace(he: HalfEdge): boolean {
     const faceHasTwoEdges = (he.faceSuccessor.faceSuccessor === he);
     let faceIsBanana = false;
@@ -233,7 +344,7 @@ export class PlanarSubdivision {
     }
     return faceHasTwoEdges && !faceIsBanana;
   }
-  // Look across edge mates (possibly several) for a nonnull mate face.
+  /** Look across edge mates (possibly several) for a nonnull mate face. */
   private static nonNullEdgeMate(_graph: HalfEdgeGraph, e: HalfEdge): HalfEdge | undefined {
     if (this.isNullFace(e))
       return undefined;

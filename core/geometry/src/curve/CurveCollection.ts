@@ -383,6 +383,12 @@ export abstract class CurveChain extends CurveCollection {
     else
       return undefined;
   }
+  /** Whether the chain's start and end points are defined and within tolerance. */
+  public isPhysicallyClosed(tolerance: number = Geometry.smallMetricDistance): boolean {
+    const p0 = this.startPoint();
+    const p1 = this.endPoint();
+    return p0 !== undefined && p1 !== undefined && p0.isAlmostEqual(p1, tolerance);
+  }
   /**
    * Return the start point and derivative of the first child of the curve chain.
    * * For queries interior to the chain, use [[CurveChainWithDistanceIndex.fractionToPointAndDerivative]].

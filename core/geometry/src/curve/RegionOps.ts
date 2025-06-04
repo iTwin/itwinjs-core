@@ -367,8 +367,10 @@ export class RegionOps {
     const context = RegionBooleanContext.create(RegionGroupOpType.Union, RegionGroupOpType.Union);
     context.addMembers(loopsA, loopsB);
     context.annotateAndMergeCurvesInGraph(mergeTolerance);
+    const visitMask = context.graph.grabMask(false);
     const range = context.groupA.range().union(context.groupB.range());
     const areaTol = this.computeXYAreaTolerance(range, mergeTolerance);
+    const bridgeMask = HalfEdgeMask.BRIDGE_EDGE; // | HalfEdgeMask.REGULARIZED_EDGE; // TODO
     context.runClassificationSweep(
       operation,
       (_graph: HalfEdgeGraph, face: HalfEdge, faceType: -1 | 0 | 1, area: number) => {
@@ -378,25 +380,13 @@ export class RegionOps {
         if (Math.abs(area) < areaTol)
           return;
         if (faceType === 1) {
-          const loop = PlanarSubdivision.createLoopInFace(face);
-          if (loop)
-            result.tryAddChild(loop);
+          const loopOrParityRegion = PlanarSubdivision.createLoopOrParityRegionInFace(face, bridgeMask, visitMask);
+          if (loopOrParityRegion)
+            result.tryAddChild(loopOrParityRegion);
         }
       },
     );
-
-    // START HERE: convert split-washer loops into parity regions
-    // + 1. in PlanarSubdivision.assembleHalfEdgeGraph, mask the HalfEdges from curves whose parent's parentGroup's groupOpType is NonBounding (these are bridges)
-    // 2. instead of createLoopInFace above, call new PlanarSubdivision.createLoopOrParityRegionInFace:
-    //    a. if no bridge/regularized masked edges in face, return the Loop
-    //    b. if a masked edge's mate isn't masked or isn't in the face loop, return the Loop
-    //    b. collect super faces (each masked edge has a mate in the face loop):
-    //        i. visit nodes around the face (fSucc) but vPred past masked nodes until reach start node. Create a Loop.
-    //        ii. When encounter a masked node, push it onto a stack.
-    //    c. pop bridge stack:
-    //        i. Follow the bridge fSucc chain until reach an unvisited unmasked edge to start a new super face search
-    //    d. when stack empty, call sortOuterAndHoleLoopsXY on the Loops
-
+    context.graph.dropMask(visitMask);
     return result ? this.simplifyRegionType(result) : undefined;
   }
   /**
