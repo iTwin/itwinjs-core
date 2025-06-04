@@ -217,7 +217,47 @@ describe("Bearing format tests:", () => {
 
   });
 
-  it("should correctly parse valid and reject invalid bearing values", async () => {
+  it("should correctly format negative bearing values", async () => {
+    const valueList = [
+      { value: -45, expected: "N45°00'00\"W" },
+      { value: -270, expected: "N90°00'00\"E" },  // -270° → same as 90°
+    ];
+
+    const formatProps: FormatProps = {
+      minWidth: 2,
+      precision: 0,
+      type: "Bearing",
+      revolutionUnit: "Units.REVOLUTION",
+      formatTraits: ["showUnitLabel"],
+      uomSeparator: "",
+      composite: {
+        includeZero: true,
+        spacer: "",
+        units: [
+          { name: "Units.ARC_DEG", label: "°" },
+          { name: "Units.ARC_MINUTE", label: "'" },
+          { name: "Units.ARC_SECOND", label: "\"" },
+        ],
+      },
+    };
+    const format = new Format("bearing-format");
+    await format.fromJSON(new TestUnitsProvider(), formatProps);
+
+    const inputUnit = {
+      name: "Units.ARC_DEG",
+      label: "°",
+      phenomenon: "Angle",
+      system: "si",
+      isValid: true,
+    };
+    const formatterSpec = await FormatterSpec.create("bearing-format", format, new TestUnitsProvider(), inputUnit);
+    for (const { value, expected } of valueList) {
+      const result = Formatter.formatQuantity(value, formatterSpec);
+      expect(result).to.equal(expected);
+    }
+  });
+
+  it("should correctly parse valid and reject invalid bearing strings", async () => {
     const bearingFormatProps: FormatProps = {
       minWidth: 2,
       precision: 0,
@@ -236,34 +276,34 @@ describe("Bearing format tests:", () => {
       },
     };
 
-    const bearingFormat = new Format("bearing-dms");
+    const bearingFormat = new Format("bearing-parser");
     await bearingFormat.fromJSON(unitsProvider, bearingFormatProps);
-    const bearingDMSParser = await ParserSpec.create(bearingFormat, unitsProvider, degree);
-
+    const bearingParser = await ParserSpec.create(bearingFormat, unitsProvider, degree);
     // Valid inputs
     const validTestData = [
       { input: "N45:00:00E", expected: 45.0 },
-      { input: "N-45:00:00E", expected: 315.0 }, // negative input should wrap
+      { input: "N-45:00:00E", expected: 315.0 },
       { input: "S90:00:00W", expected: 270.0 },
     ];
 
     for (const { input, expected } of validTestData) {
-      const result = Parser.parseQuantityString(input, bearingDMSParser);
+      const result = Parser.parseQuantityString(input, bearingParser);
       if (!Parser.isParsedQuantity(result)) {
         expect.fail(`Expected a parsed quantity for input "${input}"`);
       }
     expect(result.value).to.be.closeTo(expected, 0.01);
     }
 
-  //  Invalid inputs
+    // Invalid inputs
     const invalidTestData = [
-      "N200E",        // over 90° in quadrant
-      "S361:00:00E",  // total degrees > 360
-      "N-200E",       // negative overbound
+      "N200E",       // More than 90° in a quadrant
+      "S361:00:00E", // Over 360°
+      "N-200E",      // Overbound negative
+      "N270:00:00E", // Like azimuth input in quadrant format
     ];
 
     for (const input of invalidTestData) {
-      const result = Parser.parseQuantityString(input, bearingDMSParser);
+      const result = Parser.parseQuantityString(input, bearingParser);
     expect(Parser.isParsedQuantity(result), `Expected input "${input}" to be invalid`).to.be.false;
     }
   });
