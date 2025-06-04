@@ -96,7 +96,7 @@
     },
     {
       "name": "@bentley/imodeljs-native",
-      "allowedCategories": [ "backend", "tools" ]
+      "allowedCategories": [ "backend", "internal", "tools" ]
     },
     {
       "name": "@bentley/linear-referencing-schema",
@@ -160,7 +160,7 @@
     },
     {
       "name": "@itwin/cloud-agnostic-core",
-      "allowedCategories": [ "backend", "frontend", "tools" ]
+      "allowedCategories": [ "backend", "frontend", "internal", "tools" ]
     },
     {
       "name": "@itwin/core-backend",
@@ -304,7 +304,7 @@
     },
     {
       "name": "@itwin/object-storage-azure",
-      "allowedCategories": [ "backend", "tools" ]
+      "allowedCategories": [ "backend", "internal", "tools" ]
     },
     {
       "name": "@itwin/object-storage-core",
@@ -368,7 +368,7 @@
     },
     {
       "name": "@opentelemetry/api",
-      "allowedCategories": [ "backend", "common", "tools" ]
+      "allowedCategories": [ "backend", "common", "internal", "tools" ]
     },
     {
       "name": "@sinonjs/fake-timers",
@@ -592,7 +592,7 @@
     },
     {
       "name": "form-data",
-      "allowedCategories": [ "backend", "tools" ]
+      "allowedCategories": [ "backend", "internal", "tools" ]
     },
     {
       "name": "fs-extra",
@@ -644,7 +644,7 @@
     },
     {
       "name": "inversify",
-      "allowedCategories": [ "backend", "tools" ]
+      "allowedCategories": [ "backend", "internal", "tools" ]
     },
     {
       "name": "js-base64",
@@ -664,7 +664,7 @@
     },
     {
       "name": "json5",
-      "allowedCategories": [ "backend", "tools" ]
+      "allowedCategories": [ "backend", "internal", "tools" ]
     },
     {
       "name": "jsonc-parser",
@@ -672,7 +672,7 @@
     },
     {
       "name": "linebreak",
-      "allowedCategories": [ "backend", "tools" ]
+      "allowedCategories": [ "backend", "internal", "tools" ]
     },
     {
       "name": "lodash",
@@ -680,7 +680,7 @@
     },
     {
       "name": "marked",
-      "allowedCategories": [ "backend", "tools" ]
+      "allowedCategories": [ "backend", "internal", "tools" ]
     },
     {
       "name": "memfs",
@@ -704,7 +704,7 @@
     },
     {
       "name": "multiparty",
-      "allowedCategories": [ "backend", "tools" ]
+      "allowedCategories": [ "backend", "internal", "tools" ]
     },
     {
       "name": "mysql2",
@@ -776,7 +776,7 @@
     },
     {
       "name": "reflect-metadata",
-      "allowedCategories": [ "backend", "tools" ]
+      "allowedCategories": [ "backend", "internal", "tools" ]
     },
     {
       "name": "resolve",
@@ -844,7 +844,7 @@
     },
     {
       "name": "sql-formatter",
-      "allowedCategories": [ "backend", "tools" ]
+      "allowedCategories": [ "backend", "internal", "tools" ]
     },
     {
       "name": "stream-browserify",
@@ -864,7 +864,7 @@
     },
     {
       "name": "touch",
-      "allowedCategories": [ "backend", "tools" ]
+      "allowedCategories": [ "backend", "internal", "tools" ]
     },
     {
       "name": "tree-kill",
@@ -948,7 +948,7 @@
     },
     {
       "name": "ws",
-      "allowedCategories": [ "backend", "tools" ]
+      "allowedCategories": [ "backend", "internal", "tools" ]
     },
     {
       "name": "wtfnode",

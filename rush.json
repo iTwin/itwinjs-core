@@ -17,10 +17,14 @@
       "extensions",
       "integration-testing"
     ],
-    "ignoredNpmScopes": ["@types"]
+    "ignoredNpmScopes": [
+      "@types"
+    ]
   },
   "gitPolicy": {
-    "allowedEmailRegExps": ["[^@]+@users\\.noreply\\.github\\.com"],
+    "allowedEmailRegExps": [
+      "[^@]+@users\\.noreply\\.github\\.com"
+    ],
     "sampleEmail": "mrexample@users.noreply.github.com"
   },
   "repository": {
@@ -263,6 +267,13 @@
       "projectFolder": "tools/test-support",
       "reviewCategory": "tools",
       "shouldPublish": true,
+      "versionPolicyName": "prerelease-monorepo-lockStep"
+    },
+    {
+      "packageName": "@itwin/core-backend-test",
+      "projectFolder": "core/backend-test",
+      "reviewCategory": "internal",
+      "shouldPublish": false,
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {

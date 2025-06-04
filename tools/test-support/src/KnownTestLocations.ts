@@ -9,6 +9,13 @@ import { ProcessDetector } from "@itwin/core-bentley";
 /** @internal */
 export class KnownTestLocations {
 
+  private static _rootDir: string | undefined;
+
+  /** Set the root directory under which to look for assets. */
+  public static setRootDir(rootDir: string): void {
+    this._rootDir = rootDir;
+  }
+
   /** The directory where test assets are stored. Keep in mind that the test is playing the role of the app. */
   public static get assetsDir(): string {
     if (ProcessDetector.isMobileAppBackend) {
@@ -17,7 +24,7 @@ export class KnownTestLocations {
       return join(tmpdir(), "assets");
     }
 
-    return join(__dirname, "assets");
+    return join(this._rootDir || __dirname, "assets");
   }
 
   /** The directory where tests can write. */

@@ -13,11 +13,13 @@ import {
 import { IModelTestUtils } from "./IModelTestUtils";
 
 /** @internal */
-export const brepData: { data: string } = JSON.parse(
-  fs.readFileSync(IModelTestUtils.resolveAssetFile("brepdata1.json"), {
-    encoding: "utf8",
-  }),
-);
+export function brepData(): { data: string } {
+  return JSON.parse(
+    fs.readFileSync(IModelTestUtils.resolveAssetFile("brepdata1.json"), {
+      encoding: "utf8",
+    }),
+  );
+}
 
 /** @internal */
 export function createBRepDataProps(origin?: Point3d, angles?: YawPitchRollAngles): BRepEntity.DataProps {
@@ -28,7 +30,7 @@ export function createBRepDataProps(origin?: Point3d, angles?: YawPitchRollAngle
   ];
 
   const brepProps: BRepEntity.DataProps = {
-    data: brepData.data,
+    data: brepData().data,
     faceSymbology: faceSymb,
     transform: Transform.createOriginAndMatrix(origin, angles ? angles.toMatrix3d() : undefined).toJSON(),
   };
