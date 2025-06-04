@@ -26,6 +26,7 @@ export enum ParseError {
   InvalidParserSpec,
   BearingPrefixOrSuffixMissing,
   MathematicOperationFoundButIsNotAllowed,
+  BearingAngleOutOfRange,
 }
 
 /** Parse error result from [[Parser.parseToQuantityValue]] or [[Parser.parseToQuantityValue]].
@@ -786,8 +787,14 @@ export class Parser {
     if(this.isParseError(parsedResult)) {
       return parsedResult;
     }
+    if (parsedResult.value > 90) {
+      return { ok: false, error: ParseError.BearingAngleOutOfRange };
+    }
 
     let magnitude = parsedResult.value;
+    if (magnitude < -90 || magnitude > 90) {
+      return { ok: false, error: ParseError.BearingAngleOutOfRange };
+    }
     const revolution = this.getRevolution(spec);
     magnitude = this.normalizeAngle(magnitude, revolution);
     const quarterRevolution = revolution / 4;
