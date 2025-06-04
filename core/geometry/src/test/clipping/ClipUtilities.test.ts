@@ -821,9 +821,7 @@ describe("ClipAnyCurve", () => {
     const clippedCurve = ClipUtilities.clipAnyCurve(bag, clipper);
     GeometryCoreTestIO.captureGeometry(allGeometry, clippedCurve, shift);
     GeometryCoreTestIO.captureRangeEdges(allGeometry, range, shift);
-    // sanity tests
-    expect(clippedCurve.length).toBe(1);
-    expect(clippedCurve[0].children?.length).toBe(0);
+    ck.testExactNumber(clippedCurve.length, 0, "clip result is empty because the entire input is clipped away");
     // save all geometries
     GeometryCoreTestIO.saveGeometry(allGeometry, "ClipUtilities", "BagOfCurvesOutsideClip2");
     expect(ck.getNumErrors()).toBe(0);
