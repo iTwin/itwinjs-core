@@ -394,7 +394,7 @@ export class RegionOps {
     operation: RegionBinaryOpType,
     mergeTolerance: number = Geometry.smallMetricDistance,
   ): AnyRegion | undefined {
-    let result: AnyRegion | undefined;
+    const result = UnionRegion.create();
     const context = RegionBooleanContext.create(RegionGroupOpType.Union, RegionGroupOpType.Union);
     context.addMembers(loopsA, loopsB);
     context.annotateAndMergeCurvesInGraph(mergeTolerance);
@@ -418,7 +418,7 @@ export class RegionOps {
       },
     );
     context.graph.dropMask(visitMask);
-    return result ? this.simplifyRegion(result) : undefined;
+    return this.simplifyRegion(result);
   }
   /**
    * Return a polyface whose facets are a boolean operation between the input regions.
