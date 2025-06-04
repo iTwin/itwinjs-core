@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { BaselineShift, ColorDef, FractionRun, LineBreakRun, Placement2dProps, TextAnnotation, TextAnnotationAnchor, TextAnnotationFrameShape, TextAnnotationProps, TextBlock, TextBlockJustification, TextBlockMargins, TextFrameStyleProps, TextRun, TextStyleSettingsProps } from "@itwin/core-common";
+import { BaselineShift, ColorDef, FractionRun, LineBreakRun, Placement2dProps, TabRun, TextAnnotation, TextAnnotationAnchor, TextAnnotationFrameShape, TextAnnotationProps, TextBlock, TextBlockJustification, TextBlockMargins, TextFrameStyleProps, TextRun, TextStyleSettingsProps } from "@itwin/core-common";
 import { DecorateContext, Decorator, GraphicType, IModelApp, IModelConnection, readElementGraphics, RenderGraphicOwner, Tool } from "@itwin/core-frontend";
 import { DtaRpcInterface } from "../common/DtaRpcInterface";
 import { Id64, Id64String } from "@itwin/core-bentley";
@@ -100,6 +100,13 @@ class TextEditor implements Decorator {
       styleOverrides: this.runStyle,
       numerator,
       denominator,
+    }));
+  }
+
+  public appendTab(spaces?: number): void {
+    this._textBlock.appendRun(TabRun.create({
+      styleName: "",
+      styleOverrides: { ... this.runStyle, tabSpaces: spaces },
     }));
   }
 
@@ -233,6 +240,10 @@ export class TextDecorationTool extends Tool {
         break;
       case "break":
         editor.appendBreak();
+        break;
+      case "tab":
+        const spaces = parseInt(inArgs[1], 10) || undefined;
+        editor.appendTab(spaces);
         break;
       case "paragraph":
         editor.appendParagraph();

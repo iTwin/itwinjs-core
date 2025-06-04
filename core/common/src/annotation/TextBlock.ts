@@ -6,7 +6,7 @@
  * @module Annotation
  */
 
-import { TextStyleSettingsProps } from "./TextStyle";
+import { TextStyleSettings, TextStyleSettingsProps } from "./TextStyle";
 
 /** Options supplied to [[TextBlockComponent.applyStyle]] to control how the style is applied to the component and its child components.
  * @beta
@@ -50,6 +50,10 @@ export interface TextBlockStringifyOptions {
    * Default: "/"
    */
   fractionSeparator?: string;
+  /** Whether of not to use spaces or \t for tabs.
+   * Default: "undefined" - use spaces.
+   */
+  tabsAsSpaces?: boolean;
 }
 
 /** Abstract representation of any of the building blocks that make up a [[TextBlock]] document - namely [[Run]]s, [[Paragraph]]s, and [[TextBlock]] itself.
@@ -145,13 +149,13 @@ export abstract class TextBlockComponent {
 /**
  * @beta
  */
-export type Run = TextRun | FractionRun | LineBreakRun;
+export type Run = TextRun | FractionRun | TabRun | LineBreakRun;
 
 /** The JSON representation of a [[Run]].
  * Use the `type` field to discriminate between the different kinds of runs.
  * @beta
  */
-export type RunProps = TextRunProps | FractionRunProps | LineBreakRunProps;
+export type RunProps = TextRunProps | FractionRunProps | TabRunProps | LineBreakRunProps;
 
 /** A sequence of characters within a [[Paragraph]] that share a single style. Runs are the leaf nodes of a [[TextBlock]] document. When laid out for display, a single run may span
  * multiple lines, but it will never contain different styling.
@@ -166,6 +170,7 @@ export namespace Run { // eslint-disable-line @typescript-eslint/no-redeclare
     switch (props.type) {
       case "text": return TextRun.create(props);
       case "fraction": return FractionRun.create(props);
+      case "tab": return TabRun.create(props);
       case "linebreak": return LineBreakRun.create(props);
     }
   }
@@ -337,6 +342,50 @@ export class LineBreakRun extends TextBlockComponent {
 
   public override equals(other: TextBlockComponent): boolean {
     return other instanceof LineBreakRun && super.equals(other);
+  }
+}
+
+/** JSON representation of a [[FractionRun]].
+ * @beta
+ */
+export interface TabRunProps extends TextBlockComponentProps {
+  /** Discriminator field for the [[RunProps]] union. */
+  readonly type: "tab";
+}
+
+/** A [[Run]] a set number of spaces. The Default is 4.
+ * @beta
+ */
+export class TabRun extends TextBlockComponent {
+  /** Discriminator field for the [[Run]] union. */
+  public readonly type = "tab";
+
+  public override toJSON(): TabRunProps {
+    return {
+      ...super.toJSON(),
+      type: "tab",
+    };
+  }
+
+  public override clone(): TabRun {
+    return new TabRun(this.toJSON());
+  }
+
+  public static create(props: Omit<TabRunProps, "type">): TabRun {
+    return new TabRun(props);
+  }
+
+  /** Formats the fraction as a string with the [[numerator]] and [[denominator]] separated by [[TextBlockStringifyOptions.fractionSeparator]]. */
+  public override stringify(options?: TextBlockStringifyOptions): string {
+    if (options?.tabsAsSpaces) {
+      return ` `.repeat(this.styleOverrides.tabSpaces ?? TextStyleSettings.defaultProps.tabSpaces);
+    }
+
+    return "\t";
+  }
+
+  public override equals(other: TextBlockComponent): boolean {
+    return other instanceof TabRun && super.equals(other);
   }
 }
 

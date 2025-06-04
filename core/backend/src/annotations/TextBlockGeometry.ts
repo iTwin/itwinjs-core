@@ -63,6 +63,33 @@ function processTextRun(run: RunLayout, transform: Transform, context: GeometryC
   context.entries.push({ text: ts });
 }
 
+function createTabTextString(text: string, run: RunLayout, origin: Point3d, transform: Transform): TextString {
+  const ts = createTextString(text, run, origin);
+  assert(undefined !== ts.widthFactor);
+
+  ts.height *= run.style.lineHeight;
+
+  ts.transformInPlace(transform);
+
+  return ts;
+}
+
+function processTabRun(run: RunLayout, transform: Transform, context: GeometryContext): void {
+  const source = run.source;
+  assert(source.type === "tab");
+
+  if (undefined === source.styleOverrides.tabSpaces || 0 === source.styleOverrides.tabSpaces) {
+    return;
+  }
+
+  assert(undefined !== run.range);
+  setColor(run.style.color, context);
+
+  const offset = new Point3d(run.range.low.x, run.range.low.y, 0);
+
+  context.entries.push({ text: createTabTextString(source.stringify({ tabsAsSpaces: true }), run, offset, transform) });
+}
+
 function createFractionTextString(text: string, run: RunLayout, origin: Point3d, transform: Transform): TextString {
   const ts = createTextString(text, run, origin);
   assert(undefined !== ts.widthFactor);
@@ -146,6 +173,8 @@ export function produceTextBlockGeometry(layout: TextBlockLayout, documentTransf
       documentTransform.multiplyTransformTransform(runTrans, runTrans);
       if ("text" === run.source.type) {
         processTextRun(run, runTrans, context);
+      } else if ("tab" === run.source.type) {
+        processTabRun(run, runTrans, context);
       } else {
         processFractionRun(run, runTrans, context);
       }

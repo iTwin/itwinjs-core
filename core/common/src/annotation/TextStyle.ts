@@ -34,7 +34,7 @@ export interface TextStyleSettingsProps {
    */
   fontName?: string;
   /** The height each line of text, in meters. Many other settings use the line height as the basis for computing their own values.
-   * For example, the height and offset from baseline of a subscript [[TextRun]]  are compuated as lineHeight * [[subScriptScale]] and
+   * For example, the height and offset from baseline of a subscript [[TextRun]]  are computed as lineHeight * [[subScriptScale]] and
    * lineHeight * [[subScriptOffsetFactor]], respectively.
    * Default: 1.0. */
   lineHeight?: number;
@@ -88,6 +88,10 @@ export interface TextStyleSettingsProps {
    * Default: 1.0
    */
   widthFactor?: number;
+  /** The number of spaces to use for a tab character.
+   * Default: 4
+   */
+  tabSpaces?: number;
 }
 
 /** A description of the formatting to be applied to a [[TextBlockComponent]].
@@ -103,7 +107,7 @@ export class TextStyleSettings {
    */
   public readonly fontName: string;
   /** The height each line of text, in meters. Many other settings use the line height as the basis for computing their own values.
-   * For example, the height and offset from baseline of a subscript [[TextRun]]  are compuated as lineHeight * [[subScriptScale]] and
+   * For example, the height and offset from baseline of a subscript [[TextRun]]  are computed as lineHeight * [[subScriptScale]] and
    * lineHeight * [[subScriptOffsetFactor]], respectively.
    */
   public readonly lineHeight: number;
@@ -141,6 +145,8 @@ export class TextStyleSettings {
   public readonly superScriptScale: number;
   /** Multiplier used to compute the width of each glyph, relative to [[lineHeight]]. */
   public readonly widthFactor: number;
+  /** The number of " " characters to use for tab */
+  public readonly tabSpaces: number;
 
   /** A fully-populated JSON representation of the default settings. */
   public static defaultProps: Readonly<Required<TextStyleSettingsProps>> = {
@@ -158,6 +164,7 @@ export class TextStyleSettings {
     superScriptOffsetFactor: 0.5,
     superScriptScale: 2 / 3,
     widthFactor: 1,
+    tabSpaces: 4,
   };
 
   /** Settings initialized to all default values. */
@@ -182,6 +189,7 @@ export class TextStyleSettings {
     this.superScriptOffsetFactor = props.superScriptOffsetFactor ?? defaults.superScriptOffsetFactor;
     this.superScriptScale = props.superScriptScale ?? defaults.superScriptScale;
     this.widthFactor = props.widthFactor ?? defaults.widthFactor;
+    this.tabSpaces = undefined === props.tabSpaces ? defaults.tabSpaces : props.tabSpaces;
   }
 
   /** Create a copy of these settings, modified according to the properties defined by `alteredProps`. */
@@ -204,7 +212,8 @@ export class TextStyleSettings {
       && this.isBold === other.isBold && this.isItalic === other.isItalic && this.isUnderlined === other.isUnderlined
       && this.stackedFractionType === other.stackedFractionType && this.stackedFractionScale === other.stackedFractionScale
       && this.subScriptOffsetFactor === other.subScriptOffsetFactor && this.subScriptScale === other.subScriptScale
-      && this.superScriptOffsetFactor === other.superScriptOffsetFactor && this.superScriptScale === other.superScriptScale;
+      && this.superScriptOffsetFactor === other.superScriptOffsetFactor && this.superScriptScale === other.superScriptScale
+      && this.tabSpaces === other.tabSpaces;
   }
 }
 

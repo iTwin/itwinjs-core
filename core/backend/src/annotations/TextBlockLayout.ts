@@ -347,6 +347,14 @@ export class RunLayout {
         denominatorRange = ranges.denominator;
         break;
       }
+      case "tab": {
+        const spaces = source.styleOverrides.tabSpaces;
+        numChars = undefined !== spaces ? spaces : TextStyleSettings.defaultProps.tabSpaces;
+        const ranges = context.computeRangeForText(" ".repeat(numChars), style, "none");
+        range = ranges.layout;
+        justificationRange = ranges.justification;
+        break;
+      }
       default: {
         // We do this so that blank lines space correctly without special casing later.
         range = new Range2d(0, 0, 0, style.lineHeight);
