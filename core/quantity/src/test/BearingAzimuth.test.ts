@@ -284,6 +284,19 @@ describe("Bearing format tests:", () => {
       { input: "N45:00:00E", expected: 45.0 },
       { input: "N-45:00:00E", expected: 315.0 },
       { input: "S90:00:00W", expected: 270.0 },
+      { input: "S45:00:00W", expected: 225.0 },
+      { input: "N00:00:00E", expected: 0.0 },
+      { input: "S00:00:00W", expected: 180.0 },
+      { input: "S89:59:59W", expected: 269.9997 },
+      { input: "N89:59:59E", expected: 89.9997 },
+      { input: "S-45:00:00W", expected: 135.0 },  // edge case
+      { input: "N45:00:30E", expected: 45.0083 }, // valid with seconds
+      { input: "N0:00:01E", expected: 0.0003 },
+      { input: "S0:00:01W", expected: 180.0003 },
+      { input: "N-0:00:01E", expected: 359.9997 },
+      { input: "S-0:00:01W", expected: 179.9997 },
+      { input: "N-89:59:59E", expected: 270.0003 },  // wrapped
+      { input: "S-89:59:59W", expected: 89.9997 },   //
     ];
 
     for (const { input, expected } of validTestData) {
@@ -300,6 +313,15 @@ describe("Bearing format tests:", () => {
       "S361:00:00E", // Over 360°
       "N-200E",      // Overbound negative
       "N270:00:00E", // Like azimuth input in quadrant format
+      "N90:00:01E",     // exceeds quarter revolution
+      "S-90:00:01W",    // exceeds negative quarter revolution
+      "N91:00:00E",     // degree overflow
+      "S-91:00:00W",    // beyond acceptable negative angle
+      "N-91:00:00E",    // beyond acceptable negative angle
+      "N45:00:00",      // missing direction
+      "E45:00:00W",     // invalid prefix
+      "45:00:00E",      // missing prefix
+      "N45:00:00EExtra", // unexpected suffix
     ];
 
     for (const input of invalidTestData) {

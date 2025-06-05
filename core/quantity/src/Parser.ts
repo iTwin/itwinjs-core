@@ -799,7 +799,6 @@ export class Parser {
       return { ok: false, error: ParseError.BearingAngleOutOfRange };
     }
 
-    magnitude = this.normalizeAngle(magnitude, revolution);
     // we have to turn the value into an east base and counter clockwise (NW and SE are already counter clockwise)
     if (matchedPrefix === DirectionLabel.North) {
       if (matchedSuffix === DirectionLabel.West) {
@@ -812,6 +811,7 @@ export class Parser {
         magnitude = (2 * quarterRevolution) - magnitude;
       }
     }
+    magnitude = this.normalizeAngle(magnitude, revolution);
 
     return { ok: true, value: magnitude };
   }
