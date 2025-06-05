@@ -87,10 +87,18 @@ export interface UpdateModelOptions extends ModelProps {
   geometryChanged?: boolean;
 }
 
+/** Shared options for editing (insert, update, delete)
+ * @public
+ */
+export interface EditOptions {
+  /** If true, the edit will be marked as an indirect change. */
+  indirect?: boolean;
+}
+
 /** Options supposed to [[IModelDb.Elements.insertElement]].
  * @public
  */
-export interface InsertElementOptions {
+export interface InsertElementOptions extends EditOptions {
   /** If true, instead of assigning a new, unique Id to the inserted element, the inserted element will use the Id specified by the supplied [ElementProps]($common).
    * This is chiefly useful when applying a filtering transformation - i.e., copying some elements from a source iModel to a target iModel and adding no new elements.
    * If this option is `true` then [ElementProps.id]($common) must be a valid Id that is not already used by an element in the iModel.
@@ -2204,6 +2212,7 @@ export namespace IModelDb {
 
     /** Insert a new element into the iModel.
      * @param elProps The properties of the new element.
+     * @param options Flags that affect the insert
      * @returns The newly inserted element's Id.
      * @throws [[ITwinError]] if unable to insert the element.
      * @note For convenience, the value of `elProps.id` is updated to reflect the resultant element's id.
@@ -2233,18 +2242,19 @@ export namespace IModelDb {
      * To support clearing a property value, every property name that is present in the `elProps` object will be updated even if the value is `undefined`.
      * To keep an individual element property unchanged, it should either be excluded from the `elProps` parameter or set to its current value.
      * @param elProps the properties of the element to update.
+     * @param options Flags that affect the update
      * @note The values of `classFullName` and `model` *may not be changed* by this method. Further, it will permute the `elProps` object by adding or
      * overwriting their values to the correct values.
      * @throws [[ITwinError]] if unable to update the element.
      */
-    public updateElement<T extends ElementProps>(elProps: Partial<T>): void {
+    public updateElement<T extends ElementProps>(elProps: Partial<T>, options?: EditOptions): void {
       try {
         this[_cache].delete({
           id: elProps.id,
           federationGuid: elProps.federationGuid,
           code: elProps.code,
         });
-        this._iModel[_nativeDb].updateElement(elProps);
+        this._iModel[_nativeDb].updateElement(elProps, options);
       } catch (err: any) {
         err.message = `Error updating element [${err.message}], id: ${elProps.id}`;
         err.metadata = { elProps };
@@ -2254,16 +2264,17 @@ export namespace IModelDb {
 
     /** Delete one or more elements from this iModel.
      * @param ids The set of Ids of the element(s) to be deleted
+     * @param options Flags that affect the update
      * @throws [[ITwinError]]
      * @see deleteDefinitionElements
      */
-    public deleteElement(ids: Id64Arg): void {
+    public deleteElement(ids: Id64Arg, options?: EditOptions): void {
       const iModel = this._iModel;
       Id64.toIdSet(ids).forEach((id) => {
         try {
           this[_cache].delete({ id });
           this[_instanceKeyCache].deleteById(id);
-          iModel[_nativeDb].deleteElement(id);
+          iModel[_nativeDb].deleteElement(id, options);
         } catch (err: any) {
           err.message = `Error deleting element [${err.message}], id: ${id}`;
           err.metadata = { elementId: id };
@@ -2560,7 +2571,7 @@ export namespace IModelDb {
       try {
         return this._iModel[_nativeDb].insertElementAspect(aspectProps);
       } catch (err: any) {
-        const error =  new IModelError(err.errorNumber, `Error inserting ElementAspect [${err.message}], class: ${aspectProps.classFullName}`, aspectProps);
+        const error = new IModelError(err.errorNumber, `Error inserting ElementAspect [${err.message}], class: ${aspectProps.classFullName}`, aspectProps);
         error.cause = err;
         throw error;
       }
@@ -2574,7 +2585,7 @@ export namespace IModelDb {
       try {
         this._iModel[_nativeDb].updateElementAspect(aspectProps);
       } catch (err: any) {
-        const error =  new IModelError(err.errorNumber, `Error updating ElementAspect [${err.message}], id: ${aspectProps.id}`, aspectProps);
+        const error = new IModelError(err.errorNumber, `Error updating ElementAspect [${err.message}], id: ${aspectProps.id}`, aspectProps);
         error.cause = err;
         throw error;
       }
@@ -2590,7 +2601,7 @@ export namespace IModelDb {
         try {
           iModel[_nativeDb].deleteElementAspect(aspectInstanceId);
         } catch (err: any) {
-          const error =  new IModelError(err.errorNumber, `Error deleting ElementAspect [${err.message}], id: ${aspectInstanceId}`);
+          const error = new IModelError(err.errorNumber, `Error deleting ElementAspect [${err.message}], id: ${aspectInstanceId}`);
           error.cause = err;
           throw error;
         }
