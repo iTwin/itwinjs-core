@@ -787,17 +787,19 @@ export class Parser {
     if(this.isParseError(parsedResult)) {
       return parsedResult;
     }
-    if (parsedResult.value > 90) {
+    const revolution = this.getRevolution(spec);
+    const quarterRevolution = revolution / 4;
+
+    if (parsedResult.value > quarterRevolution) {
       return { ok: false, error: ParseError.BearingAngleOutOfRange };
     }
 
     let magnitude = parsedResult.value;
-    if (magnitude < -90 || magnitude > 90) {
+    if (magnitude < -quarterRevolution || magnitude > quarterRevolution) {
       return { ok: false, error: ParseError.BearingAngleOutOfRange };
     }
-    const revolution = this.getRevolution(spec);
+
     magnitude = this.normalizeAngle(magnitude, revolution);
-    const quarterRevolution = revolution / 4;
     // we have to turn the value into an east base and counter clockwise (NW and SE are already counter clockwise)
     if (matchedPrefix === DirectionLabel.North) {
       if (matchedSuffix === DirectionLabel.West) {
