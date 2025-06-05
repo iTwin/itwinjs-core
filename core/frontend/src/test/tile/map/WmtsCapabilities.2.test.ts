@@ -30,7 +30,6 @@ describe("WmtsCapabilities2", () => {
     expect(capabilities?.contents?.layers.length).toEqual(1); // this sample capabilities has 2 layers
     const resourceUrls = capabilities?.contents?.layers[0].resourceUrls;
     expect(resourceUrls).toBeDefined();
-    // console.log(resourceUrls);
     expect(resourceUrls?.length).toEqual(3);
     resourceUrls?.forEach((resourceUrl) => {
       expect(resourceUrl.resourceType).toBeDefined();
