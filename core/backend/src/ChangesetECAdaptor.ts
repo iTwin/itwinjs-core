@@ -9,7 +9,7 @@ import { DbResult, Guid, GuidString, Id64String } from "@itwin/core-bentley";
 import { AnyDb, SqliteChange, SqliteChangeOp, SqliteChangesetReader, SqliteValueStage } from "./SqliteChangesetReader";
 import { Base64EncodedString } from "@itwin/core-common";
 import { ECDb } from "./ECDb";
-import { _nativeDb } from "./core-backend";
+import { _nativeDb } from "./internal/Symbols";
 
 interface IClassRef {
   classId: Id64String;
@@ -535,7 +535,7 @@ export class SqliteBackedInstanceCache implements ECChangeUnifierCache {
    */
   private dropTempTable(): void {
     this._db.saveChanges();
-    if(this._db instanceof ECDb)
+    if (this._db instanceof ECDb)
       this._db.clearStatementCache();
     else {
       this._db.clearCaches();
