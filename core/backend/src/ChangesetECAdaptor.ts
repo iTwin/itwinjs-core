@@ -8,6 +8,8 @@
 import { DbResult, Guid, GuidString, Id64String } from "@itwin/core-bentley";
 import { AnyDb, SqliteChange, SqliteChangeOp, SqliteChangesetReader, SqliteValueStage } from "./SqliteChangesetReader";
 import { Base64EncodedString } from "@itwin/core-common";
+import { ECDb } from "./ECDb";
+import { _nativeDb } from "./core-backend";
 
 interface IClassRef {
   classId: Id64String;
@@ -521,7 +523,7 @@ export class SqliteBackedInstanceCache implements ECChangeUnifierCache {
    * @throws Error if unable to create the temporary table.
    */
   private createTempTable(): void {
-    this._db.withPreparedSqliteStatement(`CREATE TABLE ${this._cacheTable} ([key] text primary key, [value] text)`, (stmt) => {
+    this._db.withSqliteStatement(`CREATE TABLE ${this._cacheTable} ([key] text primary key, [value] text)`, (stmt) => {
       if (DbResult.BE_SQLITE_DONE !== stmt.step())
         throw new Error("unable to create temp table");
     });
@@ -532,7 +534,14 @@ export class SqliteBackedInstanceCache implements ECChangeUnifierCache {
    * @throws Error if unable to drop the temporary table.
    */
   private dropTempTable(): void {
-    this._db.withPreparedSqliteStatement(`DROP TABLE IF EXISTS ${this._cacheTable}`, (stmt) => {
+    this._db.saveChanges();
+    if(this._db instanceof ECDb)
+      this._db.clearStatementCache();
+    else {
+      this._db.clearCaches();
+      this._db[_nativeDb].clearECDbCache();
+    }
+    this._db.withSqliteStatement(`DROP TABLE IF EXISTS ${this._cacheTable}`, (stmt) => {
       if (DbResult.BE_SQLITE_DONE !== stmt.step())
         throw new Error("unable to drop temp table");
     });
