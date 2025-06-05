@@ -249,6 +249,7 @@ export class PresentationManagerDetail implements Disposable {
       requestId: NativePlatformRequestTypes.GetContentSet,
       rulesetId: this.registerRuleset(rulesetOrId),
       ...strippedOptions,
+      omitFormattedValues: true,
       keys: getKeysForContentRequest(requestOptions.keys, (map) => bisElementInstanceKeysProcessor(requestOptions.imodel, map)),
       descriptorOverrides: createContentDescriptorOverrides(descriptor),
     };
@@ -266,6 +267,7 @@ export class PresentationManagerDetail implements Disposable {
       requestId: NativePlatformRequestTypes.GetContent,
       rulesetId: this.registerRuleset(rulesetOrId),
       ...strippedOptions,
+      omitFormattedValues: true,
       keys: getKeysForContentRequest(requestOptions.keys, (map) => bisElementInstanceKeysProcessor(requestOptions.imodel, map)),
       descriptorOverrides: createContentDescriptorOverrides(descriptor),
     };
