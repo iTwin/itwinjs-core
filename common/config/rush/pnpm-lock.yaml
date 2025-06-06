@@ -3051,6 +3051,9 @@ importers:
 
   ../../presentation/backend:
     dependencies:
+      '@itwin/presentation-shared':
+        specifier: ^1.2.1
+        version: 1.2.1
       object-hash:
         specifier: ^1.3.1
         version: 1.3.1
@@ -3186,6 +3189,10 @@ importers:
         version: 5.6.2
 
   ../../presentation/common:
+    dependencies:
+      '@itwin/presentation-shared':
+        specifier: ^1.2.1
+        version: 1.2.1
     devDependencies:
       '@itwin/build-tools':
         specifier: workspace:*
@@ -5240,8 +5247,8 @@ packages:
       '@itwin/core-bentley': workspace:*
       '@itwin/core-common': workspace:*
 
-  '@itwin/presentation-shared@1.2.0':
-    resolution: {integrity: sha512-+esa0GJhWxO1MaF5cGH439mOXPXWNX/SZGgaVfPyRE/1DdH33ECaXaeJVSpFqNrrBHn5XxYN5/7Rayb78k2LOg==}
+  '@itwin/presentation-shared@1.2.1':
+    resolution: {integrity: sha512-b8In5BV+6q1FjMC+zUmkcSAVgbvp+F0M6WlOOiToSWVx+UpcolctlQZSMCKyBuvYvXVDh7DRfAFOm8k2nfgQfw==}
 
   '@itwin/reality-data-client@1.2.1':
     resolution: {integrity: sha512-pNpnO1tbsM1HwyZcr6UkZLyMczNcYFHqsnREmjYJ4GIeCMdrWKGbH5ar4hyajqc/ZkV9zO4FXFMYgQx3yKK1zQ==}
@@ -11546,7 +11553,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@itwin/presentation-shared@1.2.0':
+  '@itwin/presentation-shared@1.2.1':
     dependencies:
       '@itwin/core-bentley': 4.10.10
 
@@ -11582,7 +11589,7 @@ snapshots:
   '@itwin/unified-selection@1.2.0':
     dependencies:
       '@itwin/core-bentley': 4.10.10
-      '@itwin/presentation-shared': 1.2.0
+      '@itwin/presentation-shared': 1.2.1
       rxjs: 7.8.2
       rxjs-for-await: 1.0.0(rxjs@7.8.2)
 

@@ -64,6 +64,9 @@
     "test": "mocha --enable-source-maps --config ./.mocharc.json",
     "prettier:fix": "prettier --write ."
   },
+  "dependencies": {
+    "@itwin/presentation-shared": "^1.2.1"
+  },
   "peerDependencies": {
     "@itwin/core-bentley": "workspace:*",
     "@itwin/core-common": "workspace:*",
