@@ -13,7 +13,7 @@ import {
   FontMap, FontType, GeoCoordinatesRequestProps, GeoCoordStatus, GeographicCRS, GeographicCRSProps, GeometricElementProps, GeometryParams, GeometryStreamBuilder,
   ImageSourceFormat, IModel, IModelCoordinatesRequestProps, IModelError, LightLocationProps, MapImageryProps, PhysicalElementProps,
   PointWithStatus, RelatedElement, RenderMode, SchemaState, SpatialViewDefinitionProps, SubCategoryAppearance, SubjectProps, TextureMapping,
-  TextureMapProps, TextureMapUnits, ViewDefinitionProps, ViewFlagProps, ViewFlags,
+  TextureMapProps, TextureMapUnits, TypeDefinitionElementProps, ViewDefinitionProps, ViewFlagProps, ViewFlags,
 } from "@itwin/core-common";
 import {
   Geometry, GeometryQuery, LineString3d, Loop, Matrix4d, Point3d, PolyfaceBuilder, Range3d, StrokeOptions, Transform, XYZProps, YawPitchRollAngles,
@@ -22,12 +22,12 @@ import {
   _nativeDb, BisCoreSchema, BriefcaseDb, Category, ClassRegistry, DefinitionContainer, DefinitionGroup,
   DefinitionGroupGroupsDefinitions, DefinitionModel, DefinitionPartition, DictionaryModel, DisplayStyle3d,
   DisplayStyleCreationOptions, DocumentPartition, DrawingGraphic, ECSqlStatement, Element, ElementDrivesElement,
-  ElementGroupsMembers, ElementGroupsMembersProps, ElementOwnsChildElements, Entity, GeometricElement2d, GeometricElement3d,
-  GeometricModel, GroupInformationPartition, IModelDb, IModelHost, IModelJsFs, InformationPartitionElement,
-  InformationRecordElement, LightLocation, LinkPartition, Model, PhysicalElement, PhysicalModel, PhysicalObject,
-  PhysicalPartition, RenderMaterialElement, RenderMaterialElementParams, SnapshotDb, SnapshotDbOpenArgs, SpatialCategory,
-  SqliteStatement, SqliteValue, SqliteValueType, StandaloneDb, SubCategory, Subject, Texture, V2CheckpointAccessProps,
-  V2CheckpointManager, ViewDefinition, 
+  ElementGroupsMembers, ElementGroupsMembersProps, ElementOwnsChildElements, Entity, GenericGraphicalType2d,
+  GeometricElement2d, GeometricElement3d, GeometricModel, GroupInformationPartition, IModelDb, IModelHost, IModelJsFs,
+  InformationPartitionElement, InformationRecordElement, LightLocation, LinkPartition, Model, PhysicalElement, PhysicalModel,
+  PhysicalObject, PhysicalPartition, RenderMaterialElement, RenderMaterialElementParams, SnapshotDb, SnapshotDbOpenArgs,
+  SpatialCategory, SqliteStatement, SqliteValue, SqliteValueType, StandaloneDb, SubCategory, Subject, Texture,
+  V2CheckpointAccessProps, V2CheckpointManager, ViewDefinition,
 } from "@itwin/core-backend";
 import { HubMock, IModelTestUtils, KnownTestLocations } from "@itwin/test-support";
 import { DisableNativeAssertions } from "../TestUtils";
@@ -1414,12 +1414,15 @@ describe("iModel", () => {
     testImodel.models.deleteModel(newModelId);
 
     // Test insertModel error handling
-    assert.throws(() => {
+    try {
       testImodel.models.insertModel({
         classFullName: DefinitionModel.classFullName,
         modeledElement: { id: "0x10000000bad" },
       });
-    }, IModelError);
+    } catch (error: any) {
+      assert.isTrue(error instanceof IModelError || error.iTwinErrorId !== undefined);
+    }
+
   });
 
   it("should create model with custom relationship to modeled element", async () => {
@@ -2906,6 +2909,36 @@ describe("iModel", () => {
     expect(categ3.code.value).to.equal(code3.trimmedCodeVal);
 
     imodel.close();
+  });
+
+  it("should throw iTwinErrors on element CRUD opertion fails", async () => {
+    const code = Code.createEmpty();
+    code.value = "foo";
+
+    const props: TypeDefinitionElementProps = {
+      classFullName: GenericGraphicalType2d.classFullName,
+      model: IModel.dictionaryId,
+      code,
+    };
+    imodel1.elements.insertElement(props);
+
+    expect(() => imodel1.elements.insertElement(props)).throws("Error inserting element [duplicate code]").to.have.property("iTwinErrorId");
+    const updateProps: TypeDefinitionElementProps = {
+      id: Id64.fromString("0x111111"),
+      classFullName: GenericGraphicalType2d.classFullName,
+      model: IModel.dictionaryId,
+      code,
+    };
+    expect(() => imodel1.elements.updateElement(updateProps)).throws(`Error updating element [missing id], id: ${updateProps.id}`).to.have.property("iTwinErrorId");
+    expect(() => imodel1.elements.deleteElement(updateProps.id!)).throws(`Error deleting element [missing id], id: ${updateProps.id}`).to.have.property("iTwinErrorId");
+
+    expect(() => imodel1.models.insertModel({classFullName: DefinitionModel.classFullName, modeledElement: { id: "0x10000000bad" }})).throws("Error inserting model [error=10004], class=BisCore:DefinitionModel").to.have.property("iTwinErrorId");
+    expect(() => imodel1.models.updateModel({
+      id: Id64.fromString("0x111111"),
+      modeledElement: { id: Id64.fromString("0x111111")},
+      classFullName: ""
+    })).throws(`Error updating model [missing id], id: ${Id64.fromString("0x111111")}`).to.have.property("iTwinErrorId");
+    expect(() => imodel1.models.deleteModel(Id64.fromString("0x111111"))).throws(`Error deleting model [missing id], id: ${Id64.fromString("0x111111")}`).to.have.property("iTwinErrorId");
   });
 
   it("throws NotFound when attempting to access element props after closing the iModel", () => {

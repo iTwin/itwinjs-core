@@ -89,8 +89,8 @@ export type AnnounceCurvePrimitive = (cp: CurvePrimitive) => void;
  */
 export interface TangentOptions {
   /**
-   * The tangent returned by [[CurvePrimitive.closestTangent]] is nearest this point as seen in the view plane.
-   * * Default value is `P`.
+   * The tangent point returned by [[CurvePrimitive.closestTangent]] is nearest to this point as seen in the view plane.
+   * * Default value is the fixed point `P`.
    */
   hintPoint?: Point3d,
   /**
@@ -614,8 +614,8 @@ export abstract class CurvePrimitive extends GeometryQuery {
    */
   public closestTangent(spacePoint: Point3d, options?: TangentOptions): CurveLocationDetail | undefined {
     const hint = options?.hintPoint ?? spacePoint;
-    let toLocal: Matrix3d| undefined;
-    if (options?.vectorToEye && !options.vectorToEye.isExactEqual({x: 0, y: 0, z: 1}))
+    let toLocal: Matrix3d | undefined;
+    if (options?.vectorToEye && !options.vectorToEye.isExactEqual({ x: 0, y: 0, z: 1 }))
       toLocal = Matrix3d.createRigidViewAxesZTowardsEye(options.vectorToEye.x, options.vectorToEye.y, options.vectorToEye.z);
     const measureHintDist2 = (pt: Point3d): number => { // measure distance to hint in view plane coordinates
       return toLocal?.multiplyTransposeXYZ(hint.x - pt.x, hint.y - pt.y, hint.z - pt.z).magnitudeSquaredXY() ?? pt.distanceSquaredXY(hint);

@@ -331,6 +331,10 @@
       "allowedCategories": [ "integration-testing", "internal" ]
     },
     {
+      "name": "@itwin/presentation-shared",
+      "allowedCategories": [ "backend", "common" ]
+    },
+    {
       "name": "@itwin/reality-data-client",
       "allowedCategories": [ "internal" ]
     },

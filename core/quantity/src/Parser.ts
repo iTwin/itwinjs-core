@@ -26,6 +26,7 @@ export enum ParseError {
   InvalidParserSpec,
   BearingPrefixOrSuffixMissing,
   MathematicOperationFoundButIsNotAllowed,
+  BearingAngleOutOfRange,
 }
 
 /** Parse error result from [[Parser.parseToQuantityValue]] or [[Parser.parseToQuantityValue]].
@@ -786,11 +787,14 @@ export class Parser {
     if(this.isParseError(parsedResult)) {
       return parsedResult;
     }
+    const revolution = this.getRevolution(spec);
+    const quarterRevolution = revolution / 4;
 
     let magnitude = parsedResult.value;
-    const revolution = this.getRevolution(spec);
-    magnitude = this.normalizeAngle(magnitude, revolution);
-    const quarterRevolution = revolution / 4;
+    if (magnitude < -quarterRevolution || magnitude > quarterRevolution) {
+      return { ok: false, error: ParseError.BearingAngleOutOfRange };
+    }
+
     // we have to turn the value into an east base and counter clockwise (NW and SE are already counter clockwise)
     if (matchedPrefix === DirectionLabel.North) {
       if (matchedSuffix === DirectionLabel.West) {
@@ -803,6 +807,7 @@ export class Parser {
         magnitude = (2 * quarterRevolution) - magnitude;
       }
     }
+    magnitude = this.normalizeAngle(magnitude, revolution);
 
     return { ok: true, value: magnitude };
   }

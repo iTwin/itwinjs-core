@@ -34,6 +34,7 @@ import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 import { testGeometryQueryRoundTrip } from "../serialization/FlatBuffer.test";
 import { prettyPrint } from "../testFunctions";
+import { CurveCurve } from "../../curve/CurveCurve";
 
 /** return knots [0,0,0, step, 2*step, ... N,N,N]
  * where there are:
@@ -1036,7 +1037,7 @@ describe("BsplineCurve", () => {
     if (ck.testDefined(tangents, "tangents is defined")) {
       if (ck.testExactNumber(3, tangents.length, "3 tangents found in front view")) {
         ck.testTrue(Geometry.isAlmostEqualAnyNumber(0, iterator(), Geometry.smallFraction), "found tangent at 0");
-        ck.testTrue(Geometry.isAlmostEqualAnyNumber(2/3, iterator(), Geometry.smallFraction), "found tangent at 2/3");
+        ck.testTrue(Geometry.isAlmostEqualAnyNumber(2 / 3, iterator(), Geometry.smallFraction), "found tangent at 2/3");
         ck.testTrue(Geometry.isAlmostEqualAnyNumber(1, iterator(), Geometry.smallFraction), "found tangent at 1");
       }
     }
@@ -1071,8 +1072,91 @@ describe("BsplineCurve", () => {
       ck.testTrue(Geometry.isAlmostEqualAnyNumber(0.058457040789467, iterator(), Geometry.smallFraction), "found first expected tangent");
       ck.testTrue(Geometry.isAlmostEqualAnyNumber(0.586388071865798, iterator(), Geometry.smallFraction), "found second expected tangent");
       ck.testTrue(Geometry.isAlmostEqualAnyNumber(0.907531065010458, iterator(), Geometry.smallFraction), "found third expected tangent");
-  }
+    }
     GeometryCoreTestIO.saveGeometry(allGeometry, "BsplineCurve", "AllTangentsAndClosestTangent");
+    expect(ck.getNumErrors()).toBe(0);
+  });
+
+  it("clonePartialCurve", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+
+    const pt0 = Point3d.create(5, 3);
+    const pt1 = Point3d.create(3.5, 6);
+    const degree = 2;
+    const poles = [
+      Point3d.create(3, 3),
+      Point3d.create(7, 3),
+      Point3d.create(3, 7),
+      Point3d.create(3, 3),
+    ];
+    const bspline = BSplineCurve3d.createPeriodicUniformKnots(poles, degree + 1)!;
+    const bspline0 = bspline.clonePartialCurve(0.0, 0.5);
+    const bspline1 = bspline.clonePartialCurve(0.5, 1);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, bspline0);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, bspline1);
+
+    ck.testPoint3d(pt0, bspline0.startPoint());
+    ck.testPoint3d(pt1, bspline0.endPoint());
+    const bspline0Reverse = bspline0.clonePartialCurve(1, 0);
+    ck.testPoint3d(pt1, bspline0Reverse.startPoint());
+    ck.testPoint3d(pt0, bspline0Reverse.endPoint());
+
+    ck.testPoint3d(pt1, bspline1.startPoint());
+    ck.testPoint3d(pt0, bspline1.endPoint());
+    const bspline1Reverse = bspline1.clonePartialCurve(1, 0);
+    ck.testPoint3d(pt0, bspline1Reverse.startPoint());
+    ck.testPoint3d(pt1, bspline1Reverse.endPoint());
+
+    GeometryCoreTestIO.saveGeometry(allGeometry, "BsplineCurve", "clonePartialCurve");
+    expect(ck.getNumErrors()).toBe(0);
+  });
+  it("intersectionXYPairs", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+
+    // small bspline
+    const degree = 2;
+    let poles = [
+      Point3d.create(1, 0.5),
+      Point3d.create(2, 1),
+      Point3d.create(1.5, 1.5),
+      Point3d.create(1, 0.5),
+    ];
+    let bspline = BSplineCurve3d.createPeriodicUniformKnots(poles, degree + 1)!;
+    let bspline0 = bspline.clonePartialCurve(0.0, 0.5);
+    let bspline1 = bspline.clonePartialCurve(0.5, 1);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, bspline0);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, bspline1);
+    let intersections = CurveCurve.intersectionXYPairs(bspline0, false, bspline1, false);
+    for (const intersection of intersections)
+      GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, intersection.detailA.point, 0.1);
+    if (ck.testExactNumber(2, intersections.length, "2 intersection between the partial curves")) {
+      ck.testPoint3d(bspline0.startPoint(), intersections[0].detailA.point);
+      ck.testPoint3d(bspline0.endPoint(), intersections[1].detailA.point);
+    }
+
+    // large bspline
+    const dx = 5;
+    poles = [
+      Point3d.create(3, 3),
+      Point3d.create(7, 3),
+      Point3d.create(3, 7),
+      Point3d.create(3, 3),
+    ];
+    bspline = BSplineCurve3d.createPeriodicUniformKnots(poles, degree + 1)!;
+    bspline0 = bspline.clonePartialCurve(0.0, 0.5);
+    bspline1 = bspline.clonePartialCurve(0.5, 1);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, bspline0, dx);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, bspline1, dx);
+    intersections = CurveCurve.intersectionXYPairs(bspline0, false, bspline1, false);
+    for (const intersection of intersections)
+      GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, intersection.detailA.point, 0.1, dx);
+    if (ck.testExactNumber(2, intersections.length, "2 intersection between the partial curves")) {
+      ck.testPoint3d(bspline0.startPoint(), intersections[0].detailA.point);
+      ck.testPoint3d(bspline0.endPoint(), intersections[1].detailA.point);
+    }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "BsplineCurve", "intersectionXYPairs");
     expect(ck.getNumErrors()).toBe(0);
   });
 });
