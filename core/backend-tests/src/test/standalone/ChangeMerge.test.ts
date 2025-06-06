@@ -11,7 +11,7 @@ import {
 import * as chai from "chai";
 import { assert } from "chai";
 import * as chaiAsPromised from "chai-as-promised";
-import { HubMock, HubWrappers, KnownTestLocations } from "@itwin/test-support";
+import { HubMock, HubWrappers, IModelTestUtils, KnownTestLocations, TestUserType } from "@itwin/test-support";
 import {
   BriefcaseDb,
   ChannelControl,
@@ -21,7 +21,7 @@ import {
   SqliteChangesetReader
 } from "@itwin/core-backend";
 import { RebaseChangesetConflictArgs, TxnArgs } from "@itwin/core-backend/lib/cjs/internal/ChangesetConflictArgs";
-import { IModelTestUtils, TestUserType } from "@itwin/test-support";
+
 chai.use(chaiAsPromised);
 
 async function assertThrowsAsync<T>(test: () => Promise<T>, msg?: string) {
