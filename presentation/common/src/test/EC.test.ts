@@ -15,34 +15,58 @@ import { createTestECClassInfo, createTestRelatedClassInfo, createTestRelatedCla
 
 describe("InstanceKey", () => {
   describe("compare", () => {
-    it("returns less than 0 when `lhs.className` < `rhs.className`", () => {
-      const lhs = { className: "a", id: Id64.invalid };
-      const rhs = { className: "b", id: Id64.invalid };
+    it("returns less than 0 when lhs schema name < rhs schema name", () => {
+      const lhs = { className: "a.x", id: Id64.invalid };
+      const rhs = { className: "b.x", id: Id64.invalid };
       expect(InstanceKey.compare(lhs, rhs)).to.be.lt(0);
     });
 
-    it("returns less than 0 when `lhs.className` = `rhs.className` and `lhs.id` < `rhs.id`", () => {
-      const lhs = { className: "a", id: "0x1" };
-      const rhs = { className: "a", id: "0x2" };
+    it("returns less than 0 when lhs class name < rhs class name", () => {
+      const lhs = { className: "x.a", id: Id64.invalid };
+      const rhs = { className: "x.b", id: Id64.invalid };
       expect(InstanceKey.compare(lhs, rhs)).to.be.lt(0);
     });
 
-    it("returns 0 when `lhs.className` = `rhs.className` and `lhs.id` = `rhs.id`", () => {
-      const lhs = { className: "a", id: "0x1" };
-      const rhs = { className: "a", id: "0x1" };
+    it("returns less than 0 when lhs id < rhs id", () => {
+      const lhs = { className: "x.y", id: "0x1" };
+      const rhs = { className: "x.y", id: "0x2" };
+      expect(InstanceKey.compare(lhs, rhs)).to.be.lt(0);
+    });
+
+    it("returns more than 0 when lhs schema name < rhs schema name", () => {
+      const lhs = { className: "b.x", id: Id64.invalid };
+      const rhs = { className: "a.x", id: Id64.invalid };
+      expect(InstanceKey.compare(lhs, rhs)).to.be.gt(0);
+    });
+
+    it("returns more than 0 when lhs class name < rhs class name", () => {
+      const lhs = { className: "x.b", id: Id64.invalid };
+      const rhs = { className: "x.a", id: Id64.invalid };
+      expect(InstanceKey.compare(lhs, rhs)).to.be.gt(0);
+    });
+
+    it("returns more than 0 when lhs id < rhs id", () => {
+      const lhs = { className: "x.y", id: "0x2" };
+      const rhs = { className: "x.y", id: "0x1" };
+      expect(InstanceKey.compare(lhs, rhs)).to.be.gt(0);
+    });
+
+    it("returns 0 when everything's equal", () => {
+      const lhs = { className: "a.b", id: "0x1" };
+      const rhs = { className: "a.b", id: "0x1" };
       expect(InstanceKey.compare(lhs, rhs)).to.eq(0);
     });
 
-    it("returns more than 0 when `lhs.className` > `rhs.className`", () => {
-      const lhs = { className: "b", id: Id64.invalid };
-      const rhs = { className: "1", id: Id64.invalid };
-      expect(InstanceKey.compare(lhs, rhs)).to.be.gt(0);
+    it("ignores letter casing", () => {
+      const lhs = { className: "a.B", id: "0xaBC" };
+      const rhs = { className: "A.b", id: "0xAbc" };
+      expect(InstanceKey.compare(lhs, rhs)).to.eq(0);
     });
 
-    it("returns more than 0 when `lhs.className` = `rhs.className` and `lhs.id` > `rhs.id`", () => {
-      const lhs = { className: "a", id: "0x2" };
-      const rhs = { className: "a", id: "0x1" };
-      expect(InstanceKey.compare(lhs, rhs)).to.be.gt(0);
+    it("ignores different full class name formats", () => {
+      const lhs = { className: "a.b", id: Id64.invalid };
+      const rhs = { className: "a:b", id: Id64.invalid };
+      expect(InstanceKey.compare(lhs, rhs)).to.eq(0);
     });
   });
 });
