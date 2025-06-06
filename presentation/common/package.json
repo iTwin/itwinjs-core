@@ -46,6 +46,9 @@
     "test:watch": "npm -s test -- --reporter min --watch-extensions ts --watch",
     "prettier:fix": "prettier --write ."
   },
+  "dependencies": {
+    "@itwin/presentation-shared": "^1.2.1"
+  },
   "peerDependencies": {
     "@itwin/core-bentley": "workspace:^4.11.4",
     "@itwin/core-common": "workspace:^4.11.4",

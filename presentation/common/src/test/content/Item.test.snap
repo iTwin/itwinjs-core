@@ -47,7 +47,7 @@ Object {
   "classInfo": Object {
     "id": "0x9c64000000847e",
     "label": "Brand",
-    "name": "XSS",
+    "name": "schema_name:XSS",
   },
   "displayValues": Object {
     "key1": "Associate Savings Account",
@@ -75,7 +75,7 @@ Object {
   "classInfo": Object {
     "id": "0xf3eb0000001909",
     "label": "magnetic International",
-    "name": "Consultant",
+    "name": "schema_name:Consultant",
   },
   "displayValues": Object {
     "key1": "Mobility",
@@ -103,7 +103,7 @@ Object {
   "classInfo": Object {
     "id": "0x6e520000005776",
     "label": "invoice Sleek",
-    "name": "bandwidth",
+    "name": "schema_name:bandwidth",
   },
   "displayValues": Object {
     "key1": null,
@@ -129,7 +129,7 @@ Object {
         ],
         "primaryKeys": Array [
           Object {
-            "className": "SAS",
+            "className": "schema_name:SAS",
             "id": "0x110880000004de8",
           },
         ],
@@ -147,7 +147,7 @@ Object {
   "classInfo": Object {
     "id": "0xbd4c0000006e24",
     "label": "Incredible Metal Chair",
-    "name": "deposit",
+    "name": "schema_name:deposit",
   },
   "displayValues": Object {
     "key1": null,

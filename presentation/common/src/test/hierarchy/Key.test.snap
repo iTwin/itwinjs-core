@@ -27,11 +27,11 @@ exports[`NodeKey fromJSON creates ECInstancesNodeKey 1`] = `
 Object {
   "instanceKeys": Array [
     Object {
-      "className": "Tunisia",
+      "className": "schema_name:Tunisia",
       "id": "0x124e700000179e8",
     },
     Object {
-      "className": "Awesome Fresh Shirt",
+      "className": "schema_name:Awesome Fresh Shirt",
       "id": "0xa3a10000008b64",
     },
   ],
@@ -100,11 +100,11 @@ exports[`NodeKey toJSON serializes ECInstancesNodeKey 1`] = `
 Object {
   "instanceKeys": Array [
     Object {
-      "className": "Delaware",
+      "className": "schema_name:Delaware",
       "id": "0xc509000000f76f",
     },
     Object {
-      "className": "overriding",
+      "className": "schema_name:overriding",
       "id": "0x7a40000000b730",
     },
   ],

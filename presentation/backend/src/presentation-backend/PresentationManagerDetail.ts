@@ -46,6 +46,7 @@ import {
   UpdateInfo,
   WithCancelEvent,
 } from "@itwin/presentation-common";
+import { normalizeFullClassName } from "@itwin/presentation-shared";
 import { PresentationBackendLoggerCategory } from "./BackendLoggerCategory";
 import {
   createDefaultNativePlatform,
@@ -292,7 +293,7 @@ export class PresentationManagerDetail implements IDisposable {
   ): Promise<LabelDefinition[]> {
     const concreteKeys = requestOptions.keys
       .map((k) => {
-        if (k.className === "BisCore:Element") {
+        if (normalizeFullClassName(k.className).toLowerCase() === "BisCore.Element".toLowerCase()) {
           return getElementKey(requestOptions.imodel, k.id);
         }
         return k;

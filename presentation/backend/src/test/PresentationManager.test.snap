@@ -7,7 +7,7 @@ Object {
       "classInfo": Object {
         "id": "0x859f000000fede",
         "label": "cross-platform compressing",
-        "name": "Chicken",
+        "name": "schema_name:Chicken",
       },
       "displayValues": Object {
         "Uzbekistan": "Massachusetts technologies",
@@ -21,7 +21,7 @@ Object {
       "mergedFieldNames": Array [],
       "primaryKeys": Array [
         Object {
-          "className": "throughput",
+          "className": "schema_name:throughput",
           "id": "0xb1d10000003603",
         },
       ],
@@ -82,7 +82,7 @@ Object {
       "classInfo": Object {
         "id": "0x3b8400000029b4",
         "label": "mission-critical mobile",
-        "name": "Solutions",
+        "name": "schema_name:Solutions",
       },
       "displayValues": Object {
         "Investor": "protocol Credit Card Account",
@@ -96,7 +96,7 @@ Object {
       "mergedFieldNames": Array [],
       "primaryKeys": Array [
         Object {
-          "className": "Borders",
+          "className": "schema_name:Borders",
           "id": "0xe44c0000007be8",
         },
       ],
@@ -157,7 +157,7 @@ Object {
       "classInfo": Object {
         "id": "0xe89e00000082d3",
         "label": "Borders Pennsylvania",
-        "name": "Developer",
+        "name": "schema_name:Developer",
       },
       "displayValues": Object {
         "Virginia": "Expressway Avon Valley",
@@ -171,7 +171,7 @@ Object {
       "mergedFieldNames": Array [],
       "primaryKeys": Array [
         Object {
-          "className": "Sharable",
+          "className": "schema_name:Sharable",
           "id": "0xc5130000013a68",
         },
       ],
@@ -232,7 +232,7 @@ Object {
       "classInfo": Object {
         "id": "0x289f000000758a",
         "label": "Up-sized Delaware Plastic",
-        "name": "Chair",
+        "name": "schema_name:Chair",
       },
       "displayValues": Object {
         "6th generation": "Intelligent Fresh Cheese copying Pass",
@@ -246,7 +246,7 @@ Object {
       "mergedFieldNames": Array [],
       "primaryKeys": Array [
         Object {
-          "className": "Multi-tiered",
+          "className": "schema_name:Multi-tiered",
           "id": "0x13842000000ae4d",
         },
       ],
@@ -292,7 +292,7 @@ Object {
       "classInfo": Object {
         "id": "0x10f000000e465",
         "label": "Cambridgeshire asymmetric SDD",
-        "name": "optimizing",
+        "name": "schema_name:optimizing",
       },
       "displayValues": Object {},
       "imageId": "bad90675-1cd6-4a1c-9a48-976928bf2c4c",
@@ -304,7 +304,7 @@ Object {
       "mergedFieldNames": Array [],
       "primaryKeys": Array [
         Object {
-          "className": "dot-com",
+          "className": "schema_name:dot-com",
           "id": "0x137ba0000004451",
         },
       ],
@@ -374,7 +374,7 @@ Object {
       "classInfo": Object {
         "id": "0x14a1300000029c1",
         "label": "generating IB back-end",
-        "name": "bypass",
+        "name": "schema_name:bypass",
       },
       "displayValues": Object {
         "HTTP": "1.23",
@@ -388,7 +388,7 @@ Object {
       "mergedFieldNames": Array [],
       "primaryKeys": Array [
         Object {
-          "className": "Legacy",
+          "className": "schema_name:Legacy",
           "id": "0x1119c00000171d2",
         },
       ],
@@ -458,7 +458,7 @@ Object {
       "classInfo": Object {
         "id": "0xd7cd000000a73e",
         "label": "orchestrate TCP Auto Loan Account",
-        "name": "Nepalese Rupee",
+        "name": "schema_name:Nepalese Rupee",
       },
       "displayValues": Object {
         "Legacy": "Not specified",
@@ -472,7 +472,7 @@ Object {
       "mergedFieldNames": Array [],
       "primaryKeys": Array [
         Object {
-          "className": "programming",
+          "className": "schema_name:programming",
           "id": "0xcd1c000000953e",
         },
       ],
@@ -544,7 +544,7 @@ Object {
     },
     "0x1054a000001245d": Object {
       "label": "Rustic Metal Fish Automotive Cuban Peso Peso Convertible",
-      "name": "Barbados",
+      "name": "schema_name:Barbados",
     },
     "0x2": Object {
       "label": "Target",
@@ -556,11 +556,11 @@ Object {
     },
     "0xab690000009ba9": Object {
       "label": "back-end",
-      "name": "auxiliary",
+      "name": "schema_name:auxiliary",
     },
     "0xea7d000000f2b6": Object {
       "label": "Assurance turquoise navigating",
-      "name": "Berkshire",
+      "name": "schema_name:Berkshire",
     },
   },
   "connectionId": "d61dcbd0-3355-426a-9ebf-3eadccd4b8be",
@@ -777,7 +777,7 @@ Array [
     "classInfo": Object {
       "id": "0xfef3000000b3cb",
       "label": "Yuan Renminbi lime",
-      "name": "Multi-lateral",
+      "name": "schema_name:Multi-lateral",
     },
     "displayValues": Object {
       "test field": "test display value",
@@ -791,7 +791,7 @@ Array [
     "mergedFieldNames": Array [],
     "primaryKeys": Array [
       Object {
-        "className": "District",
+        "className": "schema_name:District",
         "id": "0x406e0000001bdf",
       },
     ],
@@ -808,7 +808,7 @@ Array [
     "classInfo": Object {
       "id": "0x12f58000000306f",
       "label": "lime Chips Centralized",
-      "name": "Regional",
+      "name": "schema_name:Regional",
     },
     "displayValues": Object {
       "test field": "test display value",
@@ -822,7 +822,7 @@ Array [
     "mergedFieldNames": Array [],
     "primaryKeys": Array [
       Object {
-        "className": "Armenian Dram",
+        "className": "schema_name:Armenian Dram",
         "id": "0x13e25000000ea94",
       },
     ],
@@ -839,7 +839,7 @@ Array [
     "classInfo": Object {
       "id": "0x58d1000000eea3",
       "label": "Corporate",
-      "name": "Money Market Account",
+      "name": "schema_name:Money Market Account",
     },
     "displayValues": Object {
       "test field": "test display value",
@@ -853,7 +853,7 @@ Array [
     "mergedFieldNames": Array [],
     "primaryKeys": Array [
       Object {
-        "className": "Steel",
+        "className": "schema_name:Steel",
         "id": "0x1450c0000017be8",
       },
     ],
@@ -870,7 +870,7 @@ Array [
     "classInfo": Object {
       "id": "0x4c9d0000009d37",
       "label": "e-tailers",
-      "name": "Seamless",
+      "name": "schema_name:Seamless",
     },
     "displayValues": Object {},
     "imageId": "test image id",
@@ -882,7 +882,7 @@ Array [
     "mergedFieldNames": Array [],
     "primaryKeys": Array [
       Object {
-        "className": "ability",
+        "className": "schema_name:ability",
         "id": "0x4776000000b65d",
       },
     ],
@@ -899,7 +899,7 @@ Array [
     "classInfo": Object {
       "id": "0x185860000012371",
       "label": "Human Optional Accounts",
-      "name": "holistic",
+      "name": "schema_name:holistic",
     },
     "displayValues": Object {
       "test field": "1.23",
@@ -913,7 +913,7 @@ Array [
     "mergedFieldNames": Array [],
     "primaryKeys": Array [
       Object {
-        "className": "Chair",
+        "className": "schema_name:Chair",
         "id": "0x306d00000118e0",
       },
     ],
@@ -930,7 +930,7 @@ Array [
     "classInfo": Object {
       "id": "0x16d360000000546",
       "label": "Personal Loan Account",
-      "name": "open-source",
+      "name": "schema_name:open-source",
     },
     "displayValues": Object {
       "test field": "Not specified",
@@ -944,7 +944,7 @@ Array [
     "mergedFieldNames": Array [],
     "primaryKeys": Array [
       Object {
-        "className": "empower",
+        "className": "schema_name:empower",
         "id": "0xf4e7000000fcfa",
       },
     ],
@@ -1079,11 +1079,11 @@ Array [
       "key": Object {
         "instanceKeys": Array [
           Object {
-            "className": "Steel",
+            "className": "schema_name:Steel",
             "id": "0x19a5000001511d",
           },
           Object {
-            "className": "auxiliary",
+            "className": "schema_name:auxiliary",
             "id": "0xb4550000004334",
           },
         ],
@@ -1126,11 +1126,11 @@ Array [
       "key": Object {
         "instanceKeys": Array [
           Object {
-            "className": "Incredible",
+            "className": "schema_name:Incredible",
             "id": "0x12f930000017b44",
           },
           Object {
-            "className": "Extended",
+            "className": "schema_name:Extended",
             "id": "0xd5a8000000c6af",
           },
         ],
@@ -1157,7 +1157,7 @@ Array [
     "key": Object {
       "instanceKeys": Array [
         Object {
-          "className": "enable",
+          "className": "schema_name:enable",
           "id": "0x13cb90000016d51",
         },
       ],
@@ -1270,7 +1270,7 @@ Array [
     "key": Object {
       "instanceKeys": Array [
         Object {
-          "className": "Personal Loan Account",
+          "className": "schema_name:Personal Loan Account",
           "id": "0x671b0000017448",
         },
       ],

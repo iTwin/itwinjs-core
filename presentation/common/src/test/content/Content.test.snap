@@ -7,7 +7,7 @@ Object {
       "classInfo": Object {
         "id": "0x8634000001605b",
         "label": "Associate",
-        "name": "Ergonomic",
+        "name": "schema_name:Ergonomic",
       },
       "displayValues": Object {
         "test": "Sports Steel program",
@@ -21,7 +21,7 @@ Object {
       "mergedFieldNames": Array [],
       "primaryKeys": Array [
         Object {
-          "className": "Money Market Account",
+          "className": "schema_name:Money Market Account",
           "id": "0xfab60000016bab",
         },
       ],
@@ -50,7 +50,7 @@ Object {
       "classInfo": Object {
         "id": "0xc9b1000000e4ef",
         "label": "Intuitive",
-        "name": "Handmade Metal Soap",
+        "name": "schema_name:Handmade Metal Soap",
       },
       "displayValues": Object {
         "test": "Walk",
@@ -64,7 +64,7 @@ Object {
       "mergedFieldNames": Array [],
       "primaryKeys": Array [
         Object {
-          "className": "enhance",
+          "className": "schema_name:enhance",
           "id": "0x90ae000000ef81",
         },
       ],
