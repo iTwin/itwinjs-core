@@ -1098,7 +1098,7 @@ export namespace IModelConnection {
     }
 
     /** Loads the needed CodeSpec from the remote IModelDb. */
-    private async _loadCodeSpec(identifier: { name: string; id: never } | { id: string; name: never }): Promise<CodeSpec> {
+    private async _loadCodeSpec(identifier: { name: string; id?: undefined } | { id: string; name?: undefined }): Promise<CodeSpec> {
       const query = `
         SELECT ECInstanceId AS Id, Name, JsonProperties
         FROM BisCore.CodeSpec
@@ -1145,7 +1145,7 @@ export namespace IModelConnection {
       if (!Id64.isValid(codeSpecId))
         throw new IModelError(IModelStatus.InvalidId, "Invalid codeSpecId", () => ({ codeSpecId }));
 
-      return this._loadCodeSpec({ id: codeSpecId, name: undefined as never });
+      return this._loadCodeSpec({ id: codeSpecId });
     }
 
     /** Look up a CodeSpec by name.
@@ -1156,7 +1156,7 @@ export namespace IModelConnection {
     public async getByName(name: string): Promise<CodeSpec> {
       if (name === "") throw new IModelError(IModelStatus.NotFound, "CodeSpec not found");
 
-      return this._loadCodeSpec({ name, id: undefined as never });
+      return this._loadCodeSpec({ name });
     }
   }
 
