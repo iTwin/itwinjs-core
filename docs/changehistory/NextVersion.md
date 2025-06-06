@@ -443,6 +443,8 @@ const schema = await context.getSchema(schemaKey, SchemaMatchType.Exact);
 
 A new major release of iTwin.js affords us the opportunity to update our requirements to continue to provide modern, secure, and rich libraries. Please visit our [Supported Platforms](../learning/SupportedPlatforms) documentation for a full breakdown.
 
+Support for Intel architecture on macOS and iOS Simulator was removed in iTwin.js 5.0. Both now require an Apple Silicon Mac (M1 or later).
+
 #### Node.js
 
 Node 18 will reach [end-of-life](https://github.com/nodejs/release?tab=readme-ov-file#release-schedule) soon and will no longer be supported. iTwin.js 5.0 requires a minimum of Node 20.11.0, though we recommend using the latest long-term-support version.
