@@ -250,7 +250,6 @@ export interface PresentationManagerProps {
     // @deprecated
     presentationAssetsRoot?: string | PresentationAssetsRootConfig;
     rulesetDirectories?: string[];
-    // @deprecated
     schemaContextProvider?: (imodel: IModelDb) => SchemaContext;
     supplementalRulesetDirectories?: string[];
     // @beta @deprecated
