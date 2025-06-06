@@ -322,6 +322,9 @@ describe("Bearing format tests:", () => {
       "E45:00:00W",     // invalid prefix
       "45:00:00E",      // missing prefix
       "N45:00:00EExtra", // unexpected suffix
+      "N90:-44:-23E",
+      "S-90:-00:-01W",
+      "N-70:20:-5E"
     ];
 
     for (const input of invalidTestData) {
