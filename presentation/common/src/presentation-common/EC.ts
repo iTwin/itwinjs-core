@@ -8,12 +8,8 @@
 
 import { assert, Id64String } from "@itwin/core-bentley";
 import { FormatProps } from "@itwin/core-quantity";
-<<<<<<< HEAD
-import { PartialBy } from "./Utils";
-=======
 import { parseFullClassName } from "@itwin/presentation-shared";
-import { PartialBy } from "./Utils.js";
->>>>>>> 7565452a5e (Presentation: More elaborate full class name comparisons (#8183))
+import { PartialBy } from "./Utils";
 
 /**
  * Type of an ECClass ID.

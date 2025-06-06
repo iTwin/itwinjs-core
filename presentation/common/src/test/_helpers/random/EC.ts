@@ -18,7 +18,7 @@ export const createRandomECInstanceId = (): ec.InstanceId => {
  */
 export const createRandomECInstanceKey = (): ec.InstanceKey => {
   return {
-    className: faker.random.word(),
+    className: `schema_name:${faker.random.word()}`,
     id: createRandomECInstanceId(),
   };
 };
@@ -29,7 +29,7 @@ export const createRandomECInstanceKey = (): ec.InstanceKey => {
 export const createRandomECClassInfo = (): ec.ClassInfo => {
   return {
     id: createRandomECInstanceId(),
-    name: faker.random.word(),
+    name: `schema_name:${faker.random.word()}`,
     label: faker.random.words(),
   };
 };

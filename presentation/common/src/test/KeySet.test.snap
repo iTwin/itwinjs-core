@@ -25,11 +25,11 @@ Set {
   Object {
     "instanceKeys": Array [
       Object {
-        "className": "payment",
+        "className": "schema_name:payment",
         "id": "0xa5b40000008392",
       },
       Object {
-        "className": "Facilitator",
+        "className": "schema_name:Facilitator",
         "id": "0x1557800000006dd",
       },
     ],
@@ -43,11 +43,11 @@ Set {
   Object {
     "instanceKeys": Array [
       Object {
-        "className": "Baby",
+        "className": "schema_name:Baby",
         "id": "0xc91b00000131e3",
       },
       Object {
-        "className": "fuchsia",
+        "className": "schema_name:fuchsia",
         "id": "0x2fd90000000252",
       },
     ],
@@ -65,11 +65,11 @@ exports[`KeySet serialization roundtrip 1`] = `
 Object {
   "instanceKeys": Array [
     Array [
-      "Ergonomic Concrete Computer",
+      "schema_name:Ergonomic Concrete Computer",
       "+14990000016CD0+B148FFFFFF3755",
     ],
     Array [
-      "Rustic Soft Fish",
+      "schema_name:Rustic Soft Fish",
       "+A46C00000153AE",
     ],
   ],
@@ -77,11 +77,11 @@ Object {
     Object {
       "instanceKeys": Array [
         Object {
-          "className": "Unbranded",
+          "className": "schema_name:Unbranded",
           "id": "0xbeec0000009fc8",
         },
         Object {
-          "className": "intangible",
+          "className": "schema_name:intangible",
           "id": "0xf42000000018a3",
         },
       ],

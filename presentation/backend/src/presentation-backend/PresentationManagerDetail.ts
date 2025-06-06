@@ -46,13 +46,8 @@ import {
   UpdateInfo,
   WithCancelEvent,
 } from "@itwin/presentation-common";
-<<<<<<< HEAD
-import { PresentationBackendLoggerCategory } from "./BackendLoggerCategory";
-=======
-import { deepReplaceNullsToUndefined, PresentationIpcEvents } from "@itwin/presentation-common/internal";
 import { normalizeFullClassName } from "@itwin/presentation-shared";
-import { PresentationBackendLoggerCategory } from "./BackendLoggerCategory.js";
->>>>>>> 7565452a5e (Presentation: More elaborate full class name comparisons (#8183))
+import { PresentationBackendLoggerCategory } from "./BackendLoggerCategory";
 import {
   createDefaultNativePlatform,
   NativePlatformDefinition,

@@ -3282,7 +3282,7 @@ describe("PresentationManager", () => {
       it("returns labels for BisCore:Element instances", async () => {
         // what the addon receives
         const baseClassKey = { className: "BisCore:Element", id: createRandomId() };
-        const concreteClassKey = { className: faker.random.word(), id: baseClassKey.id };
+        const concreteClassKey = { className: `BisCore:ConcreteClass`, id: baseClassKey.id };
         setupIModelForElementKey(imodelMock, concreteClassKey);
         const label = createRandomLabelDefinition();
         const expectedContentParams = {

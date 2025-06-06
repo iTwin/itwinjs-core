@@ -23,11 +23,11 @@ Object {
     "key": Object {
       "instanceKeys": Array [
         Object {
-          "className": "data-warehouse",
+          "className": "schema_name:data-warehouse",
           "id": "0xeac00000034cf",
         },
         Object {
-          "className": "Facilitator",
+          "className": "schema_name:Facilitator",
           "id": "0x283e00000097bf",
         },
       ],
@@ -69,11 +69,11 @@ Object {
     "key": Object {
       "instanceKeys": Array [
         Object {
-          "className": "throughput",
+          "className": "schema_name:throughput",
           "id": "0xc15a0000015831",
         },
         Object {
-          "className": "redundant",
+          "className": "schema_name:redundant",
           "id": "0xfabd0000008446",
         },
       ],
@@ -117,11 +117,11 @@ Array [
       "key": Object {
         "instanceKeys": Array [
           Object {
-            "className": "Incredible Plastic Chair",
+            "className": "schema_name:Incredible Plastic Chair",
             "id": "0x104ce0000008d17",
           },
           Object {
-            "className": "e-markets",
+            "className": "schema_name:e-markets",
             "id": "0x31290000016cb2",
           },
         ],
@@ -161,11 +161,11 @@ Array [
       "key": Object {
         "instanceKeys": Array [
           Object {
-            "className": "Chile",
+            "className": "schema_name:Chile",
             "id": "0x8141000000e0d8",
           },
           Object {
-            "className": "purple",
+            "className": "schema_name:purple",
             "id": "0xb7b70000002cfe",
           },
         ],
@@ -213,11 +213,11 @@ Array [
       "key": Object {
         "instanceKeys": Array [
           Object {
-            "className": "infomediaries",
+            "className": "schema_name:infomediaries",
             "id": "0x13706000000f833",
           },
           Object {
-            "className": "XML",
+            "className": "schema_name:XML",
             "id": "0x6e770000001d8f",
           },
         ],
@@ -254,11 +254,11 @@ Array [
       "key": Object {
         "instanceKeys": Array [
           Object {
-            "className": "Buckinghamshire",
+            "className": "schema_name:Buckinghamshire",
             "id": "0x10401000001736d",
           },
           Object {
-            "className": "invoice",
+            "className": "schema_name:invoice",
             "id": "0x14a6400000078bb",
           },
         ],
@@ -307,11 +307,11 @@ Object {
     "key": Object {
       "instanceKeys": Array [
         Object {
-          "className": "black",
+          "className": "schema_name:black",
           "id": "0x1812400000172a9",
         },
         Object {
-          "className": "1080p",
+          "className": "schema_name:1080p",
           "id": "0x16a8b0000011c4c",
         },
       ],
@@ -354,11 +354,11 @@ Object {
     "key": Object {
       "instanceKeys": Array [
         Object {
-          "className": "compressing",
+          "className": "schema_name:compressing",
           "id": "0x16deb0000012feb",
         },
         Object {
-          "className": "Ball",
+          "className": "schema_name:Ball",
           "id": "0x1148a000000c782",
         },
       ],
@@ -402,11 +402,11 @@ Object {
     "key": Object {
       "instanceKeys": Array [
         Object {
-          "className": "Steel",
+          "className": "schema_name:Steel",
           "id": "0x13ec80000017064",
         },
         Object {
-          "className": "Bedfordshire",
+          "className": "schema_name:Bedfordshire",
           "id": "0xc0b30000007d73",
         },
       ],
