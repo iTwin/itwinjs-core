@@ -1099,12 +1099,20 @@ export namespace IModelConnection {
 
     /** Loads the needed CodeSpec from the remote IModelDb. */
     private async _loadCodeSpec(identifier: { name: string; id?: undefined } | { id: string; name?: undefined }): Promise<CodeSpec> {
+      const isNameDefined = identifier.name !== undefined;
       const query = `
         SELECT ECInstanceId AS Id, Name, JsonProperties
         FROM BisCore.CodeSpec
-        WHERE ${identifier.name !== undefined ? ` Name='${identifier.name}'` : ` Id=${identifier.id}`}`;
+        WHERE ${isNameDefined ? `Name=:name` : `Id=:id`}`;
 
-      const queryReader = this._iModel.createQueryReader(query, undefined, {
+      const params = new QueryBinder();
+      if (isNameDefined) {
+        params.bindString("name", identifier.name);
+      } else {
+        params.bindId("id", identifier.id);
+      }
+
+      const queryReader = this._iModel.createQueryReader(query, params, {
         rowFormat: QueryRowFormat.UseECSqlPropertyIndexes,
       });
 
