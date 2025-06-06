@@ -48,6 +48,7 @@ import {
   WithCancelEvent,
 } from "@itwin/presentation-common";
 import { deepReplaceNullsToUndefined, PresentationIpcEvents } from "@itwin/presentation-common/internal";
+import { normalizeFullClassName } from "@itwin/presentation-shared";
 import { PresentationBackendLoggerCategory } from "./BackendLoggerCategory.js";
 import {
   createDefaultNativePlatform,
@@ -249,6 +250,7 @@ export class PresentationManagerDetail implements Disposable {
       requestId: NativePlatformRequestTypes.GetContentSet,
       rulesetId: this.registerRuleset(rulesetOrId),
       ...strippedOptions,
+      omitFormattedValues: true,
       keys: getKeysForContentRequest(requestOptions.keys, (map) => bisElementInstanceKeysProcessor(requestOptions.imodel, map)),
       descriptorOverrides: createContentDescriptorOverrides(descriptor),
     };
@@ -266,6 +268,7 @@ export class PresentationManagerDetail implements Disposable {
       requestId: NativePlatformRequestTypes.GetContent,
       rulesetId: this.registerRuleset(rulesetOrId),
       ...strippedOptions,
+      omitFormattedValues: true,
       keys: getKeysForContentRequest(requestOptions.keys, (map) => bisElementInstanceKeysProcessor(requestOptions.imodel, map)),
       descriptorOverrides: createContentDescriptorOverrides(descriptor),
     };
@@ -303,7 +306,7 @@ export class PresentationManagerDetail implements Disposable {
   ): Promise<LabelDefinition[]> {
     const concreteKeys = requestOptions.keys
       .map((k) => {
-        if (k.className === "BisCore:Element") {
+        if (normalizeFullClassName(k.className).toLowerCase() === "BisCore.Element".toLowerCase()) {
           return getElementKey(requestOptions.imodel, k.id);
         }
         return k;
