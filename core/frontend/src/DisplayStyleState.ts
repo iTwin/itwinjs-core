@@ -23,6 +23,7 @@ import { IModelConnection } from "./IModelConnection";
 import { PlanarClipMaskState } from "./PlanarClipMaskState";
 import { getCesiumOSMBuildingsUrl, MapLayerIndex, TileTreeReference } from "./tile/internal";
 import { _onScheduleScriptReferenceChanged, _scheduleScriptReference } from './common/internal/Symbols';
+import { getAllElementIdsFromScript, getScriptDelta } from "./ScriptUtils";
 
 /** @internal */
 export class TerrainDisplayOverrides {
@@ -41,6 +42,11 @@ export interface OsmBuildingDisplayOptions {
   onOff?: boolean;
   /** If defined, overrides aspects of the appearance of the OpenStreetMap building meshes. */
   appearanceOverrides?: FeatureAppearance;
+}
+
+interface ScheduleEditingSession {
+  script: RenderSchedule.Script;
+  committed: boolean;
 }
 
 /** A DisplayStyle defines the parameters for 'styling' the contents of a [[ViewState]].
@@ -62,6 +68,18 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   public readonly [_onScheduleScriptReferenceChanged] = new BeEvent<(newScriptReference: RenderSchedule.ScriptReference | undefined) => void>();
 
   private _scriptReference?: RenderSchedule.ScriptReference;
+
+  private _editingSession?: ScheduleEditingSession;
+
+  /** Event raised when schedule script edits are made, providing changed element IDs and the editing scope. */
+  public readonly onScheduleEditingChanged = new BeEvent<
+    (change: { changedElementIds: Set<Id64String> }) => void
+  >();
+
+  /** Event raised when schedule script edits are committed (finalized). */
+  public readonly onScheduleEditingCommitted = new BeEvent<
+    () => void
+  >();
 
   /** Event raised just before the [[scheduleScript]] property is changed. */
   public readonly onScheduleScriptChanged = new BeEvent<(newScript: RenderSchedule.Script | undefined) => void>();
@@ -293,6 +311,41 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     // Note the `await` in loadScriptReferenceFromTimeline will resolve before this one [per the spec](https://262.ecma-international.org/6.0/#sec-triggerpromisereactions).
     if (this._queryRenderTimelinePropsPromise)
       await this._queryRenderTimelinePropsPromise;
+  }
+
+  /** Start a new schedule editing session. Fires initial onScheduleEditingChanged with all elementIds. */
+  public beginScheduleEditing(initialScript: RenderSchedule.Script): void {
+    this._editingSession = {
+      script: initialScript,
+      committed: false,
+    };
+
+    const allIds = getAllElementIdsFromScript(initialScript);
+    this.onScheduleEditingChanged.raiseEvent({ changedElementIds: allIds });
+
+    this.scheduleScript = initialScript;
+  }
+
+  /** Update the script in the current editing session. Fires onScheduleEditingChanged. */
+  public updateEditingScript(newScript: RenderSchedule.Script): void {
+    if (!this._editingSession || this._editingSession.committed)
+      return;
+
+    const prevScript = this._editingSession.script;
+    const changedIds = getScriptDelta(prevScript, newScript);
+    this._editingSession.script = newScript;
+    this.onScheduleEditingChanged.raiseEvent({ changedElementIds: changedIds });
+
+    this.scheduleScript = newScript;
+  }
+
+  /** Commit the editing session. */
+  public commitScheduleEditing(): void {
+    if (!this._editingSession || this._editingSession.committed)
+      return;
+    this._editingSession.committed = true;
+    this.onScheduleEditingCommitted.raiseEvent();
+    this._editingSession = undefined;
   }
 
   /** The [RenderSchedule.Script]($common) that animates the contents of the view, if any.

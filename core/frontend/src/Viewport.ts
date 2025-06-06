@@ -1299,16 +1299,32 @@ export abstract class Viewport implements Disposable, TileUser {
     const scriptChanged = () => {
       scheduleChanged();
       this.invalidateScene();
-      for (const ref of this.getTileTreeRefs()) {
-        const tree = ref.treeOwner.tileTree;
-        if (tree instanceof IModelTileTree && typeof tree.notifyScheduleScriptChanged === "function") {
-          void tree.notifyScheduleScriptChanged();
-        }
-      }
     };
 
     removals.push(settings.onTimePointChanged.addListener(scheduleChanged));
     removals.push(style.onScheduleScriptChanged.addListener(scriptChanged));
+
+
+    const scheduleEditingChanged = (change: { changedElementIds: Set<Id64String> }) => {
+      for (const ref of this.getTileTreeRefs()) {
+        const tree = ref.treeOwner.tileTree;
+        if (tree instanceof IModelTileTree) {
+          tree.onScheduleEditingChanged(change);
+        }
+      }
+    };
+
+    const scheduleEditingCommitted = () => {
+      for (const ref of this.getTileTreeRefs()) {
+        const tree = ref.treeOwner.tileTree;
+        if (tree instanceof IModelTileTree) {
+          tree.onScheduleEditingCommitted();
+        }
+      }
+    };
+
+    removals.push(style.onScheduleEditingChanged.addListener(scheduleEditingChanged));
+    removals.push(style.onScheduleEditingCommitted.addListener(scheduleEditingCommitted));
 
     removals.push(settings.onViewFlagsChanged.addListener((vf) => {
       if (vf.backgroundMap !== this.viewFlags.backgroundMap)

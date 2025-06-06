@@ -203,6 +203,11 @@ export class SetScheduleScriptTool extends DisplayStyleTool {
       const elementTimeline1 = modelTimeline.addElementTimeline(["0x2000003abfc"]);
       elementTimeline1.addColor(now, new RgbColor(255, 255, 0));
       elementTimeline1.addColor(now + 3000, new RgbColor(255, 255, 255));
+      elementTimeline1.addTransform(now, Transform.createIdentity());
+      elementTimeline1.addTransform(
+        now + 3000,
+        Transform.createTranslationXYZ(0, 0, 0)
+      );
 
       const elementTimeline2 = modelTimeline.addElementTimeline(["0xca60"]);
       elementTimeline2.addColor(now, new RgbColor(0, 255, 255));
@@ -218,7 +223,11 @@ export class SetScheduleScriptTool extends DisplayStyleTool {
   }
 
   public override async execute(vp: Viewport): Promise<boolean> {
-    vp.displayStyle.scheduleScript = this._script;
+    // vp.displayStyle.scheduleScript = this._script;
+    if (!this._script)
+      return false;
+    // vp.displayStyle.updateEditingScript(this._script);
+    vp.displayStyle.commitScheduleEditing();
     return true;
   }
 }
@@ -256,7 +265,13 @@ export class TestScheduleScriptTool extends DisplayStyleTool {
   }
 
   public override async execute(vp: Viewport): Promise<boolean> {
-    vp.displayStyle.scheduleScript = this._script;
+    // vp.displayStyle.scheduleScript = this._script;
+    if (!this._script)
+      return false;
+
+    vp.displayStyle.beginScheduleEditing(this._script);
+    // editingScope.updateScript(this._script);
+
     return true;
   }
 }

@@ -21,7 +21,6 @@ import {
   acquireImdlDecoder, DynamicIModelTile, ImdlDecoder, IModelTile, IModelTileParams, iModelTileParamsFromJSON, LayerTileTreeHandler, MapLayerTreeSetting, Tile,
   TileContent, TileDrawArgs, TileLoadPriority, TileParams, TileRequest, TileRequestChannel, TileTree, TileTreeParams
 } from "../../tile/internal";
-import { getScriptDelta } from "../../ScriptUtils";
 
 export interface IModelTileTreeOptions {
   readonly allowInstancing: boolean;
@@ -158,7 +157,7 @@ class DynamicState {
   }
 }
 
-class DynamicTestState {
+class ScheduleScriptDynamicState {
   public readonly type = "dynamic";
   public readonly rootTile: DynamicIModelTile;
   private _dispose: () => void;
@@ -183,7 +182,7 @@ class DisposedState {
 const disposedState = new DisposedState();
 
 /** The current state of an [[IModelTileTree]]'s [[RootTile]]. The tile transitions between these states primarily in response to GraphicalEditingScope events. */
-type RootTileState = StaticState | InteractiveState | DynamicState | DisposedState | DynamicTestState ;
+type RootTileState = StaticState | InteractiveState | DynamicState | DisposedState | ScheduleScriptDynamicState ;
 
 /** The root tile for an [[IModelTileTree]].
  */
@@ -283,7 +282,6 @@ class RootTile extends Tile {
       let appearanceProvider = this._tileState.rootTile.appearanceProvider;
       if (args.appearanceProvider)
         appearanceProvider = FeatureAppearanceProvider.chain(args.appearanceProvider, appearanceProvider);
-      console.log(appearanceProvider);
       args.graphics.clear();
       args.graphics.add(args.context.createGraphicBranch(staticBranch, Transform.createIdentity(), { appearanceProvider }));
     }
@@ -477,90 +475,20 @@ export class IModelTileTree extends TileTree {
     return undefined !== this._transformNodeRanges;
   }
 
-  public async notifyScheduleScriptChanged(): Promise<void> {
-    if (!this.rootTile)
-      return;
-
-    const selectedView = IModelApp.viewManager.selectedView;
-    const displayStyle = selectedView?.displayStyle;
-
-    if (!displayStyle)
-      return;
-
-    await new Promise(resolve => setTimeout(resolve, 0));
-    await displayStyle.load();
-
-    const newScript = displayStyle.scheduleScript;
-    const previousScript = this._lastScheduleScript;
-    this._lastScheduleScript = newScript;
-
-    const scriptRef = newScript ? new RenderSchedule.ScriptReference(displayStyle.id, newScript) : undefined;
-    const scriptInfo = IModelApp.tileAdmin.getScriptInfoForTreeId(this.modelId, scriptRef);
-
-    const sameScript = this.timeline === scriptInfo?.timeline;
-    if (!sameScript) {
-      this.decoder = acquireImdlDecoder({
-        type: this.batchType,
-        omitEdges: false === this.edgeOptions,
-        timeline: scriptInfo?.timeline,
-        iModel: this.iModel,
-        batchModelId: this.modelId,
-        is3d: this.is3d,
-        containsTransformNodes: this.containsTransformNodes,
-        noWorker: !IModelApp.tileAdmin.decodeImdlInWorker,
+  public onScheduleEditingChanged(change: { changedElementIds: Set<Id64String> }) {
+    const elemChanges: ElementGeometryChange[] = [];
+    for (const id of change.changedElementIds) {
+      elemChanges.push({
+        id,
+        type: DbOpcode.Update,
+        range: new Range3d(0, 0, 0, 1, 1, 1),
       });
     }
-
-    let changedElementIds: Set<Id64String> | undefined;
-    if (!previousScript && newScript) {
-      changedElementIds = new Set<Id64String>();
-
-      for (const model of newScript.modelTimelines) {
-        for (const timeline of model.elementTimelines) {
-          for (const id of timeline.elementIds)
-            changedElementIds.add(id);
-        }
-      }
-    } else if (previousScript && newScript) {
-      changedElementIds = getScriptDelta(previousScript, newScript);
-    }
-
-    // this.pruneAnimatedTiles(this.rootTile, changedElementIds);
-
-    if (changedElementIds && changedElementIds.size > 0) {
-      const elemChanges: ElementGeometryChange[] = [];
-      for (const id of changedElementIds) {
-        const range = new Range3d(0, 0, 0, 1, 1, 1);
-
-        elemChanges.push({
-          id,
-          type: DbOpcode.Update,
-          range,
-        });
-      }
-
-      console.log("Switching to DynamicTestState with", elemChanges.length, "element(s)");
-
-      // Switch to dynamic state
-      this._rootTile.transition(new DynamicTestState(this._rootTile, elemChanges));
-      return;
-    }
-
-    // this.pruneAnimatedTiles(this.rootTile, changedElementIds);
+    this._rootTile.transition(new ScheduleScriptDynamicState(this._rootTile, elemChanges));
   }
 
-  private pruneAnimatedTiles(tile: Tile, changedElementIds?: Set<Id64String>): void {
-    if (tile instanceof IModelTile) {
-      const shouldRefresh = tile.hasGraphics && tile.isAffectedByScheduleScript(changedElementIds);
-
-      if (shouldRefresh) {
-        tile.disposeContents();
-      }
-    }
-
-    if (tile.children) {
-      for (const child of tile.children)
-        this.pruneAnimatedTiles(child, changedElementIds);
-    }
+  public onScheduleEditingCommitted() {
+    if (this._rootTile.tileState.type !== "static")
+      this._rootTile.transition(new StaticState(this._rootTile));
   }
 }

@@ -68,3 +68,15 @@ function isTimelineEntryEqual(a: RenderSchedule.ElementTimeline, b: RenderSchedu
 
   return true;
 }
+
+export function getAllElementIdsFromScript(script: RenderSchedule.Script): Set<Id64String> {
+  const ids = new Set<Id64String>();
+  for (const modelTimeline of script.modelTimelines) {
+    for (const elementTimeline of modelTimeline.elementTimelines) {
+      for (const id of elementTimeline.elementIds)
+        ids.add(id);
+    }
+  }
+  return ids;
+}
+
