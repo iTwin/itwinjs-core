@@ -531,8 +531,8 @@ preview;class;SpatialLocationType
 public;class;SpatialModel
 preview;class;SpatialModel
 public;class;SpatialViewDefinition
-beta;class;SqliteBackedInstanceCache
 preview;class;SpatialViewDefinition
+beta;class;SqliteBackedInstanceCache
 beta;interface;SqliteChange
 beta;type;SqliteChangeOp
 beta;class;SqliteChangesetReader
