@@ -9,7 +9,9 @@ import { BentleyLoggerCategory, Logger, LogLevel, ProcessDetector } from "@itwin
 import { BackendLoggerCategory, IModelHost, IModelHostOptions } from "@itwin/core-backend";
 import { IModelNative } from "@itwin/core-backend/lib/cjs/internal/NativePlatform";
 
-/** Class for simple test timing */
+/** Class for simple test timing
+ * @internal
+ */
 export class Timer {
   private _label: string;
   private _start: Date;
@@ -31,6 +33,7 @@ export class Timer {
  * test failing operations. If those failing operations raise assertions in native code, the test
  * would fail unexpectedly in a debug build. In that case the native code assertions can be disabled with
  * this class.
+ * @internal
  */
 export class DisableNativeAssertions implements Disposable {
   private _native: IModelJsNative.DisableNativeAssertions | undefined;
@@ -53,6 +56,9 @@ export class DisableNativeAssertions implements Disposable {
   }
 }
 
+/**
+ * @internal
+ */
 export class TestUtils {
   public static getCacheDir(fallback: string | undefined = undefined) {
     if (ProcessDetector.isMobileAppBackend) {
