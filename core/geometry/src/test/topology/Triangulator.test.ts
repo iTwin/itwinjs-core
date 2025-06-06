@@ -1261,9 +1261,12 @@ describe("Triangulation", () => {
           return ck.testTrue(false, "expect circumcircle to be circular");
         for (const node of g.allHalfEdges) {
           const vertex = node.getPoint3d();
-          if (vertex.distanceXY(center) < radius - Geometry.smallMetricDistance) {
+          if (vertex.isAlmostEqual(p0) || vertex.isAlmostEqual(p1) || vertex.isAlmostEqual(p2))
+            continue; // skip triangle vertices
+          let k = radius - Geometry.smallMetricDistance;
+          let k2 = k * k;
+          if (vertex.distanceSquaredXY(center) < k2)
             return expectDelaunay ? ck.testTrue(false, "expect no vertex inside circumcircle") : true;
-          }
         }
         return expectDelaunay ? true : ck.testTrue(false, "expect non-Delaunay triangulation");
       },
