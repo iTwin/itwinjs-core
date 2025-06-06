@@ -2,6 +2,12 @@
   "name": "@itwin/presentation-frontend",
   "entries": [
     {
+      "version": "4.11.5",
+      "tag": "@itwin/presentation-frontend_v4.11.5",
+      "date": "Fri, 06 Jun 2025 13:41:18 GMT",
+      "comments": {}
+    },
+    {
       "version": "4.11.4",
       "tag": "@itwin/presentation-frontend_v4.11.4",
       "date": "Tue, 03 Jun 2025 16:15:19 GMT",
