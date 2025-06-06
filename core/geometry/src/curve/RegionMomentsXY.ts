@@ -93,18 +93,42 @@ export class RegionMomentsXY extends NullGeometryHandler {
     this._activeMomentData = undefined;
     return momentData;
   }
+  private computeLargestParityRegionLoop(region: AnyRegion): { loopMoments: MomentData[], largestLoopIndex: number } | undefined {
+    if (!(region instanceof ParityRegion))
+      return undefined;
+    let largestLoopIndex = -1;
+    const loopMoments: MomentData[] = [];
+    let maxAbsArea = 0.0;
+    for (let i = 0; i < region.children.length; i++) {
+      const moments = this.handleLoop(region.children[i]);
+      if (moments) {
+        loopMoments.push(moments);
+        const area = Math.abs(moments.quantitySum);
+        if (area > maxAbsArea) {
+          maxAbsArea = area;
+          largestLoopIndex = i;
+        }
+      }
+    }
+    if (largestLoopIndex < 0)
+      return undefined; // unexpected
+    return { loopMoments, largestLoopIndex };
+  }
   private handleAnyRegion(region: AnyRegion): MomentData | undefined {
-    // guarantee there is no overlapping children
+    // guarantee there are no overlapping children
     const merged = RegionOps.regionBooleanXY(region, undefined, RegionBinaryOpType.Union);
     if (!merged)
       return undefined;
     if (merged instanceof Loop)
       return this.handleLoop(merged);
+    const parityData = this.computeLargestParityRegionLoop(merged);
     const summedMoments = MomentData.create();
-    for (const child of merged.children) {
-      const childMoments = child.dispatchToGeometryHandler(this);
+    for (let i = 0; i < merged.children.length; i++) {
+      const childMoments = parityData ? parityData.loopMoments[i] : merged.children[i].dispatchToGeometryHandler(this);
       if (childMoments) {
-        const sign0 = childMoments.signFactor(1.0);
+        // parity region hole sums subtract from outer loop sums; all other regions add
+        const scale = (parityData && (i !== parityData.largestLoopIndex)) ? -1.0 : 1.0;
+        const sign0 = childMoments.signFactor(scale);
         summedMoments.accumulateProducts(childMoments, sign0);
       }
     }
