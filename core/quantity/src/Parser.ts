@@ -790,10 +790,6 @@ export class Parser {
     const revolution = this.getRevolution(spec);
     const quarterRevolution = revolution / 4;
 
-    if (parsedResult.value > quarterRevolution) {
-      return { ok: false, error: ParseError.BearingAngleOutOfRange };
-    }
-
     let magnitude = parsedResult.value;
     if (magnitude < -quarterRevolution || magnitude > quarterRevolution) {
       return { ok: false, error: ParseError.BearingAngleOutOfRange };
