@@ -7,8 +7,7 @@ import { Code, ColorDef, GeometryStreamProps, IModel, SubCategoryAppearance } fr
 import { Arc3d, IModelJson, Point3d } from "@itwin/core-geometry";
 import { assert, expect } from "chai";
 import * as path from "node:path";
-import { HubMock } from "@itwin/core-backend/lib/cjs/internal/HubMock";
-import { HubWrappers, IModelTestUtils, KnownTestLocations } from "@itwin/test-support";
+import { HubMock, HubWrappers, IModelTestUtils, KnownTestLocations } from "@itwin/test-support";
 import {
   _nativeDb, BriefcaseDb, ChannelControl, DrawingCategory, ChangesetECAdaptor as ECChangesetAdaptor, PartialECChangeUnifier,
   SnapshotDb, SqliteChangeOp, SqliteChangesetReader,
