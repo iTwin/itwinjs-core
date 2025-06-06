@@ -67,13 +67,13 @@ import {
   LocalizationHelper,
 } from "@itwin/presentation-common/internal";
 import { getContentItemsObservableFromClassNames, getContentItemsObservableFromElementIds } from "./ElementPropertiesHelper.js";
+import { _presentation_manager_detail } from "./InternalSymbols.js";
 import { NativePlatformRequestTypes } from "./NativePlatform.js";
 import { getRulesetIdObject, PresentationManagerDetail } from "./PresentationManagerDetail.js";
 import { RulesetManager } from "./RulesetManager.js";
 import { RulesetVariablesManager, RulesetVariablesManagerImpl } from "./RulesetVariablesManager.js";
 import { SelectionScopesHelper } from "./SelectionScopesHelper.js";
 import { BackendDiagnosticsAttribute, BackendDiagnosticsOptions, getLocalizedStringEN } from "./Utils.js";
-import { _presentation_manager_detail } from "./InternalSymbols.js";
 
 /**
  * Presentation hierarchy cache mode.
@@ -327,6 +327,8 @@ export interface PresentationManagerProps {
   /**
    * Callback that provides [SchemaContext]($ecschema-metadata) for supplied [IModelDb]($core-backend).
    * [SchemaContext]($ecschema-metadata) is used for getting metadata required for values formatting.
+   *
+   * @deprecated in 5.1. [IModelDb.schemaContext]($core-backend) is now used by default instead.
    */
   schemaContextProvider?: (imodel: IModelDb) => SchemaContext;
 
@@ -349,6 +351,7 @@ export class PresentationManager {
   private _props: PresentationManagerProps;
   private _detail: PresentationManagerDetail;
   private _localizationHelper: LocalizationHelper;
+  private _schemaContextProvider: (imodel: IModelDb) => SchemaContext;
 
   /**
    * Creates an instance of PresentationManager.
@@ -358,6 +361,8 @@ export class PresentationManager {
     this._props = props ?? {};
     this._detail = new PresentationManagerDetail(this._props);
     this._localizationHelper = new LocalizationHelper({ getLocalizedString: props?.getLocalizedString ?? getLocalizedStringEN });
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    this._schemaContextProvider = props?.schemaContextProvider ?? ((imodel: IModelDb) => imodel.schemaContext);
   }
 
   /** Get / set active unit system used to format property values with units */
@@ -505,6 +510,11 @@ export class PresentationManager {
     return this._detail.getContentSetSize(requestOptions);
   }
 
+  private createContentFormatter({ imodel, unitSystem }: { imodel: IModelDb; unitSystem?: UnitSystemKey }): ContentFormatter {
+    const koqPropertyFormatter = new KoqPropertyValueFormatter(this._schemaContextProvider(imodel), this.props.defaultFormats);
+    return new ContentFormatter(new ContentPropertyValueFormatter(koqPropertyFormatter), unitSystem ?? this.props.defaultUnitSystem);
+  }
+
   /**
    * Retrieves the content set based on the supplied content descriptor.
    * @public
@@ -512,17 +522,10 @@ export class PresentationManager {
   public async getContentSet(
     requestOptions: WithCancelEvent<Prioritized<Paged<ContentRequestOptions<IModelDb, Descriptor, KeySet, RulesetVariable>>>> & BackendDiagnosticsAttribute,
   ): Promise<Item[]> {
-    let items = await this._detail.getContentSet({
-      ...requestOptions,
-      ...(!requestOptions.omitFormattedValues && this.props.schemaContextProvider !== undefined ? { omitFormattedValues: true } : undefined),
-    });
+    let items = await this._detail.getContentSet(requestOptions);
 
-    if (!requestOptions.omitFormattedValues && this.props.schemaContextProvider !== undefined) {
-      const koqPropertyFormatter = new KoqPropertyValueFormatter(this.props.schemaContextProvider(requestOptions.imodel), this.props.defaultFormats);
-      const formatter = new ContentFormatter(
-        new ContentPropertyValueFormatter(koqPropertyFormatter),
-        requestOptions.unitSystem ?? this.props.defaultUnitSystem,
-      );
+    if (!requestOptions.omitFormattedValues) {
+      const formatter = this.createContentFormatter(requestOptions);
       items = await formatter.formatContentItems(items, requestOptions.descriptor);
     }
 
@@ -537,21 +540,13 @@ export class PresentationManager {
     requestOptions: WithCancelEvent<Prioritized<Paged<ContentRequestOptions<IModelDb, Descriptor | DescriptorOverrides, KeySet, RulesetVariable>>>> &
       BackendDiagnosticsAttribute,
   ): Promise<Content | undefined> {
-    const content = await this._detail.getContent({
-      ...requestOptions,
-      ...(!requestOptions.omitFormattedValues && this.props.schemaContextProvider !== undefined ? { omitFormattedValues: true } : undefined),
-    });
-
+    const content = await this._detail.getContent(requestOptions);
     if (!content) {
       return undefined;
     }
 
-    if (!requestOptions.omitFormattedValues && this.props.schemaContextProvider !== undefined) {
-      const koqPropertyFormatter = new KoqPropertyValueFormatter(this.props.schemaContextProvider(requestOptions.imodel), this.props.defaultFormats);
-      const formatter = new ContentFormatter(
-        new ContentPropertyValueFormatter(koqPropertyFormatter),
-        requestOptions.unitSystem ?? this.props.defaultUnitSystem,
-      );
+    if (!requestOptions.omitFormattedValues) {
+      const formatter = this.createContentFormatter(requestOptions);
       await formatter.formatContent(content);
     }
 
