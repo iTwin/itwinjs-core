@@ -62,6 +62,12 @@ describe("InstanceKey", () => {
       const rhs = { className: "A.b", id: "0xAbc" };
       expect(InstanceKey.compare(lhs, rhs)).to.eq(0);
     });
+
+    it("ignores different full class name formats", () => {
+      const lhs = { className: "a.b", id: Id64.invalid };
+      const rhs = { className: "a:b", id: Id64.invalid };
+      expect(InstanceKey.compare(lhs, rhs)).to.eq(0);
+    });
   });
 });
 
