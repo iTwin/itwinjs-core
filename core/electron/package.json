@@ -1,6 +1,6 @@
 {
   "name": "@itwin/core-electron",
-  "version": "5.0.0-dev.87",
+  "version": "5.1.0-dev.33",
   "description": "iTwin.js ElectronHost and ElectronApp",
   "license": "MIT",
   "engines": {
@@ -11,8 +11,8 @@
     "build:cjs": "tsc 1>&2 --outDir lib/cjs",
     "copy:test-assets": "cpx \"./src/test/assets/**/*\" ./lib/cjs/test/assets",
     "clean": "rimraf -g lib .rush/temp/package-deps*.json",
-    "docs": "betools docs --json=../../generated-docs/core/core-electron/file.json --tsIndexFile=./__DOC_ONLY__.ts --onlyJson",
-    "extract-api": "betools extract-api --entry=__DOC_ONLY__",
+    "docs": "betools docs --json=../../generated-docs/core/core-electron/file.json --tsIndexFile=./core-electron.ts --onlyJson",
+    "extract-api": "betools extract-api --entry=core-electron",
     "lint": "eslint \"./src/**/*.ts\" 1>&2",
     "test": "",
     "test:integration": "npm run test:integration:backend && npm run test:integration:frontend",
@@ -40,7 +40,7 @@
     "@itwin/core-bentley": "workspace:*",
     "@itwin/core-common": "workspace:*",
     "@itwin/core-frontend": "workspace:*",
-    "electron": "^35.0.0"
+    "electron": "^35.0.0 || ^36.0.0"
   },
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
@@ -55,7 +55,7 @@
     "@types/node": "~20.17.0",
     "chai": "^4.3.10",
     "cpx2": "^8.0.0",
-    "electron": "^35.0.0",
+    "electron": "^36.2.1",
     "eslint": "^9.13.0",
     "glob": "^10.3.12",
     "mocha": "^11.1.0",

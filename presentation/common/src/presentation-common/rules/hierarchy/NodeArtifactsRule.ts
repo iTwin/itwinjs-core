@@ -6,7 +6,7 @@
  * @module PresentationRules
  */
 
-import { RuleBase } from "../Rule";
+import { RuleBase } from "../Rule.js";
 
 /**
  * Node artifacts rules are used to create and assign artifacts to specific nodes. The artifacts can be

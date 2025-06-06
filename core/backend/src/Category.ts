@@ -13,9 +13,10 @@ import {
 import { DefinitionElement } from "./Element";
 import { IModelDb } from "./IModelDb";
 import { CategoryOwnsSubCategories } from "./NavigationRelationship";
+import { CustomHandledProperty, DeserializeEntityArgs, ECSqlRow } from "./Entity";
 
 /** Defines the appearance for graphics in Geometric elements
- * @public
+ * @public @preview
  */
 export class SubCategory extends DefinitionElement {
   public static override get className(): string { return "SubCategory"; }
@@ -28,6 +29,48 @@ export class SubCategory extends DefinitionElement {
     super(props, iModel);
     this.appearance = new SubCategoryAppearance(props.appearance);
     this.description = JsonUtils.asString(props.description);
+  }
+
+  /**
+   * SubCategory custom HandledProps include 'description' and 'properties'.
+   * @inheritdoc
+   * @beta
+   */
+  protected static override readonly _customHandledProps: CustomHandledProperty[] = [
+    { propertyName: "description", source: "Class" },
+    { propertyName: "properties", source: "Class" },
+  ];
+
+  /**
+   * SubCategory deserializes 'description' and 'properties'.
+   * @inheritdoc
+   * @beta
+   */
+  public static override deserialize(props: DeserializeEntityArgs): SubCategoryProps {
+    const elProps = super.deserialize(props) as SubCategoryProps;
+    elProps.description = JsonUtils.asString(props.row.description);
+    if (props.row.properties !== '') {
+      elProps.appearance = JSON.parse(props.row.properties) as SubCategoryAppearance.Props;
+    } else {
+      elProps.appearance = undefined;
+    }
+    return elProps;
+  }
+
+  /**
+   * SubCategory serialize 'description' and 'properties'.
+   * @inheritdoc
+   * @beta
+   */
+  public static override serialize(props: SubCategoryProps, iModel: IModelDb): ECSqlRow {
+    const inst = super.serialize(props, iModel);
+    if (props.description !== undefined) {
+      inst.description = props.description;
+    }
+    if (props.appearance !== undefined) {
+      inst.properties = JSON.stringify(props.appearance);
+    }
+    return inst;
   }
 
   public override toJSON(): SubCategoryProps {
@@ -95,7 +138,7 @@ export class SubCategory extends DefinitionElement {
 }
 
 /** A Category element is the target of the `category` member of [[GeometricElement]].
- * @public
+ * @public @preview
  */
 export class Category extends DefinitionElement {
   public static override get className(): string { return "Category"; }
@@ -108,6 +151,41 @@ export class Category extends DefinitionElement {
     this.description = JsonUtils.asString(props.description);
   }
 
+  /**
+   * Category custom HandledProps include 'rank' and 'description'.
+   * @inheritdoc
+   * @beta
+   */
+  protected static override readonly _customHandledProps: CustomHandledProperty[] = [
+    { propertyName: "rank", source: "Class" },
+    { propertyName: "description", source: "Class" },
+  ];
+
+  /**
+   * Category deserializes 'rank' and 'description'.
+   * @inheritdoc
+   * @beta
+   */
+  public static override deserialize(props: DeserializeEntityArgs): CategoryProps {
+    const elProps = super.deserialize(props) as CategoryProps;
+    elProps.description = JsonUtils.asString(props.row.description);
+    elProps.rank = JsonUtils.asInt(props.row.rank);
+    return elProps;
+  }
+
+  /**
+   * Category serialize 'rank' and 'description'.
+   * @inheritdoc
+   * @beta
+   */
+  public static override serialize(props: CategoryProps, iModel: IModelDb): ECSqlRow {
+    const inst = super.serialize(props, iModel);
+    if (undefined !== props.description) {
+      inst.description = props.description;
+    }
+    inst.rank = props.rank;
+    return inst;
+  }
   public override toJSON(): CategoryProps {
     const val = super.toJSON() as CategoryProps;
     val.rank = this.rank;
@@ -131,7 +209,7 @@ export class Category extends DefinitionElement {
 }
 
 /** Categorizes 2d GeometricElements.
- * @public
+ * @public @preview
  */
 export class DrawingCategory extends Category {
   public static override get className(): string { return "DrawingCategory"; }
@@ -193,7 +271,7 @@ export class DrawingCategory extends Category {
 }
 
 /** Categorizes SpatialElements. See [how to create a SpatialCategory]($docs/learning/backend/CreateElements.md#SpatialCategory).
- * @public
+ * @public @preview
  */
 export class SpatialCategory extends Category {
   public static override get className(): string { return "SpatialCategory"; }

@@ -1,6 +1,56 @@
 # Change Log - @itwin/presentation-common
 
-This log was last generated on Wed, 19 Mar 2025 15:33:24 GMT and should not be manually modified.
+This log was last generated on Fri, 06 Jun 2025 13:44:02 GMT and should not be manually modified.
+
+## 4.11.5
+Fri, 06 Jun 2025 13:41:18 GMT
+
+### Updates
+
+- Fix `InstanceKey.compare` implementation not taking into account different formats and casings of full class name.
+
+## 4.11.4
+Tue, 03 Jun 2025 16:15:19 GMT
+
+_Version update only_
+
+## 4.11.3
+Wed, 28 May 2025 13:56:23 GMT
+
+_Version update only_
+
+## 4.11.2
+Tue, 20 May 2025 20:14:46 GMT
+
+_Version update only_
+
+## 4.11.1
+Wed, 30 Apr 2025 13:13:21 GMT
+
+_Version update only_
+
+## 4.11.0
+Wed, 16 Apr 2025 15:50:28 GMT
+
+### Minor changes
+
+- All public methods of `PresentationRpcInterface` have been deprecated. Going forward, RPC interfaces should not be called directly. Public wrappers such as `PresentationManager` should be used instead.
+
+### Updates
+
+- KeySet: Always store instance key class name in `Schema:Class` format.
+- Fixed enum property values formatting issue, where raw value was used instead of enum's display value.
+- Extend `MultiElementPropertiesRequestOptions` to support specifying input element either through `elementClasses` or `elementIds` arrays.
+
+## 4.10.13
+Thu, 10 Apr 2025 17:47:21 GMT
+
+_Version update only_
+
+## 4.10.12
+Wed, 02 Apr 2025 19:35:47 GMT
+
+_Version update only_
 
 ## 4.10.11
 Wed, 19 Mar 2025 15:30:39 GMT

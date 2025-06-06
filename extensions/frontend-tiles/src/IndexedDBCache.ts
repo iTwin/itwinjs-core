@@ -3,6 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { Logger } from "@itwin/core-bentley";
+
 const loggerCategory = "IndexedDBCache";
 
 /** @internal */

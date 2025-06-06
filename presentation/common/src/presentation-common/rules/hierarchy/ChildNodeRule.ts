@@ -6,7 +6,7 @@
  * @module PresentationRules
  */
 
-import { NavigationRuleBase } from "./NavigationRule";
+import { NavigationRuleBase } from "./NavigationRule.js";
 
 /**
  * Child node rules are used to define child nodes in a hierarchy.

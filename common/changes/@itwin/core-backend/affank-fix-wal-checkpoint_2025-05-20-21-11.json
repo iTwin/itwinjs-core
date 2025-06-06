@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Fix regression when using performCheckpoint()",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}

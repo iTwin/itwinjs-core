@@ -5,11 +5,12 @@
 import { assert, expect } from "chai";
 import * as path from "path";
 import * as sinon from "sinon";
-import { DbResult, Id64, Id64String, Logger } from "@itwin/core-bentley";
-import { ECDb, ECDbOpenMode, ECSqlInsertResult, ECSqlStatement, IModelJsFs, SqliteStatement, SqliteValue, SqliteValueType } from "../../core-backend";
+import { DbResult, Id64, Id64String, Logger, LogLevel } from "@itwin/core-bentley";
+import { ECDb, ECDbOpenMode, ECSqlInsertResult, ECSqlStatement, ECSqlWriteStatement, IModelJsFs, SqliteStatement, SqliteValue, SqliteValueType } from "../../core-backend";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { ECDbTestHelper } from "./ECDbTestHelper";
 import { QueryOptionsBuilder } from "@itwin/core-common";
+import { EntityClass, SchemaContext, SchemaJsonLocater, SchemaKey } from "@itwin/ecschema-metadata";
 
 describe("ECDb", () => {
   const outDir = KnownTestLocations.outputDir;
@@ -71,6 +72,7 @@ describe("ECDb", () => {
       </ECEntityClass>
       </ECSchema>`);
     assert.isTrue(testECDb.isOpen);
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     testECDb.withPreparedStatement("INSERT INTO test.Person(Name,Age) VALUES('Mary', 45)", (stmt: ECSqlStatement) => {
       const res: ECSqlInsertResult = stmt.stepForInsert();
       assert.equal(res.status, DbResult.BE_SQLITE_DONE);
@@ -88,6 +90,7 @@ describe("ECDb", () => {
     testECDb.saveChanges();
 
     const runDbListPragmaUsingStatement = (ecdb: ECDb) => {
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       return ecdb.withPreparedStatement("PRAGMA db_list", (stmt: ECSqlStatement) => {
         const result: { alias: string, filename: string, profile: string }[] = [];
         while (stmt.step() === DbResult.BE_SQLITE_ROW) {
@@ -107,6 +110,7 @@ describe("ECDb", () => {
     using testECDb0 = ECDbTestHelper.createECDb(outDir, "file2.ecdb");
     // following call will not fail but unknow ECDb profile will cause it to be attach as SQLite.
     testECDb0.attachDb(ecdbPath1, "source");
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     expect(() => testECDb0.withPreparedStatement("SELECT Name, Age FROM source.test.Person", () => { })).to.throw("ECClass 'source.test.Person' does not exist or could not be loaded.");
     expect(runDbListPragmaUsingStatement(testECDb0)).deep.equals([
       {
@@ -131,6 +135,7 @@ describe("ECDb", () => {
         profile: "ECDb"
       },
     ]);
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     expect(() => testECDb0.withPreparedStatement("SELECT Name, Age FROM source.test.Person", () => { })).to.throw("ECClass 'source.test.Person' does not exist or could not be loaded.");
 
     using testECDb1 = ECDbTestHelper.createECDb(outDir, "file4.ecdb");
@@ -181,6 +186,7 @@ describe("ECDb", () => {
       </ECEntityClass>
       </ECSchema>`);
     assert.isTrue(testECDb.isOpen);
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     testECDb.withPreparedStatement("INSERT INTO test.Person(Name,Age) VALUES('Mary', 45)", (stmt: ECSqlStatement) => {
       const res: ECSqlInsertResult = stmt.stepForInsert();
       assert.equal(res.status, DbResult.BE_SQLITE_DONE);
@@ -191,6 +197,7 @@ describe("ECDb", () => {
     testECDb.saveChanges();
 
     const runDbListPragma = (ecdb: ECDb) => {
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       return ecdb.withPreparedStatement("PRAGMA db_list", (stmt: ECSqlStatement) => {
         const result: { alias: string, filename: string, profile: string }[] = [];
         while (stmt.step() === DbResult.BE_SQLITE_ROW) {
@@ -201,6 +208,7 @@ describe("ECDb", () => {
     }
     using testECDb0 = ECDbTestHelper.createECDb(outDir, "file2.ecdb");
     testECDb0.attachDb(ecdbPath1, "source");
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     testECDb0.withPreparedStatement("SELECT Name, Age FROM source.test.Person", (stmt: ECSqlStatement) => {
       assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
       const row = stmt.getRow();
@@ -230,6 +238,7 @@ describe("ECDb", () => {
         profile: "ECDb"
       },
     ]);
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     expect(() => testECDb0.withPreparedStatement("SELECT Name, Age FROM source.test.Person", () => { })).to.throw("ECClass 'source.test.Person' does not exist or could not be loaded.");
 
     using testECDb1 = ECDbTestHelper.createECDb(outDir, "file3.ecdb");
@@ -273,7 +282,7 @@ describe("ECDb", () => {
         </ECEntityClass>
         </ECSchema>`);
       assert.isTrue(testECDb.isOpen);
-      id = testECDb.withPreparedStatement("INSERT INTO test.Person(Name,Age) VALUES('Mary', 45)", (stmt: ECSqlStatement) => {
+      id = testECDb.withCachedWriteStatement("INSERT INTO test.Person(Name,Age) VALUES('Mary', 45)", (stmt: ECSqlWriteStatement) => {
         const res: ECSqlInsertResult = stmt.stepForInsert();
         assert.equal(res.status, DbResult.BE_SQLITE_DONE);
         assert.isDefined(res.id);
@@ -287,6 +296,7 @@ describe("ECDb", () => {
     ecdb.openDb(ecdbPath, ECDbOpenMode.Readonly);
     assert.isTrue(ecdb.isOpen);
 
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     ecdb.withPreparedStatement("SELECT Name, Age FROM test.Person WHERE ECInstanceId=?", (stmt: ECSqlStatement) => {
       stmt.bindId(1, id);
       assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
@@ -403,6 +413,7 @@ describe("ECDb", () => {
 
     const expectedLabels = [undefined, "m", "", "mm"];
     let index = 0;
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     ecdb.withStatement("select label from meta.FormatCompositeUnitDef where Format.Id=0x1", (stmt: ECSqlStatement) => {
       for (let i: number = 1; i <= 4; i++) {
         assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
@@ -431,6 +442,7 @@ describe("ECDb", () => {
 
     const expectedLabelsUpdated = ["", "m", undefined, "mm"];
     index = 0;
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     ecdb.withStatement("select label from meta.FormatCompositeUnitDef where Format.Id=0x1", (stmt: ECSqlStatement) => {
       for (let i: number = 1; i <= 4; i++) {
         assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
@@ -441,7 +453,7 @@ describe("ECDb", () => {
     ecdb.closeDb();
   });
 
-  it("should make importSchema fail if new schema changes are observed without version bump", () => {
+  it("should log warning but continue if new schema changes are observed without version bump", async () => {
     const ecdb: ECDb = ECDbTestHelper.createECDb(outDir, "importSchemaNoVersionBump.ecdb");
     const xmlpathOriginal = path.join(outDir, "importSchemaNoVersionBump1.ecschema.xml");
 
@@ -467,17 +479,38 @@ describe("ECDb", () => {
 
     let calledCategory = "";
     let calledMessage = "";
-    const stubbedLogError = sinon.stub(Logger, "logError").callsFake((category: string, message: string) => {
+    const stubbedLogWarning = sinon.stub(Logger, "logWarning").callsFake((category: string, message: string) => {
       calledCategory = category;
       calledMessage = message;
     });
+    const prevLevel = Logger.getLevel("ECDb");
 
-    // although an error should be logged, no error is actually returned to not disrupt currently existing workflows and to alert the user about some wrong/unexpected behavior
-    expect(ecdb.importSchema(xmlpathUpdated)).to.not.throw;
-    expect(calledCategory).to.equal("ECDb");
-    expect(calledMessage).to.equal("ECSchema import has failed. Schema Test has new changes, but the schema version is not incremented.");
+    try {
+      Logger.setLevel("ECDb", LogLevel.Warning);
+      // We do not want this behavior (just logs a warning and proceeds), initially we intended to throw an error
+      // We will wait for the next major change to make this a hard error
+      expect(ecdb.importSchema(xmlpathUpdated)).to.not.throw;
+      expect(calledCategory).to.equal("ECDb");
+      expect(calledMessage).to.equal("Schema 'Test' has changes but its version was not incremented. Proceeding with import, but this may lead to unexpected behavior.");
+      stubbedLogWarning.restore();
+    }
+    finally {
+      if (prevLevel !== undefined)
+        Logger.setLevel("ECDb", prevLevel);
+      else
+        delete (Logger as any)._categoryFilter.ECDb;
+    }
 
-    stubbedLogError.restore();
+    const context = new SchemaContext();
+    const locater = new SchemaJsonLocater((name) => ecdb.getSchemaProps(name));
+    context.addLocater(locater);
+    const schema = await context.getSchema(new SchemaKey("Test", 1, 0, 0));
+    assert.isDefined(schema);
+    const personClass = await schema!.getItem("Person", EntityClass);
+    assert.isDefined(personClass);
+    const heightProp = personClass!.getProperty("Height");
+    assert.isDefined(heightProp);
+
     ecdb.closeDb();
   });
 });

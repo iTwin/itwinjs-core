@@ -6,7 +6,7 @@
  * @module Content
  */
 
-import { RendererDescription } from "./Renderer";
+import { RendererDescription } from "./Renderer.js";
 
 /**
  * A data structure that describes a [[Field]] category.

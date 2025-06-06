@@ -47,10 +47,11 @@ export class PolylineOps {
     return PolylineCompressionContext.compressPoint3dArrayByChordError(source, chordTolerance);
   }
   /**
-   * Return a simplified subset of given points, omitting points if very close to their neighbors.
+   * Return a simplified subset of given points, omitting a point if very close to its predecessor.
    * * This is a local search, with a single pass over the data.
+   * * First and last points are always retained.
    * @param source input points
-   * @param maxEdgeLength
+   * @param maxEdgeLength length of largest edge to be compressed out
    * @see [[GrowableXYZArray.cloneCompressed]]
    */
   public static compressShortEdges(source: Point3d[] | IndexedXYZCollection, maxEdgeLength: number): Point3d[] {
@@ -59,10 +60,10 @@ export class PolylineOps {
     return dest.getPoint3dArray();
   }
   /**
-   * Return a simplified subset of given points, omitting points of the triangle with adjacent points is small.
+   * Return a simplified subset of given points, omitting the middle of three successive points if the triangle they form is small.
    * * This is a local search, with a single pass over the data.
    * @param source input points
-   * @param maxEdgeLength
+   * @param maxTriangleArea area of largest triangle to compress
    */
   public static compressSmallTriangles(source: Point3d[], maxTriangleArea: number): Point3d[] {
     const dest = GrowableXYZArray.create(source);

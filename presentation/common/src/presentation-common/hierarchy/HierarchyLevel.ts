@@ -6,7 +6,7 @@
  * @module Hierarchies
  */
 
-import { Node } from "./Node";
+import { Node } from "./Node.js";
 
 /**
  * Defines a hierarchy level that consists of an array of nodes and possibly other information.

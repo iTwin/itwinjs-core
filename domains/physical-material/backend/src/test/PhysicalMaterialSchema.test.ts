@@ -4,17 +4,17 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert } from "chai";
-import * as path from "path";
+import * as path from "node:path";
 import { DbResult } from "@itwin/core-bentley";
 import { ECSqlStatement, IModelDb, IModelHost, IModelJsFs, PhysicalMaterial, SnapshotDb } from "@itwin/core-backend";
 import { IModel } from "@itwin/core-common";
-import { Aggregate, Aluminum, Asphalt, Concrete, PhysicalMaterialSchema, Steel } from "../physical-material-backend";
+import { Aggregate, Aluminum, Asphalt, Concrete, PhysicalMaterialSchema, Steel } from "../physical-material-backend.js";
 
 describe("PhysicalMaterialSchema", () => {
-  const outputDir = path.join(__dirname, "output");
+  const outputDir = path.join(import.meta.dirname, "output");
 
   before(async () => {
-    await IModelHost.startup({ cacheDir: path.join(__dirname, ".cache") });
+    await IModelHost.startup({ cacheDir: path.join(import.meta.dirname, ".cache") });
     PhysicalMaterialSchema.registerSchema();
     if (!IModelJsFs.existsSync(outputDir)) {
       IModelJsFs.mkdirSync(outputDir);
@@ -22,6 +22,7 @@ describe("PhysicalMaterialSchema", () => {
   });
 
   function count(iModelDb: IModelDb, classFullName: string): number {
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     return iModelDb.withPreparedStatement(`SELECT COUNT(*) FROM ${classFullName}`, (statement: ECSqlStatement): number => {
       return DbResult.BE_SQLITE_ROW === statement.step() ? statement.getValue(0).getInteger() : 0;
     });

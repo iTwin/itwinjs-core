@@ -6,8 +6,8 @@
  * @module PresentationRules
  */
 
-import { RepeatableRelationshipPathSpecification } from "../RelationshipPathSpecification";
-import { ContentSpecificationBase } from "./ContentSpecification";
+import { RepeatableRelationshipPathSpecification } from "../RelationshipPathSpecification.js";
+import { ContentSpecificationBase } from "./ContentSpecification.js";
 
 /**
  * Returns content for instances related to the selected (input) instances.

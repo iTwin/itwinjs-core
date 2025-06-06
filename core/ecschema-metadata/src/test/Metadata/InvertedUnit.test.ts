@@ -6,13 +6,14 @@
 import { assert, expect } from "chai";
 import { SchemaContext } from "../../Context";
 import { SchemaItemType } from "../../ECObjects";
-import { ECObjectsError } from "../../Exception";
+import { ECSchemaError } from "../../Exception";
 import { InvertedUnit } from "../../Metadata/InvertedUnit";
 import { Schema } from "../../Metadata/Schema";
 import { Unit } from "../../Metadata/Unit";
 import { UnitSystem } from "../../Metadata/UnitSystem";
 import { createEmptyXmlDocument } from "../TestUtils/SerializationHelper";
 import { createSchemaJsonWithItems } from "../TestUtils/DeserializationHelpers";
+import { ECSchemaNamespaceUris } from "../../Constants";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 
@@ -91,9 +92,10 @@ describe("Inverted Unit tests", () => {
 
     it("Basic test for label", async () => {
       const json = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+        $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
         version: "1.0.0",
         name: "TestSchema",
+        alias: "ts",
         items: {
           HORIZONTAL_PER_VERTICAL: {
             schemaItemType: "InvertedUnit",
@@ -129,9 +131,10 @@ describe("Inverted Unit tests", () => {
     });
     it("Label and description are optional", async () => {
       const json = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+        $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
         version: "1.0.0",
         name: "TestSchema",
+        alias: "ts",
         items: {
           HORIZONTAL_PER_VERTICAL: {
             schemaItemType: "InvertedUnit",
@@ -168,9 +171,10 @@ describe("Inverted Unit tests", () => {
     });
     it("unitSystem is required", async () => {
       const json = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+        $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
         version: "1.0.0",
         name: "TestSchema",
+        alias: "ts",
         items: {
           HORIZONTAL_PER_VERTICAL: {
             schemaItemType: "InvertedUnit",
@@ -194,13 +198,14 @@ describe("Inverted Unit tests", () => {
           },
         },
       };
-      await expect(Schema.fromJson(json, new SchemaContext())).to.be.rejectedWith(ECObjectsError, `The InvertedUnit TestSchema.HORIZONTAL_PER_VERTICAL does not have the required 'unitSystem' attribute.`);
+      await expect(Schema.fromJson(json, new SchemaContext())).to.be.rejectedWith(ECSchemaError, `The InvertedUnit TestSchema.HORIZONTAL_PER_VERTICAL does not have the required 'unitSystem' attribute.`);
     });
     it("Resolve all dependencies for inverts unit and unit system", async () => {
       const json = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+        $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
         version: "1.0.0",
         name: "TestSchema",
+        alias: "ts",
         items: {
           HORIZONTAL_PER_VERTICAL: {
             schemaItemType: "InvertedUnit",
@@ -256,9 +261,10 @@ describe("Inverted Unit tests", () => {
 
     it("Basic test for label", () => {
       const json = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+        $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
         version: "1.0.0",
         name: "TestSchema",
+        alias: "ts",
         items: {
           HORIZONTAL_PER_VERTICAL: {
             schemaItemType: "InvertedUnit",
@@ -294,9 +300,10 @@ describe("Inverted Unit tests", () => {
     });
     it("Label and description are optional", () => {
       const json = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+        $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
         version: "1.0.0",
         name: "TestSchema",
+        alias: "ts",
         items: {
           HORIZONTAL_PER_VERTICAL: {
             schemaItemType: "InvertedUnit",
@@ -333,9 +340,10 @@ describe("Inverted Unit tests", () => {
     });
     it("Resolve all dependencies for inverts unit and unit system", async () => {
       const json = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+        $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
         version: "1.0.0",
         name: "TestSchema",
+        alias: "ts",
         items: {
           HORIZONTAL_PER_VERTICAL: {
             schemaItemType: "InvertedUnit",
@@ -391,9 +399,10 @@ describe("Inverted Unit tests", () => {
     });
 
     const jsonOne = {
-      $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+      $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
       version: "1.0.0",
       name: "TestSchema",
+      alias: "ts",
       items: {
         HORIZONTAL_PER_VERTICAL: {
           schemaItemType: "InvertedUnit",
@@ -468,9 +477,10 @@ describe("Inverted Unit tests", () => {
   describe("toXml", () => {
     const newDom = createEmptyXmlDocument();
     const schemaJson = {
-      $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+      $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
       version: "1.0.0",
       name: "TestSchema",
+      alias: "ts",
       items: {
         HORIZONTAL_PER_VERTICAL: {
           schemaItemType: "InvertedUnit",

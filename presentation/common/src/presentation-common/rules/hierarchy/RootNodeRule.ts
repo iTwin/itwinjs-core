@@ -6,7 +6,7 @@
  * @module PresentationRules
  */
 
-import { NavigationRuleBase } from "./NavigationRule";
+import { NavigationRuleBase } from "./NavigationRule.js";
 
 /**
  * Root node rules are used to define nodes that are displayed at the root hierarchy level.

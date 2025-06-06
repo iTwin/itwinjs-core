@@ -25,9 +25,9 @@ import {
   insertPhysicalElement,
   insertPhysicalModelWithPartition,
   insertSpatialCategory,
-} from "../../IModelSetupUtils";
-import { collect } from "../../Utils";
-import { describeContentTestSuite } from "./Utils";
+} from "../../IModelSetupUtils.js";
+import { collect } from "../../Utils.js";
+import { describeContentTestSuite } from "./Utils.js";
 
 describeContentTestSuite("Content Display Labels", () => {
   const EMPTY_LABEL = LabelDefinition.fromLabelString("@Presentation:label.notSpecified@");

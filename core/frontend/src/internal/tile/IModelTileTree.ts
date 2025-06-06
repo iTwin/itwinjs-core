@@ -10,7 +10,7 @@ import { assert, BeTimePoint, GuidString, Id64Array, Id64String } from "@itwin/c
 import { Range3d, Transform } from "@itwin/core-geometry";
 import {
   BatchType, ContentIdProvider, EdgeOptions, ElementAlignedBox3d, ElementGeometryChange, FeatureAppearanceProvider,
-  IModelTileTreeId, IModelTileTreeProps, ModelGeometryChanges, RenderSchedule, TileProps,
+  IModelTileTreeId, IModelTileTreeProps, ModelGeometryChanges, RenderSchedule, TileProps
 } from "@itwin/core-common";
 import { IModelApp } from "../../IModelApp";
 import { IModelConnection } from "../../IModelConnection";
@@ -18,8 +18,8 @@ import { GraphicalEditingScope } from "../../GraphicalEditingScope";
 import { RenderSystem } from "../../render/RenderSystem";
 import { GraphicBranch } from "../../render/GraphicBranch";
 import {
-  acquireImdlDecoder, DynamicIModelTile, ImdlDecoder, IModelTile, IModelTileParams, iModelTileParamsFromJSON, Tile, TileContent, TileDrawArgs, TileLoadPriority, TileParams, TileRequest,
-  TileRequestChannel, TileTree, TileTreeParams,
+  acquireImdlDecoder, DynamicIModelTile, ImdlDecoder, IModelTile, IModelTileParams, iModelTileParamsFromJSON, LayerTileTreeHandler, MapLayerTreeSetting, Tile,
+  TileContent, TileDrawArgs, TileLoadPriority, TileParams, TileRequest, TileRequestChannel, TileTree, TileTreeParams
 } from "../../tile/internal";
 
 export interface IModelTileTreeOptions {
@@ -354,6 +354,10 @@ export class IModelTileTree extends TileTree {
    * used by draw().
    */
   private _numStaticTilesSelected = 0;
+  public layerImageryTrees: MapLayerTreeSetting[] = [];
+
+  private readonly _layerHandler: LayerTileTreeHandler;
+  public override get layerHandler() { return this._layerHandler; }
 
   public constructor(params: IModelTileTreeParams, treeId: IModelTileTreeId) {
     super(params);
@@ -361,6 +365,7 @@ export class IModelTileTree extends TileTree {
     this.contentIdQualifier = params.contentIdQualifier;
     this.geometryGuid = params.geometryGuid;
     this.tileScreenSize = params.tileScreenSize;
+    this._layerHandler = new LayerTileTreeHandler(this);
 
     if (BatchType.Primary === treeId.type)
       this.stringifiedSectionClip = treeId.sectionCut;
@@ -425,6 +430,8 @@ export class IModelTileTree extends TileTree {
   public draw(args: TileDrawArgs): void {
     const tiles = this.selectTiles(args);
     this._rootTile.draw(args, tiles, this._numStaticTilesSelected);
+    if (args.shouldCollectClassifierGraphics)
+      this._layerHandler.collectClassifierGraphics(args, tiles);
   }
 
   public prune(): void {

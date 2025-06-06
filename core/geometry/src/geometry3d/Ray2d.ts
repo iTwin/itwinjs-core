@@ -10,8 +10,6 @@
 import { Geometry } from "../Geometry";
 import { Point2d, Vector2d } from "../geometry3d/Point2dVector2d";
 
-// cspell:word CCWXY, CWXY
-
 /**
  * Ray with xy origin and direction
  * @public

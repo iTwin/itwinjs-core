@@ -2,7 +2,7 @@
  * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
-import * as ec from "../../presentation-common/EC";
+import * as ec from "../../presentation-common/EC.js";
 
 /**
  * @internal Used for testing only.
