@@ -1,10 +1,10 @@
-# @itwin/core-backend
+# @itwin/core-backend-tests
 
 Copyright © Bentley Systems, Incorporated. All rights reserved. See LICENSE.md for license terms and full copyright notice.
 
 ## Description
 
-The __@itwin/core-backend__ package contains classes that backend code can use to work with directly with iModels.
+The __@itwin/core-backend-tests__ package contains tests for __@itwin/core-backend__.
 
 ## Documentation
 
