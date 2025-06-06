@@ -1097,7 +1097,6 @@ export namespace IModelConnection {
       return true;
     }
 
-    /** Loads the needed CodeSpec from the remote IModelDb. */
     private async _loadCodeSpec(identifier: { name: string; id?: undefined } | { id: string; name?: undefined }): Promise<CodeSpec> {
       const isNameDefined = identifier.name !== undefined;
       const query = `
@@ -1113,32 +1112,32 @@ export namespace IModelConnection {
       }
 
       const queryReader = this._iModel.createQueryReader(query, params, {
-        rowFormat: QueryRowFormat.UseECSqlPropertyIndexes,
+        rowFormat: QueryRowFormat.UseECSqlPropertyNames,
       });
 
       const queryResult = await queryReader.next();
 
       if (queryResult.done) throw new IModelError(IModelStatus.NotFound, "CodeSpec not found");
 
-      const codeSpecResult = queryResult.value.toArray();
+      const codeSpecResult = queryResult.value;
 
       if (
-          typeof codeSpecResult[0] !== "string" ||
-          typeof codeSpecResult[1] !== "string" ||
-          typeof codeSpecResult[2] !== "string"
+        typeof codeSpecResult.Id !== "string" ||
+        typeof codeSpecResult.Name !== "string" ||
+        typeof codeSpecResult.JsonProperties !== "string"
       )
         throw new Error("Invalid CodeSpec was returned");
 
-      const jsonProperties = JSON.parse(codeSpecResult[2]);
+      const jsonProperties = JSON.parse(codeSpecResult.JsonProperties);
 
       if (!this._isCodeSpecProperties(jsonProperties))
         throw new Error("Invalid CodeSpecProperties returned in the CodeSpec");
 
       const codeSpec = CodeSpec.createFromJson(
         this._iModel,
-        Id64.fromString(codeSpecResult[0]),
-        codeSpecResult[1],
-        jsonProperties,
+        Id64.fromString(codeSpecResult.Id),
+        codeSpecResult.Name,
+        jsonProperties
       );
       return codeSpec;
     }

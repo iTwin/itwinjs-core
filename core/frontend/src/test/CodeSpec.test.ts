@@ -10,16 +10,24 @@ describe("CodeSpecs._isCodeSpecProperties()", async () => {
 
   it("should validate valid CodeSpecProperties", async () => {
     const fakeCodeSpecProperties: CodeSpecProperties = {
-      scopeSpec: { type: CodeScopeSpec.Type.Repository, fGuidRequired: true, relationship: "valid" },
+      scopeSpec: {
+        type: CodeScopeSpec.Type.Repository,
+        fGuidRequired: true,
+        relationship: "valid",
+      },
       spec: { isManagedWithDgnDb: false },
       version: "1.0.0",
     };
-    const fakeRow = {
-      toArray: () => ["0x123", "TestCodeSpec", JSON.stringify(fakeCodeSpecProperties)],
-    } as QueryRowProxy;
+    const fakeValue = {
+      /* eslint-disable @typescript-eslint/naming-convention */
+      Id: "0x123",
+      Name: "TestCodeSpec",
+      JsonProperties: JSON.stringify(fakeCodeSpecProperties),
+      /* eslint-enable @typescript-eslint/naming-convention */
+    } as unknown as QueryRowProxy;
 
     const ecsqlReaderFake = {
-      next: async () => ({ done: false, value: fakeRow }),
+      next: async () => ({ done: false, value: fakeValue }),
     } as unknown as ECSqlReader;
 
     const iModelConnectionFake = {
@@ -35,12 +43,16 @@ describe("CodeSpecs._isCodeSpecProperties()", async () => {
   });
 
   async function expectInvalidCodeSpecPropertiesToBeRejected(codeSpecProperties: any) {
-    const fakeRow = {
-      toArray: () => ["0x123", "TestCodeSpec", JSON.stringify(codeSpecProperties)],
-    } as QueryRowProxy;
+    const fakeValue = {
+      /* eslint-disable @typescript-eslint/naming-convention */
+      Id: "0x123",
+      Name: "TestCodeSpec",
+      JsonProperties: JSON.stringify(codeSpecProperties),
+      /* eslint-enable @typescript-eslint/naming-convention */
+    } as unknown as QueryRowProxy;
 
     const ecsqlReaderFake = {
-      next: async () => ({ done: false, value: fakeRow }),
+      next: async () => ({ done: false, value: fakeValue }),
     } as unknown as ECSqlReader;
 
     const iModelConnectionFake = {
@@ -49,16 +61,18 @@ describe("CodeSpecs._isCodeSpecProperties()", async () => {
 
     const codeSpecs = new IModelConnection.CodeSpecs(iModelConnectionFake);
 
-    await expect(codeSpecs.getByName("TestCodeSpec")).rejects.toThrow(
-      "Invalid CodeSpecProperties returned in the CodeSpec",
-    );
+    await expect(codeSpecs.getByName("TestCodeSpec")).rejects.toThrow("Invalid CodeSpecProperties returned in the CodeSpec");
   }
 
   const invalidCodeSpecPropertiesWithWrongTypes = [
     {
       reason: "invalid scopeSpec.type type",
       codeSpecProperties: {
-        scopeSpec: { type: "invalid", fGuidRequired: true, relationship: "valid" },
+        scopeSpec: {
+          type: "invalid",
+          fGuidRequired: true,
+          relationship: "valid",
+        },
         spec: { isManagedWithDgnDb: false },
         version: "1.0.0",
       },
@@ -66,7 +80,11 @@ describe("CodeSpecs._isCodeSpecProperties()", async () => {
     {
       reason: "invalid scopeSpec.fGuidRequired type",
       codeSpecProperties: {
-        scopeSpec: { type: CodeScopeSpec.Type.Repository, fGuidRequired: "invalid", relationship: "valid" },
+        scopeSpec: {
+          type: CodeScopeSpec.Type.Repository,
+          fGuidRequired: "invalid",
+          relationship: "valid",
+        },
         spec: { isManagedWithDgnDb: false },
         version: "1.0.0",
       },
@@ -74,7 +92,11 @@ describe("CodeSpecs._isCodeSpecProperties()", async () => {
     {
       reason: "invalid scopeSpec.relationship type",
       codeSpecProperties: {
-        scopeSpec: { type: CodeScopeSpec.Type.Repository, fGuidRequired: true, relationship: false },
+        scopeSpec: {
+          type: CodeScopeSpec.Type.Repository,
+          fGuidRequired: true,
+          relationship: false,
+        },
         spec: { isManagedWithDgnDb: false },
         version: "1.0.0",
       },
@@ -82,7 +104,11 @@ describe("CodeSpecs._isCodeSpecProperties()", async () => {
     {
       reason: "invalid spec.isManagedWithDgnDb type",
       codeSpecProperties: {
-        scopeSpec: { type: CodeScopeSpec.Type.Repository, fGuidRequired: true, relationship: "valid" },
+        scopeSpec: {
+          type: CodeScopeSpec.Type.Repository,
+          fGuidRequired: true,
+          relationship: "valid",
+        },
         spec: { isManagedWithDgnDb: "invalid" },
         version: "1.0.0",
       },
@@ -90,7 +116,11 @@ describe("CodeSpecs._isCodeSpecProperties()", async () => {
     {
       reason: "invalid version type",
       codeSpecProperties: {
-        scopeSpec: { type: CodeScopeSpec.Type.Repository, fGuidRequired: true, relationship: "valid" },
+        scopeSpec: {
+          type: CodeScopeSpec.Type.Repository,
+          fGuidRequired: true,
+          relationship: "valid",
+        },
         spec: { isManagedWithDgnDb: false },
         version: false,
       },
@@ -115,7 +145,11 @@ describe("CodeSpecs._isCodeSpecProperties()", async () => {
     {
       reason: "codeSpecProperties.scopeSpec.type are undefined",
       codeSpecProperties: {
-        scopeSpec: { type: undefined, fGuidRequired: true, relationship: "valid" },
+        scopeSpec: {
+          type: undefined,
+          fGuidRequired: true,
+          relationship: "valid",
+        },
         spec: { isManagedWithDgnDb: false },
         version: "1.0.0",
       },
