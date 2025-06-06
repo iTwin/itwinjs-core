@@ -20,13 +20,13 @@ import { _nativeDb } from "./internal/Symbols";
 import { DbRebaseChangesetConflictArgs, RebaseChangesetConflictArgs, TxnArgs } from "./internal/ChangesetConflictArgs";
 
 /** A string that identifies a Txn.
- * @public
+ * @public @preview
  */
 export type TxnIdString = string;
 
 /** An error generated during dependency validation.
  * @see [[TxnManager.validationErrors]].
- * @public
+ * @public @preview
  */
 export interface ValidationError {
   /** If true, txn is aborted. */
@@ -39,7 +39,7 @@ export interface ValidationError {
 
 /** Describes a set of [[Element]]s or [[Model]]s that changed as part of a transaction.
  * @see [[TxnManager.onElementsChanged]] and [[TxnManager.onModelsChanged]].
- * @public
+ * @public @preview
  */
 export interface TxnChangedEntities {
   /** The entities that were inserted by the transaction. */
@@ -356,7 +356,7 @@ export class ChangeMergeManager {
 }
 
 /** Manages local changes to a [[BriefcaseDb]] or [[StandaloneDb]] via [Txns]($docs/learning/InteractiveEditing.md)
- * @public
+ * @public @preview
  */
 export class TxnManager {
   /** @internal */

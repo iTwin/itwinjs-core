@@ -19,7 +19,7 @@ import { DeserializeEntityArgs, ECSqlRow } from "./Entity";
 /** A DisplayStyle defines the parameters for 'styling' the contents of a view.
  * Internally a DisplayStyle consists of a dictionary of several named 'styles' describing specific aspects of the display style as a whole.
  * Many ViewDefinitions may share the same DisplayStyle.
- * @public
+ * @public @preview
  */
 export abstract class DisplayStyle extends DefinitionElement {
   public static override get className(): string { return "DisplayStyle"; }
@@ -154,7 +154,7 @@ export abstract class DisplayStyle extends DefinitionElement {
 }
 
 /** A DisplayStyle for 2d views.
- * @public
+ * @public @preview
  */
 export class DisplayStyle2d extends DisplayStyle {
   public static override get className(): string { return "DisplayStyle2d"; }
@@ -208,7 +208,7 @@ export class DisplayStyle2d extends DisplayStyle {
  * - It extends the type of [DisplayStyleSettingsProps.backgroundColor]($common) to include [ColorDef]($common).
  * These idiosyncrasies will be addressed in a future version of core-backend.
  * @see [[DisplayStyle3d.create]].
- * @public
+ * @public @preview
  */
 export interface DisplayStyleCreationOptions extends Omit<DisplayStyle3dSettingsProps, "backgroundColor" | "scheduleScript"> {
   /** If supplied, the [ViewFlags]($common) applied by the display style.
@@ -220,7 +220,7 @@ export interface DisplayStyleCreationOptions extends Omit<DisplayStyle3dSettings
 
 /** A DisplayStyle for 3d views.
  * See [how to create a DisplayStyle3d]$(docs/learning/backend/CreateElements.md#DisplayStyle3d).
- * @public
+ * @public @preview
  */
 export class DisplayStyle3d extends DisplayStyle {
   public static override get className(): string { return "DisplayStyle3d"; }
