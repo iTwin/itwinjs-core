@@ -11,11 +11,12 @@ import { HalfEdgeGraphMerge } from "../../topology/Merging";
 import { Arc3d } from "../Arc3d";
 import { CurveLocationDetail, CurveLocationDetailPair } from "../CurveLocationDetail";
 import { CurvePrimitive } from "../CurvePrimitive";
+import { AnyRegion } from "../CurveTypes";
 import { LineSegment3d } from "../LineSegment3d";
 import { LineString3d } from "../LineString3d";
 import { Loop, LoopCurveLoopCurve, SignedLoops } from "../Loop";
 import { ParityRegion } from "../ParityRegion";
-import { RegionOps } from "../RegionOps";
+import { ConsolidateAdjacentCurvePrimitivesOptions, RegionOps } from "../RegionOps";
 import { RegionGroupMember, RegionGroupOpType } from "../RegionOpsClassificationSweeps";
 
 /** @packageDocumentation
@@ -223,114 +224,75 @@ export class PlanarSubdivision {
   }
   /**
    * Create a [[Loop]] for the given face.
-   * @param faceSeed a node in the face loop.
+   * @param face a node in the face loop, or an array of HalfEdges that comprise a face (e.g., super face).
    * @param announce optional callback invoked on each edge/curve of the face/Loop.
+   * @param compress whether to consolidate adjacent curves in the output Loop (default `false`).
+   * If `announce` is provided, no compression is performed, as edges and curves would no longer be in 1-1 correspondence.
    */
-  public static createLoopInFace(faceSeed: HalfEdge, announce?: (he: HalfEdge, curve: CurvePrimitive, loop: Loop) => void): Loop {
-    let he = faceSeed;
+  public static createLoopInFace(face: HalfEdge | HalfEdge[], announce?: (he: HalfEdge, curve: CurvePrimitive, loop: Loop) => void, compress: boolean = false): Loop | undefined {
+    if (announce)
+      compress = false;
     const loop = Loop.create();
-    do {
+    const addEdgeCurve = (he: HalfEdge): void => {
       const curve = this.createCurveInEdge(he);
       if (curve) {
         announce?.(he, curve, loop);
         loop.tryAddChild(curve);
       }
-      he = he.faceSuccessor;
-    } while (he !== faceSeed);
-    return loop;
-  }
-  /**
-   * Create a [[Loop]] for the given cyclic array of edges.
-   * * Edge geometry is extracted from a CurveLocationDetail.
-   * * Adjacent intervals in the same curve are compressed.
-   * @param edges cyclic array of HalfEdges.
-   */
-  private static createLoopInEdgeArray(edges: HalfEdge[]): Loop | undefined{
-    if (edges.length < 2)
-      return undefined;
-    const details: CurveLocationDetail[] = [];
-    for (const edge of edges) {
-      const info = this.extractGeometryFromEdge(edge);
-      if (!info)
-        return undefined;
-      info.detail.a = info.reversed ? -1.0 : 1.0;
-      details.push(info.detail);
-    }
-    const mergeDetails = (surviving: CurveLocationDetail, other: Readonly<CurveLocationDetail>): boolean => {
-      if (surviving.curve === other.curve && surviving.a === other.a) {
-        if (surviving.a > 0 && surviving.fraction1 === other.fraction) {
-          surviving.fraction1 = other.fraction1;
-          return true;
-        }
-        if (surviving.a < 0 && surviving.fraction === other.fraction1) {
-          surviving.fraction = other.fraction;
-          return true;
-        }
-      }
-      return false;
     };
-    // merge details with same curve and adjacent intervals
-    for (let i = 0; i < details.length - 1; ) {
-      if (mergeDetails(details[i], details[i + 1]))
-        details.splice(i + 1, 1);
-      else
-        ++i;
+    if (Array.isArray(face))
+      face.forEach(addEdgeCurve);
+    else
+      face.announceEdgesInFace(addEdgeCurve);
+    if (compress) {
+      const options = new ConsolidateAdjacentCurvePrimitivesOptions();
+      options.consolidateLoopSeam = true;
+      RegionOps.consolidateAdjacentPrimitives(loop, options);
     }
-    // merge the end details (into the tail)
-    if (details.length > 1 && mergeDetails(details[details.length - 1], details[0]))
-      details.splice(0, 1);
-    const loop = new Loop()
-    for (const detail of details) {
-      let curve: CurvePrimitive | undefined;
-      if (detail.a > 0)
-        curve = detail.curve!.clonePartialCurve(detail.fraction, detail.fraction1!);
-      else
-        curve = detail.curve!.clonePartialCurve(detail.fraction1!, detail.fraction);
-      if (curve)
-        loop.tryAddChild(curve);
-    }
-    return loop.isPhysicallyClosed() ? loop : undefined;
+    if (loop.isPhysicallyClosed())
+      return loop;
+    assert(false, "createLoopInFace: face is not physically closed");
+    return undefined;
   }
   /**
    * Create a [[Loop]] or [[ParityRegion]] for the given face.
    * * A ParityRegion is created for a split-washer type face by removing bridge edges.
-   * @param faceSeed a node in the face loop
+   * @param face a node in the face loop.
    * @param bridgeMask mask on bridge edges (default is `HalfEdgeMask.BRIDGE_EDGE`).
    * @param visitMask mask to use for visiting edges in the face loop (default is `HalfEdgeMask.VISITED`).
    */
-  public static createLoopOrParityRegionInFace(faceSeed: HalfEdge, bridgeMask: HalfEdgeMask = HalfEdgeMask.BRIDGE_EDGE, visitMask: HalfEdgeMask = HalfEdgeMask.VISITED): Loop | ParityRegion {
-    if (!faceSeed.isSplitWasherFace(bridgeMask))
-      return this.createLoopInFace(faceSeed); // not a split-washer face, so a Loop suffices
-    const loops: Loop[] = [];
-    const loopEdges: HalfEdge[] = [];
-    const bridgeStack: HalfEdge[] = [faceSeed.findMaskAroundFace(bridgeMask, true)!];
-    const announceEdge = (he: HalfEdge) => { he.setMask(visitMask); loopEdges.push(he); };
-    const announceBridge = (he: HalfEdge) => { if (!he.isMaskSet(visitMask)) bridgeStack.push(he); };
-    faceSeed.clearMaskAroundFace(visitMask);
-    let bridge: HalfEdge | undefined;
-    while (undefined !== (bridge = bridgeStack.pop())) {
-      bridge.setMask(visitMask);
-      const loopSeed = bridge.findMaskAroundFace(bridgeMask, false); // advance to next loop
-      if (loopSeed) {
-        if (loopSeed.isMaskSet(visitMask))
-          continue;
-        loopEdges.length = 0;
-        if (loopSeed.announceEdgesInSuperFace(bridgeMask, announceEdge, announceBridge)) {
-          const loop = this.createLoopInEdgeArray(loopEdges);
-          if (loop) {
-            loops.push(loop);
+  public static createLoopOrParityRegionInFace(face: HalfEdge, bridgeMask: HalfEdgeMask = HalfEdgeMask.BRIDGE_EDGE, visitMask: HalfEdgeMask = HalfEdgeMask.VISITED): Loop | ParityRegion | undefined {
+    let region: AnyRegion | undefined;
+    if (face.isSplitWasherFace(bridgeMask)) {
+      const loops: Loop[] = [];
+      const loopEdges: HalfEdge[] = [];
+      const bridgeStack: HalfEdge[] = [face.findMaskAroundFace(bridgeMask, true)!];
+      const announceEdge = (he: HalfEdge) => { he.setMask(visitMask); loopEdges.push(he); };
+      const announceBridge = (he: HalfEdge) => { if (!he.isMaskSet(visitMask)) bridgeStack.push(he); };
+      face.clearMaskAroundFace(visitMask);
+      let bridge: HalfEdge | undefined;
+      while (undefined !== (bridge = bridgeStack.pop())) {
+        bridge.setMask(visitMask);
+        const loopSeed = bridge.findMaskAroundFace(bridgeMask, false); // advance to next loop
+        if (loopSeed) {
+          if (loopSeed.isMaskSet(visitMask))
             continue;
+          loopEdges.length = 0;
+          if (loopSeed.announceEdgesInSuperFace(bridgeMask, announceEdge, announceBridge)) {
+            const loop = this.createLoopInFace(loopEdges, undefined, true);
+            if (loop) {
+              loops.push(loop);
+              continue;
+            }
           }
         }
       }
-      loops.length = 0; // unexpected, fall through to default
-      break;
+      region = RegionOps.sortOuterAndHoleLoopsXY(loops);
+      region = RegionOps.simplifyRegion(region);
+    } else {
+      region = this.createLoopInFace(face, undefined, true);
     }
-    const region = RegionOps.sortOuterAndHoleLoopsXY(loops);
-    if (region instanceof ParityRegion || region instanceof Loop)
-      return region;
-    assert(false, "ParityRegion creation failed in PlanarSubdivision.createLoopOrParityRegionInFace.");
-    return this.createLoopInFace(faceSeed); // fall back on split-washer loop
+    return (region && (region instanceof Loop || region instanceof ParityRegion)) ? region : undefined;
   }
   /** Return true if there are only two edges in the face loop, and their start curvatures are the same. */
   private static isNullFace(he: HalfEdge): boolean {
@@ -344,8 +306,8 @@ export class PlanarSubdivision {
     }
     return faceHasTwoEdges && !faceIsBanana;
   }
-  /** Look across edge mates (possibly several) for a nonnull mate face. */
-  private static nonNullEdgeMate(_graph: HalfEdgeGraph, e: HalfEdge): HalfEdge | undefined {
+  /** Look across edge mates (possibly several) for a non-null mate face. */
+  private static getNonNullEdgeMate(_graph: HalfEdgeGraph, e: HalfEdge): HalfEdge | undefined {
     if (this.isNullFace(e))
       return undefined;
     let e1 = e.edgeMate;
@@ -367,7 +329,7 @@ export class PlanarSubdivision {
         const isNullFace = this.isNullFace(faceSeed);
         const loop = this.createLoopInFace(faceSeed, (he: HalfEdge, curveC: CurvePrimitive, loopC: Loop) => {
           if (!isNullFace) {
-            const mate = this.nonNullEdgeMate(graph, he);
+            const mate = this.getNonNullEdgeMate(graph, he);
             if (mate !== undefined) {
               const e = edgeMap.get(mate);
               if (e === undefined) {
@@ -382,7 +344,8 @@ export class PlanarSubdivision {
             }
           }
         });
-        this.collectSignedLoop(loop, componentAreas, zeroAreaTolerance, isNullFace);
+        if (loop)
+          this.collectSignedLoop(loop, componentAreas, zeroAreaTolerance, isNullFace);
       }
       componentAreas.edges = edges;
       result.push(componentAreas);

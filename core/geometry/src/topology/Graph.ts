@@ -1035,6 +1035,17 @@ export class HalfEdge implements HalfEdgeUserData {
     return result;
   }
   /**
+   * Announce edges in the face loop, starting with the instance and proceeding in a `faceSuccessor` traversal.
+   * @param announceEdge function to call at each edge
+   */
+  public announceEdgesInFace(announceEdge: NodeFunction): void {
+    let node: HalfEdge = this;
+    do {
+      announceEdge(node);
+      node = node.faceSuccessor;
+    } while (node !== this);
+  }
+  /**
    * Announce edges in the super face loop, starting with the instance.
    * * A super face admits a `faceSuccessor` traversal, where the next edge at the far vertex is the first one lacking `skipMask` in a `vertexPredecessor` traversal.
    * @param skipMask mask on edges to skip.
