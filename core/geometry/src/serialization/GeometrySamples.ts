@@ -65,8 +65,6 @@ import { SolidPrimitive } from "../solid/SolidPrimitive";
 import { Sphere } from "../solid/Sphere";
 import { TorusPipe } from "../solid/TorusPipe";
 
-// cspell:word CCWXY
-// cspell:word ABCDA
 /**
  * Function to be called to obtain function value at (i,n), for
  * * n fixed over many calls
@@ -2691,7 +2689,7 @@ export class Sample {
     const pointD = Point3d.create(0, 1, 0);
     const pointABC = [pointA, pointB, pointC];
     const pointABCD = [pointA, pointB, pointC, pointD];
-    const pointABCDA = [pointA, pointB, pointC, pointD, pointA];
+    const pointABCD1 = [pointA, pointB, pointC, pointD, pointA];
     result.push(LineSegment3d.create(pointA, pointB));
     result.push(CoordinateXYZ.create(pointA));
     result.push(Arc3d.createCircularStartMiddleEnd(pointA, pointB, pointC));
@@ -2709,7 +2707,7 @@ export class Sample {
     result.push(BezierCurve3dH.create(pointABC)!);
     result.push(BSplineCurve3d.createUniformKnots(pointABC, 3)!);
     result.push(BSplineCurve3dH.createUniformKnots(pointABC, 3)!);
-    result.push(Loop.create(LineString3d.create(pointABCDA)));
+    result.push(Loop.create(LineString3d.create(pointABCD1)));
     result.push(Path.create(LineString3d.create(pointABCD)));
     result.push(this.createConeBsplineSurface(pointA, pointC, 1, 2, 4)!);
     result.push(this.createXYGridBsplineSurface(8, 4, 4, 3)!);

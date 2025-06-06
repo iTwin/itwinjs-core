@@ -17,8 +17,8 @@ importers:
   ../../core/backend:
     dependencies:
       '@bentley/imodeljs-native':
-        specifier: 5.1.33
-        version: 5.1.33
+        specifier: 5.1.40
+        version: 5.1.40
       '@itwin/cloud-agnostic-core':
         specifier: ^2.2.4
         version: 2.2.4(inversify@6.0.1)(reflect-metadata@0.1.13)
@@ -3060,6 +3060,9 @@ importers:
 
   ../../presentation/backend:
     dependencies:
+      '@itwin/presentation-shared':
+        specifier: ^1.2.1
+        version: 1.2.1
       object-hash:
         specifier: ^1.3.1
         version: 1.3.1
@@ -3195,6 +3198,10 @@ importers:
         version: 5.6.2
 
   ../../presentation/common:
+    dependencies:
+      '@itwin/presentation-shared':
+        specifier: ^1.2.1
+        version: 1.2.1
     devDependencies:
       '@itwin/build-tools':
         specifier: workspace:*
@@ -4650,8 +4657,8 @@ packages:
   '@bentley/icons-generic@1.0.34':
     resolution: {integrity: sha512-IIs1wDcY2oZ8tJ3EZRw0U51M+0ZL3MvwoDYYmhUXaa9/UZqpFoOyLBGaxjirQteWXqTIMm3mFvmC+Nbn1ok4Iw==}
 
-  '@bentley/imodeljs-native@5.1.33':
-    resolution: {integrity: sha512-S1p0JF4UEl4xT4ztaukUxEb3srJxoXJdyA2smcpzNW4BgYeRIehSoMyKjKsrIaVsBGhJNkpqtsFfh9o1Iq3elQ==}
+  '@bentley/imodeljs-native@5.1.40':
+    resolution: {integrity: sha512-YUzcVUJEHeJxm8iOfsRMKDJG5OQkxBmSPhRMe85O/Ng/Jnd2qaQ1+0EXwevyE8PR4rLu1/4QYLVjHfZbRJrEPA==}
 
   '@bentley/linear-referencing-schema@2.0.3':
     resolution: {integrity: sha512-2pFIEN4BS7alIDhGous6N2icKAS8ZhVBfoWB8WvSFaYnneGv5YwbbXl46qATDdPO5jUFezkW6uVxdpp1eOgUHQ==}
@@ -5249,8 +5256,8 @@ packages:
       '@itwin/core-bentley': workspace:*
       '@itwin/core-common': workspace:*
 
-  '@itwin/presentation-shared@1.2.0':
-    resolution: {integrity: sha512-+esa0GJhWxO1MaF5cGH439mOXPXWNX/SZGgaVfPyRE/1DdH33ECaXaeJVSpFqNrrBHn5XxYN5/7Rayb78k2LOg==}
+  '@itwin/presentation-shared@1.2.1':
+    resolution: {integrity: sha512-b8In5BV+6q1FjMC+zUmkcSAVgbvp+F0M6WlOOiToSWVx+UpcolctlQZSMCKyBuvYvXVDh7DRfAFOm8k2nfgQfw==}
 
   '@itwin/reality-data-client@1.2.1':
     resolution: {integrity: sha512-pNpnO1tbsM1HwyZcr6UkZLyMczNcYFHqsnREmjYJ4GIeCMdrWKGbH5ar4hyajqc/ZkV9zO4FXFMYgQx3yKK1zQ==}
@@ -11041,7 +11048,7 @@ snapshots:
 
   '@bentley/icons-generic@1.0.34': {}
 
-  '@bentley/imodeljs-native@5.1.33': {}
+  '@bentley/imodeljs-native@5.1.40': {}
 
   '@bentley/linear-referencing-schema@2.0.3': {}
 
@@ -11555,7 +11562,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@itwin/presentation-shared@1.2.0':
+  '@itwin/presentation-shared@1.2.1':
     dependencies:
       '@itwin/core-bentley': 4.10.10
 
@@ -11591,7 +11598,7 @@ snapshots:
   '@itwin/unified-selection@1.2.0':
     dependencies:
       '@itwin/core-bentley': 4.10.10
-      '@itwin/presentation-shared': 1.2.0
+      '@itwin/presentation-shared': 1.2.1
       rxjs: 7.8.2
       rxjs-for-await: 1.0.0(rxjs@7.8.2)
 

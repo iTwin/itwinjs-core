@@ -61,13 +61,13 @@ import {
   RpcRequestsHandler,
 } from "@itwin/presentation-common/internal";
 import { TRANSIENT_ELEMENT_CLASSNAME } from "@itwin/unified-selection";
+import { ensureIModelInitialized, startIModelInitialization } from "./IModelConnectionInitialization.js";
+import { _presentation_manager_ipcRequestsHandler, _presentation_manager_rpcRequestsHandler } from "./InternalSymbols.js";
 import { IpcRequestsHandler } from "./IpcRequestsHandler.js";
 import { FrontendLocalizationHelper } from "./LocalizationHelper.js";
 import { RulesetManager, RulesetManagerImpl } from "./RulesetManager.js";
 import { RulesetVariablesManager, RulesetVariablesManagerImpl } from "./RulesetVariablesManager.js";
 import { StreamedResponseGenerator } from "./StreamedResponseGenerator.js";
-import { ensureIModelInitialized, startIModelInitialization } from "./IModelConnectionInitialization.js";
-import { _presentation_manager_ipcRequestsHandler, _presentation_manager_rpcRequestsHandler } from "./InternalSymbols.js";
 
 /**
  * Data structure that describes IModel hierarchy change event arguments.
@@ -175,6 +175,8 @@ export interface PresentationManagerProps {
   /**
    * Callback that provides [SchemaContext]($ecschema-metadata) for supplied [IModelConnection]($core-frontend).
    * [SchemaContext]($ecschema-metadata) is used for getting metadata required for values formatting.
+   *
+   * @deprecated in 5.1. [IModelConnection.schemaContext]($core-frontend) is now used by default instead.
    */
   schemaContextProvider?: (imodel: IModelConnection) => SchemaContext;
 
@@ -206,7 +208,7 @@ export class PresentationManager implements Disposable {
   private _explicitActiveUnitSystem: UnitSystemKey | undefined;
   private _rulesetVars: Map<string, RulesetVariablesManager>;
   private _clearEventListener?: () => void;
-  private _schemaContextProvider?: (imodel: IModelConnection) => SchemaContext;
+  private _schemaContextProvider: (imodel: IModelConnection) => SchemaContext;
   private _defaultFormats?: FormatsMap;
   private _ipcRequestsHandler?: IpcRequestsHandler;
 
@@ -246,7 +248,8 @@ export class PresentationManager implements Disposable {
     this._rulesetVars = new Map<string, RulesetVariablesManager>();
     this._rulesets = RulesetManagerImpl.create();
     this._localizationHelper = new FrontendLocalizationHelper(props?.activeLocale);
-    this._schemaContextProvider = props?.schemaContextProvider;
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    this._schemaContextProvider = props?.schemaContextProvider ?? ((imodel: IModelConnection) => imodel.schemaContext);
     this._defaultFormats = props?.defaultFormats;
 
     if (IpcApp.isValid) {
@@ -538,12 +541,12 @@ export class PresentationManager implements Disposable {
       ...options,
       descriptor: getDescriptorOverrides(requestOptions.descriptor),
       keys: stripTransientElementKeys(requestOptions.keys).toJSON(),
+      omitFormattedValues: true,
       ...(firstPageSize ? { paging: { ...requestOptions.paging, size: firstPageSize } } : undefined),
-      ...(!requestOptions.omitFormattedValues && this._schemaContextProvider !== undefined ? { omitFormattedValues: true } : undefined),
     });
 
     let contentFormatter: ContentFormatter | undefined;
-    if (!requestOptions.omitFormattedValues && this._schemaContextProvider) {
+    if (!requestOptions.omitFormattedValues) {
       const koqPropertyFormatter = new KoqPropertyValueFormatter(this._schemaContextProvider(requestOptions.imodel), this._defaultFormats);
       contentFormatter = new ContentFormatter(
         new ContentPropertyValueFormatter(koqPropertyFormatter),
