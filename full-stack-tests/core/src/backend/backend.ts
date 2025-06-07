@@ -269,12 +269,12 @@ async function init() {
 
 /** A FileNameResolver for resolving test iModel files from core/backend */
 class BackendTestAssetResolver extends FileNameResolver { // eslint-disable-line @typescript-eslint/no-deprecated
-  /** Resolve a base file name to a full path file name in the core/backend/lib/cjs/test/assets/ directory. */
+  /** Resolve a base file name to a full path file name in the core/backend-tests/lib/cjs/test/assets/ directory. */
   public override tryResolveFileName(inFileName: string): string {
     if (path.isAbsolute(inFileName)) {
       return inFileName;
     }
-    return path.join(__dirname, "../../../../core/backend/lib/cjs/test/assets/", inFileName);
+    return path.join(__dirname, "../../../../core/backend-tests/lib/cjs/test/assets/", inFileName);
   }
   /** Resolve a key (for testing FileNameResolver) */
   public override tryResolveKey(fileKey: string): string | undefined {

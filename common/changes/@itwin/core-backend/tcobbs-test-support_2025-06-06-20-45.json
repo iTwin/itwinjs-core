@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Unit tests moved into new core-backend-tests package.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}

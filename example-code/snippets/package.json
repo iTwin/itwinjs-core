@@ -34,6 +34,7 @@
     "@itwin/itwins-client": "^1.6.1",
     "@itwin/map-layers-formats": "workspace:*",
     "@itwin/service-authorization": "^1.0.0",
+    "@itwin/test-support": "workspace:*",
     "@xmldom/xmldom": "~0.8.10",
     "azurite": "^3.34.0",
     "fs-extra": "^8.1.0",

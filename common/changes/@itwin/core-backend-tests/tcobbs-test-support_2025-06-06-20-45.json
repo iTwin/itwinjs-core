@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend-tests",
+      "comment": "New core-backend-tests packages created for core-backend tests.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend-tests"
+}

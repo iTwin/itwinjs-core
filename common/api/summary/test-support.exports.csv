@@ -1,0 +1,19 @@
+sep=;
+Release Tag;API Item Type;API Item Name
+internal;function;advancedDeepEqual
+internal;function;brepData
+internal;function;createBRepDataProps
+internal;const;defaultOpts
+beta;class;ExtensiveTestScenario
+beta;class;HubMock
+beta;class;HubWrappers
+beta;class;IModelTestUtils
+internal;interface;IModelTestUtilsOpenOptions
+internal;class;KnownTestLocations
+internal;class;TestBim
+internal;class;TestChangeSetUtility
+internal;class;TestElementDrivesElement
+internal;class;TestPhysicalObject
+internal;interface;TestPhysicalObjectProps
+internal;interface;TestRelationshipProps
+beta;enum;TestUserType

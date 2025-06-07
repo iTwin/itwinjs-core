@@ -32,7 +32,7 @@ if (ProcessDetector.isElectronAppFrontend) {
 
     it("Create container and versions of CatalogIModels within it", async () => {
       // This file will be used as the "seed catalog" file
-      const localCatalogFile = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/cjs/test/assets/test.bim");
+      const localCatalogFile = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend-tests/lib/cjs/test/assets/test.bim");
 
       // for names of individuals in various apis
       const people = {

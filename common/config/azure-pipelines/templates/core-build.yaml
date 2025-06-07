@@ -103,7 +103,7 @@ steps:
     condition: and(succeeded(), ${{ parameters.buildMobile }}, eq(variables['Agent.OS'], 'Darwin'))
 
   - script: npm run ios:all
-    workingDirectory: core/backend
+    workingDirectory: core/backend-tests
     displayName: Build & run iOS backend unit tests in Simulator
     condition: and(succeeded(), ${{ parameters.buildMobile }}, eq(variables['Agent.OS'], 'Darwin'))
 
