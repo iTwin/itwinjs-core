@@ -98,7 +98,8 @@ export class Triangulator {
     const q = Geometry.tripleProduct(
       wx, wy, tx,
       vx, vy, ty,
-      ux, uy, tz);
+      ux, uy, tz,
+    );
     if (q < 0)
       return false;
     const denom = Math.abs(wx * vy * tz) + Math.abs(wy * ty * ux) + Math.abs(tx * vx * uy)

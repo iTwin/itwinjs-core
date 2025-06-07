@@ -245,6 +245,7 @@ describe("HalfEdgeGraphSearch", () => {
   it("HalfEdgeGraphSearch.graphToPolyface", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
+
     const graph = new HalfEdgeGraph();
     const node0 = graph.addEdgeXY(1, 1, 0, 0);
     const node1 = node0.faceSuccessor;

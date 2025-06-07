@@ -91,3 +91,8 @@ export function prettyPrint(jsonObject: object): string {
   }
   return prettyString;
 }
+
+/** Return a random number between a and b */
+export function getRandomNumber(a: number, b: number): number {
+  return (b - a) * Math.random() + a;
+}
