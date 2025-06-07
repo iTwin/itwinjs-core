@@ -208,6 +208,17 @@ export class SetScheduleScriptTool extends DisplayStyleTool {
         now + 3000,
         Transform.createTranslationXYZ(0, 0, 0)
       );
+      elementTimeline1.addVisibility(now, 50);
+      elementTimeline1.addVisibility(now + 3000, 100);
+
+      // elementTimeline1.addCuttingPlane(now, {
+      //   position: { x: 0, y: 0, z: 0 },
+      //   direction: { x: 0, y: 0, z: 1 },
+      // });
+      // elementTimeline1.addCuttingPlane(now + 3000, {
+      //   position: { x: 0, y: 0, z: 5 },
+      //   direction: { x: 0, y: 0, z: 1 },
+      // });
 
       const elementTimeline2 = modelTimeline.addElementTimeline(["0xca60"]);
       elementTimeline2.addColor(now, new RgbColor(0, 255, 255));
@@ -226,8 +237,8 @@ export class SetScheduleScriptTool extends DisplayStyleTool {
     // vp.displayStyle.scheduleScript = this._script;
     if (!this._script)
       return false;
-    // vp.displayStyle.updateEditingScript(this._script);
-    vp.displayStyle.commitScheduleEditing();
+    vp.displayStyle.updateEditingScript(this._script);
+    // vp.displayStyle.commitScheduleEditing();
     return true;
   }
 }

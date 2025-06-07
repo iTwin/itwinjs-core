@@ -484,7 +484,8 @@ export class IModelTileTree extends TileTree {
         range: new Range3d(0, 0, 0, 1, 1, 1),
       });
     }
-    this._rootTile.transition(new ScheduleScriptDynamicState(this._rootTile, elemChanges));
+    if (this._rootTile.tileState.type !== "dynamic")
+      this._rootTile.transition(new ScheduleScriptDynamicState(this._rootTile, elemChanges));
   }
 
   public onScheduleEditingCommitted() {
