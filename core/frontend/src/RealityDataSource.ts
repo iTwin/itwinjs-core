@@ -5,15 +5,18 @@
 /** @packageDocumentation
  * @module Tiles
  */
-import { BentleyError, GuidString, Logger, LoggingMetaData, RealityDataStatus } from "@itwin/core-bentley";
+import { BentleyError, BentleyStatus, GuidString, Logger, LoggingMetaData, RealityDataStatus } from "@itwin/core-bentley";
 import { Cartographic, EcefLocation, OrbitGtBlobProps, RealityData, RealityDataFormat, RealityDataProvider, RealityDataSourceKey } from "@itwin/core-common";
 import { FrontendLoggerCategory } from "./common/FrontendLoggerCategory";
 import { CesiumIonAssetProvider, ContextShareProvider, getCesiumAssetUrl } from "./tile/internal";
 import { RealityDataSourceTilesetUrlImpl } from "./RealityDataSourceTilesetUrlImpl";
 import { RealityDataSourceContextShareImpl } from "./RealityDataSourceContextShareImpl";
 import { RealityDataSourceCesiumIonAssetImpl } from "./RealityDataSourceCesiumIonAssetImpl";
+import { RealityDataSourceGP3DTImpl } from "./RealityDataSourceGP3DTImpl";
 import { IModelApp } from "./IModelApp";
 import { Range3d } from "@itwin/core-geometry";
+import { GoogleMapsDecorator } from "./GoogleMapsDecorator";
+import { DecorateContext } from "./ViewContext";
 
 const loggerCategory: string = FrontendLoggerCategory.RealityData;
 
@@ -213,6 +216,13 @@ export namespace RealityDataSource {
 
     return provider.createRealityDataSource(key, iTwinId);
   }
+
+  /** Implement this function in order to provide the base URL for the specified reality data source.
+   * @alpha
+   */
+  export function setBaseUrl(id: string) {
+    throw new Error(`Function not implemented. rdSourceId: ${id}}`);
+  }
 }
 
 /** A named supplier of [RealityDataSource]]s.
@@ -221,6 +231,7 @@ export namespace RealityDataSource {
  * is invoked to produce the reality data source.
  * @alpha
  */
+
 export interface RealityDataSourceProvider {
   /** Produce a RealityDataSource for the specified `key`.
    * @param key Identifies the reality data source.
@@ -228,11 +239,15 @@ export interface RealityDataSourceProvider {
    * @returns the requested reality data source, or `undefined` if it could not be produced.
    */
   createRealityDataSource(key: RealityDataSourceKey, iTwinId: GuidString | undefined): Promise<RealityDataSource | undefined>;
+  /** Optionally add any decorations specific to this reality data source provider.
+   * For example, the Google Photorealistic 3D Tiles reality data source provider will add the Google logo.
+   */
+  decorate?(_context: DecorateContext): void;
 }
 
 /** A registry of [[RealityDataSourceProvider]]s identified by their unique names. The registry can be accessed via [[IModelApp.realityDataSourceProviders]].
  * It includes a handful of built-in providers for sources like Cesium ION, ContextShare, OrbitGT, and arbitrary public-accessible URLs.
- * Any number of additional providers can be registered. They should typically be registered just after [[IModelAp.startup]].
+ * Any number of additional providers can be registered. They should typically be registered just after [[IModelApp.startup]].
  * @alpha
  */
 export class RealityDataSourceProviderRegistry {
@@ -263,5 +278,65 @@ export class RealityDataSourceProviderRegistry {
   /** Look up the provider registered by the specified `name`. */
   public find(name: string): RealityDataSourceProvider | undefined {
     return this._providers.get(name);
+  }
+}
+
+/**
+ * Options for creating a Google Photorealistic 3D Tiles (GP3DT) reality data source provider.
+ * @param apiKey Google Map Tiles API Key used to access GP3DT.
+ * @param getAuthToken Function that returns an OAuth token for authenticating with GP3DT. This token is expected to not contain the "Bearer" prefix.
+ * @param showCreditsOnScreen If true, the data attributions/copyrights from the GP3DT will be displayed on screen. The Google Maps logo will always be displayed. Defaults to `true`.
+ * @alpha
+ */
+interface RealityDataSourceGP3DTProviderOptions {
+  apiKey?: string;
+  getAuthToken?: () => Promise<string | undefined>;
+  showCreditsOnScreen?: boolean;
+}
+
+/**
+ * Will provide Google Photorealistic 3D Tiles (GP3DT) from Google (in 3dTile format).
+ * A valid GP3DT authentication key must be configured when creating and registering this provider.
+ * To use this provider, you must register it with [[IModelApp.realityDataSourceProviders]].
+ * @alpha
+ */
+export class RealityDataSourceGP3DTProvider implements RealityDataSourceProvider {
+  /** Google Map Tiles API Key used to access GP3DT. */
+  private _apiKey?: string;
+  /** Function that returns an OAuth token for authenticating with GP3DT. This token is expected to not contain the "Bearer" prefix. */
+  private _getAuthToken?: () => Promise<string | undefined>;
+  /** Decorator for Google Maps logos */
+  private _decorator: GoogleMapsDecorator;
+
+  public async createRealityDataSource(key: RealityDataSourceKey, iTwinId: GuidString | undefined): Promise<RealityDataSource | undefined> {
+    if (!this._apiKey && !this._getAuthToken) {
+      Logger.logError(loggerCategory, "Either an API key or getAuthToken function are required to create a GP3DT reality data source.");
+      return undefined;
+    }
+    return RealityDataSourceGP3DTImpl.createFromKey(key, iTwinId, this._apiKey, this._getAuthToken);
+  }
+
+  public constructor(options: RealityDataSourceGP3DTProviderOptions) {
+    this._apiKey = options.apiKey;
+    this._getAuthToken = options.getAuthToken;
+    this._decorator = new GoogleMapsDecorator(options.showCreditsOnScreen ?? true);
+  }
+
+  /**
+   * Initialize the GP3DT reality data source provider by activating its decorator, which consists of loading the correct Google Maps logo.
+   * @returns `true` if the decorator was successfully activated, otherwise `false`.
+   */
+  public async initialize(): Promise<boolean> {
+    const isActivated = await this._decorator.activate("satellite");
+    if (!isActivated) {
+      const msg = `Failed to activate decorator`;
+      Logger.logError(loggerCategory, msg);
+      throw new BentleyError(BentleyStatus.ERROR, msg);
+    }
+    return isActivated;
+  }
+
+  public decorate(_context: DecorateContext): void {
+    this._decorator.decorate(_context);
   }
 }

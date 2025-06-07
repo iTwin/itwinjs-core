@@ -10,7 +10,7 @@ import {
   BackgroundMapProps, BackgroundMapProviderName, BackgroundMapProviderProps, BackgroundMapType, BaseMapLayerSettings, CesiumTerrainAssetId, ColorDef, DisplayStyle3dSettingsProps,
   GlobeMode, HiddenLine, LinePixels, MonochromeMode, RenderMode, TerrainProps, ThematicDisplayMode, ThematicGradientColorScheme, ThematicGradientMode,
 } from "@itwin/core-common";
-import { DisplayStyle2dState, DisplayStyle3dState, DisplayStyleState, IModelApp, Viewport, ViewState, ViewState3d } from "@itwin/core-frontend";
+import { DisplayStyle2dState, DisplayStyle3dState, DisplayStyleState, getGooglePhotorealistic3DTilesURL, IModelApp, RealityDataSourceGP3DTProvider, Viewport, ViewState, ViewState3d } from "@itwin/core-frontend";
 import { AmbientOcclusionEditor } from "./AmbientOcclusion";
 import { EnvironmentEditor } from "./EnvironmentEditor";
 import { Settings } from "./FeatureOverrides";
@@ -242,6 +242,10 @@ const renderingStyles: RenderingStyle[] = [{
   },
   viewflags: renderingStyleViewFlags,
 }];
+
+// ###TODO - make this use display style settings?? Maybe... Depends how "hacky" vs. "real" we want this approach.
+// This is a global right now, which is icky.
+let displayingGP3DT = false;
 
 export class ViewAttributes {
   private static _expandViewFlags = false;
@@ -485,6 +489,8 @@ export class ViewAttributes {
     this._updates.push((view) => thematic.update(view));
   }
 
+  private getDisplayingGP3DT() { return displayingGP3DT; }
+
   private getBackgroundMap(view: ViewState) { return view.displayStyle.settings.backgroundMap; }
   private addBackgroundMapOrTerrain(): void {
     const isMapSupported = (view: ViewState) => view.is3d() && view.iModel.isGeoLocated;
@@ -498,15 +504,65 @@ export class ViewAttributes {
       backgroundSettingsDiv.style.display = display;
     };
 
+    let checkboxInterfaceGP3DT: CheckBox | undefined;
+    let checkboxInterfaceBGMap: CheckBox | undefined;
+
+    const toggleGP3DTUI = (enabled: boolean) => {
+      if (undefined === checkboxInterfaceGP3DT)
+        return;
+      const checkboxGP3DT = checkboxInterfaceGP3DT.checkbox;
+      const checkboxLabelGP3DT = checkboxInterfaceGP3DT.label;
+      if (!enabled) {
+        checkboxGP3DT.disabled = true;
+        checkboxLabelGP3DT.style.opacity = "0.5";
+      } else {
+        checkboxGP3DT.disabled = false;
+        checkboxLabelGP3DT.style.opacity = "1.0";
+      }
+      checkboxLabelGP3DT.style.fontWeight = checkboxGP3DT.checked ? "bold" : "500";
+    };
+
+    const toggleBGMapUI = (enabled: boolean) => {
+      if (undefined === checkboxInterfaceBGMap)
+        return;
+      const checkboxBGMap = checkboxInterfaceBGMap.checkbox;
+      const checkboxLabelBGMap = checkboxInterfaceBGMap.label;
+      if (!enabled) {
+        checkboxBGMap.disabled = true;
+        checkboxLabelBGMap.style.opacity = "0.5";
+      } else {
+        checkboxBGMap.disabled = false;
+        checkboxLabelBGMap.style.opacity = "1.0";
+      }
+      checkboxLabelBGMap.style.fontWeight = checkboxBGMap.checked ? "bold" : "500";
+    };
+
+    const enableGP3DT = (enabled: boolean) => {
+      toggleBGMapUI(!enabled);
+      if (undefined === checkboxInterfaceGP3DT)
+        return;
+      const checkboxGP3DT = checkboxInterfaceGP3DT.checkbox;
+      const checkboxLabelGP3DT = checkboxInterfaceGP3DT.label;
+      checkboxLabelGP3DT.style.fontWeight = checkboxGP3DT.checked ? "bold" : "500";
+      this.sync();
+    };
+    const checkboxInterfaceGP3DT0 = checkboxInterfaceGP3DT = this.addCheckbox("Google Photorealistic 3D Tiles", enableGP3DT, div);
+    if (this.getDisplayingGP3DT())
+      checkboxInterfaceGP3DT.checkbox.checked = true;
+    toggleGP3DTUI(this.getDisplayingGP3DT() || !this._vp.view.viewFlags.backgroundMap);
+
     const enableMap = (enabled: boolean) => {
       this._vp.viewFlags = this._vp.viewFlags.with("backgroundMap", enabled);
       backgroundSettingsDiv.style.display = enabled ? "block" : "none";
       showOrHideSettings(enabled);
+      toggleGP3DTUI(!enabled);
       this.sync();
     };
-    const checkboxInterface = this.addCheckbox("Background Map", enableMap, div);
+    const checkboxInterface = checkboxInterfaceBGMap = this.addCheckbox("Background Map", enableMap, div);
     const checkbox = checkboxInterface.checkbox;
     const checkboxLabel = checkboxInterface.label;
+
+    toggleBGMapUI(this._vp.view.viewFlags.backgroundMap || !this.getDisplayingGP3DT());
 
     const imageryProviders = createComboBox({
       parent: backgroundSettingsDiv,
@@ -558,11 +614,39 @@ export class ViewAttributes {
     backgroundSettingsDiv.appendChild(mapSettings);
     backgroundSettingsDiv.appendChild(terrainSettings);
 
-    this._updates.push((view) => {
+    this._updates.push(async (view) => {
       const visible = isMapSupported(view);
       div.style.display = visible ? "block" : "none";
       if (!visible)
         return;
+
+      if (checkboxInterfaceGP3DT0.checkbox.checked) {
+        // Only create and initialize the provider once
+        const provider = new RealityDataSourceGP3DTProvider({ apiKey: process.env.IMJS_GP3DT_KEY!, showCreditsOnScreen: true });
+        await provider.initialize();
+
+        if (!this.getDisplayingGP3DT()) {
+          const url = getGooglePhotorealistic3DTilesURL();
+          IModelApp.realityDataSourceProviders.register("GP3DT", provider);
+          view.displayStyle.attachRealityModel({
+            tilesetUrl: url,
+            name: "googleMap3dTiles",
+            rdSourceKey: {
+                provider: "GP3DT",
+                format: "ThreeDTile",
+                id: url,
+              },
+            });
+          this.sync();
+          displayingGP3DT = true;
+        }
+      } else {
+        if (this.getDisplayingGP3DT()) {
+          view.displayStyle.detachRealityModelByNameAndUrl("googleMap3dTiles", getGooglePhotorealistic3DTilesURL());
+          this.sync();
+          displayingGP3DT = false;
+        }
+      }
 
       checkbox.checked = view.viewFlags.backgroundMap;
       checkboxLabel.style.fontWeight = checkbox.checked ? "bold" : "500";
