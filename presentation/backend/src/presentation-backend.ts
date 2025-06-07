@@ -35,3 +35,8 @@ export { BackendDiagnosticsHandler, BackendDiagnosticsOptions, BackendDiagnostic
  * Types related to logging in this package.
  */
 export { PresentationBackendLoggerCategory, PresentationBackendNativeLoggerCategory } from "./presentation-backend/BackendLoggerCategory.js";
+
+const globalSymbol = Symbol.for("itwin.presentation.backend.globals");
+if ((globalThis as any)[globalSymbol]) {
+  throw new Error("Multiple @itwin/presentation-backend imports detected!");
+}

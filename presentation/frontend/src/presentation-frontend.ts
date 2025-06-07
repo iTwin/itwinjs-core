@@ -61,3 +61,8 @@ export { SelectionScopesManagerProps, SelectionScopesManager, createSelectionSco
 export { SelectionHandlerProps, SelectionHandler } from "./presentation-frontend/selection/SelectionHandler.js";
 export { HiliteSet, HiliteSetProviderProps, HiliteSetProvider } from "./presentation-frontend/selection/HiliteSetProvider.js";
 export { SelectionHelper } from "./presentation-frontend/selection/SelectionHelper.js";
+
+const globalSymbol = Symbol.for("itwin.presentation.frontend.globals");
+if ((globalThis as any)[globalSymbol]) {
+  throw new Error("Multiple @itwin/presentation-frontend imports detected!");
+}
