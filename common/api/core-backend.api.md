@@ -2243,6 +2243,7 @@ export class ECSqlValueIterator implements IterableIterator<ECSqlValue> {
 
 // @public
 export class ECSqlWriteStatement {
+    [Symbol.dispose](): void;
     constructor(stmt?: ECSqlStatement);
     bindArray(parameter: number | string, val: any[]): void;
     bindBlob(parameter: number | string, blob: string | Uint8Array | ArrayBuffer | SharedArrayBuffer): void;
@@ -2274,6 +2275,8 @@ export class ECSqlWriteStatement {
     reset(): void;
     // (undocumented)
     get sql(): string;
+    // (undocumented)
+    step(): DbResult;
     stepForInsert(): ECSqlInsertResult;
     // @internal
     get stmt(): ECSqlStatement;
