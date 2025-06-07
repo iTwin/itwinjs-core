@@ -49,7 +49,7 @@ import { RenderTarget } from "./render/RenderTarget";
 import { StandardView, StandardViewId } from "./StandardView";
 import { SubCategoriesCache } from "./SubCategoriesCache";
 import {
-  DisclosedTileTreeSet, MapCartoRectangle, MapFeatureInfo, MapFeatureInfoOptions, MapLayerFeatureInfo, MapLayerImageryProvider, MapLayerIndex, MapLayerInfoFromTileTree, MapTiledGraphicsProvider,
+  DisclosedTileTreeSet, IModelTileTree, MapCartoRectangle, MapFeatureInfo, MapFeatureInfoOptions, MapLayerFeatureInfo, MapLayerImageryProvider, MapLayerIndex, MapLayerInfoFromTileTree, MapTiledGraphicsProvider,
   MapTileTreeReference, MapTileTreeScaleRangeVisibility, TileBoundingBoxes, TiledGraphicsProvider, TileTreeLoadStatus, TileTreeReference, TileUser,
 } from "./tile/internal";
 import { EventController } from "./tools/EventController";
@@ -1303,6 +1303,28 @@ export abstract class Viewport implements Disposable, TileUser {
 
     removals.push(settings.onTimePointChanged.addListener(scheduleChanged));
     removals.push(style.onScheduleScriptChanged.addListener(scriptChanged));
+
+
+    const scheduleEditingChanged = (change: { changedElementIds: Set<Id64String> }) => {
+      for (const ref of this.getTileTreeRefs()) {
+        const tree = ref.treeOwner.tileTree;
+        if (tree instanceof IModelTileTree) {
+          tree.onScheduleEditingChanged(change);
+        }
+      }
+    };
+
+    const scheduleEditingCommitted = () => {
+      for (const ref of this.getTileTreeRefs()) {
+        const tree = ref.treeOwner.tileTree;
+        if (tree instanceof IModelTileTree) {
+          tree.onScheduleEditingCommitted();
+        }
+      }
+    };
+
+    removals.push(style.onScheduleEditingChanged.addListener(scheduleEditingChanged));
+    removals.push(style.onScheduleEditingCommitted.addListener(scheduleEditingCommitted));
 
     removals.push(settings.onViewFlagsChanged.addListener((vf) => {
       if (vf.backgroundMap !== this.viewFlags.backgroundMap)

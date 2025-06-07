@@ -6,7 +6,7 @@
  * @module Tiles
  */
 
-import { assert, BeTimePoint, GuidString, Id64Array, Id64String } from "@itwin/core-bentley";
+import { assert, BeTimePoint, DbOpcode, GuidString, Id64Array, Id64String } from "@itwin/core-bentley";
 import { Range3d, Transform } from "@itwin/core-geometry";
 import {
   BatchType, ContentIdProvider, EdgeOptions, ElementAlignedBox3d, ElementGeometryChange, FeatureAppearanceProvider,
@@ -157,6 +157,22 @@ class DynamicState {
   }
 }
 
+class ScheduleScriptDynamicState {
+  public readonly type = "dynamic";
+  public readonly rootTile: DynamicIModelTile;
+  private _dispose: () => void;
+
+  public [Symbol.dispose](): void {
+    this._dispose();
+    this.rootTile[Symbol.dispose]();
+  }
+
+  public constructor(root: RootTile, elemChanges: Iterable<ElementGeometryChange>) {
+    this.rootTile = DynamicIModelTile.create(root, elemChanges);
+    this._dispose = () => {};
+  }
+}
+
 /** The tile tree has been disposed. */
 class DisposedState {
   public readonly type = "disposed";
@@ -166,7 +182,7 @@ class DisposedState {
 const disposedState = new DisposedState();
 
 /** The current state of an [[IModelTileTree]]'s [[RootTile]]. The tile transitions between these states primarily in response to GraphicalEditingScope events. */
-type RootTileState = StaticState | InteractiveState | DynamicState | DisposedState;
+type RootTileState = StaticState | InteractiveState | DynamicState | DisposedState | ScheduleScriptDynamicState ;
 
 /** The root tile for an [[IModelTileTree]].
  */
@@ -266,7 +282,6 @@ class RootTile extends Tile {
       let appearanceProvider = this._tileState.rootTile.appearanceProvider;
       if (args.appearanceProvider)
         appearanceProvider = FeatureAppearanceProvider.chain(args.appearanceProvider, appearanceProvider);
-
       args.graphics.clear();
       args.graphics.add(args.context.createGraphicBranch(staticBranch, Transform.createIdentity(), { appearanceProvider }));
     }
@@ -335,7 +350,7 @@ class RootTile extends Tile {
  * @internal exported strictly for display-test-app until we remove CommonJS support.
  */
 export class IModelTileTree extends TileTree {
-  public readonly decoder: ImdlDecoder;
+  public decoder: ImdlDecoder;
   private readonly _rootTile: RootTile;
   private readonly _options: IModelTileTreeOptions;
   private readonly _transformNodeRanges?: Map<number, Range3d>;
@@ -358,6 +373,8 @@ export class IModelTileTree extends TileTree {
 
   private readonly _layerHandler: LayerTileTreeHandler;
   public override get layerHandler() { return this._layerHandler; }
+  private _lastScheduleScript?: RenderSchedule.Script;
+  private _scriptLoadPromise?: Promise<void>;
 
   public constructor(params: IModelTileTreeParams, treeId: IModelTileTreeId) {
     super(params);
@@ -456,5 +473,23 @@ export class IModelTileTree extends TileTree {
 
   public get containsTransformNodes(): boolean {
     return undefined !== this._transformNodeRanges;
+  }
+
+  public onScheduleEditingChanged(change: { changedElementIds: Set<Id64String> }) {
+    const elemChanges: ElementGeometryChange[] = [];
+    for (const id of change.changedElementIds) {
+      elemChanges.push({
+        id,
+        type: DbOpcode.Update,
+        range: new Range3d(0, 0, 0, 1, 1, 1),
+      });
+    }
+    if (this._rootTile.tileState.type !== "dynamic")
+      this._rootTile.transition(new ScheduleScriptDynamicState(this._rootTile, elemChanges));
+  }
+
+  public onScheduleEditingCommitted() {
+    if (this._rootTile.tileState.type !== "static")
+      this._rootTile.transition(new StaticState(this._rootTile));
   }
 }
