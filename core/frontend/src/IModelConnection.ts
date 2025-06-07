@@ -309,7 +309,7 @@ export abstract class IModelConnection extends IModel {
   }
 
   /** @internal
-   * @deprecated in 4.8. Use AccuSnap.doSnapRequest.
+   * @deprecated in 4.8 - might be removed in next major version. Use AccuSnap.doSnapRequest.
    */
   public async requestSnap(props: SnapRequestProps): Promise<SnapResponseProps> {
     return this[_requestSnap](props);
@@ -356,7 +356,7 @@ export abstract class IModelConnection extends IModel {
   }
 
   /** Request mass properties for multiple elements from the backend.
-   * @deprecated in 4.11. Use [[IModelConnection.getMassProperties]].
+   * @deprecated in 4.11 - might be removed in next major version. Use [[IModelConnection.getMassProperties]].
    */
   public async getMassPropertiesPerCandidate(requestProps: MassPropertiesPerCandidateRequestProps): Promise<MassPropertiesPerCandidateResponseProps[]> {  // eslint-disable-line @typescript-eslint/no-deprecated
     return IModelReadRpcInterface.getClientForRouting(this.routingContext.token).getMassPropertiesPerCandidate(this.getRpcProps(), requestProps);
@@ -729,7 +729,7 @@ export class SnapshotConnection extends IModelConnection {
 
   /** Open an IModelConnection to a remote read-only snapshot iModel from a key that will be resolved by the backend.
    * @note This method is intended for web applications.
-   * @deprecated in 4.10. Use [[CheckpointConnection.openRemote]].
+   * @deprecated in 4.10 - might be removed in next major version. Use [[CheckpointConnection.openRemote]].
    */
   public static async openRemote(fileKey: string): Promise<SnapshotConnection> {
     const routingContext = IModelRoutingContext.current || IModelRoutingContext.default;
@@ -1200,7 +1200,7 @@ export namespace IModelConnection {
      * There is no guarantee that this view will be suitable for the purposes of any other applications.
      * Most applications should ignore the default view and instead create a [[ViewState]] that fits their own requirements using APIs like [[ViewCreator3d]].
      * @returns the Id of the default view as defined in the iModel's property table, or an invalid ID if no default view is defined.
-     * @deprecated in 4.2. Create a ViewState to your own specifications.
+     * @deprecated in 4.2 - might be removed in next major version. Create a ViewState to your own specifications.
      */
     public async queryDefaultViewId(): Promise<Id64String> {
       const iModel = this._iModel;

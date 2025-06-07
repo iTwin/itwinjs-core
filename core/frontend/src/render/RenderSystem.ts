@@ -822,7 +822,7 @@ export namespace RenderSystem {
     /** Previously, this property dictated whether to attempt to use a WebGL 2 rendering context before falling back to WebGL 1.
      * WebGL 1 is no longer supported, so this property is now ignored.
      * @public
-     * @deprecated in 4.x. WebGL 1 is no longer supported.
+     * @deprecated in 4.x - might be removed in next major version. WebGL 1 is no longer supported.
      */
     useWebGL2?: boolean;
 
