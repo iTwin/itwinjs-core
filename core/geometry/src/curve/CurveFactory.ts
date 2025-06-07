@@ -33,6 +33,11 @@ import { CurveChain } from "./CurveCollection";
 import { CurvePrimitive } from "./CurvePrimitive";
 import { AnyCurve, AnyRegion } from "./CurveTypes";
 import { GeometryQuery } from "./GeometryQuery";
+import { Ellipse2d } from "./internalContexts/geometry2d/Ellipse2d";
+import { ImplicitCurve2d } from "./internalContexts/geometry2d/implicitCurve2d";
+import { UnboundedCircle2dByCenterAndRadius } from "./internalContexts/geometry2d/UnboundedCircle2d";
+import { UnboundedHyperbola2d } from "./internalContexts/geometry2d/UnboundedHyperbola2d";
+import { UnboundedLine2dByPointAndNormal } from "./internalContexts/geometry2d/UnboundedLine2d.";
 import { LineSegment3d } from "./LineSegment3d";
 import { LineString3d } from "./LineString3d";
 import { Loop } from "./Loop";
@@ -599,13 +604,60 @@ export class CurveFactory {
   ): Arc3d | undefined {
     return Arc3d.createCircularStartTangentRadius(start, tangentAtStart, radius, upVector, sweep);
   }
-  public static createLinePointTangent(
-    _start: Point3d,
-    _curve: CurvePrimitive
-  ): LineSegment3d | undefined {
+
+  public static createCurvePrimitiveFromImplicitCurve (source: ImplicitCurve2d | ImplicitCurve2d[],
+    sizeHint: number = 100):CurvePrimitive | CurvePrimitive[] | undefined{
+    if (Array.isArray (source)){
+      const result:CurvePrimitive[] = [];
+      for (const s of source){
+        const c = this.createCurvePrimitiveFromImplicitCurve (s);
+        if (c === undefined){
+          // ignore it!
+        } else if (c instanceof CurvePrimitive){
+          result.push (c);
+        } else if (Array.isArray(c)){
+          for (const c1 of c)
+            result.push(c1);
+        }
+      }
+      return result;
+    }
+    // source is a single curve . .
+    if (source instanceof UnboundedCircle2dByCenterAndRadius){
+      return Arc3d.createXY (Point3d.createFrom (source.center), source.radius);
+    }
+    if (source instanceof UnboundedLine2dByPointAndNormal){
+      const vectorAlong = source.vectorAlongLine ();
+      return LineSegment3d.createXYXY (
+        source.point.x - sizeHint * vectorAlong.x, source.point.y - sizeHint * vectorAlong.y,
+        source.point.x + sizeHint * vectorAlong.x, source.point.y + sizeHint * vectorAlong.y);
+    }
+    if (source instanceof UnboundedHyperbola2d){
+    const degreeStep = 10.0;
+    const degreeLimit = 80.0;
+    const result:CurvePrimitive[] = [];
+    for (const signX of [1,-1]){
+        const strokes = [];
+        for (const theta = Angle.createDegrees (-degreeLimit);
+          theta.degrees < degreeLimit + 1;
+          theta.setDegrees(theta.degrees +  degreeStep)){
+          const c = signX * theta.cos();
+          const s = theta.sin();
+          const xy = Point3d.createFrom (source.pointA.plus2Scaled (source.vectorU, 1.0 / c, source.vectorV, s/c));
+          strokes.push (Point3d.createFrom (xy));
+          }
+        result.push (LineString3d.create (strokes));
+        }
+      return result;
+      }
+    else if (source instanceof Ellipse2d){
+      return  Arc3d.create (
+        Point3d.createFrom (source.pointA),
+        Vector3d.createFrom (source.vectorU),
+        Vector3d.createFrom (source.vectorV));
+    }
     return undefined;
   }
-
   /**
    * Compute 2 spirals (all in XY) for a symmetric line-to-line transition.
    * * First spiral begins at given start point.

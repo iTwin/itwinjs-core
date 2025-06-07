@@ -35,6 +35,13 @@ export class UnboundedCircle2dByCenterAndRadius extends ImplicitCurve2d {
       // (The create method clones the inputs . . .)
       return  UnboundedCircle2dByCenterAndRadius.createPointRadius (this.center, this.radius);
     }
+    /**
+     * Return a clone of this circle, with radius negated
+     */
+    public cloneNegateRadius () : UnboundedCircle2dByCenterAndRadius {
+      // (The create method clones the inputs . . .)
+      return  UnboundedCircle2dByCenterAndRadius.createPointRadius (this.center, -this.radius);
+    }
   /**
    * Create an ImplicitCircle2d from XY parts of its center and its radius
    * @param centerX x coordinate of center

@@ -22,6 +22,8 @@ import { CurvePrimitive, LineString3d } from "../../core-geometry";
 import { UnboundedLine2dByPointAndNormal } from "../../curve/internalContexts/geometry2d/UnboundedLine2d.";
 import { ImplicitCurve2d, ImplicitGeometryMarkup } from "../../curve/internalContexts/geometry2d/implicitCurve2d";
 import { PointToCurveTangentHandler } from "../../curve/internalContexts/PointToCurveTangentHandler";
+import { CurveFactory } from "../../curve/CurveFactory";
+import { UnboundedHyperbola2d } from "../../curve/internalContexts/geometry2d/UnboundedHyperbola2d";
 
 function implicitCircle2dToArc3d (circle: UnboundedCircle2dByCenterAndRadius, z: number = 0.0 ):Arc3d | LineString3d|undefined{
   if (circle.radius !== 0.0)
@@ -679,4 +681,64 @@ it("CircleTangentCCR", () => {
   }
   GeometryCoreTestIO.saveGeometry (allGeometry, "geometry2d", "circleTangentCCR");
   expect(ck.getNumErrors()).toBe(0);
+});
+
+it("MedialCurveCC", () => {
+  const ck = new Checker(true, true);
+  const allGeometry: GeometryQuery[] = [];
+
+  const circleA = UnboundedCircle2dByCenterAndRadius.createXYRadius (0,0,1);
+  const circleB = UnboundedCircle2dByCenterAndRadius.createXYRadius (0,4,-2);
+  const circleC = UnboundedCircle2dByCenterAndRadius.createXYRadius (0, 1, 0.8);
+  const circleD = UnboundedCircle2dByCenterAndRadius.createXYRadius(2,3,4);
+
+  const allCircles = [circleA, circleB, circleC, circleD];
+
+  let x0 = 0;
+  let y0 = 0;
+  const xStepA = 20;
+  const xStepB = 40;
+  // const yStep = 40;
+  for (let i = 0; i < allCircles.length; i++){
+    y0 = 0;
+    const circle0 = allCircles[i];
+    const circle1 = circle0.cloneNegateRadius ();
+    for (let j = i+1; j < allCircles.length; j++){
+      for (const circle of [circle0, circle1]){
+        const curve = ConstrainedConstruction.medialCurveBetweenCircles (circle, allCircles[j]);
+        GeometryCoreTestIO.captureCloneGeometry (allGeometry,
+            implicitCircle2dToArc3d (allCircles[i]), x0, y0);
+        GeometryCoreTestIO.captureCloneGeometry (allGeometry,
+              implicitCircle2dToArc3d (allCircles[j]), x0, y0);
+        if (curve)
+          GeometryCoreTestIO.captureCloneGeometry (allGeometry,
+              CurveFactory.createCurvePrimitiveFromImplicitCurve(curve), x0, y0);
+          x0 += xStepA;
+        }
+      }
+    x0 += xStepB;
+  }
+
+  GeometryCoreTestIO.saveGeometry (allGeometry, "geometry2d", "medialCurveCC");
+  expect(ck.getNumErrors()).toBe(0);
+});
+
+it("UnboundedHyperbola2d", () => {
+  const ck = new Checker(true, true);
+  const allGeometry: GeometryQuery[] = [];
+
+  const curveA = UnboundedHyperbola2d.createCenterAndAxisVectors (
+        Point2d.create (0,0), Vector2d.create (1,0), Vector2d.create (0,1));
+  const curveB = UnboundedHyperbola2d.createCenterAndAxisVectors (
+    Point2d.create (1,2), Vector2d.create (2,1), Vector2d.create (-1,3));
+  let x0 = 0;
+  const y0 = 0;
+    for (const curve of [curveA, curveB]){
+      GeometryCoreTestIO.captureCloneGeometry (allGeometry,
+        CurveFactory.createCurvePrimitiveFromImplicitCurve(curve), x0, y0);
+      x0 += 30;
+      }
+
+    GeometryCoreTestIO.saveGeometry (allGeometry, "geometry2d", "UnboundedHyperbola2d");
+    expect(ck.getNumErrors()).toBe(0);
 });

@@ -207,7 +207,7 @@ export class GeometryCoreTestIO {
    */
   public static captureCloneGeometry(
     collection: GeometryQuery[],
-    newGeometry: GeometryQuery | GeometryQuery[] | IndexedXYZCollection | Point3d[] | Point3d[][] | IndexedXYZCollection[] | undefined,
+    newGeometry: GeometryQuery | GeometryQuery[] | IndexedXYZCollection | Point3d[] | Point3d[][] | Point2d[] | IndexedXYZCollection[] | undefined,
     dx: number = 0,
     dy: number = 0,
     dz: number = 0,

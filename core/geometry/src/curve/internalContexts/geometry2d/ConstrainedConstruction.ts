@@ -15,6 +15,8 @@ import { ImplicitCurve2d, ImplicitGeometryMarkup } from "./implicitCurve2d";
 import { Point2dImplicitCurve2d, UnboundedCircle2dByCenterAndRadius } from "./UnboundedCircle2d";
 import { UnboundedLine2dByPointAndNormal } from "./UnboundedLine2d.";
 import { XAndY } from "../../../geometry3d/XYZProps";
+import { UnboundedHyperbola2d } from "./UnboundedHyperbola2d";
+import { Ellipse2d } from "./Ellipse2d";
 
 /**
  * Itemization of constraints for line and circle construction.
@@ -694,7 +696,42 @@ export class ConstrainedConstruction {
     }
     return result.length > 0 ? result : undefined;
   }
+/**
+ * Construct basis vectors for hyperbola or ellipse whose points are equidistant from tangencies with
+ * circleA and circleB.
+ * * If the curve is a hyperbola, the equation is
+ *            X = center + vectorU * sec(theta) + vectorV * tan(theta)
+ * * If the curve is an ellipse, the equation is
+ *            X = center + vectorU * cos(theta) + vectorV * sin(theta)
+ * @param circleA
+ * @param circleB
+ */
+public static medialCurveBetweenCircles (
+circleA: UnboundedCircle2dByCenterAndRadius,
+circleB: UnboundedCircle2dByCenterAndRadius
+) : ImplicitCurve2d | undefined
+  {
+  const d = circleA.center.distance(circleB.center);
+  const origin = circleA.center.interpolate (0.5, circleB.center);
+  const h = circleA.radius + circleB.radius;
+  const discriminant = d * d - h * h;
+  const hy = Math.sqrt(Math.abs(discriminant));
+  const xAxis = Vector2d.createStartEnd (origin, circleB.center).normalize ();
+  if (xAxis === undefined)
+    return undefined;
+  const yAxis = xAxis.rotate90CCWXY ();
+  const ax = 0.5 * h;
+  const ay = 0.5 * hy;
+  const vectorU = xAxis.scale (ax);
+  const vectorV = yAxis.scale (ay);
 
+  if (discriminant > 0.0){
+    return UnboundedHyperbola2d.createCenterAndAxisVectors (origin, vectorU, vectorV);
+  } else if (discriminant < 0.0) {
+    return Ellipse2d.createCenterAndAxisVectors (origin, vectorU, vectorV);
+  }
+  return undefined;
+  }
 }
 /**
  * If distance is near zero metric, return an array containing only valueA.
