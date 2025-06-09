@@ -8,7 +8,7 @@
 
 import { Point3d, Range2d, Transform, XYZProps, YawPitchRollAngles, YawPitchRollProps } from "@itwin/core-geometry";
 import { TextBlock, TextBlockProps } from "./TextBlock";
-import { LeaderStyleProps, TextStyleColor, TextStyleSettingsProps } from "./TextStyle";
+import { TextStyleColor } from "./TextStyle";
 
 /** Describes how to compute the "anchor point" for a [[TextAnnotation]].
  * The anchor point is a point on or inside of the 2d bounding box enclosing the contents of the annotation's [[TextBlock]].
@@ -36,38 +36,35 @@ export interface TextAnnotationAnchor {
   horizontal: "left" | "center" | "right";
 }
 
-export type TextAnnotationFrame = "none" | "line" | "rectangle" | "circle" | "equilateralTriangle" | "diamond" | "square" | "pentagon" | "hexagon" | "capsule" | "roundedRectangle";
+/** Set of predefined shapes that can be computed and drawn around the margins of a [[TextBlock]]
+ * @beta
+*/
+export type TextAnnotationFrameShape = "none" | "line" | "rectangle" | "circle" | "equilateralTriangle" | "diamond" | "square" | "pentagon" | "hexagon" | "octagon" | "capsule" | "roundedRectangle";
 
 
-/** TODO
+/**
+ * Describes what color to use when filling the frame around a [[TextBlock]].
+ * If `background` is specified, [[GeometryParams.BackgroundFill]] will be set to `BackgroundFill.Outline`.
  * @beta
  */
 export type TextAnnotationFillColor = TextStyleColor | "background";
 
+/**
+ * Describes how to draw the frame around a [[TextBlock]].
+ * The frame can be a simple line, a filled shape, or both.
+ * @beta
+ */
 export interface TextFrameStyleProps {
-  frame?: TextAnnotationFrame;
+  /** Shape of the frame. Default: "rectangle" */
+  shape?: TextAnnotationFrameShape;
+  /** The color to fill the shape of the text frame. This fill will is applied using [[FillDisplay.Blanking]]. Default: no fill */
   fill?: TextAnnotationFillColor;
+  /** The color of the text frame's outline. Default: black */
   border?: TextStyleColor;
+  /** This will be used to set the [[GeometryParams.weight]] property of the frame (in pixels). Default: 1px */
   borderWeight?: number;
-  debugSnap?: boolean;
 }
 
-
-export type TextPointOptions = "TopLeft" | "TopRight" | "BottomLeft" | "BottomRight"
-export type LeaderAttachmentMode =
-  | { mode: "KeyPoint"; curveIndex: number; fraction: number }
-  | { mode: "TextPoint"; position: TextPointOptions }
-  | { mode: "Nearest" };
-export interface TextAnnotationLeaderProps {
-  startPoint: XYZProps;
-  attachmentMode: LeaderAttachmentMode;
-  styleOverrides?: TextStyleSettingsProps;
-}
-export interface TextAnnotationLeader {
-  startPoint: Point3d;
-  attachmentMode: LeaderAttachmentMode;
-  styleOverrides?: TextStyleSettingsProps;
-}
 /**
  * JSON representation of a [[TextAnnotation]].
  * @beta
@@ -81,10 +78,8 @@ export interface TextAnnotationProps {
   textBlock?: TextBlockProps;
   /** See [[TextAnnotation.anchor]]. Default: top-left. */
   anchor?: TextAnnotationAnchor;
-  /** TODO */
-  frame?: TextFrameStyleProps;
-  /** TODO */
-  leader?: TextAnnotationLeaderProps;
+  /** See [[TextAnnotation.frame]]. Default: no frame */
+  frame?: TextFrameStyleProps
 }
 
 /** Arguments supplied to [[TextAnnotation.create]].
@@ -99,10 +94,8 @@ export interface TextAnnotationCreateArgs {
   textBlock?: TextBlock;
   /** See [[TextAnnotation.anchor]]. Default: top-left. */
   anchor?: TextAnnotationAnchor;
-  /** TODO */
-  frame?: TextFrameStyleProps;
-  /** TODO */
-  leader?: TextAnnotationLeader;
+  /** See [[TextAnnotation.frame]]. Default: no frame */
+  frame?: TextFrameStyleProps
 }
 
 /**
@@ -115,7 +108,7 @@ export interface TextAnnotationCreateArgs {
  * edges, or in the center of the box.
  * - The [[orientation]] is applied to rotate the box around the anchor point.
  * - Finally, the [[offset]] is added to the anchor point to apply translation.
- * @see [produceTextAnnotationGeometry]($backend) to decompose the annotation into a set of geometric primitives suitable for use with [[GeometryStreamBuilder.appendTextBlock]].
+ * @see [appendTextAnnotationGeometry]($backend) to construct the geometry and append it to an [[ElementGeometry.Builder]].
  * @beta
  */
 export class TextAnnotation {
@@ -129,18 +122,15 @@ export class TextAnnotation {
   public anchor: TextAnnotationAnchor;
   /** An offset applied to the anchor point that can be used to position annotations within the same geometry stream relative to one another. */
   public offset: Point3d;
-  /** The frame type of the text annotation. */
+  /** The frame settings of the text annotation. */
   public frame?: TextFrameStyleProps;
 
-  public leader?: TextAnnotationLeader;
-
-  private constructor(offset: Point3d, angles: YawPitchRollAngles, textBlock: TextBlock, anchor: TextAnnotationAnchor, frame?: TextFrameStyleProps, leader?: TextAnnotationLeader) {
+  private constructor(offset: Point3d, angles: YawPitchRollAngles, textBlock: TextBlock, anchor: TextAnnotationAnchor, frame?: TextFrameStyleProps) {
     this.offset = offset;
     this.orientation = angles;
     this.textBlock = textBlock;
     this.anchor = anchor;
-    this.frame = frame;
-    this.leader = leader;
+    this.frame = frame
   }
 
   /** Creates a new TextAnnotation. */
@@ -149,9 +139,11 @@ export class TextAnnotation {
     const angles = args?.orientation ?? new YawPitchRollAngles();
     const textBlock = args?.textBlock ?? TextBlock.createEmpty();
     const anchor = args?.anchor ?? { vertical: "top", horizontal: "left" };
-    const leader = args?.leader;
+    // If the user supplies a frame, but doesn't supply a shape, default the shape to "rectangle"
+    const shape: TextAnnotationFrameShape = args?.frame?.shape ?? "rectangle";
+    const frame = args?.frame ? { shape, ...args.frame } : undefined;
 
-    return new TextAnnotation(offset, angles, textBlock, anchor, args?.frame, leader);
+    return new TextAnnotation(offset, angles, textBlock, anchor, frame);
   }
 
   /**
@@ -164,12 +156,7 @@ export class TextAnnotation {
       orientation: props?.orientation ? YawPitchRollAngles.fromJSON(props.orientation) : undefined,
       textBlock: props?.textBlock ? TextBlock.create(props.textBlock) : undefined,
       anchor: props?.anchor ? { ...props.anchor } : undefined,
-      frame: props?.frame,
-      leader: {
-        startPoint: Point3d.fromJSON(props?.leader?.startPoint),
-        attachmentMode: props?.leader?.attachmentMode ?? { mode: "Nearest" },
-        styleOverrides: props?.leader?.styleOverrides ? { ...props.leader.styleOverrides } : undefined
-      },
+      frame: props?.frame ? { shape: "rectangle", ...props.frame } : undefined,
     });
   }
 
@@ -195,9 +182,8 @@ export class TextAnnotation {
       props.anchor = { ...this.anchor };
     }
 
-    props.frame = this.frame;
-    props.leader = this.leader;
-
+    // Default frame to "none"
+    props.frame = this.frame ? { ...this.frame } : undefined;
 
     return props;
   }
@@ -252,7 +238,7 @@ export class TextAnnotation {
 
   /** Returns true if this annotation is logically equivalent to `other`. */
   public equals(other: TextAnnotation): boolean {
-    const framesMatch = this.frame?.frame === other.frame?.frame
+    const framesMatch = this.frame?.shape === other.frame?.shape
       && this.frame?.fill === other.frame?.fill
       && this.frame?.border === other.frame?.border
       && this.frame?.borderWeight === other.frame?.borderWeight;

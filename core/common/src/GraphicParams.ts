@@ -24,6 +24,7 @@ export enum FillFlags {
   Always = 1 << 1,
   /** Render the fill behind other geometry belonging to the same element.
    * For example if an element's geometry contains text with background fill, the text always renders in front of the fill.
+   * @note [GraphicBuilder]($frontend) will not produce edge geometry for shapes with this fill flag. If you want an outline, add it separately.
    */
   Behind = 1 << 2,
   /** Combines Behind and Always flags. */

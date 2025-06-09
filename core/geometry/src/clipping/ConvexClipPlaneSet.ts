@@ -696,9 +696,8 @@ export class ConvexClipPlaneSet implements Clipper, PolygonClipper {
    * range is the range of the convex set.
    * * If the convex set is unbounded, the range only contains the range of the accepted (corner) points, and the
    * range is not a representative of the "range of all points in the set".
-   * @param transform (optional) transform to apply to the points.
    * @param points (optional) array to which computed points are to be added.
-   * @param range (optional) range to be extended by the computed points
+   * @param rangeToExtend (optional) range to be extended by the computed points
    * @param transform (optional) transform to apply to the accepted points.
    * @param testContainment if true, test each point to see if it is within the convex set. (send false if confident
    * that the convex set is rectilinear set such as a slab. Send true if chiseled corners are possible).
@@ -794,28 +793,18 @@ export class ConvexClipPlaneSet implements Clipper, PolygonClipper {
   ): { clipper: ConvexClipPlaneSet, volume: number } {
     result = this.createEmpty(result);
     let vol = 0;
-    let myMesh: Polyface | undefined;
-    let myVisitor: PolyfaceVisitor;
-    if (convexMesh instanceof Polyface) {
-      myMesh = convexMesh;
-      myVisitor = convexMesh.createVisitor(0);
-    } else {
-      myMesh = convexMesh.clientPolyface();
-      myVisitor = convexMesh;
-    }
-    if (myMesh && myVisitor) {
-      if (PolyfaceQuery.isPolyfaceClosedByEdgePairing(myMesh))
-        vol = PolyfaceQuery.sumTetrahedralVolumes(myVisitor);
-      const scale = vol > 0.0 ? -1.0 : 1.0; // point clipper normals inward if mesh normals point outward
-      const normal = Vector3d.create();
-      const plane = Plane3dByOriginAndUnitNormal.createXYPlane();
-      myVisitor.reset();
-      while (myVisitor.moveToNextFacet()) {
-        if (undefined !== PolygonOps.areaNormalGo(myVisitor.point, normal)) {
-          normal.scaleInPlace(scale);
-          if (undefined !== Plane3dByOriginAndUnitNormal.create(myVisitor.point.front()!, normal, plane))
-            result.addPlaneToConvexSet(plane);
-        }
+    if (PolyfaceQuery.isPolyfaceClosedByEdgePairing(convexMesh))
+      vol = PolyfaceQuery.sumTetrahedralVolumes(convexMesh);
+    const scale = vol > 0.0 ? -1.0 : 1.0; // point clipper normals inward if mesh normals point outward
+    const normal = Vector3d.create();
+    const plane = Plane3dByOriginAndUnitNormal.createXYPlane();
+    const visitor = convexMesh instanceof Polyface ? convexMesh.createVisitor(0) : convexMesh;
+    visitor.setNumWrap(0);
+    for (visitor.reset(); visitor.moveToNextFacet(); ) {
+      if (undefined !== PolygonOps.areaNormalGo(visitor.point, normal)) {
+        normal.scaleInPlace(scale);
+        if (undefined !== Plane3dByOriginAndUnitNormal.create(visitor.point.front()!, normal, plane))
+          result.addPlaneToConvexSet(plane);
       }
     }
     return { clipper: result, volume: vol };

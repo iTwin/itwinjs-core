@@ -6,35 +6,26 @@
  * @module Elements
  */
 
-import { GeometryParams, GeometryStreamBuilder, TextAnnotation, TextAnnotation2dProps, TextAnnotation3dProps } from "@itwin/core-common";
-import { IModelDb } from "./IModelDb";
-import { AnnotationElement2d, GraphicalElement3d } from "./Element";
-import { produceTextAnnotationGeometry } from "./TextAnnotationGeometry";
+import { ElementGeometry, ElementGeometryBuilderParams, PlacementProps, TextAnnotation, TextAnnotation2dProps, TextAnnotation3dProps, TextAnnotationProps } from "@itwin/core-common";
+import { IModelDb } from "../IModelDb";
+import { AnnotationElement2d, GraphicalElement3d } from "../Element";
 import { Id64String } from "@itwin/core-bentley";
+import { layoutTextBlock } from "./TextBlockLayout";
+import { appendTextAnnotationGeometry } from "./TextAnnotationGeometry";
 
-function updateAnnotation(element: TextAnnotation2d | TextAnnotation3d, annotation: TextAnnotation, subCategory: Id64String | undefined): boolean {
-  const builder = new GeometryStreamBuilder();
+function getElementGeometryBuilderParams(iModel: IModelDb, _placementProps: PlacementProps, annotationProps: TextAnnotationProps, categoryId: Id64String, _subCategory?: Id64String): ElementGeometryBuilderParams {
+  const textBlock = TextAnnotation.fromJSON(annotationProps).textBlock;
+  const layout = layoutTextBlock({ iModel, textBlock });
+  const builder = new ElementGeometry.Builder();
+  appendTextAnnotationGeometry({ layout, annotationProps, builder, categoryId })
 
-  const params = new GeometryParams(element.category, subCategory);
-  if (!builder.appendGeometryParamsChange(params)) {
-    return false;
-  }
-
-  const props = produceTextAnnotationGeometry({ iModel: element.iModel, annotation });
-  if (!builder.appendTextAnnotation(props)) {
-    return false;
-  }
-
-  element.geom = builder.geometryStream;
-  element.jsonProperties.annotation = annotation.toJSON();
-
-  return true;
+  return { entryArray: builder.entries };
 }
 
 /** An element that displays textual content within a 2d model.
  * The text is stored as a [TextAnnotation]($common) from which the element's [geometry]($docs/learning/common/GeometryStream.md) and [Placement]($common) are computed.
  * @see [[setAnnotation]] to change the textual content.
- * @public
+ * @public @preview
  */
 export class TextAnnotation2d extends AnnotationElement2d {
   /** @internal */
@@ -46,7 +37,10 @@ export class TextAnnotation2d extends AnnotationElement2d {
   }
 
   public override toJSON(): TextAnnotation2dProps {
-    return super.toJSON();
+    const props = super.toJSON();
+    props.elementGeometryBuilderParams = getElementGeometryBuilderParams(this.iModel, this.placement, this.jsonProperties.annotation, this.category);
+
+    return props;
   }
 
   /** Extract the textual content, if present.
@@ -60,18 +54,16 @@ export class TextAnnotation2d extends AnnotationElement2d {
   /** Change the textual content, updating the element's geometry and placement accordingly.
    * @see [[getAnnotation]] to extract the current annotation.
    * @param annotation The new annotation
-   * @param subCategory If specified, the subcategory on which to define the geometry; otherwise, the default subcategory of the element's category is used.
-   * @returns true if the annotation was successfully updated.
    */
-  public setAnnotation(annotation: TextAnnotation, subCategory?: Id64String): boolean {
-    return updateAnnotation(this, annotation, subCategory);
+  public setAnnotation(annotation: TextAnnotation) {
+    this.jsonProperties.annotation = annotation.toJSON();
   }
 }
 
 /** An element that displays textual content within a 3d model.
  * The text is stored as a [TextAnnotation]($common) from which the element's [geometry]($docs/learning/common/GeometryStream.md) and [Placement]($common) are computed.
  * @see [[setAnnotation]] to change the textual content.
- * @public
+ * @public @preview
  */
 export class TextAnnotation3d extends GraphicalElement3d {
   /** @internal */
@@ -83,7 +75,10 @@ export class TextAnnotation3d extends GraphicalElement3d {
   }
 
   public override toJSON(): TextAnnotation3dProps {
-    return super.toJSON();
+    const props = super.toJSON();
+    props.elementGeometryBuilderParams = getElementGeometryBuilderParams(this.iModel, this.placement, this.jsonProperties.annotation, this.category);
+
+    return props;
   }
 
   /** Extract the textual content, if present.
@@ -97,10 +92,8 @@ export class TextAnnotation3d extends GraphicalElement3d {
   /** Change the textual content, updating the element's geometry and placement accordingly.
    * @see [[getAnnotation]] to extract the current annotation.
    * @param annotation The new annotation
-   * @param subCategory If specified, the subcategory on which to define the geometry; otherwise, the default subcategory of the element's category is used.
-   * @returns true if the annotation was successfully updated.
    */
-  public setAnnotation(annotation: TextAnnotation, subCategory?: Id64String): boolean {
-    return updateAnnotation(this, annotation, subCategory);
+  public setAnnotation(annotation: TextAnnotation) {
+    this.jsonProperties.annotation = annotation.toJSON();
   }
 }

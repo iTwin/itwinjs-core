@@ -3,11 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { BaselineShift, ColorDef, FractionRun, GeometryStreamBuilder, IModelTileRpcInterface, LineBreakRun, TextAnnotation, TextAnnotationAnchor, TextAnnotationFrame, TextAnnotationLeaderProps, TextBlock, TextBlockJustification, TextBlockMargins, TextFrameStyleProps, TextPointOptions, TextRun, TextStyleSettingsProps } from "@itwin/core-common";
+import { BaselineShift, ColorDef, FractionRun, LineBreakRun, Placement2dProps, TextAnnotation, TextAnnotationAnchor, TextAnnotationFrameShape, TextAnnotationProps, TextBlock, TextBlockJustification, TextBlockMargins, TextFrameStyleProps, TextRun, TextStyleSettingsProps } from "@itwin/core-common";
 import { DecorateContext, Decorator, GraphicType, IModelApp, IModelConnection, readElementGraphics, RenderGraphicOwner, Tool } from "@itwin/core-frontend";
 import { DtaRpcInterface } from "../common/DtaRpcInterface";
-import { Guid, Id64, Id64String } from "@itwin/core-bentley";
-import { Point3d, Vector3d, YawPitchRollAngles } from "@itwin/core-geometry";
+import { Id64, Id64String } from "@itwin/core-bentley";
+import { Point3d, YawPitchRollAngles } from "@itwin/core-geometry";
 
 // Ignoring the spelling of the keyins. They're case insensitive, so we check against lowercase.
 // cspell:ignore superscript, subscript, widthfactor, fractionscale, fractiontype
@@ -24,15 +24,32 @@ class TextEditor implements Decorator {
   public rotation = 0;
   public offset = { x: 0, y: 0 };
   public anchor: TextAnnotationAnchor = { horizontal: "left", vertical: "top" };
-
-  public leader: TextAnnotationLeaderProps | undefined = undefined;
-
-  public frame: TextFrameStyleProps = { borderWeight: 1, frame: "none" };
+  public frame: TextFrameStyleProps = { borderWeight: 1, shape: "none" };
   public debugAnchorPointAndRange = false;
 
   // Properties applied to the entire document
   public get documentStyle(): Pick<TextStyleSettingsProps, "lineHeight" | "widthFactor" | "lineSpacingFactor"> {
     return this._textBlock.styleOverrides;
+  }
+
+  public get annotationProps(): TextAnnotationProps {
+    const annotation = TextAnnotation.fromJSON({
+      textBlock: this._textBlock.toJSON(),
+      // origin: this.origin,
+      anchor: this.anchor,
+      orientation: YawPitchRollAngles.createDegrees(this.rotation, 0, 0).toJSON(),
+      offset: this.offset,
+      frame: this.frame,
+    });
+
+    return annotation.toJSON();
+  }
+
+  public get placementProps(): Placement2dProps {
+    return {
+      origin: this.origin,
+      angle: 0,
+    }
   }
 
   // Properties to be applied to the next run
@@ -67,6 +84,7 @@ class TextEditor implements Decorator {
     this.debugAnchorPointAndRange = false;
     this.runStyle = { fontName: "Arial" };
     this.baselineShift = "none";
+    this.frame = { borderWeight: 1, shape: "none" };
   }
 
   public appendText(content: string): void {
@@ -115,41 +133,17 @@ class TextEditor implements Decorator {
     };
   }
 
-  public setFrame(frame: TextFrameStyleProps, wantCompleteOverride: boolean = false) {
-    if (wantCompleteOverride) this.frame = frame;
-    else this.frame = { ...this.frame, ...frame };
+  public setFrame(frame: Partial<TextFrameStyleProps>) {
+    this.frame = { ...this.frame, ...frame };
   }
 
-  public setLeaderStartPoint(leader: TextAnnotationLeaderProps, angle: number) {
-    const point = Point3d.createZero();
-    const distance = 10;
-    switch (angle) {
-      case 0: leader.startPoint = point.plusScaled(Vector3d.unitX(), distance * 2).toJSON(); break;
-      case 90: leader.startPoint = point.plusScaled(Vector3d.unitY(), distance).toJSON(); break;
-      case 180: leader.startPoint = point.plusScaled(Vector3d.unitX().negate(), distance * 2).toJSON(); break;
-      case 270: leader.startPoint = point.plusScaled(Vector3d.unitY().negate(), distance).toJSON(); break;
-      case 45: leader.startPoint = point.plusScaled(Vector3d.unitX().plus(Vector3d.unitY()), distance).toJSON(); break;
-      case 135: leader.startPoint = point.plusScaled(Vector3d.unitX().negate().plus(Vector3d.unitY()), distance).toJSON(); break;
-      case 225: leader.startPoint = point.plusScaled(Vector3d.unitX().negate().plus(Vector3d.unitY().negate()), distance).toJSON(); break;
-      case 315: leader.startPoint = point.plusScaled(Vector3d.unitX().plus(Vector3d.unitY().negate()), distance).toJSON(); break;
-      default: leader.startPoint = point.plusScaled(Vector3d.unitX(), distance).toJSON(); break;
-    }
-  }
-
-  public setLeaderProps() {
-    this.leader = { startPoint: Point3d.createZero().plusScaled(Vector3d.unitX().negate(), 20).toJSON(), attachmentMode: { mode: "Nearest" }, styleOverrides: { wantElbow: true, elbowLength: 4, terminatorHeight: 0.5, terminatorWidth: 1, terminatorShape: "Arrow" } };
-  }
-
-  public setLeaderKeyPoint(leader: TextAnnotationLeaderProps, curveIndex: number, fraction: number) {
-    leader.attachmentMode = { mode: "KeyPoint", curveIndex, fraction };
-  }
-  public setLeaderTextPoint(leader: TextAnnotationLeaderProps, arg: TextPointOptions) {
-    leader.attachmentMode = { mode: "TextPoint", position: arg as "TopLeft" | "TopRight" | "BottomLeft" | "BottomRight" };
-  }
-  public setLeaderNearest(leader: TextAnnotationLeaderProps,) {
-    leader.attachmentMode = { mode: "Nearest" };
-  }
-
+  /**
+   * Draws the graphics for the decoration. Text annotation graphics require a call to the backend to generate the geometry.
+   * In this case, we're using the `TextAnnotationGeometry` RPC endpoint that calls [[IModelDb.generateElementGraphics]]
+   * with the values from [[appendTextAnnotationGeometry]].
+   * These graphics can be added to the [[RenderSystem]] via [[readElementGraphics]] and [[RenderSystem.createGraphicOwner]]
+   * or via an [[ElementGeometryGraphicsProvider]]. In this case, we're using the former.
+   */
   public async update(): Promise<void> {
     if (!this._iModel) {
       throw new Error("Invoke `dta text init` first");
@@ -159,35 +153,15 @@ class TextEditor implements Decorator {
       return;
     }
 
-    const annotation = TextAnnotation.fromJSON({
-      textBlock: this._textBlock.toJSON(),
-      // origin: this.origin,
-      anchor: this.anchor,
-      orientation: YawPitchRollAngles.createDegrees(this.rotation, 0, 0).toJSON(),
-      offset: this.offset,
-      frame: this.frame,
-      leader: this.leader,
-    });
-
     const rpcProps = this._iModel.getRpcProps();
-    const geom = await DtaRpcInterface.getClient().produceTextAnnotationGeometry(rpcProps, annotation.toJSON(), this.debugAnchorPointAndRange);
-    const builder = new GeometryStreamBuilder();
-    builder.appendTextAnnotation(geom);
 
-    const gfx = await IModelTileRpcInterface.getClient().requestElementGraphics(rpcProps, {
-      id: Guid.createValue(),
-      toleranceLog10: -5,
-      type: "2d",
-      placement: {
-        origin: this.origin.toJSON(), // Point3d.createZero(),
-        angle: 0,
-      },
-      categoryId: this._categoryId,
-      geometry: {
-        format: "json",
-        data: builder.geometryStream,
-      },
-    });
+    const gfx = await DtaRpcInterface.getClient().generateTextAnnotationGeometry(
+      rpcProps,
+      this.annotationProps,
+      this._categoryId,
+      this.placementProps,
+      this.debugAnchorPointAndRange
+    );
 
     const graphic = undefined !== gfx ? await readElementGraphics(gfx, this._iModel, this._entityId, false) : undefined;
     this._graphic = graphic ? IModelApp.renderSystem.createGraphicOwner(graphic) : undefined;
@@ -402,39 +376,11 @@ export class TextDecorationTool extends Tool {
         if (key === "fill") editor.setFrame({ fill: (val === "background" || val === "subcategory") ? val : val ? ColorDef.fromString(val).toJSON() : undefined });
         else if (key === "border") editor.setFrame({ border: val ? ColorDef.fromString(val).toJSON() : undefined });
         else if (key === "borderWeight") editor.setFrame({ borderWeight: Number(val) });
-        else if (key === "debug") editor.setFrame({ debugSnap: !editor.frame.debugSnap });
-        else if (key as TextAnnotationFrame) editor.setFrame({ frame: key as TextAnnotationFrame });
-        else throw new Error("Expected style, fill, border, borderWeight, debugSnap");
+        else if (key === "shape") editor.setFrame({ shape: val as TextAnnotationFrameShape });
+        else throw new Error("Expected shape, fill, border, borderWeight");
 
         break;
       }
-      case "leader":
-        const k = inArgs[1];
-        const value = inArgs[2];
-        if (k === "init") {
-          editor.setLeaderProps();
-        } else {
-          if (editor.leader) {
-            if (k === "start") editor.setLeaderStartPoint(editor.leader, Number(value));
-            else if (k === "keypoint") {
-              const curveIndex = inArgs[2];
-              const fraction = inArgs[3]
-              editor.setLeaderKeyPoint(editor.leader, Number(curveIndex), Number(fraction));
-            }
-            else if (k === "nearest") editor.setLeaderNearest(editor.leader);
-            else if (k === "textpoint") {
-              const position = inArgs[2] as "TopLeft" | "TopRight" | "BottomLeft" | "BottomRight";
-              editor.setLeaderTextPoint(editor.leader, position);
-
-            }
-            else throw new Error("Expected start, keypoint, nearest");
-          } else {
-            throw new Error("Leader not initialized. Use dta text leader init first.");
-          }
-
-        }
-
-        break;
 
       default:
         throw new Error(`unrecognized command ${cmd}`);

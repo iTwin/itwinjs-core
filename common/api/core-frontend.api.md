@@ -1186,12 +1186,12 @@ export class AlternateUnitLabelsRegistry implements AlternateUnitLabelsProvider 
 
 // @beta
 export class AngleDescription extends FormattedQuantityDescription {
-    constructor(name?: string, displayLabel?: string, iconSpec?: string);
+    constructor(name?: string, displayLabel?: string, iconSpec?: string, kindOfQuantityName?: string);
     // (undocumented)
     get formatterQuantityType(): QuantityType;
     // (undocumented)
     get parseError(): string;
-    // (undocumented)
+    // @deprecated (undocumented)
     get quantityType(): string;
 }
 
@@ -2973,6 +2973,8 @@ export abstract class ElementSetTool extends PrimitiveTool {
     filterHit(hit: HitDetail, out?: LocateResponse): Promise<LocateFilterStatus>;
     protected gatherElements(ev: BeButtonEvent): Promise<EventHandled | undefined>;
     protected gatherInput(ev: BeButtonEvent): Promise<EventHandled | undefined>;
+    // @internal
+    static getAreaOrVolumeSelectionCandidates(vp: Viewport, origin: XAndY, corner: XAndY, method: SelectionMethod, allowOverlaps: boolean, filter?: (id: Id64String) => boolean, includeDecorationsForVolume?: boolean): Promise<Set<Id64String>>;
     protected getDragSelectCandidates(vp: Viewport, origin: Point3d, corner: Point3d, method: SelectionMethod, overlap: boolean): Promise<Id64Arg>;
     protected getGroupIds(id: Id64String): Promise<Id64Arg>;
     protected getLocateCandidates(hit: HitDetail): Promise<Id64Arg>;
@@ -3105,12 +3107,12 @@ export class EmphasizeElements implements FeatureOverrideProvider {
 
 // @beta
 export class EngineeringLengthDescription extends FormattedQuantityDescription {
-    constructor(name?: string, displayLabel?: string, iconSpec?: string);
+    constructor(name?: string, displayLabel?: string, iconSpec?: string, kindOfQuantityName?: string);
     // (undocumented)
     get formatterQuantityType(): QuantityType;
     // (undocumented)
     get parseError(): string;
-    // (undocumented)
+    // @deprecated (undocumented)
     get quantityType(): string;
 }
 
@@ -3429,7 +3431,8 @@ export class FormatsProviderManager implements FormatsProvider {
 
 // @beta
 export abstract class FormattedQuantityDescription extends BaseQuantityDescription {
-    constructor(name: string, displayLabel: string, iconSpec?: string);
+    constructor(args: FormattedQuantityDescriptionArgs);
+    constructor(name: string, displayLabel: string, iconSpec?: string, kindOfQuantityName?: string);
     // (undocumented)
     abstract get formatterQuantityType(): QuantityType;
     // (undocumented)
@@ -3444,11 +3447,31 @@ export abstract class FormattedQuantityDescription extends BaseQuantityDescripti
     protected parseString(userInput: string): ParseResults;
 }
 
+// @beta (undocumented)
+export interface FormattedQuantityDescriptionArgs {
+    // (undocumented)
+    displayLabel: string;
+    // (undocumented)
+    iconSpec?: string;
+    // (undocumented)
+    kindOfQuantityName?: string;
+    // (undocumented)
+    name: string;
+}
+
 // @public
 export interface FormatterParserSpecsProvider {
     createFormatterSpec: (unitSystem: UnitSystemKey) => Promise<FormatterSpec>;
     createParserSpec: (unitSystem: UnitSystemKey) => Promise<ParserSpec>;
     quantityType: QuantityTypeArg;
+}
+
+// @beta
+export interface FormattingSpecEntry {
+    // (undocumented)
+    formatterSpec: FormatterSpec;
+    // (undocumented)
+    parserSpec: ParserSpec;
 }
 
 // @public
@@ -5268,6 +5291,8 @@ export abstract class InteractiveTool extends Tool {
     filterHit(_hit: HitDetail, _out?: LocateResponse): Promise<LocateFilterStatus>;
     getCurrentButtonEvent(ev: BeButtonEvent): void;
     getDecorationGeometry(_hit: HitDetail): GeometryStreamProps | undefined;
+    // @beta
+    protected getToolSettingLockProperty(_property: DialogProperty<any>): DialogProperty<boolean> | undefined;
     // @internal (undocumented)
     protected getToolSettingPropertyByName(propertyName: string): DialogProperty<any>;
     protected getToolSettingPropertyLocked(_property: DialogProperty<any>): DialogProperty<any> | undefined;
@@ -5473,12 +5498,12 @@ export class LayerTileTreeReferenceHandler {
 
 // @beta
 export class LengthDescription extends FormattedQuantityDescription {
-    constructor(name?: string, displayLabel?: string, iconSpec?: string);
+    constructor(name?: string, displayLabel?: string, iconSpec?: string, kindOfQuantityName?: string);
     // (undocumented)
     get formatterQuantityType(): QuantityType;
     // (undocumented)
     get parseError(): string;
-    // (undocumented)
+    // @deprecated (undocumented)
     get quantityType(): string;
 }
 
@@ -7846,12 +7871,16 @@ export interface QuantityFormatsChangedArgs {
 
 // @public
 export class QuantityFormatter implements UnitsProvider {
+    // (undocumented)
+    [Symbol.dispose](): void;
     constructor(showMetricOrUnitSystem?: boolean | UnitSystemKey);
     protected _activeFormatSpecsByType: Map<string, FormatterSpec>;
     protected _activeParserSpecsByType: Map<string, ParserSpec>;
     get activeUnitSystem(): UnitSystemKey;
     protected _activeUnitSystem: UnitSystemKey;
     addAlternateLabels(key: UnitNameKey, ...labels: string[]): void;
+    // @beta
+    addFormattingSpecsToRegistry(name: string, persistenceUnitName: string, formatProps?: FormatProps): Promise<void>;
     get alternateUnitLabelsProvider(): AlternateUnitLabelsProvider;
     clearAllOverrideFormats(): Promise<void>;
     clearOverrideFormats(type: QuantityTypeArg): Promise<void>;
@@ -7869,6 +7898,8 @@ export class QuantityFormatter implements UnitsProvider {
         kindOfQuantityName: string;
     }): Promise<string>;
     formatQuantity(magnitude: number, formatSpec?: FormatterSpec): string;
+    // @beta
+    protected _formatSpecsRegistry: Map<string, FormattingSpecEntry>;
     generateFormatterSpecByType(type: QuantityTypeArg, formatProps: FormatProps): Promise<FormatterSpec>;
     getConversion(fromUnit: UnitProps, toUnit: UnitProps): Promise<UnitConversionProps>;
     getFormatPropsByQuantityType(quantityType: QuantityTypeArg, requestedSystem?: UnitSystemKey, ignoreOverrides?: boolean): FormatProps | undefined;
@@ -7878,6 +7909,8 @@ export class QuantityFormatter implements UnitsProvider {
     getParserSpecByQuantityTypeAndSystem(type: QuantityTypeArg, system?: UnitSystemKey): Promise<ParserSpec | undefined>;
     getQuantityDefinition(type: QuantityTypeArg): QuantityTypeDefinition | undefined;
     getQuantityTypeKey(type: QuantityTypeArg): string;
+    // @beta
+    getSpecsByName(name: string): FormattingSpecEntry | undefined;
     getUnitsByFamily(phenomenon: string): Promise<UnitProps[]>;
     getUnitSystemFromString(inputSystem: string, fallback?: UnitSystemKey): UnitSystemKey;
     hasActiveOverride(type: QuantityTypeArg, checkOnlyActiveUnitSystem?: boolean): boolean;
@@ -9408,9 +9441,9 @@ export class SelectionTool extends PrimitiveTool {
     // (undocumented)
     requireWriteableTarget(): boolean;
     // (undocumented)
-    protected selectByPointsEnd(ev: BeButtonEvent): boolean;
+    protected selectByPointsEnd(ev: BeButtonEvent): Promise<boolean>;
     // (undocumented)
-    protected selectByPointsProcess(origin: Point3d, corner: Point3d, ev: BeButtonEvent, method: SelectionMethod, overlap: boolean): void;
+    protected selectByPointsProcess(origin: Point3d, corner: Point3d, ev: BeButtonEvent, method: SelectionMethod, overlap: boolean): Promise<boolean>;
     // (undocumented)
     protected selectByPointsStart(ev: BeButtonEvent): boolean;
     // (undocumented)
@@ -9495,6 +9528,8 @@ export class SetupCameraTool extends PrimitiveTool {
     protected getAdjustedEyePoint(): Point3d;
     // (undocumented)
     protected getAdjustedTargetPoint(): Point3d;
+    // (undocumented)
+    protected getToolSettingLockProperty(property: DialogProperty<any>): DialogProperty<boolean> | undefined;
     // (undocumented)
     protected _haveEyePt: boolean;
     // (undocumented)
@@ -10036,12 +10071,12 @@ export interface SubCategoriesRequest {
 
 // @beta
 export class SurveyLengthDescription extends FormattedQuantityDescription {
-    constructor(name?: string, displayLabel?: string, iconSpec?: string);
+    constructor(name?: string, displayLabel?: string, iconSpec?: string, kindOfQuantityName?: string);
     // (undocumented)
     get formatterQuantityType(): QuantityType;
     // (undocumented)
     get parseError(): string;
-    // (undocumented)
+    // @deprecated (undocumented)
     get quantityType(): string;
 }
 
@@ -11692,6 +11727,8 @@ export class ToolSettings {
     static doubleTapTimeout: BeDuration;
     // @beta
     static enableVirtualCursorForLocate: boolean;
+    // @beta
+    static enableVolumeSelection: boolean;
     static maxOnMotionSnapCallPerSecond: number;
     static preserveWorldUp: boolean;
     static scrollSpeed: number;
@@ -12909,6 +12946,7 @@ export abstract class Viewport implements Disposable, TileUser {
     get backgroundMapGeometry(): BackgroundMapGeometry | undefined;
     get backgroundMapSettings(): BackgroundMapSettings;
     set backgroundMapSettings(settings: BackgroundMapSettings);
+    get backgroundMapTileTreeReference(): TileTreeReference | undefined;
     changeBackgroundMapProps(props: BackgroundMapProps): void;
     changeBackgroundMapProvider(props: BackgroundMapProviderProps): void;
     changeCategoryDisplay(categories: Id64Arg, display: boolean, enableAllSubCategories?: boolean): void;
