@@ -15,8 +15,9 @@ import { RealityDataSourceCesiumIonAssetImpl } from "./RealityDataSourceCesiumIo
 import { RealityDataSourceGP3DTImpl } from "./RealityDataSourceGP3DTImpl";
 import { IModelApp } from "./IModelApp";
 import { Range3d } from "@itwin/core-geometry";
-import { GoogleMapsDecorator } from "./GoogleMapsDecorator";
+import { getCopyrights, GoogleMapsDecorator } from "./GoogleMapsDecorator";
 import { DecorateContext } from "./ViewContext";
+import { ScreenViewport } from "./Viewport";
 
 const loggerCategory: string = FrontendLoggerCategory.RealityData;
 
@@ -243,6 +244,8 @@ export interface RealityDataSourceProvider {
    * For example, the Google Photorealistic 3D Tiles reality data source provider will add the Google logo.
    */
   decorate?(_context: DecorateContext): void;
+  /** Optioally add attribution logo cards to the viewport's logo div. */
+  addAttributions?(cards: HTMLTableElement, vp: ScreenViewport): Promise<void>;
 }
 
 /** A registry of [[RealityDataSourceProvider]]s identified by their unique names. The registry can be accessed via [[IModelApp.realityDataSourceProviders]].
@@ -338,5 +341,27 @@ export class RealityDataSourceGP3DTProvider implements RealityDataSourceProvider
 
   public decorate(_context: DecorateContext): void {
     this._decorator.decorate(_context);
+  }
+
+  public async addAttributions(cards: HTMLTableElement, vp: ScreenViewport): Promise<void> {
+    const copyrightMap = getCopyrights(vp);
+
+    // Only add another logo card if the tiles have copyright
+    if (copyrightMap.size > 0) {
+      // Order by most occurances to least
+      // See https://developers.google.com/maps/documentation/tile/create-renderer#display-attributions
+      const sortedCopyrights = [...copyrightMap.entries()].sort((a, b) => b[1] - a[1]);
+
+      let copyrightMsg = "Data provided by:<br><ul>";
+      copyrightMsg += sortedCopyrights.map(([key]) => `<li>${key}</li>`).join("");
+      copyrightMsg += "</ul>";
+
+      // Only add Google header and icon if the tileset is GP3DT
+      cards.appendChild(IModelApp.makeLogoCard({
+        iconSrc: `${IModelApp.publicPath}images/google_on_white_hdpi.png`,
+        heading: "Google Photorealistic 3D Tiles",
+        notice: copyrightMsg
+      }));
+    }
   }
 }

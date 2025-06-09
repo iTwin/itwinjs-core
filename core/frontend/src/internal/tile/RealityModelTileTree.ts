@@ -33,9 +33,7 @@ import {
 } from "../../tile/internal";
 import { SpatialClassifiersState } from "../../SpatialClassifiersState";
 import { RealityDataSourceTilesetUrlImpl } from "../../RealityDataSourceTilesetUrlImpl";
-import { RealityDataSourceGP3DTImpl } from "../../RealityDataSourceGP3DTImpl";
 import { ScreenViewport } from "../../Viewport";
-import { getCopyrights } from "../../GoogleMapsDecorator";
 
 function getUrl(content: any) {
   return content ? (content.url ? content.url : content.uri) : undefined;
@@ -983,27 +981,9 @@ export class RealityTreeReference extends RealityModelTileTree.Reference {
   }
 
   public override async addAttributions(cards: HTMLTableElement, vp: ScreenViewport): Promise<void> {
-    const copyrightMap = getCopyrights(vp);
-
-    // Only add another logo card if the tiles have copyright
-    if (copyrightMap.size > 0) {
-      // Order by most occurances to least
-      // See https://developers.google.com/maps/documentation/tile/create-renderer#display-attributions
-      const sortedCopyrights = [...copyrightMap.entries()].sort((a, b) => b[1] - a[1]);
-
-      let copyrightMsg = "Data provided by:<br><ul>";
-      copyrightMsg += sortedCopyrights.map(([key]) => `<li>${key}</li>`).join("");
-      copyrightMsg += "</ul>";
-
-      const rdSource = await RealityDataSource.fromKey(this._rdSourceKey, this.iModel.iTwinId);
-      const isGP3DT = rdSource instanceof RealityDataSourceGP3DTImpl;
-
-      // Only add Google header and icon if the tileset is GP3DT
-      cards.appendChild(IModelApp.makeLogoCard({
-        iconSrc: isGP3DT ? `${IModelApp.publicPath}images/google_on_white_hdpi.png` : undefined,
-        heading: isGP3DT ? "Google Photorealistic 3D Tiles" : "",
-        notice: copyrightMsg
-      }));
+    const provider = IModelApp.realityDataSourceProviders.find(this._rdSourceKey.provider);
+    if (provider && provider.addAttributions) {
+      await provider.addAttributions(cards, vp);
     }
   }
 

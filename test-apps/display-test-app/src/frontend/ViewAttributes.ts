@@ -632,11 +632,11 @@ export class ViewAttributes {
             tilesetUrl: url,
             name: "googleMap3dTiles",
             rdSourceKey: {
-                provider: "GP3DT",
-                format: "ThreeDTile",
-                id: url,
-              },
-            });
+              provider: "GP3DT",
+              format: "ThreeDTile",
+              id: url,
+            },
+          });
           this.sync();
           displayingGP3DT = true;
         }
