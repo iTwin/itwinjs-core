@@ -4,8 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { Angle, AngleSweep, Arc3d, CurveCurve, CurvePrimitive, LineSegment3d, LineString3d, Loop, Point3d, Range2d, Range2dProps, Transform, TransformProps, Vector2d, Vector3d, XYAndZ, XYZProps } from "@itwin/core-geometry";
-import { TextAnnotationFrame, TextAnnotationLeaderProps } from "./TextAnnotation";
+import { TextAnnotationFrame, TextAnnotationLeaderProps, TextPointOptions } from "./TextAnnotation";
 import { TextBlockLayoutResult } from "./TextBlockLayoutResult";
+import { TextStyleSettingsProps } from "./TextStyle";
 
 // I don't love where this is.
 
@@ -51,8 +52,29 @@ export namespace FrameGeometry {
     });
     return points;
   }
+  function adjustAttachmentPoint(targetPoint: Point3d, textPoint: Point3d, documentTransform: Transform, position: TextPointOptions): TextPointOptions {
+
+    const textOrientation = documentTransform.getMatrix().getColumn(1)
+    const AB = textPoint.minus(targetPoint);
+    // 2D cross product (z-component)
+    const cross = textOrientation.x * AB.y - textOrientation.y * AB.x;
+    let textPointPosition: TextPointOptions = position;
+    if (cross >= 0) {
+      if (textPointPosition.includes("Top"))
+        textPointPosition = "TopRight";
+      else textPointPosition = "BottomRight";
+    }
+    if (cross < 0) {
+      if (textPointPosition.includes("Bottom"))
+        textPointPosition = "BottomLeft";
+      else textPointPosition = "TopLeft";
+    };
+    return textPointPosition;
+
+
+  }
   /** Returns the closest point on the text frame where a leader can attach to */
-  export const computeLeaderStartPoint = (frame: TextAnnotationFrame, textLayout: TextBlockLayoutResult, transformProps: TransformProps, leaderProps: TextAnnotationLeaderProps): { endPoint?: Point3d, elbowDirection?: Vector3d } | undefined => {
+  export const computeLeaderStartPoint = (frame: TextAnnotationFrame, textLayout: TextBlockLayoutResult, transformProps: TransformProps, leaderProps: TextAnnotationLeaderProps, textStyleOverrides?: TextStyleSettingsProps): { endPoint?: Point3d, elbowDirection?: Vector3d } | undefined => {
     let closestPoint: Point3d | undefined;
     let curve: Loop;
     if (leaderProps.attachmentMode.mode === "Nearest") {
@@ -74,6 +96,7 @@ export namespace FrameGeometry {
       let lineRange = Range2d.createNull();
       let lineOffset: XYZProps;
       let scaleDirection = transform.matrix.getColumn(0).negate();
+      leaderProps.attachmentMode.position = adjustAttachmentPoint(Point3d.fromJSON(leaderProps.startPoint), Point3d.createZero(), transform, leaderProps.attachmentMode.position);
       if (leaderProps.attachmentMode.position.includes("Top")) {
         lineRange = Range2d.fromJSON(textLayout.lines[0].range);
         lineOffset = textLayout.lines[0].offsetFromDocument;
@@ -98,14 +121,14 @@ export namespace FrameGeometry {
       closestPoint = closestPointDetail[0]?.detailA.point;
     }
     let elbowDirection: Vector3d | undefined;
-    if (closestPoint && leaderProps.styleOverrides?.wantElbow) {
+    if (closestPoint && textStyleOverrides?.wantElbow) {
       // Determine the direction based on the closest point's position relative to the frame
       const isCloserToLeft = Math.abs(closestPoint.x - curve.range().low.x) < Math.abs(closestPoint.x - curve.range().high.x);
 
       // Decide the direction: left (-X) or right (+X)
       elbowDirection = isCloserToLeft ? Vector3d.unitX().negate() : Vector3d.unitX();
 
-      const elbowPoint = closestPoint.plusScaled(elbowDirection, leaderProps.styleOverrides.elbowLength ?? 0);
+      const elbowPoint = closestPoint.plusScaled(elbowDirection, textStyleOverrides.elbowLength ?? 0);
       const elbowLine = LineSegment3d.create(closestPoint, elbowPoint);
 
       const primitives = curve.collectCurvePrimitives();

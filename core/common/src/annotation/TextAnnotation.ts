@@ -66,7 +66,7 @@ export interface TextAnnotationLeaderProps {
 export interface TextAnnotationLeader {
   startPoint: Point3d;
   attachmentMode: LeaderAttachmentMode;
-  styleOverrides?: LeaderStyleProps
+  styleOverrides?: TextStyleSettingsProps;
 }
 /**
  * JSON representation of a [[TextAnnotation]].
@@ -102,7 +102,7 @@ export interface TextAnnotationCreateArgs {
   /** TODO */
   frame?: TextFrameStyleProps;
   /** TODO */
-  leader?: TextAnnotationLeaderProps;
+  leader?: TextAnnotationLeader;
 }
 
 /**
@@ -132,9 +132,9 @@ export class TextAnnotation {
   /** The frame type of the text annotation. */
   public frame?: TextFrameStyleProps;
 
-  public leader?: TextAnnotationLeaderProps;
+  public leader?: TextAnnotationLeader;
 
-  private constructor(offset: Point3d, angles: YawPitchRollAngles, textBlock: TextBlock, anchor: TextAnnotationAnchor, frame?: TextFrameStyleProps, leader?: TextAnnotationLeaderProps) {
+  private constructor(offset: Point3d, angles: YawPitchRollAngles, textBlock: TextBlock, anchor: TextAnnotationAnchor, frame?: TextFrameStyleProps, leader?: TextAnnotationLeader) {
     this.offset = offset;
     this.orientation = angles;
     this.textBlock = textBlock;
@@ -149,7 +149,7 @@ export class TextAnnotation {
     const angles = args?.orientation ?? new YawPitchRollAngles();
     const textBlock = args?.textBlock ?? TextBlock.createEmpty();
     const anchor = args?.anchor ?? { vertical: "top", horizontal: "left" };
-    const leader = args?.leader ?? { startPoint: new Point3d(), attachmentMode: { mode: "Nearest" } };
+    const leader = args?.leader;
 
     return new TextAnnotation(offset, angles, textBlock, anchor, args?.frame, leader);
   }
@@ -165,7 +165,11 @@ export class TextAnnotation {
       textBlock: props?.textBlock ? TextBlock.create(props.textBlock) : undefined,
       anchor: props?.anchor ? { ...props.anchor } : undefined,
       frame: props?.frame,
-      leader: props?.leader,
+      leader: {
+        startPoint: Point3d.fromJSON(props?.leader?.startPoint),
+        attachmentMode: props?.leader?.attachmentMode ?? { mode: "Nearest" },
+        styleOverrides: props?.leader?.styleOverrides ? { ...props.leader.styleOverrides } : undefined
+      },
     });
   }
 
@@ -192,10 +196,7 @@ export class TextAnnotation {
     }
 
     props.frame = this.frame;
-    if (this.leader) {
-      console.log(this.leader);
-      props.leader = { startPoint: this.leader.startPoint, attachmentMode: this.leader.attachmentMode, styleOverrides: this.leader.styleOverrides };
-    }
+    props.leader = this.leader;
 
 
     return props;

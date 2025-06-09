@@ -251,14 +251,13 @@ function produceTextBlockGeometry(layout: TextBlockLayout, documentTransform: Tr
 
   return { entries: context.entries };
 }
-function produceLeaderGeometry(layout: TextBlockLayout, documentTransform: Transform, frame: TextAnnotationFrame, leader?: TextAnnotationLeaderProps): LeaderGeometryProps {
+function produceLeaderGeometry(layout: TextBlockLayout, documentTransform: Transform, frame: TextAnnotationFrame, leader?: TextAnnotationLeaderProps, textStyleOverrides?: TextStyleSettingsProps): LeaderGeometryProps {
   const context: LeaderGeometryProps = { entries: [] };
+
   if (leader) {
-    let startPoint = Point3d.fromJSON(leader.startPoint);
-    startPoint = documentTransform.multiplyPoint3d(startPoint);
-    const result = FrameGeometry.computeLeaderStartPoint(frame, layout.toResult(), documentTransform.toJSON(), leader);
+    const result = FrameGeometry.computeLeaderStartPoint(frame, layout.toResult(), documentTransform.toJSON(), leader, textStyleOverrides);
     if (result?.endPoint)
-      processLeaders(startPoint, result.endPoint, context, undefined, leader.styleOverrides, result.elbowDirection)
+      processLeaders(Point3d.fromJSON(leader.startPoint), result.endPoint, context, undefined, textStyleOverrides, result.elbowDirection)
 
   }
 
@@ -334,6 +333,6 @@ export function produceTextAnnotationGeometry(args: ProduceTextAnnotationGeometr
 
   const textBlockGeometry = produceTextBlockGeometry(layout, transform, anchorPoint);
   const frameGeometry = produceFrameGeometry(layout, transform, args.annotation.frame);
-  const leaderGeometry = produceLeaderGeometry(layout, transform, args.annotation.frame?.frame ?? 'rectangle', args.annotation.leader);
+  const leaderGeometry = produceLeaderGeometry(layout, transform, args.annotation.frame?.frame ?? 'rectangle', args.annotation.leader, args.annotation.textBlock.styleOverrides);
   return { textBlockGeometry, frameGeometry, leaderGeometry };
 }
