@@ -51,6 +51,7 @@ enum XmlConstants {
   TILEHEIGHT_XMLTAG = "TileHeight",
   TILEMATRIX_XMLTAG = "TileMatrix",
   TILEMATRIXSETLINK_XMLTAG = "TileMatrixSetLink",
+  RESOURCEURL_XMLTAG = "ResourceURL",
   TILEWIDTH_XMLTAG = "TileWidth",
   TOPLEFTCORNER_XMLTAG = "TopLeftCorner",
   WELLKNOWNSCALESET_XMLTAG = "WellKnownScaleSet",
@@ -332,6 +333,18 @@ export namespace WmtsCapability {
     }
   }
 
+  export class ResourceURL {
+    public readonly format: string;
+    public readonly resourceType: string
+    public readonly template: string;
+
+    constructor(elem: Element) {
+      this.format = elem.getAttribute("format") ?? "";
+      this.resourceType = elem.getAttribute("resourceType") ?? "";
+      this.template = elem.getAttribute("template") ?? "";
+    }
+  }
+
   export class TileMatrixSet {
     public readonly identifier: string;
     public readonly title?: string;
@@ -438,6 +451,7 @@ export namespace WmtsCapability {
     public readonly boundingBox?: BoundingBox;
     public readonly styles: Style[] = [];
     public readonly tileMatrixSetLinks: TileMatrixSetLink[] = [];
+    public readonly resourceUrls: ResourceURL[] = [];
 
     constructor(elem: Element) {
 
@@ -490,6 +504,12 @@ export namespace WmtsCapability {
 
       for (const tmsl of tileMatrixSetLink)
         this.tileMatrixSetLinks.push(new TileMatrixSetLink(tmsl));
+
+      // ResourceURL are optional.  It can be repeated for different resource types.
+      const resourceUrls = elem.getElementsByTagName(XmlConstants.RESOURCEURL_XMLTAG);
+
+      for (const url of resourceUrls)
+        this.resourceUrls.push(new ResourceURL(url));
     }
   }
 }

@@ -292,6 +292,7 @@ export interface PresentationManagerProps {
     clientId?: string;
     defaultFormats?: FormatsMap;
     requestTimeout?: number;
+    // @deprecated
     schemaContextProvider?: (imodel: IModelConnection) => SchemaContext;
 }
 
