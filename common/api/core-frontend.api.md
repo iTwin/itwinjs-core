@@ -8163,6 +8163,13 @@ export class RealityDataSourceGP3DTProvider implements RealityDataSourceProvider
 }
 
 // @alpha
+export interface RealityDataSourceGP3DTProviderOptions {
+    apiKey?: string;
+    getAuthToken?: () => Promise<string | undefined>;
+    showCreditsOnScreen?: boolean;
+}
+
+// @alpha
 export interface RealityDataSourceProvider {
     addAttributions?(cards: HTMLTableElement, vp: ScreenViewport): Promise<void>;
     createRealityDataSource(key: RealityDataSourceKey, iTwinId: GuidString | undefined): Promise<RealityDataSource | undefined>;

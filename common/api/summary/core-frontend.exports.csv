@@ -513,6 +513,7 @@ alpha;function;createOrbitGtBlobPropsFromKey
 alpha;function;fromKey
 alpha;function;setBaseUrl
 alpha;class;RealityDataSourceGP3DTProvider
+alpha;interface;RealityDataSourceGP3DTProviderOptions
 alpha;interface;RealityDataSourceProvider
 alpha;class;RealityDataSourceProviderRegistry
 public;interface;RealityMeshParams
