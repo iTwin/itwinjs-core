@@ -201,24 +201,24 @@ export class SetScheduleScriptTool extends DisplayStyleTool {
       const modelTimeline = builder.addModelTimeline("0x20000000010"); // model Id
 
       const elementTimeline1 = modelTimeline.addElementTimeline(["0x2000003abfc"]);
-      elementTimeline1.addColor(now, new RgbColor(255, 255, 0));
-      elementTimeline1.addColor(now + 3000, new RgbColor(255, 255, 255));
-      elementTimeline1.addTransform(now, Transform.createIdentity());
-      elementTimeline1.addTransform(
-        now + 3000,
-        Transform.createTranslationXYZ(0, 0, 0)
-      );
-      elementTimeline1.addVisibility(now, 50);
-      elementTimeline1.addVisibility(now + 3000, 100);
+      // elementTimeline1.addColor(now, new RgbColor(255, 255, 0));
+      // elementTimeline1.addColor(now + 3000, new RgbColor(255, 255, 255));
+      // elementTimeline1.addTransform(now, Transform.createIdentity());
+      // elementTimeline1.addTransform(
+      //   now + 3000,
+      //   Transform.createTranslationXYZ(0, 0, 0)
+      // );
+      // elementTimeline1.addVisibility(now, 50);
+      // elementTimeline1.addVisibility(now + 3000, 100);
 
-      // elementTimeline1.addCuttingPlane(now, {
-      //   position: { x: 0, y: 0, z: 0 },
-      //   direction: { x: 0, y: 0, z: 1 },
-      // });
-      // elementTimeline1.addCuttingPlane(now + 3000, {
-      //   position: { x: 0, y: 0, z: 5 },
-      //   direction: { x: 0, y: 0, z: 1 },
-      // });
+      elementTimeline1.addCuttingPlane(now, {
+        position: { x: 0, y: 0, z: 0 },
+        direction: { x: 0, y: 0, z: 1 },
+      });
+      elementTimeline1.addCuttingPlane(now + 3000, {
+        position: { x: 0, y: 0, z: 5 },
+        direction: { x: 0, y: 0, z: 1 },
+      });
 
       const elementTimeline2 = modelTimeline.addElementTimeline(["0xca60"]);
       elementTimeline2.addColor(now, new RgbColor(0, 255, 255));

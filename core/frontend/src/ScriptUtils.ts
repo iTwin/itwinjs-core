@@ -40,29 +40,78 @@ export function getScriptDelta(prev: RenderSchedule.Script, next: RenderSchedule
       }
     }
   }
-
   return changed;
 }
 
-function isTimelineEntryEqual(a: RenderSchedule.ElementTimeline, b: RenderSchedule.ElementTimeline): boolean {
-  const sampleTimes = [0, 0.25, 0.5, 0.75, 1];
+function collectTimelineEntryTimes(timeline: RenderSchedule.ElementTimeline): number[] {
+  const result = new Set<number>();
 
-  for (const {} of a.elementIds) {
-    for (const t of sampleTimes) {
-      // check visibility
+  if (timeline.cuttingPlane) {
+    for (const entry of timeline.cuttingPlane) {
+      result.add(entry.time);
+    }
+  }
+  if (timeline.visibility) {
+    for (const entry of timeline.visibility) {
+      result.add(entry.time);
+    }
+  }
+  if (timeline.transform) {
+    for (const entry of timeline.transform) {
+      result.add(entry.time);
+    }
+  }
+  if (timeline.color) {
+    for (const entry of timeline.color) {
+      result.add(entry.time);
+    }
+  }
+  return Array.from(result);
+}
+
+function isTimelineEntryEqual(a: RenderSchedule.ElementTimeline, b: RenderSchedule.ElementTimeline): boolean {
+  const timesSet = new Set<number>([
+    ...collectTimelineEntryTimes(a),
+    ...collectTimelineEntryTimes(b),
+  ]);
+  let times = Array.from(timesSet).sort((x, y) => x - y);
+  if (times.length === 0) {
+    times = [0, 0.25, 0.5, 0.75, 1];
+  }
+
+  for (const [] of a.elementIds) {
+    for (const t of times) {
+      // Check visibility
       const v1 = a.getVisibility(t);
       const v2 = b.getVisibility(t);
       if (Math.abs(v1 - v2) > 0.01) return false;
 
-      // check Transform
+      // Check Transform
       const tf1 = a.getAnimationTransform(t);
       const tf2 = b.getAnimationTransform(t);
       if (!tf1.isAlmostEqual(tf2)) return false;
 
-      // check Color
+      // Check Color
       const c1 = a.getColor(t);
       const c2 = b.getColor(t);
       if ((c1 && !c2) || (!c1 && c2) || (c1 && c2 && !c1.equals(c2))) return false;
+
+      // Cutting Plane (CLIPPING)
+      const clip1 = a.getCuttingPlane?.(t);
+      const clip2 = b.getCuttingPlane?.(t);
+
+      const bothUndefined = clip1 === undefined && clip2 === undefined;
+      const oneUndefined = (clip1 === undefined) !== (clip2 === undefined);
+
+      if (oneUndefined) return false;
+      if (!bothUndefined && clip1 && clip2) {
+        if (
+          !clip1.getOriginRef().isAlmostEqual(clip2.getOriginRef(), 1e-6) ||
+          !clip1.getNormalRef().isAlmostEqual(clip2.getNormalRef(), 1e-6)
+        ) {
+          return false;
+        }
+      }
     }
   }
 
@@ -79,4 +128,3 @@ export function getAllElementIdsFromScript(script: RenderSchedule.Script): Set<I
   }
   return ids;
 }
-
