@@ -243,10 +243,6 @@ const renderingStyles: RenderingStyle[] = [{
   viewflags: renderingStyleViewFlags,
 }];
 
-// ###TODO - make this use display style settings?? Maybe... Depends how "hacky" vs. "real" we want this approach.
-// This is a global right now, which is icky.
-let displayingGP3DT = false;
-
 export class ViewAttributes {
   private static _expandViewFlags = false;
   private static _expandEdgeDisplay = false;
@@ -489,7 +485,10 @@ export class ViewAttributes {
     this._updates.push((view) => thematic.update(view));
   }
 
-  private getDisplayingGP3DT() { return displayingGP3DT; }
+  private getDisplayingGP3DT() {
+    const gp3dtModel = this._vp.view.displayStyle.settings.contextRealityModels.models.find((model) => { return model.name === "googleMap3dTiles"; });
+    return gp3dtModel !== undefined;
+  }
 
   private getBackgroundMap(view: ViewState) { return view.displayStyle.settings.backgroundMap; }
   private addBackgroundMapOrTerrain(): void {
@@ -638,13 +637,11 @@ export class ViewAttributes {
             },
           });
           this.sync();
-          displayingGP3DT = true;
         }
       } else {
         if (this.getDisplayingGP3DT()) {
           view.displayStyle.detachRealityModelByNameAndUrl("googleMap3dTiles", getGooglePhotorealistic3DTilesURL());
           this.sync();
-          displayingGP3DT = false;
         }
       }
 
