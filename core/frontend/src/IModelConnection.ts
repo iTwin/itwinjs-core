@@ -293,6 +293,8 @@ export abstract class IModelConnection extends IModel {
   private createRPCQueryReader(ecsql: string, params?: QueryBinder, config?: QueryOptions): ECSqlReader {
     const executor = {
       execute: async (request: DbQueryRequest) => {
+        // ARTIFICIAL DELAY: 300 ms
+        await new Promise((resolve) => setTimeout(resolve, 300))
         return IModelReadRpcInterface.getClientForRouting(this.routingContext.token).queryRows(this.getRpcProps(), request);
       },
     };

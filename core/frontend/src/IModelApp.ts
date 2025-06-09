@@ -416,6 +416,7 @@ export class IModelApp {
     this._realityDataAccess = opts.realityDataAccess;
     this._publicPath = opts.publicPath ?? "";
 
+    /*
     [
       this.renderSystem,
       this.viewManager,
@@ -428,6 +429,7 @@ export class IModelApp {
     ].forEach((sys) => sys.onInitialized());
 
     await this.quantityFormatter.onInitialized();
+    */
     this.onAfterStartup.raiseEvent();
   }
 
