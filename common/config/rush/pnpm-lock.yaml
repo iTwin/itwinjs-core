@@ -2360,6 +2360,9 @@ importers:
       '@itwin/core-backend':
         specifier: workspace:*
         version: link:../../core/backend
+      '@itwin/core-backend-tests':
+        specifier: workspace:*
+        version: link:../../core/backend-tests
       '@itwin/core-bentley':
         specifier: workspace:*
         version: link:../../core/bentley
