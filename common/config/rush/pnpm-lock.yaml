@@ -83,12 +83,6 @@ importers:
       '@opentelemetry/api':
         specifier: 1.0.4
         version: 1.0.4
-      '@types/chai':
-        specifier: 4.3.1
-        version: 4.3.1
-      '@types/chai-as-promised':
-        specifier: ^7
-        version: 7.1.0
       '@types/fs-extra':
         specifier: ^4.0.7
         version: 4.0.7
@@ -113,12 +107,6 @@ importers:
       '@types/ws':
         specifier: ^7.0.0
         version: 7.2.0
-      chai:
-        specifier: ^4.3.10
-        version: 4.3.10
-      chai-as-promised:
-        specifier: ^7.1.1
-        version: 7.1.1(chai@4.3.10)
       cpx2:
         specifier: ^8.0.0
         version: 8.0.0
