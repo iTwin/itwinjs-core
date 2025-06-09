@@ -6,11 +6,10 @@
  * @module ElementGeometry
  */
 
-import { ColorDef, TextAnnotation, TextBlockGeometryProps, TextBlockGeometryPropsEntry, TextString, TextStyleColor } from "@itwin/core-common";
-import { ComputeRangesForTextLayout, FindFontId, FindTextStyle, layoutTextBlock, RunLayout, TextBlockLayout } from "./TextAnnotationLayout";
+import { TextBlockGeometryProps, TextBlockGeometryPropsEntry, TextString, TextStyleColor } from "@itwin/core-common";
+import { RunLayout, TextBlockLayout } from "./TextBlockLayout";
 import { LineSegment3d, Point3d, Range2d, Transform, Vector2d } from "@itwin/core-geometry";
 import { assert } from "@itwin/core-bentley";
-import { IModelDb } from "./IModelDb";
 
 interface GeometryContext {
   curColor?: TextStyleColor;
@@ -125,7 +124,15 @@ function processFractionRun(run: RunLayout, transform: Transform, context: Geome
   }
 }
 
-function produceTextBlockGeometry(layout: TextBlockLayout, documentTransform: Transform, debugAnchorPt?: Point3d): TextBlockGeometryProps {
+/**
+ * Produces the geometry for a text block in a way that can be interpreted by a [[GeometryStreamBuilder]] or [[ElementBuilder.Geometry]].
+ * To build the geometry for a whole [[TextAnnotation]], use [[appendTextAnnotationGeometry]] instead.
+ * @param layout of the text block as computed by [[layoutTextBlock]].
+ * @param documentTransform that positions the text block in world coordinates.
+ * @returns TextBlockGeometryProps.
+ * @beta
+ */
+export function produceTextBlockGeometry(layout: TextBlockLayout, documentTransform: Transform): TextBlockGeometryProps {
   const context: GeometryContext = { entries: [] };
   for (const line of layout.lines) {
     const lineTrans = Transform.createTranslationXYZ(line.offsetFromDocument.x, line.offsetFromDocument.y, 0);
@@ -145,98 +152,5 @@ function produceTextBlockGeometry(layout: TextBlockLayout, documentTransform: Tr
     }
   }
 
-  if (debugAnchorPt) {
-    context.entries.push({
-      color: ColorDef.blue.toJSON()
-    });
-
-    // Draw a blue box to show the element's margin
-    const marginCorners = layout.range.corners3d(true);
-    documentTransform.multiplyPoint3dArrayInPlace(marginCorners);
-    marginCorners.forEach((corner, index) => {
-      const next = marginCorners[index + 1];
-      if (!next) return;
-
-      context.entries.push({
-        separator: {
-          startPoint: [corner.x, corner.y, 0],
-          endPoint: [next.x, next.y, 0],
-        },
-      });
-    });
-
-    // Draw a blue x to show the anchor point - Rotation occurs around this point. The x will be 1 m by 1 m.
-    context.entries.push({
-      separator: {
-        startPoint: [debugAnchorPt.x - 1, debugAnchorPt.y - 1, 0],
-        endPoint: [debugAnchorPt.x + 1, debugAnchorPt.y + 1, 0],
-      },
-    });
-
-    context.entries.push({
-      separator: {
-        startPoint: [debugAnchorPt.x + 1, debugAnchorPt.y - 1, 0],
-        endPoint: [debugAnchorPt.x - 1, debugAnchorPt.y + 1, 0],
-      },
-    });
-
-    // Draw a red box to show the text range
-    context.entries.push({
-      color: ColorDef.red.toJSON(),
-    });
-
-    const rangeCorners = layout.textRange.corners3d(true);
-    documentTransform.multiplyPoint3dArrayInPlace(rangeCorners);
-    rangeCorners.forEach((corner, index) => {
-      const next = rangeCorners[index + 1];
-      if (!next) return;
-
-      context.entries.push({
-        separator: {
-          startPoint: [corner.x, corner.y, 0],
-          endPoint: [next.x, next.y, 0],
-        },
-      });
-    });
-  }
-
   return { entries: context.entries };
-}
-
-/** Arguments supplied to [[produceTextAnnotationGeometry]].
- * @beta
- */
-export interface ProduceTextAnnotationGeometryArgs {
-  /** The annotation from which to produce the geometry. */
-  annotation: TextAnnotation;
-  /** The iModel from which to obtain fonts and text styles. */
-  iModel: IModelDb;
-  /** For debugging purposes only, whether to include geometry representing the bounding box and anchor point of the annotation.
-   * If true, two red lines indicating the horizontal and vertical extents of the bounding box will be included, intersecting at the anchor point.
-   */
-  debugAnchorPointAndRange?: boolean;
-  /** @internal chiefly for tests */
-  computeTextRange?: ComputeRangesForTextLayout;
-  /** @internal chiefly for tests */
-  findTextStyle?: FindTextStyle;
-  /** @internal chiefly for tests */
-  findFontId?: FindFontId;
-}
-
-/** Produce a geometric representation of a text annotation, with the annotation's anchor point at the origin.
- * The result can be supplied to [GeometryStreamBuilder.appendTextBlock]($common).
- * @see [[TextAnnotation2d.setAnnotation]] and [[TextAnnotation3d.setAnnotation]] to update the annotation, geometry, and placement of an annotation element.
- * @beta
- */
-export function produceTextAnnotationGeometry(args: ProduceTextAnnotationGeometryArgs): TextBlockGeometryProps {
-  const layout = layoutTextBlock({
-    ...args,
-    textBlock: args.annotation.textBlock,
-  });
-
-  const dimensions = layout.range;
-  const transform = args.annotation.computeTransform(dimensions);
-
-  const anchorPoint = args.debugAnchorPointAndRange ? transform.multiplyPoint3d(args.annotation.computeAnchorPoint(dimensions)) : undefined;
-  return produceTextBlockGeometry(layout, transform, anchorPoint);
 }

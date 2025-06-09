@@ -51,7 +51,6 @@ import {
   PresentationError,
   PresentationRpcRequestOptions,
   PresentationStatus,
-  PropertyValueFormat,
   RequestOptions,
   RulesetVariable,
   RulesetVariableJSON,
@@ -63,16 +62,13 @@ import {
 } from "@itwin/presentation-common";
 import {
   configureForPromiseResult,
-  createTestCategoryDescription,
   createTestContentDescriptor,
-  createTestECClassInfo,
   createTestECInstanceKey,
   createTestECInstancesNodeKey,
   createTestLabelDefinition,
   createTestNode,
   createTestNodePathElement,
   createTestSelectClassInfo,
-  createTestSimpleContentField,
   ResolvablePromise,
 } from "@itwin/presentation-common/test-utils";
 import { BackendDiagnosticsAttribute } from "../presentation-backend.js";
@@ -1546,25 +1542,9 @@ describe("PresentationRpcImpl", () => {
     });
 
     describe("getElementProperties", () => {
-      it("calls manager", async () => {
-        const elementId = "0x123";
-        const presentationManagerDetailStub = {
-          getContent: sinon.spy(async () => undefined),
-        };
-        presentationManagerMock
-          .setup((x) => x[_presentation_manager_detail])
-          .returns(() => presentationManagerDetailStub as unknown as PresentationManagerDetail);
-        const actualResult = await impl.getElementProperties(testData.imodelToken, {
-          ...defaultRpcParams,
-          elementId,
-        });
-        presentationManagerMock.verifyAll();
-        expect(actualResult.result).to.be.undefined;
-      });
-
       it("creates element properties from manager's content", async () => {
         const elementId = "0x123";
-        const expectedElementProperties: ElementProperties = {
+        const elementProperties: ElementProperties = {
           class: "Test Class",
           id: elementId,
           label: "test label",
@@ -1580,47 +1560,15 @@ describe("PresentationRpcImpl", () => {
             },
           },
         };
-        const testCategory = createTestCategoryDescription({ name: "TestCategory", label: "Test Category" });
-        const testField = createTestSimpleContentField({
-          name: "TestField",
-          category: testCategory,
-          label: "Test Field",
-          type: {
-            valueFormat: PropertyValueFormat.Primitive,
-            typeName: "string",
-          },
-        });
-        const descriptor = createTestContentDescriptor({
-          categories: [testCategory],
-          fields: [testField],
-        });
-        const contentItem = new Item(
-          [{ className: "TestSchema:TestElement", id: elementId }],
-          "test label",
-          "",
-          createTestECClassInfo({ label: "Test Class" }),
-          {
-            [testField.name]: "test value",
-          },
-          {
-            [testField.name]: "test display value",
-          },
-          [],
-          undefined,
-        );
-        const managerResponse = new Content(descriptor, [contentItem]);
-        const presentationManagerDetailStub = {
-          getContent: sinon.spy(async () => managerResponse),
-        };
         presentationManagerMock
-          .setup((x) => x[_presentation_manager_detail])
-          .returns(() => presentationManagerDetailStub as unknown as PresentationManagerDetail);
+          .setup(async (x) => x.getElementProperties({ imodel: testData.imodelMock.object, elementId, cancelEvent: new BeEvent<() => void>() }))
+          .returns(async () => elementProperties);
         const actualResult = await impl.getElementProperties(testData.imodelToken, {
           ...defaultRpcParams,
           elementId,
         });
         presentationManagerMock.verifyAll();
-        expect(actualResult.result).to.deep.eq(expectedElementProperties);
+        expect(actualResult.result).to.deep.eq(elementProperties);
       });
     });
 

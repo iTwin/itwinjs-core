@@ -204,7 +204,6 @@ describe("Bearing format tests:", () => {
 
     const testData = [
       {input: "N-45:00:00E", expected: 315.0},
-      {input: "S361:00:00E", expected: 179.0},
       {input: "S45:99:00E", expected: 133.35}, // 180 - 45 - 99/60 = 133.35
     ]
 
@@ -216,6 +215,122 @@ describe("Bearing format tests:", () => {
       expect(parseResult.value).closeTo(entry.expected, 0.01);
     }
 
+  });
+
+  it("should correctly format negative bearing values", async () => {
+    const valueList = [
+      { value: -45, expected: "N45°00'00\"W" },
+      { value: -270, expected: "N90°00'00\"E" },  // -270° → same as 90°
+    ];
+
+    const formatProps: FormatProps = {
+      minWidth: 2,
+      precision: 0,
+      type: "Bearing",
+      revolutionUnit: "Units.REVOLUTION",
+      formatTraits: ["showUnitLabel"],
+      uomSeparator: "",
+      composite: {
+        includeZero: true,
+        spacer: "",
+        units: [
+          { name: "Units.ARC_DEG", label: "°" },
+          { name: "Units.ARC_MINUTE", label: "'" },
+          { name: "Units.ARC_SECOND", label: "\"" },
+        ],
+      },
+    };
+    const format = new Format("bearing-format");
+    await format.fromJSON(new TestUnitsProvider(), formatProps);
+
+    const inputUnit = {
+      name: "Units.ARC_DEG",
+      label: "°",
+      phenomenon: "Angle",
+      system: "si",
+      isValid: true,
+    };
+    const formatterSpec = await FormatterSpec.create("bearing-format", format, new TestUnitsProvider(), inputUnit);
+    for (const { value, expected } of valueList) {
+      const result = Formatter.formatQuantity(value, formatterSpec);
+      expect(result).to.equal(expected);
+    }
+  });
+
+  it("should correctly parse valid and reject invalid bearing strings", async () => {
+    const bearingFormatProps: FormatProps = {
+      minWidth: 2,
+      precision: 0,
+      type: "Bearing",
+      revolutionUnit: "Units.REVOLUTION",
+      formatTraits: ["showUnitLabel"],
+      uomSeparator: "",
+      composite: {
+        includeZero: true,
+        spacer: "",
+        units: [
+          { name: "Units.ARC_DEG", label: "°" },
+          { name: "Units.ARC_MINUTE", label: "'" },
+          { name: "Units.ARC_SECOND", label: "\"" },
+        ],
+      },
+    };
+
+    const bearingFormat = new Format("bearing-parser");
+    await bearingFormat.fromJSON(unitsProvider, bearingFormatProps);
+    const bearingParser = await ParserSpec.create(bearingFormat, unitsProvider, degree);
+    // Valid inputs
+    const validTestData = [
+      { input: "N45:00:00E", expected: 45.0 },
+      { input: "N-45:00:00E", expected: 315.0 },
+      { input: "S90:00:00W", expected: 270.0 },
+      { input: "S45:00:00W", expected: 225.0 },
+      { input: "N00:00:00E", expected: 0.0 },
+      { input: "S00:00:00W", expected: 180.0 },
+      { input: "S89:59:59W", expected: 269.9997 },
+      { input: "N89:59:59E", expected: 89.9997 },
+      { input: "S-45:00:00W", expected: 135.0 },  // edge case
+      { input: "N45:00:30E", expected: 45.0083 }, // valid with seconds
+      { input: "N0:00:01E", expected: 0.0003 },
+      { input: "S0:00:01W", expected: 180.0003 },
+      { input: "N-0:00:01E", expected: 359.9997 },
+      { input: "S-0:00:01W", expected: 179.9997 },
+      { input: "N-89:59:59E", expected: 270.0003 },  // wrapped
+      { input: "S-89:59:59W", expected: 89.9997 },   //
+    ];
+
+    for (const { input, expected } of validTestData) {
+      const result = Parser.parseQuantityString(input, bearingParser);
+      if (!Parser.isParsedQuantity(result)) {
+        expect.fail(`Expected a parsed quantity for input "${input}"`);
+      }
+    expect(result.value).to.be.closeTo(expected, 0.01);
+    }
+
+    // Invalid inputs
+    const invalidTestData = [
+      "N200E",       // More than 90° in a quadrant
+      "S361:00:00E", // Over 360°
+      "N-200E",      // Overbound negative
+      "N270:00:00E", // Like azimuth input in quadrant format
+      "N90:00:01E",     // exceeds quarter revolution
+      "S-90:00:01W",    // exceeds negative quarter revolution
+      "N91:00:00E",     // degree overflow
+      "S-91:00:00W",    // beyond acceptable negative angle
+      "N-91:00:00E",    // beyond acceptable negative angle
+      "N45:00:00",      // missing direction
+      "E45:00:00W",     // invalid prefix
+      "45:00:00E",      // missing prefix
+      "N45:00:00EExtra", // unexpected suffix
+      "N90:-44:-23E",
+      "S-90:-00:-01W",
+      "N-70:20:-5E"
+    ];
+
+    for (const input of invalidTestData) {
+      const result = Parser.parseQuantityString(input, bearingParser);
+    expect(Parser.isParsedQuantity(result), `Expected input "${input}" to be invalid`).to.be.false;
+    }
   });
 
   it("should return ParseQuantityError if input string is incomplete", async () => {
