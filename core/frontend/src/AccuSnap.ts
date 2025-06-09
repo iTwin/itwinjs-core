@@ -915,7 +915,7 @@ export class AccuSnap implements Decorator {
 
     const filterStatus: LocateFilterStatus = (this.isLocateEnabled ? await IModelApp.locateManager.filterHit(thisHit, LocateAction.AutoLocate, out) : LocateFilterStatus.Accept);
     if (LocateFilterStatus.Accept !== filterStatus) {
-      out.snapStatus = SnapStatus.FilteredByApp;
+      out.snapStatus = IModelApp.toolAdmin.wantToolTip(thisHit) ? SnapStatus.FilteredByApp : SnapStatus.FilteredByAppQuietly;
       return undefined;
     }
 
@@ -1032,7 +1032,7 @@ export class AccuSnap implements Decorator {
       if (undefined !== firstRejected)
         continue;
       firstRejected = filterResponse.clone();
-      firstRejected.snapStatus = SnapStatus.FilteredByApp;
+      firstRejected.snapStatus = IModelApp.toolAdmin.wantToolTip(thisHit) ? SnapStatus.FilteredByApp : SnapStatus.FilteredByAppQuietly;
     }
 
     if (undefined !== firstRejected)
