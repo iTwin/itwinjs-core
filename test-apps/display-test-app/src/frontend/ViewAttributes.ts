@@ -621,7 +621,7 @@ export class ViewAttributes {
 
       if (checkboxInterfaceGP3DT0.checkbox.checked) {
         // Only create and initialize the provider once
-        const provider = new RealityDataSourceGP3DTProvider({ apiKey: process.env.IMJS_GP3DT_KEY!, showCreditsOnScreen: true });
+        const provider = new RealityDataSourceGP3DTProvider({ apiKey: process.env.IMJS_GP3DT_KEY, showCreditsOnScreen: true });
         await provider.initialize();
 
         if (!this.getDisplayingGP3DT()) {
