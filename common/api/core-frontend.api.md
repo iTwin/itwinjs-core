@@ -8154,6 +8154,8 @@ export namespace RealityDataSource {
 export class RealityDataSourceGP3DTProvider implements RealityDataSourceProvider {
     constructor(options: RealityDataSourceGP3DTProviderOptions);
     // (undocumented)
+    addAttributions(cards: HTMLTableElement, vp: ScreenViewport): Promise<void>;
+    // (undocumented)
     createRealityDataSource(key: RealityDataSourceKey, iTwinId: GuidString | undefined): Promise<RealityDataSource | undefined>;
     // (undocumented)
     decorate(_context: DecorateContext): void;
@@ -8162,6 +8164,7 @@ export class RealityDataSourceGP3DTProvider implements RealityDataSourceProvider
 
 // @alpha
 export interface RealityDataSourceProvider {
+    addAttributions?(cards: HTMLTableElement, vp: ScreenViewport): Promise<void>;
     createRealityDataSource(key: RealityDataSourceKey, iTwinId: GuidString | undefined): Promise<RealityDataSource | undefined>;
     decorate?(_context: DecorateContext): void;
 }
