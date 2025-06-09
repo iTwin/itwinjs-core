@@ -82,9 +82,20 @@ export * from "./ChangesetECAdaptor";
 
 export * from "./internal/cross-package";
 
-const globalSymbol = Symbol.for("itwin.core.backend.globals");
-if ((globalThis as any)[globalSymbol])
-  throw new Error("Multiple @itwin/core-backend imports detected!");
+const globalSymbolCoreBackend = Symbol.for("itwin.core.backend.globals");
+if ((globalThis as any)[globalSymbolCoreBackend]) {
+  const error = new Error(
+    "Multiple @itwin/core-backend imports detected! This may happen if:\n" +
+      "- You have multiple versions of the package installed\n" +
+      "- Your bundling configuration is incorrect\n" +
+      "- You're importing from both ESM and CommonJS versions"
+  );
+  // eslint-disable-next-line no-console
+  console.error("Duplicate @itwin/core-backend import:", error);
+  throw error;
+} else {
+  (globalThis as any)[globalSymbolCoreBackend] = true;
+}
 
 /** @docs-package-description
  * The core-backend package always runs on the computer with a local Briefcase.

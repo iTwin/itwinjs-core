@@ -12,9 +12,20 @@
 
 import { ExtensionHost } from "./ExtensionHost";
 
-const globalSymbol = Symbol.for("itwin.core.frontend.globals");
-if ((globalThis as any)[globalSymbol])
-  throw new Error("Multiple @itwin/core-frontend imports detected!");
+const globalSymbolCoreFrontend = Symbol.for("itwin.core.frontend.globals");
+if ((globalThis as any)[globalSymbolCoreFrontend]) {
+  const error = new Error(
+    "Multiple @itwin/core-frontend imports detected! This may happen if:\n" +
+      "- You have multiple versions of the package installed\n" +
+      "- Your bundling configuration is incorrect\n" +
+      "- You're importing from both ESM and CommonJS versions"
+  );
+  // eslint-disable-next-line no-console
+  console.error("Duplicate @itwin/core-frontend import:", error);
+  throw error;
+} else {
+  (globalThis as any)[globalSymbolCoreFrontend] = true;
+}
 
 // BEGIN GENERATED CODE
 import {

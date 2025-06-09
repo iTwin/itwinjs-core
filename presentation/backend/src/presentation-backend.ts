@@ -36,7 +36,17 @@ export { BackendDiagnosticsHandler, BackendDiagnosticsOptions, BackendDiagnostic
  */
 export { PresentationBackendLoggerCategory, PresentationBackendNativeLoggerCategory } from "./presentation-backend/BackendLoggerCategory.js";
 
-const globalSymbol = Symbol.for("itwin.presentation.backend.globals");
-if ((globalThis as any)[globalSymbol]) {
-  throw new Error("Multiple @itwin/presentation-backend imports detected!");
+const globalSymbolPresentationBackend = Symbol.for("itwin.presentation.backend.globals");
+if ((globalThis as any)[globalSymbolPresentationBackend]) {
+  const error = new Error(
+    "Multiple @itwin/presentation-backend imports detected! This may happen if:\n" +
+      "- You have multiple versions of the package installed\n" +
+      "- Your bundling configuration is incorrect\n" +
+      "- You're importing from both ESM and CommonJS versions",
+  );
+  // eslint-disable-next-line no-console
+  console.error("Duplicate @itwin/presentation-backend import:", error);
+  throw error;
+} else {
+  (globalThis as any)[globalSymbolPresentationBackend] = true;
 }

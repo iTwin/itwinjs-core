@@ -62,7 +62,17 @@ export { SelectionHandlerProps, SelectionHandler } from "./presentation-frontend
 export { HiliteSet, HiliteSetProviderProps, HiliteSetProvider } from "./presentation-frontend/selection/HiliteSetProvider.js";
 export { SelectionHelper } from "./presentation-frontend/selection/SelectionHelper.js";
 
-const globalSymbol = Symbol.for("itwin.presentation.frontend.globals");
-if ((globalThis as any)[globalSymbol]) {
-  throw new Error("Multiple @itwin/presentation-frontend imports detected!");
+const globalSymbolPresentationFrontend = Symbol.for("itwin.presentation.frontend.globals");
+if ((globalThis as any)[globalSymbolPresentationFrontend]) {
+  const error = new Error(
+    "Multiple @itwin/presentation-frontend imports detected! This may happen if:\n" +
+      "- You have multiple versions of the package installed\n" +
+      "- Your bundling configuration is incorrect\n" +
+      "- You're importing from both ESM and CommonJS versions",
+  );
+  // eslint-disable-next-line no-console
+  console.error("Duplicate @itwin/presentation-frontend import:", error);
+  throw error;
+} else {
+  (globalThis as any)[globalSymbolPresentationFrontend] = true;
 }
