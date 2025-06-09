@@ -77,7 +77,7 @@ if ((globalThis as any)[globalSymbolPresentationFrontend]) {
   /* eslint-disable no-console */
   console.error("Duplicate @itwin/presentation-frontend import:", error);
   console.error("First import occurred at:", firstLoadStack);
-  console.error("Current import occurred at:", new Error().stack);
+  console.error("Current import occurred at:", error.stack);
   /* eslint-enable no-console */
 
   throw error;
