@@ -47,6 +47,7 @@
     "@bentley/quantity-takeoffs-aspects-schema": "^1.0.1",
     "@bentley/road-rail-units-schema": "^1.0.1",
     "@itwin/core-backend": "workspace:*",
+    "@itwin/core-backend-tests": "workspace:*",
     "@itwin/core-bentley": "workspace:*",
     "@itwin/core-common": "workspace:*",
     "@itwin/core-geometry": "workspace:*",
