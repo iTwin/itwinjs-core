@@ -477,11 +477,18 @@ export class IModelTileTree extends TileTree {
 
   public onScheduleEditingChanged(change: { changedElementIds: Set<Id64String> }) {
     const elemChanges: ElementGeometryChange[] = [];
+
     for (const id of change.changedElementIds) {
+      let range = this.staticBranch.findElementRange
+        ? this.staticBranch.findElementRange(id)
+        : undefined;
+      if (!range) {
+        range = Range3d.createNull();
+      }
       elemChanges.push({
         id,
         type: DbOpcode.Update,
-        range: new Range3d(0, 0, 0, 1, 1, 1),
+        range,
       });
     }
     if (this._rootTile.tileState.type !== "dynamic")

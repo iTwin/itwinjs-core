@@ -351,4 +351,25 @@ export class IModelTile extends Tile {
     super.clearLayers();
     this.disposeChildren();
   }
+
+  /**
+   * Finds the bounding range of an element in this tile or its descendants.
+   */
+  public findElementRange(elementId: Id64String): Range3d | undefined {
+    if (this.elementInfos) {
+      for (const info of this.elementInfos) {
+        if (info.elementId === elementId)
+          return this.range;
+      }
+    }
+
+    if (this.iModelChildren) {
+      for (const child of this.iModelChildren) {
+        const found = child.findElementRange(elementId);
+        if (found)
+          return found;
+      }
+    }
+    return undefined;
+  }
 }
