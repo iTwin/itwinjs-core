@@ -12,10 +12,10 @@
 
 import { ExtensionHost } from "./ExtensionHost";
 
-const globalSymbolCoreFrontend = Symbol.for("itwin.core.frontend.globals");
-if ((globalThis as any)[globalSymbolCoreFrontend]) {
+const globalSymbol = Symbol.for("itwin.core.frontend.globals");
+if ((globalThis as any)[globalSymbol]) {
   // Get the stack trace from when the module was first loaded
-  const firstLoadStack = (globalThis as any)[globalSymbolCoreFrontend].stack;
+  const firstLoadStack = (globalThis as any)[globalSymbol].stack;
 
   const error = new Error(
     "Multiple @itwin/core-frontend imports detected! This may happen if:\n" +
@@ -31,10 +31,6 @@ if ((globalThis as any)[globalSymbolCoreFrontend]) {
   /* eslint-enable no-console */
 
   throw error;
-} else {
-  (globalThis as any)[globalSymbolCoreFrontend] = {
-    stack: new Error().stack,
-  };
 }
 
 // BEGIN GENERATED CODE
@@ -569,5 +565,6 @@ const getExtensionApi = (_id: string) => {
 };
 
 (globalThis as any)[globalSymbol] = {
+  stack: new Error().stack,
   getExtensionApi,
 };
