@@ -21,6 +21,7 @@
     "docs": "betools docs --json=../../../generated-docs/domains/linear-referencing-common/file.json --tsIndexFile=./linear-referencing-common.ts --onlyJson",
     "extract-api": "betools extract-api --entry=linear-referencing-common",
     "lint": "eslint \"./src/**/*.ts\" 1>&2",
+    "lint-fix": "eslint --fix -f visualstudio \"./src/**/*.ts\" 1>&2",
     "test": ""
   },
   "repository": {
@@ -47,7 +48,7 @@
   ],
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
-    "@itwin/eslint-plugin": "5.0.0-dev.1",
+    "@itwin/eslint-plugin": "5.2.2-dev.0",
     "@itwin/core-common": "workspace:*",
     "@itwin/core-bentley": "workspace:*",
     "eslint": "^9.13.0",

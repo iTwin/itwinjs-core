@@ -18,6 +18,7 @@
     "cover": "",
     "docs": "",
     "lint": "eslint \"./src/**/*.ts\" 1>&2",
+    "lint-fix": "eslint --fix -f visualstudio \"./src/**/*.ts\" 1>&2",
     "optest": "certa -r chrome --fgrep \"Operational: \"",
     "start:backend": "node ./lib/test/backend.js",
     "test": "",
@@ -52,7 +53,7 @@
   },
   "devDependencies": {
     "@itwin/core-backend": "workspace:*",
-    "@itwin/eslint-plugin": "5.0.0-dev.1",
+    "@itwin/eslint-plugin": "5.2.2-dev.0",
     "@itwin/express-server": "workspace:*",
     "@itwin/itwins-client": "^1.6.1",
     "@types/chai": "4.3.1",

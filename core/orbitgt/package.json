@@ -15,6 +15,7 @@
     "docs": "betools docs --json=../../generated-docs/core/core-orbitgt/file.json --tsIndexFile=./core-orbitgt.ts --onlyJson",
     "extract-api": "betools extract-api --entry=core-orbitgt",
     "lint": "",
+    "lint-fix": "",
     "test": "mocha",
     "cover": "nyc npm -s test"
   },
@@ -33,7 +34,7 @@
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
     "@itwin/core-bentley": "workspace:*",
-    "@itwin/eslint-plugin": "5.0.0-dev.1",
+    "@itwin/eslint-plugin": "5.2.2-dev.0",
     "@types/chai": "4.3.1",
     "@types/mocha": "^10.0.6",
     "@types/node": "~20.17.0",

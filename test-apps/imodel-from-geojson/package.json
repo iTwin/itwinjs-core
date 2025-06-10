@@ -10,6 +10,7 @@
     "cover": "",
     "docs": "",
     "lint": "eslint \"./src/**/*.ts\" 1>&2",
+    "lint-fix": "eslint --fix -f visualstudio \"./src/**/*.ts\" 1>&2",
     "test": ""
   },
   "repository": {},
@@ -23,7 +24,7 @@
   },
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
-    "@itwin/eslint-plugin": "5.0.0-dev.1",
+    "@itwin/eslint-plugin": "5.2.2-dev.0",
     "@types/fs-extra": "^4.0.7",
     "@types/lodash": "^4.14.202",
     "@types/node": "~20.17.0",
