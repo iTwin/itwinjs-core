@@ -152,6 +152,8 @@ preview;class;DrawingModel
 public;class;DrawingViewDefinition
 preview;class;DrawingViewDefinition
 beta;class;DriverBundleElement
+beta;interface;ECChangeUnifierCache
+public;namespace;ECChangeUnifierCache
 public;class;ECDb
 public;enum;ECDbOpenMode
 public;interface;ECEnumValue

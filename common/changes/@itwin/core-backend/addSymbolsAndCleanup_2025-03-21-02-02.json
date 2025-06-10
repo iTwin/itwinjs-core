@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Add Symbols to prevent duplicate instances of package",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}
