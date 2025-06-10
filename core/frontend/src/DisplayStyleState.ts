@@ -69,7 +69,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
 
   private _scriptReference?: RenderSchedule.ScriptReference;
 
-  private _editingSession?: ScheduleEditingSession;
+  public editingSession?: ScheduleEditingSession;
 
   /** Event raised when schedule script edits are made, providing changed element IDs and the editing scope. */
   public readonly onScheduleEditingChanged = new BeEvent<
@@ -315,37 +315,38 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
 
   /** Start a new schedule editing session. Fires initial onScheduleEditingChanged with all elementIds. */
   public beginScheduleEditing(initialScript: RenderSchedule.Script): void {
-    this._editingSession = {
+    this.editingSession = {
       script: initialScript,
       committed: false,
     };
+    this.scheduleScript = initialScript;
 
     const allIds = getAllElementIdsFromScript(initialScript);
     this.onScheduleEditingChanged.raiseEvent({ changedElementIds: allIds });
-
-    this.scheduleScript = initialScript;
   }
 
   /** Update the script in the current editing session. Fires onScheduleEditingChanged. */
   public updateEditingScript(newScript: RenderSchedule.Script): void {
-    if (!this._editingSession || this._editingSession.committed)
+    if (!this.editingSession || this.editingSession.committed)
       return;
 
-    const prevScript = this._editingSession.script;
+    const prevScript = this.editingSession.script;
     const changedIds = getScriptDelta(prevScript, newScript);
-    this._editingSession.script = newScript;
-    this.onScheduleEditingChanged.raiseEvent({ changedElementIds: changedIds });
-
+    this.editingSession.script = newScript;
     this.scheduleScript = newScript;
+    this.onScheduleEditingChanged.raiseEvent({ changedElementIds: changedIds });
   }
 
   /** Commit the editing session. */
   public commitScheduleEditing(): void {
-    if (!this._editingSession || this._editingSession.committed)
+    if (!this.editingSession || this.editingSession.committed)
       return;
-    this._editingSession.committed = true;
+    this.editingSession.committed = true;
     this.onScheduleEditingCommitted.raiseEvent();
-    this._editingSession = undefined;
+    for (const modelTimeline of this.editingSession.script.modelTimelines) {
+      modelTimeline.isEditingCommitted = true;
+    }
+    this.editingSession = undefined;
   }
 
   /** The [RenderSchedule.Script]($common) that animates the contents of the view, if any.
