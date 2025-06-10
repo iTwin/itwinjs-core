@@ -51,6 +51,7 @@ Table of contents:
       - [TypeScript](#typescript)
         - [`target`](#target)
         - [`useDefineForClassFields`](#usedefineforclassfields)
+    - [Preventing Doppelgangers](#preventing-doppelgangers)
     - [Deprecated API removals](#deprecated-api-removals)
       - [@itwin/appui-abstract](#itwinappui-abstract-1)
       - [@itwin/core-backend](#itwincore-backend-1)
@@ -509,6 +510,23 @@ class MyElement extends Element {
   ...
 }
 ```
+
+### Preventing Doppelgangers
+
+Previously, applications could inadvertently include multiple instances of the same iTwin.js core package (known as _"doppelgangers"_). This could happen due to dependency misconfiguration, incorrect bundling, or mixing module systems. Doppelgangers create several serious issues:
+
+- _Non-single singletons_: Services intended to be singletons become duplicated, causing state inconsistencies
+- _Duplicate types_: Type checking failures when comparing identical types from different package instances
+- _Semantically different behavior_: Different versions of the same code running simultaneously
+
+For more details on the consequences of doppelgangers, see the [Rush.js](https://rushjs.io/) project's documentation on the [consequences of doppelgangers](https://github.com/microsoft/rushstack-websites/blob/main/websites/rushjs.io/docs/pages/advanced/npm_doppelgangers.md#consequences-of-doppelgangers).
+
+In iTwin.js 5.0, we've implemented a robust doppelganger detection mechanism using JavaScript [Symbol](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Symbol)s. When a core package is loaded for the first time, it registers its presence in the global scope with a unique symbol. If the same package is loaded again (from a different instance), the system detects this conflict and throws a detailed error message with stack traces showing:
+
+1. Where the package was first loaded
+2. Where the duplicate loading attempt occurred
+
+This early detection prevents hard-to-diagnose runtime errors by immediately identifying the duplicate package problem with actionable information for resolution.
 
 ### Deprecated API removals
 
