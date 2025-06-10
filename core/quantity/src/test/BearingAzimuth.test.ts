@@ -214,7 +214,7 @@ describe("Bearing format tests:", () => {
     }
   });
 
-  it.only("should correctly parse flexible valid bearing strings", async () => {
+  it("should correctly parse flexible valid bearing strings", async () => {
     const bearingFormatProps: FormatProps = {
       minWidth: 2,
       precision: 0,
