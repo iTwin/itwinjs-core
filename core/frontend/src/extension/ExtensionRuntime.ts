@@ -13,8 +13,25 @@
 import { ExtensionHost } from "./ExtensionHost";
 
 const globalSymbol = Symbol.for("itwin.core.frontend.globals");
-if ((globalThis as any)[globalSymbol])
-  throw new Error("Multiple @itwin/core-frontend imports detected!");
+if ((globalThis as any)[globalSymbol]) {
+  // Get the stack trace from when the module was first loaded
+  const firstLoadStack = (globalThis as any)[globalSymbol].stack;
+
+  const error = new Error(
+    "Multiple @itwin/core-frontend imports detected! This may happen if:\n" +
+      "- You have multiple versions of the package installed\n" +
+      "- Your bundling configuration is incorrect\n" +
+      "- You're importing from both ESM and CommonJS versions"
+  );
+
+  /* eslint-disable no-console */
+  console.error("Duplicate @itwin/core-frontend import:", error);
+  console.error("First import occurred at:", firstLoadStack);
+  console.error("Current import occurred at:", error.stack);
+  /* eslint-enable no-console */
+
+  throw error;
+}
 
 // BEGIN GENERATED CODE
 import {
@@ -548,5 +565,6 @@ const getExtensionApi = (_id: string) => {
 };
 
 (globalThis as any)[globalSymbol] = {
+  stack: new Error().stack,
   getExtensionApi,
 };
