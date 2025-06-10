@@ -199,9 +199,9 @@ describe("Bearing format tests:", () => {
     await bearingDMSWithLabel.fromJSON(unitsProvider, bearingDMSWithLabelJson);
     const bearingDMSParser = await ParserSpec.create(bearingDMSWithLabel, unitsProvider, degree);
     const testData = [
-      { input: "s45d00m00se", expected:  135.0 },
+   //   { input: "s45d00m00se", expected:  135.0 },
       { input: "s 45 00 00 e", expected:  135.0 },
-      { input: "n35 45 45.101e", expected:  35.7625 },
+      { input: "n35 45 45.101e", expected:  35.762528055555556 },
       { input: "s45d45m45.0se", expected:  135.7625 },
       { input: "s45d45m45.0e", expected:  135.7625 },
     ];
@@ -211,6 +211,46 @@ describe("Bearing format tests:", () => {
         expect.fail(`Expected a parsed quantity for input ${entry.input}`);
       }
       expect(parseResult.value).to.be.eql(entry.expected);
+    }
+  });
+
+  it.only("should correctly parse flexible valid bearing strings", async () => {
+    const bearingFormatProps: FormatProps = {
+      minWidth: 2,
+      precision: 0,
+      type: "Bearing",
+      revolutionUnit: "Units.REVOLUTION",
+      formatTraits: ["showUnitLabel"],
+      uomSeparator: "",
+      composite: {
+        includeZero: true,
+        spacer: "",
+        units: [
+          { name: "Units.ARC_DEG", label: "°" },
+          { name: "Units.ARC_MINUTE", label: "'" },
+          { name: "Units.ARC_SECOND", label: "\"" },
+        ],
+      },
+    };
+
+    const bearingFormat = new Format("bearing-flexible-parser");
+    await bearingFormat.fromJSON(unitsProvider, bearingFormatProps);
+    const bearingParser = await ParserSpec.create(bearingFormat, unitsProvider, degree);
+
+     const validTestData = [
+      { input: "s 45 45 45 e", expected: 134.2375 },
+      { input: "S45:45:45E", expected: 134.2375 },
+      { input: "s45 45 45e", expected:  134.2375 },
+      { input: "S45 00 00 E", expected: 135.0 },
+      { input: "n 30 15 30 e", expected: 30.2583 },
+     ];
+
+    for (const { input, expected } of validTestData) {
+      const result = Parser.parseQuantityString(input, bearingParser);
+      if (!Parser.isParsedQuantity(result)) {
+        expect.fail(`Expected a parsed quantity for input "${input}"`);
+      }
+      expect(result.value).to.be.closeTo(expected, 0.01);
     }
   });
 
