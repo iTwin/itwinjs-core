@@ -74,7 +74,7 @@ export class SchemaFormatsProvider implements FormatsProvider {
     }
 
     // Find the first presentation format that matches the provided unit system.
-    const unitSystemMatchers = getUnitSystemGroupNames(this._unitSystem);
+    const unitSystemMatchers = getUnitSystemGroupMatchers(this._unitSystem);
     const presentationFormats = kindOfQuantity.presentationFormats;
     for (const matcher of unitSystemMatchers) {
       for (const lazyFormat of presentationFormats) {
@@ -147,7 +147,7 @@ export class SchemaFormatsProvider implements FormatsProvider {
   }
 }
 
-function getUnitSystemGroupNames(groupKey?: UnitSystemKey) {
+function getUnitSystemGroupMatchers(groupKey?: UnitSystemKey) {
   function createMatcher(name: string | string[]) {
     const names = Array.isArray(name) ? name : [name];
     return (unitSystem: UnitSystem) => names.some((n) => n === unitSystem.name.toUpperCase());
