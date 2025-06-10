@@ -916,7 +916,7 @@ describe("RegionOps", () => {
     expectedCentroid = rotationTransform.multiplyPoint3d(Point3d.create(5, 3.8136483127358547));
     expectedNormal = Vector3d.createFrom(rotationTransform.multiplyPoint3d(Point3d.create(0, 0, 1)));
     expectedArea = 80 - 4 * Math.PI;
-    const rotatedRegion = region.cloneTransformed(rotationTransform) as Loop;
+    const rotatedRegion = region.cloneTransformed(rotationTransform) as AnyRegion;
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, rotatedRegion, dx, dy);
     RegionOps.centroidAreaNormal(rotatedRegion, ray);
     if (ck.testDefined(ray, "computed centroid and normal") && ck.testDefined(ray.a, "computed area")) {
