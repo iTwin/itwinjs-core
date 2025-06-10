@@ -128,7 +128,7 @@ export class GoogleMapsDecorator implements Decorator {
     const elem = document.createElement("div");
     elem.innerHTML = copyrightText;
     elem.style.color = "white";
-    elem.style.fontSize = "10px";
+    elem.style.fontSize = "11px";
     elem.style.textWrap = "wrap";
     elem.style.position = "absolute";
     elem.style.bottom = "10px";
@@ -147,7 +147,7 @@ export function getCopyrights(vp: ScreenViewport): Map<string, number> {
   if (tiles) {
     for (const tile of tiles as Set<RealityTile>) {
       if (tile.copyright) {
-        for (const copyright of tile.copyright?.split(";")) {
+        for (const copyright of tile.copyright.split(";")) {
           const currentCount = copyrightMap.get(copyright);
           copyrightMap.set(copyright, currentCount ? currentCount + 1 : 1);
         }

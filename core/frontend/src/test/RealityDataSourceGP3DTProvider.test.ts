@@ -100,7 +100,7 @@ describe("RealityDataSourceGP3DTProvider", () => {
 
     expect(addCanvasDecorationStub.called).to.be.true;
     expect(addHTMLDecorationStub.called).to.be.true;
-    const htmlDecorationStr = `<div style="color: white; font-size: 10px; text-wrap: wrap; position: absolute; bottom: 10px; left: 107px;"> • Google • Bentley Systems, Inc.</div>`;
+    const htmlDecorationStr = `<div style="color: white; font-size: 11px; text-wrap: wrap; position: absolute; bottom: 10px; left: 107px;"> • Google • Bentley Systems, Inc.</div>`;
     expect(addHTMLDecorationStub.firstCall.args[0].outerHTML).to.eq(htmlDecorationStr);
     expect(getSpriteStub.firstCall.args[0]).to.eq("public/images/google_on_non_white.png");
   });

@@ -985,14 +985,14 @@ export class RealityTreeReference extends RealityModelTileTree.Reference {
 
   public override async addAttributions(cards: HTMLTableElement, vp: ScreenViewport): Promise<void> {
     const provider = IModelApp.realityDataSourceProviders.find(this._rdSourceKey.provider);
-    if (provider && provider.addAttributions) {
+    if (provider?.addAttributions) {
       await provider.addAttributions(cards, vp);
     }
   }
 
   public override decorate(_context: DecorateContext): void {
     const provider = IModelApp.realityDataSourceProviders.find(this._rdSourceKey.provider);
-    if (provider && provider.decorate) {
+    if (provider?.decorate) {
       provider.decorate(_context);
     }
   }
