@@ -135,14 +135,6 @@ export class IModelTile extends Tile {
     return content;
   }
 
-  public isAffectedByScheduleScript(changedElementIds?: Set<Id64String>): boolean {
-    if (!changedElementIds || !this._elementInfos){
-      return false;
-    }
-
-    return this._elementInfos.some(info => changedElementIds.has(info.elementId));
-  }
-
   public override setContent(content: IModelTileContent): void {
     super.setContent(content);
 
