@@ -40,6 +40,7 @@ import { GeometryQuery } from "./GeometryQuery";
 import { ChainCollectorContext } from "./internalContexts/ChainCollectorContext";
 import { PolygonWireOffsetContext } from "./internalContexts/PolygonOffsetContext";
 import { TransferWithSplitArcs } from "./internalContexts/TransferWithSplitArcs";
+import { LineSegment3d } from "./LineSegment3d";
 import { LineString3d } from "./LineString3d";
 import { Loop, SignedLoops } from "./Loop";
 import { JointOptions, OffsetOptions } from "./OffsetOptions";
@@ -761,18 +762,42 @@ export class RegionOps {
     return SortablePolygon.sortAsAnyRegion(loopAndArea);
   }
   /**
+   * Collect inputs that are nominally closed: regions, and physically closed curves.
+   * * Physically closed input curves are each returned wrapped in a Loop to facilitate xy-algorithms,
+   * but outside this limited context, these Loops only makes sense if they are planar.
+  */
+  private static collectRegionsAndClosedPrimitives(curves: AnyCurve | AnyCurve[], tolerance: number = Geometry.smallMetricDistance): AnyRegion[] {
+    const regions: AnyRegion[] = [];
+    if (!Array.isArray(curves))
+      curves = [curves];
+    for (const curve of curves) {
+      if (curve instanceof Loop || curve instanceof ParityRegion || curve instanceof UnionRegion) {
+        regions.push(curve);
+      } else if (curve instanceof Path) {
+        if (curve.isPhysicallyClosedCurve(tolerance))
+          regions.push(Loop.create(...curve.children));
+      } else if (curve instanceof CurvePrimitive) {
+        if (curve.isPhysicallyClosedCurve(tolerance))
+          regions.push(Loop.create(curve));
+      }
+    }
+    return regions;
+  }
+  /**
    * Find all xy-areas bounded by the unstructured, possibly intersecting curves.
    * * For best results, input curves should be parallel to the xy-plane, as z-coordinates are ignored.
-   * * A common use case of this method is to assemble the bounding "exterior" loop (or loops) containing the
-   * input curves. Note that "holes" implied by inputs are _not_ preserved in output.
-   * * This method does not add bridge edges to connect outer loops to inner loops. Each disconnected loop,
-   * regardless of its containment, is returned as its own SignedLoops object. Pre-process with [[regionBooleanXY]]
-   * to add bridge edges so that [[constructAllXYRegionLoops]] will return outer and inner loops in the same
-   * SignedLoops object.
-   * @param curvesAndRegions Any collection of curves. Each Loop/ParityRegion/UnionRegion contributes its curve
-   * primitives, stripped of parity context. This means holes are _not_ preserved in output.
+   * * "Holes" implied/bounded by inputs are _not_ preserved/discovered in output; in particular [[ParityRegion]]
+   * hole loops are treated like any other positive area loops.
+   * * A common use case of this method is to assemble the bounding "exterior" loop for each connected component
+   * of input curves.
+   * @param curvesAndRegions Any collection of curves. Each [[AnyRegion]] contributes its children _stripped of
+   * parity context_.
    * @param tolerance optional distance tolerance for coincidence.
-   * @returns array of [[SignedLoops]], each entry of which describes the faces in a single connected component:
+   * @param addBridges whether to add line segments to connect nested input loops (default is `false`). To reduce
+   * the number of output components pass `addBridges = true` so that nested input loops are connected to each other
+   * by bridge edges. Loops that are not explicit in input, but rather are assembled from disparate input curves, do
+   * not receive bridge edges.
+   * @returns array of [[SignedLoops]], each entry of which describes the areas bounded by a single connected component:
    *    * `positiveAreaLoops` contains "interior" loops, _including holes in ParityRegion input_. These loops have
    * positive area and counterclockwise orientation.
    *    * `negativeAreaLoops` contains (probably just one) "exterior" loop which is ordered clockwise.
@@ -781,12 +806,26 @@ export class RegionOps {
    * to the edge and a constituent curve in each.
    */
   public static constructAllXYRegionLoops(
-    curvesAndRegions: AnyCurve | AnyCurve[], tolerance: number = Geometry.smallMetricDistance,
+    curvesAndRegions: AnyCurve | AnyCurve[],
+    tolerance: number = Geometry.smallMetricDistance,
+    addBridges: boolean = false,
   ): SignedLoops[] {
     let primitives = RegionOps.collectCurvePrimitives(curvesAndRegions, undefined, true, true);
-    primitives = TransferWithSplitArcs.clone(BagOfCurves.create(...primitives)).children as CurvePrimitive[];
     const range = this.curveArrayRange(primitives);
     const areaTol = this.computeXYAreaTolerance(range, tolerance);
+    const regions = this.collectRegionsAndClosedPrimitives(curvesAndRegions, tolerance);
+    if (addBridges) { // generate a temp graph to extract its bridge edges
+      const context = RegionBooleanContext.create(RegionGroupOpType.Union, RegionGroupOpType.Union);
+      context.addMembers(regions, undefined);
+      context.annotateAndMergeCurvesInGraph(tolerance);
+      context.graph.announceEdges((_graph, edge: HalfEdge) => {
+        if (edge.isMaskSet(HalfEdgeMask.BRIDGE_EDGE))
+          primitives.push(LineSegment3d.create(edge.getPoint3d(), edge.faceSuccessor.getPoint3d()));
+        return true;
+      });
+    } else {
+      primitives = TransferWithSplitArcs.clone(BagOfCurves.create(...primitives)).children as CurvePrimitive[];
+    }
     const intersections = CurveCurve.allIntersectionsAmongPrimitivesXY(primitives, tolerance);
     const graph = PlanarSubdivision.assembleHalfEdgeGraph(primitives, intersections, tolerance);
     return PlanarSubdivision.collectSignedLoopSetsInHalfEdgeGraph(graph, areaTol);
