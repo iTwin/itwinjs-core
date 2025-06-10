@@ -445,8 +445,8 @@ export namespace ECChangeUnifierCache {
     return new InMemoryInstanceCache();
   }
 
-  export function createSqliteBacked(db: AnyDb, bufferReadInstanceSizeInBytes = 1024*1024*10): ECChangeUnifierCache {
-  return new SqliteBackedInstanceCache(db, bufferedReadInstanceSizeInBytes);
+  export function createSqliteBacked(db: AnyDb, bufferedReadInstanceSizeInBytes = 1024 * 1024 * 10): ECChangeUnifierCache {
+    return new SqliteBackedInstanceCache(db, bufferedReadInstanceSizeInBytes);
   }
 }
 
