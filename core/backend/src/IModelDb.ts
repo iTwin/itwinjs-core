@@ -812,6 +812,7 @@ export abstract class IModelDb extends IModel {
    * @note This will not delete Txns that have already been saved, even if they have not yet been pushed.
   */
   public abandonChanges(): void {
+    this.clearCaches();
     this[_nativeDb].abandonChanges();
   }
 

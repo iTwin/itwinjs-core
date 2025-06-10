@@ -13,7 +13,7 @@ import {
   FontMap, FontType, GeoCoordinatesRequestProps, GeoCoordStatus, GeographicCRS, GeographicCRSProps, GeometricElementProps, GeometryParams, GeometryStreamBuilder,
   ImageSourceFormat, IModel, IModelCoordinatesRequestProps, IModelError, LightLocationProps, MapImageryProps, PhysicalElementProps,
   PointWithStatus, RelatedElement, RenderMode, SchemaState, SpatialViewDefinitionProps, SubCategoryAppearance, SubjectProps, TextureMapping,
-  TextureMapProps, TextureMapUnits, ViewDefinitionProps, ViewFlagProps, ViewFlags,
+  TextureMapProps, TextureMapUnits, TypeDefinitionElementProps, ViewDefinitionProps, ViewFlagProps, ViewFlags,
 } from "@itwin/core-common";
 import {
   Geometry, GeometryQuery, LineString3d, Loop, Matrix4d, Point3d, PolyfaceBuilder, Range3d, StrokeOptions, Transform, XYZProps, YawPitchRollAngles,
@@ -23,7 +23,7 @@ import { V2CheckpointManager } from "../../CheckpointManager";
 import {
   _nativeDb, BisCoreSchema, Category, ClassRegistry, DefinitionContainer, DefinitionGroup, DefinitionGroupGroupsDefinitions,
   DefinitionModel, DefinitionPartition, DictionaryModel, DisplayStyle3d, DisplayStyleCreationOptions, DocumentPartition, DrawingGraphic, ECSqlStatement,
-  Element, ElementDrivesElement, ElementGroupsMembers, ElementGroupsMembersProps, ElementOwnsChildElements, Entity, GeometricElement2d, GeometricElement3d,
+  Element, ElementDrivesElement, ElementGroupsMembers, ElementGroupsMembersProps, ElementOwnsChildElements, Entity, GenericGraphicalType2d, GeometricElement2d, GeometricElement3d,
   GeometricModel, GroupInformationPartition, IModelDb, IModelHost, IModelJsFs, InformationPartitionElement, InformationRecordElement, LightLocation,
   LinkPartition, Model, PhysicalElement, PhysicalModel, PhysicalObject, PhysicalPartition, RenderMaterialElement, RenderMaterialElementParams, SnapshotDb, SpatialCategory,
   SqliteStatement, SqliteValue, SqliteValueType, StandaloneDb, SubCategory, Subject, Texture, ViewDefinition,
@@ -2345,6 +2345,37 @@ describe("iModel", () => {
     assert.isAtLeast(tryOpen(standaloneFile, { busyTimeout: seconds(1) }), seconds(1), "open should fail with atleast 1 sec delay due to retry");
     assert.isAtLeast(tryOpen(standaloneFile, { busyTimeout: seconds(2) }), seconds(2), "open should fail with atleast 2 sec delay due to retry");
     assert.isAtLeast(tryOpen(standaloneFile, { busyTimeout: seconds(3) }), seconds(3), "open should fail with atleast 3 sec delay due to retry");
+
+    db.abandonChanges();
+    db.close();
+  });
+
+  it("Cache cleared on abandonChanges", () => {
+    const standaloneFile = IModelTestUtils.prepareOutputFile("IModel", "StandaloneReadWrite.bim");
+    const db = StandaloneDb.createEmpty(standaloneFile, { rootSubject: { name: "Standalone" } });
+    db.saveChanges();
+
+    const code = Code.createEmpty();
+    code.value = "foo";
+    const props: TypeDefinitionElementProps = {
+      classFullName: GenericGraphicalType2d.classFullName,
+      model: IModel.dictionaryId,
+      code,
+    };
+    const id = db.elements.insertElement(props);
+    const element1 = db.elements.getElementProps(id);
+    db.abandonChanges();
+
+    code.value = "bar";
+    const props2: TypeDefinitionElementProps = {
+      classFullName: GenericGraphicalType2d.classFullName,
+      model: IModel.dictionaryId,
+      code,
+    };
+    const id2 = db.elements.insertElement(props2);
+    expect(id2).to.equal(id);
+    const element2 = db.elements.getElementProps(id2);
+    expect(element2).to.not.equal(element1);
 
     db.abandonChanges();
     db.close();
