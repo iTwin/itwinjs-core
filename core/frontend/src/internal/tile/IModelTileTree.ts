@@ -373,8 +373,6 @@ export class IModelTileTree extends TileTree {
 
   private readonly _layerHandler: LayerTileTreeHandler;
   public override get layerHandler() { return this._layerHandler; }
-  private _lastScheduleScript?: RenderSchedule.Script;
-  private _scriptLoadPromise?: Promise<void>;
 
   public constructor(params: IModelTileTreeParams, treeId: IModelTileTreeId) {
     super(params);
@@ -498,5 +496,26 @@ export class IModelTileTree extends TileTree {
   public onScheduleEditingCommitted() {
     if (this._rootTile.tileState.type !== "static")
       this._rootTile.transition(new StaticState(this._rootTile));
+    const selectedView = IModelApp.viewManager.selectedView;
+    const displayStyle = selectedView?.displayStyle;
+
+    if (!displayStyle)
+      return;
+
+    const newScript = displayStyle.scheduleScript;
+
+    const scriptRef = newScript ? new RenderSchedule.ScriptReference(displayStyle.id, newScript) : undefined;
+    const scriptInfo = IModelApp.tileAdmin.getScriptInfoForTreeId(this.modelId, scriptRef);
+    this.decoder = acquireImdlDecoder({
+        type: this.batchType,
+        omitEdges: false === this.edgeOptions,
+        timeline: scriptInfo?.timeline,
+        iModel: this.iModel,
+        batchModelId: this.modelId,
+        is3d: this.is3d,
+        containsTransformNodes: this.containsTransformNodes,
+        noWorker: !IModelApp.tileAdmin.decodeImdlInWorker,
+      });
+    this.rootTile.clearLayers();
   }
 }
