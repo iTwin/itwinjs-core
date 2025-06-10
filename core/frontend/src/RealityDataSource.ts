@@ -246,6 +246,8 @@ export interface RealityDataSourceProvider {
   decorate?(_context: DecorateContext): void;
   /** Optioally add attribution logo cards to the viewport's logo div. */
   addAttributions?(cards: HTMLTableElement, vp: ScreenViewport): Promise<void>;
+  /** @see [[ViewportDecorator.useCachedDecorations]] */
+  useCachedDecorations?: true | undefined;
 }
 
 /** A registry of [[RealityDataSourceProvider]]s identified by their unique names. The registry can be accessed via [[IModelApp.realityDataSourceProviders]].
@@ -308,8 +310,10 @@ export class RealityDataSourceGP3DTProvider implements RealityDataSourceProvider
   private _apiKey?: string;
   /** Function that returns an OAuth token for authenticating with GP3DT. This token is expected to not contain the "Bearer" prefix. */
   private _getAuthToken?: () => Promise<string | undefined>;
-  /** Decorator for Google Maps logos */
+  /** Decorator for Google Maps logos. */
   private _decorator: GoogleMapsDecorator;
+  /** Enables cached decorations for this provider. @see [[ViewportDecorator.useCachedDecorations]] */
+  public readonly useCachedDecorations = true;
 
   public async createRealityDataSource(key: RealityDataSourceKey, iTwinId: GuidString | undefined): Promise<RealityDataSource | undefined> {
     if (!this._apiKey && !this._getAuthToken) {

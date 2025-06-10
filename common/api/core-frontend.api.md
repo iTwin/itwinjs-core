@@ -8160,6 +8160,7 @@ export class RealityDataSourceGP3DTProvider implements RealityDataSourceProvider
     // (undocumented)
     decorate(_context: DecorateContext): void;
     initialize(): Promise<boolean>;
+    readonly useCachedDecorations = true;
 }
 
 // @alpha
@@ -8174,6 +8175,8 @@ export interface RealityDataSourceProvider {
     addAttributions?(cards: HTMLTableElement, vp: ScreenViewport): Promise<void>;
     createRealityDataSource(key: RealityDataSourceKey, iTwinId: GuidString | undefined): Promise<RealityDataSource | undefined>;
     decorate?(_context: DecorateContext): void;
+    // (undocumented)
+    useCachedDecorations?: true | undefined;
 }
 
 // @alpha
