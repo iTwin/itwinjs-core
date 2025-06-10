@@ -440,11 +440,20 @@ export interface ECChangeUnifierCache extends Disposable {
   count(): number;
 }
 
+export namespace ECChangeUnifierCache {
+  export function createInMemory(): ECChangeUnifierCache {
+    return new InMemoryInstanceCache();
+  }
+
+  export function createSqliteBacked(db: AnyDb, bufferReadInstanceSizeInBytes = 1024*1024*10): ECChangeUnifierCache {
+  return new SqliteBackedInstanceCache(db, bufferedReadInstanceSizeInBytes);
+  }
+}
+
 /**
  * In-memory cache for storing changed EC instances.
- * @beta
  */
-export class InMemoryInstanceCache implements ECChangeUnifierCache {
+class InMemoryInstanceCache implements ECChangeUnifierCache {
   private readonly _cache = new Map<string, ChangedECInstance>();
 
   /**
@@ -501,9 +510,8 @@ export class InMemoryInstanceCache implements ECChangeUnifierCache {
 
 /**
  * Represents a cache for unifying EC changes in a SQLite-backed instance cache.
- * @beta
  */
-export class SqliteBackedInstanceCache implements ECChangeUnifierCache {
+class SqliteBackedInstanceCache implements ECChangeUnifierCache {
   private readonly _cacheTable = `[temp].[${Guid.createValue()}]`;
   public static readonly defaultBufferSize = 1024 * 1024 * 10; // 10MB
   /**
