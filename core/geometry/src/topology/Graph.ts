@@ -327,18 +327,24 @@ export class HalfEdge implements HalfEdgeUserData {
     return newA;
   }
   /**
-   * Reverse of [[splitEdge]].
-   * @param doomed one of two nodes added by [[splitEdge]]. On successful return this node and its mate are isolated.
+   * Reverse of [[splitEdge]]: remove the vertex at `doomed` and merge its two incident edges.
+   * @param doomed one of two nodes added by [[splitEdge]]. These nodes should form a vertex loop of two nodes.
+   * On successful return this node and its mate are isolated.
+   * @param checkParallel whether to check that the doomed edge and the preceding edge in its face loop are parallel.
+   * When passing `true` the assumption is that edge geometry is linear. If nonlinear edge geometry is attached, the
+   * caller should a) verify that the geometry on either side of the doomed vertex can be merged, and if so, they
+   * should b) call this method passing `false`, and c) adjust the geometry of the returned edge and its edge mate
+   * as appropriate.
    * @returns the former (surviving) face predecessor of `doomed`, or undefined if the edge can't be healed.
    */
-  public static healEdge(doomed: HalfEdge): HalfEdge | undefined {
+  public static healEdge(doomed: HalfEdge, checkParallel: boolean = true): HalfEdge | undefined {
     if (doomed.isIsolatedEdge)
       return undefined;
     const doomed1 = doomed.vertexSuccessor;
     if (doomed1.vertexSuccessor !== doomed)
       return undefined; // v-loop not a 2-cycle
-    if (!doomed.vectorToFaceSuccessor().isParallelTo(doomed.vectorToFacePredecessor(), true, true))
-      return undefined; // not healable
+    if (checkParallel && !doomed.vectorToFaceSuccessor().isParallelTo(doomed.facePredecessor.vectorToFaceSuccessor(), false, true))
+      return undefined; // removing this vertex does not leave a straight edge behind
     const fPred = doomed.facePredecessor;
     const fSucc = doomed.faceSuccessor;
     const fPred1 = doomed1.facePredecessor;
