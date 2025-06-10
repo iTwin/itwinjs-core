@@ -18,6 +18,7 @@ import { FormatProps, FormatsChangedArgs, FormatsProvider, UnitSystemKey } from 
 import { Unit } from "./Metadata/Unit";
 import { InvertedUnit } from "./Metadata/InvertedUnit";
 import { Schema } from "./Metadata/Schema";
+import { UnitSystem } from "./Metadata/UnitSystem";
 const loggerCategory = "SchemaFormatsProvider";
 /**
  * Provides default formats and kind of quantities from a given SchemaContext or SchemaLocater.
@@ -73,17 +74,17 @@ export class SchemaFormatsProvider implements FormatsProvider {
     }
 
     // Find the first presentation format that matches the provided unit system.
-    const unitSystemGroupNames = getUnitSystemGroupNames(this._unitSystem);
+    const unitSystemMatchers = getUnitSystemGroupNames(this._unitSystem);
     const presentationFormats = kindOfQuantity.presentationFormats;
-    for (const system of unitSystemGroupNames) {
+    for (const matcher of unitSystemMatchers) {
       for (const lazyFormat of presentationFormats) {
         const format = await lazyFormat;
         const unit = await (format.units && format.units[0][0]);
         if (!unit) {
           continue;
         }
-        const currentUnitSystem = unit.unitSystem;
-        if (currentUnitSystem && currentUnitSystem.name.toUpperCase() === system) {
+        const currentUnitSystem = await unit.unitSystem;
+        if (currentUnitSystem && matcher(currentUnitSystem)) {
           this._formatsRetrieved.add(itemKey.fullName);
           return getFormatProps(format);
         }
@@ -93,7 +94,7 @@ export class SchemaFormatsProvider implements FormatsProvider {
     // If no matching presentation format was found, use persistence unit format if it matches unit system.
     const persistenceUnit = await kindOfQuantity.persistenceUnit;
     const persistenceUnitSystem = await persistenceUnit?.unitSystem;
-    if (persistenceUnitSystem && unitSystemGroupNames.includes(persistenceUnitSystem.name.toUpperCase())) {
+    if (persistenceUnitSystem && unitSystemMatchers.some((matcher) => matcher(persistenceUnitSystem))) {
       this._formatsRetrieved.add(itemKey.fullName);
       return getPersistenceUnitFormatProps(persistenceUnit!);
     }
@@ -146,16 +147,20 @@ export class SchemaFormatsProvider implements FormatsProvider {
   }
 }
 
-function getUnitSystemGroupNames(unitSystem?: UnitSystemKey) {
-  switch (unitSystem) {
+function getUnitSystemGroupNames(groupKey?: UnitSystemKey) {
+  function createMatcher(name: string | string[]) {
+    const names = Array.isArray(name) ? name : [name];
+    return (unitSystem: UnitSystem) => names.some((n) => n === unitSystem.name.toUpperCase());
+  }
+  switch (groupKey) {
     case "imperial":
-      return ["IMPERIAL", "USCUSTOM", "INTERNATIONAL", "FINANCE"];
+      return ["IMPERIAL", "USCUSTOM", "INTERNATIONAL", "FINANCE"].map(createMatcher);
     case "metric":
-      return ["SI", "METRIC", "INTERNATIONAL", "FINANCE"];
+      return [["SI", "METRIC"], "INTERNATIONAL", "FINANCE"].map(createMatcher);
     case "usCustomary":
-      return ["USCUSTOM", "INTERNATIONAL", "FINANCE"];
+      return ["USCUSTOM", "INTERNATIONAL", "FINANCE"].map(createMatcher);
     case "usSurvey":
-      return ["USSURVEY", "USCUSTOM", "INTERNATIONAL", "FINANCE"];
+      return ["USSURVEY", "USCUSTOM", "INTERNATIONAL", "FINANCE"].map(createMatcher);
   }
   return [];
 }

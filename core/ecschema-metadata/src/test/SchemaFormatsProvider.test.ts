@@ -8,8 +8,9 @@ import { expect } from "chai";
 import { SchemaContext } from "../Context";
 import { SchemaFormatsProvider } from "../SchemaFormatsProvider";
 import { deserializeXmlSync } from "./TestUtils/DeserializationHelpers";
+import { SchemaItemFormatProps } from "../Deserialization/JsonProps";
 
-describe("SchemaFormatsProvider", () => {
+describe.only("SchemaFormatsProvider", () => {
   let context: SchemaContext;
   let formatsProvider: SchemaFormatsProvider;
 
@@ -68,8 +69,21 @@ describe("SchemaFormatsProvider", () => {
     expect(formatPropsImperial!.composite?.units[0].name).to.equal("Units.FT");
 
     formatsProvider.unitSystem = "metric";
-    const formatPropsMetric = await formatsProvider.getFormat("AecUnits.LENGTH_LONG");
+    const formatPropsMetric = await formatsProvider.getFormat("AecUnits.LENGTH");
     expect(formatPropsMetric).not.to.be.undefined;
-    expect(formatPropsMetric!.composite?.units[0].name).to.equal("Units.M"); // Doesn't return Units.KM because KM is in Metric, not SI, and algorithm finds SI first.
+    expect(formatPropsMetric!.composite?.units[0].name).to.equal("Units.M");
+  });
+
+  it("when using metric system, should return presentation format from KoQ that uses UnitSystem.METRIC", async () => {
+    formatsProvider.unitSystem = "metric";
+
+    let formatProps: SchemaItemFormatProps | undefined;
+    formatProps = await formatsProvider.getFormat("AecUnits.LENGTH_SHORT");
+    expect(formatProps).not.to.be.undefined;
+    expect(formatProps!.composite?.units[0].name).to.equal("Units.MM");
+
+    formatProps = await formatsProvider.getFormat("AecUnits.AREA_LARGE");
+    expect(formatProps).not.to.be.undefined;
+    expect(formatProps!.composite?.units[0].name).to.equal("Units.SQ_KM");
   });
 });
