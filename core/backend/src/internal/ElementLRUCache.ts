@@ -1,5 +1,5 @@
 import { IModelJsNative } from "@bentley/imodeljs-native";
-import { Id64String, ITwinError } from "@itwin/core-bentley";
+import { Id64, Id64String, ITwinError } from "@itwin/core-bentley";
 import { CodeProps, ElementLoadOptions, ElementLoadProps, ElementProps } from "@itwin/core-common";
 
 /* @internal */
@@ -146,6 +146,9 @@ class ArgumentsToResultMap {
 
     if (args.id)
       this._idToResult.set(args.id, result);
+    else
+      this._idToResult.set(result.id, result);
+
     if (args.code)
       this._codeToResult.set(args.code, result);
     if (args.federationGuid)
@@ -206,8 +209,9 @@ export class InstanceKeyLRUCache {
     if (existingArgs) {
       // Combine existing args with new args for more complete key
       this._argsToResultCache.delete(existingArgs);
-      this._argsToResultCache.set({ ...existingArgs, ...cacheArgs}, result);
-      this._resultToArgsCache.set(result.id, { ...existingArgs, ...cacheArgs });
+      const combinedArgs: CachedArgs = InstanceKeyLRUCache.combineCachedArgs(existingArgs, cacheArgs);
+      this._argsToResultCache.set(combinedArgs, result);
+      this._resultToArgsCache.set(result.id, combinedArgs);
     } else {
       this._argsToResultCache.set(cacheArgs, result);
       this._resultToArgsCache.set(result.id, cacheArgs);
@@ -254,6 +258,16 @@ export class InstanceKeyLRUCache {
       federationGuid: args.federationGuid,
     };
   }
+  private static combineCachedArgs(originalArgs: CachedArgs, newArgs: CachedArgs): CachedArgs {
+    if (!originalArgs.id && !originalArgs.code && !originalArgs.federationGuid && !newArgs.id && !newArgs.code && !newArgs.federationGuid)
+      ITwinError.throwError<ITwinError>({ ...new Error("ResolveInstanceKeyArgs must have a partialKey, code, or federationGuid"), iTwinErrorId: { scope: "imodel-cache", key: "invalid-arguments" } });
+
+    return {
+      id: newArgs.id ? newArgs.id : originalArgs.id,
+      code: newArgs.code ? newArgs.code : originalArgs.code,
+      federationGuid: newArgs.federationGuid ? newArgs.federationGuid : originalArgs.federationGuid,
+    };
+  }
   private static makeCodeKey(code: CodeProps): string {
     const keys = [code.scope, code.spec];
     if (code.value !== undefined) {
@@ -266,7 +280,7 @@ export class InstanceKeyLRUCache {
     this._resultToArgsCache.clear();
   }
   public get size(): number {
-    return this._argsToResultCache.size;
+    return this._resultToArgsCache.size;
   }
   public get [Symbol.toStringTag](): string {
     return `InstanceKeyCache(size=${this.size}, capacity=${this.capacity})`;
