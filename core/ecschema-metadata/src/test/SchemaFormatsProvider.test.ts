@@ -10,7 +10,7 @@ import { SchemaFormatsProvider } from "../SchemaFormatsProvider";
 import { deserializeXmlSync } from "./TestUtils/DeserializationHelpers";
 import { SchemaItemFormatProps } from "../Deserialization/JsonProps";
 
-describe.only("SchemaFormatsProvider", () => {
+describe("SchemaFormatsProvider", () => {
   let context: SchemaContext;
   let formatsProvider: SchemaFormatsProvider;
 
