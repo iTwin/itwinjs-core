@@ -125,7 +125,7 @@ export class RealityDataSourceGP3DTImpl implements RealityDataSource {
 
     return request(url, "json", authToken ? {
       headers: {
-        "Authorization": `Bearer ${authToken}`
+        authorization: `Bearer ${authToken}`
       }} : undefined
     );
   }
@@ -175,7 +175,7 @@ export class RealityDataSourceGP3DTImpl implements RealityDataSource {
 
     return request(this.getTileUrl(name), "arraybuffer", authToken ? {
       headers: {
-        "Authorization": `Bearer ${authToken}`
+        authorization: `Bearer ${authToken}`
       }} : undefined
     );
   }
@@ -191,7 +191,7 @@ export class RealityDataSourceGP3DTImpl implements RealityDataSource {
 
     return request(this.getTileUrl(name), "json", authToken ? {
       headers: {
-        "Authorization": `Bearer ${authToken}`
+        authorization: `Bearer ${authToken}`
       }} : undefined
     );
   }
