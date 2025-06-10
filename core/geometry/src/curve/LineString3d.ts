@@ -1362,11 +1362,17 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
       );
     return undefined;
   }
+  /**
+   * Whether the start and end points are defined and within tolerance.
+   * * Does not check for planarity or degeneracy.
+   * @param tolerance optional distance tolerance (default is [[Geometry.smallMetricDistance]])
+   */
+  public override isPhysicallyClosedCurve(tolerance: number = Geometry.smallMetricDistance): boolean {
+    return this._points.length > 0 && this.startPoint().isAlmostEqual(this.endPoint(), tolerance);
+  }
   /** Returns true if first and last points are within metric tolerance. */
   public get isPhysicallyClosed(): boolean {
-    return this._points.length > 0 && Geometry.isSmallMetricDistance(
-      this._points.distanceIndexIndex(0, this._points.length - 1)!,
-    );
+    return this.isPhysicallyClosedCurve();
   }
 
   /**

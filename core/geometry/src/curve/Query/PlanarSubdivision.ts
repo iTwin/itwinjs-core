@@ -249,7 +249,7 @@ export class PlanarSubdivision {
       options.consolidateLoopSeam = true;
       RegionOps.consolidateAdjacentPrimitives(loop, options);
     }
-    if (loop.isPhysicallyClosed())
+    if (loop.isPhysicallyClosedCurve())
       return loop;
     assert(false, "createLoopInFace: face is not physically closed");
     return undefined;
