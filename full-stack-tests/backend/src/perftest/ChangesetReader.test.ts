@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { ChangesetECAdaptor, ChannelControl, DrawingCategory, IModelHost, InMemoryInstanceCache, PartialECChangeUnifier, SqliteBackedInstanceCache, SqliteChangesetReader } from "@itwin/core-backend";
+import { ChangesetECAdaptor, ChannelControl, DrawingCategory, ECChangeUnifierCache, IModelHost, PartialECChangeUnifier, SqliteChangesetReader } from "@itwin/core-backend";
 import { HubMock } from "@itwin/core-backend/lib/cjs/internal/HubMock";
 import { HubWrappers, IModelTestUtils } from "@itwin/core-backend/lib/cjs/test/index";
 import { KnownTestLocations } from "@itwin/core-backend/lib/cjs/test/KnownTestLocations";
@@ -100,7 +100,7 @@ describe("ChangesetReaderAPI", async () => {
       // Open the changesets one by one and read the changes
       const reader = SqliteChangesetReader.openFile({ fileName: changesets[testCase.testCaseNum].pathname, db: rwIModel, disableSchemaCheck: true });
       const adaptor = new ChangesetECAdaptor(reader);
-      const unifier = new PartialECChangeUnifier(reader.db, new InMemoryInstanceCache());
+      const unifier = new PartialECChangeUnifier(reader.db, ECChangeUnifierCache.createInMemory());
       adaptor.acceptOp("Inserted");
       assert.equal(unifier.getInstanceCount(), 0, "Unifier should be empty before any changes are applied");
 
@@ -186,7 +186,7 @@ describe("ChangesetReaderAPI", async () => {
       // Open the changesets one by one and read the changes
       const reader = SqliteChangesetReader.openFile({ fileName: changesets[testCase.testCaseNum].pathname, db: rwIModel, disableSchemaCheck: true });
       const adaptor = new ChangesetECAdaptor(reader);
-      const unifier = new PartialECChangeUnifier(reader.db, new SqliteBackedInstanceCache(reader.db));
+      const unifier = new PartialECChangeUnifier(reader.db, ECChangeUnifierCache.createSqliteBacked(reader.db));
       adaptor.acceptOp("Inserted");
       assert.equal(unifier.getInstanceCount(), 0, "Unifier should be empty before any changes are applied");
 
