@@ -3770,7 +3770,7 @@ export function getCopyrights(vp: ScreenViewport): Map<string, number>;
 // @internal (undocumented)
 export function getFrustumPlaneIntersectionDepthRange(frustum: Frustum, plane: Plane3dByOriginAndUnitNormal): Range1d;
 
-// @alpha
+// @beta
 export function getGooglePhotorealistic3DTilesURL(): string;
 
 // @public
@@ -8150,7 +8150,7 @@ export namespace RealityDataSource {
     export function setBaseUrl(id: string): void;
 }
 
-// @alpha
+// @beta
 export class RealityDataSourceGP3DTProvider implements RealityDataSourceProvider {
     constructor(options: RealityDataSourceGP3DTProviderOptions);
     // (undocumented)
@@ -8163,14 +8163,14 @@ export class RealityDataSourceGP3DTProvider implements RealityDataSourceProvider
     readonly useCachedDecorations = true;
 }
 
-// @alpha
+// @beta
 export interface RealityDataSourceGP3DTProviderOptions {
     apiKey?: string;
     getAuthToken?: () => Promise<string | undefined>;
     showCreditsOnScreen?: boolean;
 }
 
-// @alpha
+// @beta
 export interface RealityDataSourceProvider {
     addAttributions?(cards: HTMLTableElement, vp: ScreenViewport): Promise<void>;
     createRealityDataSource(key: RealityDataSourceKey, iTwinId: GuidString | undefined): Promise<RealityDataSource | undefined>;
@@ -8179,7 +8179,7 @@ export interface RealityDataSourceProvider {
     useCachedDecorations?: true | undefined;
 }
 
-// @alpha
+// @beta
 export class RealityDataSourceProviderRegistry {
     // @internal
     constructor();

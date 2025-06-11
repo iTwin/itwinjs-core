@@ -230,7 +230,7 @@ export namespace RealityDataSource {
  * The provider's name is stored in a [RealityDataSourceKey]($common). When the [[RealityDataSource]] is requested from the key,
  * the provider is looked up in [[IModelApp.realityDataSourceProviders]] by its name and, if found, its [[createRealityDataSource]] method
  * is invoked to produce the reality data source.
- * @alpha
+ * @beta
  */
 
 export interface RealityDataSourceProvider {
@@ -244,16 +244,16 @@ export interface RealityDataSourceProvider {
    * For example, the Google Photorealistic 3D Tiles reality data source provider will add the Google logo.
    */
   decorate?(_context: DecorateContext): void;
-  /** Optioally add attribution logo cards to the viewport's logo div. */
+  /** Optionally add attribution logo cards to the viewport's logo div. */
   addAttributions?(cards: HTMLTableElement, vp: ScreenViewport): Promise<void>;
-  /** @see [[ViewportDecorator.useCachedDecorations]] */
+  /** Enables cached decorations for this provider. @see [[ViewportDecorator.useCachedDecorations]] */
   useCachedDecorations?: true | undefined;
 }
 
 /** A registry of [[RealityDataSourceProvider]]s identified by their unique names. The registry can be accessed via [[IModelApp.realityDataSourceProviders]].
  * It includes a handful of built-in providers for sources like Cesium ION, ContextShare, OrbitGT, and arbitrary public-accessible URLs.
  * Any number of additional providers can be registered. They should typically be registered just after [[IModelApp.startup]].
- * @alpha
+ * @beta
  */
 export class RealityDataSourceProviderRegistry {
   private readonly _providers = new Map<string, RealityDataSourceProvider>();
@@ -288,7 +288,7 @@ export class RealityDataSourceProviderRegistry {
 
 /**
  * Options for creating a Google Photorealistic 3D Tiles (GP3DT) reality data source provider.
- * @alpha
+ * @beta
  */
 export interface RealityDataSourceGP3DTProviderOptions {
   /** Google Map Tiles API Key used to access GP3DT. */
@@ -301,9 +301,9 @@ export interface RealityDataSourceGP3DTProviderOptions {
 
 /**
  * Will provide Google Photorealistic 3D Tiles (GP3DT) from Google (in 3dTile format).
- * A valid GP3DT authentication key must be configured when creating and registering this provider.
+ * A valid GP3DT API key or getAuthToken fuction must be supplied when creating this provider.
  * To use this provider, you must register it with [[IModelApp.realityDataSourceProviders]].
- * @alpha
+ * @beta
  */
 export class RealityDataSourceGP3DTProvider implements RealityDataSourceProvider {
   /** Google Map Tiles API Key used to access GP3DT. */

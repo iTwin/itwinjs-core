@@ -13,7 +13,7 @@ import { PublisherProductInfo, RealityDataSource, SpatialLocationAndExtents } fr
 import { ThreeDTileFormatInterpreter } from "./tile/internal";
 
 /** Returns the URL used for retrieving Google Photorealistic 3D Tiles.
- * @alpha
+ * @beta
  */
 export function getGooglePhotorealistic3DTilesURL() {
   return "https://tile.googleapis.com/v1/3dtiles/root.json";

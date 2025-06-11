@@ -226,7 +226,7 @@ public;function;getCesiumAssetUrl
 public;function;getCompressedJpegFromCanvas
 internal;function;getCopyrights
 internal;function;getFrustumPlaneIntersectionDepthRange
-alpha;function;getGooglePhotorealistic3DTilesURL
+beta;function;getGooglePhotorealistic3DTilesURL
 public;function;getImageSourceFormatForMimeType
 public;function;getImageSourceMimeType
 public;interface;GetPixelDataWorldPointArgs
@@ -512,10 +512,10 @@ alpha;function;createKeyFromOrbitGtBlobProps
 alpha;function;createOrbitGtBlobPropsFromKey
 alpha;function;fromKey
 alpha;function;setBaseUrl
-alpha;class;RealityDataSourceGP3DTProvider
-alpha;interface;RealityDataSourceGP3DTProviderOptions
-alpha;interface;RealityDataSourceProvider
-alpha;class;RealityDataSourceProviderRegistry
+beta;class;RealityDataSourceGP3DTProvider
+beta;interface;RealityDataSourceGP3DTProviderOptions
+beta;interface;RealityDataSourceProvider
+beta;class;RealityDataSourceProviderRegistry
 public;interface;RealityMeshParams
 public;namespace;RealityMeshParams
 internal;function;fromGltfMesh
