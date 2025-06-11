@@ -387,11 +387,12 @@ export abstract class CurveChain extends CurveCollection {
    * Whether the chain start and end points are defined and within tolerance.
    * * Does not check for planarity or degeneracy.
    * @param tolerance optional distance tolerance (default is [[Geometry.smallMetricDistance]])
+   * @param xyOnly if true, ignore z coordinate (default is `false`)
    */
-  public isPhysicallyClosedCurve(tolerance: number = Geometry.smallMetricDistance): boolean {
+  public isPhysicallyClosedCurve(tolerance: number = Geometry.smallMetricDistance, xyOnly: boolean = false): boolean {
     const p0 = this.startPoint();
     const p1 = this.endPoint();
-    return p0 !== undefined && p1 !== undefined && p0.isAlmostEqual(p1, tolerance);
+    return p0 !== undefined && p1 !== undefined && (xyOnly ? p0.isAlmostEqualXY(p1, tolerance) : p0.isAlmostEqual(p1, tolerance));
   }
   /**
    * Return the start point and derivative of the first child of the curve chain.

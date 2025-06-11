@@ -1366,9 +1366,14 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
    * Whether the start and end points are defined and within tolerance.
    * * Does not check for planarity or degeneracy.
    * @param tolerance optional distance tolerance (default is [[Geometry.smallMetricDistance]])
+   * @param xyOnly if true, ignore z coordinate (default is `false`)
    */
-  public override isPhysicallyClosedCurve(tolerance: number = Geometry.smallMetricDistance): boolean {
-    return this._points.length > 0 && this.startPoint().isAlmostEqual(this.endPoint(), tolerance);
+  public override isPhysicallyClosedCurve(tolerance: number = Geometry.smallMetricDistance, xyOnly: boolean = false): boolean {
+    if (!this._points.length)
+      return false;
+    const p0 = this._points.getPoint3dAtUncheckedPointIndex(0, LineString3d._workPointA);
+    const p1 = this._points.getPoint3dAtUncheckedPointIndex(this._points.length - 1, LineString3d._workPointB);
+    return xyOnly ? p0.isAlmostEqualXY(p1, tolerance): p0.isAlmostEqual(p1, tolerance);
   }
   /** Returns true if first and last points are within metric tolerance. */
   public get isPhysicallyClosed(): boolean {
