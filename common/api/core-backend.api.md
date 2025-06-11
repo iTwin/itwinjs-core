@@ -1938,8 +1938,6 @@ export abstract class DriverBundleElement extends InformationContentElement {
     static get className(): string;
 }
 
-<<<<<<< HEAD
-=======
 // @beta
 export interface ECChangeUnifierCache extends Disposable {
     all(): IterableIterator<ChangedECInstance>;
@@ -1954,7 +1952,6 @@ export namespace ECChangeUnifierCache {
     export function createSqliteBackedCache(db: AnyDb, bufferedReadInstanceSizeInBytes?: number): ECChangeUnifierCache;
 }
 
->>>>>>> e5d940c42c (Fixes failing CI jobs (#8209))
 // @public
 export class ECDb implements Disposable {
     // @internal (undocumented)

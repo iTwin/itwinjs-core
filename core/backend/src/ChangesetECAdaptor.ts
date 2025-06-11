@@ -404,8 +404,6 @@ namespace DateTime {
     return new Date((jd - 2440587.5 + utcOffset) * 86400000);
   }
 }
-<<<<<<< HEAD
-=======
 
 /**
  * Represents a cache for unifying EC changes.
@@ -642,7 +640,6 @@ class SqliteBackedInstanceCache implements ECChangeUnifierCache {
 }
 
 
->>>>>>> e5d940c42c (Fixes failing CI jobs (#8209))
 /**
  * Combine partial changed instance into single instance.
  * Partial changes is per table and a single instance can
