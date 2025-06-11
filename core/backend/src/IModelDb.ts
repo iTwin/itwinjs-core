@@ -750,6 +750,8 @@ export abstract class IModelDb extends IModel {
     this._schemaContext = undefined;
     this.elements[_cache].clear();
     this.models[_cache].clear();
+    this.elements[_instanceKeyCache].clear();
+    this.models[_instanceKeyCache].clear();
   }
 
   /** Update the project extents for this iModel.
@@ -1938,6 +1940,7 @@ export namespace IModelDb {
       Id64.toIdSet(ids).forEach((id) => {
         try {
           this[_cache].delete(id);
+          this[_instanceKeyCache].deleteById(id);
           this._iModel[_nativeDb].deleteModel(id);
         } catch (err: any) {
           const error = new IModelError(err.errorNumber, `Error deleting model [${err.message}], id: ${id}`);
@@ -2236,6 +2239,7 @@ export namespace IModelDb {
       Id64.toIdSet(ids).forEach((id) => {
         try {
           this[_cache].delete({ id });
+          this[_instanceKeyCache].deleteById(id);
           iModel[_nativeDb].deleteElement(id);
         } catch (err: any) {
           err.message = `Error deleting element [${err.message}], id: ${id}`;
