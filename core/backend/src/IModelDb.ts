@@ -2146,16 +2146,16 @@ export namespace IModelDb {
 
       if (code.value === undefined)
         throw new IModelError(IModelStatus.InvalidCode, "Invalid Code");
-      // eslint-disable-next-line @typescript-eslint/no-deprecated
-      return this._iModel.withPreparedStatement("SELECT ECInstanceId FROM BisCore:Element WHERE CodeSpec.Id=? AND CodeScope.Id=? AND CodeValue=?", (stmt: ECSqlStatement) => {
-        stmt.bindId(1, code.spec);
-        stmt.bindId(2, Id64.fromString(code.scope));
-        stmt.bindString(3, code.value);
-        if (DbResult.BE_SQLITE_ROW !== stmt.step())
-          return undefined;
 
-        return stmt.getValue(0).getId();
-      });
+      const codeToQuery = new Code(code);
+      try {
+        const elementKey = this.resolveElementKey(codeToQuery);
+        return Id64.fromString(elementKey.id);
+      } catch (err: any) {
+        if (err.errorNumber === IModelStatus.NotFound)
+          return undefined;
+        throw err;
+      }
     }
 
     /** Query for an [[Element]]'s last modified time.
