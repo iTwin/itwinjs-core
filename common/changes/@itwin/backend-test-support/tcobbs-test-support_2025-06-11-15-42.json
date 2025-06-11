@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/backend-test-support",
+      "comment": "New @itwin/backend-test-support package created for Beta release of HubMock.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/backend-test-support"
+}
