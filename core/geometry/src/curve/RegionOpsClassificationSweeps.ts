@@ -560,6 +560,7 @@ export class RegionBooleanContext implements RegionOpsFaceToFaceSearchCallbacks 
     for (const doomedA of toHeal) {
       const doomedB = doomedA.vertexSuccessor;
       if ( // are the geometries mergeable?
+        doomedA !== doomedB &&
         doomedA.edgeTag instanceof CurveLocationDetail && doomedA.sortData !== undefined &&
         doomedB.edgeTag instanceof CurveLocationDetail && doomedB.sortData !== undefined &&
         doomedA.edgeTag.curve === doomedB.edgeTag.curve &&
