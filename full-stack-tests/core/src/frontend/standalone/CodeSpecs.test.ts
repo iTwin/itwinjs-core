@@ -9,7 +9,7 @@ import { TestUtility } from "../TestUtility";
 import { TestSnapshotConnection } from "../TestSnapshotConnection";
 import { IModelStatus } from "@itwin/core-bentley";
 
-describe("CodeSpecs", async () => {
+describe("IModelConnection.CodeSpecs", async () => {
   let iModel: IModelConnection;
 
   before(async () => {
