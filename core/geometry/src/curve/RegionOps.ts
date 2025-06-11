@@ -789,7 +789,7 @@ export class RegionOps {
    * * "Holes" implied/bounded by inputs are _not_ preserved/discovered in output; in particular [[ParityRegion]]
    * hole loops are treated like any other positive area loops.
    * * A common use case of this method is to assemble the bounding "exterior" loop for each connected component
-   * of input curves.
+   * of input curves. To connect nested loops, pass `addBridges = true`.
    * @param curvesAndRegions Any collection of curves. Each [[AnyRegion]] contributes its children _stripped of
    * parity context_.
    * @param tolerance optional distance tolerance for coincidence.

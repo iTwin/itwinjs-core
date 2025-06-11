@@ -966,7 +966,7 @@ export class HalfEdge implements HalfEdgeUserData {
     this.yankFromVertexLoop();
     mate.yankFromVertexLoop();
   }
-  /** Specify whether this edge is isolated from the rest of the graph. */
+  /** Specify whether this edge is isolated from the rest of the graph (at both ends). */
   public get isIsolatedEdge(): boolean {
     return this === this.vertexSuccessor && this.edgeMate === this.edgeMate.vertexSuccessor;
   }
