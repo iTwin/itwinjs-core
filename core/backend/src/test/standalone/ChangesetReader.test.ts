@@ -336,7 +336,7 @@ describe("Changeset Reader API", async () => {
       if (true || "test with InMemoryInstanceCache") {
         using reader = SqliteChangesetReader.openLocalChanges({ db: rwIModel, disableSchemaCheck: true });
         using adaptor = new ECChangesetAdaptor(reader);
-        using pcu = new PartialECChangeUnifier(reader.db, ECChangeUnifierCache.createInMemory());
+        using pcu = new PartialECChangeUnifier(reader.db, ECChangeUnifierCache.createInMemoryCache());
         while (adaptor.step()) {
           pcu.appendFrom(adaptor);
         }
@@ -346,7 +346,7 @@ describe("Changeset Reader API", async () => {
       if (true || "test with SqliteBackedInstanceCache") {
         using reader = SqliteChangesetReader.openLocalChanges({ db: rwIModel, disableSchemaCheck: true });
         using adaptor = new ECChangesetAdaptor(reader);
-        using pcu = new PartialECChangeUnifier(reader.db, ECChangeUnifierCache.createSqliteBacked(rwIModel));
+        using pcu = new PartialECChangeUnifier(reader.db, ECChangeUnifierCache.createSqliteBackedCache(rwIModel));
         while (adaptor.step()) {
           pcu.appendFrom(adaptor);
         }
@@ -386,7 +386,7 @@ describe("Changeset Reader API", async () => {
       if (true || "test with InMemoryInstanceCache") {
         using reader = SqliteChangesetReader.openFile({ fileName: changesets[3].pathname, db: rwIModel, disableSchemaCheck: true });
         using adaptor = new ECChangesetAdaptor(reader);
-        using pcu = new PartialECChangeUnifier(reader.db, ECChangeUnifierCache.createInMemory());
+        using pcu = new PartialECChangeUnifier(reader.db, ECChangeUnifierCache.createInMemoryCache());
         while (adaptor.step()) {
           pcu.appendFrom(adaptor);
         }
@@ -396,7 +396,7 @@ describe("Changeset Reader API", async () => {
       if (true || "test with SqliteBackedInstanceCache") {
         using reader = SqliteChangesetReader.openFile({ fileName: changesets[3].pathname, db: rwIModel, disableSchemaCheck: true });
         using adaptor = new ECChangesetAdaptor(reader);
-        using pcu = new PartialECChangeUnifier(reader.db, ECChangeUnifierCache.createSqliteBacked(rwIModel));
+        using pcu = new PartialECChangeUnifier(reader.db, ECChangeUnifierCache.createSqliteBackedCache(rwIModel));
         while (adaptor.step()) {
           pcu.appendFrom(adaptor);
         }
@@ -433,7 +433,7 @@ describe("Changeset Reader API", async () => {
       if (true || "test with InMemoryInstanceCache") {
         using reader = SqliteChangesetReader.openFile({ fileName: changesets[3].pathname, db: otherDb, disableSchemaCheck: true });
         using adaptor = new ECChangesetAdaptor(reader);
-        using pcu = new PartialECChangeUnifier(reader.db, ECChangeUnifierCache.createInMemory());
+        using pcu = new PartialECChangeUnifier(reader.db, ECChangeUnifierCache.createInMemoryCache());
         while (adaptor.step()) {
           pcu.appendFrom(adaptor);
         }
@@ -443,7 +443,7 @@ describe("Changeset Reader API", async () => {
       if (true || "test with SqliteBackedInstanceCache") {
         using reader = SqliteChangesetReader.openFile({ fileName: changesets[3].pathname, db: otherDb, disableSchemaCheck: true });
         using adaptor = new ECChangesetAdaptor(reader);
-        using pcu = new PartialECChangeUnifier(reader.db, ECChangeUnifierCache.createSqliteBacked(rwIModel));
+        using pcu = new PartialECChangeUnifier(reader.db, ECChangeUnifierCache.createSqliteBackedCache(rwIModel));
         while (adaptor.step()) {
           pcu.appendFrom(adaptor);
         }
@@ -519,7 +519,7 @@ describe("Changeset Reader API", async () => {
       if (true || "test with InMemoryInstanceCache") {
         using reader = SqliteChangesetReader.openFile({ fileName: changesets[2].pathname, db: rwIModel, disableSchemaCheck: true });
         using adaptor = new ECChangesetAdaptor(reader);
-        using pcu = new PartialECChangeUnifier(reader.db, ECChangeUnifierCache.createInMemory());
+        using pcu = new PartialECChangeUnifier(reader.db, ECChangeUnifierCache.createInMemoryCache());
         while (adaptor.step()) {
           pcu.appendFrom(adaptor);
         }
@@ -529,7 +529,7 @@ describe("Changeset Reader API", async () => {
       if (true || "test with SqliteBackedInstanceCache") {
         using reader = SqliteChangesetReader.openFile({ fileName: changesets[2].pathname, db: rwIModel, disableSchemaCheck: true });
         using adaptor = new ECChangesetAdaptor(reader);
-        using pcu = new PartialECChangeUnifier(reader.db, ECChangeUnifierCache.createSqliteBacked(rwIModel));
+        using pcu = new PartialECChangeUnifier(reader.db, ECChangeUnifierCache.createSqliteBackedCache(rwIModel));
         while (adaptor.step()) {
           pcu.appendFrom(adaptor);
         }
@@ -545,7 +545,7 @@ describe("Changeset Reader API", async () => {
         using reader = SqliteChangesetReader.openFile({ fileName: changesets[2].pathname, db: rwIModel, disableSchemaCheck: true });
         using adaptor = new ECChangesetAdaptor(reader);
         adaptor.acceptClass("TestDomain.Test2dElement");
-        using pcu = new PartialECChangeUnifier(reader.db, ECChangeUnifierCache.createInMemory());
+        using pcu = new PartialECChangeUnifier(reader.db, ECChangeUnifierCache.createInMemoryCache());
         while (adaptor.step()) {
           pcu.appendFrom(adaptor);
         }
@@ -556,7 +556,7 @@ describe("Changeset Reader API", async () => {
         using reader = SqliteChangesetReader.openFile({ fileName: changesets[2].pathname, db: rwIModel, disableSchemaCheck: true });
         using adaptor = new ECChangesetAdaptor(reader);
         adaptor.acceptClass("TestDomain.Test2dElement");
-        using pcu = new PartialECChangeUnifier(reader.db, ECChangeUnifierCache.createSqliteBacked(rwIModel));
+        using pcu = new PartialECChangeUnifier(reader.db, ECChangeUnifierCache.createSqliteBackedCache(rwIModel));
         while (adaptor.step()) {
           pcu.appendFrom(adaptor);
         }
@@ -579,7 +579,7 @@ describe("Changeset Reader API", async () => {
         using reader = SqliteChangesetReader.openFile({ fileName: changesets[2].pathname, db: rwIModel, disableSchemaCheck: true });
         using adaptor = new ECChangesetAdaptor(reader);
         adaptor.acceptOp("Updated")
-        using pcu = new PartialECChangeUnifier(reader.db, ECChangeUnifierCache.createInMemory());
+        using pcu = new PartialECChangeUnifier(reader.db, ECChangeUnifierCache.createInMemoryCache());
         while (adaptor.step()) {
           pcu.appendFrom(adaptor);
         }
@@ -590,7 +590,7 @@ describe("Changeset Reader API", async () => {
         using reader = SqliteChangesetReader.openFile({ fileName: changesets[2].pathname, db: rwIModel, disableSchemaCheck: true });
         using adaptor = new ECChangesetAdaptor(reader);
         adaptor.acceptOp("Updated")
-        using pcu = new PartialECChangeUnifier(reader.db, ECChangeUnifierCache.createSqliteBacked(rwIModel));
+        using pcu = new PartialECChangeUnifier(reader.db, ECChangeUnifierCache.createSqliteBackedCache(rwIModel));
         while (adaptor.step()) {
           pcu.appendFrom(adaptor);
         }
