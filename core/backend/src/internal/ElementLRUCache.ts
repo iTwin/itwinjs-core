@@ -37,7 +37,7 @@ export class ElementLRUCache {
       if (id)
         return this._elementCache.get(id);
     } else {
-      ITwinError.throwError<ITwinError>({ ...new Error("No key provided"), iTwinErrorId: { scope: "imodel-cache", key: "invalid-arguments" } });
+      ITwinError.throwError<ITwinError>({ message: "No key provided", iTwinErrorId: { scope: "imodel-cache", key: "invalid-arguments" } });
     }
     return undefined;
   }
@@ -90,7 +90,7 @@ export class ElementLRUCache {
   }
   public set(el: CachedElement): this {
     if (!el.elProps.id)
-      ITwinError.throwError<ITwinError>({ ...new Error("Element must have an id"), iTwinErrorId: { scope: "imodel-cache", key: "invalid-arguments" } });
+      ITwinError.throwError<ITwinError>({ message: "Element must have an id", iTwinErrorId: { scope: "imodel-cache", key: "invalid-arguments" } });
 
     // do not cache this element as geom need to be rerender into geom props if any part changes
     // TODO: find a way to handle caching geometry
@@ -142,7 +142,7 @@ class ArgumentsToResultMap {
 
   public set(args: CachedArgs, result: IModelJsNative.ResolveInstanceKeyResult): void {
     if (!args.id && !args.code && !args.federationGuid)
-      ITwinError.throwError<ITwinError>({ ...new Error("At least one id, code, or federationGuid must be provided"), iTwinErrorId: { scope: "imodel-cache", key: "invalid-arguments" } });
+      ITwinError.throwError<ITwinError>({ message: "At least one id, code, or federationGuid must be provided", iTwinErrorId: { scope: "imodel-cache", key: "invalid-arguments" } });
 
     if (args.id)
       this._idToResult.set(args.id, result);
@@ -156,7 +156,7 @@ class ArgumentsToResultMap {
   }
   public get(args: CachedArgs): IModelJsNative.ResolveInstanceKeyResult | undefined {
     if (!args.id && !args.code && !args.federationGuid)
-      ITwinError.throwError<ITwinError>({ ...new Error("At least one id, code, or federationGuid must be provided"), iTwinErrorId: { scope: "imodel-cache", key: "invalid-arguments" } });
+      ITwinError.throwError<ITwinError>({ message: "At least one id, code, or federationGuid must be provided", iTwinErrorId: { scope: "imodel-cache", key: "invalid-arguments" } });
 
     if (args.id)
       return this._idToResult.get(args.id);
@@ -168,7 +168,7 @@ class ArgumentsToResultMap {
   }
   public delete(args: CachedArgs): boolean {
     if (!args.id && !args.code && !args.federationGuid)
-      ITwinError.throwError<ITwinError>({ ...new Error("At least one id, code, or federationGuid must be provided"), iTwinErrorId: { scope: "imodel-cache", key: "invalid-arguments" } });
+      ITwinError.throwError<ITwinError>({ message: "At least one id, code, or federationGuid must be provided", iTwinErrorId: { scope: "imodel-cache", key: "invalid-arguments" } });
 
     let deleted = false;
     if (args.id)
@@ -250,7 +250,7 @@ export class InstanceKeyLRUCache {
   }
   private static makeCachedArgs(args: IModelJsNative.ResolveInstanceKeyArgs): CachedArgs {
     if (!args.partialKey && !args.code && !args.federationGuid)
-      ITwinError.throwError<ITwinError>({ ...new Error("ResolveInstanceKeyArgs must have a partialKey, code, or federationGuid"), iTwinErrorId: { scope: "imodel-cache", key: "invalid-arguments" } });
+      ITwinError.throwError<ITwinError>({ message: "ResolveInstanceKeyArgs must have a partialKey, code, or federationGuid", iTwinErrorId: { scope: "imodel-cache", key: "invalid-arguments" } });
 
     return {
       id: args.partialKey?.id,
@@ -260,7 +260,7 @@ export class InstanceKeyLRUCache {
   }
   private static combineCachedArgs(originalArgs: CachedArgs, newArgs: CachedArgs): CachedArgs {
     if (!originalArgs.id && !originalArgs.code && !originalArgs.federationGuid && !newArgs.id && !newArgs.code && !newArgs.federationGuid)
-      ITwinError.throwError<ITwinError>({ ...new Error("ResolveInstanceKeyArgs must have a partialKey, code, or federationGuid"), iTwinErrorId: { scope: "imodel-cache", key: "invalid-arguments" } });
+      ITwinError.throwError<ITwinError>({ message: "ResolveInstanceKeyArgs must have a partialKey, code, or federationGuid", iTwinErrorId: { scope: "imodel-cache", key: "invalid-arguments" } });
 
     return {
       id: newArgs.id ? newArgs.id : originalArgs.id,
