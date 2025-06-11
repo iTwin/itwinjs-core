@@ -2,8 +2,8 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert } from "chai";
-import { BisCodeSpec, CodeScopeSpec, CodeSpec } from "@itwin/core-common";
+import { assert, expect } from "chai";
+import { BisCodeSpec, CodeScopeSpec, CodeSpec, IModelError } from "@itwin/core-common";
 import { IModelConnection } from "@itwin/core-frontend";
 import { TestUtility } from "../TestUtility";
 import { TestSnapshotConnection } from "../TestSnapshotConnection";
