@@ -263,8 +263,8 @@
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
-      "packageName": "@itwin/test-support",
-      "projectFolder": "tools/test-support",
+      "packageName": "@itwin/backend-test-support",
+      "projectFolder": "tools/backend-test-support",
       "reviewCategory": "tools",
       "shouldPublish": true,
       "versionPolicyName": "prerelease-monorepo-lockStep"

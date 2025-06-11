@@ -1,7 +1,7 @@
 import { expect } from "chai";
 import { AuxCoordSystemProps, Code, GeometricModel2dProps, ModelProps } from "@itwin/core-common";
 import { AuxCoordSystem2d, AuxCoordSystem3d, GeometricModel2d, SnapshotDb } from "@itwin/core-backend";
-import { IModelTestUtils } from "@itwin/test-support";
+import { IModelTestUtils } from "@itwin/backend-test-support";
 
 describe("EntitySubClasses", () => {
   let iModelDb: SnapshotDb;

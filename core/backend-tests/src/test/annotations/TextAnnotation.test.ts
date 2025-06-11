@@ -10,7 +10,7 @@ import {
 } from "@itwin/core-backend";
 import { Angle, Point3d, Range2d, Range3d, YawPitchRollAngles } from "@itwin/core-geometry";
 import { Code, ColorDef, FractionRun, SubCategoryAppearance, TextAnnotation, TextAnnotation2dProps, TextAnnotation3dProps, TextBlock, TextRun } from "@itwin/core-common";
-import { IModelTestUtils } from "@itwin/test-support";
+import { IModelTestUtils } from "@itwin/backend-test-support";
 import { Guid, Id64, Id64String } from "@itwin/core-bentley";
 
 function computeTextRangeAsStringLength(args: ComputeRangesForTextLayoutArgs): TextLayoutRanges {

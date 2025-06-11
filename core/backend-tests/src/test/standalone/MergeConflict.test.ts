@@ -12,7 +12,7 @@ import {
 import * as chai from "chai";
 import { assert, expect } from "chai";
 import * as chaiAsPromised from "chai-as-promised";
-import { HubMock, HubWrappers, IModelTestUtils, KnownTestLocations, TestUserType } from "@itwin/test-support";
+import { HubMock, HubWrappers, IModelTestUtils, KnownTestLocations, TestUserType } from "@itwin/backend-test-support";
 import {
   BriefcaseDb,
   ChannelControl,

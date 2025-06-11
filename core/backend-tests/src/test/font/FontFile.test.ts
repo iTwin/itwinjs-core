@@ -5,7 +5,7 @@
 import * as fs from "fs";
 import { expect } from "chai";
 import { FontFace, FontType } from "@itwin/core-common";
-import { IModelTestUtils } from "@itwin/test-support";
+import { IModelTestUtils } from "@itwin/backend-test-support";
 import { FontFile } from "@itwin/core-backend";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import { CadFontFile } from "@itwin/core-backend/lib/cjs/internal/FontFileImpl";
@@ -53,7 +53,7 @@ describe("FontFile", () => {
       expect(() => FontFile.createFromRscFontBlob({ familyName: "not-a-font", blob })).to.throw("Failed to read font file");
     });
   });
-  
+
   describe("TrueType fonts", () => {
     describe("createFromTrueTypeFileName", () => {
       it("throws on non-existent file", () => {
@@ -100,7 +100,7 @@ describe("FontFile", () => {
         ], "Sitka.ttc");
       });
     });
-    
+
     describe("isEmbeddable", () => {
       function expectEmbeddable(expected: boolean, fontName: string): void {
         const fileName = IModelTestUtils.resolveFontFile(fontName);

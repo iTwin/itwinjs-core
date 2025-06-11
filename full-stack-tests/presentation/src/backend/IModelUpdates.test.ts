@@ -8,7 +8,7 @@ import * as fs from "fs";
 import path from "path";
 import * as sinon from "sinon";
 import { BriefcaseDb, BriefcaseManager, IModelDb, IpcHost, StandaloneDb } from "@itwin/core-backend";
-import { HubMock } from "@itwin/test-support";
+import { HubMock } from "@itwin/backend-test-support";
 import { IModelStatus } from "@itwin/core-bentley";
 import { IModel, IpcSocketBackend } from "@itwin/core-common";
 import { Presentation } from "@itwin/presentation-backend";

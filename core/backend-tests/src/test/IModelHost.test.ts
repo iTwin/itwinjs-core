@@ -10,7 +10,7 @@ import { BriefcaseManager, IModelHost, IModelHostOptions, KnownLocations, Schema
 import { AzureServerStorage, AzureServerStorageBindings, AzureServerStorageBindingsConfig } from "@itwin/object-storage-azure";
 import { ServerStorage } from "@itwin/object-storage-core";
 import { TestUtils } from "./TestUtils";
-import { IModelTestUtils, KnownTestLocations } from "@itwin/test-support";
+import { IModelTestUtils, KnownTestLocations } from "@itwin/backend-test-support";
 import { Logger, LogLevel } from "@itwin/core-bentley";
 import { overrideSyncNativeLogLevels } from "@itwin/core-backend/lib/cjs/internal/NativePlatform";
 import { _getHubAccess, _hubAccess } from "@itwin/core-backend/lib/cjs/internal/Symbols";

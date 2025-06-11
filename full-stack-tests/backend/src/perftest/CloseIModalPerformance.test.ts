@@ -21,7 +21,7 @@ import {
   SnapshotDb,
   SpatialCategory,
 } from "@itwin/core-backend";
-import { IModelTestUtils, KnownTestLocations } from "@itwin/test-support";
+import { IModelTestUtils, KnownTestLocations } from "@itwin/backend-test-support";
 import { IModelsClient } from "@itwin/imodels-client-authoring";
 import { BackendIModelsAccess } from "@itwin/imodels-access-backend";
 import * as path from "path";

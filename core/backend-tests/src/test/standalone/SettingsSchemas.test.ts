@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { IModelTestUtils } from "@itwin/test-support";
+import { IModelTestUtils } from "@itwin/backend-test-support";
 import { IModelHost } from "@itwin/core-backend";
 
 describe("SettingsSchemas", () => {

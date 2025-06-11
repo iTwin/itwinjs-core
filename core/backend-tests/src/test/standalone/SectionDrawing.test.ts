@@ -7,7 +7,7 @@ import { Id64 } from "@itwin/core-bentley";
 import { Transform } from "@itwin/core-geometry";
 import { RelatedElement, SectionDrawingProps, SectionType } from "@itwin/core-common";
 import { DocumentListModel, Drawing, DrawingModel, SectionDrawing, SectionDrawingModel, SnapshotDb } from "@itwin/core-backend";
-import { IModelTestUtils } from "@itwin/test-support";
+import { IModelTestUtils } from "@itwin/backend-test-support";
 
 describe("SectionDrawing", () => {
   let imodel: SnapshotDb;

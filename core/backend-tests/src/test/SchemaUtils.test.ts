@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import { convertEC2SchemasToEC3Schemas, ECDb, ECSqlStatement, upgradeCustomAttributesToEC3 } from "@itwin/core-backend";
-import { KnownTestLocations } from "@itwin/test-support";
+import { KnownTestLocations } from "@itwin/backend-test-support";
 import { ECDbTestHelper } from "./ecdb/ECDbTestHelper";
 import { DbResult } from "@itwin/core-bentley";
 

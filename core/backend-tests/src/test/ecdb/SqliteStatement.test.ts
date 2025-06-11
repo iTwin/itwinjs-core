@@ -7,7 +7,7 @@ import * as path from "path";
 import { DbResult } from "@itwin/core-bentley";
 import { Range3d } from "@itwin/core-geometry";
 import { ECDb, ECDbOpenMode, SqliteStatement, SqliteValueType } from "@itwin/core-backend";
-import { KnownTestLocations } from "@itwin/test-support";
+import { KnownTestLocations } from "@itwin/backend-test-support";
 import { ECDbTestHelper } from "./ECDbTestHelper";
 import { SequentialLogMatcher } from "../SequentialLogMatcher";
 

@@ -6,7 +6,7 @@ import { assert } from "chai";
 import * as path from "path";
 import { Id64, Id64String } from "@itwin/core-bentley";
 import { _nativeDb, IModelDb, IModelHost, SnapshotDb, SpatialCategory } from "@itwin/core-backend";
-import { IModelTestUtils, KnownTestLocations } from "@itwin/test-support";
+import { IModelTestUtils, KnownTestLocations } from "@itwin/backend-test-support";
 import { Code, ColorDef, ElementAspectProps, GeometryStreamProps, IModel, PhysicalElementProps, RelatedElementProps, SubCategoryAppearance } from "@itwin/core-common";
 import { Arc3d, IModelJson, Point2d, Point3d } from "@itwin/core-geometry";
 

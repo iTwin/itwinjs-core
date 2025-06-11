@@ -19,7 +19,7 @@ import {
   ExportGraphicsOptions, ExportLinesInfo, ExportPartInfo, ExportPartInstanceInfo, ExportPartLinesInfo, GeometricElement,
   GeometryPart, LineStyleDefinition, PhysicalObject, RenderMaterialElement, SnapshotDb, Texture,
 } from "@itwin/core-backend";
-import { IModelTestUtils } from "@itwin/test-support";
+import { IModelTestUtils } from "@itwin/backend-test-support";
 
 describe("exportGraphics", () => {
   let iModel: SnapshotDb;

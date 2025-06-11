@@ -29,7 +29,7 @@ import {
   SpatialCategory, SqliteStatement, SqliteValue, SqliteValueType, StandaloneDb, SubCategory, Subject, Texture,
   V2CheckpointAccessProps, V2CheckpointManager, ViewDefinition,
 } from "@itwin/core-backend";
-import { HubMock, IModelTestUtils, KnownTestLocations } from "@itwin/test-support";
+import { HubMock, IModelTestUtils, KnownTestLocations } from "@itwin/backend-test-support";
 import { DisableNativeAssertions } from "../TestUtils";
 import { samplePngTexture } from "../imageData";
 import { performance } from "perf_hooks";

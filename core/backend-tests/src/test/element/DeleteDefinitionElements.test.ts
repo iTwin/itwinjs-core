@@ -12,7 +12,7 @@ import {
   CategorySelector, DisplayStyle2d, DisplayStyle3d, DrawingCategory, DrawingViewDefinition, GeometryPart, IModelJsFs, InformationPartitionElement,
   ModelSelector, OrthographicViewDefinition, RenderMaterialElement, SnapshotDb, SpatialCategory, SubCategory, Subject, Texture,
 } from "@itwin/core-backend";
-import { ExtensiveTestScenario, IModelTestUtils, KnownTestLocations } from "@itwin/test-support";
+import { ExtensiveTestScenario, IModelTestUtils, KnownTestLocations } from "@itwin/backend-test-support";
 
 describe("DeleteDefinitionElements", () => {
   const outputDir: string = path.join(KnownTestLocations.outputDir, "DeleteDefinitionElements");

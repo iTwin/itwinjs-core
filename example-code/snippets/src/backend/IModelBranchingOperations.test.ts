@@ -9,7 +9,7 @@ import {
   BriefcaseDb, BriefcaseManager, ExternalSource, ExternalSourceIsInRepository, IModelDb, IModelHost, PhysicalModel, PhysicalObject,
   PhysicalPartition, RepositoryLink, SnapshotDb, SpatialCategory,
 } from "@itwin/core-backend";
-import { IModelTestUtils as BackendTestUtils, HubMock, HubWrappers, TestUserType } from "@itwin/test-support";
+import { IModelTestUtils as BackendTestUtils, HubMock, HubWrappers, TestUserType } from "@itwin/backend-test-support";
 import { AccessToken } from "@itwin/core-bentley";
 import { Code, ExternalSourceProps, IModel, PhysicalElementProps, RepositoryLinkProps, SubCategoryAppearance } from "@itwin/core-common";
 import { Point3d, YawPitchRollAngles } from "@itwin/core-geometry";

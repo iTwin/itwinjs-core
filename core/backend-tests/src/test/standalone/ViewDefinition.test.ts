@@ -14,7 +14,7 @@ import { Matrix3d, Range3d, StandardViewIndex, Transform, YawPitchRollAngles } f
 import {
   CategorySelector, DictionaryModel, DisplayStyle3d, IModelDb, ModelSelector, SpatialCategory, SpatialViewDefinition, StandaloneDb, ViewStore,
 } from "@itwin/core-backend";
-import { IModelTestUtils, KnownTestLocations } from "@itwin/test-support";
+import { IModelTestUtils, KnownTestLocations } from "@itwin/backend-test-support";
 
 function createNewModelAndCategory(rwIModel: IModelDb) {
   const modelId = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(rwIModel, IModelTestUtils.getUniqueModelCode(rwIModel, "newPhysicalModel"))[1];

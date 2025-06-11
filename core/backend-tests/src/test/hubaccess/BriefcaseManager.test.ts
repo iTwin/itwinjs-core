@@ -7,7 +7,7 @@ import { assert } from "chai";
 import { Guid } from "@itwin/core-bentley";
 import { BriefcaseIdValue } from "@itwin/core-common";
 import { _nativeDb, ChannelControl, Element } from "@itwin/core-backend";
-import { HubMock, HubWrappers, IModelTestUtils, KnownTestLocations, TestChangeSetUtility } from "@itwin/test-support";
+import { HubMock, HubWrappers, IModelTestUtils, KnownTestLocations, TestChangeSetUtility } from "@itwin/backend-test-support";
 
 describe("BriefcaseManager", async () => {
   const testITwinId: string = Guid.createValue();

@@ -57,7 +57,7 @@ import {
   WhereClauseExp,
 } from "@itwin/ecsql-common";
 import { ECDb, ECDbOpenMode, IModelHost } from "@itwin/core-backend";
-import { IModelTestUtils } from "@itwin/test-support";
+import { IModelTestUtils } from "@itwin/backend-test-support";
 import { DbResult } from "@itwin/core-bentley";
 
 describe("ECSql Abstract Syntax Tree", () => {

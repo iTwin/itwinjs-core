@@ -3,7 +3,7 @@ import { DbQueryConfig, ECSqlReader, QueryStats } from "@itwin/core-common";
 import { expect } from "chai";
 import { ConcurrentQuery } from "@itwin/core-backend/lib/cjs/ConcurrentQuery";
 import { _nativeDb, ECDb, IModelDb, SnapshotDb } from "@itwin/core-backend";
-import { IModelTestUtils } from "@itwin/test-support";
+import { IModelTestUtils } from "@itwin/backend-test-support";
 
 interface ITaskResult {
   stats: QueryStats;

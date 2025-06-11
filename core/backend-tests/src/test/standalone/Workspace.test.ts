@@ -13,7 +13,7 @@ import {
   CloudSqlite, EditableWorkspaceDb, SettingsPriority, Workspace, WorkspaceContainerProps, WorkspaceDbManifest,
   WorkspaceDbProps, WorkspaceEditor,
 } from "@itwin/core-backend";
-import { IModelTestUtils } from "@itwin/test-support";
+import { IModelTestUtils } from "@itwin/backend-test-support";
 import { validateWorkspaceContainerId } from "@itwin/core-backend/lib/cjs/internal/workspace/WorkspaceImpl";
 import { _nativeDb } from "@itwin/core-backend/lib/cjs/internal/Symbols";
 

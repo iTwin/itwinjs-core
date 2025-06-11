@@ -6,7 +6,7 @@ import { assert } from "chai";
 import { DbResult } from "@itwin/core-bentley";
 import { ECSqlReader, QueryBinder, QueryOptionsBuilder, QueryRowFormat } from "@itwin/core-common";
 import { ECSqlWriteStatement, SnapshotDb } from "@itwin/core-backend";
-import { IModelTestUtils, KnownTestLocations } from "@itwin/test-support";
+import { IModelTestUtils, KnownTestLocations } from "@itwin/backend-test-support";
 import { ECDbTestHelper } from "./ECDbTestHelper";
 
 describe("ECSqlReader", (() => {

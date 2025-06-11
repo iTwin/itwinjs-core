@@ -8,7 +8,7 @@ import { SubCategoryAppearance } from "@itwin/core-common";
 import {
   IModelDb, RenderMaterialElement, RenderMaterialElementParams, SpatialCategory, StandaloneDb, SubCategory,
 } from "@itwin/core-backend";
-import { IModelTestUtils } from "@itwin/test-support";
+import { IModelTestUtils } from "@itwin/backend-test-support";
 
 describe("Category", () => {
   let imodel: StandaloneDb;

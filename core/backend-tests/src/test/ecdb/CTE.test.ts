@@ -5,7 +5,7 @@
 import { assert } from "chai";
 import { QueryBinder, QueryRowFormat } from "@itwin/core-common";
 import { IModelDb, SnapshotDb } from "@itwin/core-backend";
-import { IModelTestUtils } from "@itwin/test-support";
+import { IModelTestUtils } from "@itwin/backend-test-support";
 import { SequentialLogMatcher } from "../SequentialLogMatcher";
 
 // cspell:ignore mirukuru ibim

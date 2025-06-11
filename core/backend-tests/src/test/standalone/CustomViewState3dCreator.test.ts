@@ -7,7 +7,7 @@ import { assert } from "chai";
 import { CustomViewState3dProps } from "@itwin/core-common";
 import { SnapshotDb } from "@itwin/core-backend";
 import { CompressedId64Set, Id64String} from "@itwin/core-bentley";
-import { IModelTestUtils } from "@itwin/test-support";
+import { IModelTestUtils } from "@itwin/backend-test-support";
 import { CustomViewState3dCreator } from "@itwin/core-backend/lib/cjs/CustomViewState3dCreator";
 import { Range3d } from "@itwin/core-geometry";
 

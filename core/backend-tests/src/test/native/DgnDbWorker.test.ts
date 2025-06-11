@@ -8,7 +8,7 @@ import { BeDuration } from "@itwin/core-bentley";
 import { Matrix4d } from "@itwin/core-geometry";
 import { IModelNative } from "@itwin/core-backend/lib/cjs/internal/NativePlatform";
 import { _nativeDb, StandaloneDb } from "@itwin/core-backend";
-import { IModelTestUtils } from "@itwin/test-support";
+import { IModelTestUtils } from "@itwin/backend-test-support";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 
 describe("DgnDbWorker", () => {

@@ -13,7 +13,7 @@ import {
   SnapshotDb,
 } from "@itwin/core-backend";
 import { ServerBasedLocks } from "@itwin/core-backend/lib/cjs/internal/ServerBasedLocks";
-import { ExtensiveTestScenario, HubMock, IModelTestUtils, KnownTestLocations } from "@itwin/test-support";
+import { ExtensiveTestScenario, HubMock, IModelTestUtils, KnownTestLocations } from "@itwin/backend-test-support";
 import { _hubAccess, _releaseAllLocks } from "@itwin/core-backend/lib/cjs/internal/Symbols";
 
 const expect = chai.expect;

@@ -7,7 +7,7 @@ import * as path from "path";
 import * as sinon from "sinon";
 import { DbResult, Id64, Id64String, Logger, LogLevel } from "@itwin/core-bentley";
 import { ECDb, ECDbOpenMode, ECSqlInsertResult, ECSqlStatement, ECSqlWriteStatement, IModelJsFs, SqliteStatement, SqliteValue, SqliteValueType } from "@itwin/core-backend";
-import { KnownTestLocations } from "@itwin/test-support";
+import { KnownTestLocations } from "@itwin/backend-test-support";
 import { ECDbTestHelper } from "./ECDbTestHelper";
 import { QueryOptionsBuilder } from "@itwin/core-common";
 import { EntityClass, SchemaContext, SchemaJsonLocater, SchemaKey } from "@itwin/ecschema-metadata";

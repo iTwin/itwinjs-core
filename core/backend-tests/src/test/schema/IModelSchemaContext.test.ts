@@ -12,7 +12,7 @@ import {
   RepositoryLink,
   SnapshotDb, SpatialViewDefinition, UrlLink, ViewDefinition3d,
 } from "@itwin/core-backend";
-import { IModelTestUtils, KnownTestLocations } from "@itwin/test-support";
+import { IModelTestUtils, KnownTestLocations } from "@itwin/backend-test-support";
 import { SchemaKey } from "@itwin/ecschema-metadata";
 
 describe("IModel Schema Context", () => {

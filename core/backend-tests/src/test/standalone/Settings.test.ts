@@ -9,7 +9,7 @@ import {
   GcsDbProps, GeoCoordConfig, IModelHost, Setting, SettingGroupSchema, SettingSchema, SettingsContainer, SettingsPriority,
   SnapshotDb, StandaloneDb,
 } from "@itwin/core-backend";
-import { IModelTestUtils } from "@itwin/test-support";
+import { IModelTestUtils } from "@itwin/backend-test-support";
 
 describe("Settings", () => {
   let iModel: SnapshotDb;

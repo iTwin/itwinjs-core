@@ -6,7 +6,7 @@ import { expect } from "chai";
 import { Guid } from "@itwin/core-bentley";
 import { DrawingProps } from "@itwin/core-common";
 import { DocumentListModel, Drawing, SnapshotDb } from "@itwin/core-backend";
-import { IModelTestUtils } from "@itwin/test-support";
+import { IModelTestUtils } from "@itwin/backend-test-support";
 
 describe("Drawing", () => {
   let imodel: SnapshotDb;
@@ -21,7 +21,7 @@ describe("Drawing", () => {
   after(() => {
     imodel.close();
   });
-  
+
   class TestDrawing extends Drawing {
     public constructor(props: DrawingProps) {
       super(props, imodel);
@@ -39,7 +39,7 @@ describe("Drawing", () => {
       if (undefined !== scaleFactor) {
         props.scaleFactor = scaleFactor;
       }
-      
+
       return props;
     }
 

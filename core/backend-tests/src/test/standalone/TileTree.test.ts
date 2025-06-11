@@ -15,7 +15,7 @@ import {
   SpatialCategory,
   SubjectOwnsPartitionElements,
 } from "@itwin/core-backend";
-import { IModelTestUtils } from "@itwin/test-support";
+import { IModelTestUtils } from "@itwin/backend-test-support";
 
 let uniqueId = 0;
 

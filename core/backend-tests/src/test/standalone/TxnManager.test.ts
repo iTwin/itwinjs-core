@@ -15,7 +15,7 @@ import {
   ChannelControl,
   IModelJsFs, PhysicalModel, setMaxEntitiesPerEvent, SpatialCategory, StandaloneDb, TxnChangedEntities, TxnManager,
 } from "@itwin/core-backend";
-import { IModelTestUtils, TestElementDrivesElement, TestPhysicalObject, TestPhysicalObjectProps } from "@itwin/test-support";
+import { IModelTestUtils, TestElementDrivesElement, TestPhysicalObject, TestPhysicalObjectProps } from "@itwin/backend-test-support";
 import { IModelNative } from "@itwin/core-backend/lib/cjs/internal/NativePlatform";
 import { EntityClass, SchemaItemKey, SchemaKey } from "@itwin/ecschema-metadata";
 

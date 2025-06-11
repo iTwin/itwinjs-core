@@ -7,7 +7,7 @@ import { expect } from "chai";
 import { Id64 } from "@itwin/core-bentley";
 import { GeometricElement3dProps, Placement3d } from "@itwin/core-common";
 import { GeometricElement3d, SnapshotDb } from "@itwin/core-backend";
-import { IModelTestUtils } from "@itwin/test-support";
+import { IModelTestUtils } from "@itwin/backend-test-support";
 
 describe("computeProjectExtents", () => {
   let imodel: SnapshotDb;

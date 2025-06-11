@@ -9,7 +9,7 @@ import { join } from "path";
 import { Guid, GuidString, Logger, LogLevel, OpenMode } from "@itwin/core-bentley";
 import { ViewStore } from "@itwin/core-backend";
 import { ThumbnailFormatProps } from "@itwin/core-common";
-import { KnownTestLocations } from "@itwin/test-support";
+import { KnownTestLocations } from "@itwin/backend-test-support";
 
 describe("ViewStore", function (this: Suite) {
   this.timeout(0);

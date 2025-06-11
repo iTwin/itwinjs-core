@@ -6,7 +6,7 @@ import { expect } from "chai";
 import { Id64 } from "@itwin/core-bentley";
 import { BisCodeSpec, DisplayStyleProps, IModel, QueryBinder, QueryRowFormat } from "@itwin/core-common";
 import { DisplayStyle3d, SnapshotDb } from "@itwin/core-backend";
-import { IModelTestUtils } from "@itwin/test-support";
+import { IModelTestUtils } from "@itwin/backend-test-support";
 
 // spell-checker: disable
 

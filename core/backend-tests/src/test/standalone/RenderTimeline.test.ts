@@ -6,7 +6,7 @@ import { expect } from "chai";
 import { Id64, Id64String, OpenMode } from "@itwin/core-bentley";
 import { Code, IModel, RenderSchedule, RenderTimelineProps } from "@itwin/core-common";
 import { GenericSchema, IModelJsFs, RenderTimeline, StandaloneDb } from "@itwin/core-backend";
-import { IModelTestUtils } from "@itwin/test-support";
+import { IModelTestUtils } from "@itwin/backend-test-support";
 
 describe("RenderTimeline", () => {
   before(() => {

@@ -7,7 +7,7 @@ import { DbResult, Id64 } from "@itwin/core-bentley";
 import { DbQueryRequest, DbQueryResponse, DbRequestExecutor, DbRequestKind, ECSqlReader, QueryBinder, QueryOptionsBuilder, QueryPropertyMetaData, QueryRowFormat } from "@itwin/core-common";
 import { ConcurrentQuery } from "@itwin/core-backend/lib/cjs/ConcurrentQuery";
 import { _nativeDb, ECSqlStatement, SnapshotDb } from "@itwin/core-backend";
-import { IModelTestUtils } from "@itwin/test-support";
+import { IModelTestUtils } from "@itwin/backend-test-support";
 import { SequentialLogMatcher } from "../SequentialLogMatcher";
 import * as path from "path";
 

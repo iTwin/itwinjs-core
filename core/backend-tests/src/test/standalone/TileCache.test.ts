@@ -11,7 +11,7 @@ import {
 } from "@itwin/core-common";
 import { GeometricModel3d, IModelDb, IModelHost, IModelJsFs, RpcTrace, SnapshotDb } from "@itwin/core-backend";
 import { TestUtils } from "../TestUtils";
-import { IModelTestUtils } from "@itwin/test-support";
+import { IModelTestUtils } from "@itwin/backend-test-support";
 import { _nativeDb } from "@itwin/core-backend/lib/cjs/internal/Symbols";
 
 const fakeRpc: RpcActivity = {

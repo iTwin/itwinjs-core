@@ -5,7 +5,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { IModelTestUtils } from "@itwin/test-support";
+import { IModelTestUtils } from "@itwin/backend-test-support";
 import { SnapshotDb } from "@itwin/core-backend";
 import { LocalFileName } from "@itwin/core-common";
 

@@ -14,7 +14,7 @@ import {
 } from "@itwin/core-common";
 import { LineSegment3d, Point3d, YawPitchRollAngles } from "@itwin/core-geometry";
 import { _nativeDb, ChannelControl, ElementDrivesElementProps, IModelJsFs, PhysicalModel, SpatialCategory, StandaloneDb } from "@itwin/core-backend";
-import { IModelTestUtils, TestElementDrivesElement, TestPhysicalObject, TestPhysicalObjectProps } from "@itwin/test-support";
+import { IModelTestUtils, TestElementDrivesElement, TestPhysicalObject, TestPhysicalObjectProps } from "@itwin/backend-test-support";
 import { IModelNative } from "@itwin/core-backend/lib/cjs/internal/NativePlatform";
 
 export function copyFile(newName: string, pathToCopy: string): string {

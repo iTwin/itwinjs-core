@@ -7,7 +7,7 @@ import { assert, expect } from "chai";
 import { Suite } from "mocha";
 import { _nativeDb, BriefcaseDb, BriefcaseManager, ChannelControl, CloudSqlite, DrawingCategory, IModelDb, IModelHost, SchemaSync, SnapshotDb, SqliteStatement } from "@itwin/core-backend";
 import { AzuriteTest } from "./AzuriteTest";
-import { HubMock, HubWrappers, IModelTestUtils, KnownTestLocations } from "@itwin/test-support";
+import { HubMock, HubWrappers, IModelTestUtils, KnownTestLocations } from "@itwin/backend-test-support";
 import { AccessToken, DbResult, Guid, Id64String, OpenMode } from "@itwin/core-bentley";
 import * as path from "path";
 import { EOL } from "os";
@@ -1516,7 +1516,7 @@ describe("Schema synchronization", function (this: Suite) {
     assert.isUndefined(findEl(el2));
     assert.isDefined(findEl(el3));
     assert.isDefined(findEl(el4));
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
+     
     assert.deepEqual(Object.getOwnPropertyNames(b1.getMetaData("TestDomain:Test2dElement").properties), ["p1", "p2"]);
     // 6. Revert to timeline 2
     await b2.revertAndPushChanges({ toIndex: 3, description: "revert to timeline 2" });
@@ -1527,7 +1527,7 @@ describe("Schema synchronization", function (this: Suite) {
     assert.isUndefined(findEl(el2));
     assert.isUndefined(findEl(el3));
     assert.isUndefined(findEl(el4));
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
+     
     assert.deepEqual(Object.getOwnPropertyNames(b1.getMetaData("TestDomain:Test2dElement").properties), ["p1", "p2"]);
 
     await b2.revertAndPushChanges({ toIndex: 7, description: "reinstate last reverted changeset" });
@@ -1537,7 +1537,7 @@ describe("Schema synchronization", function (this: Suite) {
     assert.isUndefined(findEl(el2));
     assert.isDefined(findEl(el3));
     assert.isDefined(findEl(el4));
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
+     
     assert.deepEqual(Object.getOwnPropertyNames(b1.getMetaData("TestDomain:Test2dElement").properties), ["p1", "p2"]);
 
     await addPropertyAndImportSchema(b1);
@@ -1545,7 +1545,7 @@ describe("Schema synchronization", function (this: Suite) {
     await updateEl(el1, { p1: "test12", p2: "test13", p3: "test114" });
     b1.saveChanges();
     await b1.pushChanges({ description: "import schema, insert element 5 & update element 1" });
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
+     
     assert.deepEqual(Object.getOwnPropertyNames(b1.getMetaData("TestDomain:Test2dElement").properties), ["p1", "p2", "p3"]);
 
     // skip schema changes & auto generated comment
@@ -1556,7 +1556,7 @@ describe("Schema synchronization", function (this: Suite) {
     assert.isUndefined(findEl(el3));
     assert.isUndefined(findEl(el4));
     assert.isUndefined(findEl(el5));
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
+     
     assert.deepEqual(Object.getOwnPropertyNames(b1.getMetaData("TestDomain:Test2dElement").properties), ["p1", "p2", "p3"]);
 
     await b1.revertAndPushChanges({ toIndex: 10 });
@@ -1566,7 +1566,7 @@ describe("Schema synchronization", function (this: Suite) {
     assert.isDefined(findEl(el3));
     assert.isDefined(findEl(el4));
     assert.isDefined(findEl(el5));
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
+     
     assert.deepEqual(Object.getOwnPropertyNames(b1.getMetaData("TestDomain:Test2dElement").properties), ["p1", "p2", "p3"]);
 
     // schema sync should be skip for revert
@@ -1575,20 +1575,20 @@ describe("Schema synchronization", function (this: Suite) {
     assert.isTrue(SchemaSync.isEnabled(b3));
 
     await addPropertyAndImportSchema(b1);
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
+     
     assert.deepEqual(Object.getOwnPropertyNames(b1.getMetaData("TestDomain:Test2dElement").properties), ["p1", "p2", "p3", "p4"]);
 
     // b3 should get new property via schema sync
     await b3.pullChanges();
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
+     
     assert.deepEqual(Object.getOwnPropertyNames(b3.getMetaData("TestDomain:Test2dElement").properties), ["p1", "p2", "p3", "p4"]);
 
     // b2 should not see new property even after revert
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
+     
     assert.deepEqual(Object.getOwnPropertyNames(b2.getMetaData("TestDomain:Test2dElement").properties), ["p1", "p2", "p3"]);
     await b2.revertAndPushChanges({ toIndex: 11 });
     assert.equal((await getChanges()).at(-1)!.description, "Reverted changes from 11 to 11 (schema changes skipped)");
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
+     
     assert.deepEqual(Object.getOwnPropertyNames(b2.getMetaData("TestDomain:Test2dElement").properties), ["p1", "p2", "p3"]);
 
     await b1.pullChanges();
@@ -1600,7 +1600,7 @@ describe("Schema synchronization", function (this: Suite) {
     assert.isUndefined(findEl(el3, b1));
     assert.isUndefined(findEl(el4, b1));
     assert.isUndefined(findEl(el5, b1));
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
+     
     assert.deepEqual(Object.getOwnPropertyNames(b1.getMetaData("TestDomain:Test2dElement").properties), ["p1", "p2", "p3", "p4"]);
 
     assert.isUndefined(findEl(el1, b2));
@@ -1608,7 +1608,7 @@ describe("Schema synchronization", function (this: Suite) {
     assert.isUndefined(findEl(el3, b2));
     assert.isUndefined(findEl(el4, b2));
     assert.isUndefined(findEl(el5, b2));
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
+     
     assert.deepEqual(Object.getOwnPropertyNames(b2.getMetaData("TestDomain:Test2dElement").properties), ["p1", "p2", "p3", "p4"]);
 
     assert.isUndefined(findEl(el1, b3));
@@ -1616,7 +1616,7 @@ describe("Schema synchronization", function (this: Suite) {
     assert.isUndefined(findEl(el3, b3));
     assert.isUndefined(findEl(el4, b3));
     assert.isUndefined(findEl(el5, b3));
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
+     
     assert.deepEqual(Object.getOwnPropertyNames(b3.getMetaData("TestDomain:Test2dElement").properties), ["p1", "p2", "p3", "p4"]);
 
     b1.close();

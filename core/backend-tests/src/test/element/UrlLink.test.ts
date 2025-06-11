@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import { Guid, Id64 } from "@itwin/core-bentley";
-import { IModelTestUtils } from "@itwin/test-support";
+import { IModelTestUtils } from "@itwin/backend-test-support";
 
 import { IModel, RepositoryLinkProps } from "@itwin/core-common";
 import { RepositoryLink, SnapshotDb } from "@itwin/core-backend";

@@ -14,7 +14,7 @@ import {
   ElementTreeWalkerScope, ExternalSource, ExternalSourceGroup, IModelDb, Model, PhysicalPartition, SnapshotDb,
   SpatialCategory, SubCategory, Subject,
 } from "@itwin/core-backend";
-import { IModelTestUtils, KnownTestLocations } from "@itwin/test-support";
+import { IModelTestUtils, KnownTestLocations } from "@itwin/backend-test-support";
 
 // Test class that collects the results of a bottom-up tree walk
 class ElementTreeCollector extends ElementTreeBottomUp {

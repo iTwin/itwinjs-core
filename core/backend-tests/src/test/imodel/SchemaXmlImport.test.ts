@@ -6,7 +6,7 @@ import { assert } from "chai";
 import * as fs from "fs";
 import * as path from "path";
 import { PhysicalElement, SnapshotDb } from "@itwin/core-backend";
-import { IModelTestUtils, KnownTestLocations } from "@itwin/test-support";
+import { IModelTestUtils, KnownTestLocations } from "@itwin/backend-test-support";
 import { Logger, LogLevel } from "@itwin/core-bentley";
 import { EntityClass } from "@itwin/ecschema-metadata";
 

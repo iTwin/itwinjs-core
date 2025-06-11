@@ -15,7 +15,7 @@ import {
   IModelJsFs, Model, RepositoryLink, Schema, Schemas, SnapshotDb, SpatialViewDefinition, StandaloneDb, UrlLink,
   ViewDefinition3d,
 } from "@itwin/core-backend";
-import { IModelTestUtils, KnownTestLocations } from "@itwin/test-support";
+import { IModelTestUtils, KnownTestLocations } from "@itwin/backend-test-support";
 import { OpenMode } from "@itwin/core-bentley";
 import { EntityClass, NavigationProperty, PrimitiveProperty } from "@itwin/ecschema-metadata";
 

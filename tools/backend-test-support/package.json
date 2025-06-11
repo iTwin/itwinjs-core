@@ -1,10 +1,10 @@
 {
-  "name": "@itwin/test-support",
+  "name": "@itwin/backend-test-support",
   "version": "5.1.0-dev.20",
   "description": "iTwin.js test support library",
-  "main": "lib/cjs/test-support.js",
-  "module": "lib/esm/test-support.js",
-  "typings": "lib/cjs/test-support",
+  "main": "lib/cjs/backend-test-support.js",
+  "module": "lib/esm/backend-test-support.js",
+  "typings": "lib/cjs/backend-test-support",
   "license": "MIT",
   "engines": {
     "node": "^20.0.0 || ^22.0.0"

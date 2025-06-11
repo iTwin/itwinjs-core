@@ -11,7 +11,7 @@ import {
   BriefcaseManager, IModelHost, IModelJsFs, LockProps, LockStatusExclusive, LockStatusShared, ProgressFunction,
   ProgressStatus,
 } from "@itwin/core-backend";
-import { HubMock, IModelTestUtils, KnownTestLocations } from "@itwin/test-support";
+import { HubMock, IModelTestUtils, KnownTestLocations } from "@itwin/backend-test-support";
 import { _hubAccess } from "@itwin/core-backend/lib/cjs/internal/Symbols";
 
 describe("HubMock", () => {

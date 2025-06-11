@@ -5,7 +5,7 @@
 import { assert } from "chai";
 import { DbResult } from "@itwin/core-bentley";
 import { ECSqlRowArg, ECSqlStatement, SnapshotDb } from "@itwin/core-backend";
-import { KnownTestLocations } from "@itwin/test-support";
+import { KnownTestLocations } from "@itwin/backend-test-support";
 import { ECSqlReader, ECSqlValueType, QueryBinder, QueryOptions, QueryRowFormat } from "@itwin/core-common";
 import { buildBinaryData, ECDbMarkdownTestParser, ECDbTestMode, ECDbTestProps, ECDbTestRowFormat } from "./ECSqlTestParser";
 import * as path from "path";

@@ -10,7 +10,7 @@ import * as path from "path";
 import * as fs from "fs";
 import * as crypto from "crypto";
 import { ECSqlDatasets } from "../dataset/ECSqlDatasets";
-import { KnownTestLocations } from "@itwin/test-support";
+import { KnownTestLocations } from "@itwin/backend-test-support";
 import { format } from "sql-formatter";
 
 // Call like this:

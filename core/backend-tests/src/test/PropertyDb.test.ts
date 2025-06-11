@@ -9,7 +9,7 @@ import { Suite } from "mocha";
 import { join } from "path";
 import { OpenMode } from "@itwin/core-bentley";
 import { IModelHost, PropertyStore } from "@itwin/core-backend";
-import { KnownTestLocations } from "@itwin/test-support";
+import { KnownTestLocations } from "@itwin/backend-test-support";
 
 describe("PropertyDb", function (this: Suite) {
   this.timeout(0);

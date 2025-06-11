@@ -21,7 +21,7 @@ import {
   ThematicGradientSettings, ViewFlags,
 } from "@itwin/core-common";
 import { _nativeDb, DefinitionModel, deleteElementTree, GeometricElement, GeometryPart, LineStyleDefinition, PhysicalObject, SnapshotDb, Subject } from "@itwin/core-backend";
-import { createBRepDataProps, IModelTestUtils } from "@itwin/test-support";
+import { createBRepDataProps, IModelTestUtils } from "@itwin/backend-test-support";
 import { Timer } from "../TestUtils";
 
 function assertTrue(expr: boolean): asserts expr {

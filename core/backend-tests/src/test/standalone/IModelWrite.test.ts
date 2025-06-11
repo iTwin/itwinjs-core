@@ -15,7 +15,7 @@ import * as chaiAsPromised from "chai-as-promised";
 import * as fs from "fs";
 import * as semver from "semver";
 import * as sinon from "sinon";
-import { HubMock, HubWrappers, IModelTestUtils, KnownTestLocations, TestUserType } from "@itwin/test-support";
+import { HubMock, HubWrappers, IModelTestUtils, KnownTestLocations, TestUserType } from "@itwin/backend-test-support";
 import {
   _nativeDb, BriefcaseDb, BriefcaseManager, ChannelControl, CodeService, DefinitionModel, DictionaryModel,
   DocumentListModel, Drawing, DrawingCategory, DrawingGraphic, ECSqlStatement, OpenBriefcaseArgs, SpatialCategory, Subject,
@@ -876,7 +876,10 @@ describe("IModelWriteTest", () => {
 
     expect(ecefLocationBeforeExtentsChange).to.not.be.undefined;
     expect(ecefLocationAfterExtentsChange).to.not.be.undefined;
-    expect(ecefLocationBeforeExtentsChange?.isAlmostEqual(ecefLocationAfterExtentsChange!)).to.be.false;
+    if (ecefLocationAfterExtentsChange) {
+      expect(ecefLocationBeforeExtentsChange).to.not.be.undefined;
+      expect(ecefLocationBeforeExtentsChange?.isAlmostEqual(ecefLocationAfterExtentsChange)).to.be.false;
+    }
     expect(extentsStrAfterPull).to.not.equal(extentsStrBeforePull);
     expect(extentsAfterPull.isAlmostEqual(extentsBeforePull)).to.be.false;
     await HubWrappers.closeAndDeleteBriefcaseDb(accessToken, iModelBeforeExtentsChange);

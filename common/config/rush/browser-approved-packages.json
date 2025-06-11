@@ -143,6 +143,10 @@
       "allowedCategories": [ "edit", "extensions", "frontend", "internal" ]
     },
     {
+      "name": "@itwin/backend-test-support",
+      "allowedCategories": [ "internal" ]
+    },
+    {
       "name": "@itwin/backend-webpack-tools",
       "allowedCategories": [ "internal" ]
     },

@@ -15,7 +15,7 @@ import {
   OnChildElementPropsArg, OnElementIdArg, OnElementInModelIdArg, OnElementInModelPropsArg, OnElementPropsArg, OnModelIdArg,
   OnModelPropsArg, OnSubModelIdArg, OnSubModelPropsArg, Schemas, StandaloneDb, SubjectOwnsPartitionElements,
 } from "@itwin/core-backend";
-import { IModelTestUtils, KnownTestLocations} from "@itwin/test-support";
+import { IModelTestUtils, KnownTestLocations} from "@itwin/backend-test-support";
 
 let iModelDb: StandaloneDb;
 const insertedLabel = "inserted label";

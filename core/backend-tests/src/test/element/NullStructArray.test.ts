@@ -9,7 +9,7 @@ import {
   SubCategoryAppearance,
 } from "@itwin/core-common";
 import {   _nativeDb, IModelDb, IModelJsFs, SnapshotDb, SpatialCategory } from "@itwin/core-backend";
-import { IModelTestUtils } from "@itwin/test-support";
+import { IModelTestUtils } from "@itwin/backend-test-support";
 
 interface TestElement extends GeometricElementProps {
   addresses: [null, {city: "Pune", zip: 28}];

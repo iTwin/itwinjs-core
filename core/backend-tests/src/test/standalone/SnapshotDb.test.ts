@@ -9,7 +9,7 @@ import { ChangesetIdWithIndex } from "@itwin/core-common";
 import { CheckpointManager, IModelDb, IModelHost, IModelJsFs, SnapshotDb, SpatialCategory, StandaloneDb, V2CheckpointManager } from "@itwin/core-backend";
 import { Logger } from "@itwin/core-bentley";
 import { _hubAccess, _nativeDb } from "@itwin/core-backend/lib/cjs/internal/Symbols";
-import { HubMock, IModelTestUtils, KnownTestLocations } from "@itwin/test-support";
+import { HubMock, IModelTestUtils, KnownTestLocations } from "@itwin/backend-test-support";
 import * as path from "path";
 
 describe("SnapshotDb.refreshContainerForRpc", () => {

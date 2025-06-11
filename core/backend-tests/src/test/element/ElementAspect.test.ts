@@ -8,7 +8,7 @@ import { ElementAspectProps, ExternalSourceAspectProps, IModel, SubCategoryAppea
 import {
   Element, ElementAspect, ElementMultiAspect, ElementUniqueAspect, ExternalSourceAspect, PhysicalElement, SnapshotDb, SpatialCategory,
 } from "@itwin/core-backend";
-import { IModelTestUtils } from "@itwin/test-support";
+import { IModelTestUtils } from "@itwin/backend-test-support";
 
 describe("ElementAspect", () => {
 

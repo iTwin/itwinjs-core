@@ -6,7 +6,7 @@ import { expect } from "chai";
 import * as fs from "fs";
 import * as sinon from "sinon";
 import { BriefcaseDb, BriefcaseManager, CodeService, FontFile, IModelDb, QueryMappedFamiliesArgs } from "@itwin/core-backend";
-import { HubMock, IModelTestUtils, KnownTestLocations } from "@itwin/test-support";
+import { HubMock, IModelTestUtils, KnownTestLocations } from "@itwin/backend-test-support";
 import { FontFace, FontType, RscFontEncodingProps } from "@itwin/core-common";
 import type { IModelJsNative } from "@bentley/imodeljs-native";
 import { _faceProps, _getData } from "@itwin/core-backend/lib/cjs/internal/Symbols";

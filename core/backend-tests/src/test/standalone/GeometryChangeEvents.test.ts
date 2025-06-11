@@ -12,7 +12,7 @@ import {
   _nativeDb,
   ChannelControl, IModelJsFs, PhysicalModel, SpatialCategory, StandaloneDb, VolumeElement,
 } from "@itwin/core-backend";
-import { IModelTestUtils } from "@itwin/test-support";
+import { IModelTestUtils } from "@itwin/backend-test-support";
 
 describe("Model geometry changes", () => {
   let imodel: StandaloneDb;

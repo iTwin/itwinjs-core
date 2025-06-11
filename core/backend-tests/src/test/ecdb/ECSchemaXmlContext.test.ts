@@ -6,7 +6,7 @@ import { expect } from "chai";
 import * as fs from "fs";
 import * as path from "path";
 import { ECSchemaXmlContext, SchemaKey } from "@itwin/core-backend";
-import { KnownTestLocations } from "@itwin/test-support";
+import { KnownTestLocations } from "@itwin/backend-test-support";
 import { SequentialLogMatcher } from "../SequentialLogMatcher";
 
 describe("ECSchemaXmlContext", () => {

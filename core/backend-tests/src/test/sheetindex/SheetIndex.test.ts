@@ -11,7 +11,7 @@ import {
   SheetIndexFolderOwnsEntries, SheetIndexModel, SheetIndexOwnsEntries, SheetIndexReference,
   SheetIndexReferenceRefersToSheetIndex, SheetModel, SheetReference, SheetReferenceRefersToSheet, SnapshotDb,
 } from "@itwin/core-backend";
-import { ExtensiveTestScenario, IModelTestUtils } from "@itwin/test-support";
+import { ExtensiveTestScenario, IModelTestUtils } from "@itwin/backend-test-support";
 import { expect } from "chai";
 
 export const getOrCreateDocumentList = async (iModel: IModelDb): Promise<Id64String> => {

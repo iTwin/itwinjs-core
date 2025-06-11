@@ -9,7 +9,7 @@ import * as sinon from "sinon";
 import { Guid } from "@itwin/core-bentley";
 import { IModelJsFs, V2CheckpointManager } from "@itwin/core-backend";
 import { _hubAccess, _nativeDb } from "@itwin/core-backend/lib/cjs/internal/Symbols";
-import { IModelTestUtils } from "@itwin/test-support";
+import { IModelTestUtils } from "@itwin/backend-test-support";
 
 describe("Checkpoint Manager", () => {
 
