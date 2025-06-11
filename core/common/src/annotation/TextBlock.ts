@@ -378,7 +378,7 @@ export class TabRun extends TextBlockComponent {
   /** Formats the fraction as a string with the [[numerator]] and [[denominator]] separated by [[TextBlockStringifyOptions.fractionSeparator]]. */
   public override stringify(options?: TextBlockStringifyOptions): string {
     if (options?.tabsAsSpaces) {
-      return ` `.repeat(this.styleOverrides.tabSpaces ?? TextStyleSettings.defaultProps.tabSpaces);
+      return ` `.repeat(this.styleOverrides.tabInterval ?? TextStyleSettings.defaultProps.tabInterval);
     }
 
     return "\t";

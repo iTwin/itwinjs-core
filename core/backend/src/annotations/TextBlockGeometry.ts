@@ -78,7 +78,7 @@ function processTabRun(run: RunLayout, transform: Transform, context: GeometryCo
   const source = run.source;
   assert(source.type === "tab");
 
-  if (undefined === source.styleOverrides.tabSpaces || 0 === source.styleOverrides.tabSpaces) {
+  if (undefined === source.styleOverrides.tabInterval || 0 === source.styleOverrides.tabInterval) {
     return;
   }
 

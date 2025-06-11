@@ -106,7 +106,7 @@ class TextEditor implements Decorator {
   public appendTab(spaces?: number): void {
     this._textBlock.appendRun(TabRun.create({
       styleName: "",
-      styleOverrides: { ... this.runStyle, tabSpaces: spaces },
+      styleOverrides: { ... this.runStyle, tabInterval: spaces },
     }));
   }
 

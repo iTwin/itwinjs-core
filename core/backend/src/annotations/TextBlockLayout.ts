@@ -348,8 +348,8 @@ export class RunLayout {
         break;
       }
       case "tab": {
-        const spaces = source.styleOverrides.tabSpaces;
-        numChars = undefined !== spaces ? spaces : TextStyleSettings.defaultProps.tabSpaces;
+        const spaces = source.styleOverrides.tabInterval;
+        numChars = undefined !== spaces ? spaces : TextStyleSettings.defaultProps.tabInterval;
         const ranges = context.computeRangeForText(" ".repeat(numChars), style, "none");
         range = ranges.layout;
         justificationRange = ranges.justification;
