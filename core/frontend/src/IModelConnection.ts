@@ -1082,17 +1082,20 @@ export namespace IModelConnection {
     constructor(private _iModel: IModelConnection) { }
 
     private _isCodeSpecProperties(x: any): x is CodeSpecProperties {
-      if (!x || !x.scopeSpec || !Object.values(CodeScopeSpec.Type).includes(x.scopeSpec.type)) return false;
+      if (!x || !x.scopeSpec || !Object.values(CodeScopeSpec.Type).includes(x.scopeSpec.type))
+        return false;
 
       if (typeof x.scopeSpec.fGuidRequired !== "boolean" && typeof x.scopeSpec.fGuidRequired !== "undefined")
         return false;
 
-      if (typeof x.scopeSpec.relationship !== "string" && typeof x.scopeSpec.relationship !== "undefined") return false;
+      if (typeof x.scopeSpec.relationship !== "string" && typeof x.scopeSpec.relationship !== "undefined")
+        return false;
 
       if (typeof x.spec?.isManagedWithDgnDb !== "boolean" && typeof x.spec?.isManagedWithDgnDb !== "undefined")
         return false;
 
-      if (typeof x.version !== "string" && typeof x.version !== "undefined") return false;
+      if (typeof x.version !== "string" && typeof x.version !== "undefined")
+        return false;
 
       return true;
     }
