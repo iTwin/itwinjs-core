@@ -23,7 +23,7 @@ import { IModelConnection } from "./IModelConnection";
 import { PlanarClipMaskState } from "./PlanarClipMaskState";
 import { getCesiumOSMBuildingsUrl, MapLayerIndex, TileTreeReference } from "./tile/internal";
 import { _onScheduleScriptReferenceChanged, _scheduleScriptReference } from './common/internal/Symbols';
-import { getAllElementIdsFromScript, getScriptDelta } from "./ScriptUtils";
+import { getScriptDelta } from "./ScriptUtils";
 
 /** @internal */
 export class TerrainDisplayOverrides {
@@ -42,11 +42,6 @@ export interface OsmBuildingDisplayOptions {
   onOff?: boolean;
   /** If defined, overrides aspects of the appearance of the OpenStreetMap building meshes. */
   appearanceOverrides?: FeatureAppearance;
-}
-
-interface ScheduleEditingSession {
-  script: RenderSchedule.Script;
-  committed: boolean;
 }
 
 /** A DisplayStyle defines the parameters for 'styling' the contents of a [[ViewState]].
@@ -68,8 +63,6 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   public readonly [_onScheduleScriptReferenceChanged] = new BeEvent<(newScriptReference: RenderSchedule.ScriptReference | undefined) => void>();
 
   private _scriptReference?: RenderSchedule.ScriptReference;
-
-  public editingSession?: ScheduleEditingSession;
 
   /** Event raised when schedule script edits are made, providing changed element IDs and the editing scope. */
   public readonly onScheduleEditingChanged = new BeEvent<
@@ -313,40 +306,22 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
       await this._queryRenderTimelinePropsPromise;
   }
 
-  /** Start a new schedule editing session. Fires initial onScheduleEditingChanged with all elementIds. */
-  public beginScheduleEditing(initialScript: RenderSchedule.Script): void {
-    this.editingSession = {
-      script: initialScript,
-      committed: false,
-    };
-    this.scheduleScript = initialScript;
-
-    const allIds = getAllElementIdsFromScript(initialScript);
-    this.onScheduleEditingChanged.raiseEvent({ changedElementIds: allIds });
-  }
-
-  /** Update the script in the current editing session. Fires onScheduleEditingChanged. */
-  public updateEditingScript(newScript: RenderSchedule.Script): void {
-    if (!this.editingSession || this.editingSession.committed)
-      return;
-
-    const prevScript = this.editingSession.script;
+  /** Start/update the script in the current editing session. Fires onScheduleEditingChanged. */
+  public setScheduleEditingScript(newScript: RenderSchedule.Script): void {
+    const prevScript = this.scheduleScript;
     const changedIds = getScriptDelta(prevScript, newScript);
-    this.editingSession.script = newScript;
     this.scheduleScript = newScript;
     this.onScheduleEditingChanged.raiseEvent({ changedElementIds: changedIds });
   }
 
   /** Commit the editing session. */
   public commitScheduleEditing(): void {
-    if (!this.editingSession || this.editingSession.committed)
-      return;
-    this.editingSession.committed = true;
     this.onScheduleEditingCommitted.raiseEvent();
-    for (const modelTimeline of this.editingSession.script.modelTimelines) {
+    if (!this.scheduleScript)
+      return;
+    for (const modelTimeline of this.scheduleScript.modelTimelines) {
       modelTimeline.isEditingCommitted = true;
     }
-    this.editingSession = undefined;
   }
 
   /** The [RenderSchedule.Script]($common) that animates the contents of the view, if any.

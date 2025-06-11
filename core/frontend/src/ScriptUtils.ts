@@ -1,7 +1,11 @@
 import { Id64String } from "@itwin/core-bentley";
 import { RenderSchedule } from "@itwin/core-common";
 
-export function getScriptDelta(prev: RenderSchedule.Script, next: RenderSchedule.Script): Set<Id64String> {
+export function getScriptDelta(prev: RenderSchedule.Script | undefined | null, next: RenderSchedule.Script): Set<Id64String> {
+  if (!prev || !prev.modelTimelines || prev.modelTimelines.length === 0) {
+    return getAllElementIdsFromScript(next);
+  }
+
   const changed = new Set<Id64String>();
 
   const prevModels = new Map(prev.modelTimelines.map(m => [m.modelId, m]));
@@ -118,7 +122,7 @@ function isTimelineEntryEqual(a: RenderSchedule.ElementTimeline, b: RenderSchedu
   return true;
 }
 
-export function getAllElementIdsFromScript(script: RenderSchedule.Script): Set<Id64String> {
+function getAllElementIdsFromScript(script: RenderSchedule.Script): Set<Id64String> {
   const ids = new Set<Id64String>();
   for (const modelTimeline of script.modelTimelines) {
     for (const elementTimeline of modelTimeline.elementTimelines) {
