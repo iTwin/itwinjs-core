@@ -249,7 +249,7 @@ describe('ElementLruCache', () => {
 describe('InstanceKeyLRUCache', () => {
   const testArgs1: IModelJsNative.ResolveInstanceKeyArgs = {
     partialKey: {
-      id: "testId",
+      id: "0x001",
       baseClassName: "baseName",
     },
   }
@@ -392,7 +392,7 @@ describe('InstanceKeyLRUCache', () => {
     expect(retrievedResult3).to.equal(testResults[2]);
   });
 
-  it('should delete with id', () => {
+  it('should delete with partialKey', () => {
     const cache = new InstanceKeyLRUCache(3);
     cache.set(testArgs1, testResults[0]);
     cache.set(testArgs2, testResults[1]);
@@ -407,6 +407,33 @@ describe('InstanceKeyLRUCache', () => {
     const retrievedResult2 = cache.get(testArgs2);
     expect(retrievedResult2).to.not.be.undefined;
     expect(retrievedResult2).to.equal(testResults[1]);
+  });
+
+  it('should delete with id', () => {
+    const cache = new InstanceKeyLRUCache(3);
+    cache.set(testArgs1, testResults[0]);
+    cache.set(testArgs2, testResults[1]);
+    cache.set(testArgs3, testResults[2]);
+    expect(cache.size).to.equal(3);
+    cache.deleteById(testArgs1.partialKey.id);
+    expect(cache.size).to.equal(2);
+
+    const retrievedResult = cache.get({ partialKey: testArgs1.partialKey });
+    expect(retrievedResult).to.be.undefined;
+
+    const retrievedResult2 = cache.get(testArgs2);
+    expect(retrievedResult2).to.not.be.undefined;
+    expect(retrievedResult2).to.equal(testResults[1]);
+  });
+
+  it('should throw when deleting with a bad id', () => {
+    const cache = new InstanceKeyLRUCache(3);
+    cache.set(testArgs1, testResults[0]);
+    cache.set(testArgs2, testResults[1]);
+    cache.set(testArgs3, testResults[2]);
+    expect(cache.size).to.equal(3);
+    expect(() => cache.deleteById("badid")).to.throw(Error, "Invalid id provided");
+    expect(cache.size).to.equal(3);
   });
 
   it('should delete with federation guid', () => {
