@@ -404,6 +404,245 @@ namespace DateTime {
     return new Date((jd - 2440587.5 + utcOffset) * 86400000);
   }
 }
+<<<<<<< HEAD
+=======
+
+/**
+ * Represents a cache for unifying EC changes.
+ * @beta
+ */
+export interface ECChangeUnifierCache extends Disposable {
+  /**
+   * Retrieves the value associated with the specified key from the cache.
+   * @param key - The key to retrieve the value for.
+   * @returns The value associated with the key, or undefined if the key is not found.
+   */
+  get(key: string): ChangedECInstance | undefined;
+
+  /**
+   * Sets the value associated with the specified key in the cache.
+   * @param key - The key to set the value for.
+   * @param value - The value to be associated with the key.
+   */
+  set(key: string, value: ChangedECInstance): void;
+
+  /**
+   * Returns an iterator for all the values in the cache.
+   * @returns An iterator for all the values in the cache.
+   */
+  all(): IterableIterator<ChangedECInstance>;
+
+  /**
+   * Returns the number of entries in the cache.
+   * @returns The number of entries in the cache.
+   */
+  count(): number;
+}
+/** @beta */
+export namespace ECChangeUnifierCache {
+  /**
+   * Creates and returns a new in-memory cache for EC change unification.
+   * @note This cache is fast but recommended for small to medium size changesets. As it store changes in memory using a hash map, it may run out of memory for larger changesets.
+   * @returns {ECChangeUnifierCache} An instance of cache that store changes in memory using a hash map.
+   */
+  export function createInMemoryCache(): ECChangeUnifierCache {
+    return new InMemoryInstanceCache();
+  }
+
+  /**
+   * Creates an ECChangeUnifierCache that is backed by a database.
+   * @note This cache is suitable for larger changesets and uses SQLite to store changes. It is slower than the in-memory cache but can handle larger datasets without running out of memory.
+   * @param db - The database instance to use for caching.
+   * @param bufferedReadInstanceSizeInBytes - The size in bytes for buffered read instances. Defaults to 10 MB.
+   * @returns An instance of ECChangeUnifierCache backed by SQLite temp db.
+   */
+  export function createSqliteBackedCache(db: AnyDb, bufferedReadInstanceSizeInBytes = 1024 * 1024 * 10): ECChangeUnifierCache {
+    return new SqliteBackedInstanceCache(db, bufferedReadInstanceSizeInBytes);
+  }
+}
+
+/**
+ * In-memory cache for storing changed EC instances.
+ */
+class InMemoryInstanceCache implements ECChangeUnifierCache {
+  private readonly _cache = new Map<string, ChangedECInstance>();
+
+  /**
+   * Retrieves the changed EC instance associated with the specified key.
+   * @param key - The key used to retrieve the instance.
+   * @returns The changed EC instance, or undefined if not found.
+   */
+  public get(key: string): ChangedECInstance | undefined {
+    return this._cache.get(key);
+  }
+
+  /**
+   * Sets the changed EC instance associated with the specified key.
+   * @param key - The key used to store the instance.
+   * @param value - The changed EC instance to be stored.
+   */
+  public set(key: string, value: ChangedECInstance): void {
+    const meta = value.$meta as any;
+    // Remove undefined keys
+    if (meta) {
+      Object.keys(meta).forEach((k) => meta[k] === undefined && delete meta[k]);
+    }
+    this._cache.set(key, value);
+  }
+
+  /**
+   * Returns an iterator over all the changed EC instances in the cache.
+   * @returns An iterator over all the changed EC instances.
+   */
+  public *all(): IterableIterator<ChangedECInstance> {
+    for (const key of Array.from(this._cache.keys()).sort()) {
+      const instance = this._cache.get(key);
+      if (instance) {
+        yield instance;
+      }
+    }
+  }
+
+  /**
+   * Returns the number of changed EC instances in the cache.
+   * @returns The number of changed EC instances.
+   */
+  public count(): number {
+    return this._cache.size;
+  }
+
+  /**
+   * Disposes the cache.
+   */
+  public [Symbol.dispose](): void {
+    // Implementation details
+  }
+}
+
+/**
+ * Represents a cache for unifying EC changes in a SQLite-backed instance cache.
+ */
+class SqliteBackedInstanceCache implements ECChangeUnifierCache {
+  private readonly _cacheTable = `[temp].[${Guid.createValue()}]`;
+  public static readonly defaultBufferSize = 1024 * 1024 * 10; // 10MB
+  /**
+   * Creates an instance of SqliteBackedInstanceCache.
+   * @param _db The underlying database connection.
+   * @param bufferedReadInstanceSizeInBytes The size of read instance buffer defaults to 10Mb.
+   * @throws Error if bufferedReadInstanceSizeInBytes is less than or equal to 0.
+   */
+  public constructor(private readonly _db: AnyDb, public readonly bufferedReadInstanceSizeInBytes: number = SqliteBackedInstanceCache.defaultBufferSize) {
+    if (bufferedReadInstanceSizeInBytes <= 0)
+      throw new Error("bufferedReadInstanceCount must be greater than 0");
+    this.createTempTable();
+  }
+
+  /**
+   * Creates a temporary table in the database for caching instances.
+   * @throws Error if unable to create the temporary table.
+   */
+  private createTempTable(): void {
+    this._db.withSqliteStatement(`CREATE TABLE ${this._cacheTable} ([key] text primary key, [value] text)`, (stmt) => {
+      if (DbResult.BE_SQLITE_DONE !== stmt.step())
+        throw new Error("unable to create temp table");
+    });
+  }
+
+  /**
+   * Drops the temporary table from the database.
+   * @throws Error if unable to drop the temporary table.
+   */
+  private dropTempTable(): void {
+    this._db.saveChanges();
+    if (this._db instanceof ECDb)
+      this._db.clearStatementCache();
+    else {
+      this._db.clearCaches();
+      this._db[_nativeDb].clearECDbCache();
+    }
+    this._db.withSqliteStatement(`DROP TABLE IF EXISTS ${this._cacheTable}`, (stmt) => {
+      if (DbResult.BE_SQLITE_DONE !== stmt.step())
+        throw new Error("unable to drop temp table");
+    });
+  }
+
+  /**
+   * Retrieves the changed EC instance from the cache based on the specified key.
+   * @param key The key of the instance.
+   * @returns The changed EC instance if found, otherwise undefined.
+   */
+  public get(key: string): ChangedECInstance | undefined {
+    return this._db.withPreparedSqliteStatement(`SELECT [value] FROM ${this._cacheTable} WHERE [key]=?`, (stmt) => {
+      stmt.bindString(1, key);
+      if (stmt.step() === DbResult.BE_SQLITE_ROW) {
+        const out = JSON.parse(stmt.getValueString(0), Base64EncodedString.reviver) as ChangedECInstance;
+        return out;
+      }
+      return undefined;
+    });
+  }
+
+  /**
+   * Sets the changed EC instance in the cache with the specified key.
+   * @param key The key of the instance.
+   * @param value The changed EC instance to be set.
+   */
+  public set(key: string, value: ChangedECInstance): void {
+    const shallowCopy = Object.assign({}, value);
+    this._db.withPreparedSqliteStatement(`INSERT INTO ${this._cacheTable} ([key], [value]) VALUES (?, ?) ON CONFLICT ([key]) DO UPDATE SET [value] = [excluded].[value]`, (stmt) => {
+      stmt.bindString(1, key);
+      stmt.bindString(2, JSON.stringify(shallowCopy, Base64EncodedString.replacer));
+      stmt.step();
+    });
+  }
+
+  /**
+   * Returns an iterator for all the changed EC instances in the cache.
+   * @returns An iterator for all the changed EC instances.
+   */
+  public *all(): IterableIterator<ChangedECInstance> {
+    const sql = `
+      SELECT JSON_GROUP_ARRAY (JSON([value]))
+      FROM   (SELECT
+                    [value],
+                    SUM (LENGTH ([value])) OVER (ORDER BY [key] ROWS UNBOUNDED PRECEDING) / ${this.bufferedReadInstanceSizeInBytes} AS [bucket]
+              FROM   ${this._cacheTable})
+      GROUP  BY [bucket]`;
+
+    const stmt = this._db.prepareSqliteStatement(sql);
+    while (stmt.step() === DbResult.BE_SQLITE_ROW) {
+      const instanceBucket = JSON.parse(stmt.getValueString(0), Base64EncodedString.reviver) as ChangedECInstance[];
+      for (const value of instanceBucket) {
+        yield value;
+      }
+    }
+    stmt[Symbol.dispose]();
+  }
+
+  /**
+   * Returns the number of instances in the cache.
+   * @returns The number of instances in the cache.
+   */
+  public count(): number {
+    return this._db.withPreparedSqliteStatement(`SELECT COUNT(*) FROM ${this._cacheTable}`, (stmt) => {
+      if (stmt.step() === DbResult.BE_SQLITE_ROW)
+        return stmt.getValue(0).getInteger();
+      return 0;
+    });
+  }
+
+  /**
+   * Disposes the cache by dropping the temporary table.
+   */
+  public [Symbol.dispose](): void {
+    if (this._db.isOpen) {
+      this.dropTempTable();
+    }
+  }
+}
+
+
+>>>>>>> e5d940c42c (Fixes failing CI jobs (#8209))
 /**
  * Combine partial changed instance into single instance.
  * Partial changes is per table and a single instance can

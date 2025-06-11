@@ -142,6 +142,11 @@ preview;class;DrawingModel
 public;class;DrawingViewDefinition
 preview;class;DrawingViewDefinition
 beta;class;DriverBundleElement
+<<<<<<< HEAD
+=======
+beta;interface;ECChangeUnifierCache
+beta;namespace;ECChangeUnifierCache
+>>>>>>> e5d940c42c (Fixes failing CI jobs (#8209))
 public;class;ECDb
 public;enum;ECDbOpenMode
 public;interface;ECEnumValue
