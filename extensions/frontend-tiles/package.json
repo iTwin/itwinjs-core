@@ -23,6 +23,7 @@
     "extract-api": "betools extract-api --entry=frontend-tiles",
     "lint": "eslint \"./src/**/*.ts\" 1>&2",
     "lint-fix": "eslint --fix -f visualstudio \"./src/**/*.ts\" 1>&2",
+    "lint-deprecation": "eslint --fix -f visualstudio --no-inline-config -c ../../common/config/eslint/eslint.config.deprecation-policy.js \"./src/**/*.ts\"",
     "test": "npm run -s webpackTests && certa -r chrome",
     "webpackTests": "webpack --config ./src/test/utils/webpack-config.cjs 1>&2"
   },

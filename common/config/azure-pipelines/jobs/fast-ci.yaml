@@ -43,6 +43,69 @@ resources:
       name: iModelTechnologies/imodeljs-build-pipeline-scripts
 
 jobs:
+  - job: VeracodeScan
+    condition: eq(variables['Build.SourceBranch'], 'refs/heads/master')
+    displayName: Veracode SAST Scan
+    pool:
+      vmImage: ubuntu-latest
+    steps:
+      - template: templates/appsec/veracode/package-veracode.yaml@build-pipeline-scripts
+        parameters:
+          foldersToInclude: "core,editor,domains,example-code,extensions,presentation,test-apps,tools,ui,utils" #note I skipped common, docs, full-stack-tests
+          foldersToExclude: "test,public"
+      - script: |
+          zip_file_path="$(Build.ArtifactStagingDirectory)/veracode-scan.zip"
+          file_size=$(stat -c%s "$zip_file_path")
+          echo "Size of $zip_file_path is $file_size bytes."
+        displayName: Print size of zip file.
+      - task: Veracode@3
+        inputs:
+          ConnectionDetailsSelection: "Service Connection"
+          AnalysisService: "AppSec - Veracode-iModelTechnologies"
+          veracodeAppProfile: "iTwinjs - itwinjscore (ITJS - 2686)"
+          version: "$(Build.BuildNumber)"
+          filepath: "$(Build.ArtifactStagingDirectory)/veracode-scan.zip"
+  - job: CheckLinkedPR
+    dependsOn: []
+    displayName: Get PRs
+    pool:
+      vmImage: ubuntu-latest
+
+    steps:
+      - checkout: self
+        persistCredentials: true
+      - task: UseNode@1
+        inputs:
+          version: "22.x"
+
+      - bash: |
+          if [[ "$(Build.Reason)" == "PullRequest" ]]; then
+            branch=$(System.PullRequest.SourceBranch)
+
+            # Use GH CLI to get the PR description, SHA and title in json format so it can be parsed
+            gh pr view $branch --json title,body,headRefOid >> pr_view.json
+
+            #save SHA and PR description
+            currentSHA=$(node -e "const data = require('./pr_view.json'); console.log(data.headRefOid)")
+            node -e "const data = require('./pr_view.json'); console.log(data.body)" >> body.txt
+
+            NativeUrl=$(grep -E '^imodel-native(-internal)?: https://github\.com/iTwin/imodel-native(-internal)?/pull/*' body.txt)
+          else
+            echo 'This run was not triggered by a Pull request.'
+            echo 'If you have a PR for this branch and wish to use a linked PR please comment in your PR "/azp run iTwin.js" to trigger the pipeline'
+          fi
+
+          # No native PRs are linked
+          if [[ -z "$NativeUrl" ]]; then
+            echo '##vso[task.setvariable variable=POST_STATUS;isoutput=true]true'
+          else
+            echo '##vso[task.setvariable variable=POST_STATUS;isoutput=true]false'
+          fi
+
+        env:
+          GITHUB_TOKEN: $(GH_TOKEN)
+        name: checkForPr
+
   - job: Build
     dependsOn: CheckLinkedPR
     condition: succeeded()

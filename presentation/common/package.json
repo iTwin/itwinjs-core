@@ -59,7 +59,7 @@
     "ruleset-json-schema:generate": "typescript-json-schema \"./src/presentation-common/rules/**/*.ts\" Ruleset --noExtraProps --required --strictNullChecks --validationKeywords deprecated > ./Ruleset.schema.json",
     "ruleset-json-schema:post-process": "node ./scripts/post-process-json-schema.cjs --path ./Ruleset.schema.json",
     "lint": "eslint \"./src/**/*.ts\" 1>&2",
-    "lint-fix": "eslint --fix -f visualstudio \"./src/**/*.ts\" 1>&2",
+    "lint-deprecation": "eslint --fix -f visualstudio --no-inline-config -c ../../common/config/eslint/eslint.config.deprecation-policy.js \"./src/**/*.ts\"",
     "pseudolocalize:assets": "betools pseudolocalize --englishDir ./assets/locales/en --out ./lib/assets/locales/en-PSEUDO",
     "pseudolocalize:public": "betools pseudolocalize --englishDir ./assets/locales/en --out ./lib/public/locales/en-PSEUDO",
     "test": "mocha --enable-source-maps --config ./.mocharc.json",

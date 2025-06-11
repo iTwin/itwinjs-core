@@ -18,11 +18,6 @@ steps:
   displayName: Publish if version bump
   condition: and(succeeded(), in(variables['Build.Reason'], 'IndividualCI', 'Schedule', 'Manual'), eq(variables['Agent.OS'], 'Windows_NT'))
 
-- script: node common/scripts/install-run-rush.js lint-fix
-  displayName: rush lint-fix
-  workingDirectory: ${{ parameters.workingDir }}
-  condition: and(succeeded(), in(variables['Build.Reason'], 'IndividualCI', 'Schedule', 'Manual'), eq(variables['Agent.OS'], 'Windows_NT'), eq(variables['ShouldPublish'], 'True'))
-
 - script: node common/scripts/install-run-rush.js publish --publish --pack --include-all
   displayName: rush publish pack
   workingDirectory: ${{ parameters.workingDir }}

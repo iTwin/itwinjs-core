@@ -229,6 +229,9 @@ jobs:
             displayName: NextVersion.md rename and replace
             condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/heads/release/'))
 
+      - script: node common/scripts/install-run-rush.js eslint-fix
+        displayName: Refresh deprecation comments on release branch
+
       - bash: "git add ."
         displayName: Git add
 

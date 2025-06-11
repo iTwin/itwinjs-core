@@ -17,7 +17,7 @@
     "docs": "betools docs --json=../../generated-docs/editor/editor-backend/file.json --tsIndexFile=./editor-backend.ts --onlyJson",
     "extract-api": "betools extract-api --entry=editor-backend",
     "lint": "eslint --max-warnings 0 ./src/**/*.ts 1>&2",
-    "lint-fix": "eslint --fix -f visualstudio \"./src/**/*.ts\" 1>&2",
+    "lint-deprecation": "eslint --fix -f visualstudio --no-inline-config -c ../../common/config/eslint/eslint.config.deprecation-policy.js \"./src/**/*.ts\"",
     "test": "",
     "cover": ""
   },

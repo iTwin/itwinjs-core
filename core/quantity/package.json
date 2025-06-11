@@ -18,7 +18,7 @@
     "clean": "rimraf -g lib .rush/temp/package-deps*.json .nyc_output",
     "extract-api": "betools extract-api --entry=core-quantity",
     "lint": "eslint \"./src/**/*.ts\" 1>&2",
-    "lint-fix": "eslint --fix -f visualstudio \"./src/**/*.ts\" 1>&2",
+    "lint-deprecation": "eslint --fix -f visualstudio --no-inline-config -c ../../common/config/eslint/eslint.config.deprecation-policy.js \"./src/**/*.ts\"",
     "test": "vitest --run",
     "docs": "betools docs --json=../../generated-docs/core/core-quantity/file.json --tsIndexFile=./core-quantity.ts --onlyJson",
     "cover": "vitest --run --coverage",

@@ -21,7 +21,7 @@
     "cover": "npm -s test",
     "docs": "betools docs --json=../../generated-docs/ui/appui-abstract/file.json --tsIndexFile=./appui-abstract.ts --onlyJson",
     "lint": "eslint \"./src/**/*.ts\" 1>&2",
-    "lint-fix": "eslint --fix -f visualstudio \"./src/**/*.ts\" 1>&2",
+    "lint-deprecation": "eslint --fix -f visualstudio --no-inline-config -c ../../common/config/eslint/eslint.config.deprecation-policy.js \"./src/**/*.ts\"",
     "extract-api": "betools extract-api --entry=appui-abstract",
     "test": "npm run -s webpackTests && certa -r chrome",
     "test:watch": "npm -s test -- --reporter min --watch-extensions ts --watch",

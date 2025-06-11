@@ -16,6 +16,7 @@
     "extract-extension-api": "eslint --no-inline-config -c extraction.eslint.config.js  \"./src/**/*.ts\" 1>&2",
     "lint": "eslint \"./src/**/*.ts\" 1>&2",
     "lint-fix": "eslint --fix -f visualstudio \"./src/**/*.ts\" 1>&2",
+    "lint-deprecation": "eslint --fix -f visualstudio --no-inline-config -c ../../common/config/eslint/eslint.config.deprecation-policy.js \"./src/**/*.ts\"",
     "test": "vitest --run",
     "cover": "vitest --run --coverage"
   },
