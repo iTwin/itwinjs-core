@@ -111,7 +111,7 @@ describe("ChangeSummary", () => {
       ChangeSummaryManager.attachChangeCache(iModel);
       assert.isTrue(ChangeSummaryManager.isChangeCacheAttached(iModel));
 
-       
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       iModel.withPreparedStatement("SELECT ECInstanceId,ECClassId,ExtendedProperties FROM change.ChangeSummary ORDER BY ECInstanceId", (myStmt) => {
         let rowCount: number = 0;
         while (myStmt.step() === DbResult.BE_SQLITE_ROW) {
@@ -123,7 +123,8 @@ describe("ChangeSummary", () => {
         assert.isAtLeast(rowCount, 3);
       });
 
-       
+
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       iModel.withPreparedStatement("SELECT ECClassId,Summary,WsgId,ParentWsgId,Description,PushDate,UserCreated FROM imodelchange.ChangeSet ORDER BY Summary.Id", (myStmt) => {
         let rowCount: number = 0;
         while (myStmt.step() === DbResult.BE_SQLITE_ROW) {
@@ -162,7 +163,8 @@ describe("ChangeSummary", () => {
       ChangeSummaryManager.attachChangeCache(iModel);
       assert.isTrue(ChangeSummaryManager.isChangeCacheAttached(iModel));
 
-       
+
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       iModel.withPreparedStatement("SELECT WsgId, Summary, ParentWsgId, Description, PushDate, UserCreated FROM imodelchange.ChangeSet", (myStmt) => {
         assert.equal(myStmt.step(), DbResult.BE_SQLITE_DONE);
       });
@@ -192,7 +194,8 @@ describe("ChangeSummary", () => {
       ChangeSummaryManager.attachChangeCache(iModel);
       assert.isTrue(ChangeSummaryManager.isChangeCacheAttached(iModel));
 
-       
+
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       iModel.withPreparedStatement("SELECT WsgId, Summary, ParentWsgId, Description, PushDate, UserCreated FROM imodelchange.ChangeSet", (myStmt) => {
         assert.equal(myStmt.step(), DbResult.BE_SQLITE_ROW);
         const row: any = myStmt.getRow();
@@ -228,7 +231,8 @@ describe("ChangeSummary", () => {
       ChangeSummaryManager.attachChangeCache(iModel);
       assert.isTrue(ChangeSummaryManager.isChangeCacheAttached(iModel));
 
-       
+
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       iModel.withPreparedStatement("SELECT WsgId, Summary, ParentWsgId, Description, PushDate, UserCreated FROM imodelchange.ChangeSet ORDER BY Summary.Id", (myStmt) => {
         assert.equal(myStmt.step(), DbResult.BE_SQLITE_ROW);
         let row: any = myStmt.getRow();
@@ -275,7 +279,8 @@ describe("ChangeSummary", () => {
       ChangeSummaryManager.attachChangeCache(iModel);
       assert.isTrue(ChangeSummaryManager.isChangeCacheAttached(iModel));
 
-       
+
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       iModel.withPreparedStatement("SELECT WsgId, Summary, ParentWsgId, Description, PushDate, UserCreated FROM imodelchange.ChangeSet", (myStmt) => {
         assert.equal(myStmt.step(), DbResult.BE_SQLITE_ROW);
         const row: any = myStmt.getRow();
@@ -302,7 +307,8 @@ describe("ChangeSummary", () => {
       ChangeSummaryManager.attachChangeCache(iModel);
       assert.isTrue(ChangeSummaryManager.isChangeCacheAttached(iModel));
 
-       
+
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       iModel.withPreparedStatement("SELECT cset.WsgId changesetId FROM change.ChangeSummary csum JOIN imodelchange.ChangeSet cset ON csum.ECInstanceId=cset.Summary.Id ORDER BY csum.ECInstanceId", (myStmt) => {
         let rowCount: number = 0;
         while (myStmt.step() === DbResult.BE_SQLITE_ROW) {
@@ -342,7 +348,8 @@ describe("ChangeSummary", () => {
         IModelJsFs.mkdirSync(outDir);
 
       const changeSummaries = new Array<ChangeSummary>();
-       
+
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       iModel.withPreparedStatement("SELECT ECInstanceId FROM ecchange.change.ChangeSummary ORDER BY ECInstanceId", (stmt) => {
         perfLogger = new PerfLogger("ChangeSummaryManager.queryChangeSummary");
         while (stmt.step() === DbResult.BE_SQLITE_ROW) {
@@ -359,7 +366,8 @@ describe("ChangeSummary", () => {
           IModelJsFs.unlinkSync(filePath);
 
         const content = { id: changeSummary.id, changeSet: changeSummary.changeSet, instanceChanges: new Array<any>() };
-         
+
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         iModel.withPreparedStatement("SELECT ECInstanceId FROM ecchange.change.InstanceChange WHERE Summary.Id=? ORDER BY ECInstanceId", (stmt) => {
           stmt.bindId(1, changeSummary.id);
           perfLogger = new PerfLogger(`ChangeSummaryManager.queryInstanceChange for all instances in ChangeSummary ${changeSummary.id}`);
@@ -514,7 +522,8 @@ describe("ChangeSummary", () => {
     // const changeSummaryJson = getChangeSummaryAsJson(iModel, changeSummaryId);
     // console.log(JSON.stringify(changeSummaryJson, undefined, 2)); // eslint-disable-line
 
-     
+
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     iModel.withPreparedStatement(
       // eslint-disable-next-line @typescript-eslint/no-deprecated
       "SELECT ECInstanceId FROM ecchange.change.InstanceChange WHERE Summary.Id=? ORDER BY ECInstanceId", (sqlStatement: ECSqlStatement) => {
@@ -546,7 +555,8 @@ describe("ChangeSummary", () => {
         ChangeSummaryManager.attachChangeCache(iModel);
         assert.isTrue(ChangeSummaryManager.isChangeCacheAttached(iModel));
 
-         
+
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         iModel.withPreparedStatement("SELECT WsgId, Summary FROM imodelchange.ChangeSet WHERE Summary.Id=?", (myStmt) => {
           myStmt.bindId(1, changeSummaryId);
           assert.equal(myStmt.step(), DbResult.BE_SQLITE_ROW);
@@ -570,7 +580,8 @@ describe("ChangeSummary", () => {
         ChangeSummaryManager.attachChangeCache(iModel);
         assert.isTrue(ChangeSummaryManager.isChangeCacheAttached(iModel));
 
-         
+
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         iModel.withPreparedStatement("SELECT WsgId, Summary FROM imodelchange.ChangeSet WHERE Summary.Id=?", (myStmt) => {
           myStmt.bindId(1, changeSummaryId);
           assert.equal(myStmt.step(), DbResult.BE_SQLITE_ROW);
@@ -607,7 +618,8 @@ describe("ChangeSummary", () => {
     try {
       ChangeSummaryManager.attachChangeCache(iModel);
 
-       
+
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       iModel.withPreparedStatement("SELECT ECInstanceId,ECClassId,ExtendedProperties FROM change.ChangeSummary ORDER BY ECInstanceId", (myStmt) => {
         let rowCount: number = 0;
         while (myStmt.step() === DbResult.BE_SQLITE_ROW) {
@@ -618,7 +630,8 @@ describe("ChangeSummary", () => {
         assert.isAtLeast(rowCount, 4);
       });
 
-       
+
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       iModel.withPreparedStatement("SELECT ECClassId,Summary,WsgId,ParentWsgId,Description,PushDate,UserCreated FROM imodelchange.ChangeSet ORDER BY Summary.Id", (myStmt) => {
         let rowCount: number = 0;
         while (myStmt.step() === DbResult.BE_SQLITE_ROW) {
@@ -648,7 +661,8 @@ describe("ChangeSummary", () => {
     try {
       ChangeSummaryManager.attachChangeCache(iModel);
 
-       
+
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       iModel.withPreparedStatement("SELECT ECInstanceId,ECClassId,ExtendedProperties FROM change.ChangeSummary ORDER BY ECInstanceId", (myStmt) => {
         let rowCount: number = 0;
         while (myStmt.step() === DbResult.BE_SQLITE_ROW) {
@@ -659,7 +673,8 @@ describe("ChangeSummary", () => {
         assert.strictEqual(rowCount, 1);
       });
 
-       
+
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       iModel.withPreparedStatement("SELECT ECClassId,Summary,WsgId,ParentWsgId,Description,PushDate,UserCreated FROM imodelchange.ChangeSet ORDER BY Summary.Id", (myStmt) => {
         let rowCount: number = 0;
         while (myStmt.step() === DbResult.BE_SQLITE_ROW) {
