@@ -138,8 +138,8 @@ jobs:
   - job: Bump
     displayName: Bump Version
     dependsOn:
-    - CreateBranch
-    - CheckPrevCommit
+      - CreateBranch
+      - CheckPrevCommit
     condition: and(in(dependencies.CreateBranch.result, 'Succeeded', 'Skipped'), in(dependencies.CheckPrevCommit.result, 'Succeeded', 'Skipped'))
     variables:
       releaseBranchName: $[ dependencies.CreateBranch.outputs['getBranchName.releaseBranchName'] ]
@@ -170,13 +170,13 @@ jobs:
         displayName: rush audit
 
       # Can be run on any branch to do a standard version bump. Which is currently -dev bumps.
-      - ? ${{ if or(eq(parameters.BumpType, 'nightly'), eq(parameters.BumpType, 'releaseCandidate')) }}
-        : - bash: "node common/scripts/install-run-rush version --bump"
+      - ${{ if or(eq(parameters.BumpType, 'nightly'), eq(parameters.BumpType, 'releaseCandidate')) }}:
+          - bash: "node common/scripts/install-run-rush version --bump"
             displayName: Rush version --bump
 
       # Support two separate bump types on release branches
-      - ? ${{ if or(eq(parameters.BumpType, 'minor'), eq(parameters.BumpType, 'patch')) }}
-        : - bash: "node common/scripts/install-run-rush version --override-bump ${{ parameters.BumpType }} --version-policy prerelease-monorepo-lockStep --bump"
+      - ${{ if or(eq(parameters.BumpType, 'minor'), eq(parameters.BumpType, 'patch')) }}:
+          - bash: "node common/scripts/install-run-rush version --override-bump ${{ parameters.BumpType }} --version-policy prerelease-monorepo-lockStep --bump"
             displayName: Release version bump
             condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/heads/release/'))
 
@@ -229,8 +229,8 @@ jobs:
             displayName: NextVersion.md rename and replace
             condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/heads/release/'))
 
-      - script: node common/scripts/install-run-rush.js eslint-fix
-        displayName: Refresh deprecation comments on release branch
+      - script: node common/scripts/install-run-rush.js rush lint-deprecation
+        displayName: rush lint-deprecation to update or add missing dates
 
       - bash: "git add ."
         displayName: Git add
@@ -241,8 +241,8 @@ jobs:
           git commit -m "$(getVersion.version)" --author="imodeljs-admin <imodeljs-admin@users.noreply.github.com>"
         displayName: Commit version bump
 
-      - ? ${{ if or(eq(parameters.BumpType, 'minor'), eq(parameters.BumpType, 'patch')) }}
-        : - bash: 'git tag -a release/$(getVersion.version) -m "v$(getVersion.version)"'
+      - ${{ if or(eq(parameters.BumpType, 'minor'), eq(parameters.BumpType, 'patch')) }}:
+          - bash: 'git tag -a release/$(getVersion.version) -m "v$(getVersion.version)"'
             displayName: Create git tag
 
       - bash: "git push --follow-tags https://$(GITHUBTOKEN)@github.com/iTwin/itwinjs-core $(releaseBranchName)"
