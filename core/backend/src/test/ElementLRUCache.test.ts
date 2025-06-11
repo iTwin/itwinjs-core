@@ -140,6 +140,7 @@ describe('ElementLruCache', () => {
     cache.set(testElem2);
     cache.set(testElem3);
     cache.set(testElemFedGuid);
+    expect(cache.size).to.equal(3);
 
     const retrievedElem = cache.get({ id: testElem2.elProps.id });
     expect(retrievedElem).to.not.be.undefined;
@@ -377,6 +378,7 @@ describe('InstanceKeyLRUCache', () => {
     cache.set(testArgs2, testResults[1]);
     cache.set(testArgs3, testResults[2]);
     cache.set(testArgs4, testResults[3]);
+    expect(cache.size).to.equal(3);
 
     const retrievedResult = cache.get(testArgs2);
     expect(retrievedResult).to.not.be.undefined;
@@ -449,9 +451,20 @@ describe('InstanceKeyLRUCache', () => {
     expect(cache.size).to.equal(1);
     cache.delete(testArgs3);
     expect(cache.size).to.equal(0);
-
     const retrievedResult = cache.get(testArgs1);
     expect(retrievedResult).to.be.undefined;
+
+    cache.set(testArgs1, testResults[0]);
+    cache.set(testArgs2, testResults[1]);
+    cache.set(testArgs3, testResults[2]);
+    expect(cache.size).to.equal(3);
+    cache.set(testArgs4, testResults[0]);
+    expect(cache.size).to.equal(3);
+
+    cache.delete(testArgs4);
+    expect(cache.size).to.equal(2);
+    const retrievedResult2 = cache.get(testArgs1);
+    expect(retrievedResult2).to.be.undefined;
   });
 
   it('should clear the cache', () => {
@@ -467,13 +480,4 @@ describe('InstanceKeyLRUCache', () => {
     const retrievedElem = cache.get(testArgs1);
     expect(retrievedElem).to.be.undefined;
   });
-
-  // it('should not return wrong element when passed a manipulated code value', () => {
-  //   const cache = new ElementLRUCache(3);
-  //   cache.set(testElem2);
-  //   expect(cache.size).to.equal(1);
-
-  //   const retrievedElem = cache.get({ code: testElemCode.elProps.code });
-  //   expect(retrievedElem).to.be.undefined;
-  // });
 });
