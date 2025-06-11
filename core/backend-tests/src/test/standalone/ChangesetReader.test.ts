@@ -9,7 +9,7 @@ import { assert, expect } from "chai";
 import * as path from "node:path";
 import { HubMock, HubWrappers, IModelTestUtils, KnownTestLocations } from "@itwin/backend-test-support";
 import {
-  _nativeDb, BriefcaseDb, ChannelControl, DrawingCategory, ChangesetECAdaptor as ECChangesetAdaptor, PartialECChangeUnifier,
+  _nativeDb, BriefcaseDb, ChangedECInstance, ChannelControl, DrawingCategory, ChangesetECAdaptor as ECChangesetAdaptor, ECChangeUnifierCache, PartialECChangeUnifier,
   SnapshotDb, SqliteChangeOp, SqliteChangesetReader,
 } from "@itwin/core-backend";
 
@@ -265,76 +265,92 @@ describe("Changeset Reader API", async () => {
     rwIModel.saveChanges("user 1: data");
 
     if (true || "test local changes") {
-      const reader = SqliteChangesetReader.openLocalChanges({ db: rwIModel, disableSchemaCheck: true });
-      using adaptor = new ECChangesetAdaptor(reader);
-      const cci = new PartialECChangeUnifier();
-      while (adaptor.step()) {
-        cci.appendFrom(adaptor);
+      const testChanges = (changes: ChangedECInstance[]) => {
+        assert.equal(changes.length, 3);
+
+        assert.equal(changes[0].ECInstanceId, "0x20000000001");
+        assert.equal(changes[0].$meta?.classFullName, "BisCore:DrawingModel");
+        assert.equal(changes[0].$meta?.op, "Updated");
+        assert.equal(changes[0].$meta?.stage, "New");
+        assert.isNotNull(changes[0].LastMod);
+        assert.isNotNull(changes[0].GeometryGuid);
+
+        assert.equal(changes[1].ECInstanceId, "0x20000000001");
+        assert.equal(changes[1].$meta?.classFullName, "BisCore:DrawingModel");
+        assert.equal(changes[1].$meta?.op, "Updated");
+        assert.equal(changes[1].$meta?.stage, "Old");
+        assert.isNull(changes[1].LastMod);
+        assert.isNull(changes[1].GeometryGuid);
+
+        assert.equal(changes[2].ECInstanceId, "0x20000000004");
+        assert.equal(changes[2].$meta?.classFullName, "TestDomain:Test2dElement");
+        assert.equal(changes[2].$meta?.op, "Inserted");
+        assert.equal(changes[2].$meta?.stage, "New");
+
+        const el = changes.filter((x) => x.ECInstanceId === "0x20000000004")[0];
+        assert.equal(el.Rotation, 0);
+        // eslint-disable-next-line @typescript-eslint/naming-convention
+        assert.deepEqual(el.Origin, { X: 0, Y: 0 });
+        // eslint-disable-next-line @typescript-eslint/naming-convention
+        assert.deepEqual(el.BBoxLow, { X: -25, Y: -25 });
+        // eslint-disable-next-line @typescript-eslint/naming-convention
+        assert.deepEqual(el.BBoxHigh, { X: 15, Y: 15 });
+        // eslint-disable-next-line @typescript-eslint/naming-convention
+        assert.deepEqual(el.Category, { Id: "0x20000000002", RelECClassId: "0x6d" });
+        assert.equal(el.s, "xxxxxxxxx");
+        assert.isNull(el.CodeValue);
+        assert.isNull(el.UserLabel);
+        assert.isNull(el.JsonProperties);
+        assert.instanceOf(el.GeometryStream, Uint8Array);
+        assert.typeOf(el.FederationGuid, "string");
+        assert.typeOf(el.LastMod, "string");
+        // eslint-disable-next-line @typescript-eslint/naming-convention
+        assert.deepEqual(el.Parent, { Id: null, RelECClassId: null });
+        // eslint-disable-next-line @typescript-eslint/naming-convention
+        assert.deepEqual(el.TypeDefinition, { Id: null, RelECClassId: null });
+        // eslint-disable-next-line @typescript-eslint/naming-convention
+        assert.deepEqual(el.Category, { Id: "0x20000000002", RelECClassId: "0x6d" });
+        // eslint-disable-next-line @typescript-eslint/naming-convention
+        assert.deepEqual(el.CodeSpec, { Id: "0x1", RelECClassId: "0x69" });
+        // eslint-disable-next-line @typescript-eslint/naming-convention
+        assert.deepEqual(el.CodeScope, { Id: "0x1", RelECClassId: "0x6b" });
+
+        assert.deepEqual(el.$meta, {
+          tables: [
+            "bis_GeometricElement2d",
+            "bis_Element",
+          ],
+          op: "Inserted",
+          classFullName: "TestDomain:Test2dElement",
+          changeIndexes: [
+            2,
+            1,
+          ],
+          stage: "New",
+        });
       }
-      const changes = Array.from(cci.instances);
-      assert.equal(changes.length, 3);
-      assert.equal(changes[0].ECInstanceId, "0x20000000004");
-      assert.equal(changes[0].$meta?.classFullName, "TestDomain:Test2dElement");
-      assert.equal(changes[0].$meta?.op, "Inserted");
-      assert.equal(changes[0].$meta?.stage, "New");
 
-      assert.equal(changes[1].ECInstanceId, "0x20000000001");
-      assert.equal(changes[1].$meta?.classFullName, "BisCore:DrawingModel");
-      assert.equal(changes[1].$meta?.op, "Updated");
-      assert.equal(changes[1].$meta?.stage, "New");
-      assert.isNotNull(changes[1].LastMod);
-      assert.isNotNull(changes[1].GeometryGuid);
+      if (true || "test with InMemoryInstanceCache") {
+        using reader = SqliteChangesetReader.openLocalChanges({ db: rwIModel, disableSchemaCheck: true });
+        using adaptor = new ECChangesetAdaptor(reader);
+        using pcu = new PartialECChangeUnifier(reader.db, ECChangeUnifierCache.createInMemory());
+        while (adaptor.step()) {
+          pcu.appendFrom(adaptor);
+        }
+        testChanges(Array.from(pcu.instances));
+      }
 
-      assert.equal(changes[2].ECInstanceId, "0x20000000001");
-      assert.equal(changes[2].$meta?.classFullName, "BisCore:DrawingModel");
-      assert.equal(changes[2].$meta?.op, "Updated");
-      assert.equal(changes[2].$meta?.stage, "Old");
-      assert.isNull(changes[2].LastMod);
-      assert.isNull(changes[2].GeometryGuid);
-
-      const el = changes.filter((x) => x.ECInstanceId === "0x20000000004")[0];
-      assert.equal(el.Rotation, 0);
-      // eslint-disable-next-line @typescript-eslint/naming-convention
-      assert.deepEqual(el.Origin, { X: 0, Y: 0 });
-      // eslint-disable-next-line @typescript-eslint/naming-convention
-      assert.deepEqual(el.BBoxLow, { X: -25, Y: -25 });
-      // eslint-disable-next-line @typescript-eslint/naming-convention
-      assert.deepEqual(el.BBoxHigh, { X: 15, Y: 15 });
-      // eslint-disable-next-line @typescript-eslint/naming-convention
-      assert.deepEqual(el.Category, { Id: "0x20000000002", RelECClassId: "0x6d" });
-      assert.equal(el.s, "xxxxxxxxx");
-      assert.isNull(el.CodeValue);
-      assert.isNull(el.UserLabel);
-      assert.isNull(el.JsonProperties);
-      assert.instanceOf(el.GeometryStream, Uint8Array);
-      assert.typeOf(el.FederationGuid, "string");
-      assert.typeOf(el.LastMod, "string");
-      // eslint-disable-next-line @typescript-eslint/naming-convention
-      assert.deepEqual(el.Parent, { Id: null, RelECClassId: null });
-      // eslint-disable-next-line @typescript-eslint/naming-convention
-      assert.deepEqual(el.TypeDefinition, { Id: null, RelECClassId: null });
-      // eslint-disable-next-line @typescript-eslint/naming-convention
-      assert.deepEqual(el.Category, { Id: "0x20000000002", RelECClassId: "0x6d" });
-      // eslint-disable-next-line @typescript-eslint/naming-convention
-      assert.deepEqual(el.CodeSpec, { Id: "0x1", RelECClassId: "0x69" });
-      // eslint-disable-next-line @typescript-eslint/naming-convention
-      assert.deepEqual(el.CodeScope, { Id: "0x1", RelECClassId: "0x6b" });
-
-      assert.deepEqual(el.$meta, {
-        tables: [
-          "bis_GeometricElement2d",
-          "bis_Element",
-        ],
-        op: "Inserted",
-        classFullName: "TestDomain:Test2dElement",
-        changeIndexes: [
-          2,
-          1,
-        ],
-        stage: "New",
-        fallbackClassId: undefined,
-      });
+      if (true || "test with SqliteBackedInstanceCache") {
+        using reader = SqliteChangesetReader.openLocalChanges({ db: rwIModel, disableSchemaCheck: true });
+        using adaptor = new ECChangesetAdaptor(reader);
+        using pcu = new PartialECChangeUnifier(reader.db, ECChangeUnifierCache.createSqliteBacked(rwIModel));
+        while (adaptor.step()) {
+          pcu.appendFrom(adaptor);
+        }
+        testChanges(Array.from(pcu.instances));
+      }
     }
+
     const targetDir = path.join(KnownTestLocations.outputDir, rwIModelId, "changesets");
     await rwIModel.pushChanges({ description: "schema changeset", accessToken: adminToken });
 
@@ -342,167 +358,241 @@ describe("Changeset Reader API", async () => {
 
     const changesets = await HubMock.downloadChangesets({ iModelId: rwIModelId, targetDir });
     if (true || "updated element") {
-      const reader = SqliteChangesetReader.openFile({ fileName: changesets[3].pathname, db: rwIModel, disableSchemaCheck: true });
-      const adaptor = new ECChangesetAdaptor(reader);
-      const cci = new PartialECChangeUnifier();
-      while (adaptor.step()) {
-        cci.appendFrom(adaptor);
+      const testChanges = (changes: ChangedECInstance[]) => {
+        assert.equal(changes.length, 4);
+
+        const classId: Id64String = getClassIdByName(rwIModel, "Test2dElement");
+
+        // new value
+        assert.equal(changes[2].ECInstanceId, "0x20000000004");
+        assert.equal(changes[2].ECClassId, classId);
+        assert.equal(changes[2].s, "updated property");
+        assert.equal(changes[2].$meta?.classFullName, "TestDomain:Test2dElement");
+        assert.equal(changes[2].$meta?.op, "Updated");
+        assert.equal(changes[2].$meta?.stage, "New");
+
+        // old value
+        assert.equal(changes[3].ECInstanceId, "0x20000000004");
+        assert.equal(changes[3].ECClassId, classId);
+        assert.equal(changes[3].s, "xxxxxxxxx");
+        assert.equal(changes[3].$meta?.classFullName, "TestDomain:Test2dElement");
+        assert.equal(changes[3].$meta?.op, "Updated");
+        assert.equal(changes[3].$meta?.stage, "Old");
+      };
+
+      if (true || "test with InMemoryInstanceCache") {
+        using reader = SqliteChangesetReader.openFile({ fileName: changesets[3].pathname, db: rwIModel, disableSchemaCheck: true });
+        using adaptor = new ECChangesetAdaptor(reader);
+        using pcu = new PartialECChangeUnifier(reader.db, ECChangeUnifierCache.createInMemory());
+        while (adaptor.step()) {
+          pcu.appendFrom(adaptor);
+        }
+        testChanges(Array.from(pcu.instances));
       }
 
-      const changes = Array.from(cci.instances);
-      assert.equal(changes.length, 4);
-
-      const classId: Id64String = getClassIdByName(rwIModel, "Test2dElement");
-
-      // new value
-      assert.equal(changes[0].ECInstanceId, "0x20000000004");
-      assert.equal(changes[0].ECClassId, classId);
-      assert.equal(changes[0].s, "updated property");
-      assert.equal(changes[0].$meta?.classFullName, "TestDomain:Test2dElement");
-      assert.equal(changes[0].$meta?.op, "Updated");
-      assert.equal(changes[0].$meta?.stage, "New");
-
-      // old value
-      assert.equal(changes[1].ECInstanceId, "0x20000000004");
-      assert.equal(changes[1].ECClassId, classId);
-      assert.equal(changes[1].s, "xxxxxxxxx");
-      assert.equal(changes[1].$meta?.classFullName, "TestDomain:Test2dElement");
-      assert.equal(changes[1].$meta?.op, "Updated");
-      assert.equal(changes[1].$meta?.stage, "Old");
+      if (true || "test with SqliteBackedInstanceCache") {
+        using reader = SqliteChangesetReader.openFile({ fileName: changesets[3].pathname, db: rwIModel, disableSchemaCheck: true });
+        using adaptor = new ECChangesetAdaptor(reader);
+        using pcu = new PartialECChangeUnifier(reader.db, ECChangeUnifierCache.createSqliteBacked(rwIModel));
+        while (adaptor.step()) {
+          pcu.appendFrom(adaptor);
+        }
+        testChanges(Array.from(pcu.instances));
+      }
     }
+
     if (true || "updated element when no classId") {
       const otherDb = SnapshotDb.openFile(IModelTestUtils.resolveAssetFile("test.bim"));
-      const reader = SqliteChangesetReader.openFile({ fileName: changesets[3].pathname, db: otherDb, disableSchemaCheck: true });
-      const adaptor = new ECChangesetAdaptor(reader);
-      const cci = new PartialECChangeUnifier();
-      while (adaptor.step()) {
-        cci.appendFrom(adaptor);
+      const testChanges = (changes: ChangedECInstance[]) => {
+        assert.equal(changes.length, 4);
+
+        // new value
+        assert.equal(changes[2].ECInstanceId, "0x20000000004");
+        assert.isUndefined(changes[2].ECClassId);
+        assert.isDefined(changes[2].$meta?.fallbackClassId);
+        assert.equal(changes[2].$meta?.fallbackClassId, "0x3d");
+        assert.isUndefined(changes[2].s);
+        assert.equal(changes[2].$meta?.classFullName, "BisCore:GeometricElement2d");
+        assert.equal(changes[2].$meta?.op, "Updated");
+        assert.equal(changes[2].$meta?.stage, "New");
+
+        // old value
+        assert.equal(changes[3].ECInstanceId, "0x20000000004");
+        assert.isUndefined(changes[3].ECClassId);
+        assert.isDefined(changes[3].$meta?.fallbackClassId);
+        assert.equal(changes[3].$meta?.fallbackClassId, "0x3d");
+        assert.isUndefined(changes[3].s);
+        assert.equal(changes[3].$meta?.classFullName, "BisCore:GeometricElement2d");
+        assert.equal(changes[3].$meta?.op, "Updated");
+        assert.equal(changes[3].$meta?.stage, "Old");
+      };
+
+      if (true || "test with InMemoryInstanceCache") {
+        using reader = SqliteChangesetReader.openFile({ fileName: changesets[3].pathname, db: otherDb, disableSchemaCheck: true });
+        using adaptor = new ECChangesetAdaptor(reader);
+        using pcu = new PartialECChangeUnifier(reader.db, ECChangeUnifierCache.createInMemory());
+        while (adaptor.step()) {
+          pcu.appendFrom(adaptor);
+        }
+        testChanges(Array.from(pcu.instances));
       }
 
-      const changes = Array.from(cci.instances);
-      assert.equal(changes.length, 4);
-
-      // new value
-      assert.equal(changes[0].ECInstanceId, "0x20000000004");
-      assert.isUndefined(changes[0].ECClassId);
-      assert.isDefined(changes[0].$meta?.fallbackClassId);
-      assert.equal(changes[0].$meta?.fallbackClassId, "0x3d");
-      assert.isUndefined(changes[0].s);
-      assert.equal(changes[0].$meta?.classFullName, "BisCore:GeometricElement2d");
-      assert.equal(changes[0].$meta?.op, "Updated");
-      assert.equal(changes[0].$meta?.stage, "New");
-
-      // old value
-      assert.equal(changes[1].ECInstanceId, "0x20000000004");
-      assert.isUndefined(changes[1].ECClassId);
-      assert.isDefined(changes[1].$meta?.fallbackClassId);
-      assert.equal(changes[1].$meta?.fallbackClassId, "0x3d");
-      assert.isUndefined(changes[1].s);
-      assert.equal(changes[1].$meta?.classFullName, "BisCore:GeometricElement2d");
-      assert.equal(changes[1].$meta?.op, "Updated");
-      assert.equal(changes[1].$meta?.stage, "Old");
+      if (true || "test with SqliteBackedInstanceCache") {
+        using reader = SqliteChangesetReader.openFile({ fileName: changesets[3].pathname, db: otherDb, disableSchemaCheck: true });
+        using adaptor = new ECChangesetAdaptor(reader);
+        using pcu = new PartialECChangeUnifier(reader.db, ECChangeUnifierCache.createSqliteBacked(rwIModel));
+        while (adaptor.step()) {
+          pcu.appendFrom(adaptor);
+        }
+        testChanges(Array.from(pcu.instances));
+      }
     }
+
     if (true || "test changeset file") {
-      const reader = SqliteChangesetReader.openFile({ fileName: changesets[2].pathname, db: rwIModel, disableSchemaCheck: true });
-      using adaptor = new ECChangesetAdaptor(reader);
-      const cci = new PartialECChangeUnifier();
-      while (adaptor.step()) {
-        cci.appendFrom(adaptor);
+      const testChanges = (changes: ChangedECInstance[]) => {
+        assert.equal(changes.length, 3);
+
+        assert.equal(changes[0].ECInstanceId, "0x20000000001");
+        assert.equal(changes[0].$meta?.classFullName, "BisCore:DrawingModel");
+        assert.equal(changes[0].$meta?.op, "Updated");
+        assert.equal(changes[0].$meta?.stage, "New");
+        assert.isNotNull(changes[0].LastMod);
+        assert.isNotNull(changes[0].GeometryGuid);
+
+        assert.equal(changes[1].ECInstanceId, "0x20000000001");
+        assert.equal(changes[1].$meta?.classFullName, "BisCore:DrawingModel");
+        assert.equal(changes[1].$meta?.op, "Updated");
+        assert.equal(changes[1].$meta?.stage, "Old");
+        assert.isNull(changes[1].LastMod);
+        assert.isNull(changes[1].GeometryGuid);
+
+        assert.equal(changes[2].ECInstanceId, "0x20000000004");
+        assert.equal(changes[2].$meta?.classFullName, "TestDomain:Test2dElement");
+        assert.equal(changes[2].$meta?.op, "Inserted");
+        assert.equal(changes[2].$meta?.stage, "New");
+
+        const el = changes.filter((x) => x.ECInstanceId === "0x20000000004")[0];
+        assert.equal(el.Rotation, 0);
+        // eslint-disable-next-line @typescript-eslint/naming-convention
+        assert.deepEqual(el.Origin, { X: 0, Y: 0 });
+        // eslint-disable-next-line @typescript-eslint/naming-convention
+        assert.deepEqual(el.BBoxLow, { X: -25, Y: -25 });
+        // eslint-disable-next-line @typescript-eslint/naming-convention
+        assert.deepEqual(el.BBoxHigh, { X: 15, Y: 15 });
+        // eslint-disable-next-line @typescript-eslint/naming-convention
+        assert.deepEqual(el.Category, { Id: "0x20000000002", RelECClassId: "0x6d" });
+        assert.equal(el.s, "xxxxxxxxx");
+        assert.isNull(el.CodeValue);
+        assert.isNull(el.UserLabel);
+        assert.isNull(el.JsonProperties);
+        assert.instanceOf(el.GeometryStream, Uint8Array);
+        assert.typeOf(el.FederationGuid, "string");
+        assert.typeOf(el.LastMod, "string");
+        // eslint-disable-next-line @typescript-eslint/naming-convention
+        assert.deepEqual(el.Parent, { Id: null, RelECClassId: null });
+        // eslint-disable-next-line @typescript-eslint/naming-convention
+        assert.deepEqual(el.TypeDefinition, { Id: null, RelECClassId: null });
+        // eslint-disable-next-line @typescript-eslint/naming-convention
+        assert.deepEqual(el.Category, { Id: "0x20000000002", RelECClassId: "0x6d" });
+        // eslint-disable-next-line @typescript-eslint/naming-convention
+        assert.deepEqual(el.CodeSpec, { Id: "0x1", RelECClassId: "0x69" });
+        // eslint-disable-next-line @typescript-eslint/naming-convention
+        assert.deepEqual(el.CodeScope, { Id: "0x1", RelECClassId: "0x6b" });
+
+        assert.deepEqual(el.$meta, {
+          tables: [
+            "bis_GeometricElement2d",
+            "bis_Element",
+          ],
+          op: "Inserted",
+          classFullName: "TestDomain:Test2dElement",
+          changeIndexes: [
+            2,
+            1,
+          ],
+          stage: "New",
+        });
       }
-      const changes = Array.from(cci.instances);
-      assert.equal(changes.length, 3);
-      assert.equal(changes[0].ECInstanceId, "0x20000000004");
-      assert.equal(changes[0].$meta?.classFullName, "TestDomain:Test2dElement");
-      assert.equal(changes[0].$meta?.op, "Inserted");
-      assert.equal(changes[0].$meta?.stage, "New");
+      if (true || "test with InMemoryInstanceCache") {
+        using reader = SqliteChangesetReader.openFile({ fileName: changesets[2].pathname, db: rwIModel, disableSchemaCheck: true });
+        using adaptor = new ECChangesetAdaptor(reader);
+        using pcu = new PartialECChangeUnifier(reader.db, ECChangeUnifierCache.createInMemory());
+        while (adaptor.step()) {
+          pcu.appendFrom(adaptor);
+        }
+        testChanges(Array.from(pcu.instances));
+      }
 
-      assert.equal(changes[1].ECInstanceId, "0x20000000001");
-      assert.equal(changes[1].$meta?.classFullName, "BisCore:DrawingModel");
-      assert.equal(changes[1].$meta?.op, "Updated");
-      assert.equal(changes[1].$meta?.stage, "New");
-      assert.isNotNull(changes[1].LastMod);
-      assert.isNotNull(changes[1].GeometryGuid);
-
-      assert.equal(changes[2].ECInstanceId, "0x20000000001");
-      assert.equal(changes[2].$meta?.classFullName, "BisCore:DrawingModel");
-      assert.equal(changes[2].$meta?.op, "Updated");
-      assert.equal(changes[2].$meta?.stage, "Old");
-      assert.isNull(changes[2].LastMod);
-      assert.isNull(changes[2].GeometryGuid);
-
-      const el = changes.filter((x) => x.ECInstanceId === "0x20000000004")[0];
-      assert.equal(el.Rotation, 0);
-      // eslint-disable-next-line @typescript-eslint/naming-convention
-      assert.deepEqual(el.Origin, { X: 0, Y: 0 });
-      // eslint-disable-next-line @typescript-eslint/naming-convention
-      assert.deepEqual(el.BBoxLow, { X: -25, Y: -25 });
-      // eslint-disable-next-line @typescript-eslint/naming-convention
-      assert.deepEqual(el.BBoxHigh, { X: 15, Y: 15 });
-      // eslint-disable-next-line @typescript-eslint/naming-convention
-      assert.deepEqual(el.Category, { Id: "0x20000000002", RelECClassId: "0x6d" });
-      assert.equal(el.s, "xxxxxxxxx");
-      assert.isNull(el.CodeValue);
-      assert.isNull(el.UserLabel);
-      assert.isNull(el.JsonProperties);
-      assert.instanceOf(el.GeometryStream, Uint8Array);
-      assert.typeOf(el.FederationGuid, "string");
-      assert.typeOf(el.LastMod, "string");
-      // eslint-disable-next-line @typescript-eslint/naming-convention
-      assert.deepEqual(el.Parent, { Id: null, RelECClassId: null });
-      // eslint-disable-next-line @typescript-eslint/naming-convention
-      assert.deepEqual(el.TypeDefinition, { Id: null, RelECClassId: null });
-      // eslint-disable-next-line @typescript-eslint/naming-convention
-      assert.deepEqual(el.Category, { Id: "0x20000000002", RelECClassId: "0x6d" });
-      // eslint-disable-next-line @typescript-eslint/naming-convention
-      assert.deepEqual(el.CodeSpec, { Id: "0x1", RelECClassId: "0x69" });
-      // eslint-disable-next-line @typescript-eslint/naming-convention
-      assert.deepEqual(el.CodeScope, { Id: "0x1", RelECClassId: "0x6b" });
-
-      assert.deepEqual(el.$meta, {
-        tables: [
-          "bis_GeometricElement2d",
-          "bis_Element",
-        ],
-        op: "Inserted",
-        classFullName: "TestDomain:Test2dElement",
-        changeIndexes: [
-          2,
-          1,
-        ],
-        stage: "New",
-        fallbackClassId: undefined,
-      });
+      if (true || "test with SqliteBackedInstanceCache") {
+        using reader = SqliteChangesetReader.openFile({ fileName: changesets[2].pathname, db: rwIModel, disableSchemaCheck: true });
+        using adaptor = new ECChangesetAdaptor(reader);
+        using pcu = new PartialECChangeUnifier(reader.db, ECChangeUnifierCache.createSqliteBacked(rwIModel));
+        while (adaptor.step()) {
+          pcu.appendFrom(adaptor);
+        }
+        testChanges(Array.from(pcu.instances));
+      }
     }
     if (true || "test ChangesetAdaptor.acceptClass()") {
-      const reader = SqliteChangesetReader.openFile({ fileName: changesets[2].pathname, db: rwIModel, disableSchemaCheck: true });
-      using adaptor = new ECChangesetAdaptor(reader);
-      adaptor.acceptClass("TestDomain.Test2dElement");
-      const cci = new PartialECChangeUnifier();
-      while (adaptor.step()) {
-        cci.appendFrom(adaptor);
+      const testChanges = (changes: ChangedECInstance[]) => {
+        assert.equal(changes.length, 1);
+        assert.equal(changes[0].$meta?.classFullName, "TestDomain:Test2dElement");
+      };
+      if (true || "test with InMemoryInstanceCache") {
+        using reader = SqliteChangesetReader.openFile({ fileName: changesets[2].pathname, db: rwIModel, disableSchemaCheck: true });
+        using adaptor = new ECChangesetAdaptor(reader);
+        adaptor.acceptClass("TestDomain.Test2dElement");
+        using pcu = new PartialECChangeUnifier(reader.db, ECChangeUnifierCache.createInMemory());
+        while (adaptor.step()) {
+          pcu.appendFrom(adaptor);
+        }
+        testChanges(Array.from(pcu.instances));
       }
-      const changes = Array.from(cci.instances);
-      assert.equal(changes.length, 1);
-      assert.equal(changes[0].$meta?.classFullName, "TestDomain:Test2dElement");
+
+      if (true || "test with SqliteBackedInstanceCache") {
+        using reader = SqliteChangesetReader.openFile({ fileName: changesets[2].pathname, db: rwIModel, disableSchemaCheck: true });
+        using adaptor = new ECChangesetAdaptor(reader);
+        adaptor.acceptClass("TestDomain.Test2dElement");
+        using pcu = new PartialECChangeUnifier(reader.db, ECChangeUnifierCache.createSqliteBacked(rwIModel));
+        while (adaptor.step()) {
+          pcu.appendFrom(adaptor);
+        }
+        testChanges(Array.from(pcu.instances));
+      }
     }
     if (true || "test ChangesetAdaptor.adaptor()") {
-      const reader = SqliteChangesetReader.openFile({ fileName: changesets[2].pathname, db: rwIModel, disableSchemaCheck: true });
-      using adaptor = new ECChangesetAdaptor(reader);
-      adaptor.acceptOp("Updated");
-      const cci = new PartialECChangeUnifier();
-      while (adaptor.step()) {
-        cci.appendFrom(adaptor);
+      const testChanges = (changes: ChangedECInstance[]) => {
+        assert.equal(changes.length, 2);
+        assert.equal(changes[0].ECInstanceId, "0x20000000001");
+        assert.equal(changes[0].$meta?.classFullName, "BisCore:DrawingModel");
+        assert.equal(changes[0].$meta?.op, "Updated");
+        assert.equal(changes[0].$meta?.stage, "New");
+        assert.equal(changes[1].ECInstanceId, "0x20000000001");
+        assert.equal(changes[1].$meta?.classFullName, "BisCore:DrawingModel");
+        assert.equal(changes[1].$meta?.op, "Updated");
+        assert.equal(changes[1].$meta?.stage, "Old");
+      };
+      if (true || "test with InMemoryInstanceCache") {
+        using reader = SqliteChangesetReader.openFile({ fileName: changesets[2].pathname, db: rwIModel, disableSchemaCheck: true });
+        using adaptor = new ECChangesetAdaptor(reader);
+        adaptor.acceptOp("Updated")
+        using pcu = new PartialECChangeUnifier(reader.db, ECChangeUnifierCache.createInMemory());
+        while (adaptor.step()) {
+          pcu.appendFrom(adaptor);
+        }
+        testChanges(Array.from(pcu.instances));
       }
-      const changes = Array.from(cci.instances);
-      assert.equal(changes.length, 2);
-      assert.equal(changes[0].ECInstanceId, "0x20000000001");
-      assert.equal(changes[0].$meta?.classFullName, "BisCore:DrawingModel");
-      assert.equal(changes[0].$meta?.op, "Updated");
-      assert.equal(changes[0].$meta?.stage, "New");
-      assert.equal(changes[1].ECInstanceId, "0x20000000001");
-      assert.equal(changes[1].$meta?.classFullName, "BisCore:DrawingModel");
-      assert.equal(changes[1].$meta?.op, "Updated");
-      assert.equal(changes[1].$meta?.stage, "Old");
+
+      if (true || "test with SqliteBackedInstanceCache") {
+        using reader = SqliteChangesetReader.openFile({ fileName: changesets[2].pathname, db: rwIModel, disableSchemaCheck: true });
+        using adaptor = new ECChangesetAdaptor(reader);
+        adaptor.acceptOp("Updated")
+        using pcu = new PartialECChangeUnifier(reader.db, ECChangeUnifierCache.createSqliteBacked(rwIModel));
+        while (adaptor.step()) {
+          pcu.appendFrom(adaptor);
+        }
+        testChanges(Array.from(pcu.instances));
+      }
     }
     rwIModel.close();
   });
@@ -615,7 +705,7 @@ describe("Changeset Reader API", async () => {
     assert.isUndefined(findEl(el2));
     assert.isDefined(findEl(el3));
     assert.isDefined(findEl(el4));
-     
+
     assert.deepEqual(Object.getOwnPropertyNames(rwIModel.getMetaData("TestDomain:Test2dElement").properties), ["p1", "p2"]);
     // 6. Revert to timeline 2
     await rwIModel.revertAndPushChanges({ toIndex: 2, description: "revert to timeline 2" });
@@ -625,7 +715,7 @@ describe("Changeset Reader API", async () => {
     assert.isUndefined(findEl(el2));
     assert.isUndefined(findEl(el3));
     assert.isUndefined(findEl(el4));
-     
+
     assert.deepEqual(Object.getOwnPropertyNames(rwIModel.getMetaData("TestDomain:Test2dElement").properties), ["p1"]);
 
     await rwIModel.revertAndPushChanges({ toIndex: 6, description: "reinstate last reverted changeset" });
@@ -634,7 +724,7 @@ describe("Changeset Reader API", async () => {
     assert.isUndefined(findEl(el2));
     assert.isDefined(findEl(el3));
     assert.isDefined(findEl(el4));
-     
+
     assert.deepEqual(Object.getOwnPropertyNames(rwIModel.getMetaData("TestDomain:Test2dElement").properties), ["p1", "p2"]);
 
     await addPropertyAndImportSchema();
@@ -642,7 +732,7 @@ describe("Changeset Reader API", async () => {
     await updateEl(el1, { p1: "test12", p2: "test13", p3: "test114" });
     rwIModel.saveChanges();
     await rwIModel.pushChanges({ description: "import schema, insert element 5 & update element 1" });
-     
+
     assert.deepEqual(Object.getOwnPropertyNames(rwIModel.getMetaData("TestDomain:Test2dElement").properties), ["p1", "p2", "p3"]);
 
     // skip schema changes & auto generated comment
@@ -653,7 +743,7 @@ describe("Changeset Reader API", async () => {
     assert.isUndefined(findEl(el3));
     assert.isUndefined(findEl(el4));
     assert.isUndefined(findEl(el5));
-     
+
     assert.deepEqual(Object.getOwnPropertyNames(rwIModel.getMetaData("TestDomain:Test2dElement").properties), ["p1", "p2", "p3"]);
 
     await rwIModel.revertAndPushChanges({ toIndex: 9 });
@@ -663,7 +753,7 @@ describe("Changeset Reader API", async () => {
     assert.isDefined(findEl(el3));
     assert.isDefined(findEl(el4));
     assert.isDefined(findEl(el5));
-     
+
     assert.deepEqual(Object.getOwnPropertyNames(rwIModel.getMetaData("TestDomain:Test2dElement").properties), ["p1", "p2", "p3"]);
     rwIModel.close();
   });

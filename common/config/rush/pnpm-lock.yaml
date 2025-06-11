@@ -17,8 +17,8 @@ importers:
   ../../core/backend:
     dependencies:
       '@bentley/imodeljs-native':
-        specifier: 5.1.40
-        version: 5.1.40
+        specifier: 5.1.41
+        version: 5.1.41
       '@itwin/cloud-agnostic-core':
         specifier: ^2.2.4
         version: 2.2.4(inversify@6.0.1)(reflect-metadata@0.1.13)
@@ -159,8 +159,8 @@ importers:
   ../../core/backend-tests:
     dependencies:
       '@bentley/imodeljs-native':
-        specifier: 5.1.40
-        version: 5.1.40
+        specifier: 5.1.41
+        version: 5.1.41
       '@itwin/cloud-agnostic-core':
         specifier: ^2.2.4
         version: 2.2.4(inversify@6.0.1)(reflect-metadata@0.1.13)
@@ -596,9 +596,21 @@ importers:
       '@bentley/aec-units-schema':
         specifier: ^1.0.3
         version: 1.0.3
+      '@bentley/bis-custom-attributes-schema':
+        specifier: ^1.0.0
+        version: 1.0.0
+      '@bentley/cif-units-schema':
+        specifier: ^1.0.7
+        version: 1.0.7
+      '@bentley/core-custom-attributes-schema':
+        specifier: ^1.0.4
+        version: 1.0.4
       '@bentley/formats-schema':
         specifier: ^1.0.0
         version: 1.0.0
+      '@bentley/road-rail-units-schema':
+        specifier: ^1.0.3
+        version: 1.0.3
       '@bentley/units-schema':
         specifier: ^1.0.8
         version: 1.0.8
@@ -2328,8 +2340,8 @@ importers:
         specifier: ^1.0.3
         version: 1.0.3
       '@bentley/cif-units-schema':
-        specifier: ^1.0.1
-        version: 1.0.1
+        specifier: ^1.0.7
+        version: 1.0.7
       '@bentley/plant-custom-attributes-schema':
         specifier: ^1.0.1
         version: 1.0.1
@@ -2343,8 +2355,8 @@ importers:
         specifier: ^1.0.1
         version: 1.0.1
       '@bentley/road-rail-units-schema':
-        specifier: ^1.0.1
-        version: 1.0.1
+        specifier: ^1.0.3
+        version: 1.0.3
       '@itwin/backend-test-support':
         specifier: workspace:*
         version: link:../../tools/backend-test-support
@@ -4203,8 +4215,8 @@ importers:
   ../../tools/backend-test-support:
     dependencies:
       '@bentley/imodeljs-native':
-        specifier: 5.1.40
-        version: 5.1.40
+        specifier: 5.1.41
+        version: 5.1.41
       '@itwin/cloud-agnostic-core':
         specifier: ^2.2.4
         version: 2.2.4(inversify@6.0.1)(reflect-metadata@0.1.13)
@@ -4908,8 +4920,8 @@ packages:
   '@bentley/cif-subsurface-schema@1.0.3':
     resolution: {integrity: sha512-m5HoxGrgdGel+xWdf4NUzFQ7jMSeyjymsbvGzTlsuc8fLsyjHKo+afTOsIci1zWrZ3tSWIO0nHdzcz862/bnuQ==}
 
-  '@bentley/cif-units-schema@1.0.1':
-    resolution: {integrity: sha512-K2TvSF7L5T5RBG82BTRhaqnlWdstlFpVCSGUUVtU2iiqEBizkYgVDuS6wBf8Lj/RquaHJyvbV3WAkU6SxopyFQ==}
+  '@bentley/cif-units-schema@1.0.7':
+    resolution: {integrity: sha512-hArgQLOD095xdeVASBRouIh4dbxD26lJvVWZwYV8+pQzTzF/2gKlENUSR5bvee0FDq9l5mxTbo02GAqmvyKljw==}
 
   '@bentley/construction-schema@1.0.4':
     resolution: {integrity: sha512-VuR/K6odSLBXPtUoyX0v4m1l0MLw/pyeX2b1DuMHlnOMS9/Ub9oi6BgMbwOYUslWP8Bxw4HcFoiR8F4aPasmaw==}
@@ -4932,8 +4944,8 @@ packages:
   '@bentley/icons-generic@1.0.34':
     resolution: {integrity: sha512-IIs1wDcY2oZ8tJ3EZRw0U51M+0ZL3MvwoDYYmhUXaa9/UZqpFoOyLBGaxjirQteWXqTIMm3mFvmC+Nbn1ok4Iw==}
 
-  '@bentley/imodeljs-native@5.1.40':
-    resolution: {integrity: sha512-YUzcVUJEHeJxm8iOfsRMKDJG5OQkxBmSPhRMe85O/Ng/Jnd2qaQ1+0EXwevyE8PR4rLu1/4QYLVjHfZbRJrEPA==}
+  '@bentley/imodeljs-native@5.1.41':
+    resolution: {integrity: sha512-GybtOpKurtQKl2hHHtxEf3HC30RNfvPTqrFrPDdGR7ppzxGzyWpw4jPlp8FKV3Y0Y7uCl1KBJG9cQe19p8AFPw==}
 
   '@bentley/linear-referencing-schema@2.0.3':
     resolution: {integrity: sha512-2pFIEN4BS7alIDhGous6N2icKAS8ZhVBfoWB8WvSFaYnneGv5YwbbXl46qATDdPO5jUFezkW6uVxdpp1eOgUHQ==}
@@ -4953,8 +4965,8 @@ packages:
   '@bentley/quantity-takeoffs-aspects-schema@1.0.1':
     resolution: {integrity: sha512-ufOI4M0zyRuf9qvQfVuvra3AFNA2xo9OOPjYq6/ffLptQtoocrmnLq+pfhMMPnY5JnSSt0CavzhxM0d6Ynzkhg==}
 
-  '@bentley/road-rail-units-schema@1.0.1':
-    resolution: {integrity: sha512-7vHunp5SZrxiCErMhibOmbO1DYCx1Fm3pJZ4SYBAJBtEDbmkdI8yrhcNf6PRYHBpTsfbzdWeOWCcG1A4zulY/A==}
+  '@bentley/road-rail-units-schema@1.0.3':
+    resolution: {integrity: sha512-0C8JdbbOgpZmv0q9wN2sn40zAMBNvviKxDQjJyIO0XTLH0uMnwmpCK1J202IxnjwORbh0i7CiqV/cm3bxoJPpQ==}
 
   '@bentley/spatial-composition-schema@1.0.1':
     resolution: {integrity: sha512-ldAGnxs2zsjzCWG2jFtcZ0IMuNvTUM5e9JV38EsFMWbdIjXmZaX+Tx/t2vDEUgOqfCvo4Fb98YKpdclJcnSDrw==}
@@ -11307,7 +11319,7 @@ snapshots:
 
   '@bentley/cif-subsurface-schema@1.0.3': {}
 
-  '@bentley/cif-units-schema@1.0.1': {}
+  '@bentley/cif-units-schema@1.0.7': {}
 
   '@bentley/construction-schema@1.0.4': {}
 
@@ -11323,7 +11335,7 @@ snapshots:
 
   '@bentley/icons-generic@1.0.34': {}
 
-  '@bentley/imodeljs-native@5.1.40': {}
+  '@bentley/imodeljs-native@5.1.41': {}
 
   '@bentley/linear-referencing-schema@2.0.3': {}
 
@@ -11337,7 +11349,7 @@ snapshots:
 
   '@bentley/quantity-takeoffs-aspects-schema@1.0.1': {}
 
-  '@bentley/road-rail-units-schema@1.0.1': {}
+  '@bentley/road-rail-units-schema@1.0.3': {}
 
   '@bentley/spatial-composition-schema@1.0.1': {}
 
