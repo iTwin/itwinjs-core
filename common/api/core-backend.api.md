@@ -2025,7 +2025,7 @@ export interface ECChangeUnifierCache extends Disposable {
     set(key: string, value: ChangedECInstance): void;
 }
 
-// @public (undocumented)
+// @beta (undocumented)
 export namespace ECChangeUnifierCache {
     // (undocumented)
     export function createInMemory(): ECChangeUnifierCache;

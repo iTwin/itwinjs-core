@@ -439,12 +439,12 @@ export interface ECChangeUnifierCache extends Disposable {
    */
   count(): number;
 }
-
+/** @beta */
 export namespace ECChangeUnifierCache {
   export function createInMemory(): ECChangeUnifierCache {
     return new InMemoryInstanceCache();
   }
-
+  
   export function createSqliteBacked(db: AnyDb, bufferedReadInstanceSizeInBytes = 1024 * 1024 * 10): ECChangeUnifierCache {
     return new SqliteBackedInstanceCache(db, bufferedReadInstanceSizeInBytes);
   }
