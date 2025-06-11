@@ -52,6 +52,8 @@ export interface ParsedQuantity {
 enum Operator {
   addition = "+",
   subtraction = "-",
+  multiplication = "*",
+  division = "/"
 }
 
 function isOperator(char: number | string): boolean {

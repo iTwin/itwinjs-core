@@ -202,8 +202,8 @@ describe("Bearing format tests:", () => {
    //   { input: "s45d00m00se", expected:  135.0 },
       { input: "s 45 00 00 e", expected:  135.0 },
       { input: "n35 45 45.101e", expected:  35.762528055555556 },
-      { input: "s45d45m45.0se", expected:  135.7625 },
-      { input: "s45d45m45.0e", expected:  135.7625 },
+      { input: "s45d45m45.0se", expected:  134.2375 },
+      { input: "s45d45m45.0e", expected:  134.2375 },
     ];
     for (const entry of testData) {
       const parseResult = Parser.parseQuantityString(entry.input, bearingDMSParser);
@@ -214,7 +214,7 @@ describe("Bearing format tests:", () => {
     }
   });
 
-  it("should correctly parse flexible valid bearing strings", async () => {
+  it("should correctly parse supported and reject unsupported bearing strings", async () => {
     const bearingFormatProps: FormatProps = {
       minWidth: 2,
       precision: 0,
@@ -251,6 +251,16 @@ describe("Bearing format tests:", () => {
         expect.fail(`Expected a parsed quantity for input "${input}"`);
       }
       expect(result.value).to.be.closeTo(expected, 0.01);
+    }
+     const unsupportedInputs = [
+      "s45+45+45e",
+      "s45/45/45e",
+      "s45*45*45e",
+      "s45-45-45e",
+    ];
+    for (const input of unsupportedInputs) {
+      const result = Parser.parseQuantityString(input, bearingParser);
+        expect(Parser.isParsedQuantity(result)).to.be.false;
     }
   });
 
