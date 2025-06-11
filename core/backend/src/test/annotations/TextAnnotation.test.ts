@@ -4,9 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { Angle, Point3d, Range2d, Range3d, YawPitchRollAngles } from "@itwin/core-geometry";
-import { Code, ColorDef, FractionRun, SubCategoryAppearance, TextAnnotation, TextAnnotation2dProps, TextAnnotation3dProps, TextBlock, TextRun } from "@itwin/core-common";
+import { Code, ColorDef, FractionRun, SubCategoryAppearance, TextAnnotation, TextAnnotation2dProps, TextBlock, TextRun } from "@itwin/core-common";
 import { IModelDb, StandaloneDb } from "../../IModelDb";
-import { TextAnnotation2d, TextAnnotation3d } from "../../annotations/TextAnnotationElement";
+import { TextAnnotation2d, TextAnnotation2dCreateArgs, TextAnnotation3d, TextAnnotation3dCreateArgs } from "../../annotations/TextAnnotationElement";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { GeometricElement2d, GeometricElement3d, Subject } from "../../Element";
 import { Guid, Id64, Id64String } from "@itwin/core-bentley";
@@ -53,17 +53,13 @@ describe("TextAnnotation element", () => {
   }
 
   describe("getAnnotation", () => {
-    it("returns undefined if not present in JSON properties", () => {
+    it("returns undefined if not provided", () => {
       expect(makeElement().getAnnotation()).to.be.undefined;
     });
 
-    it("extracts from JSON properties", () => {
+    it("converts JSON string to class instance", () => {
       const elem = makeElement({
-        jsonProperties: {
-          annotation: {
-            textBlock: TextBlock.create({ styleName: "block" }).toJSON(),
-          },
-        },
+        textAnnotationData: JSON.stringify({textBlock: TextBlock.create({ styleName: "block" }).toJSON()})
       });
 
       const anno = elem.getAnnotation()!;
@@ -74,11 +70,7 @@ describe("TextAnnotation element", () => {
 
     it("produces a new object each time it is called", () => {
       const elem = makeElement({
-        jsonProperties: {
-          annotation: {
-            textBlock: TextBlock.create({ styleName: "block" }).toJSON(),
-          },
-        },
+        textAnnotationData: JSON.stringify({textBlock: TextBlock.create({ styleName: "block" }).toJSON()})
       });
 
       const anno1 = elem.getAnnotation()!;
@@ -89,7 +81,7 @@ describe("TextAnnotation element", () => {
   });
 
   describe("setAnnotation", () => {
-    it("updates JSON properties", () => {
+    it("updates properties", () => {
       const elem = makeElement();
 
       const textBlock = TextBlock.create({ styleName: "block" });
@@ -97,23 +89,9 @@ describe("TextAnnotation element", () => {
       const annotation = TextAnnotation.fromJSON({ textBlock: textBlock.toJSON() });
       elem.setAnnotation(annotation);
 
-      expect(elem.jsonProperties.annotation).to.deep.equal(annotation.toJSON());
-      expect(elem.jsonProperties.annotation).not.to.equal(annotation.toJSON());
+      expect(elem.getAnnotation()!.toJSON()).to.deep.equal(annotation.toJSON());
+      expect(elem.getAnnotation()!.toJSON()).not.to.equal(annotation.toJSON());
     });
-
-    // it("uses default subcategory by default", () => {
-    //   const elem = makeElement();
-    //   elem.setAnnotation(TextAnnotation.fromJSON({ textBlock: { styleName: "block" } }));
-    //   expect(elem.geom!.length).to.equal(1);
-    //   expect(elem.geom![0].appearance!.subCategory).to.equal("0x13");
-    // });
-
-    // it("uses specific subcategory if provided", () => {
-    //   const elem = makeElement();
-    //   elem.setAnnotation(TextAnnotation.fromJSON({ textBlock: { styleName: "block" } }));
-    //   expect(elem.geom!.length).to.equal(1);
-    //   expect(elem.geom![0].appearance!.subCategory).to.equal("0x1234");
-    // });
   });
 
   function createAnnotation(): TextAnnotation {
@@ -204,8 +182,9 @@ describe("TextAnnotation element", () => {
 
     after(() => imodel.close());
 
-    function createElement3d(props?: Partial<TextAnnotation3dProps>): TextAnnotation3d {
-      return TextAnnotation3d.fromJSON({
+    function createElement3d(createArgs?: Partial<TextAnnotation3dCreateArgs>): TextAnnotation3d {
+      return TextAnnotation3d.create(imodel, {
+        textAnnotationData: createArgs?.textAnnotationData,
         category: seedCategoryId,
         model: seedModelId,
         code: Code.createEmpty(),
@@ -213,14 +192,12 @@ describe("TextAnnotation element", () => {
           origin: { x: 0, y: 0, z: 0 },
           angles: YawPitchRollAngles.createDegrees(0, 0, 0).toJSON(),
         },
-        ...props,
-        classFullName: TextAnnotation3d.classFullName,
-      }, imodel);
+      })
     }
 
-    it("create method does not automatically compute the geometry", () => {
+    it("creating element does not automatically compute the geometry", () => {
       const annotation = createAnnotation();
-      const el = createElement3d({ jsonProperties: { annotation: annotation.toJSON() } });
+      const el = createElement3d({ textAnnotationData: annotation.toJSON() });
       expect(el.getAnnotation()!.equals(annotation)).to.be.true;
       expect(el.geom).to.be.undefined;
     });
@@ -243,8 +220,6 @@ describe("TextAnnotation element", () => {
         }
 
         expectPlacement3d(el0, false);
-        expect(el0.toJSON().elementGeometryBuilderParams).not.to.be.undefined;
-
 
         const elId = el0.insert()
 
@@ -260,9 +235,11 @@ describe("TextAnnotation element", () => {
 
         if (!annotation) {
           expect(anno).to.be.undefined;
+          expect(el0.toJSON().elementGeometryBuilderParams).to.be.undefined;
         } else {
           expect(anno).not.to.be.undefined;
           expect(anno!.equals(annotation)).to.be.true;
+          expect(el0.toJSON().elementGeometryBuilderParams).not.to.be.undefined;
         }
       }
 
@@ -271,6 +248,7 @@ describe("TextAnnotation element", () => {
       it("roundtrips an annotation with a textBlock", async () => { await test(createAnnotation()); });
     });
   });
+
   describe("TextAnnotation2d Persistence", () => {
     let imodel: StandaloneDb;
     let seedCategoryId: string;
@@ -294,8 +272,9 @@ describe("TextAnnotation element", () => {
       imodel.close();
     });
 
-    function createElement2d(props?: Partial<TextAnnotation2dProps>): TextAnnotation2d {
-      return TextAnnotation2d.fromJSON({
+    function createElement2d(createArgs?: Partial<TextAnnotation2dCreateArgs>): TextAnnotation2d {
+      return TextAnnotation2d.create(imodel, {
+        textAnnotationData: createArgs?.textAnnotationData,
         category: seedCategoryId,
         model: seedModelId,
         code: Code.createEmpty(),
@@ -303,16 +282,12 @@ describe("TextAnnotation element", () => {
           origin: { x: 0, y: 0 },
           angle: Angle.createDegrees(0).toJSON(),
         },
-        ...props,
-        classFullName: TextAnnotation2d.classFullName,
-      }, imodel);
+      })
     }
 
-
-
-    it("create method does not automatically compute the geometry", () => {
+    it("creating element does not automatically compute the geometry", () => {
       const annotation = createAnnotation();
-      const el = createElement2d({ jsonProperties: { annotation: annotation.toJSON() } });
+      const el = createElement2d({ textAnnotationData: annotation.toJSON() });
       expect(el.getAnnotation()!.equals(annotation)).to.be.true;
       expect(el.geom).to.be.undefined;
     });
@@ -332,7 +307,6 @@ describe("TextAnnotation element", () => {
         }
 
         expectPlacement2d(el0, false);
-        expect(el0.toJSON().elementGeometryBuilderParams).not.to.be.undefined;
 
         const elId = el0.insert();
 
@@ -348,9 +322,11 @@ describe("TextAnnotation element", () => {
 
         if (!annotation) {
           expect(anno).to.be.undefined;
+          expect(el0.toJSON().elementGeometryBuilderParams).to.be.undefined;
         } else {
           expect(anno).not.to.be.undefined;
           expect(anno!.equals(annotation)).to.be.true;
+          expect(el0.toJSON().elementGeometryBuilderParams).not.to.be.undefined;
         }
       }
 
