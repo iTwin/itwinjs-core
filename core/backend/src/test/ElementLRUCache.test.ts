@@ -415,7 +415,7 @@ describe('InstanceKeyLRUCache', () => {
     cache.set(testArgs2, testResults[1]);
     cache.set(testArgs3, testResults[2]);
     expect(cache.size).to.equal(3);
-    cache.deleteById(testArgs1.partialKey.id);
+    cache.deleteById(testArgs1.partialKey!.id);
     expect(cache.size).to.equal(2);
 
     const retrievedResult = cache.get({ partialKey: testArgs1.partialKey });
