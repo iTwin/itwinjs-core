@@ -166,6 +166,40 @@ jobs:
       - script: node common/scripts/install-run-rush.js install
         displayName: rush install
 
+      - ${{ if or(eq(parameters.BumpType, 'minor'), eq('${{ parameters.BumpType }}', 'minor'), eq('${{ parameters.BumpType }}', 'releaseCandidate')) }}:
+          - bash: node common/scripts/install-run-rush.js
+            displayName: rush lint-deprecation
+
+          - bash: git add .
+            displayName: git add .
+
+          - bash: |
+              # Commit deprecation date changes
+              git commit -m "update deprecation dates"
+
+              # Get the SHA-1 Hash of deprecation changes commit to apply it later on master
+              deprecationDateCommitHash=$(git log -1 --format=%H)
+
+              echo "##vso[task.setvariable variable=hash;isOutput=true]$deprecationDateCommitHash"
+            displayName: Commit deprecation date changes and save SHA-1 hash of the commit
+            name: getDeprecationCommit
+
+          - bash: |
+              currentBranch=$(git branch --show-current)
+              deprecationCommitHash=$(getDeprecationCommit.hash)
+
+              git checkout master
+              git cherry-pick $deprecationCommitHash
+              # TODO: handle case where cherry picking will produce a merge conflict
+              git checkout $currentBranch
+            continueOnError: true
+
+      - bash: |
+          echo Committing deprecation documentation date changes...
+
+          git commit -m "$(getVersion.version)" --author="imodeljs-admin <imodeljs-admin@users.noreply.github.com>"
+        displayName: Commit version bump
+
       - bash: node common/scripts/install-run-rush.js audit
         displayName: rush audit
 
@@ -228,9 +262,6 @@ jobs:
             failOnStderr: true
             displayName: NextVersion.md rename and replace
             condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/heads/release/'))
-
-      - script: node common/scripts/install-run-rush.js rush lint-deprecation
-        displayName: rush lint-deprecation to update or add missing dates
 
       - bash: "git add ."
         displayName: Git add
