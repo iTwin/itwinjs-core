@@ -235,6 +235,15 @@ export class InstanceKeyLRUCache {
     }
     return cachedResult;
   }
+  public deleteById(id: string): boolean {
+    if (!Id64.isValidId64(id))
+      ITwinError.throwError<ITwinError>({ message: "Invalid id provided", iTwinErrorId: { scope: "imodel-cache", key: "invalid-arguments" } });
+
+    const cacheArgs = {
+      id: Id64.fromString(id),
+    }
+    return this.deleteCachedArgs(cacheArgs);
+  }
   public delete(key: IModelJsNative.ResolveInstanceKeyArgs): boolean {
     const cacheArgs = InstanceKeyLRUCache.makeCachedArgs(key);
     return this.deleteCachedArgs(cacheArgs);
