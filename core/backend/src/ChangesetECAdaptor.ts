@@ -441,11 +441,23 @@ export interface ECChangeUnifierCache extends Disposable {
 }
 /** @beta */
 export namespace ECChangeUnifierCache {
-  export function createInMemory(): ECChangeUnifierCache {
+  /**
+   * Creates and returns a new in-memory cache for EC change unification.
+   * @note This cache is fast but recommended for small to medium size changesets. As it store changes in memory using a hash map, it may run out of memory for larger changesets.
+   * @returns {ECChangeUnifierCache} An instance of cache that store changes in memory using a hash map.
+   */
+  export function createInMemoryCache(): ECChangeUnifierCache {
     return new InMemoryInstanceCache();
   }
-  
-  export function createSqliteBacked(db: AnyDb, bufferedReadInstanceSizeInBytes = 1024 * 1024 * 10): ECChangeUnifierCache {
+
+  /**
+   * Creates an ECChangeUnifierCache that is backed by a database.
+   * @note This cache is suitable for larger changesets and uses SQLite to store changes. It is slower than the in-memory cache but can handle larger datasets without running out of memory.
+   * @param db - The database instance to use for caching.
+   * @param bufferedReadInstanceSizeInBytes - The size in bytes for buffered read instances. Defaults to 10 MB.
+   * @returns An instance of ECChangeUnifierCache backed by SQLite temp db.
+   */
+  export function createSqliteBackedCache(db: AnyDb, bufferedReadInstanceSizeInBytes = 1024 * 1024 * 10): ECChangeUnifierCache {
     return new SqliteBackedInstanceCache(db, bufferedReadInstanceSizeInBytes);
   }
 }

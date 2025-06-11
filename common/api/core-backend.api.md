@@ -2027,10 +2027,8 @@ export interface ECChangeUnifierCache extends Disposable {
 
 // @beta (undocumented)
 export namespace ECChangeUnifierCache {
-    // (undocumented)
-    export function createInMemory(): ECChangeUnifierCache;
-    // (undocumented)
-    export function createSqliteBacked(db: AnyDb, bufferedReadInstanceSizeInBytes?: number): ECChangeUnifierCache;
+    export function createInMemoryCache(): ECChangeUnifierCache;
+    export function createSqliteBackedCache(db: AnyDb, bufferedReadInstanceSizeInBytes?: number): ECChangeUnifierCache;
 }
 
 // @public
