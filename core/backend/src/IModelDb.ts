@@ -53,7 +53,7 @@ import { Relationships } from "./Relationship";
 import { SchemaSync } from "./SchemaSync";
 import { createServerBasedLocks } from "./internal/ServerBasedLocks";
 import { SqliteStatement, StatementCache } from "./SqliteStatement";
-import { ComputeRangesForTextLayoutArgs, TextLayoutRanges } from "./TextAnnotationLayout";
+import { ComputeRangesForTextLayoutArgs, TextLayoutRanges } from "./annotations/TextBlockLayout";
 import { TxnManager } from "./TxnManager";
 import { DrawingViewDefinition, SheetViewDefinition, ViewDefinition } from "./ViewDefinition";
 import { ViewStore } from "./ViewStore";
@@ -814,6 +814,7 @@ export abstract class IModelDb extends IModel {
    * @note This will not delete Txns that have already been saved, even if they have not yet been pushed.
   */
   public abandonChanges(): void {
+    this.clearCaches();
     this[_nativeDb].abandonChanges();
   }
 
