@@ -1333,7 +1333,7 @@ export abstract class IModelDb extends IModel {
       throw new IModelError(val.error.status, `Error getting class meta data for: ${classFullName}`);
 
     assert(undefined !== val.result);
-  // eslint-disable-next-line @typescript-eslint/no-deprecated
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     const metaData = new EntityMetaData(JSON.parse(val.result));
     // eslint-disable-next-line @typescript-eslint/no-deprecated
     this.classMetaDataRegistry.add(classFullName, metaData);
