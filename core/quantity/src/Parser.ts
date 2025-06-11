@@ -283,15 +283,15 @@ export class Parser {
                 processingNumber = false;
                 wipToken = "";
               }
-             else if (wipToken.length > 0) {
-               if (signToken.length > 0) {
-                wipToken = signToken + wipToken;
-                signToken = "";
-               }
+              else if (format?.type === "Bearing" && wipToken.length > 0) {
+                if (signToken.length > 0) {
+                  wipToken = signToken + wipToken;
+                  signToken = "";
+                }
              tokens.push(new ParseToken(parseFloat(wipToken))); // Create token for the current number
              processingNumber = false;
              wipToken = "";
-            }
+              }
               continue;
             } else {
               // an "E" or "e" may signify scientific notation
