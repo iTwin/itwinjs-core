@@ -34,25 +34,6 @@ describe("CodeSpecs", async () => {
     id: "0x1f",
   };
 
-  /** verify that given codespec has expected properties */
-  function verifyCodeSpec(
-    codeSpec: CodeSpec,
-    requestedIModel: IModelConnection,
-    requestedName: string,
-    requestedId: string
-  ) {
-    expect(codeSpec).to.exist;
-
-    expect(codeSpec.id).to.exist;
-    expect(codeSpec.id).to.equal(requestedId);
-
-    expect(codeSpec.name).to.exist;
-    expect(codeSpec.name).to.equal(requestedName);
-
-    expect(codeSpec.iModel).to.exist;
-    expect(codeSpec.iModel.name).to.equal(requestedIModel.name);
-  }
-
   it("should load CodeSpecs", async () => {
     const nullCodeSpec: CodeSpec = await iModel.codeSpecs.getByName(
       BisCodeSpec.nullCodeSpec
@@ -91,7 +72,11 @@ describe("CodeSpecs", async () => {
 
     const codeSpec = await iModel.codeSpecs.getByName(codeSpecName);
 
-    verifyCodeSpec(codeSpec, iModel, codeSpecName, codeSpecId);
+    expect(codeSpec.id).to.equal(codeSpecId);
+
+    expect(codeSpec.name).to.equal(codeSpecName);
+
+    expect(codeSpec.iModel.name).to.equal(iModel.name);
   });
 
   it("should return code spec by id", async () => {
@@ -100,7 +85,11 @@ describe("CodeSpecs", async () => {
 
     const codeSpec = await iModel.codeSpecs.getById(codeSpecId);
 
-    verifyCodeSpec(codeSpec, iModel, codeSpecName, codeSpecId);
+    expect(codeSpec.id).to.equal(codeSpecId);
+
+    expect(codeSpec.name).to.equal(codeSpecName);
+
+    expect(codeSpec.iModel.name).to.equal(iModel.name);
   });
 
   it("should fail because empty id", async () => {
