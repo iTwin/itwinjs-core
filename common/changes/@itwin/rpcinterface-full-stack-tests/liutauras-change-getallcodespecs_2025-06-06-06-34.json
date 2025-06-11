@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/rpcinterface-full-stack-tests",
-      "comment": "Removed CodeSpecs tests.",
+      "comment": "Moved CodeSpecs tests.",
       "type": "none"
     }
   ],
