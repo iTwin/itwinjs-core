@@ -1,6 +1,7 @@
 import { expect } from "chai";
 import { CachedElement, ElementLRUCache, InstanceKeyLRUCache } from "../internal/ElementLRUCache";
 import { IModelJsNative } from "../core-backend";
+import { Id64 } from "@itwin/core-bentley";
 
 describe('ElementLruCache', () => {
   const testElem1: CachedElement = {
@@ -249,7 +250,7 @@ describe('ElementLruCache', () => {
 describe('InstanceKeyLRUCache', () => {
   const testArgs1: IModelJsNative.ResolveInstanceKeyArgs = {
     partialKey: {
-      id: "0x001",
+      id: Id64.fromJSON("0x123"),
       baseClassName: "baseName",
     },
   }
