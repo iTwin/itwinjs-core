@@ -1721,7 +1721,7 @@ function processSchemaWriteStatus(status: SchemaWriteStatus): void {
 export namespace IModelDb {
 
   /** The collection of models in an [[IModelDb]].
-   * @public
+   * @public @preview
    */
   export class Models {
     /** @internal */
@@ -1966,7 +1966,7 @@ export namespace IModelDb {
   }
 
   /** The collection of elements in an [[IModelDb]].
-   * @public
+   * @public @preview
    */
   export class Elements implements GuidMapper {
     /** @internal */
@@ -2541,7 +2541,7 @@ export namespace IModelDb {
   }
 
   /** The collection of views in an [[IModelDb]].
-   * @public
+   * @public @preview
    */
   export class Views {
     /** @internal */
