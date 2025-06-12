@@ -481,7 +481,7 @@ export class IModelTileTree extends TileTree {
         ? this.staticBranch.findElementRange(id)
         : undefined;
       if (!range) {
-        range = Range3d.createNull();
+        range = Range3d.createXYZXYZ(-1, -1, -1, 1, 1, 1);
       }
       elemChanges.push({
         id,

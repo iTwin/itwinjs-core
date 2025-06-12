@@ -312,6 +312,9 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     const changedIds = getScriptDelta(prevScript, newScript);
     this.scheduleScript = newScript;
     this.onScheduleEditingChanged.raiseEvent({ changedElementIds: changedIds });
+    for (const modelTimeline of this.scheduleScript.modelTimelines) {
+      modelTimeline.isEditingCommitted = false;
+    }
   }
 
   /** Commit the editing session. */
