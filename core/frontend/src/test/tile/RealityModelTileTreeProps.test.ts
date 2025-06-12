@@ -49,14 +49,14 @@ class Source implements RealityDataSource {
     //
   }
 
-  public getServiceUrl = () => Promise.resolve(undefined);
+  public getServiceUrl = async () => Promise.resolve(undefined);
   public getTileContentType(): "tile" | "tileset" { return "tile" }
-  public getRootDocument = () => Promise.resolve({});
-  public getTileContent = () => Promise.resolve({});
-  public getTileJson = () => Promise.resolve({});
+  public getRootDocument = async () => Promise.resolve({});
+  public getTileContent = async () => Promise.resolve({});
+  public getTileJson = async () => Promise.resolve({});
   public getTilesetUrl = () => undefined;
-  public getSpatialLocationAndExtents = () => Promise.resolve(undefined);
-  public getPublisherProductInfo = () => Promise.resolve(undefined);
+  public getSpatialLocationAndExtents = async () => Promise.resolve(undefined);
+  public getPublisherProductInfo = async () => Promise.resolve(undefined);
 }
 
 function expectMaxSSE(expected:number | undefined, useGeometricError?: boolean, maxSSE?: number | undefined, extras?: any): void {
