@@ -1243,15 +1243,15 @@ describe("Triangulation", () => {
 
   function checkDelaunayTriangulation(graph: HalfEdgeGraph, ck: Checker, expectDelaunay: boolean): void {
     graph.announceFaceLoops(
-      (g: HalfEdgeGraph, seed: HalfEdge) => {
+      (_g: HalfEdgeGraph, seed: HalfEdge) => {
         if (seed.isMaskSet(HalfEdgeMask.EXTERIOR))
           return true; // ignore exterior face
         if (seed.countEdgesAroundFace() !== 3)
           return ck.testTrue(false, "expect face to be a triangle");
-        const p0 = seed.getPoint3d();
-        const p1 = seed.faceSuccessor.getPoint3d();
-        const p2 = seed.faceSuccessor.faceSuccessor.getPoint3d();
-        const circumcircle = Arc3d.createCircularStartMiddleEnd(p0, p1, p2);
+        const v0 = seed;
+        const v1 = seed.faceSuccessor;
+        const v2 = seed.faceSuccessor.faceSuccessor;
+        const circumcircle = Arc3d.createCircularStartMiddleEnd(v0.getPoint3d(), v1.getPoint3d(), v2.getPoint3d());
         if (!circumcircle || circumcircle instanceof LineString3d)
           return ck.testTrue(false, "expect triangle to have a circumcircle");
         circumcircle.sweep = AngleSweep.create360();
@@ -1259,12 +1259,13 @@ describe("Triangulation", () => {
         const radius = circumcircle.circularRadius();
         if (!radius)
           return ck.testTrue(false, "expect circumcircle to be circular");
-        for (const node of g.allHalfEdges) {
-          const vertex = node.getPoint3d();
-          if (vertex.isAlmostEqual(p0) || vertex.isAlmostEqual(p1) || vertex.isAlmostEqual(p2))
-            continue; // skip triangle vertices
-          let k = radius - Geometry.smallMetricDistance;
-          let k2 = k * k;
+        for (const node of [v0, v1, v2]) {
+          const edgeMate = node.edgeMate;
+          if (edgeMate.isMaskSet(HalfEdgeMask.EXTERIOR))
+            continue; // ignore exterior edges
+          const vertex = edgeMate.facePredecessor.getPoint3d();
+          const k = radius - Geometry.smallMetricDistance;
+          const k2 = k * k;
           if (vertex.distanceSquaredXY(center) < k2)
             return expectDelaunay ? ck.testTrue(false, "expect no vertex inside circumcircle") : true;
         }
