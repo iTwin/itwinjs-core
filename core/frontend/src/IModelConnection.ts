@@ -24,12 +24,11 @@ import {
   ElementNotFoundError,
   type IModelReadAPI,
   type IModelReadIpcAPI,
-  mapTextureIModelReadToRPC,
-  mapTextureLoadPropsRPCToIModelRead,
   MaxTextureSizeNotGreaterThanZeroError,
   MeshesNotFoundError,
   type QueryArgs,
   Texture as TextureIModelRead,
+  TextureMapping,
   TextureNotFoundError,
 } from "@itwin/imodelread-common";
 import { IpcIModelRead } from "@itwin/imodelread-client-ipc";
@@ -515,7 +514,7 @@ export abstract class IModelConnection extends IModel {
       let img: TextureIModelRead;
 
       try {
-        img = await this._iModelReadApi.getTexture(mapTextureLoadPropsRPCToIModelRead(textureLoadProps));
+        img = await this._iModelReadApi.getTexture(TextureMapping.mapTextureLoadPropsRPCToIModelRead(textureLoadProps));
       } catch (error: unknown) {
         if (error instanceof TextureNotFoundError) {
           return undefined;
@@ -526,7 +525,7 @@ export abstract class IModelConnection extends IModel {
         throw error;
       }
 
-      return mapTextureIModelReadToRPC(img);
+      return TextureMapping.mapTextureIModelReadToRPC(img);
     }
     return undefined;
   }
@@ -836,7 +835,7 @@ export class BlankConnection extends IModelConnection {
       getConnectionProps: async () => props,
       getTooltipMessage: async () => ({ lines: [] }),
       getElementMeshes: () => { throw new IModelError(IModelStatus.BadRequest, "getElementMeshes not available for blank connection") },
-      getTextureData: () => { throw new IModelError(IModelStatus.BadRequest, "getElementMeshes not available for blank connection") },
+      getTexture: () => { throw new IModelError(IModelStatus.BadRequest, "getTexture not available for blank connection") },
       runQuery: () => new ECSqlReader({ execute: async () => ECSqlReader.createDbResponseFromRows([], DbResponseStatus.Done)}, ""),
     }
 
