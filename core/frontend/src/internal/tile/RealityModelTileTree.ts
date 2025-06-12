@@ -270,8 +270,10 @@ export class RealityModelTileTreeProps {
       this.yAxisUp = true;
     }
     
-    this.maximumScreenSpaceError = json.asset.extras?.maximumScreenSpaceError;
-    if (undefined === this.maximumScreenSpaceError && rdSource.usesGeometricError) {
+    const maxSSE = json.asset.extras?.maximumScreenSpaceError;
+    if (typeof maxSSE === "number") {
+      this.maximumScreenSpaceError = json.asset.extras?.maximumScreenSpaceError;
+    } else if (rdSource.usesGeometricError) {
       this.maximumScreenSpaceError = rdSource.maximumScreenSpaceError ?? 1;
     }
   }
