@@ -336,13 +336,13 @@ export class XYZ implements XYAndZ {
     this.z += scale * other.z;
   }
   /** Multiply the x, y, z parts by scale. */
-  public scaleInPlace(scale: number) {
+  public scaleInPlace(scale: number): void  {
     this.x *= scale;
     this.y *= scale;
     this.z *= scale;
   }
   /** Add to x, y, z parts */
-  public addXYZInPlace(dx: number = 0.0, dy: number = 0.0, dz: number = 0.0) {
+  public addXYZInPlace(dx: number = 0.0, dy: number = 0.0, dz: number = 0.0): void  {
     this.x += dx;
     this.y += dy;
     this.z += dz;

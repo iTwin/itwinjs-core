@@ -163,7 +163,7 @@ export class Triangulator {
   }
 
   /**
-   * Create a graph from an xy-triangulation of the given points.
+   * Create a graph from an xy-triangulation of the given points. The triangulation is Delaunay.
    * * The outer boundary of the graph is the xy-convex hull of the points; it is marked `HalfEdgeMask.EXTERIOR`.
    * @param points the points to triangulate
    * @param zRule optional rule for updating the z-coordinate of an existing vertex when an xy-duplicate point is
@@ -194,6 +194,20 @@ export class Triangulator {
     }
     if (face0.countEdgesAroundFace() > 3) // no strictly interior vertices to split the hull polygon, so triangulate it
       return Triangulator.createTriangulatedGraphFromSingleLoop(hull);
+    return graph;
+  }
+  /**
+   * Create a graph from an xy-triangulation of the given points and indices. The triangulation is Delaunay.
+   * * The outer boundary of the graph is the xy-convex hull of the points; it is marked `HalfEdgeMask.EXTERIOR`.
+   * @param pointsWithIndices the points to triangulate along with their indices.
+   */
+  public static createTriangulatedGraphFromPointsWithIndices(
+    pointsWithIndices: [Point3d, number][],
+  ): HalfEdgeGraph | undefined {
+    if (pointsWithIndices.length < 3)
+      return undefined;
+    const graph = new HalfEdgeGraph();
+    // TODO: implement triangulation with indices
     return graph;
   }
   /**
@@ -311,7 +325,7 @@ export class Triangulator {
   }
 
   /**
-   * Triangulate the polygon made up of by a series of points.
+   * Triangulate the polygon made up of by a series of points. The triangulation is Delaunay.
    * * The loop may be either CCW or CW -- CCW order will be used for triangles.
    * * To triangulate a polygon with holes, use createTriangulatedGraphFromLoops.
    */
