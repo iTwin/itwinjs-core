@@ -239,8 +239,8 @@ describe("Bearing format tests:", () => {
 
      const validTestData = [
       { input: "n45 45 45e", expected:  45.7625 },
-  //  { input: "n45.4545e", expected:  45.765 }, // giving wrong output
-  //  { input: "n65.4545e", expected:  65.7625 }, // giving wrong output
+      { input: "n45.4545e", expected:  45.765 },
+      { input: "n65.4545e", expected:  65.7625 },
       { input: "n 45 45 45 e", expected: 45.7625 },
       { input: "n35 45 45.101e", expected: 35.7625280 },
       { input: "n85 45 45.9e", expected: 85.76275 },
