@@ -9,7 +9,7 @@ import { TestUsers, TestUtility } from "@itwin/oidc-signin-tool";
 import { assert, expect } from "chai";
 import { BriefcaseManager, IModelHost } from "@itwin/core-backend";
 import { _hubAccess } from "@itwin/core-backend/lib/cjs/internal/Symbols";
-import { HubWrappers } from "@itwin/core-backend/lib/cjs/test/IModelTestUtils";
+import { HubWrappers } from "@itwin/backend-test-support";
 import { HubUtility } from "../HubUtility";
 
 import "./StartupShutdown"; // calls startup/shutdown IModelHost before/after all tests

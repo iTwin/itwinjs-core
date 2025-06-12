@@ -185,7 +185,7 @@ describe("Sheet views", () => {
   describe("ViewAttachments", () => {
     it("areAllTileTreesLoaded should return true when attachments are outside of the viewed extents", async () => {
       // Create Sheet View with attachment
-      const filePath = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/cjs/test/assets/sheetViewTest.bim");
+      const filePath = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend-tests/lib/cjs/test/assets/sheetViewTest.bim");
       const sheetViewId = await coreFullStackTestIpc.insertSheetViewWithAttachment(filePath);
       const iModel = await BriefcaseConnection.openStandalone(filePath);
 

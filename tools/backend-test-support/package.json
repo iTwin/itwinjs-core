@@ -1,0 +1,97 @@
+{
+  "name": "@itwin/backend-test-support",
+  "version": "5.1.0-dev.20",
+  "description": "iTwin.js test support library",
+  "main": "lib/cjs/backend-test-support.js",
+  "module": "lib/esm/backend-test-support.js",
+  "typings": "lib/cjs/backend-test-support",
+  "license": "MIT",
+  "engines": {
+    "node": "^20.0.0 || ^22.0.0"
+  },
+  "scripts": {
+    "build": "npm run -s build:cjs && npm run -s build:esm",
+    "build:cjs": "tsc 1>&2 --outDir lib/cjs",
+    "build:esm": "tsc 1>&2 --module ES2022 --outDir lib/esm",
+    "clean": "rimraf -g lib .rush/temp/package-deps*.json",
+    "docs": "",
+    "cover": "",
+    "extract-api": "betools extract-api --entry=backend-test-support",
+    "lint": "eslint \"./src/**/*.ts\" 1>&2",
+    "lint-fix": "eslint --fix -f visualstudio \"./src/**/*.ts\" 1>&2",
+    "test": ""
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/iTwin/itwinjs-core.git",
+    "directory": "backend-test-support"
+  },
+  "keywords": [
+    "Bentley",
+    "BIM",
+    "iModel",
+    "digital-twin",
+    "iTwin"
+  ],
+  "author": {
+    "name": "Bentley Systems, Inc.",
+    "url": "http://www.bentley.com"
+  },
+  "peerDependencies": {
+    "@itwin/core-backend": "workspace:*",
+    "@itwin/core-bentley": "workspace:*",
+    "@itwin/core-common": "workspace:*",
+    "@itwin/core-geometry": "workspace:*"
+  },
+  "peerDependenciesMeta": {
+    "@opentelemetry/api": {
+      "optional": true
+    }
+  },
+  "//devDependencies": [
+    "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
+    "NOTE: All tools used by scripts in this package must be listed as devDependencies"
+  ],
+  "devDependencies": {
+    "@itwin/build-tools": "workspace:*",
+    "@itwin/core-backend": "workspace:*",
+    "@itwin/core-bentley": "workspace:*",
+    "@itwin/core-common": "workspace:*",
+    "@itwin/core-geometry": "workspace:*",
+    "@itwin/ecsql-common": "workspace:*",
+    "@itwin/eslint-plugin": "5.0.0-dev.1",
+    "@types/chai": "4.3.1",
+    "@types/chai-as-promised": "^7",
+    "@types/fs-extra": "^4.0.7",
+    "@types/node": "~20.17.0",
+    "@types/semver": "7.3.10",
+    "chai": "^4.3.10",
+    "chai-as-promised": "^7.1.1",
+    "dotenv": "^16.4.5",
+    "dotenv-expand": "^5.1.0",
+    "eslint": "^9.13.0",
+    "fs-extra": "^8.1.0",
+    "internal-tools": "workspace:*",
+    "node-simctl": "~7.6.1",
+    "null-loader": "^4.0.1",
+    "rimraf": "^6.0.1",
+    "source-map-loader": "^5.0.0",
+    "typescript": "~5.6.2",
+    "marked": "^14.1.3",
+    "sql-formatter": "^15.4.6",
+    "webpack": "^5.97.1"
+  },
+  "dependencies": {
+    "@bentley/imodeljs-native": "5.1.41",
+    "@itwin/cloud-agnostic-core": "^2.2.4",
+    "@itwin/object-storage-azure": "^2.3.0",
+    "@itwin/object-storage-core": "^2.3.0",
+    "form-data": "^4.0.1",
+    "fs-extra": "^8.1.0",
+    "inversify": "~6.0.1",
+    "json5": "^2.2.3",
+    "linebreak": "^1.1.0",
+    "semver": "^7.5.2",
+    "touch": "^3.1.0"
+  }
+}

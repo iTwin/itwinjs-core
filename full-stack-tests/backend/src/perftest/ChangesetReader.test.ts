@@ -4,9 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { ChangesetECAdaptor, ChannelControl, DrawingCategory, ECChangeUnifierCache, IModelHost, PartialECChangeUnifier, SqliteChangesetReader } from "@itwin/core-backend";
-import { HubMock } from "@itwin/core-backend/lib/cjs/internal/HubMock";
-import { HubWrappers, IModelTestUtils } from "@itwin/core-backend/lib/cjs/test/index";
-import { KnownTestLocations } from "@itwin/core-backend/lib/cjs/test/KnownTestLocations";
+import { HubMock, HubWrappers, IModelTestUtils, KnownTestLocations } from "@itwin/backend-test-support";
 import { GuidString, Id64, StopWatch } from "@itwin/core-bentley";
 import { Code, IModel, SubCategoryAppearance } from "@itwin/core-common";
 import { Reporter } from "@itwin/perf-tools";

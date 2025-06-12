@@ -10,7 +10,7 @@ import * as path from "path";
 import * as sinon from "sinon";
 import { CloudSqlite, IModelDb, IModelHost, IModelJsFs, NativeCloudSqlite, SettingsPriority, SnapshotDb, V2CheckpointAccessProps, V2CheckpointManager } from "@itwin/core-backend";
 import { _hubAccess } from "@itwin/core-backend/lib/cjs/internal/Symbols";
-import { KnownTestLocations } from "@itwin/core-backend/lib/cjs/test/KnownTestLocations";
+import { KnownTestLocations } from "@itwin/backend-test-support";
 import { AccessToken, GuidString } from "@itwin/core-bentley";
 import { ChangesetProps, IModelVersion } from "@itwin/core-common";
 import { TestUsers, TestUtility } from "@itwin/oidc-signin-tool";

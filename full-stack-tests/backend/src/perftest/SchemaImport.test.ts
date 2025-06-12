@@ -6,7 +6,7 @@ import { assert } from "chai";
 import * as path from "path";
 import { Reporter } from "@itwin/perf-tools";
 import { IModelHost, IModelJsFs } from "@itwin/core-backend";
-import { KnownTestLocations } from "@itwin/core-backend/lib/cjs/test/index";
+import { KnownTestLocations } from "@itwin/backend-test-support";
 import { PerfTestDataMgr } from "./PerfTestUtils";
 
 describe("SchemaDesignPerf Schema Import", () => {
