@@ -1,6 +1,6 @@
 {
   "name": "@itwin/presentation-common",
-  "version": "5.1.0-dev.32",
+  "version": "5.1.0-dev.37",
   "description": "Common pieces for iModel.js presentation packages",
   "license": "MIT",
   "repository": {
@@ -63,6 +63,9 @@
     "pseudolocalize:public": "betools pseudolocalize --englishDir ./assets/locales/en --out ./lib/public/locales/en-PSEUDO",
     "test": "mocha --enable-source-maps --config ./.mocharc.json",
     "prettier:fix": "prettier --write ."
+  },
+  "dependencies": {
+    "@itwin/presentation-shared": "^1.2.1"
   },
   "peerDependencies": {
     "@itwin/core-bentley": "workspace:*",
