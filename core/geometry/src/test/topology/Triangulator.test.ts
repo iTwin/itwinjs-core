@@ -1277,6 +1277,27 @@ describe("Triangulation", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
 
+    // non-convex quad
+    const myGraph = new HalfEdgeGraph();
+    const n0 = myGraph.addEdgeXY(2, 1, 0, 0);
+    const n1 = n0.faceSuccessor;
+    const n2 = myGraph.addEdgeXY(0, 0, 1, 0);
+    const n3 = n2.faceSuccessor;
+    const n4 = myGraph.addEdgeXY(1, 0, 2, 1);
+    const n5 = n4.faceSuccessor;
+    HalfEdge.pinch(n1, n2);
+    HalfEdge.pinch(n3, n4);
+    HalfEdge.pinch(n5, n0);
+    const n6 = myGraph.addEdgeXY(0, 0, 2, -1);
+    const n7 = n6.faceSuccessor;
+    const n8 = myGraph.addEdgeXY(2, -1, 1, 0);
+    const n9 = n8.faceSuccessor;
+    HalfEdge.pinch(n7, n8);
+    HalfEdge.pinch(n3, n9);
+    HalfEdge.pinch(n1, n6);
+    ck.testFalse(Triangulator.computeCircumcircleDeterminantIsStrongPositive(n2), "no need to flip the diagonal of a non-convex quad");
+    ck.testFalse(Triangulator.computeCircumcircleDeterminantIsStrongPositive(n3), "no need to flip the diagonal of a non-convex quad");
+
     // Delaunay triangulation
     const graphD = new HalfEdgeGraph();
     let node0 = graphD.addEdgeXY(-3, 0, 0, -1);
