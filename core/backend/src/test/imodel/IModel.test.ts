@@ -2353,6 +2353,37 @@ describe("iModel", () => {
     db.close();
   });
 
+  it("Cache cleared on abandonChanges", () => {
+    const standaloneFile = IModelTestUtils.prepareOutputFile("IModel", "StandaloneReadWrite.bim");
+    const db = StandaloneDb.createEmpty(standaloneFile, { rootSubject: { name: "Standalone" } });
+    db.saveChanges();
+
+    const code = Code.createEmpty();
+    code.value = "foo";
+    const props: TypeDefinitionElementProps = {
+      classFullName: GenericGraphicalType2d.classFullName,
+      model: IModel.dictionaryId,
+      code,
+    };
+    const id = db.elements.insertElement(props);
+    const element1 = db.elements.getElementProps(id);
+    db.abandonChanges();
+
+    code.value = "bar";
+    const props2: TypeDefinitionElementProps = {
+      classFullName: GenericGraphicalType2d.classFullName,
+      model: IModel.dictionaryId,
+      code,
+    };
+    const id2 = db.elements.insertElement(props2);
+    expect(id2).to.equal(id);
+    const element2 = db.elements.getElementProps(id2);
+    expect(element2).to.not.equal(element1);
+
+    db.abandonChanges();
+    db.close();
+  });
+
   it("Standalone iModel properties", () => {
     const standaloneRootSubjectName = "Standalone";
     const standaloneFile1 = IModelTestUtils.prepareOutputFile("IModel", "Standalone1.bim");
