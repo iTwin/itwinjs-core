@@ -271,7 +271,7 @@ class RealityModelTileTreeProps {
     
     this.maximumScreenSpaceError = json.extras.maximumScreenSpaceError;
     if (undefined === this.maximumScreenSpaceError && rdSource.usesGeometricError) {
-      this.maximumScreenSpaceError = rdSource.maximumScreenSpaceError;
+      this.maximumScreenSpaceError = rdSource.maximumScreenSpaceError ?? 1;
     }
   }
 }
