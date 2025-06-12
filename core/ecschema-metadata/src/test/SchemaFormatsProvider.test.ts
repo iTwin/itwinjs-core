@@ -8,6 +8,7 @@ import { expect } from "chai";
 import { SchemaContext } from "../Context";
 import { SchemaFormatsProvider } from "../SchemaFormatsProvider";
 import { deserializeXmlSync } from "./TestUtils/DeserializationHelpers";
+import { SchemaItemFormatProps } from "../Deserialization/JsonProps";
 
 describe("SchemaFormatsProvider", () => {
   let context: SchemaContext;
@@ -32,6 +33,16 @@ describe("SchemaFormatsProvider", () => {
     const usSchemaXml = fs.readFileSync(usSchemaFile, "utf-8");
     deserializeXmlSync(usSchemaXml, context);
 
+    const bisCustomAttributeSchemaFile = path.join(__dirname, "..", "..", "..", "node_modules", "@bentley", "bis-custom-attributes-schema", "BisCustomAttributes.ecschema.xml");
+    const bisCustomAttributeSchemaXml = fs.readFileSync(bisCustomAttributeSchemaFile, "utf-8");
+    deserializeXmlSync(bisCustomAttributeSchemaXml, context);
+
+    const coreCustomAttributeSchemaFile = path.join(__dirname, "..", "..", "..", "node_modules", "@bentley", "core-custom-attributes-schema", "CoreCustomAttributes.ecschema.xml");
+    const coreCustomAttributeSchemaXml = fs.readFileSync(coreCustomAttributeSchemaFile, "utf-8");
+    deserializeXmlSync(coreCustomAttributeSchemaXml, context);
+
+
+
     const schemaFile = path.join(__dirname, "..", "..", "..", "node_modules", "@bentley", "formats-schema", "Formats.ecschema.xml");
     const schemaXml = fs.readFileSync(schemaFile, "utf-8");
     deserializeXmlSync(schemaXml, context);
@@ -40,6 +51,13 @@ describe("SchemaFormatsProvider", () => {
     const aecSchemaXml = fs.readFileSync(aecSchemaFile, "utf-8");
     deserializeXmlSync(aecSchemaXml, context);
 
+    const roadRailSchemaFile = path.join(__dirname, "..", "..", "..", "node_modules", "@bentley", "road-rail-units-schema", "RoadRailUnits.ecschema.xml");
+    const roadRailSchemaXml = fs.readFileSync(roadRailSchemaFile, "utf-8");
+    deserializeXmlSync(roadRailSchemaXml, context);
+
+    const cifUnitsSchemaFile = path.join(__dirname, "..", "..", "..", "node_modules", "@bentley", "cif-units-schema", "CifUnits.ecschema.xml");
+    const cifUnitsSchemaXml = fs.readFileSync(cifUnitsSchemaFile, "utf-8");
+    deserializeXmlSync(cifUnitsSchemaXml, context);
   });
 
   beforeEach(() => {
@@ -68,8 +86,51 @@ describe("SchemaFormatsProvider", () => {
     expect(formatPropsImperial!.composite?.units[0].name).to.equal("Units.FT");
 
     formatsProvider.unitSystem = "metric";
-    const formatPropsMetric = await formatsProvider.getFormat("AecUnits.LENGTH_LONG");
+    const formatPropsMetric = await formatsProvider.getFormat("AecUnits.LENGTH");
     expect(formatPropsMetric).not.to.be.undefined;
-    expect(formatPropsMetric!.composite?.units[0].name).to.equal("Units.M"); // Doesn't return Units.KM because KM is in Metric, not SI, and algorithm finds SI first.
+    expect(formatPropsMetric!.composite?.units[0].name).to.equal("Units.M");
+  });
+
+  it("when using metric system, should return presentation format from KoQ that uses UnitSystem.METRIC", async () => {
+    formatsProvider.unitSystem = "metric";
+
+    let formatProps: SchemaItemFormatProps | undefined;
+    formatProps = await formatsProvider.getFormat("AecUnits.LENGTH_SHORT");
+    expect(formatProps).not.to.be.undefined;
+    expect(formatProps!.composite?.units[0].name).to.equal("Units.MM");
+
+    formatProps = await formatsProvider.getFormat("AecUnits.AREA_LARGE");
+    expect(formatProps).not.to.be.undefined;
+    expect(formatProps!.composite?.units[0].name).to.equal("Units.SQ_KM");
+  });
+
+  it("when using us customary unit system, should return presentation formats that use UnitSystem.USCUSTOM", async () => {
+    formatsProvider.unitSystem = "usCustomary";
+
+    let formatProps: SchemaItemFormatProps | undefined;
+    formatProps = await formatsProvider.getFormat("AecUnits.AREA");
+    expect(formatProps).not.to.be.undefined;
+    expect(formatProps!.composite?.units[0].name).to.equal("Units.SQ_FT");
+
+    formatProps = await formatsProvider.getFormat("AecUnits.LIQUID_VOLUME");
+    expect(formatProps).not.to.be.undefined;
+    expect(formatProps!.composite?.units[0].name).to.equal("Units.GALLON");
+  });
+
+  it("when using us survey unit system, should return presentation formats that use UnitSystem.USSURVEY", async () => {
+    formatsProvider.unitSystem = "usSurvey";
+
+    const formatProps = await formatsProvider.getFormat("RoadRailUnits.LENGTH");
+    expect(formatProps).not.to.be.undefined;
+    expect(formatProps!.composite?.units[0].name).to.equal("Units.US_SURVEY_FT");
+  });
+
+  it("should return a persistence format that uses UnitSystem.FINANCE regardless of the unit system", async () => {
+    formatsProvider.unitSystem = "metric";
+
+    const formatProps = await formatsProvider.getFormat("CifUnits.CURRENCY");
+    expect(formatProps).not.to.be.undefined;
+    expect(formatProps!.composite?.units[0].name).to.equal("Units.MONETARY_UNIT");
+
   });
 });
