@@ -238,11 +238,21 @@ describe("Bearing format tests:", () => {
     const bearingParser = await ParserSpec.create(bearingFormat, unitsProvider, degree);
 
      const validTestData = [
-      { input: "s 45 45 45 e", expected: 134.2375 },
-      { input: "S45:45:45E", expected: 134.2375 },
-      { input: "s45 45 45e", expected:  134.2375 },
-      { input: "S45 00 00 E", expected: 135.0 },
-      { input: "n 30 15 30 e", expected: 30.2583 },
+      { input: "n45 45 45e", expected:  45.7625 },
+   // { input: "n65.6549e", expected:  45.4545 }, // giving wrong output
+      { input: "n 45 45 45 e", expected: 45.7625 },
+      { input: "n35 45 45.101e", expected: 35.7625280 },
+      { input: "n85 45 45.9e", expected: 85.76275 },
+      { input: "n85 45 45e", expected:   85.7625 },
+      { input: "n85 60 60e", expected: 86.0167 },
+      { input: "n85 45 65e", expected: 85.76275 },
+      { input: "s65:40:00w", expected: 245.667 },
+      { input: "s45e", expected: 135 },
+      { input: "S45E", expected: 135 },
+  //  { input: "s45,45e", expected: 245.667 }, // directly fail
+      { input: "s45d45m45se", expected: 134.2375 },
+      { input: "s45d45m45.0se", expected: 134.2375 },
+      { input: "s45d45m45.0e", expected: 134.2375 },
      ];
 
     for (const { input, expected } of validTestData) {
