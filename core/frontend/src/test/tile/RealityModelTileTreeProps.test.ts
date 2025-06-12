@@ -77,18 +77,15 @@ describe("RealityTileTreeProps", () => {
   });
 
   it("uses max SSE from RealityDataSource", () => {
-    
+    expectMaxSSE(123, true, 123);
+    expectMaxSSE(1, true, undefined);
   });
 
   it("uses max SSE from tileset", () => {
-    
+    expectMaxSSE(456, undefined, undefined, { maximumScreenSpaceError: 456 });
   });
 
   it("prefers max SSE specified by tileset", () => {
-    
+    expectMaxSSE(456, true, 123, { maximumScreenSpaceError: 456 });
   });
 });
-
-/*
-{"asset":{"version":"1.0","extras":{"gltfUpAxis":"Y","maximumScreenSpaceError":16}},"geometricError":284.11519094368634,"root":{"boundingVolume":{"sphere":[-4712810.182503086,2617866.0424965154,-3397524.183610141,142.05759547184317]},"geometricError":8,"refine":"REPLACE","content":{"uri":"20250515_Stage_2_Stack.b3dm"},"
-*/
