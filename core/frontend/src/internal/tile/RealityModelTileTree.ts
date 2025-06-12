@@ -247,7 +247,8 @@ enum SMTextureType {
   Streaming = 2, // textures need to be downloaded, Bing Maps, etc…
 }
 
-class RealityModelTileTreeProps {
+/** Exported strictly for tests. */
+export class RealityModelTileTreeProps {
   public location: Transform;
   public tilesetJson: any;
   public doDrapeBackgroundMap: boolean = false;
@@ -269,7 +270,7 @@ class RealityModelTileTreeProps {
       this.yAxisUp = true;
     }
     
-    this.maximumScreenSpaceError = json.extras.maximumScreenSpaceError;
+    this.maximumScreenSpaceError = json.extras?.maximumScreenSpaceError;
     if (undefined === this.maximumScreenSpaceError && rdSource.usesGeometricError) {
       this.maximumScreenSpaceError = rdSource.maximumScreenSpaceError ?? 1;
     }
