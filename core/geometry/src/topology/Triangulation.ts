@@ -192,7 +192,7 @@ export class Triangulator {
       context.insertAndRetriangulate(p, zRule);
       numInsert++; // eslint-disable-line @typescript-eslint/no-unused-vars
     }
-    if (face0.countEdgesAroundFace() > 3) // all vertices are on the hull (or duplicates of them)
+    if (face0.countEdgesAroundFace() > 3) // no strictly interior vertices to split the hull polygon, so triangulate it
       return Triangulator.createTriangulatedGraphFromSingleLoop(hull);
     return graph;
   }
