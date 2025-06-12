@@ -391,16 +391,17 @@ export class Parser {
         tokens.push(new ParseToken(wipToken));
       }
     }
-    if (tokens.length === 1 && typeof tokens[0].value === "number" && format.type === "Bearing") {
-      // Example: 65.4545 → 65 (degrees), 45 (minutes), 45 (seconds)
+
+    // Handle compact decimal input in Bearing format (e.g., 65.4545 → 65°45′45″)
+    if (format.type === "Bearing" && tokens.length === 1 && typeof tokens[0].value === "number" ) {
       const value = tokens[0].value;
       const degrees = Math.floor(value);
       const remaining = (value - degrees) * 100;
       const minutes = Math.floor(remaining);
       const seconds = (remaining - minutes) * 100;
-      // Remove the original compact decimal token (e.g., 65.4545)
-      // before pushing split DMS tokens (degrees, minutes, seconds)
+      // Remove the original compact decimal token (e.g., 65.4545) ,  before pushing split DMS tokens (degrees, minutes, seconds)
       tokens.pop();
+      
       tokens.push(
       new ParseToken(degrees),
       new ParseToken(minutes),
