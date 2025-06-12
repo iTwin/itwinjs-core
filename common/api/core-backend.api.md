@@ -2017,6 +2017,20 @@ export abstract class DriverBundleElement extends InformationContentElement {
     static get className(): string;
 }
 
+// @beta
+export interface ECChangeUnifierCache extends Disposable {
+    all(): IterableIterator<ChangedECInstance>;
+    count(): number;
+    get(key: string): ChangedECInstance | undefined;
+    set(key: string, value: ChangedECInstance): void;
+}
+
+// @beta (undocumented)
+export namespace ECChangeUnifierCache {
+    export function createInMemoryCache(): ECChangeUnifierCache;
+    export function createSqliteBackedCache(db: AnyDb, bufferedReadInstanceSizeInBytes?: number): ECChangeUnifierCache;
+}
+
 // @public
 export class ECDb implements Disposable {
     // @internal (undocumented)
@@ -4834,10 +4848,12 @@ export class OrthographicViewDefinition extends SpatialViewDefinition {
 }
 
 // @beta
-export class PartialECChangeUnifier {
+export class PartialECChangeUnifier implements Disposable {
+    [Symbol.dispose](): void;
+    constructor(_db: AnyDb, _cache?: ECChangeUnifierCache);
     appendFrom(adaptor: ChangesetECAdaptor): void;
+    getInstanceCount(): number;
     get instances(): IterableIterator<ChangedECInstance>;
-    stripMetaData(): void;
 }
 
 // @public @preview
