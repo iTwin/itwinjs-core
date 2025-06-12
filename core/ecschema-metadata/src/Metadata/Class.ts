@@ -534,7 +534,6 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
         if (undefined === baseItem || !ECClass.isECClass(baseItem))
           throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `Unable to locate the baseClass ${classProps.baseClass}.`);
 
-        this.addDerivedClass(baseItem, this);
         return baseItem;
       });
     }
@@ -831,7 +830,7 @@ protected async buildPropertyCache(): Promise<Map<string, Property>> {
    * @param prop The property to add.
    * @return The property that was added.
    */
-  private addDerivedClass(baseClass: ECClass, derivedClass: ECClass) {
+  protected addDerivedClass(baseClass: ECClass, derivedClass: ECClass) {
     if (!baseClass._derivedClasses)
       baseClass._derivedClasses = new Map<string, LazyLoadedECClass>();
 
@@ -941,4 +940,6 @@ export abstract class MutableClass extends ECClass {
 
   public abstract override deleteProperty(name: string): Promise<void>;
   public abstract override deletePropertySync(name: string): void;
+
+  public abstract override addDerivedClass(baseClass: ECClass, derivedClass: ECClass): void;
 }

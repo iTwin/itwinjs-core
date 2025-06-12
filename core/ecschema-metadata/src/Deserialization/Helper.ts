@@ -685,19 +685,23 @@ export class SchemaReadHelper<T = unknown> {
    * @param rawClass The serialized class data.
    */
   private async loadClass(classObj: AnyClass, classProps: ClassProps, rawClass: Readonly<unknown>): Promise<void> {
-    const baseClassLoaded = async (baseClass: SchemaItem) => {
+    const baseClassLoaded = async (baseItem: SchemaItem) => {
       if (this._visitorHelper)
-        await this._visitorHelper.visitSchemaPart(baseClass);
+        await this._visitorHelper.visitSchemaPart(baseItem);
     };
 
     // Load base class first
+    let baseClass: ECClass | undefined;
     if (undefined !== classProps.baseClass) {
-      await this.findSchemaItem(classProps.baseClass, true, baseClassLoaded);
+      baseClass =  await this.findSchemaItem(classProps.baseClass, true, baseClassLoaded) as ECClass;
     }
 
     // Now deserialize the class itself, *before* any properties
     // (We need to do this to break Entity -navProp-> Relationship -constraint-> Entity cycle.)
     await (classObj as ECClass).fromJSON(classProps);
+
+    if (baseClass)
+      (classObj as MutableClass).addDerivedClass(baseClass, classObj);
 
     for (const [propName, propType, rawProp] of this._parser.getProperties(rawClass, classObj.fullName)) {
       await this.loadPropertyTypes(classObj, propName, propType, rawProp);
@@ -713,19 +717,23 @@ export class SchemaReadHelper<T = unknown> {
    * @param rawClass The serialized class data.
    */
   private loadClassSync(classObj: AnyClass, classProps: ClassProps, rawClass: Readonly<unknown>): void {
-    const baseClassLoaded = async (baseClass: SchemaItem) => {
+    const baseClassLoaded = async (baseItem: SchemaItem) => {
       if (this._visitorHelper)
-        this._visitorHelper.visitSchemaPartSync(baseClass);
+        this._visitorHelper.visitSchemaPartSync(baseItem);
     };
 
     // Load base class first
+    let baseClass: ECClass | undefined;
     if (undefined !== classProps.baseClass) {
-      this.findSchemaItemSync(classProps.baseClass, true, baseClassLoaded);
+      baseClass = this.findSchemaItemSync(classProps.baseClass, true, baseClassLoaded) as ECClass;
     }
 
     // Now deserialize the class itself, *before* any properties
     // (We need to do this to break Entity -navProp-> Relationship -constraint-> Entity cycle.)
     (classObj as ECClass).fromJSONSync(classProps);
+
+    if (baseClass)
+      (classObj as MutableClass).addDerivedClass(baseClass, classObj);
 
     for (const [propName, propType, rawProp] of this._parser.getProperties(rawClass, classObj.fullName)) {
       this.loadPropertyTypesSync(classObj, propName, propType, rawProp);
