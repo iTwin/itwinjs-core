@@ -276,19 +276,19 @@ describe('InstanceKeyLRUCache', () => {
 
   const testResults: IModelJsNative.ResolveInstanceKeyResult[] = [
     {
-      id: "testId1",
+      id: Id64.fromJSON("0x123"),
       classFullName: "testName1",
     },
     {
-      id: "testId2",
+      id: Id64.fromJSON("0x122"),
       classFullName: "testName2",
     },
     {
-      id: "testId3",
+      id: Id64.fromJSON("0x133"),
       classFullName: "testName3",
     },
     {
-      id: "testId4",
+      id: Id64.fromJSON("0x144"),
       classFullName: "testName4",
     }
   ];
