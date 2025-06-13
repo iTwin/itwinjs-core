@@ -1729,6 +1729,7 @@ export namespace IModelDb {
     private readonly _modelCacheSize = 10;
     /** @internal */
     public readonly [_cache] = new LRUMap<Id64String, ModelProps>(this._modelCacheSize);
+    /** @internal */
     public readonly [_instanceKeyCache] = new InstanceKeyLRUCache(this._modelCacheSize);
 
     /** @internal */
@@ -1991,6 +1992,7 @@ export namespace IModelDb {
     private readonly _elementCacheSize = 50;
     /** @internal */
     public readonly [_cache] = new ElementLRUCache(this._elementCacheSize);
+    /** @internal */
     public readonly [_instanceKeyCache] = new InstanceKeyLRUCache(this._elementCacheSize);
 
     /** @internal */
