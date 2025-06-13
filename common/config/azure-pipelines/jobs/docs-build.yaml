@@ -138,6 +138,25 @@ jobs:
         artifact: DocsBuild
         displayName: Publish Pipeline Artifact - DocsBuild
 
+      # Tag the build for version archival (e.g., "v4") if building a specific release branch
+      - bash: |
+          branchName="$(Build.SourceBranchName)"
+          archiveTag=""
+          # Add conditions here for branches that should produce tagged archives
+          # For example, if 'release/4.11.x' should be archived as 'v4'
+          if [[ "$branchName" == "release/4.11.x" ]]; then
+            archiveTag="v4"
+          # elif [[ "$branchName" == "release/5.x.x" ]]; then
+          #   archiveTag="v5"
+          fi
+
+          if [[ -n "$archiveTag" ]]; then
+            echo "Tagging build with $archiveTag for archival purposes."
+            echo "##vso[build.addbuildtag]$archiveTag"
+          fi
+        displayName: Tag build for version archival (e.g., v4)
+        condition: and(succeeded(), eq('${{ parameters.shouldPublish }}', true))
+
       # tag the build to trigger the release pipeline
       - bash: |
           commitMsg="${BUILD_SOURCEVERSIONMESSAGE}"
