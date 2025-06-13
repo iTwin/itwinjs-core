@@ -119,6 +119,10 @@ export abstract class TextBlockComponent {
   /** Compute a string representation of the contents of this component and all of its sub-components. */
   public abstract stringify(options?: TextBlockStringifyOptions): string;
 
+  public get isWhitespace(): boolean {
+    return /^\s*$/g.test(this.stringify());
+  };
+
   /** Convert this component to its JSON representation. */
   public toJSON(): TextBlockComponentProps {
     return {
@@ -378,7 +382,7 @@ export class TabRun extends TextBlockComponent {
   /** Formats the fraction as a string with the [[numerator]] and [[denominator]] separated by [[TextBlockStringifyOptions.fractionSeparator]]. */
   public override stringify(options?: TextBlockStringifyOptions): string {
     if (options?.tabsAsSpaces) {
-      return "\s".repeat(options.tabsAsSpaces);
+      return " ".repeat(options.tabsAsSpaces);
     }
 
     return "\t";
@@ -546,7 +550,9 @@ export class TextBlock extends TextBlockComponent {
     return TextBlock.create({ styleName: "" });
   }
 
-  /** Returns true if every paragraph in this text block is empty. */
+  /** Returns true if every paragraph in this text block is empty.
+   * idk, should I get rid of this? I can't see a use for it. using isWhitespace is probably better in most cases.
+  */
   public get isEmpty(): boolean {
     return this.paragraphs.every((p) => p.runs.length === 0);
   }

@@ -154,7 +154,7 @@ class TextEditor implements Decorator {
       throw new Error("Invoke `dta text init` first");
     }
 
-    if (this._textBlock.isEmpty) {
+    if (this._textBlock.isWhitespace) {
       return;
     }
 
@@ -242,7 +242,7 @@ export class TextDecorationTool extends Tool {
         editor.appendBreak();
         break;
       case "tab":
-        const spaces = parseInt(inArgs[1], 10) || undefined;
+        const spaces = inArgs[1] ? parseInt(inArgs[1], 10) : undefined;
         editor.appendTab(spaces);
         break;
       case "paragraph":
@@ -361,6 +361,17 @@ export class TextDecorationTool extends Tool {
       }
       case "debug": {
         editor.debugAnchorPointAndRange = !editor.debugAnchorPointAndRange;
+        break;
+      }
+      case "log": {
+        // Log the current text block to the console
+        const anno = TextAnnotation.fromJSON(editor.annotationProps);
+        // eslint-disable-next-line no-console
+        console.log(anno.textBlock.stringify({ paragraphBreak: "\n", lineBreak: "\n" }));
+        // eslint-disable-next-line no-console
+        console.log("Object > ", anno);
+        // eslint-disable-next-line no-console
+        console.log("Props > ", editor.annotationProps);
         break;
       }
       case "frame": {
