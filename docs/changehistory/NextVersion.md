@@ -12,21 +12,22 @@ Table of contents:
   - [Snapping](#snapping)
   - [Font APIs](#font-apis)
     - [Text Block Margins](#text-block-margins)
+  - [Backend](#backend)
+    - [Image conversion](#image-conversion)
+    - [Delete all transactions](#delete-all-transactions)
+    - [Attach/detach db](#attachdetach-db)
   - [Geometry](#geometry)
     - [Polyface Traversal](#polyface-traversal)
     - [Tangent To Curve](#tangent-to-curve)
-  - [Display](#display)
+  - [Graphics Display](#graphics-display)
+    - [Google Maps 2D Tiles API](#google-maps-2d-tiles-api)
     - [Read image to canvas](#read-image-to-canvas)
     - [Draping iModel models onto reality data or other iModel models](#draping-imodel-models-onto-reality-data-or-other-imodel-models)
     - [Reading contour lines](#reading-contour-lines)
-  - [Back-end image conversion](#back-end-image-conversion)
   - [Presentation](#presentation)
     - [Unified selection move to `@itwin/unified-selection`](#unified-selection-move-to-itwinunified-selection)
     - [Localization assets in `@itwin/presentation-common`](#localization-assets-in-itwinpresentation-common)
     - [Internal APIs](#internal-apis)
-  - [Google Maps 2D Tiles API](#google-maps-2d-tiles-api)
-  - [Delete all transactions](#delete-all-transactions)
-  - [Attach/detach db](#attachdetach-db)
   - [Quantity Formatting](#quantity-formatting)
     - [FormatDefinition](#formatdefinition)
     - [FormatsProvider](#formatsprovider)
@@ -119,6 +120,29 @@ Consult the [learning article](../learning/backend/Fonts.md) for details and exa
 
 You can now surround a [TextBlock]($core-common) with padding by setting its [TextBlockMargins]($core-common). When [layoutTextBlock]($core-backend) computes [TextBlockLayout.range]($core-backend), it will expand the bounding box to include the margins. [ProduceTextAnnotationGeometryArgs.debugAnchorPointAndRange]($core-backend) now produces two bounding boxes: one tightly fitted to the text, and a second expanded to include the margins.
 
+## Backend
+
+### Image conversion
+
+`@itwin/core-backend` provides two new APIs for encoding and decoding images:
+
+- [imageBufferFromImageSource]($backend) converts a PNG or JPEG image into a bitmap image
+- [imageSourceFromImageBuffer]($backend) performs the inverse conversion.
+
+### Delete all transactions
+
+[BriefcaseDb.txns]($backend) keeps track of all unsaved and/or unpushed local changes made to a briefcase. After pushing your changes, the record of local changes is deleted. In some cases, a user may wish to abandon all of their accumulated changes and start fresh. [TxnManager.deleteAllTxns]($backend) deletes all local changes without pushing them.
+
+### Attach/detach db
+
+Allow the attachment of an ECDb/IModel to a connection and running ECSQL that combines data from both databases.
+
+```ts
+[[include:IModelDb_attachDb.code]]
+```
+
+> Note: There are some reserve alias names that cannot be used. They are 'main', 'schema_sync_db', 'ecchange' & 'temp'
+
 ## Geometry
 
 ### Polyface Traversal
@@ -137,7 +161,37 @@ If a walker operation would advance outside the mesh (e.g., `edgeMate` of a boun
 
 A new API [CurvePrimitive.emitTangents]($core-geometry) is added to announce tangents from a space point to a curve primitive. This API takes a callback to announce each computed tangent so users can specify the callback according to their need. For example, we have created 2 specific APIs to take advantage of the new API. First API is [CurvePrimitive.allTangents]($core-geometry) which returns all tangents from a space point to a curve primitive. Second API is [CurvePrimitive.closestTangent]($core-geometry) which returns the closest tangent from a space point to a curve primitive with respect to a hint point.
 
-## Display
+## Graphics Display
+
+### Google Maps 2D Tiles API
+
+The `@itwin/map-layers-formats` package now includes an API for consuming [Google Maps 2D tiles](https://developers.google.com/maps/documentation/tile/2d-tiles-overview).
+
+To enable it as a base map, it's as simple as:
+
+```typescript
+import { GoogleMaps } from "@itwin/map-layers-formats";
+const ds = IModelApp.viewManager.selectedView.displayStyle;
+ds.backgroundMapBase = GoogleMaps.createBaseLayerSettings();
+```
+
+Can also be attached as a map-layer:
+
+```typescript
+[[include:GoogleMaps_AttachMapLayerSimple]]
+```
+
+> **_IMPORTANT_**: Make sure to configure your Google Cloud's API key in the `MapLayerOptions` when starting your IModelApp application:
+
+```typescript
+[[include:GoogleMaps_SetGoogleMapsApiKey]]
+```
+
+Optionally, a custom session manager can be specified to get control over the session management and request URLs.:
+
+```typescript
+[[include:GoogleMaps_SetGoogleMapsSessionManager]]
+```
 
 ### Read image to canvas
 
@@ -161,10 +215,6 @@ Here is a sample screenshot of draping a model from within an iModel onto all mo
 
 When a [HitDetail]($frontend) originates from a [contour line](../learning/display/ContourDisplay.md), the new [HitDetail.contour]($frontend) property now provides the elevation of the contour line, whether it is a major or minor contour, and from which [ContourGroup]($common) it originated. The same information is available in the `contour` property of the [Pixel.Data]($frontend) objects produced by [Viewport.readPixels]($frontend).
 
-## Back-end image conversion
-
-`@itwin/core-backend` provides two new APIs for encoding and decoding images. [imageBufferFromImageSource]($backend) converts a PNG or JPEG image into a bitmap image. [imageSourceFromImageBuffer]($backend) performs the inverse conversion.
-
 ## Presentation
 
 The Presentation system is moving towards a more modular approach, with smaller packages intended for more specific tasks and having less peer dependencies. You can find more details about that in the [README of `@itwin/presentation` repo](https://github.com/iTwin/presentation/blob/master/README.md#the-packages). As part of that move, some Presentation APIs in `@itwin/itwinjs-core` repository, and, more specifically, 3 Presentation packages: `@itwin/presentation-common`, `@itwin/presentation-backend`, and `@itwin/presentation-frontend` have received a number of deprecations for APIs that already have replacements.
@@ -183,50 +233,6 @@ The `@itwin/presentation-common` delivers a localization file used by either `@i
 ### Internal APIs
 
 The Presentation packages exported a number of `@internal` APIs through the public barrel files. These APIs were never intended for consumers' use and have been removed from the public barrels to avoid accidental usage.
-
-## Google Maps 2D Tiles API
-
-The `@itwin/map-layers-formats` package now includes an API for consuming Google Maps 2D tiles.
-
-To enable it as a base map, it's simple as:
-
-```typescript
-import { GoogleMaps } from "@itwin/map-layers-formats";
-const ds = IModelApp.viewManager.selectedView.displayStyle;
-ds.backgroundMapBase = GoogleMaps.createBaseLayerSettings();
-```
-
-Can also be attached as a map-layer:
-
-```ts
-[[include:GoogleMaps_AttachMapLayerSimple]]
-```
-
-> **_IMPORTANT_**: Make sure to configure your Google Cloud's API key in the `MapLayerOptions` when starting your IModelApp application:
-
-```ts
-[[include:GoogleMaps_SetGoogleMapsApiKey]]
-```
-
-Optionally, a custom session manager can be specified to get control over the session management and request URLs.:
-
-```ts
-[[include:GoogleMaps_SetGoogleMapsSessionManager]]
-```
-
-## Delete all transactions
-
-[BriefcaseDb.txns]($backend) keeps track of all unsaved and/or unpushed local changes made to a briefcase. After pushing your changes, the record of local changes is deleted. In some cases, a user may wish to abandon all of their accumulated changes and start fresh. [TxnManager.deleteAllTxns]($backend) deletes all local changes without pushing them.
-
-## Attach/detach db
-
-Allow the attachment of an ECDb/IModel to a connection and running ECSQL that combines data from both databases.
-
-```ts
-[[include:IModelDb_attachDb.code]]
-```
-
-> Note: There are some reserve alias names that cannot be used. They are 'main', 'schema_sync_db', 'ecchange' & 'temp'
 
 ## Quantity Formatting
 
