@@ -457,7 +457,7 @@ iTwin.js 5.0 is a major release, and as such, it introduces breaking changes to 
 
 We have introduced the concept of a new `@preview` tag to be used for APIs that are stable within the current major version but may change in the next major version. This tag is intended to help developers identify APIs that are not yet fully stable (`@public`) and may require adjustments in future releases.
 
-Deprecation notices now include specific dates that indicate the earliest time a deprecated APIs can be removed. This is to provide developers with a clear timeline for when they need to migrate away from deprecated APIs. Specific grace periods are now defined as **one year** for `@public` APIs and **three months** for `@preview` APIs. This is a departure from the previous policy of waiting until major version `N+2` for removal of an API deprecated in major version `N`; which was often too long and led to confusion about when APIs would actually be removed.
+Deprecation notices now include specific dates that indicate the earliest time a deprecated API can be removed. This is to provide developers with a clear timeline for when they need to migrate away from deprecated APIs. Specific grace periods are now defined as **one year** for `@public` APIs and **three months** for `@preview` APIs. This is a departure from the previous policy of waiting until major version `N+2` for removal of an API deprecated in major version `N`; which was often too long and led to confusion about when APIs would actually be removed.
 
 ### Updated minimum requirements
 
