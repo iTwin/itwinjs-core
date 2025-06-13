@@ -3666,7 +3666,7 @@ export namespace IModelDb {
     export class Elements implements GuidMapper {
         // @internal (undocumented)
         readonly [_cache]: ElementLRUCache;
-        // (undocumented)
+        // @internal (undocumented)
         readonly [_instanceKeyCache]: InstanceKeyLRUCache;
         // @internal
         constructor(_iModel: IModelDb);
@@ -3709,7 +3709,7 @@ export namespace IModelDb {
     export class Models {
         // @internal (undocumented)
         readonly [_cache]: LRUMap<string, ModelProps>;
-        // (undocumented)
+        // @internal (undocumented)
         readonly [_instanceKeyCache]: InstanceKeyLRUCache;
         // @internal
         constructor(_iModel: IModelDb);
