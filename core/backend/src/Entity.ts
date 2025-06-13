@@ -192,7 +192,7 @@ export class Entity {
    * @param func The callback to be invoked on each property
    * @param includeCustom If true (default), include custom-handled properties in the iteration. Otherwise, skip custom-handled properties.
    * @note Custom-handled properties are core properties that have behavior enforced by C++ handlers.
-   * @deprecated in 5.0. Please use `forEach` to get the metadata and iterate over the properties instead.
+   * @deprecated in 5.0 - will not be removed until after 2026-06-13. Please use `forEach` to get the metadata and iterate over the properties instead.
    *
    * @example
    * ```typescript

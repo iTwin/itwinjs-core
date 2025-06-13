@@ -155,7 +155,7 @@ export interface PropertyGroup extends GroupingSpecificationBase {
    * it's up to the UI component to decide what to do with it.
    *
    * @minLength 1
-   * @deprecated in 5.0. Use [[ExtendedDataRule]] instead. See [extended data usage page]($docs/presentation/customization/ExtendedDataUsage.md) for more details.
+   * @deprecated in 5.0 - will not be removed until after 2026-06-13. Use [[ExtendedDataRule]] instead. See [extended data usage page]($docs/presentation/customization/ExtendedDataUsage.md) for more details.
    */
   imageId?: string;
 
@@ -182,7 +182,7 @@ export interface PropertyRangeGroupSpecification {
    * ID of an image to use for the grouping node. Defaults to [[PropertyGroup.imageId]] specified in [[PropertyGroup]].
    *
    * @minLength 1
-   * @deprecated in 5.0. Use [[ExtendedDataRule]] instead. See [extended data usage page]($docs/presentation/customization/ExtendedDataUsage.md) for more details.
+   * @deprecated in 5.0 - will not be removed until after 2026-06-13. Use [[ExtendedDataRule]] instead. See [extended data usage page]($docs/presentation/customization/ExtendedDataUsage.md) for more details.
    */
   imageId?: string;
 
