@@ -1422,7 +1422,7 @@ export class PolyfaceQuery {
     );
     return builder.claimPolyface(true);
   }
-  /** @deprecated in 4.x. Use [[sweepLineStringToFacetsXYReturnSweptFacets]] instead. */
+  /** @deprecated in 4.x - will not be removed until 2026-06-13. Use [[sweepLineStringToFacetsXYReturnSweptFacets]] instead. */
   public static sweepLinestringToFacetsXYreturnSweptFacets(linestringPoints: GrowableXYZArray, polyface: Polyface): Polyface {
     return this.sweepLineStringToFacetsXYReturnSweptFacets(linestringPoints, polyface);
   }
@@ -1524,7 +1524,7 @@ export class PolyfaceQuery {
     * * Return collected line segments.
     * * This calls [[sweepLineStringToFacets]] with options created by
     *   `const options = SweepLineStringToFacetsOptions.create(Vector3d.unitZ(), Angle.createSmallAngle(), false, true, true, true);`
-    * @deprecated in 4.x. Use [[PolyfaceQuery.sweepLineStringToFacets]] to get further options.
+    * @deprecated in 4.x - will not be removed until 2026-06-13. Use [[PolyfaceQuery.sweepLineStringToFacets]] to get further options.
     */
   public static sweepLinestringToFacetsXYReturnLines(linestringPoints: GrowableXYZArray, polyface: Polyface): LineSegment3d[] {
     const options = SweepLineStringToFacetsOptions.create(Vector3d.unitZ(), Angle.createSmallAngle(), false, true, true, true);
@@ -1534,7 +1534,7 @@ export class PolyfaceQuery {
    * Find segments (within the linestring) which project to facets.
    * * Return chains.
    * * This calls [[sweepLineStringToFacets]] with default options.
-   * @deprecated in 4.x. Use [[PolyfaceQuery.sweepLineStringToFacets]] to get further options.
+   * @deprecated in 4.x - will not be removed until 2026-06-13. Use [[PolyfaceQuery.sweepLineStringToFacets]] to get further options.
    */
   public static sweepLinestringToFacetsXYReturnChains(linestringPoints: GrowableXYZArray, polyface: Polyface): LineString3d[] {
     return PolyfaceQuery.sweepLineStringToFacets(linestringPoints, polyface) as LineString3d[];

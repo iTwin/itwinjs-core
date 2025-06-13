@@ -145,7 +145,7 @@ export class BingMapsImageryLayerProvider extends MapLayerImageryProvider {
     }
     return matchingAttributions;
   }
-   /** @deprecated in 5.0 Use [addAttributions] instead. */
+   /** @deprecated in 5.0 - will not be removed until 2026-06-13. Use [addAttributions] instead. */
   public override addLogoCards(cards: HTMLTableElement, vp: ScreenViewport): void {
     const tiles = IModelApp.tileAdmin.getTilesForUser(vp)?.selected;
     const matchingAttributions = this.getMatchingAttributions(tiles);

@@ -132,7 +132,7 @@ export abstract class MapLayerImageryProvider {
 
   public get tilingScheme(): MapTilingScheme { return this.useGeographicTilingScheme ? this._geographicTilingScheme : this._mercatorTilingScheme; }
 
-  /** @deprecated in 5.0 Use [addAttributions] instead. */
+  /** @deprecated in 5.0 - will not be removed until 2026-06-13. Use [addAttributions] instead. */
   public addLogoCards(_cards: HTMLTableElement, _viewport: ScreenViewport): void { }
 
   /**

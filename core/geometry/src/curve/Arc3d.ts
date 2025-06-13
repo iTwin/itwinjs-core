@@ -755,7 +755,7 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
   }
   /**
    * Gauss point quadrature count for evaluating curve length. (The number of intervals is adjusted to the arc sweep).
-   * @deprecated in 5.0. Use correct spelling quadratureGaussCount.
+   * @deprecated in 5.0 - will not be removed until 2026-06-13. Use correct spelling quadratureGaussCount.
    */
   public static readonly quadratureGuassCount = 5;
   /** Gauss point quadrature count for evaluating curve length. (The number of intervals is adjusted to the arc sweep). */

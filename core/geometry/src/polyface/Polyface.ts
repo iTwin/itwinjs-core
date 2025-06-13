@@ -493,7 +493,7 @@ export class IndexedPolyface extends Polyface { // more info can be found at geo
   }
   /**
    * Clean up the open facet.
-   * @deprecated in 4.x to remove nebulous "open facet" concept from the API. Call [[PolyfaceData.trimAllIndexArrays]]
+   * @deprecated in 4.x - will not be removed until 2026-06-13. To remove nebulous "open facet" concept from the API. Call [[PolyfaceData.trimAllIndexArrays]]
    * instead.
    */
   public cleanupOpenFacet(): void {
@@ -645,7 +645,7 @@ export class IndexedPolyface extends Polyface { // more info can be found at geo
   }
   /**
    * Given the index of a facet, return the data pertaining to the face it is a part of.
-   * @deprecated in 4.x. Use [[IndexedPolyface.tryGetFaceData]], which verifies the index is in range.
+   * @deprecated in 4.x - will not be removed until 2026-06-13. Use [[IndexedPolyface.tryGetFaceData]], which verifies the index is in range.
    */
   public getFaceDataByFacetIndex(facetIndex: number): FacetFaceData {
     return this.data.face[this._facetToFaceData[facetIndex]];
