@@ -9351,6 +9351,29 @@ export namespace RealityModelTileTree {
     }
 }
 
+// @internal
+export class RealityModelTileTreeProps {
+    constructor(json: any, root: any, rdSource: RealityDataSource, tilesetToDbTransform: Transform, tilesetToEcef?: Transform | undefined);
+    // (undocumented)
+    dataSource: RealityDataSource;
+    // (undocumented)
+    doDrapeBackgroundMap: boolean;
+    // (undocumented)
+    location: Transform;
+    // (undocumented)
+    readonly maximumScreenSpaceError?: number;
+    // (undocumented)
+    root: any;
+    // (undocumented)
+    tilesetJson: any;
+    // (undocumented)
+    readonly tilesetToEcef?: Transform | undefined;
+    // (undocumented)
+    get usesGeometricError(): boolean;
+    // (undocumented)
+    yAxisUp: boolean;
+}
+
 // @internal (undocumented)
 export class RealityModelTileUtils {
     // (undocumented)
