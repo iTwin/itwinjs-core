@@ -144,11 +144,12 @@ jobs:
           archiveTag=""
           # Add conditions here for branches that should produce tagged archives
           # For example, if 'ref/heads/release/4.11.x' should be archived as 'v4'
-
+          echo $branchName
           # TESTING - change to release/4.11.x after confirmed
-          if [[ "$branchName" == "ref/heads/docs/archive-v4" ]]; then
+          if [[ $branchName == "ref/heads/docs/archive-v4" ]]; then
+            echo "matches branch name"
             archiveTag="v4"
-          # elif [[ "$branchName" == "ref/heads/release/5.x.x" ]]; then
+          # elif [[ $branchName == "ref/heads/release/5.x.x" ]]; then
           #   archiveTag="v5"
           fi
 
