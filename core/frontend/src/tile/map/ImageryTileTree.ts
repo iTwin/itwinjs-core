@@ -209,7 +209,7 @@ export class ImageryMapTileTree extends RealityTileTree {
   }
   public get tilingScheme(): MapTilingScheme { return this._imageryLoader.imageryProvider.tilingScheme; }
 
-    /** @deprecated in 5.0 - will not be removed until 2026-06-13. Use [addAttributions] instead. */
+    /** @deprecated in 5.0 - will not be removed until after 2026-06-13. Use [addAttributions] instead. */
   public addLogoCards(cards: HTMLTableElement, vp: ScreenViewport): void {
     // eslint-disable-next-line @typescript-eslint/no-deprecated
     this._imageryLoader.addLogoCards(cards, vp);
@@ -266,7 +266,7 @@ class ImageryTileLoader extends RealityTileLoader {
   public get minDepth(): number { return this._imageryProvider.minimumZoomLevel; }
   public get priority(): TileLoadPriority { return TileLoadPriority.Map; }
 
-    /** @deprecated in 5.0 - will not be removed until 2026-06-13. Use [addAttributions] instead. */
+    /** @deprecated in 5.0 - will not be removed until after 2026-06-13. Use [addAttributions] instead. */
   public addLogoCards(cards: HTMLTableElement, vp: ScreenViewport): void {
     // eslint-disable-next-line @typescript-eslint/no-deprecated
     this._imageryProvider.addLogoCards(cards, vp);

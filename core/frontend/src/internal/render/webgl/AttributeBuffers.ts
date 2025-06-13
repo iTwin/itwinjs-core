@@ -87,7 +87,7 @@ export class BuffersContainer implements WebGLDisposable {
     this._vao = new VAOHandle(this._context);
   }
 
-  /** @deprecated in 5.0 - will not be removed until 2026-06-13. Use [Symbol.dispose] instead. */
+  /** @deprecated in 5.0 - will not be removed until after 2026-06-13. Use [Symbol.dispose] instead. */
   public dispose() {
     this[Symbol.dispose]();
   }
@@ -160,7 +160,7 @@ export class VAOHandle implements WebGLDisposable {
 
   public get isDisposed(): boolean { return this._arrayObject === undefined; }
 
-  /** @deprecated in 5.0 - will not be removed until 2026-06-13. Use [Symbol.dispose] instead. */
+  /** @deprecated in 5.0 - will not be removed until after 2026-06-13. Use [Symbol.dispose] instead. */
   public dispose() {
     this[Symbol.dispose]();
   }

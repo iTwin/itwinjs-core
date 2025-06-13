@@ -318,7 +318,7 @@ export class ArcGISMapLayerImageryProvider extends ArcGISImageryProvider {
 
   }
 
-  /** @deprecated in 5.0 - will not be removed until 2026-06-13. Use [addAttributions] instead. */
+  /** @deprecated in 5.0 - will not be removed until after 2026-06-13. Use [addAttributions] instead. */
   public override addLogoCards(cards: HTMLTableElement): void {
     if (!cards.dataset.arcGisLogoCard) {
       cards.dataset.arcGisLogoCard = "true";

@@ -275,7 +275,7 @@ export class HitDetail {
   /** Create a new HitDetail from the inputs to and results of a locate operation. */
   public constructor(props: HitDetailProps);
 
-  /** @deprecated in 4.1 - will not be removed until 2026-06-13. Use the overload that takes a [[HitDetailProps]]. */
+  /** @deprecated in 4.1 - will not be removed until after 2026-06-13. Use the overload that takes a [[HitDetailProps]]. */
   public constructor(testPoint: Point3d, viewport: ScreenViewport, hitSource: HitSource, hitPoint: Point3d, sourceId: string, priority: HitPriority, distXY: number, distFraction: number, subCategoryId?: string, geometryClass?: GeometryClass, modelId?: string, sourceIModel?: IModelConnection, tileId?: string, isClassifier?: boolean);
 
   /** @internal */

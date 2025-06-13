@@ -172,14 +172,14 @@ export type DisplayLabelsRpcRequestOptions = PresentationRpcRequestOptions<Displ
 /**
  * Data structure for selection scope request options.
  * @public
- * @deprecated in 5.0 - will not be removed until 2026-06-13. Use `computeSelection` from [@itwin/unified-selection](https://github.com/iTwin/presentation/blob/master/packages/unified-selection/README.md#selection-scopes) package instead.
+ * @deprecated in 5.0 - will not be removed until after 2026-06-13. Use `computeSelection` from [@itwin/unified-selection](https://github.com/iTwin/presentation/blob/master/packages/unified-selection/README.md#selection-scopes) package instead.
  */
 export type SelectionScopeRpcRequestOptions = PresentationRpcRequestOptions<SelectionScopeRequestOptions<never>>;
 
 /**
  * Request options data structure for computing selection based on given selection scope and element IDs.
  * @public
- * @deprecated in 5.0 - will not be removed until 2026-06-13. Use `computeSelection` from [@itwin/unified-selection](https://github.com/iTwin/presentation/blob/master/packages/unified-selection/README.md#selection-scopes) package instead.
+ * @deprecated in 5.0 - will not be removed until after 2026-06-13. Use `computeSelection` from [@itwin/unified-selection](https://github.com/iTwin/presentation/blob/master/packages/unified-selection/README.md#selection-scopes) package instead.
  */
 export type ComputeSelectionRpcRequestOptions = PresentationRpcRequestOptions<ComputeSelectionRequestOptions<never>>;
 
@@ -200,17 +200,17 @@ export class PresentationRpcInterface extends RpcInterface {
     NOTE: Please consult the README in core/common/src/rpc for the semantic versioning rules.
   ===========================================================================================*/
 
-  /** @deprecated in 4.10 - will not be removed until 2026-06-13. Use [PresentationManager]($presentation-frontend) instead of calling the RPC interface directly. */
+  /** @deprecated in 4.10 - will not be removed until after 2026-06-13. Use [PresentationManager]($presentation-frontend) instead of calling the RPC interface directly. */
   public async getNodesCount(_token: IModelRpcProps, _options: HierarchyRpcRequestOptions): PresentationRpcResponse<number> {
     return this.forward(arguments);
   }
 
-  /** @deprecated in 4.10 - will not be removed until 2026-06-13. Use [PresentationManager]($presentation-frontend) instead of calling the RPC interface directly. */
+  /** @deprecated in 4.10 - will not be removed until after 2026-06-13. Use [PresentationManager]($presentation-frontend) instead of calling the RPC interface directly. */
   public async getPagedNodes(_token: IModelRpcProps, _options: Paged<HierarchyRpcRequestOptions>): PresentationRpcResponse<PagedResponse<Node>> {
     return deepReplaceNullsToUndefined(await this.forward(arguments));
   }
 
-  /** @deprecated in 4.10 - will not be removed until 2026-06-13. Use [PresentationManager]($presentation-frontend) instead of calling the RPC interface directly. */
+  /** @deprecated in 4.10 - will not be removed until after 2026-06-13. Use [PresentationManager]($presentation-frontend) instead of calling the RPC interface directly. */
   public async getNodesDescriptor(
     _token: IModelRpcProps,
     _options: HierarchyLevelDescriptorRpcRequestOptions,
@@ -218,24 +218,24 @@ export class PresentationRpcInterface extends RpcInterface {
     return deepReplaceNullsToUndefined(await this.forward(arguments));
   }
 
-  /** @deprecated in 4.10 - will not be removed until 2026-06-13. Use [PresentationManager]($presentation-frontend) instead of calling the RPC interface directly. */
+  /** @deprecated in 4.10 - will not be removed until after 2026-06-13. Use [PresentationManager]($presentation-frontend) instead of calling the RPC interface directly. */
   // TODO: add paged version of this (#387280)
   public async getNodePaths(_token: IModelRpcProps, _options: FilterByInstancePathsHierarchyRpcRequestOptions): PresentationRpcResponse<NodePathElement[]> {
     return deepReplaceNullsToUndefined(await this.forward(arguments));
   }
 
-  /** @deprecated in 4.10 - will not be removed until 2026-06-13. Use [PresentationManager]($presentation-frontend) instead of calling the RPC interface directly. */
+  /** @deprecated in 4.10 - will not be removed until after 2026-06-13. Use [PresentationManager]($presentation-frontend) instead of calling the RPC interface directly. */
   // TODO: add paged version of this (#387280)
   public async getFilteredNodePaths(_token: IModelRpcProps, _options: FilterByTextHierarchyRpcRequestOptions): PresentationRpcResponse<NodePathElement[]> {
     return deepReplaceNullsToUndefined(await this.forward(arguments));
   }
 
-  /** @deprecated in 4.10 - will not be removed until 2026-06-13. Use [PresentationManager]($presentation-frontend) instead of calling the RPC interface directly. */
+  /** @deprecated in 4.10 - will not be removed until after 2026-06-13. Use [PresentationManager]($presentation-frontend) instead of calling the RPC interface directly. */
   public async getContentSources(_token: IModelRpcProps, _options: ContentSourcesRpcRequestOptions): PresentationRpcResponse<ContentSourcesRpcResult> {
     return deepReplaceNullsToUndefined(await this.forward(arguments));
   }
 
-  /** @deprecated in 4.10 - will not be removed until 2026-06-13. Use [PresentationManager]($presentation-frontend) instead of calling the RPC interface directly. */
+  /** @deprecated in 4.10 - will not be removed until after 2026-06-13. Use [PresentationManager]($presentation-frontend) instead of calling the RPC interface directly. */
   public async getContentDescriptor(_token: IModelRpcProps, _options: ContentDescriptorRpcRequestOptions): PresentationRpcResponse<DescriptorJSON | undefined> {
     const response: PresentationRpcResponseData<string | undefined> = await this.forward(arguments);
     return {
@@ -244,12 +244,12 @@ export class PresentationRpcInterface extends RpcInterface {
     };
   }
 
-  /** @deprecated in 4.10 - will not be removed until 2026-06-13. Use [PresentationManager]($presentation-frontend) instead of calling the RPC interface directly. */
+  /** @deprecated in 4.10 - will not be removed until after 2026-06-13. Use [PresentationManager]($presentation-frontend) instead of calling the RPC interface directly. */
   public async getContentSetSize(_token: IModelRpcProps, _options: ContentRpcRequestOptions): PresentationRpcResponse<number> {
     return this.forward(arguments);
   }
 
-  /** @deprecated in 4.10 - will not be removed until 2026-06-13. Use [PresentationManager]($presentation-frontend) instead of calling the RPC interface directly. */
+  /** @deprecated in 4.10 - will not be removed until after 2026-06-13. Use [PresentationManager]($presentation-frontend) instead of calling the RPC interface directly. */
   public async getPagedContent(
     _token: IModelRpcProps,
     _options: Paged<ContentRpcRequestOptions>,
@@ -263,12 +263,12 @@ export class PresentationRpcInterface extends RpcInterface {
     };
   }
 
-  /** @deprecated in 4.10 - will not be removed until 2026-06-13. Use [PresentationManager]($presentation-frontend) instead of calling the RPC interface directly. */
+  /** @deprecated in 4.10 - will not be removed until after 2026-06-13. Use [PresentationManager]($presentation-frontend) instead of calling the RPC interface directly. */
   public async getPagedContentSet(_token: IModelRpcProps, _options: Paged<ContentRpcRequestOptions>): PresentationRpcResponse<PagedResponse<ItemJSON>> {
     return deepReplaceNullsToUndefined(await this.forward(arguments));
   }
 
-  /** @deprecated in 4.10 - will not be removed until 2026-06-13. Use [PresentationManager]($presentation-frontend) instead of calling the RPC interface directly. */
+  /** @deprecated in 4.10 - will not be removed until after 2026-06-13. Use [PresentationManager]($presentation-frontend) instead of calling the RPC interface directly. */
   public async getElementProperties(
     _token: IModelRpcProps,
     _options: SingleElementPropertiesRpcRequestOptions,
@@ -276,7 +276,7 @@ export class PresentationRpcInterface extends RpcInterface {
     return deepReplaceNullsToUndefined(await this.forward(arguments));
   }
 
-  /** @deprecated in 4.10 - will not be removed until 2026-06-13. Use [PresentationManager]($presentation-frontend) instead of calling the RPC interface directly. */
+  /** @deprecated in 4.10 - will not be removed until after 2026-06-13. Use [PresentationManager]($presentation-frontend) instead of calling the RPC interface directly. */
   public async getPagedDistinctValues(
     _token: IModelRpcProps,
     _options: DistinctValuesRpcRequestOptions,
@@ -284,7 +284,7 @@ export class PresentationRpcInterface extends RpcInterface {
     return deepReplaceNullsToUndefined(await this.forward(arguments));
   }
 
-  /** @deprecated in 4.10 - will not be removed until 2026-06-13. Use [PresentationManager]($presentation-frontend) instead of calling the RPC interface directly. */
+  /** @deprecated in 4.10 - will not be removed until after 2026-06-13. Use [PresentationManager]($presentation-frontend) instead of calling the RPC interface directly. */
   public async getContentInstanceKeys(
     _token: IModelRpcProps,
     _options: ContentInstanceKeysRpcRequestOptions,
@@ -292,12 +292,12 @@ export class PresentationRpcInterface extends RpcInterface {
     return this.forward(arguments);
   }
 
-  /** @deprecated in 4.10 - will not be removed until 2026-06-13. Use [PresentationManager]($presentation-frontend) instead of calling the RPC interface directly. */
+  /** @deprecated in 4.10 - will not be removed until after 2026-06-13. Use [PresentationManager]($presentation-frontend) instead of calling the RPC interface directly. */
   public async getDisplayLabelDefinition(_token: IModelRpcProps, _options: DisplayLabelRpcRequestOptions): PresentationRpcResponse<LabelDefinition> {
     return deepReplaceNullsToUndefined(await this.forward(arguments));
   }
 
-  /** @deprecated in 4.10 - will not be removed until 2026-06-13. Use [PresentationManager]($presentation-frontend) instead of calling the RPC interface directly. */
+  /** @deprecated in 4.10 - will not be removed until after 2026-06-13. Use [PresentationManager]($presentation-frontend) instead of calling the RPC interface directly. */
   public async getPagedDisplayLabelDefinitions(
     _token: IModelRpcProps,
     _options: DisplayLabelsRpcRequestOptions,
@@ -305,13 +305,13 @@ export class PresentationRpcInterface extends RpcInterface {
     return deepReplaceNullsToUndefined(await this.forward(arguments));
   }
 
-  /** @deprecated in 4.10 - will not be removed until 2026-06-13. Use [PresentationManager]($presentation-frontend) instead of calling the RPC interface directly. */
+  /** @deprecated in 4.10 - will not be removed until after 2026-06-13. Use [PresentationManager]($presentation-frontend) instead of calling the RPC interface directly. */
   // eslint-disable-next-line @typescript-eslint/no-deprecated
   public async getSelectionScopes(_token: IModelRpcProps, _options: SelectionScopeRpcRequestOptions): PresentationRpcResponse<SelectionScope[]> {
     return this.forward(arguments);
   }
 
-  /** @deprecated in 4.10 - will not be removed until 2026-06-13. Use [PresentationManager]($presentation-frontend) instead of calling the RPC interface directly. */
+  /** @deprecated in 4.10 - will not be removed until after 2026-06-13. Use [PresentationManager]($presentation-frontend) instead of calling the RPC interface directly. */
   // eslint-disable-next-line @typescript-eslint/no-deprecated
   public async computeSelection(_token: IModelRpcProps, _options: ComputeSelectionRpcRequestOptions): PresentationRpcResponse<KeySetJSON> {
     return this.forward(arguments);
