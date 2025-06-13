@@ -9046,5 +9046,47 @@
     "input": 42.42,
     "to": "N",
     "expect": 424.2
-  }
+  },
+  {
+  "from": "HORIZONTAL_DIR_ARC_DEG",
+  "input": 42.42,
+  "to": "HORIZONTAL_DIR_RAD",
+  "expect": 0.7403686686959946
+},
+{
+  "from": "HORIZONTAL_DIR_RAD",
+  "input": 42.42,
+  "to": "HORIZONTAL_DIR_ARC_DEG",
+  "expect": 2430.486966944952
+},
+{
+  "from": "HORIZONTAL_DIR_ARC_MINUTE",
+  "input": 42.42,
+  "to": "HORIZONTAL_DIR_ARC_DEG",
+  "expect": 0.707
+},
+{
+  "from": "HORIZONTAL_DIR_ARC_SECOND",
+  "input": 42.42,
+  "to": "HORIZONTAL_DIR_ARC_DEG",
+  "expect": 0.011783333333333333
+},
+{
+  "from": "HORIZONTAL_DIR_GRAD",
+  "input": 42.42,
+  "to": "HORIZONTAL_DIR_ARC_DEG",
+  "expect": 38.178
+},
+{
+  "from": "HORIZONTAL_DIR_MILLIRAD",
+  "input": 42.42,
+  "to": "HORIZONTAL_DIR_RAD",
+  "expect": 0.13326636036527903
+},
+{
+  "from": "HORIZONTAL_DIR_REVOLUTION",
+  "input": 42.42,
+  "to": "HORIZONTAL_DIR_RAD",
+  "expect": 266.5327207305581
+}
 ]
