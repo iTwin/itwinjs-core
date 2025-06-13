@@ -205,6 +205,7 @@ export class InstanceKeyLRUCache {
 
   public set(key: IModelJsNative.ResolveInstanceKeyArgs, result: IModelJsNative.ResolveInstanceKeyResult): this {
     const cacheArgs: CachedArgs = InstanceKeyLRUCache.makeCachedArgs(key);
+    cacheArgs.id = cacheArgs.id ? cacheArgs.id : result.id;
     const existingArgs = this._resultToArgsCache.get(result.id);
     if (existingArgs) {
       // Combine existing args with new args for more complete key
@@ -220,7 +221,7 @@ export class InstanceKeyLRUCache {
     if (this._resultToArgsCache.size > this.capacity) {
       const oldestKey = this._resultToArgsCache.keys().next().value as Id64String;
       const oldestArgs = this._resultToArgsCache.get(oldestKey);
-      this.deleteCachedArgs({...oldestArgs});
+      this.deleteCachedArgs({id: oldestArgs?.id,code: oldestArgs?.code, federationGuid: oldestArgs?.federationGuid});
     }
     return this;
   }
@@ -230,8 +231,10 @@ export class InstanceKeyLRUCache {
     if (cachedResult) {
       // Pop the cached result to the end of the cache to mark it as recently used
       const cachedArgs = this._resultToArgsCache.get(cachedResult.id);
-      this._resultToArgsCache.delete(cachedResult.id);
-      this._resultToArgsCache.set(cachedResult.id, {...cachedArgs});
+      if (cachedArgs) {
+        this._resultToArgsCache.delete(cachedResult.id);
+        this._resultToArgsCache.set(cachedResult.id, cachedArgs);
+      }
     }
     return cachedResult;
   }
@@ -251,7 +254,8 @@ export class InstanceKeyLRUCache {
   private deleteCachedArgs(key: CachedArgs): boolean {
     const result = this._argsToResultCache.get(key);
     if (result) {
-      this._argsToResultCache.delete({...this._resultToArgsCache.get(result.id)});
+      const argsToDelete = this._resultToArgsCache.get(result.id);
+      this._argsToResultCache.delete({id: argsToDelete?.id, code: argsToDelete?.code, federationGuid: argsToDelete?.federationGuid});
       this._resultToArgsCache.delete(result.id);
       return true;
     }
