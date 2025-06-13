@@ -11,9 +11,9 @@ Table of contents:
   - [Select by volume](#select-by-volume)
   - [Snapping](#snapping)
   - [Font APIs](#font-apis)
+    - [Text Block Margins](#text-block-margins)
   - [Geometry](#geometry)
     - [Polyface Traversal](#polyface-traversal)
-    - [Text Block Margins](#text-block-margins)
     - [Tangent To Curve](#tangent-to-curve)
   - [Display](#display)
     - [Read image to canvas](#read-image-to-canvas)
@@ -24,7 +24,7 @@ Table of contents:
     - [Unified selection move to `@itwin/unified-selection`](#unified-selection-move-to-itwinunified-selection)
     - [Localization assets in `@itwin/presentation-common`](#localization-assets-in-itwinpresentation-common)
     - [Internal APIs](#internal-apis)
-  - [Google Maps 2D tiles API](#google-maps-2d-tiles-api)
+  - [Google Maps 2D Tiles API](#google-maps-2d-tiles-api)
   - [Delete all transactions](#delete-all-transactions)
   - [Attach/detach db](#attachdetach-db)
   - [Quantity Formatting](#quantity-formatting)
@@ -33,16 +33,16 @@ Table of contents:
     - [Persistence](#persistence)
     - [Migrating From QuantityType to KindOfQuantity](#migrating-from-quantitytype-to-kindofquantity)
   - [API deprecations](#api-deprecations)
-    - [@itwin/core-bentley](#itwincore-bentley)
-    - [@itwin/core-common](#itwincore-common)
+    - [@itwin/appui-abstract](#itwinappui-abstract)
     - [@itwin/core-backend](#itwincore-backend)
       - [Deprecated metadata retrieval methods](#deprecated-metadata-retrieval-methods)
+    - [@itwin/core-bentley](#itwincore-bentley)
+    - [@itwin/core-common](#itwincore-common)
     - [@itwin/core-frontend](#itwincore-frontend)
-    - [@itwin/presentation-common](#itwinpresentation-common)
-    - [@itwin/presentation-backend](#itwinpresentation-backend)
-    - [@itwin/presentation-frontend](#itwinpresentation-frontend)
     - [@itwin/ecschema-rpcinterface-common](#itwinecschema-rpcinterface-common)
-    - [@itwin/appui-abstract](#itwinappui-abstract)
+    - [@itwin/presentation-backend](#itwinpresentation-backend)
+    - [@itwin/presentation-common](#itwinpresentation-common)
+    - [@itwin/presentation-frontend](#itwinpresentation-frontend)
   - [Breaking Changes](#breaking-changes)
     - [Updated minimum requirements](#updated-minimum-requirements)
       - [Node.js](#nodejs)
@@ -69,13 +69,12 @@ Table of contents:
       - [@itwin/core-frontend](#itwincore-frontend-2)
     - [Packages dropped](#packages-dropped)
     - [Opening connection to local snapshot requires IPC](#opening-connection-to-local-snapshot-requires-ipc)
-    - [Change to pullMerge](#change-to-pullmerge)
+    - [Change to `pullMerge`](#change-to-pullmerge)
       - [No pending/local changes](#no-pendinglocal-changes)
       - [With pending/local changes](#with-pendinglocal-changes)
     - [Reworked @itwin/ecschema-metadata package](#reworked-itwinecschema-metadata-package)
       - [Tips for adjusting existing code](#tips-for-adjusting-existing-code)
     - [Changes to getElement and getModel](#changes-to-getelement-and-getmodel)
-  - [Deprecated ECSqlStatement](#deprecated-ecsqlstatement)
 
 ## Selection set
 
@@ -116,6 +115,10 @@ Added `SnapMode.TangentPoint`. Snaps to the closest point of tangency on the cur
 
 Consult the [learning article](../learning/backend/Fonts.md) for details and example code.
 
+### Text Block Margins
+
+You can now surround a [TextBlock]($core-common) with padding by setting its [TextBlockMargins]($core-common). When [layoutTextBlock]($core-backend) computes [TextBlockLayout.range]($core-backend), it will expand the bounding box to include the margins. [ProduceTextAnnotationGeometryArgs.debugAnchorPointAndRange]($core-backend) now produces two bounding boxes: one tightly fitted to the text, and a second expanded to include the margins.
+
 ## Geometry
 
 ### Polyface Traversal
@@ -129,10 +132,6 @@ The new class [IndexedPolyfaceWalker]($core-geometry) has methods to complete th
 - [IndexedPolyfaceWalker.edgeMate]($core-geometry) returns a walker referring to the matched edge in the adjacent facet.
 
 If a walker operation would advance outside the mesh (e.g., `edgeMate` of a boundary edge), it returns an invalid walker.
-
-### Text Block Margins
-
-You can now surround a [TextBlock]($core-common) with padding by setting its [TextBlockMargins]($core-common). When [layoutTextBlock]($core-backend) computes [TextBlockLayout.range]($core-backend), it will expand the bounding box to include the margins. [ProduceTextAnnotationGeometryArgs.debugAnchorPointAndRange]($core-backend) now produces two bounding boxes: one tightly fitted to the text, and a second expanded to include the margins.
 
 ### Tangent To Curve
 
@@ -164,7 +163,7 @@ When a [HitDetail]($frontend) originates from a [contour line](../learning/displ
 
 ## Back-end image conversion
 
-@itwin/core-backend provides two new APIs for encoding and decoding images. [imageBufferFromImageSource]($backend) converts a PNG or JPEG image into a bitmap image. [imageSourceFromImageBuffer]($backend) performs the inverse conversion.
+`@itwin/core-backend` provides two new APIs for encoding and decoding images. [imageBufferFromImageSource]($backend) converts a PNG or JPEG image into a bitmap image. [imageSourceFromImageBuffer]($backend) performs the inverse conversion.
 
 ## Presentation
 
@@ -185,7 +184,7 @@ The `@itwin/presentation-common` delivers a localization file used by either `@i
 
 The Presentation packages exported a number of `@internal` APIs through the public barrel files. These APIs were never intended for consumers' use and have been removed from the public barrels to avoid accidental usage.
 
-## Google Maps 2D tiles API
+## Google Maps 2D Tiles API
 
 The `@itwin/map-layers-formats` package now includes an API for consuming Google Maps 2D tiles.
 
@@ -260,47 +259,9 @@ Here are 2 ways to retrieve formats, given an EC Full Name for a `KindOfQuantity
 
 ## API deprecations
 
-### @itwin/core-bentley
+### @itwin/appui-abstract
 
-- The [IDisposable]($core-bentley) interface, along with related [isIDisposable]($core-bentley) and [using]($core-bentley) utilities, have been deprecated in favor of [TypeScript's built-in](https://www.typescriptlang.org/docs/handbook/release-notes/typescript-5-2.html#using-declarations-and-explicit-resource-management) `Disposable` type and `using` declarations (from the upcoming [Explicit Resource Management](https://github.com/tc39/proposal-explicit-resource-management) feature in ECMAScript).
-
-  For example, the following:
-
-  ```typescript
-  import { using } from "@itwin/core-bentley";
-  export function doSomeWork() {
-    using(new SomethingDisposable(), (temp) => {
-      // do something with temp
-    });
-  }
-  ```
-
-  should now be rewritten as:
-
-  ```typescript
-  export function doSomeWork() {
-    using temp = new SomethingDisposable();
-    // do something with temp
-  }
-  ```
-
-  > Note that while public types with deterministic cleanup logic in iTwin.js will continue to implement _both_ `IDisposable` and `Disposable` until the former is fully removed in iTwin.js 7.0 (in accordance with our [API support policy](../learning/api-support-policies)), disposable objects should still only be disposed once - _either_ with [IDisposable.dispose]($core-bentley) _or_ `Symbol.dispose()` but not both! Where possible, prefer `using` declarations or the [dispose]($core-bentley) helper function over directly calling either method.
-
-### @itwin/core-common
-
-- [FontMap]($common) attempts to provide an in-memory cache mapping [FontId]($common)s to [Font](../learning/backend/Fonts.md) names. Use [IModelDb.fonts]($backend) instead.
-- Some types which are now more comprehensively exposed by backend's new `@itwin/ecschema-metadata` integration were made deprecated:
-  - [EntityMetaData]($common)
-  - [EntityMetaDataProps]($common)
-  - [CustomAttribute]($common)
-  - [PropertyMetaData]($common)
-  - [PropertyMetaDataProps]($common)
-
-| **Deprecated class from `@itwin/core-common`** | **Replacement class from `@itwin/ecschema-metadata`** |
-| ---------------------------------------------- | ----------------------------------------------------- |
-| `EntityMetaData`                               | Use `EntityClass` instead.                            |
-| `CustomAttribute`                              | Use `CustomAttribute` instead.                        |
-| `PropertyMetaData`                             | Use `Property` instead.                               |
+- The `quantityType` property in `PropertyDescription` has been deprecated, in favor of a new optional property, `kindOfQuantityName`. This was done to follow the [migration away from using QuantityType enums.](#migrating-from-quantitytype-to-kindofquantity)
 
 ### @itwin/core-backend
 
@@ -351,6 +312,48 @@ const metaData: Format | undefined = await imodelDb.schemaContext.getSchemaItem(
 const metaData: KindOfQuantity | undefined = await imodelDb.schemaContext.getSchemaItem("TestSchema.TestKoQ", KindOfQuantity);
 ```
 
+### @itwin/core-bentley
+
+- The [IDisposable]($core-bentley) interface, along with related [isIDisposable]($core-bentley) and [using]($core-bentley) utilities, have been deprecated in favor of [TypeScript's built-in](https://www.typescriptlang.org/docs/handbook/release-notes/typescript-5-2.html#using-declarations-and-explicit-resource-management) `Disposable` type and `using` declarations (from the upcoming [Explicit Resource Management](https://github.com/tc39/proposal-explicit-resource-management) feature in ECMAScript).
+
+  For example, the following:
+
+  ```typescript
+  import { using } from "@itwin/core-bentley";
+  export function doSomeWork() {
+    using(new SomethingDisposable(), (temp) => {
+      // do something with temp
+    });
+  }
+  ```
+
+  should now be rewritten as:
+
+  ```typescript
+  export function doSomeWork() {
+    using temp = new SomethingDisposable();
+    // do something with temp
+  }
+  ```
+
+  > Note that while public types with deterministic cleanup logic in iTwin.js will continue to implement _both_ `IDisposable` and `Disposable` until the former is fully removed in iTwin.js 7.0 (in accordance with our [API support policy](../learning/api-support-policies)), disposable objects should still only be disposed once - _either_ with [IDisposable.dispose]($core-bentley) _or_ `Symbol.dispose()` but not both! Where possible, prefer `using` declarations or the [dispose]($core-bentley) helper function over directly calling either method.
+
+### @itwin/core-common
+
+- [FontMap]($common) attempts to provide an in-memory cache mapping [FontId]($common)s to [Font](../learning/backend/Fonts.md) names. Use [IModelDb.fonts]($backend) instead.
+- Some types which are now more comprehensively exposed by backend's new `@itwin/ecschema-metadata` integration were made deprecated:
+  - [EntityMetaData]($common)
+  - [EntityMetaDataProps]($common)
+  - [CustomAttribute]($common)
+  - [PropertyMetaData]($common)
+  - [PropertyMetaDataProps]($common)
+
+| **Deprecated class from `@itwin/core-common`** | **Replacement class from `@itwin/ecschema-metadata`** |
+| ---------------------------------------------- | ----------------------------------------------------- |
+| `EntityMetaData`                               | Use `EntityClass` instead.                            |
+| `CustomAttribute`                              | Use `CustomAttribute` instead.                        |
+| `PropertyMetaData`                             | Use `Property` instead.                               |
+
 ### @itwin/core-frontend
 
 - Deprecated [SelectionSet]($core-frontend)-related APIs:
@@ -369,6 +372,32 @@ const metaData: KindOfQuantity | undefined = await imodelDb.schemaContext.getSch
 
 - Deprecated `quantityType` getter for [LengthDescription]($core-frontend), [SurveyLengthDescription]($core-frontend), [EngineeringLengthDescription]($core-frontend), and [AngleDescription]($core-frontend). Use `kindOfQuantityName` property of those classes instead.
 
+### @itwin/ecschema-rpcinterface-common
+
+- The `getSchemaSync` method in `ECSchemaRpcLocater` has been deprecated in version 5.0. This method is not supported for locating schemas over RPC/HTTP. Instead, use the asynchronous `getSchema` method for schema retrieval.
+
+**Reason for deprecation:**
+The synchronous `getSchemaSync` method is incompatible with the asynchronous nature of RPC/HTTP operations. It always throws an error and should not be used.
+
+**Replacement:**
+Use the `getSchema` method, which is asynchronous and designed for retrieving schemas over RPC/HTTP.
+
+**Example:**
+
+```typescript
+// Deprecated usage
+const schema = context.getSchemaSync(schemaKey, SchemaMatchType.Exact);
+
+// Recommended usage
+const schema = await context.getSchema(schemaKey, SchemaMatchType.Exact);
+```
+
+### @itwin/presentation-backend
+
+- All unified-selection related APIs have been deprecated in favor of the new `@itwin/unified-selection` package (see [Unified selection move to `@itwin/unified-selection`](#unified-selection-move-to-itwinunified-selection) section for more details). Affected APIs:
+  - `PresentationManager.computeSelection`,
+  - `PresentationManager.getSelectionScopes`.
+
 ### @itwin/presentation-common
 
 - All public methods of [PresentationRpcInterface]($presentation-common) have been deprecated. Going forward, RPC interfaces should not be called directly. Public wrappers such as [PresentationManager]($presentation-frontend) should be used instead.
@@ -385,12 +414,6 @@ const metaData: KindOfQuantity | undefined = await imodelDb.schemaContext.getSch
   - `SelectionScopeProps`,
   - `SelectionScopeRequestOptions`,
   - `SelectionScopeRpcRequestOptions`.
-
-### @itwin/presentation-backend
-
-- All unified-selection related APIs have been deprecated in favor of the new `@itwin/unified-selection` package (see [Unified selection move to `@itwin/unified-selection`](#unified-selection-move-to-itwinunified-selection) section for more details). Affected APIs:
-  - `PresentationManager.computeSelection`,
-  - `PresentationManager.getSelectionScopes`.
 
 ### @itwin/presentation-frontend
 
@@ -414,30 +437,6 @@ const metaData: KindOfQuantity | undefined = await imodelDb.schemaContext.getSch
   - `SelectionScopesManager`,
   - `SelectionScopesManagerProps`.
 
-### @itwin/ecschema-rpcinterface-common
-
-- The `getSchemaSync` method in `ECSchemaRpcLocater` has been deprecated in version 5.0. This method is not supported for locating schemas over RPC/HTTP. Instead, use the asynchronous `getSchema` method for schema retrieval.
-
-**Reason for deprecation:**
-The synchronous `getSchemaSync` method is incompatible with the asynchronous nature of RPC/HTTP operations. It always throws an error and should not be used.
-
-**Replacement:**
-Use the `getSchema` method, which is asynchronous and designed for retrieving schemas over RPC/HTTP.
-
-**Example:**
-
-```typescript
-// Deprecated usage
-const schema = context.getSchemaSync(schemaKey, SchemaMatchType.Exact);
-
-// Recommended usage
-const schema = await context.getSchema(schemaKey, SchemaMatchType.Exact);
-```
-
-### @itwin/appui-abstract
-
-- The `quantityType` property in `PropertyDescription` has been deprecated, in favor of a new optional property, `kindOfQuantityName`. This was done to follow the [migration away from using QuantityType enums.](#migrating-from-quantitytype-to-kindofquantity)
-
 ## Breaking Changes
 
 ### Updated minimum requirements
@@ -448,11 +447,11 @@ Support for Intel architecture on macOS and iOS Simulator was removed in iTwin.j
 
 #### Node.js
 
-Node 18 will reach [end-of-life](https://github.com/nodejs/release?tab=readme-ov-file#release-schedule) soon and will no longer be supported. iTwin.js 5.0 requires a minimum of Node 20.11.0, though we recommend using the latest long-term-support version.
+Node.js 18 has reached [end-of-life](https://github.com/nodejs/release?tab=readme-ov-file#release-schedule) and is no longer supported. iTwin.js 5.0 requires a minimum of Node 20.11.0, though we recommend using the latest long-term-support version.
 
 #### Electron
 
-iTwin.js now supports only [Electron 35](https://www.electronjs.org/blog/electron-35-0) and [Electron 36](https://www.electronjs.org/blog/electron-36-0). Support for all older Electron releases was dropped. This decision was made because Electron releases major updates much more frequently than iTwin.js and it is difficult to support a high number of major versions.
+iTwin.js now supports only [Electron 35](https://www.electronjs.org/blog/electron-35-0) and [Electron 36](https://www.electronjs.org/blog/electron-36-0). Support for all older Electron releases were dropped. This decision was made because Electron releases major updates much more frequently than iTwin.js and it is difficult to support a high number of major versions.
 
 #### ECMAScript
 
@@ -468,7 +467,7 @@ There are number of changes made to base TypeScript configuration available in `
 
 ##### `useDefineForClassFields`
 
-Starting `ES2022`, Typescript compile flag [`useDefineForClassFields`](https://www.typescriptlang.org/tsconfig/#useDefineForClassFields) defaults to `true` ([TypeScript release notes on `useDefineForClassFields` flag](https://www.typescriptlang.org/docs/handbook/release-notes/typescript-3-7.html#the-usedefineforclassfields-flag-and-the-declare-property-modifier)).
+Starting in `ES2022`, Typescript compile flag for [`useDefineForClassFields`](https://www.typescriptlang.org/tsconfig/#useDefineForClassFields) defaults to `true` ([TypeScript release notes on `useDefineForClassFields` flag](https://www.typescriptlang.org/docs/handbook/release-notes/typescript-3-7.html#the-usedefineforclassfields-flag-and-the-declare-property-modifier)).
 
 This may cause issues for classes which have [Entity]($backend) class as an ancestor and initialize their properties using [Entity]($backend) constructor (note: example uses simplified [Element]($backend) class):
 
@@ -519,7 +518,7 @@ Previously, applications could inadvertently include multiple instances of the s
 - _Duplicate types_: Type checking failures when comparing identical types from different package instances
 - _Semantically different behavior_: Different versions of the same code running simultaneously
 
-For more details on the consequences of doppelgangers, see the [Rush.js](https://rushjs.io/) project's documentation on the [consequences of doppelgangers](https://github.com/microsoft/rushstack-websites/blob/main/websites/rushjs.io/docs/pages/advanced/npm_doppelgangers.md#consequences-of-doppelgangers).
+For more details on the consequences of doppelgangers, see the Microsoft [Rush.js](https://rushjs.io/) project's documentation on the [consequences of doppelgangers](https://github.com/microsoft/rushstack-websites/blob/main/websites/rushjs.io/docs/pages/advanced/npm_doppelgangers.md#consequences-of-doppelgangers).
 
 In iTwin.js 5.0, we've implemented a robust doppelganger detection mechanism using JavaScript [Symbol](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Symbol)s. When a core package is loaded for the first time, it registers its presence in the global scope with a unique symbol. If the same package is loaded again (from a different instance), the system detects this conflict and throws a detailed error message with stack traces showing:
 
@@ -802,7 +801,7 @@ The following APIs have been removed:
 
 #### @itwin/core-common
 
-The following APIs were re-exported from `@itwin/core-bentley` and have been removed. Please import from `@itwin/core-bentley` instead.
+The following APIs which were re-exported from `@itwin/core-bentley` and have been removed. Please import them directly from `@itwin/core-bentley` instead.
 
 | Removed               |
 | --------------------- |
@@ -830,19 +829,19 @@ As of iTwin.js 5.0, the following packages have been removed and are no longer a
 | ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `@itwin/backend-webpack-tools` | Previously we recommended bundling backends via tools like webpack to decrease the deployed backend size, however we no longer recommend bundling backends at all. |
 | `@itwin/core-telemetry`        | No consumable APIs were being published therefore this package has been removed, with no replacement available. Please implement your own telemetry client.        |
-| `@itwin/core-webpack-tools`    | We no longer recommend using [webpack](https://webpack.js.org/) and instead recommend using [Vite](https://vite.dev/).                                             |
+| `@itwin/core-webpack-tools`    | We no longer recommend using [webpack](https://webpack.js.org/) and instead recommend using tools like [Vite](https://vite.dev/).                                             |
 
 ### Opening connection to local snapshot requires IPC
 
 [SnapshotConnection.openFile]($frontend) now requires applications to have set up a valid IPC communication. If you're using this API in an Electron or Mobile application, no additional action is needed as long as you call `ElectronHost.startup` or `MobileHost.startup` respectively. This API shouldn't be used in Web applications, so it has no replacement there.
 
-### Change to pullMerge
+### Change to `pullMerge`
 
-Starting from version 5.x, iTwin.js has transitioned from using the merge method to using the rebase + fast-forward method for merging changes. This change is transparent to users and is enabled by default.
+Starting from version 5.0, iTwin.js has transitioned from using the merge method to using the `rebase + fast-forward` method for merging changes. This change is transparent to users and is enabled by default.
 
 #### No pending/local changes
 
-- Incoming changes are applied using "fast-forward" method.
+- Incoming changes are applied using the `fast-forward` method.
 
 #### With pending/local changes
 
@@ -915,12 +914,12 @@ This applies to `SchemaContext.getSchemaItem/Sync`, `Schema.getItem/Sync` and `S
 
 ### Changes to getElement and getModel
 
-GetElement and GetModel have been optimized on the backend. Element reads and Model reads should be largely unaffected and should function exactly as they have before, with some minor exceptions listed below.
+The [getElement]($backend) and [getModel]($backend) apis have been optimized on the backend. Element reads and Model reads should be largely unaffected and should function exactly as they have before, with some minor exceptions listed below.
 
-List of changes to how Entity props are returned by getElement() and getModel():
+List of changes to how Entity props are returned by `getElement()` and `getModel()`:
 
 - GeometricElement3dProps with empty placement.angles:
-  Previously, if placement.angles was [0,0,0], it was omitted entirely from the returned object. Now, placement.angles will always be defined, even if it is an empty object ({}), aligning with how YawPitchRollProps handles [0,0,0].
+  Previously, if placement.angles was [0,0,0], it was omitted entirely from the returned object. Now, placement.angles will always be defined, even if it is an empty object `({})`, aligning with how YawPitchRollProps handles [0,0,0].
 
 - Precision Changes in angles:
   Very small angles values will now be rounded when converted to JavaScript numbers (e.g., -35.0000000000000055 becomes -35.000000000000006).
@@ -931,18 +930,5 @@ List of changes to how Entity props are returned by getElement() and getModel():
 - GeomStream:
   GeomStream via ECSql Reader now returns an uncompressed GeomStream buffer instead of a compressed buffer.
 
-A new iModelHost configuration is offered to opt out of these changes: `disableThinnedNativeInstanceWorkflow`
+A new [IModelHost]($backend) configuration is offered to opt out of these changes: `disableThinnedNativeInstanceWorkflow`
 By setting `disableThinnedNativeInstanceWorkflow` to true, the workflow will function exactly as before.
-
-## Deprecated ECSqlStatement
-
-`ECSqlStatement` is deprecated in 4.11 Use [IModelDb.createQueryReader]($backend) or [ECDb.createQueryReader]($backend)
-
-Following are related classes to ECSqlStatement that are also mark depercate
-
-- `ECEnumValue`
-- `ECSqlValue`
-- `ECSqlValueIterator`
-- `ECSqlColumnInfo`
-
-  In concurrent query `QueryOptions.convertClassIdsToClassNames` & `QueryOptionsBuilder.setConvertClassIdsToNames()` are deprecated. Use ECSQL ec_classname() function to convert class ids to class names.
