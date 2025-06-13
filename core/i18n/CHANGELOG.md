@@ -1,6 +1,16 @@
 # Change Log - @itwin/core-i18n
 
-This log was last generated on Fri, 06 Jun 2025 13:42:43 GMT and should not be manually modified.
+This log was last generated on Fri, 13 Jun 2025 20:25:38 GMT and should not be manually modified.
+
+## 5.0.0
+Fri, 13 Jun 2025 20:25:38 GMT
+
+### Updates
+
+- Upgrade compile target to ES2023 and module to ES2022
+- Remove 3.x Deprecated APIs
+- Bump `i18next-http-backend` dependency version to `^3.0.2`.
+- Change core peer dependencies to strict version.
 
 ## 4.11.5
 Fri, 06 Jun 2025 13:41:18 GMT

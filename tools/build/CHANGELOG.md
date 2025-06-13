@@ -1,6 +1,23 @@
 # Change Log - @itwin/build-tools
 
-This log was last generated on Fri, 06 Jun 2025 13:42:43 GMT and should not be manually modified.
+This log was last generated on Fri, 13 Jun 2025 20:25:38 GMT and should not be manually modified.
+
+## 5.0.0
+Fri, 13 Jun 2025 20:25:38 GMT
+
+### Updates
+
+- Bump `typedoc-plugin-merge-modules` dependency to a version that supports typedoc `0.26`.
+- Bump `typedoc` dependency to a version that supports typescript `5.6`.
+- Deprecate  unused --includes flag
+- Fix `typedoc` not finding `typedoc-plugin-merge-modules` plugin when hoisting is disabled.
+- add temporary fix for typedoc@0.26 issue #2802
+- Upgrade @microsoft/api-extractor to 7.49
+- Upgrade compile target to ES2023
+- Dropped support for Node 18
+- Enabled `useDefineForClassFields` TypeScript config flag
+- Bumped `cross-spawn` to `7.0.5`
+- Add a `tsconfig` option to `docs` command to allow specifying a custom TS configuration.
 
 ## 4.11.5
 Fri, 06 Jun 2025 13:41:18 GMT

@@ -1,6 +1,16 @@
 # Change Log - @itwin/ecschema-rpcinterface-common
 
-This log was last generated on Fri, 06 Jun 2025 13:42:43 GMT and should not be manually modified.
+This log was last generated on Fri, 13 Jun 2025 20:25:38 GMT and should not be manually modified.
+
+## 5.0.0
+Fri, 13 Jun 2025 20:25:38 GMT
+
+### Updates
+
+- Deprecated `getSchemaSync` method from ECSchemaRpcLocater.
+- Add ESM build
+- Upgrade compile target to ES2023 and module to ES2022
+- applied changes in ecschema-metadatas SchemaLocater interface
 
 ## 4.11.5
 Fri, 06 Jun 2025 13:41:18 GMT

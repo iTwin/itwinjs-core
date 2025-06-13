@@ -1,6 +1,14 @@
 # Change Log - @itwin/express-server
 
-This log was last generated on Fri, 06 Jun 2025 13:42:43 GMT and should not be manually modified.
+This log was last generated on Fri, 13 Jun 2025 20:25:38 GMT and should not be manually modified.
+
+## 5.0.0
+Fri, 13 Jun 2025 20:25:38 GMT
+
+### Updates
+
+- Dropped support for Node 18
+- Added ESM support
 
 ## 4.11.5
 Fri, 06 Jun 2025 13:41:18 GMT

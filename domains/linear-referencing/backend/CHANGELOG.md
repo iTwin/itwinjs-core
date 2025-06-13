@@ -1,6 +1,16 @@
 # Change Log - @itwin/linear-referencing-backend
 
-This log was last generated on Fri, 06 Jun 2025 13:42:43 GMT and should not be manually modified.
+This log was last generated on Fri, 13 Jun 2025 20:25:38 GMT and should not be manually modified.
+
+## 5.0.0
+Fri, 13 Jun 2025 20:25:38 GMT
+
+### Updates
+
+- Depreciate ECSqlStatement API
+- Dropped support for Node 18
+- Added ESM support
+- Change core peer dependencies to strict version.
 
 ## 4.11.5
 Fri, 06 Jun 2025 13:41:18 GMT
