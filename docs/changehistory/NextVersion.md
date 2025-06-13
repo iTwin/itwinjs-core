@@ -7,32 +7,34 @@ publish: false
 Table of contents:
 
 - [NextVersion](#nextversion)
-  - [Selection set](#selection-set)
-  - [Select by volume](#select-by-volume)
-  - [Snapping](#snapping)
-  - [Font APIs](#font-apis)
-    - [Text Block Margins](#text-block-margins)
-  - [Backend](#backend)
-    - [Image conversion](#image-conversion)
-    - [Delete all transactions](#delete-all-transactions)
-    - [Attach/detach db](#attachdetach-db)
-  - [Geometry](#geometry)
-    - [Polyface Traversal](#polyface-traversal)
-    - [Tangent To Curve](#tangent-to-curve)
-  - [Graphics Display](#graphics-display)
-    - [Google Maps 2D Tiles API](#google-maps-2d-tiles-api)
-    - [Read image to canvas](#read-image-to-canvas)
-    - [Draping iModel models onto reality data or other iModel models](#draping-imodel-models-onto-reality-data-or-other-imodel-models)
-    - [Reading contour lines](#reading-contour-lines)
-  - [Presentation](#presentation)
-    - [Unified selection move to `@itwin/unified-selection`](#unified-selection-move-to-itwinunified-selection)
-    - [Localization assets in `@itwin/presentation-common`](#localization-assets-in-itwinpresentation-common)
-    - [Internal APIs](#internal-apis)
-  - [Quantity Formatting](#quantity-formatting)
-    - [FormatDefinition](#formatdefinition)
-    - [FormatsProvider](#formatsprovider)
-    - [Persistence](#persistence)
-    - [Migrating From QuantityType to KindOfQuantity](#migrating-from-quantitytype-to-kindofquantity)
+  - [New Features](#new-features)
+    - [Selection](#selection)
+      - [Selection set](#selection-set)
+      - [Select by volume](#select-by-volume)
+    - [Snapping](#snapping)
+    - [Font APIs](#font-apis)
+      - [Text Block Margins](#text-block-margins)
+    - [Backend](#backend)
+      - [Image conversion](#image-conversion)
+      - [Delete all transactions](#delete-all-transactions)
+      - [Attach/detach db](#attachdetach-db)
+    - [Geometry](#geometry)
+      - [Polyface Traversal](#polyface-traversal)
+      - [Tangent To Curve](#tangent-to-curve)
+    - [Graphics](#graphics)
+      - [Google Maps 2D Tiles API](#google-maps-2d-tiles-api)
+      - [Read image to canvas](#read-image-to-canvas)
+      - [Draping iModel models onto reality data or other iModel models](#draping-imodel-models-onto-reality-data-or-other-imodel-models)
+      - [Reading contour lines](#reading-contour-lines)
+    - [Presentation](#presentation)
+      - [Unified selection move to `@itwin/unified-selection`](#unified-selection-move-to-itwinunified-selection)
+      - [Localization assets in `@itwin/presentation-common`](#localization-assets-in-itwinpresentation-common)
+      - [Internal APIs](#internal-apis)
+    - [Quantity Formatting](#quantity-formatting)
+      - [FormatDefinition](#formatdefinition)
+      - [FormatsProvider](#formatsprovider)
+      - [Persistence](#persistence)
+      - [Migrating From QuantityType to KindOfQuantity](#migrating-from-quantitytype-to-kindofquantity)
   - [API deprecations](#api-deprecations)
     - [@itwin/appui-abstract](#itwinappui-abstract)
     - [@itwin/core-backend](#itwincore-backend)
@@ -77,7 +79,11 @@ Table of contents:
       - [Tips for adjusting existing code](#tips-for-adjusting-existing-code)
     - [Changes to getElement and getModel](#changes-to-getelement-and-getmodel)
 
-## Selection set
+## New Features
+
+### Selection
+
+#### Selection set
 
 There are two similar selection-related concepts in `@itwin/core-frontend` - [SelectionSet]($core-frontend) and [HiliteSet]($core-frontend). The former is generally used by interactive tools (e.g. the "Move element" tool), so it contains what tools think is selected. The latter is used by the graphics system to know what elements to highlight, so it contains what users think is selected. Generally, we want the two sets to be in sync to avoid confusion why tools act on different elements than what users think are selected. Keeping them in sync was not always possible, because `HiliteSet` may store Model and SubCategory ids, but `SelectionSet` could only store Element ids. So we could end up in situations where a Model id is added to `HiliteSet` and `SelectionSet` is empty, making users think that all elements in that model are selected, but tools not knowing anything about it.
 
@@ -88,7 +94,7 @@ To alleviate this problem, the `SelectionSet`-related APIs have been enhanced to
 
 Because the `SelectionSet` now stores additional types of ids, existing code that listens to `onChange` event may start getting extra invocations that don't affect the element selection (e.g. `SelectAddEvent` with `added: []` and `additions: { models: ["0x1"] }`). Also, the `isActive` getter may return `true` even though `elements` set is empty.
 
-## Select by volume
+#### Select by volume
 
 By default a box select with the selection tool will only identify visible elements (i.e. elements that light up a pixel in the current view). Sometimes it is desirable to select all elements that are inside or overlap the box regardless of whether they are currently obscured by other elements. Applications can now change [ToolSettings.enableVolumeSelection]($core-frontend) to enable box selection by volume in spatial views.
 
@@ -97,17 +103,17 @@ The following protected methods on SelectTool had their signature changed to sup
 - [SelectTool.selectByPointsProcess]($core-frontend)
 - [SelectTool.selectByPointsEnd]($core-frontend)
 
-## Snapping
+### Snapping
 
-Added `SnapMode.PerpendicularPoint`. Snaps to the closest/perpendicular point on the curve under the cursor from the AccuDraw origin.
+Added [SnapMode.PerpendicularPoint]($core-frontend). Snaps to the closest/perpendicular point on the curve under the cursor from the AccuDraw origin.
 
 ![perpendicular point snap](assets/SnapPerpendicularPoint.png "Perpendicular Point Snap")
 
-Added `SnapMode.TangentPoint`. Snaps to the closest point of tangency on the curve under the cursor that will pass through the AccuDraw origin.
+Added [SnapMode.TangentPoint]($core-frontend). Snaps to the closest point of tangency on the curve under the cursor that will pass through the AccuDraw origin.
 
 ![tangent point snap](assets/SnapTangentPoint.png "Tangent Point Snap")
 
-## Font APIs
+### Font APIs
 
 [Fonts](../learning/backend/Fonts.md) control the appearance and layout of [TextAnnotation]($common)s. To apply a font to text stored in a [GeometryStream](../learning/common/GeometryStream.md), the font must first be embedded into the iModel. Two new APIs permit you to work with fonts:
 
@@ -116,24 +122,24 @@ Added `SnapMode.TangentPoint`. Snaps to the closest point of tangency on the cur
 
 Consult the [learning article](../learning/backend/Fonts.md) for details and example code.
 
-### Text Block Margins
+#### Text Block Margins
 
 You can now surround a [TextBlock]($core-common) with padding by setting its [TextBlockMargins]($core-common). When [layoutTextBlock]($core-backend) computes [TextBlockLayout.range]($core-backend), it will expand the bounding box to include the margins. [ProduceTextAnnotationGeometryArgs.debugAnchorPointAndRange]($core-backend) now produces two bounding boxes: one tightly fitted to the text, and a second expanded to include the margins.
 
-## Backend
+### Backend
 
-### Image conversion
+#### Image conversion
 
 `@itwin/core-backend` provides two new APIs for encoding and decoding images:
 
 - [imageBufferFromImageSource]($backend) converts a PNG or JPEG image into a bitmap image
 - [imageSourceFromImageBuffer]($backend) performs the inverse conversion.
 
-### Delete all transactions
+#### Delete all transactions
 
 [BriefcaseDb.txns]($backend) keeps track of all unsaved and/or unpushed local changes made to a briefcase. After pushing your changes, the record of local changes is deleted. In some cases, a user may wish to abandon all of their accumulated changes and start fresh. [TxnManager.deleteAllTxns]($backend) deletes all local changes without pushing them.
 
-### Attach/detach db
+#### Attach/detach db
 
 Allow the attachment of an ECDb/IModel to a connection and running ECSQL that combines data from both databases.
 
@@ -143,9 +149,9 @@ Allow the attachment of an ECDb/IModel to a connection and running ECSQL that co
 
 > Note: There are some reserve alias names that cannot be used. They are 'main', 'schema_sync_db', 'ecchange' & 'temp'
 
-## Geometry
+### Geometry
 
-### Polyface Traversal
+#### Polyface Traversal
 
 Conventional [IndexedPolyface]($core-geometry) data defines each facet by a sequence of point indices around the facet, however these indices do not indicate which facet is adjacent across an edge, nor do they indicate which facets are adjacent at a vertex. The topology of the mesh is incomplete.
 
@@ -157,13 +163,13 @@ The new class [IndexedPolyfaceWalker]($core-geometry) has methods to complete th
 
 If a walker operation would advance outside the mesh (e.g., `edgeMate` of a boundary edge), it returns an invalid walker.
 
-### Tangent To Curve
+#### Tangent To Curve
 
 A new API [CurvePrimitive.emitTangents]($core-geometry) is added to announce tangents from a space point to a curve primitive. This API takes a callback to announce each computed tangent so users can specify the callback according to their need. For example, we have created 2 specific APIs to take advantage of the new API. First API is [CurvePrimitive.allTangents]($core-geometry) which returns all tangents from a space point to a curve primitive. Second API is [CurvePrimitive.closestTangent]($core-geometry) which returns the closest tangent from a space point to a curve primitive with respect to a hint point.
 
-## Graphics Display
+### Graphics
 
-### Google Maps 2D Tiles API
+#### Google Maps 2D Tiles API
 
 The `@itwin/map-layers-formats` package now includes an API for consuming [Google Maps 2D tiles](https://developers.google.com/maps/documentation/tile/2d-tiles-overview).
 
@@ -193,13 +199,13 @@ Optionally, a custom session manager can be specified to get control over the se
 [[include:GoogleMaps_SetGoogleMapsSessionManager]]
 ```
 
-### Read image to canvas
+#### Read image to canvas
 
 Previously, when using [Viewport.readImageToCanvas]($core-frontend) with a single open viewport, canvas decorations were not included in the saved image. Sometimes this behavior was useful, so an overload to [Viewport.readImageToCanvas]($core-frontend) using the new [ReadImageToCanvasOptions]($core-frontend) interface was [created](https://github.com/iTwin/itwinjs-core/pull/7539). This now allows the option to choose whether or not canvas decorations are omitted in the saved image: if [ReadImageToCanvasOptions.omitCanvasDecorations]($core-frontend) is true, canvas decorations will be omitted.
 
 If [ReadImageToCanvasOptions]($core-frontend) are undefined in the call to [Viewport.readImageToCanvas]($core-frontend), previous behavior will persist and canvas decorations will not be included. This means canvas decorations will not be included when there is a single open viewport, but will be included when there are multiple open viewports. All existing calls to [Viewport.readImageToCanvas]($core-frontend) will be unaffected by this change as the inclusion of [ReadImageToCanvasOptions]($core-frontend) is optional, and when they are undefined, previous behavior will persist.
 
-### Draping iModel models onto reality data or other iModel models
+#### Draping iModel models onto reality data or other iModel models
 
 A new property titled `drapeTarget` has been added to [ModelMapLayerProps]($common) and [ModelMapLayerSettings]($common). When this property is specified as [ModelMapLayerDrapeTarget.RealityData]($common), the model map layer will be only draped onto all attached reality data. When this property is specified as [ModelMapLayerDrapeTarget.IModel]($common), the model map layer will be only draped onto all models within the iModel. If `drapeTarget` is not specified in the properties, the drape target will default to [ModelMapLayerDrapeTarget.Globe]($common), which will only drape the model map layer onto the globe.
 
@@ -211,42 +217,42 @@ Here is a sample screenshot of draping a model from within an iModel onto all mo
 
 ![models onto models draping example](./assets/models-draping-onto-models.jpg "Example of draping models from within an iModel onto all models from that same iModel")
 
-### Reading contour lines
+#### Reading contour lines
 
 When a [HitDetail]($frontend) originates from a [contour line](../learning/display/ContourDisplay.md), the new [HitDetail.contour]($frontend) property now provides the elevation of the contour line, whether it is a major or minor contour, and from which [ContourGroup]($common) it originated. The same information is available in the `contour` property of the [Pixel.Data]($frontend) objects produced by [Viewport.readPixels]($frontend).
 
-## Presentation
+### Presentation
 
 The Presentation system is moving towards a more modular approach, with smaller packages intended for more specific tasks and having less peer dependencies. You can find more details about that in the [README of `@itwin/presentation` repo](https://github.com/iTwin/presentation/blob/master/README.md#the-packages). As part of that move, some Presentation APIs in `@itwin/itwinjs-core` repository, and, more specifically, 3 Presentation packages: `@itwin/presentation-common`, `@itwin/presentation-backend`, and `@itwin/presentation-frontend` have received a number of deprecations for APIs that already have replacements.
 
-### Unified selection move to `@itwin/unified-selection`
+#### Unified selection move to `@itwin/unified-selection`
 
 The unified selection system has been part of `@itwin/presentation-frontend` for a long time, providing a way for apps to have a single source of truth of what's selected. This system is now deprecated in favor of the new [@itwin/unified-selection](https://www.npmjs.com/package/@itwin/unified-selection) package. See the [migration guide](https://github.com/iTwin/presentation/blob/master/packages/unified-selection/learning/MigrationGuide.md) for migration details.
 
-### Localization assets in `@itwin/presentation-common`
+#### Localization assets in `@itwin/presentation-common`
 
 The `@itwin/presentation-common` delivers a localization file used by either `@itwin/presentation-backend` or `@itwin/presentation-frontend`, depending on where the localization is needed. Backend and frontend code expects to find localization assets under different directories:
 
 - Frontend looks for localization assets under `lib/public/locales` directory.
 - Backend used to look for localization assets under `lib/cjs/assets/locales` directory. This directory has been changed to `lib/assets/locales` to avoid duplication between `cjs` and `esm` builds. Anyone looking for localization assets in code can find then using `@itwin/presentation-common/locales/en/Presentation.json` import path.
 
-### Internal APIs
+#### Internal APIs
 
 The Presentation packages exported a number of `@internal` APIs through the public barrel files. These APIs were never intended for consumers' use and have been removed from the public barrels to avoid accidental usage.
 
-## Quantity Formatting
+### Quantity Formatting
 
-### FormatDefinition
+#### FormatDefinition
 
 A [FormatDefinition]($quantity) interface has been added, an extension of FormatProps to help identify formats.
 
-### FormatsProvider
+#### FormatsProvider
 
 [FormatsProvider]($quantity) and [MutableFormatsProvider]($quantity) interfaces and a [SchemaFormatsProvider]($ecschema-metadata) class have been added. This enables quick setup of [FormatterSpec]($quantity) and [ParserSpec]($quantity) to help with display formatting.
 
 In addition, [IModelApp]($core-frontend) now accepts an optional `FormatsProvider` for use across a frontend application, defaulting to an internal implementation that uses [QuantityType]($core-frontend). The implementation of this default provider will be updated when `QuantityType` is deprecated in 5.x lifecycle.
 
-### Persistence
+#### Persistence
 
 Following APIs have been added to support persistence:
 
@@ -254,7 +260,7 @@ Following APIs have been added to support persistence:
 
 Learn more at the [Quantity](../learning/quantity/index.md#persistence) learnings article for examples and use cases.
 
-### Migrating From QuantityType to KindOfQuantity
+#### Migrating From QuantityType to KindOfQuantity
 
 We are moving away from using [QuantityType]($core-frontend) in favor of [KindOfQuantity]($ecschema-metadata) [EC full name](https://www.itwinjs.org/bis/ec/ec-name/#full-name). See [Migrating from QuantityType to KindOfQuantity](../learning/frontend/QuantityFormatting.md#migrating-from-quantitytype-to-kindofquantity) for explanations on replacements to `QuantityType`.
 
@@ -447,7 +453,7 @@ const schema = await context.getSchema(schemaKey, SchemaMatchType.Exact);
 
 ### Updated minimum requirements
 
-A new major release of iTwin.js affords us the opportunity to update our requirements to continue to provide modern, secure, and rich libraries. Please visit our [Supported Platforms](../learning/SupportedPlatforms) documentation for a full breakdown.
+A new major release of iTwin.js affords us the opportunity to update our requirements to continue to provide modern, secure, and rich libraries. Please visit our [Supported Platforms](../learning/SupportedPlatforms.md) documentation for a full breakdown.
 
 Support for Intel architecture on macOS and iOS Simulator was removed in iTwin.js 5.0. Both now require an Apple Silicon Mac (M1 or later).
 
