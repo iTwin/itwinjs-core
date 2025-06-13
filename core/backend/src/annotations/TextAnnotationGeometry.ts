@@ -116,7 +116,7 @@ function debugSnapPoints(builder: ElementGeometry.Builder, frame: TextFrameStyle
 
 /**
  * Draws debug geometry for each line and run in a TextBlockLayout.
- * 
+ *
  * For each line and run, this function draws colored boxes to visualize their layout and boundaries.
  * Different run types (e.g., text, linebreak, fraction, tab) are assigned distinct colors for clarity.
  * This is useful for debugging text layout and alignment issues.
@@ -139,14 +139,6 @@ function debugRunLayout(builder: ElementGeometry.Builder, layout: TextBlockLayou
   }
 
   layout.lines.forEach(line => {
-    if (!lastColor.equals(color)) {
-      const colorParams = new GeometryParams(Id64.invalid);
-      colorParams.lineColor = color;
-      result = result && builder.appendGeometryParamsChange(colorParams);
-
-      lastColor = color;
-    }
-
     const lineTrans = Transform.createTranslationXYZ(line.offsetFromDocument.x, line.offsetFromDocument.y, 0);
     documentTransform.multiplyTransformTransform(lineTrans, lineTrans);
 
