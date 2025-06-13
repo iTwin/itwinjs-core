@@ -19,20 +19,8 @@ export abstract class FormattedQuantityDescription extends BaseQuantityDescripti
   private _formatterSpec?: FormatterSpec;
   private _parserSpec?: ParserSpec;
 
-<<<<<<< HEAD
   constructor(name: string, displayLabel: string, iconSpec?: string) {
     super(name, displayLabel, iconSpec);
-=======
-  constructor(args: FormattedQuantityDescriptionArgs);
-  constructor(name: string, displayLabel: string, iconSpec?: string, kindOfQuantityName?: string);
-  constructor(argsOrName: FormattedQuantityDescriptionArgs | string, displayLabel?: string, iconSpec?: string, kindOfQuantityName?: string) {
-    if (typeof argsOrName === "string") {
-       
-      super(argsOrName, displayLabel!, iconSpec, kindOfQuantityName);
-    } else {
-      super(argsOrName.name, argsOrName.displayLabel, argsOrName.iconSpec, argsOrName.kindOfQuantityName);
-    }
->>>>>>> 350b57884c (Respect extras.maximumScreenSpaceError (#8217))
   }
 
   protected formatValue(numberValue: number): string {

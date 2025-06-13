@@ -243,13 +243,8 @@ enum SMTextureType {
   Streaming = 2, // textures need to be downloaded, Bing Maps, etc…
 }
 
-<<<<<<< HEAD:core/frontend/src/tile/RealityModelTileTree.ts
-/** @internal */
-class RealityModelTileTreeProps {
-=======
 /** Exported strictly for tests. */
 export class RealityModelTileTreeProps {
->>>>>>> 350b57884c (Respect extras.maximumScreenSpaceError (#8217)):core/frontend/src/internal/tile/RealityModelTileTree.ts
   public location: Transform;
   public tilesetJson: any;
   public doDrapeBackgroundMap: boolean = false;
