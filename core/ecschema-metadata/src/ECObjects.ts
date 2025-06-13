@@ -118,7 +118,7 @@ export enum CustomAttributeContainerType {
 export enum SchemaMatchType {
   /*
    * Find exact VersionRead, VersionWrite, VersionMinor match as well as Data. NOTE data is not yet matched
-   * @deprecated in 4.10 Use Exact instead.
+   * @deprecated in 4.10 - will not be removed until after 2026-06-13. Use Exact instead.
    */
   Identical,
   /* Find exact VersionRead, VersionWrite, VersionMinor match. */
@@ -223,7 +223,7 @@ export function parseSchemaItemType(type: string): SchemaItemType | undefined {
  * @param value The SchemaItemType to stringify.
  * @return A string representing the provided SchemaItemType. If the type is not valid, an empty string is returned.
  * @beta
- * @deprecated in 4.6.0 SchemaItemType is a string enum so just use it directly
+ * @deprecated in 4.6.0 - will not be removed until after 2026-06-13. SchemaItemType is a string enum so just use it directly
  */
 export function schemaItemTypeToString(value: SchemaItemType): string {
   return value; // TODO: Remove

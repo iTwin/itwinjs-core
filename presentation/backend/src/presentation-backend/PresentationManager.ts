@@ -211,7 +211,7 @@ export interface PresentationManagerCachingConfig {
  * assigning default unit formats for specific phenomenons (see [[PresentationManagerProps.defaultFormats]]).
  *
  * @public
- * @deprecated in 4.3. The type has been moved to `@itwin/presentation-common` package.
+ * @deprecated in 4.3 - will not be removed until after 2026-06-13. The type has been moved to `@itwin/presentation-common` package.
  */
 export type UnitSystemFormat = CommonUnitSystemFormat;
 
@@ -257,7 +257,7 @@ export interface PresentationManagerProps {
    *
    *   which means the assets can be found through a relative path `./assets/` from the `{source file being executed}`.
    *
-   * @deprecated in 4.2. This attribute is not used anymore - the package is not using private assets anymore.
+   * @deprecated in 4.2 - will not be removed until after 2026-06-13. This attribute is not used anymore - the package is not using private assets anymore.
    */
   presentationAssetsRoot?: string | PresentationAssetsRootConfig;
 
@@ -301,7 +301,7 @@ export interface PresentationManagerProps {
    * data changes are not tracked at all.
    *
    * @beta
-   * @deprecated in 4.4. The manager now always tracks for iModel data changes without polling.
+   * @deprecated in 4.4 - will not be removed until after 2026-06-13. The manager now always tracks for iModel data changes without polling.
    */
   updatesPollInterval?: number;
 
@@ -374,7 +374,7 @@ export class PresentationManager {
     this._detail[Symbol.dispose]();
   }
 
-  /** @deprecated in 5.0 Use [Symbol.dispose] instead. */
+  /** @deprecated in 5.0 - will not be removed until after 2026-06-13. Use [Symbol.dispose] instead. */
   /* c8 ignore next 3 */
   public dispose() {
     this[Symbol.dispose]();
@@ -724,7 +724,7 @@ export class PresentationManager {
   /**
    * Retrieves available selection scopes.
    * @public
-   * @deprecated in 5.0. Use `computeSelection` from [@itwin/unified-selection](https://github.com/iTwin/presentation/blob/master/packages/unified-selection/README.md#selection-scopes) package instead.
+   * @deprecated in 5.0 - will not be removed until after 2026-06-13. Use `computeSelection` from [@itwin/unified-selection](https://github.com/iTwin/presentation/blob/master/packages/unified-selection/README.md#selection-scopes) package instead.
    */
   // eslint-disable-next-line @typescript-eslint/no-deprecated
   public async getSelectionScopes(_requestOptions: SelectionScopeRequestOptions<IModelDb> & BackendDiagnosticsAttribute): Promise<SelectionScope[]> {
@@ -734,7 +734,7 @@ export class PresentationManager {
   /**
    * Computes selection based on provided element IDs and selection scope.
    * @public
-   * @deprecated in 5.0. Use `computeSelection` from [@itwin/unified-selection](https://github.com/iTwin/presentation/blob/master/packages/unified-selection/README.md#selection-scopes) package instead.
+   * @deprecated in 5.0 - will not be removed until after 2026-06-13. Use `computeSelection` from [@itwin/unified-selection](https://github.com/iTwin/presentation/blob/master/packages/unified-selection/README.md#selection-scopes) package instead.
    */
   // eslint-disable-next-line @typescript-eslint/no-deprecated
   public async computeSelection(requestOptions: ComputeSelectionRequestOptions<IModelDb> & BackendDiagnosticsAttribute): Promise<KeySet> {
