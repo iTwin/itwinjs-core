@@ -295,6 +295,42 @@ describe("Bearing format tests:", () => {
     }
   });
 
+  it("should correctly parse breaing using RAD units", async () => {
+    const bearingRadJson: FormatProps = {
+      minWidth: 2,
+      precision: 0,
+      type: "Bearing",
+      revolutionUnit: "Units.REVOLUTION",
+      composite: {
+        includeZero: true,
+        units: [
+          { name: "Units.RAD" },
+        ],
+      },
+    };
+
+    const bearingRad = new Format("BearingRad");
+    await bearingRad.fromJSON(unitsProvider, bearingRadJson);
+    expect(bearingRad.hasUnits).to.be.true;
+
+    const bearingRadParser = await ParserSpec.create(bearingRad, unitsProvider, rad);
+
+    const testData = [
+      { input: "N0.785398E", expected: 0.785398 }, // 45 degrees in radians
+      { input: "S0.785398E", expected: 2.35619 }, // 135 degrees in radians
+      { input: "S", expected: 3.14159 }, // 180 degrees in radians
+      { input: "S0.785398W", expected: 3.92699 }, // 225 degrees in radians
+    ];
+
+    for (const entry of testData) {
+      const parseResult = Parser.parseQuantityString(entry.input, bearingRadParser);
+      if (!Parser.isParsedQuantity(parseResult)) {
+        expect.fail(`Expected a parsed quantity for input ${entry.input}`);
+      }
+      expect(parseResult.value).to.be.closeTo(entry.expected, 0.01);
+    }
+  });
+
   it("should handle special formats for bearing strings", async () => {
     const bearingDMSParser = await ParserSpec.create(bearingDMS, unitsProvider, degree);
 
