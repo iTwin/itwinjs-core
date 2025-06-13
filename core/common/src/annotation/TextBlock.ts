@@ -6,7 +6,7 @@
  * @module Annotation
  */
 
-import { TextStyleSettings, TextStyleSettingsProps } from "./TextStyle";
+import { TextStyleSettingsProps } from "./TextStyle";
 
 /** Options supplied to [[TextBlockComponent.applyStyle]] to control how the style is applied to the component and its child components.
  * @beta
@@ -53,7 +53,7 @@ export interface TextBlockStringifyOptions {
   /** Whether of not to use spaces or \t for tabs.
    * Default: "undefined" - use spaces.
    */
-  tabsAsSpaces?: boolean;
+  tabsAsSpaces?: number;
 }
 
 /** Abstract representation of any of the building blocks that make up a [[TextBlock]] document - namely [[Run]]s, [[Paragraph]]s, and [[TextBlock]] itself.
@@ -378,7 +378,7 @@ export class TabRun extends TextBlockComponent {
   /** Formats the fraction as a string with the [[numerator]] and [[denominator]] separated by [[TextBlockStringifyOptions.fractionSeparator]]. */
   public override stringify(options?: TextBlockStringifyOptions): string {
     if (options?.tabsAsSpaces) {
-      return ` `.repeat(this.styleOverrides.tabInterval ?? TextStyleSettings.defaultProps.tabInterval);
+      return "\s".repeat(options.tabsAsSpaces);
     }
 
     return "\t";
