@@ -609,6 +609,7 @@ beta;interface;RealityMeshParamsBuilderOptions
 internal;type;RealityModelSource
 internal;class;RealityModelTileTree
 internal;namespace;RealityModelTileTree
+internal;class;RealityModelTileTreeProps
 internal;class;RealityModelTileUtils
 public;class;RealityTile
 internal;interface;RealityTileContent

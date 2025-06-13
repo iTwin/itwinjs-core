@@ -243,7 +243,7 @@ enum SMTextureType {
   Streaming = 2, // textures need to be downloaded, Bing Maps, etc…
 }
 
-/** Exported strictly for tests. */
+/** @internal Exported strictly for tests. */
 export class RealityModelTileTreeProps {
   public location: Transform;
   public tilesetJson: any;
