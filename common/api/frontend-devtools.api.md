@@ -2620,7 +2620,7 @@ export class ViewportAddRealityModel extends Tool {
     // (undocumented)
     static get minArgs(): number;
     parseAndRun(...args: string[]): Promise<boolean>;
-    run(url: string): Promise<boolean>;
+    run(url: string, skipGcsConversion: boolean): Promise<boolean>;
     // (undocumented)
     static toolId: string;
 }
