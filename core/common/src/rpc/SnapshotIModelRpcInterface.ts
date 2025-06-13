@@ -47,7 +47,7 @@ export abstract class SnapshotIModelRpcInterface extends RpcInterface {
   public async openFile(_filePath: string, _opts?: SnapshotOpenOptions): Promise<IModelConnectionProps> { return this.forward(arguments); }
 
   /**
-   * @deprecated in 4.10. Use [[CheckpointConnection.openRemote]].
+   * @deprecated in 4.10 - might be removed in next major version. Use [[CheckpointConnection.openRemote]].
    */
   @RpcOperation.setRoutingProps(unknownIModelId)
   public async openRemote(_key: string, _opts?: SnapshotOpenOptions): Promise<IModelConnectionProps> { return this.forward(arguments); }

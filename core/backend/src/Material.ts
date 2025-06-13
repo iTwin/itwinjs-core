@@ -242,7 +242,7 @@ export namespace RenderMaterialElement {
   /** Parameters used to construct a [[RenderMaterial]].
    * The persistent JSON representation - [RenderMaterialAssetProps]($common) - is quite verbose and unwieldy. This representation simplifies it somewhat.
    * @see [[RenderMaterialElement.create]] and [[RenderMaterialElement.insert]] to create a [[RenderMaterial]] from parameters of this type.
-   * @deprecated in 3.6 because it is not useful to use a `class` - just use [[RenderMaterialElementParams]] directly instead.
+   * @deprecated in 3.6 - might be removed in next major version. It is not useful to use a `class` - just use [[RenderMaterialElementParams]] directly instead.
    */
   export class Params {
     /** A required palette name that categorizes this RenderMaterial */

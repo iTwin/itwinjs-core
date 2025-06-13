@@ -2583,7 +2583,7 @@ export class Sample {
   }
 
   // cspell:word creat
-  /** @deprecated in 4.x. Use createVerticalStaggerPolygon instead. */
+  /** @deprecated in 4.x - might be removed in next major version. Use createVerticalStaggerPolygon instead. */
   public static creatVerticalStaggerPolygon(
     dy1: number, dy2: number, dy3: number, dy4: number, ax: number, ay: number, dx1: number, dx4: number,
   ): Point3d[] {
