@@ -393,7 +393,7 @@ export class Parser {
     }
 
     // Handle compact decimal input in Bearing format (e.g., 65.4545 → 65°45′45″)
-    if (format.type === "Bearing" && tokens.length === 1 && typeof tokens[0].value === "number" ) {
+    if (format.type === FormatType.Bearing && tokens.length === 1 && typeof tokens[0].value === "number" ) {
       const value = tokens[0].value;
       const degrees = Math.floor(value);
       const remaining = (value - degrees) * 100;
