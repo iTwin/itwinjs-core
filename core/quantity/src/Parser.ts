@@ -26,6 +26,7 @@ export enum ParseError {
   InvalidParserSpec,
   BearingPrefixOrSuffixMissing,
   MathematicOperationFoundButIsNotAllowed,
+  BearingAngleOutOfRange,
 }
 
 /** Parse error result from [[Parser.parseToQuantityValue]] or [[Parser.parseToQuantityValue]].
@@ -333,19 +334,29 @@ export class Parser {
           }
         } else {
           // not processing a number
-          if (isOperator(charCode)) {
+          const isCharOperator = isOperator(charCode);
+          const isSpacer = charCode === format.spacerOrDefault.charCodeAt(0) && charCode !== QuantityConstants.CHAR_SPACE;
+
+          if (isSpacer && i > 0 && i < str.length - 1) {
+            const prevCharCode = str.charCodeAt(i - 1);
+            if (isCharOperator && prevCharCode !== QuantityConstants.CHAR_SPACE) {
+              // ignore spacer if it's not at the start or end, not whitespace, and is not in front of a whitespace
+              continue;
+            }
+          }
+
+          if(wipToken.length === 0 && charCode === QuantityConstants.CHAR_SPACE){
+            // Don't add space when the wip token is empty.
+            continue;
+          }
+
+          if (isCharOperator) {
             if(wipToken.length > 0){
               // There is a token is progress, process it now, before adding the new operator token.
               tokens.push(new ParseToken(wipToken));
               wipToken = "";
             }
-
             tokens.push(new ParseToken(str[i])); // Push an Operator Token in the list.
-            continue;
-          }
-
-          if(wipToken.length === 0 && charCode === QuantityConstants.CHAR_SPACE){
-            // Don't add space when the wip token is empty.
             continue;
           }
 
@@ -627,10 +638,7 @@ export class Parser {
         let value = sign * (tokenPair[0].value as number);
         let conversion: UnitConversionProps | undefined;
         if(tokenPair.length === 2 && tokenPair[1].isString){
-          const spacer = format.spacerOrDefault;
-          if(tokenPair[1].value !== spacer){ // ignore spacer
-            conversion = Parser.tryFindUnitConversion(tokenPair[1].value as string, unitsConversions, defaultUnit);
-          }
+          conversion = Parser.tryFindUnitConversion(tokenPair[1].value as string, unitsConversions, defaultUnit);
         }
         if (!conversion) {
           if (compositeUnitIndex > 0 && format.units && format.units.length > compositeUnitIndex) {
@@ -779,11 +787,14 @@ export class Parser {
     if(this.isParseError(parsedResult)) {
       return parsedResult;
     }
+    const revolution = this.getRevolution(spec);
+    const quarterRevolution = revolution / 4;
 
     let magnitude = parsedResult.value;
-    const revolution = this.getRevolution(spec);
-    magnitude = this.normalizeAngle(magnitude, revolution);
-    const quarterRevolution = revolution / 4;
+    if (magnitude < -quarterRevolution || magnitude > quarterRevolution) {
+      return { ok: false, error: ParseError.BearingAngleOutOfRange };
+    }
+
     // we have to turn the value into an east base and counter clockwise (NW and SE are already counter clockwise)
     if (matchedPrefix === DirectionLabel.North) {
       if (matchedSuffix === DirectionLabel.West) {
@@ -796,6 +807,7 @@ export class Parser {
         magnitude = (2 * quarterRevolution) - magnitude;
       }
     }
+    magnitude = this.normalizeAngle(magnitude, revolution);
 
     return { ok: true, value: magnitude };
   }

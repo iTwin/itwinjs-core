@@ -40,7 +40,7 @@ export interface OnAspectIdArg extends OnAspectArg {
 /** An Element Aspect is a class that defines a set of properties that are related to (and owned by) a single element.
  * Semantically, an ElementAspect can be considered part of the Element. Thus, an ElementAspect is deleted if its owning Element is deleted.
  * BIS Guideline: Subclass ElementUniqueAspect or ElementMultiAspect rather than subclassing ElementAspect directly.
- * @public
+ * @public @preview
  */
 export class ElementAspect extends Entity {
   public static override get className(): string { return "ElementAspect"; }
@@ -111,21 +111,21 @@ export class ElementAspect extends Entity {
   protected static onDeleted(_arg: OnAspectIdArg): void { }
 }
 /** An Element Unique Aspect is an ElementAspect where there can be only zero or one instance of the Element Aspect class per Element.
- * @public
+ * @public @preview
  */
 export class ElementUniqueAspect extends ElementAspect {
   public static override get className(): string { return "ElementUniqueAspect"; }
 }
 
 /** An Element Multi-Aspect is an ElementAspect where there can be **n** instances of the Element Aspect class per Element.
- * @public
+ * @public @preview
  */
 export class ElementMultiAspect extends ElementAspect {
   public static override get className(): string { return "ElementMultiAspect"; }
 }
 
 /**
- * @public
+ * @public @preview
  */
 export class ChannelRootAspect extends ElementUniqueAspect {
   public static override get className(): string { return "ChannelRootAspect"; }
@@ -140,7 +140,7 @@ export class ChannelRootAspect extends ElementUniqueAspect {
 
 /** An ElementMultiAspect that stores synchronization information for an Element originating from an external source.
  * @note The associated ECClass was added to the BisCore schema in version 1.0.2
- * @public
+ * @public @preview
  */
 export class ExternalSourceAspect extends ElementMultiAspect {
   public static override get className(): string { return "ExternalSourceAspect"; }
@@ -181,23 +181,6 @@ export class ExternalSourceAspect extends ElementMultiAspect {
     this.jsonProperties = props.jsonProperties;
   }
 
-  /** @deprecated in 3.x. findAllBySource */
-  public static findBySource(iModelDb: IModelDb, scope: Id64String, kind: string, identifier: string): { elementId?: Id64String, aspectId?: Id64String } {
-    const sql = `SELECT Element.Id, ECInstanceId FROM ${ExternalSourceAspect.classFullName} WHERE (Scope.Id=:scope AND Kind=:kind AND Identifier=:identifier)`;
-    let elementId: Id64String | undefined;
-    let aspectId: Id64String | undefined;
-    iModelDb.withPreparedStatement(sql, (statement: ECSqlStatement) => {
-      statement.bindId("scope", scope);
-      statement.bindString("kind", kind);
-      statement.bindString("identifier", identifier);
-      if (DbResult.BE_SQLITE_ROW === statement.step()) {
-        elementId = statement.getValue(0).getId();
-        aspectId = statement.getValue(1).getId();
-      }
-    });
-    return { elementId, aspectId };
-  }
-
   /** Look up the elements that contain one or more ExternalSourceAspect with the specified Scope, Kind, and Identifier.
    * The result of this function is an array of all of the ExternalSourceAspects that were found, each associated with the owning element.
    * A given element could have more than one ExternalSourceAspect with the given scope, kind, and identifier.
@@ -213,6 +196,7 @@ export class ExternalSourceAspect extends ElementMultiAspect {
   public static findAllBySource(iModelDb: IModelDb, scope: Id64String, kind: string, identifier: string): Array<{ elementId: Id64String, aspectId: Id64String }> {
     const sql = `SELECT Element.Id, ECInstanceId FROM ${ExternalSourceAspect.classFullName} WHERE (Scope.Id=:scope AND Kind=:kind AND Identifier=:identifier)`;
     const found: Array<{ elementId: Id64String, aspectId: Id64String }> = [];
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     iModelDb.withPreparedStatement(sql, (statement: ECSqlStatement) => {
       statement.bindId("scope", scope);
       statement.bindString("kind", kind);
@@ -246,10 +230,10 @@ export class ExternalSourceAspect extends ElementMultiAspect {
   }
 }
 
-/** @public */
+/** @public @preview */
 export namespace ExternalSourceAspect {
   /** Standard values for the `Kind` property of `ExternalSourceAspect`.
-   * @public
+   * @public @preview
    */
   export enum Kind {
     /** Indicates that the [[ExternalSourceAspect]] is storing [[Element]] provenance */

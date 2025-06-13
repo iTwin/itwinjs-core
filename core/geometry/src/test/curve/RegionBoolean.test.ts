@@ -703,14 +703,23 @@ describe("RegionBoolean", () => {
       testCases.push({ jsonFilePath: "./src/test/data/curve/michelLoops2.imjs", expectedNumComponents: 338, skipBoolean: true }); // 10 seconds
     }
     for (const testCase of testCases) {
-      const inputs = IModelJson.Reader.parse(JSON.parse(fs.readFileSync(testCase.jsonFilePath, "utf8"))) as Loop[];
+      const inputs = IModelJson.Reader.parse(JSON.parse(fs.readFileSync(testCase.jsonFilePath, "utf8"))) as AnyRegion[];
       if (ck.testDefined(inputs, "inputs successfully parsed")) {
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, inputs, x0, y0);
-        const range: Range3d = Range3d.createFromVariantData(inputs.map((loop: Loop) => { return [loop.range().low, loop.range().high]; }));
+        const range: Range3d = Range3d.createFromVariantData(inputs.map((loop: AnyRegion) => { return [loop.range().low, loop.range().high]; }));
         xDelta = 1.5 * range.xLength();
         yDelta = 1.5 * range.yLength();
-        let merged: Loop[] | AnyRegion | undefined = inputs;
+        let merged: AnyRegion | AnyRegion[] | undefined = inputs;
         if (!testCase.skipBoolean) {
+          /*
+          Merge the inputs into a UnionRegion. This will split overlapping loops into disjoint loops, but does not discover holes.
+            This is OK, as here we're only interested in the outer loop.
+          It is hard to use RegionOps.regionBooleanXY to discover holes: you have to know a priori how to separate the loops into arrays
+            of solids and holes (for AMinusB operation) because both input arrays undergo a union before the main parity operation starts.
+          RegionOps.sortOuterAndHoleLoopsXY can produce a Union/ParityRegion from loops, after which you know which input loops are "holes".
+            But because it doesn't compute intersections, it doesn't discover holes that aren't already loops in the input array, and if
+            a hole loop intersects any other loop, you don't know its parity-rule-defined subregions.
+          */
           merged = RegionOps.regionBooleanXY(inputs, undefined, RegionBinaryOpType.Union, testCase.tolerance);
           if (ck.testDefined(merged, "regionBooleanXY succeeded")) {
             x0 += xDelta;
@@ -1467,8 +1476,15 @@ describe("GeneralSweepBooleans", () => {
   });
 });
 
-function exerciseAreaBooleans(dataA: AnyRegion[], dataB: AnyRegion[],
-  ck: Checker, allGeometry: GeometryQuery[], x0: number, y0Start: number, showVertexNeighborhoods: boolean) {
+function exerciseAreaBooleans(
+  dataA: AnyRegion[],
+  dataB: AnyRegion[],
+  ck: Checker,
+  allGeometry: GeometryQuery[],
+  x0: number,
+  y0Start: number,
+  showVertexNeighborhoods: boolean,
+) {
   const areas = [];
   const range = RegionOps.curveArrayRange(dataA.concat(dataB));
   const yStep = Math.max(15.0, 2.0 * range.yLength());
@@ -1479,22 +1495,26 @@ function exerciseAreaBooleans(dataA: AnyRegion[], dataB: AnyRegion[],
   const vertexNeighborhoodFunction = (edgeData: VertexNeighborhoodSortData[]) => {
     GeometryCoreTestIO.consoleLog({ nodeCount: edgeData.length });
     for (const data of edgeData) {
-      GeometryCoreTestIO.consoleLog(` id: ${data.node.id}  x: ${data.node.x}, y: ${data.node.y}, theta: ${data.radians}, curvature: ${data.radiusOfCurvature} `);
+      GeometryCoreTestIO.consoleLog(
+        `id: ${data.node.id}  x: ${data.node.x}, y: ${data.node.y}, theta: ${data.radians}, curvature: ${data.radiusOfCurvature}`,
+      );
     }
   };
-  for (const opType of [RegionBinaryOpType.Union, RegionBinaryOpType.Intersection, RegionBinaryOpType.AMinusB, RegionBinaryOpType.BMinusA]) {
+  for (const opType of [
+    RegionBinaryOpType.Union, RegionBinaryOpType.Intersection, RegionBinaryOpType.AMinusB, RegionBinaryOpType.BMinusA,
+  ]) {
     y0 += yStep;
     if (showVertexNeighborhoods && opType === RegionBinaryOpType.Union)
       HalfEdgeGraphMerge.announceVertexNeighborhoodFunction = vertexNeighborhoodFunction;
     const result = RegionOps.regionBooleanXY(dataA, dataB, opType);
     if (showVertexNeighborhoods)
       HalfEdgeGraphMerge.announceVertexNeighborhoodFunction = undefined;
-    areas.push(RegionOps.computeXYArea(result!)!);
+    areas.push(result ? (RegionOps.computeXYArea(result) ?? 0.0) : 0.0);
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, result, x0, y0);
   }
   const area0 = areas[0]; // union
   const area123 = areas[1] + areas[2] + areas[3];
-  ck.testCoordinate(area0, area123, " UnionArea = sum of parts");
+  ck.testCoordinate(area0, area123, "UnionArea = sum of parts");
 }
 /**
  * Return an ellipse the loops around a segment.

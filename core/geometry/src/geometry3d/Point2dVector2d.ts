@@ -6,8 +6,6 @@
 /** @packageDocumentation
  * @module CartesianGeometry
  */
-// cspell:word JSONXY
-// cspell:word CWXY CCWXY
 
 import { BeJSONFunctions, Geometry, PerpParallelOptions } from "../Geometry";
 import { Angle } from "./Angle";

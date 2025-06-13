@@ -2,6 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+
 import { ByteStream } from "@itwin/core-bentley";
 
 export const createFakeTileResponse = (contentType: string, data?: Uint8Array) => {

@@ -573,6 +573,14 @@ export abstract class Tile {
    * produce more accurate size calculation.
    */
   public getSizeProjectionCorners(): Point3d[] | undefined { return undefined; }
+
+  /** @internal */
+  public clearLayers() {
+    this.disposeContents();
+    if (this.children)
+      for (const child of this.children)
+        (child).clearLayers();
+  }
 }
 
 /** Describes the current status of a [[Tile]]'s content. Tile content is loaded via an asynchronous [[TileRequest]].

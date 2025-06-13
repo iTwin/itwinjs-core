@@ -9,21 +9,17 @@
 import { firstValueFrom } from "rxjs";
 import { eachValueFrom } from "rxjs-for-await";
 import { IModelDb } from "@itwin/core-backend";
-import { Id64Array } from "@itwin/core-bentley";
+import { BeEvent, Id64Array } from "@itwin/core-bentley";
 import { UnitSystemKey } from "@itwin/core-quantity";
 import { SchemaContext } from "@itwin/ecschema-metadata";
 import {
-  buildElementProperties,
   UnitSystemFormat as CommonUnitSystemFormat,
   ComputeSelectionRequestOptions,
   Content,
   ContentDescriptorRequestOptions,
   ContentFlags,
-  ContentFormatter,
-  ContentPropertyValueFormatter,
   ContentRequestOptions,
   ContentSourcesRequestOptions,
-  deepReplaceNullsToUndefined,
   DefaultContentDisplayTypes,
   Descriptor,
   DescriptorOverrides,
@@ -41,12 +37,10 @@ import {
   HierarchyLevelDescriptorRequestOptions,
   HierarchyRequestOptions,
   InstanceKey,
-  isSingleElementPropertiesRequestOptions,
   Item,
   KeySet,
   KoqPropertyValueFormatter,
   LabelDefinition,
-  LocalizationHelper,
   MultiElementPropertiesRequestOptions,
   Node,
   NodeKey,
@@ -64,13 +58,22 @@ import {
   SingleElementPropertiesRequestOptions,
   WithCancelEvent,
 } from "@itwin/presentation-common";
-import { getContentItemsObservableFromClassNames, getContentItemsObservableFromElementIds } from "./ElementPropertiesHelper";
-import { NativePlatformDefinition, NativePlatformRequestTypes } from "./NativePlatform";
-import { getRulesetIdObject, PresentationManagerDetail } from "./PresentationManagerDetail";
-import { RulesetManager } from "./RulesetManager";
-import { RulesetVariablesManager, RulesetVariablesManagerImpl } from "./RulesetVariablesManager";
-import { SelectionScopesHelper } from "./SelectionScopesHelper";
-import { BackendDiagnosticsAttribute, BackendDiagnosticsOptions, getLocalizedStringEN } from "./Utils";
+import {
+  buildElementProperties,
+  ContentFormatter,
+  ContentPropertyValueFormatter,
+  deepReplaceNullsToUndefined,
+  isSingleElementPropertiesRequestOptions,
+  LocalizationHelper,
+} from "@itwin/presentation-common/internal";
+import { getContentItemsObservableFromClassNames, getContentItemsObservableFromElementIds } from "./ElementPropertiesHelper.js";
+import { _presentation_manager_detail } from "./InternalSymbols.js";
+import { NativePlatformRequestTypes } from "./NativePlatform.js";
+import { getRulesetIdObject, PresentationManagerDetail } from "./PresentationManagerDetail.js";
+import { RulesetManager } from "./RulesetManager.js";
+import { RulesetVariablesManager, RulesetVariablesManagerImpl } from "./RulesetVariablesManager.js";
+import { SelectionScopesHelper } from "./SelectionScopesHelper.js";
+import { BackendDiagnosticsAttribute, BackendDiagnosticsOptions, getLocalizedStringEN } from "./Utils.js";
 
 /**
  * Presentation hierarchy cache mode.
@@ -314,19 +317,6 @@ export interface PresentationManagerProps {
   useMmap?: boolean | number;
 
   /**
-   * An identifier which helps separate multiple presentation managers. It's
-   * mostly useful in tests where multiple presentation managers can co-exist
-   * and try to share the same resources, which we don't want. With this identifier
-   * set, managers put their resources into id-named subdirectories.
-   *
-   * @internal
-   */
-  id?: string;
-
-  /** @internal */
-  addon?: NativePlatformDefinition;
-
-  /**
    * Localization function to localize data returned by presentation manager when it's used directly on the backend (as opposed to when used through RPC, where
    * data is localized on the frontend). Defaults to English localization.
    *
@@ -337,6 +327,8 @@ export interface PresentationManagerProps {
   /**
    * Callback that provides [SchemaContext]($ecschema-metadata) for supplied [IModelDb]($core-backend).
    * [SchemaContext]($ecschema-metadata) is used for getting metadata required for values formatting.
+   *
+   * @deprecated in 5.1. [IModelDb.schemaContext]($core-backend) is now used by default instead.
    */
   schemaContextProvider?: (imodel: IModelDb) => SchemaContext;
 
@@ -359,6 +351,7 @@ export class PresentationManager {
   private _props: PresentationManagerProps;
   private _detail: PresentationManagerDetail;
   private _localizationHelper: LocalizationHelper;
+  private _schemaContextProvider: (imodel: IModelDb) => SchemaContext;
 
   /**
    * Creates an instance of PresentationManager.
@@ -367,15 +360,16 @@ export class PresentationManager {
   constructor(props?: PresentationManagerProps) {
     this._props = props ?? {};
     this._detail = new PresentationManagerDetail(this._props);
-
     this._localizationHelper = new LocalizationHelper({ getLocalizedString: props?.getLocalizedString ?? getLocalizedStringEN });
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    this._schemaContextProvider = props?.schemaContextProvider ?? ((imodel: IModelDb) => imodel.schemaContext);
   }
 
   /** Get / set active unit system used to format property values with units */
   public get activeUnitSystem(): UnitSystemKey | undefined {
     return this._detail.activeUnitSystem;
   }
-  // istanbul ignore next
+  /* c8 ignore next 3 */
   public set activeUnitSystem(value: UnitSystemKey | undefined) {
     this._detail.activeUnitSystem = value;
   }
@@ -386,14 +380,14 @@ export class PresentationManager {
   }
 
   /** @deprecated in 5.0 Use [Symbol.dispose] instead. */
-  // istanbul ignore next
+  /* c8 ignore next 3 */
   public dispose() {
     this[Symbol.dispose]();
   }
 
-  /** @internal */
-  public setOnManagerUsedHandler(handler: () => void) {
-    this._detail.setOnManagerUsedHandler(handler);
+  /** An event, that this manager raises whenever any request is made on it. */
+  public get onUsed(): BeEvent<() => void> {
+    return this._detail.onUsed;
   }
 
   /** Properties used to initialize the manager */
@@ -411,21 +405,15 @@ export class PresentationManager {
    * @param rulesetId Id of the ruleset to get variables manager for
    */
   public vars(rulesetId: string): RulesetVariablesManager {
-    return new RulesetVariablesManagerImpl(this.getNativePlatform, rulesetId);
+    return new RulesetVariablesManagerImpl(() => this._detail.getNativePlatform(), rulesetId);
   }
 
   /** @internal */
-  public getNativePlatform = (): NativePlatformDefinition => {
-    return this._detail.getNativePlatform();
-  };
-
-  /** @internal */
-  // istanbul ignore next
-  public getDetail(): PresentationManagerDetail {
+  /* c8 ignore next 3 */
+  public get [_presentation_manager_detail](): PresentationManagerDetail {
     return this._detail;
   }
 
-  /** @internal */
   public getRulesetId(rulesetOrId: Ruleset | string) {
     return this._detail.getRulesetId(rulesetOrId);
   }
@@ -522,6 +510,11 @@ export class PresentationManager {
     return this._detail.getContentSetSize(requestOptions);
   }
 
+  private createContentFormatter({ imodel, unitSystem }: { imodel: IModelDb; unitSystem?: UnitSystemKey }): ContentFormatter {
+    const koqPropertyFormatter = new KoqPropertyValueFormatter(this._schemaContextProvider(imodel), this.props.defaultFormats);
+    return new ContentFormatter(new ContentPropertyValueFormatter(koqPropertyFormatter), unitSystem ?? this.props.defaultUnitSystem);
+  }
+
   /**
    * Retrieves the content set based on the supplied content descriptor.
    * @public
@@ -529,17 +522,10 @@ export class PresentationManager {
   public async getContentSet(
     requestOptions: WithCancelEvent<Prioritized<Paged<ContentRequestOptions<IModelDb, Descriptor, KeySet, RulesetVariable>>>> & BackendDiagnosticsAttribute,
   ): Promise<Item[]> {
-    let items = await this._detail.getContentSet({
-      ...requestOptions,
-      ...(!requestOptions.omitFormattedValues && this.props.schemaContextProvider !== undefined ? { omitFormattedValues: true } : undefined),
-    });
+    let items = await this._detail.getContentSet(requestOptions);
 
-    if (!requestOptions.omitFormattedValues && this.props.schemaContextProvider !== undefined) {
-      const koqPropertyFormatter = new KoqPropertyValueFormatter(this.props.schemaContextProvider(requestOptions.imodel), this.props.defaultFormats);
-      const formatter = new ContentFormatter(
-        new ContentPropertyValueFormatter(koqPropertyFormatter),
-        requestOptions.unitSystem ?? this.props.defaultUnitSystem,
-      );
+    if (!requestOptions.omitFormattedValues) {
+      const formatter = this.createContentFormatter(requestOptions);
       items = await formatter.formatContentItems(items, requestOptions.descriptor);
     }
 
@@ -554,21 +540,13 @@ export class PresentationManager {
     requestOptions: WithCancelEvent<Prioritized<Paged<ContentRequestOptions<IModelDb, Descriptor | DescriptorOverrides, KeySet, RulesetVariable>>>> &
       BackendDiagnosticsAttribute,
   ): Promise<Content | undefined> {
-    const content = await this._detail.getContent({
-      ...requestOptions,
-      ...(!requestOptions.omitFormattedValues && this.props.schemaContextProvider !== undefined ? { omitFormattedValues: true } : undefined),
-    });
-
+    const content = await this._detail.getContent(requestOptions);
     if (!content) {
       return undefined;
     }
 
-    if (!requestOptions.omitFormattedValues && this.props.schemaContextProvider !== undefined) {
-      const koqPropertyFormatter = new KoqPropertyValueFormatter(this.props.schemaContextProvider(requestOptions.imodel), this.props.defaultFormats);
-      const formatter = new ContentFormatter(
-        new ContentPropertyValueFormatter(koqPropertyFormatter),
-        requestOptions.unitSystem ?? this.props.defaultUnitSystem,
-      );
+    if (!requestOptions.omitFormattedValues) {
+      const formatter = this.createContentFormatter(requestOptions);
       await formatter.formatContent(content);
     }
 
@@ -653,16 +631,16 @@ export class PresentationManager {
     // and can be shared across all batch requests for that class. Handling multiple classes at the same time not only increases memory footprint,
     // but also may push descriptors out of cache, requiring us to recreate them, thus making performance worse. For those reasons we handle at
     // most `workerThreadsCount / 2` classes in parallel.
-    // istanbul ignore next
+    /* c8 ignore next */
     const classParallelism = workerThreadsCount > 1 ? Math.ceil(workerThreadsCount / 2) : 1;
 
     // We want all worker threads to be constantly busy. However, there's some fairly expensive work being done after the worker thread is done,
     // but before we receive the response. That means the worker thread would be starving if we sent only `workerThreadsCount` requests in parallel.
     // To avoid that, we keep twice as much requests active.
-    // istanbul ignore next
+    /* c8 ignore next */
     const batchesParallelism = workerThreadsCount > 0 ? workerThreadsCount : 1;
 
-    // istanbul ignore next
+    /* c8 ignore next */
     const batchSize = batchSizeOption ?? 100;
 
     const elementsIdentifier = ((): { elementIds: Id64Array } | { elementClasses: string[] } => {
@@ -671,13 +649,12 @@ export class PresentationManager {
         delete contentOptions.elementIds;
         return { elementIds };
       }
-      // istanbul ignore else
       if ("elementClasses" in contentOptions && contentOptions.elementClasses !== undefined) {
         const elementClasses = contentOptions.elementClasses;
         delete contentOptions.elementClasses;
         return { elementClasses };
       }
-      // istanbul ignore next
+      /* c8 ignore next */
       return { elementClasses: ["BisCore:Element"] };
     })();
 

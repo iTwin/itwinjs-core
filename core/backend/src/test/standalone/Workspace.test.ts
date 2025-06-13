@@ -13,8 +13,9 @@ import { SettingsPriority } from "../../workspace/Settings";
 import { Workspace, WorkspaceContainerProps, WorkspaceDbManifest, WorkspaceDbProps } from "../../workspace/Workspace";
 import { EditableWorkspaceDb, WorkspaceEditor } from "../../workspace/WorkspaceEditor";
 import { IModelTestUtils } from "../IModelTestUtils";
-import { validateWorkspaceContainerId, validateWorkspaceDbName } from "../../internal/workspace/WorkspaceImpl";
+import { validateWorkspaceContainerId } from "../../internal/workspace/WorkspaceImpl";
 import { _nativeDb } from "../../internal/Symbols";
+import { CloudSqlite } from "../../CloudSqlite";
 
 describe("WorkspaceFile", () => {
 
@@ -73,7 +74,7 @@ describe("WorkspaceFile", () => {
   it("WorkspaceDbNames", () => {
     const expectBadName = (names: string[]) => {
       names.forEach((dbName) => {
-        expect(() => validateWorkspaceDbName(dbName)).to.throw("dbName");
+        expect(() => CloudSqlite.validateDbName(dbName)).to.throw("dbName");
       });
     };
 
@@ -102,7 +103,7 @@ describe("WorkspaceFile", () => {
       "single'quote",
     ]);
 
-    validateWorkspaceDbName(Guid.createValue()); // guids should be valid
+    CloudSqlite.validateDbName(Guid.createValue()); // guids should be valid
   });
 
   it("create new WorkspaceDb", async () => {

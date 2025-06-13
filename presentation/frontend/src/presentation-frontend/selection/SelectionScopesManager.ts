@@ -8,8 +8,19 @@
  */
 
 import { Id64Arg } from "@itwin/core-bentley";
+import { IModelRpcProps } from "@itwin/core-common";
 import { IModelConnection } from "@itwin/core-frontend";
-import { DEFAULT_KEYS_BATCH_SIZE, KeySet, RpcRequestsHandler, SelectionScope, SelectionScopeProps } from "@itwin/presentation-common";
+import {
+  ClientDiagnosticsAttribute,
+  ComputeSelectionRequestOptions,
+  DEFAULT_KEYS_BATCH_SIZE,
+  KeySet,
+  KeySetJSON,
+  SelectionScope,
+  SelectionScopeProps,
+  SelectionScopeRequestOptions,
+} from "@itwin/presentation-common";
+import { RpcRequestsHandler } from "@itwin/presentation-common/internal";
 
 /**
  * Properties for creating [[SelectionScopesManager]].
@@ -18,7 +29,12 @@ import { DEFAULT_KEYS_BATCH_SIZE, KeySet, RpcRequestsHandler, SelectionScope, Se
  */
 export interface SelectionScopesManagerProps {
   /** RPC handler to use for requesting selection scopes */
-  rpcRequestsHandler: RpcRequestsHandler;
+  rpcRequestsHandler: {
+    /** Requests available selection scopes */
+    getSelectionScopes: (args: SelectionScopeRequestOptions<IModelRpcProps> & ClientDiagnosticsAttribute) => Promise<SelectionScope[]>;
+    /** Requests keys to be added to logical selection based on provided element IDs and selection scope */
+    computeSelection: (args: ComputeSelectionRequestOptions<IModelRpcProps> & ClientDiagnosticsAttribute) => Promise<KeySetJSON>;
+  };
 
   /** Provider of active locale to use for localizing scopes */
   localeProvider?: () => string | undefined;
@@ -32,7 +48,7 @@ export interface SelectionScopesManagerProps {
  * @deprecated in 5.0. Use `computeSelection` from [@itwin/unified-selection](https://github.com/iTwin/presentation/blob/master/packages/unified-selection/README.md#selection-scopes) package instead.
  */
 export class SelectionScopesManager {
-  private _rpcRequestsHandler: RpcRequestsHandler;
+  private _rpcRequestsHandler: Pick<RpcRequestsHandler, "getSelectionScopes" | "computeSelection">;
   private _getLocale: () => string | undefined;
   private _activeScope: SelectionScopeProps | SelectionScope | string | undefined;
 

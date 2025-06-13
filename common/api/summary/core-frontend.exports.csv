@@ -12,7 +12,6 @@ beta;class;AccuDrawRotateAxesTool
 beta;class;AccuDrawRotateCycleTool
 beta;class;AccuDrawRotateElementTool
 beta;class;AccuDrawRotateFrontTool
-beta;class;AccuDrawRotatePerpendicularTool
 beta;class;AccuDrawRotateSideTool
 beta;class;AccuDrawRotateTopTool
 beta;class;AccuDrawRotateViewTool
@@ -85,6 +84,8 @@ public;interface;CanvasDecoration
 public;type;CanvasDecorationList
 public;function;canvasToImageBuffer
 public;function;canvasToResizedCanvasWithBars
+beta;interface;CatalogConnection
+beta;namespace;CatalogConnection
 public;class;CategorySelectorState
 public;enum;ChangeFlag
 public;class;ChangeFlags
@@ -105,12 +106,14 @@ public;function;connectViewportViews
 internal;enum;ContextMode
 public;class;ContextRealityModelState
 public;enum;ContextRotationId
+beta;interface;ContourHit
 internal;class;CoordinateConverter
 internal;interface;CoordinateConverterOptions
 public;enum;CoordinateLockOverrides
 public;enum;CoordSource
 public;enum;CoordSystem
 internal;class;CoreTools
+beta;interface;CreateFormattingSpecProps
 beta;interface;CreateGraphicFromDescriptionArgs
 beta;interface;CreateGraphicFromTemplateArgs
 beta;interface;CreateRenderInstancesParamsBuilderArgs
@@ -150,6 +153,7 @@ public;class;DrawingModelState
 public;class;DrawingViewState
 public;class;DynamicsContext
 public;interface;DynamicSpatialClassifier
+beta;interface;EditableCatalogConnection
 internal;interface;EditCommandHandler
 public;namespace;EditManipulator
 internal;const;ELEMENT_MARKED_FOR_REMOVAL
@@ -187,8 +191,11 @@ public;class;FlashSettings
 public;type;FlashSettingsOptions
 public;class;FlyViewTool
 internal;function;formatAnimationBranchId
+internal;class;FormatsProviderManager
 beta;class;FormattedQuantityDescription
+beta;interface;FormattedQuantityDescriptionArgs
 public;interface;FormatterParserSpecsProvider
+beta;interface;FormattingSpecEntry
 public;interface;FormattingUnitSystemChangedArgs
 internal;interface;FrameBeforeRenderData
 internal;interface;FrameCameraFrustumData
@@ -325,6 +332,8 @@ beta;interface;ITwinIdArg
 public;const;ITWINJS_CORE_VERSION
 public;enum;KeyinParseError
 internal;enum;KeyinStatus
+internal;class;LayerTileTreeHandler
+internal;class;LayerTileTreeReferenceHandler
 beta;class;LengthDescription
 internal;function;linePlaneIntersect
 alpha;class;LocalExtensionProvider
@@ -373,6 +382,7 @@ public;enum;MapLayerSourceStatus
 public;interface;MapLayerSourceValidation
 beta;class;MapLayerTileTreeReference
 beta;interface;MapLayerTokenEndpoint
+internal;interface;MapLayerTreeSetting
 beta;interface;MapSubLayerFeatureInfo
 public;class;MapTile
 public;class;MapTileProjection
@@ -465,12 +475,14 @@ internal;enum;PrimitiveVisibility
 alpha;interface;PublisherProductInfo
 public;interface;PullChangesOptions
 public;class;QuadId
+public;interface;QuadIdProps
 public;interface;QuantityFormatOverridesChangedArgs
 public;interface;QuantityFormatsChangedArgs
 public;class;QuantityFormatter
 public;enum;QuantityType
 public;type;QuantityTypeArg
 public;interface;QuantityTypeDefinition
+internal;class;QuantityTypeFormatsProvider
 public;type;QuantityTypeKey
 public;interface;QueryScreenFeaturesOptions
 public;function;queryTerrainElevationOffset

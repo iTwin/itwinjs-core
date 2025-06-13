@@ -40,7 +40,7 @@ export class MeshRenderGeometry implements RenderGeometry {
     this.data = data;
     this.isInstanceable = data.viewIndependentOrigin === undefined;
     this.range = params.vertices.qparams.computeRange();
-    this.surface = SurfaceGeometry.create(data, params.surface.indices);
+    this.surface = SurfaceGeometry.create(data, params);
     const edges = params.edges;
     if (!edges || data.type === SurfaceType.VolumeClassifier)
       return;
@@ -155,7 +155,7 @@ export class MeshGraphic extends Graphic {
 
   public override unionRange(range: Range3d) {
     if (this._instances)
-      range.extendRange(range);
+      range.extendRange(this._instances.range);
     else
       range.extendRange(this._meshRange);
   }

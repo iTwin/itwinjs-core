@@ -10,9 +10,9 @@
 import { DisposableList } from "@itwin/core-bentley";
 import { IModelConnection } from "@itwin/core-frontend";
 import { Keys, KeySet } from "@itwin/presentation-common";
-import { ISelectionProvider } from "./ISelectionProvider";
-import { SelectionChangeEventArgs, SelectionChangesListener } from "./SelectionChangeEvent";
-import { SelectionManager } from "./SelectionManager";
+import { ISelectionProvider } from "./ISelectionProvider.js";
+import { SelectionChangeEventArgs, SelectionChangesListener } from "./SelectionChangeEvent.js";
+import { SelectionManager } from "./SelectionManager.js";
 
 /**
  * Properties for creating a `SelectionHandler` instance.
@@ -89,7 +89,7 @@ export class SelectionHandler implements Disposable {
   }
 
   /** @deprecated in 5.0 Use [Symbol.dispose] instead. */
-  // istanbul ignore next
+  /* c8 ignore next 3 */
   public dispose() {
     this[Symbol.dispose]();
   }

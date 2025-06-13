@@ -7,8 +7,8 @@ import * as sinon from "sinon";
 import { IModelConnection } from "@itwin/core-frontend";
 import { ClientDiagnostics } from "@itwin/presentation-common";
 import { Presentation } from "@itwin/presentation-frontend";
-import { initialize, terminate } from "../IntegrationTests";
-import { TestIModelConnection } from "../IModelSetupUtils";
+import { initialize, terminate } from "../IntegrationTests.js";
+import { TestIModelConnection } from "../IModelSetupUtils.js";
 
 describe("Diagnostics", async () => {
   let imodel: IModelConnection;
@@ -83,9 +83,8 @@ describe("Learning Snippets", () => {
         },
       });
       // __PUBLISH_EXTRACT_END__
-      // eslint-disable-next-line @typescript-eslint/no-require-imports
-      const expectedBackendVersion = require("@itwin/presentation-backend/package.json").version;
-      expect(log).to.be.calledOnceWith(`Backend version: ${expectedBackendVersion}`);
+      const presentationBackendPackageJson = await import("@itwin/presentation-backend/package.json", { with: { type: "json" } });
+      expect(log).to.be.calledOnceWith(`Backend version: ${presentationBackendPackageJson.default.version}`);
     });
   });
 });

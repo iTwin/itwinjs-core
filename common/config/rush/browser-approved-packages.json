@@ -8,7 +8,7 @@
     },
     {
       "name": "@bentley/aec-units-schema",
-      "allowedCategories": [ "backend", "internal" ]
+      "allowedCategories": [ "backend", "common", "internal" ]
     },
     {
       "name": "@bentley/architectural-physical-schema",
@@ -20,7 +20,7 @@
     },
     {
       "name": "@bentley/bis-custom-attributes-schema",
-      "allowedCategories": [ "backend" ]
+      "allowedCategories": [ "backend", "common" ]
     },
     {
       "name": "@bentley/cif-bridge-schema",
@@ -64,7 +64,7 @@
     },
     {
       "name": "@bentley/cif-units-schema",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [ "common", "internal" ]
     },
     {
       "name": "@bentley/construction-schema",
@@ -72,7 +72,7 @@
     },
     {
       "name": "@bentley/core-custom-attributes-schema",
-      "allowedCategories": [ "backend" ]
+      "allowedCategories": [ "backend", "common" ]
     },
     {
       "name": "@bentley/ecdb-map-schema",
@@ -84,7 +84,7 @@
     },
     {
       "name": "@bentley/formats-schema",
-      "allowedCategories": [ "backend" ]
+      "allowedCategories": [ "backend", "common", "internal" ]
     },
     {
       "name": "@bentley/icons-generic",
@@ -124,7 +124,7 @@
     },
     {
       "name": "@bentley/road-rail-units-schema",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [ "common", "internal" ]
     },
     {
       "name": "@bentley/spatial-composition-schema",
@@ -136,7 +136,7 @@
     },
     {
       "name": "@bentley/units-schema",
-      "allowedCategories": [ "backend", "common" ]
+      "allowedCategories": [ "backend", "common", "internal" ]
     },
     {
       "name": "@itwin/appui-abstract",
@@ -224,7 +224,7 @@
     },
     {
       "name": "@itwin/ecschema-rpcinterface-common",
-      "allowedCategories": [ "backend", "integration-testing", "internal" ]
+      "allowedCategories": [ "backend", "frontend", "integration-testing", "internal" ]
     },
     {
       "name": "@itwin/ecschema-rpcinterface-impl",
@@ -331,6 +331,10 @@
       "allowedCategories": [ "integration-testing", "internal" ]
     },
     {
+      "name": "@itwin/presentation-shared",
+      "allowedCategories": [ "backend", "common" ]
+    },
+    {
       "name": "@itwin/reality-data-client",
       "allowedCategories": [ "internal" ]
     },
@@ -429,6 +433,10 @@
     {
       "name": "buffer",
       "allowedCategories": [ "integration-testing", "internal" ]
+    },
+    {
+      "name": "c8",
+      "allowedCategories": [ "backend", "common", "frontend" ]
     },
     {
       "name": "cache-require-paths",
@@ -632,7 +640,7 @@
     },
     {
       "name": "internal-tools",
-      "allowedCategories": [ "backend", "integration-testing", "internal" ]
+      "allowedCategories": [ "backend", "common", "extensions", "frontend", "integration-testing", "internal" ]
     },
     {
       "name": "inversify",
@@ -716,6 +724,10 @@
     },
     {
       "name": "npm-run-all",
+      "allowedCategories": [ "integration-testing", "internal" ]
+    },
+    {
+      "name": "npm-run-all2",
       "allowedCategories": [ "integration-testing", "internal" ]
     },
     {

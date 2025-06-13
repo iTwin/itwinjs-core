@@ -5,11 +5,12 @@
 import { assert, expect } from "chai";
 import { SchemaContext } from "../../Context";
 import { RelationshipEnd } from "../../ECObjects";
-import { ECObjectsError } from "../../Exception";
+import { ECSchemaError } from "../../Exception";
 import { RelationshipClass, RelationshipConstraint } from "../../Metadata/RelationshipClass";
 import { Schema } from "../../Metadata/Schema";
 import { createSchemaJsonWithItems } from "../TestUtils/DeserializationHelpers";
 import { createEmptyXmlDocument, getElementChildren, getElementChildrenByTagName } from "../TestUtils/SerializationHelper";
+import { ECSchemaNamespaceUris } from "../../Constants";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 
@@ -77,7 +78,7 @@ describe("RelationshipConstraint", () => {
         roleLabel: "test roleLabel",
       };
       const unloadedConstraintClassesJson = { ...json, constraintClasses: ["ThisClassDoesNotExist"] };
-      await expect(testConstraint.fromJSON(unloadedConstraintClassesJson)).to.be.rejectedWith(ECObjectsError);
+      await expect(testConstraint.fromJSON(unloadedConstraintClassesJson)).to.be.rejectedWith(ECSchemaError);
     });
 
     const targetStubJson = {
@@ -118,7 +119,7 @@ describe("RelationshipConstraint", () => {
       assert.isTrue(testConstraint.customAttributes!.get("TestSchema.TestCAClassA")!.ShowClasses);
     });
     const twoCustomAttributesJson = {
-      $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+      $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
       name: "ValidSchema",
       polymorphic: true,
       multiplicity: "(0..1)",
@@ -218,7 +219,7 @@ describe("RelationshipConstraint", () => {
     });
 
     const twoCustomAttributesJson = {
-      $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+      $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
       name: "ValidSchema",
       polymorphic: true,
       multiplicity: "(0..1)",
@@ -329,7 +330,7 @@ describe("RelationshipConstraint", () => {
     });
 
     const twoCustomAttributesJson = {
-      $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+      $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
       name: "ValidSchema",
       polymorphic: true,
       multiplicity: "(0..1)",

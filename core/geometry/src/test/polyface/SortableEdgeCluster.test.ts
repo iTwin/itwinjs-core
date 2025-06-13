@@ -27,18 +27,18 @@ describe("SortableEdgeCluster", () => {
     //     8 <<<<<<<  9
     //     8 >>F4>>>  9   // nul face F4!!!!
     //
-    edgeArray.addPath([1, 2, 3, 4], 0);
+    edgeArray.addPath([1, 2, 3, 4], 0, true);
     ck.testTrue(edgeArray.edges[0].isLowHigh, "low to high");
     ck.testFalse(edgeArray.edges[3].isLowHigh, "high to low");
-    ck.testExactNumber(edgeArray.edges[0].vertexIndexA, edgeArray.edges[3].vertexIndexB, "confirm facet closure");
-    edgeArray.addPath([1, 6, 7, 2], 1);
+    ck.testExactNumber(edgeArray.edges[0].startVertex, edgeArray.edges[3].endVertex, "confirm facet closure");
+    edgeArray.addPath([1, 6, 7, 2], 1, true);
     ck.testExactNumber(1, edgeArray.edges[4].facetIndex, "confirm facet index");
     const n1 = edgeArray.edges.length;
-    edgeArray.addPath([], 20);  // force null return.
+    edgeArray.addPath([], 20, true);  // force null return.
     ck.testExactNumber(n1, edgeArray.edges.length, "confirm no edges added with empty input");
-    edgeArray.addPath([5, 6, 1, 0], 2);
-    edgeArray.addPath([6, 9, 8, 5], 3);    // Clockwise == creates error case 5>>>6 !!!
-    edgeArray.addPath([8, 9], 4);
+    edgeArray.addPath([5, 6, 1, 0], 2, true);
+    edgeArray.addPath([6, 9, 8, 5], 3, true);    // Clockwise == creates error case 5>>>6 !!!
+    edgeArray.addPath([8, 9], 4, true);
     edgeArray.addPath([2, 7, 10, 10, 2], 5, false);    // null edge, with explicit closure
 
     const manifold: SortableEdgeCluster[] = [];

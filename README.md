@@ -62,7 +62,7 @@ The following instructions will quickly set the repo up for you to edit the sour
 3. Build source: `rush build`
 4. Run tests: `rush cover`
 
-​For more information, please refer to our [Contributing Guide](https://github.com/iTwin/itwinjs-core/pull/7767/CONTRIBUTING.md), which provides detailed instructions on source code editing workflows, debugging tests, contribution standards, FAQs, and guidelines for posting questions.​
+​For more information, please refer to our [Contributing Guide](./CONTRIBUTING.md), which provides detailed instructions on source code editing workflows, debugging tests, contribution standards, FAQs, and guidelines for posting questions.​
 
 ## Licensing
 
