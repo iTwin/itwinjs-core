@@ -285,7 +285,7 @@ export class Parser {
                 processingNumber = false;
                 wipToken = "";
               }
-              else if (format?.type === "Bearing" && wipToken.length > 0) {
+              else if (format.type === FormatType.Bearing && wipToken.length > 0) {
                 if (signToken.length > 0) {
                   wipToken = signToken + wipToken;
                   signToken = "";
