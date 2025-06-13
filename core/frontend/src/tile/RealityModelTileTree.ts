@@ -243,40 +243,22 @@ enum SMTextureType {
   Streaming = 2, // textures need to be downloaded, Bing Maps, etc…
 }
 
-<<<<<<< HEAD:core/frontend/src/tile/RealityModelTileTree.ts
 /** @internal */
 class RealityModelTileTreeProps {
-=======
-/** Exported strictly for tests. */
-export class RealityModelTileTreeProps {
->>>>>>> 350b57884c (Respect extras.maximumScreenSpaceError (#8217)):core/frontend/src/internal/tile/RealityModelTileTree.ts
   public location: Transform;
   public tilesetJson: any;
   public doDrapeBackgroundMap: boolean = false;
-  public dataSource: RealityDataSource;
+  public rdSource: RealityDataSource;
   public yAxisUp = false;
   public root: any;
-  public readonly maximumScreenSpaceError?: number;
 
-  public get usesGeometricError(): boolean {
-    return undefined !== this.maximumScreenSpaceError;
-  }
-  
   constructor(json: any, root: any, rdSource: RealityDataSource, tilesetToDbTransform: Transform, public readonly tilesetToEcef?: Transform) {
     this.tilesetJson = root;
-    this.dataSource = rdSource;
+    this.rdSource = rdSource;
     this.location = tilesetToDbTransform;
     this.doDrapeBackgroundMap = (json.root && json.root.SMMasterHeader && SMTextureType.Streaming === json.root.SMMasterHeader.IsTextured);
-    if (json.asset.gltfUpAxis === undefined || json.asset.gltfUpAxis === "y" || json.asset.gltfUpAxis === "Y") {
+    if (json.asset.gltfUpAxis === undefined || json.asset.gltfUpAxis === "y" || json.asset.gltfUpAxis === "Y")
       this.yAxisUp = true;
-    }
-    
-    const maxSSE = json.asset.extras?.maximumScreenSpaceError;
-    if (typeof maxSSE === "number") {
-      this.maximumScreenSpaceError = json.asset.extras?.maximumScreenSpaceError;
-    } else if (rdSource.usesGeometricError) {
-      this.maximumScreenSpaceError = rdSource.maximumScreenSpaceError ?? 1;
-    }
   }
 }
 
@@ -303,7 +285,7 @@ class RealityModelTileTreeParams implements RealityTileTreeParams {
       id: "",
       // If not specified explicitly, additiveRefinement is inherited from parent tile.
       additiveRefinement: undefined !== refine ? "ADD" === refine : undefined,
-      usesGeometricError: loader.tree.usesGeometricError,
+      usesGeometricError: loader.tree.rdSource.usesGeometricError,
     });
   }
 }
@@ -461,7 +443,7 @@ class RealityModelTileLoader extends RealityTileLoader {
   public get clipLowResolutionTiles(): boolean { return true; }
   public override get viewFlagOverrides(): ViewFlagOverrides { return this._viewFlagOverrides; }
   public override get maximumScreenSpaceError(): number | undefined {
-    return this.tree.maximumScreenSpaceError;
+    return this.tree.rdSource.maximumScreenSpaceError;
   }
 
   public async loadChildren(tile: RealityTile): Promise<Tile[] | undefined> {
@@ -494,7 +476,7 @@ class RealityModelTileLoader extends RealityTileLoader {
             transformToRoot: foundChild.transformToRoot,
             // If not specified explicitly, additiveRefinement is inherited from parent tile.
             additiveRefinement: undefined !== refine ? refine === "ADD" : undefined,
-            usesGeometricError: this.tree.usesGeometricError,
+            usesGeometricError: this.tree.rdSource.usesGeometricError,
           }));
         }
       }
@@ -512,7 +494,7 @@ class RealityModelTileLoader extends RealityTileLoader {
     if (undefined === foundChild || undefined === foundChild.json.content || isCanceled())
       return undefined;
 
-    return this.tree.dataSource.getTileContent(getUrl(foundChild.json.content));
+    return this.tree.rdSource.getTileContent(getUrl(foundChild.json.content));
   }
 
   private async findTileInJson(tilesetJson: any, id: string, parentId: string, transformToRoot?: Transform): Promise<FindChildResult | undefined> {
@@ -539,7 +521,7 @@ class RealityModelTileLoader extends RealityTileLoader {
       return this.findTileInJson(foundChild, id.substring(separatorIndex + 1), thisParentId, transformToRoot);
     }
 
-    tilesetJson.children[childIndex] = await expandSubTree(foundChild, this.tree.dataSource);
+    tilesetJson.children[childIndex] = await expandSubTree(foundChild, this.tree.rdSource);
 
     return new FindChildResult(thisParentId, tilesetJson.children[childIndex], transformToRoot);
   }
@@ -928,7 +910,7 @@ export class RealityTreeReference extends RealityModelTileTree.Reference {
     const strings = [];
 
     const loader = (tree as RealityModelTileTree).loader;
-    const type = (loader as RealityModelTileLoader).tree.dataSource.realityDataType;
+    const type = (loader as RealityModelTileLoader).tree.rdSource.realityDataType;
 
     // If a type is specified, display it
     if (type !== undefined) {
