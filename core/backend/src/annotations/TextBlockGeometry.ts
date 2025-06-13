@@ -87,7 +87,7 @@ function processTabRun(run: RunLayout, transform: Transform, context: GeometryCo
 
   const offset = new Point3d(run.range.low.x, run.range.low.y, 0);
 
-  context.entries.push({ text: createTabTextString(source.stringify({ tabsAsSpaces: true }), run, offset, transform) });
+  context.entries.push({ text: createTabTextString(source.stringify({ tabsAsSpaces: 4 }), run, offset, transform) });
 }
 
 function createFractionTextString(text: string, run: RunLayout, origin: Point3d, transform: Transform): TextString {
