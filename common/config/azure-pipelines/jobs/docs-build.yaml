@@ -119,29 +119,30 @@ jobs:
         displayName: Install BeMetalsmith
         workingDirectory: ${{ parameters.workingDir }}
 
-      - script: "./node_modules/.bin/bmsBuild --strictLinkChecking --topicsMustHaveDesc --source ${{ parameters.stagingDir }} --destination ${{ parameters.outputDir }}/public_build --siteTitle iTwin.js"
-        displayName: Run bmsBuild
-        workingDirectory: ${{ parameters.workingDir }}
+      # - script: "./node_modules/.bin/bmsBuild --strictLinkChecking --topicsMustHaveDesc --source ${{ parameters.stagingDir }} --destination ${{ parameters.outputDir }}/public_build --siteTitle iTwin.js"
+      #   displayName: Run bmsBuild
+      #   workingDirectory: ${{ parameters.workingDir }}
 
-      # if publishing and not using the core artifact, publish the new core artifact
-      - publish: ${{ parameters.workingDir }}/generated-docs
-        artifact: Core Generated Docs
-        displayName: Publish Core Generated Docs Artifact
-        condition: and(succeeded(), eq('${{ parameters.shouldPublish }}', true), eq('${{ parameters.useCoreDocsArtifact }}', false))
+      # # if publishing and not using the core artifact, publish the new core artifact
+      # - publish: ${{ parameters.workingDir }}/generated-docs
+      #   artifact: Core Generated Docs
+      #   displayName: Publish Core Generated Docs Artifact
+      #   condition: and(succeeded(), eq('${{ parameters.shouldPublish }}', true), eq('${{ parameters.useCoreDocsArtifact }}', false))
 
-      - publish: ${{ parameters.stagingDir }}/config/.updated.json
-        artifact: .updated.json
-        displayName: Publish Pipeline Artifact - .updated.json
-        condition: and(succeeded(), eq('${{ parameters.shouldPublish }}', true))
+      # - publish: ${{ parameters.stagingDir }}/config/.updated.json
+      #   artifact: .updated.json
+      #   displayName: Publish Pipeline Artifact - .updated.json
+      #   condition: and(succeeded(), eq('${{ parameters.shouldPublish }}', true))
 
-      - publish: ${{ parameters.outputDir }}
-        artifact: DocsBuild
-        displayName: Publish Pipeline Artifact - DocsBuild
+      # - publish: ${{ parameters.outputDir }}
+      #   artifact: DocsBuild
+      #   displayName: Publish Pipeline Artifact - DocsBuild
 
       # Tag the build for version archival (e.g., "v4") if building a specific release branch
       - bash: |
           branchName="$(Build.SourceBranch)"
           archiveTag=""
+          echo $branchName
           # Add conditions here for branches that should produce tagged archives
           # For example, if 'ref/heads/release/4.11.x' should be archived as 'v4'
 
