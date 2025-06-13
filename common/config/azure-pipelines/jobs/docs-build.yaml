@@ -154,9 +154,9 @@ jobs:
           fi
 
           if [[ -n "$archiveTag" ]]; then
-            echo "Tagging build with $(archiveTag) for archival purposes."
+            echo "Tagging build with $archiveTag for archival purposes."
             echo $archiveTag
-            echo "##vso[build.addbuildtag]$(archiveTag)"
+            echo "##vso[build.addbuildtag]$archiveTag"
           fi
         displayName: Tag build for version archival (e.g., v4)
         condition: and(succeeded(), eq('${{ parameters.shouldPublish }}', true))
