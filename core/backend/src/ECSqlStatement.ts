@@ -496,6 +496,18 @@ export class ECSqlWriteStatement {
     this._stmt.reset();
   }
 
+  /**
+   * Releases the native resources held by this ECSqlWriteStatement.
+   *
+   * This method should be called when the statement is no longer needed to free up native resources.
+   *
+   * > Do not call this method directly on a statement that is being managed by a statement cache.
+   */
+  public [Symbol.dispose](): void {
+    if (this._stmt)
+      this._stmt[Symbol.dispose]();
+  }
+
   /** Get the Native SQL statement
    * @internal
    */
@@ -643,6 +655,10 @@ export class ECSqlWriteStatement {
    */
   public stepForInsert(): ECSqlInsertResult {
     return this._stmt.stepForInsert();
+  }
+
+  public step(): DbResult {
+    return this._stmt.step();
   }
 
   /** Get the query result's column count (only for ECSQL SELECT statements). */
