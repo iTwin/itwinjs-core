@@ -196,6 +196,8 @@ You can use these environment variables to alter the default behavior of various
   * If defined, sets a Google Maps key within the `MapLayerOptions` as a "key" type.
 * IMJS_CESIUM_ION_KEY
   * If defined, the API key supplying access to Cesium ION assets.
+* IMJS_GP3DT_KEY
+  * If defined, the API key supplying access to Google Photorealistic 3D Tiles.
 * IMJS_IMODEL_ID
   * If defined, the GuidString of the iModel to fetch from the iModel Hub and open.
 * IMJS_URL_PREFIX
