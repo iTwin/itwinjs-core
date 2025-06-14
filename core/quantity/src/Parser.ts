@@ -52,6 +52,8 @@ export interface ParsedQuantity {
 enum Operator {
   addition = "+",
   subtraction = "-",
+  multiplication = "*", // unsupported but we recognize it during parsing
+  division = "/" // unsupported but we recognize it during parsing
 }
 
 function isOperator(char: number | string): boolean {
@@ -283,6 +285,15 @@ export class Parser {
                 processingNumber = false;
                 wipToken = "";
               }
+              else if (format.type === FormatType.Bearing && wipToken.length > 0) {
+                if (signToken.length > 0) {
+                  wipToken = signToken + wipToken;
+                  signToken = "";
+                }
+             tokens.push(new ParseToken(parseFloat(wipToken))); // Create token for the current number
+             processingNumber = false;
+             wipToken = "";
+              }
               continue;
             } else {
               // an "E" or "e" may signify scientific notation
@@ -379,6 +390,23 @@ export class Parser {
       } else {
         tokens.push(new ParseToken(wipToken));
       }
+    }
+
+    // Handle compact decimal input in Bearing format (e.g., 65.4545 → 65°45′45″)
+    if (format.type === FormatType.Bearing && tokens.length === 1 && typeof tokens[0].value === "number" ) {
+      const value = tokens[0].value;
+      const degrees = Math.floor(value);
+      const remaining = (value - degrees) * 100;
+      const minutes = Math.floor(remaining);
+      const seconds = (remaining - minutes) * 100;
+      // Remove the original compact decimal token (e.g., 65.4545) ,  before pushing split DMS tokens (degrees, minutes, seconds)
+      tokens.pop();
+      
+      tokens.push(
+      new ParseToken(degrees),
+      new ParseToken(minutes),
+      new ParseToken(seconds)
+      );
     }
 
     return tokens;
