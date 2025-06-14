@@ -119,6 +119,7 @@ public;interface;FilterByTextHierarchyRequestOptions
 public;type;FilterByTextHierarchyRpcRequestOptions
 public;interface;FormatOptions
 public;interface;FormatsMap
+deprecated;interface;FormatsMap
 public;const;getInstancesCount
 public;interface;GroupingNodeKey
 public;interface;GroupingRule
@@ -339,6 +340,7 @@ public;function;traverseContentItem
 public;function;traverseFieldHierarchy
 public;type;TypeDescription
 public;interface;UnitSystemFormat
+deprecated;interface;UnitSystemFormat
 public;const;UPDATE_FULL
 public;interface;UpdateInfo
 public;type;Value

@@ -24,6 +24,7 @@ import { Entity } from '@itwin/core-backend';
 import { FilterByInstancePathsHierarchyRequestOptions } from '@itwin/presentation-common';
 import { FilterByTextHierarchyRequestOptions } from '@itwin/presentation-common';
 import { FormatsMap } from '@itwin/presentation-common';
+import { FormatsProvider } from '@itwin/core-quantity';
 import { HierarchyCompareInfo } from '@itwin/presentation-common';
 import { HierarchyCompareOptions } from '@itwin/presentation-common';
 import { HierarchyLevelDescriptorRequestOptions } from '@itwin/presentation-common';
@@ -243,9 +244,11 @@ export interface PresentationManagerCachingConfig {
 // @public
 export interface PresentationManagerProps {
     caching?: PresentationManagerCachingConfig;
+    // @deprecated
     defaultFormats?: FormatsMap;
     defaultUnitSystem?: UnitSystemKey;
     diagnostics?: BackendDiagnosticsOptions;
+    formatsProvider?: FormatsProvider;
     getLocalizedString?: (key: string) => string;
     // @deprecated
     presentationAssetsRoot?: string | PresentationAssetsRootConfig;

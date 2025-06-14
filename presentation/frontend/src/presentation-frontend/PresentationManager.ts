@@ -185,7 +185,11 @@ export interface PresentationManagerProps {
    * in requested unit system.
    *
    * @note Only has effect when frontend value formatting is enabled by supplying the `schemaContextProvider` prop.
+   *
+   * @deprecated in 5.1. All formats' logic is now handled by [IModelApp.formatsProvider]($core-frontend). Until the prop is removed, when
+   * supplied, this map will be used as a fallback if IModelApp's formats provider doesn't return anything for requested format.
    */
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   defaultFormats?: FormatsMap;
 }
 
@@ -209,6 +213,7 @@ export class PresentationManager implements Disposable {
   private _rulesetVars: Map<string, RulesetVariablesManager>;
   private _clearEventListener?: () => void;
   private _schemaContextProvider: (imodel: IModelConnection) => SchemaContext;
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   private _defaultFormats?: FormatsMap;
   private _ipcRequestsHandler?: IpcRequestsHandler;
 
@@ -250,6 +255,7 @@ export class PresentationManager implements Disposable {
     this._localizationHelper = new FrontendLocalizationHelper(props?.activeLocale);
     // eslint-disable-next-line @typescript-eslint/no-deprecated
     this._schemaContextProvider = props?.schemaContextProvider ?? ((imodel: IModelConnection) => imodel.schemaContext);
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     this._defaultFormats = props?.defaultFormats;
 
     if (IpcApp.isValid) {
@@ -547,11 +553,14 @@ export class PresentationManager implements Disposable {
 
     let contentFormatter: ContentFormatter | undefined;
     if (!requestOptions.omitFormattedValues) {
-      const koqPropertyFormatter = new KoqPropertyValueFormatter(this._schemaContextProvider(requestOptions.imodel), this._defaultFormats);
-      contentFormatter = new ContentFormatter(
-        new ContentPropertyValueFormatter(koqPropertyFormatter),
-        requestOptions.unitSystem ?? this._explicitActiveUnitSystem ?? IModelApp.quantityFormatter.activeUnitSystem,
-      );
+      const schemaContext = this._schemaContextProvider(requestOptions.imodel);
+      const unitSystem = requestOptions.unitSystem ?? this._explicitActiveUnitSystem ?? IModelApp.quantityFormatter.activeUnitSystem;
+      const koqPropertyFormatter = new KoqPropertyValueFormatter({
+        schemaContext,
+        formatsProvider: IModelApp.formatsProvider,
+      });
+      koqPropertyFormatter.defaultFormats = this._defaultFormats;
+      contentFormatter = new ContentFormatter(new ContentPropertyValueFormatter(koqPropertyFormatter), unitSystem);
     }
 
     let descriptor = requestOptions.descriptor instanceof Descriptor ? requestOptions.descriptor : undefined;
