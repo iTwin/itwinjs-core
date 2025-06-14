@@ -6,10 +6,10 @@
  * @module Tiles
  */
 
-import { ByteStream, Id64Set, Id64String } from "@itwin/core-bentley";
+import { ByteStream, Id64, Id64Set, Id64String } from "@itwin/core-bentley";
 import { Point3d, Transform } from "@itwin/core-geometry";
 import {
-  BatchType, decodeTileContentDescription, TileReadError, TileReadStatus,
+  BatchType, decodeTileContentDescription, ModelFeature, TileReadError, TileReadStatus,
 } from "@itwin/core-common";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
@@ -25,6 +25,7 @@ import { LayerTileData } from "../internal/render/webgl/MapLayerParams";
 /** @internal */
 export interface ImdlReaderResult extends IModelTileContent {
   readStatus: TileReadStatus;
+  elementInfos?: { elementId: Id64String; modelId: Id64String }[];
 }
 
 /** Convert the byte array returned by [[TileAdmin.requestElementGraphics]] into a [[RenderGraphic]].
@@ -115,11 +116,25 @@ export async function readImdlContent(args: ImdlReaderCreateArgs & { parseDocume
     tileData: args.tileData,
   });
 
+  const elementInfos: { elementId: Id64String; modelId: Id64String }[] = [];
+  const featureTable = convertFeatureTable(document.featureTable, args.modelId);
+  const feature = ModelFeature.create();
+
+  for (let i = 0; i < featureTable.numFeatures; i++) {
+    featureTable.getFeature(i, feature);
+    if (!Id64.isInvalid(feature.elementId)) {
+      elementInfos.push({
+        elementId: feature.elementId,
+        modelId: feature.modelId,
+      });
+    }
+  }
+
   if (isCanceled())
     return { isLeaf: true, readStatus: TileReadStatus.Canceled };
 
   if (graphic && false !== args.options) {
-    const featureTable = convertFeatureTable(document.featureTable, args.modelId);
+    // const featureTable = convertFeatureTable(document.featureTable, args.modelId);
     graphic = args.system.createBatch(graphic, featureTable, content.contentRange, args.options);
   }
 
@@ -136,6 +151,7 @@ export async function readImdlContent(args: ImdlReaderCreateArgs & { parseDocume
     contentRange: content.contentRange.isNull ? undefined : content.contentRange,
     graphic,
     emptySubRangeMask: content.emptySubRangeMask,
+    elementInfos,
   };
 }
 
