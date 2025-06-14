@@ -150,6 +150,8 @@ export interface DisplayStyleSettingsProps {
   planarClipOvr?: DisplayStylePlanarClipMaskProps[];
   /** See [[DisplayStyleSettings.whiteOnWhiteReversal]]. */
   whiteOnWhiteReversal?: WhiteOnWhiteReversalProps;
+  /** See [[DisplayStyle3dSettings.contours]]. */
+  contours?: ContourDisplayProps;
 }
 
 /** JSON representation of [[DisplayStyle3dSettings]]  associated with a [[DisplayStyle3dProps]].
@@ -442,6 +444,7 @@ export class DisplayStyleSettings {
   private _clipStyle: ClipStyle;
   private readonly _contextRealityModels: ContextRealityModels;
   private _whiteOnWhiteReversal: WhiteOnWhiteReversalSettings;
+  private _contours: ContourDisplay;
 
   /** Returns true if this is a [[DisplayStyle3dSettings]]. */
   public is3d(): this is DisplayStyle3dSettings {
@@ -592,6 +595,8 @@ export class DisplayStyleSettings {
       createContextRealityModel: options?.createContextRealityModel,
       deferPopulating: options?.deferContextRealityModels,
     });
+
+    this._contours = ContourDisplay.fromJSON(this._json.contours);
   }
 
   /** Flags controlling various aspects of the display style. */
@@ -975,6 +980,8 @@ export class DisplayStyleSettings {
       props.excludedElements = this._excludedElements.ids;
     }
 
+    props.contours = this.contours.toJSON();
+
     return props;
   }
 
@@ -995,6 +1002,9 @@ export class DisplayStyleSettings {
   public applyOverrides(overrides: DisplayStyleSettingsProps): void {
     this._applyOverrides(overrides);
     this.onOverridesApplied.raiseEvent(overrides);
+    if (overrides.contours)
+      this.contours = ContourDisplay.fromJSON(overrides.contours);
+
   }
 
   /** @internal */
@@ -1067,6 +1077,17 @@ export class DisplayStyleSettings {
 
     this.onOverridesApplied.raiseEvent(overrides);
   }
+
+  /** The settings that control contour display. */
+  public get contours(): ContourDisplay { return this._contours; }
+  public set contours(contours: ContourDisplay) {
+    if (contours.equals(this.contours))
+      return;
+
+    this.onContoursChanged.raiseEvent(contours);
+    this._contours = contours;
+    this._json.contours = contours.toJSON();
+  }
 }
 
 /** Provides access to the settings defined by a [[DisplayStyle3d]] or [[DisplayStyle3dState]], and ensures that
@@ -1075,7 +1096,6 @@ export class DisplayStyleSettings {
  */
 export class DisplayStyle3dSettings extends DisplayStyleSettings {
   private _thematic: ThematicDisplay;
-  private _contours: ContourDisplay;
   private _hline: HiddenLine.Settings;
   private _ao: AmbientOcclusion.Settings;
   private _solarShadows: SolarShadowSettings;
@@ -1092,7 +1112,6 @@ export class DisplayStyle3dSettings extends DisplayStyleSettings {
   public constructor(jsonProperties: { styles?: DisplayStyle3dSettingsProps }, options?: DisplayStyleSettingsOptions) {
     super(jsonProperties, options);
     this._thematic = ThematicDisplay.fromJSON(this._json3d.thematic);
-    this._contours = ContourDisplay.fromJSON(this._json3d.contours);
     this._hline = HiddenLine.Settings.fromJSON(this._json3d.hline);
     this._ao = AmbientOcclusion.Settings.fromJSON(this._json3d.ao);
     this._solarShadows = SolarShadowSettings.fromJSON(this._json3d.solarShadows);
@@ -1170,8 +1189,6 @@ export class DisplayStyle3dSettings extends DisplayStyleSettings {
       }
     }
 
-    props.contours = this.contours.toJSON();
-
     return props;
   }
 
@@ -1202,9 +1219,6 @@ export class DisplayStyle3dSettings extends DisplayStyleSettings {
     if (overrides.thematic)
       this.thematic = ThematicDisplay.fromJSON(overrides.thematic);
 
-    if (overrides.contours)
-      this.contours = ContourDisplay.fromJSON(overrides.contours);
-
     this.onOverridesApplied.raiseEvent(overrides);
   }
 
@@ -1217,17 +1231,6 @@ export class DisplayStyle3dSettings extends DisplayStyleSettings {
     this.onThematicChanged.raiseEvent(thematic);
     this._thematic = thematic;
     this._json3d.thematic = thematic.toJSON();
-  }
-
-  /** The settings that control contour display. */
-  public get contours(): ContourDisplay { return this._contours; }
-  public set contours(contours: ContourDisplay) {
-    if (contours.equals(this.contours))
-      return;
-
-    this.onContoursChanged.raiseEvent(contours);
-    this._contours = contours;
-    this._json3d.contours = contours.toJSON();
   }
 
   /** The settings that control how visible and hidden edges are displayed.  */
