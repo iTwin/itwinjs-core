@@ -28,22 +28,22 @@ export interface OrbitGtBlobProps {
  */
 export enum RealityDataProvider {
   /**
-   * This is the legacy mode where the access to the 3d tiles is harcoded in ContextRealityModelProps.tilesetUrl property.
-   * It was use to support RealityMesh3DTiles, Terrain3DTiles, Cesium3DTiles
-   * You should use other mode when possible
+   * This is the legacy mode where the access to the 3d tiles is hardcoded in ContextRealityModelProps.tilesetUrl property.
+   * It was used to support RealityMesh3DTiles, Terrain3DTiles, Cesium3DTiles
+   * You should use other modes when possible
    * @see [[RealityDataSource.createKeyFromUrl]] that will try to detect provider from an URL
    */
   TilesetUrl = "TilesetUrl",
   /**
-   * This is the legacy mode where the access to the 3d tiles is harcoded in ContextRealityModelProps.OrbitGtBlob property.
-   * It was use to support OrbitPointCloud (OPC) from other server than ContextShare
-   * You should use other mode when possible
+   * This is the legacy mode where the access to the 3d tiles is hardcoded in ContextRealityModelProps.OrbitGtBlob property.
+   * It was used to support OrbitPointCloud (OPC) from other server than ContextShare
+   * You should use other modes when possible
    * @see [[RealityDataSource.createKeyFromOrbitGtBlobProps]] that will try to detect provider from an URL
    */
   OrbitGtBlob = "OrbitGtBlob",
   /**
-   * Will provide access url from realityDataId and iTwinId on contextShare for 3dTile storage format or  OPC storage format
-   * This provider support all type of 3dTile storage fomat and OrbitPointCloud: RealityMesh3DTiles, Terrain3DTiles, Cesium3DTiles, OPC
+   * Will provide access url from realityDataId and iTwinId on contextShare for 3dTile storage format or OPC storage format
+   * This provider supports all types of 3dTile storage format and OrbitPointCloud: RealityMesh3DTiles, Terrain3DTiles, Cesium3DTiles, OPC
    * @see [[RealityDataFormat]].
    */
   ContextShare = "ContextShare",

@@ -864,6 +864,9 @@ importers:
       '@types/chai-as-promised':
         specifier: ^7
         version: 7.1.0
+      '@types/sinon':
+        specifier: ^17.0.2
+        version: 17.0.2
       '@vitest/browser':
         specifier: ^3.0.6
         version: 3.0.6(@types/node@22.13.10)(playwright@1.47.1)(typescript@5.6.2)(vite@6.2.1(@types/node@22.13.10)(terser@5.39.0)(yaml@2.7.0))(vitest@3.0.6)
@@ -885,6 +888,9 @@ importers:
       rimraf:
         specifier: ^6.0.1
         version: 6.0.1
+      sinon:
+        specifier: ^17.0.2
+        version: 17.0.2
       source-map-loader:
         specifier: ^5.0.0
         version: 5.0.0(webpack@5.97.1)
