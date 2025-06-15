@@ -95,11 +95,10 @@ jobs:
           branchName="$(Build.SourceBranch)"
           archiveTag=""
 
-          # Add conditions here for branches that should produce tagged archives
-          # TODO: Change back to release/4.11.x
-          # For example, if 'refs/heads/docs/archive-v4' should be archived as 'v4'
+          # Add conditions here for branches that should produce archives
+          # For example, 'refs/heads/release/4.11.x' should be archived as 'v4':
 
-          if [[ $branchName == "refs/heads/docs/archive-v4" ]]; then
+          if [[ $branchName == "refs/heads/release/4.11.x" ]]; then
             echo "matches branch name"
             archiveTag="v4"
           fi
