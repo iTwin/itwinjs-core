@@ -5,6 +5,7 @@
 
 import * as fs from "fs";
 import { describe, expect, it } from "vitest";
+import { compareNumbers, SortedArray } from "@itwin/core-bentley";
 import { BezierCurve3d } from "../../bspline/BezierCurve3d";
 import { BSplineCurve3d } from "../../bspline/BSplineCurve";
 import { BSplineCurve3dH } from "../../bspline/BSplineCurve3dH";
@@ -951,12 +952,7 @@ describe("RegionOps", () => {
 
     let merged = RegionOps.regionBooleanXY(region, undefined, RegionBinaryOpType.Union)
     if (ck.testDefined(merged, "merge operation succeeded")) {
-      if (merged instanceof Loop) {
-        GeometryCoreTestIO.captureCloneGeometry(allGeometry, merged, 0, 10);
-      } else {
-        for (const child of merged.children)
-          GeometryCoreTestIO.captureCloneGeometry(allGeometry, child, 0, 10);
-      }
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, merged, 0, 10);
       mergedArea = RegionOps.computeXYArea(merged);
       if (ck.testDefined(mergedArea, "area computed for merged region")) {
         holeArea = Math.PI * 4;
@@ -983,15 +979,10 @@ describe("RegionOps", () => {
 
     merged = RegionOps.regionBooleanXY(region, undefined, RegionBinaryOpType.Union)!;
     if (ck.testDefined(merged, "merge operation succeeded")) {
-      if (merged instanceof Loop) {
-        GeometryCoreTestIO.captureCloneGeometry(allGeometry, merged, dx, 10);
-      } else {
-        for (const child of merged.children)
-          GeometryCoreTestIO.captureCloneGeometry(allGeometry, child, dx, 10);
-      }
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, merged, dx, 10);
       mergedArea = RegionOps.computeXYArea(merged);
       if (ck.testDefined(mergedArea, "area computed for merged region")) {
-        holeArea = 5.98545846038;
+        holeArea = 5.98546797013559;
         expectedArea = rectangleArea - holeArea;
         ck.testCoordinate(regionArea, expectedArea, "area before merge");
         ck.testCoordinate(mergedArea, expectedArea, "area after merge");
@@ -1014,12 +1005,7 @@ describe("RegionOps", () => {
 
     merged = RegionOps.regionBooleanXY(region, undefined, RegionBinaryOpType.Union)!;
     if (ck.testDefined(merged, "merge operation succeeded")) {
-      if (merged instanceof Loop) {
-        GeometryCoreTestIO.captureCloneGeometry(allGeometry, merged, dx, 10);
-      } else {
-        for (const child of merged.children)
-          GeometryCoreTestIO.captureCloneGeometry(allGeometry, child, dx, 10);
-      }
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, merged, dx, 10);
       mergedArea = RegionOps.computeXYArea(merged);
       if (ck.testDefined(mergedArea, "area computed for merged region")) {
         holeArea = 0.28065082813693;
@@ -1033,91 +1019,98 @@ describe("RegionOps", () => {
     expect(ck.getNumErrors()).toBe(0);
   });
 
-  function testSignedLoops(
-    region: AnyRegion,
-    numPositiveLoops: number,
-    numNegativeLoops: number,
-    allGeometry: GeometryQuery[],
-    ck: Checker,
-    dx: number,
-  ) {
-    let signedLoops: SignedLoops[] = [];
-    let positiveAreaLoops: Loop[] = [];
-    let negativeAreaLoops: Loop[] = [];
-    GeometryCoreTestIO.captureCloneGeometry(allGeometry, region, dx);
-
-    signedLoops = RegionOps.constructAllXYRegionLoops(region);
-    for (const signedLoop of signedLoops) {
-      positiveAreaLoops = signedLoop.positiveAreaLoops;
-      for (const loop of positiveAreaLoops)
-        GeometryCoreTestIO.captureCloneGeometry(allGeometry, loop, dx, 3);
-      ck.testCoordinate(numPositiveLoops, positiveAreaLoops.length, "number of positive loops");
-      negativeAreaLoops = signedLoop.negativeAreaLoops;
-      for (const loop of negativeAreaLoops)
-        GeometryCoreTestIO.captureCloneGeometry(allGeometry, loop, dx, 6);
-      ck.testCoordinate(numNegativeLoops, negativeAreaLoops.length, "number of negative loops");
-    }
-  }
-
   it("constructAllXYRegionLoops", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
+    const deltaX = 5;
+    const deltaY = 3;
+    const deltaZ = 2;
+    let x0 = -deltaX;
+    let y0 = -deltaY;
+    const compareLoops = (loops0: Loop[], loops1: Loop[], testName: string): void => {
+      if (ck.testExactNumber(loops0.length, loops1.length, `${testName}: loop count`)) {
+        const lengths0 = new SortedArray<number>(compareNumbers);
+        const lengths1 = new SortedArray<number>(compareNumbers);
+        for (let i = 0; i < loops0.length; i++) {
+          lengths0.insert(loops0[i].sumLengths());
+          lengths1.insert(loops1[i].sumLengths());
+        }
+        ck.testNumberArrayWithTol(lengths0.extractArray(), lengths1.extractArray(), Geometry.smallMetricDistance, `${testName}: loop lengths`);
+      }
+    };
+    const compareSignedLoops = (signedLoops0: SignedLoops[], signedLoops1: SignedLoops[], testName: string): void => {
+      if (ck.testExactNumber(signedLoops0.length, signedLoops1.length, `${testName}: component count`)) {
+        for (let i = 0; i < signedLoops0.length; i++) {
+          compareLoops(signedLoops0[i].positiveAreaLoops, signedLoops1[i].positiveAreaLoops, `${testName}[component${i} positive loops]`);
+          compareLoops(signedLoops0[i].negativeAreaLoops, signedLoops1[i].negativeAreaLoops, `${testName}[component${i} negative loops]`);
+          ck.testExactNumber(signedLoops0[i].slivers.length, signedLoops1[i].slivers.length, `${testName}[component${i}]: sliver edge count`);
+        }
+      }
+    };
+    // expected count arrays: #component, #posLoop, #negLoop
+    const testSignedLoopsSingle = (curves: AnyCurve | AnyCurve[], addBridges: boolean, expectedCounts: number[], testName: string): SignedLoops[] => {
+      let numPosLoops = 0;
+      let numNegLoops = 0;
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, curves, x0, y0 += deltaY);
+      const signedLoops = RegionOps.constructAllXYRegionLoops(curves, undefined, addBridges);
+      for (const signedLoop of signedLoops) {
+        y0 += deltaY;
+        let z0 = -deltaZ;
+        for (const posLoop of signedLoop.positiveAreaLoops)
+          GeometryCoreTestIO.captureCloneGeometry(allGeometry, posLoop, x0, y0, z0 += deltaZ);
+        y0 += deltaY;
+        z0 = -deltaZ;
+        for (const negLoop of signedLoop.negativeAreaLoops)
+          GeometryCoreTestIO.captureCloneGeometry(allGeometry, negLoop, x0, y0, z0 += deltaZ);
+        numPosLoops += signedLoop.positiveAreaLoops.length;
+        numNegLoops += signedLoop.negativeAreaLoops.length;
+      }
+      ck.testExactNumber(signedLoops.length, expectedCounts[0], `${testName}${addBridges ? " [bridges]" : ""}: number of components`);
+      ck.testExactNumber(numPosLoops, expectedCounts[1], `${testName}${addBridges ? " [bridges]" : ""}: total number of positive loops`);
+      ck.testExactNumber(numNegLoops, expectedCounts[2], `${testName}${addBridges ? " [bridges]" : ""}: total number of negative loops`);
+      return signedLoops;
+    };
+    const testSignedLoops = (curves: AnyCurve | AnyCurve[], expectedCountsNoBridges: number[], expectedCountsWithBridges: number[], testName: string): { noBridges: SignedLoops[], withBridges: SignedLoops[] } => {
+      x0 += deltaX;
+      y0 = -deltaY;
+      const noBridges = testSignedLoopsSingle(curves, false, expectedCountsNoBridges, testName);
+      const withBridges = testSignedLoopsSingle(curves, true, expectedCountsWithBridges, testName);
+      return { noBridges, withBridges };
+    }
 
-    // union region
-    let dx = 0;
-    const arc0 = Arc3d.createXY(Point3d.create(0, 1), 1.0);
-    const arc1 = Arc3d.createXY(Point3d.create(1, 1), 1.0);
-    const loop0 = Loop.create(arc0);
-    const loop1 = Loop.create(arc1);
-    const unionRegion = UnionRegion.create(loop0, loop1);
-    testSignedLoops(unionRegion, 3, 1, allGeometry, ck, dx);
+    const loop0 = Loop.create(Arc3d.createXY(Point3d.create(0, 1), 1.0));
+    const loop1 = Loop.create(Arc3d.createXY(Point3d.create(1, 1), 1.0));
+    let unionRegion = UnionRegion.create(loop0, loop1);
+    let unionData = testSignedLoops(unionRegion, [1, 3, 1], [1, 3, 1], "UnionRegionIntersectingLoops");
+    let parityRegion = ParityRegion.create(loop0, loop1);
+    let parityData = testSignedLoops(parityRegion, [1, 3, 1], [1, 3, 1], "ParityRegionIntersectingLoops");
+    compareSignedLoops(unionData.noBridges, parityData.noBridges, "UnionAndParityIntersectingLoopsNoBridges");
+    compareSignedLoops(unionData.withBridges, parityData.withBridges, "UnionAndParityIntersectingLoopsBridges");
 
-    // parity region
-    dx += 5;
-    const parityRegion = ParityRegion.create(loop0, loop1);
-    testSignedLoops(parityRegion, 3, 1, allGeometry, ck, dx);
-
-    // region with circle holes
-    dx += 5;
     const rectangle = Loop.create(LineString3d.create(Sample.createRectangle(0, 0, 3, 2, 0, true)));
-    let hole = Loop.create(
-      Arc3d.create(
-        Point3d.create(1.5, 1), Vector3d.create(0.5, 0), Vector3d.create(0, 0.5), AngleSweep.createStartEndDegrees(-90, 270),
-      ),
-    );
-    let region = RegionOps.regionBooleanXY(rectangle, hole, RegionBinaryOpType.AMinusB)!;
-    testSignedLoops(region, 2, 1, allGeometry, ck, dx);
+    const hole = Loop.create(Arc3d.create(Point3d.create(1.5, 1), Vector3d.create(0.5), Vector3d.create(0, 0.5), AngleSweep.createStartEndDegrees(-90, 270)));
+    unionRegion = UnionRegion.create(rectangle, hole);
+    unionData = testSignedLoops(unionRegion, [2, 2, 2], [1, 2, 1], "UnionRegionDisjointLoops");
+    parityRegion = ParityRegion.create(rectangle, hole);
+    parityData = testSignedLoops(parityRegion, [2, 2, 2], [1, 2, 1], "ParityRegionDisjointLoops");
+    compareSignedLoops(unionData.noBridges, parityData.noBridges, "UnionAndParityDisjointLoopsNoBridges");
+    compareSignedLoops(unionData.withBridges, parityData.withBridges, "UnionAndParityDisjointLoopsBridges");
+    const parityRegion2 = RegionOps.regionBooleanXY(rectangle, hole, RegionBinaryOpType.AMinusB)!;
+    const parityData2 = testSignedLoops(parityRegion2, [2, 2, 2], [1, 2, 1], "ParityRegionFromBooleanSubtract");
+    compareSignedLoops(parityData.withBridges, parityData2.withBridges, "ParityRegionsWithBridges");
 
-    // region with large B-Spline holes
-    dx += 5;
-    let degree = 3;
-    let poles = [
-      Point3d.create(0, 0),
-      Point3d.create(3, 0),
-      Point3d.create(3, 2),
-      Point3d.create(1.5, 1.5),
-      Point3d.create(0, 0),
-    ];
-    let bspline = BSplineCurve3d.createPeriodicUniformKnots(poles, degree + 1)!;
-    hole = Loop.create(bspline);
-    region = RegionOps.regionBooleanXY(rectangle, hole, RegionBinaryOpType.AMinusB)!;
-    testSignedLoops(region, 2, 1, allGeometry, ck, dx);
-    GeometryCoreTestIO.captureCloneGeometry(allGeometry, region, dx);
-
-    // region with small B-Spline holes
-    dx += 5;
-    degree = 2;
-    poles = [
-      Point3d.create(1, 0.5),
-      Point3d.create(2, 1),
-      Point3d.create(1.5, 1.5),
-      Point3d.create(1, 0.5),
-    ];
-    bspline = BSplineCurve3d.createPeriodicUniformKnots(poles, degree + 1)!;
-    hole = Loop.create(bspline);
-    region = RegionOps.regionBooleanXY(rectangle, hole, RegionBinaryOpType.AMinusB)!;
-    testSignedLoops(region, 2, 1, allGeometry, ck, dx);
-    GeometryCoreTestIO.captureCloneGeometry(allGeometry, region, dx);
+    const poles0 = [Point3d.createZero(), Point3d.create(3), Point3d.create(3, 2), Point3d.create(1.5, 1.5)];
+    const hole0 = Loop.create(BSplineCurve3d.createPeriodicUniformKnots(poles0, 4)!);
+    const poles1 = [Point3d.create(1, 0.5), Point3d.create(2, 1), Point3d.create(1.5, 1.5)];
+    const hole1 = Loop.create(BSplineCurve3d.createPeriodicUniformKnots(poles1, 3)!);
+    const holes = [hole0, hole1];
+    for (let i = 0; i < holes.length; ++i) {
+      const region0 = ParityRegion.create(rectangle, holes[i]);
+      const parityData0 = testSignedLoops(region0, [2, 2, 2], [1, 2, 1], `ParityRegionBSplineHole${i}`);
+      const region1 = RegionOps.regionBooleanXY(rectangle, holes[i], RegionBinaryOpType.AMinusB)!;
+      const parityData1 = testSignedLoops(region1, [2, 2, 2], [1, 2, 1], `ParityRegionBSplineHole${i}FromBooleanSubtract`);
+      compareSignedLoops(parityData0.withBridges, parityData1.withBridges, "ParityRegionsBSplineHoleWithBridges");
+    }
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "RegionOps", "constructAllXYRegionLoops");
     expect(ck.getNumErrors()).toBe(0);

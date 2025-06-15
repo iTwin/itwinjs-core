@@ -663,7 +663,7 @@ describe("RegionBoolean", () => {
       jsonFilePath: string;
       expectedNumComponents: number;
       tolerance?: number;
-      skipBoolean?: boolean;
+      skipMerge?: boolean;
     }
     // try various combinations of loops:
     // * null faces
@@ -693,14 +693,14 @@ describe("RegionBoolean", () => {
       { jsonFilePath: "./src/test/data/curve/laurynasLoopsInRectangle.imjs", expectedNumComponents: 1 },
       { jsonFilePath: "./src/test/data/curve/laurynasLoopsWithDanglers.imjs", expectedNumComponents: 1 },   // has doglegs of length 0.0001
       { jsonFilePath: "./src/test/data/curve/laurynasLoopsWithoutDanglers.imjs", expectedNumComponents: 1 },
-      { jsonFilePath: "./src/test/data/curve/michelParityRegion.imjs", expectedNumComponents: 2 },  // has a small island in a hole!
+      { jsonFilePath: "./src/test/data/curve/michelParityRegion.imjs", expectedNumComponents: 1 },  // has a small island in a hole
       { jsonFilePath: "./src/test/data/curve/laurynasCircularHole.imjs", expectedNumComponents: 1 },
-      { jsonFilePath: "./src/test/data/curve/laurynasCircularHole2.imjs", expectedNumComponents: 4, skipBoolean: true },  // without merge, 4 separate loops
-      { jsonFilePath: "./src/test/data/curve/dovydasLoops.imjs", expectedNumComponents: 1 }, // union makes bridges to three holes along the bridge ray
+      { jsonFilePath: "./src/test/data/curve/laurynasCircularHole2.imjs", expectedNumComponents: 1 },
+      { jsonFilePath: "./src/test/data/curve/dovydasLoops.imjs", expectedNumComponents: 1 }, // bridges to three holes along the bridge ray
     ];
     if (GeometryCoreTestIO.enableLongTests) {
-      testCases.push({ jsonFilePath: "./src/test/data/curve/michelLoops2.imjs", expectedNumComponents: 206 });                    // 2 minutes
-      testCases.push({ jsonFilePath: "./src/test/data/curve/michelLoops2.imjs", expectedNumComponents: 338, skipBoolean: true }); // 10 seconds
+      testCases.push({ jsonFilePath: "./src/test/data/curve/michelLoops2.imjs", expectedNumComponents: 206 });                  // 2 minutes
+      testCases.push({ jsonFilePath: "./src/test/data/curve/michelLoops2.imjs", expectedNumComponents: 338, skipMerge: true }); // 10 seconds
     }
     for (const testCase of testCases) {
       const inputs = IModelJson.Reader.parse(JSON.parse(fs.readFileSync(testCase.jsonFilePath, "utf8"))) as AnyRegion[];
@@ -710,25 +710,25 @@ describe("RegionBoolean", () => {
         xDelta = 1.5 * range.xLength();
         yDelta = 1.5 * range.yLength();
         let merged: AnyRegion | AnyRegion[] | undefined = inputs;
-        if (!testCase.skipBoolean) {
-          /*
-          Merge the inputs into a UnionRegion. This will split overlapping loops into disjoint loops, but does not discover holes.
-            This is OK, as here we're only interested in the outer loop.
-          It is hard to use RegionOps.regionBooleanXY to discover holes: you have to know a priori how to separate the loops into arrays
-            of solids and holes (for AMinusB operation) because both input arrays undergo a union before the main parity operation starts.
-          RegionOps.sortOuterAndHoleLoopsXY can produce a Union/ParityRegion from loops, after which you know which input loops are "holes".
-            But because it doesn't compute intersections, it doesn't discover holes that aren't already loops in the input array, and if
-            a hole loop intersects any other loop, you don't know its parity-rule-defined subregions.
-          */
+        if (!testCase.skipMerge) {
+          // Merge inputs to split overlapping loops into disjoint loops.
+          // * This improves the results of constructAllXYRegionLoops.
+          // * This does not discover holes; this is OK, as we're only interested in the outer loop here.
+          // * It is hard to use RegionOps.regionBooleanXY to discover holes: you have to know a priori how to separate
+          //   the loops into arrays of solids and holes (for AMinusB operation) because both input arrays undergo a
+          //   union before the main parity operation starts.
+          // * RegionOps.sortOuterAndHoleLoopsXY can produce a Union/ParityRegion from loops, after which you know which
+          //   input loops are "holes". But because it doesn't compute intersections, it doesn't discover holes that
+          //   aren't already loops in the input array, and if a hole loop intersects any other loop, you don't know its
+          //   parity-rule-defined subregions.
           merged = RegionOps.regionBooleanXY(inputs, undefined, RegionBinaryOpType.Union, testCase.tolerance);
           if (ck.testDefined(merged, "regionBooleanXY succeeded")) {
             x0 += xDelta;
             GeometryCoreTestIO.captureCloneGeometry(allGeometry, merged, x0, y0);
-            ck.testType(merged, UnionRegion, "regionBooleanXY produced a UnionRegion");
           }
         }
         if (merged) {
-          const signedLoops = RegionOps.constructAllXYRegionLoops(merged);
+          const signedLoops = RegionOps.constructAllXYRegionLoops(merged, testCase.tolerance, true);
           ck.testExactNumber(testCase.expectedNumComponents, signedLoops.length, `UnionRegion has expected number of connected components: ${testCase.jsonFilePath}`);
           x0 += xDelta;
           for (const signedLoop of signedLoops) {
@@ -1408,9 +1408,6 @@ describe("GeneralSweepBooleans", () => {
       "./src/test/data/intersections/MBContainmentBoolean/inner.imjs", "utf8"))) as AnyRegion[];
     let x0 = 0;
     const dy = 50;
-    // for (const entry of outer) {
-    //   RegionOps.consolidateAdjacentPrimitives(entry);
-    // }
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, outer, x0, 0);
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, inner, x0, 50);
     const dx = 100.0;
@@ -1582,7 +1579,7 @@ function exerciseAreaBooleans(
     }
   };
   for (const opType of [
-    RegionBinaryOpType.Union, RegionBinaryOpType.Intersection, RegionBinaryOpType.AMinusB, RegionBinaryOpType.BMinusA,
+   RegionBinaryOpType.Union, RegionBinaryOpType.Intersection, RegionBinaryOpType.AMinusB, RegionBinaryOpType.BMinusA,
   ]) {
     y0 += yStep;
     if (showVertexNeighborhoods && opType === RegionBinaryOpType.Union)

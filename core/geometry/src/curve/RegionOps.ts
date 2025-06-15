@@ -789,14 +789,14 @@ export class RegionOps {
    * * "Holes" implied/bounded by inputs are _not_ preserved/discovered in output; in particular [[ParityRegion]]
    * hole loops are treated like any other positive area loops.
    * * A common use case of this method is to assemble the bounding "exterior" loop for each connected component
-   * of input curves. To connect nested loops, pass `addBridges = true`.
+   * of input curves. This is the negative area loop of the component. Passing `addBridges = true` decreases the
+   * number of connected components for nested inputs [[Loop]]s, and thus increases the likelihood of returning
+   * exactly one exterior loop. This explains why the default value for `addBridges` is `true`.
    * @param curvesAndRegions Any collection of curves. Each [[AnyRegion]] contributes its children _stripped of
    * parity context_.
    * @param tolerance optional distance tolerance for coincidence.
-   * @param addBridges whether to add line segments to connect nested input loops (default is `false`). To reduce
-   * the number of output components pass `addBridges = true` so that nested input loops are connected to each other
-   * by bridge edges. Loops that are not explicit in input, but rather are assembled from disparate input curves, do
-   * not receive bridge edges.
+   * @param addBridges whether to add line segments to connect nested input [[Loop]]s (default is `true`). When `false`,
+   * no line segments are added to the input curves, but the number of output components may be greater than expected.
    * @returns array of [[SignedLoops]], each entry of which describes the areas bounded by a single connected component:
    *    * `positiveAreaLoops` contains "interior" loops, _including holes in ParityRegion input_. These loops have
    * positive area and counterclockwise orientation.
@@ -808,9 +808,10 @@ export class RegionOps {
   public static constructAllXYRegionLoops(
     curvesAndRegions: AnyCurve | AnyCurve[],
     tolerance: number = Geometry.smallMetricDistance,
-    addBridges: boolean = false,
+    addBridges: boolean = true,
   ): SignedLoops[] {
     let primitives = RegionOps.collectCurvePrimitives(curvesAndRegions, undefined, true, true);
+    primitives = TransferWithSplitArcs.clone(BagOfCurves.create(...primitives)).children as CurvePrimitive[];
     const range = this.curveArrayRange(primitives);
     const areaTol = this.computeXYAreaTolerance(range, tolerance);
     const regions = this.collectRegionsAndClosedPrimitives(curvesAndRegions, tolerance);
@@ -823,8 +824,6 @@ export class RegionOps {
           primitives.push(LineSegment3d.create(edge.getPoint3d(), edge.faceSuccessor.getPoint3d()));
         return true;
       });
-    } else {
-      primitives = TransferWithSplitArcs.clone(BagOfCurves.create(...primitives)).children as CurvePrimitive[];
     }
     const intersections = CurveCurve.allIntersectionsAmongPrimitivesXY(primitives, tolerance);
     const graph = PlanarSubdivision.assembleHalfEdgeGraph(primitives, intersections, tolerance);
