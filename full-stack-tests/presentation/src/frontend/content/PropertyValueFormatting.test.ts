@@ -4,11 +4,13 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
+import sinon from "sinon";
 import { Guid } from "@itwin/core-bentley";
-import { IModelConnection } from "@itwin/core-frontend";
+import { IModelApp, IModelConnection } from "@itwin/core-frontend";
+import { UnitSystemKey } from "@itwin/core-quantity";
+import { SchemaFormatsProvider } from "@itwin/ecschema-metadata";
 import { Content, ContentSpecificationTypes, DisplayValue, FormatsMap, InstanceKey, KeySet, Ruleset, RuleTypes } from "@itwin/presentation-common";
 import { PresentationManager, PresentationManagerProps } from "@itwin/presentation-frontend";
-import { collect, getFieldByLabel } from "../../Utils.js";
 import {
   buildTestIModelConnection,
   importSchema,
@@ -17,9 +19,7 @@ import {
   insertPhysicalModelWithPartition,
   insertSpatialCategory,
 } from "../../IModelSetupUtils.js";
-import { UnitSystemKey } from "@itwin/core-quantity";
-import { SchemaContext } from "@itwin/ecschema-metadata";
-import { ECSchemaRpcLocater } from "@itwin/ecschema-rpcinterface-common";
+import { collect, getFieldByLabel } from "../../Utils.js";
 import { describeContentTestSuite, getDisplayValue } from "./Utils.js";
 
 describeContentTestSuite("Property value formatting", ({ getDefaultSuiteIModel }) => {
@@ -34,6 +34,7 @@ describeContentTestSuite("Property value formatting", ({ getDefaultSuiteIModel }
   };
 
   describe("with formats from different sources", () => {
+    let imodel: IModelConnection;
     const key = { className: "Generic:PhysicalObject", id: "0x74" };
     const baseFormatProps = {
       formatTraits: "KeepSingleZero|KeepDecimalPoint|ShowUnitLabel",
@@ -41,6 +42,16 @@ describeContentTestSuite("Property value formatting", ({ getDefaultSuiteIModel }
       precision: 4,
       uomSeparator: " ",
     };
+
+    beforeEach(async () => {
+      imodel = await getDefaultSuiteIModel();
+      const formatsProvider = new SchemaFormatsProvider(imodel.schemaContext, "metric");
+      sinon.stub(IModelApp, "formatsProvider").get(() => formatsProvider);
+    });
+
+    afterEach(() => {
+      sinon.restore();
+    });
 
     it("formats property with default kind of quantity format when it doesn't have format for requested unit system", async () => {
       expect(await getAreaDisplayValue("imperial")).to.eq("150.1235 cm²");
@@ -100,6 +111,7 @@ describeContentTestSuite("Property value formatting", ({ getDefaultSuiteIModel }
       expect(await getAreaDisplayValue("usSurvey", defaultFormats)).to.eq("0.018 yrd² (US Survey)");
     });
 
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     async function getAreaDisplayValue(unitSystem: UnitSystemKey, defaultFormats?: FormatsMap): Promise<DisplayValue> {
       const content = await getContent(await getDefaultSuiteIModel(), key, unitSystem, defaultFormats);
       return getDisplayValue(content, [getFieldByLabel(content.descriptor.fields, "area"), getFieldByLabel(content.descriptor.fields, "cm2")]);
@@ -294,16 +306,20 @@ describeContentTestSuite("Property value formatting", ({ getDefaultSuiteIModel }
     });
   });
 
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   async function getContent(imodel: IModelConnection, key: InstanceKey, unitSystem?: UnitSystemKey, defaultFormats?: FormatsMap): Promise<Content> {
+    const formatsProvider = new SchemaFormatsProvider(imodel.schemaContext, unitSystem ?? "metric");
+    const formatsProviderStub = sinon.stub(IModelApp, "formatsProvider").get(() => formatsProvider);
+    using _resetIModelAppFormatsProvider = {
+      [Symbol.dispose]() {
+        formatsProviderStub.restore();
+      },
+    };
+
     const keys = new KeySet([key]);
     const props: PresentationManagerProps = {
       defaultFormats,
       activeLocale: "en-PSEUDO",
-      schemaContextProvider: (schemaIModel) => {
-        const schemas = new SchemaContext();
-        schemas.addLocater(new ECSchemaRpcLocater(schemaIModel));
-        return schemas;
-      },
     };
     using manager = PresentationManager.create(props);
     const descriptor = await manager.getContentDescriptor({
