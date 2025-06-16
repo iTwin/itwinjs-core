@@ -6,8 +6,8 @@
  * @module WebGL
  */
 
-import { assert, dispose, Id64String } from "@itwin/core-bentley";
-import { ElementAlignedBox3d, FeatureAppearanceProvider, RenderFeatureTable, ThematicDisplayMode, ViewFlags } from "@itwin/core-common";
+import { assert, dispose, Id64, Id64String } from "@itwin/core-bentley";
+import { ElementAlignedBox3d, FeatureAppearanceProvider, PackedFeature, RenderFeatureTable, ThematicDisplayMode, ViewFlags } from "@itwin/core-common";
 import { Range3d, Transform } from "@itwin/core-geometry";
 import { IModelConnection } from "../../../IModelConnection";
 import { FeatureSymbology } from "../../../render/FeatureSymbology";
@@ -29,6 +29,10 @@ import { BranchState } from "./BranchState";
 import { BatchOptions } from "../../../common/render/BatchOptions";
 import { Contours } from "./Contours";
 import { GraphicBranchFrustum } from "../GraphicBranchFrustum";
+import { computeDimensions } from "../../../common/internal/render/VertexTable";
+import { System } from "./System";
+import { Texture2DHandle, TextureHandle } from "./Texture";
+import { GL } from "./GL";
 
 /** @internal */
 export abstract class Graphic extends RenderGraphic implements WebGLDisposable {
@@ -245,6 +249,25 @@ export class PerTargetData {
   }
 }
 
+function createElementIndexLUT(featureTable: RenderFeatureTable): Texture2DHandle | undefined {
+  const { width, height } = computeDimensions(featureTable.numFeatures, 1, 0, System.instance.maxTextureSize);
+  const buffer = new Uint32Array(width * height);
+
+  const elementIdToIndex = new Id64.Uint32Map<number>();
+  let curElementIndex = 0;
+  for (const feature of featureTable.iterable(PackedFeature.createWithIndex())) {
+    let elementIndex = elementIdToIndex.get(feature.elementId.lower, feature.elementId.upper);
+    if (undefined === elementIndex) {
+      elementIndex = curElementIndex++;
+      elementIdToIndex.set(feature.elementId.lower, feature.elementId.upper, elementIndex);
+    }
+
+    buffer[feature.index] = elementIndex;
+  }
+
+  return TextureHandle.createForData(width, height, new Uint8Array(buffer.buffer), false, GL.Texture.WrapMode.ClampToEdge, GL.Texture.Format.Rgba);
+}
+
 /** @internal */
 export class Batch extends Graphic {
   public readonly graphic: Graphic;
@@ -254,6 +277,7 @@ export class Batch extends Graphic {
   /** Public strictly for tests. */
   public readonly perTargetData = new PerTargetData(this);
   public readonly options: BatchOptions;
+  public readonly elementIndexLUT?: Texture2DHandle;
 
   // Chiefly for debugging.
   public get tileId(): string | undefined {
@@ -293,6 +317,10 @@ export class Batch extends Graphic {
     this.featureTable = features;
     this.range = range;
     this.options = options ?? {};
+
+    if (this.hasBlankingFill) {
+      this.elementIndexLUT = createElementIndexLUT(features);
+    }
   }
 
   private _isDisposed = false;
