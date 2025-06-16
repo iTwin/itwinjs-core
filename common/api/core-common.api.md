@@ -2039,7 +2039,7 @@ export interface ContourStyleProps {
 // @public
 export type CreateEmptySnapshotIModelProps = CreateIModelProps & CreateSnapshotIModelProps;
 
-// @internal
+// @public
 export type CreateEmptyStandaloneIModelProps = CreateIModelProps & CreateStandaloneIModelProps;
 
 // @public
@@ -2055,7 +2055,7 @@ export interface CreateSnapshotIModelProps {
     readonly createClassViews?: boolean;
 }
 
-// @internal
+// @public
 export interface CreateStandaloneIModelProps {
     readonly allowEdit?: string;
 }
