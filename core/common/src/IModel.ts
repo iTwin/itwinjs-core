@@ -192,7 +192,7 @@ export interface CreateSnapshotIModelProps {
 export type CreateEmptySnapshotIModelProps = CreateIModelProps & CreateSnapshotIModelProps;
 
 /** Options that can be supplied when creating standalone iModels.
- * @internal
+ * @public
  */
 export interface CreateStandaloneIModelProps {
   /** If present, file will allow local editing, but cannot be used to create changesets */
@@ -201,7 +201,7 @@ export interface CreateStandaloneIModelProps {
 
 /** The options that can be specified when creating an *empty* standalone iModel.
  * @see [standalone.createEmpty]($backend)
- * @internal
+ * @public
  */
 export type CreateEmptyStandaloneIModelProps = CreateIModelProps & CreateStandaloneIModelProps;
 
