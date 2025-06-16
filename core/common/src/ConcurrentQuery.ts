@@ -63,7 +63,7 @@ export interface QueryPropertyMetaData {
   /** The name is the property's alias if the property is a generated one, otherwise, it is the name of the property. */
   name: string;
   /** If this property is a PrimitiveECProperty, extend type is the extended type name of this property, if it is not defined locally will be inherited from base property if one exists, otherwise extend type is set to an empty string.
-   * @deprecated in 4.11 - might be removed in next major version. Use extendedType instead
+   * @deprecated in 4.11 - will not be removed until after 2026-06-13. Use extendedType instead
    */
   extendType: string;
   /** If this property is a PrimitiveECProperty, extended type is the extended type name of this property, if it is not defined locally will be inherited from base property if one exists, otherwise extended type will be undefined. */
@@ -145,7 +145,7 @@ export interface QueryOptions extends BaseReaderOptions {
   /**
    * Convert ECClassId, SourceECClassId, TargetECClassId and RelClassId to respective name.
    * When true, XXXXClassId property will be returned as className.
-   * @deprecated in 4.11 - might be removed in next major version. Use ecsql function ec_classname to get class name instead.
+   * @deprecated in 4.11 - will not be removed until after 2026-06-13. Use ecsql function ec_classname to get class name instead.
    * */
   convertClassIdsToClassNames?: boolean;
   /**
@@ -225,7 +225,7 @@ export class QueryOptionsBuilder {
    * If set ECClassId, SourceECClassId and TargetECClassId system properties will return qualified name of class instead of a @typedef Id64String.
    * @param val A boolean value.
    * @returns @type QueryOptionsBuilder for fluent interface.
-   * @deprecated in 4.11 - might be removed in next major version. Use ecsql function ec_classname to get class name instead.
+   * @deprecated in 4.11 - will not be removed until after 2026-06-13. Use ecsql function ec_classname to get class name instead.
    */
   public setConvertClassIdsToNames(val: boolean) {
     // eslint-disable-next-line @typescript-eslint/no-deprecated

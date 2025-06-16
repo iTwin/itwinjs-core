@@ -63,7 +63,7 @@ export interface TextureMapProps {
   /** Weight at which to combine diffuse image and color; if undefined, defaults to 1.0 */
   pattern_weight?: number;
   /** If true, override the mapping mode with constant LOD mapping for the normal map, defaults to false.
-   * @deprecated in 4.4 - might be removed in next major version. It never functioned properly - use [[pattern_useconstantlod]] instead.
+   * @deprecated in 4.4 - will not be removed until after 2026-06-13. It never functioned properly - use [[pattern_useconstantlod]] instead.
    */
   pattern_useConstantLod?: boolean;
   /** If true, override the mapping mode with constant LOD mapping for the normal map, defaults to false. */
