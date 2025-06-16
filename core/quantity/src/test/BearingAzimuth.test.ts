@@ -236,9 +236,10 @@ describe("Bearing format tests:", () => {
     const bearingFormat = new Format("bearing-flexible-parser");
     await bearingFormat.fromJSON(unitsProvider, bearingFormatProps);
     const bearingParser = await ParserSpec.create(bearingFormat, unitsProvider, degree);
+    const bearingFormatter = await FormatterSpec.create("bearing-flexible-formatter", bearingFormat, unitsProvider, rad);
 
      const validTestData = [
-      { input: "N45 45 45E", expected:  45.7625 },
+      { input: "N45 45 45E", expected:  45.7625, expectedText: "N45°45'45\"E" },
       { input: "N45 45 45e", expected:  45.7625 },
       { input: "n45 45 45E", expected:  45.7625 },
       { input: "n45 45 45e", expected:  45.7625 },
@@ -302,7 +303,7 @@ describe("Bearing format tests:", () => {
     }
   });
 
-  it("should correctly parse breaing using RAD units", async () => {
+  it("should correctly parse bearing using RAD units", async () => {
     const bearingRadJson: FormatProps = {
       minWidth: 2,
       precision: 0,
