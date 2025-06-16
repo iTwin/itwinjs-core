@@ -151,7 +151,7 @@ export interface PresentationManagerProps {
    * overriden for each request through request parameters. If not set, `IModelApp.quantityFormatter.activeUnitSystem`
    * is used by default.
    *
-   * @deprecated in 4.0. Use [IModelApp.quantityFormatter]($core-frontend) to set the active unit system.
+   * @deprecated in 4.0 - might be removed in next major version. Use [IModelApp.quantityFormatter]($core-frontend) to set the active unit system.
    */
   activeUnitSystem?: UnitSystemKey;
 
@@ -185,7 +185,11 @@ export interface PresentationManagerProps {
    * in requested unit system.
    *
    * @note Only has effect when frontend value formatting is enabled by supplying the `schemaContextProvider` prop.
+   *
+   * @deprecated in 5.1. All formats' logic is now handled by [IModelApp.formatsProvider]($core-frontend). Until the prop is removed, when
+   * supplied, this map will be used as a fallback if IModelApp's formats provider doesn't return anything for requested format.
    */
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   defaultFormats?: FormatsMap;
 }
 
@@ -209,6 +213,7 @@ export class PresentationManager implements Disposable {
   private _rulesetVars: Map<string, RulesetVariablesManager>;
   private _clearEventListener?: () => void;
   private _schemaContextProvider: (imodel: IModelConnection) => SchemaContext;
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   private _defaultFormats?: FormatsMap;
   private _ipcRequestsHandler?: IpcRequestsHandler;
 
@@ -225,7 +230,7 @@ export class PresentationManager implements Disposable {
   /**
    * Get / set active unit system used to format property values with units.
    *
-   * @deprecated in 4.0. `IModelApp.quantityFormatter` should be used to get/set the active unit system. At the moment
+   * @deprecated in 4.0 - might be removed in next major version. `IModelApp.quantityFormatter` should be used to get/set the active unit system. At the moment
    * [[PresentationManager]] allows overriding it, but returns `IModelApp.quantityFormatter.activeUnitSystem` if override
    * is not set.
    */
@@ -250,6 +255,7 @@ export class PresentationManager implements Disposable {
     this._localizationHelper = new FrontendLocalizationHelper(props?.activeLocale);
     // eslint-disable-next-line @typescript-eslint/no-deprecated
     this._schemaContextProvider = props?.schemaContextProvider ?? ((imodel: IModelConnection) => imodel.schemaContext);
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     this._defaultFormats = props?.defaultFormats;
 
     if (IpcApp.isValid) {
@@ -274,7 +280,7 @@ export class PresentationManager implements Disposable {
     }
   }
 
-  /** @deprecated in 5.0 Use [Symbol.dispose] instead. */
+  /** @deprecated in 5.0. Use [Symbol.dispose] instead. */
   /* c8 ignore next 3 */
   public dispose() {
     this[Symbol.dispose]();
@@ -422,7 +428,7 @@ export class PresentationManager implements Disposable {
 
   /**
    * Retrieves nodes
-   * @deprecated in 4.5. Use [[getNodesIterator]] instead.
+   * @deprecated in 4.5 - might be removed in next major version. Use [[getNodesIterator]] instead.
    */
   public async getNodes(requestOptions: GetNodesRequestOptions & MultipleValuesRequestOptions): Promise<Node[]> {
     const result = await this.getNodesIterator(requestOptions);
@@ -439,7 +445,7 @@ export class PresentationManager implements Disposable {
 
   /**
    * Retrieves total nodes count and a single page of nodes.
-   * @deprecated in 4.5. Use [[getNodesIterator]] instead.
+   * @deprecated in 4.5 - might be removed in next major version. Use [[getNodesIterator]] instead.
    */
   public async getNodesAndCount(requestOptions: GetNodesRequestOptions & MultipleValuesRequestOptions): Promise<{ count: number; nodes: Node[] }> {
     const result = await this.getNodesIterator(requestOptions);
@@ -547,11 +553,14 @@ export class PresentationManager implements Disposable {
 
     let contentFormatter: ContentFormatter | undefined;
     if (!requestOptions.omitFormattedValues) {
-      const koqPropertyFormatter = new KoqPropertyValueFormatter(this._schemaContextProvider(requestOptions.imodel), this._defaultFormats);
-      contentFormatter = new ContentFormatter(
-        new ContentPropertyValueFormatter(koqPropertyFormatter),
-        requestOptions.unitSystem ?? this._explicitActiveUnitSystem ?? IModelApp.quantityFormatter.activeUnitSystem,
-      );
+      const schemaContext = this._schemaContextProvider(requestOptions.imodel);
+      const unitSystem = requestOptions.unitSystem ?? this._explicitActiveUnitSystem ?? IModelApp.quantityFormatter.activeUnitSystem;
+      const koqPropertyFormatter = new KoqPropertyValueFormatter({
+        schemaContext,
+        formatsProvider: IModelApp.formatsProvider,
+      });
+      koqPropertyFormatter.defaultFormats = this._defaultFormats;
+      contentFormatter = new ContentFormatter(new ContentPropertyValueFormatter(koqPropertyFormatter), unitSystem);
     }
 
     let descriptor = requestOptions.descriptor instanceof Descriptor ? requestOptions.descriptor : undefined;
@@ -615,7 +624,7 @@ export class PresentationManager implements Disposable {
 
   /**
    * Retrieves content which consists of a content descriptor and a page of records.
-   * @deprecated in 4.5. Use [[getContentIterator]] instead.
+   * @deprecated in 4.5 - might be removed in next major version. Use [[getContentIterator]] instead.
    */
   public async getContent(requestOptions: GetContentRequestOptions & MultipleValuesRequestOptions): Promise<Content | undefined> {
     // eslint-disable-next-line @typescript-eslint/no-deprecated
@@ -624,7 +633,7 @@ export class PresentationManager implements Disposable {
 
   /**
    * Retrieves content set size and content which consists of a content descriptor and a page of records.
-   * @deprecated in 4.5. Use [[getContentIterator]] instead.
+   * @deprecated in 4.5 - might be removed in next major version. Use [[getContentIterator]] instead.
    */
   public async getContentAndSize(
     requestOptions: GetContentRequestOptions & MultipleValuesRequestOptions,
@@ -670,7 +679,7 @@ export class PresentationManager implements Disposable {
 
   /**
    * Retrieves distinct values of specific field from the content.
-   * @deprecated in 4.5. Use [[getDistinctValuesIterator]] instead.
+   * @deprecated in 4.5 - might be removed in next major version. Use [[getDistinctValuesIterator]] instead.
    */
   public async getPagedDistinctValues(
     requestOptions: GetDistinctValuesRequestOptions & MultipleValuesRequestOptions,
@@ -778,7 +787,7 @@ export class PresentationManager implements Disposable {
 
   /**
    * Retrieves display label definition of specific items.
-   * @deprecated in 4.5. Use [[getDisplayLabelDefinitionsIterator]] instead.
+   * @deprecated in 4.5 - might be removed in next major version. Use [[getDisplayLabelDefinitionsIterator]] instead.
    */
   public async getDisplayLabelDefinitions(
     requestOptions: DisplayLabelsRequestOptions<IModelConnection, InstanceKey> & ClientDiagnosticsAttribute & MultipleValuesRequestOptions,
