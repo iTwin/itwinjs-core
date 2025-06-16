@@ -1,4 +1,3 @@
-
 # 5.0.0 Change Notes
 
 Table of contents:
@@ -95,10 +94,10 @@ Because the `SelectionSet` now stores additional types of ids, existing code tha
 
 By default a box select with the selection tool will only identify visible elements (i.e. elements that light up a pixel in the current view). Sometimes it is desirable to select all elements that are inside or overlap the box regardless of whether they are currently obscured by other elements. Applications can now change [ToolSettings.enableVolumeSelection]($core-frontend) to enable box selection by volume in spatial views.
 
-The following protected methods on SelectTool had their signature changed to support volume selection:
+The following protected methods on SelectionTool had their signature changed to support volume selection:
 
-- [SelectTool.selectByPointsProcess]($core-frontend)
-- [SelectTool.selectByPointsEnd]($core-frontend)
+- [SelectionTool.selectByPointsProcess]($core-frontend)
+- [SelectionTool.selectByPointsEnd]($core-frontend)
 
 ### Snapping
 
@@ -651,10 +650,10 @@ All three `nativeDb` fields and `IModelHost.platform` have always been `@interna
 
 #### @itwin/core-electron
 
-| Removed                             | Replacement                                               |
-| ----------------------------------- | --------------------------------------------------------- |
-| `ElectronApp.callDialog`            | [ElectronApp.dialogIpc]($electron)                        |
-| `ElectronHost.getWindowSizeSetting` | [ElectronHost.getWindowSizeAndPositionSetting]($electron) |
+| Removed                             | Replacement                                                    |
+| ----------------------------------- | -------------------------------------------------------------- |
+| `ElectronApp.callDialog`            | [ElectronApp.dialogIpc]($core-electron)                        |
+| `ElectronHost.getWindowSizeSetting` | [ElectronHost.getWindowSizeAndPositionSetting]($core-electron) |
 
 #### @itwin/core-frontend
 
@@ -904,6 +903,7 @@ For more information read [Pull merge & conflict resolution](../learning/backend
   - `setUnits` takes `LazyLoadedUnit | LazyLoadedInvertedUnit` instead of `Unit | InvertedUnit`
   - `units` getter returns `ReadonlyArray<[LazyLoadedUnit | LazyLoadedInvertedUnit, string | undefined]>` instead of `ReadonlyArray<[Unit | InvertedUnit, string | undefined]>`
 - `KindOfQuantity` updated to use Lazy Loaded items to be consistent with other schema items
+
   - `addPresentationFormat` takes `LazyLoadedFormat` instead of `Format`
   - `createFormatOverride` takes `Array<[LazyLoadedUnit | LazyLoadedInvertedUnit, string | undefined]>` instead of `Array<[Unit | InvertedUnit, string | undefined]>`
   - `defaultPresentationFormat` getter returns `LazyLoadedFormat` instead of `Format`
@@ -918,12 +918,7 @@ For more information read [Pull merge & conflict resolution](../learning/backend
 
 Existing calls like `context.getSchemaItem<EntityClass>("schema:myName")` have to be adjusted either into
 `context.getSchemaItem("schema", "myName", EntityClass)` or more verbose as a general item followed by a type-guard:
-
-```ts
-const item: SchemaItem = await iModel.schemaContext.getSchemaItem("BisCore", "Element");
-if (item && EntityClass.isEntityClass(item)) {
-}
-```
+s
 
 A regex can be used to do bulk renaming:
 `getSchemaItem<([^>]+)>\(([^)]+)\)` replace with: `getSchemaItem($2, $1)`
@@ -931,7 +926,7 @@ This applies to `SchemaContext.getSchemaItem/Sync`, `Schema.getItem/Sync` and `S
 
 ### Changes to getElement and getModel
 
-The [getElement]($backend) and [getModel]($backend) apis have been optimized on the backend. Element reads and Model reads should be largely unaffected and should function exactly as they have before, with some minor exceptions listed below.
+The [IModelDb.Elements.getElement]($backend) and [IModelD.Modelss.getModel]($backend) apis have been optimized on the backend. Element reads and Model reads should be largely unaffected and should function exactly as they have before, with some minor exceptions listed below.
 
 List of changes to how Entity props are returned by `getElement()` and `getModel()`:
 
