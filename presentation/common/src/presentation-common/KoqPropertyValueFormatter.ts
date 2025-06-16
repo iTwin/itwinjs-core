@@ -6,8 +6,8 @@
  * @module Core
  */
 
-import { assert, BeEvent } from "@itwin/core-bentley";
-import { Format, FormatProps, FormatsChangedArgs, FormatsProvider, FormatterSpec, ParserSpec, UnitsProvider, UnitSystemKey } from "@itwin/core-quantity";
+import { assert } from "@itwin/core-bentley";
+import { Format, FormatProps, FormatsProvider, FormatterSpec, ParserSpec, UnitsProvider, UnitSystemKey } from "@itwin/core-quantity";
 import { InvertedUnit, KindOfQuantity, SchemaContext, SchemaFormatsProvider, SchemaKey, SchemaMatchType, SchemaUnitProvider } from "@itwin/ecschema-metadata";
 
 /**
@@ -164,8 +164,12 @@ export class KoqPropertyValueFormatter {
     // to default formats' map first, and only then to the default presentation format. All of this can
     // be removed with the removal of default formats map.
     if (this._defaultFormats && (!formatProps || (await getUnitSystemKey(this._unitsProvider, formatProps)) !== unitSystem)) {
-      const defaultFormatsProvider = createFormatsProviderFromDefaultFormats(this._schemaContext, this._defaultFormats, unitSystem);
-      const defaultFormatProps = await defaultFormatsProvider.getFormat(koqName);
+      const defaultFormatProps = await getFormatPropsFromDefaultFormats({
+        schemaContext: this._schemaContext,
+        formatsMap: this._defaultFormats,
+        unitSystem,
+        koqName,
+      });
       if (defaultFormatProps) {
         return { formatProps: defaultFormatProps, persistenceUnitName: persistenceUnit.fullName };
       }
@@ -214,35 +218,40 @@ async function getUnitSystemKey(unitsProvider: UnitsProvider, formatProps: Forma
   }
 }
 
-// eslint-disable-next-line @typescript-eslint/no-deprecated
-function createFormatsProviderFromDefaultFormats(schemaContext: SchemaContext, formatsMap: FormatsMap, unitSystem: UnitSystemKey): FormatsProvider {
-  return {
-    onFormatsChanged: new BeEvent<(args: FormatsChangedArgs) => void>(),
-    getFormat: async (name: string) => {
-      const koq = await getKoq(schemaContext, name);
-      /* c8 ignore next 3 */
-      if (!koq) {
-        return undefined;
-      }
+async function getFormatPropsFromDefaultFormats({
+  schemaContext,
+  formatsMap,
+  unitSystem,
+  koqName,
+}: {
+  schemaContext: SchemaContext;
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
+  formatsMap: FormatsMap;
+  unitSystem: UnitSystemKey;
+  koqName: string;
+}): Promise<FormatProps | undefined> {
+  const koq = await getKoq(schemaContext, koqName);
+  /* c8 ignore next 3 */
+  if (!koq) {
+    return undefined;
+  }
 
-      const persistenceUnit = await koq.persistenceUnit;
-      /* c8 ignore next 3 */
-      if (!persistenceUnit) {
-        return undefined;
+  const persistenceUnit = await koq.persistenceUnit;
+  /* c8 ignore next 3 */
+  if (!persistenceUnit) {
+    return undefined;
+  }
+  const actualPersistenceUnit = persistenceUnit instanceof InvertedUnit ? /* c8 ignore next */ await persistenceUnit.invertsUnit : persistenceUnit;
+  const phenomenon = await actualPersistenceUnit?.phenomenon;
+  if (phenomenon && formatsMap[phenomenon.name.toUpperCase()]) {
+    const defaultPhenomenonFormats = formatsMap[phenomenon.name.toUpperCase()];
+    for (const defaultUnitSystemFormat of Array.isArray(defaultPhenomenonFormats)
+      ? /* c8 ignore next */ defaultPhenomenonFormats
+      : [defaultPhenomenonFormats]) {
+      if (defaultUnitSystemFormat.unitSystems.includes(unitSystem)) {
+        return defaultUnitSystemFormat.format;
       }
-      const actualPersistenceUnit = persistenceUnit instanceof InvertedUnit ? /* c8 ignore next */ await persistenceUnit.invertsUnit : persistenceUnit;
-      const phenomenon = await actualPersistenceUnit?.phenomenon;
-      if (phenomenon && formatsMap[phenomenon.name.toUpperCase()]) {
-        const defaultPhenomenonFormats = formatsMap[phenomenon.name.toUpperCase()];
-        for (const defaultUnitSystemFormat of Array.isArray(defaultPhenomenonFormats)
-          ? /* c8 ignore next */ defaultPhenomenonFormats
-          : [defaultPhenomenonFormats]) {
-          if (defaultUnitSystemFormat.unitSystems.includes(unitSystem)) {
-            return defaultUnitSystemFormat.format;
-          }
-        }
-      }
-      return undefined;
-    },
-  };
+    }
+  }
+  return undefined;
 }
