@@ -32,11 +32,22 @@ import { GraphicBranchFrustum } from "../GraphicBranchFrustum";
 
 /** @internal */
 export abstract class Graphic extends RenderGraphic implements WebGLDisposable {
+  private _blankingFill?: boolean;
+  
   public abstract addCommands(_commands: RenderCommands): void;
   public abstract get isDisposed(): boolean;
   public abstract get isPickable(): boolean;
   public addHiliteCommands(_commands: RenderCommands, _pass: RenderPass): void { assert(false); }
   public toPrimitive(): Primitive | undefined { return undefined; }
+  protected abstract get _hasBlankingFill(): boolean;
+
+  public get hasBlankingFill(): boolean {
+    if (undefined === this._blankingFill) {
+      this._blankingFill = this._hasBlankingFill;
+    }
+
+    return this._blankingFill;
+  }
 }
 
 export class GraphicOwner extends Graphic {
@@ -74,6 +85,9 @@ export class GraphicOwner extends Graphic {
   }
   public override toPrimitive(): Primitive | undefined {
     return this._graphic.toPrimitive();
+  }
+  protected override get _hasBlankingFill() {
+    return this._graphic.hasBlankingFill;
   }
 }
 
@@ -233,7 +247,7 @@ export class PerTargetData {
 
 /** @internal */
 export class Batch extends Graphic {
-  public readonly graphic: RenderGraphic;
+  public readonly graphic: Graphic;
   public readonly featureTable: RenderFeatureTable;
   public readonly range: ElementAlignedBox3d;
   private readonly _context: BatchContext = { batchId: 0 };
@@ -273,7 +287,7 @@ export class Batch extends Graphic {
     this._context.inSectionDrawingAttachment = undefined;
   }
 
-  public constructor(graphic: RenderGraphic, features: RenderFeatureTable, range: ElementAlignedBox3d, options?: BatchOptions) {
+  public constructor(graphic: Graphic, features: RenderFeatureTable, range: ElementAlignedBox3d, options?: BatchOptions) {
     super();
     this.graphic = graphic;
     this.featureTable = features;
@@ -330,6 +344,10 @@ export class Batch extends Graphic {
 
   public onTargetDisposed(target: Target) {
     this.perTargetData.onTargetDisposed(target);
+  }
+
+  protected override get _hasBlankingFill() {
+    return this.graphic.hasBlankingFill;
   }
 }
 
@@ -431,6 +449,10 @@ export class Branch extends Graphic {
     if (this.shouldAddCommands(commands))
       commands.addHiliteBranch(this, pass);
   }
+
+  protected override get _hasBlankingFill() {
+    return this.branch.entries.some((gf) => (gf as Graphic).hasBlankingFill);
+  }
 }
 
 /** @internal */
@@ -475,6 +497,10 @@ export class AnimationTransformBranch extends Graphic {
     commands.target.currentAnimationTransformNodeId = this.nodeId;
     this.graphic.addHiliteCommands(commands, pass);
     commands.target.currentAnimationTransformNodeId = undefined;
+  }
+
+  protected override get _hasBlankingFill() {
+    return this.graphic.hasBlankingFill;
   }
 }
 
@@ -533,5 +559,9 @@ export class GraphicsArray extends Graphic {
   public override unionRange(range: Range3d) {
     for (const graphic of this.graphics)
       graphic.unionRange(range);
+  }
+
+  protected override get _hasBlankingFill() {
+    return this.graphics.some((x) => (x as Graphic).hasBlankingFill);
   }
 }

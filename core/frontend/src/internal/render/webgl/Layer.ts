@@ -41,6 +41,10 @@ abstract class GraphicWrapper extends Graphic {
   public override unionRange(range: Range3d) {
     this.graphic.unionRange(range);
   }
+
+  protected override get _hasBlankingFill() {
+    return this.graphic.hasBlankingFill;
+  }
 }
 
 /** Within a single tile, contains graphics belonging to a single layer.
