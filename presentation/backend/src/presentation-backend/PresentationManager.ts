@@ -10,8 +10,8 @@ import { firstValueFrom } from "rxjs";
 import { eachValueFrom } from "rxjs-for-await";
 import { IModelDb } from "@itwin/core-backend";
 import { BeEvent, Id64Array } from "@itwin/core-bentley";
-import { UnitSystemKey } from "@itwin/core-quantity";
-import { SchemaContext } from "@itwin/ecschema-metadata";
+import { FormatsProvider, UnitSystemKey } from "@itwin/core-quantity";
+import { SchemaContext, SchemaFormatsProvider } from "@itwin/ecschema-metadata";
 import {
   UnitSystemFormat as CommonUnitSystemFormat,
   ComputeSelectionRequestOptions,
@@ -288,8 +288,17 @@ export interface PresentationManagerProps {
   /**
    * A map of default unit formats to use for formatting properties that don't have a presentation format
    * in requested unit system.
+   *
+   * @deprecated in 5.1. Use `formatsProvider` instead. Still used as a fallback if `formatsProvider` is not supplied.
    */
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   defaultFormats?: FormatsMap;
+
+  /**
+   * A custom formats provider to use for formatting property values with units. Defaults to [SchemaFormatsProvider]($ecschema-metadata) if
+   * not supplied.
+   */
+  formatsProvider?: FormatsProvider;
 
   /**
    * A number of worker threads to use for handling presentation requests. Defaults to `2`.
@@ -511,8 +520,17 @@ export class PresentationManager {
   }
 
   private createContentFormatter({ imodel, unitSystem }: { imodel: IModelDb; unitSystem?: UnitSystemKey }): ContentFormatter {
-    const koqPropertyFormatter = new KoqPropertyValueFormatter(this._schemaContextProvider(imodel), this.props.defaultFormats);
-    return new ContentFormatter(new ContentPropertyValueFormatter(koqPropertyFormatter), unitSystem ?? this.props.defaultUnitSystem);
+    if (!unitSystem) {
+      unitSystem = this.props.defaultUnitSystem ?? "metric";
+    }
+    const schemaContext = this._schemaContextProvider(imodel);
+    const koqPropertyFormatter = new KoqPropertyValueFormatter({
+      schemaContext,
+      formatsProvider: this.props.formatsProvider ?? new SchemaFormatsProvider(schemaContext, unitSystem),
+    });
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    koqPropertyFormatter.defaultFormats = this.props.defaultFormats;
+    return new ContentFormatter(new ContentPropertyValueFormatter(koqPropertyFormatter), unitSystem);
   }
 
   /**
