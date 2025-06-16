@@ -625,7 +625,7 @@ export class Parser {
     const units = (format as any)._units;
 
     if ( format.type === FormatType.Bearing && tokens.length === 1 && typeof tokens[0].value === "number" && Array.isArray(units) &&
-         units.length === 3 && units[0]?.[0]?.name === "Units.ARC_DEG")  {
+         units.length === 3 && Array.isArray(units[0]) && units[0].length > 0 && units[0][0].name === "Units.ARC_DEG")  {
 
           const value = tokens[0].value;
           const degrees = Math.floor(value);
