@@ -9,6 +9,7 @@
 import { Point3d, Range2d, Transform, XYZProps, YawPitchRollAngles, YawPitchRollProps } from "@itwin/core-geometry";
 import { TextBlock, TextBlockProps } from "./TextBlock";
 import { TextStyleColor } from "./TextStyle";
+import { EntityReferenceSet } from "../EntityReference";
 
 /** Describes how to compute the "anchor point" for a [[TextAnnotation]].
  * The anchor point is a point on or inside of the 2d bounding box enclosing the contents of the annotation's [[TextBlock]].
@@ -246,5 +247,23 @@ export class TextAnnotation {
       && this.orientation.isAlmostEqual(other.orientation) && this.offset.isAlmostEqual(other.offset)
       && this.textBlock.equals(other.textBlock)
       && framesMatch;
+  }
+
+  /** Gathers the IDs of the styles used by this annotation.
+   * @internal
+   */
+  public discloseIds(ids: EntityReferenceSet) {
+    const addIfValid = (id: string) => {
+      if (id)
+        ids.addElement(id);
+    }
+
+    addIfValid(this.textBlock.styleId);
+    for (const paragraph of this.textBlock.paragraphs) {
+      addIfValid(paragraph.styleId);
+      for (const run of paragraph.runs) {
+        addIfValid(run.styleId);
+      }
+    }
   }
 }

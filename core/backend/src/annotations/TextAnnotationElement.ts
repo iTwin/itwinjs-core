@@ -6,26 +6,20 @@
  * @module Elements
  */
 
-import { Code, CodeProps, ElementGeometry, ElementGeometryBuilderParams, Placement2d, Placement2dProps, Placement3d, Placement3dProps, PlacementProps, TextAnnotation, TextAnnotation2dProps, TextAnnotation3dProps, TextAnnotationProps } from "@itwin/core-common";
+import { AnnotationTextStyleProps, BisCodeSpec, Code, CodeProps, CodeScopeProps, CodeSpec, ConcreteEntityTypes, ElementGeometry, ElementGeometryBuilderParams, EntityReference, EntityReferenceSet, Placement2d, Placement2dProps, Placement3d, Placement3dProps, PlacementProps, TextAnnotation, TextAnnotation2dProps, TextAnnotation3dProps, TextAnnotationProps, TextStyleSettings, TextStyleSettingsProps } from "@itwin/core-common";
 import { IModelDb } from "../IModelDb";
-import { AnnotationElement2d, GraphicalElement3d, OnElementPropsArg } from "../Element";
-import { Id64String } from "@itwin/core-bentley";
+import { AnnotationElement2d, DefinitionElement, GraphicalElement3d, OnElementIdArg, OnElementPropsArg } from "../Element";
+import { DbResult, Id64String } from "@itwin/core-bentley";
 import { layoutTextBlock } from "./TextBlockLayout";
 import { appendTextAnnotationGeometry } from "./TextAnnotationGeometry";
 
-export interface TextAnnotation3dCreateArgs extends TextAnnotationXdCreateArgs {
-  placement: Placement3dProps;
-}
-
-export interface TextAnnotation2dCreateArgs extends TextAnnotationXdCreateArgs {
-  placement: Placement2dProps;
-}
-
-export interface TextAnnotationXdCreateArgs {
-  textAnnotationData?: TextAnnotationProps;
-  category: Id64String;
-  model: Id64String;
-  code?: CodeProps;
+function parseTextAnnotationData(json: string | undefined): TextAnnotationProps | undefined {
+  if (!json) return undefined;
+  try {
+    return JSON.parse(json);
+  } catch {
+    return undefined;
+  }
 }
 
 function getElementGeometryBuilderParams(iModel: IModelDb, _placementProps: PlacementProps, stringifiedAnnotationProps: string, categoryId: Id64String, _subCategory?: Id64String): ElementGeometryBuilderParams {
@@ -36,15 +30,6 @@ function getElementGeometryBuilderParams(iModel: IModelDb, _placementProps: Plac
   appendTextAnnotationGeometry({ layout, annotationProps: annotationProps ?? {}, builder, categoryId })
 
   return { entryArray: builder.entries };
-}
-
-function parseTextAnnotationData(json: string | undefined): TextAnnotationProps | undefined {
-  if (!json) return undefined;
-  try {
-    return JSON.parse(json);
-  } catch {
-    return undefined;
-  }
 }
 
 export class TextAnnotation2d extends AnnotationElement2d {
@@ -87,14 +72,14 @@ export class TextAnnotation2d extends AnnotationElement2d {
     return props;
   }
 
-  public static create(iModelDb: IModelDb, args: TextAnnotation2dCreateArgs): TextAnnotation2d {
+  public static create(iModelDb: IModelDb, category: Id64String, model: Id64String, placement: Placement2dProps, textAnnotationData?: TextAnnotationProps, code?: CodeProps): TextAnnotation2d {
     const props: TextAnnotation2dProps = {
       classFullName: this.classFullName,
-      textAnnotationData: JSON.stringify(args.textAnnotationData),
-      placement: args.placement,
-      model: args.model,
-      category: args.category,
-      code: args.code ?? Code.createEmpty(),
+      textAnnotationData: JSON.stringify(textAnnotationData),
+      placement,
+      model,
+      category,
+      code: code ?? Code.createEmpty(),
     }
     return new this(props, iModelDb);
   }
@@ -115,6 +100,15 @@ export class TextAnnotation2d extends AnnotationElement2d {
     }
 
     props.elementGeometryBuilderParams = getElementGeometryBuilderParams(iModelDb, props.placement ?? Placement2d.fromJSON(), props.textAnnotationData, props.category);
+  }
+
+  protected override collectReferenceIds(ids: EntityReferenceSet): void {
+    super.collectReferenceIds(ids);
+    const annotation = this.getAnnotation();
+    if (!annotation) {
+      return;
+    }
+    annotation.discloseIds(ids);
   }
 }
 
@@ -162,14 +156,14 @@ export class TextAnnotation3d extends GraphicalElement3d {
     return props;
   }
 
-  public static create(iModelDb: IModelDb, args: TextAnnotation3dCreateArgs): TextAnnotation3d {
+  public static create(iModelDb: IModelDb, category: Id64String, model: Id64String, placement: Placement3dProps, textAnnotationData?: TextAnnotationProps, code?: CodeProps): TextAnnotation3d {
     const props: TextAnnotation3dProps = {
       classFullName: this.classFullName,
-      textAnnotationData: JSON.stringify(args.textAnnotationData),
-      placement: args.placement,
-      model: args.model,
-      category: args.category,
-      code: args.code ?? Code.createEmpty(),
+      textAnnotationData: JSON.stringify(textAnnotationData),
+      placement,
+      model,
+      category,
+      code: code ?? Code.createEmpty(),
     }
     return new this(props, iModelDb);
   }
@@ -191,8 +185,109 @@ export class TextAnnotation3d extends GraphicalElement3d {
 
     props.elementGeometryBuilderParams = getElementGeometryBuilderParams(iModelDb, props.placement ?? Placement3d.fromJSON(), props.textAnnotationData, props.category);
   }
+
+  protected override collectReferenceIds(ids: EntityReferenceSet): void {
+    super.collectReferenceIds(ids);
+    const annotation = this.getAnnotation();
+    if (!annotation) {
+      return;
+    }
+    annotation.discloseIds(ids);
+  }
 }
 
+export class AnnotationTextStyle extends DefinitionElement {
+  /** @internal */
+  public static override get className(): string { return "AnnotationTextStyle"; }
+  public description?: string;
+  public settings: TextStyleSettings;
 
+  protected constructor(props: AnnotationTextStyleProps, iModel: IModelDb) {
+    super(props, iModel);
+    this.description = props.description;
+    const settingsProps = AnnotationTextStyle.parseTextStyleSettings(props.settings);
+    this.settings = TextStyleSettings.fromJSON(settingsProps);
+  }
+
+  public static createCode(iModel: IModelDb, definitionModelId: CodeScopeProps, name: string): Code {
+    const codeSpec: CodeSpec = iModel.codeSpecs.getByName(BisCodeSpec.annotationTextStyle);
+    return new Code({ spec: codeSpec.id, scope: definitionModelId, value: name });
+  }
+
+  public static create(iModelDb: IModelDb, definitionModelId: Id64String, name: string, settings?: TextStyleSettingsProps, description?: string) {
+    const props: AnnotationTextStyleProps = {
+      classFullName: this.classFullName,
+      model: definitionModelId,
+      code: this.createCode(iModelDb, definitionModelId, name).toJSON(),
+      description,
+      settings: JSON.stringify(settings),
+    }
+    return new this(props, iModelDb);
+  }
+
+  public override toJSON(): AnnotationTextStyleProps {
+    const props = super.toJSON() as AnnotationTextStyleProps;
+    props.description = this.description;
+    props.settings = JSON.stringify(this.settings.toJSON());
+    return props;
+  }
+
+  public static fromJSON(props: AnnotationTextStyleProps, iModel: IModelDb): AnnotationTextStyle {
+    return new AnnotationTextStyle(props, iModel);
+  }
+
+  protected static override onInsert(arg: OnElementPropsArg): void {
+    super.onInsert(arg);
+    const settingProps = AnnotationTextStyle.parseTextStyleSettings((arg.props as AnnotationTextStyleProps).settings);
+    if (!settingProps) return;
+    const settings = TextStyleSettings.fromJSON(settingProps);
+    if (settings.fontName === "") {
+      throw new Error("Invalid AnnotationTextStyle settings: fontName must be provided");
+    }
+
+    if (settings.lineHeight <= 0 ||
+        settings.stackedFractionScale <= 0 ||
+        settings.subScriptScale <= 0 ||
+        settings.superScriptScale <= 0 ||
+        settings.widthFactor <= 0
+    ) {
+      throw new Error("Invalid AnnotationTextStyle settings: lineHeight, stackedFractionScale, subScriptScale, superScriptScale, and widthFactor must be greater than 0");
+    }
+  }
+
+  protected static override onDelete(arg: OnElementIdArg): void {
+    super.onDelete(arg);
+    const query = `
+      SELECT TextAnnotationData FROM BisCore.TextAnnotation2d
+        UNION ALL
+      SELECT TextAnnotationData FROM BisCore.TextAnnotation3d
+    `;
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    arg.iModel.withPreparedStatement(query, (statement) => {
+      const referenceIds = new EntityReferenceSet();
+      const key = ConcreteEntityTypes.Element + arg.id as EntityReference;
+      while (statement.step() === DbResult.BE_SQLITE_ROW) {
+        const row = statement.getRow();
+        const textAnnotationProps = parseTextAnnotationData(row.textAnnotationData);
+        if (textAnnotationProps) {
+          const textAnnotation = TextAnnotation.fromJSON(textAnnotationProps);
+          textAnnotation.discloseIds(referenceIds);
+          if (referenceIds.has(key)) {
+            throw new Error("Cannot delete AnnotationTextStyle because it is referenced by a TextAnnotation element");
+          }
+        }
+      }
+    });
+  }
+
+  private static parseTextStyleSettings(json: string | undefined): TextStyleSettingsProps | undefined {
+    if (!json) return undefined;
+    try {
+      return JSON.parse(json);
+    } catch {
+      return undefined;
+    }
+  }
+}
 
 

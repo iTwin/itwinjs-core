@@ -87,7 +87,7 @@ class TextEditor implements Decorator {
 
   public appendText(content: string): void {
     this._textBlock.appendRun(TextRun.create({
-      styleName: "",
+      styleId: "",
       styleOverrides: this.runStyle,
       content,
       baselineShift: this.baselineShift,
@@ -96,7 +96,7 @@ class TextEditor implements Decorator {
 
   public appendFraction(numerator: string, denominator: string): void {
     this._textBlock.appendRun(FractionRun.create({
-      styleName: "",
+      styleId: "",
       styleOverrides: this.runStyle,
       numerator,
       denominator,
@@ -105,7 +105,7 @@ class TextEditor implements Decorator {
 
   public appendBreak(): void {
     this._textBlock.appendRun(LineBreakRun.create({
-      styleName: "",
+      styleId: "",
       styleOverrides: this.runStyle,
     }));
   }
