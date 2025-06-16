@@ -1,6 +1,6 @@
 # Change Log - @itwin/ecschema-metadata
 
-This log was last generated on Fri, 13 Jun 2025 20:25:38 GMT and should not be manually modified.
+This log was last generated on Mon, 16 Jun 2025 15:01:38 GMT and should not be manually modified.
 
 ## 5.0.0
 Fri, 13 Jun 2025 20:25:38 GMT
@@ -24,6 +24,11 @@ Fri, 13 Jun 2025 20:25:38 GMT
 - Since the properties on SchemaKey are already readonly, wrapping the type in a Readonly Utility-Type is not necessary. Changed the locater method argument from Readonly<SchemaKey> to SchemaKey and applied the change to all callers and implementations.
 - EC Schemas getItems was using a generic to specify the type of item to be removed, the items were never validated though if the schema items really match the given type. With this change, callers can make sure that if they use the overload with the item type (analog to getItem) only items of that type get's returned.
 - Change core peer dependencies to strict version.
+
+## 4.11.6
+Mon, 16 Jun 2025 15:00:15 GMT
+
+_Version update only_
 
 ## 4.11.5
 Fri, 06 Jun 2025 13:41:18 GMT
