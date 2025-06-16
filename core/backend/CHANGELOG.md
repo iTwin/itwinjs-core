@@ -1,6 +1,94 @@
 # Change Log - @itwin/core-backend
 
-This log was last generated on Wed, 30 Apr 2025 13:16:15 GMT and should not be manually modified.
+This log was last generated on Mon, 16 Jun 2025 15:03:02 GMT and should not be manually modified.
+
+## 5.0.0
+Fri, 13 Jun 2025 20:25:38 GMT
+
+### Updates
+
+- Add Symbols to prevent duplicate instances of package
+- Allow attach/detach db
+- Fix applychangeset issue
+- Update test to reflect correct behaviour
+- Mark iModel edit API as @preview
+- Fix issue with concurrent query where it interrupt statement during prepare
+- Fix regression when using performCheckpoint()
+- Add rebase method for merging changes
+- Fix issue with upgrading from ECDb profile version 4001 to later
+- Adding support for margins to `TextBlock`
+- Bug fix for TextAnnotation justification. Justification now works when there's only 1 line.
+- Remove deprecated in 3.x APIs
+- Resolves CVE-2025-27152
+- new test for 3d linestyle part export
+- Add test for BE_SQLITE_CONSTRAINT_UNIQUE
+- Depreciate ECSqlStatement API
+- Adding floating point tolerance check for text block word wrapping.
+- Removed `ChangedElementsManager`
+- Deprecate `SnapshotIModelRpcImpl`
+- Dropped support for Node 18
+- Changed `Model.parentModel`, `LightLocation.enabled` and some of the `AuxCoordSystem` properties to be optional
+- add CatalogIModel api
+- Added SheetIndex classes to Class Registery
+- Clear iModelDb Caches on abandonChanges
+- Thining iModelPlatform API
+- Remove 3.x Deprecated APIs
+- Update BlobContainerService Comments
+- Add QueryContainersMetadata to BlobContainer
+- pulling a changeset with project extents changes now updates the extents of the opened imodel
+- Added ESM support
+- Enhancing errors for Channels
+- Sending metadata for bentley error over ipc & checking function is not sent as metadata
+- Added error metadata to be sent to ipc frontend
+- Add APIs for converting between ImageSource and ImageBuffer.
+- Fix CloudSqlite.DbAccess.createBlobContainer always overwriting containerType with "property-store".
+- Add TxnManager.deleteAllTxns
+- Add Drawing.scaleFactor.
+- Add new font APIs.
+- Remove deprecated, @internal `nativeDb` fields.
+- Add StandaloneDb.convertToStandalone.
+- Add InsertElementOptions.forceUseId.
+- Add IModelDb methods for exporting ECSchemas.
+- Add simplifyElementGeometry and inlineGeometryParts to IModelDb.
+- Add IModelDb.getLastError.
+- Add TxnManager.getChangeTrackingMemoryUsed.
+- Fix redo string for IPC apps.
+- Drop dependency on @itwin/core-telemetry
+- deprecate some replaced metadata methods
+- Integrate ecschema-metadata package to make additional schema information available.
+- Updated comments to mention new replacements for the deprecated methods forEachProperty, getMetaData, tryGetMetaData and forEachMetaData.
+- Resolve race condition when recursively creating folders.
+- Change core peer dependencies to strict version.
+- Add Beta downloadChangeset and downloadChangesets to BriefcaseManager.
+- Make IModelHostOptions.hubAccess public.
+- Remove V1 Checkpoints API.
+
+## 4.11.6
+Mon, 16 Jun 2025 15:00:15 GMT
+
+_Version update only_
+
+## 4.11.5
+Fri, 06 Jun 2025 13:41:18 GMT
+
+_Version update only_
+
+## 4.11.4
+Tue, 03 Jun 2025 16:15:19 GMT
+
+_Version update only_
+
+## 4.11.3
+Wed, 28 May 2025 13:56:22 GMT
+
+_Version update only_
+
+## 4.11.2
+Tue, 20 May 2025 20:14:45 GMT
+
+### Updates
+
+- Fix applychangeset issue
 
 ## 4.11.1
 Wed, 30 Apr 2025 13:13:21 GMT

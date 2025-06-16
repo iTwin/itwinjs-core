@@ -18,7 +18,6 @@ import {
   ContentRpcRequestOptions,
   ContentSourcesRpcRequestOptions,
   ContentSourcesRpcResult,
-  DefaultContentDisplayTypes,
   DescriptorJSON,
   Diagnostics,
   DisplayLabelRpcRequestOptions,
@@ -54,16 +53,16 @@ import {
   SelectionScopeRpcRequestOptions,
   SingleElementPropertiesRpcRequestOptions,
 } from "@itwin/presentation-common";
-import { buildElementProperties, createCancellableTimeoutPromise, deepReplaceNullsToUndefined } from "@itwin/presentation-common/internal";
+import { createCancellableTimeoutPromise, deepReplaceNullsToUndefined } from "@itwin/presentation-common/internal";
 // @ts-expect-error TS complains about `with` in CJS builds; The path is fine at runtime, but not at compile time
 // eslint-disable-next-line @itwin/import-within-package
 import packageJson from "../../../package.json" with { type: "json" };
 import { PresentationBackendLoggerCategory } from "./BackendLoggerCategory.js";
+import { _presentation_manager_detail } from "./InternalSymbols.js";
 import { Presentation } from "./Presentation.js";
 import { PresentationManager } from "./PresentationManager.js";
 import { DESCRIPTOR_ONLY_CONTENT_FLAG, getRulesetIdObject } from "./PresentationManagerDetail.js";
 import { TemporaryStorage } from "./TemporaryStorage.js";
-import { _presentation_manager_detail } from "./InternalSymbols.js";
 
 const packageJsonVersion = packageJson.version;
 
@@ -391,21 +390,8 @@ export class PresentationRpcImpl extends PresentationRpcInterface implements Dis
     requestOptions: SingleElementPropertiesRpcRequestOptions,
   ): PresentationRpcResponse<ElementProperties | undefined> {
     return this.makeRequest(token, "getElementProperties", { ...requestOptions }, async (options) => {
-      const manager = this.getManager(requestOptions.clientId);
-      const { elementId, ...optionsNoElementId } = options;
-      const content = await manager[_presentation_manager_detail].getContent({
-        ...optionsNoElementId,
-        descriptor: {
-          displayType: DefaultContentDisplayTypes.PropertyPane,
-          contentFlags: ContentFlags.ShowLabels,
-        },
-        rulesetOrId: "ElementProperties",
-        keys: new KeySet([{ className: "BisCore:Element", id: elementId }]),
-      });
-      if (!content || content.contentSet.length === 0) {
-        return undefined;
-      }
-      return buildElementProperties(content.descriptor, content.contentSet[0]);
+      const { clientId, ...restOptions } = options;
+      return this.getManager(clientId).getElementProperties(restOptions);
     });
   }
 

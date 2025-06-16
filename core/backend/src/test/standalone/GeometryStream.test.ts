@@ -20,7 +20,7 @@ import {
   MassPropertiesRequestProps, PhysicalElementProps, Placement3d, Placement3dProps, TextString, TextStringGlyphData, TextStringProps, ThematicGradientMode,
   ThematicGradientSettings, ViewFlags,
 } from "@itwin/core-common";
-import { _nativeDb, DefinitionModel, deleteElementTree, GeometricElement, GeometryPart, LineStyleDefinition, PhysicalObject, SnapshotDb, Subject } from "../../core-backend";
+import { _nativeDb, DefinitionModel, deleteElementTree, GeometricElement, GeometryPart, LineStyleDefinition, PhysicalObject, SnapshotDb, SubCategory, Subject } from "../../core-backend";
 import { createBRepDataProps } from "../GeometryTestUtil";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { Timer } from "../TestUtils";
@@ -1117,6 +1117,68 @@ describe("GeometryStream", () => {
     const usageInfo = imodel[_nativeDb].queryDefinitionElementUsage([partId])!;
     assert.isTrue(usageInfo.geometryPartIds!.includes(partId));
     assert.isTrue(usageInfo.usedIds!.includes(partId));
+  });
+
+  it("create GeometricElement3d with material and sub-category", async () => {
+    const seedElement = imodel.elements.getElement<GeometricElement>("0x1d");
+    assert.exists(seedElement);
+
+    const subCategory = SubCategory.create(imodel, seedElement.category, "testSubCat", { weight: 2 });
+    const subCategoryId = imodel.elements.insertElement(subCategory.toJSON());
+    imodel.saveChanges();
+
+    const params = new GeometryParams(seedElement.category);
+    params.subCategoryId = subCategoryId;
+    params.materialId = "0x5";
+
+    const shape = Loop.create(LineString3d.create(Point3d.create(0, 0, 0), Point3d.create(1, 0, 0), Point3d.create(1, 1, 0), Point3d.create(0, 1, 0), Point3d.create(0, 0, 0)));
+
+    // Test flatbuffer roundtrip...
+    const builderF = new ElementGeometry.Builder();
+    builderF.appendGeometryParamsChange(params);
+    builderF.appendGeometryQuery(shape);
+
+    const elementPropsF = createPhysicalElementProps(seedElement);
+    elementPropsF.elementGeometryBuilderParams = { entryArray: builderF.entries };
+
+    const newIdF = imodel.elements.insertElement(elementPropsF);
+    assert.isTrue(Id64.isValidId64(newIdF));
+    imodel.saveChanges();
+
+    const onGeometry: ElementGeometryFunction = (info: ElementGeometryInfo): void => {
+      assert.isTrue(undefined !== info.entryArray);
+      const it = new ElementGeometry.Iterator(info);
+
+      for (const entry of it) {
+        if (ElementGeometry.isGeometryQueryEntry(entry.value)) {
+          assert.isTrue(params.subCategoryId === entry.geomParams.subCategoryId && params.materialId === entry.geomParams.materialId);
+        }
+      };
+    };
+
+    const status = imodel.elementGeometryRequest({ elementId: newIdF, onGeometry });
+    assert(IModelStatus.Success === status)
+
+    // Test JSON roundtrip...
+    const builderJ = new GeometryStreamBuilder();
+    builderJ.appendGeometryParamsChange(params);
+    builderJ.appendGeometry(shape);
+
+    const elementPropsJ = createPhysicalElementProps(seedElement);
+    elementPropsJ.geom = builderJ.geometryStream;
+
+    const newIdJ = imodel.elements.insertElement(elementPropsJ);
+    assert.isTrue(Id64.isValidId64(newIdJ));
+    imodel.saveChanges();
+
+    const value = imodel.elements.getElementProps<GeometricElementProps>({ id: newIdJ, wantGeometry: true });
+    assert.isDefined(value.geom);
+
+    const itLocal = new GeometryStreamIterator(value.geom!, value.category);
+    for (const entry of itLocal) {
+      assert.equal(entry.primitive.type, "geometryQuery");
+      assert.isTrue(params.subCategoryId === entry.geomParams.subCategoryId && params.materialId === entry.geomParams.materialId);
+    }
   });
 
   it("create GeometricElement3d from world coordinate text using a newly added font", async () => {

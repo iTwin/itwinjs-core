@@ -1,6 +1,38 @@
 # Change Log - @itwin/webgl-compatibility
 
-This log was last generated on Wed, 30 Apr 2025 13:16:15 GMT and should not be manually modified.
+This log was last generated on Mon, 16 Jun 2025 15:03:02 GMT and should not be manually modified.
+
+## 5.0.0
+Fri, 13 Jun 2025 20:25:38 GMT
+
+### Updates
+
+- Upgrade compile target to ES2023 and module to ES2022
+
+## 4.11.6
+Mon, 16 Jun 2025 15:00:15 GMT
+
+_Version update only_
+
+## 4.11.5
+Fri, 06 Jun 2025 13:41:18 GMT
+
+_Version update only_
+
+## 4.11.4
+Tue, 03 Jun 2025 16:15:19 GMT
+
+_Version update only_
+
+## 4.11.3
+Wed, 28 May 2025 13:56:23 GMT
+
+_Version update only_
+
+## 4.11.2
+Tue, 20 May 2025 20:14:46 GMT
+
+_Version update only_
 
 ## 4.11.1
 Wed, 30 Apr 2025 13:13:21 GMT

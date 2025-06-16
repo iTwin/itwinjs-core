@@ -290,8 +290,10 @@ export interface PresentationManagerProps {
     // @deprecated
     activeUnitSystem?: UnitSystemKey;
     clientId?: string;
+    // @deprecated
     defaultFormats?: FormatsMap;
     requestTimeout?: number;
+    // @deprecated
     schemaContextProvider?: (imodel: IModelConnection) => SchemaContext;
 }
 

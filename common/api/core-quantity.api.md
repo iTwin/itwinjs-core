@@ -428,6 +428,8 @@ export interface ParsedQuantity {
 // @beta
 export enum ParseError {
     // (undocumented)
+    BearingAngleOutOfRange = 9,
+    // (undocumented)
     BearingPrefixOrSuffixMissing = 7,
     // (undocumented)
     InvalidParserSpec = 6,
