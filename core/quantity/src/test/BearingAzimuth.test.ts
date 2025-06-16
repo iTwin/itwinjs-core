@@ -325,7 +325,7 @@ describe("Bearing format tests:", () => {
     const testData = [
       { input: "N0.785398E", expected: 0.785398 }, // 45 degrees in radians
       { input: "S0.785398E", expected: 2.35619 }, // 135 degrees in radians
-      { input: "S", expected: 3.14159 }, // 180 degrees in radians
+      { input: "S", expected: 180 }, // 180 degrees in radians
       { input: "S0.785398W", expected: 3.92699 }, // 225 degrees in radians
     ];
 

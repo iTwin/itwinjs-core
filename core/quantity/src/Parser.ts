@@ -391,24 +391,6 @@ export class Parser {
         tokens.push(new ParseToken(wipToken));
       }
     }
-
-    // Handle compact decimal input in Bearing format (e.g., 65.4545 → 65°45′45″)
-    if (format.type === FormatType.Bearing && tokens.length === 1 && typeof tokens[0].value === "number" ) {
-      const value = tokens[0].value;
-      const degrees = Math.floor(value);
-      const remaining = (value - degrees) * 100;
-      const minutes = Math.floor(remaining);
-      const seconds = (remaining - minutes) * 100;
-      // Remove the original compact decimal token (e.g., 65.4545) ,  before pushing split DMS tokens (degrees, minutes, seconds)
-      tokens.pop();
-      
-      tokens.push(
-      new ParseToken(degrees),
-      new ParseToken(minutes),
-      new ParseToken(seconds)
-      );
-    }
-
     return tokens;
   }
 
@@ -640,8 +622,23 @@ export class Parser {
     let sign: 1 | -1 = 1;
 
     let compositeUnitIndex = 0;
+    const units = (format as any)._units;
 
+    if ( format.type === FormatType.Bearing && tokens.length === 1 && typeof tokens[0].value === "number" && Array.isArray(units) &&
+         units.length === 3 && units[0]?.[0]?.name === "Units.ARC_DEG")  {
 
+          const value = tokens[0].value;
+          const degrees = Math.floor(value);
+          const remaining = (value - degrees) * 100;
+          const minutes = Math.floor(remaining);
+          const seconds = (remaining - minutes) * 100;
+          tokens.pop();
+          tokens.push(
+          new ParseToken(degrees),
+          new ParseToken(minutes),
+          new ParseToken(seconds)
+        );
+        }
     for (let i = 0; i < tokens.length; i = i + increment) {
       tokenPair = this.getNextTokenPair(i, tokens);
       if(!tokenPair || tokenPair.length === 0){
