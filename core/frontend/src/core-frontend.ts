@@ -32,7 +32,6 @@ export * from "./FrustumAnimator";
 export * from "./FuzzySearch";
 export * from "./GeoServices";
 export * from "./GlobeAnimator";
-export * from "./GoogleMapsDecorator";
 export * from "./GraphicalEditingScope";
 export * from "./HitDetail";
 export * from "./IModelApp";
@@ -50,9 +49,6 @@ export * from "./NoRenderApp";
 export * from "./NotificationManager";
 export * from "./PerModelCategoryVisibility";
 export * from "./PlanarClipMaskState";
-export {
-  getGooglePhotorealistic3DTilesURL,
-} from "./RealityDataSourceGP3DTImpl";
 export * from "./SelectionSet";
 export * from "./SheetViewState";
 export * from "./SpatialClassifiersState";

@@ -224,9 +224,8 @@ internal;interface;GetAttachmentViewportArgs
 public;function;getCenteredViewRect
 public;function;getCesiumAssetUrl
 public;function;getCompressedJpegFromCanvas
-internal;function;getCopyrights
 internal;function;getFrustumPlaneIntersectionDepthRange
-beta;function;getGooglePhotorealistic3DTilesURL
+beta;function;getGoogle3dTilesUrl
 public;function;getImageSourceFormatForMimeType
 public;function;getImageSourceMimeType
 public;interface;GetPixelDataWorldPointArgs
@@ -243,6 +242,8 @@ internal;interface;GltfReaderArgs
 internal;interface;GltfReaderResult
 beta;interface;GltfTemplate
 internal;interface;GLTimerResult
+beta;class;Google3dTilesProvider
+beta;interface;Google3dTilesProviderOptions
 internal;class;GoogleMapsDecorator
 public;type;GpuMemoryLimit
 public;interface;GpuMemoryLimits
@@ -512,8 +513,6 @@ alpha;function;createKeyFromOrbitGtBlobProps
 alpha;function;createOrbitGtBlobPropsFromKey
 alpha;function;fromKey
 alpha;function;setBaseUrl
-beta;class;RealityDataSourceGP3DTProvider
-beta;interface;RealityDataSourceGP3DTProviderOptions
 beta;interface;RealityDataSourceProvider
 beta;class;RealityDataSourceProviderRegistry
 public;interface;RealityMeshParams

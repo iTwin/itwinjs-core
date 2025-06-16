@@ -9,10 +9,10 @@ import { Frustum } from "@itwin/core-common";
 import { Range3d } from "@itwin/core-geometry";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
-import { LogoDecoration } from "../GoogleMapsDecorator";
+import { LogoDecoration } from "../internal/GoogleMapsDecorator";
 import { IconSprites, Sprite } from "../Sprites";
 import { RealityTile, RealityTileTree, TileAdmin } from "../tile/internal";
-import {  RealityDataSourceGP3DTProvider } from "../RealityDataSource";
+import {  Google3dTilesProvider } from "../RealityDataSource";
 import { createBlankConnection } from "./createBlankConnection";
 import { ScreenViewport } from "../Viewport";
 import { DecorateContext } from "../ViewContext";
@@ -28,7 +28,7 @@ class FakeRealityTile extends RealityTile {
   }
 }
 
-describe("RealityDataSourceGP3DTProvider", () => {
+describe("Google3dTilesProvider", () => {
   const sandbox = sinon.createSandbox();
   let iModel: IModelConnection;
   let getSpriteStub: sinon.SinonStub;
@@ -82,7 +82,7 @@ describe("RealityDataSourceGP3DTProvider", () => {
   });
 
   it("should add attributions", async () => {
-    const provider = new RealityDataSourceGP3DTProvider({ apiKey: "testApiKey" });
+    const provider = new Google3dTilesProvider({ apiKey: "testApiKey" });
     expect(await provider.initialize()).to.be.true;
 
     const table = document.createElement("table");
@@ -94,7 +94,7 @@ describe("RealityDataSourceGP3DTProvider", () => {
   });
 
   it("should decorate Google logo and attributions on screen", async () => {
-    const provider = new RealityDataSourceGP3DTProvider({ apiKey: "testApiKey" });
+    const provider = new Google3dTilesProvider({ apiKey: "testApiKey" });
     expect(await provider.initialize()).to.be.true;
     provider.decorate(context);
 
@@ -106,7 +106,7 @@ describe("RealityDataSourceGP3DTProvider", () => {
   });
 
   it("should not decorate attributions on screen when showCreditsOnscreen is false", async () => {
-    const provider = new RealityDataSourceGP3DTProvider({ apiKey: "testApiKey", showCreditsOnScreen: false });
+    const provider = new Google3dTilesProvider({ apiKey: "testApiKey", showCreditsOnScreen: false });
     expect(await provider.initialize()).to.be.true;
     provider.decorate(context);
 

@@ -7,15 +7,15 @@
  */
 import { BentleyError, BentleyStatus, GuidString, Logger, LoggingMetaData, RealityDataStatus } from "@itwin/core-bentley";
 import { Cartographic, EcefLocation, OrbitGtBlobProps, RealityData, RealityDataFormat, RealityDataProvider, RealityDataSourceKey } from "@itwin/core-common";
+import { Range3d } from "@itwin/core-geometry";
 import { FrontendLoggerCategory } from "./common/FrontendLoggerCategory";
 import { CesiumIonAssetProvider, ContextShareProvider, getCesiumAssetUrl } from "./tile/internal";
 import { RealityDataSourceTilesetUrlImpl } from "./RealityDataSourceTilesetUrlImpl";
 import { RealityDataSourceContextShareImpl } from "./RealityDataSourceContextShareImpl";
 import { RealityDataSourceCesiumIonAssetImpl } from "./RealityDataSourceCesiumIonAssetImpl";
-import { RealityDataSourceGP3DTImpl } from "./RealityDataSourceGP3DTImpl";
+import { RealityDataSourceGoogle3dTilesImpl } from "./internal/RealityDataSourceGoogle3dTilesImpl";
 import { IModelApp } from "./IModelApp";
-import { Range3d } from "@itwin/core-geometry";
-import { getCopyrights, GoogleMapsDecorator } from "./GoogleMapsDecorator";
+import { getCopyrights, GoogleMapsDecorator } from "./internal/GoogleMapsDecorator";
 import { DecorateContext } from "./ViewContext";
 import { ScreenViewport } from "./Viewport";
 
@@ -287,28 +287,28 @@ export class RealityDataSourceProviderRegistry {
 }
 
 /**
- * Options for creating a Google Photorealistic 3D Tiles (GP3DT) reality data source provider.
+ * Options for creating a Google Photorealistic 3D Tiles reality data source provider.
  * @beta
  */
-export interface RealityDataSourceGP3DTProviderOptions {
-  /** Google Map Tiles API Key used to access GP3DT. */
+export interface Google3dTilesProviderOptions {
+  /** Google Map Tiles API Key used to access Google 3D Tiles. */
   apiKey?: string;
-  /** Function that returns an OAuth token for authenticating with GP3DT. This token is expected to not contain the "Bearer" prefix. */
+  /** Function that returns an OAuth token for authenticating with Google 3D Tiles. This token is expected to not contain the "Bearer" prefix. */
   getAuthToken?: () => Promise<string | undefined>;
-  /** If true, the data attributions/copyrights from the GP3DT will be displayed on screen. The Google Maps logo will always be displayed. Defaults to `true`. */
+  /** If true, the data attributions/copyrights from the Google 3D Tiles will be displayed on screen. The Google Maps logo will always be displayed. Defaults to `true`. */
   showCreditsOnScreen?: boolean;
 }
 
 /**
- * Will provide Google Photorealistic 3D Tiles (GP3DT) from Google (in 3dTile format).
- * A valid GP3DT API key or getAuthToken fuction must be supplied when creating this provider.
+ * Will provide Google Photorealistic 3D Tiles (in 3dTile format).
+ * A valid API key or getAuthToken fuction must be supplied when creating this provider.
  * To use this provider, you must register it with [[IModelApp.realityDataSourceProviders]].
  * @beta
  */
-export class RealityDataSourceGP3DTProvider implements RealityDataSourceProvider {
-  /** Google Map Tiles API Key used to access GP3DT. */
+export class Google3dTilesProvider implements RealityDataSourceProvider {
+  /** Google Map Tiles API Key used to access Google 3D Tiles. */
   private _apiKey?: string;
-  /** Function that returns an OAuth token for authenticating with GP3DT. This token is expected to not contain the "Bearer" prefix. */
+  /** Function that returns an OAuth token for authenticating with Google 3D Tiles. This token is expected to not contain the "Bearer" prefix. */
   private _getAuthToken?: () => Promise<string | undefined>;
   /** Decorator for Google Maps logos. */
   private _decorator: GoogleMapsDecorator;
@@ -317,20 +317,20 @@ export class RealityDataSourceGP3DTProvider implements RealityDataSourceProvider
 
   public async createRealityDataSource(key: RealityDataSourceKey, iTwinId: GuidString | undefined): Promise<RealityDataSource | undefined> {
     if (!this._apiKey && !this._getAuthToken) {
-      Logger.logError(loggerCategory, "Either an API key or getAuthToken function are required to create a GP3DT reality data source.");
+      Logger.logError(loggerCategory, "Either an API key or getAuthToken function are required to create a Google3dTilesProvider.");
       return undefined;
     }
-    return RealityDataSourceGP3DTImpl.createFromKey(key, iTwinId, this._apiKey, this._getAuthToken);
+    return RealityDataSourceGoogle3dTilesImpl.createFromKey(key, iTwinId, this._apiKey, this._getAuthToken);
   }
 
-  public constructor(options: RealityDataSourceGP3DTProviderOptions) {
+  public constructor(options: Google3dTilesProviderOptions) {
     this._apiKey = options.apiKey;
     this._getAuthToken = options.getAuthToken;
     this._decorator = new GoogleMapsDecorator(options.showCreditsOnScreen ?? true);
   }
 
   /**
-   * Initialize the GP3DT reality data source provider by activating its decorator, which consists of loading the correct Google Maps logo.
+   * Initialize the Google 3D Tiles reality data source provider by activating its decorator, which consists of loading the correct Google Maps logo.
    * @returns `true` if the decorator was successfully activated, otherwise `false`.
    */
   public async initialize(): Promise<boolean> {
@@ -360,7 +360,6 @@ export class RealityDataSourceGP3DTProvider implements RealityDataSourceProvider
       copyrightMsg += sortedCopyrights.map(([key]) => `<li>${key}</li>`).join("");
       copyrightMsg += "</ul>";
 
-      // Only add Google header and icon if the tileset is GP3DT
       cards.appendChild(IModelApp.makeLogoCard({
         iconSrc: `${IModelApp.publicPath}images/google_on_white_hdpi.png`,
         heading: "Google Photorealistic 3D Tiles",
@@ -368,4 +367,11 @@ export class RealityDataSourceGP3DTProvider implements RealityDataSourceProvider
       }));
     }
   }
+}
+
+/** Returns the URL used for retrieving Google Photorealistic 3D Tiles.
+ * @beta
+ */
+export function getGoogle3dTilesUrl() {
+  return "https://tile.googleapis.com/v1/3dtiles/root.json";
 }

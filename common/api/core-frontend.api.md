@@ -3764,14 +3764,11 @@ export function getCesiumAssetUrl(osmAssetId: number, requestKey: string): strin
 // @public
 export function getCompressedJpegFromCanvas(canvas: HTMLCanvasElement, maxBytes?: number, minCompressionQuality?: number): string | undefined;
 
-// @internal
-export function getCopyrights(vp: ScreenViewport): Map<string, number>;
-
 // @internal (undocumented)
 export function getFrustumPlaneIntersectionDepthRange(frustum: Frustum, plane: Plane3dByOriginAndUnitNormal): Range1d;
 
 // @beta
-export function getGooglePhotorealistic3DTilesURL(): string;
+export function getGoogle3dTilesUrl(): string;
 
 // @public
 export function getImageSourceFormatForMimeType(mimeType: string): ImageSourceFormat | undefined;
@@ -4101,6 +4098,26 @@ export interface GLTimerResult {
     children?: GLTimerResult[];
     label: string;
     nanoseconds: number;
+}
+
+// @beta
+export class Google3dTilesProvider implements RealityDataSourceProvider {
+    constructor(options: Google3dTilesProviderOptions);
+    // (undocumented)
+    addAttributions(cards: HTMLTableElement, vp: ScreenViewport): Promise<void>;
+    // (undocumented)
+    createRealityDataSource(key: RealityDataSourceKey, iTwinId: GuidString | undefined): Promise<RealityDataSource | undefined>;
+    // (undocumented)
+    decorate(_context: DecorateContext): void;
+    initialize(): Promise<boolean>;
+    readonly useCachedDecorations = true;
+}
+
+// @beta
+export interface Google3dTilesProviderOptions {
+    apiKey?: string;
+    getAuthToken?: () => Promise<string | undefined>;
+    showCreditsOnScreen?: boolean;
 }
 
 // @internal
@@ -8148,26 +8165,6 @@ export namespace RealityDataSource {
     export function fromKey(key: RealityDataSourceKey, iTwinId: GuidString | undefined): Promise<RealityDataSource | undefined>;
     // @alpha
     export function setBaseUrl(id: string): void;
-}
-
-// @beta
-export class RealityDataSourceGP3DTProvider implements RealityDataSourceProvider {
-    constructor(options: RealityDataSourceGP3DTProviderOptions);
-    // (undocumented)
-    addAttributions(cards: HTMLTableElement, vp: ScreenViewport): Promise<void>;
-    // (undocumented)
-    createRealityDataSource(key: RealityDataSourceKey, iTwinId: GuidString | undefined): Promise<RealityDataSource | undefined>;
-    // (undocumented)
-    decorate(_context: DecorateContext): void;
-    initialize(): Promise<boolean>;
-    readonly useCachedDecorations = true;
-}
-
-// @beta
-export interface RealityDataSourceGP3DTProviderOptions {
-    apiKey?: string;
-    getAuthToken?: () => Promise<string | undefined>;
-    showCreditsOnScreen?: boolean;
 }
 
 // @beta

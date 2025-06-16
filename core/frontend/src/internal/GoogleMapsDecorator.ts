@@ -4,13 +4,13 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { Point3d } from "@itwin/core-geometry";
-import { CanvasDecoration } from "./render/CanvasDecoration";
-import { DecorateContext } from "./ViewContext";
-import { IModelApp } from "./IModelApp";
-import { Decorator } from "./ViewManager";
-import { IconSprites, Sprite } from "./Sprites";
-import { RealityTile } from "./tile/internal";
-import { ScreenViewport } from "./Viewport";
+import { CanvasDecoration } from "../render/CanvasDecoration";
+import { DecorateContext } from "../ViewContext";
+import { IModelApp } from "../IModelApp";
+import { Decorator } from "../ViewManager";
+import { IconSprites, Sprite } from "../Sprites";
+import { RealityTile } from "../tile/internal";
+import { ScreenViewport } from "../Viewport";
 
 /** Layer types that can be added to the map.
  * @internal

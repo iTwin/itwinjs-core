@@ -8,36 +8,29 @@
 import { BentleyStatus, GuidString } from "@itwin/core-bentley";
 import { IModelError, RealityData, RealityDataFormat, RealityDataSourceKey, RealityDataSourceProps } from "@itwin/core-common";
 
-import { request } from "./request/Request";
-import { PublisherProductInfo, RealityDataSource, SpatialLocationAndExtents } from "./RealityDataSource";
-import { ThreeDTileFormatInterpreter } from "./tile/internal";
-
-/** Returns the URL used for retrieving Google Photorealistic 3D Tiles.
- * @beta
- */
-export function getGooglePhotorealistic3DTilesURL() {
-  return "https://tile.googleapis.com/v1/3dtiles/root.json";
-}
+import { request } from "../request/Request";
+import { PublisherProductInfo, RealityDataSource, SpatialLocationAndExtents } from "../RealityDataSource";
+import { ThreeDTileFormatInterpreter } from "../tile/internal";
 
 /** This class provides access to the reality data provider services.
  * It encapsulates access to a reality data from the Google Photorealistic 3D Tiles service.
- * A valid GP3DT authentication key must be configured for this provider to work (provide the key in the [[RealityDataSourceGP3DTImpl.createFromKey]] method).
+ * A valid Google 3D Tiles authentication key must be configured for this provider to work (provide the key in the [[RealityDataSourceGoogle3dTilesImpl.createFromKey]] method).
 * @internal
 */
-export class RealityDataSourceGP3DTImpl implements RealityDataSource {
+export class RealityDataSourceGoogle3dTilesImpl implements RealityDataSource {
   public readonly key: RealityDataSourceKey;
-  /** The URL that supplies the 3d tiles for displaying the GP3DT tileset. */
+  /** The URL that supplies the 3d tiles for displaying the Google 3D Tiles tileset. */
   private _tilesetUrl: string | undefined;
-  /** Base URL of the GP3DT tileset. Does not include trailing subdirectories. */
+  /** Base URL of the Google 3D Tiles tileset. Does not include trailing subdirectories. */
   private _baseUrl: string = ""
   /** Search parameters that must be passed down to child tile requests. */
   private _searchParams?: URLSearchParams;
-  /** Google Map Tiles API Key used to access GP3DT. */
+  /** Google Map Tiles API Key used to access Google 3D Tiles. */
   private _apiKey?: string;
   /** Function that returns an OAuth token for authenticating with GP3sDT. This token is expected to not contain the "Bearer" prefix. */
   private _getAuthToken?: () => Promise<string | undefined>;
 
-  /** This is necessary for GP3DT tilesets! This tells the iTwin.js tiling system to use the geometric error specified in the GP3DT tileset rather than any of our own. */
+  /** This is necessary for Google 3D Tiles tilesets! This tells the iTwin.js tiling system to use the geometric error specified in the tileset rather than any of our own. */
   public readonly usesGeometricError = true;
 
   /** Construct a new reality data source.
@@ -54,7 +47,7 @@ export class RealityDataSourceGP3DTImpl implements RealityDataSource {
    * Create an instance of this class from a source key and iTwin context.
    */
   public static async createFromKey(sourceKey: RealityDataSourceKey, _iTwinId: GuidString | undefined, apiKey: string | undefined, _getAuthToken?: () => Promise<string | undefined>): Promise<RealityDataSource | undefined> {
-    return new RealityDataSourceGP3DTImpl({ sourceKey }, apiKey, _getAuthToken);
+    return new RealityDataSourceGoogle3dTilesImpl({ sourceKey }, apiKey, _getAuthToken);
   }
 
   public get isContextShare(): boolean {
@@ -80,14 +73,14 @@ export class RealityDataSourceGP3DTImpl implements RealityDataSource {
     return this._tilesetUrl;
   }
 
-  /** Return the URL of the GP3DT tileset with the GP3DT key from the reality data format registry included. */
+  /** Return the URL of the Google 3D Tiles tileset with its API key included. */
   private getTilesetUrlWithKey() {
-    const gp3dtKey = this._apiKey;
+    const google3dTilesKey = this._apiKey;
     if (this._getAuthToken) {
       // If we have a getAuthToken function, no need to append API key to the URL
       return this._tilesetUrl;
     } else {
-      return `${this._tilesetUrl}?key=${gp3dtKey}`;
+      return `${this._tilesetUrl}?key=${google3dTilesKey}`;
     }
   }
 

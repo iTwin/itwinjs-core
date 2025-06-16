@@ -19,7 +19,7 @@ In addition to [already supported Electron versions](../learning/SupportedPlatfo
 
 ## Google Photorealistic 3D Tiles support
 
-iTwin.js now supports displaying Google Photorealistic 3D Tiles (GP3DT) via the new `RealityDataSourceGP3DTProvider`. See [this article](../learning/frontend/GooglePhotorealistic3DTiles.md) for more details.
+iTwin.js now supports displaying Google Photorealistic 3D Tiles via the new `Google3dTilesProvider`. See [this article](../learning/frontend/GooglePhotorealistic3dTiles.md) for more details.
 
 ![Google Photorealistic 3D Tiles - Exton](../learning/frontend/google-photorealistic-3d-tiles-1.jpg "Google Photorealistic 3D Tiles - Exton")
 

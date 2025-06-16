@@ -5,15 +5,15 @@
 
 import { describe, expect, it } from "vitest";
 import { RealityDataSourceKey, RealityDataSourceProps } from "@itwin/core-common";
-import { getGooglePhotorealistic3DTilesURL, RealityDataSourceGP3DTImpl } from "../RealityDataSourceGP3DTImpl";
-import { RealityDataSourceGP3DTProvider } from "../RealityDataSource";
+import { RealityDataSourceGoogle3dTilesImpl } from "../internal/RealityDataSourceGoogle3dTilesImpl";
+import { getGoogle3dTilesUrl, Google3dTilesProvider } from "../RealityDataSource";
 
-describe("RealityDataSourceGP3DTImpl", async () => {
-  const provider = new RealityDataSourceGP3DTProvider({ apiKey: "testApiKey" });
+describe("RealityDataSourceGoogle3dTilesImpl", async () => {
+  const provider = new Google3dTilesProvider({ apiKey: "testApiKey" });
   const rdSourceKey = {
-    provider: "Test GP3DT provider",
+    provider: "Test Google 3D Tiles provider",
     format: "ThreeDTile",
-    id: getGooglePhotorealistic3DTilesURL()
+    id: getGoogle3dTilesUrl()
   }
   const rdSource = await provider.createRealityDataSource(rdSourceKey, undefined);
 
@@ -82,10 +82,10 @@ describe("RealityDataSourceGP3DTImpl", async () => {
 
   describe("getTileUrl", () => {
     const sourceKey = {
-      provider: "Test GP3DT provider",
+      provider: "Test Google 3D Tiles provider",
       format: "ThreeDTile",
     }
-    class TestGP3DTImpl extends RealityDataSourceGP3DTImpl {
+    class TestGoogle3dTilesImpl extends RealityDataSourceGoogle3dTilesImpl {
       public constructor(props: RealityDataSourceProps) {
         super(props, undefined);
       }
@@ -94,8 +94,8 @@ describe("RealityDataSourceGP3DTImpl", async () => {
         super.setBaseUrl(url);
       }
 
-      public static override async createFromKey(key: RealityDataSourceKey): Promise<TestGP3DTImpl | undefined> {
-        const source = await RealityDataSourceGP3DTImpl.createFromKey(key, undefined, undefined) as TestGP3DTImpl;
+      public static override async createFromKey(key: RealityDataSourceKey): Promise<TestGoogle3dTilesImpl | undefined> {
+        const source = await RealityDataSourceGoogle3dTilesImpl.createFromKey(key, undefined, undefined) as TestGoogle3dTilesImpl;
         source.setBaseUrl(key.id);
         return source;
       }
@@ -103,7 +103,7 @@ describe("RealityDataSourceGP3DTImpl", async () => {
 
     it("should get correct URL", async () => {
       const url = "https://tile.googleapis.com/some/sub/dirs/root.json";
-      const source = await TestGP3DTImpl.createFromKey({ ...sourceKey, id: url });
+      const source = await TestGoogle3dTilesImpl.createFromKey({ ...sourceKey, id: url });
       expect(source).toBeDefined();
 
       if (!source)
@@ -118,7 +118,7 @@ describe("RealityDataSourceGP3DTImpl", async () => {
 
     it("should handle tile path starting with slash", async () => {
       const url = "https://tile.googleapis.com/some/sub/dirs/root.json";
-      const source = await TestGP3DTImpl.createFromKey({ ...sourceKey, id: url });
+      const source = await TestGoogle3dTilesImpl.createFromKey({ ...sourceKey, id: url });
       expect(source).toBeDefined();
 
       if (!source)
@@ -133,7 +133,7 @@ describe("RealityDataSourceGP3DTImpl", async () => {
 
     it("should handle paths with leading subdirectories", async () => {
       const url = "https://tile.googleapis.com/some/sub/dirs/root.json?key=key&sessionId=id";
-      const source = await TestGP3DTImpl.createFromKey({ ...sourceKey, id: url });
+      const source = await TestGoogle3dTilesImpl.createFromKey({ ...sourceKey, id: url });
       expect(source).toBeDefined();
 
       if (!source)
@@ -148,7 +148,7 @@ describe("RealityDataSourceGP3DTImpl", async () => {
 
     it("should pass down root search params", async () => {
       const url = "https://tile.googleapis.com/some/sub/dirs/root.json?key=key&sessionId=id";
-      const source = await TestGP3DTImpl.createFromKey({ ...sourceKey, id: url });
+      const source = await TestGoogle3dTilesImpl.createFromKey({ ...sourceKey, id: url });
       expect(source).toBeDefined();
 
       if (!source)
@@ -163,7 +163,7 @@ describe("RealityDataSourceGP3DTImpl", async () => {
 
     it("should pass down root search params while preserving tile's search params", async () => {
       const url = "https://tile.googleapis.com/some/sub/dirs/root.json?key=key";
-      const source = await TestGP3DTImpl.createFromKey({ ...sourceKey, id: url });
+      const source = await TestGoogle3dTilesImpl.createFromKey({ ...sourceKey, id: url });
       expect(source).toBeDefined();
 
       if (!source)
@@ -178,7 +178,7 @@ describe("RealityDataSourceGP3DTImpl", async () => {
 
     it("should pass down root search params while preserving tileset's search params", async () => {
       const url = "https://tile.googleapis.com/some/sub/dirs/root.json?key=key";
-      const source = await TestGP3DTImpl.createFromKey({ ...sourceKey, id: url });
+      const source = await TestGoogle3dTilesImpl.createFromKey({ ...sourceKey, id: url });
       expect(source).toBeDefined();
 
       if (!source)
@@ -193,7 +193,7 @@ describe("RealityDataSourceGP3DTImpl", async () => {
 
     it("should pass down both root search params and tileset search params", async () => {
       const url = "https://tile.googleapis.com/some/sub/dirs/root.json?key=key";
-      const source = await TestGP3DTImpl.createFromKey({ ...sourceKey, id: url });
+      const source = await TestGoogle3dTilesImpl.createFromKey({ ...sourceKey, id: url });
       expect(source).toBeDefined();
 
       if (!source)
@@ -206,7 +206,7 @@ describe("RealityDataSourceGP3DTImpl", async () => {
       expect(returnedUrl2).toEqual("https://tile.googleapis.com/tileset.json?sessionId=456&key=key");
 
       const returnedUrl3 = source.getTileUrl("tile.glb");
-      // Because all tileset search params are stored in RealityDataSourceGP3DTImpl._searchParams, not just root, the tile will recieve both session ids.
+      // Because all tileset search params are stored in RealityDataSourceGoogle3dTilesImpl._searchParams, not just root, the tile will recieve both session ids.
       // In the future we might need a way to pass down "subtree" search params only to the tiles that need them.
       expect(returnedUrl3).toEqual("https://tile.googleapis.com/tile.glb?key=key&sessionId=123&sessionId=456");
     });
