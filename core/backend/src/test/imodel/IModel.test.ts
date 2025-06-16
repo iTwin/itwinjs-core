@@ -3021,6 +3021,191 @@ describe("iModel", () => {
     imodel.close();
   });
 
+  function createElemProps(_imodel: IModelDb, modId: Id64String, catId: Id64String, className: string): GeometricElementProps {
+    // Create props
+    const elementProps: GeometricElementProps = {
+      classFullName: className,
+      model: modId,
+      category: catId,
+      code: Code.createEmpty(),
+    };
+    return elementProps;
+  }
+
+  function insertElement(imodel: IModelDb, mId: Id64String, cId: Id64String, cName: string, propName: string): Id64String {
+    const elementProps = createElemProps(imodel, mId, cId, cName);
+    const geomElement = imodel.elements.createElement(elementProps);
+    (geomElement as any).name = propName; // Add a custom property to the element
+    const id = imodel.elements.insertElement(geomElement.toJSON());
+    assert.isTrue(Id64.isValidId64(id), "insert failed");
+    return id;
+  }
+
+  function validateADrivesBRowCount(imodel: IModelDb, expectedRows: number): void {
+    const reader = IModelTestUtils.executeQuery(imodel, `select * from trs.ADrivesB`);
+    assert.strictEqual(reader.length, expectedRows, `Expected ${expectedRows} rows in trs.ADrivesB table`);
+  }
+
+  function validateNavProp(imodel: IModelDb, expectedNavPropValue: any): void {
+    const reader = IModelTestUtils.executeQuery(imodel, `select NavPropChildB from trs.ChildA`);
+    assert.strictEqual(reader.length, 1);
+    assert.deepEqual(reader[0].navPropChildB, expectedNavPropValue, `Expected NavPropChildB to be "${expectedNavPropValue}"`);
+  }
+
+  it("Validate invalid relationship classes being inserted/updated", async () => {
+    const imodelPath = IModelTestUtils.prepareOutputFile("IModel", "invalidRelationshipClass.bim");
+
+    if (IModelJsFs.existsSync(imodelPath))
+      IModelJsFs.unlinkSync(imodelPath);
+
+    const testImodel = SnapshotDb.createEmpty(imodelPath, { rootSubject: { name: "invalidRelationshipClass" } });
+
+    await testImodel.importSchemaStrings([
+      `<?xml version="1.0" encoding="UTF-8"?>
+      <ECSchema schemaName="TestRelationSchema" alias="trs" version="01.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
+          <ECSchemaReference name="BisCore" version="01.00" alias="bis"/>
+          <ECEntityClass typeName="TestElement">
+              <BaseClass>bis:PhysicalElement</BaseClass>
+              <ECProperty propertyName="Name" typeName="string" />
+          </ECEntityClass>
+
+          <ECEntityClass typeName="ChildA" >
+            <BaseClass>TestElement</BaseClass>
+            <ECNavigationProperty propertyName="NavPropChildB" relationshipName="ADrivesB" direction="Forward" readOnly="True">
+            </ECNavigationProperty>
+          </ECEntityClass>
+
+          <ECEntityClass typeName="ChildB" >
+            <BaseClass>TestElement</BaseClass>
+          </ECEntityClass>
+
+          <ECRelationshipClass typeName="ADrivesB" strengthDirection="Backward" strength="referencing" modifier="Sealed">
+            <Source multiplicity="(0..*)" polymorphic="true" roleLabel="drives">
+              <Class class="ChildA"/>
+            </Source>
+            <Target multiplicity="(0..1)" polymorphic="true" roleLabel="is driven by">
+              <Class class="ChildB"/>
+            </Target>
+          </ECRelationshipClass>
+
+          <ECEntityClass typeName="ChildC">
+            <BaseClass>TestElement</BaseClass>
+          </ECEntityClass>
+
+          <ECEntityClass typeName="ChildD">
+            <BaseClass>TestElement</BaseClass>
+          </ECEntityClass>
+
+          <ECRelationshipClass typeName="CIsRelatedToD" strength="referencing" modifier="Sealed">
+             <BaseClass>bis:ElementRefersToElements</BaseClass>
+            <Source multiplicity="(0..*)" roleLabel="IsRelatedTo" polymorphic="true">
+              <Class class="ChildC"/>
+            </Source>
+            <Target multiplicity="(0..*)" roleLabel="IsRelatedTo (Reversed)" polymorphic="true">
+              <Class class="ChildD"/>
+            </Target>
+          </ECRelationshipClass>
+        </ECSchema>`]);
+
+    // Enable ECSQL write validation and verify it's set
+    const pragmaRows = IModelTestUtils.executeQuery(testImodel, `PRAGMA validate_ecsql_writes=true`);
+    assert.exists(pragmaRows);
+    assert.strictEqual(pragmaRows[0].validate_ecsql_writes, true);
+
+    // Ensure ADrivesB table is empty before test
+    validateADrivesBRowCount(testImodel, 0);
+
+    // Create a physical model and spatial category if needed
+    const [, newModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(testImodel, Code.createEmpty(), true);
+    let spatialCategoryId = SpatialCategory.queryCategoryIdByName(testImodel, IModel.dictionaryId, "MySpatialCategory");
+    if (!spatialCategoryId) {
+      spatialCategoryId = SpatialCategory.insert(
+        testImodel,
+        IModel.dictionaryId,
+        "MySpatialCategory",
+        new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() })
+      );
+    }
+
+    // Insert a ChildB element to be referenced by ChildA
+    const idB = insertElement(testImodel, newModelId, spatialCategoryId, "TestRelationSchema:ChildB", "ChildBElement");
+    assert.isTrue(Id64.isValidId64(idB), "Insert ChildBElement failed");
+
+    testImodel.saveChanges();
+
+    // Prepare base props for ChildA
+    const elementProps = createElemProps(testImodel, newModelId, spatialCategoryId, "TestRelationSchema:ChildA");
+
+    // Test various relationship class names for navigation property
+    const testCases = [
+      { name: "trs:ADrivesB", shouldSucceed: true, expectedRows: 1 },
+      { name: "trs.FakeClass", shouldSucceed: true, expectedRows: 0 },
+      { name: "trs:ChildA", shouldSucceed: false, expectedRows: 0 },
+      { name: "trs:ChildB", shouldSucceed: false, expectedRows: 0 },
+      { name: "trs:CIsRelatedToD", shouldSucceed: false, expectedRows: 0 },
+    ];
+
+    for (const { name, shouldSucceed, expectedRows } of testCases) {
+      const elemRef = new RelatedElement({ id: idB, relClassName: name });
+      (elementProps as any).navPropChildB = elemRef;
+      (elementProps as any).name = "ChildAElement";
+      const geomElement = testImodel.elements.createElement(elementProps);
+
+      let idA: Id64String | undefined;
+      try {
+        idA = testImodel.elements.insertElement(geomElement.toJSON());
+        if (shouldSucceed)
+          assert.isTrue(Id64.isValidId64(idA), `Insert should have succeeded for ${name}.`);
+        else
+          assert.fail(`Insert should have failed for ${name}.`);
+      } catch (err: any) {
+        if (shouldSucceed)
+          assert.fail(`Insert should have succeeded for ${name}. Error: ${err.message}`);
+
+        // If should not succeed, error is expected
+      }
+
+      // Validate row count in ADrivesB table
+      validateADrivesBRowCount(testImodel, expectedRows);
+
+      // If insert succeeded, test update and delete scenarios
+      if (expectedRows === 1 && idA !== undefined) {
+        validateNavProp(testImodel,  { id: idB, relClassName: "TestRelationSchema.ADrivesB" });
+
+        const editElem: any = testImodel.elements.getElement(idA);
+        editElem.navPropChildB = new RelatedElement({ id: idB, relClassName: "trs.FakeClass" });
+        editElem.name= "ChildAElementUpdated";
+        testImodel.elements.updateElement(editElem);
+
+        validateADrivesBRowCount(testImodel, 1);
+        validateNavProp(testImodel,  { id: idB, relClassName: "TestRelationSchema.ADrivesB" });
+
+        const editedElem: any = testImodel.elements.getElement(idA);
+        assert.equal(editedElem.name, "ChildAElementUpdated", `Expected name to be "ChildAElementUpdated" after update, but got "${editedElem.name}"`);
+        assert.strictEqual(editedElem.navPropChildB.relClassName, "TestRelationSchema.ADrivesB", `Expected navPropChildB to be "TestRelationSchema.ADrivesB" after update, but got "${editedElem.navPropChildB}"`);
+
+        // Set the nav prop value to null
+        editElem.name= "ChildAElementNulled";
+        editElem.navPropChildB = null;
+        testImodel.elements.updateElement(editElem);
+
+        validateADrivesBRowCount(testImodel, 0);
+        const nulledElem: any = testImodel.elements.getElement(idA);
+        assert.equal(nulledElem.name, "ChildAElementNulled", `Expected name to be "ChildAElementNulled" after nulling, but got "${nulledElem.name}"`);
+        assert.isUndefined(nulledElem.navPropChildB, `Expected navPropChildB to be undefined after nulling, but got "${nulledElem.navPropChildB}"`);
+
+        if (shouldSucceed) {
+          // Delete the element
+          testImodel.elements.deleteElement(idA);
+          assert.isUndefined(testImodel.elements.tryGetElement(idA), `Expected element with id ${idA} to be deleted, but it still exists.`);
+        }
+      }
+
+      testImodel.abandonChanges();
+    }
+    testImodel.close();
+  });
+  
   function assertSchemaVersion(imodel: IModelDb, schemaName: string, expectedVersion: string) {
     const schemaProps = imodel.getSchemaProps(schemaName);
     assert.isDefined(schemaProps);
