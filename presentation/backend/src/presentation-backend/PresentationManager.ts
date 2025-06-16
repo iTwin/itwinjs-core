@@ -295,7 +295,7 @@ export interface PresentationManagerProps {
   defaultFormats?: FormatsMap;
 
   /**
-   * A custom formats provider to use for formatting property values with units. Defaults to [SchemaFormatsProvider]($core-quantity) if
+   * A custom formats provider to use for formatting property values with units. Defaults to [SchemaFormatsProvider]($ecschema-metadata) if
    * not supplied.
    */
   formatsProvider?: FormatsProvider;
