@@ -759,6 +759,17 @@ export class Parser {
     return this.parseAndProcessTokens(inString, format, unitsConversions);
   }
 
+  /** The value of special direction is always in degrees, try to find the unit conversion for that. */
+  private static processSpecialBearingDirection(mag: number, spec: ParserSpec): QuantityParseResult {
+    const specialDirUnit = spec.unitConversions.find((unitConversion) => unitConversion.name === "Units.ARC_DEG");
+    if (!specialDirUnit)
+      return { ok: false, error: ParseError.UnknownUnit };
+    const preferredUnit = spec.outUnit;
+    const conversion = this.tryFindUnitConversion(specialDirUnit.label, spec.unitConversions, preferredUnit);
+    if (!conversion) return { ok: true, value: mag };
+    return { ok: true, value: applyConversion(mag, conversion) };
+  }
+
   private static parseBearingFormat(inString: string, spec: ParserSpec): QuantityParseResult {
     const specialDirections: Record<string, number> = {
       n: 0,
@@ -805,7 +816,7 @@ export class Parser {
       const suffix = matchedSuffix?.toLowerCase() || "";
       const specialDirection = specialDirections[`${prefix}${suffix}`];
       if (specialDirection !== undefined)
-        return { ok: true, value: specialDirection };
+        return this.processSpecialBearingDirection(specialDirection, spec);
     }
 
     if (matchedPrefix === null || matchedSuffix === null) {

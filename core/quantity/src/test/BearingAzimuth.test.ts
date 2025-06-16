@@ -326,7 +326,6 @@ describe("Bearing format tests:", () => {
     const testData = [
       { input: "N0.785398E", expected: 0.785398 }, // 45 degrees in radians
       { input: "S0.785398E", expected: 2.35619 }, // 135 degrees in radians
-      { input: "S", expected: 180 }, // 180 degrees in radians
       { input: "S0.785398W", expected: 3.92699 }, // 225 degrees in radians
     ];
 
@@ -361,7 +360,6 @@ describe("Bearing format tests:", () => {
       },
     };
 
-    const unitsProvider = new TestUnitsProvider();
     const bearingFormat = new Format("bearing-roundtrip");
     await bearingFormat.fromJSON(unitsProvider, bearingFormatProps);
 
@@ -385,24 +383,31 @@ describe("Bearing format tests:", () => {
 
   it("should handle special formats for bearing strings", async () => {
     const bearingDMSParser = await ParserSpec.create(bearingDMS, unitsProvider, degree);
+    const bearingDMSParserRadOut = await ParserSpec.create(bearingDMS, unitsProvider, rad);
 
     const testData = [
-      { input: "N", expected: 0.0 },
-      { input: "NE", expected: 45.0 },
-      { input: "E", expected: 90.0 },
-      { input: "SE", expected: 135.0 },
-      { input: "S", expected: 180.0 },
-      { input: "SW", expected: 225.0 },
-      { input: "W", expected: 270.0 },
-      { input: "NW", expected: 315.0 },
+      { input: "N", expectedDeg: 0.0, expectedRad: 0.0 },
+      { input: "NE", expectedDeg: 45.0, expectedRad: 0.785398 },
+      { input: "E", expectedDeg: 90.0, expectedRad: 1.570796 },
+      { input: "SE", expectedDeg: 135.0, expectedRad: 2.356194 },
+      { input: "S", expectedDeg: 180.0, expectedRad: 3.141592 },
+      { input: "SW", expectedDeg: 225.0, expectedRad: 3.926990 },
+      { input: "W", expectedDeg: 270.0, expectedRad: 4.712388 },
+      { input: "NW", expectedDeg: 315.0, expectedRad: 5.497787 },
     ];
 
     for (const entry of testData) {
-      const parseResult = Parser.parseQuantityString(entry.input, bearingDMSParser);
-      if (!Parser.isParsedQuantity(parseResult)) {
+      const parseResultDeg = Parser.parseQuantityString(entry.input, bearingDMSParser);
+      if (!Parser.isParsedQuantity(parseResultDeg)) {
         expect.fail(`Expected a parsed quantity for input ${entry.input}`);
       }
-      expect(parseResult.value).to.be.eql(entry.expected);;
+      expect(parseResultDeg.value).closeTo(entry.expectedDeg, 0.01);
+
+      const parseResultRad = Parser.parseQuantityString(entry.input, bearingDMSParserRadOut);
+      if (!Parser.isParsedQuantity(parseResultRad)) {
+        expect.fail(`Expected a parsed quantity for input ${entry.input}`);
+      }
+      expect(parseResultRad.value).closeTo(entry.expectedRad, 0.01);
     }
   });
 
