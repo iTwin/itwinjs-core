@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-common",
+      "comment": "Make CreateEmptyStandaloneIModelProps public",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-common"
+}
