@@ -1,6 +1,13 @@
 # Change Log - @itwin/core-frontend
 
-This log was last generated on Fri, 06 Jun 2025 13:41:18 GMT and should not be manually modified.
+This log was last generated on Mon, 16 Jun 2025 15:00:15 GMT and should not be manually modified.
+
+## 4.11.6
+Mon, 16 Jun 2025 15:00:15 GMT
+
+### Updates
+
+- Honor maximumScreenSpaceError specified in tileset.
 
 ## 4.11.5
 Fri, 06 Jun 2025 13:41:18 GMT
