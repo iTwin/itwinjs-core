@@ -25,7 +25,7 @@ import { RpcRequestsHandler } from "@itwin/presentation-common/internal";
 /**
  * Properties for creating [[SelectionScopesManager]].
  * @public
- * @deprecated in 5.0. Use `computeSelection` from [@itwin/unified-selection](https://github.com/iTwin/presentation/blob/master/packages/unified-selection/README.md#selection-scopes) package instead.
+ * @deprecated in 5.0 - will not be removed until after 2026-06-13. Use `computeSelection` from [@itwin/unified-selection](https://github.com/iTwin/presentation/blob/master/packages/unified-selection/README.md#selection-scopes) package instead.
  */
 export interface SelectionScopesManagerProps {
   /** RPC handler to use for requesting selection scopes */
@@ -45,7 +45,7 @@ export interface SelectionScopesManagerProps {
  * and can compute logical selection based on element IDs and selection scope.
  *
  * @public
- * @deprecated in 5.0. Use `computeSelection` from [@itwin/unified-selection](https://github.com/iTwin/presentation/blob/master/packages/unified-selection/README.md#selection-scopes) package instead.
+ * @deprecated in 5.0 - will not be removed until after 2026-06-13. Use `computeSelection` from [@itwin/unified-selection](https://github.com/iTwin/presentation/blob/master/packages/unified-selection/README.md#selection-scopes) package instead.
  */
 export class SelectionScopesManager {
   private _rpcRequestsHandler: Pick<RpcRequestsHandler, "getSelectionScopes" | "computeSelection">;
@@ -119,7 +119,7 @@ export class SelectionScopesManager {
  * calculating selection with scope.
  *
  * @public
- * @deprecated in 5.0. Use `computeSelection` from [@itwin/unified-selection](https://github.com/iTwin/presentation/blob/master/packages/unified-selection/README.md#selection-scopes) package instead.
+ * @deprecated in 5.0 - will not be removed until after 2026-06-13. Use `computeSelection` from [@itwin/unified-selection](https://github.com/iTwin/presentation/blob/master/packages/unified-selection/README.md#selection-scopes) package instead.
  */
 export function createSelectionScopeProps(scope: SelectionScopeProps | SelectionScope | string | undefined): SelectionScopeProps {
   if (!scope) {
