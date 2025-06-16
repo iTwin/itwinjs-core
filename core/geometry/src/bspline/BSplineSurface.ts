@@ -1053,6 +1053,7 @@ export class BSplineSurface3dH extends BSpline2dNd implements BSplineSurface3dQu
     const result = {
       points: Point3dArray.unpackNumbersToNestedArraysIJK(this.coffs, 4, this.numPolesUV(0)),
       numCartesianDimensions: 3,
+      weighStyle: WeightStyle.WeightsAlreadyAppliedToCoordinates, // @deprecated in 4.x - will not be removed until after 2026-06-13. Use weightStyle instead.
       weightStyle: WeightStyle.WeightsAlreadyAppliedToCoordinates,
     };
     return result;
