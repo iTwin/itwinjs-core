@@ -1,6 +1,6 @@
 # Change Log - @itwin/rpcinterface-full-stack-tests
 
-This log was last generated on Fri, 13 Jun 2025 20:25:38 GMT and should not be manually modified.
+This log was last generated on Mon, 16 Jun 2025 15:01:38 GMT and should not be manually modified.
 
 ## 5.0.0
 Fri, 13 Jun 2025 20:25:38 GMT
@@ -11,6 +11,11 @@ Fri, 13 Jun 2025 20:25:38 GMT
 - Resolves CVE-2025-27152
 - change the assert in the test 'should be able to cancel a snap' to match the error message thrown on the frontend when a snap is successfully cancelled.
 - Deprecate unified selection related APIs.
+
+## 4.11.6
+Mon, 16 Jun 2025 15:00:15 GMT
+
+_Version update only_
 
 ## 4.11.5
 Fri, 06 Jun 2025 13:41:18 GMT
