@@ -32,6 +32,7 @@ export class RealityDataSourceGoogle3dTilesImpl implements RealityDataSource {
 
   /** This is necessary for Google 3D Tiles tilesets! This tells the iTwin.js tiling system to use the geometric error specified in the tileset rather than any of our own. */
   public readonly usesGeometricError = true;
+  public readonly maximumScreenSpaceError = 16;
 
   /** Construct a new reality data source.
    * @param props JSON representation of the reality data source
