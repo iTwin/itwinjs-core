@@ -1,6 +1,32 @@
 # Change Log - @itwin/presentation-backend
 
-This log was last generated on Fri, 06 Jun 2025 13:44:02 GMT and should not be manually modified.
+This log was last generated on Mon, 16 Jun 2025 15:03:02 GMT and should not be manually modified.
+
+## 5.0.0
+Fri, 13 Jun 2025 20:25:38 GMT
+
+### Updates
+
+- Add Symbols to prevent duplicate instances of package
+- Depreciate ECSqlStatement API
+- Dropped support for Node 18
+- Fix `getDisplayLabelDefinitions` implementation not taking into account different formats and casings of full class name.
+- Added ESM support
+- Add `type: "module"` to `package.json` to tell Node.js to load this package as ESM by default.
+- Deprecate unified selection related APIs.
+- Log ruleset ID rather than the whole ruleset in INFO level logs
+- Fix Presentation RPC returning details contained within thrown errors. Instead of doing that, we now re-throw the error and let RPC system handle it (by re-throwing a generic error instead).
+- Add `PresentationManager.getElementProperties` overload for specifying elements by id rather than class name.
+- Remove `@internal` APIs from public barrel exports file.
+- Clean up APIs deprecated in 3.x
+- Clean up APIs deprecated in 3.x
+- Return errors in a way native to our RPC system. For web cases that also means proper HTTP response status codes.
+- Change core peer dependencies to strict version.
+
+## 4.11.6
+Mon, 16 Jun 2025 15:00:15 GMT
+
+_Version update only_
 
 ## 4.11.5
 Fri, 06 Jun 2025 13:41:18 GMT

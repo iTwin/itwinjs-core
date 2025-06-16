@@ -2,6 +2,186 @@
   "name": "@itwin/core-backend",
   "entries": [
     {
+      "version": "5.0.0",
+      "tag": "@itwin/core-backend_v5.0.0",
+      "date": "Fri, 13 Jun 2025 20:25:38 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add Symbols to prevent duplicate instances of package"
+          },
+          {
+            "comment": "Allow attach/detach db"
+          },
+          {
+            "comment": "Fix applychangeset issue"
+          },
+          {
+            "comment": "Update test to reflect correct behaviour"
+          },
+          {
+            "comment": "Mark iModel edit API as @preview"
+          },
+          {
+            "comment": "Fix issue with concurrent query where it interrupt statement during prepare"
+          },
+          {
+            "comment": "Fix regression when using performCheckpoint()"
+          },
+          {
+            "comment": "Add rebase method for merging changes"
+          },
+          {
+            "comment": "Fix issue with upgrading from ECDb profile version 4001 to later"
+          },
+          {
+            "comment": "Adding support for margins to `TextBlock`"
+          },
+          {
+            "comment": "Bug fix for TextAnnotation justification. Justification now works when there's only 1 line."
+          },
+          {
+            "comment": "Remove deprecated in 3.x APIs"
+          },
+          {
+            "comment": "Resolves CVE-2025-27152"
+          },
+          {
+            "comment": "new test for 3d linestyle part export"
+          },
+          {
+            "comment": "Add test for BE_SQLITE_CONSTRAINT_UNIQUE"
+          },
+          {
+            "comment": "Depreciate ECSqlStatement API"
+          },
+          {
+            "comment": "Adding floating point tolerance check for text block word wrapping."
+          },
+          {
+            "comment": "Removed `ChangedElementsManager`"
+          },
+          {
+            "comment": "Deprecate `SnapshotIModelRpcImpl`"
+          },
+          {
+            "comment": "Dropped support for Node 18"
+          },
+          {
+            "comment": "Changed `Model.parentModel`, `LightLocation.enabled` and some of the `AuxCoordSystem` properties to be optional"
+          },
+          {
+            "comment": "add CatalogIModel api"
+          },
+          {
+            "comment": "Added SheetIndex classes to Class Registery"
+          },
+          {
+            "comment": "Clear iModelDb Caches on abandonChanges"
+          },
+          {
+            "comment": "Thining iModelPlatform API"
+          },
+          {
+            "comment": "Remove 3.x Deprecated APIs"
+          },
+          {
+            "comment": "Update BlobContainerService Comments"
+          },
+          {
+            "comment": "Add QueryContainersMetadata to BlobContainer"
+          },
+          {
+            "comment": "pulling a changeset with project extents changes now updates the extents of the opened imodel"
+          },
+          {
+            "comment": "Added ESM support"
+          },
+          {
+            "comment": "Enhancing errors for Channels"
+          },
+          {
+            "comment": "Sending metadata for bentley error over ipc & checking function is not sent as metadata"
+          },
+          {
+            "comment": "Added error metadata to be sent to ipc frontend"
+          },
+          {
+            "comment": "Add APIs for converting between ImageSource and ImageBuffer."
+          },
+          {
+            "comment": "Fix CloudSqlite.DbAccess.createBlobContainer always overwriting containerType with \"property-store\"."
+          },
+          {
+            "comment": "Add TxnManager.deleteAllTxns"
+          },
+          {
+            "comment": "Add Drawing.scaleFactor."
+          },
+          {
+            "comment": "Add new font APIs."
+          },
+          {
+            "comment": "Remove deprecated, @internal `nativeDb` fields."
+          },
+          {
+            "comment": "Add StandaloneDb.convertToStandalone."
+          },
+          {
+            "comment": "Add InsertElementOptions.forceUseId."
+          },
+          {
+            "comment": "Add IModelDb methods for exporting ECSchemas."
+          },
+          {
+            "comment": "Add simplifyElementGeometry and inlineGeometryParts to IModelDb."
+          },
+          {
+            "comment": "Add IModelDb.getLastError."
+          },
+          {
+            "comment": "Add TxnManager.getChangeTrackingMemoryUsed."
+          },
+          {
+            "comment": "Fix redo string for IPC apps."
+          },
+          {
+            "comment": "Drop dependency on @itwin/core-telemetry"
+          },
+          {
+            "comment": "deprecate some replaced metadata methods"
+          },
+          {
+            "comment": "Integrate ecschema-metadata package to make additional schema information available."
+          },
+          {
+            "comment": "Updated comments to mention new replacements for the deprecated methods forEachProperty, getMetaData, tryGetMetaData and forEachMetaData."
+          },
+          {
+            "comment": "Resolve race condition when recursively creating folders."
+          },
+          {
+            "comment": "Change core peer dependencies to strict version."
+          },
+          {
+            "comment": "Add Beta downloadChangeset and downloadChangesets to BriefcaseManager."
+          },
+          {
+            "comment": "Make IModelHostOptions.hubAccess public."
+          },
+          {
+            "comment": "Remove V1 Checkpoints API."
+          }
+        ]
+      }
+    },
+    {
+      "version": "4.11.6",
+      "tag": "@itwin/core-backend_v4.11.6",
+      "date": "Mon, 16 Jun 2025 15:00:15 GMT",
+      "comments": {}
+    },
+    {
       "version": "4.11.5",
       "tag": "@itwin/core-backend_v4.11.5",
       "date": "Fri, 06 Jun 2025 13:41:18 GMT",
