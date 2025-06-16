@@ -200,7 +200,7 @@ export interface CreateStandaloneIModelProps {
 }
 
 /** The options that can be specified when creating an *empty* standalone iModel.
- * @see [standalone.createEmpty]($backend)
+ * @see [StandaloneDb.createEmpty]($backend)
  * @public
  */
 export type CreateEmptyStandaloneIModelProps = CreateIModelProps & CreateStandaloneIModelProps;
