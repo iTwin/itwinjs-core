@@ -174,10 +174,10 @@ public;class;ContourStyle
 public;type;ContourStyleProperties
 public;interface;ContourStyleProps
 public;type;CreateEmptySnapshotIModelProps
-internal;type;CreateEmptyStandaloneIModelProps
+public;type;CreateEmptyStandaloneIModelProps
 public;interface;CreateIModelProps
 public;interface;CreateSnapshotIModelProps
-internal;interface;CreateStandaloneIModelProps
+public;interface;CreateStandaloneIModelProps
 internal;const;CURRENT_INVOCATION
 internal;const;CURRENT_REQUEST
 internal;enum;CurrentImdlVersion
