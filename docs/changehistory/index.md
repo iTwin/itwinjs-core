@@ -120,7 +120,7 @@ Consult the [learning article](../learning/backend/Fonts.md) for details and exa
 
 #### Text Block Margins
 
-You can now surround a [TextBlock]($core-common) with padding by setting its [TextBlockMargins]($core-common). When [layoutTextBlock]($core-backend) computes [TextBlockLayout.range]($core-backend), it will expand the bounding box to include the margins. [ProduceTextAnnotationGeometryArgs.debugAnchorPointAndRange]($core-backend) now produces two bounding boxes: one tightly fitted to the text, and a second expanded to include the margins.
+You can now surround a [TextBlock]($core-common) with padding by setting its [TextBlockMargins]($core-common). When [layoutTextBlock]($core-backend) computes `TextBlockLayout.range`, it will expand the bounding box to include the margins. [ProduceTextAnnotationGeometryArgs.debugAnchorPointAndRange]($core-backend) now produces two bounding boxes: one tightly fitted to the text, and a second expanded to include the margins.
 
 ### Backend
 
@@ -926,7 +926,7 @@ This applies to `SchemaContext.getSchemaItem/Sync`, `Schema.getItem/Sync` and `S
 
 ### Changes to getElement and getModel
 
-The [IModelDb.Elements.getElement]($backend) and [IModelD.Modelss.getModel]($backend) apis have been optimized on the backend. Element reads and Model reads should be largely unaffected and should function exactly as they have before, with some minor exceptions listed below.
+The [IModelDb.Elements.getElement]($backend) and [IModelD.Models.getModel]($backend) apis have been optimized on the backend. Element reads and Model reads should be largely unaffected and should function exactly as they have before, with some minor exceptions listed below.
 
 List of changes to how Entity props are returned by `getElement()` and `getModel()`:
 
