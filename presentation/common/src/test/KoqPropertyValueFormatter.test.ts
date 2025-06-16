@@ -130,8 +130,7 @@ describe("KoqPropertyValueFormatter", () => {
         expect(formatted).to.be.eq(`1,5 ${usSurveyUnit.label}`);
       });
 
-      // FIXME: Fails because `SchemaFormatsProvider` doesn't have these changes: https://github.com/iTwin/itwinjs-core/pull/6262
-      it.skip("formats value using 'Metric' system when KoQ supports metric and SI", async () => {
+      it("formats value using 'Metric' system when KoQ supports metric and SI", async () => {
         const formatted = await formatter.format(1.5, {
           koqName: "TestSchema:TestKoqMetricAndSi",
           unitSystem: "metric",
