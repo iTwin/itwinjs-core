@@ -8,6 +8,7 @@
 
 import { ECSchemaNamespaceUris } from "../Constants";
 import { SchemaItemProps } from "../Deserialization/JsonProps";
+import { ObjectLoadingController } from "../utils/ObjectLoadingController";
 import { AbstractSchemaItemType, SchemaItemType, schemaItemTypeToXmlString, SupportedSchemaItemType } from "../ECObjects";
 import { ECSchemaError, ECSchemaStatus } from "../Exception";
 import { ECVersion, SchemaItemKey } from "../SchemaKey";
@@ -32,6 +33,7 @@ export abstract class SchemaItem {
   private _key: SchemaItemKey;
   private _description?: string;
   private _label?: string;
+  private _loadingController?: ObjectLoadingController;
 
   /** @internal */
   constructor(schema: Schema, name: string) {
@@ -44,6 +46,18 @@ export abstract class SchemaItem {
   public get key() { return this._key; }
   public get label() { return this._label; }
   public get description() { return this._description; }
+
+  /** Returns the ObjectLoadingController for this Schema. Maybe undefined.
+   * @beta*/
+  public get loadingController(): ObjectLoadingController | undefined{
+    return this._loadingController;
+  }
+
+  /** Sets the ObjectLoadingController for this Schema.
+   * @beta*/
+  public set loadingController(controller: ObjectLoadingController) {
+    this._loadingController = controller;
+  }
 
   // Proposal: Create protected setter methods for description and label? For UnitSystems as an example, where using createFromProps isn't that necessary and can just use basic create().
   /**

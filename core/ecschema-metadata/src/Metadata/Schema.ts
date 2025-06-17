@@ -34,6 +34,7 @@ import { SchemaItem } from "./SchemaItem";
 import { Unit } from "./Unit";
 import { UnitSystem } from "./UnitSystem";
 import { ECSchemaNamespaceUris } from "../Constants";
+import { ObjectLoadingController } from "../utils/ObjectLoadingController";
 /**
  * @public @preview
  */
@@ -49,6 +50,7 @@ export class Schema implements CustomAttributeContainerProps {
   private _customAttributes?: Map<string, CustomAttribute>;
   private _originalECSpecMajorVersion?: number;
   private _originalECSpecMinorVersion?: number;
+  private _loadingController?: ObjectLoadingController;
 
   /**
    * Constructs an empty Schema with the given name and version in the provided context.
@@ -149,6 +151,16 @@ export class Schema implements CustomAttributeContainerProps {
 
   /** Returns the schema context this schema is within. */
   public get context(): SchemaContext { return this._context; }
+
+  /** Returns the ObjectLoadingController for this Schema. Maybe undefined. */
+  public get loadingController(): ObjectLoadingController | undefined{
+    return this._loadingController;
+  }
+
+  /** Sets the ObjectLoadingController for this Schema. */
+  public set loadingController(controller: ObjectLoadingController) {
+    this._loadingController = controller;
+  }
 
   /**
    * Returns a SchemaItemKey given the item name and the schema it belongs to
