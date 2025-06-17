@@ -88,8 +88,9 @@ export interface TextStyleSettingsProps {
    * Default: 1.0
    */
   widthFactor?: number;
-  /** The number of spaces to use for a tab character.
-   * Default: 4
+  /** The size (in meters) used to calculate the tab stops in a run.
+   * These are equally spaced from the left edge of the TextBlock.
+   * Default: 4 meters.
    */
   tabInterval?: number;
 }
