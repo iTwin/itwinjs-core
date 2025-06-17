@@ -14,7 +14,7 @@ Instead of an API key, you can also supply a `getAuthToken` function:
 [[include:GooglePhotorealistic3dTiles_providerGetAuthToken]]
 ```
 
-You can also use the [Google3dTilesProviderOptions.showCreditsOnScreen]($frontend) flag to control the display of the data attributions on-screen. It is set to `true` by default.
+You can also use the [Google3dTilesProviderOptions]($frontend) `showCreditsOnScreen` flag to control the display of the data attributions on-screen. It is set to `true` by default.
 
 ![Google Photorealistic 3D Tiles - Exton](./google-photorealistic-3d-tiles-1.jpg "Google Photorealistic 3D Tiles - Exton")
 
