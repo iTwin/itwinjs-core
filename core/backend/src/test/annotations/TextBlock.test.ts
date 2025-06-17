@@ -42,7 +42,7 @@ function isIntlSupported(): boolean {
   return !ProcessDetector.isMobileAppBackend;
 }
 
-describe.only("layoutTextBlock", () => {
+describe("layoutTextBlock", () => {
   it("resolves TextStyleSettings from combination of TextBlock and Run", () => {
     const textBlock = TextBlock.create({ styleName: "block", styleOverrides: { widthFactor: 34, color: 0x00ff00 } });
     const run0 = TextRun.create({ content: "run0", styleName: "run", styleOverrides: { lineHeight: 56, color: 0xff0000 } });
@@ -156,22 +156,11 @@ describe.only("layoutTextBlock", () => {
     expect(tb.range.low.y).to.equal(-(lineSpacingFactor * 2 + lineHeight * 3));
   });
 
-  it.only("applies tab shifts", () => {
+  it("applies tab shifts", () => {
     const lineHeight = 1;
     const tabInterval = 6;
     const styleName = "testStyle";
     const textBlock = TextBlock.create({ styleName, styleOverrides: { lineHeight, tabInterval } });
-
-    /* Text Block to produce: (_* represents a tab space)
-      ______a
-      ______bc
-      a_____a
-      bc____bc
-      cde___cde
-      cdefg_cde
-      cdefgh______cde
-      cdefghi_____cde
-    */
 
     // Appends a line that looks like `stringOne` TAB `stringTwo` LINEBREAK
     const appendLine = (stringOne: string, stringTwo: string, wantLineBreak: boolean = true) => {
@@ -181,6 +170,7 @@ describe.only("layoutTextBlock", () => {
       if (wantLineBreak) textBlock.appendRun(LineBreakRun.create({ styleName }));
     }
 
+    // The extra whitespace is intentional to show where the tab stops should be.
     appendLine("",      "a");
     appendLine("",      "bc");
     appendLine("a",     "a");
