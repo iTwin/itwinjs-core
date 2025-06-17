@@ -176,7 +176,7 @@ describe("Bearing format tests:", () => {
     }
   });
 
-  it("should correctly parse supported and reject unsupported bearing strings", async () => {
+  it("should correctly parse and roundtrip supported and reject unsupported bearing strings", async () => {
     const bearingFormatProps: FormatProps = {
       minWidth: 2,
       precision: 0,
@@ -198,60 +198,70 @@ describe("Bearing format tests:", () => {
     const bearingFormat = new Format("bearing-flexible-parser");
     await bearingFormat.fromJSON(unitsProvider, bearingFormatProps);
     const bearingParser = await ParserSpec.create(bearingFormat, unitsProvider, degree);
-    const bearingFormatter = await FormatterSpec.create("bearing-flexible-formatter", bearingFormat, unitsProvider, rad);
+    const bearingFormatter = await FormatterSpec.create("bearing-flexible-formatter", bearingFormat, unitsProvider, {
+      name: "Units.ARC_DEG",
+      label: "°",
+      phenomenon: "Angle",
+      system: "si",
+      isValid: true,
+    });
 
-     const validTestData = [
+    const validTestData = [
       { input: "N45 45 45E", expected:  45.7625, expectedText: "N45°45'45\"E" },
-      { input: "N45 45 45e", expected:  45.7625 },
-      { input: "n45 45 45E", expected:  45.7625 },
-      { input: "n45 45 45e", expected:  45.7625 },
-      { input: "n 45 45 45 e", expected: 45.7625 },
-      { input: "n45.4545e", expected:  45.765 },
-      { input: "n 45.4545 e", expected:  45.765 },
-      { input: "n65.4545e",  expected:  65.7625 },
-      { input: "n65 45 45e", expected:  65.7625 },
-      { input: "n35 45 45.101e", expected: 35.7625280 },
-      { input: "n85 45 45.9e", expected: 85.76275 },
-      { input: "n85 45 45e", expected: 85.7625 },
-      { input: "n85 60 60e", expected: 86.0167 },
-      { input: "n85 45 65e", expected: 85.76275 },
-      { input: "s65:40:00w", expected: 245.667 },
-      { input: "s45e", expected: 135 },
-      { input: "S45E", expected: 135 },
-      { input: "s45.45e",    expected: 134.25 },
-      { input: "s45 45 00e", expected: 134.25 },
-      { input: "s 45 45 00 e", expected: 134.25 },
-      { input: "s45d45m45se", expected: 134.2375 },
-      { input: "s45d45m45.0se", expected: 134.2375 },
-      { input: "s45d45m45.0e", expected: 134.2375 },
-      { input: "NE", expected: 45.0 },
-      { input: "SE", expected: 135.0 },
-      { input: "SW", expected: 225.0 },
-      { input: "NW", expected: 315.0 },
-      { input: "N45E", expected: 45.0 },
-      { input: "S45W", expected: 225.0 },
-      { input: "N45W", expected: 315.0 },
-      { input: "S45E", expected: 135.0 },
-      { input: "nE", expected: 45.0 },
-      { input: "sW", expected: 225.0 },
-      { input: "nW", expected: 315.0 },
-      { input: "sE", expected: 135.0 },
-      { input: "n45e", expected: 45.0 },
-      { input: "s45w", expected: 225.0 },
-      { input: "n45w", expected: 315.0 },
-      { input: "s45e", expected: 135.0 },
-      { input: "N", expected: 0.0 },
-      { input: "S", expected: 180.0 },
-      { input: "n", expected: 0.0 },
-      { input: "s", expected: 180.0 },
+      { input: "N45 45 45e", expected:  45.7625, expectedText: "N45°45'45\"E" },
+      { input: "n45 45 45E", expected:  45.7625, expectedText: "N45°45'45\"E" },
+      { input: "n45 45 45e", expected:  45.7625, expectedText: "N45°45'45\"E" },
+      { input: "n 45 45 45 e", expected: 45.7625, expectedText: "N45°45'45\"E" },
+      { input: "n45.4545e", expected:  45.765, expectedText: "N45°45'45\"E" },
+      { input: "n 45.4545 e", expected:  45.765, expectedText: "N45°45'45\"E" },
+      { input: "n65.4545e",  expected:  65.7625, expectedText: "N65°45'45\"E" },
+      { input: "n65 45 45e", expected:  65.7625, expectedText: "N65°45'45\"E" },
+      { input: "n35 45 45.101e", expected: 35.762528, expectedText: "N35°45'45\"E" },
+      { input: "n85 45 45.9e", expected: 85.76275, expectedText: "N85°45'46\"E" },
+      { input: "n85 45 45e", expected: 85.7625, expectedText: "N85°45'45\"E" },
+      { input: "n85 60 60e", expected: 86.0167, expectedText: "N86°01'00\"E" },
+      { input: "n85 45 65e", expected: 85.76275, expectedText: "N85°46'05\"E" },
+      { input: "s65:40:00w", expected: 245.667, expectedText: "S65°40'00\"W" },
+      { input: "s45e", expected: 135, expectedText: "S45°00'00\"E" },
+      { input: "S45E", expected: 135, expectedText: "S45°00'00\"E" },
+      { input: "s45.45e",    expected: 134.25, expectedText: "S45°45'00\"E" },
+      { input: "s45 45 00e", expected: 134.25, expectedText: "S45°45'00\"E" },
+      { input: "s 45 45 00 e", expected: 134.25, expectedText: "S45°45'00\"E" },
+      { input: "s45d45m45se", expected: 134.2375, expectedText: "S45°45'45\"E" },
+      { input: "s45d45m45.0se", expected: 134.2375, expectedText: "S45°45'45\"E" },
+      { input: "s45d45m45.0e", expected: 134.2375, expectedText: "S45°45'45\"E" },
+      { input: "NE", expected: 45.0, expectedText: "N45°00'00\"E" },
+      { input: "SE", expected: 135.0, expectedText: "S45°00'00\"E" },
+      { input: "SW", expected: 225.0, expectedText: "S45°00'00\"W" },
+      { input: "NW", expected: 315.0, expectedText: "N45°00'00\"W" },
+      { input: "N45E", expected: 45.0, expectedText: "N45°00'00\"E" },
+      { input: "S45W", expected: 225.0, expectedText: "S45°00'00\"W" },
+      { input: "N45W", expected: 315.0, expectedText: "N45°00'00\"W" },
+      { input: "S45E", expected: 135.0, expectedText: "S45°00'00\"E" },
+      { input: "nE", expected: 45.0, expectedText: "N45°00'00\"E" },
+      { input: "sW", expected: 225.0, expectedText: "S45°00'00\"W" },
+      { input: "nW", expected: 315.0, expectedText: "N45°00'00\"W" },
+      { input: "sE", expected: 135.0, expectedText: "S45°00'00\"E" },
+      { input: "n45e", expected: 45.0, expectedText: "N45°00'00\"E" },
+      { input: "s45w", expected: 225.0, expectedText: "S45°00'00\"W" },
+      { input: "n45w", expected: 315.0, expectedText: "N45°00'00\"W" },
+      { input: "s45e", expected: 135.0, expectedText: "S45°00'00\"E" },
+      { input: "N", expected: 0.0, expectedText: "N00°00'00\"E" },
+      { input: "S", expected: 180.0, expectedText: "S00°00'00\"E" },
+      { input: "n", expected: 0.0, expectedText: "N00°00'00\"E" },
+      { input: "s", expected: 180.0, expectedText: "S00°00'00\"E" },
     ];
 
-    for (const { input, expected } of validTestData) {
+    for (const { input, expected, expectedText } of validTestData) {
       const result = Parser.parseQuantityString(input, bearingParser);
       if (!Parser.isParsedQuantity(result)) {
         expect.fail(`Expected a parsed quantity for input "${input}"`);
       }
       expect(result.value).to.be.closeTo(expected, 0.01);
+      if (expectedText) {
+        const formatted = Formatter.formatQuantity(result.value, bearingFormatter);
+        expect(formatted).to.equal(expectedText);
+      }
     }
     const unsupportedInputs = [
       "s45+45+45e",
@@ -298,49 +308,6 @@ describe("Bearing format tests:", () => {
       }
       expect(parseResult.value).to.be.closeTo(entry.expected, 0.01);
     }
-  });
-
-  it("should correctly parse and format bearing strings (roundtrip test)", async () => {
-    const input = "n 45 45 45 e";
-    const expectedFormatted = "N45°45'45\"E";
-
-    const bearingFormatProps: FormatProps = {
-      minWidth: 2,
-      precision: 0,
-      type: "Bearing",
-      revolutionUnit: "Units.REVOLUTION",
-      formatTraits: ["showUnitLabel"],
-      uomSeparator: "",
-      composite: {
-        includeZero: true,
-        spacer: "",
-        units: [
-          { name: "Units.ARC_DEG", label: "°" },
-          { name: "Units.ARC_MINUTE", label: "'" },
-          { name: "Units.ARC_SECOND", label: "\"" },
-        ],
-      },
-    };
-
-    const bearingFormat = new Format("bearing-roundtrip");
-    await bearingFormat.fromJSON(unitsProvider, bearingFormatProps);
-
-    const bearingParser = await ParserSpec.create(bearingFormat, unitsProvider, degree);
-    const formatterSpec = await FormatterSpec.create("bearing-roundtrip", bearingFormat, unitsProvider, {
-      name: "Units.ARC_DEG",
-      label: "°",
-      phenomenon: "Angle",
-      system: "si",
-      isValid: true,
-    });
-
-    const result = Parser.parseQuantityString(input, bearingParser);
-    if (!Parser.isParsedQuantity(result)) {
-      expect.fail(`Expected a parsed quantity for input "${input}"`);
-    }
-
-    const formatted = Formatter.formatQuantity(result.value, formatterSpec);
-    expect(formatted).to.equal(expectedFormatted);
   });
 
   it("should handle special formats for bearing strings", async () => {
