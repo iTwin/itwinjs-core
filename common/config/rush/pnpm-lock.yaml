@@ -253,8 +253,8 @@ importers:
   ../../core/ecschema-editing:
     devDependencies:
       '@bentley/units-schema':
-        specifier: ^1.0.8
-        version: 1.0.8
+        specifier: ^1.0.9
+        version: 1.0.9
       '@itwin/build-tools':
         specifier: workspace:*
         version: link:../../tools/build
@@ -383,8 +383,8 @@ importers:
         specifier: ^1.0.1
         version: 1.0.1
       '@bentley/units-schema':
-        specifier: ^1.0.8
-        version: 1.0.8
+        specifier: ^1.0.9
+        version: 1.0.9
       '@itwin/build-tools':
         specifier: workspace:*
         version: link:../../tools/build
@@ -464,8 +464,8 @@ importers:
         specifier: ^1.0.3
         version: 1.0.3
       '@bentley/units-schema':
-        specifier: ^1.0.8
-        version: 1.0.8
+        specifier: ^1.0.9
+        version: 1.0.9
       '@itwin/build-tools':
         specifier: workspace:*
         version: link:../../tools/build
@@ -1830,8 +1830,8 @@ importers:
         specifier: ^1.0.0
         version: 1.0.0
       '@bentley/units-schema':
-        specifier: ^1.0.8
-        version: 1.0.8
+        specifier: ^1.0.9
+        version: 1.0.9
       '@itwin/build-tools':
         specifier: workspace:*
         version: link:../../tools/build
@@ -3714,8 +3714,8 @@ importers:
         specifier: ^1.0.0
         version: 1.0.0
       '@bentley/units-schema':
-        specifier: ^1.0.8
-        version: 1.0.8
+        specifier: ^1.0.9
+        version: 1.0.9
       '@itwin/build-tools':
         specifier: workspace:*
         version: link:../../tools/build
@@ -4699,8 +4699,8 @@ packages:
   '@bentley/structural-physical-schema@1.0.1':
     resolution: {integrity: sha512-ND+R4BwoZlOhq0nNgF82v87LhtVW9Oydl6+ExezqPn3G3CdBjoPkTzT7LDVyXX7cOOIQOD3efvwOWBiGh3sShQ==}
 
-  '@bentley/units-schema@1.0.8':
-    resolution: {integrity: sha512-mib0MBPNxT6xS1Spihn/VZeYGRvhbfjZ/O2/FaRDHc9J3dymtCqL/1Q/iTY5fscqUWvr9TdJjx+ICPmb5Wr4HQ==}
+  '@bentley/units-schema@1.0.9':
+    resolution: {integrity: sha512-kyfz9bQDB+1yJR5SgikkjFIKE+U8OuaClpwG0uxXN2zn9c4xKURhejC93XX7zUL4V1dqWXjhHJdkagxhDbMwQw==}
 
   '@bundled-es-modules/cookie@2.0.1':
     resolution: {integrity: sha512-8o+5fRPLNbjbdGRRmJj3h6Hh1AQJf2dk3qQ/5ZFb+PXkRNiSoMGGUKlsgLfrxneb72axVJyIYji64E2+nNfYyw==}
@@ -11080,7 +11080,7 @@ snapshots:
 
   '@bentley/structural-physical-schema@1.0.1': {}
 
-  '@bentley/units-schema@1.0.8': {}
+  '@bentley/units-schema@1.0.9': {}
 
   '@bundled-es-modules/cookie@2.0.1':
     dependencies:

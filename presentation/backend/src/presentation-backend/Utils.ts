@@ -10,16 +10,8 @@
 import { parse as parseVersion } from "semver";
 import { IModelDb } from "@itwin/core-backend";
 import { Id64String } from "@itwin/core-bentley";
-import {
-  Diagnostics,
-  DiagnosticsLogEntry,
-  DiagnosticsOptions,
-  InstanceKey,
-} from "@itwin/presentation-common";
-import {
-  combineDiagnosticsSeverities,
-  compareDiagnosticsSeverities,
-} from "@itwin/presentation-common/internal";
+import { Diagnostics, DiagnosticsLogEntry, DiagnosticsOptions, InstanceKey } from "@itwin/presentation-common";
+import { combineDiagnosticsSeverities, compareDiagnosticsSeverities } from "@itwin/presentation-common/internal";
 // @ts-ignore TS complains about `with` in CJS builds, but not ESM
 import presentationStrings from "@itwin/presentation-common/locales/en/Presentation.json" with { type: "json" };
 

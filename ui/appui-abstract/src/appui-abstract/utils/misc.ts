@@ -8,7 +8,7 @@
 
 /** Gets the class name for an object.
  * @internal
- * @deprecated in 4.3. Please use your own implementation in the future.  Though internal, this requires deprecation due to known public usage in @itwin/core-react.
+ * @deprecated in 4.3 - will not be removed until after 2026-06-13. Please use your own implementation in the future.  Though internal, this requires deprecation due to known public usage in @itwin/core-react.
  */
 export const getClassName = (obj: any): string => {
   let className = "";
