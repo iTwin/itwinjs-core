@@ -8163,8 +8163,6 @@ export namespace RealityDataSource {
     export function createOrbitGtBlobPropsFromKey(rdSourceKey: RealityDataSourceKey): OrbitGtBlobProps | undefined;
     // @alpha
     export function fromKey(key: RealityDataSourceKey, iTwinId: GuidString | undefined): Promise<RealityDataSource | undefined>;
-    // @alpha
-    export function setBaseUrl(id: string): void;
 }
 
 // @beta

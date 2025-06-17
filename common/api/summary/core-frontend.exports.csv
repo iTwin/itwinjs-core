@@ -512,7 +512,6 @@ alpha;function;createKeyFromBlobUrl
 alpha;function;createKeyFromOrbitGtBlobProps
 alpha;function;createOrbitGtBlobPropsFromKey
 alpha;function;fromKey
-alpha;function;setBaseUrl
 beta;interface;RealityDataSourceProvider
 beta;class;RealityDataSourceProviderRegistry
 public;interface;RealityMeshParams
