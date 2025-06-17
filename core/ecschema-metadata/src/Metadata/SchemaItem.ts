@@ -47,14 +47,14 @@ export abstract class SchemaItem {
   public get label() { return this._label; }
   public get description() { return this._description; }
 
-  /** Returns the ObjectLoadingController for this Schema. Maybe undefined.
-   * @beta*/
+  /**
+   * Returns the ObjectLoadingController for this Schema. Maybe undefined.
+   * @beta
+   */
   public get loadingController(): ObjectLoadingController | undefined{
     return this._loadingController;
   }
 
-  /** Sets the ObjectLoadingController for this Schema.
-   * @beta*/
   public set loadingController(controller: ObjectLoadingController) {
     this._loadingController = controller;
   }

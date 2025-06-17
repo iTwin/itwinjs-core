@@ -152,12 +152,14 @@ export class Schema implements CustomAttributeContainerProps {
   /** Returns the schema context this schema is within. */
   public get context(): SchemaContext { return this._context; }
 
-  /** Returns the ObjectLoadingController for this Schema. Maybe undefined. */
+  /**
+   * Returns the ObjectLoadingController for this Schema. Maybe undefined.
+   * @beta
+   */
   public get loadingController(): ObjectLoadingController | undefined{
     return this._loadingController;
   }
 
-  /** Sets the ObjectLoadingController for this Schema. */
   public set loadingController(controller: ObjectLoadingController) {
     this._loadingController = controller;
   }
