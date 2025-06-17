@@ -985,7 +985,7 @@ export class RealityTreeReference extends RealityModelTileTree.Reference {
     return div;
   }
 
-    /** @deprecated in 5.0 Use [addAttributions] instead. */
+    /** @deprecated in 5.0 - will not be removed until after 2026-06-13. Use [addAttributions] instead. */
   public override addLogoCards(cards: HTMLTableElement): void {
     if (this._rdSourceKey.provider === RealityDataProvider.CesiumIonAsset && !cards.dataset.openStreetMapLogoCard) {
       cards.dataset.openStreetMapLogoCard = "true";

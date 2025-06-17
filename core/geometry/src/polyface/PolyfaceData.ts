@@ -511,7 +511,7 @@ export class PolyfaceData {
   }
   /**
    * Resize all data arrays to the specified `length`.
-   * @deprecated in 4.x - might be removed in next major version. because name is misleading. Call [[PolyfaceData.resizeAllArrays]] instead.
+   * @deprecated in 4.x - will not be removed until after 2026-06-13. Because name is misleading. Call [[PolyfaceData.resizeAllArrays]] instead.
    */
   public resizeAllDataArrays(length: number): void {
     if (length > this.point.length) {

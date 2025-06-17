@@ -2,6 +2,24 @@
   "name": "@itwin/core-orbitgt",
   "entries": [
     {
+      "version": "5.0.0",
+      "tag": "@itwin/core-orbitgt_v5.0.0",
+      "date": "Fri, 13 Jun 2025 20:25:38 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Upgrade compile target to ES2023 and module to ES2022"
+          }
+        ]
+      }
+    },
+    {
+      "version": "4.11.6",
+      "tag": "@itwin/core-orbitgt_v4.11.6",
+      "date": "Mon, 16 Jun 2025 15:00:15 GMT",
+      "comments": {}
+    },
+    {
       "version": "4.11.5",
       "tag": "@itwin/core-orbitgt_v4.11.5",
       "date": "Fri, 06 Jun 2025 13:41:18 GMT",

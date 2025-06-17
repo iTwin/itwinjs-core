@@ -1,6 +1,28 @@
 # Change Log - @itwin/ecschema-editing
 
-This log was last generated on Fri, 06 Jun 2025 13:44:02 GMT and should not be manually modified.
+This log was last generated on Mon, 16 Jun 2025 15:03:02 GMT and should not be manually modified.
+
+## 5.0.0
+Fri, 13 Jun 2025 20:25:38 GMT
+
+### Updates
+
+- Replaced ECClass.baseClass setter with setBaseClass method due to underlying changes in the ecschema-metadata package.
+- Changed Class.getProperty method to include inherited properties by default. This affected numerous call in the editing package.
+- Upgrade compile target to ES2023 and module to ES2022
+- Dropped support for Node 18
+- Added ESM support
+- Updated getSchemaItem methods from MergingSchemaContext to reflect changes made to methods from the base class SchemaContext.
+- Added format merging
+- Allows to re-apply stored conflict resolutions
+- Added ability to merge Unit and InvertedUnit Schema Items
+- applied changes in ecschema-metadatas SchemaLocater interface
+- Change core peer dependencies to strict version.
+
+## 4.11.6
+Mon, 16 Jun 2025 15:00:15 GMT
+
+_Version update only_
 
 ## 4.11.5
 Fri, 06 Jun 2025 13:41:18 GMT

@@ -1,6 +1,26 @@
 # Change Log - @itwin/core-electron
 
-This log was last generated on Fri, 06 Jun 2025 13:44:02 GMT and should not be manually modified.
+This log was last generated on Mon, 16 Jun 2025 15:03:02 GMT and should not be manually modified.
+
+## 5.0.0
+Fri, 13 Jun 2025 20:25:38 GMT
+
+### Updates
+
+- Deprecate `DialogModuleMethod` 
+- Dropped support for Node 18
+- Dropped support for Electron 32 and older
+- Upgrade to Electron 34, drop support for Electron 33
+- Bumped `username` to `7.0.0`
+- Removed `ElectronHost.getWindowSizeSetting` and `ElectronApp.callDialog` methods
+- Upgrade to Electron 35, drop support for Electron 34
+- Add support for Electron 36
+- Change core peer dependencies to strict version.
+
+## 4.11.6
+Mon, 16 Jun 2025 15:00:15 GMT
+
+_Version update only_
 
 ## 4.11.5
 Fri, 06 Jun 2025 13:41:18 GMT
