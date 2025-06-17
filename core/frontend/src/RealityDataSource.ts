@@ -217,13 +217,6 @@ export namespace RealityDataSource {
 
     return provider.createRealityDataSource(key, iTwinId);
   }
-
-  /** Implement this function in order to provide the base URL for the specified reality data source.
-   * @alpha
-   */
-  export function setBaseUrl(id: string) {
-    throw new Error(`Function not implemented. rdSourceId: ${id}}`);
-  }
 }
 
 /** A named supplier of [RealityDataSource]]s.
