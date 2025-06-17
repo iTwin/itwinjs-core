@@ -127,10 +127,11 @@ function debugSnapPoints(builder: ElementGeometry.Builder, frame: TextFrameStyle
  * @returns True if all debug geometry was successfully appended.
  */
 function debugRunLayout(builder: ElementGeometry.Builder, layout: TextBlockLayout, documentTransform: Transform): boolean {
-  let result = true;
-  let color = ColorDef.black;
-  let lastColor = color;
+  let result = true; // Tracks if all geometry was appended successfully
+  let color = ColorDef.black; // Current color for the run type
+  let lastColor = color; // Last color used, to minimize param changes
 
+  // Map run types to debug colors
   const colors = {
     "text": ColorDef.fromString("orange"),
     "linebreak": ColorDef.fromString("yellow"),
@@ -139,27 +140,27 @@ function debugRunLayout(builder: ElementGeometry.Builder, layout: TextBlockLayou
   }
 
   layout.lines.forEach(line => {
+    // Apply the line's offset transform
     const lineTrans = Transform.createTranslationXYZ(line.offsetFromDocument.x, line.offsetFromDocument.y, 0);
     documentTransform.multiplyTransformTransform(lineTrans, lineTrans);
 
-    const corners = line.range.corners3d(true);
-    lineTrans.multiplyPoint3dArrayInPlace(corners);
-    result = result && builder.appendGeometryQuery(LineString3d.create(corners));
-
     line.runs.forEach(run => {
-      color = colors[run.source.type] ?? ColorDef.black; // Default to black if type is unknown
+      // Determine color for this run type
+      color = colors[run.source.type] ?? ColorDef.black;
 
+      // Only change geometry params if the color changes
       if (!lastColor.equals(color)) {
         const colorParams = new GeometryParams(Id64.invalid);
         colorParams.lineColor = color;
         result = result && builder.appendGeometryParamsChange(colorParams);
-
         lastColor = color;
       }
 
+      // Apply the line's offset to the run's offset
       const runTrans = Transform.createTranslationXYZ(run.offsetFromLine.x, run.offsetFromLine.y, 0);
       lineTrans.multiplyTransformTransform(runTrans, runTrans);
 
+      // Draw the enclosing range for the run
       const runCorners = run.range.corners3d(true);
       runTrans.multiplyPoint3dArrayInPlace(runCorners);
       result = result && builder.appendGeometryQuery(LineString3d.create(runCorners));
