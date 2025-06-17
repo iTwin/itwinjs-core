@@ -2,6 +2,159 @@
   "name": "@itwin/core-frontend",
   "entries": [
     {
+      "version": "5.0.0",
+      "tag": "@itwin/core-frontend_v5.0.0",
+      "date": "Fri, 13 Jun 2025 20:25:38 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Made QuadIdProps public"
+          },
+          {
+            "comment": "Add new async `addAttributions` method  on `TileTreeReference`. Also make sure ImageryTileTree / providers are included when decorating the view."
+          },
+          {
+            "comment": "Fix issue validating ArcGIS service urls"
+          },
+          {
+            "comment": "Added new `MapLayerSessionManager` API.  Minor additions to `MapCartoRectangle` and `QuadId` classes."
+          },
+          {
+            "comment": "Add iterator-based alternatives to various forEach-style APIs."
+          },
+          {
+            "comment": "Removed part of deprecated APIs from core-frontend"
+          },
+          {
+            "comment": "Removed deprecated scheduleScriptReference and onScheduleScriptReferencedChanged from DisplayStyleState."
+          },
+          {
+            "comment": "removed getThumbnail api"
+          },
+          {
+            "comment": "Add ReadImageToCanvasOptions"
+          },
+          {
+            "comment": "Fix failure to resolve relative texture URIs in 3D Tiles"
+          },
+          {
+            "comment": "Add support for reading and interpreting Cesium tiles containing EXT_mesh_features extension."
+          },
+          {
+            "comment": "Raise `IModelConnection.onChange` when a new `BlankConnection` is created."
+          },
+          {
+            "comment": "Support Models' and SubCategories' selection in `SelectionSet`."
+          },
+          {
+            "comment": "Resolves CVE-2025-27152"
+          },
+          {
+            "comment": "support draping model map layers onto iModels"
+          },
+          {
+            "comment": "Implement draping of models within iModels onto attached reality data."
+          },
+          {
+            "comment": "Fix draping to reality bug"
+          },
+          {
+            "comment": "Upgrade compile target to ES2023 and module to ES2022"
+          },
+          {
+            "comment": "`SnapshotConnection.openFile` is now only available in IPC apps"
+          },
+          {
+            "comment": "add CatalogConnection"
+          },
+          {
+            "comment": "Fixed problem causing bg map masking of large models to crash."
+          },
+          {
+            "comment": "Fix duplicate Bing map attributions."
+          },
+          {
+            "comment": "Deprecated `IModelConnection.getMassPropertiesPerCandidate`"
+          },
+          {
+            "comment": "Remove calls to deprecated core-common APIs"
+          },
+          {
+            "comment": "Add support for tiles compressed with meshoptimizer"
+          },
+          {
+            "comment": "Add `@itwin/ecschema-metadata`, `@itwin/ecschema-rpcinterface-common` peer dependencies. Make iModel-specific `SchemaContext` available on `IModelConnection` through the new `schemaContext` getter."
+          },
+          {
+            "comment": "Deprecate `quantityType` getters for subclasses of `FormattedQuantityDescription` and allow passing in `kindOfQuantityName` to constructor"
+          },
+          {
+            "comment": "Add `formatsProvider` property to `IModelApp` and `IModelAppOptions`, new `QuantityFormatter` helper methods to help consumers supply their own format specifications for formatting numeric values."
+          },
+          {
+            "comment": "Add Viewport.backgroundMapTileTreeReference"
+          },
+          {
+            "comment": "Fix decoration graphics failing to use line color for planar region outlines."
+          },
+          {
+            "comment": "Fix conversion of RGBA to RGB when decoding point cloud colors."
+          },
+          {
+            "comment": "Add BriefcaseConnection.abandonChanges."
+          },
+          {
+            "comment": "Fix white pixels of textured surfaces sometimes drawing as black."
+          },
+          {
+            "comment": "Honor maximumScreenSpaceError specified in tileset."
+          },
+          {
+            "comment": "Added TileAdmin.Options.disablePolyfaceDecimation."
+          },
+          {
+            "comment": "HitDetail and Viewport.readPixels include contour line information."
+          },
+          {
+            "comment": "Drop dependency on @itwin/core-telemetry"
+          },
+          {
+            "comment": "Change core peer dependencies to strict version."
+          }
+        ]
+      }
+    },
+    {
+      "version": "4.11.6",
+      "tag": "@itwin/core-frontend_v4.11.6",
+      "date": "Mon, 16 Jun 2025 15:00:15 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Honor maximumScreenSpaceError specified in tileset."
+          }
+        ]
+      }
+    },
+    {
+      "version": "4.11.5",
+      "tag": "@itwin/core-frontend_v4.11.5",
+      "date": "Fri, 06 Jun 2025 13:41:18 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.11.4",
+      "tag": "@itwin/core-frontend_v4.11.4",
+      "date": "Tue, 03 Jun 2025 16:15:19 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.11.3",
+      "tag": "@itwin/core-frontend_v4.11.3",
+      "date": "Wed, 28 May 2025 13:56:22 GMT",
+      "comments": {}
+    },
+    {
       "version": "4.11.2",
       "tag": "@itwin/core-frontend_v4.11.2",
       "date": "Tue, 20 May 2025 20:14:45 GMT",

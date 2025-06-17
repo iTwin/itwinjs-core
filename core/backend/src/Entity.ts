@@ -46,7 +46,7 @@ export interface CustomHandledProperty {
 /** Represents one of the fundamental building block in an [[IModelDb]]: as an [[Element]], [[Model]], or [[Relationship]].
  * Every subclass of Entity represents one BIS [ECClass]($ecschema-metadata).
  * An Entity is typically instantiated from an [EntityProps]($common) and can be converted back to this representation via [[Entity.toJSON]].
- * @public
+ * @public @preview
  */
 export class Entity {
   /** An immutable property used to discriminate between [[Entity]] and [EntityProps]($common), used to inform the TypeScript compiler that these two types
@@ -192,7 +192,7 @@ export class Entity {
    * @param func The callback to be invoked on each property
    * @param includeCustom If true (default), include custom-handled properties in the iteration. Otherwise, skip custom-handled properties.
    * @note Custom-handled properties are core properties that have behavior enforced by C++ handlers.
-   * @deprecated in 5.0. Please use `forEach` to get the metadata and iterate over the properties instead.
+   * @deprecated in 5.0 - will not be removed until after 2026-06-13. Please use `forEach` to get the metadata and iterate over the properties instead.
    *
    * @example
    * ```typescript
@@ -318,6 +318,6 @@ export class Entity {
 export type PropertyHandler = (name: string, property: Property) => void;
 
 /** Parameter type that can accept both abstract constructor types and non-abstract constructor types for `instanceof` to test.
- * @public
+ * @public @preview
  */
 export type EntityClassType<T> = Function & { prototype: T }; // eslint-disable-line @typescript-eslint/no-unsafe-function-type

@@ -24,7 +24,7 @@ import {
   OpenCheckpointArgs, OpenSqliteArgs, ProfileOptions, PropertyCallback, QueryBinder, QueryOptions, QueryRowFormat, SchemaState,
   SheetProps, SnapRequestProps, SnapResponseProps, SnapshotOpenOptions, SpatialViewDefinitionProps, SubCategoryResultRow, TextureData,
   TextureLoadProps, ThumbnailProps, UpgradeOptions, ViewDefinition2dProps, ViewDefinitionProps, ViewIdString, ViewQueryParams, ViewStateLoadProps,
-  ViewStateProps, ViewStoreRpc
+  ViewStateProps, ViewStoreError, ViewStoreRpc
 } from "@itwin/core-common";
 import { Range2d, Range3d } from "@itwin/core-geometry";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
@@ -53,7 +53,7 @@ import { Relationships } from "./Relationship";
 import { SchemaSync } from "./SchemaSync";
 import { createServerBasedLocks } from "./internal/ServerBasedLocks";
 import { SqliteStatement, StatementCache } from "./SqliteStatement";
-import { ComputeRangesForTextLayoutArgs, TextLayoutRanges } from "./TextAnnotationLayout";
+import { ComputeRangesForTextLayoutArgs, TextLayoutRanges } from "./annotations/TextBlockLayout";
 import { TxnManager } from "./TxnManager";
 import { DrawingViewDefinition, SheetViewDefinition, ViewDefinition } from "./ViewDefinition";
 import { ViewStore } from "./ViewStore";
@@ -235,7 +235,7 @@ export abstract class IModelDb extends IModel {
   private _jsClassMap?: EntityJsClassMap;
   private _schemaMap?: SchemaMap;
   private _schemaContext?: SchemaContext;
-  /** @deprecated in 5.0.0. Use [[fonts]]. */
+  /** @deprecated in 5.0.0 - will not be removed until after 2026-06-13. Use [[fonts]]. */
   protected _fontMap?: FontMap; // eslint-disable-line @typescript-eslint/no-deprecated
   private readonly _fonts: IModelDbFonts = createIModelDbFonts(this);
   private _workspace?: OwnedWorkspace;
@@ -303,7 +303,7 @@ export abstract class IModelDb extends IModel {
     this[_nativeDb].restartDefaultTxn();
   }
 
-  /** @deprecated in 5.0.0. Use [[fonts]]. */
+  /** @deprecated in 5.0.0 - will not be removed until after 2026-06-13. Use [[fonts]]. */
   public get fontMap(): FontMap { // eslint-disable-line @typescript-eslint/no-deprecated
     return this._fontMap ?? (this._fontMap = new FontMap(this[_nativeDb].readFontMap())); // eslint-disable-line @typescript-eslint/no-deprecated
   }
@@ -507,7 +507,7 @@ export abstract class IModelDb extends IModel {
    * @returns the value returned by `callback`.
    * @see [[withStatement]]
    * @public
-   * @deprecated in 4.11.  Use [[createQueryReader]] instead.
+   * @deprecated in 4.11 - will not be removed until after 2026-06-13.  Use [[createQueryReader]] instead.
    */
   // eslint-disable-next-line @typescript-eslint/no-deprecated
   public withPreparedStatement<T>(ecsql: string, callback: (stmt: ECSqlStatement) => T, logErrors = true): T {
@@ -538,7 +538,7 @@ export abstract class IModelDb extends IModel {
    * @returns the value returned by `callback`.
    * @see [[withPreparedStatement]]
    * @public
-   * @deprecated in 4.11.  Use [[createQueryReader]] instead.
+   * @deprecated in 4.11 - will not be removed until after 2026-06-13.  Use [[createQueryReader]] instead.
    */
   // eslint-disable-next-line @typescript-eslint/no-deprecated
   public withStatement<T>(ecsql: string, callback: (stmt: ECSqlStatement) => T, logErrors = true): T {
@@ -812,6 +812,7 @@ export abstract class IModelDb extends IModel {
    * @note This will not delete Txns that have already been saved, even if they have not yet been pushed.
   */
   public abandonChanges(): void {
+    this.clearCaches();
     this[_nativeDb].abandonChanges();
   }
 
@@ -834,7 +835,7 @@ export abstract class IModelDb extends IModel {
   }
 
   /** @internal
-   * @deprecated in 4.8. Use `txns.reverseTxns`.
+   * @deprecated in 4.8 - will not be removed until after 2026-06-13. Use `txns.reverseTxns`.
    */
   public reverseTxns(numOperations: number): IModelStatus {
     return this[_nativeDb].reverseTxns(numOperations);
@@ -1068,7 +1069,7 @@ export abstract class IModelDb extends IModel {
 
   /** The registry of entity metadata for this iModel.
    * @internal
-   * @deprecated in 5.0. Please use `schemaContext` from the `iModel` instead.
+   * @deprecated in 5.0 - will not be removed until after 2026-06-13. Please use `schemaContext` from the `iModel` instead.
    *
    * @example
    * ```typescript
@@ -1137,7 +1138,7 @@ export abstract class IModelDb extends IModel {
    * @param sql The ECSQL statement to prepare
    * @param logErrors Determines if error will be logged if statement fail to prepare
    * @throws [[IModelError]] if there is a problem preparing the statement.
-   * @deprecated in 4.11.  Use [IModelDb.createQueryReader]($backend) or [ECDb.createQueryReader]($backend) to query.
+   * @deprecated in 4.11 - will not be removed until after 2026-06-13.  Use [IModelDb.createQueryReader]($backend) or [ECDb.createQueryReader]($backend) to query.
    */
   // eslint-disable-next-line @typescript-eslint/no-deprecated
   public prepareStatement(sql: string, logErrors = true): ECSqlStatement {
@@ -1150,7 +1151,7 @@ export abstract class IModelDb extends IModel {
   /** Prepare an ECSQL statement.
    * @param sql The ECSQL statement to prepare
    * @returns `undefined` if there is a problem preparing the statement.
-   * @deprecated in 4.11.  Use [IModelDb.createQueryReader]($backend) or [ECDb.createQueryReader]($backend) to query.
+   * @deprecated in 4.11 - will not be removed until after 2026-06-13.  Use [IModelDb.createQueryReader]($backend) or [ECDb.createQueryReader]($backend) to query.
    */
   // eslint-disable-next-line @typescript-eslint/no-deprecated
   public tryPrepareStatement(sql: string): ECSqlStatement | undefined {
@@ -1201,7 +1202,7 @@ export abstract class IModelDb extends IModel {
 
   /** Get metadata for a class. This method will load the metadata from the iModel into the cache as a side-effect, if necessary.
    * @throws [[IModelError]] if the metadata cannot be found nor loaded.
-   * @deprecated in 5.0. Please use `getSchemaItem` from `SchemaContext` class instead.
+   * @deprecated in 5.0 - will not be removed until after 2026-06-13. Please use `getSchemaItem` from `SchemaContext` class instead.
    *
    * @example
    *  * ```typescript
@@ -1228,7 +1229,7 @@ export abstract class IModelDb extends IModel {
   }
 
   /** Identical to [[getMetaData]], except it returns `undefined` instead of throwing an error if the metadata cannot be found nor loaded.
-   * @deprecated in 5.0. Please use `getSchemaItem` from `SchemaContext` class instead.
+   * @deprecated in 5.0 - will not be removed until after 2026-06-13. Please use `getSchemaItem` from `SchemaContext` class instead.
    *
    * @example
    *  * ```typescript
@@ -1256,7 +1257,7 @@ export abstract class IModelDb extends IModel {
    * @param func The callback to be invoked on each property
    * @param includeCustom If true (default), include custom-handled properties in the iteration. Otherwise, skip custom-handled properties.
    * @note Custom-handled properties are core properties that have behavior enforced by C++ handlers.
-   * @deprecated in 5.0. Please use `forEachProperty` instead.
+   * @deprecated in 5.0 - will not be removed until after 2026-06-13. Please use `forEachProperty` instead.
    *
    * @example
    * ```typescript
@@ -1283,7 +1284,7 @@ export abstract class IModelDb extends IModel {
    * @param func The callback to be invoked on each property
    * @param includeCustom If true (default), include custom-handled properties in the iteration. Otherwise, skip custom-handled properties.
    * @note Custom-handled properties are core properties that have behavior enforced by C++ handlers.
-   * @deprecated in 5.0. Use `forEachProperty` from `SchemaContext` class instead.
+   * @deprecated in 5.0 - will not be removed until after 2026-06-13. Use `forEachProperty` from `SchemaContext` class instead.
    *
    * @example
    * ```typescript
@@ -1315,7 +1316,7 @@ export abstract class IModelDb extends IModel {
 
   /**
    * @internal
-   * @deprecated in 5.0. Please use `schemaContext` from `iModel` instead to get metadata.
+   * @deprecated in 5.0 - will not be removed until after 2026-06-13. Please use `schemaContext` from `iModel` instead to get metadata.
    */
   private loadMetaData(classFullName: string) {
     // eslint-disable-next-line @typescript-eslint/no-deprecated
@@ -1720,7 +1721,7 @@ function processSchemaWriteStatus(status: SchemaWriteStatus): void {
 export namespace IModelDb {
 
   /** The collection of models in an [[IModelDb]].
-   * @public
+   * @public @preview
    */
   export class Models {
     private readonly _modelCacheSize = 10;
@@ -1883,7 +1884,9 @@ export namespace IModelDb {
       try {
         return props.id = this._iModel[_nativeDb].insertModel(props);
       } catch (err: any) {
-        throw new IModelError(err.errorNumber, `Error inserting model [${err.message}], class=${props.classFullName}`);
+        const error = new IModelError(err.errorNumber, `Error inserting model [${err.message}], class=${props.classFullName}`);
+        error.cause = err;
+        throw error;
       }
     }
 
@@ -1898,7 +1901,9 @@ export namespace IModelDb {
 
         this._iModel[_nativeDb].updateModel(props);
       } catch (err: any) {
-        throw new IModelError(err.errorNumber, `error updating model [${err.message}] id=${props.id}`);
+        const error = new IModelError(err.errorNumber, `Error updating model [${err.message}], id: ${props.id}`);
+        error.cause = err;
+        throw error;
       }
     }
     /** Mark the geometry of [[GeometricModel]] as having changed, by recording an indirect change to its GeometryGuid property.
@@ -1914,7 +1919,7 @@ export namespace IModelDb {
       this._iModel.models[_cache].delete(modelId);
       const error = this._iModel[_nativeDb].updateModelGeometryGuid(modelId);
       if (error !== IModelStatus.Success)
-        throw new IModelError(error, `updating geometry guid for model ${modelId}`);
+        throw new IModelError(error, `Error updating geometry guid for model ${modelId}`);
     }
 
     /** Delete one or more existing models.
@@ -1927,7 +1932,9 @@ export namespace IModelDb {
           this[_cache].delete(id);
           this._iModel[_nativeDb].deleteModel(id);
         } catch (err: any) {
-          throw new IModelError(err.errorNumber, `error deleting model [${err.message}] id ${id}`);
+          const error = new IModelError(err.errorNumber, `Error deleting model [${err.message}], id: ${id}`);
+          error.cause = err;
+          throw error;
         }
       });
     }
@@ -1966,7 +1973,7 @@ export namespace IModelDb {
   }
 
   /** The collection of elements in an [[IModelDb]].
-   * @public
+   * @public @preview
    */
   export class Elements implements GuidMapper {
     private readonly _elementCacheSize = 50;
@@ -2155,7 +2162,7 @@ export namespace IModelDb {
     /** Insert a new element into the iModel.
      * @param elProps The properties of the new element.
      * @returns The newly inserted element's Id.
-     * @throws [[IModelError]] if unable to insert the element.
+     * @throws [[ITwinError]] if unable to insert the element.
      * @note For convenience, the value of `elProps.id` is updated to reflect the resultant element's id.
      * However when `elProps.federationGuid` is not present or undefined, a new Guid will be generated and stored on the resultant element. But
      * the value of `elProps.federationGuid` is *not* updated. Generally, it is best to re-read the element after inserting (e.g. via [[getElementProps]])
@@ -2185,7 +2192,7 @@ export namespace IModelDb {
      * @param elProps the properties of the element to update.
      * @note The values of `classFullName` and `model` *may not be changed* by this method. Further, it will permute the `elProps` object by adding or
      * overwriting their values to the correct values.
-     * @throws [[IModelError]] if unable to update the element.
+     * @throws [[ITwinError]] if unable to update the element.
      */
     public updateElement<T extends ElementProps>(elProps: Partial<T>): void {
       try {
@@ -2204,7 +2211,7 @@ export namespace IModelDb {
 
     /** Delete one or more elements from this iModel.
      * @param ids The set of Ids of the element(s) to be deleted
-     * @throws [[IModelError]]
+     * @throws [[ITwinError]]
      * @see deleteDefinitionElements
      */
     public deleteElement(ids: Id64Arg): void {
@@ -2509,7 +2516,9 @@ export namespace IModelDb {
       try {
         return this._iModel[_nativeDb].insertElementAspect(aspectProps);
       } catch (err: any) {
-        throw new IModelError(err.errorNumber, `Error inserting ElementAspect [${err.message}], class: ${aspectProps.classFullName}`);
+        const error =  new IModelError(err.errorNumber, `Error inserting ElementAspect [${err.message}], class: ${aspectProps.classFullName}`, aspectProps);
+        error.cause = err;
+        throw error;
       }
     }
 
@@ -2521,7 +2530,9 @@ export namespace IModelDb {
       try {
         this._iModel[_nativeDb].updateElementAspect(aspectProps);
       } catch (err: any) {
-        throw new IModelError(err.errorNumber, `Error updating ElementAspect [${err.message}], id: ${aspectProps.id}`);
+        const error =  new IModelError(err.errorNumber, `Error updating ElementAspect [${err.message}], id: ${aspectProps.id}`, aspectProps);
+        error.cause = err;
+        throw error;
       }
     }
 
@@ -2535,14 +2546,16 @@ export namespace IModelDb {
         try {
           iModel[_nativeDb].deleteElementAspect(aspectInstanceId);
         } catch (err: any) {
-          throw new IModelError(err.errorNumber, `Error deleting ElementAspect [${err.message}], id: ${aspectInstanceId}`);
+          const error =  new IModelError(err.errorNumber, `Error deleting ElementAspect [${err.message}], id: ${aspectInstanceId}`);
+          error.cause = err;
+          throw error;
         }
       });
     }
   }
 
   /** The collection of views in an [[IModelDb]].
-   * @public
+   * @public @preview
    */
   export class Views {
     /** @internal */
@@ -2566,7 +2579,7 @@ export namespace IModelDb {
       if (undefined === props) {
         const propsString = this._iModel.queryFilePropertyString(Views.viewStoreProperty);
         if (!propsString)
-          throw new Error("iModel does not have a default ViewStore");
+          ViewStoreError.throwError("no-viewstore", { message: "iModel does not have a default ViewStore" });
 
         props = JSON.parse(propsString) as CloudSqlite.ContainerProps;
       }
@@ -2698,7 +2711,7 @@ export namespace IModelDb {
 
     private getViewThumbnailArg(viewDefinitionId: ViewIdString): FilePropertyProps {
       if (!Id64.isValid(viewDefinitionId))
-        throw new Error("illegal thumbnail id");
+        throw new IModelError(IModelStatus.BadArg, "illegal thumbnail id");
 
       return { namespace: "dgn_View", name: "Thumbnail", id: viewDefinitionId };
     }
@@ -2732,7 +2745,7 @@ export namespace IModelDb {
 
     /** Set the default view property the iModel.
      * @param viewId The Id of the ViewDefinition to use as the default
-     * @deprecated in 4.2.x. Avoid setting this property - it is not practical for one single view to serve the needs of the many applications
+     * @deprecated in 4.2.x - will not be removed until after 2026-06-13. Avoid setting this property - it is not practical for one single view to serve the needs of the many applications
      * that might wish to view the contents of the iModel.
      */
     public setDefaultViewId(viewId: Id64String): void {

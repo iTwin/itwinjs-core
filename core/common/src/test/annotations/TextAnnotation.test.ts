@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { TextAnnotation, TextAnnotationAnchor } from "../../annotation/TextAnnotation";
+import { TextAnnotation, TextAnnotationAnchor, TextFrameStyleProps } from "../../annotation/TextAnnotation";
 import { Angle, Point3d, Range2d, Range3d, YawPitchRollAngles } from "@itwin/core-geometry";
+import { ColorDef } from "../../ColorDef";
 
 describe("TextAnnotation", () => {
   describe("computeAnchorPoint", () => {
@@ -169,6 +170,24 @@ describe("TextAnnotation", () => {
         rotation: 90,
         origin: [0, 100],
       });
+    });
+  });
+
+  describe("frame", () => {
+    it("should return undefined for frame when no frame is set", () => {
+      const annotation = TextAnnotation.fromJSON({});
+      expect(annotation.frame).to.equal(undefined);
+    });
+
+    it("should return frame when set", () => {
+      const frame: TextFrameStyleProps = { shape: "rectangle", border: ColorDef.red.tbgr, borderWeight: 2, fill: ColorDef.green.tbgr };
+      const annotation = TextAnnotation.fromJSON({ frame });
+      expect(annotation.frame).to.deep.equal(frame);
+    });
+
+    it("should set rectangle as default shape", () => {
+      const annotation = TextAnnotation.fromJSON({ frame: {} });
+      expect(annotation.frame?.shape).to.equal("rectangle");
     });
   });
 });

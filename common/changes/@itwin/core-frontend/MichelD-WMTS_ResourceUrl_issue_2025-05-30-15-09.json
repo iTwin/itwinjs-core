@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Fix issue with WMTS server using ResourceURL",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-common",
+      "comment": "Mark iModel edit API as @preview",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-common"
+}

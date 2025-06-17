@@ -2,6 +2,90 @@
   "name": "@itwin/presentation-backend",
   "entries": [
     {
+      "version": "5.0.0",
+      "tag": "@itwin/presentation-backend_v5.0.0",
+      "date": "Fri, 13 Jun 2025 20:25:38 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add Symbols to prevent duplicate instances of package"
+          },
+          {
+            "comment": "Depreciate ECSqlStatement API"
+          },
+          {
+            "comment": "Dropped support for Node 18"
+          },
+          {
+            "comment": "Fix `getDisplayLabelDefinitions` implementation not taking into account different formats and casings of full class name."
+          },
+          {
+            "comment": "Added ESM support"
+          },
+          {
+            "comment": "Add `type: \"module\"` to `package.json` to tell Node.js to load this package as ESM by default."
+          },
+          {
+            "comment": "Deprecate unified selection related APIs."
+          },
+          {
+            "comment": "Log ruleset ID rather than the whole ruleset in INFO level logs"
+          },
+          {
+            "comment": "Fix Presentation RPC returning details contained within thrown errors. Instead of doing that, we now re-throw the error and let RPC system handle it (by re-throwing a generic error instead)."
+          },
+          {
+            "comment": "Add `PresentationManager.getElementProperties` overload for specifying elements by id rather than class name."
+          },
+          {
+            "comment": "Remove `@internal` APIs from public barrel exports file."
+          },
+          {
+            "comment": "Clean up APIs deprecated in 3.x"
+          },
+          {
+            "comment": "Clean up APIs deprecated in 3.x"
+          },
+          {
+            "comment": "Return errors in a way native to our RPC system. For web cases that also means proper HTTP response status codes."
+          },
+          {
+            "comment": "Change core peer dependencies to strict version."
+          }
+        ]
+      }
+    },
+    {
+      "version": "4.11.6",
+      "tag": "@itwin/presentation-backend_v4.11.6",
+      "date": "Mon, 16 Jun 2025 15:00:15 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.11.5",
+      "tag": "@itwin/presentation-backend_v4.11.5",
+      "date": "Fri, 06 Jun 2025 13:41:18 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fix `getDisplayLabelDefinitions` implementation not taking into account different formats and casings of full class name."
+          }
+        ]
+      }
+    },
+    {
+      "version": "4.11.4",
+      "tag": "@itwin/presentation-backend_v4.11.4",
+      "date": "Tue, 03 Jun 2025 16:15:19 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.11.3",
+      "tag": "@itwin/presentation-backend_v4.11.3",
+      "date": "Wed, 28 May 2025 13:56:23 GMT",
+      "comments": {}
+    },
+    {
       "version": "4.11.2",
       "tag": "@itwin/presentation-backend_v4.11.2",
       "date": "Tue, 20 May 2025 20:14:46 GMT",
