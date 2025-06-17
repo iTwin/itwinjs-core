@@ -413,8 +413,7 @@ const checkForEarlySurfaceDiscard = `
 `;
 
 const checkForEarlySurfaceDiscardWithFeatureID = `
-  // No normals => unlt => reality model => no edges.
-  if (u_renderPass > kRenderPass_Translucent || u_renderPass == kRenderPass_Layers || !u_surfaceFlags[kSurfaceBitIndex_HasNormals])
+  if (u_renderPass > kRenderPass_Translucent || u_renderPass == kRenderPass_Layers ||)
     return false;
 
   vec2 tc = windowCoordsToTexCoords(gl_FragCoord.xy);
