@@ -473,7 +473,7 @@ export class IModelTileTree extends TileTree {
     return undefined !== this._transformNodeRanges;
   }
 
-  public onScheduleEditingChanged(change: { changedElementIds: Set<Id64String> }) {
+  public onScheduleEditingChanged(change: { changedElementIds: Set<Id64String> }, transformChanged: boolean) {
     const elemChanges: ElementGeometryChange[] = [];
 
     for (const id of change.changedElementIds) {
@@ -483,9 +483,10 @@ export class IModelTileTree extends TileTree {
       if (!range) {
         range = Range3d.createXYZXYZ(-1, -1, -1, 1, 1, 1);
       }
+
       elemChanges.push({
         id,
-        type: DbOpcode.Update,
+        type: transformChanged ? DbOpcode.Update : DbOpcode.Insert,
         range,
       });
     }
