@@ -130,7 +130,7 @@ export class ElementMultiAspect extends ElementAspect {
 export class ChannelRootAspect extends ElementUniqueAspect {
   public static override get className(): string { return "ChannelRootAspect"; }
   /** Insert a ChannelRootAspect on the specified element.
-   * @deprecated in 4.0 - might be removed in next major version. use [[ChannelControl.makeChannelRoot]]. This method does not enforce the rule that channels may not nest and is therefore dangerous.
+   * @deprecated in 4.0 - will not be removed until after 2026-06-13. Use [[ChannelControl.makeChannelRoot]]. This method does not enforce the rule that channels may not nest and is therefore dangerous.
    */
   public static insert(iModel: IModelDb, ownerId: Id64String, channelName: string) {
     const props: ChannelRootAspectProps = { classFullName: this.classFullName, element: { id: ownerId }, owner: channelName };

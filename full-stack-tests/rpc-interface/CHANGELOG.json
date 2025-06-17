@@ -2,6 +2,33 @@
   "name": "@itwin/rpcinterface-full-stack-tests",
   "entries": [
     {
+      "version": "5.0.0",
+      "tag": "@itwin/rpcinterface-full-stack-tests_v5.0.0",
+      "date": "Fri, 13 Jun 2025 20:25:38 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "removed getThumbnail api"
+          },
+          {
+            "comment": "Resolves CVE-2025-27152"
+          },
+          {
+            "comment": "change the assert in the test 'should be able to cancel a snap' to match the error message thrown on the frontend when a snap is successfully cancelled."
+          },
+          {
+            "comment": "Deprecate unified selection related APIs."
+          }
+        ]
+      }
+    },
+    {
+      "version": "4.11.6",
+      "tag": "@itwin/rpcinterface-full-stack-tests_v4.11.6",
+      "date": "Mon, 16 Jun 2025 15:00:15 GMT",
+      "comments": {}
+    },
+    {
       "version": "4.11.5",
       "tag": "@itwin/rpcinterface-full-stack-tests_v4.11.5",
       "date": "Fri, 06 Jun 2025 13:41:18 GMT",

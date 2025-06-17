@@ -87,7 +87,7 @@ public methodA();
 
 /**
  * @public
- * @deprecated in 5.1 - will not be removed until 2026-01-01. Please use methodB instead.
+ * @deprecated in 5.1 - will not be removed until after 2026-01-01. Please use methodB instead.
  */
 public methodA();
 /** @public */
@@ -110,7 +110,7 @@ public methodA(arg1?: string);
 // After deprecation:
 /**
  * @public
- * @deprecated in 5.1 - will not be removed until 2026-01-01. Please use the overload with a string parameter instead.
+ * @deprecated in 5.1 - will not be removed until after 2026-01-01. Please use the overload with a string parameter instead.
  */
 public methodA();
 /** @public */
@@ -136,7 +136,7 @@ export interface A {
 
 /**
  * @public
- * @deprecated in 5.1 - will not be removed until 2026-01-01. Please use B instead.
+ * @deprecated in 5.1 - will not be removed until after 2026-01-01. Please use B instead.
  */
 export interface A {
   foo: string;
