@@ -245,6 +245,7 @@ import { SubCategoryProps } from '@itwin/core-common';
 import { SubCategoryResultRow } from '@itwin/core-common';
 import { SubjectProps } from '@itwin/core-common';
 import { SynchronizationConfigLinkProps } from '@itwin/core-common';
+import { TabRun } from '@itwin/core-common';
 import { TextAnnotation } from '@itwin/core-common';
 import { TextAnnotation2dProps } from '@itwin/core-common';
 import { TextAnnotation3dProps } from '@itwin/core-common';
@@ -5266,6 +5267,8 @@ export class RpcTrace {
 
 // @beta
 export class RunLayout {
+    // (undocumented)
+    applyTabShift(parent: LineLayout, context: LayoutContext): void;
     // (undocumented)
     canWrap(): this is {
         source: TextRun;
