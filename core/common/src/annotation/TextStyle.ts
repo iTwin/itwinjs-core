@@ -145,7 +145,9 @@ export class TextStyleSettings {
   public readonly superScriptScale: number;
   /** Multiplier used to compute the width of each glyph, relative to [[lineHeight]]. */
   public readonly widthFactor: number;
-  /** The number of " " characters to use for tab */
+  /** The size (in meters) used to calculate the tab stops in a run.
+   * These are equally spaced from the left edge of the TextBlock. Default is 4 meters.
+   */
   public readonly tabInterval: number;
 
   /** A fully-populated JSON representation of the default settings. */

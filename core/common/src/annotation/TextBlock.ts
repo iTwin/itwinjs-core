@@ -119,6 +119,10 @@ export abstract class TextBlockComponent {
   /** Compute a string representation of the contents of this component and all of its sub-components. */
   public abstract stringify(options?: TextBlockStringifyOptions): string;
 
+  /**
+  * Returns true if the string representation of this component consists only of whitespace characters.
+  * Useful for checking if the component is visually empty (producing no graphics) or contains only spaces, tabs, or line breaks.
+  */
   public get isWhitespace(): boolean {
     return /^\s*$/g.test(this.stringify());
   };
@@ -349,7 +353,7 @@ export class LineBreakRun extends TextBlockComponent {
   }
 }
 
-/** JSON representation of a [[FractionRun]].
+/** JSON representation of a [[TabRun]].
  * @beta
  */
 export interface TabRunProps extends TextBlockComponentProps {
@@ -357,7 +361,8 @@ export interface TabRunProps extends TextBlockComponentProps {
   readonly type: "tab";
 }
 
-/** A [[Run]] a set number of spaces. The Default is 4.
+/** A [[TabRun]] is used to shift the next tab stop.
+ * @note Only left-justified tabs are supported at this tab.
  * @beta
  */
 export class TabRun extends TextBlockComponent {
@@ -379,7 +384,11 @@ export class TabRun extends TextBlockComponent {
     return new TabRun(props);
   }
 
-  /** Formats the fraction as a string with the [[numerator]] and [[denominator]] separated by [[TextBlockStringifyOptions.fractionSeparator]]. */
+    /**
+   * Converts a [[TabRun]] to its string representation.
+   * If the `tabsAsSpaces` option is provided, returns a string of spaces of the specified length.
+   * Otherwise, returns a tab character ("\t").
+   */
   public override stringify(options?: TextBlockStringifyOptions): string {
     if (options?.tabsAsSpaces) {
       return " ".repeat(options.tabsAsSpaces);

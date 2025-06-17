@@ -137,6 +137,7 @@ export function produceTextBlockGeometry(layout: TextBlockLayout, documentTransf
   for (const line of layout.lines) {
     const lineTrans = Transform.createTranslationXYZ(line.offsetFromDocument.x, line.offsetFromDocument.y, 0);
     for (const run of line.runs) {
+      // Skip runs that are solely whitespace
       if ("linebreak" === run.source.type || "tab" === run.source.type) {
         continue;
       }
