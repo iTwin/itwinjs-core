@@ -31,7 +31,7 @@ import { Contours } from "./Contours";
 import { GraphicBranchFrustum } from "../GraphicBranchFrustum";
 import { computeDimensions } from "../../../common/internal/render/VertexTable";
 import { System } from "./System";
-import { Texture2DHandle, TextureHandle } from "./Texture";
+import { LookupTexture, TextureHandle } from "./Texture";
 import { GL } from "./GL";
 
 /** @internal */
@@ -249,7 +249,7 @@ export class PerTargetData {
   }
 }
 
-function createElementIndexLUT(featureTable: RenderFeatureTable): Texture2DHandle | undefined {
+function createElementIndexLUT(featureTable: RenderFeatureTable): LookupTexture | undefined {
   const { width, height } = computeDimensions(featureTable.numFeatures, 1, 0, System.instance.maxTextureSize);
   const buffer = new Uint32Array(width * height);
 
@@ -265,7 +265,8 @@ function createElementIndexLUT(featureTable: RenderFeatureTable): Texture2DHandl
     buffer[feature.index] = elementIndex;
   }
 
-  return TextureHandle.createForData(width, height, new Uint8Array(buffer.buffer), false, GL.Texture.WrapMode.ClampToEdge, GL.Texture.Format.Rgba);
+  const handle = TextureHandle.createForData(width, height, new Uint8Array(buffer.buffer), false, GL.Texture.WrapMode.ClampToEdge, GL.Texture.Format.Rgba);
+  return handle ? new LookupTexture(handle) : undefined;
 }
 
 /** @internal */
@@ -277,7 +278,7 @@ export class Batch extends Graphic {
   /** Public strictly for tests. */
   public readonly perTargetData = new PerTargetData(this);
   public readonly options: BatchOptions;
-  public readonly elementIndexLUT?: Texture2DHandle;
+  public readonly elementIndexLUT?: LookupTexture;
 
   // Chiefly for debugging.
   public get tileId(): string | undefined {
