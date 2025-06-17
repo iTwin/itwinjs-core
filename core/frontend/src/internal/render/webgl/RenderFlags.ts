@@ -196,8 +196,11 @@ export enum TextureUnit {
   SurfaceDraping1 = RealityMesh4,
   SurfaceDraping2 = RealityMesh5,
   SurfaceDraping3 = RealityMeshThematicGradient,
-  SurfaceDraping4 = WebGLRenderingContext.TEXTURE15,
-  SurfaceDraping5 = WebGLRenderingContext.TEXTURE16,
+
+  // For a Batch that contains any planar regions of RenderOrder.BlankingRegion, we must compare pick buffer contents based on
+  // element Id, not feature Id. The texture bound to this unit maps feature Id to a unique element index. Two feature Ids that
+  // correspond to the same element will map to the same element index.
+  ElementIndex = WebGLRenderingContext.TEXTURE15,
 }
 
 /**

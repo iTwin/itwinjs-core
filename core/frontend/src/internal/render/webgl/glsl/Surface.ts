@@ -624,8 +624,6 @@ export function addTexture(builder: ProgramBuilder, animated: IsAnimated, isThem
       TextureUnit.SurfaceDraping1,
       TextureUnit.SurfaceDraping2,
       TextureUnit.SurfaceDraping3,
-      TextureUnit.SurfaceDraping4,
-      TextureUnit.SurfaceDraping5,
     ];
 
     for (let i = 0; i < textureUnits.length; i++) {

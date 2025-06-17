@@ -579,18 +579,16 @@ export class Texture2DHandle extends TextureHandle {
 }
 
 export class LookupTexture {
-  private readonly _lutParams = new Float32Array(2);
+  public readonly handle: Texture2DHandle;
+  public readonly params = new Float32Array(2);
 
-  public constructor(private readonly _handle: Texture2DHandle) {
-    this._lutParams[0] = _handle.width;
-    this._lutParams[1] = _handle.height;
-  }
-
-  public bind(texture: UniformHandle, unit: TextureUnit, params: UniformHandle): void {
-    this._handle.bindSampler(texture, unit);
-    params.setUniform2fv(this._lutParams);
+  public constructor(handle: Texture2DHandle) {
+    this.handle = handle;
+    this.params[0] = handle.width;
+    this.params[1] = handle.height;
   }
 }
+
 /** @internal */
 export type ExternalTextureLoadCallback = (req: ExternalTextureRequest, data: TextureData) => void;
 
