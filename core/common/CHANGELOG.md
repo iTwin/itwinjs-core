@@ -1,6 +1,13 @@
 # Change Log - @itwin/core-common
 
-This log was last generated on Mon, 16 Jun 2025 15:03:02 GMT and should not be manually modified.
+This log was last generated on Tue, 17 Jun 2025 18:35:12 GMT and should not be manually modified.
+
+## 5.0.1
+Tue, 17 Jun 2025 18:33:52 GMT
+
+### Updates
+
+- Make CreateEmptyStandaloneIModelProps public
 
 ## 5.0.0
 Fri, 13 Jun 2025 20:25:38 GMT
