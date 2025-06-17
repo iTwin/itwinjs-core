@@ -5,7 +5,7 @@
 import { expect } from "chai";
 import { computeGraphemeOffsets, ComputeGraphemeOffsetsArgs, ComputeRangesForTextLayoutArgs, FindFontId, FindTextStyle, layoutTextBlock, LineLayout, RunLayout, TextBlockLayout, TextLayoutRanges } from "../../annotations/TextBlockLayout";
 import { Geometry, Range2d } from "@itwin/core-geometry";
-import { ColorDef, FontType, FractionRun, LineBreakRun, LineLayoutResult, Run, RunLayoutResult, TextAnnotation, TextAnnotationAnchor, TextBlock, TextBlockGeometryPropsEntry, TextBlockMargins, TextRun, TextStringProps, TextStyleSettings } from "@itwin/core-common";
+import { ColorDef, FontType, FractionRun, LineBreakRun, LineLayoutResult, Run, RunLayoutResult, TabRun, TextAnnotation, TextAnnotationAnchor, TextBlock, TextBlockGeometryPropsEntry, TextBlockMargins, TextRun, TextStringProps, TextStyleSettings } from "@itwin/core-common";
 import { SnapshotDb } from "../../IModelDb";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { ProcessDetector } from "@itwin/core-bentley";
@@ -42,7 +42,7 @@ function isIntlSupported(): boolean {
   return !ProcessDetector.isMobileAppBackend;
 }
 
-describe("layoutTextBlock", () => {
+describe.only("layoutTextBlock", () => {
   it("resolves TextStyleSettings from combination of TextBlock and Run", () => {
     const textBlock = TextBlock.create({ styleName: "block", styleOverrides: { widthFactor: 34, color: 0x00ff00 } });
     const run0 = TextRun.create({ content: "run0", styleName: "run", styleOverrides: { lineHeight: 56, color: 0xff0000 } });
@@ -154,6 +154,51 @@ describe("layoutTextBlock", () => {
     expect(tb.range.high.x).to.equal(6);
     expect(tb.range.high.y).to.equal(0);
     expect(tb.range.low.y).to.equal(-(lineSpacingFactor * 2 + lineHeight * 3));
+  });
+
+  it.only("applies tab shifts", () => {
+    const lineHeight = 1;
+    const tabInterval = 6;
+    const styleName = "testStyle";
+    const textBlock = TextBlock.create({ styleName, styleOverrides: { lineHeight, tabInterval } });
+
+    /* Text Block to produce: (_* represents a tab space)
+      ______a
+      ______bc
+      a_____a
+      bc____bc
+      cde___cde
+      cdefg_cde
+      cdefgh______cde
+      cdefghi_____cde
+    */
+
+    // Appends a line that looks like `stringOne` TAB `stringTwo` LINEBREAK
+    const appendLine = (stringOne: string, stringTwo: string, wantLineBreak: boolean = true) => {
+      if (stringOne.length > 0) textBlock.appendRun(TextRun.create({ styleName, content: stringOne }));
+      textBlock.appendRun(TabRun.create({ styleName, styleOverrides: { tabInterval } }));
+      if (stringTwo.length > 0) textBlock.appendRun(TextRun.create({ styleName, content: stringTwo }));
+      if (wantLineBreak) textBlock.appendRun(LineBreakRun.create({ styleName }));
+    }
+
+    appendLine("",      "a");
+    appendLine("",      "bc");
+    appendLine("a",     "a");
+    appendLine("bc",    "bc");
+    appendLine("cde",   "cde");
+    appendLine("cdefg", "cde"); // this one is the max tab distance before needing to move to the next tab stop
+    appendLine("cdefgh",      "cde"); // This one should push to the next tab stop.
+    appendLine("cdefghi",     "cde", false); // This one should push to the next tab stop.
+
+    const tb = doLayout(textBlock);
+    tb.lines.forEach((line, index) => {
+      const firstTextRun = (line.runs[0].source.type === "text") ? line.runs[0] : undefined;
+      const firstTabRun = (line.runs[0].source.type === "tab") ? line.runs[0] : line.runs[1];
+
+      const distance = (firstTextRun?.range.xLength() ?? 0) + firstTabRun.range.xLength();
+      const expectedDistance = ((firstTextRun?.range.xLength() || 0) >= tabInterval) ? tabInterval * 2 : tabInterval;
+      expect(distance).to.equal(expectedDistance, `Line ${index} does not have the expected tab distance. ${expectedDistance}`);
+    });
   });
 
   it("computes ranges based on custom line spacing and line height", () => {
@@ -1147,4 +1192,4 @@ describe("produceTextBlockGeometry", () => {
 
 
 // Ignoring the text strings from the spell checker
-// cspell:ignore jklmnop vwxyz defg hijk ghij klmno pqrstu Tanuki aabb eeff nggg amet adipiscing elit Phasellus pretium malesuada venenatis eleifend Donec sapien Nullam commodo accumsan lacinia metus enim pharetra lacus facilisis Duis suscipit quis feugiat fermentum ut augue Mauris iaculis odio rhoncus lorem viverra turpis elementum posuere Consolas अनुच्छेद
+// cspell:ignore jklmnop vwxyz defg hijk ghij klmno pqrstu Tanuki aabb eeff nggg amet adipiscing elit Phasellus pretium malesuada venenatis eleifend Donec sapien Nullam commodo accumsan lacinia metus enim pharetra lacus facilisis Duis suscipit quis feugiat fermentum ut augue Mauris iaculis odio rhoncus lorem viverra turpis elementum posuere Consolas अनुच्छेद cdefg cdefgh cdefghi
