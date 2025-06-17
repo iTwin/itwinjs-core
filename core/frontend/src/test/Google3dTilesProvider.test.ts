@@ -12,7 +12,7 @@ import { IModelConnection } from "../IModelConnection";
 import { LogoDecoration } from "../internal/GoogleMapsDecorator";
 import { IconSprites, Sprite } from "../Sprites";
 import { RealityTile, RealityTileTree, TileAdmin } from "../tile/internal";
-import {  Google3dTilesProvider } from "../RealityDataSource";
+import { Google3dTilesProvider } from "../RealityDataSource";
 import { createBlankConnection } from "./createBlankConnection";
 import { ScreenViewport } from "../Viewport";
 import { DecorateContext } from "../ViewContext";

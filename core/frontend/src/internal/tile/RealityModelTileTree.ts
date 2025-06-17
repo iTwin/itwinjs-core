@@ -261,7 +261,7 @@ export class RealityModelTileTreeProps {
   public get usesGeometricError(): boolean {
     return undefined !== this.maximumScreenSpaceError;
   }
-  
+
   constructor(json: any, root: any, rdSource: RealityDataSource, tilesetToDbTransform: Transform, public readonly tilesetToEcef?: Transform) {
     this.tilesetJson = root;
     this.dataSource = rdSource;
@@ -270,12 +270,12 @@ export class RealityModelTileTreeProps {
     if (json.asset.gltfUpAxis === undefined || json.asset.gltfUpAxis === "y" || json.asset.gltfUpAxis === "Y") {
       this.yAxisUp = true;
     }
-    
+
     const maxSSE = json.asset.extras?.maximumScreenSpaceError;
     if (typeof maxSSE === "number") {
       this.maximumScreenSpaceError = json.asset.extras?.maximumScreenSpaceError;
     } else if (rdSource.usesGeometricError) {
-      this.maximumScreenSpaceError = rdSource.maximumScreenSpaceError ?? 1;
+      this.maximumScreenSpaceError = rdSource.maximumScreenSpaceError ?? 16;
     }
   }
 }

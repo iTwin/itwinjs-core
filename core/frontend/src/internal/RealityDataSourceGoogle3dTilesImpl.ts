@@ -85,10 +85,10 @@ export class RealityDataSourceGoogle3dTilesImpl implements RealityDataSource {
     }
   }
 
-  protected setBaseUrl(url: string): void {
+  private setBaseUrl(url: string): void {
     const urlParts = url.split("/");
     const newUrl = new URL(url);
-    this._searchParams = newUrl.searchParams
+    this._searchParams = newUrl.searchParams;
     urlParts.pop();
     if (urlParts.length === 0) {
       this._baseUrl = "";

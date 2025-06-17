@@ -281,21 +281,32 @@ export class RealityDataSourceProviderRegistry {
 
 /**
  * Options for creating a Google Photorealistic 3D Tiles reality data source provider.
+ * The caller must provide either an API key or a function that returns an auth token.
  * @beta
  */
-export interface Google3dTilesProviderOptions {
+export type Google3dTilesProviderOptions = {
   /** Google Map Tiles API Key used to access Google 3D Tiles. */
-  apiKey?: string;
+  apiKey: string;
+  getAuthToken?: never;
+  /** If true, the data attributions/copyrights from the Google 3D Tiles will be displayed on screen. The Google Maps logo will always be displayed. Defaults to `true`. */
+  showCreditsOnScreen?: boolean
+} | {
+  apiKey?: never;
   /** Function that returns an OAuth token for authenticating with Google 3D Tiles. This token is expected to not contain the "Bearer" prefix. */
-  getAuthToken?: () => Promise<string | undefined>;
+  getAuthToken: () => Promise<string>;
   /** If true, the data attributions/copyrights from the Google 3D Tiles will be displayed on screen. The Google Maps logo will always be displayed. Defaults to `true`. */
   showCreditsOnScreen?: boolean;
-}
+};
 
 /**
  * Will provide Google Photorealistic 3D Tiles (in 3dTile format).
  * A valid API key or getAuthToken fuction must be supplied when creating this provider.
  * To use this provider, you must register it with [[IModelApp.realityDataSourceProviders]].
+ * Example usage:
+ * ```ts
+ * [[include:GooglePhotorealistic3dTiles_providerApiKey]]
+ * ```
+ * @see [Google Photorealistic 3D Tiles]($docs/learning/frontend/GooglePhotorealistic3dTiles.md)
  * @beta
  */
 export class Google3dTilesProvider implements RealityDataSourceProvider {
