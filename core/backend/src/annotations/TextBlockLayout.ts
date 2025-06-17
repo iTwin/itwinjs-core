@@ -6,7 +6,7 @@
  * @module ElementGeometry
  */
 
-import { BaselineShift, FontId, FontType, FractionRun, LineLayoutResult, Paragraph, Run, RunLayoutResult, TextBlock, TextBlockLayoutResult, TextBlockMargins, TextRun, TextStyleSettings, TextStyleSettingsProps } from "@itwin/core-common";
+import { BaselineShift, FontId, FontType, FractionRun, LineLayoutResult, Paragraph, Run, RunLayoutResult, TabRun, TextBlock, TextBlockLayoutResult, TextBlockMargins, TextRun, TextStyleSettings, TextStyleSettingsProps } from "@itwin/core-common";
 import { Geometry, Range2d } from "@itwin/core-geometry";
 import { IModelDb } from "../IModelDb";
 import { assert, NonFunctionPropertiesOf } from "@itwin/core-bentley";
@@ -264,6 +264,16 @@ class LayoutContext {
     layout.extendRange(denominator);
     return { layout, numerator, denominator };
   }
+
+  public computeRangeForTabRun(style: TextStyleSettings, source: TabRun, lineRange: Range2d): Range2d {
+    const interval = source.styleOverrides.tabInterval ?? style.tabInterval;
+    const tabEndX = interval - lineRange.xLength() % interval;
+
+    const range = new Range2d(0, 0, 0, style.lineHeight);
+    range.extendXY(tabEndX, range.low.y);
+
+    return range;
+  }
 }
 
 interface Segment {
@@ -347,16 +357,9 @@ export class RunLayout {
         denominatorRange = ranges.denominator;
         break;
       }
-      case "tab": {
-        const spaces = source.styleOverrides.tabInterval;
-        numChars = undefined !== spaces ? spaces : TextStyleSettings.defaultProps.tabInterval;
-        const ranges = context.computeRangeForText(" ".repeat(numChars), style, "none");
-        range = ranges.layout;
-        justificationRange = ranges.justification;
-        break;
-      }
-      default: {
-        // We do this so that blank lines space correctly without special casing later.
+      default: { // "linebreak" or "tab"
+      // "tab": Tabs rely on the context they are in, so we compute its range later.
+      // lineBreak: We do this so that blank lines space correctly without special casing later.
         range = new Range2d(0, 0, 0, style.lineHeight);
         break;
       }
@@ -407,6 +410,11 @@ export class RunLayout {
         numChars: segment.segment.length,
       });
     });
+  }
+
+  public applyTabShift(parent: LineLayout, context: LayoutContext) {
+    if (this.source instanceof TabRun)
+      this.range.setFrom(context.computeRangeForTabRun(this.style, this.source, parent.justificationRange));
   }
 
   public toResult(paragraph: Paragraph): RunLayoutResult {
@@ -580,6 +588,12 @@ export class TextBlockLayout {
         if ("linebreak" === run.source.type) {
           curLine.append(run);
           curLine = this.flushLine(context, curLine);
+          continue;
+        }
+
+        if ("tab" === run.source.type) {
+          run.applyTabShift(curLine, context);
+          curLine.append(run);
           continue;
         }
 
