@@ -4114,11 +4114,15 @@ export class Google3dTilesProvider implements RealityDataSourceProvider {
 }
 
 // @beta
-export interface Google3dTilesProviderOptions {
-    apiKey?: string;
-    getAuthToken?: () => Promise<string | undefined>;
+export type Google3dTilesProviderOptions = {
+    apiKey: string;
+    getAuthToken?: never;
     showCreditsOnScreen?: boolean;
-}
+} | {
+    apiKey?: never;
+    getAuthToken: () => Promise<string>;
+    showCreditsOnScreen?: boolean;
+};
 
 // @internal
 export class GoogleMapsDecorator implements Decorator {

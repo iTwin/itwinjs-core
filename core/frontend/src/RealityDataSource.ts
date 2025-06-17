@@ -340,7 +340,7 @@ export class Google3dTilesProvider implements RealityDataSourceProvider {
   public async initialize(): Promise<boolean> {
     const isActivated = await this._decorator.activate("satellite");
     if (!isActivated) {
-      const msg = `Failed to activate decorator`;
+      const msg = "Failed to activate decorator";
       Logger.logError(loggerCategory, msg);
       throw new BentleyError(BentleyStatus.ERROR, msg);
     }
