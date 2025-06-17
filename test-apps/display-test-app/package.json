@@ -80,7 +80,7 @@
   },
   "devDependencies": {
     "@bentley/formats-schema": "^1.0.0",
-    "@bentley/units-schema": "^1.0.8",
+    "@bentley/units-schema": "^1.0.9",
     "@bentley/aec-units-schema": "^1.0.3",
     "@itwin/build-tools": "workspace:*",
     "@itwin/eslint-plugin": "5.0.0-dev.1",

@@ -1,6 +1,30 @@
 # Change Log - @itwin/presentation-frontend
 
-This log was last generated on Fri, 06 Jun 2025 13:44:02 GMT and should not be manually modified.
+This log was last generated on Mon, 16 Jun 2025 15:03:02 GMT and should not be manually modified.
+
+## 5.0.0
+Fri, 13 Jun 2025 20:25:38 GMT
+
+### Updates
+
+- Add Symbols to prevent duplicate instances of package
+- Bumped `@itwin/unified-selection` version.
+- Handle Models' and SubCategories' selection when syncing `SelectionSet` to unified selection.
+- Upgrade compile target to ES2023 and module to ES2022
+- Add `type: "module"` to `package.json` to tell Node.js to load this package as ESM by default.
+- Deprecate unified selection related APIs.
+- Bump `@itwin/unified-selection` dependency version to `^1.2.0`.
+- Fix selection changes not being handled in certain scenarios: when using blank connections or when using multiple connections to the same iModel.
+- Expose `SelectionManager.selectionStorage` as a readonly member. This gives consumers a chance to start using selection storage directly instead of through soon-to-be-deprecated `SelectionManager`.
+- Remove `@internal` APIs from public barrel exports file.
+- Clean up APIs deprecated in 3.x
+- Clean up APIs deprecated in 3.x
+- Change core peer dependencies to strict version.
+
+## 4.11.6
+Mon, 16 Jun 2025 15:00:15 GMT
+
+_Version update only_
 
 ## 4.11.5
 Fri, 06 Jun 2025 13:41:18 GMT

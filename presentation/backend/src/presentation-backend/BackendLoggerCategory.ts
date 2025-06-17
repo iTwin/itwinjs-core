@@ -52,22 +52,22 @@ export enum PresentationBackendNativeLoggerCategory {
   ECPresentation_Serialization = "ECPresentation.Serialization",
 
   /* eslint-disable @typescript-eslint/no-duplicate-enum-values */
-  /** @deprecated in 4.0. The logging namespace is not used anymore. */
+  /** @deprecated in 4.0 - will not be removed until after 2026-06-13. The logging namespace is not used anymore. */
   ECPresentation_Localization = "ECPresentation.Localization",
-  /** @deprecated in 4.0. Use [[ECPresentation]] */
+  /** @deprecated in 4.0 - will not be removed until after 2026-06-13. Use [[ECPresentation]] */
   ECPresentation_RulesEngine = "ECPresentation.RulesEngine",
-  /** @deprecated in 4.0. Use [[ECPresentation_Content]] */
+  /** @deprecated in 4.0 - will not be removed until after 2026-06-13. Use [[ECPresentation_Content]] */
   ECPresentation_RulesEngine_Content = "ECPresentation.Content",
-  /** @deprecated in 4.0. The logging namespace is not used anymore. */
+  /** @deprecated in 4.0 - will not be removed until after 2026-06-13. The logging namespace is not used anymore. */
   ECPresentation_RulesEngine_Localization = "ECPresentation.Localization",
-  /** @deprecated in 4.0. Use [[ECPresentation_Hierarchies]] */
+  /** @deprecated in 4.0 - will not be removed until after 2026-06-13. Use [[ECPresentation_Hierarchies]] */
   ECPresentation_RulesEngine_Navigation = "ECPresentation.Navigation",
-  /** @deprecated in 4.0. Use [[ECPresentation_Hierarchies_Cache]] */
+  /** @deprecated in 4.0 - will not be removed until after 2026-06-13. Use [[ECPresentation_Hierarchies_Cache]] */
   ECPresentation_RulesEngine_Navigation_Cache = "ECPresentation.Navigation.Cache",
-  /** @deprecated in 4.0. Use [[ECPresentation_Tasks]] */
+  /** @deprecated in 4.0 - will not be removed until after 2026-06-13. Use [[ECPresentation_Tasks]] */
   ECPresentation_RulesEngine_Threads = "ECPresentation.Tasks",
-  /** @deprecated in 4.0. Use [[ECPresentation_Update]] */
+  /** @deprecated in 4.0 - will not be removed until after 2026-06-13. Use [[ECPresentation_Update]] */
   ECPresentation_RulesEngine_Update = "ECPresentation.Update",
-  /** @deprecated in 4.0. Use [[ECPresentation_RulesetVariables]] */
+  /** @deprecated in 4.0 - will not be removed until after 2026-06-13. Use [[ECPresentation_RulesetVariables]] */
   ECPresentation_RulesEngine_RulesetVariables = "ECPresentation.RulesetVariables",
 }

@@ -52,7 +52,7 @@ interface PresentationInternalProps {
  * instances, one for each frontend.
  *
  * @public
- * @deprecated in 4.8 - use [[PresentationProps]] instead.
+ * @deprecated in 4.8 - will not be removed until after 2026-06-13. Use [[PresentationProps]] instead.
  */
 export type MultiManagerPresentationProps = PresentationProps;
 
@@ -60,7 +60,7 @@ export type MultiManagerPresentationProps = PresentationProps;
  * Base props for initializing the [[Presentation]] library.
  *
  * @public
- * @deprecated in 4.8 - use [[PresentationProps]] instead.
+ * @deprecated in 4.8 - will not be removed until after 2026-06-13. Use [[PresentationProps]] instead.
  */
 export type PresentationPropsBase = PresentationProps;
 
@@ -69,7 +69,7 @@ export type PresentationPropsBase = PresentationProps;
  * [[PresentationManager]] instance for handling all requests.
  *
  * @public
- * @deprecated in 4.8 - use [[PresentationProps]] instead.
+ * @deprecated in 4.8 - will not be removed until after 2026-06-13. Use [[PresentationProps]] instead.
  */
 export type SingleManagerPresentationProps = Omit<PresentationProps, "unusedClientLifetime">;
 
