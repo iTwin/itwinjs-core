@@ -176,7 +176,7 @@ describe("Bearing format tests:", () => {
     }
   });
 
-  it("should correctly parse and roundtrip supported and reject unsupported bearing strings", async () => {
+  it("correctly parse and format supported bearing strings, reject unsupported strings, using Units.RAD and Units.ARC_DEG", async () => {
     const bearingFormatProps: FormatProps = {
       minWidth: 2,
       precision: 0,
@@ -197,14 +197,10 @@ describe("Bearing format tests:", () => {
 
     const bearingFormat = new Format("bearing-flexible-parser");
     await bearingFormat.fromJSON(unitsProvider, bearingFormatProps);
-    const bearingParser = await ParserSpec.create(bearingFormat, unitsProvider, degree);
-    const bearingFormatter = await FormatterSpec.create("bearing-flexible-formatter", bearingFormat, unitsProvider, {
-      name: "Units.ARC_DEG",
-      label: "°",
-      phenomenon: "Angle",
-      system: "si",
-      isValid: true,
-    });
+    const bearingParserDeg = await ParserSpec.create(bearingFormat, unitsProvider, degree);
+    const bearingFormatterDeg = await FormatterSpec.create("bearing-flexible-formatter", bearingFormat, unitsProvider, degree);
+    const bearingParserRad = await ParserSpec.create(bearingFormat, unitsProvider, rad);
+    const bearingFormatterRad = await FormatterSpec.create("bearing-flexible-formatter", bearingFormat, unitsProvider, rad);
 
     const validTestData = [
       { input: "N45 45 45E", expected:  45.7625, expectedText: "N45°45'45\"E" },
@@ -252,16 +248,23 @@ describe("Bearing format tests:", () => {
       { input: "s", expected: 180.0, expectedText: "S00°00'00\"E" },
     ];
 
-    for (const { input, expected, expectedText } of validTestData) {
-      const result = Parser.parseQuantityString(input, bearingParser);
+    const validateRoundTrip = (input: string, expected: number, expectedText: string, formatSpec: FormatterSpec, parserSpec: ParserSpec) => {
+      const result = Parser.parseQuantityString(input, parserSpec);
       if (!Parser.isParsedQuantity(result)) {
         expect.fail(`Expected a parsed quantity for input "${input}"`);
       }
       expect(result.value).to.be.closeTo(expected, 0.01);
-      if (expectedText) {
-        const formatted = Formatter.formatQuantity(result.value, bearingFormatter);
-        expect(formatted).to.equal(expectedText);
-      }
+      const formatted = Formatter.formatQuantity(result.value, formatSpec);
+      expect(formatted).to.equal(expectedText);
+    }
+
+    for (const { input, expected, expectedText } of validTestData) {
+      validateRoundTrip(input, expected, expectedText, bearingFormatterDeg, bearingParserDeg);
+
+      const radians = expected * (Math.PI / 180);
+      const normalizedAngle = radians % (2 * Math.PI);
+      validateRoundTrip(input, normalizedAngle, expectedText, bearingFormatterRad, bearingParserRad);
+
     }
     const unsupportedInputs = [
       "s45+45+45e",
@@ -270,7 +273,7 @@ describe("Bearing format tests:", () => {
       "s45-45-45e",
     ];
     for (const input of unsupportedInputs) {
-      const result = Parser.parseQuantityString(input, bearingParser);
+      const result = Parser.parseQuantityString(input, bearingParserDeg);
       expect(Parser.isParsedQuantity(result)).to.be.false;
     }
   });
