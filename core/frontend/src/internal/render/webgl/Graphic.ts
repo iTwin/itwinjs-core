@@ -249,8 +249,9 @@ export class PerTargetData {
   }
 }
 
-function createElementIndexLUT(featureTable: RenderFeatureTable): LookupTexture | undefined {
-  const { width, height } = computeDimensions(featureTable.numFeatures, 1, 0, System.instance.maxTextureSize);
+/** @internal exported for unit tests. */
+export function createElementIndexLUT(featureTable: RenderFeatureTable, maxDimension: number, preserveData?: boolean): LookupTexture | undefined {
+  const { width, height } = computeDimensions(featureTable.numFeatures, 1, 0, maxDimension);
   const buffer = new Uint32Array(width * height);
 
   let curElementIndex = 0;
@@ -263,14 +264,14 @@ function createElementIndexLUT(featureTable: RenderFeatureTable): LookupTexture 
       // A zero R and non-zero G, B, and/or A indicate the index of the element that produced the fragment.
       // All zeroes indicates neither.
       // Assign element indices as multiples of 0x100, starting at 0x100, to ensure zero R and non-zero G, B, and/or A.
-      elementIndex = curElementIndex + 0x100;
+      elementIndex = curElementIndex = curElementIndex + 0x100;
       elementIdToIndex.set(feature.elementId.lower, feature.elementId.upper, elementIndex);
     }
 
     buffer[feature.index] = elementIndex;
   }
 
-  const handle = TextureHandle.createForData(width, height, new Uint8Array(buffer.buffer), false, GL.Texture.WrapMode.ClampToEdge, GL.Texture.Format.Rgba);
+  const handle = TextureHandle.createForData(width, height, new Uint8Array(buffer.buffer), preserveData, GL.Texture.WrapMode.ClampToEdge, GL.Texture.Format.Rgba);
   return handle ? new LookupTexture(handle) : undefined;
 }
 
@@ -325,7 +326,7 @@ export class Batch extends Graphic {
     this.options = options ?? {};
 
     if (this.hasBlankingFill) {
-      this.elementIndexLUT = createElementIndexLUT(features);
+      this.elementIndexLUT = createElementIndexLUT(features, System.instance.maxTextureSize);
     }
   }
 
