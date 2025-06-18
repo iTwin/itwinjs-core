@@ -474,6 +474,24 @@ export class IModelTileTree extends TileTree {
   }
 
   public onScheduleEditingChanged(change: { changedElementIds: Set<Id64String> }, transformChanged: boolean) {
+    const displayStyle = IModelApp.viewManager.selectedView?.displayStyle;
+    const newScript = displayStyle?.scheduleScript;
+    const scriptRef = newScript ? new RenderSchedule.ScriptReference(displayStyle.id, newScript) : undefined;
+    const scriptInfo = IModelApp.tileAdmin.getScriptInfoForTreeId(this.modelId, scriptRef);
+
+    const sameScript = this.timeline === scriptInfo?.timeline;
+    if (!sameScript) {
+      this.decoder = acquireImdlDecoder({
+        type: this.batchType,
+        omitEdges: false === this.edgeOptions,
+        timeline: scriptInfo?.timeline,
+        iModel: this.iModel,
+        batchModelId: this.modelId,
+        is3d: this.is3d,
+        containsTransformNodes: this.containsTransformNodes,
+        noWorker: !IModelApp.tileAdmin.decodeImdlInWorker,
+      });
+    }
     const elemChanges: ElementGeometryChange[] = [];
 
     for (const id of change.changedElementIds) {
@@ -481,15 +499,16 @@ export class IModelTileTree extends TileTree {
         ? this.staticBranch.findElementRange(id)
         : undefined;
       if (!range) {
-        range = Range3d.createXYZXYZ(-1, -1, -1, 1, 1, 1);
+        range = this._rootTile.range.clone();
       }
 
       elemChanges.push({
         id,
-        type: transformChanged ? DbOpcode.Update : DbOpcode.Insert,
+        type: DbOpcode.Update,
         range,
       });
     }
+
     if (this._rootTile.tileState.type !== "dynamic")
       this._rootTile.transition(new ScheduleScriptDynamicState(this._rootTile, elemChanges));
   }
