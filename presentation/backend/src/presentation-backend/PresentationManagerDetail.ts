@@ -3,6 +3,7 @@
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
 /* eslint-disable @typescript-eslint/ban-ts-comment */
+
 import * as hash from "object-hash";
 import * as path from "path";
 import { IModelDb, IModelJsNative, IpcHost } from "@itwin/core-backend";
@@ -48,6 +49,7 @@ import {
   WithCancelEvent,
 } from "@itwin/presentation-common";
 import { deepReplaceNullsToUndefined, PresentationIpcEvents } from "@itwin/presentation-common/internal";
+import { normalizeFullClassName } from "@itwin/presentation-shared";
 import { PresentationBackendLoggerCategory } from "./BackendLoggerCategory.js";
 import {
   createDefaultNativePlatform,
@@ -101,6 +103,7 @@ export class PresentationManagerDetail implements Disposable {
         params.workerThreadsCount ?? 2,
         IpcHost.isValid ? ipcUpdatesHandler : noopUpdatesHandler,
         params.caching,
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         params.defaultFormats,
         params.useMmap,
       );
@@ -249,6 +252,7 @@ export class PresentationManagerDetail implements Disposable {
       requestId: NativePlatformRequestTypes.GetContentSet,
       rulesetId: this.registerRuleset(rulesetOrId),
       ...strippedOptions,
+      omitFormattedValues: true,
       keys: getKeysForContentRequest(requestOptions.keys, (map) => bisElementInstanceKeysProcessor(requestOptions.imodel, map)),
       descriptorOverrides: createContentDescriptorOverrides(descriptor),
     };
@@ -266,6 +270,7 @@ export class PresentationManagerDetail implements Disposable {
       requestId: NativePlatformRequestTypes.GetContent,
       rulesetId: this.registerRuleset(rulesetOrId),
       ...strippedOptions,
+      omitFormattedValues: true,
       keys: getKeysForContentRequest(requestOptions.keys, (map) => bisElementInstanceKeysProcessor(requestOptions.imodel, map)),
       descriptorOverrides: createContentDescriptorOverrides(descriptor),
     };
@@ -303,7 +308,7 @@ export class PresentationManagerDetail implements Disposable {
   ): Promise<LabelDefinition[]> {
     const concreteKeys = requestOptions.keys
       .map((k) => {
-        if (k.className === "BisCore:Element") {
+        if (normalizeFullClassName(k.className).toLowerCase() === "BisCore.Element".toLowerCase()) {
           return getElementKey(requestOptions.imodel, k.id);
         }
         return k;
@@ -504,6 +509,7 @@ function createNativePlatform(
   workerThreadsCount: number,
   updateCallback: (updateInfo: UpdateInfo | undefined) => void,
   caching: PresentationManagerProps["caching"],
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   defaultFormats: FormatsMap | undefined,
   useMmap: boolean | number | undefined,
 ): NativePlatformDefinition {
@@ -541,6 +547,7 @@ function createNativePlatform(
     return directory ? path.resolve(directory) : "";
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   function toNativeUnitFormatsMap(map: FormatsMap | undefined): NativePresentationDefaultUnitFormats | undefined {
     if (!map) {
       return undefined;

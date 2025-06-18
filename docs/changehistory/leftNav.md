@@ -10,6 +10,7 @@ closedPanels: ["Previous Versions", "Changelogs"]
 
 ### Versions
 
+- [4.11.0](./4.11.0.md)
 - [4.10.0](./4.10.0.md)
 - [4.9.0](./4.9.0.md)
 - [4.8.0](./4.8.0.md)
