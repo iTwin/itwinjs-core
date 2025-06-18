@@ -1,9 +1,9 @@
 import { expect } from "chai";
-import { ObjectLoadingController } from "../../utils/ObjectLoadingController";
+import { SchemaLoadingController } from "../../utils/SchemaLoadingController";
 
-describe("ObjectLoadingController tests", () => {
+describe("SchemaLoadingController tests", () => {
   it("controller started and awaited, properties set correctly", async () => {
-    const controller = new ObjectLoadingController();
+    const controller = new SchemaLoadingController();
     expect(controller.inProgress).to.be.false;
     expect(controller.isComplete).to.be.false;
 

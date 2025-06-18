@@ -9,7 +9,7 @@
  * and SchemaItem instances.
  * @internal
  */
-export class ObjectLoadingController {
+export class SchemaLoadingController {
   private _complete;
   private _inProgress;
   private _promise?: Promise<void>;

@@ -8,7 +8,7 @@
 
 import { ECSchemaNamespaceUris } from "../Constants";
 import { SchemaItemProps } from "../Deserialization/JsonProps";
-import { ObjectLoadingController } from "../utils/ObjectLoadingController";
+import { SchemaLoadingController } from "../utils/SchemaLoadingController";
 import { AbstractSchemaItemType, SchemaItemType, schemaItemTypeToXmlString, SupportedSchemaItemType } from "../ECObjects";
 import { ECSchemaError, ECSchemaStatus } from "../Exception";
 import { ECVersion, SchemaItemKey } from "../SchemaKey";
@@ -33,7 +33,7 @@ export abstract class SchemaItem {
   private _key: SchemaItemKey;
   private _description?: string;
   private _label?: string;
-  private _loadingController?: ObjectLoadingController;
+  private _loadingController?: SchemaLoadingController;
 
   /** @internal */
   constructor(schema: Schema, name: string) {
@@ -51,11 +51,11 @@ export abstract class SchemaItem {
    * Returns the ObjectLoadingController for this Schema. Maybe undefined.
    * @beta
    */
-  public get loadingController(): ObjectLoadingController | undefined{
+  public get loadingController(): SchemaLoadingController | undefined{
     return this._loadingController;
   }
 
-  public set loadingController(controller: ObjectLoadingController) {
+  public set loadingController(controller: SchemaLoadingController) {
     this._loadingController = controller;
   }
 
