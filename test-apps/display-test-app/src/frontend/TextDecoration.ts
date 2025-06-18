@@ -242,7 +242,7 @@ export class TextDecorationTool extends Tool {
         editor.appendBreak();
         break;
       case "tab":
-        const spaces = inArgs[1] ? parseInt(inArgs[1], 10) : undefined;
+        const spaces = inArgs[1] ? parseFloat(inArgs[1]) : undefined;
         editor.appendTab(spaces);
         break;
       case "paragraph":
