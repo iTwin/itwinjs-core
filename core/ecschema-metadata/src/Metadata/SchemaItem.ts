@@ -49,7 +49,7 @@ export abstract class SchemaItem {
 
   /**
    * Returns the ObjectLoadingController for this Schema. Maybe undefined.
-   * @beta
+   * @internal
    */
   public get loadingController(): SchemaLoadingController | undefined{
     return this._loadingController;
