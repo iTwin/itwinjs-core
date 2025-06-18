@@ -253,15 +253,17 @@ function createElementIndexLUT(featureTable: RenderFeatureTable): LookupTexture 
   const { width, height } = computeDimensions(featureTable.numFeatures, 1, 0, System.instance.maxTextureSize);
   const buffer = new Uint32Array(width * height);
 
-  // Start at 1. We write element index as RGBA to contour pick buffer output, which will be all zeroes if fragment is not from a contour line.
-  // The R component stores the contour group index and type, which will be zero if not a contour line.
-  // Zero R and non-zero G, B, and/or A indicate element index.
-  let curElementIndex = 1;
+  let curElementIndex = 0;
   const elementIdToIndex = new Id64.Uint32Map<number>();
   for (const feature of featureTable.iterable(PackedFeature.createWithIndex())) {
     let elementIndex = elementIdToIndex.get(feature.elementId.lower, feature.elementId.upper);
     if (undefined === elementIndex) {
-      elementIndex = curElementIndex++;
+      // We write the element index as RGBA to the contour pick buffer output.
+      // A zero in the R (low) byte indicates the fragment was not produced by a contour line.
+      // A zero R and non-zero G, B, and/or A indicate the index of the element that produced the fragment.
+      // All zeroes indicates neither.
+      // Assign element indices as multiples of 0x100, starting at 0x100, to ensure zero R and non-zero G, B, and/or A.
+      elementIndex = curElementIndex + 0x100;
       elementIdToIndex.set(feature.elementId.lower, feature.elementId.upper, elementIndex);
     }
 
