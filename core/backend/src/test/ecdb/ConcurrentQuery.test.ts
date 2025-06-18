@@ -11,7 +11,7 @@ async function delay(ms: number): Promise<void> {
   });
 }
 
-describe.only("ConcurrentQuery", () => {
+describe("ConcurrentQuery", () => {
   it("default config", () => {
     const testFile = IModelTestUtils.resolveAssetFile("test.bim");
     const db = SnapshotDb.openFile(testFile);
