@@ -265,9 +265,9 @@ class LayoutContext {
     return { layout, numerator, denominator };
   }
 
-  public computeRangeForTabRun(style: TextStyleSettings, source: TabRun, lineRange: Range2d): Range2d {
+  public computeRangeForTabRun(style: TextStyleSettings, source: TabRun, length: number): Range2d {
     const interval = source.styleOverrides.tabInterval ?? style.tabInterval;
-    const tabEndX = interval - lineRange.xLength() % interval;
+    const tabEndX = interval - length % interval;
 
     const range = new Range2d(0, 0, 0, style.lineHeight);
     range.extendXY(tabEndX, range.low.y);
@@ -413,8 +413,9 @@ export class RunLayout {
   }
 
   public applyTabShift(parent: LineLayout, context: LayoutContext) {
-    if (this.source instanceof TabRun)
-      this.range.setFrom(context.computeRangeForTabRun(this.style, this.source, parent.justificationRange));
+    if (this.source instanceof TabRun) {
+      this.range.setFrom(context.computeRangeForTabRun(this.style, this.source, parent.lengthFromLastTab));
+    }
   }
 
   public toResult(paragraph: Paragraph): RunLayoutResult {
@@ -455,6 +456,7 @@ export class LineLayout {
   public range = new Range2d(0, 0, 0, 0);
   public justificationRange = new Range2d(0, 0, 0, 0);
   public offsetFromDocument = { x: 0, y: 0 };
+  public lengthFromLastTab = 0; // Used to track the length from the last tab for tab runs.
   private _runs: RunLayout[] = [];
 
   public constructor(source: Paragraph) {
@@ -502,6 +504,12 @@ export class LineLayout {
       if ("linebreak" !== run.source.type) {
         const runJustificationRange = run.justificationRange?.cloneTranslated(runOffset);
         this.justificationRange.extendRange(runJustificationRange ?? runLayoutRange);
+      }
+
+      if (run.source.type === "tab") {
+        this.lengthFromLastTab = 0;
+      } else {
+        this.lengthFromLastTab += run.range.xLength();
       }
     }
   }

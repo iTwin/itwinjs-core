@@ -42,7 +42,7 @@ function isIntlSupported(): boolean {
   return !ProcessDetector.isMobileAppBackend;
 }
 
-describe.only("layoutTextBlock", () => {
+describe("layoutTextBlock", () => {
   it("resolves TextStyleSettings from combination of TextBlock and Run", () => {
     const textBlock = TextBlock.create({ styleName: "block", styleOverrides: { widthFactor: 34, color: 0x00ff00 } });
     const run0 = TextRun.create({ content: "run0", styleName: "run", styleOverrides: { lineHeight: 56, color: 0xff0000 } });
@@ -216,11 +216,21 @@ describe.only("layoutTextBlock", () => {
     textBlock.appendRun(TabRun.create({ styleName, styleOverrides: { tabInterval: 7 } }));
     textBlock.appendRun(LineBreakRun.create({ styleName }));
 
+    // line 3: "abc" TAB(7) "1/23" TAB(3) "abcde" TAB(7) LINEBREAK
+    textBlock.appendRun(TextRun.create({ styleName, content: "abc" }));
+    textBlock.appendRun(TabRun.create({ styleName, styleOverrides: { tabInterval: 7 } }));
+    textBlock.appendRun(FractionRun.create({ styleName, numerator: "1", denominator: "23" }));
+    textBlock.appendRun(TabRun.create({ styleName, styleOverrides: { tabInterval: 3 } }));
+    textBlock.appendRun(TextRun.create({ styleName, content: "abcde" }));
+    textBlock.appendRun(TabRun.create({ styleName, styleOverrides: { tabInterval: 7 } }));
+    textBlock.appendRun(LineBreakRun.create({ styleName }));
+
     const tb = doLayout(textBlock);
 
     const line0 = tb.lines[0];
     const line1 = tb.lines[1];
     const line2 = tb.lines[2];
+    const line3 = tb.lines[3];
 
     expect(line0.runs.length).to.equal(4);
     expect(line0.range.xLength()).to.equal(3 * tabInterval, `Lines with only tabs should have the correct range length`);
@@ -230,6 +240,9 @@ describe.only("layoutTextBlock", () => {
 
     expect(line2.runs.length).to.equal(5);
     expect(line2.range.xLength()).to.equal(7 + 2 + 7, `Multiple tabs with different intervals should be applied correctly`);
+
+    expect(line3.runs.length).to.equal(7);
+    expect(line3.range.xLength()).to.equal(7 + 3 + 7, `Multiple tabs with different intervals should be applied correctly`);
   });
 
   it("computes ranges based on custom line spacing and line height", () => {
@@ -534,7 +547,7 @@ describe.only("layoutTextBlock", () => {
   });
 
   it("wraps tabs", () => {
-    
+
   });
 
   it("performs word-wrapping with punctuation", function () {
