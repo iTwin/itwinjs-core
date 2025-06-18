@@ -559,9 +559,7 @@ export class TextBlock extends TextBlockComponent {
     return TextBlock.create({ styleName: "" });
   }
 
-  /** Returns true if every paragraph in this text block is empty.
-   * idk, should I get rid of this? I can't see a use for it. using isWhitespace is probably better in most cases.
-  */
+  /** Returns true if every paragraph in this text block is empty. */
   public get isEmpty(): boolean {
     return this.paragraphs.every((p) => p.runs.length === 0);
   }
