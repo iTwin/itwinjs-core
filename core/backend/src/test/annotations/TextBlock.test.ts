@@ -42,7 +42,7 @@ function isIntlSupported(): boolean {
   return !ProcessDetector.isMobileAppBackend;
 }
 
-describe("layoutTextBlock", () => {
+describe.only("layoutTextBlock", () => {
   it("resolves TextStyleSettings from combination of TextBlock and Run", () => {
     const textBlock = TextBlock.create({ styleName: "block", styleOverrides: { widthFactor: 34, color: 0x00ff00 } });
     const run0 = TextRun.create({ content: "run0", styleName: "run", styleOverrides: { lineHeight: 56, color: 0xff0000 } });
@@ -189,6 +189,47 @@ describe("layoutTextBlock", () => {
       const expectedDistance = ((firstTextRun?.range.xLength() || 0) >= tabInterval) ? tabInterval * 2 : tabInterval;
       expect(distance).to.equal(expectedDistance, `Line ${index} does not have the expected tab distance. ${expectedDistance}`);
     });
+  });
+
+  it("applies consecutive tab shifts", () => {
+    const lineHeight = 1;
+    const tabInterval = 6;
+    const styleName = "testStyle";
+    const textBlock = TextBlock.create({ styleName, styleOverrides: { lineHeight, tabInterval } });
+
+    // line 0: TAB TAB TAB LINEBREAK
+    textBlock.appendRun(TabRun.create({ styleName, styleOverrides: { tabInterval } }));
+    textBlock.appendRun(TabRun.create({ styleName, styleOverrides: { tabInterval } }));
+    textBlock.appendRun(TabRun.create({ styleName, styleOverrides: { tabInterval } }));
+    textBlock.appendRun(LineBreakRun.create({ styleName }));
+
+    // line 1: "abc" TAB TAB LINEBREAK
+    textBlock.appendRun(TextRun.create({ styleName, content: "abc" }));
+    textBlock.appendRun(TabRun.create({ styleName, styleOverrides: { tabInterval } }));
+    textBlock.appendRun(TabRun.create({ styleName, styleOverrides: { tabInterval } }));
+    textBlock.appendRun(LineBreakRun.create({ styleName }));
+
+    // line 2: "abc" TAB(7) TAB(2) TAB(7) LINEBREAK
+    textBlock.appendRun(TextRun.create({ styleName, content: "abc" }));
+    textBlock.appendRun(TabRun.create({ styleName, styleOverrides: { tabInterval: 7 } }));
+    textBlock.appendRun(TabRun.create({ styleName, styleOverrides: { tabInterval: 2 } }));
+    textBlock.appendRun(TabRun.create({ styleName, styleOverrides: { tabInterval: 7 } }));
+    textBlock.appendRun(LineBreakRun.create({ styleName }));
+
+    const tb = doLayout(textBlock);
+
+    const line0 = tb.lines[0];
+    const line1 = tb.lines[1];
+    const line2 = tb.lines[2];
+
+    expect(line0.runs.length).to.equal(4);
+    expect(line0.range.xLength()).to.equal(3 * tabInterval, `Lines with only tabs should have the correct range length`);
+
+    expect(line1.runs.length).to.equal(4);
+    expect(line1.range.xLength()).to.equal(2 * tabInterval, `Tabs should be applied correctly when they are at the end of a line`);
+
+    expect(line2.runs.length).to.equal(5);
+    expect(line2.range.xLength()).to.equal(7 + 2 + 7, `Multiple tabs with different intervals should be applied correctly`);
   });
 
   it("computes ranges based on custom line spacing and line height", () => {
@@ -490,6 +531,10 @@ describe("layoutTextBlock", () => {
 
     // "I am a cat. The name is Tanuki."
     expectLines("吾輩は猫である。名前はたぬき。", 1, ["吾", "輩", "は", "猫", "で", "あ", "る。", "名", "前", "は", "た", "ぬ", "き。"]);
+  });
+
+  it("wraps tabs", () => {
+    
   });
 
   it("performs word-wrapping with punctuation", function () {

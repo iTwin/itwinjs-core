@@ -117,7 +117,7 @@ function debugSnapPoints(builder: ElementGeometry.Builder, frame: TextFrameStyle
 /**
  * Draws debug geometry for each line and run in a TextBlockLayout.
  *
- * For each line and run, this function draws colored boxes to visualize their layout and boundaries.
+ * For each line and run, this function draws boxes to visualize their layout and boundaries.
  * Different run types (e.g., text, linebreak, fraction, tab) are assigned distinct colors for clarity.
  * This is useful for debugging text layout and alignment issues.
  *
