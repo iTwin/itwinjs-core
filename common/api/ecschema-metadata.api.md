@@ -1759,8 +1759,8 @@ export class Schema implements CustomAttributeContainerProps {
     // (undocumented)
     get label(): string | undefined;
     // @beta
-    get loadingController(): ObjectLoadingController | undefined;
-    set loadingController(controller: ObjectLoadingController);
+    get loadingController(): SchemaLoadingController | undefined;
+    set loadingController(controller: SchemaLoadingController);
     lookupItem(key: Readonly<SchemaItemKey> | string): Promise<SchemaItem | undefined>;
     // (undocumented)
     lookupItem<T extends typeof SchemaItem>(key: Readonly<SchemaItemKey> | string, itemConstructor: T): Promise<InstanceType<T> | undefined>;
@@ -1910,8 +1910,8 @@ export abstract class SchemaItem {
     // (undocumented)
     get label(): string | undefined;
     // @beta
-    get loadingController(): ObjectLoadingController | undefined;
-    set loadingController(controller: ObjectLoadingController);
+    get loadingController(): SchemaLoadingController | undefined;
+    set loadingController(controller: SchemaLoadingController);
     // (undocumented)
     get name(): string;
     static parseFullName(fullName: string): [string, string];
