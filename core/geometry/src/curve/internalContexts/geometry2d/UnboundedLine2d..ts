@@ -72,6 +72,8 @@ export class UnboundedLine2dByPointAndNormal extends ImplicitCurve2d {
       }
     /**
    * Create an UnboundedLine2dByPointAndNormal from XY parts of two points on the line.
+   * * The nominal origin is at pointA.
+   * * The line direction is from pointA to pointB, converted to a normal by createPointXYDirectionXY.
    * @param pointAX x coordinate of first point on the line
    * @param pointAY y coordinate of first point on the line
    * @param pointBX x coordinate of second point on the line
@@ -134,17 +136,17 @@ export class UnboundedLine2dByPointAndNormal extends ImplicitCurve2d {
     public unitVectorAlongLine () : Vector2d | undefined {
       return this.normal.rotate90CCWXY().normalize ();
     }
+    /**
+     * Drop a perpendicular from spacePoint to the line.   Emit that point to the handler.
+     * @param spacePoint
+     * @param handler
+     */
     public override emitPerpendiculars(spacePoint: Point2d,
       handler :(curvePoint: Point2d)=>any):any{
         const fraction = Geometry.fractionOfProjectionToVectorXYXY (
           spacePoint.x - this.point.x, spacePoint.y-this.point.y, this.normal.x, this.normal.y);
         handler (spacePoint.plusScaled (this.normal, -fraction));
       }
-   public  allNormalsToPoint(xy: XAndY):Point2d[] | undefined {
-    const fraction = Geometry.fractionOfProjectionToVectorXYXY (
-        xy.x - this.point.x, xy.y-this.point.y, this.normal.x, this.normal.y);
-    return [Point2d.create (xy.x - fraction * this.normal.x, xy.y - fraction * this.normal.y)];
-}
 /**
  * Return a new implicit line with its reference point given relative to newOrigin, and its perpendicular vector
  *    normalized.
@@ -161,7 +163,7 @@ return new UnboundedLine2dByPointAndNormal (
 }
 /**
  * Return a new implicit line with its reference point shifted by given multiple of its normal vector.
- * * The shift is applied directly to the existing normal -- no normalization or test for zero.
+ * * The shift is applied to the point, and the normal copied unchanged-- no normalization or test for zero.
  * @param shiftFactor multiplier for normal.
  * @return shifted line
 */

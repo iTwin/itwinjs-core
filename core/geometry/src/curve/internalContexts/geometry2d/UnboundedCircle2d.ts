@@ -47,7 +47,7 @@ export class UnboundedCircle2dByCenterAndRadius extends ImplicitCurve2d {
    * @param centerX x coordinate of center
    * @param centerY y coordinate of center
    * @param radius circle radius
-   * @returns
+   * @returns newly created circle object
    */
   public static createXYRadius(centerX: number, centerY: number, radius: number): UnboundedCircle2dByCenterAndRadius {
     return new UnboundedCircle2dByCenterAndRadius(Point2d.create(centerX, centerY), radius);
@@ -55,9 +55,11 @@ export class UnboundedCircle2dByCenterAndRadius extends ImplicitCurve2d {
 
   /**
    * Create an ImplicitCircle2d from an xy object and a radius.
+   * * Zero radius is valid.
+   * * The input coordinates are copied -- the center is NOT captured.
    * @param center xy coordinates of center
    * @param radius circle radius
-   * @returns
+   * @returns newly created circle object
    */
   public static createPointRadius(center: XAndY, radius: number): UnboundedCircle2dByCenterAndRadius {
     return new UnboundedCircle2dByCenterAndRadius(Point2d.create(center.x, center.y), radius);
@@ -73,12 +75,19 @@ public override functionValue (xy: XAndY) : number {
   /**
    *
    * @param xy space paoint
-   * @returns squared distance to center minus squared radius
+   * @returns gradient of the implicit function.
    */
   public override gradiant (xy: XAndY) : Vector2d {
-    return Vector2d.createStartEnd (this.center, xy);
+    return Vector2d.create(2 * (xy.x - this.center.x), 2 * (xy.y - this.center.y));
   }
 
+  /**
+   * Emit circle points for which a vector to the space point is perpendicular to the circle.
+   * * For a non-zero radius circle, there are two perpendiculars.  The one on the side of the space point is emitted first.
+   * * For a zero radius circle, the vector from center to the space point is the only perpendicular
+   * @param spacePoint
+   * @param handler
+   */
 public override emitPerpendiculars(spacePoint: Point2d,
    handler :(curvePoint: Point2d)=>any):any{
   const radialVector = Vector2d.createStartEnd (this.center, spacePoint).scaleToLength (this.radius);
@@ -135,8 +144,8 @@ public intersectCircle (other: UnboundedCircle2dByCenterAndRadius): Point2d[]{
   return points;
   }
 /**
- * Compute intersectionsn with another circle.
- * @param other second circle
+ * Compute intersectionsn with a line
+ * @param line the line.
  * @return array of 0, 1, or 2 points of intersection
  */
 public intersectLine (line: UnboundedLine2dByPointAndNormal): Point2d[]{
@@ -172,17 +181,5 @@ export class Point2dImplicitCurve2d {
   public constructor(point: Point2d, curve: ImplicitCurve2d) {
     this.point = point;
     this.curve = curve;
-  }
-}
-export class TaggedArray<TagType,MemberType> {
-  public tag: TagType;
-  public data: MemberType[];
-  /** CAPTURE tag and (optional) array.
-   * * If he data array is not given, an empty array is created.
-  */
-  public constructor  (tag: TagType, data?: MemberType[]){
-this.tag = tag;
-this.data = data !== undefined ? data : [];
-
   }
 }

@@ -33,7 +33,7 @@ import { CurveChain } from "./CurveCollection";
 import { CurvePrimitive } from "./CurvePrimitive";
 import { AnyCurve, AnyRegion } from "./CurveTypes";
 import { GeometryQuery } from "./GeometryQuery";
-import { Ellipse2d } from "./internalContexts/geometry2d/Ellipse2d";
+import { UnboundedEllipse2d } from "./internalContexts/geometry2d/UnboundedEllipse2d";
 import { ImplicitCurve2d } from "./internalContexts/geometry2d/implicitCurve2d";
 import { UnboundedCircle2dByCenterAndRadius } from "./internalContexts/geometry2d/UnboundedCircle2d";
 import { UnboundedHyperbola2d } from "./internalContexts/geometry2d/UnboundedHyperbola2d";
@@ -648,7 +648,7 @@ export class CurveFactory {
         }
       return result;
       }
-    else if (source instanceof Ellipse2d){
+    else if (source instanceof UnboundedEllipse2d){
       return  Arc3d.create (
         Point3d.createFrom (source.pointA),
         Vector3d.createFrom (source.vectorU),

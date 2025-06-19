@@ -1,4 +1,5 @@
 
+
 /*---------------------------------------------------------------------------------------------
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
@@ -683,7 +684,7 @@ it("CircleTangentCCR", () => {
   expect(ck.getNumErrors()).toBe(0);
 });
 
-it("MedialCurveCC", () => {
+it("MedialCurveCCB", () => {
   const ck = new Checker(true, true);
   const allGeometry: GeometryQuery[] = [];
 
@@ -719,26 +720,88 @@ it("MedialCurveCC", () => {
     x0 += xStepB;
   }
 
-  GeometryCoreTestIO.saveGeometry (allGeometry, "geometry2d", "medialCurveCC");
+  GeometryCoreTestIO.saveGeometry (allGeometry, "geometry2d", "medialCurveCCB");
   expect(ck.getNumErrors()).toBe(0);
 });
 
-it("UnboundedHyperbola2d", () => {
+it("UnboundedHyperbola2dB", () => {
   const ck = new Checker(true, true);
   const allGeometry: GeometryQuery[] = [];
 
   const curveA = UnboundedHyperbola2d.createCenterAndAxisVectors (
         Point2d.create (0,0), Vector2d.create (1,0), Vector2d.create (0,1));
+  const curveA1 = UnboundedHyperbola2d.createCenterAndAxisVectors (
+    Point2d.create (0,1), Vector2d.create (1,0), Vector2d.create (0,1));
   const curveB = UnboundedHyperbola2d.createCenterAndAxisVectors (
     Point2d.create (1,2), Vector2d.create (2,1), Vector2d.create (-1,3));
+  const curveCX = UnboundedHyperbola2d.createCenterAndAxisVectors (
+    Point2d.create (0,0), Vector2d.create (2,0), Vector2d.create (0,1));
+  const curveCY = UnboundedHyperbola2d.createCenterAndAxisVectors (
+    Point2d.create (1,2), Vector2d.create (0,2), Vector2d.create (2,0));
+  const curveD = UnboundedHyperbola2d.createCenterAndAxisVectors (
+    Point2d.create (0,0), Vector2d.create (1,0), Vector2d.create (1,1));
+  const curveE = UnboundedHyperbola2d.createCenterAndAxisVectors (
+    Point2d.create (0,0), Vector2d.create (1,0), Vector2d.create (0,-1));
+  const curveF = UnboundedHyperbola2d.createCenterAndAxisVectors (
+    Point2d.create (0,0), Vector2d.create (1,-1), Vector2d.create (1,1));
   let x0 = 0;
   const y0 = 0;
-    for (const curve of [curveA, curveB]){
+    for (const curve of [curveA, curveCX, curveCY, curveA1, curveB, curveD, curveE, curveF]){
       GeometryCoreTestIO.captureCloneGeometry (allGeometry,
         CurveFactory.createCurvePrimitiveFromImplicitCurve(curve), x0, y0);
+
+        GeometryCoreTestIO.consoleLog (" new curve", {a: curve.pointA, u: curve.vectorU, v: curve.vectorV});
+        /*
+              for (const radians of [0.0, 0.1, 0.2, 0.3]){
+        const perpFunction = curve.radiansToPerpFunction (radians);
+        // GeometryCoreTestIO.consoleLog ({radians, perpFunction});
+        ck.testCoordinate (0.0, perpFunction, {radians, perpFunction})
+      }
+        */
+
+        for (const radians of [0.0, 0.1, 0.5]){
+          const xy = curve.radiansToPoint2d (radians);
+          if (xy !== undefined){
+            const xy1 = curve.closestPoint (xy);
+            if (ck.testDefined (xy1, "cloesstPoint"))
+              ck.testPoint2d (xy, xy1, {radians, x0: xy.x, y0: xy.y, x1: xy1.x, y1:xy1.y});
+            // const uv = curve.globalToLocal (xy)!;
+            const f = curve.functionValue (xy);
+            // GeometryCoreTestIO.consoleLog ({radians, f});
+            ck.testCoordinate (0, f, {radians, f, x: xy.x, y: xy.y});
+            // const uv = curve.globalToLocal (xy)!;
+            // GeometryCoreTestIO.consoleLog ({onCurve: xy.toJSON(), projection: uv.toJSON()});
+          }
+        }
+// GeometryCoreTestIO.consoleLog("OFF CURVE TESTS");
+      for (const xy of [
+        Point2d.create (3,5),
+        Point2d.create (13,0.1),
+        Point2d.create (4,5),
+        Point2d.create (8,5),
+        Point2d.create (8,-1),
+        Point2d.create (2,0.01)]){
+        GeometryCoreTestIO.createAndCaptureXYMarker (allGeometry, 0, xy, 0.05, x0, 0);
+        curve.emitPerpendiculars (xy,
+          (curvePoint: Point2d)=>{
+            GeometryCoreTestIO.captureCloneGeometry (allGeometry,
+              LineSegment3d.createXYXY(xy.x, xy.y, curvePoint.x, curvePoint.y), x0,0);
+            // GeometryCoreTestIO.consoleLog({onCurve: curvePoint.toJSON()});
+            ck.testCoordinate (0, curve.functionValue (curvePoint), "point projects to hyperbola");
+            const gradF = curve.gradiant (curvePoint);
+            GeometryCoreTestIO.captureCloneGeometry (allGeometry,
+                [Point3d.createFrom (curvePoint), Point3d.createFrom (curvePoint.plusScaled (gradF, 0.2))],
+                x0, 0);
+            const vectorW = Vector2d.createStartEnd (xy, curvePoint);
+            const cross = gradF.crossProduct (vectorW);
+            GeometryCoreTestIO.consoleLog ({cross, curvePoint, xy, vectorW, gradF});
+            ck.testCoordinate (0, cross, "point to hyperbola is perpendicular");
+            }
+            );
+        }
       x0 += 30;
       }
 
-    GeometryCoreTestIO.saveGeometry (allGeometry, "geometry2d", "UnboundedHyperbola2d");
+    GeometryCoreTestIO.saveGeometry (allGeometry, "geometry2d", "UnboundedHyperbola2dB");
     expect(ck.getNumErrors()).toBe(0);
 });

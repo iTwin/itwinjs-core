@@ -8,7 +8,12 @@
 
 import { Point2d, Vector2d } from "../../../geometry3d/Point2dVector2d";
 import { XAndY } from "../../../geometry3d/XYZProps";
-
+/**
+ * Abstract base class for curves with an implicit 2d function.
+ * * Curves in the class are required to have an implicit functioni f(x,y)=0.
+ * * They MAY (but are not requried) to have a parametric form such as the RadiansToPoint2d interface.
+ * @internal
+ */
 export abstract class ImplicitCurve2d {
     /**
      * Return the implicit function value at xy
@@ -27,6 +32,29 @@ export abstract class ImplicitCurve2d {
     * @param spacePoint
     */
    public abstract emitPerpendiculars (spacePoint: Point2d,  handler :(curvePoint: Point2d)=>any):any;
+   /**
+    * Call emitPerpendiculars.  Return the closest of the perpendiculars.
+    * * Return undefined if no perpendiculars are received.
+    * @param spacePoint
+    *
+    */
+   public closestPoint (spacePoint: Point2d): Point2d | undefined {
+    let minDistanceSquared : number = Number.MAX_SAFE_INTEGER;
+    let point: Point2d | undefined;
+
+      // console.log ({space: spacePoint.toJSON()});
+
+    this.emitPerpendiculars (spacePoint,
+      (curvePoint: Point2d)=>{
+        const distanceSquared = curvePoint.distanceSquared (spacePoint);
+        // console.log ({distanceSquared, xy: curvePoint.toJSON(), minD: minDistanceSquared});
+        if (distanceSquared < minDistanceSquared){
+          point = curvePoint.clone ();
+          minDistanceSquared = distanceSquared;
+          }
+        });
+    return point;
+   }
     /**
     * Return true if the item has degenerate defining data.
     */
@@ -35,6 +63,12 @@ export abstract class ImplicitCurve2d {
      * return a clone of the curve.
      */
     public abstract clone (): ImplicitCurve2d;
+}
+/** Interface with methods for parametric evaluations */
+export interface RadiansToPoint2dMethods {
+  /** Evaluate the curve point at specified radians.
+   */
+radiansToPoint2d (radians: number): Point2d | undefined;
 }
 
 export class Point2dImplicitCurve2d {
@@ -50,7 +84,11 @@ export class Point2dImplicitCurve2d {
     this.curve = curve;
   }
 }
-
+/**
+ * Carrier class containing:
+ * * a curve which is a subclass of ImplicitCurve2d
+ * * an array of paired point and ImplicitCurve2d.
+ */
 export class ImplicitGeometryMarkup<GeometryType extends ImplicitCurve2d> {
     public curve: GeometryType;
     public data: Point2dImplicitCurve2d[];
@@ -63,46 +101,55 @@ export class ImplicitGeometryMarkup<GeometryType extends ImplicitCurve2d> {
       this.data = [];
 
     }
-
+/** Create an ImplicitGeometryMarkup with a specified curve and empty data array.
+ *
+*/
     public static createCapture<GeometryTypeA extends ImplicitCurve2d> (circle: GeometryTypeA): ImplicitGeometryMarkup<GeometryTypeA> {
       return new ImplicitGeometryMarkup<GeometryTypeA>(circle);
     }
 
 /**
- * * Use the curve's emitPerpendiculars method to examine all perpendiculars from spacePoint to the curve.
+ * * Use the otherCurve's emitPerpendiculars method to examine all perpendiculars from spacePoint to the curve.
  * * For each such point, compute distane from bias point.
  * * Choose the one whose distance is closest to biasDistance.
  * * push the chosen point on the data array.
- * @param spacePoint
- * @param curve
- * @param biasPoint
- * @param biasDistance
+ * @param spacePoint point to project to otherCurve
+ * @param otherCurve target curve for projection
+ * @param referencePoint reference point for point selection
+ * @param biasDistance preferred distance.
  * @returns
  */
   public appendClosePoint (spacePoint: Point2d,
-    curve:ImplicitCurve2d,
-    biasPoint: XAndY,
+    otherCurve:ImplicitCurve2d,
+    referencePoint: XAndY,
     biasDistance: number,
   ):boolean{
     let dMin : undefined | number;
     let closestPoint;
-    curve.emitPerpendiculars (spacePoint,
+    otherCurve.emitPerpendiculars (spacePoint,
        (curvePoint: Point2d) =>{
-        const d = Math.abs(curvePoint.distance (biasPoint) - Math.abs (biasDistance));
+        const d = Math.abs(curvePoint.distance (referencePoint) - Math.abs (biasDistance));
           if (dMin === undefined || d < dMin){
             dMin = d;
             closestPoint = curvePoint.clone();
             }
       });
       if (closestPoint !== undefined)
-        this.data.push (new Point2dImplicitCurve2d (closestPoint, curve));
+        this.data.push (new Point2dImplicitCurve2d (closestPoint, otherCurve));
     return true;
   }
+  /**
+   * Find closest points of an array of curves.
+   * @param spacePoint point to project to otherCurve
+   * @param referencePoint reference point for point selection
+   * @param biasDistance preferred distance.
+   * @param otherCurves
+   */
   public closePointsOfGeometry (
-      center: Point2d, biasPoint: Point2d, biasRadius: number,
-      curves: ImplicitCurve2d[]){
-        for (const c of curves){
-        this.appendClosePoint (center, c, biasPoint, biasRadius);
+      spacePoint: Point2d, referencePoint: Point2d, biasRadius: number,
+      otherCurves: ImplicitCurve2d[]){
+        for (const c of otherCurves){
+        this.appendClosePoint (spacePoint, c, referencePoint, biasRadius);
         }
       }
 

@@ -16,7 +16,7 @@ import { Point2dImplicitCurve2d, UnboundedCircle2dByCenterAndRadius } from "./Un
 import { UnboundedLine2dByPointAndNormal } from "./UnboundedLine2d.";
 import { XAndY } from "../../../geometry3d/XYZProps";
 import { UnboundedHyperbola2d } from "./UnboundedHyperbola2d";
-import { Ellipse2d } from "./Ellipse2d";
+import { UnboundedEllipse2d } from "./UnboundedEllipse2d";
 
 /**
  * Itemization of constraints for line and circle construction.
@@ -392,7 +392,7 @@ export class ConstrainedConstruction {
     return result;
   }
   /**
-   *
+   * special case CCC tangent construction when inputs are colinear.
    * @param circleA first input circle
    * @param circleB second input circle
    * @param circleC.center third inpu circle
@@ -728,7 +728,7 @@ circleB: UnboundedCircle2dByCenterAndRadius
   if (discriminant > 0.0){
     return UnboundedHyperbola2d.createCenterAndAxisVectors (origin, vectorU, vectorV);
   } else if (discriminant < 0.0) {
-    return Ellipse2d.createCenterAndAxisVectors (origin, vectorU, vectorV);
+    return UnboundedEllipse2d.createCenterAndAxisVectors (origin, vectorU, vectorV);
   }
   return undefined;
   }

@@ -15,13 +15,14 @@ import { TrigPolynomial } from "../../../numerics/Polynomials";
 import { ImplicitCurve2d } from "./implicitCurve2d";
 
 /**
- * Internal class for an ellipse in the xy plane.The ellipse equation in angular parameterization is
+ * Class for an ellipse in the xy plane.The ellipse equation in angular parameterization is
  * * X = A + U * cos(theta) + V * sin(theta)
  * which means that in the (skewed and scaled) coordinate system with origin at A and local u and v as
  *   multiples of U and V the implicit equation is
  * * u^2 + v^2 = 1
+ * @internal
  */
-export class Ellipse2d extends ImplicitCurve2d {
+export class UnboundedEllipse2d extends ImplicitCurve2d {
   /** The Cartesian coordinates of any center on the line. */
   public pointA: Point2d;
   /** The local u axis direction. */
@@ -38,40 +39,47 @@ export class Ellipse2d extends ImplicitCurve2d {
     /**
      * Return a clone of this circle.
      */
-    public clone () : Ellipse2d {
+    public clone () : UnboundedEllipse2d {
       // (The create method clones the inputs . . .)
-      return  Ellipse2d.createCenterAndAxisVectors (this.pointA, this.vectorU, this.vectorV);
+      return  UnboundedEllipse2d.createCenterAndAxisVectors (this.pointA, this.vectorU, this.vectorV);
     }
     /**
      * Return a clone of this circle, with radius negated
      */
 
   /**
-   * Create Ellipse2d with scale factors
+   * Create an axis-aligned UnboundedEllipse2d with axis lengths
    * * The implicit equation is
-   *     (x/a)^2 + (y/b)^2 = 1
+   *     (x/scaleU)^2 + (y/scaleV)^2 = 1
    * @param centerX x coordinate of center
    * @param centerY y coordinate of center
-   * @param radius circle radius
+   * @param scaleX x axis radius
+   * @param scaleV y axis radius
    * @returns
    */
-  public static createFromCenterAndScales(centerX: number, centerY: number, scaleU: number, scaleV: number): Ellipse2d {
-    return new Ellipse2d(Point2d.create(centerX, centerY),
-          Vector2d.create (scaleU,0), Vector2d.create (0, scaleV));
+  public static createFromCenterAndScales(centerX: number, centerY: number, scaleX: number, scaleY
+    : number): UnboundedEllipse2d {
+    return new UnboundedEllipse2d(Point2d.create(centerX, centerY),
+          Vector2d.create (scaleX,0), Vector2d.create (0, scaleY));
   }
 
   /**
-   * Create an UnboundedHyperbola2d from an xy object and a radius.
+   * Create an UnboundedEllipse2d from xy coordinates and axis vectors.
    * @param pointA xy coordinates of center
-   * @param vectorU vector from pointA to to theta=0 vertex, i.e. along axis on the "inside" of the curve
-   * @param vectorV vector from pointA to the theta=90
+   * @param vectorU vector from pointA to to theta=0 point
+   * @param vectorV vector from pointA to the theta=90 point
    * @returns
    */
-  public static createCenterAndAxisVectors(center: XAndY, vectorU: XAndY, vectorV: XAndY): Ellipse2d {
-    return new Ellipse2d(Point2d.create (center.x, center.y),
+  public static createCenterAndAxisVectors(center: XAndY, vectorU: XAndY, vectorV: XAndY): UnboundedEllipse2d {
+    return new UnboundedEllipse2d(Point2d.create (center.x, center.y),
           Vector2d.create (vectorU.x, vectorU.y),
           Vector2d.create (vectorV.x, vectorV.y));
   }
+  /**
+   * Convert the coordinates of spacePoint to local coordinates relative to the ellipse vectors.
+   * @param spacePoint point for coordinate conversion
+   * @returns
+   */
   public globalToLocal (spacePoint: XAndY):Vector2d | undefined{
     const result = Vector2d.create ();
     if (SmallSystem.linearSystem2d (
@@ -81,9 +89,9 @@ export class Ellipse2d extends ImplicitCurve2d {
     return undefined;
   }
   /**
-   *
+   * Return the implicit function value at xy.
    * @param xy space paoint
-   * @returns squared distance to center minus squared radius
+   * @returns squared local (uv) coordinates minus 1.
    */
 public override functionValue (xy: XAndY) : number {
   const vectorUV = this.globalToLocal (xy);
@@ -94,7 +102,7 @@ public override functionValue (xy: XAndY) : number {
   /**
    *
    * @param xy space paoint
-   * @returns squared distance to center minus squared radius
+   * @returns gradient of the implicit function
    */
   public override gradiant (xy: XAndY) : Vector2d {
     const vectorUV = this.globalToLocal (xy);
@@ -102,7 +110,13 @@ public override functionValue (xy: XAndY) : number {
       return Vector2d.create (0,0);
     return Vector2d.create (2 * vectorUV.x, 2 * vectorUV.y);
     }
-
+/**
+ * Find points that are on the ellipse at foot of perpendiculars to the space ponit.
+ * Pass each point to the handler.
+ * * 0 to 4 handler calls are possible.
+ * @param spacePoint point to project to the ellipse
+ * @param handler function to receive curve points.
+ */
 public override emitPerpendiculars(spacePoint: Point2d,
    handler :(curvePoint: Point2d)=>any):any{
     const centerToSpacePoint = Vector2d.createStartEnd (this.pointA, spacePoint);
@@ -141,7 +155,7 @@ public override isDegenerate ():boolean{
  *      * The weak test is a test for the same implicit set
  * @returns true if identical to tolerance.
  */
-public isSameEllipse (other: Ellipse2d, negatedAndExchangedAxesAreEqual: boolean = false):boolean{
+public isSameEllipse (other: UnboundedEllipse2d, negatedAndExchangedAxesAreEqual: boolean = false):boolean{
   if (Geometry.isSamePoint2d (this.pointA, other.pointA)){
     if (!negatedAndExchangedAxesAreEqual){
       // simple equality test on the vectors . .
