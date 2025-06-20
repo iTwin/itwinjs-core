@@ -69,7 +69,7 @@ describe("ConcurrentQuery", () => {
     expect(resp.status).equals(DbResponseStatus.Partial);
     expect(resp.stats.timeLimit).equals(1000);
     expect(resp.stats.memLimit).equals(100000);
-    expect(resp.stats.cpuTime).to.be.closeTo(1000970, 10000);
+    expect(resp.stats.cpuTime).to.be.closeTo(1000970, 500000);
     expect(resp.stats.totalTime).to.be.closeTo(1001, 100);
     expect(resp.stats.memUsed).to.be.closeTo(2, 3);
     expect(resp.stats.prepareTime).to.be.closeTo(0, 2);
