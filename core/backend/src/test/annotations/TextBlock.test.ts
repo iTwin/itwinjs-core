@@ -5,7 +5,7 @@
 import { expect } from "chai";
 import { computeGraphemeOffsets, ComputeGraphemeOffsetsArgs, ComputeRangesForTextLayoutArgs, FindFontId, FindTextStyle, layoutTextBlock, LineLayout, RunLayout, TextBlockLayout, TextLayoutRanges } from "../../annotations/TextBlockLayout";
 import { Geometry, Range2d } from "@itwin/core-geometry";
-import { ColorDef, FontType, FractionRun, LineBreakRun, LineLayoutResult, Run, RunLayoutResult, TextAnnotation, TextAnnotationAnchor, TextBlock, TextBlockGeometryPropsEntry, TextBlockMargins, TextRun, TextStringProps, TextStyleSettings } from "@itwin/core-common";
+import { ColorDef, FontType, FractionRun, LineBreakRun, LineLayoutResult, Paragraph, Run, RunLayoutResult, TextAnnotation, TextAnnotationAnchor, TextBlock, TextBlockGeometryPropsEntry, TextBlockMargins, TextRun, TextStringProps, TextStyleSettings } from "@itwin/core-common";
 import { SnapshotDb } from "../../IModelDb";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { Id64String, ProcessDetector } from "@itwin/core-bentley";
@@ -42,34 +42,182 @@ function isIntlSupported(): boolean {
   return !ProcessDetector.isMobileAppBackend;
 }
 
-describe("layoutTextBlock", () => {
-  it("resolves TextStyleSettings from combination of TextBlock and Run", () => {
-    const textBlock = TextBlock.create({ styleId: "0x42", styleOverrides: { widthFactor: 34, color: 0x00ff00 } });
-    const run0 = TextRun.create({ content: "run0", styleId: "0x43", styleOverrides: { lineHeight: 56, color: 0xff0000 } });
-    const run1 = TextRun.create({ content: "run1", styleId: "0x43", styleOverrides: { widthFactor: 78, fontName: "run1" } });
-    textBlock.appendRun(run0);
-    textBlock.appendRun(run1);
+function findTextStyleImpl(id: Id64String): TextStyleSettings {
+  switch (id) {
+    case "0x42":
+      return TextStyleSettings.fromJSON({ lineSpacingFactor: 12, fontName: "block" });
+    case "0x43":
+      return TextStyleSettings.fromJSON({ lineSpacingFactor: 55, fontName: "paragraph" });
+    case "0x44":
+      return TextStyleSettings.fromJSON({ lineSpacingFactor: 99, fontName: "run" });
+    default:
+      return TextStyleSettings.fromJSON({ lineSpacingFactor: 1, fontName: "other" });
+  }
+}
 
-    const tb = doLayout(textBlock, {
-      findTextStyle: (id: Id64String) => TextStyleSettings.fromJSON(id === "0x42" ? { lineSpacingFactor: 12, fontName: "block" } : { lineSpacingFactor: 99, fontName: "run" }),
+describe("layoutTextBlock", () => {
+  describe("resolves TextStyleSettings", () => {
+    it("inherits styling from TextBlock when Paragraph and Run have no styleId", () => {
+      const textBlock = TextBlock.create({ styleId: "0x42" });
+      const run = TextRun.create({ content: "test", styleId: "" });
+      textBlock.appendParagraph();
+      textBlock.appendRun(run);
+
+      const tb = doLayout(textBlock, {
+        findTextStyle: findTextStyleImpl,
+      });
+
+      expect(tb.lines.length).to.equal(1);
+      expect(tb.lines[0].runs.length).to.equal(1);
+
+      const runStyle = tb.lines[0].runs[0].style;
+      expect(runStyle.fontName).to.equal("block");
     });
 
-    expect(tb.lines.length).to.equal(1);
-    expect(tb.lines[0].runs.length).to.equal(2);
+    it("inherits styling from Paragraph when Run has no styleId", () => {
+      const textBlock = TextBlock.create({ styleId: "0x42" });
+      const paragraph = Paragraph.create({ styleId: "0x43" });
+      const run = TextRun.create({ content: "test", styleId: "" });
+      textBlock.paragraphs.push(paragraph);
+      textBlock.appendRun(run);
 
-    const s0 = tb.lines[0].runs[0].style;
-    expect(s0.lineHeight).to.equal(1);
-    expect(s0.lineSpacingFactor).to.equal(12);
-    expect(s0.widthFactor).to.equal(34);
-    expect(s0.fontName).to.equal("run");
-    expect(s0.color).to.equal(0xff0000);
+      const tb = doLayout(textBlock, {
+        findTextStyle: findTextStyleImpl,
+      });
 
-    const s1 = tb.lines[0].runs[1].style;
-    expect(s1.widthFactor).to.equal(34);
-    expect(s1.lineSpacingFactor).to.equal(12);
-    expect(s1.lineHeight).to.equal(1);
-    expect(s1.fontName).to.equal("run1");
-    expect(s1.color).to.equal("subcategory");
+      expect(tb.lines.length).to.equal(1);
+      expect(tb.lines[0].runs.length).to.equal(1);
+
+      const runStyle = tb.lines[0].runs[0].style;
+      expect(runStyle.fontName).to.equal("paragraph");
+    });
+
+    it("uses Run style when Run has styleId", () => {
+      const textBlock = TextBlock.create({ styleId: "0x42" });
+      const paragraph = Paragraph.create({ styleId: "0x43" });
+      const run = TextRun.create({ content: "test", styleId: "0x44" });
+      textBlock.paragraphs.push(paragraph);
+      textBlock.appendRun(run);
+
+      const tb = doLayout(textBlock, {
+        findTextStyle: findTextStyleImpl,
+      });
+
+      expect(tb.lines.length).to.equal(1);
+      expect(tb.lines[0].runs.length).to.equal(1);
+
+      const runStyle = tb.lines[0].runs[0].style;
+      expect(runStyle.fontName).to.equal("run");
+    });
+
+    it("still uses TextBlock specific styles when Run has styleId", () => {
+      // Some style settings only make sense on a TextBlock, so they are always applied from the TextBlock, even if the Run has a styleId.
+      const textBlock = TextBlock.create({ styleId: "0x42" });
+      const run = TextRun.create({ content: "test", styleId: "0x44" });
+      textBlock.appendParagraph();
+      textBlock.appendRun(run);
+
+      const tb = doLayout(textBlock, {
+        findTextStyle: findTextStyleImpl,
+      });
+
+      expect(tb.lines.length).to.equal(1);
+      expect(tb.lines[0].runs.length).to.equal(1);
+
+      const runStyle = tb.lines[0].runs[0].style;
+      expect(runStyle.lineSpacingFactor).to.equal(12);
+    });
+
+    it("inherits overrides from TextBlock, Paragraph and Run when there is no styleId", () => {
+      const textBlock = TextBlock.create({ styleId: "", styleOverrides: { widthFactor: 34, lineHeight: 3, lineSpacingFactor: 12, isBold: true } });
+      const paragraph = Paragraph.create({ styleId: "", styleOverrides: { lineHeight: 56, color: 0xff0000 } });
+      const run = TextRun.create({ content: "test", styleId: "", styleOverrides: { widthFactor: 78, fontName: "override" } });
+      textBlock.paragraphs.push(paragraph);
+      textBlock.appendRun(run);
+
+      const tb = doLayout(textBlock, {
+        findTextStyle: findTextStyleImpl,
+      });
+
+      expect(tb.lines.length).to.equal(1);
+      expect(tb.lines[0].runs.length).to.equal(1);
+
+      const runStyle = tb.lines[0].runs[0].style;
+      // widthFactor is always taken from the TextBlock, even if the Run has a styleId or overrides
+      expect(runStyle.widthFactor).to.equal(34);
+      // lineHeight is always taken from the TextBlock, even if the Run has a styleId or overrides
+      expect(runStyle.lineHeight).to.equal(3);
+      // lineSpacingFactor is always taken from the TextBlock, even if the Run has a styleId or overrides
+      expect(runStyle.lineSpacingFactor).to.equal(12);
+      expect(runStyle.fontName).to.equal("override");
+      expect(runStyle.color).to.equal(0xff0000);
+      expect(runStyle.isBold).to.be.true;
+    });
+
+    it("does not inherit overrides in TextBlock or Paragraph when Run has styleId", () => {
+      const textBlock = TextBlock.create({ styleId: "0x42", styleOverrides: { widthFactor: 34, lineHeight: 3, lineSpacingFactor: 12, isBold: true }});
+      const paragraph = Paragraph.create({ styleId: "", styleOverrides: { lineHeight: 56, color: 0xff0000 } });
+      const run = TextRun.create({ content: "test", styleId: "0x44", styleOverrides: { widthFactor: 78, lineHeight: 6, lineSpacingFactor: 24, fontName: "override" } });
+      textBlock.paragraphs.push(paragraph);
+      textBlock.appendRun(run);
+
+      const tb = doLayout(textBlock, {
+        findTextStyle: findTextStyleImpl,
+      });
+
+      expect(tb.lines.length).to.equal(1);
+      expect(tb.lines[0].runs.length).to.equal(1);
+
+      const runStyle = tb.lines[0].runs[0].style;
+      // widthFactor is always taken from the TextBlock, even if the Run has a styleId or overrides
+      expect(runStyle.widthFactor).to.equal(34);
+      // lineHeight is always taken from the TextBlock, even if the Run has a styleId or overrides
+      expect(runStyle.lineHeight).to.equal(3);
+      // lineSpacingFactor is always taken from the TextBlock, even if the Run has a styleId or overrides
+      expect(runStyle.lineSpacingFactor).to.equal(12);
+      expect(runStyle.fontName).to.equal("override");
+      expect(runStyle.color).to.equal("subcategory");
+      expect(runStyle.isBold).to.be.false;
+    });
+
+    it("resets styling even if the styleId is the same", () => {
+      const textBlock = TextBlock.create({ styleId: "0x42", styleOverrides: { isBold: true, fontName: "blockFont" } });
+      const paragraph = Paragraph.create({ styleId: "0x42", styleOverrides: { color: 0xff0000, fontName: "paragraphFont" } });
+      const run = TextRun.create({ content: "test", styleId: "" });
+      textBlock.paragraphs.push(paragraph);
+      textBlock.appendRun(run);
+
+      const tb = doLayout(textBlock, {
+        findTextStyle: findTextStyleImpl,
+      });
+
+      expect(tb.lines.length).to.equal(1);
+      expect(tb.lines[0].runs.length).to.equal(1);
+
+      const runStyle = tb.lines[0].runs[0].style;
+      expect(runStyle.fontName).to.equal("paragraphFont");
+      expect(runStyle.color).to.equal(0xff0000);
+      expect(runStyle.isBold).to.be.false;
+    });
+
+    it("takes child overrides over parent overrides", () => {
+      //...unless they are TextBlock specific as covered in other tests
+      const textBlock = TextBlock.create({ styleId: "", styleOverrides: { fontName: "grandparent" } });
+      const paragraph = Paragraph.create({ styleId: "", styleOverrides: { fontName: "parent" } });
+      const run = TextRun.create({ content: "test", styleId: "", styleOverrides: { fontName: "child" } });
+      textBlock.paragraphs.push(paragraph);
+      textBlock.appendRun(run);
+
+      const tb = doLayout(textBlock, {
+        findTextStyle: findTextStyleImpl,
+      });
+
+      expect(tb.lines.length).to.equal(1);
+      expect(tb.lines[0].runs.length).to.equal(1);
+
+      const runStyle = tb.lines[0].runs[0].style;
+      expect(runStyle.fontName).to.equal("child");
+    });
   });
 
   it("aligns text to center based on height of stacked fraction", () => {

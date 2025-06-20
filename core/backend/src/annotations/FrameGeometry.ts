@@ -13,10 +13,9 @@ import { Angle, AngleSweep, Arc3d, LineString3d, Loop, Path, Point3d, Range2d, T
 /**
  * Based on the frame style, this method will construct and append [[GeometryParams]] (for line style) and a [[Loop]] (for the frame shape) to the builder.
  * @param builder that will be appended to in place
- * @param category to which the frame belongs, used for the [[GeometryParams]].
  * @param frame
  * @param range to enclose with the frame
- * @param transform that transform the range to world coordinates
+ * @param transform that transforms the range to world coordinates
  * @returns `true` if any geometry was appended to the builder
 * @beta
  */

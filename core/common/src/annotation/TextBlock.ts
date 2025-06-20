@@ -17,10 +17,11 @@ export interface ApplyTextStyleOptions {
    * By default, all overrides are cleared.
    */
   preserveOverrides?: boolean;
-  /** Controls whether the style should be recursively applied to the [[Paragraph]]s belonging to a [[TextBlock]] and the [[Run]]s belonging to a [[Paragraph]].
-   * By default, the style change propagates to child components.
+  /** Controls whether the style IDs of any child components stored in [[TextBlockComponent.styleId]] are retained. If a child component has its own [[styleId]],
+   * the styling is effectively reset and the child component will not inherit the parent's style.
+   * By default, all child styleIds are cleared.
    */
-  preventPropagation?: boolean;
+  preserveChildrenStyles?: boolean;
 }
 
 /** The JSON representation of a [[TextBlockComponent]].
@@ -96,7 +97,7 @@ export abstract class TextBlockComponent {
     this.styleOverrides = { };
   }
 
-  /** Apply the [[TextStyle]] from the [AnnotationTextStyle]($backend) specified by `styleId` to this component, optionally preserving [[styleOverrides]] and/or preventing propagation to sub-components. */
+  /** Apply the [[TextStyle]] from the [AnnotationTextStyle]($backend) specified by `styleId` to this component, optionally preserving [[styleOverrides]] and/or preserving the [[styleId]] of sub-components. */
   public applyStyle(styleId: Id64String, options?: ApplyTextStyleOptions): void {
     this._styleId = styleId;
 
@@ -379,12 +380,14 @@ export class Paragraph extends TextBlockComponent {
     return new Paragraph(this.toJSON());
   }
 
-  /** Apply the specified style to this [[Paragraph]], and - unless [[ApplyTextStyleOptions.preventPropagation]] is `true` - to all of its [[runs]]. */
+  /** Apply the specified style to this [[Paragraph]], and - unless [[ApplyTextStyleOptions.preserveChildrenStyles]] is `true` - to all of its [[runs]]. */
   public override applyStyle(styleId: Id64String, options?: ApplyTextStyleOptions): void {
     super.applyStyle(styleId, options);
-    if (!(options?.preventPropagation)) {
+
+    if (!options?.preserveOverrides || !options?.preserveChildrenStyles) {
       for (const run of this.runs) {
-        run.applyStyle(styleId, options);
+        const childStyleId = options?.preserveChildrenStyles ? run.styleId : "";
+        run.applyStyle(childStyleId, options);
       }
     }
   }
@@ -507,12 +510,14 @@ export class TextBlock extends TextBlockComponent {
     return new TextBlock(this.toJSON());
   }
 
-  /** Apply the specified style to this block and - unless [[ApplyTextStyleOptions.preventPropagation]] is `true` - to all of its [[paragraphs]]. */
+  /** Apply the specified style to this block and - unless [[ApplyTextStyleOptions.preserveChildrenStyles]] is `true` - to all of its [[paragraphs]]. */
   public override applyStyle(styleId: Id64String, options?: ApplyTextStyleOptions): void {
     super.applyStyle(styleId, options);
-    if (!(options?.preventPropagation)) {
+
+    if (!options?.preserveOverrides || !options?.preserveChildrenStyles) {
       for (const paragraph of this.paragraphs) {
-        paragraph.applyStyle(styleId, options);
+        const childStyleId = options?.preserveChildrenStyles ? paragraph.styleId : "";
+        paragraph.applyStyle(childStyleId, options);
       }
     }
   }
@@ -523,14 +528,22 @@ export class TextBlock extends TextBlockComponent {
   }
 
   /** Add and return a new paragraph.
-   * If [[paragraphs]] is not empty, the style and overrides of the last [[Paragraph]] in the block will be applied to the new paragraph; otherwise,
-   * the paragraph will inherit this block's style with no overrides.
+   * By default, the paragraph will be created with an empty [[styleId]] and no [[styleOverrides]], so that it inherits the style of this block.
+   * @param seedFromLast If true and [[paragraphs]] is not empty, the new paragraph will inherit the style and overrides of the last [[Paragraph]] in this block.
    */
-  public appendParagraph(): Paragraph {
-    const seed = this.paragraphs[0];
+  public appendParagraph(seedFromLast: boolean = false): Paragraph {
+    let styleId = "";
+    let styleOverrides: TextStyleSettingsProps = {};
+
+    if (seedFromLast && this.paragraphs.length > 0) {
+      const seed = this.paragraphs[this.paragraphs.length - 1];
+      styleId = seed.styleId;
+      styleOverrides = { ...seed.styleOverrides };
+    }
+
     const paragraph = Paragraph.create({
-      styleId: seed?.styleId ?? this.styleId,
-      styleOverrides: seed?.styleOverrides ?? undefined,
+      styleId,
+      styleOverrides
     });
 
     this.paragraphs.push(paragraph);

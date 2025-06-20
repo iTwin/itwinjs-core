@@ -35,7 +35,6 @@ class TextEditor implements Decorator {
   public get annotationProps(): TextAnnotationProps {
     const annotation = TextAnnotation.fromJSON({
       textBlock: this._textBlock.toJSON(),
-      // origin: this.origin,
       anchor: this.anchor,
       orientation: YawPitchRollAngles.createDegrees(this.rotation, 0, 0).toJSON(),
       offset: this.offset,

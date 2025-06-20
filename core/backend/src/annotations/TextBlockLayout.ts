@@ -174,8 +174,9 @@ class LayoutContext {
   public readonly blockSettings: TextStyleSettings;
 
   public constructor(block: TextBlock, private readonly _computeTextRange: ComputeRangesForTextLayout, private readonly _findTextStyle: FindTextStyle, private readonly _findFontId: FindFontId) {
-    const settings = this.findTextStyle(block.styleId);
-    this.blockSettings = applyBlockSettings(settings, block.styleOverrides);
+    this.blockSettings = this.findTextStyle(block.styleId);
+    if (block.styleOverrides)
+      this.blockSettings = this.blockSettings.clone(block.styleOverrides);
   }
 
   public findFontId(name: string): FontId {
@@ -196,12 +197,24 @@ class LayoutContext {
     return style;
   }
 
-  public createRunSettings(run: Run): TextStyleSettings {
-    let settings = this.findTextStyle(run.styleId);
+  public createRunSettings(run: Run, paragraph: Paragraph): TextStyleSettings {
+    let settings = this.blockSettings;
+
+    if (paragraph.styleId) {
+      settings = this.findTextStyle(paragraph.styleId);
+    }
+    if (paragraph.overridesStyle) {
+      settings = settings.clone(paragraph.styleOverrides);
+    }
+
+    if (run.styleId) {
+      settings = this.findTextStyle(run.styleId);
+    }
     if (run.overridesStyle) {
       settings = settings.clone(run.styleOverrides);
     }
 
+    // Still apply block specific settings (lineSpacingFactor, lineHeight, and widthFactor). These must be set on the block, as they are meaningless on individual paragraphs/runs
     return applyBlockSettings(settings, this.blockSettings);
   }
 
@@ -333,8 +346,8 @@ export class RunLayout {
     this.fontId = props.fontId;
   }
 
-  public static create(source: Run, context: LayoutContext): RunLayout {
-    const style = context.createRunSettings(source);
+  public static create(source: Run, parentParagraph: Paragraph,  context: LayoutContext): RunLayout {
+    const style = context.createRunSettings(source, parentParagraph);
     const fontId = context.findFontId(style.fontName);
     const charOffset = 0;
     const offsetFromLine = { x: 0, y: 0 };
@@ -574,7 +587,7 @@ export class TextBlockLayout {
         curLine = this.flushLine(context, curLine, paragraph);
       }
 
-      let runs = paragraph.runs.map((run) => RunLayout.create(run, context));
+      let runs = paragraph.runs.map((run) => RunLayout.create(run, paragraph, context));
       if (doWrap) {
         runs = runs.map((run) => run.split(context)).flat();
       }
@@ -658,7 +671,7 @@ export class TextBlockLayout {
         return new LineLayout(nextParagraph);
       }
 
-      line.append(RunLayout.create(prevRun.clone(), context));
+      line.append(RunLayout.create(prevRun.clone(), line.source, context));
     }
 
     // Line origin is its baseline.

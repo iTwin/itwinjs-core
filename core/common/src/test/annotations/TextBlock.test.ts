@@ -32,6 +32,24 @@ function makeParagraph(runs?: RunProps[], styleId = "", styleOverrides?: TextSty
   };
 }
 
+
+function getStyleIds(block: TextBlock) {
+  return {
+    block: block.styleId,
+    paragraph: block.paragraphs[0]?.styleId,
+    run: block.paragraphs[0]?.runs[0]?.styleId,
+ };
+}
+
+function getOverrides(block: TextBlock) {
+  return {
+    block: block.styleOverrides,
+    paragraph: block.paragraphs[0]?.styleOverrides,
+    run: block.paragraphs[0]?.runs[0]?.styleOverrides,
+  };
+}
+
+
 describe("TextBlockComponent", () => {
   describe("applyStyle", () => {
     let block: TextBlock;
@@ -46,35 +64,73 @@ describe("TextBlockComponent", () => {
       block.paragraphs.push(paragraph);
     });
 
-    it("clears overrides and propagates to subcomponents by default", () => {
-      block.applyStyle("0x55");
-      for (const component of [run, block, paragraph]) {
-        expect(component.styleId).to.equal("0x55");
-        expect(component.styleOverrides).to.deep.equal({});
-      }
+    it("clears both styles and overrides by default", () => {
+      block.applyStyle("0x99");
+
+      const ids = getStyleIds(block);
+      expect(ids.block).to.equal("0x99");
+      expect(ids.paragraph).to.equal("");
+      expect(ids.run).to.equal("");
+
+      const overrides = getOverrides(block);
+      expect(overrides.block).to.deep.equal({});
+      expect(overrides.paragraph).to.deep.equal({});
+      expect(overrides.run).to.deep.equal({});
     });
 
-    it("preserves overrides if specified", () => {
-      block.applyStyle("0x55", { preserveOverrides: true });
-      for (const component of [run, block, paragraph]) {
-        expect(component.styleId).to.equal("0x55");
-      }
+    it("preserves overrides but clears styles", () => {
+      block.applyStyle("0x99", { preserveOverrides: true });
 
-      expect(block.styleOverrides).to.deep.equal({ widthFactor: 1234 });
-      expect(paragraph.styleOverrides).to.deep.equal({ lineHeight: 42 });
-      expect(run.styleOverrides).to.deep.equal({ fontName: "Consolas" });
+      const ids = getStyleIds(block);
+      expect(ids.block).to.equal("0x99");
+      expect(ids.paragraph).to.equal("");
+      expect(ids.run).to.equal("");
+
+      const overrides = getOverrides(block);
+      expect(overrides.block).to.deep.equal({ widthFactor: 1234 });
+      expect(overrides.paragraph).to.deep.equal({ lineHeight: 42 });
+      expect(overrides.run).to.deep.equal({ fontName: "Consolas" });
     });
 
-    it("prevents propagation if specified", () => {
-      block.applyStyle("0x55", { preventPropagation: true });
-      expect(block.styleId).to.equal("0x55");
-      expect(block.styleOverrides).to.deep.equal({});
+    it("preserves styles but clears overrides", () => {
+      block.applyStyle("0x99", { preserveChildrenStyles: true });
 
-      expect(paragraph.styleId).to.equal("0x43");
-      expect(paragraph.styleOverrides).to.deep.equal({ lineHeight: 42 });
+      const ids = getStyleIds(block);
+      expect(ids.block).to.equal("0x99");
+      expect(ids.paragraph).to.equal("0x43");
+      expect(ids.run).to.equal("0x44");
 
-      expect(run.styleId).to.equal("0x44");
-      expect(run.styleOverrides).to.deep.equal({ fontName: "Consolas" });
+      const overrides = getOverrides(block);
+      expect(overrides.block).to.deep.equal({});
+      expect(overrides.paragraph).to.deep.equal({});
+      expect(overrides.run).to.deep.equal({});
+    });
+
+    it("preserves both styles and overrides", () => {
+      block.applyStyle("0x99", { preserveOverrides: true, preserveChildrenStyles: true });
+
+      const ids = getStyleIds(block);
+      expect(ids.block).to.equal("0x99");
+      expect(ids.paragraph).to.equal("0x43");
+      expect(ids.run).to.equal("0x44");
+
+      const overrides = getOverrides(block);
+      expect(overrides.block).to.deep.equal({ widthFactor: 1234 });
+      expect(overrides.paragraph).to.deep.equal({ lineHeight: 42 });
+      expect(overrides.run).to.deep.equal({ fontName: "Consolas" });
+    });
+
+    it("handles empty text block", () => {
+      const empty = TextBlock.createEmpty();
+      expect(() => empty.applyStyle("0x01")).not.to.throw();
+      expect(empty.styleId).to.equal("0x01");
+    });
+
+    it("handles paragraph with no runs", () => {
+      const tb = TextBlock.create({ styleId: "0x01", paragraphs: [Paragraph.create({ styleId: "0x02" })] });
+      expect(() => tb.applyStyle("0x03")).not.to.throw();
+      expect(tb.styleId).to.equal("0x03");
+      expect(tb.paragraphs[0].styleId).to.equal("");
     });
   });
 
@@ -111,24 +167,34 @@ describe("TextBlockComponent", () => {
 
 describe("TextBlock", () => {
   describe("appendParagraph", () => {
-    it("uses the TextBlock's style with no overrides if no paragraphs exist", () => {
+    it("creates a paragraph with no styleId or overrides by default", () => {
       const tb = TextBlock.create({ styleId: "0x42", styleOverrides: { lineHeight: 42 } });
       const p = tb.appendParagraph();
-      expect(p.styleId).to.equal("0x42");
+      expect(p.styleId).to.equal("");
       expect(p.styleOverrides).to.deep.equal({});
+
+      const p2 = tb.appendParagraph();
+      expect(p2.styleId).to.equal("");
+      expect(p2.styleOverrides).to.deep.equal({});
+
+      expect(tb.paragraphs.length).to.equal(2);
     });
 
-    it("uses the style and overrides of the last paragraph if one exists", () => {
+    it("uses the style and overrides of the last paragraph if one exists and seedFromLast is true", () => {
       const tb = TextBlock.create({ styleId: "0x42", styleOverrides: { lineHeight: 42 } });
-      const p1 = tb.appendParagraph();
-      expect(p1.styleId).to.equal("0x42");
-      expect(p1.styleOverrides).to.deep.equal({});
+      const p1 = Paragraph.create({ styleId: "0x43", styleOverrides: { isBold: true } });
+      tb.paragraphs.push(p1);
 
-      p1.styleId = "0x43";
-      p1.styleOverrides = { widthFactor: 1234 };
-      const p2 = tb.appendParagraph();
+      const p2 = tb.appendParagraph(true);
       expect(p2.styleId).to.equal(p1.styleId);
       expect(p2.styleOverrides).to.deep.equal(p1.styleOverrides);
+    });
+
+    it("creates a paragraph with no styleId or overrides if none exist even if seedFromLast is true", () => {
+      const tb = TextBlock.create({ styleId: "0x42", styleOverrides: { lineHeight: 42 } });
+      const p1 = tb.appendParagraph(true);
+      expect(p1.styleId).to.equal("");
+      expect(p1.styleOverrides).to.deep.equal({});
     });
   });
 

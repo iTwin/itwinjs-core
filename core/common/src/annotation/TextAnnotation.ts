@@ -166,7 +166,7 @@ export class TextAnnotation {
   public toJSON(): TextAnnotationProps {
     const props: TextAnnotationProps = {};
 
-    // Even if the text block is empty, we want to record its style name and overrides, e.g.,
+    // Even if the text block is empty, we want to record its style ID and overrides, e.g.,
     // so the user can pick up where they left off editing it next time.
     props.textBlock = this.textBlock.toJSON();
 
