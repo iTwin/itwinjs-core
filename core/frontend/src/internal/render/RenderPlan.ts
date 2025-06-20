@@ -123,7 +123,7 @@ export function createRenderPlanFromViewport(vp: Viewport): RenderPlan {
   const ao = style.is3d() ? style.settings.ambientOcclusionSettings : undefined;
   const analysisStyle = style.settings.analysisStyle;
   const thematic = (style.is3d() && view.displayStyle.viewFlags.thematicDisplay) ? style.settings.thematic : undefined;
-  const contours = (style.is3d() && style.settings.contours.groups.length > 0) ? style.settings.contours : undefined;
+  const contours = (style.settings.contours.groups.length > 0) ? style.settings.contours : undefined;
   const shouldDisplayAtmosphere = (style.is3d() && GlobeMode.Ellipsoid === view.globeMode && vp.iModel.isGeoLocated && style.viewFlags.backgroundMap) ? (vp.view as ViewState3d).getDisplayStyle3d().environment.displayAtmosphere : false;
   const atmosphere = shouldDisplayAtmosphere ? (vp.view as ViewState3d).getDisplayStyle3d().environment.atmosphere : undefined;
 
