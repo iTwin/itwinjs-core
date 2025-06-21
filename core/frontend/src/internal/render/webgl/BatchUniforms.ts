@@ -16,8 +16,11 @@ import { FeatureMode } from "./TechniqueFlags";
 import { ThematicSensors } from "./ThematicSensors";
 import { Contours } from "./Contours";
 import { OvrFlags } from "../../../common/internal/render/OvrFlags";
+import { LookupTexture } from "./Texture";
+import { TextureUnit } from "./RenderFlags";
 
 const scratchRgb = new Float32Array(3);
+const scratchElementIndexParams = new Float32Array(2);
 const noOverrideRgb = new Float32Array([-1.0, -1.0, -1.0]);
 
 /** Maintains uniform variable state associated with the Batch currently being drawn by a Target.
@@ -33,6 +36,7 @@ export class BatchUniforms {
   private _sensors?: ThematicSensors;
   private _contours?: Contours;
   private _batchId = new Float32Array(4);
+  private _elementIndexLUT?: LookupTexture;
 
   private _scratchBytes = new Uint8Array(4);
   private _scratchUint32 = new Uint32Array(this._scratchBytes.buffer);
@@ -76,6 +80,7 @@ export class BatchUniforms {
       this._featureMode = FeatureMode.None;
 
     this._contours = undefined !== batch && this.wantContourLines ? batch.getContours(this._target) : undefined;
+    this._elementIndexLUT = batch?.elementIndexLUT;
   }
 
   public resetBatchState(): void {
@@ -112,6 +117,14 @@ export class BatchUniforms {
       else
         this._contours.bindContourLUTWidth(uniform);
     }
+  }
+
+  public bindElementIndices(sampler: UniformHandle, params: UniformHandle): void {
+    if (!sync(this, params)) {
+      params.setUniform2fv(this._elementIndexLUT?.params ?? scratchElementIndexParams);
+    }
+
+    this._elementIndexLUT?.handle.bindSampler(sampler, TextureUnit.ElementIndex);
   }
 
   public bindLUT(uniform: UniformHandle): void {

@@ -77,6 +77,10 @@ export class Primitive extends Graphic {
     range.extendRange(this.cachedGeometry.computeRange());
   }
 
+  protected override get _hasBlankingFill() {
+    return this.cachedGeometry.hasBlankingFill;
+  }
+
   public getPass(target: Target): Pass {
     if (this.isPixelMode)
       return "view-overlay";
