@@ -887,6 +887,8 @@ preview;interface;SubjectProps
 public;type;SubLayerId
 beta;interface;SynchronizationConfigLinkProps
 public;enum;SyncMode
+beta;class;TabRun
+beta;interface;TabRunProps
 public;enum;TerrainHeightOriginMode
 public;interface;TerrainProps
 public;class;TerrainSettings

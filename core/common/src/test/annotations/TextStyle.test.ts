@@ -21,6 +21,7 @@ describe("TextStyleSettings", () => {
     superScriptOffsetFactor: 0.6,
     superScriptScale: 0.5,
     widthFactor: 2,
+    tabInterval: 7,
   };
 
   it("returns defaults if no props provided", () => {
