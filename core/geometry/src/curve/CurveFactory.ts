@@ -19,6 +19,7 @@ import { Point3dArrayCarrier } from "../geometry3d/Point3dArrayCarrier";
 import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
 import { PolylineOps } from "../geometry3d/PolylineOps";
 import { Ray3d } from "../geometry3d/Ray3d";
+import { Point4d } from "../geometry4d/Point4d";
 import { Segment1d } from "../geometry3d/Segment1d";
 import { Transform } from "../geometry3d/Transform";
 import { XAndY } from "../geometry3d/XYZProps";
@@ -46,6 +47,7 @@ import { RegionOps } from "./RegionOps";
 import { IntegratedSpiral3d } from "./spiral/IntegratedSpiral3d";
 import { IntegratedSpiralTypeName } from "./spiral/TransitionSpiral3d";
 import { StrokeOptions } from "./StrokeOptions";
+import { BezierCurve3dH } from "../bspline/BezierCurve3dH";
 
 /**
  * Interface to carry parallel arrays of planes and sections, and optional geometry assembled from them,
@@ -631,9 +633,10 @@ export class CurveFactory {
         source.point.x + sizeHint * vectorAlong.x, source.point.y + sizeHint * vectorAlong.y);
     }
     if (source instanceof UnboundedHyperbola2d){
+    const result:CurvePrimitive[] = [];
+      /* COMMENTED CODE FOR LINESTRING
     const degreeStep = 10.0;
     const degreeLimit = 80.0;
-    const result:CurvePrimitive[] = [];
     for (const signX of [1,-1]){
         const strokes = [];
         for (const theta = Angle.createDegrees (-degreeLimit);
@@ -646,6 +649,25 @@ export class CurveFactory {
           }
         result.push (LineString3d.create (strokes));
         }
+    */
+   // The bezier branches open on plus and minus u axes, with asymptontes at 45 degree angles in local space
+   // Construct a bezier for 180 degrees of unit circle from negative y to plus 1 with (c,s,w)
+   // Reverse c and w so its normalized form is (sec, tan, 1)
+   // Map those so bezier 0 maps to U-V asymptote, bezier 1 maps to U+v, and bezier 0.5 maps to A
+   // but the secants have 0 weight and evaluate at infinity
+   // so subdivide to safely within 0..1
+   // Repeat with negated sign for U to get the other branch.
+        for (const signU of [1, -1]){
+          const poles = [
+            Point4d.create (signU * source.vectorU.x + source.vectorV.x, signU * source.vectorU.y + source.vectorV.y, 0, 0),
+            Point4d.create (source.pointA.x, source.pointA.y, 0, 1),
+            Point4d.create (signU * source.vectorU.x - source.vectorV.x, signU * source.vectorU.y - source.vectorV.y, 0, 0),
+          ];
+          const fullBezier = BezierCurve3dH.create (poles);
+          if (fullBezier){
+            const branch = fullBezier?.clonePartialCurve (0.05, 0.95);
+            result.push (branch);
+          }}
       return result;
       }
     else if (source instanceof UnboundedEllipse2d){
