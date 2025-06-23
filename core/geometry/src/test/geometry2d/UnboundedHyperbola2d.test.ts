@@ -34,7 +34,7 @@ function implicitCircle2dToArc3d (circle: UnboundedCircle2dByCenterAndRadius, z:
 }
 
 it("AMedialCurveCCA", () => {
-  const ck = new Checker(true, true);
+  const ck = new Checker(false, false);
   const allGeometry: GeometryQuery[] = [];
 
   const circleA = UnboundedCircle2dByCenterAndRadius.createXYRadius (0,0,1);
@@ -74,7 +74,7 @@ it("AMedialCurveCCA", () => {
 });
 
 it("UnboundedHyperbola2dA", () => {
-  const ck = new Checker(true, true);
+  const ck = new Checker(false, false);
   const allGeometry: GeometryQuery[] = [];
 
   const curveA = UnboundedHyperbola2d.createCenterAndAxisVectors (
