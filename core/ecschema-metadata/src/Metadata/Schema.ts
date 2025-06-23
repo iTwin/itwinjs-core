@@ -35,6 +35,7 @@ import { Unit } from "./Unit";
 import { UnitSystem } from "./UnitSystem";
 import { ECSchemaNamespaceUris } from "../Constants";
 import { SchemaLoadingController } from "../utils/SchemaLoadingController";
+
 /**
  * @public @preview
  */
@@ -153,15 +154,12 @@ export class Schema implements CustomAttributeContainerProps {
   public get context(): SchemaContext { return this._context; }
 
   /**
-   * Returns the ObjectLoadingController for this Schema. Maybe undefined.
+   * Returns the SchemaLoadingController for this Schema. This would only be set if the schema is
+   * loaded incrementally.
    * @internal
    */
   public get loadingController(): SchemaLoadingController | undefined{
     return this._loadingController;
-  }
-
-  public set loadingController(controller: SchemaLoadingController) {
-    this._loadingController = controller;
   }
 
   /**
@@ -922,6 +920,11 @@ export class Schema implements CustomAttributeContainerProps {
       throw new ECSchemaError(ECSchemaStatus.InvalidECName, "The specified schema alias is invalid.");
     }
     this._alias = alias;
+  }
+
+  /** @internal */
+  public setLoadingController(controller: SchemaLoadingController) {
+    this._loadingController = controller;
   }
 }
 

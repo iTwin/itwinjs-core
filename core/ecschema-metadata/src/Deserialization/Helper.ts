@@ -138,7 +138,7 @@ export class SchemaReadHelper<T = unknown> {
    * @param schemaItem The SchemaItem to check.
    * @returns True if the SchemaItem has been fully loaded, false otherwise.
    */
-  protected schemaItemLoaded(schemaItem: SchemaItem | undefined): boolean {
+  protected isSchemaItemLoaded(schemaItem: SchemaItem | undefined): boolean {
     return schemaItem !== undefined;
   }
 
@@ -159,11 +159,11 @@ export class SchemaReadHelper<T = unknown> {
       // Make sure the item has not already been loaded. No need to check the SchemaContext because all SchemaItems are added to a Schema,
       // which would be found when adding to the context.
       const schemaItem = await schema.getItem(itemName);
-      if (this.schemaItemLoaded(schemaItem))
+      if (this.isSchemaItemLoaded(schemaItem))
         continue;
 
       const loadedItem = await this.loadSchemaItem(schema, itemName, itemType, rawItem);
-      if (this.schemaItemLoaded(loadedItem) && this._visitorHelper) {
+      if (this.isSchemaItemLoaded(loadedItem) && this._visitorHelper) {
         await this._visitorHelper.visitSchemaPart(loadedItem!);
       }
     }
@@ -205,7 +205,7 @@ export class SchemaReadHelper<T = unknown> {
     // Load all schema items
     for (const [itemName, itemType, rawItem] of this._parser.getItems()) {
       const loadedItem = this.loadSchemaItemSync(schema, itemName, itemType, rawItem);
-      if (this.schemaItemLoaded(loadedItem) && this._visitorHelper) {
+      if (this.isSchemaItemLoaded(loadedItem) && this._visitorHelper) {
         this._visitorHelper.visitSchemaPartSync(loadedItem!);
       }
     }
@@ -301,7 +301,7 @@ export class SchemaReadHelper<T = unknown> {
    */
   protected async loadSchemaItem(schema: Schema, name: string, itemType: string, schemaItemObject?: Readonly<unknown>): Promise<SchemaItem | undefined> {
     let schemaItem = await schema.getItem(name);
-    if (this.schemaItemLoaded(schemaItem)) {
+    if (this.isSchemaItemLoaded(schemaItem)) {
       return schemaItem;
     }
 
@@ -406,7 +406,7 @@ export class SchemaReadHelper<T = unknown> {
    */
   private loadSchemaItemSync(schema: Schema, name: string, itemType: string, schemaItemObject: Readonly<unknown>): SchemaItem | undefined {
     let schemaItem = schema.getItemSync(name);
-    if (this.schemaItemLoaded(schemaItem)) {
+    if (this.isSchemaItemLoaded(schemaItem)) {
       return schemaItem;
     }
 
@@ -523,7 +523,7 @@ export class SchemaReadHelper<T = unknown> {
       const foundItem = this._parser.findItem(itemName);
       if (foundItem) {
         schemaItem = await this.loadSchemaItem(this._schema!, ...foundItem);
-        if (!skipVisitor && this.schemaItemLoaded(schemaItem) && this._visitorHelper) {
+        if (!skipVisitor && this.isSchemaItemLoaded(schemaItem) && this._visitorHelper) {
           await this._visitorHelper.visitSchemaPart(schemaItem!);
         }
         if (loadCallBack && schemaItem)
@@ -562,7 +562,7 @@ export class SchemaReadHelper<T = unknown> {
       const foundItem = this._parser.findItem(itemName);
       if (foundItem) {
         schemaItem = this.loadSchemaItemSync(this._schema!, ...foundItem);
-        if (!skipVisitor && this.schemaItemLoaded(schemaItem) && this._visitorHelper) {
+        if (!skipVisitor && this.isSchemaItemLoaded(schemaItem) && this._visitorHelper) {
           this._visitorHelper.visitSchemaPartSync(schemaItem!);
         }
         if (loadCallBack && schemaItem)
@@ -742,7 +742,7 @@ export class SchemaReadHelper<T = unknown> {
    */
   private async loadClass(classObj: AnyClass, classProps: ClassProps, rawClass: Readonly<unknown>): Promise<void> {
     const baseClassLoaded = async (baseClass: SchemaItem) => {
-      if (this._visitorHelper && this.schemaItemLoaded(baseClass))
+      if (this._visitorHelper && this.isSchemaItemLoaded(baseClass))
         await this._visitorHelper.visitSchemaPart(baseClass);
     };
 
@@ -770,7 +770,7 @@ export class SchemaReadHelper<T = unknown> {
    */
   private loadClassSync(classObj: AnyClass, classProps: ClassProps, rawClass: Readonly<unknown>): void {
     const baseClassLoaded = async (baseClass: SchemaItem) => {
-      if (this._visitorHelper && this.schemaItemLoaded(baseClass))
+      if (this._visitorHelper && this.isSchemaItemLoaded(baseClass))
         this._visitorHelper.visitSchemaPartSync(baseClass);
     };
 
@@ -833,7 +833,7 @@ export class SchemaReadHelper<T = unknown> {
     const mixinProps = this._parser.parseMixin(rawMixin);
 
     const appliesToLoaded = async (appliesToClass: SchemaItem) => {
-      if (this._visitorHelper && this.schemaItemLoaded(appliesToClass))
+      if (this._visitorHelper && this.isSchemaItemLoaded(appliesToClass))
         await this._visitorHelper.visitSchemaPart(appliesToClass);
     };
 
@@ -851,7 +851,7 @@ export class SchemaReadHelper<T = unknown> {
     const mixinProps = this._parser.parseMixin(rawMixin);
 
     const appliesToLoaded = async (appliesToClass: SchemaItem) => {
-      if (this._visitorHelper && this.schemaItemLoaded(appliesToClass))
+      if (this._visitorHelper && this.isSchemaItemLoaded(appliesToClass))
         await this._visitorHelper.visitSchemaPart(appliesToClass);
     };
 
