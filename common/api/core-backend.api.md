@@ -4196,6 +4196,8 @@ export class LineLayout {
     // (undocumented)
     justificationRange: Range2d;
     // (undocumented)
+    lengthFromLastTab: number;
+    // (undocumented)
     offsetFromDocument: {
         x: number;
         y: number;
