@@ -42,7 +42,7 @@ function isIntlSupported(): boolean {
   return !ProcessDetector.isMobileAppBackend;
 }
 
-describe.only("layoutTextBlock", () => {
+describe("layoutTextBlock", () => {
   it("resolves TextStyleSettings from combination of TextBlock and Run", () => {
     const textBlock = TextBlock.create({ styleName: "block", styleOverrides: { widthFactor: 34, color: 0x00ff00 } });
     const run0 = TextRun.create({ content: "run0", styleName: "run", styleOverrides: { lineHeight: 56, color: 0xff0000 } });
