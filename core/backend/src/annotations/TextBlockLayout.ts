@@ -599,29 +599,35 @@ export class TextBlockLayout {
           continue;
         }
 
+        // If this is a tab, we need to apply the tab shift first, and then we can treat it like a text run.
         if ("tab" === run.source.type) {
           run.applyTabShift(curLine, context);
-          curLine.append(run);
-          continue;
         }
 
+        // If our width is not set (doWrap is false), then we don't have to compute word wrapping, so just append the run, and continue.
         if (!doWrap) {
           curLine.append(run);
           continue;
         }
 
+        // Next, determine if we can append this run to the current line without exceeding the document width
         const runWidth = run.range.xLength();
         const lineWidth = curLine.range.xLength();
+
+        // If true, then no word wrapping is required, so we can append to the current line.
         if (runWidth + lineWidth < doc.width || Geometry.isAlmostEqualNumber(runWidth + lineWidth, doc.width, Geometry.smallMetricDistance)) {
           curLine.append(run);
           continue;
         }
 
+        // Do word wrapping
         if (curLine.runs.length === 0) {
+          if ("tab" === run.source.type) run.applyTabShift(curLine, context);
           curLine.append(run);
           curLine = this.flushLine(context, curLine);
         } else {
           curLine = this.flushLine(context, curLine);
+          if ("tab" === run.source.type) run.applyTabShift(curLine, context);
           curLine.append(run);
         }
       }
