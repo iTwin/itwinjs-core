@@ -12,7 +12,7 @@ import { Geometry } from "../../../Geometry";
 import { Point2d, Vector2d } from "../../../geometry3d/Point2dVector2d";
 import { XAndY } from "../../../geometry3d/XYZProps";
 import { TrigPolynomial } from "../../../numerics/Polynomials";
-import { ImplicitCurve2d, RadiansToPoint2dMethods } from "./implicitCurve2d";
+import { ImplicitCurve2d} from "./implicitCurve2d";
 
 /**
  * Internal class for hyperbola in the xy plane.  The hyperbola equation in angular parameterization is
@@ -23,7 +23,7 @@ import { ImplicitCurve2d, RadiansToPoint2dMethods } from "./implicitCurve2d";
  * which means the hyperbola opens along the positive and negative U axis with asymptotes at 45 degrees,
  *    i.e. along the directions (U+V) and (U-V)
  */
-export class UnboundedHyperbola2d extends ImplicitCurve2d implements RadiansToPoint2dMethods {
+export class UnboundedHyperbola2d extends ImplicitCurve2d  {
   /** The Cartesian coordinates of any center on the line. */
   public pointA: Point2d;
   /** The local u axis direction. */
@@ -92,7 +92,7 @@ export class UnboundedHyperbola2d extends ImplicitCurve2d implements RadiansToPo
    * @param radians parametric angle on the hyperbola
    * @returns xy coordinate on the hyperbola
    */
-  public radiansToPoint2d (radians: number): Point2d | undefined{
+  public override radiansToPoint2d (radians: number): Point2d | undefined{
     const c = Math.cos (radians);
     const s = Math.sin (radians);
     if (Geometry.isSmallMetricDistance (Math.abs (c)))

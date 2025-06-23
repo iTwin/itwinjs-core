@@ -11,7 +11,7 @@ import { XAndY } from "../../../geometry3d/XYZProps";
 /**
  * Abstract base class for curves with an implicit 2d function.
  * * Curves in the class are required to have an implicit functioni f(x,y)=0.
- * * They MAY (but are not requried) to have a parametric form such as the RadiansToPoint2d interface.
+ * * They MAY (but are not requried to) implement a parametric evaluator radiansToPoint2d.
  * @internal
  */
 export abstract class ImplicitCurve2d {
@@ -63,14 +63,13 @@ export abstract class ImplicitCurve2d {
      * return a clone of the curve.
      */
     public abstract clone (): ImplicitCurve2d;
-}
-/** Interface with methods for parametric evaluations */
-export interface RadiansToPoint2dMethods {
-  /** Evaluate the curve point at specified radians.
-   */
-radiansToPoint2d (radians: number): Point2d | undefined;
-}
 
+/** OPTIONAL method to return a Point2d at given radians value.
+ * * The default implementaiton returns undefined.
+ * * Concrete classes that can be expressed as a function of radians must implement this.
+ */
+    public radiansToPoint2d (_radians: number): Point2d | undefined { return undefined;}
+  }
 export class Point2dImplicitCurve2d {
   public point: Point2d;
   public curve: ImplicitCurve2d;
@@ -138,19 +137,18 @@ export class ImplicitGeometryMarkup<GeometryType extends ImplicitCurve2d> {
         this.data.push (new Point2dImplicitCurve2d (closestPoint, otherCurve));
     return true;
   }
-  /**
-   * Find closest points of an array of curves.
-   * @param spacePoint point to project to otherCurve
-   * @param referencePoint reference point for point selection
-   * @param biasDistance preferred distance.
-   * @param otherCurves
-   */
-  public closePointsOfGeometry (
-      spacePoint: Point2d, referencePoint: Point2d, biasRadius: number,
-      otherCurves: ImplicitCurve2d[]){
-        for (const c of otherCurves){
-        this.appendClosePoint (spacePoint, c, referencePoint, biasRadius);
-        }
+/**
+ * Find closest points of an array of curves.
+ * @param spacePoint point to project to otherCurve
+ * @param referencePoint reference point for point selection
+ * @param biasDistance preferred distance.
+ * @param otherCurves
+ */
+public closePointsOfGeometry (
+    spacePoint: Point2d, referencePoint: Point2d, biasRadius: number,
+    otherCurves: ImplicitCurve2d[]){
+      for (const c of otherCurves){
+      this.appendClosePoint (spacePoint, c, referencePoint, biasRadius);
       }
-
     }
+}

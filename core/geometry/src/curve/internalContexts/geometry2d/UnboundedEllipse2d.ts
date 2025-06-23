@@ -18,8 +18,11 @@ import { ImplicitCurve2d } from "./implicitCurve2d";
  * Class for an ellipse in the xy plane.The ellipse equation in angular parameterization is
  * * X = A + U * cos(theta) + V * sin(theta)
  * which means that in the (skewed and scaled) coordinate system with origin at A and local u and v as
- *   multiples of U and V the implicit equation is
- * * u^2 + v^2 = 1
+ *   multiples of U and V the implicit equation is: u^2 + v^2 = 1
+ * * Note that the U and V vectors need not be perpendicular or have any particular length relationship.
+ * * If U and V ARE perpendicular, their lengths are commonly called the major and minor axis lengths,
+ *      and the major and minor axis points are in the U and V directions.
+ * * If U and V are NOT perpendicular, the major and minor axis points are at other directions.
  * @internal
  */
 export class UnboundedEllipse2d extends ImplicitCurve2d {
@@ -135,7 +138,19 @@ public override emitPerpendiculars(spacePoint: Point2d,
       const curvePoint = this.pointA.plus2Scaled (this.vectorU, 1.0 / c, this.vectorV, s / c);
       handler(curvePoint);
     }
-}
+  }
+    /**
+     * Evaluate the curve point at parametric angle given in radians.
+     * * Note that the radians is as it appears in sin(radians) and cos( radians), and
+     *     this is NOT a geometric angle in the xy plane.
+     * * The radians value is only geometric if the U and V are perpendicular and of equal length, i.e.
+     *     the ellipse is a circle.
+     * @param radians angular coordinate in the ellipse.
+     * @returns
+     */
+    public override radiansToPoint2d(radians: number): Point2d | undefined {
+      return this.pointA.plus2Scaled (this.vectorU, Math.cos (radians), this.vectorV, Math.sin (radians));
+    }
 
 
 /**
@@ -175,20 +190,7 @@ public isSameEllipse (other: UnboundedEllipse2d, negatedAndExchangedAxesAreEqual
   }
   return false;
 }
-}
 
-export class Point2dImplicitCurve2d {
-  public point: Point2d;
-  public curve: ImplicitCurve2d;
-  /**
-   * CAPTURE a point and curve.
-   * @param point point member
-   * @param curve curve member
-   */
-  public constructor(point: Point2d, curve: ImplicitCurve2d) {
-    this.point = point;
-    this.curve = curve;
-  }
 }
 
 function almostEqualOrNegated (vectorU: Vector2d, vectorV: Vector2d): -1 | 0 | 1 {
