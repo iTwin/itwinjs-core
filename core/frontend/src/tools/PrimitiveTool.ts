@@ -7,7 +7,7 @@
  */
 
 import { assert } from "@itwin/core-bentley";
-import {BriefcaseConnection} from "../BriefcaseConnection";
+import { BriefcaseConnection } from "../BriefcaseConnection";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
 import { NotifyMessageDetails, OutputMessagePriority } from "../NotificationManager";
@@ -212,9 +212,9 @@ export abstract class PrimitiveTool extends InteractiveTool {
     return true;
   }
 
-  /** If this tool is editing a briefcase, commits any elements that the tool has changed, supplying the tool name as the undo string. */
+  /** If this tool is editing a briefcase, commits any elements that the tool has changed, supplying the tool flyover for the undo description. */
   public async saveChanges(): Promise<void> {
     if (this.iModel.isBriefcaseConnection())
-      return this.iModel.saveChanges(this.toolId);
+      return this.iModel.saveChanges(this.flyover);
   }
 }

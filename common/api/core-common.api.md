@@ -615,8 +615,6 @@ export interface BaseReaderOptions {
     priority?: number;
     quota?: QueryQuota;
     restartToken?: string;
-    // @internal (undocumented)
-    testingArgs?: TestingArgs;
     usePrimaryConn?: boolean;
 }
 
@@ -2140,9 +2138,7 @@ export interface DbBlobResponse extends DbResponse {
 
 // @internal (undocumented)
 export interface DbQueryConfig {
-    allowTestingArgs?: boolean;
-    autoShutdowWhenIdlelForSeconds?: number;
-    // (undocumented)
+    autoShutdownWhenIdleForSeconds?: number;
     doNotUsePrimaryConnToPrepare?: boolean;
     // (undocumented)
     globalQuota?: QueryQuota;
@@ -2151,6 +2147,7 @@ export interface DbQueryConfig {
     memoryMapFileSize?: number;
     // (undocumented)
     monitorPollInterval?: number;
+    progressOpCount?: number;
     requestQueueSize?: number;
     statementCacheSizePerWorker?: number;
     workerThreads?: number;
@@ -2191,8 +2188,6 @@ export interface DbQueryResponse extends DbResponse {
 export interface DbRequest extends BaseReaderOptions {
     // (undocumented)
     kind?: DbRequestKind;
-    // (undocumented)
-    testingArgs?: TestingArgs;
 }
 
 // @internal (undocumented)
@@ -7544,8 +7539,6 @@ export class QueryOptionsBuilder {
     setRestartToken(val: string): this;
     setRowFormat(val: QueryRowFormat): this;
     setSuppressLogErrors(val: boolean): this;
-    // @internal
-    setTestingArgs(val: TestingArgs): this;
     setUsePrimaryConnection(val: boolean): this;
 }
 
@@ -9826,12 +9819,6 @@ export class TerrainSettings {
     readonly providerName: string;
     // (undocumented)
     toJSON(): TerrainProps;
-}
-
-// @internal (undocumented)
-export interface TestingArgs {
-    // (undocumented)
-    interrupt?: boolean;
 }
 
 // @internal

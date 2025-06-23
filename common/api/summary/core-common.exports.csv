@@ -892,7 +892,6 @@ beta;interface;TabRunProps
 public;enum;TerrainHeightOriginMode
 public;interface;TerrainProps
 public;class;TerrainSettings
-internal;interface;TestingArgs
 internal;class;TestRpcManager
 beta;class;TextAnnotation
 public;interface;TextAnnotation2dProps
