@@ -68,10 +68,10 @@ import type { BlobContainer } from "./BlobContainerService";
 import { createNoOpLockControl } from "./internal/NoLocks";
 import { IModelDbFonts } from "./IModelDbFonts";
 import { createIModelDbFonts } from "./internal/IModelDbFontsImpl";
-import { _cache, _close, _hubAccess, _nativeDb, _releaseAllLocks } from "./internal/Symbols";
+import { _cache, _close, _hubAccess, _instanceKeyCache, _nativeDb, _releaseAllLocks } from "./internal/Symbols";
 import { SchemaContext, SchemaJsonLocater } from "@itwin/ecschema-metadata";
 import { SchemaMap } from "./Schema";
-import { ElementLRUCache } from "./internal/ElementLRUCache";
+import { ElementLRUCache, InstanceKeyLRUCache } from "./internal/ElementLRUCache";
 // spell:ignore fontid fontmap
 
 const loggerCategory: string = BackendLoggerCategory.IModelDb;
@@ -243,7 +243,7 @@ export abstract class IModelDb extends IModel {
   private _jsClassMap?: EntityJsClassMap;
   private _schemaMap?: SchemaMap;
   private _schemaContext?: SchemaContext;
-  /** @deprecated in 5.0.0. Use [[fonts]]. */
+  /** @deprecated in 5.0.0 - will not be removed until after 2026-06-13. Use [[fonts]]. */
   protected _fontMap?: FontMap; // eslint-disable-line @typescript-eslint/no-deprecated
   private readonly _fonts: IModelDbFonts = createIModelDbFonts(this);
   private _workspace?: OwnedWorkspace;
@@ -311,7 +311,7 @@ export abstract class IModelDb extends IModel {
     this[_nativeDb].restartDefaultTxn();
   }
 
-  /** @deprecated in 5.0.0. Use [[fonts]]. */
+  /** @deprecated in 5.0.0 - will not be removed until after 2026-06-13. Use [[fonts]]. */
   public get fontMap(): FontMap { // eslint-disable-line @typescript-eslint/no-deprecated
     return this._fontMap ?? (this._fontMap = new FontMap(this[_nativeDb].readFontMap())); // eslint-disable-line @typescript-eslint/no-deprecated
   }
@@ -515,7 +515,7 @@ export abstract class IModelDb extends IModel {
    * @returns the value returned by `callback`.
    * @see [[withStatement]]
    * @public
-   * @deprecated in 4.11.  Use [[createQueryReader]] instead.
+   * @deprecated in 4.11 - will not be removed until after 2026-06-13.  Use [[createQueryReader]] instead.
    */
   // eslint-disable-next-line @typescript-eslint/no-deprecated
   public withPreparedStatement<T>(ecsql: string, callback: (stmt: ECSqlStatement) => T, logErrors = true): T {
@@ -546,7 +546,7 @@ export abstract class IModelDb extends IModel {
    * @returns the value returned by `callback`.
    * @see [[withPreparedStatement]]
    * @public
-   * @deprecated in 4.11.  Use [[createQueryReader]] instead.
+   * @deprecated in 4.11 - will not be removed until after 2026-06-13.  Use [[createQueryReader]] instead.
    */
   // eslint-disable-next-line @typescript-eslint/no-deprecated
   public withStatement<T>(ecsql: string, callback: (stmt: ECSqlStatement) => T, logErrors = true): T {
@@ -758,6 +758,8 @@ export abstract class IModelDb extends IModel {
     this._schemaContext = undefined;
     this.elements[_cache].clear();
     this.models[_cache].clear();
+    this.elements[_instanceKeyCache].clear();
+    this.models[_instanceKeyCache].clear();
   }
 
   /** Update the project extents for this iModel.
@@ -820,6 +822,7 @@ export abstract class IModelDb extends IModel {
    * @note This will not delete Txns that have already been saved, even if they have not yet been pushed.
   */
   public abandonChanges(): void {
+    this.clearCaches();
     this[_nativeDb].abandonChanges();
   }
 
@@ -842,7 +845,7 @@ export abstract class IModelDb extends IModel {
   }
 
   /** @internal
-   * @deprecated in 4.8. Use `txns.reverseTxns`.
+   * @deprecated in 4.8 - will not be removed until after 2026-06-13. Use `txns.reverseTxns`.
    */
   public reverseTxns(numOperations: number): IModelStatus {
     return this[_nativeDb].reverseTxns(numOperations);
@@ -1076,7 +1079,7 @@ export abstract class IModelDb extends IModel {
 
   /** The registry of entity metadata for this iModel.
    * @internal
-   * @deprecated in 5.0. Please use `schemaContext` from the `iModel` instead.
+   * @deprecated in 5.0 - will not be removed until after 2026-06-13. Please use `schemaContext` from the `iModel` instead.
    *
    * @example
    * ```typescript
@@ -1145,7 +1148,7 @@ export abstract class IModelDb extends IModel {
    * @param sql The ECSQL statement to prepare
    * @param logErrors Determines if error will be logged if statement fail to prepare
    * @throws [[IModelError]] if there is a problem preparing the statement.
-   * @deprecated in 4.11.  Use [IModelDb.createQueryReader]($backend) or [ECDb.createQueryReader]($backend) to query.
+   * @deprecated in 4.11 - will not be removed until after 2026-06-13.  Use [IModelDb.createQueryReader]($backend) or [ECDb.createQueryReader]($backend) to query.
    */
   // eslint-disable-next-line @typescript-eslint/no-deprecated
   public prepareStatement(sql: string, logErrors = true): ECSqlStatement {
@@ -1158,7 +1161,7 @@ export abstract class IModelDb extends IModel {
   /** Prepare an ECSQL statement.
    * @param sql The ECSQL statement to prepare
    * @returns `undefined` if there is a problem preparing the statement.
-   * @deprecated in 4.11.  Use [IModelDb.createQueryReader]($backend) or [ECDb.createQueryReader]($backend) to query.
+   * @deprecated in 4.11 - will not be removed until after 2026-06-13.  Use [IModelDb.createQueryReader]($backend) or [ECDb.createQueryReader]($backend) to query.
    */
   // eslint-disable-next-line @typescript-eslint/no-deprecated
   public tryPrepareStatement(sql: string): ECSqlStatement | undefined {
@@ -1209,7 +1212,7 @@ export abstract class IModelDb extends IModel {
 
   /** Get metadata for a class. This method will load the metadata from the iModel into the cache as a side-effect, if necessary.
    * @throws [[IModelError]] if the metadata cannot be found nor loaded.
-   * @deprecated in 5.0. Please use `getSchemaItem` from `SchemaContext` class instead.
+   * @deprecated in 5.0 - will not be removed until after 2026-06-13. Please use `getSchemaItem` from `SchemaContext` class instead.
    *
    * @example
    *  * ```typescript
@@ -1236,7 +1239,7 @@ export abstract class IModelDb extends IModel {
   }
 
   /** Identical to [[getMetaData]], except it returns `undefined` instead of throwing an error if the metadata cannot be found nor loaded.
-   * @deprecated in 5.0. Please use `getSchemaItem` from `SchemaContext` class instead.
+   * @deprecated in 5.0 - will not be removed until after 2026-06-13. Please use `getSchemaItem` from `SchemaContext` class instead.
    *
    * @example
    *  * ```typescript
@@ -1264,7 +1267,7 @@ export abstract class IModelDb extends IModel {
    * @param func The callback to be invoked on each property
    * @param includeCustom If true (default), include custom-handled properties in the iteration. Otherwise, skip custom-handled properties.
    * @note Custom-handled properties are core properties that have behavior enforced by C++ handlers.
-   * @deprecated in 5.0. Please use `forEachProperty` instead.
+   * @deprecated in 5.0 - will not be removed until after 2026-06-13. Please use `forEachProperty` instead.
    *
    * @example
    * ```typescript
@@ -1291,7 +1294,7 @@ export abstract class IModelDb extends IModel {
    * @param func The callback to be invoked on each property
    * @param includeCustom If true (default), include custom-handled properties in the iteration. Otherwise, skip custom-handled properties.
    * @note Custom-handled properties are core properties that have behavior enforced by C++ handlers.
-   * @deprecated in 5.0. Use `forEachProperty` from `SchemaContext` class instead.
+   * @deprecated in 5.0 - will not be removed until after 2026-06-13. Use `forEachProperty` from `SchemaContext` class instead.
    *
    * @example
    * ```typescript
@@ -1323,7 +1326,7 @@ export abstract class IModelDb extends IModel {
 
   /**
    * @internal
-   * @deprecated in 5.0. Please use `schemaContext` from `iModel` instead to get metadata.
+   * @deprecated in 5.0 - will not be removed until after 2026-06-13. Please use `schemaContext` from `iModel` instead to get metadata.
    */
   private loadMetaData(classFullName: string) {
     // eslint-disable-next-line @typescript-eslint/no-deprecated
@@ -1734,6 +1737,8 @@ export namespace IModelDb {
     private readonly _modelCacheSize = 10;
     /** @internal */
     public readonly [_cache] = new LRUMap<Id64String, ModelProps>(this._modelCacheSize);
+    /** @internal */
+    public readonly [_instanceKeyCache] = new InstanceKeyLRUCache(this._modelCacheSize);
 
     /** @internal */
     public constructor(private _iModel: IModelDb) { }
@@ -1843,7 +1848,15 @@ export namespace IModelDb {
       } else {
         throw new IModelError(IModelStatus.InvalidId, `Invalid model identifier: ${JSON.stringify(modelIdArg)}`);
       }
-      return this._iModel[_nativeDb].resolveInstanceKey(args);
+      // Check the cache to avoid unnecessary native calls
+      const cachedResult = this[_instanceKeyCache].get(args);
+      if (cachedResult) {
+        return cachedResult;
+      } else {
+        const instanceKey = this._iModel[_nativeDb].resolveInstanceKey(args);
+        this[_instanceKeyCache].set(args, instanceKey);
+        return instanceKey;
+      }
     }
 
     /** Get the sub-model of the specified Element.
@@ -1937,6 +1950,7 @@ export namespace IModelDb {
       Id64.toIdSet(ids).forEach((id) => {
         try {
           this[_cache].delete(id);
+          this[_instanceKeyCache].deleteById(id);
           this._iModel[_nativeDb].deleteModel(id);
         } catch (err: any) {
           const error = new IModelError(err.errorNumber, `Error deleting model [${err.message}], id: ${id}`);
@@ -1986,6 +2000,8 @@ export namespace IModelDb {
     private readonly _elementCacheSize = 50;
     /** @internal */
     public readonly [_cache] = new ElementLRUCache(this._elementCacheSize);
+    /** @internal */
+    public readonly [_instanceKeyCache] = new InstanceKeyLRUCache(this._elementCacheSize);
 
     /** @internal */
     public constructor(private _iModel: IModelDb) { }
@@ -2035,7 +2051,15 @@ export namespace IModelDb {
           throw new IModelError(IModelStatus.InvalidId, "Element Id or FederationGuid or Code is required");
         }
       }
-      return this._iModel[_nativeDb].resolveInstanceKey(args);
+      // Check the cache to avoid unnecessary native calls
+      const cachedResult = this[_instanceKeyCache].get(args);
+      if (cachedResult) {
+        return cachedResult;
+      } else {
+        const instanceKey = this._iModel[_nativeDb].resolveInstanceKey(args);
+        this[_instanceKeyCache].set(args, instanceKey);
+        return instanceKey;
+      }
     }
 
     /** Get properties of an Element by Id, FederationGuid, or Code
@@ -2133,16 +2157,16 @@ export namespace IModelDb {
 
       if (code.value === undefined)
         throw new IModelError(IModelStatus.InvalidCode, "Invalid Code");
-      // eslint-disable-next-line @typescript-eslint/no-deprecated
-      return this._iModel.withPreparedStatement("SELECT ECInstanceId FROM BisCore:Element WHERE CodeSpec.Id=? AND CodeScope.Id=? AND CodeValue=?", (stmt: ECSqlStatement) => {
-        stmt.bindId(1, code.spec);
-        stmt.bindId(2, Id64.fromString(code.scope));
-        stmt.bindString(3, code.value);
-        if (DbResult.BE_SQLITE_ROW !== stmt.step())
-          return undefined;
 
-        return stmt.getValue(0).getId();
-      });
+      const codeToQuery = new Code(code);
+      try {
+        const elementKey = this.resolveElementKey(codeToQuery);
+        return Id64.fromString(elementKey.id);
+      } catch (err: any) {
+        if (err.errorNumber === IModelStatus.NotFound)
+          return undefined;
+        throw err;
+      }
     }
 
     /** Query for an [[Element]]'s last modified time.
@@ -2229,6 +2253,7 @@ export namespace IModelDb {
       Id64.toIdSet(ids).forEach((id) => {
         try {
           this[_cache].delete({ id });
+          this[_instanceKeyCache].deleteById(id);
           iModel[_nativeDb].deleteElement(id, options);
         } catch (err: any) {
           err.message = `Error deleting element [${err.message}], id: ${id}`;
@@ -2755,7 +2780,7 @@ export namespace IModelDb {
 
     /** Set the default view property the iModel.
      * @param viewId The Id of the ViewDefinition to use as the default
-     * @deprecated in 4.2.x. Avoid setting this property - it is not practical for one single view to serve the needs of the many applications
+     * @deprecated in 4.2.x - will not be removed until after 2026-06-13. Avoid setting this property - it is not practical for one single view to serve the needs of the many applications
      * that might wish to view the contents of the iModel.
      */
     public setDefaultViewId(viewId: Id64String): void {

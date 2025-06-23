@@ -2,6 +2,36 @@
   "name": "@itwin/ecschema-rpcinterface-impl",
   "entries": [
     {
+      "version": "5.0.1",
+      "tag": "@itwin/ecschema-rpcinterface-impl_v5.0.1",
+      "date": "Tue, 17 Jun 2025 18:33:52 GMT",
+      "comments": {}
+    },
+    {
+      "version": "5.0.0",
+      "tag": "@itwin/ecschema-rpcinterface-impl_v5.0.0",
+      "date": "Fri, 13 Jun 2025 20:25:38 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Added ESM support"
+          }
+        ]
+      }
+    },
+    {
+      "version": "4.11.6",
+      "tag": "@itwin/ecschema-rpcinterface-impl_v4.11.6",
+      "date": "Mon, 16 Jun 2025 15:00:15 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.11.5",
+      "tag": "@itwin/ecschema-rpcinterface-impl_v4.11.5",
+      "date": "Fri, 06 Jun 2025 13:41:18 GMT",
+      "comments": {}
+    },
+    {
       "version": "4.11.4",
       "tag": "@itwin/ecschema-rpcinterface-impl_v4.11.4",
       "date": "Tue, 03 Jun 2025 16:15:19 GMT",

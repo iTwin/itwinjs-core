@@ -1,6 +1,51 @@
 # Change Log - @itwin/presentation-common
 
-This log was last generated on Tue, 03 Jun 2025 16:18:11 GMT and should not be manually modified.
+This log was last generated on Tue, 17 Jun 2025 18:35:12 GMT and should not be manually modified.
+
+## 5.0.1
+Tue, 17 Jun 2025 18:33:52 GMT
+
+_Version update only_
+
+## 5.0.0
+Fri, 13 Jun 2025 20:25:38 GMT
+
+### Minor changes
+
+- All public methods of `PresentationRpcInterface` have been deprecated. Going forward, RPC interfaces should not be called directly. Public wrappers such as `PresentationManager` should be used instead.
+
+### Updates
+
+- Export `Ruleset.schema.json` through exports field
+- Add value constraints to `PropertyInfo`
+- KeySet: Always store instance key class name in `Schema:Class` format.
+- Upgrade compile target to ES2023 and module to ES2022
+- Fixed enum property values formatting issue, where raw value was used instead of enum's display value.
+- Fix `InstanceKey.compare` implementation not taking into account different formats and casings of full class name.
+- Deprecate `imageId` property of `CustomNodeSpecification` and `PropertyRangeGroupSpecification`.
+- Deprecate `labelDefinition` property of `ItemJSON` and `NestedContentValue` in favor of newly added `label`.
+- Deprecate `fromJSON` and `toJSON` methods of `Field` and its subclasses.
+- Add `type: "module"` to `package.json` to tell Node.js to load this package as ESM by default.
+- Deprecate unified selection related APIs.
+- When serializing content, don't put `undefined` values to JSON.
+- Extend `MultiElementPropertiesRequestOptions` to support specifying input element either through `elementClasses` or `elementIds` arrays.
+- Remove `@internal` APIs from public barrel exports file.
+- Stop using `Object.create` and `Object.assign` and use proper constructors and operators instead.
+- Clean up APIs deprecated in 3.x
+- Refactor RPC "pending" response handling to rely on our RPC system rather than custom implementation
+- Change core peer dependencies to strict version.
+
+## 4.11.6
+Mon, 16 Jun 2025 15:00:15 GMT
+
+_Version update only_
+
+## 4.11.5
+Fri, 06 Jun 2025 13:41:18 GMT
+
+### Updates
+
+- Fix `InstanceKey.compare` implementation not taking into account different formats and casings of full class name.
 
 ## 4.11.4
 Tue, 03 Jun 2025 16:15:19 GMT

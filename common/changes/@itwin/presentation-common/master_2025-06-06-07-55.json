@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/presentation-common",
+      "comment": "Fix `InstanceKey.compare` implementation not taking into account different formats and casings of full class name.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/presentation-common"
+}
