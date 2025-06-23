@@ -31,7 +31,8 @@ export abstract class ImplicitCurve2d {
     * Pass each in turn to the handler.
     * @param spacePoint
     */
-   public abstract emitPerpendiculars (spacePoint: Point2d,  handler :(curvePoint: Point2d)=>any):any;
+   public abstract emitPerpendiculars (spacePoint: Point2d,
+       handler :(curvePoint: Point2d, radians : number | undefined)=>any):any;
    /**
     * Call emitPerpendiculars.  Return the closest of the perpendiculars.
     * * Return undefined if no perpendiculars are received.
@@ -45,7 +46,7 @@ export abstract class ImplicitCurve2d {
       // console.log ({space: spacePoint.toJSON()});
 
     this.emitPerpendiculars (spacePoint,
-      (curvePoint: Point2d)=>{
+      (curvePoint: Point2d, _radians: number | undefined)=>{
         const distanceSquared = curvePoint.distanceSquared (spacePoint);
         // console.log ({distanceSquared, xy: curvePoint.toJSON(), minD: minDistanceSquared});
         if (distanceSquared < minDistanceSquared){
@@ -126,7 +127,7 @@ export class ImplicitGeometryMarkup<GeometryType extends ImplicitCurve2d> {
     let dMin : undefined | number;
     let closestPoint;
     otherCurve.emitPerpendiculars (spacePoint,
-       (curvePoint: Point2d) =>{
+       (curvePoint: Point2d, _radians : number | undefined) =>{
         const d = Math.abs(curvePoint.distance (referencePoint) - Math.abs (biasDistance));
           if (dMin === undefined || d < dMin){
             dMin = d;

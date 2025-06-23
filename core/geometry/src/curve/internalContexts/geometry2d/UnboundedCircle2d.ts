@@ -89,11 +89,11 @@ public override functionValue (xy: XAndY) : number {
    * @param handler
    */
 public override emitPerpendiculars(spacePoint: Point2d,
-   handler :(curvePoint: Point2d)=>any):any{
+   handler :(curvePoint: Point2d, radians: number | undefined)=>any):any{
   const radialVector = Vector2d.createStartEnd (this.center, spacePoint).scaleToLength (this.radius);
   if (radialVector !== undefined){
-    handler (this.center.plus (radialVector));
-    handler(this.center.minus(radialVector));
+    handler (this.center.plus (radialVector), undefined);
+    handler(this.center.minus(radialVector), undefined);
   }
 }
 

@@ -132,7 +132,7 @@ it("UnboundedHyperbola2dA", () => {
         Point2d.create (2,0.01)]){
         GeometryCoreTestIO.createAndCaptureXYMarker (allGeometry, 0, xy, 0.05, x0, 0);
         curve.emitPerpendiculars (xy,
-          (curvePoint: Point2d)=>{
+          (curvePoint: Point2d, _radians: number | undefined)=>{
             GeometryCoreTestIO.captureCloneGeometry (allGeometry,
               LineSegment3d.createXYXY(xy.x, xy.y, curvePoint.x, curvePoint.y), x0,0);
             // GeometryCoreTestIO.consoleLog({onCurve: curvePoint.toJSON()});

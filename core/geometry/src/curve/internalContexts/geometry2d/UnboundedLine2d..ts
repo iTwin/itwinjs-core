@@ -142,10 +142,10 @@ export class UnboundedLine2dByPointAndNormal extends ImplicitCurve2d {
      * @param handler
      */
     public override emitPerpendiculars(spacePoint: Point2d,
-      handler :(curvePoint: Point2d)=>any):any{
+      handler :(curvePoint: Point2d, radians: number | undefined)=>any):any{
         const fraction = Geometry.fractionOfProjectionToVectorXYXY (
           spacePoint.x - this.point.x, spacePoint.y-this.point.y, this.normal.x, this.normal.y);
-        handler (spacePoint.plusScaled (this.normal, -fraction));
+        handler (spacePoint.plusScaled (this.normal, -fraction), undefined);
       }
 /**
  * Return a new implicit line with its reference point given relative to newOrigin, and its perpendicular vector

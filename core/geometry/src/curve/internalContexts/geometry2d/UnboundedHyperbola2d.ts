@@ -167,7 +167,7 @@ return f0;
  * @param handler
  */
     public override emitPerpendiculars(spacePoint: Point2d,
-   handler :(curvePoint: Point2d)=>any):any{
+   handler :(curvePoint: Point2d, radians : number | undefined)=>any):any{
     const centerToSpacePoint = Vector2d.createStartEnd (spacePoint, this.pointA);
     // Coefficients of C and S where C and S are the unit circle points parameterized by theta.
 
@@ -183,7 +183,7 @@ return f0;
       const s = Math.sin (radians);
       const c = Math.cos (radians);
       const curvePoint = this.pointA.plus2Scaled (this.vectorU, 1.0 / c, this.vectorV, s / c);
-      handler(curvePoint);
+      handler(curvePoint, radians);
     }
 }
 

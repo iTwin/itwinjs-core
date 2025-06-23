@@ -13,6 +13,7 @@ import { Point2d, Vector2d } from "../../../geometry3d/Point2dVector2d";
 import { XAndY } from "../../../geometry3d/XYZProps";
 import { TrigPolynomial } from "../../../numerics/Polynomials";
 import { ImplicitCurve2d } from "./implicitCurve2d";
+import { AnyChain } from "../../CurveTypes";
 
 /**
  * Class for an ellipse in the xy plane.The ellipse equation in angular parameterization is
@@ -121,7 +122,7 @@ public override functionValue (xy: XAndY) : number {
  * @param handler function to receive curve points.
  */
 public override emitPerpendiculars(spacePoint: Point2d,
-   handler :(curvePoint: Point2d)=>any):any{
+   handler :(curvePoint: Point2d, radians: number | undefined)=>AnyChain):any{
     const centerToSpacePoint = Vector2d.createStartEnd (this.pointA, spacePoint);
     // Coefficients of C and S where C and S are the unit circle points parameterized by theta.
     const coffSC = centerToSpacePoint.dotProduct (this.vectorU);
@@ -136,7 +137,7 @@ public override emitPerpendiculars(spacePoint: Point2d,
       const s = Math.sin (radians);
       const c = Math.cos (radians);
       const curvePoint = this.pointA.plus2Scaled (this.vectorU, 1.0 / c, this.vectorV, s / c);
-      handler(curvePoint);
+      handler(curvePoint, radians);
     }
   }
     /**
