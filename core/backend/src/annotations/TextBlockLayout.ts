@@ -622,12 +622,15 @@ export class TextBlockLayout {
 
         // Do word wrapping
         if (curLine.runs.length === 0) {
-          if ("tab" === run.source.type) run.applyTabShift(curLine, context);
           curLine.append(run);
+
+          // Lastly, flush line
           curLine = this.flushLine(context, curLine);
         } else {
+          // First, flush line
           curLine = this.flushLine(context, curLine);
-          if ("tab" === run.source.type) run.applyTabShift(curLine, context);
+
+          if ("tab" === run.source.type) run.applyTabShift(curLine, context); // Recompute tab shift
           curLine.append(run);
         }
       }

@@ -42,7 +42,7 @@ function isIntlSupported(): boolean {
   return !ProcessDetector.isMobileAppBackend;
 }
 
-describe("layoutTextBlock", () => {
+describe.only("layoutTextBlock", () => {
   it("resolves TextStyleSettings from combination of TextBlock and Run", () => {
     const textBlock = TextBlock.create({ styleName: "block", styleOverrides: { widthFactor: 34, color: 0x00ff00 } });
     const run0 = TextRun.create({ content: "run0", styleName: "run", styleOverrides: { lineHeight: 56, color: 0xff0000 } });
@@ -197,26 +197,26 @@ describe("layoutTextBlock", () => {
     const styleName = "testStyle";
     const textBlock = TextBlock.create({ styleName, styleOverrides: { lineHeight, tabInterval } });
 
-    // line 0: TAB TAB TAB LINEBREAK
+    // line 0: ----->----->----->LINEBREAK
     textBlock.appendRun(TabRun.create({ styleName, styleOverrides: { tabInterval } }));
     textBlock.appendRun(TabRun.create({ styleName, styleOverrides: { tabInterval } }));
     textBlock.appendRun(TabRun.create({ styleName, styleOverrides: { tabInterval } }));
     textBlock.appendRun(LineBreakRun.create({ styleName }));
 
-    // line 1: "abc" TAB TAB LINEBREAK
+    // line 1: abc-->----->LINEBREAK
     textBlock.appendRun(TextRun.create({ styleName, content: "abc" }));
     textBlock.appendRun(TabRun.create({ styleName, styleOverrides: { tabInterval } }));
     textBlock.appendRun(TabRun.create({ styleName, styleOverrides: { tabInterval } }));
     textBlock.appendRun(LineBreakRun.create({ styleName }));
 
-    // line 2: "abc" TAB(7) TAB(2) TAB(7) LINEBREAK
+    // line 2: abc--->->------>LINEBREAK
     textBlock.appendRun(TextRun.create({ styleName, content: "abc" }));
     textBlock.appendRun(TabRun.create({ styleName, styleOverrides: { tabInterval: 7 } }));
     textBlock.appendRun(TabRun.create({ styleName, styleOverrides: { tabInterval: 2 } }));
     textBlock.appendRun(TabRun.create({ styleName, styleOverrides: { tabInterval: 7 } }));
     textBlock.appendRun(LineBreakRun.create({ styleName }));
 
-    // line 3: "abc" TAB(7) "1/23" TAB(3) "abcde" TAB(7) LINEBREAK
+    // line 3: abc--->1/23->abcde->LINEBREAK
     textBlock.appendRun(TextRun.create({ styleName, content: "abc" }));
     textBlock.appendRun(TabRun.create({ styleName, styleOverrides: { tabInterval: 7 } }));
     textBlock.appendRun(FractionRun.create({ styleName, numerator: "1", denominator: "23" }));
@@ -461,6 +461,8 @@ describe("layoutTextBlock", () => {
     expectLineOffset(-3.5, 2);
   });
 
+  // describe("performs word-wrapping", () => {
+
   function expectLines(input: string, width: number, expectedLines: string[]): TextBlockLayout {
     const textBlock = TextBlock.create({ styleName: "" });
     textBlock.width = width;
@@ -547,7 +549,64 @@ describe("layoutTextBlock", () => {
   });
 
   it("wraps tabs", () => {
+    //todo
+    const lineHeight = 1;
+    const styleName = "testStyle";
+    const textBlock = TextBlock.create({ styleName, styleOverrides: { lineHeight } });
 
+    // line 0:  -->-->------> LINEBREAK
+    textBlock.appendRun(TabRun.create({ styleName, styleOverrides: { tabInterval: 3 } }));
+    textBlock.appendRun(TabRun.create({ styleName, styleOverrides: { tabInterval: 3 } }));
+    textBlock.appendRun(TabRun.create({ styleName, styleOverrides: { tabInterval: 7 } }));
+    textBlock.appendRun(LineBreakRun.create({ styleName }));
+
+    // line 1:  a->b->cd-----> LINEBREAK
+    textBlock.appendRun(TextRun.create({ styleName, content: "a" }));
+    textBlock.appendRun(TabRun.create({ styleName, styleOverrides: { tabInterval: 3 } }));
+    textBlock.appendRun(TextRun.create({ styleName, content: "b" }));
+    textBlock.appendRun(TabRun.create({ styleName, styleOverrides: { tabInterval: 3 } }));
+    textBlock.appendRun(TextRun.create({ styleName, content: "cd" }));
+    textBlock.appendRun(TabRun.create({ styleName, styleOverrides: { tabInterval: 7 } }));
+    textBlock.appendRun(LineBreakRun.create({ styleName }));
+
+    // line 2:  -->a->b------>cd LINEBREAK
+    textBlock.appendRun(TabRun.create({ styleName, styleOverrides: { tabInterval: 3 } }));
+    textBlock.appendRun(TextRun.create({ styleName, content: "a" }));
+    textBlock.appendRun(TabRun.create({ styleName, styleOverrides: { tabInterval: 3 } }));
+    textBlock.appendRun(TextRun.create({ styleName, content: "b" }));
+    textBlock.appendRun(TabRun.create({ styleName, styleOverrides: { tabInterval: 7 } }));
+    textBlock.appendRun(TextRun.create({ styleName, content: "cd" }));
+    textBlock.appendRun(LineBreakRun.create({ styleName }));
+
+    /* Full Width:
+      * -->-->------>
+      * a->b->cd---->
+      * -->a->b----->cd
+    */
+    let tb = doLayout(textBlock);
+    expect(tb.lines.length).to.equal(3, ``);
+    expect(tb.lines[0].range.xLength()).to.equal(13, ``);
+    expect(tb.lines[1].range.xLength()).to.equal(13, ``);
+    expect(tb.lines[2].range.xLength()).to.equal(15, ``);
+
+    /* Width of 10:
+      * -->-->
+      * ------>
+      * a->b->cd
+      * ------>
+      * -->a->b
+      * ------>cd
+    */
+
+    textBlock.width = 10;
+    tb = doLayout(textBlock);
+    expect(tb.lines.length).to.equal(6, ``);
+    expect(tb.lines[0].range.xLength()).to.equal(6, ``);
+    expect(tb.lines[1].range.xLength()).to.equal(7, ``);
+    expect(tb.lines[2].range.xLength()).to.equal(8, ``);
+    expect(tb.lines[3].range.xLength()).to.equal(7, ``);
+    expect(tb.lines[4].range.xLength()).to.equal(7, ``);
+    expect(tb.lines[5].range.xLength()).to.equal(9, ``);
   });
 
   it("performs word-wrapping with punctuation", function () {
@@ -676,7 +735,8 @@ describe("layoutTextBlock", () => {
     block.width = width;
     const layout2 = doLayout(block);
     expect(layout2.range.yLength()).to.equal(1);
-  })
+  });
+  // });
 
   it("has consistent data when converted to a layout result", function () {
     if (!isIntlSupported()) {
