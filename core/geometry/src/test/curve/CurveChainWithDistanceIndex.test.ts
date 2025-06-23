@@ -675,8 +675,8 @@ describe("CurveChainWithDistanceIndex", () => {
     const geometryA = CurveChainWithDistanceIndex.createCapture(path1);
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, geometryA);
     // second CurveChainWithDistanceIndex
-    const lineSegment2 = LineSegment3d.createXYZXYZ(-1, 0, 1, 3, 0, 1);
-    const lineString3 = LineString3d.create([3, 0, 1], [5, 0, 1], [5, -3, 1], [12, -3, 1]);
+    const lineSegment2 = LineSegment3d.createXYZXYZ(-1, 0, 1, 5, 0, 1);
+    const lineString3 = LineString3d.create([5, 0, 1], [5, -3, 1], [12, -3, 1]);
     const lineSegment3 = LineSegment3d.createXYZXYZ(12, -3, 1, 12, -3, 3);
     const path2 = Path.create();
     path2.tryAddChild(lineSegment2);

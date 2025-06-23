@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-quantity",
+      "comment": "Expand parsing flexibility for Bearing formats",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-quantity"
+}

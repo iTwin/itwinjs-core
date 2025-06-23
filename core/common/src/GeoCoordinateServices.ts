@@ -59,7 +59,7 @@ export enum GeoCoordStatus {
   /** This temporary status is used to mark coordinates for which the conversion has not yet been processed by the backend
    *  as opposed to other coordinate conversions that may have been resolved otherwise (typically a cache).
    *  At the completion of the conversion promise no coordinates should have this status.
-   * @deprecated in 5.0. Pending is no longer returned as a status for coordinate conversions.
+   * @deprecated in 5.0 - will not be removed until after 2026-06-13. Pending is no longer returned as a status for coordinate conversions.
    */
   Pending = -41556,
 }

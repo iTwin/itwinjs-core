@@ -955,4 +955,193 @@ describe("Changeset Reader API", async () => {
     }
     rwIModel.close();
   });
+
+  it("Delete class FK constraint violation in cache table", async () => {
+    // Helper to check if TestClass exists in schema and cache table for both briefcases
+    function checkClass(firstBriefcase: BriefcaseDb, isClassInFirst: boolean, secondBriefcase: BriefcaseDb, isClassInSecond: boolean) {
+      const firstItems = firstBriefcase.getSchemaProps("TestSchema").items;
+      assert.equal(isClassInFirst, !!firstItems?.TestClass);
+
+      const secondItems = secondBriefcase.getSchemaProps("TestSchema").items;
+      assert.equal(isClassInSecond, !!secondItems?.TestClass);
+
+      const sql = `SELECT ch.classId FROM ec_cache_ClassHierarchy ch JOIN ec_Class c ON ch.classId = c.Id WHERE c.Name = 'TestClass'`;
+      const firstStmt = firstBriefcase.prepareSqliteStatement(sql);
+      assert.equal(firstStmt.step(), isClassInFirst ? DbResult.BE_SQLITE_ROW : DbResult.BE_SQLITE_DONE);
+      firstStmt[Symbol.dispose]();
+
+      const secondStmt = secondBriefcase.prepareSqliteStatement(sql);
+      assert.equal(secondStmt.step(), isClassInSecond ? DbResult.BE_SQLITE_ROW : DbResult.BE_SQLITE_DONE);
+      secondStmt[Symbol.dispose]();
+    }
+
+    const adminToken = "super manager token";
+    const iModelName = "test";
+    const rwIModelId = await HubMock.createNewIModel({ iTwinId, iModelName, description: "TestSubject", accessToken: adminToken });
+    assert.isNotEmpty(rwIModelId);
+
+    // Open two briefcases for the same iModel
+    const [firstBriefCase, secondBriefCase] = await Promise.all([
+      HubWrappers.downloadAndOpenBriefcase({ iTwinId, iModelId: rwIModelId, accessToken: adminToken }),
+      HubWrappers.downloadAndOpenBriefcase({ iTwinId, iModelId: rwIModelId, accessToken: adminToken })
+    ]);
+
+    // Enable shared channel for both
+    [firstBriefCase, secondBriefCase].forEach(briefcase => briefcase.channels.addAllowedChannel(ChannelControl.sharedChannelName));
+
+    await firstBriefCase.importSchemaStrings([`<?xml version="1.0" encoding="UTF-8"?>
+      <ECSchema schemaName="TestSchema" alias="ts" version="1.0.0" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
+          <ECSchemaReference name="BisCore" version="1.0.0" alias="bis"/>
+          <ECSchemaReference name="CoreCustomAttributes" version="1.0.0" alias="CoreCA" />
+
+          <ECCustomAttributes>
+              <DynamicSchema xmlns = 'CoreCustomAttributes.1.0.0' />
+          </ECCustomAttributes>
+
+          <ECEntityClass typeName="TestClass">
+              <BaseClass>bis:PhysicalElement</BaseClass>
+          </ECEntityClass>
+      </ECSchema>`]);
+    firstBriefCase.saveChanges("import initial schema");
+
+    // Push the changes to the hub
+    await firstBriefCase.pushChanges({ description: "push initial schema changeset", accessToken: adminToken });
+
+    // Sync the second briefcase with the iModel
+    await secondBriefCase.pullChanges({ accessToken: adminToken });
+
+    checkClass(firstBriefCase, true, secondBriefCase, true);
+
+    // Import the schema
+    await firstBriefCase.importSchemaStrings([`<?xml version="1.0" encoding="UTF-8"?>
+      <ECSchema schemaName="TestSchema" alias="ts" version="2.0.0" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
+        <ECSchemaReference name="CoreCustomAttributes" version="1.0.0" alias="CoreCA" />
+
+        <ECCustomAttributes>
+          <DynamicSchema xmlns = 'CoreCustomAttributes.1.0.0' />
+        </ECCustomAttributes>
+      </ECSchema>`]);
+    firstBriefCase.saveChanges("imported schema");
+
+    // Push the changeset to the hub
+    await firstBriefCase.pushChanges({ description: "Delete class major change", accessToken: adminToken });
+
+    checkClass(firstBriefCase, false, secondBriefCase, true);
+
+    // Apply the latest changeset to a new briefcase
+    try {
+      await secondBriefCase.pullChanges({ accessToken: adminToken });
+    } catch (error: any) {
+      assert.fail(`Should not have failed with the error: ${error.message}`);
+    }
+
+    checkClass(firstBriefCase, false, secondBriefCase, false);
+
+    // Cleanup
+    await Promise.all([secondBriefCase.close(), firstBriefCase.close()]);
+  });
+
+
+  it("Delete class FK constraint violation in cache table through a revert", async () => {
+    // Helper to check if TestClass exists in schema and cache table for both briefcases
+    function checkClass(className: string, firstBriefcase: BriefcaseDb, isClassInFirst: boolean, secondBriefcase: BriefcaseDb, isClassInSecond: boolean) {
+      assert.equal(isClassInFirst, !!firstBriefcase.getSchemaProps("TestSchema").items?.[className]);
+      assert.equal(isClassInSecond, !!secondBriefcase.getSchemaProps("TestSchema").items?.[className]);
+
+      const sql = `SELECT ch.classId FROM ec_cache_ClassHierarchy ch JOIN ec_Class c ON ch.classId = c.Id WHERE c.Name = '${className}'`;
+      const firstStmt = firstBriefcase.prepareSqliteStatement(sql);
+      assert.equal(firstStmt.step(), isClassInFirst ? DbResult.BE_SQLITE_ROW : DbResult.BE_SQLITE_DONE);
+      firstStmt[Symbol.dispose]();
+
+      const secondStmt = secondBriefcase.prepareSqliteStatement(sql);
+      assert.equal(secondStmt.step(), isClassInSecond ? DbResult.BE_SQLITE_ROW : DbResult.BE_SQLITE_DONE);
+      secondStmt[Symbol.dispose]();
+    }
+
+    const adminToken = "super manager token";
+    const iModelName = "test";
+    const rwIModelId = await HubMock.createNewIModel({ iTwinId, iModelName, description: "TestSubject", accessToken: adminToken });
+    assert.isNotEmpty(rwIModelId);
+
+    // Open two briefcases for the same iModel
+    const [firstBriefCase, secondBriefCase] = await Promise.all([
+      HubWrappers.downloadAndOpenBriefcase({ iTwinId, iModelId: rwIModelId, accessToken: adminToken }),
+      HubWrappers.downloadAndOpenBriefcase({ iTwinId, iModelId: rwIModelId, accessToken: adminToken })
+    ]);
+
+    // Enable shared channel for both
+    [firstBriefCase, secondBriefCase].forEach(briefcase => briefcase.channels.addAllowedChannel(ChannelControl.sharedChannelName));
+
+    await firstBriefCase.importSchemaStrings([`<?xml version="1.0" encoding="UTF-8"?>
+      <ECSchema schemaName="TestSchema" alias="ts" version="1.0.0" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
+          <ECSchemaReference name="BisCore" version="1.0.0" alias="bis"/>
+          <ECSchemaReference name="CoreCustomAttributes" version="1.0.0" alias="CoreCA" />
+
+          <ECCustomAttributes>
+              <DynamicSchema xmlns = 'CoreCustomAttributes.1.0.0' />
+          </ECCustomAttributes>
+
+          <ECEntityClass typeName="TestClass">
+              <BaseClass>bis:PhysicalElement</BaseClass>
+          </ECEntityClass>
+      </ECSchema>`]);
+    firstBriefCase.saveChanges("import initial schema");
+
+    // Push the changes to the hub
+    await firstBriefCase.pushChanges({ description: "push initial schema changeset", accessToken: adminToken });
+    // Sync the second briefcase
+    await secondBriefCase.pullChanges({ accessToken: adminToken });
+
+    checkClass("TestClass", firstBriefCase, true, secondBriefCase, true);
+
+    // Import the schema
+    await firstBriefCase.importSchemaStrings([`<?xml version="1.0" encoding="UTF-8"?>
+      <ECSchema schemaName="TestSchema" alias="ts" version="1.0.1" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
+        <ECSchemaReference name="BisCore" version="1.0.0" alias="bis"/>
+        <ECSchemaReference name="CoreCustomAttributes" version="1.0.0" alias="CoreCA" />
+
+        <ECCustomAttributes>
+          <DynamicSchema xmlns = 'CoreCustomAttributes.1.0.0' />
+        </ECCustomAttributes>
+
+        <ECEntityClass typeName="TestClass">
+          <BaseClass>bis:PhysicalElement</BaseClass>
+        </ECEntityClass>
+
+        <ECEntityClass typeName="AnotherTestClass">
+          <BaseClass>bis:PhysicalElement</BaseClass>
+        </ECEntityClass>
+      </ECSchema>`]);
+    firstBriefCase.saveChanges("imported schema");
+
+    // Push the changeset to the hub
+    await firstBriefCase.pushChanges({ description: "Add another class change", accessToken: adminToken });
+    // Sync the second briefcase
+    await secondBriefCase.pullChanges({ accessToken: adminToken });
+
+    checkClass("TestClass", firstBriefCase, true, secondBriefCase, true);
+    checkClass("AnotherTestClass", firstBriefCase, true, secondBriefCase, true);
+
+    // Revert the latest changeset from the first briefcase
+    try {
+      await firstBriefCase.revertAndPushChanges({ toIndex: 2, description: "Revert last changeset" });
+    } catch (error: any) {
+      assert.fail(`Should not have failed with the error: ${error.message}`);
+    }
+
+    checkClass("TestClass", firstBriefCase, true, secondBriefCase, true);
+    checkClass("AnotherTestClass", firstBriefCase, false, secondBriefCase, true);
+
+    try {
+      await secondBriefCase.pullChanges({ accessToken: adminToken });
+    } catch (error: any) {
+      assert.fail(`Should not have failed with the error: ${error.message}`);
+    }
+
+    checkClass("TestClass", firstBriefCase, true, secondBriefCase, true);
+    checkClass("AnotherTestClass", firstBriefCase, false, secondBriefCase, false);
+
+    // Cleanup
+    await Promise.all([secondBriefCase.close(), firstBriefCase.close()]);
+  });
 });

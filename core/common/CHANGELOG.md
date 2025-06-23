@@ -1,6 +1,56 @@
 # Change Log - @itwin/core-common
 
-This log was last generated on Fri, 06 Jun 2025 13:44:02 GMT and should not be manually modified.
+This log was last generated on Tue, 17 Jun 2025 18:35:12 GMT and should not be manually modified.
+
+## 5.0.1
+Tue, 17 Jun 2025 18:33:52 GMT
+
+### Updates
+
+- Make CreateEmptyStandaloneIModelProps public
+
+## 5.0.0
+Fri, 13 Jun 2025 20:25:38 GMT
+
+### Updates
+
+- Add new `properties` property to `ImageMapLayerSettings` class.
+- Deprecated the property extendType of QueryPropertyMetaData and added new property extendedType to QueryPropertyMetaData
+- removed getThumbnail api
+- Mark iModel edit API as @preview
+- Update ECSql reader api to support no stat and error code.
+- Adding support for margins to `TextBlock`
+- Resolves CVE-2025-27152
+- Depreciate ECSqlStatement API
+- add new imodel drapeTarget to ModelMapLayerProps
+- Add drapeTarget to ModelMapLayerProps (Reality data now a possible target)
+- FontMap.getFont now uses case insensitive matching for font names.
+- Upgrade compile target to ES2023 and module to ES2022
+- Removed `WipRpcInterface`
+- Deprecate `SnapshotIModelRpcInterface`
+- add CatalogIModelTypes
+- Add CesiumIonAssetId enum
+- Deprecated `MassPropertiesPerCandidateRequestProps` and `MassPropertiesPerCandidateResponseProps`
+- Deprecated `GeoCoordStatus.Pending`
+- Thinning iModelPlatform API
+- Revert BackendTypes to Public
+- Remove 3.x Deprecated APIs
+- Add support for tiles compressed with meshoptimizer
+- Adding Errors for Channels
+- Refactoring ITwin Error
+- Adding metadata for bentley error in IpcInvokeReturn
+- Updated IpcInvokeReturn to include error metadata
+- Add DrawingProps with scaleFactor.
+- Add new font APIs.
+- Remove deprecated IModelEncryptionProps
+- Removes re-exports from @itwin/core-bentley
+- Deprecate metadata types replaced by ecschema-metadata
+- Change core peer dependencies to strict version.
+
+## 4.11.6
+Mon, 16 Jun 2025 15:00:15 GMT
+
+_Version update only_
 
 ## 4.11.5
 Fri, 06 Jun 2025 13:41:18 GMT
