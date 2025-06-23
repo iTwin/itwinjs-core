@@ -709,8 +709,11 @@ describe("layoutTextBlock", () => {
       expectLines("吾輩は猫である。名前はたぬき。", 1, ["吾", "輩", "は", "猫", "で", "あ", "る。", "名", "前", "は", "た", "ぬ", "き。"]);
     });
 
-    it("wraps tabs", () => {
-      //todo
+    it("wraps tabs", function () {
+      if (!isIntlSupported()) {
+        this.skip();
+      }
+
       const lineHeight = 1;
       const styleName = "";
       const textBlock = TextBlock.create({ styleName, styleOverrides: { lineHeight } });
