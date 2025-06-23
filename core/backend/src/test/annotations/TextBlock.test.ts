@@ -319,7 +319,7 @@ describe("layoutTextBlock", () => {
     it("applies tab shifts", () => {
       const lineHeight = 1;
       const tabInterval = 6;
-      const styleName = "testStyle";
+      const styleName = "";
       const textBlock = TextBlock.create({ styleName, styleOverrides: { lineHeight, tabInterval } });
 
       // Appends a line that looks like `stringOne` TAB `stringTwo` LINEBREAK
@@ -354,7 +354,7 @@ describe("layoutTextBlock", () => {
     it("applies consecutive tab shifts", () => {
       const lineHeight = 1;
       const tabInterval = 6;
-      const styleName = "testStyle";
+      const styleName = "";
       const textBlock = TextBlock.create({ styleName, styleOverrides: { lineHeight, tabInterval } });
 
       // line 0: ----->----->----->LINEBREAK
@@ -712,7 +712,7 @@ describe("layoutTextBlock", () => {
     it("wraps tabs", () => {
       //todo
       const lineHeight = 1;
-      const styleName = "testStyle";
+      const styleName = "";
       const textBlock = TextBlock.create({ styleName, styleOverrides: { lineHeight } });
 
       // line 0:  -->-->------> LINEBREAK
