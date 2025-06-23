@@ -208,7 +208,7 @@ export type AngleSweepProps =
 /**
 * Interface for method with a clone operation.
 * @public
-* @deprecated in 4.x. Use ICloneable.
+* @deprecated in 4.x - will not be removed until after 2026-06-13. Use ICloneable.
 */
 export interface Cloneable<T> {
   /** Required method to return a deep clone. */
@@ -280,7 +280,7 @@ export class Geometry {
   public static readonly largeCoordinateResult = 1.0e13;
   /**
    * Numeric value that may considered infinite for metric coordinates.
-   * @deprecated in 4.x. Use [[largeCoordinateResult]].
+   * @deprecated in 4.x - will not be removed until after 2026-06-13. Use [[largeCoordinateResult]].
    * * This coordinate should be used only as a placeholder indicating "at infinity" -- computing actual
    * points at this coordinate invites numerical problems.
    */
@@ -291,7 +291,7 @@ export class Geometry {
   }
   /**
    * Test if the absolute value of x is at least [[largeCoordinateResult]].
-   * @deprecated in 4.x. Use [[isLargeCoordinateResult]].
+   * @deprecated in 4.x - will not be removed until after 2026-06-13. Use [[isLargeCoordinateResult]].
    */
   public static isHugeCoordinate(x: number): boolean {
     return Geometry.isLargeCoordinateResult(x);
@@ -1340,7 +1340,7 @@ export class Geometry {
   /**
    * Clone an array whose members have type `T`, which implements the clone method.
    * * If the clone method returns `undefined`, then `undefined` is forced into the cloned array.
-   * @deprecated in 4.x. Use cloneArray.
+   * @deprecated in 4.x - will not be removed until after 2026-06-13. Use cloneArray.
    */
   // eslint-disable-next-line @typescript-eslint/no-deprecated
   public static cloneMembers<T extends Cloneable<T>>(array: T[] | undefined): T[] | undefined {

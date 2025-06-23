@@ -174,7 +174,7 @@ export class GraphicalEditingScope extends BriefcaseNotificationHandler implemen
     }
   }
 
-  /** @deprecated in 5.0 Use [Symbol.dispose] instead. */
+  /** @deprecated in 5.0 - will not be removed until after 2026-06-13. Use [Symbol.dispose] instead. */
   public dispose() {
     this[Symbol.dispose]();
   }

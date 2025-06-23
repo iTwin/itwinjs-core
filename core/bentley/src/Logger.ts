@@ -373,7 +373,7 @@ export class PerfLogger implements Disposable {
     this.logMessage();
   }
 
-  /** @deprecated in 5.0 Use [Symbol.dispose] instead. */
+  /** @deprecated in 5.0 - will not be removed until after 2026-06-13. Use [Symbol.dispose] instead. */
   public dispose(): void {
     this[Symbol.dispose]();
   }

@@ -160,7 +160,7 @@ function outputCircleMarkup (ck: Checker, allGeometry: GeometryQuery[], x0: numb
   });
 
   it("LineTangentCCC", () => {
-    const ck = new Checker(true, true);
+    const ck = new Checker(false,false);
     const allGeometry: GeometryQuery[] = [];
     const circleA = UnboundedCircle2dByCenterAndRadius.createXYRadius (0,0,2);
     const circleB = UnboundedCircle2dByCenterAndRadius.createXYRadius (5,0,1);

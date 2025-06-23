@@ -135,7 +135,7 @@ export namespace IModelJson {
     // cspell:word bagof
     /**
      * A collection of curves with no required structure or connections
-     * @deprecated in 5.x. Instead use bagOfCurves, which has correct capitalization and type. The old name has never been persisted.
+     * @deprecated in 5.0 - will not be removed until after 2026-06-13. Instead use bagOfCurves, which has correct capitalization and type. The old name has never been persisted.
     */
     bagofCurves?: [CurveCollectionProps];
     /** A collection of curves with no required structure or connections. */
@@ -263,12 +263,12 @@ export namespace IModelJson {
 
     /**
      * Optional section x-axis.
-     * @deprecated in 5.x. This property has never been written. Optional axes are specified by an AxesProps.
+     * @deprecated in 5.0 - will not be removed until after 2026-06-13. This property has never been written. Optional axes are specified by an AxesProps.
      */
     vectorX?: XYZProps;
     /**
      * Optional section y-axis.
-     * @deprecated in 5.x. This property has never been written. Optional axes are specified by an AxesProps.
+     * @deprecated in 5.0 - will not be removed until after 2026-06-13. This property has never been written. Optional axes are specified by an AxesProps.
      */
     vectorY?: XYZProps;
 
@@ -1807,7 +1807,7 @@ export namespace IModelJson {
         if (!SerializationHelpers.announceUncompressedZeroBasedReflexiveIndices(pf.data.edgeMateIndex,
           pf.facetStart, SerializationHelpers.EdgeMateIndex.BlockSeparator,
           SerializationHelpers.EdgeMateIndex.NoEdgeMate, (i: number) => edgeMateIndex.push(i),
-        )){
+        )) {
           assert(false, "unable to serialize edgeMateIndex array to json");
         }
       }
