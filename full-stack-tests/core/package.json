@@ -79,7 +79,11 @@
     "babel-plugin-istanbul": "^7.0.0",
     "browserify-zlib": "^0.2.0",
     "chai": "^4.3.10",
+<<<<<<< HEAD
     "crypto-browserify": "3.12.0",
+=======
+    "cross-env": "^7.0.3",
+>>>>>>> 2b6810e8cd (remove crypto-browserify  (#8267))
     "dotenv": "^16.4.5",
     "dotenv-expand": "^5.1.0",
     "eslint": "^9.13.0",
