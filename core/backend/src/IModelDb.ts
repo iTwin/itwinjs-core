@@ -105,11 +105,6 @@ export interface InsertElementOptions extends EditOptions {
    * @beta
    */
   forceUseId?: boolean;
-
-  /** If true, the element will be inserted as an *indirect* change.
-   * @beta
-   */
-  indirect?: boolean;
 }
 
 /** Options supplied to [[IModelDb.computeProjectExtents]].
