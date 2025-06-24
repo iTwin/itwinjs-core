@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { Angle, Point3d, Range2d, Range3d, YawPitchRollAngles } from "@itwin/core-geometry";
-import { ColorDef, FractionRun, SubCategoryAppearance, TextAnnotation, TextAnnotation2dProps, TextAnnotation3dProps, TextAnnotationProps, TextBlock, TextRun, TextStyleSettings, TextStyleSettingsProps } from "@itwin/core-common";
+import { FractionRun, SubCategoryAppearance, TextAnnotation, TextAnnotation2dProps, TextAnnotation3dProps, TextAnnotationProps, TextBlock, TextRun, TextStyleSettings, TextStyleSettingsProps } from "@itwin/core-common";
 import { IModelDb, StandaloneDb } from "../../IModelDb";
 import { AnnotationTextStyle, TextAnnotation2d, TextAnnotation3d } from "../../annotations/TextAnnotationElement";
 import { IModelTestUtils } from "../IModelTestUtils";
@@ -46,7 +46,6 @@ function createAnnotation(styleId?: Id64String): TextAnnotation {
   annotation.anchor = { vertical: "middle", horizontal: "right" };
   annotation.orientation = YawPitchRollAngles.createDegrees(1, 0, -1);
   annotation.offset = Point3d.create(10, -5, 0);
-  annotation.frame = { shape: "rectangle", border: ColorDef.red.toJSON(), fill: ColorDef.green.toJSON(), borderWeight: 2 };
 
   return annotation;
 }

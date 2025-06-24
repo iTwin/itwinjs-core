@@ -6,7 +6,20 @@
  * @module Annotation
  */
 
-import { ColorDefProps } from "../ColorDef";
+import { ColorDef, ColorDefProps } from "../ColorDef";
+
+/** Set of predefined shapes that can be computed and drawn around the margins of a [[TextBlock]]
+ * @beta
+*/
+export type TextAnnotationFrameShape = "none" | "line" | "rectangle" | "circle" | "equilateralTriangle" | "diamond" | "square" | "pentagon" | "hexagon" | "octagon" | "capsule" | "roundedRectangle";
+
+/**
+ * Describes what color to use when filling the frame around a [[TextBlock]].
+ * If `background` is specified, [[GeometryParams.BackgroundFill]] will be set to `BackgroundFill.Outline`.
+ * If `none` is specified, no fill will be applied.
+ * @beta
+ */
+export type TextAnnotationFillColor = TextStyleColor | "background" | "none";
 
 /** Specifies how to separate the numerator and denominator of a [[FractionRun]], by either a horizontal or diagonal bar.
  * @see [[TextStyleSettingsProps.stackedFractionType]] and [[TextStyleSettings.stackedFractionType]].
@@ -88,6 +101,31 @@ export interface TextStyleSettingsProps {
    * Default: 1.0
    */
   widthFactor?: number;
+  /** Describes a frame around the text block.
+   * Shape of the frame.
+   * Used when producing geometry for [[TextAnnotation]]s.
+   * Default: "none".
+   */
+  frameShape?: TextAnnotationFrameShape;
+  /** Describes a frame around the text block.
+   * The color to fill the shape of the text frame.
+   * Used when producing geometry for [[TextAnnotation]]s.
+   * This fill is applied using [[FillDisplay.Blanking]].
+   * Default: "none".
+   */
+  frameFill?: TextAnnotationFillColor;
+  /** Describes a frame around the text block.
+   * The color of the text frame's outline.
+   * Used when producing geometry for [[TextAnnotation]]s.
+   * Default: black
+   */
+  frameBorder?: TextStyleColor;
+  /** Describes a frame around the text block.
+   * This will be used to set the [[GeometryParams.weight]] property of the frame (in pixels).
+   * Used when producing geometry for [[TextAnnotation]]s.
+   * Default: 1px
+   */
+  frameBorderWeight?: number;
 }
 
 /** A description of the formatting to be applied to a [[TextBlockComponent]].
@@ -103,7 +141,7 @@ export class TextStyleSettings {
    */
   public readonly fontName: string;
   /** The height each line of text, in meters. Many other settings use the line height as the basis for computing their own values.
-   * For example, the height and offset from baseline of a subscript [[TextRun]]  are compuated as lineHeight * [[subScriptScale]] and
+   * For example, the height and offset from baseline of a subscript [[TextRun]]  are computed as lineHeight * [[subScriptScale]] and
    * lineHeight * [[subScriptOffsetFactor]], respectively.
    */
   public readonly lineHeight: number;
@@ -141,6 +179,14 @@ export class TextStyleSettings {
   public readonly superScriptScale: number;
   /** Multiplier used to compute the width of each glyph, relative to [[lineHeight]]. */
   public readonly widthFactor: number;
+  /** The frame shape of the [[TextAnnotation]]. No other frame properties apply if this is "none". */
+  public readonly frameShape: TextAnnotationFrameShape;
+  /** The fill color of the frame. */
+  public readonly frameFill: TextAnnotationFillColor;
+  /** The border color of the frame.  */
+  public readonly frameBorder: TextStyleColor;
+  /** The weight of the frame border. */
+  public readonly frameBorderWeight: number;
 
   /** A fully-populated JSON representation of the default settings. */
   public static defaultProps: Readonly<Required<TextStyleSettingsProps>> = {
@@ -158,6 +204,10 @@ export class TextStyleSettings {
     superScriptOffsetFactor: 0.5,
     superScriptScale: 2 / 3,
     widthFactor: 1,
+    frameShape: "none",
+    frameFill: "none",
+    frameBorder: ColorDef.black.toJSON(),
+    frameBorderWeight: 1,
   };
 
   /** Settings initialized to all default values. */
@@ -182,6 +232,10 @@ export class TextStyleSettings {
     this.superScriptOffsetFactor = props.superScriptOffsetFactor ?? defaults.superScriptOffsetFactor;
     this.superScriptScale = props.superScriptScale ?? defaults.superScriptScale;
     this.widthFactor = props.widthFactor ?? defaults.widthFactor;
+    this.frameShape = props.frameShape ?? defaults.frameShape;
+    this.frameFill = props.frameFill ?? defaults.frameFill;
+    this.frameBorder = props.frameBorder ?? defaults.frameBorder;
+    this.frameBorderWeight = props.frameBorderWeight ?? defaults.frameBorderWeight;
   }
 
   /** Create a copy of these settings, modified according to the properties defined by `alteredProps`. */
@@ -204,7 +258,9 @@ export class TextStyleSettings {
       && this.isBold === other.isBold && this.isItalic === other.isItalic && this.isUnderlined === other.isUnderlined
       && this.stackedFractionType === other.stackedFractionType && this.stackedFractionScale === other.stackedFractionScale
       && this.subScriptOffsetFactor === other.subScriptOffsetFactor && this.subScriptScale === other.subScriptScale
-      && this.superScriptOffsetFactor === other.superScriptOffsetFactor && this.superScriptScale === other.superScriptScale;
+      && this.superScriptOffsetFactor === other.superScriptOffsetFactor && this.superScriptScale === other.superScriptScale
+      && this.frameShape === other.frameShape && this.frameFill === other.frameFill
+      && this.frameBorder === other.frameBorder && this.frameBorderWeight === other.frameBorderWeight
   }
 }
 

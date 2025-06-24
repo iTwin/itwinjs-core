@@ -6,7 +6,7 @@
  * @module ElementGeometry
  */
 
-import { ColorDef, ElementGeometry, FillDisplay, GeometryParams, TextAnnotation, TextAnnotationProps, TextFrameStyleProps } from "@itwin/core-common";
+import { ColorDef, ElementGeometry, FillDisplay, GeometryParams, TextAnnotation, TextAnnotationProps, TextStyleSettings } from "@itwin/core-common";
 import { TextBlockLayout } from "./TextBlockLayout";
 import { LineString3d, PointString3d, Range2d, Transform } from "@itwin/core-geometry";
 import { Id64, Id64String } from "@itwin/core-bentley";
@@ -49,14 +49,14 @@ export function appendTextAnnotationGeometry(props: AppendTextAnnotationGeometry
   result = result && props.builder.appendTextBlock(entries, params);
 
   // Construct the frame geometry
-  if (annotation.frame && annotation.frame.shape !== "none") {
-    result = result && appendFrameToBuilder(props.builder, annotation.frame, range, transform, params);
+  if (props.layout.blockSettings.frameShape !== "none") {
+    result = result && appendFrameToBuilder(props.builder, props.layout.blockSettings, range, transform, params);
   }
 
   // Construct the debug geometry
   if (props.wantDebugGeometry) {
     result = result && debugAnchorPoint(props.builder, annotation, props.layout, annotation.computeTransform(props.layout.range));
-    if (annotation.frame) result = result && debugSnapPoints(props.builder, annotation.frame, props.layout.range, annotation.computeTransform(props.layout.range));
+    if (props.layout.blockSettings.frameShape !== "none") result = result && debugSnapPoints(props.builder, props.layout.blockSettings, props.layout.range, annotation.computeTransform(props.layout.range));
   }
 
   return result;
@@ -99,14 +99,14 @@ function debugAnchorPoint(builder: ElementGeometry.Builder, annotation: TextAnno
 }
 
 /** Draws the interval points defined by calling [[computeIntervalPoints]]. The points are shown as black dots 5x larger than the borderWeight */
-function debugSnapPoints(builder: ElementGeometry.Builder, frame: TextFrameStyleProps, range: Range2d, transform: Transform): boolean {
-  if (undefined === frame.shape || frame.shape === "none")
+function debugSnapPoints(builder: ElementGeometry.Builder, style: TextStyleSettings, range: Range2d, transform: Transform): boolean {
+  if (style.frameShape === "none")
     return false;
-  const points = computeIntervalPoints({ frame: frame.shape, range, transform, lineIntervalFactor: 0.5, arcIntervalFactor: 0.25 });
+  const points = computeIntervalPoints({ frame: style.frameShape, range, transform, lineIntervalFactor: 0.5, arcIntervalFactor: 0.25 });
 
   const params = new GeometryParams(Id64.invalid);
   params.lineColor = ColorDef.black;
-  params.weight = (frame.borderWeight ?? 1) * 5; // We want the dots to be bigger than the frame so we can see them.
+  params.weight = style.frameBorderWeight * 5; // We want the dots to be bigger than the frame so we can see them.
   params.fillDisplay = FillDisplay.Always;
 
   const result = builder.appendGeometryParamsChange(params) && builder.appendGeometryQuery(PointString3d.create(points));

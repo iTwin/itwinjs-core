@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { BaselineShift, ColorDef, FractionRun, LineBreakRun, Placement2dProps, TextAnnotation, TextAnnotationAnchor, TextAnnotationFrameShape, TextAnnotationProps, TextBlock, TextBlockJustification, TextBlockMargins, TextFrameStyleProps, TextRun, TextStyleSettingsProps } from "@itwin/core-common";
+import { BaselineShift, ColorDef, FractionRun, LineBreakRun, Placement2dProps, TextAnnotation, TextAnnotationAnchor, TextAnnotationFrameShape, TextAnnotationProps, TextBlock, TextBlockJustification, TextBlockMargins, TextRun, TextStyleSettingsProps } from "@itwin/core-common";
 import { DecorateContext, Decorator, GraphicType, IModelApp, IModelConnection, readElementGraphics, RenderGraphicOwner, Tool } from "@itwin/core-frontend";
 import { DtaRpcInterface } from "../common/DtaRpcInterface";
 import { Id64, Id64String } from "@itwin/core-bentley";
@@ -24,11 +24,18 @@ class TextEditor implements Decorator {
   public rotation = 0;
   public offset = { x: 0, y: 0 };
   public anchor: TextAnnotationAnchor = { horizontal: "left", vertical: "top" };
-  public frame: TextFrameStyleProps = { borderWeight: 1, shape: "none" };
   public debugAnchorPointAndRange = false;
 
   // Properties applied to the entire document
-  public get documentStyle(): Pick<TextStyleSettingsProps, "lineHeight" | "widthFactor" | "lineSpacingFactor"> {
+  public get documentStyle(): Pick<
+    TextStyleSettingsProps,
+    "lineHeight" |
+    "widthFactor" |
+    "lineSpacingFactor" |
+    "frameShape" |
+    "frameFill" |
+    "frameBorder" |
+    "frameBorderWeight"> {
     return this._textBlock.styleOverrides;
   }
 
@@ -38,7 +45,6 @@ class TextEditor implements Decorator {
       anchor: this.anchor,
       orientation: YawPitchRollAngles.createDegrees(this.rotation, 0, 0).toJSON(),
       offset: this.offset,
-      frame: this.frame,
     });
 
     return annotation.toJSON();
@@ -81,7 +87,6 @@ class TextEditor implements Decorator {
     this.debugAnchorPointAndRange = false;
     this.runStyle = { fontName: "Arial" };
     this.baselineShift = "none";
-    this.frame = { borderWeight: 1, shape: "none" };
   }
 
   public appendText(content: string): void {
@@ -128,10 +133,6 @@ class TextEditor implements Decorator {
       top: margins.top ?? this._textBlock.margins.top,
       bottom: margins.bottom ?? this._textBlock.margins.bottom,
     };
-  }
-
-  public setFrame(frame: Partial<TextFrameStyleProps>) {
-    this.frame = { ...this.frame, ...frame };
   }
 
   /**
@@ -354,10 +355,10 @@ export class TextDecorationTool extends Tool {
       case "frame": {
         const key = inArgs[1];
         const val = inArgs[2];
-        if (key === "fill") editor.setFrame({ fill: (val === "background" || val === "subcategory") ? val : val ? ColorDef.fromString(val).toJSON() : undefined });
-        else if (key === "border") editor.setFrame({ border: val ? ColorDef.fromString(val).toJSON() : undefined });
-        else if (key === "borderWeight") editor.setFrame({ borderWeight: Number(val) });
-        else if (key === "shape") editor.setFrame({ shape: val as TextAnnotationFrameShape });
+        if (key === "fill") editor.documentStyle.frameFill = (val === "background" || val === "subcategory") ? val : val ? ColorDef.fromString(val).toJSON() : undefined;
+        else if (key === "border") editor.documentStyle.frameBorder = val ? ColorDef.fromString(val).toJSON() : undefined;
+        else if (key === "borderWeight") editor.documentStyle.frameBorderWeight = Number(val);
+        else if (key === "shape") editor.documentStyle.frameShape = val as TextAnnotationFrameShape;
         else throw new Error("Expected shape, fill, border, borderWeight");
 
         break;

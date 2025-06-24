@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { describe, expect, it } from "vitest";
-import { TextStyleSettings, TextStyleSettingsProps } from "../../core-common";
+import { ColorDef, TextStyleSettings, TextStyleSettingsProps } from "../../core-common";
 
 describe("TextStyleSettings", () => {
   const customProps: Required<TextStyleSettingsProps> = {
@@ -21,6 +21,10 @@ describe("TextStyleSettings", () => {
     superScriptOffsetFactor: 0.6,
     superScriptScale: 0.5,
     widthFactor: 2,
+    frameShape: "rectangle",
+    frameFill: ColorDef.green.tbgr,
+    frameBorder: ColorDef.red.tbgr,
+    frameBorderWeight: 2
   };
 
   it("returns defaults if no props provided", () => {

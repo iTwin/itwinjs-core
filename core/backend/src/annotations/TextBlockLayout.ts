@@ -559,11 +559,13 @@ export class TextBlockLayout {
   /** The range including margins of the [[TextBlock]]. */
   public range = new Range2d();
   public lines: LineLayout[] = [];
+  public readonly blockSettings: TextStyleSettings;
   private _context: LayoutContext;
 
   public constructor(source: TextBlock, context: LayoutContext) {
     this._context = context;
     this.source = source;
+    this.blockSettings = context.blockSettings.clone();
 
     if (source.width > 0) {
       this.textRange.low.x = 0;
