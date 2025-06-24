@@ -4,9 +4,8 @@
  *--------------------------------------------------------------------------------------------*/
 
 /**
- * Assists in tracking the loading progress of Schemas and
- * SchemaItems. An instance of this class is set in Schema
- * and SchemaItem instances.
+ * Assists in tracking the loading progress of Schemas and SchemaItems. An instance of this
+ * class is set in Schema and SchemaItem instances.
  * @internal
  */
 export class SchemaLoadingController {
@@ -36,7 +35,7 @@ export class SchemaLoadingController {
   }
 
   /**
-   * Initializes a new ObjectLoadingController instance.
+   * Initializes a new SchemaLoadingController instance.
    */
   constructor() {
     this._complete = false;
@@ -57,7 +56,7 @@ export class SchemaLoadingController {
   }
 
   /**
-   * Waits on the Promise given in SchemaPartialLoadingController.start().
+   * Waits on the Promise given in SchemaLoadingController.start().
    * @returns A Promised that can be awaited while the Schema or SchemaItem is being loaded.
    */
   public async wait(): Promise<void> {

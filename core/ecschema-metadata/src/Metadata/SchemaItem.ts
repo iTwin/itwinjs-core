@@ -48,15 +48,12 @@ export abstract class SchemaItem {
   public get description() { return this._description; }
 
   /**
-   * Returns the ObjectLoadingController for this Schema. Maybe undefined.
+   * Returns the SchemaLoadingController for this Schema. This would only be set if the schema is
+   * loaded incrementally.
    * @internal
    */
   public get loadingController(): SchemaLoadingController | undefined{
     return this._loadingController;
-  }
-
-  public set loadingController(controller: SchemaLoadingController) {
-    this._loadingController = controller;
   }
 
   // Proposal: Create protected setter methods for description and label? For UnitSystems as an example, where using createFromProps isn't that necessary and can just use basic create().
@@ -184,6 +181,11 @@ export abstract class SchemaItem {
   /** @internal */
   protected setDescription(description: string) {
     this._description = description;
+  }
+
+  /** @internal */
+  public setLoadingController(controller: SchemaLoadingController) {
+    this._loadingController = controller;
   }
 }
 
