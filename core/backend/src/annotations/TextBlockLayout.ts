@@ -90,7 +90,7 @@ export function layoutTextBlock(args: LayoutTextBlockArgs): TextBlockLayout {
 
   const findTextStyle = args.findTextStyle ?? createFindTextStyleImpl(args.iModel);
 
-  return new TextBlockLayout(args.textBlock, new LayoutContext(args.textBlock, computeTextRange, findTextStyle, findFontId));
+  return new TextBlockLayout(args.textBlock, new LayoutContext(args.textBlock, findTextStyle, computeTextRange, findFontId));
 }
 
 /**
@@ -137,7 +137,7 @@ export function computeGraphemeOffsets(args: ComputeGraphemeOffsetsArgs): Range2
 
   const style = TextStyleSettings.fromJSON(runLayoutResult.textStyle);
 
-  const layoutContext = new LayoutContext(textBlock, computeTextRange, findTextStyle, findFontId);
+  const layoutContext = new LayoutContext(textBlock, findTextStyle, computeTextRange, findFontId);
   const graphemeRanges: Range2d[] = [];
 
   graphemeCharIndexes.forEach((_, index) => {
@@ -168,26 +168,22 @@ function applyBlockSettings(target: TextStyleSettings, source: TextStyleSettings
   return target;
 }
 
-class LayoutContext {
+/**
+ * Resolves the effective style of TextBlockComponents, taking into account overrides and styles of the instance and its parent(s).
+ * @beta
+ */
+export class TextStyleResolverContext {
   private readonly _textStyles = new Map<Id64String, TextStyleSettings>();
-  private readonly _fontIds = new Map<string, FontId>();
+  /** The resolved style of the TextBlock. */
   public readonly blockSettings: TextStyleSettings;
 
-  public constructor(block: TextBlock, private readonly _computeTextRange: ComputeRangesForTextLayout, private readonly _findTextStyle: FindTextStyle, private readonly _findFontId: FindFontId) {
-    this.blockSettings = this.findTextStyle(block.styleId);
-    if (block.styleOverrides)
-      this.blockSettings = this.blockSettings.clone(block.styleOverrides);
+  public constructor(textBlock: TextBlock, private readonly _findTextStyle: FindTextStyle) {
+    this.blockSettings = this.findTextStyle(textBlock.styleId);
+    if (textBlock.styleOverrides)
+      this.blockSettings = this.blockSettings.clone(textBlock.styleOverrides);
   }
 
-  public findFontId(name: string): FontId {
-    let fontId = this._fontIds.get(name);
-    if (undefined === fontId) {
-      this._fontIds.set(name, fontId = this._findFontId(name));
-    }
-
-    return fontId;
-  }
-
+  /** Looks up an [[AnnotationTextStyle]] by ID. Uses caching. */
   public findTextStyle(id: Id64String): TextStyleSettings {
     let style = this._textStyles.get(id);
     if (undefined === style) {
@@ -197,25 +193,48 @@ class LayoutContext {
     return style;
   }
 
-  public createRunSettings(run: Run, paragraph: Paragraph): TextStyleSettings {
+  /** Resolves the effective style for a [Paragraph]($common). Paragraph should be child of provided TextBlock. */
+  public resolveParagraphSettings(paragraph: Paragraph): TextStyleSettings {
     let settings = this.blockSettings;
 
-    if (paragraph.styleId) {
+    if (paragraph.styleId)
       settings = this.findTextStyle(paragraph.styleId);
-    }
-    if (paragraph.overridesStyle) {
+    if (paragraph.overridesStyle)
       settings = settings.clone(paragraph.styleOverrides);
-    }
-
-    if (run.styleId) {
-      settings = this.findTextStyle(run.styleId);
-    }
-    if (run.overridesStyle) {
-      settings = settings.clone(run.styleOverrides);
-    }
 
     // Still apply block specific settings (lineSpacingFactor, lineHeight, and widthFactor). These must be set on the block, as they are meaningless on individual paragraphs/runs
     return applyBlockSettings(settings, this.blockSettings);
+  }
+
+  /** Resolves the effective style for a [Run]($common). Run should be child of provided Paragraph and TextBlock. */
+  public resolveRunSettings(paragraph: Paragraph, run: Run): TextStyleSettings {
+    let settings = this.resolveParagraphSettings(paragraph);
+
+    if (run.styleId)
+      settings = this.findTextStyle(run.styleId);
+    if (run.overridesStyle)
+      settings = settings.clone(run.styleOverrides);
+
+
+    // Still apply block specific settings (lineSpacingFactor, lineHeight, and widthFactor). These must be set on the block, as they are meaningless on individual paragraphs/runs
+    return applyBlockSettings(settings, this.blockSettings);
+  }
+}
+
+class LayoutContext extends TextStyleResolverContext {
+  private readonly _fontIds = new Map<string, FontId>();
+
+  public constructor(block: TextBlock, findTextStyle: FindTextStyle, private readonly _computeTextRange: ComputeRangesForTextLayout, private readonly _findFontId: FindFontId) {
+    super(block, findTextStyle);
+  }
+
+  public findFontId(name: string): FontId {
+    let fontId = this._fontIds.get(name);
+    if (undefined === fontId) {
+      this._fontIds.set(name, fontId = this._findFontId(name));
+    }
+
+    return fontId;
   }
 
   public computeRangeForText(chars: string, style: TextStyleSettings, baselineShift: BaselineShift): TextLayoutRanges {
@@ -347,7 +366,7 @@ export class RunLayout {
   }
 
   public static create(source: Run, parentParagraph: Paragraph,  context: LayoutContext): RunLayout {
-    const style = context.createRunSettings(source, parentParagraph);
+    const style = context.resolveRunSettings(parentParagraph, source);
     const fontId = context.findFontId(style.fontName);
     const charOffset = 0;
     const offsetFromLine = { x: 0, y: 0 };
