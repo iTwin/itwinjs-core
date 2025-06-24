@@ -11,7 +11,9 @@
   },
   "globalOverrides": {
     "rollup-plugin-copy>globby": "^11.0.0", // https://github.com/vladshcherbin/rollup-plugin-copy/issues/77
-    "elliptic": "^6.6.1" // https://github.com/advisories/GHSA-vjh7-7g9h-fjfh crypto-browserify>browserify-sign>elliptic
+    "elliptic": "^6.6.1", // https://github.com/advisories/GHSA-vjh7-7g9h-fjfh crypto-browserify>browserify-sign>elliptic
+    "pbkdf2": "^3.1.3" // https://github.com/advisories/GHSA-h7cp-r72f-jxh6 crypto-browserify>pbkdf2
+
   },
   // A list of temporary advisories excluded from the High and Critical list.
   // Warning this should only be used as a temporary measure to avoid build failures
