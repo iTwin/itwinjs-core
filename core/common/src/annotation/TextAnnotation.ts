@@ -8,7 +8,7 @@
 
 import { Point3d, Range2d, Transform, XYZProps, YawPitchRollAngles, YawPitchRollProps } from "@itwin/core-geometry";
 import { TextBlock, TextBlockProps } from "./TextBlock";
-import { TextStyleColor } from "./TextStyle";
+import { TextStyleColor, TextStyleSettingsProps } from "./TextStyle";
 
 /** Describes how to compute the "anchor point" for a [[TextAnnotation]].
  * The anchor point is a point on or inside of the 2d bounding box enclosing the contents of the annotation's [[TextBlock]].
@@ -66,6 +66,44 @@ export interface TextFrameStyleProps {
 }
 
 /**
+ * Specifies where to attach a leader line to a [[TextAnnotation]].
+ * The leader line can be attached to a key point, to the first or last line of text, or to the nearest point on the text block frame.
+ * @beta
+ */
+export type LeaderAttachmentMode =
+  | { mode: "KeyPoint"; curveIndex: number; fraction: number }
+  | { mode: "TextPoint"; position: LeaderTextPointOptions }
+  | { mode: "Nearest" };
+
+/**
+ * Specifies the possible positions for the leader attachment point relative to the annotation when attachmentMode is TextPoint.
+ */
+export type LeaderTextPointOptions = "TopLeft" | "TopRight" | "BottomLeft" | "BottomRight"
+
+/**
+ * Properties of a leader line attached to a [[TextAnnotation]].
+*/
+export interface TextAnnotationLeader {
+  startPoint: Point3d;
+  attachmentMode: LeaderAttachmentMode;
+  intermediatePoints?: Point3d[];
+  styleOverrides?: TextStyleSettingsProps;
+}
+/**
+ * JSON representation of a [[TextAnnotationLeader]].
+ * @beta
+ */
+
+export interface TextAnnotationLeaderProps {
+  startPoint: XYZProps;
+  attachmentMode: LeaderAttachmentMode;
+  intermediatePoints?: XYZProps[];
+  styleOverrides?: TextStyleSettingsProps;
+}
+
+/**
+
+/**
  * JSON representation of a [[TextAnnotation]].
  * @beta
  */
@@ -79,7 +117,9 @@ export interface TextAnnotationProps {
   /** See [[TextAnnotation.anchor]]. Default: top-left. */
   anchor?: TextAnnotationAnchor;
   /** See [[TextAnnotation.frame]]. Default: no frame */
-  frame?: TextFrameStyleProps
+  frame?: TextFrameStyleProps;
+  /** See [[TextAnnotation.leader]]. Default: an empty leader array  */
+  leaders?: TextAnnotationLeaderProps[];
 }
 
 /** Arguments supplied to [[TextAnnotation.create]].
@@ -95,7 +135,9 @@ export interface TextAnnotationCreateArgs {
   /** See [[TextAnnotation.anchor]]. Default: top-left. */
   anchor?: TextAnnotationAnchor;
   /** See [[TextAnnotation.frame]]. Default: no frame */
-  frame?: TextFrameStyleProps
+  frame?: TextFrameStyleProps;
+  /** See [[TextAnnotation.leader]]. Default: an empty leader array  */
+  leaders?: TextAnnotationLeader[];
 }
 
 /**
@@ -124,13 +166,16 @@ export class TextAnnotation {
   public offset: Point3d;
   /** The frame settings of the text annotation. */
   public frame?: TextFrameStyleProps;
+  /** The leaders of the text annotation. */
+  public leaders?: TextAnnotationLeader[];
 
-  private constructor(offset: Point3d, angles: YawPitchRollAngles, textBlock: TextBlock, anchor: TextAnnotationAnchor, frame?: TextFrameStyleProps) {
+  private constructor(offset: Point3d, angles: YawPitchRollAngles, textBlock: TextBlock, anchor: TextAnnotationAnchor, frame?: TextFrameStyleProps, leaders?: TextAnnotationLeader[]) {
     this.offset = offset;
     this.orientation = angles;
     this.textBlock = textBlock;
     this.anchor = anchor;
-    this.frame = frame
+    this.frame = frame;
+    this.leaders = leaders;
   }
 
   /** Creates a new TextAnnotation. */
@@ -142,8 +187,8 @@ export class TextAnnotation {
     // If the user supplies a frame, but doesn't supply a shape, default the shape to "rectangle"
     const shape: TextAnnotationFrameShape = args?.frame?.shape ?? "rectangle";
     const frame = args?.frame ? { shape, ...args.frame } : undefined;
-
-    return new TextAnnotation(offset, angles, textBlock, anchor, frame);
+    const leaders = args?.leaders ?? [];
+    return new TextAnnotation(offset, angles, textBlock, anchor, frame, leaders);
   }
 
   /**
@@ -156,6 +201,12 @@ export class TextAnnotation {
       textBlock: props?.textBlock ? TextBlock.create(props.textBlock) : undefined,
       anchor: props?.anchor ? { ...props.anchor } : undefined,
       frame: props?.frame ? { shape: "rectangle", ...props.frame } : undefined,
+      leaders: props?.leaders ? props.leaders.map((leader) => ({
+        startPoint: Point3d.fromJSON(leader.startPoint),
+        attachmentMode: leader.attachmentMode,
+        styleOverrides: leader.styleOverrides,
+        intermediatePoints: leader.intermediatePoints ? leader.intermediatePoints.map((point) => Point3d.fromJSON(point)) : undefined,
+      })) : [],
     });
   }
 
@@ -183,6 +234,13 @@ export class TextAnnotation {
 
     // Default frame to "none"
     props.frame = this.frame ? { ...this.frame } : undefined;
+
+    props.leaders = this.leaders?.map((leader) => ({
+      startPoint: leader.startPoint.toJSON(),
+      attachmentMode: leader.attachmentMode,
+      styleOverrides: leader.styleOverrides,
+      intermediatePoints: leader.intermediatePoints ? leader.intermediatePoints.map((point) => point.toJSON()) : undefined,
+    })) ?? [];
 
     return props;
   }
@@ -235,6 +293,28 @@ export class TextAnnotation {
     return new Point3d(x, y, 0);
   }
 
+  private areLeadersEqual(leadersA?: TextAnnotationLeader[], leadersB?: TextAnnotationLeader[]): boolean {
+    if (leadersA === leadersB) return true;
+    if (!leadersA || !leadersB || leadersA.length !== leadersB.length) return false;
+
+    for (let i = 0; i < leadersA.length; ++i) {
+      const a = leadersA[i];
+      const b = leadersB[i];
+
+      if (!a.startPoint.isAlmostEqual(b.startPoint)) return false;
+      if (JSON.stringify(a.attachmentMode) !== JSON.stringify(b.attachmentMode)) return false;
+      if (JSON.stringify(a.styleOverrides) !== JSON.stringify(b.styleOverrides)) return false;
+
+      const pointsA = a.intermediatePoints ?? [];
+      const pointsB = b.intermediatePoints ?? [];
+      if (pointsA.length !== pointsB.length) return false;
+      for (let j = 0; j < pointsA.length; ++j) {
+        if (!pointsA[j].isAlmostEqual(pointsB[j])) return false;
+      }
+    }
+    return true;
+  }
+
   /** Returns true if this annotation is logically equivalent to `other`. */
   public equals(other: TextAnnotation): boolean {
     const framesMatch = this.frame?.shape === other.frame?.shape
@@ -242,9 +322,11 @@ export class TextAnnotation {
       && this.frame?.border === other.frame?.border
       && this.frame?.borderWeight === other.frame?.borderWeight;
 
+    const leadersMatch = this.areLeadersEqual(this.leaders, other.leaders);
+
     return this.anchor.horizontal === other.anchor.horizontal && this.anchor.vertical === other.anchor.vertical
       && this.orientation.isAlmostEqual(other.orientation) && this.offset.isAlmostEqual(other.offset)
       && this.textBlock.equals(other.textBlock)
-      && framesMatch;
+      && framesMatch && leadersMatch;
   }
 }
