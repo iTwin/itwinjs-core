@@ -50,7 +50,7 @@ export interface TextBlockStringifyOptions {
    * Default: "/"
    */
   fractionSeparator?: string;
-  /** Whether of not to use spaces or \t for tabs.
+  /** The number of spaces to use for tabs. If not provided, tabs will be represented by a tab character: "\t".
    * Default: "undefined" - use spaces.
    */
   tabsAsSpaces?: number;
