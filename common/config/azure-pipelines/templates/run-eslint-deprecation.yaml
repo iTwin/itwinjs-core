@@ -1,0 +1,78 @@
+steps:
+  - bash: node common/scripts/install-run-rush.js lint-deprecation
+    displayName: rush lint-deprecation
+
+  - bash: |
+      if [ -n "$(git status --porcelain)" ]; then
+        echo "##vso[task.setvariable variable=changesDetected]true"
+      else
+        echo "No changes to @deprecated comments were made. Skipping deprecation comment handling."
+        echo "##vso[task.setvariable variable=changesDetected]false"
+      fi
+    displayName: Check if any changes happened
+    name: checkChanges
+
+  - bash: git add .
+    displayName: git add .
+    condition: eq(variables['changesDetected'], 'true')
+
+  - bash: |
+      git commit -m "add deprecation dates using custom ESLint rule"
+      relBranchName="release/"$(Build.SourceBranchName)
+      git push https://$(GITHUBTOKEN)@github.com/iTwin/itwinjs-core HEAD:$relBranchName
+    displayName: Commit and push deprecation date changes to release branch
+    condition: eq(variables['changesDetected'], 'true')
+
+  - bash: |
+      # Get the SHA-1 hash of deprecation changes commit to apply it later on master
+      deprecationDateCommitHash=$(git log -1 --format=%H)
+      echo "##vso[task.setvariable variable=hash;isOutput=true]$deprecationDateCommitHash"
+    displayName: Save SHA-1 hash of the commit
+    name: deprecationCommit
+    condition: eq(variables['changesDetected'], 'true')
+
+  - bash: |
+      git fetch
+      git checkout origin/master
+    displayName: Checkout to up-to-date master
+    condition: eq(variables['changesDetected'], 'true')
+
+  - bash: |
+      commitHash=$(deprecationCommit.hash)
+      echo "Attempting to cherry-pick commit: $commitHash"
+      if git cherry-pick $commitHash; then
+        echo "Successfully applied deprecation comment updates to master"
+        git push https://$(GITHUBTOKEN)@github.com/iTwin/itwinjs-core HEAD:master
+      else
+        # Merge conflicts prevent us from committing changes to master directly.
+        # We create a branch with conflicting changes and set-up a PR.
+        # It is then expected that developer manually resolves merge conflicts and merges the PR
+        echo "Cherry-pick operation on master failed (most likely merge conflicts). Manual intervention required"
+        git cherry-pick --abort
+
+        # Create and checkout to conflict handling branch
+        conflictBranchName="cherry-pick-conflict-$(date +%y%m%d%H%m%s)"
+        echo "Creating new branch '$conflictBranchName' for manual resolution"
+        git checkout -b $conflictBranchName
+
+        # Cherry-pick changes onto conflict handling branch
+        commitHash=$(deprecationCommit.hash)
+        git cherry-pick $commitHash # we expect this to fail with conflicts
+
+        # Commit and push all changes
+        git add .
+        git commit -m "Add deprecation comment changes with all merge conflicts"
+        git push --set-upstream https://$(GITHUBTOKEN)@github.com/iTwin/itwinjs-core $conflictBranchName
+        echo "Now manually fix conflicts on branch '$conflictBranchName' and merge changes into master"
+        git fetch
+
+        # Create a PR with new conflict branch
+        gh pr create --title "Merge deprecation comment changes into master" --body "This PR contains all changes after running lint-deprecation ESLint rule and merging with master. Manual intervention required: solve conflicts in this branch and merge PR into master. This happened because deprecation comments in master and in release branch could not be merged automatically." --draft --head $conflictBranchName
+      fi
+    displayName: Perform cherry-pick operation for deprecation changes
+    continueOnError: true
+    condition: eq(variables['changesDetected'], 'true')
+
+  - bash: git checkout $(deprecationCommit.hash)
+    displayName: Checkout back to branch that ran the pipeline
+    condition: eq(variables['changesDetected'], 'true')
