@@ -192,7 +192,7 @@ export class TextStyleSettings {
     this.superScriptOffsetFactor = props.superScriptOffsetFactor ?? defaults.superScriptOffsetFactor;
     this.superScriptScale = props.superScriptScale ?? defaults.superScriptScale;
     this.widthFactor = props.widthFactor ?? defaults.widthFactor;
-    this.tabInterval = undefined === props.tabInterval ? defaults.tabInterval : props.tabInterval;
+    this.tabInterval = props.tabInterval ?? defaults.tabInterval;
   }
 
   /** Create a copy of these settings, modified according to the properties defined by `alteredProps`. */
