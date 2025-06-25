@@ -77,11 +77,13 @@ export type LeaderAttachmentMode =
 
 /**
  * Specifies the possible positions for the leader attachment point relative to the annotation when attachmentMode is TextPoint.
+ * @beta
  */
 export type LeaderTextPointOptions = "TopLeft" | "TopRight" | "BottomLeft" | "BottomRight"
 
 /**
  * Properties of a leader line attached to a [[TextAnnotation]].
+ * @beta
 */
 export interface TextAnnotationLeader {
   startPoint: Point3d;
@@ -93,7 +95,6 @@ export interface TextAnnotationLeader {
  * JSON representation of a [[TextAnnotationLeader]].
  * @beta
  */
-
 export interface TextAnnotationLeaderProps {
   startPoint: XYZProps;
   attachmentMode: LeaderAttachmentMode;
