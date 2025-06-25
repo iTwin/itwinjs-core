@@ -609,6 +609,11 @@ export class BriefcaseManager {
       throw new IModelError(IModelStatus.NoContent, "error creating changeset");
 
     changesetProps.size = fileSize;
+    const id = IModelNative.platform.DgnDb.computeChangesetId(changesetProps);
+    if (id !== changesetProps.id) {
+      Logger.logWarning(loggerCategory, `Changeset id ${changesetProps.id} does not match computed id ${id}. Using computed id.`);
+      changesetProps.id = id;
+    }
 
     let retryCount = arg.pushRetryCount ?? 3;
     while (true) {
