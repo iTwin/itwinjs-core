@@ -2257,6 +2257,7 @@ export class ECSqlValueIterator implements IterableIterator<ECSqlValue> {
 
 // @public
 export class ECSqlWriteStatement {
+    [Symbol.dispose](): void;
     constructor(stmt?: ECSqlStatement);
     bindArray(parameter: number | string, val: any[]): void;
     bindBlob(parameter: number | string, blob: string | Uint8Array | ArrayBuffer | SharedArrayBuffer): void;
@@ -2288,6 +2289,8 @@ export class ECSqlWriteStatement {
     reset(): void;
     // (undocumented)
     get sql(): string;
+    // (undocumented)
+    step(): DbResult;
     stepForInsert(): ECSqlInsertResult;
     // @internal
     get stmt(): ECSqlStatement;
@@ -3663,6 +3666,8 @@ export namespace IModelDb {
     export class Elements implements GuidMapper {
         // @internal (undocumented)
         readonly [_cache]: ElementLRUCache;
+        // @internal (undocumented)
+        readonly [_instanceKeyCache]: InstanceKeyLRUCache;
         // @internal
         constructor(_iModel: IModelDb);
         createElement<T extends Element_2>(elProps: ElementProps): T;
@@ -3704,6 +3709,8 @@ export namespace IModelDb {
     export class Models {
         // @internal (undocumented)
         readonly [_cache]: LRUMap<string, ModelProps>;
+        // @internal (undocumented)
+        readonly [_instanceKeyCache]: InstanceKeyLRUCache;
         // @internal
         constructor(_iModel: IModelDb);
         createModel<T extends Model>(modelProps: ModelProps): T;

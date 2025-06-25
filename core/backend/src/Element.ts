@@ -457,7 +457,7 @@ export class Element extends Entity {
   };
 
   /** Get the class metadata for this element.
-   * @deprecated in 5.0. Please use `getMetaData` provided by the parent class `Entity` instead.
+   * @deprecated in 5.0 - will not be removed until after 2026-06-13. Please use `getMetaData` provided by the parent class `Entity` instead.
    *
    * @example
    * ```typescript
