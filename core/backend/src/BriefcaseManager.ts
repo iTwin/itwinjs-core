@@ -611,7 +611,7 @@ export class BriefcaseManager {
     changesetProps.size = fileSize;
     const id = IModelNative.platform.DgnDb.computeChangesetId(changesetProps);
     if (id !== changesetProps.id) {
-      Logger.logWarning(loggerCategory, `Changeset id ${changesetProps.id} does not match computed id ${id}. Using computed id.`);
+      Logger.logWarning(loggerCategory, `Changeset id ${changesetProps.id} does not match computed id ${id}.`);
       changesetProps.id = id;
     }
 
