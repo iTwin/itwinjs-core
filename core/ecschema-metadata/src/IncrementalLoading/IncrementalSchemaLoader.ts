@@ -13,10 +13,10 @@ import { Schema } from "../Metadata/Schema";
 import { SchemaItem } from "../Metadata/SchemaItem";
 import { SchemaKey } from "../SchemaKey";
 import { SchemaLoadingController } from "../utils/SchemaLoadingController";
-import { SchemaReadHelper } from "./Helper";
-import { JsonParser } from "./JsonParser";
-import { SchemaProps } from "./JsonProps";
-import { SchemaGraphUtil } from "./SchemaGraphUtil";
+import { SchemaReadHelper } from "../Deserialization/Helper";
+import { JsonParser } from "../Deserialization/JsonParser";
+import { SchemaProps } from "../Deserialization/JsonProps";
+import { SchemaGraphUtil } from "../Deserialization/SchemaGraphUtil";
 
 
 /**
@@ -128,7 +128,7 @@ export abstract class IncrementalSchemaLoader {
     const controller = new SchemaLoadingController();
     const schemaReader = new IncrementalSchemaReader(schemaContext, true);
     const schema = new Schema(schemaContext);
-    schema.loadingController = controller;
+    schema.setLoadingController(controller);
 
     await schemaReader.readSchema(schema, schemaProps);
 
@@ -233,7 +233,7 @@ class IncrementalSchemaReader extends SchemaReadHelper {
    * @param schemaItem The SchemaItem to check.
    * @returns True if the item has been loaded, false if still in progress.
    */
-  protected override schemaItemLoaded(schemaItem: SchemaItem | undefined): boolean {
+  protected override isSchemaItemLoaded(schemaItem: SchemaItem | undefined): boolean {
     return schemaItem !== undefined
       && schemaItem.loadingController !== undefined
       && schemaItem.loadingController.isComplete;
@@ -271,15 +271,15 @@ class IncrementalSchemaReader extends SchemaReadHelper {
 
     if (schemaItem.loadingController === undefined) {
       const controller = new SchemaLoadingController();
-      schemaItem.loadingController = controller;
+      schemaItem.setLoadingController(controller);
     }
 
     if (ECClass.isECClass(schemaItem)
       || schemaItem.schemaItemType === SchemaItemType.KindOfQuantity
       || schemaItem.schemaItemType === SchemaItemType.Format)
-      schemaItem.loadingController.isComplete = !this._incremental;
+      schemaItem.loadingController!.isComplete = !this._incremental;
     else
-      schemaItem.loadingController.isComplete = true;
+      schemaItem.loadingController!.isComplete = true;
   }
 }
 

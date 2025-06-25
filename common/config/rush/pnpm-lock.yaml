@@ -472,6 +472,9 @@ importers:
       '@itwin/core-bentley':
         specifier: workspace:*
         version: link:../bentley
+      '@itwin/core-common':
+        specifier: workspace:*
+        version: link:../common
       '@itwin/core-quantity':
         specifier: workspace:*
         version: link:../quantity

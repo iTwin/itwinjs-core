@@ -4,12 +4,12 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
 import * as sinon from "sinon";
-import { IncrementalSchemaLoader } from "../../Deserialization/IncrementalSchemaLoader";
+import { IncrementalSchemaLoader } from "../../IncrementalLoading/IncrementalSchemaLoader";
 import { SchemaProps } from "../../Deserialization/JsonProps";
 import { SchemaInfo } from "../../Interfaces";
 import { SchemaKey } from "../../SchemaKey";
 import { SchemaContext } from "../../Context";
-import { IncrementalSchemaLocater } from "../../Deserialization/IncrementalSchemaLocater";
+import { IncrementalSchemaLocater } from "../../IncrementalLoading/IncrementalSchemaLocater";
 import { SchemaMatchType } from "../../ECObjects";
 import { ECSchemaNamespaceUris } from "../../Constants";
 import { Schema } from "../../Metadata/Schema";
