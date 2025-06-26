@@ -515,7 +515,7 @@ export abstract class ViewState extends ElementState {
   /** Execute a function against each [[TileTreeReference]] associated with this view.
    * This may include tile trees not associated with any [[GeometricModelState]] - e.g., context reality data.
    * @note This method is inefficient (iteration cannot be aborted) and awkward (callback cannot be async nor return a value). Prefer to iterate using [[getTileTreeRefs]].
-   * @deprecated in 5.0. Use [[getTileTreeRefs]] instead.
+   * @deprecated in 5.0 - will not be removed until after 2026-06-13. Use [[getTileTreeRefs]] instead.
    */
   public forEachTileTreeRef(func: (treeRef: TileTreeReference) => void): void {
     for (const ref of this.getModelTreeRefs()) {

@@ -100,7 +100,7 @@ describe("ChangesetReaderAPI", async () => {
       // Open the changesets one by one and read the changes
       const reader = SqliteChangesetReader.openFile({ fileName: changesets[testCase.testCaseNum].pathname, db: rwIModel, disableSchemaCheck: true });
       const adaptor = new ChangesetECAdaptor(reader);
-      const unifier = new PartialECChangeUnifier(reader.db, ECChangeUnifierCache.createInMemory());
+      const unifier = new PartialECChangeUnifier(reader.db, ECChangeUnifierCache.createInMemoryCache());
       adaptor.acceptOp("Inserted");
       assert.equal(unifier.getInstanceCount(), 0, "Unifier should be empty before any changes are applied");
 
@@ -186,7 +186,7 @@ describe("ChangesetReaderAPI", async () => {
       // Open the changesets one by one and read the changes
       const reader = SqliteChangesetReader.openFile({ fileName: changesets[testCase.testCaseNum].pathname, db: rwIModel, disableSchemaCheck: true });
       const adaptor = new ChangesetECAdaptor(reader);
-      const unifier = new PartialECChangeUnifier(reader.db, ECChangeUnifierCache.createSqliteBacked(reader.db));
+      const unifier = new PartialECChangeUnifier(reader.db, ECChangeUnifierCache.createSqliteBackedCache(reader.db));
       adaptor.acceptOp("Inserted");
       assert.equal(unifier.getInstanceCount(), 0, "Unifier should be empty before any changes are applied");
 

@@ -489,12 +489,7 @@ As a Connector developer, once the data is transformed into an iModel, one needs
 
 #### ECSQL
 
-Please see this article on [ECSQL](./ecsqltutorial/index#learning-ecsql) as a prerequisite for this section. The iModelConsole instance below demonstrates how you can use ECSQL to find some of the transformed data in an iModel.
-
-<figure>
-  <iframe style="height:40vh;width:60vw;" src="https://imodelconsole.bentley.com/?embedded=true&nosignin=true&imodel=House Sample Bak&query=SELECT * FROM bis.Element">
-  </iframe>
-</figure>
+Please see this article on [ECSQL](./ecsqltutorial/index#learning-ecsql) as a prerequisite for this section. ECSql can be run against local and remote iModels using the [Query API](./ECSQLCodeExamples.md).  On the web the [iModelConsole](https://imodelconsole.bentley.com) can be used to interactively run ECSql against an iModel.
 
 Some sample queries that is helpful to debug Connector output
 

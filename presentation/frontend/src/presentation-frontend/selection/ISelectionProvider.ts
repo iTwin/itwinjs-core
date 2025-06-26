@@ -14,7 +14,7 @@ import { SelectionChangeEvent } from "./SelectionChangeEvent.js";
 /**
  * Selection provider interface which provides main selection and sub-selection.
  * @public
- * @deprecated in 5.0. Use `SelectionStorage` from [@itwin/unified-selection](https://github.com/iTwin/presentation/blob/master/packages/unified-selection/README.md) package instead.
+ * @deprecated in 5.0 - will not be removed until after 2026-06-13. Use `SelectionStorage` from [@itwin/unified-selection](https://github.com/iTwin/presentation/blob/master/packages/unified-selection/README.md) package instead.
  */
 export interface ISelectionProvider {
   /** An event that's fired when selection changes */
