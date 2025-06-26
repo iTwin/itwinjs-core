@@ -244,6 +244,19 @@ The example below is of a `MutableFormatsProvider` that lets you add/remove form
 
 </details>
 
+### Registering a SchemaFormatsProvider on IModelConnection open
+
+The simplest way to get formats from schemas into an iTwin application is to use the [IModelConnection.schemaContext]($core-frontend), and registering a new `SchemaFormatsProvider` through a [IModelConnection.onOpen]($core-frontend) event listener. The example below illustrates how that can be done.
+
+<details>
+  <summary> Example of registering a SchemaFormatsProvider on IModelConnection open
+
+```ts
+[[include:Quantity_Formatting.Schema_Fmt_Provider_on_IModelConnection_Open]]
+```
+
+</details>
+
 ### Mathematical Operation Parsing
 
 The quantity formatter supports parsing mathematical operations. The operation is solved, formatting each value present, according to the specified format. This makes it possible to process several different units at once.
