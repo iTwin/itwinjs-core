@@ -25,7 +25,7 @@
     "docs": "betools docs --json=../../../generated-docs/domains/analytical-backend/file.json --tsIndexFile=./analytical-backend.ts --onlyJson",
     "extract-api": "betools extract-api --entry=analytical-backend",
     "lint": "eslint \"./src/**/*.ts\" 1>&2",
-    "lint-fix": "eslint --fix -f visualstudio \"./src/**/*.ts\" 1>&2",
+    "lint-deprecation": "eslint --fix -f visualstudio --no-inline-config -c ../../../common/config/eslint/eslint.config.deprecation-policy.js \"./src/**/*.ts\"",
     "test": "mocha"
   },
   "repository": {

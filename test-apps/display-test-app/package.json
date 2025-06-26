@@ -20,6 +20,7 @@
     "docs": "",
     "lint": "eslint \"./src/**/*.ts\" 1>&2",
     "lint-fix": "eslint --fix -f visualstudio \"./src/**/*.ts\" 1>&2",
+    "lint-deprecation": "",
     "start": "cross-env NODE_ENV=development run-p start:webserver start:electron",
     "start:electron": "electron ./lib/backend/DtaElectronMain.js --inspect --remote-debugging-port=9223",
     "start:webserver": "cross-env NODE_ENV=development vite",

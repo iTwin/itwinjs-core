@@ -15,7 +15,7 @@
     "docs": "betools docs --json=../../generated-docs/core/core-orbitgt/file.json --tsIndexFile=./core-orbitgt.ts --onlyJson",
     "extract-api": "betools extract-api --entry=core-orbitgt",
     "lint": "",
-    "lint-fix": "",
+    "lint-deprecation": "eslint --fix -f visualstudio --no-inline-config -c ../../common/config/eslint/eslint.config.deprecation-policy.js \"./src/**/*.ts\"",
     "test": "mocha",
     "cover": "nyc npm -s test"
   },

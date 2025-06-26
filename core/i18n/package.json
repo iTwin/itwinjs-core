@@ -19,7 +19,7 @@
     "docs": "betools docs --json=../../generated-docs/core/core-i18n/file.json --tsIndexFile=./core-i18n.ts --onlyJson",
     "extract-api": "betools extract-api --entry=core-i18n",
     "lint": "eslint \"./src/**/*.ts\" 1>&2",
-    "lint-fix": "eslint --fix -f visualstudio \"./src/**/*.ts\" 1>&2",
+    "lint-deprecation": "eslint --fix -f visualstudio --no-inline-config -c ../../common/config/eslint/eslint.config.deprecation-policy.js \"./src/**/*.ts\"",
     "test": "npm run -s test:chrome",
     "test:chrome": "certa -r chrome",
     "test:debug": "certa -r chrome --debug",
