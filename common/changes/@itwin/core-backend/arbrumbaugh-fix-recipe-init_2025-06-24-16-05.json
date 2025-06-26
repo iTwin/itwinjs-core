@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Fix recipe initialization in TypeDefinitionElement",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}
