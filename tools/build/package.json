@@ -16,6 +16,7 @@
     "clean": "rimraf -g ../../modules .rush/temp/package-deps*.json",
     "docs": "",
     "lint": "eslint \"./src/**/*.ts\" 1>&2",
+    "lint-fix": "eslint --fix -f visualstudio \"./src/**/*.ts\" 1>&2",
     "test": "",
     "cover": ""
   },
@@ -46,7 +47,7 @@
     "yargs": "^17.4.0"
   },
   "devDependencies": {
-    "@itwin/eslint-plugin": "5.0.0-dev.1",
+    "@itwin/eslint-plugin": "5.2.2-dev.0",
     "@types/node": "~20.17.0",
     "eslint": "^9.13.0"
   }

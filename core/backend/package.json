@@ -73,7 +73,7 @@
     "@itwin/core-geometry": "workspace:*",
     "@itwin/ecschema-metadata": "workspace:*",
     "@itwin/ecsql-common": "workspace:*",
-    "@itwin/eslint-plugin": "5.0.0-dev.1",
+    "@itwin/eslint-plugin": "5.2.2-dev.0",
     "@opentelemetry/api": "1.0.4",
     "@types/chai": "4.3.1",
     "@types/chai-as-promised": "^7",

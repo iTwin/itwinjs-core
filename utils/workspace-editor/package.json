@@ -12,6 +12,7 @@
     "cover": "",
     "docs": "",
     "lint": "eslint \"./src/**/*.ts\" 1>&2",
+    "lint-fix": "eslint --fix -f visualstudio \"./src/**/*.ts\" 1>&2",
     "test": ""
   },
   "files": [
@@ -31,7 +32,7 @@
   },
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
-    "@itwin/eslint-plugin": "5.0.0-dev.1",
+    "@itwin/eslint-plugin": "5.2.2-dev.0",
     "@types/chai": "4.3.1",
     "@types/mocha": "^10.0.6",
     "@types/yargs": "17.0.19",

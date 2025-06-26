@@ -15,6 +15,7 @@
     "docs": "betools docs --json=../../generated-docs/editor/editor-frontend/file.json --tsIndexFile=./editor-frontend.ts --onlyJson --excludes=webgl/**/*,**/primitives --excludeGlob=**/*-css.ts",
     "extract-api": "betools extract-api --entry=editor-frontend",
     "lint": "eslint --max-warnings 0 ./src/**/*.ts 1>&2",
+    "lint-fix": "eslint --fix -f visualstudio \"./src/**/*.ts\" 1>&2",
     "pseudolocalize": "betools pseudolocalize --englishDir ./src/public/locales/en --out ./public/locales/en-PSEUDO",
     "test": "",
     "cover": ""
@@ -54,7 +55,7 @@
     "@itwin/core-common": "workspace:*",
     "@itwin/core-frontend": "workspace:*",
     "@itwin/core-geometry": "workspace:*",
-    "@itwin/eslint-plugin": "5.0.0-dev.1",
+    "@itwin/eslint-plugin": "5.2.2-dev.0",
     "cpx2": "^8.0.0",
     "eslint": "^9.13.0",
     "rimraf": "^6.0.1",
