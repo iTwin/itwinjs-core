@@ -1,6 +1,14 @@
 # Change Log - @itwin/core-backend
 
-This log was last generated on Tue, 17 Jun 2025 18:33:51 GMT and should not be manually modified.
+This log was last generated on Thu, 26 Jun 2025 22:16:01 GMT and should not be manually modified.
+
+## 5.0.2
+Thu, 26 Jun 2025 22:16:01 GMT
+
+### Updates
+
+- Fix recipe initialization in TypeDefinitionElement
+- Make IModelHostConfiguration.hubAccess public.
 
 ## 5.0.1
 Tue, 17 Jun 2025 18:33:51 GMT
