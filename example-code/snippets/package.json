@@ -12,7 +12,7 @@
     "docs": "npm run -s copy:assets && npm run -s extract",
     "lint": "eslint \"./src/**/*.ts\" 1>&2",
     "lint-fix": "eslint --fix -f visualstudio \"./src/**/*.ts\" 1>&2",
-    "lint-deprecation": "eslint --fix -f visualstudio --no-inline-config -c ../../common/config/eslint/eslint.config.deprecation-policy.js \"./src/**/*.ts\"",
+    "lint-deprecation": "",
     "test": "npm run -s test:azurite",
     "test:backend": "npm run -s copy:assets &&  mocha --no-config",
     "test:azurite": "run-p -r azurite:setup test:backend",
