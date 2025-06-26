@@ -10,12 +10,14 @@
       - [Unit Conversion](#unit-conversion)
   - [Persistence](#persistence)
     - [FormatSet](#formatset)
+  - [Using KindOfQuantities to Retrieve Formats](#using-kindofquantities-to-retrieve-formats)
   - [Examples of Usage](#examples-of-usage)
     - [Numeric Format](#numeric-format)
     - [Composite Format](#composite-format)
     - [Parsing Values](#parsing-values)
     - [Using a FormatsProvider](#using-a-formatsprovider)
     - [Using a MutableFormatsProvider](#using-a-mutableformatsprovider)
+    - [Registering a SchemaFormatsProvider on IModelConnection open](#registering-a-schemaformatsprovider-on-imodelconnection-open)
     - [Mathematical Operation Parsing](#mathematical-operation-parsing)
       - [Limitations](#limitations)
 
@@ -153,6 +155,26 @@ Each `Format` defined in a `FormatSet` need to be mapped to a valid [ECName](../
 ```
 
 </details>
+
+## Using KindOfQuantities to Retrieve Formats
+
+Building off on [FormatSet](#formatset), Tools and components that format quantities across applications should be linked to a `KindOfQuantity` and a Persistence Unit. See [Domains]($docs/bis/domains/) for available schemas, including `AecUnits` and `RoadRailUnits`, which define many `KindOfQuantity` values.
+
+The table below lists common measurements with their typical `KindOfQuantity` and Persistence Unit. This allows tools to request a default `KindOfQuantity` from ][IModelApp.formatsProvider]($core-frontend) and a Persistence Unit from [IModelApp.quantityFormatter.unitsProvider]($core-frontend) to create a `FormatterSpec` for quantity formatting.
+
+| Measurement  | Actual KindOfQuantity (EC Full Name) | Persistence Unit
+| ------------- | ------------- | -------------
+| Length  |  AecUnits.LENGTH | Units.M
+| Angle  | AecUnits.ANGLE  | Units.RAD
+| Area  |  AecUnits.AREA | Units.SQ_M
+| Volume  | AecUnits.VOLUME  | Units.CUB_M
+| Latitude/Longitude | AecUnits.ANGLE | Units.RAD
+| Coordinate | AecUnits.LENGTH | Units.M
+| Stationing | RoadRailUnits.STATION | Units.M
+| Length (Survey Feet) | RoadRailUnits.LENGTH | Units.M
+| Bearing | RoadRailUnits.BEARING | Units.RAD
+| Weight | AecUnits.WEIGHT | Units.KG
+| Time | AecUnits.TIME | Units.S
 
 ## Examples of Usage
 
