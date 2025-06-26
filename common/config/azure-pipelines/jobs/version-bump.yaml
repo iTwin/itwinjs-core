@@ -166,7 +166,7 @@ jobs:
       - script: node common/scripts/install-run-rush.js install
         displayName: rush install
 
-      - ${{ if or(eq(parameters.BumpType, 'minor'), eq('${{ parameters.BumpType }}', 'patch')) }}:
+      - ${{ if or(eq(parameters.BumpType, 'minor'), eq(parameters.BumpType, 'patch')) }}:
           - template: "../templates/run-eslint-deprecation.yaml"
 
       - bash: node common/scripts/install-run-rush.js audit
