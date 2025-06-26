@@ -166,9 +166,6 @@ jobs:
       - script: node common/scripts/install-run-rush.js install
         displayName: rush install
 
-      - ${{ if or(eq(parameters.BumpType, 'minor'), eq(parameters.BumpType, 'patch')) }}:
-          - template: "../templates/run-eslint-deprecation.yaml"
-
       - bash: node common/scripts/install-run-rush.js audit
         displayName: rush audit
 
@@ -240,6 +237,10 @@ jobs:
 
           git commit -m "$(getVersion.version)" --author="imodeljs-admin <imodeljs-admin@users.noreply.github.com>"
         displayName: Commit version bump
+
+      - ${{ if or(eq(parameters.BumpType, 'minor'), eq(parameters.BumpType, 'patch')) }}:
+        - template: "../templates/run-eslint-deprecation.yaml"
+
 
       - ? ${{ if or(eq(parameters.BumpType, 'minor'), eq(parameters.BumpType, 'patch')) }}
         : - bash: 'git tag -a release/$(getVersion.version) -m "v$(getVersion.version)"'

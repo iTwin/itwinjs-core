@@ -1,4 +1,9 @@
 steps:
+  - bash: |
+      newPackageVersion=$(cat common/config/rush/version-policies.json | grep \"version\": | awk -F'"' '{split($4,a,"-"); print a[1]}')
+      sed -i 's/\(addVersion: "\)[^"]*/\15.2.0/' common/config/eslint/eslint.config.deprecation-policy.js
+    displayName: Change addVersion in ESLint config to current version
+
   - bash: node common/scripts/install-run-rush.js lint-deprecation
     displayName: rush lint-deprecation
 
