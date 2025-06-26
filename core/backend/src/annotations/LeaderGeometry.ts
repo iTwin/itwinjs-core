@@ -3,6 +3,23 @@ import { CurveCurve, LineSegment3d, LineString3d, Loop, Path, Point3d, Transform
 import { computeFrame } from "./FrameGeometry";
 import { TextBlockLayout } from "./TextBlockLayout";
 
+/**
+ * Constructs and appends leader lines and their terminators to the provided geometry builder for a text annotation.
+ *
+ * This function processes an array of `TextAnnotationLeader` objects, computes their attachment points
+ * relative to a text frame (or a default rectangular frame if none is provided), and appends the leader
+ * line and terminator geometry to the builder. It also applies color overrides if specified
+ * in the leader's style overrides.
+ *
+ * @param builder - The geometry builder to which the leader geometries will be appended.
+ * @param leaders - An array of leader properties.
+ * @param layout - The layout information for the text block, including its range.
+ * @param transform - The transform to apply to the frame and leader geometry.
+ * @param params - The geometry parameters, such as color, to use for the leader lines.
+ * @param frame - (Optional) The style properties for the text frame. If not provided or set to "none", a default rectangle is used.
+ * @returns `true` if at least one leader with a terminator was successfully appended; otherwise, `false`.
+ * @beta
+ */
 export function appendLeadersToBuilder(builder: ElementGeometry.Builder, leaders: TextAnnotationLeader[], layout: TextBlockLayout, transform: Transform, params: GeometryParams, frame?: TextFrameStyleProps,): boolean {
   // If there is no frame, use a rectangular frame to compute the attachmentPoints for leaders.
   if (frame === undefined || frame.shape === "none") {
@@ -60,6 +77,18 @@ export function appendLeadersToBuilder(builder: ElementGeometry.Builder, leaders
   return false;
 }
 
+
+/**
+ * Computes the direction vector for an "elbow" for leader based on the attachment point and a frame curve.
+ * The elbow direction is determined by whether the attachment point is closer to the left or right side of the frame.
+ * If the computed elbow would be tangent to the frame at the intersection, no elbow direction is returned.
+ *
+ * @param attachmentPoint - The point where the leader attaches.
+ * @param frameCurve - The frame curve (either a Loop or Path) to which the leader is attached.
+ * @param elbowLength - The length of the elbow segment to be created.
+ * @returns The direction vector for the elbow, or `undefined` if the elbow would be tangent to the frame.
+ * @beta
+ */
 export function computeElbowDirection(attachmentPoint: Point3d, frameCurve: Loop | Path, elbowLength: number): Vector3d | undefined {
 
   let elbowDirection: Vector3d | undefined;
@@ -90,6 +119,21 @@ export function computeElbowDirection(attachmentPoint: Point3d, frameCurve: Loop
   return elbowDirection;
 }
 
+/**
+ * Computes the attachment point for a leader line on a text annotation frame.
+ *
+ * The attachment point is determined based on the leader's attachment mode:
+ * - `"Nearest"`: Finds the closest point on the frame curve to the leader's start point.
+ * - `"KeyPoint"`: Uses a specific curve segment and fraction along that segment to determine the point.
+ * - `"TextPoint"`: Calculates a point on the text layout (top/bottom, left/right) and projects it onto the frame curve.
+ *
+ * @param leader - The leader props.
+ * @param frameCurve - The curve (Loop or Path) representing the annotation frame.
+ * @param textLayout - The layout information for the text block.
+ * @param transform - The transform applied to the text layout.
+ * @returns The computed attachment point as a `Point3d`, or `undefined` if it cannot be determined.
+ * @beta
+ */
 export function computeLeaderAttachmentPoint(
   leader: TextAnnotationLeader,
   frameCurve: Loop | Path,
