@@ -1500,7 +1500,7 @@ export abstract class TypeDefinitionElement extends DefinitionElement {
 
   protected constructor(props: TypeDefinitionElementProps, iModel: IModelDb) {
     super(props, iModel);
-    this.recipe = this.recipe;
+    this.recipe = RelatedElement.fromJSON(props.recipe);
   }
 
   protected override collectReferenceIds(referenceIds: EntityReferenceSet): void {
