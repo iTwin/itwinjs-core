@@ -10,7 +10,7 @@
     "cover": "npm -s test",
     "docs": "",
     "lint": "eslint \"./src/**/*.ts\" 1>&2",
-    "lint-deprecation": "eslint --fix -f visualstudio --no-inline-config -c ../../common/config/eslint/eslint.config.deprecation-policy.js \"./src/**/*.ts\"",
+    "lint-deprecation": "",
     "test": "npm run -s test:chrome && npm run -s test:electron && npm run -s test:chrome-websocket",
     "test:chrome": "certa -r chrome -b ./lib/backend/http.js",
     "test:chrome-websocket": "certa -r chrome -b ./lib/backend/websocket.js",

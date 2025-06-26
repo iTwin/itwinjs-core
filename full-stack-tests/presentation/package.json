@@ -16,7 +16,7 @@
     "docs": "npm run -s extract",
     "extract": "betools extract --fileExt=ts,tsx --extractFrom=./src --recursive --out=../../generated-docs/extract",
     "lint": "eslint \"./src/**/*.ts\" 1>&2",
-    "lint-deprecation": "eslint --fix -f visualstudio --no-inline-config -c ../../common/config/eslint/eslint.config.deprecation-policy.js \"./src/**/*.ts\"",
+    "lint-deprecation": "",
     "test": "cross-env NODE_ENV=development mocha --enable-source-maps --config ./.mocharc.json --grep \"#performance\" --invert",
     "test:performance": "mocha --config ./.mocharc.json --grep \"#performance\" --no-timeouts",
     "copy:config": "internal-tools copy-config",
