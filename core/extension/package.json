@@ -17,7 +17,7 @@
     "cover": "",
     "docs": "",
     "lint": "",
-    "lint-fix": "",
+    "lint-deprecation": "",
     "test": "",
     "extract-api": "npm run -s generate",
     "generate": "node ./codeGen/generate-exports.js"

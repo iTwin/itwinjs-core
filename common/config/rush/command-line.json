@@ -85,13 +85,13 @@
       "allowWarningsInSuccessfulBuild": true
     },
     {
-      "name": "lint-fix",
+      "name": "lint-deprecation",
       "commandKind": "bulk",
-      "summary": "Run lint-fix rules on each package",
-      "description": "Iterates through each package in the monorepo and runs the 'lint-fix' script",
+      "summary": "Formats deprecation messages",
+      "description": "Iterates through each package in the monorepo and lints it with custom configuration",
       "enableParallelism": true,
-      "ignoreMissingScript": true,
       "ignoreDependencyOrder": true,
+      "ignoreMissingScript": true,
       "allowWarningsInSuccessfulBuild": true
     },
     {

@@ -10,6 +10,7 @@
     "copy:config": "internal-tools copy-config",
     "lint": "eslint \"./src/**/*.ts\" 1>&2",
     "lint-fix": "eslint --fix -f visualstudio \"./src/**/*.ts\" 1>&2",
+    "lint-deprecation": "eslint --fix -f visualstudio --no-inline-config -c ../../common/config/eslint/eslint.config.deprecation-policy.js \"./src/**/*.ts\"",
     "azurite:setup": "mkdirp ./lib/cjs/test/azuriteStorage && azurite-blob --silent --loose --location ./lib/cjs/test/azuriteStorage",
     "test": "",
     "cover": "",
