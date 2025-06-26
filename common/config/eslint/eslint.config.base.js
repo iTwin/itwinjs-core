@@ -8,7 +8,14 @@ module.exports = [
   {
     files: ["**/*.ts"],
     rules: {
-      "@typescript-eslint/no-unsafe-enum-comparison": "off"
+      "@typescript-eslint/no-unsafe-enum-comparison": "off",
+      "@itwin/require-version-in-deprecation": [
+        "error",
+        {
+          removeOldDates: true,
+          addVersion: "5.1.0"
+        }
+      ]
     }
   }
 ]

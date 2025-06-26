@@ -17,6 +17,7 @@
     "docs": "betools docs --json=../../generated-docs/core/express-server/file.json --tsIndexFile=./express-server.ts --onlyJson",
     "extract-api": "betools extract-api --entry=express-server",
     "lint": "eslint \"./src/**/*.ts\" 1>&2",
+    "lint-fix": "eslint --fix -f visualstudio \"./src/**/*.ts\" 1>&2",
     "test": "mocha",
     "cover": "nyc npm -s test"
   },
@@ -40,7 +41,7 @@
     "@itwin/build-tools": "workspace:*",
     "@itwin/core-common": "workspace:*",
     "@itwin/core-backend": "workspace:*",
-    "@itwin/eslint-plugin": "5.0.0-dev.1",
+    "@itwin/eslint-plugin": "5.2.2-dev.0",
     "@types/body-parser": "^1.17.0",
     "@types/chai": "4.3.1",
     "@types/express": "^4.17.20",

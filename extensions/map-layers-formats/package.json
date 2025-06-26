@@ -23,6 +23,7 @@
     "docs": "betools docs --json=../../generated-docs/core/map-layers-formats/file.json --tsIndexFile=./map-layers-formats.ts --onlyJson --excludes=**/ArcGisFeature/*.ts,**/*.gen.ts",
     "extract-api": "betools extract-api --entry=map-layers-formats",
     "lint": "eslint \"./src/**/*.{ts,tsx}\" 1>&2",
+    "lint-fix": "eslint --fix -f visualstudio \"./src/**/*.ts\" 1>&2",
     "pseudolocalize": "betools pseudolocalize --englishDir=./src/public/locales/en --out=./src/public/locales/en-PSEUDO",
     "test": "mocha",
     "rebuild": "npm run -s clean && npm run -s build"
@@ -49,7 +50,7 @@
     "@itwin/core-common": "workspace:*",
     "@itwin/core-geometry": "workspace:*",
     "@itwin/core-frontend": "workspace:*",
-    "@itwin/eslint-plugin": "5.0.0-dev.1",
+    "@itwin/eslint-plugin": "5.2.2-dev.0",
     "@types/chai": "4.3.1",
     "@types/chai-as-promised": "^7",
     "@types/geojson": "~7946.0.14",

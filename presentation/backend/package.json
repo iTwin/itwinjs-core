@@ -47,6 +47,7 @@
     "extract": "betools extract --fileExt=ts --extractFrom=./src/test --recursive --out=../../generated-docs/extract",
     "extract-api": "betools extract-api --entry=lib/esm/presentation-backend",
     "lint": "eslint \"./src/**/*.ts\" 1>&2",
+    "lint-fix": "eslint --fix -f visualstudio \"./src/**/*.ts\" 1>&2",
     "test": "mocha --enable-source-maps  --config ./.mocharc.json",
     "prettier:fix": "prettier --write ."
   },
@@ -65,7 +66,7 @@
     "@itwin/core-common": "workspace:*",
     "@itwin/core-quantity": "workspace:*",
     "@itwin/ecschema-metadata": "workspace:*",
-    "@itwin/eslint-plugin": "5.0.0-dev.1",
+    "@itwin/eslint-plugin": "5.2.2-dev.0",
     "@itwin/presentation-common": "workspace:*",
     "@sinonjs/fake-timers": "^11.2.2",
     "@types/chai": "4.3.1",
