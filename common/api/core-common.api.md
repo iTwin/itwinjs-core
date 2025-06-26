@@ -5589,6 +5589,21 @@ export interface JsonGeometryStream {
     format: "json";
 }
 
+// @beta
+export type LeaderAttachmentMode = {
+    mode: "KeyPoint";
+    curveIndex: number;
+    fraction: number;
+} | {
+    mode: "TextPoint";
+    position: LeaderTextPointOptions;
+} | {
+    mode: "Nearest";
+};
+
+// @beta
+export type LeaderTextPointOptions = "TopLeft" | "TopRight" | "BottomLeft" | "BottomRight";
+
 // @internal
 export interface LegacyAnalysisStyleProps {
     // (undocumented)
@@ -9817,6 +9832,7 @@ export class TextAnnotation {
     equals(other: TextAnnotation): boolean;
     frame?: TextFrameStyleProps;
     static fromJSON(props: TextAnnotationProps | undefined): TextAnnotation;
+    leaders?: TextAnnotationLeader[];
     offset: Point3d;
     orientation: YawPitchRollAngles;
     textBlock: TextBlock;
@@ -9851,6 +9867,7 @@ export interface TextAnnotationAnchor {
 export interface TextAnnotationCreateArgs {
     anchor?: TextAnnotationAnchor;
     frame?: TextFrameStyleProps;
+    leaders?: TextAnnotationLeader[];
     offset?: Point3d;
     orientation?: YawPitchRollAngles;
     textBlock?: TextBlock;
@@ -9863,9 +9880,34 @@ export type TextAnnotationFillColor = TextStyleColor | "background";
 export type TextAnnotationFrameShape = "none" | "line" | "rectangle" | "circle" | "equilateralTriangle" | "diamond" | "square" | "pentagon" | "hexagon" | "octagon" | "capsule" | "roundedRectangle";
 
 // @beta
+export interface TextAnnotationLeader {
+    // (undocumented)
+    attachmentMode: LeaderAttachmentMode;
+    // (undocumented)
+    intermediatePoints?: Point3d[];
+    // (undocumented)
+    startPoint: Point3d;
+    // (undocumented)
+    styleOverrides?: TextStyleSettingsProps;
+}
+
+// @beta
+export interface TextAnnotationLeaderProps {
+    // (undocumented)
+    attachmentMode: LeaderAttachmentMode;
+    // (undocumented)
+    intermediatePoints?: XYZProps[];
+    // (undocumented)
+    startPoint: XYZProps;
+    // (undocumented)
+    styleOverrides?: TextStyleSettingsProps;
+}
+
+// @beta
 export interface TextAnnotationProps {
     anchor?: TextAnnotationAnchor;
     frame?: TextFrameStyleProps;
+    leaders?: TextAnnotationLeaderProps[];
     offset?: XYZProps;
     orientation?: YawPitchRollProps;
     textBlock?: TextBlockProps;
@@ -10084,6 +10126,7 @@ export class TextStyleSettings {
     readonly color: TextStyleColor;
     static defaultProps: Readonly<Required<TextStyleSettingsProps>>;
     static defaults: TextStyleSettings;
+    readonly elbowLength: number;
     // (undocumented)
     equals(other: TextStyleSettings): boolean;
     readonly fontName: string;
@@ -10091,6 +10134,7 @@ export class TextStyleSettings {
     readonly isBold: boolean;
     readonly isItalic: boolean;
     readonly isUnderlined: boolean;
+    readonly leaderColor: TextStyleColor;
     readonly lineHeight: number;
     readonly lineSpacingFactor: number;
     readonly stackedFractionScale: number;
@@ -10099,18 +10143,23 @@ export class TextStyleSettings {
     readonly subScriptScale: number;
     readonly superScriptOffsetFactor: number;
     readonly superScriptScale: number;
+    readonly terminatorHeight: number;
+    readonly terminatorWidth: number;
     // (undocumented)
     toJSON(): TextStyleSettingsProps;
+    readonly wantElbow: boolean;
     readonly widthFactor: number;
 }
 
 // @beta
 export interface TextStyleSettingsProps {
     color?: TextStyleColor;
+    elbowLength?: number;
     fontName?: string;
     isBold?: boolean;
     isItalic?: boolean;
     isUnderlined?: boolean;
+    leaderColor?: TextStyleColor;
     lineHeight?: number;
     lineSpacingFactor?: number;
     stackedFractionScale?: number;
@@ -10119,6 +10168,9 @@ export interface TextStyleSettingsProps {
     subScriptScale?: number;
     superScriptOffsetFactor?: number;
     superScriptScale?: number;
+    terminatorHeight?: number;
+    terminatorWidth?: number;
+    wantElbow?: boolean;
     widthFactor?: number;
 }
 
