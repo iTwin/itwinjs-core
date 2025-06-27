@@ -304,6 +304,7 @@ export abstract class TileTreeReference /* implements RenderMemory.Consumer */ {
    * Currently, only terrain and reality model tiles support geometry collection.
    * @note Do not override this method - override [[_createGeometryTreeReference]] instead.
    */
+  // ###TODO: Add an option to enable reprojection of the geometry if this geometry tree reference will be collecting tile geometry.
   public createGeometryTreeReference(): GeometryTileTreeReference | undefined {
     if (this.collectTileGeometry) {
       // Unclear why compiler doesn't detect that `this` satisfies the GeometryTileTreeReference interface...it must be looking only at the types, not this particular instance.
