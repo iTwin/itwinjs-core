@@ -301,6 +301,12 @@ function split(source: string): Segment[] {
   return segments;
 }
 
+function applyTabShift(run: RunLayout, parent: LineLayout, context: LayoutContext): void {
+  if (run.source.type === "tab") {
+    run.range.setFrom(context.computeRangeForTabRun(run.style, run.source, parent.lengthFromLastTab));
+  }
+}
+
 /**
  * Represents the layout of a single run (text, fraction, or line break) within a line of text.
  * Stores information about the run's position, style, and font within the line.
@@ -410,12 +416,6 @@ export class RunLayout {
         numChars: segment.segment.length,
       });
     });
-  }
-
-  public applyTabShift(parent: LineLayout, context: LayoutContext) {
-    if (this.source instanceof TabRun) {
-      this.range.setFrom(context.computeRangeForTabRun(this.style, this.source, parent.lengthFromLastTab));
-    }
   }
 
   public toResult(paragraph: Paragraph): RunLayoutResult {
@@ -600,9 +600,7 @@ export class TextBlockLayout {
         }
 
         // If this is a tab, we need to apply the tab shift first, and then we can treat it like a text run.
-        if ("tab" === run.source.type) {
-          run.applyTabShift(curLine, context);
-        }
+        applyTabShift(run, curLine, context);
 
         // If our width is not set (doWrap is false), then we don't have to compute word wrapping, so just append the run, and continue.
         if (!doWrap) {
@@ -630,7 +628,9 @@ export class TextBlockLayout {
           // First, flush line
           curLine = this.flushLine(context, curLine);
 
-          if ("tab" === run.source.type) run.applyTabShift(curLine, context); // Recompute tab shift
+          // Recompute tab shift if applicable
+          applyTabShift(run, curLine, context);
+
           curLine.append(run);
         }
       }

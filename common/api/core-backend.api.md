@@ -5274,8 +5274,6 @@ export class RpcTrace {
 // @beta
 export class RunLayout {
     // (undocumented)
-    applyTabShift(parent: LineLayout, context: LayoutContext): void;
-    // (undocumented)
     canWrap(): this is {
         source: TextRun;
     };
