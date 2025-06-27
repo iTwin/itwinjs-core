@@ -10,7 +10,7 @@ import { Id64, Id64String } from "@itwin/core-bentley";
 import { Angle, Point3d, Vector3d, YawPitchRollAngles } from "@itwin/core-geometry";
 
 // Ignoring the spelling of the keyins. They're case insensitive, so we check against lowercase.
-// cspell:ignore superscript, subscript, widthfactor, fractionscale, fractiontype
+// cspell:ignore superscript, subscript, widthfactor, fractionscale, fractiontype, textpoint
 
 class TextEditor implements Decorator {
   // Geometry properties
