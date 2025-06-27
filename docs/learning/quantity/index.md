@@ -158,7 +158,7 @@ Each `Format` defined in a `FormatSet` need to be mapped to a valid [ECName](../
 
 ## Using KindOfQuantities to Retrieve Formats
 
-Building off of [FormatSet](#formatset), Tools and components that format quantities across applications should be linked to a `KindOfQuantity` and a Persistence Unit. See [Domains]($docs/bis/domains/) for available schemas, including `AecUnits` and `RoadRailUnits`, which define many `KindOfQuantity` values.
+Building off of [FormatSet](#formatset), Tools and components that format quantities across applications should be linked to a [KindOfQuantity](../../bis/ec/kindofquantity.md) and a Persistence Unit. See [Domains]($docs/bis/domains/) for available schemas, including `AecUnits` and `RoadRailUnits`, which define many `KindOfQuantity` values.
 
 The table below lists common measurements with their typical `KindOfQuantity` and Persistence Unit. This allows tools to request a default `KindOfQuantity` from [IModelApp.formatsProvider]($core-frontend) and a Persistence Unit from [IModelApp.quantityFormatter.unitsProvider]($core-frontend) to create a `FormatterSpec` for quantity formatting.
 
@@ -268,7 +268,7 @@ The example below is of a `MutableFormatsProvider` that lets you add/remove form
 
 ### Registering a SchemaFormatsProvider on IModelConnection open
 
-The simplest way to get formats from schemas into an iTwin application is to use the [IModelConnection.schemaContext]($core-frontend), and registering a new `SchemaFormatsProvider` through a [IModelConnection.onOpen]($core-frontend) event listener. The example below illustrates how that can be done.
+The simplest way to get formats from schemas into an iTwin application is to register a new `SchemaFormatsProvider` through a [IModelConnection.onOpen]($core-frontend) event listener, passing [IModelConnection.schemaContext]($core-frontend) to the provider. The example below illustrates how that can be done.
 
 <details>
   <summary> Example of registering a SchemaFormatsProvider on IModelConnection open
