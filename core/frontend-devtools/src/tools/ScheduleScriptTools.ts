@@ -16,7 +16,6 @@ import { _scheduleScriptReference, Viewport } from "@itwin/core-frontend";
 import { copyStringToClipboard } from "../ClipboardUtilities";
 import { parseArgs } from "./parseArgs";
 import { DisplayStyleTool } from "./DisplayStyleTools";
-import { Transform } from "@itwin/core-geometry";
 
 /** Query the schedule script JSON from an element.
  * @beta
