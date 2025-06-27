@@ -1080,7 +1080,7 @@ describe("iModel", () => {
       checkElementMetaData(metaData);
   });
 
-  it("should get metadata for a relationship", async () => {
+  it("should iterate through metadata for a relationship", async () => {
     const imodelPath = IModelTestUtils.prepareOutputFile("IModel", "relationshipMetadata.bim");
     const imodel = SnapshotDb.createEmpty(imodelPath, { rootSubject: { name: "relationshipMetadata" } });
 
