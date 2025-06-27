@@ -457,6 +457,11 @@ export class SqliteChangesetReader implements Disposable {
     }
 
     const stream = fs.createWriteStream(fileName, { flags: "w+" });
+    stream.on('error', (err) => {
+      console.error(`Failed to write to file ${fileName}:`, err);
+      stream.end(); // Ensure the stream is closed on error
+      throw err; // Rethrow the error to notify the caller
+    });
     stream.write("[");
     stream.write(EOL);
     let nChange = 0;
