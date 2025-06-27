@@ -236,7 +236,10 @@ export class Element extends Entity {
   protected static onUpdate(arg: OnElementPropsArg): void {
     const { iModel, props } = arg;
     iModel.channels[_verifyChannel](props.model);
-    iModel.locks.checkExclusiveLock(props.id!, "element", "update"); // eslint-disable-line @typescript-eslint/no-non-null-assertion
+    const isIndirectChange = (arg.options && arg.options.indirect === true);
+    if (!isIndirectChange) {
+      iModel.locks.checkExclusiveLock(props.id!, "element", "update"); // eslint-disable-line @typescript-eslint/no-non-null-assertion
+    }
     iModel.codeService?.verifyCode(arg);
   }
 

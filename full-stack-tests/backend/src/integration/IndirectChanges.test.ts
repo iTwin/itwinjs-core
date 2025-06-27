@@ -26,30 +26,28 @@ async function assertThrowsAsync<T>(test: () => Promise<T>, contains?: string) {
 }
 
 describe.only("Indirect changes flag on elements", () => {
-  const iTwinId = Guid.createValue();
+  let iTwinId = "";
   const user1AccessToken = "token 1";
   const user2AccessToken = "token 2";
-  const user3AccessToken = "token 3";
   let version0: string;
   let iModelId: string;
 
-  before(async () => {
+  beforeEach(async () => {
+    iTwinId = Guid.createValue();
     IModelHost.authorizationClient = new AzuriteTest.AuthorizationClient();
     AzuriteTest.userToken = AzuriteTest.service.userToken.readWrite;
-    // Setup: create a new iModel and briefcases for two users
     HubMock.startup("IndirectChanges", KnownTestLocations.outputDir);
-
     version0 = IModelTestUtils.prepareOutputFile("IndirectChanges", "imodel1.bim");
     SnapshotDb.createEmpty(version0, { rootSubject: { name: "testIndirectChanges" } }).close();
     iModelId = await HubMock.createNewIModel({ accessToken: user1AccessToken, iTwinId, version0, iModelName: "indirectChanges" });
   });
 
-  after(async () => {
+  afterEach(async () => {
     HubMock.shutdown();
     IModelHost.authorizationClient = undefined;
   });
 
-  async function openNewBriefcase(accessToken: AccessToken) {
+  async function openNewBriefcase(accessToken: AccessToken): Promise<BriefcaseDb> {
     const bcProps = await BriefcaseManager.downloadBriefcase({ iModelId, iTwinId, accessToken });
     return BriefcaseDb.open(bcProps);
   }
@@ -59,7 +57,7 @@ describe.only("Indirect changes flag on elements", () => {
     return db.elements.insertElement(subject.toJSON(), { indirect });
   };
 
-  it.only("indirect changes should not require a lock", async () => {
+  it("Indirect changes should not require a lock", async () => {
     const b1 = await openNewBriefcase(user1AccessToken);
     await assertThrowsAsync(async () => {
       makeSubject(b1, "Subject 1", "Description 1", false);
@@ -73,11 +71,9 @@ describe.only("Indirect changes flag on elements", () => {
     assert.isDefined(b1s3, "Subject 3 should be created in b1 as an indirect change");
   });
 
-  it.only("multi user indirect changes workflow", async () => {
+  it("Insert direct and indirect subjects and cross pull", async () => {
     const b1 = await openNewBriefcase(user1AccessToken);
     const b2 = await openNewBriefcase(user2AccessToken);
-    const _b3 = await openNewBriefcase(user3AccessToken);
-
 
     await b1.locks.acquireLocks({ shared: IModel.rootSubjectId });
     const b1s1 = makeSubject(b1, "Subject 1", "Description 1", false);
@@ -152,14 +148,46 @@ describe.only("Indirect changes flag on elements", () => {
 
     b1.close();
     b2.close();
+  });
 
+  it.only("Conflict on changes to same subject", async () => {
+    // Create one subject which we will later modify to produce a conflict.
+    const b1 = await openNewBriefcase(user1AccessToken);
+    await b1.locks.acquireLocks({ shared: IModel.rootSubjectId });
+    const subjectId = makeSubject(b1, "Subject 1", "Description 1");
+    assert.isDefined(subjectId);
+    b1.saveChanges();
+    await b1.pushChanges({ description: "B1: Inserted subject." });
 
+    const b2 = await openNewBriefcase(user2AccessToken);
 
+    const elementInB2 = b2.elements.getElement<Subject>(subjectId);
+    assert.isDefined(elementInB2, "Subject 1 should be pulled into b2");
+    elementInB2.description = "Modified description in b2";
+    b2.elements.updateElement(elementInB2.toJSON(), { indirect: true });
+    b2.saveChanges();
 
+    const elementInB1 = b1.elements.getElement<Subject>(subjectId);
+    assert.isDefined(elementInB1);
+    elementInB1.description = "Modified description in b1";
+    b1.elements.updateElement(elementInB1.toJSON(), { indirect: true });
+    b1.saveChanges();
 
-    // Clean up
+    await b1.pushChanges({ description: "B1: Modified subject." });
+    await b2.pushChanges({ description: "B2: Modified subject." });
+
+    await b1.pullChanges();
+    await b2.pullChanges();
+
+    const b1AfterConflict = b1.elements.getElement<Subject>(subjectId);
+    assert.isDefined(b1AfterConflict);
+    assert.strictEqual(b1AfterConflict.description, "Modified description in b2");
+
+    const b2AfterConflict = b2.elements.getElement<Subject>(subjectId);
+    assert.isDefined(b2AfterConflict);
+    assert.strictEqual(b2AfterConflict.description, "Modified description in b1");
+
     b1.close();
     b2.close();
-    HubMock.shutdown();
   });
 });
