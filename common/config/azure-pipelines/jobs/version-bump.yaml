@@ -138,8 +138,8 @@ jobs:
   - job: Bump
     displayName: Bump Version
     dependsOn:
-    - CreateBranch
-    - CheckPrevCommit
+      - CreateBranch
+      - CheckPrevCommit
     condition: and(in(dependencies.CreateBranch.result, 'Succeeded', 'Skipped'), in(dependencies.CheckPrevCommit.result, 'Succeeded', 'Skipped'))
     variables:
       releaseBranchName: $[ dependencies.CreateBranch.outputs['getBranchName.releaseBranchName'] ]
@@ -166,17 +166,51 @@ jobs:
       - script: node common/scripts/install-run-rush.js install
         displayName: rush install
 
+      - ${{ if or(eq(parameters.BumpType, 'minor'), eq('${{ parameters.BumpType }}', 'minor'), eq('${{ parameters.BumpType }}', 'releaseCandidate')) }}:
+          - bash: node common/scripts/install-run-rush.js
+            displayName: rush lint-deprecation
+
+          - bash: git add .
+            displayName: git add .
+
+          - bash: |
+              # Commit deprecation date changes
+              git commit -m "update deprecation dates"
+
+              # Get the SHA-1 Hash of deprecation changes commit to apply it later on master
+              deprecationDateCommitHash=$(git log -1 --format=%H)
+
+              echo "##vso[task.setvariable variable=hash;isOutput=true]$deprecationDateCommitHash"
+            displayName: Commit deprecation date changes and save SHA-1 hash of the commit
+            name: getDeprecationCommit
+
+          - bash: |
+              currentBranch=$(git branch --show-current)
+              deprecationCommitHash=$(getDeprecationCommit.hash)
+
+              git checkout master
+              git cherry-pick $deprecationCommitHash
+              # TODO: handle case where cherry picking will produce a merge conflict
+              git checkout $currentBranch
+            continueOnError: true
+
+      - bash: |
+          echo Committing deprecation documentation date changes...
+
+          git commit -m "$(getVersion.version)" --author="imodeljs-admin <imodeljs-admin@users.noreply.github.com>"
+        displayName: Commit version bump
+
       - bash: node common/scripts/install-run-rush.js audit
         displayName: rush audit
 
       # Can be run on any branch to do a standard version bump. Which is currently -dev bumps.
-      - ? ${{ if or(eq(parameters.BumpType, 'nightly'), eq(parameters.BumpType, 'releaseCandidate')) }}
-        : - bash: "node common/scripts/install-run-rush version --bump"
+      - ${{ if or(eq(parameters.BumpType, 'nightly'), eq(parameters.BumpType, 'releaseCandidate')) }}:
+          - bash: "node common/scripts/install-run-rush version --bump"
             displayName: Rush version --bump
 
       # Support two separate bump types on release branches
-      - ? ${{ if or(eq(parameters.BumpType, 'minor'), eq(parameters.BumpType, 'patch')) }}
-        : - bash: "node common/scripts/install-run-rush version --override-bump ${{ parameters.BumpType }} --version-policy prerelease-monorepo-lockStep --bump"
+      - ${{ if or(eq(parameters.BumpType, 'minor'), eq(parameters.BumpType, 'patch')) }}:
+          - bash: "node common/scripts/install-run-rush version --override-bump ${{ parameters.BumpType }} --version-policy prerelease-monorepo-lockStep --bump"
             displayName: Release version bump
             condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/heads/release/'))
 
@@ -238,8 +272,8 @@ jobs:
           git commit -m "$(getVersion.version)" --author="imodeljs-admin <imodeljs-admin@users.noreply.github.com>"
         displayName: Commit version bump
 
-      - ? ${{ if or(eq(parameters.BumpType, 'minor'), eq(parameters.BumpType, 'patch')) }}
-        : - bash: 'git tag -a release/$(getVersion.version) -m "v$(getVersion.version)"'
+      - ${{ if or(eq(parameters.BumpType, 'minor'), eq(parameters.BumpType, 'patch')) }}:
+          - bash: 'git tag -a release/$(getVersion.version) -m "v$(getVersion.version)"'
             displayName: Create git tag
 
       - bash: "git push --follow-tags https://$(GITHUBTOKEN)@github.com/iTwin/itwinjs-core $(releaseBranchName)"
