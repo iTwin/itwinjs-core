@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-backend",
-      "comment": "Fix issue realted to pullMerge() failure",
+      "comment": "Fix issue related to pullMerge() failure",
       "type": "none"
     }
   ],
