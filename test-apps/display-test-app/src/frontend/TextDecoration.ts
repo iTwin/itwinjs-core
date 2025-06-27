@@ -156,7 +156,7 @@ class TextEditor implements Decorator {
   public setLeaderTextPoint(leader: TextAnnotationLeader, arg: LeaderTextPointOptions) {
     leader.attachmentMode = { mode: "TextPoint", position: arg };
   }
-  public setLeaderNearest(leader: TextAnnotationLeader,) {
+  public setLeaderNearest(leader: TextAnnotationLeader) {
     leader.attachmentMode = { mode: "Nearest" };
   }
 
