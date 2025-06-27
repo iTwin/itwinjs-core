@@ -228,7 +228,7 @@ export class Entity {
    * ```
    */
   public forEach(func: PropertyHandler, includeCustom: boolean = true) {
-    const item = this.iModel.schemaContext.getSchemaItemSync(this.schemaItemKey);
+    const item = this._metadata ?? this.iModel.schemaContext.getSchemaItemSync(this.schemaItemKey);
 
     if (EntityClass.isEntityClass(item) || RelationshipClass.isRelationshipClass(item)) {
       for (const property of item.getPropertiesSync()) {
