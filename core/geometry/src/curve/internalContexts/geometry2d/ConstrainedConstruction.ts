@@ -19,37 +19,6 @@ import { UnboundedHyperbola2d } from "./UnboundedHyperbola2d";
 import { UnboundedEllipse2d } from "./UnboundedEllipse2d";
 
 /**
- * Itemization of constraints for line and circle construction.
- * Not all combinations are solvable!
- * @public
- */
-export enum ConstriaintType {
-  throughPoint,
-  radius,
-  tangentTo,
-  curveLength
-}
-
-export class ConstructionConstraint {
-  public constraintType: ConstriaintType;
-  public curve?: ImplicitCurve2d;
-  public point?: Point2d;
-  private constructor (constraintType: ConstriaintType){
-    this.constraintType = constraintType;
-  }
-  public createThroughPoint (point: Point2d): ConstructionConstraint {
-    const c = new ConstructionConstraint (ConstriaintType.throughPoint);
-    c.point = point.clone ();
-    return c;
-  }
-  public createTangentTo (curve: ImplicitCurve2d): ConstructionConstraint {
-    const c = new ConstructionConstraint (ConstriaintType.tangentTo);
-    c.curve = curve.clone ();
-    return c;
-  }
-}
-
-/**
  * Static methods for special case circle constructions.
  */
 export class ConstrainedConstruction {
@@ -749,6 +718,7 @@ function signedValues (distance: number, value?: number):number[]{
     values.push (-value);
   return values;
 }
+/** Search an array of circles to see if a particular new circle is already present */
 function isThisCirclePresent (circles: ImplicitGeometryMarkup<UnboundedCircle2dByCenterAndRadius>[],
   circle: UnboundedCircle2dByCenterAndRadius): boolean{
     for (const c of circles){

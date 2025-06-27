@@ -1,0 +1,241 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+/** @packageDocumentation
+ * @module CartesianGeometry
+ */
+import { Geometry } from "../../../Geometry";
+import { Point2d } from "../../../geometry3d/Point2dVector2d";
+import { ConstrainedConstruction } from "./ConstrainedConstruction";
+import { ImplicitCurve2d, ImplicitGeometryMarkup } from "./implicitCurve2d";
+import { UnboundedCircle2dByCenterAndRadius } from "./UnboundedCircle2d";
+import { UnboundedLine2dByPointAndNormal } from "./UnboundedLine2d.";
+
+/**
+ * Itemization of constraints for line and circle construction.
+ * Not all combinations are solvable!
+ * @public
+ */
+
+export enum ConstriaintType {
+  throughPoint,
+  radius,
+  tangentTo,
+  curveLength
+}
+
+export class ConstructionConstraint {
+  public constraintType: ConstriaintType;
+  public curve?: ImplicitCurve2d;
+  public point?: Point2d;
+  public radius?: number;
+  private constructor(constraintType: ConstriaintType) {
+    this.constraintType = constraintType;
+  }
+  public static createThroughPoint(point: Point2d): ConstructionConstraint {
+    const c = new ConstructionConstraint(ConstriaintType.throughPoint);
+    c.point = point.clone();
+    return c;
+  }
+  public static createTangentTo(curve: ImplicitCurve2d): ConstructionConstraint {
+    const c = new ConstructionConstraint(ConstriaintType.tangentTo);
+    c.curve = curve.clone();
+    return c;
+  }
+  public static createRadius(radius: number): ConstructionConstraint {
+    const c = new ConstructionConstraint(ConstriaintType.radius);
+    c.radius = radius;
+    return c;
+  }
+  /** Return a clone of thi sconstraitn.
+   * * point or curve referenced by this constraint are cloned
+   */
+  public clone(): ConstructionConstraint {
+    const c = new ConstructionConstraint(this.constraintType);
+    if (this.curve !== undefined)
+      c.curve = this.curve.clone();
+    if (this.point !== undefined)
+      c.point = this.point.clone();
+    if (this.radius !== undefined)
+      c.radius = this.radius;
+    return c;
+  }
+}
+
+export class ConstraintSet {
+  private _constraints: ConstructionConstraint[];
+  private constructor() {
+    this._constraints = [];
+  }
+  /** Create an empty constraint set */
+  public static create(): ConstraintSet {
+    return new ConstraintSet();
+  }
+  /** Clone the array */
+  public clone(): ConstraintSet {
+    const theClone = ConstraintSet.create();
+    for (const c of this._constraints) {
+      theClone._constraints.push(c.clone());
+    }
+    return theClone;
+  }
+
+  /**
+   * Add a new constraint to the array.
+   * @param constraint 
+   * @returns true if the constratnt was accepted.
+   */
+  public addConstraint(constraint: ConstructionConstraint): boolean {
+    this._constraints.push(constraint);
+    return true;
+  }
+  /** Count the constraints of specific type. */
+  public countConstraintType(t: ConstriaintType) {
+    let n = 0;
+    for (const c of this._constraints) {
+      if (c.constraintType === t) n++;
+    }
+    return n;
+  }
+  /** Replace zero radius circle constraints to point constraints. */
+  public convertZeroRadiusCirclesToThroughPoint() {
+    for (let i = 0; i < this._constraints.length; i++) {
+      const c = this._constraints[i];
+      if (c.constraintType === ConstriaintType.tangentTo
+        && c.curve !== undefined
+        && c.curve instanceof UnboundedCircle2dByCenterAndRadius
+        && Geometry.isSmallMetricDistance(c.curve.radius)) {
+        const c1 = ConstructionConstraint.createThroughPoint(c.curve.center);
+        this._constraints[i] = c1;
+      }
+    }
+  }
+  /** Replace point passthrough to zero radius circle tangency */
+  public convertThroughPointToZeroRadiusCircles() {
+    for (let i = 0; i < this._constraints.length; i++) {
+      const c = this._constraints[i];
+      if (c.constraintType === ConstriaintType.throughPoint
+        && c.point !== undefined) {
+        const c1 = ConstructionConstraint.createTangentTo(
+          UnboundedCircle2dByCenterAndRadius.createPointRadius(c.point, 0.0))
+        this._constraints[i] = c1;
+      }
+    }
+  }
+  /** normalize all line perendiculars */
+  public normalizeLines() {
+    for (let i = 0; i < this._constraints.length; i++) {
+      const c = this._constraints[i];
+      if (c.constraintType === ConstriaintType.tangentTo
+        && c.curve instanceof UnboundedLine2dByPointAndNormal) {
+        const newLine = c.curve.cloneNormalizedFromOrigin ();
+        if (newLine !== undefined){
+          const c1 = ConstructionConstraint.createTangentTo(newLine);
+          this._constraints[i] = c1;
+        }
+      }
+    }
+  }
+
+
+  /**
+   * Return
+   *   * 1 if the constraint curve is UnboundedLine2dByPointAndNormal
+   *   * 2 if the constraint curve is UnboundedCircle2dByCenterAndRadius
+   *   * 0 otherwise
+   * @param c constraint
+   */
+  public static tangentGeometryLineCircleType(c: ConstructionConstraint): number {
+    if (c.curve instanceof UnboundedCircle2dByCenterAndRadius)
+      return 2;
+    if (c.curve instanceof UnboundedLine2dByPointAndNormal)
+      return 1;
+    return 0;
+  }
+  /** Sort the given constraints  with
+   * * Primary sort is on constraint type
+   * * For equal constraint type, apply ordering from tangentGeometryType function.
+   */
+  public static sortByConstraintTypeAndGeometryType(constraints: ConstructionConstraint[]) {
+    constraints.sort(
+      (a: ConstructionConstraint, b: ConstructionConstraint) => {
+        if (a.constraintType === b.constraintType) {
+          const ga = this.tangentGeometryLineCircleType(a);
+          const gb = this.tangentGeometryLineCircleType(b);
+          if (ga === gb) return 0;
+          return ga < gb ? -1 : 1;
+        }
+        // return this.tangentGeometryLineCircleType(a)
+        return (a.constraintType < b.constraintType) ? -1 : 1;
+      }
+    )
+  }
+  public constructTangentCircles(): ImplicitGeometryMarkup<UnboundedCircle2dByCenterAndRadius>[] | undefined {
+    if (this._constraints.length !== 3)
+      return undefined;
+
+    const constraints = this.clone();
+    constraints.convertThroughPointToZeroRadiusCircles();
+    constraints.normalizeLines ();
+    ConstraintSet.sortByConstraintTypeAndGeometryType(constraints._constraints);
+    // Note that pass-through points are now tangentTo circles with zero radius.
+    const numTangent = constraints.countConstraintType(ConstriaintType.tangentTo);
+    const numRadius = constraints.countConstraintType(ConstriaintType.radius);
+      const c0 = constraints._constraints[0];
+      const c1 = constraints._constraints[1];
+      const c2 = constraints._constraints[2];
+    if (numTangent === 3) {
+      // Radius comes first, then Line(s), then circle(s)
+      // Once a circle is encountered, the rest must be circles.
+      if (c0.curve instanceof UnboundedLine2dByPointAndNormal) {
+        if (c1.curve instanceof UnboundedLine2dByPointAndNormal) {
+          if (c2.curve instanceof UnboundedLine2dByPointAndNormal) {
+            // LINE LINE LINE !
+            return ConstrainedConstruction.circlesTangentLLL(
+              c0.curve, c1.curve, c2.curve);
+          } else if (c2.curve instanceof UnboundedCircle2dByCenterAndRadius) {
+            return ConstrainedConstruction.circlesTangentLLC(
+              c0.curve, c1.curve, c2.curve);
+          }
+        } else if (c1.curve instanceof UnboundedCircle2dByCenterAndRadius) {
+          if (c2.curve instanceof UnboundedCircle2dByCenterAndRadius) {
+            return ConstrainedConstruction.circlesTangentCCL(
+              c1.curve,
+              c2.curve,
+              c0.curve,
+            );
+          }
+        }
+      } else if (c0.curve instanceof UnboundedCircle2dByCenterAndRadius) {
+        if (c1.curve instanceof UnboundedCircle2dByCenterAndRadius
+          && c2.curve instanceof UnboundedCircle2dByCenterAndRadius) {
+          return ConstrainedConstruction.circlesTangentCCC(
+            c0.curve, c1.curve, c2.curve);
+        }
+      }
+    } else if (numRadius === 1 && numTangent === 2
+               && c0.radius !== undefined) {
+      // c0 is the readius
+      // c1,c2 can be LINE LINE or LINE CIRCLE or CIRCLE CIRCLE
+      if (c1.curve instanceof UnboundedLine2dByPointAndNormal) {
+        if (c2.curve instanceof UnboundedLine2dByPointAndNormal) {
+          // LINE LINE LINE !
+          return ConstrainedConstruction.circlesTangentLLR(
+            c1.curve,
+            c2.curve,
+            c0.radius);
+        } else if (c2.curve instanceof UnboundedCircle2dByCenterAndRadius) {
+          return ConstrainedConstruction.circlesTangentCLR(
+            c2.curve, c1.curve, c0.radius);
+        }
+      } else if (c1.curve instanceof UnboundedCircle2dByCenterAndRadius) {
+        if (c2.curve instanceof UnboundedCircle2dByCenterAndRadius) {
+          return ConstrainedConstruction.circlesTangentCCR(c1.curve, c2.curve, c0.radius);
+        }
+      }
+
+    }
+    return undefined;
+  }
+}

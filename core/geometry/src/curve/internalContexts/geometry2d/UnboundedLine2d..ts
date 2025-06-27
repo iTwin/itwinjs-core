@@ -153,13 +153,18 @@ export class UnboundedLine2dByPointAndNormal extends ImplicitCurve2d {
  * @return undefined if perpendicular vector has zero length.
  * @param newOrigin origin coordinates to subtract from existing origin.
 */
-public cloneNormalizedFromOrigin (newOrigin: Point2d): UnboundedLine2dByPointAndNormal | undefined{
+public cloneNormalizedFromOrigin (newOrigin?: Point2d): UnboundedLine2dByPointAndNormal | undefined{
 const unitNormal = this.normal.normalize ();
 if (unitNormal === undefined)
     return undefined;
-return new UnboundedLine2dByPointAndNormal (
-    Point2d.create (this.point.x - newOrigin.x, this.point.y - newOrigin.y),
+if (newOrigin !== undefined){
+    return new UnboundedLine2dByPointAndNormal (
+      Point2d.create (this.point.x - newOrigin.x, this.point.y - newOrigin.y),
+      Vector2d.create (unitNormal.x, unitNormal.y));
+  } else {
+    return new UnboundedLine2dByPointAndNormal (this.point.clone(),
     Vector2d.create (unitNormal.x, unitNormal.y));
+  }
 }
 /**
  * Return a new implicit line with its reference point shifted by given multiple of its normal vector.

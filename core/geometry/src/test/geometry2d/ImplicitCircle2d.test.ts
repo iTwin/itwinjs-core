@@ -24,92 +24,6 @@ import { UnboundedLine2dByPointAndNormal } from "../../curve/internalContexts/ge
 import { ImplicitCurve2d, ImplicitGeometryMarkup } from "../../curve/internalContexts/geometry2d/implicitCurve2d";
 import { PointToCurveTangentHandler } from "../../curve/internalContexts/PointToCurveTangentHandler";
 
-function implicitCircle2dToArc3d (circle: UnboundedCircle2dByCenterAndRadius, z: number = 0.0 ):Arc3d | LineString3d|undefined{
-  if (circle.radius !== 0.0)
-  return Arc3d.createCenterNormalRadius (Point3d.create (circle.center.x, circle.center.y, z),
-    Vector3d.create (0,0,1), circle.radius);
-  const size = 0.1;
-  const x0 = circle.center.x - size;
-  const x1 = circle.center.x + size;
-  const y0 = circle.center.y - size;
-  const y1 = circle.center.y + size;
-  return LineString3d.create ([[x0,y0,z],[x1,y1,z],[x1,y0,z],[x0,y1,z]]);
-}
-function implicitLine2dToLineSegment3d (line: UnboundedLine2dByPointAndNormal, z: number = 0.0,
-  a0: number,
-  a1: number
-):LineSegment3d | undefined{
-  const direction = Vector3d.create (line.normal.y, -line.normal.x, 0);
-  const origin = Point3d.create (line.point.x, line.point.y, z);
-    return LineSegment3d.create (
-    origin. plusScaled (direction, a0),
-    origin.plusScaled (direction, a1));
-  }
-  function implicitCurve2dToGeometry (curve: ImplicitCurve2d):CurvePrimitive | undefined{
-    if (curve instanceof UnboundedCircle2dByCenterAndRadius){
-      return implicitCircle2dToArc3d (curve);
-    } else if (curve instanceof UnboundedLine2dByPointAndNormal){
-      return implicitLine2dToLineSegment3d (curve, 0, -10, 10);
-    }
-return undefined;
-  }
-  function testParallelGradiants (ck: Checker, vectorA:Vector2d, vectorB: Vector2d){
-    if (Geometry.isSmallMetricDistance (vectorA.magnitude ()) || Geometry.isSmallMetricDistance (vectorB.magnitude ()))
-      return;
-    ck.testParallelOrAntiParllel2d (vectorA, vectorB, "expect parallelGradiants");
-  }
-
-/**
- *
- * @param ck checker4
- * @param allGeometry output capture array
- * @param x0 output x shift
- * @param y0 output y shift
- * @param markup circles to output with lines to tangency
- * @param inputGeometry additional input geometry to output with each markup batch
- * @param yStep step to apply to y0 for each output circle and markup batch
- * @returns updated y0
- */
-function outputCircleMarkup (ck: Checker, allGeometry: GeometryQuery[], x0: number, y0: number,
-  markup: ImplicitGeometryMarkup<UnboundedCircle2dByCenterAndRadius>[] | undefined,
-  inputGeometry: ImplicitCurve2d [] | undefined = undefined, yStep: number = 0) : number{
-    if (markup === undefined){
-      if (inputGeometry){
-        for (const g1 of inputGeometry){
-          GeometryCoreTestIO.captureCloneGeometry (allGeometry,
-            implicitCurve2dToGeometry (g1), x0, y0);
-          }
-        }
-        return y0;
-      }
-    for (const m of markup){
-    if (m.curve instanceof UnboundedCircle2dByCenterAndRadius)
-      GeometryCoreTestIO.captureCloneGeometry (allGeometry,
-        implicitCircle2dToArc3d (m.curve), x0, y0);
-        for (const g of m.data){
-             if (inputGeometry){
-                for (const g1 of inputGeometry){
-                  GeometryCoreTestIO.captureCloneGeometry (allGeometry,
-                    implicitCurve2dToGeometry (g1), x0, y0);
-                  }
-             }
-            GeometryCoreTestIO.captureCloneGeometry (allGeometry,
-              LineSegment3d.create (
-                Point3d.create (m.curve.center.x, m.curve.center.y),
-                Point3d.create (g.point.x, g.point.y)),
-                x0, y0);
-            const fM = m.curve.functionValue (g.point);
-            const fG = g.curve.functionValue(g.point);
-            const gradM = m.curve.gradiant (g.point);
-            const gradG = g.curve.gradiant (g.point);
-            ck.testCoordinate (fM, 0.0, "function value fM at tangency", m.curve, g.curve);
-            ck.testCoordinate (fG, 0.0, "function value fG at tangency", m.curve, g.curve);
-            testParallelGradiants (ck, gradM, gradG);
-            }
-        y0 += yStep;
-        }
-      return y0;
-      }
 
   describe("ImplicitCircle2d", () => {
 
@@ -681,3 +595,90 @@ it("CircleTangentCCR", () => {
   GeometryCoreTestIO.saveGeometry (allGeometry, "geometry2d", "circleTangentCCR");
   expect(ck.getNumErrors()).toBe(0);
 });
+
+function implicitCircle2dToArc3d (circle: UnboundedCircle2dByCenterAndRadius, z: number = 0.0 ):Arc3d | LineString3d|undefined{
+  if (circle.radius !== 0.0)
+  return Arc3d.createCenterNormalRadius (Point3d.create (circle.center.x, circle.center.y, z),
+    Vector3d.create (0,0,1), circle.radius);
+  const size = 0.1;
+  const x0 = circle.center.x - size;
+  const x1 = circle.center.x + size;
+  const y0 = circle.center.y - size;
+  const y1 = circle.center.y + size;
+  return LineString3d.create ([[x0,y0,z],[x1,y1,z],[x1,y0,z],[x0,y1,z]]);
+}
+function implicitLine2dToLineSegment3d (line: UnboundedLine2dByPointAndNormal, z: number = 0.0,
+  a0: number,
+  a1: number
+):LineSegment3d | undefined{
+  const direction = Vector3d.create (line.normal.y, -line.normal.x, 0);
+  const origin = Point3d.create (line.point.x, line.point.y, z);
+    return LineSegment3d.create (
+    origin. plusScaled (direction, a0),
+    origin.plusScaled (direction, a1));
+  }
+  function implicitCurve2dToGeometry (curve: ImplicitCurve2d):CurvePrimitive | undefined{
+    if (curve instanceof UnboundedCircle2dByCenterAndRadius){
+      return implicitCircle2dToArc3d (curve);
+    } else if (curve instanceof UnboundedLine2dByPointAndNormal){
+      return implicitLine2dToLineSegment3d (curve, 0, -10, 10);
+    }
+return undefined;
+  }
+  function testParallelGradiants (ck: Checker, vectorA:Vector2d, vectorB: Vector2d){
+    if (Geometry.isSmallMetricDistance (vectorA.magnitude ()) || Geometry.isSmallMetricDistance (vectorB.magnitude ()))
+      return;
+    ck.testParallelOrAntiParllel2d (vectorA, vectorB, "expect parallelGradiants");
+  }
+
+/**
+ *
+ * @param ck checker4
+ * @param allGeometry output capture array
+ * @param x0 output x shift
+ * @param y0 output y shift
+ * @param markup circles to output with lines to tangency
+ * @param inputGeometry additional input geometry to output with each markup batch
+ * @param yStep step to apply to y0 for each output circle and markup batch
+ * @returns updated y0
+ */
+function outputCircleMarkup (ck: Checker, allGeometry: GeometryQuery[], x0: number, y0: number,
+  markup: ImplicitGeometryMarkup<UnboundedCircle2dByCenterAndRadius>[] | undefined,
+  inputGeometry: ImplicitCurve2d [] | undefined = undefined, yStep: number = 0) : number{
+    if (markup === undefined){
+      if (inputGeometry){
+        for (const g1 of inputGeometry){
+          GeometryCoreTestIO.captureCloneGeometry (allGeometry,
+            implicitCurve2dToGeometry (g1), x0, y0);
+          }
+        }
+        return y0;
+      }
+    for (const m of markup){
+    if (m.curve instanceof UnboundedCircle2dByCenterAndRadius)
+      GeometryCoreTestIO.captureCloneGeometry (allGeometry,
+        implicitCircle2dToArc3d (m.curve), x0, y0);
+        for (const g of m.data){
+             if (inputGeometry){
+                for (const g1 of inputGeometry){
+                  GeometryCoreTestIO.captureCloneGeometry (allGeometry,
+                    implicitCurve2dToGeometry (g1), x0, y0);
+                  }
+             }
+            GeometryCoreTestIO.captureCloneGeometry (allGeometry,
+              LineSegment3d.create (
+                Point3d.create (m.curve.center.x, m.curve.center.y),
+                Point3d.create (g.point.x, g.point.y)),
+                x0, y0);
+            const fM = m.curve.functionValue (g.point);
+            const fG = g.curve.functionValue(g.point);
+            const gradM = m.curve.gradiant (g.point);
+            const gradG = g.curve.gradiant (g.point);
+            ck.testCoordinate (fM, 0.0, "function value fM at tangency", m.curve, g.curve);
+            ck.testCoordinate (fG, 0.0, "function value fG at tangency", m.curve, g.curve);
+            testParallelGradiants (ck, gradM, gradG);
+            }
+        y0 += yStep;
+        }
+      return y0;
+      }
