@@ -5,10 +5,11 @@
 import { afterAll, afterEach, beforeAll, describe, it } from "vitest";
 import { TestDecorator } from "../../TestDecorators";
 import { IModelApp } from "../../../IModelApp";
-import { ColorDef, EmptyLocalization, Feature } from "@itwin/core-common";
+import { ColorDef, EmptyLocalization, Feature, FillFlags, GraphicParams } from "@itwin/core-common";
 import { Point2d, Point3d, Transform, XYZProps } from "@itwin/core-geometry";
 import { DecorateContext } from "../../../ViewContext";
 import { GraphicType } from "../../../common";
+import { Viewport } from "../../../Viewport";
 
 class BlankingDecorator extends TestDecorator {
   public constructor(
@@ -29,7 +30,10 @@ class BlankingDecorator extends TestDecorator {
     });
 
     builder.activateFeature(this._blankingFeature);
-    builder.setSymbology(this._blankingColor, this._blankingColor, 1);
+    const blankingParams = new GraphicParams();
+    blankingParams.fillColor = blankingParams.lineColor = this._blankingColor;
+    blankingParams.fillFlags = FillFlags.Blanking;
+    builder.activateGraphicParams(blankingParams);
     builder.addShape2d([
       new Point2d(0, 0), new Point2d(0, 12), new Point2d(12, 12), new Point2d(12, 0), new Point2d(0, 0),
     ], 0);
@@ -48,6 +52,10 @@ class BlankingDecorator extends TestDecorator {
     
     context.addDecorationFromBuilder(builder);
   }
+}
+
+function expectBlankingRegion(vp: Viewport, expectedBlankingColor: ColorDef, expectedForegroundColor): void {
+  
 }
 
 describe("Blanking fill", () => {
