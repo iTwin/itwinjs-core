@@ -307,7 +307,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   }
 
   /** Start/update the script in the current editing session. Fires onScheduleEditingChanged. */
-  public setScheduleEditingScript(newScript: RenderSchedule.Script): void {
+  public setScheduleEditing(newScript: RenderSchedule.Script): void {
     const prevScript = this.scheduleScript;
     const changedIds = getScriptDelta(prevScript, newScript);
     this.scheduleScript = newScript;

@@ -27,7 +27,7 @@ export interface IModelTileTreeOptions {
   readonly edges: EdgeOptions | false;
   readonly batchType: BatchType;
   readonly is3d: boolean;
-  readonly timeline: RenderSchedule.ModelTimeline | undefined;
+  timeline: RenderSchedule.ModelTimeline | undefined;
 }
 
 // Overrides nothing.
@@ -473,7 +473,7 @@ export class IModelTileTree extends TileTree {
     return undefined !== this._transformNodeRanges;
   }
 
-  public onScheduleEditingChanged(change: { changedElementIds: Set<Id64String> }, transformChanged: boolean) {
+  public onScheduleEditingChanged(change: { changedElementIds: Set<Id64String> }) {
     const displayStyle = IModelApp.viewManager.selectedView?.displayStyle;
     const newScript = displayStyle?.scheduleScript;
     const scriptRef = newScript ? new RenderSchedule.ScriptReference(displayStyle.id, newScript) : undefined;
@@ -481,31 +481,26 @@ export class IModelTileTree extends TileTree {
 
     const sameScript = this.timeline === scriptInfo?.timeline;
     if (!sameScript) {
+      const newTimeline = scriptInfo?.timeline;
       this.decoder = acquireImdlDecoder({
         type: this.batchType,
         omitEdges: false === this.edgeOptions,
-        timeline: scriptInfo?.timeline,
+        timeline: newTimeline,
         iModel: this.iModel,
         batchModelId: this.modelId,
         is3d: this.is3d,
         containsTransformNodes: this.containsTransformNodes,
         noWorker: !IModelApp.tileAdmin.decodeImdlInWorker,
       });
+      this._options.timeline = newTimeline;
     }
     const elemChanges: ElementGeometryChange[] = [];
 
     for (const id of change.changedElementIds) {
-      let range = this.staticBranch.findElementRange
-        ? this.staticBranch.findElementRange(id)
-        : undefined;
-      if (!range) {
-        range = this._rootTile.range.clone();
-      }
-
       elemChanges.push({
         id,
         type: DbOpcode.Update,
-        range,
+        range : new Range3d(),
       });
     }
 

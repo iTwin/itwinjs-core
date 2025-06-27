@@ -203,7 +203,7 @@ export class SetScheduleScriptTool extends DisplayStyleTool {
       const elementTimeline1 = modelTimeline.addElementTimeline(["0x2000003abfc"]);
       elementTimeline1.addColor(now, new RgbColor(255, 255, 0));
       elementTimeline1.addColor(now + 3000, new RgbColor(255, 255, 255));
-      elementTimeline1.addTransform(now, Transform.createIdentity());
+      // elementTimeline1.addTransform(now, Transform.createIdentity());
       // elementTimeline1.addTransform(
       //   now + 3000,
       //   Transform.createTranslationXYZ(0, 0, 0)
@@ -237,7 +237,7 @@ export class SetScheduleScriptTool extends DisplayStyleTool {
     // vp.displayStyle.scheduleScript = this._script;
     if (!this._script)
       return false;
-    vp.displayStyle.setScheduleEditingScript(this._script);
+    vp.displayStyle.setScheduleEditing(this._script);
     vp.displayStyle.commitScheduleEditing();
     return true;
   }
@@ -258,9 +258,9 @@ export class TestScheduleScriptTool extends DisplayStyleTool {
       const builder = new RenderSchedule.ScriptBuilder();
       const modelTimeline = builder.addModelTimeline("0x20000000010"); // model Id
       const elementTimeline = modelTimeline.addElementTimeline(["0x2000003abfc"]); // element Id
-      elementTimeline.addColor(now, new RgbColor(255, 0, 0));
+      elementTimeline.addColor(now, new RgbColor(255, 0, 255));
       elementTimeline.addColor(now + 3000, new RgbColor(0, 255, 0));
-      elementTimeline.addTransform(now, Transform.createIdentity());
+      // elementTimeline.addTransform(now, Transform.createIdentity());
       // elementTimeline.addTransform(
       //   now + 3000,
       //   Transform.createTranslationXYZ(10, 0, 0)
@@ -280,7 +280,7 @@ export class TestScheduleScriptTool extends DisplayStyleTool {
     if (!this._script)
       return false;
 
-    vp.displayStyle.setScheduleEditingScript(this._script);
+    vp.displayStyle.setScheduleEditing(this._script);
 
     return true;
   }

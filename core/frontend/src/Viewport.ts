@@ -1306,20 +1306,11 @@ export abstract class Viewport implements Disposable, TileUser {
 
 
     const scheduleEditingChanged = (change: { changedElementIds: Set<Id64String> }) => {
-      const scheduleScript = this.view.displayStyle.scheduleScript;
-      let transformChanged = false;
 
-      if (scheduleScript) {
-        if (scheduleScript.containsTransform) {
-          transformChanged = true;
-        } else if (scheduleScript.containsFeatureOverrides || scheduleScript.containsModelClipping) {
-          transformChanged = false;
-        }
-      }
       for (const ref of this.getTileTreeRefs()) {
         const tree = ref.treeOwner.tileTree;
         if (tree instanceof IModelTileTree) {
-          tree.onScheduleEditingChanged(change, transformChanged);
+          tree.onScheduleEditingChanged(change);
         }
       }
     };
