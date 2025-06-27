@@ -9,6 +9,7 @@ import { BentleyError } from '@itwin/core-bentley';
 import { CompressedId64Set } from '@itwin/core-bentley';
 import { EntityProps } from '@itwin/core-common';
 import { FormatProps } from '@itwin/core-quantity';
+import { FormatsProvider } from '@itwin/core-quantity';
 import { FormatterSpec } from '@itwin/core-quantity';
 import { GetMetaDataFunction } from '@itwin/core-bentley';
 import { GuidString } from '@itwin/core-bentley';
@@ -860,7 +861,7 @@ export interface FormatOptions {
     unitSystem?: UnitSystemKey;
 }
 
-// @public
+// @public @deprecated
 export interface FormatsMap {
     // (undocumented)
     [phenomenon: string]: UnitSystemFormat | UnitSystemFormat[];
@@ -1275,7 +1276,12 @@ export interface KindOfQuantityInfo {
 
 // @public
 export class KoqPropertyValueFormatter {
-    constructor(_schemaContext: SchemaContext, defaultFormats?: FormatsMap);
+    // @deprecated
+    constructor(schemaContext: SchemaContext, defaultFormats?: FormatsMap, formatsProvider?: FormatsProvider);
+    constructor(props: KoqPropertyValueFormatterProps);
+    // @internal (undocumented)
+    get defaultFormats(): FormatsMap | undefined;
+    set defaultFormats(value: FormatsMap | undefined);
     // (undocumented)
     format(value: number, options: FormatOptions): Promise<string | undefined>;
     // (undocumented)
@@ -2514,7 +2520,7 @@ export function traverseFieldHierarchy(hierarchy: FieldHierarchy, cb: (h: FieldH
 // @public
 export type TypeDescription = PrimitiveTypeDescription | ArrayTypeDescription | StructTypeDescription;
 
-// @public
+// @public @deprecated
 export interface UnitSystemFormat {
     // (undocumented)
     format: FormatProps;
