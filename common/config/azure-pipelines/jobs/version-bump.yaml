@@ -241,7 +241,6 @@ jobs:
       - ${{ if or(eq(parameters.BumpType, 'minor'), eq(parameters.BumpType, 'patch')) }}:
         - template: "../templates/run-eslint-deprecation.yaml"
 
-
       - ? ${{ if or(eq(parameters.BumpType, 'minor'), eq(parameters.BumpType, 'patch')) }}
         : - bash: 'git tag -a release/$(getVersion.version) -m "v$(getVersion.version)"'
             displayName: Create git tag

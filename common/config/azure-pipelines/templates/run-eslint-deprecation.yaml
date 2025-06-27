@@ -1,7 +1,7 @@
 steps:
   - bash: |
       newPackageVersion=$(cat common/config/rush/version-policies.json | grep \"version\": | awk -F'"' '{split($4,a,"-"); print a[1]}')
-      sed -i 's/\(addVersion: "\)[^"]*/\15.2.0/' common/config/eslint/eslint.config.deprecation-policy.js
+      sed -i "s/\(addVersion: \"\)[^\"]*/\1$newPackageVersion/" common/config/eslint/eslint.config.deprecation-policy.js
     displayName: Change addVersion in ESLint config to current version
 
   - bash: node common/scripts/install-run-rush.js lint-deprecation
@@ -14,7 +14,7 @@ steps:
         echo "No changes to @deprecated comments were made. Skipping deprecation comment handling."
         echo "##vso[task.setvariable variable=changesDetected]false"
       fi
-    displayName: Check if any changes happened
+    displayName: "Check if any changes happened"
     name: checkChanges
 
   - bash: git add .
@@ -23,13 +23,10 @@ steps:
 
   - bash: |
       git commit -m "add deprecation dates using custom ESLint rule"
-      relBranchName="release/"$(Build.SourceBranchName)
-      git push https://$(GITHUBTOKEN)@github.com/iTwin/itwinjs-core HEAD:$relBranchName
-    displayName: Commit and push deprecation date changes to release branch
+    displayName: Commit deprecation comment changes to release branch
     condition: eq(variables['changesDetected'], 'true')
 
   - bash: |
-      # Get the SHA-1 hash of deprecation changes commit to apply it later on master
       deprecationDateCommitHash=$(git log -1 --format=%H)
       echo "##vso[task.setvariable variable=hash;isOutput=true]$deprecationDateCommitHash"
     displayName: Save SHA-1 hash of the commit
@@ -37,9 +34,9 @@ steps:
     condition: eq(variables['changesDetected'], 'true')
 
   - bash: |
-      git fetch
-      git checkout origin/master
-    displayName: Checkout to up-to-date master
+      git fetch https://$(GITHUBTOKEN)@github.com/iTwin/itwinjs-core master:master
+      git checkout master
+    displayName: Checkout to master
     condition: eq(variables['changesDetected'], 'true')
 
   - bash: |
@@ -77,6 +74,8 @@ steps:
     displayName: Perform cherry-pick operation for deprecation changes
     continueOnError: true
     condition: eq(variables['changesDetected'], 'true')
+    env:
+      GH_TOKEN: $(GITHUBTOKEN)
 
   - bash: git checkout $(deprecationCommit.hash)
     displayName: Checkout back to branch that ran the pipeline
