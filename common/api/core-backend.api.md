@@ -3912,7 +3912,7 @@ export class IModelHostConfiguration implements IModelHostOptions {
     static defaultTileRequestTimeout: number;
     // @beta
     disableThinnedNativeInstanceWorkflow?: boolean;
-    // @internal (undocumented)
+    // (undocumented)
     hubAccess?: BackendHubAccess;
     // @internal (undocumented)
     logTileLoadTimeThreshold: number;
