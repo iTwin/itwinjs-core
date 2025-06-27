@@ -169,15 +169,15 @@ export class TextStyleSettings {
   /** Whether to use an elbow in the leader line. */
   public readonly wantElbow: boolean;
   /** Multiplier used to compute length of the elbow in the leader line.
-   * The elbowLength is computed as elbowLength * [[lineHeight]].
+   * The elbowLength is computed in meters as elbowLength * [[lineHeight]].
   */
   public readonly elbowLength: number;
   /** Multiplier to compute height of the leader terminator.
-   * The terminator height is computed as terminatorHeight * [[lineHeight]].
+   * The terminator height is computed in meters as terminatorHeight * [[lineHeight]].
   */
   public readonly terminatorHeight: number;
   /** Multiplier to compute width of the leader terminator.
-   * The terminator width is computed as terminatorWidth * [[lineHeight]].
+   * The terminator width is computed in meters as terminatorWidth * [[lineHeight]].
   */
   public readonly terminatorWidth: number;
 
