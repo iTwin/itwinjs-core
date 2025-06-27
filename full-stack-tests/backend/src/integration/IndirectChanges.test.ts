@@ -7,7 +7,7 @@ import { assert } from "chai";
 import { BriefcaseDb, BriefcaseManager, IModelDb, IModelHost, SnapshotDb, Subject } from "@itwin/core-backend";
 import { HubMock } from "@itwin/core-backend/lib/cjs/internal/HubMock";
 import { IModelTestUtils, KnownTestLocations } from "@itwin/core-backend/lib/cjs/test";
-import { AccessToken, Guid, Id64String } from "@itwin/core-bentley";
+import { AccessToken, DbConflictResolution, Guid, Id64String } from "@itwin/core-bentley";
 import { describe } from "mocha";
 import { AzuriteTest } from "./AzuriteTest";
 import { IModel } from "@itwin/core-common";
@@ -176,8 +176,26 @@ describe.only("Indirect changes flag on elements", () => {
     await b1.pushChanges({ description: "B1: Modified subject." });
     await b2.pushChanges({ description: "B2: Modified subject." });
 
+    let reportedB1Conflicts = 0;
+    let reportedB2Conflicts = 0;
+    b1.txns.appCustomConflictHandler = (conflict) => {
+      assert.isDefined(conflict);
+      reportedB1Conflicts++;
+      assert.isTrue(conflict.indirect);
+      return DbConflictResolution.Skip;
+    }
+    b2.txns.appCustomConflictHandler = (conflict) => {
+      assert.isDefined(conflict);
+      reportedB2Conflicts++;
+      assert.isTrue(conflict.indirect);
+      return DbConflictResolution.Skip;
+    }
+
     await b1.pullChanges();
     await b2.pullChanges();
+
+    assert.strictEqual(reportedB1Conflicts, 0); // currently no conflicts reported
+    assert.strictEqual(reportedB2Conflicts, 0);
 
     const b1AfterConflict = b1.elements.getElement<Subject>(subjectId);
     assert.isDefined(b1AfterConflict);
