@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Changed IModelReadRpcInterface.getAllCodeSpecs to use ECSqlReader. Added CodeSpecs tests.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}
