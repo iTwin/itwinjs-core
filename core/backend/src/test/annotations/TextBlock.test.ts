@@ -5,7 +5,7 @@
 import { expect } from "chai";
 import { computeGraphemeOffsets, ComputeGraphemeOffsetsArgs, ComputeRangesForTextLayoutArgs, FindFontId, FindTextStyle, layoutTextBlock, LineLayout, RunLayout, TextBlockLayout, TextLayoutRanges } from "../../annotations/TextBlockLayout";
 import { Geometry, Range2d } from "@itwin/core-geometry";
-import { ColorDef, FontType, FractionRun, LineBreakRun, LineLayoutResult, Run, RunLayoutResult, TextAnnotation, TextAnnotationAnchor, TextBlock, TextBlockGeometryPropsEntry, TextBlockMargins, TextRun, TextStringProps, TextStyleSettings } from "@itwin/core-common";
+import { ColorDef, FontType, FractionRun, LineBreakRun, LineLayoutResult, Run, RunLayoutResult, TabRun, TextAnnotation, TextAnnotationAnchor, TextBlock, TextBlockGeometryPropsEntry, TextBlockMargins, TextRun, TextStringProps, TextStyleSettings } from "@itwin/core-common";
 import { SnapshotDb } from "../../IModelDb";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { ProcessDetector } from "@itwin/core-bentley";
@@ -71,519 +71,6 @@ describe("layoutTextBlock", () => {
     expect(s1.fontName).to.equal("run1");
     expect(s1.color).to.equal("subcategory");
   });
-
-  it("aligns text to center based on height of stacked fraction", () => {
-    const textBlock = TextBlock.create({ styleName: "" });
-    const fractionRun = FractionRun.create({ numerator: "1", denominator: "2", styleName: "fraction" });
-    const textRun = TextRun.create({ content: "text", styleName: "text" });
-    textBlock.appendRun(fractionRun);
-    textBlock.appendRun(textRun);
-
-    const layout = doLayout(textBlock);
-
-    const fractionLayout = layout.lines[0].runs[0];
-    const textLayout = layout.lines[0].runs[1];
-
-    const round = (num: number, numDecimalPlaces: number) => {
-      const multiplier = Math.pow(100, numDecimalPlaces);
-      return Math.round(num * multiplier) / multiplier;
-    };
-
-    expect(textLayout.range.yLength()).to.equal(1);
-    expect(round(fractionLayout.range.yLength(), 2)).to.equal(1.75);
-    expect(fractionLayout.offsetFromLine.y).to.equal(0);
-    expect(round(textLayout.offsetFromLine.y, 3)).to.equal(.375);
-  });
-
-  it("produces one line per paragraph if document width <= 0", () => {
-    const textBlock = TextBlock.create({ styleName: "" });
-    for (let i = 0; i < 4; i++) {
-      const layout = doLayout(textBlock);
-      if (i === 0) {
-        expect(layout.range.isNull).to.be.true;
-      } else {
-        expect(layout.lines.length).to.equal(i);
-        expect(layout.range.low.x).to.equal(0);
-        expect(layout.range.low.y).to.equal(-i - (0.5 * (i - 1))); // lineSpacingFactor=0.5
-        expect(layout.range.high.x).to.equal(i * 3);
-        expect(layout.range.high.y).to.equal(0);
-      }
-
-      for (let l = 0; l < layout.lines.length; l++) {
-        const line = layout.lines[l];
-        expect(line.runs.length).to.equal(l + 1);
-        expect(line.range.low.x).to.equal(0);
-        expect(line.range.low.y).to.equal(0);
-        expect(line.range.high.y).to.equal(1);
-        expect(line.range.high.x).to.equal(3 * (l + 1));
-        for (const run of line.runs) {
-          expect(run.charOffset).to.equal(0);
-          expect(run.numChars).to.equal(3);
-          expect(run.range.low.x).to.equal(0);
-          expect(run.range.low.y).to.equal(0);
-          expect(run.range.high.x).to.equal(3);
-          expect(run.range.high.y).to.equal(1);
-        }
-      }
-
-      const p = textBlock.appendParagraph();
-      for (let j = 0; j <= i; j++) {
-        p.runs.push(TextRun.create({ styleName: "", content: "Run" }));
-      }
-    }
-  });
-
-  it("produces a new line for each LineBreakRun", () => {
-    const lineSpacingFactor = 0.5;
-    const lineHeight = 1;
-    const textBlock = TextBlock.create({ styleName: "", styleOverrides: { lineSpacingFactor, lineHeight } });
-    textBlock.appendRun(TextRun.create({ styleName: "", content: "abc" }));
-    textBlock.appendRun(LineBreakRun.create({ styleName: "" }));
-    textBlock.appendRun(TextRun.create({ styleName: "", content: "def" }));
-    textBlock.appendRun(TextRun.create({ styleName: "", content: "ghi" }));
-    textBlock.appendRun(LineBreakRun.create({ styleName: "" }));
-    textBlock.appendRun(TextRun.create({ styleName: "", content: "jkl" }));
-
-    const tb = doLayout(textBlock);
-    expect(tb.lines.length).to.equal(3);
-    expect(tb.lines[0].runs.length).to.equal(2);
-    expect(tb.lines[1].runs.length).to.equal(3);
-    expect(tb.lines[2].runs.length).to.equal(1);
-
-    expect(tb.range.low.x).to.equal(0);
-    expect(tb.range.high.x).to.equal(6);
-    expect(tb.range.high.y).to.equal(0);
-    expect(tb.range.low.y).to.equal(-(lineSpacingFactor * 2 + lineHeight * 3));
-  });
-
-  it("computes ranges based on custom line spacing and line height", () => {
-    const lineSpacingFactor = 2;
-    const lineHeight = 3;
-    const textBlock = TextBlock.create({ styleName: "", styleOverrides: { lineSpacingFactor, lineHeight } });
-    textBlock.appendRun(TextRun.create({ styleName: "", content: "abc" }));
-    textBlock.appendRun(LineBreakRun.create({ styleName: "" }));
-    textBlock.appendRun(TextRun.create({ styleName: "", content: "def" }));
-    textBlock.appendRun(TextRun.create({ styleName: "", content: "ghi" }));
-    textBlock.appendRun(LineBreakRun.create({ styleName: "" }));
-    textBlock.appendRun(TextRun.create({ styleName: "", content: "jkl" }));
-
-    const tb = doLayout(textBlock);
-    expect(tb.lines.length).to.equal(3);
-    expect(tb.lines[0].runs.length).to.equal(2);
-    expect(tb.lines[1].runs.length).to.equal(3);
-    expect(tb.lines[2].runs.length).to.equal(1);
-
-    // We have 3 lines each `lineHeight` high, plus 2 line breaks in between each `lineHeight*lineSpacingFactor` high.
-    expect(tb.range.low.x).to.equal(0);
-    expect(tb.range.high.x).to.equal(6);
-    expect(tb.range.high.y).to.equal(0);
-    expect(tb.range.low.y).to.equal(-(lineHeight * 3 + (lineHeight * lineSpacingFactor) * 2));
-
-    expect(tb.lines[0].offsetFromDocument.y).to.equal(-lineHeight);
-    expect(tb.lines[1].offsetFromDocument.y).to.equal(tb.lines[0].offsetFromDocument.y - (lineHeight + lineHeight * lineSpacingFactor));
-    expect(tb.lines[2].offsetFromDocument.y).to.equal(tb.lines[1].offsetFromDocument.y - (lineHeight + lineHeight * lineSpacingFactor));
-    expect(tb.lines.every((line) => line.offsetFromDocument.x === 0)).to.be.true;
-  });
-
-  it("splits paragraphs into multiple lines if runs exceed the document width", function () {
-    if (!isIntlSupported()) {
-      this.skip();
-    }
-
-    const textBlock = TextBlock.create({ styleName: "" });
-    textBlock.width = 6;
-    textBlock.appendRun(makeTextRun("ab"));
-    expect(doLayout(textBlock).lines.length).to.equal(1);
-    textBlock.appendRun(makeTextRun("cd"));
-    expect(doLayout(textBlock).lines.length).to.equal(1);
-
-    textBlock.appendRun(makeTextRun("ef"));
-    expect(doLayout(textBlock).lines.length).to.equal(1);
-    textBlock.appendRun(makeTextRun("ghi"));
-    expect(doLayout(textBlock).lines.length).to.equal(2);
-
-    textBlock.appendRun(makeTextRun("jklmnop"));
-    expect(doLayout(textBlock).lines.length).to.equal(3);
-
-    textBlock.appendRun(makeTextRun("q"));
-    expect(doLayout(textBlock).lines.length).to.equal(4);
-    textBlock.appendRun(makeTextRun("r"));
-    expect(doLayout(textBlock).lines.length).to.equal(4);
-    textBlock.appendRun(makeTextRun("stu"));
-    expect(doLayout(textBlock).lines.length).to.equal(4);
-
-    textBlock.appendRun(makeTextRun("vwxyz"));
-    expect(doLayout(textBlock).lines.length).to.equal(5);
-  });
-
-  function expectRange(width: number, height: number, range: Range2d): void {
-    expect(range.xLength()).to.equal(width);
-    expect(range.yLength()).to.equal(height);
-  }
-
-  it("computes range for wrapped lines", function () {
-    if (!isIntlSupported()) {
-      this.skip();
-    }
-
-    const block = TextBlock.create({ styleName: "", width: 3, styleOverrides: { lineHeight: 1, lineSpacingFactor: 0 } });
-
-    function expectBlockRange(width: number, height: number): void {
-      const layout = doLayout(block);
-      expectRange(width, height, layout.range);
-    }
-
-    block.appendRun(makeTextRun("abc"));
-    expectBlockRange(3, 1);
-
-    block.appendRun(makeTextRun("defg"));
-    expectBlockRange(4, 2);
-
-    block.width = 1;
-    expectBlockRange(4, 2);
-
-    block.width = 8;
-    expectBlockRange(8, 1);
-
-    block.width = 6;
-    expectBlockRange(6, 2);
-
-    block.width = 10;
-    expectBlockRange(10, 1);
-    block.appendRun(makeTextRun("hijk"));
-    expectBlockRange(10, 2);
-  });
-
-  it("computes range for split runs", function () {
-    if (!isIntlSupported()) {
-      this.skip();
-    }
-
-    const block = TextBlock.create({ styleName: "", styleOverrides: { lineHeight: 1, lineSpacingFactor: 0 } });
-
-    function expectBlockRange(width: number, height: number): void {
-      const layout = doLayout(block);
-      expectRange(width, height, layout.range);
-    }
-
-    const sentence = "a bc def ghij klmno";
-    expect(sentence.length).to.equal(19);
-    block.appendRun(makeTextRun(sentence));
-
-    block.width = 19;
-    expectBlockRange(19, 1);
-
-    block.width = 10;
-    expectBlockRange(10, 2);
-  });
-
-  it("justifies lines", function () {
-    if (!isIntlSupported()) {
-      this.skip();
-    }
-
-    const block = TextBlock.create({ styleName: "", styleOverrides: { lineSpacingFactor: 0 } });
-
-    function expectBlockRange(width: number, height: number): void {
-      const layout = doLayout(block);
-      expectRange(width, height, layout.range);
-    }
-
-    function expectLineOffset(offset: number, lineIndex: number): void {
-      const layout = doLayout(block);
-      expect(layout.lines.length).least(lineIndex + 1);
-
-      const line = layout.lines[lineIndex];
-      expect(line.offsetFromDocument.y).to.equal(-(lineIndex + 1));
-      expect(line.offsetFromDocument.x).to.equal(offset);
-    }
-
-    // Two text runs with 7 characters total.
-    block.appendRun(makeTextRun("abc"));
-    block.appendRun(makeTextRun("defg"));
-
-    // 1 line of text with width 0: left, right, center justification.
-    block.justification = "left";
-    expectBlockRange(7, 1);
-    expectLineOffset(0, 0);
-
-    block.justification = "right";
-    expectBlockRange(7, 1);
-    expectLineOffset(0, 0);
-
-    block.justification = "center";
-    expectBlockRange(7, 1);
-    expectLineOffset(0, 0);
-
-    // 1 line of text from a width greater than number of characters: left, right, center justification.
-    block.width = 10;
-
-    block.justification = "left";
-    expectBlockRange(10, 1);
-    expectLineOffset(0, 0);
-
-    block.justification = "right";
-    expectBlockRange(10, 1);
-    expectLineOffset(3, 0); // 3 = 10 - 7
-
-    block.justification = "center";
-    expectBlockRange(10, 1);
-    expectLineOffset(1.5, 0); // 1.5 = (10 - 7) / 2
-
-    // 2 line of text from a width less than number of characters: left, right, center justification.
-    block.justification = "left";
-    block.width = 4;
-    expectBlockRange(4, 2);
-    expectLineOffset(0, 0);
-    expectLineOffset(0, 1);
-
-    block.justification = "right";
-    expectBlockRange(4, 2);
-    expectLineOffset(1, 0);
-    expectLineOffset(0, 1);
-
-    block.justification = "center";
-    expectBlockRange(4, 2);
-    expectLineOffset(0.5, 0);
-    expectLineOffset(0, 1);
-
-    // Testing text longer the the width of the text block.
-    block.width = 2;
-    block.justification = "left";
-    expectBlockRange(4, 2);
-    expectLineOffset(0, 0);
-    expectLineOffset(0, 1);
-
-    block.justification = "right";
-    expectBlockRange(4, 2);
-    expectLineOffset(-1, 0);
-    expectLineOffset(-2, 1);
-
-    block.appendRun(makeTextRun("123456789"));
-    expectBlockRange(9, 3);
-    expectLineOffset(-1, 0);
-    expectLineOffset(-2, 1);
-    expectLineOffset(-7, 2);
-
-    block.justification = "center";
-    expectBlockRange(9, 3);
-    expectLineOffset(-0.5, 0);
-    expectLineOffset(-1, 1);
-    expectLineOffset(-3.5, 2);
-  });
-
-  function expectLines(input: string, width: number, expectedLines: string[]): TextBlockLayout {
-    const textBlock = TextBlock.create({ styleName: "" });
-    textBlock.width = width;
-    const run = makeTextRun(input);
-    textBlock.appendRun(run);
-
-    const layout = doLayout(textBlock);
-    expect(layout.lines.every((line) => line.runs.every((r) => r.source === run))).to.be.true;
-
-    const actual = layout.lines.map((line) => line.runs.map((runLayout) => (runLayout.source as TextRun).content.substring(runLayout.charOffset, runLayout.charOffset + runLayout.numChars)).join(""));
-    expect(actual).to.deep.equal(expectedLines);
-
-    return layout;
-  }
-
-  it("splits a single TextRun at word boundaries if it exceeds the document width", function () {
-    if (!isIntlSupported()) {
-      this.skip();
-    }
-
-    expectLines("a bc def ghij klmno pqrstu vwxyz", 5, [
-      "a bc ",
-      "def ",
-      "ghij ",
-      "klmno ",
-      "pqrstu ",
-      "vwxyz",
-    ]);
-
-    const fox = "The quick brown fox jumped over the lazy dog";
-    expectLines(fox, 50, [fox]);
-    expectLines(fox, 40, [
-      //       1         2         3         4
-      // 34567890123456789012345678901234567890
-      "The quick brown fox jumped over the ",
-      "lazy dog",
-    ]);
-    expectLines(fox, 30, [
-      //       1         2         3
-      // 3456789012345678901234567890
-      "The quick brown fox jumped ",
-      "over the lazy dog",
-    ]);
-    expectLines(fox, 20, [
-      //       1         2
-      // 345678901234567890
-      "The quick brown fox ",
-      "jumped over the ",
-      "lazy dog",
-    ]);
-    expectLines(fox, 10, [
-      //        1
-      // 234567890
-      "The quick ",
-      "brown fox ",
-      "jumped ",
-      "over the ",
-      "lazy dog",
-    ]);
-  });
-
-  it("considers consecutive whitespace part of a single 'word'", function () {
-    if (!isIntlSupported()) {
-      this.skip();
-    }
-
-    expectLines("a b  c   d    e     f      ", 3, [
-      "a ",
-      "b  ",
-      "c   ",
-      "d    ",
-      "e     ",
-      "f      ",
-    ]);
-  });
-
-  it("wraps Japanese text", function () {
-    if (!isIntlSupported()) {
-      this.skip();
-    }
-
-    // "I am a cat. The name is Tanuki."
-    expectLines("吾輩は猫である。名前はたぬき。", 1, ["吾", "輩", "は", "猫", "で", "あ", "る。", "名", "前", "は", "た", "ぬ", "き。"]);
-  });
-
-  it("performs word-wrapping with punctuation", function () {
-    if (!isIntlSupported()) {
-      this.skip();
-    }
-
-    expectLines("1.24 56.7 8,910", 1, ["1.24 ", "56.7 ", "8,910"]);
-
-    expectLines("a.bc de.f g,hij", 1, ["a.bc ", "de.f ", "g,hij"]);
-
-    expectLines("Let's see... can you (or anyone) predict?!", 1, [
-      "Let's ",
-      "see... ",
-      "can ",
-      "you ",
-      "(or ",
-      "anyone) ",
-      "predict?!",
-    ]);
-  });
-
-  it("performs word-wrapping and line-splitting with multiple runs", function () {
-    if (!isIntlSupported()) {
-      this.skip();
-    }
-
-    const textBlock = TextBlock.create({ styleName: "" });
-    for (const str of ["The ", "quick brown", " fox jumped over ", "the lazy ", "dog"]) {
-      textBlock.appendRun(makeTextRun(str));
-    }
-
-    function test(width: number, expected: string[]): void {
-      textBlock.width = width;
-      const layout = doLayout(textBlock);
-      const actual = layout.lines.map((line) => line.runs.map((runLayout) => (runLayout.source as TextRun).content.substring(runLayout.charOffset, runLayout.charOffset + runLayout.numChars)).join(""));
-      expect(actual).to.deep.equal(expected);
-    }
-
-    test(50, ["The quick brown fox jumped over the lazy dog"]);
-    test(40, [
-      //        1         2         3         4
-      // 34567890123456789012345678901234567890
-      "The quick brown fox jumped over the ",
-      "lazy dog",
-    ]);
-    test(30, [
-      //        1         2         3
-      // 3456789012345678901234567890
-      "The quick brown fox jumped ",
-      "over the lazy dog",
-    ]);
-    test(20, [
-      //        1         2
-      // 345678901234567890
-      "The quick brown fox ",
-      "jumped over the ",
-      "lazy dog",
-    ]);
-    test(10, [
-      //        1
-      // 34567890
-      "The quick ",
-      "brown fox ",
-      "jumped ",
-      "over the ",
-      "lazy dog",
-    ]);
-  });
-
-  it("wraps multiple runs", function () {
-    if (!isIntlSupported()) {
-      this.skip();
-    }
-
-    const block = TextBlock.create({ styleName: "" });
-    block.appendRun(makeTextRun("aa")); // 2 chars wide
-    block.appendRun(makeTextRun("bb ccc d ee")); // 11 chars wide
-    block.appendRun(makeTextRun("ff ggg h")); // 8 chars wide
-
-    function expectLayout(width: number, expected: string): void {
-      block.width = width;
-      const layout = doLayout(block);
-      expect(layout.stringify()).to.equal(expected);
-    }
-
-    expectLayout(23, "aabb ccc d eeff ggg h");
-    expectLayout(22, "aabb ccc d eeff ggg h");
-    expectLayout(21, "aabb ccc d eeff ggg h");
-    expectLayout(20, "aabb ccc d eeff ggg \nh");
-    expectLayout(19, "aabb ccc d eeff \nggg h");
-    expectLayout(18, "aabb ccc d eeff \nggg h");
-    expectLayout(17, "aabb ccc d eeff \nggg h");
-    expectLayout(16, "aabb ccc d eeff \nggg h");
-    expectLayout(15, "aabb ccc d ee\nff ggg h");
-    expectLayout(14, "aabb ccc d ee\nff ggg h");
-    expectLayout(13, "aabb ccc d ee\nff ggg h");
-    expectLayout(12, "aabb ccc d \neeff ggg h");
-    expectLayout(11, "aabb ccc d \neeff ggg h");
-    expectLayout(10, "aabb ccc \nd eeff \nggg h");
-    expectLayout(9, "aabb ccc \nd eeff \nggg h");
-    expectLayout(8, "aabb \nccc d ee\nff ggg h");
-    expectLayout(7, "aabb \nccc d \neeff \nggg h");
-    expectLayout(6, "aabb \nccc d \neeff \nggg h");
-    expectLayout(5, "aabb \nccc \nd ee\nff \nggg h");
-    expectLayout(4, "aa\nbb \nccc \nd ee\nff \nggg \nh");
-    expectLayout(3, "aa\nbb \nccc \nd \nee\nff \nggg \nh");
-    expectLayout(2, "aa\nbb \nccc \nd \nee\nff \nggg \nh");
-    expectLayout(1, "aa\nbb \nccc \nd \nee\nff \nggg \nh");
-    expectLayout(0, "aabb ccc d eeff ggg h");
-    expectLayout(-1, "aabb ccc d eeff ggg h");
-    expectLayout(-2, "aabb ccc d eeff ggg h");
-  });
-
-  it("does not word wrap due to floating point rounding error", function () {
-    if (!isIntlSupported()) {
-      this.skip();
-    }
-
-    const block = TextBlock.create({ styleName: "", styleOverrides: { lineHeight: 1, lineSpacingFactor: 0 } });
-    block.appendRun(makeTextRun("abc defg"));
-    const layout1 = doLayout(block);
-    let width = layout1.range.xLength();
-    // Simulate a floating point rounding error by slightly reducing the width
-    width -= Geometry.smallFloatingPoint;
-    block.width = width;
-    const layout2 = doLayout(block);
-    expect(layout2.range.yLength()).to.equal(1);
-  })
 
   it("has consistent data when converted to a layout result", function () {
     if (!isIntlSupported()) {
@@ -741,6 +228,678 @@ describe("layoutTextBlock", () => {
 
     expectMargins(layout.textRange, layout.range, { top: 1, bottom: 2 });
 
+  });
+
+  describe("range", () => {
+
+    it("aligns text to center based on height of stacked fraction", () => {
+      const textBlock = TextBlock.create({ styleName: "" });
+      const fractionRun = FractionRun.create({ numerator: "1", denominator: "2", styleName: "fraction" });
+      const textRun = TextRun.create({ content: "text", styleName: "text" });
+      textBlock.appendRun(fractionRun);
+      textBlock.appendRun(textRun);
+
+      const layout = doLayout(textBlock);
+
+      const fractionLayout = layout.lines[0].runs[0];
+      const textLayout = layout.lines[0].runs[1];
+
+      const round = (num: number, numDecimalPlaces: number) => {
+        const multiplier = Math.pow(100, numDecimalPlaces);
+        return Math.round(num * multiplier) / multiplier;
+      };
+
+      expect(textLayout.range.yLength()).to.equal(1);
+      expect(round(fractionLayout.range.yLength(), 2)).to.equal(1.75);
+      expect(fractionLayout.offsetFromLine.y).to.equal(0);
+      expect(round(textLayout.offsetFromLine.y, 3)).to.equal(.375);
+    });
+
+    it("produces one line per paragraph if document width <= 0", () => {
+      const textBlock = TextBlock.create({ styleName: "" });
+      for (let i = 0; i < 4; i++) {
+        const layout = doLayout(textBlock);
+        if (i === 0) {
+          expect(layout.range.isNull).to.be.true;
+        } else {
+          expect(layout.lines.length).to.equal(i);
+          expect(layout.range.low.x).to.equal(0);
+          expect(layout.range.low.y).to.equal(-i - (0.5 * (i - 1))); // lineSpacingFactor=0.5
+          expect(layout.range.high.x).to.equal(i * 3);
+          expect(layout.range.high.y).to.equal(0);
+        }
+
+        for (let l = 0; l < layout.lines.length; l++) {
+          const line = layout.lines[l];
+          expect(line.runs.length).to.equal(l + 1);
+          expect(line.range.low.x).to.equal(0);
+          expect(line.range.low.y).to.equal(0);
+          expect(line.range.high.y).to.equal(1);
+          expect(line.range.high.x).to.equal(3 * (l + 1));
+          for (const run of line.runs) {
+            expect(run.charOffset).to.equal(0);
+            expect(run.numChars).to.equal(3);
+            expect(run.range.low.x).to.equal(0);
+            expect(run.range.low.y).to.equal(0);
+            expect(run.range.high.x).to.equal(3);
+            expect(run.range.high.y).to.equal(1);
+          }
+        }
+
+        const p = textBlock.appendParagraph();
+        for (let j = 0; j <= i; j++) {
+          p.runs.push(TextRun.create({ styleName: "", content: "Run" }));
+        }
+      }
+    });
+
+    it("produces a new line for each LineBreakRun", () => {
+      const lineSpacingFactor = 0.5;
+      const lineHeight = 1;
+      const textBlock = TextBlock.create({ styleName: "", styleOverrides: { lineSpacingFactor, lineHeight } });
+      textBlock.appendRun(TextRun.create({ styleName: "", content: "abc" }));
+      textBlock.appendRun(LineBreakRun.create({ styleName: "" }));
+      textBlock.appendRun(TextRun.create({ styleName: "", content: "def" }));
+      textBlock.appendRun(TextRun.create({ styleName: "", content: "ghi" }));
+      textBlock.appendRun(LineBreakRun.create({ styleName: "" }));
+      textBlock.appendRun(TextRun.create({ styleName: "", content: "jkl" }));
+
+      const tb = doLayout(textBlock);
+      expect(tb.lines.length).to.equal(3);
+      expect(tb.lines[0].runs.length).to.equal(2);
+      expect(tb.lines[1].runs.length).to.equal(3);
+      expect(tb.lines[2].runs.length).to.equal(1);
+
+      expect(tb.range.low.x).to.equal(0);
+      expect(tb.range.high.x).to.equal(6);
+      expect(tb.range.high.y).to.equal(0);
+      expect(tb.range.low.y).to.equal(-(lineSpacingFactor * 2 + lineHeight * 3));
+    });
+
+    it("applies tab shifts", () => {
+      const lineHeight = 1;
+      const tabInterval = 6;
+      const styleName = "";
+      const textBlock = TextBlock.create({ styleName, styleOverrides: { lineHeight, tabInterval } });
+
+      // Appends a line that looks like `stringOne` TAB `stringTwo` LINEBREAK
+      const appendLine = (stringOne: string, stringTwo: string, wantLineBreak: boolean = true) => {
+        if (stringOne.length > 0) textBlock.appendRun(TextRun.create({ styleName, content: stringOne }));
+        textBlock.appendRun(TabRun.create({ styleName, styleOverrides: { tabInterval } }));
+        if (stringTwo.length > 0) textBlock.appendRun(TextRun.create({ styleName, content: stringTwo }));
+        if (wantLineBreak) textBlock.appendRun(LineBreakRun.create({ styleName }));
+      }
+
+      // The extra whitespace is intentional to show where the tab stops should be.
+      appendLine("",      "a");
+      appendLine("",      "bc");
+      appendLine("a",     "a");
+      appendLine("bc",    "bc");
+      appendLine("cde",   "cde");
+      appendLine("cdefg", "cde"); // this one is the max tab distance before needing to move to the next tab stop
+      appendLine("cdefgh",      "cde"); // This one should push to the next tab stop.
+      appendLine("cdefghi",     "cde", false); // This one should push to the next tab stop.
+
+      const tb = doLayout(textBlock);
+      tb.lines.forEach((line, index) => {
+        const firstTextRun = (line.runs[0].source.type === "text") ? line.runs[0] : undefined;
+        const firstTabRun = (line.runs[0].source.type === "tab") ? line.runs[0] : line.runs[1];
+
+        const distance = (firstTextRun?.range.xLength() ?? 0) + firstTabRun.range.xLength();
+        const expectedDistance = ((firstTextRun?.range.xLength() || 0) >= tabInterval) ? tabInterval * 2 : tabInterval;
+        expect(distance).to.equal(expectedDistance, `Line ${index} does not have the expected tab distance. ${expectedDistance}`);
+      });
+    });
+
+    it("applies consecutive tab shifts", () => {
+      const lineHeight = 1;
+      const tabInterval = 6;
+      const styleName = "";
+      const textBlock = TextBlock.create({ styleName, styleOverrides: { lineHeight, tabInterval } });
+
+      // line 0: ----->----->----->LINEBREAK
+      textBlock.appendRun(TabRun.create({ styleName, styleOverrides: { tabInterval } }));
+      textBlock.appendRun(TabRun.create({ styleName, styleOverrides: { tabInterval } }));
+      textBlock.appendRun(TabRun.create({ styleName, styleOverrides: { tabInterval } }));
+      textBlock.appendRun(LineBreakRun.create({ styleName }));
+
+      // line 1: abc-->----->LINEBREAK
+      textBlock.appendRun(TextRun.create({ styleName, content: "abc" }));
+      textBlock.appendRun(TabRun.create({ styleName, styleOverrides: { tabInterval } }));
+      textBlock.appendRun(TabRun.create({ styleName, styleOverrides: { tabInterval } }));
+      textBlock.appendRun(LineBreakRun.create({ styleName }));
+
+      // line 2: abc--->->------>LINEBREAK
+      textBlock.appendRun(TextRun.create({ styleName, content: "abc" }));
+      textBlock.appendRun(TabRun.create({ styleName, styleOverrides: { tabInterval: 7 } }));
+      textBlock.appendRun(TabRun.create({ styleName, styleOverrides: { tabInterval: 2 } }));
+      textBlock.appendRun(TabRun.create({ styleName, styleOverrides: { tabInterval: 7 } }));
+      textBlock.appendRun(LineBreakRun.create({ styleName }));
+
+      // line 3: abc--->1/23->abcde->LINEBREAK
+      textBlock.appendRun(TextRun.create({ styleName, content: "abc" }));
+      textBlock.appendRun(TabRun.create({ styleName, styleOverrides: { tabInterval: 7 } }));
+      textBlock.appendRun(FractionRun.create({ styleName, numerator: "1", denominator: "23" }));
+      textBlock.appendRun(TabRun.create({ styleName, styleOverrides: { tabInterval: 3 } }));
+      textBlock.appendRun(TextRun.create({ styleName, content: "abcde" }));
+      textBlock.appendRun(TabRun.create({ styleName, styleOverrides: { tabInterval: 7 } }));
+      textBlock.appendRun(LineBreakRun.create({ styleName }));
+
+      const tb = doLayout(textBlock);
+
+      const line0 = tb.lines[0];
+      const line1 = tb.lines[1];
+      const line2 = tb.lines[2];
+      const line3 = tb.lines[3];
+
+      expect(line0.runs.length).to.equal(4);
+      expect(line0.range.xLength()).to.equal(3 * tabInterval, `Lines with only tabs should have the correct range length`);
+
+      expect(line1.runs.length).to.equal(4);
+      expect(line1.range.xLength()).to.equal(2 * tabInterval, `Tabs should be applied correctly when they are at the end of a line`);
+
+      expect(line2.runs.length).to.equal(5);
+      expect(line2.range.xLength()).to.equal(7 + 2 + 7, `Multiple tabs with different intervals should be applied correctly`);
+
+      expect(line3.runs.length).to.equal(7);
+      expect(line3.range.xLength()).to.equal(7 + 3 + 7, `Multiple tabs with different intervals should be applied correctly`);
+    });
+
+    it("computes ranges based on custom line spacing and line height", () => {
+      const lineSpacingFactor = 2;
+      const lineHeight = 3;
+      const textBlock = TextBlock.create({ styleName: "", styleOverrides: { lineSpacingFactor, lineHeight } });
+      textBlock.appendRun(TextRun.create({ styleName: "", content: "abc" }));
+      textBlock.appendRun(LineBreakRun.create({ styleName: "" }));
+      textBlock.appendRun(TextRun.create({ styleName: "", content: "def" }));
+      textBlock.appendRun(TextRun.create({ styleName: "", content: "ghi" }));
+      textBlock.appendRun(LineBreakRun.create({ styleName: "" }));
+      textBlock.appendRun(TextRun.create({ styleName: "", content: "jkl" }));
+
+      const tb = doLayout(textBlock);
+      expect(tb.lines.length).to.equal(3);
+      expect(tb.lines[0].runs.length).to.equal(2);
+      expect(tb.lines[1].runs.length).to.equal(3);
+      expect(tb.lines[2].runs.length).to.equal(1);
+
+      // We have 3 lines each `lineHeight` high, plus 2 line breaks in between each `lineHeight*lineSpacingFactor` high.
+      expect(tb.range.low.x).to.equal(0);
+      expect(tb.range.high.x).to.equal(6);
+      expect(tb.range.high.y).to.equal(0);
+      expect(tb.range.low.y).to.equal(-(lineHeight * 3 + (lineHeight * lineSpacingFactor) * 2));
+
+      expect(tb.lines[0].offsetFromDocument.y).to.equal(-lineHeight);
+      expect(tb.lines[1].offsetFromDocument.y).to.equal(tb.lines[0].offsetFromDocument.y - (lineHeight + lineHeight * lineSpacingFactor));
+      expect(tb.lines[2].offsetFromDocument.y).to.equal(tb.lines[1].offsetFromDocument.y - (lineHeight + lineHeight * lineSpacingFactor));
+      expect(tb.lines.every((line) => line.offsetFromDocument.x === 0)).to.be.true;
+    });
+
+    function expectRange(width: number, height: number, range: Range2d): void {
+      expect(range.xLength()).to.equal(width);
+      expect(range.yLength()).to.equal(height);
+    }
+
+    it("computes range for wrapped lines", function () {
+      if (!isIntlSupported()) {
+        this.skip();
+      }
+
+      const block = TextBlock.create({ styleName: "", width: 3, styleOverrides: { lineHeight: 1, lineSpacingFactor: 0 } });
+
+      function expectBlockRange(width: number, height: number): void {
+        const layout = doLayout(block);
+        expectRange(width, height, layout.range);
+      }
+
+      block.appendRun(makeTextRun("abc"));
+      expectBlockRange(3, 1);
+
+      block.appendRun(makeTextRun("defg"));
+      expectBlockRange(4, 2);
+
+      block.width = 1;
+      expectBlockRange(4, 2);
+
+      block.width = 8;
+      expectBlockRange(8, 1);
+
+      block.width = 6;
+      expectBlockRange(6, 2);
+
+      block.width = 10;
+      expectBlockRange(10, 1);
+      block.appendRun(makeTextRun("hijk"));
+      expectBlockRange(10, 2);
+    });
+
+    it("computes range for split runs", function () {
+      if (!isIntlSupported()) {
+        this.skip();
+      }
+
+      const block = TextBlock.create({ styleName: "", styleOverrides: { lineHeight: 1, lineSpacingFactor: 0 } });
+
+      function expectBlockRange(width: number, height: number): void {
+        const layout = doLayout(block);
+        expectRange(width, height, layout.range);
+      }
+
+      const sentence = "a bc def ghij klmno";
+      expect(sentence.length).to.equal(19);
+      block.appendRun(makeTextRun(sentence));
+
+      block.width = 19;
+      expectBlockRange(19, 1);
+
+      block.width = 10;
+      expectBlockRange(10, 2);
+    });
+
+    it("justifies lines", function () {
+      if (!isIntlSupported()) {
+        this.skip();
+      }
+
+      const block = TextBlock.create({ styleName: "", styleOverrides: { lineSpacingFactor: 0 } });
+
+      function expectBlockRange(width: number, height: number): void {
+        const layout = doLayout(block);
+        expectRange(width, height, layout.range);
+      }
+
+      function expectLineOffset(offset: number, lineIndex: number): void {
+        const layout = doLayout(block);
+        expect(layout.lines.length).least(lineIndex + 1);
+
+        const line = layout.lines[lineIndex];
+        expect(line.offsetFromDocument.y).to.equal(-(lineIndex + 1));
+        expect(line.offsetFromDocument.x).to.equal(offset);
+      }
+
+      // Two text runs with 7 characters total.
+      block.appendRun(makeTextRun("abc"));
+      block.appendRun(makeTextRun("defg"));
+
+      // 1 line of text with width 0: left, right, center justification.
+      block.justification = "left";
+      expectBlockRange(7, 1);
+      expectLineOffset(0, 0);
+
+      block.justification = "right";
+      expectBlockRange(7, 1);
+      expectLineOffset(0, 0);
+
+      block.justification = "center";
+      expectBlockRange(7, 1);
+      expectLineOffset(0, 0);
+
+      // 1 line of text from a width greater than number of characters: left, right, center justification.
+      block.width = 10;
+
+      block.justification = "left";
+      expectBlockRange(10, 1);
+      expectLineOffset(0, 0);
+
+      block.justification = "right";
+      expectBlockRange(10, 1);
+      expectLineOffset(3, 0); // 3 = 10 - 7
+
+      block.justification = "center";
+      expectBlockRange(10, 1);
+      expectLineOffset(1.5, 0); // 1.5 = (10 - 7) / 2
+
+      // 2 line of text from a width less than number of characters: left, right, center justification.
+      block.justification = "left";
+      block.width = 4;
+      expectBlockRange(4, 2);
+      expectLineOffset(0, 0);
+      expectLineOffset(0, 1);
+
+      block.justification = "right";
+      expectBlockRange(4, 2);
+      expectLineOffset(1, 0);
+      expectLineOffset(0, 1);
+
+      block.justification = "center";
+      expectBlockRange(4, 2);
+      expectLineOffset(0.5, 0);
+      expectLineOffset(0, 1);
+
+      // Testing text longer the the width of the text block.
+      block.width = 2;
+      block.justification = "left";
+      expectBlockRange(4, 2);
+      expectLineOffset(0, 0);
+      expectLineOffset(0, 1);
+
+      block.justification = "right";
+      expectBlockRange(4, 2);
+      expectLineOffset(-1, 0);
+      expectLineOffset(-2, 1);
+
+      block.appendRun(makeTextRun("123456789"));
+      expectBlockRange(9, 3);
+      expectLineOffset(-1, 0);
+      expectLineOffset(-2, 1);
+      expectLineOffset(-7, 2);
+
+      block.justification = "center";
+      expectBlockRange(9, 3);
+      expectLineOffset(-0.5, 0);
+      expectLineOffset(-1, 1);
+      expectLineOffset(-3.5, 2);
+    });
+  });
+
+  describe("word-wrapping", () => {
+
+    function expectLines(input: string, width: number, expectedLines: string[]): TextBlockLayout {
+      const textBlock = TextBlock.create({ styleName: "" });
+      textBlock.width = width;
+      const run = makeTextRun(input);
+      textBlock.appendRun(run);
+
+      const layout = doLayout(textBlock);
+      expect(layout.lines.every((line) => line.runs.every((r) => r.source === run))).to.be.true;
+
+      const actual = layout.lines.map((line) => line.runs.map((runLayout) => (runLayout.source as TextRun).content.substring(runLayout.charOffset, runLayout.charOffset + runLayout.numChars)).join(""));
+      expect(actual).to.deep.equal(expectedLines);
+
+      return layout;
+    }
+
+    it("splits paragraphs into multiple lines if runs exceed the document width", function () {
+      if (!isIntlSupported()) {
+        this.skip();
+      }
+
+      const textBlock = TextBlock.create({ styleName: "" });
+      textBlock.width = 6;
+      textBlock.appendRun(makeTextRun("ab"));
+      expect(doLayout(textBlock).lines.length).to.equal(1);
+      textBlock.appendRun(makeTextRun("cd"));
+      expect(doLayout(textBlock).lines.length).to.equal(1);
+
+      textBlock.appendRun(makeTextRun("ef"));
+      expect(doLayout(textBlock).lines.length).to.equal(1);
+      textBlock.appendRun(makeTextRun("ghi"));
+      expect(doLayout(textBlock).lines.length).to.equal(2);
+
+      textBlock.appendRun(makeTextRun("jklmnop"));
+      expect(doLayout(textBlock).lines.length).to.equal(3);
+
+      textBlock.appendRun(makeTextRun("q"));
+      expect(doLayout(textBlock).lines.length).to.equal(4);
+      textBlock.appendRun(makeTextRun("r"));
+      expect(doLayout(textBlock).lines.length).to.equal(4);
+      textBlock.appendRun(makeTextRun("stu"));
+      expect(doLayout(textBlock).lines.length).to.equal(4);
+
+      textBlock.appendRun(makeTextRun("vwxyz"));
+      expect(doLayout(textBlock).lines.length).to.equal(5);
+    });
+
+    it("splits a single TextRun at word boundaries if it exceeds the document width", function () {
+      if (!isIntlSupported()) {
+        this.skip();
+      }
+
+      expectLines("a bc def ghij klmno pqrstu vwxyz", 5, [
+        "a bc ",
+        "def ",
+        "ghij ",
+        "klmno ",
+        "pqrstu ",
+        "vwxyz",
+      ]);
+
+      const fox = "The quick brown fox jumped over the lazy dog";
+      expectLines(fox, 50, [fox]);
+      expectLines(fox, 40, [
+        //       1         2         3         4
+        // 34567890123456789012345678901234567890
+        "The quick brown fox jumped over the ",
+        "lazy dog",
+      ]);
+      expectLines(fox, 30, [
+        //       1         2         3
+        // 3456789012345678901234567890
+        "The quick brown fox jumped ",
+        "over the lazy dog",
+      ]);
+      expectLines(fox, 20, [
+        //       1         2
+        // 345678901234567890
+        "The quick brown fox ",
+        "jumped over the ",
+        "lazy dog",
+      ]);
+      expectLines(fox, 10, [
+        //        1
+        // 234567890
+        "The quick ",
+        "brown fox ",
+        "jumped ",
+        "over the ",
+        "lazy dog",
+      ]);
+    });
+
+    it("considers consecutive whitespace part of a single 'word'", function () {
+      if (!isIntlSupported()) {
+        this.skip();
+      }
+
+      expectLines("a b  c   d    e     f      ", 3, [
+        "a ",
+        "b  ",
+        "c   ",
+        "d    ",
+        "e     ",
+        "f      ",
+      ]);
+    });
+
+    it("wraps Japanese text", function () {
+      if (!isIntlSupported()) {
+        this.skip();
+      }
+
+      // "I am a cat. The name is Tanuki."
+      expectLines("吾輩は猫である。名前はたぬき。", 1, ["吾", "輩", "は", "猫", "で", "あ", "る。", "名", "前", "は", "た", "ぬ", "き。"]);
+    });
+
+    it("wraps tabs", function () {
+      if (!isIntlSupported()) {
+        this.skip();
+      }
+
+      const lineHeight = 1;
+      const styleName = "";
+      const textBlock = TextBlock.create({ styleName, styleOverrides: { lineHeight } });
+
+      // line 0:  -->-->------> LINEBREAK
+      textBlock.appendRun(TabRun.create({ styleName, styleOverrides: { tabInterval: 3 } }));
+      textBlock.appendRun(TabRun.create({ styleName, styleOverrides: { tabInterval: 3 } }));
+      textBlock.appendRun(TabRun.create({ styleName, styleOverrides: { tabInterval: 7 } }));
+      textBlock.appendRun(LineBreakRun.create({ styleName }));
+
+      // line 1:  a->b->cd-----> LINEBREAK
+      textBlock.appendRun(TextRun.create({ styleName, content: "a" }));
+      textBlock.appendRun(TabRun.create({ styleName, styleOverrides: { tabInterval: 3 } }));
+      textBlock.appendRun(TextRun.create({ styleName, content: "b" }));
+      textBlock.appendRun(TabRun.create({ styleName, styleOverrides: { tabInterval: 3 } }));
+      textBlock.appendRun(TextRun.create({ styleName, content: "cd" }));
+      textBlock.appendRun(TabRun.create({ styleName, styleOverrides: { tabInterval: 7 } }));
+      textBlock.appendRun(LineBreakRun.create({ styleName }));
+
+      // line 2:  -->a->b------>cd LINEBREAK
+      textBlock.appendRun(TabRun.create({ styleName, styleOverrides: { tabInterval: 3 } }));
+      textBlock.appendRun(TextRun.create({ styleName, content: "a" }));
+      textBlock.appendRun(TabRun.create({ styleName, styleOverrides: { tabInterval: 3 } }));
+      textBlock.appendRun(TextRun.create({ styleName, content: "b" }));
+      textBlock.appendRun(TabRun.create({ styleName, styleOverrides: { tabInterval: 7 } }));
+      textBlock.appendRun(TextRun.create({ styleName, content: "cd" }));
+      textBlock.appendRun(LineBreakRun.create({ styleName }));
+
+      /* Full Width:
+        * -->-->------>
+        * a->b->cd---->
+        * -->a->b----->cd
+      */
+      let tb = doLayout(textBlock);
+      expect(tb.lines.length).to.equal(3, ``);
+      expect(tb.lines[0].range.xLength()).to.equal(13, ``);
+      expect(tb.lines[1].range.xLength()).to.equal(13, ``);
+      expect(tb.lines[2].range.xLength()).to.equal(15, ``);
+
+      /* Width of 10:
+        * -->-->
+        * ------>
+        * a->b->cd
+        * ------>
+        * -->a->b
+        * ------>cd
+      */
+
+      textBlock.width = 10;
+      tb = doLayout(textBlock);
+      expect(tb.lines.length).to.equal(6, ``);
+      expect(tb.lines[0].range.xLength()).to.equal(6, ``);
+      expect(tb.lines[1].range.xLength()).to.equal(7, ``);
+      expect(tb.lines[2].range.xLength()).to.equal(8, ``);
+      expect(tb.lines[3].range.xLength()).to.equal(7, ``);
+      expect(tb.lines[4].range.xLength()).to.equal(7, ``);
+      expect(tb.lines[5].range.xLength()).to.equal(9, ``);
+    });
+
+    it("performs word-wrapping with punctuation", function () {
+      if (!isIntlSupported()) {
+        this.skip();
+      }
+
+      expectLines("1.24 56.7 8,910", 1, ["1.24 ", "56.7 ", "8,910"]);
+
+      expectLines("a.bc de.f g,hij", 1, ["a.bc ", "de.f ", "g,hij"]);
+
+      expectLines("Let's see... can you (or anyone) predict?!", 1, [
+        "Let's ",
+        "see... ",
+        "can ",
+        "you ",
+        "(or ",
+        "anyone) ",
+        "predict?!",
+      ]);
+    });
+
+    it("performs word-wrapping and line-splitting with multiple runs", function () {
+      if (!isIntlSupported()) {
+        this.skip();
+      }
+
+      const textBlock = TextBlock.create({ styleName: "" });
+      for (const str of ["The ", "quick brown", " fox jumped over ", "the lazy ", "dog"]) {
+        textBlock.appendRun(makeTextRun(str));
+      }
+
+      function test(width: number, expected: string[]): void {
+        textBlock.width = width;
+        const layout = doLayout(textBlock);
+        const actual = layout.lines.map((line) => line.runs.map((runLayout) => (runLayout.source as TextRun).content.substring(runLayout.charOffset, runLayout.charOffset + runLayout.numChars)).join(""));
+        expect(actual).to.deep.equal(expected);
+      }
+
+      test(50, ["The quick brown fox jumped over the lazy dog"]);
+      test(40, [
+        //        1         2         3         4
+        // 34567890123456789012345678901234567890
+        "The quick brown fox jumped over the ",
+        "lazy dog",
+      ]);
+      test(30, [
+        //        1         2         3
+        // 3456789012345678901234567890
+        "The quick brown fox jumped ",
+        "over the lazy dog",
+      ]);
+      test(20, [
+        //        1         2
+        // 345678901234567890
+        "The quick brown fox ",
+        "jumped over the ",
+        "lazy dog",
+      ]);
+      test(10, [
+        //        1
+        // 34567890
+        "The quick ",
+        "brown fox ",
+        "jumped ",
+        "over the ",
+        "lazy dog",
+      ]);
+    });
+
+    it("wraps multiple runs", function () {
+      if (!isIntlSupported()) {
+        this.skip();
+      }
+
+      const block = TextBlock.create({ styleName: "" });
+      block.appendRun(makeTextRun("aa")); // 2 chars wide
+      block.appendRun(makeTextRun("bb ccc d ee")); // 11 chars wide
+      block.appendRun(makeTextRun("ff ggg h")); // 8 chars wide
+
+      function expectLayout(width: number, expected: string): void {
+        block.width = width;
+        const layout = doLayout(block);
+        expect(layout.stringify()).to.equal(expected);
+      }
+
+      expectLayout(23, "aabb ccc d eeff ggg h");
+      expectLayout(22, "aabb ccc d eeff ggg h");
+      expectLayout(21, "aabb ccc d eeff ggg h");
+      expectLayout(20, "aabb ccc d eeff ggg \nh");
+      expectLayout(19, "aabb ccc d eeff \nggg h");
+      expectLayout(18, "aabb ccc d eeff \nggg h");
+      expectLayout(17, "aabb ccc d eeff \nggg h");
+      expectLayout(16, "aabb ccc d eeff \nggg h");
+      expectLayout(15, "aabb ccc d ee\nff ggg h");
+      expectLayout(14, "aabb ccc d ee\nff ggg h");
+      expectLayout(13, "aabb ccc d ee\nff ggg h");
+      expectLayout(12, "aabb ccc d \neeff ggg h");
+      expectLayout(11, "aabb ccc d \neeff ggg h");
+      expectLayout(10, "aabb ccc \nd eeff \nggg h");
+      expectLayout(9, "aabb ccc \nd eeff \nggg h");
+      expectLayout(8, "aabb \nccc d ee\nff ggg h");
+      expectLayout(7, "aabb \nccc d \neeff \nggg h");
+      expectLayout(6, "aabb \nccc d \neeff \nggg h");
+      expectLayout(5, "aabb \nccc \nd ee\nff \nggg h");
+      expectLayout(4, "aa\nbb \nccc \nd ee\nff \nggg \nh");
+      expectLayout(3, "aa\nbb \nccc \nd \nee\nff \nggg \nh");
+      expectLayout(2, "aa\nbb \nccc \nd \nee\nff \nggg \nh");
+      expectLayout(1, "aa\nbb \nccc \nd \nee\nff \nggg \nh");
+      expectLayout(0, "aabb ccc d eeff ggg h");
+      expectLayout(-1, "aabb ccc d eeff ggg h");
+      expectLayout(-2, "aabb ccc d eeff ggg h");
+    });
+
+    it("does not word wrap due to floating point rounding error", function () {
+      if (!isIntlSupported()) {
+        this.skip();
+      }
+
+      const block = TextBlock.create({ styleName: "", styleOverrides: { lineHeight: 1, lineSpacingFactor: 0 } });
+      block.appendRun(makeTextRun("abc defg"));
+      const layout1 = doLayout(block);
+      let width = layout1.range.xLength();
+      // Simulate a floating point rounding error by slightly reducing the width
+      width -= Geometry.smallFloatingPoint;
+      block.width = width;
+      const layout2 = doLayout(block);
+      expect(layout2.range.yLength()).to.equal(1);
+    });
   });
 
   describe("grapheme offsets", () => {
@@ -1147,4 +1306,4 @@ describe("produceTextBlockGeometry", () => {
 
 
 // Ignoring the text strings from the spell checker
-// cspell:ignore jklmnop vwxyz defg hijk ghij klmno pqrstu Tanuki aabb eeff nggg amet adipiscing elit Phasellus pretium malesuada venenatis eleifend Donec sapien Nullam commodo accumsan lacinia metus enim pharetra lacus facilisis Duis suscipit quis feugiat fermentum ut augue Mauris iaculis odio rhoncus lorem viverra turpis elementum posuere Consolas अनुच्छेद
+// cspell:ignore jklmnop vwxyz defg hijk ghij klmno pqrstu Tanuki aabb eeff nggg amet adipiscing elit Phasellus pretium malesuada venenatis eleifend Donec sapien Nullam commodo accumsan lacinia metus enim pharetra lacus facilisis Duis suscipit quis feugiat fermentum ut augue Mauris iaculis odio rhoncus lorem viverra turpis elementum posuere Consolas अनुच्छेद cdefg cdefgh cdefghi

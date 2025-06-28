@@ -137,7 +137,8 @@ export function produceTextBlockGeometry(layout: TextBlockLayout, documentTransf
   for (const line of layout.lines) {
     const lineTrans = Transform.createTranslationXYZ(line.offsetFromDocument.x, line.offsetFromDocument.y, 0);
     for (const run of line.runs) {
-      if ("linebreak" === run.source.type) {
+      // Skip runs that are solely whitespace
+      if (run.source.isWhitespace) {
         continue;
       }
 

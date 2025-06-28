@@ -50,6 +50,10 @@ export interface TextBlockStringifyOptions {
    * Default: "/"
    */
   fractionSeparator?: string;
+  /** The number of spaces to use for tabs. If not provided, tabs will be represented by a tab character: "\t".
+   * Default: "undefined" - use "\t".
+   */
+  tabsAsSpaces?: number;
 }
 
 /** Abstract representation of any of the building blocks that make up a [[TextBlock]] document - namely [[Run]]s, [[Paragraph]]s, and [[TextBlock]] itself.
@@ -115,6 +119,14 @@ export abstract class TextBlockComponent {
   /** Compute a string representation of the contents of this component and all of its sub-components. */
   public abstract stringify(options?: TextBlockStringifyOptions): string;
 
+  /**
+  * Returns true if the string representation of this component consists only of whitespace characters.
+  * Useful for checking if the component is visually empty (producing no graphics) or contains only spaces, tabs, or line breaks.
+  */
+  public get isWhitespace(): boolean {
+    return /^\s*$/g.test(this.stringify());
+  };
+
   /** Convert this component to its JSON representation. */
   public toJSON(): TextBlockComponentProps {
     return {
@@ -145,13 +157,13 @@ export abstract class TextBlockComponent {
 /**
  * @beta
  */
-export type Run = TextRun | FractionRun | LineBreakRun;
+export type Run = TextRun | FractionRun | TabRun | LineBreakRun;
 
 /** The JSON representation of a [[Run]].
  * Use the `type` field to discriminate between the different kinds of runs.
  * @beta
  */
-export type RunProps = TextRunProps | FractionRunProps | LineBreakRunProps;
+export type RunProps = TextRunProps | FractionRunProps | TabRunProps | LineBreakRunProps;
 
 /** A sequence of characters within a [[Paragraph]] that share a single style. Runs are the leaf nodes of a [[TextBlock]] document. When laid out for display, a single run may span
  * multiple lines, but it will never contain different styling.
@@ -166,6 +178,7 @@ export namespace Run { // eslint-disable-line @typescript-eslint/no-redeclare
     switch (props.type) {
       case "text": return TextRun.create(props);
       case "fraction": return FractionRun.create(props);
+      case "tab": return TabRun.create(props);
       case "linebreak": return LineBreakRun.create(props);
     }
   }
@@ -337,6 +350,55 @@ export class LineBreakRun extends TextBlockComponent {
 
   public override equals(other: TextBlockComponent): boolean {
     return other instanceof LineBreakRun && super.equals(other);
+  }
+}
+
+/** JSON representation of a [[TabRun]].
+ * @beta
+ */
+export interface TabRunProps extends TextBlockComponentProps {
+  /** Discriminator field for the [[RunProps]] union. */
+  readonly type: "tab";
+}
+
+/** A [[TabRun]] is used to shift the next tab stop.
+ * @note Only left-justified tabs are supported at this tab.
+ * @beta
+ */
+export class TabRun extends TextBlockComponent {
+  /** Discriminator field for the [[Run]] union. */
+  public readonly type = "tab";
+
+  public override toJSON(): TabRunProps {
+    return {
+      ...super.toJSON(),
+      type: "tab",
+    };
+  }
+
+  public override clone(): TabRun {
+    return new TabRun(this.toJSON());
+  }
+
+  public static create(props: Omit<TabRunProps, "type">): TabRun {
+    return new TabRun(props);
+  }
+
+    /**
+   * Converts a [[TabRun]] to its string representation.
+   * If the `tabsAsSpaces` option is provided, returns a string of spaces of the specified length.
+   * Otherwise, returns a tab character ("\t").
+   */
+  public override stringify(options?: TextBlockStringifyOptions): string {
+    if (options?.tabsAsSpaces) {
+      return " ".repeat(options.tabsAsSpaces);
+    }
+
+    return "\t";
+  }
+
+  public override equals(other: TextBlockComponent): boolean {
+    return other instanceof TabRun && super.equals(other);
   }
 }
 
