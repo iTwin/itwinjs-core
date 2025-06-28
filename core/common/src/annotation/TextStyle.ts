@@ -88,6 +88,29 @@ export interface TextStyleSettingsProps {
    * Default: 1.0
    */
   widthFactor?: number;
+  /** The color of the leader line.
+   * Default: "subcategory".
+   */
+  leaderColor?: TextStyleColor;
+  /** Whether to use an elbow in the leader line.
+   * Default: false
+   */
+  wantElbow?: boolean;
+  /** Multiplier used to compute length of the elbow in the leader line.
+   * The elbowLength is computed as elbowLength * [[lineHeight]].
+   * Default: 1.0
+   */
+  elbowLength?: number;
+  /** Multiplier to compute height of the leader terminator.
+   * The terminator height is computed as terminatorHeight * [[lineHeight]].
+   * Default: 1.0
+   */
+  terminatorHeight?: number;
+  /** Multiplier to compute width of the leader terminator.
+   * The terminator width is computed as terminatorWidth * [[lineHeight]].
+   * Default: 1.0
+   */
+  terminatorWidth?: number;
 }
 
 /** A description of the formatting to be applied to a [[TextBlockComponent]].
@@ -141,6 +164,22 @@ export class TextStyleSettings {
   public readonly superScriptScale: number;
   /** Multiplier used to compute the width of each glyph, relative to [[lineHeight]]. */
   public readonly widthFactor: number;
+  /** The color of the leader line. */
+  public readonly leaderColor: TextStyleColor;
+  /** Whether to use an elbow in the leader line. */
+  public readonly wantElbow: boolean;
+  /** Multiplier used to compute length of the elbow in the leader line.
+   * The elbowLength is computed in meters as elbowLength * [[lineHeight]].
+  */
+  public readonly elbowLength: number;
+  /** Multiplier to compute height of the leader terminator.
+   * The terminator height is computed in meters as terminatorHeight * [[lineHeight]].
+  */
+  public readonly terminatorHeight: number;
+  /** Multiplier to compute width of the leader terminator.
+   * The terminator width is computed in meters as terminatorWidth * [[lineHeight]].
+  */
+  public readonly terminatorWidth: number;
 
   /** A fully-populated JSON representation of the default settings. */
   public static defaultProps: Readonly<Required<TextStyleSettingsProps>> = {
@@ -158,10 +197,15 @@ export class TextStyleSettings {
     superScriptOffsetFactor: 0.5,
     superScriptScale: 2 / 3,
     widthFactor: 1,
+    leaderColor: "subcategory",
+    wantElbow: true,
+    elbowLength: 1,
+    terminatorHeight: 1,
+    terminatorWidth: 1,
   };
 
   /** Settings initialized to all default values. */
-  public static defaults: TextStyleSettings = new TextStyleSettings({ });
+  public static defaults: TextStyleSettings = new TextStyleSettings({});
 
   private constructor(props: TextStyleSettingsProps, defaults?: Required<TextStyleSettingsProps>) {
     if (!defaults) {
@@ -182,6 +226,11 @@ export class TextStyleSettings {
     this.superScriptOffsetFactor = props.superScriptOffsetFactor ?? defaults.superScriptOffsetFactor;
     this.superScriptScale = props.superScriptScale ?? defaults.superScriptScale;
     this.widthFactor = props.widthFactor ?? defaults.widthFactor;
+    this.leaderColor = props.leaderColor ?? defaults.leaderColor;
+    this.wantElbow = props.wantElbow ?? defaults.wantElbow;
+    this.elbowLength = props.elbowLength ?? defaults.elbowLength;
+    this.terminatorHeight = props.terminatorHeight ?? defaults.terminatorHeight;
+    this.terminatorWidth = props.terminatorWidth ?? defaults.terminatorWidth;
   }
 
   /** Create a copy of these settings, modified according to the properties defined by `alteredProps`. */
@@ -204,7 +253,9 @@ export class TextStyleSettings {
       && this.isBold === other.isBold && this.isItalic === other.isItalic && this.isUnderlined === other.isUnderlined
       && this.stackedFractionType === other.stackedFractionType && this.stackedFractionScale === other.stackedFractionScale
       && this.subScriptOffsetFactor === other.subScriptOffsetFactor && this.subScriptScale === other.subScriptScale
-      && this.superScriptOffsetFactor === other.superScriptOffsetFactor && this.superScriptScale === other.superScriptScale;
+      && this.superScriptOffsetFactor === other.superScriptOffsetFactor && this.superScriptScale === other.superScriptScale && this.leaderColor === other.leaderColor
+      && this.wantElbow === other.wantElbow && this.elbowLength === other.elbowLength
+      && this.terminatorHeight === other.terminatorHeight && this.terminatorWidth === other.terminatorWidth;
   }
 }
 

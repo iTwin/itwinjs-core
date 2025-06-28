@@ -500,6 +500,8 @@ public;function;isPowerOfTwo
 public;function;isValidImageSourceFormat
 internal;const;iTwinChannel
 public;interface;JsonGeometryStream
+beta;type;LeaderAttachmentMode
+beta;type;LeaderTextPointOptions
 internal;interface;LegacyAnalysisStyleProps
 internal;interface;LightLocationProps
 public;class;LightSettings
@@ -900,6 +902,8 @@ beta;interface;TextAnnotationAnchor
 beta;interface;TextAnnotationCreateArgs
 beta;type;TextAnnotationFillColor
 beta;type;TextAnnotationFrameShape
+beta;interface;TextAnnotationLeader
+beta;interface;TextAnnotationLeaderProps
 beta;interface;TextAnnotationProps
 beta;class;TextBlock
 beta;class;TextBlockComponent
