@@ -144,6 +144,7 @@ class GltfBufferView {
 export interface GltfReaderResult extends TileContent {
   readStatus: TileReadStatus;
   range?: AxisAlignedBox3d;
+  copyright?: string;
 }
 
 type GltfTemplateResult = Omit<GltfReaderResult, "graphic"> & { template?: GraphicTemplate };
@@ -593,6 +594,7 @@ export abstract class GltfReader {
       isLeaf,
       contentRange,
       range,
+      copyright: this._glTF.asset?.copyright,
       containsPointCloud: this._containsPointCloud,
       template: createGraphicTemplate({
         nodes: templateNodes,
