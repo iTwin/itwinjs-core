@@ -790,7 +790,7 @@ export class RegionOps {
    * hole loops are treated like any other positive area loops.
    * * A common use case of this method is to assemble the bounding "exterior" loop for each connected component
    * of input curves. This is the negative area loop of the component. Passing `addBridges = true` decreases the
-   * number of connected components for nested inputs [[Loop]]s, and thus increases the likelihood of returning
+   * number of connected components for nested input [[Loop]]s, and thus increases the likelihood of returning
    * exactly one exterior loop. This explains why the default value for `addBridges` is `true`.
    * @param curvesAndRegions Any collection of curves. Each [[AnyRegion]] contributes its children _stripped of
    * parity context_.
