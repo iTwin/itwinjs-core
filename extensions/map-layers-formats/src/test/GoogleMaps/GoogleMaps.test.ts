@@ -3,9 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { DecorateContext, Decorations, IconSprites, IModelApp, MapCartoRectangle, MapTile, MapTileTree, QuadId, ScreenViewport, Sprite } from "@itwin/core-frontend";
+import { DecorateContext, Decorations, IconSprites, IModelApp, LogoDecoration, MapCartoRectangle, MapTile, MapTileTree, QuadId, ScreenViewport, Sprite } from "@itwin/core-frontend";
 import sinon from "sinon";
-import { LogoDecoration } from "../../GoogleMaps/GoogleMapDecorator.js";
 import { Frustum, ImageMapLayerSettings } from "@itwin/core-common";
 import { TilePatch } from "@itwin/core-frontend/lib/cjs/tile/internal.js";
 import { Range3d } from "@itwin/core-geometry";
