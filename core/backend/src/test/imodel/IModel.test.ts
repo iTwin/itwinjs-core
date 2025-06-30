@@ -64,7 +64,7 @@ async function generateTestSnapshot(targetFileName: string, seedAssetName: strin
   return imodel;
 }
 
-describe.only("iModel", () => {
+describe("iModel", () => {
   //TODO: These imodels are used and modified across multiple tests. This is not a good practice and should be refactored.
   let imodel1: SnapshotDb;
   let imodel2: SnapshotDb;
@@ -1073,7 +1073,7 @@ describe.only("iModel", () => {
     }
   }
 
-  it.only("should get metadata for a relationship", async () => {
+  it("should get metadata for a relationship", async () => {
     const imodelPath = IModelTestUtils.prepareOutputFile("IModel", "relationshipMetadata.bim");
     const imodel = SnapshotDb.createEmpty(imodelPath, { rootSubject: { name: "relationshipMetadata" } });
 
