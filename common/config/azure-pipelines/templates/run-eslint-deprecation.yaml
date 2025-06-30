@@ -58,7 +58,7 @@ steps:
     displayName: Perform cherry-pick operation for deprecation changes
     continueOnError: true
     env:
-      GH_TOKEN: $(GH_TOKEN)
+      GH_TOKEN: $(GITHUBTOKEN)
 
   - bash: git checkout $(deprecationCommit.hash)
     displayName: Checkout back to branch that ran the pipeline
