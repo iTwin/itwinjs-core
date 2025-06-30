@@ -1,6 +1,6 @@
 {
   "name": "@itwin/ecschema-metadata",
-  "version": "5.1.0-dev.36",
+  "version": "5.1.0-dev.48",
   "description": "ECObjects core concepts in typescript",
   "license": "MIT",
   "main": "lib/cjs/ecschema-metadata.js",
@@ -42,7 +42,7 @@
     "@bentley/core-custom-attributes-schema": "^1.0.4",
     "@bentley/formats-schema": "^1.0.0",
     "@bentley/road-rail-units-schema": "^1.0.3",
-    "@bentley/units-schema": "^1.0.8",
+    "@bentley/units-schema": "^1.0.9",
     "@itwin/build-tools": "workspace:*",
     "@itwin/core-bentley": "workspace:*",
     "@itwin/core-quantity": "workspace:*",

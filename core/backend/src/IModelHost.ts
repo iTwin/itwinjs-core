@@ -219,7 +219,6 @@ export class IModelHostConfiguration implements IModelHostOptions {
 
   /** @beta */
   public workspace?: WorkspaceOpts;
-  /** @internal */
   public hubAccess?: BackendHubAccess;
   /** The AuthorizationClient used to obtain [AccessToken]($bentley)s. */
   public authorizationClient?: AuthorizationClient;
@@ -372,7 +371,7 @@ export class IModelHost {
   public static get settingsSchemas(): SettingsSchemas { return definedInStartup(this._settingsSchemas); }
 
   /** The optional [[FileNameResolver]] that resolves keys and partial file names for snapshot iModels.
-   * @deprecated in 4.10. When opening a snapshot by file name, ensure to pass already resolved path. Using a key to open a snapshot is now deprecated.
+   * @deprecated in 4.10 - will not be removed until after 2026-06-13. When opening a snapshot by file name, ensure to pass already resolved path. Using a key to open a snapshot is now deprecated.
    */
   public static snapshotFileNameResolver?: FileNameResolver; // eslint-disable-line @typescript-eslint/no-deprecated
 
@@ -709,7 +708,7 @@ export class KnownLocations {
  * @note Only `tryResolveKey` and/or `tryResolveFileName` need to be overridden as the implementations of `resolveKey` and `resolveFileName` work for most purposes.
  * @see [[IModelHost.snapshotFileNameResolver]]
  * @public
- * @deprecated in 4.10. When opening a snapshot by file name, ensure to pass already resolved path. Using a key to open a snapshot is now deprecated.
+ * @deprecated in 4.10 - will not be removed until after 2026-06-13. When opening a snapshot by file name, ensure to pass already resolved path. Using a key to open a snapshot is now deprecated.
  */
 export abstract class FileNameResolver {
   /** Resolve a file name from the specified key.
