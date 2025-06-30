@@ -1,10 +1,10 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 /*---------------------------------------------------------------------------------------------
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
 import * as sinon from "sinon";
-import { IncrementalSchemaLoader } from "../../IncrementalLoading/IncrementalSchemaLoader";
 import { SchemaProps } from "../../Deserialization/JsonProps";
 import { SchemaInfo } from "../../Interfaces";
 import { SchemaKey } from "../../SchemaKey";
@@ -14,7 +14,7 @@ import { SchemaMatchType } from "../../ECObjects";
 import { ECSchemaNamespaceUris } from "../../Constants";
 import { Schema } from "../../Metadata/Schema";
 
-class TestSchemaLoader extends IncrementalSchemaLoader {
+class TestSchemaLocater extends IncrementalSchemaLocater {
   public async loadSchemaInfos(_context: SchemaContext): Promise<Iterable<SchemaInfo>> {
     throw new Error("Implementation will be provided by the test.");
   }
@@ -30,13 +30,12 @@ class TestSchemaLoader extends IncrementalSchemaLoader {
 }
 
 describe("IncrementalSchemaLocater tests: ", () => {
-  let locater: IncrementalSchemaLocater;
   let context: SchemaContext;
-  let schemaLoader: TestSchemaLoader;
+  let locater: TestSchemaLocater;
 
   beforeEach(() => {
-    schemaLoader = new TestSchemaLoader();
-    locater = new IncrementalSchemaLocater(schemaLoader);
+    sinon.restore();
+    locater = new TestSchemaLocater();
     context = new SchemaContext();
     context.addLocater(locater);
   });
@@ -45,7 +44,7 @@ describe("IncrementalSchemaLocater tests: ", () => {
     const schemaKeyA = new SchemaKey("SchemaA", 1, 1, 1);
     const schemaKeyB = new SchemaKey("SchemaB", 1, 1, 1);
     const schemaKeyC = new SchemaKey("SchemaC", 1, 1, 1);
-    const spy = sinon.stub(schemaLoader, "loadSchemaInfos").resolves([
+    const spy = sinon.stub(locater, "loadSchemaInfos").resolves([
       { schemaKey: schemaKeyA, references: [{ schemaKey: schemaKeyB }, { schemaKey: schemaKeyC }], alias: "SchemaA" },
       { schemaKey: schemaKeyB, references: [], alias: "SchemaB" },
       { schemaKey: schemaKeyC, references: [{ schemaKey: schemaKeyB }], alias: "SchemaC" },
@@ -63,7 +62,7 @@ describe("IncrementalSchemaLocater tests: ", () => {
     const schemaKeyA = new SchemaKey("SchemaA", 1, 1, 1);
     const schemaKeyB = new SchemaKey("SchemaB", 1, 1, 1);
     const schemaKeyC = new SchemaKey("SchemaC", 1, 1, 1);
-    const spy = sinon.stub(schemaLoader, "loadSchemaInfos").resolves([
+    const spy = sinon.stub(locater, "loadSchemaInfos").resolves([
       { schemaKey: schemaKeyA, references: [{ schemaKey: schemaKeyB }, { schemaKey: schemaKeyC }], alias: "SchemaA" },
       { schemaKey: schemaKeyB, references: [], alias: "SchemaB" },
       { schemaKey: schemaKeyC, references: [{ schemaKey: schemaKeyB }], alias: "SchemaC" },
@@ -81,12 +80,12 @@ describe("IncrementalSchemaLocater tests: ", () => {
     const schemaKeyA = new SchemaKey("SchemaA", 1, 1, 1);
     const schemaKeyB = new SchemaKey("SchemaB", 1, 1, 1);
     const schemaKeyC = new SchemaKey("SchemaC", 1, 1, 1);
-    const spy = sinon.stub(schemaLoader, "loadSchemaInfos").resolves([
+    const spy = sinon.stub(locater, "loadSchemaInfos").resolves([
       { schemaKey: schemaKeyA, references: [{ schemaKey: schemaKeyB }, { schemaKey: schemaKeyC }], alias: "SchemaA" },
       { schemaKey: schemaKeyB, references: [], alias: "SchemaB" },
       { schemaKey: schemaKeyC, references: [{ schemaKey: schemaKeyB }], alias: "SchemaC" },
     ]);
-    sinon.stub(schemaLoader, "getSchemaPartials").resolves([
+    sinon.stub(locater, "getSchemaPartials").resolves([
       {
         $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
         name: schemaKeyA.name,
@@ -141,8 +140,8 @@ describe("IncrementalSchemaLocater tests: ", () => {
 
   it("getSchema called multiple times for same schema", async () => {
     const schemaKey = new SchemaKey("SchemaD", 4, 4, 4);
-    sinon.stub(schemaLoader, "loadSchemaInfos").resolves([{ schemaKey, references: [], alias: "SchemaD" }]);
-    sinon.stub(schemaLoader, "getSchemaPartials").resolves([{
+    sinon.stub(locater, "loadSchemaInfos").resolves([{ schemaKey, references: [], alias: "SchemaD" }]);
+    sinon.stub(locater, "getSchemaPartials").resolves([{
       $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
       name: schemaKey.name,
       version: schemaKey.version.toString(),
@@ -150,7 +149,7 @@ describe("IncrementalSchemaLocater tests: ", () => {
     }]);
 
     // locater should not cache the schema.
-    const spy = sinon.spy(schemaLoader, "loadSchema");
+    const spy = sinon.spy(locater, "loadSchema");
     await locater.getSchema(schemaKey, SchemaMatchType.Exact, context);
     await locater.getSchema(schemaKey, SchemaMatchType.Exact, context);
 
@@ -159,20 +158,20 @@ describe("IncrementalSchemaLocater tests: ", () => {
 
   it("getSchema, wait till resolved, succeeds", async () => {
     const schemaKey = new SchemaKey("SchemaA", 1, 1, 1);
-    sinon.stub(schemaLoader, "loadSchemaInfos").resolves([{ schemaKey, references: [], alias: "SchemaA" }]);
-    sinon.stub(schemaLoader, "getSchemaPartials").resolves([{
+    sinon.stub(locater, "loadSchemaInfos").resolves([{ schemaKey, references: [], alias: "SchemaA" }]);
+    sinon.stub(locater, "getSchemaPartials").resolves([{
       $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
       name: schemaKey.name,
       version: schemaKey.version.toString(),
       alias: "SchemaA"
     }]);
-    sinon.stub(schemaLoader, "getSchemaJson").resolves({
+    sinon.stub(locater, "getSchemaJson").resolves({
       $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
       name: "SchemaA",
       version: "01.01.01",
       alias: "SchemaA",
       items: {
-        "category": {
+        "Category": {
           schemaItemType: "EntityClass",
           name: "Category",
           label: "This is Category",
@@ -194,20 +193,20 @@ describe("IncrementalSchemaLocater tests: ", () => {
 
   it("getSchema, wait till resolved, fails", async () => {
     const schemaKey = new SchemaKey("SchemaA", 1, 1, 1);
-    sinon.stub(schemaLoader, "loadSchemaInfos").resolves([{ schemaKey, references: [], alias: "SchemaA" }]);
-    sinon.stub(schemaLoader, "getSchemaPartials").resolves([{
+    sinon.stub(locater, "loadSchemaInfos").resolves([{ schemaKey, references: [], alias: "SchemaA" }]);
+    sinon.stub(locater, "getSchemaPartials").resolves([{
       $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
       name: schemaKey.name,
       version: schemaKey.version.toString(),
       alias: "SchemaA"
     }]);
-    sinon.stub(schemaLoader, "getSchemaJson").resolves({
+    sinon.stub(locater, "getSchemaJson").resolves({
       $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
       name: "SchemaA",
       version: "01.01.01",
       alias: "SchemaA",
       items: {
-        "category": {
+        "Category": {
           schemaItemType: "EntityClass",
           name: "Category",
           baseClass: "SchemaA.BadBaseClass",
@@ -229,7 +228,7 @@ describe("IncrementalSchemaLocater tests: ", () => {
   });
 
   it("getSchema which does not exist, returns undefined", async () => {
-    sinon.stub(schemaLoader, "loadSchemaInfos").resolves([]);
+    sinon.stub(locater, "loadSchemaInfos").resolves([]);
 
     const schemaKey = new SchemaKey("DoesNotExist");
     const result = await locater.getSchema(schemaKey, SchemaMatchType.Exact, context);
@@ -238,8 +237,8 @@ describe("IncrementalSchemaLocater tests: ", () => {
 
   it("getSchema, full version, succeeds", async () => {
     const schemaKey = new SchemaKey("SchemaA", 1, 1, 1);
-    sinon.stub(schemaLoader, "loadSchemaInfos").resolves([{ schemaKey, references: [], alias: "SchemaA" }]);
-    sinon.stub(schemaLoader, "getSchemaPartials").resolves([{
+    sinon.stub(locater, "loadSchemaInfos").resolves([{ schemaKey, references: [], alias: "SchemaA" }]);
+    sinon.stub(locater, "getSchemaPartials").resolves([{
       $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
       name: schemaKey.name,
       version: schemaKey.version.toString(),
@@ -254,7 +253,7 @@ describe("IncrementalSchemaLocater tests: ", () => {
 
   it("getSchema, exact version, wrong minor, fails", async () => {
     const schemaKey = new SchemaKey("SchemaD", 4, 4, 4);
-    sinon.stub(schemaLoader, "loadSchemaInfos").resolves([{ schemaKey, references: [], alias: "SchemaD" }]);
+    sinon.stub(locater, "loadSchemaInfos").resolves([{ schemaKey, references: [], alias: "SchemaD" }]);
 
     const schema = await locater.getSchema(new SchemaKey("SchemaD", 1, 1, 2), SchemaMatchType.Exact, context);
     expect(schema).to.be.undefined;
@@ -262,8 +261,8 @@ describe("IncrementalSchemaLocater tests: ", () => {
 
   it("getSchema, latest, succeeds", async () => {
     const schemaKey = new SchemaKey("SchemaA", 2, 0, 2);
-    sinon.stub(schemaLoader, "loadSchemaInfos").resolves([{ schemaKey, references: [], alias: "SchemaA" }]);
-    sinon.stub(schemaLoader, "getSchemaPartials").resolves([{
+    sinon.stub(locater, "loadSchemaInfos").resolves([{ schemaKey, references: [], alias: "SchemaA" }]);
+    sinon.stub(locater, "getSchemaPartials").resolves([{
       $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
       name: schemaKey.name,
       version: schemaKey.version.toString(),
@@ -278,8 +277,8 @@ describe("IncrementalSchemaLocater tests: ", () => {
 
   it("getSchema, latest write compatible, succeeds", async () => {
     const schemaKey = new SchemaKey("SchemaA", 1, 1, 1);
-    sinon.stub(schemaLoader, "loadSchemaInfos").resolves([{ schemaKey, references: [], alias: "SchemaA" }]);
-    sinon.stub(schemaLoader, "getSchemaPartials").resolves([{
+    sinon.stub(locater, "loadSchemaInfos").resolves([{ schemaKey, references: [], alias: "SchemaA" }]);
+    sinon.stub(locater, "getSchemaPartials").resolves([{
       $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
       name: schemaKey.name,
       version: schemaKey.version.toString(),
@@ -294,8 +293,8 @@ describe("IncrementalSchemaLocater tests: ", () => {
 
   it("getSchema, latest write compatible, write version wrong, fails", async () => {
     const schemaKey = new SchemaKey("SchemaA", 1, 1, 1);
-    sinon.stub(schemaLoader, "loadSchemaInfos").resolves([{ schemaKey, references: [], alias: "SchemaA" }]);
-    sinon.stub(schemaLoader, "getSchemaPartials").resolves([{
+    sinon.stub(locater, "loadSchemaInfos").resolves([{ schemaKey, references: [], alias: "SchemaA" }]);
+    sinon.stub(locater, "getSchemaPartials").resolves([{
       $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
       name: schemaKey.name,
       version: schemaKey.version.toString(),
@@ -308,8 +307,8 @@ describe("IncrementalSchemaLocater tests: ", () => {
 
   it("getSchema, latest read compatible, succeeds", async () => {
     const schemaKey = new SchemaKey("SchemaA", 1, 1, 1);
-    sinon.stub(schemaLoader, "loadSchemaInfos").resolves([{ schemaKey, references: [], alias: "SchemaA" }]);
-    sinon.stub(schemaLoader, "getSchemaPartials").resolves([{
+    sinon.stub(locater, "loadSchemaInfos").resolves([{ schemaKey, references: [], alias: "SchemaA" }]);
+    sinon.stub(locater, "getSchemaPartials").resolves([{
       $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
       name: schemaKey.name,
       version: schemaKey.version.toString(),
@@ -324,8 +323,8 @@ describe("IncrementalSchemaLocater tests: ", () => {
 
   it("getSchema, latest read compatible, read version wrong, fails", async () => {
     const schemaKey = new SchemaKey("SchemaA", 1, 1, 1);
-    sinon.stub(schemaLoader, "loadSchemaInfos").resolves([{ schemaKey, references: [], alias: "SchemaA" }]);
-    sinon.stub(schemaLoader, "getSchemaPartials").resolves([{
+    sinon.stub(locater, "loadSchemaInfos").resolves([{ schemaKey, references: [], alias: "SchemaA" }]);
+    sinon.stub(locater, "getSchemaPartials").resolves([{
       $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
       name: schemaKey.name,
       version: schemaKey.version.toString(),
@@ -338,9 +337,9 @@ describe("IncrementalSchemaLocater tests: ", () => {
 
   it("getSchema, partial schema loading is not supported, fallback to full schema load.", async () => {
     const schemaKey = new SchemaKey("SchemaD", 4, 4, 4);
-    sinon.stub(schemaLoader, "loadSchemaInfos").resolves([{ schemaKey, references: [], alias: "SchemaD" }]);
-    sinon.stub(schemaLoader, "supportPartialSchemaLoading").resolves(false);
-    const getJsonSpy = sinon.stub(schemaLoader, "getSchemaJson").resolves({
+    sinon.stub(locater, "loadSchemaInfos").resolves([{ schemaKey, references: [], alias: "SchemaD" }]);
+    sinon.stub(locater, "supportPartialSchemaLoading").resolves(false);
+    const getJsonSpy = sinon.stub(locater, "getSchemaJson").resolves({
       $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
       name: schemaKey.name,
       version: schemaKey.version.toString(),
@@ -348,7 +347,7 @@ describe("IncrementalSchemaLocater tests: ", () => {
     });
 
     // locater should not cache the schema.
-    const getPartialSpy = sinon.spy(schemaLoader, "getSchemaPartials");
+    const getPartialSpy = sinon.spy(locater, "getSchemaPartials");
     await locater.getSchema(schemaKey, SchemaMatchType.Exact, context);
 
     expect(getPartialSpy.callCount).to.be.equal(0, "getSchemaPartials should not be called.");

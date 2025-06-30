@@ -1,0 +1,2315 @@
+{
+  "label": "Test iModel",
+  "bimFile": "./iModels/TestIModel.bim",
+  "schemas": [
+    {
+      "name": "Schema_Test2",
+      "references": [
+        "BisCore",
+        "CoreCustomAttributes",
+        "Schema_TestBase"
+      ],
+      "itemCount": 293,
+      "checkStubs": [
+        {
+          "item": "Schema_Test2.Phenomenon_Test5",
+          "properties": {
+            "schemaItemType": "Phenomenon",
+            "label": "Test5",
+            "description": "Phenomenon Test5",
+            "definition": "TEST5"
+          }
+        },
+        {
+          "item": "Schema_Test2.UnitSystem_Test11",
+          "properties": {
+            "schemaItemType": "UnitSystem",
+            "label": "Test11",
+            "description": "UnitSystem Test11"
+          }
+        },
+        {
+          "item": "BisCore.ElementRefersToElements",
+          "properties": {
+            "schemaItemType": "RelationshipClass",
+            "description": "A general relationship between two bis:Elements. These are typically specialized by derived relationship to give more specific meaning.",
+            "modifier": "Abstract"
+          }
+        }
+      ],
+      "checkHierachy": {
+        "derivedClass": "Schema_Test2.EntityClass_Test101",
+        "baseClass": "Schema_Test2.EntityClass_Test4"
+      },
+      "checkFullLoad": [
+        {
+          "item": "Schema_Test2.Constant_Test2",
+          "properties": {
+            "schemaItemType": "Constant",
+            "label": "Test2",
+            "description": "Constant Test2",
+            "phenomenon": "Schema_Test2.Phenomenon_Test5",
+            "definition": "TEST2",
+            "numerator": 0.01
+          }
+        },
+        {
+          "item": "Schema_Test2.Mixin_Test3",
+          "properties": {
+            "schemaItemType": "Mixin",
+            "baseClass": "Schema_Test2.Mixin_Test2",
+            "label": "Test3",
+            "description": "Mixin Test3",
+            "appliesTo": "BisCore.Element"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Schema_Test3",
+      "references": [
+        "BisCore",
+        "Schema_Test2",
+        "CoreCustomAttributes",
+        "Formats",
+        "Units"
+      ],
+      "itemCount": 327,
+      "checkStubs": [
+        {
+          "item": "Schema_Test3.Enumeration_Test4",
+          "properties": {
+            "schemaItemType": "Enumeration",
+            "label": "Test4",
+            "description": "Enumeration Test4",
+            "type": "int",
+            "isStrict": true,
+            "enumerators": [
+              {
+                "name": "Enumerator0",
+                "value": 0,
+                "label": "0",
+                "description": "Enumerator 0"
+              },
+              {
+                "name": "Enumerator1",
+                "value": 1,
+                "label": "1",
+                "description": "Enumerator 1"
+              },
+              {
+                "name": "Enumerator2",
+                "value": 2,
+                "label": "2",
+                "description": "Enumerator 2"
+              }
+            ]
+          }
+        },
+        {
+          "item": "Schema_Test3.KindOfQuantity_Test7",
+          "properties": {
+            "schemaItemType": "KindOfQuantity",
+            "label": "Test7",
+            "description": "KindOfQuantity Test7"
+          }
+        },
+        {
+          "item": "Schema_Test3.EntityClass_Test70",
+          "properties": {
+            "schemaItemType": "EntityClass",
+            "label": "Test70",
+            "description": "EntityClass Test70",
+            "baseClass": "Schema_Test2.EntityClass_Test8"
+          }
+        }
+      ],
+      "checkHierachy": {
+        "derivedClass": "Schema_Test3.EntityClass_Test228",
+        "baseClass": "Schema_Test2.Mixin_Test1"
+      },
+      "checkFullLoad": [
+        {
+          "item": "Schema_Test3.Category_Test26",
+          "properties": {
+            "schemaItemType": "PropertyCategory",
+            "label": "Test26",
+            "description": "Category Test26",
+            "priority": 200000
+          }
+        },
+        {
+          "item": "Schema_Test3.Enumeration_Test27",
+          "properties": {
+            "schemaItemType": "Enumeration",
+            "label": "Test27",
+            "description": "Enumeration Test27",
+            "type": "int",
+            "isStrict": true,
+            "enumerators": [
+              {
+                "name": "Enumerator0",
+                "value": 0,
+                "label": "0",
+                "description": "Enumerator 0"
+              },
+              {
+                "name": "Enumerator1",
+                "value": 1,
+                "label": "1",
+                "description": "Enumerator 1"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Schema_Test4",
+      "references": [
+        "BisCore",
+        "Schema_Test2",
+        "CoreCustomAttributes"
+      ],
+      "itemCount": 567,
+      "checkStubs": [
+        {
+          "item": "Schema_Test4.RelationshipClass_Test96",
+          "properties": {
+            "schemaItemType": "RelationshipClass",
+            "label": "Test96",
+            "description": "RelationshipClass Test96",
+            "modifier": "None",
+            "baseClass": "BisCore.ElementRefersToElements"
+          }
+        },
+        {
+          "item": "Schema_Test4.StructClass_Test3",
+          "properties": {
+            "schemaItemType": "StructClass",
+            "label": "Test3",
+            "description": "StructClass Test3"
+          }
+        },
+        {
+          "item": "Schema_Test2.EntityClass_Test16",
+          "properties": {
+            "schemaItemType": "EntityClass",
+            "label": "Test16",
+            "description": "EntityClass Test16",
+            "baseClass": "Schema_Test2.EntityClass_Test8"
+          }
+        }
+      ],
+      "checkHierachy": {
+        "derivedClass": "Schema_Test4.EntityClass_Test13",
+        "baseClass": "Schema_Test2.EntityClass_Test2"
+      },
+      "checkFullLoad": [
+        {
+          "item": "Schema_Test4.EntityClass_Test16",
+          "properties": {
+            "schemaItemType": "EntityClass",
+            "label": "Test16",
+            "description": "EntityClass Test16",
+            "modifier": "Abstract",
+            "baseClass": "Schema_Test4.EntityClass_Test17"
+          }
+        },
+        {
+          "item": "Schema_Test4.StructClass_Test4",
+          "properties": {
+            "schemaItemType": "StructClass",
+            "label": "Test4",
+            "description": "StructClass Test4",
+            "properties": [
+              {
+                "name": "Struct4_Property1",
+                "type": "PrimitiveProperty",
+                "description": "Property Test1",
+                "label": "Test1",
+                "priority": 0,
+                "typeName": "double"
+              },
+              {
+                "name": "Struct4_Property2",
+                "type": "PrimitiveProperty",
+                "description": "Property Test2",
+                "label": "Test2",
+                "priority": 0,
+                "typeName": "point3d"
+              },
+              {
+                "name": "Struct4_Property3",
+                "type": "PrimitiveProperty",
+                "description": "Property Test3",
+                "label": "Test3",
+                "priority": 0,
+                "typeName": "int"
+              },
+              {
+                "name": "Struct4_Property4",
+                "type": "PrimitiveProperty",
+                "description": "Property Test4",
+                "label": "Test4",
+                "priority": 0,
+                "typeName": "boolean"
+              },
+              {
+                "name": "Struct4_Property5",
+                "type": "PrimitiveProperty",
+                "description": "Property Test5",
+                "label": "Test5",
+                "priority": 0,
+                "typeName": "boolean"
+              }
+            ],
+            "customAttributes": [
+              {
+                "className": "Schema_Test2.CustomAttributeClass_Test3",
+                "Property_Test1": "StructClass_Test4_Old"
+              }
+            ]
+          }
+        },
+        {
+          "item": "Schema_Test4.EntityClass_Test6",
+          "properties": {
+            "schemaItemType": "EntityClass",
+            "label": "Test6",
+            "description": "EntityClass Test6",
+            "baseClass": "BisCore.PhysicalElement",
+            "properties": [
+              {
+                "name": "Entity6_Property1",
+                "type": "PrimitiveProperty",
+                "description": "Property Test1",
+                "label": "Test1",
+                "priority": 0,
+                "typeName": "double"
+              }
+            ],
+            "customAttributes": [
+              {
+                "className": "Schema_Test2.CustomAttributeClass_Test3",
+                "Property_Test1": "EntityClass_Test6_Old"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Schema_Test5",
+      "references": [
+        "BisCore",
+        "Schema_Test4",
+        "CoreCustomAttributes"
+      ],
+      "itemCount": 2109,
+      "checkStubs": [
+        {
+          "item": "Schema_Test5.Format_Test1",
+          "properties": {
+            "schemaItemType": "Format",
+            "label": "realu"
+          }
+        },
+        {
+          "item": "Schema_Test4.EntityClass_Test5",
+          "properties": {
+            "schemaItemType": "EntityClass",
+            "label": "Test5",
+            "description": "EntityClass Test5",
+            "modifier": "Abstract",
+            "baseClass": "Schema_Test4.EntityClass_Test2"
+          }
+        },
+        {
+          "item": "BisCore.PhysicalElement",
+          "properties": {
+            "schemaItemType": "EntityClass",
+            "label": "Physical Element",
+            "description": "A bis:PhysicalElement is spatially located, has mass, and can be 'touched'.",
+            "modifier": "Abstract",
+            "baseClass": "BisCore.SpatialElement"
+          }
+        }
+      ],
+      "checkHierachy": {
+        "derivedClass": "Schema_Test5.EntityClass_Test500",
+        "baseClass": "BisCore.GeometricElement3d"
+      },
+      "checkFullLoad": [
+        {
+          "item": "Schema_Test5.Format_Test1",
+          "properties": {
+            "schemaItemType": "Format",
+            "label": "realu",
+            "type": "Decimal",
+            "precision": 6,
+            "formatTraits": [
+              "KeepSingleZero",
+              "KeepDecimalPoint",
+              "ShowUnitLabel"
+            ]
+          }
+        },
+        {
+          "item": "Schema_Test5.KindOfQuantity_Test3",
+          "properties": {
+            "schemaItemType": "KindOfQuantity",
+            "label": "Test3",
+            "description": "KindOfQuantity Test3",
+            "relativeError": 0.00001,
+            "persistenceUnit": "Schema_Test5.Unit_Test13",
+            "presentationUnits": [
+              "Schema_Test5.Format_Test1(4)[Schema_Test5.Unit_Test13]"
+            ]
+          }
+        },
+        {
+          "item": "Schema_Test5.Phenomenon_Test5",
+          "properties": {
+            "schemaItemType": "Phenomenon",
+            "label": "Test5",
+            "description": "Phenomenon Test5",
+            "definition": "TEST5"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Schema_Test7",
+      "references": [
+        "BisCore",
+        "Schema_TestBase",
+        "CoreCustomAttributes",
+        "Formats",
+        "Units"
+      ],
+      "itemCount": 1872,
+      "checkStubs": [
+        {
+          "item": "Schema_Test7.CustomAttributeClass_Test3",
+          "properties": {
+            "label": "Test3",
+            "description": "CustomAttributeClass Test3"
+          }
+        },
+        {
+          "item": "Schema_Test7.Category_Test2",
+          "properties": {
+            "schemaItemType": "PropertyCategory",
+            "label": "Test2",
+            "description": "Category Test2",
+            "priority": 100000
+          }
+        },
+        {
+          "item": "Schema_Test7.KindOfQuantity_Test1",
+          "properties": {
+            "schemaItemType": "KindOfQuantity",
+            "label": "Test1",
+            "description": "KindOfQuantity Test1"
+          }
+        }
+      ],
+      "checkHierachy": {
+        "derivedClass": "Schema_Test7.EntityClass_Test7",
+        "baseClass": "BisCore.PhysicalElement"
+      },
+      "checkFullLoad": [
+        {
+          "item": "Schema_Test7.CustomAttributeClass_Test1",
+          "properties": {
+            "schemaItemType": "CustomAttributeClass",
+            "label": "Test1",
+            "description": "CustomAttributeClass Test1",
+            "properties": [
+              {
+                "name": "CustomAttribute1_Property1",
+                "type": "PrimitiveProperty",
+                "description": "Property Test1",
+                "label": "Test1",
+                "priority": 0,
+                "typeName": "int"
+              }
+            ],
+            "appliesTo": "Any"
+          }
+        },
+        {
+          "item": "Schema_Test7.KindOfQuantity_Test6",
+          "properties": {
+            "schemaItemType": "KindOfQuantity",
+            "label": "Test6",
+            "description": "KindOfQuantity Test6",
+            "relativeError": 0.0001,
+            "persistenceUnit": "Units.KG_PER_M"
+          }
+        },
+        {
+          "item": "Schema_Test7.EntityClass_Test12",
+          "properties": {
+            "schemaItemType": "EntityClass",
+            "label": "Test12",
+            "description": "EntityClass Test12",
+            "baseClass": "BisCore.PhysicalElement",
+            "properties": [
+              {
+                "name": "Entity12_Property1",
+                "type": "PrimitiveProperty",
+                "description": "Property Test1",
+                "label": "Test1",
+                "isReadOnly": true,
+                "category": "Schema_Test7.Category_Test3",
+                "priority": 9997,
+                "typeName": "string"
+              },
+              {
+                "name": "Entity12_Property2",
+                "type": "PrimitiveProperty",
+                "description": "Property Test2",
+                "label": "Test2",
+                "isReadOnly": true,
+                "category": "Schema_Test7.Category_Test3",
+                "priority": 9996,
+                "typeName": "string"
+              },
+              {
+                "name": "Entity12_Property3",
+                "type": "PrimitiveProperty",
+                "description": "Property Test3",
+                "label": "Test3",
+                "isReadOnly": true,
+                "category": "Schema_Test7.Category_Test3",
+                "priority": 9999,
+                "typeName": "string"
+              },
+              {
+                "name": "Entity12_Property4",
+                "type": "PrimitiveProperty",
+                "description": "Property Test4",
+                "label": "Test4",
+                "isReadOnly": true,
+                "category": "Schema_Test7.Category_Test3",
+                "priority": 9998,
+                "typeName": "string"
+              },
+              {
+                "name": "Entity12_Property5",
+                "type": "PrimitiveProperty",
+                "description": "Property Test5",
+                "label": "Test5",
+                "priority": 0,
+                "customAttributes": [
+                  {
+                    "Show": false,
+                    "className": "CoreCustomAttributes.HiddenProperty"
+                  }
+                ],
+                "typeName": "string"
+              },
+              {
+                "name": "Entity12_Property6",
+                "type": "PrimitiveProperty",
+                "description": "Property Test6",
+                "label": "Test6",
+                "isReadOnly": true,
+                "category": "Schema_Test7.Category_Test36",
+                "priority": 9999,
+                "customAttributes": [
+                  {
+                    "className": "Schema_Test7.CustomAttributeClass_Test1",
+                    "CustomAttribute1_Property1": 91179
+                  }
+                ],
+                "typeName": "string"
+              },
+              {
+                "name": "Entity12_Property7",
+                "type": "PrimitiveProperty",
+                "description": "Property Test7",
+                "label": "Test7",
+                "isReadOnly": true,
+                "category": "Schema_Test7.Category_Test36",
+                "priority": 9998,
+                "kindOfQuantity": "Schema_Test7.KindOfQuantity_Test1",
+                "customAttributes": [
+                  {
+                    "className": "Schema_Test7.CustomAttributeClass_Test2",
+                    "CustomAttribute2_Property1": 15244
+                  },
+                  {
+                    "className": "Schema_Test7.CustomAttributeClass_Test1",
+                    "CustomAttribute1_Property1": 11346
+                  }
+                ],
+                "typeName": "double"
+              },
+              {
+                "name": "Entity12_Property8",
+                "type": "PrimitiveProperty",
+                "description": "Property Test8",
+                "label": "Test8",
+                "isReadOnly": true,
+                "category": "Schema_Test7.Category_Test36",
+                "priority": 9997,
+                "customAttributes": [
+                  {
+                    "className": "Schema_Test7.CustomAttributeClass_Test1",
+                    "CustomAttribute1_Property1": 58399
+                  }
+                ],
+                "typeName": "string"
+              },
+              {
+                "name": "Entity12_Property9",
+                "type": "PrimitiveProperty",
+                "description": "Property Test9",
+                "label": "Test9",
+                "isReadOnly": true,
+                "category": "Schema_Test7.Category_Test36",
+                "priority": 9996,
+                "kindOfQuantity": "Schema_Test7.KindOfQuantity_Test1",
+                "customAttributes": [
+                  {
+                    "className": "Schema_Test7.CustomAttributeClass_Test2",
+                    "CustomAttribute2_Property1": 22420
+                  },
+                  {
+                    "className": "Schema_Test7.CustomAttributeClass_Test1",
+                    "CustomAttribute1_Property1": 21415
+                  }
+                ],
+                "typeName": "double"
+              },
+              {
+                "name": "Entity12_Property10",
+                "type": "PrimitiveProperty",
+                "description": "Property Test10",
+                "label": "Test10",
+                "isReadOnly": true,
+                "category": "Schema_Test7.Category_Test36",
+                "priority": 9995,
+                "kindOfQuantity": "Schema_Test7.KindOfQuantity_Test1",
+                "customAttributes": [
+                  {
+                    "className": "Schema_Test7.CustomAttributeClass_Test2",
+                    "CustomAttribute2_Property1": 6329
+                  },
+                  {
+                    "className": "Schema_Test7.CustomAttributeClass_Test1",
+                    "CustomAttribute1_Property1": 38460
+                  }
+                ],
+                "typeName": "double"
+              },
+              {
+                "name": "Entity12_Property11",
+                "type": "PrimitiveProperty",
+                "description": "Property Test11",
+                "label": "Test11",
+                "isReadOnly": true,
+                "category": "Schema_Test7.Category_Test36",
+                "priority": 9994,
+                "kindOfQuantity": "Schema_Test7.KindOfQuantity_Test1",
+                "customAttributes": [
+                  {
+                    "className": "Schema_Test7.CustomAttributeClass_Test2",
+                    "CustomAttribute2_Property1": 79338
+                  },
+                  {
+                    "className": "Schema_Test7.CustomAttributeClass_Test1",
+                    "CustomAttribute1_Property1": 88702
+                  }
+                ],
+                "typeName": "double"
+              },
+              {
+                "name": "Entity12_Property12",
+                "type": "PrimitiveProperty",
+                "description": "Property Test12",
+                "label": "Test12",
+                "isReadOnly": true,
+                "category": "Schema_Test7.Category_Test36",
+                "priority": 9993,
+                "kindOfQuantity": "Schema_Test7.KindOfQuantity_Test1",
+                "customAttributes": [
+                  {
+                    "className": "Schema_Test7.CustomAttributeClass_Test2",
+                    "CustomAttribute2_Property1": 78022
+                  },
+                  {
+                    "className": "Schema_Test7.CustomAttributeClass_Test1",
+                    "CustomAttribute1_Property1": 69197
+                  }
+                ],
+                "typeName": "double"
+              },
+              {
+                "name": "Entity12_Property13",
+                "type": "PrimitiveProperty",
+                "description": "Property Test13",
+                "label": "Test13",
+                "isReadOnly": true,
+                "category": "Schema_Test7.Category_Test4",
+                "priority": 9999,
+                "customAttributes": [
+                  {
+                    "className": "Schema_Test7.CustomAttributeClass_Test1",
+                    "CustomAttribute1_Property1": 9996
+                  }
+                ],
+                "typeName": "string"
+              },
+              {
+                "name": "Entity12_Property14",
+                "type": "PrimitiveProperty",
+                "description": "Property Test14",
+                "label": "Test14",
+                "isReadOnly": true,
+                "category": "Schema_Test7.Category_Test4",
+                "priority": 9998,
+                "customAttributes": [
+                  {
+                    "className": "Schema_Test7.CustomAttributeClass_Test1",
+                    "CustomAttribute1_Property1": 10953
+                  }
+                ],
+                "typeName": "string"
+              },
+              {
+                "name": "Entity12_Property15",
+                "type": "PrimitiveProperty",
+                "description": "Property Test15",
+                "label": "Test15",
+                "isReadOnly": true,
+                "category": "Schema_Test7.Category_Test4",
+                "priority": 9997,
+                "customAttributes": [
+                  {
+                    "className": "Schema_Test7.CustomAttributeClass_Test1",
+                    "CustomAttribute1_Property1": 3288
+                  }
+                ],
+                "typeName": "string"
+              },
+              {
+                "name": "Entity12_Property16",
+                "type": "PrimitiveProperty",
+                "description": "Property Test16",
+                "label": "Test16",
+                "isReadOnly": true,
+                "category": "Schema_Test7.Category_Test4",
+                "priority": 9996,
+                "customAttributes": [
+                  {
+                    "className": "Schema_Test7.CustomAttributeClass_Test1",
+                    "CustomAttribute1_Property1": 13314
+                  }
+                ],
+                "typeName": "string"
+              },
+              {
+                "name": "Entity12_Property17",
+                "type": "PrimitiveProperty",
+                "description": "Property Test17",
+                "label": "Test17",
+                "isReadOnly": true,
+                "category": "Schema_Test7.Category_Test4",
+                "priority": 9995,
+                "customAttributes": [
+                  {
+                    "className": "Schema_Test7.CustomAttributeClass_Test1",
+                    "CustomAttribute1_Property1": 52226
+                  }
+                ],
+                "typeName": "string"
+              },
+              {
+                "name": "Entity12_Property18",
+                "type": "PrimitiveProperty",
+                "description": "Property Test18",
+                "label": "Test18",
+                "isReadOnly": true,
+                "category": "Schema_Test7.Category_Test4",
+                "priority": 9994,
+                "customAttributes": [
+                  {
+                    "className": "Schema_Test7.CustomAttributeClass_Test1",
+                    "CustomAttribute1_Property1": 53421
+                  }
+                ],
+                "typeName": "string"
+              },
+              {
+                "name": "Entity12_Property19",
+                "type": "PrimitiveProperty",
+                "description": "Property Test19",
+                "label": "Test19",
+                "isReadOnly": true,
+                "category": "Schema_Test7.Category_Test4",
+                "priority": 9993,
+                "customAttributes": [
+                  {
+                    "className": "Schema_Test7.CustomAttributeClass_Test1",
+                    "CustomAttribute1_Property1": 49936
+                  }
+                ],
+                "typeName": "string"
+              },
+              {
+                "name": "Entity12_Property20",
+                "type": "PrimitiveProperty",
+                "description": "Property Test20",
+                "label": "Test20",
+                "isReadOnly": true,
+                "category": "Schema_Test7.Category_Test4",
+                "priority": 9992,
+                "customAttributes": [
+                  {
+                    "className": "Schema_Test7.CustomAttributeClass_Test1",
+                    "CustomAttribute1_Property1": 45677
+                  }
+                ],
+                "typeName": "string"
+              },
+              {
+                "name": "Entity12_Property21",
+                "type": "PrimitiveProperty",
+                "description": "Property Test21",
+                "label": "Test21",
+                "isReadOnly": true,
+                "category": "Schema_Test7.Category_Test4",
+                "priority": 9991,
+                "customAttributes": [
+                  {
+                    "className": "Schema_Test7.CustomAttributeClass_Test1",
+                    "CustomAttribute1_Property1": 14990
+                  }
+                ],
+                "typeName": "string"
+              },
+              {
+                "name": "Entity12_Property22",
+                "type": "PrimitiveProperty",
+                "description": "Property Test22",
+                "label": "Test22",
+                "isReadOnly": true,
+                "category": "Schema_Test7.Category_Test4",
+                "priority": 9990,
+                "customAttributes": [
+                  {
+                    "className": "Schema_Test7.CustomAttributeClass_Test1",
+                    "CustomAttribute1_Property1": 86704
+                  }
+                ],
+                "typeName": "string"
+              },
+              {
+                "name": "Entity12_Property23",
+                "type": "PrimitiveProperty",
+                "description": "Property Test23",
+                "label": "Test23",
+                "isReadOnly": true,
+                "category": "Schema_Test7.Category_Test4",
+                "priority": 9989,
+                "customAttributes": [
+                  {
+                    "className": "Schema_Test7.CustomAttributeClass_Test1",
+                    "CustomAttribute1_Property1": 8435
+                  }
+                ],
+                "typeName": "string"
+              },
+              {
+                "name": "Entity12_Property24",
+                "type": "PrimitiveProperty",
+                "description": "Property Test24",
+                "label": "Test24",
+                "isReadOnly": true,
+                "category": "Schema_Test7.Category_Test4",
+                "priority": 9988,
+                "customAttributes": [
+                  {
+                    "className": "Schema_Test7.CustomAttributeClass_Test1",
+                    "CustomAttribute1_Property1": 33441
+                  }
+                ],
+                "typeName": "string"
+              },
+              {
+                "name": "Entity12_Property25",
+                "type": "PrimitiveProperty",
+                "description": "Property Test25",
+                "label": "Test25",
+                "isReadOnly": true,
+                "category": "Schema_Test7.Category_Test4",
+                "priority": 9987,
+                "customAttributes": [
+                  {
+                    "className": "Schema_Test7.CustomAttributeClass_Test1",
+                    "CustomAttribute1_Property1": 18763
+                  }
+                ],
+                "typeName": "string"
+              },
+              {
+                "name": "Entity12_Property26",
+                "type": "PrimitiveProperty",
+                "description": "Property Test26",
+                "label": "Test26",
+                "isReadOnly": true,
+                "category": "Schema_Test7.Category_Test4",
+                "priority": 9986,
+                "customAttributes": [
+                  {
+                    "className": "Schema_Test7.CustomAttributeClass_Test1",
+                    "CustomAttribute1_Property1": 4736
+                  }
+                ],
+                "typeName": "string"
+              },
+              {
+                "name": "Entity12_Property27",
+                "type": "PrimitiveProperty",
+                "description": "Property Test27",
+                "label": "Test27",
+                "isReadOnly": true,
+                "category": "Schema_Test7.Category_Test4",
+                "priority": 9985,
+                "customAttributes": [
+                  {
+                    "className": "Schema_Test7.CustomAttributeClass_Test1",
+                    "CustomAttribute1_Property1": 18648
+                  }
+                ],
+                "typeName": "string"
+              },
+              {
+                "name": "Entity12_Property28",
+                "type": "PrimitiveProperty",
+                "description": "Property Test28",
+                "label": "Test28",
+                "isReadOnly": true,
+                "category": "Schema_Test7.Category_Test4",
+                "priority": 9984,
+                "customAttributes": [
+                  {
+                    "className": "Schema_Test7.CustomAttributeClass_Test1",
+                    "CustomAttribute1_Property1": 79320
+                  }
+                ],
+                "typeName": "string"
+              },
+              {
+                "name": "Entity12_Property29",
+                "type": "PrimitiveProperty",
+                "description": "Property Test29",
+                "label": "Test29",
+                "isReadOnly": true,
+                "category": "Schema_Test7.Category_Test4",
+                "priority": 9983,
+                "customAttributes": [
+                  {
+                    "className": "Schema_Test7.CustomAttributeClass_Test1",
+                    "CustomAttribute1_Property1": 68560
+                  }
+                ],
+                "typeName": "string"
+              },
+              {
+                "name": "Entity12_Property30",
+                "type": "PrimitiveProperty",
+                "description": "Property Test30",
+                "label": "Test30",
+                "isReadOnly": true,
+                "category": "Schema_Test7.Category_Test4",
+                "priority": 9982,
+                "customAttributes": [
+                  {
+                    "className": "Schema_Test7.CustomAttributeClass_Test1",
+                    "CustomAttribute1_Property1": 14457
+                  }
+                ],
+                "typeName": "string"
+              },
+              {
+                "name": "Entity12_Property31",
+                "type": "PrimitiveProperty",
+                "description": "Property Test31",
+                "label": "Test31",
+                "isReadOnly": true,
+                "category": "Schema_Test7.Category_Test4",
+                "priority": 9981,
+                "customAttributes": [
+                  {
+                    "className": "Schema_Test7.CustomAttributeClass_Test1",
+                    "CustomAttribute1_Property1": 23596
+                  }
+                ],
+                "typeName": "string"
+              },
+              {
+                "name": "Entity12_Property32",
+                "type": "PrimitiveProperty",
+                "description": "Property Test32",
+                "label": "Test32",
+                "isReadOnly": true,
+                "category": "Schema_Test7.Category_Test4",
+                "priority": 9980,
+                "customAttributes": [
+                  {
+                    "className": "Schema_Test7.CustomAttributeClass_Test1",
+                    "CustomAttribute1_Property1": 28830
+                  }
+                ],
+                "typeName": "string"
+              },
+              {
+                "name": "Entity12_Property33",
+                "type": "PrimitiveProperty",
+                "description": "Property Test33",
+                "label": "Test33",
+                "isReadOnly": true,
+                "category": "Schema_Test7.Category_Test4",
+                "priority": 9979,
+                "customAttributes": [
+                  {
+                    "className": "Schema_Test7.CustomAttributeClass_Test1",
+                    "CustomAttribute1_Property1": 4267
+                  }
+                ],
+                "typeName": "string"
+              },
+              {
+                "name": "Entity12_Property34",
+                "type": "PrimitiveProperty",
+                "description": "Property Test34",
+                "label": "Test34",
+                "isReadOnly": true,
+                "category": "Schema_Test7.Category_Test4",
+                "priority": 9978,
+                "customAttributes": [
+                  {
+                    "className": "Schema_Test7.CustomAttributeClass_Test1",
+                    "CustomAttribute1_Property1": 58264
+                  }
+                ],
+                "typeName": "string"
+              },
+              {
+                "name": "Entity12_Property35",
+                "type": "PrimitiveProperty",
+                "description": "Property Test35",
+                "label": "Test35",
+                "isReadOnly": true,
+                "category": "Schema_Test7.Category_Test4",
+                "priority": 9977,
+                "customAttributes": [
+                  {
+                    "className": "Schema_Test7.CustomAttributeClass_Test1",
+                    "CustomAttribute1_Property1": 74450
+                  }
+                ],
+                "typeName": "string"
+              },
+              {
+                "name": "Entity12_Property36",
+                "type": "PrimitiveProperty",
+                "description": "Property Test36",
+                "label": "Test36",
+                "isReadOnly": true,
+                "category": "Schema_Test7.Category_Test4",
+                "priority": 9976,
+                "customAttributes": [
+                  {
+                    "className": "Schema_Test7.CustomAttributeClass_Test1",
+                    "CustomAttribute1_Property1": 27577
+                  }
+                ],
+                "typeName": "string"
+              },
+              {
+                "name": "Entity12_Property37",
+                "type": "PrimitiveProperty",
+                "description": "Property Test37",
+                "label": "Test37",
+                "isReadOnly": true,
+                "category": "Schema_Test7.Category_Test4",
+                "priority": 9975,
+                "customAttributes": [
+                  {
+                    "className": "Schema_Test7.CustomAttributeClass_Test1",
+                    "CustomAttribute1_Property1": 79572
+                  }
+                ],
+                "typeName": "string"
+              },
+              {
+                "name": "Entity12_Property38",
+                "type": "PrimitiveProperty",
+                "description": "Property Test38",
+                "label": "Test38",
+                "isReadOnly": true,
+                "category": "Schema_Test7.Category_Test4",
+                "priority": 9974,
+                "customAttributes": [
+                  {
+                    "className": "Schema_Test7.CustomAttributeClass_Test1",
+                    "CustomAttribute1_Property1": 22225
+                  }
+                ],
+                "typeName": "string"
+              },
+              {
+                "name": "Entity12_Property39",
+                "type": "PrimitiveProperty",
+                "description": "Property Test39",
+                "label": "Test39",
+                "isReadOnly": true,
+                "category": "Schema_Test7.Category_Test4",
+                "priority": 9973,
+                "customAttributes": [
+                  {
+                    "className": "Schema_Test7.CustomAttributeClass_Test1",
+                    "CustomAttribute1_Property1": 67652
+                  }
+                ],
+                "typeName": "string"
+              },
+              {
+                "name": "Entity12_Property40",
+                "type": "PrimitiveProperty",
+                "description": "Property Test40",
+                "label": "Test40",
+                "isReadOnly": true,
+                "category": "Schema_Test7.Category_Test4",
+                "priority": 9972,
+                "customAttributes": [
+                  {
+                    "className": "Schema_Test7.CustomAttributeClass_Test1",
+                    "CustomAttribute1_Property1": 13656
+                  }
+                ],
+                "typeName": "string"
+              },
+              {
+                "name": "Entity12_Property41",
+                "type": "PrimitiveProperty",
+                "description": "Property Test41",
+                "label": "Test41",
+                "isReadOnly": true,
+                "category": "Schema_Test7.Category_Test5",
+                "priority": 9999,
+                "customAttributes": [
+                  {
+                    "className": "Schema_Test7.CustomAttributeClass_Test1",
+                    "CustomAttribute1_Property1": 24340
+                  }
+                ],
+                "typeName": "string"
+              },
+              {
+                "name": "Entity12_Property42",
+                "type": "PrimitiveProperty",
+                "description": "Property Test42",
+                "label": "Test42",
+                "isReadOnly": true,
+                "category": "Schema_Test7.Category_Test5",
+                "priority": 9998,
+                "customAttributes": [
+                  {
+                    "className": "Schema_Test7.CustomAttributeClass_Test1",
+                    "CustomAttribute1_Property1": 17020
+                  }
+                ],
+                "typeName": "string"
+              },
+              {
+                "name": "Entity12_Property43",
+                "type": "PrimitiveProperty",
+                "description": "Property Test43",
+                "label": "Test43",
+                "isReadOnly": true,
+                "category": "Schema_Test7.Category_Test5",
+                "priority": 9997,
+                "customAttributes": [
+                  {
+                    "className": "Schema_Test7.CustomAttributeClass_Test1",
+                    "CustomAttribute1_Property1": 29171
+                  }
+                ],
+                "typeName": "string"
+              },
+              {
+                "name": "Entity12_Property44",
+                "type": "PrimitiveProperty",
+                "description": "Property Test44",
+                "label": "Test44",
+                "isReadOnly": true,
+                "category": "Schema_Test7.Category_Test5",
+                "priority": 9996,
+                "customAttributes": [
+                  {
+                    "className": "Schema_Test7.CustomAttributeClass_Test1",
+                    "CustomAttribute1_Property1": 74514
+                  }
+                ],
+                "typeName": "string"
+              },
+              {
+                "name": "Entity12_Property45",
+                "type": "PrimitiveProperty",
+                "description": "Property Test45",
+                "label": "Test45",
+                "isReadOnly": true,
+                "category": "Schema_Test7.Category_Test6",
+                "priority": 9999,
+                "customAttributes": [
+                  {
+                    "className": "Schema_Test7.CustomAttributeClass_Test1",
+                    "CustomAttribute1_Property1": 18415
+                  }
+                ],
+                "typeName": "string"
+              },
+              {
+                "name": "Entity12_Property46",
+                "type": "PrimitiveProperty",
+                "description": "Property Test46",
+                "label": "Test46",
+                "isReadOnly": true,
+                "category": "Schema_Test7.Category_Test6",
+                "priority": 9998,
+                "customAttributes": [
+                  {
+                    "className": "Schema_Test7.CustomAttributeClass_Test1",
+                    "CustomAttribute1_Property1": 48145
+                  }
+                ],
+                "typeName": "string"
+              },
+              {
+                "name": "Entity12_Property47",
+                "type": "PrimitiveProperty",
+                "description": "Property Test47",
+                "label": "Test47",
+                "isReadOnly": true,
+                "category": "Schema_Test7.Category_Test6",
+                "priority": 9997,
+                "customAttributes": [
+                  {
+                    "className": "Schema_Test7.CustomAttributeClass_Test1",
+                    "CustomAttribute1_Property1": 62396
+                  }
+                ],
+                "typeName": "string"
+              },
+              {
+                "name": "Entity12_Property48",
+                "type": "PrimitiveProperty",
+                "description": "Property Test48",
+                "label": "Test48",
+                "isReadOnly": true,
+                "category": "Schema_Test7.Category_Test6",
+                "priority": 9996,
+                "customAttributes": [
+                  {
+                    "className": "Schema_Test7.CustomAttributeClass_Test1",
+                    "CustomAttribute1_Property1": 42294
+                  }
+                ],
+                "typeName": "string"
+              },
+              {
+                "name": "Entity12_Property49",
+                "type": "PrimitiveProperty",
+                "description": "Property Test49",
+                "label": "Test49",
+                "isReadOnly": true,
+                "category": "Schema_Test7.Category_Test6",
+                "priority": 9995,
+                "customAttributes": [
+                  {
+                    "className": "Schema_Test7.CustomAttributeClass_Test1",
+                    "CustomAttribute1_Property1": 39062
+                  }
+                ],
+                "typeName": "string"
+              },
+              {
+                "name": "Entity12_Property50",
+                "type": "PrimitiveProperty",
+                "description": "Property Test50",
+                "label": "Test50",
+                "isReadOnly": true,
+                "category": "Schema_Test7.Category_Test6",
+                "priority": 9994,
+                "customAttributes": [
+                  {
+                    "className": "Schema_Test7.CustomAttributeClass_Test1",
+                    "CustomAttribute1_Property1": 11787
+                  }
+                ],
+                "typeName": "string"
+              },
+              {
+                "name": "Entity12_Property51",
+                "type": "PrimitiveProperty",
+                "description": "Property Test51",
+                "label": "Test51",
+                "isReadOnly": true,
+                "category": "Schema_Test7.Category_Test6",
+                "priority": 9993,
+                "customAttributes": [
+                  {
+                    "className": "Schema_Test7.CustomAttributeClass_Test1",
+                    "CustomAttribute1_Property1": 34581
+                  }
+                ],
+                "typeName": "string"
+              },
+              {
+                "name": "Entity12_Property52",
+                "type": "PrimitiveProperty",
+                "description": "Property Test52",
+                "label": "Test52",
+                "isReadOnly": true,
+                "category": "Schema_Test7.Category_Test6",
+                "priority": 9992,
+                "customAttributes": [
+                  {
+                    "className": "Schema_Test7.CustomAttributeClass_Test1",
+                    "CustomAttribute1_Property1": 20195
+                  }
+                ],
+                "typeName": "string"
+              },
+              {
+                "name": "Entity12_Property53",
+                "type": "PrimitiveProperty",
+                "description": "Property Test53",
+                "label": "Test53",
+                "isReadOnly": true,
+                "category": "Schema_Test7.Category_Test6",
+                "priority": 9991,
+                "customAttributes": [
+                  {
+                    "className": "Schema_Test7.CustomAttributeClass_Test1",
+                    "CustomAttribute1_Property1": 75179
+                  }
+                ],
+                "typeName": "string"
+              },
+              {
+                "name": "Entity12_Property54",
+                "type": "PrimitiveProperty",
+                "description": "Property Test54",
+                "label": "Test54",
+                "isReadOnly": true,
+                "category": "Schema_Test7.Category_Test6",
+                "priority": 9990,
+                "customAttributes": [
+                  {
+                    "className": "Schema_Test7.CustomAttributeClass_Test1",
+                    "CustomAttribute1_Property1": 16441
+                  }
+                ],
+                "typeName": "string"
+              },
+              {
+                "name": "Entity12_Property55",
+                "type": "PrimitiveProperty",
+                "description": "Property Test55",
+                "label": "Test55",
+                "isReadOnly": true,
+                "category": "Schema_Test7.Category_Test6",
+                "priority": 9989,
+                "customAttributes": [
+                  {
+                    "className": "Schema_Test7.CustomAttributeClass_Test1",
+                    "CustomAttribute1_Property1": 86827
+                  }
+                ],
+                "typeName": "string"
+              },
+              {
+                "name": "Entity12_Property56",
+                "type": "PrimitiveProperty",
+                "description": "Property Test56",
+                "label": "Test56",
+                "isReadOnly": true,
+                "category": "Schema_Test7.Category_Test6",
+                "priority": 9988,
+                "customAttributes": [
+                  {
+                    "className": "Schema_Test7.CustomAttributeClass_Test1",
+                    "CustomAttribute1_Property1": 60625
+                  }
+                ],
+                "typeName": "string"
+              },
+              {
+                "name": "Entity12_Property57",
+                "type": "PrimitiveProperty",
+                "description": "Property Test57",
+                "label": "Test57",
+                "isReadOnly": true,
+                "category": "Schema_Test7.Category_Test6",
+                "priority": 9987,
+                "customAttributes": [
+                  {
+                    "className": "Schema_Test7.CustomAttributeClass_Test1",
+                    "CustomAttribute1_Property1": 5527
+                  }
+                ],
+                "typeName": "string"
+              },
+              {
+                "name": "Entity12_Property58",
+                "type": "PrimitiveProperty",
+                "description": "Property Test58",
+                "label": "Test58",
+                "isReadOnly": true,
+                "category": "Schema_Test7.Category_Test6",
+                "priority": 9986,
+                "customAttributes": [
+                  {
+                    "className": "Schema_Test7.CustomAttributeClass_Test1",
+                    "CustomAttribute1_Property1": 75054
+                  }
+                ],
+                "typeName": "string"
+              },
+              {
+                "name": "Entity12_Property59",
+                "type": "PrimitiveProperty",
+                "description": "Property Test59",
+                "label": "Test59",
+                "isReadOnly": true,
+                "category": "Schema_Test7.Category_Test6",
+                "priority": 9985,
+                "customAttributes": [
+                  {
+                    "className": "Schema_Test7.CustomAttributeClass_Test1",
+                    "CustomAttribute1_Property1": 25454
+                  }
+                ],
+                "typeName": "string"
+              },
+              {
+                "name": "Entity12_Property60",
+                "type": "PrimitiveProperty",
+                "description": "Property Test60",
+                "label": "Test60",
+                "isReadOnly": true,
+                "category": "Schema_Test7.Category_Test6",
+                "priority": 9984,
+                "customAttributes": [
+                  {
+                    "className": "Schema_Test7.CustomAttributeClass_Test1",
+                    "CustomAttribute1_Property1": 43860
+                  }
+                ],
+                "typeName": "string"
+              },
+              {
+                "name": "Entity12_Property61",
+                "type": "PrimitiveProperty",
+                "description": "Property Test61",
+                "label": "Test61",
+                "isReadOnly": true,
+                "category": "Schema_Test7.Category_Test7",
+                "priority": 9999,
+                "customAttributes": [
+                  {
+                    "className": "Schema_Test7.CustomAttributeClass_Test1",
+                    "CustomAttribute1_Property1": 95325
+                  }
+                ],
+                "typeName": "string"
+              },
+              {
+                "name": "Entity12_Property62",
+                "type": "PrimitiveProperty",
+                "description": "Property Test62",
+                "label": "Test62",
+                "isReadOnly": true,
+                "category": "Schema_Test7.Category_Test11",
+                "priority": 9999,
+                "customAttributes": [
+                  {
+                    "className": "Schema_Test7.CustomAttributeClass_Test1",
+                    "CustomAttribute1_Property1": 75263
+                  }
+                ],
+                "typeName": "string"
+              },
+              {
+                "name": "Entity12_Property63",
+                "type": "PrimitiveProperty",
+                "description": "Property Test63",
+                "label": "Test63",
+                "isReadOnly": true,
+                "category": "Schema_Test7.Category_Test11",
+                "priority": 9998,
+                "customAttributes": [
+                  {
+                    "className": "Schema_Test7.CustomAttributeClass_Test1",
+                    "CustomAttribute1_Property1": 26009
+                  }
+                ],
+                "typeName": "string"
+              },
+              {
+                "name": "Entity12_Property64",
+                "type": "PrimitiveProperty",
+                "description": "Property Test64",
+                "label": "Test64",
+                "isReadOnly": true,
+                "category": "Schema_Test7.Category_Test11",
+                "priority": 9997,
+                "customAttributes": [
+                  {
+                    "className": "Schema_Test7.CustomAttributeClass_Test1",
+                    "CustomAttribute1_Property1": 58154
+                  }
+                ],
+                "typeName": "string"
+              },
+              {
+                "name": "Entity12_Property65",
+                "type": "PrimitiveProperty",
+                "description": "Property Test65",
+                "label": "Test65",
+                "isReadOnly": true,
+                "category": "Schema_Test7.Category_Test11",
+                "priority": 9996,
+                "customAttributes": [
+                  {
+                    "className": "Schema_Test7.CustomAttributeClass_Test1",
+                    "CustomAttribute1_Property1": 89130
+                  }
+                ],
+                "typeName": "string"
+              },
+              {
+                "name": "Entity12_Property66",
+                "type": "PrimitiveProperty",
+                "description": "Property Test66",
+                "label": "Test66",
+                "isReadOnly": true,
+                "category": "Schema_Test7.Category_Test11",
+                "priority": 9995,
+                "customAttributes": [
+                  {
+                    "className": "Schema_Test7.CustomAttributeClass_Test1",
+                    "CustomAttribute1_Property1": 66441
+                  }
+                ],
+                "typeName": "string"
+              },
+              {
+                "name": "Entity12_Property67",
+                "type": "PrimitiveProperty",
+                "description": "Property Test67",
+                "label": "Test67",
+                "isReadOnly": true,
+                "category": "Schema_Test7.Category_Test11",
+                "priority": 9994,
+                "customAttributes": [
+                  {
+                    "className": "Schema_Test7.CustomAttributeClass_Test1",
+                    "CustomAttribute1_Property1": 78487
+                  }
+                ],
+                "typeName": "string"
+              },
+              {
+                "name": "Entity12_Property68",
+                "type": "PrimitiveProperty",
+                "description": "Property Test68",
+                "label": "Test68",
+                "isReadOnly": true,
+                "category": "Schema_Test7.Category_Test11",
+                "priority": 9993,
+                "customAttributes": [
+                  {
+                    "className": "Schema_Test7.CustomAttributeClass_Test1",
+                    "CustomAttribute1_Property1": 45199
+                  }
+                ],
+                "typeName": "string"
+              },
+              {
+                "name": "Entity12_Property69",
+                "type": "PrimitiveProperty",
+                "description": "Property Test69",
+                "label": "Test69",
+                "isReadOnly": true,
+                "category": "Schema_Test7.Category_Test14",
+                "priority": 9999,
+                "customAttributes": [
+                  {
+                    "className": "Schema_Test7.CustomAttributeClass_Test1",
+                    "CustomAttribute1_Property1": 45583
+                  }
+                ],
+                "typeName": "string"
+              },
+              {
+                "name": "Entity12_Property70",
+                "type": "PrimitiveProperty",
+                "description": "Property Test70",
+                "label": "Test70",
+                "isReadOnly": true,
+                "category": "Schema_Test7.Category_Test37",
+                "priority": 9999,
+                "customAttributes": [
+                  {
+                    "className": "Schema_Test7.CustomAttributeClass_Test1",
+                    "CustomAttribute1_Property1": 29023
+                  }
+                ],
+                "typeName": "string"
+              },
+              {
+                "name": "Entity12_Property71",
+                "type": "PrimitiveProperty",
+                "description": "Property Test71",
+                "label": "Test71",
+                "isReadOnly": true,
+                "category": "Schema_Test7.Category_Test37",
+                "priority": 9998,
+                "customAttributes": [
+                  {
+                    "className": "Schema_Test7.CustomAttributeClass_Test1",
+                    "CustomAttribute1_Property1": 82858
+                  }
+                ],
+                "typeName": "string"
+              },
+              {
+                "name": "Entity12_Property72",
+                "type": "PrimitiveProperty",
+                "description": "Property Test72",
+                "label": "Test72",
+                "isReadOnly": true,
+                "category": "Schema_Test7.Category_Test18",
+                "priority": 9999,
+                "customAttributes": [
+                  {
+                    "className": "Schema_Test7.CustomAttributeClass_Test1",
+                    "CustomAttribute1_Property1": 90130
+                  }
+                ],
+                "typeName": "dateTime"
+              },
+              {
+                "name": "Entity12_Property73",
+                "type": "PrimitiveProperty",
+                "description": "Property Test73",
+                "label": "Test73",
+                "isReadOnly": true,
+                "category": "Schema_Test7.Category_Test18",
+                "priority": 9998,
+                "customAttributes": [
+                  {
+                    "className": "Schema_Test7.CustomAttributeClass_Test1",
+                    "CustomAttribute1_Property1": 27454
+                  }
+                ],
+                "typeName": "string"
+              },
+              {
+                "name": "Entity12_Property74",
+                "type": "PrimitiveProperty",
+                "description": "Property Test74",
+                "label": "Test74",
+                "isReadOnly": true,
+                "category": "Schema_Test7.Category_Test18",
+                "priority": 9997,
+                "customAttributes": [
+                  {
+                    "className": "Schema_Test7.CustomAttributeClass_Test1",
+                    "CustomAttribute1_Property1": 35967
+                  }
+                ],
+                "typeName": "string"
+              },
+              {
+                "name": "Entity12_Property75",
+                "type": "PrimitiveProperty",
+                "description": "Property Test75",
+                "label": "Test75",
+                "isReadOnly": true,
+                "category": "Schema_Test7.Category_Test18",
+                "priority": 9996,
+                "customAttributes": [
+                  {
+                    "className": "Schema_Test7.CustomAttributeClass_Test1",
+                    "CustomAttribute1_Property1": 29737
+                  }
+                ],
+                "typeName": "string"
+              },
+              {
+                "name": "Entity12_Property76",
+                "type": "PrimitiveProperty",
+                "description": "Property Test76",
+                "label": "Test76",
+                "isReadOnly": true,
+                "category": "Schema_Test7.Category_Test18",
+                "priority": 9995,
+                "customAttributes": [
+                  {
+                    "className": "Schema_Test7.CustomAttributeClass_Test1",
+                    "CustomAttribute1_Property1": 49030
+                  }
+                ],
+                "typeName": "string"
+              },
+              {
+                "name": "Entity12_Property77",
+                "type": "PrimitiveProperty",
+                "description": "Property Test77",
+                "label": "Test77",
+                "isReadOnly": true,
+                "category": "Schema_Test7.Category_Test19",
+                "priority": 9999,
+                "customAttributes": [
+                  {
+                    "className": "Schema_Test7.CustomAttributeClass_Test1",
+                    "CustomAttribute1_Property1": 72160
+                  }
+                ],
+                "typeName": "string"
+              },
+              {
+                "name": "Entity12_Property78",
+                "type": "PrimitiveProperty",
+                "description": "Property Test78",
+                "label": "Test78",
+                "isReadOnly": true,
+                "category": "Schema_Test7.Category_Test19",
+                "priority": 9998,
+                "customAttributes": [
+                  {
+                    "className": "Schema_Test7.CustomAttributeClass_Test1",
+                    "CustomAttribute1_Property1": 72062
+                  }
+                ],
+                "typeName": "string"
+              },
+              {
+                "name": "Entity12_Property79",
+                "type": "PrimitiveProperty",
+                "description": "Property Test79",
+                "label": "Test79",
+                "isReadOnly": true,
+                "category": "Schema_Test7.Category_Test19",
+                "priority": 9997,
+                "customAttributes": [
+                  {
+                    "className": "Schema_Test7.CustomAttributeClass_Test1",
+                    "CustomAttribute1_Property1": 35152
+                  }
+                ],
+                "typeName": "string"
+              },
+              {
+                "name": "Entity12_Property80",
+                "type": "PrimitiveProperty",
+                "description": "Property Test80",
+                "label": "Test80",
+                "isReadOnly": true,
+                "category": "Schema_Test7.Category_Test19",
+                "priority": 9996,
+                "customAttributes": [
+                  {
+                    "className": "Schema_Test7.CustomAttributeClass_Test1",
+                    "CustomAttribute1_Property1": 87987
+                  }
+                ],
+                "typeName": "string"
+              },
+              {
+                "name": "Entity12_Property81",
+                "type": "PrimitiveProperty",
+                "description": "Property Test81",
+                "label": "Test81",
+                "isReadOnly": true,
+                "category": "Schema_Test7.Category_Test19",
+                "priority": 9995,
+                "customAttributes": [
+                  {
+                    "className": "Schema_Test7.CustomAttributeClass_Test1",
+                    "CustomAttribute1_Property1": 81452
+                  }
+                ],
+                "typeName": "string"
+              },
+              {
+                "name": "Entity12_Property82",
+                "type": "PrimitiveProperty",
+                "description": "Property Test82",
+                "label": "Test82",
+                "isReadOnly": true,
+                "category": "Schema_Test7.Category_Test19",
+                "priority": 9994,
+                "customAttributes": [
+                  {
+                    "className": "Schema_Test7.CustomAttributeClass_Test1",
+                    "CustomAttribute1_Property1": 89240
+                  }
+                ],
+                "typeName": "string"
+              },
+              {
+                "name": "Entity12_Property83",
+                "type": "PrimitiveProperty",
+                "description": "Property Test83",
+                "label": "Test83",
+                "isReadOnly": true,
+                "category": "Schema_Test7.Category_Test19",
+                "priority": 9993,
+                "customAttributes": [
+                  {
+                    "className": "Schema_Test7.CustomAttributeClass_Test1",
+                    "CustomAttribute1_Property1": 65294
+                  }
+                ],
+                "typeName": "string"
+              },
+              {
+                "name": "Entity12_Property84",
+                "type": "PrimitiveProperty",
+                "description": "Property Test84",
+                "label": "Test84",
+                "isReadOnly": true,
+                "category": "Schema_Test7.Category_Test38",
+                "priority": 9999,
+                "customAttributes": [
+                  {
+                    "className": "Schema_Test7.CustomAttributeClass_Test1",
+                    "CustomAttribute1_Property1": 6098
+                  }
+                ],
+                "typeName": "string"
+              },
+              {
+                "name": "Entity12_Property85",
+                "type": "PrimitiveProperty",
+                "description": "Property Test85",
+                "label": "Test85",
+                "isReadOnly": true,
+                "category": "Schema_Test7.Category_Test38",
+                "priority": 9998,
+                "customAttributes": [
+                  {
+                    "className": "Schema_Test7.CustomAttributeClass_Test1",
+                    "CustomAttribute1_Property1": 76444
+                  }
+                ],
+                "typeName": "string"
+              },
+              {
+                "name": "Entity12_Property86",
+                "type": "PrimitiveProperty",
+                "description": "Property Test86",
+                "label": "Test86",
+                "isReadOnly": true,
+                "category": "Schema_Test7.Category_Test38",
+                "priority": 9997,
+                "customAttributes": [
+                  {
+                    "className": "Schema_Test7.CustomAttributeClass_Test1",
+                    "CustomAttribute1_Property1": 41259
+                  }
+                ],
+                "typeName": "boolean"
+              },
+              {
+                "name": "Entity12_Property87",
+                "type": "PrimitiveProperty",
+                "description": "Property Test87",
+                "label": "Test87",
+                "isReadOnly": true,
+                "category": "Schema_Test7.Category_Test38",
+                "priority": 9996,
+                "customAttributes": [
+                  {
+                    "className": "Schema_Test7.CustomAttributeClass_Test1",
+                    "CustomAttribute1_Property1": 18306
+                  }
+                ],
+                "typeName": "boolean"
+              },
+              {
+                "name": "Entity12_Property88",
+                "type": "PrimitiveProperty",
+                "description": "Property Test88",
+                "label": "Test88",
+                "isReadOnly": true,
+                "category": "Schema_Test7.Category_Test38",
+                "priority": 9995,
+                "customAttributes": [
+                  {
+                    "className": "Schema_Test7.CustomAttributeClass_Test1",
+                    "CustomAttribute1_Property1": 28157
+                  }
+                ],
+                "typeName": "string"
+              },
+              {
+                "name": "Entity12_Property89",
+                "type": "PrimitiveProperty",
+                "description": "Property Test89",
+                "label": "Test89",
+                "isReadOnly": true,
+                "category": "Schema_Test7.Category_Test38",
+                "priority": 9994,
+                "customAttributes": [
+                  {
+                    "className": "Schema_Test7.CustomAttributeClass_Test1",
+                    "CustomAttribute1_Property1": 24798
+                  }
+                ],
+                "typeName": "string"
+              },
+              {
+                "name": "Entity12_Property90",
+                "type": "PrimitiveProperty",
+                "description": "Property Test90",
+                "label": "Test90",
+                "isReadOnly": true,
+                "category": "Schema_Test7.Category_Test38",
+                "priority": 9993,
+                "customAttributes": [
+                  {
+                    "className": "Schema_Test7.CustomAttributeClass_Test1",
+                    "CustomAttribute1_Property1": 94578
+                  }
+                ],
+                "typeName": "double"
+              },
+              {
+                "name": "Entity12_Property91",
+                "type": "PrimitiveProperty",
+                "description": "Property Test91",
+                "label": "Test91",
+                "isReadOnly": true,
+                "category": "Schema_Test7.Category_Test3",
+                "priority": 9999,
+                "typeName": "string"
+              },
+              {
+                "name": "Entity12_Property92",
+                "type": "PrimitiveProperty",
+                "description": "Property Test92",
+                "label": "Test92",
+                "isReadOnly": true,
+                "category": "Schema_Test7.Category_Test22",
+                "priority": 9999,
+                "kindOfQuantity": "Schema_Test7.KindOfQuantity_Test3",
+                "customAttributes": [
+                  {
+                    "className": "Schema_Test7.CustomAttributeClass_Test2",
+                    "CustomAttribute2_Property1": 81298
+                  }
+                ],
+                "typeName": "double"
+              },
+              {
+                "name": "Entity12_Property93",
+                "type": "PrimitiveProperty",
+                "description": "Property Test93",
+                "label": "Test93",
+                "isReadOnly": true,
+                "category": "Schema_Test7.Category_Test22",
+                "priority": 9998,
+                "kindOfQuantity": "Schema_Test7.KindOfQuantity_Test3",
+                "customAttributes": [
+                  {
+                    "className": "Schema_Test7.CustomAttributeClass_Test2",
+                    "CustomAttribute2_Property1": 20339
+                  }
+                ],
+                "typeName": "double"
+              },
+              {
+                "name": "Entity12_Property94",
+                "type": "PrimitiveProperty",
+                "description": "Property Test94",
+                "label": "Test94",
+                "isReadOnly": true,
+                "category": "Schema_Test7.Category_Test22",
+                "priority": 9997,
+                "kindOfQuantity": "Schema_Test7.KindOfQuantity_Test6",
+                "customAttributes": [
+                  {
+                    "className": "Schema_Test7.CustomAttributeClass_Test2",
+                    "CustomAttribute2_Property1": 24358
+                  }
+                ],
+                "typeName": "double"
+              },
+              {
+                "name": "Entity12_Property95",
+                "type": "PrimitiveProperty",
+                "description": "Property Test95",
+                "label": "Test95",
+                "isReadOnly": true,
+                "category": "Schema_Test7.Category_Test22",
+                "priority": 9996,
+                "kindOfQuantity": "Schema_Test7.KindOfQuantity_Test4",
+                "customAttributes": [
+                  {
+                    "className": "Schema_Test7.CustomAttributeClass_Test2",
+                    "CustomAttribute2_Property1": 75623
+                  }
+                ],
+                "typeName": "double"
+              },
+              {
+                "name": "Entity12_Property96",
+                "type": "PrimitiveProperty",
+                "description": "Property Test96",
+                "label": "Test96",
+                "isReadOnly": true,
+                "category": "Schema_Test7.Category_Test22",
+                "priority": 9995,
+                "kindOfQuantity": "Schema_Test7.KindOfQuantity_Test5",
+                "customAttributes": [
+                  {
+                    "className": "Schema_Test7.CustomAttributeClass_Test2",
+                    "CustomAttribute2_Property1": 7724
+                  }
+                ],
+                "typeName": "double"
+              },
+              {
+                "name": "Entity12_Property97",
+                "type": "PrimitiveProperty",
+                "description": "Property Test97",
+                "label": "Test97",
+                "isReadOnly": true,
+                "category": "Schema_Test7.Category_Test22",
+                "priority": 9994,
+                "kindOfQuantity": "Schema_Test7.KindOfQuantity_Test4",
+                "customAttributes": [
+                  {
+                    "className": "Schema_Test7.CustomAttributeClass_Test2",
+                    "CustomAttribute2_Property1": 60225
+                  }
+                ],
+                "typeName": "double"
+              },
+              {
+                "name": "Entity12_Property98",
+                "type": "PrimitiveProperty",
+                "description": "Property Test98",
+                "label": "Test98",
+                "isReadOnly": true,
+                "category": "Schema_Test7.Category_Test22",
+                "priority": 9993,
+                "kindOfQuantity": "Schema_Test7.KindOfQuantity_Test4",
+                "customAttributes": [
+                  {
+                    "className": "Schema_Test7.CustomAttributeClass_Test2",
+                    "CustomAttribute2_Property1": 14058
+                  }
+                ],
+                "typeName": "double"
+              },
+              {
+                "name": "Entity12_Property99",
+                "type": "PrimitiveProperty",
+                "description": "Property Test99",
+                "label": "Test99",
+                "isReadOnly": true,
+                "category": "Schema_Test7.Category_Test22",
+                "priority": 9992,
+                "typeName": "string"
+              },
+              {
+                "name": "Entity12_Property100",
+                "type": "PrimitiveProperty",
+                "description": "Property Test100",
+                "label": "Test100",
+                "isReadOnly": true,
+                "category": "Schema_Test7.Category_Test22",
+                "priority": 9991,
+                "typeName": "point3d"
+              },
+              {
+                "name": "Entity12_Property101",
+                "type": "PrimitiveProperty",
+                "description": "Property Test101",
+                "label": "Test101",
+                "isReadOnly": true,
+                "category": "Schema_Test7.Category_Test22",
+                "priority": 9990,
+                "typeName": "point3d"
+              },
+              {
+                "name": "Entity12_Property102",
+                "type": "PrimitiveProperty",
+                "description": "Property Test102",
+                "label": "Test102",
+                "isReadOnly": true,
+                "category": "Schema_Test7.Category_Test22",
+                "priority": 9989,
+                "typeName": "double"
+              },
+              {
+                "name": "Entity12_Property103",
+                "type": "PrimitiveProperty",
+                "description": "Property Test103",
+                "label": "Test103",
+                "isReadOnly": true,
+                "category": "Schema_Test7.Category_Test22",
+                "priority": 9988,
+                "kindOfQuantity": "Schema_Test7.KindOfQuantity_Test1",
+                "typeName": "double"
+              },
+              {
+                "name": "Entity12_Property104",
+                "type": "PrimitiveProperty",
+                "description": "Property Test104",
+                "label": "Test104",
+                "isReadOnly": true,
+                "category": "Schema_Test7.Category_Test22",
+                "priority": 9987,
+                "typeName": "int"
+              },
+              {
+                "name": "Entity12_Property105",
+                "type": "PrimitiveProperty",
+                "description": "Property Test105",
+                "label": "Test105",
+                "isReadOnly": true,
+                "category": "Schema_Test7.Category_Test22",
+                "priority": 9986,
+                "typeName": "int"
+              },
+              {
+                "name": "Entity12_Property106",
+                "type": "PrimitiveProperty",
+                "description": "Property Test106",
+                "label": "Test106",
+                "isReadOnly": true,
+                "category": "Schema_Test7.Category_Test22",
+                "priority": 9985,
+                "typeName": "point3d"
+              },
+              {
+                "name": "Entity12_Property107",
+                "type": "PrimitiveProperty",
+                "description": "Property Test107",
+                "label": "Test107",
+                "isReadOnly": true,
+                "category": "Schema_Test7.Category_Test22",
+                "priority": 9984,
+                "typeName": "string"
+              },
+              {
+                "name": "Entity12_Property108",
+                "type": "PrimitiveProperty",
+                "description": "Property Test108",
+                "label": "Test108",
+                "isReadOnly": true,
+                "category": "Schema_Test7.Category_Test22",
+                "priority": 9983,
+                "typeName": "string"
+              },
+              {
+                "name": "Entity12_Property109",
+                "type": "PrimitiveProperty",
+                "description": "Property Test109",
+                "label": "Test109",
+                "isReadOnly": true,
+                "category": "Schema_Test7.Category_Test22",
+                "priority": 9982,
+                "typeName": "string"
+              },
+              {
+                "name": "Entity12_Property110",
+                "type": "PrimitiveProperty",
+                "description": "Property Test110",
+                "label": "Test110",
+                "isReadOnly": true,
+                "category": "Schema_Test7.Category_Test22",
+                "priority": 9981,
+                "typeName": "string"
+              },
+              {
+                "name": "Entity12_Property111",
+                "type": "PrimitiveProperty",
+                "description": "Property Test111",
+                "label": "Test111",
+                "isReadOnly": true,
+                "category": "Schema_Test7.Category_Test22",
+                "priority": 9980,
+                "typeName": "string"
+              },
+              {
+                "name": "Entity12_Property112",
+                "type": "PrimitiveProperty",
+                "description": "Property Test112",
+                "label": "Test112",
+                "isReadOnly": true,
+                "category": "Schema_Test7.Category_Test22",
+                "priority": 9979,
+                "typeName": "string"
+              },
+              {
+                "name": "Entity12_Property113",
+                "type": "PrimitiveProperty",
+                "description": "Property Test113",
+                "label": "Test113",
+                "isReadOnly": true,
+                "category": "Schema_Test7.Category_Test22",
+                "priority": 9978,
+                "typeName": "string"
+              },
+              {
+                "name": "Entity12_Property114",
+                "type": "PrimitiveProperty",
+                "description": "Property Test114",
+                "label": "Test114",
+                "isReadOnly": true,
+                "category": "Schema_Test7.Category_Test22",
+                "priority": 9977,
+                "typeName": "string"
+              },
+              {
+                "name": "Entity12_Property115",
+                "type": "PrimitiveProperty",
+                "description": "Property Test115",
+                "label": "Test115",
+                "isReadOnly": true,
+                "category": "Schema_Test7.Category_Test22",
+                "priority": 9976,
+                "typeName": "string"
+              },
+              {
+                "name": "Entity12_Property116",
+                "type": "PrimitiveProperty",
+                "description": "Property Test116",
+                "label": "Test116",
+                "isReadOnly": true,
+                "category": "Schema_Test7.Category_Test22",
+                "priority": 9975,
+                "typeName": "string"
+              },
+              {
+                "name": "Entity12_Property117",
+                "type": "PrimitiveProperty",
+                "description": "Property Test117",
+                "label": "Test117",
+                "isReadOnly": true,
+                "category": "Schema_Test7.Category_Test22",
+                "priority": 9974,
+                "typeName": "string"
+              },
+              {
+                "name": "Entity12_Property118",
+                "type": "PrimitiveProperty",
+                "description": "Property Test118",
+                "label": "Test118",
+                "isReadOnly": true,
+                "category": "Schema_Test7.Category_Test22",
+                "priority": 9973,
+                "typeName": "string"
+              },
+              {
+                "name": "Entity12_Property119",
+                "type": "PrimitiveProperty",
+                "description": "Property Test119",
+                "label": "Test119",
+                "isReadOnly": true,
+                "category": "Schema_Test7.Category_Test22",
+                "priority": 9972,
+                "typeName": "string"
+              },
+              {
+                "name": "Entity12_Property120",
+                "type": "PrimitiveProperty",
+                "description": "Property Test120",
+                "label": "Test120",
+                "isReadOnly": true,
+                "category": "Schema_Test7.Category_Test22",
+                "priority": 9971,
+                "typeName": "string"
+              },
+              {
+                "name": "Entity12_Property121",
+                "type": "PrimitiveProperty",
+                "description": "Property Test121",
+                "label": "Test121",
+                "isReadOnly": true,
+                "category": "Schema_Test7.Category_Test3",
+                "priority": 9995,
+                "typeName": "double"
+              },
+              {
+                "name": "Entity12_Property122",
+                "type": "PrimitiveProperty",
+                "description": "Property Test122",
+                "label": "Test122",
+                "isReadOnly": true,
+                "category": "Schema_Test7.Category_Test3",
+                "priority": 9994,
+                "typeName": "double"
+              },
+              {
+                "name": "Entity12_Property123",
+                "type": "PrimitiveProperty",
+                "description": "Property Test123",
+                "label": "Test123",
+                "isReadOnly": true,
+                "category": "Schema_Test7.Category_Test3",
+                "priority": 9993,
+                "typeName": "string"
+              },
+              {
+                "name": "Entity12_Property124",
+                "type": "PrimitiveProperty",
+                "description": "Property Test124",
+                "label": "Test124",
+                "isReadOnly": true,
+                "category": "Schema_Test7.Category_Test3",
+                "priority": 9992,
+                "typeName": "string"
+              },
+              {
+                "name": "Entity12_Property125",
+                "type": "PrimitiveProperty",
+                "description": "Property Test125",
+                "label": "Test125",
+                "isReadOnly": true,
+                "category": "Schema_Test7.Category_Test3",
+                "priority": 9991,
+                "typeName": "string"
+              },
+              {
+                "name": "Entity12_Property126",
+                "type": "PrimitiveProperty",
+                "description": "Property Test126",
+                "label": "Test126",
+                "isReadOnly": true,
+                "category": "Schema_Test7.Category_Test3",
+                "priority": 9990,
+                "typeName": "string"
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

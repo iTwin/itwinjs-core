@@ -48,7 +48,7 @@ export class PerformanceLogger {
    * value is a second Map whose key is a Schema name and value is a SchemaLoadData
    * object.
    */
-  public get LogItems(): Map<string, Map<string, SchemaLoadData>> {
+  public get logItems(): Map<string, Map<string, SchemaLoadData>> {
     return this._iModelItems;
   }
 

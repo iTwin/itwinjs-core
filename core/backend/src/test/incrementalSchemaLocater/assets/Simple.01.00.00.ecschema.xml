@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ECSchema schemaName="SimpleSchema" alias="t" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
+  <ECSchemaReference name="Units" version="01.00.08" alias="u"/>
+  <ECSchemaReference name="Formats" version="01.00.00" alias="f"/>
+  <ECSchemaReference name="BisCore" version="01.00.10" alias="bis"/>
+  <ECSchemaReference name="CoreCustomAttributes" version="01.00.03" alias="CoreCA"/>
+
+  <UnitSystem typeName="UnitSystem_Test" displayLabel="Test" description="UnitSystem Test"/>
+  <Phenomenon typeName="Phenomenon_Test" definition="TEST" displayLabel="Test" description="Phenomenon Test"/>
+  <PropertyCategory typeName="Category_Test" priority="1000" displayLabel="Test" description="PropertyCategory Test"/>
+
+  <ECEnumeration typeName="Enumeration_Integer" backingTypeName="int" isStrict="true" displayLabel="Test" description="Enumeration Integer">
+    <ECEnumerator value="0" name="Enumerator0" displayLabel="0" description="Enumerator 0"/>
+    <ECEnumerator value="1" name="Enumerator1" displayLabel="1" description="Enumerator 1"/>
+  </ECEnumeration>
+
+  <ECEnumeration typeName="Enumeration_String" backingTypeName="string" isStrict="false" displayLabel="Test" description="Enumeration String">
+    <ECEnumerator value="0" name="Enumerator0"/>
+    <ECEnumerator value="1" name="Enumerator1"/>
+  </ECEnumeration>
+
+  <Unit typeName="Unit_Test1" phenomenon="Phenomenon_Test" unitSystem="UnitSystem_Test" definition="TEST1" numerator="10.0" displayLabel="Test1" description="Unit Test1" />
+  <Unit typeName="Unit_Test2" phenomenon="u:TEMPERATURE" unitSystem="u:USCUSTOM" definition="TEST2" numerator="5.0" denominator="3.0" offset="0.01325" displayLabel="Test2" description="Unit Test2" />
+  <InvertedUnit typeName="InvertedUnit_Test1" invertsUnit="Unit_Test1" unitSystem="UnitSystem_Test" displayLabel="Test1" description="InvertedUnit Test1"/>
+  <InvertedUnit typeName="InvertedUnit_Test2" invertsUnit="u:FT_PER_FT" unitSystem="u:USCUSTOM" displayLabel="Test2" description="InvertedUnit Test2"/>
+
+  <Constant typeName="Constant_Test1" phenomenon="Phenomenon_Test" definition="TEST1" numerator="1.0e3" displayLabel="Test1" description="Constant Test1"/>
+  <Constant typeName="Constant_Test2" phenomenon="u:ANGLE" definition="TEST2" numerator="180.0" denominator="0.5" displayLabel="Test2" description="Constant Test2"/>
+
+  <Format typeName="Format_Station" displayLabel="Test" description="Format Station" type="station" precision="2" formatTraits="trailZeroes|keepSingleZero|keepDecimalPoint"
+    thousandSeparator=" " decimalSeparator="," stationSeparator="+" stationOffsetSize="3" minWidth="3"/>
+  <Format typeName="Format_Scientific" displayLabel="Test" description="Format Scientific" type="scientific" scientificType="Normalized" precision="6" 
+    formatTraits="keepSingleZero" decimalSeparator="," thousandSeparator=" "/>
+  <Format typeName="Format_Decimal" displayLabel="Test" description="Format Decimal"
+      type="decimal" precision="4" showSignOption="noSign" formatTraits="keepSingleZero|keepDecimalPoint" thousandSeparator=" " decimalSeparator="," minWidth="3" roundFactor="0.1">
+    <Composite spacer="" includeZero="false">
+      <Unit label="g">u:G</Unit>
+      <Unit label="mg">u:MG</Unit>
+    </Composite>
+  </Format>
+  <Format typeName="Format_Fractional" displayLabel="Test" description="Format Fractional" type="fractional" precision="8" formatTraits="keepSingleZero|showUnitLabel" uomSeparator="">
+    <Composite spacer="">
+      <Unit label="test">Unit_Test1</Unit>
+    </Composite>
+  </Format>
+  <KindOfQuantity typeName="KindOfQuantity_Test1" displayLabel="Test1" description="KindOfQuantity Test1" persistenceUnit="Unit_Test1" relativeError="0.001" presentationUnits="Format_Fractional(4)[Unit_Test1]"/>
+  <KindOfQuantity typeName="KindOfQuantity_Test2" displayLabel="Test2" description="KindOfQuantity Test2" persistenceUnit="u:MG" relativeError="0.0001" presentationUnits="f:DefaultRealU(2)[u:MG];f:DefaultRealU(2)[u:G]"/>
+
+  <ECStructClass typeName="StructClass_Test1" modifier="Abstract"  displayLabel="Test1" description="StructClass Test1">
+    <ECProperty propertyName="DoubleProperty" typeName="double" category="Category_Test" displayLabel="Double" description="Double Property"/>
+	  <ECProperty propertyName="Point3dProperty" typeName="point3d" readOnly="true" displayLabel="Point3" description="Point3 Property">
+      <ECCustomAttributes>
+        <HiddenProperty xmlns="CoreCustomAttributes.01.00.03"/>
+        <CustomHandledProperty xmlns="BisCore.01.00.10"/>
+      </ECCustomAttributes>
+    </ECProperty>
+	  <ECArrayProperty propertyName="LongArrayProperty" typeName="long" minOccurs="0" maxOccurs="52" displayLabel="LongArray" description="LongArray Property"/>
+  </ECStructClass>
+  <ECStructClass typeName="StructClass_Test2" modifier="Sealed"  displayLabel="Test2" description="StructClass Test2">
+    <BaseClass>StructClass_Test1</BaseClass>
+    <ECCustomAttributes>
+      <ClassHasHandler xmlns="BisCore.01.00.10"/>
+    </ECCustomAttributes>
+    <ECProperty propertyName="DateTimeProperty" typeName="dateTime" kindOfQuantity="KindOfQuantity_Test1" displayLabel="DateTime" description="DateTime Property"/>
+	  <ECProperty propertyName="BooleanProperty" typeName="boolean" priority="1001" displayLabel="Boolean" description="Boolean Property"/>
+	  <ECArrayProperty propertyName="StringEnumerationArrayProperty" typeName="Enumeration_String" minOccurs="0" maxOccurs="3" displayLabel="StringEnumerationArray" description="StringEnumerationArray Property"/>
+  </ECStructClass>
+
+  <ECCustomAttributeClass typeName="CustomAttributeClass_Test1" modifier="Abstract" appliesTo="AnyClass" displayLabel="Test1" description="CustomAttributeClass Test1">
+    <ECProperty propertyName="StringProperty" typeName="string" extendedTypeName="Json" minimumLength="1" maximumLength="150" displayLabel="String" description="String Property" />
+    <ECStructProperty propertyName="StructProperty" typeName="StructClass_Test2" displayLabel="Struct" description="Struct Property"/>
+  </ECCustomAttributeClass>
+  <ECCustomAttributeClass typeName="CustomAttributeClass_Test2" modifier="None" appliesTo="AnyProperty" displayLabel="Test2" description="CustomAttributeClass Test2">
+    <BaseClass>bis:CustomHandledProperty</BaseClass>
+    <ECCustomAttributes>
+      <CustomAttributeClass_Test3/>
+    </ECCustomAttributes>
+    <ECArrayProperty propertyName="IntegerArrayProperty" typeName="int" minOccurs="0" maxOccurs="150" maximumValue="1000" description="IntegerArray Property" displayLabel="IntegerArray"/>
+    <ECProperty propertyName="BinaryProperty" typeName="binary" displayLabel="Binary" description="Binary Property"/>
+  </ECCustomAttributeClass>
+  <ECCustomAttributeClass typeName="CustomAttributeClass_Test3"  modifier="Sealed" appliesTo="Any" displayLabel="Test3" description="CustomAttributeClass Test3">
+    <BaseClass>CustomAttributeClass_Test1</BaseClass>
+    <ECProperty propertyName="IntegerProperty" typeName="int" minimumValue="1" maximumValue="101" displayLabel="Integer" description="Integer Property">
+      <ECCustomAttributes>
+        <AutoHandledProperty xmlns="BisCore.01.00.10">
+          <StatementTypes>3</StatementTypes>
+        </AutoHandledProperty>
+      </ECCustomAttributes>
+    </ECProperty>
+    <ECArrayProperty propertyName="IntegerEnumerationArray" typeName="bis:SectionType" displayLabel="IntegerEnumerationArray" description="IntegerEnumerationArray Property"/>
+  </ECCustomAttributeClass>
+  <ECCustomAttributeClass typeName="CustomAttributeClass_Test4" appliesTo="AnyRelationshipConstraint" modifier="Sealed">
+    <ECProperty propertyName="StringProperty" typeName="string"/>
+  </ECCustomAttributeClass>
+    
+  <ECEntityClass typeName="IMixin_Test1" modifier="Abstract" displayLabel="Test1" description="Mixin Test1">
+    <ECCustomAttributes>
+      <IsMixin xmlns="CoreCustomAttributes.01.00.03">
+        <AppliesToEntityClass>bis:Element</AppliesToEntityClass>
+      </IsMixin>
+      <CustomAttributeClass_Test3/>
+    </ECCustomAttributes>
+    <ECProperty propertyName="LongProperty" typeName="long" category="Category_Test" displayLabel="Long" description="Long Property"/>
+    <ECArrayProperty propertyName="BooleanArrayProperty" typeName="boolean" minOccurs="1" maxOccurs="5" displayLabel="BooleanArray" description="BooleanArray Property"/>
+  </ECEntityClass>
+
+  <ECEntityClass typeName="IMixin_Test2" modifier="Abstract" displayLabel="Test2" description="Mixin Test2">
+    <BaseClass>IMixin_Test1</BaseClass>
+    <ECCustomAttributes>
+      <IsMixin xmlns="CoreCustomAttributes.01.00.03">
+        <AppliesToEntityClass>bis:PhysicalElement</AppliesToEntityClass>
+      </IsMixin>
+    </ECCustomAttributes>
+    <ECProperty propertyName="IGeometryProperty" typeName="Bentley.Geometry.Common.IGeometry" displayLabel="IGeometry" description="IGeometry Property">
+      <ECCustomAttributes>
+        <HiddenProperty xmlns="CoreCustomAttributes.01.00.03"/>
+        <Deprecated xmlns="CoreCustomAttributes.01.00.03">
+          <Description>Deprecated renamed property.</Description>
+        </Deprecated>
+      </ECCustomAttributes>
+    </ECProperty>
+    <ECArrayProperty propertyName="DoubleArrayProperty" typeName="double" minimumValue="0.1" maximumValue="9.9" minOccurs="2" maxOccurs="10" displayLabel="DoubleArray" description="DoubleArray Property"/>
+  </ECEntityClass>
+
+  <ECEntityClass typeName="EntityClass_Test1" modifier="None" displayLabel="Test1" description="EntityClass Test1">
+    <BaseClass>bis:PhysicalElement</BaseClass>
+    <BaseClass>IMixin_Test1</BaseClass>
+    <ECCustomAttributes>      
+      <CustomAttributeClass_Test3>
+        <IntegerProperty>152</IntegerProperty>
+      </CustomAttributeClass_Test3>
+    </ECCustomAttributes>
+    <ECProperty propertyName="IntegerEnumerationProperty" typeName="Enumeration_Integer" displayLabel="IntegerEnumeration" description="IntegerEnumeration Property"/>
+    <ECArrayProperty propertyName="DateTimeArrayProperty" typeName="dateTime" minOccurs="1" maxOccurs="2" displayLabel="DateTimeArray" description="DateTimeArray Property"/>
+  </ECEntityClass>
+  <ECEntityClass typeName="EntityClass_Test2" modifier="Abstract" displayLabel="Test2" description="EntityClass Test2">
+    <BaseClass>EntityClass_Test1</BaseClass>
+    <BaseClass>IMixin_Test2</BaseClass>
+    <ECProperty propertyName="Point2dProperty" typeName="point2d" displayLabel="Point2d" description="Point2d Property"/>
+    <ECArrayProperty propertyName="StringArrayProperty" typeName="string" minimumLength="1" maximumLength="455" displayLabel="StringArrayProperty" description="StringArray Property"/>
+  </ECEntityClass>
+    <ECEntityClass typeName="EntityClass_Test3" modifier="Sealed" displayLabel="Test3" description="EntityClass Test3">
+    <BaseClass>EntityClass_Test2</BaseClass>
+    <ECProperty propertyName="StringEnumerationProperty" typeName="CoreCA:ProductionStatusValue" displayLabel="StringEnumeration" description="StringEnumeration Property"/>    
+  </ECEntityClass>
+
+  <ECRelationshipClass typeName="RelationshipClass_Test1" displayLabel="Test1" description="RelationshipClass Test1" modifier="Sealed" strength="Referencing" strengthDirection="Forward">
+    <BaseClass>bis:ElementRefersToElements</BaseClass>
+    <ECCustomAttributes>
+      <HiddenClass xmlns="CoreCustomAttributes.01.00.03">
+        <Show>false</Show>
+      </HiddenClass>
+    </ECCustomAttributes>
+    <ECArrayProperty propertyName="Point2dArrayProperty" typeName="point2d" minOccurs="5" maxOccurs="75" displayLabel="Point2dArray" description="Point2dArray Property"/>
+    <ECArrayProperty propertyName="Point3dArrayProperty" typeName="point3d" minOccurs="3" maxOccurs="13" displayLabel="Point3dArray" description="Point3dArray Property"/>
+	  <Source polymorphic="true" roleLabel="refers to" multiplicity="(0..*)" abstractConstraint="bis:Element">
+	    <Class class="bis:Element"/>
+      <ECCustomAttributes>
+        <CustomAttributeClass_Test4>
+          <StringProperty>Source</StringProperty>
+        </CustomAttributeClass_Test4>
+      </ECCustomAttributes>
+	  </Source>
+	  <Target polymorphic="true" roleLabel="is referenced by" multiplicity="(0..*)" abstractConstraint="bis:Element">
+	    <Class class="bis:Element"/>
+      <ECCustomAttributes>
+        <CustomAttributeClass_Test4>
+          <StringProperty>Target</StringProperty>
+        </CustomAttributeClass_Test4>
+      </ECCustomAttributes>
+	  </Target>
+  </ECRelationshipClass>
+  <ECRelationshipClass typeName="RelationshipClass_Test2" modifier="None" displayLabel="Test2" description="RelationshipClass Test2" strength="Embedding" strengthDirection="Backward">
+    <BaseClass>bis:ModelModelsElement</BaseClass>
+	  <Source polymorphic="true" roleLabel="models" multiplicity="(0..1)" abstractConstraint="bis:Model">
+	    <Class class="bis:Model"/>
+	  </Source>
+	  <Target polymorphic="true" roleLabel="is referenced by" multiplicity="(0..1)" abstractConstraint="bis:ISubModeledElement">
+	    <Class class="bis:ISubModeledElement"/>
+	  </Target>
+  </ECRelationshipClass>
+</ECSchema>

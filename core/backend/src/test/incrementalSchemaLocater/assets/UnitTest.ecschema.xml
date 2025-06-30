@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- ==================================================================================
+|  * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+|  * See LICENSE.md in the project root for license terms and full copyright notice.
+======================================================================================= -->
+<ECSchema schemaName="UnitTest" alias="ut" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
+  <UnitSystem typeName="METRIC" displayLabel="Metric System" description="The worldly unit system"/>
+  <UnitSystem typeName="USCUSTOM" displayLabel="US System" description="The American way"/>
+  <Phenomenon typeName="VOLUME" definition="LENGTH(3)" displayLabel="Volume" description="Volume"/>
+  <Phenomenon typeName="AREA" definition="LENGTH(2)" displayLabel="Area" />
+  <Phenomenon typeName="TEMPERATURE" definition="TEMPERATURE" displayLabel="Temperature" />
+  <Unit typeName="LITRE" phenomenon="VOLUME" unitSystem="METRIC" definition="CUB_DM" displayLabel="L" />
+  <Unit typeName="GALLON" phenomenon="VOLUME" unitSystem="USCUSTOM" definition="IN(3)" numerator="231.0" displayLabel="gal" description="used for things like milk" />
+  <Unit typeName="ACRE" phenomenon="AREA" unitSystem="USCUSTOM" definition="CHAIN(2)" numerator="10.0" displayLabel="acres" description="used for land area" />
+  <Unit typeName="FAHRENHEIT" phenomenon="TEMPERATURE" unitSystem="USCUSTOM" definition="CELSIUS" numerator="5.0" denominator="9.0" offset="-32" displayLabel="°F" description="Factor is 5/9" />
+</ECSchema>

@@ -45,7 +45,6 @@
     "@bentley/units-schema": "^1.0.9",
     "@itwin/build-tools": "workspace:*",
     "@itwin/core-bentley": "workspace:*",
-    "@itwin/core-common": "workspace:*",
     "@itwin/core-quantity": "workspace:*",
     "@itwin/eslint-plugin": "5.0.0-dev.1",
     "@types/benchmark": "^2.1.0",
@@ -68,8 +67,7 @@
   },
   "peerDependencies": {
     "@itwin/core-bentley": "workspace:*",
-    "@itwin/core-quantity": "workspace:*",
-    "@itwin/core-common": "workspace:*"
+    "@itwin/core-quantity": "workspace:*"
   },
   "nyc": {
     "extends": "./node_modules/@itwin/build-tools/.nycrc"

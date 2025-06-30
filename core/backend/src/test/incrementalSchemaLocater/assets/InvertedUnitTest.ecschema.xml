@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- ==================================================================================
+|  * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+|  * See LICENSE.md in the project root for license terms and full copyright notice.
+======================================================================================= -->
+<ECSchema schemaName="InvertedUnitTest" alias="iut" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
+  <UnitSystem typeName="USCUSTOM" displayLabel="US System" description="The American way"/>
+  <Phenomenon typeName="SLOPE" definition="LENGTH*LENGTH(-1)" displayLabel="Slope" />
+  <Unit typeName="FT_PER_FT" phenomenon="SLOPE" unitSystem="USCUSTOM" definition="FT*FT(-1)" displayLabel="ft/ft" />
+  <InvertedUnit typeName="FT_HORIZONTAL_PER_FT_VERTICAL" invertsUnit="FT_PER_FT" unitSystem="USCUSTOM" />
+</ECSchema>

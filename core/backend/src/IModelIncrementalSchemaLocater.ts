@@ -3,50 +3,36 @@
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
 
-import { ECSqlQueryOptions, ECSqlSchemaLoader, ECSqlSchemaLoaderOptions, IncrementalSchemaLocater, SchemaKey, SchemaProps } from "@itwin/ecschema-metadata";
+import { ECSqlQueryOptions, ECSqlSchemaLocater, ECSqlSchemaLocaterOptions, SchemaKey, SchemaProps } from "@itwin/ecschema-metadata";
+import { QueryBinder, QueryRowFormat } from "@itwin/core-common";
 import { IModelDb } from "./IModelDb";
-import { QueryRowFormat } from "@itwin/core-common";
 
 /**
- * A [[IncrementalSchemaLocater]]($ecschema-metadata) implementation that uses the [[IModelDb]] to load schemas incrementally.
+ * A [[ECSqlSchemaLocater]]($ecschema-metadata) implementation that uses the [[IModelDb]] to load schemas incrementally.
  * @beta
  */
-export class IModelIncrementalSchemaLocater extends IncrementalSchemaLocater {
-  /**
-   * Initializes a new instance of the IModelIncrementalSchemaLocater class.
-   */
-  constructor(iModel: IModelDb, options?: ECSqlSchemaLoaderOptions) {
-    super(new IModelSchemaLoader(iModel, { useMultipleQueries: true, ...options }));
-  }
-}
-
-/**
- * An ECSqlSchemaLoader implementation that reads the schema using ECSql from an IModelDb.
- * This loader is supposed to be used in backend scenarios where the IModelDb is available.
- * @internal
- */
-class IModelSchemaLoader extends ECSqlSchemaLoader {
+export class IModelIncrementalSchemaLocater extends ECSqlSchemaLocater {
   private readonly _iModel: IModelDb;
 
   /**
-   * Constructs a new IModelSchemaLoader instance.
-   * @param iModel The IModelDb to query.
-   * @param options Optional ECSqlSchemaLoaderOptions.
+   * Constructs a new [[IModelSchemaLoader]] instance.
+   * @param iModel The [[IModelDb]] to query.
+   * @param options Optional [[ECSqlSchemaLoaderOptions]].
    */
-  constructor(iModel: IModelDb, options?: ECSqlSchemaLoaderOptions) {
+  constructor(iModel: IModelDb, options?: ECSqlSchemaLocaterOptions) {
     super(options ?? { useMultipleQueries: true });
     this._iModel = iModel;
   }
 
   /**
-   * Gets the IModelDb targeted by this schema loader.
+   * Gets the [[IModelDb]] targeted by this schema loader.
    */
   public get iModelDb(): IModelDb {
     return this._iModel;
   }
 
   /**
-   * Gets SchemaProps for the given SchemaKey.
+   * Gets [[SchemaProps]]($ecschema-metadata) for the given [[SchemaKey]]($ecschema-metadata).
    * This is the full schema json with all elements that are defined in the schema.
    * @param schemaKey The key of the schema to be resolved.
    */
@@ -67,12 +53,14 @@ class IModelSchemaLoader extends ECSqlSchemaLoader {
   /**
    * Executes an ECSql query against the IModelDb.
    * @param query The query to execute
-   * @param options The ECSqlQueryOptions to use.
+   * @param options The [[ECSqlQueryOptions]] to use.
    * @returns A promise that resolves to read-only array of type TRow.
    */
   protected async executeQuery<TRow>(query: string, options?: ECSqlQueryOptions): Promise<ReadonlyArray<TRow>> {
+    const queryParameters = options && options.parameters ? QueryBinder.from(options.parameters) : undefined;
+
     return this._iModel
-      .createQueryReader(query, options?.args, {
+      .createQueryReader(query, queryParameters, {
         rowFormat: QueryRowFormat.UseECSqlPropertyNames,
         limit: { count: options?.limit },
       })
