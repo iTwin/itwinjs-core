@@ -132,6 +132,7 @@ describe("FormatsProvider examples", () => {
 
       IModelConnection.onClose.addOnce(() => {
         removeUnitSystemListener();
+        IModelApp.resetFormatsProvider();
       });
       IModelApp.formatsProvider = schemaFormatsProvider;
     });
