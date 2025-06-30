@@ -472,6 +472,7 @@ export class Element extends Entity {
   // eslint-disable-next-line @typescript-eslint/no-deprecated
   public getClassMetaData(): EntityMetaData | undefined { return this.iModel.classMetaDataRegistry.find(this.classFullName); }
 
+  /** Query metadata for this entity class from the iModel's schema. Returns cached metadata if available.*/
   public override async getMetaData(): Promise<EntityClass> {
     if (this._metadata && EntityClass.isEntityClass(this._metadata)) {
       return this._metadata;

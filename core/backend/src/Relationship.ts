@@ -37,6 +37,7 @@ export class Relationship extends Entity {
     return val;
   }
 
+  /** Query metadata for this relationship class from the iModel's schema. Returns cached metadata if available.*/
   public override async getMetaData(): Promise<RelationshipClass> {
     if (this._metadata && RelationshipClass.isRelationshipClass(this._metadata)) {
       return this._metadata;
