@@ -556,6 +556,44 @@ describe("EntityClass", () => {
       const props = { ...baseJson, mixins: ["DoesNotExist"] };
       expect(() => testClass.fromJSONSync(props)).to.throw(ECSchemaError, `Unable to find the referenced SchemaItem DoesNotExist.`);
     });
+
+    it("should not add the same mixin when deserializing", () => {
+      const testMixin = new Mixin(testClass.schema, "TestMixin");
+      (testClass as MutableEntityClass).addMixin(testMixin);
+
+      const entityClassProps = {
+        name: "TestEntity",
+        schemaItemType: "EntityClass",
+        mixins: [testMixin.fullName]
+      };
+
+      testClass.fromJSONSync(entityClassProps);
+      const serialized = testClass.toJSON();
+      assert.isDefined(serialized.mixins);
+      expect(serialized.mixins!.length).equal(1);
+      assert.isTrue(serialized.mixins![0] === testMixin.fullName);
+    });
+
+    it("should add a different mixin when deserializing", async () => {
+      const refSchema = new Schema(testClass.schema.context, "RefSchema", "rs", 1, 0, 0);
+      await (testClass.schema as MutableSchema).addReference(refSchema);
+
+      const testMixin = new Mixin(testClass.schema, "TestMixin");
+      const refMixin = new Mixin(refSchema, "TestMixin");
+      (testClass as MutableEntityClass).addMixin(refMixin);
+
+      const entityClassProps = {
+        name: "TestEntity",
+        schemaItemType: "EntityClass",
+        mixins: [testMixin.fullName]
+      };
+
+      await testClass.fromJSON(entityClassProps);
+      const serialized = testClass.toJSON();
+      assert.isDefined(serialized.mixins);
+      expect(serialized.mixins!.length).equal(2);
+      assert.deepEqual(serialized.mixins, [refMixin.fullName, testMixin.fullName]);
+    });
   });
 
   describe("toJSON", () => {
