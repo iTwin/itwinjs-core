@@ -1347,8 +1347,7 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
     this.addResolvedPoint(localA.index, localA.fraction, result._points);
     for (let index = index0; index <= index1; index++) {
       if (this._points.isIndexValid(index)) {
-        this._points.getPoint3dAtUncheckedPointIndex(index, LineString3d._workPointA);
-        result._points.push(LineString3d._workPointA);
+        result._points.pushFromGrowableXYZArray(this._points, index);
       }
     }
     this.addResolvedPoint(localB.index, localB.fraction, result._points);
@@ -1371,9 +1370,9 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
   public override isPhysicallyClosedCurve(tolerance: number = Geometry.smallMetricDistance, xyOnly: boolean = false): boolean {
     if (!this._points.length)
       return false;
-    const p0 = this._points.getPoint3dAtUncheckedPointIndex(0, LineString3d._workPointA);
-    const p1 = this._points.getPoint3dAtUncheckedPointIndex(this._points.length - 1, LineString3d._workPointB);
-    return xyOnly ? p0.isAlmostEqualXY(p1, tolerance): p0.isAlmostEqual(p1, tolerance);
+    if (xyOnly)
+      return this._points.almostEqualXYIndexIndex(0, this._points.length - 1, tolerance)!; // we know the indices are valid
+    return this._points.almostEqualIndexIndex(0, this._points.length - 1, tolerance)!;
   }
   /** Returns true if first and last points are within metric tolerance. */
   public get isPhysicallyClosed(): boolean {
