@@ -74,7 +74,7 @@ export class Entity {
   }
 
   /** Cached Metadata for the ECClass */
-  private _metadata?: EntityClass | RelationshipClass;
+  protected _metadata?: EntityClass | RelationshipClass;
 
   /** When working with an Entity it can be useful to set property values directly, bypassing the compiler's type checking.
    * This property makes such code slightly less tedious to read and write.
