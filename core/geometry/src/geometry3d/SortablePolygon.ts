@@ -118,7 +118,7 @@ class PolygonCarrier extends SimpleRegionCarrier {
   public constructInteriorPointNearEdge(edgeIndex: number, fractionAlong: number): Point3d | undefined {
     if (edgeIndex + 1 < this.data.length) {
       const ray = Ray3d.createCapture(
-        this.data.interpolateIndexIndex(edgeIndex, edgeIndex + 1, fractionAlong)!,
+        this.data.interpolateIndexIndex(edgeIndex, fractionAlong, edgeIndex + 1)!,
         this.data.vectorIndexIndex(edgeIndex, edgeIndex + 1)!
       );
       return this.constructInteriorPoint(ray);
