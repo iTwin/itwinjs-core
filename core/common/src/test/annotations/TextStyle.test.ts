@@ -22,6 +22,7 @@ describe("TextStyleSettings", () => {
     superScriptScale: 0.5,
     widthFactor: 2,
     tabInterval: 7,
+    indentation: 0.33,
   };
 
   it("returns defaults if no props provided", () => {

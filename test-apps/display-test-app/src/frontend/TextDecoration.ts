@@ -117,9 +117,24 @@ class TextEditor implements Decorator {
     }));
   }
 
-  public appendParagraph(): void {
+  public appendParagraph(styleOverrides?: TextStyleSettingsProps): void {
     this._textBlock.appendParagraph();
+    this._textBlock.paragraphs[this._textBlock.paragraphs.length - 1].styleOverrides = {
+      ...styleOverrides,
+      ...this.runStyle,
+      ...this.documentStyle
+    };
   }
+
+  public setIndentation(indentation: number): void {
+    const currentParagraph = this._textBlock.paragraphs[this._textBlock.paragraphs.length - 1];
+    currentParagraph.styleOverrides = {
+      ...currentParagraph.styleOverrides,
+      indentation,
+    };
+
+    this.runStyle.indentation = indentation;
+  };
 
   public setDocumentWidth(width: number): void {
     this._textBlock.width = width;
@@ -271,6 +286,11 @@ export class TextDecorationTool extends Tool {
           default:
             throw new Error("Expected left, right, or center");
         }
+        break;
+      }
+      case "indent": {
+        const indentation = Number.parseFloat(arg);
+        editor.setIndentation(indentation);
         break;
       }
       case "spacing":

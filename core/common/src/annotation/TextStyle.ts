@@ -93,6 +93,11 @@ export interface TextStyleSettingsProps {
    * Default: 4 meters.
    */
   tabInterval?: number;
+  /** The offset (in meters) from the left edge of the text block to the start of the line of text.
+   * In nested runs, this is compounded with the indentations of the parent runs to determine the actual offset.
+   * Default: 0 meters.
+   */
+  indentation?: number;
 }
 
 /** A description of the formatting to be applied to a [[TextBlockComponent]].
@@ -150,6 +155,10 @@ export class TextStyleSettings {
    * These are equally spaced from the left edge of the TextBlock. Default is 4 meters.
    */
   public readonly tabInterval: number;
+  /** The offset (in meters) from the left edge of the text block to the start of the line of text.
+   * In nested runs, this is compounded with the indentations of the parent runs to determine the actual offset.
+   */
+  public readonly indentation: number;
 
   /** A fully-populated JSON representation of the default settings. */
   public static defaultProps: Readonly<Required<TextStyleSettingsProps>> = {
@@ -168,6 +177,7 @@ export class TextStyleSettings {
     superScriptScale: 2 / 3,
     widthFactor: 1,
     tabInterval: 4,
+    indentation: 0,
   };
 
   /** Settings initialized to all default values. */
@@ -193,6 +203,7 @@ export class TextStyleSettings {
     this.superScriptScale = props.superScriptScale ?? defaults.superScriptScale;
     this.widthFactor = props.widthFactor ?? defaults.widthFactor;
     this.tabInterval = props.tabInterval ?? defaults.tabInterval;
+    this.indentation = props.indentation ?? defaults.indentation;
   }
 
   /** Create a copy of these settings, modified according to the properties defined by `alteredProps`. */
@@ -216,7 +227,7 @@ export class TextStyleSettings {
       && this.stackedFractionType === other.stackedFractionType && this.stackedFractionScale === other.stackedFractionScale
       && this.subScriptOffsetFactor === other.subScriptOffsetFactor && this.subScriptScale === other.subScriptScale
       && this.superScriptOffsetFactor === other.superScriptOffsetFactor && this.superScriptScale === other.superScriptScale
-      && this.tabInterval === other.tabInterval;
+      && this.tabInterval === other.tabInterval && this.indentation === other.indentation;
   }
 }
 

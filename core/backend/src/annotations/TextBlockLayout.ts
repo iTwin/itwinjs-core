@@ -7,7 +7,7 @@
  */
 
 import { BaselineShift, FontId, FontType, FractionRun, LineLayoutResult, Paragraph, Run, RunLayoutResult, TabRun, TextBlock, TextBlockLayoutResult, TextBlockMargins, TextRun, TextStyleSettings, TextStyleSettingsProps } from "@itwin/core-common";
-import { Geometry, Range2d } from "@itwin/core-geometry";
+import { Geometry, Range2d, WritableXAndY } from "@itwin/core-geometry";
 import { IModelDb } from "../IModelDb";
 import { assert, NonFunctionPropertiesOf } from "@itwin/core-bentley";
 import * as LineBreaker from "linebreak";
@@ -455,12 +455,13 @@ export class LineLayout {
   public source: Paragraph;
   public range = new Range2d(0, 0, 0, 0);
   public justificationRange = new Range2d(0, 0, 0, 0);
-  public offsetFromDocument = { x: 0, y: 0 };
+  public offsetFromDocument: WritableXAndY;
   public lengthFromLastTab = 0; // Used to track the length from the last tab for tab runs.
   private _runs: RunLayout[] = [];
 
   public constructor(source: Paragraph) {
     this.source = source;
+    this.offsetFromDocument = { x: source.styleOverrides.indentation ?? 0, y: 0 };
   }
 
   /** Compute a string representation, primarily for debugging purposes. */
@@ -506,7 +507,7 @@ export class LineLayout {
         this.justificationRange.extendRange(runJustificationRange ?? runLayoutRange);
       }
 
-      if (run.source.type === "tab") {
+      if ("tab" === run.source.type) {
         this.lengthFromLastTab = 0;
       } else {
         this.lengthFromLastTab += run.range.xLength();
@@ -690,7 +691,8 @@ export class TextBlockLayout {
     }
 
     // Line origin is its baseline.
-    const lineOffset = { x: 0, y: -line.range.yLength() };
+    const lineOffset = { ...line.offsetFromDocument }; // Start with the line's original offset, which includes indentation.
+    lineOffset.y = -line.range.yLength(); // Shift down the baseline
 
     // Place it below any existing lines
     if (this.lines.length > 0) {
