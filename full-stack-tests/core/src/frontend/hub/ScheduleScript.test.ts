@@ -19,7 +19,7 @@ function countTileTrees(view: ViewState): number {
   return numTrees;
 }
 
-describe.only("Schedule script (#integration)", () => {
+describe("Schedule script (#integration)", () => {
   let dbOld: IModelConnection; // BisCore 1.0.8. No RenderTimeline element.
   let dbNew: IModelConnection; // BisCore 1.0.13. RenderTimeline element and DisplayStyle pointing to it.
   const viewId = "0x100000004d9";
