@@ -6,7 +6,7 @@
  * @module ElementGeometry
  */
 
-import { BaselineShift, FontId, FontType, FractionRun, LineLayoutResult, Paragraph, Run, RunLayoutResult, TextBlock, TextBlockLayoutResult, TextBlockMargins, TextRun, TextStyleSettings, TextStyleSettingsProps } from "@itwin/core-common";
+import { BaselineShift, FontId, FontType, FractionRun, LineLayoutResult, Paragraph, Run, RunLayoutResult, TabRun, TextBlock, TextBlockLayoutResult, TextBlockMargins, TextRun, TextStyleSettings, TextStyleSettingsProps } from "@itwin/core-common";
 import { Geometry, Range2d } from "@itwin/core-geometry";
 import { IModelDb } from "../IModelDb";
 import { assert, NonFunctionPropertiesOf } from "@itwin/core-bentley";
@@ -264,6 +264,16 @@ class LayoutContext {
     layout.extendRange(denominator);
     return { layout, numerator, denominator };
   }
+
+  public computeRangeForTabRun(style: TextStyleSettings, source: TabRun, length: number): Range2d {
+    const interval = source.styleOverrides.tabInterval ?? style.tabInterval;
+    const tabEndX = interval - length % interval;
+
+    const range = new Range2d(0, 0, 0, style.lineHeight);
+    range.extendXY(tabEndX, range.low.y);
+
+    return range;
+  }
 }
 
 interface Segment {
@@ -289,6 +299,12 @@ function split(source: string): Segment[] {
   }
 
   return segments;
+}
+
+function applyTabShift(run: RunLayout, parent: LineLayout, context: LayoutContext): void {
+  if (run.source.type === "tab") {
+    run.range.setFrom(context.computeRangeForTabRun(run.style, run.source, parent.lengthFromLastTab));
+  }
 }
 
 /**
@@ -347,8 +363,9 @@ export class RunLayout {
         denominatorRange = ranges.denominator;
         break;
       }
-      default: {
-        // We do this so that blank lines space correctly without special casing later.
+      default: { // "linebreak" or "tab"
+      // "tab": Tabs rely on the context they are in, so we compute its range later.
+      // lineBreak: We do this so that blank lines space correctly without special casing later.
         range = new Range2d(0, 0, 0, style.lineHeight);
         break;
       }
@@ -439,6 +456,7 @@ export class LineLayout {
   public range = new Range2d(0, 0, 0, 0);
   public justificationRange = new Range2d(0, 0, 0, 0);
   public offsetFromDocument = { x: 0, y: 0 };
+  public lengthFromLastTab = 0; // Used to track the length from the last tab for tab runs.
   private _runs: RunLayout[] = [];
 
   public constructor(source: Paragraph) {
@@ -486,6 +504,12 @@ export class LineLayout {
       if ("linebreak" !== run.source.type) {
         const runJustificationRange = run.justificationRange?.cloneTranslated(runOffset);
         this.justificationRange.extendRange(runJustificationRange ?? runLayoutRange);
+      }
+
+      if (run.source.type === "tab") {
+        this.lengthFromLastTab = 0;
+      } else {
+        this.lengthFromLastTab += run.range.xLength();
       }
     }
   }
@@ -575,23 +599,38 @@ export class TextBlockLayout {
           continue;
         }
 
+        // If this is a tab, we need to apply the tab shift first, and then we can treat it like a text run.
+        applyTabShift(run, curLine, context);
+
+        // If our width is not set (doWrap is false), then we don't have to compute word wrapping, so just append the run, and continue.
         if (!doWrap) {
           curLine.append(run);
           continue;
         }
 
+        // Next, determine if we can append this run to the current line without exceeding the document width
         const runWidth = run.range.xLength();
         const lineWidth = curLine.range.xLength();
+
+        // If true, then no word wrapping is required, so we can append to the current line.
         if (runWidth + lineWidth < doc.width || Geometry.isAlmostEqualNumber(runWidth + lineWidth, doc.width, Geometry.smallMetricDistance)) {
           curLine.append(run);
           continue;
         }
 
+        // Do word wrapping
         if (curLine.runs.length === 0) {
           curLine.append(run);
+
+          // Lastly, flush line
           curLine = this.flushLine(context, curLine);
         } else {
+          // First, flush line
           curLine = this.flushLine(context, curLine);
+
+          // Recompute tab shift if applicable
+          applyTabShift(run, curLine, context);
+
           curLine.append(run);
         }
       }
