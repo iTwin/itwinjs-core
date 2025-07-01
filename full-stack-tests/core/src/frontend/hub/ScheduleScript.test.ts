@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { Code, DisplayStyle3dProps, DisplayStyleProps, ElementProps, RenderSchedule, RenderTimelineProps } from "@itwin/core-common";
+import { Code, DisplayStyle3dProps, DisplayStyleProps, ElementProps, RenderSchedule, RenderTimelineProps, RgbColor } from "@itwin/core-common";
 import {
   _scheduleScriptReference, CheckpointConnection, DisplayStyle3dState, IModelApp, IModelConnection, SpatialViewState, ViewState,
 } from "@itwin/core-frontend";
@@ -19,7 +19,7 @@ function countTileTrees(view: ViewState): number {
   return numTrees;
 }
 
-describe("Schedule script (#integration)", () => {
+describe.only("Schedule script (#integration)", () => {
   let dbOld: IModelConnection; // BisCore 1.0.8. No RenderTimeline element.
   let dbNew: IModelConnection; // BisCore 1.0.13. RenderTimeline element and DisplayStyle pointing to it.
   const viewId = "0x100000004d9";
@@ -281,5 +281,73 @@ describe("Schedule script (#integration)", () => {
     expect(style.scheduleScript).to.be.undefined;
     await style.load();
     expect(style.scheduleScript).not.to.be.undefined;
+  });
+
+  it("sets schedule script in editing mode without triggering tile tree refresh", async () => {
+    const view = await dbNew.views.load(viewId) as SpatialViewState;
+    const style = view.displayStyle;
+
+    const now = Date.now();
+    const builder = new RenderSchedule.ScriptBuilder();
+    const modelTimeline = builder.addModelTimeline(modelId);
+    const elementTimeline = modelTimeline.addElementTimeline(["0x2000003abfc"]);
+
+    elementTimeline.addColor(now, new RgbColor(255, 0, 0));
+    elementTimeline.addColor(now + 2000, new RgbColor(0, 255, 0));
+
+    const newScript = RenderSchedule.Script.fromJSON(builder.finish());
+    if (!newScript)
+      throw new Error("Failed to create schedule script from JSON");
+    style.setScheduleEditing(newScript);
+
+    expect(style.scheduleScript).to.not.be.undefined;
+    expect(style.scheduleScript!.modelTimelines.every(t => t.isEditingCommitted === false)).to.be.true;
+
+    expect(countTileTrees(view)).to.equal(1);
+  });
+
+  it("commits edited schedule script and updates tile tree owner", async () => {
+    const view = await dbNew.views.load(viewId) as SpatialViewState;
+    const style = view.displayStyle;
+
+    const now = Date.now();
+    const builder = new RenderSchedule.ScriptBuilder();
+    const modelTimeline = builder.addModelTimeline(modelId);
+    const elementTimeline = modelTimeline.addElementTimeline(["0x2000003abfc"]);
+    elementTimeline.addColor(now, new RgbColor(0, 0, 255));
+    elementTimeline.addColor(now + 2000, new RgbColor(255, 255, 0));
+
+    const newScript = RenderSchedule.Script.fromJSON(builder.finish());
+    if (!newScript)
+      throw new Error("Failed to create schedule script from JSON");
+
+    style.setScheduleEditing(newScript);
+    style.commitScheduleEditing();
+
+    expect(style.scheduleScript!.modelTimelines.every(t => t.isEditingCommitted)).to.be.true;
+  });
+
+  it("fires editing and commit events when using editing mode", async () => {
+    const style = await loadDisplayStyle(embedStyleId, dbNew);
+    const now = Date.now();
+    const builder = new RenderSchedule.ScriptBuilder();
+    builder.addModelTimeline(modelId)
+      .addElementTimeline(["0x2000003abfc"])
+      .addColor(now, new RgbColor(123, 123, 123));
+    const script = RenderSchedule.Script.fromJSON(builder.finish());
+    if (!script)
+      throw new Error("Failed to create schedule script from JSON");
+
+    let editingChangedFired = false;
+    let committedFired = false;
+
+    style.onScheduleEditingChanged.addOnce(() => editingChangedFired = true);
+    style.onScheduleEditingCommitted.addOnce(() => committedFired = true);
+
+    style.setScheduleEditing(script);
+    expect(editingChangedFired).to.be.true;
+
+    style.commitScheduleEditing();
+    expect(committedFired).to.be.true;
   });
 });
