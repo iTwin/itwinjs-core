@@ -652,7 +652,7 @@ describe("RegionBoolean", () => {
   });
 
   // cspell:word laurynas, dovydas
-  it("BridgeEdgesAndDegenerateLoops", () => {
+  it("BridgeEdgesAndDegenerateLoops", {timeout: 200000 /* only needed with enableLongTests */}, () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
     let x0 = 0;
