@@ -225,6 +225,7 @@ public;function;getCenteredViewRect
 public;function;getCesiumAssetUrl
 public;function;getCompressedJpegFromCanvas
 internal;function;getFrustumPlaneIntersectionDepthRange
+beta;function;getGoogle3dTilesUrl
 public;function;getImageSourceFormatForMimeType
 public;function;getImageSourceMimeType
 public;interface;GetPixelDataWorldPointArgs
@@ -241,6 +242,9 @@ internal;interface;GltfReaderArgs
 internal;interface;GltfReaderResult
 beta;interface;GltfTemplate
 internal;interface;GLTimerResult
+beta;class;Google3dTilesProvider
+beta;type;Google3dTilesProviderOptions
+internal;class;GoogleMapsDecorator
 public;type;GpuMemoryLimit
 public;interface;GpuMemoryLimits
 public;class;GraphicalEditingScope
@@ -346,6 +350,7 @@ public;enum;LocateFilterStatus
 public;class;LocateOptions
 public;class;LocateResponse
 internal;enum;LockedStates
+internal;class;LogoDecoration
 public;class;LookAndMoveTool
 public;interface;LookAtArgs
 public;interface;LookAtOrthoArgs
@@ -507,8 +512,8 @@ alpha;function;createKeyFromBlobUrl
 alpha;function;createKeyFromOrbitGtBlobProps
 alpha;function;createOrbitGtBlobPropsFromKey
 alpha;function;fromKey
-alpha;interface;RealityDataSourceProvider
-alpha;class;RealityDataSourceProviderRegistry
+beta;interface;RealityDataSourceProvider
+beta;class;RealityDataSourceProviderRegistry
 public;interface;RealityMeshParams
 public;namespace;RealityMeshParams
 internal;function;fromGltfMesh
