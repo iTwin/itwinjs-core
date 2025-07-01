@@ -532,12 +532,24 @@ export class RegionBooleanContext implements RegionOpsFaceToFaceSearchCallbacks 
   /**
    * Simplify the graph by removing bridge edges that do not serve to connect inner and outer loops, i.e.:
    * * the bridge edge is dangling
-   * * the bridge edge is part of multiple face loops
-   * * the bridge edge is part of a negative area face loop
+   * * the bridge edge is adjacent to multiple faces
+   * * the bridge edge is adjacent to a negative area face
    * @returns the number of extraneous bridge edges removed from the graph.
    */
   private removeExtraneousBridgeEdges(): number {
     const toHeal: HalfEdge[] = [];
+    const interiorBridges: HalfEdge[] = [];
+
+    // lambda test for boundary edge that doesn't need HalfEdgeMasks
+    const isExteriorEdge = (node: HalfEdge): boolean => {
+      if (this.faceAreaFunction(node) < 0.0)
+        return true;
+      if (!node.findAroundFace(node.edgeMate))
+        return this.faceAreaFunction(node.edgeMate) < 0.0;
+      return false;
+    };
+
+    // isolate dangling bridges, bridges separating different faces, and bridges in the negative area face
     this.graph.announceEdges((_graph: HalfEdgeGraph, node: HalfEdge): boolean => {
       if (node.edgeTag !== undefined) {
         if (node.edgeTag instanceof CurveLocationDetail) {
@@ -548,6 +560,8 @@ export class RegionBooleanContext implements RegionOpsFaceToFaceSearchCallbacks 
                   toHeal.push(node.vertexSuccessor);
                   toHeal.push(node.edgeMate.vertexSuccessor);
                   node.isolateEdge();
+                } else {
+                  interiorBridges.push(node);
                 }
               }
             }
@@ -556,7 +570,33 @@ export class RegionBooleanContext implements RegionOpsFaceToFaceSearchCallbacks 
       }
       return true;
     });
-    // The bridge edges are isolated. Now heal any vertices added by splitEdge, and adjust surviving geometry.
+
+    // At this point, all bridges that were exterior are isolated, but this may have caused formerly
+    // interior bridges to become exterior. Now we successively isolate exterior bridges until none remain.
+    let numIsolatedThisPass: number;
+    do {
+      numIsolatedThisPass = 0;
+      for (const node of interiorBridges) {
+        if (!node.isIsolatedEdge && isExteriorEdge(node)) {
+          toHeal.push(node.vertexSuccessor);
+          toHeal.push(node.edgeMate.vertexSuccessor);
+          node.isolateEdge();
+          numIsolatedThisPass++;
+        }
+      }
+    } while (numIsolatedThisPass > 0);
+
+    // lambda to extend the detail interval on a side of a healed edge
+    const mergeDetails = (he: HalfEdge | undefined, newFraction?: number, newPoint?: Point3d): void => {
+        if (he && he.edgeTag instanceof CurveLocationDetail && he.sortData !== undefined && newFraction !== undefined && newPoint) {
+          if (he.sortData > 0)
+            he.edgeTag.captureFraction1Point1(newFraction, newPoint);
+          else
+            he.edgeTag.captureFractionPoint(newFraction, newPoint);
+        }
+      };
+
+    // At this point all removable bridges are isolated. Clean up their original vertex loops, if possible.
     for (const doomedA of toHeal) {
       const doomedB = doomedA.vertexSuccessor;
       if ( // are the geometries mergeable?
@@ -569,21 +609,15 @@ export class RegionBooleanContext implements RegionOpsFaceToFaceSearchCallbacks 
         ((doomedA.sortData > 0 && Geometry.isSmallRelative(doomedA.edgeTag.fraction - doomedB.edgeTag.fraction1!)) ||
          (doomedA.sortData < 0 && Geometry.isSmallRelative(doomedA.edgeTag.fraction1! - doomedB.edgeTag.fraction)))
       ) {
-        const endFractionA = (doomedA.sortData > 0) ? doomedA.edgeTag.fraction1 : doomedA.edgeTag.fraction;
-        const endPointA = (doomedA.sortData > 0) ? doomedA.edgeTag.point1 : doomedA.edgeTag.point;
-        const endFractionB = (doomedB.sortData > 0) ? doomedB.edgeTag.fraction1 : doomedB.edgeTag.fraction;
-        const endPointB = (doomedB.sortData > 0) ? doomedB.edgeTag.point1 : doomedB.edgeTag.point;
-        const mergeDetails = (he: HalfEdge | undefined, newFraction?: number, newPoint?: Point3d): void => {
-          if (he && he.edgeTag instanceof CurveLocationDetail && he.sortData !== undefined && newFraction !== undefined && newPoint) {
-            if (he.sortData > 0)
-              he.edgeTag.captureFraction1Point1(newFraction, newPoint);
-            else
-              he.edgeTag.captureFractionPoint(newFraction, newPoint);
-          }
-        };
         const survivorA = HalfEdge.healEdge(doomedA, false);
-        mergeDetails(survivorA, endFractionA, endPointA);
-        mergeDetails(survivorA?.edgeMate, endFractionB, endPointB);
+        if (survivorA) {
+          const endFractionA = (doomedA.sortData > 0) ? doomedA.edgeTag.fraction1 : doomedA.edgeTag.fraction;
+          const endPointA = (doomedA.sortData > 0) ? doomedA.edgeTag.point1 : doomedA.edgeTag.point;
+          mergeDetails(survivorA, endFractionA, endPointA);
+          const endFractionB = (doomedB.sortData > 0) ? doomedB.edgeTag.fraction1 : doomedB.edgeTag.fraction;
+          const endPointB = (doomedB.sortData > 0) ? doomedB.edgeTag.point1 : doomedB.edgeTag.point;
+          mergeDetails(survivorA.edgeMate, endFractionB, endPointB);
+        }
       }
     }
     return this.graph.deleteIsolatedEdges();
