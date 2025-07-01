@@ -130,15 +130,15 @@ describe("FormatsProvider examples", () => {
         schemaFormatsProvider.unitSystem = args.system;
       });
 
-      IModelConnection.onClose.addOnce(() => {
+      iModel.onClose.addOnce(() => {
         removeUnitSystemListener();
-        IModelApp.resetFormatsProvider();
       });
       IModelApp.formatsProvider = schemaFormatsProvider;
     });
 
     IModelConnection.onClose.addOnce(() => {
       removeIModelConnectionListener();
+      IModelApp.resetFormatsProvider();
     });
     // __PUBLISH_EXTRACT_END__
   });
