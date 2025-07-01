@@ -227,8 +227,8 @@ export class HalfEdgeGraphSearch {
    * pattern starting at the seed face, with each successive concentric ring of faces at constant topological
    * distance from the seed face receiving the opposite parity state of the previous ring.
    * @param parityMask (optional) mask to apply to the first face and faces that share the same parity as the
-   * first face, as determined by the parity rule. If this is `NULL_MASK`, there is no record of parity. If
-   * (non-null) parity mask is given, on return it is entirely set or entirely clear around each face.
+   * first face, as determined by the parity rule. If this is `NULL_MASK` (default), there is no record of parity.
+   * If (non-null) parity mask is given, on return it is entirely set or entirely clear around each face.
    * @returns the components of the graph, each component represented by an array of nodes, one node per face
    * of the component. In other words, entry [i][j] is a HalfEdge in the j_th face loop of the i_th component.
    */

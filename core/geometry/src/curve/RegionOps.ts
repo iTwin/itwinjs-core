@@ -788,10 +788,10 @@ export class RegionOps {
    * * For best results, input curves should be parallel to the xy-plane, as z-coordinates are ignored.
    * * "Holes" implied/bounded by inputs are _not_ preserved/discovered in output; in particular [[ParityRegion]]
    * hole loops are treated like any other positive area loops.
-   * * A common use case of this method is to assemble the bounding "exterior" loop for each connected component
-   * of input curves. This is the negative area loop of the component. Passing `addBridges = true` decreases the
-   * number of connected components for nested input [[Loop]]s, and thus increases the likelihood of returning
-   * exactly one exterior loop. This explains why the default value for `addBridges` is `true`.
+   * * A common use case of this method is to assemble the bounding negative-area "exterior" loop for each connected
+   * component of input curves. Passing `addBridges = true` decreases the number of connected components for nested
+   * input [[Loop]]s, and thus increases the likelihood of returning exactly one exterior loop. (This is why the
+   * default value for `addBridges` is `true`.)
    * @param curvesAndRegions Any collection of curves. Each [[AnyRegion]] contributes its children _stripped of
    * parity context_.
    * @param tolerance optional distance tolerance for coincidence.
@@ -814,9 +814,9 @@ export class RegionOps {
     primitives = TransferWithSplitArcs.clone(BagOfCurves.create(...primitives)).children as CurvePrimitive[];
     const range = this.curveArrayRange(primitives);
     const areaTol = this.computeXYAreaTolerance(range, tolerance);
-    const regions = this.collectRegionsAndClosedPrimitives(curvesAndRegions, tolerance);
     if (addBridges) { // generate a temp graph to extract its bridge edges
       const context = RegionBooleanContext.create(RegionGroupOpType.Union, RegionGroupOpType.Union);
+      const regions = this.collectRegionsAndClosedPrimitives(curvesAndRegions, tolerance);
       context.addMembers(regions, undefined);
       context.annotateAndMergeCurvesInGraph(tolerance);
       context.graph.announceEdges((_graph, edge: HalfEdge) => {
