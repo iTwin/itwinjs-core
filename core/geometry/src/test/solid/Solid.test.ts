@@ -552,12 +552,12 @@ describe("Solids", () => {
       }
     };
 
-    // this used to create a mesh with extraneous visible edges and boundary edges
-    const splitWasherLoop = RegionOps.regionBooleanXY(outer, [hole0, hole1], RegionBinaryOpType.AMinusB);
-    if (ck.testDefined(splitWasherLoop, "created contour with hole")) {
-      GeometryCoreTestIO.captureCloneGeometry(allGeometry, splitWasherLoop, x0, y0);
-      ck.testType(splitWasherLoop, ParityRegion, "boolean subtract resulted in a ParityRegion");
-      const sweep1 = LinearSweep.create(splitWasherLoop, sweepVec, true);
+    // regionBooleanXY used to create a split-washer whose meshed sweep had extraneous visible edges, and boundary edges
+    const puncturedShape = RegionOps.regionBooleanXY(outer, [hole0, hole1], RegionBinaryOpType.AMinusB);
+    if (ck.testDefined(puncturedShape, "created contour with hole")) {
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, puncturedShape, x0, y0);
+      ck.testType(puncturedShape, ParityRegion, "boolean subtract resulted in a ParityRegion");
+      const sweep1 = LinearSweep.create(puncturedShape, sweepVec, true);
       testSweepMesh(sweep1, 36);
     }
     x0 = 0;
