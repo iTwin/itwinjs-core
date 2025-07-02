@@ -109,7 +109,7 @@ function isTimelineEntryEqual(a: RenderSchedule.ElementTimeline, b: RenderSchedu
       const oneUndefined = (clip1 === undefined) !== (clip2 === undefined);
 
       if (oneUndefined) return false;
-      if (!bothUndefined && clip1 && clip2) {
+      if (clip1 && clip2) {
         if (
           !clip1.getOriginRef().isAlmostEqual(clip2.getOriginRef(), 1e-6) ||
           !clip1.getNormalRef().isAlmostEqual(clip2.getNormalRef(), 1e-6)
