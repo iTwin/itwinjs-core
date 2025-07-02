@@ -109,7 +109,6 @@ function isTimelineEntryEqual(a: RenderSchedule.ElementTimeline, b: RenderSchedu
       const clip1 = a.getCuttingPlane?.(t);
       const clip2 = b.getCuttingPlane?.(t);
 
-      const bothUndefined = clip1 === undefined && clip2 === undefined;
       const oneUndefined = (clip1 === undefined) !== (clip2 === undefined);
 
       if (oneUndefined) return false;
