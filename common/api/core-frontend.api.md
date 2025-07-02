@@ -2651,6 +2651,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     readonly onOSMBuildingDisplayChanged: BeEvent<(osmBuildingDisplayEnabled: boolean) => void>;
     readonly onScheduleEditingChanged: BeEvent<(change: {
         changedElementIds: Set<Id64String>;
+        affectedModelIds: Set<Id64String>;
     }) => void>;
     readonly onScheduleEditingCommitted: BeEvent<() => void>;
     readonly onScheduleScriptChanged: BeEvent<(newScript: RenderSchedule.Script | undefined) => void>;
