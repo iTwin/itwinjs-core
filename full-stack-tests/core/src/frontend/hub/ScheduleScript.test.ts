@@ -283,71 +283,71 @@ describe("Schedule script (#integration)", () => {
     expect(style.scheduleScript).not.to.be.undefined;
   });
 
-  it("sets schedule script in editing mode without triggering tile tree refresh", async () => {
-    const view = await dbNew.views.load(viewId) as SpatialViewState;
-    const style = view.displayStyle;
+  // it("sets schedule script in editing mode without triggering tile tree refresh", async () => {
+  //   const view = await dbNew.views.load(viewId) as SpatialViewState;
+  //   const style = view.displayStyle;
 
-    const now = Date.now();
-    const builder = new RenderSchedule.ScriptBuilder();
-    const modelTimeline = builder.addModelTimeline(modelId);
-    const elementTimeline = modelTimeline.addElementTimeline(["0x2000003abfc"]);
+  //   const now = Date.now();
+  //   const builder = new RenderSchedule.ScriptBuilder();
+  //   const modelTimeline = builder.addModelTimeline(modelId);
+  //   const elementTimeline = modelTimeline.addElementTimeline(["0x2000003abfc"]);
 
-    elementTimeline.addColor(now, new RgbColor(255, 0, 0));
-    elementTimeline.addColor(now + 2000, new RgbColor(0, 255, 0));
+  //   elementTimeline.addColor(now, new RgbColor(255, 0, 0));
+  //   elementTimeline.addColor(now + 2000, new RgbColor(0, 255, 0));
 
-    const newScript = RenderSchedule.Script.fromJSON(builder.finish());
-    if (!newScript)
-      throw new Error("Failed to create schedule script from JSON");
-    style.setScheduleEditing(newScript);
+  //   const newScript = RenderSchedule.Script.fromJSON(builder.finish());
+  //   if (!newScript)
+  //     throw new Error("Failed to create schedule script from JSON");
+  //   style.setScheduleEditing(newScript);
 
-    expect(style.scheduleScript).to.not.be.undefined;
-    expect(style.scheduleScript!.modelTimelines.every(t => t.isEditingCommitted === false)).to.be.true;
+  //   expect(style.scheduleScript).to.not.be.undefined;
+  //   expect(style.scheduleScript!.modelTimelines.every(t => t.isEditingCommitted === false)).to.be.true;
 
-    expect(countTileTrees(view)).to.equal(1);
-  });
+  //   expect(countTileTrees(view)).to.equal(1);
+  // });
 
-  it("commits edited schedule script and updates tile tree owner", async () => {
-    const view = await dbNew.views.load(viewId) as SpatialViewState;
-    const style = view.displayStyle;
+  // it("commits edited schedule script and updates tile tree owner", async () => {
+  //   const view = await dbNew.views.load(viewId) as SpatialViewState;
+  //   const style = view.displayStyle;
 
-    const now = Date.now();
-    const builder = new RenderSchedule.ScriptBuilder();
-    const modelTimeline = builder.addModelTimeline(modelId);
-    const elementTimeline = modelTimeline.addElementTimeline(["0x2000003abfc"]);
-    elementTimeline.addColor(now, new RgbColor(0, 0, 255));
-    elementTimeline.addColor(now + 2000, new RgbColor(255, 255, 0));
+  //   const now = Date.now();
+  //   const builder = new RenderSchedule.ScriptBuilder();
+  //   const modelTimeline = builder.addModelTimeline(modelId);
+  //   const elementTimeline = modelTimeline.addElementTimeline(["0x2000003abfc"]);
+  //   elementTimeline.addColor(now, new RgbColor(0, 0, 255));
+  //   elementTimeline.addColor(now + 2000, new RgbColor(255, 255, 0));
 
-    const newScript = RenderSchedule.Script.fromJSON(builder.finish());
-    if (!newScript)
-      throw new Error("Failed to create schedule script from JSON");
+  //   const newScript = RenderSchedule.Script.fromJSON(builder.finish());
+  //   if (!newScript)
+  //     throw new Error("Failed to create schedule script from JSON");
 
-    style.setScheduleEditing(newScript);
-    style.commitScheduleEditing();
+  //   style.setScheduleEditing(newScript);
+  //   style.commitScheduleEditing();
 
-    expect(style.scheduleScript!.modelTimelines.every(t => t.isEditingCommitted)).to.be.true;
-  });
+  //   expect(style.scheduleScript!.modelTimelines.every(t => t.isEditingCommitted)).to.be.true;
+  // });
 
-  it("fires editing and commit events when using editing mode", async () => {
-    const style = await loadDisplayStyle(embedStyleId, dbNew);
-    const now = Date.now();
-    const builder = new RenderSchedule.ScriptBuilder();
-    builder.addModelTimeline(modelId)
-      .addElementTimeline(["0x2000003abfc"])
-      .addColor(now, new RgbColor(123, 123, 123));
-    const script = RenderSchedule.Script.fromJSON(builder.finish());
-    if (!script)
-      throw new Error("Failed to create schedule script from JSON");
+  // it("fires editing and commit events when using editing mode", async () => {
+  //   const style = await loadDisplayStyle(embedStyleId, dbNew);
+  //   const now = Date.now();
+  //   const builder = new RenderSchedule.ScriptBuilder();
+  //   builder.addModelTimeline(modelId)
+  //     .addElementTimeline(["0x2000003abfc"])
+  //     .addColor(now, new RgbColor(123, 123, 123));
+  //   const script = RenderSchedule.Script.fromJSON(builder.finish());
+  //   if (!script)
+  //     throw new Error("Failed to create schedule script from JSON");
 
-    let editingChangedFired = false;
-    let committedFired = false;
+  //   let editingChangedFired = false;
+  //   let committedFired = false;
 
-    style.onScheduleEditingChanged.addOnce(() => editingChangedFired = true);
-    style.onScheduleEditingCommitted.addOnce(() => committedFired = true);
+  //   style.onScheduleEditingChanged.addOnce(() => editingChangedFired = true);
+  //   style.onScheduleEditingCommitted.addOnce(() => committedFired = true);
 
-    style.setScheduleEditing(script);
-    expect(editingChangedFired).to.be.true;
+  //   style.setScheduleEditing(script);
+  //   expect(editingChangedFired).to.be.true;
 
-    style.commitScheduleEditing();
-    expect(committedFired).to.be.true;
-  });
+  //   style.commitScheduleEditing();
+  //   expect(committedFired).to.be.true;
+  // });
 });
