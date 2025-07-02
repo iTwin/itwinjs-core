@@ -476,9 +476,6 @@
     "SetScheduleScript": {
       "keyin": "fdt set schedule script"
     },
-    "TestScheduleScript": {
-      "keyin": "fdt test schedule script"
-    },
     "ToggleTileTreeReferences": {
       "keyin": "fdt toggle treerefs"
     },
