@@ -413,7 +413,7 @@ const checkForEarlySurfaceDiscard = `
 `;
 
 const checkForEarlySurfaceDiscardWithFeatureID = `
-  if (u_renderPass > kRenderPass_Translucent || u_renderPass == kRenderPass_Layers ||)
+  if (u_renderPass > kRenderPass_Translucent || u_renderPass == kRenderPass_Layers)
     return false;
 
   vec2 tc = windowCoordsToTexCoords(gl_FragCoord.xy);
