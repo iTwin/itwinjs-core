@@ -99,7 +99,11 @@ function isTimelineEntryEqual(a: RenderSchedule.ElementTimeline, b: RenderSchedu
       // Check Color
       const c1 = a.getColor(t);
       const c2 = b.getColor(t);
-      if ((c1 && !c2) || (!c1 && c2) || (c1 && c2 && !c1.equals(c2))) return false;
+      if ((c1 === undefined) !== (c2 === undefined))
+        return false;
+
+      if (c1 !== undefined && !c1.equals(c2!))
+        return false;
 
       // Cutting Plane (CLIPPING)
       const clip1 = a.getCuttingPlane?.(t);

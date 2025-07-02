@@ -311,22 +311,19 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     const prevScript = this.scheduleScript;
     const changes: Array<{ timeline: RenderSchedule.ModelTimeline, elements: Set<Id64String> }> = [];
 
-    for (const newTimeline of newScript.modelTimelines) {
-      const oldTimeline = prevScript?.modelTimelines.find(t => t.modelId === newTimeline.modelId);
+    const globalDelta = getScriptDelta(prevScript, newScript);
 
-      const oldIds = (oldTimeline?.elementTimelines.flatMap(et => [...et.elementIds]) ?? []);
-      const newIds = newTimeline.elementTimelines.flatMap(et => [...et.elementIds]);
-
-
-      const changed = new Set<Id64String>();
-      for (const id of newIds) {
-        if (!oldIds.includes(id))
-          changed.add(id);
+    for (const timeline of newScript.modelTimelines) {
+      const ids = new Set<Id64String>();
+      for (const et of timeline.elementTimelines) {
+        for (const id of et.elementIds) {
+          if (globalDelta.has(id))
+            ids.add(id);
+        }
       }
 
-      if (changed.size > 0) {
-        changes.push({ timeline: newTimeline, elements: changed });
-      }
+      if (ids.size > 0)
+        changes.push({ timeline, elements: ids });
     }
 
     this.scheduleScript = newScript;
