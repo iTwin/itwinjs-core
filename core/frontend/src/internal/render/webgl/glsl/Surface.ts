@@ -556,6 +556,14 @@ function addNormal(builder: ProgramBuilder, animated: IsAnimated) {
 const scratchMatrix4d1 = Matrix4d.createIdentity();
 const scratchMatrix4d2 = Matrix4d.createIdentity();
 const scratchMatrix = new Matrix4();
+
+const surfaceDrapeTextureUnits = [
+  TextureUnit.SurfaceDraping0,
+  TextureUnit.SurfaceDraping1,
+  TextureUnit.SurfaceDraping2,
+  TextureUnit.SurfaceDraping3,
+];
+
 /** @internal */
 export function addTexture(builder: ProgramBuilder, animated: IsAnimated, isThematic: IsThematic, isPointCloud: boolean, isHilite: boolean, isMaplayer:boolean) {
   if (isThematic) {
@@ -619,19 +627,12 @@ export function addTexture(builder: ProgramBuilder, animated: IsAnimated, isThem
       });
     });
 
-    const textureUnits = [
-      TextureUnit.SurfaceDraping0,
-      TextureUnit.SurfaceDraping1,
-      TextureUnit.SurfaceDraping2,
-      TextureUnit.SurfaceDraping3,
-    ];
-
-    for (let i = 0; i < textureUnits.length; i++) {
+    for (let i = 0; i < surfaceDrapeTextureUnits.length; i++) {
       const textureLabel = `s_texture${i}`;
 
       builder.frag.addUniform(textureLabel, VariableType.Sampler2D, (prog) => {
         prog.addGraphicUniform(textureLabel, (uniform, params) => {
-          const textureUnit = textureUnits[i];
+          const textureUnit = surfaceDrapeTextureUnits[i];
           const mesh = params.geometry.asSurface!;
           const drapeTexture = mesh.textureParams ? mesh.textureParams.params[i].texture : undefined;
           if (drapeTexture !== undefined) {
@@ -761,7 +762,7 @@ export function createSurfaceBuilder(flags: TechniqueFlags): ProgramBuilder {
   addLighting(builder);
   addWhiteOnWhiteReversal(builder.frag);
   addApplyContours(builder);
-  addApplySurfaceDraping(builder.frag);
+  addApplySurfaceDraping(builder.frag, surfaceDrapeTextureUnits.length);
 
   if (flags.isTranslucent) {
     addTranslucency(builder);
