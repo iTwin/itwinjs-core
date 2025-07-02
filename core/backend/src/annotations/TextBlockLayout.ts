@@ -160,9 +160,20 @@ function applyBlockSettings(target: TextStyleSettings, source: TextStyleSettings
   const lineSpacingFactor = source.lineSpacingFactor ?? target.lineSpacingFactor;
   const lineHeight = source.lineHeight ?? target.lineHeight;
   const widthFactor = source.widthFactor ?? target.widthFactor;
+  const frameShape = source.frameShape ?? target.frameShape;
+  const frameFill = source.frameFill ?? target.frameFill;
+  const frameBorder = source.frameBorder ?? target.frameBorder;
+  const frameBorderWeight = source.frameBorderWeight ?? target.frameBorderWeight;
 
-  if (lineSpacingFactor !== target.lineSpacingFactor || lineHeight !== target.lineHeight || widthFactor !== target.widthFactor) {
-    target = target.clone({ lineSpacingFactor, lineHeight, widthFactor });
+  if (lineSpacingFactor !== target.lineSpacingFactor ||
+      lineHeight !== target.lineHeight ||
+      widthFactor !== target.widthFactor ||
+      frameShape !== target.frameShape ||
+      frameFill !== target.frameFill ||
+      frameBorder !== target.frameBorder ||
+      frameBorderWeight !== target.frameBorderWeight
+  ) {
+    target = target.clone({ lineSpacingFactor, lineHeight, widthFactor, frameShape, frameFill, frameBorder, frameBorderWeight });
   }
 
   return target;
