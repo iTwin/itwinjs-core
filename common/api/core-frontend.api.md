@@ -2600,6 +2600,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     changeRenderTimeline(timelineId: Id64String | undefined): Promise<void>;
     // (undocumented)
     static get className(): string;
+    commitScheduleEditing(): void;
     get contextRealityModelStates(): ReadonlyArray<ContextRealityModelState>;
     // @internal (undocumented)
     protected createRealityModel(props: ContextRealityModelProps): ContextRealityModelState;
@@ -2648,6 +2649,10 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     moveMapLayerToTop(mapLayerIndex: MapLayerIndex): void;
     get name(): string;
     readonly onOSMBuildingDisplayChanged: BeEvent<(osmBuildingDisplayEnabled: boolean) => void>;
+    readonly onScheduleEditingChanged: BeEvent<(change: {
+        changedElementIds: Set<Id64String>;
+    }) => void>;
+    readonly onScheduleEditingCommitted: BeEvent<() => void>;
     readonly onScheduleScriptChanged: BeEvent<(newScript: RenderSchedule.Script | undefined) => void>;
     overrideSubCategory(id: Id64String, ovr: SubCategoryOverride): void;
     // @internal (undocumented)
@@ -2662,6 +2667,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     get scheduleScript(): RenderSchedule.Script | undefined;
     set scheduleScript(script: RenderSchedule.Script | undefined);
     setOSMBuildingDisplay(options: OsmBuildingDisplayOptions): boolean;
+    setScheduleEditing(newScript: RenderSchedule.Script): void;
     // @internal
     setSubCategoryVisible(subCategoryId: Id64String, visible: boolean): boolean;
     abstract get settings(): DisplayStyleSettings;
@@ -5210,7 +5216,7 @@ export class IModelTileTree extends TileTree {
     readonly contentIdQualifier?: string;
     debugMaxDepth?: number;
     // (undocumented)
-    readonly decoder: ImdlDecoder;
+    decoder: ImdlDecoder;
     // (undocumented)
     draw(args: TileDrawArgs): void;
     // (undocumented)
@@ -5238,6 +5244,12 @@ export class IModelTileTree extends TileTree {
     readonly maxInitialTilesToSkip: number;
     // (undocumented)
     readonly maxTilesToSkip: number;
+    // (undocumented)
+    onScheduleEditingChanged(change: {
+        changedElementIds: Set<Id64String>;
+    }): void;
+    // (undocumented)
+    onScheduleEditingCommitted(): void;
     // (undocumented)
     prune(): void;
     // (undocumented)

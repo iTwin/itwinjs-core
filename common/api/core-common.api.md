@@ -8079,6 +8079,7 @@ export namespace RenderSchedule {
         // @internal (undocumented)
         protected getFeatureAppearance(visibility: number, time: number): FeatureAppearance | undefined;
         getVisibility(time: number): number;
+        isEditingCommitted: boolean;
         // (undocumented)
         toJSON(): TimelineProps;
         readonly transform?: TransformTimelineEntries;
