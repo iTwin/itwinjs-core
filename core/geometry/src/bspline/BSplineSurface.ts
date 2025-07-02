@@ -28,7 +28,7 @@ export enum UVSelect {
   uDirection = 0,
   /**
    * index of v direction
-   * @deprecated in 4.x. Use vDirection instead.
+   * @deprecated in 4.x - will not be removed until after 2026-06-13. Use vDirection instead.
    */
   VDirection = 1,
   /** index of v direction */
@@ -368,7 +368,7 @@ export abstract class BSpline2dNd extends GeometryQuery {
   }
   /**
    * sum poles by the weights in the basisBuffer, using poles for given span
-   * @deprecated in 4.x. Use sumPoleBufferDerivativesForSpan instead.
+   * @deprecated in 4.x - will not be removed until after 2026-06-13. Use sumPoleBufferDerivativesForSpan instead.
    */
   public sumpoleBufferDerivativesForSpan(spanIndexU: number, spanIndexV: number) {
     return this.sumPoleBufferDerivativesForSpan(spanIndexU, spanIndexV);

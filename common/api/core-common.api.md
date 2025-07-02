@@ -615,8 +615,6 @@ export interface BaseReaderOptions {
     priority?: number;
     quota?: QueryQuota;
     restartToken?: string;
-    // @internal (undocumented)
-    testingArgs?: TestingArgs;
     usePrimaryConn?: boolean;
 }
 
@@ -2039,7 +2037,7 @@ export interface ContourStyleProps {
 // @public
 export type CreateEmptySnapshotIModelProps = CreateIModelProps & CreateSnapshotIModelProps;
 
-// @internal
+// @public
 export type CreateEmptyStandaloneIModelProps = CreateIModelProps & CreateStandaloneIModelProps;
 
 // @public
@@ -2055,7 +2053,7 @@ export interface CreateSnapshotIModelProps {
     readonly createClassViews?: boolean;
 }
 
-// @internal
+// @public
 export interface CreateStandaloneIModelProps {
     readonly allowEdit?: string;
 }
@@ -2140,9 +2138,7 @@ export interface DbBlobResponse extends DbResponse {
 
 // @internal (undocumented)
 export interface DbQueryConfig {
-    allowTestingArgs?: boolean;
-    autoShutdowWhenIdlelForSeconds?: number;
-    // (undocumented)
+    autoShutdownWhenIdleForSeconds?: number;
     doNotUsePrimaryConnToPrepare?: boolean;
     // (undocumented)
     globalQuota?: QueryQuota;
@@ -2151,6 +2147,7 @@ export interface DbQueryConfig {
     memoryMapFileSize?: number;
     // (undocumented)
     monitorPollInterval?: number;
+    progressOpCount?: number;
     requestQueueSize?: number;
     statementCacheSizePerWorker?: number;
     workerThreads?: number;
@@ -2191,8 +2188,6 @@ export interface DbQueryResponse extends DbResponse {
 export interface DbRequest extends BaseReaderOptions {
     // (undocumented)
     kind?: DbRequestKind;
-    // (undocumented)
-    testingArgs?: TestingArgs;
 }
 
 // @internal (undocumented)
@@ -7544,8 +7539,6 @@ export class QueryOptionsBuilder {
     setRestartToken(val: string): this;
     setRowFormat(val: QueryRowFormat): this;
     setSuppressLogErrors(val: boolean): this;
-    // @internal
-    setTestingArgs(val: TestingArgs): this;
     setUsePrimaryConnection(val: boolean): this;
 }
 
@@ -9080,7 +9073,7 @@ export interface RscFontEncodingProps {
 }
 
 // @beta (undocumented)
-export type Run = TextRun | FractionRun | LineBreakRun;
+export type Run = TextRun | FractionRun | TabRun | LineBreakRun;
 
 // @beta
 export namespace Run {
@@ -9102,7 +9095,7 @@ export interface RunLayoutResult {
 }
 
 // @beta
-export type RunProps = TextRunProps | FractionRunProps | LineBreakRunProps;
+export type RunProps = TextRunProps | FractionRunProps | TabRunProps | LineBreakRunProps;
 
 // @public
 export enum SchemaState {
@@ -9766,6 +9759,25 @@ export enum SyncMode {
     PullOnly = 3
 }
 
+// @beta
+export class TabRun extends TextBlockComponent {
+    // (undocumented)
+    clone(): TabRun;
+    // (undocumented)
+    static create(props: Omit<TabRunProps, "type">): TabRun;
+    // (undocumented)
+    equals(other: TextBlockComponent): boolean;
+    stringify(options?: TextBlockStringifyOptions): string;
+    // (undocumented)
+    toJSON(): TabRunProps;
+    readonly type = "tab";
+}
+
+// @beta
+export interface TabRunProps extends TextBlockComponentProps {
+    readonly type: "tab";
+}
+
 // @public
 export enum TerrainHeightOriginMode {
     Geodetic = 0,
@@ -9807,12 +9819,6 @@ export class TerrainSettings {
     readonly providerName: string;
     // (undocumented)
     toJSON(): TerrainProps;
-}
-
-// @internal (undocumented)
-export interface TestingArgs {
-    // (undocumented)
-    interrupt?: boolean;
 }
 
 // @internal
@@ -9913,6 +9919,7 @@ export abstract class TextBlockComponent {
     clearStyleOverrides(): void;
     abstract clone(): TextBlockComponent;
     equals(other: TextBlockComponent): boolean;
+    get isWhitespace(): boolean;
     get overridesStyle(): boolean;
     abstract stringify(options?: TextBlockStringifyOptions): string;
     get styleName(): string;
@@ -9981,6 +9988,7 @@ export interface TextBlockStringifyOptions {
     fractionSeparator?: string;
     lineBreak?: string;
     paragraphBreak?: string;
+    tabsAsSpaces?: number;
 }
 
 // @beta
@@ -10112,6 +10120,7 @@ export class TextStyleSettings {
     readonly subScriptScale: number;
     readonly superScriptOffsetFactor: number;
     readonly superScriptScale: number;
+    readonly tabInterval: number;
     // (undocumented)
     toJSON(): TextStyleSettingsProps;
     readonly widthFactor: number;
@@ -10132,6 +10141,7 @@ export interface TextStyleSettingsProps {
     subScriptScale?: number;
     superScriptOffsetFactor?: number;
     superScriptScale?: number;
+    tabInterval?: number;
     widthFactor?: number;
 }
 

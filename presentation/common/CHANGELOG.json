@@ -2,6 +2,104 @@
   "name": "@itwin/presentation-common",
   "entries": [
     {
+      "version": "5.0.2",
+      "tag": "@itwin/presentation-common_v5.0.2",
+      "date": "Thu, 26 Jun 2025 22:16:01 GMT",
+      "comments": {}
+    },
+    {
+      "version": "5.0.1",
+      "tag": "@itwin/presentation-common_v5.0.1",
+      "date": "Tue, 17 Jun 2025 18:33:52 GMT",
+      "comments": {}
+    },
+    {
+      "version": "5.0.0",
+      "tag": "@itwin/presentation-common_v5.0.0",
+      "date": "Fri, 13 Jun 2025 20:25:38 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Export `Ruleset.schema.json` through exports field"
+          },
+          {
+            "comment": "Add value constraints to `PropertyInfo`"
+          },
+          {
+            "comment": "KeySet: Always store instance key class name in `Schema:Class` format."
+          },
+          {
+            "comment": "Upgrade compile target to ES2023 and module to ES2022"
+          },
+          {
+            "comment": "Fixed enum property values formatting issue, where raw value was used instead of enum's display value."
+          },
+          {
+            "comment": "Fix `InstanceKey.compare` implementation not taking into account different formats and casings of full class name."
+          },
+          {
+            "comment": "Deprecate `imageId` property of `CustomNodeSpecification` and `PropertyRangeGroupSpecification`."
+          },
+          {
+            "comment": "Deprecate `labelDefinition` property of `ItemJSON` and `NestedContentValue` in favor of newly added `label`."
+          },
+          {
+            "comment": "Deprecate `fromJSON` and `toJSON` methods of `Field` and its subclasses."
+          },
+          {
+            "comment": "Add `type: \"module\"` to `package.json` to tell Node.js to load this package as ESM by default."
+          },
+          {
+            "comment": "Deprecate unified selection related APIs."
+          },
+          {
+            "comment": "When serializing content, don't put `undefined` values to JSON."
+          },
+          {
+            "comment": "Extend `MultiElementPropertiesRequestOptions` to support specifying input element either through `elementClasses` or `elementIds` arrays."
+          },
+          {
+            "comment": "Remove `@internal` APIs from public barrel exports file."
+          },
+          {
+            "comment": "Stop using `Object.create` and `Object.assign` and use proper constructors and operators instead."
+          },
+          {
+            "comment": "Clean up APIs deprecated in 3.x"
+          },
+          {
+            "comment": "Refactor RPC \"pending\" response handling to rely on our RPC system rather than custom implementation"
+          },
+          {
+            "comment": "Change core peer dependencies to strict version."
+          }
+        ],
+        "minor": [
+          {
+            "comment": "All public methods of `PresentationRpcInterface` have been deprecated. Going forward, RPC interfaces should not be called directly. Public wrappers such as `PresentationManager` should be used instead."
+          }
+        ]
+      }
+    },
+    {
+      "version": "4.11.6",
+      "tag": "@itwin/presentation-common_v4.11.6",
+      "date": "Mon, 16 Jun 2025 15:00:15 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.11.5",
+      "tag": "@itwin/presentation-common_v4.11.5",
+      "date": "Fri, 06 Jun 2025 13:41:18 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fix `InstanceKey.compare` implementation not taking into account different formats and casings of full class name."
+          }
+        ]
+      }
+    },
+    {
       "version": "4.11.4",
       "tag": "@itwin/presentation-common_v4.11.4",
       "date": "Tue, 03 Jun 2025 16:15:19 GMT",

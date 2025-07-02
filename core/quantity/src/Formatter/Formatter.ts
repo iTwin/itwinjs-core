@@ -417,7 +417,7 @@ export class Formatter {
         break;
 
       case ShowSignOption.OnlyNegative:
-        if (valueIsNegative)
+        if (valueIsNegative && spec.format.type !== FormatType.Bearing && spec.format.type !== FormatType.Azimuth)
           prefix += "-";
 
         break;

@@ -547,7 +547,7 @@ export class CurveLocationDetailPair {
 
 /**
  * Data bundle for a pair of arrays of CurveLocationDetail structures.
- * @deprecated in 4.x. Use CurveLocationDetailPair[] instead.
+ * @deprecated in 4.x - will not be removed until after 2026-06-13. Use CurveLocationDetailPair[] instead.
  * @public
  */
 export class CurveLocationDetailArrayPair {

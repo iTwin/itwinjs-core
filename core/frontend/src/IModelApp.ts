@@ -127,11 +127,11 @@ export interface IModelAppOptions {
    */
   noRender?: boolean;
 
-   /**
-   * @deprecated in 3.7. Specify desired RPC interfaces in the platform-specific RPC manager call instead.
+  /**
+   * @deprecated in 3.7 - might be removed in next major version. Specify desired RPC interfaces in the platform-specific RPC manager call instead.
    * See [[MobileRpcManager.initializeClient]], [[ElectronRpcManager.initializeFrontend]], [[BentleyCloudRpcManager.initializeClient]].
    */
-   rpcInterfaces?: RpcInterfaceDefinition[];
+  rpcInterfaces?: RpcInterfaceDefinition[];
 
   /** @beta */
   realityDataAccess?: RealityDataAccess;
@@ -234,7 +234,7 @@ export class IModelApp {
   /** The [[TerrainProviderRegistry]] for this session. */
   public static get terrainProviderRegistry(): TerrainProviderRegistry { return this._terrainProviderRegistry; }
   /** The [[RealityDataSourceProviderRegistry]] for this session.
-   * @alpha
+   * @beta
    */
   public static get realityDataSourceProviders(): RealityDataSourceProviderRegistry { return this._realityDataSourceProviders; }
   /** The [[RenderSystem]] for this session. */

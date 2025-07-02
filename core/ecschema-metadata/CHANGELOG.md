@@ -1,6 +1,49 @@
 # Change Log - @itwin/ecschema-metadata
 
-This log was last generated on Tue, 03 Jun 2025 16:18:11 GMT and should not be manually modified.
+This log was last generated on Thu, 26 Jun 2025 22:17:28 GMT and should not be manually modified.
+
+## 5.0.2
+Thu, 26 Jun 2025 22:16:01 GMT
+
+_Version update only_
+
+## 5.0.1
+Tue, 17 Jun 2025 18:33:52 GMT
+
+_Version update only_
+
+## 5.0.0
+Fri, 13 Jun 2025 20:25:38 GMT
+
+### Updates
+
+- ECClass.baseClass setter has been replaced with setBaseClass method to enable derived class caching support.
+- Fix for error occuring when converting multiple units with the same UnitConverter instance
+- Changed Class.getProperty method to include inherited properties by default. You must now pass in 'true' to 'excludeInherited' properties.
+- Upgrade compile target to ES2023 and module to ES2022
+- Add `SchemaFormatsProvider` class that implements `FormatsProvider` from `@itwin/core-quantity` and looks for formats in schemas using given `SchemaContext`.
+- Handle SI and METRIC unit systems as one unit system in SchemaFormatsProvider
+- Add FormatSet interface
+- Gracefully handle errors, including rpc, when retrieving schema items in `SchemaFormatsProvider`
+- pull from base property if property attribute undefined
+- Improve type-safety, remove generics from getItem(), add type guards and assertions for SchemaItem.
+- mark api as public preview from beta
+- Added fallback locater support to schema context.
+- Added replacement methods for the now deprecated methods forEachProperty, getMetaData, tryGetMetaData and forEachMetaData.
+- The members defaultPresentationFormat and presentationFormats on KindOfQuantity and the member units on Format and OverrideFormat are now LazyLoaded types.
+- Since the properties on SchemaKey are already readonly, wrapping the type in a Readonly Utility-Type is not necessary. Changed the locater method argument from Readonly<SchemaKey> to SchemaKey and applied the change to all callers and implementations.
+- EC Schemas getItems was using a generic to specify the type of item to be removed, the items were never validated though if the schema items really match the given type. With this change, callers can make sure that if they use the overload with the item type (analog to getItem) only items of that type get's returned.
+- Change core peer dependencies to strict version.
+
+## 4.11.6
+Mon, 16 Jun 2025 15:00:15 GMT
+
+_Version update only_
+
+## 4.11.5
+Fri, 06 Jun 2025 13:41:18 GMT
+
+_Version update only_
 
 ## 4.11.4
 Tue, 03 Jun 2025 16:15:19 GMT
