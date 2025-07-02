@@ -6,18 +6,19 @@
 import { BaselineShift, ColorDef, FractionRun, LineBreakRun, Placement2dProps, TextAnnotation, TextAnnotationAnchor, TextAnnotationFrameShape, TextAnnotationProps, TextBlock, TextBlockJustification, TextBlockMargins, TextRun, TextStyleSettingsProps } from "@itwin/core-common";
 import { DecorateContext, Decorator, GraphicType, IModelApp, IModelConnection, readElementGraphics, RenderGraphicOwner, Tool } from "@itwin/core-frontend";
 import { DtaRpcInterface } from "../common/DtaRpcInterface";
-import { Id64, Id64String } from "@itwin/core-bentley";
+import { assert, Id64, Id64String } from "@itwin/core-bentley";
 import { Point3d, YawPitchRollAngles } from "@itwin/core-geometry";
+import { dtaIpc } from "./App";
 
 // Ignoring the spelling of the keyins. They're case insensitive, so we check against lowercase.
 // cspell:ignore superscript, subscript, widthfactor, fractionscale, fractiontype
 
 class TextEditor implements Decorator {
   // Geometry properties
-  private _categoryId: Id64String = Id64.invalid;
   private _iModel?: IModelConnection;
   private _entityId: Id64String = Id64.invalid;
   private _graphic?: RenderGraphicOwner;
+  public categoryId: Id64String = Id64.invalid;
 
   // TextAnnotation properties
   public origin: Point3d = new Point3d(0, 0, 0);
@@ -36,12 +37,12 @@ class TextEditor implements Decorator {
     "frameFill" |
     "frameBorder" |
     "frameBorderWeight"> {
-    return this._textBlock.styleOverrides;
+    return this.textBlock.styleOverrides;
   }
 
   public get annotationProps(): TextAnnotationProps {
     const annotation = TextAnnotation.fromJSON({
-      textBlock: this._textBlock.toJSON(),
+      textBlock: this.textBlock.toJSON(),
       anchor: this.anchor,
       orientation: YawPitchRollAngles.createDegrees(this.rotation, 0, 0).toJSON(),
       offset: this.offset,
@@ -61,14 +62,14 @@ class TextEditor implements Decorator {
   public runStyle: Omit<TextStyleSettingsProps, "lineHeight" | "widthFactor" | "lineSpacingFactor"> = { fontName: "Arial" };
   public baselineShift: BaselineShift = "none";
 
-  private _textBlock = TextBlock.createEmpty();
+  public textBlock = TextBlock.createEmpty();
 
   public init(iModel: IModelConnection, category: Id64String): void {
     this.clear();
 
     this._iModel = iModel;
     this._entityId = iModel.transientIds.getNext();
-    this._categoryId = category;
+    this.categoryId = category;
 
     IModelApp.viewManager.addDecorator(this);
   }
@@ -79,7 +80,7 @@ class TextEditor implements Decorator {
     this._iModel = undefined;
     this._graphic?.disposeGraphic();
     this._graphic = undefined;
-    this._textBlock = TextBlock.createEmpty();
+    this.textBlock = TextBlock.createEmpty();
     this.origin.setZero();
     this.rotation = 0;
     this.offset.x = this.offset.y = 0;
@@ -90,7 +91,7 @@ class TextEditor implements Decorator {
   }
 
   public appendText(content: string): void {
-    this._textBlock.appendRun(TextRun.create({
+    this.textBlock.appendRun(TextRun.create({
       styleId: "",
       styleOverrides: this.runStyle,
       content,
@@ -99,7 +100,7 @@ class TextEditor implements Decorator {
   }
 
   public appendFraction(numerator: string, denominator: string): void {
-    this._textBlock.appendRun(FractionRun.create({
+    this.textBlock.appendRun(FractionRun.create({
       styleId: "",
       styleOverrides: this.runStyle,
       numerator,
@@ -108,30 +109,30 @@ class TextEditor implements Decorator {
   }
 
   public appendBreak(): void {
-    this._textBlock.appendRun(LineBreakRun.create({
+    this.textBlock.appendRun(LineBreakRun.create({
       styleId: "",
       styleOverrides: this.runStyle,
     }));
   }
 
   public appendParagraph(): void {
-    this._textBlock.appendParagraph();
+    this.textBlock.appendParagraph();
   }
 
   public setDocumentWidth(width: number): void {
-    this._textBlock.width = width;
+    this.textBlock.width = width;
   }
 
   public justify(justification: TextBlockJustification): void {
-    this._textBlock.justification = justification;
+    this.textBlock.justification = justification;
   }
 
   public setMargins(margins: Partial<TextBlockMargins>): void {
-    this._textBlock.margins = {
-      left: margins.left ?? this._textBlock.margins.left,
-      right: margins.right ?? this._textBlock.margins.right,
-      top: margins.top ?? this._textBlock.margins.top,
-      bottom: margins.bottom ?? this._textBlock.margins.bottom,
+    this.textBlock.margins = {
+      left: margins.left ?? this.textBlock.margins.left,
+      right: margins.right ?? this.textBlock.margins.right,
+      top: margins.top ?? this.textBlock.margins.top,
+      bottom: margins.bottom ?? this.textBlock.margins.bottom,
     };
   }
 
@@ -147,7 +148,7 @@ class TextEditor implements Decorator {
       throw new Error("Invoke `dta text init` first");
     }
 
-    if (this._textBlock.isEmpty) {
+    if (this.textBlock.isEmpty) {
       return;
     }
 
@@ -156,7 +157,7 @@ class TextEditor implements Decorator {
     const gfx = await DtaRpcInterface.getClient().generateTextAnnotationGeometry(
       rpcProps,
       this.annotationProps,
-      this._categoryId,
+      this.categoryId,
       this.placementProps,
       this.debugAnchorPointAndRange
     );
@@ -362,6 +363,109 @@ export class TextDecorationTool extends Tool {
         else throw new Error("Expected shape, fill, border, borderWeight");
 
         break;
+      }
+      case "insertstyle": {
+        if (!arg) {
+          throw new Error("Expected style name");
+        }
+        const style: TextStyleSettingsProps = {...editor.documentStyle, ...editor.runStyle };
+        const styleId = await dtaIpc.insertTextStyle(
+          vp.iModel.key,
+          arg,
+          style,
+        );
+
+        // eslint-disable-next-line no-console
+        console.log(`Inserted text style with id ${styleId} and name ${arg}`);
+
+        return true;
+      }
+      case "updatestyle": {
+        if (!arg) {
+          throw new Error("Expected style name");
+        }
+        const style: TextStyleSettingsProps = {...editor.documentStyle, ...editor.runStyle };
+        await dtaIpc.updateTextStyle(
+          vp.iModel.key,
+          arg,
+          style,
+        );
+        return true;
+      }
+      case "deletestyle": {
+        if (!arg) {
+          throw new Error("Expected style name");
+        }
+        await dtaIpc.deleteTextStyle(
+          vp.iModel.key,
+          arg,
+        );
+        return true;
+      }
+      case "applystyle": {
+        let applyTo: "textblock" | "paragraph" | "run" = "textblock";
+        if (inArgs.length === 3) {
+          applyTo = inArgs[2].toLowerCase() as "textblock" | "paragraph" | "run";
+        }
+        if (applyTo === "textblock") {
+          editor.textBlock.applyStyle(arg);
+          break;
+        }
+        const lastParagraphIndex = editor.textBlock.paragraphs.length - 1;
+        if (applyTo === "paragraph" && lastParagraphIndex >= 0) {
+          editor.textBlock.paragraphs[lastParagraphIndex].applyStyle(arg);
+          break;
+        }
+        const lastRunIndex = editor.textBlock.paragraphs[lastParagraphIndex]?.runs.length - 1;
+        if (applyTo === "run" && lastParagraphIndex >= 0 && lastRunIndex >= 0) {
+          editor.textBlock.paragraphs[lastParagraphIndex].runs[lastRunIndex].applyStyle(arg);
+          break;
+        }
+
+        throw new Error(`Invalid applyTo value: ${applyTo}. Expected textblock, paragraph, or run.`);
+      }
+      case "insert": {
+        assert(vp.view.is2d() === true, "View is not 2d");
+        const modelId = vp.view.baseModelId;
+        const id = await dtaIpc.insertText(
+          vp.iModel.key,
+          editor.categoryId,
+          modelId,
+          editor.placementProps,
+          editor.annotationProps
+        );
+
+        // eslint-disable-next-line no-console
+        console.log(`Inserted text annotation with id ${id}`);
+
+        return true;
+      }
+      case "update": {
+        if (!arg) {
+          throw new Error("Expected annotation ID");
+        }
+
+        await dtaIpc.updateText(
+          vp.iModel.key,
+          arg,
+          editor.categoryId,
+          editor.placementProps,
+          editor.annotationProps
+        );
+
+        return true;
+      }
+      case "delete": {
+        if (!arg) {
+          throw new Error("Expected annotation ID");
+        }
+
+        await dtaIpc.deleteText(
+          vp.iModel.key,
+          arg
+        );
+
+        return true;
       }
 
       default:

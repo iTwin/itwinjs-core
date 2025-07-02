@@ -3,13 +3,15 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as path from "path";
-import { assert } from "@itwin/core-bentley";
+import { assert, Id64String } from "@itwin/core-bentley";
 import { ElectronHost } from "@itwin/core-electron/lib/cjs/ElectronBackend";
 import { CreateSectionDrawingViewArgs, CreateSectionDrawingViewResult, dtaChannel, DtaIpcInterface } from "../common/DtaIpcInterface";
 import { getRpcInterfaces, initializeDtaBackend, loadBackendConfig } from "./Backend";
 import { IpcHandler } from "@itwin/core-backend";
 import { getConfig } from "../common/DtaConfiguration";
 import { createSectionDrawing } from "./SectionDrawingImpl";
+import { Placement2dProps, TextAnnotationProps, TextStyleSettingsProps } from "@itwin/core-common";
+import { deleteText, deleteTextStyle, insertText, insertTextStyle, updateText, updateTextStyle } from "./TextImpl";
 
 const mainWindowName = "mainWindow";
 const getWindowSize = (winSize?: string) => {
@@ -39,6 +41,30 @@ class DtaHandler extends IpcHandler implements DtaIpcInterface {
 
   public async createSectionDrawing(args: CreateSectionDrawingViewArgs): Promise<CreateSectionDrawingViewResult> {
     return createSectionDrawing(args);
+  }
+
+  public async insertTextStyle(iModelKey: string, name: string, settingProps: TextStyleSettingsProps): Promise<Id64String> {
+    return insertTextStyle(iModelKey, name, settingProps);
+  }
+
+  public async updateTextStyle(iModelKey: string, name: string, newSettingProps: TextStyleSettingsProps): Promise<void> {
+    return updateTextStyle(iModelKey, name, newSettingProps);
+  }
+
+  public async deleteTextStyle(iModelKey: string, name: string): Promise<void> {
+    return deleteTextStyle(iModelKey, name);
+  }
+
+  public async insertText(iModelKey: string, categoryId: Id64String, modelId: Id64String, placement: Placement2dProps, textAnnotationData?: TextAnnotationProps): Promise<Id64String> {
+    return insertText(iModelKey, categoryId, modelId, placement, textAnnotationData);
+  }
+
+  public async updateText(iModelKey: string, elementId: Id64String, categoryId?: Id64String, placement?: Placement2dProps, textAnnotationProps?: TextAnnotationProps): Promise<void> {
+    return updateText(iModelKey, elementId, categoryId, placement, textAnnotationProps);
+  }
+
+  public async deleteText(iModelKey: string, elementId: Id64String): Promise<void> {
+    return deleteText(iModelKey, elementId);
   }
 }
 
