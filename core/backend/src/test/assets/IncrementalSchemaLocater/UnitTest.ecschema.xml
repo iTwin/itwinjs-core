@@ -13,4 +13,10 @@
   <Unit typeName="GALLON" phenomenon="VOLUME" unitSystem="USCUSTOM" definition="IN(3)" numerator="231.0" displayLabel="gal" description="used for things like milk" />
   <Unit typeName="ACRE" phenomenon="AREA" unitSystem="USCUSTOM" definition="CHAIN(2)" numerator="10.0" displayLabel="acres" description="used for land area" />
   <Unit typeName="FAHRENHEIT" phenomenon="TEMPERATURE" unitSystem="USCUSTOM" definition="CELSIUS" numerator="5.0" denominator="9.0" offset="-32" displayLabel="°F" description="Factor is 5/9" />
+
+  <Unit typeName="CHAIN" phenomenon="LENGTH" unitSystem="USCUSTOM" definition="FT" numerator="66.0" displayLabel="chain" />
+  <Unit typeName="CELSIUS" phenomenon="TEMPERATURE" unitSystem="METRIC" definition="K" offset="273.15" displayLabel="°C" />
+  <Unit typeName="IN" phenomenon="LENGTH" unitSystem="USCUSTOM" definition="MM" numerator="25.4" displayLabel="in" />
+  <Unit typeName="CUB_DM" phenomenon="VOLUME" unitSystem="METRIC" definition="DM(3)" displayLabel="dm³" />
+  <Phenomenon typeName="LENGTH" definition="LENGTH" displayLabel="Length" />
 </ECSchema>

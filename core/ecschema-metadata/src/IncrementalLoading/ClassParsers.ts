@@ -12,6 +12,10 @@ type MutablePropertyProps = {
   -readonly [K in keyof AnyPropertyProps]: AnyPropertyProps[K]
 };
 
+type MutableClassProps = {
+  -readonly [K in keyof ClassProps]: ClassProps[K]
+};
+
 /**
  * Parses ClassProps JSON returned from an ECSql query and returns the correct ClassProps JSON.
  * This is necessary as a small amount information (ie. CustomAttribute data) returned from the
@@ -25,9 +29,13 @@ export class ClassParser extends SchemaItemParser {
    * @returns The corrected ClassProps Json.
    */
   public override async parse(data: ClassProps): Promise<ClassProps> {
-    const props = await super.parse(data) as ClassProps;
-    if (props.properties)
-      this.parseProperties(props.properties);
+    const props = await super.parse(data) as MutableClassProps;
+    if (props.properties) {
+      if (props.properties.length === 0)
+        delete props.properties;
+      else
+        this.parseProperties(props.properties);
+    }
 
     return props;
   }
@@ -84,9 +92,7 @@ export class CustomAttributeClassParser extends ClassParser {
    */
   public override async parse(data: CustomAttributeClassProps): Promise<CustomAttributeClassProps> {
     const props = await super.parse(data) as MutableCustomAttributeClassProps;
-
     props.appliesTo = props.appliesTo ? containerTypeToString(props.appliesTo as any as number) : CustomAttributeContainerType[CustomAttributeContainerType.Any];
-
     return props;
   }
 }

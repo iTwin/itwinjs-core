@@ -1,6 +1,6 @@
 {
   "label": "Simple Profile iModel",
-  "bimFile": "./iModels/SimpleIModel.bim",
+  "bimFile": "SimpleIModel.bim",
   "schemas": [
     {
       "name": "SimpleSchema",

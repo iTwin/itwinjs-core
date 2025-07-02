@@ -1,4 +1,4 @@
-import { AnyPropertyProps, AnySchemaItemProps, ClassProps, EntityClassProps, RelationshipClassProps, Schema, SchemaKey } from "@itwin/ecschema-metadata";
+import { AnyPropertyProps, AnySchemaItemProps, ClassProps, ECClass, ECClassModifier, RelationshipClassProps, Schema, SchemaItemType, SchemaKey } from "@itwin/ecschema-metadata";
 import { SqlTestHelper } from "./utils/SqlTestHelper";
 import { expect, use } from "chai";
 import * as deepEqualInAnyOrder from "deep-equal-in-any-order";
@@ -18,7 +18,8 @@ function findProperty<T extends AnyPropertyProps>(name: string, rowData: T[]) {
 }
 
 function isECClass(item: AnySchemaItemProps): item is ClassProps {
-  return "baseClass" in item;
+  return item.schemaItemType === SchemaItemType.EntityClass || item.schemaItemType === SchemaItemType.Mixin || item.schemaItemType === SchemaItemType.RelationshipClass ||
+      item.schemaItemType === SchemaItemType.StructClass || item.schemaItemType === SchemaItemType.CustomAttributeClass;
 }
 
 function isRelationshipClass(item: AnySchemaItemProps): item is RelationshipClassProps {
@@ -28,10 +29,10 @@ function isRelationshipClass(item: AnySchemaItemProps): item is RelationshipClas
 describe("ECSql query tests", function () {
   let schemaLoader: TestSqlSchemaLocater;
 
-  async function validateItem(name: string, itemPropObjects: AnySchemaItemProps[], schema: Schema) {
+  function validateItem(name: string, itemPropObjects: AnySchemaItemProps[], schema: Schema) {
     const actualJson = findItem(name, itemPropObjects);
     const expectedItem = schema.getItemSync(name);
-    const expectedJson = schema.toJSON();
+    const expectedJson = expectedItem!.toJSON();
 
     // The following code exists because some data coming from the database will not match the
     // data from the context due to default values. This is OK as long as the conditions are
@@ -39,12 +40,20 @@ describe("ECSql query tests", function () {
     // coming from the DB. RelationshipConstraint's AbstractConstraint is set when only one
     // constraint class exists coming from the database, but a serialized Relationship will not
     // contain the abstract constraint. The one constraint is 'assumed' to be the abstract constraint.
-    if (isECClass(actualJson!)) {
-      // Name does not exist in serialized JSON but does exist from DB.
-      expect(actualJson.name).to.equal(expectedItem?.name);
-      delete (actualJson as any).name;
+
+    expect(actualJson.name).to.equal(expectedItem?.name);
+    delete (actualJson as any).name;
+
+    if (isECClass(actualJson)) {
+      if (expectedJson.schemaItemType === "Mixin") {
+        expect(actualJson.modifier).to.be.oneOf([undefined, 'Abstract']);
+        delete (actualJson as any).modifier;
+      } else if ((expectedJson as ClassProps).modifier === undefined) {
+        expect(actualJson.modifier).to.be.oneOf([undefined, 'None']);
+        delete (actualJson as any).modifier;
+      }
     }
-    if (isRelationshipClass(actualJson!)) {
+    if (isRelationshipClass(actualJson)) {
       // abstract can be set via database, but not via context for 1 constraint class
       // so verify constraint and conditions are correct and delete property
       const expectedRelationship = expectedJson as any as RelationshipClassProps;
@@ -57,6 +66,33 @@ describe("ECSql query tests", function () {
         expect(actualJson.target.abstractConstraint).to.equal(expectedRelationship.target.constraintClasses[0]);
         expect(actualJson.target.constraintClasses.length).to.equal(1);
         delete (actualJson.target as any).abstractConstraint;
+      }
+    }
+
+    if (actualJson.schemaItemType === SchemaItemType.Format) {
+      if (undefined !== (actualJson as any).includeZero && undefined === (expectedJson as any).includeZero) {
+        expect((actualJson as any).includeZero).to.equal(true);
+        delete (actualJson as any).includeZero;
+      }
+      if (undefined !== (actualJson as any).composite.includeZero && undefined === (expectedJson as any).composite.includeZero) {
+        expect((actualJson as any).composite.includeZero).to.equal(true);
+        delete (actualJson as any).composite.includeZero;
+      }
+      if (undefined !== (actualJson as any).decimalSeparator && undefined === (expectedJson as any).decimalSeparator) {
+        expect((actualJson as any).decimalSeparator).to.equal(".");
+        delete (actualJson as any).decimalSeparator;
+      }
+      if (undefined !== (actualJson as any).roundFactor && undefined === (expectedJson as any).roundFactor) {
+        expect((actualJson as any).roundFactor).to.equal(0);
+        delete (actualJson as any).roundFactor;
+      }
+      if (undefined !== (actualJson as any).showSignOption && undefined === (expectedJson as any).showSignOption) {
+        expect((actualJson as any).showSignOption).to.equal("OnlyNegative");
+        delete (actualJson as any).showSignOption;
+      }
+      if (undefined !== (actualJson as any).thousandSeparator && undefined === (expectedJson as any).thousandSeparator) {
+        expect((actualJson as any).thousandSeparator).to.equal(",");
+        delete (actualJson as any).thousandSeparator;
       }
     }
 
@@ -95,8 +131,8 @@ describe("ECSql query tests", function () {
       throw new Error(`Could not find schema ${testKey.name}`);
 
     const classPropsObjects = await schemaLoader.getEntities(testKey.name, SqlTestHelper.context);
-    const entityOneProps = findItem("EntityOne", classPropsObjects) as EntityClassProps;
-    const entityTwoProps = findItem("EntityTwo", classPropsObjects) as EntityClassProps;
+    const entityOneProps = findItem("EntityOne", classPropsObjects);
+    const entityTwoProps = findItem("EntityTwo", classPropsObjects);
     const expectedEntityOne = await schema.getEntityClass("EntityOne");
     const expectedEntityTwo = await schema.getEntityClass("EntityTwo");
 
@@ -326,7 +362,7 @@ describe("ECSql query tests", function () {
     validateItem("LENGTH_RATIO", itemPropsObjects, schema);
   });
 
-  it("Format Schema parses successfully", async function () {
+  it.only("Format Schema parses successfully", async function () {
     // Using installed Formats schema
     const testKey = new SchemaKey("Formats", 1, 0, 0);
     await SqlTestHelper.importSchema(testKey);

@@ -1,5 +1,5 @@
 
-import { DbResult, OpenMode } from "@itwin/core-bentley";
+import { OpenMode } from "@itwin/core-bentley";
 import { ProfileOptions } from "@itwin/core-common";
 import { SchemaXmlFileLocater } from "@itwin/ecschema-locaters";
 import { Schema, SchemaContext, SchemaGraphUtil, SchemaKey, SchemaMatchType } from "@itwin/ecschema-metadata";
@@ -11,6 +11,7 @@ import { IModelSchemaLocater } from "./IModelSchemaLocater";
 import { BriefcaseDb, IModelDb, StandaloneDb } from "../../../IModelDb";
 import { IModelHost } from "../../../IModelHost";
 import { IModelJsFs } from "../../../IModelJsFs";
+import { KnownTestLocations } from "../../KnownTestLocations";
 
 export class SqlTestHelper {
   private static _iModel: IModelDb | undefined;
@@ -24,22 +25,6 @@ export class SqlTestHelper {
 
   public static get isLoaded(): boolean {
     return this._iModel !== undefined;
-  }
-
-  public static get schemaNames(): string[] {
-    const result = new Array<string>();
-    const sqlQuery = "SELECT Name, VersionMajor, VersionWrite, VersionMinor FROM meta.ECSchemaDef ORDER BY Name";
-    this.iModel.withPreparedStatement(sqlQuery, (stmt) => {
-      while (stmt.step() === DbResult.BE_SQLITE_ROW) {
-        const name = stmt.getValue(0).getString();
-        const versionMajor = stmt.getValue(1).getInteger();
-        const versionWrite = stmt.getValue(2).getInteger();
-        const versionMinor = stmt.getValue(3).getInteger();
-
-        result.push(`${name}.${versionMajor}.${versionWrite}.${versionMinor}`);
-      }
-    });
-    return result;
   }
 
   public static async setup(iModelId?: string, isStandalone: boolean = true, openReadOnly = true): Promise<void> {
@@ -68,14 +53,14 @@ export class SqlTestHelper {
     this.context = new SchemaContext();
     this.context.addLocater(new IModelSchemaLocater(this._iModel));
     const xmlLocater = new SchemaXmlFileLocater();
-    xmlLocater.addSchemaSearchPath(path.join(__dirname, "../assets/"));
+    xmlLocater.addSchemaSearchPath(path.join(KnownTestLocations.assetsDir, "IncrementalSchemaLocater"));
     this.context.addLocater(xmlLocater);
     const nodeLocater = this.configureNodeSchemaLocater();
     this.context.addLocater(nodeLocater);
   }
 
   private static initializeTestIModel() {
-    const testBim = path.join(__dirname, "../assets", "test-bim.bim");
+    const testBim = path.join(KnownTestLocations.assetsDir, "IncrementalSchemaLocater", "test-bim.bim");
 
     if (IModelJsFs.existsSync(testBim)) {~
       IModelJsFs.removeSync(testBim);
@@ -166,7 +151,7 @@ export class SqlTestHelper {
   }
 
   private static configureNodeSchemaLocater(): SchemaXmlFileLocater {
-    const schemaDir = path.join(__dirname, "../../../node_modules//@bentley");
+    const schemaDir = path.join(__dirname, "../../../../../node_modules//@bentley");
     const searchPaths: string[] = [];
     searchPaths.push(...globSync(path.join(schemaDir, "*schema"), { windowsPathsNoEscape: true }).filter(fs.existsSync));
 

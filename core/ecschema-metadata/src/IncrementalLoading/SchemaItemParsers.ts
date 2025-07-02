@@ -43,7 +43,7 @@ export class SchemaItemParser {
     const props = data as MutableSchemaItemProps;
     props.schemaItemType = parseSchemaItemType((data as any).schemaItemType);
     props.customAttributes = props.customAttributes ? props.customAttributes.map((attr: any) => { return parseCustomAttribute(attr); }) : undefined;
-    if (!props.customAttributes)
+    if (!props.customAttributes || props.customAttributes.length === 0)
       delete props.customAttributes;
 
     return props;
