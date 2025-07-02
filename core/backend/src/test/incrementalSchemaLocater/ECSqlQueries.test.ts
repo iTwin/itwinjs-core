@@ -1,4 +1,4 @@
-import { AnyPropertyProps, AnySchemaItemProps, ClassProps, ECClass, ECClassModifier, RelationshipClassProps, Schema, SchemaItemType, SchemaKey } from "@itwin/ecschema-metadata";
+import { AnyPropertyProps, AnySchemaItemProps, ClassProps, RelationshipClassProps, Schema, SchemaItemType, SchemaKey } from "@itwin/ecschema-metadata";
 import { SqlTestHelper } from "./utils/SqlTestHelper";
 import { expect, use } from "chai";
 import * as deepEqualInAnyOrder from "deep-equal-in-any-order";
@@ -74,9 +74,13 @@ describe("ECSql query tests", function () {
         expect((actualJson as any).includeZero).to.equal(true);
         delete (actualJson as any).includeZero;
       }
-      if (undefined !== (actualJson as any).composite.includeZero && undefined === (expectedJson as any).composite.includeZero) {
+      if ((actualJson as any).composite && undefined !== (actualJson as any).composite.includeZero && undefined === (expectedJson as any).composite.includeZero) {
         expect((actualJson as any).composite.includeZero).to.equal(true);
         delete (actualJson as any).composite.includeZero;
+      }
+      if ((actualJson as any).composite && undefined !== (actualJson as any).composite.spacer && undefined === (expectedJson as any).composite.spacer) {
+        expect((actualJson as any).composite.spacer).to.equal(" ");
+        delete (actualJson as any).composite.spacer;
       }
       if (undefined !== (actualJson as any).decimalSeparator && undefined === (expectedJson as any).decimalSeparator) {
         expect((actualJson as any).decimalSeparator).to.equal(".");
@@ -93,6 +97,19 @@ describe("ECSql query tests", function () {
       if (undefined !== (actualJson as any).thousandSeparator && undefined === (expectedJson as any).thousandSeparator) {
         expect((actualJson as any).thousandSeparator).to.equal(",");
         delete (actualJson as any).thousandSeparator;
+      }
+      if (undefined !== (actualJson as any).uomSeparator && undefined === (expectedJson as any).uomSeparator) {
+        expect((actualJson as any).uomSeparator).to.equal(" ");
+        delete (actualJson as any).uomSeparator;
+      }
+      if (undefined !== (actualJson as any).spacer && undefined === (expectedJson as any).spacer) {
+        expect((actualJson as any).spacer).to.equal(" ");
+        delete (actualJson as any).spacer;
+      }
+      if (undefined !== (actualJson as any).formatTraits) {
+        (actualJson as any).formatTraits = (actualJson as any).formatTraits.map((trait: string) => {
+          return trait.charAt(0).toUpperCase() + trait.slice(1);
+        });
       }
     }
 
@@ -362,7 +379,7 @@ describe("ECSql query tests", function () {
     validateItem("LENGTH_RATIO", itemPropsObjects, schema);
   });
 
-  it.only("Format Schema parses successfully", async function () {
+  it("Format Schema parses successfully", async function () {
     // Using installed Formats schema
     const testKey = new SchemaKey("Formats", 1, 0, 0);
     await SqlTestHelper.importSchema(testKey);
