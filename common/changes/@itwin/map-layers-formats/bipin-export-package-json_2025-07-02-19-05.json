@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/map-layers-formats",
-      "comment": "package.json added to exports",
+      "comment": "`package.json` added to exports map",
       "type": "none"
     }
   ],
