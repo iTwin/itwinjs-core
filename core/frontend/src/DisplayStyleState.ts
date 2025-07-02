@@ -66,7 +66,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
 
   /** Event raised when schedule script edits are made, providing changed element IDs and the editing scope. */
   public readonly onScheduleEditingChanged = new BeEvent<
-    (change: { changedElementIds: Set<Id64String> }) => void
+    (change: { changedElementIds: Set<Id64String>, affectedModelIds: Set<Id64String> }) => void
   >();
 
   /** Event raised when schedule script edits are committed (finalized). */
@@ -310,8 +310,19 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   public setScheduleEditing(newScript: RenderSchedule.Script): void {
     const prevScript = this.scheduleScript;
     const changedIds = getScriptDelta(prevScript, newScript);
+
+    const affectedModelIds = new Set<Id64String>();
+    for (const timeline of newScript.modelTimelines) {
+      affectedModelIds.add(timeline.modelId);
+    }
+
     this.scheduleScript = newScript;
-    this.onScheduleEditingChanged.raiseEvent({ changedElementIds: changedIds });
+
+    this.onScheduleEditingChanged.raiseEvent({
+      changedElementIds: changedIds,
+      affectedModelIds,
+    });
+
     for (const modelTimeline of this.scheduleScript.modelTimelines) {
       modelTimeline.isEditingCommitted = false;
     }

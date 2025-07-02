@@ -1305,11 +1305,10 @@ export abstract class Viewport implements Disposable, TileUser {
     removals.push(style.onScheduleScriptChanged.addListener(scriptChanged));
 
 
-    const scheduleEditingChanged = (change: { changedElementIds: Set<Id64String> }) => {
-
+    const scheduleEditingChanged = (change: { changedElementIds: Set<Id64String>, affectedModelIds: Set<Id64String> }) => {
       for (const ref of this.getTileTreeRefs()) {
         const tree = ref.treeOwner.tileTree;
-        if (tree instanceof IModelTileTree) {
+        if (tree instanceof IModelTileTree && change.affectedModelIds.has(tree.modelId)) {
           tree.onScheduleEditingChanged(change);
         }
       }
