@@ -5,19 +5,44 @@
 import { afterAll, afterEach, beforeAll, describe, it } from "vitest";
 import { TestDecorator } from "../../TestDecorators";
 import { IModelApp } from "../../../IModelApp";
-import { ColorDef, EmptyLocalization, Feature, FillFlags, GraphicParams } from "@itwin/core-common";
-import { Point2d, Point3d, Transform, XYZProps } from "@itwin/core-geometry";
+import { ColorDef, EmptyLocalization, Feature, FillFlags, GraphicParams, RenderMode } from "@itwin/core-common";
+import { Point2d, Point3d, Range3d, Transform, XYZProps } from "@itwin/core-geometry";
 import { DecorateContext } from "../../../ViewContext";
 import { GraphicType } from "../../../common";
 import { Viewport } from "../../../Viewport";
+import { testBlankViewport } from "../../openBlankViewport";
+import { StandardViewId } from "../../../StandardView";
+import { expectColors } from "../../ExpectColors";
 
+
+
+/** Produces a decoration that draws a square as a blanking region, plus a (P)oint, (S)urface, and (L)ine as follows:
+ *
+ *                        1 1 1
+ *    0 1 2 3 4 5 6 7 8 9 0 1 2 
+ *  0                           |
+ *  1     P P P     S S S S S   |
+ *  2   P P P P P   S S S S S   |
+ *  3   P P P P P   S S S S S   |
+ *  4   P P P P P   S S S S S   |
+ *  5     P P P     S S S S S   |
+ *  6                           |
+ *  7   L L L L L L L L L L L   |
+ *  8   L L L L L L L L L L L   |
+ *  9   L L L L L L L L L L L   |
+ * 10   L L L L L L L L L L L   |
+ * 11   L L L L L L L L L L L   |
+ * 12 _ _ _ _ _ _ _ _ _ _ _ _ _ |
+ *
+ * All blank pixels above are part of the blanking region.
+ */
 class BlankingDecorator extends TestDecorator {
   public constructor(
-    private readonly _origin: Point3d,
     private readonly _blankingColor: ColorDef,
     private readonly _blankingFeature: Feature,
     private readonly _fgColor: ColorDef,
-    private readonly _fgFeature: Feature
+    private readonly _fgFeature: Feature,
+    private readonly _origin: Point3d = new Point3d(0, 0, 0),
   ) {
     super();
   }
@@ -54,8 +79,29 @@ class BlankingDecorator extends TestDecorator {
   }
 }
 
-function expectBlankingRegion(vp: Viewport, expectedBlankingColor: ColorDef, expectedForegroundColor): void {
-  
+const bgColor = ColorDef.from(12, 34, 56);
+
+function expectBlankingRegion(expectedBlankingColor: ColorDef, expectedForegroundColor: ColorDef): void {
+  testBlankViewport((vp) => {
+    vp.displayStyle.backgroundColor = bgColor;
+    vp.displayStyle.viewFlags = vp.displayStyle.viewFlags.copy({
+      renderMode: RenderMode.SmoothShade,
+      lighting: false,
+      visibleEdges: false,
+    });
+
+    vp.view.setStandardRotation(StandardViewId.Top);
+    vp.view.lookAtVolume(new Range3d(-5, -5, -5, 17, 17, 5));
+    vp.turnCameraOff();
+    vp.synchWithView();
+
+    vp.invalidateDecorations();
+    vp.renderFrame();
+    
+    expectColors(vp, [expectedBlankingColor, expectedForegroundColor, bgColor]);
+
+    // ###TODO test individual pixels
+  });
 }
 
 describe("Blanking fill", () => {
@@ -64,7 +110,15 @@ describe("Blanking fill", () => {
   afterAll(async () => IModelApp.shutdown());
   
   it("renders behind coplanar geometry from same feature", () => {
-    
+    const feature = new Feature("0xabc");
+    IModelApp.viewManager.addDecorator(new BlankingDecorator(
+      ColorDef.red,
+      feature,
+      ColorDef.blue,
+      feature,
+    ));
+
+    expectBlankingRegion(ColorDef.red, ColorDef.blue);
   });
 
   it("renders behind coplanar geometry from same element", () => {
