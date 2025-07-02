@@ -1,6 +1,7 @@
 import { Id64String } from "@itwin/core-bentley";
 import { RenderSchedule } from "@itwin/core-common";
 
+/** @internal */
 export function getScriptDelta(prev: RenderSchedule.Script | undefined | null, next: RenderSchedule.Script): Set<Id64String> {
   if (!prev || !prev.modelTimelines || prev.modelTimelines.length === 0) {
     return getAllElementIdsFromScript(next);

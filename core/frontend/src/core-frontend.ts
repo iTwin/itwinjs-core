@@ -287,7 +287,3 @@ import "./extension/ExtensionRuntime";
  * @docs-group-description TileStorage
  * Class for working with cloud storage using iTwin/object-storage cloud providers
 */
-/**
- * @docs-group-description ScriptUtils
- * Utility functions for comparing and analyzing schedule scripts and their timelines.
- */
