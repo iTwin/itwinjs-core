@@ -18,7 +18,7 @@ import {
   AnalysisStyle, BackgroundMapProps, BackgroundMapProviderProps, BackgroundMapSettings, Camera, CartographicRange, ClipStyle, ColorDef, DisplayStyleSettingsProps,
   Easing, ElementProps, FeatureAppearance, Frustum, GlobeMode, GridOrientationType, Hilite, ImageBuffer,
   Interpolation, isPlacement2dProps, LightSettings, ModelMapLayerSettings, Npc, NpcCenter, Placement,
-  Placement2d, Placement3d, PlacementProps, SolarShadowSettings, SubCategoryAppearance, SubCategoryOverride, ViewFlags,
+  Placement2d, Placement3d, PlacementProps, RenderSchedule, SolarShadowSettings, SubCategoryAppearance, SubCategoryOverride, ViewFlags,
 } from "@itwin/core-common";
 import { AuxCoordSystemState } from "./AuxCoordSys";
 import { BackgroundMapGeometry } from "./BackgroundMapGeometry";
@@ -1305,11 +1305,15 @@ export abstract class Viewport implements Disposable, TileUser {
     removals.push(style.onScheduleScriptChanged.addListener(scriptChanged));
 
 
-    const scheduleEditingChanged = (change: { changedElementIds: Set<Id64String>, affectedModelIds: Set<Id64String> }) => {
-      for (const ref of this.getTileTreeRefs()) {
-        const tree = ref.treeOwner.tileTree;
-        if (tree instanceof IModelTileTree && change.affectedModelIds.has(tree.modelId)) {
-          tree.onScheduleEditingChanged(change);
+    const scheduleEditingChanged = (
+      changes: Array<{ timeline: RenderSchedule.ModelTimeline, elements: Set<Id64String> }>
+    ) => {
+      for (const { timeline, elements } of changes) {
+        for (const ref of this.getTileTreeRefs()) {
+          const tree = ref.treeOwner.tileTree;
+          if (tree instanceof IModelTileTree && tree.modelId === timeline.modelId) {
+            tree.onScheduleEditingChanged({ changedElementIds: elements });
+          }
         }
       }
     };

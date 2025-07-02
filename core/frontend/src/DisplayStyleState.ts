@@ -5,7 +5,7 @@
 /** @packageDocumentation
  * @module Views
  */
-import { assert, BeEvent, Id64, Id64Arg, Id64String } from "@itwin/core-bentley";
+import { assert, BeEvent, Id64, Id64Arg, Id64Set, Id64String } from "@itwin/core-bentley";
 import { Range1d, Vector3d } from "@itwin/core-geometry";
 import {
   BackgroundMapProps, BackgroundMapProvider, BackgroundMapProviderProps, BackgroundMapSettings,
@@ -66,7 +66,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
 
   /** Event raised when schedule script edits are made, providing changed element IDs and the editing scope. */
   public readonly onScheduleEditingChanged = new BeEvent<
-    (change: { changedElementIds: Set<Id64String>, affectedModelIds: Set<Id64String> }) => void
+      (change: Array<{ timeline: RenderSchedule.ModelTimeline, elements: Set<Id64String> }>) => void
   >();
 
   /** Event raised when schedule script edits are committed (finalized). */
@@ -309,19 +309,28 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   /** Start/update the script in the current editing session. Fires onScheduleEditingChanged. */
   public setScheduleEditing(newScript: RenderSchedule.Script): void {
     const prevScript = this.scheduleScript;
-    const changedIds = getScriptDelta(prevScript, newScript);
+    const changes: Array<{ timeline: RenderSchedule.ModelTimeline, elements: Set<Id64String> }> = [];
 
-    const affectedModelIds = new Set<Id64String>();
-    for (const timeline of newScript.modelTimelines) {
-      affectedModelIds.add(timeline.modelId);
+    for (const newTimeline of newScript.modelTimelines) {
+      const oldTimeline = prevScript?.modelTimelines.find(t => t.modelId === newTimeline.modelId);
+
+      const oldIds = (oldTimeline?.elementTimelines.flatMap(et => [...et.elementIds]) ?? []);
+      const newIds = newTimeline.elementTimelines.flatMap(et => [...et.elementIds]);
+
+
+      const changed = new Set<Id64String>();
+      for (const id of newIds) {
+        if (!oldIds.includes(id))
+          changed.add(id);
+      }
+
+      if (changed.size > 0) {
+        changes.push({ timeline: newTimeline, elements: changed });
+      }
     }
 
     this.scheduleScript = newScript;
-
-    this.onScheduleEditingChanged.raiseEvent({
-      changedElementIds: changedIds,
-      affectedModelIds,
-    });
+    this.onScheduleEditingChanged.raiseEvent(changes);
 
     for (const modelTimeline of this.scheduleScript.modelTimelines) {
       modelTimeline.isEditingCommitted = false;
