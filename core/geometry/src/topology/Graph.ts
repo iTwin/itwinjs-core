@@ -1469,6 +1469,25 @@ export class HalfEdgeGraph {
     this.allHalfEdges.push(baseNode.faceSuccessor);
     return baseNode;
   }
+  /**
+   * Create two nodes of a new edge using start and end points of a line segment.
+   * @param lineSegment the line segment to use as the edge.
+   * @param startFaceTag (optional) face tag for the start node.
+   * @param endFaceTag (optional) face tag for the end node.
+   * @returns the reference to the new node at the start of the line segment.
+   */
+  public addLineSegmentXY(lineSegment: LineSegment3d, startFaceTag?: number, endFaceTag?: number): HalfEdge {
+    const baseNode = HalfEdge.createEdgeXYXY(
+      this._numNodesCreated, lineSegment.startPoint().x, lineSegment.startPoint().y,
+      this._numNodesCreated + 1, lineSegment.endPoint().x, lineSegment.endPoint().y,
+    );
+    baseNode.faceTag = startFaceTag;
+    baseNode.faceSuccessor.faceTag = endFaceTag;
+    this._numNodesCreated += 2;
+    this.allHalfEdges.push(baseNode);
+    this.allHalfEdges.push(baseNode.faceSuccessor);
+    return baseNode;
+  }
   /** Clear selected `mask` bits in all nodes of the graph. */
   public clearMask(mask: HalfEdgeMask) {
     for (const node of this.allHalfEdges)
