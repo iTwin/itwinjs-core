@@ -389,21 +389,21 @@ export class TextDecorationTool extends Tool {
         break;
       }
       case "leader":
-        const k = inArgs[1];
+        const command = inArgs[1];
         const value = inArgs[2];
-        if (k === "new") {
+        if (command === "new") {
           editor.setLeaderProps();
         } else {
           if (editor.leaders && editor.leaders.length > 0) {
             const latestLeaderIndex = editor.leaders.length - 1;
-            if (k === "start") editor.setLeaderStartPoint(editor.leaders[latestLeaderIndex], Number(value));
-            else if (k === "keypoint") {
+            if (command === "start") editor.setLeaderStartPoint(editor.leaders[latestLeaderIndex], Number(value));
+            else if (command === "keypoint") {
               const curveIndex = inArgs[2];
               const fraction = inArgs[3]
               editor.setLeaderKeyPoint(editor.leaders[latestLeaderIndex], Number(curveIndex), Number(fraction));
             }
-            else if (k === "nearest") editor.setLeaderNearest(editor.leaders[latestLeaderIndex]);
-            else if (k === "textpoint") {
+            else if (command === "nearest") editor.setLeaderNearest(editor.leaders[latestLeaderIndex]);
+            else if (command === "textpoint") {
               const position = inArgs[2] as LeaderTextPointOptions;
               editor.setLeaderTextPoint(editor.leaders[latestLeaderIndex], position);
 
