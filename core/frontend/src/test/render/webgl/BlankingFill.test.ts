@@ -49,11 +49,13 @@ class BlankingDecorator extends TestDecorator {
 
   public decorate(context: DecorateContext): void {
     const builder = context.createGraphic({
-      type: GraphicType.WorldDecoration,
+      type: GraphicType.Scene,
       placement: Transform.createTranslation(this._origin),
       pickable: { id: "0xbaadf00d" },
     });
 
+    const doBlanking = true;
+    if (doBlanking) {
     builder.activateFeature(this._blankingFeature);
     const blankingParams = new GraphicParams();
     blankingParams.fillColor = blankingParams.lineColor = this._blankingColor;
@@ -62,7 +64,10 @@ class BlankingDecorator extends TestDecorator {
     builder.addShape2d([
       new Point2d(0, 0), new Point2d(0, 12), new Point2d(12, 12), new Point2d(12, 0), new Point2d(0, 0),
     ], 0);
+    }
 
+    const doForeground = true;
+    if (doForeground) {
     builder.activateFeature(this._fgFeature);
     builder.setSymbology(this._fgColor, this._fgColor, 2);
     builder.addPointString2d([new Point2d(3, 3)], 0);
@@ -74,6 +79,7 @@ class BlankingDecorator extends TestDecorator {
     builder.addLineString2d([
       new Point2d(1, 9), new Point2d(11, 9),
     ], 0);
+    }
     
     context.addDecorationFromBuilder(builder);
   }
@@ -113,13 +119,13 @@ describe("Blanking fill", () => {
   it("renders behind coplanar geometry from same feature", () => {
     const feature = new Feature("0xabc");
     IModelApp.viewManager.addDecorator(new BlankingDecorator(
-      ColorDef.red,
+      ColorDef.green,
       feature,
-      ColorDef.blue,
+      ColorDef.white,
       feature,
     ));
 
-    expectBlankingRegion(ColorDef.red, ColorDef.blue);
+    expectBlankingRegion(ColorDef.green, ColorDef.white);
   });
 
   it("renders behind coplanar geometry from same element", () => {

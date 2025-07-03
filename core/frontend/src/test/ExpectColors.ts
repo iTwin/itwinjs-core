@@ -27,7 +27,7 @@ export function readUniqueColors(viewport: ScreenViewport, rect?: ViewRect): Col
 export function expectUniqueColors(viewport: ScreenViewport, expected: ColorDef[], rect?: ViewRect): void {
   const expectedColors = expected.map((x) => x.toHexString()).sort();
   const actualColors = readUniqueColors(viewport, rect).map((x) => x.toHexString()).sort();
-  expect(actualColors).to.equal(expectedColors);
+  expect(actualColors).toEqual(expectedColors);
 }
 
 /** A viewport-color-checking function for tests. Tests for the presence of a list of expected colors in the entire viewport or specified ViewRect.
