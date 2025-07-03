@@ -597,6 +597,7 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
   }
 
   public createBatch(graphic: RenderGraphic, features: RenderFeatureTable, range: ElementAlignedBox3d, options?: BatchOptions): RenderGraphic {
+    assert(graphic instanceof Graphic);
     return new Batch(graphic, features, range, options);
   }
 
