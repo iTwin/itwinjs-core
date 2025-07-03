@@ -15,7 +15,7 @@ import {
   updateSliderValue,
 } from "@itwin/frontend-devtools";
 import { ColorDef, Contour, ContourDisplay, ContourDisplayProps, ContourGroupProps, LinePixels, RgbColor } from "@itwin/core-common";
-import { Viewport, ViewState3d } from "@itwin/core-frontend";
+import { Viewport, ViewState } from "@itwin/core-frontend";
 import { ToolBarDropDown } from "./ToolBar";
 
 // size of widget or panel
@@ -77,7 +77,6 @@ export class ContoursSettings implements Disposable {
       name: "Display contours in the viewport",
       id: "cbx_toggleDisplayContours",
       handler: (checkbox) => {
-        assert(this._vp.view.is3d());
         this._vp.view.displayStyle.settings.contours = this._vp.view.displayStyle.settings.contours.withDisplayContours(checkbox.checked);
         this.sync();
       },
@@ -208,7 +207,6 @@ export class ContoursSettings implements Disposable {
     this.toggleCurrentGroup(false);
     this.loadContourDef(this._currentContourIndex);
 
-    assert(this._vp.view.is3d());
     this._checkbox.checkbox.checked = this._vp.view.displayStyle.settings.contours.displayContours;
   }
 
@@ -216,7 +214,7 @@ export class ContoursSettings implements Disposable {
     this._parent.removeChild(this._element);
   }
 
-  private getContourDisplayProps(view: ViewState3d): ContourDisplayProps {
+  private getContourDisplayProps(view: ViewState): ContourDisplayProps {
     const contours =  view.displayStyle.settings.contours;
     return contours.toJSON();
   }
@@ -253,7 +251,6 @@ export class ContoursSettings implements Disposable {
   private loadContourDef(index: number) {
     this._currentContourIndex = index;
 
-    assert(this._vp.view.is3d());
 
     const groups = this._vp.view.displayStyle.settings.contours.groups;
     if (this._currentContourIndex > groups.length - 1) {
@@ -280,7 +277,6 @@ export class ContoursSettings implements Disposable {
 
   private addContourDef() {
     const view = this._vp.view;
-    assert(view.is3d());
     const contoursJson = this.getContourDisplayProps(view);
     const groups = undefined === contoursJson.groups ? [] : contoursJson.groups;
 
@@ -301,7 +297,6 @@ export class ContoursSettings implements Disposable {
 
   private applyContourDef() {
     const view = this._vp.view;
-    assert(view.is3d());
     const contoursJson = this.getContourDisplayProps(view);
     const groups = undefined === contoursJson.groups ? [] : contoursJson.groups;
 
@@ -317,7 +312,6 @@ export class ContoursSettings implements Disposable {
   }
 
   private deleteContourDef() {
-    assert(this._vp.view.is3d());
 
     const contoursJson = this.getContourDisplayProps(this._vp.view);
     const groups = undefined === contoursJson.groups ? [] : contoursJson.groups;
