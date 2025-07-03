@@ -20,7 +20,9 @@ import { TextBlockLayout } from "./TextBlockLayout";
  * @returns `true` if at least one leader with a terminator was successfully appended; otherwise, `false`.
  * @beta
  */
-export function appendLeadersToBuilder(builder: ElementGeometry.Builder, leaders: TextAnnotationLeader[], layout: TextBlockLayout, transform: Transform, params: GeometryParams, frame?: TextFrameStyleProps,): boolean {
+export function appendLeadersToBuilder(builder: ElementGeometry.Builder, leaders: TextAnnotationLeader[], layout: TextBlockLayout, transform: Transform, params: GeometryParams, frame?: TextFrameStyleProps): boolean {
+  let result = true;
+
   // If there is no frame, use a rectangular frame to compute the attachmentPoints for leaders.
   if (frame === undefined || frame.shape === "none") {
     frame = { shape: "rectangle" }
@@ -32,7 +34,7 @@ export function appendLeadersToBuilder(builder: ElementGeometry.Builder, leaders
     if (leader.styleOverrides?.leaderColor !== "subcategory" && leader.styleOverrides?.color !== "subcategory") {
       const color = leader.styleOverrides?.leaderColor ?? leader.styleOverrides?.color;
       params.lineColor = color ? ColorDef.fromJSON(color) : ColorDef.black;
-      builder.appendGeometryParamsChange(params);
+      result = result && builder.appendGeometryParamsChange(params);
     }
 
     const attachmentPoint = computeLeaderAttachmentPoint(leader, frameCurve, layout, transform);
@@ -56,7 +58,7 @@ export function appendLeadersToBuilder(builder: ElementGeometry.Builder, leaders
 
     leaderLinePoints.push(attachmentPoint)
 
-    builder.appendGeometryQuery(LineString3d.create(leaderLinePoints));
+    result = result && builder.appendGeometryQuery(LineString3d.create(leaderLinePoints));
 
     // Terminator geometry
     const terminatorDirection = Vector3d.createStartEnd(
@@ -70,9 +72,9 @@ export function appendLeadersToBuilder(builder: ElementGeometry.Builder, leaders
     const basePoint = leader.startPoint.plusScaled(terminatorDirection, terminatorWidth);
     const termPointA = basePoint.plusScaled(termY, terminatorHeight);
     const termPointB = basePoint.plusScaled(termY.negate(), terminatorHeight);
-    builder.appendGeometryQuery(LineString3d.create([termPointA, leader.startPoint, termPointB]));
+    result = result && builder.appendGeometryQuery(LineString3d.create([termPointA, leader.startPoint, termPointB]));
 
-    return true;
+    return result;
   })
   return false;
 }
