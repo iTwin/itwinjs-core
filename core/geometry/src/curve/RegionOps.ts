@@ -386,8 +386,7 @@ export class RegionOps {
    * @param loopsB second set of loops (treated as a union)
    * @param operation indicates Union, Intersection, Parity, AMinusB, or BMinusA
    * @param mergeTolerance absolute distance tolerance for merging loops
-   * @returns a region resulting from merging input loops and the boolean operation. May contain bridge edges added
-   * to connect interior loops to exterior loops.
+   * @returns a region resulting from merging input loops and the boolean operation.
    */
   public static regionBooleanXY(
     loopsA: AnyRegion | AnyRegion[] | undefined,
@@ -402,7 +401,7 @@ export class RegionOps {
     const visitMask = context.graph.grabMask(false);
     const range = context.groupA.range().union(context.groupB.range());
     const areaTol = this.computeXYAreaTolerance(range, mergeTolerance);
-    const bridgeMask = HalfEdgeMask.BRIDGE_EDGE; // | HalfEdgeMask.REGULARIZED_EDGE; // TODO
+    const bridgeMask = HalfEdgeMask.BRIDGE_EDGE;
     context.runClassificationSweep(
       operation,
       (_graph: HalfEdgeGraph, face: HalfEdge, faceType: -1 | 0 | 1, area: number) => {
