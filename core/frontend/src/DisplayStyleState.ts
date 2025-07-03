@@ -5,7 +5,7 @@
 /** @packageDocumentation
  * @module Views
  */
-import { assert, BeEvent, Id64, Id64Arg, Id64Set, Id64String } from "@itwin/core-bentley";
+import { assert, BeEvent, Id64, Id64Arg, Id64String } from "@itwin/core-bentley";
 import { Range1d, Vector3d } from "@itwin/core-geometry";
 import {
   BackgroundMapProps, BackgroundMapProvider, BackgroundMapProviderProps, BackgroundMapSettings,
