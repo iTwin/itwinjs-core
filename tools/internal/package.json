@@ -12,6 +12,7 @@
     "clean": "",
     "docs": "",
     "lint": "",
+    "lint-deprecation": "",
     "test": "",
     "cover": ""
   },
