@@ -6,9 +6,10 @@
 /** @packageDocumentation
  * @module CartesianGeometry
  */
-import { AnyRegion } from "../curve/CurveTypes";
+
 import { CurveChain } from "../curve/CurveCollection";
 import { CurvePrimitive } from "../curve/CurvePrimitive";
+import { AnyRegion } from "../curve/CurveTypes";
 import { LineString3d } from "../curve/LineString3d";
 import { Loop } from "../curve/Loop";
 import { ParityRegion } from "../curve/ParityRegion";
@@ -18,13 +19,17 @@ import { IndexedReadWriteXYZCollection, IndexedXYZCollection } from "./IndexedXY
 import { Point3d } from "./Point3dVector3d";
 import { PolygonOps } from "./PolygonOps";
 import { Range3d } from "./Range";
+import { Ray3d } from "./Ray3d";
 import { XAndY } from "./XYZProps";
 
-/** abstract base class for area-related queries of a loop.
- * * subclasses have particular logic for `Loop` and polygon data.
+/** Abstract base class for area-related queries of an xy-loop.
+ * * Subclasses have particular logic for `Loop` and polygon data.
  * @internal
  */
 abstract class SimpleRegionCarrier {
+  /** Fractions for interior point search. */
+  protected searchFractions: number[] = [0.2349, 0.4142, 0.6587, 0.8193];
+
   public abstract classifyPointXY(xy: XAndY): number | undefined;
   // Find any point on an edge.
   // evaluate tangent.
@@ -47,9 +52,30 @@ abstract class SimpleRegionCarrier {
    * If the current `signedArea` has different sign versus `targetSign`, reverse the loop in place.
    */
   public abstract reverseForAreaSign(targetSign: number): void;
+  /**
+   * Given a region boundary tangent, construct a point interior to the region.
+   * @param ray point and tangent on an edge of the region (modified on return)
+   */
+  protected constructInteriorPoint(ray: Ray3d): Point3d | undefined {
+    ray.direction.z = 0.0;
+    if (!ray.direction.normalizeInPlace())
+      return undefined; // loop has zero length edge, or a vertical (gap) edge
+    ray.direction.rotate90CCWXY(ray.direction);
+    if (this.signedArea < 0.0)
+      ray.direction.scaleInPlace(-1.0); // aim toward the region interior
+    const refDistance = Math.sqrt(Math.abs(this.signedArea));
+    const candidatePoint = Point3d.create();
+    for (let fraction = 1.0e-5; fraction < 3; fraction *= 5.0) {
+      ray.fractionToPoint(fraction * refDistance, candidatePoint);
+      if (1 === this.classifyPointXY(candidatePoint))
+        return candidatePoint;
+    }
+    return undefined;
+  }
 }
+
 /**
- * Implement `LoopCarrier` queries with the area as a polygon carried in an `IndexedReadWriteXYZCollection`
+ * Implement `SimpleRegionCarrier` queries with the area as a polygon carried in an `IndexedReadWriteXYZCollection`.
  */
 class PolygonCarrier extends SimpleRegionCarrier {
   public data: IndexedReadWriteXYZCollection;
@@ -68,14 +94,14 @@ class PolygonCarrier extends SimpleRegionCarrier {
   public classifyPointXY(xy: XAndY): number | undefined {
     return PolygonOps.classifyPointInPolygonXY(xy.x, xy.y, this.data);
   }
-  /** Return some point "inside"
-   * NEEDS WORK: this returns a point ON --
-   */
+  /** Return some point "inside". */
   public getAnyInteriorPoint(): Point3d | undefined {
     for (let childIndex = 0; childIndex < this.data.length; childIndex++) {
-      const q = this.constructInteriorPointNearEdge(childIndex, 0.2349);
-      if (q !== undefined)
-        return q;
+      for (const fraction of this.searchFractions) {
+        const q = this.constructInteriorPointNearEdge(childIndex, fraction);
+        if (q !== undefined)
+          return q;
+      }
     }
     return undefined;
   }
@@ -91,28 +117,18 @@ class PolygonCarrier extends SimpleRegionCarrier {
   }
   public constructInteriorPointNearEdge(edgeIndex: number, fractionAlong: number): Point3d | undefined {
     if (edgeIndex + 1 < this.data.length) {
-      const point0 = this.data.getPoint3dAtUncheckedPointIndex(edgeIndex);
-      const point1 = this.data.getPoint3dAtUncheckedPointIndex(edgeIndex + 1);
-      const vector = point0.vectorTo(point1);
-      const point = point0.interpolate(fractionAlong, point1);
-      vector.rotate90CCWXY(vector);
-      if (vector.normalizeInPlace()) {
-        if (this._signedArea < 0)
-          vector.scaleInPlace(-1.0);
-        const refDistance = Math.sqrt(Math.abs(this._signedArea));
-        for (let fraction = 1.0e-5; fraction < 3; fraction *= 5.0) {
-          const candidatePoint = point.plusScaled(vector, fraction * refDistance);
-          if (1 === this.classifyPointXY(candidatePoint))
-            return candidatePoint;
-        }
-      }
+      const ray = Ray3d.createCapture(
+        this.data.interpolateIndexIndex(edgeIndex, fractionAlong, edgeIndex + 1)!,
+        this.data.vectorIndexIndex(edgeIndex, edgeIndex + 1)!
+      );
+      return this.constructInteriorPoint(ray);
     }
     return undefined;
   }
-
 }
+
 /**
- * Implement `LoopCarrier` queries with the area as a strongly typed `Loop`
+ * Implement `SimpleRegionCarrier` queries with the area as a strongly typed `Loop`.
  */
 class LoopCarrier extends SimpleRegionCarrier {
   public data: Loop;
@@ -134,28 +150,19 @@ class LoopCarrier extends SimpleRegionCarrier {
   }
   public constructInteriorPointNearChild(childIndex: number, fractionAlong: number): Point3d | undefined {
     if (childIndex < this.data.children.length) {
-      const primitive = this.data.children[childIndex];
-      const ray = primitive.fractionToPointAndUnitTangent(fractionAlong);
-      ray.direction.rotate90CCWXY(ray.direction);
-      if (this._signedArea < 0.0)
-        ray.direction.scaleInPlace(-1.0);
-      const refDistance = Math.sqrt(Math.abs(this._signedArea));
-      for (let fraction = 1.0e-5; fraction < 3; fraction *= 5.0) {
-        const candidatePoint = ray.fractionToPoint(fraction * refDistance);
-        if (1 === this.classifyPointXY(candidatePoint))
-          return candidatePoint;
-      }
+      const ray = this.data.children[childIndex].fractionToPointAndDerivative(fractionAlong);
+      return this.constructInteriorPoint(ray);
     }
     return undefined;
   }
-  /** Return some point "inside"
-   * NEEDS WORK: this returns a point ON --
-   */
+  /** Return some point "inside". */
   public getAnyInteriorPoint(): Point3d | undefined {
     for (let childIndex = 0; childIndex < this.data.children.length; childIndex++) {
-      const q = this.constructInteriorPointNearChild(childIndex, 0.2349);
-      if (q !== undefined)
-        return q;
+      for (const fraction of this.searchFractions) {
+        const q = this.constructInteriorPointNearChild(childIndex, fraction);
+        if (q !== undefined)
+          return q;
+      }
     }
     return undefined;
   }
@@ -184,7 +191,7 @@ class LoopCarrier extends SimpleRegionCarrier {
 }
 
 /**
- * A `SortablePolygon` carries a (single) loop with data useful for sorting for inner-outer structure.
+ * A `SortablePolygon` carries a (single) xy-loop with data useful for sorting for inner-outer structure.
  * @internal
  */
 export class SortablePolygon {

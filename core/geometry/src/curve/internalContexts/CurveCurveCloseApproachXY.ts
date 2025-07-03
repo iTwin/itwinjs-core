@@ -361,23 +361,23 @@ export class CurveCurveCloseApproachXY extends RecurseToCurvesGeometryHandler {
     let reversed = false;
     const uu = Geometry.hypotenuseSquaredXY(ux, uy);
     if (hab0 * hab0 <= maxDistanceSquared * uu) { // test distance of b0 to u
-      const fractionA = Geometry.dotProductXYXY(ux, uy, e00x, e00y) / uu;
+      const fractionA = Geometry.safeDivideFraction(Geometry.dotProductXYXY(ux, uy, e00x, e00y), uu, 0.0);
       if (this.updatePointToSegmentDistance(0, b0, a0, a1, fractionA, maxDistanceSquared, closestApproach))
         reversed = true;
     }
     if (hab1 * hab1 <= maxDistanceSquared * uu) { // test distance of b1 to u
-      const fractionA = Geometry.dotProductXYXY(ux, uy, e01x, e01y) / uu;
+      const fractionA = Geometry.safeDivideFraction(Geometry.dotProductXYXY(ux, uy, e01x, e01y), uu, 0.0);
       if (this.updatePointToSegmentDistance(1, b1, a0, a1, fractionA, maxDistanceSquared, closestApproach))
         reversed = true;
     }
     const vv = Geometry.hypotenuseSquaredXY(vx, vy);
     if (hba0 * hba0 <= maxDistanceSquared * vv) { // test distance of a0 to v
-      const fractionB = -Geometry.dotProductXYXY(vx, vy, e00x, e00y) / vv;
+      const fractionB = Geometry.safeDivideFraction(-Geometry.dotProductXYXY(vx, vy, e00x, e00y), vv, 0.0);
       if (this.updatePointToSegmentDistance(0, a0, b0, b1, fractionB, maxDistanceSquared, closestApproach))
         reversed = false;
     }
     if (hba1 * hba1 <= maxDistanceSquared * vv) { // test distance of a1 to v
-      const fractionB = -Geometry.dotProductXYXY(vx, vy, e10x, e10y) / vv;
+      const fractionB = Geometry.safeDivideFraction(-Geometry.dotProductXYXY(vx, vy, e10x, e10y), vv, 0.0);
       if (this.updatePointToSegmentDistance(1, a1, b0, b1, fractionB, maxDistanceSquared, closestApproach))
         reversed = false;
     }
@@ -465,7 +465,7 @@ export class CurveCurveCloseApproachXY extends RecurseToCurvesGeometryHandler {
     return undefined;
   }
   /**
-   * Find the closest approach between `pointA` and `cpB`. Add the approach if it's within `fB0` and `fB1`.
+   * Find the closest xy approach between `pointA` and `cpB`. Add the approach if it's within `fB0` and `fB1`.
    * * Does not test the endpoints of `cpB`.
    * * The only types supported for `cpB` are Arc3d, LineSegment3d, and LineString3d.
    * * If `cpB` is a LineString3d, then the interval `[fB0, fB1]` must correspond to a segment of the line string.
@@ -491,7 +491,7 @@ export class CurveCurveCloseApproachXY extends RecurseToCurvesGeometryHandler {
     }
   }
   /**
-   * Compute intersection of two line segments.
+   * Compute closest xy approach of two line segments.
    * Filter by extension rules.
    * Record with fraction mapping.
    * * The fraction mappings allow portions of a linestring to be passed here.

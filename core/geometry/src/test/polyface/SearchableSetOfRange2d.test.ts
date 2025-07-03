@@ -301,7 +301,7 @@ describe("GriddedRaggedRange2dSet", () => {
     GeometryCoreTestIO.saveGeometry(allGeometry, "GriddedRaggedRange2dSet", "HelloWorld");
     expect(ck.getNumErrors()).toBe(0);
   });
-  it("FacetGrid", () => {
+  it("FacetGrid", {timeout: 100000}, () => {
     if (!GeometryCoreTestIO.enableLongTests)
       return;
     const ck = new Checker();

@@ -267,8 +267,9 @@ export class RegularizationContext {
     if (nodeA1 !== undefined && nodeB1 !== undefined) {
       HalfEdge.pinch(nodeA1, nodeC);
       HalfEdge.pinch(nodeB1, nodeC.edgeMate);
+      nodeC.setMaskAroundEdge(HalfEdgeMask.REGULARIZED_EDGE);
       if (RegularizationContext.announceEdge)
-        RegularizationContext.announceEdge(this.graph, nodeA, nodeB, direction);
+        RegularizationContext.announceEdge(this.graph, nodeC, nodeC.edgeMate, direction);
       return nodeC;
     }
     return undefined;

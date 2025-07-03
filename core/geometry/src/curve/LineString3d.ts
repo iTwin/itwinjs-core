@@ -1347,8 +1347,7 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
     this.addResolvedPoint(localA.index, localA.fraction, result._points);
     for (let index = index0; index <= index1; index++) {
       if (this._points.isIndexValid(index)) {
-        this._points.getPoint3dAtUncheckedPointIndex(index, LineString3d._workPointA);
-        result._points.push(LineString3d._workPointA);
+        result._points.pushFromGrowableXYZArray(this._points, index);
       }
     }
     this.addResolvedPoint(localB.index, localB.fraction, result._points);
@@ -1362,11 +1361,22 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
       );
     return undefined;
   }
+  /**
+   * Whether the start and end points are defined and within tolerance.
+   * * Does not check for planarity or degeneracy.
+   * @param tolerance optional distance tolerance (default is [[Geometry.smallMetricDistance]])
+   * @param xyOnly if true, ignore z coordinate (default is `false`)
+   */
+  public override isPhysicallyClosedCurve(tolerance: number = Geometry.smallMetricDistance, xyOnly: boolean = false): boolean {
+    if (!this._points.length)
+      return false;
+    if (xyOnly)
+      return this._points.almostEqualXYIndexIndex(0, this._points.length - 1, tolerance)!; // we know the indices are valid
+    return this._points.almostEqualIndexIndex(0, this._points.length - 1, tolerance)!;
+  }
   /** Returns true if first and last points are within metric tolerance. */
   public get isPhysicallyClosed(): boolean {
-    return this._points.length > 0 && Geometry.isSmallMetricDistance(
-      this._points.distanceIndexIndex(0, this._points.length - 1)!,
-    );
+    return this.isPhysicallyClosedCurve();
   }
 
   /**

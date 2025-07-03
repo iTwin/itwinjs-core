@@ -1376,7 +1376,8 @@ export class ConsolidateAdjacentCurvePrimitivesOptions {
     colinearPointTolerance: number;
     consolidateCompatibleArcs: boolean;
     consolidateLinearGeometry: boolean;
-    disableLinearCompression?: boolean;
+    consolidateLoopSeam: boolean;
+    disableLinearCompression: boolean;
     duplicatePointTolerance: number;
 }
 
@@ -1507,6 +1508,7 @@ export abstract class CurveChain extends CurveCollection {
     extendRange(range: Range3d, transform?: Transform): void;
     getChild(i: number): CurvePrimitive | undefined;
     getPackedStrokes(options?: StrokeOptions): GrowableXYZArray | undefined;
+    isPhysicallyClosedCurve(tolerance?: number, xyOnly?: boolean): boolean;
     primitiveIndexAndFractionToCurveLocationDetailPointAndDerivative(index: number, fraction: number, cyclic?: boolean, result?: CurveLocationDetail): CurveLocationDetail | undefined;
     reverseChildrenInPlace(): void;
     reverseInPlace(): void;
@@ -1642,7 +1644,7 @@ export class CurveExtendOptions {
 
 // @public
 export class CurveFactory {
-    static appendToArcInPlace(arcA: Arc3d, arcB: Arc3d, allowReverse?: boolean): boolean;
+    static appendToArcInPlace(arcA: Arc3d, arcB: Arc3d, allowReverse?: boolean, tolerance?: number): boolean;
     static assembleArcChainOnEllipsoid(ellipsoid: Ellipsoid, pathPoints: GeodesicPathPoint[], fractionForIntermediateNormal?: number): Path;
     static createArcFromSectionData(centerline: IndexedXYZCollection | Point3d[] | CurvePrimitive, sectionData: number | XAndY | Arc3d): Arc3d | undefined;
     static createArcPointTangentPoint(start: Point3d, tangentAtStart: Vector3d, end: Point3d): Arc3d | undefined;
@@ -1672,6 +1674,7 @@ export class CurveLocationDetail {
     constructor();
     a: number;
     captureFraction1Point1(fraction1: number, point1: Point3d): void;
+    captureFractionPoint(fraction: number, point: Point3d): void;
     childDetail?: CurveLocationDetail;
     static chooseSmallerA(detailA: CurveLocationDetail | undefined, detailB: CurveLocationDetail | undefined): CurveLocationDetail | undefined;
     clone(result?: CurveLocationDetail): CurveLocationDetail;
@@ -1792,6 +1795,7 @@ export abstract class CurvePrimitive extends GeometryQuery {
     static installStrokeCountMap(curve: CurvePrimitive, curveMap: StrokeCountMap, parentMap?: StrokeCountMap): void;
     get isExtensibleFractionSpace(): boolean;
     abstract isInPlane(plane: Plane3dByOriginAndUnitNormal): boolean;
+    isPhysicallyClosedCurve(tolerance?: number, xyOnly?: boolean): boolean;
     moveSignedDistanceFromFraction(startFraction: number, signedDistance: number, allowExtension: boolean, result?: CurveLocationDetail): CurveLocationDetail;
     protected moveSignedDistanceFromFractionGeneric(startFraction: number, signedDistance: number, allowExtension: boolean, result?: CurveLocationDetail): CurveLocationDetail;
     parent?: any;
@@ -2969,6 +2973,7 @@ export abstract class IndexedXYZCollection {
     abstract accumulateCrossProductIndexIndexIndex(origin: number, indexA: number, indexB: number, result: Vector3d): void;
     abstract accumulateScaledXYZ(index: number, scale: number, sum: Point3d): void;
     almostEqualIndexIndex(index0: number, index1: number, tolerance?: number): boolean | undefined;
+    almostEqualXYIndexIndex(index0: number, index1: number, tolerance?: number): boolean | undefined;
     back(result?: Point3d): Point3d | undefined;
     abstract crossProductIndexIndexIndex(origin: number, indexA: number, indexB: number, result?: Vector3d): Vector3d | undefined;
     crossProductIndexIndexXYAndZ(origin: number, indexA: number, targetB: XYAndZ, result?: Vector3d): Vector3d | undefined;
@@ -3255,6 +3260,7 @@ export class LineSegment3d extends CurvePrimitive implements BeJSONFunctions {
     isSameGeometryClass(other: GeometryQuery): boolean;
     get point0Ref(): Point3d;
     get point1Ref(): Point3d;
+    get points(): Point3d[];
     projectedParameterRange(ray: Vector3d | Ray3d, lowHigh?: Range1d): Range1d | undefined;
     quickLength(): number;
     rangeBetweenFractions(fraction0: number, fraction1: number, transform?: Transform): Range3d;
@@ -3339,6 +3345,7 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
     get isExtensibleFractionSpace(): boolean;
     isInPlane(plane: Plane3dByOriginAndUnitNormal): boolean;
     get isPhysicallyClosed(): boolean;
+    isPhysicallyClosedCurve(tolerance?: number, xyOnly?: boolean): boolean;
     isSameGeometryClass(other: GeometryQuery): boolean;
     static mapGlobalToLocalFraction(globalFraction: number, numSegment: number): {
         index: number;
@@ -5241,8 +5248,8 @@ export class Ray3d implements BeJSONFunctions {
     intersectionWithPlane(plane: Plane3dByOriginAndUnitNormal, result?: Point3d): number | undefined;
     intersectionWithRange3d(range: Range3d, result?: Range1d): Range1d;
     intersectionWithTriangle(vertex0: Point3d, vertex1: Point3d, vertex2: Point3d, distanceTol?: number, parameterTol?: number, result?: Point3d): Point3d | undefined;
-    isAlmostEqual(other: Ray3d): boolean;
-    isAlmostEqualPointSet(other: Ray3d): boolean;
+    isAlmostEqual(other: Ray3d, tolerance?: number): boolean;
+    isAlmostEqualPointSet(other: Ray3d, options?: PerpParallelOptions): boolean;
     origin: Point3d;
     perpendicularPartOfVectorToTarget(targetPoint: XYAndZ, result?: Vector3d): Vector3d;
     pointToFraction(spacePoint: Point3d): number;
@@ -5360,7 +5367,7 @@ export class RegionOps {
     static computeXYAreaTolerance(range: Range3d, distanceTolerance?: number): number;
     static computeXYZWireMomentSums(curve: AnyCurve): MomentData | undefined;
     static consolidateAdjacentPrimitives(curves: CurveCollection, options?: ConsolidateAdjacentCurvePrimitivesOptions): void;
-    static constructAllXYRegionLoops(curvesAndRegions: AnyCurve | AnyCurve[], tolerance?: number): SignedLoops[];
+    static constructAllXYRegionLoops(curvesAndRegions: AnyCurve | AnyCurve[], tolerance?: number, addBridges?: boolean): SignedLoops[];
     static constructCurveXYOffset(curves: Path | Loop, offsetDistanceOrOptions: number | JointOptions | OffsetOptions): CurveCollection | undefined;
     static constructPolygonWireXYOffset(points: Point3d[], wrap: boolean, offsetDistanceOrOptions: number | JointOptions): CurveChain | undefined;
     static convexDecomposePolygonXY(polygon: MultiLineStringDataVariant, maximize?: boolean): GrowableXYZArray[] | undefined;

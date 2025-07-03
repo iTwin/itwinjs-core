@@ -205,7 +205,7 @@ export class SweepContour {
   /**
    * Emit facets to a function.
    * This method may cache and reuse facets over multiple calls.
-   * @param announce callback to receive the facet set.
+   * @param announce callback to receive the facet set. Called only once (if facets exist).
    * @param options how to stroke the contour.
    */
   public announceFacets(announce: (facets: IndexedPolyface) => void, options?: StrokeOptions): void {

@@ -121,7 +121,7 @@ export class AngleSweep implements BeJSONFunctions {
     result.setStartEndRadians(startRadians, endRadians);
     return result;
   }
-  /** Return the angle obtained by subtracting radians from this angle. */
+  /** Return the AngleSweep obtained by subtracting radians from the start and end angles of this sweep. */
   public cloneMinusRadians(radians: number): AngleSweep {
     return new AngleSweep(this._radians0 - radians, this._radians1 - radians);
   }
