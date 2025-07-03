@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { TextAnnotation, TextAnnotationAnchor, TextFrameStyleProps } from "../../annotation/TextAnnotation";
+import { TextAnnotation, TextAnnotationAnchor, TextAnnotationLeader, TextFrameStyleProps } from "../../annotation/TextAnnotation";
 import { Angle, Point3d, Range2d, Range3d, YawPitchRollAngles } from "@itwin/core-geometry";
 import { ColorDef } from "../../ColorDef";
 
@@ -132,7 +132,7 @@ describe("TextAnnotation", () => {
         rotation: 90,
       });
       expectTransformedRange([10, -10, 20, 10], {
-        anchor: { horizontal: "center", vertical: "top"},
+        anchor: { horizontal: "center", vertical: "top" },
         rotation: 90,
       });
       expectTransformedRange([0, -20, 10, 0], {
@@ -188,6 +188,20 @@ describe("TextAnnotation", () => {
     it("should set rectangle as default shape", () => {
       const annotation = TextAnnotation.fromJSON({ frame: {} });
       expect(annotation.frame?.shape).to.equal("rectangle");
+    });
+  });
+
+  describe("leaders", () => {
+    it("should return undefined for leaders when no leaders are set", () => {
+      const annotation = TextAnnotation.fromJSON({});
+      expect(annotation.leaders).to.equal(undefined);
+    });
+
+    it("should return leaders when set", () => {
+      const leader: TextAnnotationLeader = { startPoint: Point3d.createZero(), attachmentMode: { mode: "Nearest" }, styleOverrides: undefined, intermediatePoints: undefined };
+      const leaderProps = { ...leader, startPoint: leader.startPoint.toJSON() };
+      const annotation = TextAnnotation.fromJSON({ leaders: [leaderProps] });
+      expect(annotation.leaders).to.deep.equal([leader]);
     });
   });
 });

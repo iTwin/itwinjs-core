@@ -88,6 +88,29 @@ export interface TextStyleSettingsProps {
    * Default: 1.0
    */
   widthFactor?: number;
+  /** The color of the leader line.
+   * Default: "subcategory".
+   */
+  leaderColor?: TextStyleColor;
+  /** Whether to use an elbow in the leader line.
+   * Default: false
+   */
+  wantElbow?: boolean;
+  /** Multiplier used to compute length of the elbow in the leader line.
+   * The elbowLength is computed in meters as elbowLength * [[lineHeight]].
+   * Default: 1.0
+   */
+  elbowLength?: number;
+  /** Multiplier to compute height of the leader terminator.
+   * The terminator height is computed in meters as terminatorHeight * [[lineHeight]].
+   * Default: 1.0
+   */
+  terminatorHeightFactor?: number;
+  /** Multiplier to compute width of the leader terminator.
+   * The terminator width is computed in meters as terminatorWidth * [[lineHeight]].
+   * Default: 1.0
+   */
+  terminatorWidthFactor?: number;
   /** The size (in meters) used to calculate the tab stops in a run.
    * These are equally spaced from the left edge of the TextBlock.
    * Default: 4 meters.
@@ -146,6 +169,22 @@ export class TextStyleSettings {
   public readonly superScriptScale: number;
   /** Multiplier used to compute the width of each glyph, relative to [[lineHeight]]. */
   public readonly widthFactor: number;
+  /** The color of the leader line. */
+  public readonly leaderColor: TextStyleColor;
+  /** Whether to use an elbow in the leader line. */
+  public readonly wantElbow: boolean;
+  /** Multiplier used to compute length of the elbow in the leader line.
+   * The elbowLength is computed in meters as elbowLength * [[lineHeight]].
+  */
+  public readonly elbowLength: number;
+  /** Multiplier to compute height of the leader terminator.
+   * The terminator height is computed in meters as terminatorHeight * [[lineHeight]].
+  */
+  public readonly terminatorHeightFactor: number;
+  /** Multiplier to compute width of the leader terminator.
+   * The terminator width is computed in meters as terminatorWidth * [[lineHeight]].
+  */
+  public readonly terminatorWidthFactor: number;
   /** The size (in meters) used to calculate the tab stops in a run.
    * These are equally spaced from the left edge of the TextBlock. Default is 4 meters.
    */
@@ -167,11 +206,16 @@ export class TextStyleSettings {
     superScriptOffsetFactor: 0.5,
     superScriptScale: 2 / 3,
     widthFactor: 1,
+    leaderColor: "subcategory",
+    wantElbow: true,
+    elbowLength: 1,
+    terminatorHeightFactor: 1,
+    terminatorWidthFactor: 1,
     tabInterval: 4,
   };
 
   /** Settings initialized to all default values. */
-  public static defaults: TextStyleSettings = new TextStyleSettings({ });
+  public static defaults: TextStyleSettings = new TextStyleSettings({});
 
   private constructor(props: TextStyleSettingsProps, defaults?: Required<TextStyleSettingsProps>) {
     if (!defaults) {
@@ -192,6 +236,11 @@ export class TextStyleSettings {
     this.superScriptOffsetFactor = props.superScriptOffsetFactor ?? defaults.superScriptOffsetFactor;
     this.superScriptScale = props.superScriptScale ?? defaults.superScriptScale;
     this.widthFactor = props.widthFactor ?? defaults.widthFactor;
+    this.leaderColor = props.leaderColor ?? defaults.leaderColor;
+    this.wantElbow = props.wantElbow ?? defaults.wantElbow;
+    this.elbowLength = props.elbowLength ?? defaults.elbowLength;
+    this.terminatorHeightFactor = props.terminatorHeightFactor ?? defaults.terminatorHeightFactor;
+    this.terminatorWidthFactor = props.terminatorWidthFactor ?? defaults.terminatorWidthFactor;
     this.tabInterval = props.tabInterval ?? defaults.tabInterval;
   }
 
@@ -215,7 +264,10 @@ export class TextStyleSettings {
       && this.isBold === other.isBold && this.isItalic === other.isItalic && this.isUnderlined === other.isUnderlined
       && this.stackedFractionType === other.stackedFractionType && this.stackedFractionScale === other.stackedFractionScale
       && this.subScriptOffsetFactor === other.subScriptOffsetFactor && this.subScriptScale === other.subScriptScale
-      && this.superScriptOffsetFactor === other.superScriptOffsetFactor && this.superScriptScale === other.superScriptScale
+      && this.superScriptOffsetFactor === other.superScriptOffsetFactor
+      && this.superScriptScale === other.superScriptScale && this.leaderColor === other.leaderColor
+      && this.wantElbow === other.wantElbow && this.elbowLength === other.elbowLength
+      && this.terminatorHeightFactor === other.terminatorHeightFactor && this.terminatorWidthFactor === other.terminatorWidthFactor
       && this.tabInterval === other.tabInterval;
   }
 }
