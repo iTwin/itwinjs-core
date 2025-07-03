@@ -1015,6 +1015,75 @@ describe("RegionOps", () => {
       }
     }
 
+    // parity region with loop and parity region islands (disjoint loops)
+    dx += 15;
+    const rect1x1 = Loop.create(LineString3d.create(Sample.createRectangle(0, 0, 1, 1, 0, true)));
+    const rect3x3 = Loop.create(LineString3d.create(Sample.createRectangle(0, 0, 3, 3, 0, true)));
+    const rect7x6 = Loop.create(LineString3d.create(Sample.createRectangle(0, 0, 7, 6, 0, true)));
+    const rect11x9 = Loop.create(LineString3d.create(Sample.createRectangle(0, 0, 11, 9, 0, true)));
+    const parityRegion = ParityRegion.create(
+      rect11x9.clone() as Loop, // outer
+      rect1x1.cloneTransformed(Transform.createTranslationXYZ(1, 7)) as Loop, // hole in outer
+      rect7x6.cloneTransformed(Transform.createTranslationXYZ(3, 1)) as Loop, // large hole in outer
+      rect1x1.cloneTransformed(Transform.createTranslationXYZ(4, 5)) as Loop, // small island in large hole
+      rect3x3.cloneTransformed(Transform.createTranslationXYZ(6, 2)) as Loop, // large island in large hole
+      rect1x1.cloneTransformed(Transform.createTranslationXYZ(7, 3)) as Loop, // hole in large island
+    );
+    regionArea = RegionOps.computeXYArea(parityRegion)!;
+    ck.testCoordinate(regionArea, 65, "parity region area as expected");
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, parityRegion, dx);
+    // check how sorter organizes the children
+    const sortedParityRegionChildren = RegionOps.sortOuterAndHoleLoopsXY(parityRegion.children);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, sortedParityRegionChildren, dx, 10);
+    if (ck.testType(sortedParityRegionChildren, UnionRegion, "sortOuterAndHoleLoopsXY returns a UnionRegion")) {
+      if (ck.testExactNumber(3, sortedParityRegionChildren.children.length, "sortOuterAndHoleLoopsXY sorts into 3 regions")) {
+        sortedParityRegionChildren.children.sort((a, b) => RegionOps.computeXYArea(a)! - RegionOps.computeXYArea(b)!);
+        let child = sortedParityRegionChildren.children[0];
+        ck.testType(child, Loop, "small region is a loop");
+        ck.testCoordinate(RegionOps.computeXYArea(child)!, 1, "small region area as expected");
+        child = sortedParityRegionChildren.children[1];
+        ck.testType(child, ParityRegion, "medium region is a parity region");
+        ck.testCoordinate(RegionOps.computeXYArea(child)!, 8, "medium region area as expected");
+        child = sortedParityRegionChildren.children[2];
+        ck.testType(child, ParityRegion, "large region is a parity region");
+        ck.testCoordinate(RegionOps.computeXYArea(child)!, 56, "large region area as expected");
+      }
+    }
+
+    // disjoint union of two copies of the previous parity region
+    dx += 15;
+    const unionRegion = UnionRegion.create(parityRegion.clone(), parityRegion.cloneTransformed(Transform.createTranslationXYZ(0, 10)) as ParityRegion);
+    regionArea = RegionOps.computeXYArea(unionRegion)!;
+    ck.testCoordinate(regionArea, 130, "union region area as expected");
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, unionRegion, dx);
+
+    // venn-diagram parity region (intersecting loops)
+    dx += 20;
+    const dy = 5;
+    const circle = Loop.create(Arc3d.createXY(Point3d.createZero(), 2.5));
+    const venn0 = circle.cloneTransformed(Transform.createTranslationXYZ(Math.sqrt(3), 1)) as Loop;
+    const venn1 = circle.cloneTransformed(Transform.createTranslationXYZ(-Math.sqrt(3), 1)) as Loop;
+    const venn2 = circle.cloneTransformed(Transform.createTranslationXYZ(0, -2)) as Loop;
+    const vennRegion = ParityRegion.create(venn0, venn1, venn2);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, vennRegion, dx, dy);
+    ck.testCoordinate(RegionOps.computeXYArea(vennRegion)!, 40.41956377576274, "venn region area as expected");
+    // check how merge operation converts this parity region
+    merged = RegionOps.regionBooleanXY(vennRegion, undefined, RegionBinaryOpType.Union);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, merged, dx, dy + 10);
+    if (ck.testType(merged, UnionRegion, "merge returns a UnionRegion")) {
+      if (ck.testExactNumber(4, merged.children.length, "merge splits intersecting circles into 4 regions")) {
+        merged.children.sort((a, b) => RegionOps.computeXYArea(a)! - RegionOps.computeXYArea(b)!);
+        let child = merged.children[0];
+        ck.testType(child, Loop, "small region is a loop");
+        ck.testCoordinate(RegionOps.computeXYArea(child)!, 1.1124940184117313, "small region area as expected");
+        for (let i = 1; i < 4; i++) {
+          child = merged.children[i];
+          ck.testType(child, Loop, "larger regions are parity regions");
+          ck.testCoordinate(RegionOps.computeXYArea(child)!, 13.102356585783673, "larger region areas as expected");
+        }
+      }
+    }
+
     GeometryCoreTestIO.saveGeometry(allGeometry, "RegionOps", "MergeRegionArea");
     expect(ck.getNumErrors()).toBe(0);
   });
