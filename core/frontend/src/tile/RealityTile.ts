@@ -635,7 +635,8 @@ export class RealityTile extends Tile {
           collector.addMissingTile(this.loadableTile);
         else if (this.geometry?.polyfaces) {
           const xForm = this._reprojectionTransform;
-          if (xForm) { // ###TODO: Make this optional in the future, based on some option specified in createGeometryTreeReference.
+          // ###TODO: Make this optional in the future, based on some option specified in createGeometryTreeReference.
+          if (collector.reprojectGeometry && xForm) {
             // If the tile is reprojected, transform the polyfaces to the reprojection transform.
             for (const polyface of this.geometry.polyfaces) {
               polyface.tryTransformInPlace(xForm);

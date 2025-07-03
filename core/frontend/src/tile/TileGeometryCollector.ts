@@ -32,6 +32,7 @@ export interface TileGeometryCollectorOptions {
   user: TileUser;
   /** An optional transform to be applied to the tile ranges before testing intersection with [[range]]. Typically this is obtained from [[TileTree.iModelTransform]]. */
   transform?: Transform;
+  reprojectGeometry?: boolean;
 }
 
 /** Collects geoemtry from a [[GeometryTileTreeReference]] within a specified volume at a specified level of detail.
@@ -51,9 +52,12 @@ export class TileGeometryCollector {
   /** The options used to construct this collector. */
   protected readonly _options: TileGeometryCollectorOptions;
 
+  public reprojectGeometry?: boolean;
+
   /** Create a new collector. */
   public constructor(options: TileGeometryCollectorOptions) {
     this._options = options;
+    this.reprojectGeometry = options.reprojectGeometry;
   }
 
   /** Allows an implementation of [[GeometryTileTreeReference.collectTileGeoemtry]] to indicate that further loading is required before

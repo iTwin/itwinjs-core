@@ -13,7 +13,8 @@ import {
 /** A TileGeometryCollector that restricts collection to tiles that overlap a line string. */
 class DrapeLineStringCollector extends TileGeometryCollector {
   constructor(user: TileUser, chordTolerance: number, range: Range3d, transform: Transform, private _points: GrowableXYZArray) {
-    super({ user, chordTolerance, range, transform });
+    super({ user, chordTolerance, range, transform, reprojectGeometry: true });
+    // super({ user, chordTolerance, range, transform });
   }
 
   public override collectTile(tile: Tile): CollectTileStatus {
