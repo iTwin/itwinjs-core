@@ -103,6 +103,10 @@ export interface ChangesetRange {
   end?: ChangesetIndex;
 }
 
+/**
+ * Statistics for a single SQL statement executed during changeset application.
+ * @public
+ */
 export interface PerStatementHealthStats {
   sqlStatement: string;
   dbOperation: string;
@@ -110,6 +114,11 @@ export interface PerStatementHealthStats {
   elapsedMs: number;
   fullTableScans: number;
 }
+
+/**
+ * Aggregated health statistics for a changeset application.
+ * @public
+ */
 export interface ChangesetHealthStats {
   changesetId: string;
   uncompressedSizeBytes: number;

@@ -1145,43 +1145,43 @@ describe("Changeset Reader API", async () => {
     await Promise.all([secondBriefCase.close(), firstBriefCase.close()]);
   });
 
-  it.only("Track changeset health stats", async () => {
+  it("Track changeset health stats", async () => {
     const adminToken = "super manager token";
     const iModelName = "test";
     const rwIModelId = await HubMock.createNewIModel({ iTwinId, iModelName, description: "TestSubject", accessToken: adminToken });
     assert.isNotEmpty(rwIModelId);
 
     // Open two briefcases for the same iModel
-    const [firstBriefCase, secondBriefCase] = await Promise.all([
+    const [firstBriefcase, secondBriefcase] = await Promise.all([
       HubWrappers.downloadAndOpenBriefcase({ iTwinId, iModelId: rwIModelId, accessToken: adminToken }),
       HubWrappers.downloadAndOpenBriefcase({ iTwinId, iModelId: rwIModelId, accessToken: adminToken })
     ]);
 
-    [firstBriefCase, secondBriefCase].forEach(briefcase => briefcase.channels.addAllowedChannel(ChannelControl.sharedChannelName));
+    [firstBriefcase, secondBriefcase].forEach(briefcase => briefcase.channels.addAllowedChannel(ChannelControl.sharedChannelName));
 
-    await firstBriefCase.importSchemaStrings([`<?xml version="1.0" encoding="UTF-8"?>
+    await firstBriefcase.importSchemaStrings([`<?xml version="1.0" encoding="UTF-8"?>
       <ECSchema schemaName="TestSchema" alias="ts" version="1.0.0" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
-          <ECSchemaReference name="BisCore" version="1.0.0" alias="bis"/>
-          <ECSchemaReference name="CoreCustomAttributes" version="1.0.0" alias="CoreCA" />
+        <ECSchemaReference name="BisCore" version="1.0.0" alias="bis"/>
+        <ECSchemaReference name="CoreCustomAttributes" version="1.0.0" alias="CoreCA" />
 
-          <ECCustomAttributes>
-              <DynamicSchema xmlns = 'CoreCustomAttributes.1.0.0' />
-          </ECCustomAttributes>
+        <ECCustomAttributes>
+          <DynamicSchema xmlns = 'CoreCustomAttributes.1.0.0' />
+        </ECCustomAttributes>
 
-          <ECEntityClass typeName="TestClass">
-              <BaseClass>bis:PhysicalElement</BaseClass>
-          </ECEntityClass>
+        <ECEntityClass typeName="TestClass">
+          <BaseClass>bis:PhysicalElement</BaseClass>
+        </ECEntityClass>
       </ECSchema>`]);
-    firstBriefCase.saveChanges("import initial schema");
+    firstBriefcase.saveChanges("import initial schema");
 
     // Enable changeset tracking for both briefcases
-    await Promise.all([firstBriefCase.enableChangesetStatTracking(), secondBriefCase.enableChangesetStatTracking()]);
+    await Promise.all([firstBriefcase.enableChangesetStatTracking(), secondBriefcase.enableChangesetStatTracking()]);
 
-    await firstBriefCase.pushChanges({ description: "push initial schema changeset", accessToken: adminToken });
-    await secondBriefCase.pullChanges({ accessToken: adminToken });
+    await firstBriefcase.pushChanges({ description: "push initial schema changeset", accessToken: adminToken });
+    await secondBriefcase.pullChanges({ accessToken: adminToken });
 
     // Schema upgrade
-    await secondBriefCase.importSchemaStrings([`<?xml version="1.0" encoding="UTF-8"?>
+    await secondBriefcase.importSchemaStrings([`<?xml version="1.0" encoding="UTF-8"?>
       <ECSchema schemaName="TestSchema" alias="ts" version="2.0.0" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
         <ECSchemaReference name="BisCore" version="1.0.0" alias="bis"/>
         <ECSchemaReference name="CoreCustomAttributes" version="1.0.0" alias="CoreCA" />
@@ -1200,13 +1200,13 @@ describe("Changeset Reader API", async () => {
           <ECEnumerator name="Enumerator2" value="2" displayLabel="TestEnumerator2"/>
         </ECEnumeration>
       </ECSchema>`]);
-    secondBriefCase.saveChanges("imported schema");
+    secondBriefcase.saveChanges("imported schema");
 
-    await secondBriefCase.pushChanges({ description: "Added a property to TestClass and an enum", accessToken: adminToken });
-    await firstBriefCase.pullChanges({ accessToken: adminToken });
+    await secondBriefcase.pushChanges({ description: "Added a property to TestClass and an enum", accessToken: adminToken });
+    await firstBriefcase.pullChanges({ accessToken: adminToken });
 
     // Major schema change
-    await firstBriefCase.importSchemaStrings([`<?xml version="1.0" encoding="UTF-8"?>
+    await firstBriefcase.importSchemaStrings([`<?xml version="1.0" encoding="UTF-8"?>
       <ECSchema schemaName="TestSchema" alias="ts" version="2.0.0" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
         <ECSchemaReference name="CoreCustomAttributes" version="1.0.0" alias="CoreCA" />
 
@@ -1219,13 +1219,13 @@ describe("Changeset Reader API", async () => {
           <ECEnumerator name="Enumerator2" value="2" displayLabel="TestEnumerator2"/>
         </ECEnumeration>
       </ECSchema>`]);
-    firstBriefCase.saveChanges("imported schema");
+    firstBriefcase.saveChanges("imported schema");
 
-    await firstBriefCase.pushChanges({ description: "Deleted TestClass", accessToken: adminToken });
-    await secondBriefCase.pullChanges({ accessToken: adminToken });
+    await firstBriefcase.pushChanges({ description: "Deleted TestClass", accessToken: adminToken });
+    await secondBriefcase.pullChanges({ accessToken: adminToken });
 
-    const firstBriefcaseChangesets = await firstBriefCase.getAllChangesetHealthData();
-    const secondBriefcaseChangesets = await secondBriefCase.getAllChangesetHealthData();
+    const firstBriefcaseChangesets = await firstBriefcase.getAllChangesetHealthData();
+    const secondBriefcaseChangesets = await secondBriefcase.getAllChangesetHealthData();
 
     assert.equal(firstBriefcaseChangesets.length, 1);
     const firstBriefcaseChangeset = firstBriefcaseChangesets[0];
@@ -1258,6 +1258,6 @@ describe("Changeset Reader API", async () => {
     expect(secondBriefcaseChangeset2.perStatementStats.length).to.be.eql(11);
 
     // Cleanup
-    await Promise.all([secondBriefCase.close(), firstBriefCase.close()]);
+    await Promise.all([secondBriefcase.close(), firstBriefcase.close()]);
   });
 });
