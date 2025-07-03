@@ -258,7 +258,7 @@ export class PlanarSubdivision {
    * Create a [[Loop]] or [[ParityRegion]] for the given face.
    * * A ParityRegion is created for a split-washer type face by removing bridge edges.
    * @param face a node in the face loop.
-   * @param bridgeMask mask on bridge edges (default is `HalfEdgeMask.BRIDGE_EDGE`).
+   * @param bridgeMask mask preset on bridge edges (default is `HalfEdgeMask.BRIDGE_EDGE`).
    * @param visitMask mask to use for visiting edges in the face loop (default is `HalfEdgeMask.VISITED`).
    */
   public static createLoopOrParityRegionInFace(face: HalfEdge, bridgeMask: HalfEdgeMask = HalfEdgeMask.BRIDGE_EDGE, visitMask: HalfEdgeMask = HalfEdgeMask.VISITED): Loop | ParityRegion | undefined {

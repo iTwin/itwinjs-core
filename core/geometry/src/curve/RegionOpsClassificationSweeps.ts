@@ -540,7 +540,7 @@ export class RegionBooleanContext implements RegionOpsFaceToFaceSearchCallbacks 
     const toHeal: HalfEdge[] = [];
     const interiorBridges: HalfEdge[] = [];
 
-    // lambda test for boundary edge that doesn't need HalfEdgeMasks
+    // lambda test for boundary edge. Relies only on face loop orientation. Doesn't use HalfEdgeMasks!
     const isExteriorEdge = (node: HalfEdge): boolean => {
       if (this.faceAreaFunction(node) < 0.0)
         return true;
@@ -549,7 +549,7 @@ export class RegionBooleanContext implements RegionOpsFaceToFaceSearchCallbacks 
       return false;
     };
 
-    // isolate dangling bridges, bridges separating different faces, and bridges in the negative area face
+    // isolate dangling bridges, bridges separating different faces, and "exterior" bridges in the negative area face
     this.graph.announceEdges((_graph: HalfEdgeGraph, node: HalfEdge): boolean => {
       if (node.edgeTag !== undefined) {
         if (node.edgeTag instanceof CurveLocationDetail) {

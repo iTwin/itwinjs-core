@@ -704,7 +704,7 @@ describe("RegionBoolean", () => {
       testCases.push({ jsonFilePath: "./src/test/data/curve/michelLoops2.imjs", expectedNumComponents: 206, skipMerge: true });  // 26s
       testCases.push({ jsonFilePath: "./src/test/data/curve/michelLoops2.imjs", expectedNumComponents: 206 });  // 64s
     }
-      for (const testCase of testCases) {
+    for (const testCase of testCases) {
       const inputs = IModelJson.Reader.parse(JSON.parse(fs.readFileSync(testCase.jsonFilePath, "utf8"))) as AnyRegion[];
       if (ck.testDefined(inputs, "inputs successfully parsed")) {
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, inputs, x0, y0);
@@ -1580,9 +1580,7 @@ function exerciseAreaBooleans(
       );
     }
   };
-  for (const opType of [
-   RegionBinaryOpType.Union, RegionBinaryOpType.Intersection, RegionBinaryOpType.AMinusB, RegionBinaryOpType.BMinusA,
-  ]) {
+  for (const opType of [RegionBinaryOpType.Union, RegionBinaryOpType.Intersection, RegionBinaryOpType.AMinusB, RegionBinaryOpType.BMinusA]) {
     y0 += yStep;
     if (showVertexNeighborhoods && opType === RegionBinaryOpType.Union)
       HalfEdgeGraphMerge.announceVertexNeighborhoodFunction = vertexNeighborhoodFunction;

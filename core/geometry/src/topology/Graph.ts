@@ -742,7 +742,7 @@ export class HalfEdge implements HalfEdgeUserData {
       predA._faceSuccessor = nodeB;
     }
   }
-  /** Return whether the node is dangling. */
+  /** Return whether the edge is dangling at its base. */
   public get isDangling(): boolean {
     return this.edgeMate.faceSuccessor === this;
   }
@@ -966,7 +966,10 @@ export class HalfEdge implements HalfEdgeUserData {
     this.yankFromVertexLoop();
     mate.yankFromVertexLoop();
   }
-  /** Specify whether this edge is isolated from the rest of the graph (at both ends). */
+  /**
+   * Specify whether this edge is isolated from the rest of the graph.
+   * * Both edge mates of an isolated edge return true for [[isDangling]].
+   */
   public get isIsolatedEdge(): boolean {
     return this === this.vertexSuccessor && this.edgeMate === this.edgeMate.vertexSuccessor;
   }
@@ -1397,9 +1400,9 @@ export class HalfEdge implements HalfEdgeUserData {
   /**
    * Is the instance's face loop a split-washer type face?
    * * A split-washer face contains at least one bridge edge.
-   * * A bridge edge and its edge mate have the same mask and live in the same face loop.
+   * * A bridge edge and its edge mate have the same `bridgeMask` and live in the same face loop.
    * * By connecting hole/outer loops with bridge edges, a split-washer face can represent a parity region.
-   * @param bridgeMask mask on bridge edges (default is `HalfEdgeMask.BRIDGE_EDGE`).
+   * @param bridgeMask mask preset on bridge edges (default is [[HalfEdgeMask.BRIDGE_EDGE]]).
    */
   public isSplitWasherFace(bridgeMask: HalfEdgeMask = HalfEdgeMask.BRIDGE_EDGE): boolean {
     if (!this.countMaskAroundFace(HalfEdgeMask.BRIDGE_EDGE))
