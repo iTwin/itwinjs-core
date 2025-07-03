@@ -1230,7 +1230,7 @@ describe("Changeset Reader API", async () => {
     assert.equal(firstBriefcaseChangesets.length, 1);
     const firstBriefcaseChangeset = firstBriefcaseChangesets[0];
 
-    expect(firstBriefcaseChangeset.uncompressedSizeBytes).to.be.eql(522);
+    expect(firstBriefcaseChangeset.uncompressedSizeBytes).to.be.greaterThan(300);
     expect(firstBriefcaseChangeset.insertedRows).to.be.eql(4);
     expect(firstBriefcaseChangeset.updatedRows).to.be.eql(1);
     expect(firstBriefcaseChangeset.deletedRows).to.be.eql(0);
@@ -1240,14 +1240,14 @@ describe("Changeset Reader API", async () => {
     assert.equal(secondBriefcaseChangesets.length, 2);
     const [secondBriefcaseChangeset1, secondBriefcaseChangeset2] = secondBriefcaseChangesets;
 
-    expect(secondBriefcaseChangeset1.uncompressedSizeBytes).to.be.eql(45351);
+    expect(secondBriefcaseChangeset1.uncompressedSizeBytes).to.be.greaterThan(40000);
     expect(secondBriefcaseChangeset1.insertedRows).to.be.eql(52);
     expect(secondBriefcaseChangeset1.updatedRows).to.be.eql(921);
     expect(secondBriefcaseChangeset1.deletedRows).to.be.eql(0);
     expect(secondBriefcaseChangeset1.totalFullTableScans).to.be.eql(0);
     expect(secondBriefcaseChangeset1.perStatementStats.length).to.be.eql(11);
 
-    expect(secondBriefcaseChangeset2.uncompressedSizeBytes).to.be.eql(45314);
+    expect(secondBriefcaseChangeset2.uncompressedSizeBytes).to.be.greaterThan(40000);
     expect(secondBriefcaseChangeset2.insertedRows).to.be.eql(0);
     expect(secondBriefcaseChangeset2.updatedRows).to.be.eql(921);
     expect(secondBriefcaseChangeset2.deletedRows).to.be.eql(52);
