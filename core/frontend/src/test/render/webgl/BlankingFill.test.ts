@@ -18,6 +18,7 @@ const surfaceColor = ColorDef.from(4, 5, 6);
 const pointColor = ColorDef.from(7, 8, 9);
 const blankingColor = ColorDef.from(0xa, 0xb, 0xc);
 const bgColor = ColorDef.from(0xd, 0xe, 0xf);
+const planarColor = ColorDef.from(0xff, 0xfe, 0xfd);
 
 /** Produces a decoration that draws a square as a blanking region, plus a (P)oint, (S)urface, and (L)ine as follows:
  *
@@ -55,8 +56,6 @@ class BlankingDecorator extends TestDecorator {
       pickable: { id: "0xbaadf00d" },
     });
 
-    const doBlanking = true;
-    if (doBlanking) {
     builder.activateFeature(this._blankingFeature);
     const blankingParams = new GraphicParams();
     blankingParams.fillColor = blankingParams.lineColor = blankingColor;
@@ -65,10 +64,6 @@ class BlankingDecorator extends TestDecorator {
     builder.addShape2d([
       new Point2d(0, 0), new Point2d(0, 12), new Point2d(12, 12), new Point2d(12, 0), new Point2d(0, 0),
     ], 0);
-    }
-
-    const doForeground = true;
-    if (doForeground) {
     builder.activateFeature(this._fgFeature);
     builder.setSymbology(pointColor, pointColor, 2);
     builder.addPointString2d([new Point2d(3, 3)], 0);
@@ -80,7 +75,6 @@ class BlankingDecorator extends TestDecorator {
     builder.addLineString2d([
       new Point2d(1, 9), new Point2d(11, 9),
     ], 0);
-    }
     
     context.addDecorationFromBuilder(builder);
   }
@@ -132,23 +126,40 @@ describe("Blanking fill", () => {
     expectBlankingRegion([blankingColor, pointColor, surfaceColor, lineColor, bgColor]);
   });
 
-  it("renders in arbitrary order with unrelated coplanar geometry", () => {
-    IModelApp.viewManager.addDecorator(new BlankingDecorator(
-      new Feature("0xdef"),
-      new Feature("0xabc"),
-    ));
+  class PlanarDecorator extends TestDecorator {
+    public constructor(private readonly _feature: Feature, private readonly _zDepth: number) {
+      super();
+    }
 
-    // On my machine, only the point draws in front of the blanking region.
-    // That result depends on the ordering of the features' element Ids.
-    // Might need to delete this test if different hardware produces different "arbitrary" results.
-    expectBlankingRegion([blankingColor, pointColor, bgColor]);
-  });
+    public decorate(context: DecorateContext): void {
+      const builder = context.createGraphic({
+        type: GraphicType.Scene,
+        placement: Transform.createIdentity(),
+        pickable: { id: "0x12345678" },
+      });
 
+      builder.activateFeature(this._feature);
+      builder.setSymbology(planarColor, planarColor, 1);
+      builder.addShape2d([
+        new Point2d(0, 0), new Point2d(0, 12), new Point2d(12, 12), new Point2d(12, 0), new Point2d(0, 0),
+      ], this._zDepth);
+      
+      context.addDecorationFromBuilder(builder);
+    }
+  }
   it("renders behind unrelated geometry nearer to camera", () => {
-    
+    const blankingFeature = new Feature("0xabc");
+    IModelApp.viewManager.addDecorator(new BlankingDecorator(blankingFeature, blankingFeature));
+    const planarFeature = new Feature("0xdef");
+    IModelApp.viewManager.addDecorator(new PlanarDecorator(planarFeature, 0.01));
+    expectBlankingRegion([planarColor, bgColor]);
   });
 
   it("renders in front of unrelated geometry closer to camera", () => {
-    
+    const blankingFeature = new Feature("0xabc");
+    IModelApp.viewManager.addDecorator(new BlankingDecorator(blankingFeature, blankingFeature));
+    const planarFeature = new Feature("0xdef");
+    IModelApp.viewManager.addDecorator(new PlanarDecorator(planarFeature, -0.01));
+    expectBlankingRegion([blankingColor, pointColor, surfaceColor, lineColor, bgColor]);
   });
 });
