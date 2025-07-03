@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert, CompressedId64Set, dispose } from "@itwin/core-bentley";
+import { CompressedId64Set, dispose } from "@itwin/core-bentley";
 import {
   CheckBox,
   ColorInput,
