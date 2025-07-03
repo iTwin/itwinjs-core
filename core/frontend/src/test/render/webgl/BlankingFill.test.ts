@@ -12,7 +12,7 @@ import { GraphicType } from "../../../common";
 import { Viewport } from "../../../Viewport";
 import { testBlankViewport } from "../../openBlankViewport";
 import { StandardViewId } from "../../../StandardView";
-import { expectColors } from "../../ExpectColors";
+import { expectUniqueColors } from "../../ExpectColors";
 
 
 
@@ -88,6 +88,7 @@ function expectBlankingRegion(expectedBlankingColor: ColorDef, expectedForegroun
       renderMode: RenderMode.SmoothShade,
       lighting: false,
       visibleEdges: false,
+      forceSurfaceDiscard: true,
     });
 
     vp.view.setStandardRotation(StandardViewId.Top);
@@ -98,7 +99,7 @@ function expectBlankingRegion(expectedBlankingColor: ColorDef, expectedForegroun
     vp.invalidateDecorations();
     vp.renderFrame();
     
-    expectColors(vp, [expectedBlankingColor, expectedForegroundColor, bgColor]);
+    expectUniqueColors(vp, [expectedBlankingColor, expectedForegroundColor, bgColor]);
 
     // ###TODO test individual pixels
   });

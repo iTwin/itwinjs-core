@@ -8,6 +8,28 @@ import { ColorDef } from "@itwin/core-common";
 import { ScreenViewport } from "../Viewport";
 import { ViewRect } from "../common/ViewRect";
 
+export function readUniqueColors(viewport: ScreenViewport, rect?: ViewRect): ColorDef[] {
+  viewport.renderFrame();
+  const buf = viewport.readImageBuffer({ rect })!;
+  expect(buf).toBeDefined();
+
+  const u32 = Array.from(new Uint32Array(buf.data.buffer));
+  const uniqueRgba = Array.from(new Set<number>(u32)).sort();
+  return uniqueRgba.map((rgba) => {
+    const r = ((rgba & 0x000000ff) >>> 0x00) >>> 0;
+    const g = ((rgba & 0x0000ff00) >>> 0x08) >>> 0;
+    const b = ((rgba & 0x00ff0000) >>> 0x10) >>> 0;
+    const a = ((rgba & 0xff000000) >>> 0x18) >>> 0;
+    return ColorDef.from(r, g, b, 0xff - a);
+  });
+}
+
+export function expectUniqueColors(viewport: ScreenViewport, expected: ColorDef[], rect?: ViewRect): void {
+  const expectedColors = expected.map((x) => x.toHexString()).sort();
+  const actualColors = readUniqueColors(viewport, rect).map((x) => x.toHexString()).sort();
+  expect(actualColors).to.equal(expectedColors);
+}
+
 /** A viewport-color-checking function for tests. Tests for the presence of a list of expected colors in the entire viewport or specified ViewRect.
  * @internal
  */
