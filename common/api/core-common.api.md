@@ -10164,9 +10164,9 @@ export class TextStyleSettings {
     readonly subScriptScale: number;
     readonly superScriptOffsetFactor: number;
     readonly superScriptScale: number;
-    readonly terminatorHeight: number;
-    readonly terminatorWidth: number;
     readonly tabInterval: number;
+    readonly terminatorHeightFactor: number;
+    readonly terminatorWidthFactor: number;
     // (undocumented)
     toJSON(): TextStyleSettingsProps;
     readonly wantElbow: boolean;
@@ -10190,10 +10190,10 @@ export interface TextStyleSettingsProps {
     subScriptScale?: number;
     superScriptOffsetFactor?: number;
     superScriptScale?: number;
-    terminatorHeight?: number;
-    terminatorWidth?: number;
-    wantElbow?: boolean;
     tabInterval?: number;
+    terminatorHeightFactor?: number;
+    terminatorWidthFactor?: number;
+    wantElbow?: boolean;
     widthFactor?: number;
 }
 
