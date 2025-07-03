@@ -5,19 +5,19 @@
 import { afterAll, afterEach, beforeAll, describe, it } from "vitest";
 import { TestDecorator } from "../../TestDecorators";
 import { IModelApp } from "../../../IModelApp";
-import { ColorDef, EmptyLocalization, Feature, FillFlags, GraphicParams, RenderMode } from "@itwin/core-common";
-import { Point2d, Point3d, Range3d, Transform, XYZProps } from "@itwin/core-geometry";
+import { ColorDef, EmptyLocalization, Feature, FillFlags, GeometryClass, GraphicParams, RenderMode } from "@itwin/core-common";
+import { Point2d, Point3d, Range3d, Transform } from "@itwin/core-geometry";
 import { DecorateContext } from "../../../ViewContext";
 import { GraphicType } from "../../../common";
-import { Viewport } from "../../../Viewport";
 import { testBlankViewport } from "../../openBlankViewport";
 import { StandardViewId } from "../../../StandardView";
 import { expectUniqueColors } from "../../ExpectColors";
 
-const bgColor = ColorDef.from(0xa, 0xb, 0xc);
-const pointColor = ColorDef.from(0xd, 0xe, 0xf);
 const lineColor = ColorDef.from(1, 2, 3);
 const surfaceColor = ColorDef.from(4, 5, 6);
+const pointColor = ColorDef.from(7, 8, 9);
+const blankingColor = ColorDef.from(0xa, 0xb, 0xc);
+const bgColor = ColorDef.from(0xd, 0xe, 0xf);
 
 /** Produces a decoration that draws a square as a blanking region, plus a (P)oint, (S)urface, and (L)ine as follows:
  *
@@ -41,7 +41,6 @@ const surfaceColor = ColorDef.from(4, 5, 6);
  */
 class BlankingDecorator extends TestDecorator {
   public constructor(
-    private readonly _blankingColor: ColorDef,
     private readonly _blankingFeature: Feature,
     private readonly _fgFeature: Feature,
     private readonly _origin: Point3d = new Point3d(0, 0, 0),
@@ -60,7 +59,7 @@ class BlankingDecorator extends TestDecorator {
     if (doBlanking) {
     builder.activateFeature(this._blankingFeature);
     const blankingParams = new GraphicParams();
-    blankingParams.fillColor = blankingParams.lineColor = this._blankingColor;
+    blankingParams.fillColor = blankingParams.lineColor = blankingColor;
     blankingParams.fillFlags = FillFlags.Blanking;
     builder.activateGraphicParams(blankingParams);
     builder.addShape2d([
@@ -87,7 +86,7 @@ class BlankingDecorator extends TestDecorator {
   }
 }
 
-function expectBlankingRegion(expectedBlankingColor: ColorDef): void {
+function expectBlankingRegion(expectedColors: ColorDef[]): void {
   testBlankViewport((vp) => {
     vp.displayStyle.backgroundColor = bgColor;
     vp.displayStyle.viewFlags = vp.displayStyle.viewFlags.copy({
@@ -105,7 +104,7 @@ function expectBlankingRegion(expectedBlankingColor: ColorDef): void {
     vp.invalidateDecorations();
     vp.renderFrame();
     
-    expectUniqueColors(vp, [expectedBlankingColor, pointColor, surfaceColor, lineColor, bgColor]);
+    expectUniqueColors(vp, expectedColors);
   });
 }
 
@@ -117,23 +116,39 @@ describe("Blanking fill", () => {
   it("renders behind coplanar geometry from same feature", () => {
     const feature = new Feature("0xabc");
     IModelApp.viewManager.addDecorator(new BlankingDecorator(
-      ColorDef.green,
       feature,
       feature,
     ));
 
-    expectBlankingRegion(ColorDef.green);
+    expectBlankingRegion([blankingColor, pointColor, surfaceColor, lineColor, bgColor]);
   });
 
   it("renders behind coplanar geometry from same element", () => {
+    IModelApp.viewManager.addDecorator(new BlankingDecorator(
+      new Feature("0xabc", undefined, GeometryClass.Primary),
+      new Feature("0xabc", undefined, GeometryClass.Construction),
+    ));
+
+    expectBlankingRegion([blankingColor, pointColor, surfaceColor, lineColor, bgColor]);
+  });
+
+  it("renders in arbitrary order with unrelated coplanar geometry", () => {
+    IModelApp.viewManager.addDecorator(new BlankingDecorator(
+      new Feature("0xdef"),
+      new Feature("0xabc"),
+    ));
+
+    // On my machine, only the point draws in front of the blanking region.
+    // That result depends on the ordering of the features' element Ids.
+    // Might need to delete this test if different hardware produces different "arbitrary" results.
+    expectBlankingRegion([blankingColor, pointColor, bgColor]);
+  });
+
+  it("renders behind unrelated geometry nearer to camera", () => {
     
   });
 
-  it("renders behind geometry nearer to camera", () => {
-    
-  });
-
-  it("renders in front of geometry closer to camera", () => {
+  it("renders in front of unrelated geometry closer to camera", () => {
     
   });
 });
