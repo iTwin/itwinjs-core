@@ -246,6 +246,7 @@ import { SubCategoryProps } from '@itwin/core-common';
 import { SubCategoryResultRow } from '@itwin/core-common';
 import { SubjectProps } from '@itwin/core-common';
 import { SynchronizationConfigLinkProps } from '@itwin/core-common';
+import { TabRun } from '@itwin/core-common';
 import { TextAnnotation } from '@itwin/core-common';
 import { TextAnnotation2dProps } from '@itwin/core-common';
 import { TextAnnotation3dProps } from '@itwin/core-common';
@@ -4201,6 +4202,8 @@ export class LineLayout {
     get isEmpty(): boolean;
     // (undocumented)
     justificationRange: Range2d;
+    // (undocumented)
+    lengthFromLastTab: number;
     // (undocumented)
     offsetFromDocument: {
         x: number;
