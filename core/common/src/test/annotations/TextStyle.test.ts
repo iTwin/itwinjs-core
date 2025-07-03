@@ -24,8 +24,8 @@ describe("TextStyleSettings", () => {
     leaderColor: 0xff007f,
     wantElbow: false,
     elbowLength: 0.5,
-    terminatorHeight: 0.5,
-    terminatorWidth: 0.5,
+    terminatorHeightFactor: 0.5,
+    terminatorWidthFactor: 0.5,
   };
 
   it("returns defaults if no props provided", () => {

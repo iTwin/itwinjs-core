@@ -65,8 +65,8 @@ export function appendLeadersToBuilder(builder: ElementGeometry.Builder, leaders
 
     const termY = terminatorDirection?.unitCrossProduct(Vector3d.unitZ());
     if (!termY || !terminatorDirection) return true; // Assuming leaders without terminators is a valid case.
-    const terminatorHeight = (leader.styleOverrides?.terminatorHeight ?? 1) * (leader.styleOverrides?.lineHeight ?? 1);
-    const terminatorWidth = (leader.styleOverrides?.terminatorWidth ?? 1) * (leader.styleOverrides?.lineHeight ?? 1);
+    const terminatorHeight = (leader.styleOverrides?.terminatorHeightFactor ?? 1) * (leader.styleOverrides?.lineHeight ?? 1);
+    const terminatorWidth = (leader.styleOverrides?.terminatorWidthFactor ?? 1) * (leader.styleOverrides?.lineHeight ?? 1);
     const basePoint = leader.startPoint.plusScaled(terminatorDirection, terminatorWidth);
     const termPointA = basePoint.plusScaled(termY, terminatorHeight);
     const termPointB = basePoint.plusScaled(termY.negate(), terminatorHeight);

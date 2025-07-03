@@ -97,20 +97,20 @@ export interface TextStyleSettingsProps {
    */
   wantElbow?: boolean;
   /** Multiplier used to compute length of the elbow in the leader line.
-   * The elbowLength is computed as elbowLength * [[lineHeight]].
+   * The elbowLength is computed in meters as elbowLength * [[lineHeight]].
    * Default: 1.0
    */
   elbowLength?: number;
   /** Multiplier to compute height of the leader terminator.
-   * The terminator height is computed as terminatorHeight * [[lineHeight]].
+   * The terminator height is computed in meters as terminatorHeight * [[lineHeight]].
    * Default: 1.0
    */
-  terminatorHeight?: number;
+  terminatorHeightFactor?: number;
   /** Multiplier to compute width of the leader terminator.
-   * The terminator width is computed as terminatorWidth * [[lineHeight]].
+   * The terminator width is computed in meters as terminatorWidth * [[lineHeight]].
    * Default: 1.0
    */
-  terminatorWidth?: number;
+  terminatorWidthFactor?: number;
 }
 
 /** A description of the formatting to be applied to a [[TextBlockComponent]].
@@ -175,11 +175,11 @@ export class TextStyleSettings {
   /** Multiplier to compute height of the leader terminator.
    * The terminator height is computed in meters as terminatorHeight * [[lineHeight]].
   */
-  public readonly terminatorHeight: number;
+  public readonly terminatorHeightFactor: number;
   /** Multiplier to compute width of the leader terminator.
    * The terminator width is computed in meters as terminatorWidth * [[lineHeight]].
   */
-  public readonly terminatorWidth: number;
+  public readonly terminatorWidthFactor: number;
 
   /** A fully-populated JSON representation of the default settings. */
   public static defaultProps: Readonly<Required<TextStyleSettingsProps>> = {
@@ -200,8 +200,8 @@ export class TextStyleSettings {
     leaderColor: "subcategory",
     wantElbow: true,
     elbowLength: 1,
-    terminatorHeight: 1,
-    terminatorWidth: 1,
+    terminatorHeightFactor: 1,
+    terminatorWidthFactor: 1,
   };
 
   /** Settings initialized to all default values. */
@@ -229,8 +229,8 @@ export class TextStyleSettings {
     this.leaderColor = props.leaderColor ?? defaults.leaderColor;
     this.wantElbow = props.wantElbow ?? defaults.wantElbow;
     this.elbowLength = props.elbowLength ?? defaults.elbowLength;
-    this.terminatorHeight = props.terminatorHeight ?? defaults.terminatorHeight;
-    this.terminatorWidth = props.terminatorWidth ?? defaults.terminatorWidth;
+    this.terminatorHeightFactor = props.terminatorHeightFactor ?? defaults.terminatorHeightFactor;
+    this.terminatorWidthFactor = props.terminatorWidthFactor ?? defaults.terminatorWidthFactor;
   }
 
   /** Create a copy of these settings, modified according to the properties defined by `alteredProps`. */
@@ -253,9 +253,10 @@ export class TextStyleSettings {
       && this.isBold === other.isBold && this.isItalic === other.isItalic && this.isUnderlined === other.isUnderlined
       && this.stackedFractionType === other.stackedFractionType && this.stackedFractionScale === other.stackedFractionScale
       && this.subScriptOffsetFactor === other.subScriptOffsetFactor && this.subScriptScale === other.subScriptScale
-      && this.superScriptOffsetFactor === other.superScriptOffsetFactor && this.superScriptScale === other.superScriptScale && this.leaderColor === other.leaderColor
+      && this.superScriptOffsetFactor === other.superScriptOffsetFactor
+      && this.superScriptScale === other.superScriptScale && this.leaderColor === other.leaderColor
       && this.wantElbow === other.wantElbow && this.elbowLength === other.elbowLength
-      && this.terminatorHeight === other.terminatorHeight && this.terminatorWidth === other.terminatorWidth;
+      && this.terminatorHeightFactor === other.terminatorHeightFactor && this.terminatorWidthFactor === other.terminatorWidthFactor;
   }
 }
 
