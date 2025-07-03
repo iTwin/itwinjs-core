@@ -287,41 +287,22 @@ describe("Schedule script (#integration)", () => {
     const view = await dbNew.views.load(viewId) as SpatialViewState;
     const style = view.displayStyle;
 
-    const now = Date.now();
-    const builder = new RenderSchedule.ScriptBuilder();
-    const modelTimeline = builder.addModelTimeline(modelId);
-    const elementTimeline = modelTimeline.addElementTimeline(["0x2000003abfc"]);
-
-    elementTimeline.addColor(now, new RgbColor(255, 0, 0));
-    elementTimeline.addColor(now + 2000, new RgbColor(0, 255, 0));
-
-    const newScript = RenderSchedule.Script.fromJSON(builder.finish());
-    if (!newScript)
-      throw new Error("Failed to create schedule script from JSON");
-    style.setScheduleEditing(newScript);
+    const original = style.scheduleScript!;
+    const edited = RenderSchedule.Script.fromJSON(original.toJSON())!;
+    style.setScheduleEditing(edited);
 
     expect(style.scheduleScript).to.not.be.undefined;
     expect(style.scheduleScript!.modelTimelines.every(t => t.isEditingCommitted === false)).to.be.true;
 
-    expect(countTileTrees(view)).to.equal(1);
+    expect(countTileTrees(view)).to.equal(2);
   });
 
   it("commits edited schedule script and updates tile tree owner", async () => {
     const view = await dbNew.views.load(viewId) as SpatialViewState;
     const style = view.displayStyle;
 
-    const now = Date.now();
-    const builder = new RenderSchedule.ScriptBuilder();
-    const modelTimeline = builder.addModelTimeline(modelId);
-    const elementTimeline = modelTimeline.addElementTimeline(["0x2000003abfc"]);
-    elementTimeline.addColor(now, new RgbColor(0, 0, 255));
-    elementTimeline.addColor(now + 2000, new RgbColor(255, 255, 0));
-
-    const newScript = RenderSchedule.Script.fromJSON(builder.finish());
-    if (!newScript)
-      throw new Error("Failed to create schedule script from JSON");
-
-    style.setScheduleEditing(newScript);
+    const edited = RenderSchedule.Script.fromJSON(style.scheduleScript!.toJSON())!;
+    style.setScheduleEditing(edited);
     style.commitScheduleEditing();
 
     expect(style.scheduleScript!.modelTimelines.every(t => t.isEditingCommitted)).to.be.true;
@@ -329,14 +310,7 @@ describe("Schedule script (#integration)", () => {
 
   it("fires editing and commit events when using editing mode", async () => {
     const style = await loadDisplayStyle(embedStyleId, dbNew);
-    const now = Date.now();
-    const builder = new RenderSchedule.ScriptBuilder();
-    builder.addModelTimeline(modelId)
-      .addElementTimeline(["0x2000003abfc"])
-      .addColor(now, new RgbColor(123, 123, 123));
-    const script = RenderSchedule.Script.fromJSON(builder.finish());
-    if (!script)
-      throw new Error("Failed to create schedule script from JSON");
+    const script = RenderSchedule.Script.fromJSON(style.scheduleScript!.toJSON())!;
 
     let editingChangedFired = false;
     let committedFired = false;
