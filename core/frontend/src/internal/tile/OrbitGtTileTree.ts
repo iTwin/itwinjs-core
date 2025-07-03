@@ -30,6 +30,8 @@ import { RenderSystem } from "../../render/RenderSystem";
 import { ViewingSpace } from "../../ViewingSpace";
 import { Viewport } from "../../Viewport";
 import {
+  LayerTileTreeHandler,
+  MapLayerTreeSetting,
   RealityModelTileTree, Tile, TileContent, TileDrawArgs, TileLoadPriority, TileParams, TileRequest, TileTree, TileTreeOwner,
   TileTreeParams, TileTreeSupplier, TileUsageMarker,
 } from "../../tile/internal";
@@ -226,9 +228,15 @@ export class OrbitGtTileTree extends TileTree {
   public rootTile: OrbitGtRootTile;
   public viewFlagOverrides: ViewFlagOverrides = {};
   private _tileGraphics = new Map<string, OrbitGtTileGraphic>();
+  private readonly _layerHandler: LayerTileTreeHandler;
+  public layerImageryTrees: MapLayerTreeSetting[] = [];
+
+  public override get layerHandler() { return this._layerHandler; }
 
   public constructor(treeParams: TileTreeParams, private _dataManager: OrbitGtDataManager, cloudRange: Range3d, private _centerOffset: Vector3d, private _ecefTransform: Transform) {
     super(treeParams);
+
+    this._layerHandler = new LayerTileTreeHandler(this);
 
     this._tileParams = { contentId: "0", range: cloudRange, maximumSize: 256 };
     this.rootTile = new OrbitGtRootTile(this._tileParams, this);

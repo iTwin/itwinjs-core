@@ -26,6 +26,7 @@ describe("TextStyleSettings", () => {
     elbowLength: 0.5,
     terminatorHeightFactor: 0.5,
     terminatorWidthFactor: 0.5,
+    tabInterval: 7,
   };
 
   it("returns defaults if no props provided", () => {

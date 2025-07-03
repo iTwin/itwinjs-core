@@ -34,7 +34,7 @@ export interface TextStyleSettingsProps {
    */
   fontName?: string;
   /** The height each line of text, in meters. Many other settings use the line height as the basis for computing their own values.
-   * For example, the height and offset from baseline of a subscript [[TextRun]]  are compuated as lineHeight * [[subScriptScale]] and
+   * For example, the height and offset from baseline of a subscript [[TextRun]]  are computed as lineHeight * [[subScriptScale]] and
    * lineHeight * [[subScriptOffsetFactor]], respectively.
    * Default: 1.0. */
   lineHeight?: number;
@@ -111,6 +111,11 @@ export interface TextStyleSettingsProps {
    * Default: 1.0
    */
   terminatorWidthFactor?: number;
+  /** The size (in meters) used to calculate the tab stops in a run.
+   * These are equally spaced from the left edge of the TextBlock.
+   * Default: 4 meters.
+   */
+  tabInterval?: number;
 }
 
 /** A description of the formatting to be applied to a [[TextBlockComponent]].
@@ -126,7 +131,7 @@ export class TextStyleSettings {
    */
   public readonly fontName: string;
   /** The height each line of text, in meters. Many other settings use the line height as the basis for computing their own values.
-   * For example, the height and offset from baseline of a subscript [[TextRun]]  are compuated as lineHeight * [[subScriptScale]] and
+   * For example, the height and offset from baseline of a subscript [[TextRun]]  are computed as lineHeight * [[subScriptScale]] and
    * lineHeight * [[subScriptOffsetFactor]], respectively.
    */
   public readonly lineHeight: number;
@@ -180,6 +185,10 @@ export class TextStyleSettings {
    * The terminator width is computed in meters as terminatorWidth * [[lineHeight]].
   */
   public readonly terminatorWidthFactor: number;
+  /** The size (in meters) used to calculate the tab stops in a run.
+   * These are equally spaced from the left edge of the TextBlock. Default is 4 meters.
+   */
+  public readonly tabInterval: number;
 
   /** A fully-populated JSON representation of the default settings. */
   public static defaultProps: Readonly<Required<TextStyleSettingsProps>> = {
@@ -202,6 +211,7 @@ export class TextStyleSettings {
     elbowLength: 1,
     terminatorHeightFactor: 1,
     terminatorWidthFactor: 1,
+    tabInterval: 4,
   };
 
   /** Settings initialized to all default values. */
@@ -231,6 +241,7 @@ export class TextStyleSettings {
     this.elbowLength = props.elbowLength ?? defaults.elbowLength;
     this.terminatorHeightFactor = props.terminatorHeightFactor ?? defaults.terminatorHeightFactor;
     this.terminatorWidthFactor = props.terminatorWidthFactor ?? defaults.terminatorWidthFactor;
+    this.tabInterval = props.tabInterval ?? defaults.tabInterval;
   }
 
   /** Create a copy of these settings, modified according to the properties defined by `alteredProps`. */
@@ -256,7 +267,8 @@ export class TextStyleSettings {
       && this.superScriptOffsetFactor === other.superScriptOffsetFactor
       && this.superScriptScale === other.superScriptScale && this.leaderColor === other.leaderColor
       && this.wantElbow === other.wantElbow && this.elbowLength === other.elbowLength
-      && this.terminatorHeightFactor === other.terminatorHeightFactor && this.terminatorWidthFactor === other.terminatorWidthFactor;
+      && this.terminatorHeightFactor === other.terminatorHeightFactor && this.terminatorWidthFactor === other.terminatorWidthFactor
+      && this.tabInterval === other.tabInterval;
   }
 }
 
