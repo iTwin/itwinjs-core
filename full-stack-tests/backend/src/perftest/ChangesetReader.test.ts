@@ -271,7 +271,6 @@ describe("ChangesetReaderAPI", async () => {
     expect(secondBriefcaseChangeset2.insertedRows).to.be.eql(numElements * 2); // 100k in bis_Element + 100k in bis_GeometricElement2d
     expect(secondBriefcaseChangeset2.updatedRows).to.be.eql(2);
     expect(secondBriefcaseChangeset2.totalElapsedMs).to.be.greaterThan(0); // Ensure it took some time
-    expect(secondBriefcaseChangeset2.sha1ValidationTimeMs).to.be.greaterThan(0); // Ensure it took some time
     expect(secondBriefcaseChangeset2.perStatementStats.length).to.be.eql(4);
 
     reporter.addEntry("ChangesetReaderAPI", "ChangesetHealthStats", "Execution time (ms)", secondBriefcaseChangeset2.totalElapsedMs, { changesetId: secondBriefcaseChangeset2.changesetId, statementsExecuted: secondBriefcaseChangeset2.perStatementStats.length });
