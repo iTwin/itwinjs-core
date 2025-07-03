@@ -10,7 +10,8 @@
     ".": {
       "import": "./lib/esm/map-layers-formats.js",
       "require": "./lib/cjs/map-layers-formats.js"
-    }
+    },
+    "./package.json": "./package.json"
   },
   "license": "MIT",
   "scripts": {
