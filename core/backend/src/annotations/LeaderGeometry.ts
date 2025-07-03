@@ -72,7 +72,7 @@ export function appendLeadersToBuilder(builder: ElementGeometry.Builder, leaders
     const basePoint = leader.startPoint.plusScaled(terminatorDirection, terminatorWidth);
     const termPointA = basePoint.plusScaled(termY, terminatorHeight);
     const termPointB = basePoint.plusScaled(termY.negate(), terminatorHeight);
-    builder.appendGeometryQuery(LineString3d.create([termPointA, leader.startPoint, termPointB]));
+    result = result && builder.appendGeometryQuery(LineString3d.create([termPointA, leader.startPoint, termPointB]));
 
     return true;
   })
