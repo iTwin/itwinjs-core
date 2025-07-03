@@ -18,7 +18,7 @@ import {
   AnalysisStyle, BackgroundMapProps, BackgroundMapProviderProps, BackgroundMapSettings, Camera, CartographicRange, ClipStyle, ColorDef, DisplayStyleSettingsProps,
   Easing, ElementProps, FeatureAppearance, Frustum, GlobeMode, GridOrientationType, Hilite, ImageBuffer,
   Interpolation, isPlacement2dProps, LightSettings, ModelMapLayerSettings, Npc, NpcCenter, Placement,
-  Placement2d, Placement3d, PlacementProps, SolarShadowSettings, SubCategoryAppearance, SubCategoryOverride, ViewFlags,
+  Placement2d, Placement3d, PlacementProps, RenderSchedule, SolarShadowSettings, SubCategoryAppearance, SubCategoryOverride, ViewFlags,
 } from "@itwin/core-common";
 import { AuxCoordSystemState } from "./AuxCoordSys";
 import { BackgroundMapGeometry } from "./BackgroundMapGeometry";
@@ -49,7 +49,7 @@ import { RenderTarget } from "./render/RenderTarget";
 import { StandardView, StandardViewId } from "./StandardView";
 import { SubCategoriesCache } from "./SubCategoriesCache";
 import {
-  DisclosedTileTreeSet, MapCartoRectangle, MapFeatureInfo, MapFeatureInfoOptions, MapLayerFeatureInfo, MapLayerImageryProvider, MapLayerIndex, MapLayerInfoFromTileTree, MapTiledGraphicsProvider,
+  DisclosedTileTreeSet, IModelTileTree, MapCartoRectangle, MapFeatureInfo, MapFeatureInfoOptions, MapLayerFeatureInfo, MapLayerImageryProvider, MapLayerIndex, MapLayerInfoFromTileTree, MapTiledGraphicsProvider,
   MapTileTreeReference, MapTileTreeScaleRangeVisibility, TileBoundingBoxes, TiledGraphicsProvider, TileTreeLoadStatus, TileTreeReference, TileUser,
 } from "./tile/internal";
 import { EventController } from "./tools/EventController";
@@ -1303,6 +1303,32 @@ export abstract class Viewport implements Disposable, TileUser {
 
     removals.push(settings.onTimePointChanged.addListener(scheduleChanged));
     removals.push(style.onScheduleScriptChanged.addListener(scriptChanged));
+
+
+    const scheduleEditingChanged = (
+      changes: Array<{ timeline: RenderSchedule.ModelTimeline, elements: Set<Id64String> }>
+    ) => {
+      for (const { timeline, elements } of changes) {
+        for (const ref of this.getTileTreeRefs()) {
+          const tree = ref.treeOwner.tileTree;
+          if (tree instanceof IModelTileTree && tree.modelId === timeline.modelId) {
+            tree.onScheduleEditingChanged({ changedElementIds: elements });
+          }
+        }
+      }
+    };
+
+    const scheduleEditingCommitted = () => {
+      for (const ref of this.getTileTreeRefs()) {
+        const tree = ref.treeOwner.tileTree;
+        if (tree instanceof IModelTileTree) {
+          tree.onScheduleEditingCommitted();
+        }
+      }
+    };
+
+    removals.push(style.onScheduleEditingChanged.addListener(scheduleEditingChanged));
+    removals.push(style.onScheduleEditingCommitted.addListener(scheduleEditingCommitted));
 
     removals.push(settings.onViewFlagsChanged.addListener((vf) => {
       if (vf.backgroundMap !== this.viewFlags.backgroundMap)

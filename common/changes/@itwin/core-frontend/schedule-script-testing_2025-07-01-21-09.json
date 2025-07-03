@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "schedule script editing mode",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}
