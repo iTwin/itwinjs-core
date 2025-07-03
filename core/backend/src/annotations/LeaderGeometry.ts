@@ -34,7 +34,7 @@ export function appendLeadersToBuilder(builder: ElementGeometry.Builder, leaders
     if (leader.styleOverrides?.leaderColor !== "subcategory" && leader.styleOverrides?.color !== "subcategory") {
       const color = leader.styleOverrides?.leaderColor ?? leader.styleOverrides?.color;
       params.lineColor = color ? ColorDef.fromJSON(color) : ColorDef.black;
-      builder.appendGeometryParamsChange(params);
+      result = result && builder.appendGeometryParamsChange(params);
     }
 
     const attachmentPoint = computeLeaderAttachmentPoint(leader, frameCurve, layout, transform);
