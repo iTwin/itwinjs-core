@@ -1144,4 +1144,120 @@ describe("Changeset Reader API", async () => {
     // Cleanup
     await Promise.all([secondBriefCase.close(), firstBriefCase.close()]);
   });
+
+  it.only("Track changeset health stats", async () => {
+    const adminToken = "super manager token";
+    const iModelName = "test";
+    const rwIModelId = await HubMock.createNewIModel({ iTwinId, iModelName, description: "TestSubject", accessToken: adminToken });
+    assert.isNotEmpty(rwIModelId);
+
+    // Open two briefcases for the same iModel
+    const [firstBriefCase, secondBriefCase] = await Promise.all([
+      HubWrappers.downloadAndOpenBriefcase({ iTwinId, iModelId: rwIModelId, accessToken: adminToken }),
+      HubWrappers.downloadAndOpenBriefcase({ iTwinId, iModelId: rwIModelId, accessToken: adminToken })
+    ]);
+
+    [firstBriefCase, secondBriefCase].forEach(briefcase => briefcase.channels.addAllowedChannel(ChannelControl.sharedChannelName));
+
+    await firstBriefCase.importSchemaStrings([`<?xml version="1.0" encoding="UTF-8"?>
+      <ECSchema schemaName="TestSchema" alias="ts" version="1.0.0" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
+          <ECSchemaReference name="BisCore" version="1.0.0" alias="bis"/>
+          <ECSchemaReference name="CoreCustomAttributes" version="1.0.0" alias="CoreCA" />
+
+          <ECCustomAttributes>
+              <DynamicSchema xmlns = 'CoreCustomAttributes.1.0.0' />
+          </ECCustomAttributes>
+
+          <ECEntityClass typeName="TestClass">
+              <BaseClass>bis:PhysicalElement</BaseClass>
+          </ECEntityClass>
+      </ECSchema>`]);
+    firstBriefCase.saveChanges("import initial schema");
+
+    // Enable changeset tracking for both briefcases
+    await Promise.all([firstBriefCase.enableChangesetStatTracking(), secondBriefCase.enableChangesetStatTracking()]);
+
+    await firstBriefCase.pushChanges({ description: "push initial schema changeset", accessToken: adminToken });
+    await secondBriefCase.pullChanges({ accessToken: adminToken });
+
+    // Schema upgrade
+    await secondBriefCase.importSchemaStrings([`<?xml version="1.0" encoding="UTF-8"?>
+      <ECSchema schemaName="TestSchema" alias="ts" version="2.0.0" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
+        <ECSchemaReference name="BisCore" version="1.0.0" alias="bis"/>
+        <ECSchemaReference name="CoreCustomAttributes" version="1.0.0" alias="CoreCA" />
+
+        <ECCustomAttributes>
+          <DynamicSchema xmlns = 'CoreCustomAttributes.1.0.0' />
+        </ECCustomAttributes>
+
+        <ECEntityClass typeName="TestClass">
+          <BaseClass>bis:PhysicalElement</BaseClass>
+          <ECProperty propertyName="TestProperty" typeName="string"/>
+        </ECEntityClass>
+
+        <ECEnumeration typeName="TestEnum" backingTypeName="int" isStrict="true">
+          <ECEnumerator name="Enumerator1" value="1" displayLabel="TestEnumerator1"/>
+          <ECEnumerator name="Enumerator2" value="2" displayLabel="TestEnumerator2"/>
+        </ECEnumeration>
+      </ECSchema>`]);
+    secondBriefCase.saveChanges("imported schema");
+
+    await secondBriefCase.pushChanges({ description: "Added a property to TestClass and an enum", accessToken: adminToken });
+    await firstBriefCase.pullChanges({ accessToken: adminToken });
+
+    // Major schema change
+    await firstBriefCase.importSchemaStrings([`<?xml version="1.0" encoding="UTF-8"?>
+      <ECSchema schemaName="TestSchema" alias="ts" version="2.0.0" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
+        <ECSchemaReference name="CoreCustomAttributes" version="1.0.0" alias="CoreCA" />
+
+        <ECCustomAttributes>
+          <DynamicSchema xmlns = 'CoreCustomAttributes.1.0.0' />
+        </ECCustomAttributes>
+
+        <ECEnumeration typeName="TestEnum" backingTypeName="int" isStrict="true">
+          <ECEnumerator name="Enumerator1" value="1" displayLabel="TestEnumerator1"/>
+          <ECEnumerator name="Enumerator2" value="2" displayLabel="TestEnumerator2"/>
+        </ECEnumeration>
+      </ECSchema>`]);
+    firstBriefCase.saveChanges("imported schema");
+
+    await firstBriefCase.pushChanges({ description: "Deleted TestClass", accessToken: adminToken });
+    await secondBriefCase.pullChanges({ accessToken: adminToken });
+
+    const firstBriefcaseChangesets = await firstBriefCase.getAllChangesetHealthData();
+    const secondBriefcaseChangesets = await secondBriefCase.getAllChangesetHealthData();
+
+    assert.equal(firstBriefcaseChangesets.length, 1);
+    const firstBriefcaseChangeset = firstBriefcaseChangesets[0];
+
+    expect(firstBriefcaseChangeset.uncompressedSizeBytes).to.be.eql(522);
+    expect(firstBriefcaseChangeset.sha1ValidationTimeMs).to.be.greaterThanOrEqual(1);
+    expect(firstBriefcaseChangeset.insertedRows).to.be.eql(4);
+    expect(firstBriefcaseChangeset.updatedRows).to.be.eql(1);
+    expect(firstBriefcaseChangeset.deletedRows).to.be.eql(0);
+    expect(firstBriefcaseChangeset.totalFullTableScans).to.be.eql(0);
+    expect(firstBriefcaseChangeset.perStatementStats.length).to.be.eql(5);
+
+    assert.equal(secondBriefcaseChangesets.length, 2);
+    const [secondBriefcaseChangeset1, secondBriefcaseChangeset2] = secondBriefcaseChangesets;
+
+    expect(secondBriefcaseChangeset1.uncompressedSizeBytes).to.be.eql(45351);
+    expect(secondBriefcaseChangeset1.sha1ValidationTimeMs).to.be.greaterThanOrEqual(1);
+    expect(secondBriefcaseChangeset1.insertedRows).to.be.eql(52);
+    expect(secondBriefcaseChangeset1.updatedRows).to.be.eql(921);
+    expect(secondBriefcaseChangeset1.deletedRows).to.be.eql(0);
+    expect(secondBriefcaseChangeset1.totalFullTableScans).to.be.eql(0);
+    expect(secondBriefcaseChangeset1.perStatementStats.length).to.be.eql(11);
+
+    expect(secondBriefcaseChangeset2.uncompressedSizeBytes).to.be.eql(45314);
+    expect(secondBriefcaseChangeset2.sha1ValidationTimeMs).to.be.greaterThanOrEqual(1);
+    expect(secondBriefcaseChangeset2.insertedRows).to.be.eql(0);
+    expect(secondBriefcaseChangeset2.updatedRows).to.be.eql(921);
+    expect(secondBriefcaseChangeset2.deletedRows).to.be.eql(52);
+    expect(secondBriefcaseChangeset2.totalFullTableScans).to.be.eql(0);
+    expect(secondBriefcaseChangeset2.perStatementStats.length).to.be.eql(11);
+
+    // Cleanup
+    await Promise.all([secondBriefCase.close(), firstBriefCase.close()]);
+  });
 });
