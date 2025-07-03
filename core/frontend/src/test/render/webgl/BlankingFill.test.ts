@@ -14,7 +14,10 @@ import { testBlankViewport } from "../../openBlankViewport";
 import { StandardViewId } from "../../../StandardView";
 import { expectUniqueColors } from "../../ExpectColors";
 
-
+const bgColor = ColorDef.from(0xa, 0xb, 0xc);
+const pointColor = ColorDef.from(0xd, 0xe, 0xf);
+const lineColor = ColorDef.from(1, 2, 3);
+const surfaceColor = ColorDef.from(4, 5, 6);
 
 /** Produces a decoration that draws a square as a blanking region, plus a (P)oint, (S)urface, and (L)ine as follows:
  *
@@ -40,7 +43,6 @@ class BlankingDecorator extends TestDecorator {
   public constructor(
     private readonly _blankingColor: ColorDef,
     private readonly _blankingFeature: Feature,
-    private readonly _fgColor: ColorDef,
     private readonly _fgFeature: Feature,
     private readonly _origin: Point3d = new Point3d(0, 0, 0),
   ) {
@@ -69,13 +71,13 @@ class BlankingDecorator extends TestDecorator {
     const doForeground = true;
     if (doForeground) {
     builder.activateFeature(this._fgFeature);
-    builder.setSymbology(this._fgColor, this._fgColor, 2);
+    builder.setSymbology(pointColor, pointColor, 2);
     builder.addPointString2d([new Point2d(3, 3)], 0);
-    builder.setSymbology(this._fgColor, this._fgColor, 1);
+    builder.setSymbology(surfaceColor, surfaceColor, 1);
     builder.addShape2d([
       new Point2d(7, 1), new Point2d(11, 7), new Point2d(11, 11), new Point2d(7, 11), new Point2d(7, 1),
     ], 0);
-    builder.setSymbology(this._fgColor, this._fgColor, 4);
+    builder.setSymbology(lineColor, lineColor, 4);
     builder.addLineString2d([
       new Point2d(1, 9), new Point2d(11, 9),
     ], 0);
@@ -85,9 +87,7 @@ class BlankingDecorator extends TestDecorator {
   }
 }
 
-const bgColor = ColorDef.from(12, 34, 56);
-
-function expectBlankingRegion(expectedBlankingColor: ColorDef, expectedForegroundColor: ColorDef): void {
+function expectBlankingRegion(expectedBlankingColor: ColorDef): void {
   testBlankViewport((vp) => {
     vp.displayStyle.backgroundColor = bgColor;
     vp.displayStyle.viewFlags = vp.displayStyle.viewFlags.copy({
@@ -98,16 +98,14 @@ function expectBlankingRegion(expectedBlankingColor: ColorDef, expectedForegroun
     });
 
     vp.view.setStandardRotation(StandardViewId.Top);
-    vp.view.lookAtVolume(new Range3d(-5, -5, -5, 17, 17, 5));
+    vp.view.lookAtVolume(new Range3d(0, 0, -5, 12, 12, 5));
     vp.turnCameraOff();
     vp.synchWithView();
 
     vp.invalidateDecorations();
     vp.renderFrame();
     
-    expectUniqueColors(vp, [expectedBlankingColor, expectedForegroundColor, bgColor]);
-
-    // ###TODO test individual pixels
+    expectUniqueColors(vp, [expectedBlankingColor, pointColor, surfaceColor, lineColor, bgColor]);
   });
 }
 
@@ -121,11 +119,10 @@ describe("Blanking fill", () => {
     IModelApp.viewManager.addDecorator(new BlankingDecorator(
       ColorDef.green,
       feature,
-      ColorDef.white,
       feature,
     ));
 
-    expectBlankingRegion(ColorDef.green, ColorDef.white);
+    expectBlankingRegion(ColorDef.green);
   });
 
   it("renders behind coplanar geometry from same element", () => {
