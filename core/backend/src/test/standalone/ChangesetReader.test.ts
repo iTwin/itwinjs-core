@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 /*---------------------------------------------------------------------------------------------
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
@@ -1226,6 +1227,9 @@ describe("Changeset Reader API", async () => {
 
     const firstBriefcaseChangesets = await firstBriefcase.getAllChangesetHealthData();
     const secondBriefcaseChangesets = await secondBriefcase.getAllChangesetHealthData();
+
+    console.log(`First Briefcase Changesets: ${JSON.stringify(firstBriefcaseChangesets)}`);
+    console.log(`Second Briefcase Changesets: ${JSON.stringify(secondBriefcaseChangesets)}`);
 
     assert.equal(firstBriefcaseChangesets.length, 1);
     const firstBriefcaseChangeset = firstBriefcaseChangesets[0];
