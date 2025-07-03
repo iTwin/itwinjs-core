@@ -130,7 +130,7 @@ export class RpcBriefcaseUtility {
 
   public static async open(args: DownloadAndOpenArgs & { syncMode: SyncMode.FixedVersion }): Promise<IModelDb>;
   /**
-   * @deprecated in 4.4.0 - only `SyncMode.FixedVersion` should be used in RPC backends
+   * @deprecated in 4.4.0 - will not be removed until after 2026-06-13. Only `SyncMode.FixedVersion` should be used in RPC backends
    */
   // eslint-disable-next-line @typescript-eslint/unified-signatures -- these are separate to explicitly deprecate some SyncMode members.
   public static async open(args: DownloadAndOpenArgs & { syncMode: Exclude<SyncMode, "FixedVersion"> }): Promise<IModelDb>;
@@ -181,7 +181,7 @@ export class RpcBriefcaseUtility {
 
   public static async openWithTimeout(activity: RpcActivity, tokenProps: IModelRpcOpenProps, syncMode: SyncMode.FixedVersion, timeout?: number): Promise<IModelConnectionProps>;
   /**
-   * @deprecated in 4.4.0 - only `SyncMode.FixedVersion` should be used in RPC backends
+   * @deprecated in 4.4.0 - will not be removed until after 2026-06-13. Only `SyncMode.FixedVersion` should be used in RPC backends
    */
   // eslint-disable-next-line @typescript-eslint/unified-signatures -- these are separate to explicitly deprecate some SyncMode members.
   public static async openWithTimeout(activity: RpcActivity, tokenProps: IModelRpcOpenProps, syncMode: Exclude<SyncMode, "FixedVersion">, timeout?: number): Promise<IModelConnectionProps>;

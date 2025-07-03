@@ -2,6 +2,45 @@
   "name": "@itwin/core-i18n",
   "entries": [
     {
+      "version": "5.0.2",
+      "tag": "@itwin/core-i18n_v5.0.2",
+      "date": "Thu, 26 Jun 2025 22:16:01 GMT",
+      "comments": {}
+    },
+    {
+      "version": "5.0.1",
+      "tag": "@itwin/core-i18n_v5.0.1",
+      "date": "Tue, 17 Jun 2025 18:33:52 GMT",
+      "comments": {}
+    },
+    {
+      "version": "5.0.0",
+      "tag": "@itwin/core-i18n_v5.0.0",
+      "date": "Fri, 13 Jun 2025 20:25:38 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Upgrade compile target to ES2023 and module to ES2022"
+          },
+          {
+            "comment": "Remove 3.x Deprecated APIs"
+          },
+          {
+            "comment": "Bump `i18next-http-backend` dependency version to `^3.0.2`."
+          },
+          {
+            "comment": "Change core peer dependencies to strict version."
+          }
+        ]
+      }
+    },
+    {
+      "version": "4.11.6",
+      "tag": "@itwin/core-i18n_v4.11.6",
+      "date": "Mon, 16 Jun 2025 15:00:15 GMT",
+      "comments": {}
+    },
+    {
       "version": "4.11.5",
       "tag": "@itwin/core-i18n_v4.11.5",
       "date": "Fri, 06 Jun 2025 13:41:18 GMT",

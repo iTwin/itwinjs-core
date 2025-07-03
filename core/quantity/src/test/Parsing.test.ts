@@ -1125,23 +1125,23 @@ describe("Synchronous Parsing tests:", async () => {
 
   it("should return parseError when parsing only special characters", async () => {
     const testData = [
-      ".",
-      ",",
-      ",,",
-      "..",
-      ",,,",
-      "...",
-      ".,",
-      ",.",
-      "!@#$%^&*()_",
+      { input: ".", expectedError: ParseError.UnableToConvertParseTokensToQuantity },
+      { input: ",", expectedError: ParseError.UnableToConvertParseTokensToQuantity },
+      { input: ",,", expectedError: ParseError.UnableToConvertParseTokensToQuantity },
+      { input: "..", expectedError: ParseError.UnableToConvertParseTokensToQuantity },
+      { input: ",,,", expectedError: ParseError.UnableToConvertParseTokensToQuantity },
+      { input: "...", expectedError: ParseError.UnableToConvertParseTokensToQuantity },
+      { input: ".,", expectedError: ParseError.UnableToConvertParseTokensToQuantity },
+      { input: ",.", expectedError: ParseError.UnableToConvertParseTokensToQuantity },
+      { input: "!@#$%^&*()_", expectedError: ParseError.NoValueOrUnitFoundInString }, // Different due to "*" split
     ];
 
-    for (const testEntry of testData) {
-      const parseResult = Parser.parseQuantityString(testEntry, parserSpec);
+    for (const { input, expectedError } of testData) {
+      const parseResult = Parser.parseQuantityString(input, parserSpec);
       if (Parser.isParseError(parseResult)){
-        expect(parseResult.error).to.eql(ParseError.UnableToConvertParseTokensToQuantity);
+        expect(parseResult.error).to.eql(expectedError);
       } else {
-        expect.fail(`Expected a ParseError with input: ${testEntry}`);
+        expect.fail(`Expected a ParseError with input: ${input}`);
       }
     }
   });

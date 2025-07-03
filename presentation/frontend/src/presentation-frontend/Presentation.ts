@@ -36,7 +36,7 @@ export interface PresentationProps {
   /**
    * Props for [[SelectionManager]].
    *
-   * @deprecated in 5.0. The whole unified selection system in this package is deprecated in favor of the new
+   * @deprecated in 5.0 - will not be removed until after 2026-06-13. The whole unified selection system in this package is deprecated in favor of the new
    * [@itwin/unified-selection](https://github.com/iTwin/presentation/blob/master/packages/unified-selection/README.md) package.
    */
   // eslint-disable-next-line @typescript-eslint/no-deprecated
@@ -162,7 +162,7 @@ export class Presentation {
   /**
    * The singleton [[SelectionManager]].
    *
-   * @deprecated in 5.0. The whole unified selection system in this package is deprecated in favor of the new
+   * @deprecated in 5.0 - will not be removed until after 2026-06-13. The whole unified selection system in this package is deprecated in favor of the new
    * [@itwin/unified-selection](https://github.com/iTwin/presentation/blob/master/packages/unified-selection/README.md) package.
    */
   // eslint-disable-next-line @typescript-eslint/no-deprecated

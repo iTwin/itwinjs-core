@@ -56,6 +56,7 @@ export function appendTextAnnotationGeometry(props: AppendTextAnnotationGeometry
   // Construct the debug geometry
   if (props.wantDebugGeometry) {
     result = result && debugAnchorPoint(props.builder, annotation, props.layout, annotation.computeTransform(props.layout.range));
+    result = result && debugRunLayout(props.builder, props.layout, annotation.computeTransform(props.layout.range));
     if (props.layout.blockSettings.frameShape !== "none") result = result && debugSnapPoints(props.builder, props.layout.blockSettings, props.layout.range, annotation.computeTransform(props.layout.range));
   }
 
@@ -110,5 +111,61 @@ function debugSnapPoints(builder: ElementGeometry.Builder, style: TextStyleSetti
   params.fillDisplay = FillDisplay.Always;
 
   const result = builder.appendGeometryParamsChange(params) && builder.appendGeometryQuery(PointString3d.create(points));
+  return result;
+}
+
+/**
+ * Draws debug geometry for each line and run in a TextBlockLayout.
+ *
+ * For each line and run, this function draws boxes to visualize their layout and boundaries.
+ * Different run types (e.g., text, linebreak, fraction, tab) are assigned distinct colors for clarity.
+ * This is useful for debugging text layout and alignment issues.
+ *
+ * @param builder - The geometry builder to append debug geometry to.
+ * @param layout - The text block layout containing lines and runs to visualize.
+ * @param documentTransform - The transform to apply to the entire document.
+ * @returns True if all debug geometry was successfully appended.
+ */
+function debugRunLayout(builder: ElementGeometry.Builder, layout: TextBlockLayout, documentTransform: Transform): boolean {
+  let result = true; // Tracks if all geometry was appended successfully
+  let color = ColorDef.black; // Current color for the run type
+  let lastColor = color; // Last color used, to minimize param changes
+
+  // Map run types to debug colors
+  const colors = {
+    "text": ColorDef.fromString("orange"),
+    "linebreak": ColorDef.fromString("yellow"),
+    "fraction": ColorDef.fromString("green"),
+    "tab": ColorDef.fromString("aquamarine"),
+  }
+
+  layout.lines.forEach(line => {
+    // Apply the line's offset transform
+    const lineTrans = Transform.createTranslationXYZ(line.offsetFromDocument.x, line.offsetFromDocument.y, 0);
+    documentTransform.multiplyTransformTransform(lineTrans, lineTrans);
+
+    line.runs.forEach(run => {
+      // Determine color for this run type
+      color = colors[run.source.type] ?? ColorDef.black;
+
+      // Only change geometry params if the color changes
+      if (!lastColor.equals(color)) {
+        const colorParams = new GeometryParams(Id64.invalid);
+        colorParams.lineColor = color;
+        result = result && builder.appendGeometryParamsChange(colorParams);
+        lastColor = color;
+      }
+
+      // Apply the line's offset to the run's offset
+      const runTrans = Transform.createTranslationXYZ(run.offsetFromLine.x, run.offsetFromLine.y, 0);
+      lineTrans.multiplyTransformTransform(runTrans, runTrans);
+
+      // Draw the enclosing range for the run
+      const runCorners = run.range.corners3d(true);
+      runTrans.multiplyPoint3dArrayInPlace(runCorners);
+      result = result && builder.appendGeometryQuery(LineString3d.create(runCorners));
+    });
+  });
+
   return result;
 }

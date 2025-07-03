@@ -126,6 +126,11 @@ export interface TextStyleSettingsProps {
    * Default: 1px
    */
   frameBorderWeight?: number;
+  /** The size (in meters) used to calculate the tab stops in a run.
+   * These are equally spaced from the left edge of the TextBlock.
+   * Default: 4 meters.
+   */
+  tabInterval?: number;
 }
 
 /** A description of the formatting to be applied to a [[TextBlockComponent]].
@@ -187,6 +192,10 @@ export class TextStyleSettings {
   public readonly frameBorder: TextStyleColor;
   /** The weight of the frame border. */
   public readonly frameBorderWeight: number;
+  /** The size (in meters) used to calculate the tab stops in a run.
+   * These are equally spaced from the left edge of the TextBlock. Default is 4 meters.
+   */
+  public readonly tabInterval: number;
 
   /** A fully-populated JSON representation of the default settings. */
   public static defaultProps: Readonly<Required<TextStyleSettingsProps>> = {
@@ -208,6 +217,7 @@ export class TextStyleSettings {
     frameFill: "none",
     frameBorder: ColorDef.black.toJSON(),
     frameBorderWeight: 1,
+    tabInterval: 4,
   };
 
   /** Settings initialized to all default values. */
@@ -236,6 +246,7 @@ export class TextStyleSettings {
     this.frameFill = props.frameFill ?? defaults.frameFill;
     this.frameBorder = props.frameBorder ?? defaults.frameBorder;
     this.frameBorderWeight = props.frameBorderWeight ?? defaults.frameBorderWeight;
+    this.tabInterval = props.tabInterval ?? defaults.tabInterval;
   }
 
   /** Create a copy of these settings, modified according to the properties defined by `alteredProps`. */
@@ -261,6 +272,7 @@ export class TextStyleSettings {
       && this.superScriptOffsetFactor === other.superScriptOffsetFactor && this.superScriptScale === other.superScriptScale
       && this.frameShape === other.frameShape && this.frameFill === other.frameFill
       && this.frameBorder === other.frameBorder && this.frameBorderWeight === other.frameBorderWeight
+      && this.tabInterval === other.tabInterval;
   }
 }
 

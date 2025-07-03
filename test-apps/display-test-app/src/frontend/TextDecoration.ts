@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { BaselineShift, ColorDef, FractionRun, LineBreakRun, Placement2dProps, TextAnnotation, TextAnnotationAnchor, TextAnnotationFrameShape, TextAnnotationProps, TextBlock, TextBlockJustification, TextBlockMargins, TextRun, TextStyleSettingsProps } from "@itwin/core-common";
+import { BaselineShift, ColorDef, FractionRun, LineBreakRun, Placement2dProps, TabRun, TextAnnotation, TextAnnotationAnchor, TextAnnotationFrameShape, TextAnnotationProps, TextBlock, TextBlockJustification, TextBlockMargins, TextFrameStyleProps, TextRun, TextStyleSettingsProps } from "@itwin/core-common";
 import { DecorateContext, Decorator, GraphicType, IModelApp, IModelConnection, readElementGraphics, RenderGraphicOwner, Tool } from "@itwin/core-frontend";
 import { DtaRpcInterface } from "../common/DtaRpcInterface";
 import { assert, Id64, Id64String } from "@itwin/core-bentley";
@@ -108,6 +108,13 @@ class TextEditor implements Decorator {
     }));
   }
 
+  public appendTab(spaces?: number): void {
+    this.textBlock.appendRun(TabRun.create({
+      styleName: "",
+      styleOverrides: { ... this.runStyle, tabInterval: spaces },
+    }));
+  }
+
   public appendBreak(): void {
     this.textBlock.appendRun(LineBreakRun.create({
       styleId: "",
@@ -148,7 +155,7 @@ class TextEditor implements Decorator {
       throw new Error("Invoke `dta text init` first");
     }
 
-    if (this.textBlock.isEmpty) {
+    if (this.textBlock.isEmpty || this.textBlock.isWhitespace) {
       return;
     }
 
@@ -234,6 +241,10 @@ export class TextDecorationTool extends Tool {
         break;
       case "break":
         editor.appendBreak();
+        break;
+      case "tab":
+        const spaces = inArgs[1] ? parseFloat(inArgs[1]) : undefined;
+        editor.appendTab(spaces);
         break;
       case "paragraph":
         editor.appendParagraph();
@@ -351,6 +362,17 @@ export class TextDecorationTool extends Tool {
       }
       case "debug": {
         editor.debugAnchorPointAndRange = !editor.debugAnchorPointAndRange;
+        break;
+      }
+      case "log": {
+        // Log the current text block to the console
+        const anno = TextAnnotation.fromJSON(editor.annotationProps);
+        // eslint-disable-next-line no-console
+        console.log(anno.textBlock.stringify({ paragraphBreak: "\n", lineBreak: "\n" }));
+        // eslint-disable-next-line no-console
+        console.log("Object > ", anno);
+        // eslint-disable-next-line no-console
+        console.log("Props > ", editor.annotationProps);
         break;
       }
       case "frame": {

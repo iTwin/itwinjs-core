@@ -24,7 +24,8 @@ describe("TextStyleSettings", () => {
     frameShape: "rectangle",
     frameFill: ColorDef.green.tbgr,
     frameBorder: ColorDef.red.tbgr,
-    frameBorderWeight: 2
+    frameBorderWeight: 2,
+    tabInterval: 7,
   };
 
   it("returns defaults if no props provided", () => {
