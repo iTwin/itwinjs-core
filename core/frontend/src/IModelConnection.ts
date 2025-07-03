@@ -11,7 +11,7 @@ import {
   PickAsyncMethods, TransientIdSequence,
 } from "@itwin/core-bentley";
 import {
-  Cartographic, CodeProps, CodeSpec, DbQueryRequest, EcefLocation, EcefLocationProps, ECSqlReader, ElementLoadOptions, ElementMeshRequestProps,
+  Cartographic, CodeProps, CodeScopeSpec, CodeSpec, CodeSpecProperties, DbQueryRequest, EcefLocation, EcefLocationProps, ECSqlReader, ElementLoadOptions, ElementMeshRequestProps,
   ElementProps, EntityQueryParams, FontMap, GeoCoordStatus, GeographicCRSProps, GeometryContainmentRequestProps, GeometryContainmentResponseProps, GeometrySummaryRequestProps, IModel, IModelConnectionProps, IModelError,
   IModelReadRpcInterface, mapToGeoServiceStatus, MassPropertiesPerCandidateRequestProps, MassPropertiesPerCandidateResponseProps,
   MassPropertiesRequestProps, MassPropertiesResponseProps, ModelExtentsProps, ModelProps, ModelQueryParams, Placement, Placement2d,
@@ -1078,21 +1078,71 @@ export namespace IModelConnection {
 
   /** The collection of [[CodeSpec]] entities for an [[IModelConnection]]. */
   export class CodeSpecs {
-    private _loaded?: CodeSpec[];
-
     /** @internal */
     constructor(private _iModel: IModelConnection) { }
 
-    /** Loads all CodeSpec from the remote IModelDb. */
-    private async _loadAllCodeSpecs(): Promise<void> {
-      if (this._loaded)
-        return;
+    private _isCodeSpecProperties(x: any): x is CodeSpecProperties {
+      if (!x || !x.scopeSpec || !Object.values(CodeScopeSpec.Type).includes(x.scopeSpec.type))
+        return false;
 
-      this._loaded = [];
-      const codeSpecArray: any[] = await IModelReadRpcInterface.getClientForRouting(this._iModel.routingContext.token).getAllCodeSpecs(this._iModel.getRpcProps());
-      for (const codeSpec of codeSpecArray) {
-        this._loaded.push(CodeSpec.createFromJson(this._iModel, Id64.fromString(codeSpec.id), codeSpec.name, codeSpec.jsonProperties));
+      if (typeof x.scopeSpec.fGuidRequired !== "boolean" && typeof x.scopeSpec.fGuidRequired !== "undefined")
+        return false;
+
+      if (typeof x.scopeSpec.relationship !== "string" && typeof x.scopeSpec.relationship !== "undefined")
+        return false;
+
+      if (typeof x.spec?.isManagedWithDgnDb !== "boolean" && typeof x.spec?.isManagedWithDgnDb !== "undefined")
+        return false;
+
+      if (typeof x.version !== "string" && typeof x.version !== "undefined")
+        return false;
+
+      return true;
+    }
+
+    private async _loadCodeSpec(identifier: { name: string; id?: undefined } | { id: string; name?: undefined }): Promise<CodeSpec> {
+      const isNameDefined = identifier.name !== undefined;
+      const query = `
+        SELECT ECInstanceId AS Id, Name, JsonProperties
+        FROM BisCore.CodeSpec
+        WHERE ${isNameDefined ? `Name=:name` : `Id=:id`}`;
+
+      const params = new QueryBinder();
+      if (isNameDefined) {
+        params.bindString("name", identifier.name);
+      } else {
+        params.bindId("id", identifier.id);
       }
+
+      const queryReader = this._iModel.createQueryReader(query, params, {
+        rowFormat: QueryRowFormat.UseECSqlPropertyNames,
+      });
+
+      const queryResult = await queryReader.next();
+
+      if (queryResult.done) throw new IModelError(IModelStatus.NotFound, "CodeSpec not found");
+
+      const codeSpecResult = queryResult.value;
+
+      if (
+        typeof codeSpecResult.Id !== "string" ||
+        typeof codeSpecResult.Name !== "string" ||
+        typeof codeSpecResult.JsonProperties !== "string"
+      )
+        throw new Error("Invalid CodeSpec was returned");
+
+      const jsonProperties = JSON.parse(codeSpecResult.JsonProperties);
+
+      if (!this._isCodeSpecProperties(jsonProperties))
+        throw new Error("Invalid CodeSpecProperties returned in the CodeSpec");
+
+      const codeSpec = CodeSpec.createFromJson(
+        this._iModel,
+        Id64.fromString(codeSpecResult.Id),
+        codeSpecResult.Name,
+        jsonProperties
+      );
+      return codeSpec;
     }
 
     /** Look up a CodeSpec by Id.
@@ -1101,15 +1151,11 @@ export namespace IModelConnection {
      * @throws [[IModelError]] if the Id is invalid or if no CodeSpec with that Id could be found.
      */
     public async getById(codeSpecId: Id64String): Promise<CodeSpec> {
+      if (codeSpecId === "") throw new IModelError(IModelStatus.NotFound, "CodeSpec not found");
       if (!Id64.isValid(codeSpecId))
         throw new IModelError(IModelStatus.InvalidId, "Invalid codeSpecId", () => ({ codeSpecId }));
 
-      await this._loadAllCodeSpecs(); // ensure all codeSpecs have been downloaded
-      const found: CodeSpec | undefined = this._loaded!.find((codeSpec: CodeSpec) => codeSpec.id === codeSpecId);
-      if (!found)
-        throw new IModelError(IModelStatus.NotFound, "CodeSpec not found");
-
-      return found;
+      return this._loadCodeSpec({ id: codeSpecId });
     }
 
     /** Look up a CodeSpec by name.
@@ -1118,12 +1164,9 @@ export namespace IModelConnection {
      * @throws [[IModelError]] if no CodeSpec with the specified name could be found.
      */
     public async getByName(name: string): Promise<CodeSpec> {
-      await this._loadAllCodeSpecs(); // ensure all codeSpecs have been downloaded
-      const found: CodeSpec | undefined = this._loaded!.find((codeSpec: CodeSpec) => codeSpec.name === name);
-      if (!found)
-        throw new IModelError(IModelStatus.NotFound, "CodeSpec not found");
+      if (name === "") throw new IModelError(IModelStatus.NotFound, "CodeSpec not found");
 
-      return found;
+      return this._loadCodeSpec({ name });
     }
   }
 
