@@ -58,7 +58,7 @@ export function appendLeadersToBuilder(builder: ElementGeometry.Builder, leaders
 
     leaderLinePoints.push(attachmentPoint)
 
-    builder.appendGeometryQuery(LineString3d.create(leaderLinePoints));
+    result = result && builder.appendGeometryQuery(LineString3d.create(leaderLinePoints));
 
     // Terminator geometry
     const terminatorDirection = Vector3d.createStartEnd(
