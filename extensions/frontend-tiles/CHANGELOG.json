@@ -2,6 +2,72 @@
   "name": "@itwin/frontend-tiles",
   "entries": [
     {
+      "version": "5.0.2",
+      "tag": "@itwin/frontend-tiles_v5.0.2",
+      "date": "Thu, 26 Jun 2025 22:16:01 GMT",
+      "comments": {}
+    },
+    {
+      "version": "5.0.1",
+      "tag": "@itwin/frontend-tiles_v5.0.1",
+      "date": "Tue, 17 Jun 2025 18:33:52 GMT",
+      "comments": {}
+    },
+    {
+      "version": "5.0.0",
+      "tag": "@itwin/frontend-tiles_v5.0.0",
+      "date": "Fri, 13 Jun 2025 20:25:38 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "support imodel draping"
+          },
+          {
+            "comment": "Allow passing number of exports to createGraphicRepresentationsQueryUrl"
+          },
+          {
+            "comment": "Update GraphicRepresentationFormat and GraphicRepresentationStatus to reflect Mesh Export API docs. Change GraphicRepresentationStatus from an enum to a string literal type. Change GraphicRepresentation from type to interface."
+          },
+          {
+            "comment": "Upgrade compile target to ES2023 and module to ES2022"
+          },
+          {
+            "comment": "change frontend-tiles to pure esm"
+          }
+        ]
+      }
+    },
+    {
+      "version": "4.11.6",
+      "tag": "@itwin/frontend-tiles_v4.11.6",
+      "date": "Mon, 16 Jun 2025 15:00:15 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.11.5",
+      "tag": "@itwin/frontend-tiles_v4.11.5",
+      "date": "Fri, 06 Jun 2025 13:41:18 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.11.4",
+      "tag": "@itwin/frontend-tiles_v4.11.4",
+      "date": "Tue, 03 Jun 2025 16:15:19 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.11.3",
+      "tag": "@itwin/frontend-tiles_v4.11.3",
+      "date": "Wed, 28 May 2025 13:56:23 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.11.2",
+      "tag": "@itwin/frontend-tiles_v4.11.2",
+      "date": "Tue, 20 May 2025 20:14:46 GMT",
+      "comments": {}
+    },
+    {
       "version": "4.11.1",
       "tag": "@itwin/frontend-tiles_v4.11.1",
       "date": "Wed, 30 Apr 2025 13:13:21 GMT",

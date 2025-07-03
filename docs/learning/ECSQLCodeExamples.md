@@ -18,7 +18,7 @@ See also:
 
 All of the iModel classes above provide a `createQueryReader` method for executing ECSQL statements on an iModel and reading the results of the query. The execution and results are handled by the returned [ECSqlReader]($common).
 
-> For refererence, here are all three `createQueryReader` methods.
+> For reference, here are all three `createQueryReader` methods.
 >
 > - [IModelDb.createQueryReader]($backend)
 > - [ECDb.createQueryReader]($backend)

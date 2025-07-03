@@ -1,6 +1,57 @@
 # Change Log - @itwin/core-bentley
 
-This log was last generated on Wed, 30 Apr 2025 13:16:15 GMT and should not be manually modified.
+This log was last generated on Thu, 26 Jun 2025 22:17:28 GMT and should not be manually modified.
+
+## 5.0.2
+Thu, 26 Jun 2025 22:16:01 GMT
+
+_Version update only_
+
+## 5.0.1
+Tue, 17 Jun 2025 18:33:51 GMT
+
+_Version update only_
+
+## 5.0.0
+Fri, 13 Jun 2025 20:25:38 GMT
+
+### Updates
+
+- Add `compareSimpleTypes` and `compareSimpleArrays` to compare simple data.
+- Add rebase method for merging changes
+- Fix `Uint32Set.delete` leaving artifacts in internal map, causing `isEmpty` to return incorrect value.
+- Upgrade compile target to ES2023 and module to ES2022
+- Introduce ITwinError
+- Deprecated `GeoServiceStatus.Pending`
+- Removed 3.x deprecated APIs from core-bentley
+- Add compareArrays for ordered comparison of arrays.
+- Add Logger.staticMetaData.
+- Deprecated IDisposable interface (along with related isIDisposable and using utilities) in favor of TypeScript's built-in `Disposable` type and `using` declarations. 
+
+## 4.11.6
+Mon, 16 Jun 2025 15:00:15 GMT
+
+_Version update only_
+
+## 4.11.5
+Fri, 06 Jun 2025 13:41:18 GMT
+
+_Version update only_
+
+## 4.11.4
+Tue, 03 Jun 2025 16:15:19 GMT
+
+_Version update only_
+
+## 4.11.3
+Wed, 28 May 2025 13:56:22 GMT
+
+_Version update only_
+
+## 4.11.2
+Tue, 20 May 2025 20:14:45 GMT
+
+_Version update only_
 
 ## 4.11.1
 Wed, 30 Apr 2025 13:13:21 GMT

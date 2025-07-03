@@ -615,8 +615,6 @@ export interface BaseReaderOptions {
     priority?: number;
     quota?: QueryQuota;
     restartToken?: string;
-    // @internal (undocumented)
-    testingArgs?: TestingArgs;
     usePrimaryConn?: boolean;
 }
 
@@ -1106,7 +1104,7 @@ export namespace CatalogIModel {
     export type VersionRange = string;
 }
 
-// @public
+// @public @preview
 export interface CategoryProps extends DefinitionElementProps {
     // (undocumented)
     description?: string;
@@ -1271,7 +1269,7 @@ export namespace ChannelControlError {
     export function throwError(key: Key, message: string, channelKey: string): never;
 }
 
-// @public
+// @public @preview
 export interface ChannelRootAspectProps extends ElementAspectProps {
     owner: string;
 }
@@ -2039,7 +2037,7 @@ export interface ContourStyleProps {
 // @public
 export type CreateEmptySnapshotIModelProps = CreateIModelProps & CreateSnapshotIModelProps;
 
-// @internal
+// @public
 export type CreateEmptyStandaloneIModelProps = CreateIModelProps & CreateStandaloneIModelProps;
 
 // @public
@@ -2055,7 +2053,7 @@ export interface CreateSnapshotIModelProps {
     readonly createClassViews?: boolean;
 }
 
-// @internal
+// @public
 export interface CreateStandaloneIModelProps {
     readonly allowEdit?: string;
 }
@@ -2140,9 +2138,7 @@ export interface DbBlobResponse extends DbResponse {
 
 // @internal (undocumented)
 export interface DbQueryConfig {
-    allowTestingArgs?: boolean;
-    autoShutdowWhenIdlelForSeconds?: number;
-    // (undocumented)
+    autoShutdownWhenIdleForSeconds?: number;
     doNotUsePrimaryConnToPrepare?: boolean;
     // (undocumented)
     globalQuota?: QueryQuota;
@@ -2151,6 +2147,7 @@ export interface DbQueryConfig {
     memoryMapFileSize?: number;
     // (undocumented)
     monitorPollInterval?: number;
+    progressOpCount?: number;
     requestQueueSize?: number;
     statementCacheSizePerWorker?: number;
     workerThreads?: number;
@@ -2191,8 +2188,6 @@ export interface DbQueryResponse extends DbResponse {
 export interface DbRequest extends BaseReaderOptions {
     // (undocumented)
     kind?: DbRequestKind;
-    // (undocumented)
-    testingArgs?: TestingArgs;
 }
 
 // @internal (undocumented)
@@ -2329,7 +2324,7 @@ export enum DefaultSupportedTypes {
 // @internal (undocumented)
 export const defaultTileOptions: TileOptions;
 
-// @public
+// @public @preview
 export interface DefinitionElementProps extends ElementProps {
     // (undocumented)
     isPrivate?: boolean;
@@ -2435,7 +2430,7 @@ export interface DisplayStyle3dSettingsProps extends DisplayStyleSettingsProps {
     thematic?: ThematicDisplayProps;
 }
 
-// @public
+// @public @preview
 export interface DisplayStyleLoadProps {
     compressExcludedElementIds?: boolean;
     omitScheduleScriptElementIds?: boolean;
@@ -2614,8 +2609,9 @@ export enum DomainOptions {
     Upgrade = 2
 }
 
-// @public
+// @public @preview
 export interface DrawingProps extends ElementProps {
+    // @preview
     scaleFactor?: number;
 }
 
@@ -2912,7 +2908,7 @@ export type ElementAlignedBox2d = Range2d;
 // @public
 export type ElementAlignedBox3d = Range3d;
 
-// @public
+// @public @preview
 export interface ElementAspectProps extends EntityProps {
     // (undocumented)
     element: RelatedElementProps;
@@ -2930,7 +2926,7 @@ export namespace ElementGeometry {
         appendGeometryQuery(geometry: GeometryQuery): boolean;
         appendGeometryRanges(): boolean;
         appendImageGraphic(image: ImageGraphic): boolean;
-        appendTextBlock(block: TextBlockGeometryProps): boolean;
+        appendTextBlock(block: TextBlockGeometryProps, geomParams?: GeometryParams): boolean;
         appendTextString(text: TextString): boolean;
         readonly entries: ElementGeometryDataEntry[];
         get localToWorld(): Transform | undefined;
@@ -3113,7 +3109,7 @@ export interface ElementIdsAndRangesProps {
     readonly ranges: Range3dProps[];
 }
 
-// @public
+// @public @preview
 export interface ElementLoadOptions {
     displayStyle?: DisplayStyleLoadProps;
     onlyBaseProperties?: boolean;
@@ -3122,7 +3118,7 @@ export interface ElementLoadOptions {
     wantGeometry?: boolean;
 }
 
-// @public
+// @public @preview
 export interface ElementLoadProps extends ElementLoadOptions {
     code?: CodeProps;
     // (undocumented)
@@ -3154,7 +3150,7 @@ export interface ElementPlanarClipMaskArgs extends BasicPlanarClipMaskArgs {
     subCategoryIds?: never;
 }
 
-// @public
+// @public @preview
 export interface ElementProps extends EntityProps {
     code: CodeProps;
     federationGuid?: GuidString;
@@ -3244,7 +3240,7 @@ export interface EntityMetaDataProps {
     };
 }
 
-// @public
+// @public @preview
 export interface EntityProps {
     classFullName: string;
     id?: Id64String;
@@ -3254,7 +3250,7 @@ export interface EntityProps {
     };
 }
 
-// @public
+// @public @preview
 export interface EntityQueryParams {
     bindings?: any[] | object;
     from?: string;
@@ -3321,7 +3317,7 @@ export interface ExtantElementGeometryChange {
     readonly type: DbOpcode.Insert | DbOpcode.Update;
 }
 
-// @public
+// @public @preview
 export interface ExternalSourceAspectProps extends ElementAspectProps {
     checksum?: string;
     identifier: string;
@@ -4023,7 +4019,7 @@ export interface GeographicCRSProps {
     verticalCRS?: VerticalCRSProps;
 }
 
-// @public
+// @public @preview
 export interface GeometricElement2dProps extends GeometricElementProps {
     // (undocumented)
     placement?: Placement2dProps;
@@ -4031,7 +4027,7 @@ export interface GeometricElement2dProps extends GeometricElementProps {
     typeDefinition?: RelatedElementProps;
 }
 
-// @public
+// @public @preview
 export interface GeometricElement3dProps extends GeometricElementProps {
     // (undocumented)
     placement?: Placement3dProps;
@@ -4039,7 +4035,7 @@ export interface GeometricElement3dProps extends GeometricElementProps {
     typeDefinition?: RelatedElementProps;
 }
 
-// @public
+// @public @preview
 export interface GeometricElementProps extends ElementProps {
     category: Id64String;
     elementGeometryBuilderParams?: ElementGeometryBuilderParams;
@@ -4146,7 +4142,7 @@ export interface GeometryPartInstanceProps {
     scale?: number;
 }
 
-// @public
+// @public @preview
 export interface GeometryPartProps extends ElementProps {
     // (undocumented)
     bbox?: LowAndHighXYZProps;
@@ -5330,7 +5326,7 @@ export type IModelVersionProps = {
     afterChangeSetId?: never;
 };
 
-// @public
+// @public @preview
 export interface InformationPartitionElementProps extends ElementProps {
     // (undocumented)
     description?: string;
@@ -5572,10 +5568,10 @@ export function isBinaryImageSource(source: ImageSource): source is BinaryImageS
 // @internal
 export function isKnownTileFormat(format: number): boolean;
 
-// @public
+// @public @preview
 export function isPlacement2dProps(props: PlacementProps): props is Placement2dProps;
 
-// @public
+// @public @preview
 export function isPlacement3dProps(props: PlacementProps): props is Placement3dProps;
 
 // @public
@@ -5754,7 +5750,7 @@ export namespace LineStyle {
     }
 }
 
-// @public
+// @public @preview
 export interface LineStyleProps extends DefinitionElementProps {
     data: string;
     // (undocumented)
@@ -6797,13 +6793,13 @@ export interface PersistentGraphicsRequestProps extends GraphicsRequestProps {
     readonly elementId: Id64String;
 }
 
-// @public
+// @public @preview
 export interface PhysicalElementProps extends GeometricElement3dProps {
     // (undocumented)
     physicalMaterial?: RelatedElementProps;
 }
 
-// @public
+// @public @preview
 export interface PhysicalTypeProps extends TypeDefinitionElementProps {
     physicalMaterial?: RelatedElementProps;
 }
@@ -6831,7 +6827,7 @@ export class Placement2d implements Placement2dProps {
     get transform(): Transform;
 }
 
-// @public
+// @public @preview
 export interface Placement2dProps {
     // (undocumented)
     angle: AngleProps;
@@ -6861,7 +6857,7 @@ export class Placement3d implements Placement3dProps {
     get transform(): Transform;
 }
 
-// @public
+// @public @preview
 export interface Placement3dProps {
     // (undocumented)
     angles: YawPitchRollProps;
@@ -6871,7 +6867,7 @@ export interface Placement3dProps {
     origin: XYZProps;
 }
 
-// @public (undocumented)
+// @public @preview (undocumented)
 export type PlacementProps = Placement2dProps | Placement3dProps;
 
 // @public
@@ -7543,8 +7539,6 @@ export class QueryOptionsBuilder {
     setRestartToken(val: string): this;
     setRowFormat(val: QueryRowFormat): this;
     setSuppressLogErrors(val: boolean): this;
-    // @internal
-    setTestingArgs(val: TestingArgs): this;
     setUsePrimaryConnection(val: boolean): this;
 }
 
@@ -7626,7 +7620,7 @@ export interface QueryStats {
 // @public
 export type QueryValueType = any;
 
-// @public
+// @public @preview
 export enum Rank {
     Application = 2,
     Domain = 1,
@@ -7726,7 +7720,7 @@ export class RealityModelDisplaySettings {
 // @internal (undocumented)
 export const REGISTRY: unique symbol;
 
-// @public
+// @public @preview
 export class RelatedElement implements RelatedElementProps {
     constructor(props: RelatedElementProps);
     // (undocumented)
@@ -7739,13 +7733,13 @@ export class RelatedElement implements RelatedElementProps {
     toJSON(): RelatedElementProps;
 }
 
-// @public
+// @public @preview
 export interface RelatedElementProps {
     id: Id64String;
     relClassName?: string;
 }
 
-// @public
+// @public @preview
 export interface RelationshipProps extends EntityProps, SourceAndTarget {
 }
 
@@ -8250,18 +8244,18 @@ export class RenderTextureParams {
     readonly type: RenderTexture.Type;
 }
 
-// @public
+// @public @preview
 export interface RenderTimelineLoadProps {
     omitScriptElementIds?: boolean;
 }
 
-// @public
+// @public @preview
 export interface RenderTimelineProps extends ElementProps {
     description?: string;
     script: string;
 }
 
-// @public
+// @public @preview
 export interface RepositoryLinkProps extends UrlLinkProps {
     // (undocumented)
     format?: string;
@@ -9079,7 +9073,7 @@ export interface RscFontEncodingProps {
 }
 
 // @beta (undocumented)
-export type Run = TextRun | FractionRun | LineBreakRun;
+export type Run = TextRun | FractionRun | TabRun | LineBreakRun;
 
 // @beta
 export namespace Run {
@@ -9101,7 +9095,7 @@ export interface RunLayoutResult {
 }
 
 // @beta
-export type RunProps = TextRunProps | FractionRunProps | LineBreakRunProps;
+export type RunProps = TextRunProps | FractionRunProps | TabRunProps | LineBreakRunProps;
 
 // @public
 export enum SchemaState {
@@ -9112,12 +9106,12 @@ export enum SchemaState {
     UpToDate = 0
 }
 
-// @public
+// @public @preview
 export interface SectionDrawingLocationProps extends GeometricElement3dProps {
     sectionView?: RelatedElementProps;
 }
 
-// @public
+// @public @preview
 export interface SectionDrawingProps extends DrawingProps {
     // (undocumented)
     jsonProperties?: {
@@ -9137,7 +9131,7 @@ export interface SectionDrawingViewProps {
     spatialView: Id64String;
 }
 
-// @public
+// @public @preview
 export enum SectionType {
     // (undocumented)
     Detail = 4,
@@ -9240,7 +9234,7 @@ export interface SheetIndexReferenceProps extends SheetIndexEntryProps {
     sheetIndex?: RelatedElementProps;
 }
 
-// @public
+// @public @preview
 export interface SheetProps extends ElementProps {
     // (undocumented)
     attachments?: Id64String[];
@@ -9521,7 +9515,7 @@ export interface SolarShadowSettingsProps {
     color?: ColorDefProps;
 }
 
-// @public
+// @public @preview
 export interface SourceAndTarget {
     // (undocumented)
     sourceId: Id64String;
@@ -9725,7 +9719,7 @@ export interface SubCategoryPlanarClipMaskArgs extends BasicPlanarClipMaskArgs {
     subCategoryIds: Iterable<Id64String>;
 }
 
-// @public
+// @public @preview
 export interface SubCategoryProps extends DefinitionElementProps {
     // (undocumented)
     appearance?: SubCategoryAppearance.Props;
@@ -9743,7 +9737,7 @@ export interface SubCategoryResultRow {
     parentId: Id64String;
 }
 
-// @public
+// @public @preview
 export interface SubjectProps extends ElementProps {
     // (undocumented)
     description?: string;
@@ -9763,6 +9757,25 @@ export enum SyncMode {
     FixedVersion = 1,
     PullAndPush = 2,
     PullOnly = 3
+}
+
+// @beta
+export class TabRun extends TextBlockComponent {
+    // (undocumented)
+    clone(): TabRun;
+    // (undocumented)
+    static create(props: Omit<TabRunProps, "type">): TabRun;
+    // (undocumented)
+    equals(other: TextBlockComponent): boolean;
+    stringify(options?: TextBlockStringifyOptions): string;
+    // (undocumented)
+    toJSON(): TabRunProps;
+    readonly type = "tab";
+}
+
+// @beta
+export interface TabRunProps extends TextBlockComponentProps {
+    readonly type: "tab";
 }
 
 // @public
@@ -9808,12 +9821,6 @@ export class TerrainSettings {
     toJSON(): TerrainProps;
 }
 
-// @internal (undocumented)
-export interface TestingArgs {
-    // (undocumented)
-    interrupt?: boolean;
-}
-
 // @internal
 export class TestRpcManager {
     // (undocumented)
@@ -9827,6 +9834,7 @@ export class TextAnnotation {
     computeTransform(boundingBox: Range2d): Transform;
     static create(args?: TextAnnotationCreateArgs): TextAnnotation;
     equals(other: TextAnnotation): boolean;
+    frame?: TextFrameStyleProps;
     static fromJSON(props: TextAnnotationProps | undefined): TextAnnotation;
     offset: Point3d;
     orientation: YawPitchRollAngles;
@@ -9834,7 +9842,7 @@ export class TextAnnotation {
     toJSON(): TextAnnotationProps;
 }
 
-// @public
+// @public @preview
 export interface TextAnnotation2dProps extends GeometricElement2dProps {
     // (undocumented)
     jsonProperties?: {
@@ -9843,7 +9851,7 @@ export interface TextAnnotation2dProps extends GeometricElement2dProps {
     };
 }
 
-// @public
+// @public @preview
 export interface TextAnnotation3dProps extends GeometricElement3dProps {
     // (undocumented)
     jsonProperties?: {
@@ -9861,14 +9869,22 @@ export interface TextAnnotationAnchor {
 // @beta
 export interface TextAnnotationCreateArgs {
     anchor?: TextAnnotationAnchor;
+    frame?: TextFrameStyleProps;
     offset?: Point3d;
     orientation?: YawPitchRollAngles;
     textBlock?: TextBlock;
 }
 
 // @beta
+export type TextAnnotationFillColor = TextStyleColor | "background";
+
+// @beta
+export type TextAnnotationFrameShape = "none" | "line" | "rectangle" | "circle" | "equilateralTriangle" | "diamond" | "square" | "pentagon" | "hexagon" | "octagon" | "capsule" | "roundedRectangle";
+
+// @beta
 export interface TextAnnotationProps {
     anchor?: TextAnnotationAnchor;
+    frame?: TextFrameStyleProps;
     offset?: XYZProps;
     orientation?: YawPitchRollProps;
     textBlock?: TextBlockProps;
@@ -9903,6 +9919,7 @@ export abstract class TextBlockComponent {
     clearStyleOverrides(): void;
     abstract clone(): TextBlockComponent;
     equals(other: TextBlockComponent): boolean;
+    get isWhitespace(): boolean;
     get overridesStyle(): boolean;
     abstract stringify(options?: TextBlockStringifyOptions): string;
     get styleName(): string;
@@ -9971,6 +9988,15 @@ export interface TextBlockStringifyOptions {
     fractionSeparator?: string;
     lineBreak?: string;
     paragraphBreak?: string;
+    tabsAsSpaces?: number;
+}
+
+// @beta
+export interface TextFrameStyleProps {
+    border?: TextStyleColor;
+    borderWeight?: number;
+    fill?: TextAnnotationFillColor;
+    shape?: TextAnnotationFrameShape;
 }
 
 // @beta
@@ -10094,6 +10120,7 @@ export class TextStyleSettings {
     readonly subScriptScale: number;
     readonly superScriptOffsetFactor: number;
     readonly superScriptScale: number;
+    readonly tabInterval: number;
     // (undocumented)
     toJSON(): TextStyleSettingsProps;
     readonly widthFactor: number;
@@ -10114,6 +10141,7 @@ export interface TextStyleSettingsProps {
     subScriptScale?: number;
     superScriptOffsetFactor?: number;
     superScriptScale?: number;
+    tabInterval?: number;
     widthFactor?: number;
 }
 
@@ -10873,11 +10901,11 @@ export interface TxnNotifications {
     notifyRootSubjectChanged: (subject: RootSubjectProps) => void;
 }
 
-// @public
+// @public @preview
 export class TypeDefinition extends RelatedElement {
 }
 
-// @public
+// @public @preview
 export interface TypeDefinitionElementProps extends DefinitionElementProps {
     // (undocumented)
     recipe?: RelatedElementProps;
@@ -10912,7 +10940,7 @@ export interface UpgradeOptions {
     readonly schemaLockHeld?: boolean;
 }
 
-// @public
+// @public @preview
 export interface UrlLinkProps extends ElementProps {
     // (undocumented)
     description?: string;
@@ -10940,7 +10968,7 @@ export interface ViewAttachmentLabelProps extends GeometricElement2dProps {
     viewAttachment?: RelatedElementProps;
 }
 
-// @public
+// @public @preview
 export interface ViewAttachmentProps extends GeometricElement2dProps {
     // (undocumented)
     jsonProperties?: {
@@ -11176,7 +11204,7 @@ export namespace ViewStoreError {
     scope = "itwin-ViewStore";
     export function isError<T extends ViewStoreError>(error: unknown, key?: Key): error is T;
     // (undocumented)
-    export type Key = "invalid-value" | "invalid-member" | "no-owner" | "not-found" | "not-unique" | "group-error";
+    export type Key = "invalid-value" | "invalid-member" | "no-owner" | "not-found" | "not-unique" | "no-viewstore" | "group-error";
     export function throwError<T extends ViewStoreError>(key: Key, e: Omit<T, "name" | "iTwinErrorId">): never;
 }
 

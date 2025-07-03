@@ -2973,6 +2973,8 @@ export abstract class ElementSetTool extends PrimitiveTool {
     filterHit(hit: HitDetail, out?: LocateResponse): Promise<LocateFilterStatus>;
     protected gatherElements(ev: BeButtonEvent): Promise<EventHandled | undefined>;
     protected gatherInput(ev: BeButtonEvent): Promise<EventHandled | undefined>;
+    // @internal
+    static getAreaOrVolumeSelectionCandidates(vp: Viewport, origin: XAndY, corner: XAndY, method: SelectionMethod, allowOverlaps: boolean, filter?: (id: Id64String) => boolean, includeDecorationsForVolume?: boolean): Promise<Set<Id64String>>;
     protected getDragSelectCandidates(vp: Viewport, origin: Point3d, corner: Point3d, method: SelectionMethod, overlap: boolean): Promise<Id64Arg>;
     protected getGroupIds(id: Id64String): Promise<Id64Arg>;
     protected getLocateCandidates(hit: HitDetail): Promise<Id64Arg>;
@@ -3765,6 +3767,9 @@ export function getCompressedJpegFromCanvas(canvas: HTMLCanvasElement, maxBytes?
 // @internal (undocumented)
 export function getFrustumPlaneIntersectionDepthRange(frustum: Frustum, plane: Plane3dByOriginAndUnitNormal): Range1d;
 
+// @beta
+export function getGoogle3dTilesUrl(): string;
+
 // @public
 export function getImageSourceFormatForMimeType(mimeType: string): ImageSourceFormat | undefined;
 
@@ -4074,6 +4079,8 @@ export interface GltfReaderArgs {
 // @internal
 export interface GltfReaderResult extends TileContent {
     // (undocumented)
+    copyright?: string;
+    // (undocumented)
     range?: AxisAlignedBox3d;
     // (undocumented)
     readStatus: TileReadStatus;
@@ -4091,6 +4098,39 @@ export interface GLTimerResult {
     children?: GLTimerResult[];
     label: string;
     nanoseconds: number;
+}
+
+// @beta
+export class Google3dTilesProvider implements RealityDataSourceProvider {
+    constructor(options: Google3dTilesProviderOptions);
+    // (undocumented)
+    addAttributions(cards: HTMLTableElement, vp: ScreenViewport): Promise<void>;
+    // (undocumented)
+    createRealityDataSource(key: RealityDataSourceKey, iTwinId: GuidString | undefined): Promise<RealityDataSource | undefined>;
+    // (undocumented)
+    decorate(_context: DecorateContext): void;
+    initialize(): Promise<boolean>;
+    readonly useCachedDecorations = true;
+}
+
+// @beta
+export type Google3dTilesProviderOptions = {
+    apiKey: string;
+    getAuthToken?: never;
+    showCreditsOnScreen?: boolean;
+} | {
+    apiKey?: never;
+    getAuthToken: () => Promise<string>;
+    showCreditsOnScreen?: boolean;
+};
+
+// @internal
+export class GoogleMapsDecorator implements Decorator {
+    constructor(showCreditsOnScreen?: boolean);
+    activate(mapType: GoogleMapsMapTypes): Promise<boolean>;
+    decorate: (context: DecorateContext) => void;
+    // (undocumented)
+    readonly logo: LogoDecoration;
 }
 
 // @public
@@ -4874,7 +4914,7 @@ export class IModelApp {
     static queryRenderCompatibility(): WebGLRenderCompatibilityInfo;
     // @beta
     static get realityDataAccess(): RealityDataAccess | undefined;
-    // @alpha
+    // @beta
     static get realityDataSourceProviders(): RealityDataSourceProviderRegistry;
     // @internal
     static registerEntityState(classFullName: string, classType: typeof EntityState): void;
@@ -5616,6 +5656,20 @@ export enum LockedStates {
     XY_BM = 3,
     // (undocumented)
     Y_BM = 2
+}
+
+// @internal
+export class LogoDecoration implements CanvasDecoration {
+    // (undocumented)
+    activate(sprite: Sprite): Promise<boolean>;
+    // (undocumented)
+    decorate(context: DecorateContext): void;
+    drawDecoration(ctx: CanvasRenderingContext2D): void;
+    get isLoaded(): boolean;
+    moveToLowerLeftCorner(context: DecorateContext): boolean;
+    set offset(offset: Point3d | undefined);
+    get offset(): Point3d | undefined;
+    readonly position: Point3d;
 }
 
 // @public
@@ -8115,12 +8169,15 @@ export namespace RealityDataSource {
     export function fromKey(key: RealityDataSourceKey, iTwinId: GuidString | undefined): Promise<RealityDataSource | undefined>;
 }
 
-// @alpha
+// @beta
 export interface RealityDataSourceProvider {
+    addAttributions?(cards: HTMLTableElement, vp: ScreenViewport): Promise<void>;
     createRealityDataSource(key: RealityDataSourceKey, iTwinId: GuidString | undefined): Promise<RealityDataSource | undefined>;
+    decorate?(_context: DecorateContext): void;
+    useCachedDecorations?: true | undefined;
 }
 
-// @alpha
+// @beta
 export class RealityDataSourceProviderRegistry {
     // @internal
     constructor();
@@ -8214,6 +8271,10 @@ export class RealityTile extends Tile {
     computeLoadPriority(viewports: Iterable<Viewport>, users: Iterable<TileUser>): number;
     // @internal (undocumented)
     computeVisibilityFactor(args: TileDrawArgs): number;
+    // @internal (undocumented)
+    get copyright(): string | undefined;
+    // @internal (undocumented)
+    protected _copyright?: string;
     // @internal (undocumented)
     disposeContents(): void;
     // @internal (undocumented)
@@ -9439,9 +9500,9 @@ export class SelectionTool extends PrimitiveTool {
     // (undocumented)
     requireWriteableTarget(): boolean;
     // (undocumented)
-    protected selectByPointsEnd(ev: BeButtonEvent): boolean;
+    protected selectByPointsEnd(ev: BeButtonEvent): Promise<boolean>;
     // (undocumented)
-    protected selectByPointsProcess(origin: Point3d, corner: Point3d, ev: BeButtonEvent, method: SelectionMethod, overlap: boolean): void;
+    protected selectByPointsProcess(origin: Point3d, corner: Point3d, ev: BeButtonEvent, method: SelectionMethod, overlap: boolean): Promise<boolean>;
     // (undocumented)
     protected selectByPointsStart(ev: BeButtonEvent): boolean;
     // (undocumented)
@@ -11725,6 +11786,8 @@ export class ToolSettings {
     static doubleTapTimeout: BeDuration;
     // @beta
     static enableVirtualCursorForLocate: boolean;
+    // @beta
+    static enableVolumeSelection: boolean;
     static maxOnMotionSnapCallPerSecond: number;
     static preserveWorldUp: boolean;
     static scrollSpeed: number;
