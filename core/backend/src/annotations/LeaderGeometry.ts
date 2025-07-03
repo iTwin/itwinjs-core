@@ -20,7 +20,9 @@ import { TextBlockLayout } from "./TextBlockLayout";
  * @returns `true` if at least one leader with a terminator was successfully appended; otherwise, `false`.
  * @beta
  */
-export function appendLeadersToBuilder(builder: ElementGeometry.Builder, leaders: TextAnnotationLeader[], layout: TextBlockLayout, transform: Transform, params: GeometryParams, frame?: TextFrameStyleProps,): boolean {
+export function appendLeadersToBuilder(builder: ElementGeometry.Builder, leaders: TextAnnotationLeader[], layout: TextBlockLayout, transform: Transform, params: GeometryParams, frame?: TextFrameStyleProps): boolean {
+  let result = true;
+
   // If there is no frame, use a rectangular frame to compute the attachmentPoints for leaders.
   if (frame === undefined || frame.shape === "none") {
     frame = { shape: "rectangle" }
