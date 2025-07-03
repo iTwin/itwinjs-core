@@ -188,7 +188,7 @@ export class TextAnnotation {
     // If the user supplies a frame, but doesn't supply a shape, default the shape to "rectangle"
     const shape: TextAnnotationFrameShape = args?.frame?.shape ?? "rectangle";
     const frame = args?.frame ? { shape, ...args.frame } : undefined;
-    const leaders = args?.leaders ?? [];
+    const leaders = args?.leaders ?? undefined;
     return new TextAnnotation(offset, angles, textBlock, anchor, frame, leaders);
   }
 
@@ -205,9 +205,9 @@ export class TextAnnotation {
       leaders: props?.leaders ? props.leaders.map((leader) => ({
         startPoint: Point3d.fromJSON(leader.startPoint),
         attachmentMode: leader.attachmentMode,
-        styleOverrides: leader.styleOverrides,
+        styleOverrides: leader.styleOverrides ?? undefined,
         intermediatePoints: leader.intermediatePoints ? leader.intermediatePoints.map((point) => Point3d.fromJSON(point)) : undefined,
-      })) : [],
+      })) : undefined,
     });
   }
 
@@ -239,9 +239,9 @@ export class TextAnnotation {
     props.leaders = this.leaders?.map((leader) => ({
       startPoint: leader.startPoint.toJSON(),
       attachmentMode: leader.attachmentMode,
-      styleOverrides: leader.styleOverrides,
+      styleOverrides: leader.styleOverrides ?? undefined,
       intermediatePoints: leader.intermediatePoints ? leader.intermediatePoints.map((point) => point.toJSON()) : undefined,
-    })) ?? [];
+    })) ?? undefined;
 
     return props;
   }
