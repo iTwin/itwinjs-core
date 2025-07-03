@@ -11,7 +11,7 @@ import { BeEvent, dispose } from "@itwin/core-bentley";
 import {
   ColorDef, Frustum, FrustumPlanes, RenderMode, RenderTexture, SpatialClassifierInsideDisplay, SpatialClassifierOutsideDisplay, TextureTransparency,
 } from "@itwin/core-common";
-import { Matrix3d, Matrix4d, Plane3dByOriginAndUnitNormal, Point3d, Range3d, Vector3d } from "@itwin/core-geometry";
+import { Matrix4d, Plane3dByOriginAndUnitNormal, Point3d, Range3d, Vector3d } from "@itwin/core-geometry";
 import { PlanarClipMaskState } from "../../../PlanarClipMaskState";
 import { GraphicsCollectorDrawArgs, SpatialClassifierTileTreeReference, TileTreeReference } from "../../../tile/internal";
 import { SceneContext } from "../../../ViewContext";
