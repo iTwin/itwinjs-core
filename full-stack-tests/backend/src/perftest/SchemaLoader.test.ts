@@ -62,7 +62,7 @@ describe("SchemaLoaderPerformance", () => {
   function getBisSchemaPaths(): string[] {
     const bisSchemaPaths: string[] = [];
 
-    bisSchemaPaths.push(path.join(assetDir, "Units.01.00.08.ecschema.xml"));
+    bisSchemaPaths.push(path.join(assetDir, "Units.01.00.09.ecschema.xml"));
     bisSchemaPaths.push(path.join(assetDir, "Formats.01.00.00.ecschema.xml"));
 
     bisSchemaPaths.push(path.join(assetDir, "BisCore.ecschema.xml"));
