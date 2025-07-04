@@ -261,25 +261,25 @@ export function getTraitString(trait: FormatTraits) {
 export function formatTraitsToArray(currentFormatTrait: FormatTraits): string[] {
   const formatTraitsArr = Array<string>();
   if ((currentFormatTrait & FormatTraits.TrailZeroes) === FormatTraits.TrailZeroes)
-    formatTraitsArr.push("TrailZeroes");
+    formatTraitsArr.push("trailZeroes");
   if ((currentFormatTrait & FormatTraits.KeepSingleZero) === FormatTraits.KeepSingleZero)
-    formatTraitsArr.push("KeepSingleZero");
+    formatTraitsArr.push("keepSingleZero");
   if ((currentFormatTrait & FormatTraits.ZeroEmpty) === FormatTraits.ZeroEmpty)
-    formatTraitsArr.push("ZeroEmpty");
+    formatTraitsArr.push("zeroEmpty");
   if ((currentFormatTrait & FormatTraits.KeepDecimalPoint) === FormatTraits.KeepDecimalPoint)
-    formatTraitsArr.push("KeepDecimalPoint");
+    formatTraitsArr.push("keepDecimalPoint");
   if ((currentFormatTrait & FormatTraits.ApplyRounding) === FormatTraits.ApplyRounding)
-    formatTraitsArr.push("ApplyRounding");
+    formatTraitsArr.push("applyRounding");
   if ((currentFormatTrait & FormatTraits.FractionDash) === FormatTraits.FractionDash)
-    formatTraitsArr.push("FractionDash");
+    formatTraitsArr.push("fractionDash");
   if ((currentFormatTrait & FormatTraits.ShowUnitLabel) === FormatTraits.ShowUnitLabel)
-    formatTraitsArr.push("ShowUnitLabel");
+    formatTraitsArr.push("showUnitLabel");
   if ((currentFormatTrait & FormatTraits.PrependUnitLabel) === FormatTraits.PrependUnitLabel)
-    formatTraitsArr.push("PrependUnitLabel");
+    formatTraitsArr.push("prependUnitLabel");
   if ((currentFormatTrait & FormatTraits.Use1000Separator) === FormatTraits.Use1000Separator)
-    formatTraitsArr.push("Use1000Separator");
+    formatTraitsArr.push("use1000Separator");
   if ((currentFormatTrait & FormatTraits.ExponentOnlyNegative) === FormatTraits.ExponentOnlyNegative)
-    formatTraitsArr.push("ExponentOnlyNegative");
+    formatTraitsArr.push("exponentOnlyNegative");
   return formatTraitsArr;
 }
 
