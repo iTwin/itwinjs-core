@@ -1,6 +1,0 @@
-sep=;
-Release Tag;API Item Type;API Item Name
-internal;interface;TelemetryClient
-internal;enum;TelemetryClientLoggerCategory
-internal;class;TelemetryEvent
-internal;class;TelemetryManager

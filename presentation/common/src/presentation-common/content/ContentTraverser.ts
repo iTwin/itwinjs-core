@@ -6,13 +6,14 @@
  * @module Content
  */
 
-import { assert, IDisposable, using } from "@itwin/core-bentley";
-import { CategoryDescription } from "./Category";
-import { Content } from "./Content";
-import { Descriptor } from "./Descriptor";
-import { Field, NestedContentField } from "./Fields";
-import { Item } from "./Item";
-import { PropertyValueFormat, TypeDescription } from "./TypeDescription";
+import { assert } from "@itwin/core-bentley";
+import { LabelDefinition } from "../LabelDefinition.js";
+import { CategoryDescription } from "./Category.js";
+import { Content } from "./Content.js";
+import { Descriptor } from "./Descriptor.js";
+import { Field, NestedContentField } from "./Fields.js";
+import { Item } from "./Item.js";
+import { PropertyValueFormat, TypeDescription } from "./TypeDescription.js";
 import {
   DisplayValue,
   DisplayValuesArray,
@@ -21,8 +22,7 @@ import {
   Value as PresentationValue,
   ValuesArray as PresentationValuesArray,
   ValuesMap as PresentationValuesMap,
-} from "./Value";
-import { LabelDefinition } from "../LabelDefinition";
+} from "./Value.js";
 
 const NESTED_CONTENT_LABEL_SYMBOL = Symbol();
 
@@ -312,7 +312,7 @@ export function traverseContentItem(visitor: IContentVisitor, descriptor: Descri
   traverseContent(visitor, new Content(descriptor, [item]));
 }
 
-class VisitedCategories implements IDisposable {
+class VisitedCategories implements Disposable {
   private _visitedCategories: CategoryDescription[];
   private _didVisitAllHierarchy: boolean;
   constructor(
@@ -338,7 +338,7 @@ class VisitedCategories implements IDisposable {
       }
     }
   }
-  public dispose() {
+  public [Symbol.dispose]() {
     while (this._visitedCategories.pop()) {
       this._visitor.finishCategory();
     }
@@ -355,11 +355,10 @@ function traverseContentItemFields(visitor: IContentVisitor, fieldHierarchies: F
 
   try {
     fieldHierarchies.forEach((fieldHierarchy) => {
-      using(new VisitedCategories(visitor, fieldHierarchy.field.category), (res) => {
-        if (res.shouldContinue) {
-          traverseContentItemField(visitor, fieldHierarchy, item);
-        }
-      });
+      using res = new VisitedCategories(visitor, fieldHierarchy.field.category);
+      if (res.shouldContinue) {
+        traverseContentItemField(visitor, fieldHierarchy, item);
+      }
     });
   } finally {
     visitor.finishItem();
@@ -408,13 +407,15 @@ function traverseContentItemField(visitor: IContentVisitor, fieldHierarchy: Fiel
     } else if (pathUpToField.length > 0) {
       fieldHierarchy = {
         ...fieldHierarchy,
-        field: Object.assign(fieldHierarchy.field.clone(), {
-          type: {
+        field: (function () {
+          const clone = fieldHierarchy.field.clone();
+          clone.type = {
             valueFormat: PropertyValueFormat.Array,
             typeName: `${fieldHierarchy.field.type.typeName}[]`,
             memberType: fieldHierarchy.field.type,
-          },
-        }),
+          };
+          return clone;
+        })(),
       };
     }
 
@@ -507,14 +508,14 @@ function traverseContentItemStructFieldValue(
         // Not finding a member field means we're traversing an ECStruct. We still need to carry member information, so we
         // create a fake field to represent the member
         memberField = {
-          field: new Field(
-            fieldHierarchy.field.category,
-            memberDescription.name,
-            memberDescription.label,
-            memberDescription.type,
-            fieldHierarchy.field.isReadonly,
-            0,
-          ),
+          field: new Field({
+            category: fieldHierarchy.field.category,
+            name: memberDescription.name,
+            label: memberDescription.label,
+            type: memberDescription.type,
+            isReadonly: fieldHierarchy.field.isReadonly,
+            priority: 0,
+          }),
           childFields: [],
         };
       }
@@ -659,7 +660,7 @@ function mergeHierarchies(lhs: FieldHierarchy, rhs: FieldHierarchy) {
 }
 
 /**
- * Adds a field hierarchy into root field hierarchies list. *
+ * Adds a field hierarchy into root field hierarchies list.
  * @public
  */
 export function addFieldHierarchy(rootHierarchies: FieldHierarchy[], hierarchy: FieldHierarchy): void {
@@ -717,30 +718,30 @@ function convertNestedContentItemToStructArrayItem(item: Readonly<Item>, field: 
     return { emptyNestedItem: true, convertedItem: item };
   }
 
-  const nextFieldValues: { raw: ValuesArray; display: DisplayValuesArray } = { raw: [], display: [] };
-  value.forEach((ncv) => {
-    const nextRawValue = ncv.values[nextField.name];
-    const nextDisplayValue = ncv.displayValues[nextField.name];
-    if (nextField.isNestedContentField()) {
+  let nextFieldValues: { raw: PresentationValuesArray | NestedContentValue[]; display: DisplayValuesArray } = { raw: [], display: [] };
+  if (nextField.isNestedContentField()) {
+    const nextNestedContent: NestedContentValue[] = [];
+    value.forEach((ncv) => {
+      const nextRawValue = ncv.values[nextField.name];
       if (nextRawValue) {
         assert(PresentationValue.isNestedContent(nextRawValue));
-        nextFieldValues.raw.push(...nextRawValue);
+        nextNestedContent.push(...nextRawValue);
       }
-    } else {
-      nextFieldValues.raw.push(nextRawValue);
-      nextFieldValues.display.push(nextDisplayValue);
-    }
+    });
+    nextFieldValues.raw = nextNestedContent;
+  } else {
+    const nextValues: { raw: PresentationValuesArray; display: DisplayValuesArray } = { raw: [], display: [] };
+    value.forEach((ncv) => {
+      nextValues.raw.push(ncv.values[nextField.name]);
+      nextValues.display.push(ncv.displayValues[nextField.name]);
+    });
+    nextFieldValues = nextValues;
+  }
+  const convertedItem = new Item({
+    ...item,
+    values: { [nextField.name]: nextFieldValues.raw },
+    displayValues: { [nextField.name]: nextFieldValues.display },
   });
-  const convertedItem = new Item(
-    item.primaryKeys,
-    item.label,
-    item.imageId, // eslint-disable-line @typescript-eslint/no-deprecated
-    item.classInfo,
-    { [nextField.name]: nextFieldValues.raw },
-    { [nextField.name]: nextFieldValues.display },
-    item.mergedFieldNames,
-    item.extendedData,
-  );
   return { emptyNestedItem: false, convertedItem };
 }
 
@@ -753,8 +754,9 @@ function convertNestedContentFieldHierarchyToStructArrayHierarchy(fieldHierarchy
     return child;
   });
   const convertedFieldHierarchy: FieldHierarchy = {
-    field: Object.assign(fieldHierarchy.field.clone(), {
-      type: {
+    field: (function () {
+      const clone = fieldHierarchy.field.clone();
+      clone.type = {
         valueFormat: PropertyValueFormat.Array,
         typeName: `${fieldHierarchy.field.type.typeName}[]`,
         memberType: {
@@ -766,8 +768,9 @@ function convertNestedContentFieldHierarchyToStructArrayHierarchy(fieldHierarchy
             type: member.field.type,
           })),
         },
-      } as TypeDescription,
-    }),
+      };
+      return clone;
+    })(),
     childFields: convertedChildFieldHierarchies,
   };
   return convertedFieldHierarchy;
@@ -784,7 +787,8 @@ function convertNestedContentValuesToStructArrayValuesRecursive(fieldHierarchy: 
     const values: ValuesMap = { ...ncv.values };
     const displayValues: DisplayValuesMap = { ...ncv.displayValues };
     const mergedFieldNames: string[] = [...ncv.mergedFieldNames];
-    values[NESTED_CONTENT_LABEL_SYMBOL] = ncv.labelDefinition;
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    values[NESTED_CONTENT_LABEL_SYMBOL] = ncv.label ?? ncv.labelDefinition;
 
     fieldHierarchy.childFields.forEach((childFieldHierarchy) => {
       const childFieldName = childFieldHierarchy.field.name;
@@ -816,15 +820,11 @@ function convertNestedContentFieldHierarchyItemToStructArrayItem(item: Readonly<
   }
 
   const converted = convertNestedContentValuesToStructArrayValuesRecursive(fieldHierarchy, rawValue);
-  const convertedItem = new Item(
-    item.primaryKeys,
-    item.label,
-    item.imageId, // eslint-disable-line @typescript-eslint/no-deprecated
-    item.classInfo,
-    { [fieldName]: converted.raw },
-    { [fieldName]: converted.display },
-    converted.mergedFieldNames,
-    item.extendedData,
-  );
+  const convertedItem = new Item({
+    ...item,
+    values: { [fieldName]: converted.raw },
+    displayValues: { [fieldName]: converted.display },
+    mergedFieldNames: converted.mergedFieldNames,
+  });
   return { emptyNestedItem: false, convertedItem };
 }

@@ -31,7 +31,7 @@ export namespace Quantization {
     return 0.0 === extent ? extent : rangeScale / extent;
   }
 
-  /** @internal */
+  /** Returns true if the quantized value `qpos` fits within the specified range. */
   export function isInRange(qpos: number, rangeScale = rangeScale16): boolean {
     return qpos >= 0.0 && qpos < rangeScale + 1.0;
   }
@@ -43,7 +43,7 @@ export namespace Quantization {
     return Math.floor(Math.max(0.0, Math.min(rangeScale, 0.5 + (pos - origin) * scale)));
   }
 
-  /** @internal */
+  /** Returns true if the value `pos` can be quantized to the specified range. */
   export function isQuantizable(pos: number, origin: number, scale: number, rangeScale = rangeScale16) {
     return isInRange(quantize(pos, origin, scale, rangeScale));
   }
@@ -55,7 +55,7 @@ export namespace Quantization {
     return 0.0 === scale ? origin : origin + qpos / scale;
   }
 
-  /** @internal */
+  /** Returns true if `qpos` is a valid quantized 16-bit value. */
   export function isQuantized(qpos: number) {
     return isInRange(qpos) && qpos === Math.floor(qpos);
   }
@@ -141,7 +141,7 @@ export class QParams2d {
     return new QParams2d(originX, originY, scaleX, scaleY);
   }
 
-  /** @internal */
+  /** The diagonal of the unquantized range represented by these parameters. */
   public get rangeDiagonal(): Vector2d {
     return Vector2d.createFrom({ x: 0 === this.scale.x ? 0 : Quantization.rangeScale16 / this.scale.x, y: 0 === this.scale.y ? 0 : Quantization.rangeScale16 / this.scale.y });
   }
@@ -513,7 +513,7 @@ export class QParams3d {
     return QParams3d.fromRange(Range3d.createArray([Point3d.create(0, 0, 0), Point3d.create(1, 1, 1)]), undefined, rangeScale);
   }
 
-  /** @internal */
+  /** The diagonal of the unquantized range represented by these parameters. */
   public get rangeDiagonal(): Vector3d {
     return Vector3d.createFrom({
       x: this.scale.x === 0 ? 0 : Quantization.rangeScale16 / this.scale.x,

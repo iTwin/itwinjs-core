@@ -8,18 +8,20 @@
 
 import { PhenomenonProps } from "../Deserialization/JsonProps";
 import { SchemaItemType } from "../ECObjects";
-import { ECObjectsError, ECObjectsStatus } from "../Exception";
+import { ECSchemaError, ECSchemaStatus } from "../Exception";
 import { Schema } from "./Schema";
 import { SchemaItem } from "./SchemaItem";
 
-/** @beta */
+/** @public @preview */
 export class Phenomenon extends SchemaItem {
-  public override readonly schemaItemType!: SchemaItemType.Phenomenon;
-  protected _definition: string; // Contains a combination of Phenomena names which form this Phenomenon. Each Phenomena name is separated by a * and may have an exponent, specified using parentheses
+  public override readonly schemaItemType = Phenomenon.schemaItemType;
+  /** @internal */
+  public static override get schemaItemType() { return SchemaItemType.Phenomenon; }
+  private _definition: string; // Contains a combination of Phenomena names which form this Phenomenon. Each Phenomena name is separated by a * and may have an exponent, specified using parentheses
 
+  /** @internal */
   constructor(schema: Schema, name: string) {
     super(schema, name);
-    this.schemaItemType = SchemaItemType.Phenomenon;
     this._definition = "";
   }
 
@@ -46,7 +48,7 @@ export class Phenomenon extends SchemaItem {
   public override fromJSONSync(phenomenonProps: PhenomenonProps) {
     super.fromJSONSync(phenomenonProps);
     if (this._definition !== "" && phenomenonProps.definition.toLowerCase() !== this._definition.toLowerCase())
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Phenomenon ${this.name} has an invalid 'definition' attribute.`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The Phenomenon ${this.name} has an invalid 'definition' attribute.`);
     else if (this._definition === "")
       this._definition = phenomenonProps.definition;
   }
@@ -55,8 +57,36 @@ export class Phenomenon extends SchemaItem {
     this.fromJSONSync(phenomenonProps);
   }
 
+  /**
+   *
+   * @param definition
+   * @internal
+   */
   protected async setDefinition(definition: string) {
     this._definition = definition;
+  }
+
+  /**
+   * Type guard to check if the SchemaItem is of type Phenomenon.
+   * @param item The SchemaItem to check.
+   * @returns True if the item is a Phenomenon, false otherwise.
+   */
+  public static isPhenomenon(item?: SchemaItem): item is Phenomenon {
+    if (item && item.schemaItemType === SchemaItemType.Phenomenon)
+      return true;
+
+    return false;
+  }
+
+  /**
+   * Type assertion to check if the SchemaItem is of type Phenomenon.
+   * @param item The SchemaItem to check.
+   * @returns The item cast to Phenomenon if it is a Phenomenon, undefined otherwise.
+   * @internal
+   */
+  public static assertIsPhenomenon(item?: SchemaItem): asserts item is Phenomenon {
+    if (!this.isPhenomenon(item))
+      throw new ECSchemaError(ECSchemaStatus.InvalidSchemaItemType, `Expected '${SchemaItemType.Phenomenon}' (Phenomenon)`);
   }
 }
 

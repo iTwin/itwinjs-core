@@ -50,9 +50,13 @@ export class TextureMapping {
     this.params = params;
   }
 
-  /** @internal */
-  public computeUVParams(visitor: PolyfaceVisitor, transformToImodel: Transform): Point2d[] | undefined {
-    return this.params.computeUVParams(visitor as IndexedPolyfaceVisitor, transformToImodel);
+  /** Compute texture coordinates for a polyface.
+   * @param visitor The polyface for which to compute UV coordinates based on this texture mapping.
+   * @param localToWorld The polyface's local-to-world transform, used for [[TextureMapping.Mode.ElevationDrape]].
+   * @returns the texture coordinates, or undefined if computation failed.
+   */
+  public computeUVParams(visitor: PolyfaceVisitor, localToWorld: Transform = Transform.createIdentity()): Point2d[] | undefined {
+    return this.params.computeUVParams(visitor as IndexedPolyfaceVisitor, localToWorld);
   }
 
   /** An [OrderedComparator]($bentley) that compares this mapping against `other`. */
@@ -74,17 +78,17 @@ export namespace TextureMapping {
     Parametric = 0,
     ElevationDrape = 1,
     Planar = 2,
-    /** @internal */
+    /** Currently unsupported. */
     DirectionalDrape = 3,
-    /** @internal */
+    /** Currently unsupported. */
     Cubic = 4,
-    /** @internal */
+    /** Currently unsupported. */
     Spherical = 5,
-    /** @internal */
+    /** Currently unsupported. */
     Cylindrical = 6,
-    /** @internal */
+    /** Currently unsupported. */
     Solid = 7,
-    /** @internal Only valid for lights */
+    /** Currently unsupported. */
     FrontProject = 8,
   }
 
@@ -180,7 +184,6 @@ export namespace TextureMapping {
      * @note Defaults to [[TextureMapping.Mode.Parametric]].
      */
     mapMode?: TextureMapping.Mode;
-    /** @internal */
     worldMapping?: boolean;
     /** True if want to use constant LOD texture mapping for the surface texture. */
     useConstantLod?: boolean;
@@ -198,7 +201,6 @@ export namespace TextureMapping {
     public weight: number;
     /** The mode by which to map the image to a surface. */
     public mode: TextureMapping.Mode;
-    /** @internal */
     public worldMapping: boolean;
     /** True if want to use constant LOD texture mapping for the surface texture. */
     public useConstantLod: boolean;
@@ -230,11 +232,12 @@ export namespace TextureMapping {
         || compareConstantLodParams(this.constantLodParams, other.constantLodParams);
     }
 
-    /**
-     * Generates UV parameters for textured surfaces. Returns undefined on failure.
-     * @internal
-     */
-    public computeUVParams(visitor: IndexedPolyfaceVisitor, transformToImodel: Transform): Point2d[] | undefined {
+  /** Compute texture coordinates for a polyface.
+   * @param visitor The polyface for which to compute UV coordinates based on this texture mapping.
+   * @param localToWorld The polyface's local-to-world transform, used for [[TextureMapping.Mode.ElevationDrape]].
+   * @returns the texture coordinates, or undefined if computation failed.
+   */
+    public computeUVParams(visitor: IndexedPolyfaceVisitor, localToWorld: Transform = Transform.createIdentity()): Point2d[] | undefined {
       switch (this.mode) {
         default:  // Fall through to parametric in default case
         case TextureMapping.Mode.Parametric: {
@@ -253,7 +256,7 @@ export namespace TextureMapping {
           }
         }
         case TextureMapping.Mode.ElevationDrape: {
-          return this.computeElevationDrapeUVParams(visitor, this.textureMatrix.transform, transformToImodel);
+          return this.computeElevationDrapeUVParams(visitor, this.textureMatrix.transform, localToWorld);
         }
       }
     }
@@ -325,14 +328,14 @@ export namespace TextureMapping {
     }
 
     /** Computes UV parameters given a texture mapping mode of elevation drape. The result is stored in the Point2d array given. */
-    private computeElevationDrapeUVParams(visitor: IndexedPolyfaceVisitor, uvTransform: Transform, transformToIModel?: Transform): Point2d[] {
+    private computeElevationDrapeUVParams(visitor: IndexedPolyfaceVisitor, uvTransform: Transform, localToWorld?: Transform): Point2d[] {
       const params: Point2d[] = [];
       const numEdges = visitor.numEdgesThisFacet;
       for (let i = 0; i < numEdges; i++) {
         const point = visitor.point.getPoint3dAtUncheckedPointIndex(i);
 
-        if (transformToIModel !== undefined)
-          transformToIModel.multiplyPoint3d(point, point);
+        if (localToWorld !== undefined)
+          localToWorld.multiplyPoint3d(point, point);
 
         params.push(Point2d.createFrom(point));
         uvTransform.multiplyPoint2d(params[i], params[i]);

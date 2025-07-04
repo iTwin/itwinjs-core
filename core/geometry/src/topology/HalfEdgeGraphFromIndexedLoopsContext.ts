@@ -44,7 +44,7 @@ export class HalfEdgeGraphFromIndexedLoopsContext {
    *         * those coordinates and indices will never be referenced again by this construction sequence -- the caller is free to mutate them as needed.
    *   * if [indexB, indexA] appeared previously (and its outer HalfEdge was left "unmatched"),
    *     the "unmatched" HalfEdge is used in the loop being constructed, and its EXTERIOR mask is cleared.
-   * @param indices Array of indices around the edge.  This is accessed cyclically, so first and last indices should be different.
+   * @param indices Array of indices around the loop.  This is accessed cyclically, so first and last indices should be different.
    * @param announceMatedHalfEdges optional function to be called as mated pairs are created. At the call,
    *     the given HalfEdge and its mate will have a pair of successive indices from the array.
    */
@@ -53,7 +53,7 @@ export class HalfEdgeGraphFromIndexedLoopsContext {
     if (n > 2) {
       let index0 = indices[indices.length - 1];
       this._halfEdgesAroundCurrentLoop.length = 0;
-      for (const index1 of indices){
+      for (const index1 of indices) {
         const insideString = this.indexPairToString (index0, index1);
         const halfEdgePreviouslyConstructedFromOppositeSide: HalfEdge | undefined = this._unmatchedEdges.get (insideString);
         if (halfEdgePreviouslyConstructedFromOppositeSide === undefined){

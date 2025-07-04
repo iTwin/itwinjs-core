@@ -20,6 +20,10 @@ import { SchemaItems } from "./SchemaItems";
  * A class allowing you to create schema items of type Inverted Unit.
  */
 export class InvertedUnits extends SchemaItems {
+  protected override get itemTypeClass(): typeof InvertedUnit {
+    return InvertedUnit;
+  }
+
   public constructor(schemaEditor: SchemaContextEditor) {
     super(SchemaItemType.InvertedUnit, schemaEditor);
   }
@@ -27,10 +31,10 @@ export class InvertedUnits extends SchemaItems {
     try {
       const newUnit = await this.createSchemaItem<InvertedUnit>(schemaKey, this.schemaItemType, (schema) => schema.createInvertedUnit.bind(schema), name) as MutableInvertedUnit;
 
-      const invertsUnit = await this.lookupSchemaItem<Unit>(schemaKey, invertsUnitKey, SchemaItemType.Unit);
+      const invertsUnit = await this.getSchemaItem(invertsUnitKey, Unit);
       newUnit.setInvertsUnit(new DelayedPromiseWithProps<SchemaItemKey, Unit>(invertsUnitKey, async () => invertsUnit));
 
-      const unitSystem = await this.lookupSchemaItem<UnitSystem>(schemaKey, unitSystemKey, SchemaItemType.UnitSystem);
+      const unitSystem = await this.getSchemaItem(unitSystemKey, UnitSystem);
       newUnit.setUnitSystem(new DelayedPromiseWithProps<SchemaItemKey, UnitSystem>(unitSystemKey, async () => unitSystem));
 
       if (displayLabel)
@@ -53,8 +57,8 @@ export class InvertedUnits extends SchemaItems {
 
   public async setInvertsUnit(invertedUnitKey: SchemaItemKey, invertsUnitKey: SchemaItemKey): Promise<void> {
     try {
-      const invertedUnit = await this.getSchemaItem<MutableInvertedUnit>(invertedUnitKey);
-      const invertsUnit = await this.getSchemaItem<Unit>(invertedUnitKey, SchemaItemType.Unit);
+      const invertedUnit = await this.getSchemaItem(invertedUnitKey, MutableInvertedUnit);
+      const invertsUnit = await this.getSchemaItem(invertedUnitKey, Unit);
       invertedUnit.setInvertsUnit(new DelayedPromiseWithProps<SchemaItemKey, Unit>(invertsUnitKey, async () => invertsUnit));
     } catch(e: any) {
       throw new SchemaEditingError(ECEditingStatus.SetInvertsUnit, new SchemaItemId(this.schemaItemType, invertedUnitKey), e);
@@ -63,8 +67,8 @@ export class InvertedUnits extends SchemaItems {
 
   public async setUnitSystem(invertedUnitKey: SchemaItemKey, unitSystemKey: SchemaItemKey): Promise<void> {
     try {
-      const invertedUnit = await this.getSchemaItem<MutableInvertedUnit>(invertedUnitKey);
-      const unitSystem = await this.getSchemaItem<UnitSystem>(unitSystemKey, SchemaItemType.UnitSystem);
+      const invertedUnit = await this.getSchemaItem(invertedUnitKey, MutableInvertedUnit);
+      const unitSystem = await this.getSchemaItem(unitSystemKey, UnitSystem);
       invertedUnit.setUnitSystem(new DelayedPromiseWithProps<SchemaItemKey, UnitSystem>(unitSystemKey, async () => unitSystem));
     } catch(e: any) {
       throw new SchemaEditingError(ECEditingStatus.SetUnitSystem, new SchemaItemId(this.schemaItemType, invertedUnitKey), e);

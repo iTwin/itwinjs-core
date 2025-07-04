@@ -5,7 +5,7 @@
 
 import { describe, expect, it } from "vitest";
 import { ColorDef } from "@itwin/core-common";
-import { FloatRgb, FloatRgba } from "../../../render/webgl/FloatRGBA";
+import { FloatRgb, FloatRgba } from "../../../internal/render/webgl/FloatRGBA";
 
 interface Rgb {
   red: number;

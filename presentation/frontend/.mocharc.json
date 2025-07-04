@@ -1,0 +1,19 @@
+{
+  "require": [
+    "./lib/esm/test/setup.js"
+  ],
+  "checkLeaks": true,
+  "timeout": 60000,
+  "spec": [
+    "lib/esm/test/**/*.test.js"
+  ],
+  "exclude": [
+    "lib/test/coverage/**/*"
+  ],
+  "reporter": [
+    "node_modules/@itwin/build-tools/mocha-reporter"
+  ],
+  "reporterOptions": [
+    "mochaFile=lib/test/junit_results.xml"
+  ]
+}

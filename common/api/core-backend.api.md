@@ -17,11 +17,13 @@ import { BeDuration } from '@itwin/core-bentley';
 import { BeEvent } from '@itwin/core-bentley';
 import { BentleyError } from '@itwin/core-bentley';
 import { BentleyStatus } from '@itwin/core-bentley';
+import { BinaryImageSource } from '@itwin/core-common';
 import { BRepGeometryCreate } from '@itwin/core-common';
 import { BriefcaseId } from '@itwin/core-common';
 import { BriefcaseProps } from '@itwin/core-common';
 import { CalloutProps } from '@itwin/core-common';
 import { Camera } from '@itwin/core-common';
+import { CatalogIModel } from '@itwin/core-common';
 import { CategoryProps } from '@itwin/core-common';
 import { CategorySelectorProps } from '@itwin/core-common';
 import { ChangeData } from '@itwin/core-common';
@@ -33,7 +35,6 @@ import { ChangesetFileProps } from '@itwin/core-common';
 import { ChangesetId } from '@itwin/core-common';
 import { ChangesetIdWithIndex } from '@itwin/core-common';
 import { ChangesetIndex } from '@itwin/core-common';
-import { ChangesetIndexAndId } from '@itwin/core-common';
 import { ChangesetIndexOrId } from '@itwin/core-common';
 import { ChangesetProps } from '@itwin/core-common';
 import { ChangesetRange } from '@itwin/core-common';
@@ -51,6 +52,10 @@ import { Constructor } from '@itwin/core-bentley';
 import { CreateEmptySnapshotIModelProps } from '@itwin/core-common';
 import { CreateEmptyStandaloneIModelProps } from '@itwin/core-common';
 import { CreateSnapshotIModelProps } from '@itwin/core-common';
+import { DbChangeStage } from '@itwin/core-bentley';
+import { DbConflictCause } from '@itwin/core-bentley';
+import { DbConflictResolution } from '@itwin/core-bentley';
+import { DbOpcode } from '@itwin/core-bentley';
 import { DbResult } from '@itwin/core-bentley';
 import { DbValueType } from '@itwin/core-bentley';
 import { DefinitionElementProps } from '@itwin/core-common';
@@ -61,6 +66,7 @@ import { DisplayStyleLoadProps } from '@itwin/core-common';
 import { DisplayStyleProps } from '@itwin/core-common';
 import { DisplayStyleSettings } from '@itwin/core-common';
 import { DisplayStyleSettingsProps } from '@itwin/core-common';
+import { DrawingProps } from '@itwin/core-common';
 import { EcefLocation } from '@itwin/core-common';
 import { ECSchemaProps } from '@itwin/core-common';
 import { ECSqlReader } from '@itwin/core-common';
@@ -68,15 +74,16 @@ import { ECSqlValueType } from '@itwin/core-common';
 import { EditingScopeNotifications } from '@itwin/core-common';
 import { ElementAlignedBox3d } from '@itwin/core-common';
 import { ElementAspectProps } from '@itwin/core-common';
-import { ElementGeometryBuilderParams } from '@itwin/core-common';
-import { ElementGeometryBuilderParamsForPart } from '@itwin/core-common';
+import { ElementGeometry } from '@itwin/core-common';
 import { ElementGeometryCacheOperationRequestProps } from '@itwin/core-common';
 import { ElementGeometryCacheRequestProps } from '@itwin/core-common';
 import { ElementGeometryCacheResponseProps } from '@itwin/core-common';
 import { ElementGeometryRequest } from '@itwin/core-common';
 import { ElementGraphicsRequestProps } from '@itwin/core-common';
+import { ElementLoadOptions } from '@itwin/core-common';
 import { ElementLoadProps } from '@itwin/core-common';
 import { ElementProps } from '@itwin/core-common';
+import { EntityClass } from '@itwin/ecschema-metadata';
 import { EntityIdAndClassIdIterable } from '@itwin/core-common';
 import { EntityMetaData } from '@itwin/core-common';
 import { EntityProps } from '@itwin/core-common';
@@ -88,9 +95,14 @@ import { ExternalSourceAttachmentProps } from '@itwin/core-common';
 import { ExternalSourceAttachmentRole } from '@itwin/core-common';
 import { ExternalSourceProps } from '@itwin/core-common';
 import { FilePropertyProps } from '@itwin/core-common';
+import { FontFace as FontFace_2 } from '@itwin/core-common';
+import { FontFamilyDescriptor } from '@itwin/core-common';
+import { FontFamilySelector } from '@itwin/core-common';
 import { FontId } from '@itwin/core-common';
 import { FontMap } from '@itwin/core-common';
+import { FontProps } from '@itwin/core-common';
 import { FontType } from '@itwin/core-common';
+import { FractionRun } from '@itwin/core-common';
 import { FunctionalElementProps } from '@itwin/core-common';
 import { GeoCoordinatesRequestProps } from '@itwin/core-common';
 import { GeoCoordinatesResponseProps } from '@itwin/core-common';
@@ -103,6 +115,7 @@ import { GeometricModelProps } from '@itwin/core-common';
 import { GeometryClass } from '@itwin/core-common';
 import { GeometryContainmentRequestProps } from '@itwin/core-common';
 import { GeometryContainmentResponseProps } from '@itwin/core-common';
+import { GeometryParams } from '@itwin/core-common';
 import { GeometryPartProps } from '@itwin/core-common';
 import { GeometryStreamProps } from '@itwin/core-common';
 import { GuidString } from '@itwin/core-bentley';
@@ -110,9 +123,11 @@ import { Id64Arg } from '@itwin/core-bentley';
 import { Id64Array } from '@itwin/core-bentley';
 import { Id64Set } from '@itwin/core-bentley';
 import { Id64String } from '@itwin/core-bentley';
-import { IDisposable } from '@itwin/core-bentley';
+import { ImageBuffer } from '@itwin/core-common';
+import { ImageBufferFormat } from '@itwin/core-common';
 import { ImageSourceFormat } from '@itwin/core-common';
 import { IModel } from '@itwin/core-common';
+import { IModelConnectionProps } from '@itwin/core-common';
 import { IModelCoordinatesRequestProps } from '@itwin/core-common';
 import { IModelCoordinatesResponseProps } from '@itwin/core-common';
 import { IModelError } from '@itwin/core-common';
@@ -127,10 +142,12 @@ import { IpcAppNotifications } from '@itwin/core-common';
 import { IpcListener } from '@itwin/core-common';
 import { IpcSocketBackend } from '@itwin/core-common';
 import { IpcWebSocketBackend } from '@itwin/core-common';
+import { ITwinError } from '@itwin/core-bentley';
 import { JSONSchema } from '@itwin/core-bentley';
 import { JSONSchemaType } from '@itwin/core-bentley';
 import { JSONSchemaTypeName } from '@itwin/core-bentley';
 import { LightLocationProps } from '@itwin/core-common';
+import { LineLayoutResult } from '@itwin/core-common';
 import { LinePixels } from '@itwin/core-common';
 import { LineStyleProps } from '@itwin/core-common';
 import { LocalBriefcaseProps } from '@itwin/core-common';
@@ -138,7 +155,9 @@ import { LocalDirName } from '@itwin/core-common';
 import { LocalFileName } from '@itwin/core-common';
 import { LockState as LockState_2 } from '@itwin/core-common';
 import { LogLevel } from '@itwin/core-bentley';
+import { Loop } from '@itwin/core-geometry';
 import { LowAndHighXYZ } from '@itwin/core-geometry';
+import { LRUMap } from '@itwin/core-bentley';
 import { MarkRequired } from '@itwin/core-bentley';
 import { MassPropertiesRequestProps } from '@itwin/core-common';
 import { MassPropertiesResponseProps } from '@itwin/core-common';
@@ -146,7 +165,6 @@ import { Metadata } from '@itwin/object-storage-core';
 import { ModelExtentsProps } from '@itwin/core-common';
 import { ModelGeometryChangesProps } from '@itwin/core-common';
 import { ModelIdAndGeometryGuid } from '@itwin/core-common';
-import { ModelLoadProps } from '@itwin/core-common';
 import { ModelProps } from '@itwin/core-common';
 import { ModelSelectorProps } from '@itwin/core-common';
 import { Mutable } from '@itwin/core-bentley';
@@ -163,6 +181,8 @@ import { OpenSqliteArgs } from '@itwin/core-common';
 import { Optional } from '@itwin/core-bentley';
 import * as os from 'os';
 import { OverriddenBy } from '@itwin/core-common';
+import { Paragraph } from '@itwin/core-common';
+import { Path } from '@itwin/core-geometry';
 import { PhysicalElementProps } from '@itwin/core-common';
 import { PhysicalTypeProps } from '@itwin/core-common';
 import { PickAsyncMethods } from '@itwin/core-bentley';
@@ -174,6 +194,7 @@ import { Point3d } from '@itwin/core-geometry';
 import { Polyface } from '@itwin/core-geometry';
 import { PolyfaceData } from '@itwin/core-geometry';
 import { PolyfaceVisitor } from '@itwin/core-geometry';
+import { Property } from '@itwin/ecschema-metadata';
 import { PropertyCallback } from '@itwin/core-common';
 import { QueryBinder } from '@itwin/core-common';
 import { QueryOptions } from '@itwin/core-common';
@@ -194,7 +215,12 @@ import { RequestNewBriefcaseProps } from '@itwin/core-common';
 import { RgbFactorProps } from '@itwin/core-common';
 import { RpcActivity } from '@itwin/core-common';
 import { RpcInterfaceEndpoints } from '@itwin/core-common';
+import { RscFontEncodingProps } from '@itwin/core-common';
+import { Run } from '@itwin/core-common';
 import { RunLayoutResult } from '@itwin/core-common';
+import { SchemaContext } from '@itwin/ecschema-metadata';
+import { SchemaItemKey } from '@itwin/ecschema-metadata';
+import { SchemaKey as SchemaKey_2 } from '@itwin/ecschema-metadata';
 import { SchemaState } from '@itwin/core-common';
 import { SectionDrawingLocationProps } from '@itwin/core-common';
 import { SectionDrawingProps } from '@itwin/core-common';
@@ -219,12 +245,17 @@ import { SubCategoryProps } from '@itwin/core-common';
 import { SubCategoryResultRow } from '@itwin/core-common';
 import { SubjectProps } from '@itwin/core-common';
 import { SynchronizationConfigLinkProps } from '@itwin/core-common';
+import { TabRun } from '@itwin/core-common';
 import { TextAnnotation } from '@itwin/core-common';
 import { TextAnnotation2dProps } from '@itwin/core-common';
 import { TextAnnotation3dProps } from '@itwin/core-common';
+import { TextAnnotationFrameShape } from '@itwin/core-common';
+import { TextAnnotationProps } from '@itwin/core-common';
 import { TextBlock } from '@itwin/core-common';
 import { TextBlockGeometryProps } from '@itwin/core-common';
 import { TextBlockLayoutResult } from '@itwin/core-common';
+import { TextFrameStyleProps } from '@itwin/core-common';
+import { TextRun } from '@itwin/core-common';
 import { TextStyleSettings } from '@itwin/core-common';
 import { TextureData } from '@itwin/core-common';
 import { TextureLoadProps } from '@itwin/core-common';
@@ -263,7 +294,7 @@ export interface AcquireNewBriefcaseIdArg extends IModelIdArg {
     readonly briefcaseAlias?: string;
 }
 
-// @public
+// @public @preview
 export class AnnotationElement2d extends GraphicalElement2d {
     protected constructor(props: GeometricElement2dProps, iModel: IModelDb);
     // (undocumented)
@@ -273,7 +304,23 @@ export class AnnotationElement2d extends GraphicalElement2d {
 // @beta
 export type AnyDb = IModelDb | ECDb;
 
-// @public
+// @beta
+export function appendFrameToBuilder(builder: ElementGeometry.Builder, frame: TextFrameStyleProps, range: Range2d, transform: Transform, geomParams: GeometryParams): boolean;
+
+// @beta
+export function appendTextAnnotationGeometry(props: AppendTextAnnotationGeometryArgs): boolean;
+
+// @beta
+export interface AppendTextAnnotationGeometryArgs {
+    annotationProps: TextAnnotationProps;
+    builder: ElementGeometry.Builder;
+    categoryId: Id64String;
+    layout: TextBlockLayout;
+    subCategoryId?: Id64String;
+    wantDebugGeometry?: boolean;
+}
+
+// @public @preview
 export abstract class AuxCoordSystem extends DefinitionElement {
     constructor(props: AuxCoordSystemProps, iModel: IModelDb);
     // (undocumented)
@@ -281,14 +328,14 @@ export abstract class AuxCoordSystem extends DefinitionElement {
     // (undocumented)
     description?: string;
     // (undocumented)
-    type: number;
+    type?: number;
 }
 
-// @public
+// @public @preview
 export class AuxCoordSystem2d extends AuxCoordSystem {
     constructor(props: AuxCoordSystem2dProps, iModel: IModelDb);
     // (undocumented)
-    angle: number;
+    angle?: number;
     // (undocumented)
     static get className(): string;
     static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code;
@@ -296,7 +343,7 @@ export class AuxCoordSystem2d extends AuxCoordSystem {
     origin?: Point2d;
 }
 
-// @public
+// @public @preview
 export class AuxCoordSystem3d extends AuxCoordSystem {
     constructor(props: AuxCoordSystem3dProps, iModel: IModelDb);
     // (undocumented)
@@ -305,14 +352,14 @@ export class AuxCoordSystem3d extends AuxCoordSystem {
     // (undocumented)
     origin?: Point3d;
     // (undocumented)
-    pitch: number;
+    pitch?: number;
     // (undocumented)
-    roll: number;
+    roll?: number;
     // (undocumented)
-    yaw: number;
+    yaw?: number;
 }
 
-// @public
+// @public @preview
 export class AuxCoordSystemSpatial extends AuxCoordSystem3d {
     // (undocumented)
     static get className(): string;
@@ -337,7 +384,7 @@ export interface AzureBlobStorageCredentials {
     baseUrl?: string;
 }
 
-// @internal
+// @public
 export interface BackendHubAccess {
     acquireLocks: (arg: BriefcaseDbArg, locks: LockMap) => Promise<void>;
     acquireNewBriefcaseId: (arg: AcquireNewBriefcaseIdArg) => Promise<BriefcaseId>;
@@ -345,8 +392,6 @@ export interface BackendHubAccess {
     deleteIModel: (arg: IModelIdArg & ITwinIdArg) => Promise<void>;
     downloadChangeset: (arg: DownloadChangesetArg) => Promise<ChangesetFileProps>;
     downloadChangesets: (arg: DownloadChangesetRangeArg) => Promise<ChangesetFileProps[]>;
-    // @deprecated
-    downloadV1Checkpoint: (arg: CheckpointArg) => Promise<ChangesetIndexAndId>;
     getChangesetFromNamedVersion: (arg: IModelIdArg & {
         versionName: string;
     }) => Promise<ChangesetProps>;
@@ -545,6 +590,10 @@ export class BriefcaseManager {
     // @internal
     static deleteChangeSetsFromLocalDisk(iModelId: string): void;
     static downloadBriefcase(arg: RequestNewBriefcaseArg): Promise<LocalBriefcaseProps>;
+    // @beta
+    static downloadChangeset(arg: DownloadChangesetArg): Promise<ChangesetFileProps>;
+    // @beta
+    static downloadChangesets(arg: DownloadChangesetRangeArg): Promise<ChangesetFileProps[]>;
     static getBriefcaseBasePath(iModelId: GuidString): LocalDirName;
     static getCachedBriefcases(iModelId?: GuidString): LocalBriefcaseProps[];
     // @internal (undocumented)
@@ -585,16 +634,86 @@ export abstract class Callout extends DetailingSymbol {
     static get className(): string;
 }
 
-// @public
+// @beta
+export interface CatalogDb extends StandaloneDb {
+    getInfo(): {
+        manifest?: CatalogIModel.Manifest;
+        version: string;
+    };
+    getManifest(): CatalogIModel.Manifest | undefined;
+    getVersion(): string;
+    isEditable(): this is EditableCatalogDb;
+}
+
+// @beta (undocumented)
+export namespace CatalogDb {
+    export function acquireWriteLock(args: {
+        containerId: string;
+        username: string;
+    }): Promise<void>;
+    export function createNewContainer(args: CatalogIModel.CreateNewContainerArgs): Promise<CatalogIModel.NewContainerProps>;
+    export function createNewVersion(args: CatalogIModel.CreateNewVersionArgs): Promise<{
+        oldDb: CatalogIModel.NameAndVersion;
+        newDb: CatalogIModel.NameAndVersion;
+    }>;
+    export function openEditable(args: CatalogIModel.OpenArgs): Promise<EditableCatalogDb>;
+    export function openReadonly(args: CatalogIModel.OpenArgs): Promise<CatalogDb>;
+    export function releaseWriteLock(args: {
+        containerId: string;
+        abandon?: true;
+    }): Promise<void>;
+}
+
+// @internal
+export class CatalogIModelHandler extends IpcHandler implements CatalogIModel.IpcMethods {
+    // (undocumented)
+    acquireWriteLock(args: {
+        containerId: string;
+        username: string;
+    }): Promise<void>;
+    // (undocumented)
+    get channelName(): CatalogIModel.IpcChannel;
+    // (undocumented)
+    createNewContainer(args: CatalogIModel.CreateNewContainerArgs): Promise<CatalogIModel.NewContainerProps>;
+    // (undocumented)
+    createNewVersion(args: CatalogIModel.CreateNewVersionArgs): Promise<{
+        oldDb: CatalogIModel.NameAndVersion;
+        newDb: CatalogIModel.NameAndVersion;
+    }>;
+    // (undocumented)
+    getInfo(key: string): Promise<{
+        manifest?: CatalogIModel.Manifest;
+        version: string;
+    }>;
+    // (undocumented)
+    openEditable(args: CatalogIModel.OpenArgs): Promise<IModelConnectionProps>;
+    // (undocumented)
+    openReadonly(args: CatalogIModel.OpenArgs): Promise<IModelConnectionProps>;
+    // (undocumented)
+    releaseWriteLock(args: {
+        containerId: string;
+        abandon?: true;
+    }): Promise<void>;
+    // (undocumented)
+    updateCatalogManifest(key: string, manifest: CatalogIModel.Manifest): Promise<void>;
+}
+
+// @public @preview
 export class Category extends DefinitionElement {
     protected constructor(props: CategoryProps, iModel: IModelDb);
     // (undocumented)
     static get className(): string;
+    // @beta
+    protected static readonly _customHandledProps: CustomHandledProperty[];
     // (undocumented)
     description?: string;
+    // @beta
+    static deserialize(props: DeserializeEntityArgs): CategoryProps;
     myDefaultSubCategoryId(): Id64String;
     // (undocumented)
     rank: Rank;
+    // @beta
+    static serialize(props: CategoryProps, iModel: IModelDb): ECSqlRow;
     setDefaultAppearance(props: SubCategoryAppearance.Props | SubCategoryAppearance): void;
     // (undocumented)
     toJSON(): CategoryProps;
@@ -607,7 +726,7 @@ export class CategoryOwnsSubCategories extends ElementOwnsChildElements {
     static classFullName: string;
 }
 
-// @public
+// @public @preview
 export class CategorySelector extends DefinitionElement {
     protected constructor(props: CategorySelectorProps, iModel: IModelDb);
     categories: Id64String[];
@@ -617,6 +736,10 @@ export class CategorySelector extends DefinitionElement {
     protected collectReferenceIds(referenceIds: EntityReferenceSet): void;
     static create(iModelDb: IModelDb, definitionModelId: Id64String, name: string, categories: Id64Array): CategorySelector;
     static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code;
+    // @beta
+    protected static readonly _customHandledProps: CustomHandledProperty[];
+    // @beta
+    static deserialize(props: DeserializeEntityArgs): CategorySelectorProps;
     static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, categories: Id64Array): Id64String;
     // (undocumented)
     toJSON(): CategorySelectorProps;
@@ -635,14 +758,14 @@ export interface ChangedECInstance {
 }
 
 // @internal
-export class ChangedElementsDb implements IDisposable {
+export class ChangedElementsDb implements Disposable {
+    // (undocumented)
+    [Symbol.dispose](): void;
     constructor();
     // (undocumented)
     cleanCaches(): void;
     closeDb(): void;
     static createDb(briefcase: IModelDb, pathName: string): ChangedElementsDb;
-    // (undocumented)
-    dispose(): void;
     getChangeData(startChangesetId: string, endChangesetId: string): ChangeData | undefined;
     getChangedElements(startChangesetId: string, endChangesetId: string): ChangedElements | undefined;
     getChangedModels(startChangesetId: string, endChangesetId: string): ChangedModels | undefined;
@@ -671,6 +794,24 @@ export interface ChangeInstanceKey {
     id: Id64String;
 }
 
+// @internal
+export class ChangeMergeManager {
+    constructor(_iModel: BriefcaseDb | StandaloneDb);
+    // (undocumented)
+    addConflictHandler(args: {
+        id: string;
+        handler: (args: RebaseChangesetConflictArgs) => DbConflictResolution | undefined;
+    }): void;
+    // (undocumented)
+    inProgress(): boolean;
+    // (undocumented)
+    onConflict(args: RebaseChangesetConflictArgs): DbConflictResolution | undefined;
+    // (undocumented)
+    removeConflictHandler(id: string): void;
+    // (undocumented)
+    resume(): void;
+}
+
 // @beta
 export interface ChangeMetaData {
     changeIndexes: number[];
@@ -688,7 +829,8 @@ export interface ChangesetArg extends IModelIdArg {
 }
 
 // @beta
-export class ChangesetECAdaptor implements IDisposable {
+export class ChangesetECAdaptor implements Disposable {
+    [Symbol.dispose](): void;
     constructor(reader: SqliteChangesetReader, disableMetaData?: boolean);
     acceptClass(classFullName: string): ChangesetECAdaptor;
     acceptOp(op: SqliteChangeOp): ChangesetECAdaptor;
@@ -702,7 +844,6 @@ export class ChangesetECAdaptor implements IDisposable {
     deleted?: ChangedECInstance;
     // (undocumented)
     readonly disableMetaData: boolean;
-    dispose(): void;
     inserted?: ChangedECInstance;
     get isDeleted(): boolean;
     isECTable(tableName: string): boolean;
@@ -789,7 +930,7 @@ export namespace ChannelControl {
 // @beta
 export type ChannelKey = string;
 
-// @public (undocumented)
+// @public @preview (undocumented)
 export class ChannelRootAspect extends ElementUniqueAspect {
     // (undocumented)
     static get className(): string;
@@ -797,21 +938,15 @@ export class ChannelRootAspect extends ElementUniqueAspect {
     static insert(iModel: IModelDb, ownerId: Id64String, channelName: string): void;
 }
 
-// @internal @deprecated (undocumented)
-export type CheckpointArg = DownloadRequest;
-
 // @internal (undocumented)
 export class CheckpointManager {
     static downloadCheckpoint(request: DownloadRequest): Promise<void>;
     // (undocumented)
     static getKey(checkpoint: CheckpointProps): string;
     // (undocumented)
-    static readonly onDownloadV1: BeEvent<(job: DownloadJob) => void>;
-    // (undocumented)
     static readonly onDownloadV2: BeEvent<(job: DownloadJob) => void>;
     // (undocumented)
     static toCheckpointProps(args: OpenCheckpointArgs): Promise<CheckpointProps>;
-    static tryOpenLocalFile(request: DownloadRequest): SnapshotDb | undefined;
     // (undocumented)
     static updateToRequestedVersion(request: DownloadRequest): Promise<void>;
     static validateCheckpointGuids(checkpoint: CheckpointProps, snapshotDb: SnapshotDb): void;
@@ -843,7 +978,7 @@ export class ClassRegistry {
     static register(entityClass: typeof Entity, schema: typeof Schema): void;
     static registerModule(moduleObj: any, schema: typeof Schema): void;
     // @internal
-    static unregisterCLass(classFullName: string): boolean;
+    static unregisterClass(classFullName: string): boolean;
     // @internal
     static unregisterClassesFrom(schema: typeof Schema): void;
 }
@@ -861,6 +996,7 @@ export namespace CloudSqlite {
         container: CloudContainer;
         busyHandler?: WriteLockBusyHandler;
     }): Promise<void>;
+    export function addHiddenProperty<T>(o: T, p: PropertyKey, value?: any): T;
     // @internal
     export interface BcvHttpLog {
         readonly endTime: string | undefined;
@@ -1020,6 +1156,17 @@ export namespace CloudSqlite {
         accessLevel?: BlobContainer.RequestAccessLevel;
         tokenFn?: (args: RequestTokenArgs) => Promise<AccessToken>;
     }): CloudContainer;
+    // (undocumented)
+    export function createNewDbVersion(container: CloudContainer, args: CreateNewDbVersionArgs): Promise<{
+        oldDb: DbNameAndVersion;
+        newDb: DbNameAndVersion;
+    }>;
+    export interface CreateNewDbVersionArgs {
+        // (undocumented)
+        readonly fromDb: DbNameAndVersion;
+        readonly identifier?: string;
+        readonly versionType: SemverIncrement;
+    }
     export class DbAccess<DbType extends VersionedSqliteDb, ReadMethods = DbType, WriteMethods = DbType> {
         constructor(args: {
             dbType: Constructor<DbType>;
@@ -1065,13 +1212,33 @@ export namespace CloudSqlite {
         }, operation: () => Promise<T>): Promise<T>;
         get writeLocker(): PickAsyncMethods<WriteMethods>;
     }
+    export type DbFullName = string;
+    export type DbName = string;
+    export interface DbNameAndVersion {
+        readonly dbName: DbName;
+        readonly version?: DbVersionRange;
+    }
     export interface DbNameProp {
-        dbName: string;
+        dbName: DbFullName;
     }
-    export interface DbProps extends DbNameProp {
-        localFileName: LocalFileName;
-    }
+    export type DbVersion = string;
+    export type DbVersionRange = string;
     export function downloadDb(container: CloudContainer, props: TransferDbProps): Promise<void>;
+    // (undocumented)
+    export function getBlobService(): BlobContainer.ContainerService;
+    // (undocumented)
+    export function getWriteLockHeldBy(container: CloudContainer): string | undefined;
+    // (undocumented)
+    export function isSemverEditable(dbFullName: string, container: CloudContainer): boolean | readonly (string | number)[];
+    // (undocumented)
+    export function isSemverPrerelease(version: string): true | readonly (string | number)[] | null;
+    // (undocumented)
+    export interface LoadProps extends DbNameAndVersion {
+        // (undocumented)
+        readonly container: CloudContainer;
+        readonly includePrerelease?: boolean;
+        readonly prefetch?: boolean;
+    }
     // @internal (undocumented)
     export interface LockAndOpenArgs extends SQLiteDb.WithOpenDbArgs {
         busyHandler?: WriteLockBusyHandler;
@@ -1088,25 +1255,37 @@ export namespace CloudSqlite {
         LifecycleEvents = 8,
         None = 0
     }
+    export function makeSemverName(dbName: DbName, version?: DbVersion): DbName;
+    // (undocumented)
+    export function noLeadingOrTrailingSpaces(name: string, msg: string): void;
     export interface ObtainLockParams {
         nRetries: number;
         onFailure?: WriteLockBusyHandler;
         retryDelayMs: number;
         user?: string;
     }
+    export function parseDbFileName(dbFileName: DbFullName): {
+        dbName: DbName;
+        version: DbVersion;
+    };
     // (undocumented)
     export interface PrefetchProps extends CloudHttpProps {
         minRequests?: number;
         timeout?: number;
     }
+    export function querySemverMatch(props: LoadProps): DbFullName;
+    export function releaseWriteLock(container: CloudContainer): void;
     export function requestToken(args: RequestTokenArgs): Promise<AccessToken>;
     // (undocumented)
     export type RequestTokenArgs = Optional<BlobContainer.RequestTokenProps, "userToken">;
+    export type SemverIncrement = "major" | "minor" | "patch" | "premajor" | "preminor" | "prepatch" | "prerelease";
     export function startCloudPrefetch(container: CloudContainer, dbName: string, args?: PrefetchProps): CloudPrefetch;
     // @internal (undocumented)
     export function transferDb(direction: TransferDirection, container: CloudContainer, props: TransferDbProps): Promise<void>;
     // (undocumented)
-    export type TransferDbProps = DbProps & TransferProgress & CloudHttpProps;
+    export interface TransferDbProps extends DbNameProp, TransferProgress, CloudHttpProps {
+        localFileName: LocalFileName;
+    }
     // (undocumented)
     export type TransferDirection = "upload" | "download";
     // (undocumented)
@@ -1114,6 +1293,10 @@ export namespace CloudSqlite {
         onProgress?: (loaded: number, total: number) => number;
     }
     export function uploadDb(container: CloudContainer, props: TransferDbProps): Promise<void>;
+    // (undocumented)
+    export function validateDbName(dbName: DbName): void;
+    // (undocumented)
+    export function validateDbVersion(version?: DbVersion): string;
     export function withWriteLock<T>(args: {
         user: string;
         container: CloudContainer;
@@ -1224,6 +1407,8 @@ export namespace CodeService {
         // @internal (undocumented)
         reserveBisCodeSpecs(specs: CodeService.BisCodeSpecIndexProps[]): Promise<void>;
         // @internal (undocumented)
+        reserveEmbeddedFaceDataId(facesKey: string): Promise<number>;
+        // @internal (undocumented)
         reserveFontId(props: CodeService.FontIndexProps): Promise<FontId>;
     }
     export type IterationReturn = void | "stop";
@@ -1324,7 +1509,7 @@ export namespace CodeService {
     }
 }
 
-// @public
+// @public @preview
 export class CodeSpecs {
     constructor(imodel: IModelDb);
     getById(codeSpecId: Id64String): CodeSpec;
@@ -1346,6 +1531,16 @@ export interface ComputedProjectExtents {
 }
 
 // @beta
+export function computeFrame(args: ComputeFrameArgs): Loop | Path;
+
+// @beta
+export interface ComputeFrameArgs {
+    frame: Exclude<TextAnnotationFrameShape, "none">;
+    range: Range2d;
+    transform: Transform;
+}
+
+// @beta
 export function computeGraphemeOffsets(args: ComputeGraphemeOffsetsArgs): Range2d[];
 
 // @beta
@@ -1356,12 +1551,42 @@ export interface ComputeGraphemeOffsetsArgs extends LayoutTextBlockArgs {
 }
 
 // @beta
+export function computeIntervalPoints({ frame, range, transform, lineIntervalFactor, arcIntervalFactor }: ComputeIntervalPointsArgs): Point3d[] | undefined;
+
+// @beta
+export interface ComputeIntervalPointsArgs extends ComputeFrameArgs {
+    arcIntervalFactor?: number;
+    lineIntervalFactor?: number;
+}
+
+// @beta
 export function computeLayoutTextBlockResult(args: LayoutTextBlockArgs): TextBlockLayoutResult;
 
 // @public
 export interface ComputeProjectExtentsOptions {
     reportExtentsWithOutliers?: boolean;
     reportOutliers?: boolean;
+}
+
+// @internal
+export type ComputeRangesForTextLayout = (args: ComputeRangesForTextLayoutArgs) => TextLayoutRanges;
+
+// @internal
+export interface ComputeRangesForTextLayoutArgs {
+    // (undocumented)
+    baselineShift: BaselineShift;
+    // (undocumented)
+    bold: boolean;
+    // (undocumented)
+    chars: string;
+    // (undocumented)
+    fontId: FontId;
+    // (undocumented)
+    italic: boolean;
+    // (undocumented)
+    lineHeight: number;
+    // (undocumented)
+    widthFactor: number;
 }
 
 // @alpha
@@ -1400,6 +1625,19 @@ export interface CreateChangeSummaryArgs extends TokenArg {
     range: ChangesetRange;
 }
 
+// @alpha
+export interface CreateFontFileFromRscBlobArgs {
+    blob: Uint8Array;
+    encoding?: RscFontEncodingProps;
+    familyName: string;
+}
+
+// @beta
+export interface CreateFontFileFromShxBlobArgs {
+    blob: Uint8Array;
+    familyName: string;
+}
+
 // @public
 export interface CreateNewIModelProps extends IModelNameArg {
     // (undocumented)
@@ -1422,10 +1660,27 @@ export interface CreateNewWorkspaceContainerArgs {
 export interface CreateNewWorkspaceDbVersionArgs {
     fromProps?: WorkspaceDbProps;
     identifier?: string;
-    versionType: WorkspaceDbVersionIncrement;
+    versionType: CloudSqlite.SemverIncrement;
 }
 
 // @public
+export interface CreateSheetViewDefinitionArgs {
+    baseModelId: Id64String;
+    categorySelectorId: Id64String;
+    definitionModelId: Id64String;
+    displayStyleId: Id64String;
+    iModel: IModelDb;
+    name: string;
+    range: Range2d;
+}
+
+// @beta
+export interface CustomHandledProperty {
+    readonly propertyName: string;
+    readonly source: "Class" | "Computed";
+}
+
+// @public @preview
 export class DefinitionContainer extends DefinitionSet {
     // (undocumented)
     static get className(): string;
@@ -1433,17 +1688,23 @@ export class DefinitionContainer extends DefinitionSet {
     static insert(iModelDb: IModelDb, definitionModelId: Id64String, code: Code, isPrivate?: boolean): Id64String;
 }
 
-// @public
+// @public @preview
 export abstract class DefinitionElement extends InformationContentElement {
     protected constructor(props: DefinitionElementProps, iModel: IModelDb);
     // (undocumented)
     static get className(): string;
+    // @beta
+    protected static readonly _customHandledProps: CustomHandledProperty[];
+    // @beta
+    static deserialize(props: DeserializeEntityArgs): DefinitionElementProps;
     isPrivate: boolean;
+    // @beta
+    static serialize(props: DefinitionElementProps, iModel: IModelDb): ECSqlRow;
     // (undocumented)
     toJSON(): DefinitionElementProps;
 }
 
-// @public
+// @public @preview
 export class DefinitionGroup extends DefinitionSet {
     // (undocumented)
     static get className(): string;
@@ -1456,20 +1717,20 @@ export class DefinitionGroupGroupsDefinitions extends ElementGroupsMembers {
     static get className(): string;
 }
 
-// @public
+// @public @preview
 export class DefinitionModel extends InformationModel {
     // (undocumented)
     static get className(): string;
     static insert(iModelDb: IModelDb, parentSubjectId: Id64String, name: string): Id64String;
 }
 
-// @public
+// @public @preview
 export class DefinitionPartition extends InformationPartitionElement {
     // (undocumented)
     static get className(): string;
 }
 
-// @public
+// @public @preview
 export abstract class DefinitionSet extends DefinitionElement {
     // (undocumented)
     static get className(): string;
@@ -1489,6 +1750,15 @@ export interface DeleteElementTreeArgs {
     iModel: IModelDb;
     maxPasses?: number;
     topElement: Id64String;
+}
+
+// @beta
+export interface DeserializeEntityArgs {
+    iModel: IModelDb;
+    options?: {
+        element?: ElementLoadOptions;
+    };
+    row: ECSqlRow;
 }
 
 // @public
@@ -1560,13 +1830,13 @@ export class DevToolsStatsFormatter {
     static toFormattedJson(stats: any): any;
 }
 
-// @public
+// @public @preview
 export class DictionaryModel extends DefinitionModel {
     // (undocumented)
     static get className(): string;
 }
 
-// @public
+// @public @preview
 export abstract class DisplayStyle extends DefinitionElement {
     protected constructor(props: DisplayStyleProps, iModel: IModelDb);
     // (undocumented)
@@ -1574,15 +1844,19 @@ export abstract class DisplayStyle extends DefinitionElement {
     // (undocumented)
     protected collectReferenceIds(referenceIds: EntityReferenceSet): void;
     static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code;
+    // @beta (undocumented)
+    static deserialize(props: DeserializeEntityArgs): DisplayStyleProps;
     // (undocumented)
     loadScheduleScript(): RenderSchedule.ScriptReference | undefined;
     // @alpha (undocumented)
     protected static onCloned(context: IModelElementCloneContext, sourceElementProps: DisplayStyleProps, targetElementProps: DisplayStyleProps): void;
+    // @beta (undocumented)
+    static serialize(props: DisplayStyleProps, iModel: IModelDb): ECSqlRow;
     // (undocumented)
     abstract get settings(): DisplayStyleSettings;
 }
 
-// @public
+// @public @preview
 export class DisplayStyle2d extends DisplayStyle {
     protected constructor(props: DisplayStyleProps, iModel: IModelDb);
     // (undocumented)
@@ -1593,7 +1867,7 @@ export class DisplayStyle2d extends DisplayStyle {
     get settings(): DisplayStyleSettings;
 }
 
-// @public
+// @public @preview
 export class DisplayStyle3d extends DisplayStyle {
     protected constructor(props: DisplayStyle3dProps, iModel: IModelDb);
     // (undocumented)
@@ -1608,14 +1882,14 @@ export class DisplayStyle3d extends DisplayStyle {
     get settings(): DisplayStyle3dSettings;
 }
 
-// @public
+// @public @preview
 export interface DisplayStyleCreationOptions extends Omit<DisplayStyle3dSettingsProps, "backgroundColor" | "scheduleScript"> {
     // (undocumented)
     backgroundColor?: ColorDef | number;
     viewFlags?: ViewFlags;
 }
 
-// @public
+// @public @preview
 abstract class Document_2 extends InformationContentElement {
     protected constructor(props: ElementProps, iModel: IModelDb);
     // (undocumented)
@@ -1623,25 +1897,25 @@ abstract class Document_2 extends InformationContentElement {
 }
 export { Document_2 as Document }
 
-// @public
+// @public @preview
 export class DocumentListModel extends InformationModel {
     // (undocumented)
     static get className(): string;
     static insert(iModelDb: IModelDb, parentSubjectId: Id64String, name: string): Id64String;
 }
 
-// @public
+// @public @preview
 export class DocumentPartition extends InformationPartitionElement {
     // (undocumented)
     static get className(): string;
 }
 
-// @beta
+// @public
 export interface DownloadChangesetArg extends ChangesetArg, DownloadProgressArg {
     targetDir: LocalDirName;
 }
 
-// @beta
+// @public
 export interface DownloadChangesetRangeArg extends ChangesetRangeArg, DownloadProgressArg {
     targetDir: LocalDirName;
 }
@@ -1654,7 +1928,7 @@ export interface DownloadJob {
     request: DownloadRequest;
 }
 
-// @beta
+// @public
 export interface DownloadProgressArg {
     progressCallback?: ProgressFunction;
 }
@@ -1675,17 +1949,22 @@ export class Downloads {
     static isInProgress(pathName: LocalFileName): DownloadJob | undefined;
 }
 
-// @public
+// @public @preview
 export class Drawing extends Document_2 {
-    protected constructor(props: ElementProps, iModel: IModelDb);
+    protected constructor(props: DrawingProps, iModel: IModelDb);
     // (undocumented)
     static get className(): string;
     static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code;
     protected static get drawingModelFullClassName(): string;
-    static insert(iModelDb: IModelDb, documentListModelId: Id64String, name: string): Id64String;
+    static insert(iModelDb: IModelDb, documentListModelId: Id64String, name: string, scaleFactor?: number): Id64String;
+    // @preview
+    get scaleFactor(): number;
+    set scaleFactor(factor: number);
+    // (undocumented)
+    toJSON(): DrawingProps;
 }
 
-// @public
+// @public @preview
 export class DrawingCategory extends Category {
     protected constructor(opts: ElementProps, iModel: IModelDb);
     // (undocumented)
@@ -1697,7 +1976,7 @@ export class DrawingCategory extends Category {
     static queryCategoryIdByName(iModel: IModelDb, scopeModelId: Id64String, categoryName: string): Id64String | undefined;
 }
 
-// @public
+// @public @preview
 export class DrawingGraphic extends GraphicalElement2d {
     protected constructor(props: GeometricElement2dProps, iModel: IModelDb);
     // (undocumented)
@@ -1716,13 +1995,13 @@ export class DrawingGraphicRepresentsFunctionalElement extends DrawingGraphicRep
     static get className(): string;
 }
 
-// @public
+// @public @preview
 export class DrawingModel extends GraphicalModel2d {
     // (undocumented)
     static get className(): string;
 }
 
-// @public
+// @public @preview
 export class DrawingViewDefinition extends ViewDefinition2d {
     protected constructor(props: ViewDefinition2dProps, iModel: IModelDb);
     // (undocumented)
@@ -1739,42 +2018,61 @@ export abstract class DriverBundleElement extends InformationContentElement {
     static get className(): string;
 }
 
+// @beta
+export interface ECChangeUnifierCache extends Disposable {
+    all(): IterableIterator<ChangedECInstance>;
+    count(): number;
+    get(key: string): ChangedECInstance | undefined;
+    set(key: string, value: ChangedECInstance): void;
+}
+
+// @beta (undocumented)
+export namespace ECChangeUnifierCache {
+    export function createInMemoryCache(): ECChangeUnifierCache;
+    export function createSqliteBackedCache(db: AnyDb, bufferedReadInstanceSizeInBytes?: number): ECChangeUnifierCache;
+}
+
 // @public
-export class ECDb implements IDisposable {
+export class ECDb implements Disposable {
     // @internal (undocumented)
     get [_nativeDb](): IModelJsNative.ECDb;
+    [Symbol.dispose](): void;
     constructor();
     abandonChanges(): void;
+    attachDb(fileName: string, alias: string): void;
     // @internal
     clearStatementCache(): void;
     closeDb(): void;
     createDb(pathName: string): void;
     createQueryReader(ecsql: string, params?: QueryBinder, config?: QueryOptions): ECSqlReader;
+    detachDb(alias: string): void;
+    // @deprecated (undocumented)
     dispose(): void;
     // @internal
     getCachedStatementCount(): number;
     getSchemaProps(name: string): ECSchemaProps;
     importSchema(pathName: string): void;
     get isOpen(): boolean;
-    // @internal @deprecated (undocumented)
-    get nativeDb(): IModelJsNative.ECDb;
     openDb(pathName: string, openMode?: ECDbOpenMode): void;
     // @internal
     prepareSqliteStatement(sql: string, logErrors?: boolean): SqliteStatement;
+    // @deprecated
     prepareStatement(ecsql: string, logErrors?: boolean): ECSqlStatement;
-    // @deprecated
-    query(ecsql: string, params?: QueryBinder, options?: QueryOptions): AsyncIterableIterator<any>;
-    // @deprecated
-    queryRowCount(ecsql: string, params?: QueryBinder): Promise<number>;
+    // @beta
+    prepareWriteStatement(ecsql: string, logErrors?: boolean): ECSqlWriteStatement;
     // @internal
     resetSqliteCache(size: number): void;
-    // @deprecated
-    restartQuery(token: string, ecsql: string, params?: QueryBinder, options?: QueryOptions): AsyncIterableIterator<any>;
     saveChanges(changesetName?: string): void;
+    // @beta
+    withCachedWriteStatement<T>(ecsql: string, callback: (stmt: ECSqlWriteStatement) => T, logErrors?: boolean): T;
     withPreparedSqliteStatement<T>(sql: string, callback: (stmt: SqliteStatement) => T, logErrors?: boolean): T;
+    // @deprecated
     withPreparedStatement<T>(ecsql: string, callback: (stmt: ECSqlStatement) => T, logErrors?: boolean): T;
     withSqliteStatement<T>(sql: string, callback: (stmt: SqliteStatement) => T, logErrors?: boolean): T;
+    // @deprecated
     withStatement<T>(ecsql: string, callback: (stmt: ECSqlStatement) => T, logErrors?: boolean): T;
+    // @beta
+    withWriteStatement<T>(ecsql: string, callback: (stmt: ECSqlWriteStatement) => T, logErrors?: boolean): T;
 }
 
 // @public
@@ -1786,7 +2084,7 @@ export enum ECDbOpenMode {
     ReadWrite = 1
 }
 
-// @public
+// @public @deprecated
 export interface ECEnumValue {
     // (undocumented)
     key: string;
@@ -1798,7 +2096,7 @@ export interface ECEnumValue {
     value: number | string;
 }
 
-// @beta
+// @public @preview
 export class ECSchemaXmlContext {
     constructor();
     addSchemaPath(searchPath: string): void;
@@ -1836,7 +2134,7 @@ export class ECSqlBinder {
     bindStruct(val: object): void;
 }
 
-// @public
+// @public @deprecated
 export interface ECSqlColumnInfo {
     getAccessString(): string;
     getOriginPropertyName(): string | undefined;
@@ -1859,14 +2157,21 @@ export class ECSqlInsertResult {
     status: DbResult;
 }
 
+// @beta
+export interface ECSqlRow {
+    // (undocumented)
+    [key: string]: any;
+}
+
 // @public
 export interface ECSqlRowArg {
     classIdsToClassNames?: boolean;
     rowFormat?: QueryRowFormat;
 }
 
-// @public
-export class ECSqlStatement implements IterableIterator<any>, IDisposable {
+// @public @deprecated
+export class ECSqlStatement implements IterableIterator<any>, Disposable {
+    [Symbol.dispose](): void;
     [Symbol.iterator](): IterableIterator<any>;
     bindArray(parameter: number | string, val: any[]): void;
     bindBlob(parameter: number | string, blob: string | Uint8Array | ArrayBuffer | SharedArrayBuffer): void;
@@ -1888,6 +2193,7 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
     bindValue(parameter: number | string, val: any): void;
     bindValues(values: any[] | object): void;
     clearBindings(): void;
+    // @deprecated (undocumented)
     dispose(): void;
     getBinder(parameter: string | number): ECSqlBinder;
     getColumnCount(): number;
@@ -1913,7 +2219,7 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
     };
 }
 
-// @public
+// @public @deprecated
 export class ECSqlValue {
     // @internal
     constructor(val: IModelJsNative.ECSqlValue);
@@ -1940,7 +2246,7 @@ export class ECSqlValue {
     get value(): any;
 }
 
-// @public
+// @public @deprecated
 export class ECSqlValueIterator implements IterableIterator<ECSqlValue> {
     // (undocumented)
     [Symbol.iterator](): IterableIterator<ECSqlValue>;
@@ -1948,6 +2254,57 @@ export class ECSqlValueIterator implements IterableIterator<ECSqlValue> {
     constructor(it: IModelJsNative.ECSqlValueIterator);
     // (undocumented)
     next(): IteratorResult<ECSqlValue>;
+}
+
+// @public
+export class ECSqlWriteStatement {
+    [Symbol.dispose](): void;
+    constructor(stmt?: ECSqlStatement);
+    bindArray(parameter: number | string, val: any[]): void;
+    bindBlob(parameter: number | string, blob: string | Uint8Array | ArrayBuffer | SharedArrayBuffer): void;
+    bindBoolean(parameter: number | string, val: boolean): void;
+    bindDateTime(parameter: number | string, isoDateTimeString: string): void;
+    bindDouble(parameter: number | string, val: number): void;
+    bindGuid(parameter: number | string, val: GuidString): void;
+    bindId(parameter: number | string, val: Id64String): void;
+    // (undocumented)
+    bindIdSet(parameter: number | string, val: Id64String[]): void;
+    bindInteger(parameter: number | string, val: number | string): void;
+    bindNavigation(parameter: number | string, val: NavigationBindingValue): void;
+    bindNull(parameter: number | string): void;
+    bindPoint2d(parameter: number | string, val: XAndY): void;
+    bindPoint3d(parameter: number | string, val: XYAndZ): void;
+    bindRange3d(parameter: number | string, val: LowAndHighXYZ): void;
+    bindString(parameter: number | string, val: string): void;
+    bindStruct(parameter: number | string, val: object): void;
+    bindValue(parameter: number | string, val: any): void;
+    bindValues(values: any[] | object): void;
+    clearBindings(): void;
+    getBinder(parameter: string | number): ECSqlBinder;
+    getColumnCount(): number;
+    // @internal
+    getNativeSql(): string;
+    get isPrepared(): boolean;
+    // @internal
+    prepare(db: IModelJsNative.ECDb, ecsql: string, logErrors?: boolean): void;
+    reset(): void;
+    // (undocumented)
+    get sql(): string;
+    // (undocumented)
+    step(): DbResult;
+    stepForInsert(): ECSqlInsertResult;
+    // @internal
+    get stmt(): ECSqlStatement;
+    // @internal
+    tryPrepare(db: IModelJsNative.DgnDb | IModelJsNative.ECDb, ecsql: string, logErrors?: boolean): {
+        status: DbResult;
+        message: string;
+    };
+}
+
+// @beta
+export interface EditableCatalogDb extends CatalogDb {
+    updateCatalogManifest(manifest: CatalogIModel.Manifest): void;
 }
 
 // @beta
@@ -1988,23 +2345,24 @@ export interface EditableWorkspaceDb extends WorkspaceDb {
     updateString(rscName: WorkspaceResourceName, val: string): void;
 }
 
-// @public
+// @public @preview
 class Element_2 extends Entity {
     protected constructor(props: ElementProps, iModel: IModelDb);
     // (undocumented)
     static get className(): string;
     code: Code;
-    // @beta @deprecated
-    protected collectPredecessorIds(predecessorIds: EntityReferenceSet): void;
     // (undocumented)
     protected collectReferenceIds(referenceIds: EntityReferenceSet): void;
+    // @beta
+    protected static readonly _customHandledProps: CustomHandledProperty[];
     delete(): void;
+    // @beta
+    static deserialize(props: DeserializeEntityArgs): ElementProps;
     federationGuid?: GuidString;
+    // @deprecated
     getClassMetaData(): EntityMetaData | undefined;
     getDisplayLabel(): string;
     getJsonProperty(nameSpace: string): any;
-    // @beta @deprecated
-    getPredecessorIds(): Id64Set;
     getToolTipMessage(): string[];
     getUserProperties(namespace: string): any;
     insert(): string;
@@ -2019,29 +2377,29 @@ class Element_2 extends Entity {
     // @beta
     protected static onChildAdd(_arg: OnChildElementPropsArg): void;
     // @beta
-    protected static onChildAdded(_arg: OnChildElementIdArg): void;
+    protected static onChildAdded(arg: OnChildElementIdArg): void;
     // @beta
     protected static onChildDelete(_arg: OnChildElementIdArg): void;
     // @beta
-    protected static onChildDeleted(_arg: OnChildElementIdArg): void;
+    protected static onChildDeleted(arg: OnChildElementIdArg): void;
     // @beta
     protected static onChildDrop(_arg: OnChildElementIdArg): void;
     // @beta
-    protected static onChildDropped(_arg: OnChildElementIdArg): void;
+    protected static onChildDropped(arg: OnChildElementIdArg): void;
     // @beta
     protected static onChildInsert(_arg: OnChildElementPropsArg): void;
     // @beta
-    protected static onChildInserted(_arg: OnChildElementIdArg): void;
+    protected static onChildInserted(arg: OnChildElementIdArg): void;
     // @beta
     protected static onChildUpdate(_arg: OnChildElementPropsArg): void;
     // @beta
-    protected static onChildUpdated(_arg: OnChildElementIdArg): void;
+    protected static onChildUpdated(arg: OnChildElementIdArg): void;
     // @beta
     protected static onCloned(_context: IModelElementCloneContext, _sourceProps: ElementProps, _targetProps: ElementProps): void;
     // @beta
     protected static onDelete(arg: OnElementIdArg): void;
     // @beta
-    protected static onDeleted(_arg: OnElementIdArg): void;
+    protected static onDeleted(arg: OnElementIdArg): void;
     // @beta
     protected static onInsert(arg: OnElementPropsArg): void;
     // @beta
@@ -2049,15 +2407,15 @@ class Element_2 extends Entity {
     // @beta
     protected static onSubModelDelete(_arg: OnSubModelIdArg): void;
     // @beta
-    protected static onSubModelDeleted(_arg: OnSubModelIdArg): void;
+    protected static onSubModelDeleted(arg: OnSubModelIdArg): void;
     // @beta
     protected static onSubModelInsert(_arg: OnSubModelPropsArg): void;
     // @beta
-    protected static onSubModelInserted(_arg: OnSubModelIdArg): void;
+    protected static onSubModelInserted(arg: OnSubModelIdArg): void;
     // @beta
     protected static onUpdate(arg: OnElementPropsArg): void;
     // @beta
-    protected static onUpdated(_arg: OnElementIdArg): void;
+    protected static onUpdated(arg: OnElementIdArg): void;
     parent?: RelatedElement;
     // @internal (undocumented)
     static get protectedOperations(): string[];
@@ -2066,6 +2424,8 @@ class Element_2 extends Entity {
     static readonly requiredReferenceKeys: ReadonlyArray<string>;
     // @alpha
     static readonly requiredReferenceKeyTypeMap: Record<string, ConcreteEntityTypes>;
+    // @beta
+    static serialize(props: ElementProps, iModel: IModelDb): ECSqlRow;
     // (undocumented)
     setJsonProperty(nameSpace: string, value: any): void;
     setUserProperties(nameSpace: string, value: any): void;
@@ -2076,7 +2436,7 @@ class Element_2 extends Entity {
 }
 export { Element_2 as Element }
 
-// @public
+// @public @preview
 export class ElementAspect extends Entity {
     constructor(props: ElementAspectProps, iModel: IModelDb);
     // (undocumented)
@@ -2146,7 +2506,7 @@ export interface ElementGroupsMembersProps extends RelationshipProps {
     memberPriority: number;
 }
 
-// @public
+// @public @preview
 export class ElementMultiAspect extends ElementAspect {
     // (undocumented)
     static get className(): string;
@@ -2262,7 +2622,7 @@ export class ElementTreeWalkerScope {
     toString(): string;
 }
 
-// @public
+// @public @preview
 export class ElementUniqueAspect extends ElementAspect {
     // (undocumented)
     static get className(): string;
@@ -2275,13 +2635,19 @@ export class ElevationCallout extends Callout {
     static get className(): string;
 }
 
-// @public
+// @public @preview
 export class EmbeddedFileLink extends LinkElement {
     // (undocumented)
     static get className(): string;
 }
 
-// @public
+// @beta
+export interface EmbedFontFileArgs {
+    file: FontFile;
+    skipFontIdAllocation?: boolean;
+}
+
+// @public @preview
 export class Entity {
     protected constructor(props: EntityProps, iModel: IModelDb);
     // @internal
@@ -2290,13 +2656,17 @@ export class Entity {
     get classFullName(): string;
     static get className(): string;
     get className(): string;
-    // @internal @deprecated
-    protected collectReferenceConcreteIds: (_referenceIds: EntityReferenceSet) => void;
     // @beta
     protected collectReferenceIds(_referenceIds: EntityReferenceSet): void;
+    // @beta
+    protected static readonly _customHandledProps: CustomHandledProperty[];
+    // @beta
+    static deserialize(props: DeserializeEntityArgs): EntityProps;
+    forEach(func: PropertyHandler, includeCustom?: boolean): void;
+    // @deprecated
     forEachProperty(func: PropertyCallback, includeCustom?: boolean): void;
-    // @internal @deprecated
-    getReferenceConcreteIds: () => EntityReferenceSet;
+    // @preview
+    getMetaData(): Promise<EntityClass>;
     // @beta
     getReferenceIds(): EntityReferenceSet;
     id: Id64String;
@@ -2310,14 +2680,37 @@ export class Entity {
     // @internal (undocumented)
     static get protectedOperations(): string[];
     static schema: typeof Schema;
+    // @preview
+    static get schemaItemKey(): SchemaItemKey;
+    // @preview
+    get schemaItemKey(): SchemaItemKey;
     get schemaName(): string;
+    // @beta
+    static serialize(props: EntityProps, _iModel: IModelDb): ECSqlRow;
     toJSON(): EntityProps;
 }
 
-// @public
+// @public @preview
 export type EntityClassType<T> = Function & {
     prototype: T;
 };
+
+// @public
+export class EntityJsClassMap {
+    // @internal (undocumented)
+    [Symbol.iterator](): IterableIterator<[string, typeof Entity]>;
+    // @internal (undocumented)
+    clear(): void;
+    // @internal (undocumented)
+    delete(classFullName: string): boolean;
+    // @internal (undocumented)
+    get(classFullName: string): typeof Entity | undefined;
+    // @internal (undocumented)
+    has(classFullName: string): boolean;
+    register(entityClass: typeof Entity, schema: typeof Schema): void;
+    // @internal (undocumented)
+    set(classFullName: string, entityClass: typeof Entity): void;
+}
 
 // @alpha
 export namespace EntityReferences {
@@ -2379,17 +2772,29 @@ export interface ExportGraphicsMesh {
 }
 
 // @public
+export class ExportGraphicsMeshSubsetVisitor extends ExportGraphicsMeshVisitor {
+    static createSubsetVisitor(polyface: ExportGraphicsMesh, facetIndices: number[], numWrap?: number): ExportGraphicsMeshSubsetVisitor;
+    getVisitableFacetCount(): number;
+    moveToNextFacet(): boolean;
+    moveToReadIndex(subsetIndex: number): boolean;
+    parentFacetIndex(subsetIndex?: number): number | undefined;
+    reset(): void;
+}
+
+// @public
 export class ExportGraphicsMeshVisitor extends PolyfaceData implements PolyfaceVisitor {
+    protected constructor(facets: ExportGraphicsMesh, numWrap: number);
     clearArrays(): void;
     clientAuxIndex(_i: number): number;
     clientColorIndex(_i: number): number;
     clientNormalIndex(i: number): number;
     clientParamIndex(i: number): number;
     clientPointIndex(i: number): number;
-    clientPolyface(): Polyface;
-    static create(polyface: ExportGraphicsMesh, numWrap: number): ExportGraphicsMeshVisitor;
+    clientPolyface(): Polyface | undefined;
+    static create(polyface: ExportGraphicsMesh, numWrap?: number): ExportGraphicsMeshVisitor;
+    createSubsetVisitor(facetIndices: number[], numWrap?: number): ExportGraphicsMeshSubsetVisitor;
     currentReadIndex(): number;
-    // (undocumented)
+    getVisitableFacetCount(): number;
     moveToNextFacet(): boolean;
     moveToReadIndex(facetIndex: number): boolean;
     pushDataFrom(other: PolyfaceVisitor, index: number): void;
@@ -2485,6 +2890,13 @@ export interface ExportPartLinesInfo {
 }
 
 // @beta
+export interface ExportSchemaArgs {
+    outputDirectory: LocalFileName;
+    outputFileName?: string;
+    schemaName: string;
+}
+
+// @beta
 export class ExternalSource extends InformationReferenceElement {
     protected constructor(props: ExternalSourceProps, iModel: IModelDb);
     // @internal (undocumented)
@@ -2500,7 +2912,7 @@ export class ExternalSource extends InformationReferenceElement {
     toJSON(): ExternalSourceProps;
 }
 
-// @public
+// @public @preview
 export class ExternalSourceAspect extends ElementMultiAspect {
     constructor(props: ExternalSourceAspectProps, iModel: IModelDb);
     checksum?: string;
@@ -2512,11 +2924,6 @@ export class ExternalSourceAspect extends ElementMultiAspect {
         elementId: Id64String;
         aspectId: Id64String;
     }>;
-    // @deprecated (undocumented)
-    static findBySource(iModelDb: IModelDb, scope: Id64String, kind: string, identifier: string): {
-        elementId?: Id64String;
-        aspectId?: Id64String;
-    };
     identifier: string;
     jsonProperties?: string;
     kind: string;
@@ -2527,8 +2934,9 @@ export class ExternalSourceAspect extends ElementMultiAspect {
     version?: string;
 }
 
-// @public (undocumented)
+// @public @preview (undocumented)
 export namespace ExternalSourceAspect {
+    // @preview
     export enum Kind {
         Element = "Element",
         Relationship = "Relationship",
@@ -2596,6 +3004,12 @@ export abstract class FileNameResolver {
     tryResolveKey(_fileKey: string): string | undefined;
 }
 
+// @internal
+export type FindFontId = (name: string, type?: FontType) => FontId;
+
+// @internal (undocumented)
+export type FindTextStyle = (name: string) => TextStyleSettings;
+
 // @beta
 export class FolderContainsRepositories extends ElementOwnsChildElements {
     constructor(parentId: Id64String, relClassName?: string);
@@ -2607,6 +3021,29 @@ export class FolderContainsRepositories extends ElementOwnsChildElements {
 export class FolderLink extends UrlLink {
     // (undocumented)
     static get className(): string;
+}
+
+// @beta
+export interface FontFile {
+    // @internal
+    readonly [_faceProps]: IModelJsNative.FontFaceProps[];
+    // @internal
+    readonly [_getData]: () => Uint8Array;
+    // @internal (undocumented)
+    readonly [_implementationProhibited]: unknown;
+    // @internal
+    readonly [_key]: string;
+    readonly faces: ReadonlyArray<Readonly<FontFace_2>>;
+    readonly isEmbeddable: boolean;
+    readonly type: FontType;
+}
+
+// @beta (undocumented)
+export namespace FontFile {
+    // @alpha
+    export function createFromRscFontBlob(args: CreateFontFileFromRscBlobArgs): FontFile;
+    export function createFromShxFontBlob(args: CreateFontFileFromShxBlobArgs): FontFile;
+    export function createFromTrueTypeFileName(fileName: LocalFileName): FontFile;
 }
 
 // @public
@@ -2752,7 +3189,7 @@ export class GeoCoordConfig {
     };
 }
 
-// @public
+// @public @preview
 export abstract class GeometricElement extends Element_2 {
     protected constructor(props: GeometricElementProps, iModel: IModelDb);
     // (undocumented)
@@ -2763,7 +3200,9 @@ export abstract class GeometricElement extends Element_2 {
     // (undocumented)
     protected collectReferenceIds(referenceIds: EntityReferenceSet): void;
     // @beta
-    elementGeometryBuilderParams?: ElementGeometryBuilderParams;
+    protected static readonly _customHandledProps: CustomHandledProperty[];
+    // @beta
+    static deserialize(props: DeserializeEntityArgs): GeometricElementProps;
     geom?: GeometryStreamProps;
     getPlacementTransform(): Transform;
     is2d(): this is GeometricElement2d;
@@ -2773,19 +3212,27 @@ export abstract class GeometricElement extends Element_2 {
     static readonly requiredReferenceKeys: ReadonlyArray<string>;
     // @alpha (undocumented)
     static readonly requiredReferenceKeyTypeMap: Record<string, ConcreteEntityTypes>;
+    // @beta
+    static serialize(props: GeometricElementProps, iModel: IModelDb): ECSqlRow;
     // (undocumented)
     toJSON(): GeometricElementProps;
 }
 
-// @public
+// @public @preview
 export abstract class GeometricElement2d extends GeometricElement {
     protected constructor(props: GeometricElement2dProps, iModel: IModelDb);
     // (undocumented)
     static get className(): string;
     // (undocumented)
     protected collectReferenceIds(referenceIds: EntityReferenceSet): void;
+    // @beta
+    protected static readonly _customHandledProps: CustomHandledProperty[];
+    // @beta
+    static deserialize(props: DeserializeEntityArgs): GeometricElement2dProps;
     // (undocumented)
     placement: Placement2d;
+    // @beta
+    static serialize(props: GeometricElement2dProps, iModel: IModelDb): ECSqlRow;
     // (undocumented)
     toJSON(): GeometricElement2dProps;
     // (undocumented)
@@ -2799,15 +3246,21 @@ export class GeometricElement2dHasTypeDefinition extends TypeDefinition {
     static classFullName: string;
 }
 
-// @public
+// @public @preview
 export abstract class GeometricElement3d extends GeometricElement {
     protected constructor(props: GeometricElement3dProps, iModel: IModelDb);
     // (undocumented)
     static get className(): string;
     // (undocumented)
     protected collectReferenceIds(referenceIds: EntityReferenceSet): void;
+    // @beta
+    protected static readonly _customHandledProps: CustomHandledProperty[];
+    // @beta
+    static deserialize(props: DeserializeEntityArgs): GeometricElement3dProps;
     // (undocumented)
     placement: Placement3d;
+    // @beta
+    static serialize(props: GeometricElement3dProps, iModel: IModelDb): ECSqlRow;
     // (undocumented)
     toJSON(): GeometricElement3dProps;
     // (undocumented)
@@ -2821,7 +3274,7 @@ export class GeometricElement3dHasTypeDefinition extends TypeDefinition {
     static classFullName: string;
 }
 
-// @public
+// @public @preview
 export class GeometricModel extends Model {
     protected constructor(props: GeometricModelProps, iModel: IModelDb);
     // (undocumented)
@@ -2832,7 +3285,7 @@ export class GeometricModel extends Model {
     queryRange(): Promise<AxisAlignedBox3d>;
 }
 
-// @public
+// @public @preview
 export abstract class GeometricModel2d extends GeometricModel {
     protected constructor(props: GeometricModel2dProps, iModel: IModelDb);
     // (undocumented)
@@ -2842,19 +3295,25 @@ export abstract class GeometricModel2d extends GeometricModel {
     toJSON(): GeometricModel2dProps;
 }
 
-// @public
+// @public @preview
 export abstract class GeometricModel3d extends GeometricModel {
     protected constructor(props: GeometricModel3dProps, iModel: IModelDb);
     // (undocumented)
     static get className(): string;
+    // @beta
+    protected static readonly _customHandledProps: CustomHandledProperty[];
+    // @beta
+    static deserialize(props: DeserializeEntityArgs): GeometricModel3dProps;
     readonly isNotSpatiallyLocated: boolean;
     readonly isPlanProjection: boolean;
     get isSpatiallyLocated(): boolean;
+    // @beta
+    static serialize(props: GeometricModel3dProps, _iModel: IModelDb): ECSqlRow;
     // (undocumented)
     toJSON(): GeometricModel3dProps;
 }
 
-// @public
+// @public @preview
 export class GeometryPart extends DefinitionElement {
     protected constructor(props: GeometryPartProps, iModel: IModelDb);
     // (undocumented)
@@ -2863,9 +3322,13 @@ export class GeometryPart extends DefinitionElement {
     static get className(): string;
     static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code;
     // @beta
-    elementGeometryBuilderParams?: ElementGeometryBuilderParamsForPart;
+    protected static readonly _customHandledProps: CustomHandledProperty[];
+    // @beta
+    static deserialize(props: DeserializeEntityArgs): GeometryPartProps;
     // (undocumented)
     geom?: GeometryStreamProps;
+    // @beta
+    static serialize(props: GeometryPartProps, iModel: IModelDb): ECSqlRow;
     // (undocumented)
     toJSON(): GeometryPartProps;
 }
@@ -2876,6 +3339,7 @@ export function getAvailableCoordinateReferenceSystems(args: GetAvailableCoordin
 // @beta
 export interface GetAvailableCoordinateReferenceSystemsArgs {
     extent?: Range2dProps;
+    includeWorld?: boolean;
 }
 
 // @beta
@@ -2896,7 +3360,7 @@ export class Graphic3d extends GraphicalElement3d {
     static get className(): string;
 }
 
-// @public
+// @public @preview
 export abstract class GraphicalElement2d extends GeometricElement2d {
     protected constructor(props: GeometricElement2dProps, iModel: IModelDb);
     // (undocumented)
@@ -2910,7 +3374,7 @@ export class GraphicalElement2dIsOfType extends GeometricElement2dHasTypeDefinit
     static classFullName: string;
 }
 
-// @public
+// @public @preview
 export abstract class GraphicalElement3d extends GeometricElement3d {
     protected constructor(props: GeometricElement3dProps, iModel: IModelDb);
     // (undocumented)
@@ -2923,25 +3387,25 @@ export class GraphicalElement3dRepresentsElement extends ElementRefersToElements
     static get className(): string;
 }
 
-// @public
+// @public @preview
 export abstract class GraphicalModel2d extends GeometricModel2d {
     // (undocumented)
     static get className(): string;
 }
 
-// @public
+// @public @preview
 export abstract class GraphicalModel3d extends GeometricModel3d {
     // (undocumented)
     static get className(): string;
 }
 
-// @public
+// @public @preview
 export class GraphicalPartition3d extends InformationPartitionElement {
     // (undocumented)
     static get className(): string;
 }
 
-// @public
+// @public @preview
 export abstract class GraphicalType2d extends TypeDefinitionElement {
     protected constructor(props: TypeDefinitionElementProps, iModel: IModelDb);
     // (undocumented)
@@ -2962,19 +3426,19 @@ export class GroupImpartsToMembers extends ElementGroupsMembers {
     static get className(): string;
 }
 
-// @public
+// @public @preview
 export abstract class GroupInformationElement extends InformationReferenceElement {
     // (undocumented)
     static get className(): string;
 }
 
-// @public
+// @public @preview
 export abstract class GroupInformationModel extends InformationModel {
     // (undocumented)
     static get className(): string;
 }
 
-// @public
+// @public @preview
 export class GroupInformationPartition extends InformationPartitionElement {
     // (undocumented)
     static get className(): string;
@@ -2988,68 +3452,25 @@ export class GroupModel extends GroupInformationModel {
     static insert(iModelDb: IModelDb, parentSubjectId: Id64String, name: string): Id64String;
 }
 
-// @internal
-export class HubMock {
-    // (undocumented)
-    static acquireLocks(arg: BriefcaseDbArg, locks: LockMap): Promise<void>;
-    // (undocumented)
-    static acquireNewBriefcaseId(arg: AcquireNewBriefcaseIdArg): Promise<number>;
-    static createNewIModel(arg: CreateNewIModelProps): Promise<GuidString>;
-    // (undocumented)
-    static deleteIModel(arg: IModelIdArg & {
-        iTwinId: GuidString;
-    }): Promise<void>;
-    static destroy(iModelId: GuidString): void;
-    // (undocumented)
-    static downloadChangeset(arg: DownloadChangesetArg): Promise<ChangesetFileProps>;
-    // (undocumented)
-    static downloadChangesets(arg: DownloadChangesetRangeArg): Promise<ChangesetFileProps[]>;
-    // (undocumented)
-    static downloadV1Checkpoint(arg: CheckpointArg): Promise<ChangesetIndexAndId>;
-    // (undocumented)
-    static findLocalHub(iModelId: GuidString): LocalHub;
-    static getChangesetFromNamedVersion(arg: IModelIdArg & {
-        versionName: string;
-    }): Promise<ChangesetProps>;
-    // (undocumented)
-    static getChangesetFromVersion(arg: IModelIdArg & {
-        version: IModelVersion;
-    }): Promise<ChangesetProps>;
-    // (undocumented)
-    static getLatestChangeset(arg: IModelIdArg): Promise<ChangesetProps>;
-    // (undocumented)
-    static getMyBriefcaseIds(arg: IModelIdArg): Promise<number[]>;
-    static get isValid(): boolean;
-    // (undocumented)
-    static get iTwinId(): string;
-    // (undocumented)
-    static pushChangeset(arg: IModelIdArg & {
-        changesetProps: ChangesetFileProps;
-    }): Promise<ChangesetIndex>;
-    // (undocumented)
-    static queryAllLocks(_arg: BriefcaseDbArg): Promise<LockProps[]>;
-    // (undocumented)
-    static queryChangeset(arg: ChangesetArg): Promise<ChangesetProps>;
-    // (undocumented)
-    static queryChangesets(arg: IModelIdArg & {
-        range?: ChangesetRange;
-    }): Promise<ChangesetProps[]>;
-    // (undocumented)
-    static queryIModelByName(arg: IModelNameArg): Promise<GuidString | undefined>;
-    // (undocumented)
-    static queryV2Checkpoint(_arg: CheckpointProps): Promise<V2CheckpointAccessProps | undefined>;
-    // (undocumented)
-    static releaseAllLocks(arg: BriefcaseDbArg): Promise<void>;
-    static releaseBriefcase(arg: BriefcaseIdArg): Promise<void>;
-    static shutdown(): void;
-    static startup(mockName: LocalDirName, outputDir: string): void;
+// @public
+export function imageBufferFromImageSource(args: ImageBufferFromImageSourceArgs): ImageBuffer | undefined;
+
+// @public
+export interface ImageBufferFromImageSourceArgs {
+    source: BinaryImageSource;
+    targetFormat?: ImageBufferFormat.Rgb | ImageBufferFormat.Rgba;
 }
 
-// @beta @deprecated (undocumented)
-export const IModelCloneContext: typeof IModelElementCloneContext;
+// @public
+export function imageSourceFromImageBuffer(args: ImageSourceFromImageBufferArgs): BinaryImageSource | undefined;
 
-// @beta @deprecated (undocumented)
-export type IModelCloneContext = IModelElementCloneContext;
+// @public
+export interface ImageSourceFromImageBufferArgs {
+    flipVertically?: boolean;
+    image: ImageBuffer;
+    jpegQuality?: number;
+    targetFormat?: ImageSourceFormat.Png | ImageSourceFormat.Jpeg;
+}
 
 // @public
 export abstract class IModelDb extends IModel {
@@ -3063,20 +3484,21 @@ export abstract class IModelDb extends IModel {
     });
     abandonChanges(): void;
     acquireSchemaLock(): Promise<void>;
-    // @beta
-    addNewFont(name: string, type?: FontType): FontId;
+    attachDb(fileName: string, alias: string): void;
     // @internal
     protected beforeClose(): void;
     // @internal
     cancelSnap(sessionId: string): void;
     // @beta (undocumented)
     readonly channels: ChannelControl;
-    // @internal
+    // @internal @deprecated
     get classMetaDataRegistry(): MetaDataRegistry;
     clearCaches(): void;
     // @internal (undocumented)
     clearFontMap(): void;
     close(): void;
+    // @beta
+    get cloudContainer(): CloudSqlite.CloudContainer | undefined;
     // @alpha (undocumented)
     get codeService(): CodeService | undefined;
     // @internal (undocumented)
@@ -3097,6 +3519,7 @@ export abstract class IModelDb extends IModel {
     deleteFileProperty(prop: FilePropertyProps): void;
     // @beta
     deleteSettingDictionary(name: string): void;
+    detachDb(alias: string): void;
     // @beta
     elementGeometryCacheOperation(requestProps: ElementGeometryCacheOperationRequestProps): BentleyStatus;
     // @beta
@@ -3105,21 +3528,33 @@ export abstract class IModelDb extends IModel {
     readonly elements: IModelDb.Elements;
     exportGraphics(exportProps: ExportGraphicsOptions): DbResult;
     exportPartGraphics(exportProps: ExportPartGraphicsOptions): DbResult;
+    // @beta
+    exportSchema(args: ExportSchemaArgs): void;
+    // @beta
+    exportSchemas(outputDirectory: LocalFileName): void;
     static findByFilename(fileName: LocalFileName): IModelDb | undefined;
     static findByKey(key: string): IModelDb;
-    // (undocumented)
+    // @deprecated (undocumented)
     get fontMap(): FontMap;
-    // (undocumented)
+    // @deprecated (undocumented)
     protected _fontMap?: FontMap;
+    // @beta
+    get fonts(): IModelDbFonts;
+    // @deprecated
     static forEachMetaData(iModel: IModelDb, classFullName: string, wantSuper: boolean, func: PropertyCallback, includeCustom?: boolean): void;
+    // @deprecated
     forEachMetaData(classFullName: string, wantSuper: boolean, func: PropertyCallback, includeCustom?: boolean): void;
     generateElementGraphics(request: ElementGraphicsRequestProps): Promise<Uint8Array | undefined>;
     getBriefcaseId(): BriefcaseId;
     getGeoCoordinatesFromIModelCoordinates(props: GeoCoordinatesRequestProps): Promise<GeoCoordinatesResponseProps>;
     getGeometryContainment(props: GeometryContainmentRequestProps): Promise<GeometryContainmentResponseProps>;
     getIModelCoordinatesFromGeoCoordinates(props: IModelCoordinatesRequestProps): Promise<IModelCoordinatesResponseProps>;
+    // @internal
+    getInstanceArgs(instanceId?: Id64String, baseClassName?: string, federationGuid?: GuidString, code?: CodeProps): IModelJsNative.ResolveInstanceKeyArgs;
     getJsClass<T extends typeof Entity>(classFullName: string): T;
+    getLastError(): string;
     getMassProperties(props: MassPropertiesRequestProps): Promise<MassPropertiesResponseProps>;
+    // @deprecated
     getMetaData(classFullName: string): EntityMetaData;
     getSchemaProps(name: string): ECSchemaProps;
     get holdsSchemaLock(): boolean;
@@ -3128,7 +3563,9 @@ export abstract class IModelDb extends IModel {
     // @alpha
     importSchemaStrings(serializedXmlSchemas: string[]): Promise<void>;
     // @internal (undocumented)
-    protected initializeIModelDb(): void;
+    protected initializeIModelDb(when?: "pullMerge"): void;
+    // @beta
+    inlineGeometryParts(): InlineGeometryPartsResult;
     get isBriefcase(): boolean;
     isBriefcaseDb(): this is BriefcaseDb;
     // @internal
@@ -3139,6 +3576,7 @@ export abstract class IModelDb extends IModel {
     // @internal
     get isStandalone(): boolean;
     isStandaloneDb(): this is StandaloneDb;
+    get jsClassMap(): EntityJsClassMap;
     // @internal (undocumented)
     protected loadWorkspaceSettings(): Promise<void>;
     get locks(): LockControl;
@@ -3148,8 +3586,6 @@ export abstract class IModelDb extends IModel {
     static readonly maxLimit = 10000;
     // (undocumented)
     readonly models: IModelDb.Models;
-    // @internal @deprecated (undocumented)
-    get nativeDb(): IModelJsNative.DgnDb;
     // @internal (undocumented)
     notifyChangesetApplied(): void;
     readonly onBeforeClose: BeEvent<() => void>;
@@ -3163,17 +3599,14 @@ export abstract class IModelDb extends IModel {
     performCheckpoint(): void;
     // @internal
     prepareSqliteStatement(sql: string, logErrors?: boolean): SqliteStatement;
-    prepareStatement(sql: string, logErrors?: boolean): ECSqlStatement;
     // @deprecated
-    query(ecsql: string, params?: QueryBinder, options?: QueryOptions): AsyncIterableIterator<any>;
+    prepareStatement(sql: string, logErrors?: boolean): ECSqlStatement;
     // @internal
     queryAllUsedSpatialSubCategories(): Promise<SubCategoryResultRow[]>;
     queryEntityIds(params: EntityQueryParams): Id64Set;
     queryFilePropertyBlob(prop: FilePropertyProps): Uint8Array | undefined;
     queryFilePropertyString(prop: FilePropertyProps): string | undefined;
     queryNextAvailableFileProperty(prop: FilePropertyProps): number;
-    // @deprecated
-    queryRowCount(ecsql: string, params?: QueryBinder): Promise<number>;
     querySchemaVersion(schemaName: string): string | undefined;
     // @internal
     querySubCategories(categoryIds: Iterable<Id64String>): Promise<SubCategoryResultRow[]>;
@@ -3188,8 +3621,6 @@ export abstract class IModelDb extends IModel {
     requestSnap(sessionId: string, props: SnapRequestProps): Promise<SnapResponseProps>;
     // @internal (undocumented)
     restartDefaultTxn(): void;
-    // @deprecated
-    restartQuery(token: string, ecsql: string, params?: QueryBinder, options?: QueryOptions): AsyncIterableIterator<any>;
     // @internal (undocumented)
     restartTxnSession(): void;
     // @internal @deprecated (undocumented)
@@ -3198,10 +3629,17 @@ export abstract class IModelDb extends IModel {
     saveFileProperty(prop: FilePropertyProps, strValue: string | undefined, blobVal?: Uint8Array): void;
     // @beta
     saveSettingDictionary(name: string, dict: SettingsContainer): void;
+    // @preview
+    get schemaContext(): SchemaContext;
+    get schemaMap(): SchemaMap;
+    // @beta
+    simplifyElementGeometry(args: SimplifyElementGeometryArgs): IModelStatus;
     // (undocumented)
     readonly tiles: IModelDb.Tiles;
     static tryFindByKey(key: string): IModelDb | undefined;
+    // @deprecated
     tryGetMetaData(classFullName: string): EntityMetaData | undefined;
+    // @deprecated
     tryPrepareStatement(sql: string): ECSqlStatement | undefined;
     updateEcefLocation(ecef: EcefLocation): void;
     // @beta
@@ -3214,8 +3652,10 @@ export abstract class IModelDb extends IModel {
     // @internal
     get watchFilePathName(): LocalFileName;
     withPreparedSqliteStatement<T>(sql: string, callback: (stmt: SqliteStatement) => T, logErrors?: boolean): T;
+    // @deprecated
     withPreparedStatement<T>(ecsql: string, callback: (stmt: ECSqlStatement) => T, logErrors?: boolean): T;
     withSqliteStatement<T>(sql: string, callback: (stmt: SqliteStatement) => T, logErrors?: boolean): T;
+    // @deprecated
     withStatement<T>(ecsql: string, callback: (stmt: ECSqlStatement) => T, logErrors?: boolean): T;
     // @beta
     get workspace(): Workspace;
@@ -3223,7 +3663,12 @@ export abstract class IModelDb extends IModel {
 
 // @public (undocumented)
 export namespace IModelDb {
+    // @preview
     export class Elements implements GuidMapper {
+        // @internal (undocumented)
+        readonly [_cache]: ElementLRUCache;
+        // @internal (undocumented)
+        readonly [_instanceKeyCache]: InstanceKeyLRUCache;
         // @internal
         constructor(_iModel: IModelDb);
         createElement<T extends Element_2>(elProps: ElementProps): T;
@@ -3234,8 +3679,6 @@ export namespace IModelDb {
         getAspect(aspectInstanceId: Id64String): ElementAspect;
         getAspects(elementId: Id64String, aspectClassFullName?: string, excludedClassFullNames?: Set<string>): ElementAspect[];
         getElement<T extends Element_2>(elementId: Id64String | GuidString | Code | ElementLoadProps, elementClass?: EntityClassType<Element_2>): T;
-        // @internal
-        getElementJson<T extends ElementProps>(elementId: ElementLoadProps): T;
         getElementProps<T extends ElementProps>(props: Id64String | GuidString | Code | ElementLoadProps): T;
         // (undocumented)
         getFederationGuidFromId(id: Id64String): GuidString | undefined;
@@ -3244,7 +3687,7 @@ export namespace IModelDb {
         getRootSubject(): Subject;
         hasSubModel(elementId: Id64String): boolean;
         insertAspect(aspectProps: ElementAspectProps): Id64String;
-        insertElement(elProps: ElementProps): Id64String;
+        insertElement(elProps: ElementProps, options?: InsertElementOptions): Id64String;
         // @internal
         _queryAspects(elementId: Id64String, fromClassFullName: string, excludedClassFullNames?: Set<string>): ElementAspect[];
         queryChildren(elementId: Id64String): Id64String[];
@@ -3252,7 +3695,7 @@ export namespace IModelDb {
         queryLastModifiedTime(elementId: Id64String): string;
         queryParent(elementId: Id64String): Id64String | undefined;
         tryGetElement<T extends Element_2>(elementId: Id64String | GuidString | Code | ElementLoadProps, elementClass?: EntityClassType<Element_2>): T | undefined;
-        tryGetElementProps<T extends ElementProps>(elementId: Id64String | GuidString | Code | ElementLoadProps): T | undefined;
+        tryGetElementProps<T extends ElementProps>(props: Id64String | GuidString | Code | ElementLoadProps): T | undefined;
         updateAspect(aspectProps: ElementAspectProps): void;
         updateElement<T extends ElementProps>(elProps: Partial<T>): void;
     }
@@ -3263,14 +3706,17 @@ export namespace IModelDb {
         // (undocumented)
         getIdFromFederationGuid(guid?: GuidString): Id64String | undefined;
     }
+    // @preview
     export class Models {
+        // @internal (undocumented)
+        readonly [_cache]: LRUMap<string, ModelProps>;
+        // @internal (undocumented)
+        readonly [_instanceKeyCache]: InstanceKeyLRUCache;
         // @internal
         constructor(_iModel: IModelDb);
         createModel<T extends Model>(modelProps: ModelProps): T;
         deleteModel(ids: Id64Arg): void;
         getModel<T extends Model>(modelId: Id64String, modelClass?: EntityClassType<Model>): T;
-        // @internal
-        getModelJson<T extends ModelProps>(modelIdArg: ModelLoadProps): T;
         getModelProps<T extends ModelProps>(id: Id64String): T;
         getSubModel<T extends Model>(modeledElementId: Id64String | GuidString | Code, modelClass?: EntityClassType<Model>): T;
         insertModel(props: ModelProps): Id64String;
@@ -3302,6 +3748,7 @@ export namespace IModelDb {
         // (undocumented)
         requestTileTreeProps(id: string): Promise<IModelTileTreeProps>;
     }
+    // @preview
     export class Views {
         // @internal
         constructor(_iModel: IModelDb);
@@ -3312,8 +3759,6 @@ export namespace IModelDb {
         }): Promise<ViewStore.CloudAccess>;
         static readonly defaultQueryParams: ViewQueryParams;
         getThumbnail(viewDefinitionId: Id64String): ThumbnailProps | undefined;
-        // @deprecated (undocumented)
-        getViewStateData(viewDefinitionId: ViewIdString, options?: ViewStateLoadProps): ViewStateProps;
         getViewStateProps(viewDefinitionId: ViewIdString, options?: ViewStateLoadProps): Promise<ViewStateProps>;
         // (undocumented)
         get hasViewStore(): boolean;
@@ -3331,11 +3776,25 @@ export namespace IModelDb {
 }
 
 // @beta
+export interface IModelDbFonts {
+    // @internal (undocumented)
+    readonly [_implementationProhibited]: unknown;
+    acquireId(descriptor: FontFamilyDescriptor): Promise<FontId>;
+    embedFontFile(args: EmbedFontFileArgs): Promise<void>;
+    findDescriptor(id: FontId): FontFamilyDescriptor | undefined;
+    findId(selector: FontFamilySelector): FontId | undefined;
+    queryEmbeddedFontFiles(): Iterable<FontFile>;
+    queryMappedFamilies(args?: QueryMappedFamiliesArgs): Iterable<FontProps>;
+}
+
+// @beta
 export class IModelElementCloneContext {
+    [Symbol.dispose](): void;
     constructor(sourceDb: IModelDb, targetDb?: IModelDb);
     // @internal
     cloneElement(sourceElement: Element_2, cloneOptions?: IModelJsNative.CloneElementOptions): ElementProps;
     static create(...args: ConstructorParameters<typeof IModelElementCloneContext>): Promise<IModelElementCloneContext>;
+    // @deprecated (undocumented)
     dispose(): void;
     // @internal
     dump(outputFileName: string): void;
@@ -3364,6 +3823,12 @@ export class IModelElementCloneContext {
 
 // @public
 export class IModelHost {
+    // @internal
+    static [_getHubAccess](): BackendHubAccess | undefined;
+    // @internal
+    static get [_hubAccess](): BackendHubAccess;
+    // @internal (undocumented)
+    static [_setHubAccess](hubAccess: BackendHubAccess | undefined): void;
     static get appAssetsDir(): string | undefined;
     static get applicationId(): string;
     static set applicationId(id: string);
@@ -3384,22 +3849,17 @@ export class IModelHost {
         exactMatch?: boolean;
     }): string;
     // (undocumented)
-    static configuration?: IModelHostOptions;
+    static configuration?: Omit<IModelHostOptions, "hubAccess">;
+    static createNewIModel(arg: CreateNewIModelProps): Promise<GuidString>;
     static getAccessToken(): Promise<AccessToken>;
     // @internal
     static getCrashReportProperties(): CrashReportingConfigNameValuePair[];
-    // @internal
-    static getHubAccess(): BackendHubAccess | undefined;
-    // @internal
-    static get hubAccess(): BackendHubAccess;
     static get isValid(): boolean;
     static get logTileLoadTimeThreshold(): number;
     static get logTileSizeThreshold(): number;
     static readonly onAfterStartup: BeEvent<() => void>;
     static readonly onBeforeShutdown: BeEvent<() => void>;
     static readonly onWorkspaceStartup: BeEvent<() => void>;
-    // @internal @deprecated
-    static get platform(): typeof IModelJsNative;
     // @beta
     static get profileDir(): LocalDirName;
     // @beta
@@ -3414,8 +3874,6 @@ export class IModelHost {
     static set sessionId(id: GuidString);
     // @internal
     static setCrashReportProperty(name: string, value: string): void;
-    // @internal (undocumented)
-    static setHubAccess(hubAccess: BackendHubAccess | undefined): void;
     // @beta
     static get settingsSchemas(): SettingsSchemas;
     static shutdown(this: void): Promise<void>;
@@ -3452,7 +3910,9 @@ export class IModelHostConfiguration implements IModelHostOptions {
     static defaultMaxTileCacheDbSize: number;
     // (undocumented)
     static defaultTileRequestTimeout: number;
-    // @internal (undocumented)
+    // @beta
+    disableThinnedNativeInstanceWorkflow?: boolean;
+    // (undocumented)
     hubAccess?: BackendHubAccess;
     // @internal (undocumented)
     logTileLoadTimeThreshold: number;
@@ -3479,8 +3939,8 @@ export interface IModelHostOptions {
     compressCachedTiles?: boolean;
     // @internal
     crashReportingConfig?: CrashReportingConfig;
+    disableThinnedNativeInstanceWorkflow?: boolean;
     enableOpenTelemetry?: boolean;
-    // @internal
     hubAccess?: BackendHubAccess;
     // @internal
     logTileLoadTimeThreshold?: number;
@@ -3566,20 +4026,20 @@ export class IModelNative {
     static get platform(): typeof IModelJsNative;
 }
 
-// @public
+// @public @preview
 export abstract class InformationContentElement extends Element_2 {
     protected constructor(props: ElementProps, iModel: IModelDb);
     // (undocumented)
     static get className(): string;
 }
 
-// @public
+// @public @preview
 export abstract class InformationModel extends Model {
     // (undocumented)
     static get className(): string;
 }
 
-// @public
+// @public @preview
 export abstract class InformationPartitionElement extends InformationContentElement {
     protected constructor(props: InformationPartitionElementProps, iModel: IModelDb);
     // (undocumented)
@@ -3590,27 +4050,27 @@ export abstract class InformationPartitionElement extends InformationContentElem
     toJSON(): InformationPartitionElementProps;
 }
 
-// @public
+// @public @preview
 export abstract class InformationRecordElement extends InformationContentElement {
     protected constructor(props: ElementProps, iModel: IModelDb);
     // (undocumented)
     static get className(): string;
 }
 
-// @public
+// @public @preview
 export class InformationRecordModel extends InformationModel {
     // (undocumented)
     static get className(): string;
     static insert(iModelDb: IModelDb, parentSubjectId: Id64String, name: string): Id64String;
 }
 
-// @public
+// @public @preview
 export class InformationRecordPartition extends InformationPartitionElement {
     // (undocumented)
     static get className(): string;
 }
 
-// @public
+// @public @preview
 export abstract class InformationReferenceElement extends InformationContentElement {
     protected constructor(props: ElementProps, iModel: IModelDb);
     // (undocumented)
@@ -3619,6 +4079,19 @@ export abstract class InformationReferenceElement extends InformationContentElem
 
 // @internal (undocumented)
 export function initializeTracing(enableOpenTelemetry?: boolean): void;
+
+// @beta
+export interface InlineGeometryPartsResult {
+    numCandidateParts: number;
+    numPartsDeleted: number;
+    numRefsInlined: number;
+}
+
+// @public
+export interface InsertElementOptions {
+    // @beta
+    forceUseId?: boolean;
+}
 
 // @beta
 export interface InstanceChange {
@@ -3689,6 +4162,9 @@ export class KnownLocations {
 }
 
 // @beta
+export function layoutTextBlock(args: LayoutTextBlockArgs): TextBlockLayout;
+
+// @beta
 export interface LayoutTextBlockArgs {
     // @internal
     computeTextRange?: ComputeRangesForTextLayout;
@@ -3705,19 +4181,54 @@ export class LightLocation extends SpatialLocationElement {
     protected constructor(props: LightLocationProps, iModel: IModelDb);
     // (undocumented)
     static get className(): string;
-    enabled: boolean;
+    enabled?: boolean;
 }
 
-// @public
+// @beta
+export class LineLayout {
+    constructor(source: Paragraph);
+    // (undocumented)
+    append(run: RunLayout): void;
+    // (undocumented)
+    get back(): RunLayout;
+    // (undocumented)
+    get isEmpty(): boolean;
+    // (undocumented)
+    justificationRange: Range2d;
+    // (undocumented)
+    lengthFromLastTab: number;
+    // (undocumented)
+    offsetFromDocument: {
+        x: number;
+        y: number;
+    };
+    // (undocumented)
+    range: Range2d;
+    // (undocumented)
+    get runs(): ReadonlyArray<RunLayout>;
+    // (undocumented)
+    source: Paragraph;
+    stringify(): string;
+    // (undocumented)
+    toResult(textBlock: TextBlock): LineLayoutResult;
+}
+
+// @public @preview
 export class LineStyle extends DefinitionElement {
     protected constructor(props: LineStyleProps, iModel: IModelDb);
     // (undocumented)
     static get className(): string;
     static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code;
+    // @beta
+    protected static readonly _customHandledProps: CustomHandledProperty[];
     // (undocumented)
     data: string;
     // (undocumented)
     description?: string;
+    // @beta
+    static deserialize(props: DeserializeEntityArgs): LineStyleProps;
+    // @beta
+    static serialize(props: LineStyleProps, iModel: IModelDb): ECSqlRow;
 }
 
 // @public
@@ -3871,20 +4382,20 @@ export namespace LineStyleDefinition {
     }
 }
 
-// @public
+// @public @preview
 export abstract class LinkElement extends InformationReferenceElement {
     // (undocumented)
     static get className(): string;
     static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code;
 }
 
-// @public
+// @public @preview
 export class LinkModel extends InformationModel {
     // (undocumented)
     static get className(): string;
 }
 
-// @public
+// @public @preview
 export class LinkPartition extends InformationPartitionElement {
     // (undocumented)
     static get className(): string;
@@ -4047,10 +4558,10 @@ export interface LockControl {
     releaseAllLocks(): Promise<void>;
 }
 
-// @internal (undocumented)
+// @public
 export type LockMap = Map<Id64String, LockState_2>;
 
-// @beta
+// @public
 export interface LockProps {
     readonly id: Id64String;
     readonly state: LockState_2;
@@ -4083,7 +4594,7 @@ export interface LockStatusShared {
     state: LockState_2.Shared;
 }
 
-// @internal
+// @internal @deprecated
 export class MetaDataRegistry {
     add(classFullName: string, metaData: EntityMetaData): void;
     find(classFullName: string): EntityMetaData | undefined;
@@ -4091,14 +4602,26 @@ export class MetaDataRegistry {
     findByClassId(classId: Id64String): EntityMetaData | undefined;
 }
 
-// @public
+// @internal (undocumented)
+export interface MockCheckpoint {
+    // (undocumented)
+    mockAttach(checkpoint: CheckpointProps): string;
+    // (undocumented)
+    mockDownload(_request: DownloadRequest): void;
+}
+
+// @public @preview
 export class Model extends Entity {
     protected constructor(props: ModelProps, iModel: IModelDb);
     // (undocumented)
     static get className(): string;
     // (undocumented)
     protected collectReferenceIds(referenceIds: EntityReferenceSet): void;
+    // @beta
+    protected static readonly _customHandledProps: CustomHandledProperty[];
     delete(): void;
+    // @beta
+    static deserialize(props: DeserializeEntityArgs): ModelProps;
     // (undocumented)
     getJsonProperty(name: string): any;
     getUserProperties(namespace: string): any;
@@ -4118,9 +4641,9 @@ export class Model extends Entity {
     // @beta
     protected static onDelete(arg: OnModelIdArg): void;
     // @beta
-    protected static onDeleted(_arg: OnModelIdArg): void;
+    protected static onDeleted(arg: OnModelIdArg): void;
     // @beta
-    protected static onDeletedElement(_arg: OnElementInModelIdArg): void;
+    protected static onDeletedElement(arg: OnElementInModelIdArg): void;
     // @beta
     protected static onDeleteElement(_arg: OnElementInModelIdArg): void;
     // @beta
@@ -4128,22 +4651,24 @@ export class Model extends Entity {
     // @beta
     protected static onInserted(_arg: OnModelIdArg): void;
     // @beta
-    protected static onInsertedElement(_arg: OnElementInModelIdArg): void;
+    protected static onInsertedElement(arg: OnElementInModelIdArg): void;
     // @beta
     protected static onInsertElement(_arg: OnElementInModelPropsArg): void;
     // @beta
     protected static onUpdate(arg: OnModelPropsArg): void;
     // @beta
-    protected static onUpdated(_arg: OnModelIdArg): void;
+    protected static onUpdated(arg: OnModelIdArg): void;
     // @beta
-    protected static onUpdatedElement(_arg: OnElementInModelIdArg): void;
+    protected static onUpdatedElement(arg: OnElementInModelIdArg): void;
     // @beta
     protected static onUpdateElement(_arg: OnElementInModelPropsArg): void;
     // (undocumented)
-    readonly parentModel: Id64String;
+    readonly parentModel?: Id64String;
     // @internal (undocumented)
     static get protectedOperations(): string[];
     removeUserProperties(nameSpace: string): void;
+    // @beta
+    static serialize(props: ModelProps, _iModel: IModelDb): ECSqlRow;
     // (undocumented)
     setJsonProperty(name: string, value: any): void;
     setUserProperties(nameSpace: string, value: any): void;
@@ -4152,7 +4677,7 @@ export class Model extends Entity {
     update(): void;
 }
 
-// @public
+// @public @preview
 export class ModelSelector extends DefinitionElement {
     protected constructor(props: ModelSelectorProps, iModel: IModelDb);
     // (undocumented)
@@ -4161,6 +4686,10 @@ export class ModelSelector extends DefinitionElement {
     protected collectReferenceIds(referenceIds: EntityReferenceSet): void;
     static create(iModelDb: IModelDb, definitionModelId: Id64String, name: string, models: Id64Array): ModelSelector;
     static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code;
+    // @beta
+    protected static readonly _customHandledProps: CustomHandledProperty[];
+    // @beta
+    static deserialize(props: DeserializeEntityArgs): ModelSelectorProps;
     static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, models: Id64Array): Id64String;
     models: Id64String[];
     // (undocumented)
@@ -4318,7 +4847,7 @@ export interface OnSubModelPropsArg extends OnElementArg {
 // @public
 export type OpenBriefcaseArgs = OpenBriefcaseProps & CloudContainerArgs & OpenSqliteArgs;
 
-// @public
+// @public @preview
 export class OrthographicViewDefinition extends SpatialViewDefinition {
     constructor(props: SpatialViewDefinitionProps, iModel: IModelDb);
     // (undocumented)
@@ -4329,13 +4858,15 @@ export class OrthographicViewDefinition extends SpatialViewDefinition {
 }
 
 // @beta
-export class PartialECChangeUnifier {
+export class PartialECChangeUnifier implements Disposable {
+    [Symbol.dispose](): void;
+    constructor(_db: AnyDb, _cache?: ECChangeUnifierCache);
     appendFrom(adaptor: ChangesetECAdaptor): void;
+    getInstanceCount(): number;
     get instances(): IterableIterator<ChangedECInstance>;
-    stripMetaData(): void;
 }
 
-// @public
+// @public @preview
 export abstract class PhysicalElement extends SpatialElement {
     protected constructor(props: PhysicalElementProps, iModel: IModelDb);
     // (undocumented)
@@ -4380,7 +4911,7 @@ export abstract class PhysicalMaterial extends DefinitionElement {
     static createCode(iModel: IModelDb, definitionModelId: CodeScopeProps, name: string): Code;
 }
 
-// @public
+// @public @preview
 export class PhysicalModel extends SpatialModel {
     // (undocumented)
     static get className(): string;
@@ -4394,13 +4925,13 @@ export class PhysicalObject extends PhysicalElement {
     static get className(): string;
 }
 
-// @public
+// @public @preview
 export class PhysicalPartition extends InformationPartitionElement {
     // (undocumented)
     static get className(): string;
 }
 
-// @public
+// @public @preview
 export abstract class PhysicalType extends TypeDefinitionElement {
     protected constructor(props: PhysicalTypeProps, iModel: IModelDb);
     // (undocumented)
@@ -4459,20 +4990,7 @@ export interface ProcessChangesetOptions {
 }
 
 // @beta
-export function produceTextAnnotationGeometry(args: ProduceTextAnnotationGeometryArgs): TextBlockGeometryProps;
-
-// @beta
-export interface ProduceTextAnnotationGeometryArgs {
-    annotation: TextAnnotation;
-    // @internal
-    computeTextRange?: ComputeRangesForTextLayout;
-    debugAnchorPointAndRange?: boolean;
-    // @internal
-    findFontId?: FindFontId;
-    // @internal
-    findTextStyle?: FindTextStyle;
-    iModel: IModelDb;
-}
+export function produceTextBlockGeometry(layout: TextBlockLayout, documentTransform: Transform): TextBlockGeometryProps;
 
 // @public
 export type ProgressFunction = (loaded: number, total: number) => ProgressStatus;
@@ -4482,6 +5000,9 @@ export enum ProgressStatus {
     Abort = 1,
     Continue = 0
 }
+
+// @public @preview
+export type PropertyHandler = (name: string, property: Property) => void;
 
 // @beta (undocumented)
 export namespace PropertyStore {
@@ -4541,6 +5062,7 @@ export namespace PropertyStore {
 // @public
 export type PullChangesArgs = ToChangesetArgs & {
     onProgress?: ProgressFunction;
+    noFastForward?: true;
 };
 
 // @public
@@ -4548,6 +5070,8 @@ export interface PushChangesArgs extends TokenArg {
     description: string;
     mergeRetryCount?: number;
     mergeRetryDelay?: BeDuration;
+    // @internal
+    noFastForward?: true;
     pushRetryCount?: number;
     pushRetryDelay?: BeDuration;
     retainLocks?: true;
@@ -4557,6 +5081,11 @@ export interface PushChangesArgs extends TokenArg {
 export interface QueryLocalChangesArgs {
     readonly includedClasses?: string[];
     readonly includeUnsavedChanges?: boolean;
+}
+
+// @beta
+export interface QueryMappedFamiliesArgs {
+    includeNonEmbedded?: boolean;
 }
 
 // @beta
@@ -4623,11 +5152,17 @@ export class RenderMaterialElement extends DefinitionElement {
     static get className(): string;
     static create(iModelDb: IModelDb, definitionModelId: Id64String, materialName: string, params: RenderMaterialElementParams): RenderMaterialElement;
     static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, name: string): Code;
+    // @beta
+    protected static readonly _customHandledProps: CustomHandledProperty[];
     description?: string;
+    // @beta
+    static deserialize(props: DeserializeEntityArgs): RenderMaterialProps;
     static insert(iModelDb: IModelDb, definitionModelId: Id64String, materialName: string, params: RenderMaterialElementParams): Id64String;
     // @beta (undocumented)
     protected static onCloned(context: IModelElementCloneContext, sourceProps: ElementProps, targetProps: ElementProps): void;
     paletteName: string;
+    // @beta
+    static serialize(props: RenderMaterialProps, iModel: IModelDb): ECSqlRow;
     // (undocumented)
     toJSON(): RenderMaterialProps;
 }
@@ -4665,7 +5200,7 @@ export class RenderMaterialOwnsRenderMaterials extends ElementOwnsChildElements 
     static classFullName: string;
 }
 
-// @public
+// @public @preview
 export class RenderTimeline extends InformationRecordElement {
     protected constructor(props: RenderTimelineProps, iModel: IModelDb);
     // (undocumented)
@@ -4673,6 +5208,8 @@ export class RenderTimeline extends InformationRecordElement {
     // (undocumented)
     protected collectReferenceIds(ids: EntityReferenceSet): void;
     description: string;
+    // @beta
+    static deserialize(props: DeserializeEntityArgs): RenderTimelineProps;
     // (undocumented)
     static fromJSON(props: RenderTimelineProps, iModel: IModelDb): RenderTimeline;
     // @alpha (undocumented)
@@ -4684,7 +5221,7 @@ export class RenderTimeline extends InformationRecordElement {
     toJSON(): RenderTimelineProps;
 }
 
-// @public
+// @public @preview
 export class RepositoryLink extends UrlLink {
     protected constructor(props: RepositoryLinkProps, iModel: IModelDb);
     // (undocumented)
@@ -4696,7 +5233,7 @@ export class RepositoryLink extends UrlLink {
     toJSON(): RepositoryLinkProps;
 }
 
-// @public
+// @public @preview
 export class RepositoryModel extends DefinitionModel {
     // (undocumented)
     static get className(): string;
@@ -4714,13 +5251,13 @@ export type RevertChangesArgs = Optional<PushChangesArgs, "description"> & {
     skipSchemaChanges?: true;
 };
 
-// @public
+// @public @preview
 export abstract class RoleElement extends Element_2 {
     // (undocumented)
     static get className(): string;
 }
 
-// @public
+// @public @preview
 export class RoleModel extends Model {
     // (undocumented)
     static get className(): string;
@@ -4734,12 +5271,52 @@ export class RpcTrace {
     static runWithSpan<T>(activity: RpcActivity, fn: () => Promise<T>): Promise<T>;
 }
 
+// @beta
+export class RunLayout {
+    // (undocumented)
+    canWrap(): this is {
+        source: TextRun;
+    };
+    // (undocumented)
+    charOffset: number;
+    // (undocumented)
+    static create(source: Run, context: LayoutContext): RunLayout;
+    // (undocumented)
+    denominatorRange?: Range2d;
+    // (undocumented)
+    fontId: FontId;
+    // (undocumented)
+    justificationRange?: Range2d;
+    // (undocumented)
+    numChars: number;
+    // (undocumented)
+    numeratorRange?: Range2d;
+    // (undocumented)
+    offsetFromLine: {
+        x: number;
+        y: number;
+    };
+    // (undocumented)
+    range: Range2d;
+    // (undocumented)
+    source: Run;
+    // (undocumented)
+    split(context: LayoutContext): RunLayout[];
+    stringify(): string;
+    // (undocumented)
+    style: TextStyleSettings;
+    // (undocumented)
+    toResult(paragraph: Paragraph): RunLayoutResult;
+}
+
 // @public
 export class Schema {
     // @internal
     protected constructor();
     // @internal
     static get missingRequiredBehavior(): boolean;
+    // @internal
+    static get schemaKey(): SchemaKey_2;
     static get schemaName(): string;
     // @beta
     static toSemverString(paddedVersion: string): string;
@@ -4753,6 +5330,17 @@ export interface SchemaImportOptions {
 
 // @internal (undocumented)
 export type SchemaKey = IModelJsNative.ECSchemaXmlContext.SchemaKey;
+
+// @public
+export class SchemaMap {
+    // @internal (undocumented)
+    delete(schemaName: string): boolean;
+    // @internal (undocumented)
+    get(schemaName: string): typeof Schema | undefined;
+    registerSchema(schema: typeof Schema): void;
+    // @internal (undocumented)
+    set(schemaName: string, schema: typeof Schema): void;
+}
 
 // @internal (undocumented)
 export type SchemaMatchType = IModelJsNative.ECSchemaXmlContext.SchemaMatchType;
@@ -4810,7 +5398,7 @@ export class SectionCallout extends Callout {
     static get className(): string;
 }
 
-// @public
+// @public @preview
 export class SectionDrawing extends Drawing {
     protected constructor(props: SectionDrawingProps, iModel: IModelDb);
     // (undocumented)
@@ -4827,7 +5415,7 @@ export class SectionDrawing extends Drawing {
     toJSON(): SectionDrawingProps;
 }
 
-// @public
+// @public @preview
 export class SectionDrawingLocation extends SpatialLocationElement {
     constructor(props: SectionDrawingLocationProps, iModel: IModelDb);
     // (undocumented)
@@ -4837,7 +5425,7 @@ export class SectionDrawingLocation extends SpatialLocationElement {
     toJSON(): SectionDrawingLocationProps;
 }
 
-// @public
+// @public @preview
 export class SectionDrawingModel extends DrawingModel {
     // (undocumented)
     static get className(): string;
@@ -4971,7 +5559,7 @@ export interface SettingsSchemas {
     validateSetting<T>(value: T, settingName: SettingName): T;
 }
 
-// @public
+// @public @preview
 export class Sheet extends Document_2 {
     protected constructor(props: SheetProps, iModel: IModelDb);
     // (undocumented)
@@ -4989,7 +5577,7 @@ export class Sheet extends Document_2 {
     width: number;
 }
 
-// @public
+// @public @preview
 export class SheetBorderTemplate extends Document_2 {
     protected constructor(props: SheetBorderTemplateProps, iModel: IModelDb);
     // (undocumented)
@@ -5096,7 +5684,7 @@ export class SheetIndexReferenceRefersToSheetIndex extends RelatedElement {
     static classFullName: string;
 }
 
-// @public
+// @public @preview
 export class SheetModel extends GraphicalModel2d {
     // (undocumented)
     static get className(): string;
@@ -5130,7 +5718,7 @@ export class SheetReferenceRefersToSheet extends RelatedElement {
     static classFullName: string;
 }
 
-// @public
+// @public @preview
 export class SheetTemplate extends Document_2 {
     protected constructor(props: SheetTemplateProps, iModel: IModelDb);
     // (undocumented)
@@ -5145,10 +5733,20 @@ export class SheetTemplate extends Document_2 {
     width?: number;
 }
 
-// @public
+// @public @preview
 export class SheetViewDefinition extends ViewDefinition2d {
+    protected constructor(props: ViewDefinition2dProps, iModel: IModelDb);
     // (undocumented)
     static get className(): string;
+    static create(args: CreateSheetViewDefinitionArgs): SheetViewDefinition;
+    static fromJSON(props: Omit<ViewDefinition2dProps, "classFullName">, iModel: IModelDb): SheetViewDefinition;
+    static insert(args: CreateSheetViewDefinitionArgs): Id64String;
+}
+
+// @beta
+export interface SimplifyElementGeometryArgs {
+    convertBReps?: boolean;
+    id: Id64String;
 }
 
 // @public
@@ -5183,7 +5781,7 @@ export type SnapshotDbOpenArgs = SnapshotOpenOptions & CloudContainerArgs & Open
 
 export { SourceAndTarget }
 
-// @public
+// @public @preview
 export class SpatialCategory extends Category {
     protected constructor(opts: ElementProps, iModel: IModelDb);
     // (undocumented)
@@ -5195,7 +5793,7 @@ export class SpatialCategory extends Category {
     static queryCategoryIdByName(iModel: IModelDb, scopeModelId: Id64String, categoryName: string): Id64String | undefined;
 }
 
-// @public
+// @public @preview
 export abstract class SpatialElement extends GeometricElement3d {
     protected constructor(props: GeometricElement3dProps, iModel: IModelDb);
     // (undocumented)
@@ -5209,7 +5807,7 @@ export class SpatialLocation extends SpatialLocationElement {
     static get className(): string;
 }
 
-// @public
+// @public @preview
 export abstract class SpatialLocationElement extends SpatialElement {
     protected constructor(props: GeometricElement3dProps, iModel: IModelDb);
     // (undocumented)
@@ -5223,20 +5821,20 @@ export class SpatialLocationIsOfType extends GeometricElement3dHasTypeDefinition
     static classFullName: string;
 }
 
-// @public
+// @public @preview
 export class SpatialLocationModel extends SpatialModel {
     // (undocumented)
     static get className(): string;
     static insert(iModelDb: IModelDb, parentSubjectId: Id64String, name: string, isPlanProjection?: boolean): Id64String;
 }
 
-// @public
+// @public @preview
 export class SpatialLocationPartition extends InformationPartitionElement {
     // (undocumented)
     static get className(): string;
 }
 
-// @public
+// @public @preview
 export abstract class SpatialLocationType extends TypeDefinitionElement {
     protected constructor(props: TypeDefinitionElementProps, iModel: IModelDb);
     // (undocumented)
@@ -5244,13 +5842,13 @@ export abstract class SpatialLocationType extends TypeDefinitionElement {
     static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code;
 }
 
-// @public
+// @public @preview
 export abstract class SpatialModel extends GeometricModel3d {
     // (undocumented)
     static get className(): string;
 }
 
-// @public
+// @public @preview
 export class SpatialViewDefinition extends ViewDefinition3d {
     protected constructor(props: SpatialViewDefinitionProps, iModel: IModelDb);
     // (undocumented)
@@ -5258,6 +5856,10 @@ export class SpatialViewDefinition extends ViewDefinition3d {
     // (undocumented)
     protected collectReferenceIds(referenceIds: EntityReferenceSet): void;
     static createWithCamera(iModelDb: IModelDb, definitionModelId: Id64String, name: string, modelSelectorId: Id64String, categorySelectorId: Id64String, displayStyleId: Id64String, range: Range3d, standardView?: StandardViewIndex, cameraAngle?: number): SpatialViewDefinition;
+    // @beta
+    protected static readonly _customHandledProps: CustomHandledProperty[];
+    // @beta
+    static deserialize(props: DeserializeEntityArgs): SpatialViewDefinitionProps;
     static fromJSON(props: Omit<SpatialViewDefinitionProps, "classFullName">, iModel: IModelDb): SpatialViewDefinition;
     static insertWithCamera(iModelDb: IModelDb, definitionModelId: Id64String, name: string, modelSelectorId: Id64String, categorySelectorId: Id64String, displayStyleId: Id64String, range: Range3d, standardView?: StandardViewIndex, cameraAngle?: number): Id64String;
     loadModelSelector(): ModelSelector;
@@ -5266,6 +5868,8 @@ export class SpatialViewDefinition extends ViewDefinition3d {
     static readonly requiredReferenceKeys: ReadonlyArray<string>;
     // @alpha (undocumented)
     static readonly requiredReferenceKeyTypeMap: Record<string, ConcreteEntityTypes>;
+    // @beta
+    static serialize(props: SpatialViewDefinitionProps, _iModel: IModelDb): ECSqlRow;
     // (undocumented)
     toJSON(): SpatialViewDefinitionProps;
 }
@@ -5282,7 +5886,8 @@ export interface SqliteChange {
 export type SqliteChangeOp = "Inserted" | "Updated" | "Deleted";
 
 // @beta
-export class SqliteChangesetReader implements IDisposable {
+export class SqliteChangesetReader implements Disposable {
+    [Symbol.dispose](): void;
     protected constructor(
     db: AnyDb);
     get changeIndex(): number;
@@ -5290,7 +5895,6 @@ export class SqliteChangesetReader implements IDisposable {
     get columnCount(): number;
     readonly db: AnyDb;
     get disableSchemaCheck(): boolean;
-    dispose(): void;
     getChangeValue(columnIndex: number, stage: SqliteValueStage): SqliteValue_2;
     getChangeValueBinary(columnIndex: number, stage: SqliteValueStage): Uint8Array | null | undefined;
     getChangeValueDouble(columnIndex: number, stage: SqliteValueStage): number | null | undefined;
@@ -5317,6 +5921,9 @@ export class SqliteChangesetReader implements IDisposable {
         db: IModelDb;
         includeInMemoryChanges?: true;
     }): SqliteChangesetReader;
+    static openTxn(args: {
+        txnId: Id64String;
+    } & SqliteChangesetReaderArgs): SqliteChangesetReader;
     get primaryKeyValues(): SqliteValueArray;
     step(): boolean;
     get tableName(): string;
@@ -5340,6 +5947,8 @@ export class SQLiteDb {
     readonly [_nativeDb]: IModelJsNative.SQLiteDb;
     abandonChanges(): void;
     closeDb(saveChanges?: boolean): void;
+    // @beta
+    get cloudContainer(): CloudSqlite.CloudContainer | undefined;
     // @internal (undocumented)
     static createBlobIO(): SQLiteDb.BlobIO;
     createDb(dbName: string): void;
@@ -5354,10 +5963,9 @@ export class SQLiteDb {
     // @deprecated
     dispose(): void;
     executeSQL(sql: string): DbResult;
+    getLastInsertRowId(): number;
     get isOpen(): boolean;
     get isReadonly(): boolean;
-    // @internal @deprecated (undocumented)
-    get nativeDb(): IModelJsNative.SQLiteDb;
     openDb(dbName: string, openMode: OpenMode | SQLiteDb.OpenParams): void;
     // @beta (undocumented)
     openDb(dbName: string, openMode: OpenMode | SQLiteDb.OpenParams, container?: CloudSqlite.CloudContainer): void;
@@ -5438,7 +6046,8 @@ export namespace SQLiteDb {
 }
 
 // @public
-export class SqliteStatement implements IterableIterator<any>, IDisposable {
+export class SqliteStatement implements IterableIterator<any>, Disposable {
+    [Symbol.dispose](): void;
     [Symbol.iterator](): IterableIterator<any>;
     constructor(_sql: string);
     bindBlob(parameter: BindParameter, blob: Uint8Array): void;
@@ -5454,6 +6063,7 @@ export class SqliteStatement implements IterableIterator<any>, IDisposable {
     bindValue(parameter: BindParameter, value: any): void;
     bindValues(values: any[] | object): void;
     clearBindings(): void;
+    // @deprecated (undocumented)
     dispose(): void;
     getColumnBytes(colIndex: number): number;
     getColumnCount(): number;
@@ -5548,6 +6158,8 @@ export enum SqliteValueType {
 // @public
 export class StandaloneDb extends BriefcaseDb {
     // @beta
+    static convertToStandalone(iModelFileName: LocalFileName): void;
+    // @beta
     createClassViews(): void;
     static createEmpty(filePath: LocalFileName, args: CreateEmptyStandaloneIModelProps): StandaloneDb;
     // (undocumented)
@@ -5583,7 +6195,7 @@ export interface StringParam {
     id?: Id64String;
 }
 
-// @public
+// @public @preview
 export class SubCategory extends DefinitionElement {
     protected constructor(props: SubCategoryProps, iModel: IModelDb);
     appearance: SubCategoryAppearance;
@@ -5591,17 +6203,23 @@ export class SubCategory extends DefinitionElement {
     static get className(): string;
     static create(iModelDb: IModelDb, parentCategoryId: Id64String, name: string, appearance: SubCategoryAppearance.Props | SubCategoryAppearance): SubCategory;
     static createCode(iModel: IModelDb, parentCategoryId: CodeScopeProps, codeValue: string): Code;
+    // @beta
+    protected static readonly _customHandledProps: CustomHandledProperty[];
     description?: string;
+    // @beta
+    static deserialize(props: DeserializeEntityArgs): SubCategoryProps;
     getCategoryId(): Id64String;
     getSubCategoryId(): Id64String;
     getSubCategoryName(): string;
     static insert(iModelDb: IModelDb, parentCategoryId: Id64String, name: string, appearance: SubCategoryAppearance.Props | SubCategoryAppearance): Id64String;
     get isDefaultSubCategory(): boolean;
+    // @beta
+    static serialize(props: SubCategoryProps, iModel: IModelDb): ECSqlRow;
     // (undocumented)
     toJSON(): SubCategoryProps;
 }
 
-// @public
+// @public @preview
 export class Subject extends InformationReferenceElement {
     protected constructor(props: SubjectProps, iModel: IModelDb);
     // (undocumented)
@@ -5683,7 +6301,7 @@ export class TemplateViewDefinition3d extends ViewDefinition3d {
     static get className(): string;
 }
 
-// @public
+// @public @preview
 export class TextAnnotation2d extends AnnotationElement2d {
     protected constructor(props: TextAnnotation2dProps, iModel: IModelDb);
     // @internal (undocumented)
@@ -5691,12 +6309,12 @@ export class TextAnnotation2d extends AnnotationElement2d {
     // (undocumented)
     static fromJSON(props: TextAnnotation2dProps, iModel: IModelDb): TextAnnotation2d;
     getAnnotation(): TextAnnotation | undefined;
-    setAnnotation(annotation: TextAnnotation, subCategory?: Id64String): boolean;
+    setAnnotation(annotation: TextAnnotation): void;
     // (undocumented)
     toJSON(): TextAnnotation2dProps;
 }
 
-// @public
+// @public @preview
 export class TextAnnotation3d extends GraphicalElement3d {
     protected constructor(props: TextAnnotation3dProps, iModel: IModelDb);
     // @internal (undocumented)
@@ -5704,12 +6322,34 @@ export class TextAnnotation3d extends GraphicalElement3d {
     // (undocumented)
     static fromJSON(props: TextAnnotation3dProps, iModel: IModelDb): TextAnnotation3d;
     getAnnotation(): TextAnnotation | undefined;
-    setAnnotation(annotation: TextAnnotation, subCategory?: Id64String): boolean;
+    setAnnotation(annotation: TextAnnotation): void;
     // (undocumented)
     toJSON(): TextAnnotation3dProps;
 }
 
-// @public
+// @beta
+export class TextBlockLayout {
+    constructor(source: TextBlock, context: LayoutContext);
+    // (undocumented)
+    lines: LineLayout[];
+    range: Range2d;
+    // (undocumented)
+    source: TextBlock;
+    stringify(): string;
+    textRange: Range2d;
+    // (undocumented)
+    toResult(): TextBlockLayoutResult;
+}
+
+// @internal (undocumented)
+export interface TextLayoutRanges {
+    // (undocumented)
+    justification: Range2d;
+    // (undocumented)
+    layout: Range2d;
+}
+
+// @public @preview
 export class Texture extends DefinitionElement {
     // @beta
     protected constructor(props: TextureCreateProps, iModel: IModelDb);
@@ -5777,23 +6417,29 @@ export interface TokenArg {
     readonly accessToken?: AccessToken;
 }
 
-// @public
+// @public @preview
 export interface TxnChangedEntities {
     readonly deletes: EntityIdAndClassIdIterable;
     readonly inserts: EntityIdAndClassIdIterable;
     readonly updates: EntityIdAndClassIdIterable;
 }
 
-// @public
+// @public @preview
 export type TxnIdString = string;
 
-// @public
+// @public @preview
 export class TxnManager {
     // @internal
     constructor(_iModel: BriefcaseDb | StandaloneDb);
+    // @internal
+    appCustomConflictHandler?: (args: DbRebaseChangesetConflictArgs) => DbConflictResolution | undefined;
     beginMultiTxnOperation(): DbResult;
     cancelTo(txnId: TxnIdString): IModelStatus;
+    // @internal (undocumented)
+    readonly changeMergeManager: ChangeMergeManager;
+    deleteAllTxns(): void;
     endMultiTxnOperation(): DbResult;
+    getChangeTrackingMemoryUsed(): number;
     getCurrentTxnId(): TxnIdString;
     getMultiTxnOperationDepth(): number;
     getRedoString(): string;
@@ -5845,6 +6491,10 @@ export class TxnManager {
     protected _onGeometryGuidsChanged(changes: ModelIdAndGeometryGuid[]): void;
     readonly onModelGeometryChanged: BeEvent<(changes: ReadonlyArray<ModelIdAndGeometryGuid>) => void>;
     readonly onModelsChanged: BeEvent<(changes: TxnChangedEntities) => void>;
+    // @internal (undocumented)
+    readonly onRebaseTxnBegin: BeEvent<(txn: TxnArgs) => void>;
+    // @internal (undocumented)
+    readonly onRebaseTxnEnd: BeEvent<(txn: TxnArgs) => void>;
     readonly onReplayedExternalTxns: BeEvent<() => void>;
     // @internal (undocumented)
     protected _onReplayedExternalTxns(): void;
@@ -5870,7 +6520,7 @@ export class TxnManager {
     readonly validationErrors: ValidationError[];
 }
 
-// @public
+// @public @preview
 export abstract class TypeDefinitionElement extends DefinitionElement {
     protected constructor(props: TypeDefinitionElementProps, iModel: IModelDb);
     // (undocumented)
@@ -5890,33 +6540,26 @@ export interface UpdateModelOptions extends ModelProps {
 // @beta
 export function upgradeCustomAttributesToEC3(xmlSchemas: string[], schemaContext?: ECSchemaXmlContext): string[];
 
-// @public
+// @public @preview
 export class UrlLink extends LinkElement {
     protected constructor(props: UrlLinkProps, iModel: IModelDb);
     // (undocumented)
     static get className(): string;
+    // @beta
+    protected static readonly _customHandledProps: CustomHandledProperty[];
     // (undocumented)
     description?: string;
+    // @beta
+    static deserialize(props: DeserializeEntityArgs): UrlLinkProps;
+    // @beta
+    static serialize(props: UrlLinkProps, iModel: IModelDb): ECSqlRow;
     // (undocumented)
     toJSON(): UrlLinkProps;
     // (undocumented)
     url?: string;
 }
 
-// @internal
-export class V1CheckpointManager {
-    static downloadCheckpoint(request: DownloadRequest): Promise<ChangesetId>;
-    // (undocumented)
-    static getCheckpointDb(request: DownloadRequest): Promise<SnapshotDb>;
-    // (undocumented)
-    static getFileName(checkpoint: CheckpointProps): LocalFileName;
-    // (undocumented)
-    static getFolder(iModelId: GuidString): LocalDirName;
-    // (undocumented)
-    static openCheckpointV1(fileName: LocalFileName, checkpoint: CheckpointProps): SnapshotDb;
-}
-
-// @internal
+// @public
 export interface V2CheckpointAccessProps {
     readonly accountName: string;
     readonly containerId: string;
@@ -5927,10 +6570,11 @@ export interface V2CheckpointAccessProps {
 
 // @internal
 export class V2CheckpointManager {
+    static [_mockCheckpoint]?: MockCheckpoint;
     // (undocumented)
     static attach(checkpoint: CheckpointProps): Promise<{
         dbName: string;
-        container: CloudSqlite.CloudContainer;
+        container: CloudSqlite.CloudContainer | undefined;
     }>;
     // (undocumented)
     static cleanup(): void;
@@ -5941,7 +6585,7 @@ export class V2CheckpointManager {
     static getFolder(): LocalDirName;
 }
 
-// @public
+// @public @preview
 export interface ValidationError {
     errorType: string;
     fatal: boolean;
@@ -5973,7 +6617,7 @@ export abstract class VersionedSqliteDb extends SQLiteDb {
     };
 }
 
-// @public
+// @public @preview
 export class ViewAttachment extends GraphicalElement2d {
     constructor(props: ViewAttachmentProps, iModel: IModelDb);
     // (undocumented)
@@ -5991,7 +6635,7 @@ export class ViewAttachmentLabel extends DetailingSymbol {
     static get className(): string;
 }
 
-// @public
+// @public @preview
 export abstract class ViewDefinition extends DefinitionElement {
     protected constructor(props: ViewDefinitionProps, iModel: IModelDb);
     categorySelectorId: Id64String;
@@ -6000,6 +6644,10 @@ export abstract class ViewDefinition extends DefinitionElement {
     // (undocumented)
     protected collectReferenceIds(referenceIds: EntityReferenceSet): void;
     static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code;
+    // @beta
+    protected static readonly _customHandledProps: CustomHandledProperty[];
+    // @beta
+    static deserialize(props: DeserializeEntityArgs): ViewDefinitionProps;
     abstract get details(): ViewDetails;
     displayStyleId: Id64String;
     getAuxiliaryCoordinateSystemId(): Id64String;
@@ -6015,12 +6663,14 @@ export abstract class ViewDefinition extends DefinitionElement {
     static readonly requiredReferenceKeys: ReadonlyArray<string>;
     // @alpha (undocumented)
     static readonly requiredReferenceKeyTypeMap: Record<string, ConcreteEntityTypes>;
+    // @beta
+    static serialize(props: ViewDefinitionProps, _iModel: IModelDb): ECSqlRow;
     setAuxiliaryCoordinateSystemId(acsId: Id64String): void;
     // (undocumented)
     toJSON(): ViewDefinitionProps;
 }
 
-// @public
+// @public @preview
 export class ViewDefinition2d extends ViewDefinition {
     protected constructor(props: ViewDefinition2dProps, iModel: IModelDb);
     angle: Angle;
@@ -6029,15 +6679,21 @@ export class ViewDefinition2d extends ViewDefinition {
     static get className(): string;
     // (undocumented)
     protected collectReferenceIds(referenceIds: EntityReferenceSet): void;
+    // @beta
+    protected static readonly _customHandledProps: CustomHandledProperty[];
     delta: Point2d;
+    // @beta
+    static deserialize(props: DeserializeEntityArgs): ViewDefinition2dProps;
     get details(): ViewDetails;
     loadDisplayStyle2d(): DisplayStyle2d;
     origin: Point2d;
+    // @beta
+    static serialize(props: ViewDefinition2dProps, _iModel: IModelDb): ECSqlRow;
     // (undocumented)
     toJSON(): ViewDefinition2dProps;
 }
 
-// @public
+// @public @preview
 export abstract class ViewDefinition3d extends ViewDefinition {
     protected constructor(props: ViewDefinition3dProps, iModel: IModelDb);
     angles: YawPitchRollAngles;
@@ -6045,10 +6701,16 @@ export abstract class ViewDefinition3d extends ViewDefinition {
     cameraOn: boolean;
     // (undocumented)
     static get className(): string;
+    // @beta
+    protected static readonly _customHandledProps: CustomHandledProperty[];
+    // @beta
+    static deserialize(props: DeserializeEntityArgs): ViewDefinition3dProps;
     get details(): ViewDetails3d;
     extents: Vector3d;
     loadDisplayStyle3d(): DisplayStyle3d;
     origin: Point3d;
+    // @beta
+    static serialize(props: ViewDefinition3dProps, _iModel: IModelDb): ECSqlRow;
     // (undocumented)
     toJSON(): ViewDefinition3dProps;
 }
@@ -6515,14 +7177,14 @@ export namespace ViewStore {
         {};
 }
 
-// @public
+// @public @preview
 export class VolumeElement extends SpatialLocationElement {
     protected constructor(props: GeometricElement3dProps, iModel: IModelDb);
     // (undocumented)
     static get className(): string;
 }
 
-// @public
+// @public @preview
 export class WebMercatorModel extends SpatialModel {
     // (undocumented)
     static get className(): string;
@@ -6638,13 +7300,13 @@ export type WorkspaceDbCloudProps = WorkspaceDbProps & WorkspaceContainerProps;
 export type WorkspaceDbFullName = string;
 
 // @beta
-export interface WorkspaceDbLoadError extends Error {
+export interface WorkspaceDbLoadError extends ITwinError {
     wsDb?: WorkspaceDb;
     wsDbProps?: WorkspaceDbProps & Partial<WorkspaceDbCloudProps>;
 }
 
 // @beta
-export interface WorkspaceDbLoadErrors extends Error {
+export interface WorkspaceDbLoadErrors extends ITwinError {
     wsLoadErrors?: WorkspaceDbLoadError[];
 }
 
@@ -6660,10 +7322,7 @@ export interface WorkspaceDbManifest {
 export type WorkspaceDbName = string;
 
 // @beta
-export interface WorkspaceDbNameAndVersion {
-    readonly dbName?: WorkspaceDbName;
-    readonly version?: WorkspaceDbVersionRange;
-}
+export type WorkspaceDbNameAndVersion = Optional<CloudSqlite.DbNameAndVersion, "dbName">;
 
 // @beta
 export interface WorkspaceDbProps extends WorkspaceDbNameAndVersion {
@@ -6689,13 +7348,10 @@ export interface WorkspaceDbSettingsProps extends WorkspaceDbCloudProps {
 }
 
 // @beta
-export type WorkspaceDbVersion = string;
+export type WorkspaceDbVersion = CloudSqlite.DbVersion;
 
 // @beta
-export type WorkspaceDbVersionIncrement = "major" | "minor" | "patch" | "premajor" | "preminor" | "prepatch" | "prerelease";
-
-// @beta
-export type WorkspaceDbVersionRange = string;
+export type WorkspaceDbVersionRange = CloudSqlite.DbVersionRange;
 
 // @beta (undocumented)
 export namespace WorkspaceEditor {

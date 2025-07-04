@@ -5,9 +5,9 @@
 /** @packageDocumentation
  * @module RpcInterface
  */
-
-import { BentleyStatus, IModelError } from "../../IModelError";
-import { BackendReadable } from "../../BackendTypes";
+import { BentleyStatus } from "@itwin/core-bentley";
+import { IModelError } from "../../IModelError";
+import { BackendReadable } from "../../internal/BackendTypes";
 import { RpcProtocol } from "./RpcProtocol";
 
 // cspell:ignore unmarshal

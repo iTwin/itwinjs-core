@@ -3,23 +3,16 @@
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
 
-import * as cpx from "cpx2";
 import * as fs from "fs";
 import Backend from "i18next-http-backend";
 import * as path from "path";
-import rimraf from "rimraf";
+import { rimrafSync } from "rimraf";
+import dotenv from "dotenv";
+import dotenvExpand from "dotenv-expand";
 import sinon from "sinon";
 import { IModelHost, IModelHostOptions, IModelJsFs } from "@itwin/core-backend";
 import { Guid, Logger, LogLevel } from "@itwin/core-bentley";
-import {
-  AuthorizationClient,
-  EmptyLocalization,
-  IModelReadRpcInterface,
-  Localization,
-  RpcConfiguration,
-  RpcDefaultConfiguration,
-  RpcInterfaceDefinition,
-} from "@itwin/core-common";
+import { EmptyLocalization, IModelReadRpcInterface, RpcConfiguration, RpcDefaultConfiguration, RpcInterfaceDefinition } from "@itwin/core-common";
 import { IModelApp, IModelAppOptions, NoRenderApp } from "@itwin/core-frontend";
 import { ITwinLocalization } from "@itwin/core-i18n";
 import { ECSchemaRpcInterface } from "@itwin/ecschema-rpcinterface-common";
@@ -32,7 +25,7 @@ import {
 } from "@itwin/presentation-backend";
 import { PresentationRpcInterface } from "@itwin/presentation-common";
 import { Presentation as PresentationFrontend, PresentationProps as PresentationFrontendProps } from "@itwin/presentation-frontend";
-import { getOutputRoot } from "./Utils";
+import { getOutputRoot } from "./Utils.js";
 
 const DEFAULT_BACKEND_TIMEOUT: number = 0;
 
@@ -42,8 +35,6 @@ function loadEnv(envFile: string) {
     return;
   }
 
-  const dotenv = require("dotenv"); // eslint-disable-line @typescript-eslint/no-require-imports
-  const dotenvExpand = require("dotenv-expand"); // eslint-disable-line @typescript-eslint/no-require-imports
   const envResult = dotenv.config({ path: envFile });
   if (envResult.error) {
     throw envResult.error;
@@ -52,45 +43,12 @@ function loadEnv(envFile: string) {
   dotenvExpand(envResult);
 }
 
-loadEnv(path.join(__dirname, "..", ".env"));
-
-const copyITwinBackendAssets = (outputDir: string) => {
-  const iTwinPackagesPath = "node_modules/@itwin";
-  fs.readdirSync(iTwinPackagesPath)
-    .map((packageName) => {
-      const packagePath = path.resolve(iTwinPackagesPath, packageName);
-      return path.join(packagePath, "lib", "cjs", "assets");
-    })
-    .filter((assetsPath) => {
-      return fs.existsSync(assetsPath);
-    })
-    .forEach((src) => {
-      cpx.copySync(`${src}/**/*`, outputDir);
-    });
-};
-
-const copyITwinFrontendAssets = (outputDir: string) => {
-  const iTwinPackagesPath = "node_modules/@itwin";
-  fs.readdirSync(iTwinPackagesPath)
-    .map((packageName) => {
-      const packagePath = path.resolve(iTwinPackagesPath, packageName);
-      return path.join(packagePath, "lib", "public");
-    })
-    .filter((assetsPath) => {
-      return fs.existsSync(assetsPath);
-    })
-    .forEach((src) => {
-      cpx.copySync(`${src}/**/*`, outputDir);
-    });
-};
+loadEnv(path.join(import.meta.dirname, "..", ".env"));
 
 class IntegrationTestsApp extends NoRenderApp {
   public static override async startup(opts?: IModelAppOptions): Promise<void> {
     await NoRenderApp.startup(opts);
     await IModelApp.localization.changeLanguage("en-PSEUDO");
-    cpx.copySync(`assets/**/*`, "lib/assets");
-    copyITwinBackendAssets("lib/assets");
-    copyITwinFrontendAssets("lib/public");
   }
 }
 
@@ -102,11 +60,10 @@ export function setupTestsOutputDirectory() {
   return outputRoot;
 }
 
-const initializeCommon = async (props: {
-  backendTimeout?: number;
-  frontendTimeout?: number;
-  authorizationClient?: AuthorizationClient;
-  localization?: Localization;
+export const initialize = async (props?: {
+  presentationBackendProps?: PresentationBackendProps;
+  presentationFrontendProps?: PresentationFrontendProps;
+  imodelAppProps?: IModelAppOptions;
 }) => {
   // init logging
   Logger.initializeToConsole();
@@ -117,38 +74,35 @@ const initializeCommon = async (props: {
   Logger.setLevel(PresentationBackendNativeLoggerCategory.ECObjects, LogLevel.Warning);
 
   const outputRoot = setupTestsOutputDirectory();
-  const tempCachesDir = path.join(outputRoot, "caches");
-  if (!fs.existsSync(tempCachesDir)) {
-    fs.mkdirSync(tempCachesDir);
-  }
 
   const backendInitProps: PresentationBackendProps = {
+    // @ts-expect-error internal prop
     id: `test-${Guid.createValue()}`,
-    requestTimeout: props.backendTimeout,
+    requestTimeout: DEFAULT_BACKEND_TIMEOUT,
     rulesetDirectories: [path.join(path.resolve("lib"), "assets", "rulesets")],
-    defaultLocale: "en-PSEUDO",
     workerThreadsCount: 1,
     caching: {
       hierarchies: {
         mode: HierarchyCacheMode.Memory,
       },
     },
+    ...props?.presentationBackendProps,
   };
   const frontendInitProps: PresentationFrontendProps = {
     presentation: {
-      requestTimeout: props.frontendTimeout,
       activeLocale: "en-PSEUDO",
     },
+    ...props?.presentationFrontendProps,
   };
 
   const frontendAppOptions: IModelAppOptions = {
-    authorizationClient: props.authorizationClient,
-    localization: props.localization ?? new EmptyLocalization(),
+    localization: new EmptyLocalization(),
+    ...props?.imodelAppProps,
   };
 
   const presentationTestingInitProps: PresentationInitProps = {
     backendProps: backendInitProps,
-    backendHostProps: { cacheDir: tempCachesDir },
+    backendHostProps: { cacheDir: outputRoot },
     frontendProps: frontendInitProps,
     frontendApp: IntegrationTestsApp,
     frontendAppOptions,
@@ -162,13 +116,6 @@ const initializeCommon = async (props: {
 
   // eslint-disable-next-line no-console
   console.log(`[${new Date().toISOString()}] Tests initialized`);
-};
-
-export const initialize = async (props?: { backendTimeout?: number; frontendTimeout?: number; localization?: Localization }) => {
-  await initializeCommon({
-    backendTimeout: DEFAULT_BACKEND_TIMEOUT,
-    ...props,
-  });
 };
 
 export const terminate = async () => {
@@ -262,7 +209,7 @@ async function terminatePresentation(frontendApp = IModelApp) {
   PresentationBackend.terminate();
   await IModelHost.shutdown();
   if (hierarchiesCacheDirectory) {
-    rimraf.sync(hierarchiesCacheDirectory);
+    rimrafSync(hierarchiesCacheDirectory);
   }
 
   // terminate frontend

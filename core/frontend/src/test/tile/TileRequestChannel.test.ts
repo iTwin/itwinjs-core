@@ -9,7 +9,7 @@ import { ServerTimeoutError } from "@itwin/core-common";
 import { IModelConnection } from "../../IModelConnection";
 import { IModelApp } from "../../IModelApp";
 import { Viewport } from "../../Viewport";
-import { MockRender } from "../../render/MockRender";
+import { MockRender } from "../../internal/render/MockRender";
 import { createBlankConnection } from "../createBlankConnection";
 import {
   Tile, TileContent, TileContentDecodingStatistics, TileLoadPriority, TileLoadStatus, TileRequest, TileRequestChannel, TileRequestChannelStatistics, TileTree,

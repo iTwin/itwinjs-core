@@ -11,7 +11,7 @@ import { RenderMemory } from "../../../render/RenderMemory";
 import { RenderGraphic } from "../../../render/RenderGraphic";
 import { MeshArgsEdges } from "../../../common/internal/render/MeshPrimitives";
 import { createMeshParams } from "../../../common/internal/render/VertexTableBuilder";
-import { Texture } from "../../../render/webgl/Texture";
+import { Texture } from "../../../internal/render/webgl/Texture";
 import { createBlankConnection } from "../../createBlankConnection";
 import { InstancedGraphicParams, MeshArgs } from "../../../core-frontend";
 import { RenderGeometry } from "../../../internal/render/RenderGeometry";
@@ -30,11 +30,11 @@ function createMeshGeometry(opts?: { texture?: RenderTexture, includeEdges?: boo
   if (opts?.texture) {
     textureMapping = {
       texture: opts.texture,
-      uvParams: [new Point2d(0, 1), new Point2d(1, 1), new Point2d(0, 0), new Point2d(1, 0) ],
+      uvParams: [new Point2d(0, 1), new Point2d(1, 1), new Point2d(0, 0), new Point2d(1, 0)],
     };
   }
 
-  const points = [ new Point3d(0, 0, 0), new Point3d(1, 0, 0), new Point3d(0, 1, 0), new Point3d(1, 1, 0) ];
+  const points = [new Point3d(0, 0, 0), new Point3d(1, 0, 0), new Point3d(0, 1, 0), new Point3d(1, 1, 0)];
   const qpoints = new QPoint3dList(QParams3d.fromRange(Range3d.createXYZXYZ(0, 0, 0, 1, 1, 1)));
   for (const point of points)
     qpoints.add(point);
@@ -199,11 +199,11 @@ describe("RenderMemory", () => {
   it("reports zero memory after disposal", () => {
     const mesh = createGraphic(createMeshGeometry());
     expect(getBytesUsed(mesh)).greaterThan(0);
-    mesh.dispose();
+    mesh[Symbol.dispose]();
     expectBytesUsed(0, mesh);
 
     const texture = createTexture(imodel, false);
-    texture.dispose();
+    texture[Symbol.dispose]();
     expectBytesUsed(0, texture);
   });
 
@@ -217,7 +217,7 @@ describe("RenderMemory", () => {
     const graphic = createGraphic(mesh, params);
     expectBytesUsed(getBytesUsed(mesh) + numInstanceBytes, graphic);
 
-    graphic.dispose();
+    graphic[Symbol.dispose]();
     expectBytesUsed(0, mesh);
     expectBytesUsed(0, graphic);
   });
@@ -230,7 +230,7 @@ describe("RenderMemory", () => {
     const graphic = createGraphic(mesh, params);
     expectBytesUsed(getBytesUsed(mesh) + numInstanceBytes, graphic);
 
-    graphic.dispose();
+    graphic[Symbol.dispose]();
     expectBytesUsed(0, mesh);
     expectBytesUsed(0, graphic);
   });

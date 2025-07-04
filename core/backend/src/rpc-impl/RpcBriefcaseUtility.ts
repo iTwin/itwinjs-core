@@ -6,16 +6,17 @@
  * @module RpcInterface
  */
 
-import { AccessToken, assert, BeDuration, BentleyError, IModelStatus, Logger } from "@itwin/core-bentley";
+import { AccessToken, assert, BeDuration, IModelStatus, Logger } from "@itwin/core-bentley";
 import {
   BriefcaseProps, IModelConnectionProps, IModelError, IModelRpcOpenProps, IModelRpcProps, IModelVersion, RpcActivity, RpcPendingResponse, SyncMode,
 } from "@itwin/core-common";
 import { BackendLoggerCategory } from "../BackendLoggerCategory";
 import { BriefcaseManager, RequestNewBriefcaseArg } from "../BriefcaseManager";
-import { CheckpointManager, V1CheckpointManager } from "../CheckpointManager";
+import { CheckpointManager } from "../CheckpointManager";
 import { BriefcaseDb, IModelDb, SnapshotDb } from "../IModelDb";
 import { IModelHost } from "../IModelHost";
 import { IModelJsFs } from "../IModelJsFs";
+import { _hubAccess } from "../internal/Symbols";
 
 const loggerCategory: string = BackendLoggerCategory.IModelDb;
 
@@ -45,7 +46,7 @@ export class RpcBriefcaseUtility {
       myBriefcaseIds = [0]; // PullOnly means briefcaseId 0
     } else {
       // check with iModelHub and see if we already have acquired any briefcaseIds
-      myBriefcaseIds = await IModelHost.hubAccess.getMyBriefcaseIds({ accessToken, iModelId });
+      myBriefcaseIds = await IModelHost[_hubAccess].getMyBriefcaseIds({ accessToken, iModelId });
     }
 
     const resolvers = args.fileNameResolvers ?? [(arg) => BriefcaseManager.getFileName(arg)];
@@ -57,8 +58,13 @@ export class RpcBriefcaseUtility {
           const fileName = resolver({ briefcaseId, iModelId });
           if (IModelJsFs.existsSync(fileName)) {
             const briefcaseDb = BriefcaseDb.findByFilename(fileName);
-            if (briefcaseDb !== undefined)
-              return briefcaseDb as BriefcaseDb;
+            if (briefcaseDb !== undefined) {
+              if (briefcaseDb.isBriefcaseDb()) {
+                return briefcaseDb;
+              } else {
+                throw new IModelError(IModelStatus.AlreadyOpen, "iModel is already open as a SnapshotDb");
+              }
+            }
             try {
               if (args.forceDownload)
                 throw new Error(); // causes delete below
@@ -66,7 +72,7 @@ export class RpcBriefcaseUtility {
               if (db.changeset.id !== tokenProps.changeset?.id) {
                 assert(undefined !== tokenProps.changeset);
                 const toIndex = tokenProps.changeset?.index ??
-                  (await IModelHost.hubAccess.getChangesetFromVersion({ accessToken, iModelId, version: IModelVersion.asOfChangeSet(tokenProps.changeset.id) })).index;
+                  (await IModelHost[_hubAccess].getChangesetFromVersion({ accessToken, iModelId, version: IModelVersion.asOfChangeSet(tokenProps.changeset.id) })).index;
                 await BriefcaseManager.pullAndApplyChangesets(db, { accessToken, toIndex });
               }
               return db;
@@ -124,7 +130,7 @@ export class RpcBriefcaseUtility {
 
   public static async open(args: DownloadAndOpenArgs & { syncMode: SyncMode.FixedVersion }): Promise<IModelDb>;
   /**
-   * @deprecated in 4.4.0 - only `SyncMode.FixedVersion` should be used in RPC backends
+   * @deprecated in 4.4.0 - will not be removed until after 2026-06-13. Only `SyncMode.FixedVersion` should be used in RPC backends
    */
   // eslint-disable-next-line @typescript-eslint/unified-signatures -- these are separate to explicitly deprecate some SyncMode members.
   public static async open(args: DownloadAndOpenArgs & { syncMode: Exclude<SyncMode, "FixedVersion"> }): Promise<IModelDb>;
@@ -166,34 +172,16 @@ export class RpcBriefcaseUtility {
       return db;
     }
 
-    try {
-      // now try V2 checkpoint
-      db = await SnapshotDb.openCheckpointFromRpc(checkpoint);
-      Logger.logTrace(loggerCategory, "using V2 checkpoint", tokenProps);
-    } catch (e) {
-      Logger.logTrace(loggerCategory, "unable to open V2 checkpoint - falling back to V1 checkpoint", { error: BentleyError.getErrorProps(e), ...tokenProps });
-
-      // this isn't a v2 checkpoint. Set up a race between the specified timeout period and the open. Throw an RpcPendingResponse exception if the timeout happens first.
-      const request = {
-        checkpoint,
-        localFile: V1CheckpointManager.getFileName(checkpoint),
-        aliasFiles: [],
-      };
-      db = await BeDuration.race(timeout, V1CheckpointManager.getCheckpointDb(request));
-
-      if (db === undefined) {
-        Logger.logTrace(loggerCategory, "Open V1 checkpoint - pending", tokenProps);
-        throw new RpcPendingResponse(); // eslint-disable-line @typescript-eslint/only-throw-error
-      }
-      Logger.logTrace(loggerCategory, "Opened V1 checkpoint", tokenProps);
-    }
+    // now try V2 checkpoint
+    db = await SnapshotDb.openCheckpointFromRpc(checkpoint);
+    Logger.logTrace(loggerCategory, "using V2 checkpoint", tokenProps);
 
     return db;
   }
 
   public static async openWithTimeout(activity: RpcActivity, tokenProps: IModelRpcOpenProps, syncMode: SyncMode.FixedVersion, timeout?: number): Promise<IModelConnectionProps>;
   /**
-   * @deprecated in 4.4.0 - only `SyncMode.FixedVersion` should be used in RPC backends
+   * @deprecated in 4.4.0 - will not be removed until after 2026-06-13. Only `SyncMode.FixedVersion` should be used in RPC backends
    */
   // eslint-disable-next-line @typescript-eslint/unified-signatures -- these are separate to explicitly deprecate some SyncMode members.
   public static async openWithTimeout(activity: RpcActivity, tokenProps: IModelRpcOpenProps, syncMode: Exclude<SyncMode, "FixedVersion">, timeout?: number): Promise<IModelConnectionProps>;

@@ -4,16 +4,16 @@
 *--------------------------------------------------------------------------------------------*/
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { IModelApp } from "../../../IModelApp";
-import { AttributeMap } from "../../../render/webgl/AttributeMap";
-import { CompileStatus } from "../../../render/webgl/ShaderProgram";
-import { DrawParams, ShaderProgramParams } from "../../../render/webgl/DrawCommand";
-import { FeatureMode, TechniqueFlags } from "../../../render/webgl/TechniqueFlags";
-import { FragmentShaderComponent, ProgramBuilder, VariableType, VertexShaderComponent } from "../../../render/webgl/ShaderBuilder";
-import { SingularTechnique, Techniques } from "../../../render/webgl/Technique";
-import { System } from "../../../render/webgl/System";
-import { Target } from "../../../render/webgl/Target";
-import { TechniqueId } from "../../../render/webgl/TechniqueId";
-import { ViewportQuadGeometry } from "../../../render/webgl/CachedGeometry";
+import { AttributeMap } from "../../../internal/render/webgl/AttributeMap";
+import { CompileStatus } from "../../../internal/render/webgl/ShaderProgram";
+import { DrawParams, ShaderProgramParams } from "../../../internal/render/webgl/DrawCommand";
+import { FeatureMode, TechniqueFlags } from "../../../internal/render/webgl/TechniqueFlags";
+import { FragmentShaderComponent, ProgramBuilder, VariableType, VertexShaderComponent } from "../../../internal/render/webgl/ShaderBuilder";
+import { SingularTechnique, Techniques } from "../../../internal/render/webgl/Technique";
+import { System } from "../../../internal/render/webgl/System";
+import { Target } from "../../../internal/render/webgl/Target";
+import { TechniqueId } from "../../../internal/render/webgl/TechniqueId";
+import { ViewportQuadGeometry } from "../../../internal/render/webgl/CachedGeometry";
 import { Logger, LogLevel } from "@itwin/core-bentley";
 import { EmptyLocalization } from "@itwin/core-common";
 
@@ -88,14 +88,13 @@ describe("Techniques", () => {
     target.techniques.draw(drawParams);
   });
 
-  // NB: compiling all shaders can potentially take a long time, especially on our mac build machines.
-  // A timeout of zero means no timeout.
-  const compileTimeout = 0;
   async function compileAllShaders(): Promise<void> {
     expect(System.instance.techniques.compileShaders()).toBe(true);
   }
 
-  it("should compile all shader programs", { timeout: compileTimeout || undefined }, async () => {
+  // NB: compiling all shaders can potentially take a long time, especially on our mac build machines.
+  // A timeout of zero means no timeout.
+  it("should compile all shader programs", { timeout: 0 }, async () => {
     await compileAllShaders();
   });
 

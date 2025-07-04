@@ -38,7 +38,7 @@ const padStartEx = (str: string, targetLength: number, padString: string) => {
  * addition of two properties: fileName and schemaText.  The fileName contains the
  * full path to the file on disk and schemaText is the full string representation
  * of the Schema.
- * @beta
+ * @internal
  */
 export class FileSchemaKey extends SchemaKey {
   // The schema file associated with the SchemaKey
@@ -62,16 +62,18 @@ export class FileSchemaKey extends SchemaKey {
 
 /**
  * Abstract class to hold common/overlapping functionality between SchemaJsonFileLocater and SchemaXmlFileLocater
- * @beta - Needs further testing and possibly moved to a separate package.
+ * @public @preview
  */
 export abstract class SchemaFileLocater {
+  /** @internal */
   public searchPaths: string[];
 
   constructor() {
     this.searchPaths = [];
   }
 
-  public async readUtf8FileToString(filePath: string): Promise<string | undefined> {
+  /** @internal */
+  protected async readUtf8FileToString(filePath: string): Promise<string | undefined> {
     return new Promise<string | undefined>((resolve, reject) => {
       fs.readFile(filePath, "utf-8", (err, data) => {
         if (err)
@@ -82,11 +84,13 @@ export abstract class SchemaFileLocater {
     });
   }
 
-  public readUtf8FileToStringSync(filePath: string): string | undefined {
+  /** @internal */
+  protected readUtf8FileToStringSync(filePath: string): string | undefined {
     return fs.readFileSync(filePath, "utf-8");
   }
 
-  public async fileExists(filePath: string): Promise<boolean | undefined> {
+  /** @internal */
+  protected async fileExists(filePath: string): Promise<boolean | undefined> {
     return new Promise<boolean | undefined>((resolve) => {
       fs.access(filePath, fs.constants.F_OK, (err) => {
         resolve(err ? false : true);
@@ -94,7 +98,8 @@ export abstract class SchemaFileLocater {
     });
   }
 
-  public fileExistsSync(filePath: string): boolean | undefined {
+  /** @internal */
+  protected fileExistsSync(filePath: string): boolean | undefined {
     return fs.existsSync(filePath);
   }
 
@@ -132,7 +137,7 @@ export abstract class SchemaFileLocater {
    * @param matchType The SchemaMatchType to use when comparing the desiredKey and the keys found during the search.
    * @param format The type of file that the schema key refers to. json or xml
    */
-  private addCandidateNoExtSchemaKey(foundFiles: FileSchemaKey[], schemaPath: string, schemaName: string, desiredKey: Readonly<SchemaKey>, matchType: SchemaMatchType, format: string) {
+  private addCandidateNoExtSchemaKey(foundFiles: FileSchemaKey[], schemaPath: string, schemaName: string, desiredKey: SchemaKey, matchType: SchemaMatchType, format: string) {
     const fullPath = path.join(schemaPath, `${schemaName}.ecschema.${format}`);
 
     // If the file does not exist, end
@@ -161,7 +166,7 @@ export abstract class SchemaFileLocater {
    * @param matchType The SchemaMatchType to use when comparing the desired Key and the keys found during the search.
    * @param format The type of file that the schema key refers to. json or xml
    */
-  private addCandidateSchemaKeys(foundFiles: FileSchemaKey[], schemaPath: string, fileFilter: string, desiredKey: Readonly<SchemaKey>, matchType: SchemaMatchType, format: string) {
+  private addCandidateSchemaKeys(foundFiles: FileSchemaKey[], schemaPath: string, fileFilter: string, desiredKey: SchemaKey, matchType: SchemaMatchType, format: string) {
     const fullPath = path.join(schemaPath, fileFilter);
 
     const result = globSync(fullPath, { windowsPathsNoEscape: true });
@@ -191,8 +196,9 @@ export abstract class SchemaFileLocater {
    * @param desiredKey The SchemaKey to match.
    * @param matchType The SchemaMatchType.
    * @param format The type of file that the schema key refers to. json or xml
+   * @internal
    */
-  protected findEligibleSchemaKeys(desiredKey: Readonly<SchemaKey>, matchType: SchemaMatchType, format: string): FileSchemaKey[] {
+  protected findEligibleSchemaKeys(desiredKey: SchemaKey, matchType: SchemaMatchType, format: string): FileSchemaKey[] {
     const foundFiles = new Array<FileSchemaKey>();
 
     let twoVersionSuffix: string;
@@ -227,13 +233,22 @@ export abstract class SchemaFileLocater {
     return foundFiles;
   }
 
-  public abstract getSchema<T extends Schema>(key: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): Promise<T | undefined>;
+  /**
+   * Attempts to retrieve a Schema with the given SchemaKey by using the configured search paths
+   * to locate the XML Schema file from the file system. Returns only Schemas from XML files with
+   * their keys populated.
+   * @param key The SchemaKey of the Schema to retrieve.
+   * @param matchType The SchemaMatchType.
+   * @param context The SchemaContext that will control the lifetime of the schema.
+   */
+  public abstract getSchema(key: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): Promise<Schema | undefined>;
 
   /**
    * Compares two Schema versions.  If the left-hand version is greater, 1 is returned. If the
    * left-hand version is less, -1 us returned.  If the versions are an exact match, 0 is returned.
    * @param lhs The 'left-hand' FileSchemaKey.
    * @param rhs The 'right-hand' FileSchemaKey.
+   * @internal
    */
   public compareSchemaKeyByVersion = (lhs: FileSchemaKey, rhs: FileSchemaKey): number => {
     return lhs.compareByVersion(rhs);

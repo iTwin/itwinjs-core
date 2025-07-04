@@ -3,9 +3,17 @@
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { Field, NestedContentField, PrimitiveTypeDescription, PropertiesField, PropertyValueFormat } from "../../presentation-common";
-import { ArrayPropertiesField, FieldDescriptor, FieldDescriptorType, StructPropertiesField } from "../../presentation-common/content/Fields";
-import { RelationshipMeaning } from "../../presentation-common/rules/content/modifiers/RelatedPropertiesSpecification";
+import {
+  ArrayPropertiesField,
+  Field,
+  FieldDescriptor,
+  FieldDescriptorType,
+  NestedContentField,
+  PropertiesField,
+  StructPropertiesField,
+} from "../../presentation-common/content/Fields.js";
+import { PrimitiveTypeDescription, PropertyValueFormat } from "../../presentation-common/content/TypeDescription.js";
+import { RelationshipMeaning } from "../../presentation-common/rules/content/modifiers/RelatedPropertiesSpecification.js";
 import {
   createTestArrayPropertiesContentField,
   createTestCategoryDescription,
@@ -13,11 +21,12 @@ import {
   createTestPropertiesContentField,
   createTestSimpleContentField,
   createTestStructPropertiesContentField,
-} from "../_helpers/Content";
-import { createTestECClassInfo, createTestPropertyInfo, createTestRelatedClassInfo } from "../_helpers/EC";
+} from "../_helpers/Content.js";
+import { createTestECClassInfo, createTestPropertyInfo, createTestRelatedClassInfo } from "../_helpers/EC.js";
 
 describe("Field", () => {
   describe("fromJSON", () => {
+    /* eslint-disable @typescript-eslint/no-deprecated */
     it("creates valid Field from valid JSON", () => {
       const category = createTestCategoryDescription();
       const json = createTestSimpleContentField({ category }).toJSON();
@@ -110,6 +119,7 @@ describe("Field", () => {
       const json = createTestSimpleContentField({ category }).toJSON();
       expect(() => Field.fromJSON({ ...json, category: "does not exist" }, [category])).to.throw();
     });
+    /* eslint-enable @typescript-eslint/no-deprecated */
   });
 
   describe("isPropertiesField", () => {
@@ -166,13 +176,14 @@ describe("Field", () => {
       const field = createTestSimpleContentField();
       const clone = field.clone();
       expect(clone).to.be.instanceOf(Field);
-      expect(clone.toJSON()).to.deep.eq(field.toJSON());
+      expect(clone).to.deep.eq(field);
     });
   });
 });
 
 describe("PropertiesField", () => {
   describe("fromJSON", () => {
+    /* eslint-disable @typescript-eslint/no-deprecated */
     it("creates valid PropertiesField from valid JSON", () => {
       const category = createTestCategoryDescription();
       const json = createTestPropertiesContentField({
@@ -208,6 +219,7 @@ describe("PropertiesField", () => {
       const field = PropertiesField.fromJSON(json, [category]);
       expect(field).to.matchSnapshot();
     });
+    /* eslint-enable @typescript-eslint/no-deprecated */
   });
 
   describe("isArrayPropertiesField", () => {
@@ -494,7 +506,7 @@ describe("PropertiesField", () => {
       });
       const clone = field.clone();
       expect(clone).to.be.instanceOf(PropertiesField);
-      expect(clone.toJSON()).to.deep.eq(field.toJSON());
+      expect(clone).to.deep.eq(field);
     });
   });
 
@@ -527,7 +539,7 @@ describe("ArrayPropertiesField", () => {
       });
       const clone = field.clone();
       expect(clone).to.be.instanceOf(ArrayPropertiesField);
-      expect(clone.toJSON()).to.deep.eq(field.toJSON());
+      expect(clone).to.deep.eq(field);
     });
   });
 });
@@ -549,7 +561,7 @@ describe("StructPropertiesField", () => {
       });
       const clone = field.clone();
       expect(clone).to.be.instanceOf(StructPropertiesField);
-      expect(clone.toJSON()).to.deep.eq(field.toJSON());
+      expect(clone).to.deep.eq(field);
     });
   });
 });
@@ -575,13 +587,14 @@ describe("NestedContentField", () => {
   });
 
   describe("fromJSON", () => {
+    /* eslint-disable @typescript-eslint/no-deprecated */
     it("creates valid NestedContentField from valid JSON", () => {
       const category = createTestCategoryDescription();
       const json = createTestNestedContentField({
         category,
         nestedFields: [createTestSimpleContentField({ category })],
+        autoExpand: true,
       }).toJSON();
-      // eslint-disable-next-line @typescript-eslint/no-deprecated
       const field = NestedContentField.fromJSON(json, [category]);
       expect(field).to.matchSnapshot();
     });
@@ -593,16 +606,15 @@ describe("NestedContentField", () => {
         nestedFields: [createTestSimpleContentField({ category })],
         relationshipMeaning: RelationshipMeaning.SameInstance,
       }).toJSON();
-      // eslint-disable-next-line @typescript-eslint/no-deprecated
       const field = NestedContentField.fromJSON(json, [category]);
       expect(field).to.matchSnapshot();
     });
 
     it("returns undefined for undefined JSON", () => {
-      // eslint-disable-next-line @typescript-eslint/no-deprecated
       const item = NestedContentField.fromJSON(undefined, []);
       expect(item).to.be.undefined;
     });
+    /* eslint-enable @typescript-eslint/no-deprecated */
   });
 
   describe("rebuildParentship / resetParentship", () => {
@@ -628,7 +640,7 @@ describe("NestedContentField", () => {
       const field = createTestNestedContentField({ nestedFields: [createTestSimpleContentField()] });
       const clone = field.clone();
       expect(clone).to.be.instanceOf(NestedContentField);
-      expect(clone.toJSON()).to.deep.eq(field.toJSON());
+      expect(clone).to.deep.eq(field);
     });
   });
 });

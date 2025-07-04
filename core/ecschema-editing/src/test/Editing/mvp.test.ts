@@ -185,7 +185,7 @@ describe("SchemaEditor tests", () => {
       await testEditor.entities.delete(result);
       element = await testSchema!.getItem("testElements");
       expect(element).to.be.undefined;
-      const classes = testSchema!.getClasses();
+      const classes = testSchema!.getItems(ECClass);
       for (const _class of classes) {
         expect(false, "Expected no classes in the schema.").to.be.true;
       }
@@ -197,7 +197,7 @@ describe("SchemaEditor tests", () => {
       beforeEach(async () => {
         const elementKey = new SchemaItemKey("Element", bisSchemaKey);
         entityKey = await testEditor.entities.create(testSchemaKey, "testElement", ECClassModifier.None, "test element", elementKey);
-        testEntity = await testSchema!.getItem("testElement");
+        testEntity = await testSchema!.getItem("testElement", EntityClass);
       });
 
       it("should successfully create a PrimitiveProperty of type double", async () => {

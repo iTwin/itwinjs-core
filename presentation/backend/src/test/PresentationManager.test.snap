@@ -5,28 +5,32 @@ Object {
   "contentSet": Array [
     Object {
       "classInfo": Object {
-        "id": "0x859f000000fede",
-        "label": "cross-platform compressing",
-        "name": "Chicken",
+        "id": "0x1",
+        "label": "Class Label",
+        "name": "SchemaName:ClassName",
       },
       "displayValues": Object {
-        "Uzbekistan": "Massachusetts technologies",
+        "test field": "test display value",
       },
-      "imageId": "5ad62fe9-3007-40cc-9951-3043c07a316f",
+      "label": Object {
+        "displayValue": "test display value",
+        "rawValue": "test raw value",
+        "typeName": "string",
+      },
       "labelDefinition": Object {
-        "displayValue": "Handmade",
-        "rawValue": "Cotton",
+        "displayValue": "test display value",
+        "rawValue": "test raw value",
         "typeName": "string",
       },
       "mergedFieldNames": Array [],
       "primaryKeys": Array [
         Object {
-          "className": "throughput",
-          "id": "0xb1d10000003603",
+          "className": "SchemaName:ClassName",
+          "id": "0x1",
         },
       ],
       "values": Object {
-        "Uzbekistan": "Generic pink Licensed",
+        "test field": "test value",
       },
     },
   ],
@@ -52,19 +56,17 @@ Object {
     "fields": Array [
       Object {
         "category": "test-category",
-        "editor": undefined,
-        "extendedData": undefined,
         "isReadonly": false,
         "label": "Simple Field",
-        "name": "Uzbekistan",
+        "name": "test field",
         "priority": 0,
-        "renderer": undefined,
         "type": Object {
           "typeName": "string",
           "valueFormat": "Primitive",
         },
       },
     ],
+    "inputKeysHash": "",
     "selectClasses": Array [
       Object {
         "isSelectPolymorphic": false,
@@ -80,28 +82,32 @@ Object {
   "contentSet": Array [
     Object {
       "classInfo": Object {
-        "id": "0x3b8400000029b4",
-        "label": "mission-critical mobile",
-        "name": "Solutions",
+        "id": "0x1",
+        "label": "Class Label",
+        "name": "SchemaName:ClassName",
       },
       "displayValues": Object {
-        "Investor": "protocol Credit Card Account",
+        "test field name": "test display value",
       },
-      "imageId": "56fa49e9-7856-4470-9e9b-b341dbd1167c",
+      "label": Object {
+        "displayValue": "test display value",
+        "rawValue": "test raw value",
+        "typeName": "string",
+      },
       "labelDefinition": Object {
-        "displayValue": "Security",
-        "rawValue": "syndicate",
+        "displayValue": "test display value",
+        "rawValue": "test raw value",
         "typeName": "string",
       },
       "mergedFieldNames": Array [],
       "primaryKeys": Array [
         Object {
-          "className": "Borders",
-          "id": "0xe44c0000007be8",
+          "className": "SchemaName:ClassName",
+          "id": "0x1",
         },
       ],
       "values": Object {
-        "Investor": "RAM",
+        "test field name": "test value",
       },
     },
   ],
@@ -127,19 +133,17 @@ Object {
     "fields": Array [
       Object {
         "category": "test-category",
-        "editor": undefined,
-        "extendedData": undefined,
         "isReadonly": false,
         "label": "Simple Field",
-        "name": "Investor",
+        "name": "test field name",
         "priority": 0,
-        "renderer": undefined,
         "type": Object {
           "typeName": "string",
           "valueFormat": "Primitive",
         },
       },
     ],
+    "inputKeysHash": "",
     "selectClasses": Array [
       Object {
         "isSelectPolymorphic": false,
@@ -155,28 +159,32 @@ Object {
   "contentSet": Array [
     Object {
       "classInfo": Object {
-        "id": "0xe89e00000082d3",
-        "label": "Borders Pennsylvania",
-        "name": "Developer",
+        "id": "0x1",
+        "label": "Class Label",
+        "name": "SchemaName:ClassName",
       },
       "displayValues": Object {
-        "Virginia": "Expressway Avon Valley",
+        "test field name": "test display value",
       },
-      "imageId": "c36b205f-f9eb-4eb5-b00d-da61efed8ad3",
+      "label": Object {
+        "displayValue": "test display value",
+        "rawValue": "test raw value",
+        "typeName": "string",
+      },
       "labelDefinition": Object {
-        "displayValue": "Electronics",
-        "rawValue": "composite",
+        "displayValue": "test display value",
+        "rawValue": "test raw value",
         "typeName": "string",
       },
       "mergedFieldNames": Array [],
       "primaryKeys": Array [
         Object {
-          "className": "Sharable",
-          "id": "0xc5130000013a68",
+          "className": "SchemaName:ClassName",
+          "id": "0x1",
         },
       ],
       "values": Object {
-        "Virginia": "Spain back up PNG",
+        "test field name": "test value",
       },
     },
   ],
@@ -202,19 +210,17 @@ Object {
     "fields": Array [
       Object {
         "category": "test-category",
-        "editor": undefined,
-        "extendedData": undefined,
         "isReadonly": false,
         "label": "Simple Field",
-        "name": "Virginia",
+        "name": "test field name",
         "priority": 0,
-        "renderer": undefined,
         "type": Object {
           "typeName": "string",
           "valueFormat": "Primitive",
         },
       },
     ],
+    "inputKeysHash": "",
     "selectClasses": Array [
       Object {
         "isSelectPolymorphic": false,
@@ -230,28 +236,32 @@ Object {
   "contentSet": Array [
     Object {
       "classInfo": Object {
-        "id": "0x289f000000758a",
-        "label": "Up-sized Delaware Plastic",
-        "name": "Chair",
+        "id": "0x1",
+        "label": "Class Label",
+        "name": "SchemaName:ClassName",
       },
       "displayValues": Object {
-        "6th generation": "Intelligent Fresh Cheese copying Pass",
+        "test field name": "test display value",
       },
-      "imageId": "bde282e5-f116-4ef0-bb8b-1fa57dd96dc3",
+      "label": Object {
+        "displayValue": "test display value",
+        "rawValue": "test raw value",
+        "typeName": "string",
+      },
       "labelDefinition": Object {
-        "displayValue": "alarm",
-        "rawValue": "Mobility",
+        "displayValue": "test display value",
+        "rawValue": "test raw value",
         "typeName": "string",
       },
       "mergedFieldNames": Array [],
       "primaryKeys": Array [
         Object {
-          "className": "Multi-tiered",
-          "id": "0x13842000000ae4d",
+          "className": "SchemaName:ClassName",
+          "id": "0x1",
         },
       ],
       "values": Object {
-        "6th generation": "Checking Account United States of America",
+        "test field name": "test value",
       },
     },
   ],
@@ -275,6 +285,7 @@ Object {
     "contentFlags": 0,
     "displayType": "test",
     "fields": Array [],
+    "inputKeysHash": "",
     "selectClasses": Array [
       Object {
         "isSelectPolymorphic": false,
@@ -290,26 +301,30 @@ Object {
   "contentSet": Array [
     Object {
       "classInfo": Object {
-        "id": "0x10f000000e465",
-        "label": "Cambridgeshire asymmetric SDD",
-        "name": "optimizing",
+        "id": "0x1",
+        "label": "Class Label",
+        "name": "SchemaName:ClassName",
       },
       "displayValues": Object {},
-      "imageId": "bad90675-1cd6-4a1c-9a48-976928bf2c4c",
+      "label": Object {
+        "displayValue": "test display value",
+        "rawValue": "test raw value",
+        "typeName": "string",
+      },
       "labelDefinition": Object {
-        "displayValue": "Electronics",
-        "rawValue": "Intelligent Plastic Keyboard",
+        "displayValue": "test display value",
+        "rawValue": "test raw value",
         "typeName": "string",
       },
       "mergedFieldNames": Array [],
       "primaryKeys": Array [
         Object {
-          "className": "dot-com",
-          "id": "0x137ba0000004451",
+          "className": "SchemaName:ClassName",
+          "id": "0x1",
         },
       ],
       "values": Object {
-        "e-markets": 1.234,
+        "test field name": 1.234,
       },
     },
   ],
@@ -335,11 +350,9 @@ Object {
     "fields": Array [
       Object {
         "category": "test-category",
-        "editor": undefined,
-        "extendedData": undefined,
         "isReadonly": false,
         "label": "Properties Field",
-        "name": "e-markets",
+        "name": "test field name",
         "priority": 0,
         "properties": Array [
           Object {
@@ -350,13 +363,13 @@ Object {
             },
           },
         ],
-        "renderer": undefined,
         "type": Object {
           "typeName": "double",
           "valueFormat": "Primitive",
         },
       },
     ],
+    "inputKeysHash": "",
     "selectClasses": Array [
       Object {
         "isSelectPolymorphic": false,
@@ -372,28 +385,32 @@ Object {
   "contentSet": Array [
     Object {
       "classInfo": Object {
-        "id": "0x14a1300000029c1",
-        "label": "generating IB back-end",
-        "name": "bypass",
+        "id": "0x1",
+        "label": "Class Label",
+        "name": "SchemaName:ClassName",
       },
       "displayValues": Object {
-        "HTTP": "1.23",
+        "test field name": "1.23",
       },
-      "imageId": "9124abde-51a0-469c-83c9-93b31596571d",
+      "label": Object {
+        "displayValue": "test display value",
+        "rawValue": "test raw value",
+        "typeName": "string",
+      },
       "labelDefinition": Object {
-        "displayValue": "payment",
-        "rawValue": "mesh",
+        "displayValue": "test display value",
+        "rawValue": "test raw value",
         "typeName": "string",
       },
       "mergedFieldNames": Array [],
       "primaryKeys": Array [
         Object {
-          "className": "Legacy",
-          "id": "0x1119c00000171d2",
+          "className": "SchemaName:ClassName",
+          "id": "0x1",
         },
       ],
       "values": Object {
-        "HTTP": 1.234,
+        "test field name": 1.234,
       },
     },
   ],
@@ -419,11 +436,9 @@ Object {
     "fields": Array [
       Object {
         "category": "test-category",
-        "editor": undefined,
-        "extendedData": undefined,
         "isReadonly": false,
         "label": "Properties Field",
-        "name": "HTTP",
+        "name": "test field name",
         "priority": 0,
         "properties": Array [
           Object {
@@ -434,13 +449,13 @@ Object {
             },
           },
         ],
-        "renderer": undefined,
         "type": Object {
           "typeName": "double",
           "valueFormat": "Primitive",
         },
       },
     ],
+    "inputKeysHash": "",
     "selectClasses": Array [
       Object {
         "isSelectPolymorphic": false,
@@ -456,14 +471,18 @@ Object {
   "contentSet": Array [
     Object {
       "classInfo": Object {
-        "id": "0xd7cd000000a73e",
-        "label": "orchestrate TCP Auto Loan Account",
-        "name": "Nepalese Rupee",
+        "id": "0x1",
+        "label": "Class Label",
+        "name": "SchemaName:ClassName",
       },
       "displayValues": Object {
-        "Legacy": "Not specified",
+        "test field name": "Not specified",
       },
-      "imageId": "f4ef32e7-726b-4d52-88e8-f4565aafb241",
+      "label": Object {
+        "displayValue": "Not specified",
+        "rawValue": "Not specified",
+        "typeName": "string",
+      },
       "labelDefinition": Object {
         "displayValue": "Not specified",
         "rawValue": "Not specified",
@@ -472,12 +491,12 @@ Object {
       "mergedFieldNames": Array [],
       "primaryKeys": Array [
         Object {
-          "className": "programming",
-          "id": "0xcd1c000000953e",
+          "className": "SchemaName:ClassName",
+          "id": "0x1",
         },
       ],
       "values": Object {
-        "Legacy": "Not specified",
+        "test field name": "Not specified",
       },
     },
   ],
@@ -503,19 +522,17 @@ Object {
     "fields": Array [
       Object {
         "category": "test-category",
-        "editor": undefined,
-        "extendedData": undefined,
         "isReadonly": false,
         "label": "Not specified",
-        "name": "Legacy",
+        "name": "test field name",
         "priority": 0,
-        "renderer": undefined,
         "type": Object {
           "typeName": "string",
           "valueFormat": "Primitive",
         },
       },
     ],
+    "inputKeysHash": "",
     "selectClasses": Array [
       Object {
         "isSelectPolymorphic": false,
@@ -542,10 +559,6 @@ Object {
       "label": "Source",
       "name": "source:class",
     },
-    "0x1054a000001245d": Object {
-      "label": "Rustic Metal Fish Automotive Cuban Peso Peso Convertible",
-      "name": "Barbados",
-    },
     "0x2": Object {
       "label": "Target",
       "name": "target:class",
@@ -554,32 +567,23 @@ Object {
       "label": "Relationship",
       "name": "relationship:class",
     },
-    "0xab690000009ba9": Object {
-      "label": "back-end",
-      "name": "auxiliary",
-    },
-    "0xea7d000000f2b6": Object {
-      "label": "Assurance turquoise navigating",
-      "name": "Berkshire",
-    },
   },
-  "connectionId": "d61dcbd0-3355-426a-9ebf-3eadccd4b8be",
+  "connectionId": "test-connection-id",
   "contentFlags": 0,
-  "displayType": "withdrawal",
+  "displayType": "test-display-type",
   "fields": Array [
     Object {
       "category": "test-category",
       "editor": Object {
-        "name": "multi-byte",
+        "name": "test-editor",
         "params": Object {
-          "some_param": 17857,
+          "some_param": 789,
         },
       },
-      "extendedData": undefined,
-      "isReadonly": false,
-      "label": "generating",
+      "isReadonly": true,
+      "label": "Test field with editor",
       "name": "Primitive property field with editor",
-      "priority": 2036,
+      "priority": 999,
       "properties": Array [
         Object {
           "property": Object {
@@ -587,22 +591,21 @@ Object {
             "enumerationInfo": Object {
               "choices": Array [
                 Object {
-                  "label": "Games withdrawal",
-                  "value": "27ad4616-5582-41da-b1ef-5896d49bacba",
+                  "label": "choice1",
+                  "value": "Choice 1",
                 },
                 Object {
-                  "label": "payment morph Congo",
-                  "value": "b4e62d6b-c243-4b63-aa44-6b6bcee422bd",
+                  "label": "choice2",
+                  "value": "Choice 2",
                 },
               ],
-              "isStrict": false,
+              "isStrict": true,
             },
-            "name": "Practical",
+            "name": "Test property",
             "type": "string",
           },
         },
       ],
-      "renderer": undefined,
       "type": Object {
         "typeName": "string",
         "valueFormat": "Primitive",
@@ -610,41 +613,38 @@ Object {
     },
     Object {
       "category": "test-category",
-      "editor": undefined,
-      "extendedData": undefined,
-      "isReadonly": true,
-      "label": "bus Strategist Facilitator",
+      "isReadonly": false,
+      "label": "Test array of structs field",
       "name": "Complex array of structs property field",
-      "priority": 26470,
+      "priority": 888,
       "properties": Array [
         Object {
           "property": Object {
             "classInfo": "0x1",
             "kindOfQuantity": Object {
-              "label": "Accounts backing up",
-              "name": "Avon",
-              "persistenceUnit": "Senior",
+              "label": "Test koq",
+              "name": "TestKoq",
+              "persistenceUnit": "m",
             },
-            "name": "Tennessee",
+            "name": "TestProperty",
             "type": "double",
           },
         },
       ],
-      "renderer": undefined,
       "type": Object {
         "memberType": Object {
           "members": Array [
             Object {
-              "label": "multi-byte",
-              "name": "CFA Franc BCEAO",
+              "label": "Member 1",
+              "name": "member1",
               "type": Object {
                 "typeName": "string",
                 "valueFormat": "Primitive",
               },
             },
             Object {
-              "label": "United States Minor Outlying Islands Fields",
-              "name": "Keys",
+              "label": "Member 2",
+              "name": "member2",
               "type": Object {
                 "memberType": Object {
                   "typeName": "string",
@@ -667,21 +667,16 @@ Object {
       "autoExpand": true,
       "category": "test-category",
       "contentClassInfo": "0x1",
-      "editor": undefined,
-      "extendedData": undefined,
       "isReadonly": false,
-      "label": "24/7 Home Loan Account stable",
+      "label": "Nested content field",
       "name": "Nested content field",
       "nestedFields": Array [
         Object {
           "category": "test-category",
-          "editor": undefined,
-          "extendedData": undefined,
-          "isReadonly": true,
-          "label": "Avon Planner Ways",
+          "isReadonly": false,
+          "label": "Test simple field",
           "name": "Simple property field",
-          "priority": 27093,
-          "renderer": undefined,
+          "priority": 777,
           "type": Object {
             "typeName": "string",
             "valueFormat": "Primitive",
@@ -693,31 +688,30 @@ Object {
           "isForwardRelationship": false,
           "isPolymorphicRelationship": false,
           "isPolymorphicTargetClass": false,
-          "relationshipInfo": "0x1054a000001245d",
-          "sourceClassInfo": "0xea7d000000f2b6",
-          "targetClassInfo": "0xab690000009ba9",
+          "relationshipInfo": "0x3",
+          "sourceClassInfo": "0x1",
+          "targetClassInfo": "0x2",
         },
       ],
-      "priority": 77648,
+      "priority": 777,
       "relationshipMeaning": "RelatedInstance",
-      "renderer": undefined,
       "type": Object {
         "members": Array [
           Object {
-            "label": "Integration web services",
-            "name": "Integration",
+            "label": "Member 1",
+            "name": "member1",
             "type": Object {
               "typeName": "string",
               "valueFormat": "Primitive",
             },
           },
         ],
-        "typeName": "transmitter",
+        "typeName": "Field type",
         "valueFormat": "Struct",
       },
     },
   ],
-  "inputKeysHash": "56c8a034-328a-4ac5-bf67-c3c8fa1ad1ad",
+  "inputKeysHash": "input-hash",
   "selectClasses": Array [
     Object {
       "isSelectPolymorphic": false,
@@ -775,24 +769,28 @@ exports[`PresentationManager addon results conversion to Presentation objects ge
 Array [
   Object {
     "classInfo": Object {
-      "id": "0xfef3000000b3cb",
-      "label": "Yuan Renminbi lime",
-      "name": "Multi-lateral",
+      "id": "0x1",
+      "label": "Class Label",
+      "name": "SchemaName:ClassName",
     },
     "displayValues": Object {
       "test field": "test display value",
     },
-    "imageId": "image id",
+    "label": Object {
+      "displayValue": "test display value",
+      "rawValue": "test raw value",
+      "typeName": "string",
+    },
     "labelDefinition": Object {
-      "displayValue": "Argentine Peso",
-      "rawValue": "Functionality",
+      "displayValue": "test display value",
+      "rawValue": "test raw value",
       "typeName": "string",
     },
     "mergedFieldNames": Array [],
     "primaryKeys": Array [
       Object {
-        "className": "District",
-        "id": "0x406e0000001bdf",
+        "className": "SchemaName:ClassName",
+        "id": "0x1",
       },
     ],
     "values": Object {
@@ -806,24 +804,28 @@ exports[`PresentationManager addon results conversion to Presentation objects ge
 Array [
   Object {
     "classInfo": Object {
-      "id": "0x12f58000000306f",
-      "label": "lime Chips Centralized",
-      "name": "Regional",
+      "id": "0x1",
+      "label": "Class Label",
+      "name": "SchemaName:ClassName",
     },
     "displayValues": Object {
       "test field": "test display value",
     },
-    "imageId": "test image id",
+    "label": Object {
+      "displayValue": "test display value",
+      "rawValue": "test raw value",
+      "typeName": "string",
+    },
     "labelDefinition": Object {
-      "displayValue": "Director",
-      "rawValue": "Refined",
+      "displayValue": "test display value",
+      "rawValue": "test raw value",
       "typeName": "string",
     },
     "mergedFieldNames": Array [],
     "primaryKeys": Array [
       Object {
-        "className": "Armenian Dram",
-        "id": "0x13e25000000ea94",
+        "className": "SchemaName:ClassName",
+        "id": "0x1",
       },
     ],
     "values": Object {
@@ -837,24 +839,28 @@ exports[`PresentationManager addon results conversion to Presentation objects ge
 Array [
   Object {
     "classInfo": Object {
-      "id": "0x58d1000000eea3",
-      "label": "Corporate",
-      "name": "Money Market Account",
+      "id": "0x1",
+      "label": "Class Label",
+      "name": "SchemaName:ClassName",
     },
     "displayValues": Object {
       "test field": "test display value",
     },
-    "imageId": "test image id",
+    "label": Object {
+      "displayValue": "test display value",
+      "rawValue": "test raw value",
+      "typeName": "string",
+    },
     "labelDefinition": Object {
-      "displayValue": "Nebraska",
-      "rawValue": "primary",
+      "displayValue": "test display value",
+      "rawValue": "test raw value",
       "typeName": "string",
     },
     "mergedFieldNames": Array [],
     "primaryKeys": Array [
       Object {
-        "className": "Steel",
-        "id": "0x1450c0000017be8",
+        "className": "SchemaName:ClassName",
+        "id": "0x1",
       },
     ],
     "values": Object {
@@ -868,22 +874,26 @@ exports[`PresentationManager addon results conversion to Presentation objects ge
 Array [
   Object {
     "classInfo": Object {
-      "id": "0x4c9d0000009d37",
-      "label": "e-tailers",
-      "name": "Seamless",
+      "id": "0x1",
+      "label": "Class Label",
+      "name": "SchemaName:ClassName",
     },
     "displayValues": Object {},
-    "imageId": "test image id",
+    "label": Object {
+      "displayValue": "test display value",
+      "rawValue": "test raw value",
+      "typeName": "string",
+    },
     "labelDefinition": Object {
-      "displayValue": "neural",
-      "rawValue": "grey",
+      "displayValue": "test display value",
+      "rawValue": "test raw value",
       "typeName": "string",
     },
     "mergedFieldNames": Array [],
     "primaryKeys": Array [
       Object {
-        "className": "ability",
-        "id": "0x4776000000b65d",
+        "className": "SchemaName:ClassName",
+        "id": "0x1",
       },
     ],
     "values": Object {
@@ -897,24 +907,28 @@ exports[`PresentationManager addon results conversion to Presentation objects ge
 Array [
   Object {
     "classInfo": Object {
-      "id": "0x185860000012371",
-      "label": "Human Optional Accounts",
-      "name": "holistic",
+      "id": "0x1",
+      "label": "Class Label",
+      "name": "SchemaName:ClassName",
     },
     "displayValues": Object {
       "test field": "1.23",
     },
-    "imageId": "test image id",
+    "label": Object {
+      "displayValue": "test display value",
+      "rawValue": "test raw value",
+      "typeName": "string",
+    },
     "labelDefinition": Object {
-      "displayValue": "port",
-      "rawValue": "interactive",
+      "displayValue": "test display value",
+      "rawValue": "test raw value",
       "typeName": "string",
     },
     "mergedFieldNames": Array [],
     "primaryKeys": Array [
       Object {
-        "className": "Chair",
-        "id": "0x306d00000118e0",
+        "className": "SchemaName:ClassName",
+        "id": "0x1",
       },
     ],
     "values": Object {
@@ -928,14 +942,18 @@ exports[`PresentationManager addon results conversion to Presentation objects ge
 Array [
   Object {
     "classInfo": Object {
-      "id": "0x16d360000000546",
-      "label": "Personal Loan Account",
-      "name": "open-source",
+      "id": "0x1",
+      "label": "Class Label",
+      "name": "SchemaName:ClassName",
     },
     "displayValues": Object {
       "test field": "Not specified",
     },
-    "imageId": "image id",
+    "label": Object {
+      "displayValue": "Not specified",
+      "rawValue": "Not specified",
+      "typeName": "string",
+    },
     "labelDefinition": Object {
       "displayValue": "Not specified",
       "rawValue": "Not specified",
@@ -944,8 +962,8 @@ Array [
     "mergedFieldNames": Array [],
     "primaryKeys": Array [
       Object {
-        "className": "empower",
-        "id": "0xf4e7000000fcfa",
+        "className": "SchemaName:ClassName",
+        "id": "0x1",
       },
     ],
     "values": Object {
@@ -1056,47 +1074,16 @@ exports[`PresentationManager addon results conversion to Presentation objects ge
 Array [
   Object {
     "children": Array [],
-    "filteringData": Object {
-      "childMatchesCount": 6721,
-      "matchesCount": 18930,
-    },
-    "index": 861,
-    "isMarked": true,
+    "index": 0,
     "node": Object {
-      "backColor": "rgb(
-    204,
-    226,
-    70
-  )",
-      "foreColor": "#A867F6",
-      "hasChildren": true,
-      "isCheckboxEnabled": false,
-      "isCheckboxVisible": false,
-      "isChecked": true,
-      "isEditable": false,
-      "isExpanded": true,
-      "isSelectionDisabled": false,
       "key": Object {
-        "instanceKeys": Array [
-          Object {
-            "className": "Steel",
-            "id": "0x19a5000001511d",
-          },
-          Object {
-            "className": "auxiliary",
-            "id": "0xb4550000004334",
-          },
-        ],
-        "pathFromRoot": Array [
-          "bea34161-fd3f-4f8c-b903-5f8330662f47",
-          "039f81e0-6937-45ec-966a-a453243a981b",
-        ],
-        "type": "ECInstancesNode",
-        "version": 2,
+        "pathFromRoot": Array [],
+        "type": "test-node",
+        "version": 0,
       },
       "label": Object {
-        "displayValue": "withdrawal",
-        "rawValue": "Small",
+        "displayValue": "test label",
+        "rawValue": "test label",
         "typeName": "string",
       },
     },
@@ -1108,42 +1095,16 @@ exports[`PresentationManager addon results conversion to Presentation objects ge
 Array [
   Object {
     "children": Array [],
-    "index": 118,
+    "index": 0,
     "node": Object {
-      "backColor": "rgb(
-    143,
-    75,
-    113
-  )",
-      "foreColor": "#F60C4B",
-      "hasChildren": true,
-      "isCheckboxEnabled": true,
-      "isCheckboxVisible": true,
-      "isChecked": true,
-      "isEditable": false,
-      "isExpanded": true,
-      "isSelectionDisabled": false,
       "key": Object {
-        "instanceKeys": Array [
-          Object {
-            "className": "Incredible",
-            "id": "0x12f930000017b44",
-          },
-          Object {
-            "className": "Extended",
-            "id": "0xd5a8000000c6af",
-          },
-        ],
-        "pathFromRoot": Array [
-          "4edc3570-8f07-4d6c-8dd6-8a7b1c2ff0f1",
-          "6636b107-ded2-4a66-a751-f89329656c97",
-        ],
-        "type": "ECInstancesNode",
-        "version": 2,
+        "pathFromRoot": Array [],
+        "type": "test-node",
+        "version": 0,
       },
       "label": Object {
-        "displayValue": "connect",
-        "rawValue": "Credit Card Account",
+        "displayValue": "test label",
+        "rawValue": "test label",
         "typeName": "string",
       },
     },
@@ -1157,15 +1118,15 @@ Array [
     "key": Object {
       "instanceKeys": Array [
         Object {
-          "className": "enable",
-          "id": "0x13cb90000016d51",
+          "className": "SchemaName:ClassName",
+          "id": "0x1",
         },
       ],
       "pathFromRoot": Array [
         "p1",
       ],
       "type": "ECInstancesNode",
-      "version": 1,
+      "version": 0,
     },
     "label": Object {
       "displayValue": "test2",
@@ -1180,7 +1141,7 @@ Array [
         "p3",
       ],
       "type": "type 2",
-      "version": 1,
+      "version": 0,
     },
     "label": Object {
       "displayValue": "test3",
@@ -1194,15 +1155,8 @@ Array [
 exports[`PresentationManager addon results conversion to Presentation objects getNodes returns localized nodes 1`] = `
 Array [
   Object {
-    "backColor": "backColor1",
     "description": "description1",
-    "fontStyle": "fontStyle1",
-    "foreColor": "foreColor1",
     "hasChildren": true,
-    "imageId": "img_1",
-    "isCheckboxEnabled": true,
-    "isCheckboxVisible": true,
-    "isChecked": true,
     "isEditable": true,
     "isExpanded": true,
     "isSelectionDisabled": true,
@@ -1213,7 +1167,7 @@ Array [
         "p3",
       ],
       "type": "type1",
-      "version": 1,
+      "version": 0,
     },
     "label": Object {
       "displayValue": "Not specified",
@@ -1227,15 +1181,8 @@ Array [
 exports[`PresentationManager addon results conversion to Presentation objects getNodes returns root nodes 1`] = `
 Array [
   Object {
-    "backColor": "backColor1",
     "description": "description1",
-    "fontStyle": "fontStyle1",
-    "foreColor": "foreColor1",
     "hasChildren": true,
-    "imageId": "img_1",
-    "isCheckboxEnabled": true,
-    "isCheckboxVisible": true,
-    "isChecked": true,
     "isEditable": true,
     "isExpanded": true,
     "isSelectionDisabled": true,
@@ -1246,7 +1193,7 @@ Array [
         "p3",
       ],
       "type": "type1",
-      "version": 1,
+      "version": 0,
     },
     "label": Object {
       "displayValue": "test1",
@@ -1255,30 +1202,23 @@ Array [
     },
   },
   Object {
-    "backColor": "",
     "description": "description2",
-    "fontStyle": "",
-    "foreColor": "",
     "hasChildren": false,
-    "imageId": "",
-    "isCheckboxEnabled": false,
-    "isCheckboxVisible": false,
-    "isChecked": false,
     "isEditable": false,
     "isExpanded": false,
     "isSelectionDisabled": false,
     "key": Object {
       "instanceKeys": Array [
         Object {
-          "className": "Personal Loan Account",
-          "id": "0x671b0000017448",
+          "className": "SchemaName:ClassName",
+          "id": "0x1",
         },
       ],
       "pathFromRoot": Array [
         "p1",
       ],
       "type": "ECInstancesNode",
-      "version": 1,
+      "version": 0,
     },
     "label": Object {
       "displayValue": "test2",
@@ -1293,7 +1233,7 @@ Array [
         "p3",
       ],
       "type": "some node",
-      "version": 1,
+      "version": 0,
     },
     "label": Object {
       "displayValue": "test2",
@@ -1325,6 +1265,7 @@ Object {
   "contentFlags": 0,
   "displayType": "",
   "fields": Array [],
+  "inputKeysHash": "",
   "selectClasses": Array [
     Object {
       "isSelectPolymorphic": false,

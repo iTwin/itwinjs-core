@@ -41,7 +41,7 @@ export class ResponseLike implements Response {
   public get status() { return 200; }
   public get statusText() { return ""; }
   public get trailer(): Promise<Headers> { throw new IModelError(BentleyStatus.ERROR, "Not implemented."); }
-  public get type(): ResponseType { return "basic"; }
+  public get type(): "basic" | "cors" | "default" | "error" | "opaque" | "opaqueredirect" { return "basic"; }
   public get url() { return ""; }
   public clone() { return { ...this }; }
 
@@ -504,7 +504,7 @@ export abstract class RpcRequest<TResponse = any> {
     }
 
     this.setStatus(RpcRequestStatus.Resolved);
-    this.dispose();
+    this[Symbol.dispose]();
   }
 
   private resolveRaw() {
@@ -516,7 +516,7 @@ export abstract class RpcRequest<TResponse = any> {
     this.setLastUpdatedTime();
     this._resolveRaw(this._response);
     this.setStatus(RpcRequestStatus.Resolved);
-    this.dispose();
+    this[Symbol.dispose]();
   }
 
   protected reject(reason: any): void {
@@ -532,11 +532,11 @@ export abstract class RpcRequest<TResponse = any> {
     }
 
     this.setStatus(RpcRequestStatus.Rejected);
-    this.dispose();
+    this[Symbol.dispose]();
   }
 
   /** @internal */
-  public dispose(): void {
+  public [Symbol.dispose](): void {
     this.setStatus(RpcRequestStatus.Disposed);
     this._raw = undefined;
     this._response = undefined;

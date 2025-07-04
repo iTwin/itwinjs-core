@@ -8,9 +8,9 @@ import * as sinon from "sinon";
 import { BeDuration } from "@itwin/core-bentley";
 import { InternetConnectivityStatus } from "@itwin/core-common";
 import { NativeApp } from "@itwin/core-frontend";
-import { ResolvablePromise } from "@itwin/presentation-common/lib/cjs/test";
-import { ConnectivityInformationProvider } from "../presentation-frontend/ConnectivityInformationProvider";
-import { Presentation } from "../presentation-frontend/Presentation";
+import { ResolvablePromise } from "@itwin/presentation-common/test-utils";
+import { ConnectivityInformationProvider } from "../presentation-frontend/ConnectivityInformationProvider.js";
+import { Presentation } from "../presentation-frontend/Presentation.js";
 
 describe("ConnectivityInformationProvider", () => {
   let nativeAppCheckInternetConnectivityStub: sinon.SinonStub<[], PromiseLike<InternetConnectivityStatus>>;
@@ -28,8 +28,6 @@ describe("ConnectivityInformationProvider", () => {
       sinon.stub(NativeApp, "isValid").get(() => true); // we're not really going to use any native methods, just events.
       NativeApp.onInternetConnectivityChanged.clear();
     });
-
-    afterEach(() => {});
 
     describe("constructor", () => {
       it("sets current status to the result of `NativeApp.checkInternetConnectivity` if not set already", async () => {
@@ -60,7 +58,7 @@ describe("ConnectivityInformationProvider", () => {
       it("unsubscribes from `NativeApp.onInternetConnectivityChanged` event", () => {
         const provider = new ConnectivityInformationProvider();
         expect(NativeApp.onInternetConnectivityChanged.numberOfListeners).to.eq(1);
-        provider.dispose();
+        provider[Symbol.dispose]();
         expect(NativeApp.onInternetConnectivityChanged.numberOfListeners).to.eq(0);
       });
     });

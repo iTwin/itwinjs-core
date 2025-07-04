@@ -11,7 +11,7 @@ import { PrimitiveBuilder } from "@itwin/core-frontend/lib/cjs/internal/render/P
 import { DisplayParams } from "@itwin/core-frontend/lib/cjs/common/internal/render/DisplayParams";
 import { _accumulator } from "@itwin/core-frontend/lib/cjs/common/internal/Symbols";
 import { Geometry } from "@itwin/core-frontend/lib/cjs/common/internal/render/GeometryPrimitives";
-import { Branch } from "@itwin/core-frontend/lib/cjs/webgl";
+import { Branch } from "@itwin/core-frontend/lib/cjs/internal/webgl";
 import { Arc3d, IndexedPolyface, LineString3d, Loop, Path, Point2d, Point3d, Polyface, Range3d, Transform } from "@itwin/core-geometry";
 import { TestUtility } from "../TestUtility";
 import { TestSnapshotConnection } from "../TestSnapshotConnection";
@@ -36,7 +36,7 @@ describe("PrimitiveBuilder", () => {
   });
 
   after(async () => {
-    viewport?.dispose();
+    viewport?.[Symbol.dispose]();
     await imodel?.close();
     await TestUtility.shutdownFrontend();
   });

@@ -11,8 +11,7 @@ import { AnySchemaEdits, SchemaEditType } from "../Merging/Edits/SchemaEdits";
 import { SchemaDiagnosticVisitor } from "./SchemaDiagnosticVisitor";
 import { SchemaChanges } from "../Validation/SchemaChanges";
 import { SchemaComparer } from "../Validation/SchemaComparer";
-import {
-  AnyEnumerator, AnyProperty, AnyPropertyProps, ConstantProps, CustomAttribute,
+import { AnyEnumerator, AnyProperty, AnyPropertyProps, ConstantProps, CustomAttribute,
   CustomAttributeClassProps, ECClass, EntityClassProps, EnumerationProps, InvertedUnitProps, KindOfQuantityProps,
   MixinProps, PhenomenonProps, PropertyCategoryProps, RelationshipClassProps, RelationshipConstraintProps,
   type Schema, SchemaItem, SchemaItemFormatProps, SchemaItemKey, SchemaItemProps, SchemaItemType, SchemaItemUnitProps, SchemaReferenceProps, StructClassProps, UnitSystemProps,
@@ -55,6 +54,8 @@ export enum SchemaOtherTypes {
   RelationshipConstraintClass = "RelationshipConstraintClass",
   EntityClassMixin = "EntityClassMixin",
   KindOfQuantityPresentationFormat = "KindOfQuantityPresentationFormat",
+  FormatUnit = "FormatUnit",
+  FormatUnitLabel = "FormatUnitLabel",
 }
 
 /**
@@ -91,7 +92,8 @@ export type AnySchemaDifference =
   AnySchemaItemPathDifference |
   EntityClassMixinDifference |
   CustomAttributeDifference |
-  KindOfQuantityPresentationFormatDifference;
+  KindOfQuantityPresentationFormatDifference |
+  FormatUnitDifference;
 
 /**
  * Differencing entry for changes on a Schema.
@@ -152,7 +154,8 @@ export type AnySchemaItemPathDifference =
   RelationshipConstraintClassDifference |
   CustomAttributePropertyDifference |
   EnumeratorDifference |
-  ClassPropertyDifference;
+  ClassPropertyDifference |
+  FormatUnitLabelDifference;
 
 /**
  * Internal base class for all Schema Item differencing entries.
@@ -405,6 +408,34 @@ export interface KindOfQuantityPresentationFormatDifference {
 }
 
 /**
+ * Differencing entry for changed Units on Formats.
+ * @alpha
+ */
+export interface FormatUnitDifference {
+  readonly changeType: "modify";
+  readonly schemaType: SchemaOtherTypes.FormatUnit;
+  readonly itemName: string;
+  readonly difference: {
+    name: string;
+    label?: string;
+  }[];
+}
+
+/**
+ * Differencing entry for changed labels on Format Units.
+ * @alpha
+ */
+export interface FormatUnitLabelDifference {
+  readonly changeType: "modify";
+  readonly schemaType: SchemaOtherTypes.FormatUnitLabel;
+  readonly itemName: string;
+  readonly path: string;
+  readonly difference: {
+    label?: string;
+  };
+}
+
+/**
  * Creates a [[SchemaDifferenceResult]] for two given schemas.
  * @param targetSchema  The schema the differences gets merged into.
  * @param sourceSchema  The schema to get merged in the target.
@@ -470,9 +501,9 @@ class DifferenceSchemaComparer extends SchemaComparer {
     this.nameMappings = new NameMapping();
   }
 
-  public override async resolveItem<TItem extends SchemaItem>(item: SchemaItem, lookupSchema: Schema): Promise<TItem | undefined> {
+  public override async resolveItem<TItem extends typeof SchemaItem>(item: SchemaItem, lookupSchema: Schema, itemConstructor: TItem): Promise<InstanceType<TItem> | undefined> {
     const classKey = this.nameMappings.resolveItemKey(item.key);
-    return lookupSchema.lookupItem<TItem>(classKey.name);
+    return lookupSchema.lookupItem(classKey.name, itemConstructor);
   }
 
   public override async resolveProperty(propertyA: AnyProperty, ecClass: ECClass): Promise<AnyProperty | undefined> {

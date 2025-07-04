@@ -76,7 +76,7 @@ export class PolyfaceData {
    * shared edge is hidden, then the mesh has `edgeVisible = [true,true,false, false,true,true]`.
    */
   public edgeVisible: boolean[];
-  /** Boolean tag indicating if the facets are viewable from the back. */
+  /** The [[twoSided]] flag. */
   private _twoSided: boolean;
   /**
    * Flag indicating if the mesh closure is unknown (0), open sheet (1), closed solid (2).
@@ -84,15 +84,53 @@ export class PolyfaceData {
    * * Closed solid is a mesh with no boundary edge. Open sheet is a mesh that has boundary edge(s).
    */
   private _expectedClosure: number;
+
+  /**
+   * Optional index array for moving "across an edge" to an adjacent facet.
+   * * This array:
+   *   * completes the topology of the polyface.
+   *   * has the same length as the other PolyfaceData index arrays.
+   *   * is populated by [[IndexedPolyfaceWalker.buildEdgeMateIndices]].
+   *   * is used by [[IndexedPolyfaceWalker]] to traverse the polyface.
+   *   * is invalid if the polyface topology is subsequently changed.
+   * * Let k1 = edgeMateIndex[k] be defined. Then:
+   *   * k1 is an index (an "edge index") into the PolyfaceData index arrays. (The same for k.)
+   *   * k and k1 refer to the two oppositely oriented sides of an interior edge in the polyface.
+   *   * pointIndex[k1] is the point at the opposite end of the edge that starts at pointIndex[k].
+   *   * edgeMateIndex[k1] === k.
+   * * If k1 is undefined, then there is no adjacent facet across the edge that starts at pointIndex[k],
+   * i.e. k refers to a boundary edge.
+   */
+  public edgeMateIndex?: Array<number | undefined>;
+  /**
+   * Dereference the edgeMateIndex array.
+   * * This method returns undefined if:
+   *   * k is undefined
+   *   * `this.edgeMateIndex` is undefined
+   *   * k is out of bounds for `this.edgeMateIndex`
+   *   * `this.edgeMateIndex[k]` is undefined
+   */
+  public edgeIndexToEdgeMateIndex(k: number | undefined): number | undefined {
+    if (k !== undefined
+      && this.edgeMateIndex !== undefined
+      && k >= 0 && k < this.edgeMateIndex.length)
+      return this.edgeMateIndex[k];
+    return undefined;
+  }
+  /** Test if `value` is a valid index into the `pointIndex` array. */
+  public isValidEdgeIndex(value: number | undefined): boolean {
+    return value !== undefined && value >= 0 && value < this.pointIndex.length;
+  }
+
   /**
    * Constructor for facets.
    * @param needNormals `true` to allocate empty normal data and index arrays; `false` (default) to leave undefined.
    * @param needParams `true` to allocate empty uv parameter data and index arrays; `false` (default) to leave undefined.
    * @param needColors `true` to allocate empty color data and index arrays; `false` (default) to leave undefined.
-   * @param twoSided `true` if the facets are to be considered viewable from the back; `false` (default) if not.
+   * @param twoSided `true` (default) if the facets are to be considered viewable from the back; `false` if they are amenable to backface culling.
    */
   public constructor(
-    needNormals: boolean = false, needParams: boolean = false, needColors: boolean = false, twoSided: boolean = false,
+    needNormals: boolean = false, needParams: boolean = false, needColors: boolean = false, twoSided: boolean = true,
   ) {
     this.point = new GrowableXYZArray();
     this.pointIndex = [];
@@ -138,6 +176,8 @@ export class PolyfaceData {
     result.edgeVisible = this.edgeVisible.slice();
     result.twoSided = this.twoSided;
     result.expectedClosure = this.expectedClosure;
+    if (this.edgeMateIndex)
+      result.edgeMateIndex = this.edgeMateIndex.slice();
     return result;
   }
   /** Test for equal indices and nearly equal coordinates. */
@@ -167,6 +207,8 @@ export class PolyfaceData {
     if (this.twoSided !== other.twoSided)
       return false;
     if (this.expectedClosure !== other.expectedClosure)
+      return false;
+    if (!NumberArray.isExactEqual(this.edgeMateIndex, other.edgeMateIndex))
       return false;
     return true;
   }
@@ -230,7 +272,12 @@ export class PolyfaceData {
   public getEdgeVisible(i: number): boolean {
     return this.edgeVisible[i];
   }
-  /** Get boolean tag indicating if the facets are to be considered viewable from the back. */
+  /**
+   * Boolean flag indicating if the facets are viewable from the back.
+   * * Default value is true.
+   * * Set to false only if the mesh is known to be a closed volume with outward normals,
+   * indicating it is amenable to backface culling for improved display performance.
+   */
   public get twoSided(): boolean {
     return this._twoSided;
   }
@@ -359,6 +406,13 @@ export class PolyfaceData {
       for (let i = 0; i < numWrap; i++)
         this.auxData.indices[numEdge + i] = this.auxData.indices[i];
     }
+    // copy wrapped edgeMateIndex
+    if (this.edgeMateIndex && other.edgeMateIndex) {
+      for (let i = 0; i < numEdge; i++)
+        this.edgeMateIndex[i] = other.edgeMateIndex[index0 + i];
+      for (let i = 0; i < numWrap; i++)
+        this.edgeMateIndex[numEdge + i] = this.edgeMateIndex[i];
+    }
   }
   /** Trim the `data` arrays to the stated `length`. */
   private static trimArray(data: any[] | undefined, length: number) {
@@ -382,6 +436,7 @@ export class PolyfaceData {
           PolyfaceData.trimArray(data.values, channel.entriesPerValue * length);
       }
     }
+    PolyfaceData.trimArray(this.edgeMateIndex, length);
   }
   /**
    * Resize all data and index arrays to the specified `length`.
@@ -422,6 +477,9 @@ export class PolyfaceData {
         if (this.auxData.indices)
           this.auxData.indices.push(-1);
       }
+      if (this.edgeMateIndex)
+        while (this.edgeMateIndex.length < length)
+          this.edgeMateIndex.push(undefined);
     } else if (length < this.point.length) {
       this.point.resize(length);
       this.pointIndex.length = length;
@@ -447,11 +505,13 @@ export class PolyfaceData {
         if (this.auxData.indices)
           this.auxData.indices.length = length;
       }
+      if (this.edgeMateIndex)
+        this.edgeMateIndex.length = length;
     }
   }
   /**
    * Resize all data arrays to the specified `length`.
-   * @deprecated in 4.x because name is misleading. Call [[PolyfaceData.resizeAllArrays]] instead.
+   * @deprecated in 4.x - will not be removed until after 2026-06-13. Because name is misleading. Call [[PolyfaceData.resizeAllArrays]] instead.
    */
   public resizeAllDataArrays(length: number): void {
     if (length > this.point.length) {
@@ -683,6 +743,7 @@ export class PolyfaceData {
       if (this.colorIndex !== this.pointIndex)
         PolyfaceData.reverseIndices(facetStartIndex, this.colorIndex, true);
       PolyfaceData.reverseIndices(facetStartIndex, this.edgeVisible, false);
+      // TODO: reverse auxData.indices, edgeMateIndex
     }
   }
   /**
@@ -702,6 +763,7 @@ export class PolyfaceData {
     if (this.colorIndex !== this.pointIndex)
       PolyfaceData.reverseIndicesSingleFacet(facetIndex, facetStartIndex, this.colorIndex, true);
     PolyfaceData.reverseIndicesSingleFacet(facetIndex, facetStartIndex, this.edgeVisible, false);
+    // TODO: reverse auxData.indices, edgeMateIndex
   }
   /** Scale all the normals by -1. */
   public reverseNormals() {

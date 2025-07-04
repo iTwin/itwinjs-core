@@ -8,6 +8,66 @@
 
 import { DbResult } from "./BeSQLite";
 import { RepositoryStatus } from "./internal/RepositoryStatus";
+import { JsonUtils } from "./JsonUtils";
+
+/** Uniquely identifies a specific kind of [[ITwinError]].
+ * @beta
+ */
+export interface ITwinErrorId {
+  /** A "namespace" serving as a qualifier for the [[key]]. It should be specific enough to ensure uniqueness across all applications.
+   * For example, all errors originating from a given package should use that package's full name as their scope.
+   */
+  readonly scope: string;
+  /** Uniquely identifies a specific kind of [[ITwinError]] within the [[scope]]. */
+  readonly key: string;
+}
+
+/** The interface that all exceptions thrown by iTwin.js libraries and applications should implement.
+ * Specific kinds of `ITwinError`s are identified by an [[ITwinErrorId]] that allows programmers to identify errors when they are caught without relying
+ * on specific class hierarchies, which is especially important when errors are marshalled across process boundaries.
+ * You can extend `ITwinError` to add properties that provide programmers with additional context for a particular kind of error.
+ * When catching errors, programmers can use [[isError]] to determine if the error is of a specific sub-type, and if so access the
+ * additional properties.
+ * Those additional properties will also be logged as metadata by [[Logger.logException]].
+ * @beta
+ */
+export interface ITwinError extends Error {
+  /** Uniquely identifies the kind of error. */
+  readonly iTwinErrorId: ITwinErrorId;
+}
+
+/** @beta */
+export namespace ITwinError {
+  /** Instantiate a new `ITwinError` or subtype thereof.
+   * @see [[ITwinError.throwError]] to conveniently instantiate and throw the error.
+   */
+  export function create<T extends ITwinError>(args: Omit<T, "name">): T {
+    const err = new Error(args.message);
+    Object.assign(err, args);
+    err.name = args.iTwinErrorId.key; // helpful because this is used by `toString` for Error class
+    return err as T;
+  }
+
+  /** Instantiate and immediately throw an `ITwinError`.
+   * @see [[ITwinError.create]] to instantiate an error without throwing it.
+   */
+  export function throwError<T extends ITwinError>(args: Omit<T, "name">): never {
+    throw create(args);
+  }
+
+  /**
+   * Determine whether an error object was thrown by iTwin.js and has a specific scope and key.
+   *
+   * If the test succeeds, the type of `error` is coerced to `T`
+   * @param error The error to ve verified.
+   * @param scope value for `error.iTwinErrorId.scope`
+   * @param key value for `error.iTwinErrorId.key`
+  */
+  export function isError<T extends ITwinError>(error: unknown, scope: string, key?: string): error is T {
+    return JsonUtils.isObject(error) && "iTwinErrorId" in error && JsonUtils.isObject(error.iTwinErrorId)
+      && error.iTwinErrorId.scope === scope && (undefined === key || error.iTwinErrorId.key === key);
+  }
+}
 
 /** Standard status code.
  * This status code should be rarely used.
@@ -288,6 +348,9 @@ export enum GeoServiceStatus {
   NoDatumConverter = GEOSERVICESTATUS_BASE + 3,
   VerticalDatumConvertError = GEOSERVICESTATUS_BASE + 4,
   CSMapError = GEOSERVICESTATUS_BASE + 5,
+  /**
+   * @deprecated in 5.0 - will not be removed until after 2026-06-13. This status is never returned.
+   */
   Pending = GEOSERVICESTATUS_BASE + 6,
 }
 
@@ -312,9 +375,6 @@ export type GetMetaDataFunction = () => object | undefined;
  */
 export type LoggingMetaData = GetMetaDataFunction | object | undefined;
 
-function isObject(obj: unknown): obj is { [key: string]: unknown } {
-  return typeof obj === "object" && obj !== null;
-}
 
 interface ErrorProps {
   message: string;
@@ -322,10 +382,30 @@ interface ErrorProps {
   metadata?: object;
 }
 
-/** Base exception class for iTwin.js exceptions.
+/**
+ * An [[ITwinError]] that also supplies an `errorNumber`.
+ * @note this interface exists *only* for legacy errors derived from `BentleyError`. The concept of "error number" is
+ * problematic since it is impossible to enforce across the iTwin.js library, let alone across applications. New code should
+ * use `ITwinError` and identify errors with strings instead.
+ * @beta */
+export interface LegacyITwinErrorWithNumber extends ITwinError {
+  /** a number to identify the error. */
+  readonly errorNumber: number;
+
+  /** Logging metadata
+   * @note exceptions should *not* include logging data. Logging should be done where exceptions are caught. This member exists
+   * only for backwards compatibility.
+   */
+  loggingMetadata?: object;
+}
+
+/**
+ * Base exception class for legacy iTwin.js errors.
+ * For backwards compatibility only. Do not create new subclasses of BentleyError. Instead use [[ITwinError]].
  * @public
  */
-export class BentleyError extends Error {
+export class BentleyError extends Error { // note: this class implements LegacyITwinErrorWithNumber but can't be declared as such because that interface is @beta.
+  public static readonly iTwinErrorScope = "bentley-error";
   private readonly _metaData: LoggingMetaData;
 
   /**
@@ -338,6 +418,25 @@ export class BentleyError extends Error {
     this.errorNumber = errorNumber;
     this._metaData = metaData;
     this.name = this._initName();
+  }
+
+  /** supply the value for iTwinErrorId  */
+  public get iTwinErrorId() {
+    return { scope: BentleyError.iTwinErrorScope, key: this.name };
+  }
+  /** value for logging metadata */
+  public get loggingMetadata() { return this.getMetaData(); }
+
+  /**
+   * Determine if an error object implements the `LegacyITwinErrorWithNumber` interface.
+   *
+   * If the test succeeds, the type of `error` is coerced to `T`
+   * @note this method does *not* test that the object is an `instanceOf BentleyError`.
+   * @beta
+   */
+  public static isError<T extends LegacyITwinErrorWithNumber>(error: unknown, errorNumber?: number): error is T {
+    return ITwinError.isError<LegacyITwinErrorWithNumber>(error, BentleyError.iTwinErrorScope) &&
+      typeof error.errorNumber === "number" && (errorNumber === undefined || error.errorNumber === errorNumber);
   }
 
   /** Returns true if this BentleyError includes (optional) metadata. */
@@ -355,7 +454,12 @@ export class BentleyError extends Error {
 
   /** This function returns the name of each error status. Override this method to handle more error status codes. */
   protected _initName(): string {
-    switch (this.errorNumber) {
+    return BentleyError.getErrorKey(this.errorNumber);
+  }
+
+  /** This function returns the name of each error status. */
+  public static getErrorKey(errorNumber: number) {
+    switch (errorNumber) {
       case IModelStatus.AlreadyLoaded: return "Already Loaded";
       case IModelStatus.AlreadyOpen: return "Already Open";
       case IModelStatus.BadArg: return "Bad Arg";
@@ -623,7 +727,7 @@ export class BentleyError extends Error {
       case GeoServiceStatus.NoDatumConverter: return "No datum converter";
       case GeoServiceStatus.VerticalDatumConvertError: return "Vertical datum convert error";
       case GeoServiceStatus.CSMapError: return "CSMap error";
-      case GeoServiceStatus.Pending: return "Pending";
+      case GeoServiceStatus.Pending: return "Pending"; // eslint-disable-line @typescript-eslint/no-deprecated
       case RealityDataStatus.InvalidData: return "Invalid or unknown data";
       case DbResult.BE_SQLITE_OK:
       case DbResult.BE_SQLITE_ROW:
@@ -632,7 +736,7 @@ export class BentleyError extends Error {
         return "Success";
 
       default:
-        return `Error (${this.errorNumber})`;
+        return `Error (${errorNumber})`;
     }
   }
 
@@ -647,7 +751,7 @@ export class BentleyError extends Error {
     if (error instanceof Error)
       return error.toString();
 
-    if (isObject(error)) {
+    if (JsonUtils.isObject(error)) {
       if (typeof error.message === "string")
         return error.message;
 
@@ -667,7 +771,7 @@ export class BentleyError extends Error {
    * @public
    */
   public static getErrorStack(error: unknown): string | undefined {
-    if (isObject(error) && typeof error.stack === "string")
+    if (JsonUtils.isObject(error) && typeof error.stack === "string")
       return error.stack;
 
     return undefined;
@@ -679,7 +783,7 @@ export class BentleyError extends Error {
    * @public
    */
   public static getErrorMetadata(error: unknown): object | undefined {
-    if (isObject(error) && typeof error.getMetaData === "function") {
+    if (JsonUtils.isObject(error) && typeof error.getMetaData === "function") {
       const metadata = error.getMetaData();
       if (typeof metadata === "object" && metadata !== null)
         return metadata;

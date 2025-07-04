@@ -5,7 +5,7 @@
 import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 import { AuxChannel, AuxChannelData, AuxChannelDataType, Geometry, Vector3d } from "@itwin/core-geometry";
 import { OctEncodedNormal } from "@itwin/core-common";
-import { MockRender } from "../../../render/MockRender";
+import { MockRender } from "../../../internal/render/MockRender";
 import { AuxChannelTable } from "../../../common/internal/render/AuxChannelTable";
 
 describe("AuxChannelTable", () => {

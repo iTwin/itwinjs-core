@@ -357,23 +357,9 @@ export class PolyfaceBuilder extends NullGeometryHandler {
   public addPoint(xyz: Point3d): number {
     return this._polyface.addPoint(xyz);
   }
-  /**
-   * Add a point to the polyface.
-   * @deprecated in 3.x. Use addPoint instead.
-   */
-  public findOrAddPoint(xyz: Point3d): number {
-    return this.addPoint(xyz);
-  }
   /** Add a uv parameter to the polyface. */
   public addParamXY(x: number, y: number): number {
     return this._polyface.addParamUV(x, y);
-  }
-  /**
-   * Add a uv parameter to the polyface.
-   * @deprecated in 3.x. Use addParamXY instead.
-   */
-  public findOrAddParamXY(x: number, y: number): number {
-    return this.addParamXY(x, y);
   }
   private static _workPointFindOrAddA = Point3d.create();
   private static _workVectorFindOrAdd = Vector3d.create();
@@ -453,13 +439,6 @@ export class PolyfaceBuilder extends NullGeometryHandler {
     return undefined;
   }
   /**
-   * Add a uv parameter to the polyface.
-   * @deprecated in 3.x. Use addParamInGrowableXYArray instead.
-   */
-  public findOrAddParamInGrowableXYArray(data: GrowableXYArray, index: number): number | undefined {
-    return this.addParamInGrowableXYArray(data, index);
-  }
-  /**
    * Add a uv parameter to the polyface, taking `u` from `ls.fractions` and `v` from input. The implementation is
    * free to either create a new param or return the index of a prior param with the same coordinates.
    * @param ls the linestring.
@@ -502,13 +481,6 @@ export class PolyfaceBuilder extends NullGeometryHandler {
   /** Add a point to the polyface. */
   public addPointXYZ(x: number, y: number, z: number): number {
     return this._polyface.addPointXYZ(x, y, z);
-  }
-  /**
-   * Add a point to the polyface.
-   * @deprecated in 3.x. Use addPointXYZ instead.
-   */
-  public findOrAddPointXYZ(x: number, y: number, z: number): number {
-    return this.addPointXYZ(x, y, z);
   }
   /** Returns a transform who can be applied to points on a triangular facet in order to obtain UV parameters. */
   private getUVTransformForTriangleFacet(pointA: Point3d, pointB: Point3d, pointC: Point3d): Transform | undefined {
@@ -1223,7 +1195,7 @@ export class PolyfaceBuilder extends NullGeometryHandler {
    * Apply stroke counts to curve primitives.
    * * Recursively visit all children of data.
    * * At each primitive, invoke `computeStrokeCountForOptions` method with options from the builder.
-   * @deprecated in 4.x. This method does nothing and is unneeded.
+   * @deprecated in 4.x - will not be removed until after 2026-06-13. This method does nothing and is unneeded.
    */
   public applyStrokeCountsToCurvePrimitives(data: AnyCurve | GeometryQuery): void {
     const options = this._options;
@@ -2044,9 +2016,9 @@ export class PolyfaceBuilder extends NullGeometryHandler {
   private getEdgeIndices(edge: SortableEdge): { edgeIndexA: number, edgeIndexB: number } | undefined {
     let indexA = -1; let indexB = -1;
     for (let i = this._polyface.facetIndex0(edge.facetIndex); i < this._polyface.facetIndex1(edge.facetIndex); ++i) {
-      if (edge.vertexIndexA === this._polyface.data.pointIndex[i])
+      if (edge.startVertex === this._polyface.data.pointIndex[i])
         indexA = i;
-      else if (edge.vertexIndexB === this._polyface.data.pointIndex[i])
+      else if (edge.endVertex === this._polyface.data.pointIndex[i])
         indexB = i;
     }
     return (indexA < 0 || indexB < 0) ? undefined : { edgeIndexA: indexA, edgeIndexB: indexB };

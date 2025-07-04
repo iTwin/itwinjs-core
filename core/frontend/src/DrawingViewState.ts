@@ -19,7 +19,7 @@ import { IModelApp } from "./IModelApp";
 import { IModelConnection } from "./IModelConnection";
 import { FeatureSymbology } from "./render/FeatureSymbology";
 import { GraphicBranch, GraphicBranchOptions } from "./render/GraphicBranch";
-import { MockRender } from "./render/MockRender";
+import { MockRender } from "./internal/render/MockRender";
 import { RenderGraphic } from "./render/RenderGraphic";
 import { Scene } from "./render/Scene";
 import { DisclosedTileTreeSet, TileGraphicType } from "./tile/internal";
@@ -230,8 +230,8 @@ class SectionAttachment {
     this._drawingExtents.z = Math.abs(this._drawingExtents.z);
   }
 
-  public dispose(): void {
-    this.viewport.dispose();
+  public [Symbol.dispose](): void {
+    this.viewport[Symbol.dispose]();
   }
 
   public addToScene(context: SceneContext): void {

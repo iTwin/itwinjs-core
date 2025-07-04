@@ -8,8 +8,8 @@ import { IModelDb, StandaloneDb } from "@itwin/core-backend";
 import { Logger, LogLevel } from "@itwin/core-bentley";
 import { PresentationManager } from "@itwin/presentation-backend";
 import { ChildNodeSpecificationTypes, Ruleset, RuleTypes } from "@itwin/presentation-common";
-import { initialize, terminate } from "../IntegrationTests";
-import { prepareOutputFilePath } from "../Utils";
+import { initialize, terminate } from "../IntegrationTests.js";
+import { prepareOutputFilePath } from "../Utils.js";
 
 describe("ReadWrite", () => {
   let manager: PresentationManager;
@@ -39,7 +39,7 @@ describe("ReadWrite", () => {
     const imodelPath = imodel.pathName;
     imodel.close();
     fs.unlinkSync(imodelPath);
-    manager.dispose();
+    manager[Symbol.dispose]();
   });
 
   describe("Handling read-write operations", () => {
@@ -52,8 +52,7 @@ describe("ReadWrite", () => {
             specifications: [
               {
                 specType: ChildNodeSpecificationTypes.InstanceNodesOfSpecificClasses,
-                classes: { schemaName: "BisCore", classNames: ["Element"] },
-                arePolymorphic: true,
+                classes: { schemaName: "BisCore", classNames: ["Element"], arePolymorphic: true },
                 groupByClass: false,
               },
             ],

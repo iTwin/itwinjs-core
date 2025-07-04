@@ -43,6 +43,8 @@ export class SchemaMergingWalker extends SchemaDifferenceWalker {
       ...differences.filter(filterByType(SchemaItemType.Unit)),
       ...differences.filter(filterByType(SchemaItemType.InvertedUnit)),
       ...differences.filter(filterByType(SchemaItemType.Format)),
+      ...differences.filter(filterByType(SchemaOtherTypes.FormatUnit)),
+      ...differences.filter(filterByType(SchemaOtherTypes.FormatUnitLabel)),
       ...differences.filter(filterByType(SchemaItemType.KindOfQuantity)),
       ...differences.filter(filterByType(SchemaItemType.Constant)),
       ...differences.filter(filterByType(SchemaOtherTypes.KindOfQuantityPresentationFormat)),

@@ -2,12 +2,15 @@
  * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
+/* eslint-disable @typescript-eslint/ban-ts-comment */
+
 import * as hash from "object-hash";
 import * as path from "path";
 import { IModelDb, IModelJsNative, IpcHost } from "@itwin/core-backend";
-import { BeEvent, IDisposable, Logger } from "@itwin/core-bentley";
+import { BeEvent, Logger } from "@itwin/core-bentley";
 import { UnitSystemKey } from "@itwin/core-quantity";
 import {
+  CompressedClassInfoJSON,
   Content,
   ContentDescriptorRequestOptions,
   ContentFlags,
@@ -29,6 +32,7 @@ import {
   HierarchyRequestOptions,
   InstanceKey,
   Item,
+  ItemJSON,
   Key,
   KeySet,
   LabelDefinition,
@@ -36,17 +40,17 @@ import {
   NodePathElement,
   Paged,
   PagedResponse,
-  PresentationError,
-  PresentationIpcEvents,
-  PresentationStatus,
   Prioritized,
   Ruleset,
   RulesetVariable,
   SelectClassInfo,
+  SelectClassInfoJSON,
   UpdateInfo,
   WithCancelEvent,
 } from "@itwin/presentation-common";
-import { PresentationBackendLoggerCategory } from "./BackendLoggerCategory";
+import { deepReplaceNullsToUndefined, PresentationIpcEvents } from "@itwin/presentation-common/internal";
+import { normalizeFullClassName } from "@itwin/presentation-shared";
+import { PresentationBackendLoggerCategory } from "./BackendLoggerCategory.js";
 import {
   createDefaultNativePlatform,
   NativePlatformDefinition,
@@ -56,22 +60,40 @@ import {
   NativePresentationKeySetJSON,
   NativePresentationUnitSystem,
   PresentationNativePlatformResponseError,
-} from "./NativePlatform";
-import { HierarchyCacheConfig, HierarchyCacheMode, PresentationManagerProps } from "./PresentationManager";
-import { RulesetManager, RulesetManagerImpl } from "./RulesetManager";
-import { BackendDiagnosticsAttribute, BackendDiagnosticsOptions, combineDiagnosticsOptions, getElementKey, reportDiagnostics } from "./Utils";
+} from "./NativePlatform.js";
+import { HierarchyCacheConfig, HierarchyCacheMode, PresentationManagerProps } from "./PresentationManager.js";
+// @ts-ignore TS complains about `with` in CJS builds, but not ESM
+import elementPropertiesRuleset from "./primary-presentation-rules/ElementProperties.PresentationRuleSet.json" with { type: "json" };
+import { RulesetManager, RulesetManagerImpl } from "./RulesetManager.js";
+// @ts-ignore TS complains about `with` in CJS builds, but not ESM
+import bisSupplementalRuleset from "./supplemental-presentation-rules/BisCore.PresentationRuleSet.json" with { type: "json" };
+// @ts-ignore TS complains about `with` in CJS builds, but not ESM
+import funcSupplementalRuleset from "./supplemental-presentation-rules/Functional.PresentationRuleSet.json" with { type: "json" };
+import { BackendDiagnosticsAttribute, BackendDiagnosticsOptions, combineDiagnosticsOptions, getElementKey, reportDiagnostics } from "./Utils.js";
+
+/**
+ * Produce content descriptor that is not intended for querying content. Allows the implementation to omit certain
+ * operations to make obtaining content descriptor faster.
+ * @internal
+ */
+export const DESCRIPTOR_ONLY_CONTENT_FLAG = 1 << 9;
+
+interface PresentationManagerDetailProps extends PresentationManagerProps {
+  id?: string;
+  addon?: NativePlatformDefinition;
+}
 
 /** @internal */
-export class PresentationManagerDetail implements IDisposable {
+export class PresentationManagerDetail implements Disposable {
   private _disposed: boolean;
   private _nativePlatform: NativePlatformDefinition | undefined;
-  private _onManagerUsed: (() => void) | undefined;
   private _diagnosticsOptions: BackendDiagnosticsOptions | undefined;
 
   public rulesets: RulesetManager;
   public activeUnitSystem: UnitSystemKey | undefined;
+  public readonly onUsed: BeEvent<() => void>;
 
-  constructor(params: PresentationManagerProps) {
+  constructor(params: PresentationManagerDetailProps) {
     this._disposed = false;
 
     this._nativePlatform =
@@ -81,6 +103,7 @@ export class PresentationManagerDetail implements IDisposable {
         params.workerThreadsCount ?? 2,
         IpcHost.isValid ? ipcUpdatesHandler : noopUpdatesHandler,
         params.caching,
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         params.defaultFormats,
         params.useMmap,
       );
@@ -88,32 +111,28 @@ export class PresentationManagerDetail implements IDisposable {
     setupRulesets(this._nativePlatform, params.supplementalRulesetDirectories ?? [], params.rulesetDirectories ?? []);
     this.activeUnitSystem = params.defaultUnitSystem;
 
-    this._onManagerUsed = undefined;
+    this.onUsed = new BeEvent();
     this.rulesets = new RulesetManagerImpl(() => this.getNativePlatform());
     this._diagnosticsOptions = params.diagnostics;
   }
 
-  public dispose(): void {
+  public [Symbol.dispose](): void {
     if (this._disposed) {
       return;
     }
 
-    this.getNativePlatform().dispose();
+    this.getNativePlatform()[Symbol.dispose]();
     this._nativePlatform = undefined;
+    this.onUsed.clear();
 
     this._disposed = true;
   }
 
   public getNativePlatform(): NativePlatformDefinition {
     if (this._disposed) {
-      throw new PresentationError(PresentationStatus.NotInitialized, "Attempting to use Presentation manager after disposal");
+      throw new Error("Attempting to use Presentation manager after disposal");
     }
-
     return this._nativePlatform!;
-  }
-
-  public setOnManagerUsedHandler(handler: () => void) {
-    this._onManagerUsed = handler;
   }
 
   public async getNodes(
@@ -165,7 +184,8 @@ export class PresentationManagerDetail implements IDisposable {
       ...strippedOptions,
       paths: instancePaths,
     };
-    return JSON.parse(await this.request(params), NodePathElement.listReviver);
+    const paths: NodePathElement[] = deepReplaceNullsToUndefined(JSON.parse(await this.request(params)));
+    return paths;
   }
 
   public async getFilteredNodePaths(
@@ -177,7 +197,8 @@ export class PresentationManagerDetail implements IDisposable {
       rulesetId: this.registerRuleset(rulesetOrId),
       ...strippedOptions,
     };
-    return JSON.parse(await this.request(params), NodePathElement.listReviver);
+    const paths: NodePathElement[] = deepReplaceNullsToUndefined(JSON.parse(await this.request(params)));
+    return paths;
   }
 
   public async getContentDescriptor(requestOptions: WithCancelEvent<Prioritized<ContentDescriptorRequestOptions<IModelDb, KeySet>>>): Promise<string> {
@@ -186,7 +207,7 @@ export class PresentationManagerDetail implements IDisposable {
       requestId: NativePlatformRequestTypes.GetContentDescriptor,
       rulesetId: this.registerRuleset(rulesetOrId),
       ...strippedOptions,
-      contentFlags: contentFlags ?? ContentFlags.DescriptorOnly, // only set "descriptor only" flag if there are no flags provided
+      contentFlags: contentFlags ?? DESCRIPTOR_ONLY_CONTENT_FLAG, // only set "descriptor only" flag if there are no flags provided
       keys: getKeysForContentRequest(requestOptions.keys, (map) => bisElementInstanceKeysProcessor(requestOptions.imodel, map)),
     };
     return this.request(params);
@@ -200,10 +221,11 @@ export class PresentationManagerDetail implements IDisposable {
       rulesetId: "ElementProperties",
       ...requestOptions,
     };
-    const reviver = (key: string, value: any) => {
-      return key === "" ? SelectClassInfo.listFromCompressedJSON(value.sources, value.classesMap) : value;
-    };
-    return JSON.parse(await this.request(params), reviver);
+    const json: {
+      sources: SelectClassInfoJSON<string>[];
+      classesMap: { [id: string]: CompressedClassInfoJSON };
+    } = JSON.parse(await this.request(params));
+    return deepReplaceNullsToUndefined(json.sources.map((sourceJson) => SelectClassInfo.fromCompressedJSON(sourceJson, json.classesMap)));
   }
 
   public async getContentSetSize(
@@ -230,11 +252,13 @@ export class PresentationManagerDetail implements IDisposable {
       requestId: NativePlatformRequestTypes.GetContentSet,
       rulesetId: this.registerRuleset(rulesetOrId),
       ...strippedOptions,
+      omitFormattedValues: true,
       keys: getKeysForContentRequest(requestOptions.keys, (map) => bisElementInstanceKeysProcessor(requestOptions.imodel, map)),
       descriptorOverrides: createContentDescriptorOverrides(descriptor),
     };
-    // eslint-disable-next-line @typescript-eslint/unbound-method
-    return JSON.parse(await this.request(params), Item.listReviver);
+    return JSON.parse(await this.request(params))
+      .map((json: ItemJSON) => Item.fromJSON(deepReplaceNullsToUndefined(json)))
+      .filter((item: Item | undefined): item is Item => !!item);
   }
 
   public async getContent(
@@ -246,10 +270,11 @@ export class PresentationManagerDetail implements IDisposable {
       requestId: NativePlatformRequestTypes.GetContent,
       rulesetId: this.registerRuleset(rulesetOrId),
       ...strippedOptions,
+      omitFormattedValues: true,
       keys: getKeysForContentRequest(requestOptions.keys, (map) => bisElementInstanceKeysProcessor(requestOptions.imodel, map)),
       descriptorOverrides: createContentDescriptorOverrides(descriptor),
     };
-    return JSON.parse(await this.request(params), (key, value) => Content.reviver(key, value));
+    return Content.fromJSON(deepReplaceNullsToUndefined(JSON.parse(await this.request(params))));
   }
 
   public async getPagedDistinctValues(
@@ -265,16 +290,7 @@ export class PresentationManagerDetail implements IDisposable {
       keys: getKeysForContentRequest(keys, (map) => bisElementInstanceKeysProcessor(requestOptions.imodel, map)),
       descriptorOverrides: createContentDescriptorOverrides(descriptor),
     };
-    const reviver = (key: string, value: any) => {
-      return key === ""
-        ? {
-            total: value.total,
-            // eslint-disable-next-line @typescript-eslint/no-deprecated
-            items: value.items.map(DisplayValueGroup.fromJSON),
-          }
-        : value;
-    };
-    return JSON.parse(await this.request(params), reviver);
+    return deepReplaceNullsToUndefined(JSON.parse(await this.request(params)));
   }
 
   public async getDisplayLabelDefinition(
@@ -284,7 +300,7 @@ export class PresentationManagerDetail implements IDisposable {
       requestId: NativePlatformRequestTypes.GetDisplayLabel,
       ...requestOptions,
     };
-    return JSON.parse(await this.request(params));
+    return deepReplaceNullsToUndefined(JSON.parse(await this.request(params)));
   }
 
   public async getDisplayLabelDefinitions(
@@ -292,7 +308,7 @@ export class PresentationManagerDetail implements IDisposable {
   ): Promise<LabelDefinition[]> {
     const concreteKeys = requestOptions.keys
       .map((k) => {
-        if (k.className === "BisCore:Element") {
+        if (normalizeFullClassName(k.className).toLowerCase() === "BisCore.Element".toLowerCase()) {
           return getElementKey(requestOptions.imodel, k.id);
         }
         return k;
@@ -333,7 +349,7 @@ export class PresentationManagerDetail implements IDisposable {
   }
 
   public async request(params: RequestParams): Promise<string> {
-    this._onManagerUsed?.();
+    this.onUsed.raiseEvent();
     const { requestId, imodel, unitSystem, diagnostics: requestDiagnostics, cancelEvent, ...strippedParams } = params;
     const imodelAddon = this.getNativePlatform().getImodelAddon(imodel);
     const response = await withOptionalDiagnostics([this._diagnosticsOptions, requestDiagnostics], async (diagnosticsOptions) => {
@@ -367,6 +383,7 @@ async function withOptionalDiagnostics(
       responseDiagnostics = e.diagnostics;
     }
     throw e;
+    /* c8 ignore next */
   } finally {
     if (responseDiagnostics) {
       const diagnostics = { logs: [responseDiagnostics] };
@@ -386,18 +403,9 @@ interface RequestParams {
 }
 
 function setupRulesets(nativePlatform: NativePlatformDefinition, supplementalRulesetDirectories: string[], primaryRulesetDirectories: string[]): void {
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const elementPropertiesRuleset: Ruleset = require("./primary-presentation-rules/ElementProperties.PresentationRuleSet.json");
   nativePlatform.addRuleset(JSON.stringify(elementPropertiesRuleset));
-
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const bisSupplementalRuleset: Ruleset = require("./supplemental-presentation-rules/BisCore.PresentationRuleSet.json");
   nativePlatform.registerSupplementalRuleset(JSON.stringify(bisSupplementalRuleset));
-
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const funcSupplementalRuleset: Ruleset = require("./supplemental-presentation-rules/Functional.PresentationRuleSet.json");
   nativePlatform.registerSupplementalRuleset(JSON.stringify(funcSupplementalRuleset));
-
   nativePlatform.setupSupplementalRulesetDirectories(collateAssetDirectories(supplementalRulesetDirectories));
   nativePlatform.setupRulesetDirectories(collateAssetDirectories(primaryRulesetDirectories));
 }
@@ -489,7 +497,6 @@ export function bisElementInstanceKeysProcessor(imodel: IModelDb, classInstances
 
 function addInstanceKey(classInstancesMap: Map<string, Set<string>>, key: InstanceKey): void {
   let set = classInstancesMap.get(key.className);
-  // istanbul ignore else
   if (!set) {
     set = new Set();
     classInstancesMap.set(key.className, set);
@@ -502,6 +509,7 @@ function createNativePlatform(
   workerThreadsCount: number,
   updateCallback: (updateInfo: UpdateInfo | undefined) => void,
   caching: PresentationManagerProps["caching"],
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   defaultFormats: FormatsMap | undefined,
   useMmap: boolean | number | undefined,
 ): NativePlatformDefinition {
@@ -539,6 +547,7 @@ function createNativePlatform(
     return directory ? path.resolve(directory) : "";
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   function toNativeUnitFormatsMap(map: FormatsMap | undefined): NativePresentationDefaultUnitFormats | undefined {
     if (!map) {
       return undefined;
@@ -589,7 +598,7 @@ function parseUpdateInfo(info: UpdateInfo | undefined) {
 
   const parsedInfo: UpdateInfo = {};
   for (const fileName in info) {
-    // istanbul ignore if
+    /* c8 ignore next 3 */
     if (!info.hasOwnProperty(fileName)) {
       continue;
     }
@@ -614,5 +623,5 @@ export function ipcUpdatesHandler(info: UpdateInfo | undefined) {
 }
 
 /** @internal */
-// istanbul ignore next
+/* c8 ignore next */
 export function noopUpdatesHandler(_info: UpdateInfo | undefined) {}

@@ -5,9 +5,9 @@
 
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { IModelApp } from "../../../IModelApp";
-import { GL } from "../../../render/webgl/GL";
-import { RenderState } from "../../../render/webgl/RenderState";
-import { System } from "../../../render/webgl/System";
+import { GL } from "../../../internal/render/webgl/GL";
+import { RenderState } from "../../../internal/render/webgl/RenderState";
+import { System } from "../../../internal/render/webgl/System";
 import { EmptyLocalization } from "@itwin/core-common";
 
 describe("RenderState", () => {

@@ -6,13 +6,14 @@
  * @module Elements
  */
 
-import { Id64, Id64String } from "@itwin/core-bentley";
+import { Id64, Id64String, JsonUtils } from "@itwin/core-bentley";
 import {
   BisCodeSpec, Code, CodeScopeProps, CodeSpec, DefinitionElementProps, ElementProps, NormalMapProps, RenderMaterialAssetMapsProps, RenderMaterialProps, RgbFactorProps, TextureMapProps,
 } from "@itwin/core-common";
 import { DefinitionElement } from "./Element";
 import { IModelDb } from "./IModelDb";
 import { IModelElementCloneContext } from "./IModelElementCloneContext";
+import { CustomHandledProperty, DeserializeEntityArgs, ECSqlRow } from "./Entity";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 
@@ -72,6 +73,39 @@ export class RenderMaterialElement extends DefinitionElement {
     val.description = this.description;
     return val;
   }
+
+  /**
+   * RenderMaterialElement custom HandledProps includes 'paletteName'.
+   * @inheritdoc
+   * @beta
+   */
+  protected static override readonly _customHandledProps: CustomHandledProperty[] = [
+    { propertyName: "paletteName", source: "Class" },
+  ];
+
+  /**
+   * RenderMaterialElement deserializes 'paletteName'.
+   * @inheritdoc
+   * @beta
+   */
+  public static override deserialize(props: DeserializeEntityArgs): RenderMaterialProps {
+    const elProps = super.deserialize(props) as RenderMaterialProps;
+    const instance = props.row;
+    elProps.paletteName = JsonUtils.asString(instance.paletteName);
+    return elProps;
+  }
+
+  /**
+   * RenderMaterialElement serializes 'paletteName'.
+   * @inheritdoc
+   * @beta
+   */
+  public static override serialize(props: RenderMaterialProps, iModel: IModelDb): ECSqlRow {
+    const inst = super.serialize(props, iModel);
+    inst.paletteName = props.paletteName;
+    return inst;
+  }
+
   /** Create a Code for a RenderMaterial given a name that is meant to be unique within the scope of the specified DefinitionModel.
    * @param iModel  The IModelDb
    * @param scopeModelId The Id of the DefinitionModel that contains the RenderMaterial and provides the scope for its name.
@@ -208,7 +242,7 @@ export namespace RenderMaterialElement {
   /** Parameters used to construct a [[RenderMaterial]].
    * The persistent JSON representation - [RenderMaterialAssetProps]($common) - is quite verbose and unwieldy. This representation simplifies it somewhat.
    * @see [[RenderMaterialElement.create]] and [[RenderMaterialElement.insert]] to create a [[RenderMaterial]] from parameters of this type.
-   * @deprecated in 3.6 because it is not useful to use a `class` - just use [[RenderMaterialElementParams]] directly instead.
+   * @deprecated in 3.6 - might be removed in next major version. Because it is not useful to use a `class` - just use [[RenderMaterialElementParams]] directly instead.
    */
   export class Params {
     /** A required palette name that categorizes this RenderMaterial */

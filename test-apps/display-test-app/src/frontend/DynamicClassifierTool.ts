@@ -145,7 +145,7 @@ export class DynamicClassifierTool extends PrimitiveTool {
       }
 
       this._spheres.add(ev.point);
-      this._graphic?.dispose();
+      this._graphic?.[Symbol.dispose]();
       this._graphic = this._spheres.toGraphic(false);
       ev.viewport?.invalidateDecorations();
     }
@@ -282,7 +282,7 @@ export class DynamicClipMaskTool extends PrimitiveTool {
     }
 
     this._spheres.add(ev.point);
-    this._graphic?.dispose();
+    this._graphic?.[Symbol.dispose]();
     this._graphic = this._spheres.toGraphic(false);
     ev.viewport?.invalidateDecorations();
 

@@ -97,17 +97,17 @@ class ParticleSystem {
 
     this._origin = randomPositionInRange(iModel.projectExtents);
 
-    this._dispose = iModel.onClose.addListener(() => this.dispose());
+    this._dispose = iModel.onClose.addListener(() => this[Symbol.dispose]());
   }
 
-  public dispose(): void {
+  public [Symbol.dispose](): void {
     if (this._dispose) {
       this._dispose();
       this._dispose = undefined;
     }
 
     IModelApp.viewManager.dropDecorator(this);
-    this._texture.dispose();
+    this._texture[Symbol.dispose]();
   }
 
   public update(): void {
@@ -120,7 +120,7 @@ class ParticleSystem {
     if (numParticles === 0) {
       this._numEmissions--;
       if (this._numEmissions < 0)
-        this.dispose();
+        this[Symbol.dispose]();
       else
         this._particles = this._emitter.emit();
 

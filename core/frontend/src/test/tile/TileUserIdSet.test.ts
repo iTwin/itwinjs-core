@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { describe, expect, it } from "vitest";
-import { TileUserIdSet, TileUserIdSets } from "../../tile/LRUTileList";
+import { TileUserIdSet, TileUserIdSets } from "../../tile/internal";
 
 function makeTileUserIdSet(ids: number[]): TileUserIdSet {
   const set = new TileUserIdSet();

@@ -62,19 +62,16 @@ export class ImageBuffer {
     return new ImageBuffer(data, format, width);
   }
 
-  /** @internal */
-  protected static isValidData(data: Uint8Array, format: ImageBufferFormat, width: number): boolean {
+  private static isValidData(data: Uint8Array, format: ImageBufferFormat, width: number): boolean {
     const height = this.computeHeight(data, format, width);
     return width > 0 && height > 0 && Math.floor(width) === width && Math.floor(height) === height;
   }
 
-  /** @internal */
-  protected static computeHeight(data: Uint8Array, format: ImageBufferFormat, width: number): number {
+  private static computeHeight(data: Uint8Array, format: ImageBufferFormat, width: number): number {
     return data.length / (width * this.getNumBytesPerPixel(format));
   }
 
-  /** @internal */
-  protected constructor(data: Uint8Array, format: ImageBufferFormat, width: number) {
+  private constructor(data: Uint8Array, format: ImageBufferFormat, width: number) {
     this.data = data;
     this.format = format;
     this.width = width;
@@ -116,8 +113,10 @@ export enum ImageSourceFormat {
   Svg = 3,
 }
 
-/** @internal */
-export function isValidImageSourceFormat(format: ImageSourceFormat): boolean {
+/** Returns true if the numeric `format` value is a valid member of the [[ImageSourceFormat]] enumeration.
+ * @public
+ */
+export function isValidImageSourceFormat(format: number): format is ImageSourceFormat {
   switch (format) {
     case ImageSourceFormat.Jpeg:
     case ImageSourceFormat.Png:
@@ -142,4 +141,23 @@ export class ImageSource {
     this.data = data;
     this.format = format;
   }
+}
+
+/** An [[ImageSource]] encoded in binary form as a Jpeg or Png, as opposed to one encoded
+ * in string format as an Svg.
+ * Only binary ImageSources can be used for [[Texture]]s stored in [[IModelDb]]s.
+ * @public
+ */
+export interface BinaryImageSource {
+  /** The format in which the [[data]] is encoded. */
+  readonly format: ImageSourceFormat.Jpeg | ImageSourceFormat.Png;
+  /** The image data encoded according to [[format]]. */
+  readonly data: Uint8Array;
+}
+
+/** Returns true if `source` is a [[BinaryImageSource]].
+ * @public
+ */
+export function isBinaryImageSource(source: ImageSource): source is BinaryImageSource {
+  return source.format !== ImageSourceFormat.Svg && source.data instanceof Uint8Array;
 }

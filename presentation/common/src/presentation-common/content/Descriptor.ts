@@ -9,7 +9,6 @@
 import { assert, Id64String } from "@itwin/core-bentley";
 import {
   ClassInfo,
-  ClassInfoJSON,
   CompressedClassInfoJSON,
   RelatedClassInfo,
   RelatedClassInfoJSON,
@@ -17,11 +16,12 @@ import {
   RelatedClassInfoWithOptionalRelationshipJSON,
   RelationshipPath,
   RelationshipPathJSON,
-} from "../EC";
-import { InstanceFilterDefinition } from "../InstanceFilterDefinition";
-import { Ruleset } from "../rules/Ruleset";
-import { CategoryDescription, CategoryDescriptionJSON } from "./Category";
-import { Field, FieldDescriptor, FieldJSON, getFieldByDescriptor, getFieldByName } from "./Fields";
+} from "../EC.js";
+import { InstanceFilterDefinition } from "../InstanceFilterDefinition.js";
+import { Ruleset } from "../rules/Ruleset.js";
+import { omitUndefined } from "../Utils.js";
+import { CategoryDescription, CategoryDescriptionJSON } from "./Category.js";
+import { Field, FieldDescriptor, FieldJSON, getFieldByDescriptor, getFieldByName } from "./Fields.js";
 
 /**
  * Data structure that describes an ECClass in content [[Descriptor]].
@@ -51,8 +51,7 @@ export interface SelectClassInfo {
  * Serialized [[SelectClassInfo]] JSON representation
  * @public
  */
-// eslint-disable-next-line @typescript-eslint/no-deprecated
-export interface SelectClassInfoJSON<TClassInfoJSON = ClassInfoJSON> {
+export interface SelectClassInfoJSON<TClassInfoJSON = ClassInfo> {
   selectClassInfo: TClassInfoJSON;
   isSelectPolymorphic: boolean;
   pathFromInputToSelectClass?: RelatedClassInfoWithOptionalRelationshipJSON<TClassInfoJSON>[];
@@ -121,17 +120,6 @@ export namespace SelectClassInfo {
         : undefined),
     };
   }
-
-  /**
-   * Deserialize [[SelectClassInfo]] list from JSON
-   * @param json JSON or JSON serialized to string to deserialize from
-   * @returns Deserialized [[SelectClassInfo]] objects list
-   *
-   * @internal
-   */
-  export function listFromCompressedJSON(json: SelectClassInfoJSON<Id64String>[], classesMap: { [id: string]: CompressedClassInfoJSON }): SelectClassInfo[] {
-    return json.map((sci) => fromCompressedJSON(sci, classesMap));
-  }
 }
 
 /**
@@ -141,12 +129,6 @@ export namespace SelectClassInfo {
 export enum ContentFlags {
   /** Each content record only has [[InstanceKey]] and no data */
   KeysOnly = 1 << 0,
-
-  /**
-   * Each content record additionally has an image id
-   * @deprecated in 3.x. Use [[ExtendedDataRule]] instead. See [extended data usage page]($docs/presentation/customization/ExtendedDataUsage.md) for more details.
-   */
-  ShowImages = 1 << 1,
 
   /** Each content record additionally has a display label */
   ShowLabels = 1 << 2,
@@ -165,13 +147,6 @@ export enum ContentFlags {
    * given input key at the cost of performance creating those items.
    */
   IncludeInputKeys = 1 << 8,
-
-  /**
-   * Produce content descriptor that is not intended for querying content. Allows the implementation to omit certain
-   * operations to make obtaining content descriptor faster.
-   * @internal
-   */
-  DescriptorOnly = 1 << 9,
 }
 
 /**
@@ -204,8 +179,6 @@ export interface DescriptorJSON {
   classesMap: { [id: string]: CompressedClassInfoJSON };
   connectionId: string;
   inputKeysHash: string;
-  /** @deprecated in 3.x. The attribute is not used anymore. */
-  contentOptions: any;
   selectionInfo?: SelectionInfo;
   displayType: string;
   selectClasses: SelectClassInfoJSON<Id64String>[];
@@ -214,8 +187,6 @@ export interface DescriptorJSON {
   sortingFieldName?: string;
   sortDirection?: SortDirection;
   contentFlags: number;
-  /** @deprecated in 3.x. The attribute was replaced with [[fieldsFilterExpression]]. */
-  filterExpression?: string;
   fieldsFilterExpression?: string;
   instanceFilter?: InstanceFilterDefinition;
   ruleset?: Ruleset;
@@ -251,11 +222,6 @@ export interface DescriptorOverrides {
     direction: SortDirection;
   };
 
-  /**
-   * [ECExpression]($docs/presentation/advanced/ECExpressions.md) for filtering content
-   * @deprecated in 3.x. The attribute was replaced with [[fieldsFilterExpression]].
-   */
-  filterExpression?: string;
   /**
    * [ECExpression]($docs/presentation/advanced/ECExpressions.md) for filtering content by
    * select fields.
@@ -311,11 +277,6 @@ export interface DescriptorSource {
    */
   readonly ruleset?: Ruleset;
   /**
-   * [ECExpression]($docs/presentation/advanced/ECExpressions.md) for filtering content
-   * @deprecated in 3.x. The attribute was replaced with [[fieldsFilterExpression]].
-   */
-  filterExpression?: string;
-  /**
    * [ECExpression]($docs/presentation/advanced/ECExpressions.md) for filtering content by
    * select fields.
    *
@@ -350,11 +311,6 @@ export class Descriptor implements DescriptorSource {
   public readonly connectionId?: string;
   /** Hash of the input keys used to create the descriptor */
   public readonly inputKeysHash?: string;
-  /**
-   * Extended options used to create the descriptor.
-   * @deprecated in 3.6. The attribute is not used anymore.
-   */
-  public readonly contentOptions: any;
   /** Selection info used to create the descriptor */
   public readonly selectionInfo?: SelectionInfo;
   /** Display type used to create the descriptor */
@@ -376,11 +332,6 @@ export class Descriptor implements DescriptorSource {
   public sortingField?: Field;
   /** Sorting direction */
   public sortDirection?: SortDirection;
-  /**
-   * [ECExpression]($docs/presentation/advanced/ECExpressions.md) for filtering content
-   * @deprecated in 3.x. The attribute was replaced with [[fieldsFilterExpression]].
-   */
-  public filterExpression?: string;
   /**
    * [ECExpression]($docs/presentation/advanced/ECExpressions.md) for filtering content by
    * select fields.
@@ -416,8 +367,7 @@ export class Descriptor implements DescriptorSource {
     this.fields = [...source.fields];
     this.sortingField = source.sortingField;
     this.sortDirection = source.sortDirection;
-    this.filterExpression = source.fieldsFilterExpression ?? source.filterExpression; // eslint-disable-line @typescript-eslint/no-deprecated
-    this.fieldsFilterExpression = source.fieldsFilterExpression ?? source.filterExpression; // eslint-disable-line @typescript-eslint/no-deprecated
+    this.fieldsFilterExpression = source.fieldsFilterExpression;
     this.instanceFilter = source.instanceFilter;
     this.ruleset = source.ruleset;
   }
@@ -427,27 +377,22 @@ export class Descriptor implements DescriptorSource {
     const classesMap: { [id: string]: CompressedClassInfoJSON } = {};
     const selectClasses: SelectClassInfoJSON<string>[] = this.selectClasses.map((selectClass) => SelectClassInfo.toCompressedJSON(selectClass, classesMap));
     const fields: FieldJSON<string>[] = this.fields.map((field) => field.toCompressedJSON(classesMap));
-    return Object.assign(
-      {
-        displayType: this.displayType,
-        contentFlags: this.contentFlags,
-        categories: this.categories.map(CategoryDescription.toJSON),
-        fields,
-        selectClasses,
-        classesMap,
-      },
-      this.connectionId !== undefined && { connectionId: this.connectionId },
-      this.inputKeysHash !== undefined && { inputKeysHash: this.inputKeysHash },
-      // istanbul ignore next
-      this.contentOptions !== undefined && { contentOptions: this.contentOptions }, // eslint-disable-line @typescript-eslint/no-deprecated
-      this.sortingField !== undefined && { sortingFieldName: this.sortingField.name },
-      this.sortDirection !== undefined && { sortDirection: this.sortDirection },
-      this.filterExpression !== undefined && { filterExpression: this.filterExpression }, // eslint-disable-line @typescript-eslint/no-deprecated
-      this.fieldsFilterExpression !== undefined && { fieldsFilterExpression: this.fieldsFilterExpression },
-      this.instanceFilter !== undefined && { instanceFilter: this.instanceFilter },
-      this.selectionInfo !== undefined && { selectionInfo: this.selectionInfo },
-      this.ruleset !== undefined && { ruleset: this.ruleset },
-    );
+    return omitUndefined({
+      displayType: this.displayType,
+      contentFlags: this.contentFlags,
+      categories: this.categories.map(CategoryDescription.toJSON),
+      fields,
+      selectClasses,
+      classesMap,
+      connectionId: this.connectionId ?? "",
+      inputKeysHash: this.inputKeysHash ?? "",
+      sortingFieldName: this.sortingField?.name,
+      sortDirection: this.sortDirection,
+      fieldsFilterExpression: this.fieldsFilterExpression,
+      instanceFilter: this.instanceFilter,
+      selectionInfo: this.selectionInfo,
+      ruleset: this.ruleset,
+    });
   }
 
   /** Deserialize [[Descriptor]] from JSON */
@@ -456,16 +401,27 @@ export class Descriptor implements DescriptorSource {
       return undefined;
     }
 
-    const { classesMap, ...leftOverJson } = json;
-    const categories = CategoryDescription.listFromJSON(json.categories);
-    const selectClasses = SelectClassInfo.listFromCompressedJSON(json.selectClasses, classesMap);
-    const fields = this.getFieldsFromJSON(json.fields, (fieldJson) => Field.fromCompressedJSON(fieldJson, classesMap, categories));
+    const {
+      categories: jsonCategories,
+      selectClasses: jsonSelectClasses,
+      fields: jsonFields,
+      connectionId,
+      inputKeysHash,
+      classesMap,
+      sortingFieldName,
+      ...leftOverJson
+    } = json;
+    const categories = CategoryDescription.listFromJSON(jsonCategories);
+    const selectClasses = jsonSelectClasses.map((jsc) => SelectClassInfo.fromCompressedJSON(jsc, classesMap));
+    const fields = this.getFieldsFromJSON(jsonFields, (fieldJson) => Field.fromCompressedJSON(fieldJson, classesMap, categories));
     return new Descriptor({
       ...leftOverJson,
+      ...(connectionId ? /* c8 ignore next */ { connectionId } : undefined),
+      ...(inputKeysHash ? /* c8 ignore next */ { inputKeysHash } : undefined),
       selectClasses,
       categories,
       fields,
-      sortingField: getFieldByName(fields, json.sortingFieldName, true),
+      sortingField: getFieldByName(fields, sortingFieldName, true),
     });
   }
 
@@ -509,10 +465,8 @@ export class Descriptor implements DescriptorSource {
     if (this.contentFlags !== 0) {
       overrides.contentFlags = this.contentFlags;
     }
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
-    if (this.filterExpression || this.fieldsFilterExpression) {
-      // eslint-disable-next-line @typescript-eslint/no-deprecated
-      overrides.fieldsFilterExpression = this.fieldsFilterExpression ?? this.filterExpression;
+    if (this.fieldsFilterExpression) {
+      overrides.fieldsFilterExpression = this.fieldsFilterExpression;
     }
     if (this.instanceFilter) {
       overrides.instanceFilter = this.instanceFilter;

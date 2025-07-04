@@ -5,7 +5,7 @@
 
 import { assert } from "@itwin/core-bentley";
 import { parsePrimitiveType, PrimitiveType, primitiveTypeToString, StrengthDirection, strengthDirectionToString } from "../ECObjects";
-import { ECObjectsError, ECObjectsStatus } from "../Exception";
+import { ECSchemaError, ECSchemaStatus } from "../Exception";
 import { ECClass, StructClass } from "../Metadata/Class";
 import { CustomAttribute } from "../Metadata/CustomAttribute";
 import { CustomAttributeClass } from "../Metadata/CustomAttributeClass";
@@ -75,23 +75,23 @@ export class XmlParser extends AbstractParser<Element> {
   public parseSchema(): SchemaProps {
     const schemaMetadata = this._rawSchema.documentElement;
     if ("ECSchema" !== schemaMetadata.nodeName)
-      throw new ECObjectsError(ECObjectsStatus.InvalidSchemaXML, "An ECSchema is missing the required metadata.");
+      throw new ECSchemaError(ECSchemaStatus.InvalidSchemaXML, "An ECSchema is missing the required metadata.");
 
     const schemaDefDuplicates = this.getElementChildrenByTagName(schemaMetadata, "ECSchema");
     if (schemaDefDuplicates.length > 1)
-      throw new ECObjectsError(ECObjectsStatus.InvalidSchemaXML, "An ECSchema has more than one ECSchema definition. Only one is allowed.");
+      throw new ECSchemaError(ECSchemaStatus.InvalidSchemaXML, "An ECSchema has more than one ECSchema definition. Only one is allowed.");
 
     if (this._schemaName === undefined)
-      throw new ECObjectsError(ECObjectsStatus.InvalidSchemaXML, `An ECSchema is missing a required 'schemaName' attribute`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidSchemaXML, `An ECSchema is missing a required 'schemaName' attribute`);
 
     if (this._schemaVersion === undefined)
-      throw new ECObjectsError(ECObjectsStatus.InvalidSchemaXML, `The ECSchema ${this._schemaName} is missing a required 'version' attribute`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidSchemaXML, `The ECSchema ${this._schemaName} is missing a required 'version' attribute`);
 
     if (this._xmlNamespace === undefined)
-      throw new ECObjectsError(ECObjectsStatus.InvalidSchemaXML, `The ECSchema ${this._schemaName} is missing a required 'xmlns' attribute`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidSchemaXML, `The ECSchema ${this._schemaName} is missing a required 'xmlns' attribute`);
 
     if (this._ecSpecVersion === undefined)
-      throw new ECObjectsError(ECObjectsStatus.InvalidSchemaXML, `The ECSchema ${this._schemaName} has an invalid 'xmlns' attribute`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidSchemaXML, `The ECSchema ${this._schemaName} has an invalid 'xmlns' attribute`);
 
     const alias = this.getRequiredAttribute(schemaMetadata, "alias",
       `The ECSchema ${this._schemaName} is missing a required 'alias' attribute`);
@@ -140,13 +140,13 @@ export class XmlParser extends AbstractParser<Element> {
         if (itemType === undefined) {
           if (SchemaReadHelper.isECSpecVersionNewer(this._ecSpecVersion))
             continue;
-          throw new ECObjectsError(ECObjectsStatus.InvalidSchemaXML, `A SchemaItem in ${this._schemaName} has an invalid type. '${rawItemType}' is not a valid SchemaItem type.`);
+          throw new ECSchemaError(ECSchemaStatus.InvalidSchemaXML, `A SchemaItem in ${this._schemaName} has an invalid type. '${rawItemType}' is not a valid SchemaItem type.`);
         }
 
         const itemName = this.getRequiredAttribute(item, "typeName", `A SchemaItem in ${this._schemaName} is missing the required 'typeName' attribute.`);
 
         if (!ECName.validate(itemName))
-          throw new ECObjectsError(ECObjectsStatus.InvalidECName, `A SchemaItem in ${this._schemaName} has an invalid 'typeName' attribute. '${itemName}' is not a valid ECName.`);
+          throw new ECSchemaError(ECSchemaStatus.InvalidECName, `A SchemaItem in ${this._schemaName} has an invalid 'typeName' attribute. '${itemName}' is not a valid ECName.`);
 
         this._currentItemFullName = `${this._schemaName}.${itemName}`;
         this._schemaItems.set(itemName, [itemType, item]);
@@ -213,28 +213,28 @@ export class XmlParser extends AbstractParser<Element> {
 
     // Mixins can only have one base class
     if (baseClasses.length > 1)
-      throw new ECObjectsError(ECObjectsStatus.InvalidSchemaXML, `The Mixin ${this._currentItemFullName} has more than one base class which is not allowed.`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidSchemaXML, `The Mixin ${this._currentItemFullName} has more than one base class which is not allowed.`);
 
     const customAttributesResult = this.getElementChildrenByTagName(xmlElement, "ECCustomAttributes");
 
     if (customAttributesResult.length < 1)
-      throw new ECObjectsError(ECObjectsStatus.InvalidSchemaXML, `The Mixin ${this._currentItemFullName} is missing the required 'IsMixin' tag.`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidSchemaXML, `The Mixin ${this._currentItemFullName} is missing the required 'IsMixin' tag.`);
 
     const customAttributes = customAttributesResult[0];
     const isMixinResult = this.getElementChildrenByTagName(customAttributes, "IsMixin");
     if (isMixinResult.length < 1)
-      throw new ECObjectsError(ECObjectsStatus.InvalidSchemaXML, `The Mixin ${this._currentItemFullName} is missing the required 'IsMixin' tag.`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidSchemaXML, `The Mixin ${this._currentItemFullName} is missing the required 'IsMixin' tag.`);
 
     const mixinAttributes = isMixinResult[0];
     const appliesToResult = this.getElementChildrenByTagName(mixinAttributes, "AppliesToEntityClass");
 
     if (appliesToResult.length < 1)
-      throw new ECObjectsError(ECObjectsStatus.InvalidSchemaXML, `The Mixin ${this._currentItemFullName} is missing the required 'AppliesToEntityClass' tag.`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidSchemaXML, `The Mixin ${this._currentItemFullName} is missing the required 'AppliesToEntityClass' tag.`);
 
     const appliesToElement = appliesToResult[0];
     let appliesTo = appliesToElement.textContent;
     if (appliesTo === null || appliesTo.length === 0)
-      throw new ECObjectsError(ECObjectsStatus.InvalidSchemaXML, `The Mixin ${this._currentItemFullName} is missing the required 'AppliesToEntityClass' tag.`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidSchemaXML, `The Mixin ${this._currentItemFullName} is missing the required 'AppliesToEntityClass' tag.`);
 
     appliesTo = this.getQualifiedTypeName(appliesTo);
 
@@ -274,18 +274,18 @@ export class XmlParser extends AbstractParser<Element> {
     const sourceResult = this.getElementChildrenByTagName(xmlElement, "Source");
     if (sourceResult.length !== 1) {
       if (sourceResult.length === 0)
-        throw new ECObjectsError(ECObjectsStatus.InvalidSchemaXML, `The RelationshipClass ${this._currentItemFullName} is missing the required Source constraint tag.`);
+        throw new ECSchemaError(ECSchemaStatus.InvalidSchemaXML, `The RelationshipClass ${this._currentItemFullName} is missing the required Source constraint tag.`);
       else
-        throw new ECObjectsError(ECObjectsStatus.InvalidSchemaXML, `The RelationshipClass ${this._currentItemFullName} has more than one Source constraint tag. Only one is allowed.`);
+        throw new ECSchemaError(ECSchemaStatus.InvalidSchemaXML, `The RelationshipClass ${this._currentItemFullName} has more than one Source constraint tag. Only one is allowed.`);
     }
     const source = this.getRelationshipConstraintProps(sourceResult[0], true);
 
     const targetResult = this.getElementChildrenByTagName(xmlElement, "Target");
     if (targetResult.length !== 1) {
       if (targetResult.length === 0)
-        throw new ECObjectsError(ECObjectsStatus.InvalidSchemaXML, `The RelationshipClass ${this._currentItemFullName} is missing the required Target constraint tag.`);
+        throw new ECSchemaError(ECSchemaStatus.InvalidSchemaXML, `The RelationshipClass ${this._currentItemFullName} is missing the required Target constraint tag.`);
       else
-        throw new ECObjectsError(ECObjectsStatus.InvalidSchemaXML, `The RelationshipClass ${this._currentItemFullName} has more than one Target constraint tag. Only one is allowed.`);
+        throw new ECSchemaError(ECSchemaStatus.InvalidSchemaXML, `The RelationshipClass ${this._currentItemFullName} has more than one Target constraint tag. Only one is allowed.`);
     }
     const target = this.getRelationshipConstraintProps(targetResult[0], false);
 
@@ -315,7 +315,7 @@ export class XmlParser extends AbstractParser<Element> {
       if (SchemaReadHelper.isECSpecVersionNewer(this._ecSpecVersion))
         tempBackingType = PrimitiveType.String;
       else
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Enumeration ${this._currentItemFullName} has an invalid 'backingTypeName' attribute. It should be either "int" or "string".`);
+        throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The Enumeration ${this._currentItemFullName} has an invalid 'backingTypeName' attribute. It should be either "int" or "string".`);
     }
 
     let isStrictString: string | undefined = this.getOptionalAttribute(xmlElement, "isStrict");
@@ -339,7 +339,7 @@ export class XmlParser extends AbstractParser<Element> {
       if (PrimitiveType.Integer === tempBackingType) {
         const numericValue = parseInt(valueString, 10);
         if (isNaN(numericValue))
-          throw new ECObjectsError(ECObjectsStatus.InvalidSchemaXML, `The Enumeration ${this._currentItemFullName} of type "int" has an enumerator with a non-integer value.`);
+          throw new ECSchemaError(ECSchemaStatus.InvalidSchemaXML, `The Enumeration ${this._currentItemFullName} of type "int" has an enumerator with a non-integer value.`);
         value = numericValue;
       }
 
@@ -371,7 +371,7 @@ export class XmlParser extends AbstractParser<Element> {
       `The KindOfQuantity ${this._currentItemFullName} is missing the required 'relativeError' attribute.`);
     const relativeError = parseFloat(relativeErrorString);
     if (isNaN(relativeError))
-      throw new ECObjectsError(ECObjectsStatus.InvalidSchemaXML, `The KindOfQuantity ${this._currentItemFullName} has an invalid 'relativeError' attribute. It should be a numeric value.`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidSchemaXML, `The KindOfQuantity ${this._currentItemFullName} has an invalid 'relativeError' attribute. It should be a numeric value.`);
 
     const presentationUnitsString = this.getOptionalAttribute(xmlElement, "presentationUnits");
     let presentationUnits: string[] | undefined;
@@ -397,7 +397,7 @@ export class XmlParser extends AbstractParser<Element> {
       `The PropertyCategory ${this._currentItemFullName} is missing the required 'priority' attribute.`);
     const priority = parseInt(priorityString, 10);
     if (isNaN(priority))
-      throw new ECObjectsError(ECObjectsStatus.InvalidSchemaXML, `The PropertyCategory ${this._currentItemFullName} has an invalid 'priority' attribute. It should be a numeric value.`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidSchemaXML, `The PropertyCategory ${this._currentItemFullName} has an invalid 'priority' attribute. It should be a numeric value.`);
 
     return {
       ...itemProps,
@@ -532,12 +532,12 @@ export class XmlParser extends AbstractParser<Element> {
       const units = new Array<{ name: string, label?: string }>();
       const unitsResult = this.getElementChildrenByTagName(compositeElement, "Unit");
       if (unitsResult.length < 1)
-        throw new ECObjectsError(ECObjectsStatus.InvalidSchemaXML, `The Format ${this._currentItemFullName} has an invalid 'Composite' element. It should have 1-4 Unit elements.`);
+        throw new ECSchemaError(ECSchemaStatus.InvalidSchemaXML, `The Format ${this._currentItemFullName} has an invalid 'Composite' element. It should have 1-4 Unit elements.`);
 
       for (const unit of unitsResult) {
         let name = unit.textContent;
         if (null === name || 0 === name.length)
-          throw new ECObjectsError(ECObjectsStatus.InvalidSchemaXML, `The Format ${this._currentItemFullName} has a Composite with an invalid Unit. One of the Units is missing the required 'name' attribute.`);
+          throw new ECSchemaError(ECSchemaStatus.InvalidSchemaXML, `The Format ${this._currentItemFullName} has a Composite with an invalid Unit. One of the Units is missing the required 'name' attribute.`);
 
         const label = this.getOptionalAttribute(unit, "label");
         name = this.getQualifiedTypeName(name);
@@ -585,7 +585,7 @@ export class XmlParser extends AbstractParser<Element> {
       const propertyType = this.getPropertyType(childType);
       // This may not be needed, just a failsafe if the regex is faulty
       if (propertyType === undefined)
-        throw new ECObjectsError(ECObjectsStatus.InvalidSchemaXML, `The ECProperty ${itemName}.${propertyName} has an invalid type. ${childType} is not a valid ECProperty type.`);
+        throw new ECSchemaError(ECSchemaStatus.InvalidSchemaXML, `The ECProperty ${itemName}.${propertyName} has an invalid type. ${childType} is not a valid ECProperty type.`);
 
       yield [propertyName, propertyType, child];
     }
@@ -661,13 +661,13 @@ export class XmlParser extends AbstractParser<Element> {
   public getRelationshipConstraintCustomAttributeProviders(xmlElement: Element): [Iterable<CAProviderTuple> /* source */, Iterable<CAProviderTuple> /* target */] {
     const sourceResult = this.getElementChildrenByTagName(xmlElement, "Source");
     if (sourceResult.length < 1)
-      throw new ECObjectsError(ECObjectsStatus.InvalidSchemaXML, `The RelationshipClass ${this._currentItemFullName} is missing the required Source constraint tag.`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidSchemaXML, `The RelationshipClass ${this._currentItemFullName} is missing the required Source constraint tag.`);
     const sourceElement = sourceResult[0];
     const sourceCustomAttributes = this.getCustomAttributeProviders(sourceElement, "Source Constraint of", this._currentItemFullName);
 
     const targetResult = this.getElementChildrenByTagName(xmlElement, "Target");
     if (targetResult.length < 1)
-      throw new ECObjectsError(ECObjectsStatus.InvalidSchemaXML, `The RelationshipClass ${this._currentItemFullName} is missing the required Target constraint tag.`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidSchemaXML, `The RelationshipClass ${this._currentItemFullName} is missing the required Target constraint tag.`);
     const targetElement = targetResult[0];
     const targetCustomAttributes = this.getCustomAttributeProviders(targetElement, "Source Constraint of", this._currentItemFullName);
 
@@ -723,7 +723,7 @@ export class XmlParser extends AbstractParser<Element> {
     if (resultString) {
       result = parseFloat(resultString);
       if (isNaN(result))
-        throw new ECObjectsError(ECObjectsStatus.InvalidSchemaXML, parseErrorMsg);
+        throw new ECSchemaError(ECSchemaStatus.InvalidSchemaXML, parseErrorMsg);
     }
     return result;
   }
@@ -734,7 +734,7 @@ export class XmlParser extends AbstractParser<Element> {
     if (resultString) {
       result = parseInt(resultString, 10);
       if (isNaN(result))
-        throw new ECObjectsError(ECObjectsStatus.InvalidSchemaXML, parseErrorMsg);
+        throw new ECSchemaError(ECSchemaStatus.InvalidSchemaXML, parseErrorMsg);
     }
     return result;
   }
@@ -746,15 +746,15 @@ export class XmlParser extends AbstractParser<Element> {
     else if ("false" === textString)
       return false;
     else
-      throw new ECObjectsError(ECObjectsStatus.InvalidSchemaXML, parseErrorMsg);
+      throw new ECSchemaError(ECSchemaStatus.InvalidSchemaXML, parseErrorMsg);
   }
 
   private getRequiredAttribute(xmlElement: Element, attributeName: string, errorMsg: string): string {
     if (!xmlElement.hasAttribute(attributeName))
-      throw new ECObjectsError(ECObjectsStatus.InvalidSchemaXML, errorMsg);
+      throw new ECSchemaError(ECSchemaStatus.InvalidSchemaXML, errorMsg);
     const result = xmlElement.getAttribute(attributeName);
     if (result === null)
-      throw new ECObjectsError(ECObjectsStatus.InvalidSchemaXML, errorMsg);
+      throw new ECSchemaError(ECSchemaStatus.InvalidSchemaXML, errorMsg);
     return result;
   }
 
@@ -853,12 +853,12 @@ export class XmlParser extends AbstractParser<Element> {
     const constraintClasses = new Array<string>();
     const constraintClassesResult = this.getElementChildrenByTagName(xmlElement, "Class");
     if (constraintClassesResult.length < 1)
-      throw new ECObjectsError(ECObjectsStatus.InvalidSchemaXML, `The ${constraintName} is missing the required Class tags.`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidSchemaXML, `The ${constraintName} is missing the required Class tags.`);
 
     for (const constraintClass of constraintClassesResult) {
       let constraintClassId = constraintClass.getAttribute("class");
       if (null === constraintClassId || 0 === constraintClassId.length)
-        throw new ECObjectsError(ECObjectsStatus.InvalidSchemaXML, `The ${constraintName} has a Class that is missing the required 'class' attribute.`);
+        throw new ECSchemaError(ECSchemaStatus.InvalidSchemaXML, `The ${constraintName} has a Class that is missing the required 'class' attribute.`);
 
       constraintClassId = this.getQualifiedTypeName(constraintClassId);
       constraintClasses.push(constraintClassId);
@@ -894,7 +894,7 @@ export class XmlParser extends AbstractParser<Element> {
 
     const propType = this.getPropertyType(xmlElement.nodeName);
     if (propType === undefined)
-      throw new ECObjectsError(ECObjectsStatus.InvalidSchemaXML, `The ECProperty ${this._currentItemFullName}.${propName} has an invalid type. ${propType} is not a valid ECProperty type.`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidSchemaXML, `The ECProperty ${this._currentItemFullName}.${propName} has an invalid type. ${propType} is not a valid ECProperty type.`);
 
     const label = this.getOptionalAttribute(xmlElement, "displayLabel");
     const description = this.getOptionalAttribute(xmlElement, "description");
@@ -986,7 +986,7 @@ export class XmlParser extends AbstractParser<Element> {
     else if (undefined !== maxOccursStr) {
       maxOccurs = parseInt(maxOccursStr, 10);
       if (isNaN(maxOccurs))
-        throw new ECObjectsError(ECObjectsStatus.InvalidSchemaXML, `The ECProperty ${this._currentItemFullName}.${propName} has an invalid 'maxOccurs' attribute. It should be a numeric value.`);
+        throw new ECSchemaError(ECSchemaStatus.InvalidSchemaXML, `The ECProperty ${this._currentItemFullName}.${propName} has an invalid 'maxOccurs' attribute. It should be a numeric value.`);
     }
 
     return { minOccurs, maxOccurs };
@@ -1017,7 +1017,7 @@ export class XmlParser extends AbstractParser<Element> {
     }
 
     if (null === ns || !this.isSchemaFullNameValidForVersion(ns, this._ecSpecVersion))
-      throw new ECObjectsError(ECObjectsStatus.InvalidSchemaXML, `Custom attribute namespaces must contain a valid 3.2 full schema name in the form <schemaName>.RR.ww.mm.`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidSchemaXML, `Custom attribute namespaces must contain a valid 3.2 full schema name in the form <schemaName>.RR.ww.mm.`);
 
     const schemaNameParts = ns.split(".");
     const className = `${schemaNameParts[0]}.${xmlCustomAttribute.tagName}`;
@@ -1032,9 +1032,6 @@ export class XmlParser extends AbstractParser<Element> {
 
   private addCAPropertyValues(caClass: CustomAttributeClass, propertyElements: Element[]): CustomAttribute {
     const instance = { className: caClass.fullName } as CustomAttribute;
-    if (!caClass.properties)
-      return instance;
-
     for (const propertyElement of propertyElements) {
       const value = this.readPropertyValue(propertyElement, caClass);
       if (value !== undefined)
@@ -1055,9 +1052,9 @@ export class XmlParser extends AbstractParser<Element> {
     let enumeration: Enumeration | undefined;
     if (propertyClass.isPrimitive()) {
       if (propertyClass.isEnumeration() && propertyClass.enumeration) {
-        enumeration = propertyClass.schema.lookupItemSync(propertyClass.enumeration.fullName);
+        enumeration = propertyClass.schema.lookupItemSync(propertyClass.enumeration.fullName, Enumeration);
         if (!enumeration)
-          throw new ECObjectsError(ECObjectsStatus.ClassNotFound, `The Enumeration class '${propertyClass.enumeration.fullName}' could not be found.`);
+          throw new ECSchemaError(ECSchemaStatus.ClassNotFound, `The Enumeration class '${propertyClass.enumeration.fullName}' could not be found.`);
       }
       const primitiveType = enumeration && enumeration.type ? enumeration.type : (propertyClass).primitiveType;
       return this.readPrimitivePropertyValue(propElement, primitiveType);
@@ -1115,10 +1112,10 @@ export class XmlParser extends AbstractParser<Element> {
 
   private readPrimitivePropertyValue(propElement: Element, primitiveType: PrimitiveType): PrimitiveValue {
     if (undefined === propElement.textContent || null === propElement.textContent)
-      throw new ECObjectsError(ECObjectsStatus.InvalidSchemaXML, `Primitive property '${propElement.tagName}' has an invalid property value.`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidSchemaXML, `Primitive property '${propElement.tagName}' has an invalid property value.`);
 
     if (propElement.textContent === "" && primitiveType !== PrimitiveType.String)
-      throw new ECObjectsError(ECObjectsStatus.InvalidSchemaXML, `Primitive property '${propElement.tagName}' has an invalid property value.`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidSchemaXML, `Primitive property '${propElement.tagName}' has an invalid property value.`);
 
     // TODO: Mapping all primitive types to string, number and boolean
     // for now.  Need to review with IModelJs.
@@ -1141,7 +1138,7 @@ export class XmlParser extends AbstractParser<Element> {
       case PrimitiveType.Double:
         return this.getDoublePropertyValue(propElement.textContent, propElement.tagName);
       default:
-        throw new ECObjectsError(ECObjectsStatus.InvalidSchemaXML, `Primitive property '${propElement.tagName}' has an invalid primitive type.`);
+        throw new ECSchemaError(ECSchemaStatus.InvalidSchemaXML, `Primitive property '${propElement.tagName}' has an invalid primitive type.`);
     }
   }
 
@@ -1154,13 +1151,13 @@ export class XmlParser extends AbstractParser<Element> {
       return false;
     }
 
-    throw new ECObjectsError(ECObjectsStatus.InvalidSchemaXML, `Property '${propName}' has an invalid property value. An boolean value was expected.`);
+    throw new ECSchemaError(ECSchemaStatus.InvalidSchemaXML, `Property '${propName}' has an invalid property value. An boolean value was expected.`);
   }
 
   private getIntegerPropertyValue(propValue: string, propName: string): number {
     const result = Number.parseFloat(propValue);
     if (isNaN(result) || result % 1 !== 0)
-      throw new ECObjectsError(ECObjectsStatus.InvalidSchemaXML, `Property '${propName}' has an invalid property value. An integer value was expected.`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidSchemaXML, `Property '${propName}' has an invalid property value. An integer value was expected.`);
 
     return result;
   }
@@ -1168,7 +1165,7 @@ export class XmlParser extends AbstractParser<Element> {
   private getDatePropertyValue(propValue: string, propName: string): Date {
     const result = Number.parseInt(propValue, 10);
     if (isNaN(result))
-      throw new ECObjectsError(ECObjectsStatus.InvalidSchemaXML, `Property '${propName}' has an invalid property value. A date in milliseconds was expected.`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidSchemaXML, `Property '${propName}' has an invalid property value. A date in milliseconds was expected.`);
 
     return new Date(result);
   }
@@ -1176,7 +1173,7 @@ export class XmlParser extends AbstractParser<Element> {
   private getDoublePropertyValue(propValue: string, propName: string): number {
     const result = Number.parseFloat(propValue);
     if (isNaN(result))
-      throw new ECObjectsError(ECObjectsStatus.InvalidSchemaXML, `Property '${propName}' has an invalid property value. A double value was expected.`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidSchemaXML, `Property '${propName}' has an invalid property value. A double value was expected.`);
 
     return result;
   }
@@ -1184,14 +1181,14 @@ export class XmlParser extends AbstractParser<Element> {
   private getPoint2DPropertyValue(propValue: string, propName: string): any {
     const result = propValue.split(",");
     if (result.length !== 2) {
-      throw new ECObjectsError(ECObjectsStatus.InvalidSchemaXML, `Property '${propName}' has an invalid property value. A Point 2D value was expected.`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidSchemaXML, `Property '${propName}' has an invalid property value. A Point 2D value was expected.`);
     }
 
     const x = Number.parseFloat(result[0]);
     const y = Number.parseFloat(result[1]);
 
     if (isNaN(x) || isNaN(y))
-      throw new ECObjectsError(ECObjectsStatus.InvalidSchemaXML, `Property '${propName}' has an invalid property value. A Point 2D value was expected.`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidSchemaXML, `Property '${propName}' has an invalid property value. A Point 2D value was expected.`);
 
     return { x, y };
   }
@@ -1199,7 +1196,7 @@ export class XmlParser extends AbstractParser<Element> {
   private getPoint3DPropertyValue(propValue: string, propName: string): any {
     const result = propValue.split(",");
     if (result.length !== 3) {
-      throw new ECObjectsError(ECObjectsStatus.InvalidSchemaXML, `Property '${propName}' has an invalid property value. A Point 3D value was expected.`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidSchemaXML, `Property '${propName}' has an invalid property value. A Point 3D value was expected.`);
     }
 
     const x = Number.parseFloat(result[0]);
@@ -1207,7 +1204,7 @@ export class XmlParser extends AbstractParser<Element> {
     const z = Number.parseFloat(result[2]);
 
     if (isNaN(x) || isNaN(y) || isNaN(z))
-      throw new ECObjectsError(ECObjectsStatus.InvalidSchemaXML, `Property '${propName}' has an invalid property value. A Point 3D value was expected.`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidSchemaXML, `Property '${propName}' has an invalid property value. A Point 3D value was expected.`);
 
     return { x, y, z };
   }
@@ -1246,7 +1243,7 @@ export class XmlParser extends AbstractParser<Element> {
     if (this._schemaReferenceNames.has(nameParts[0].toLowerCase()))
       return `${this._schemaReferenceNames.get(nameParts[0].toLowerCase())}.${nameParts[1]}`;
 
-    throw new ECObjectsError(ECObjectsStatus.InvalidSchemaXML, `No valid schema found for alias ${nameParts[0]}`);
+    throw new ECSchemaError(ECSchemaStatus.InvalidSchemaXML, `No valid schema found for alias ${nameParts[0]}`);
   }
 
   /** The rest of the API uses the full name format of `{SchemaName}.{SchemaItemName}`,

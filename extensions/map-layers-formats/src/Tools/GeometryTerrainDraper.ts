@@ -2,12 +2,14 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+
+import { Logger } from "@itwin/core-bentley";
 import {
   CollectTileStatus, DisclosedTileTreeSet,
   GeometryTileTreeReference, IModelApp,
-  Tile, TileGeometryCollector, TileUser, Viewport } from "@itwin/core-frontend";
+  Tile, TileGeometryCollector, TileUser, Viewport
+} from "@itwin/core-frontend";
 import { Angle, ConvexClipPlaneSet, CurvePrimitive, GrowableXYZArray, IndexedPolyface, IndexedPolyfaceSubsetVisitor, Loop, Point3d, Polyface, PolyfaceClip, PolyfaceQuery, PolygonOps, Range3d, Ray3d, SweepLineStringToFacetsOptions, Transform, Vector3d } from "@itwin/core-geometry";
-import { Logger } from "@itwin/core-bentley";
 
 const loggerCategory = "MapLayersFormats.GeometryTerrainDraper";
 
@@ -34,7 +36,7 @@ class LineSegmentCollector extends TileGeometryCollector {
       status = "reject";
     }
 
-    Logger.logTrace(loggerCategory, `collectTile - tile: ${tile.contentId} status: ${status } isReady: ${tile.isReady} status:${tile.loadStatus}`);
+    Logger.logTrace(loggerCategory, `collectTile - tile: ${tile.contentId} status: ${status} isReady: ${tile.isReady} status:${tile.loadStatus}`);
     return status;
   }
 
@@ -66,7 +68,7 @@ export class GeometryTerrainDraper implements TileUser {
     IModelApp.tileAdmin.registerUser(this);
   }
 
-  public dispose(): void {
+  public [Symbol.dispose](): void {
     IModelApp.tileAdmin.forgetUser(this);
   }
 
@@ -90,7 +92,7 @@ export class GeometryTerrainDraper implements TileUser {
     const topFacets: number[] = [];
     const facetNormal = Vector3d.createZero();
 
-    for (const visitor = mesh.createVisitor(0); visitor.moveToNextFacet(); ) {
+    for (const visitor = mesh.createVisitor(0); visitor.moveToNextFacet();) {
       if (PolygonOps.unitNormal(visitor.point, facetNormal)) {
         const theta = facetNormal.angleFromPerpendicular(sweepVector);
         if (!theta.isMagnitudeLessThanOrEqual(this.sideAngle)) { // skip side facet
@@ -170,14 +172,14 @@ export class GeometryTerrainDraper implements TileUser {
     expandedRange.extendZOnly(-this.maxDistanceZ);
     expandedRange.extendZOnly(this.maxDistanceZ);
 
-    const collector = new TileGeometryCollector({chordTolerance, range: expandedRange, user: this });
+    const collector = new TileGeometryCollector({ chordTolerance, range: expandedRange, user: this });
     this.treeRef.collectTileGeometry(collector);
     collector.requestMissingTiles();
 
     if (collector.isAllGeometryLoaded && collector.polyfaces.length > 0) {
       for (const polyface of collector.polyfaces) {
         // Im assuming a single polyface here since we are draping a single point
-        const facetLocation = PolyfaceQuery.intersectRay3d(polyface, Ray3d.create(point, Vector3d.unitZ() ));
+        const facetLocation = PolyfaceQuery.intersectRay3d(polyface, Ray3d.create(point, Vector3d.unitZ()));
         if (!facetLocation)
           continue;
         outPoint.setFromPoint3d(facetLocation.point);

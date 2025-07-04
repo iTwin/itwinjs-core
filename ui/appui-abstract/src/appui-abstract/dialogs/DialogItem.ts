@@ -41,7 +41,7 @@ export interface DialogItem extends BaseDialogItem {
   readonly lockProperty?: BaseDialogItem;
 }
 
-/** [[DialogPropertyItem]] us the specification to use if you are defining the components directly, e.g., in React
+/** [[DialogPropertyItem]] is the specification to use if you are defining the components directly, e.g., in React
  * @public
  */
 export interface DialogPropertyItem {

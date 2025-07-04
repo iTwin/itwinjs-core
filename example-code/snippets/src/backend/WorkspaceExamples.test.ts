@@ -18,7 +18,7 @@ describe("Workspace Examples", () => {
   let iModel: StandaloneDb;
 
   before(async () => {
-    iModel = IModelTestUtils.openIModelForWrite("test.bim");
+    iModel = IModelTestUtils.openIModelForWrite("test.bim", { copyFilename: "WorkspaceExamples.bim" });
   });
 
   after(() => {

@@ -5,7 +5,7 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { Point2d, Point3d, Range3d } from "@itwin/core-geometry";
 import { ColorIndex, FeatureIndex, FeatureIndexType, FillFlags, QParams2d, QParams3d, QPoint3d, QPoint3dList, RenderTexture } from "@itwin/core-common";
-import { MockRender } from "../../../render/MockRender";
+import { MockRender } from "../../../internal/render/MockRender";
 import { Point3dList } from "../../../common/internal/render/MeshPrimitive";
 import { IModelApp } from "../../../IModelApp";
 import { createMeshParams } from "../../../common/internal/render/VertexTableBuilder";

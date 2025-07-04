@@ -6,8 +6,8 @@
  * @module PresentationRules
  */
 
-import { MultiSchemaClassesSpecification } from "../ClassSpecifications";
-import { ContentSpecificationBase } from "./ContentSpecification";
+import { MultiSchemaClassesSpecification } from "../ClassSpecifications.js";
+import { ContentSpecificationBase } from "./ContentSpecification.js";
 
 /**
  * This specification creates content for all instances of specific ECClasses.

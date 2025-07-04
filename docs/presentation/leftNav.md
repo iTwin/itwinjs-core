@@ -40,9 +40,7 @@
 
 &nbsp;
 
-### [Unified Selection](./unified-selection/index.md)
-
-- [External Resources](./unified-selection/index.md#external-resources)
+### [Unified Selection (deprecated)](./unified-selection/index.md)
 
 &nbsp;
 

@@ -141,9 +141,11 @@ public;interface;HoleFillOptions
 public;interface;ICloneable
 public;namespace;IModelJson
 public;class;IndexedCollectionInterval
+public;class;IndexedEdgeMatcher
 public;class;IndexedPolyface
 public;class;IndexedPolyfaceSubsetVisitor
 public;class;IndexedPolyfaceVisitor
+public;class;IndexedPolyfaceWalker
 public;class;IndexedReadWriteXYZCollection
 public;class;IndexedXYCollection
 public;class;IndexedXYZCollection
@@ -260,6 +262,8 @@ public;class;SmallSystem
 public;class;SmoothTransformBetweenFrusta
 public;class;SolidPrimitive
 public;type;SolidPrimitiveType
+public;class;SortableEdge
+public;type;SortableEdgeCluster
 public;class;SpacePolygonTriangulation
 public;class;Sphere
 public;enum;StandardViewIndex
@@ -273,6 +277,7 @@ public;class;SweepContour
 public;class;SweepLineStringToFacetsOptions
 public;namespace;TaggedNumericConstants
 public;class;TaggedNumericData
+public;interface;TangentOptions
 public;class;TorusPipe
 public;class;Transform
 public;type;TransformProps
@@ -293,6 +298,8 @@ public;type;VariantCurveExtendParameter
 public;class;Vector2d
 public;class;Vector3d
 public;class;Vector3dArray
+public;interface;VolumeBetweenPolygonAndPlaneOptions
+public;interface;VolumeBetweenPolygonAndPlaneOutput
 public;enum;WeightStyle
 public;interface;WritableLowAndHighXY
 public;interface;WritableLowAndHighXYZ

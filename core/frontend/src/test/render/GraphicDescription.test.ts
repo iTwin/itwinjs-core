@@ -4,21 +4,21 @@
 *--------------------------------------------------------------------------------------------*/
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { Angle, Point2d, Point3d, Range3d, Transform, XYAndZ } from "@itwin/core-geometry";
-import { ColorDef, EmptyLocalization, Feature, FillFlags, GeometryClass, Gradient, GraphicParams, ImageBuffer, ImageBufferFormat, ImageSource, ImageSourceFormat, LinePixels, ModelFeature, RenderFeatureTable, RenderMaterial, RenderTexture, TextureTransparency } from "@itwin/core-common";
+import { ColorDef, EmptyLocalization, Feature, FillFlags, GeometryClass, Gradient, GraphicParams, ImageBuffer, ImageBufferFormat, ImageSource, ImageSourceFormat, LinePixels, ModelFeature, RenderFeatureTable, RenderMaterial, RenderMaterialParams, RenderTexture, TextureTransparency } from "@itwin/core-common";
 import { createWorkerProxy } from "../../common/WorkerProxy";
 import { TestWorker } from "../worker/test-worker";
 import { IModelApp } from "../../IModelApp";
-import { MeshGraphic } from "../../render/webgl/Mesh";
+import { MeshGraphic } from "../../internal/render/webgl/Mesh";
 import { GraphicDescriptionBuilder, GraphicDescriptionBuilderOptions, imageBufferToPngDataUrl } from "../../common";
 import { GraphicType } from "../../common/render/GraphicType";
 import { GraphicDescriptionImpl, isGraphicDescription } from "../../common/internal/render/GraphicDescriptionBuilderImpl";
-import { Batch, Branch, GraphicsArray } from "../../webgl";
+import { Batch, Branch, GraphicsArray } from "../../internal/render/webgl/Graphic";
 import { ImdlModel } from "../../common/imdl/ImdlModel";
 import { Id64, Id64String, TransientIdSequence } from "@itwin/core-bentley";
 import { GraphicDescriptionContext, WorkerGraphicDescriptionContext } from "../../common/render/GraphicDescriptionContext";
 import { WorkerTexture } from "../../common/internal/render/GraphicDescriptionContextImpl";
 import { _textures } from "../../common/internal/Symbols";
-import { Material } from "../../render/webgl/Material";
+import { Material } from "../../internal/render/webgl/Material";
 import { IModelConnection } from "../../IModelConnection";
 
 function expectRange(range: Readonly<Range3d>, translation: XYAndZ | undefined, lx: number, ly: number, lz: number, hx: number, hy: number, hz: number): void {
@@ -480,8 +480,8 @@ describe("GraphicDescriptionBuilder", () => {
     expect(context[_textures].size).toEqual(4);
   });
 
-  // eslint-disable-next-line @typescript-eslint/no-deprecated
-  function expectMaterial(mat: Material, expected: Partial<RenderMaterial.Params>): void {
+
+  function expectMaterial(mat: Material, expected: Partial<RenderMaterialParams>): void {
     expect(mat.params).toBeDefined();
     const actual = {
       ...mat.params,
@@ -493,8 +493,7 @@ describe("GraphicDescriptionBuilder", () => {
     delete actual._alpha;
 
     expected = {
-      // eslint-disable-next-line @typescript-eslint/no-deprecated
-      ...RenderMaterial.Params.defaults,
+      ...RenderMaterialParams.defaults,
       diffuseColor: undefined,
       alpha: undefined,
       ...expected,

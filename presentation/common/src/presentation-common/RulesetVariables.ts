@@ -123,51 +123,6 @@ export interface RulesetVariableBaseJSON {
   value: VariableValueJSON;
 }
 /**
- * JSON representation of [[BooleanRulesetVariable]].
- * @public
- * @deprecated in 3.x. Use [[BooleanRulesetVariable]]
- */
-export interface BooleanRulesetVariableJSON extends RulesetVariableBaseJSON {
-  type: VariableValueTypes.Bool;
-  value: boolean;
-}
-/**
- * JSON representation of [[StringRulesetVariable]].
- * @public
- * @deprecated in 3.x. Use [[StringRulesetVariable]]
- */
-export interface StringRulesetVariableJSON extends RulesetVariableBaseJSON {
-  type: VariableValueTypes.String;
-  value: string;
-}
-/**
- * JSON representation of [[IntRulesetVariable]].
- * @public
- * @deprecated in 3.x. Use [[IntRulesetVariable]]
- */
-export interface IntRulesetVariableJSON extends RulesetVariableBaseJSON {
-  type: VariableValueTypes.Int;
-  value: number;
-}
-/**
- * JSON representation of [[IntsRulesetVariable]].
- * @public
- * @deprecated in 3.x. Use [[IntsRulesetVariable]]
- */
-export interface IntsRulesetVariableJSON extends RulesetVariableBaseJSON {
-  type: VariableValueTypes.IntArray;
-  value: number[];
-}
-/**
- * JSON representation of [[Id64RulesetVariable]].
- * @public
- * @deprecated in 3.x. Use [[Id64RulesetVariable]]
- */
-export interface Id64RulesetVariableJSON extends RulesetVariableBaseJSON {
-  type: VariableValueTypes.Id64;
-  value: Id64String;
-}
-/**
  * JSON representation of [[Id64sRulesetVariable]].
  * @public
  */
@@ -181,11 +136,11 @@ export interface Id64sRulesetVariableJSON extends RulesetVariableBaseJSON {
  */
 
 export type RulesetVariableJSON =
-  | BooleanRulesetVariableJSON // eslint-disable-line @typescript-eslint/no-deprecated
-  | StringRulesetVariableJSON // eslint-disable-line @typescript-eslint/no-deprecated
-  | IntRulesetVariableJSON // eslint-disable-line @typescript-eslint/no-deprecated
-  | IntsRulesetVariableJSON // eslint-disable-line @typescript-eslint/no-deprecated
-  | Id64RulesetVariableJSON // eslint-disable-line @typescript-eslint/no-deprecated
+  | BooleanRulesetVariable
+  | StringRulesetVariable
+  | IntRulesetVariable
+  | IntsRulesetVariable
+  | Id64RulesetVariable
   | Id64sRulesetVariableJSON;
 
 /** @public */

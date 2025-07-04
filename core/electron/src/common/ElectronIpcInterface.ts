@@ -15,5 +15,6 @@ export const electronIpcStrings = {
 
 /** Asynchronous methods of dialog module in an Electron app.
  * @beta
+ * @deprecated in 5.0 - will not be removed until after 2026-06-13. Use `Electron.Dialog` from `electron` instead.
  */
 export type DialogModuleMethod = AsyncMethodsOf<Electron.Dialog>;

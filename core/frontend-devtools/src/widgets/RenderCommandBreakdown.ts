@@ -34,7 +34,7 @@ export class RenderCommandBreakdown {
     this._total.innerText = "Total: 0";
   }
 
-  public dispose(): void {
+  public [Symbol.dispose](): void {
     this.clearInterval();
   }
 

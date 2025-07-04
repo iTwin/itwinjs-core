@@ -12,9 +12,9 @@ import { RpcRoutingToken } from "./rpc/core/RpcRoutingToken";
 import { InterceptedRpcRequest, IpcSession } from "./ipc/IpcSession";
 import { RpcSerializedValue } from "./rpc/core/RpcMarshaling";
 import { RpcManagedStatus } from "./rpc/core/RpcProtocol";
-import { BentleyStatus, IModelError, NoContentError } from "./IModelError";
+import { IModelError, NoContentError } from "./IModelError";
 import { RpcRequestEvent, RpcRequestStatus } from "./rpc/core/RpcConstants";
-import { BeDuration } from "@itwin/core-bentley";
+import { BeDuration, BentleyStatus } from "@itwin/core-bentley";
 import { RpcNotFoundResponse } from "./rpc/core/RpcControl";
 
 /* eslint-disable @typescript-eslint/no-deprecated */
@@ -122,7 +122,7 @@ export abstract class RpcInterface {
   }
 
   /** @internal */
-  public configurationSupplier: RpcConfigurationSupplier | undefined;
+  declare public configurationSupplier: RpcConfigurationSupplier | undefined;
 }
 
 RpcInterface.prototype.configurationSupplier = undefined;

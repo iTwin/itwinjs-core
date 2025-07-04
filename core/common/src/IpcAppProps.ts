@@ -155,6 +155,8 @@ export interface IpcAppFunctions {
   closeIModel: (key: string) => Promise<void>;
   /** see BriefcaseConnection.saveChanges */
   saveChanges: (key: string, description?: string) => Promise<void>;
+  /** see BriefcaseConnection.abandonChanges */
+  abandonChanges: (key: string) => Promise<void>;
   /** see BriefcaseTxns.hasPendingTxns */
   hasPendingTxns: (key: string) => Promise<boolean>;
   /** see BriefcaseTxns.isUndoPossible */

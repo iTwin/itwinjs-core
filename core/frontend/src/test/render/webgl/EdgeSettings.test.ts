@@ -5,9 +5,9 @@
 
 import { describe, expect, it } from "vitest";
 import { ColorDef, HiddenLine, LinePixels, RenderMode, ViewFlags } from "@itwin/core-common";
-import { EdgeSettings } from "../../../render/webgl/EdgeSettings";
-import { RenderPass } from "../../../render/webgl/RenderFlags";
-import { LineCode } from "../../../render/webgl/LineCode";
+import { EdgeSettings } from "../../../internal/render/webgl/EdgeSettings";
+import { RenderPass } from "../../../internal/render/webgl/RenderFlags";
+import { LineCode } from "../../../internal/render/webgl/LineCode";
 import { OvrFlags } from "../../../common/internal/render/OvrFlags";
 
 describe("EdgeSettings", () => {

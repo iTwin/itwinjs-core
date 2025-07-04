@@ -6,8 +6,7 @@
 import { assert, expect } from "chai";
 import { SchemaContext } from "../../Context";
 import { ECClassModifier, PrimitiveType, PropertyType, SchemaItemType, StrengthType } from "../../ECObjects";
-import { ECObjectsError } from "../../Exception";
-import { AnySchemaItem } from "../../Interfaces";
+import { ECSchemaError } from "../../Exception";
 import { ECClass, StructClass } from "../../Metadata/Class";
 import { EntityClass } from "../../Metadata/EntityClass";
 import { Mixin } from "../../Metadata/Mixin";
@@ -17,7 +16,7 @@ import { SchemaReadHelper } from "../../Deserialization/Helper";
 import { XmlParser } from "../../Deserialization/XmlParser";
 import { SchemaKey } from "../../SchemaKey";
 
-import { Constant, CustomAttributeClass, Enumeration, Format, KindOfQuantity, Phenomenon, Property, PropertyCategory, RelationshipClass, SchemaItem, Unit, UnitSystem } from "../../ecschema-metadata";
+import { Constant, CustomAttributeClass, ECSchemaNamespaceUris, Enumeration, Format, InvertedUnit, KindOfQuantity, Phenomenon, Property, PropertyCategory, RelationshipClass, SchemaItem, Unit, UnitSystem } from "../../ecschema-metadata";
 import { DOMParser, XMLSerializer } from "@xmldom/xmldom";
 
 /* eslint-disable @typescript-eslint/naming-convention */
@@ -33,23 +32,23 @@ describe("Schema", () => {
 
     it("with invalid version numbers should fail", () => {
       const context = new SchemaContext();
-      expect(() => new Schema(context, "NewSchemaWithInvalidReadVersion", "new", 9999, 4, 5)).to.throw(ECObjectsError);
-      expect(() => new Schema(context, "NewSchemaWithInvalidWriteVersion", "new", 12, 9999, 6)).to.throw(ECObjectsError);
-      expect(() => new Schema(context, "NewSchemaWithInvalidMinorVersion", "new", 12, 34, 56700000)).to.throw(ECObjectsError);
+      expect(() => new Schema(context, "NewSchemaWithInvalidReadVersion", "new", 9999, 4, 5)).to.throw(ECSchemaError);
+      expect(() => new Schema(context, "NewSchemaWithInvalidWriteVersion", "new", 12, 9999, 6)).to.throw(ECSchemaError);
+      expect(() => new Schema(context, "NewSchemaWithInvalidMinorVersion", "new", 12, 34, 56700000)).to.throw(ECSchemaError);
     });
   });
 
   describe("miscellaneous API tests", () => {
     it("getReferenceNameByAlias, reference exists, correct name returned.", async () => {
       const refSchemaJson = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+        $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
         name: "RefSchema",
         version: "1.0.0",
         alias: "rs",
       };
 
       const schemaJson = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+        $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
         name: "ValidSchema",
         version: "1.2.3",
         alias: "vs",
@@ -69,14 +68,14 @@ describe("Schema", () => {
 
     it("getReferenceNameByAlias, reference does not exist, returns undefined.", async () => {
       const refSchemaJson = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+        $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
         name: "RefSchema",
         version: "1.0.0",
         alias: "rs",
       };
 
       const schemaJson = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+        $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
         name: "ValidSchema",
         version: "1.2.3",
         alias: "vs",
@@ -96,7 +95,7 @@ describe("Schema", () => {
 
     it("getReferenceNameByAlias, no references, returns undefined.", async () => {
       const schemaJson = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+        $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
         name: "ValidSchema",
         version: "1.2.3",
         alias: "vs",
@@ -115,7 +114,7 @@ describe("Schema", () => {
       await (testSchema as MutableSchema).createEntityClass("TestEntity");
 
       expect(ECClass.isECClass(await testSchema.getItem("TestEntity"))).to.equal(true);
-      expect((await testSchema.getItem<EntityClass>("TestEntity"))?.schemaItemType).to.equal(SchemaItemType.EntityClass);
+      expect((await testSchema.getItem("TestEntity", EntityClass))?.schemaItemType).to.equal(SchemaItemType.EntityClass);
     });
 
     it("should succeed for mixin class", async () => {
@@ -123,7 +122,7 @@ describe("Schema", () => {
       await (testSchema as MutableSchema).createMixinClass("TestMixin");
 
       expect(ECClass.isECClass(await testSchema.getItem("TestMixin"))).to.equal(true);
-      expect((await testSchema.getItem<Mixin>("TestMixin"))?.schemaItemType).to.equal(SchemaItemType.Mixin);
+      expect((await testSchema.getItem("TestMixin", Mixin))?.schemaItemType).to.equal(SchemaItemType.Mixin);
     });
 
     it("should succeed for struct class", async () => {
@@ -131,7 +130,7 @@ describe("Schema", () => {
       await (testSchema as MutableSchema).createStructClass("TestStruct");
 
       expect(ECClass.isECClass(await testSchema.getItem("TestStruct"))).to.equal(true);
-      expect((await testSchema.getItem<StructClass>("TestStruct"))?.schemaItemType).to.equal(SchemaItemType.StructClass);
+      expect((await testSchema.getItem("TestStruct", StructClass))?.schemaItemType).to.equal(SchemaItemType.StructClass);
     });
 
     it("should succeed for non-class schema items", async () => {
@@ -142,14 +141,14 @@ describe("Schema", () => {
       await (testSchema as MutableSchema).createPropertyCategory("TestPropertyCategory");
       await (testSchema as MutableSchema).createFormat("TestFormat");
 
-      const schemaItems = testSchema.getItems();
+      const schemaItems = Array.from(testSchema.getItems());
 
-      expect(schemaItems.next().value.schemaItemType).to.equal(SchemaItemType.KindOfQuantity);
-      expect(schemaItems.next().value.schemaItemType).to.equal(SchemaItemType.Enumeration);
-      expect(schemaItems.next().value.schemaItemType).to.equal(SchemaItemType.Unit);
-      expect(schemaItems.next().value.schemaItemType).to.equal(SchemaItemType.PropertyCategory);
-      expect(schemaItems.next().value.schemaItemType).to.equal(SchemaItemType.Format);
-      expect(schemaItems.next().done).to.equal(true);
+      expect(schemaItems.length).to.equal(5);
+      expect(schemaItems[0].schemaItemType).to.equal(SchemaItemType.KindOfQuantity);
+      expect(schemaItems[1].schemaItemType).to.equal(SchemaItemType.Enumeration);
+      expect(schemaItems[2].schemaItemType).to.equal(SchemaItemType.Unit);
+      expect(schemaItems[3].schemaItemType).to.equal(SchemaItemType.PropertyCategory);
+      expect(schemaItems[4].schemaItemType).to.equal(SchemaItemType.Format);
     });
 
     it("should succeed with case-insensitive search", async () => {
@@ -184,7 +183,7 @@ describe("Schema", () => {
       await (testSchema as MutableSchema).createUnitSystem("TestUnitSystem");
 
       expect(SchemaItem.isSchemaItem(await testSchema.getItem("TestUnitSystem"))).to.equal(true);
-      expect((await testSchema.getItem<EntityClass>("TestUnitSystem"))?.schemaItemType).to.equal(SchemaItemType.UnitSystem);
+      expect((await testSchema.getItem("TestUnitSystem", UnitSystem))?.schemaItemType).to.equal(SchemaItemType.UnitSystem);
 
       (testSchema as MutableSchema).deleteSchemaItemSync("TestUnitSystem");
       expect(await testSchema.getItem("TestUnitSystem")).to.be.undefined;
@@ -198,7 +197,7 @@ describe("Schema", () => {
       await (testSchema as MutableSchema).createUnitSystem("TestUnitSystem");
 
       expect(SchemaItem.isSchemaItem(await testSchema.getItem("TestUnitSystem"))).to.equal(true);
-      expect((await testSchema.getItem<EntityClass>("TestUnitSystem"))?.schemaItemType).to.equal(SchemaItemType.UnitSystem);
+      expect((await testSchema.getItem("TestUnitSystem", UnitSystem))?.schemaItemType).to.equal(SchemaItemType.UnitSystem);
 
       await (testSchema as MutableSchema).deleteSchemaItem("TestUnitSystem");
       expect(await testSchema.getItem("TestUnitSystem")).to.be.undefined;
@@ -214,13 +213,13 @@ describe("Schema", () => {
       await (testSchema as MutableSchema).createUnitSystem("TestUnitSystem3");
 
       expect(SchemaItem.isSchemaItem(await testSchema.getItem("TestUnitSystem1"))).to.equal(true);
-      expect((await testSchema.getItem<UnitSystem>("TestUnitSystem1"))?.schemaItemType).to.equal(SchemaItemType.UnitSystem);
+      expect((await testSchema.getItem("TestUnitSystem1", UnitSystem))?.schemaItemType).to.equal(SchemaItemType.UnitSystem);
 
       expect(ECClass.isSchemaItem(await testSchema.getItem("TestUnitSystem2"))).to.equal(true);
-      expect((await testSchema.getItem<UnitSystem>("TestUnitSystem2"))?.schemaItemType).to.equal(SchemaItemType.UnitSystem);
+      expect((await testSchema.getItem("TestUnitSystem2", UnitSystem))?.schemaItemType).to.equal(SchemaItemType.UnitSystem);
 
       expect(ECClass.isSchemaItem(await testSchema.getItem("TestUnitSystem3"))).to.equal(true);
-      expect((await testSchema.getItem<UnitSystem>("TestUnitSystem3"))?.schemaItemType).to.equal(SchemaItemType.UnitSystem);
+      expect((await testSchema.getItem("TestUnitSystem3", UnitSystem))?.schemaItemType).to.equal(SchemaItemType.UnitSystem);
 
       await (testSchema as MutableSchema).deleteSchemaItem("TestUnitSystem1");
       expect(await testSchema.getItem("TestUnitSystem1")).to.be.undefined;
@@ -239,13 +238,13 @@ describe("Schema", () => {
       await (testSchema as MutableSchema).createUnitSystem("TestUnitSystem3");
 
       expect(SchemaItem.isSchemaItem(await testSchema.getItem("TestUnitSystem1"))).to.equal(true);
-      expect((await testSchema.getItem<UnitSystem>("TestUnitSystem1"))?.schemaItemType).to.equal(SchemaItemType.UnitSystem);
+      expect((await testSchema.getItem("TestUnitSystem1", UnitSystem))?.schemaItemType).to.equal(SchemaItemType.UnitSystem);
 
       expect(ECClass.isSchemaItem(await testSchema.getItem("TestUnitSystem2"))).to.equal(true);
-      expect((await testSchema.getItem<UnitSystem>("TestUnitSystem2"))?.schemaItemType).to.equal(SchemaItemType.UnitSystem);
+      expect((await testSchema.getItem("TestUnitSystem2", UnitSystem))?.schemaItemType).to.equal(SchemaItemType.UnitSystem);
 
       expect(ECClass.isSchemaItem(await testSchema.getItem("TestUnitSystem3"))).to.equal(true);
-      expect((await testSchema.getItem<UnitSystem>("TestUnitSystem3"))?.schemaItemType).to.equal(SchemaItemType.UnitSystem);
+      expect((await testSchema.getItem("TestUnitSystem3", UnitSystem))?.schemaItemType).to.equal(SchemaItemType.UnitSystem);
 
       (testSchema as MutableSchema).deleteSchemaItemSync("TestUnitSystem1");
       expect(await testSchema.getItem("TestUnitSystem1")).to.be.undefined;
@@ -270,31 +269,31 @@ describe("Schema", () => {
       await (testSchema as MutableSchema).createUnitSystem("TestUnitSystem");
 
       expect(SchemaItem.isSchemaItem(await testSchema.getItem("TestConstant"))).to.equal(true);
-      expect((await testSchema.getItem<Constant>("TestConstant"))?.schemaItemType).to.equal(SchemaItemType.Constant);
+      expect((await testSchema.getItem("TestConstant", Constant))?.schemaItemType).to.equal(SchemaItemType.Constant);
 
       expect(SchemaItem.isSchemaItem(await testSchema.getItem("TestEnumeration"))).to.equal(true);
-      expect((await testSchema.getItem<Enumeration>("TestEnumeration"))?.schemaItemType).to.equal(SchemaItemType.Enumeration);
+      expect((await testSchema.getItem("TestEnumeration", Enumeration))?.schemaItemType).to.equal(SchemaItemType.Enumeration);
 
       expect(SchemaItem.isSchemaItem(await testSchema.getItem("TestFormat"))).to.equal(true);
-      expect((await testSchema.getItem<Format>("TestFormat"))?.schemaItemType).to.equal(SchemaItemType.Format);
+      expect((await testSchema.getItem("TestFormat", Format))?.schemaItemType).to.equal(SchemaItemType.Format);
 
       expect(SchemaItem.isSchemaItem(await testSchema.getItem("TestInvertedUnit"))).to.equal(true);
-      expect((await testSchema.getItem<CustomAttributeClass>("TestInvertedUnit"))?.schemaItemType).to.equal(SchemaItemType.InvertedUnit);
+      expect((await testSchema.getItem("TestInvertedUnit", InvertedUnit))?.schemaItemType).to.equal(SchemaItemType.InvertedUnit);
 
       expect(SchemaItem.isSchemaItem(await testSchema.getItem("TestUnit"))).to.equal(true);
-      expect((await testSchema.getItem<Unit>("TestUnit"))?.schemaItemType).to.equal(SchemaItemType.Unit);
+      expect((await testSchema.getItem("TestUnit", Unit))?.schemaItemType).to.equal(SchemaItemType.Unit);
 
       expect(SchemaItem.isSchemaItem(await testSchema.getItem("TestKindOfQuantity"))).to.equal(true);
-      expect((await testSchema.getItem<KindOfQuantity>("TestKindOfQuantity"))?.schemaItemType).to.equal(SchemaItemType.KindOfQuantity);
+      expect((await testSchema.getItem("TestKindOfQuantity", KindOfQuantity))?.schemaItemType).to.equal(SchemaItemType.KindOfQuantity);
 
       expect(SchemaItem.isSchemaItem(await testSchema.getItem("TestPhenomenon"))).to.equal(true);
-      expect((await testSchema.getItem<Phenomenon>("TestPhenomenon"))?.schemaItemType).to.equal(SchemaItemType.Phenomenon);
+      expect((await testSchema.getItem("TestPhenomenon", Phenomenon))?.schemaItemType).to.equal(SchemaItemType.Phenomenon);
 
       expect(SchemaItem.isSchemaItem(await testSchema.getItem("TestPropertyCategory"))).to.equal(true);
-      expect((await testSchema.getItem<PropertyCategory>("TestPropertyCategory"))?.schemaItemType).to.equal(SchemaItemType.PropertyCategory);
+      expect((await testSchema.getItem("TestPropertyCategory", PropertyCategory))?.schemaItemType).to.equal(SchemaItemType.PropertyCategory);
 
       expect(SchemaItem.isSchemaItem(await testSchema.getItem("TestUnitSystem"))).to.equal(true);
-      expect((await testSchema.getItem<UnitSystem>("TestUnitSystem"))?.schemaItemType).to.equal(SchemaItemType.UnitSystem);
+      expect((await testSchema.getItem("TestUnitSystem", UnitSystem))?.schemaItemType).to.equal(SchemaItemType.UnitSystem);
 
       (testSchema as MutableSchema).deleteSchemaItemSync("TestConstant");
       expect(await testSchema.getItem("TestConstant")).to.be.undefined;
@@ -337,31 +336,31 @@ describe("Schema", () => {
       await (testSchema as MutableSchema).createUnitSystem("TestUnitSystem");
 
       expect(SchemaItem.isSchemaItem(await testSchema.getItem("TestConstant"))).to.equal(true);
-      expect((await testSchema.getItem<Constant>("TestConstant"))?.schemaItemType).to.equal(SchemaItemType.Constant);
+      expect((await testSchema.getItem("TestConstant", Constant))?.schemaItemType).to.equal(SchemaItemType.Constant);
 
       expect(SchemaItem.isSchemaItem(await testSchema.getItem("TestEnumeration"))).to.equal(true);
-      expect((await testSchema.getItem<Enumeration>("TestEnumeration"))?.schemaItemType).to.equal(SchemaItemType.Enumeration);
+      expect((await testSchema.getItem("TestEnumeration", Enumeration))?.schemaItemType).to.equal(SchemaItemType.Enumeration);
 
       expect(SchemaItem.isSchemaItem(await testSchema.getItem("TestFormat"))).to.equal(true);
-      expect((await testSchema.getItem<Format>("TestFormat"))?.schemaItemType).to.equal(SchemaItemType.Format);
+      expect((await testSchema.getItem("TestFormat", Format))?.schemaItemType).to.equal(SchemaItemType.Format);
 
       expect(SchemaItem.isSchemaItem(await testSchema.getItem("TestInvertedUnit"))).to.equal(true);
-      expect((await testSchema.getItem<CustomAttributeClass>("TestInvertedUnit"))?.schemaItemType).to.equal(SchemaItemType.InvertedUnit);
+      expect((await testSchema.getItem("TestInvertedUnit", InvertedUnit))?.schemaItemType).to.equal(SchemaItemType.InvertedUnit);
 
       expect(SchemaItem.isSchemaItem(await testSchema.getItem("TestUnit"))).to.equal(true);
-      expect((await testSchema.getItem<Unit>("TestUnit"))?.schemaItemType).to.equal(SchemaItemType.Unit);
+      expect((await testSchema.getItem("TestUnit", Unit))?.schemaItemType).to.equal(SchemaItemType.Unit);
 
       expect(SchemaItem.isSchemaItem(await testSchema.getItem("TestKindOfQuantity"))).to.equal(true);
-      expect((await testSchema.getItem<KindOfQuantity>("TestKindOfQuantity"))?.schemaItemType).to.equal(SchemaItemType.KindOfQuantity);
+      expect((await testSchema.getItem("TestKindOfQuantity", KindOfQuantity))?.schemaItemType).to.equal(SchemaItemType.KindOfQuantity);
 
       expect(SchemaItem.isSchemaItem(await testSchema.getItem("TestPhenomenon"))).to.equal(true);
-      expect((await testSchema.getItem<Phenomenon>("TestPhenomenon"))?.schemaItemType).to.equal(SchemaItemType.Phenomenon);
+      expect((await testSchema.getItem("TestPhenomenon", Phenomenon))?.schemaItemType).to.equal(SchemaItemType.Phenomenon);
 
       expect(SchemaItem.isSchemaItem(await testSchema.getItem("TestPropertyCategory"))).to.equal(true);
-      expect((await testSchema.getItem<PropertyCategory>("TestPropertyCategory"))?.schemaItemType).to.equal(SchemaItemType.PropertyCategory);
+      expect((await testSchema.getItem("TestPropertyCategory", PropertyCategory))?.schemaItemType).to.equal(SchemaItemType.PropertyCategory);
 
       expect(SchemaItem.isSchemaItem(await testSchema.getItem("TestUnitSystem"))).to.equal(true);
-      expect((await testSchema.getItem<UnitSystem>("TestUnitSystem"))?.schemaItemType).to.equal(SchemaItemType.UnitSystem);
+      expect((await testSchema.getItem("TestUnitSystem", UnitSystem))?.schemaItemType).to.equal(SchemaItemType.UnitSystem);
 
       await (testSchema as MutableSchema).deleteSchemaItem("TestConstant");
       expect(await testSchema.getItem("TestConstant")).to.be.undefined;
@@ -414,7 +413,7 @@ describe("Schema", () => {
       await (testSchema as MutableSchema).createEntityClass("TestEntity");
 
       expect(ECClass.isECClass(await testSchema.getItem("TestEntity"))).to.equal(true);
-      expect((await testSchema.getItem<EntityClass>("TestEntity"))?.schemaItemType).to.equal(SchemaItemType.EntityClass);
+      expect((await testSchema.getItem("TestEntity", EntityClass))?.schemaItemType).to.equal(SchemaItemType.EntityClass);
 
       (testSchema as MutableSchema).deleteClassSync("TestEntity");
       expect(await testSchema.getItem("TestEntity")).to.be.undefined;
@@ -428,7 +427,7 @@ describe("Schema", () => {
       await (testSchema as MutableSchema).createEntityClass("TestEntity");
 
       expect(ECClass.isECClass(await testSchema.getItem("TestEntity"))).to.equal(true);
-      expect((await testSchema.getItem<EntityClass>("TestEntity"))?.schemaItemType).to.equal(SchemaItemType.EntityClass);
+      expect((await testSchema.getItem("TestEntity", EntityClass))?.schemaItemType).to.equal(SchemaItemType.EntityClass);
 
       await (testSchema as MutableSchema).deleteClass("TestEntity");
       expect(await testSchema.getItem("TestEntity")).to.be.undefined;
@@ -444,13 +443,13 @@ describe("Schema", () => {
       await (testSchema as MutableSchema).createEntityClass("TestEntity3");
 
       expect(ECClass.isECClass(await testSchema.getItem("TestEntity1"))).to.equal(true);
-      expect((await testSchema.getItem<EntityClass>("TestEntity1"))?.schemaItemType).to.equal(SchemaItemType.EntityClass);
+      expect((await testSchema.getItem("TestEntity1", EntityClass))?.schemaItemType).to.equal(SchemaItemType.EntityClass);
 
       expect(ECClass.isECClass(await testSchema.getItem("TestEntity2"))).to.equal(true);
-      expect((await testSchema.getItem<EntityClass>("TestEntity2"))?.schemaItemType).to.equal(SchemaItemType.EntityClass);
+      expect((await testSchema.getItem("TestEntity2", EntityClass))?.schemaItemType).to.equal(SchemaItemType.EntityClass);
 
       expect(ECClass.isECClass(await testSchema.getItem("TestEntity3"))).to.equal(true);
-      expect((await testSchema.getItem<EntityClass>("TestEntity3"))?.schemaItemType).to.equal(SchemaItemType.EntityClass);
+      expect((await testSchema.getItem("TestEntity3", EntityClass))?.schemaItemType).to.equal(SchemaItemType.EntityClass);
 
       await (testSchema as MutableSchema).deleteClass("TestEntity1");
       expect(await testSchema.getItem("TestEntity1")).to.be.undefined;
@@ -469,13 +468,13 @@ describe("Schema", () => {
       await (testSchema as MutableSchema).createEntityClass("TestEntity3");
 
       expect(ECClass.isECClass(await testSchema.getItem("TestEntity1"))).to.equal(true);
-      expect((await testSchema.getItem<EntityClass>("TestEntity1"))?.schemaItemType).to.equal(SchemaItemType.EntityClass);
+      expect((await testSchema.getItem("TestEntity1", EntityClass))?.schemaItemType).to.equal(SchemaItemType.EntityClass);
 
       expect(ECClass.isECClass(await testSchema.getItem("TestEntity2"))).to.equal(true);
-      expect((await testSchema.getItem<EntityClass>("TestEntity2"))?.schemaItemType).to.equal(SchemaItemType.EntityClass);
+      expect((await testSchema.getItem("TestEntity2", EntityClass))?.schemaItemType).to.equal(SchemaItemType.EntityClass);
 
       expect(ECClass.isECClass(await testSchema.getItem("TestEntity3"))).to.equal(true);
-      expect((await testSchema.getItem<EntityClass>("TestEntity3"))?.schemaItemType).to.equal(SchemaItemType.EntityClass);
+      expect((await testSchema.getItem("TestEntity3", EntityClass))?.schemaItemType).to.equal(SchemaItemType.EntityClass);
 
       (testSchema as MutableSchema).deleteClassSync("TestEntity1");
       expect(await testSchema.getItem("TestEntity1")).to.be.undefined;
@@ -496,19 +495,19 @@ describe("Schema", () => {
       await (testSchema as MutableSchema).createRelationshipClass("TestRelationship");
 
       expect(ECClass.isECClass(await testSchema.getItem("TestEntity"))).to.equal(true);
-      expect((await testSchema.getItem<EntityClass>("TestEntity"))?.schemaItemType).to.equal(SchemaItemType.EntityClass);
+      expect((await testSchema.getItem("TestEntity", EntityClass))?.schemaItemType).to.equal(SchemaItemType.EntityClass);
 
       expect(ECClass.isECClass(await testSchema.getItem("TestMixin"))).to.equal(true);
-      expect((await testSchema.getItem<EntityClass>("TestMixin"))?.schemaItemType).to.equal(SchemaItemType.Mixin);
+      expect((await testSchema.getItem("TestMixin", Mixin))?.schemaItemType).to.equal(SchemaItemType.Mixin);
 
       expect(ECClass.isECClass(await testSchema.getItem("TestStruct"))).to.equal(true);
-      expect((await testSchema.getItem<EntityClass>("TestStruct"))?.schemaItemType).to.equal(SchemaItemType.StructClass);
+      expect((await testSchema.getItem("TestStruct", StructClass))?.schemaItemType).to.equal(SchemaItemType.StructClass);
 
       expect(ECClass.isECClass(await testSchema.getItem("TestCustomAttribute"))).to.equal(true);
-      expect((await testSchema.getItem<EntityClass>("TestCustomAttribute"))?.schemaItemType).to.equal(SchemaItemType.CustomAttributeClass);
+      expect((await testSchema.getItem("TestCustomAttribute", CustomAttributeClass))?.schemaItemType).to.equal(SchemaItemType.CustomAttributeClass);
 
       expect(ECClass.isECClass(await testSchema.getItem("TestRelationship"))).to.equal(true);
-      expect((await testSchema.getItem<EntityClass>("TestRelationship"))?.schemaItemType).to.equal(SchemaItemType.RelationshipClass);
+      expect((await testSchema.getItem("TestRelationship", RelationshipClass))?.schemaItemType).to.equal(SchemaItemType.RelationshipClass);
 
       (testSchema as MutableSchema).deleteClassSync("TestEntity");
       expect(await testSchema.getItem("TestEntity")).to.be.undefined;
@@ -535,19 +534,19 @@ describe("Schema", () => {
       await (testSchema as MutableSchema).createRelationshipClass("TestRelationship");
 
       expect(ECClass.isECClass(await testSchema.getItem("TestEntity"))).to.equal(true);
-      expect((await testSchema.getItem<EntityClass>("TestEntity"))?.schemaItemType).to.equal(SchemaItemType.EntityClass);
+      expect((await testSchema.getItem("TestEntity", EntityClass))?.schemaItemType).to.equal(SchemaItemType.EntityClass);
 
       expect(ECClass.isECClass(await testSchema.getItem("TestMixin"))).to.equal(true);
-      expect((await testSchema.getItem<EntityClass>("TestMixin"))?.schemaItemType).to.equal(SchemaItemType.Mixin);
+      expect((await testSchema.getItem("TestMixin", Mixin))?.schemaItemType).to.equal(SchemaItemType.Mixin);
 
       expect(ECClass.isECClass(await testSchema.getItem("TestStruct"))).to.equal(true);
-      expect((await testSchema.getItem<EntityClass>("TestStruct"))?.schemaItemType).to.equal(SchemaItemType.StructClass);
+      expect((await testSchema.getItem("TestStruct", StructClass))?.schemaItemType).to.equal(SchemaItemType.StructClass);
 
       expect(ECClass.isECClass(await testSchema.getItem("TestCustomAttribute"))).to.equal(true);
-      expect((await testSchema.getItem<EntityClass>("TestCustomAttribute"))?.schemaItemType).to.equal(SchemaItemType.CustomAttributeClass);
+      expect((await testSchema.getItem("TestCustomAttribute", CustomAttributeClass))?.schemaItemType).to.equal(SchemaItemType.CustomAttributeClass);
 
       expect(ECClass.isECClass(await testSchema.getItem("TestRelationship"))).to.equal(true);
-      expect((await testSchema.getItem<EntityClass>("TestRelationship"))?.schemaItemType).to.equal(SchemaItemType.RelationshipClass);
+      expect((await testSchema.getItem("TestRelationship", RelationshipClass))?.schemaItemType).to.equal(SchemaItemType.RelationshipClass);
 
       await (testSchema as MutableSchema).deleteClass("TestEntity");
       expect(await testSchema.getItem("TestEntity")).to.be.undefined;
@@ -582,43 +581,41 @@ describe("Schema", () => {
     });
 
     describe("getItems", () => {
-      let schemaItems: IterableIterator<AnySchemaItem>;
+      let schemaItems: SchemaItem[];
 
       before(() => {
-        schemaItems = testSchema.getItems();
+        schemaItems = Array.from(testSchema.getItems());
       });
 
       it("should return all schema items in schema", () => {
         const itemArray = Array.from(testSchema.getItems());
         expect(itemArray.length).to.equal(8);
 
-        expect(schemaItems.next().value.schemaItemType).to.equal(SchemaItemType.EntityClass);
-        expect(schemaItems.next().value.schemaItemType).to.equal(SchemaItemType.Mixin);
-        expect(schemaItems.next().value.schemaItemType).to.equal(SchemaItemType.StructClass);
-        expect(schemaItems.next().value.schemaItemType).to.equal(SchemaItemType.KindOfQuantity);
-        expect(schemaItems.next().value.schemaItemType).to.equal(SchemaItemType.Enumeration);
-        expect(schemaItems.next().value.schemaItemType).to.equal(SchemaItemType.Unit);
-        expect(schemaItems.next().value.schemaItemType).to.equal(SchemaItemType.PropertyCategory);
-        expect(schemaItems.next().value.schemaItemType).to.equal(SchemaItemType.Format);
-        expect(schemaItems.next().done).to.equal(true);
-      });
-    });
-
-    describe("getClasses", () => {
-      let schemaClasses: IterableIterator<ECClass>;
-
-      before(() => {
-        schemaClasses = testSchema.getClasses();
+        expect(schemaItems.length).to.equal(8);
+        expect(schemaItems[0].schemaItemType).to.equal(SchemaItemType.EntityClass);
+        expect(schemaItems[1].schemaItemType).to.equal(SchemaItemType.Mixin);
+        expect(schemaItems[2].schemaItemType).to.equal(SchemaItemType.StructClass);
+        expect(schemaItems[3].schemaItemType).to.equal(SchemaItemType.KindOfQuantity);
+        expect(schemaItems[4].schemaItemType).to.equal(SchemaItemType.Enumeration);
+        expect(schemaItems[5].schemaItemType).to.equal(SchemaItemType.Unit);
+        expect(schemaItems[6].schemaItemType).to.equal(SchemaItemType.PropertyCategory);
+        expect(schemaItems[7].schemaItemType).to.equal(SchemaItemType.Format);
       });
 
       it("should return only class items in schema", async () => {
-        const classArray = Array.from(testSchema.getClasses());
+        const classArray = Array.from(testSchema.getItems(ECClass));
         expect(classArray.length).to.eql(3);
 
-        expect(schemaClasses.next().value.schemaItemType).to.eql(SchemaItemType.EntityClass);
-        expect(schemaClasses.next().value.schemaItemType).to.eql(SchemaItemType.Mixin);
-        expect(schemaClasses.next().value.schemaItemType).to.eql(SchemaItemType.StructClass);
-        expect(schemaClasses.next().done).to.eql(true);
+        expect(classArray[0].schemaItemType).to.eql(SchemaItemType.EntityClass);
+        expect(classArray[1].schemaItemType).to.eql(SchemaItemType.Mixin);
+        expect(classArray[2].schemaItemType).to.eql(SchemaItemType.StructClass);
+      });
+
+      it("should return only enumeration items in schema", async () => {
+        const classArray = Array.from(testSchema.getItems(Enumeration));
+        expect(classArray.length).to.eql(1);
+
+        expect(classArray[0].schemaItemType).to.eql(SchemaItemType.Enumeration);
       });
     });
   });
@@ -628,7 +625,8 @@ describe("Schema", () => {
 
     type TestCase = [ xmlVersionMajor: number, xmlVersionMinor: number, deserializtionStatus: boolean, serializationStatus: boolean ];
     const testCases: TestCase[] = [
-      [Schema.currentECSpecMajorVersion, Schema.currentECSpecMinorVersion - 1, true, true],
+      // [3, 1, false, false], // Will have to be uncommented and the test below updated when the ECSpec Version gets incremented next.
+      [Schema.currentECSpecMajorVersion, Schema.currentECSpecMinorVersion - 1, false, false],
       [Schema.currentECSpecMajorVersion, Schema.currentECSpecMinorVersion, true, true],
       [Schema.currentECSpecMajorVersion, Schema.currentECSpecMinorVersion + 1, true, false],
       [Schema.currentECSpecMajorVersion + 1, Schema.currentECSpecMinorVersion, false, false],
@@ -638,11 +636,11 @@ describe("Schema", () => {
     async function testSerialization(schema: Schema, serializationStatus: boolean, expectedError: string) {
       const xmlDoc = new DOMParser().parseFromString(`<?xml version="1.0" encoding="UTF-8"?>`, "application/xml");
       if (serializationStatus) {
-        await expect(schema.toXml(xmlDoc)).to.not.be.rejectedWith(ECObjectsError, expectedError);
-        expect(() => schema.toJSON()).to.not.throw(ECObjectsError, expectedError);
+        await expect(schema.toXml(xmlDoc)).to.not.be.rejectedWith(ECSchemaError, expectedError, `Serialization failed for ECXML version ${schema.originalECSpecMajorVersion}.${schema.originalECSpecMinorVersion}`);
+        expect(() => schema.toJSON()).to.not.throw(ECSchemaError, expectedError, `Serialization failed for ECXML version ${schema.originalECSpecMajorVersion}.${schema.originalECSpecMinorVersion}`);
       } else {
-        await expect(schema.toXml(xmlDoc)).to.be.rejectedWith(ECObjectsError, expectedError);
-        expect(() => schema.toJSON()).to.throw(ECObjectsError, expectedError);
+        await expect(schema.toXml(xmlDoc)).to.be.rejectedWith(ECSchemaError, expectedError, `Serialization failed for ECXML version ${schema.originalECSpecMajorVersion}.${schema.originalECSpecMinorVersion}`);
+        expect(() => schema.toJSON()).to.throw(ECSchemaError, expectedError, `Serialization failed for ECXML version ${schema.originalECSpecMajorVersion}.${schema.originalECSpecMinorVersion}`);
       }
     }
 
@@ -662,15 +660,15 @@ describe("Schema", () => {
         try {
           reader.readSchemaSync(schema, document);
         } catch (err: any) {
-          assert.equal(err.message, `The Schema 'TestSchema' has an unsupported ECVersion and cannot be loaded.`);
-          assert.isFalse(deserializtionStatus);
+          assert.equal(err.message, `The Schema 'TestSchema' has an unsupported ECVersion ${xmlVersionMajor}.${xmlVersionMinor} and cannot be loaded.`);
+          assert.isFalse(deserializtionStatus, `Deserialization check failed for ECXML version ${xmlVersionMajor}.${xmlVersionMinor}`);
 
           // Schema serialization should fail if the major ECXml version is newer
           await testSerialization(schema, serializationStatus, unsupportedVersionError);
           continue;
         }
 
-        assert.isTrue(deserializtionStatus);
+        assert.isTrue(deserializtionStatus, `Deserialization check failed for ECXML version ${xmlVersionMajor}.${xmlVersionMinor}`);
         expect(schema.originalECSpecMajorVersion).to.equal(xmlVersionMajor);
         expect(schema.originalECSpecMinorVersion).to.equal(xmlVersionMinor);
         expect(schema.getItemSync("testClass") !== undefined).to.equal(deserializtionStatus);
@@ -694,7 +692,7 @@ describe("Schema", () => {
         try {
           await reader.readSchema(schema, new DOMParser().parseFromString(schemaXml));
         } catch (err: any) {
-          assert.equal(err.message, `The Schema 'TestSchema' has an unsupported ECVersion and cannot be loaded.`);
+          assert.equal(err.message, `The Schema 'TestSchema' has an unsupported ECVersion ${xmlVersionMajor}.${xmlVersionMinor} and cannot be loaded.`);
           assert.isFalse(deserializtionStatus);
 
           // Schema serialization should fail if the major ECXml version is newer
@@ -713,8 +711,7 @@ describe("Schema", () => {
     });
 
     it("Deserialize and serialize newer JS schemas - sync", async () => {
-      // eslint-disable-next-line prefer-const
-      for (let [ecMajorVersion, ecMinorVersion, deserializtionStatus, serializationStatus] of testCases) {
+      for (const [ecMajorVersion, ecMinorVersion, deserializtionStatus, serializationStatus] of testCases) {
         const schemaJson = {
           $schema: `https://dev.bentley.com/json_schemas/ec/${ecMajorVersion}${ecMinorVersion}/ecschema`,
           name: "TestSchema",
@@ -735,15 +732,12 @@ describe("Schema", () => {
         try {
           schema = Schema.fromJsonSync(schemaJson, new SchemaContext());
         } catch (err: any) {
-          assert.equal(err.message, `The Schema 'TestSchema' has an unsupported ECVersion and cannot be loaded.`);
+          assert.equal(err.message, `The Schema 'TestSchema' has an unsupported ECVersion ${ecMajorVersion}.${ecMinorVersion} and cannot be loaded.`);
           assert.isFalse(deserializtionStatus);
 
-          // When the ECXML major version is newer, deserialization will throw an error and the schema object will never get updated and the ECXMl version will remain the deafult latest supported.
-          // Hence serialization should succeed in this case.
-          if (ecMajorVersion > Schema.currentECSpecMajorVersion || (ecMajorVersion === Schema.currentECSpecMajorVersion && ecMinorVersion > Schema.currentECSpecMinorVersion))
-            serializationStatus = true;
-
-          await testSerialization(schema, serializationStatus, unsupportedVersionError);
+          // When the ECXML major version is newer, deserialization will throw an error and the schema object will never get updated. The ECXMl version will then remain the default latest supported.
+          // Hence, serialization should succeed in this case.
+          await testSerialization(schema, true, unsupportedVersionError);
           continue;
         }
 
@@ -758,8 +752,7 @@ describe("Schema", () => {
     });
 
     it("Deserialize and serialize newer JS schemas - async", async () => {
-      // eslint-disable-next-line prefer-const
-      for (let [ecMajorVersion, ecMinorVersion, deserializtionStatus, serializationStatus] of testCases) {
+      for (const [ecMajorVersion, ecMinorVersion, deserializtionStatus, serializationStatus] of testCases) {
         const schemaJson = {
           $schema: `https://dev.bentley.com/json_schemas/ec/${ecMajorVersion}${ecMinorVersion}/ecschema`,
           name: "TestSchema",
@@ -779,15 +772,12 @@ describe("Schema", () => {
         try {
           schema = await Schema.fromJson(schemaJson, new SchemaContext());
         } catch (err: any) {
-          assert.equal(err.message, `The Schema 'TestSchema' has an unsupported ECVersion and cannot be loaded.`);
+          assert.equal(err.message, `The Schema 'TestSchema' has an unsupported ECVersion ${ecMajorVersion}.${ecMinorVersion} and cannot be loaded.`);
           assert.isFalse(deserializtionStatus);
 
-          // When the ECXML major version is newer, deserialization will throw an error and the schema object will never get updated and the ECXMl version will remain the deafult latest supported.
-          // Hence serialization should succeed in this case.
-          if (ecMajorVersion > Schema.currentECSpecMajorVersion || (ecMajorVersion === Schema.currentECSpecMajorVersion && ecMinorVersion > Schema.currentECSpecMinorVersion))
-            serializationStatus = true;
-
-          await testSerialization(schema, serializationStatus, unsupportedVersionError);
+          // When the ECXML major version is newer, deserialization will throw an error and the schema object will never get updated. The ECXMl version will then remain the default latest supported.
+          // Hence, serialization should succeed in this case.
+          await testSerialization(schema, true, unsupportedVersionError);
           continue;
         }
 
@@ -814,7 +804,7 @@ describe("Schema", () => {
         try {
           schema.fromJSONSync(schemaJson);
         } catch (err: any) {
-          assert.equal(err.message, `The Schema 'TestSchema' has an unsupported ECVersion and cannot be loaded.`);
+          assert.equal(err.message, `The Schema 'TestSchema' has an unsupported ECVersion ${ecMajorVersion}.${ecMinorVersion} and cannot be loaded.`);
           assert.isFalse(deserializtionStatus);
 
           // Schema serialization should fail if the major ECXml version is newer
@@ -844,7 +834,7 @@ describe("Schema", () => {
         try {
           await schema.fromJSON(schemaJson);
         } catch (err: any) {
-          assert.equal(err.message, `The Schema 'TestSchema' has an unsupported ECVersion and cannot be loaded.`);
+          assert.equal(err.message, `The Schema 'TestSchema' has an unsupported ECVersion ${ecMajorVersion}.${ecMinorVersion} and cannot be loaded.`);
           assert.isFalse(deserializtionStatus);
 
           // Schema serialization should fail if the major ECXml version is newer
@@ -1235,6 +1225,27 @@ describe("Schema", () => {
         deserializeAndTestJSONSync(JSON.stringify(schemaJson), testRelationshipStrength);
         await testSerialization(_schema, false, unsupportedVersionError);
       });
+
+      it("should throw an error for version V3_2, when encountered an unknown type", async () => {
+        const schemaXml = `<?xml version="1.0" encoding="utf-8"?>
+            <ECSchema schemaName="Test" alias="test" version="1.0.0" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
+          <ECStructClass typeName="PrimStruct">
+            <ECProperty propertyName="p2d" typeName="Point2d" />
+            <ECProperty propertyName="p3d" typeName="Point3d" />
+          </ECStructClass>
+          <ECEntityClass typeName="UseOfWrongPropertyTags">
+            <ECProperty propertyName="Struct" typeName="PrimStruct" />
+            <ECStructArrayProperty propertyName="Struct_Array" typeName="PrimStruct" />
+          </ECEntityClass>
+          </ECSchema>`;
+
+          _schema = new Schema(_context);
+          try {
+            await _xmlReader.readSchema(_schema, new DOMParser().parseFromString(schemaXml));
+          } catch (err: any) {
+            assert.equal(err.message, `The provided primitive type, Test.PrimStruct, is not a valid PrimitiveType or Enumeration.`);
+          }
+      });
     });
   });
 
@@ -1252,7 +1263,7 @@ describe("Schema", () => {
 
       it("with name/version first specified in JSON", async () => {
         const propertyJson = {
-          $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+          $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
           name: "ValidSchema",
           version: "1.2.3",
           alias: "vs",
@@ -1267,7 +1278,7 @@ describe("Schema", () => {
 
       it("with name/version repeated in JSON", async () => {
         const propertyJson = {
-          $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+          $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
           name: "ValidSchema",
           version: "1.2.3",
           alias: "vs",
@@ -1282,7 +1293,7 @@ describe("Schema", () => {
 
       it("should throw for invalid alias", async () => {
         const propertyJson = {
-          $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+          $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
           name: "ValidSchema",
           version: "1.2.3",
           alias: "",
@@ -1291,7 +1302,7 @@ describe("Schema", () => {
         };
         const testSchema = new Schema(new SchemaContext());
         expect(testSchema).to.exist;
-        await expect(testSchema.fromJSON(propertyJson)).to.be.rejectedWith(ECObjectsError, "The Schema ValidSchema does not have the required 'alias' attribute.");
+        await expect(testSchema.fromJSON(propertyJson)).to.be.rejectedWith(ECSchemaError, "The Schema ValidSchema does not have the required 'alias' attribute.");
       });
 
       it("should throw for invalid $schema", async () => {
@@ -1303,32 +1314,32 @@ describe("Schema", () => {
         const context = new SchemaContext();
         const testSchema = new Schema(context, "InvalidSchema", "is", 1, 2, 3);
         expect(testSchema).to.exist;
-        await expect(testSchema.fromJSON(schemaJson as any)).to.be.rejectedWith(ECObjectsError, "The Schema 'InvalidSchema' has an unsupported namespace 'https://badmetaschema.com'.");
-        await expect(Schema.fromJson(schemaJson as any, context)).to.be.rejectedWith(ECObjectsError, "The Schema 'InvalidSchema' has an unsupported namespace 'https://badmetaschema.com'.");
+        await expect(testSchema.fromJSON(schemaJson as any)).to.be.rejectedWith(ECSchemaError, "The Schema 'InvalidSchema' has an unsupported namespace 'https://badmetaschema.com'.");
+        await expect(Schema.fromJson(schemaJson as any, context)).to.be.rejectedWith(ECSchemaError, "The Schema 'InvalidSchema' has an unsupported namespace 'https://badmetaschema.com'.");
       });
 
       it("should throw for mismatched name", async () => {
         const json = {
-          $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+          $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
           name: "ThisDoesNotMatch",
           version: "1.2.3",
           alias: "bad",
         };
         const testSchema = new Schema(new SchemaContext(), "BadSchema", "bad", 1, 2, 3);
         expect(testSchema).to.exist;
-        await expect(testSchema.fromJSON(json)).to.be.rejectedWith(ECObjectsError);
+        await expect(testSchema.fromJSON(json)).to.be.rejectedWith(ECSchemaError);
       });
 
       it("should throw for mismatched version", async () => {
         const json = {
-          $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+          $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
           name: "BadSchema",
           version: "1.2.6",
           alias: "bad",
         };
         const testSchema = new Schema(new SchemaContext(), "BadSchema", "bad", 1, 2, 3);
         expect(testSchema).to.exist;
-        await expect(testSchema.fromJSON(json)).to.be.rejectedWith(ECObjectsError);
+        await expect(testSchema.fromJSON(json)).to.be.rejectedWith(ECSchemaError);
       });
     });
 
@@ -1336,15 +1347,15 @@ describe("Schema", () => {
       it("Simple JSON serialization of an empty schema", async () => {
         const context = new SchemaContext();
         let schema: Schema = new Schema(context);
-        expect(() => schema.toJSON()).to.throw(ECObjectsError, "The schema has an invalid or missing SchemaKey.");
+        expect(() => schema.toJSON()).to.throw(ECSchemaError, "The schema has an invalid or missing SchemaKey.");
 
         schema = new Schema(context, "EmptySchema", "es", 1, 2, 3);
-        expect(() => schema.toJSON()).to.not.throw(ECObjectsError, "The schema has an invalid or missing SchemaKey.");
+        expect(() => schema.toJSON()).to.not.throw(ECSchemaError, "The schema has an invalid or missing SchemaKey.");
       });
 
       it("Simple serialization", async () => {
         const schemaJson = {
-          $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+          $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
           name: "ValidSchema",
           version: "1.2.3",
           alias: "vs",
@@ -1359,7 +1370,7 @@ describe("Schema", () => {
       });
       it("Serialization - JSON stringify", async () => {
         const schemaJson = {
-          $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+          $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
           name: "ValidSchema",
           version: "1.2.3",
           alias: "vs",
@@ -1375,7 +1386,7 @@ describe("Schema", () => {
       });
       it("Serialization with one custom attribute- only class name", async () => {
         const propertyJson = {
-          $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+          $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
           name: "ValidSchema",
           version: "1.2.3",
           alias: "vs",
@@ -1391,7 +1402,7 @@ describe("Schema", () => {
       });
       it("Serialization with one custom attribute- additional properties", () => {
         const propertyJson = {
-          $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+          $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
           name: "ValidSchema",
           version: "1.2.3",
           alias: "vs",
@@ -1408,7 +1419,7 @@ describe("Schema", () => {
       });
       it("Serialization with multiple custom attributes- only class name", async () => {
         const propertyJson = {
-          $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+          $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
           name: "ValidSchema",
           version: "1.2.3",
           alias: "vs",
@@ -1428,7 +1439,7 @@ describe("Schema", () => {
       });
       it("Serialization with multiple custom attributes- additional properties", async () => {
         const propertyJson = {
-          $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+          $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
           name: "ValidSchema",
           version: "1.2.3",
           alias: "vs",
@@ -1448,7 +1459,7 @@ describe("Schema", () => {
       });
       it("Serialization with one reference", async () => {
         const schemaJson = {
-          $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+          $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
           name: "ValidSchema",
           version: "1.2.3",
           alias: "vs",
@@ -1474,7 +1485,7 @@ describe("Schema", () => {
       });
       it("Serialization with multiple references", () => {
         const schemaJson = {
-          $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+          $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
           name: "ValidSchema",
           version: "1.2.3",
           alias: "vs",
@@ -1508,7 +1519,7 @@ describe("Schema", () => {
       });
       it("Serialization with one reference and item", async () => {
         const schemaJson = {
-          $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+          $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
           name: "TestSchema",
           version: "1.2.3",
           alias: "ts",
@@ -1544,7 +1555,7 @@ describe("Schema", () => {
       });
       it("Serialization with one reference and multiple items", async () => {
         const schemaJson = {
-          $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+          $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
           name: "TestSchema",
           version: "1.2.3",
           alias: "ts",
@@ -1620,7 +1631,7 @@ describe("Schema", () => {
 
     it("Serialization with reference containing different minor version", async () => {
       const schemaJson = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+        $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
         name: "ValidSchema",
         version: "1.2.3",
         alias: "vs",
@@ -1647,7 +1658,7 @@ describe("Schema", () => {
 
     it("Serialization with reference containing different write version, throws", async () => {
       const schemaJson = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+        $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
         name: "ValidSchema",
         version: "1.2.3",
         alias: "vs",
@@ -1664,7 +1675,7 @@ describe("Schema", () => {
       const context = new SchemaContext();
       await context.addSchema(refSchema);
 
-      await expect(Schema.fromJson(schemaJson, context)).to.be.rejectedWith(ECObjectsError, "Could not locate the referenced schema, RefSchema.01.00.00, of ValidSchema");
+      await expect(Schema.fromJson(schemaJson, context)).to.be.rejectedWith(ECSchemaError, "Could not locate the referenced schema, RefSchema.01.00.00, of ValidSchema");
     });
 
     describe("toXML", () => {
@@ -1694,15 +1705,15 @@ describe("Schema", () => {
         let schema: Schema = new Schema(context);
         const xmlDoc = new DOMParser().parseFromString(`<?xml version="1.0" encoding="UTF-8"?>`, "application/xml");
 
-        await expect(schema.toXml(xmlDoc)).to.be.rejectedWith(ECObjectsError, `The schema has an invalid or missing SchemaKey.`);
+        await expect(schema.toXml(xmlDoc)).to.be.rejectedWith(ECSchemaError, `The schema has an invalid or missing SchemaKey.`);
 
         schema = new Schema(context, "EmptySchema", "ts", 1, 2, 3);
-        await expect(schema.toXml(xmlDoc)).to.not.be.rejectedWith(ECObjectsError, `The schema has an invalid or missing SchemaKey.`);
+        await expect(schema.toXml(xmlDoc)).to.not.be.rejectedWith(ECSchemaError, `The schema has an invalid or missing SchemaKey.`);
       });
 
       it("Simple serialization", async () => {
         const schemaJson = {
-          $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+          $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
           name: "ValidSchema",
           version: "1.2.3",
           alias: "vs",
@@ -1726,7 +1737,7 @@ describe("Schema", () => {
       it("Deserialize after Serialization", async () => {
 
         const referenceJson = {
-          $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+          $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
           name: "RefSchema",
           version: "1.2.3",
           alias: "rf",
@@ -1744,7 +1755,7 @@ describe("Schema", () => {
 
         const coreCASchema =
         {
-          $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+          $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
           alias: "CoreCA",
           description: "Custom attributes to indicate core EC concepts, may include struct classes intended for use in core custom attributes.",
           items: {
@@ -1772,7 +1783,7 @@ describe("Schema", () => {
         Schema.fromJsonSync(referenceJson, context);
 
         const schemaJson = {
-          $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+          $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
           name: "ValidSchema",
           version: "1.2.3",
           alias: "vs",
@@ -1813,7 +1824,7 @@ describe("Schema", () => {
 
       it("Serialization with one reference", async () => {
         const schemaJson = {
-          $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+          $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
           name: "ValidSchema",
           version: "1.2.3",
           alias: "vs",
@@ -1845,7 +1856,7 @@ describe("Schema", () => {
 
       it("Serialization with multiple references", async () => {
         const schemaJson = {
-          $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+          $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
           name: "ValidSchema",
           version: "1.2.3",
           alias: "vs",
@@ -1890,7 +1901,7 @@ describe("Schema", () => {
 
       it("Serialization with one reference and item", async () => {
         const schemaJson = {
-          $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+          $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
           name: "TestSchema",
           version: "1.2.3",
           alias: "ts",
@@ -1935,7 +1946,7 @@ describe("Schema", () => {
 
       it("Serialization with one reference and multiple items", async () => {
         const schemaJson = {
-          $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+          $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
           name: "TestSchema",
           version: "1.2.3",
           alias: "ts",
@@ -2021,7 +2032,7 @@ describe("Schema", () => {
 
       /* it("Serialization with one custom attribute defined in ref schema, only class name", async () => {
         const schemaJson = {
-          $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+          $schema: ECSchemaNamespaceUri.SCHEMAURL3_2_JSON,
           name: "ValidSchema",
           version: "1.2.3",
           alias: "vs",
@@ -2042,7 +2053,7 @@ describe("Schema", () => {
 
       it("Serialization with one custom attribute defined in same schema, only class name", async () => {
         const schemaJson = {
-          $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+          $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
           name: "ValidSchema",
           version: "1.2.3",
           alias: "vs",
@@ -2064,7 +2075,7 @@ describe("Schema", () => {
 
       it("Serialization with one qualified custom attribute defined in same schema, only class name", async () => {
         const schemaJson = {
-          $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+          $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
           name: "ValidSchema",
           version: "1.2.3",
           alias: "vs",
@@ -2086,7 +2097,7 @@ describe("Schema", () => {
 
       it("Serialization with one custom attribute, with Primitive property values", async () => {
         const schemaJson = {
-          $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+          $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
           name: "ValidSchema",
           version: "1.2.3",
           alias: "vs",
@@ -2196,7 +2207,7 @@ describe("Schema", () => {
 
       it("Serialization with one custom attribute, with PrimitiveArray property values", async () => {
         const schemaJson = {
-          $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+          $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
           name: "ValidSchema",
           version: "1.2.3",
           alias: "vs",
@@ -2237,7 +2248,7 @@ describe("Schema", () => {
 
       it("Serialization with one custom attribute, with Struct property value", async () => {
         const schemaJson = {
-          $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+          $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
           name: "ValidSchema",
           version: "1.2.3",
           alias: "vs",
@@ -2293,7 +2304,7 @@ describe("Schema", () => {
 
       it("Serialization with one custom attribute, with Enumeration property value", async () => {
         const schemaJson = {
-          $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+          $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
           name: "ValidSchema",
           version: "1.2.3",
           alias: "vs",
@@ -2344,7 +2355,7 @@ describe("Schema", () => {
 
       it("Serialization with one custom attribute, with StructArray property value", async () => {
         const schemaJson = {
-          $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+          $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
           name: "ValidSchema",
           version: "1.2.3",
           alias: "vs",
@@ -2430,7 +2441,7 @@ describe("Schema", () => {
 
       async function testKoQSerialization(presentationUnit: any): Promise<string> {
         const testSchemaJson = {
-          $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+          $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
           name: "TestSchema",
           version: "1.0.0",
           alias: "ts",
@@ -2464,7 +2475,7 @@ describe("Schema", () => {
 
       async function testCompositeFormatSerialization(compositeFormat: any): Promise<string> {
         const testSchemaJson = {
-          $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+          $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
           name: "TestSchema",
           version: "1.0.0",
           alias: "ts",

@@ -298,10 +298,9 @@ export namespace Gradient {
     /** Returns true if the [[Gradient.Flags.Outline]] flag is set. */
     public get isOutlined(): boolean { return 0 !== (this.flags & Flags.Outline); }
 
-    /** This function (for internal use only) provides the WebGL renderer with a thematic image that its shaders
-     * can use properly with various thematic rendering techniques.
-     * If you want a regular gradient image, use the method [[Gradient.Symb.getImage]].
-     * @internal
+    /** Produce an image suitable for use for thematic rendering.
+     * This function is chiefly useful for the WebGL renderer.
+     * @see [[Gradient.Symb.getImage]] to obtain a generally useful image instead.
      */
     public getThematicImageForRenderer(maxDimension: number): ImageBuffer {
       assert(Mode.Thematic === this.mode, "getThematicImageForRenderer only is used for thematic display.");

@@ -5,7 +5,9 @@
 import { describe, expect, it } from "vitest";
 import { Arc3d } from "../../curve/Arc3d";
 import { CoordinateXYZ } from "../../curve/CoordinateXYZ";
-import { BagOfCurves } from "../../curve/CurveCollection";
+import { BagOfCurves, CurveCollection } from "../../curve/CurveCollection";
+import { CurvePrimitive } from "../../curve/CurvePrimitive";
+import { AnyCurve } from "../../curve/CurveTypes";
 import { GeometryQuery } from "../../curve/GeometryQuery";
 import { LineSegment3d } from "../../curve/LineSegment3d";
 import { LineString3d } from "../../curve/LineString3d";
@@ -39,7 +41,7 @@ import { IModelJson } from "../../serialization/IModelJsonSchema";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 
-// cspell::word bsijson
+// cspell::word bsijson, bagof
 
 const bsiJsonPunchList: object[] = [];
 let previousConstructor: object;
@@ -149,7 +151,7 @@ describe("BSIJSON.ExerciseAllTypes", () => {
     {
       let a;
       for (a of Sample.angle) {
-        exercise(a);
+        errors += exercise(a);
         const a1 = Angle.fromJSON(a.toJSON());
         expect(a.isAlmostEqualAllowPeriodShift(a1)).toBe(true);
       }
@@ -157,7 +159,7 @@ describe("BSIJSON.ExerciseAllTypes", () => {
     {
       let a;
       for (a of Sample.point3d) {
-        exercise(a);
+        errors += exercise(a);
         const a1 = Point3d.fromJSON(a.toJSON());
         expect(a.isAlmostEqual(a1)).toBe(true);
       }
@@ -166,7 +168,7 @@ describe("BSIJSON.ExerciseAllTypes", () => {
     {
       let a;
       for (a of Sample.point2d) {
-        exercise(a);
+        errors += exercise(a);
         const a1 = Point2d.fromJSON(a.toJSON());
         expect(a.isAlmostEqual(a1)).toBe(true);
       }
@@ -175,7 +177,7 @@ describe("BSIJSON.ExerciseAllTypes", () => {
     {
       let a;
       for (a of Sample.point4d) {
-        exercise(a);
+        errors += exercise(a);
         const a1 = Point4d.fromJSON(a.toJSON());
         expect(a.isAlmostEqual(a1)).toBe(true);
       }
@@ -184,7 +186,7 @@ describe("BSIJSON.ExerciseAllTypes", () => {
     {
       let a;
       for (a of Sample.vector2d) {
-        exercise(a);
+        errors += exercise(a);
         let a1 = Vector2d.fromJSON(a.toJSON());
         // GeometryCoreTestIO.consoleLog(a, a1);
         if (!a.isAlmostEqual(a1)) {
@@ -197,7 +199,7 @@ describe("BSIJSON.ExerciseAllTypes", () => {
     {
       let a;
       for (a of Sample.createNonZeroVectors()) {
-        exercise(a);
+        errors += exercise(a);
         let a1 = Vector3d.fromJSON(a.toJSON());
         // GeometryCoreTestIO.consoleLog(a, a1);
         if (!a.isAlmostEqual(a1)) {
@@ -209,14 +211,14 @@ describe("BSIJSON.ExerciseAllTypes", () => {
     }
     {
       const a = YawPitchRollAngles.createDegrees(10, 20, 30);
-      exercise(a);
+      errors += exercise(a);
       const a1 = YawPitchRollAngles.fromJSON(a.toJSON());
       expect(a.isAlmostEqual(a1)).toBe(true);
     }
 
     {
       const a = Complex.create(1, 2);
-      exercise(a);
+      errors += exercise(a);
       const a1 = Complex.fromJSON(a.toJSON());
       // GeometryCoreTestIO.consoleLog(a, a1);
       expect(a.isAlmostEqual(a1)).toBe(true);
@@ -225,7 +227,7 @@ describe("BSIJSON.ExerciseAllTypes", () => {
     {
       let a;
       for (a of Sample.plane3dByOriginAndUnitNormal) {
-        exercise(a);
+        errors += exercise(a);
         const a1 = Plane3dByOriginAndUnitNormal.fromJSON(a.toJSON());
         // GeometryCoreTestIO.consoleLog(a, a1);
         expect(a.isAlmostEqual(a1)).toBe(true);
@@ -235,7 +237,7 @@ describe("BSIJSON.ExerciseAllTypes", () => {
     {
       let a;
       for (a of Sample.ray3d) {
-        exercise(a);
+        errors += exercise(a);
         const a1 = Ray3d.fromJSON(a.toJSON());
         // GeometryCoreTestIO.consoleLog(a, a1);
         expect(a.isAlmostEqual(a1)).toBe(true);
@@ -245,7 +247,7 @@ describe("BSIJSON.ExerciseAllTypes", () => {
     {
       let a;
       for (a of Sample.angle) {
-        exercise(a);
+        errors += exercise(a);
         const a1 = Angle.fromJSON(a.toJSON());
         // GeometryCoreTestIO.consoleLog(a, a1);
         expect(a.isAlmostEqualNoPeriodShift(a1)).toBe(true);
@@ -255,7 +257,7 @@ describe("BSIJSON.ExerciseAllTypes", () => {
     {
       let a;
       for (a of Sample.angleSweep) {
-        exercise(a);
+        errors += exercise(a);
         const a1 = AngleSweep.fromJSON(a.toJSON());
         // GeometryCoreTestIO.consoleLog(a, a1);
         expect(a.isAlmostEqualNoPeriodShift(a1)).toBe(true);
@@ -265,7 +267,7 @@ describe("BSIJSON.ExerciseAllTypes", () => {
     {
       let a;
       for (a of Sample.lineSegment3d) {
-        exercise(a);
+        errors += exercise(a);
         let a1 = LineSegment3d.fromJSON(a.toJSON());
         // GeometryCoreTestIO.consoleLog(a, a1);
         if (!a.isAlmostEqual(a1)) {
@@ -282,7 +284,7 @@ describe("BSIJSON.ExerciseAllTypes", () => {
       let a;
       const linestrings = Sample.createLineStrings();
       for (a of linestrings) {
-        exercise(a);
+        errors += exercise(a);
         let a1 = LineString3d.fromJSON(a.toJSON());
         // GeometryCoreTestIO.consoleLog(a, a1);
         if (!a.isAlmostEqual(a1)) {
@@ -295,7 +297,7 @@ describe("BSIJSON.ExerciseAllTypes", () => {
     {
       let a;
       for (a of Sample.range1d) {
-        exercise(a);
+        errors += exercise(a);
         let a1 = Range1d.fromJSON(a.toJSON());
         // GeometryCoreTestIO.consoleLog(a, a1);
         if (!a.isAlmostEqual(a1)) {
@@ -308,7 +310,7 @@ describe("BSIJSON.ExerciseAllTypes", () => {
     {
       let a;
       for (a of Sample.range2d) {
-        exercise(a);
+        errors += exercise(a);
         let a1 = Range2d.fromJSON(a.toJSON());
         // GeometryCoreTestIO.consoleLog(a, a1);
         if (!a.isAlmostEqual(a1)) {
@@ -321,7 +323,7 @@ describe("BSIJSON.ExerciseAllTypes", () => {
     {
       let a;
       for (a of Sample.range3d) {
-        exercise(a);
+        errors += exercise(a);
         let a1 = Range3d.fromJSON(a.toJSON());
         // GeometryCoreTestIO.consoleLog(a, a1);
         if (!a.isAlmostEqual(a1)) {
@@ -335,7 +337,7 @@ describe("BSIJSON.ExerciseAllTypes", () => {
     {
       let a;
       for (a of Sample.createInvertibleTransforms()) {
-        exercise(a);
+        errors += exercise(a);
         let a1 = Transform.fromJSON(a.toJSON());
         // console.log (a.toJSON ());
         // GeometryCoreTestIO.consoleLog(a, a1);
@@ -355,7 +357,7 @@ describe("BSIJSON.ExerciseAllTypes", () => {
     {
       let a;
       for (a of Sample.createMatrix3dArray()) {
-        exercise(a);
+        errors += exercise(a);
         let a1 = Matrix3d.fromJSON(a.toJSON());
         // console.log (a.toJSON ());
         // GeometryCoreTestIO.consoleLog(a, a1);
@@ -371,7 +373,7 @@ describe("BSIJSON.ExerciseAllTypes", () => {
       let a;
       const matrix4d = Sample.createMatrix4ds(true);
       for (a of matrix4d) {
-        exercise(a);
+        errors += exercise(a);
         let a1 = Matrix4d.fromJSON(a.toJSON());
         // GeometryCoreTestIO.consoleLog(a, a1);
         if (!a.isAlmostEqual(a1)) {
@@ -386,7 +388,7 @@ describe("BSIJSON.ExerciseAllTypes", () => {
       let a;
       const map4d = Sample.createMap4ds();
       for (a of map4d) {
-        exercise(a);
+        errors += exercise(a);
         let a1 = Map4d.fromJSON(a.toJSON());
         // GeometryCoreTestIO.consoleLog(a, a1);
         if (!a.isAlmostEqual(a1)) {
@@ -399,41 +401,57 @@ describe("BSIJSON.ExerciseAllTypes", () => {
 
     {
       const data = Sample.createSimplePaths(true);
-      let d; for (d of data) { exercise(d, false); }
+      let d; for (d of data) { errors += exercise(d, false); }
     }
 
     {
       const data = Sample.createSimpleLoops();
-      let d; for (d of data) { exercise(d, false); }
+      let d; for (d of data) { errors += exercise(d, false); }
     }
 
     {
       const data = Sample.createSimpleParityRegions();
-      let d; for (d of data) { exercise(d, false); }
+      let d; for (d of data) { errors += exercise(d, false); }
     }
     {
       const data = Sample.createSimpleUnions();
-      let d; for (d of data) { exercise(d, false); }
+      let d; for (d of data) { errors += exercise(d, false); }
     }
 
     {
       const data = Sample.createBsplineCurves(true);
-      let d; for (d of data) { exercise(d, false); }
+      let d; for (d of data) { errors += exercise(d, false); }
     }
 
     {
       const data = Sample.createSimplePointStrings();
-      let d; for (d of data) { exercise(d, false); }
+      let d; for (d of data) { errors += exercise(d, false); }
     }
-    // exercise(CurveChain.createZero());
-    // exercise(Path.createZero());
-    // exercise(Loop.createZero());
-    // exercise(ParityRegion.createZero());
-    // exercise(UnionRegion.createZero());
-    // exercise(CurveCollection.createZero());o
+
+    {
+      const data = Sample.createBagOfCurves();
+      let numPrimitives = 0;
+      let numCollections = 0;
+      for (const d of data) {
+        const json: IModelJson.CurveCollectionProps = IModelJson.Writer.toIModelJson(d);
+        ck.testFalse(json.hasOwnProperty("bagofCurves"), "CurveCollectionProps lacks misspelled 'bagofCurves' property");
+        if (ck.testDefined(json.bagOfCurves, "CurveCollectionProps has correctly spelled 'bagOfCurves' property"))
+          if (ck.testTrue(Array.isArray(json.bagOfCurves), "CurveCollectionProps.bagOfCurves is an array")) {
+            for (const child of json.bagOfCurves) {
+              const child1 = IModelJson.Reader.parse(child) as AnyCurve;
+              if (child1 instanceof CurvePrimitive)
+                ++numPrimitives;
+              else if (child1 instanceof CurveCollection)
+                ++numCollections;
+            }
+          }
+        errors += exercise(d, false);
+      }
+      ck.testTrue(numPrimitives > 0 && numCollections > 0, "CurveCollectionProps.bagOfCurves can contain both primitives and collections");
+    }
 
     ck.testExactNumber(0, errors, "errors exercising geometry");
-    //    errors += exercise({ q: 1 });
+
     if (bsiJsonPunchList.length > 0)
       GeometryCoreTestIO.consoleLog(bsiJsonPunchList);
 

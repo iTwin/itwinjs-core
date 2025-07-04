@@ -38,7 +38,7 @@ describe("GraphicTemplate", () => {
     expectDisposed(template, false);
     const graphic = IModelApp.renderSystem.createGraphicFromTemplate({ template });
 
-    graphic.dispose();
+    graphic[Symbol.dispose]();
     expectDisposed(template, false);
   });
 

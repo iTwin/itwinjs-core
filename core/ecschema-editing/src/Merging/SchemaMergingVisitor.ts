@@ -2,7 +2,13 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { AnyClassItemDifference, AnySchemaDifference, AnySchemaItemDifference, ClassPropertyDifference, ConstantDifference, CustomAttributeClassDifference, CustomAttributeDifference, EntityClassDifference, EntityClassMixinDifference, EnumerationDifference, EnumeratorDifference, FormatDifference, InvertedUnitDifference, KindOfQuantityDifference, KindOfQuantityPresentationFormatDifference, MixinClassDifference, PhenomenonDifference, PropertyCategoryDifference, RelationshipClassDifference, RelationshipConstraintClassDifference, RelationshipConstraintDifference, SchemaDifference, SchemaReferenceDifference, StructClassDifference, UnitDifference, UnitSystemDifference } from "../Differencing/SchemaDifference";
+import { AnyClassItemDifference, AnySchemaDifference, AnySchemaItemDifference, ClassPropertyDifference, 
+  ConstantDifference, CustomAttributeClassDifference, CustomAttributeDifference, EntityClassDifference, 
+  EntityClassMixinDifference, EnumerationDifference, EnumeratorDifference, FormatDifference, FormatUnitDifference, 
+  FormatUnitLabelDifference, InvertedUnitDifference, KindOfQuantityDifference, KindOfQuantityPresentationFormatDifference, 
+  MixinClassDifference, PhenomenonDifference, PropertyCategoryDifference, RelationshipClassDifference, 
+  RelationshipConstraintClassDifference, RelationshipConstraintDifference, SchemaDifference, SchemaReferenceDifference, 
+  StructClassDifference, UnitDifference, UnitSystemDifference } from "../Differencing/SchemaDifference";
 import { addConstant, modifyConstant } from "./ConstantMerger";
 import { addCustomAttribute } from "./CustomAttributeMerger";
 import { addCustomAttributeClass, modifyCustomAttributeClass } from "./CustomAttributeClassMerger";
@@ -23,6 +29,9 @@ import { SchemaDifferenceVisitor } from "../Differencing/SchemaDifferenceVisitor
 import { SchemaItemKey } from "@itwin/ecschema-metadata";
 import { SchemaMergeContext } from "./SchemaMerger";
 import { toItemKey } from "./Utils";
+import { addUnit, modifyUnit } from "./UnitMerger";
+import { addInvertedUnit, modifyInvertedUnit } from "./InvertedUnitMerger";
+import { addFormat, modifyFormat, modifyFormatUnit, modifyFormatUnitLabel } from "./FormatMerger";
 
 /** Definition of schema items change type handler array. */
 interface ItemChangeTypeHandler<T extends AnySchemaDifference> {
@@ -163,16 +172,42 @@ export class SchemaMergingVisitor implements SchemaDifferenceVisitor {
    * Visitor implementation for handling FormatDifference.
    * @internal
    */
-  public async visitFormatDifference(_entry: FormatDifference): Promise<void> {
-    // TODO: Add merger handler...
+  public async visitFormatDifference(entry: FormatDifference): Promise<void> {
+    return this.visitSchemaItemDifference(entry, {
+      add: addFormat,
+      modify: modifyFormat,
+    });
+  }
+
+  /**
+   * Visitor implementation for handling FormatUnitDifference.
+   * @internal
+   */
+  public async visitFormatUnitDifference(entry: FormatUnitDifference): Promise<void> {
+    switch(entry.changeType) {
+      case "modify": return modifyFormatUnit(this._context, entry, toItemKey(this._context, entry.itemName));
+    }
+  }
+
+  /**
+   * Visitor implementation for handling FormatUnitLabelDifference.
+   * @internal
+   */
+  public async visitFormatUnitLabelDifference(entry: FormatUnitLabelDifference): Promise<void> {
+    switch(entry.changeType) {
+      case "modify": return modifyFormatUnitLabel(this._context, entry, toItemKey(this._context, entry.itemName));
+    }
   }
 
   /**
    * Visitor implementation for handling InvertedUnitDifference.
    * @internal
    */
-  public async visitInvertedUnitDifference(_entry: InvertedUnitDifference): Promise<void> {
-    // TODO: Add merger handler...
+  public async visitInvertedUnitDifference(entry: InvertedUnitDifference): Promise<void> {
+    return this.visitSchemaItemDifference(entry, {
+      add: addInvertedUnit,
+      modify: modifyInvertedUnit,
+    });
   }
 
   /**
@@ -311,8 +346,11 @@ export class SchemaMergingVisitor implements SchemaDifferenceVisitor {
    * Visitor implementation for handling UnitDifference.
    * @internal
    */
-  public async visitUnitDifference(_entry: UnitDifference): Promise<void> {
-    // TODO: Add merger handler...
+  public async visitUnitDifference(entry: UnitDifference): Promise<void> {
+    return this.visitSchemaItemDifference(entry, {
+      add: addUnit,
+      modify: modifyUnit,
+    });
   }
 
   /**
@@ -332,7 +370,7 @@ export class SchemaMergingVisitor implements SchemaDifferenceVisitor {
   */
   public async visitKindOfQuantityPresentationFormatDifference(entry: KindOfQuantityPresentationFormatDifference): Promise<void> {
     switch(entry.changeType) {
-      case "add": return addPresentationFormat(this._context, entry);
+      case "add": return addPresentationFormat(this._context, entry, toItemKey(this._context, entry.itemName));
     }
   }
 }

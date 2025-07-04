@@ -5,7 +5,7 @@
 
 import { describe, expect, it } from "vitest";
 import { Matrix3d, Matrix4d, Point3d, Transform, Vector3d } from "@itwin/core-geometry";
-import { fromNormalizedCrossProduct, Matrix3, Matrix4, normalizedDifference } from "../../../render/webgl/Matrix";
+import { fromNormalizedCrossProduct, Matrix3, Matrix4, normalizedDifference } from "../../../internal/render/webgl/Matrix";
 
 describe("Matrix3", () => {
   it("constructor works as expected", () => {

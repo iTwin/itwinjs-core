@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { WmsCapabilities } from "../../../tile/map/WmsCapabilities";
+import { WmsCapabilities } from "../../../internal/tile/map/WmsCapabilities";
 import { fakeTextFetch } from "./MapLayerTestUtilities";
 
 const mapProxyDatasetNbLayers = 9;

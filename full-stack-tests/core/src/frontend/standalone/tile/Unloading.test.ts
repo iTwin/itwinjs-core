@@ -6,11 +6,12 @@
 import { expect } from "chai";
 import { BeDuration, BeTimePoint } from "@itwin/core-bentley";
 import {
-  DisclosedTileTreeSet, IModelApp, IModelConnection, IModelTileTree, Tile, TileLoadStatus, TileTree, TileUsageMarker, Viewport,
+  DisclosedTileTreeSet, IModelApp, IModelConnection, Tile, TileLoadStatus, TileTree, TileUsageMarker, Viewport,
 } from "@itwin/core-frontend";
 import { TestUtility } from "../../TestUtility";
 import { createOnScreenTestViewport, testOnScreenViewport, TestViewport, testViewports } from "../../TestViewport";
 import { TestSnapshotConnection } from "../../TestSnapshotConnection";
+import { IModelTileTree } from "@itwin/core-frontend/lib/cjs/internal/tile/IModelTileTree";
 
 describe("Tile unloading", async () => {
   let imodel: IModelConnection;
@@ -56,8 +57,8 @@ describe("Tile unloading", async () => {
   }
 
   it("should mark usage", async () => {
-    const vp1 = await createOnScreenTestViewport("0x41", imodel, 100, 100);
-    const vp2 = await createOnScreenTestViewport("0x41", imodel, 100, 100);
+    using vp1 = await createOnScreenTestViewport("0x41", imodel, 100, 100);
+    using vp2 = await createOnScreenTestViewport("0x41", imodel, 100, 100);
 
     const now = BeTimePoint.now();
     const later = now.plus(BeDuration.fromSeconds(10));
@@ -93,9 +94,6 @@ describe("Tile unloading", async () => {
     expect(admin.isTileInUse(marker)).to.be.false;
     expect(marker.isExpired(now)).to.be.false;
     expect(marker.isExpired(later)).to.be.true;
-
-    vp1.dispose();
-    vp2.dispose();
   });
 
   it("should not dispose of displayed tiles", async () => {

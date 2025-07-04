@@ -51,8 +51,8 @@ export class ElectronRpcRequest extends RpcRequest {
   }
 
   /** @internal */
-  public override dispose() {
+  public override[Symbol.dispose]() {
     this.protocol.requests.delete(this.id);
-    super.dispose();
+    super[Symbol.dispose]();
   }
 }

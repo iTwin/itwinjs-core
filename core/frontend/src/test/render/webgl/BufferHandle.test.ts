@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { IModelApp } from "../../../IModelApp";
-import { GL } from "../../../render/webgl/GL";
-import { BufferHandle } from "../../../render/webgl/AttributeBuffers";
+import { GL } from "../../../internal/render/webgl/GL";
+import { BufferHandle } from "../../../internal/render/webgl/AttributeBuffers";
 import { EmptyLocalization } from "@itwin/core-common";
 
 describe("BufferHandle", () => {
@@ -15,7 +15,7 @@ describe("BufferHandle", () => {
   it("disposes", () => {
     const buf = new BufferHandle(GL.Buffer.Target.ArrayBuffer);
     expect(buf.isDisposed).toBe(false);
-    buf.dispose();
+    buf[Symbol.dispose]();
     expect(buf.isDisposed).toBe(true);
   });
 

@@ -5,8 +5,9 @@
 
 import { assert, expect } from "chai";
 import { Suite } from "mocha";
-import { _nativeDb, BriefcaseDb, BriefcaseManager, ChannelControl, CloudSqlite, DrawingCategory, HubMock, IModelDb, IModelHost, SchemaSync, SnapshotDb, SqliteStatement } from "@itwin/core-backend";
+import { _nativeDb, BriefcaseDb, BriefcaseManager, ChannelControl, CloudSqlite, DrawingCategory, IModelDb, IModelHost, SchemaSync, SnapshotDb, SqliteStatement } from "@itwin/core-backend";
 import { AzuriteTest } from "./AzuriteTest";
+import { HubMock } from "@itwin/core-backend/lib/cjs/internal/HubMock";
 import { HubWrappers, IModelTestUtils, KnownTestLocations } from "@itwin/core-backend/lib/cjs/test";
 import { AccessToken, DbResult, Guid, Id64String, OpenMode } from "@itwin/core-bentley";
 import * as path from "path";
@@ -70,9 +71,10 @@ const tinySchemaToXml = (s: TinySchema) => {
   xml.push(`</ECSchema>`);
   return xml.join(EOL);
 };
-const queryPropNames = (b: BriefcaseDb, className: string) => {
+const queryPropNames = (b: BriefcaseDb, classFullName: string) => {
   try {
-    return Object.getOwnPropertyNames(b.getMetaData(className).properties);
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    return Object.getOwnPropertyNames(b.getMetaData(classFullName).properties);
   } catch { return []; }
 };
 const assertChangesetTypeAndDescr = async (b: BriefcaseDb, changesetType: ChangesetType, description: string) => {
@@ -186,6 +188,7 @@ describe("Schema synchronization", function (this: Suite) {
     b1.saveChanges();
 
     // ensure b1 have class and its properties
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     assert.sameOrderedMembers(["p1", "p2"], Object.getOwnPropertyNames(b1.getMetaData("TestSchema1:Pipe1").properties));
 
     // pull schema change into b2 from shared schema channel
@@ -193,6 +196,7 @@ describe("Schema synchronization", function (this: Suite) {
     b2.saveChanges();
 
     // ensure b2 have class and its properties
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     assert.sameOrderedMembers(["p1", "p2"], Object.getOwnPropertyNames(b2.getMetaData("TestSchema1:Pipe1").properties));
 
     // add new properties in b2
@@ -211,6 +215,7 @@ describe("Schema synchronization", function (this: Suite) {
     b2.saveChanges();
 
     // ensure b2 have class and its properties
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     assert.sameOrderedMembers(["p1", "p2", "p3", "p4"], Object.getOwnPropertyNames(b2.getMetaData("TestSchema1:Pipe1").properties));
 
     // pull schema change into b1 from shared schema channel
@@ -218,6 +223,7 @@ describe("Schema synchronization", function (this: Suite) {
     b1.saveChanges();
 
     // ensure b1 have class and its properties
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     assert.sameOrderedMembers(["p1", "p2", "p3", "p4"], Object.getOwnPropertyNames(b1.getMetaData("TestSchema1:Pipe1").properties));
 
     // push changes
@@ -228,6 +234,7 @@ describe("Schema synchronization", function (this: Suite) {
     await b3.pullChanges({ accessToken: user3AccessToken });
 
     // ensure b3 have class and its properties
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     assert.sameOrderedMembers(["p1", "p2", "p3", "p4"], Object.getOwnPropertyNames(b3.getMetaData("TestSchema1:Pipe1").properties));
 
     b1.close();
@@ -284,6 +291,7 @@ describe("Schema synchronization", function (this: Suite) {
     b1.saveChanges();
 
     // ensure b1 have class and its properties
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     assert.sameOrderedMembers(["p1", "p2"], Object.getOwnPropertyNames(b1.getMetaData("TestSchema1:Pipe1").properties));
 
     // pull schema change into b2 from shared schema channel
@@ -291,6 +299,7 @@ describe("Schema synchronization", function (this: Suite) {
     b2.saveChanges();
 
     // ensure b2 have class and its properties
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     assert.sameOrderedMembers(["p1", "p2"], Object.getOwnPropertyNames(b2.getMetaData("TestSchema1:Pipe1").properties));
 
     // import same schema from another briefcase
@@ -298,6 +307,7 @@ describe("Schema synchronization", function (this: Suite) {
     b2.saveChanges();
 
     // ensure b2 have class and its properties
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     assert.sameOrderedMembers(["p1", "p2"], Object.getOwnPropertyNames(b2.getMetaData("TestSchema1:Pipe1").properties));
 
     // pull schema change into b1 from shared schema channel
@@ -305,6 +315,7 @@ describe("Schema synchronization", function (this: Suite) {
     b1.saveChanges();
 
     // ensure b1 have class and its properties
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     assert.sameOrderedMembers(["p1", "p2"], Object.getOwnPropertyNames(b1.getMetaData("TestSchema1:Pipe1").properties));
 
     // push changes
@@ -315,6 +326,7 @@ describe("Schema synchronization", function (this: Suite) {
     await b3.pullChanges({ accessToken: user3AccessToken });
 
     // ensure b3 have class and its properties
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     assert.sameOrderedMembers(["p1", "p2"], Object.getOwnPropertyNames(b3.getMetaData("TestSchema1:Pipe1").properties));
 
     b1.close();
@@ -488,7 +500,7 @@ describe("Schema synchronization", function (this: Suite) {
       briefcaseId: 4,
     }, {
       description: "b2 push",
-      changesType: 65,
+      changesType: 0,
       briefcaseId: 3,
     }, {
       description: "b1 push",
@@ -828,7 +840,7 @@ describe("Schema synchronization", function (this: Suite) {
       briefcaseId: 2,
     }, {
       description: "Upgraded profile",
-      changesType: 0,
+      changesType: 65,
       briefcaseId: 2,
     }, {
       description: "Upgraded domain schemas",
@@ -1172,7 +1184,7 @@ describe("Schema synchronization", function (this: Suite) {
       briefcaseId: 2,
     }, {
       description: "Upgraded profile",
-      changesType: 0,
+      changesType: 65,
       briefcaseId: 2,
     }, {
       description: "Upgraded domain schemas",
@@ -1505,6 +1517,7 @@ describe("Schema synchronization", function (this: Suite) {
     assert.isUndefined(findEl(el2));
     assert.isDefined(findEl(el3));
     assert.isDefined(findEl(el4));
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     assert.deepEqual(Object.getOwnPropertyNames(b1.getMetaData("TestDomain:Test2dElement").properties), ["p1", "p2"]);
     // 6. Revert to timeline 2
     await b2.revertAndPushChanges({ toIndex: 3, description: "revert to timeline 2" });
@@ -1515,6 +1528,7 @@ describe("Schema synchronization", function (this: Suite) {
     assert.isUndefined(findEl(el2));
     assert.isUndefined(findEl(el3));
     assert.isUndefined(findEl(el4));
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     assert.deepEqual(Object.getOwnPropertyNames(b1.getMetaData("TestDomain:Test2dElement").properties), ["p1", "p2"]);
 
     await b2.revertAndPushChanges({ toIndex: 7, description: "reinstate last reverted changeset" });
@@ -1524,6 +1538,7 @@ describe("Schema synchronization", function (this: Suite) {
     assert.isUndefined(findEl(el2));
     assert.isDefined(findEl(el3));
     assert.isDefined(findEl(el4));
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     assert.deepEqual(Object.getOwnPropertyNames(b1.getMetaData("TestDomain:Test2dElement").properties), ["p1", "p2"]);
 
     await addPropertyAndImportSchema(b1);
@@ -1531,6 +1546,7 @@ describe("Schema synchronization", function (this: Suite) {
     await updateEl(el1, { p1: "test12", p2: "test13", p3: "test114" });
     b1.saveChanges();
     await b1.pushChanges({ description: "import schema, insert element 5 & update element 1" });
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     assert.deepEqual(Object.getOwnPropertyNames(b1.getMetaData("TestDomain:Test2dElement").properties), ["p1", "p2", "p3"]);
 
     // skip schema changes & auto generated comment
@@ -1541,6 +1557,7 @@ describe("Schema synchronization", function (this: Suite) {
     assert.isUndefined(findEl(el3));
     assert.isUndefined(findEl(el4));
     assert.isUndefined(findEl(el5));
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     assert.deepEqual(Object.getOwnPropertyNames(b1.getMetaData("TestDomain:Test2dElement").properties), ["p1", "p2", "p3"]);
 
     await b1.revertAndPushChanges({ toIndex: 10 });
@@ -1550,6 +1567,7 @@ describe("Schema synchronization", function (this: Suite) {
     assert.isDefined(findEl(el3));
     assert.isDefined(findEl(el4));
     assert.isDefined(findEl(el5));
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     assert.deepEqual(Object.getOwnPropertyNames(b1.getMetaData("TestDomain:Test2dElement").properties), ["p1", "p2", "p3"]);
 
     // schema sync should be skip for revert
@@ -1558,16 +1576,20 @@ describe("Schema synchronization", function (this: Suite) {
     assert.isTrue(SchemaSync.isEnabled(b3));
 
     await addPropertyAndImportSchema(b1);
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     assert.deepEqual(Object.getOwnPropertyNames(b1.getMetaData("TestDomain:Test2dElement").properties), ["p1", "p2", "p3", "p4"]);
 
     // b3 should get new property via schema sync
     await b3.pullChanges();
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     assert.deepEqual(Object.getOwnPropertyNames(b3.getMetaData("TestDomain:Test2dElement").properties), ["p1", "p2", "p3", "p4"]);
 
     // b2 should not see new property even after revert
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     assert.deepEqual(Object.getOwnPropertyNames(b2.getMetaData("TestDomain:Test2dElement").properties), ["p1", "p2", "p3"]);
     await b2.revertAndPushChanges({ toIndex: 11 });
     assert.equal((await getChanges()).at(-1)!.description, "Reverted changes from 11 to 11 (schema changes skipped)");
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     assert.deepEqual(Object.getOwnPropertyNames(b2.getMetaData("TestDomain:Test2dElement").properties), ["p1", "p2", "p3"]);
 
     await b1.pullChanges();
@@ -1579,6 +1601,7 @@ describe("Schema synchronization", function (this: Suite) {
     assert.isUndefined(findEl(el3, b1));
     assert.isUndefined(findEl(el4, b1));
     assert.isUndefined(findEl(el5, b1));
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     assert.deepEqual(Object.getOwnPropertyNames(b1.getMetaData("TestDomain:Test2dElement").properties), ["p1", "p2", "p3", "p4"]);
 
     assert.isUndefined(findEl(el1, b2));
@@ -1586,6 +1609,7 @@ describe("Schema synchronization", function (this: Suite) {
     assert.isUndefined(findEl(el3, b2));
     assert.isUndefined(findEl(el4, b2));
     assert.isUndefined(findEl(el5, b2));
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     assert.deepEqual(Object.getOwnPropertyNames(b2.getMetaData("TestDomain:Test2dElement").properties), ["p1", "p2", "p3", "p4"]);
 
     assert.isUndefined(findEl(el1, b3));
@@ -1593,6 +1617,7 @@ describe("Schema synchronization", function (this: Suite) {
     assert.isUndefined(findEl(el3, b3));
     assert.isUndefined(findEl(el4, b3));
     assert.isUndefined(findEl(el5, b3));
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     assert.deepEqual(Object.getOwnPropertyNames(b3.getMetaData("TestDomain:Test2dElement").properties), ["p1", "p2", "p3", "p4"]);
 
     b1.close();

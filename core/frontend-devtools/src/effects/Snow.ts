@@ -66,7 +66,7 @@ export class SnowDecorator implements Decorator {
   /** The viewport being decorated. */
   public readonly viewport: Viewport;
   /** Invoked when this decorator is to be destroyed. */
-  public readonly dispose: VoidFunction;
+  public readonly [Symbol.dispose]: VoidFunction;
   /** The initial width and height of the viewport, from which we randomly select each particle's initial position. */
   private readonly _dimensions: Point2d;
   /** The list of particles being drawn. */
@@ -92,15 +92,15 @@ export class SnowDecorator implements Decorator {
       // Transfer ownership of the texture to the new decorator.
       const tex = this._texture;
       this._texture = undefined;
-      this.dispose();
+      this[Symbol.dispose]();
       new SnowDecorator(viewport, tex);
     });
 
     // When the viewport is destroyed, dispose of this decorator too.
-    const removeOnDispose = viewport.onDisposed.addListener(() => this.dispose());
+    const removeOnDispose = viewport.onDisposed.addListener(() => this[Symbol.dispose]());
     const removeDecorator = IModelApp.viewManager.addDecorator(this);
 
-    this.dispose = () => {
+    this[Symbol.dispose] = () => {
       removeDecorator();
       removeOnRender();
       removeOnDispose();
@@ -221,7 +221,7 @@ export class SnowDecorator implements Decorator {
       enable = undefined === decorator;
 
     if (undefined !== decorator && !enable)
-      decorator.dispose();
+      decorator[Symbol.dispose]();
     else if (undefined === decorator && enable) {
       // Create a texture to use for the particles.
       // Note: the decorator takes ownership of the texture, and disposes of it when the decorator is disposed.

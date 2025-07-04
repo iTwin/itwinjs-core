@@ -10,7 +10,7 @@ import { DelayedPromiseWithProps } from "../DelayedPromise";
 import { SchemaItemUnitProps } from "../Deserialization/JsonProps";
 import { XmlSerializationUtils } from "../Deserialization/XmlSerializationUtils";
 import { SchemaItemType } from "../ECObjects";
-import { ECObjectsError, ECObjectsStatus } from "../Exception";
+import { ECSchemaError, ECSchemaStatus } from "../Exception";
 import { LazyLoadedPhenomenon, LazyLoadedUnitSystem } from "../Interfaces";
 import { SchemaItemKey } from "../SchemaKey";
 import { Phenomenon } from "./Phenomenon";
@@ -21,20 +21,22 @@ import { UnitSystem } from "./UnitSystem";
 /**
  * An abstract class that adds the ability to define Units and everything that goes with them, within an ECSchema as a
  * first-class concept is to allow the iModel to not be dependent on any hard-coded Units
- * @beta
+ * @public @preview
  */
 export class Unit extends SchemaItem {
-  public override readonly schemaItemType!: SchemaItemType.Unit;
-  protected _phenomenon?: LazyLoadedPhenomenon;
-  protected _unitSystem?: LazyLoadedUnitSystem;
-  protected _definition: string;
-  protected _numerator?: number;
-  protected _denominator?: number;
-  protected _offset?: number;
+  public override readonly schemaItemType = Unit.schemaItemType;
+  /** @internal */
+  public static override get schemaItemType() { return SchemaItemType.Unit; }
+  private _phenomenon?: LazyLoadedPhenomenon;
+  private _unitSystem?: LazyLoadedUnitSystem;
+  private _definition: string;
+  private _numerator?: number;
+  private _denominator?: number;
+  private _offset?: number;
 
+  /** @internal */
   constructor(schema: Schema, name: string) {
     super(schema, name);
-    this.schemaItemType = SchemaItemType.Unit;
     this._definition = "";
   }
 
@@ -62,10 +64,15 @@ export class Unit extends SchemaItem {
   }
 
   /**
-   * @alpha
+   * Type guard to check if the SchemaItem is of type Unit.
+   * @param item The SchemaItem to check.
+   * @returns True if the item is a Unit, false otherwise.
    */
-  public static isUnit(object: any): object is Unit {
-    return SchemaItem.isSchemaItem(object) && object.schemaItemType === SchemaItemType.Unit;
+  public static isUnit(item?: SchemaItem): item is Unit {
+    if (item && item.schemaItemType === SchemaItemType.Unit)
+      return true;
+
+    return false;
   }
 
   /**
@@ -119,28 +126,28 @@ export class Unit extends SchemaItem {
 
     const phenomenonSchemaItemKey = this.schema.getSchemaItemKey(unitProps.phenomenon);
     if (!phenomenonSchemaItemKey)
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate the phenomenon ${unitProps.phenomenon}.`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `Unable to locate the phenomenon ${unitProps.phenomenon}.`);
     this._phenomenon = new DelayedPromiseWithProps<SchemaItemKey, Phenomenon>(phenomenonSchemaItemKey,
       async () => {
-        const phenom = await this.schema.lookupItem<Phenomenon>(phenomenonSchemaItemKey);
+        const phenom = await this.schema.lookupItem(phenomenonSchemaItemKey, Phenomenon);
         if (undefined === phenom)
-          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate the phenomenon ${unitProps.phenomenon}.`);
+          throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `Unable to locate the phenomenon ${unitProps.phenomenon}.`);
         return phenom;
       });
 
     const unitSystemSchemaItemKey = this.schema.getSchemaItemKey(unitProps.unitSystem);
     if (!unitSystemSchemaItemKey)
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate the unitSystem ${unitProps.unitSystem}.`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `Unable to locate the unitSystem ${unitProps.unitSystem}.`);
     this._unitSystem = new DelayedPromiseWithProps<SchemaItemKey, UnitSystem>(unitSystemSchemaItemKey,
       async () => {
-        const unitSystem = await this.schema.lookupItem<UnitSystem>(unitSystemSchemaItemKey);
+        const unitSystem = await this.schema.lookupItem(unitSystemSchemaItemKey, UnitSystem);
         if (undefined === unitSystem)
-          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate the unitSystem ${unitProps.unitSystem}.`);
+          throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `Unable to locate the unitSystem ${unitProps.unitSystem}.`);
         return unitSystem;
       });
 
     if (this._definition !== "" && unitProps.definition.toLowerCase() !== this._definition.toLowerCase())
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Unit ${this.name} has an invalid 'definition' attribute.`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The Unit ${this.name} has an invalid 'definition' attribute.`);
     else if (this._definition === "")
       this._definition = unitProps.definition;
 
@@ -164,28 +171,30 @@ export class Unit extends SchemaItem {
     this.fromJSONSync(unitProps);
   }
 
-  /**
-   * @alpha
-   * Used for schema editing.
-   */
+  /** @internal */
   protected async setPhenomenon(phenomenon: LazyLoadedPhenomenon) {
     this._phenomenon = phenomenon;
   }
 
-  /**
-   * @alpha
-   * Used for schema editing.
-   */
+  /** @internal */
   protected async setUnitSystem(unitSystem: LazyLoadedUnitSystem) {
     this._unitSystem = unitSystem;
   }
 
-  /**
-   * @alpha
-   * Used for schema editing.
-   */
+  /** @internal */
   protected async setDefinition(definition: string) {
     this._definition = definition;
+  }
+
+  /**
+   * Type assertion to check if the SchemaItem is of type Unit.
+   * @param item The SchemaItem to check.
+   * @returns The item cast to Unit if it is a Unit, undefined otherwise.
+   * @internal
+   */
+  public static assertIsUnit(item?: SchemaItem): asserts item is Unit {
+    if (!this.isUnit(item))
+      throw new ECSchemaError(ECSchemaStatus.InvalidSchemaItemType, `Expected '${SchemaItemType.Unit}' (Unit)`);
   }
 }
 /**

@@ -208,9 +208,9 @@ export class Formatter {
       const unitConversion = spec.unitConversions[i].conversion;
 
       if (i > 0 && unitConversion.factor < 1.0)
-        throw new QuantityError(QuantityStatus.InvalidCompositeFormat, `The Format ${spec.format.name} has a invalid unit specification..`);
+        throw new QuantityError(QuantityStatus.InvalidCompositeFormat, `The Format ${spec.format.name} has a invalid unit specification.`);
       if (i > 0 && unitConversion.offset !== 0) // offset should only ever be defined for major unit
-        throw new QuantityError(QuantityStatus.InvalidCompositeFormat, `The Format ${spec.format.name} has a invalid unit specification..`);
+        throw new QuantityError(QuantityStatus.InvalidCompositeFormat, `The Format ${spec.format.name} has a invalid unit specification.`);
 
       let unitValue = 0.0;
       if (spec.format.type === FormatType.Ratio){
@@ -417,7 +417,7 @@ export class Formatter {
         break;
 
       case ShowSignOption.OnlyNegative:
-        if (valueIsNegative)
+        if (valueIsNegative && spec.format.type !== FormatType.Bearing && spec.format.type !== FormatType.Azimuth)
           prefix += "-";
 
         break;

@@ -82,7 +82,7 @@ export interface ChangesetProps {
 }
 
 /** Properties of a changeset file
- * @internal
+ * @public
  */
 export interface ChangesetFileProps extends ChangesetProps {
   /** The full pathname of the local file holding this changeset. */

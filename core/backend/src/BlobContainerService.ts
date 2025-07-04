@@ -78,19 +78,19 @@ export namespace BlobContainer {
   /** Properties returned by `Service.requestToken` */
   export interface TokenProps {
     /**
-     * expiring token that provides the requested access to the container. Should be used in all subsequent requests for blobs within the container,
+     * Expiring token that provides the requested access to the container. Should be used in all subsequent requests for blobs within the container,
      * and must be refreshed before it expires
      */
     token: ContainerToken;
-    /** scope of the container. */
+    /** Scope of the container. */
     scope: Scope;
-    /** name of the blob storage provider. */
+    /** Name of the blob storage provider. */
     provider: Provider;
     /** Time at which the token will expire. The token should be refreshed (that is, a new token should be requested) before this time. */
     expiration: Date;
     /** Metadata of the container. */
     metadata: Metadata;
-    /** Base URI of container */
+    /** Base URI of the storage account that hosts the container */
     baseUri: string;
   }
 

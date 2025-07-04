@@ -41,7 +41,7 @@ describe("Pickable graphic", () => {
   });
 
   afterEach(() => {
-    viewport.dispose();
+    viewport[Symbol.dispose]();
     TestDecorator.dropAll();
   });
 

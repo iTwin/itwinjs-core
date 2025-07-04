@@ -5,7 +5,7 @@
 
 import { ImageMapLayerProps, ImageMapLayerSettings } from "@itwin/core-common";
 import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
-import { MockRender } from "../../../render/MockRender";
+import { MockRender } from "../../../internal/render/MockRender";
 import { createBlankConnection } from "../../createBlankConnection";
 import { ImageryMapLayerTreeReference } from "../../../tile/map/ImageryTileTree";
 import { IModelConnection } from "../../../IModelConnection";
@@ -67,6 +67,15 @@ describe("ImageryTileTree", () => {
       {lhs: {...baseProps, formatId:"Custom2"}, rhs: {...baseProps}, expectSameTileTree:false},
       {lhs: {...baseProps, subLayers: [{name: "sub0", visible: false}]}, rhs: {...baseProps}, expectSameTileTree:false},
       {lhs: {...baseProps, subLayers: [{name: "sub1", visible: true}]}, rhs: {...baseProps}, expectSameTileTree:false},
+      {lhs: {...baseProps, properties: {key: "value"}}, rhs: {...baseProps}, expectSameTileTree:false},
+      {lhs: {...baseProps}, rhs: {...baseProps, properties: {key: "value"}}, expectSameTileTree:false},
+      {lhs: {...baseProps, properties: {key: "value"}}, rhs: {...baseProps, properties: {key: "value"}}, expectSameTileTree:true},
+      {lhs: {...baseProps, properties: {key: [1,2,3]}}, rhs: {...baseProps}, expectSameTileTree:false},
+      {lhs: {...baseProps}, rhs: {...baseProps, properties: {key: [1,2,3]}}, expectSameTileTree:false},
+      {lhs: {...baseProps, properties: {key: "value"}}, rhs: {...baseProps, properties: {key: [1,2,3]}}, expectSameTileTree:false},
+      {lhs: {...baseProps,  properties: {key: [1,2,3,4]}}, rhs: {...baseProps, properties: {key: [1,2,3]}}, expectSameTileTree:false},
+      {lhs: {...baseProps,  properties: {key: [1,2,3]}}, rhs: {...baseProps, properties: {key: [1,2,3,4]}}, expectSameTileTree:false},
+      {lhs: {...baseProps,  properties: {key: [1,2,3]}}, rhs: {...baseProps, properties: {key: [1,2,3]}}, expectSameTileTree:true},
     ];
     for (const entry of dataset) {
       const settingsLhs = ImageMapLayerSettings.fromJSON(entry.lhs);

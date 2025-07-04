@@ -11,12 +11,14 @@ import { SchemaMatchType } from "../../ECObjects";
 import { Schema } from "../../Metadata/Schema";
 import { SchemaKey } from "../../SchemaKey";
 import { SchemaInfo } from "../../Interfaces";
+import { ECSchemaNamespaceUris } from "../../Constants";
 
 export function createSchemaJsonWithItems(itemsJson: any, referenceJson?: any): any {
   return {
-    $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+    $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
     name: "TestSchema",
     version: "1.2.3",
+    alias: "ts",
     items: {
       ...itemsJson,
     },
@@ -37,16 +39,16 @@ export class ReferenceSchemaLocater implements ISchemaLocater {
   public addSchema(schemaName: string, schema: any) {
     this._schemaList.set(schemaName, schema);
   }
-  public async getSchema<T extends Schema>(schemaKey: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): Promise<T | undefined> {
+  public async getSchema(schemaKey: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): Promise<Schema | undefined> {
     if (this._schemaList.has(schemaKey.name)) {
       const schemaBody = this._schemaList.get(schemaKey.name);
       await this._asyncParser(schemaBody, context);
-      return await context.getCachedSchema(schemaKey, matchType) as T;
+      return context.getCachedSchema(schemaKey, matchType);
     }
     return undefined;
   }
 
-  public async getSchemaInfo(schemaKey: Readonly<SchemaKey>, _matchType: SchemaMatchType, context: SchemaContext): Promise<SchemaInfo | undefined> {
+  public async getSchemaInfo(schemaKey: SchemaKey, _matchType: SchemaMatchType, context: SchemaContext): Promise<SchemaInfo | undefined> {
     if (this._schemaList.has(schemaKey.name)) {
       const schemaBody = this._schemaList.get(schemaKey.name);
       const schemaInfo = this._asyncParser(schemaBody, context);
@@ -55,13 +57,13 @@ export class ReferenceSchemaLocater implements ISchemaLocater {
     return undefined;
   }
 
-  public getSchemaSync<T extends Schema>(schemaKey: SchemaKey, _matchType: SchemaMatchType, context: SchemaContext): T | undefined {
+  public getSchemaSync(schemaKey: SchemaKey, _matchType: SchemaMatchType, context: SchemaContext): Schema | undefined {
 
     if (this._schemaList.has(schemaKey.name)) {
       const schemaBody = this._schemaList.get(schemaKey.name);
       const schema = this._parser(schemaBody, context);
 
-      return schema as T;
+      return schema;
     }
 
     return undefined;

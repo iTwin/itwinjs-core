@@ -62,10 +62,9 @@ export class MobileIpcTransport extends IpcWebSocketTransport {
   }
 
   private async sendToBackend(message: IpcWebSocketMessage) {
-    const request = new MobileRpcRequest(this._client, "send", [message]);
+    using request = new MobileRpcRequest(this._client, "send", [message]);
     const encoded = await MobileRpcProtocol.encodeRequest(request);
     this._protocol.sendToBackend(encoded);
-    request.dispose();
   }
 
   private sendToFrontend(message: IpcWebSocketMessage) {

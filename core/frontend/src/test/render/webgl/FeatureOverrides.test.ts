@@ -10,9 +10,9 @@ import { ViewRect } from "../../../common/ViewRect";
 import { IModelApp } from "../../../IModelApp";
 import { FeatureSymbology } from "../../../render/FeatureSymbology";
 import { GraphicBranch } from "../../../render/GraphicBranch";
-import { Target } from "../../../render/webgl/Target";
-import { Texture2DDataUpdater } from "../../../render/webgl/Texture";
-import { Batch, Branch } from "../../../render/webgl/Graphic";
+import { Target } from "../../../internal/render/webgl/Target";
+import { Texture2DDataUpdater } from "../../../internal/render/webgl/Texture";
+import { Batch, Branch } from "../../../internal/render/webgl/Graphic";
 import { readUniqueColors, testBlankViewport } from "../../openBlankViewport";
 import { OvrFlags } from "../../../common/internal/render/OvrFlags";
 import { Decorator } from "../../../ViewManager";
@@ -250,23 +250,23 @@ describe("FeatureOverrides", () => {
       }
     }
 
-    t2.dispose();
+    t2[Symbol.dispose]();
     for (const batch of batches) {
       expect(batch.perTargetData.data.length).toEqual(1);
       expect(batch.perTargetData.data[0].target).toEqual(t1);
       expect(batch.perTargetData.data[0].featureOverrides.size).toEqual(2);
     }
 
-    ba1.dispose();
+    ba1[Symbol.dispose]();
     expect(ba1.perTargetData.data.length).toEqual(0);
     expect(ba1.isDisposed).toBe(true);
     expect(ba2.isDisposed).toBe(false);
 
-    t1.dispose();
+    t1[Symbol.dispose]();
     s1.onSourceDisposed.raiseEvent();
     expect(ba2.perTargetData.data.length).toEqual(0);
 
-    ba2.dispose();
+    ba2[Symbol.dispose]();
   });
 
   it("updates when HiliteSet changes", () => {
@@ -308,7 +308,7 @@ describe("FeatureOverrides", () => {
 
         IModelApp.viewManager.addViewport(vp);
         const target = vp.target as Target;
-		    expect(target).toBeInstanceOf(Target);
+        expect(target).toBeInstanceOf(Target);
 
         vp.view.createScene = (context) => {
           context.scene.foreground.push(b1);
@@ -319,14 +319,14 @@ describe("FeatureOverrides", () => {
           function expectHilited(batch: Batch, featureIndex: 0 | 1, expectToBeHilited: boolean): void {
             const ptd = batch.perTargetData.data[0];
             if (!ptd) {
-		          expect(expectToBeHilited).toBe(false);
+              expect(expectToBeHilited).toBe(false);
               return;
             }
 
             const ovrs = ptd.featureOverrides.get(undefined);
-		        expect(ovrs).toBeDefined();
+            expect(ovrs).toBeDefined();
             const data = ovrs!.lutData!;
-		        expect(data).toBeDefined();
+            expect(data).toBeDefined();
 
             const numBytesPerFeature = 12; // 3 RGBA values per feature
             expect(data.length).toEqual(2 * numBytesPerFeature);
@@ -334,19 +334,19 @@ describe("FeatureOverrides", () => {
             const tex = new Texture2DDataUpdater(data);
             const flags = tex.getOvrFlagsAtIndex(featureIndex * numBytesPerFeature);
             const isHilited = 0 !== (flags & OvrFlags.Hilited);
-		        expect(isHilited).toEqual(expectToBeHilited);
+            expect(isHilited).toEqual(expectToBeHilited);
           }
 
           setup();
           vp.renderFrame();
 
-		      expect(target.hilites).toEqual(vp.iModel.hilited);
-		      expect(b1.perTargetData.data.length).toEqual(1);
+          expect(target.hilites).toEqual(vp.iModel.hilited);
+          expect(b1.perTargetData.data.length).toEqual(1);
 
           const expected = new Set<string>(expectedHilitedElements ? (typeof expectedHilitedElements === "string" ? [expectedHilitedElements] : expectedHilitedElements) : []);
           if (expected.size > 0) {
-		        expect(b1.perTargetData.data.length).toEqual(1);
-		        expect(b2.perTargetData.data.length).toEqual(1);
+            expect(b1.perTargetData.data.length).toEqual(1);
+            expect(b2.perTargetData.data.length).toEqual(1);
           }
 
           expectHilited(b1, 0, expected.has(e11));
@@ -373,10 +373,10 @@ describe("FeatureOverrides", () => {
         for (const el of allElems) {
           reset();
           test(el, () => {
-		        expect(h.elements.isEmpty).toBe(true);
+            expect(h.elements.isEmpty).toBe(true);
             h.elements.addId(el);
-		        expect(h.elements.isEmpty).toBe(false);
-		        expect(h.elements.hasId(el)).toBe(true);
+            expect(h.elements.isEmpty).toBe(false);
+            expect(h.elements.hasId(el)).toBe(true);
           });
         }
 

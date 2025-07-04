@@ -53,11 +53,11 @@ export class SchemaUnitProvider implements UnitsProvider {
     }
 
     const itemKey = new SchemaItemKey(schemaItemName, schema.schemaKey);
-    const unit = await this._context.getSchemaItem<Unit>(itemKey);
+    const unit = await this._context.getSchemaItem(itemKey, Unit);
     if (unit && unit.schemaItemType === SchemaItemType.Unit)
       return this.getUnitsProps(unit);
 
-    const invertedUnit = await this._context.getSchemaItem<InvertedUnit>(itemKey);
+    const invertedUnit = await this._context.getSchemaItem(itemKey, InvertedUnit);
     if (invertedUnit && invertedUnit.schemaItemType === SchemaItemType.InvertedUnit) {
       return this.getUnitsProps(invertedUnit);
     }
@@ -97,8 +97,7 @@ export class SchemaUnitProvider implements UnitsProvider {
     // Find units' full name that match given phenomenon param.
     const filteredUnits: Array<UnitProps> = [];
     const schemaItems = this._context.getSchemaItems();
-    let { value, done } = schemaItems.next();
-    while (!done) {
+    for (const value of schemaItems) {
       if (Unit.isUnit(value)) {
         const foundPhenomenon = await value.phenomenon;
         if (foundPhenomenon && foundPhenomenon.key.matchesFullName(phenomenon)) {
@@ -115,7 +114,6 @@ export class SchemaUnitProvider implements UnitsProvider {
           }
         }
       }
-      ({ value, done } = schemaItems.next());
     }
 
     return filteredUnits;
@@ -202,7 +200,7 @@ export class SchemaUnitProvider implements UnitsProvider {
     }
 
     const itemKey = new SchemaItemKey(schemaItemName, schema.schemaKey);
-    const invertedUnit = await context.getSchemaItem<InvertedUnit>(itemKey);
+    const invertedUnit = await context.getSchemaItem(itemKey, InvertedUnit);
     // Check if we found an item, the item is an inverted unit, and it has its invertsUnit property set
     if (invertedUnit && InvertedUnit.isInvertedUnit(invertedUnit) && invertedUnit.invertsUnit) {
       return { unitName: invertedUnit.invertsUnit.fullName, isInverted: true };
@@ -247,8 +245,7 @@ export class SchemaUnitProvider implements UnitsProvider {
   private async findUnitByDisplayLabel(displayLabel: string, schemaName?: string, phenomenon?: string, unitSystem?: string): Promise<UnitProps> {
     // TODO: Known bug: This only looks through loaded schemas. If schema name is provided, we can attempt to load that schema
     const schemaItems = this._context.getSchemaItems();
-    let { value, done } = schemaItems.next();
-    while (!done) {
+    for (const value of schemaItems) {
       if (Unit.isUnit(value) && value.label?.toLowerCase() === displayLabel) {
         // TODO: this can be optimized. We don't have to await these if we don't want to check for them
         const currPhenomenon = await value.phenomenon;
@@ -268,7 +265,6 @@ export class SchemaUnitProvider implements UnitsProvider {
                 return this.getUnitsProps(value);
         }
       }
-      ({ value, done } = schemaItems.next());
     }
 
     return new BadUnit();

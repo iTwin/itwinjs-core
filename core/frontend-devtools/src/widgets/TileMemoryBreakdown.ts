@@ -188,7 +188,7 @@ export class TileMemoryBreakdown {
     }
   }
 
-  public dispose(): void {
+  public [Symbol.dispose](): void {
     this.clearInterval();
   }
 

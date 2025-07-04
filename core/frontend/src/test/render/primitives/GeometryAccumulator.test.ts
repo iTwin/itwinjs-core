@@ -10,7 +10,7 @@ import { IModelConnection } from "../../../IModelConnection";
 import { RenderGraphic } from "../../../render/RenderGraphic";
 import { StandardViewId } from "../../../StandardView";
 import { SpatialViewState } from "../../../SpatialViewState";
-import { Branch } from "../../../render/webgl/Graphic";
+import { Branch } from "../../../internal/render/webgl/Graphic";
 import { createBlankConnection } from "../../createBlankConnection";
 import { FakeGeometry } from "./Fake";
 import { GraphicType } from "../../../common";

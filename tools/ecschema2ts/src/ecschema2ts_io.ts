@@ -5,7 +5,7 @@
 
 import * as path from "path";
 import * as fs from "fs";
-import { ECObjectsError, ECObjectsStatus, ECVersion, ISchemaLocater, Schema, SchemaContext, SchemaInfo, SchemaKey, SchemaMatchType } from "@itwin/ecschema-metadata";
+import { ECSchemaError, ECSchemaStatus, ECVersion, ISchemaLocater, Schema, SchemaContext, SchemaInfo, SchemaKey, SchemaMatchType } from "@itwin/ecschema-metadata";
 import { FileSchemaKey, SchemaFileLocater, SchemaJsonFileLocater } from "@itwin/ecschema-locaters";
 import { DOMParser } from "@xmldom/xmldom";
 import { ECSchemaXmlContext, IModelHost } from "@itwin/core-backend";
@@ -33,11 +33,11 @@ class SchemaBackendFileLocater extends SchemaFileLocater implements ISchemaLocat
    * @param matchType The SchemaMatchType
    * @param context The schema context used to parse schema
    */
-  public async getSchema<T extends Schema>(key: Readonly<SchemaKey>, matchType: SchemaMatchType, context: SchemaContext): Promise<T | undefined> {
-    return this.getSchemaSync(key, matchType, context) as T;
+  public async getSchema(key: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): Promise<Schema | undefined> {
+    return this.getSchemaSync(key, matchType, context);
   }
 
-  public async getSchemaInfo(schemaKey: Readonly<SchemaKey>, matchType: SchemaMatchType, context: SchemaContext): Promise<SchemaInfo | undefined> {
+  public async getSchemaInfo(schemaKey: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): Promise<SchemaInfo | undefined> {
     return this.getSchema(schemaKey, matchType, context);
   }
 
@@ -47,7 +47,7 @@ class SchemaBackendFileLocater extends SchemaFileLocater implements ISchemaLocat
    * @param matchType The SchemaMatchType
    * @param context The schema context used to parse schema
    */
-  public getSchemaSync<T extends Schema>(key: Readonly<SchemaKey>, matchType: SchemaMatchType, context: SchemaContext): T | undefined {
+  public getSchemaSync(key: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): Schema | undefined {
     const localPath: Set<string> = new Set<string>();
     return this.getSchemaRecursively(key, matchType, context, localPath);
   }
@@ -61,13 +61,13 @@ class SchemaBackendFileLocater extends SchemaFileLocater implements ISchemaLocat
   public getSchemaKey(data: string): SchemaKey {
     const matches = data.match(/<ECSchema ([^]+?)>/g);
     if (!matches || matches.length !== 1)
-      throw new ECObjectsError(ECObjectsStatus.InvalidSchemaXML, `Could not find '<ECSchema>' tag in the given file`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidSchemaXML, `Could not find '<ECSchema>' tag in the given file`);
 
     // parse name and version
     const name = matches[0].match(/schemaName="(.+?)"/);
     const version = matches[0].match(/version="(.+?)"/);
     if (!name || name.length !== 2 || !version || version.length !== 2)
-      throw new ECObjectsError(ECObjectsStatus.InvalidSchemaXML, `Could not find the ECSchema 'schemaName' or 'version' tag in the given file`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidSchemaXML, `Could not find the ECSchema 'schemaName' or 'version' tag in the given file`);
 
     const versionStr: string = this.resolveECVersionString(version[1]);
     const key = new SchemaKey(name[1], ECVersion.fromString(versionStr));
@@ -83,7 +83,7 @@ class SchemaBackendFileLocater extends SchemaFileLocater implements ISchemaLocat
    * @param context The schema context used to parse schema
    * @param localPath The path of the recursion is following used to detect cyclic dependency
    */
-  private getSchemaRecursively<T extends Schema>(key: Readonly<SchemaKey>, matchType: SchemaMatchType, context: SchemaContext, localPath: Set<string>): T | undefined {
+  private getSchemaRecursively(key: SchemaKey, matchType: SchemaMatchType, context: SchemaContext, localPath: Set<string>): Schema | undefined {
     // load the schema file
     const candidates: FileSchemaKey[] = this.findEligibleSchemaKeys(key, matchType, "xml");
     if (0 === candidates.length)
@@ -109,11 +109,11 @@ class SchemaBackendFileLocater extends SchemaFileLocater implements ISchemaLocat
       if (undefined === context.getSchemaSync(referenceKey, matchType)) {
         const referenceSchema = this.getSchemaRecursively(referenceKey, SchemaMatchType.LatestWriteCompatible, context, localPath);
         if (!referenceSchema) {
-          throw new ECObjectsError(ECObjectsStatus.UnableToLocateSchema,
+          throw new ECSchemaError(ECSchemaStatus.UnableToLocateSchema,
             `Could not locate reference schema, ${referenceKey.name}.${referenceKey.version.toString()} of schema ${key.name}.${key.version.toString()}`);
         }
       } else if (localPath.has(referenceKeyName)) {
-        throw new ECObjectsError(ECObjectsStatus.InvalidSchemaXML, `Schema ${schemaKeyName} and ${referenceKeyName} form cyclic dependency`);
+        throw new ECSchemaError(ECSchemaStatus.InvalidSchemaXML, `Schema ${schemaKeyName} and ${referenceKeyName} form cyclic dependency`);
       }
     }
 
@@ -121,7 +121,7 @@ class SchemaBackendFileLocater extends SchemaFileLocater implements ISchemaLocat
 
     // it should be safe to parse the current schema because all the references are in the native context and the TS side schema context at this point
     const schemaJson = this._nativeContext.readSchemaFromXmlFile(schemaPath);
-    return Schema.fromJsonSync(schemaJson, context) as T;
+    return Schema.fromJsonSync(schemaJson, context);
   }
 
   /**
@@ -158,7 +158,7 @@ class SchemaBackendFileLocater extends SchemaFileLocater implements ISchemaLocat
   private getRequiredXmlAttribute(xmlElement: Element, attribute: string, errorMessage: string): string {
     const value = xmlElement.getAttribute(attribute);
     if (!value)
-      throw new ECObjectsError(ECObjectsStatus.InvalidSchemaXML, errorMessage);
+      throw new ECSchemaError(ECSchemaStatus.InvalidSchemaXML, errorMessage);
 
     return value;
   }
@@ -172,7 +172,7 @@ class SchemaBackendFileLocater extends SchemaFileLocater implements ISchemaLocat
     // check that version at leasts contain read and write number. If so, add 00 to the minor version if there is none existed in the version
     let versionNumbers: string[] = version.split(".");
     if (versionNumbers.length < 2)
-      throw new ECObjectsError(ECObjectsStatus.InvalidSchemaXML, `'version' number does not at least have read and minor number in the given file`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidSchemaXML, `'version' number does not at least have read and minor number in the given file`);
     else if (versionNumbers.length === 2) {
       versionNumbers.push("00");
       const [readNumber, minorNumber, writeNumber] = versionNumbers;
@@ -196,7 +196,7 @@ class SchemaDeserializer {
   public async deserializeXmlFile(schemaFilePath: string, schemaContext: SchemaContext, referencePaths?: string[]): Promise<Schema> {
     // If the schema file doesn't exist, throw an error
     if (!fs.existsSync(schemaFilePath))
-      throw new ECObjectsError(ECObjectsStatus.UnableToLocateSchema, `Unable to locate schema XML file at ${schemaFilePath}`);
+      throw new ECSchemaError(ECSchemaStatus.UnableToLocateSchema, `Unable to locate schema XML file at ${schemaFilePath}`);
 
     await IModelHost.startup({ cacheDir: path.join(__dirname, ".cache") });
 
@@ -241,7 +241,7 @@ class SchemaDeserializer {
   public deserializeJsonFile(schemaFilePath: string, context: SchemaContext, referencePaths?: string[]): Schema {
     // If the schema file doesn't exist, throw an error
     if (!fs.existsSync(schemaFilePath))
-      throw new ECObjectsError(ECObjectsStatus.UnableToLocateSchema, `Unable to locate schema JSON file at ${schemaFilePath}`);
+      throw new ECSchemaError(ECSchemaStatus.UnableToLocateSchema, `Unable to locate schema JSON file at ${schemaFilePath}`);
 
     // add locater to the context
     if (!referencePaths)
@@ -258,7 +258,7 @@ class SchemaDeserializer {
     try {
       schemaJson = JSON.parse(schemaString);
     } catch (e: any) {
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, e.message);
+      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, e.message);
     }
     return Schema.fromJsonSync(schemaJson, context);
   }

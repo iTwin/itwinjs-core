@@ -605,7 +605,7 @@ describe("SchemaChanges tests", () => {
     it("PresentationUnitMissing, correct change created", async () => {
       const testClass = new Format(schema, "TestClass");
       const unit = new Unit(schema, "TestUnit");
-      const diag = new SchemaCompareDiagnostics.FormatUnitMissing(testClass, [unit]);
+      const diag = new SchemaCompareDiagnostics.FormatUnitMissing(testClass, [unit, "test"]);
       const changes = new SchemaChanges(schema);
 
       changes.addDiagnostic(diag);
@@ -619,7 +619,7 @@ describe("SchemaChanges tests", () => {
       expect(change!.formatUnitChanges[0].diagnostic).to.equal(diag);
       expect(change!.formatUnitChanges[0].changeType).to.equal(ChangeType.Missing);
       const text = change!.formatUnitChanges[0].toString();
-      expect(text).to.equal("Unit: TestSchema.TestUnit");
+      expect(text).to.equal("Unit: TestSchema.TestUnit, label: test");
     });
 
     it("UnitLabelOverrideDelta, correct change created", async () => {

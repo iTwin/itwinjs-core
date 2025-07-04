@@ -11,7 +11,6 @@ import { Point4d } from "../geometry4d/Point4d";
 import { Angle } from "./Angle";
 import { HasZ, XAndY, XYAndZ, XYZProps } from "./XYZProps";
 
-// cspell:words CWXY CCWXY arctan Rodrigues
 /**
  * * `XYZ` is a minimal object containing x,y,z and operations that are meaningful without change in both
  * point and vector.
@@ -609,7 +608,7 @@ export class Point3d extends XYZ {
     );
   }
   /** Return point + vectorA * scalarA + vectorB * scalarB */
-  public plus2Scaled(vectorA: XYAndZ, scalarA: number, vectorB: XYZ, scalarB: number, result?: Point3d): Point3d {
+  public plus2Scaled(vectorA: XYAndZ, scalarA: number, vectorB: XYAndZ, scalarB: number, result?: Point3d): Point3d {
     return Point3d.create(this.x + vectorA.x * scalarA + vectorB.x * scalarB,
       this.y + vectorA.y * scalarA + vectorB.y * scalarB,
       this.z + vectorA.z * scalarA + vectorB.z * scalarB,
@@ -882,7 +881,7 @@ export class Vector3d extends XYZ {
    * @returns undefined if axis has no length.
    */
   public static createRotateVectorAroundVector(vector: Vector3d, axis: Vector3d, angle?: Angle): Vector3d | undefined {
-    // Rodriguez formula, https://en.wikipedia.org/wiki/Rodrigues'_rotation_formula
+    // cf. https://en.wikipedia.org/wiki/Rodrigues_rotation_formula
     const unitAxis = axis.normalize();
     if (unitAxis) {
       const xProduct = unitAxis.crossProduct(vector);
@@ -1100,14 +1099,14 @@ export class Vector3d extends XYZ {
   }
   /**
    * Rotate this vector 90 degrees around an axis vector.
-   * * Note that simple cross is in the plane perpendicular to axis -- it loses the part
-   * of "this" that is along the axis. The unit and scale is supposed to fix that.
-   * This matches with Rodrigues' rotation formula because cos(theta) = 0 and sin(theta) = 1
    * @returns the (new or optionally reused result) rotated vector, or undefined if the axis
    * vector cannot be normalized.
    */
   public rotate90Around(axis: Vector3d, result?: Vector3d): Vector3d | undefined {
     const unitNormal = axis.normalize();
+    // The cross product is in the plane perpendicular to axis -- it loses the part
+    // of "this" that is along the axis. The unit and scale is supposed to fix that.
+    // This matches with Rodrigues' rotation formula because cos(theta) = 0 and sin(theta) = 1.
     return unitNormal ? unitNormal.crossProduct(this).plusScaled(unitNormal, unitNormal.dotProduct(this), result) : undefined;
   }
   /**
@@ -1482,7 +1481,7 @@ export class Vector3d extends XYZ {
   /**
    * Return the (strongly-typed) angle from this vector to vectorB, using only the xy parts.
    * * The returned angle is between -180 and 180 degrees.
-   * * Use `planarAngleTo` and `signedAngleTo` to return an angle measured in a specific plane.
+   * * Use [[planarAngleTo]] and [[signedAngleTo]] to return an angle measured in a specific plane.
    * @param vectorB target vector.
    */
   public angleToXY(vectorB: Vector3d): Angle {
@@ -1495,7 +1494,7 @@ export class Vector3d extends XYZ {
    * * If the cross product of `this` vector and `vectorB` lies on the same side of the plane as `vectorW`,
    * this function returns `radiansTo(vectorB)`; otherwise, it returns `-radiansTo(vectorB)`.
    * * `vectorW` does not have to be perpendicular to the plane.
-   * * Use `planarRadiansTo` to measure the angle between vectors that are projected to another plane.
+   * * Use [[planarRadiansTo]] to measure the angle between vectors that are projected to another plane.
    * @param vectorB target vector.
    * @param vectorW determines the side of the plane in which the returned angle is measured
    */
@@ -1515,7 +1514,7 @@ export class Vector3d extends XYZ {
    * * If the cross product of this vector and vectorB lies on the same side of the plane as vectorW,
    * this function returns `angleTo(vectorB)`; otherwise, it returns `-angleTo(vectorB)`.
    * * `vectorW` does not have to be perpendicular to the plane.
-   * * Use `planarAngleTo` to measure the angle between vectors that are projected to another plane.
+   * * Use [[planarAngleTo]] to measure the angle between vectors that are projected to another plane.
    * @param vectorB target vector.
    * @param vectorW determines the side of the plane in which the returned angle is measured
    */
@@ -1577,8 +1576,12 @@ export class Vector3d extends XYZ {
    * @param returnValueIfAnInputIsZeroLength if either vector is near zero length, return this value. Default false.
    * @param options optional radian and distance tolerances.
    */
-  public isParallelTo(other: Vector3d, oppositeIsParallel: boolean = false,
-    returnValueIfAnInputIsZeroLength: boolean = false, options?: PerpParallelOptions): boolean {
+  public isParallelTo(
+    other: Vector3d,
+    oppositeIsParallel: boolean = false,
+    returnValueIfAnInputIsZeroLength: boolean = false,
+    options?: PerpParallelOptions,
+  ): boolean {
     const radianSquaredTol: number = options?.radianSquaredTol ?? Geometry.smallAngleRadiansSquared;
     const distanceSquaredTol: number = options?.distanceSquaredTol ?? Geometry.smallMetricDistanceSquared;
     const a2 = this.magnitudeSquared();
@@ -1589,9 +1592,9 @@ export class Vector3d extends XYZ {
     if (dot < 0.0 && !oppositeIsParallel)
       return false;
     const cross2 = this.crossProductMagnitudeSquared(other);
-    /* a2,b2,cross2 are squared lengths of respective vectors */
-    /* cross2 = sin^2(theta) * a2 * b2 */
-    /* For small theta, sin^2(theta)~~theta^2 */
+    // a2,b2,cross2 are squared lengths of respective vectors
+    // cross2 = sin^2(theta) * a2 * b2
+    // For small theta, sin^2(theta) ~ theta^2
     return cross2 <= radianSquaredTol * a2 * b2;
   }
   /**
@@ -1599,7 +1602,7 @@ export class Vector3d extends XYZ {
    * * The input tolerances in `options`, if given, are considered to be squared for efficiency's sake,
    * so if you have a distance or angle tolerance t, you should pass in t * t.
    * @param other second vector in comparison
-   * @param returnValueIfAnInputIsZeroLength if either vector is near zero length, return this value.
+   * @param returnValueIfAnInputIsZeroLength if either vector is near zero length, return this value (default false).
    * @param options optional radian and distance tolerances.
    */
   public isPerpendicularTo(

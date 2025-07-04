@@ -21,7 +21,7 @@ import { GraphicBranch } from "./render/GraphicBranch";
 import { Frustum2d } from "./Frustum2d";
 import { Scene } from "./render/Scene";
 import { Decorations } from "./render/Decorations";
-import { MockRender } from "./render/MockRender";
+import { MockRender } from "./internal/render/MockRender";
 import { RenderClipVolume } from "./render/RenderClipVolume";
 import { RenderMemory } from "./render/RenderMemory";
 import { FeatureSymbology } from "./render/FeatureSymbology";
@@ -288,9 +288,9 @@ class ViewAttachments {
     }
   }
 
-  public dispose(): void {
+  public [Symbol.dispose](): void {
     for (const attachment of this._attachments)
-      attachment.dispose();
+      attachment[Symbol.dispose]();
 
     this._attachments.length = 0;
   }
@@ -308,8 +308,19 @@ class ViewAttachments {
     return 0 === this._attachments.length;
   }
 
-  public get areAllTileTreesLoaded(): boolean {
-    return this._attachments.every((x) => x.areAllTileTreesLoaded);
+  public areAllTileTreesLoaded(displayedExtents: Range3d): boolean {
+    return this._attachments.every((x) => {
+      const placement = Placement2d.fromJSON(x.viewAttachmentProps.placement);
+      const attachmentRange = placement.calculateRange();
+      if (!attachmentRange.intersectsRangeXY(displayedExtents))
+        return true;
+
+      return x.areAllTileTreesLoaded});
+  }
+
+  /** Strictly for testing purposes */
+  public areAllAttachmentsLoaded(): boolean {
+    return this._attachments.every((attachment) => attachment.areAllTileTreesLoaded);
   }
 
   public discloseTileTrees(trees: DisclosedTileTreeSet): void {
@@ -527,7 +538,21 @@ export class SheetViewState extends ViewState2d {
   }
 
   public override get areAllTileTreesLoaded(): boolean {
-    return super.areAllTileTreesLoaded && (!this._attachments || this._attachments.areAllTileTreesLoaded);
+    let displayedExtents = this._viewedExtents;
+    const frustum = this.calculateFrustum();
+    if (frustum) {
+      displayedExtents = frustum.toRange();
+    }
+
+    return super.areAllTileTreesLoaded && (!this._attachments || this._attachments.areAllTileTreesLoaded(displayedExtents));
+  }
+
+  /** @internal Strictly for testing */
+  public areAllAttachmentsLoaded(): boolean {
+    if (this._attachments) {
+      return this._attachments.areAllAttachmentsLoaded();
+    }
+    return true;
   }
 
   /** Create a sheet border decoration graphic. */
@@ -606,14 +631,13 @@ class AttachmentTarget extends MockRender.OffScreenTarget {
 }
 
 /** Draws the contents of a view attachment into a sheet view. */
-interface Attachment {
+interface Attachment extends Disposable {
   readonly areAllTileTreesLoaded: boolean;
   addToScene: (context: SceneContext) => void;
   discloseTileTrees: (trees: DisclosedTileTreeSet) => void;
   readonly zDepth: number;
   collectStatistics: (stats: RenderMemory.Statistics) => void;
   viewAttachmentProps: ViewAttachmentProps;
-  dispose(): void;
   readonly viewport?: Viewport;
 }
 
@@ -748,8 +772,8 @@ class OrthographicAttachment {
       this._hiddenLineSettings = style.settings.hiddenLineSettings;
   }
 
-  public dispose(): void {
-    this._viewport.dispose();
+  public [Symbol.dispose](): void {
+    this._viewport[Symbol.dispose]();
   }
 
   public discloseTileTrees(trees: DisclosedTileTreeSet): void {
@@ -974,8 +998,8 @@ class RasterAttachment {
     this.zDepth = Frustum2d.depthFromDisplayPriority(props.jsonProperties?.displayPriority ?? 0);
   }
 
-  public dispose(): void {
-    this._viewport?.dispose();
+  public [Symbol.dispose](): void {
+    this._viewport?.[Symbol.dispose]();
   }
 
   public get viewAttachmentProps() {

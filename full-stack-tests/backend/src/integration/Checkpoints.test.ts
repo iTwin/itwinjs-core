@@ -8,7 +8,8 @@ import { ChildProcess } from "child_process";
 import * as fs from "fs-extra";
 import * as path from "path";
 import * as sinon from "sinon";
-import { _nativeDb, CloudSqlite, IModelDb, IModelHost, IModelJsFs, NativeCloudSqlite, SettingsPriority, SnapshotDb, V2CheckpointAccessProps, V2CheckpointManager } from "@itwin/core-backend";
+import { CloudSqlite, IModelDb, IModelHost, IModelJsFs, NativeCloudSqlite, SettingsPriority, SnapshotDb, V2CheckpointAccessProps, V2CheckpointManager } from "@itwin/core-backend";
+import { _hubAccess } from "@itwin/core-backend/lib/cjs/internal/Symbols";
 import { KnownTestLocations } from "@itwin/core-backend/lib/cjs/test/KnownTestLocations";
 import { AccessToken, GuidString } from "@itwin/core-bentley";
 import { ChangesetProps, IModelVersion } from "@itwin/core-common";
@@ -84,13 +85,13 @@ describe("Checkpoints", () => {
     accessToken = await TestUtility.getAccessToken(TestUsers.regular);
     testITwinId = await HubUtility.getTestITwinId(accessToken);
     testIModelId = await HubUtility.getTestIModelId(accessToken, HubUtility.testIModelNames.stadium);
-    testChangeSet = await IModelHost.hubAccess.getLatestChangeset({ accessToken, iModelId: testIModelId });
-    testChangeSetFirstVersion = await IModelHost.hubAccess.getChangesetFromVersion({ accessToken, iModelId: testIModelId, version: IModelVersion.first() });
+    testChangeSet = await IModelHost[_hubAccess].getLatestChangeset({ accessToken, iModelId: testIModelId });
+    testChangeSetFirstVersion = await IModelHost[_hubAccess].getChangesetFromVersion({ accessToken, iModelId: testIModelId, version: IModelVersion.first() });
     testITwinId2 = await HubUtility.getTestITwinId(accessToken);
     testIModelId2 = await HubUtility.getTestIModelId(accessToken, HubUtility.testIModelNames.readOnly);
-    testChangeSet2 = await IModelHost.hubAccess.getLatestChangeset({ accessToken, iModelId: testIModelId2 });
+    testChangeSet2 = await IModelHost[_hubAccess].getLatestChangeset({ accessToken, iModelId: testIModelId2 });
 
-    checkpointProps = await IModelHost.hubAccess.queryV2Checkpoint({
+    checkpointProps = await IModelHost[_hubAccess].queryV2Checkpoint({
       expectV2: true,
       iTwinId: testITwinId,
       iModelId: testIModelId,
@@ -122,7 +123,7 @@ describe("Checkpoints", () => {
       iModelId: testIModelId,
       changeset: testChangeSet,
     });
-    expect(iModel[_nativeDb].cloudContainer?.cache?.rootDir).contains("profile");
+    expect(iModel.cloudContainer?.cache?.rootDir).contains("profile");
     iModel.close();
   });
 
@@ -163,7 +164,7 @@ describe("Checkpoints", () => {
     // simulate user being logged in
     sinon.stub(IModelHost, "getAccessToken").callsFake(async () => accessToken);
     const clock = sinon.useFakeTimers(); // must be before creating PropertyStore container
-    const queryV2Checkpoint = sinon.spy(IModelHost.hubAccess, "queryV2Checkpoint");
+    const queryV2Checkpoint = sinon.spy(IModelHost[_hubAccess], "queryV2Checkpoint");
 
     let iModel = await SnapshotDb.openCheckpoint({
       iTwinId: testITwinId,
@@ -182,7 +183,7 @@ describe("Checkpoints", () => {
 
     // make sure the sasToken for the checkpoint container is refreshed before it expires
     // (see explanation in CloudSqlite.test.ts "Auto refresh container tokens" for how this works)
-    const c1 = iModel[_nativeDb].cloudContainer as CloudSqlite.CloudContainer & { refreshPromise?: Promise<void> };
+    const c1 = iModel.cloudContainer as CloudSqlite.CloudContainer & { refreshPromise?: Promise<void> };
     const oldToken = c1.accessToken; // save current token
 
     expect(queryV2Checkpoint.callCount).equal(1);
@@ -286,6 +287,9 @@ describe("Checkpoints", () => {
       });
 
       const container = (await containerSpy.returnValues[0]).container;
+      if (container === undefined) {
+        assert.fail("Container is undefined");
+      }
       let stats = container.queryBcvStats({ addClientInformation: true });
       const populatedCacheslots = stats.populatedCacheslots;
       // Opening the database causes some blocks to be downloaded.
@@ -335,6 +339,41 @@ describe("Checkpoints", () => {
       expect(stats.totalClients).to.equal(0);
     });
 
+    it("should be able to open multiple checkpoints in same container when sas expires", async () => {
+      const iModel = await SnapshotDb.openCheckpointFromRpc({
+        accessToken,
+        iTwinId: testITwinId,
+        iModelId: testIModelId,
+        changeset: testChangeSet,
+      });
+
+      await iModel.refreshContainerForRpc(accessToken);
+
+      const checkpointContainer = iModel.cloudContainer;
+      iModel.close();
+
+      // simulate sas token expiration / bad token
+      expect(checkpointContainer).to.not.be.undefined;
+      checkpointContainer!.accessToken = "";
+
+      // Open iModel from same container, expect it to refresh the token
+      const iModel2 = await SnapshotDb.openCheckpointFromRpc({
+        accessToken,
+        iTwinId: testITwinId,
+        iModelId: testIModelId,
+        changeset: testChangeSetFirstVersion,
+      });
+      expect(checkpointContainer?.accessToken).to.not.be.empty;
+      assert.equal(iModel2.iModelId, testIModelId);
+      assert.equal(iModel2.changeset.id, testChangeSetFirstVersion.id);
+      assert.equal(iModel2.iTwinId, testITwinId);
+      assert.equal(iModel2.rootSubject.name, "Stadium Dataset 1");
+      const numModels = await queryBisModelCount(iModel2);
+      assert.equal(numModels, 3);
+      iModel2.close();
+
+    });
+
     it("should be able to open and read checkpoint for Rpc with daemon running", async () => {
       let iModel = await SnapshotDb.openCheckpointFromRpc({
         accessToken,
@@ -353,7 +392,7 @@ describe("Checkpoints", () => {
       numModels = await queryBisModelCount(iModel);
       assert.equal(numModels, 32);
 
-      const checkpointContainer = iModel[_nativeDb].cloudContainer;
+      const checkpointContainer = iModel.cloudContainer;
       iModel.close();
 
       iModel = await SnapshotDb.openCheckpointFromRpc({
@@ -399,8 +438,8 @@ describe("Checkpoints", () => {
       assert.equal(numModels, 4);
 
       // all checkpoints for the same iModel should share a cloud container
-      expect(checkpointContainer).equal(iModel[_nativeDb].cloudContainer);
-      expect(checkpointContainer).equal(iModel2[_nativeDb].cloudContainer);
+      expect(checkpointContainer).equal(iModel.cloudContainer);
+      expect(checkpointContainer).equal(iModel2.cloudContainer);
 
       iModel.close();
       iModel2.close();

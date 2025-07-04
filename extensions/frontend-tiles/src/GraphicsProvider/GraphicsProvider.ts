@@ -5,8 +5,8 @@
 
 import { AccessToken, Logger } from "@itwin/core-bentley";
 import { IModelApp } from "@itwin/core-frontend";
-import { obtainGraphicRepresentationUrl } from "./GraphicRepresentationProvider";
-import { loggerCategory } from "../LoggerCategory";
+import { loggerCategory } from "../LoggerCategory.js";
+import { obtainGraphicRepresentationUrl, ObtainGraphicRepresentationUrlArgs } from "./GraphicRepresentationProvider.js";
 
 /** Arguments supplied  to [[obtainIModelTilesetUrl]].
  * @beta
@@ -48,7 +48,7 @@ export async function obtainIModelTilesetUrl(args: ObtainIModelTilesetUrlArgs):
     return undefined;
   }
 
-  const graphicsArgs = {
+  const graphicsArgs: ObtainGraphicRepresentationUrlArgs = {
     accessToken: args.accessToken,
     sessionId: IModelApp.sessionId,
     dataSource: {
@@ -57,7 +57,7 @@ export async function obtainIModelTilesetUrl(args: ObtainIModelTilesetUrlArgs):
       changeId: args.changesetId,
       type: "IMODEL",
     },
-    format: "IMDL",
+    format: "IMODEL",
     urlPrefix: args.urlPrefix,
     requireExactVersion: args.requireExactChangeset,
     enableCDN: args.enableCDN,

@@ -231,30 +231,3 @@ Specifications of [related instances](../RelatedInstanceSpecification.md) that c
 | `SpatialViewDefinition` instances                                 | ![A list of spatial view definitions](./media/sharedattributes-with-relatedinstances-3.png)                                           |
 | `ModelSelector` instances                                         | ![A list of model selectors](./media/sharedattributes-with-relatedinstances-2.png)                                                    |
 | `ModelSelector` instances filtered by `SpatialViewDefinition.Yaw` | ![A list of model selectors filtered by yaw of related spatial view definition](./media/sharedattributes-with-relatedinstances-1.png) |
-
-## Deprecated attributes
-
-### Attribute: `handleInstancesPolymorphically`
-
-Tells whether selecting instances from ECClasses specified in [`classes`](#attribute-classes) and [`excludedClasses`](#attribute-excludedclasses) attributes should be polymorphic or not.
-
-The attribute was replaced by [MultiSchemaClasses.arePolymorphic](../MultiSchemaClassesSpecification.md#attribute-arepolymorphic) attribute specified individually for each class definition under [`classes`](#attribute-classes)
-and [`excludedClasses`](#attribute-excludedclasses) attributes. At the moment, to keep backwards compatibility, this attribute acts as a fallback value in case the flag is not specified individually for a class definition.
-
-|                   |           |
-| ----------------- | --------- |
-| **Type**          | `boolean` |
-| **Is Required**   | No        |
-| **Default Value** | `false`   |
-
-### Attribute: `showImages`
-
-Should image IDs be calculated for the returned instances. When `true`, [ImageIdOverride](../customization/ImageIdOverride.md) rules get applied when creating the content.
-
-[ExtendedDataRule](../customization/ExtendedDataRule.md) should be used instead to provide image data to content items created by this specification. See [extended data usage page](../customization/ExtendedDataUsage.md) for more details
-
-|                   |           |
-| ----------------- | --------- |
-| **Type**          | `boolean` |
-| **Is Required**   | No        |
-| **Default Value** | `false`   |

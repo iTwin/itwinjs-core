@@ -3,11 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { IModelApp, IModelConnection, SpatialTileTreeReferences, SpatialViewState } from "@itwin/core-frontend";
-import { createBatchedSpatialTileTreeReferences } from "./BatchedSpatialTileTreeRefs";
-import { queryGraphicRepresentations } from "./GraphicsProvider/GraphicRepresentationProvider";
 import { AccessToken } from "@itwin/core-bentley";
-import { obtainIModelTilesetUrl, ObtainIModelTilesetUrlArgs } from "./GraphicsProvider/GraphicsProvider";
+import { IModelApp, IModelConnection, SpatialTileTreeReferences, SpatialViewState } from "@itwin/core-frontend";
+import { createBatchedSpatialTileTreeReferences } from "./BatchedSpatialTileTreeRefs.js";
+import { queryGraphicRepresentations, QueryGraphicRepresentationsArgs } from "./GraphicsProvider/GraphicRepresentationProvider.js";
+import { obtainIModelTilesetUrl, ObtainIModelTilesetUrlArgs } from "./GraphicsProvider/GraphicsProvider.js";
 
 /** A function that can provide the base URL where a tileset representing all of the spatial models in a given iModel are stored.
  * The tileset is expected to reside at "baseUrl/tileset.json" and to have been produced by the [mesh export service](https://developer.bentley.com/apis/mesh-export/).
@@ -83,7 +83,7 @@ export interface QueryMeshExportsArgs {
  * @beta
  */
 export async function* queryMeshExports(args: QueryMeshExportsArgs): AsyncIterableIterator<MeshExport> {
-  const graphicsArgs = {
+  const graphicsArgs: QueryGraphicRepresentationsArgs = {
     accessToken: args.accessToken,
     sessionId: IModelApp.sessionId,
     dataSource: {
@@ -92,7 +92,7 @@ export async function* queryMeshExports(args: QueryMeshExportsArgs): AsyncIterab
       changeId: args.changesetId,
       type: "IMODEL",
     },
-    format: "IMDL",
+    format: "IMODEL",
     urlPrefix: args.urlPrefix,
     includeIncomplete: args.includeIncomplete,
     enableCDN: args.enableCDN,

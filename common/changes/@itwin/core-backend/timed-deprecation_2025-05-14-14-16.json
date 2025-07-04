@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Updated deprecation comments to new template",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}

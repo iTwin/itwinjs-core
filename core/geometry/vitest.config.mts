@@ -1,9 +1,21 @@
 import { coverageConfigDefaults, defineConfig } from 'vitest/config';
+import * as packageJson from "./package.json";
+
+const includePackages: string[] = Object.entries(packageJson.dependencies)
+  .filter(([_, version]) => version === "workspace:*")
+  .map(([pkgName]) => pkgName);
+
 export default defineConfig({
+  esbuild: {
+    target: "es2022",
+  },
   test: {
     dir: "src/test",
     setupFiles: "./src/test/setupTests.ts",
     // include: ["**/filename.test.ts"], // to honor it/describe.only
+    testTimeout: 80000, // Some tests can take much longer than the default 5 seconds when run in parallel.
+    minWorkers: 1,
+    maxWorkers: 3,
     coverage: {
       provider: "v8",
       include: [
@@ -35,5 +47,9 @@ export default defineConfig({
         },
       },
     },
+  },
+  optimizeDeps: {
+    include: includePackages,
+    force: true,
   }
 })

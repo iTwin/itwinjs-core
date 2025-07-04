@@ -110,7 +110,7 @@ class RequestTileTreePropsMemoizer extends TileRequestMemoizer<IModelTileTreePro
   private constructor() {
     super(getTileTreeProps, generateTileRequestKey);
     IModelHost.onBeforeShutdown.addOnce(() => {
-      this.dispose();
+      this[Symbol.dispose]();
       RequestTileTreePropsMemoizer._instance = undefined;
     });
   }
@@ -168,7 +168,7 @@ class RequestTileContentMemoizer extends TileRequestMemoizer<TileContentSource, 
   private constructor() {
     super(getTileContent, generateTileContentKey);
     IModelHost.onBeforeShutdown.addOnce(() => {
-      this.dispose();
+      this[Symbol.dispose]();
       RequestTileContentMemoizer._instance = undefined;
     });
   }

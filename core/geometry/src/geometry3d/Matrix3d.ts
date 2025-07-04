@@ -961,35 +961,40 @@ export class Matrix3d implements BeJSONFunctions {
         result = Matrix3d.createRowValues(
           1, 0, 0,
           0, -1, 0,
-          0, 0, -1);
+          0, 0, -1,
+        );
         break;
       // Start with TOP view, ccw rotation by -90 degrees around X and by 90 degrees around Z
       case StandardViewIndex.Left:
         result = Matrix3d.createRowValues(
           0, -1, 0,
           0, 0, 1,
-          -1, 0, 0);
+          -1, 0, 0,
+        );
         break;
       // Start with TOP view, ccw rotation by -90 degrees around X and by -90 degrees around Z
       case StandardViewIndex.Right:
         result = Matrix3d.createRowValues(
           0, 1, 0,
           0, 0, 1,
-          1, 0, 0);
+          1, 0, 0,
+        );
         break;
       // Start with TOP view, ccw rotation by -90 degrees around X
       case StandardViewIndex.Front:
         result = Matrix3d.createRowValues(
           1, 0, 0,
           0, 0, 1,
-          0, -1, 0);
+          0, -1, 0,
+        );
         break;
       // Start with TOP view, ccw rotation by -90 degrees around X and by 180 degrees around Z
       case StandardViewIndex.Back:
         result = Matrix3d.createRowValues(
           -1, 0, 0,
           0, 0, 1,
-          0, 1, 0);
+          0, 1, 0,
+        );
         break;
       /**
        * Isometric view
@@ -1002,14 +1007,16 @@ export class Matrix3d implements BeJSONFunctions {
         result = Matrix3d.createRowValues(
           0.707106781186548, -0.70710678118654757, 0.00000000000000000,
           0.408248290463863, 0.40824829046386302, 0.81649658092772603,
-          -0.577350269189626, -0.57735026918962573, 0.57735026918962573);
+          -0.577350269189626, -0.57735026918962573, 0.57735026918962573,
+        );
         break;
       // Start with FRONT view, ccw rotation by 45 degrees around Y and by 35.264 degrees around X
       case StandardViewIndex.RightIso:
         result = Matrix3d.createRowValues(
           0.707106781186548, 0.70710678118654757, 0.00000000000000000,
           -0.408248290463863, 0.40824829046386302, 0.81649658092772603,
-          0.577350269189626, -0.57735026918962573, 0.57735026918962573);
+          0.577350269189626, -0.57735026918962573, 0.57735026918962573,
+        );
         break;
       // no rotation
       case StandardViewIndex.Top:
@@ -1342,6 +1349,7 @@ export class Matrix3d implements BeJSONFunctions {
       return Matrix3d.createRotationAroundVector(
         upVector,
         Angle.createRadians(fraction * vectorA.planarAngleTo(vectorB, upVector).radians),
+        result,
       );
     }
     // if either vector is zero
@@ -1353,7 +1361,7 @@ export class Matrix3d implements BeJSONFunctions {
       return Matrix3d.createIdentity(result);
     // opposing vectors (cross product = 0, dot product < 0)
     upVector = Matrix3d.createPerpendicularVectorFavorPlaneContainingZ(vectorA, upVector);
-    return Matrix3d.createRotationAroundVector(upVector, Angle.createRadians(fraction * Math.PI));
+    return Matrix3d.createRotationAroundVector(upVector, Angle.createRadians(fraction * Math.PI), result);
   }
   /** Returns a matrix that rotates from vectorA to vectorB. */
   public static createRotationVectorToVector(
@@ -1672,7 +1680,7 @@ export class Matrix3d implements BeJSONFunctions {
     // Note W * N^T is a 3x3 matrix. By associativity of matrix multiplication:
     //   `U1 = (I - W * N^T / W DOT N) * U0`
     // and the matrix to do the sweep for any vector in place of U0 is `I - W * N^T / W DOT N`.
-     const result = Matrix3d.createIdentity();
+    const result = Matrix3d.createIdentity();
     const dot = sweepVector.dotProduct(planeNormal);
     const inverse = Geometry.conditionalDivideCoordinate(1.0, -dot);
     if (inverse !== undefined) {
@@ -2828,28 +2836,27 @@ export class Matrix3d implements BeJSONFunctions {
     return count === 3;
   }
   /**
-   * Adjust the matrix in place to make is a `rigid` matrix so that:
-   * * columns are perpendicular and have unit length.
-   * * transpose equals inverse.
-   * * mirroring is removed.
-   * * This function internally uses `axisOrderCrossProductsInPlace` to make the matrix rigid.
-   * @param axisOrder how to reorder the matrix columns
-   * @return whether the adjusted matrix is `rigid` on return
+   * Adjust the matrix in place to make it rigid:
+   * * Columns are perpendicular and have unit length.
+   * * Transpose equals inverse.
+   * @param axisOrder how to reorder the matrix columns. A left-handed ordering will return a mirror.
+   * @return whether the adjusted matrix is rigid on return
    */
   public makeRigid(axisOrder: AxisOrder = AxisOrder.XYZ): boolean {
     const maxAbs = this.maxAbs();
     if (Geometry.isSmallMetricDistance(maxAbs))
       return false;
     const scale = 1.0 / maxAbs;
-    this.scaleColumnsInPlace(scale, scale, scale);
+    this.scaleColumnsInPlace(scale, scale, scale); // improve numerical stability
     this.axisOrderCrossProductsInPlace(axisOrder);
     return this.normalizeColumnsInPlace();
   }
   /**
-   * Create a new orthogonal matrix (perpendicular columns, unit length, transpose is inverse).
-   * * Columns are taken from the source Matrix3d in order indicated by the axis order.
-   * * Mirroring in the matrix is removed.
-   * * This function internally uses `axisOrderCrossProductsInPlace` to make the matrix rigid.
+   * Create a new orthogonal matrix by calling [[makeRigid]] on a clone of `source`.
+   * @param source input matrix
+   * @param axisOrder how to reorder the matrix columns. A left-handed ordering will return a mirror.
+   * @param result optional preallocated result to populate and return
+   * @returns rigid matrix, or `undefined` if the operation failed.
    */
   public static createRigidFromMatrix3d(
     source: Matrix3d, axisOrder: AxisOrder = AxisOrder.XYZ, result?: Matrix3d,

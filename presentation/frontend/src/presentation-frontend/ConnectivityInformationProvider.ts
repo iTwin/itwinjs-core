@@ -6,7 +6,7 @@
  * @module Core
  */
 
-import { BeEvent, IDisposable } from "@itwin/core-bentley";
+import { BeEvent } from "@itwin/core-bentley";
 import { InternetConnectivityStatus } from "@itwin/core-common";
 import { NativeApp } from "@itwin/core-frontend";
 
@@ -22,7 +22,7 @@ export interface IConnectivityInformationProvider {
  *
  * @internal
  */
-export class ConnectivityInformationProvider implements IConnectivityInformationProvider, IDisposable {
+export class ConnectivityInformationProvider implements IConnectivityInformationProvider, Disposable {
   private _currentStatus?: InternetConnectivityStatus;
   private _unsubscribeFromInternetConnectivityChangedEvent?: () => void;
   public readonly onInternetConnectivityChanged = new BeEvent<(args: { status: InternetConnectivityStatus }) => void>();
@@ -41,7 +41,7 @@ export class ConnectivityInformationProvider implements IConnectivityInformation
     }
   }
 
-  public dispose() {
+  public [Symbol.dispose]() {
     this._unsubscribeFromInternetConnectivityChangedEvent && this._unsubscribeFromInternetConnectivityChangedEvent();
   }
 

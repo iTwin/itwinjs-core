@@ -151,10 +151,6 @@ export class PathFragment {
     this.chainDistance0 = totalDistance - d1;
     this.chainDistance1 = totalDistance - d0;
   }
-  /** @deprecated in 3.x. Use `PathFragment.childFractionToChainDistance`. */
-  public childFractionTChainDistance(fraction: number): number {
-    return this.childFractionToChainDistance(fraction);
-  }
   /**
    * Convert a fractional position on the childCurve of this fragment to distance on the curve chain.
    * * Return value is SIGNED and will be negative when `fraction < this.childFraction0`.
@@ -478,7 +474,7 @@ export class CurveChainWithDistanceIndex extends CurvePrimitive {
         return child.path.children;
       else
         return [child];
-      },
+    },
     );
     flatChain.children.splice(0, Infinity, ...flatChildren);
     return flatChain;

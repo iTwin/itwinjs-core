@@ -14,14 +14,14 @@ iTwin.js UI and presentation packages register some built-in value renderers tha
 >
 > **Prerequisites:**
 >
-> - Property value type is [Primitives.InstanceKey]($appui-abstract). Generally those are navigation type of properties.
-> - The property is rendered within a unified selection context. See [useUnifiedSelectionContext]($presentation-components) for more details.
+> - Property value type is [Primitives.InstanceKey]($appui-abstract). Generally, those are navigation type of properties.
+> - The property is rendered within a unified selection context. See [React context for unified selection](https://www.npmjs.com/package/@itwin/unified-selection-react/v/1.0.0#react-context-for-unified-selection) for more details.
 
 The renderer renders nothing when property value is `undefined`. When it's defined, the value is rendered as a clickable text.
 
 The property display value is used for the displayed text. If it is not set, then the [TypeConverter]($components-react) system is used to calculate displayed string from the raw property value.
 
-When the clickable text clicked on, the available unified selection context is used to replace active selection with the instance key stored in the value by calling [UnifiedSelectionContext.replaceSelection]($presentation-components).
+When the clickable text clicked on, the available unified selection context is used access selection storage and replace active selection with the instance key stored in the value.
 
 | Default rendering                                                                                                | `SelectableInstance` rendering                                                                            |
 | ---------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |

@@ -128,7 +128,7 @@ export const SchemaCompareDiagnostics = {
   FormatDelta: createSchemaItemDiagnosticClass<Format, [string, any, any]>(SchemaCompareCodes.FormatDelta, ""),
 
   /** Required message parameters: Unit or InvertedUnit */
-  FormatUnitMissing: createSchemaItemDiagnosticClass<Format, [Unit | InvertedUnit]>(SchemaCompareCodes.FormatUnitMissing, ""),
+  FormatUnitMissing: createSchemaItemDiagnosticClass<Format, [Unit | InvertedUnit, string | undefined]>(SchemaCompareCodes.FormatUnitMissing, ""),
 
   /** Required message parameters: Unit or InvertedUnit, label A, label B */
   UnitLabelOverrideDelta: createSchemaItemDiagnosticClass<Format, [Unit | InvertedUnit, string | undefined, string | undefined]>(SchemaCompareCodes.UnitLabelOverrideDelta, ""),

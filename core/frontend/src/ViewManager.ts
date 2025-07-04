@@ -13,7 +13,7 @@ import { IModelConnection } from "./IModelConnection";
 import { DisclosedTileTreeSet, TileTree } from "./tile/internal";
 import { BeButtonEvent, EventHandled } from "./tools/Tool";
 import { ScreenViewport, ViewportDecorator } from "./Viewport";
-import { System } from "./render/webgl/System";
+import { System } from "./internal/render/webgl/System";
 
 /** Interface for drawing [decoration graphics]($docs/learning/frontend/ViewDecorations.md) into, or on top of, the active [[ScreenViewport]]s managed by [[ViewManager]].
  * Decorators generate [[Decorations]].
@@ -203,11 +203,11 @@ export class ViewManager implements Iterable<ScreenViewport> {
 
     const cursorVp = IModelApp.toolAdmin.cursorView;
     if (cursorVp)
-      cursorVp.changeDynamics(undefined);
+      cursorVp.changeDynamics(undefined, undefined);
 
     for (const vp of this._viewports) {
       if (vp !== cursorVp)
-        vp.changeDynamics(undefined);
+        vp.changeDynamics(undefined, undefined);
     }
   }
 
@@ -324,7 +324,7 @@ export class ViewManager implements Iterable<ScreenViewport> {
     this.updateRenderToScreen();
 
     if (disposeOfViewport)
-      vp.dispose();
+      vp[Symbol.dispose]();
 
     if (this._doIdleWork && this._viewports.length === 0)
       this._beginIdleWork();

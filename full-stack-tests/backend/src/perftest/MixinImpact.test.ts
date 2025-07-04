@@ -45,6 +45,7 @@ describe("SchemaDesignPerf1 Impact of Mixins", () => {
   }
   function getCount(imodel: IModelDb, className: string) {
     let count = 0;
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     imodel.withPreparedStatement(`SELECT count(*) AS [count] FROM ${className}`, (stmt: ECSqlStatement) => {
       assert.equal(DbResult.BE_SQLITE_ROW, stmt.step());
       const row = stmt.getRow();
@@ -142,12 +143,13 @@ describe("SchemaDesignPerf1 Impact of Mixins", () => {
       console.log(String(path.join(__dirname, ".cache")));
       await IModelHost.startup({ cacheDir: path.join(__dirname, ".cache") });
       if (!IModelJsFs.existsSync(seedName)) {
-        console.log("-> after IModelHost.startup");
+        await IModelHost.startup();
         const seedIModel = SnapshotDb.createEmpty(IModelTestUtils.prepareOutputFile("MixinPerformance", `mixin_${hCount}.bim`), { rootSubject: { name: "PerfTest" } });
         console.log("-> after const seedIModel = SnapshotDb.createEmpty");
         await seedIModel.importSchemas([st]);
         console.log("-> before seedIModel[_nativeDb].resetBriefcaseId(BriefcaseIdValue.Unassigned)");
         seedIModel[_nativeDb].resetBriefcaseId(BriefcaseIdValue.Unassigned);
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         assert.isDefined(seedIModel.getMetaData("TestMixinSchema:MixinElement"), "Mixin Class is not present in iModel.");
         const [, newModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(seedIModel, Code.createEmpty(), true);
         let spatialCategoryId = SpatialCategory.queryCategoryIdByName(seedIModel, IModel.dictionaryId, "MySpatialCategory");
@@ -184,8 +186,7 @@ describe("SchemaDesignPerf1 Impact of Mixins", () => {
         seedIModel.saveChanges();
         assert.equal(getCount(seedIModel, "TestMixinSchema:PropElement"), ((2 * seedCount * hCount) + seedCount));
         seedIModel.close();
-        // await IModelHost.shutdown();
-        console.log("-> after await IModelHost.shutdown();");
+        await IModelHost.shutdown();
       }
     }
     console.log('-> "Before" section finished');
@@ -196,13 +197,13 @@ describe("SchemaDesignPerf1 Impact of Mixins", () => {
     await IModelHost.shutdown();
   });
 
-  // beforeEach(async () => {
-  //   await IModelHost.startup();
-  // });
+  beforeEach(async () => {
+    await IModelHost.startup();
+  });
 
-  // afterEach(async () => {
-  //   await IModelHost.shutdown();
-  // });
+  afterEach(async () => {
+    await IModelHost.shutdown();
+  });
 
   it("Read", async () => {
     for (const hCount of hierarchyCounts) {
@@ -211,6 +212,7 @@ describe("SchemaDesignPerf1 Impact of Mixins", () => {
       const perfimodel = IModelTestUtils.createSnapshotFromSeed(testFileName, seedFileName);
 
       const startTime = new Date().getTime();
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       perfimodel.withPreparedStatement("SELECT * FROM tps.MixinElement", (stmt: ECSqlStatement) => {
         assert.equal(DbResult.BE_SQLITE_ROW, stmt.step());
         const row = stmt.getRow();

@@ -2,20 +2,22 @@
  * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
+/* eslint-disable @typescript-eslint/no-deprecated */
 /** @packageDocumentation
  * @module UnifiedSelection
  */
 
-import { DisposableList, IDisposable } from "@itwin/core-bentley";
+import { DisposableList } from "@itwin/core-bentley";
 import { IModelConnection } from "@itwin/core-frontend";
 import { Keys, KeySet } from "@itwin/presentation-common";
-import { ISelectionProvider } from "./ISelectionProvider";
-import { SelectionChangeEventArgs, SelectionChangesListener } from "./SelectionChangeEvent";
-import { SelectionManager } from "./SelectionManager";
+import { ISelectionProvider } from "./ISelectionProvider.js";
+import { SelectionChangeEventArgs, SelectionChangesListener } from "./SelectionChangeEvent.js";
+import { SelectionManager } from "./SelectionManager.js";
 
 /**
  * Properties for creating a `SelectionHandler` instance.
  * @public
+ * @deprecated in 5.0 - will not be removed until after 2026-06-13. Use `SelectionStorage` from [@itwin/unified-selection](https://github.com/iTwin/presentation/blob/master/packages/unified-selection/README.md#basic-usage) package instead.
  */
 export interface SelectionHandlerProps {
   /** SelectionManager used to store overall selection. */
@@ -44,8 +46,9 @@ export interface SelectionHandlerProps {
  * internal the selection state.
  *
  * @public
+ * @deprecated in 5.0 - will not be removed until after 2026-06-13. Use `SelectionStorage` from [@itwin/unified-selection](https://github.com/iTwin/presentation/blob/master/packages/unified-selection/README.md#basic-usage) package instead.
  */
-export class SelectionHandler implements IDisposable {
+export class SelectionHandler implements Disposable {
   private _inSelect: boolean;
   private _disposables: DisposableList;
 
@@ -81,8 +84,14 @@ export class SelectionHandler implements IDisposable {
    * Destructor. Must be called before disposing this object to make sure it cleans
    * up correctly.
    */
-  public dispose(): void {
+  public [Symbol.dispose](): void {
     this._disposables.dispose();
+  }
+
+  /** @deprecated in 5.0 - will not be removed until after 2026-06-13. Use [Symbol.dispose] instead. */
+  /* c8 ignore next 3 */
+  public dispose() {
+    this[Symbol.dispose]();
   }
 
   /**

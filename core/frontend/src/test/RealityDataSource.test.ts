@@ -5,8 +5,8 @@
 
 import { OrbitGtBlobProps, RealityDataFormat, RealityDataProvider, RealityDataSourceKey } from "@itwin/core-common";
 import { describe, expect, it } from "vitest";
-import { CesiumIonAssetProvider, getCesiumAssetUrl } from "../core-frontend";
-import { RealityDataSource } from "../RealityDataSource";
+import { CesiumIonAssetProvider, getCesiumAssetUrl } from "../tile/internal";
+import { getGoogle3dTilesUrl, Google3dTilesProvider, RealityDataSource } from "../RealityDataSource";
 
 describe("RealityDataSource", () => {
   it("should handle creation from empty url", () => {
@@ -285,5 +285,14 @@ describe("RealityDataSource", () => {
     expect(orbitGtBlobFromKey).toBeUndefined();
     const rdSourceKeyStr = RealityDataSourceKey.convertToString(rdSourceKey);
     expect(rdSourceKeyStr).toEqual("ContextShare:OPC:994fc408-401f-4ee1-91f0-3d7bfba50136:5b4ebd22-d94b-456b-8bd8-d59563de9acd");
+  });
+  it("should handle creation from Google3dTilesProvider", async () => {
+    const provider = new Google3dTilesProvider({ apiKey: "testApiKey" });
+    const rdSourceKey = RealityDataSource.createKeyFromUrl(getGoogle3dTilesUrl());
+    const rdSource = await provider.createRealityDataSource(rdSourceKey, undefined);
+    expect(rdSource).to.be.toBeDefined;
+    expect(rdSourceKey.provider).toEqual("TilesetUrl");
+    expect(rdSourceKey.format).toEqual(RealityDataFormat.ThreeDTile);
+    expect(rdSourceKey.id).toEqual(getGoogle3dTilesUrl());
   });
 });

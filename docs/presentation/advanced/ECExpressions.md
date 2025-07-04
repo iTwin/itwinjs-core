@@ -106,14 +106,14 @@ value_list.AnyMatches(x => this.IsOfClass(x.PropertyValue))
 
 ##### Logical operators
 
-| Description           | Operator          |
-| --------------------- | ----------------- |
-| Conjunction           | `And`*, `AndAlso` |
-| Disjunction           | `Or`*, `OrElse`   |
-| Exclusive disjunction | `Xor`             |
-| Negation              | `Not`             |
+| Description           | Operator           |
+| --------------------- | ------------------ |
+| Conjunction           | `And`\*, `AndAlso` |
+| Disjunction           | `Or`\*, `OrElse`   |
+| Exclusive disjunction | `Xor`              |
+| Negation              | `Not`              |
 
-> **Note:** *Checks right side of expression even if result value can be deducted from the left side.
+> **Note:** \*Checks right side of expression even if result value can be deducted from the left side.
 
 ```
 False And True OrElse True
@@ -121,53 +121,34 @@ False And True OrElse True
 
 ##### Comparison operators
 
-| Description              | Operator |
-| ------------------------ | -------- |
-| Less than                | `<`      |
-| Less than or equal to    | `<=`     |
-| Greater than             | `>`      |
-| Greater than or equal to | `>=`     |
-| Equal to                 | `=`      |
-| Not equal to             | `<>`     |
-
-```
-20 < 10 ==> False
-```
+| Description              | Operator | Example              |
+| ------------------------ | -------- | -------------------- |
+| Less than                | `<`      | `3 < 3` ==> `False`  |
+| Less than or equal to    | `<=`     | `3 <= 3` ==> `True`  |
+| Greater than             | `>`      | `3 > 3` ==> `False`  |
+| Greater than or equal to | `>=`     | `3 >= 3` ==> `True`  |
+| Equal to                 | `=`      | `3 = 3` ==> `True`   |
+| Not equal to             | `<>`     | `3 <> 3` ==> `False` |
 
 ##### Arithmetic operators
 
-| Description      | Operator |
-| ---------------- | -------- |
-| Exponentation    | `^`      |
-| Multiplication   | `*`      |
-| Double division  | `/`      |
-| Integer division | `\`      |
-| Modular division | `Mod`    |
-| Addition         | `+`      |
-| Subtraction      | `-`      |
-
-```
-1 + "4"   ==> 5
-2.2 * 3   ==> 6.6
-12 / 5    ==> 2.4
-12 \ 5    ==> 2
-25 Mod 3  ==> 1
-```
+| Description      | Operator | Example             |
+| ---------------- | -------- | ------------------- |
+| Exponentation    | `^`      | `2 ^ 3` ==> `8`     |
+| Multiplication   | `*`      | `2.2 * 3` ==> `6.6` |
+| Double division  | `/`      | `13 / 5` ==> `2.6`  |
+| Integer division | `\`      | `13 \ 5` ==> `2`    |
+| Modular division | `Mod`    | `13 Mod 5` ==> `3`  |
+| Addition         | `+`      | `1 + "4"` ==> `5`   |
+| Subtraction      | `-`      | `5 - 1` ==> `4`     |
 
 ##### Bit shift operators
 
-| Description          | Operator |
-| -------------------- | -------- |
-| Signed shift left    | `<<`     |
-| Signed shift right   | `>>`     |
-| Unsigned shift right | `>>>`    |
-
-```
-5 << 1      ==>  10
-24 >> 2     ==>  6
--105 >> 1   ==>  -53
--105 >>> 1  ==>  75
-```
+| Description          | Operator | Example               |
+| -------------------- | -------- | --------------------- |
+| Signed shift left    | `<<`     | `5 << 1` ==> `10`     |
+| Signed shift right   | `>>`     | `24 >> 2` ==> `6`     |
+| Unsigned shift right | `>>>`    | `-105 >>> 1` ==> `75` |
 
 ##### Conditional operator
 
@@ -182,13 +163,12 @@ IIf (500>200, "Math ok", "Math wrong") ==> "Math ok"
 IIf (500<200, "Math ok", "Math wrong") ==> "Math wrong"
 ```
 
-##### Concatenation operator
+##### String operators
 
-```
-"Dog" & " and " & "Cat" ==> "Dog and Cat"
-"1" & 4                 ==> "14"
-1 & "4"                 ==> "14"
-```
+| Description   | Operator | Example                                           |
+| ------------- | -------- | ------------------------------------------------- |
+| Concatenation | `&`      | `"Dog and " & 4 & " cats"` ==> `"Dog and 4 cats"` |
+| Like          | `~`      | `"My name is Peter" ~ "% name is %"` ==> `True`   |
 
 ##### Lambda operator
 
@@ -209,7 +189,7 @@ System.String.Length ("Dog" & " and " & "Cat") ==> 11
 
 Method `IsNull (value)` evaluates if given value is `Null`.
 
-Method `IfNull (value, value-if-null)` evaluates to `value` if it is not null, otherwise evaluates to  `value-if-null`.
+Method `IfNull (value, value-if-null)` evaluates to `value` if it is not null, otherwise evaluates to `value-if-null`.
 
 In case `this.MiddleName` is null:
 
@@ -300,7 +280,7 @@ ECInstance key expression context provides access to class and instance IDs. The
 
 ### Ruleset variables (user settings)
 
-> **Note:** *User Settings* is a deprecated name of *Ruleset Variables* concept.
+> **Note:** _User Settings_ is a deprecated name of _Ruleset Variables_ concept.
 
 Ruleset variable access symbols allow accessing variable values through ECExpressions.
 

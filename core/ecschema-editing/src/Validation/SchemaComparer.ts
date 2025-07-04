@@ -53,7 +53,7 @@ export interface ISchemaComparer {
   compareConstants(constantA: Constant, constantB: Constant): void;
 
   /** @internal */
-  resolveItem<TItem extends SchemaItem>(item: SchemaItem, lookupSchema: Schema): Promise<TItem | undefined>;
+  resolveItem<TItem extends typeof SchemaItem>(item: SchemaItem, lookupSchema: Schema, itemConstructor: TItem): Promise<InstanceType<TItem> | undefined>;
   /** @internal */
   resolveProperty(propertyA: AnyProperty, ecClass: ECClass): Promise<AnyProperty | undefined>;
   /** @internal */
@@ -89,8 +89,8 @@ export class SchemaComparer {
    * Resolves a schema Item from the given lookup schema.
    * @internal
    */
-  public async resolveItem<TItem extends SchemaItem>(item: SchemaItem, lookupSchema: Schema): Promise<TItem | undefined> {
-    return lookupSchema.lookupItem<TItem>(item.name);
+  public async resolveItem<TItem extends typeof SchemaItem>(item: SchemaItem, lookupSchema: Schema, itemConstructor: TItem): Promise<InstanceType<TItem> | undefined> {
+    return lookupSchema.lookupItem(item.name, itemConstructor);
   }
 
   /**
@@ -478,9 +478,21 @@ export class SchemaComparer {
     const promises: Array<Promise<void>> = [];
 
     if (koqA.presentationFormats) {
-      for (const unitA of koqA.presentationFormats) {
-        if (-1 === koqB.presentationFormats.findIndex((unitB) => this.areOverrideFormatsSameByName(unitA, unitB, koqA.schema.name, koqB.schema.name)))
+      for (const lazyUnitA of koqA.presentationFormats) {
+        const unitA = OverrideFormat.isOverrideFormat(lazyUnitA) ? lazyUnitA : await lazyUnitA;
+
+        let itemFound = false;
+        for(const lazyUnitB of koqB.presentationFormats) {
+          const unitB = OverrideFormat.isOverrideFormat(lazyUnitB) ? lazyUnitB : await lazyUnitB;
+          if (this.areOverrideFormatsSameByName(unitA, unitB, koqA.schema.name, koqB.schema.name)) {
+            itemFound = true;
+            break;
+          }
+        }
+
+        if (!itemFound) {
           promises.push(this._reporter.reportPresentationUnitMissing(koqA, unitA, this._compareDirection));
+        }
       }
     }
 
@@ -841,20 +853,20 @@ export class SchemaComparer {
 
     const promises: Array<Promise<void>> = [];
 
-    for (const unitA of formatA.units) {
-      const unitB = formatB.units ? formatB.units.find((u) => this.areItemsSameByName(unitA[0], u[0], formatA.schema.name, formatB.schema.name)) : undefined;
+    for (const [lazyUnitA, labelA] of formatA.units) {
+      const unitA = await lazyUnitA;
+      const unitB = formatB.units ? formatB.units.find((u) => this.areItemsSameByName(unitA, u[0], formatA.schema.name, formatB.schema.name)) : undefined;
       if (!unitB) {
-        promises.push(this._reporter.reportFormatUnitMissing(formatA, unitA[0], this._compareDirection));
+        promises.push(this._reporter.reportFormatUnitMissing(formatA, [unitA, labelA], this._compareDirection));
         continue;
       }
 
       if (this._compareDirection === SchemaCompareDirection.Backward)
         continue;
 
-      if (unitA[1] !== unitB[1]) {
-        const labelA = unitA[1];
+      if (labelA !== unitB[1]) {;
         const labelB = unitB[1];
-        promises.push(this._reporter.reportUnitLabelOverrideDelta(formatA, unitB[0], labelA, labelB, this._compareDirection));
+        promises.push(this._reporter.reportUnitLabelOverrideDelta(formatA, unitA, labelA, labelB, this._compareDirection));
       }
     }
 

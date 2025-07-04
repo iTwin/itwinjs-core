@@ -6,6 +6,7 @@ import { assert, describe, it } from "vitest";
 import { DisposableList, IDisposable, using } from "../core-bentley";
 import { isIDisposable } from "../Disposable";
 
+/* eslint-disable @typescript-eslint/no-deprecated */
 class CallbackDisposable implements IDisposable {
   private _callback: () => void;
   constructor(callback: () => void) {

@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { dispose, Id64String, IDisposable } from "@itwin/core-bentley";
+import { dispose, Id64String } from "@itwin/core-bentley";
 import {
   ComboBox, ComboBoxHandler, convertHexToRgb, createButton, createCheckBox, createColorInput, createComboBox, createNumericInput,
 } from "@itwin/frontend-devtools";
@@ -96,7 +96,7 @@ export class Provider implements FeatureOverrideProvider {
   }
 }
 
-export class Settings implements IDisposable {
+export class Settings implements Disposable {
   private _appearance = FeatureAppearance.defaults;
   private readonly _vp: Viewport;
   private readonly _parent: HTMLElement;
@@ -167,7 +167,7 @@ export class Settings implements IDisposable {
     parent.appendChild(this._element);
   }
 
-  public dispose(): void {
+  public [Symbol.dispose](): void {
     this._parent.removeChild(this._element);
   }
 

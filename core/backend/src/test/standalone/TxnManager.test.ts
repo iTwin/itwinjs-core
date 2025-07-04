@@ -17,6 +17,7 @@ import {
 } from "../../core-backend";
 import { IModelTestUtils, TestElementDrivesElement, TestPhysicalObject, TestPhysicalObjectProps } from "../IModelTestUtils";
 import { IModelNative } from "../../internal/NativePlatform";
+import { EntityClass, SchemaItemKey, SchemaKey } from "@itwin/ecschema-metadata";
 
 /// cspell:ignore accum
 
@@ -104,7 +105,7 @@ describe("TxnManager", () => {
     let model = models.getModel<PhysicalModel>(modelId);
     assert.isUndefined(model.geometryGuid, "geometryGuid starts undefined");
 
-    assert.isDefined(imodel.getMetaData("TestBim:TestPhysicalObject"), "TestPhysicalObject is present");
+    assert.isDefined(await imodel.schemaContext.getSchemaItem(new SchemaItemKey("TestPhysicalObject", new SchemaKey("TestBim", 1, 0, 0)), EntityClass), "TestPhysicalObject is present");
 
     const txns = imodel.txns;
     assert.isFalse(txns.hasPendingTxns);
@@ -171,7 +172,7 @@ describe("TxnManager", () => {
     assert.equal(afterUndo, 1);
     assert.equal(undoAction, TxnAction.Reverse);
 
-    assert.throws(() => elements.getElementProps(elementId), IModelError, "reading element");
+    assert.throws(() => elements.getElementProps(elementId), IModelError, "element not found");
     assert.throws(() => elements.getElement(elementId), IModelError);
     assert.equal(IModelStatus.Success, txns.reinstateTxn());
     model = models.getModel(modelId);
@@ -338,7 +339,7 @@ describe("TxnManager", () => {
       }));
     }
 
-    public dispose(): void {
+    public [Symbol.dispose](): void {
       for (const cleanup of this._cleanup)
         cleanup();
 
@@ -346,10 +347,9 @@ describe("TxnManager", () => {
     }
 
     public static test(txns: TxnManager, event: BeEvent<(changes: TxnChangedEntities) => void>, func: (accum: EventAccumulator) => void): void {
-      const accum = new EventAccumulator(txns);
+      using accum = new EventAccumulator(txns);
       accum.listen(event);
       func(accum);
-      accum.dispose();
     }
 
     public static testElements(iModel: StandaloneDb, func: (accum: EventAccumulator) => void): void {
@@ -920,5 +920,60 @@ describe("TxnManager", () => {
     imodel.saveChanges("1 deleted");
     assert.deepEqual(Array.from(txns.queryLocalChanges({ includeUnsavedChanges: false })), e3);
     assert.deepEqual(Array.from(txns.queryLocalChanges({ includeUnsavedChanges: true })), e3);
+  });
+
+  describe("deleteAllTxns", () => {
+    it("deletes pending and/or unsaved changes", () => {
+      expect(imodel.txns.hasLocalChanges).to.be.false;
+      expect(imodel.txns.hasPendingTxns).to.be.false;
+      expect(imodel.txns.hasUnsavedChanges).to.be.false;
+
+      imodel.elements.insertElement(props);
+      expect(imodel.txns.hasLocalChanges).to.be.true;
+      expect(imodel.txns.hasPendingTxns).to.be.false;
+      expect(imodel.txns.hasUnsavedChanges).to.be.true;
+
+      imodel.txns.deleteAllTxns();
+      expect(imodel.txns.hasLocalChanges).to.be.false;
+
+      imodel.elements.insertElement(props);
+      imodel.saveChanges();
+      expect(imodel.txns.hasLocalChanges).to.be.true;
+      expect(imodel.txns.hasPendingTxns).to.be.true;
+      expect(imodel.txns.hasUnsavedChanges).to.be.false;
+
+      imodel.txns.deleteAllTxns();
+      expect(imodel.txns.hasLocalChanges).to.be.false;
+
+      imodel.elements.insertElement(props);
+      imodel.saveChanges();
+      imodel.elements.insertElement(props);
+      expect(imodel.txns.hasLocalChanges).to.be.true;
+      expect(imodel.txns.hasPendingTxns).to.be.true;
+      expect(imodel.txns.hasUnsavedChanges).to.be.true;
+
+      imodel.txns.deleteAllTxns();
+      expect(imodel.txns.hasLocalChanges).to.be.false;
+    });
+
+    it("clears undo/redo history", () => {
+      expect(imodel.txns.isRedoPossible).to.be.false;
+      expect(imodel.txns.isUndoPossible).to.be.false;
+
+      imodel.elements.insertElement(props);
+      imodel.saveChanges();
+      expect(imodel.txns.isUndoPossible).to.be.true;
+
+      imodel.txns.deleteAllTxns();
+      expect(imodel.txns.isUndoPossible).to.be.false;
+
+      imodel.elements.insertElement(props);
+      imodel.saveChanges();
+      imodel.txns.reverseSingleTxn();
+      expect(imodel.txns.isRedoPossible).to.be.true;
+
+      imodel.txns.deleteAllTxns();
+      expect(imodel.txns.isRedoPossible).to.be.false;
+    });
   });
 });

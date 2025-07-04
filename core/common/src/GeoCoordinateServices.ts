@@ -59,6 +59,7 @@ export enum GeoCoordStatus {
   /** This temporary status is used to mark coordinates for which the conversion has not yet been processed by the backend
    *  as opposed to other coordinate conversions that may have been resolved otherwise (typically a cache).
    *  At the completion of the conversion promise no coordinates should have this status.
+   * @deprecated in 5.0 - will not be removed until after 2026-06-13. Pending is no longer returned as a status for coordinate conversions.
    */
   Pending = -41556,
 }
@@ -75,7 +76,7 @@ export function mapToGeoServiceStatus(s: GeoCoordStatus): GeoServiceStatus {
     case GeoCoordStatus.NoDatumConverter: return GeoServiceStatus.NoDatumConverter;
     case GeoCoordStatus.VerticalDatumConvertError: return GeoServiceStatus.VerticalDatumConvertError;
     case GeoCoordStatus.CSMapError: return GeoServiceStatus.CSMapError;
-    case GeoCoordStatus.Pending: return GeoServiceStatus.Pending;
+    case GeoCoordStatus.Pending: return GeoServiceStatus.Pending; // eslint-disable-line @typescript-eslint/no-deprecated
     default:
       throw new Error("GeoCoordStatus -> GeoServiceStatus - Missing enum conversion");
   }

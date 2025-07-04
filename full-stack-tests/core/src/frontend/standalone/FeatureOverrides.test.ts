@@ -6,7 +6,7 @@ import { assert, expect } from "chai";
 import { Id64 } from "@itwin/core-bentley";
 import { Feature, FeatureTable, GeometryClass, PackedFeatureTable } from "@itwin/core-common";
 import { HiliteSet, IModelApp, IModelConnection, ScreenViewport, SpatialViewState, StandardViewId, Target } from "@itwin/core-frontend";
-import { FeatureOverrides } from "@itwin/core-frontend/lib/cjs/webgl";
+import { FeatureOverrides } from "@itwin/core-frontend/lib/cjs/internal/webgl";
 import { TestUtility } from "../TestUtility";
 import { TestSnapshotConnection } from "../TestSnapshotConnection";
 

@@ -74,7 +74,7 @@ steps:
   - script: node common/scripts/install-run-rush.js audit
     displayName: rush audit
     workingDirectory: ${{ parameters.workingDir }}
-    condition: and(succeeded(), ${{ parameters.runRushAudit }}, ne('${{ parameters.targetBranch }}', 'imodel02'))
+    condition: and(succeeded(), ${{ parameters.runRushAudit }})
 
   - script: node common/scripts/install-run-rush.js build -v -p max
     displayName: rush build
@@ -102,11 +102,10 @@ steps:
       IMJS_OIDC_CLIENT_SECRET: $(IMJS_OIDC_CLIENT_SECRET)
     condition: and(succeeded(), ${{ parameters.buildMobile }}, eq(variables['Agent.OS'], 'Darwin'))
 
-  # The Node 22 update is causing some tests to fail, so disable until they can be fixed.
-  # - script: npm run ios:all
-  #   workingDirectory: core/backend
-  #   displayName: Build & run iOS backend unit tests in Simulator
-  #   condition: and(succeeded(), ${{ parameters.buildMobile }}, eq(variables['Agent.OS'], 'Darwin'))
+  - script: npm run ios:all
+    workingDirectory: core/backend
+    displayName: Build & run iOS backend unit tests in Simulator
+    condition: and(succeeded(), ${{ parameters.buildMobile }}, eq(variables['Agent.OS'], 'Darwin'))
 
   - script: node common/scripts/install-run-rush.js lint
     displayName: rush lint
@@ -135,8 +134,3 @@ steps:
   - script: node common/scripts/install-run-rush.js docs
     displayName: rush docs
     workingDirectory: ${{ parameters.workingDir }}
-
-  - script: node common/scripts/install-run-rush.js extract-api
-    displayName: rush extract-api
-    workingDirectory: ${{ parameters.workingDir }}
-    condition: ${{ parameters.nativePrVal }}
