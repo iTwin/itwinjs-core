@@ -828,7 +828,7 @@ describe("Formatting tests:", () => {
   it("deserialization of custom Formats is consistent", async () => {
     const unitsProvider = new TestUnitsProvider();
     const formatProps: CustomFormatProps = {
-      formatTraits: ["KeepSingleZero", "ApplyRounding", "KeepDecimalPoint", "ShowUnitLabel", "Use1000Separator"],
+      formatTraits: ["keepSingleZero", "applyRounding", "keepDecimalPoint", "showUnitLabel", "use1000Separator"],
       precision: 6,
       type: "Decimal",
       uomSeparator: " ",
@@ -861,14 +861,14 @@ describe("Formatting tests:", () => {
     const unitsProvider = new TestUnitsProvider();
     const formatPropsArray: FormatProps[] = [
       {
-        formatTraits: ["KeepSingleZero", "ApplyRounding", "KeepDecimalPoint", "ShowUnitLabel", "Use1000Separator"],
+        formatTraits: ["keepSingleZero", "applyRounding", "keepDecimalPoint", "showUnitLabel", "use1000Separator"],
         precision: 6,
         type: "Decimal",
         uomSeparator: " ",
       },
       {
 
-        formatTraits: ["KeepSingleZero", "KeepDecimalPoint", "ShowUnitLabel"],
+        formatTraits: ["keepSingleZero", "keepDecimalPoint", "showUnitLabel"],
         precision: 8,
         type: "Fractional",
         uomSeparator: "",
@@ -888,7 +888,7 @@ describe("Formatting tests:", () => {
         },
       },
       {
-        formatTraits: ["TrailZeroes", "KeepSingleZero", "KeepDecimalPoint", "ShowUnitLabel"],
+        formatTraits: ["trailZeroes", "keepSingleZero", "keepDecimalPoint", "showUnitLabel"],
         minWidth: 6,
         precision: 3,
         type: "Bearing",
@@ -903,7 +903,7 @@ describe("Formatting tests:", () => {
         },
       },
       {
-        formatTraits: ["TrailZeroes", "KeepSingleZero", "KeepDecimalPoint", "ShowUnitLabel"],
+        formatTraits: ["trailZeroes", "keepSingleZero", "keepDecimalPoint", "showUnitLabel"],
         minWidth: 4,
         precision: 1,
         type: "Azimuth",
