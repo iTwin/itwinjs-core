@@ -48,6 +48,7 @@ import { IntegratedSpiral3d } from "./spiral/IntegratedSpiral3d";
 import { IntegratedSpiralTypeName } from "./spiral/TransitionSpiral3d";
 import { StrokeOptions } from "./StrokeOptions";
 import { BezierCurve3dH } from "../bspline/BezierCurve3dH";
+import { UnboundedParabola2d } from "./internalContexts/geometry2d/UnboundedParabola";
 
 /**
  * Interface to carry parallel arrays of planes and sections, and optional geometry assembled from them,
@@ -605,17 +606,17 @@ export class CurveFactory {
     return Arc3d.createCircularStartTangentRadius(start, tangentAtStart, radius, upVector, sweep);
   }
 
-  public static createCurvePrimitiveFromImplicitCurve (source: ImplicitCurve2d | ImplicitCurve2d[],
-    sizeHint: number = 100):CurvePrimitive | CurvePrimitive[] | undefined{
-    if (Array.isArray (source)){
-      const result:CurvePrimitive[] = [];
-      for (const s of source){
-        const c = this.createCurvePrimitiveFromImplicitCurve (s);
-        if (c === undefined){
+  public static createCurvePrimitiveFromImplicitCurve(source: ImplicitCurve2d | ImplicitCurve2d[],
+    sizeHint: number = 100): CurvePrimitive | CurvePrimitive[] | undefined {
+    if (Array.isArray(source)) {
+      const result: CurvePrimitive[] = [];
+      for (const s of source) {
+        const c = this.createCurvePrimitiveFromImplicitCurve(s);
+        if (c === undefined) {
           // ignore it!
-        } else if (c instanceof CurvePrimitive){
-          result.push (c);
-        } else if (Array.isArray(c)){
+        } else if (c instanceof CurvePrimitive) {
+          result.push(c);
+        } else if (Array.isArray(c)) {
           for (const c1 of c)
             result.push(c1);
         }
@@ -623,18 +624,16 @@ export class CurveFactory {
       return result;
     }
     // source is a single curve . .
-    if (source instanceof UnboundedCircle2dByCenterAndRadius){
-      return Arc3d.createXY (Point3d.createFrom (source.center), source.radius);
-    }
-    if (source instanceof UnboundedLine2dByPointAndNormal){
-      const vectorAlong = source.vectorAlongLine ();
-      return LineSegment3d.createXYXY (
+    if (source instanceof UnboundedCircle2dByCenterAndRadius) {
+      return Arc3d.createXY(Point3d.createFrom(source.center), source.radius);
+    } else if (source instanceof UnboundedLine2dByPointAndNormal) {
+      const vectorAlong = source.vectorAlongLine();
+      return LineSegment3d.createXYXY(
         source.point.x - sizeHint * vectorAlong.x, source.point.y - sizeHint * vectorAlong.y,
         source.point.x + sizeHint * vectorAlong.x, source.point.y + sizeHint * vectorAlong.y);
-    }
-    if (source instanceof UnboundedHyperbola2d){
-    const result:CurvePrimitive[] = [];
-      /* COMMENTED CODE FOR LINESTRING
+    } else if (source instanceof UnboundedHyperbola2d) {
+      const result: CurvePrimitive[] = [];
+      /* COMMENTED CODE FOR LINESTRING APPROXIMATION
     const degreeStep = 10.0;
     const degreeLimit = 80.0;
     for (const signX of [1,-1]){
@@ -650,31 +649,51 @@ export class CurveFactory {
         result.push (LineString3d.create (strokes));
         }
     */
-   // The bezier branches open on plus and minus u axes, with asymptontes at 45 degree angles in local space
-   // Construct a bezier for 180 degrees of unit circle from negative y to plus 1 with (c,s,w)
-   // Reverse c and w so its normalized form is (sec, tan, 1)
-   // Map those so bezier 0 maps to U-V asymptote, bezier 1 maps to U+v, and bezier 0.5 maps to A
-   // but the secants have 0 weight and evaluate at infinity
-   // so subdivide to safely within 0..1
-   // Repeat with negated sign for U to get the other branch.
-        for (const signU of [1, -1]){
-          const poles = [
-            Point4d.create (signU * source.vectorU.x + source.vectorV.x, signU * source.vectorU.y + source.vectorV.y, 0, 0),
-            Point4d.create (source.pointA.x, source.pointA.y, 0, 1),
-            Point4d.create (signU * source.vectorU.x - source.vectorV.x, signU * source.vectorU.y - source.vectorV.y, 0, 0),
-          ];
-          const fullBezier = BezierCurve3dH.create (poles);
-          if (fullBezier){
-            const branch = fullBezier?.clonePartialCurve (0.05, 0.95);
-            result.push (branch);
-          }}
-      return result;
+      // The bezier branches open on plus and minus u axes, with asymptontes at 45 degree angles in local space
+      // Construct a bezier for 180 degrees of unit circle from negative y to plus 1 with (c,s,w)
+      // Reverse c and w so its normalized form is (sec, tan, 1)
+      // Map those so bezier 0 maps to U-V asymptote, bezier 1 maps to U+v, and bezier 0.5 maps to A
+      // but the secants have 0 weight and evaluate at infinity
+      // so subdivide to safely within 0..1
+      // Repeat with negated sign for U to get the other branch.
+      for (const signU of [1, -1]) {
+        const poles = [
+          Point4d.create(signU * source.vectorU.x + source.vectorV.x, signU * source.vectorU.y + source.vectorV.y, 0, 0),
+          Point4d.create(source.pointA.x, source.pointA.y, 0, 1),
+          Point4d.create(signU * source.vectorU.x - source.vectorV.x, signU * source.vectorU.y - source.vectorV.y, 0, 0),
+        ];
+        const fullBezier = BezierCurve3dH.create(poles);
+        if (fullBezier) {
+          const branch = fullBezier?.clonePartialCurve(0.05, 0.95);
+          result.push(branch);
+        }
       }
-    else if (source instanceof UnboundedEllipse2d){
-      return  Arc3d.create (
-        Point3d.createFrom (source.pointA),
-        Vector3d.createFrom (source.vectorU),
-        Vector3d.createFrom (source.vectorV));
+      return result;
+    } else if (source instanceof UnboundedEllipse2d) {
+      return Arc3d.create(
+        Point3d.createFrom(source.pointA),
+        Vector3d.createFrom(source.vectorU),
+        Vector3d.createFrom(source.vectorV));
+    } else if (source instanceof UnboundedParabola2d) {
+      /* 
+      const halfParabolapoles = [
+        Point4d.create (2 * source.pointA.x, 2 *source.pointA.y, 0, 2),
+        Point4d.create (source.vectorU.x, source.vectorU.y, 0, 0),
+        Point4d.create (2 * source.vectorV.x, 2 * source.vectorV.y, 0, 0),
+      ];
+      */
+      const point0 = source.pointA.plus2Scaled(source.vectorU, 1, source.vectorV, 1);
+      const point1 = source.pointA.minus(source.vectorV);
+      const point2 = source.pointA.plus2Scaled(source.vectorU, -1, source.vectorV, 1);
+      const poles = [
+        Point4d.create(point0.x, point0.y, 0, 1),
+        Point4d.create(point1.x, point1.y, 0, 1),
+        Point4d.create(point2.x, point2.y, 0, 1),
+      ];
+
+      const centerBezier = BezierCurve3dH.create(poles);
+      if (centerBezier !== undefined)
+        return centerBezier.clonePartialCurve(-4, 5);
     }
     return undefined;
   }

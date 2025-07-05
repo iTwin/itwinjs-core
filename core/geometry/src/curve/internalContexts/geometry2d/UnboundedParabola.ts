@@ -15,15 +15,22 @@ import { TrigPolynomial } from "../../../numerics/Polynomials";
 import { ImplicitCurve2d} from "./implicitCurve2d";
 
 /**
- * Internal class for hyperbola in the xy plane.  The hyperbola equation in angular parameterization is
- * * X = A + U * sec(theta) + V * tan(theta)
- * which means that in the (skewed and scaled) coordinate system with origin at A and local u and v as
- *   multiples of U and V the implicit equation is
- * * u^2 - v^2 = 1
- * which means the hyperbola opens along the positive and negative U axis with asymptotes at 45 degrees,
- *    i.e. along the directions (U+V) and (U-V)
+ * Internal class for parabola in the xy plane, with an angular parameterization.
+ * * In uv local coordinates
+ *    * Let c=co(theta) and s = sin(theta)
+ *    * The parabola is (u,v) =  (s/ (1+c), (1-c)/(1+c) )
+ *    * The uv derivative is (u',v') = (1/(c+1), 2s/(c+1) )
+ * * Basic trig identities confirm that u^2 = v as expected for a parabola
+ * * This traces the parabola in a full theta range (-2PI < theta < 2PI)
+ * * The angle theta = 2PI is the singular point.
+ * * In XY coordinates the mapped parabola is
+ *    *         x = A + Uu + Vv
+ *    *         X = A + U * s / (1+c) + V * (1  - 2 * c / (1+c))
+ *    *         X' = U * (1/(c+1) + V * 2s / (c+1) 
+ * * 
+ * * 
  */
-export class UnboundedHyperbola2d extends ImplicitCurve2d  {
+export class UnboundedParabola2d extends ImplicitCurve2d  {
   /** The Cartesian coordinates of any center on the line. */
   public pointA: Point2d;
   /** The local u axis direction. */
@@ -38,39 +45,25 @@ export class UnboundedHyperbola2d extends ImplicitCurve2d  {
     this.vectorV = vectorV;
   }
     /**
-     * Return a clone of this hyperbola.
+     * Return a clone of this Parabola.
      */
-    public clone () : UnboundedHyperbola2d {
+    public clone () : UnboundedParabola2d {
       // (The create method clones the inputs . . .)
-      return  UnboundedHyperbola2d.createCenterAndAxisVectors (this.pointA, this.vectorU, this.vectorV);
+      return  UnboundedParabola2d.createCenterAndAxisVectors (this.pointA, this.vectorU, this.vectorV);
     }
     /**
      * Return a clone of this circle, with radius negated
      */
 
   /**
-   * Create UnboundedHyperbola2d with scale factors
-   * * The implicit equation is
-   *     (x/a)^2 - (y/b)^2 = 1
-   * @param centerX x coordinate of center
-   * @param centerY y coordinate of center
-   * @param radius circle radius
-   * @returns
-   */
-  public static createFromCenterAndScales(centerX: number, centerY: number, scaleU: number, scaleV: number): UnboundedHyperbola2d {
-    return new UnboundedHyperbola2d(Point2d.create(centerX, centerY),
-          Vector2d.create (scaleU,0), Vector2d.create (0, scaleV));
-  }
-
-  /**
-   * Create an UnboundedHyperbola2d from an xy object and a radius.
+   * Create an UnboundedParabola2d from an xy object and a radius.
    * @param pointA xy coordinates of center
    * @param vectorU vector from pointA to to theta=0 vertex, i.e. along axis on the "inside" of the curve
    * @param vectorV vector from pointA to the transverse direction.
    * @returns
    */
-  public static createCenterAndAxisVectors(center: XAndY, vectorU: XAndY, vectorV: XAndY): UnboundedHyperbola2d {
-    return new UnboundedHyperbola2d(Point2d.create (center.x, center.y),
+  public static createCenterAndAxisVectors(center: XAndY, vectorU: XAndY, vectorV: XAndY): UnboundedParabola2d {
+    return new UnboundedParabola2d(Point2d.create (center.x, center.y),
           Vector2d.create (vectorU.x, vectorU.y),
           Vector2d.create (vectorV.x, vectorV.y));
   }
@@ -89,45 +82,44 @@ export class UnboundedHyperbola2d extends ImplicitCurve2d  {
   }
   /**
    *
-   * @param radians parametric angle on the hyperbola
-   * @returns xy coordinate on the hyperbola
+   * @param radians parametric angle on the Parabola
+   * @returns xy coordinate on the Parabola
    */
   public override radiansToPoint2d (radians: number): Point2d | undefined{
     const c = Math.cos (radians);
     const s = Math.sin (radians);
-    if (Geometry.isSmallMetricDistance (Math.abs (c)))
+    const q = 1 + c;
+    if (Geometry.isSmallMetricDistance (Math.abs (q)))
         return undefined;
-    return this.pointA.plus2Scaled (this.vectorU, 1.0 / c, this.vectorV, s / c);
+    return this.pointA.plus2Scaled (this.vectorU, s/q,  this.vectorV, (1 - c)/q);
   }
-  /**
-   *
-   * @param radians parametric angle on the hyperbola
-   * @returns xy coordinate on the hyperbola
-   */
-  public override radiansToTangentVector2d (radians: number): Vector2d | undefined{
-    const c = Math.cos (radians);
-    const s = Math.sin (radians);
-    const cc = c * c;
-    const sec2 = Geometry.conditionalDivideCoordinate (1.0, cc);
-    const secTan = Geometry.conditionalDivideCoordinate (s , cc);
-    if (sec2 === undefined || secTan === undefined)
-      return undefined;
-    return Vector2d.createAdd2Scaled (this.vectorU, secTan, this.vectorV, sec2);
-  }
+  /** OPTIONAL method to return a tangent at given radians value.
+ * * The default implementaiton returns undefined.
+ * * Concrete classes that can be expressed as a function of radians should implement this.
+ */
+    public override radiansToTangentVector2d (radians: number): Vector2d | undefined {
+      const c = Math.cos (radians);
+      const s = Math.sin (radians);
+      const q  = 1+c;
+      const u = Geometry.conditionalDivideCoordinate (1, q);
+      const v = Geometry.conditionalDivideCoordinate(2 * s, q * q);
+      if (u === undefined || v === undefined)
+        return undefined;
+      return Vector2d.createAdd2Scaled (this.vectorU, u, this.vectorV, v);
+    }
 
   /**
-   *
+   * Return the implicit function value v - u*u
    * @param xy space paoint
-   * @returns squared distance to center minus squared radius
    */
 public override functionValue (xy: XAndY) : number {
   const vectorUV = this.globalToLocal (xy);
   if (vectorUV === undefined)
     return 0;
-  return vectorUV.x * vectorUV.x - vectorUV.y * vectorUV.y - 1.0;
+  return vectorUV.y - vectorUV.x * vectorUV.x;
 }
   /**
-   * Evaluate the gradiant (steepest descent) of the implicit function.
+   * Evaluate the (global coordinates) gradiant (steepest descent) of the implicit function.
    * @param xy space paoint
    * @returns gradiant vector for the implicit function
    */
@@ -138,7 +130,7 @@ public override functionValue (xy: XAndY) : number {
     if (vectorUV !== undefined && SmallSystem.linearSystem2d (
       this.vectorU.x, this.vectorU.y,
       this.vectorV.x, this.vectorV.y,
-      2 * vectorUV.x, -2 * vectorUV.y, result))
+      - 2 * vectorUV.x, 1.0, result))
       return result;
     return Vector2d.create (0,0);
     }
@@ -150,17 +142,24 @@ public override functionValue (xy: XAndY) : number {
  * @param radians
  * @returns
 public radiansToPerpFunction (radians: number): number{
-  const curvePoint = this.radiansToXY (radians)!;
-  const sign = 1;
-  const curvePointToCoordinateCenter = Vector2d.createStartEnd (curvePoint, this.pointA);
-    const coffSC =  sign *curvePointToCoordinateCenter.dotProduct (this.vectorU);
-    const coffC =  sign * curvePointToCoordinateCenter.dotProduct(this.vectorV);
-    const coffS = this.vectorU.dotProduct (this.vectorU) + this.vectorV.dotProduct (this.vectorV);
-    const coff1 = this.vectorU.dotProduct (this.vectorV);
-    const coffSS = this.vectorV.dotProduct (this.vectorU);
-const c = Math.cos(radians)
+  const curvePoint = this.radiansToPoint2d (radians)!;
+      const vectorW = Vector2d.createStartEnd (curvePoint, this.pointA);
+    // Coefficients of c and s in the parameterization . . ..
+    const dotWU = vectorW.dotProduct(this.vectorU);
+    const dotWV = vectorW.dotProduct(this.vectorV);
+
+    const dotUU = this.vectorU.dotProduct (this.vectorU);
+    const dotVV = this.vectorV.dotProduct (this.vectorV);
+    const dotUV = this.vectorU.dotProduct (this.vectorV);
+
+    const coff1 =dotWU;
+    const coffC = 2 * dotWU;
+    const coffS = 2 * dotWV + dotUU + 2 * dotVV;
+    const coffCC = dotWU;
+    const coffSC = 2 * dotWV + dotUU - 2 * dotVV;
+    const coffSS = 3 * dotUV;const c = Math.cos(radians)
 const s = Math.sin(radians);
-const f1 = coffSC * s * c + coffC * c + coffS * s + coff1 + coffSS * s * s;
+const f1 = coffCC * c * c + coffSC * s * c + coffC * c + coffS * s + coff1 + coffSS * s * s;
 return f1;
 
 const pointX = this.pointA.plus2Scaled (this.vectorU, 1/c, this.vectorV, s/c);
@@ -170,36 +169,52 @@ const cc = c * c;
 const vectorSpacePointToX = Vector2d.createStartEnd (curvePoint, pointX);
 const tangentX = Vector2d.createZero().plus2Scaled (this.vectorU, s/ cc, this.vectorV, 1.0 / cc );
 const f0 = vectorSpacePointToX.dotProduct(tangentX);
+// eslint-disable-next-line no-console
 console.log ({radians, f0, f1, vectorSpacePointToX, spaceToCurve: vectorSpacePointToX.toJSON ()});
-console.log ({centerToSpacePoint: curvePointToCoordinateCenter, vectorPart});
+// eslint-disable-next-line no-console
+console.log ({vectorW, vectorPart});
 
 return f0;
 }
 */
 /**
- * Solve for parametric radians at hyperbola points which are perpendicular projections of spacePoint.
+ * Solve for parametric radians at Parabola points which are perpendicular projections of spacePoint.
  * * Up to 4 solutionis are possible.
  * @param spacePoint
  * @param handler
  */
     public override emitPerpendiculars(spacePoint: Point2d,
-   handler :(curvePoint: Point2d, radians : number | undefined)=>any):any{
-    const centerToSpacePoint = Vector2d.createStartEnd (spacePoint, this.pointA);
-    // Coefficients of C and S where C and S are the unit circle points parameterized by theta.
+   handler :(curvePoint: Point2d, radians : number | undefined)=>any):void{
+    const vectorW = Vector2d.createStartEnd (spacePoint, this.pointA);
+    // Coefficients of c and s in the parameterization . . ..
+    const dotWU = vectorW.dotProduct(this.vectorU);
+    const dotWV = vectorW.dotProduct(this.vectorV);
 
-    const coffSC =  centerToSpacePoint.dotProduct (this.vectorU);
-    const coffC =  centerToSpacePoint.dotProduct(this.vectorV);
-    const coffS = this.vectorU.dotProduct (this.vectorU) + this.vectorV.dotProduct (this.vectorV);
-    const coff1 = this.vectorU.dotProduct (this.vectorV);
-    const coffSS = this.vectorV.dotProduct (this.vectorU);
+    const dotUU = this.vectorU.dotProduct (this.vectorU);
+    const dotVV = this.vectorV.dotProduct (this.vectorV);
+    const dotUV = this.vectorU.dotProduct (this.vectorV);
+/*
+    const coff1 = dotWU + dotUV;
+    const coffC =  dotWU - dotUV;
+    const coffS = 2 * dotWV + 2 * dotVV + dotUU;
+    const coffCC = 0;
+    const coffSC = 2 * dotWV - 2 * dotVV;
+    const coffSS = 2 * dotUV;
+*/
+    const coff1 =dotWU;
+    const coffC = 2 * dotWU;
+    const coffS = 2 * dotWV + dotUU + 2 * dotVV;
+    const coffCC = dotWU;
+    const coffSC = 2 * dotWV + dotUU - 2 * dotVV;
+    const coffSS = 3 * dotUV;
+  
     const radiansSolutions: number[] = [];
     TrigPolynomial.solveUnitCircleImplicitQuadricIntersection(
-      0, coffSC, coffSS, coffC, coffS, coff1, radiansSolutions);
+      coffCC, coffSC, coffSS, coffC, coffS, coff1, radiansSolutions);
     for (const radians of radiansSolutions){
-      const s = Math.sin (radians);
-      const c = Math.cos (radians);
-      const curvePoint = this.pointA.plus2Scaled (this.vectorU, 1.0 / c, this.vectorV, s / c);
-      handler(curvePoint, radians);
+      const curvePoint = this.radiansToPoint2d (radians);
+      if (curvePoint !== undefined)
+        handler(curvePoint, radians);
     }
 }
 
@@ -213,7 +228,7 @@ public override isDegenerate ():boolean{
 }
 /**
  * Test if the centers and axes of the vectors are close
- * @param other second hyperbola
+ * @param other second Parabola
  * @param negatedAndExchangedAxesAreEqual
  *   * if false, a strong equality test requiring both U and V vectors to match
  *      * This strong test is a test for identical parameterization
@@ -221,7 +236,7 @@ public override isDegenerate ():boolean{
  *      * The weak test is a test for the same implicit set
  * @returns true if identical to tolerance.
  */
-public isSameHyperbola (other: UnboundedHyperbola2d, negatedAndExchangedAxesAreEqual: boolean = false):boolean{
+public isSameParabola (other: UnboundedParabola2d, negatedAndExchangedAxesAreEqual: boolean = false):boolean{
   if (Geometry.isSamePoint2d (this.pointA, other.pointA)){
     if (!negatedAndExchangedAxesAreEqual){
       // simple equality test on the vectors . .

@@ -13,7 +13,7 @@ import { Point2d, Vector2d } from "../../../geometry3d/Point2dVector2d";
 import { XAndY } from "../../../geometry3d/XYZProps";
 import { TrigPolynomial } from "../../../numerics/Polynomials";
 import { ImplicitCurve2d } from "./implicitCurve2d";
-import { AnyChain } from "../../CurveTypes";
+
 
 /**
  * Class for an ellipse in the xy plane.The ellipse equation in angular parameterization is
@@ -87,8 +87,9 @@ export class UnboundedEllipse2d extends ImplicitCurve2d {
   public globalToLocal (spacePoint: XAndY):Vector2d | undefined{
     const result = Vector2d.create ();
     if (SmallSystem.linearSystem2d (
-      this.vectorU.x, this.vectorV.x, spacePoint.x - this.pointA.x,
-      this.vectorU.y, this.vectorV.y, spacePoint.y - this.pointA.y, result))
+      this.vectorU.x, this.vectorV.x, 
+      this.vectorU.y, this.vectorV.y,
+      spacePoint.x - this.pointA.x, spacePoint.y - this.pointA.y, result))
       return result;
     return undefined;
   }
@@ -112,7 +113,8 @@ public override functionValue (xy: XAndY) : number {
     const vectorUV = this.globalToLocal (xy);
     if (vectorUV === undefined)
       return Vector2d.create (0,0);
-    return Vector2d.create (2 * vectorUV.x, 2 * vectorUV.y);
+    return ImplicitCurve2d.gradientLocalToGlobal (2 * vectorUV.x, 2 * vectorUV.y,
+              this.vectorU, this.vectorV);
     }
 /**
  * Find points that are on the ellipse at foot of perpendiculars to the space ponit.
@@ -122,21 +124,23 @@ public override functionValue (xy: XAndY) : number {
  * @param handler function to receive curve points.
  */
 public override emitPerpendiculars(spacePoint: Point2d,
-   handler :(curvePoint: Point2d, radians: number | undefined)=>AnyChain):any{
-    const centerToSpacePoint = Vector2d.createStartEnd (this.pointA, spacePoint);
+   handler :(curvePoint: Point2d, radians: number | undefined)=>void):void{
+    const vectorW = Vector2d.createStartEnd (spacePoint, this.pointA);
     // Coefficients of C and S where C and S are the unit circle points parameterized by theta.
-    const coffSC = centerToSpacePoint.dotProduct (this.vectorU);
-    const coffC = centerToSpacePoint.dotProduct(this.vectorV);
-    const coffS = this.vectorU.dotProduct (this.vectorU); + this.vectorV.dotProduct (this.vectorV);
-    const coff1 = this.vectorU.dotProduct (this.vectorV);
-    const coffSS = this.vectorV.dotProduct (this.vectorU);
+
+    const coffC = vectorW.dotProduct(this.vectorV);
+    const coffS = - vectorW.dotProduct (this.vectorU);
+
+    const coff1 = 0;
+    const dotUV = this.vectorU.dotProduct (this.vectorV);
+    const coffCC = dotUV;
+    const coffSC = this.vectorV.dotProduct (this.vectorV) - this.vectorU.dotProduct (this.vectorU);
+    const coffSS = -dotUV;
     const radiansSolutions: number[] = [];
     TrigPolynomial.solveUnitCircleImplicitQuadricIntersection(
-      0.0, coffSC, coffSS, coffC, coffS, coff1, radiansSolutions);
+      coffCC, coffSC, coffSS, coffC, coffS, coff1, radiansSolutions);
     for (const radians of radiansSolutions){
-      const s = Math.sin (radians);
-      const c = Math.cos (radians);
-      const curvePoint = this.pointA.plus2Scaled (this.vectorU, 1.0 / c, this.vectorV, s / c);
+      const curvePoint = this.radiansToPoint2d (radians)!;
       handler(curvePoint, radians);
     }
   }
@@ -152,6 +156,16 @@ public override emitPerpendiculars(spacePoint: Point2d,
     public override radiansToPoint2d(radians: number): Point2d | undefined {
       return this.pointA.plus2Scaled (this.vectorU, Math.cos (radians), this.vectorV, Math.sin (radians));
     }
+ /**
+   *
+   * @param radians parametric angle on the ellipse
+   * @returns xy coordinate on the ellipse
+   */
+  public override radiansToTangentVector2d (radians: number): Vector2d | undefined{
+    const c = Math.cos (radians);
+    const s = Math.sin (radians);
+    return Vector2d.createAdd2Scaled (this.vectorU, -s, this.vectorV, c);
+  }
 
 
 /**

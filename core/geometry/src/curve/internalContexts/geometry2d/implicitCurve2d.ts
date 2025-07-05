@@ -8,6 +8,7 @@
 
 import { Point2d, Vector2d } from "../../../geometry3d/Point2dVector2d";
 import { XAndY } from "../../../geometry3d/XYZProps";
+import { SmallSystem } from "../../../numerics/SmallSystem";
 /**
  * Abstract base class for curves with an implicit 2d function.
  * * Curves in the class are required to have an implicit functioni f(x,y)=0.
@@ -25,6 +26,20 @@ export abstract class ImplicitCurve2d {
      * @param xy point for evaluation
      */
     public abstract gradiant (xy: XAndY):Vector2d;
+
+    /** Map a gradient vector (du,dv) from its local frame to global */
+    public static gradientLocalToGlobal (du: number, dv: number,
+      vectorU: Vector2d, vectorV: Vector2d):Vector2d {
+    const result = Vector2d.create ();
+    // Use INVERSE of TRANSPOSE of [UV] matrix to map gradiant terms !!!!
+    if (SmallSystem.linearSystem2d (
+      vectorU.x, vectorU.y,
+      vectorV.x, vectorV.y,
+      du, dv, result))
+      return result;
+    return Vector2d.create (0,0);
+
+      }
 
    /**
     * Find all perpendiculars from space point to the curve.
@@ -67,9 +82,14 @@ export abstract class ImplicitCurve2d {
 
 /** OPTIONAL method to return a Point2d at given radians value.
  * * The default implementaiton returns undefined.
- * * Concrete classes that can be expressed as a function of radians must implement this.
+ * * Concrete classes that can be expressed as a function of radians should implement this.
  */
     public radiansToPoint2d (_radians: number): Point2d | undefined { return undefined;}
+/** OPTIONAL method to return a tangent at given radians value.
+ * * The default implementaiton returns undefined.
+ * * Concrete classes that can be expressed as a function of radians should implement this.
+ */
+    public radiansToTangentVector2d (_radians: number): Vector2d | undefined { return undefined;}
   }
 export class Point2dImplicitCurve2d {
   public point: Point2d;

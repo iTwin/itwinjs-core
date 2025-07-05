@@ -226,7 +226,7 @@ export class GeometryCoreTestIO {
       return;
     }
     if (Array.isArray(newGeometry) && newGeometry.length > 0) {
-      if (newGeometry[0] instanceof Point3d) {
+      if (newGeometry[0] instanceof Point3d || newGeometry[0] instanceof Point2d) {
         const linestring = LineString3d.create(newGeometry);
         this.captureGeometry(collection, linestring, dx, dy, dz);
         return;
