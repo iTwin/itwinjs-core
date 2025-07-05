@@ -296,9 +296,9 @@ describe("Schema Differences", () => {
           type: "Decimal",
           precision: 4,
           formatTraits: [
-            "KeepSingleZero",
-            "KeepDecimalPoint",
-            "ShowUnitLabel",
+            "keepSingleZero",
+            "keepDecimalPoint",
+            "showUnitLabel",
           ],
           decimalSeparator: ",",
           thousandSeparator: " ",
@@ -309,7 +309,7 @@ describe("Schema Differences", () => {
               {
                 name: "SourceSchema.MissingUnit",
                 label: "four",
-              }, 
+              },
               {
                 name: "SourceSchema.MissingInvertedUnit",
               },

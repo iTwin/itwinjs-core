@@ -919,7 +919,7 @@ describe("Format", () => {
       expect(serialized.getAttribute("minWidth")).to.eql("10");
       expect(serialized.getAttribute("showSignOption")).to.eql("OnlyNegative");
       // formatTraitsToArray ignores insertion order in favor of an arbitrary order
-      expect(serialized.getAttribute("formatTraits")).to.eql("TrailZeroes|KeepSingleZero");
+      expect(serialized.getAttribute("formatTraits")).to.eql("trailZeroes|keepSingleZero");
       expect(serialized.getAttribute("decimalSeparator")).to.eql(".");
       expect(serialized.getAttribute("thousandSeparator")).to.eql(",");
       expect(serialized.getAttribute("uomSeparator")).to.eql(" ");

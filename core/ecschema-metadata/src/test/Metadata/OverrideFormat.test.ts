@@ -94,7 +94,7 @@ describe("OverrideFormat", () => {
       precision: 2,
       roundFactor: 5,
       showSignOption: "NoSign",
-      formatTraits: ["TrailZeroes", "PrependUnitLabel"],
+      formatTraits: ["trailZeroes", "prependUnitLabel"],
       decimalSeparator: ",",
       thousandSeparator: ".",
       uomSeparator: "-",
