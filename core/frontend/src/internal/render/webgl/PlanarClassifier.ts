@@ -460,7 +460,8 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
       this._projectionMatrix = this._lastValidProjectionMatrix;
       this._frustum = this._lastValidFrustum;
     } else {
-      return;
+      this._projectionMatrix = projection.projectionMatrix;
+      this._frustum = projection.textureFrustum;
     }
 
     this._debugFrustum = projection.debugFrustum;
