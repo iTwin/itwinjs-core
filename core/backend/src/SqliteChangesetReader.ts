@@ -5,7 +5,7 @@
 /** @packageDocumentation
  * @module SQLiteDb
  */
-import { DbChangeStage, DbOpcode, DbResult, DbValueType, Id64String } from "@itwin/core-bentley";
+import { DbChangeStage, DbOpcode, DbResult, DbValueType, Id64String, Logger } from "@itwin/core-bentley";
 import { ECDb } from "./ECDb";
 import { IModelDb } from "./IModelDb";
 import { IModelNative } from "./internal/NativePlatform";
@@ -13,6 +13,7 @@ import { _nativeDb } from "./internal/Symbols";
 import * as fs from "fs";
 import { EOL } from "os";
 import { createHash } from "crypto";
+import { BackendLoggerCategory } from "./BackendLoggerCategory";
 
 /** Changed value type
  * @beta
@@ -458,7 +459,6 @@ export class SqliteChangesetReader implements Disposable {
 
     const stream = fs.createWriteStream(fileName, { flags: "w+" });
     stream.on('error', (err) => {
-      console.error(`Failed to write to file ${fileName}:`, err);
       stream.end(); // Ensure the stream is closed on error
       throw err; // Rethrow the error to notify the caller
     });
