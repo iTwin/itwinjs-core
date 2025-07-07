@@ -1789,7 +1789,7 @@ describe("iModel", () => {
   });
 
   describe("async coordinate conversions", () => {
-    it.only("should output same number of points as input", async () => {
+    it("should output same number of points as input", async () => {
       const iModelCoords: Point3d[] = [];
       const geoCoords: Point3d[] = [];
       for (let numPts = 0; numPts < 3; numPts++) {
@@ -1804,7 +1804,7 @@ describe("iModel", () => {
       }
     });
 
-    it.only("should always have fromCache = 0", async () => {
+    it("should always have fromCache = 0", async () => {
       const iModelCoords: Point3d[] = [];
       const geoCoords: Point3d[] = [];
       for (let numPts = 0; numPts < 3; numPts++) {

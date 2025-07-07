@@ -1466,12 +1466,18 @@ export abstract class IModelDb extends IModel {
 
   /** Get the IModel coordinate corresponding to each GeoCoordinate point in the input */
   public async getIModelCoordinatesFromGeoCoordinates(props: IModelCoordinatesRequestProps): Promise<IModelCoordinatesResponseProps> {
-    return this[_nativeDb].getIModelCoordinatesFromGeoCoordinates(props);
+    const response = this[_nativeDb].getIModelCoordinatesFromGeoCoordinates(props);
+    response.fromCache = 0;
+    response.iModelCoords = response.iModelCoords ?? [];
+    return response;
   }
 
   /** Get the GeoCoordinate (longitude, latitude, elevation) corresponding to each IModel Coordinate point in the input */
   public async getGeoCoordinatesFromIModelCoordinates(props: GeoCoordinatesRequestProps): Promise<GeoCoordinatesResponseProps> {
-    return this[_nativeDb].getGeoCoordinatesFromIModelCoordinates(props);
+    const response = this[_nativeDb].getGeoCoordinatesFromIModelCoordinates(props);
+    response.fromCache = 0;
+    response.geoCoords = response.geoCoords ?? [];
+    return response;
   }
 
   /** Export meshes suitable for graphics APIs from arbitrary geometry in elements in this IModelDb.
