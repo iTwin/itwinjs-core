@@ -308,7 +308,9 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
       await this._queryRenderTimelinePropsPromise;
   }
 
-  /** Start/update the script in the current editing session. Fires onScheduleEditingChanged. */
+  /** Start/update the script in the current editing session. Fires onScheduleEditingChanged.
+   * @beta
+   */
   public setScheduleEditing(newScript: RenderSchedule.Script): void {
     const prevScript = this.scheduleScript;
     const changes: Array<{ timeline: RenderSchedule.ModelTimeline, elements: Set<Id64String> }> = [];
