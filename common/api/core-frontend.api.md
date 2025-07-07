@@ -2649,10 +2649,12 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     moveMapLayerToTop(mapLayerIndex: MapLayerIndex): void;
     get name(): string;
     readonly onOSMBuildingDisplayChanged: BeEvent<(osmBuildingDisplayEnabled: boolean) => void>;
+    // @beta (undocumented)
     readonly onScheduleEditingChanged: BeEvent<(change: Array<{
         timeline: RenderSchedule.ModelTimeline;
         elements: Set<Id64String>;
     }>) => void>;
+    // @beta (undocumented)
     readonly onScheduleEditingCommitted: BeEvent<() => void>;
     readonly onScheduleScriptChanged: BeEvent<(newScript: RenderSchedule.Script | undefined) => void>;
     overrideSubCategory(id: Id64String, ovr: SubCategoryOverride): void;
@@ -5246,9 +5248,7 @@ export class IModelTileTree extends TileTree {
     // (undocumented)
     readonly maxTilesToSkip: number;
     // (undocumented)
-    onScheduleEditingChanged(change: {
-        changedElementIds: Set<Id64String>;
-    }): void;
+    onScheduleEditingChanged(changes: RenderSchedule.EditingChanges[]): void;
     // (undocumented)
     onScheduleEditingCommitted(): void;
     // (undocumented)
@@ -6513,7 +6513,7 @@ export abstract class MapTilingScheme {
     readonly numberOfLevelZeroTilesX: number;
     readonly numberOfLevelZeroTilesY: number;
     // @alpha (undocumented)
-    get rootLevel(): 0 | -1;
+    get rootLevel(): -1 | 0;
     readonly rowZeroAtNorthPole: boolean;
     tileBordersNorthPole(row: number, level: number): boolean;
     tileBordersSouthPole(row: number, level: number): boolean;
@@ -11353,6 +11353,10 @@ export abstract class TileTree {
     get loadPriority(): TileLoadPriority;
     abstract get maxDepth(): number | undefined;
     readonly modelId: Id64String;
+    // @internal
+    onScheduleEditingChanged(_changes: RenderSchedule.EditingChanges[]): void;
+    // @internal
+    onScheduleEditingCommitted(): void;
     get parentsAndChildrenExclusive(): boolean;
     abstract prune(): void;
     get range(): ElementAlignedBox3d;
