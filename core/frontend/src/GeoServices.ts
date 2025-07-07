@@ -12,12 +12,24 @@ import {
 } from "@itwin/core-bentley";
 import { WritableXYAndZ, XYAndZ, XYZProps } from "@itwin/core-geometry";
 import {
-  GeoCoordinatesRequestProps, GeoCoordinatesResponseProps, GeoCoordStatus, GeographicCRSProps, IModelCoordinatesRequestProps, IModelCoordinatesResponseProps,
-  IModelReadRpcInterface, PointWithStatus,
+  GeoCoordinatesRequestProps,
+  GeoCoordinatesResponseProps,
+  GeoCoordStatus,
+  GeographicCRSProps,
+  IModelCoordinatesRequestProps,
+  IModelCoordinatesResponseProps,
+  PointWithStatus,
 } from "@itwin/core-common";
 import { IModelConnection } from "./IModelConnection";
 import { FrontendLoggerCategory } from "./common/FrontendLoggerCategory";
-import { CoordinateMapping, GeoCoordinatesResponse, IModelCoordinatesResponse, IModelReadAPI, NoDatumConverterError, NoGCSDefinedError } from "@itwin/imodelread-common";
+import {
+  CoordinateMapping,
+  GeoCoordinatesResponse,
+  IModelCoordinatesResponse,
+  IModelReadAPI,
+  NoDatumConverterError,
+  NoGCSDefinedError,
+} from "@itwin/imodelread-common";
 
 /** Options used to create a [[CoordinateConverter]].
  * @internal exported strictly for tests.
@@ -367,7 +379,7 @@ export class GeoServices {
         let response: IModelCoordinatesResponse;
         let remappedResponse: IModelCoordinatesResponseProps;
         try {
-          response = await iModelReadAPI.convertIModelCoordinatesFromGeoCoordinates(remappedRequest);
+          response = await iModelReadAPI.convertGeoCoordinatesToIModelCoordinates(remappedRequest);
           remappedResponse = CoordinateMapping.mapIModelCoordResponseIModelReadToRPC(response);
         } catch (error) {
           if (error instanceof NoGCSDefinedError) {
@@ -386,7 +398,7 @@ export class GeoServices {
         let response: GeoCoordinatesResponse;
         let remappedResponse: GeoCoordinatesResponseProps;
         try {
-          response = await iModelReadAPI.convertGeoCoordinatesFromIModelCoordinates(remappedRequest);
+          response = await iModelReadAPI.convertIModelCoordinatesToGeoCoordinates(remappedRequest);
           remappedResponse = CoordinateMapping.mapGeoCoordResponseIModelReadToRPC(response);
         } catch (error) {
           if (error instanceof NoGCSDefinedError) {

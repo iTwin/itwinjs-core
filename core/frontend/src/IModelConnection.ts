@@ -756,8 +756,8 @@ export class BlankConnection extends IModelConnection {
       getTooltipMessage: async () => ({ lines: [] }),
 <<<<<<< HEAD
       getElementMeshes: () => { throw new IModelError(IModelStatus.BadRequest, "getElementMeshes not available for blank connection") },
-      convertIModelCoordinatesFromGeoCoordinates: () => { throw new IModelError(IModelStatus.BadRequest, "convertIModelCoordinatesFromGeoCoordinates not available for blank connection") },
-      convertGeoCoordinatesFromIModelCoordinates: () => { throw new IModelError(IModelStatus.BadRequest, "convertGeoCoordinatesFromIModelCoordinates not available for blank connection") },
+      convertGeoCoordinatesToIModelCoordinates: () => { throw new IModelError(IModelStatus.BadRequest, "convertGeoCoordinatesToIModelCoordinates not available for blank connection") },
+      convertIModelCoordinatesToGeoCoordinates: () => { throw new IModelError(IModelStatus.BadRequest, "convertIModelCoordinatesToGeoCoordinates not available for blank connection") },
       runQuery: () => new ECSqlReader({ execute: async () => ECSqlReader.createDbResponseFromRows([], DbResponseStatus.Done)}, ""),
 =======
       async *runQuery() { },
