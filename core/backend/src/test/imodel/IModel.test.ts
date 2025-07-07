@@ -1788,6 +1788,39 @@ describe("iModel", () => {
     iModel2.close();
   });
 
+  describe("async coordinate conversions", () => {
+    it("should output same number of points as input", async () => {
+      const iModelCoords: Point3d[] = [];
+      const geoCoords: Point3d[] = [];
+      for (let numPts = 0; numPts < 3; numPts++) {
+        const geoResponse = await imodel5.getGeoCoordinatesFromIModelCoordinates({ target: "WGS84", iModelCoords });
+        expect(geoResponse.geoCoords.length).to.equal(numPts);
+        
+        const iModelResponse = await imodel5.getIModelCoordinatesFromGeoCoordinates({ source: "WGS84", geoCoords });
+        expect(iModelResponse.iModelCoords.length).to.equal(numPts);
+        
+        iModelCoords.push(new Point3d());
+        geoCoords.push(new Point3d());
+      }
+    });
+
+    it("should always have fromCache = 0", async () => {
+      const iModelCoords: Point3d[] = [];
+      const geoCoords: Point3d[] = [];
+      for (let numPts = 0; numPts < 3; numPts++) {
+        const geoResponse = await imodel5.getGeoCoordinatesFromIModelCoordinates({ target: "WGS84", iModelCoords });
+        expect(geoResponse.fromCache).to.equal(0);
+        
+        const iModelResponse = await imodel5.getIModelCoordinatesFromGeoCoordinates({ source: "WGS84", geoCoords });
+        expect(iModelResponse.iModelCoords.length).to.equal(numPts);
+        expect(iModelResponse.fromCache).to.equal(0);
+        
+        iModelCoords.push(new Point3d());
+        geoCoords.push(new Point3d());
+      }
+    });
+  });
+
   if (!ProcessDetector.isIOSAppBackend) {
     it("should be able to reproject with iModel coordinates to or from any other GeographicCRS", async () => {
       const convertTest = async (fileName: string, fileGCS: GeographicCRSProps, datum: string | GeographicCRSProps, inputCoord: XYZProps, outputCoord: PointWithStatus) => {
