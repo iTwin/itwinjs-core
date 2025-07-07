@@ -2649,12 +2649,12 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     moveMapLayerToTop(mapLayerIndex: MapLayerIndex): void;
     get name(): string;
     readonly onOSMBuildingDisplayChanged: BeEvent<(osmBuildingDisplayEnabled: boolean) => void>;
-    // @beta (undocumented)
+    // @beta
     readonly onScheduleEditingChanged: BeEvent<(change: Array<{
         timeline: RenderSchedule.ModelTimeline;
         elements: Set<Id64String>;
     }>) => void>;
-    // @beta (undocumented)
+    // @beta
     readonly onScheduleEditingCommitted: BeEvent<() => void>;
     readonly onScheduleScriptChanged: BeEvent<(newScript: RenderSchedule.Script | undefined) => void>;
     overrideSubCategory(id: Id64String, ovr: SubCategoryOverride): void;
