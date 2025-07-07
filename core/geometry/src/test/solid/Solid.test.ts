@@ -531,9 +531,9 @@ describe("Solids", () => {
     const allGeometry: GeometryQuery[] = [];
     let x0 = 0;
     let y0 = 0;
-    const outer = Loop.create(LineString3d.create(Sample.createRectangleXY(0, 0, 4, 3, 0)));
-    const hole0 = Loop.create(LineString3d.create(Sample.createRectangleXY(1, 1, 1, 1, 0)));
-    const hole1 = Loop.create(LineString3d.create(Sample.createRectangleXY(2.5, 0.5, 1, 1, 0)));
+    const outer = Loop.create(LineString3d.create(Sample.createRectangleXY(0, 0, 4, 3)));
+    const hole0 = Loop.create(LineString3d.create(Sample.createRectangleXY(1, 1, 1, 1)));
+    const hole1 = Loop.create(LineString3d.create(Sample.createRectangleXY(2.5, 0.5, 1, 1)));
     const sweepVec = Vector3d.create(0, 0, 4);
     const options = StrokeOptions.createForFacets();
 

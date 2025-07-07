@@ -855,10 +855,10 @@ describe("RegionBoolean", () => {
 
       // union of loops split into groups does not change result
       if (merged) {
-        const merged2 = RegionOps.regionBooleanXY([inputs[0], inputs[1]], [inputs[2], inputs[3]], RegionBinaryOpType.Union);
-        GeometryCoreTestIO.captureCloneGeometry(allGeometry, merged2, x0 += delta);
-        if (ck.testType(merged2, UnionRegion, "regionBooleanXY union produced a UnionRegion"))
-          ck.testExactNumber(merged.children.length, merged2.children.length, "regionBooleanXY union not affected by input grouping)");
+        const merged1 = RegionOps.regionBooleanXY([inputs[0], inputs[1]], [inputs[2], inputs[3]], RegionBinaryOpType.Union);
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, merged1, x0 += delta);
+        if (ck.testType(merged1, UnionRegion, "regionBooleanXY union produced a UnionRegion"))
+          ck.testExactNumber(merged.children.length, merged1.children.length, "regionBooleanXY union not affected by input grouping)");
       }
 
       // sorting loops after union changes nothing

@@ -223,8 +223,8 @@ export class PlanarSubdivision {
     return undefined;
   }
   /**
-   * Create a [[Loop]] for the given face.
-   * @param face a node in the face loop, or an array of HalfEdges that comprise a face (e.g., super face).
+   * Create a [[Loop]] for the given face or super face.
+   * @param face a node in the face loop, or an array of HalfEdges that comprise a loop (e.g., a super face).
    * @param announce optional callback invoked on each edge/curve of the face/Loop.
    * @param compress whether to consolidate adjacent curves in the output Loop (default `false`).
    * If `announce` is provided, no compression is performed, as edges and curves would no longer be in 1-1 correspondence.
