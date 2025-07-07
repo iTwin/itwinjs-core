@@ -215,7 +215,7 @@ export class Formatter {
       let unitValue = 0.0;
       if (spec.format.type === FormatType.Ratio){
         if (1 !== spec.format.units!.length)
-          throw new QuantityError(QuantityStatus.InvalidCompositeFormat, `The Format ${spec.format.name} has an invalid unit specification, we require single presentation unit when using format type 'ratio'`);
+            throw new QuantityError(QuantityStatus.InvalidCompositeFormat, `The Format '${spec.format.name}' with type 'ratio' must have exactly one unit.`);
 
         try {
           unitValue = applyConversion(posMagnitude, unitConversion) + this.FPV_MINTHRESHOLD;
