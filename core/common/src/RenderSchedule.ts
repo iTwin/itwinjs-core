@@ -568,8 +568,10 @@ export namespace RenderSchedule {
     public readonly cuttingPlane?: TimelineEntryList<CuttingPlaneEntry, CuttingPlaneEntryProps, CuttingPlane | undefined>;
     /** The total time period represented by this timeline. */
     public readonly duration: Range1d;
-    /** Indicates whether the schedule editing session has been finalized and is no longer active. */
-    /** @internal */
+    /** Indicates whether the schedule editing session has been finalized and is no longer active.
+     * @internal
+     */
+
     public isEditingCommitted: boolean = false;
 
     public constructor(props: TimelineProps) {
