@@ -528,7 +528,9 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
           branch.add(gf);
         }
 
-        graphics.push(this.createGraphicBranch(branch, node.transform));
+        graphics.push(this.createGraphicBranch(branch, node.transform, {
+        contours: args.plan?.contours,
+      }));
       } else {
         graphics.push(this.createGraphicList(nodeGraphics));
       }
