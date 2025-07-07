@@ -473,42 +473,44 @@ export class IModelTileTree extends TileTree {
     return undefined !== this._transformNodeRanges;
   }
 
-  public onScheduleEditingChanged(change: { changedElementIds: Set<Id64String> }) {
+  public override onScheduleEditingChanged(changes: RenderSchedule.EditingChanges[]): void {
     const displayStyle = IModelApp.viewManager.selectedView?.displayStyle;
     const newScript = displayStyle?.scheduleScript;
     const scriptRef = newScript ? new RenderSchedule.ScriptReference(displayStyle.id, newScript) : undefined;
     const scriptInfo = IModelApp.tileAdmin.getScriptInfoForTreeId(this.modelId, scriptRef);
 
-    const sameScript = this.timeline === scriptInfo?.timeline;
-    if (!sameScript) {
-      const newTimeline = scriptInfo?.timeline;
+    if (scriptInfo?.timeline && this.timeline !== scriptInfo.timeline) {
       this.decoder = acquireImdlDecoder({
         type: this.batchType,
-        omitEdges: false === this.edgeOptions,
-        timeline: newTimeline,
+        omitEdges: this.edgeOptions === false,
+        timeline: scriptInfo.timeline,
         iModel: this.iModel,
         batchModelId: this.modelId,
         is3d: this.is3d,
         containsTransformNodes: this.containsTransformNodes,
         noWorker: !IModelApp.tileAdmin.decodeImdlInWorker,
       });
-      this._options.timeline = newTimeline;
-    }
-    const elemChanges: ElementGeometryChange[] = [];
-
-    for (const id of change.changedElementIds) {
-      elemChanges.push({
-        id,
-        type: DbOpcode.Update,
-        range : new Range3d(),
-      });
+      this._options.timeline = scriptInfo.timeline;
     }
 
-    if (this._rootTile.tileState.type !== "dynamic")
-      this._rootTile.transition(new ScheduleScriptDynamicState(this._rootTile, elemChanges));
+    const changedElements: ElementGeometryChange[] = [];
+    for (const change of changes) {
+      for (const id of change.elements) {
+        changedElements.push({
+          id,
+          type: DbOpcode.Update,
+          range: new Range3d(),
+        });
+      }
+    }
+
+    if (changedElements.length === 0 || this._rootTile.tileState.type === "dynamic")
+      return;
+
+    this._rootTile.transition(new ScheduleScriptDynamicState(this._rootTile, changedElements));
   }
 
-  public onScheduleEditingCommitted() {
+  public override onScheduleEditingCommitted() {
     if (this._rootTile.tileState.type !== "static")
       this._rootTile.transition(new StaticState(this._rootTile));
   }

@@ -1306,24 +1306,18 @@ export abstract class Viewport implements Disposable, TileUser {
 
 
     const scheduleEditingChanged = (
-      changes: Array<{ timeline: RenderSchedule.ModelTimeline, elements: Set<Id64String> }>
+      changes: RenderSchedule.EditingChanges[]
     ) => {
-      for (const { timeline, elements } of changes) {
-        for (const ref of this.getTileTreeRefs()) {
-          const tree = ref.treeOwner.tileTree;
-          if (tree instanceof IModelTileTree && tree.modelId === timeline.modelId) {
-            tree.onScheduleEditingChanged({ changedElementIds: elements });
-          }
-        }
+      for (const ref of this.getTileTreeRefs()) {
+        const tree = ref.treeOwner.tileTree;
+        tree?.onScheduleEditingChanged(changes);
       }
     };
 
     const scheduleEditingCommitted = () => {
       for (const ref of this.getTileTreeRefs()) {
         const tree = ref.treeOwner.tileTree;
-        if (tree instanceof IModelTileTree) {
-          tree.onScheduleEditingCommitted();
-        }
+        tree?.onScheduleEditingCommitted();
       }
     };
 
