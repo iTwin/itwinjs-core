@@ -70,8 +70,9 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
       (change: Array<{ timeline: RenderSchedule.ModelTimeline, elements: Set<Id64String> }>) => void
   >();
 
-  /** Event raised when schedule script edits are committed (finalized). */
-  /** @beta */
+  /** Event raised when schedule script edits are committed (finalized).
+   * @beta
+   */
   public readonly onScheduleEditingCommitted = new BeEvent<
     () => void
   >();
