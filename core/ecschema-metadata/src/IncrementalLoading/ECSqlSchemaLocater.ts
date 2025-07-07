@@ -135,6 +135,7 @@ export abstract class ECSqlSchemaLocater extends IncrementalSchemaLocater {
    * in the schema. The schema locater calls this after the stub has been loaded to fully load the schema in the background.
    * @param schemaKey   The [[SchemaKey]] of the schema to be resolved.
    * @param context     The [[SchemaContext]] to use for resolving references.
+   * @internal
    */
   public async getSchemaJson(schemaKey: SchemaKey, context: SchemaContext): Promise<SchemaProps | undefined> {
     // If the meta schema is an earlier version than 4.0.3, we can't use the ECSql query interface to get the schema
@@ -161,6 +162,7 @@ export abstract class ECSqlSchemaLocater extends IncrementalSchemaLocater {
    * @param schemaName The name of the Schema.
    * @param context The [[SchemaContext]] to use for resolving references.
    * @returns
+   * @internal
    */
   public async getSchemaNoItems(schemaName: string, context: SchemaContext): Promise<SchemaProps | undefined> {
     const schemaRows = await this.executeQuery<SchemaRow>(FullSchemaQueries.schemaNoItemsQuery, { parameters: { schemaName } });
@@ -188,6 +190,7 @@ export abstract class ECSqlSchemaLocater extends IncrementalSchemaLocater {
    * @param schemaName The name of the Schema.
    * @param context The [[SchemaContext]] to which the schema belongs.
    * @returns A promise that resolves to a EntityClassProps array. Maybe empty of no entities are found.
+   * @internal
    */
   public async getEntities(schema: string, context: SchemaContext, queryOverride?: string): Promise<EntityClassProps[]> {
     const query = queryOverride ?? FullSchemaQueries.entityQuery;
@@ -199,6 +202,7 @@ export abstract class ECSqlSchemaLocater extends IncrementalSchemaLocater {
    * @param schemaName The name of the Schema.
    * @param context The SchemaContext to which the schema belongs.
    * @returns A promise that resolves to a MixinProps array. Maybe empty of no entities are found.
+   * @internal
    */
   public async getMixins(schema: string, context: SchemaContext, queryOverride?: string): Promise<MixinProps[]> {
     const query = queryOverride ?? FullSchemaQueries.mixinQuery;
@@ -210,6 +214,7 @@ export abstract class ECSqlSchemaLocater extends IncrementalSchemaLocater {
    * @param schemaName The name of the Schema.
    * @param context The SchemaContext to which the schema belongs.
    * @returns A promise that resolves to a RelationshipClassProps array. Maybe empty if no items are found.
+   * @internal
    */
   public async getRelationships(schema: string, context: SchemaContext, queryOverride?: string): Promise<RelationshipClassProps[]> {
     const query = queryOverride ?? FullSchemaQueries.relationshipClassQuery;
@@ -221,6 +226,7 @@ export abstract class ECSqlSchemaLocater extends IncrementalSchemaLocater {
    * @param schemaName The name of the Schema.
    * @param context The SchemaContext to which the schema belongs.
    * @returns A promise that resolves to a CustomAttributeClassProps array. Maybe empty if not items are found.
+   * @internal
    */
   public async getCustomAttributeClasses(schema: string, context: SchemaContext, queryOverride?: string): Promise<CustomAttributeClassProps[]> {
     const query = queryOverride ?? FullSchemaQueries.customAttributeQuery;
@@ -233,6 +239,7 @@ export abstract class ECSqlSchemaLocater extends IncrementalSchemaLocater {
    * @param schemaName The name of the Schema.
    * @param context The SchemaContext to which the schema belongs.
    * @returns A promise that resolves to a StructClassProps array. Maybe empty if not items are found.
+   * @internal
    */
   public async getStructs(schema: string, context: SchemaContext, queryOverride?: string): Promise<StructClassProps[]> {
     const query = queryOverride ?? FullSchemaQueries.structQuery;
@@ -244,6 +251,7 @@ export abstract class ECSqlSchemaLocater extends IncrementalSchemaLocater {
    * @param schema The name of the Schema.
    * @param context The SchemaContext to which the schema belongs.
    * @returns A promise that resolves to a KindOfQuantityProps array. Maybe empty if not items are found.
+   * @internal
    */
   public async getKindOfQuantities(schema: string, context: SchemaContext): Promise<KindOfQuantityProps[]> {
     return this.querySchemaItem<KindOfQuantityProps>(context, schema, SchemaItemQueries.kindOfQuantity(true), "KindOfQuantity");
@@ -254,6 +262,7 @@ export abstract class ECSqlSchemaLocater extends IncrementalSchemaLocater {
    * @param schema The name of the Schema.
    * @param context The SchemaContext to which the schema belongs.
    * @returns A promise that resolves to a PropertyCategoryProps array. Maybe empty if not items are found.
+   * @internal
    */
   public async getPropertyCategories(schema: string, context: SchemaContext): Promise<PropertyCategoryProps[]> {
     return this.querySchemaItem<PropertyCategoryProps>(context, schema, SchemaItemQueries.propertyCategory(true), "PropertyCategory");
@@ -264,6 +273,7 @@ export abstract class ECSqlSchemaLocater extends IncrementalSchemaLocater {
    * @param schema The name of the Schema.
    * @param context The SchemaContext to which the schema belongs.
    * @returns A promise that resolves to a EnumerationProps array. Maybe empty if not items are found.
+   * @internal
    */
   public async getEnumerations(schema: string, context: SchemaContext): Promise<EnumerationProps[]> {
     return this.querySchemaItem<EnumerationProps>(context, schema, SchemaItemQueries.enumeration(true), "Enumeration");
@@ -274,6 +284,7 @@ export abstract class ECSqlSchemaLocater extends IncrementalSchemaLocater {
    * @param schema The name of the Schema.
    * @param context The SchemaContext to which the schema belongs.
    * @returns A promise that resolves to a SchemaItemUnitProps array. Maybe empty if not items are found.
+   * @internal
    */
   public async getUnits(schema: string, context: SchemaContext): Promise<SchemaItemUnitProps[]> {
     return this.querySchemaItem<SchemaItemUnitProps>(context, schema, SchemaItemQueries.unit(true), "Unit");
@@ -284,6 +295,7 @@ export abstract class ECSqlSchemaLocater extends IncrementalSchemaLocater {
    * @param schema The name of the Schema.
    * @param context The SchemaContext to which the schema belongs.
    * @returns A promise that resolves to a InvertedUnitProps array. Maybe empty if not items are found.
+   * @internal
    */
   public async getInvertedUnits(schema: string, context: SchemaContext): Promise<InvertedUnitProps[]> {
     return this.querySchemaItem<InvertedUnitProps>(context, schema, SchemaItemQueries.invertedUnit(true), "InvertedUnit");
@@ -294,6 +306,7 @@ export abstract class ECSqlSchemaLocater extends IncrementalSchemaLocater {
    * @param schema The name of the Schema.
    * @param context The SchemaContext to which the schema belongs.
    * @returns A promise that resolves to a ConstantProps array. Maybe empty if not items are found.
+   * @internal
    */
   public async getConstants(schema: string, context: SchemaContext): Promise<ConstantProps[]> {
     return this.querySchemaItem<ConstantProps>(context, schema, SchemaItemQueries.constant(true), "Constant");
@@ -304,6 +317,7 @@ export abstract class ECSqlSchemaLocater extends IncrementalSchemaLocater {
    * @param schema The name of the Schema.
    * @param context The SchemaContext to which the schema belongs.
    * @returns A promise that resolves to a UnitSystemProps array. Maybe empty if not items are found.
+   * @internal
    */
   public async getUnitSystems(schema: string, context: SchemaContext): Promise<UnitSystemProps[]> {
     return this.querySchemaItem<UnitSystemProps>(context, schema, SchemaItemQueries.unitSystem(true), "UnitSystem");
@@ -314,6 +328,7 @@ export abstract class ECSqlSchemaLocater extends IncrementalSchemaLocater {
    * @param schema The name of the Schema.
    * @param context The SchemaContext to which the schema belongs.
    * @returns A promise that resolves to a PhenomenonProps array. Maybe empty if not items are found.
+   * @internal
    */
   public async getPhenomenon(schema: string, context: SchemaContext): Promise<PhenomenonProps[]> {
     return this.querySchemaItem<PhenomenonProps>(context, schema, SchemaItemQueries.phenomenon(true), "Phenomenon");
@@ -324,6 +339,7 @@ export abstract class ECSqlSchemaLocater extends IncrementalSchemaLocater {
    * @param schema The name of the Schema.
    * @param context The SchemaContext to which the schema belongs.
    * @returns A promise that resolves to a SchemaItemFormatProps array. Maybe empty if not items are found.
+   * @internal
    */
   public async getFormats(schema: string, context: SchemaContext): Promise<SchemaItemFormatProps[]> {
     return this.querySchemaItem<SchemaItemFormatProps>(context, schema, SchemaItemQueries.format(true), "Format");
@@ -331,6 +347,7 @@ export abstract class ECSqlSchemaLocater extends IncrementalSchemaLocater {
 
   /**
    * Gets [[SchemaInfo]] objects for all schemas including their direct schema references.
+   * @internal
    */
   public async loadSchemaInfos(): Promise<ReadonlyArray<SchemaInfo>> {
     const schemaRows = await this.executeQuery<SchemaInfoRow>(ecsqlQueries.schemaInfoQuery);
@@ -347,6 +364,8 @@ export abstract class ECSqlSchemaLocater extends IncrementalSchemaLocater {
    * Gets the [[SchemaProps]] to create the basic schema skeleton. Depending on which options are set, the schema items or class hierarchy
    * can be included in the initial fetch.
    * @param schemaKey The [[SchemaKey]] of the schema to be resolved.
+   * @returns A promise that resolves to the schema partials, which is an array of [[SchemaProps]].
+   * @internal
    */
   public async getSchemaPartials(schemaKey: SchemaKey, context: SchemaContext): Promise<ReadonlyArray<SchemaProps> | undefined> {
     const [schemaRow] = await this.executeQuery<SchemaStubRow>(ecsqlQueries.schemaStubQuery, {
