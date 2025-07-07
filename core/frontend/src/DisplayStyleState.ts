@@ -336,7 +336,9 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     }
   }
 
-  /** Commit the editing session. */
+  /** Commit the editing session.
+   * @beta
+   */
   public commitScheduleEditing(): void {
     this.onScheduleEditingCommitted.raiseEvent();
     if (!this.scheduleScript)
