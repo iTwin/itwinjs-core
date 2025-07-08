@@ -4,8 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { Viewport } from "@itwin/core-frontend";
 import { RenderSchedule, RgbColor } from "@itwin/core-common";
-import { Transform } from "@itwin/core-geometry";
-import { assert, Id64String | from "@itwin/core-bentley";
+import { assert, Id64String } from "@itwin/core-bentley";
 
 // __PUBLISH_EXTRACT_START__ ScheduleScript_editingMode
 /** Applies color and visibility changes to a specified element using interactive
@@ -36,7 +35,6 @@ export function editElementTimeline(vp: Viewport, elementId: Id64String, modelId
   script = RenderSchedule.Script.fromJSON(builder.finish());
   assert(script !== undefined);
   vp.displayStyle.setScheduleEditing(script);
-  
   // ...make some other changes to the script if desired...
 
   // Commit changes, triggering full graphical refresh.
