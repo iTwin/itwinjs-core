@@ -1321,7 +1321,11 @@ export abstract class Viewport implements Disposable, TileUser {
       }
     };
 
-    removals.push(style.onScheduleEditingChanged.addListener(scheduleEditingChanged));
+    removals.push(
+      style.onScheduleEditingChanged.addListener((changes) => {
+        void scheduleEditingChanged(changes);
+      })
+    );
     removals.push(style.onScheduleEditingCommitted.addListener(scheduleEditingCommitted));
 
     removals.push(settings.onViewFlagsChanged.addListener((vf) => {
