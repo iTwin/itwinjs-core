@@ -1,4 +1,4 @@
-import { AnnotationTextStyle, BriefcaseDb, IModelDb, TextAnnotation2d } from "@itwin/core-backend";
+import { AnnotationTextStyle, BriefcaseDb, Drawing, IModelDb, TextAnnotation2d } from "@itwin/core-backend";
 import { Id64String } from "@itwin/core-bentley";
 import { Placement2d, Placement2dProps, TextAnnotation, TextAnnotationProps, TextStyleSettings, TextStyleSettingsProps } from "@itwin/core-common";
 
@@ -113,6 +113,23 @@ export async function deleteText(iModelKey: string, elementId: Id64String): Prom
     text.delete();
 
     iModel.saveChanges(`Deleted text annotation`);
+  } catch (e) {
+    iModel.abandonChanges();
+    throw e;
+  }
+}
+
+export async function setScaleFactor(iModelKey: string, modelId: Id64String, scaleFactor: number): Promise<void> {
+  const iModel = BriefcaseDb.findByKey(iModelKey);
+
+  try {
+    const element = iModel.elements.getElement(modelId);
+    if (element instanceof Drawing) {
+      element.scaleFactor = scaleFactor;
+      await iModel.locks.acquireLocks({ shared: [modelId], exclusive: [element.id] });
+      element.update();
+      iModel.saveChanges(`Updated scale factor for drawing ${element.id}`);
+    }
   } catch (e) {
     iModel.abandonChanges();
     throw e;

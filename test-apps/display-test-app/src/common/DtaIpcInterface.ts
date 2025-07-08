@@ -69,5 +69,10 @@ export interface DtaIpcInterface {
   /**
    * Deletes an existing text annotation in the specified iModel.
    */
-  deleteText(iModelKey: string, elementId: Id64String): Promise<void>
+  deleteText(iModelKey: string, elementId: Id64String): Promise<void>;
+
+  /**
+   * If the model is a DrawingModel, sets the scale factor on the Drawing element.
+   */
+  setScaleFactor(iModelKey: string, modelId: Id64String, scaleFactor: number): Promise<void>;
 }

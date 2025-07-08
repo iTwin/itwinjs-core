@@ -12,6 +12,7 @@ import { IModelDb } from "../IModelDb";
 import { assert, Id64String, NonFunctionPropertiesOf } from "@itwin/core-bentley";
 import * as LineBreaker from "linebreak";
 import { AnnotationTextStyle } from "./TextAnnotationElement";
+import { Drawing } from "../Element";
 
 
 /** @internal */
@@ -44,9 +45,10 @@ export type ComputeRangesForTextLayout = (args: ComputeRangesForTextLayoutArgs) 
  */
 export type FindFontId = (name: string, type?: FontType) => FontId;
 
-/** @internal */
+/** @internal chiefly for tests. */
 export type FindTextStyle = (id: Id64String) => TextStyleSettings;
 
+/** @internal */
 function createFindTextStyleImpl(iModel: IModelDb): FindTextStyle {
   return function findTextStyleImpl(id: Id64String): TextStyleSettings {
     const annotationTextStyle = iModel.elements.tryGetElement<AnnotationTextStyle>(id);
@@ -67,10 +69,10 @@ export interface LayoutTextBlockArgs {
   textBlock: TextBlock;
   /** The iModel from which to obtain fonts and [TextStyle]($common)s when laying out glyphs. */
   iModel: IModelDb;
+  /** The text style resolver used to resolve effective text styles during layout. */
+  textStyleResolver: TextStyleResolver;
   /** @internal chiefly for tests, by default uses IModelJsNative.DgnDb.computeRangesForText. */
   computeTextRange?: ComputeRangesForTextLayout;
-  /** @internal chiefly for tests, by default looks up styles from a workspace. */
-  findTextStyle?: FindTextStyle;
   /** @internal chiefly for tests, by default uses IModelDb.fontMap. */
   findFontId?: FindFontId;
 }
@@ -88,9 +90,7 @@ export function layoutTextBlock(args: LayoutTextBlockArgs): TextBlockLayout {
   const findFontId = args.findFontId ?? ((name, type) => args.iModel.fonts.findId({ name, type }) ?? 0);
   const computeTextRange = args.computeTextRange ?? ((x) => args.iModel.computeRangesForText(x));
 
-  const findTextStyle = args.findTextStyle ?? createFindTextStyleImpl(args.iModel);
-
-  return new TextBlockLayout(args.textBlock, new LayoutContext(args.textBlock, findTextStyle, computeTextRange, findFontId));
+  return new TextBlockLayout(args.textBlock, new LayoutContext(args.textStyleResolver, computeTextRange, findFontId));
 }
 
 /**
@@ -128,7 +128,6 @@ export function computeGraphemeOffsets(args: ComputeGraphemeOffsetsArgs): Range2
   const { textBlock, paragraphIndex, runLayoutResult, graphemeCharIndexes, iModel } = args;
   const findFontId = args.findFontId ?? ((name, type) => iModel.fonts.findId({ name, type }) ?? 0);
   const computeTextRange = args.computeTextRange ?? ((x) => iModel.computeRangesForText(x));
-  const findTextStyle = args.findTextStyle ?? createFindTextStyleImpl(args.iModel);
   const source = textBlock.paragraphs[paragraphIndex].runs[runLayoutResult.sourceRunIndex];
 
   if (source.type !== "text" || runLayoutResult.characterCount === 0) {
@@ -137,7 +136,7 @@ export function computeGraphemeOffsets(args: ComputeGraphemeOffsetsArgs): Range2
 
   const style = TextStyleSettings.fromJSON(runLayoutResult.textStyle);
 
-  const layoutContext = new LayoutContext(textBlock, findTextStyle, computeTextRange, findFontId);
+  const layoutContext = new LayoutContext(args.textStyleResolver, computeTextRange, findFontId);
   const graphemeRanges: Range2d[] = [];
 
   graphemeCharIndexes.forEach((_, index) => {
@@ -183,15 +182,43 @@ function applyBlockSettings(target: TextStyleSettings, source: TextStyleSettings
  * Resolves the effective style of TextBlockComponents, taking into account overrides and styles of the instance and its parent(s).
  * @beta
  */
-export class TextStyleResolverContext {
+export class TextStyleResolver {
   private readonly _textStyles = new Map<Id64String, TextStyleSettings>();
+  private readonly _findTextStyle: FindTextStyle;
   /** The resolved style of the TextBlock. */
   public readonly blockSettings: TextStyleSettings;
+  public readonly scaleFactor: number;
 
-  public constructor(textBlock: TextBlock, private readonly _findTextStyle: FindTextStyle) {
+  /**
+   * @param textBlock The text block whose styles are to be resolved.
+   * @param _iModel The iModel to look up text styles from.
+   * @param _modelId The ID of the model containing the text block, used to compute the scale factor.
+   * @param findTextStyle chiefly for tests, by default looks up styles from the iModel.
+   */
+  public constructor(textBlock: TextBlock, private readonly _iModel: IModelDb, modelId?: Id64String, findTextStyle?: FindTextStyle) {
+    this._findTextStyle = findTextStyle ?? createFindTextStyleImpl(this._iModel);
+
+    this.scaleFactor = 1;
+    if (modelId) {
+      const element = this._iModel.elements.getElement(modelId);
+      if (element instanceof Drawing)
+        this.scaleFactor = element.scaleFactor;
+    }
+
     this.blockSettings = this.findTextStyle(textBlock.styleId);
     if (textBlock.styleOverrides)
       this.blockSettings = this.blockSettings.clone(textBlock.styleOverrides);
+  }
+
+  private resolveParagraphSettingsImpl(paragraph: Paragraph): TextStyleSettings {
+    let settings = this.blockSettings;
+
+    if (paragraph.styleId)
+      settings = this.findTextStyle(paragraph.styleId);
+    if (paragraph.overridesStyle)
+      settings = settings.clone(paragraph.styleOverrides);
+
+    return settings;
   }
 
   /** Looks up an [[AnnotationTextStyle]] by ID. Uses caching. */
@@ -206,20 +233,13 @@ export class TextStyleResolverContext {
 
   /** Resolves the effective style for a [Paragraph]($common). Paragraph should be child of provided TextBlock. */
   public resolveParagraphSettings(paragraph: Paragraph): TextStyleSettings {
-    let settings = this.blockSettings;
-
-    if (paragraph.styleId)
-      settings = this.findTextStyle(paragraph.styleId);
-    if (paragraph.overridesStyle)
-      settings = settings.clone(paragraph.styleOverrides);
-
-    // Still apply block specific settings (lineSpacingFactor, lineHeight, and widthFactor). These must be set on the block, as they are meaningless on individual paragraphs/runs
-    return applyBlockSettings(settings, this.blockSettings);
+    // Apply block specific settings (lineSpacingFactor, lineHeight, and widthFactor). These must be set on the block, as they are meaningless on individual paragraphs/runs
+    return applyBlockSettings(this.resolveParagraphSettingsImpl(paragraph), this.blockSettings);
   }
 
   /** Resolves the effective style for a [Run]($common). Run should be child of provided Paragraph and TextBlock. */
   public resolveRunSettings(paragraph: Paragraph, run: Run): TextStyleSettings {
-    let settings = this.resolveParagraphSettings(paragraph);
+    let settings = this.resolveParagraphSettingsImpl(paragraph);
 
     if (run.styleId)
       settings = this.findTextStyle(run.styleId);
@@ -232,12 +252,10 @@ export class TextStyleResolverContext {
   }
 }
 
-class LayoutContext extends TextStyleResolverContext {
+class LayoutContext {
   private readonly _fontIds = new Map<string, FontId>();
 
-  public constructor(block: TextBlock, findTextStyle: FindTextStyle, private readonly _computeTextRange: ComputeRangesForTextLayout, private readonly _findFontId: FindFontId) {
-    super(block, findTextStyle);
-  }
+  public constructor(public readonly textStyleResolver: TextStyleResolver, private readonly _computeTextRange: ComputeRangesForTextLayout, private readonly _findFontId: FindFontId) {}
 
   public findFontId(name: string): FontId {
     let fontId = this._fontIds.get(name);
@@ -263,8 +281,8 @@ class LayoutContext extends TextStyleResolverContext {
       baselineShift,
       bold: style.isBold,
       italic: style.isItalic,
-      lineHeight: this.blockSettings.lineHeight,
-      widthFactor: this.blockSettings.widthFactor,
+      lineHeight: this.textStyleResolver.blockSettings.lineHeight,
+      widthFactor: this.textStyleResolver.blockSettings.widthFactor,
     });
 
     if ("none" !== baselineShift) {
@@ -393,7 +411,7 @@ export class RunLayout {
   }
 
   public static create(source: Run, parentParagraph: Paragraph,  context: LayoutContext): RunLayout {
-    const style = context.resolveRunSettings(parentParagraph, source);
+    const style = context.textStyleResolver.resolveRunSettings(parentParagraph, source);
     const fontId = context.findFontId(style.fontName);
     const charOffset = 0;
     const offsetFromLine = { x: 0, y: 0 };
@@ -594,13 +612,11 @@ export class TextBlockLayout {
   /** The range including margins of the [[TextBlock]]. */
   public range = new Range2d();
   public lines: LineLayout[] = [];
-  public readonly blockSettings: TextStyleSettings;
   private _context: LayoutContext;
 
   public constructor(source: TextBlock, context: LayoutContext) {
     this._context = context;
     this.source = source;
-    this.blockSettings = context.blockSettings.clone();
 
     if (source.width > 0) {
       this.textRange.low.x = 0;
@@ -751,7 +767,7 @@ export class TextBlockLayout {
     // Place it below any existing lines
     if (this.lines.length > 0) {
       lineOffset.y += this._back.offsetFromDocument.y;
-      lineOffset.y -= context.blockSettings.lineSpacingFactor * context.blockSettings.lineHeight;
+      lineOffset.y -= context.textStyleResolver.blockSettings.lineSpacingFactor * context.textStyleResolver.blockSettings.lineHeight;
     }
 
     line.offsetFromDocument = lineOffset;

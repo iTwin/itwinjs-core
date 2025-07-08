@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { BaselineShift, ColorDef, FractionRun, LineBreakRun, Placement2dProps, TabRun, TextAnnotation, TextAnnotationAnchor, TextAnnotationFrameShape, TextAnnotationProps, TextBlock, TextBlockJustification, TextBlockMargins, TextFrameStyleProps, TextRun, TextStyleSettingsProps } from "@itwin/core-common";
+import { BaselineShift, ColorDef, FractionRun, LineBreakRun, Placement2dProps, TabRun, TextAnnotation, TextAnnotationAnchor, TextAnnotationFrameShape, TextAnnotationProps, TextBlock, TextBlockJustification, TextBlockMargins, TextRun, TextStyleSettingsProps } from "@itwin/core-common";
 import { DecorateContext, Decorator, GraphicType, IModelApp, IModelConnection, readElementGraphics, RenderGraphicOwner, Tool } from "@itwin/core-frontend";
 import { DtaRpcInterface } from "../common/DtaRpcInterface";
 import { assert, Id64, Id64String } from "@itwin/core-bentley";
@@ -19,6 +19,7 @@ class TextEditor implements Decorator {
   private _entityId: Id64String = Id64.invalid;
   private _graphic?: RenderGraphicOwner;
   public categoryId: Id64String = Id64.invalid;
+  public modelId: Id64String = Id64.invalid;
 
   // TextAnnotation properties
   public origin: Point3d = new Point3d(0, 0, 0);
@@ -110,7 +111,7 @@ class TextEditor implements Decorator {
 
   public appendTab(spaces?: number): void {
     this.textBlock.appendRun(TabRun.create({
-      styleName: "",
+      styleId: "",
       styleOverrides: { ... this.runStyle, tabInterval: spaces },
     }));
   }
@@ -165,6 +166,7 @@ class TextEditor implements Decorator {
       rpcProps,
       this.annotationProps,
       this.categoryId,
+      this.modelId,
       this.placementProps,
       this.debugAnchorPointAndRange
     );
@@ -194,6 +196,10 @@ export class TextDecorationTool extends Tool {
     const vp = IModelApp.viewManager.selectedView;
     if (!vp) {
       return false;
+    }
+
+    if (vp.view.is2d()) {
+      editor.modelId = vp.view.baseModelId;
     }
 
     const cmd = inArgs[0].toLowerCase();
@@ -448,11 +454,10 @@ export class TextDecorationTool extends Tool {
       }
       case "insert": {
         assert(vp.view.is2d() === true, "View is not 2d");
-        const modelId = vp.view.baseModelId;
         const id = await dtaIpc.insertText(
           vp.iModel.key,
           editor.categoryId,
-          modelId,
+          editor.modelId,
           editor.placementProps,
           editor.annotationProps
         );
@@ -488,6 +493,24 @@ export class TextDecorationTool extends Tool {
         );
 
         return true;
+      }
+      case "scale": {
+        if (!arg) {
+          throw new Error("Expected scale factor");
+        }
+
+        const scaleFactor = Number(arg);
+        if (isNaN(scaleFactor)) {
+          throw new Error("Expected a number for scale factor");
+        }
+
+        await dtaIpc.setScaleFactor(
+          vp.iModel.key,
+          editor.modelId,
+          scaleFactor
+        );
+
+        break;
       }
 
       default:

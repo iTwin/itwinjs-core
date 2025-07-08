@@ -11,7 +11,7 @@ import { IpcHandler } from "@itwin/core-backend";
 import { getConfig } from "../common/DtaConfiguration";
 import { createSectionDrawing } from "./SectionDrawingImpl";
 import { Placement2dProps, TextAnnotationProps, TextStyleSettingsProps } from "@itwin/core-common";
-import { deleteText, deleteTextStyle, insertText, insertTextStyle, updateText, updateTextStyle } from "./TextImpl";
+import { deleteText, deleteTextStyle, insertText, insertTextStyle, setScaleFactor, updateText, updateTextStyle } from "./TextImpl";
 
 const mainWindowName = "mainWindow";
 const getWindowSize = (winSize?: string) => {
@@ -65,6 +65,10 @@ class DtaHandler extends IpcHandler implements DtaIpcInterface {
 
   public async deleteText(iModelKey: string, elementId: Id64String): Promise<void> {
     return deleteText(iModelKey, elementId);
+  }
+
+  public async setScaleFactor(iModelKey: string, modelId: Id64String, scaleFactor: number): Promise<void> {
+    return setScaleFactor(iModelKey, modelId, scaleFactor);
   }
 }
 

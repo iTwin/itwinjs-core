@@ -10,7 +10,7 @@ import { AnnotationTextStyleProps, BisCodeSpec, Code, CodeProps, CodeScopeProps,
 import { IModelDb } from "../IModelDb";
 import { AnnotationElement2d, DefinitionElement, GraphicalElement3d, OnElementIdArg, OnElementPropsArg } from "../Element";
 import { DbResult, Id64String } from "@itwin/core-bentley";
-import { layoutTextBlock } from "./TextBlockLayout";
+import { layoutTextBlock, TextStyleResolver } from "./TextBlockLayout";
 import { appendTextAnnotationGeometry } from "./TextAnnotationGeometry";
 
 function parseTextAnnotationData(json: string | undefined): TextAnnotationProps | undefined {
@@ -22,12 +22,13 @@ function parseTextAnnotationData(json: string | undefined): TextAnnotationProps 
   }
 }
 
-function getElementGeometryBuilderParams(iModel: IModelDb, _placementProps: PlacementProps, stringifiedAnnotationProps: string, categoryId: Id64String, _subCategory?: Id64String): ElementGeometryBuilderParams {
+function getElementGeometryBuilderParams(iModel: IModelDb, modelId: Id64String, _placementProps: PlacementProps, stringifiedAnnotationProps: string, categoryId: Id64String, _subCategory?: Id64String): ElementGeometryBuilderParams {
   const annotationProps = parseTextAnnotationData(stringifiedAnnotationProps);
   const textBlock = TextAnnotation.fromJSON(annotationProps).textBlock;
-  const layout = layoutTextBlock({ iModel, textBlock });
+  const textStyleResolver = new TextStyleResolver(textBlock, iModel, modelId);
+  const layout = layoutTextBlock({ iModel, textBlock, textStyleResolver });
   const builder = new ElementGeometry.Builder();
-  appendTextAnnotationGeometry({ layout, annotationProps: annotationProps ?? {}, builder, categoryId })
+  appendTextAnnotationGeometry({ layout, textStyleResolver, annotationProps: annotationProps ?? {}, builder, categoryId })
 
   return { entryArray: builder.entries };
 }
@@ -66,7 +67,7 @@ export class TextAnnotation2d extends AnnotationElement2d {
     const props = super.toJSON() as TextAnnotation2dProps;
     props.textAnnotationData = this._textAnnotationData;
     if (this._textAnnotationData) {
-      props.elementGeometryBuilderParams = getElementGeometryBuilderParams(this.iModel, this.placement, this._textAnnotationData, this.category);
+      props.elementGeometryBuilderParams = getElementGeometryBuilderParams(this.iModel, this.model, this.placement, this._textAnnotationData, this.category);
     }
 
     return props;
@@ -99,7 +100,7 @@ export class TextAnnotation2d extends AnnotationElement2d {
       return;
     }
 
-    props.elementGeometryBuilderParams = getElementGeometryBuilderParams(iModelDb, props.placement ?? Placement2d.fromJSON(), props.textAnnotationData, props.category);
+    props.elementGeometryBuilderParams = getElementGeometryBuilderParams(iModelDb, props.model, props.placement ?? Placement2d.fromJSON(), props.textAnnotationData, props.category);
   }
 
   protected override collectReferenceIds(ids: EntityReferenceSet): void {
@@ -150,7 +151,7 @@ export class TextAnnotation3d extends GraphicalElement3d {
     const props = super.toJSON() as TextAnnotation3dProps;
     props.textAnnotationData = this._textAnnotationData;
     if (this._textAnnotationData) {
-      props.elementGeometryBuilderParams = getElementGeometryBuilderParams(this.iModel, this.placement, this._textAnnotationData, this.category);
+      props.elementGeometryBuilderParams = getElementGeometryBuilderParams(this.iModel, this.model, this.placement, this._textAnnotationData, this.category);
     }
 
     return props;
@@ -183,7 +184,7 @@ export class TextAnnotation3d extends GraphicalElement3d {
       return;
     }
 
-    props.elementGeometryBuilderParams = getElementGeometryBuilderParams(iModelDb, props.placement ?? Placement3d.fromJSON(), props.textAnnotationData, props.category);
+    props.elementGeometryBuilderParams = getElementGeometryBuilderParams(iModelDb, props.model, props.placement ?? Placement3d.fromJSON(), props.textAnnotationData, props.category);
   }
 
   protected override collectReferenceIds(ids: EntityReferenceSet): void {

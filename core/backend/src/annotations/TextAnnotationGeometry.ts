@@ -7,7 +7,7 @@
  */
 
 import { ColorDef, ElementGeometry, FillDisplay, GeometryParams, TextAnnotation, TextAnnotationProps, TextStyleSettings } from "@itwin/core-common";
-import { TextBlockLayout } from "./TextBlockLayout";
+import { TextBlockLayout, TextStyleResolver } from "./TextBlockLayout";
 import { LineString3d, PointString3d, Range2d, Transform } from "@itwin/core-geometry";
 import { Id64, Id64String } from "@itwin/core-bentley";
 import { produceTextBlockGeometry } from "./TextBlockGeometry";
@@ -23,6 +23,8 @@ export interface AppendTextAnnotationGeometryArgs {
   annotationProps: TextAnnotationProps;
   /** Layout provided by calling [[layoutTextBlock]] */
   layout: TextBlockLayout;
+  /** [[TextStyleResolver]] used to get styling and scale information for creating geometry. */
+  textStyleResolver: TextStyleResolver;
   /** Builder that will be added to in place */
   builder: ElementGeometry.Builder;
   /** The category the element will belong to. This will passed into the [[GeometryParams]] */
@@ -39,25 +41,26 @@ export interface AppendTextAnnotationGeometryArgs {
  */
 export function appendTextAnnotationGeometry(props: AppendTextAnnotationGeometryArgs): boolean {
   const annotation = TextAnnotation.fromJSON(props.annotationProps);
-  const range = Range2d.fromJSON(props.layout.range);
-  const transform = annotation.computeTransform(range);
+
+  const transform = annotation.computeTransform(props.layout.range, props.textStyleResolver.scaleFactor);
+
   let result = true;
 
   // Construct the TextBlockGeometry
   const params = new GeometryParams(props.categoryId, props.subCategoryId);
-  const entries = produceTextBlockGeometry(props.layout, annotation.computeTransform(props.layout.range));
+  const entries = produceTextBlockGeometry(props.layout, transform.clone());
   result = result && props.builder.appendTextBlock(entries, params);
 
   // Construct the frame geometry
-  if (props.layout.blockSettings.frameShape !== "none") {
-    result = result && appendFrameToBuilder(props.builder, props.layout.blockSettings, range, transform, params);
+  if (props.textStyleResolver.blockSettings.frameShape !== "none") {
+    result = result && appendFrameToBuilder(props.builder, props.textStyleResolver.blockSettings, props.layout.range, transform.clone(), params);
   }
 
   // Construct the debug geometry
   if (props.wantDebugGeometry) {
-    result = result && debugAnchorPoint(props.builder, annotation, props.layout, annotation.computeTransform(props.layout.range));
-    result = result && debugRunLayout(props.builder, props.layout, annotation.computeTransform(props.layout.range));
-    if (props.layout.blockSettings.frameShape !== "none") result = result && debugSnapPoints(props.builder, props.layout.blockSettings, props.layout.range, annotation.computeTransform(props.layout.range));
+    result = result && debugAnchorPoint(props.builder, annotation, props.layout, transform.clone());
+    result = result && debugRunLayout(props.builder, props.layout, transform.clone());
+    if (props.textStyleResolver.blockSettings.frameShape !== "none") result = result && debugSnapPoints(props.builder, props.textStyleResolver.blockSettings, props.layout.range, transform.clone());
   }
 
   return result;

@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { computeGraphemeOffsets, ComputeGraphemeOffsetsArgs, ComputeRangesForTextLayoutArgs, FindFontId, FindTextStyle, layoutTextBlock, LineLayout, RunLayout, TextBlockLayout, TextLayoutRanges } from "../../annotations/TextBlockLayout";
+import { computeGraphemeOffsets, ComputeGraphemeOffsetsArgs, ComputeRangesForTextLayoutArgs, FindFontId, FindTextStyle, layoutTextBlock, LineLayout, RunLayout, TextBlockLayout, TextLayoutRanges, TextStyleResolver } from "../../annotations/TextBlockLayout";
 import { Geometry, Range2d } from "@itwin/core-geometry";
 import { ColorDef, FontType, FractionRun, LineBreakRun, LineLayoutResult, Paragraph, Run, RunLayoutResult, TabRun, TextAnnotation, TextAnnotationAnchor, TextBlock, TextBlockGeometryPropsEntry, TextBlockMargins, TextRun, TextStringProps, TextStyleSettings } from "@itwin/core-common";
 import { SnapshotDb } from "../../IModelDb";
@@ -20,10 +20,11 @@ function doLayout(textBlock: TextBlock, args?: {
   findTextStyle?: FindTextStyle;
   findFontId?: FindFontId;
 }): TextBlockLayout {
+  const textStyleResolver = new TextStyleResolver(textBlock, {} as any, undefined, args?.findTextStyle ?? (() => TextStyleSettings.defaults));
   const layout = layoutTextBlock({
     textBlock,
     iModel: {} as any,
-    findTextStyle: args?.findTextStyle ?? (() => TextStyleSettings.defaults),
+    textStyleResolver,
     findFontId: args?.findFontId ?? (() => 0),
     computeTextRange: computeTextRangeAsStringLength,
   });
@@ -1060,10 +1061,11 @@ describe("layoutTextBlock", () => {
 
       const layout = doLayout(textBlock);
       const result = layout.toResult();
+      const textStyleResolver = new TextStyleResolver(textBlock, {} as any, undefined, () => TextStyleSettings.defaults);
       const args: ComputeGraphemeOffsetsArgs = {
         textBlock,
         iModel: {} as any,
-        findTextStyle: () => TextStyleSettings.defaults,
+        textStyleResolver,
         findFontId: () => 0,
         computeTextRange: computeTextRangeAsStringLength,
         paragraphIndex: result.lines[0].sourceParagraphIndex,
@@ -1082,10 +1084,11 @@ describe("layoutTextBlock", () => {
 
       const layout = doLayout(textBlock);
       const result = layout.toResult();
+      const textStyleResolver = new TextStyleResolver(textBlock, {} as any, undefined, () => TextStyleSettings.defaults);
       const args: ComputeGraphemeOffsetsArgs = {
         textBlock,
         iModel: {} as any,
-        findTextStyle: () => TextStyleSettings.defaults,
+        textStyleResolver,
         findFontId: () => 0,
         computeTextRange: computeTextRangeAsStringLength,
         paragraphIndex: result.lines[0].sourceParagraphIndex,
@@ -1104,10 +1107,11 @@ describe("layoutTextBlock", () => {
 
       const layout = doLayout(textBlock);
       const result = layout.toResult();
+      const textStyleResolver = new TextStyleResolver(textBlock, {} as any, undefined, () => TextStyleSettings.defaults);
       const args: ComputeGraphemeOffsetsArgs = {
         textBlock,
         iModel: {} as any,
-        findTextStyle: () => TextStyleSettings.defaults,
+        textStyleResolver,
         findFontId: () => 0,
         computeTextRange: computeTextRangeAsStringLength,
         paragraphIndex: result.lines[0].sourceParagraphIndex,
@@ -1129,10 +1133,11 @@ describe("layoutTextBlock", () => {
 
       const layout = doLayout(textBlock);
       const result = layout.toResult();
+      const textStyleResolver = new TextStyleResolver(textBlock, {} as any, undefined, () => TextStyleSettings.defaults);
       const args: ComputeGraphemeOffsetsArgs = {
         textBlock,
         iModel: {} as any,
-        findTextStyle: () => TextStyleSettings.defaults,
+        textStyleResolver,
         findFontId: () => 0,
         computeTextRange: computeTextRangeAsStringLength,
         paragraphIndex: result.lines[0].sourceParagraphIndex,
@@ -1155,10 +1160,11 @@ describe("layoutTextBlock", () => {
 
       const layout = doLayout(textBlock);
       const result = layout.toResult();
+      const textStyleResolver = new TextStyleResolver(textBlock, {} as any, undefined, () => TextStyleSettings.defaults);
       const args: ComputeGraphemeOffsetsArgs = {
         textBlock,
         iModel: {} as any,
-        findTextStyle: () => TextStyleSettings.defaults,
+        textStyleResolver,
         findFontId: () => 0,
         computeTextRange: computeTextRangeAsStringLength,
         paragraphIndex: result.lines[0].sourceParagraphIndex,
@@ -1198,7 +1204,8 @@ describe("layoutTextBlock", () => {
       function test(fontName: string, expectedFontId: number): void {
         const textBlock = TextBlock.create({ styleId: "" });
         textBlock.appendRun(TextRun.create({ styleId: "", styleOverrides: { fontName } }));
-        const layout = layoutTextBlock({ textBlock, iModel });
+        const textStyleResolver = new TextStyleResolver(textBlock, iModel);
+        const layout = layoutTextBlock({ textBlock, iModel, textStyleResolver });
         const run = layout.lines[0].runs[0];
         expect(run).not.to.be.undefined;
         expect(run.fontId).to.equal(expectedFontId);
@@ -1231,7 +1238,8 @@ describe("layoutTextBlock", () => {
         },
       }));
 
-      const range = layoutTextBlock({ textBlock, iModel }).range;
+      const textStyleResolver = new TextStyleResolver(textBlock, iModel);
+      const range = layoutTextBlock({ textBlock, iModel, textStyleResolver }).range;
       return { x: range.high.x - range.low.x, y: range.high.y - range.low.y };
     }
 

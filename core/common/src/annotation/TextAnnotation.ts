@@ -149,18 +149,24 @@ export class TextAnnotation {
    * at the bottom left, then the transform will be relative to the bottom-left corner of `textBlockExtents`.
    * The text block will be rotated around the fixed anchor point according to [[orientation]], then translated by [[offset]].
    * The anchor point will coincide with (0, 0, 0) unless an [[offset]] is present.
+   * If a scale factor is specified, the transform will also scale the annotation by that factor. Usually, this should come from the [[Drawing]] containing the annotation.
    * @param boundingBox A box fully containing the [[textBlock]]. This range should include the margins.
+   * @param scaleFactor A factor by which to scale the annotation. Default: 1 (no scaling).
    * @see [[computeAnchorPoint]] to compute the transform's anchor point.
    * @see [computeLayoutTextBlockResult]($backend) to lay out a `TextBlock`.
    */
-  public computeTransform(boundingBox: Range2d): Transform {
+  public computeTransform(boundingBox: Range2d, scaleFactor: number = 1): Transform {
     const anchorPt = this.computeAnchorPoint(boundingBox);
     const matrix = this.orientation.toMatrix3d();
 
-    const rotation = Transform.createFixedPointAndMatrix(anchorPt, matrix);
+    const transform = Transform.createIdentity();
     const translation = Transform.createTranslation(this.offset.minus(anchorPt));
-
-    return translation.multiplyTransformTransform(rotation, rotation);
+    const scaleTransform = Transform.createScaleAboutPoint(anchorPt, scaleFactor);
+    const rotation = Transform.createFixedPointAndMatrix(anchorPt, matrix);
+    transform.multiplyTransformTransform(translation, transform);
+    transform.multiplyTransformTransform(scaleTransform, transform);
+    transform.multiplyTransformTransform(rotation, transform);
+    return transform;
   }
 
   /** Compute the anchor point of this annotation as specified by [[anchor]].
