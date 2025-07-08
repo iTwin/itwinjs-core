@@ -17,11 +17,12 @@ import { UnboundedLine2dByPointAndNormal } from "./UnboundedLine2d.";
 import { XAndY } from "../../../geometry3d/XYZProps";
 import { UnboundedHyperbola2d } from "./UnboundedHyperbola2d";
 import { UnboundedEllipse2d } from "./UnboundedEllipse2d";
+import { UnboundedParabola2d } from "./UnboundedParabola";
 
 /**
  * Static methods for special case circle constructions.
  */
-export class ConstrainedConstruction {
+export class TangentConstruction {
   /**
    * Return all (i.e. up to 4) circles that are tangent to 3 given lines.
    * @param lineA first line
@@ -245,13 +246,13 @@ export class ConstrainedConstruction {
             for (const r of roots) {
               const center = circleC.center.plus2Scaled(vectorF, 1.0, vectorG, r);
               const newCircle = UnboundedCircle2dByCenterAndRadius.createPointRadius(center, r);
-              if (!isThisCirclePresent (result, newCircle)){
+              if (!isThisCirclePresent(result, newCircle)) {
                 const markup = new ImplicitGeometryMarkup<UnboundedCircle2dByCenterAndRadius>(newCircle);
                 markup.appendClosePoint(newCircle.center, lineA, newCircle.center, newCircle.radius);
                 markup.appendClosePoint(newCircle.center, lineB, newCircle.center, newCircle.radius);
                 markup.appendClosePoint(newCircle.center, circleC, newCircle.center, newCircle.radius);
                 result.push(markup);
-                }
+              }
             }
           }
         }
@@ -318,8 +319,8 @@ export class ConstrainedConstruction {
     const coffC = [0, 0];
     const circleRadius = [0, 0];
     const result = [];
-    const radiiFromA = signedValues (circleA.radius, circleA.radius);
-    const radiiFromB = signedValues (circleB.radius, circleB.radius);
+    const radiiFromA = signedValues(circleA.radius, circleA.radius);
+    const radiiFromB = signedValues(circleB.radius, circleB.radius);
     for (const radiusA of radiiFromA) {
       circleRadius[0] = radiusA;
       for (const radiusB of radiiFromB) {
@@ -346,7 +347,7 @@ export class ConstrainedConstruction {
               const r = Math.abs(y);
               const center = lineC.point.plus2Scaled(lineUnitAlong, x, lineUnitNormal, y);
               const newCircle = UnboundedCircle2dByCenterAndRadius.createPointRadius(center, r);
-              if (!isThisCirclePresent (result, newCircle)){
+              if (!isThisCirclePresent(result, newCircle)) {
                 const markup = new ImplicitGeometryMarkup<UnboundedCircle2dByCenterAndRadius>(newCircle);
                 markup.appendClosePoint(newCircle.center, circleA, newCircle.center, r);
                 markup.appendClosePoint(newCircle.center, circleB, newCircle.center, r);
@@ -431,12 +432,13 @@ export class ConstrainedConstruction {
         const xy1 = origin.plus2Scaled(unitAB, x, unitPerp, -y);
         for (const newCenter of [xy0, xy1]) {
           const newCircle = UnboundedCircle2dByCenterAndRadius.createPointRadius(newCenter, r);
-          if (!isThisCirclePresent (result, newCircle)){
-          const markup = new ImplicitGeometryMarkup<UnboundedCircle2dByCenterAndRadius>(newCircle);
-          markup.appendClosePoint(newCircle.center, circleA, newCircle.center, r);
-          markup.appendClosePoint(newCircle.center, circleB, newCircle.center, r);
-          markup.appendClosePoint(newCircle.center, circleC, newCircle.center, r);
-          result.push(markup);}
+          if (!isThisCirclePresent(result, newCircle)) {
+            const markup = new ImplicitGeometryMarkup<UnboundedCircle2dByCenterAndRadius>(newCircle);
+            markup.appendClosePoint(newCircle.center, circleA, newCircle.center, r);
+            markup.appendClosePoint(newCircle.center, circleB, newCircle.center, r);
+            markup.appendClosePoint(newCircle.center, circleC, newCircle.center, r);
+            result.push(markup);
+          }
         }
       }
     }
@@ -461,13 +463,13 @@ export class ConstrainedConstruction {
     // Maybe having 1/determinant is worth it?
     if (oneOverDeterminant === undefined || Math.abs(determinant) <= determinantTol * Math.abs(dot12) || oneOverDeterminant === undefined) {
       const signedR0 = circles[0].radius;
-        for (const signedR1 of signedValues (circles[1].radius)) {
-          for (const signedR2 of signedValues (circles[2].radius)) {
-            this.solveColinearCCCTangents(
-              circles[0], circles[1], circles[2],
-              signedR0, signedR1, signedR2,
-              result);
-          }
+      for (const signedR1 of signedValues(circles[1].radius)) {
+        for (const signedR2 of signedValues(circles[2].radius)) {
+          this.solveColinearCCCTangents(
+            circles[0], circles[1], circles[2],
+            signedR0, signedR1, signedR2,
+            result);
+        }
       }
       return result.length > 0 ? result : undefined;
     }
@@ -478,7 +480,7 @@ export class ConstrainedConstruction {
       -vector02.x * oneOverDeterminant, vector01.x * oneOverDeterminant, 0.0,
       0.0, 0.0, 1.0);
 
-    for (const r1 of signedValues (circles[1].radius)) {
+    for (const r1 of signedValues(circles[1].radius)) {
       for (const r2 of signedValues(circles[2].radius)) {
         const vectorA = Vector3d.create(
           -0.5 * (Geometry.square(r1) - Geometry.square(vector01.x) - Geometry.square(vector01.y) - Geometry.square(r0)),
@@ -495,17 +497,17 @@ export class ConstrainedConstruction {
         const roots = Degree2PowerPolynomial.solveQuadratic(qa, qb, qc);
         if (roots !== undefined) {
           if (roots.length === 2
-            && Geometry.isSmallMetricDistance (Math.abs (roots[0]) - Math.abs (roots[1])))
+            && Geometry.isSmallMetricDistance(Math.abs(roots[0]) - Math.abs(roots[1])))
             roots.pop();
           for (const newRadius of roots) {
             const newCenter = circles[0].center.plus2Scaled(vectorA1, 1.0, vectorB1, newRadius);
             const newCircle = UnboundedCircle2dByCenterAndRadius.createPointRadius(newCenter, newRadius);
-            if (!isThisCirclePresent (result, newCircle)){
-            const markup = new ImplicitGeometryMarkup<UnboundedCircle2dByCenterAndRadius>(newCircle);
-            markup.appendClosePoint(newCircle.center, circles[0], newCircle.center, newRadius);
-            markup.appendClosePoint(newCircle.center, circles[1], newCircle.center, newRadius);
-            markup.appendClosePoint(newCircle.center, circles[2], newCircle.center, newRadius);
-            result.push(markup);
+            if (!isThisCirclePresent(result, newCircle)) {
+              const markup = new ImplicitGeometryMarkup<UnboundedCircle2dByCenterAndRadius>(newCircle);
+              markup.appendClosePoint(newCircle.center, circles[0], newCircle.center, newRadius);
+              markup.appendClosePoint(newCircle.center, circles[1], newCircle.center, newRadius);
+              markup.appendClosePoint(newCircle.center, circles[2], newCircle.center, newRadius);
+              result.push(markup);
             }
           }
         }
@@ -528,20 +530,20 @@ export class ConstrainedConstruction {
     const circlesInOrder = [circleA, circleB, circleC];
     return this.circlesTangentCCCThisOrder(circlesInOrder);
   }
-/**
- * return an unbounded line with the midpoint between pointA and pointB as its reference point
- * and the unit vector from pointA towards pointB as its normal.
- * @param pointA
- * @param pointB
- * @returns unbounded line, or undefined if pointA and pointB are coincident.
- */
-  public static bisector (pointA: XAndY, pointB: XAndY) : UnboundedLine2dByPointAndNormal | undefined {
-    const vectorAB = Vector2d.createStartEnd (pointA, pointB);
-    const midPoint = Point2d.createInterpolated (pointA, 0.5, pointB);
-    const unitAB = vectorAB.normalize ();
+  /**
+   * return an unbounded line with the midpoint between pointA and pointB as its reference point
+   * and the unit vector from pointA towards pointB as its normal.
+   * @param pointA
+   * @param pointB
+   * @returns unbounded line, or undefined if pointA and pointB are coincident.
+   */
+  public static bisector(pointA: XAndY, pointB: XAndY): UnboundedLine2dByPointAndNormal | undefined {
+    const vectorAB = Vector2d.createStartEnd(pointA, pointB);
+    const midPoint = Point2d.createInterpolated(pointA, 0.5, pointB);
+    const unitAB = vectorAB.normalize();
     if (unitAB === undefined)
-        return undefined;
-    return UnboundedLine2dByPointAndNormal.createPointNormal (midPoint, unitAB);
+      return undefined;
+    return UnboundedLine2dByPointAndNormal.createPointNormal(midPoint, unitAB);
   }
   /**
    * compute circles of specified radius tangent to each of the lines
@@ -552,33 +554,33 @@ export class ConstrainedConstruction {
    * @param radius radius of tangent circles
    * @returns array of circles with annotated tangencies
    */
-  public static circlesTangentLLR (
+  public static circlesTangentLLR(
     lineA: UnboundedLine2dByPointAndNormal,
     lineB: UnboundedLine2dByPointAndNormal,
     radius: number
   ): ImplicitGeometryMarkup<UnboundedCircle2dByCenterAndRadius>[] | undefined {
-    if (Geometry.isSmallMetricDistance (radius))
+    if (Geometry.isSmallMetricDistance(radius))
       return undefined;
     const offsetsA = [
-      lineA.cloneShifted (radius)!,
+      lineA.cloneShifted(radius)!,
       lineA.cloneShifted(-radius)!
-      ];
+    ];
     const offsetsB = [
-      lineB.cloneShifted (radius)!,
+      lineB.cloneShifted(radius)!,
       lineB.cloneShifted(-radius)!
-      ];
+    ];
     const result = [];
-    for (const offsetA of offsetsA){
-      for (const offsetB of offsetsB){
-        const p = offsetA?.interesectUnboundedLine2dByPointAndNormalWithOffsets (offsetB);
-        if (p !== undefined){
-          const newCircle = UnboundedCircle2dByCenterAndRadius.createPointRadius (p, radius);
-          if (!isThisCirclePresent (result, newCircle)){
+    for (const offsetA of offsetsA) {
+      for (const offsetB of offsetsB) {
+        const p = offsetA?.interesectUnboundedLine2dByPointAndNormalWithOffsets(offsetB);
+        if (p !== undefined) {
+          const newCircle = UnboundedCircle2dByCenterAndRadius.createPointRadius(p, radius);
+          if (!isThisCirclePresent(result, newCircle)) {
             const markup = new ImplicitGeometryMarkup<UnboundedCircle2dByCenterAndRadius>(newCircle);
             markup.appendClosePoint(newCircle.center, lineA, newCircle.center, newCircle.radius);
             markup.appendClosePoint(newCircle.center, lineB, newCircle.center, newCircle.radius);
             result.push(markup);
-            }
+          }
         }
       }
     }
@@ -593,32 +595,32 @@ export class ConstrainedConstruction {
    * @param radius radius of tangent circles
    * @returns array of circles with annotated tangencies
    */
-  public static circlesTangentCLR (
+  public static circlesTangentCLR(
     circleA: UnboundedCircle2dByCenterAndRadius,
     lineB: UnboundedLine2dByPointAndNormal,
     radius: number
   ): ImplicitGeometryMarkup<UnboundedCircle2dByCenterAndRadius>[] | undefined {
-    if (Geometry.isSmallMetricDistance (radius))
+    if (Geometry.isSmallMetricDistance(radius))
       return undefined;
     const offsetsA = [
-      UnboundedCircle2dByCenterAndRadius.createPointRadius (circleA.center, circleA.radius + radius),
-      UnboundedCircle2dByCenterAndRadius.createPointRadius (circleA.center, circleA.radius - radius)];
+      UnboundedCircle2dByCenterAndRadius.createPointRadius(circleA.center, circleA.radius + radius),
+      UnboundedCircle2dByCenterAndRadius.createPointRadius(circleA.center, circleA.radius - radius)];
     const offsetsB = [
-      lineB.cloneShifted (radius)!,
+      lineB.cloneShifted(radius)!,
       lineB.cloneShifted(-radius)!];
 
     const result = [];
-    for (const offsetA of offsetsA){
-      for (const offsetB of offsetsB){
-        const points = offsetA.intersectLine (offsetB);
-        for (const p of points){
-          const newCircle = UnboundedCircle2dByCenterAndRadius.createPointRadius (p, radius);
-          if (!isThisCirclePresent (result, newCircle)){
+    for (const offsetA of offsetsA) {
+      for (const offsetB of offsetsB) {
+        const points = offsetA.intersectLine(offsetB);
+        for (const p of points) {
+          const newCircle = UnboundedCircle2dByCenterAndRadius.createPointRadius(p, radius);
+          if (!isThisCirclePresent(result, newCircle)) {
             const markup = new ImplicitGeometryMarkup<UnboundedCircle2dByCenterAndRadius>(newCircle);
             markup.appendClosePoint(newCircle.center, circleA, newCircle.center, newCircle.radius);
             markup.appendClosePoint(newCircle.center, lineB, newCircle.center, newCircle.radius);
             result.push(markup);
-            }
+          }
         }
       }
     }
@@ -634,73 +636,118 @@ export class ConstrainedConstruction {
    * @param radius radius of tangent circles
    * @returns array of circles with annotated tangencies
    */
-  public static circlesTangentCCR (
+  public static circlesTangentCCR(
     circleA: UnboundedCircle2dByCenterAndRadius,
     circleB: UnboundedCircle2dByCenterAndRadius,
     radius: number
   ): ImplicitGeometryMarkup<UnboundedCircle2dByCenterAndRadius>[] | undefined {
-    if (Geometry.isSmallMetricDistance (radius))
+    if (Geometry.isSmallMetricDistance(radius))
       return undefined;
     const offsetsA = [
-      UnboundedCircle2dByCenterAndRadius.createPointRadius (circleA.center, circleA.radius + radius),
-      UnboundedCircle2dByCenterAndRadius.createPointRadius (circleA.center, circleA.radius - radius)];
+      UnboundedCircle2dByCenterAndRadius.createPointRadius(circleA.center, circleA.radius + radius),
+      UnboundedCircle2dByCenterAndRadius.createPointRadius(circleA.center, circleA.radius - radius)];
     const offsetsB = [
-      UnboundedCircle2dByCenterAndRadius.createPointRadius (circleB.center, circleB.radius + radius),
-      UnboundedCircle2dByCenterAndRadius.createPointRadius (circleB.center, circleB.radius - radius)];
+      UnboundedCircle2dByCenterAndRadius.createPointRadius(circleB.center, circleB.radius + radius),
+      UnboundedCircle2dByCenterAndRadius.createPointRadius(circleB.center, circleB.radius - radius)];
 
     const result = [];
-    for (const offsetA of offsetsA){
-      for (const offsetB of offsetsB){
-        const points = offsetA.intersectCircle (offsetB);
-        for (const p of points){
-          const newCircle = UnboundedCircle2dByCenterAndRadius.createPointRadius (p, radius);
-          if (!isThisCirclePresent (result, newCircle)){
+    for (const offsetA of offsetsA) {
+      for (const offsetB of offsetsB) {
+        const points = offsetA.intersectCircle(offsetB);
+        for (const p of points) {
+          const newCircle = UnboundedCircle2dByCenterAndRadius.createPointRadius(p, radius);
+          if (!isThisCirclePresent(result, newCircle)) {
             const markup = new ImplicitGeometryMarkup<UnboundedCircle2dByCenterAndRadius>(newCircle);
             markup.appendClosePoint(newCircle.center, circleA, newCircle.center, newCircle.radius);
             markup.appendClosePoint(newCircle.center, circleB, newCircle.center, newCircle.radius);
             result.push(markup);
-            }
+          }
         }
       }
     }
     return result.length > 0 ? result : undefined;
   }
-/**
- * Construct basis vectors for hyperbola or ellipse whose points are equidistant from tangencies with
- * circleA and circleB.
- * * If the curve is a hyperbola, the equation is
- *            X = center + vectorU * sec(theta) + vectorV * tan(theta)
- * * If the curve is an ellipse, the equation is
- *            X = center + vectorU * cos(theta) + vectorV * sin(theta)
- * @param circleA
- * @param circleB
- */
-public static medialCurveBetweenCircles (
-circleA: UnboundedCircle2dByCenterAndRadius,
-circleB: UnboundedCircle2dByCenterAndRadius
-) : ImplicitCurve2d | undefined
-  {
-  const d = circleA.center.distance(circleB.center);
-  const origin = circleA.center.interpolate (0.5, circleB.center);
-  const h = circleA.radius + circleB.radius;
-  const discriminant = d * d - h * h;
-  const hy = Math.sqrt(Math.abs(discriminant));
-  const xAxis = Vector2d.createStartEnd (origin, circleB.center).normalize ();
-  if (xAxis === undefined)
-    return undefined;
-  const yAxis = xAxis.rotate90CCWXY ();
-  const ax = 0.5 * h;
-  const ay = 0.5 * hy;
-  const vectorU = xAxis.scale (ax);
-  const vectorV = yAxis.scale (ay);
+  /**
+   * Construct basis vectors for hyperbola or ellipse whose points are equidistant from tangencies with
+   * circleA and circleB.
+   * * If the curve is a hyperbola, the equation is
+   *            X = center + vectorU * sec(theta) + vectorV * tan(theta)
+   * * If the curve is an ellipse, the equation is
+   *            X = center + vectorU * cos(theta) + vectorV * sin(theta)
+   * @param circleA
+   * @param circleB
+   */
+  public static medialCurveCircleCircle(
+    circleA: UnboundedCircle2dByCenterAndRadius,
+    circleB: UnboundedCircle2dByCenterAndRadius
+  ): ImplicitCurve2d | undefined {
+    const d = circleA.center.distance(circleB.center);
+    const origin = circleA.center.interpolate(0.5, circleB.center);
+    const h = circleA.radius + circleB.radius;
+    const discriminant = d * d - h * h;
+    const hy = Math.sqrt(Math.abs(discriminant));
+    const xAxis = Vector2d.createStartEnd(origin, circleB.center).normalize();
+    if (xAxis === undefined)
+      return undefined;
+    const yAxis = xAxis.rotate90CCWXY();
+    const ax = 0.5 * h;
+    const ay = 0.5 * hy;
+    const vectorU = xAxis.scale(ax);
+    const vectorV = yAxis.scale(ay);
 
-  if (discriminant > 0.0){
-    return UnboundedHyperbola2d.createCenterAndAxisVectors (origin, vectorU, vectorV);
-  } else if (discriminant < 0.0) {
-    return UnboundedEllipse2d.createCenterAndAxisVectors (origin, vectorU, vectorV);
+    if (discriminant > 0.0) {
+      return UnboundedHyperbola2d.createCenterAndAxisVectors(origin, vectorU, vectorV);
+    } else if (discriminant < 0.0) {
+      return UnboundedEllipse2d.createCenterAndAxisVectors(origin, vectorU, vectorV);
+    }
+    return undefined;
   }
-  return undefined;
+  /**
+   * Construct basis vectors for hyperbola or ellipse whose points are equidistant from tangencies with
+   * circleA and circleB.
+   * * If the curve is a hyperbola, the equation is
+   *            X = center + vectorU * sec(theta) + vectorV * tan(theta)
+   * * If the curve is an ellipse, the equation is
+   *            X = center + vectorU * cos(theta) + vectorV * sin(theta)
+   * @param circleA
+   * @param circleB
+   */
+  public static medialCurveLineCircle(
+    line: UnboundedLine2dByPointAndNormal,
+    circleB: UnboundedCircle2dByCenterAndRadius
+  ): ImplicitCurve2d[] | undefined {
+    const linePoint = line.closestPoint(circleB.center);
+    if (linePoint === undefined)
+      return undefined;
+    const lineA = line.cloneNormalizedWithOrigin(linePoint);
+    if (lineA === undefined)
+      return undefined;
+    const b = linePoint.distance(circleB.center);
+    const side = lineA.functionValue (circleB.center) > 0 ? 1 : -1;
+    const signedB = b * side;
+    const signedRadii = [];
+    if (Geometry.isSameCoordinate(circleB.radius, -circleB.radius))
+      signedRadii.push(0);
+    else {
+      signedRadii.push(circleB.radius);
+      signedRadii.push(-circleB.radius);
+    }
+    const result = [];
+    for (const r of signedRadii) {
+      const vertexDistance = (signedB - r) * 0.5;
+      const vertex = lineA.point.plusScaled(lineA.normal, vertexDistance);
+      const c = 2 * (signedB + r);
+      const oneOverC = Geometry.conditionalDivideCoordinate (1, c);
+      if (oneOverC !== undefined) {
+        const vectorV = lineA.normal.clone().scale (oneOverC);
+        const vectorU = lineA.normal.unitPerpendicularXY();
+        const parabola = UnboundedParabola2d.createCenterAndAxisVectors(vertex, vectorU, vectorV);
+        result.push(parabola);
+      }
+    }
+    return result;
   }
+
 }
 /**
  * If distance is near zero metric, return an array containing only valueA.
@@ -710,20 +757,20 @@ circleB: UnboundedCircle2dByCenterAndRadius
  * @param valueB
  * @returns
  */
-function signedValues (distance: number, value?: number):number[]{
+function signedValues(distance: number, value?: number): number[] {
   if (value === undefined)
     value = distance;
   const values = [value];
-  if (!Geometry.isSmallMetricDistance (distance))
-    values.push (-value);
+  if (!Geometry.isSmallMetricDistance(distance))
+    values.push(-value);
   return values;
 }
 /** Search an array of circles to see if a particular new circle is already present */
-function isThisCirclePresent (circles: ImplicitGeometryMarkup<UnboundedCircle2dByCenterAndRadius>[],
-  circle: UnboundedCircle2dByCenterAndRadius): boolean{
-    for (const c of circles){
-      if (circle.isSameCircle (c.curve, true))
-        return true;
-    }
-    return false;
+function isThisCirclePresent(circles: ImplicitGeometryMarkup<UnboundedCircle2dByCenterAndRadius>[],
+  circle: UnboundedCircle2dByCenterAndRadius): boolean {
+  for (const c of circles) {
+    if (circle.isSameCircle(c.curve, true))
+      return true;
   }
+  return false;
+}

@@ -91,6 +91,7 @@ export abstract class ImplicitCurve2d {
  */
     public radiansToTangentVector2d (_radians: number): Vector2d | undefined { return undefined;}
   }
+  
 export class Point2dImplicitCurve2d {
   public point: Point2d;
   public curve: ImplicitCurve2d;

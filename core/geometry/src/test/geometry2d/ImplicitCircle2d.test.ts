@@ -10,7 +10,7 @@ import { Geometry } from "../../Geometry";
 import { GeometryQuery } from "../../curve/GeometryQuery";
 import { Checker } from "../Checker";
 import { UnboundedCircle2dByCenterAndRadius } from "../../curve/internalContexts/geometry2d/UnboundedCircle2d";
-import { ConstrainedConstruction } from "../../curve/internalContexts/geometry2d/ConstrainedConstruction";
+import { TangentConstruction } from "../../curve/internalContexts/geometry2d/TangentConstruction";
 import { Arc3d } from "../../curve/Arc3d";
 import { AngleSweep } from "../../geometry3d/AngleSweep";
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
@@ -19,7 +19,7 @@ import { Matrix3d } from "../../geometry3d/Matrix3d";
 import { Range3d } from "../../geometry3d/Range";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 import { LineSegment3d } from "../../curve/LineSegment3d";
-import { CurvePrimitive, LineString3d } from "../../core-geometry";
+import { CurveFactory, CurvePrimitive, LineString3d } from "../../core-geometry";
 import { UnboundedLine2dByPointAndNormal } from "../../curve/internalContexts/geometry2d/UnboundedLine2d.";
 import { ImplicitCurve2d, ImplicitGeometryMarkup } from "../../curve/internalContexts/geometry2d/implicitCurve2d";
 import { PointToCurveTangentHandler } from "../../curve/internalContexts/PointToCurveTangentHandler";
@@ -34,8 +34,6 @@ import { PointToCurveTangentHandler } from "../../curve/internalContexts/PointTo
     const lineYAxis = UnboundedLine2dByPointAndNormal.createPointXYNormalXY(0, 0, 1, 0)!;
     const a = 1;
     const b = 0.8;
-    const lineA0 = -4.0;
-    const lineA1 = 4.0;
     const lineDiagonal11 = UnboundedLine2dByPointAndNormal.createPointXYNormalXY(1, 1, a, a)!;
     const lineY1 = UnboundedLine2dByPointAndNormal.createPointXYNormalXY(0, 1, 0, 1)!;
     const lineQ11 = UnboundedLine2dByPointAndNormal.createPointXYNormalXY(1, 1, a, b)!;
@@ -49,15 +47,14 @@ import { PointToCurveTangentHandler } from "../../curve/internalContexts/PointTo
     ]) {
       for (const l of lines)
         GeometryCoreTestIO.captureCloneGeometry (allGeometry,
-          ImplicitGeometryHelpers.implicitLine2dToLineSegment3d (l, 0.0, lineA0, lineA1),
-          x0, 0);
-      const circles = ConstrainedConstruction.circlesTangentLLL(lines[0], lines[1], lines[2]);
+          CurveFactory.createCurvePrimitiveFromImplicitCurve(l), x0, 0);
+      const circles = TangentConstruction.circlesTangentLLL(lines[0], lines[1], lines[2]);
       if (ck.testDefined(circles)) {
         // ck.testExactNumber(circles!.length, 4, "Circles in triangle 00,10,01");
 
         for (const c of circles) {
           GeometryCoreTestIO.captureCloneGeometry (allGeometry,
-            ImplicitGeometryHelpers.implicitCircle2dToArc3d(c.curve), x0, 0);
+            CurveFactory.createCurvePrimitiveFromImplicitCurve(c.curve), x0, 0);
           const r = c.curve.radius;
           for (const d of c.data){
             ck.testCoordinate (Math.abs(r), c.curve.center.distance(d.point), "distance to tangency matches radius");
@@ -74,7 +71,7 @@ import { PointToCurveTangentHandler } from "../../curve/internalContexts/PointTo
   });
 
   it("LineTangentCCC", () => {
-    const ck = new Checker(false,false);
+    const ck = new Checker(false, false);
     const allGeometry: GeometryQuery[] = [];
     const circleA = UnboundedCircle2dByCenterAndRadius.createXYRadius (0,0,2);
     const circleB = UnboundedCircle2dByCenterAndRadius.createXYRadius (5,0,1);
@@ -101,10 +98,10 @@ import { PointToCurveTangentHandler } from "../../curve/internalContexts/PointTo
     for (const circles of allCirclePairs) {
       for (const c of circles)
         GeometryCoreTestIO.captureCloneGeometry (allGeometry,
-          ImplicitGeometryHelpers.implicitCircle2dToArc3d (c),
+          CurveFactory.createCurvePrimitiveFromImplicitCurve (c),
           x0, 0);
 
-      const lines = ConstrainedConstruction.linesTangentCC(circles[0], circles[1]);
+      const lines = TangentConstruction.linesTangentCC(circles[0], circles[1]);
       if (lines !== undefined) {
         for (const l of lines) {
           GeometryCoreTestIO.captureCloneGeometry (allGeometry,
@@ -144,7 +141,7 @@ import { PointToCurveTangentHandler } from "../../curve/internalContexts/PointTo
     for (const circle of allCircles){
       y0 = 0;
       for (const lines of allLinePairs){
-        const circles = ConstrainedConstruction.circlesTangentLLC(lines[0], lines[1], circle);
+        const circles = TangentConstruction.circlesTangentLLC(lines[0], lines[1], circle);
         ImplicitGeometryHelpers.outputCircleMarkup (ck, allGeometry, x0, y0, circles, [lines[0], lines[1], circle], 100);
         x0 += 200;
         }
@@ -183,7 +180,7 @@ import { PointToCurveTangentHandler } from "../../curve/internalContexts/PointTo
         y0 = 0;
         const circle0 = inputCircles[0];
         const circle1 = inputCircles[1];
-        const circles = ConstrainedConstruction.circlesTangentCCL(circle0, circle1, line);
+        const circles = TangentConstruction.circlesTangentCCL(circle0, circle1, line);
         y0 = ImplicitGeometryHelpers.outputCircleMarkup (ck, allGeometry, x0, y0, circles, [circle0, circle1, line], 200);
         x0 += 200;
       }
@@ -225,16 +222,16 @@ import { PointToCurveTangentHandler } from "../../curve/internalContexts/PointTo
       const circle2 = inputCircles[2];
       for (const circle of inputCircles){
         GeometryCoreTestIO.captureCloneGeometry (allGeometry,
-          ImplicitGeometryHelpers.implicitCircle2dToArc3d (circle), x0, y0);
+          CurveFactory.createCurvePrimitiveFromImplicitCurve (circle), x0, y0);
         }
       y0 += yStep;
-      const circles = ConstrainedConstruction.circlesTangentCCC(circle0, circle1, circle2);
+      const circles = TangentConstruction.circlesTangentCCC(circle0, circle1, circle2);
       ImplicitGeometryHelpers.outputCircleMarkup (ck, allGeometry, x0, y0, circles, inputCircles, yStep);
 /*
       if (circles){
         for(const c of circles){
           GeometryCoreTestIO.captureCloneGeometry (allGeometry,
-            ImplicitGeometryHelpers.implicitCircle2dToArc3d (c.curve), x0, y0);
+            CurveFactory.createCurvePrimitiveFromImplicitCurve (c.curve), x0, y0);
         }
       }
 */
@@ -243,7 +240,6 @@ import { PointToCurveTangentHandler } from "../../curve/internalContexts/PointTo
     GeometryCoreTestIO.saveGeometry (allGeometry, "geometry2d", "circleTangentCCC");
     expect(ck.getNumErrors()).toBe(0);
   });
-});
 
 it("LineTangentPointCircle", () => {
   const _ck = new Checker(false, false);
@@ -367,13 +363,13 @@ it("CircleTangentCCCColinear", () => {
     const circle0 = inputCircles[0];
     const circle1 = inputCircles[1];
     const circle2 = inputCircles[2];
-    const circles = ConstrainedConstruction.circlesTangentCCC(circle0, circle1, circle2);
+    const circles = TangentConstruction.circlesTangentCCC(circle0, circle1, circle2);
     ImplicitGeometryHelpers.outputCircleMarkup (ck, allGeometry, x0, y0, circles, inputCircles, 100);
 /*
     if (circles){
       for(const c of circles){
         GeometryCoreTestIO.captureCloneGeometry (allGeometry,
-          ImplicitGeometryHelpers.implicitCircle2dToArc3d (c.curve), x0, y0);
+          CurveFactory.createCurvePrimitiveFromImplicitCurve (c.curve), x0, y0);
       }
     }
 */
@@ -404,8 +400,8 @@ it("CircleCircleIntersection", () => {
     [circleA, circleB], [circleB, circleC],
     [circleC, circleD]]){
     const points = circles[0].intersectCircle (circles[1]);
-    GeometryCoreTestIO.captureCloneGeometry(allGeometry, ImplicitGeometryHelpers.implicitCircle2dToArc3d (circles[0]), x0, y0);
-    GeometryCoreTestIO.captureCloneGeometry(allGeometry, ImplicitGeometryHelpers.implicitCircle2dToArc3d (circles[1]), x0, y0);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, CurveFactory.createCurvePrimitiveFromImplicitCurve (circles[0]), x0, y0);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, CurveFactory.createCurvePrimitiveFromImplicitCurve (circles[1]), x0, y0);
     if (points.length === 2)
       GeometryCoreTestIO.captureCloneGeometry (allGeometry,
         [Point3d.createFrom (points[0]), Point3d.createFrom (points[1])],
@@ -436,7 +432,7 @@ it("LineLIneIntersection", () => {
 
   for (const line of [lineX, lineY, lineQ, lineR]){
     GeometryCoreTestIO.captureCloneGeometry(allGeometry,
-      ImplicitGeometryHelpers.implicitLine2dToLineSegment3d (line, 0, -5, 5), x0, y0);
+      CurveFactory.createCurvePrimitiveFromImplicitCurve(line), x0, y0);
   }
 
   for (const linePair of [[lineX, lineY], [lineY, lineQ], [lineQ, lineX], [lineQ,lineR], [lineR,lineX]]){
@@ -448,7 +444,7 @@ it("LineLIneIntersection", () => {
   x0 += 10;
   for (const line of [lineQ, lineR]){
     GeometryCoreTestIO.captureCloneGeometry(allGeometry,
-      ImplicitGeometryHelpers.implicitLine2dToLineSegment3d (line, 0, -5, 5), x0, y0);
+      CurveFactory.createCurvePrimitiveFromImplicitCurve (line), x0, y0);
   }
 
   for (const offsetA of [1,2,3,0,-1,-2,-3]){
@@ -483,9 +479,9 @@ it("LineCircleIntersection", () => {
   for (const line of [lineX, lineY, lineQ, lineR]){
     for (const circle of [circleU, circleA, circleB]){
       GeometryCoreTestIO.captureCloneGeometry(allGeometry,
-        ImplicitGeometryHelpers.implicitLine2dToLineSegment3d (line, 0, -4, 4), x0, y0);
+        CurveFactory.createCurvePrimitiveFromImplicitCurve (line), x0, y0);
         GeometryCoreTestIO.captureCloneGeometry(allGeometry,
-          ImplicitGeometryHelpers.implicitCircle2dToArc3d (circle), x0, y0);
+          CurveFactory.createCurvePrimitiveFromImplicitCurve (circle), x0, y0);
         const points = circle.intersectLine (line);
         for (const p of points){
           ck.testCoordinate (0, circle.functionValue (p), "on circle", p);
@@ -519,7 +515,7 @@ it("CircleTangentLLR", () => {
     y0 = 0;
     for (let j = i+1; j < allLines.length; j++){
       for (const radius of [1,5]){
-        const circles = ConstrainedConstruction.circlesTangentLLR (allLines[i], allLines[j], radius);
+        const circles = TangentConstruction.circlesTangentLLR (allLines[i], allLines[j], radius);
         ImplicitGeometryHelpers.outputCircleMarkup (ck, allGeometry, x0, y0, circles, [allLines[i], allLines[j]], 0);
       }
       y0 += yStep;
@@ -555,7 +551,7 @@ it("CircleTangentCLR", () => {
     y0 = 0;
     for (const line of allLines){
       for (const radius of [1]){
-        const circles = ConstrainedConstruction.circlesTangentCLR (circle, line, radius);
+        const circles = TangentConstruction.circlesTangentCLR (circle, line, radius);
         ImplicitGeometryHelpers.outputCircleMarkup (ck, allGeometry, x0, y0, circles, [circle, line], 0);
       }
       y0 += yStep;
@@ -585,7 +581,7 @@ it("CircleTangentCCR", () => {
     y0 = 0;
     for (let j = i+1; j < allCircles.length; j++){
       for (const radius of [1,6]){
-        const circles = ConstrainedConstruction.circlesTangentCCR (allCircles[i], allCircles[j], radius);
+        const circles = TangentConstruction.circlesTangentCCR (allCircles[i], allCircles[j], radius);
         ImplicitGeometryHelpers.outputCircleMarkup (ck, allGeometry, x0, y0, circles, [allCircles[i], allCircles[j]], 0);
         y0 += yStep;
       }
@@ -596,36 +592,9 @@ it("CircleTangentCCR", () => {
   expect(ck.getNumErrors()).toBe(0);
 });
 
+});
 export class ImplicitGeometryHelpers {
-public static  implicitCircle2dToArc3d (circle: UnboundedCircle2dByCenterAndRadius, z: number = 0.0 ):Arc3d | LineString3d|undefined{
-  if (circle.radius !== 0.0)
-  return Arc3d.createCenterNormalRadius (Point3d.create (circle.center.x, circle.center.y, z),
-    Vector3d.create (0,0,1), circle.radius);
-  const size = 0.1;
-  const x0 = circle.center.x - size;
-  const x1 = circle.center.x + size;
-  const y0 = circle.center.y - size;
-  const y1 = circle.center.y + size;
-  return LineString3d.create ([[x0,y0,z],[x1,y1,z],[x1,y0,z],[x0,y1,z]]);
-}
-public static  implicitLine2dToLineSegment3d (line: UnboundedLine2dByPointAndNormal, z: number = 0.0,
-  a0: number,
-  a1: number
-):LineSegment3d | undefined{
-  const direction = Vector3d.create (line.normal.y, -line.normal.x, 0);
-  const origin = Point3d.create (line.point.x, line.point.y, z);
-    return LineSegment3d.create (
-    origin. plusScaled (direction, a0),
-    origin.plusScaled (direction, a1));
-  }
-  public static  implicitCurve2dToGeometry (curve: ImplicitCurve2d):CurvePrimitive | undefined{
-    if (curve instanceof UnboundedCircle2dByCenterAndRadius){
-      return ImplicitGeometryHelpers.implicitCircle2dToArc3d (curve);
-    } else if (curve instanceof UnboundedLine2dByPointAndNormal){
-      return ImplicitGeometryHelpers.implicitLine2dToLineSegment3d (curve, 0, -10, 10);
-    }
-return undefined;
-  }
+
   public static testParallelGradiants (ck: Checker, vectorA:Vector2d, vectorB: Vector2d){
     if (Geometry.isSmallMetricDistance (vectorA.magnitude ()) || Geometry.isSmallMetricDistance (vectorB.magnitude ()))
       return;
@@ -650,7 +619,7 @@ public static outputCircleMarkup (ck: Checker, allGeometry: GeometryQuery[], x0:
       if (inputGeometry){
         for (const g1 of inputGeometry){
           GeometryCoreTestIO.captureCloneGeometry (allGeometry,
-            ImplicitGeometryHelpers.implicitCurve2dToGeometry (g1), x0, y0);
+            CurveFactory.createCurvePrimitiveFromImplicitCurve (g1), x0, y0);
           }
         }
         return y0;
@@ -658,12 +627,12 @@ public static outputCircleMarkup (ck: Checker, allGeometry: GeometryQuery[], x0:
     for (const m of markup){
     if (m.curve instanceof UnboundedCircle2dByCenterAndRadius)
       GeometryCoreTestIO.captureCloneGeometry (allGeometry,
-        ImplicitGeometryHelpers.implicitCircle2dToArc3d (m.curve), x0, y0);
+        CurveFactory.createCurvePrimitiveFromImplicitCurve (m.curve), x0, y0);
         for (const g of m.data){
              if (inputGeometry){
                 for (const g1 of inputGeometry){
                   GeometryCoreTestIO.captureCloneGeometry (allGeometry,
-                    ImplicitGeometryHelpers.implicitCurve2dToGeometry (g1), x0, y0);
+                    CurveFactory.createCurvePrimitiveFromImplicitCurve (g1), x0, y0);
                   }
              }
             GeometryCoreTestIO.captureCloneGeometry (allGeometry,
@@ -684,3 +653,4 @@ public static outputCircleMarkup (ck: Checker, allGeometry: GeometryQuery[], x0:
       return y0;
       }
     }
+    

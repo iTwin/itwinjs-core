@@ -7,7 +7,7 @@
  */
 import { Geometry } from "../../../Geometry";
 import { Point2d } from "../../../geometry3d/Point2dVector2d";
-import { ConstrainedConstruction } from "./ConstrainedConstruction";
+import { TangentConstruction } from "./TangentConstruction";
 import { ImplicitCurve2d, ImplicitGeometryMarkup } from "./implicitCurve2d";
 import { UnboundedCircle2dByCenterAndRadius } from "./UnboundedCircle2d";
 import { UnboundedLine2dByPointAndNormal } from "./UnboundedLine2d.";
@@ -192,15 +192,15 @@ export class ConstraintSet {
         if (c1.curve instanceof UnboundedLine2dByPointAndNormal) {
           if (c2.curve instanceof UnboundedLine2dByPointAndNormal) {
             // LINE LINE LINE !
-            return ConstrainedConstruction.circlesTangentLLL(
+            return TangentConstruction.circlesTangentLLL(
               c0.curve, c1.curve, c2.curve);
           } else if (c2.curve instanceof UnboundedCircle2dByCenterAndRadius) {
-            return ConstrainedConstruction.circlesTangentLLC(
+            return TangentConstruction.circlesTangentLLC(
               c0.curve, c1.curve, c2.curve);
           }
         } else if (c1.curve instanceof UnboundedCircle2dByCenterAndRadius) {
           if (c2.curve instanceof UnboundedCircle2dByCenterAndRadius) {
-            return ConstrainedConstruction.circlesTangentCCL(
+            return TangentConstruction.circlesTangentCCL(
               c1.curve,
               c2.curve,
               c0.curve,
@@ -210,7 +210,7 @@ export class ConstraintSet {
       } else if (c0.curve instanceof UnboundedCircle2dByCenterAndRadius) {
         if (c1.curve instanceof UnboundedCircle2dByCenterAndRadius
           && c2.curve instanceof UnboundedCircle2dByCenterAndRadius) {
-          return ConstrainedConstruction.circlesTangentCCC(
+          return TangentConstruction.circlesTangentCCC(
             c0.curve, c1.curve, c2.curve);
         }
       }
@@ -221,17 +221,17 @@ export class ConstraintSet {
       if (c1.curve instanceof UnboundedLine2dByPointAndNormal) {
         if (c2.curve instanceof UnboundedLine2dByPointAndNormal) {
           // LINE LINE LINE !
-          return ConstrainedConstruction.circlesTangentLLR(
+          return TangentConstruction.circlesTangentLLR(
             c1.curve,
             c2.curve,
             c0.radius);
         } else if (c2.curve instanceof UnboundedCircle2dByCenterAndRadius) {
-          return ConstrainedConstruction.circlesTangentCLR(
+          return TangentConstruction.circlesTangentCLR(
             c2.curve, c1.curve, c0.radius);
         }
       } else if (c1.curve instanceof UnboundedCircle2dByCenterAndRadius) {
         if (c2.curve instanceof UnboundedCircle2dByCenterAndRadius) {
-          return ConstrainedConstruction.circlesTangentCCR(c1.curve, c2.curve, c0.radius);
+          return TangentConstruction.circlesTangentCCR(c1.curve, c2.curve, c0.radius);
         }
       }
 

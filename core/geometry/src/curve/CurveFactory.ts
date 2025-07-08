@@ -693,7 +693,7 @@ export class CurveFactory {
 
       const centerBezier = BezierCurve3dH.create(poles);
       if (centerBezier !== undefined)
-        return centerBezier.clonePartialCurve(-4, 5);
+        return centerBezier.clonePartialCurve(-2, 3);
     }
     return undefined;
   }
