@@ -360,10 +360,6 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   * After this call, the schedule script is considered committed and editing mode ends.
   *
   * @see [[setScheduleEditing]] to begin a schedule script editing session.
-  * Example:
-  * ```ts
-  * [[include:ScheduleScript_commitEditing]]
-  * ```
   * @beta
   */
   public commitScheduleEditing(): void {
