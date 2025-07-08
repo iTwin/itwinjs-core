@@ -902,6 +902,7 @@ beta;interface;TextAnnotationAnchor
 beta;interface;TextAnnotationCreateArgs
 beta;type;TextAnnotationFillColor
 beta;type;TextAnnotationFrameShape
+beta;const;textAnnotationFrameShapes
 beta;interface;TextAnnotationProps
 beta;class;TextBlock
 beta;class;TextBlockComponent
