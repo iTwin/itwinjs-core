@@ -322,7 +322,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     *
     * Example:
     * ```ts
-    * [[include:ScheduleScript_setEditingMode]]
+    * [[include:ScheduleScript_editingMode]]
     * ```
     *
     * @beta
