@@ -229,13 +229,15 @@ export class Entity {
    * ```
    */
   public forEach(func: PropertyHandler, includeCustom: boolean = true) {
-    const metaData = this.iModel.schemaContext.getSchemaItemSync(this.schemaItemKey, EntityClass);
-    if (!metaData)
-      throw new Error(`Cannot get metadata for ${this.classFullName}`);
+    const item = this._metadata ?? this.iModel.schemaContext.getSchemaItemSync(this.schemaItemKey);
 
-    for (const property of metaData.getPropertiesSync()) {
-      if (includeCustom || !property.customAttributes?.has(`BisCore.CustomHandledProperty`))
-        func(property.name, property);
+    if (EntityClass.isEntityClass(item) || RelationshipClass.isRelationshipClass(item)) {
+      for (const property of item.getPropertiesSync()) {
+        if (includeCustom || !property.customAttributes?.has(`BisCore.CustomHandledProperty`))
+          func(property.name, property);
+      }
+    } else {
+      throw new Error(`Cannot get metadata for ${this.classFullName}. Class is not an EntityClass or RelationshipClass.`);
     }
   }
 
