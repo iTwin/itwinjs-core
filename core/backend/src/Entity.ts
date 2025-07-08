@@ -10,7 +10,7 @@ import { Id64, Id64String } from "@itwin/core-bentley";
 import { ElementLoadOptions, EntityProps, EntityReferenceSet, PropertyCallback, PropertyMetaData } from "@itwin/core-common";
 import type { IModelDb } from "./IModelDb";
 import { Schema } from "./Schema";
-import { EntityClass, Property, SchemaItemKey } from "@itwin/ecschema-metadata";
+import { EntityClass, Property, RelationshipClass, SchemaItemKey } from "@itwin/ecschema-metadata";
 import { _nativeDb } from "./internal/Symbols";
 
 /** Represents a row returned by an ECSql query. The row is returned as a map of property names to values.
@@ -228,13 +228,15 @@ export class Entity {
    * ```
    */
   public forEach(func: PropertyHandler, includeCustom: boolean = true) {
-    const metaData = this.iModel.schemaContext.getSchemaItemSync(this.schemaItemKey, EntityClass);
-    if (!metaData)
-      throw new Error(`Cannot get metadata for ${this.classFullName}`);
+    const item = this._metadata ?? this.iModel.schemaContext.getSchemaItemSync(this.schemaItemKey);
 
-    for (const property of metaData.getPropertiesSync()) {
-      if (includeCustom || !property.customAttributes?.has(`BisCore.CustomHandledProperty`))
-        func(property.name, property);
+    if (EntityClass.isEntityClass(item) || RelationshipClass.isRelationshipClass(item)) {
+      for (const property of item.getPropertiesSync()) {
+        if (includeCustom || !property.customAttributes?.has(`BisCore.CustomHandledProperty`))
+          func(property.name, property);
+      }
+    } else {
+      throw new Error(`Cannot get metadata for ${this.classFullName}. Class is not an EntityClass or RelationshipClass.`);
     }
   }
 
