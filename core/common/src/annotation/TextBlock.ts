@@ -30,7 +30,7 @@ export interface ApplyTextStyleOptions {
 export interface TextBlockComponentProps {
   /** The ID of an [AnnotationTextStyle]($backend) stored in the iModel from which the base [[TextStyleSettings]] applied to the component originates. */
   styleId: Id64String;
-  /** Deviations from the base [[TextStyleSettings]] defined by the [[TextStyle]] applied to this component.
+  /** Deviations from the base [[TextStyleSettings]] defined by the [AnnotationTextStyle]($backend) applied to this component.
    * This permits you to, e.g., create a [[TextRun]] using "Arial" font and override it to use "Comic Sans" instead.
    */
   styleOverrides?: TextStyleSettingsProps;
@@ -84,7 +84,7 @@ export abstract class TextBlockComponent {
     this.applyStyle(styleId);
   }
 
-  /** Deviations in individual properties of the [[TextStyle]] in the [AnnotationTextStyle]($backend) specified by [[styleId]].
+  /** Deviations in individual properties of the [[TextStyleSettings]] in the [AnnotationTextStyle]($backend) specified by [[styleId]].
    * For example, if the style uses the "Arial" font, you can override that by settings `styleOverrides.fontName` to "Comic Sans".
    * @see [[clearStyleOverrides]] to reset this to an empty object.
    */
@@ -96,12 +96,12 @@ export abstract class TextBlockComponent {
     this._styleOverrides = { ...overrides };
   }
 
-  /** Reset any [[styleOverrides]] applied to this component's [[TextStyle]]. */
+  /** Reset any [[styleOverrides]] applied to this component's [AnnotationTextStyle]($backend). */
   public clearStyleOverrides(): void {
     this.styleOverrides = { };
   }
 
-  /** Apply the [[TextStyle]] from the [AnnotationTextStyle]($backend) specified by `styleId` to this component, optionally preserving [[styleOverrides]] and/or preserving the [[styleId]] of sub-components. */
+  /** Apply the [[TextStyleSettings]] from the [AnnotationTextStyle]($backend) specified by `styleId` to this component, optionally preserving [[styleOverrides]] and/or preserving the [[styleId]] of sub-components. */
   public applyStyle(styleId: Id64String, options?: ApplyTextStyleOptions): void {
     this._styleId = styleId;
 
@@ -110,7 +110,7 @@ export abstract class TextBlockComponent {
     }
   }
 
-  /** Returns true if [[styleOverrides]] specifies any deviations from this component's base [[TextStyle]]. */
+  /** Returns true if [[styleOverrides]] specifies any deviations from this component's base [AnnotationTextStyle]($backend). */
   public get overridesStyle(): boolean {
     return Object.keys(this.styleOverrides).length > 0;
   }
@@ -259,9 +259,9 @@ export class TextRun extends TextBlockComponent {
 export interface FractionRunProps extends TextBlockComponentProps {
   /** Discriminator field for the [[RunProps]] union. */
   readonly type: "fraction";
-  /** The text displayed before or above the fraction separator, depending on [[TextStyle.stackedFractionType]]. Default: an empty string. */
+  /** The text displayed before or above the fraction separator, depending on [[TextStyleSettings.stackedFractionType]]. Default: an empty string. */
   numerator?: string;
-  /** The text displayed after or below the fraction separator, depending on [[TextStyle.stackedFractionType]]. Default: an empty string. */
+  /** The text displayed after or below the fraction separator, depending on [[TextStyleSettings.stackedFractionType]]. Default: an empty string. */
   denominator?: string;
 }
 

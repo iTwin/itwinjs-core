@@ -52,7 +52,7 @@ export interface TextFrameStyleProps {
   borderWeight?: number;
 };
 
-/** Serves both as the JSON representation of a [[TextStyleSettings]], and a way for a [[TextBlockComponent]] to selectively override aspects of a [[TextStyle]]'s properties.
+/** Serves both as the JSON representation of a [[TextStyleSettings]], and a way for a [[TextBlockComponent]] to selectively override aspects of a [AnnotationTextStyle]($backend)'s properties.
  * @beta
  */
 export interface TextStyleSettingsProps {
@@ -145,7 +145,7 @@ function deepFreeze<T>(obj: T) {
 }
 
 /** A description of the formatting to be applied to a [[TextBlockComponent]].
- * Named instances of these settings can be stored as [[TextStyle]]s in a [Workspace]($backend).
+ * Named instances of these settings can be stored as [AnnotationTextStyle]($backend)s in an iModel.
  * @note This is an immutable type. Use [[clone]] to create a modified copy.
  * @see [[TextStyleSettingsProps]] for documentation of each of the settings.
  * @beta
@@ -295,48 +295,4 @@ export class TextStyleSettings {
 
 deepFreeze(TextStyleSettings.defaultProps);
 deepFreeze(TextStyleSettings.defaults);
-
-/** The JSON representation of a [[TextStyle]].
- * @beta
- */
-export interface TextStyleProps {
-  /** The name of the style. */
-  name: string;
-  /** The settings defined for the style. Any omitted properties will use their default values, as described by [[TextStyleSettingsProps]]. */
-  settings?: TextStyleSettingsProps;
-}
-
-/** A named, immutable [[TextStyleSettings]] stored in a [Workspace]($backend).
- * @see [[TextBlockComponent.styleName]] to define the text style for a component of a [[TextBlock]].
- * @note This is an immutable type. Use [[clone]] to create a modified copy.
- * @beta
- */
-export class TextStyle {
-  public readonly name: string;
-  public readonly settings: TextStyleSettings;
-
-  private constructor(name: string, settings: TextStyleSettings) {
-    this.name = name;
-    this.settings = settings;
-  }
-
-  /** Create a style from its JSON representation. */
-  public static fromJSON(json: TextStyleProps): TextStyle {
-    return TextStyle.create(json.name, TextStyleSettings.fromJSON(json.settings));
-  }
-
-  /** Create a new style. */
-  public static create(name: string, settings: TextStyleSettings): TextStyle {
-    return new TextStyle(name, settings);
-  }
-
-  /** Create a copy of this style with the same name, and settings modified according to the properties defined by `alteredSettings`. */
-  public clone(alteredSettings: TextStyleSettingsProps): TextStyle {
-    return TextStyle.create(this.name, this.settings.clone(alteredSettings));
-  }
-
-  public equals(other: TextStyle): boolean {
-    return this.name === other.name && this.settings.equals(other.settings);
-  }
-}
 

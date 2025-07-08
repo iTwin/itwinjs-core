@@ -67,7 +67,7 @@ function createFindTextStyleImpl(iModel: IModelDb): FindTextStyle {
 export interface LayoutTextBlockArgs {
   /** The text block whose extents are to be computed. */
   textBlock: TextBlock;
-  /** The iModel from which to obtain fonts and [TextStyle]($common)s when laying out glyphs. */
+  /** The iModel from which to obtain fonts and [[AnnotationTextStyle]]s when laying out glyphs. */
   iModel: IModelDb;
   /** The text style resolver used to resolve effective text styles during layout. */
   textStyleResolver: TextStyleResolver;
@@ -95,7 +95,7 @@ export function layoutTextBlock(args: LayoutTextBlockArgs): TextBlockLayout {
 
 /**
  * Gets the result of laying out the the contents of a TextBlock into a series of lines containing runs.
- * The visual layout accounts for the [TextStyle]($common)s, fonts, and [TextBlock.width]($common). It applies word-wrapping if needed.
+ * The visual layout accounts for the [[AnnotationTextStyle]]s, fonts, and [TextBlock.width]($common). It applies word-wrapping if needed.
  * The layout returned matches the visual layout of the geometry produced by [[appendTextAnnotationGeometry]].
  * @beta
  */
