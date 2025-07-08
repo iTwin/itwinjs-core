@@ -12,6 +12,7 @@ import { AnnotationElement2d, DefinitionElement, GraphicalElement3d, OnElementId
 import { DbResult, Id64String } from "@itwin/core-bentley";
 import { layoutTextBlock, TextStyleResolver } from "./TextBlockLayout";
 import { appendTextAnnotationGeometry } from "./TextAnnotationGeometry";
+import { CustomHandledProperty, DeserializeEntityArgs, ECSqlRow } from "../Entity";
 
 function parseTextAnnotationData(json: string | undefined): TextAnnotationProps | undefined {
   if (!json) return undefined;
@@ -36,13 +37,13 @@ function getElementGeometryBuilderParams(iModel: IModelDb, modelId: Id64String, 
 export class TextAnnotation2d extends AnnotationElement2d {
   /** @internal */
   public static override get className(): string { return "TextAnnotation2d"; }
-  private _textAnnotationData?: string;
+  public textAnnotationData?: string;
 
   /** Extract the textual content, if present.
    * @see [[setAnnotation]] to change it.
    */
   public getAnnotation(): TextAnnotation | undefined {
-    const textAnnotationProps = parseTextAnnotationData(this._textAnnotationData);
+    const textAnnotationProps = parseTextAnnotationData(this.textAnnotationData);
     return textAnnotationProps ? TextAnnotation.fromJSON(textAnnotationProps) : undefined;
   }
 
@@ -51,12 +52,12 @@ export class TextAnnotation2d extends AnnotationElement2d {
    * @param annotation The new annotation
    */
   public setAnnotation(annotation: TextAnnotation) {
-    this._textAnnotationData = annotation ? JSON.stringify(annotation.toJSON()) : undefined;
+    this.textAnnotationData = annotation ? JSON.stringify(annotation.toJSON()) : undefined;
   }
 
   protected constructor(props: TextAnnotation2dProps, iModel: IModelDb) {
     super(props, iModel);
-    this._textAnnotationData = props.textAnnotationData;
+    this.textAnnotationData = props.textAnnotationData;
   }
 
   public static fromJSON(props: TextAnnotation2dProps, iModel: IModelDb): TextAnnotation2d {
@@ -65,9 +66,9 @@ export class TextAnnotation2d extends AnnotationElement2d {
 
   public override toJSON(): TextAnnotation2dProps {
     const props = super.toJSON() as TextAnnotation2dProps;
-    props.textAnnotationData = this._textAnnotationData;
-    if (this._textAnnotationData) {
-      props.elementGeometryBuilderParams = getElementGeometryBuilderParams(this.iModel, this.model, this.placement, this._textAnnotationData, this.category);
+    props.textAnnotationData = this.textAnnotationData;
+    if (this.textAnnotationData) {
+      props.elementGeometryBuilderParams = getElementGeometryBuilderParams(this.iModel, this.model, this.placement, this.textAnnotationData, this.category);
     }
 
     return props;
@@ -111,6 +112,38 @@ export class TextAnnotation2d extends AnnotationElement2d {
     }
     annotation.discloseIds(ids);
   }
+
+  /**
+   * TextAnnotation2d custom HandledProps includes 'textAnnotationData'.
+   * @inheritdoc
+   * @beta
+   */
+  protected static override readonly _customHandledProps: CustomHandledProperty[] = [
+    { propertyName: "textAnnotationData", source: "Class" },
+  ];
+
+  /**
+   * TextAnnotation2d deserializes 'textAnnotationData'.
+   * @inheritdoc
+   * @beta
+   */
+  public static override deserialize(props: DeserializeEntityArgs): TextAnnotation2dProps {
+    const elProps = super.deserialize(props) as TextAnnotation2dProps;
+    const instance = props.row;
+    elProps.textAnnotationData = instance.textAnnotationData ?? "";
+    return elProps;
+  }
+
+  /**
+   * TextAnnotation2d serializes 'textAnnotationData'.
+   * @inheritdoc
+   * @beta
+   */
+  public static override serialize(props: TextAnnotation2dProps, iModel: IModelDb): ECSqlRow {
+    const inst = super.serialize(props, iModel);
+    inst.data = props.textAnnotationData;
+    return inst;
+  }
 }
 
 /** An element that displays textual content within a 3d model.
@@ -120,13 +153,13 @@ export class TextAnnotation2d extends AnnotationElement2d {
 export class TextAnnotation3d extends GraphicalElement3d {
   /** @internal */
   public static override get className(): string { return "TextAnnotation3d"; }
-  private _textAnnotationData?: string;
+  public textAnnotationData?: string;
 
   /** Extract the textual content, if present.
    * @see [[setAnnotation]] to change it.
    */
   public getAnnotation(): TextAnnotation | undefined {
-    const textAnnotationProps = parseTextAnnotationData(this._textAnnotationData);
+    const textAnnotationProps = parseTextAnnotationData(this.textAnnotationData);
     return textAnnotationProps ? TextAnnotation.fromJSON(textAnnotationProps) : undefined;
   }
 
@@ -135,12 +168,12 @@ export class TextAnnotation3d extends GraphicalElement3d {
    * @param annotation The new annotation
    */
   public setAnnotation(annotation: TextAnnotation) {
-    this._textAnnotationData = annotation ? JSON.stringify(annotation.toJSON()) : undefined;
+    this.textAnnotationData = annotation ? JSON.stringify(annotation.toJSON()) : undefined;
   }
 
   protected constructor(props: TextAnnotation3dProps, iModel: IModelDb) {
     super(props, iModel);
-    this._textAnnotationData = props.textAnnotationData;
+    this.textAnnotationData = props.textAnnotationData;
   }
 
   public static fromJSON(props: TextAnnotation3dProps, iModel: IModelDb): TextAnnotation3d {
@@ -149,9 +182,9 @@ export class TextAnnotation3d extends GraphicalElement3d {
 
   public override toJSON(): TextAnnotation3dProps {
     const props = super.toJSON() as TextAnnotation3dProps;
-    props.textAnnotationData = this._textAnnotationData;
-    if (this._textAnnotationData) {
-      props.elementGeometryBuilderParams = getElementGeometryBuilderParams(this.iModel, this.model, this.placement, this._textAnnotationData, this.category);
+    props.textAnnotationData = this.textAnnotationData;
+    if (this.textAnnotationData) {
+      props.elementGeometryBuilderParams = getElementGeometryBuilderParams(this.iModel, this.model, this.placement, this.textAnnotationData, this.category);
     }
 
     return props;
@@ -194,6 +227,38 @@ export class TextAnnotation3d extends GraphicalElement3d {
       return;
     }
     annotation.discloseIds(ids);
+  }
+
+  /**
+   * TextAnnotation3d custom HandledProps includes 'textAnnotationData'.
+   * @inheritdoc
+   * @beta
+   */
+  protected static override readonly _customHandledProps: CustomHandledProperty[] = [
+    { propertyName: "textAnnotationData", source: "Class" },
+  ];
+
+  /**
+   * TextAnnotation3d deserializes 'textAnnotationData'.
+   * @inheritdoc
+   * @beta
+   */
+  public static override deserialize(props: DeserializeEntityArgs): TextAnnotation3dProps {
+    const elProps = super.deserialize(props) as TextAnnotation3dProps;
+    const instance = props.row;
+    elProps.textAnnotationData = instance.textAnnotationData ?? "";
+    return elProps;
+  }
+
+  /**
+   * TextAnnotation3d serializes 'textAnnotationData'.
+   * @inheritdoc
+   * @beta
+   */
+  public static override serialize(props: TextAnnotation3dProps, iModel: IModelDb): ECSqlRow {
+    const inst = super.serialize(props, iModel);
+    inst.data = props.textAnnotationData;
+    return inst;
   }
 }
 
@@ -288,6 +353,38 @@ export class AnnotationTextStyle extends DefinitionElement {
     } catch {
       return undefined;
     }
+  }
+
+  /**
+   * AnnotationTextStyle custom HandledProps includes 'settings'.
+   * @inheritdoc
+   * @beta
+   */
+  protected static override readonly _customHandledProps: CustomHandledProperty[] = [
+    { propertyName: "settings", source: "Class" },
+  ];
+
+  /**
+   * AnnotationTextStyle deserializes 'settings'.
+   * @inheritdoc
+   * @beta
+   */
+  public static override deserialize(props: DeserializeEntityArgs): AnnotationTextStyleProps {
+    const elProps = super.deserialize(props) as AnnotationTextStyleProps;
+    const instance = props.row;
+    elProps.settings = instance.settings ?? "";
+    return elProps;
+  }
+
+  /**
+   * AnnotationTextStyle serializes 'settings'.
+   * @inheritdoc
+   * @beta
+   */
+  public static override serialize(props: AnnotationTextStyleProps, iModel: IModelDb): ECSqlRow {
+    const inst = super.serialize(props, iModel);
+    inst.data = props.settings;
+    return inst;
   }
 }
 
