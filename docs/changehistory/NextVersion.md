@@ -47,4 +47,4 @@ A new editing mode has been added to `DisplayStyle3dState` for working with `Ren
 
 Use `setScheduleEditing(script)` to apply a schedule script in editing mode. Once all edits are complete, call `commitScheduleEditing()` to finalize the changes and trigger a full refresh.
 
-See [code examples](../example-code/snippets/src/frontend/ScheduleScriptEditing.ts) for more details
+See the [Schedule Script Editing example](../../example-code/snippets/src/frontend/ScheduleScriptEditing.ts) for more details.
