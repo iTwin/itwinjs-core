@@ -9888,7 +9888,10 @@ export interface TextAnnotationCreateArgs {
 export type TextAnnotationFillColor = TextStyleColor | "background";
 
 // @beta
-export type TextAnnotationFrameShape = "none" | "line" | "rectangle" | "circle" | "equilateralTriangle" | "diamond" | "square" | "pentagon" | "hexagon" | "octagon" | "capsule" | "roundedRectangle";
+export type TextAnnotationFrameShape = typeof textAnnotationFrameShapes[number];
+
+// @beta
+export const textAnnotationFrameShapes: readonly ["none", "line", "rectangle", "circle", "equilateralTriangle", "diamond", "square", "pentagon", "hexagon", "octagon", "capsule", "roundedRectangle"];
 
 // @beta
 export interface TextAnnotationProps {
