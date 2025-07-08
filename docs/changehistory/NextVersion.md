@@ -40,3 +40,11 @@ iTwin.js now supports displaying Google Photorealistic 3D Tiles via the new `Goo
 
 - The `PresentationManagerProps.schemaContextProvider` property has been deprecated. Starting with `5.0` release, `SchemaContext` is always available on [IModelConnection]($core-frontend), so this prop is no longer needed. If supplied, it will still be preferred over the iModel's schema context, until the property is removed completely in a future release.
 - The `PresentationManagerProps.defaultFormats` property has been deprecated in favor of the `FormatsProvider` now being available on [IModelApp.formatsProvider]($core-frontend).
+
+## Schedule Script Editing Mode
+
+A new editing mode has been added to `DisplayStyle3dState` for working with `RenderSchedule.Script`. This allows dynamic editing of schedule scripts in real time, with immediate visual feedback using dynamic tiles, without requiring a full tile tree refresh for every change.
+
+Use `setScheduleEditing(script)` to apply a schedule script in editing mode. Once all edits are complete, call `commitScheduleEditing()` to finalize the changes and trigger a full refresh.
+
+See [code examples](../example-code/snippets/src/frontend/ScheduleScriptEditing.ts) for more details
