@@ -32,7 +32,7 @@ function isContinuous(geometries: CurvePrimitive[]): boolean {
   });
 }
 
-describe.only("FrameGeometry", () => {
+describe("FrameGeometry", () => {
   const defaultRange = Range2d.createXYXY(0, 0, 10, 20);
   const defaultTransform = Transform.createIdentity();
   const defaultParams = new GeometryParams(Id64.invalid);
