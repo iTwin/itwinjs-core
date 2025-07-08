@@ -375,12 +375,12 @@ export class GeoServices {
     return new GeoServices({
       isIModelClosed: () => iModel.isClosed,
       toIModelCoords: async (request) => {
-        const remappedRequest = CoordinateMapping.mapIModelCoordRequestRPCToIModelRead(request);
+        const remappedRequest = CoordinateMapping.mapIModelCoordinatesRequestRPCToIModelRead(request);
         let response: IModelCoordinatesResponse;
         let remappedResponse: IModelCoordinatesResponseProps;
         try {
           response = await iModelReadAPI.convertGeoCoordinatesToIModelCoordinates(remappedRequest);
-          remappedResponse = CoordinateMapping.mapIModelCoordResponseIModelReadToRPC(response);
+          remappedResponse = CoordinateMapping.mapIModelCoordinatesResponseIModelReadToRPC(response);
         } catch (error) {
           if (error instanceof NoGCSDefinedError) {
             remappedResponse = CoordinateMapping.mapIModelCoordExceptionToRPC(request.geoCoords.length, GeoCoordStatus.NoGCSDefined);
@@ -394,12 +394,12 @@ export class GeoServices {
         return remappedResponse.iModelCoords;
       },
       fromIModelCoords: async (request) => {
-        const remappedRequest = CoordinateMapping.mapGeoCoordRequestRPCToIModelRead(request);
+        const remappedRequest = CoordinateMapping.mapGeoCoordinatesRequestRPCToIModelRead(request);
         let response: GeoCoordinatesResponse;
         let remappedResponse: GeoCoordinatesResponseProps;
         try {
           response = await iModelReadAPI.convertIModelCoordinatesToGeoCoordinates(remappedRequest);
-          remappedResponse = CoordinateMapping.mapGeoCoordResponseIModelReadToRPC(response);
+          remappedResponse = CoordinateMapping.mapGeoCoordinatesResponseIModelReadToRPC(response);
         } catch (error) {
           if (error instanceof NoGCSDefinedError) {
             remappedResponse = CoordinateMapping.mapGeoCoordExceptionToRPC(request.iModelCoords.length, GeoCoordStatus.NoGCSDefined);
