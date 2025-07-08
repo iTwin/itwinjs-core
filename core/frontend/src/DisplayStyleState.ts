@@ -308,9 +308,24 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
       await this._queryRenderTimelinePropsPromise;
   }
 
-  /** Start/update the script in the current editing session. Fires onScheduleEditingChanged.
-   * @beta
-   */
+   /**
+    * Begins or updates a schedule script editing session for the current display style.
+    * During an editing session, changes to the schedule script are applied incrementally
+    * using temporary dynamic tiles, allowing for interactive preview of visual changes like color,
+    * transforms, visibility, and cutting planes — without requiring a full tile tree reload.
+    *
+    * Calling this method multiple times will update the current editing session with new script changes.
+    * When all edits are complete, you must invoke @see [[commitScheduleEditing]] to finalize the session and
+    * trigger a full tile tree refresh with the committed script.
+    *
+    * **Note:** You cannot use schedule script editing while a @see [[GraphicalEditingScope]] is active.
+    * Example:
+    * ```ts
+    * [[include:ScheduleScript_setEditingMode]]
+    * ```
+    *
+    * @beta
+    */
   public setScheduleEditing(newScript: RenderSchedule.Script): void {
     const prevScript = this.scheduleScript;
     const changes: Array<{ timeline: RenderSchedule.ModelTimeline, elements: Set<Id64String> }> = [];
@@ -338,9 +353,18 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     }
   }
 
-  /** Commit the editing session.
-   * @beta
-   */
+  /**
+  * Finalizes a script editing session previously started with [[setScheduleEditing]].
+  * This applies all pending script changes and triggers a full tile tree reload to reflect them in the viewport.
+  * After this call, the schedule script is considered committed and editing mode ends.
+  *
+  * @see [[setScheduleEditing]] to begin a schedule script editing session.
+  * Example:
+  * ```ts
+  * [[include:ScheduleScript_commitEditing]]
+  * ```
+  * @beta
+  */
   public commitScheduleEditing(): void {
     this.onScheduleEditingCommitted.raiseEvent();
     if (!this.scheduleScript)
