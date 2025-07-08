@@ -49,3 +49,4 @@ Use [DisplayStyle3dState.setScheduleEditing]($frontend) to enter this mode, or t
 
 ```ts
 [[include:ScheduleScript_editingMode]]
+```
