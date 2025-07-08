@@ -493,9 +493,11 @@ export class IModelTileTree extends TileTree {
       this._options.timeline = scriptInfo.timeline;
     }
 
+    const relevantChange = changes.find((c) => c.timeline.modelId === this.modelId);
     const changedElements: ElementGeometryChange[] = [];
-    for (const change of changes) {
-      for (const id of change.elements) {
+
+    if (relevantChange) {
+      for (const id of relevantChange.elements) {
         changedElements.push({
           id,
           type: DbOpcode.Update,
