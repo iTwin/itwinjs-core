@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-common",
+      "comment": "Slight typing change of TextAnnotationFrameShape",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-common"
+}
