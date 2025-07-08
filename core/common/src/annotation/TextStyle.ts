@@ -6,6 +6,7 @@
  * @module Annotation
  */
 
+import { DeepReadonlyObject, DeepRequiredObject } from "@itwin/core-bentley";
 import { ColorDef, ColorDefProps } from "../ColorDef";
 
 /** Set of predefined shapes that can be computed and drawn around the margins of a [[TextBlock]]
@@ -33,6 +34,23 @@ export type StackedFractionType = "horizontal" | "diagonal";
  * @beta
  */
 export type TextStyleColor = ColorDefProps | "subcategory";
+
+/**
+ * Describes how to draw the frame around a [[TextAnnotation]].
+ * The frame can be a simple line, a filled shape, or both.
+ * If only a subset of properties are specified, the others will be set to their default value.
+ * @beta
+ */
+export interface TextFrameStyleProps {
+  /** Shape of the frame. Default: "none" */
+  shape?: TextAnnotationFrameShape;
+  /** The color to fill the shape of the text frame. This fill will is applied using [[FillDisplay.Blanking]]. Default: "none" */
+  fill?: TextAnnotationFillColor;
+  /** The color of the text frame's outline. Default: black */
+  border?: TextStyleColor;
+  /** This will be used to set the [[GeometryParams.weight]] property of the frame (in pixels). Default: 1px */
+  borderWeight?: number;
+};
 
 /** Serves both as the JSON representation of a [[TextStyleSettings]], and a way for a [[TextBlockComponent]] to selectively override aspects of a [[TextStyle]]'s properties.
  * @beta
@@ -101,36 +119,29 @@ export interface TextStyleSettingsProps {
    * Default: 1.0
    */
   widthFactor?: number;
-  /** Describes a frame around the text block.
-   * Shape of the frame.
-   * Used when producing geometry for [[TextAnnotation]]s.
-   * Default: "none".
-   */
-  frameShape?: TextAnnotationFrameShape;
-  /** Describes a frame around the text block.
-   * The color to fill the shape of the text frame.
-   * Used when producing geometry for [[TextAnnotation]]s.
-   * This fill is applied using [[FillDisplay.Blanking]].
-   * Default: "none".
-   */
-  frameFill?: TextAnnotationFillColor;
-  /** Describes a frame around the text block.
-   * The color of the text frame's outline.
-   * Used when producing geometry for [[TextAnnotation]]s.
-   * Default: black
-   */
-  frameBorder?: TextStyleColor;
-  /** Describes a frame around the text block.
-   * This will be used to set the [[GeometryParams.weight]] property of the frame (in pixels).
-   * Used when producing geometry for [[TextAnnotation]]s.
-   * Default: 1px
-   */
-  frameBorderWeight?: number;
   /** The size (in meters) used to calculate the tab stops in a run.
    * These are equally spaced from the left edge of the TextBlock.
    * Default: 4 meters.
    */
   tabInterval?: number;
+  /**
+   * A description of the frame around the text annotation.
+   * Used when producing geometry for [[TextAnnotation]]s.
+   * Default: {shape: "none", fill: "none", border: black, borderWeight: 1} for no frame.
+   */
+  frame?: TextFrameStyleProps;
+}
+
+function deepFreeze<T>(obj: T) {
+  if (obj === null || typeof obj !== "object" || Object.isFrozen(obj))
+    return;
+  Object.getOwnPropertyNames(obj).forEach((prop) => {
+    const value = (obj as any)[prop];
+    if (value && typeof value === "object") {
+      deepFreeze(value);
+    }
+  });
+  Object.freeze(obj);
 }
 
 /** A description of the formatting to be applied to a [[TextBlockComponent]].
@@ -184,21 +195,15 @@ export class TextStyleSettings {
   public readonly superScriptScale: number;
   /** Multiplier used to compute the width of each glyph, relative to [[lineHeight]]. */
   public readonly widthFactor: number;
-  /** The frame shape of the [[TextAnnotation]]. No other frame properties apply if this is "none". */
-  public readonly frameShape: TextAnnotationFrameShape;
-  /** The fill color of the frame. */
-  public readonly frameFill: TextAnnotationFillColor;
-  /** The border color of the frame.  */
-  public readonly frameBorder: TextStyleColor;
-  /** The weight of the frame border. */
-  public readonly frameBorderWeight: number;
   /** The size (in meters) used to calculate the tab stops in a run.
    * These are equally spaced from the left edge of the TextBlock. Default is 4 meters.
    */
   public readonly tabInterval: number;
+  /** The frame settings of the [[TextAnnotation]]. */
+  public readonly frame: Readonly<Required<TextFrameStyleProps>>;
 
   /** A fully-populated JSON representation of the default settings. */
-  public static defaultProps: Readonly<Required<TextStyleSettingsProps>> = {
+  public static defaultProps: DeepReadonlyObject<DeepRequiredObject<TextStyleSettingsProps>> = {
     color: "subcategory",
     fontName: "",
     lineHeight: 1,
@@ -213,11 +218,13 @@ export class TextStyleSettings {
     superScriptOffsetFactor: 0.5,
     superScriptScale: 2 / 3,
     widthFactor: 1,
-    frameShape: "none",
-    frameFill: "none",
-    frameBorder: ColorDef.black.toJSON(),
-    frameBorderWeight: 1,
     tabInterval: 4,
+    frame: {
+      shape: "none",
+      fill: "none",
+      border: ColorDef.black.toJSON(),
+      borderWeight: 1,
+    },
   };
 
   /** Settings initialized to all default values. */
@@ -242,11 +249,15 @@ export class TextStyleSettings {
     this.superScriptOffsetFactor = props.superScriptOffsetFactor ?? defaults.superScriptOffsetFactor;
     this.superScriptScale = props.superScriptScale ?? defaults.superScriptScale;
     this.widthFactor = props.widthFactor ?? defaults.widthFactor;
-    this.frameShape = props.frameShape ?? defaults.frameShape;
-    this.frameFill = props.frameFill ?? defaults.frameFill;
-    this.frameBorder = props.frameBorder ?? defaults.frameBorder;
-    this.frameBorderWeight = props.frameBorderWeight ?? defaults.frameBorderWeight;
     this.tabInterval = props.tabInterval ?? defaults.tabInterval;
+    const frame = {
+      shape: props.frame?.shape ?? defaults.frame.shape,
+      fill: props.frame?.fill ?? defaults.frame.fill,
+      border: props.frame?.border ?? defaults.frame.border,
+      borderWeight: props.frame?.borderWeight ?? defaults.frame.borderWeight,
+     };
+    // Cast to indicate to TypeScript that the frame properties are all defined
+    this.frame = Object.freeze(frame) as Readonly<Required<TextFrameStyleProps>>;
   }
 
   /** Create a copy of these settings, modified according to the properties defined by `alteredProps`. */
@@ -263,6 +274,13 @@ export class TextStyleSettings {
     return { ...this };
   }
 
+  public framesEqual(other: TextFrameStyleProps): boolean {
+    return this.frame?.shape === other.shape
+      && this.frame?.fill === other.fill
+      && this.frame?.border === other.border
+      && this.frame?.borderWeight === other.borderWeight;
+  }
+
   public equals(other: TextStyleSettings): boolean {
     return this.color === other.color && this.fontName === other.fontName
       && this.lineHeight === other.lineHeight && this.lineSpacingFactor === other.lineSpacingFactor && this.widthFactor === other.widthFactor
@@ -270,14 +288,13 @@ export class TextStyleSettings {
       && this.stackedFractionType === other.stackedFractionType && this.stackedFractionScale === other.stackedFractionScale
       && this.subScriptOffsetFactor === other.subScriptOffsetFactor && this.subScriptScale === other.subScriptScale
       && this.superScriptOffsetFactor === other.superScriptOffsetFactor && this.superScriptScale === other.superScriptScale
-      && this.frameShape === other.frameShape && this.frameFill === other.frameFill
-      && this.frameBorder === other.frameBorder && this.frameBorderWeight === other.frameBorderWeight
-      && this.tabInterval === other.tabInterval;
+      && this.tabInterval === other.tabInterval
+      && this.framesEqual(other.frame)
   }
 }
 
-Object.freeze(TextStyleSettings.defaultProps);
-Object.freeze(TextStyleSettings.defaults);
+deepFreeze(TextStyleSettings.defaultProps);
+deepFreeze(TextStyleSettings.defaults);
 
 /** The JSON representation of a [[TextStyle]].
  * @beta

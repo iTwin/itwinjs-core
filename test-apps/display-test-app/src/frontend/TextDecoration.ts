@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { BaselineShift, ColorDef, FractionRun, LineBreakRun, Placement2dProps, TabRun, TextAnnotation, TextAnnotationAnchor, TextAnnotationFrameShape, TextAnnotationProps, TextBlock, TextBlockJustification, TextBlockMargins, TextRun, TextStyleSettingsProps } from "@itwin/core-common";
+import { BaselineShift, ColorDef, FractionRun, LineBreakRun, Placement2dProps, TabRun, TextAnnotation, TextAnnotationAnchor, TextAnnotationFrameShape, TextAnnotationProps, TextBlock, TextBlockJustification, TextBlockMargins, TextFrameStyleProps, TextRun, TextStyleSettingsProps } from "@itwin/core-common";
 import { DecorateContext, Decorator, GraphicType, IModelApp, IModelConnection, readElementGraphics, RenderGraphicOwner, Tool } from "@itwin/core-frontend";
 import { DtaRpcInterface } from "../common/DtaRpcInterface";
 import { assert, Id64, Id64String } from "@itwin/core-bentley";
@@ -34,10 +34,7 @@ class TextEditor implements Decorator {
     "lineHeight" |
     "widthFactor" |
     "lineSpacingFactor" |
-    "frameShape" |
-    "frameFill" |
-    "frameBorder" |
-    "frameBorderWeight"> {
+    "frame"> {
     return this.textBlock.styleOverrides;
   }
 
@@ -384,11 +381,14 @@ export class TextDecorationTool extends Tool {
       case "frame": {
         const key = inArgs[1];
         const val = inArgs[2];
-        if (key === "fill") editor.documentStyle.frameFill = (val === "background" || val === "subcategory") ? val : val ? ColorDef.fromString(val).toJSON() : undefined;
-        else if (key === "border") editor.documentStyle.frameBorder = val ? ColorDef.fromString(val).toJSON() : undefined;
-        else if (key === "borderWeight") editor.documentStyle.frameBorderWeight = Number(val);
-        else if (key === "shape") editor.documentStyle.frameShape = val as TextAnnotationFrameShape;
+        const frame: TextFrameStyleProps = editor.documentStyle.frame ?? { shape: "none" };
+        if (key === "fill") frame.fill = (val === "background" || val === "subcategory") ? val : val ? ColorDef.fromString(val).toJSON() : undefined;
+        else if (key === "border") frame.border = val ? ColorDef.fromString(val).toJSON() : undefined;
+        else if (key === "borderWeight") frame.borderWeight = Number(val);
+        else if (key === "shape") frame.shape = val as TextAnnotationFrameShape;
         else throw new Error("Expected shape, fill, border, borderWeight");
+
+        editor.documentStyle.frame = frame;
 
         break;
       }

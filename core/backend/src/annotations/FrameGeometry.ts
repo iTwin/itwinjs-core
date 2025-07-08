@@ -20,29 +20,29 @@ import { Angle, AngleSweep, Arc3d, LineString3d, Loop, Path, Point3d, Range2d, T
 * @beta
  */
 export function appendFrameToBuilder(builder: ElementGeometry.Builder, style: TextStyleSettings, range: Range2d, transform: Transform, geomParams: GeometryParams): boolean {
-  if (style.frameShape === "none") {
+  if (style.frame.shape === "none") {
     return false;
   }
 
   const params = geomParams.clone();
 
-  if (style.frameFill === "none") {
+  if (style.frame.fill === "none") {
     params.fillDisplay = FillDisplay.Never;
-  } else if (style.frameFill === "background") {
+  } else if (style.frame.fill === "background") {
     params.backgroundFill = BackgroundFill.Solid;
     params.fillDisplay = FillDisplay.Blanking;
-  } else if (style.frameFill !== "subcategory") {
-    params.fillColor = ColorDef.fromJSON(style.frameFill);
+  } else if (style.frame.fill !== "subcategory") {
+    params.fillColor = ColorDef.fromJSON(style.frame.fill);
     params.lineColor = params.fillColor;
     params.fillDisplay = FillDisplay.Blanking;
   }
 
-  if (style.frameBorder !== "subcategory") {
-    params.lineColor = ColorDef.fromJSON(style.frameBorder);
-    params.weight = style.frameBorderWeight;
+  if (style.frame.border !== "subcategory") {
+    params.lineColor = ColorDef.fromJSON(style.frame.border);
+    params.weight = style.frame.borderWeight;
   }
 
-  const frameGeometry = computeFrame({ frame: style.frameShape, range, transform });
+  const frameGeometry = computeFrame({ frame: style.frame.shape, range, transform });
   if (!builder.appendGeometryParamsChange(params) || !builder.appendGeometryQuery(frameGeometry)) {
     return false;
   }

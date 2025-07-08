@@ -131,7 +131,7 @@ describe("layoutTextBlock", () => {
 
     it("inherits overrides from TextBlock, Paragraph and Run when there is no styleId", () => {
       const textBlock = TextBlock.create({ styleId: "", styleOverrides: { widthFactor: 34, lineHeight: 3, lineSpacingFactor: 12, isBold: true } });
-      const paragraph = Paragraph.create({ styleId: "", styleOverrides: { lineHeight: 56, color: 0xff0000, frameShape: "octagon" } });
+      const paragraph = Paragraph.create({ styleId: "", styleOverrides: { lineHeight: 56, color: 0xff0000, frame: {shape: "octagon"} } });
       const run = TextRun.create({ content: "test", styleId: "", styleOverrides: { widthFactor: 78, fontName: "override" } });
       textBlock.paragraphs.push(paragraph);
       textBlock.appendRun(run);
@@ -151,7 +151,7 @@ describe("layoutTextBlock", () => {
       // lineSpacingFactor is always taken from the TextBlock, even if the Run has a styleId or overrides
       expect(runStyle.lineSpacingFactor).to.equal(12);
       // frame settings are always taken from the TextBlock, even if the Paragraph or Run has a styleId or overrides
-      expect(runStyle.frameShape).to.equal("none");
+      expect(runStyle.frame.shape).to.equal("none");
       expect(runStyle.fontName).to.equal("override");
       expect(runStyle.color).to.equal(0xff0000);
       expect(runStyle.isBold).to.be.true;

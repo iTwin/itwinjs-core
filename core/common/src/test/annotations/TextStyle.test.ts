@@ -4,9 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 import { describe, expect, it } from "vitest";
 import { ColorDef, TextStyleSettings, TextStyleSettingsProps } from "../../core-common";
+import { DeepRequiredObject } from "@itwin/core-bentley";
 
 describe("TextStyleSettings", () => {
-  const customProps: Required<TextStyleSettingsProps> = {
+  const customProps: DeepRequiredObject<TextStyleSettingsProps> = {
     color: 0xff007f,
     fontName: "customFont",
     lineHeight: 2,
@@ -21,10 +22,12 @@ describe("TextStyleSettings", () => {
     superScriptOffsetFactor: 0.6,
     superScriptScale: 0.5,
     widthFactor: 2,
-    frameShape: "rectangle",
-    frameFill: ColorDef.green.tbgr,
-    frameBorder: ColorDef.red.tbgr,
-    frameBorderWeight: 2,
+    frame: {
+      shape: "rectangle",
+      fill: ColorDef.green.tbgr,
+      border: ColorDef.red.tbgr,
+      borderWeight: 2,
+    },
     tabInterval: 7,
   };
 

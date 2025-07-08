@@ -52,7 +52,7 @@ export function appendTextAnnotationGeometry(props: AppendTextAnnotationGeometry
   result = result && props.builder.appendTextBlock(entries, params);
 
   // Construct the frame geometry
-  if (props.textStyleResolver.blockSettings.frameShape !== "none") {
+  if (props.textStyleResolver.blockSettings.frame.shape !== "none") {
     result = result && appendFrameToBuilder(props.builder, props.textStyleResolver.blockSettings, props.layout.range, transform.clone(), params);
   }
 
@@ -60,7 +60,7 @@ export function appendTextAnnotationGeometry(props: AppendTextAnnotationGeometry
   if (props.wantDebugGeometry) {
     result = result && debugAnchorPoint(props.builder, annotation, props.layout, transform.clone());
     result = result && debugRunLayout(props.builder, props.layout, transform.clone());
-    if (props.textStyleResolver.blockSettings.frameShape !== "none") result = result && debugSnapPoints(props.builder, props.textStyleResolver.blockSettings, props.layout.range, transform.clone());
+    if (props.textStyleResolver.blockSettings.frame.shape !== "none") result = result && debugSnapPoints(props.builder, props.textStyleResolver.blockSettings, props.layout.range, transform.clone());
   }
 
   return result;
@@ -104,13 +104,13 @@ function debugAnchorPoint(builder: ElementGeometry.Builder, annotation: TextAnno
 
 /** Draws the interval points defined by calling [[computeIntervalPoints]]. The points are shown as black dots 5x larger than the borderWeight */
 function debugSnapPoints(builder: ElementGeometry.Builder, style: TextStyleSettings, range: Range2d, transform: Transform): boolean {
-  if (style.frameShape === "none")
+  if (style.frame.shape === "none")
     return false;
-  const points = computeIntervalPoints({ frame: style.frameShape, range, transform, lineIntervalFactor: 0.5, arcIntervalFactor: 0.25 });
+  const points = computeIntervalPoints({ frame: style.frame.shape, range, transform, lineIntervalFactor: 0.5, arcIntervalFactor: 0.25 });
 
   const params = new GeometryParams(Id64.invalid);
   params.lineColor = ColorDef.black;
-  params.weight = style.frameBorderWeight * 5; // We want the dots to be bigger than the frame so we can see them.
+  params.weight = style.frame.borderWeight * 5; // We want the dots to be bigger than the frame so we can see them.
   params.fillDisplay = FillDisplay.Always;
 
   const result = builder.appendGeometryParamsChange(params) && builder.appendGeometryQuery(PointString3d.create(points));
