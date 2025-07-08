@@ -43,8 +43,9 @@ iTwin.js now supports displaying Google Photorealistic 3D Tiles via the new `Goo
 
 ## Schedule Script Editing Mode
 
-A new editing mode has been added to `DisplayStyle3dState` for working with `RenderSchedule.Script`. This allows dynamic editing of schedule scripts in real time, with immediate visual feedback using dynamic tiles, without requiring a full tile tree refresh for every change.
+[DisplayStyle3dState]($frontend) now offers an interactive editing mode for [RenderSchedule.Script]($common)s, allowing interactive, dynamic modification of the style's schedule script with immediate visual feedback. Previously, every modification of the script would trigger a refresh of all of the graphics; the new mode instead draws temporary graphics just for the elements affected by the script changes.
 
-Use `setScheduleEditing(script)` to apply a schedule script in editing mode. Once all edits are complete, call `commitScheduleEditing()` to finalize the changes and trigger a full refresh.
+Use [DisplayStyle3dState.setScheduleEditing]($frontend) to enter this mode, or to update the script again after entering the mode. Once all edits are complete, call [DisplayStyle3dState.commitScheduleEditing]($frontend) to finalize the changes a trigger a full refresh of the graphics. Example:
 
-See the [Schedule Script Editing example](../../example-code/snippets/src/frontend/ScheduleScriptEditing.ts) for more details.
+```ts
+[[include:ScheduleScript_editingMode]]
