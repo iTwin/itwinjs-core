@@ -210,7 +210,7 @@ export abstract class TileTree {
    *
    * @internal
    */
-  public onScheduleEditingChanged(_changes: RenderSchedule.EditingChanges[]): void {}
+  public async onScheduleEditingChanged(_changes: RenderSchedule.EditingChanges[]): Promise<void> {}
   /**
    * Invoked when a schedule script is committed during editing.
    * Override in specific tile tree types to handle the change.

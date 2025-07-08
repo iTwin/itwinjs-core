@@ -1305,12 +1305,12 @@ export abstract class Viewport implements Disposable, TileUser {
     removals.push(style.onScheduleScriptChanged.addListener(scriptChanged));
 
 
-    const scheduleEditingChanged = (
+    const scheduleEditingChanged = async (
       changes: RenderSchedule.EditingChanges[]
     ) => {
       for (const ref of this.getTileTreeRefs()) {
         const tree = ref.treeOwner.tileTree;
-        tree?.onScheduleEditingChanged(changes);
+        await tree?.onScheduleEditingChanged(changes);
       }
     };
 

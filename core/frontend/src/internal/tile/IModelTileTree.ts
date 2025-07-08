@@ -10,7 +10,8 @@ import { assert, BeTimePoint, DbOpcode, GuidString, Id64Array, Id64String } from
 import { Range3d, Transform } from "@itwin/core-geometry";
 import {
   BatchType, ContentIdProvider, EdgeOptions, ElementAlignedBox3d, ElementGeometryChange, FeatureAppearanceProvider,
-  IModelTileTreeId, IModelTileTreeProps, ModelGeometryChanges, RenderSchedule, TileProps
+  GeometricElementProps,
+  IModelTileTreeId, IModelTileTreeProps, isPlacement2dProps, isPlacement3dProps, ModelGeometryChanges, Placement2d, Placement3d, RenderSchedule, TileProps
 } from "@itwin/core-common";
 import { IModelApp } from "../../IModelApp";
 import { IModelConnection } from "../../IModelConnection";
@@ -473,7 +474,25 @@ export class IModelTileTree extends TileTree {
     return undefined !== this._transformNodeRanges;
   }
 
-  public override onScheduleEditingChanged(changes: RenderSchedule.EditingChanges[]): void {
+  private async getElementRange(elementId: Id64String): Promise<Range3d> {
+    const [element] = await this.iModel.elements.getProps(elementId) as GeometricElementProps[];
+
+    if (!element?.placement)
+      return Range3d.createNull();
+
+    const placement = element.placement;
+
+    if (isPlacement3dProps(placement)) {
+      return Placement3d.fromJSON(placement).calculateRange();
+    }
+
+    if (isPlacement2dProps(placement)) {
+      return Placement2d.fromJSON(placement).calculateRange();
+    }
+    return Range3d.createNull();
+  }
+
+  public override async onScheduleEditingChanged(changes: RenderSchedule.EditingChanges[]): Promise<void> {
     const displayStyle = IModelApp.viewManager.selectedView?.displayStyle;
     const newScript = displayStyle?.scheduleScript;
     const scriptRef = newScript ? new RenderSchedule.ScriptReference(displayStyle.id, newScript) : undefined;
@@ -501,7 +520,7 @@ export class IModelTileTree extends TileTree {
         changedElements.push({
           id,
           type: DbOpcode.Update,
-          range: new Range3d(),
+          range: await this.getElementRange(id),
         });
       }
     }
