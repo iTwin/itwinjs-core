@@ -41,7 +41,7 @@ export class Voronoi {
       this.populateCircumcenters(graph);
     this.populateIdToIndexMap(graph);
   }
-  // find min id of the face containing this vertex
+  // find min id of the triangular face containing this vertex
   private static findFaceMinId(vertex: HalfEdge): number {
     return Math.min(vertex.id, vertex.faceSuccessor.id, vertex.faceSuccessor.faceSuccessor.id);
   }
@@ -56,7 +56,7 @@ export class Voronoi {
           this._inputGraphIsValid = false;
           return false;
         }
-        // find center of circumcircle of the triangle formed by this face
+        // find circumcenter of the triangle formed by this face
         const p0 = seed.getPoint3d();
         const p1 = seed.faceSuccessor.getPoint3d();
         const p2 = seed.faceSuccessor.faceSuccessor.getPoint3d();
@@ -74,7 +74,7 @@ export class Voronoi {
     );
   }
   // go over all the nodes in the graph and create a map of node IDs in a vertex loop to
-  // min index (in graph.allHalfEdges) of that vertex loop
+  // min index of that vertex loop in graph.allHalfEdges
   private populateIdToIndexMap(graph: HalfEdgeGraph): void {
     graph.allHalfEdges.forEach((node, index) => {
       this._idToIndexMap.set(node.id, index);
@@ -140,7 +140,7 @@ export class Voronoi {
     const minId = Voronoi.findFaceMinId(vertex);
     const circumcenter = voronoi._circumcenterMap.get(minId);
     if (!circumcenter)
-      return false; // no circumcenter found for this edge
+      return false; // no circumcenter found for the face containing this edge
     const bisector = Voronoi.getBisector(vertex, circumcenter, voronoiBoundaryData);
     if (!bisector)
       return true; // bisector is outside the voronoi boundary for skinny triangles; skip it
@@ -161,23 +161,28 @@ export class Voronoi {
     const circumcenter0 = voronoi._circumcenterMap.get(minId0);
     const circumcenter1 = voronoi._circumcenterMap.get(minId1);
     if (!circumcenter0 || !circumcenter1)
-      return false; // no circumcenter found for this edge
+      return false; // no circumcenter found for the face containing this edge
     if (circumcenter0.isAlmostEqual(circumcenter1))
       return true; // circumcenters are the same, skip this edge
     const voronoiBoundaryRange = voronoiBoundaryData.boundaryRange;
     const center0IsInsideVoronoiBoundary = voronoiBoundaryRange.containsPoint(circumcenter0);
     const center1IsInsideVoronoiBoundary = voronoiBoundaryRange.containsPoint(circumcenter1);
-    if (!center0IsInsideVoronoiBoundary && !center1IsInsideVoronoiBoundary)
-      return true; // both circumcenters are outside the voronoi boundary, skip this edge
     const ls = LineSegment3d.create(circumcenter0, circumcenter1);
     const intersection = CurveCurve.intersectionXYPairs(ls, false, voronoiBoundaryData.boundary, false);
-    if (intersection && intersection.length > 0) { // circumcenter is outside the voronoi boundary for skinny triangles
-      const center = center0IsInsideVoronoiBoundary ? circumcenter0 : circumcenter1;
-      const limitedLs = LineSegment3d.create(center, intersection[0].detailA.point); // limit ls to the voronoi boundary
+    if (intersection && intersection.length > 0) { // ls intersects the voronoi boundary
+      let limitedLs: LineSegment3d;
+      if (!center0IsInsideVoronoiBoundary && !center1IsInsideVoronoiBoundary) {
+        limitedLs = LineSegment3d.create(intersection[0].detailA.point, intersection[1].detailA.point); // limit ls to the voronoi boundary
+      } else { 
+        const center = center0IsInsideVoronoiBoundary ? circumcenter0 : circumcenter1;
+        limitedLs = LineSegment3d.create(center, intersection[0].detailA.point); // limit ls to the voronoi boundary
+      }
       voronoiDiagram.addLineSegmentXY(
         limitedLs, voronoi._idToIndexMap.get(seed.id), voronoi._idToIndexMap.get(seed.edgeMate.id),
       );
     } else {
+      if (!center0IsInsideVoronoiBoundary && !center1IsInsideVoronoiBoundary)
+        return true; // both circumcenters are outside the voronoi boundary and ls does not intersect the boundary; skip this edge
       voronoiDiagram.addLineSegmentXY(
         ls, voronoi._idToIndexMap.get(seed.id), voronoi._idToIndexMap.get(seed.edgeMate.id),
       );
@@ -242,44 +247,24 @@ export class Voronoi {
       return undefined;
     const voronoiBoundaryData = new VoronoiBoundaryData(graph, pad);
     const voronoiDiagram = new HalfEdgeGraph();
-    // handle special case when mesh is a single skinny triangle
-    let circumcenterIsInsideVoronoiBoundary = false;
-    const numTriangles = voronoi._circumcenterMap.size;
-    if (numTriangles === 1) {
-      const circumcenter = voronoi._circumcenterMap.entries().next().value?.[1];
-      if (circumcenter)
-        circumcenterIsInsideVoronoiBoundary = voronoiBoundaryData.boundaryRange.containsPoint(circumcenter);
-    }
-    if (isValidVoronoi && numTriangles === 1 && !circumcenterIsInsideVoronoiBoundary) {
-      graph.announceEdges(
-        (_g: HalfEdgeGraph, seed: HalfEdge) => {
+    // go over all edges in the graph and add bisectors for boundary edges
+    // and add line between circumcenters for interior edges
+    // if a circumcenter is outside the voronoi boundary, limit the bisector or line to the voronoi boundary
+    graph.announceEdges(
+      (_g: HalfEdgeGraph, seed: HalfEdge) => {
+        const seedIsExterior = seed.isMaskSet(HalfEdgeMask.EXTERIOR);
+        const seedIsBoundary = seed.isMaskSet(HalfEdgeMask.BOUNDARY_EDGE);
+        if (seedIsExterior || seedIsBoundary) {
           isValidVoronoi = Voronoi.handleBoundaryEdge(
-            seed, voronoi, voronoiBoundaryData, voronoiDiagram, seed.isMaskSet(HalfEdgeMask.EXTERIOR),
+            seed, voronoi, voronoiBoundaryData, voronoiDiagram, seedIsExterior,
           );
           return isValidVoronoi;
-        },
-      );
-    } else {
-      // go over all edges in the graph and add bisectors for boundary edges
-      // and add line between circumcenters for interior edges
-      if (isValidVoronoi) {
-        graph.announceEdges(
-          (_g: HalfEdgeGraph, seed: HalfEdge) => {
-            const seedIsExterior = seed.isMaskSet(HalfEdgeMask.EXTERIOR);
-            const seedIsBoundary = seed.isMaskSet(HalfEdgeMask.BOUNDARY_EDGE);
-            if (seedIsExterior || seedIsBoundary) {
-              isValidVoronoi = Voronoi.handleBoundaryEdge(
-                seed, voronoi, voronoiBoundaryData, voronoiDiagram, seedIsExterior,
-              );
-              return isValidVoronoi;
-            } else {
-              isValidVoronoi = Voronoi.handleInteriorEdge(seed, voronoi, voronoiBoundaryData, voronoiDiagram);
-              return isValidVoronoi;
-            }
-          },
-        );
-      }
-    }
+        } else {
+          isValidVoronoi = Voronoi.handleInteriorEdge(seed, voronoi, voronoiBoundaryData, voronoiDiagram);
+          return isValidVoronoi;
+        }
+      },
+    );
     if (!isValidVoronoi)
       return undefined; // invalid graph
     Voronoi.addVoronoiBoundary(voronoiDiagram, voronoiBoundaryData);
@@ -331,10 +316,11 @@ export class Voronoi {
     const bisectorEnd = Point3d.createAdd2Scaled(bisectorStart, 1, perp, 1);
     const bisector = LineSegment3d.create(bisectorStart, bisectorEnd);
     const intersection = CurveCurve.intersectionXYPairs(bisector, true, voronoiBoundary, false);
-    if (!intersection || intersection.length === 0)
+    if (!intersection || intersection.length <= 1)
       return undefined;
     return LineSegment3d.create(intersection[0].detailA.point, intersection[1].detailA.point); // limit bisector to the voronoi boundary
   }
+  // create a Voronoi diagram for a graph with colinear points
   private static createVoronoiForColinearPoints(graph: HalfEdgeGraph, pad?: XAndY): HalfEdgeGraph | undefined {
     const voronoi = new Voronoi(graph, true);
     if (!voronoi._inputGraphIsValid)
@@ -477,10 +463,15 @@ export class Voronoi {
     if (strokeOptions === undefined)
       strokeOptions = new StrokeOptions();
     const children = curveChain.children;
-    if (!children)
+    // we should add start and end points to the pointsWithIndices array to
+    // ensure that the curve chain will be inside the Voronoi boundary rectangle
+    const startPoint = curveChain.startPoint();
+    const endPoint = curveChain.endPoint();
+    if (!children || !startPoint || !endPoint)
       return undefined;
     const numChildren = children.length;
     const pointsWithIndices: [Point3d, number][] = [];
+    pointsWithIndices.push([startPoint, 0]);
     for (let i = 0; i < numChildren; i++) {
       const child = children[i];
       if (child instanceof LineString3d) {
@@ -497,21 +488,25 @@ export class Voronoi {
           return undefined;
       }
     }
+    pointsWithIndices.push([endPoint, numChildren - 1]);
     return Voronoi.createVoronoiFromPointsWithIndices(pointsWithIndices, numChildren, pad);
   }
 
   /////////////// This method is temporary and will be removed. NO NEED TO REVIEW.  /////////////////
   /////////////// Just for debugging purposes. This method is called by last 4 tests. /////////////////
   public static createVoronoiFromCurveChainTMP(
-    curveChain: CurveChain, strokeOptions?: StrokeOptions, pad?: XAndY,
+    curveChain: CurveChain, strokeOptions?: StrokeOptions, pad?: XAndY, strokePoints?: Point3d[],
   ): HalfEdgeGraph | undefined {
     if (strokeOptions === undefined)
       strokeOptions = new StrokeOptions();
     const children = curveChain.children;
-    if (!children)
+    const startPoint = curveChain.startPoint();
+    const endPoint = curveChain.endPoint();
+    if (!children || !startPoint || !endPoint)
       return undefined;
     const numChildren = children.length;
     const pointsWithIndices: [Point3d, number][] = [];
+    pointsWithIndices.push([startPoint, 0]);
     for (let i = 0; i < numChildren; i++) {
       const child = children[i];
       if (child instanceof LineString3d) {
@@ -528,6 +523,12 @@ export class Voronoi {
           return undefined;
       }
     }
+    pointsWithIndices.push([endPoint, numChildren - 1]);
+    if (!strokePoints)
+      strokePoints = [];
+    let points = pointsWithIndices.map(([point]) => point);
+    for (const point of points)
+      strokePoints.push(point); // collect all points for debugging
     const graph = Triangulator.createTriangulatedGraphFromPoints(pointsWithIndices.map(([point]) => point));
     return graph ? Voronoi.createVoronoi(graph, pad) : undefined;
   }
@@ -559,9 +560,9 @@ class VoronoiBoundaryData {
     let padX = 0;
     let padY = 0;
     if (pad === undefined) {
-      const minPadding = 2; // smallest padding
-      const maxPadding = 10; // don't let padding grow too large
-      const ratio = 0.05; // 5% relative padding
+      const minPadding = 2;  // smallest padding
+      const maxPadding = 10; // do not let padding grow too large
+      const ratio = 0.05;    // 5% relative padding
       padX = Math.min(Math.max(graphRange.xLength() * ratio, minPadding), maxPadding);
       padY = Math.min(Math.max(graphRange.yLength() * ratio, minPadding), maxPadding);
     } else {

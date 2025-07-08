@@ -7,6 +7,7 @@ import { describe, expect, it } from "vitest";
 import { Arc3d, LineSegment3d, LineString3d, StrokeOptions } from "../../core-geometry";
 import { BagOfCurves } from "../../curve/CurveCollection";
 import { GeometryQuery } from "../../curve/GeometryQuery";
+import { Loop } from "../../curve/Loop";
 import { Path } from "../../curve/Path";
 import { Point3d } from "../../geometry3d/Point3dVector3d";
 import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
@@ -188,6 +189,7 @@ describe("Voronoi", () => {
     const dy = 8;
     let points = [[-3, 0], [0, -1], [0, 1]];
     let pts = IModelJson.Reader.parsePointArray(points);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, Loop.create(LineString3d.create(pts)), 0, dy);
     const voronoiPts = Voronoi.createVoronoiFromPoints(pts);
     if (ck.testDefined(voronoiPts)) {
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, createBagOfCurves(voronoiPts), 0, dy);
@@ -519,46 +521,26 @@ describe("Voronoi", () => {
     expect(ck.getNumErrors()).toBe(0);
   });
 
-  it.only("PathFromJson0", () => {
-    const ck = new Checker(true, true);
-    const allGeometry: GeometryQuery[] = [];
-
-    const path = IModelJson.Reader.parse(
-      JSON.parse(fs.readFileSync("./src/test/data/curve/hz_with_clothoid_spiral.json", "utf8")),
-    ) as Path;
-    if (ck.testDefined(path, "path successfully parsed"))
-      GeometryCoreTestIO.captureCloneGeometry(allGeometry, path);
-    ck.testCoordinate(path.children.length, 9, "path should have 9 children");
-
-    const strokeOptions = new StrokeOptions();
-    strokeOptions.maxEdgeLength = 200;
-    const voronoi = Voronoi.createVoronoiFromCurveChainTMP(path, strokeOptions);
-    if (ck.testDefined(voronoi)) {
-      GeometryCoreTestIO.captureCloneGeometry(allGeometry, createBagOfCurves(voronoi));
-      // ck.testCoordinate(voronoi.collectFaceLoops().length, 9, "Voronoi should have 9 faces");
-    }
-
-    GeometryCoreTestIO.saveGeometry(allGeometry, "Voronoi", "PathFromJson0");
-    expect(ck.getNumErrors()).toBe(0);
-  });
-
   it.only("PathFromJson1", () => {
     const ck = new Checker(true, true);
     const allGeometry: GeometryQuery[] = [];
 
     const path = IModelJson.Reader.parse(
-      JSON.parse(fs.readFileSync("./src/test/data/curve/hz_route97_ext.json", "utf8")),
+      JSON.parse(fs.readFileSync("./src/test/data/curve/voronoi/path_with_arc_and_linesegment.json", "utf8")),
     ) as Path;
     if (ck.testDefined(path, "path successfully parsed"))
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, path);
-    ck.testCoordinate(path.children.length, 18, "path should have 18 children");
+    ck.testCoordinate(path.children.length, 7, "path should have 7 children");
 
     const strokeOptions = new StrokeOptions();
-    strokeOptions.maxEdgeLength = 10;
-    const voronoi = Voronoi.createVoronoiFromCurveChainTMP(path, strokeOptions);
+    strokeOptions.maxEdgeLength = 20;
+    let strokePoints: Point3d[] = [];
+    const voronoi = Voronoi.createVoronoiFromCurveChainTMP(path, strokeOptions, undefined, strokePoints);
     if (ck.testDefined(voronoi)) {
+      for (const pt of strokePoints)
+        GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, pt, 4);
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, createBagOfCurves(voronoi));
-      // ck.testCoordinate(voronoi.collectFaceLoops().length, 18, "Voronoi should have 18 faces");
+      // ck.testCoordinate(voronoi.collectFaceLoops().length, path.children.length, "Voronoi should have 7 faces");
     }
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "Voronoi", "PathFromJson1");
@@ -570,21 +552,50 @@ describe("Voronoi", () => {
     const allGeometry: GeometryQuery[] = [];
 
     const path = IModelJson.Reader.parse(
-      JSON.parse(fs.readFileSync("./src/test/data/curve/hz_ramp_c.json", "utf8")),
+      JSON.parse(fs.readFileSync("./src/test/data/curve/voronoi/path_with_arc_and_linestring.json", "utf8")),
     ) as Path;
     if (ck.testDefined(path, "path successfully parsed"))
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, path);
-    ck.testCoordinate(path.children.length, 7, "path should have 7 children");
+    ck.testCoordinate(path.children.length, 18, "path should have 18 children");
 
     const strokeOptions = new StrokeOptions();
-    strokeOptions.maxEdgeLength = 20;
-    const voronoi = Voronoi.createVoronoiFromCurveChainTMP(path, strokeOptions);
+    strokeOptions.maxEdgeLength = 40;
+    let strokePoints: Point3d[] = [];
+    const voronoi = Voronoi.createVoronoiFromCurveChainTMP(path, strokeOptions, undefined, strokePoints);
     if (ck.testDefined(voronoi)) {
+      for (const pt of strokePoints)
+        GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, pt, 4);
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, createBagOfCurves(voronoi));
-      // ck.testCoordinate(voronoi.collectFaceLoops().length, 7, "Voronoi should have 7 faces");
+      // ck.testCoordinate(voronoi.collectFaceLoops().length, path.children.length, "Voronoi should have 18 faces");
     }
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "Voronoi", "PathFromJson2");
+    expect(ck.getNumErrors()).toBe(0);
+  });
+
+  it.only("PathFromJson3", () => {
+    const ck = new Checker(true, true);
+    const allGeometry: GeometryQuery[] = [];
+
+    const path = IModelJson.Reader.parse(
+      JSON.parse(fs.readFileSync("./src/test/data/curve/voronoi/path_with_spirals.json", "utf8")),
+    ) as Path;
+    if (ck.testDefined(path, "path successfully parsed"))
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, path);
+    ck.testCoordinate(path.children.length, 9, "path should have 9 children");
+
+    const strokeOptions = new StrokeOptions();
+    strokeOptions.maxEdgeLength = 200;
+    let strokePoints: Point3d[] = [];
+    const voronoi = Voronoi.createVoronoiFromCurveChainTMP(path, strokeOptions, undefined, strokePoints);
+    if (ck.testDefined(voronoi)) {
+      for (const pt of strokePoints)
+        GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, pt, 4);
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, createBagOfCurves(voronoi));
+      // ck.testCoordinate(voronoi.collectFaceLoops().length, path.children.length, "Voronoi should have 9 faces");
+    }
+
+    GeometryCoreTestIO.saveGeometry(allGeometry, "Voronoi", "PathFromJson3");
     expect(ck.getNumErrors()).toBe(0);
   });
 });
