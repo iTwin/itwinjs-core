@@ -315,10 +315,11 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     * transforms, visibility, and cutting planes — without requiring a full tile tree reload.
     *
     * Calling this method multiple times will update the current editing session with new script changes.
-    * When all edits are complete, you must invoke @see [[commitScheduleEditing]] to finalize the session and
+    * When all edits are complete, you must invoke [[commitScheduleEditing]] to finalize the session and
     * trigger a full tile tree refresh with the committed script.
     *
-    * **Note:** You cannot use schedule script editing while a @see [[GraphicalEditingScope]] is active.
+    * @note You cannot use schedule script editing while a @see [[GraphicalEditingScope]] is active.
+    *
     * Example:
     * ```ts
     * [[include:ScheduleScript_setEditingMode]]
