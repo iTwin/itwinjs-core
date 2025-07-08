@@ -10,6 +10,7 @@ import { assert, Id64String | from "@itwin/core-bentley";
 // __PUBLISH_EXTRACT_START__ ScheduleScript_editingMode
 /** Applies color and visibility changes to a specified element using interactive
  * schedule script editing.
+ * Note that a real workflow would involve user interaction between each call to `setScheduleEditing`.
  */
 export function editElementTimeline(vp: Viewport, elementId: Id64String, modelId: Id64String): void {
   const builder = new RenderSchedule.ScriptBuilder();
