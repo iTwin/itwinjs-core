@@ -6,7 +6,7 @@ import { Viewport } from "@itwin/core-frontend";
 import { RenderSchedule, RgbColor } from "@itwin/core-common";
 import { Transform } from "@itwin/core-geometry";
 
-// __PUBLISH_EXTRACT_START__ ScheduleScript_setEditingMode
+// __PUBLISH_EXTRACT_START__ ScheduleScript_editingMode
 /** Demonstrates applying schedule script using editing mode with color and visibility changes. */
 /** A helper function that extracts a schedule script from a builder. */
 function finishScript(builder: RenderSchedule.ScriptBuilder): RenderSchedule.Script {
