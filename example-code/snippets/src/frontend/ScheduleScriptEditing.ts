@@ -5,20 +5,9 @@
 import { Viewport } from "@itwin/core-frontend";
 import { RenderSchedule, RgbColor } from "@itwin/core-common";
 import { Transform } from "@itwin/core-geometry";
+import { assert, Id64String | from "@itwin/core-bentley";
 
 // __PUBLISH_EXTRACT_START__ ScheduleScript_editingMode
-/** Demonstrates applying schedule script using editing mode with color and visibility changes. */
-/** A helper function that extracts a schedule script from a builder. */
-function finishScript(builder: RenderSchedule.ScriptBuilder): RenderSchedule.Script {
-  const json = builder.finish();
-  const script = json ? RenderSchedule.Script.fromJSON(json) : undefined;
-  if (!script) {
-    throw new Error("invalid script!");
-  }
-  
-  return script;
-}
-
 /** Applies color and visibility changes to a specified element using interactive
  * schedule script editing.
  */
@@ -34,14 +23,18 @@ export function editElementTimeline(vp: Viewport, elementId: Id64String, modelId
   elementTimeline.addColor(now + 3000, new RgbColor(0, 255, 0));
 
   // Enter interactive script editing mode
-  vp.displayStyle.setScheduleEditing(finishScript(builder));  
+  let script = RenderSchedule.Script.fromJSON(builder.finish());
+  assert(script !== undefined);
+  vp.displayStyle.setScheduleEditing(script);
 
   // Change visibility over time
   elementTimeline.addVisibility(now, 0);       // fully transparent
   elementTimeline.addVisibility(now + 3000, 100); // fully visible
 
   // Update the script under construction
-  vp.displayStyle.setScheduleEditing(finishScript(builder));
+  script = RenderSchedule.Script.fromJSON(builder.finish());
+  assert(script !== undefined);
+  vp.displayStyle.setScheduleEditing(script);
   
   // ...make some other changes to the script if desired...
 
