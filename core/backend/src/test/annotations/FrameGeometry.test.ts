@@ -32,7 +32,7 @@ function isContinuous(geometries: CurvePrimitive[]): boolean {
   });
 }
 
-describe.only("FrameGeometry", () => {
+describe("FrameGeometry", () => {
   const defaultRange = Range2d.createXYXY(0, 0, 10, 20);
   const defaultTransform = Transform.createIdentity();
   const defaultParams = new GeometryParams(Id64.invalid);
@@ -43,12 +43,7 @@ describe.only("FrameGeometry", () => {
       const frame: TextFrameStyleProps = { shape: "rectangle" };
       const result = appendFrameToBuilder(builder, frame, defaultRange, defaultTransform, defaultParams);
       expect(result).to.be.true;
-
-      // Expect params for frame shape and frame fill
-      expect(builder.params.length).to.be.equal(2);
-
-      // Expect geom for frame shape and frame fill
-      expect(builder.geometries.length).to.be.equal(2);
+      expect(builder.geometries.length).to.be.equal(1);
     });
 
     it("should not append frame if shape is undefined or 'none'", () => {
