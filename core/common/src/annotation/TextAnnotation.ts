@@ -39,8 +39,12 @@ export interface TextAnnotationAnchor {
 /** Set of predefined shapes that can be computed and drawn around the margins of a [[TextBlock]]
  * @beta
 */
-export type TextAnnotationFrameShape = "none" | "line" | "rectangle" | "circle" | "equilateralTriangle" | "diamond" | "square" | "pentagon" | "hexagon" | "octagon" | "capsule" | "roundedRectangle";
+export const textAnnotationFrameShapes = ["none", "line", "rectangle", "circle", "equilateralTriangle", "diamond", "square", "pentagon", "hexagon", "octagon", "capsule", "roundedRectangle"] as const;
 
+/** Describes a predefined shape that can be computed and drawn around the margins of a [[TextBlock]]
+ * @beta
+*/
+export type TextAnnotationFrameShape = typeof textAnnotationFrameShapes[number];
 
 /**
  * Describes what color to use when filling the frame around a [[TextBlock]].

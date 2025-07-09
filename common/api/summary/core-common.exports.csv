@@ -906,6 +906,7 @@ beta;type;TextAnnotationFillColor
 beta;type;TextAnnotationFrameShape
 beta;interface;TextAnnotationLeader
 beta;interface;TextAnnotationLeaderProps
+beta;const;textAnnotationFrameShapes
 beta;interface;TextAnnotationProps
 beta;class;TextBlock
 beta;class;TextBlockComponent
