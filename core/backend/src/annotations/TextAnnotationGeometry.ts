@@ -152,6 +152,7 @@ function debugRunLayout(builder: ElementGeometry.Builder, layout: TextBlockLayou
       if (!lastColor.equals(color)) {
         const colorParams = new GeometryParams(Id64.invalid);
         colorParams.lineColor = color;
+        if (run.source.type === "linebreak") colorParams.weight = 3;
         result = result && builder.appendGeometryParamsChange(colorParams);
         lastColor = color;
       }
@@ -165,6 +166,26 @@ function debugRunLayout(builder: ElementGeometry.Builder, layout: TextBlockLayou
       runTrans.multiplyPoint3dArrayInPlace(runCorners);
       result = result && builder.appendGeometryQuery(LineString3d.create(runCorners));
     });
+
+    // TODO: remove during cleanup
+    // // Draw the justification point for the run
+    // if (line.justificationRange) {
+    //   const justificationPoint = line.justificationRange.center;
+    //   const top = justificationPoint.clone();
+    //   top.y = line.justificationRange?.yHigh + 0.25 * line.justificationRange?.yLength();
+    //   const bottom = justificationPoint.clone();
+    //   bottom.y = line.justificationRange?.yLow - 0.25 * line.justificationRange?.yLength();
+
+    //   const points = lineTrans.multiplyPoint2dArray([top, justificationPoint, bottom]);
+    //   const params = new GeometryParams(Id64.invalid);
+    //   params.lineColor = ColorDef.fromString("green");
+    //   params.weight = 3; // We want the dots to be bigger than the frame so we can see them.
+    //   params.fillDisplay = FillDisplay.Always;
+    //   lastColor = params.lineColor;
+
+    //   // result = result && builder.appendGeometryQuery(LineString3d.create(points));
+    //   result = result && builder.appendGeometryParamsChange(params) && builder.appendGeometryQuery(LineString3d.create(points));
+    // }
   });
 
   return result;
