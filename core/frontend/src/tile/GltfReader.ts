@@ -430,6 +430,44 @@ interface StructuralMetadata{
   tables: StructuralMetadataTable[];
 }
 
+/** @internal exported strictly for testing */
+
+function getMeshPrimitives(mesh: GltfMesh | undefined): GltfMeshPrimitive[] | undefined {
+  const ext = mesh?.extensions?.EXT_mesh_primitive_restart;
+  const meshPrimitives = mesh?.primitives;
+  if (!meshPrimitives || meshPrimitives.length === 0 || !ext?.primitiveGroups || ext.primitiveGroups.length === 0) {
+    return meshPrimitives;
+  }
+
+  // Note: per the spec, any violation of the extension's specification must cause us to fall back to mesh.primitives.
+
+  // Start with a copy of mesh.primitives. For each group, replace the first primitive in the group with a primitive representing the entire group,
+  // and set the rest of the primitives in the group to `undefined`.
+  // This allows us to identify which remaining primitives do not use primitive restart, and any errors involving a primitive appearing in more than one group.
+  const primitives: Array<GltfMeshPrimitive | undefined> = [...meshPrimitives];
+  for (const group of ext.primitiveGroups) {
+    // Spec: the group must not be empty and all indices must be valid array indices into mesh.primitives.
+    const firstPrimitiveIndex = group.primitives[0];
+    if (undefined === firstPrimitiveIndex || !meshPrimitives[firstPrimitiveIndex]) {
+      return meshPrimitives;
+    }
+
+    const primitive = { ...meshPrimitives[firstPrimitiveIndex], indices: group.indices };
+    for (const primitiveIndex of group.primitives) {
+      // Spec: all primitives must use indexed geometry and a given primitive may appear in at most one group.
+      if (undefined === primitives[primitiveIndex]?.indices) {
+        return meshPrimitives;
+      }
+
+      primitives[primitiveIndex] = undefined;
+    }
+
+    primitives[firstPrimitiveIndex] = primitive;
+  }
+
+  return primitives.filter((x) => x !== undefined);
+}
+
 /** Deserializes [glTF](https://www.khronos.org/gltf/).
  * @internal
  */
@@ -1136,8 +1174,9 @@ export abstract class GltfReader {
     const meshes: GltfPrimitiveData[] = [];
     for (const meshKey of getGltfNodeMeshIds(node)) {
       const nodeMesh = this._meshes[meshKey];
-      if (nodeMesh?.primitives) {
-        for (const primitive of nodeMesh.primitives) {
+      const primitives = getMeshPrimitives(nodeMesh);
+      if (primitives) {
+        for (const primitive of primitives) {
           const mesh = this.readMeshPrimitive(primitive, featureTable, thisBias);
           if (mesh) {
             meshes.push(mesh);

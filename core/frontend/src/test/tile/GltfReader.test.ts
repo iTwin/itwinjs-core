@@ -8,7 +8,7 @@ import { EmptyLocalization, GltfV2ChunkTypes, GltfVersions, RenderTexture, TileF
 import { IModelConnection } from "../../IModelConnection";
 import { IModelApp } from "../../IModelApp";
 import { GltfDataType, GltfDocument, GltfId, GltfNode, GltfSampler, GltfWrapMode } from "../../common/gltf/GltfSchema";
-import { GltfDataBuffer, GltfGraphicsReader, GltfReader, GltfReaderArgs, GltfReaderProps, GltfReaderResult } from "../../tile/GltfReader";
+import { getMeshPrimitives, GltfDataBuffer, GltfGraphicsReader, GltfReader, GltfReaderArgs, GltfReaderProps, GltfReaderResult } from "../../tile/GltfReader";
 import { createBlankConnection } from "../createBlankConnection";
 import { BatchedTileIdMap } from "../../tile/internal";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
@@ -1391,6 +1391,34 @@ const meshFeaturesExt: GltfDocument = JSON.parse(`
           expect(properties?.class1?.color1).toEqual(colorHex); // multiple feature property tables should be supported
         });
         expect(featureIndexToColorMap.size).toEqual(uniqueEntriesSize);
+      });
+    });
+  });
+
+  describe("EXT_mesh_primitive_restart", () => {
+    it("combines primitives", () => {
+      
+    });
+
+    describe("falls back to mesh.primitives", () => {
+      it("if no groups are defined", () => {
+
+      });
+
+      it("if a given primitive appears more than once in the same group", () => {
+        
+      });
+
+      it("if a given primitive appears in more than one group", () => {
+        
+      });
+
+      it("if any primitive does not use indexed geometry", () => {
+        
+      });
+
+      it("if any primitive has a topology other than line loop, line strip, triangle strip, or triangle fan", () => {
+        
       });
     });
   });
