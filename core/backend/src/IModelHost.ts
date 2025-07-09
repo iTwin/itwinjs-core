@@ -219,7 +219,6 @@ export class IModelHostConfiguration implements IModelHostOptions {
 
   /** @beta */
   public workspace?: WorkspaceOpts;
-  /** @internal */
   public hubAccess?: BackendHubAccess;
   /** The AuthorizationClient used to obtain [AccessToken]($bentley)s. */
   public authorizationClient?: AuthorizationClient;
