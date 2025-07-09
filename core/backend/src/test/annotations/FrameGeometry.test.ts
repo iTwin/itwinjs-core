@@ -44,7 +44,6 @@ describe("FrameGeometry", () => {
       const result = appendFrameToBuilder(builder, frame, defaultRange, defaultTransform, defaultParams);
       expect(result).to.be.true;
       expect(builder.geometries.length).to.be.equal(1);
-
     });
 
     it("should not append frame if shape is undefined or 'none'", () => {

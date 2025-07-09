@@ -53,7 +53,7 @@ export function appendTextAnnotationGeometry(props: AppendTextAnnotationGeometry
 
   // Construct the frame geometry
   if (props.textStyleResolver.blockSettings.frame.shape !== "none") {
-    result = result && appendFrameToBuilder(props.builder, props.textStyleResolver.blockSettings, props.layout.range, transform.clone(), params);
+    result = result && appendFrameToBuilder(props.builder, props.textStyleResolver.blockSettings.frame, props.layout.range, transform.clone(), params);
   }
 
   // Construct the debug geometry

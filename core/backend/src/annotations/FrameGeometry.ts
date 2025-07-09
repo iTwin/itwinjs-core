@@ -7,7 +7,7 @@
  */
 
 
-import { BackgroundFill, ColorDef, ElementGeometry, FillDisplay, GeometryParams, TextAnnotationFrameShape, TextStyleSettings } from "@itwin/core-common";
+import { BackgroundFill, ColorDef, ElementGeometry, FillDisplay, GeometryParams, TextAnnotationFrameShape, TextFrameStyleProps } from "@itwin/core-common";
 import { Angle, AngleSweep, Arc3d, LineString3d, Loop, Path, Point3d, Range2d, Transform, Vector2d } from "@itwin/core-geometry";
 
 /**
@@ -19,30 +19,30 @@ import { Angle, AngleSweep, Arc3d, LineString3d, Loop, Path, Point3d, Range2d, T
  * @returns `true` if any geometry was appended to the builder
 * @beta
  */
-export function appendFrameToBuilder(builder: ElementGeometry.Builder, style: TextStyleSettings, range: Range2d, transform: Transform, geomParams: GeometryParams): boolean {
-  if (style.frame.shape === "none") {
+export function appendFrameToBuilder(builder: ElementGeometry.Builder, frame: TextFrameStyleProps, range: Range2d, transform: Transform, geomParams: GeometryParams): boolean {
+  if (frame.shape === "none" || frame.shape === undefined) {
     return false;
   }
 
   const params = geomParams.clone();
 
-  if (style.frame.fill === "none") {
+  if (frame.fill === "none") {
     params.fillDisplay = FillDisplay.Never;
-  } else if (style.frame.fill === "background") {
+  } else if (frame.fill === "background") {
     params.backgroundFill = BackgroundFill.Solid;
     params.fillDisplay = FillDisplay.Blanking;
-  } else if (style.frame.fill !== "subcategory") {
-    params.fillColor = ColorDef.fromJSON(style.frame.fill);
+  } else if (frame.fill !== "subcategory") {
+    params.fillColor = ColorDef.fromJSON(frame.fill);
     params.lineColor = params.fillColor;
     params.fillDisplay = FillDisplay.Blanking;
   }
 
-  if (style.frame.border !== "subcategory") {
-    params.lineColor = ColorDef.fromJSON(style.frame.border);
-    params.weight = style.frame.borderWeight;
+  if (frame.border !== "subcategory") {
+    params.lineColor = ColorDef.fromJSON(frame.border);
+    params.weight = frame.borderWeight;
   }
 
-  const frameGeometry = computeFrame({ frame: style.frame.shape, range, transform });
+  const frameGeometry = computeFrame({ frame: frame.shape, range, transform });
   if (!builder.appendGeometryParamsChange(params) || !builder.appendGeometryQuery(frameGeometry)) {
     return false;
   }
