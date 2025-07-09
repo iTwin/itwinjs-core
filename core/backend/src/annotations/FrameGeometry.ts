@@ -26,7 +26,7 @@ export function appendFrameToBuilder(builder: ElementGeometry.Builder, frame: Te
 
   const params = geomParams.clone();
 
-  if (frame.fill === "none") {
+  if (frame.fill === "none" || frame.fill === undefined) {
     params.fillDisplay = FillDisplay.Never;
   } else if (frame.fill === "background") {
     params.backgroundFill = BackgroundFill.Solid;
