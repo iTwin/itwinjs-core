@@ -3003,6 +3003,9 @@ importers:
       '@itwin/core-backend':
         specifier: workspace:*
         version: link:../../core/backend
+      '@itwin/ecschema-metadata':
+        specifier: workspace:*
+        version: link:../../core/ecschema-metadata
       '@itwin/express-server':
         specifier: workspace:*
         version: link:../../core/express-server
