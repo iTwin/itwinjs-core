@@ -1200,6 +1200,7 @@ export abstract class GltfReader {
     let primitiveType: number = -1;
     switch (meshMode) {
       case GltfMeshMode.Lines:
+      case GltfMeshMode.LineStrip:
         primitiveType = MeshPrimitiveType.Polyline;
         break;
 
@@ -1299,7 +1300,8 @@ export abstract class GltfReader {
 
       case MeshPrimitiveType.Polyline:
       case MeshPrimitiveType.Point: {
-        if (undefined !== mesh.primitive.polylines && !this.readPolylines(mesh.primitive.polylines, primitive, "indices", MeshPrimitiveType.Point === primitiveType))
+        assert(meshMode === GltfMeshMode.Points || meshMode === GltfMeshMode.Lines || meshMode === GltfMeshMode.LineStrip);
+        if (undefined !== mesh.primitive.polylines && !this.readPolylines(mesh.primitive.polylines, primitive, "indices", meshMode))
           return undefined;
         break;
       }
@@ -1847,13 +1849,13 @@ export abstract class GltfReader {
     return true;
   }
 
-  protected readPolylines(polylines: MeshPolylineList, json: { [k: string]: any }, accessorName: string, disjoint: boolean): boolean {
+  protected readPolylines(polylines: MeshPolylineList, json: { [k: string]: any }, accessorName: string, mode: GltfMeshMode.Points | GltfMeshMode.Lines | GltfMeshMode.LineStrip): boolean {
     const data = this.readBufferData32(json, accessorName);
     if (undefined === data)
       return false;
 
     const indices = new Array<number>();
-    if (disjoint) {
+    if (GltfMeshMode.Lines !== mode) {
       for (let i = 0; i < data.count;)
         indices.push(data.buffer[i++]);
     } else {
