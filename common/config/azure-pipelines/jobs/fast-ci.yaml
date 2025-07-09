@@ -110,6 +110,7 @@ jobs:
     displayName: Parse Commit Notes
     dependsOn: CheckLinkedPR
     condition: succeeded()
+    continueOnError: true
     pool:
       vmImage: ubuntu-latest
     steps:

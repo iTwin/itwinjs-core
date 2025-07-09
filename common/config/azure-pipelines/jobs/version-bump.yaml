@@ -247,6 +247,7 @@ jobs:
 
       - bash: git fetch https://$(GITHUBTOKEN)@github.com/iTwin/itwinjs-core refs/notes/commits:refs/notes/commits
         displayName: git fetch refs/notes/commits
+        continueOnError: true
 
       - bash: |
           latestCommit=$(git log -1 --format=%H)
