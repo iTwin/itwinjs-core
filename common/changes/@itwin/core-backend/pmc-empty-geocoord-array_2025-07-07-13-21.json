@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Fix IModelDb coordinate conversion results to include `fromCache` and also the point array if input point array was empty.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}
