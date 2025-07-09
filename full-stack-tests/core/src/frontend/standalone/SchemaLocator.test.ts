@@ -9,7 +9,7 @@ import { ECSchemaRpcLocater } from "@itwin/ecschema-rpcinterface-common";
 import { assert, expect } from "chai";
 import { TestSnapshotConnection } from "../TestSnapshotConnection";
 
-describe.only("Schema Locater Tests", () => {
+describe("Schema Locater Tests", () => {
   let context = new SchemaContext();
   let imodel: IModelConnection;
 
@@ -45,7 +45,7 @@ describe.only("Schema Locater Tests", () => {
     assert.strictEqual(schemaSync!.schemaKey.version.toString(), "01.00.00");
   });
 
-  it.only("locating a non-existent schema asynchronously should return undefined", async () => {
+  it("locating a non-existent schema asynchronously should return undefined", async () => {
     const schemaKey = new SchemaKey("SchemaDoesNotExist", 1, 0, 0);
     const schema = await context.getSchema(schemaKey, SchemaMatchType.Exact);
     assert.isUndefined(schema);
