@@ -422,19 +422,14 @@ describe("AnnotationTextStyle", () => {
     // Default style should fail since it has no font
     let annotationTextStyle = createAnnotationTextStyle(imodel, seedDefinitionModel, "default");
     expect(() => annotationTextStyle.insert()).to.throw();
-    // Explicitly check that font is required
+    // font is required
     annotationTextStyle = createAnnotationTextStyle(imodel, seedDefinitionModel, "no font", { fontName: ""});
     expect(() => annotationTextStyle.insert()).to.throw();
-    // Some of the numeric properties should be positive
+    // lineHeight should be positive
     annotationTextStyle = createAnnotationTextStyle(imodel, seedDefinitionModel, "invalid lineHeight", { fontName: "Totally Real Font", lineHeight: 0 });
     expect(() => annotationTextStyle.insert()).to.throw();
+    // stackedFractionScale should be positive
     annotationTextStyle = createAnnotationTextStyle(imodel, seedDefinitionModel, "invalid stackedFractionScale", { fontName: "Totally Real Font", stackedFractionScale: 0 });
-    expect(() => annotationTextStyle.insert()).to.throw();
-    annotationTextStyle = createAnnotationTextStyle(imodel, seedDefinitionModel, "invalid subScriptScale", { fontName: "Totally Real Font", subScriptScale: 0 });
-    expect(() => annotationTextStyle.insert()).to.throw();
-    annotationTextStyle = createAnnotationTextStyle(imodel, seedDefinitionModel, "invalid superScriptScale", { fontName: "Totally Real Font", superScriptScale: 0 });
-    expect(() => annotationTextStyle.insert()).to.throw();
-    annotationTextStyle = createAnnotationTextStyle(imodel, seedDefinitionModel, "invalid widthFactor", { fontName: "Totally Real Font", widthFactor: 0 });
     expect(() => annotationTextStyle.insert()).to.throw();
   });
 

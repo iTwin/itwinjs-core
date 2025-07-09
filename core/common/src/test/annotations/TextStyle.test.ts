@@ -57,4 +57,20 @@ describe("TextStyleSettings", () => {
 
     expect(TextStyleSettings.fromJSON(customProps).equals(TextStyleSettings.fromJSON(customProps))).to.be.true;
   });
+
+  it("returns validation error messages for invalid values", () => {
+    const validSettings = TextStyleSettings.fromJSON(customProps);
+    expect(validSettings.getValidationErrors()).to.be.empty;
+
+    const invalidSettings = validSettings.clone({
+      fontName: "",
+      lineHeight: 0,
+      stackedFractionScale: 0,
+    });
+
+    const errors = invalidSettings.getValidationErrors();
+    expect(errors).to.include("fontName must be provided");
+    expect(errors).to.include("lineHeight must be greater than 0");
+    expect(errors).to.include("stackedFractionScale must be greater than 0");
+  });
 });

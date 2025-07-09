@@ -60,7 +60,7 @@ export interface TextStyleSettingsProps {
    * Default: "subcategory".
    */
   color?: TextStyleColor;
-  /** The name of a font stored in a [Workspace]($backend), used to draw the contents of a [[TextRun]].
+  /** The name of a font stored in an iModel, used to draw the contents of a [[TextRun]].
    * Default: "" (an invalid font name).
    */
   fontName?: string;
@@ -153,7 +153,7 @@ function deepFreeze<T>(obj: T) {
 export class TextStyleSettings {
   /** The color of the text. */
   public readonly color: TextStyleColor;
-  /** The name of a font stored in a [Workspace]($backend), used to draw the contents of a [[TextRun]].
+  /** The name of a font stored in an iModel, used to draw the contents of a [[TextRun]].
    */
   public readonly fontName: string;
   /** The height each line of text, in meters. Many other settings use the line height as the basis for computing their own values.
@@ -202,7 +202,7 @@ export class TextStyleSettings {
   /** The frame settings of the [[TextAnnotation]]. */
   public readonly frame: Readonly<Required<TextFrameStyleProps>>;
 
-  /** A fully-populated JSON representation of the default settings. */
+  /** A fully-populated JSON representation of the default settings. A real `fontName` must be provided before use. */
   public static defaultProps: DeepReadonlyObject<DeepRequiredObject<TextStyleSettingsProps>> = {
     color: "subcategory",
     fontName: "",
@@ -291,8 +291,34 @@ export class TextStyleSettings {
       && this.tabInterval === other.tabInterval
       && this.framesEqual(other.frame)
   }
+
+  /**
+   * Returns a list of validation errors for this instance.
+   *
+   * A TextStyleSettings object may contain values that are invalid in all contexts.
+   * If this method returns any error strings, using the settings will likely result in rendering failures or runtime exceptions.
+   *
+   * This method only checks for universally invalid values. Additional domain-specific validation may be required depending on the context in which these settings are used.
+   *
+   * @returns An array of error strings describing the invalid values, or an empty array if the settings are valid.
+   */
+  public getValidationErrors(): string[] {
+    const errorMessages: string[] = [];
+    if (this.fontName.trim() === "") {
+      errorMessages.push("fontName must be provided");
+    }
+
+    if (this.lineHeight <= 0) {
+      errorMessages.push("lineHeight must be greater than 0");
+    }
+
+    if (this.stackedFractionScale <= 0) {
+      errorMessages.push("stackedFractionScale must be greater than 0");
+    }
+
+    return errorMessages;
+  }
 }
 
 deepFreeze(TextStyleSettings.defaultProps);
 deepFreeze(TextStyleSettings.defaults);
-

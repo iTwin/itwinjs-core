@@ -307,17 +307,9 @@ export class AnnotationTextStyle extends DefinitionElement {
     const settingProps = AnnotationTextStyle.parseTextStyleSettings((arg.props as AnnotationTextStyleProps).settings);
     if (!settingProps) return;
     const settings = TextStyleSettings.fromJSON(settingProps);
-    if (settings.fontName === "") {
-      throw new Error("Invalid AnnotationTextStyle settings: fontName must be provided");
-    }
-
-    if (settings.lineHeight <= 0 ||
-        settings.stackedFractionScale <= 0 ||
-        settings.subScriptScale <= 0 ||
-        settings.superScriptScale <= 0 ||
-        settings.widthFactor <= 0
-    ) {
-      throw new Error("Invalid AnnotationTextStyle settings: lineHeight, stackedFractionScale, subScriptScale, superScriptScale, and widthFactor must be greater than 0");
+    const errors = settings.getValidationErrors();
+    if (errors.length > 0) {
+      throw new Error(`Invalid AnnotationTextStyle settings: ${errors.join(", ")}`);
     }
   }
 

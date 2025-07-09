@@ -304,6 +304,22 @@ export class TextDecorationTool extends Tool {
         }
         break;
       }
+      case "subscriptscale" : {
+        const subScale = Number.parseFloat(arg);
+        if (isNaN(subScale)) {
+          throw new Error("Expected a number for subscript scale");
+        }
+        editor.runStyle.subScriptScale = subScale;
+        break;
+      };
+      case "superscriptscale": {
+        const superScale = Number.parseFloat(arg);
+        if (isNaN(superScale)) {
+          throw new Error("Expected a number for superscript scale");
+        }
+        editor.runStyle.superScriptScale = superScale;
+        break;
+      }
       case "shift": {
         const shift = arg.toLowerCase();
         switch (shift) {
