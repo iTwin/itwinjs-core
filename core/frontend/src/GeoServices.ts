@@ -383,9 +383,9 @@ export class GeoServices {
           remappedResponse = CoordinateMapping.mapIModelCoordinatesResponseIModelReadToRPC(response);
         } catch (error) {
           if (error instanceof NoGCSDefinedError) {
-            remappedResponse = CoordinateMapping.mapIModelCoordExceptionToRPC(request.geoCoords.length, GeoCoordStatus.NoGCSDefined);
+            remappedResponse = CoordinateMapping.mapIModelCoordinateExceptionToRPC(request.geoCoords.length, GeoCoordStatus.NoGCSDefined);
           } else if (error instanceof NoDatumConverterError) {
-            remappedResponse = CoordinateMapping.mapIModelCoordExceptionToRPC(request.geoCoords.length, GeoCoordStatus.NoDatumConverter);
+            remappedResponse = CoordinateMapping.mapIModelCoordinateExceptionToRPC(request.geoCoords.length, GeoCoordStatus.NoDatumConverter);
           } else {
             throw error;
           }
@@ -402,9 +402,9 @@ export class GeoServices {
           remappedResponse = CoordinateMapping.mapGeoCoordinatesResponseIModelReadToRPC(response);
         } catch (error) {
           if (error instanceof NoGCSDefinedError) {
-            remappedResponse = CoordinateMapping.mapGeoCoordExceptionToRPC(request.iModelCoords.length, GeoCoordStatus.NoGCSDefined);
+            remappedResponse = CoordinateMapping.mapGeoCoordinateExceptionToRPC(request.iModelCoords.length, GeoCoordStatus.NoGCSDefined);
           } else if (error instanceof NoDatumConverterError) {
-            remappedResponse = CoordinateMapping.mapGeoCoordExceptionToRPC(request.iModelCoords.length, GeoCoordStatus.NoDatumConverter);
+            remappedResponse = CoordinateMapping.mapGeoCoordinateExceptionToRPC(request.iModelCoords.length, GeoCoordStatus.NoDatumConverter);
           } else {
             throw error;
           }
