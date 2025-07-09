@@ -130,7 +130,7 @@ describe("TextAnnotation element", () => {
     annotation.orientation = YawPitchRollAngles.createDegrees(1, 0, -1);
     annotation.offset = Point3d.create(10, -5, 0);
     annotation.frame = { shape: "rectangle", border: ColorDef.red.toJSON(), fill: ColorDef.green.toJSON(), borderWeight: 2 };
-    annotation.leaders = [{ startPoint: Point3d.createZero(), attachmentMode: { mode: "Nearest" } }]
+    annotation.leaders = [{ startPoint: Point3d.createZero(), attachment: { mode: "Nearest" } }]
     return annotation;
   }
 

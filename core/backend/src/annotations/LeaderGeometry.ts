@@ -31,8 +31,8 @@ export function appendLeadersToBuilder(builder: ElementGeometry.Builder, leaders
   const frameCurve = computeFrame({ frame: frame.shape, range: layout.range, transform });
 
   leaders.forEach((leader) => {
-    if (leader.styleOverrides?.leaderColor !== "subcategory" && leader.styleOverrides?.color !== "subcategory") {
-      const color = leader.styleOverrides?.leaderColor ?? leader.styleOverrides?.color;
+    if (leader.styleOverrides?.leader?.color !== "subcategory" && leader.styleOverrides?.color !== "subcategory") {
+      const color = leader.styleOverrides?.leader?.color ?? leader.styleOverrides?.color;
       params.lineColor = color ? ColorDef.fromJSON(color) : ColorDef.black;
       result = result && builder.appendGeometryParamsChange(params);
     }
@@ -49,8 +49,8 @@ export function appendLeadersToBuilder(builder: ElementGeometry.Builder, leaders
       leaderLinePoints.push(point);
     });
 
-    if (leader.styleOverrides?.wantElbow) {
-      const elbowLength = (leader.styleOverrides.elbowLength ?? 1) * (leader.styleOverrides.lineHeight ?? 1)
+    if (leader.styleOverrides?.leader?.wantElbow) {
+      const elbowLength = (leader.styleOverrides.leader.elbowLength ?? 1) * (leader.styleOverrides.lineHeight ?? 1)
       const elbowDirection = computeElbowDirection(attachmentPoint, frameCurve, elbowLength);
       if (elbowDirection)
         leaderLinePoints.push(attachmentPoint.plusScaled(elbowDirection, elbowLength))
@@ -67,8 +67,8 @@ export function appendLeadersToBuilder(builder: ElementGeometry.Builder, leaders
 
     const termY = terminatorDirection?.unitCrossProduct(Vector3d.unitZ());
     if (!termY || !terminatorDirection) return true; // Assuming leaders without terminators is a valid case.
-    const terminatorHeight = (leader.styleOverrides?.terminatorHeightFactor ?? 1) * (leader.styleOverrides?.lineHeight ?? 1);
-    const terminatorWidth = (leader.styleOverrides?.terminatorWidthFactor ?? 1) * (leader.styleOverrides?.lineHeight ?? 1);
+    const terminatorHeight = (leader.styleOverrides?.leader?.terminatorHeightFactor ?? 1) * (leader.styleOverrides?.lineHeight ?? 1);
+    const terminatorWidth = (leader.styleOverrides?.leader?.terminatorWidthFactor ?? 1) * (leader.styleOverrides?.lineHeight ?? 1);
     const basePoint = leader.startPoint.plusScaled(terminatorDirection, terminatorWidth);
     const termPointA = basePoint.plusScaled(termY, terminatorHeight);
     const termPointB = basePoint.plusScaled(termY.negate(), terminatorHeight);
@@ -144,12 +144,12 @@ export function computeLeaderAttachmentPoint(
 ): Point3d | undefined {
   let attachmentPoint: Point3d | undefined;
 
-  if (leader.attachmentMode.mode === "Nearest") {
+  if (leader.attachment.mode === "Nearest") {
     attachmentPoint = frameCurve.closestPoint(leader.startPoint)?.point;
-  } else if (leader.attachmentMode.mode === "KeyPoint") {
+  } else if (leader.attachment.mode === "KeyPoint") {
     const curves = frameCurve.collectCurvePrimitives(undefined, false, true);
-    const curveIndex = leader.attachmentMode.curveIndex;
-    const fraction = leader.attachmentMode.fraction;
+    const curveIndex = leader.attachment.curveIndex;
+    const fraction = leader.attachment.fraction;
     if (curveIndex >= curves.length) {
       // If the curveIndex is invalid, use the last curve
       // This is a fallback to avoid out-of-bounds access
@@ -157,10 +157,10 @@ export function computeLeaderAttachmentPoint(
     } else {
       attachmentPoint = curves[curveIndex].fractionToPoint(fraction);
     }
-  } else { // attachmentMode="TextPoint"
+  } else { // attachment.mode="TextPoint"
     let scaleDirection = transform.matrix.getColumn(0).negate(); // direction to draw a scaled line from text attachment point to find intersection point on frame
     let lineIndex: number;
-    if (leader.attachmentMode.position.includes("Top")) {
+    if (leader.attachment.position.includes("Top")) {
       lineIndex = 0
     } else {
       lineIndex = textLayout.lines.length - 1
@@ -170,7 +170,7 @@ export function computeLeaderAttachmentPoint(
     const origin = transform.multiplyPoint3d(Point3d.fromJSON(lineOffset));
     let attachmentPointOnText = origin.plusScaled(transform.matrix.getColumn(1), ((lineRange.yLength()) / 2));
 
-    if (leader.attachmentMode.position.includes("Right")) {
+    if (leader.attachment.position.includes("Right")) {
       attachmentPointOnText = attachmentPointOnText.plusScaled(transform.matrix.getColumn(0), lineRange.xLength());
       scaleDirection = scaleDirection.negate();
     }

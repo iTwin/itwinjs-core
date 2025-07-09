@@ -198,7 +198,7 @@ describe("TextAnnotation", () => {
     });
 
     it("should return leaders when set", () => {
-      const leader: TextAnnotationLeader = { startPoint: Point3d.createZero(), attachmentMode: { mode: "Nearest" }, styleOverrides: undefined, intermediatePoints: undefined };
+      const leader: TextAnnotationLeader = { startPoint: Point3d.createZero(), attachment: { mode: "Nearest" }, styleOverrides: undefined, intermediatePoints: undefined };
       const leaderProps = { ...leader, startPoint: leader.startPoint.toJSON() };
       const annotation = TextAnnotation.fromJSON({ leaders: [leaderProps] });
       expect(annotation.leaders).to.deep.equal([leader]);

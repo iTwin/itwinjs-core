@@ -146,7 +146,7 @@ class TextEditor implements Decorator {
   }
 
   public setLeaderProps() {
-    this.leaders?.push({ startPoint: Point3d.createZero().plusScaled(Vector3d.unitX().negate(), 20), attachmentMode: { mode: "Nearest" } });
+    this.leaders?.push({ startPoint: Point3d.createZero().plusScaled(Vector3d.unitX().negate(), 20), attachment: { mode: "Nearest" } });
   }
 
   public setLeaderStartPoint(leader: TextAnnotationLeader, angle: number) {
@@ -158,13 +158,13 @@ class TextEditor implements Decorator {
   }
 
   public setLeaderKeyPoint(leader: TextAnnotationLeader, curveIndex: number, fraction: number) {
-    leader.attachmentMode = { mode: "KeyPoint", curveIndex, fraction };
+    leader.attachment = { mode: "KeyPoint", curveIndex, fraction };
   }
   public setLeaderTextPoint(leader: TextAnnotationLeader, arg: LeaderTextPointOptions) {
-    leader.attachmentMode = { mode: "TextPoint", position: arg };
+    leader.attachment = { mode: "TextPoint", position: arg };
   }
   public setLeaderNearest(leader: TextAnnotationLeader) {
-    leader.attachmentMode = { mode: "Nearest" };
+    leader.attachment = { mode: "Nearest" };
   }
 
   /**

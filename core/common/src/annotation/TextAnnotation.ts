@@ -70,29 +70,49 @@ export interface TextFrameStyleProps {
 }
 
 /**
- * Specifies where to attach a leader line to a [[TextAnnotation]].
- * The leader line can be attached to a key point, to the first or last line of text, or to the nearest point on the text block frame.
+ * Describes how to attach a leader to a frame around [[textBlock]].
+ * Leader can be attached using one of the three modes:
+ * - KeyPoint: attach to a point on the frame specified by the given curveIndex and fractional position.
+ * - TextPoint: attach to a point that is projected on to the frame from the point on a particular line of text specified by [[LeaderTextPointOptions]].
+ * - Nearest: attach to the point on frame that is nearest to [[TextAnnotationLeader.startPoint]].
  * @beta
  */
-export type LeaderAttachmentMode =
+export type LeaderAttachment =
   | { mode: "KeyPoint"; curveIndex: number; fraction: number }
   | { mode: "TextPoint"; position: LeaderTextPointOptions }
   | { mode: "Nearest" };
 
 /**
- * Specifies the possible positions for the leader attachment point relative to the annotation when attachmentMode is TextPoint.
+ * Specifies the possible positions to attach a leader on the frame around [[textBlock]]
+ * when [[TextAnnotationLeader.attachment.mode]] is set to TextPoint.
+ * TopLeft : attach to a point projected onto the frame from the point on the left side of the first line of text.
+ * TopRight : attach to a point projected onto the frame from the point on the right side of the first line of text.
+ * BottomLeft : attach to a point projected onto the frame from the point on the left side of the last line of text.
+ * BottomRight : attach to a point projected onto the frame from the point on the right side of the last line of text.
  * @beta
  */
 export type LeaderTextPointOptions = "TopLeft" | "TopRight" | "BottomLeft" | "BottomRight"
 
 /**
- * Properties of a leader line attached to a [[TextAnnotation]].
+ * Properties of a leader in a [[TextAnnotation]].
+ * A leader is a piece of geometry that points from the [[TextAnnotation]] to a point in space attached to another element in the iModel.
+ * A leader is always attached to the frame around the [[textBlock]].
+ * If there is no frame around the textBlock, we assume a rectangular frame and attach the leader to it.
  * @beta
 */
 export interface TextAnnotationLeader {
+  /** The point where the leader starts.
+   * This is the point on another element where the leader points to */
   startPoint: Point3d;
-  attachmentMode: LeaderAttachmentMode;
+  /** Describes how to attach the leader to the frame around [[textBlock]].*/
+  attachment: LeaderAttachment;
+  /** Optional intermediate points that the leader should pass through.
+   * If not specified, the leader will be a straight line from startPoint to the point on the frame.
+   * For now, intermediate points are a set of points which create additional LineSegments in the leader, but there could be intermediate shapes instead of straight LineSegments in future*/
   intermediatePoints?: Point3d[];
+  /** Optional style overrides for the leader. If not specified, the leader will use the default style from [[TextStyleSettings]].
+   * If specified, these overrides will be applied to the leader.
+   */
   styleOverrides?: TextStyleSettingsProps;
 }
 /**
@@ -100,9 +120,13 @@ export interface TextAnnotationLeader {
  * @beta
  */
 export interface TextAnnotationLeaderProps {
+  /** See [[TextAnnotationLeader.startPoint]]. */
   startPoint: XYZProps;
-  attachmentMode: LeaderAttachmentMode;
+  /** See [[TextAnnotationLeader.attachment]]. */
+  attachment: LeaderAttachment;
+  /** See [[TextAnnotationLeader.intermediatePoints]]. Default: no intermediate points. */
   intermediatePoints?: XYZProps[];
+  /** See [[TextAnnotationLeader.styleOverrides]]. Default: no style overrides. */
   styleOverrides?: TextStyleSettingsProps;
 }
 
@@ -208,7 +232,7 @@ export class TextAnnotation {
       frame: props?.frame ? { shape: "rectangle", ...props.frame } : undefined,
       leaders: props?.leaders ? props.leaders.map((leader) => ({
         startPoint: Point3d.fromJSON(leader.startPoint),
-        attachmentMode: leader.attachmentMode,
+        attachment: leader.attachment,
         styleOverrides: leader.styleOverrides ?? undefined,
         intermediatePoints: leader.intermediatePoints ? leader.intermediatePoints.map((point) => Point3d.fromJSON(point)) : undefined,
       })) : undefined,
@@ -242,7 +266,7 @@ export class TextAnnotation {
 
     props.leaders = this.leaders?.map((leader) => ({
       startPoint: leader.startPoint.toJSON(),
-      attachmentMode: leader.attachmentMode,
+      attachment: leader.attachment,
       styleOverrides: leader.styleOverrides ?? undefined,
       intermediatePoints: leader.intermediatePoints ? leader.intermediatePoints.map((point) => point.toJSON()) : undefined,
     })) ?? undefined;
@@ -298,6 +322,7 @@ export class TextAnnotation {
     return new Point3d(x, y, 0);
   }
 
+  /** Returns true if the leaders of this annotation are equal to the leaders of `other`. */
   private areLeadersEqual(leadersA?: TextAnnotationLeader[], leadersB?: TextAnnotationLeader[]): boolean {
     if (leadersA === leadersB) return true;
     if (!leadersA || !leadersB || leadersA.length !== leadersB.length) return false;
@@ -307,7 +332,7 @@ export class TextAnnotation {
       const b = leadersB[i];
 
       if (!a.startPoint.isAlmostEqual(b.startPoint)) return false;
-      if (JSON.stringify(a.attachmentMode) !== JSON.stringify(b.attachmentMode)) return false;
+      if (JSON.stringify(a.attachment) !== JSON.stringify(b.attachment)) return false;
       if (JSON.stringify(a.styleOverrides) !== JSON.stringify(b.styleOverrides)) return false;
 
       const pointsA = a.intermediatePoints ?? [];
@@ -322,16 +347,22 @@ export class TextAnnotation {
 
   /** Returns true if this annotation is logically equivalent to `other`. */
   public equals(other: TextAnnotation): boolean {
+    if (this.anchor.horizontal !== other.anchor.horizontal ||
+      this.anchor.vertical !== other.anchor.vertical ||
+      !this.orientation.isAlmostEqual(other.orientation) ||
+      !this.offset.isAlmostEqual(other.offset) ||
+      !this.textBlock.equals(other.textBlock))
+      return false;
+
     const framesMatch = this.frame?.shape === other.frame?.shape
       && this.frame?.fill === other.frame?.fill
       && this.frame?.border === other.frame?.border
       && this.frame?.borderWeight === other.frame?.borderWeight;
 
-    const leadersMatch = this.areLeadersEqual(this.leaders, other.leaders);
+    if (!framesMatch)
+      return false;
 
-    return this.anchor.horizontal === other.anchor.horizontal && this.anchor.vertical === other.anchor.vertical
-      && this.orientation.isAlmostEqual(other.orientation) && this.offset.isAlmostEqual(other.offset)
-      && this.textBlock.equals(other.textBlock)
-      && framesMatch && leadersMatch;
+    return this.areLeadersEqual(this.leaders, other.leaders);
+
   }
 }

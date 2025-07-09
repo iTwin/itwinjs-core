@@ -21,6 +21,36 @@ export type StackedFractionType = "horizontal" | "diagonal";
  */
 export type TextStyleColor = ColorDefProps | "subcategory";
 
+/** Properties describing the appearance of [[TextAnnotationLeader]] in a [[TextAnnotation]].
+ * Used when producing geometry for [[TextAnnotation]].
+ * @beta
+ */
+export interface TextLeaderStyleProps {
+  /** The color of the leader.
+   * Default: "subcategory".
+   */
+  color?: TextStyleColor;
+  /** Whether to use an elbow in the leader.
+   * Default: false
+   */
+  wantElbow?: boolean;
+  /** Multiplier used to compute length of the elbow in the leader.
+   * The elbowLength is computed in meters as elbowLength * [[lineHeight]].
+   * Default: 1.0
+   */
+  elbowLength?: number;
+  /** Multiplier to compute height of the leader terminator.
+   * The terminator height is computed in meters as terminatorHeight * [[lineHeight]].
+   * Default: 1.0
+   */
+  terminatorHeightFactor?: number;
+  /** Multiplier to compute width of the leader terminator.
+   * The terminator width is computed in meters as terminatorWidth * [[lineHeight]].
+   * Default: 1.0
+   */
+  terminatorWidthFactor?: number;
+}
+
 /** Serves both as the JSON representation of a [[TextStyleSettings]], and a way for a [[TextBlockComponent]] to selectively override aspects of a [[TextStyle]]'s properties.
  * @beta
  */
@@ -88,29 +118,12 @@ export interface TextStyleSettingsProps {
    * Default: 1.0
    */
   widthFactor?: number;
-  /** The color of the leader line.
-   * Default: "subcategory".
+
+  /** Properties describing appearance of leaders in a [[TextAnnotation]]
+   * Used when producing geometry for [[TextAnnotation]]
+   * Default: {color:"subcategory", wantElbow:"false",elbowLength:1, terminatorWidthFactor:1, terminatorHeightFactor:1}.
    */
-  leaderColor?: TextStyleColor;
-  /** Whether to use an elbow in the leader line.
-   * Default: false
-   */
-  wantElbow?: boolean;
-  /** Multiplier used to compute length of the elbow in the leader line.
-   * The elbowLength is computed in meters as elbowLength * [[lineHeight]].
-   * Default: 1.0
-   */
-  elbowLength?: number;
-  /** Multiplier to compute height of the leader terminator.
-   * The terminator height is computed in meters as terminatorHeight * [[lineHeight]].
-   * Default: 1.0
-   */
-  terminatorHeightFactor?: number;
-  /** Multiplier to compute width of the leader terminator.
-   * The terminator width is computed in meters as terminatorWidth * [[lineHeight]].
-   * Default: 1.0
-   */
-  terminatorWidthFactor?: number;
+  leader?: TextLeaderStyleProps;
   /** The size (in meters) used to calculate the tab stops in a run.
    * These are equally spaced from the left edge of the TextBlock.
    * Default: 4 meters.
@@ -169,22 +182,10 @@ export class TextStyleSettings {
   public readonly superScriptScale: number;
   /** Multiplier used to compute the width of each glyph, relative to [[lineHeight]]. */
   public readonly widthFactor: number;
-  /** The color of the leader line. */
-  public readonly leaderColor: TextStyleColor;
-  /** Whether to use an elbow in the leader line. */
-  public readonly wantElbow: boolean;
-  /** Multiplier used to compute length of the elbow in the leader line.
-   * The elbowLength is computed in meters as elbowLength * [[lineHeight]].
-  */
-  public readonly elbowLength: number;
-  /** Multiplier to compute height of the leader terminator.
-   * The terminator height is computed in meters as terminatorHeight * [[lineHeight]].
-  */
-  public readonly terminatorHeightFactor: number;
-  /** Multiplier to compute width of the leader terminator.
-   * The terminator width is computed in meters as terminatorWidth * [[lineHeight]].
-  */
-  public readonly terminatorWidthFactor: number;
+  /** Properties describing appearance of leaders in a [[TextAnnotation]].
+   * Used when producing geometry for [[TextAnnotation]].
+   */
+  public readonly leader: Readonly<Required<TextLeaderStyleProps>>;
   /** The size (in meters) used to calculate the tab stops in a run.
    * These are equally spaced from the left edge of the TextBlock. Default is 4 meters.
    */
@@ -206,11 +207,13 @@ export class TextStyleSettings {
     superScriptOffsetFactor: 0.5,
     superScriptScale: 2 / 3,
     widthFactor: 1,
-    leaderColor: "subcategory",
-    wantElbow: true,
-    elbowLength: 1,
-    terminatorHeightFactor: 1,
-    terminatorWidthFactor: 1,
+    leader: {
+      color: "subcategory",
+      wantElbow: false,
+      elbowLength: 1.0,
+      terminatorHeightFactor: 1.0,
+      terminatorWidthFactor: 1.0,
+    },
     tabInterval: 4,
   };
 
@@ -236,11 +239,14 @@ export class TextStyleSettings {
     this.superScriptOffsetFactor = props.superScriptOffsetFactor ?? defaults.superScriptOffsetFactor;
     this.superScriptScale = props.superScriptScale ?? defaults.superScriptScale;
     this.widthFactor = props.widthFactor ?? defaults.widthFactor;
-    this.leaderColor = props.leaderColor ?? defaults.leaderColor;
-    this.wantElbow = props.wantElbow ?? defaults.wantElbow;
-    this.elbowLength = props.elbowLength ?? defaults.elbowLength;
-    this.terminatorHeightFactor = props.terminatorHeightFactor ?? defaults.terminatorHeightFactor;
-    this.terminatorWidthFactor = props.terminatorWidthFactor ?? defaults.terminatorWidthFactor;
+    const leader = {
+      color: props.leader?.color ?? defaults.leader.color,
+      wantElbow: props.leader?.wantElbow ?? defaults.leader.wantElbow,
+      elbowLength: props.leader?.elbowLength ?? defaults.leader.elbowLength,
+      terminatorHeightFactor: props.leader?.terminatorHeightFactor ?? defaults.leader.terminatorHeightFactor,
+      terminatorWidthFactor: props.leader?.terminatorWidthFactor ?? defaults.leader.terminatorWidthFactor,
+    }
+    this.leader = Object.freeze(leader) as Readonly<Required<TextLeaderStyleProps>>;
     this.tabInterval = props.tabInterval ?? defaults.tabInterval;
   }
 
@@ -257,6 +263,15 @@ export class TextStyleSettings {
   public toJSON(): TextStyleSettingsProps {
     return { ...this };
   }
+  /** Compare two [[TextLeaderStyleProps]] for equality.
+   * @param other The other leader style properties to compare against.
+   * @returns true if the two leader styles are equal, false otherwise.
+   */
+  public leaderEquals(other: TextLeaderStyleProps): boolean {
+    return this.leader.color === other.color && this.leader.wantElbow === other.wantElbow
+      && this.leader.elbowLength === other.elbowLength && this.leader.terminatorHeightFactor === other.terminatorHeightFactor
+      && this.leader.terminatorWidthFactor === other.terminatorWidthFactor;
+  }
 
   public equals(other: TextStyleSettings): boolean {
     return this.color === other.color && this.fontName === other.fontName
@@ -265,10 +280,8 @@ export class TextStyleSettings {
       && this.stackedFractionType === other.stackedFractionType && this.stackedFractionScale === other.stackedFractionScale
       && this.subScriptOffsetFactor === other.subScriptOffsetFactor && this.subScriptScale === other.subScriptScale
       && this.superScriptOffsetFactor === other.superScriptOffsetFactor
-      && this.superScriptScale === other.superScriptScale && this.leaderColor === other.leaderColor
-      && this.wantElbow === other.wantElbow && this.elbowLength === other.elbowLength
-      && this.terminatorHeightFactor === other.terminatorHeightFactor && this.terminatorWidthFactor === other.terminatorWidthFactor
-      && this.tabInterval === other.tabInterval;
+      && this.superScriptScale === other.superScriptScale
+      && this.tabInterval === other.tabInterval && this.leaderEquals(other.leader);
   }
 }
 

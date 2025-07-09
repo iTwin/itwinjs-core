@@ -5590,7 +5590,7 @@ export interface JsonGeometryStream {
 }
 
 // @beta
-export type LeaderAttachmentMode = {
+export type LeaderAttachment = {
     mode: "KeyPoint";
     curveIndex: number;
     fraction: number;
@@ -9903,25 +9903,17 @@ export const textAnnotationFrameShapes: readonly ["none", "line", "rectangle", "
 
 // @beta
 export interface TextAnnotationLeader {
-    // (undocumented)
-    attachmentMode: LeaderAttachmentMode;
-    // (undocumented)
+    attachment: LeaderAttachment;
     intermediatePoints?: Point3d[];
-    // (undocumented)
     startPoint: Point3d;
-    // (undocumented)
     styleOverrides?: TextStyleSettingsProps;
 }
 
 // @beta
 export interface TextAnnotationLeaderProps {
-    // (undocumented)
-    attachmentMode: LeaderAttachmentMode;
-    // (undocumented)
+    attachment: LeaderAttachment;
     intermediatePoints?: XYZProps[];
-    // (undocumented)
     startPoint: XYZProps;
-    // (undocumented)
     styleOverrides?: TextStyleSettingsProps;
 }
 
@@ -10045,6 +10037,15 @@ export interface TextFrameStyleProps {
 }
 
 // @beta
+export interface TextLeaderStyleProps {
+    color?: TextStyleColor;
+    elbowLength?: number;
+    terminatorHeightFactor?: number;
+    terminatorWidthFactor?: number;
+    wantElbow?: boolean;
+}
+
+// @beta
 export class TextRun extends TextBlockComponent {
     baselineShift: BaselineShift;
     // (undocumented)
@@ -10150,7 +10151,6 @@ export class TextStyleSettings {
     readonly color: TextStyleColor;
     static defaultProps: Readonly<Required<TextStyleSettingsProps>>;
     static defaults: TextStyleSettings;
-    readonly elbowLength: number;
     // (undocumented)
     equals(other: TextStyleSettings): boolean;
     readonly fontName: string;
@@ -10158,7 +10158,8 @@ export class TextStyleSettings {
     readonly isBold: boolean;
     readonly isItalic: boolean;
     readonly isUnderlined: boolean;
-    readonly leaderColor: TextStyleColor;
+    readonly leader: Readonly<Required<TextLeaderStyleProps>>;
+    leaderEquals(other: TextLeaderStyleProps): boolean;
     readonly lineHeight: number;
     readonly lineSpacingFactor: number;
     readonly stackedFractionScale: number;
@@ -10168,23 +10169,19 @@ export class TextStyleSettings {
     readonly superScriptOffsetFactor: number;
     readonly superScriptScale: number;
     readonly tabInterval: number;
-    readonly terminatorHeightFactor: number;
-    readonly terminatorWidthFactor: number;
     // (undocumented)
     toJSON(): TextStyleSettingsProps;
-    readonly wantElbow: boolean;
     readonly widthFactor: number;
 }
 
 // @beta
 export interface TextStyleSettingsProps {
     color?: TextStyleColor;
-    elbowLength?: number;
     fontName?: string;
     isBold?: boolean;
     isItalic?: boolean;
     isUnderlined?: boolean;
-    leaderColor?: TextStyleColor;
+    leader?: TextLeaderStyleProps;
     lineHeight?: number;
     lineSpacingFactor?: number;
     stackedFractionScale?: number;
@@ -10194,9 +10191,6 @@ export interface TextStyleSettingsProps {
     superScriptOffsetFactor?: number;
     superScriptScale?: number;
     tabInterval?: number;
-    terminatorHeightFactor?: number;
-    terminatorWidthFactor?: number;
-    wantElbow?: boolean;
     widthFactor?: number;
 }
 

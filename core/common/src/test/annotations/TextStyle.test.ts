@@ -21,11 +21,13 @@ describe("TextStyleSettings", () => {
     superScriptOffsetFactor: 0.6,
     superScriptScale: 0.5,
     widthFactor: 2,
-    leaderColor: 0xff007f,
-    wantElbow: false,
-    elbowLength: 0.5,
-    terminatorHeightFactor: 0.5,
-    terminatorWidthFactor: 0.5,
+    leader: {
+      color: 0xff007f,
+      wantElbow: false,
+      elbowLength: 0.5,
+      terminatorHeightFactor: 0.5,
+      terminatorWidthFactor: 0.5,
+    },
     tabInterval: 7,
   };
 
