@@ -214,6 +214,25 @@ export class TextDecorationTool extends Tool {
     const arg = inArgs[1];
 
     switch (cmd) {
+      case "test": { // TODO: temporary test command, remove when done
+        await this.parseAndRun("init");
+        await this.parseAndRun("center");
+        await this.parseAndRun("height", "1"); // Text size (text height)
+        await this.parseAndRun("debug");
+
+        await this.parseAndRun("text", "Anyway the Wind Blows - Hadestown"); // cspell:ignore Hadestown
+        await this.parseAndRun("paragraph");
+
+        await this.parseAndRun("indent", "2");
+        await this.parseAndRun("text", "People turn on you just like the wind");
+        await this.parseAndRun("break");
+        await this.parseAndRun("text", "Everyone is a cold weather friend");
+        await this.parseAndRun("break");
+        await this.parseAndRun("text", "In the end you're better off alone");
+        await this.parseAndRun("break");
+        await this.parseAndRun("text", "Anyway the wind blows");
+        break;
+      }
       case "clear":
         editor.clear();
         return true;
