@@ -58,6 +58,7 @@
   },
   "devDependencies": {
     "@itwin/core-backend": "workspace:*",
+    "@itwin/ecschema-metadata": "workspace:*",
     "@itwin/express-server": "workspace:*",
     "@itwin/itwins-client": "^1.6.1",
     "@itwin/presentation-backend": "workspace:*",
