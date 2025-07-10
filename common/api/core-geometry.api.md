@@ -2217,9 +2217,9 @@ export class Geometry {
     static isSmallRelative(value: number): boolean;
     static readonly largeCoordinateResult = 10000000000000;
     static readonly largeFractionResult = 10000000000;
-    static lexicalXYLessThan(a: XY | XYZ, b: XY | XYZ): -1 | 0 | 1;
-    static lexicalXYZLessThan(a: XYZ, b: XYZ): -1 | 0 | 1;
-    static lexicalYXLessThan(a: XY | XYZ, b: XY | XYZ): -1 | 0 | 1;
+    static lexicalXYLessThan(a: XAndY, b: XAndY): -1 | 0 | 1;
+    static lexicalXYZLessThan(a: XYAndZ, b: XYAndZ): -1 | 0 | 1;
+    static lexicalYXLessThan(a: XAndY, b: XAndY): -1 | 0 | 1;
     static maxAbsDiff(a: number, b0: number, b1: number): number;
     static maxAbsXY(x: number, y: number): number;
     static maxAbsXYZ(x: number, y: number, z: number): number;
