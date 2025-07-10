@@ -438,7 +438,7 @@ export function getMeshPrimitives(mesh: GltfMesh | undefined): GltfMeshPrimitive
     return meshPrimitives;
   }
 
-  // Note: per the spec, any violation of the extension's specification must cause us to fall back to mesh.primitives.
+  // Note: per the spec, any violation of the extension's specification should cause us to fall back to mesh.primitives, if detecting the violation is feasible.
 
   // Start with a copy of mesh.primitives. For each group, replace the first primitive in the group with a primitive representing the entire group,
   // and set the rest of the primitives in the group to `undefined`.
