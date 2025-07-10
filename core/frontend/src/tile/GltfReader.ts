@@ -452,12 +452,28 @@ export function getMeshPrimitives(mesh: GltfMesh | undefined): GltfMeshPrimitive
     }
 
     const primitive = { ...meshPrimitives[firstPrimitiveIndex], indices: group.indices };
+
+    // Spec: primitive restart only supported for these topologies.
+    switch (primitive.mode) {
+      case GltfMeshMode.TriangleFan:
+      case GltfMeshMode.TriangleStrip:
+      case GltfMeshMode.LineStrip:
+      case GltfMeshMode.LineLoop:
+        break;
+      default:
+        return meshPrimitives;
+    }
+
+
     for (const primitiveIndex of group.primitives) {
+      const thisPrimitive = primitives[primitiveIndex];
+      
       // Spec: all primitives must use indexed geometry and a given primitive may appear in at most one group.
-      if (undefined === primitives[primitiveIndex]?.indices) {
+      // Spec: all primitives must have same topology.
+      if (undefined === thisPrimitive?.indices || thisPrimitive.mode !== primitive.mode) {
         return meshPrimitives;
       }
-
+      
       primitives[primitiveIndex] = undefined;
     }
 

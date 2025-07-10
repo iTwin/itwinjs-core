@@ -1508,23 +1508,136 @@ const meshFeaturesExt: GltfDocument = JSON.parse(`
       });
 
       it("if a given primitive appears more than once in the same group", () => {
-        
+        expectPrimitives({
+          primitives: [{
+            attributes: {},
+            indices: 0,
+            mode: GltfMeshMode.LineStrip,
+          }, {
+            attributes: {},
+            indices: 1,
+            mode: GltfMeshMode.LineStrip,
+          }, {
+            attributes: {},
+            indices: 2,
+            mode: GltfMeshMode.LineStrip,
+          }],
+          extensions: {
+            EXT_mesh_primitive_restart: {
+              primitiveGroups: [{
+                primitives: [0, 2, 0],
+                indices: 111,
+              }],
+            },
+          },
+        }, "fallback");
       });
 
       it("if a given primitive appears in more than one group", () => {
-        
+        expectPrimitives({
+          primitives: [{
+            attributes: {},
+            indices: 0,
+            mode: GltfMeshMode.LineStrip,
+          }, {
+            attributes: {},
+            indices: 1,
+            mode: GltfMeshMode.LineStrip,
+          }, {
+            attributes: {},
+            indices: 2,
+            mode: GltfMeshMode.LineStrip,
+          }],
+          extensions: {
+            EXT_mesh_primitive_restart: {
+              primitiveGroups: [{
+                primitives: [0, 1],
+                indices: 111,
+              }, {
+                primitives: [1, 2],
+                indices: 222,
+              }],
+            },
+          },
+        }, "fallback");
       });
 
       it("if any primitive does not use indexed geometry", () => {
-        
+        expectPrimitives({
+          primitives: [{
+            attributes: {},
+            indices: 0,
+            mode: GltfMeshMode.LineStrip,
+          }, {
+            attributes: {},
+            indices: 1,
+            mode: GltfMeshMode.LineStrip,
+          }, {
+            attributes: {},
+            indices: undefined,
+            mode: GltfMeshMode.LineStrip,
+          }],
+          extensions: {
+            EXT_mesh_primitive_restart: {
+              primitiveGroups: [{
+                primitives: [0, 1, 2],
+                indices: 111,
+              }],
+            },
+          },
+        }, "fallback");
       });
 
       it("if any primitive has a topology other than line loop, line strip, triangle strip, or triangle fan", () => {
-        
+        expectPrimitives({
+          primitives: [{
+            attributes: {},
+            indices: 0,
+            mode: GltfMeshMode.Triangles,
+          }, {
+            attributes: {},
+            indices: 1,
+            mode: GltfMeshMode.Triangles,
+          }, {
+            attributes: {},
+            indices: 2,
+            mode: GltfMeshMode.Triangles,
+          }],
+          extensions: {
+            EXT_mesh_primitive_restart: {
+              primitiveGroups: [{
+                primitives: [0, 1, 2],
+                indices: 111,
+              }],
+            },
+          },
+        }, "fallback");
       });
 
       it("if primitives within a group have different topologies", () => {
-        
+        expectPrimitives({
+          primitives: [{
+            attributes: {},
+            indices: 0,
+            mode: GltfMeshMode.LineStrip,
+          }, {
+            attributes: {},
+            indices: 1,
+            mode: GltfMeshMode.TriangleFan,
+          }, {
+            attributes: {},
+            indices: 2,
+            mode: GltfMeshMode.LineStrip,
+          }],
+          extensions: {
+            EXT_mesh_primitive_restart: {
+              primitiveGroups: [{
+                primitives: [0, 1, 2],
+                indices: 111,
+              }],
+            },
+          },
+        }, "fallback");
       });
     });
   });
