@@ -505,16 +505,12 @@ export class IModelTileTree extends TileTree {
     if (placements.length === 0)
       return;
 
-    const changedElements: ElementGeometryChange[] = placements.map(({ elementId, ...placement }) => {
-      const range = "angles" in placement
-        ? Placement3d.fromJSON(placement).calculateRange()
-        : Placement2d.fromJSON(placement).calculateRange();
-
+    const changedElements = placements.map((x) => {
       return {
-        id: elementId,
+        id: x.elementId,
         type: DbOpcode.Update,
-        range,
-      };
+        range: x.calculateRange(),
+      }
     });
 
     if (changedElements.length === 0)
