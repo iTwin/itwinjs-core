@@ -187,7 +187,7 @@ export interface TextStyleResolverArgs {
   iModel: IModelDb;
   /** The ID of the model containing the text block, used to compute the scale factor. */
   modelId?: Id64String;
-  /** @internal chiefly for tests, by default looks an [[AnnotationTextStyle]] in the iModel by ID. */
+  /** @internal chiefly for tests, by default looks up an [[AnnotationTextStyle]] in the iModel by ID. */
   findTextStyle?: FindTextStyle;
 }
 
