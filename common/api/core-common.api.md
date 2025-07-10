@@ -24,6 +24,8 @@ import { Constructor } from '@itwin/core-bentley';
 import { ConvexClipPlaneSet } from '@itwin/core-geometry';
 import { DbOpcode } from '@itwin/core-bentley';
 import { DbResult } from '@itwin/core-bentley';
+import { DeepReadonlyObject } from '@itwin/core-bentley';
+import { DeepRequiredObject } from '@itwin/core-bentley';
 import { GeometryQuery } from '@itwin/core-geometry';
 import { GeoServiceStatus } from '@itwin/core-bentley';
 import { GuidString } from '@itwin/core-bentley';
@@ -238,6 +240,12 @@ export interface AnalysisStyleThematicProps {
     thematicSettings?: ThematicGradientSettingsProps;
 }
 
+// @public @preview
+export interface AnnotationTextStyleProps extends DefinitionElementProps {
+    description?: string;
+    settings?: string;
+}
+
 // @public
 export interface AppearanceOverrideProps {
     color?: ColorDefProps;
@@ -247,8 +255,8 @@ export interface AppearanceOverrideProps {
 
 // @beta
 export interface ApplyTextStyleOptions {
+    preserveChildrenStyles?: boolean;
     preserveOverrides?: boolean;
-    preventPropagation?: boolean;
 }
 
 // @public
@@ -6742,7 +6750,7 @@ export interface PackedFeatureWithIndex extends PackedFeature {
 
 // @beta
 export class Paragraph extends TextBlockComponent {
-    applyStyle(styleName: string, options?: ApplyTextStyleOptions): void;
+    applyStyle(styleId: Id64String, options?: ApplyTextStyleOptions): void;
     // (undocumented)
     clone(): Paragraph;
     static create(props: ParagraphProps): Paragraph;
@@ -9831,10 +9839,11 @@ export class TestRpcManager {
 export class TextAnnotation {
     anchor: TextAnnotationAnchor;
     computeAnchorPoint(boundingBox: Range2d): Point3d;
-    computeTransform(boundingBox: Range2d): Transform;
+    computeTransform(boundingBox: Range2d, scaleFactor?: number): Transform;
     static create(args?: TextAnnotationCreateArgs): TextAnnotation;
+    // @internal
+    discloseIds(ids: EntityReferenceSet): void;
     equals(other: TextAnnotation): boolean;
-    frame?: TextFrameStyleProps;
     static fromJSON(props: TextAnnotationProps | undefined): TextAnnotation;
     offset: Point3d;
     orientation: YawPitchRollAngles;
@@ -9844,20 +9853,12 @@ export class TextAnnotation {
 
 // @public @preview
 export interface TextAnnotation2dProps extends GeometricElement2dProps {
-    // (undocumented)
-    jsonProperties?: {
-        [key: string]: any;
-        annotation?: TextAnnotationProps;
-    };
+    textAnnotationData?: string;
 }
 
 // @public @preview
 export interface TextAnnotation3dProps extends GeometricElement3dProps {
-    // (undocumented)
-    jsonProperties?: {
-        [key: string]: any;
-        annotation?: TextAnnotationProps;
-    };
+    textAnnotationData?: string;
 }
 
 // @beta
@@ -9869,14 +9870,13 @@ export interface TextAnnotationAnchor {
 // @beta
 export interface TextAnnotationCreateArgs {
     anchor?: TextAnnotationAnchor;
-    frame?: TextFrameStyleProps;
     offset?: Point3d;
     orientation?: YawPitchRollAngles;
     textBlock?: TextBlock;
 }
 
 // @beta
-export type TextAnnotationFillColor = TextStyleColor | "background";
+export type TextAnnotationFillColor = TextStyleColor | "background" | "none";
 
 // @beta
 export type TextAnnotationFrameShape = typeof textAnnotationFrameShapes[number];
@@ -9887,7 +9887,6 @@ export const textAnnotationFrameShapes: readonly ["none", "line", "rectangle", "
 // @beta
 export interface TextAnnotationProps {
     anchor?: TextAnnotationAnchor;
-    frame?: TextFrameStyleProps;
     offset?: XYZProps;
     orientation?: YawPitchRollProps;
     textBlock?: TextBlockProps;
@@ -9895,9 +9894,9 @@ export interface TextAnnotationProps {
 
 // @beta
 export class TextBlock extends TextBlockComponent {
-    appendParagraph(): Paragraph;
+    appendParagraph(seedFromLast?: boolean): Paragraph;
     appendRun(run: Run): void;
-    applyStyle(styleName: string, options?: ApplyTextStyleOptions): void;
+    applyStyle(styleId: Id64String, options?: ApplyTextStyleOptions): void;
     // (undocumented)
     clone(): TextBlock;
     static create(props: TextBlockProps): TextBlock;
@@ -9918,15 +9917,15 @@ export class TextBlock extends TextBlockComponent {
 export abstract class TextBlockComponent {
     // @internal
     protected constructor(props: TextBlockComponentProps);
-    applyStyle(styleName: string, options?: ApplyTextStyleOptions): void;
+    applyStyle(styleId: Id64String, options?: ApplyTextStyleOptions): void;
     clearStyleOverrides(): void;
     abstract clone(): TextBlockComponent;
     equals(other: TextBlockComponent): boolean;
     get isWhitespace(): boolean;
     get overridesStyle(): boolean;
     abstract stringify(options?: TextBlockStringifyOptions): string;
-    get styleName(): string;
-    set styleName(styleName: string);
+    get styleId(): Id64String;
+    set styleId(styleId: string);
     get styleOverrides(): TextStyleSettingsProps;
     set styleOverrides(overrides: TextStyleSettingsProps);
     toJSON(): TextBlockComponentProps;
@@ -9934,7 +9933,7 @@ export abstract class TextBlockComponent {
 
 // @beta
 export interface TextBlockComponentProps {
-    styleName: string;
+    styleId: Id64String;
     styleOverrides?: TextStyleSettingsProps;
 }
 
@@ -10081,37 +10080,22 @@ export interface TextStringProps {
 }
 
 // @beta
-export class TextStyle {
-    clone(alteredSettings: TextStyleSettingsProps): TextStyle;
-    static create(name: string, settings: TextStyleSettings): TextStyle;
-    // (undocumented)
-    equals(other: TextStyle): boolean;
-    static fromJSON(json: TextStyleProps): TextStyle;
-    // (undocumented)
-    readonly name: string;
-    // (undocumented)
-    readonly settings: TextStyleSettings;
-}
-
-// @beta
 export type TextStyleColor = ColorDefProps | "subcategory";
-
-// @beta
-export interface TextStyleProps {
-    name: string;
-    settings?: TextStyleSettingsProps;
-}
 
 // @beta
 export class TextStyleSettings {
     clone(alteredProps?: TextStyleSettingsProps): TextStyleSettings;
     readonly color: TextStyleColor;
-    static defaultProps: Readonly<Required<TextStyleSettingsProps>>;
+    static defaultProps: DeepReadonlyObject<DeepRequiredObject<TextStyleSettingsProps>>;
     static defaults: TextStyleSettings;
     // (undocumented)
     equals(other: TextStyleSettings): boolean;
     readonly fontName: string;
+    readonly frame: Readonly<Required<TextFrameStyleProps>>;
+    // (undocumented)
+    framesEqual(other: TextFrameStyleProps): boolean;
     static fromJSON(props?: TextStyleSettingsProps): TextStyleSettings;
+    getValidationErrors(): string[];
     readonly isBold: boolean;
     readonly isItalic: boolean;
     readonly isUnderlined: boolean;
@@ -10133,6 +10117,7 @@ export class TextStyleSettings {
 export interface TextStyleSettingsProps {
     color?: TextStyleColor;
     fontName?: string;
+    frame?: TextFrameStyleProps;
     isBold?: boolean;
     isItalic?: boolean;
     isUnderlined?: boolean;

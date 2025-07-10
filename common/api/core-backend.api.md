@@ -6,6 +6,7 @@
 
 import { AccessToken } from '@itwin/core-bentley';
 import { Angle } from '@itwin/core-geometry';
+import { AnnotationTextStyleProps } from '@itwin/core-common';
 import { AuthorizationClient } from '@itwin/core-common';
 import { AuxCoordSystem2dProps } from '@itwin/core-common';
 import { AuxCoordSystem3dProps } from '@itwin/core-common';
@@ -188,7 +189,9 @@ import { PhysicalTypeProps } from '@itwin/core-common';
 import { PickAsyncMethods } from '@itwin/core-bentley';
 import { PickMethods } from '@itwin/core-bentley';
 import { Placement2d } from '@itwin/core-common';
+import { Placement2dProps } from '@itwin/core-common';
 import { Placement3d } from '@itwin/core-common';
+import { Placement3dProps } from '@itwin/core-common';
 import { Point2d } from '@itwin/core-geometry';
 import { Point3d } from '@itwin/core-geometry';
 import { Polyface } from '@itwin/core-geometry';
@@ -258,6 +261,7 @@ import { TextBlockLayoutResult } from '@itwin/core-common';
 import { TextFrameStyleProps } from '@itwin/core-common';
 import { TextRun } from '@itwin/core-common';
 import { TextStyleSettings } from '@itwin/core-common';
+import { TextStyleSettingsProps } from '@itwin/core-common';
 import { TextureData } from '@itwin/core-common';
 import { TextureLoadProps } from '@itwin/core-common';
 import { TextureMapProps } from '@itwin/core-common';
@@ -302,6 +306,35 @@ export class AnnotationElement2d extends GraphicalElement2d {
     static get className(): string;
 }
 
+// @public @preview
+export class AnnotationTextStyle extends DefinitionElement {
+    protected constructor(props: AnnotationTextStyleProps, iModel: IModelDb);
+    // @internal (undocumented)
+    static get className(): string;
+    // (undocumented)
+    static create(iModelDb: IModelDb, definitionModelId: Id64String, name: string, settings?: TextStyleSettingsProps, description?: string): AnnotationTextStyle;
+    // (undocumented)
+    static createCode(iModel: IModelDb, definitionModelId: CodeScopeProps, name: string): Code;
+    // @beta
+    protected static readonly _customHandledProps: CustomHandledProperty[];
+    // (undocumented)
+    description?: string;
+    // @beta
+    static deserialize(props: DeserializeEntityArgs): AnnotationTextStyleProps;
+    // (undocumented)
+    static fromJSON(props: AnnotationTextStyleProps, iModel: IModelDb): AnnotationTextStyle;
+    // @beta
+    protected static onDelete(arg: OnElementIdArg): void;
+    // @beta
+    protected static onInsert(arg: OnElementPropsArg): void;
+    // @beta
+    static serialize(props: AnnotationTextStyleProps, iModel: IModelDb): ECSqlRow;
+    // (undocumented)
+    settings: TextStyleSettings;
+    // (undocumented)
+    toJSON(): AnnotationTextStyleProps;
+}
+
 // @beta
 export type AnyDb = IModelDb | ECDb;
 
@@ -318,6 +351,7 @@ export interface AppendTextAnnotationGeometryArgs {
     categoryId: Id64String;
     layout: TextBlockLayout;
     subCategoryId?: Id64String;
+    textStyleResolver: TextStyleResolver;
     wantDebugGeometry?: boolean;
 }
 
@@ -3010,8 +3044,8 @@ export abstract class FileNameResolver {
 // @internal
 export type FindFontId = (name: string, type?: FontType) => FontId;
 
-// @internal (undocumented)
-export type FindTextStyle = (name: string) => TextStyleSettings;
+// @internal
+export type FindTextStyle = (id: Id64String) => TextStyleSettings;
 
 // @beta
 export class FolderContainsRepositories extends ElementOwnsChildElements {
@@ -4173,10 +4207,9 @@ export interface LayoutTextBlockArgs {
     computeTextRange?: ComputeRangesForTextLayout;
     // @internal
     findFontId?: FindFontId;
-    // @internal
-    findTextStyle?: FindTextStyle;
     iModel: IModelDb;
     textBlock: TextBlock;
+    textStyleResolver: TextStyleResolver;
 }
 
 // @internal
@@ -5284,7 +5317,7 @@ export class RunLayout {
     // (undocumented)
     charOffset: number;
     // (undocumented)
-    static create(source: Run, context: LayoutContext): RunLayout;
+    static create(source: Run, parentParagraph: Paragraph, context: LayoutContext): RunLayout;
     // (undocumented)
     denominatorRange?: Range2d;
     // (undocumented)
@@ -6311,11 +6344,29 @@ export class TextAnnotation2d extends AnnotationElement2d {
     // @internal (undocumented)
     static get className(): string;
     // (undocumented)
+    protected collectReferenceIds(ids: EntityReferenceSet): void;
+    // (undocumented)
+    static create(iModelDb: IModelDb, category: Id64String, model: Id64String, placement: Placement2dProps, textAnnotationData?: TextAnnotationProps, code?: CodeProps): TextAnnotation2d;
+    // @beta
+    protected static readonly _customHandledProps: CustomHandledProperty[];
+    // @beta
+    static deserialize(props: DeserializeEntityArgs): TextAnnotation2dProps;
+    // (undocumented)
     static fromJSON(props: TextAnnotation2dProps, iModel: IModelDb): TextAnnotation2d;
     getAnnotation(): TextAnnotation | undefined;
+    // @beta
+    protected static onInsert(arg: OnElementPropsArg): void;
+    // @beta
+    protected static onUpdate(arg: OnElementPropsArg): void;
+    // @beta
+    static serialize(props: TextAnnotation2dProps, iModel: IModelDb): ECSqlRow;
     setAnnotation(annotation: TextAnnotation): void;
     // (undocumented)
+    textAnnotationData?: string;
+    // (undocumented)
     toJSON(): TextAnnotation2dProps;
+    // (undocumented)
+    protected static updateGeometry(iModelDb: IModelDb, props: TextAnnotation2dProps): void;
 }
 
 // @public @preview
@@ -6324,11 +6375,29 @@ export class TextAnnotation3d extends GraphicalElement3d {
     // @internal (undocumented)
     static get className(): string;
     // (undocumented)
+    protected collectReferenceIds(ids: EntityReferenceSet): void;
+    // (undocumented)
+    static create(iModelDb: IModelDb, category: Id64String, model: Id64String, placement: Placement3dProps, textAnnotationData?: TextAnnotationProps, code?: CodeProps): TextAnnotation3d;
+    // @beta
+    protected static readonly _customHandledProps: CustomHandledProperty[];
+    // @beta
+    static deserialize(props: DeserializeEntityArgs): TextAnnotation3dProps;
+    // (undocumented)
     static fromJSON(props: TextAnnotation3dProps, iModel: IModelDb): TextAnnotation3d;
     getAnnotation(): TextAnnotation | undefined;
+    // @beta
+    protected static onInsert(arg: OnElementPropsArg): void;
+    // @beta
+    protected static onUpdate(arg: OnElementPropsArg): void;
+    // @beta
+    static serialize(props: TextAnnotation3dProps, iModel: IModelDb): ECSqlRow;
     setAnnotation(annotation: TextAnnotation): void;
     // (undocumented)
+    textAnnotationData?: string;
+    // (undocumented)
     toJSON(): TextAnnotation3dProps;
+    // (undocumented)
+    protected static updateGeometry(iModelDb: IModelDb, props: TextAnnotation3dProps): void;
 }
 
 // @beta
@@ -6351,6 +6420,25 @@ export interface TextLayoutRanges {
     justification: Range2d;
     // (undocumented)
     layout: Range2d;
+}
+
+// @beta
+export class TextStyleResolver {
+    constructor(args: TextStyleResolverArgs);
+    readonly blockSettings: TextStyleSettings;
+    findTextStyle(id: Id64String): TextStyleSettings;
+    resolveParagraphSettings(paragraph: Paragraph): TextStyleSettings;
+    resolveRunSettings(paragraph: Paragraph, run: Run): TextStyleSettings;
+    readonly scaleFactor: number;
+}
+
+// @beta
+export interface TextStyleResolverArgs {
+    // @internal
+    findTextStyle?: FindTextStyle;
+    iModel: IModelDb;
+    modelId?: Id64String;
+    textBlock: TextBlock;
 }
 
 // @public @preview
