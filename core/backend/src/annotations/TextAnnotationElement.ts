@@ -287,6 +287,11 @@ export class TextAnnotation3d extends GraphicalElement3d {
   }
 }
 
+/**
+ * The definition element that holds text style information.
+ * The style is stored as a [TextStyleSettings]($common).
+ * @public @preview
+ */
 export class AnnotationTextStyle extends DefinitionElement {
   /** @internal */
   public static override get className(): string { return "AnnotationTextStyle"; }
