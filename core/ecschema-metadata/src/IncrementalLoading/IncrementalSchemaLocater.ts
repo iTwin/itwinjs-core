@@ -209,6 +209,12 @@ export abstract class IncrementalSchemaLocater implements ISchemaLocater {
       controller.start(this.startLoadingFullSchema(schema));
   }
 
+  private async loadFullSchema(schema: Schema): Promise<void> {
+    const fullSchemaProps = await this.getSchemaJson(schema.schemaKey, schema.context)
+    const reader = new IncrementalSchemaReader(schema.context, false);
+    await reader.readSchema(schema, fullSchemaProps, false);
+  }
+
   private async startLoadingFullSchema(schema: Schema): Promise<void> {
     if (!schema.loadingController)
       return;
@@ -228,13 +234,7 @@ export abstract class IncrementalSchemaLocater implements ISchemaLocater {
         return this.startLoadingFullSchema(referenceSchema);
     }));
 
-    const loadSchema = async () => {
-      const fullSchemaProps = await this.getSchemaJson(schema.schemaKey, schema.context)
-      const reader = new IncrementalSchemaReader(schema.context, false);
-      await reader.readSchema(schema, fullSchemaProps, false);
-    };
-
-    return schema.loadingController.start(loadSchema());
+    return this.loadFullSchema(schema);
   }
 
   private async sortSchemaPartials(schemaPartials: ReadonlyArray<SchemaProps>, schemaContext: SchemaContext): Promise<ReadonlyArray<SchemaProps>> {
