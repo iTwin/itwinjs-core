@@ -431,8 +431,7 @@ interface StructuralMetadata{
 }
 
 /** @internal exported strictly for testing */
-
-function getMeshPrimitives(mesh: GltfMesh | undefined): GltfMeshPrimitive[] | undefined {
+export function getMeshPrimitives(mesh: GltfMesh | undefined): GltfMeshPrimitive[] | undefined {
   const ext = mesh?.extensions?.EXT_mesh_primitive_restart;
   const meshPrimitives = mesh?.primitives;
   if (!meshPrimitives || meshPrimitives.length === 0 || !ext?.primitiveGroups || ext.primitiveGroups.length === 0) {

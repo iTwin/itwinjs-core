@@ -7,7 +7,7 @@ import { Range3d } from "@itwin/core-geometry";
 import { EmptyLocalization, GltfV2ChunkTypes, GltfVersions, RenderTexture, TileFormat } from "@itwin/core-common";
 import { IModelConnection } from "../../IModelConnection";
 import { IModelApp } from "../../IModelApp";
-import { GltfDataType, GltfDocument, GltfId, GltfNode, GltfSampler, GltfWrapMode } from "../../common/gltf/GltfSchema";
+import { GltfDataType, GltfDocument, GltfId, GltfMesh, GltfMeshMode, GltfMeshPrimitive, GltfNode, GltfSampler, GltfWrapMode } from "../../common/gltf/GltfSchema";
 import { getMeshPrimitives, GltfDataBuffer, GltfGraphicsReader, GltfReader, GltfReaderArgs, GltfReaderProps, GltfReaderResult } from "../../tile/GltfReader";
 import { createBlankConnection } from "../createBlankConnection";
 import { BatchedTileIdMap } from "../../tile/internal";
@@ -1396,13 +1396,34 @@ const meshFeaturesExt: GltfDocument = JSON.parse(`
   });
 
   describe("EXT_mesh_primitive_restart", () => {
+    function expectPrimitives(mesh: GltfMesh, expected: GltfMeshPrimitive[] | "fallback"): void {
+      const expectedPrimitives = "fallback" === expected ? mesh.primitives : expected;
+      const actualPrimitives = getMeshPrimitives(mesh);
+      expect(actualPrimitives).to.equal(expectedPrimitives);
+    }
+
     it("combines primitives", () => {
       
     });
 
     describe("falls back to mesh.primitives", () => {
       it("if no groups are defined", () => {
+        expectPrimitives({
+          primitives: [{
+            attributes: {},
+            indices: 123,
+            mode: GltfMeshMode.LineStrip,
+          }],
+          extensions: {
+            EXT_mesh_primitive_restart: {
+              primitiveGroups: [],
+            },
+          },
+        }, "fallback");
+      });
 
+      it("if a group refers to a non-existent primitive", () => {
+        
       });
 
       it("if a given primitive appears more than once in the same group", () => {
@@ -1418,6 +1439,10 @@ const meshFeaturesExt: GltfDocument = JSON.parse(`
       });
 
       it("if any primitive has a topology other than line loop, line strip, triangle strip, or triangle fan", () => {
+        
+      });
+
+      it("if primitives within a group have different topologies", () => {
         
       });
     });
