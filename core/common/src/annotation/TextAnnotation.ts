@@ -83,7 +83,7 @@ export type LeaderAttachment =
   | { mode: "Nearest" };
 
 /**
- * Specifies the possible positions to attach a leader on the frame around [[textBlock]]
+ * Specifies the possible positions to attach a leader on the frame around a [[TextBlock]]
  * when [[TextAnnotationLeader.attachment.mode]] is set to TextPoint.
  * TopLeft : attach to a point projected onto the frame from the point on the left side of the first line of text.
  * TopRight : attach to a point projected onto the frame from the point on the right side of the first line of text.
