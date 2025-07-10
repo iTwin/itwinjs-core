@@ -200,6 +200,7 @@ export interface GltfMesh extends GltfChildOfRootProperty {
   /** For morph targets - currently unsupported. */
   weights?: number[];
   extensions?: GltfExtensions & {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     EXT_mesh_primitive_restart?: {
       primitiveGroups: Array<{
         primitives: number[];
