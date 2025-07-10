@@ -166,9 +166,9 @@ const computeRoundedRectangle = (range: Range2d, transform: Transform, radiusFac
 
 
   const curves = [
-    LineString3d.create([Point3d.create(inLeft, exTop), Point3d.create(inRight, exTop)]),         // top
+    LineString3d.create([Point3d.create(inRight, exTop), Point3d.create(inLeft, exTop)]),         // top
     Arc3d.createXY(Point3d.create(inLeft, inTop), radius, q2),                                    // top left
-    LineString3d.create([Point3d.create(exLeft, inBottom), Point3d.create(exLeft, inTop)]),       // left
+    LineString3d.create([Point3d.create(exLeft, inTop), Point3d.create(exLeft, inBottom)]),       // left
     Arc3d.createXY(Point3d.create(inLeft, inBottom), radius, q3),                                 // bottom left
     LineString3d.create([Point3d.create(inLeft, exBottom), Point3d.create(inRight, exBottom)]),   // bottom
     Arc3d.createXY(Point3d.create(inRight, inBottom), radius, q4),                                // bottom right
@@ -275,7 +275,7 @@ const computeCapsule = (range: Range2d, transform: Transform): Loop => {
   const rightHalfCircle = AngleSweep.createStartEndDegrees(-90, 90);
 
   const curves = [
-    LineString3d.create([Point3d.create(inLeft, exTop), Point3d.create(inRight, exTop)]),       // top
+    LineString3d.create([Point3d.create(inRight, exTop), Point3d.create(inLeft, exTop)]),       // top
     Arc3d.createXY(Point3d.create(inLeft, range.center.y), radius, leftHalfCircle),             // left
     LineString3d.create([Point3d.create(inLeft, exBottom), Point3d.create(inRight, exBottom)]), // bottom
     Arc3d.createXY(Point3d.create(inRight, range.center.y), radius, rightHalfCircle),           // right

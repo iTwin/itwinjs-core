@@ -1,6 +1,6 @@
 {
   "name": "@itwin/ecschema-locaters",
-  "version": "5.1.0-dev.41",
+  "version": "5.1.0-dev.54",
   "description": "EC Schema file locaters",
   "license": "MIT",
   "main": "lib/cjs/ecschema-locaters.js",
@@ -50,7 +50,7 @@
     "@bentley/quantity-takeoffs-aspects-schema": "^1.0.1",
     "@bentley/spatial-composition-schema": "^1.0.1",
     "@bentley/structural-physical-schema": "^1.0.1",
-    "@bentley/units-schema": "^1.0.8",
+    "@bentley/units-schema": "^1.0.9",
     "@itwin/build-tools": "workspace:*",
     "@itwin/ecschema-metadata": "workspace:*",
     "@itwin/eslint-plugin": "5.0.0-dev.1",

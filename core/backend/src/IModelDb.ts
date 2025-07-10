@@ -68,10 +68,10 @@ import type { BlobContainer } from "./BlobContainerService";
 import { createNoOpLockControl } from "./internal/NoLocks";
 import { IModelDbFonts } from "./IModelDbFonts";
 import { createIModelDbFonts } from "./internal/IModelDbFontsImpl";
-import { _cache, _close, _hubAccess, _nativeDb, _releaseAllLocks } from "./internal/Symbols";
+import { _cache, _close, _hubAccess, _instanceKeyCache, _nativeDb, _releaseAllLocks } from "./internal/Symbols";
 import { SchemaContext, SchemaJsonLocater } from "@itwin/ecschema-metadata";
 import { SchemaMap } from "./Schema";
-import { ElementLRUCache } from "./internal/ElementLRUCache";
+import { ElementLRUCache, InstanceKeyLRUCache } from "./internal/ElementLRUCache";
 // spell:ignore fontid fontmap
 
 const loggerCategory: string = BackendLoggerCategory.IModelDb;
@@ -750,6 +750,8 @@ export abstract class IModelDb extends IModel {
     this._schemaContext = undefined;
     this.elements[_cache].clear();
     this.models[_cache].clear();
+    this.elements[_instanceKeyCache].clear();
+    this.models[_instanceKeyCache].clear();
   }
 
   /** Update the project extents for this iModel.
@@ -1464,12 +1466,24 @@ export abstract class IModelDb extends IModel {
 
   /** Get the IModel coordinate corresponding to each GeoCoordinate point in the input */
   public async getIModelCoordinatesFromGeoCoordinates(props: IModelCoordinatesRequestProps): Promise<IModelCoordinatesResponseProps> {
-    return this[_nativeDb].getIModelCoordinatesFromGeoCoordinates(props);
+    const response = this[_nativeDb].getIModelCoordinatesFromGeoCoordinates(props);
+
+    // fromCache is only meaningful on the front-end; provide it for compatibility with return type.
+    response.fromCache = 0;
+    // Native omits the array if the input was empty.
+    response.iModelCoords = response.iModelCoords ?? [];
+    return response;
   }
 
   /** Get the GeoCoordinate (longitude, latitude, elevation) corresponding to each IModel Coordinate point in the input */
   public async getGeoCoordinatesFromIModelCoordinates(props: GeoCoordinatesRequestProps): Promise<GeoCoordinatesResponseProps> {
-    return this[_nativeDb].getGeoCoordinatesFromIModelCoordinates(props);
+    const response = this[_nativeDb].getGeoCoordinatesFromIModelCoordinates(props);
+
+    // fromCache is only meaningful on the front-end; provide it for compatibility with return type.
+    response.fromCache = 0;
+    // Native omits the array if the input was empty.
+    response.geoCoords = response.geoCoords ?? [];
+    return response;
   }
 
   /** Export meshes suitable for graphics APIs from arbitrary geometry in elements in this IModelDb.
@@ -1727,6 +1741,8 @@ export namespace IModelDb {
     private readonly _modelCacheSize = 10;
     /** @internal */
     public readonly [_cache] = new LRUMap<Id64String, ModelProps>(this._modelCacheSize);
+    /** @internal */
+    public readonly [_instanceKeyCache] = new InstanceKeyLRUCache(this._modelCacheSize);
 
     /** @internal */
     public constructor(private _iModel: IModelDb) { }
@@ -1836,7 +1852,15 @@ export namespace IModelDb {
       } else {
         throw new IModelError(IModelStatus.InvalidId, `Invalid model identifier: ${JSON.stringify(modelIdArg)}`);
       }
-      return this._iModel[_nativeDb].resolveInstanceKey(args);
+      // Check the cache to avoid unnecessary native calls
+      const cachedResult = this[_instanceKeyCache].get(args);
+      if (cachedResult) {
+        return cachedResult;
+      } else {
+        const instanceKey = this._iModel[_nativeDb].resolveInstanceKey(args);
+        this[_instanceKeyCache].set(args, instanceKey);
+        return instanceKey;
+      }
     }
 
     /** Get the sub-model of the specified Element.
@@ -1930,6 +1954,7 @@ export namespace IModelDb {
       Id64.toIdSet(ids).forEach((id) => {
         try {
           this[_cache].delete(id);
+          this[_instanceKeyCache].deleteById(id);
           this._iModel[_nativeDb].deleteModel(id);
         } catch (err: any) {
           const error = new IModelError(err.errorNumber, `Error deleting model [${err.message}], id: ${id}`);
@@ -1979,6 +2004,8 @@ export namespace IModelDb {
     private readonly _elementCacheSize = 50;
     /** @internal */
     public readonly [_cache] = new ElementLRUCache(this._elementCacheSize);
+    /** @internal */
+    public readonly [_instanceKeyCache] = new InstanceKeyLRUCache(this._elementCacheSize);
 
     /** @internal */
     public constructor(private _iModel: IModelDb) { }
@@ -2028,7 +2055,15 @@ export namespace IModelDb {
           throw new IModelError(IModelStatus.InvalidId, "Element Id or FederationGuid or Code is required");
         }
       }
-      return this._iModel[_nativeDb].resolveInstanceKey(args);
+      // Check the cache to avoid unnecessary native calls
+      const cachedResult = this[_instanceKeyCache].get(args);
+      if (cachedResult) {
+        return cachedResult;
+      } else {
+        const instanceKey = this._iModel[_nativeDb].resolveInstanceKey(args);
+        this[_instanceKeyCache].set(args, instanceKey);
+        return instanceKey;
+      }
     }
 
     /** Get properties of an Element by Id, FederationGuid, or Code
@@ -2126,16 +2161,16 @@ export namespace IModelDb {
 
       if (code.value === undefined)
         throw new IModelError(IModelStatus.InvalidCode, "Invalid Code");
-      // eslint-disable-next-line @typescript-eslint/no-deprecated
-      return this._iModel.withPreparedStatement("SELECT ECInstanceId FROM BisCore:Element WHERE CodeSpec.Id=? AND CodeScope.Id=? AND CodeValue=?", (stmt: ECSqlStatement) => {
-        stmt.bindId(1, code.spec);
-        stmt.bindId(2, Id64.fromString(code.scope));
-        stmt.bindString(3, code.value);
-        if (DbResult.BE_SQLITE_ROW !== stmt.step())
-          return undefined;
 
-        return stmt.getValue(0).getId();
-      });
+      const codeToQuery = new Code(code);
+      try {
+        const elementKey = this.resolveElementKey(codeToQuery);
+        return Id64.fromString(elementKey.id);
+      } catch (err: any) {
+        if (err.errorNumber === IModelStatus.NotFound)
+          return undefined;
+        throw err;
+      }
     }
 
     /** Query for an [[Element]]'s last modified time.
@@ -2219,6 +2254,7 @@ export namespace IModelDb {
       Id64.toIdSet(ids).forEach((id) => {
         try {
           this[_cache].delete({ id });
+          this[_instanceKeyCache].deleteById(id);
           iModel[_nativeDb].deleteElement(id);
         } catch (err: any) {
           err.message = `Error deleting element [${err.message}], id: ${id}`;

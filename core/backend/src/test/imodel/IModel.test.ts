@@ -1073,11 +1073,76 @@ describe("iModel", () => {
     }
   }
 
+  it("should get metadata for a relationship", async () => {
+    const imodelPath = IModelTestUtils.prepareOutputFile("IModel", "relationshipMetadata.bim");
+    const imodel = SnapshotDb.createEmpty(imodelPath, { rootSubject: { name: "relationshipMetadata" } });
+
+    const partitionId = imodel.elements.insertElement({
+      classFullName: "BisCore:PhysicalPartition",
+      model: IModel.repositoryModelId,
+      parent: {
+        relClassName: "BisCore:SubjectOwnsPartitionElements",
+        id: IModel.rootSubjectId,
+      },
+      code: new Code({
+        spec: imodel.codeSpecs.getByName(BisCodeSpec.informationPartitionElement).id,
+        scope: IModel.rootSubjectId,
+        value: "physical model",
+      }),
+    });
+
+    for await (const row of imodel.createQueryReader(`SELECT * FROM bis.Element LIMIT ${1}`)) {
+      const relId = imodel.relationships.insertInstance({
+        classFullName: "BisCore:ElementHasLinks",
+        sourceId: partitionId,
+        targetId: row.ECInstanceId,
+      });
+      const relationship = imodel.relationships.getInstance("BisCore:ElementHasLinks", relId);
+      const metadata = await relationship.getMetaData();
+      assert.isDefined(metadata, "metadata should be defined");
+    }
+    imodel.close();
+  });
+
   it("should get metadata for class", () => {
     const metaData = imodel1.schemaContext.getSchemaItemSync(Element.classFullName, EntityClass);
     assert.exists(metaData);
     if (metaData !== undefined)
       checkElementMetaData(metaData);
+  });
+
+  it("should iterate through metadata for a relationship", async () => {
+    const imodelPath = IModelTestUtils.prepareOutputFile("IModel", "relationshipMetadata.bim");
+    const imodel = SnapshotDb.createEmpty(imodelPath, { rootSubject: { name: "relationshipMetadata" } });
+
+    const partitionId = imodel.elements.insertElement({
+      classFullName: "BisCore:PhysicalPartition",
+      model: IModel.repositoryModelId,
+      parent: {
+        relClassName: "BisCore:SubjectOwnsPartitionElements",
+        id: IModel.rootSubjectId,
+      },
+      code: new Code({
+        spec: imodel.codeSpecs.getByName(BisCodeSpec.informationPartitionElement).id,
+        scope: IModel.rootSubjectId,
+        value: "physical model",
+      }),
+    });
+
+    for await (const row of imodel.createQueryReader(`SELECT * FROM bis.Element LIMIT ${1}`)) {
+      const relId = imodel.relationships.insertInstance({
+        classFullName: "BisCore:ElementHasLinks",
+        sourceId: partitionId,
+        targetId: row.ECInstanceId,
+      });
+      const relationship = imodel.relationships.getInstance("BisCore:ElementHasLinks", relId);
+      relationship.forEach((propName, propMeta) => {
+        assert.isDefined(propName, "Property name should be defined");
+        assert.isDefined(propMeta, "Property metadata should be defined");
+      });
+    }
+
+    imodel.close();
   });
 
   it("update the project extents", async () => {
@@ -1786,6 +1851,39 @@ describe("iModel", () => {
     assert.isTrue(iModel2.ecefLocation !== undefined);
 
     iModel2.close();
+  });
+
+  describe("async coordinate conversions", () => {
+    it("should output same number of points as input", async () => {
+      const iModelCoords: Point3d[] = [];
+      const geoCoords: Point3d[] = [];
+      for (let numPts = 0; numPts < 3; numPts++) {
+        const geoResponse = await imodel5.getGeoCoordinatesFromIModelCoordinates({ target: "WGS84", iModelCoords });
+        expect(geoResponse.geoCoords.length).to.equal(numPts);
+        
+        const iModelResponse = await imodel5.getIModelCoordinatesFromGeoCoordinates({ source: "WGS84", geoCoords });
+        expect(iModelResponse.iModelCoords.length).to.equal(numPts);
+        
+        iModelCoords.push(new Point3d());
+        geoCoords.push(new Point3d());
+      }
+    });
+
+    it("should always have fromCache = 0", async () => {
+      const iModelCoords: Point3d[] = [];
+      const geoCoords: Point3d[] = [];
+      for (let numPts = 0; numPts < 3; numPts++) {
+        const geoResponse = await imodel5.getGeoCoordinatesFromIModelCoordinates({ target: "WGS84", iModelCoords });
+        expect(geoResponse.fromCache).to.equal(0);
+        
+        const iModelResponse = await imodel5.getIModelCoordinatesFromGeoCoordinates({ source: "WGS84", geoCoords });
+        expect(iModelResponse.iModelCoords.length).to.equal(numPts);
+        expect(iModelResponse.fromCache).to.equal(0);
+        
+        iModelCoords.push(new Point3d());
+        geoCoords.push(new Point3d());
+      }
+    });
   });
 
   if (!ProcessDetector.isIOSAppBackend) {
