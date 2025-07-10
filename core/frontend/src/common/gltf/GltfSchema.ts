@@ -12,6 +12,7 @@
 export enum GltfMeshMode {
   Points = 0,
   Lines = 1,
+  LineLoop = 2,
   LineStrip = 3,
   Triangles = 4,
   /** Not currently supported. */
@@ -198,6 +199,15 @@ export interface GltfMesh extends GltfChildOfRootProperty {
   primitives?: GltfMeshPrimitive[];
   /** For morph targets - currently unsupported. */
   weights?: number[];
+  extensions?: GltfExtensions & {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    EXT_mesh_primitive_restart?: {
+      primitiveGroups: Array<{
+        primitives: number[];
+        indices: number;
+      }>;
+    }
+  };
 }
 
 /** Properties common to [[Gltf1Node]] and [[Gltf2Node]]. @internal */
