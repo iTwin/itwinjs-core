@@ -4030,7 +4030,7 @@ export abstract class GltfReader {
     // (undocumented)
     protected readPolylines(polylines: MeshPolylineList, json: {
         [k: string]: any;
-    }, accessorName: string, disjoint: boolean): boolean;
+    }, accessorName: string, mode: GltfMeshMode.Points | GltfMeshMode.Lines | GltfMeshMode.LineStrip): boolean;
     // (undocumented)
     protected readPrimitiveFeatures(primitive: GltfMeshPrimitive): Feature | number[] | undefined;
     // (undocumented)
