@@ -94,10 +94,11 @@ export type LeaderAttachment =
 export type LeaderTextPointOptions = "TopLeft" | "TopRight" | "BottomLeft" | "BottomRight"
 
 /**
- * Properties of a leader in a [[TextAnnotation]].
- * A leader is a piece of geometry that points from the [[TextAnnotation]] to a point in space attached to another element in the iModel.
- * A leader is always attached to the frame around the [[textBlock]].
- * If there is no frame around the textBlock, we assume a rectangular frame and attach the leader to it.
+ * A line that connects a [[TextAnnotation]] to a point in space relative to another element in the iModel.
+ * A leader is always attached to the frame around the annotation's [[TextBlock]].
+ * If the frame is not visible, the leader attaches to an invisible rectangular frame around the text block.
+ * @see [[TextAnnotation.leaders]] for the leaders associated with an annotation.
+ * @see [[TextStyleSettings.leader]] and [[styleOverrides]] to customize the appearance of leaders.
  * @beta
 */
 export interface TextAnnotationLeader {
