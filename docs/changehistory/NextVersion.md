@@ -6,16 +6,16 @@ publish: false
 
 Table of contents:
 
-- [Electron 36 support](#electron-36-support)
+- [Electron 36 and 37 support](#electron-36-and-37-support)
 - [Google Photorealistic 3D Tiles support](#google-photorealistic-3d-tiles-support)
 - [API deprecations](#api-deprecations)
   - [@itwin/presentation-common](#itwinpresentation-common)
   - [@itwin/presentation-backend](#itwinpresentation-backend)
   - [@itwin/presentation-frontend](#itwinpresentation-frontend)
 
-## Electron 36 support
+## Electron 36 and 37 support
 
-In addition to [already supported Electron versions](../learning/SupportedPlatforms.md#electron), iTwin.js now supports [Electron 36](https://www.electronjs.org/blog/electron-36-0).
+In addition to [already supported Electron versions](../learning/SupportedPlatforms.md#electron), iTwin.js now supports [Electron 36](https://www.electronjs.org/blog/electron-36-0) and [Electron 37](https://www.electronjs.org/blog/electron-37-0).
 
 ## Google Photorealistic 3D Tiles support
 
