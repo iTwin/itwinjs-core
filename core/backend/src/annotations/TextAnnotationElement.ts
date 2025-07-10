@@ -26,7 +26,7 @@ function parseTextAnnotationData(json: string | undefined): TextAnnotationProps 
 function getElementGeometryBuilderParams(iModel: IModelDb, modelId: Id64String, _placementProps: PlacementProps, stringifiedAnnotationProps: string, categoryId: Id64String, _subCategory?: Id64String): ElementGeometryBuilderParams {
   const annotationProps = parseTextAnnotationData(stringifiedAnnotationProps);
   const textBlock = TextAnnotation.fromJSON(annotationProps).textBlock;
-  const textStyleResolver = new TextStyleResolver(textBlock, iModel, modelId);
+  const textStyleResolver = new TextStyleResolver({textBlock, iModel, modelId});
   const layout = layoutTextBlock({ iModel, textBlock, textStyleResolver });
   const builder = new ElementGeometry.Builder();
   appendTextAnnotationGeometry({ layout, textStyleResolver, annotationProps: annotationProps ?? {}, builder, categoryId })
@@ -34,6 +34,11 @@ function getElementGeometryBuilderParams(iModel: IModelDb, modelId: Id64String, 
   return { entryArray: builder.entries };
 }
 
+/** An element that displays textual content within a 2d model.
+ * The text is stored as a [TextAnnotation]($common) from which the element's [geometry]($docs/learning/common/GeometryStream.md) and [Placement]($common) are computed.
+ * @see [[setAnnotation]] to change the textual content.
+ * @public @preview
+ */
 export class TextAnnotation2d extends AnnotationElement2d {
   /** @internal */
   public static override get className(): string { return "TextAnnotation2d"; }
@@ -86,11 +91,21 @@ export class TextAnnotation2d extends AnnotationElement2d {
     return new this(props, iModelDb);
   }
 
+  /**
+   * Updates the geometry of the TextAnnotation2d on insert.
+   * @inheritdoc
+   * @beta
+   */
   protected static override onInsert(arg: OnElementPropsArg): void {
     super.onInsert(arg);
     this.updateGeometry(arg.iModel, arg.props as TextAnnotation2dProps);
   }
 
+  /**
+   * Updates the geometry of the TextAnnotation2d on update.
+   * @inheritdoc
+   * @beta
+   */
   protected static override onUpdate(arg: OnElementPropsArg): void {
     super.onUpdate(arg);
     this.updateGeometry(arg.iModel, arg.props as TextAnnotation2dProps);
@@ -202,11 +217,21 @@ export class TextAnnotation3d extends GraphicalElement3d {
     return new this(props, iModelDb);
   }
 
+  /**
+   * Updates the geometry of the TextAnnotation3d on insert.
+   * @inheritdoc
+   * @beta
+   */
   protected static override onInsert(arg: OnElementPropsArg): void {
     super.onInsert(arg);
     this.updateGeometry(arg.iModel, arg.props as TextAnnotation3dProps);
   }
 
+  /**
+   * Updates the geometry of the TextAnnotation3d on update.
+   * @inheritdoc
+   * @beta
+   */
   protected static override onUpdate(arg: OnElementPropsArg): void {
     super.onUpdate(arg);
     this.updateGeometry(arg.iModel, arg.props as TextAnnotation3dProps);
@@ -302,6 +327,11 @@ export class AnnotationTextStyle extends DefinitionElement {
     return new AnnotationTextStyle(props, iModel);
   }
 
+  /**
+   * Validates that the AnnotationTextStyle's settings are valid before insert.
+   * @inheritdoc
+   * @beta
+   */
   protected static override onInsert(arg: OnElementPropsArg): void {
     super.onInsert(arg);
     const settingProps = AnnotationTextStyle.parseTextStyleSettings((arg.props as AnnotationTextStyleProps).settings);
@@ -313,6 +343,13 @@ export class AnnotationTextStyle extends DefinitionElement {
     }
   }
 
+  /**
+   * Checks that the AnnotationTextStyle is not in use before deleting it.
+   * @note The in use check is done here instead of in `deleteDefinitionElements`.
+   * @throws an error if it is referenced by any [[TextAnnotation2d]] or [[TextAnnotation3d]] elements.
+   * @inheritdoc
+   * @beta
+   */
   protected static override onDelete(arg: OnElementIdArg): void {
     super.onDelete(arg);
     const query = `

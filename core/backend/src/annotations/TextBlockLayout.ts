@@ -151,6 +151,11 @@ function scaleRange(range: Range2d, scale: number): void {
   range.high.scaleInPlace(scale);
 }
 
+/**
+ * Applies block level settings (lineSpacingFactor, lineHeight, widthFactor, and frame) to a TextStyleSettings.
+ * These must be set on the block, as they are meaningless on individual paragraphs/runs.
+ * @internal
+ */
 function applyBlockSettings(target: TextStyleSettings, source: TextStyleSettings | TextStyleSettingsProps): TextStyleSettings {
   if (source === target) {
     return target;
@@ -172,6 +177,21 @@ function applyBlockSettings(target: TextStyleSettings, source: TextStyleSettings
 }
 
 /**
+ * Arguments used when constructing a [[TextStyleResolver]].
+ * @beta
+ */
+export interface TextStyleResolverArgs {
+  /** The text block whose styles are being resolved. */
+  textBlock: TextBlock;
+  /** The iModel from which to obtain [[AnnotationTextStyle]]s when resolving styles. */
+  iModel: IModelDb;
+  /** The ID of the model containing the text block, used to compute the scale factor. */
+  modelId?: Id64String;
+  /** @internal chiefly for tests, by default looks an [[AnnotationTextStyle]] in the iModel by ID. */
+  findTextStyle?: FindTextStyle;
+}
+
+/**
  * Resolves the effective style of TextBlockComponents, taking into account overrides and styles of the instance and its parent(s).
  * @beta
  */
@@ -180,27 +200,22 @@ export class TextStyleResolver {
   private readonly _findTextStyle: FindTextStyle;
   /** The resolved style of the TextBlock. */
   public readonly blockSettings: TextStyleSettings;
+  /** The scale factor of the model containing the TextBlock. */
   public readonly scaleFactor: number;
 
-  /**
-   * @param textBlock The text block whose styles are to be resolved.
-   * @param _iModel The iModel to look up text styles from.
-   * @param _modelId The ID of the model containing the text block, used to compute the scale factor.
-   * @param findTextStyle chiefly for tests, by default looks up styles from the iModel.
-   */
-  public constructor(textBlock: TextBlock, private readonly _iModel: IModelDb, modelId?: Id64String, findTextStyle?: FindTextStyle) {
-    this._findTextStyle = findTextStyle ?? createFindTextStyleImpl(this._iModel);
+  public constructor(args: TextStyleResolverArgs) {
+    this._findTextStyle = args.findTextStyle ?? createFindTextStyleImpl(args.iModel);
 
     this.scaleFactor = 1;
-    if (modelId) {
-      const element = this._iModel.elements.getElement(modelId);
+    if (args.modelId) {
+      const element = args.iModel.elements.getElement(args.modelId);
       if (element instanceof Drawing)
         this.scaleFactor = element.scaleFactor;
     }
 
-    this.blockSettings = this.findTextStyle(textBlock.styleId);
-    if (textBlock.styleOverrides)
-      this.blockSettings = this.blockSettings.clone(textBlock.styleOverrides);
+    this.blockSettings = this.findTextStyle(args.textBlock.styleId);
+    if (args.textBlock.styleOverrides)
+      this.blockSettings = this.blockSettings.clone(args.textBlock.styleOverrides);
   }
 
   private resolveParagraphSettingsImpl(paragraph: Paragraph): TextStyleSettings {
@@ -226,7 +241,6 @@ export class TextStyleResolver {
 
   /** Resolves the effective style for a [Paragraph]($common). Paragraph should be child of provided TextBlock. */
   public resolveParagraphSettings(paragraph: Paragraph): TextStyleSettings {
-    // Apply block specific settings (lineSpacingFactor, lineHeight, and widthFactor). These must be set on the block, as they are meaningless on individual paragraphs/runs
     return applyBlockSettings(this.resolveParagraphSettingsImpl(paragraph), this.blockSettings);
   }
 
@@ -239,8 +253,6 @@ export class TextStyleResolver {
     if (run.overridesStyle)
       settings = settings.clone(run.styleOverrides);
 
-
-    // Still apply block specific settings (lineSpacingFactor, lineHeight, and widthFactor). These must be set on the block, as they are meaningless on individual paragraphs/runs
     return applyBlockSettings(settings, this.blockSettings);
   }
 }
