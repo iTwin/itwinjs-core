@@ -70,7 +70,7 @@ export interface TextFrameStyleProps {
 }
 
 /**
- * Describes how to attach a leader to a frame around [[textBlock]].
+ * Describes how to attach a [[TextAnnotationLeader]] to the frame around a [[TextBlock]].
  * Leader can be attached using one of the three modes:
  * - KeyPoint: attach to a point on the frame specified by the given curveIndex and fractional position.
  * - TextPoint: attach to a point that is projected on to the frame from the point on a particular line of text specified by [[LeaderTextPointOptions]].
