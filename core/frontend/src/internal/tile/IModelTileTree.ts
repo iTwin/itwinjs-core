@@ -498,41 +498,24 @@ export class IModelTileTree extends TileTree {
       return;
 
     const elementIds = Array.from(relevantChange.elements);
-    if (elementIds.length === 0)
+    const placements = await this.iModel.elements.getPlacements(elementIds, {
+      type: this.is3d ? "3d" : "2d",
+    });
+
+    if (placements.length === 0)
       return;
 
-    let placements: (Placement2d | Placement3d | undefined)[] = [];
-    try {
-      placements = await this.iModel.elements.getPlacements(elementIds);
-    } catch {
-      placements = new Array(elementIds.length).fill(undefined);
-    }
+    const changedElements: ElementGeometryChange[] = placements.map(({ elementId, ...placement }) => {
+      const range = "angles" in placement
+        ? Placement3d.fromJSON(placement).calculateRange()
+        : Placement2d.fromJSON(placement).calculateRange();
 
-    const changedElements: ElementGeometryChange[] = [];
-
-    for (let i = 0; i < elementIds.length; i++) {
-      const id = elementIds[i];
-      const placement = placements[i];
-      let range = Range3d.createNull();
-
-      try {
-        if (placement) {
-          if (isPlacement3dProps(placement)) {
-            range = Placement3d.fromJSON(placement).calculateRange();
-          } else if (isPlacement2dProps(placement)) {
-            range = Placement2d.fromJSON(placement).calculateRange();
-          }
-        }
-      } catch {
-        range = Range3d.createNull();
-      }
-
-      changedElements.push({
-        id,
+      return {
+        id: elementId,
         type: DbOpcode.Update,
         range,
-      });
-    }
+      };
+    });
 
     if (changedElements.length === 0)
       return;
