@@ -10,7 +10,6 @@ import { assert, BeTimePoint, DbOpcode, GuidString, Id64Array, Id64String } from
 import { Range3d, Transform } from "@itwin/core-geometry";
 import {
   BatchType, ContentIdProvider, EdgeOptions, ElementAlignedBox3d, ElementGeometryChange, FeatureAppearanceProvider,
-  GeometricElementProps,
   IModelTileTreeId, IModelTileTreeProps, isPlacement2dProps, isPlacement3dProps, ModelGeometryChanges, Placement2d, Placement3d, RenderSchedule, TileProps
 } from "@itwin/core-common";
 import { IModelApp } from "../../IModelApp";
