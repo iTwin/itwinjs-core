@@ -34,12 +34,12 @@ export class ConsolidateAdjacentCurvePrimitivesContext extends NullGeometryHandl
     this._options = options ? options : new ConsolidateAdjacentCurvePrimitivesOptions();
   }
   /** look for adjacent compatible primitives in a path or loop. */
-  public handleCurveChain(g: CurveChain) {
+  public handleCurveChain(g: CurveChain): void {
     const children = g.children;
     const numOriginal = children.length;
     const points: Point3d[] = [];
     let numAccept = 0;
-    // i0 <=i < i1 is a range of child indices.
+    // i0 <= i < i1 is a range of child indices.
     // numAccept is the number of children accepted (contiguously at front of children)
     for (let i0 = 0; i0 < numOriginal;) {
       const basePrimitive = g.children[i0];
@@ -90,7 +90,7 @@ export class ConsolidateAdjacentCurvePrimitivesContext extends NullGeometryHandl
           const nextPrimitive = g.children[i0];
           if (!(nextPrimitive instanceof Arc3d))
             break;
-          if (!CurveFactory.appendToArcInPlace(basePrimitive, nextPrimitive)) // TODO: use this._options.duplicatePointTolerance
+          if (!CurveFactory.appendToArcInPlace(basePrimitive, nextPrimitive, false, this._options.duplicatePointTolerance))
             break;
         }
         // i0 has already advanced
@@ -103,8 +103,31 @@ export class ConsolidateAdjacentCurvePrimitivesContext extends NullGeometryHandl
     g.children.length = numAccept;
   }
 
-  public override handlePath(g: Path): any { return this.handleCurveChain(g); }
-  public override handleLoop(g: Loop): any { return this.handleCurveChain(g); }
+  public override handlePath(g: Path): any {
+    return this.handleCurveChain(g);
+  }
+  public override handleLoop(g: Loop): any {
+    this.handleCurveChain(g);
+    if (g.children.length > 1 && this._options.consolidateLoopSeam) {
+      const lastChild = g.children[g.children.length - 1];
+      const firstChild = g.children[0];
+      if ((lastChild instanceof LineSegment3d || lastChild instanceof LineString3d) && (firstChild instanceof LineSegment3d || firstChild instanceof LineString3d)) {
+        if (this._options.consolidateLinearGeometry && !this._options.disableLinearCompression) {
+          const lastPoints = lastChild.points;
+          lastPoints.pop(); // the original start point survives as an interior point in the new first primitive
+          g.children[0] = LineString3d.createPoints([...lastPoints, ...firstChild.points]);
+          g.children.pop();
+        }
+      } else if (lastChild instanceof Arc3d && firstChild instanceof Arc3d) {
+        if (this._options.consolidateCompatibleArcs) {
+          if (CurveFactory.appendToArcInPlace(lastChild, firstChild, false, this._options.duplicatePointTolerance)) {
+            g.children[0] = lastChild;
+            g.children.pop();
+          }
+        }
+      }
+    }
+  }
   public override handleParityRegion(g: ParityRegion): any {
     for (const child of g.children)
       child.dispatchToGeometryHandler(this);
