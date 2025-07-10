@@ -1007,7 +1007,7 @@ export abstract class GltfReader {
       if (!bufferData)
         return undefined;
 
-      const type = accessor.componentType as GltfDataType;
+      const type = accessor.componentType;
       let dataSize = 0;
       switch (type) {
         case GltfDataType.UnsignedByte:
@@ -1904,28 +1904,53 @@ export abstract class GltfReader {
   }
 
   protected readPolylines(polylines: MeshPolylineList, json: { [k: string]: any }, accessorName: string, mode: GltfMeshMode.Points | GltfMeshMode.Lines | GltfMeshMode.LineStrip): boolean {
-    const data = this.readBufferData32(json, accessorName);
+    const bufferView = this.getBufferView(json, accessorName);
+    const data = bufferView?.toBufferData(GltfDataType.UInt32);
     if (undefined === data)
       return false;
 
     const indices = new Array<number>();
-    if (GltfMeshMode.Lines !== mode) {
-      for (let i = 0; i < data.count;)
-        indices.push(data.buffer[i++]);
-    } else {
-      for (let i = 0; i < data.count;) {
-        const index0 = data.buffer[i++];
-        const index1 = data.buffer[i++];
-        if (0 === indices.length || index0 !== indices[indices.length - 1]) {
-          if (indices.length !== 0) {
-            polylines.push(new MeshPolyline(indices));
-            indices.length = 0;
+    switch (mode) {
+      case GltfMeshMode.Points: {
+        for (let i = 0; i < data.count;)
+          indices.push(data.buffer[i++]);
+
+        break;
+      }
+      case GltfMeshMode.Lines: {
+        for (let i = 0; i < data.count;) {
+          const index0 = data.buffer[i++];
+          const index1 = data.buffer[i++];
+          if (0 === indices.length || index0 !== indices[indices.length - 1]) {
+            if (indices.length !== 0) {
+              polylines.push(new MeshPolyline(indices));
+              indices.length = 0;
+            }
+            indices.push(index0);
           }
-          indices.push(index0);
+          indices.push(index1);
         }
-        indices.push(index1);
+
+        break;
+      }
+      case GltfMeshMode.LineStrip: {
+        assert(undefined !== bufferView); // compiler can't seem to infer this...
+        const restart = GltfDataType.UnsignedByte === bufferView.type ? 0xff : (GltfDataType.UnsignedShort === bufferView.type ? 0xffff : 0xffffffff);
+        for (const index of data.buffer) {
+          if (index === restart) {
+            if (indices.length > 1) {
+              polylines.push(new MeshPolyline(indices));
+            }
+
+            indices.length = 0;
+          } else {
+            indices.push(index);
+          }
+        }
+        break;
       }
     }
+
     if (indices.length !== 0)
       polylines.push(new MeshPolyline(indices));
 
