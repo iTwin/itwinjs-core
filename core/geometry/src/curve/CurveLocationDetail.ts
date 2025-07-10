@@ -101,7 +101,12 @@ export class CurveLocationDetail {
   public setIntervalRole(value: CurveIntervalRole): void {
     this.intervalRole = value;
   }
-  /** Set the (optional) fraction1 and point1, using direct assignment (capture!) to point1. */
+  /** Set the `fraction` and `point`, using direct assignment (capture!) to `point`. */
+  public captureFractionPoint(fraction: number, point: Point3d): void {
+    this.fraction = fraction;
+    this.point = point;
+  }
+  /** Set the (optional) `fraction1` and `point1`, using direct assignment (capture!) to `point1`. */
   public captureFraction1Point1(fraction1: number, point1: Point3d): void {
     this.fraction1 = fraction1;
     this.point1 = point1;
