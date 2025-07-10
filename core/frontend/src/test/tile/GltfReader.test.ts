@@ -13,7 +13,7 @@ import { createBlankConnection } from "../createBlankConnection";
 import { BatchedTileIdMap } from "../../tile/internal";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
-// eslint-disable @typescript-eslint/naming-convention
+/* eslint-disable @typescript-eslint/naming-convention */
 
 const minimalBin = new Uint8Array([12, 34, 0xfe, 0xdc]);
 const minimalJson = { asset: { version: "02.00" }, meshes: [] };
