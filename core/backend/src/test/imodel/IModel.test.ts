@@ -1073,11 +1073,76 @@ describe("iModel", () => {
     }
   }
 
+  it("should get metadata for a relationship", async () => {
+    const imodelPath = IModelTestUtils.prepareOutputFile("IModel", "relationshipMetadata.bim");
+    const imodel = SnapshotDb.createEmpty(imodelPath, { rootSubject: { name: "relationshipMetadata" } });
+
+    const partitionId = imodel.elements.insertElement({
+      classFullName: "BisCore:PhysicalPartition",
+      model: IModel.repositoryModelId,
+      parent: {
+        relClassName: "BisCore:SubjectOwnsPartitionElements",
+        id: IModel.rootSubjectId,
+      },
+      code: new Code({
+        spec: imodel.codeSpecs.getByName(BisCodeSpec.informationPartitionElement).id,
+        scope: IModel.rootSubjectId,
+        value: "physical model",
+      }),
+    });
+
+    for await (const row of imodel.createQueryReader(`SELECT * FROM bis.Element LIMIT ${1}`)) {
+      const relId = imodel.relationships.insertInstance({
+        classFullName: "BisCore:ElementHasLinks",
+        sourceId: partitionId,
+        targetId: row.ECInstanceId,
+      });
+      const relationship = imodel.relationships.getInstance("BisCore:ElementHasLinks", relId);
+      const metadata = await relationship.getMetaData();
+      assert.isDefined(metadata, "metadata should be defined");
+    }
+    imodel.close();
+  });
+
   it("should get metadata for class", () => {
     const metaData = imodel1.schemaContext.getSchemaItemSync(Element.classFullName, EntityClass);
     assert.exists(metaData);
     if (metaData !== undefined)
       checkElementMetaData(metaData);
+  });
+
+  it("should iterate through metadata for a relationship", async () => {
+    const imodelPath = IModelTestUtils.prepareOutputFile("IModel", "relationshipMetadata.bim");
+    const imodel = SnapshotDb.createEmpty(imodelPath, { rootSubject: { name: "relationshipMetadata" } });
+
+    const partitionId = imodel.elements.insertElement({
+      classFullName: "BisCore:PhysicalPartition",
+      model: IModel.repositoryModelId,
+      parent: {
+        relClassName: "BisCore:SubjectOwnsPartitionElements",
+        id: IModel.rootSubjectId,
+      },
+      code: new Code({
+        spec: imodel.codeSpecs.getByName(BisCodeSpec.informationPartitionElement).id,
+        scope: IModel.rootSubjectId,
+        value: "physical model",
+      }),
+    });
+
+    for await (const row of imodel.createQueryReader(`SELECT * FROM bis.Element LIMIT ${1}`)) {
+      const relId = imodel.relationships.insertInstance({
+        classFullName: "BisCore:ElementHasLinks",
+        sourceId: partitionId,
+        targetId: row.ECInstanceId,
+      });
+      const relationship = imodel.relationships.getInstance("BisCore:ElementHasLinks", relId);
+      relationship.forEach((propName, propMeta) => {
+        assert.isDefined(propName, "Property name should be defined");
+        assert.isDefined(propMeta, "Property metadata should be defined");
+      });
+    }
+
+    imodel.close();
   });
 
   it("update the project extents", async () => {

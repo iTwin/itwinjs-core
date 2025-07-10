@@ -206,6 +206,7 @@ import { Range3d } from '@itwin/core-geometry';
 import { Rank } from '@itwin/core-common';
 import { RelatedElement } from '@itwin/core-common';
 import { RelatedElementProps } from '@itwin/core-common';
+import { RelationshipClass } from '@itwin/ecschema-metadata';
 import { RelationshipProps } from '@itwin/core-common';
 import { RemoveFunction } from '@itwin/core-common';
 import { RenderMaterialProps } from '@itwin/core-common';
@@ -2370,6 +2371,7 @@ class Element_2 extends Entity {
     getClassMetaData(): EntityMetaData | undefined;
     getDisplayLabel(): string;
     getJsonProperty(nameSpace: string): any;
+    getMetaData(): Promise<EntityClass>;
     getToolTipMessage(): string[];
     getUserProperties(namespace: string): any;
     insert(): string;
@@ -2673,7 +2675,7 @@ export class Entity {
     // @deprecated
     forEachProperty(func: PropertyCallback, includeCustom?: boolean): void;
     // @preview
-    getMetaData(): Promise<EntityClass>;
+    getMetaData(): Promise<EntityClass | RelationshipClass>;
     // @beta
     getReferenceIds(): EntityReferenceSet;
     id: Id64String;
@@ -2684,6 +2686,7 @@ export class Entity {
     // @internal
     static get isGeneratedClass(): boolean;
     readonly isInstanceOfEntity: true;
+    protected _metadata?: EntityClass | RelationshipClass;
     // @internal (undocumented)
     static get protectedOperations(): string[];
     static schema: typeof Schema;
@@ -5125,6 +5128,7 @@ export class Relationship extends Entity {
     delete(): void;
     // (undocumented)
     static getInstance<T extends Relationship>(iModel: IModelDb, criteria: Id64String | SourceAndTarget): T;
+    getMetaData(): Promise<RelationshipClass>;
     insert(): Id64String;
     static onDeletedDependency(_props: RelationshipProps, _iModel: IModelDb): void;
     static onRootChanged(_props: RelationshipProps, _iModel: IModelDb): void;
