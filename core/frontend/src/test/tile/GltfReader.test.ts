@@ -1399,11 +1399,60 @@ const meshFeaturesExt: GltfDocument = JSON.parse(`
     function expectPrimitives(mesh: GltfMesh, expected: GltfMeshPrimitive[] | "fallback"): void {
       const expectedPrimitives = "fallback" === expected ? mesh.primitives : expected;
       const actualPrimitives = getMeshPrimitives(mesh);
-      expect(actualPrimitives).to.equal(expectedPrimitives);
+      expect(actualPrimitives).toEqual(expectedPrimitives);
     }
 
     it("combines primitives", () => {
-      
+      expectPrimitives({
+        primitives: [{
+          attributes: {},
+          indices: 0,
+          mode: GltfMeshMode.LineStrip,
+        }, {
+          attributes: {},
+          indices: 1,
+          mode: GltfMeshMode.TriangleFan,
+        }, {
+          attributes: {},
+          indices: 2,
+          mode: GltfMeshMode.TriangleFan,
+        }, {
+          attributes: {},
+          indices: 3,
+          mode: GltfMeshMode.Triangles,
+        }, {
+          attributes: {},
+          indices: 4,
+          mode: GltfMeshMode.LineStrip,
+        }, {
+          attributes: {},
+          indices: 5,
+          mode: GltfMeshMode.LineStrip,
+        }],
+        extensions: {
+          EXT_mesh_primitive_restart: {
+            primitiveGroups: [{
+              primitives: [5, 0, 4],
+              indices: 111,
+            }, {
+                primitives: [1, 2],
+                indices: 222,
+            }],
+          },
+        },
+      }, [{
+        attributes: {},
+        indices: 222,
+        mode: GltfMeshMode.TriangleFan,
+      }, {
+        attributes: {},
+        indices: 3,
+        mode: GltfMeshMode.Triangles,
+      }, {
+        attributes: {},
+        indices: 111,
+        mode: GltfMeshMode.LineStrip,
+      }]);
     });
 
     describe("falls back to mesh.primitives", () => {
@@ -1420,9 +1469,41 @@ const meshFeaturesExt: GltfDocument = JSON.parse(`
             },
           },
         }, "fallback");
+
+        expectPrimitives({
+          primitives: [{
+            attributes: {},
+            indices: 123,
+            mode: GltfMeshMode.LineStrip,
+          }],
+          extensions: {
+            EXT_mesh_primitive_restart: {
+              primitiveGroups: undefined as any,
+            },
+          },
+        }, "fallback");
       });
 
       it("if a group refers to a non-existent primitive", () => {
+        expectPrimitives({
+          primitives: [{
+            attributes: {},
+            indices: 0,
+            mode: GltfMeshMode.LineStrip,
+          }, {
+            attributes: {},
+            indices: 1,
+            mode: GltfMeshMode.LineStrip,
+          }],
+          extensions: {
+            EXT_mesh_primitive_restart: {
+              primitiveGroups: [{
+                primitives: [0, 1, 2],
+                indices: 999,
+              }],
+            },
+          },
+        }, "fallback");
         
       });
 
