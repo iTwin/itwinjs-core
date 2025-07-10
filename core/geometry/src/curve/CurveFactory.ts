@@ -275,11 +275,12 @@ export class CurveFactory {
    * * This only succeeds if the two arcs are part of identical complete arcs and end of `arcA` matches the beginning of `arcB`.
    * @param arcA first arc, modified in place.
    * @param arcB second arc, unmodified.
-   * @param allowReversed whether to consolidate even when second arc is reversed.
+   * @param allowReversed whether to consolidate even when second arc is reversed (default is `false`).
+   * @param tolerance optional coordinate tolerance for point equality (default is `Geometry.smallMetricDistance`).
    * @returns whether `arcA` was modified.
    */
-  public static appendToArcInPlace(arcA: Arc3d, arcB: Arc3d, allowReverse: boolean = false): boolean {
-    if (arcA.center.isAlmostEqual(arcB.center)) {
+  public static appendToArcInPlace(arcA: Arc3d, arcB: Arc3d, allowReverse: boolean = false, tolerance: number = Geometry.smallMetricDistance): boolean {
+    if (arcA.center.isAlmostEqual(arcB.center, tolerance)) {
       const sweepSign = Geometry.split3WaySign(arcA.sweep.sweepRadians * arcB.sweep.sweepRadians, -1, 0, 1);
       // evaluate derivatives wrt radians (not fraction!), but adjust direction for sweep signs
       const endA = arcA.angleToPointAndDerivative(arcA.sweep.fractionToAngle(1.0));
@@ -288,7 +289,7 @@ export class CurveFactory {
       const startB = arcB.angleToPointAndDerivative(arcB.sweep.fractionToAngle(0.0));
       if (arcB.sweep.sweepRadians < 0)
         startB.direction.scaleInPlace(-1.0);
-      if (endA.isAlmostEqual(startB)) {
+      if (endA.isAlmostEqual(startB, tolerance)) {
         arcA.sweep.setStartEndRadians(
           arcA.sweep.startRadians, arcA.sweep.startRadians + arcA.sweep.sweepRadians + sweepSign * arcB.sweep.sweepRadians,
         );
@@ -297,7 +298,7 @@ export class CurveFactory {
       // Also ok if negated tangent
       if (allowReverse) {
         startB.direction.scaleInPlace(-1.0);
-        if (endA.isAlmostEqual(startB)) {
+        if (endA.isAlmostEqual(startB, tolerance)) {
           arcA.sweep.setStartEndRadians(
             arcA.sweep.startRadians, arcA.sweep.startRadians + arcA.sweep.sweepRadians - sweepSign * arcB.sweep.sweepRadians,
           );
