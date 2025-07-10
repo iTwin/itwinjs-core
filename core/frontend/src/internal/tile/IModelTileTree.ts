@@ -474,24 +474,6 @@ export class IModelTileTree extends TileTree {
     return undefined !== this._transformNodeRanges;
   }
 
-  private async getElementRange(elementId: Id64String): Promise<Range3d> {
-    const [element] = await this.iModel.elements.getProps(elementId) as GeometricElementProps[];
-
-    if (!element?.placement)
-      return Range3d.createNull();
-
-    const placement = element.placement;
-
-    if (isPlacement3dProps(placement)) {
-      return Placement3d.fromJSON(placement).calculateRange();
-    }
-
-    if (isPlacement2dProps(placement)) {
-      return Placement2d.fromJSON(placement).calculateRange();
-    }
-    return Range3d.createNull();
-  }
-
   public override async onScheduleEditingChanged(changes: RenderSchedule.EditingChanges[]): Promise<void> {
     const displayStyle = IModelApp.viewManager.selectedView?.displayStyle;
     const newScript = displayStyle?.scheduleScript;
@@ -513,21 +495,52 @@ export class IModelTileTree extends TileTree {
     }
 
     const relevantChange = changes.find((c) => c.timeline.modelId === this.modelId);
-    const changedElements: ElementGeometryChange[] = [];
-
-    if (relevantChange) {
-      for (const id of relevantChange.elements) {
-        changedElements.push({
-          id,
-          type: DbOpcode.Update,
-          range: await this.getElementRange(id),
-        });
-      }
-    }
-
-    if (changedElements.length === 0 || this._rootTile.tileState.type === "dynamic")
+    if (!relevantChange || relevantChange.elements.size === 0)
       return;
 
+    const elementIds = Array.from(relevantChange.elements);
+    if (elementIds.length === 0)
+      return;
+
+    let placements: (Placement2d | Placement3d | undefined)[] = [];
+    try {
+      placements = await this.iModel.elements.getPlacements(elementIds);
+    } catch {
+      placements = new Array(elementIds.length).fill(undefined);
+    }
+
+    const changedElements: ElementGeometryChange[] = [];
+
+    for (let i = 0; i < elementIds.length; i++) {
+      const id = elementIds[i];
+      const placement = placements[i];
+      let range = Range3d.createNull();
+
+      try {
+        if (placement) {
+          if (isPlacement3dProps(placement)) {
+            range = Placement3d.fromJSON(placement).calculateRange();
+          } else if (isPlacement2dProps(placement)) {
+            range = Placement2d.fromJSON(placement).calculateRange();
+          }
+        }
+      } catch {
+        range = Range3d.createNull();
+      }
+
+      changedElements.push({
+        id,
+        type: DbOpcode.Update,
+        range,
+      });
+    }
+
+    if (changedElements.length === 0)
+      return;
+
+    if (this._rootTile.tileState.type === "dynamic") {
+      this._rootTile.transition(new StaticState(this._rootTile));
+    }
     this._rootTile.transition(new ScheduleScriptDynamicState(this._rootTile, changedElements));
   }
 
