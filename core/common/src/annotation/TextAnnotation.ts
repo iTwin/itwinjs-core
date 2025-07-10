@@ -111,8 +111,8 @@ export interface TextAnnotationLeader {
    * If not specified, the leader will be a straight line from startPoint to the point on the frame.
    * For now, intermediate points are a set of points which create additional LineSegments in the leader, but there could be intermediate shapes instead of straight LineSegments in future*/
   intermediatePoints?: Point3d[];
-  /** Optional style overrides for the leader. If not specified, the leader will use the default style from [[TextStyleSettings]].
-   * If specified, these overrides will be applied to the leader.
+  /** Optional style overrides for the leader. If not specified, the leader will use the style defined by [[TextBlock.styleName]] as it is.
+   * If specified, these overrides will be applied to the style.
    */
   styleOverrides?: TextStyleSettingsProps;
 }
