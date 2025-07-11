@@ -214,6 +214,7 @@ export class RealityTileTree extends TileTree {
       }
     }
     this.baseUrl = params.baseUrl;
+    this.reprojectGeometry = params.reprojectGeometry;
   }
 
   /** The mapping of per-feature JSON properties from this tile tree's batch table, if one is defined.

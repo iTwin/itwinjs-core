@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { Range3d, Transform } from "@itwin/core-geometry";
+import { Point3d, PolyfaceBuilder, Range3d, Sphere, StrokeOptions, Transform } from "@itwin/core-geometry";
 import { IModelConnection } from "../../IModelConnection";
 import { IModelApp } from "../../IModelApp";
 import { MockRender } from "../../internal/render/MockRender";
@@ -56,6 +56,15 @@ describe("RealityTile", () => {
 
       if (contentSize === 0)
         this.setIsReady();
+
+      // Create indexed polyface for testing by facetting a sphere
+      const sphere = Sphere.createCenterRadius(Point3d.createZero(), 1);
+      const options = StrokeOptions.createForFacets();
+      const polyBuilder = PolyfaceBuilder.create(options);
+      polyBuilder.handleSphere(sphere);
+
+      this._geometry = { polyfaces: [polyBuilder.claimPolyface()] };
+      this._reprojectionTransform = Transform.createTranslationXYZ(10, 0, 0);
     }
 
     protected override _loadChildren(resolve: (children: Tile[] | undefined) => void): void {
@@ -198,28 +207,17 @@ describe("RealityTile", () => {
   }
 
   const supplier = new Supplier();
-
   let imodel: IModelConnection;
+  let reader: TestRealityTileLoader;
+  let collector: TileGeometryCollector;
 
   beforeEach(async () => {
     await MockRender.App.startup();
     IModelApp.stopEventLoop();
     imodel = createBlankConnection("imodel");
-  });
 
-  afterEach(async () => {
-    await imodel.close();
-    if (IModelApp.initialized)
-      await MockRender.App.shutdown();
-  });
-
-  it("Test", async () => {
-    const reader = new TestRealityTileLoader();
-    const contentSize = 100;
-    const tree1 = new TestRealityTree(contentSize, imodel, reader, true);
-    const treeOwner1 = imodel.tiles.getTileTreeOwner(tree1, supplier);
-
-    const collector = new TileGeometryCollector({
+    reader = new TestRealityTileLoader();
+    collector = new TileGeometryCollector({
       chordTolerance: 0.1,
       range: new Range3d(0, 0, 0, 1, 1, 1),
       user: {
@@ -230,23 +228,51 @@ describe("RealityTile", () => {
         },
       },
     });
+  });
+
+  afterEach(async () => {
+    await imodel.close();
+    if (IModelApp.initialized)
+      await MockRender.App.shutdown();
+  });
+
+  it("should reproject geometry when reprojectGeometry = true", async () => {
+    const tree = new TestRealityTree(0, imodel, reader, true);
+    const treeOwner = imodel.tiles.getTileTreeOwner(tree, supplier);
 
     // We need to call 'TileTreeOwner.load()' in order check 'isDisposed' later on (i.e only loaded tiletree can be truly disposed)
     // Unfortunately 'TileTreeOwner.load()' doesn't return a promise this test can await.
     // To workaround this, we create our own Promise hooked to the 'onTileTreeLoad' event.
-    const promises = [createOnTileTreeLoadPromise(treeOwner1)];
-
-    treeOwner1.load();
+    const promises = [createOnTileTreeLoadPromise(treeOwner)];
+    treeOwner.load();
     await Promise.all(promises);
 
-    tree1.collectTileGeometry(collector);
-    console.log("collector", collector);
+    tree.collectTileGeometry(collector);
+    const polyface = collector.polyfaces[0];
+    const points = polyface.data.point.getPoint3dArray();
 
-    let nbItems = 0;
-    for ( const _item of imodel.tiles) {
-      // console.log("item", _item);
-      nbItems++;
-    }
-    expect(nbItems).toEqual(1);
+    expect(points[0].x).to.equal(9.346718517561811);
+    expect(points[0].y).to.equal(-0.6532814824381882);
+    expect(points[0].z).to.equal(-0.3826834323650898);
+  });
+
+  it("should not reproject geometry when reprojectGeometry = false", async () => {
+    const tree = new TestRealityTree(0, imodel, reader, false);
+    const treeOwner = imodel.tiles.getTileTreeOwner(tree, supplier);
+
+    // We need to call 'TileTreeOwner.load()' in order check 'isDisposed' later on (i.e only loaded tiletree can be truly disposed)
+    // Unfortunately 'TileTreeOwner.load()' doesn't return a promise this test can await.
+    // To workaround this, we create our own Promise hooked to the 'onTileTreeLoad' event.
+    const promises = [createOnTileTreeLoadPromise(treeOwner)];
+    treeOwner.load();
+    await Promise.all(promises);
+
+    tree.collectTileGeometry(collector);
+    const polyface = collector.polyfaces[0];
+    const points = polyface.data.point.getPoint3dArray();
+
+    expect(points[0].x).to.equal(-0.6532814824381884);
+    expect(points[0].y).to.equal(-0.6532814824381882);
+    expect(points[0].z).to.equal(-0.3826834323650898);
   });
 });
