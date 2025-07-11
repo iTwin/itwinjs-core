@@ -14,7 +14,7 @@ import { SchemaItemFormatProps } from "./Deserialization/JsonProps";
 import { BeEvent, Logger } from "@itwin/core-bentley";
 import { KindOfQuantity } from "./Metadata/KindOfQuantity";
 import { getFormatProps } from "./Metadata/OverrideFormat";
-import { FormatProps, FormatsChangedArgs, FormatsProvider, UnitSystemKey } from "@itwin/core-quantity";
+import { FormatDefinition, FormatProps, FormatsChangedArgs, FormatsProvider, UnitSystemKey } from "@itwin/core-quantity";
 import { Unit } from "./Metadata/Unit";
 import { InvertedUnit } from "./Metadata/InvertedUnit";
 import { Schema } from "./Metadata/Schema";
@@ -61,15 +61,22 @@ export class SchemaFormatsProvider implements FormatsProvider {
   }
 
   /** When using a presentation unit from a KindOfQuantity, the label and description should come from the KindOfQuantity */
-  private replaceWithKindOfQuantityProps(format: SchemaItemFormatProps, kindOfQuantity: KindOfQuantity): SchemaItemFormatProps {
+  private convertToFormatDefinition(format: SchemaItemFormatProps, kindOfQuantity: KindOfQuantity): FormatDefinition {
+    // Destructure all properties except 'rest'
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { name, label, description, $schema, schema, schemaVersion, schemaItemType,
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      customAttributes, originalECSpecMajorVersion, originalECSpecMinorVersion, ...rest } = format;
+
     return {
-      ...format,
+      ...rest,
+      name: kindOfQuantity.fullName,
       label: kindOfQuantity.label ?? format.label,
       description: kindOfQuantity.description ?? format.description,
     }
   }
 
-  private async getKindOfQuantityFormatFromSchema(itemKey: SchemaItemKey): Promise<SchemaItemFormatProps | undefined> {
+  private async getKindOfQuantityFormatFromSchema(itemKey: SchemaItemKey): Promise<FormatDefinition | undefined> {
     let kindOfQuantity: KindOfQuantity | undefined;
     try {
       kindOfQuantity = await this._context.getSchemaItem(itemKey, KindOfQuantity);
@@ -96,7 +103,7 @@ export class SchemaFormatsProvider implements FormatsProvider {
         if (currentUnitSystem && matcher(currentUnitSystem)) {
           this._formatsRetrieved.add(itemKey.fullName);
           const props = getFormatProps(format);
-          return this.replaceWithKindOfQuantityProps(props, kindOfQuantity);
+          return this.convertToFormatDefinition(props, kindOfQuantity);
         }
       }
     }
@@ -107,7 +114,7 @@ export class SchemaFormatsProvider implements FormatsProvider {
     if (persistenceUnitSystem && unitSystemMatchers.some((matcher) => matcher(persistenceUnitSystem))) {
       this._formatsRetrieved.add(itemKey.fullName);
       const props = getPersistenceUnitFormatProps(persistenceUnit!);
-      return this.replaceWithKindOfQuantityProps(props, kindOfQuantity);
+      return this.convertToFormatDefinition(props, kindOfQuantity);
     }
 
     const defaultFormat = kindOfQuantity.defaultPresentationFormat;
@@ -116,7 +123,7 @@ export class SchemaFormatsProvider implements FormatsProvider {
     }
     this._formatsRetrieved.add(itemKey.fullName);
     const defaultProps = getFormatProps(await defaultFormat);
-    return this.replaceWithKindOfQuantityProps(defaultProps, kindOfQuantity);
+    return this.convertToFormatDefinition(defaultProps, kindOfQuantity);
   }
 
 
@@ -127,7 +134,7 @@ export class SchemaFormatsProvider implements FormatsProvider {
    * @param name The full name of the Format or KindOfQuantity.
    * @returns
    */
-  public async getFormat(name: string): Promise<SchemaItemFormatProps | undefined> {
+  public async getFormat(name: string): Promise<FormatDefinition | undefined> {
     const [schemaName, schemaItemName] = SchemaItem.parseFullName(name);
     const schemaKey = new SchemaKey(schemaName);
     let schema: Schema | undefined;
