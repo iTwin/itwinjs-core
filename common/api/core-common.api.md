@@ -7923,6 +7923,13 @@ export namespace RenderSchedule {
         position: number[];
         visible?: boolean;
     }
+    // @internal
+    export interface EditingChanges {
+        // (undocumented)
+        elements: Set<Id64String>;
+        // (undocumented)
+        timeline: ModelTimeline;
+    }
     export class ElementTimeline extends Timeline {
         // @internal (undocumented)
         addSymbologyOverrides(overrides: FeatureOverrides, time: number): void;
@@ -8079,6 +8086,8 @@ export namespace RenderSchedule {
         // @internal (undocumented)
         protected getFeatureAppearance(visibility: number, time: number): FeatureAppearance | undefined;
         getVisibility(time: number): number;
+        // @internal
+        isEditingCommitted: boolean;
         // (undocumented)
         toJSON(): TimelineProps;
         readonly transform?: TransformTimelineEntries;
@@ -9879,7 +9888,10 @@ export interface TextAnnotationCreateArgs {
 export type TextAnnotationFillColor = TextStyleColor | "background";
 
 // @beta
-export type TextAnnotationFrameShape = "none" | "line" | "rectangle" | "circle" | "equilateralTriangle" | "diamond" | "square" | "pentagon" | "hexagon" | "octagon" | "capsule" | "roundedRectangle";
+export type TextAnnotationFrameShape = typeof textAnnotationFrameShapes[number];
+
+// @beta
+export const textAnnotationFrameShapes: readonly ["none", "line", "rectangle", "circle", "equilateralTriangle", "diamond", "square", "pentagon", "hexagon", "octagon", "capsule", "roundedRectangle"];
 
 // @beta
 export interface TextAnnotationProps {

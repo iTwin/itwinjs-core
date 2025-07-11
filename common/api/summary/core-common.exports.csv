@@ -728,6 +728,7 @@ internal;class;RenderMaterialParams
 public;interface;RenderMaterialProps
 public;enum;RenderMode
 public;namespace;RenderSchedule
+internal;interface;EditingChanges
 internal;class;Interval
 public;class;RenderTexture
 public;namespace;RenderTexture
@@ -902,6 +903,7 @@ beta;interface;TextAnnotationAnchor
 beta;interface;TextAnnotationCreateArgs
 beta;type;TextAnnotationFillColor
 beta;type;TextAnnotationFrameShape
+beta;const;textAnnotationFrameShapes
 beta;interface;TextAnnotationProps
 beta;class;TextBlock
 beta;class;TextBlockComponent

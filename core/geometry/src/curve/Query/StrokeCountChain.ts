@@ -9,12 +9,13 @@
 import { Geometry } from "../../Geometry";
 import { Point3d } from "../../geometry3d/Point3dVector3d";
 import { Range1d } from "../../geometry3d/Range";
-import { AnyCurve } from "../CurveTypes";
 import { CurveChain, CurveCollection } from "../CurveCollection";
+import { AnyCurve } from "../CurveTypes";
 import { LineString3d } from "../LineString3d";
 import { Loop } from "../Loop";
 import { ParityRegion } from "../ParityRegion";
 import { StrokeOptions } from "../StrokeOptions";
+import { UnionRegion } from "../UnionRegion";
 import { StrokeCountMap } from "./StrokeCountMap";
 
 // cspell:word remapa
@@ -160,6 +161,7 @@ export class StrokeCountMapVisitorApplyMaxCurveLength extends StrokeCountMapMult
  * * `parent` = parent CurveCollection.
  *
  * An instance is normally created with either a `Path` or `Loop` as the parent.
+ * @internal
  */
 export class StrokeCountChain {
   public maps: StrokeCountMap[];
@@ -176,7 +178,7 @@ export class StrokeCountChain {
     this.maps = [];
     this.options = options;
   }
-  public static createForCurveChain(chain: CurveChain, options?: StrokeOptions): StrokeCountChain {
+  public static create(chain: CurveChain, options?: StrokeOptions): StrokeCountChain {
     const result = new StrokeCountChain(chain, options);
     result.parent = chain;
     // A chain can only contain primitives !!!!
@@ -248,15 +250,21 @@ export class StrokeCountSection {
    * construct array of arrays of `StrokeCountMap`s
    * @param parent
    */
-  public static createForParityRegionOrChain(parent: CurveCollection, options?: StrokeOptions): StrokeCountSection {
+  public static create(parent: CurveCollection, options?: StrokeOptions): StrokeCountSection {
     const result = new StrokeCountSection(parent);
-    if (parent instanceof ParityRegion) {
+    const appendCurveChain = (chain: CurveChain) => result.chains.push(StrokeCountChain.create(chain, options));
+    const appendParityRegion = (region: ParityRegion) => { for (const child of region.children) appendCurveChain(child); }
+    if (parent instanceof UnionRegion) {
       for (const child of parent.children) {
-        const p = StrokeCountChain.createForCurveChain(child, options);
-        result.chains.push(p);
+        if (child instanceof ParityRegion)
+          appendParityRegion(child);
+        else
+          appendCurveChain(child);
       }
+    } else if (parent instanceof ParityRegion) {
+      appendParityRegion(parent);
     } else if (parent instanceof CurveChain) {
-      result.chains.push(StrokeCountChain.createForCurveChain(parent, options));
+      appendCurveChain(parent);
     }
     return result;
   }
@@ -338,12 +346,12 @@ export class StrokeCountSection {
     for (let chainIndex = 0; chainIndex < numChainPerSection; chainIndex++) {
       const numPrimitive = sections[0].chains[chainIndex].maps.length;
       for (let primitiveIndex = 0; primitiveIndex < numPrimitive; primitiveIndex++) {
-        if (sections[0].chains[chainIndex].maps[primitiveIndex].componentData) {
-          const numComponent = sections[0].chains[chainIndex].maps[primitiveIndex].componentData!.length;
-          for (let i = 0; i < numComponent; i++)
+        const numComponent = sections[0].chains[chainIndex].maps[primitiveIndex].componentData?.length ?? 0;
+        if (numComponent > 0) {
+          for (let i = 0; i < numComponent; i++) {
             if (!this.applyMultipassVisitorCallbackNoComponents(sections, chainIndex, primitiveIndex, i, callback))
               return false;
-
+          }
         } else {
           if (!this.applyMultipassVisitorCallbackNoComponents(sections, chainIndex, primitiveIndex, undefined, callback))
             return false;
