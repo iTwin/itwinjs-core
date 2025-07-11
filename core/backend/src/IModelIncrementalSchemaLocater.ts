@@ -2,7 +2,9 @@
  * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
-
+/** @packageDocumentation
+ * @module iModels
+ */
 import { ECSqlQueryOptions, ECSqlSchemaLocater, ECSqlSchemaLocaterOptions, SchemaKey, SchemaProps } from "@itwin/ecschema-metadata";
 import { QueryBinder, QueryRowFormat } from "@itwin/core-common";
 import { IModelDb } from "./IModelDb";
