@@ -76,6 +76,7 @@ describe("SchemaFormatsProvider", () => {
   it("should return a format from the Formats schema", async () => {
     const format = await formatsProvider.getFormat("Formats.AmerI");
     expect(format).not.to.be.undefined;
+    expect(format?.label).to.equal("Inches");
   });
 
   it("retrieve different default presentation formats from a KoQ based on different unit systems", async () => {
@@ -84,11 +85,13 @@ describe("SchemaFormatsProvider", () => {
     const formatPropsImperial = await formatsProvider.getFormat("AecUnits.LENGTH_LONG");
     expect(formatPropsImperial).not.to.be.undefined;
     expect(formatPropsImperial!.composite?.units[0].name).to.equal("Units.FT");
+    expect(formatPropsImperial?.label).to.equal("Long Length");
 
     formatsProvider.unitSystem = "metric";
     const formatPropsMetric = await formatsProvider.getFormat("AecUnits.LENGTH");
     expect(formatPropsMetric).not.to.be.undefined;
     expect(formatPropsMetric!.composite?.units[0].name).to.equal("Units.M");
+    expect(formatPropsMetric?.label).to.equal("Length");
   });
 
   it("when using metric system, should return presentation format from KoQ that uses UnitSystem.METRIC", async () => {
@@ -98,10 +101,12 @@ describe("SchemaFormatsProvider", () => {
     formatProps = await formatsProvider.getFormat("AecUnits.LENGTH_SHORT");
     expect(formatProps).not.to.be.undefined;
     expect(formatProps!.composite?.units[0].name).to.equal("Units.MM");
+    expect(formatProps?.label).to.equal("Short Length");
 
     formatProps = await formatsProvider.getFormat("AecUnits.AREA_LARGE");
     expect(formatProps).not.to.be.undefined;
     expect(formatProps!.composite?.units[0].name).to.equal("Units.SQ_KM");
+    expect(formatProps?.label).to.equal("Large Area");
   });
 
   it("when using us customary unit system, should return presentation formats that use UnitSystem.USCUSTOM", async () => {
@@ -111,10 +116,12 @@ describe("SchemaFormatsProvider", () => {
     formatProps = await formatsProvider.getFormat("AecUnits.AREA");
     expect(formatProps).not.to.be.undefined;
     expect(formatProps!.composite?.units[0].name).to.equal("Units.SQ_FT");
+    expect(formatProps?.label).to.equal("Area");
 
     formatProps = await formatsProvider.getFormat("AecUnits.LIQUID_VOLUME");
     expect(formatProps).not.to.be.undefined;
     expect(formatProps!.composite?.units[0].name).to.equal("Units.GALLON");
+    expect(formatProps?.label).to.equal("Liquid Volume");
   });
 
   it("when using us survey unit system, should return presentation formats that use UnitSystem.USSURVEY", async () => {
@@ -123,6 +130,8 @@ describe("SchemaFormatsProvider", () => {
     const formatProps = await formatsProvider.getFormat("RoadRailUnits.LENGTH");
     expect(formatProps).not.to.be.undefined;
     expect(formatProps!.composite?.units[0].name).to.equal("Units.US_SURVEY_FT");
+    expect(formatProps?.label).to.equal("Road & Rail Length");
+
   });
 
   it("should return a persistence format that uses UnitSystem.FINANCE regardless of the unit system", async () => {
@@ -131,6 +140,7 @@ describe("SchemaFormatsProvider", () => {
     const formatProps = await formatsProvider.getFormat("CifUnits.CURRENCY");
     expect(formatProps).not.to.be.undefined;
     expect(formatProps!.composite?.units[0].name).to.equal("Units.MONETARY_UNIT");
+    expect(formatProps?.label).to.equal("Civil Designer Products Currency");
 
   });
 });
