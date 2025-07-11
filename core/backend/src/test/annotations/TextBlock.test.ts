@@ -5,7 +5,7 @@
 import { expect } from "chai";
 import { computeGraphemeOffsets, ComputeGraphemeOffsetsArgs, ComputeRangesForTextLayoutArgs, FindFontId, FindTextStyle, layoutTextBlock, LineLayout, RunLayout, TextBlockLayout, TextLayoutRanges, TextStyleResolver } from "../../annotations/TextBlockLayout";
 import { Geometry, Range2d } from "@itwin/core-geometry";
-import { ColorDef, FontType, FractionRun, LineBreakRun, LineLayoutResult, Paragraph, Run, RunLayoutResult, TabRun, TextAnnotation, TextAnnotationAnchor, TextBlock, TextBlockGeometryPropsEntry, TextBlockMargins, TextRun, TextStringProps, TextStyleSettings } from "@itwin/core-common";
+import { ColorDef, FontType, FractionRun, LineBreakRun, LineLayoutResult, Paragraph, Run, RunLayoutResult, TabRun, TextAnnotation, TextAnnotationAnchor, TextBlock, TextBlockGeometryPropsEntry, TextBlockLayoutResult, TextBlockMargins, TextRun, TextStringProps, TextStyleSettings } from "@itwin/core-common";
 import { SnapshotDb } from "../../IModelDb";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { Id64String, ProcessDetector } from "@itwin/core-bentley";
@@ -20,7 +20,12 @@ function doLayout(textBlock: TextBlock, args?: {
   findTextStyle?: FindTextStyle;
   findFontId?: FindFontId;
 }): TextBlockLayout {
-  const textStyleResolver = new TextStyleResolver(textBlock, {} as any, undefined, args?.findTextStyle ?? (() => TextStyleSettings.defaults));
+  const textStyleResolver = new TextStyleResolver({
+    textBlock,
+    iModel: {} as any,
+    modelId: undefined,
+    findTextStyle: args?.findTextStyle ?? (() => TextStyleSettings.defaults)
+  });
   const layout = layoutTextBlock({
     textBlock,
     iModel: {} as any,
@@ -1054,14 +1059,24 @@ describe("layoutTextBlock", () => {
   });
 
   describe("grapheme offsets", () => {
+    function getLayoutResultAndStyleResolver(textBlock: TextBlock): { textStyleResolver: TextStyleResolver, result: TextBlockLayoutResult } {
+      const layout = doLayout(textBlock);
+      const result = layout.toResult();
+      const textStyleResolver = new TextStyleResolver({
+        textBlock,
+        iModel: {} as any,
+        modelId: undefined,
+        findTextStyle: () => TextStyleSettings.defaults
+      });
+      return { textStyleResolver, result };
+    }
+
     it("should return an empty array if source type is not text", function () {
       const textBlock = TextBlock.create({ styleId: "" });
       const fractionRun = FractionRun.create({ numerator: "1", denominator: "2", styleId: "0x44" });
       textBlock.appendRun(fractionRun);
 
-      const layout = doLayout(textBlock);
-      const result = layout.toResult();
-      const textStyleResolver = new TextStyleResolver(textBlock, {} as any, undefined, () => TextStyleSettings.defaults);
+      const { textStyleResolver, result } = getLayoutResultAndStyleResolver(textBlock);
       const args: ComputeGraphemeOffsetsArgs = {
         textBlock,
         iModel: {} as any,
@@ -1082,9 +1097,7 @@ describe("layoutTextBlock", () => {
       const textRun = TextRun.create({ content: "", styleId: "0x43" });
       textBlock.appendRun(textRun);
 
-      const layout = doLayout(textBlock);
-      const result = layout.toResult();
-      const textStyleResolver = new TextStyleResolver(textBlock, {} as any, undefined, () => TextStyleSettings.defaults);
+      const { textStyleResolver, result } = getLayoutResultAndStyleResolver(textBlock);
       const args: ComputeGraphemeOffsetsArgs = {
         textBlock,
         iModel: {} as any,
@@ -1105,9 +1118,7 @@ describe("layoutTextBlock", () => {
       const textRun = TextRun.create({ content: "hello", styleId: "0x43" });
       textBlock.appendRun(textRun);
 
-      const layout = doLayout(textBlock);
-      const result = layout.toResult();
-      const textStyleResolver = new TextStyleResolver(textBlock, {} as any, undefined, () => TextStyleSettings.defaults);
+      const { textStyleResolver, result } = getLayoutResultAndStyleResolver(textBlock);
       const args: ComputeGraphemeOffsetsArgs = {
         textBlock,
         iModel: {} as any,
@@ -1131,9 +1142,7 @@ describe("layoutTextBlock", () => {
       const textRun = TextRun.create({ content: "अनुच्छेद", styleId: "0x43" });
       textBlock.appendRun(textRun);
 
-      const layout = doLayout(textBlock);
-      const result = layout.toResult();
-      const textStyleResolver = new TextStyleResolver(textBlock, {} as any, undefined, () => TextStyleSettings.defaults);
+      const { textStyleResolver, result } = getLayoutResultAndStyleResolver(textBlock);
       const args: ComputeGraphemeOffsetsArgs = {
         textBlock,
         iModel: {} as any,
@@ -1158,9 +1167,7 @@ describe("layoutTextBlock", () => {
       const textRun = TextRun.create({ content: "👨‍👦", styleId: "0x43" });
       textBlock.appendRun(textRun);
 
-      const layout = doLayout(textBlock);
-      const result = layout.toResult();
-      const textStyleResolver = new TextStyleResolver(textBlock, {} as any, undefined, () => TextStyleSettings.defaults);
+      const { textStyleResolver, result } = getLayoutResultAndStyleResolver(textBlock);
       const args: ComputeGraphemeOffsetsArgs = {
         textBlock,
         iModel: {} as any,
@@ -1204,7 +1211,7 @@ describe("layoutTextBlock", () => {
       function test(fontName: string, expectedFontId: number): void {
         const textBlock = TextBlock.create({ styleId: "" });
         textBlock.appendRun(TextRun.create({ styleId: "", styleOverrides: { fontName } }));
-        const textStyleResolver = new TextStyleResolver(textBlock, iModel);
+        const textStyleResolver = new TextStyleResolver({textBlock, iModel});
         const layout = layoutTextBlock({ textBlock, iModel, textStyleResolver });
         const run = layout.lines[0].runs[0];
         expect(run).not.to.be.undefined;
@@ -1238,7 +1245,7 @@ describe("layoutTextBlock", () => {
         },
       }));
 
-      const textStyleResolver = new TextStyleResolver(textBlock, iModel);
+      const textStyleResolver = new TextStyleResolver({textBlock, iModel});
       const range = layoutTextBlock({ textBlock, iModel, textStyleResolver }).range;
       return { x: range.high.x - range.low.x, y: range.high.y - range.low.y };
     }
