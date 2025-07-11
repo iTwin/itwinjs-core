@@ -33,7 +33,7 @@ export interface SchemaLocaterOptions {
  *
  * The IncrementalSchemaLocater is a locater around the [[IncrementalSchemaLocater]] to be used in a
  * [[SchemaContext]].
- * @beta
+ * @internal
  */
 export abstract class IncrementalSchemaLocater implements ISchemaLocater {
   private readonly _options: SchemaLocaterOptions;

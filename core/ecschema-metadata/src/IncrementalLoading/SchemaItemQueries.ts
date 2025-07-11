@@ -301,6 +301,7 @@ WHERE [schema].[Name] = :schemaName` : ""}
  * Queries for each SchemaItemType
  * @internal
  */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export const SchemaItemQueries = {
   kindOfQuantity,
   propertyCategory,

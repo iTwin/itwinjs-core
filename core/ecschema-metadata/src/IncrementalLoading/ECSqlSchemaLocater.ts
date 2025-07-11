@@ -78,6 +78,10 @@ interface QueryParameters {
   [parameterName: string]: string | number;
 }
 
+/**
+ * Query options used by the ECSqlSchemaLocater.
+ * @internal
+ */
 export interface ECSqlQueryOptions {
   parameters?: QueryParameters;
   limit?: number;
@@ -86,7 +90,7 @@ export interface ECSqlQueryOptions {
 /**
  * Defines the [[ECSqlSchemaLocater]] options which determine how each
  * schema is to be loaded. All options are optional.
- * @beta
+ * @internal
  */
 export interface ECSqlSchemaLocaterOptions extends SchemaLocaterOptions {
   /** Query for Schemas using multiple queries. Defaults to false. */

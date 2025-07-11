@@ -12,7 +12,7 @@ import { SchemaItem } from "../Metadata/SchemaItem";
 import { SchemaLoadingController } from "../utils/SchemaLoadingController";
 
 /**
- * Internal helper class to read schema information incrementally. It's based on the SchemaReadHelper
+ * Internal helper class to read schema information incrementally. It's based on the [[SchemaReadHelper]]
  * but overrides a few methods to support the incremental schema loading case.
  * @internal
  */
