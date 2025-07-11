@@ -127,7 +127,7 @@ describe("RealityTile", () => {
     public readonly contentSize: number;
     protected override readonly _rootTile: TestRealityTile;
 
-    public constructor(contentSize: number, iModel: IModelConnection, loader: TestRealityTileLoader, retainMemory = false) {
+    public constructor(contentSize: number, iModel: IModelConnection, loader: TestRealityTileLoader, reprojectGeometry: boolean, retainMemory = false) {
       super({
         loader,
         rootTile: {
@@ -141,6 +141,7 @@ describe("RealityTile", () => {
         priority: TileLoadPriority.Primary,
         iModel,
         gcsConverterAvailable: false,
+        reprojectGeometry
       });
 
       this.treeId = TestRealityTree._nextId;
@@ -215,7 +216,7 @@ describe("RealityTile", () => {
   it("Test", async () => {
     const reader = new TestRealityTileLoader();
     const contentSize = 100;
-    const tree1 = new TestRealityTree(contentSize, imodel, reader);
+    const tree1 = new TestRealityTree(contentSize, imodel, reader, true);
     const treeOwner1 = imodel.tiles.getTileTreeOwner(tree1, supplier);
 
     const collector = new TileGeometryCollector({
@@ -228,7 +229,6 @@ describe("RealityTile", () => {
           return undefined;
         },
       },
-      reprojectGeometry: true,
     });
 
     // We need to call 'TileTreeOwner.load()' in order check 'isDisposed' later on (i.e only loaded tiletree can be truly disposed)

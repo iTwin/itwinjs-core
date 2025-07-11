@@ -16,7 +16,7 @@ import { RenderMemory } from "../render/RenderMemory";
 import { DecorateContext, SceneContext } from "../ViewContext";
 import { ScreenViewport } from "../Viewport";
 import {
-  DisclosedTileTreeSet, GeometryTileTreeReference, MapFeatureInfoOptions, MapLayerFeatureInfo, RenderGraphicTileTreeArgs, TileDrawArgs, TileGeometryCollector, TileTree, TileTreeLoadStatus, TileTreeOwner, tileTreeReferenceFromRenderGraphic,
+  DisclosedTileTreeSet, GeometryTileTreeReference, MapFeatureInfoOptions, MapLayerFeatureInfo, RealityTileTree, RenderGraphicTileTreeArgs, TileDrawArgs, TileGeometryCollector, TileTree, TileTreeLoadStatus, TileTreeOwner, tileTreeReferenceFromRenderGraphic,
 } from "./internal";
 
 /** Describes the type of graphics produced by a [[TileTreeReference]].
@@ -276,7 +276,7 @@ export abstract class TileTreeReference /* implements RenderMemory.Consumer */ {
    * Return `undefined` if geometry collection is not supported.
    * @see [[createGeometryTreeReference]].
    */
-  protected _createGeometryTreeReference(): GeometryTileTreeReference | undefined {
+  protected _createGeometryTreeReference(_options?: GeometryTreeReferenceOptions): GeometryTileTreeReference | undefined {
     return undefined;
   }
 
@@ -288,6 +288,10 @@ export abstract class TileTreeReference /* implements RenderMemory.Consumer */ {
    */
   protected _collectTileGeometry(collector: TileGeometryCollector): void {
     const tree = this.treeOwner.load();
+    if (tree instanceof RealityTileTree) {
+      // TODO don't cast here
+      tree.reprojectGeometry = (this as GeometryTileTreeReference).reprojectGeometry;
+    }
     switch (this.treeOwner.loadStatus) {
       case TileTreeLoadStatus.Loaded:
         assert(undefined !== tree);
@@ -304,14 +308,15 @@ export abstract class TileTreeReference /* implements RenderMemory.Consumer */ {
    * Currently, only terrain and reality model tiles support geometry collection.
    * @note Do not override this method - override [[_createGeometryTreeReference]] instead.
    */
-  // ###TODO: Add an option to enable reprojection of the geometry if this geometry tree reference will be collecting tile geometry.
-  public createGeometryTreeReference(): GeometryTileTreeReference | undefined {
+  public createGeometryTreeReference(options?: GeometryTreeReferenceOptions): GeometryTileTreeReference | undefined {
     if (this.collectTileGeometry) {
       // Unclear why compiler doesn't detect that `this` satisfies the GeometryTileTreeReference interface...it must be looking only at the types, not this particular instance.
-      return this as GeometryTileTreeReference;
+      const ref = this as GeometryTileTreeReference;
+      ref.reprojectGeometry = options?.reprojectGeometry;
+      return ref;
     }
 
-    return this._createGeometryTreeReference();
+    return this._createGeometryTreeReference(options);
   }
 
   /** Create a [[TileTreeReference]] that displays a pre-defined [[RenderGraphic]].
@@ -332,4 +337,9 @@ export abstract class TileTreeReference /* implements RenderMemory.Consumer */ {
   public static createFromRenderGraphic(args: RenderGraphicTileTreeArgs): TileTreeReference {
     return tileTreeReferenceFromRenderGraphic(args);
   }
+}
+
+/** @internal */
+export interface GeometryTreeReferenceOptions {
+  reprojectGeometry?: boolean;
 }

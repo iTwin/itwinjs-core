@@ -28,6 +28,7 @@ import { DecorateContext, SceneContext } from "../../ViewContext";
 import { ViewState } from "../../ViewState";
 import {
   BatchedTileIdMap, CesiumIonAssetProvider, createClassifierTileTreeReference, createDefaultViewFlagOverrides, DisclosedTileTreeSet, GeometryTileTreeReference,
+  GeometryTreeReferenceOptions,
   getGcsConverterAvailable, LayerTileTreeHandler, LayerTileTreeReferenceHandler, MapLayerTileTreeReference, MapLayerTreeSetting, RealityTile, RealityTileLoader, RealityTileParams, RealityTileTree, RealityTileTreeParams, SpatialClassifierTileTreeReference, Tile,
   TileDrawArgs, TileLoadPriority, TileRequest, TileTree, TileTreeOwner, TileTreeReference, TileTreeSupplier,
 } from "../../tile/internal";
@@ -585,6 +586,7 @@ export namespace RealityModelTileTree {
     url?: string;
     requestAuthorization?: string;
     produceGeometry?: boolean;
+    reprojectGeometry?: boolean;
   }
 
   export abstract class Reference extends TileTreeReference {
@@ -818,6 +820,7 @@ export class RealityTreeReference extends RealityModelTileTree.Reference {
   private readonly _produceGeometry?: boolean;
   private readonly _modelId: Id64String;
   public readonly useCachedDecorations?: true | undefined;
+  public reprojectGeometry?: boolean;
 
   public constructor(props: RealityModelTileTree.ReferenceProps) {
     super(props);
@@ -841,6 +844,7 @@ export class RealityTreeReference extends RealityModelTileTree.Reference {
     this._modelId = modelId ?? props.iModel.transientIds.getNext();
     const provider = IModelApp.realityDataSourceProviders.find(this._rdSourceKey.provider);
     this.useCachedDecorations = provider?.useCachedDecorations;
+    this.reprojectGeometry = props.reprojectGeometry;
   }
 
   public override get modelId() { return this._modelId; }
@@ -861,7 +865,7 @@ export class RealityTreeReference extends RealityModelTileTree.Reference {
     return realityTreeSupplier.getOwner(this.createTreeId(this.modelId), this.iModel);
   }
 
-  protected override _createGeometryTreeReference(): GeometryTileTreeReference {
+  protected override _createGeometryTreeReference(options?: GeometryTreeReferenceOptions): GeometryTileTreeReference {
     const ref = new RealityTreeReference({
       iModel: this.iModel,
       modelId: this.modelId,
@@ -870,6 +874,7 @@ export class RealityTreeReference extends RealityModelTileTree.Reference {
       name: this._name,
       produceGeometry: true,
       getDisplaySettings: () => RealityModelDisplaySettings.defaults,
+      reprojectGeometry: options?.reprojectGeometry,
     });
 
     assert(undefined !== ref.collectTileGeometry);

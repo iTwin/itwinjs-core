@@ -165,6 +165,7 @@ export interface RealityTileTreeParams extends TileTreeParams {
   readonly rootToEcef?: Transform;
   readonly gcsConverterAvailable: boolean;
   readonly baseUrl?: string;
+  readonly reprojectGeometry?: boolean;
 }
 
 /** Base class for a [[TileTree]] representing a reality model (e.g., a point cloud or photogrammetry mesh) or 3d terrain with map imagery.
@@ -192,6 +193,8 @@ export class RealityTileTree extends TileTree {
   protected _ecefToDb?: Transform;
   /** @internal */
   public readonly baseUrl?: string;
+  /** @internal */
+  public reprojectGeometry?: boolean;
 
   /** @internal */
   public constructor(params: RealityTileTreeParams) {
