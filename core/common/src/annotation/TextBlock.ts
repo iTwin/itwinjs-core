@@ -63,6 +63,7 @@ export interface TextBlockStringifyOptions {
 export abstract class TextBlockComponent {
   private _styleName: string;
   private _styleOverrides: TextStyleSettingsProps;
+  private _parent?: TextBlockComponent;
 
   /** @internal */
   protected constructor(props: TextBlockComponentProps) {
@@ -80,6 +81,14 @@ export abstract class TextBlockComponent {
 
   public set styleName(styleName: string) {
     this.applyStyle(styleName);
+  }
+
+  public get parent(): TextBlockComponent | undefined {
+    return this._parent;
+  }
+
+  public set parent(parent: TextBlockComponent | undefined) {
+    this._parent = parent;
   }
 
   /** Deviations in individual properties of the [[TextStyle]] specified by [[styleName]].
@@ -594,6 +603,7 @@ export class TextBlock extends TextBlockComponent {
       styleOverrides: seed?.styleOverrides ?? undefined,
     });
 
+    paragraph.parent = this; // Set the parent to this block
     this.paragraphs.push(paragraph);
     return paragraph;
   }
@@ -603,6 +613,8 @@ export class TextBlock extends TextBlockComponent {
    */
   public appendRun(run: Run): void {
     const paragraph = this.paragraphs[this.paragraphs.length - 1] ?? this.appendParagraph();
+
+    run.parent = paragraph; // Set the parent to the paragraph
     paragraph.runs.push(run);
   }
 
