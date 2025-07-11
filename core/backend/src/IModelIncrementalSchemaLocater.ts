@@ -17,9 +17,9 @@ export class IModelIncrementalSchemaLocater extends ECSqlSchemaLocater {
   private readonly _iModel: IModelDb;
 
   /**
-   * Constructs a new [[IModelSchemaLoader]] instance.
+   * Constructs a new IModelIncrementalSchemaLocater instance.
    * @param iModel The [[IModelDb]] to query.
-   * @param options Optional [[ECSqlSchemaLoaderOptions]].
+   * @param options Optional [[ECSqlSchemaLoaderOptions]]($ecschema-metadata).
    */
   constructor(iModel: IModelDb, options?: ECSqlSchemaLocaterOptions) {
     super(options ?? { useMultipleQueries: true });
@@ -55,7 +55,7 @@ export class IModelIncrementalSchemaLocater extends ECSqlSchemaLocater {
   /**
    * Executes an ECSql query against the IModelDb.
    * @param query The query to execute
-   * @param options The [[ECSqlQueryOptions]] to use.
+   * @param options The [[ECSqlQueryOptions]]($ecschema-metadata) to use.
    * @returns A promise that resolves to read-only array of type TRow.
    */
   protected async executeQuery<TRow>(query: string, options?: ECSqlQueryOptions): Promise<ReadonlyArray<TRow>> {
