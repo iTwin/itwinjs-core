@@ -23,6 +23,7 @@ import { IModelConnection } from "./IModelConnection";
 import { PlanarClipMaskState } from "./PlanarClipMaskState";
 import { getCesiumOSMBuildingsUrl, MapLayerIndex, TileTreeReference } from "./tile/internal";
 import { _onScheduleScriptReferenceChanged, _scheduleScriptReference } from './common/internal/Symbols';
+import { getScriptDelta } from "./internal/ScriptUtils";
 
 /** @internal */
 export class TerrainDisplayOverrides {
@@ -62,6 +63,18 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   public readonly [_onScheduleScriptReferenceChanged] = new BeEvent<(newScriptReference: RenderSchedule.ScriptReference | undefined) => void>();
 
   private _scriptReference?: RenderSchedule.ScriptReference;
+
+  /** Event raised when schedule script edits are made, providing changed element IDs and the editing scope.
+   * @beta
+   */
+  public readonly onScheduleEditingChanged = new BeEvent<(changes: RenderSchedule.EditingChanges[]) => void>();
+
+  /** Event raised when schedule script edits are committed (finalized).
+   * @beta
+   */
+  public readonly onScheduleEditingCommitted = new BeEvent<
+    () => void
+  >();
 
   /** Event raised just before the [[scheduleScript]] property is changed. */
   public readonly onScheduleScriptChanged = new BeEvent<(newScript: RenderSchedule.Script | undefined) => void>();
@@ -293,6 +306,69 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     // Note the `await` in loadScriptReferenceFromTimeline will resolve before this one [per the spec](https://262.ecma-international.org/6.0/#sec-triggerpromisereactions).
     if (this._queryRenderTimelinePropsPromise)
       await this._queryRenderTimelinePropsPromise;
+  }
+
+   /**
+    * Begins or updates a schedule script editing session for the current display style.
+    * During an editing session, changes to the schedule script are applied incrementally
+    * using temporary dynamic tiles, allowing for interactive preview of visual changes like color,
+    * transforms, visibility, and cutting planes — without requiring a full tile tree reload.
+    *
+    * Calling this method multiple times will update the current editing session with new script changes.
+    * When all edits are complete, you must invoke [[commitScheduleEditing]] to finalize the session and
+    * trigger a full tile tree refresh with the committed script.
+    *
+    * @note You cannot use schedule script editing while a @see [[GraphicalEditingScope]] is active.
+    *
+    * Example:
+    * ```ts
+    * [[include:ScheduleScript_editingMode]]
+    * ```
+    *
+    * @beta
+    */
+  public setScheduleEditing(newScript: RenderSchedule.Script): void {
+    const prevScript = this.scheduleScript;
+    const changes: Array<{ timeline: RenderSchedule.ModelTimeline, elements: Set<Id64String> }> = [];
+
+    const globalDelta = getScriptDelta(prevScript, newScript);
+
+    for (const timeline of newScript.modelTimelines) {
+      const ids = new Set<Id64String>();
+      for (const et of timeline.elementTimelines) {
+        for (const id of et.elementIds) {
+          if (globalDelta.has(id))
+            ids.add(id);
+        }
+      }
+
+      if (ids.size > 0)
+        changes.push({ timeline, elements: ids });
+    }
+
+    this.scheduleScript = newScript;
+    this.onScheduleEditingChanged.raiseEvent(changes);
+
+    for (const modelTimeline of this.scheduleScript.modelTimelines) {
+      modelTimeline.isEditingCommitted = false;
+    }
+  }
+
+  /**
+  * Finalizes a script editing session previously started with [[setScheduleEditing]].
+  * This applies all pending script changes and triggers a full tile tree reload to reflect them in the viewport.
+  * After this call, the schedule script is considered committed and editing mode ends.
+  *
+  * @see [[setScheduleEditing]] to begin a schedule script editing session.
+  * @beta
+  */
+  public commitScheduleEditing(): void {
+    this.onScheduleEditingCommitted.raiseEvent();
+    if (!this.scheduleScript)
+      return;
+    for (const modelTimeline of this.scheduleScript.modelTimelines) {
+      modelTimeline.isEditingCommitted = true;
+    }
   }
 
   /** The [RenderSchedule.Script]($common) that animates the contents of the view, if any.
