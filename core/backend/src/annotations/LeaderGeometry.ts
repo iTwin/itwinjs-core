@@ -30,7 +30,7 @@ export function appendLeadersToBuilder(builder: ElementGeometry.Builder, leaders
   if (frame.shape === undefined || frame.shape === "none") return false;
   const frameCurve = computeFrame({ frame: frame.shape, range: layout.range, transform });
 
-  leaders.forEach((leader) => {
+  for (const leader of leaders) {
     if (leader.styleOverrides?.leader?.color !== "subcategory" && leader.styleOverrides?.color !== "subcategory") {
       const color = leader.styleOverrides?.leader?.color ?? leader.styleOverrides?.color;
       params.lineColor = color ? ColorDef.fromJSON(color) : ColorDef.black;
@@ -66,7 +66,7 @@ export function appendLeadersToBuilder(builder: ElementGeometry.Builder, leaders
     ).normalize();
 
     const termY = terminatorDirection?.unitCrossProduct(Vector3d.unitZ());
-    if (!termY || !terminatorDirection) return true; // Assuming leaders without terminators is a valid case.
+    if (!termY || !terminatorDirection) continue; // Assuming leaders without terminators is a valid case.
     const terminatorHeight = (leader.styleOverrides?.leader?.terminatorHeightFactor ?? 1) * (leader.styleOverrides?.lineHeight ?? 1);
     const terminatorWidth = (leader.styleOverrides?.leader?.terminatorWidthFactor ?? 1) * (leader.styleOverrides?.lineHeight ?? 1);
     const basePoint = leader.startPoint.plusScaled(terminatorDirection, terminatorWidth);
@@ -74,9 +74,8 @@ export function appendLeadersToBuilder(builder: ElementGeometry.Builder, leaders
     const termPointB = basePoint.plusScaled(termY.negate(), terminatorHeight);
     result = result && builder.appendGeometryQuery(LineString3d.create([termPointA, leader.startPoint, termPointB]));
 
-    return result;
-  })
-  return false;
+  }
+  return result;
 }
 
 
