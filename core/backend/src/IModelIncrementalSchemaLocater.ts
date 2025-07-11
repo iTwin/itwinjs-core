@@ -19,7 +19,7 @@ export class IModelIncrementalSchemaLocater extends ECSqlSchemaLocater {
   /**
    * Constructs a new IModelIncrementalSchemaLocater instance.
    * @param iModel The [[IModelDb]] to query.
-   * @param options Optional [[ECSqlSchemaLoaderOptions]]($ecschema-metadata).
+   * @param options Optional [[ECSqlSchemaLocaterOptions]]($ecschema-metadata).
    */
   constructor(iModel: IModelDb, options?: ECSqlSchemaLocaterOptions) {
     super(options ?? { useMultipleQueries: true });
