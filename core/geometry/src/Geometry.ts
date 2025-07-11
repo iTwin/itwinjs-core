@@ -8,9 +8,9 @@
  */
 
 import { AngleSweep } from "./geometry3d/AngleSweep";
-import { Point2d, Vector2d, XY } from "./geometry3d/Point2dVector2d";
+import { Point2d, Vector2d } from "./geometry3d/Point2dVector2d";
 import { Point3d, Vector3d, XYZ } from "./geometry3d/Point3dVector3d";
-import { XAndY } from "./geometry3d/XYZProps";
+import { XAndY, XYAndZ } from "./geometry3d/XYZProps";
 import { Point4d } from "./geometry4d/Point4d";
 
 /* eslint-disable @typescript-eslint/naming-convention */
@@ -446,7 +446,7 @@ export class Geometry {
    * Lexical comparison of (a.x, a.y) and (b.x, b.y) with x as first test and y as second (z is ignored).
    * * This is appropriate for a horizontal sweep in the plane.
    */
-  public static lexicalXYLessThan(a: XY | XYZ, b: XY | XYZ): -1 | 0 | 1 {
+  public static lexicalXYLessThan(a: XAndY, b: XAndY): -1 | 0 | 1 {
     if (a.x < b.x)
       return -1;
     else if (a.x > b.x)
@@ -461,7 +461,7 @@ export class Geometry {
    * Lexical comparison of (a.x, a.y) and (b.x, b.y) with y as first test and x as second (z is ignored).
    * * This is appropriate for a vertical sweep in the plane.
    */
-  public static lexicalYXLessThan(a: XY | XYZ, b: XY | XYZ): -1 | 0 | 1 {
+  public static lexicalYXLessThan(a: XAndY, b: XAndY): -1 | 0 | 1 {
     if (a.y < b.y)
       return -1;
     else if (a.y > b.y)
@@ -473,7 +473,7 @@ export class Geometry {
     return 0;
   }
   /** Lexical comparison of (a.x, a.y, a.z) and (b.x, b.y, b.z) with x as first test, y as second, and z as third. */
-  public static lexicalXYZLessThan(a: XYZ, b: XYZ): -1 | 0 | 1 {
+  public static lexicalXYZLessThan(a: XYAndZ, b: XYAndZ): -1 | 0 | 1 {
     if (a.x < b.x)
       return -1;
     else if (a.x > b.x)
