@@ -249,7 +249,7 @@ export interface GeometricElement2dProps extends GeometricElementProps {
   typeDefinition?: RelatedElementProps;
 }
 
-/** JSON representation of a [TextAnnotation2d]($backend).
+/** Properties that define a [TextAnnotation2d]($backend).
  * @public @preview
  * @extensions
  */
@@ -628,6 +628,10 @@ export interface SheetReferenceProps extends SheetIndexEntryProps {
   sheet?: RelatedElementProps;
 }
 
+/** Properties that define an [AnnotationTextStyle]($backend).
+ * @public @preview
+ * @extensions
+ */
 export interface AnnotationTextStyleProps extends DefinitionElementProps {
   /** An optional human-readable description of the text style.*/
   description?: string;
