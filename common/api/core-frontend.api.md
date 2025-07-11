@@ -2600,6 +2600,8 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     changeRenderTimeline(timelineId: Id64String | undefined): Promise<void>;
     // (undocumented)
     static get className(): string;
+    // @beta
+    commitScheduleEditing(): void;
     get contextRealityModelStates(): ReadonlyArray<ContextRealityModelState>;
     // @internal (undocumented)
     protected createRealityModel(props: ContextRealityModelProps): ContextRealityModelState;
@@ -2648,6 +2650,10 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     moveMapLayerToTop(mapLayerIndex: MapLayerIndex): void;
     get name(): string;
     readonly onOSMBuildingDisplayChanged: BeEvent<(osmBuildingDisplayEnabled: boolean) => void>;
+    // @beta
+    readonly onScheduleEditingChanged: BeEvent<(changes: RenderSchedule.EditingChanges[]) => void>;
+    // @beta
+    readonly onScheduleEditingCommitted: BeEvent<() => void>;
     readonly onScheduleScriptChanged: BeEvent<(newScript: RenderSchedule.Script | undefined) => void>;
     overrideSubCategory(id: Id64String, ovr: SubCategoryOverride): void;
     // @internal (undocumented)
@@ -2662,6 +2668,8 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     get scheduleScript(): RenderSchedule.Script | undefined;
     set scheduleScript(script: RenderSchedule.Script | undefined);
     setOSMBuildingDisplay(options: OsmBuildingDisplayOptions): boolean;
+    // @beta
+    setScheduleEditing(newScript: RenderSchedule.Script): void;
     // @internal
     setSubCategoryVisible(subCategoryId: Id64String, visible: boolean): boolean;
     abstract get settings(): DisplayStyleSettings;
@@ -4030,7 +4038,7 @@ export abstract class GltfReader {
     // (undocumented)
     protected readPolylines(polylines: MeshPolylineList, json: {
         [k: string]: any;
-    }, accessorName: string, disjoint: boolean): boolean;
+    }, accessorName: string, mode: GltfMeshMode.Points | GltfMeshMode.Lines | GltfMeshMode.LineStrip): boolean;
     // (undocumented)
     protected readPrimitiveFeatures(primitive: GltfMeshPrimitive): Feature | number[] | undefined;
     // (undocumented)
@@ -5210,7 +5218,7 @@ export class IModelTileTree extends TileTree {
     readonly contentIdQualifier?: string;
     debugMaxDepth?: number;
     // (undocumented)
-    readonly decoder: ImdlDecoder;
+    decoder: ImdlDecoder;
     // (undocumented)
     draw(args: TileDrawArgs): void;
     // (undocumented)
@@ -5238,6 +5246,10 @@ export class IModelTileTree extends TileTree {
     readonly maxInitialTilesToSkip: number;
     // (undocumented)
     readonly maxTilesToSkip: number;
+    // (undocumented)
+    onScheduleEditingChanged(changes: RenderSchedule.EditingChanges[]): Promise<void>;
+    // (undocumented)
+    onScheduleEditingCommitted(): void;
     // (undocumented)
     prune(): void;
     // (undocumented)
@@ -11340,6 +11352,10 @@ export abstract class TileTree {
     get loadPriority(): TileLoadPriority;
     abstract get maxDepth(): number | undefined;
     readonly modelId: Id64String;
+    // @internal
+    onScheduleEditingChanged(_changes: RenderSchedule.EditingChanges[]): Promise<void>;
+    // @internal
+    onScheduleEditingCommitted(): void;
     get parentsAndChildrenExclusive(): boolean;
     abstract prune(): void;
     get range(): ElementAlignedBox3d;
