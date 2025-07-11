@@ -29,7 +29,7 @@ class TestSchemaLocater extends IncrementalSchemaLocater {
   }
 }
 
-describe("IncrementalSchemaLocater tests: ", () => {
+describe("IncrementalSchemaLocater Tests", () => {
   let context: SchemaContext;
   let locater: TestSchemaLocater;
 
