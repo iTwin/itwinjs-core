@@ -160,8 +160,19 @@ export class MeshGraphic extends Graphic {
       range.extendRange(this._meshRange);
   }
 
-  public addCommands(cmds: RenderCommands): void { this._primitives.forEach((prim) => prim.addCommands(cmds)); }
-  public override addHiliteCommands(cmds: RenderCommands, pass: RenderPass): void { this._primitives.forEach((prim) => prim.addHiliteCommands(cmds, pass)); }
+  public addCommands(cmds: RenderCommands): void {
+    this._primitives.forEach((prim) => prim.addCommands(cmds));
+  }
 
-  public get surfaceType(): SurfaceType { return this.meshData.type; }
+  public override addHiliteCommands(cmds: RenderCommands, pass: RenderPass): void {
+    this._primitives.forEach((prim) => prim.addHiliteCommands(cmds, pass));
+  }
+
+  public get surfaceType(): SurfaceType {
+    return this.meshData.type;
+  }
+
+  protected override get _hasBlankingFill() {
+    return this._primitives.some((x) => x.hasBlankingFill);
+  }
 }
