@@ -45,6 +45,12 @@ describe("Schema Locater Tests", () => {
     assert.strictEqual(schemaSync!.schemaKey.version.toString(), "01.00.00");
   });
 
+  it("locating a non-existent schema asynchronously should return undefined", async () => {
+    const schemaKey = new SchemaKey("SchemaDoesNotExist", 1, 0, 0);
+    const schema = await context.getSchema(schemaKey, SchemaMatchType.Exact);
+    assert.isUndefined(schema);
+  });
+
   it("should throw an exception when locating a schema synchronously without caching", () => {
     const schemaKey = new SchemaKey("Gist", 1, 0, 0);
     let schema: Schema | undefined;
