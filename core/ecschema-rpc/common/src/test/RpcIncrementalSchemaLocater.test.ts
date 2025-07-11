@@ -13,7 +13,7 @@ import * as sinon from "sinon";
 // RpcIncrementalSchemaLocater derives from IncrementalSchemaLocater and ECSqlSchemaLocater, so
 // the basic functionality is already tested in their tests. This test suite verifies the expected
 // behaviour of the RPC specific implementation.
-describe.only("RpcIncrementalSchemaLocater Tests", () => {
+describe("RpcIncrementalSchemaLocater Tests", () => {
 
   let imodelReadInterface: IModelReadRpcInterface;
   let ecschemaRpcInterface: ECSchemaRpcInterface;
