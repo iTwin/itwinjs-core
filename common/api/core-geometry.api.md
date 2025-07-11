@@ -1376,8 +1376,8 @@ export class ConsolidateAdjacentCurvePrimitivesOptions {
     colinearPointTolerance: number;
     consolidateCompatibleArcs: boolean;
     consolidateLinearGeometry: boolean;
-    consolidateLoopSeam: boolean;
-    disableLinearCompression: boolean;
+    consolidateLoopSeam?: boolean;
+    disableLinearCompression?: boolean;
     duplicatePointTolerance: number;
 }
 
