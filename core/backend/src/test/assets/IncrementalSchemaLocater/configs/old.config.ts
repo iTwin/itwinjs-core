@@ -1,4 +1,4 @@
-{
+export default {
   "label": "Old Profile iModel",
   "bimFile": "OldIModel.bim",
   "schemas": [

@@ -1,4 +1,5 @@
-{
+/* eslint-disable @typescript-eslint/naming-convention */
+export default {
   "label": "Simple Profile iModel",
   "bimFile": "SimpleIModel.bim",
   "schemas": [

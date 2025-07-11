@@ -6,12 +6,9 @@ import { expect } from "chai";
 import * as chai from "chai";
 import * as chaiAsPromised from "chai-as-promised";
 import { IModelIncrementalSchemaLocater } from "../../IModelIncrementalSchemaLocater";
-import * as path from "path";
 
-/* eslint-disable @typescript-eslint/no-require-imports */
-const configPath = path.join(__dirname, "../assets/IncrementalSchemaLocater/configs");
-const oldConfiguration = require(path.join(configPath, "old.config.json"));
-const simpleConfiguration = require(path.join(configPath, "simple.config.json"));
+import oldConfiguration from "../assets/IncrementalSchemaLocater/configs/old.config";
+import simpleConfiguration from "../assets/IncrementalSchemaLocater/configs/simple.config";
 
 chai.use(chaiAsPromised);
 
