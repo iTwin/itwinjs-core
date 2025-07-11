@@ -26,7 +26,7 @@ function parseSchemaItemKey(itemKey: string): SchemaItemKey {
   return new SchemaItemKey(itemName, schemaKey);
 }
 
-describe("Incremental Schema Loading Experiment", function () {
+describe("Incremental Schema Loading", function () {
   testIModelConfigurations.forEach((iModelConfiguration) => {
     describe(`iModel: ${iModelConfiguration.label}`, () => {
       const testIModel = new TestIModel();
