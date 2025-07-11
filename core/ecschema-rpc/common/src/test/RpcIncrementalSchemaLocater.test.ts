@@ -69,13 +69,24 @@ describe.only("RpcIncrementalSchemaLocater Tests", () => {
         { name: schemaKey.name, version: schemaKey.version.toString(), references: "[]", alias: "ts" },
         { name: "ECDbMeta", version: "4.0.3", references: "[]", alias: "ecdb" },
       ]))
-      .returns(toQueryResult(["name", "version", "alias", "references", "items"], [
+      .onCall(1).returns(toQueryResult(["name", "version", "alias", "references", "items"], [
         {
           name: schemaKey.name,
           version: schemaKey.version.toString(),
           alias: "ts",
           references: "[]",
           items: "[]",
+        }
+      ]))
+      .returns(toQueryResult(["schema", "items"], [
+        {
+          schema: `{
+            "name": "${schemaKey.name}",
+            "version": "${schemaKey.version.toString()}",
+            "alias": "ts",
+            "label": "Test Schema",
+            "description": "This is a test schema."
+          }`,
         }
       ]));
 
@@ -87,6 +98,10 @@ describe.only("RpcIncrementalSchemaLocater Tests", () => {
 
     expect(schema).has.property("loadingController").that.is.not.undefined;
     expect(schema).has.a.nested.property("loadingController.inProgress").that.is.true;
+    await schema!.loadingController?.wait();
+
+    expect(schema).has.property("label", "Test Schema");
+    expect(schema).has.property("description", "This is a test schema.");
   });
 
   it("get schema, unsupported metaschema", async () => {
