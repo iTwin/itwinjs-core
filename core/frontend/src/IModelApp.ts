@@ -234,7 +234,7 @@ export class IModelApp {
   /** The [[TerrainProviderRegistry]] for this session. */
   public static get terrainProviderRegistry(): TerrainProviderRegistry { return this._terrainProviderRegistry; }
   /** The [[RealityDataSourceProviderRegistry]] for this session.
-   * @alpha
+   * @beta
    */
   public static get realityDataSourceProviders(): RealityDataSourceProviderRegistry { return this._realityDataSourceProviders; }
   /** The [[RenderSystem]] for this session. */

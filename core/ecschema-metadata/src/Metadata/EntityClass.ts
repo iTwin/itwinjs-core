@@ -240,7 +240,6 @@ protected override async buildPropertyCache(): Promise<Map<string, Property>> {
               const mixin = await this.schema.lookupItem(mixinSchemaItemKey, Mixin);
               if (undefined === mixin)
                 throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The ECEntityClass ${this.name} has a mixin ("${name}") that cannot be found.`);
-
               return mixin;
           }));
         }

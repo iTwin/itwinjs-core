@@ -535,13 +535,14 @@ describe("EntityClass", () => {
 
   describe("fromJson", () => {
     let testClass: EntityClass;
+    let schema: Schema;
     const baseJson = {
       schemaItemType: "EntityClass",
       schema: "TestSchema",
     };
 
     beforeEach(() => {
-      const schema = new Schema(new SchemaContext(), "TestSchema", "ts", 1, 0, 0);
+      schema = new Schema(new SchemaContext(), "TestSchema", "ts", 1, 0, 0);
       testClass = new EntityClass(schema, "TestEntity");
     });
 
@@ -558,7 +559,7 @@ describe("EntityClass", () => {
     });
 
     it("should not add the same mixin when deserializing", () => {
-      const testMixin = new Mixin(testClass.schema, "TestMixin");
+      const testMixin = new Mixin(schema, "TestMixin");
       (testClass as MutableEntityClass).addMixin(testMixin);
 
       const entityClassProps = {
@@ -575,10 +576,10 @@ describe("EntityClass", () => {
     });
 
     it("should add a different mixin when deserializing", async () => {
-      const refSchema = new Schema(testClass.schema.context, "RefSchema", "rs", 1, 0, 0);
-      await (testClass.schema as MutableSchema).addReference(refSchema);
+      const refSchema = new Schema(schema.context, "RefSchema", "rs", 1, 0, 0);
+      await (schema as MutableSchema).addReference(refSchema);
 
-      const testMixin = new Mixin(testClass.schema, "TestMixin");
+      const testMixin = new Mixin(schema, "TestMixin");
       const refMixin = new Mixin(refSchema, "TestMixin");
       (testClass as MutableEntityClass).addMixin(refMixin);
 

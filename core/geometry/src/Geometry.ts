@@ -235,7 +235,7 @@ export interface PerpParallelOptions {
    */
   radianSquaredTol?: number;
   /**
-   * Squared distance tolerance for detecting a zero-length vector.
+   * Squared distance tolerance for detecting equal points.
    * Default: [[Geometry.smallMetricDistanceSquared]].
    */
   distanceSquaredTol?: number;

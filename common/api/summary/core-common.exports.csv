@@ -887,6 +887,8 @@ preview;interface;SubjectProps
 public;type;SubLayerId
 beta;interface;SynchronizationConfigLinkProps
 public;enum;SyncMode
+beta;class;TabRun
+beta;interface;TabRunProps
 public;enum;TerrainHeightOriginMode
 public;interface;TerrainProps
 public;class;TerrainSettings
@@ -900,6 +902,7 @@ beta;interface;TextAnnotationAnchor
 beta;interface;TextAnnotationCreateArgs
 beta;type;TextAnnotationFillColor
 beta;type;TextAnnotationFrameShape
+beta;const;textAnnotationFrameShapes
 beta;interface;TextAnnotationProps
 beta;class;TextBlock
 beta;class;TextBlockComponent
