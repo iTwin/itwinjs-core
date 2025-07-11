@@ -3741,6 +3741,8 @@ export abstract class GeometricModelState extends ModelState implements Geometri
 // @public
 export interface GeometryTileTreeReference extends TileTreeReference {
     collectTileGeometry: (collector: TileGeometryCollector) => void;
+    // @beta (undocumented)
+    reprojectGeometry?: boolean;
 }
 
 // @public
@@ -8369,6 +8371,8 @@ export class RealityTile extends Tile {
     // @internal (undocumented)
     readonly transformToRoot?: Transform;
     // @internal (undocumented)
+    readonly tree: RealityTileTree;
+    // @internal (undocumented)
     get unprojectedGraphic(): RenderGraphic | undefined;
 }
 
@@ -8480,6 +8484,8 @@ export class RealityTileTree extends TileTree {
     reportTileVisibility(_args: TileDrawArgs, _selected: RealityTile[]): void;
     // @internal (undocumented)
     reprojectAndResolveChildren(parent: Tile, children: Tile[], resolve: (children: Tile[] | undefined) => void): void;
+    // @internal (undocumented)
+    reprojectGeometry?: boolean;
     // @internal (undocumented)
     get rootTile(): RealityTile;
     // @internal (undocumented)
@@ -11420,8 +11426,8 @@ export abstract class TileTreeReference {
     createDrawArgs(context: SceneContext): TileDrawArgs | undefined;
     // @beta
     static createFromRenderGraphic(args: RenderGraphicTileTreeArgs): TileTreeReference;
-    createGeometryTreeReference(): GeometryTileTreeReference | undefined;
-    protected _createGeometryTreeReference(): GeometryTileTreeReference | undefined;
+    createGeometryTreeReference(options?: GeometryTreeReferenceOptions): GeometryTileTreeReference | undefined;
+    protected _createGeometryTreeReference(_options?: GeometryTreeReferenceOptions): GeometryTileTreeReference | undefined;
     decorate(_context: DecorateContext): void;
     discloseTileTrees(trees: DisclosedTileTreeSet): void;
     draw(args: TileDrawArgs): void;

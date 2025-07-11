@@ -114,5 +114,6 @@ export interface GeometryTileTreeReference extends TileTreeReference {
    * @see [[TileGeometryCollector.isAllGeometryLoaded]] to determine if the list of polyfaces is fully populated.
    */
   collectTileGeometry: (collector: TileGeometryCollector) => void;
+  /** @beta */
   reprojectGeometry?: boolean;
 }
