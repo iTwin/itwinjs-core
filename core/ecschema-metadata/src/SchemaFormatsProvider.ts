@@ -60,6 +60,15 @@ export class SchemaFormatsProvider implements FormatsProvider {
     this.onFormatsChanged.raiseEvent({ formatsChanged });
   }
 
+  /** When using a presentation unit from a KindOfQuantity, the label and description should come from the KindOfQuantity */
+  private replaceWithKindOfQuantityProps(format: SchemaItemFormatProps, kindOfQuantity: KindOfQuantity): SchemaItemFormatProps {
+    return {
+      ...format,
+      label: kindOfQuantity.label ?? format.label,
+      description: kindOfQuantity.description ?? format.description,
+    }
+  }
+
   private async getKindOfQuantityFormatFromSchema(itemKey: SchemaItemKey): Promise<SchemaItemFormatProps | undefined> {
     let kindOfQuantity: KindOfQuantity | undefined;
     try {
@@ -86,7 +95,8 @@ export class SchemaFormatsProvider implements FormatsProvider {
         const currentUnitSystem = await unit.unitSystem;
         if (currentUnitSystem && matcher(currentUnitSystem)) {
           this._formatsRetrieved.add(itemKey.fullName);
-          return getFormatProps(format);
+          const props = getFormatProps(format);
+          return this.replaceWithKindOfQuantityProps(props, kindOfQuantity);
         }
       }
     }
@@ -96,7 +106,8 @@ export class SchemaFormatsProvider implements FormatsProvider {
     const persistenceUnitSystem = await persistenceUnit?.unitSystem;
     if (persistenceUnitSystem && unitSystemMatchers.some((matcher) => matcher(persistenceUnitSystem))) {
       this._formatsRetrieved.add(itemKey.fullName);
-      return getPersistenceUnitFormatProps(persistenceUnit!);
+      const props = getPersistenceUnitFormatProps(persistenceUnit!);
+      return this.replaceWithKindOfQuantityProps(props, kindOfQuantity);
     }
 
     const defaultFormat = kindOfQuantity.defaultPresentationFormat;
@@ -104,7 +115,8 @@ export class SchemaFormatsProvider implements FormatsProvider {
       return undefined;
     }
     this._formatsRetrieved.add(itemKey.fullName);
-    return getFormatProps(await defaultFormat);
+    const defaultProps = getFormatProps(await defaultFormat);
+    return this.replaceWithKindOfQuantityProps(defaultProps, kindOfQuantity);
   }
 
 
