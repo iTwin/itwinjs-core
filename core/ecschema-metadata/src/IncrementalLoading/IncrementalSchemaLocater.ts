@@ -119,7 +119,7 @@ export abstract class IncrementalSchemaLocater implements ISchemaLocater {
   public abstract loadSchemaInfos(context: SchemaContext): Promise<Iterable<SchemaInfo>>;
 
   /**
-   * Checks if the context contains teh right schemas to support incremental schema loading.
+   * Checks if the context contains the right schemas to support incremental schema loading.
    * @param context   The schema context to check.
    * @returns         true if incremental schema loading is supported, false otherwise.
    */
