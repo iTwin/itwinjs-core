@@ -257,6 +257,28 @@ describe("RulesetEmbedder", () => {
       imodelMock.verify((x) => x.saveChanges(), moq.Times.exactly(2));
     });
 
+    it("sets up prerequisites when inserting element and prerequisites are partially available", async () => {
+      const ruleset: Ruleset = { id: "test", rules: [] };
+      const rulesetElementId = "0x111";
+
+      // mock that ruleset schema is present
+      imodelMock.setup((x) => x.containsClass(RulesetElements.Ruleset.classFullName)).returns(() => true);
+      // mock that ruleset CodeSpec is not present
+      codeSpecsMock.setup((x) => x.hasName(PresentationRules.CodeSpec.Ruleset)).returns(() => false);
+      codeSpecsMock.setup((x) => x.insert(rulesetCodeSpec)).returns(() => "0x2025");
+
+      setupMocksForCreatingRulesetModel();
+      setupMocksForQueryingExistingRulesets("test", []);
+      setupMocksForInsertingNewRuleset(ruleset, rulesetElementId);
+
+      await embedder.insertRuleset(ruleset);
+
+      imodelMock.verify(async (x) => x.importSchemas(moq.It.isAny()), moq.Times.never());
+      codeSpecsMock.verify((x) => x.insert(rulesetCodeSpec), moq.Times.once());
+      rulesetModelMock.verify((x) => x.insert(), moq.Times.once());
+      imodelMock.verify((x) => x.saveChanges(), moq.Times.exactly(2));
+    });
+
     it("calls `onElementInsert` and `onModelInsert` callbacks when creating RulesetModel", async () => {
       const ruleset: Ruleset = { id: "test", rules: [] };
       const rulesetElementId = "0x111";

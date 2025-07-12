@@ -329,17 +329,22 @@ export class RulesetEmbedder {
   }
 
   private async handleElementOperationPrerequisites(): Promise<void> {
-    if (this._imodel.containsClass(RulesetElements.Ruleset.classFullName)) {
-      return;
+    let hasChanges = false;
+    if (!this._imodel.containsClass(RulesetElements.Ruleset.classFullName)) {
+      // import PresentationRules ECSchema
+      await this._imodel.importSchemas([this._schemaPath]);
+      hasChanges = true;
     }
 
-    // import PresentationRules ECSchema
-    await this._imodel.importSchemas([this._schemaPath]);
+    if (!this._imodel.codeSpecs.hasName(PresentationRules.CodeSpec.Ruleset)) {
+      // insert CodeSpec for ruleset elements
+      this._imodel.codeSpecs.insert(CodeSpec.create(this._imodel, PresentationRules.CodeSpec.Ruleset, CodeScopeSpec.Type.Model));
+      hasChanges = true;
+    }
 
-    // insert CodeSpec for ruleset elements
-    this._imodel.codeSpecs.insert(CodeSpec.create(this._imodel, PresentationRules.CodeSpec.Ruleset, CodeScopeSpec.Type.Model));
-
-    this._imodel.saveChanges();
+    if (hasChanges) {
+      this._imodel.saveChanges();
+    }
   }
 
   private async insertElement<TProps extends ElementProps>(props: TProps, callbacks?: InsertCallbacks): Promise<Element> {
