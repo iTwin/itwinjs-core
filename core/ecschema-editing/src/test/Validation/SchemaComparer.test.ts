@@ -5146,7 +5146,7 @@ describe("Schema comparison tests", () => {
       const itemA = await schemaA.getItem("FormatA") as ECClass;
 
       expect(reporter.diagnostics.length).to.equal(1, "Expected 1 difference.");
-      validateDiagnostic(reporter.diagnostics[0], SchemaCompareCodes.FormatDelta, DiagnosticType.SchemaItem, itemA, ["formatTraits", "TrailZeroes,KeepSingleZero", "KeepSingleZero"], itemA.schema);
+      validateDiagnostic(reporter.diagnostics[0], SchemaCompareCodes.FormatDelta, DiagnosticType.SchemaItem, itemA, ["formatTraits", "trailZeroes,keepSingleZero", "keepSingleZero"], itemA.schema);
     });
 
     it("Different spacer, diagnostic reported", async () => {
