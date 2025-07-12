@@ -13,21 +13,20 @@ import { Angle, AngleSweep, Arc3d, LineString3d, Loop, Path, Point3d, Range2d, T
 /**
  * Based on the frame style, this method will construct and append [[GeometryParams]] (for line style) and a [[Loop]] (for the frame shape) to the builder.
  * @param builder that will be appended to in place
- * @param category to which the frame belongs, used for the [[GeometryParams]].
  * @param frame
  * @param range to enclose with the frame
- * @param transform that transform the range to world coordinates
+ * @param transform that transforms the range to world coordinates
  * @returns `true` if any geometry was appended to the builder
 * @beta
  */
 export function appendFrameToBuilder(builder: ElementGeometry.Builder, frame: TextFrameStyleProps, range: Range2d, transform: Transform, geomParams: GeometryParams): boolean {
-  if (undefined === frame.shape || frame.shape === "none") {
+  if (frame.shape === "none" || frame.shape === undefined) {
     return false;
   }
 
   const params = geomParams.clone();
 
-  if (frame.fill === undefined) {
+  if (frame.fill === "none" || frame.fill === undefined) {
     params.fillDisplay = FillDisplay.Never;
   } else if (frame.fill === "background") {
     params.backgroundFill = BackgroundFill.Solid;

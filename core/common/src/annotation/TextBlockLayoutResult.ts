@@ -31,7 +31,7 @@ export interface RunLayoutResult {
   offsetFromLine: XAndY;
   /** Bounding box enclosing this RunLayoutResult's content. */
   range: Range2dProps;
-  /** The [[TextStyleSettings]] for the run. */
+  /** The resolved [[TextStyleSettings]] for the run. Takes into account overrides and styles on the parent classes. */
   textStyle: TextStyleSettingsProps;
   /** Bounding box used when justifying the run. This may be smaller than [[range]]. */
   justificationRange?: Range2dProps;

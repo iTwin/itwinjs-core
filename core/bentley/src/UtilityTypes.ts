@@ -6,6 +6,22 @@
  * @module Utils
  */
 
+/**
+ * A type that recursively makes all properties of object `T` required, including all properties of nested objects.
+ * @public
+ */
+export type DeepRequiredObject<T> = T extends object
+  ? { [K in keyof T]-?: DeepRequiredObject<T[K]> }
+  : T
+
+/**
+ * A type that recursively makes all properties of object `T` readonly, including all properties of nested objects.
+ * @public
+ */
+export type DeepReadonlyObject<T> = T extends object
+  ? { readonly [K in keyof T]: DeepReadonlyObject<T[K]> } :
+  T
+
 /** The inverse of TypeScript's Readonly<T> type, producing a type that has all the properties of `T` with any `readonly` modifiers removed.
  * @public
  */
