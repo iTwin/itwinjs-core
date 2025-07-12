@@ -607,6 +607,23 @@
       ]
     },
     {
+      "name": "[perftests] Changeset PerfTests (Offline)",
+      "presentation": {
+        "group": "6_Misc"
+      },
+      "cwd": "${workspaceFolder}/full-stack-tests/backend",
+      "type": "node",
+      "request": "launch",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "run",
+        "perftest:changesetPerformance"
+      ],
+      "outFiles": [
+        "${workspaceFolder}/full-stack-tests/*/lib/**/*.js"
+      ]
+    },
+    {
       "name": "[perftests] ElementAspect PerfTests",
       "presentation": {
         "group": "6_Misc"
@@ -1100,7 +1117,12 @@
       "console": "integratedTerminal",
       "cwd": "${workspaceFolder}/core/frontend", // necessary to pick up frontend's vitest config
       "program": "node_modules/vitest/vitest.mjs",
-      "args": ["--run", "--inspect", "--no-file-parallelism", "--test-timeout=0"], // disable test timeout while debugging
+      "args": [
+        "--run",
+        "--inspect",
+        "--no-file-parallelism",
+        "--test-timeout=0"
+      ], // disable test timeout while debugging
       "autoAttachChildProcesses": true
     },
     {
