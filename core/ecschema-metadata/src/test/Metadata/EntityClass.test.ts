@@ -576,7 +576,7 @@ describe("EntityClass", () => {
     });
 
     it("should add a different mixin when deserializing", async () => {
-      const refSchema = new Schema(schema.context, "RefSchema", "rs", 1, 0, 0); 
+      const refSchema = new Schema(schema.context, "RefSchema", "rs", 1, 0, 0);
       await (schema as MutableSchema).addReference(refSchema);
 
       const testMixin = new Mixin(schema, "TestMixin");

@@ -164,7 +164,7 @@
     },
     {
       "name": "@itwin/core-backend",
-      "allowedCategories": [ "backend", "edit", "integration-testing", "internal", "tools" ]
+      "allowedCategories": [ "backend", "common", "edit", "integration-testing", "internal", "tools" ]
     },
     {
       "name": "@itwin/core-bentley",
@@ -517,6 +517,10 @@
     {
       "name": "deep-equal",
       "allowedCategories": [ "backend", "common", "frontend", "internal" ]
+    },
+    {
+      "name": "deep-equal-in-any-order",
+      "allowedCategories": [ "backend" ]
     },
     {
       "name": "detect-port",

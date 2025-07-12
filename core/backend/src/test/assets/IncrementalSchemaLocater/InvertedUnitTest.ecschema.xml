@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- ==================================================================================
+|  * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+|  * See LICENSE.md in the project root for license terms and full copyright notice.
+======================================================================================= -->
+<ECSchema schemaName="InvertedUnitTest" alias="iut" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
+  <UnitSystem typeName="USCUSTOM" displayLabel="US System" description="The American way"/>
+  <UnitSystem typeName="METRIC" />
+  <UnitSystem typeName="INTERNATIONAL" />
+  <UnitSystem typeName="SI" />
+  <Phenomenon typeName="SLOPE" definition="LENGTH*LENGTH(-1)" displayLabel="Slope" />
+  <Phenomenon typeName="NUMBER" definition="NUMBER" displayLabel="Number" />
+  <Unit typeName="FT_PER_FT" phenomenon="SLOPE" unitSystem="USCUSTOM" definition="FT*FT(-1)" displayLabel="ft/ft" />
+  <InvertedUnit typeName="FT_HORIZONTAL_PER_FT_VERTICAL" invertsUnit="FT_PER_FT" unitSystem="USCUSTOM" />
+
+  <Unit typeName="FT" phenomenon="LENGTH" unitSystem="USCUSTOM" definition="IN" numerator="12.0" displayLabel="ft" />
+  <Unit typeName="IN" phenomenon="LENGTH" unitSystem="USCUSTOM" definition="MM" numerator="25.4" displayLabel="in" />
+  <Unit typeName="M" phenomenon="LENGTH" unitSystem="SI" definition="M" displayLabel="m" />
+  <Unit typeName="MM" phenomenon="LENGTH" unitSystem="METRIC" definition="[MILLI]*M" displayLabel="mm" />
+  <Unit typeName="ONE" phenomenon="NUMBER" unitSystem="INTERNATIONAL" definition="ONE" displayLabel="one" />
+  <Phenomenon typeName="LENGTH" definition="LENGTH" displayLabel="Length" />
+  <Constant typeName="MILLI" phenomenon="NUMBER" definition="ONE" numerator="1.0e-3" displayLabel="milli"/>
+</ECSchema>

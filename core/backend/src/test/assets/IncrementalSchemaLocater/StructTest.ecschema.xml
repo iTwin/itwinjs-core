@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- ==================================================================================
+|  * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+|  * See LICENSE.md in the project root for license terms and full copyright notice.
+======================================================================================= -->
+<ECSchema schemaName="StructTest" alias="st" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
+  <ECSchemaReference name="BisCore" version="01.00.01" alias="bis"/>
+  <ECSchemaReference name="CoreCustomAttributes" version="01.00.03" alias="CoreCA"/>
+
+  <ECStructClass typeName="BaseStruct" modifier="Abstract" displayLabel="TestLabel" description="TestDescription">
+    <ECProperty propertyName="StringProperty" typeName="string"/>
+    <ECCustomAttributes>
+      <HiddenClass xmlns="CoreCustomAttributes.01.00.03">
+        <Show>false</Show>
+      </HiddenClass>
+      <TestCustomAttribute xmlns="StructTest.01.00.00"/>
+    </ECCustomAttributes>
+  </ECStructClass>
+
+  <ECStructClass typeName="StructModifierNone" modifier="None" displayLabel="TestLabel" description="TestDescription">
+    <BaseClass>BaseStruct</BaseClass>
+    <ECProperty propertyName="IntProperty" typeName="int"/>
+    <ECProperty propertyName="BooleanProperty" typeName="boolean" displayLabel="Boolean" description="Boolean Property"/>
+  </ECStructClass>
+
+  <ECStructClass typeName="StructModifierAbstract" modifier="Abstract">
+    <BaseClass>BaseStruct</BaseClass>
+    <ECProperty propertyName="DoubleProperty" typeName="double"/>
+    <ECProperty propertyName="BooleanProperty" typeName="boolean" displayLabel="Boolean" description="Boolean Property"/>
+  </ECStructClass>
+
+  <ECStructClass typeName="StructModifierSealed" modifier="Sealed" displayLabel="TestLabel" description="TestDescription">
+    <BaseClass>BaseStruct</BaseClass>
+    <ECProperty propertyName="LongProperty" typeName="long"/>
+    <ECProperty propertyName="BooleanProperty" typeName="boolean" displayLabel="Boolean" description="Boolean Property"/>
+  </ECStructClass>
+
+  <ECCustomAttributeClass typeName="TestCustomAttribute" appliesTo="StructClass" modifier="Sealed"/>
+</ECSchema>
