@@ -57,7 +57,7 @@ export interface RenderPlan {
   readonly analysisStyle?: AnalysisStyle;
   readonly ao?: AmbientOcclusion.Settings;
   readonly thematic?: ThematicDisplay;
-  readonly contours?: ContourDisplay;
+  contours?: ContourDisplay;
   readonly atmosphere?: Atmosphere.Settings;
   readonly isFadeOutActive: boolean;
   readonly analysisTexture?: RenderTexture;

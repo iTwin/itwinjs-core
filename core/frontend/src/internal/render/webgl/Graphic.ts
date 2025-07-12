@@ -7,7 +7,7 @@
  */
 
 import { assert, dispose, Id64String } from "@itwin/core-bentley";
-import { ContourDisplay, ElementAlignedBox3d, FeatureAppearanceProvider, RenderFeatureTable, ThematicDisplayMode, ViewFlags } from "@itwin/core-common";
+import { ElementAlignedBox3d, FeatureAppearanceProvider, RenderFeatureTable, ThematicDisplayMode, ViewFlags } from "@itwin/core-common";
 import { Range3d, Transform } from "@itwin/core-geometry";
 import { IModelConnection } from "../../../IModelConnection";
 import { FeatureSymbology } from "../../../render/FeatureSymbology";
@@ -351,7 +351,6 @@ export class Branch extends Graphic {
   public readonly inSectionDrawingAttachment?: boolean;
   public disableClipStyle?: true;
   public readonly transformFromExternalIModel?: Transform;
-  public readonly contours?: ContourDisplay;
 
   public constructor(branch: GraphicBranch, localToWorld: Transform, viewFlags?: ViewFlags, opts?: GraphicBranchOptions) {
     super();
@@ -373,10 +372,12 @@ export class Branch extends Graphic {
     this.disableClipStyle = opts.disableClipStyle;
     this.transformFromExternalIModel = opts.transformFromIModel;
     const target = IModelApp.viewManager.selectedView?.target;
-    const planContours = (target && "plan" in target) ? (target as Target).plan.contours : undefined;
-    this.contours = planContours;
-    // this.contours = opts.contours;
-    console.log(this.contours);
+    if((target as Target).plan.contours === undefined && opts.contours !== undefined){
+      (target as Target).plan.contours = opts.contours;
+      const viewport = IModelApp.viewManager.selectedView;
+      if (viewport)
+        viewport.displayStyle.settings.contours = opts.contours;
+    }
 
     if (opts.hline)
       this.edgeSettings = EdgeSettings.create(opts.hline);

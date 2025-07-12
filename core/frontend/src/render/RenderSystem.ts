@@ -56,7 +56,6 @@ import { RenderTerrainGeometry } from "../internal/render/RenderTerrain";
 import { RenderSkyBoxParams } from "../internal/render/RenderSkyBoxParams";
 import { RenderAreaPattern } from "../internal/render/RenderAreaPattern";
 import { LayerTileData } from "../internal/render/webgl/MapLayerParams";
-import { RenderPlan } from "../internal/render/RenderPlan";
 
 // cSpell:ignore deserializing subcat uninstanced wiremesh qorigin trimesh
 
@@ -134,7 +133,6 @@ export interface CreateGraphicFromTemplateArgs {
   template: GraphicTemplate;
   /** Optionally describes how to draw multiple repetitions of the graphic. */
   instances?: RenderInstances;
-  plan?: RenderPlan;
 }
 
 /** A RenderSystem provides access to resources used by the internal WebGL-based rendering system.
