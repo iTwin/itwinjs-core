@@ -8,6 +8,7 @@
 
 import { disposeArray, Id64String } from "@itwin/core-bentley";
 import {
+  ContourDisplay,
   FeatureAppearanceProvider, HiddenLine, RealityModelDisplaySettings, ViewFlagOverrides, ViewFlags,
 } from "@itwin/core-common";
 import { IModelConnection } from "../IModelConnection";
@@ -54,6 +55,8 @@ export class GraphicBranch implements Disposable /* , RenderMemory.Consumer */ {
    * @internal
    */
   public animationNodeId?: AnimationNodeId | number;
+  /** @internal */
+  public contours?: ContourDisplay;
 
   /** Identifies the "group" to which this branch belongs.
    * Groups represent cross-cutting subsets of a tile tree's contents.
@@ -160,4 +163,5 @@ export interface GraphicBranchOptions {
    * No [ClipStyle.insideColor]($common), [ClipStyle.outsideColor]($common), or [ClipStyle.intersectionStyle]($common) will be applied.
    */
   disableClipStyle?: true;
+  contours?: ContourDisplay;
 }

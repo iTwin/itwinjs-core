@@ -29,6 +29,7 @@ import { BranchState } from "./BranchState";
 import { BatchOptions } from "../../../common/render/BatchOptions";
 import { Contours } from "./Contours";
 import { GraphicBranchFrustum } from "../GraphicBranchFrustum";
+import { IModelApp } from "../../../IModelApp";
 
 /** @internal */
 export abstract class Graphic extends RenderGraphic implements WebGLDisposable {
@@ -370,6 +371,13 @@ export class Branch extends Graphic {
     this.inSectionDrawingAttachment = opts.inSectionDrawingAttachment;
     this.disableClipStyle = opts.disableClipStyle;
     this.transformFromExternalIModel = opts.transformFromIModel;
+    const target = IModelApp.viewManager.selectedView?.target;
+    if((target as Target).plan.contours === undefined && opts.contours !== undefined){
+      (target as Target).plan.contours = opts.contours;
+      const viewport = IModelApp.viewManager.selectedView;
+      if (viewport)
+        viewport.displayStyle.settings.contours = opts.contours;
+    }
 
     if (opts.hline)
       this.edgeSettings = EdgeSettings.create(opts.hline);
