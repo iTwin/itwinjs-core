@@ -165,11 +165,10 @@ export class Triangulator {
   /**
    * Create a graph from an xy-triangulation of the given points. The triangulation is Delaunay.
    * * The outer boundary of the graph is the xy-convex hull of the points; it is marked `HalfEdgeMask.EXTERIOR`.
-   * @param points the points to triangulate
+   * @param points the points to triangulate.
    * @param zRule optional rule for updating the z-coordinate of an existing vertex when an xy-duplicate point is
    * inserted into the graph. Default is `InsertedVertexZOptions.ReplaceIfLarger`.
-   * @param pointTolerance optional xy-distance tolerance for equating vertices. Default is
-   * `Geometry.smallMetricDistance`.
+   * @param pointTolerance optional xy-distance tolerance for equating vertices. Default is `Geometry.smallMetricDistance`.
    */
   public static createTriangulatedGraphFromPoints(
     points: Point3d[],
@@ -194,20 +193,6 @@ export class Triangulator {
     }
     if (face0.countEdgesAroundFace() > 3) // no strictly interior vertices to split the hull polygon, so triangulate it
       return Triangulator.createTriangulatedGraphFromSingleLoop(hull);
-    return graph;
-  }
-  /**
-   * Create a graph from an xy-triangulation of the given points and indices. The triangulation is Delaunay.
-   * * The outer boundary of the graph is the xy-convex hull of the points; it is marked `HalfEdgeMask.EXTERIOR`.
-   * @param pointsWithIndices the points to triangulate along with their indices.
-   */
-  public static createTriangulatedGraphFromPointsWithIndices(
-    pointsWithIndices: [Point3d, number][],
-  ): HalfEdgeGraph | undefined {
-    if (pointsWithIndices.length < 3)
-      return undefined;
-    const graph = new HalfEdgeGraph();
-    // TODO: implement triangulation with indices
     return graph;
   }
   /**
@@ -468,9 +453,13 @@ export class Triangulator {
     graph: HalfEdgeGraph, data: LineStringDataVariant, returnPositiveAreaLoop: boolean, markExterior: boolean,
   ): HalfEdge | undefined {
     const base = Triangulator.directCreateFaceLoopFromCoordinates(graph, data);
-    return Triangulator.maskAndOrientNewFaceLoop(graph, base, returnPositiveAreaLoop,
+    return Triangulator.maskAndOrientNewFaceLoop(
+      graph,
+      base,
+      returnPositiveAreaLoop,
       HalfEdgeMask.BOUNDARY_EDGE | HalfEdgeMask.PRIMARY_EDGE,
-      markExterior ? HalfEdgeMask.EXTERIOR : HalfEdgeMask.NULL_MASK);
+      markExterior ? HalfEdgeMask.EXTERIOR : HalfEdgeMask.NULL_MASK,
+    );
   }
   /**
    * create a circular doubly linked list of internal and external nodes from polygon points.

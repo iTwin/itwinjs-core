@@ -6,23 +6,23 @@
  * @module Bspline
  */
 
+import { CloneFunction, Dictionary, OrderedComparator } from "@itwin/core-bentley";
 import { Arc3d } from "../curve/Arc3d";
 import { CurveChain } from "../curve/CurveCollection";
 import { CurveCurve } from "../curve/CurveCurve";
 import { CurvePrimitive } from "../curve/CurvePrimitive";
+import { AnyRegion } from "../curve/CurveTypes";
 import { LineSegment3d } from "../curve/LineSegment3d";
 import { LineString3d } from "../curve/LineString3d";
+import { Loop } from "../curve/Loop";
+import { RegionBinaryOpType, RegionOps } from "../curve/RegionOps";
 import { StrokeOptions } from "../curve/StrokeOptions";
 import { Geometry } from "../Geometry";
 import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
 import { Range3d } from "../geometry3d/Range";
-import { XAndY } from "../geometry3d/XYZProps";
-import { AnyRegion } from "../curve/CurveTypes";
 import { HalfEdge, HalfEdgeGraph, HalfEdgeMask } from "./Graph";
 import { HalfEdgeGraphMerge, HalfEdgeGraphOps } from "./Merging";
 import { Triangulator } from "./Triangulation";
-import { RegionBinaryOpType, RegionOps } from "../curve/RegionOps";
-import { Loop } from "../curve/Loop";
 
 /**
  * A class to represent a Voronoi diagram.
@@ -36,10 +36,13 @@ export class Voronoi {
   private _inputGraphIsValid = true;
   private _circumcenterMap: Map<number, Point3d> = new Map();
   private _idToIndexMap: Map<number, number> = new Map();
+  private _graphRange: Range3d = Range3d.createNull();
+  private _circumcenterRange: Range3d = Range3d.createNull();
   private constructor(graph: HalfEdgeGraph, isColinear = false) {
     if (!isColinear)
       this.populateCircumcenters(graph);
     this.populateIdToIndexMap(graph);
+    this._graphRange = HalfEdgeGraphOps.graphRange(graph);
   }
   // find min id of the triangular face containing this vertex
   private static findFaceMinId(vertex: HalfEdge): number {
@@ -72,6 +75,7 @@ export class Voronoi {
         return true;
       },
     );
+    this._circumcenterRange = Range3d.create(...Array.from(this._circumcenterMap.values()));
   }
   // go over all the nodes in the graph and create a map of node IDs in a vertex loop to
   // min index of that vertex loop in graph.allHalfEdges
@@ -100,7 +104,7 @@ export class Voronoi {
   }
   // generate bisector of each edge in the Delaunay triangulation and limit it to the voronoi boundary
   private static getBisector(
-    vertex: HalfEdge, circumcenter: Point3d, voronoiBoundaryData: VoronoiBoundaryData
+    vertex: HalfEdge, circumcenter: Point3d, voronoiBoundaryData: VoronoiBoundaryData,
   ): LineSegment3d | undefined {
     const p0 = vertex.getPoint3d();
     const p1 = vertex.faceSuccessor.getPoint3d();
@@ -115,7 +119,7 @@ export class Voronoi {
       direction = Vector3d.createStartEnd(circumcenter, midPoint);
     else
       direction = Vector3d.createStartEnd(midPoint, circumcenter);
-    const scale = 100; // had to pick a large scale to ensure the bisector is long enough to intersect the voronoi boundary
+    const scale = 100000; // had to pick a large scale to ensure the bisector is long enough to intersect the voronoi boundary
     const bisectorStart = circumcenter;
     const bisectorEnd = Point3d.createAdd2Scaled(bisectorStart, 1, direction, scale);
     const bisector = LineSegment3d.create(bisectorStart, bisectorEnd);
@@ -145,7 +149,7 @@ export class Voronoi {
     if (!bisector)
       return true; // bisector is outside the voronoi boundary for skinny triangles; skip it
     voronoiDiagram.addLineSegmentXY(
-      bisector, voronoi._idToIndexMap.get(seed.id), voronoi._idToIndexMap.get(seed.edgeMate.id),
+      bisector, voronoi._idToIndexMap.get(vertex.edgeMate.id), voronoi._idToIndexMap.get(vertex.id),
     );
     HalfEdgeGraphMerge.clusterAndMergeXYTheta(voronoiDiagram);
     return true;
@@ -173,18 +177,18 @@ export class Voronoi {
       let limitedLs: LineSegment3d;
       if (!center0IsInsideVoronoiBoundary && !center1IsInsideVoronoiBoundary) {
         limitedLs = LineSegment3d.create(intersection[0].detailA.point, intersection[1].detailA.point); // limit ls to the voronoi boundary
-      } else { 
+      } else {
         const center = center0IsInsideVoronoiBoundary ? circumcenter0 : circumcenter1;
-        limitedLs = LineSegment3d.create(center, intersection[0].detailA.point); // limit ls to the voronoi boundary
+        limitedLs = LineSegment3d.create(intersection[0].detailA.point, center); // limit ls to the voronoi boundary
       }
       voronoiDiagram.addLineSegmentXY(
-        limitedLs, voronoi._idToIndexMap.get(seed.id), voronoi._idToIndexMap.get(seed.edgeMate.id),
+        limitedLs, voronoi._idToIndexMap.get(seed.edgeMate.id), voronoi._idToIndexMap.get(seed.id),
       );
     } else {
       if (!center0IsInsideVoronoiBoundary && !center1IsInsideVoronoiBoundary)
         return true; // both circumcenters are outside the voronoi boundary and ls does not intersect the boundary; skip this edge
       voronoiDiagram.addLineSegmentXY(
-        ls, voronoi._idToIndexMap.get(seed.id), voronoi._idToIndexMap.get(seed.edgeMate.id),
+        ls, voronoi._idToIndexMap.get(seed.edgeMate.id), voronoi._idToIndexMap.get(seed.id),
       );
     }
     HalfEdgeGraphMerge.splitIntersectingEdges(voronoiDiagram);
@@ -232,12 +236,11 @@ export class Voronoi {
    *    * the boundary and exterior edges should have correct masks,
    *    * the graph boundary should be convex.
    * @param graph A HalfEdgeGraph representing a Delaunay triangulated graph; xy-only (z-coordinate is ignored).
-   * @param pad Optional padding in x and y directions to expand the graph range to create the Voronoi boundary rectangle.
    * @returns A HalfEdgeGraph representing the Voronoi diagram, or undefined if the input is invalid. Each voronoi face
    * corresponds to a vertex in the input graph and we store the index of the vertex (in graph.allHalfEdges) in the
    * edgeTag of all nodes in that voronoi face.
    */
-  public static createVoronoi(graph: HalfEdgeGraph, pad?: XAndY): HalfEdgeGraph | undefined {
+  public static createVoronoi(graph: HalfEdgeGraph): HalfEdgeGraph | undefined {
     const graphLength = graph.allHalfEdges.length;
     if (graph === undefined || graphLength < 3)
       return undefined;
@@ -245,7 +248,7 @@ export class Voronoi {
     const voronoi = new Voronoi(graph);
     if (!voronoi._inputGraphIsValid)
       return undefined;
-    const voronoiBoundaryData = new VoronoiBoundaryData(graph, pad);
+    const voronoiBoundaryData = new VoronoiBoundaryData(voronoi._graphRange, voronoi._circumcenterRange);
     const voronoiDiagram = new HalfEdgeGraph();
     // go over all edges in the graph and add bisectors for boundary edges
     // and add line between circumcenters for interior edges
@@ -321,11 +324,11 @@ export class Voronoi {
     return LineSegment3d.create(intersection[0].detailA.point, intersection[1].detailA.point); // limit bisector to the voronoi boundary
   }
   // create a Voronoi diagram for a graph with colinear points
-  private static createVoronoiForColinearPoints(graph: HalfEdgeGraph, pad?: XAndY): HalfEdgeGraph | undefined {
+  private static createVoronoiForColinearPoints(graph: HalfEdgeGraph): HalfEdgeGraph | undefined {
     const voronoi = new Voronoi(graph, true);
     if (!voronoi._inputGraphIsValid)
       return undefined;
-    const voronoiBoundaryData = new VoronoiBoundaryData(graph, pad);
+    const voronoiBoundaryData = new VoronoiBoundaryData(voronoi._graphRange, voronoi._circumcenterRange);
     const voronoiDiagram = new HalfEdgeGraph();
     let isValidVoronoi = true;
     graph.announceEdges(
@@ -353,10 +356,9 @@ export class Voronoi {
   /**
    * Creates a Voronoi diagram from a set of points.
    * @param points An array of points; xy-only (z-coordinate is ignored). Points can be colinear.
-   * @param pad Optional padding in x and y directions to expand the graph range to create the Voronoi boundary rectangle.
    * @returns A HalfEdgeGraph representing the Voronoi diagram, or undefined if the input is invalid.
    */
-  public static createVoronoiFromPoints(points: Point3d[], pad?: XAndY): HalfEdgeGraph | undefined {
+  public static createVoronoiFromPoints(points: Point3d[]): HalfEdgeGraph | undefined {
     if (!points || points.length < 2)
       return undefined;
     // remove duplicates
@@ -366,41 +368,72 @@ export class Voronoi {
     if (Voronoi.pointsAreColinear(uniquePoints)) {
       const sortedPoints = uniquePoints.slice().sort((a, b) => a.x - b.x || a.y - b.y); // sort points by x, then y
       const graph = Voronoi.createLinearGraph(sortedPoints.map(point => [point, 0]));
-      return graph ? Voronoi.createVoronoiForColinearPoints(graph, pad) : undefined;
+      return graph ? Voronoi.createVoronoiForColinearPoints(graph) : undefined;
     } else {
       const graph = Triangulator.createTriangulatedGraphFromPoints(uniquePoints);
-      return graph ? Voronoi.createVoronoi(graph, pad) : undefined;
+      return graph ? Voronoi.createVoronoi(graph) : undefined;
     }
   }
   // find the Voronoi diagram for a set of points with child indices and
   // then combine Voronoi faces for each child index into a single region
   private static createVoronoiFromPointsWithIndices(
-    pointsWithIndices: [Point3d, number][], numChildren: number, pad?: XAndY,
-  ): AnyRegion[] | undefined {
+    pointsWithIndices: [Point3d, number][], numChildren: number,
+  ): [AnyRegion[], HalfEdgeGraph] | undefined {
     if (!pointsWithIndices || pointsWithIndices.length < 2)
       return undefined;
-    // remove duplicates
-    const uniquePointsWithIndices = Array.from(
-      new Map(
-        pointsWithIndices.map(([point, num]) => [
-          `${point.x},${point.y},${point.z},${num}`,
-          [point, num] as [Point3d, number],
-        ])
-      ).values()
-    );
+    const comparePoints: OrderedComparator<Point3d> = (p0: Point3d, p1: Point3d) => {
+      if (p0.isAlmostEqual(p1))
+        return 0;
+      if (!Geometry.isAlmostEqualNumber(p0.x, p1.x)) {
+        if (p0.x < p1.x)
+          return -1;
+        if (p0.x > p1.x)
+          return 1;
+      }
+      if (!Geometry.isAlmostEqualNumber(p0.y, p1.y)) {
+        if (p0.y < p1.y)
+          return -1;
+        if (p0.y > p1.y)
+          return 1;
+      }
+      if (!Geometry.isAlmostEqualNumber(p0.z, p1.z)) {
+        if (p0.z < p1.z)
+          return -1;
+        if (p0.z > p1.z)
+          return 1;
+      }
+      return 0;
+    };
+    const clonePoint: CloneFunction<Point3d> = (p: Point3d) => {
+      return p.clone();
+    };
+    const pointToIndexDic = new Dictionary<Point3d, number>(comparePoints, clonePoint);
+    for (const [point, index] of pointsWithIndices)
+      pointToIndexDic.insert(point, index);
     let voronoiDiagram: HalfEdgeGraph | undefined;
     let graph: HalfEdgeGraph | undefined;
-    if (Voronoi.pointsAreColinear(uniquePointsWithIndices.map(([point]) => point))) {
-      const sortedPoints = uniquePointsWithIndices.slice().sort((a, b) => a[0].x - b[0].x || a[0].y - b[0].y); // sort points by x, then y
-      graph = Voronoi.createLinearGraph(sortedPoints);
-      voronoiDiagram = graph ? Voronoi.createVoronoiForColinearPoints(graph, pad) : undefined;
+    if (Voronoi.pointsAreColinear(Array.from(pointToIndexDic.keys()))) {
+      const sortedPoints = pointToIndexDic.extractPairs().slice().sort((a, b) => a.key.x - b.key.x || a.key.y - b.key.y); // sort points by x, then y
+      graph = Voronoi.createLinearGraph(sortedPoints.map(item => [item.key, item.value]));
+      voronoiDiagram = graph ? Voronoi.createVoronoiForColinearPoints(graph) : undefined;
     } else {
-      // TODO: implement Triangulator.createTriangulatedGraphFromPointsWithIndices
-      // const graph = Triangulator.createTriangulatedGraphFromPointsWithIndices(uniquePointsWithIndices);
-      graph = Triangulator.createTriangulatedGraphFromPoints(uniquePointsWithIndices.map(([point]) => point));
-      voronoiDiagram = graph ? Voronoi.createVoronoi(graph, pad) : undefined;
+      graph = Triangulator.createTriangulatedGraphFromPoints(Array.from(pointToIndexDic.keys()));
+      if (!graph)
+        return undefined;
+      graph.announceVertexLoops(
+        (_g: HalfEdgeGraph, seed: HalfEdge) => {
+          const nodesAroundVertex = seed.collectAroundVertex();
+          for (const node of nodesAroundVertex) {
+            const index = pointToIndexDic.get(node.getPoint3d());
+            if (index !== undefined)
+              node.edgeTag = index; // set edgeTag to the child index
+          }
+          return true;
+        }
+      );
+      voronoiDiagram = graph ? Voronoi.createVoronoi(graph) : undefined;
     }
-    if (!voronoiDiagram || !graph)
+    if (!voronoiDiagram)
       return undefined;
     // a 2D array where row index is equal child index (stored in edgeTags of graph nodes) and each row stores loops;
     // all loops in a row represent all faces of the Voronoi diagram that have "faceTag = row index = child index"
@@ -427,7 +460,7 @@ export class Voronoi {
       // @dave: not sure below line is correct but works fine for colinear case
       combinedRegions.push(signedLoops[0].negativeAreaLoops[0]);
     }
-    return combinedRegions;
+    return [combinedRegions, graph!];
   }
   // stoke child curve from start and end to get sample points; skip the first and last points on the child curve
   // each sample point is a tuple of [Point3d, childIndex]
@@ -453,13 +486,12 @@ export class Voronoi {
    * Creates a Voronoi diagram from a curve chain.
    * @param curveChain A curve chain; xy-only (z-coordinate is ignored).
    * @param strokeOptions Optional stroke options to control the sampling of the curve chain.
-   * @param pad Optional padding in x and y directions to expand the graph range to create the Voronoi boundary rectangle.
    * @returns An array of AnyRegion where each region representing a face of Voronoi diagram corresponding a child of curve
    * chain, or undefined if the input is invalid.
    */
   public static createVoronoiFromCurveChain(
-    curveChain: CurveChain, strokeOptions?: StrokeOptions, pad?: XAndY,
-  ): AnyRegion[] | undefined {
+    curveChain: CurveChain, strokeOptions?: StrokeOptions, strokePoints?: Point3d[],
+  ): [AnyRegion[], HalfEdgeGraph] | undefined {
     if (strokeOptions === undefined)
       strokeOptions = new StrokeOptions();
     const children = curveChain.children;
@@ -489,54 +521,18 @@ export class Voronoi {
       }
     }
     pointsWithIndices.push([endPoint, numChildren - 1]);
-    return Voronoi.createVoronoiFromPointsWithIndices(pointsWithIndices, numChildren, pad);
-  }
-
-  /////////////// This method is temporary and will be removed. NO NEED TO REVIEW.  /////////////////
-  /////////////// Just for debugging purposes. This method is called by last 4 tests. /////////////////
-  public static createVoronoiFromCurveChainTMP(
-    curveChain: CurveChain, strokeOptions?: StrokeOptions, pad?: XAndY, strokePoints?: Point3d[],
-  ): HalfEdgeGraph | undefined {
-    if (strokeOptions === undefined)
-      strokeOptions = new StrokeOptions();
-    const children = curveChain.children;
-    const startPoint = curveChain.startPoint();
-    const endPoint = curveChain.endPoint();
-    if (!children || !startPoint || !endPoint)
-      return undefined;
-    const numChildren = children.length;
-    const pointsWithIndices: [Point3d, number][] = [];
-    pointsWithIndices.push([startPoint, 0]);
-    for (let i = 0; i < numChildren; i++) {
-      const child = children[i];
-      if (child instanceof LineString3d) {
-        const points = child.points;
-        if (points.length < 2)
-          continue; // skip empty or single-point line strings
-        for (let j = 0; j < points.length - 1; j++) {
-          const segment = LineSegment3d.create(points[j], points[j + 1]);
-          if (!Voronoi.pushPointsWithIndices(segment, i, pointsWithIndices, strokeOptions))
-            return undefined;
-        }
-      } else {
-        if (!Voronoi.pushPointsWithIndices(child, i, pointsWithIndices, strokeOptions))
-          return undefined;
-      }
-    }
-    pointsWithIndices.push([endPoint, numChildren - 1]);
     if (!strokePoints)
       strokePoints = [];
-    let points = pointsWithIndices.map(([point]) => point);
-    for (const point of points)
+    for (const point of pointsWithIndices.map(([point]) => point))
       strokePoints.push(point); // collect all points for debugging
-    const graph = Triangulator.createTriangulatedGraphFromPoints(pointsWithIndices.map(([point]) => point));
-    return graph ? Voronoi.createVoronoi(graph, pad) : undefined;
+    return Voronoi.createVoronoiFromPointsWithIndices(pointsWithIndices, numChildren);
   }
 }
 
 /**
  * A class to represent the boundary data for a Voronoi diagram.
  * * Voronoi diagram is unbounded, so we create a large rectangle around the diagram to limit it.
+ * * THe rectangle is large enough to contain the circumcenters of the Delaunay triangles.
  * */
 class VoronoiBoundaryData {
   private _p0: Point3d;
@@ -552,23 +548,15 @@ class VoronoiBoundaryData {
 
   /**
    * Constructor
-   * @param graph A HalfEdgeGraph representing a Delaunay triangulated graph; xy-only (z-coordinate is ignored).
-   * @param pad Optional padding in x and y directions to expand the graph range to create the Voronoi boundary rectangle.
+   * @param graphRange Range of the HalfEdgeGraph representing a Delaunay triangulated graph; xy-only (z-coordinate is ignored).
+   * @param circumcenterRange Range of the circumcenters of the triangles in the Delaunay triangulation.
    */
-  constructor(graph: HalfEdgeGraph, pad?: XAndY) {
-    const graphRange = HalfEdgeGraphOps.graphRange(graph);
-    let padX = 0;
-    let padY = 0;
-    if (pad === undefined) {
-      const minPadding = 2;  // smallest padding
-      const maxPadding = 10; // do not let padding grow too large
-      const ratio = 0.05;    // 5% relative padding
-      padX = Math.min(Math.max(graphRange.xLength() * ratio, minPadding), maxPadding);
-      padY = Math.min(Math.max(graphRange.yLength() * ratio, minPadding), maxPadding);
-    } else {
-      padX = pad.x;
-      padY = pad.y;
-    }
+  constructor(graphRange: Range3d, circumcenterRange: Range3d) {
+    const minPadding = 2;  // smallest padding
+    const maxPadding = 10; // do not let padding grow too large
+    const ratio = 0.05;    // 5% relative padding
+    const padX = Math.min(Math.max(graphRange.xLength() * ratio, minPadding), maxPadding) + circumcenterRange.xLength();
+    const padY = Math.min(Math.max(graphRange.yLength() * ratio, minPadding), maxPadding) + circumcenterRange.yLength();
     this._p0 = Point3d.create(graphRange.low.x - padX, graphRange.low.y - padY);
     this._p1 = Point3d.create(graphRange.high.x + padX, graphRange.low.y - padY);
     this._p2 = Point3d.create(graphRange.high.x + padX, graphRange.high.y + padY);
