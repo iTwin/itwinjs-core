@@ -59,7 +59,7 @@ export function appendTextAnnotationGeometry(props: AppendTextAnnotationGeometry
 
   // Construct the leader geometry
   if (annotation.leaders && annotation.leaders.length > 0) {
-    result = result && appendLeadersToBuilder(props.builder, annotation.leaders, props.layout, transform, params, annotation.frame);
+    result = result && appendLeadersToBuilder(props.builder, annotation.leaders, props.layout, transform.clone(), params, props.textStyleResolver);
   }
 
   // Construct the debug geometry

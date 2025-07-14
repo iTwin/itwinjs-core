@@ -6,7 +6,7 @@
  * @module ElementGeometry
  */
 
-import { BaselineShift, FontId, FontType, FractionRun, LineLayoutResult, Paragraph, Run, RunLayoutResult, TabRun, TextBlock, TextBlockLayoutResult, TextBlockMargins, TextRun, TextStyleSettings, TextStyleSettingsProps } from "@itwin/core-common";
+import { BaselineShift, FontId, FontType, FractionRun, LineLayoutResult, Paragraph, Run, RunLayoutResult, TabRun, TextAnnotationLeader, TextBlock, TextBlockLayoutResult, TextBlockMargins, TextRun, TextStyleSettings, TextStyleSettingsProps } from "@itwin/core-common";
 import { Geometry, Range2d } from "@itwin/core-geometry";
 import { IModelDb } from "../IModelDb";
 import { assert, Id64String, NonFunctionPropertiesOf } from "@itwin/core-bentley";
@@ -237,6 +237,15 @@ export class TextStyleResolver {
     }
 
     return style;
+  }
+
+  public resolveTextAnnotationLeaderSettings(leader: TextAnnotationLeader): TextStyleSettings {
+    let settings = this.blockSettings;
+
+    if (leader.styleOverrides)
+      settings = settings.clone(leader.styleOverrides);
+
+    return applyBlockSettings(settings, this.blockSettings);
   }
 
   /** Resolves the effective style for a [Paragraph]($common). Paragraph should be child of provided TextBlock. */

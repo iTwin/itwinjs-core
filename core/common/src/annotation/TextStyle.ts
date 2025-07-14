@@ -63,9 +63,10 @@ export interface TextFrameStyleProps {
  */
 export interface TextLeaderStyleProps {
   /** The color of the leader.
-   * Default: "subcategory".
+   * If `inherit` is specified, the [[TextAnnotationLeader]] will use the color specified in the parent [[TextStyleSettings]]`.
+   * Default: "inherit".
    */
-  color?: TextStyleColor;
+  color?: TextStyleColor | "inherit";
   /** Whether to use an elbow in the leader.
    * Default: false
    */
@@ -264,7 +265,7 @@ export class TextStyleSettings {
     superScriptScale: 2 / 3,
     widthFactor: 1,
     leader: {
-      color: "subcategory",
+      color: "inherit",
       wantElbow: false,
       elbowLength: 1.0,
       terminatorHeightFactor: 1.0,
