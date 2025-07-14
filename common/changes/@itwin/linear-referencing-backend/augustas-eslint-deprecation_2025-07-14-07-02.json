@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/linear-referencing-backend",
+      "comment": "Added 'lint-deprecation' ESLint command to fix deprecation comments",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/linear-referencing-backend"
+}

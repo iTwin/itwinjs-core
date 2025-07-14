@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/express-server",
+      "comment": "Added 'lint-deprecation' ESLint command to fix deprecation comments",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/express-server"
+}

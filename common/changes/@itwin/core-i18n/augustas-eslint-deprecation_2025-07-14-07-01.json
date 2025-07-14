@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-i18n",
+      "comment": "Added 'lint-deprecation' ESLint command to fix deprecation comments",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-i18n"
+}
