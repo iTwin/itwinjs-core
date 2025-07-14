@@ -38,7 +38,7 @@ import { XYAndZ } from "./XYZProps";
  * For the equator circle, phi=0, cos(phi) = 1, sin(phi)=0
  *           f = u * cos(theta) + v * sin(theta).
  * with derivative
- *          df / dTheta = = u * sin(theta) + v * cos(theta)
+ *          df / dTheta = - u * sin(theta) + v * cos(theta)
  * whose zero is            tan(theta) = v/u
  * (and that has two solutions 180 degrees apart)
  * Then with that theta let      A = u * cos(theta) + v * sin(theta)

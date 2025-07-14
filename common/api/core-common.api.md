@@ -7923,6 +7923,13 @@ export namespace RenderSchedule {
         position: number[];
         visible?: boolean;
     }
+    // @internal
+    export interface EditingChanges {
+        // (undocumented)
+        elements: Set<Id64String>;
+        // (undocumented)
+        timeline: ModelTimeline;
+    }
     export class ElementTimeline extends Timeline {
         // @internal (undocumented)
         addSymbologyOverrides(overrides: FeatureOverrides, time: number): void;
@@ -8079,6 +8086,8 @@ export namespace RenderSchedule {
         // @internal (undocumented)
         protected getFeatureAppearance(visibility: number, time: number): FeatureAppearance | undefined;
         getVisibility(time: number): number;
+        // @internal
+        isEditingCommitted: boolean;
         // (undocumented)
         toJSON(): TimelineProps;
         readonly transform?: TransformTimelineEntries;
@@ -9073,7 +9082,7 @@ export interface RscFontEncodingProps {
 }
 
 // @beta (undocumented)
-export type Run = TextRun | FractionRun | LineBreakRun;
+export type Run = TextRun | FractionRun | TabRun | LineBreakRun;
 
 // @beta
 export namespace Run {
@@ -9095,7 +9104,7 @@ export interface RunLayoutResult {
 }
 
 // @beta
-export type RunProps = TextRunProps | FractionRunProps | LineBreakRunProps;
+export type RunProps = TextRunProps | FractionRunProps | TabRunProps | LineBreakRunProps;
 
 // @public
 export enum SchemaState {
@@ -9759,6 +9768,25 @@ export enum SyncMode {
     PullOnly = 3
 }
 
+// @beta
+export class TabRun extends TextBlockComponent {
+    // (undocumented)
+    clone(): TabRun;
+    // (undocumented)
+    static create(props: Omit<TabRunProps, "type">): TabRun;
+    // (undocumented)
+    equals(other: TextBlockComponent): boolean;
+    stringify(options?: TextBlockStringifyOptions): string;
+    // (undocumented)
+    toJSON(): TabRunProps;
+    readonly type = "tab";
+}
+
+// @beta
+export interface TabRunProps extends TextBlockComponentProps {
+    readonly type: "tab";
+}
+
 // @public
 export enum TerrainHeightOriginMode {
     Geodetic = 0,
@@ -9860,7 +9888,10 @@ export interface TextAnnotationCreateArgs {
 export type TextAnnotationFillColor = TextStyleColor | "background";
 
 // @beta
-export type TextAnnotationFrameShape = "none" | "line" | "rectangle" | "circle" | "equilateralTriangle" | "diamond" | "square" | "pentagon" | "hexagon" | "octagon" | "capsule" | "roundedRectangle";
+export type TextAnnotationFrameShape = typeof textAnnotationFrameShapes[number];
+
+// @beta
+export const textAnnotationFrameShapes: readonly ["none", "line", "rectangle", "circle", "equilateralTriangle", "diamond", "square", "pentagon", "hexagon", "octagon", "capsule", "roundedRectangle"];
 
 // @beta
 export interface TextAnnotationProps {
@@ -9900,6 +9931,7 @@ export abstract class TextBlockComponent {
     clearStyleOverrides(): void;
     abstract clone(): TextBlockComponent;
     equals(other: TextBlockComponent): boolean;
+    get isWhitespace(): boolean;
     get overridesStyle(): boolean;
     abstract stringify(options?: TextBlockStringifyOptions): string;
     get styleName(): string;
@@ -9968,6 +10000,7 @@ export interface TextBlockStringifyOptions {
     fractionSeparator?: string;
     lineBreak?: string;
     paragraphBreak?: string;
+    tabsAsSpaces?: number;
 }
 
 // @beta
@@ -10099,6 +10132,7 @@ export class TextStyleSettings {
     readonly subScriptScale: number;
     readonly superScriptOffsetFactor: number;
     readonly superScriptScale: number;
+    readonly tabInterval: number;
     // (undocumented)
     toJSON(): TextStyleSettingsProps;
     readonly widthFactor: number;
@@ -10119,6 +10153,7 @@ export interface TextStyleSettingsProps {
     subScriptScale?: number;
     superScriptOffsetFactor?: number;
     superScriptScale?: number;
+    tabInterval?: number;
     widthFactor?: number;
 }
 
