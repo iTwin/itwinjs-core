@@ -3,33 +3,16 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { computeGraphemeOffsets, ComputeGraphemeOffsetsArgs, ComputeRangesForTextLayoutArgs, FindFontId, FindTextStyle, layoutTextBlock, LineLayout, RunLayout, TextBlockLayout, TextLayoutRanges } from "../../annotations/TextBlockLayout";
+import { computeGraphemeOffsets, ComputeGraphemeOffsetsArgs, layoutTextBlock, LineLayout, RunLayout, TextBlockLayout, TextLayoutRanges } from "../../annotations/TextBlockLayout";
 import { Geometry, Range2d } from "@itwin/core-geometry";
 import { ColorDef, FontType, FractionRun, LineBreakRun, LineLayoutResult, Run, RunLayoutResult, TabRun, TextAnnotation, TextAnnotationAnchor, TextBlock, TextBlockGeometryPropsEntry, TextBlockMargins, TextRun, TextStringProps, TextStyleSettings } from "@itwin/core-common";
 import { SnapshotDb } from "../../IModelDb";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { ProcessDetector } from "@itwin/core-bentley";
 import { produceTextBlockGeometry } from "../../core-backend";
+import { computeTextRangeAsStringLength, doLayout } from "../AnnotationTestUtils";
 
-function computeTextRangeAsStringLength(args: ComputeRangesForTextLayoutArgs): TextLayoutRanges {
-  const range = new Range2d(0, 0, args.chars.length, args.lineHeight);
-  return { layout: range, justification: range };
-}
 
-function doLayout(textBlock: TextBlock, args?: {
-  findTextStyle?: FindTextStyle;
-  findFontId?: FindFontId;
-}): TextBlockLayout {
-  const layout = layoutTextBlock({
-    textBlock,
-    iModel: {} as any,
-    findTextStyle: args?.findTextStyle ?? (() => TextStyleSettings.defaults),
-    findFontId: args?.findFontId ?? (() => 0),
-    computeTextRange: computeTextRangeAsStringLength,
-  });
-
-  return layout;
-}
 
 function makeTextRun(content: string, styleName = ""): TextRun {
   return TextRun.create({ content, styleName });
@@ -331,14 +314,14 @@ describe("layoutTextBlock", () => {
       }
 
       // The extra whitespace is intentional to show where the tab stops should be.
-      appendLine("",      "a");
-      appendLine("",      "bc");
-      appendLine("a",     "a");
-      appendLine("bc",    "bc");
-      appendLine("cde",   "cde");
+      appendLine("", "a");
+      appendLine("", "bc");
+      appendLine("a", "a");
+      appendLine("bc", "bc");
+      appendLine("cde", "cde");
       appendLine("cdefg", "cde"); // this one is the max tab distance before needing to move to the next tab stop
-      appendLine("cdefgh",      "cde"); // This one should push to the next tab stop.
-      appendLine("cdefghi",     "cde", false); // This one should push to the next tab stop.
+      appendLine("cdefgh", "cde"); // This one should push to the next tab stop.
+      appendLine("cdefghi", "cde", false); // This one should push to the next tab stop.
 
       const tb = doLayout(textBlock);
       tb.lines.forEach((line, index) => {

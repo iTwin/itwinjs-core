@@ -18,7 +18,7 @@ import {
   AnalysisStyle, BackgroundMapProps, BackgroundMapProviderProps, BackgroundMapSettings, Camera, CartographicRange, ClipStyle, ColorDef, DisplayStyleSettingsProps,
   Easing, ElementProps, FeatureAppearance, Frustum, GlobeMode, GridOrientationType, Hilite, ImageBuffer,
   Interpolation, isPlacement2dProps, LightSettings, ModelMapLayerSettings, Npc, NpcCenter, Placement,
-  Placement2d, Placement3d, PlacementProps, SolarShadowSettings, SubCategoryAppearance, SubCategoryOverride, ViewFlags,
+  Placement2d, Placement3d, PlacementProps, RenderSchedule, SolarShadowSettings, SubCategoryAppearance, SubCategoryOverride, ViewFlags,
 } from "@itwin/core-common";
 import { AuxCoordSystemState } from "./AuxCoordSys";
 import { BackgroundMapGeometry } from "./BackgroundMapGeometry";
@@ -1303,6 +1303,30 @@ export abstract class Viewport implements Disposable, TileUser {
 
     removals.push(settings.onTimePointChanged.addListener(scheduleChanged));
     removals.push(style.onScheduleScriptChanged.addListener(scriptChanged));
+
+
+    const scheduleEditingChanged = async (
+      changes: RenderSchedule.EditingChanges[]
+    ) => {
+      for (const ref of this.getTileTreeRefs()) {
+        const tree = ref.treeOwner.tileTree;
+        await tree?.onScheduleEditingChanged(changes);
+      }
+    };
+
+    const scheduleEditingCommitted = () => {
+      for (const ref of this.getTileTreeRefs()) {
+        const tree = ref.treeOwner.tileTree;
+        tree?.onScheduleEditingCommitted();
+      }
+    };
+
+    removals.push(
+      style.onScheduleEditingChanged.addListener((changes) => {
+        void scheduleEditingChanged(changes);
+      })
+    );
+    removals.push(style.onScheduleEditingCommitted.addListener(scheduleEditingCommitted));
 
     removals.push(settings.onViewFlagsChanged.addListener((vf) => {
       if (vf.backgroundMap !== this.viewFlags.backgroundMap)

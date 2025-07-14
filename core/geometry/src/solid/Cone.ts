@@ -78,6 +78,12 @@ export class Cone extends SolidPrimitive implements UVSurface, UVSurfaceIsoParam
     if (transform.matrix.isSingular())
       return false;
     transform.multiplyTransformTransform(this._localToWorld, this._localToWorld);
+    if (transform.matrix.determinant() < 0.0) {
+      // if mirror, reverse z-axis (origin and direction) to preserve outward normals
+      this._localToWorld.origin.addInPlace(this._localToWorld.matrix.columnZ());
+      this._localToWorld.matrix.scaleColumnsInPlace(1, 1, -1);
+      [this._radiusA, this._radiusB] = [this._radiusB, this._radiusA];
+    }
     return true;
   }
   /**

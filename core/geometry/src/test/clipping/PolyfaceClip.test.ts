@@ -1257,7 +1257,7 @@ describe("PolyfaceClip", () => {
     const mesh = Sample.createMeshFromFrankeSurface(30, surfaceOptions);
     if (ck.testType(mesh, IndexedPolyface, "test mesh is defined")) {
       const regionOptions = StrokeOptions.createForCurves();
-      regionOptions.angleTol = Angle.createDegrees(5);
+      regionOptions.angleTol = Angle.createDegrees(0.5);
 
       const facetAndDrapeRegion = (label: string, regionXY: AnyRegion, knownAreaXY?: number, sweepDir?: Vector3d): IndexedPolyface | undefined => {
         let regionFacets: IndexedPolyface | undefined;

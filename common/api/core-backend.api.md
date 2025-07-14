@@ -205,6 +205,7 @@ import { Range3d } from '@itwin/core-geometry';
 import { Rank } from '@itwin/core-common';
 import { RelatedElement } from '@itwin/core-common';
 import { RelatedElementProps } from '@itwin/core-common';
+import { RelationshipClass } from '@itwin/ecschema-metadata';
 import { RelationshipProps } from '@itwin/core-common';
 import { RemoveFunction } from '@itwin/core-common';
 import { RenderMaterialProps } from '@itwin/core-common';
@@ -250,6 +251,7 @@ import { TextAnnotation } from '@itwin/core-common';
 import { TextAnnotation2dProps } from '@itwin/core-common';
 import { TextAnnotation3dProps } from '@itwin/core-common';
 import { TextAnnotationFrameShape } from '@itwin/core-common';
+import { TextAnnotationLeader } from '@itwin/core-common';
 import { TextAnnotationProps } from '@itwin/core-common';
 import { TextBlock } from '@itwin/core-common';
 import { TextBlockGeometryProps } from '@itwin/core-common';
@@ -306,6 +308,9 @@ export type AnyDb = IModelDb | ECDb;
 
 // @beta
 export function appendFrameToBuilder(builder: ElementGeometry.Builder, frame: TextFrameStyleProps, range: Range2d, transform: Transform, geomParams: GeometryParams): boolean;
+
+// @beta
+export function appendLeadersToBuilder(builder: ElementGeometry.Builder, leaders: TextAnnotationLeader[], layout: TextBlockLayout, transform: Transform, params: GeometryParams, frame?: TextFrameStyleProps): boolean;
 
 // @beta
 export function appendTextAnnotationGeometry(props: AppendTextAnnotationGeometryArgs): boolean;
@@ -1531,6 +1536,9 @@ export interface ComputedProjectExtents {
 }
 
 // @beta
+export function computeElbowDirection(attachmentPoint: Point3d, frameCurve: Loop | Path, elbowLength: number): Vector3d | undefined;
+
+// @beta
 export function computeFrame(args: ComputeFrameArgs): Loop | Path;
 
 // @beta
@@ -1561,6 +1569,9 @@ export interface ComputeIntervalPointsArgs extends ComputeFrameArgs {
 
 // @beta
 export function computeLayoutTextBlockResult(args: LayoutTextBlockArgs): TextBlockLayoutResult;
+
+// @beta
+export function computeLeaderAttachmentPoint(leader: TextAnnotationLeader, frameCurve: Loop | Path, textLayout: TextBlockLayout, transform: Transform): Point3d | undefined;
 
 // @public
 export interface ComputeProjectExtentsOptions {
@@ -2363,6 +2374,7 @@ class Element_2 extends Entity {
     getClassMetaData(): EntityMetaData | undefined;
     getDisplayLabel(): string;
     getJsonProperty(nameSpace: string): any;
+    getMetaData(): Promise<EntityClass>;
     getToolTipMessage(): string[];
     getUserProperties(namespace: string): any;
     insert(): string;
@@ -2666,7 +2678,7 @@ export class Entity {
     // @deprecated
     forEachProperty(func: PropertyCallback, includeCustom?: boolean): void;
     // @preview
-    getMetaData(): Promise<EntityClass>;
+    getMetaData(): Promise<EntityClass | RelationshipClass>;
     // @beta
     getReferenceIds(): EntityReferenceSet;
     id: Id64String;
@@ -2677,6 +2689,7 @@ export class Entity {
     // @internal
     static get isGeneratedClass(): boolean;
     readonly isInstanceOfEntity: true;
+    protected _metadata?: EntityClass | RelationshipClass;
     // @internal (undocumented)
     static get protectedOperations(): string[];
     static schema: typeof Schema;
@@ -5118,6 +5131,7 @@ export class Relationship extends Entity {
     delete(): void;
     // (undocumented)
     static getInstance<T extends Relationship>(iModel: IModelDb, criteria: Id64String | SourceAndTarget): T;
+    getMetaData(): Promise<RelationshipClass>;
     insert(): Id64String;
     static onDeletedDependency(_props: RelationshipProps, _iModel: IModelDb): void;
     static onRootChanged(_props: RelationshipProps, _iModel: IModelDb): void;
