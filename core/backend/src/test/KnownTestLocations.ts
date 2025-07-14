@@ -28,14 +28,4 @@ export class KnownTestLocations {
     // Assume that we are running in nodejs
     return join(__dirname, "output");
   }
-
-  /** The path to the node_modules directory. */
-  public static get nodeModulesDir(): string {
-    if (ProcessDetector.isMobileAppBackend) {
-      return join(tmpdir(), "node_modules");
-    }
-
-    // Assume that we are running in nodejs
-    return join(__dirname, "../../..", "node_modules");
-  }
 }

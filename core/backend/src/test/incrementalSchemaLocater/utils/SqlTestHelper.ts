@@ -55,8 +55,6 @@ export class SqlTestHelper {
     const xmlLocater = new SchemaXmlFileLocater();
     xmlLocater.addSchemaSearchPath(path.join(KnownTestLocations.assetsDir, "IncrementalSchemaLocater"));
     this.context.addLocater(xmlLocater);
-    const nodeLocater = this.configureNodeSchemaLocater();
-    this.context.addLocater(nodeLocater);
   }
 
   private static initializeTestIModel() {
@@ -148,15 +146,5 @@ export class SqlTestHelper {
     const schemas = SchemaGraphUtil.buildDependencyOrderedSchemaList(insertSchema);
     const schemaStrings = await Promise.all(schemas.map(async (schema) => SqlTestHelper.getSchemaString(schema)));
     return schemaStrings;
-  }
-
-  private static configureNodeSchemaLocater(): SchemaXmlFileLocater {
-    const schemaDir = path.join(KnownTestLocations.nodeModulesDir, "@bentley");
-    const searchPaths: string[] = [];
-    searchPaths.push(...globSync(path.join(schemaDir, "*schema"), { windowsPathsNoEscape: true }).filter(fs.existsSync));
-
-    const locater = new SchemaXmlFileLocater();
-    locater.addSchemaSearchPaths(searchPaths);
-    return locater;
   }
 };
