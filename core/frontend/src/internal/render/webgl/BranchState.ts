@@ -9,7 +9,7 @@
 import { Id64String } from "@itwin/core-bentley";
 import { Transform } from "@itwin/core-geometry";
 import {
-  BatchType, FeatureAppearance, FeatureAppearanceProvider, GeometryClass, HiddenLine, RealityModelDisplaySettings, RenderMode, ViewFlags,
+  BatchType, ContourDisplay, FeatureAppearance, FeatureAppearanceProvider, GeometryClass, HiddenLine, RealityModelDisplaySettings, RenderMode, ViewFlags,
 } from "@itwin/core-common";
 import { IModelConnection } from "../../../IModelConnection";
 import { FeatureSymbology } from "../../../render/FeatureSymbology";
@@ -51,6 +51,7 @@ export interface BranchStateOptions {
    * No [ClipStyle.insideColor]($common), [ClipStyle.outsideColor]($common), or [ClipStyle.intersectionStyle]($common) will be applied.
    */
   disableClipStyle?: true;
+  contourLine?: ContourDisplay;
 }
 
 /**
@@ -80,6 +81,7 @@ export class BranchState {
   public get inSectionDrawingAttachment() { return this._opts.inSectionDrawingAttachment; }
   public get groupNodeId() { return this._opts.groupNodeId; }
   public get disableClipStyle() { return this._opts.disableClipStyle;}
+  public get contourLine() { return this._opts.contourLine;}
 
   public get symbologyOverrides() {
     return this._opts.symbologyOverrides;
@@ -117,6 +119,7 @@ export class BranchState {
       inSectionDrawingAttachment: branch.inSectionDrawingAttachment ?? prev.inSectionDrawingAttachment,
       groupNodeId: branch.branch.groupNodeId ?? prev.groupNodeId,
       disableClipStyle: branch.disableClipStyle ?? prev.disableClipStyle,
+      contourLine: branch.contourLine ?? prev.contourLine,
     });
   }
 

@@ -7,7 +7,7 @@
  */
 
 import { assert, dispose, Id64String } from "@itwin/core-bentley";
-import { ElementAlignedBox3d, FeatureAppearanceProvider, RenderFeatureTable, ThematicDisplayMode, ViewFlags } from "@itwin/core-common";
+import { ContourDisplay, ElementAlignedBox3d, FeatureAppearanceProvider, RenderFeatureTable, ThematicDisplayMode, ViewFlags } from "@itwin/core-common";
 import { Range3d, Transform } from "@itwin/core-geometry";
 import { IModelConnection } from "../../../IModelConnection";
 import { FeatureSymbology } from "../../../render/FeatureSymbology";
@@ -29,7 +29,6 @@ import { BranchState } from "./BranchState";
 import { BatchOptions } from "../../../common/render/BatchOptions";
 import { Contours } from "./Contours";
 import { GraphicBranchFrustum } from "../GraphicBranchFrustum";
-import { IModelApp } from "../../../IModelApp";
 
 /** @internal */
 export abstract class Graphic extends RenderGraphic implements WebGLDisposable {
@@ -351,6 +350,7 @@ export class Branch extends Graphic {
   public readonly inSectionDrawingAttachment?: boolean;
   public disableClipStyle?: true;
   public readonly transformFromExternalIModel?: Transform;
+  public contourLine?: ContourDisplay;
 
   public constructor(branch: GraphicBranch, localToWorld: Transform, viewFlags?: ViewFlags, opts?: GraphicBranchOptions) {
     super();
@@ -371,13 +371,7 @@ export class Branch extends Graphic {
     this.inSectionDrawingAttachment = opts.inSectionDrawingAttachment;
     this.disableClipStyle = opts.disableClipStyle;
     this.transformFromExternalIModel = opts.transformFromIModel;
-    const target = IModelApp.viewManager.selectedView?.target;
-    if((target as Target).plan.contours === undefined && opts.contours !== undefined){
-      (target as Target).plan.contours = opts.contours;
-      const viewport = IModelApp.viewManager.selectedView;
-      if (viewport)
-        viewport.displayStyle.settings.contours = opts.contours;
-    }
+    this.contourLine = opts.contours;
 
     if (opts.hline)
       this.edgeSettings = EdgeSettings.create(opts.hline);

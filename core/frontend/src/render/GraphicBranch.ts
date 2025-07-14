@@ -55,8 +55,6 @@ export class GraphicBranch implements Disposable /* , RenderMemory.Consumer */ {
    * @internal
    */
   public animationNodeId?: AnimationNodeId | number;
-  /** @internal */
-  public contours?: ContourDisplay;
 
   /** Identifies the "group" to which this branch belongs.
    * Groups represent cross-cutting subsets of a tile tree's contents.
