@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-quantity",
+      "comment": "Make error message clearer",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-quantity"
+}

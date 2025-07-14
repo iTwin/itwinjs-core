@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/ecschema-metadata",
+      "comment": "Use labels and descriptions from KindOfQuantity when using it's presentation unit in SchemaFormatsProvider",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/ecschema-metadata"
+}
