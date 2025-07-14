@@ -151,7 +151,7 @@ export class SqlTestHelper {
   }
 
   private static configureNodeSchemaLocater(): SchemaXmlFileLocater {
-    const schemaDir = path.join(__dirname, "../../../../../node_modules/@bentley");
+    const schemaDir = path.join(KnownTestLocations.nodeModulesDir, "@bentley");
     const searchPaths: string[] = [];
     searchPaths.push(...globSync(path.join(schemaDir, "*schema"), { windowsPathsNoEscape: true }).filter(fs.existsSync));
 
