@@ -11,17 +11,11 @@ import { RenderGraphic } from "../../render/RenderGraphic";
 import { RenderMemory } from "../../render/RenderMemory";
 import {
   RealityTile, RealityTileLoader, RealityTileTree, Tile, TileContent, TileDrawArgs, TileGeometryCollector, TileLoadPriority,
-  TileRequest,
-  TileRequestChannel,
-  TileTree,
-  TileTreeOwner,
-  TileTreeSupplier,
-  TileUser
+  TileRequest, TileRequestChannel, TileUser
 } from "../../tile/internal";
 import { createBlankConnection } from "../createBlankConnection";
 
 describe("RealityTile", () => {
-
   class TestGraphic extends RenderGraphic {
     public constructor(private _size: number) {
       super();
@@ -41,10 +35,9 @@ describe("RealityTile", () => {
 
   class TestRealityTile extends RealityTile {
     private readonly _contentSize: number;
-    public retainMemory = false;
     public visible = true;
 
-    public constructor(tileTree: RealityTileTree, contentSize: number, retainMemory = false) {
+    public constructor(tileTree: RealityTileTree, contentSize: number) {
       super({
         contentId: contentSize.toString(),
         range: new Range3d(0, 0, 0, 1, 1, 1),
@@ -52,7 +45,6 @@ describe("RealityTile", () => {
       }, tileTree);
 
       this._contentSize = contentSize;
-      this.retainMemory = retainMemory;
 
       if (contentSize === 0)
         this.setIsReady();
@@ -81,11 +73,6 @@ describe("RealityTile", () => {
 
     public override async readContent(): Promise<TileContent> {
       return { graphic: new TestGraphic(this._contentSize), isLeaf: true };
-    }
-
-    public override freeMemory(): void {
-      if (!this.retainMemory)
-        super.freeMemory();
     }
 
     public computeBytesUsed(): number {
@@ -136,7 +123,7 @@ describe("RealityTile", () => {
     public readonly contentSize: number;
     protected override readonly _rootTile: TestRealityTile;
 
-    public constructor(contentSize: number, iModel: IModelConnection, loader: TestRealityTileLoader, reprojectGeometry: boolean, retainMemory = false) {
+    public constructor(contentSize: number, iModel: IModelConnection, loader: TestRealityTileLoader, reprojectGeometry: boolean) {
       super({
         loader,
         rootTile: {
@@ -155,7 +142,7 @@ describe("RealityTile", () => {
 
       this.treeId = TestRealityTree._nextId;
       this.contentSize = contentSize;
-      this._rootTile = new TestRealityTile(this, contentSize, retainMemory);
+      this._rootTile = new TestRealityTile(this, contentSize);
     }
 
     public override get rootTile(): TestRealityTile { return this._rootTile; }
@@ -187,26 +174,6 @@ describe("RealityTile", () => {
     public override prune() { }
   }
 
-  const createOnTileTreeLoadPromise: (treeOwner: TileTreeOwner) => Promise<void> = async (treeOwner: TileTreeOwner) => {
-    return new Promise((resolve) => {
-      IModelApp.tileAdmin.onTileTreeLoad.addListener((tileTreeOwner) => {
-        if (treeOwner === tileTreeOwner)
-          resolve();
-      });
-    });
-  };
-
-  class Supplier implements TileTreeSupplier {
-    public compareTileTreeIds(lhs: TestRealityTree, rhs: TestRealityTree): number {
-      return lhs.treeId - rhs.treeId;
-    }
-
-    public async createTileTree(tree: TestRealityTree): Promise<TileTree | undefined> {
-      return Promise.resolve(tree);
-    }
-  }
-
-  const supplier = new Supplier();
   let imodel: IModelConnection;
   let reader: TestRealityTileLoader;
   let collector: TileGeometryCollector;
@@ -238,14 +205,6 @@ describe("RealityTile", () => {
 
   it("should reproject geometry when reprojectGeometry = true", async () => {
     const tree = new TestRealityTree(0, imodel, reader, true);
-    const treeOwner = imodel.tiles.getTileTreeOwner(tree, supplier);
-
-    // We need to call 'TileTreeOwner.load()' in order check 'isDisposed' later on (i.e only loaded tiletree can be truly disposed)
-    // Unfortunately 'TileTreeOwner.load()' doesn't return a promise this test can await.
-    // To workaround this, we create our own Promise hooked to the 'onTileTreeLoad' event.
-    const promises = [createOnTileTreeLoadPromise(treeOwner)];
-    treeOwner.load();
-    await Promise.all(promises);
 
     tree.collectTileGeometry(collector);
     const polyface = collector.polyfaces[0];
@@ -258,20 +217,26 @@ describe("RealityTile", () => {
 
   it("should not reproject geometry when reprojectGeometry = false", async () => {
     const tree = new TestRealityTree(0, imodel, reader, false);
-    const treeOwner = imodel.tiles.getTileTreeOwner(tree, supplier);
-
-    // We need to call 'TileTreeOwner.load()' in order check 'isDisposed' later on (i.e only loaded tiletree can be truly disposed)
-    // Unfortunately 'TileTreeOwner.load()' doesn't return a promise this test can await.
-    // To workaround this, we create our own Promise hooked to the 'onTileTreeLoad' event.
-    const promises = [createOnTileTreeLoadPromise(treeOwner)];
-    treeOwner.load();
-    await Promise.all(promises);
 
     tree.collectTileGeometry(collector);
     const polyface = collector.polyfaces[0];
     const points = polyface.data.point.getPoint3dArray();
 
     expect(points[0].x).to.equal(-0.6532814824381884);
+    expect(points[0].y).to.equal(-0.6532814824381882);
+    expect(points[0].z).to.equal(-0.3826834323650898);
+  });
+
+  it("should not reproject geometry multiple times", async () => {
+    const tree = new TestRealityTree(0, imodel, reader, true);
+
+    tree.collectTileGeometry(collector);
+    // Collect twice to ensure geometry is not reprojected again
+    tree.collectTileGeometry(collector);
+    const polyface = collector.polyfaces[0];
+    const points = polyface.data.point.getPoint3dArray();
+
+    expect(points[0].x).to.equal(9.346718517561811);
     expect(points[0].y).to.equal(-0.6532814824381882);
     expect(points[0].z).to.equal(-0.3826834323650898);
   });

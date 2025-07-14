@@ -339,7 +339,7 @@ export abstract class TileTreeReference /* implements RenderMemory.Consumer */ {
   }
 }
 
-/** @internal */
+/** @beta */
 export interface GeometryTreeReferenceOptions {
   reprojectGeometry?: boolean;
 }
