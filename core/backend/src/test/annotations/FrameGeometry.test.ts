@@ -4,24 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { AnyCurvePrimitive, CurvePrimitive, Geometry, Point3d, Range2d, Transform, Vector3d } from "@itwin/core-geometry";
-import { ColorDef, ElementGeometry, GeometryParams, textAnnotationFrameShapes, TextFrameStyleProps } from "@itwin/core-common";
+import { CurvePrimitive, Geometry, Point3d, Range2d, Transform, Vector3d } from "@itwin/core-geometry";
+import { ColorDef, GeometryParams, textAnnotationFrameShapes, TextFrameStyleProps } from "@itwin/core-common";
 import { appendFrameToBuilder, computeFrame } from "../../annotations/FrameGeometry";
 import { Id64 } from "@itwin/core-bentley";
-
-// Extending this because the ElementGeometry.Builder.entries attribute is hard to parse
-class MockBuilder extends ElementGeometry.Builder {
-  public params: GeometryParams[] = [];
-  public geometries: AnyCurvePrimitive[] = [];
-  public override appendGeometryParamsChange(params: GeometryParams): boolean {
-    this.params.push(params.clone());
-    return super.appendGeometryParamsChange(params);
-  }
-  public override appendGeometryQuery(geometry: AnyCurvePrimitive): boolean {
-    this.geometries.push(geometry);
-    return super.appendGeometryQuery(geometry);
-  }
-}
+import { MockBuilder } from "../AnnotationTestUtils";
 
 function isContinuous(geometries: CurvePrimitive[]): boolean {
   return geometries.every((current, index) => {

@@ -57,6 +57,36 @@ export interface TextFrameStyleProps {
   borderWeight?: number;
 };
 
+/** Properties describing the appearance of [[TextAnnotationLeader]] in a [[TextAnnotation]].
+ * Used when producing geometry for [[TextAnnotation]].
+ * @beta
+ */
+export interface TextLeaderStyleProps {
+  /** The color of the leader.
+   * Default: "subcategory".
+   */
+  color?: TextStyleColor;
+  /** Whether to use an elbow in the leader.
+   * Default: false
+   */
+  wantElbow?: boolean;
+  /** Multiplier used to compute length of the elbow in the leader.
+   * The elbowLength is computed in meters as elbowLength * [[lineHeight]].
+   * Default: 1.0
+   */
+  elbowLength?: number;
+  /** Multiplier to compute height of the leader terminator.
+   * The terminator height is computed in meters as terminatorHeight * [[lineHeight]].
+   * Default: 1.0
+   */
+  terminatorHeightFactor?: number;
+  /** Multiplier to compute width of the leader terminator.
+   * The terminator width is computed in meters as terminatorWidth * [[lineHeight]].
+   * Default: 1.0
+   */
+  terminatorWidthFactor?: number;
+}
+
 /** Serves both as the JSON representation of a [[TextStyleSettings]], and a way for a [[TextBlockComponent]] to selectively override aspects of a [AnnotationTextStyle]($backend)'s properties.
  * @beta
  */
@@ -124,6 +154,12 @@ export interface TextStyleSettingsProps {
    * Default: 1.0
    */
   widthFactor?: number;
+
+  /** Properties describing appearance of leaders in a [[TextAnnotation]]
+   * Used when producing geometry for [[TextAnnotation]]
+   * Default: {color:"subcategory", wantElbow:"false",elbowLength:1, terminatorWidthFactor:1, terminatorHeightFactor:1}.
+   */
+  leader?: TextLeaderStyleProps;
   /** The size (in meters) used to calculate the tab stops in a run.
    * These are equally spaced from the left edge of the TextBlock.
    * Default: 4 meters.
@@ -200,6 +236,10 @@ export class TextStyleSettings {
   public readonly superScriptScale: number;
   /** Multiplier used to compute the width of each glyph, relative to [[lineHeight]]. */
   public readonly widthFactor: number;
+  /** Properties describing appearance of leaders in a [[TextAnnotation]].
+   * Used when producing geometry for [[TextAnnotation]].
+   */
+  public readonly leader: Readonly<Required<TextLeaderStyleProps>>;
   /** The size (in meters) used to calculate the tab stops in a run.
    * These are equally spaced from the left edge of the TextBlock. Default is 4 meters.
    */
@@ -223,6 +263,13 @@ export class TextStyleSettings {
     superScriptOffsetFactor: 0.5,
     superScriptScale: 2 / 3,
     widthFactor: 1,
+    leader: {
+      color: "subcategory",
+      wantElbow: false,
+      elbowLength: 1.0,
+      terminatorHeightFactor: 1.0,
+      terminatorWidthFactor: 1.0,
+    },
     tabInterval: 4,
     frame: {
       shape: "none",
@@ -233,7 +280,7 @@ export class TextStyleSettings {
   };
 
   /** Settings initialized to all default values. */
-  public static defaults: TextStyleSettings = new TextStyleSettings({ });
+  public static defaults: TextStyleSettings = new TextStyleSettings({});
 
   private constructor(props: TextStyleSettingsProps, defaults?: Required<TextStyleSettingsProps>) {
     if (!defaults) {
@@ -254,6 +301,14 @@ export class TextStyleSettings {
     this.superScriptOffsetFactor = props.superScriptOffsetFactor ?? defaults.superScriptOffsetFactor;
     this.superScriptScale = props.superScriptScale ?? defaults.superScriptScale;
     this.widthFactor = props.widthFactor ?? defaults.widthFactor;
+    const leader = {
+      color: props.leader?.color ?? defaults.leader.color,
+      wantElbow: props.leader?.wantElbow ?? defaults.leader.wantElbow,
+      elbowLength: props.leader?.elbowLength ?? defaults.leader.elbowLength,
+      terminatorHeightFactor: props.leader?.terminatorHeightFactor ?? defaults.leader.terminatorHeightFactor,
+      terminatorWidthFactor: props.leader?.terminatorWidthFactor ?? defaults.leader.terminatorWidthFactor,
+    }
+    this.leader = Object.freeze(leader) as Readonly<Required<TextLeaderStyleProps>>;
     this.tabInterval = props.tabInterval ?? defaults.tabInterval;
     const frame = {
       shape: props.frame?.shape ?? defaults.frame.shape,
@@ -278,6 +333,15 @@ export class TextStyleSettings {
   public toJSON(): TextStyleSettingsProps {
     return { ...this };
   }
+  /** Compare two [[TextLeaderStyleProps]] for equality.
+   * @param other The other leader style properties to compare against.
+   * @returns true if the two leader styles are equal, false otherwise.
+   */
+  public leaderEquals(other: TextLeaderStyleProps): boolean {
+    return this.leader.color === other.color && this.leader.wantElbow === other.wantElbow
+      && this.leader.elbowLength === other.elbowLength && this.leader.terminatorHeightFactor === other.terminatorHeightFactor
+      && this.leader.terminatorWidthFactor === other.terminatorWidthFactor;
+  }
 
   public framesEqual(other: TextFrameStyleProps): boolean {
     return this.frame?.shape === other.shape
@@ -294,6 +358,7 @@ export class TextStyleSettings {
       && this.subScriptOffsetFactor === other.subScriptOffsetFactor && this.subScriptScale === other.subScriptScale
       && this.superScriptOffsetFactor === other.superScriptOffsetFactor && this.superScriptScale === other.superScriptScale
       && this.tabInterval === other.tabInterval
+      && this.leaderEquals(other.leader)
       && this.framesEqual(other.frame)
   }
 

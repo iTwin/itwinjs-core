@@ -5597,6 +5597,21 @@ export interface JsonGeometryStream {
     format: "json";
 }
 
+// @beta
+export type LeaderAttachment = {
+    mode: "KeyPoint";
+    curveIndex: number;
+    fraction: number;
+} | {
+    mode: "TextPoint";
+    position: LeaderTextPointOptions;
+} | {
+    mode: "Nearest";
+};
+
+// @beta
+export type LeaderTextPointOptions = "TopLeft" | "TopRight" | "BottomLeft" | "BottomRight";
+
 // @internal
 export interface LegacyAnalysisStyleProps {
     // (undocumented)
@@ -7931,6 +7946,13 @@ export namespace RenderSchedule {
         position: number[];
         visible?: boolean;
     }
+    // @internal
+    export interface EditingChanges {
+        // (undocumented)
+        elements: Set<Id64String>;
+        // (undocumented)
+        timeline: ModelTimeline;
+    }
     export class ElementTimeline extends Timeline {
         // @internal (undocumented)
         addSymbologyOverrides(overrides: FeatureOverrides, time: number): void;
@@ -8087,6 +8109,8 @@ export namespace RenderSchedule {
         // @internal (undocumented)
         protected getFeatureAppearance(visibility: number, time: number): FeatureAppearance | undefined;
         getVisibility(time: number): number;
+        // @internal
+        isEditingCommitted: boolean;
         // (undocumented)
         toJSON(): TimelineProps;
         readonly transform?: TransformTimelineEntries;
@@ -9845,6 +9869,7 @@ export class TextAnnotation {
     discloseIds(ids: EntityReferenceSet): void;
     equals(other: TextAnnotation): boolean;
     static fromJSON(props: TextAnnotationProps | undefined): TextAnnotation;
+    leaders?: TextAnnotationLeader[];
     offset: Point3d;
     orientation: YawPitchRollAngles;
     textBlock: TextBlock;
@@ -9870,6 +9895,8 @@ export interface TextAnnotationAnchor {
 // @beta
 export interface TextAnnotationCreateArgs {
     anchor?: TextAnnotationAnchor;
+    frame?: TextFrameStyleProps;
+    leaders?: TextAnnotationLeader[];
     offset?: Point3d;
     orientation?: YawPitchRollAngles;
     textBlock?: TextBlock;
@@ -9885,8 +9912,26 @@ export type TextAnnotationFrameShape = typeof textAnnotationFrameShapes[number];
 export const textAnnotationFrameShapes: readonly ["none", "line", "rectangle", "circle", "equilateralTriangle", "diamond", "square", "pentagon", "hexagon", "octagon", "capsule", "roundedRectangle"];
 
 // @beta
+export interface TextAnnotationLeader {
+    attachment: LeaderAttachment;
+    intermediatePoints?: Point3d[];
+    startPoint: Point3d;
+    styleOverrides?: TextStyleSettingsProps;
+}
+
+// @beta
+export interface TextAnnotationLeaderProps {
+    attachment: LeaderAttachment;
+    intermediatePoints?: XYZProps[];
+    startPoint: XYZProps;
+    styleOverrides?: TextStyleSettingsProps;
+}
+
+// @beta
 export interface TextAnnotationProps {
     anchor?: TextAnnotationAnchor;
+    frame?: TextFrameStyleProps;
+    leaders?: TextAnnotationLeaderProps[];
     offset?: XYZProps;
     orientation?: YawPitchRollProps;
     textBlock?: TextBlockProps;
@@ -10002,6 +10047,15 @@ export interface TextFrameStyleProps {
 }
 
 // @beta
+export interface TextLeaderStyleProps {
+    color?: TextStyleColor;
+    elbowLength?: number;
+    terminatorHeightFactor?: number;
+    terminatorWidthFactor?: number;
+    wantElbow?: boolean;
+}
+
+// @beta
 export class TextRun extends TextBlockComponent {
     baselineShift: BaselineShift;
     // (undocumented)
@@ -10099,6 +10153,8 @@ export class TextStyleSettings {
     readonly isBold: boolean;
     readonly isItalic: boolean;
     readonly isUnderlined: boolean;
+    readonly leader: Readonly<Required<TextLeaderStyleProps>>;
+    leaderEquals(other: TextLeaderStyleProps): boolean;
     readonly lineHeight: number;
     readonly lineSpacingFactor: number;
     readonly stackedFractionScale: number;
@@ -10121,6 +10177,7 @@ export interface TextStyleSettingsProps {
     isBold?: boolean;
     isItalic?: boolean;
     isUnderlined?: boolean;
+    leader?: TextLeaderStyleProps;
     lineHeight?: number;
     lineSpacingFactor?: number;
     stackedFractionScale?: number;

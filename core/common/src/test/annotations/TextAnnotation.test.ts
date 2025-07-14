@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { TextAnnotation, TextAnnotationAnchor } from "../../annotation/TextAnnotation";
+import { TextAnnotation, TextAnnotationAnchor, TextAnnotationLeader } from "../../annotation/TextAnnotation";
 import { Angle, Point3d, Range2d, Range3d, YawPitchRollAngles } from "@itwin/core-geometry";
 
 describe("TextAnnotation", () => {
@@ -137,7 +137,7 @@ describe("TextAnnotation", () => {
         rotation: 90,
       });
       expectTransformedRange([10, -10, 20, 10], {
-        anchor: { horizontal: "center", vertical: "top"},
+        anchor: { horizontal: "center", vertical: "top" },
         rotation: 90,
       });
       expectTransformedRange([0, -20, 10, 0], {
@@ -293,6 +293,20 @@ describe("TextAnnotation", () => {
           scale: 2,
         });
       });
+    });
+  });
+
+  describe("leaders", () => {
+    it("should return undefined for leaders when no leaders are set", () => {
+      const annotation = TextAnnotation.fromJSON({});
+      expect(annotation.leaders).to.equal(undefined);
+    });
+
+    it("should return leaders when set", () => {
+      const leader: TextAnnotationLeader = { startPoint: Point3d.createZero(), attachment: { mode: "Nearest" }, styleOverrides: undefined, intermediatePoints: undefined };
+      const leaderProps = { ...leader, startPoint: leader.startPoint.toJSON() };
+      const annotation = TextAnnotation.fromJSON({ leaders: [leaderProps] });
+      expect(annotation.leaders).to.deep.equal([leader]);
     });
   });
 });
