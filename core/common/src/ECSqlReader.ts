@@ -7,7 +7,7 @@
  */
 import { Base64EncodedString } from "./Base64EncodedString";
 import {
-  DbQueryError, DbQueryRequest, DbQueryResponse, DbRequestExecutor, DbRequestKind, DbResponseStatus, DbValueFormat, QueryBinder, QueryOptions, QueryOptionsBuilder,
+  DbQueryError, DbQueryRequest, DbQueryResponse, DbRequestExecutor, DbRequestKind, DbResponseKind, DbResponseStatus, DbValueFormat, QueryBinder, QueryOptions, QueryOptionsBuilder,
   QueryPropertyMetaData, QueryRowFormat,
 } from "./ConcurrentQuery";
 
@@ -60,6 +60,10 @@ export class PropertyMetaDataMap implements Iterable<QueryPropertyMetaData> {
     return undefined;
   }
 }
+
+export type MetadataWithOptionalLegacyFields = Omit<QueryPropertyMetaData, 'jsonName' | 'index' | 'generated' | 'extendType'> & Partial<Pick<QueryPropertyMetaData, 'jsonName' | 'index' | 'generated' | 'extendType'>>;
+export type MinimalDbQueryResponse = Omit<DbQueryResponse, 'meta'> & { meta: MetadataWithOptionalLegacyFields[] };
+type SystemExtendedType = "Id" | "ClassId" | "SourceId" | "TargetId" | "SourceClassId" | "TargetClassId" | "NavId" | "NavRelClassId";
 
 /**
  * The format for rows returned by [[ECSqlReader]].
@@ -216,7 +220,7 @@ export class ECSqlReader implements AsyncIterableIterator<QueryRowProxy> {
   /**
    * @internal
    */
-  public constructor(private _executor: DbRequestExecutor<DbQueryRequest, DbQueryResponse>, public readonly query: string, param?: QueryBinder, options?: QueryOptions) {
+  public constructor(private _executor: DbRequestExecutor<DbQueryRequest, MinimalDbQueryResponse>, public readonly query: string, param?: QueryBinder, options?: QueryOptions) {
     if (query.trim().length === 0) {
       throw new Error("expecting non-empty ecsql statement");
     }
@@ -378,11 +382,11 @@ export class ECSqlReader implements AsyncIterableIterator<QueryRowProxy> {
       this._stats.prepareTime += rs.stats.prepareTime;
       this._stats.backendRowsReturned += (rs.data === undefined) ? 0 : rs.data.length;
     };
-    const execQuery = async (req: DbQueryRequest) => {
+    const execQuery = async (req: DbQueryRequest): Promise<DbQueryResponse> => {
       const startTime = Date.now();
       const rs = await this._executor.execute(req);
       this.stats.totalTime += (Date.now() - startTime);
-      return rs;
+      return { ...rs, meta: ECSqlReader.populateDeprecatedMetadataProps(rs.meta) };
     };
     let retry = ECSqlReader._maxRetryCount;
     let resp = await execQuery(request);
@@ -399,6 +403,95 @@ export class ECSqlReader implements AsyncIterableIterator<QueryRowProxy> {
     }
     updateStats(resp);
     return resp;
+  }
+
+  /**
+   * Helper method to populate any of the following missing metadata fields: generated, index, jsonName and extendType
+   *
+   * @param meta metadata object array with fields generated, index, jsonName and extendType set as optional
+   * @returns array of metadata objects with populated missing values
+   */
+  private static populateDeprecatedMetadataProps(meta: MetadataWithOptionalLegacyFields[]): QueryPropertyMetaData[] {
+    const jsonNameDict: { [jsonName: string]: number } = {};
+    return meta.map((value, index) =>
+      Object.assign(value, {
+        generated: this.isGeneratedProperty(value),
+        index: value.index ?? index,
+        jsonName: value.jsonName ?? this.createJsonName(value, jsonNameDict),
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
+        extendType: value.extendType ?? value.extendedType ?? ""
+      })
+    );
+  }
+
+  private static createJsonName(meta: MetadataWithOptionalLegacyFields, jsonNameDict: { [jsonName: string]: number }): string {
+    let jsName;
+    if (this.isGeneratedProperty(meta)) {
+      jsName = this.lowerFirstChar(meta.name);
+    } else if (meta.extendedType && this.isSystemExtendedType(meta.extendedType)) {
+      const path = meta.accessString ? meta.accessString.replace(/\[\d*\]/g, "") : "";
+      const lastPropertyIndex = path.lastIndexOf(".") + 1;
+      if (lastPropertyIndex > 0) {
+        jsName = path.slice(0, lastPropertyIndex);
+        const leafEntry = path.slice(lastPropertyIndex);
+        if (leafEntry === "RelECClassId") {
+          jsName += "relClassName";
+        } else if (leafEntry === "Id" || leafEntry === "X" || leafEntry === "Y" || leafEntry === "Z") {
+          jsName += this.lowerFirstChar(leafEntry);
+        } else {
+          jsName += leafEntry;
+        }
+        jsName = this.lowerFirstChar(jsName);
+      } else if (meta.extendedType === "Id" && meta.name === "ECInstanceId") {
+        jsName = "id";
+      } else if (meta.extendedType === "ClassId" && meta.name === "ECClassId") {
+        jsName = "className";
+      } else if (meta.extendedType === "SourceId" && meta.name === "SourceECInstanceId") {
+        jsName = "sourceId";
+      } else if (meta.extendedType === "TargetId" && meta.name === "TargetECInstanceId") {
+        jsName = "targetId";
+      } else if (meta.extendedType === "SourceClassId" && meta.name === "SourceECClassId") {
+        jsName = "sourceClassName";
+      } else if (meta.extendedType === "TargetClassId" && meta.name === "TargetECClassId") {
+        jsName = "targetClassName";
+      } else if (meta.extendedType === "NavId" && meta.name === "Id") {
+        jsName = "id";
+      } else if (meta.extendedType === "NavRelClassId" && meta.name === "RelECClassId") {
+        jsName = "relClassName";
+      } else {
+        jsName = this.lowerFirstChar(meta.name);
+      }
+    } else {
+      jsName = this.lowerFirstChar(meta.accessString ?? "");
+    }
+
+    if (jsonNameDict[jsName] === undefined) {
+      jsonNameDict[jsName] = 0;
+    } else {
+      jsonNameDict[jsName]++;
+      jsName += `_${jsonNameDict[jsName]}`;
+    }
+    return jsName;
+  }
+
+  private static isGeneratedProperty(meta: MetadataWithOptionalLegacyFields): boolean {
+    return meta.generated ?? meta.className === "";
+  }
+
+  private static isSystemExtendedType(value: string): value is SystemExtendedType {
+    return value === "Id"
+      || value === "ClassId"
+      || value === "SourceId"
+      || value === "TargetId"
+      || value === "SourceClassId"
+      || value === "TargetClassId"
+      || value === "NavId"
+      || value === "NavRelClassId";
+  }
+
+  private static lowerFirstChar(text: string): string {
+    if (text.length === 0) return "";
+    return text[0].toLowerCase() + text.slice(1);
   }
 
   /**
@@ -507,6 +600,33 @@ export class ECSqlReader implements AsyncIterableIterator<QueryRowProxy> {
         value: this.current,
       };
     }
+  }
+
+  /**
+   * Utility function that constructs a DbQueryResponse structure that mimics
+   * what would normally be returned from a database query.
+   *
+   * @param rows - rows of data that will be returned
+   * @param status - status of the database response
+   * @param meta - metadata that will be returned along with the rows
+   * @returns A database query response object with the provided rows and metadata
+   */
+  public static createDbResponseFromRows(rows: any[], status: DbResponseStatus, meta?: MetadataWithOptionalLegacyFields[]): MinimalDbQueryResponse {
+    return {
+      rowCount: rows.length,
+      data: rows,
+      stats: {
+        cpuTime: 0,
+        totalTime: 0,
+        memLimit: 0,
+        timeLimit: 0,
+        memUsed: 0,
+        prepareTime: 0
+      },
+      status,
+      kind: DbResponseKind.ECSql,
+      meta: meta ?? []
+    };
   }
 }
 

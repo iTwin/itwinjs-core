@@ -67,6 +67,7 @@
     "@itwin/frontend-devtools": "workspace:*",
     "@itwin/frontend-tiles": "workspace:*",
     "@itwin/hypermodeling-frontend": "workspace:*",
+    "@itwin/imodelread-backend-ipc": "workspace:*",
     "@itwin/imodels-access-backend": "^5.2.1",
     "@itwin/imodels-access-frontend": "^5.2.1",
     "@itwin/imodels-client-authoring": "^5.8.1",
