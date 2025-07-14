@@ -56,11 +56,6 @@ describe("Incremental Schema Loading", function () {
             testSchemaKey = await resolveSchemaKey(testSchemaConfiguration.name);
           });
 
-          beforeEach(function () {
-            // this.currentTest!.iModel = iModelConfiguration.label;
-            // this.currentTest!.schemaName = testSchemaKey.name;
-          });
-
           describe("get schema info", async () => {
             const executeTest = async (locater: ISchemaLocater) => {
               const schemaContext = new SchemaContext();
