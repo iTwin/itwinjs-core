@@ -25,7 +25,7 @@ import { QuantityError, QuantityStatus } from "../Exception";
  *   - Grabs the unit name, `|` and label separately
  * @internal
  */
-export const formatStringRgx = /([\w.:]+)(\(([^\)]+)\))?(\[([^\|\]]+)([\|])?([^\]]+)?\])?(\[([^\|\]]+)([\|])?([^\]]+)?\])?(\[([^\|\]]+)([\|])?([^\]]+)?\])?(\[([^\|\]]+)([\|])?([^\]]+)?\])?/;
+export const formatStringRgx = /([\w.:]+)(\(([^\)]{1,1000})\))?(\[([^\|\]]+)([\|])?([^\]]+)?\])?(\[([^\|\]]+)([\|])?([^\]]+)?\])?(\[([^\|\]]+)([\|])?([^\]]+)?\])?(\[([^\|\]]+)([\|])?([^\]]+)?\])?/;
 
 /** @internal */
 export function* getItemNamesFromFormatString(formatString: string): Iterable<string> {
