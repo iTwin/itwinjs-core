@@ -5,6 +5,7 @@ public;class;AnnotationElement2d
 preview;class;AnnotationElement2d
 beta;type;AnyDb
 beta;function;appendFrameToBuilder
+beta;function;appendLeadersToBuilder
 beta;function;appendTextAnnotationGeometry
 beta;interface;AppendTextAnnotationGeometryArgs
 public;class;AuxCoordSystem
@@ -71,6 +72,7 @@ internal;interface;FontIndexProps
 public;class;CodeSpecs
 preview;class;CodeSpecs
 public;interface;ComputedProjectExtents
+beta;function;computeElbowDirection
 beta;function;computeFrame
 beta;interface;ComputeFrameArgs
 beta;function;computeGraphemeOffsets
@@ -78,6 +80,7 @@ beta;interface;ComputeGraphemeOffsetsArgs
 beta;function;computeIntervalPoints
 beta;interface;ComputeIntervalPointsArgs
 beta;function;computeLayoutTextBlockResult
+beta;function;computeLeaderAttachmentPoint
 public;interface;ComputeProjectExtentsOptions
 internal;type;ComputeRangesForTextLayout
 internal;interface;ComputeRangesForTextLayoutArgs

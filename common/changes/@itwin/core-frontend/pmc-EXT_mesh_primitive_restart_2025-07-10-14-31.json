@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Add support for glTF EXT_mesh_primitive_restart extension.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}
