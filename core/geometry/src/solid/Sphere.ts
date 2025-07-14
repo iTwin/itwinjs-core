@@ -68,8 +68,11 @@ export class Sphere extends SolidPrimitive implements UVSurface {
     if (transform.matrix.isSingular())
       return false;
     transform.multiplyTransformTransform(this._localToWorld, this._localToWorld);
-    if (transform.matrix.determinant() < 0.0)
-      this._latitudeSweep.reverseInPlace();
+    if (transform.matrix.determinant() < 0.0) {
+      // if mirror, reverse z-axis to preserve outward normals
+      this._localToWorld.matrix.scaleColumnsInPlace(1, 1, -1);
+      this._latitudeSweep.setStartEndRadians(-this._latitudeSweep.endRadians, -this._latitudeSweep.startRadians);
+    }
     return true;
   }
   /**

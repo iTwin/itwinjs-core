@@ -3,14 +3,14 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { BaselineShift, ColorDef, FractionRun, LineBreakRun, Placement2dProps, TabRun, TextAnnotation, TextAnnotationAnchor, TextAnnotationFrameShape, TextAnnotationProps, TextBlock, TextBlockJustification, TextBlockMargins, TextFrameStyleProps, TextRun, TextStyleSettingsProps } from "@itwin/core-common";
+import { BaselineShift, ColorDef, FractionRun, LeaderTextPointOptions, LineBreakRun, Placement2dProps, TabRun, TextAnnotation, TextAnnotationAnchor, TextAnnotationFrameShape, TextAnnotationLeader, TextAnnotationProps, TextBlock, TextBlockJustification, TextBlockMargins, TextFrameStyleProps, TextRun, TextStyleSettingsProps } from "@itwin/core-common";
 import { DecorateContext, Decorator, GraphicType, IModelApp, IModelConnection, readElementGraphics, RenderGraphicOwner, Tool } from "@itwin/core-frontend";
 import { DtaRpcInterface } from "../common/DtaRpcInterface";
 import { Id64, Id64String } from "@itwin/core-bentley";
-import { Point3d, YawPitchRollAngles } from "@itwin/core-geometry";
+import { Angle, Point3d, Vector3d, YawPitchRollAngles } from "@itwin/core-geometry";
 
 // Ignoring the spelling of the keyins. They're case insensitive, so we check against lowercase.
-// cspell:ignore superscript, subscript, widthfactor, fractionscale, fractiontype
+// cspell:ignore superscript, subscript, widthfactor, fractionscale, fractiontype, textpoint
 
 class TextEditor implements Decorator {
   // Geometry properties
@@ -25,6 +25,7 @@ class TextEditor implements Decorator {
   public offset = { x: 0, y: 0 };
   public anchor: TextAnnotationAnchor = { horizontal: "left", vertical: "top" };
   public frame: TextFrameStyleProps = { borderWeight: 1, shape: "none" };
+  public leaders: TextAnnotationLeader[] = [];
   public debugAnchorPointAndRange = false;
 
   // Properties applied to the entire document
@@ -40,6 +41,7 @@ class TextEditor implements Decorator {
       orientation: YawPitchRollAngles.createDegrees(this.rotation, 0, 0).toJSON(),
       offset: this.offset,
       frame: this.frame,
+      leaders: this.leaders
     });
 
     return annotation.toJSON();
@@ -83,6 +85,7 @@ class TextEditor implements Decorator {
     this.runStyle = { fontName: "Arial" };
     this.baselineShift = "none";
     this.frame = { borderWeight: 1, shape: "none" };
+    this.leaders = [];
   }
 
   public appendText(content: string): void {
@@ -155,6 +158,28 @@ class TextEditor implements Decorator {
 
   public setFrame(frame: Partial<TextFrameStyleProps>) {
     this.frame = { ...this.frame, ...frame };
+  }
+
+  public setLeaderProps() {
+    this.leaders?.push({ startPoint: Point3d.createZero().plusScaled(Vector3d.unitX().negate(), 20), attachment: { mode: "Nearest" } });
+  }
+
+  public setLeaderStartPoint(leader: TextAnnotationLeader, angle: number) {
+    const point = Point3d.createZero();
+    const distance = 10;
+    const angleRadians = Angle.createDegrees(angle);
+    const directionVector = Vector3d.createPolar(distance, angleRadians);
+    leader.startPoint = point.plus(directionVector);
+  }
+
+  public setLeaderKeyPoint(leader: TextAnnotationLeader, curveIndex: number, fraction: number) {
+    leader.attachment = { mode: "KeyPoint", curveIndex, fraction };
+  }
+  public setLeaderTextPoint(leader: TextAnnotationLeader, arg: LeaderTextPointOptions) {
+    leader.attachment = { mode: "TextPoint", position: arg };
+  }
+  public setLeaderNearest(leader: TextAnnotationLeader) {
+    leader.attachment = { mode: "Nearest" };
   }
 
   /**
@@ -424,6 +449,33 @@ export class TextDecorationTool extends Tool {
 
         break;
       }
+      case "leader":
+        const command = inArgs[1];
+        const value = inArgs[2];
+        if (command === "new") {
+          editor.setLeaderProps();
+        } else {
+          if (editor.leaders && editor.leaders.length > 0) {
+            const latestLeaderIndex = editor.leaders.length - 1;
+            if (command === "start") editor.setLeaderStartPoint(editor.leaders[latestLeaderIndex], Number(value));
+            else if (command === "keypoint") {
+              const curveIndex = inArgs[2];
+              const fraction = inArgs[3]
+              editor.setLeaderKeyPoint(editor.leaders[latestLeaderIndex], Number(curveIndex), Number(fraction));
+            }
+            else if (command === "nearest") editor.setLeaderNearest(editor.leaders[latestLeaderIndex]);
+            else if (command === "textpoint") {
+              const position = inArgs[2] as LeaderTextPointOptions;
+              editor.setLeaderTextPoint(editor.leaders[latestLeaderIndex], position);
+
+            }
+            else throw new Error("Expected start, keypoint, nearest, textpoint");
+          } else {
+            throw new Error("No leaders created. Use dta text leader new.");
+          }
+
+        }
+        break;
 
       default:
         throw new Error(`unrecognized command ${cmd}`);
