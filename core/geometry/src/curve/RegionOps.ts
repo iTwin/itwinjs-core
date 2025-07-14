@@ -1047,9 +1047,9 @@ export class ConsolidateAdjacentCurvePrimitivesOptions {
   /** True to consolidate contiguous compatible arcs into a single Arc3d. */
   public consolidateCompatibleArcs: boolean = true;
   /** True to consolidate the first and last primitives of a [[Loop]], allowing the start/end point to change. */
-  public consolidateLoopSeam: boolean = false;
+  public consolidateLoopSeam?: boolean = false;
   /** Disable LineSegment3d and LineString3d point compression. */
-  public disableLinearCompression: boolean = false;
+  public disableLinearCompression?: boolean = false;
   /** Tolerance for detecting identical points. */
   public duplicatePointTolerance: number = Geometry.smallMetricDistance;
   /** Tolerance for removing interior colinear points (if `!disableLinearCompression`). */

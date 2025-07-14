@@ -7,6 +7,7 @@
 import { BeEvent } from '@itwin/core-bentley';
 import { BentleyError } from '@itwin/core-bentley';
 import { DecimalPrecision } from '@itwin/core-quantity';
+import { FormatDefinition } from '@itwin/core-quantity';
 import { FormatProps } from '@itwin/core-quantity';
 import { FormatsChangedArgs } from '@itwin/core-quantity';
 import { FormatsProvider } from '@itwin/core-quantity';
@@ -1915,7 +1916,7 @@ export class SchemaFormatsProvider implements FormatsProvider {
     constructor(contextOrLocater: ISchemaLocater, unitSystem: UnitSystemKey);
     // (undocumented)
     get context(): SchemaContext;
-    getFormat(name: string): Promise<SchemaItemFormatProps | undefined>;
+    getFormat(name: string): Promise<FormatDefinition | undefined>;
     // (undocumented)
     onFormatsChanged: BeEvent<(args: FormatsChangedArgs) => void>;
     // (undocumented)
