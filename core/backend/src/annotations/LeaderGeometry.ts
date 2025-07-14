@@ -1,3 +1,11 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+/** @packageDocumentation
+ * @module ElementGeometry
+ */
+
 import { ColorDef, ElementGeometry, GeometryParams, TextAnnotationLeader, TextFrameStyleProps } from "@itwin/core-common";
 import { CurveCurve, LineSegment3d, LineString3d, Loop, Path, Point3d, Transform, Vector3d } from "@itwin/core-geometry";
 import { computeFrame } from "./FrameGeometry";
