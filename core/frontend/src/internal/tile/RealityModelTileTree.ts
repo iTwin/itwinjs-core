@@ -24,7 +24,7 @@ import { IModelConnection } from "../../IModelConnection";
 import { PlanarClipMaskState } from "../../PlanarClipMaskState";
 import { RealityDataSource } from "../../RealityDataSource";
 import { RenderMemory } from "../../render/RenderMemory";
-import { SceneContext } from "../../ViewContext";
+import { DecorateContext, SceneContext } from "../../ViewContext";
 import { ViewState } from "../../ViewState";
 import {
   BatchedTileIdMap, CesiumIonAssetProvider, createClassifierTileTreeReference, createDefaultViewFlagOverrides, DisclosedTileTreeSet, GeometryTileTreeReference,
@@ -33,6 +33,7 @@ import {
 } from "../../tile/internal";
 import { SpatialClassifiersState } from "../../SpatialClassifiersState";
 import { RealityDataSourceTilesetUrlImpl } from "../../RealityDataSourceTilesetUrlImpl";
+import { ScreenViewport } from "../../Viewport";
 
 function getUrl(content: any) {
   return content ? (content.url ? content.url : content.uri) : undefined;
@@ -260,7 +261,7 @@ export class RealityModelTileTreeProps {
   public get usesGeometricError(): boolean {
     return undefined !== this.maximumScreenSpaceError;
   }
-  
+
   constructor(json: any, root: any, rdSource: RealityDataSource, tilesetToDbTransform: Transform, public readonly tilesetToEcef?: Transform) {
     this.tilesetJson = root;
     this.dataSource = rdSource;
@@ -269,12 +270,12 @@ export class RealityModelTileTreeProps {
     if (json.asset.gltfUpAxis === undefined || json.asset.gltfUpAxis === "y" || json.asset.gltfUpAxis === "Y") {
       this.yAxisUp = true;
     }
-    
+
     const maxSSE = json.asset.extras?.maximumScreenSpaceError;
     if (typeof maxSSE === "number") {
       this.maximumScreenSpaceError = json.asset.extras?.maximumScreenSpaceError;
     } else if (rdSource.usesGeometricError) {
-      this.maximumScreenSpaceError = rdSource.maximumScreenSpaceError ?? 1;
+      this.maximumScreenSpaceError = rdSource.maximumScreenSpaceError ?? 16;
     }
   }
 }
@@ -816,6 +817,7 @@ export class RealityTreeReference extends RealityModelTileTree.Reference {
   protected _rdSourceKey: RealityDataSourceKey;
   private readonly _produceGeometry?: boolean;
   private readonly _modelId: Id64String;
+  public readonly useCachedDecorations?: true | undefined;
 
   public constructor(props: RealityModelTileTree.ReferenceProps) {
     super(props);
@@ -837,6 +839,8 @@ export class RealityTreeReference extends RealityModelTileTree.Reference {
     }
 
     this._modelId = modelId ?? props.iModel.transientIds.getNext();
+    const provider = IModelApp.realityDataSourceProviders.find(this._rdSourceKey.provider);
+    this.useCachedDecorations = provider?.useCachedDecorations;
   }
 
   public override get modelId() { return this._modelId; }
@@ -993,9 +997,17 @@ export class RealityTreeReference extends RealityModelTileTree.Reference {
     }
   }
 
-  public override async addAttributions(cards: HTMLTableElement): Promise<void> {
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
-    return Promise.resolve(this.addLogoCards(cards));
+  public override async addAttributions(cards: HTMLTableElement, vp: ScreenViewport): Promise<void> {
+    const provider = IModelApp.realityDataSourceProviders.find(this._rdSourceKey.provider);
+    if (provider?.addAttributions) {
+      await provider.addAttributions(cards, vp);
+    }
+  }
+
+  public override decorate(_context: DecorateContext): void {
+    const provider = IModelApp.realityDataSourceProviders.find(this._rdSourceKey.provider);
+    if (provider?.decorate) {
+      provider.decorate(_context);
+    }
   }
 }
-

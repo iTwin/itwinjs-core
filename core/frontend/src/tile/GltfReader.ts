@@ -144,6 +144,7 @@ class GltfBufferView {
 export interface GltfReaderResult extends TileContent {
   readStatus: TileReadStatus;
   range?: AxisAlignedBox3d;
+  copyright?: string;
 }
 
 type GltfTemplateResult = Omit<GltfReaderResult, "graphic"> & { template?: GraphicTemplate };
@@ -429,6 +430,59 @@ interface StructuralMetadata{
   tables: StructuralMetadataTable[];
 }
 
+/** @internal exported strictly for testing */
+export function getMeshPrimitives(mesh: GltfMesh | undefined): GltfMeshPrimitive[] | undefined {
+  const ext = mesh?.extensions?.EXT_mesh_primitive_restart;
+  const meshPrimitives = mesh?.primitives;
+  if (!meshPrimitives || meshPrimitives.length === 0 || !ext?.primitiveGroups || ext.primitiveGroups.length === 0) {
+    return meshPrimitives;
+  }
+
+  // Note: per the spec, any violation of the extension's specification should cause us to fall back to mesh.primitives, if detecting the violation is feasible.
+
+  // Start with a copy of mesh.primitives. For each group, replace the first primitive in the group with a primitive representing the entire group,
+  // and set the rest of the primitives in the group to `undefined`.
+  // This allows us to identify which remaining primitives do not use primitive restart, and any errors involving a primitive appearing in more than one group.
+  const primitives: Array<GltfMeshPrimitive | undefined> = [...meshPrimitives];
+  for (const group of ext.primitiveGroups) {
+    // Spec: the group must not be empty and all indices must be valid array indices into mesh.primitives.
+    const firstPrimitiveIndex = group.primitives[0];
+    if (undefined === firstPrimitiveIndex || !meshPrimitives[firstPrimitiveIndex]) {
+      return meshPrimitives;
+    }
+
+    const primitive = { ...meshPrimitives[firstPrimitiveIndex], indices: group.indices };
+
+    // Spec: primitive restart only supported for these topologies.
+    switch (primitive.mode) {
+      case GltfMeshMode.TriangleFan:
+      case GltfMeshMode.TriangleStrip:
+      case GltfMeshMode.LineStrip:
+      case GltfMeshMode.LineLoop:
+        break;
+      default:
+        return meshPrimitives;
+    }
+
+
+    for (const primitiveIndex of group.primitives) {
+      const thisPrimitive = primitives[primitiveIndex];
+      
+      // Spec: all primitives must use indexed geometry and a given primitive may appear in at most one group.
+      // Spec: all primitives must have same topology.
+      if (undefined === thisPrimitive?.indices || thisPrimitive.mode !== primitive.mode) {
+        return meshPrimitives;
+      }
+      
+      primitives[primitiveIndex] = undefined;
+    }
+
+    primitives[firstPrimitiveIndex] = primitive;
+  }
+
+  return primitives.filter((x) => x !== undefined);
+}
+
 /** Deserializes [glTF](https://www.khronos.org/gltf/).
  * @internal
  */
@@ -593,6 +647,7 @@ export abstract class GltfReader {
       isLeaf,
       contentRange,
       range,
+      copyright: this._glTF.asset?.copyright,
       containsPointCloud: this._containsPointCloud,
       template: createGraphicTemplate({
         nodes: templateNodes,
@@ -952,7 +1007,7 @@ export abstract class GltfReader {
       if (!bufferData)
         return undefined;
 
-      const type = accessor.componentType as GltfDataType;
+      const type = accessor.componentType;
       let dataSize = 0;
       switch (type) {
         case GltfDataType.UnsignedByte:
@@ -1134,8 +1189,9 @@ export abstract class GltfReader {
     const meshes: GltfPrimitiveData[] = [];
     for (const meshKey of getGltfNodeMeshIds(node)) {
       const nodeMesh = this._meshes[meshKey];
-      if (nodeMesh?.primitives) {
-        for (const primitive of nodeMesh.primitives) {
+      const primitives = getMeshPrimitives(nodeMesh);
+      if (primitives) {
+        for (const primitive of primitives) {
           const mesh = this.readMeshPrimitive(primitive, featureTable, thisBias);
           if (mesh) {
             meshes.push(mesh);
@@ -1198,6 +1254,7 @@ export abstract class GltfReader {
     let primitiveType: number = -1;
     switch (meshMode) {
       case GltfMeshMode.Lines:
+      case GltfMeshMode.LineStrip:
         primitiveType = MeshPrimitiveType.Polyline;
         break;
 
@@ -1297,7 +1354,8 @@ export abstract class GltfReader {
 
       case MeshPrimitiveType.Polyline:
       case MeshPrimitiveType.Point: {
-        if (undefined !== mesh.primitive.polylines && !this.readPolylines(mesh.primitive.polylines, primitive, "indices", MeshPrimitiveType.Point === primitiveType))
+        assert(meshMode === GltfMeshMode.Points || meshMode === GltfMeshMode.Lines || meshMode === GltfMeshMode.LineStrip);
+        if (undefined !== mesh.primitive.polylines && !this.readPolylines(mesh.primitive.polylines, primitive, "indices", meshMode))
           return undefined;
         break;
       }
@@ -1845,29 +1903,54 @@ export abstract class GltfReader {
     return true;
   }
 
-  protected readPolylines(polylines: MeshPolylineList, json: { [k: string]: any }, accessorName: string, disjoint: boolean): boolean {
-    const data = this.readBufferData32(json, accessorName);
+  protected readPolylines(polylines: MeshPolylineList, json: { [k: string]: any }, accessorName: string, mode: GltfMeshMode.Points | GltfMeshMode.Lines | GltfMeshMode.LineStrip): boolean {
+    const bufferView = this.getBufferView(json, accessorName);
+    const data = bufferView?.toBufferData(GltfDataType.UInt32);
     if (undefined === data)
       return false;
 
     const indices = new Array<number>();
-    if (disjoint) {
-      for (let i = 0; i < data.count;)
-        indices.push(data.buffer[i++]);
-    } else {
-      for (let i = 0; i < data.count;) {
-        const index0 = data.buffer[i++];
-        const index1 = data.buffer[i++];
-        if (0 === indices.length || index0 !== indices[indices.length - 1]) {
-          if (indices.length !== 0) {
-            polylines.push(new MeshPolyline(indices));
-            indices.length = 0;
+    switch (mode) {
+      case GltfMeshMode.Points: {
+        for (let i = 0; i < data.count;)
+          indices.push(data.buffer[i++]);
+
+        break;
+      }
+      case GltfMeshMode.Lines: {
+        for (let i = 0; i < data.count;) {
+          const index0 = data.buffer[i++];
+          const index1 = data.buffer[i++];
+          if (0 === indices.length || index0 !== indices[indices.length - 1]) {
+            if (indices.length !== 0) {
+              polylines.push(new MeshPolyline(indices));
+              indices.length = 0;
+            }
+            indices.push(index0);
           }
-          indices.push(index0);
+          indices.push(index1);
         }
-        indices.push(index1);
+
+        break;
+      }
+      case GltfMeshMode.LineStrip: {
+        assert(undefined !== bufferView); // compiler can't seem to infer this...
+        const restart = GltfDataType.UnsignedByte === bufferView.type ? 0xff : (GltfDataType.UnsignedShort === bufferView.type ? 0xffff : 0xffffffff);
+        for (const index of data.buffer) {
+          if (index === restart) {
+            if (indices.length > 1) {
+              polylines.push(new MeshPolyline(indices));
+            }
+
+            indices.length = 0;
+          } else {
+            indices.push(index);
+          }
+        }
+        break;
       }
     }
+
     if (indices.length !== 0)
       polylines.push(new MeshPolyline(indices));
 

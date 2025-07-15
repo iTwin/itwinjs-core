@@ -5589,6 +5589,21 @@ export interface JsonGeometryStream {
     format: "json";
 }
 
+// @beta
+export type LeaderAttachment = {
+    mode: "KeyPoint";
+    curveIndex: number;
+    fraction: number;
+} | {
+    mode: "TextPoint";
+    position: LeaderTextPointOptions;
+} | {
+    mode: "Nearest";
+};
+
+// @beta
+export type LeaderTextPointOptions = "TopLeft" | "TopRight" | "BottomLeft" | "BottomRight";
+
 // @internal
 export interface LegacyAnalysisStyleProps {
     // (undocumented)
@@ -7923,6 +7938,13 @@ export namespace RenderSchedule {
         position: number[];
         visible?: boolean;
     }
+    // @internal
+    export interface EditingChanges {
+        // (undocumented)
+        elements: Set<Id64String>;
+        // (undocumented)
+        timeline: ModelTimeline;
+    }
     export class ElementTimeline extends Timeline {
         // @internal (undocumented)
         addSymbologyOverrides(overrides: FeatureOverrides, time: number): void;
@@ -8079,6 +8101,8 @@ export namespace RenderSchedule {
         // @internal (undocumented)
         protected getFeatureAppearance(visibility: number, time: number): FeatureAppearance | undefined;
         getVisibility(time: number): number;
+        // @internal
+        isEditingCommitted: boolean;
         // (undocumented)
         toJSON(): TimelineProps;
         readonly transform?: TransformTimelineEntries;
@@ -9073,7 +9097,7 @@ export interface RscFontEncodingProps {
 }
 
 // @beta (undocumented)
-export type Run = TextRun | FractionRun | LineBreakRun;
+export type Run = TextRun | FractionRun | TabRun | LineBreakRun;
 
 // @beta
 export namespace Run {
@@ -9095,7 +9119,7 @@ export interface RunLayoutResult {
 }
 
 // @beta
-export type RunProps = TextRunProps | FractionRunProps | LineBreakRunProps;
+export type RunProps = TextRunProps | FractionRunProps | TabRunProps | LineBreakRunProps;
 
 // @public
 export enum SchemaState {
@@ -9759,6 +9783,25 @@ export enum SyncMode {
     PullOnly = 3
 }
 
+// @beta
+export class TabRun extends TextBlockComponent {
+    // (undocumented)
+    clone(): TabRun;
+    // (undocumented)
+    static create(props: Omit<TabRunProps, "type">): TabRun;
+    // (undocumented)
+    equals(other: TextBlockComponent): boolean;
+    stringify(options?: TextBlockStringifyOptions): string;
+    // (undocumented)
+    toJSON(): TabRunProps;
+    readonly type = "tab";
+}
+
+// @beta
+export interface TabRunProps extends TextBlockComponentProps {
+    readonly type: "tab";
+}
+
 // @public
 export enum TerrainHeightOriginMode {
     Geodetic = 0,
@@ -9817,6 +9860,7 @@ export class TextAnnotation {
     equals(other: TextAnnotation): boolean;
     frame?: TextFrameStyleProps;
     static fromJSON(props: TextAnnotationProps | undefined): TextAnnotation;
+    leaders?: TextAnnotationLeader[];
     offset: Point3d;
     orientation: YawPitchRollAngles;
     textBlock: TextBlock;
@@ -9851,6 +9895,7 @@ export interface TextAnnotationAnchor {
 export interface TextAnnotationCreateArgs {
     anchor?: TextAnnotationAnchor;
     frame?: TextFrameStyleProps;
+    leaders?: TextAnnotationLeader[];
     offset?: Point3d;
     orientation?: YawPitchRollAngles;
     textBlock?: TextBlock;
@@ -9860,12 +9905,32 @@ export interface TextAnnotationCreateArgs {
 export type TextAnnotationFillColor = TextStyleColor | "background";
 
 // @beta
-export type TextAnnotationFrameShape = "none" | "line" | "rectangle" | "circle" | "equilateralTriangle" | "diamond" | "square" | "pentagon" | "hexagon" | "octagon" | "capsule" | "roundedRectangle";
+export type TextAnnotationFrameShape = typeof textAnnotationFrameShapes[number];
+
+// @beta
+export const textAnnotationFrameShapes: readonly ["none", "line", "rectangle", "circle", "equilateralTriangle", "diamond", "square", "pentagon", "hexagon", "octagon", "capsule", "roundedRectangle"];
+
+// @beta
+export interface TextAnnotationLeader {
+    attachment: LeaderAttachment;
+    intermediatePoints?: Point3d[];
+    startPoint: Point3d;
+    styleOverrides?: TextStyleSettingsProps;
+}
+
+// @beta
+export interface TextAnnotationLeaderProps {
+    attachment: LeaderAttachment;
+    intermediatePoints?: XYZProps[];
+    startPoint: XYZProps;
+    styleOverrides?: TextStyleSettingsProps;
+}
 
 // @beta
 export interface TextAnnotationProps {
     anchor?: TextAnnotationAnchor;
     frame?: TextFrameStyleProps;
+    leaders?: TextAnnotationLeaderProps[];
     offset?: XYZProps;
     orientation?: YawPitchRollProps;
     textBlock?: TextBlockProps;
@@ -9900,6 +9965,7 @@ export abstract class TextBlockComponent {
     clearStyleOverrides(): void;
     abstract clone(): TextBlockComponent;
     equals(other: TextBlockComponent): boolean;
+    get isWhitespace(): boolean;
     get overridesStyle(): boolean;
     abstract stringify(options?: TextBlockStringifyOptions): string;
     get styleName(): string;
@@ -9968,6 +10034,7 @@ export interface TextBlockStringifyOptions {
     fractionSeparator?: string;
     lineBreak?: string;
     paragraphBreak?: string;
+    tabsAsSpaces?: number;
 }
 
 // @beta
@@ -9976,6 +10043,15 @@ export interface TextFrameStyleProps {
     borderWeight?: number;
     fill?: TextAnnotationFillColor;
     shape?: TextAnnotationFrameShape;
+}
+
+// @beta
+export interface TextLeaderStyleProps {
+    color?: TextStyleColor;
+    elbowLength?: number;
+    terminatorHeightFactor?: number;
+    terminatorWidthFactor?: number;
+    wantElbow?: boolean;
 }
 
 // @beta
@@ -10091,6 +10167,8 @@ export class TextStyleSettings {
     readonly isBold: boolean;
     readonly isItalic: boolean;
     readonly isUnderlined: boolean;
+    readonly leader: Readonly<Required<TextLeaderStyleProps>>;
+    leaderEquals(other: TextLeaderStyleProps): boolean;
     readonly lineHeight: number;
     readonly lineSpacingFactor: number;
     readonly stackedFractionScale: number;
@@ -10099,6 +10177,7 @@ export class TextStyleSettings {
     readonly subScriptScale: number;
     readonly superScriptOffsetFactor: number;
     readonly superScriptScale: number;
+    readonly tabInterval: number;
     // (undocumented)
     toJSON(): TextStyleSettingsProps;
     readonly widthFactor: number;
@@ -10111,6 +10190,7 @@ export interface TextStyleSettingsProps {
     isBold?: boolean;
     isItalic?: boolean;
     isUnderlined?: boolean;
+    leader?: TextLeaderStyleProps;
     lineHeight?: number;
     lineSpacingFactor?: number;
     stackedFractionScale?: number;
@@ -10119,6 +10199,7 @@ export interface TextStyleSettingsProps {
     subScriptScale?: number;
     superScriptOffsetFactor?: number;
     superScriptScale?: number;
+    tabInterval?: number;
     widthFactor?: number;
 }
 
