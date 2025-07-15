@@ -2781,7 +2781,7 @@ export namespace IModelDb {
 
     /** Set the default view property the iModel.
      * @param viewId The Id of the ViewDefinition to use as the default
-     * @deprecated in 4.2.x. Will not be removed until after 2026-06-13. Avoid setting this property - it is not practical for one single view to serve the needs of the many applications
+     * @deprecated in 4.2.0. Will not be removed until after 2026-06-13. Avoid setting this property - it is not practical for one single view to serve the needs of the many applications
      * that might wish to view the contents of the iModel.
      */
     public setDefaultViewId(viewId: Id64String): void {
