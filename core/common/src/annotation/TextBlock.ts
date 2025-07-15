@@ -450,7 +450,7 @@ export interface FieldRunProps extends TextBlockComponentProps {
 }
 
 export class FieldRun extends TextBlockComponent {
-  public static invalidContent = "####"; // maybe this should be specified by the text style?
+  public static invalidContentIndicator = "####"; // maybe this should be specified by the text style?
   
   public readonly type = "field";
   public readonly target: Readonly<FieldTarget>;
@@ -461,7 +461,7 @@ export class FieldRun extends TextBlockComponent {
   private constructor(props: Omit<FieldRunProps, "type">) {
     super(props);
 
-    this.cachedContent = props.cachedContent ?? FieldRun.invalidContent;
+    this.cachedContent = props.cachedContent ?? FieldRun.invalidContentIndicator;
     this.target = props.target;
     this.accessor = props.accessor;
     this.formatter = props.formatter;
@@ -487,7 +487,7 @@ export class FieldRun extends TextBlockComponent {
       accessor: cloneAccessor(this.accessor),
     };
 
-    if (this.cachedContent !== FieldRun.invalidContent) {
+    if (this.cachedContent !== FieldRun.invalidContentIndicator) {
       json.cachedContent = this.cachedContent;
     }
 
