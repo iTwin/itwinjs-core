@@ -405,6 +405,7 @@ export class TabRun extends TextBlockComponent {
 }
 
 export interface ArrayPropertyAccessor {
+  // Access string resolving to an array property.
   // e.g. "primitives" or "outerStruct.innerStruct.primitives" - something that can be used with an ECSql statement like
   // `SELECT propertyPath FROM bis.Element WHERE ElementId=elementId"`
   propertyPath: string;
@@ -414,7 +415,10 @@ export interface ArrayPropertyAccessor {
 
 export interface FieldPropertyAccessor {
   arrayAccessors?: ArrayPropertyAccessor[];
-  propertyPath: string;
+  // Access string resolving to a primitive value. May be undefined if `arrayAccessors` resolves to a primitive array.
+  propertyPath?: string;
+  // If `propertyPath` or `arrayAccessors` resolves to a JSON string, an accessor that selects a primitive within the JSON.
+  jsonPath?: string;
 }
 
 function cloneAccessor(accessor: FieldPropertyAccessor): FieldPropertyAccessor {
@@ -499,7 +503,10 @@ export class FieldRun extends TextBlockComponent {
   }
 
   public override equals(other: TextBlockComponent): boolean {
-    if (!(other instanceof FieldRun) || this.target.elementId !== other.target.elementId || this.accessor.propertyPath !== other.accessor.propertyPath) {
+    if (!(other instanceof FieldRun)
+      || this.target.elementId !== other.target.elementId
+      || this.accessor.propertyPath !== other.accessor.propertyPath
+      || this.accessor.jsonPath !== other.accessor.jsonPath) {
       return false;
     }
 
