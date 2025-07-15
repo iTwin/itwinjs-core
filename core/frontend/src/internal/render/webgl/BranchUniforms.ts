@@ -274,7 +274,6 @@ export class BranchUniforms {
     const vp = IModelApp.viewManager.selectedView;
     if (vp) {
       vp.view.displayStyle.settings.contours = contourLine;
-      (vp.target as Target).plan.contours = contourLine;
     }
   }
 }
