@@ -1460,27 +1460,16 @@ export class HalfEdgeGraph {
   }
   /**
    * Create two nodes of a new edge.
-   * @returns the reference to the new node at (x0,y0).
-   */
-  public addEdgeXY(x0: number, y0: number, x1: number, y1: number): HalfEdge {
-    const baseNode = HalfEdge.createEdgeXYXY(this._numNodesCreated, x0, y0, this._numNodesCreated + 1, x1, y1);
-    this._numNodesCreated += 2;
-    this.allHalfEdges.push(baseNode);
-    this.allHalfEdges.push(baseNode.faceSuccessor);
-    return baseNode;
-  }
-  /**
-   * Create two nodes of a new edge using start and end points of a line segment.
-   * @param lineSegment the line segment to use as the edge.
+   * @param x0 x-coordinate of the start node.
+   * @param y0 y-coordinate of the start node.
+   * @param x1 x-coordinate of the end node.
+   * @param y1 y-coordinate of the end node.
    * @param startFaceTag (optional) face tag for the start node.
    * @param endFaceTag (optional) face tag for the end node.
-   * @returns the reference to the new node at the start of the line segment.
+   * @returns the reference to the new node at (x0,y0).
    */
-  public addLineSegmentXY(lineSegment: LineSegment3d, startFaceTag?: number, endFaceTag?: number): HalfEdge {
-    const baseNode = HalfEdge.createEdgeXYXY(
-      this._numNodesCreated, lineSegment.startPoint().x, lineSegment.startPoint().y,
-      this._numNodesCreated + 1, lineSegment.endPoint().x, lineSegment.endPoint().y,
-    );
+  public addEdgeXY(x0: number, y0: number, x1: number, y1: number, startFaceTag?: number, endFaceTag?: number): HalfEdge {
+    const baseNode = HalfEdge.createEdgeXYXY(this._numNodesCreated, x0, y0, this._numNodesCreated + 1, x1, y1);
     baseNode.faceTag = startFaceTag;
     baseNode.faceSuccessor.faceTag = endFaceTag;
     this._numNodesCreated += 2;

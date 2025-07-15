@@ -510,7 +510,7 @@ describe("Voronoi", () => {
     const strokeOptions = new StrokeOptions();
     strokeOptions.maxEdgeLength = 0.5;
     let strokePoints: Point3d[] = [];
-    const [voronoi, graph] = Voronoi.createVoronoiFromCurveChain(path, strokeOptions, strokePoints)!;
+    const [voronoi, graph] = Voronoi.createVoronoiFromCurveChain(path, strokeOptions)!;
     if (ck.testDefined(voronoi)) {
       // for (const pt of strokePoints)
       //   GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, pt, 0.1);
@@ -537,7 +537,7 @@ describe("Voronoi", () => {
     const strokeOptions = new StrokeOptions();
     strokeOptions.maxEdgeLength = 10;
     let strokePoints: Point3d[] = [];
-    const [voronoi, graph] = Voronoi.createVoronoiFromCurveChain(path, strokeOptions, strokePoints)!;
+    const [voronoi, graph] = Voronoi.createVoronoiFromCurveChain(path, strokeOptions)!;
     if (ck.testDefined(voronoi)) {
       // for (const pt of strokePoints)
       //   GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, pt, 4);
@@ -564,7 +564,7 @@ describe("Voronoi", () => {
     const strokeOptions = new StrokeOptions();
     strokeOptions.maxEdgeLength = 100;
     let strokePoints: Point3d[] = [];
-    const [voronoi, graph] = Voronoi.createVoronoiFromCurveChain(path, strokeOptions, strokePoints)!;
+    const [voronoi, graph] = Voronoi.createVoronoiFromCurveChain(path, strokeOptions)!;
     if (ck.testDefined(voronoi)) {
       // for (const pt of strokePoints)
       //   GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, pt, 4);
@@ -591,7 +591,7 @@ describe("Voronoi", () => {
     const strokeOptions = new StrokeOptions();
     strokeOptions.maxEdgeLength = 200;
     let strokePoints: Point3d[] = [];
-    const [voronoi, graph] = Voronoi.createVoronoiFromCurveChain(path, strokeOptions, strokePoints)!;
+    const [voronoi, graph] = Voronoi.createVoronoiFromCurveChain(path, strokeOptions)!;
     if (ck.testDefined(voronoi)) {
       // for (const pt of strokePoints)
       //   GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, pt, 4);
