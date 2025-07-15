@@ -30,6 +30,7 @@ import { TextBlockLayout, TextStyleResolver } from "./TextBlockLayout";
  */
 export function appendLeadersToBuilder(builder: ElementGeometry.Builder, leaders: TextAnnotationLeader[], layout: TextBlockLayout, transform: Transform, params: GeometryParams, textStyleResolver: TextStyleResolver): boolean {
   let result = true;
+  const scaledLineHeight = textStyleResolver.blockSettings.lineHeight * textStyleResolver.scaleFactor;
   let frame: TextFrameStyleProps | undefined = textStyleResolver.blockSettings.frame;
 
   // If there is no frame, use a rectangular frame to compute the attachmentPoints for leaders.
@@ -68,7 +69,7 @@ export function appendLeadersToBuilder(builder: ElementGeometry.Builder, leaders
     });
 
     if (leaderStyle.leader.wantElbow) {
-      const elbowLength = leaderStyle.leader.elbowLength * leaderStyle.lineHeight;
+      const elbowLength = leaderStyle.leader.elbowLength * scaledLineHeight;
       const elbowDirection = computeElbowDirection(attachmentPoint, frameCurve, elbowLength);
       if (elbowDirection)
         leaderLinePoints.push(attachmentPoint.plusScaled(elbowDirection, elbowLength))
@@ -85,8 +86,8 @@ export function appendLeadersToBuilder(builder: ElementGeometry.Builder, leaders
 
     const termY = terminatorDirection?.unitCrossProduct(Vector3d.unitZ());
     if (!termY || !terminatorDirection) continue; // Assuming leaders without terminators is a valid case.
-    const terminatorHeight = leaderStyle.leader.terminatorHeightFactor * leaderStyle.lineHeight;
-    const terminatorWidth = leaderStyle.leader.terminatorWidthFactor * leaderStyle.lineHeight;
+    const terminatorHeight = leaderStyle.leader.terminatorHeightFactor * scaledLineHeight;
+    const terminatorWidth = leaderStyle.leader.terminatorWidthFactor * scaledLineHeight;
     const basePoint = leader.startPoint.plusScaled(terminatorDirection, terminatorWidth);
     const termPointA = basePoint.plusScaled(termY, terminatorHeight);
     const termPointB = basePoint.plusScaled(termY.negate(), terminatorHeight);
