@@ -6,7 +6,7 @@
 <ECSchema schemaName="Formats" alias="f" version="01.00.00" description="Standard Set of Format definitions" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
     <ECSchemaReference name="Units" version="01.00.09" alias="u"/>
 
-    <Format typeName="DefaultReal" displayLabel="real" type="decimal" precision="6" formatTraits="keepSingleZero|keepDecimalPoint"/>
+    <Format typeName="DefaultReal" displayLabel="real" type="decimal" precision="6" thousandSeparator="," formatTraits="keepSingleZero|keepDecimalPoint"/>
     <Format typeName="DefaultRealU" displayLabel="realu" type="decimal" precision="6" formatTraits="keepSingleZero|keepDecimalPoint|showUnitLabel"/>
     <Format typeName="DefaultRealUNS" type="decimal" precision="6" uomSeparator="" formatTraits="keepSingleZero|keepDecimalPoint|showUnitLabel"/>
 
