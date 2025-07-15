@@ -19,6 +19,7 @@ import { StrokeOptions } from "../curve/StrokeOptions";
 import { Geometry } from "../Geometry";
 import { Point2d, Vector2d } from "../geometry3d/Point2dVector2d";
 import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
+import { PolylineOps } from "../geometry3d/PolylineOps";
 import { Range3d } from "../geometry3d/Range";
 import { XAndY, XYAndZ } from "../geometry3d/XYZProps";
 import { SmallSystem } from "../numerics/SmallSystem";
@@ -295,19 +296,6 @@ export class Voronoi {
     Voronoi.populateMasksAndFaceTags(voronoiDiagram);
     return voronoiDiagram;
   }
-  // checks if all points are colinear
-  private static pointsAreColinear(points: Point3d[]): boolean {
-    if (points.length < 3)
-      return true;
-    const p0 = points[0];
-    const vectorA = Vector3d.createStartEnd(p0, points[1]);
-    for (let i = 2; i < points.length; i++) {
-      const vectorB = Vector3d.createStartEnd(p0, points[i]);
-      if (vectorA.crossProduct(vectorB).magnitude() > Geometry.smallMetricDistanceSquared)
-        return false;
-    }
-    return true;
-  }
   // create a half-edge graph for the colinear points; index is assigned to the edgeTag of each graph node
   private static createLinearGraph(pointsWithIndices: [Point3d, number][]): HalfEdgeGraph {
     const graph = new HalfEdgeGraph();
@@ -387,7 +375,7 @@ export class Voronoi {
     const uniquePoints = Array.from(new Set(points.map(p => `${p.x},${p.y}`)))
       .map(p => p.split(',').map(Number))
       .map(p => Point3d.create(p[0], p[1]));
-    if (Voronoi.pointsAreColinear(uniquePoints)) {
+    if (PolylineOps.isColinear(uniquePoints)) {
       const sortedPoints = uniquePoints.slice().sort((a, b) => a.x - b.x || a.y - b.y); // sort points by x, then y
       const graph = Voronoi.createLinearGraph(sortedPoints.map(point => [point, 0]));
       return graph ? Voronoi.createVoronoiForColinearPoints(graph) : undefined;
@@ -400,7 +388,7 @@ export class Voronoi {
   // then combine Voronoi faces for each child index into a single region
   private static createVoronoiFromPointsWithIndices(
     pointsWithIndices: [Point3d, number][], numChildren: number, tol: number,
-  ): [AnyRegion[], HalfEdgeGraph] | undefined {
+  ): AnyRegion[] | undefined {
     if (!pointsWithIndices || pointsWithIndices.length < 2)
       return undefined;
     const comparePoints: OrderedComparator<Point3d> = (p0: Point3d, p1: Point3d) => {
@@ -434,7 +422,7 @@ export class Voronoi {
       pointToIndexDic.insert(point, index);
     let voronoiDiagram: HalfEdgeGraph | undefined;
     let graph: HalfEdgeGraph | undefined;
-    if (Voronoi.pointsAreColinear(Array.from(pointToIndexDic.keys()))) {
+    if (PolylineOps.isColinear(Array.from(pointToIndexDic.keys()))) {
       const sortedPoints = pointToIndexDic.extractPairs().slice().sort((a, b) => a.key.x - b.key.x || a.key.y - b.key.y); // sort points by x, then y
       graph = Voronoi.createLinearGraph(sortedPoints.map(item => [item.key, item.value]));
       voronoiDiagram = graph ? Voronoi.createVoronoiForColinearPoints(graph) : undefined;
@@ -482,7 +470,7 @@ export class Voronoi {
       // @dave: not sure below line is correct but works fine
       combinedRegions.push(signedLoops[0].negativeAreaLoops[0]);
     }
-    return [combinedRegions, graph];
+    return combinedRegions;
   }
   // stoke child curve from start and end to get sample points; skip the first and last points on the child curve
   // each sample point is a tuple of [Point3d, childIndex]
@@ -513,7 +501,7 @@ export class Voronoi {
    */
   public static createVoronoiFromCurveChain(
     curveChain: CurveChain, strokeOptions?: StrokeOptions, tol: number = Geometry.smallMetricDistance // strokePoints?: Point3d[],
-  ): [AnyRegion[], HalfEdgeGraph] | undefined {
+  ): AnyRegion[] | undefined {
     if (strokeOptions === undefined)
       strokeOptions = new StrokeOptions();
     const children = curveChain.children;
@@ -543,10 +531,6 @@ export class Voronoi {
       }
     }
     pointsWithIndices.push([endPoint, numChildren - 1]);
-    // if (!strokePoints)
-    //   strokePoints = [];
-    // for (const point of pointsWithIndices.map(([point]) => point))
-    //   strokePoints.push(point); // collect all points for debugging
     return Voronoi.createVoronoiFromPointsWithIndices(pointsWithIndices, numChildren, tol);
   }
 }

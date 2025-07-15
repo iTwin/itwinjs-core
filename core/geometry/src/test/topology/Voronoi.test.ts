@@ -49,7 +49,7 @@ describe("Voronoi", () => {
     expect(ck.getNumErrors()).toBe(0);
   });
 
-  it.only("CollinearPoints", () => {
+  it.only("ColinearPoints", () => {
     const ck = new Checker(true, true);
     const allGeometry: GeometryQuery[] = [];
 
@@ -156,7 +156,7 @@ describe("Voronoi", () => {
       ck.testCoordinate(voronoi.allHalfEdges.length / 2, 13, "Voronoi should have 13 edges");
     }
 
-    GeometryCoreTestIO.saveGeometry(allGeometry, "Voronoi", "CollinearPoints");
+    GeometryCoreTestIO.saveGeometry(allGeometry, "Voronoi", "ColinearPoints");
     expect(ck.getNumErrors()).toBe(0);
   });
 
@@ -474,25 +474,24 @@ describe("Voronoi", () => {
     expect(ck.getNumErrors()).toBe(0);
   });
 
-  it.only("CollinearCurveChain", () => {
+  it.only("ColinearCurveChain", () => {
     const ck = new Checker(true, true);
     const allGeometry: GeometryQuery[] = [];
 
     const lineSegment0 = LineSegment3d.createXYXY(-2, 0, 0, 0);
     const lineSegment1 = LineSegment3d.createXYXY(0, 0, 4, 0);
     const lineSegment2 = LineSegment3d.createXYXY(4, 0, 5, 0);
-
     const path = Path.create(lineSegment0, lineSegment1, lineSegment2);
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, path);
     const strokeOptions = new StrokeOptions();
     strokeOptions.maxEdgeLength = 0.5;
-    const [voronoi, graph] = Voronoi.createVoronoiFromCurveChain(path, strokeOptions)!;
+    const voronoi = Voronoi.createVoronoiFromCurveChain(path, strokeOptions)!;
     if (ck.testDefined(voronoi)) {
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, voronoi);
       ck.testCoordinate(voronoi.length, 3, "Voronoi should have 3 faces");
     }
 
-    GeometryCoreTestIO.saveGeometry(allGeometry, "Voronoi", "CollinearCurveChain");
+    GeometryCoreTestIO.saveGeometry(allGeometry, "Voronoi", "ColinearCurveChain");
     expect(ck.getNumErrors()).toBe(0);
   });
 
@@ -509,12 +508,8 @@ describe("Voronoi", () => {
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, path);
     const strokeOptions = new StrokeOptions();
     strokeOptions.maxEdgeLength = 0.5;
-    let strokePoints: Point3d[] = [];
-    const [voronoi, graph] = Voronoi.createVoronoiFromCurveChain(path, strokeOptions)!;
+    const voronoi = Voronoi.createVoronoiFromCurveChain(path, strokeOptions)!;
     if (ck.testDefined(voronoi)) {
-      // for (const pt of strokePoints)
-      //   GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, pt, 0.1);
-      // GeometryCoreTestIO.captureCloneGeometry(allGeometry, PolyfaceBuilder.graphToPolyface(graph));
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, voronoi);
       ck.testCoordinate(voronoi.length, 5, "Voronoi should have 5 faces");
     }
@@ -533,15 +528,10 @@ describe("Voronoi", () => {
     if (ck.testDefined(path, "path successfully parsed"))
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, path);
     ck.testCoordinate(path.children.length, 7, "path should have 7 children");
-
     const strokeOptions = new StrokeOptions();
     strokeOptions.maxEdgeLength = 10;
-    let strokePoints: Point3d[] = [];
-    const [voronoi, graph] = Voronoi.createVoronoiFromCurveChain(path, strokeOptions)!;
+    const voronoi = Voronoi.createVoronoiFromCurveChain(path, strokeOptions)!;
     if (ck.testDefined(voronoi)) {
-      // for (const pt of strokePoints)
-      //   GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, pt, 4);
-      // GeometryCoreTestIO.captureCloneGeometry(allGeometry, PolyfaceBuilder.graphToPolyface(graph));
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, voronoi);
       ck.testCoordinate(voronoi.length, path.children.length, "Voronoi should have 7 faces");
     }
@@ -563,12 +553,8 @@ describe("Voronoi", () => {
 
     const strokeOptions = new StrokeOptions();
     strokeOptions.maxEdgeLength = 100;
-    let strokePoints: Point3d[] = [];
-    const [voronoi, graph] = Voronoi.createVoronoiFromCurveChain(path, strokeOptions)!;
+    const voronoi = Voronoi.createVoronoiFromCurveChain(path, strokeOptions)!;
     if (ck.testDefined(voronoi)) {
-      // for (const pt of strokePoints)
-      //   GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, pt, 4);
-      // GeometryCoreTestIO.captureCloneGeometry(allGeometry, PolyfaceBuilder.graphToPolyface(graph));
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, voronoi);
       ck.testCoordinate(voronoi.length, path.children.length, "Voronoi should have 18 faces");
     }
@@ -587,15 +573,10 @@ describe("Voronoi", () => {
     if (ck.testDefined(path, "path successfully parsed"))
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, path);
     ck.testCoordinate(path.children.length, 9, "path should have 9 children");
-
     const strokeOptions = new StrokeOptions();
     strokeOptions.maxEdgeLength = 200;
-    let strokePoints: Point3d[] = [];
-    const [voronoi, graph] = Voronoi.createVoronoiFromCurveChain(path, strokeOptions)!;
+    const voronoi = Voronoi.createVoronoiFromCurveChain(path, strokeOptions)!;
     if (ck.testDefined(voronoi)) {
-      // for (const pt of strokePoints)
-      //   GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, pt, 4);
-      // GeometryCoreTestIO.captureCloneGeometry(allGeometry, PolyfaceBuilder.graphToPolyface(graph));
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, voronoi);
       ck.testCoordinate(voronoi.length, path.children.length, "Voronoi should have 9 faces");
     }

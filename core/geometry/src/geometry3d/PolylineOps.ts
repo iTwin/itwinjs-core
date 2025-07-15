@@ -356,4 +356,21 @@ export class PolylineOps {
     }
     return foundMin ? result : undefined;
   }
+  /**
+   * Checks if all points are colinear.
+   * @param points array of points to check.
+   * @param tol tolerance for co-linearity check, default is Geometry.smallMetricDistanceSquared.
+   */
+  public static isColinear(points: Point3d[], tol: number = Geometry.smallMetricDistanceSquared): boolean {
+    if (points.length < 3)
+      return true;
+    const p0 = points[0];
+    const vectorA = Vector3d.createStartEnd(p0, points[1]);
+    for (let i = 2; i < points.length; i++) {
+      const vectorB = Vector3d.createStartEnd(p0, points[i]);
+      if (vectorA.crossProduct(vectorB).magnitude() > tol)
+        return false;
+    }
+    return true;
+  }
 }
