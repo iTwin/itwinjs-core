@@ -431,13 +431,17 @@ function cloneAccessor(accessor: FieldPropertyAccessor): FieldPropertyAccessor {
 
 export interface FieldTarget {
   elementId: Id64String;
-  // TODO: optional aspect class name; some way to select among multi-aspects.
+  // ###TODO: optional aspect class name; some way to select among multi-aspects.
 }
+
+// ###TODO: figure out formatting (later).
+export type FieldFormatter = { [k: string]: any };
 
 export interface FieldRunProps extends TextBlockComponentProps {
   readonly type: "field";
   target: FieldTarget;
   accessor: FieldPropertyAccessor;
+  formatter?: FieldFormatter;
   cachedContent?: string;
 }
 
@@ -447,6 +451,7 @@ export class FieldRun extends TextBlockComponent {
   public readonly type = "field";
   public readonly target: Readonly<FieldTarget>;
   public readonly accessor: Readonly<FieldPropertyAccessor>;
+  public readonly formatter?: FieldFormatter;
   public readonly cachedContent: string;
 
   private constructor(props: Omit<FieldRunProps, "type">) {
@@ -455,12 +460,14 @@ export class FieldRun extends TextBlockComponent {
     this.cachedContent = props.cachedContent ?? FieldRun.invalidContent;
     this.target = props.target;
     this.accessor = props.accessor;
+    this.formatter = props.formatter;
   }
 
   public static create(props: Omit<FieldRunProps, "type">): FieldRun {
     return new FieldRun({
       ...props,
       accessor: cloneAccessor(props.accessor),
+      formatter: structuredClone(props.formatter),
     });
   }
 
@@ -478,6 +485,10 @@ export class FieldRun extends TextBlockComponent {
 
     if (this.cachedContent !== FieldRun.invalidContent) {
       json.cachedContent = this.cachedContent;
+    }
+
+    if (this.formatter) {
+      json.formatter = structuredClone(this.formatter);
     }
 
     return json;
@@ -507,6 +518,8 @@ export class FieldRun extends TextBlockComponent {
         }
       }
     }
+
+    // ###TODO compare formatters
 
     return true;
   }
