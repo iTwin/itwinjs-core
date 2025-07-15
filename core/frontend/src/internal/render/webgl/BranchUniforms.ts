@@ -102,11 +102,12 @@ export class BranchUniforms {
   }
 
   public pushBranch(branch: Branch): void {
+    desync(this);
+    this._stack.pushBranch(branch);
+
     this.setClipStyle(this.top.disableClipStyle);
     if(this.top.contourLine)
       this.setContourLine(this.top.contourLine);
-    desync(this);
-    this._stack.pushBranch(branch);
 
     if (this.top.clipVolume)
       this.clipStack.push(this.top.clipVolume);
@@ -273,6 +274,7 @@ export class BranchUniforms {
     const vp = IModelApp.viewManager.selectedView;
     if (vp) {
       vp.view.displayStyle.settings.contours = contourLine;
+      (vp.target as Target).plan.contours = contourLine;
     }
   }
 }
