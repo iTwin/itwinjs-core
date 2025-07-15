@@ -6,8 +6,10 @@
  * @module Annotation
  */
 
-import { Id64String } from "@itwin/core-bentley";
+import { Id64String, Logger } from "@itwin/core-bentley";
 import { TextStyleSettingsProps } from "./TextStyle";
+import { XAndY, XYAndZ } from "@itwin/core-geometry";
+import { CommonLoggerCategory } from "../CommonLoggerCategory";
 
 /** Options supplied to [[TextBlockComponent.applyStyle]] to control how the style is applied to the component and its child components.
  * @beta
@@ -456,12 +458,16 @@ export class FieldRun extends TextBlockComponent {
   public readonly target: Readonly<FieldTarget>;
   public readonly accessor: Readonly<FieldPropertyAccessor>;
   public readonly formatter?: FieldFormatter;
-  public readonly cachedContent: string;
+  private _cachedContent: string;
+
+  public get cachedContent(): string {
+    return this._cachedContent ?? FieldRun.invalidContentIndicator;
+  }
 
   private constructor(props: Omit<FieldRunProps, "type">) {
     super(props);
 
-    this.cachedContent = props.cachedContent ?? FieldRun.invalidContentIndicator;
+    this._cachedContent = props.cachedContent ?? FieldRun.invalidContentIndicator;
     this.target = props.target;
     this.accessor = props.accessor;
     this.formatter = props.formatter;
@@ -528,6 +534,31 @@ export class FieldRun extends TextBlockComponent {
 
     // ###TODO compare formatters
 
+    return true;
+  }
+
+  public update(context: UpdateFieldsContext): boolean {
+    if (context.targetElementId !== this.target.elementId) {
+      return false;
+    }
+
+    let newContent: string | undefined;
+    try {
+      const prop = context.getProperty({ accessor: this.accessor });
+      if (undefined !== prop) {
+        // ###TODO formatting etc.
+        newContent = prop.value.toString();
+      }
+    } catch (err) {
+      Logger.logException(CommonLoggerCategory.Annotations, err);
+    }
+
+    newContent = newContent ?? FieldRun.invalidContentIndicator;
+    if (newContent === this.cachedContent) {
+      return false;
+    }
+
+    this._cachedContent = newContent;
     return true;
   }
 }
@@ -632,6 +663,24 @@ export interface TextBlockProps extends TextBlockComponentProps {
   margins?: Partial<TextBlockMargins>;
   /** The paragraphs within the text block. Default: an empty array. */
   paragraphs?: ParagraphProps[];
+}
+
+export interface GetFieldPropertyValueArgs {
+  accessor: FieldPropertyAccessor;
+  // ###TODO: a description of which aspect hosts the property, if not hosted directly on the element.
+}
+
+export type FieldPropertyValue = boolean | number | string | Date | XAndY | XYAndZ;
+
+export interface FieldProperty {
+  value: FieldPropertyValue;
+  metadata?: any; // ###TODO we'll need to know extended type, KOQ/units, etc.
+}
+
+export interface UpdateFieldsContext {
+  readonly targetElementId: Id64String;
+
+  getProperty(args: GetFieldPropertyValueArgs): FieldProperty | undefined
 }
 
 /** Represents a formatted text document consisting of a series of [[Paragraph]]s, each laid out on a separate line and containing their own content in the form of [[Run]]s.
@@ -752,5 +801,20 @@ export class TextBlock extends TextBlockComponent {
     if (!marginsAreEqual) return false;
 
     return this.paragraphs.every((paragraph, index) => paragraph.equals(other.paragraphs[index]));
+  }
+
+  // Re-evaluates the display strings for all fields that target the element specified by `context` and returns the number
+  // of fields whose display strings changed as a result.
+  public updateFields(context: UpdateFieldsContext): number {
+    let numUpdated = 0;
+    for (const paragraph of this.paragraphs) {
+      for (const run of paragraph.runs) {
+        if (run.type === "field" && run.update(context)) {
+          ++numUpdated;
+        }
+      }
+    }
+
+    return numUpdated;
   }
 }
