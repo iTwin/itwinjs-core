@@ -7,7 +7,7 @@
   <ECSchemaReference name="BisCore" version="01.00.01" alias="bis"/>
   <ECSchemaReference name="CoreCustomAttributes" version="01.00.03" alias="CoreCA"/>
   <ECSchemaReference name="Formats" version="01.00.00" alias="f"/>
-  <ECSchemaReference name="Units" version="01.00.07" alias="u"/>
+  <ECSchemaReference name="Units" version="01.00.09" alias="u"/>
 
   <ECEntityClass typeName="EntityOne" modifier="Sealed">
     <BaseClass>bis:PhysicalElement</BaseClass>
