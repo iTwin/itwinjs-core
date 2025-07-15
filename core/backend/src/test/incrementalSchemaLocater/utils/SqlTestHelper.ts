@@ -25,28 +25,15 @@ export class SqlTestHelper {
     return this._iModel !== undefined;
   }
 
-  public static async setup(iModelId?: string, isStandalone: boolean = true, openReadOnly = true): Promise<void> {
+  public static async setup(): Promise<void> {
     if (!IModelHost.isValid)
       await IModelHost.startup();
 
     if (this._iModel !== undefined)
       throw new Error("iModel already loaded");
 
-    if (iModelId) {
-      this.testBimFile = path.join(__dirname, "../../../iModels", `${iModelId}.bim`);
-    } else {
-      this.testBimFile = this.initializeTestIModel();
-    }
-
-    if (isStandalone) {
-      this._iModel = StandaloneDb.openFile(this.testBimFile, OpenMode.ReadWrite);
-    } else {
-      this._iModel = await BriefcaseDb.open({
-        fileName: this.testBimFile,
-        readonly: openReadOnly,
-        key: "test-iModel",
-      });
-    }
+    this.testBimFile = this.initializeTestIModel();
+    this._iModel = StandaloneDb.openFile(this.testBimFile, OpenMode.ReadWrite);
 
     this.context = new SchemaContext();
     this.context.addLocater(new IModelSchemaLocater(this._iModel));
