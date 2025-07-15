@@ -435,7 +435,7 @@ function cloneAccessor(accessor: FieldPropertyAccessor): FieldPropertyAccessor {
   return result;
 }
 
-export interface FieldTarget {
+export interface FieldPropertyHost {
   elementId: Id64String;
   // ###TODO: optional aspect class name; some way to select among multi-aspects.
 }
@@ -445,7 +445,7 @@ export type FieldFormatter = { [k: string]: any };
 
 export interface FieldRunProps extends TextBlockComponentProps {
   readonly type: "field";
-  target: FieldTarget;
+  host: FieldPropertyHost;
   accessor: FieldPropertyAccessor;
   formatter?: FieldFormatter;
   cachedContent?: string;
@@ -455,7 +455,7 @@ export class FieldRun extends TextBlockComponent {
   public static invalidContentIndicator = "####"; // maybe this should be specified by the text style?
   
   public readonly type = "field";
-  public readonly target: Readonly<FieldTarget>;
+  public readonly host: Readonly<FieldPropertyHost>;
   public readonly accessor: Readonly<FieldPropertyAccessor>;
   public readonly formatter?: FieldFormatter;
   private _cachedContent: string;
@@ -468,7 +468,7 @@ export class FieldRun extends TextBlockComponent {
     super(props);
 
     this._cachedContent = props.cachedContent ?? FieldRun.invalidContentIndicator;
-    this.target = props.target;
+    this.host = props.host;
     this.accessor = props.accessor;
     this.formatter = props.formatter;
   }
@@ -489,7 +489,7 @@ export class FieldRun extends TextBlockComponent {
     const json: FieldRunProps = {
       ...super.toJSON(),
       type: "field",
-      target: { ...this.target },
+      host: { ...this.host },
       accessor: cloneAccessor(this.accessor),
     };
 
@@ -510,7 +510,7 @@ export class FieldRun extends TextBlockComponent {
 
   public override equals(other: TextBlockComponent): boolean {
     if (!(other instanceof FieldRun)
-      || this.target.elementId !== other.target.elementId
+      || this.host.elementId !== other.host.elementId
       || this.accessor.propertyPath !== other.accessor.propertyPath
       || this.accessor.jsonPath !== other.accessor.jsonPath) {
       return false;
@@ -538,7 +538,7 @@ export class FieldRun extends TextBlockComponent {
   }
 
   public update(context: UpdateFieldsContext): boolean {
-    if (context.targetElementId !== this.target.elementId) {
+    if (context.hostElementId !== this.host.elementId) {
       return false;
     }
 
@@ -678,7 +678,7 @@ export interface FieldProperty {
 }
 
 export interface UpdateFieldsContext {
-  readonly targetElementId: Id64String;
+  readonly hostElementId: Id64String;
 
   getProperty(args: GetFieldPropertyValueArgs): FieldProperty | undefined
 }

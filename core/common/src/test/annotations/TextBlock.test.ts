@@ -153,13 +153,13 @@ describe("FieldRun", () => {
     it("initializes fields", () => {
       const fieldRun = FieldRun.create({
         styleName: "fieldStyle",
-        target: { elementId: "0x123" },
+        host: { elementId: "0x123" },
         accessor: { propertyPath: "someProperty" },
         cachedContent: "cachedValue",
       });
 
       expect(fieldRun.styleName).to.equal("fieldStyle");
-      expect(fieldRun.target.elementId).to.equal("0x123");
+      expect(fieldRun.host.elementId).to.equal("0x123");
       expect(fieldRun.accessor.propertyPath).to.equal("someProperty");
       expect(fieldRun.cachedContent).to.equal("cachedValue");
     });
@@ -167,7 +167,7 @@ describe("FieldRun", () => {
     it("initializes cachedContent to invalid content indicator if undefined", () => {
       expect(FieldRun.create({
         styleName: "fieldStyle",
-        target: { elementId: "0x123" },
+        host: { elementId: "0x123" },
         accessor: { propertyPath: "someProperty" },
       }).cachedContent).toEqual(FieldRun.invalidContentIndicator);
     });
@@ -183,7 +183,7 @@ describe("FieldRun", () => {
 
       const fieldRun = FieldRun.create({
         styleName: "fieldStyle",
-        target: { elementId: "0x123" },
+        host: { elementId: "0x123" },
         accessor,
       });
 
@@ -203,7 +203,7 @@ describe("FieldRun", () => {
 
       const fieldRun = FieldRun.create({
         styleName: "fieldStyle",
-        target: { elementId: "0x123" },
+        host: { elementId: "0x123" },
         accessor: { propertyPath: "someProperty" },
         formatter,
       });
@@ -222,7 +222,7 @@ describe("FieldRun", () => {
     it("serializes and deserializes FieldRun correctly", () => {
       const fieldRun = FieldRun.create({
         styleName: "fieldStyle",
-        target: { elementId: "0x123" },
+        host: { elementId: "0x123" },
         accessor: { propertyPath: "someProperty" },
         cachedContent: "cachedValue",
       });
@@ -236,7 +236,7 @@ describe("FieldRun", () => {
     it("omits cachedContent if it is equal to invalid content indicator", () => {
       const fieldRun = FieldRun.create({
         styleName: "fieldStyle",
-        target: { elementId: "0x123" },
+        host: { elementId: "0x123" },
         accessor: { propertyPath: "someProperty" },
         cachedContent: FieldRun.invalidContentIndicator,
       });
@@ -249,7 +249,7 @@ describe("FieldRun", () => {
     it("produces cached content", () => {
       const fieldRun = FieldRun.create({
         styleName: "fieldStyle",
-        target: { elementId: "0x123" },
+        host: { elementId: "0x123" },
         accessor: { propertyPath: "someProperty" },
         cachedContent: "cachedValue",
       });
@@ -262,7 +262,7 @@ describe("FieldRun", () => {
     it("compares FieldRuns for equality", () => {
       const baseProps = {
         styleName: "fieldStyle",
-        target: { elementId: "0x123" },
+        host: { elementId: "0x123" },
         accessor: { propertyPath: "someProperty" },
         cachedContent: "cachedValue",
       };
@@ -273,7 +273,7 @@ describe("FieldRun", () => {
         { accessor: { propertyPath: "stuff" } },
         { accessor: { propertyPath: "someProperty", jsonPath: "$.object.key" } },
         { accessor: { arrayAccessors: [{ propertyPath: "array1", index: 0 }], jsonPath: "$.object.key" } },
-        { target: { elementId: "0x456" } },
+        { host: { elementId: "0x456" } },
       ];
 
       const fieldRuns = combinations.map((combo) =>
@@ -303,14 +303,14 @@ describe("FieldRun", () => {
     it("ignores cached content", () => {
       const field1 = FieldRun.create({
         styleName: "fieldStyle",
-        target: { elementId: "0x123" },
+        host: { elementId: "0x123" },
         accessor: { propertyPath: "someProperty" },
         cachedContent: "1",
       });
 
       const field2 = FieldRun.create({
         styleName: "fieldStyle",
-        target: { elementId: "0x123" },
+        host: { elementId: "0x123" },
         accessor: { propertyPath: "someProperty" },
         cachedContent: "2",
       });
@@ -326,7 +326,7 @@ describe("FieldRun", () => {
     const mockUpdatedContent = "updatedContent";
 
     const createMockContext = (elementId: string, propertyValue?: string) => ({
-      targetElementId: elementId,
+      hostElementId: elementId,
       getProperty: ({ accessor }: { accessor: typeof mockAccessor }) => {
         if (accessor.propertyPath === mockAccessor.propertyPath && propertyValue !== undefined) {
           return { value: propertyValue };
@@ -335,10 +335,10 @@ describe("FieldRun", () => {
       },
     });
 
-    it("does nothing if targetElementId does not match", () => {
+    it("does nothing if hostElementId does not match", () => {
       const fieldRun = FieldRun.create({
         styleName: "fieldStyle",
-        target: { elementId: mockElementId },
+        host: { elementId: mockElementId },
         accessor: mockAccessor,
         cachedContent: mockCachedContent,
       });
@@ -353,7 +353,7 @@ describe("FieldRun", () => {
     it("produces invalid content indicator if property value is undefined", () => {
       const fieldRun = FieldRun.create({
         styleName: "fieldStyle",
-        target: { elementId: mockElementId },
+        host: { elementId: mockElementId },
         accessor: mockAccessor,
         cachedContent: mockCachedContent,
       });
@@ -368,7 +368,7 @@ describe("FieldRun", () => {
     it("returns false if cached content matches new content", () => {
       const fieldRun = FieldRun.create({
         styleName: "fieldStyle",
-        target: { elementId: mockElementId },
+        host: { elementId: mockElementId },
         accessor: mockAccessor,
         cachedContent: mockCachedContent,
       });
@@ -383,7 +383,7 @@ describe("FieldRun", () => {
     it("returns true and updates cached content if new content is different", () => {
       const fieldRun = FieldRun.create({
         styleName: "fieldStyle",
-        target: { elementId: mockElementId },
+        host: { elementId: mockElementId },
         accessor: mockAccessor,
         cachedContent: mockCachedContent,
       });
@@ -398,13 +398,13 @@ describe("FieldRun", () => {
     it("resolves to invalid content indicator if an exception occurs", () => {
       const fieldRun = FieldRun.create({
         styleName: "fieldStyle",
-        target: { elementId: mockElementId },
+        host: { elementId: mockElementId },
         accessor: mockAccessor,
         cachedContent: mockCachedContent,
       });
 
       const context = {
-        targetElementId: mockElementId,
+        hostElementId: mockElementId,
         getProperty: () => {
           throw new Error("Test exception");
         },
