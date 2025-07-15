@@ -8,7 +8,7 @@
 
 import { assert } from "@itwin/core-bentley";
 import { ClipVector, Matrix3d, Matrix4d, Point3d, Transform, XYZ } from "@itwin/core-geometry";
-import { ClipStyle, ContourDisplay, HiddenLine, ViewFlags } from "@itwin/core-common";
+import { ClipStyle, HiddenLine, ViewFlags } from "@itwin/core-common";
 import { FeatureSymbology } from "../../../render/FeatureSymbology";
 import { BranchState } from "./BranchState";
 import { BranchStack } from "./BranchStack";
@@ -22,6 +22,7 @@ import { desync, sync, SyncToken } from "./Sync";
 import { Target } from "./Target";
 import { ClipStack } from "./ClipStack";
 import { IModelApp } from "../../../IModelApp";
+import { RenderPlan } from "../RenderPlan";
 
 function equalXYZs(a: XYZ | undefined, b: XYZ | undefined): boolean {
   if (a === b)
@@ -106,9 +107,10 @@ export class BranchUniforms {
     this._stack.pushBranch(branch);
 
     this.setClipStyle(this.top.disableClipStyle);
-    if(this.top.contourLine)
-      this.setContourLine(this.top.contourLine);
-
+    if (this.top.contourLine) {
+      const newPlan: RenderPlan = { ...this._target.plan, contours: this.top.contourLine };
+      this._target.plan = newPlan;
+    }
     if (this.top.clipVolume)
       this.clipStack.push(this.top.clipVolume);
 
@@ -128,6 +130,10 @@ export class BranchUniforms {
 
   public pop(): void {
     desync(this);
+    if (this.top.contourLine) {
+      const newPlan: RenderPlan = { ...this._target.plan, contours: this.top.contourLine };
+      this._target.plan = newPlan;
+    }
     if (this.top.clipVolume)
       this.clipStack.pop();
 
@@ -267,13 +273,6 @@ export class BranchUniforms {
       this.clipStack.insideColor.alpha = disableClipStyle ? 0 : (style.insideColor ? 1 : 0);
       this.clipStack.outsideColor.alpha = disableClipStyle ? 0 : (style.outsideColor ? 1 : 0);
       this.clipStack.intersectionStyle.alpha = disableClipStyle ? 0 : (style.intersectionStyle ? style.intersectionStyle.width : 0);
-    }
-  }
-
-  private setContourLine(contourLine: ContourDisplay) {
-    const vp = IModelApp.viewManager.selectedView;
-    if (vp) {
-      vp.view.displayStyle.settings.contours = contourLine;
     }
   }
 }
