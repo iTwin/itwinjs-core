@@ -6,6 +6,7 @@
  * @module Annotation
  */
 
+import { Id64String } from "@itwin/core-bentley";
 import { TextStyleSettingsProps } from "./TextStyle";
 
 /** Options supplied to [[TextBlockComponent.applyStyle]] to control how the style is applied to the component and its child components.
@@ -157,13 +158,13 @@ export abstract class TextBlockComponent {
 /**
  * @beta
  */
-export type Run = TextRun | FractionRun | TabRun | LineBreakRun;
+export type Run = TextRun | FractionRun | TabRun | LineBreakRun | FieldRun;
 
 /** The JSON representation of a [[Run]].
  * Use the `type` field to discriminate between the different kinds of runs.
  * @beta
  */
-export type RunProps = TextRunProps | FractionRunProps | TabRunProps | LineBreakRunProps;
+export type RunProps = TextRunProps | FractionRunProps | TabRunProps | LineBreakRunProps | FieldRunProps;
 
 /** A sequence of characters within a [[Paragraph]] that share a single style. Runs are the leaf nodes of a [[TextBlock]] document. When laid out for display, a single run may span
  * multiple lines, but it will never contain different styling.
@@ -180,6 +181,7 @@ export namespace Run { // eslint-disable-line @typescript-eslint/no-redeclare
       case "fraction": return FractionRun.create(props);
       case "tab": return TabRun.create(props);
       case "linebreak": return LineBreakRun.create(props);
+      case "field": return FieldRun.create(props);
     }
   }
 }
@@ -399,6 +401,114 @@ export class TabRun extends TextBlockComponent {
 
   public override equals(other: TextBlockComponent): boolean {
     return other instanceof TabRun && super.equals(other);
+  }
+}
+
+export interface ArrayPropertyAccessor {
+  // e.g. "primitives" or "outerStruct.innerStruct.primitives" - something that can be used with an ECSql statement like
+  // `SELECT propertyPath FROM bis.Element WHERE ElementId=elementId"`
+  propertyPath: string;
+  // negative indices are converted to `length + index` to select backwards starting at the end of the array
+  index: number;
+}
+
+export interface FieldPropertyAccessor {
+  arrayAccessors?: ArrayPropertyAccessor[];
+  propertyPath: string;
+}
+
+function cloneAccessor(accessor: FieldPropertyAccessor): FieldPropertyAccessor {
+  const result: FieldPropertyAccessor = { ...accessor };
+
+  if (accessor.arrayAccessors) {
+    result.arrayAccessors = accessor.arrayAccessors.map((x) => {
+      return { ...x };
+    });
+  }
+
+  return result;
+}
+
+export interface FieldTarget {
+  elementId: Id64String;
+  // TODO: optional aspect class name; some way to select among multi-aspects.
+}
+
+export interface FieldRunProps extends TextBlockComponentProps {
+  readonly type: "field";
+  target: FieldTarget;
+  accessor: FieldPropertyAccessor;
+  cachedContent?: string;
+}
+
+export class FieldRun extends TextBlockComponent {
+  public static invalidContent = "####"; // maybe this should be specified by the text style?
+  
+  public readonly type = "field";
+  public readonly target: Readonly<FieldTarget>;
+  public readonly accessor: Readonly<FieldPropertyAccessor>;
+  public readonly cachedContent: string;
+
+  private constructor(props: Omit<FieldRunProps, "type">) {
+    super(props);
+
+    this.cachedContent = props.cachedContent ?? FieldRun.invalidContent;
+    this.target = props.target;
+    this.accessor = props.accessor;
+  }
+
+  public static create(props: Omit<FieldRunProps, "type">): FieldRun {
+    return new FieldRun({
+      ...props,
+      accessor: cloneAccessor(props.accessor),
+    });
+  }
+
+  public override clone(): FieldRun {
+    return new FieldRun(this.toJSON());
+  }
+
+  public override toJSON(): FieldRunProps {
+    const json: FieldRunProps = {
+      ...super.toJSON(),
+      type: "field",
+      target: { ...this.target },
+      accessor: cloneAccessor(this.accessor),
+    };
+
+    if (this.cachedContent !== FieldRun.invalidContent) {
+      json.cachedContent = this.cachedContent;
+    }
+
+    return json;
+  }
+
+  public override stringify(): string {
+    return this.cachedContent;
+  }
+
+  public override equals(other: TextBlockComponent): boolean {
+    if (!(other instanceof FieldRun) || this.target.elementId !== other.target.elementId || this.accessor.propertyPath !== other.accessor.propertyPath) {
+      return false;
+    }
+
+    const lhs = this.accessor.arrayAccessors;
+    const rhs = other.accessor.arrayAccessors;
+    if (!lhs !== !rhs) {
+      return false;
+    } else if (lhs && rhs) {
+      if (lhs.length !== rhs.length) {
+        return false;
+      }
+
+      for (let i = 0; i < lhs.length; i++) {
+        if (lhs[i].index !== rhs[i].index || lhs[i].propertyPath !== rhs[i].propertyPath) {
+          return false;
+        }
+      }
+    }
+
+    return true;
   }
 }
 
