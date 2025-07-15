@@ -89,31 +89,17 @@ export class SqlTestHelper {
     }
   }
 
-  public static async importSchemaStrings(schemaKey: SchemaKey, schemaXml: string []): Promise<void> {
-    if (!this.isLoaded) {
-      throw new Error("iModel has not been loaded")
-    }
-
-    if (!this._iModel)
-      throw new Error("iModel is undefined");
-
-    if (undefined !== this._iModel.querySchemaVersion(schemaKey.name))
-      return;
-
-    await this._iModel.importSchemaStrings(schemaXml);
-    this._iModel.saveChanges();
-
-    if (this._iModel.isBriefcaseDb() && !this._iModel.isReadonly) {
-      await (this.iModel as BriefcaseDb).pushChanges({ description: "import test schema" });
-    }
-  }
-
   public static async close(): Promise<void> {
     if (this._iModel !== undefined) {
       this._iModel.close();
       this._iModel = undefined;
-      await IModelHost.shutdown();
     }
+  }
+
+  public static async getOrderedSchemaStrings(insertSchema: Schema): Promise<string[]> {
+    const schemas = SchemaGraphUtil.buildDependencyOrderedSchemaList(insertSchema);
+    const schemaStrings = await Promise.all(schemas.map(async (schema) => SqlTestHelper.getSchemaString(schema)));
+    return schemaStrings;
   }
 
   public static async getSchemaString(schema: Schema): Promise<string> {
@@ -125,11 +111,5 @@ export class SqlTestHelper {
     const xml = serializer.serializeToString(doc);
 
     return xml;
-  }
-
-  public static async getOrderedSchemaStrings(insertSchema: Schema): Promise<string[]> {
-    const schemas = SchemaGraphUtil.buildDependencyOrderedSchemaList(insertSchema);
-    const schemaStrings = await Promise.all(schemas.map(async (schema) => SqlTestHelper.getSchemaString(schema)));
-    return schemaStrings;
   }
 };
