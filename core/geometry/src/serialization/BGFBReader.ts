@@ -515,13 +515,12 @@ export class BGFBReader {
           // -2 for "no edgeMate", maps to `undefined` in TypeScript
           if (edgeMateIndexI32) {
             const edgeMateIndex: Array<number | undefined> = [];
-            if (!SerializationHelpers.announceCompressedZeroBasedReflexiveIndices(edgeMateIndexI32, numPerFace,
+            if (SerializationHelpers.announceCompressedZeroBasedReflexiveIndices(edgeMateIndexI32, numPerFace,
               SerializationHelpers.EdgeMateIndex.BlockSeparator, SerializationHelpers.EdgeMateIndex.NoEdgeMate,
               (i: number | undefined) => edgeMateIndex.push(i),
             )) {
-              assert(false, "unable to deserialize flatbuffer edgeMateIndex array")
+              polyface.data.edgeMateIndex = edgeMateIndex;
             }
-            polyface.data.edgeMateIndex = edgeMateIndex;
           }
 
           if (!polyface.validateAllIndices())
