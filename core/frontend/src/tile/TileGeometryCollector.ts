@@ -116,7 +116,7 @@ export interface GeometryTileTreeReference extends TileTreeReference {
   collectTileGeometry: (collector: TileGeometryCollector) => void;
   /** If set to true, tile geometry will be reprojected using the tile's reprojection transform when geometry is collected from the referenced TileTree.
    * Currently only applies to reality tiles.
-   * @beta
+   * @internal
    */
   reprojectGeometry?: boolean;
 }

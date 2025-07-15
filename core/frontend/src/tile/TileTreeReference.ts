@@ -48,7 +48,7 @@ export abstract class TileTreeReference /* implements RenderMemory.Consumer */ {
   public abstract get treeOwner(): TileTreeOwner;
 
   /** If set to true, tile geometry will be reprojected using the tile's reprojection transform when geometry is collected from the referenced TileTree.
-   * @beta
+   * @internal
    */
   public reprojectGeometry?: boolean;
 

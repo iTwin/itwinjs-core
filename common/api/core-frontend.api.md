@@ -3741,7 +3741,7 @@ export abstract class GeometricModelState extends ModelState implements Geometri
 // @public
 export interface GeometryTileTreeReference extends TileTreeReference {
     collectTileGeometry: (collector: TileGeometryCollector) => void;
-    // @beta
+    // @internal
     reprojectGeometry?: boolean;
 }
 
@@ -11460,7 +11460,7 @@ export abstract class TileTreeReference {
     protected get _isLoadingComplete(): boolean;
     // @beta
     get planarClipMaskPriority(): number;
-    // @beta
+    // @internal
     reprojectGeometry?: boolean;
     // @internal
     resetTreeOwner(): void;
