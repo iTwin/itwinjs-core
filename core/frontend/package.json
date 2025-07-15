@@ -68,7 +68,7 @@
     "@itwin/core-quantity": "workspace:*",
     "@itwin/ecschema-metadata": "workspace:*",
     "@itwin/ecschema-rpcinterface-common": "workspace:*",
-    "@itwin/eslint-plugin": "5.2.2-dev.0",
+    "@itwin/eslint-plugin": "5.2.2-dev.2",
     "@types/chai-as-promised": "^7",
     "@types/sinon": "^17.0.2",
     "@vitest/browser": "^3.0.6",

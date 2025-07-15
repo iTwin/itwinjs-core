@@ -53,7 +53,7 @@
   },
   "devDependencies": {
     "@itwin/core-backend": "workspace:*",
-    "@itwin/eslint-plugin": "5.2.2-dev.0",
+    "@itwin/eslint-plugin": "5.2.2-dev.2",
     "@itwin/express-server": "workspace:*",
     "@itwin/itwins-client": "^1.6.1",
     "@types/chai": "4.3.1",

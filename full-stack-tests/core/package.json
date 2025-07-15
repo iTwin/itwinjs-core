@@ -64,7 +64,7 @@
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
     "@itwin/certa": "workspace:*",
-    "@itwin/eslint-plugin": "5.2.2-dev.0",
+    "@itwin/eslint-plugin": "5.2.2-dev.2",
     "@itwin/itwins-client": "^1.6.1",
     "@itwin/object-storage-core": "^2.3.0",
     "@itwin/oidc-signin-tool": "^4.4.1",
