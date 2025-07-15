@@ -3741,7 +3741,13 @@ export abstract class GeometricModelState extends ModelState implements Geometri
 // @public
 export interface GeometryTileTreeReference extends TileTreeReference {
     collectTileGeometry: (collector: TileGeometryCollector) => void;
-    // @beta (undocumented)
+    // @beta
+    reprojectGeometry?: boolean;
+}
+
+// @public
+export interface GeometryTileTreeReferenceOptions {
+    // @beta
     reprojectGeometry?: boolean;
 }
 
@@ -8484,7 +8490,7 @@ export class RealityTileTree extends TileTree {
     reportTileVisibility(_args: TileDrawArgs, _selected: RealityTile[]): void;
     // @internal (undocumented)
     reprojectAndResolveChildren(parent: Tile, children: Tile[], resolve: (children: Tile[] | undefined) => void): void;
-    // @internal (undocumented)
+    // @internal
     reprojectGeometry?: boolean;
     // @internal (undocumented)
     get rootTile(): RealityTile;
@@ -11426,8 +11432,8 @@ export abstract class TileTreeReference {
     createDrawArgs(context: SceneContext): TileDrawArgs | undefined;
     // @beta
     static createFromRenderGraphic(args: RenderGraphicTileTreeArgs): TileTreeReference;
-    createGeometryTreeReference(options?: GeometryTreeReferenceOptions): GeometryTileTreeReference | undefined;
-    protected _createGeometryTreeReference(_options?: GeometryTreeReferenceOptions): GeometryTileTreeReference | undefined;
+    createGeometryTreeReference(options?: GeometryTileTreeReferenceOptions): GeometryTileTreeReference | undefined;
+    protected _createGeometryTreeReference(_options?: GeometryTileTreeReferenceOptions): GeometryTileTreeReference | undefined;
     decorate(_context: DecorateContext): void;
     discloseTileTrees(trees: DisclosedTileTreeSet): void;
     draw(args: TileDrawArgs): void;
@@ -11454,6 +11460,8 @@ export abstract class TileTreeReference {
     protected get _isLoadingComplete(): boolean;
     // @beta
     get planarClipMaskPriority(): number;
+    // @beta
+    reprojectGeometry?: boolean;
     // @internal
     resetTreeOwner(): void;
     abstract get treeOwner(): TileTreeOwner;

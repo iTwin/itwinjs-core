@@ -193,7 +193,8 @@ export class RealityTileTree extends TileTree {
   protected _ecefToDb?: Transform;
   /** @internal */
   public readonly baseUrl?: string;
-  /** @internal */
+  /** If set to true, tile geometry will be reprojected using the tile's reprojection transform when geometry is collected.
+   * @internal */
   public reprojectGeometry?: boolean;
 
   /** @internal */

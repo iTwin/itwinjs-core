@@ -28,7 +28,7 @@ import { DecorateContext, SceneContext } from "../../ViewContext";
 import { ViewState } from "../../ViewState";
 import {
   BatchedTileIdMap, CesiumIonAssetProvider, createClassifierTileTreeReference, createDefaultViewFlagOverrides, DisclosedTileTreeSet, GeometryTileTreeReference,
-  GeometryTreeReferenceOptions,
+  GeometryTileTreeReferenceOptions,
   getGcsConverterAvailable, LayerTileTreeHandler, LayerTileTreeReferenceHandler, MapLayerTileTreeReference, MapLayerTreeSetting, RealityTile, RealityTileLoader, RealityTileParams, RealityTileTree, RealityTileTreeParams, SpatialClassifierTileTreeReference, Tile,
   TileDrawArgs, TileLoadPriority, TileRequest, TileTree, TileTreeOwner, TileTreeReference, TileTreeSupplier,
 } from "../../tile/internal";
@@ -820,7 +820,6 @@ export class RealityTreeReference extends RealityModelTileTree.Reference {
   private readonly _produceGeometry?: boolean;
   private readonly _modelId: Id64String;
   public readonly useCachedDecorations?: true | undefined;
-  public reprojectGeometry?: boolean;
 
   public constructor(props: RealityModelTileTree.ReferenceProps) {
     super(props);
@@ -865,7 +864,7 @@ export class RealityTreeReference extends RealityModelTileTree.Reference {
     return realityTreeSupplier.getOwner(this.createTreeId(this.modelId), this.iModel);
   }
 
-  protected override _createGeometryTreeReference(options?: GeometryTreeReferenceOptions): GeometryTileTreeReference {
+  protected override _createGeometryTreeReference(options?: GeometryTileTreeReferenceOptions): GeometryTileTreeReference {
     const ref = new RealityTreeReference({
       iModel: this.iModel,
       modelId: this.modelId,
