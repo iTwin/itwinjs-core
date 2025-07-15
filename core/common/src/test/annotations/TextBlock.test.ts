@@ -318,4 +318,102 @@ describe("FieldRun", () => {
       expect(field1.equals(field2)).to.be.true;
     });
   });
+
+  describe("update", () => {
+    const mockElementId = "0x1";
+    const mockAccessor = { propertyPath: "mockProperty" };
+    const mockCachedContent = "cachedContent";
+    const mockUpdatedContent = "updatedContent";
+
+    const createMockContext = (elementId: string, propertyValue?: string) => ({
+      targetElementId: elementId,
+      getProperty: ({ accessor }: { accessor: typeof mockAccessor }) => {
+        if (accessor.propertyPath === mockAccessor.propertyPath && propertyValue !== undefined) {
+          return { value: propertyValue };
+        }
+        return undefined;
+      },
+    });
+
+    it("does nothing if targetElementId does not match", () => {
+      const fieldRun = FieldRun.create({
+        styleName: "fieldStyle",
+        target: { elementId: mockElementId },
+        accessor: mockAccessor,
+        cachedContent: mockCachedContent,
+      });
+
+      const context = createMockContext("0x2", mockUpdatedContent);
+      const result = fieldRun.update(context);
+
+      expect(result).to.be.false;
+      expect(fieldRun.cachedContent).to.equal(mockCachedContent);
+    });
+
+    it("produces invalid content indicator if property value is undefined", () => {
+      const fieldRun = FieldRun.create({
+        styleName: "fieldStyle",
+        target: { elementId: mockElementId },
+        accessor: mockAccessor,
+        cachedContent: mockCachedContent,
+      });
+
+      const context = createMockContext(mockElementId);
+      const result = fieldRun.update(context);
+
+      expect(result).to.be.true;
+      expect(fieldRun.cachedContent).to.equal(FieldRun.invalidContentIndicator);
+    });
+
+    it("returns false if cached content matches new content", () => {
+      const fieldRun = FieldRun.create({
+        styleName: "fieldStyle",
+        target: { elementId: mockElementId },
+        accessor: mockAccessor,
+        cachedContent: mockCachedContent,
+      });
+
+      const context = createMockContext(mockElementId, mockCachedContent);
+      const result = fieldRun.update(context);
+
+      expect(result).to.be.false;
+      expect(fieldRun.cachedContent).to.equal(mockCachedContent);
+    });
+
+    it("returns true and updates cached content if new content is different", () => {
+      const fieldRun = FieldRun.create({
+        styleName: "fieldStyle",
+        target: { elementId: mockElementId },
+        accessor: mockAccessor,
+        cachedContent: mockCachedContent,
+      });
+
+      const context = createMockContext(mockElementId, mockUpdatedContent);
+      const result = fieldRun.update(context);
+
+      expect(result).to.be.true;
+      expect(fieldRun.cachedContent).to.equal(mockUpdatedContent);
+    });
+
+    it("resolves to invalid content indicator if an exception occurs", () => {
+      const fieldRun = FieldRun.create({
+        styleName: "fieldStyle",
+        target: { elementId: mockElementId },
+        accessor: mockAccessor,
+        cachedContent: mockCachedContent,
+      });
+
+      const context = {
+        targetElementId: mockElementId,
+        getProperty: () => {
+          throw new Error("Test exception");
+        },
+      };
+
+      const result = fieldRun.update(context);
+
+      expect(result).to.be.true;
+      expect(fieldRun.cachedContent).to.equal(FieldRun.invalidContentIndicator);
+    });
+  });
 });
