@@ -12,6 +12,7 @@ import { LineString3d, PointString3d, Range2d, Transform } from "@itwin/core-geo
 import { Id64, Id64String } from "@itwin/core-bentley";
 import { produceTextBlockGeometry } from "./TextBlockGeometry";
 import { appendFrameToBuilder, computeIntervalPoints } from "./FrameGeometry";
+import { appendLeadersToBuilder } from "./LeaderGeometry";
 
 /**
  * Properties required to compute the geometry of a text annotation.
@@ -51,6 +52,11 @@ export function appendTextAnnotationGeometry(props: AppendTextAnnotationGeometry
   // Construct the frame geometry
   if (annotation.frame && annotation.frame.shape !== "none") {
     result = result && appendFrameToBuilder(props.builder, annotation.frame, range, transform, params);
+  }
+
+  // Construct the leader geometry
+  if (annotation.leaders && annotation.leaders.length > 0) {
+    result = result && appendLeadersToBuilder(props.builder, annotation.leaders, props.layout, transform, params, annotation.frame);
   }
 
   // Construct the debug geometry
