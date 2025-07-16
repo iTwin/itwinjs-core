@@ -31,11 +31,21 @@ export interface UpdateFieldsContext {
   getProperty(args: GetFieldPropertyValueArgs): FieldProperty | undefined
 }
 
+export interface TextBlockAndId {
+  readonly textBlock: TextBlock;
+  readonly id: unknown;
+}
+
 /** Interface implemented by [[GeometricElement]] subclasses whose schemas declare them to implement the mix-in `BisCore:ITextAnnotation`.
  * @beta
  */
 export interface ITextAnnotation {
-  updateFields(context: UpdateFieldsContext): void;
+  getTextBlocks(): Iterable<TextBlockAndId>;
+  updateTextBlocks(textBlocks: TextBlockAndId[]): void;
+}
+
+function isITextAnnotation(obj: any): obj is ITextAnnotation {
+  return ["getTextBlocks", "updateTextBlocks"].every((x) => x in obj && typeof obj[x] === "function");
 }
 
 function createUpdateContext(hostElementId: string, _iModel: IModelDb, deleted: boolean): UpdateFieldsContext {
@@ -53,6 +63,7 @@ function createUpdateContext(hostElementId: string, _iModel: IModelDb, deleted: 
   };
 }
 
+/** @internal exported strictly for tests. */
 export function updateField(field: FieldRun, context: UpdateFieldsContext): boolean {
   if (context.hostElementId !== field.propertyHost.elementId) {
     return false;
@@ -96,9 +107,18 @@ export function updateFields(textBlock: TextBlock, context: UpdateFieldsContext)
 function updateElementFields(props: RelationshipProps, iModel: IModelDb, deleted: boolean): void {
   try {
     const target = iModel.elements.getElement(props.targetId);
-    if ("updateFields" in target && "function" === typeof target.updateFields) {
+    if (isITextAnnotation(target)) {
       const context = createUpdateContext(props.sourceId, iModel, deleted);
-      target.updateFields(context);
+      const updatedBlocks = [];
+      for (const block of target.getTextBlocks()) {
+        if (updateFields(block.textBlock, context)) {
+          updatedBlocks.push(block);
+        }
+      }
+
+      if (updatedBlocks.length > 0) {
+        target.updateTextBlocks(updatedBlocks);
+      }
     }
   } catch (err) {
     Logger.logException(BackendLoggerCategory.IModelDb, err);
