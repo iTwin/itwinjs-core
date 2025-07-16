@@ -343,7 +343,7 @@ export type AnyDb = IModelDb | ECDb;
 export function appendFrameToBuilder(builder: ElementGeometry.Builder, frame: TextFrameStyleProps, range: Range2d, transform: Transform, geomParams: GeometryParams): boolean;
 
 // @beta
-export function appendLeadersToBuilder(builder: ElementGeometry.Builder, leaders: TextAnnotationLeader[], layout: TextBlockLayout, transform: Transform, params: GeometryParams, frame?: TextFrameStyleProps): boolean;
+export function appendLeadersToBuilder(builder: ElementGeometry.Builder, leaders: TextAnnotationLeader[], layout: TextBlockLayout, transform: Transform, params: GeometryParams, textStyleResolver: TextStyleResolver): boolean;
 
 // @beta
 export function appendTextAnnotationGeometry(props: AppendTextAnnotationGeometryArgs): boolean;
@@ -6439,6 +6439,8 @@ export class TextStyleResolver {
     findTextStyle(id: Id64String): TextStyleSettings;
     resolveParagraphSettings(paragraph: Paragraph): TextStyleSettings;
     resolveRunSettings(paragraph: Paragraph, run: Run): TextStyleSettings;
+    // (undocumented)
+    resolveTextAnnotationLeaderSettings(leader: TextAnnotationLeader): TextStyleSettings;
     readonly scaleFactor: number;
 }
 

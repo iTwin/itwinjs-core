@@ -253,12 +253,6 @@ export interface AppearanceOverrideProps {
     overrideType?: FeatureOverrideType;
 }
 
-// @beta
-export interface ApplyTextStyleOptions {
-    preserveChildrenStyles?: boolean;
-    preserveOverrides?: boolean;
-}
-
 // @public
 export interface AreaFillProps {
     backgroundFill?: BackgroundFill;
@@ -1292,6 +1286,11 @@ export interface ClassifierTileTreeId {
     expansion: number;
     // (undocumented)
     type: BatchType.VolumeClassifier | BatchType.PlanarClassifier;
+}
+
+// @beta
+export interface ClearTextStyleOptions {
+    preserveChildrenOverrides?: boolean;
 }
 
 // @public
@@ -3668,7 +3667,7 @@ export class FractionRun extends TextBlockComponent {
     // (undocumented)
     clone(): FractionRun;
     // (undocumented)
-    static create(props: Omit<FractionRunProps, "type">): FractionRun;
+    static create(props?: Omit<FractionRunProps, "type">): FractionRun;
     denominator: string;
     // (undocumented)
     equals(other: TextBlockComponent): boolean;
@@ -5675,7 +5674,7 @@ export class LineBreakRun extends TextBlockComponent {
     // (undocumented)
     clone(): LineBreakRun;
     // (undocumented)
-    static create(props: TextBlockComponentProps): LineBreakRun;
+    static create(props?: TextBlockComponentProps): LineBreakRun;
     // (undocumented)
     equals(other: TextBlockComponent): boolean;
     stringify(options?: TextBlockStringifyOptions): string;
@@ -6765,10 +6764,10 @@ export interface PackedFeatureWithIndex extends PackedFeature {
 
 // @beta
 export class Paragraph extends TextBlockComponent {
-    applyStyle(styleId: Id64String, options?: ApplyTextStyleOptions): void;
+    clearStyleOverrides(options?: ClearTextStyleOptions): void;
     // (undocumented)
     clone(): Paragraph;
-    static create(props: ParagraphProps): Paragraph;
+    static create(props?: ParagraphProps): Paragraph;
     // (undocumented)
     equals(other: TextBlockComponent): boolean;
     readonly runs: Run[];
@@ -9796,7 +9795,7 @@ export class TabRun extends TextBlockComponent {
     // (undocumented)
     clone(): TabRun;
     // (undocumented)
-    static create(props: Omit<TabRunProps, "type">): TabRun;
+    static create(props?: Omit<TabRunProps, "type">): TabRun;
     // (undocumented)
     equals(other: TextBlockComponent): boolean;
     stringify(options?: TextBlockStringifyOptions): string;
@@ -9865,8 +9864,6 @@ export class TextAnnotation {
     computeAnchorPoint(boundingBox: Range2d): Point3d;
     computeTransform(boundingBox: Range2d, scaleFactor?: number): Transform;
     static create(args?: TextAnnotationCreateArgs): TextAnnotation;
-    // @internal
-    discloseIds(ids: EntityReferenceSet): void;
     equals(other: TextAnnotation): boolean;
     static fromJSON(props: TextAnnotationProps | undefined): TextAnnotation;
     leaders?: TextAnnotationLeader[];
@@ -9895,7 +9892,6 @@ export interface TextAnnotationAnchor {
 // @beta
 export interface TextAnnotationCreateArgs {
     anchor?: TextAnnotationAnchor;
-    frame?: TextFrameStyleProps;
     leaders?: TextAnnotationLeader[];
     offset?: Point3d;
     orientation?: YawPitchRollAngles;
@@ -9930,7 +9926,6 @@ export interface TextAnnotationLeaderProps {
 // @beta
 export interface TextAnnotationProps {
     anchor?: TextAnnotationAnchor;
-    frame?: TextFrameStyleProps;
     leaders?: TextAnnotationLeaderProps[];
     offset?: XYZProps;
     orientation?: YawPitchRollProps;
@@ -9941,7 +9936,7 @@ export interface TextAnnotationProps {
 export class TextBlock extends TextBlockComponent {
     appendParagraph(seedFromLast?: boolean): Paragraph;
     appendRun(run: Run): void;
-    applyStyle(styleId: Id64String, options?: ApplyTextStyleOptions): void;
+    clearStyleOverrides(options?: ClearTextStyleOptions): void;
     // (undocumented)
     clone(): TextBlock;
     static create(props: TextBlockProps): TextBlock;
@@ -9953,6 +9948,7 @@ export class TextBlock extends TextBlockComponent {
     margins: TextBlockMargins;
     readonly paragraphs: Paragraph[];
     stringify(options?: TextBlockStringifyOptions): string;
+    styleId: Id64String;
     // (undocumented)
     toJSON(): TextBlockProps;
     width: number;
@@ -9961,16 +9957,13 @@ export class TextBlock extends TextBlockComponent {
 // @beta
 export abstract class TextBlockComponent {
     // @internal
-    protected constructor(props: TextBlockComponentProps);
-    applyStyle(styleId: Id64String, options?: ApplyTextStyleOptions): void;
-    clearStyleOverrides(): void;
+    protected constructor(props?: TextBlockComponentProps);
+    clearStyleOverrides(_options?: ClearTextStyleOptions): void;
     abstract clone(): TextBlockComponent;
     equals(other: TextBlockComponent): boolean;
     get isWhitespace(): boolean;
     get overridesStyle(): boolean;
     abstract stringify(options?: TextBlockStringifyOptions): string;
-    get styleId(): Id64String;
-    set styleId(styleId: string);
     get styleOverrides(): TextStyleSettingsProps;
     set styleOverrides(overrides: TextStyleSettingsProps);
     toJSON(): TextBlockComponentProps;
@@ -9978,7 +9971,6 @@ export abstract class TextBlockComponent {
 
 // @beta
 export interface TextBlockComponentProps {
-    styleId: Id64String;
     styleOverrides?: TextStyleSettingsProps;
 }
 
@@ -10027,6 +10019,7 @@ export interface TextBlockProps extends TextBlockComponentProps {
     justification?: TextBlockJustification;
     margins?: Partial<TextBlockMargins>;
     paragraphs?: ParagraphProps[];
+    styleId: Id64String;
     width?: number;
 }
 
@@ -10048,7 +10041,7 @@ export interface TextFrameStyleProps {
 
 // @beta
 export interface TextLeaderStyleProps {
-    color?: TextStyleColor;
+    color?: TextStyleColor | "inherit";
     elbowLength?: number;
     terminatorHeightFactor?: number;
     terminatorWidthFactor?: number;
@@ -10062,7 +10055,7 @@ export class TextRun extends TextBlockComponent {
     clone(): TextRun;
     content: string;
     // (undocumented)
-    static create(props: Omit<TextRunProps, "type">): TextRun;
+    static create(props?: Omit<TextRunProps, "type">): TextRun;
     // (undocumented)
     equals(other: TextBlockComponent): boolean;
     stringify(): string;
@@ -10139,6 +10132,7 @@ export type TextStyleColor = ColorDefProps | "subcategory";
 // @beta
 export class TextStyleSettings {
     clone(alteredProps?: TextStyleSettingsProps): TextStyleSettings;
+    static cloneProps(props: TextStyleSettingsProps): TextStyleSettingsProps;
     readonly color: TextStyleColor;
     static defaultProps: DeepReadonlyObject<DeepRequiredObject<TextStyleSettingsProps>>;
     static defaults: TextStyleSettings;
@@ -10147,7 +10141,7 @@ export class TextStyleSettings {
     readonly fontName: string;
     readonly frame: Readonly<Required<TextFrameStyleProps>>;
     // (undocumented)
-    framesEqual(other: TextFrameStyleProps): boolean;
+    frameEquals(other: TextFrameStyleProps): boolean;
     static fromJSON(props?: TextStyleSettingsProps): TextStyleSettings;
     getValidationErrors(): string[];
     readonly isBold: boolean;
