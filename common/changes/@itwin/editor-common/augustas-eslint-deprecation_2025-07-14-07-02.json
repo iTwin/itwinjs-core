@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/editor-common",
-      "comment": "Added 'lint-deprecation' ESLint command to fix deprecation comments",
+      "comment": "",
       "type": "none"
     }
   ],

@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/ecschema-locaters",
-      "comment": "Added 'lint-deprecation' ESLint command to fix deprecation comments",
+      "comment": "",
       "type": "none"
     }
   ],

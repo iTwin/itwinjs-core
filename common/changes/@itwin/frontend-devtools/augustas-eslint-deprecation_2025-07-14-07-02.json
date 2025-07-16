@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/frontend-devtools",
-      "comment": "Added 'lint-deprecation' ESLint command to fix deprecation comments",
+      "comment": "",
       "type": "none"
     }
   ],
