@@ -404,24 +404,15 @@ export class TabRun extends TextBlockComponent {
   }
 }
 
-/** An entry in a [[FieldPropertyPath]].
+/** An entry in a [[FieldPropertyPath]] identifying a single property.
  * @beta
  */
-export interface FieldBisPropertyAccessor {
-  /** The name of the BIS schema containing [[class]]. */
-  schema: string;
-  /** The name of the exact BIS class containing [[property]] (not a subclass thereof). */
-  class: string;
+export interface FieldPropertyPathEntry {
   /** The name of the BIS property. */
   property: string;
   /** If [[property]] identifies an array property, the index of the array element of interest.
    * Negative array indices can be used to count backward from the end of the array (e.g., index -1 refers to the last element, -2 to the second-to-last element, and so on).
    */
-  arrayIndex?: number;
-}
-
-export interface FieldJsonPropertyAccessor {
-  property: string;
   arrayIndex?: number;
 }
 
@@ -431,14 +422,14 @@ export interface FieldJsonPropertyAccessor {
  * ###TODO examples
  * @beta
  */
-export interface FieldPropertyPath {
-  properties: FieldBisPropertyAccessor[];
-  json?: FieldJsonPropertyAccessor[];
-}
+export type FieldPropertyPath = FieldPropertyPathEntry[];
 
 export interface FieldPropertyHost {
   elementId: Id64String;
-  // ###TODO: a way to indicate the source is an aspect; some way to select among multi-aspects.
+  /** The name of the schema containing the class identified by [[className]]. */
+  schemaName: string;
+  /** The name of the exact class (not a subclass) containing the first property in [[FieldRun.propertyPath]]. */
+  className: string;
 }
 
 // ###TODO: figure out formatting (later).
@@ -474,7 +465,7 @@ export class FieldRun extends TextBlockComponent {
     super(props);
 
     this._cachedContent = props.cachedContent ?? FieldRun.invalidContentIndicator;
-    this.propertyHost = props.propertyHost;
+    this.propertyHost = props.propertyHost
     this.propertyPath = props.propertyPath;
     this.formatter = props.formatter;
   }
@@ -482,6 +473,7 @@ export class FieldRun extends TextBlockComponent {
   public static create(props: Omit<FieldRunProps, "type">): FieldRun {
     return new FieldRun({
       ...props,
+      propertyHost: { ...props.propertyHost },
       propertyPath: structuredClone(props.propertyPath),
       formatter: structuredClone(props.formatter),
     });
@@ -492,7 +484,7 @@ export class FieldRun extends TextBlockComponent {
       ...super.toJSON(),
       type: "field",
       propertyHost: { ...this.propertyHost },
-      propertyPath: structuredClone(this.propertyPath),
+      propertyPath: this.propertyPath.map((entry) => ({ ...entry })),
     };
 
     if (this.cachedContent !== FieldRun.invalidContentIndicator) {
@@ -515,39 +507,27 @@ export class FieldRun extends TextBlockComponent {
   }
 
   public override equals(other: TextBlockComponent): boolean {
-    if (!(other instanceof FieldRun) || this.propertyHost.elementId !== other.propertyHost.elementId) {
+    if (!(other instanceof FieldRun)) {
       return false;
     }
 
-    if (this.propertyPath.properties.length !== other.propertyPath.properties.length) {
+    if (
+      this.propertyHost.elementId !== other.propertyHost.elementId ||
+      this.propertyHost.className !== other.propertyHost.className ||
+      this.propertyHost.schemaName !== other.propertyHost.schemaName
+    ) {
       return false;
     }
 
-    for (let i = 0; i < this.propertyPath.properties.length; i++) {
-      const lhs = this.propertyPath.properties[i];
-      const rhs = other.propertyPath.properties[i];
-      if (
-        lhs.schema !== rhs.schema ||
-        lhs.class !== rhs.class ||
-        lhs.property !== rhs.property ||
-        lhs.arrayIndex !== rhs.arrayIndex
-      ) {
+    if (this.propertyPath.length !== other.propertyPath.length) {
+      return false;
+    }
+
+    for (let i = 0; i < this.propertyPath.length; i++) {
+      const lhs = this.propertyPath[i];
+      const rhs = other.propertyPath[i];
+      if (lhs.property !== rhs.property || lhs.arrayIndex !== rhs.arrayIndex) {
         return false;
-      }
-    }
-
-    if (this.propertyPath.json?.length !== other.propertyPath.json?.length) {
-      return false;
-    }
-
-    if (this.propertyPath.json) {
-      for (let i = 0; i < this.propertyPath.json.length; i++) {
-        const lhs = this.propertyPath.json[i];
-        assert(undefined !== other.propertyPath.json);
-        const rhs = other.propertyPath.json[i];
-        if (lhs.property !== rhs.property || lhs.arrayIndex !== rhs.arrayIndex) {
-          return false;
-        }
       }
     }
 

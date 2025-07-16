@@ -153,17 +153,19 @@ describe("FieldRun", () => {
     it("initializes fields", () => {
       const fieldRun = FieldRun.create({
         styleName: "fieldStyle",
-        propertyHost: { elementId: "0x123" },
-        propertyPath: {
-          properties: [{ schema: "TestSchema", class: "TestClass", property: "someProperty" }],
-        },
+        propertyHost: { elementId: "0x123", schemaName: "TestSchema", className: "TestClass" },
+        propertyPath: [
+          { property: "someProperty" },
+        ],
         cachedContent: "cachedValue",
       });
 
       expect(fieldRun.styleName).to.equal("fieldStyle");
       expect(fieldRun.propertyHost.elementId).to.equal("0x123");
-      expect(fieldRun.propertyPath.properties).to.deep.equal([
-        { schema: "TestSchema", class: "TestClass", property: "someProperty" },
+      expect(fieldRun.propertyHost.schemaName).to.equal("TestSchema");
+      expect(fieldRun.propertyHost.className).to.equal("TestClass");
+      expect(fieldRun.propertyPath).to.deep.equal([
+        { property: "someProperty" },
       ]);
       expect(fieldRun.cachedContent).to.equal("cachedValue");
     });
@@ -171,33 +173,31 @@ describe("FieldRun", () => {
     it("initializes cachedContent to invalid content indicator if undefined", () => {
       expect(FieldRun.create({
         styleName: "fieldStyle",
-        propertyHost: { elementId: "0x123" },
-        propertyPath: {
-          properties: [{ schema: "TestSchema", class: "TestClass", property: "someProperty" }],
-        },
+        propertyHost: { elementId: "0x123", schemaName: "TestSchema", className: "TestClass" },
+        propertyPath: [
+          { property: "someProperty" },
+        ],
       }).cachedContent).toEqual(FieldRun.invalidContentIndicator);
     });
 
     it("deeply clones propertyPath", () => {
-      const propertyPath = {
-        properties: [
-          { schema: "TestSchema", class: "TestClass", property: "array1", arrayIndex: 0 },
-          { schema: "TestSchema", class: "TestClass", property: "array2", arrayIndex: -1 },
-        ],
-      };
+      const propertyPath = [
+        { property: "array1", arrayIndex: 0 },
+        { property: "array2", arrayIndex: -1 },
+      ];
 
       const fieldRun = FieldRun.create({
         styleName: "fieldStyle",
-        propertyHost: { elementId: "0x123" },
+        propertyHost: { elementId: "0x123", schemaName: "TestSchema", className: "TestClass" },
         propertyPath,
       });
 
       // Modify the original propertyPath to ensure the FieldRun's copy is unaffected
-      propertyPath.properties[0].property = "modifiedArray1";
+      propertyPath[0].property = "modifiedArray1";
 
-      expect(fieldRun.propertyPath.properties).to.deep.equal([
-        { schema: "TestSchema", class: "TestClass", property: "array1", arrayIndex: 0 },
-        { schema: "TestSchema", class: "TestClass", property: "array2", arrayIndex: -1 },
+      expect(fieldRun.propertyPath).to.deep.equal([
+        { property: "array1", arrayIndex: 0 },
+        { property: "array2", arrayIndex: -1 },
       ]);
     });
 
@@ -206,10 +206,8 @@ describe("FieldRun", () => {
 
       const fieldRun = FieldRun.create({
         styleName: "fieldStyle",
-        propertyHost: { elementId: "0x123" },
-        propertyPath: {
-          properties: [{ schema: "TestSchema", class: "TestClass", property: "someProperty" }],
-        },
+        propertyHost: { elementId: "0x123", schemaName: "TestSchema", className: "TestClass" },
+        propertyPath: [{ property: "someProperty" }],
         formatter,
       });
 
@@ -221,16 +219,33 @@ describe("FieldRun", () => {
 
       expect(fieldRun.formatter).to.deep.equal({ formatType: "currency", precision: 2, options: { locale: "en-US", style: "decimal" } });
     });
+
+    it("deepyl clones propertyHost", () => {
+      const propertyHost = { elementId: "0x123", schemaName: "TestSchema", className: "TestClass" };
+
+      const fieldRun = FieldRun.create({
+        styleName: "fieldStyle",
+        propertyHost,
+        propertyPath: [{ property: "someProperty" }],
+      });
+
+      // Modify the original propertyHost to ensure the FieldRun's copy is unaffected
+      propertyHost.elementId = "0x456";
+      propertyHost.schemaName = "OtherSchema";
+      propertyHost.className = "OtherClass";
+
+      expect(fieldRun.propertyHost).to.deep.equal({ elementId: "0x123", schemaName: "TestSchema", className: "TestClass" });
+    });
   });
 
   describe("toJSON", () => {
     it("serializes and deserializes FieldRun correctly", () => {
       const fieldRun = FieldRun.create({
         styleName: "fieldStyle",
-        propertyHost: { elementId: "0x123" },
-        propertyPath: {
-          properties: [{ schema: "TestSchema", class: "TestClass", property: "someProperty" }],
-        },
+        propertyHost: { elementId: "0x123", schemaName: "TestSchema", className: "TestClass" },
+        propertyPath: [
+          { property: "someProperty" },
+        ],
         cachedContent: "cachedValue",
       });
 
@@ -243,10 +258,10 @@ describe("FieldRun", () => {
     it("omits cachedContent if it is equal to invalid content indicator", () => {
       const fieldRun = FieldRun.create({
         styleName: "fieldStyle",
-        propertyHost: { elementId: "0x123" },
-        propertyPath: {
-          properties: [{ schema: "TestSchema", class: "TestClass", property: "someProperty" }],
-        },
+        propertyHost: { elementId: "0x123", schemaName: "TestSchema", className: "TestClass" },
+        propertyPath: [
+          { property: "someProperty" },
+        ],
         cachedContent: FieldRun.invalidContentIndicator,
       });
 
@@ -258,10 +273,10 @@ describe("FieldRun", () => {
     it("produces cached content", () => {
       const fieldRun = FieldRun.create({
         styleName: "fieldStyle",
-        propertyHost: { elementId: "0x123" },
-        propertyPath: {
-          properties: [{ schema: "TestSchema", class: "TestClass", property: "someProperty" }],
-        },
+        propertyHost: { elementId: "0x123", schemaName: "TestSchema", className: "TestClass" },
+        propertyPath: [
+          { property: "someProperty" },
+        ],
         cachedContent: "cachedValue",
       });
 
@@ -273,20 +288,21 @@ describe("FieldRun", () => {
     it("compares FieldRuns for equality", () => {
       const baseProps = {
         styleName: "fieldStyle",
-        propertyHost: { elementId: "0x123" },
-        propertyPath: {
-          properties: [{ schema: "TestSchema", class: "TestClass", property: "someProperty" }],
-        },
+        propertyHost: { elementId: "0x123", schemaName: "TestSchema", className: "TestClass" },
+        propertyPath: [
+          { property: "someProperty" },
+        ],
         cachedContent: "cachedValue",
       };
 
       const combinations = [
-        { formatter: { formatType: "currency" } },
-        { propertyHost: { elementId: "0x456" } },
-        { propertyPath: { properties: [{ schema: "TestSchema", class: "TestClass", property: "otherProperty" }] } },
-        { propertyPath: { properties: [{ schema: "TestSchema", class: "TestClass", property: "someProperty", arrayIndex: 0 }] } },
-        { propertyPath: { properties: [{ schema: "TestSchema", class: "TestClass", property: "someProperty", arrayIndex: 1 }] } },
-        { propertyPath: { properties: [{ schema: "TestSchema", class: "TestClass", property: "someProperty" }, { schema: "TestSchema", class: "TestClass", property: "otherProperty" }] } },
+        { propertyHost: { elementId: "0x456", schemaName: "OtherSchema", className: "OtherClass" } },
+        { propertyHost: { elementId: "0x456", schemaName: "TestSchema", className: "TestClass" } },
+        { propertyHost: { elementId: "0x123", schemaName: "OtherSchema", className: "OtherClass" } },
+        { propertyPath: [{ property: "otherProperty" }] },
+        { propertyPath: [{ property: "someProperty", arrayIndex: 0 }] },
+        { propertyPath: [{ property: "someProperty", arrayIndex: 1 }] },
+        { propertyPath: [{ property: "someProperty" }, { property: "otherProperty" }] },
       ];
 
       const fieldRuns = combinations.map((combo) =>
@@ -312,19 +328,19 @@ describe("FieldRun", () => {
     it("ignores cached content", () => {
       const field1 = FieldRun.create({
         styleName: "fieldStyle",
-        propertyHost: { elementId: "0x123" },
-        propertyPath: {
-          properties: [{ schema: "TestSchema", class: "TestClass", property: "someProperty" }],
-        },
+        propertyHost: { elementId: "0x123", schemaName: "TestSchema", className: "TestClass" },
+        propertyPath: [
+          { property: "someProperty" },
+        ],
         cachedContent: "1",
       });
 
       const field2 = FieldRun.create({
         styleName: "fieldStyle",
-        propertyHost: { elementId: "0x123" },
-        propertyPath: {
-          properties: [{ schema: "TestSchema", class: "TestClass", property: "someProperty" }],
-        },
+        propertyHost: { elementId: "0x123", schemaName: "TestSchema", className: "TestClass" },
+        propertyPath: [
+          { property: "someProperty" },
+        ],
         cachedContent: "2",
       });
 
