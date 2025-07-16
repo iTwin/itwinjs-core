@@ -9,6 +9,7 @@ import { Id64String, Logger } from "@itwin/core-bentley";
 import { BackendLoggerCategory } from "../../BackendLoggerCategory";
 import { XAndY, XYAndZ } from "@itwin/core-geometry";
 import { ITextAnnotation } from "../../annotations/ElementDrivesTextAnnotation";
+import { Entity } from "../../Entity";
 
 export interface GetFieldPropertyValueArgs {
   path: Readonly<FieldPropertyPath>;
@@ -28,22 +29,32 @@ export interface UpdateFieldsContext {
   getProperty(args: GetFieldPropertyValueArgs): FieldProperty | undefined
 }
 
-function isITextAnnotation(obj: any): obj is ITextAnnotation {
-  return ["getTextBlocks", "updateTextBlocks"].every((x) => x in obj && typeof obj[x] === "function");
-}
+function getFieldProperty(elementId: Id64String, iModel: IModelDb, path: FieldPropertyPath): FieldProperty | undefined {
+  // Empty path => invalid field.
+  if (path.properties.length === 0) {
+    return undefined;
+  }
+  
+  // Resolve the host. ###TODO handle aspects
+  const host: Entity | undefined = iModel.elements.tryGetElement(elementId);
+  if (!host) {
+    return undefined;
+  }
 
-function createUpdateContext(hostElementId: string, _iModel: IModelDb, deleted: boolean): UpdateFieldsContext {
-  if (deleted) {
-    return {
-      hostElementId,
-      getProperty: () => undefined,
-    };
+  // Verify the host is of the expected class.
+  const hostClass = host.getMetaDataSync();
+  if (!hostClass.isSync(path.properties[0].class, path.properties[0].schema)) {
+    return undefined;
   }
 
   // ###TODO
+  return undefined;
+}
+
+function createUpdateContext(hostElementId: string, iModel: IModelDb, deleted: boolean): UpdateFieldsContext {
   return {
     hostElementId,
-    getProperty: () => undefined,
+    getProperty: deleted ? () => undefined : (args) => getFieldProperty(hostElementId, iModel, args.path),
   };
 }
 
@@ -86,6 +97,10 @@ export function updateFields(textBlock: TextBlock, context: UpdateFieldsContext)
   }
 
   return numUpdated;
+}
+
+function isITextAnnotation(obj: any): obj is ITextAnnotation {
+  return ["getTextBlocks", "updateTextBlocks"].every((x) => x in obj && typeof obj[x] === "function");
 }
 
 export function updateElementFields(props: RelationshipProps, iModel: IModelDb, deleted: boolean): void {

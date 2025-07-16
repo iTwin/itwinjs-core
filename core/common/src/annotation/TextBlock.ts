@@ -428,6 +428,7 @@ export interface FieldJsonPropertyAccessor {
 /** A chain of property accesses that resolves to a primitive value that forms the basis of the displayed content
  * of a [[FieldRun]].
  * The chain may traverse through structs, arrays, and JSON objects.
+ * ###TODO examples
  * @beta
  */
 export interface FieldPropertyPath {
@@ -437,7 +438,7 @@ export interface FieldPropertyPath {
 
 export interface FieldPropertyHost {
   elementId: Id64String;
-  // ###TODO: optional aspect class name; some way to select among multi-aspects.
+  // ###TODO: a way to indicate the source is an aspect; some way to select among multi-aspects.
 }
 
 // ###TODO: figure out formatting (later).
