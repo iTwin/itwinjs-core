@@ -12,6 +12,7 @@
     "docs": "",
     "lint": "eslint \"./src/**/*.ts\" 1>&2",
     "lint-fix": "eslint --fix -f visualstudio \"./src/**/*.ts\" 1>&2",
+    "lint-deprecation": "eslint --fix -f visualstudio --no-inline-config -c ../../common/config/eslint/eslint.config.deprecation-policy.js \"./src/**/*.ts\"",
     "azurite:setup": "mkdirp ./lib/cjs/test/azuriteStorage && azurite-blob --silent --loose --location ./lib/cjs/test/azuriteStorage",
     "test": "cross-env DEBUG_LEAKS=true npm run -s test:chrome && npm run -s test:electron",
     "test:chrome": "run-p -r azurite:setup test:chrome:azurite",
@@ -63,7 +64,7 @@
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
     "@itwin/certa": "workspace:*",
-    "@itwin/eslint-plugin": "5.0.0-dev.1",
+    "@itwin/eslint-plugin": "5.2.2-dev.0",
     "@itwin/itwins-client": "^1.6.1",
     "@itwin/object-storage-core": "^2.3.0",
     "@itwin/oidc-signin-tool": "^4.4.1",
