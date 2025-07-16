@@ -154,13 +154,17 @@ describe("FieldRun", () => {
       const fieldRun = FieldRun.create({
         styleName: "fieldStyle",
         propertyHost: { elementId: "0x123" },
-        propertyPath: [{ propertyName: "someProperty" }],
+        propertyPath: {
+          properties: [{ schema: "TestSchema", class: "TestClass", property: "someProperty" }],
+        },
         cachedContent: "cachedValue",
       });
 
       expect(fieldRun.styleName).to.equal("fieldStyle");
       expect(fieldRun.propertyHost.elementId).to.equal("0x123");
-      expect(fieldRun.propertyPath).to.deep.equal([{ propertyName: "someProperty" }]);
+      expect(fieldRun.propertyPath.properties).to.deep.equal([
+        { schema: "TestSchema", class: "TestClass", property: "someProperty" },
+      ]);
       expect(fieldRun.cachedContent).to.equal("cachedValue");
     });
 
@@ -168,15 +172,19 @@ describe("FieldRun", () => {
       expect(FieldRun.create({
         styleName: "fieldStyle",
         propertyHost: { elementId: "0x123" },
-        propertyPath: [{ propertyName: "someProperty" }],
+        propertyPath: {
+          properties: [{ schema: "TestSchema", class: "TestClass", property: "someProperty" }],
+        },
       }).cachedContent).toEqual(FieldRun.invalidContentIndicator);
     });
 
-    it("deeply clones accessor", () => {
-      const propertyPath = [
-        { propertyName: "array1", arrayIndex: 0 },
-        { propertyName: "array2", arrayIndex: -1 },
-      ];
+    it("deeply clones propertyPath", () => {
+      const propertyPath = {
+        properties: [
+          { schema: "TestSchema", class: "TestClass", property: "array1", arrayIndex: 0 },
+          { schema: "TestSchema", class: "TestClass", property: "array2", arrayIndex: -1 },
+        ],
+      };
 
       const fieldRun = FieldRun.create({
         styleName: "fieldStyle",
@@ -185,11 +193,11 @@ describe("FieldRun", () => {
       });
 
       // Modify the original propertyPath to ensure the FieldRun's copy is unaffected
-      propertyPath[0].propertyName = "modifiedArray1";
+      propertyPath.properties[0].property = "modifiedArray1";
 
-      expect(fieldRun.propertyPath).to.deep.equal([
-        { propertyName: "array1", arrayIndex: 0 },
-        { propertyName: "array2", arrayIndex: -1 },
+      expect(fieldRun.propertyPath.properties).to.deep.equal([
+        { schema: "TestSchema", class: "TestClass", property: "array1", arrayIndex: 0 },
+        { schema: "TestSchema", class: "TestClass", property: "array2", arrayIndex: -1 },
       ]);
     });
 
@@ -199,7 +207,9 @@ describe("FieldRun", () => {
       const fieldRun = FieldRun.create({
         styleName: "fieldStyle",
         propertyHost: { elementId: "0x123" },
-        propertyPath: [{ propertyName: "someProperty" }],
+        propertyPath: {
+          properties: [{ schema: "TestSchema", class: "TestClass", property: "someProperty" }],
+        },
         formatter,
       });
 
@@ -218,7 +228,9 @@ describe("FieldRun", () => {
       const fieldRun = FieldRun.create({
         styleName: "fieldStyle",
         propertyHost: { elementId: "0x123" },
-        propertyPath: [{ propertyName: "someProperty" }],
+        propertyPath: {
+          properties: [{ schema: "TestSchema", class: "TestClass", property: "someProperty" }],
+        },
         cachedContent: "cachedValue",
       });
 
@@ -232,7 +244,9 @@ describe("FieldRun", () => {
       const fieldRun = FieldRun.create({
         styleName: "fieldStyle",
         propertyHost: { elementId: "0x123" },
-        propertyPath: [{ propertyName: "someProperty" }],
+        propertyPath: {
+          properties: [{ schema: "TestSchema", class: "TestClass", property: "someProperty" }],
+        },
         cachedContent: FieldRun.invalidContentIndicator,
       });
 
@@ -245,7 +259,9 @@ describe("FieldRun", () => {
       const fieldRun = FieldRun.create({
         styleName: "fieldStyle",
         propertyHost: { elementId: "0x123" },
-        propertyPath: [{ propertyName: "someProperty" }],
+        propertyPath: {
+          properties: [{ schema: "TestSchema", class: "TestClass", property: "someProperty" }],
+        },
         cachedContent: "cachedValue",
       });
 
@@ -258,18 +274,19 @@ describe("FieldRun", () => {
       const baseProps = {
         styleName: "fieldStyle",
         propertyHost: { elementId: "0x123" },
-        propertyPath: [{ propertyName: "someProperty" }],
+        propertyPath: {
+          properties: [{ schema: "TestSchema", class: "TestClass", property: "someProperty" }],
+        },
         cachedContent: "cachedValue",
       };
-
 
       const combinations = [
         { formatter: { formatType: "currency" } },
         { propertyHost: { elementId: "0x456" } },
-        { propertyPath: [{ propertyName: "otherProperty" }] },
-        { propertyPath: [{ propertyName: "someProperty", arrayIndex: 0 }] },
-        { propertyPath: [{ propertyName: "someProperty", arrayIndex: 1 }] },
-        { propertyPath: [{ propertyName: "someProperty" }, { propertyName: "otherProperty" }] },
+        { propertyPath: { properties: [{ schema: "TestSchema", class: "TestClass", property: "otherProperty" }] } },
+        { propertyPath: { properties: [{ schema: "TestSchema", class: "TestClass", property: "someProperty", arrayIndex: 0 }] } },
+        { propertyPath: { properties: [{ schema: "TestSchema", class: "TestClass", property: "someProperty", arrayIndex: 1 }] } },
+        { propertyPath: { properties: [{ schema: "TestSchema", class: "TestClass", property: "someProperty" }, { schema: "TestSchema", class: "TestClass", property: "otherProperty" }] } },
       ];
 
       const fieldRuns = combinations.map((combo) =>
@@ -296,14 +313,18 @@ describe("FieldRun", () => {
       const field1 = FieldRun.create({
         styleName: "fieldStyle",
         propertyHost: { elementId: "0x123" },
-        propertyPath: [{ propertyName: "someProperty" }],
+        propertyPath: {
+          properties: [{ schema: "TestSchema", class: "TestClass", property: "someProperty" }],
+        },
         cachedContent: "1",
       });
 
       const field2 = FieldRun.create({
         styleName: "fieldStyle",
         propertyHost: { elementId: "0x123" },
-        propertyPath: [{ propertyName: "someProperty" }],
+        propertyPath: {
+          properties: [{ schema: "TestSchema", class: "TestClass", property: "someProperty" }],
+        },
         cachedContent: "2",
       });
 

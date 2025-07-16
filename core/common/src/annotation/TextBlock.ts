@@ -6,10 +6,8 @@
  * @module Annotation
  */
 
-import { Id64String, Logger } from "@itwin/core-bentley";
+import { assert, Id64String } from "@itwin/core-bentley";
 import { TextStyleSettingsProps } from "./TextStyle";
-import { XAndY, XYAndZ } from "@itwin/core-geometry";
-import { CommonLoggerCategory } from "../CommonLoggerCategory";
 
 /** Options supplied to [[TextBlockComponent.applyStyle]] to control how the style is applied to the component and its child components.
  * @beta
@@ -409,12 +407,21 @@ export class TabRun extends TextBlockComponent {
 /** An entry in a [[FieldPropertyPath]].
  * @beta
  */
-export interface FieldPropertyPathEntry {
-  /** The name of the property. */
-  propertyName: string;
-  /** If [[propertyName]] identifies an array property, the index of the array element of interest.
+export interface FieldBisPropertyAccessor {
+  /** The name of the BIS schema containing [[class]]. */
+  schema: string;
+  /** The name of the exact BIS class containing [[property]] (not a subclass thereof). */
+  class: string;
+  /** The name of the BIS property. */
+  property: string;
+  /** If [[property]] identifies an array property, the index of the array element of interest.
    * Negative array indices can be used to count backward from the end of the array (e.g., index -1 refers to the last element, -2 to the second-to-last element, and so on).
    */
+  arrayIndex?: number;
+}
+
+export interface FieldJsonPropertyAccessor {
+  property: string;
   arrayIndex?: number;
 }
 
@@ -423,7 +430,10 @@ export interface FieldPropertyPathEntry {
  * The chain may traverse through structs, arrays, and JSON objects.
  * @beta
  */
-export type FieldPropertyPath = FieldPropertyPathEntry[];
+export interface FieldPropertyPath {
+  properties: FieldBisPropertyAccessor[];
+  json?: FieldJsonPropertyAccessor[];
+}
 
 export interface FieldPropertyHost {
   elementId: Id64String;
@@ -471,7 +481,7 @@ export class FieldRun extends TextBlockComponent {
   public static create(props: Omit<FieldRunProps, "type">): FieldRun {
     return new FieldRun({
       ...props,
-      propertyPath: props.propertyPath.map((x) => ({...x})),
+      propertyPath: structuredClone(props.propertyPath),
       formatter: structuredClone(props.formatter),
     });
   }
@@ -481,7 +491,7 @@ export class FieldRun extends TextBlockComponent {
       ...super.toJSON(),
       type: "field",
       propertyHost: { ...this.propertyHost },
-      propertyPath: this.propertyPath.map((x) => ({...x})),
+      propertyPath: structuredClone(this.propertyPath),
     };
 
     if (this.cachedContent !== FieldRun.invalidContentIndicator) {
@@ -508,19 +518,46 @@ export class FieldRun extends TextBlockComponent {
       return false;
     }
 
-    if (this.propertyPath.length !== other.propertyPath.length) {
+    if (this.propertyPath.properties.length !== other.propertyPath.properties.length) {
       return false;
     }
 
-    for (let i = 0; i < this.propertyPath.length; i++) {
-      const lhs = this.propertyPath[i];
-      const rhs = other.propertyPath[i];
-      if (lhs.propertyName !== rhs.propertyName || lhs.arrayIndex !== rhs.arrayIndex) {
+    for (let i = 0; i < this.propertyPath.properties.length; i++) {
+      const lhs = this.propertyPath.properties[i];
+      const rhs = other.propertyPath.properties[i];
+      if (
+        lhs.schema !== rhs.schema ||
+        lhs.class !== rhs.class ||
+        lhs.property !== rhs.property ||
+        lhs.arrayIndex !== rhs.arrayIndex
+      ) {
         return false;
       }
     }
 
-    // ###TODO compare formatters
+    if (this.propertyPath.json?.length !== other.propertyPath.json?.length) {
+      return false;
+    }
+
+    if (this.propertyPath.json) {
+      for (let i = 0; i < this.propertyPath.json.length; i++) {
+        const lhs = this.propertyPath.json[i];
+        assert(undefined !== other.propertyPath.json);
+        const rhs = other.propertyPath.json[i];
+        if (lhs.property !== rhs.property || lhs.arrayIndex !== rhs.arrayIndex) {
+          return false;
+        }
+      }
+    }
+
+    if (this.formatter && other.formatter) {
+      // ###TODO better comparison of formatter objects.
+      if (JSON.stringify(this.formatter) !== JSON.stringify(other.formatter)) {
+        return false;
+      }
+    } else if (this.formatter || other.formatter) {
+      return false;
+    }
 
     return true;
   }
