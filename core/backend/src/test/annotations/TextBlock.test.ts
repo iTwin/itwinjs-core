@@ -5,12 +5,13 @@
 import { expect } from "chai";
 import { computeGraphemeOffsets, ComputeGraphemeOffsetsArgs, layoutTextBlock, LineLayout, RunLayout, TextBlockLayout, TextLayoutRanges } from "../../annotations/TextBlockLayout";
 import { Geometry, Range2d } from "@itwin/core-geometry";
-import { ColorDef, FontType, FractionRun, LineBreakRun, LineLayoutResult, Run, RunLayoutResult, TabRun, TextAnnotation, TextAnnotationAnchor, TextBlock, TextBlockGeometryPropsEntry, TextBlockMargins, TextRun, TextStringProps, TextStyleSettings } from "@itwin/core-common";
+import { ColorDef, FieldRun, FontType, FractionRun, LineBreakRun, LineLayoutResult, Run, RunLayoutResult, TabRun, TextAnnotation, TextAnnotationAnchor, TextBlock, TextBlockGeometryPropsEntry, TextBlockMargins, TextRun, TextStringProps, TextStyleSettings } from "@itwin/core-common";
 import { SnapshotDb } from "../../IModelDb";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { ProcessDetector } from "@itwin/core-bentley";
 import { produceTextBlockGeometry } from "../../core-backend";
 import { computeTextRangeAsStringLength, doLayout } from "../AnnotationTestUtils";
+import { GetFieldPropertyValueArgs, updateField } from "../../annotations/ElementDrivesTextAnnotation";
 
 
 
@@ -1287,6 +1288,108 @@ describe("produceTextBlockGeometry", () => {
   });
 });
 
+describe("updateField", () => {
+  const mockElementId = "0x1";
+  const mockPath = [{ propertyName: "mockProperty" }];
+  const mockCachedContent = "cachedContent";
+  const mockUpdatedContent = "updatedContent";
+
+  const createMockContext = (elementId: string, propertyValue?: string) => ({
+    hostElementId: elementId,
+    getProperty: (args: GetFieldPropertyValueArgs) => {
+      const propertyPath = args.path;
+      if (
+        propertyPath.length === 1 &&
+        propertyPath[0].propertyName === "mockProperty" &&
+        propertyValue !== undefined
+      ) {
+        return { value: propertyValue };
+      }
+      return undefined;
+    },
+  });
+
+  it("does nothing if hostElementId does not match", () => {
+    const fieldRun = FieldRun.create({
+      styleName: "fieldStyle",
+      propertyHost: { elementId: mockElementId },
+      propertyPath: mockPath,
+      cachedContent: mockCachedContent,
+    });
+
+    const context = createMockContext("0x2", mockUpdatedContent);
+    const result = updateField(fieldRun, context);
+
+    expect(result).to.be.false;
+    expect(fieldRun.cachedContent).to.equal(mockCachedContent);
+  });
+
+  it("produces invalid content indicator if property value is undefined", () => {
+    const fieldRun = FieldRun.create({
+      styleName: "fieldStyle",
+      propertyHost: { elementId: mockElementId },
+      propertyPath: mockPath,
+      cachedContent: mockCachedContent,
+    });
+
+    const context = createMockContext(mockElementId);
+    const result = updateField(fieldRun, context);
+
+    expect(result).to.be.true;
+    expect(fieldRun.cachedContent).to.equal(FieldRun.invalidContentIndicator);
+  });
+
+  it("returns false if cached content matches new content", () => {
+    const fieldRun = FieldRun.create({
+      styleName: "fieldStyle",
+      propertyHost: { elementId: mockElementId },
+      propertyPath: mockPath,
+      cachedContent: mockCachedContent,
+    });
+
+    const context = createMockContext(mockElementId, mockCachedContent);
+    const result = updateField(fieldRun, context);
+
+    expect(result).to.be.false;
+    expect(fieldRun.cachedContent).to.equal(mockCachedContent);
+  });
+
+  it("returns true and updates cached content if new content is different", () => {
+    const fieldRun = FieldRun.create({
+      styleName: "fieldStyle",
+      propertyHost: { elementId: mockElementId },
+      propertyPath: mockPath,
+      cachedContent: mockCachedContent,
+    });
+
+    const context = createMockContext(mockElementId, mockUpdatedContent);
+    const result = updateField(fieldRun, context);
+
+    expect(result).to.be.true;
+    expect(fieldRun.cachedContent).to.equal(mockUpdatedContent);
+  });
+
+  it("resolves to invalid content indicator if an exception occurs", () => {
+    const fieldRun = FieldRun.create({
+      styleName: "fieldStyle",
+      propertyHost: { elementId: mockElementId },
+      propertyPath: mockPath,
+      cachedContent: mockCachedContent,
+    });
+
+    const context = {
+      hostElementId: mockElementId,
+      getProperty: () => {
+        throw new Error("Test exception");
+      },
+    };
+
+    const result = updateField(fieldRun, context);
+
+    expect(result).to.be.true;
+    expect(fieldRun.cachedContent).to.equal(FieldRun.invalidContentIndicator);
+  });
+});
 
 // Ignoring the text strings from the spell checker
 // cspell:ignore jklmnop vwxyz defg hijk ghij klmno pqrstu Tanuki aabb eeff nggg amet adipiscing elit Phasellus pretium malesuada venenatis eleifend Donec sapien Nullam commodo accumsan lacinia metus enim pharetra lacus facilisis Duis suscipit quis feugiat fermentum ut augue Mauris iaculis odio rhoncus lorem viverra turpis elementum posuere Consolas अनुच्छेद cdefg cdefgh cdefghi
