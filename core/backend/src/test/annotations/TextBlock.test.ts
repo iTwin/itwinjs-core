@@ -5,13 +5,13 @@
 import { expect } from "chai";
 import { computeGraphemeOffsets, ComputeGraphemeOffsetsArgs, layoutTextBlock, LineLayout, RunLayout, TextBlockLayout, TextLayoutRanges } from "../../annotations/TextBlockLayout";
 import { Geometry, Range2d } from "@itwin/core-geometry";
-import { ColorDef, FieldRun, FontType, FractionRun, LineBreakRun, LineLayoutResult, Run, RunLayoutResult, TabRun, TextAnnotation, TextAnnotationAnchor, TextBlock, TextBlockGeometryPropsEntry, TextBlockMargins, TextRun, TextStringProps, TextStyleSettings } from "@itwin/core-common";
+import { ColorDef, FieldPropertyPath, FieldRun, FontType, FractionRun, LineBreakRun, LineLayoutResult, Run, RunLayoutResult, TabRun, TextAnnotation, TextAnnotationAnchor, TextBlock, TextBlockGeometryPropsEntry, TextBlockMargins, TextRun, TextStringProps, TextStyleSettings } from "@itwin/core-common";
 import { SnapshotDb } from "../../IModelDb";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { ProcessDetector } from "@itwin/core-bentley";
 import { produceTextBlockGeometry } from "../../core-backend";
 import { computeTextRangeAsStringLength, doLayout } from "../AnnotationTestUtils";
-import { GetFieldPropertyValueArgs, updateField } from "../../annotations/ElementDrivesTextAnnotation";
+import { GetFieldPropertyValueArgs, updateField } from "../../internal/annotations/fields";
 
 
 
@@ -1290,17 +1290,17 @@ describe("produceTextBlockGeometry", () => {
 
 describe("updateField", () => {
   const mockElementId = "0x1";
-  const mockPath = [{ propertyName: "mockProperty" }];
+  const mockPath: FieldPropertyPath = { properties: [{ schema: "TestSchema", class: "TestClass", property: "mockProperty" }] };
   const mockCachedContent = "cachedContent";
   const mockUpdatedContent = "updatedContent";
 
   const createMockContext = (elementId: string, propertyValue?: string) => ({
     hostElementId: elementId,
     getProperty: (args: GetFieldPropertyValueArgs) => {
-      const propertyPath = args.path;
+      const propertyPath = args.path.properties;
       if (
         propertyPath.length === 1 &&
-        propertyPath[0].propertyName === "mockProperty" &&
+        propertyPath[0].property=== "mockProperty" &&
         propertyValue !== undefined
       ) {
         return { value: propertyValue };
