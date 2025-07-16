@@ -70,7 +70,8 @@ export class RealityTile extends Tile {
   protected _geometry?: RealityTileGeometry;
   private _everDisplayed = false;
   /** @internal */
-  protected _reprojectionTransform?: Transform;
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  public _reprojectionTransform?: Transform;
   private _reprojectedGraphic?: RenderGraphic;
   private readonly _geometricError?: number;
   /** @internal */
@@ -637,12 +638,12 @@ export class RealityTile extends Tile {
         if (!this.isReady)
           collector.addMissingTile(this.loadableTile);
         else if (this.geometry?.polyfaces) {
-          let polyfaces = this.geometry.polyfaces;
-          const xForm = this._reprojectionTransform;
-          if (this.tree.reprojectGeometry && xForm) {
-            // If the tile is reprojected, transform the polyfaces to the reprojection transform.
-            polyfaces = polyfaces.map((pf) => pf.cloneTransformed(xForm));
-          }
+          const polyfaces = this.geometry.polyfaces;
+          // const xForm = this._reprojectionTransform;
+          // if (this.tree.reprojectGeometry && xForm) {
+          //   // If the tile is reprojected, transform the polyfaces to the reprojection transform.
+          //   polyfaces = polyfaces.map((pf) => pf.cloneTransformed(xForm));
+          // }
           collector.polyfaces.push(...polyfaces);
         }
 

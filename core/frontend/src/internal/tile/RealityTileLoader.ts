@@ -88,7 +88,13 @@ export abstract class RealityTileLoader {
     if (reader)
       reader.defaultWrapMode = GltfWrapMode.ClampToEdge;
 
-    return { geometry: reader?.readGltfAndCreateGeometry(tile.tree.iModelTransform) };
+    const geom = reader?.readGltfAndCreateGeometry(tile.tree.iModelTransform);
+    const xForm = tile._reprojectionTransform;
+    if (tile.tree.reprojectGeometry && geom?.polyfaces && xForm) {
+      geom.polyfaces =  geom.polyfaces.map((pf) => pf.cloneTransformed(xForm));
+    }
+
+    return { geometry: geom };
   }
 
   private async loadGraphicsFromStream(tile: RealityTile, streamBuffer: ByteStream, system: RenderSystem, isCanceled?: () => boolean): Promise<TileContent> {
