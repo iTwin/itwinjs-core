@@ -107,6 +107,7 @@ export class BranchUniforms {
     this._stack.pushBranch(branch);
 
     this.setClipStyle(this.top.disableClipStyle);
+    // contourLine variable exists only for 2D section views with contour display; update render plan to show it.
     if (this.top.contourLine) {
       const newPlan: RenderPlan = { ...this._target.plan, contours: this.top.contourLine };
       this._target.plan = newPlan;
