@@ -166,7 +166,13 @@ jobs:
       - task: ManualValidation@0
         timeoutInMinutes: 4320 # 3 days
         inputs:
-          notifyUsers: "Arun.George@bentley.com"
+          notifyUsers: |
+            Arun.George@bentley.com
+            Nick.Tessier@bentley.com
+            Paul.Connelly@bentley.com
+            Caleb.Shafer@bentley.com
+            Bill.Goehrig@bentley.com
+            Ben.Polinsky@bentley.com
           instructions: |
             Current commit is a version bump and it will be released to npm.
             This check was added as an additional safety mechanism until new changes made in run-eslint-deprecation.yaml mature.
