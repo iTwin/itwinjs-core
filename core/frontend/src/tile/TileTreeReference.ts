@@ -346,7 +346,7 @@ export abstract class TileTreeReference /* implements RenderMemory.Consumer */ {
  */
 export interface GeometryTileTreeReferenceOptions {
   /** If set to true, tile geometry will be reprojected using the tile's reprojection transform when geometry is collected from the referenced TileTree.
-   * Currently only applies to reality tiles.
+   * Currently only applies to point clouds, reality meshes, and terrain.
    * @beta
    */
   reprojectGeometry?: boolean;
