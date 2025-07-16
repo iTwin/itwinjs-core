@@ -16,7 +16,7 @@ import { RenderMemory } from "../render/RenderMemory";
 import { DecorateContext, SceneContext } from "../ViewContext";
 import { ScreenViewport } from "../Viewport";
 import {
-  DisclosedTileTreeSet, GeometryTileTreeReference, MapFeatureInfoOptions, MapLayerFeatureInfo, RealityTileTree, RenderGraphicTileTreeArgs, TileDrawArgs, TileGeometryCollector, TileTree, TileTreeLoadStatus, TileTreeOwner, tileTreeReferenceFromRenderGraphic,
+  DisclosedTileTreeSet, GeometryTileTreeReference, MapFeatureInfoOptions, MapLayerFeatureInfo, RenderGraphicTileTreeArgs, TileDrawArgs, TileGeometryCollector, TileTree, TileTreeLoadStatus, TileTreeOwner, tileTreeReferenceFromRenderGraphic,
 } from "./internal";
 
 /** Describes the type of graphics produced by a [[TileTreeReference]].
@@ -293,13 +293,6 @@ export abstract class TileTreeReference /* implements RenderMemory.Consumer */ {
    */
   protected _collectTileGeometry(collector: TileGeometryCollector): void {
     const tree = this.treeOwner.load();
-
-    // The reprojectGeometry property is only relevant for RealityTileTree because only reality tiles have the reprojectionTransform.
-    if (tree instanceof RealityTileTree) {
-      // Make sure tree knows to reproject when collectTileGeometry is called.
-      // this.reprojectGeometry will only be defined if this is a GeometryTileTreeReference.
-      tree.reprojectGeometry = this.reprojectGeometry;
-    }
 
     switch (this.treeOwner.loadStatus) {
       case TileTreeLoadStatus.Loaded:
