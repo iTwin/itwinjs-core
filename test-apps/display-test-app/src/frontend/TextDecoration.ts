@@ -93,7 +93,6 @@ class TextEditor implements Decorator {
 
   public appendText(content: string): void {
     this.textBlock.appendRun(TextRun.create({
-      styleId: "",
       styleOverrides: this.runStyle,
       content,
       baselineShift: this.baselineShift,
@@ -102,7 +101,6 @@ class TextEditor implements Decorator {
 
   public appendFraction(numerator: string, denominator: string): void {
     this.textBlock.appendRun(FractionRun.create({
-      styleId: "",
       styleOverrides: this.runStyle,
       numerator,
       denominator,
@@ -111,14 +109,12 @@ class TextEditor implements Decorator {
 
   public appendTab(spaces?: number): void {
     this.textBlock.appendRun(TabRun.create({
-      styleId: "",
       styleOverrides: { ... this.runStyle, tabInterval: spaces },
     }));
   }
 
   public appendBreak(): void {
     this.textBlock.appendRun(LineBreakRun.create({
-      styleId: "",
       styleOverrides: this.runStyle,
     }));
   }
@@ -472,26 +468,9 @@ export class TextDecorationTool extends Tool {
         return true;
       }
       case "applystyle": {
-        let applyTo: "textblock" | "paragraph" | "run" = "textblock";
-        if (inArgs.length === 3) {
-          applyTo = inArgs[2].toLowerCase() as "textblock" | "paragraph" | "run";
-        }
-        if (applyTo === "textblock") {
-          editor.textBlock.applyStyle(arg);
-          break;
-        }
-        const lastParagraphIndex = editor.textBlock.paragraphs.length - 1;
-        if (applyTo === "paragraph" && lastParagraphIndex >= 0) {
-          editor.textBlock.paragraphs[lastParagraphIndex].applyStyle(arg);
-          break;
-        }
-        const lastRunIndex = editor.textBlock.paragraphs[lastParagraphIndex]?.runs.length - 1;
-        if (applyTo === "run" && lastParagraphIndex >= 0 && lastRunIndex >= 0) {
-          editor.textBlock.paragraphs[lastParagraphIndex].runs[lastRunIndex].applyStyle(arg);
-          break;
-        }
-
-        throw new Error(`Invalid applyTo value: ${applyTo}. Expected textblock, paragraph, or run.`);
+        editor.textBlock.styleId = arg;
+        editor.textBlock.clearStyleOverrides();
+        break;
       }
       case "insert": {
         assert(vp.view.is2d() === true, "View is not 2d");

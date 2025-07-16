@@ -7,20 +7,19 @@ import { expect } from "chai";
 import { ColorDef, GeometryParams, LineBreakRun, TextAnnotation, TextAnnotationLeader, TextBlock, TextFrameStyleProps, TextRun, TextStyleSettings } from "@itwin/core-common";
 import { LineSegment3d, LineString3d, Point3d, Range2d, YawPitchRollAngles } from "@itwin/core-geometry";
 import { appendLeadersToBuilder, computeElbowDirection, computeFrame, computeLeaderAttachmentPoint, TextStyleResolver } from "../../core-backend";
-import { Id64 } from "@itwin/core-bentley";
+import { Id64, Id64String } from "@itwin/core-bentley";
 import { doLayout, MockBuilder } from "../AnnotationTestUtils";
 
 describe("LeaderGeometry", () => {
   let builder: MockBuilder;
   let defaultParams: GeometryParams;
 
-  const textBlock = TextBlock.create({ styleId: "", styleOverrides: { fontName: "Arial", color: ColorDef.black.toJSON() } });
-  textBlock.appendRun(TextRun.create({ content: "Hello", styleId: "", styleOverrides: { fontName: "Arial" } }));
+  const textBlock = TextBlock.create({ styleId: "0x34", styleOverrides: { fontName: "Arial", color: ColorDef.black.toJSON(), leader: {wantElbow: false} } });
+  textBlock.appendRun(TextRun.create({ content: "Hello", styleOverrides: { fontName: "Arial" } }));
   textBlock.appendRun(LineBreakRun.create({
-    styleId: "",
     styleOverrides: { fontName: "Arial" },
   }));
-  textBlock.appendRun(TextRun.create({ content: "World", styleId: "", styleOverrides: { fontName: "Arial" } }));
+  textBlock.appendRun(TextRun.create({ content: "World", styleOverrides: { fontName: "Arial" } }));
 
   const frame: TextFrameStyleProps = { borderWeight: 1, shape: "rectangle" };
 
@@ -31,7 +30,7 @@ describe("LeaderGeometry", () => {
     offset: { x: 0, y: 0 },
   });
 
-  const findTextStyle = (name: string) => TextStyleSettings.fromJSON(name === "block" ? { lineSpacingFactor: 12, fontName: "block", frame } : { lineSpacingFactor: 99, fontName: "run", frame });
+  const findTextStyle = (id: Id64String) => TextStyleSettings.fromJSON(id === "0x34" ? { lineSpacingFactor: 12, fontName: "block", frame } : { lineSpacingFactor: 99, fontName: "run", frame });
   const textStyleResolver = new TextStyleResolver({
     textBlock,
     iModel: {} as any,

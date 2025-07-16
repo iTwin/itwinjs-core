@@ -326,6 +326,18 @@ export class TextStyleSettings {
     return alteredProps ? new TextStyleSettings(alteredProps, this) : this;
   }
 
+  /** Creates a deep copy of the `TextStyleSettingsProps`. */
+  public static cloneProps(props: TextStyleSettingsProps): TextStyleSettingsProps {
+    const copy = { ...props };
+    if (props.leader) {
+      copy.leader = { ...props.leader };
+    }
+    if (props.frame) {
+      copy.frame = { ...props.frame };
+    }
+    return copy;
+  }
+
   /** Create settings from their JSON representation. */
   public static fromJSON(props?: TextStyleSettingsProps): TextStyleSettings {
     return props ? new TextStyleSettings(props) : TextStyleSettings.defaults;
@@ -334,6 +346,7 @@ export class TextStyleSettings {
   public toJSON(): TextStyleSettingsProps {
     return { ...this };
   }
+
   /** Compare two [[TextLeaderStyleProps]] for equality.
    * @param other The other leader style properties to compare against.
    * @returns true if the two leader styles are equal, false otherwise.
@@ -344,7 +357,7 @@ export class TextStyleSettings {
       && this.leader.terminatorWidthFactor === other.terminatorWidthFactor;
   }
 
-  public framesEqual(other: TextFrameStyleProps): boolean {
+  public frameEquals(other: TextFrameStyleProps): boolean {
     return this.frame?.shape === other.shape
       && this.frame?.fill === other.fill
       && this.frame?.border === other.border
@@ -360,7 +373,7 @@ export class TextStyleSettings {
       && this.superScriptOffsetFactor === other.superScriptOffsetFactor && this.superScriptScale === other.superScriptScale
       && this.tabInterval === other.tabInterval
       && this.leaderEquals(other.leader)
-      && this.framesEqual(other.frame)
+      && this.frameEquals(other.frame)
   }
 
   /**

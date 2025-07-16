@@ -152,11 +152,13 @@ function scaleRange(range: Range2d, scale: number): void {
 }
 
 /**
- * Applies block level settings (lineSpacingFactor, lineHeight, widthFactor, and frame) to a TextStyleSettings.
+ * Applies block level settings (lineSpacingFactor, lineHeight, widthFactor, frame, and leader) to a [TextStyleSettings]($common).
  * These must be set on the block, as they are meaningless on individual paragraphs/runs.
+ * Leaders are a special case. To a paragraph or run, leader settings are meaningless. However, a leader
+ * can override the block's leader settings. Setting `isLeader` to `true` makes the [TextBlock]($common) settings not override the leader's settings.
  * @internal
  */
-function applyBlockSettings(target: TextStyleSettings, source: TextStyleSettings | TextStyleSettingsProps): TextStyleSettings {
+function applyBlockSettings(target: TextStyleSettings, source: TextStyleSettings | TextStyleSettingsProps, isLeader: boolean = false): TextStyleSettings {
   if (source === target) {
     return target;
   }
@@ -165,12 +167,28 @@ function applyBlockSettings(target: TextStyleSettings, source: TextStyleSettings
   const lineHeight = source.lineHeight ?? target.lineHeight;
   const widthFactor = source.widthFactor ?? target.widthFactor;
   const frame = source.frame ?? target.frame;
+  const leader = source.leader ?? target.leader;
+
+  const leaderShouldChange = !isLeader && !target.leaderEquals(leader);
+
   if (lineSpacingFactor !== target.lineSpacingFactor ||
       lineHeight !== target.lineHeight ||
       widthFactor !== target.widthFactor ||
-      !target.framesEqual(frame)
+      !target.frameEquals(frame) ||
+      leaderShouldChange
   ) {
-    target = target.clone({ lineSpacingFactor, lineHeight, widthFactor, frame });
+    const cloneProps: TextStyleSettingsProps = {
+      lineSpacingFactor,
+      lineHeight,
+      widthFactor,
+      frame,
+    };
+
+    if (leaderShouldChange) {
+      cloneProps.leader = leader;
+    }
+
+    target = target.clone(cloneProps);
   }
 
   return target;
@@ -192,7 +210,7 @@ export interface TextStyleResolverArgs {
 }
 
 /**
- * Resolves the effective style of TextBlockComponents, taking into account overrides and styles of the instance and its parent(s).
+ * Resolves the effective style of TextBlockComponents and Leaders, taking into account overrides/style of the instance and its parent(s).
  * @beta
  */
 export class TextStyleResolver {
@@ -221,8 +239,6 @@ export class TextStyleResolver {
   private resolveParagraphSettingsImpl(paragraph: Paragraph): TextStyleSettings {
     let settings = this.blockSettings;
 
-    if (paragraph.styleId)
-      settings = this.findTextStyle(paragraph.styleId);
     if (paragraph.overridesStyle)
       settings = settings.clone(paragraph.styleOverrides);
 
@@ -245,7 +261,7 @@ export class TextStyleResolver {
     if (leader.styleOverrides)
       settings = settings.clone(leader.styleOverrides);
 
-    return applyBlockSettings(settings, this.blockSettings);
+    return applyBlockSettings(settings, this.blockSettings, true);
   }
 
   /** Resolves the effective style for a [Paragraph]($common). Paragraph should be child of provided TextBlock. */
@@ -257,8 +273,6 @@ export class TextStyleResolver {
   public resolveRunSettings(paragraph: Paragraph, run: Run): TextStyleSettings {
     let settings = this.resolveParagraphSettingsImpl(paragraph);
 
-    if (run.styleId)
-      settings = this.findTextStyle(run.styleId);
     if (run.overridesStyle)
       settings = settings.clone(run.styleOverrides);
 

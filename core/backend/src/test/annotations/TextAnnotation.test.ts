@@ -33,9 +33,9 @@ function mockIModel(): IModelDb {
 function createAnnotation(styleId?: Id64String): TextAnnotation {
   const styleOverrides = { fontName: "Karla" };
   const block = TextBlock.create({ styleId: styleId ?? "0x42", styleOverrides });
-  block.appendRun(TextRun.create({ content: "Run, Barry,", styleId: styleId ?? "0x43", styleOverrides }));
-  block.appendRun(TextRun.create({ content: " RUN!!! ", styleId: styleId ?? "0x44", styleOverrides }));
-  block.appendRun(FractionRun.create({ numerator: "Harrison", denominator: "Wells", styleId: styleId ?? "0x45", styleOverrides }));
+  block.appendRun(TextRun.create({ content: "Run, Barry,", styleOverrides }));
+  block.appendRun(TextRun.create({ content: " RUN!!! ", styleOverrides }));
+  block.appendRun(FractionRun.create({ numerator: "Harrison", denominator: "Wells", styleOverrides }));
   block.margins = { left: 0, right: 1, top: 2, bottom: 3 };
 
   const annotation = TextAnnotation.fromJSON({ textBlock: block.toJSON() });
@@ -158,7 +158,7 @@ describe("TextAnnotation element", () => {
       const elem = makeElement();
 
       const textBlock = TextBlock.create({ styleId: "0x42" });
-      textBlock.appendRun(TextRun.create({ content: "text", styleId: "0x43" }));
+      textBlock.appendRun(TextRun.create({ content: "text" }));
       const annotation = TextAnnotation.fromJSON({ textBlock: textBlock.toJSON() });
       elem.setAnnotation(annotation);
 

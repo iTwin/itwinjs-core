@@ -6,7 +6,7 @@
  * @module Elements
  */
 
-import { AnnotationTextStyleProps, BisCodeSpec, Code, CodeProps, CodeScopeProps, CodeSpec, ConcreteEntityTypes, ElementGeometry, ElementGeometryBuilderParams, EntityReference, EntityReferenceSet, Placement2d, Placement2dProps, Placement3d, Placement3dProps, PlacementProps, TextAnnotation, TextAnnotation2dProps, TextAnnotation3dProps, TextAnnotationProps, TextStyleSettings, TextStyleSettingsProps } from "@itwin/core-common";
+import { AnnotationTextStyleProps, BisCodeSpec, Code, CodeProps, CodeScopeProps, CodeSpec, ElementGeometry, ElementGeometryBuilderParams, EntityReferenceSet, Placement2d, Placement2dProps, Placement3d, Placement3dProps, PlacementProps, TextAnnotation, TextAnnotation2dProps, TextAnnotation3dProps, TextAnnotationProps, TextStyleSettings, TextStyleSettingsProps } from "@itwin/core-common";
 import { IModelDb } from "../IModelDb";
 import { AnnotationElement2d, DefinitionElement, GraphicalElement3d, OnElementIdArg, OnElementPropsArg } from "../Element";
 import { DbResult, Id64String } from "@itwin/core-bentley";
@@ -125,7 +125,8 @@ export class TextAnnotation2d extends AnnotationElement2d {
     if (!annotation) {
       return;
     }
-    annotation.discloseIds(ids);
+    if (annotation.textBlock.styleId)
+      ids.addElement(annotation.textBlock.styleId);
   }
 
   /**
@@ -251,7 +252,8 @@ export class TextAnnotation3d extends GraphicalElement3d {
     if (!annotation) {
       return;
     }
-    annotation.discloseIds(ids);
+    if (annotation.textBlock.styleId)
+      ids.addElement(annotation.textBlock.styleId);
   }
 
   /**
@@ -364,17 +366,13 @@ export class AnnotationTextStyle extends DefinitionElement {
     `;
     // eslint-disable-next-line @typescript-eslint/no-deprecated
     arg.iModel.withPreparedStatement(query, (statement) => {
-      const referenceIds = new EntityReferenceSet();
-      const key = ConcreteEntityTypes.Element + arg.id as EntityReference;
       while (statement.step() === DbResult.BE_SQLITE_ROW) {
         const row = statement.getRow();
         const textAnnotationProps = parseTextAnnotationData(row.textAnnotationData);
-        if (textAnnotationProps) {
-          const textAnnotation = TextAnnotation.fromJSON(textAnnotationProps);
-          textAnnotation.discloseIds(referenceIds);
-          if (referenceIds.has(key)) {
-            throw new Error("Cannot delete AnnotationTextStyle because it is referenced by a TextAnnotation element");
-          }
+        if (!textAnnotationProps) continue;
+        const annotation = TextAnnotation.fromJSON(textAnnotationProps);
+        if (annotation.textBlock.styleId && annotation.textBlock.styleId === arg.id) {
+          throw new Error("Cannot delete AnnotationTextStyle because it is referenced by a TextAnnotation element");
         }
       }
     });
