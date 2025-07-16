@@ -11,7 +11,7 @@ import { Angle, Point3d, Vector3d, YawPitchRollAngles } from "@itwin/core-geomet
 import { dtaIpc } from "./App";
 
 // Ignoring the spelling of the keyins. They're case insensitive, so we check against lowercase.
-// cspell:ignore superscript, subscript, widthfactor, fractionscale, fractiontype, textpoint
+// cspell:ignore superscript, subscript, widthfactor, fractionscale, fractiontype, textpoint, subscriptscale, superscriptscale, insertstyle, updatestyle, deletestyle, applystyle
 
 class TextEditor implements Decorator {
   // Geometry properties
