@@ -540,7 +540,7 @@ export class PresentationManager {
   public async getContentSet(
     requestOptions: WithCancelEvent<Prioritized<Paged<ContentRequestOptions<IModelDb, Descriptor, KeySet, RulesetVariable>>>> & BackendDiagnosticsAttribute,
   ): Promise<Item[]> {
-    let items = await this._detail.getContentSet(requestOptions);
+    let items = await this._detail.getContentSet({ ...requestOptions, omitFormattedValues: true });
 
     if (!requestOptions.omitFormattedValues) {
       const formatter = this.createContentFormatter(requestOptions);
@@ -558,7 +558,7 @@ export class PresentationManager {
     requestOptions: WithCancelEvent<Prioritized<Paged<ContentRequestOptions<IModelDb, Descriptor | DescriptorOverrides, KeySet, RulesetVariable>>>> &
       BackendDiagnosticsAttribute,
   ): Promise<Content | undefined> {
-    const content = await this._detail.getContent(requestOptions);
+    const content = await this._detail.getContent({ ...requestOptions, omitFormattedValues: true });
     if (!content) {
       return undefined;
     }
