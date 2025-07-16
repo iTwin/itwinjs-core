@@ -8389,7 +8389,7 @@ export interface RealityTileGeometry {
 
 // @internal
 export abstract class RealityTileLoader {
-    constructor(_produceGeometry?: boolean | undefined);
+    constructor(_produceGeometry?: ProduceGeometryOption | undefined);
     // (undocumented)
     protected get _batchType(): BatchType;
     // (undocumented)
