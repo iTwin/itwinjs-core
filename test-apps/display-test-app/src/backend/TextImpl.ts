@@ -69,6 +69,7 @@ export async function deleteTextStyle(iModelKey: string, name: string): Promise<
   try {
     const textStyle = iModel.elements.getElement<AnnotationTextStyle>(AnnotationTextStyle.createCode(iModel, IModelDb.dictionaryId, name));
 
+    await iModel.locks.acquireLocks({ shared: IModelDb.dictionaryId, exclusive: textStyle.id });
     iModel.elements.deleteDefinitionElements([textStyle.id]);
 
     iModel.saveChanges(`Deleted text style '${name}'`);
@@ -156,6 +157,7 @@ export async function deleteText(iModelKey: string, elementId: Id64String): Prom
   try {
     const text = iModel.elements.getElement<TextAnnotation2d>(elementId);
 
+    await iModel.locks.acquireLocks({ shared: [text.model], exclusive: [elementId] });
     text.delete();
 
     iModel.saveChanges(`Deleted text annotation`);
