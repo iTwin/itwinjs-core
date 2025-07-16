@@ -1,7 +1,6 @@
-import { ECClass, IncrementalSchemaLocater, ISchemaLocater, Schema, SchemaContext, SchemaInfo, SchemaItem, SchemaItemKey,
+import { ECClass, Schema, SchemaContext, SchemaInfo, SchemaItem, SchemaItemKey,
   SchemaItemType, SchemaJsonLocater, SchemaKey, SchemaMatchType, SchemaProps, WithSchemaKey }
   from "@itwin/ecschema-metadata";
-import { TestIModel } from "./utils/TestIModel";
 import { expect } from "chai";
 import * as chai from "chai";
 import * as chaiAsPromised from "chai-as-promised";
@@ -9,13 +8,9 @@ import { IModelIncrementalSchemaLocater } from "../../IModelIncrementalSchemaLoc
 
 import oldConfiguration from "../assets/IncrementalSchemaLocater/configs/old.config";
 import simpleConfiguration from "../assets/IncrementalSchemaLocater/configs/simple.config";
+import { IncrementalTestHelper } from "./utils/IncrementalTestHelper";
 
 chai.use(chaiAsPromised);
-
-const testIModelConfigurations = [
-  simpleConfiguration,
-  oldConfiguration
-];
 
 function parseSchemaItemKey(itemKey: string): SchemaItemKey {
   const [schemaName, itemName] = SchemaItem.parseFullName(itemKey);
@@ -23,176 +18,247 @@ function parseSchemaItemKey(itemKey: string): SchemaItemKey {
   return new SchemaItemKey(itemName, schemaKey);
 }
 
-describe("Incremental Schema Loading", function () {
-  testIModelConfigurations.forEach((iModelConfiguration) => {
-    describe(`iModel: ${iModelConfiguration.label}`, () => {
-      const testIModel = new TestIModel();
+describe.only("Incremental Schema Loading", function () {
+  describe ("Simple iModel Incremental Loading Tests", () => {
+    let testSchemaKey: SchemaKey;
+    let testSchemaConfiguration: any;
 
-      before("Setup", async function () {
-        await testIModel.load(iModelConfiguration.bimFile);
-      });
+    before("Setup", async function () {
+      await IncrementalTestHelper.setup();
+      testSchemaConfiguration = simpleConfiguration.schemas[0];
+      testSchemaKey = new SchemaKey(testSchemaConfiguration.name, 1, 0, 0);
+      await IncrementalTestHelper.importSchema(testSchemaKey);
 
-      after(async () => {
-        await testIModel.close();
-      });
+    });
 
-      const resolveSchemaKey = async (schemaName: string): Promise<SchemaKey> => {
-        const schemaFullName = (await testIModel.getSchemaNames()).find((name) => name.startsWith(schemaName));
-        if (schemaFullName === undefined) {
-          throw new Error(`Test schema '${schemaName}' not found`);
+    after(async () => {
+      await IncrementalTestHelper.close();
+    });
+
+    const iModelSchemaJsonLocater = new SchemaJsonLocater((schemaName) => {
+      return IncrementalTestHelper.iModel.getSchemaProps(schemaName) as SchemaProps;
+    });
+
+    it("Get SchemaInfo (json props - iModel)", async () => {
+      const schemaContext = new SchemaContext();
+      schemaContext.addLocater(iModelSchemaJsonLocater);
+
+      const schemaInfo = await schemaContext.getSchemaInfo(testSchemaKey, SchemaMatchType.Exact) as SchemaInfo;
+      expect(schemaInfo).to.be.not.undefined;
+      expect(schemaInfo).to.have.nested.property("schemaKey.name", testSchemaKey.name);
+
+      expect(schemaInfo).to.have.property("references").to.have.a.lengthOf(testSchemaConfiguration.references.length);
+      expect(schemaInfo).to.have.property("references").to.satisfy((refs: WithSchemaKey[]) => {
+        for (const ref of refs) {
+          expect(testSchemaConfiguration.references, `Could not find referenced schema: ${ref.schemaKey.name}`).to.include(ref.schemaKey.name);
         }
-        return SchemaKey.parseString(schemaFullName);
+        return true;
+      });
+    });
+
+    it("Get SchemaInfo (incremental - backend)", async () => {
+      const locater = new IModelIncrementalSchemaLocater(IncrementalTestHelper.iModel, { loadPartialSchemaOnly: true });
+
+      const schemaContext = new SchemaContext();
+      schemaContext.addLocater(locater);
+
+      const schemaInfo = await schemaContext.getSchemaInfo(testSchemaKey, SchemaMatchType.Exact) as SchemaInfo;
+      expect(schemaInfo).to.be.not.undefined;
+      expect(schemaInfo).to.have.nested.property("schemaKey.name", testSchemaKey.name);
+
+      expect(schemaInfo).to.have.property("references").to.have.a.lengthOf(testSchemaConfiguration.references.length);
+      expect(schemaInfo).to.have.property("references").to.satisfy((refs: WithSchemaKey[]) => {
+        for (const ref of refs) {
+          expect(testSchemaConfiguration.references, `Could not find referenced schema: ${ref.schemaKey.name}`).to.include(ref.schemaKey.name);
+        }
+        return true;
+      });
+    });
+
+    it("Get Schema with item stubs (incremental - backend)", async () => {
+      const locater = new IModelIncrementalSchemaLocater(IncrementalTestHelper.iModel, { loadPartialSchemaOnly: true });
+      const schemaContext = new SchemaContext();
+      schemaContext.addLocater(locater);
+
+      const schema = await schemaContext.getSchema(testSchemaKey) as Schema;
+      expect(schema).to.be.not.undefined;
+      expect(schema).to.have.property("name", testSchemaKey.name);
+
+      expect(schema).to.have.property("references").to.have.a.lengthOf(testSchemaConfiguration.references.length);
+      for (const item of schema.getItems()) {
+        expect(item).to.have.property("name");
+        expect(item).to.have.property("schemaItemType").to.satisfy((type: string) => SchemaItemType[type as keyof typeof SchemaItemType] !== undefined);
       }
 
-      const iModelSchemaJsonLocater = new SchemaJsonLocater((schemaName) => {
-        return testIModel.iModel.getSchemaProps(schemaName) as SchemaProps;
-      });
+      expect(schema).to.be.not.undefined;
+      expect(schema).to.have.property("name", testSchemaKey.name);
 
-      iModelConfiguration.schemas.forEach((testSchemaConfiguration: any) => {
-        describe(`Schema: ${testSchemaConfiguration.name}`, () => {
-          let testSchemaKey: SchemaKey;
+      const items = [...schema.getItems()];
+      expect(items).to.have.a.lengthOf(testSchemaConfiguration.itemCount);
 
-          before(async function () {
-            testSchemaKey = await resolveSchemaKey(testSchemaConfiguration.name);
-          });
+      for (const checkStub of testSchemaConfiguration.checkStubs) {
+        const item = await schema.lookupItem(checkStub.item);
+        expect(item).to.be.not.undefined;
+        const props = item!.schemaItemType === SchemaItemType.KindOfQuantity
+          ? SchemaItem.prototype.toJSON.call(item)
+          : item!.toJSON();
+        for (const [propertyName, propertyValue] of Object.entries(checkStub.properties)) {
+          expect(props).to.have.property(propertyName).deep.equalInAnyOrder(propertyValue);
+        }
+      }
+    });
 
-          describe("get schema info", async () => {
-            const executeTest = async (locater: ISchemaLocater) => {
-              const schemaContext = new SchemaContext();
-              schemaContext.addLocater(locater);
+    it("Get Schema with class hierarchy (json props - iModel)", async () => {
+      const schemaContext = new SchemaContext();
+      schemaContext.addLocater(iModelSchemaJsonLocater);
 
-              const schemaInfo = await schemaContext.getSchemaInfo(testSchemaKey, SchemaMatchType.Exact) as SchemaInfo;
-              expect(schemaInfo).to.be.not.undefined;
-              expect(schemaInfo).to.have.nested.property("schemaKey.name", testSchemaKey.name);
+      const schema = await schemaContext.getSchema(testSchemaKey) as Schema;
 
-              expect(schemaInfo).to.have.property("references").to.have.a.lengthOf(testSchemaConfiguration.references.length);
-              expect(schemaInfo).to.have.property("references").to.satisfy((refs: WithSchemaKey[]) => {
-                for (const ref of refs) {
-                  expect(testSchemaConfiguration.references, `Could not find referenced schema: ${ref.schemaKey.name}`).to.include(ref.schemaKey.name);
-                }
-                return true;
-              });
-            };
+      expect(schema).to.be.not.undefined;
+      expect(schema).to.have.property("name", testSchemaKey.name);
 
-            it("load schema info (json props - iModel)", async () => {
-              await executeTest(iModelSchemaJsonLocater);
-            });
+      const derivedClassKey = parseSchemaItemKey(testSchemaConfiguration.checkHierachy.derivedClass);
+      const derivedClass = await schemaContext.getSchemaItem(derivedClassKey) as ECClass;
+      expect(derivedClass, `${derivedClassKey.fullName} was not found`).to.be.not.undefined;
 
-            it("load schema info (incremental - backend)", async function () {
-              await executeTest(new IModelIncrementalSchemaLocater(testIModel.iModel, { loadPartialSchemaOnly: true }));
-            });
-          });
+      const baseClassKey = parseSchemaItemKey(testSchemaConfiguration.checkHierachy.baseClass);
+      const baseClass = await schemaContext.getSchemaItem(baseClassKey) as ECClass;
+      expect(baseClass, `${baseClassKey.fullName} was not found`).to.be.not.undefined;
 
-          describe("get schema", () => {
-            const executeTest = async (locater: ISchemaLocater) => {
-              const schemaContext = new SchemaContext();
-              schemaContext.addLocater(locater);
+      const isDerivedFrom = await derivedClass.is(baseClass);
+      expect(isDerivedFrom, `${derivedClass.name} is not derived from ${baseClass.name}`).to.be.true;
+    });
 
-              const schema = await schemaContext.getSchema(testSchemaKey) as Schema;
-              expect(schema).to.be.not.undefined;
-              expect(schema).to.have.property("name", testSchemaKey.name);
+    it("Get Schema with class hierarchy (incremental - backend)", async () => {
+      const locater = new IModelIncrementalSchemaLocater(IncrementalTestHelper.iModel, { loadPartialSchemaOnly: true });
+      const schemaContext = new SchemaContext();
+      schemaContext.addLocater(locater);
 
-              expect(schema).to.have.property("references").to.have.a.lengthOf(testSchemaConfiguration.references.length);
-              for (const item of schema.getItems()) {
-                expect(item).to.have.property("name");
-                expect(item).to.have.property("schemaItemType").to.satisfy((type: string) => SchemaItemType[type as keyof typeof SchemaItemType] !== undefined);
-              }
+      const schema = await schemaContext.getSchema(testSchemaKey) as Schema;
 
-              return schema;
-            };
+      expect(schema).to.be.not.undefined;
+      expect(schema).to.have.property("name", testSchemaKey.name);
 
-            describe("with items stubs", () => {
-              const executeItemsStubsTest = async (locater: ISchemaLocater) => {
-                const schema = await executeTest(locater);
-                expect(schema).to.be.not.undefined;
-                expect(schema).to.have.property("name", testSchemaKey.name);
+      const derivedClassKey = parseSchemaItemKey(testSchemaConfiguration.checkHierachy.derivedClass);
+      const derivedClass = await schemaContext.getSchemaItem(derivedClassKey) as ECClass;
+      expect(derivedClass, `${derivedClassKey.fullName} was not found`).to.be.not.undefined;
 
-                const items = [...schema.getItems()];
-                expect(items).to.have.a.lengthOf(testSchemaConfiguration.itemCount);
+      const baseClassKey = parseSchemaItemKey(testSchemaConfiguration.checkHierachy.baseClass);
+      const baseClass = await schemaContext.getSchemaItem(baseClassKey) as ECClass;
+      expect(baseClass, `${baseClassKey.fullName} was not found`).to.be.not.undefined;
 
-                for (const checkStub of testSchemaConfiguration.checkStubs) {
-                  const item = await schema.lookupItem(checkStub.item);
-                  expect(item).to.be.not.undefined;
-                  const props = item!.schemaItemType === SchemaItemType.KindOfQuantity
-                    ? SchemaItem.prototype.toJSON.call(item)
-                    : item!.toJSON();
-                  for (const [propertyName, propertyValue] of Object.entries(checkStub.properties)) {
-                    expect(props).to.have.property(propertyName).deep.equalInAnyOrder(propertyValue);
-                  }
-                }
-              };
+      const isDerivedFrom = await derivedClass.is(baseClass);
+      expect(isDerivedFrom, `${derivedClass.name} is not derived from ${baseClass.name}`).to.be.true;
+    });
 
-              it("load schema (incremental - backend)", async function () {
-                await executeItemsStubsTest(new IModelIncrementalSchemaLocater(testIModel.iModel, { loadPartialSchemaOnly: true }));
-              });
-            });
+    it("Get Schema full schema stack (json props - iModel)", async () => {
+      const schemaContext = new SchemaContext();
+      schemaContext.addLocater(iModelSchemaJsonLocater);
 
-            describe("with class hierarchy", () => {
-              const executeClassHierarchyTest = async (locater: ISchemaLocater) => {
-                const schemaContext = new SchemaContext();
-                schemaContext.addLocater(locater);
+      const schema = await schemaContext.getSchema(testSchemaKey) as Schema;
+      expect(schema).to.be.not.undefined;
+      expect(schema).to.have.property("name", testSchemaKey.name);
 
-                const schema = await schemaContext.getSchema(testSchemaKey) as Schema;
+      expect(schema).to.have.property("references").to.have.a.lengthOf(testSchemaConfiguration.references.length);
+      for (const item of schema.getItems()) {
+        expect(item).to.have.property("name");
+        expect(item).to.have.property("schemaItemType").to.satisfy((type: string) => SchemaItemType[type as keyof typeof SchemaItemType] !== undefined);
+      }
+    });
 
-                expect(schema).to.be.not.undefined;
-                expect(schema).to.have.property("name", testSchemaKey.name);
+    it("Get Schema full schema stack (incremental - backend)", async () => {
+      const locater = new IModelIncrementalSchemaLocater(IncrementalTestHelper.iModel);
+      const schemaContext = new SchemaContext();
+      schemaContext.addLocater(locater);
 
-                const derivedClassKey = parseSchemaItemKey(testSchemaConfiguration.checkHierachy.derivedClass);
-                const derivedClass = await schemaContext.getSchemaItem(derivedClassKey) as ECClass;
-                expect(derivedClass, `${derivedClassKey.fullName} was not found`).to.be.not.undefined;
+      const schema = await schemaContext.getSchema(testSchemaKey) as Schema;
+      expect(schema).to.be.not.undefined;
+      expect(schema).to.have.property("name", testSchemaKey.name);
 
-                const baseClassKey = parseSchemaItemKey(testSchemaConfiguration.checkHierachy.baseClass);
-                const baseClass = await schemaContext.getSchemaItem(baseClassKey) as ECClass;
-                expect(baseClass, `${baseClassKey.fullName} was not found`).to.be.not.undefined;
+      expect(schema).to.have.property("references").to.have.a.lengthOf(testSchemaConfiguration.references.length);
+      for (const item of schema.getItems()) {
+        expect(item).to.have.property("name");
+        expect(item).to.have.property("schemaItemType").to.satisfy((type: string) => SchemaItemType[type as keyof typeof SchemaItemType] !== undefined);
+      }
 
-                const isDerivedFrom = await derivedClass.is(baseClass);
-                expect(isDerivedFrom, `${derivedClass.name} is not derived from ${baseClass.name}`).to.be.true;
-              };
+      expect(schema).to.be.not.undefined;
+      expect(schema).to.have.property("name", testSchemaKey.name);
 
-              it("check class inheritance (json props - iModel)", async () => {
-                await executeClassHierarchyTest(iModelSchemaJsonLocater);
-              });
+      // Old meta profile fallback queries will not have a controller initialized.
+      if (schema.loadingController)
+        await schema.loadingController.wait();
 
-              it("check class inheritance (incremental - backend)", async function () {
-                await executeClassHierarchyTest(new IModelIncrementalSchemaLocater(testIModel.iModel, { loadPartialSchemaOnly: true }));
-              });
-            });
+      const items = [...schema.getItems()];
+      expect(items).to.have.a.lengthOf(testSchemaConfiguration.itemCount);
 
-            describe("full schema stack", () => {
-              const executeTestWaitAllLoaded = async (locater: IncrementalSchemaLocater) => {
-                const schema = await executeTest(locater);
-                expect(schema).to.be.not.undefined;
-                expect(schema).to.have.property("name", testSchemaKey.name);
+      for (const checkItem of testSchemaConfiguration.checkFullLoad) {
+        const item = await schema.lookupItem(checkItem.item);
+        expect(item).to.be.not.undefined;
 
-                // Old meta profile fallback queries will not have a controller initialized.
-                if (schema.loadingController)
-                  await schema.loadingController.wait();
+        const itemProps = item!.toJSON();
+        for (const [propertyName, propertyValue] of Object.entries(checkItem.properties)) {
+          expect(itemProps).to.have.property(propertyName).deep.equalInAnyOrder(propertyValue);
+        }
+      }
+    });
+  });
 
-                const items = [...schema.getItems()];
-                expect(items).to.have.a.lengthOf(testSchemaConfiguration.itemCount);
+  describe("Old Schema profile in iModel Tests", () => {
+    let testSchemaKey: SchemaKey;
+    let testSchemaConfiguration: any;
 
-                for (const checkItem of testSchemaConfiguration.checkFullLoad) {
-                  const item = await schema.lookupItem(checkItem.item);
-                  expect(item).to.be.not.undefined;
+    const resolveSchemaKey = async (schemaName: string): Promise<SchemaKey> => {
+      const schemaFullName = (await IncrementalTestHelper.getSchemaNames()).find((name) => name.startsWith(schemaName));
+      if (schemaFullName === undefined) {
+        throw new Error(`Test schema '${schemaName}' not found`);
+      }
+      return SchemaKey.parseString(schemaFullName);
+    }
 
-                  const itemProps = item!.toJSON();
-                  for (const [propertyName, propertyValue] of Object.entries(checkItem.properties)) {
-                    expect(itemProps).to.have.property(propertyName).deep.equalInAnyOrder(propertyValue);
-                  }
-                }
-              };
+    before("Setup", async function () {
+      await IncrementalTestHelper.setup(oldConfiguration.bimFile);
+      testSchemaConfiguration = oldConfiguration.schemas[0];
+      testSchemaKey = await resolveSchemaKey(testSchemaConfiguration.name);
+    });
 
-              it("load schema (json props - iModel)", async () => {
-                await executeTest(iModelSchemaJsonLocater);
-              });
+    after(async () => {
+      await IncrementalTestHelper.close();
+    });
 
-              it("load schema (incremental - backend)", async function () {
-                await executeTestWaitAllLoaded(new IModelIncrementalSchemaLocater(testIModel.iModel));
-              });
-            });
-          });
-        });
-      });
-    })
+    it("Incremental Loading still succeeds.", async () => {
+      const locater = new IModelIncrementalSchemaLocater(IncrementalTestHelper.iModel);
+      const schemaContext = new SchemaContext();
+      schemaContext.addLocater(locater);
+
+      const schema = await schemaContext.getSchema(testSchemaKey) as Schema;
+      expect(schema).to.be.not.undefined;
+      expect(schema).to.have.property("name", testSchemaKey.name);
+
+      expect(schema).to.have.property("references").to.have.a.lengthOf(testSchemaConfiguration.references.length);
+      for (const item of schema.getItems()) {
+        expect(item).to.have.property("name");
+        expect(item).to.have.property("schemaItemType").to.satisfy((type: string) => SchemaItemType[type as keyof typeof SchemaItemType] !== undefined);
+      }
+
+      expect(schema).to.be.not.undefined;
+      expect(schema).to.have.property("name", testSchemaKey.name);
+
+      // Old meta profile fallback queries will not have a controller initialized.
+      if (schema.loadingController)
+        await schema.loadingController.wait();
+
+      const items = [...schema.getItems()];
+      expect(items).to.have.a.lengthOf(testSchemaConfiguration.itemCount);
+
+      for (const checkItem of testSchemaConfiguration.checkFullLoad) {
+        const item = await schema.lookupItem(checkItem.item);
+        expect(item).to.be.not.undefined;
+
+        const itemProps = item!.toJSON();
+        for (const [propertyName, propertyValue] of Object.entries(checkItem.properties)) {
+          expect(itemProps).to.have.property(propertyName).deep.equalInAnyOrder(propertyValue);
+        }
+      }
+    });
   });
 });

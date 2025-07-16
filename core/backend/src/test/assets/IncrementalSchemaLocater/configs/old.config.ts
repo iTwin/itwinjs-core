@@ -1,6 +1,6 @@
 export default {
   "label": "Old Profile iModel",
-  "bimFile": "OldIModel.bim",
+  "bimFile": "OldProfile.bim",
   "schemas": [
     {
       "name": "Schema_TestBase",

@@ -101,7 +101,7 @@ export default {
             "schemaItemType": "Unit",
             "label": "Test2",
             "description": "Unit Test2",
-            "phenomenon": "Units.TEMPERATURE",
+            "phenomenon": "Units.TEMPERATURE", 
             "unitSystem": "Units.USCUSTOM",
             "definition": "TEST2",
             "numerator": 5.0,

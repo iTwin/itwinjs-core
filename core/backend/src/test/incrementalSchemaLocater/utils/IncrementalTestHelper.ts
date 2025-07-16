@@ -11,7 +11,7 @@ import { IModelHost } from "../../../IModelHost";
 import { IModelJsFs } from "../../../IModelJsFs";
 import { KnownTestLocations } from "../../KnownTestLocations";
 
-export class SqlTestHelper {
+export class IncrementalTestHelper {
   private static _iModel: IModelDb | undefined;
   public static context: SchemaContext;
   public static testBimFile: string;
@@ -25,21 +25,45 @@ export class SqlTestHelper {
     return this._iModel !== undefined;
   }
 
-  public static async setup(): Promise<void> {
+  public static async setup(bimName?: string): Promise<void> {
     if (!IModelHost.isValid)
       await IModelHost.startup();
 
     if (this._iModel !== undefined)
       throw new Error("iModel already loaded");
 
-    this.testBimFile = this.initializeTestIModel();
-    this._iModel = StandaloneDb.openFile(this.testBimFile, OpenMode.ReadWrite);
+    if (bimName) {
+      const pathToBriefCase = path.join(KnownTestLocations.assetsDir, bimName);
+      this._iModel = await BriefcaseDb.open({
+        fileName: pathToBriefCase,
+        readonly: true,
+        key: "test-iModel",
+      });
+    } else {
+      this.testBimFile = this.initializeTestIModel();
+      this._iModel = StandaloneDb.openFile(this.testBimFile, OpenMode.ReadWrite);
+    }
 
     this.context = new SchemaContext();
     this.context.addLocater(new IModelSchemaLocater(this._iModel));
     const xmlLocater = new SchemaXmlFileLocater();
     xmlLocater.addSchemaSearchPath(path.join(KnownTestLocations.assetsDir, "IncrementalSchemaLocater"));
     this.context.addLocater(xmlLocater);
+  }
+
+  public static async getSchemaNames(): Promise<string[]> {
+    const result = new Array<string>();
+    const sqlQuery = "SELECT Name, VersionMajor, VersionWrite, VersionMinor FROM meta.ECSchemaDef ORDER BY Name";
+    const reader = this.iModel.createQueryReader(sqlQuery);
+    while (await reader.step()) {
+      const name = reader.current[0];
+      const versionMajor = reader.current[1];
+      const versionWrite = reader.current[2];
+      const versionMinor = reader.current[3];
+
+      result.push(`${name}.${versionMajor}.${versionWrite}.${versionMinor}`);
+    }
+    return result;
   }
 
   private static initializeTestIModel() {
@@ -52,7 +76,7 @@ export class SqlTestHelper {
     const localBim = StandaloneDb.createEmpty(testBim, {
       allowEdit: "true",
       rootSubject: {
-        name: "SqlTestingDb"
+        name: "IncrementalSchemaTestingDb"
       },
     });
 
@@ -98,7 +122,7 @@ export class SqlTestHelper {
 
   public static async getOrderedSchemaStrings(insertSchema: Schema): Promise<string[]> {
     const schemas = SchemaGraphUtil.buildDependencyOrderedSchemaList(insertSchema);
-    const schemaStrings = await Promise.all(schemas.map(async (schema) => SqlTestHelper.getSchemaString(schema)));
+    const schemaStrings = await Promise.all(schemas.map(async (schema) => IncrementalTestHelper.getSchemaString(schema)));
     return schemaStrings;
   }
 
