@@ -24,7 +24,7 @@ export interface ClearTextStyleOptions {
  */
 export interface TextBlockComponentProps {
   /** Deviations from the base [[TextStyleSettings]] defined by the [AnnotationTextStyle]($backend) applied to this component.
-   * This permits you to, e.g., create a [[TextRun]] using "Arial" font and override it to use "Comic Sans" instead.
+   * This permits you to, e.g., create a [[TextBlock]] using "Arial" font and override one of its [[TextRun]]s to use "Comic Sans" instead.
    */
   styleOverrides?: TextStyleSettingsProps;
 }
@@ -52,8 +52,7 @@ export interface TextBlockStringifyOptions {
 }
 
 /** Abstract representation of any of the building blocks that make up a [[TextBlock]] document - namely [[Run]]s, [[Paragraph]]s, and [[TextBlock]] itself.
- * Each component can specify an [AnnotationTextStyle]($backend) that formats its contents and optional [[styleOverrides]] to customize that formatting.
- * @beta
+ * The [[TextBlock]] can specify an [AnnotationTextStyle]($backend) that formats its contents. Each component can specify an optional [[styleOverrides]] to customize that formatting.
  */
 export abstract class TextBlockComponent {
   private _styleOverrides: TextStyleSettingsProps;
@@ -80,7 +79,7 @@ export abstract class TextBlockComponent {
     this.styleOverrides = { };
   }
 
-  /** Returns true if [[styleOverrides]] specifies any deviations from this component's base [AnnotationTextStyle]($backend). */
+  /** Returns true if [[styleOverrides]] specifies any deviations from the [[TextBlock]]'s [AnnotationTextStyle]($backend). */
   public get overridesStyle(): boolean {
     return Object.keys(this.styleOverrides).length > 0;
   }
