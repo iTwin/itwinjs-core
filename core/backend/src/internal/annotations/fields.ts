@@ -3,18 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { FieldPropertyPath, FieldRun, RelationshipProps, TextBlock } from "@itwin/core-common";
+import { FieldRun, RelationshipProps, TextBlock } from "@itwin/core-common";
 import { IModelDb } from "../../IModelDb";
 import { Id64String, Logger } from "@itwin/core-bentley";
 import { BackendLoggerCategory } from "../../BackendLoggerCategory";
 import { XAndY, XYAndZ } from "@itwin/core-geometry";
 import { ITextAnnotation } from "../../annotations/ElementDrivesTextAnnotation";
 import { Entity } from "../../Entity";
-
-export interface GetFieldPropertyValueArgs {
-  path: Readonly<FieldPropertyPath>;
-  // ###TODO: a description of which aspect hosts the property, if not hosted directly on the element.
-}
 
 export type FieldPropertyValue = boolean | number | string | Date | XAndY | XYAndZ;
 
@@ -26,24 +21,24 @@ export interface FieldProperty {
 export interface UpdateFieldsContext {
   readonly hostElementId: Id64String;
 
-  getProperty(args: GetFieldPropertyValueArgs): FieldProperty | undefined
+  getProperty(field: FieldRun): FieldProperty | undefined
 }
 
-function getFieldProperty(elementId: Id64String, iModel: IModelDb, path: FieldPropertyPath): FieldProperty | undefined {
+function getFieldProperty(field: FieldRun, iModel: IModelDb): FieldProperty | undefined {
   // Empty path => invalid field.
-  if (path.properties.length === 0) {
+  if (field.propertyPath.length === 0) {
     return undefined;
   }
   
   // Resolve the host. ###TODO handle aspects
-  const host: Entity | undefined = iModel.elements.tryGetElement(elementId);
+  const host: Entity | undefined = iModel.elements.tryGetElement(field.propertyHost.elementId);
   if (!host) {
     return undefined;
   }
 
   // Verify the host is of the expected class.
   const hostClass = host.getMetaDataSync();
-  if (!hostClass.isSync(path.properties[0].class, path.properties[0].schema)) {
+  if (!hostClass.isSync(field.propertyHost.className, field.propertyHost.schemaName)) {
     return undefined;
   }
 
@@ -54,7 +49,7 @@ function getFieldProperty(elementId: Id64String, iModel: IModelDb, path: FieldPr
 function createUpdateContext(hostElementId: string, iModel: IModelDb, deleted: boolean): UpdateFieldsContext {
   return {
     hostElementId,
-    getProperty: deleted ? () => undefined : (args) => getFieldProperty(hostElementId, iModel, args.path),
+    getProperty: deleted ? () => undefined : (field) => getFieldProperty(field, iModel),
   };
 }
 
@@ -66,7 +61,7 @@ export function updateField(field: FieldRun, context: UpdateFieldsContext): bool
 
   let newContent: string | undefined;
   try {
-    const prop = context.getProperty({ path: field.propertyPath });
+    const prop = context.getProperty(field);
     if (undefined !== prop) {
       // ###TODO formatting etc.
       newContent = prop.value.toString();

@@ -11,7 +11,7 @@ import { IModelTestUtils } from "../IModelTestUtils";
 import { ProcessDetector } from "@itwin/core-bentley";
 import { produceTextBlockGeometry } from "../../core-backend";
 import { computeTextRangeAsStringLength, doLayout } from "../AnnotationTestUtils";
-import { GetFieldPropertyValueArgs, updateField } from "../../internal/annotations/fields";
+import { updateField } from "../../internal/annotations/fields";
 
 
 
@@ -1290,17 +1290,19 @@ describe("produceTextBlockGeometry", () => {
 
 describe("updateField", () => {
   const mockElementId = "0x1";
-  const mockPath: FieldPropertyPath = { properties: [{ schema: "TestSchema", class: "TestClass", property: "mockProperty" }] };
+  const mockPath: FieldPropertyPath = [
+    { property: "mockProperty" },
+  ];
   const mockCachedContent = "cachedContent";
   const mockUpdatedContent = "updatedContent";
 
   const createMockContext = (elementId: string, propertyValue?: string) => ({
     hostElementId: elementId,
-    getProperty: (args: GetFieldPropertyValueArgs) => {
-      const propertyPath = args.path.properties;
+    getProperty: (field: FieldRun) => {
+      const propertyPath = field.propertyPath;
       if (
         propertyPath.length === 1 &&
-        propertyPath[0].property=== "mockProperty" &&
+        propertyPath[0].property === "mockProperty" &&
         propertyValue !== undefined
       ) {
         return { value: propertyValue };
@@ -1312,7 +1314,7 @@ describe("updateField", () => {
   it("does nothing if hostElementId does not match", () => {
     const fieldRun = FieldRun.create({
       styleName: "fieldStyle",
-      propertyHost: { elementId: mockElementId },
+      propertyHost: { elementId: mockElementId, schemaName: "TestSchema", className: "TestClass" },
       propertyPath: mockPath,
       cachedContent: mockCachedContent,
     });
@@ -1327,7 +1329,7 @@ describe("updateField", () => {
   it("produces invalid content indicator if property value is undefined", () => {
     const fieldRun = FieldRun.create({
       styleName: "fieldStyle",
-      propertyHost: { elementId: mockElementId },
+      propertyHost: { elementId: mockElementId, schemaName: "TestSchema", className: "TestClass" },
       propertyPath: mockPath,
       cachedContent: mockCachedContent,
     });
@@ -1342,7 +1344,7 @@ describe("updateField", () => {
   it("returns false if cached content matches new content", () => {
     const fieldRun = FieldRun.create({
       styleName: "fieldStyle",
-      propertyHost: { elementId: mockElementId },
+      propertyHost: { elementId: mockElementId, schemaName: "TestSchema", className: "TestClass" },
       propertyPath: mockPath,
       cachedContent: mockCachedContent,
     });
@@ -1357,7 +1359,7 @@ describe("updateField", () => {
   it("returns true and updates cached content if new content is different", () => {
     const fieldRun = FieldRun.create({
       styleName: "fieldStyle",
-      propertyHost: { elementId: mockElementId },
+      propertyHost: { elementId: mockElementId, schemaName: "TestSchema", className: "TestClass" },
       propertyPath: mockPath,
       cachedContent: mockCachedContent,
     });
@@ -1372,7 +1374,7 @@ describe("updateField", () => {
   it("resolves to invalid content indicator if an exception occurs", () => {
     const fieldRun = FieldRun.create({
       styleName: "fieldStyle",
-      propertyHost: { elementId: mockElementId },
+      propertyHost: { elementId: mockElementId, schemaName: "TestSchema", className: "TestClass" },
       propertyPath: mockPath,
       cachedContent: mockCachedContent,
     });
