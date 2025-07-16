@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { beforeEach, describe, expect, it } from "vitest";
-import { FieldRun, FractionRunProps, Paragraph, ParagraphProps, RunProps, TextBlock, TextBlockProps, TextRun, TextRunProps, TextStyleSettingsProps } from "../../core-common";
+import { FieldRun, FractionRunProps, GetFieldPropertyValueArgs, Paragraph, ParagraphProps, RunProps, TextBlock, TextBlockProps, TextRun, TextRunProps, TextStyleSettingsProps } from "../../core-common";
 
 function makeTextRun(content?: string, styleName = "", styleOverrides?: TextStyleSettingsProps): TextRunProps {
   return {
@@ -153,48 +153,43 @@ describe("FieldRun", () => {
     it("initializes fields", () => {
       const fieldRun = FieldRun.create({
         styleName: "fieldStyle",
-        host: { elementId: "0x123" },
-        accessor: { propertyPath: "someProperty" },
+        propertyHost: { elementId: "0x123" },
+        propertyPath: [{ propertyName: "someProperty" }],
         cachedContent: "cachedValue",
       });
 
       expect(fieldRun.styleName).to.equal("fieldStyle");
-      expect(fieldRun.host.elementId).to.equal("0x123");
-      expect(fieldRun.accessor.propertyPath).to.equal("someProperty");
+      expect(fieldRun.propertyHost.elementId).to.equal("0x123");
+      expect(fieldRun.propertyPath).to.deep.equal([{ propertyName: "someProperty" }]);
       expect(fieldRun.cachedContent).to.equal("cachedValue");
     });
 
     it("initializes cachedContent to invalid content indicator if undefined", () => {
       expect(FieldRun.create({
         styleName: "fieldStyle",
-        host: { elementId: "0x123" },
-        accessor: { propertyPath: "someProperty" },
+        propertyHost: { elementId: "0x123" },
+        propertyPath: [{ propertyName: "someProperty" }],
       }).cachedContent).toEqual(FieldRun.invalidContentIndicator);
     });
 
     it("deeply clones accessor", () => {
-      const accessor = {
-        propertyPath: "someProperty",
-        arrayAccessors: [
-          { propertyPath: "array1", index: 0 },
-          { propertyPath: "array2", index: -1 },
-        ],
-      };
+      const propertyPath = [
+        { propertyName: "array1", arrayIndex: 0 },
+        { propertyName: "array2", arrayIndex: -1 },
+      ];
 
       const fieldRun = FieldRun.create({
         styleName: "fieldStyle",
-        host: { elementId: "0x123" },
-        accessor,
+        propertyHost: { elementId: "0x123" },
+        propertyPath,
       });
 
-      // Modify the original accessor to ensure the FieldRun's copy is unaffected
-      accessor.propertyPath = "modifiedProperty";
-      accessor.arrayAccessors![0].propertyPath = "modifiedArray1";
+      // Modify the original propertyPath to ensure the FieldRun's copy is unaffected
+      propertyPath[0].propertyName = "modifiedArray1";
 
-      expect(fieldRun.accessor.propertyPath).to.equal("someProperty");
-      expect(fieldRun.accessor.arrayAccessors).to.deep.equal([
-        { propertyPath: "array1", index: 0 },
-        { propertyPath: "array2", index: -1 },
+      expect(fieldRun.propertyPath).to.deep.equal([
+        { propertyName: "array1", arrayIndex: 0 },
+        { propertyName: "array2", arrayIndex: -1 },
       ]);
     });
 
@@ -203,8 +198,8 @@ describe("FieldRun", () => {
 
       const fieldRun = FieldRun.create({
         styleName: "fieldStyle",
-        host: { elementId: "0x123" },
-        accessor: { propertyPath: "someProperty" },
+        propertyHost: { elementId: "0x123" },
+        propertyPath: [{ propertyName: "someProperty" }],
         formatter,
       });
 
@@ -222,8 +217,8 @@ describe("FieldRun", () => {
     it("serializes and deserializes FieldRun correctly", () => {
       const fieldRun = FieldRun.create({
         styleName: "fieldStyle",
-        host: { elementId: "0x123" },
-        accessor: { propertyPath: "someProperty" },
+        propertyHost: { elementId: "0x123" },
+        propertyPath: [{ propertyName: "someProperty" }],
         cachedContent: "cachedValue",
       });
 
@@ -236,8 +231,8 @@ describe("FieldRun", () => {
     it("omits cachedContent if it is equal to invalid content indicator", () => {
       const fieldRun = FieldRun.create({
         styleName: "fieldStyle",
-        host: { elementId: "0x123" },
-        accessor: { propertyPath: "someProperty" },
+        propertyHost: { elementId: "0x123" },
+        propertyPath: [{ propertyName: "someProperty" }],
         cachedContent: FieldRun.invalidContentIndicator,
       });
 
@@ -249,8 +244,8 @@ describe("FieldRun", () => {
     it("produces cached content", () => {
       const fieldRun = FieldRun.create({
         styleName: "fieldStyle",
-        host: { elementId: "0x123" },
-        accessor: { propertyPath: "someProperty" },
+        propertyHost: { elementId: "0x123" },
+        propertyPath: [{ propertyName: "someProperty" }],
         cachedContent: "cachedValue",
       });
 
@@ -262,28 +257,25 @@ describe("FieldRun", () => {
     it("compares FieldRuns for equality", () => {
       const baseProps = {
         styleName: "fieldStyle",
-        host: { elementId: "0x123" },
-        accessor: { propertyPath: "someProperty" },
+        propertyHost: { elementId: "0x123" },
+        propertyPath: [{ propertyName: "someProperty" }],
         cachedContent: "cachedValue",
       };
 
+
       const combinations = [
         { formatter: { formatType: "currency" } },
-        { accessor: { arrayAccessors: [{ propertyPath: "array1", index: 0 }] } },
-        { accessor: { propertyPath: "stuff" } },
-        { accessor: { propertyPath: "someProperty", jsonPath: "$.object.key" } },
-        { accessor: { arrayAccessors: [{ propertyPath: "array1", index: 0 }], jsonPath: "$.object.key" } },
-        { host: { elementId: "0x456" } },
+        { propertyHost: { elementId: "0x456" } },
+        { propertyPath: [{ propertyName: "otherProperty" }] },
+        { propertyPath: [{ propertyName: "someProperty", arrayIndex: 0 }] },
+        { propertyPath: [{ propertyName: "someProperty", arrayIndex: 1 }] },
+        { propertyPath: [{ propertyName: "someProperty" }, { propertyName: "otherProperty" }] },
       ];
 
       const fieldRuns = combinations.map((combo) =>
         FieldRun.create({
           ...baseProps,
           ...combo,
-          accessor: {
-            ...baseProps.accessor,
-            ...combo.accessor,
-          },
         })
       );
 
@@ -303,15 +295,15 @@ describe("FieldRun", () => {
     it("ignores cached content", () => {
       const field1 = FieldRun.create({
         styleName: "fieldStyle",
-        host: { elementId: "0x123" },
-        accessor: { propertyPath: "someProperty" },
+        propertyHost: { elementId: "0x123" },
+        propertyPath: [{ propertyName: "someProperty" }],
         cachedContent: "1",
       });
 
       const field2 = FieldRun.create({
         styleName: "fieldStyle",
-        host: { elementId: "0x123" },
-        accessor: { propertyPath: "someProperty" },
+        propertyHost: { elementId: "0x123" },
+        propertyPath: [{ propertyName: "someProperty" }],
         cachedContent: "2",
       });
 
@@ -321,14 +313,19 @@ describe("FieldRun", () => {
 
   describe("update", () => {
     const mockElementId = "0x1";
-    const mockAccessor = { propertyPath: "mockProperty" };
+    const mockPath = [{ propertyName: "mockProperty" }];
     const mockCachedContent = "cachedContent";
     const mockUpdatedContent = "updatedContent";
 
     const createMockContext = (elementId: string, propertyValue?: string) => ({
       hostElementId: elementId,
-      getProperty: ({ accessor }: { accessor: typeof mockAccessor }) => {
-        if (accessor.propertyPath === mockAccessor.propertyPath && propertyValue !== undefined) {
+      getProperty: (args: GetFieldPropertyValueArgs) => {
+        const propertyPath = args.path;
+        if (
+          propertyPath.length === 1 &&
+          propertyPath[0].propertyName === "mockProperty" &&
+          propertyValue !== undefined
+        ) {
           return { value: propertyValue };
         }
         return undefined;
@@ -338,8 +335,8 @@ describe("FieldRun", () => {
     it("does nothing if hostElementId does not match", () => {
       const fieldRun = FieldRun.create({
         styleName: "fieldStyle",
-        host: { elementId: mockElementId },
-        accessor: mockAccessor,
+        propertyHost: { elementId: mockElementId },
+        propertyPath: mockPath,
         cachedContent: mockCachedContent,
       });
 
@@ -353,8 +350,8 @@ describe("FieldRun", () => {
     it("produces invalid content indicator if property value is undefined", () => {
       const fieldRun = FieldRun.create({
         styleName: "fieldStyle",
-        host: { elementId: mockElementId },
-        accessor: mockAccessor,
+        propertyHost: { elementId: mockElementId },
+        propertyPath: mockPath,
         cachedContent: mockCachedContent,
       });
 
@@ -368,8 +365,8 @@ describe("FieldRun", () => {
     it("returns false if cached content matches new content", () => {
       const fieldRun = FieldRun.create({
         styleName: "fieldStyle",
-        host: { elementId: mockElementId },
-        accessor: mockAccessor,
+        propertyHost: { elementId: mockElementId },
+        propertyPath: mockPath,
         cachedContent: mockCachedContent,
       });
 
@@ -383,8 +380,8 @@ describe("FieldRun", () => {
     it("returns true and updates cached content if new content is different", () => {
       const fieldRun = FieldRun.create({
         styleName: "fieldStyle",
-        host: { elementId: mockElementId },
-        accessor: mockAccessor,
+        propertyHost: { elementId: mockElementId },
+        propertyPath: mockPath,
         cachedContent: mockCachedContent,
       });
 
@@ -398,8 +395,8 @@ describe("FieldRun", () => {
     it("resolves to invalid content indicator if an exception occurs", () => {
       const fieldRun = FieldRun.create({
         styleName: "fieldStyle",
-        host: { elementId: mockElementId },
-        accessor: mockAccessor,
+        propertyHost: { elementId: mockElementId },
+        propertyPath: mockPath,
         cachedContent: mockCachedContent,
       });
 
@@ -417,3 +414,4 @@ describe("FieldRun", () => {
     });
   });
 });
+

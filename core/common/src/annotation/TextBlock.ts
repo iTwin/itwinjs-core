@@ -99,7 +99,7 @@ export abstract class TextBlockComponent {
 
   /** Reset any [[styleOverrides]] applied to this component's [[TextStyle]]. */
   public clearStyleOverrides(): void {
-    this.styleOverrides = { };
+    this.styleOverrides = {};
   }
 
   /** Apply the [[TextStyle]] specified by `styleName` to this component, optionally preserving [[styleOverrides]] and/or preventing propagation to sub-components. */
@@ -388,11 +388,11 @@ export class TabRun extends TextBlockComponent {
     return new TabRun(props);
   }
 
-    /**
-   * Converts a [[TabRun]] to its string representation.
-   * If the `tabsAsSpaces` option is provided, returns a string of spaces of the specified length.
-   * Otherwise, returns a tab character ("\t").
-   */
+  /**
+ * Converts a [[TabRun]] to its string representation.
+ * If the `tabsAsSpaces` option is provided, returns a string of spaces of the specified length.
+ * Otherwise, returns a tab character ("\t").
+ */
   public override stringify(options?: TextBlockStringifyOptions): string {
     if (options?.tabsAsSpaces) {
       return " ".repeat(options.tabsAsSpaces);
@@ -406,34 +406,24 @@ export class TabRun extends TextBlockComponent {
   }
 }
 
-export interface ArrayPropertyAccessor {
-  // Access string resolving to an array property.
-  // e.g. "primitives" or "outerStruct.innerStruct.primitives" - something that can be used with an ECSql statement like
-  // `SELECT propertyPath FROM bis.Element WHERE ElementId=elementId"`
-  propertyPath: string;
-  // negative indices are converted to `length + index` to select backwards starting at the end of the array
-  index: number;
+/** An entry in a [[FieldPropertyPath]].
+ * @beta
+ */
+export interface FieldPropertyPathEntry {
+  /** The name of the property. */
+  propertyName: string;
+  /** If [[propertyName]] identifies an array property, the index of the array element of interest.
+   * Negative array indices can be used to count backward from the end of the array (e.g., index -1 refers to the last element, -2 to the second-to-last element, and so on).
+   */
+  arrayIndex?: number;
 }
 
-export interface FieldPropertyAccessor {
-  arrayAccessors?: ArrayPropertyAccessor[];
-  // Access string resolving to a primitive value. May be undefined if `arrayAccessors` resolves to a primitive array.
-  propertyPath?: string;
-  // If `propertyPath` or `arrayAccessors` resolves to a JSON string, an accessor that selects a primitive within the JSON.
-  jsonPath?: string;
-}
-
-function cloneAccessor(accessor: FieldPropertyAccessor): FieldPropertyAccessor {
-  const result: FieldPropertyAccessor = { ...accessor };
-
-  if (accessor.arrayAccessors) {
-    result.arrayAccessors = accessor.arrayAccessors.map((x) => {
-      return { ...x };
-    });
-  }
-
-  return result;
-}
+/** A chain of property accesses that resolves to a primitive value that forms the basis of the displayed content
+ * of a [[FieldRun]].
+ * The chain may traverse through structs, arrays, and JSON objects.
+ * @beta
+ */
+export type FieldPropertyPath = FieldPropertyPathEntry[];
 
 export interface FieldPropertyHost {
   elementId: Id64String;
@@ -445,18 +435,18 @@ export type FieldFormatter = { [k: string]: any };
 
 export interface FieldRunProps extends TextBlockComponentProps {
   readonly type: "field";
-  host: FieldPropertyHost;
-  accessor: FieldPropertyAccessor;
+  propertyHost: FieldPropertyHost;
+  propertyPath: FieldPropertyPath;
   formatter?: FieldFormatter;
   cachedContent?: string;
 }
 
 export class FieldRun extends TextBlockComponent {
   public static invalidContentIndicator = "####"; // maybe this should be specified by the text style?
-  
+
   public readonly type = "field";
-  public readonly host: Readonly<FieldPropertyHost>;
-  public readonly accessor: Readonly<FieldPropertyAccessor>;
+  public readonly propertyHost: Readonly<FieldPropertyHost>;
+  public readonly propertyPath: Readonly<FieldPropertyPath>;
   public readonly formatter?: FieldFormatter;
   private _cachedContent: string;
 
@@ -468,29 +458,25 @@ export class FieldRun extends TextBlockComponent {
     super(props);
 
     this._cachedContent = props.cachedContent ?? FieldRun.invalidContentIndicator;
-    this.host = props.host;
-    this.accessor = props.accessor;
+    this.propertyHost = props.propertyHost;
+    this.propertyPath = props.propertyPath;
     this.formatter = props.formatter;
   }
 
   public static create(props: Omit<FieldRunProps, "type">): FieldRun {
     return new FieldRun({
       ...props,
-      accessor: cloneAccessor(props.accessor),
+      propertyPath: props.propertyPath.map((x) => ({...x})),
       formatter: structuredClone(props.formatter),
     });
-  }
-
-  public override clone(): FieldRun {
-    return new FieldRun(this.toJSON());
   }
 
   public override toJSON(): FieldRunProps {
     const json: FieldRunProps = {
       ...super.toJSON(),
       type: "field",
-      host: { ...this.host },
-      accessor: cloneAccessor(this.accessor),
+      propertyHost: { ...this.propertyHost },
+      propertyPath: this.propertyPath.map((x) => ({...x})),
     };
 
     if (this.cachedContent !== FieldRun.invalidContentIndicator) {
@@ -504,31 +490,28 @@ export class FieldRun extends TextBlockComponent {
     return json;
   }
 
+  public override clone(): FieldRun {
+    return new FieldRun(this.toJSON());
+  }
+
   public override stringify(): string {
     return this.cachedContent;
   }
 
   public override equals(other: TextBlockComponent): boolean {
-    if (!(other instanceof FieldRun)
-      || this.host.elementId !== other.host.elementId
-      || this.accessor.propertyPath !== other.accessor.propertyPath
-      || this.accessor.jsonPath !== other.accessor.jsonPath) {
+    if (!(other instanceof FieldRun) || this.propertyHost.elementId !== other.propertyHost.elementId) {
       return false;
     }
 
-    const lhs = this.accessor.arrayAccessors;
-    const rhs = other.accessor.arrayAccessors;
-    if (!lhs !== !rhs) {
+    if (this.propertyPath.length !== other.propertyPath.length) {
       return false;
-    } else if (lhs && rhs) {
-      if (lhs.length !== rhs.length) {
-        return false;
-      }
+    }
 
-      for (let i = 0; i < lhs.length; i++) {
-        if (lhs[i].index !== rhs[i].index || lhs[i].propertyPath !== rhs[i].propertyPath) {
-          return false;
-        }
+    for (let i = 0; i < this.propertyPath.length; i++) {
+      const lhs = this.propertyPath[i];
+      const rhs = other.propertyPath[i];
+      if (lhs.propertyName !== rhs.propertyName || lhs.arrayIndex !== rhs.arrayIndex) {
+        return false;
       }
     }
 
@@ -538,13 +521,13 @@ export class FieldRun extends TextBlockComponent {
   }
 
   public update(context: UpdateFieldsContext): boolean {
-    if (context.hostElementId !== this.host.elementId) {
+    if (context.hostElementId !== this.propertyHost.elementId) {
       return false;
     }
 
     let newContent: string | undefined;
     try {
-      const prop = context.getProperty({ accessor: this.accessor });
+      const prop = context.getProperty({ path: this.propertyPath });
       if (undefined !== prop) {
         // ###TODO formatting etc.
         newContent = prop.value.toString();
@@ -666,7 +649,7 @@ export interface TextBlockProps extends TextBlockComponentProps {
 }
 
 export interface GetFieldPropertyValueArgs {
-  accessor: FieldPropertyAccessor;
+  path: Readonly<FieldPropertyPath>;
   // ###TODO: a description of which aspect hosts the property, if not hosted directly on the element.
 }
 
