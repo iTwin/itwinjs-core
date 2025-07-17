@@ -410,9 +410,9 @@ export class ProjectGeolocationNorthTool extends PrimitiveTool {
   }
 
   private getAdjustedPoint(ev: BeButtonEvent): Point3d | undefined {
-    if (undefined === this._origin)
+    if (undefined === this._origin || undefined === ev.viewport)
       return undefined;
-    return AccuDrawHintBuilder.projectPointToPlaneInView(ev.point, this._origin, Vector3d.unitZ(), ev.viewport!, true);
+    return AccuDrawHintBuilder.projectPointToPlaneInView(ev.point, this._origin, Vector3d.unitZ(), ev.viewport, true);
   }
 
   private unsuspendDecorations() {

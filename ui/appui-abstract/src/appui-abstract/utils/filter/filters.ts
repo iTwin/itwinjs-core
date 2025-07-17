@@ -10,7 +10,7 @@
 /* eslint-disable @typescript-eslint/no-deprecated */
 
 /** Interface that returns indices of matches
- * @public @deprecated in 4.3.x - will not be removed until after 2026-06-13. A rarely used interface. If needed, please add a custom implementation.
+ * @public @deprecated in 4.3.0 - will not be removed until after 2026-06-13. A rarely used interface. If needed, please add a custom implementation.
  */
 export interface IMatch {
   start: number;

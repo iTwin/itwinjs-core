@@ -29,7 +29,7 @@ export type AnyRegion = Loop | ParityRegion | UnionRegion;
 /**
  * Union type for a general curve chain, or a `BagOfCurves` understood to be a collection of unrelated chains.
  * @public
- * @deprecated in 4.x - will not be removed until after 2026-06-13. Use AnyChain | undefined.
+ * @deprecated in 4.3.0 - will not be removed until after 2026-06-13. Use AnyChain | undefined.
  */
 export type ChainTypes = CurvePrimitive | Path | BagOfCurves | Loop | undefined;
 
