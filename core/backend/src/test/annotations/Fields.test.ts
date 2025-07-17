@@ -198,6 +198,14 @@ describe.only("UpdateFieldsContext", () => {
       expectValue(100, { propertyName: "intProperty" });
     });
 
+    it("returns a primitive array value", () => {
+      
+    });
+
+    it("supports negative array indices", () => {
+      
+    });
+  
     it("returns undefined if the dependency was deleted", () => {
       expectValue(undefined, { propertyName: "intProperty" }, elementId, true);
     });
@@ -234,30 +242,10 @@ describe.only("UpdateFieldsContext", () => {
       
     });
   
-    it("returns a primitive array value", () => {
+    it("returns arbitrarily-nested properties of structs", () => {
       
     });
 
-    it("returns a primitive property value inside a struct", () => {
-      
-    });
-
-    it("returns the value of a primitive property of a member of a struct array", () => {
-      
-    });
-
-    it("returns a deeply-nested property within a struct array", () => {
-      
-    });
-    
-    it("returns the value of a primitive property of a member of a struct array", () => {
-      
-    });
-
-    it("supports negative array indices", () => {
-      
-    });
-  
     it("returns arbitrarily-nested JSON properties", () => {
       expectValue("abc", { propertyName: "jsonProperties", accessors: ["string"]});
 
