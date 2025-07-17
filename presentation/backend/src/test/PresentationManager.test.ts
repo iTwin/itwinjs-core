@@ -3171,7 +3171,6 @@ describe("PresentationManager", () => {
               contentFlags: ContentFlags.ShowLabels | ContentFlags.NoFields,
             },
             rulesetId: "RulesDrivenECPresentationManager_RulesetId_DisplayLabel",
-            omitFormattedValues: true,
           },
         };
 
@@ -3225,7 +3224,6 @@ describe("PresentationManager", () => {
               contentFlags: ContentFlags.ShowLabels | ContentFlags.NoFields,
             },
             rulesetId: "RulesDrivenECPresentationManager_RulesetId_DisplayLabel",
-            omitFormattedValues: true,
           },
         };
 
@@ -3281,7 +3279,6 @@ describe("PresentationManager", () => {
               contentFlags: ContentFlags.ShowLabels | ContentFlags.NoFields,
             },
             rulesetId: "RulesDrivenECPresentationManager_RulesetId_DisplayLabel",
-            omitFormattedValues: true,
           },
         };
 
@@ -3333,7 +3330,6 @@ describe("PresentationManager", () => {
               contentFlags: ContentFlags.ShowLabels | ContentFlags.NoFields,
             },
             rulesetId: "RulesDrivenECPresentationManager_RulesetId_DisplayLabel",
-            omitFormattedValues: true,
           },
         };
 
@@ -3374,7 +3370,6 @@ describe("PresentationManager", () => {
               contentFlags: ContentFlags.ShowLabels | ContentFlags.NoFields,
             },
             rulesetId: "RulesDrivenECPresentationManager_RulesetId_DisplayLabel",
-            omitFormattedValues: true,
           },
         };
 
