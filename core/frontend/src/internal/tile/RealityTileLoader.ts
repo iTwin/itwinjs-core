@@ -91,7 +91,7 @@ export abstract class RealityTileLoader {
     const geom = reader?.readGltfAndCreateGeometry(tile.tree.iModelTransform);
     const xForm = tile._reprojectionTransform;
     if (tile.tree.reprojectGeometry && geom?.polyfaces && xForm) {
-      geom.polyfaces =  geom.polyfaces.map((pf) => pf.cloneTransformed(xForm));
+      geom.polyfaces = geom.polyfaces.map((pf) => pf.cloneTransformed(xForm));
     }
 
     return { geometry: geom };

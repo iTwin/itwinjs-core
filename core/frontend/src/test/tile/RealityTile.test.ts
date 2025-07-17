@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { Point3d, PolyfaceBuilder, Range3d, Sphere, StrokeOptions, Transform } from "@itwin/core-geometry";
+import { Point3d, PolyfaceBuilder, Range3d, StrokeOptions, Transform } from "@itwin/core-geometry";
 import { IModelConnection } from "../../IModelConnection";
 import { IModelApp } from "../../IModelApp";
 import { MockRender } from "../../internal/render/MockRender";
@@ -49,11 +49,13 @@ describe("RealityTile", () => {
       if (contentSize === 0)
         this.setIsReady();
 
-      // Create indexed polyface for testing by facetting a sphere
-      const sphere = Sphere.createCenterRadius(Point3d.createZero(), 1);
       const options = StrokeOptions.createForFacets();
       const polyBuilder = PolyfaceBuilder.create(options);
-      polyBuilder.handleSphere(sphere);
+      polyBuilder.addPolygon([
+        Point3d.create(0, 0, 0),
+        Point3d.create(1, 0, 0),
+        Point3d.create(1, 1, 0)
+      ]);
 
       this._geometry = { polyfaces: [polyBuilder.claimPolyface()] };
       this._reprojectionTransform = Transform.createTranslationXYZ(10, 0, 0);
@@ -210,9 +212,9 @@ describe("RealityTile", () => {
     const polyface = collector.polyfaces[0];
     const points = polyface.data.point.getPoint3dArray();
 
-    expect(points[0].x).to.equal(9.346718517561811);
-    expect(points[0].y).to.equal(-0.6532814824381882);
-    expect(points[0].z).to.equal(-0.3826834323650898);
+    expect(points[0].isExactEqual(Point3d.create(10, 0, 0))).to.be.true;
+    expect(points[1].isExactEqual(Point3d.create(11, 0, 0))).to.be.true;
+    expect(points[2].isExactEqual(Point3d.create(11, 1, 0))).to.be.true;
   });
 
   it("should not reproject geometry when reprojectGeometry = false", async () => {
@@ -222,9 +224,9 @@ describe("RealityTile", () => {
     const polyface = collector.polyfaces[0];
     const points = polyface.data.point.getPoint3dArray();
 
-    expect(points[0].x).to.equal(-0.6532814824381884);
-    expect(points[0].y).to.equal(-0.6532814824381882);
-    expect(points[0].z).to.equal(-0.3826834323650898);
+    expect(points[0].isExactEqual(Point3d.create(0, 0, 0))).to.be.true;
+    expect(points[1].isExactEqual(Point3d.create(1, 0, 0))).to.be.true;
+    expect(points[2].isExactEqual(Point3d.create(1, 1, 0))).to.be.true;
   });
 
   it("should not reproject geometry multiple times", async () => {
@@ -236,8 +238,8 @@ describe("RealityTile", () => {
     const polyface = collector.polyfaces[0];
     const points = polyface.data.point.getPoint3dArray();
 
-    expect(points[0].x).to.equal(9.346718517561811);
-    expect(points[0].y).to.equal(-0.6532814824381882);
-    expect(points[0].z).to.equal(-0.3826834323650898);
+    expect(points[0].isExactEqual(Point3d.create(10, 0, 0))).to.be.true;
+    expect(points[1].isExactEqual(Point3d.create(11, 0, 0))).to.be.true;
+    expect(points[2].isExactEqual(Point3d.create(11, 1, 0))).to.be.true;
   });
 });
