@@ -26,7 +26,7 @@ function isRelationshipClass(item: AnySchemaItemProps): item is RelationshipClas
   return "source" in item && "target" in item;
 }
 
-describe.only("ECSql query tests", function () {
+describe("ECSql query tests", function () {
   let schemaLoader: TestSqlSchemaLocater;
 
   function validateItem(name: string, itemPropObjects: AnySchemaItemProps[], schema: Schema) {

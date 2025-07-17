@@ -102,7 +102,7 @@ export class IncrementalTestHelper {
 
     const testSchema = await this.context.getSchema(schemaKey, SchemaMatchType.Exact);
     if (undefined === testSchema)
-      throw new Error(`The schema '${schemaKey.name}' could not be found.`)
+      throw new Error(`The schema '${schemaKey.name}' could not be found.`);
     const schemaXml = await this.getOrderedSchemaStrings(testSchema);
 
     await this._iModel.importSchemaStrings(schemaXml);
