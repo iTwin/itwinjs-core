@@ -31,18 +31,17 @@ function getFieldProperty(field: FieldRun, iModel: IModelDb): FieldProperty | un
     return undefined;
   }
 
-  const host: Entity | undefined = iModel.elements.tryGetElement(field.propertyHost.elementId);
-  if (!host) {
+  const hostEntity: Entity | undefined = iModel.elements.tryGetElement(field.propertyHost.elementId);
+  if (!hostEntity) {
     return undefined;
   }
 
-  const hostClass = host.getMetaDataSync();
+  const hostClass = hostEntity.getMetaDataSync();
   if (!hostClass.isSync(field.propertyHost.className, field.propertyHost.schemaName)) {
     return undefined;
   }
 
-  /*
-  let obj: any = host[propertyName];
+  let obj: any = hostEntity.asAny()[propertyName];
   if (accessors) {
     for (const accessor of accessors) {
       obj = obj?.[accessor];
@@ -53,18 +52,15 @@ function getFieldProperty(field: FieldRun, iModel: IModelDb): FieldProperty | un
   }
 
   return { value: obj };
-  */
-  return undefined;
 }
 
-function createUpdateContext(hostElementId: string, iModel: IModelDb, deleted: boolean): UpdateFieldsContext {
+export function createUpdateContext(hostElementId: string, iModel: IModelDb, deleted: boolean): UpdateFieldsContext {
   return {
     hostElementId,
     getProperty: deleted ? () => undefined : (field) => getFieldProperty(field, iModel),
   };
 }
 
-/** @internal exported strictly for tests. */
 export function updateField(field: FieldRun, context: UpdateFieldsContext): boolean {
   if (context.hostElementId !== field.propertyHost.elementId) {
     return false;
