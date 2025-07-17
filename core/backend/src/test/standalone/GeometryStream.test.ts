@@ -306,7 +306,7 @@ function createGeometricElemFromSeed(imodel: SnapshotDb, seedId: Id64String, ent
   return newId;
 }
 
-describe.only("GeometryStream", () => {
+describe("GeometryStream", () => {
   let imodel: SnapshotDb;
 
   before(() => {
@@ -1571,7 +1571,7 @@ describe.only("GeometryStream", () => {
     expect(builder.isViewIndependent).to.be.false;
   });
 
-  it.only("should not throw subcategory parent category error when inserting element with geometry", async () => {
+  it("should not throw subcategory parent category error when inserting element with geometry", async () => {
 
     const reader = imodel.createQueryReader(`SELECT ECInstanceId, Model.Id as modelId FROM BisCore.Category where CodeValue='DefaultCategory'`, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames });
     assert.exists(reader, "Query reader should be created successfully");
