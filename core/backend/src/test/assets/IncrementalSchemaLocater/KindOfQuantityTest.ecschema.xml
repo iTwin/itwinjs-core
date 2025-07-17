@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- ==================================================================================
+|  * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+|  * See LICENSE.md in the project root for license terms and full copyright notice.
+======================================================================================= -->
+<ECSchema schemaName="KindOfQuantityTest" alias="koqt" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
+    <ECSchemaReference name="Formats" version="01.00.00" alias="f"/>
+    <ECSchemaReference name="Units"   version="01.00.09" alias="u"/>
+
+    <KindOfQuantity typeName="ACCELERATION" displayLabel="Acceleration" persistenceUnit="u:M_PER_SEC_SQ" relativeError="0.001" presentationUnits="f:DefaultRealU(4)[u:M_PER_SEC_SQ];f:DefaultRealU(4)[u:CM_PER_SEC_SQ];f:DefaultRealU(4)[u:FT_PER_SEC_SQ]"/>
+    <KindOfQuantity typeName="ANGLE" displayLabel="Angle" persistenceUnit="u:RAD" relativeError="0.0001" presentationUnits="f:DefaultRealU(2)[u:ARC_DEG];f:AngleDMS"/>
+</ECSchema>
