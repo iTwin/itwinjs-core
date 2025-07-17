@@ -1,3 +1,4 @@
+
 /*---------------------------------------------------------------------------------------------
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
@@ -17,7 +18,7 @@ import {
   FillDisplay, GeometricElement3dProps, GeometricElementProps, GeometryClass,
   GeometryContainmentRequestProps, GeometryParams, GeometryPartProps, GeometryPrimitive, GeometryStreamBuilder, GeometryStreamFlags, GeometryStreamIterator,
   GeometryStreamProps, Gradient, ImageGraphicCorners, ImageGraphicProps, IModel, LinePixels, LineStyle, MassPropertiesOperation,
-  MassPropertiesRequestProps, PhysicalElementProps, Placement3d, Placement3dProps, TextString, TextStringGlyphData, TextStringProps, ThematicGradientMode,
+  MassPropertiesRequestProps, PhysicalElementProps, Placement3d, Placement3dProps, QueryRowFormat, TextString, TextStringGlyphData, TextStringProps, ThematicGradientMode,
   ThematicGradientSettings, ViewFlags,
 } from "@itwin/core-common";
 import { _nativeDb, DefinitionModel, deleteElementTree, GeometricElement, GeometryPart, LineStyleDefinition, PhysicalObject, SnapshotDb, SubCategory, Subject } from "../../core-backend";
@@ -305,7 +306,7 @@ function createGeometricElemFromSeed(imodel: SnapshotDb, seedId: Id64String, ent
   return newId;
 }
 
-describe("GeometryStream", () => {
+describe.only("GeometryStream", () => {
   let imodel: SnapshotDb;
 
   before(() => {
@@ -1568,6 +1569,60 @@ describe("GeometryStream", () => {
     builder.isViewIndependent = false;
     expect(builder.getHeader()).not.to.be.undefined;
     expect(builder.isViewIndependent).to.be.false;
+  });
+
+  it.only("should not throw subcategory parent category error when inserting element with geometry", async () => {
+
+    const reader = imodel.createQueryReader(`SELECT ECInstanceId, Model.Id as modelId FROM BisCore.Category where CodeValue='DefaultCategory'`, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames });
+    assert.exists(reader, "Query reader should be created successfully");
+
+    assert.isTrue(await reader.step());
+    const categoryId = reader.current.ecInstanceId;
+    const modelId = reader.current.modelId;
+
+    if (categoryId === undefined || modelId === undefined)
+      assert.fail("Category or Model ID not found in the database");
+
+    const errorJson = `{
+      "errorNumber":65570,
+      "metadata":{
+        "elProps":{
+          "category":"${categoryId}",
+          "model":"${modelId}",
+          "classFullName":"${PhysicalObject.classFullName}",
+          "code":${JSON.stringify(Code.createEmpty().toJSON())},
+          "elementGeometryBuilderParams":{
+            "viewIndependent":false,
+            "entryArray":[
+              {
+                "opcode":4,
+                "data":{"0":12,"1":0,"2":0,"3":0,"4":0,"5":0,"6":6,"7":0,"8":12,"9":0,"10":4,"11":0,"12":6,"13":0,"14":0,"15":0,"16":56,"17":0,"18":0,"19":0,"20":0,"21":2,"22":0,"23":0}
+              },
+              {
+                "opcode":9,
+                "data":{"0":98,"1":103,"2":48,"3":48,"4":48,"5":49,"6":102,"7":98,"8":16,"9":0,"10":0,"11":0,"12":0,"13":0,"14":0,"15":0,"16":8,"17":0,"18":12,"19":0,"20":11,"21":0,"22":4,"23":0,
+                  "24":8,"25":0,"26":0,"27":0,"28":40,"29":0,"30":0,"31":0,"32":0,"33":0,"34":0,"35":13,"36":32,"37":0,"38":20,"39":0,"40":16,"41":0,"42":0,"43":0,"44":0,"45":0,"46":0}
+              }
+            ]
+          },
+          "placement":{"origin":[0,0,0], "angles":{}}
+        }
+      }
+    }`;
+
+    const props = JSON.parse(errorJson).metadata.elProps;
+
+    // Convert data from serialized JSON object format ({"0":12,"1":0,"2":0,...}) to the expected Uint8Array.
+    // It seems JSON serialization might have converted it to an object with numeric keys.
+    for (const entry of props.elementGeometryBuilderParams.entryArray)
+      entry.data = new Uint8Array(Object.values(entry.data));
+
+    try {
+      const elementId = imodel.elements.insertElement(props);
+      assert.isTrue(Id64.isValidId64(elementId), "Element should be inserted successfully");
+    } catch (error: any) {
+      assert.isFalse(String(error.message).includes("Subcategory has no parent category"));
+    }
   });
 });
 
