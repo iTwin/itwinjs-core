@@ -90,10 +90,11 @@ export class BranchState {
     this._opts.symbologyOverrides = ovrs;
   }
 
-  public changeRenderPlan(viewFlags: ViewFlags, is3d: boolean, hline: HiddenLine.Settings | undefined): void {
+  public changeRenderPlan(viewFlags: ViewFlags, is3d: boolean, hline: HiddenLine.Settings | undefined, contour?: ContourDisplay): void {
     this.viewFlags = viewFlags;
     this._opts.is3d = is3d;
     this.edgeSettings.init(hline);
+    this._opts.contourLine = contour;
   }
 
   /** Create a BranchState from a Branch. Any properties not explicitly specified by the new Branch are inherited from the previous BranchState. */

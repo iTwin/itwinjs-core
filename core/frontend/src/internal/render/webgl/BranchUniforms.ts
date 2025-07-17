@@ -8,7 +8,7 @@
 
 import { assert } from "@itwin/core-bentley";
 import { ClipVector, Matrix3d, Matrix4d, Point3d, Transform, XYZ } from "@itwin/core-geometry";
-import { ClipStyle, HiddenLine, ViewFlags } from "@itwin/core-common";
+import { ClipStyle, ContourDisplay, HiddenLine, ViewFlags } from "@itwin/core-common";
 import { FeatureSymbology } from "../../../render/FeatureSymbology";
 import { BranchState } from "./BranchState";
 import { BranchStack } from "./BranchStack";
@@ -22,7 +22,6 @@ import { desync, sync, SyncToken } from "./Sync";
 import { Target } from "./Target";
 import { ClipStack } from "./ClipStack";
 import { IModelApp } from "../../../IModelApp";
-import { RenderPlan } from "../RenderPlan";
 
 function equalXYZs(a: XYZ | undefined, b: XYZ | undefined): boolean {
   if (a === b)
@@ -107,11 +106,6 @@ export class BranchUniforms {
     this._stack.pushBranch(branch);
 
     this.setClipStyle(this.top.disableClipStyle);
-    // contourLine variable exists only for 2D section views with contour display; update render plan to show it.
-    if (this.top.contourLine) {
-      const newPlan: RenderPlan = { ...this._target.plan, contours: this.top.contourLine };
-      this._target.plan = newPlan;
-    }
     if (this.top.clipVolume)
       this.clipStack.push(this.top.clipVolume);
 
@@ -131,10 +125,6 @@ export class BranchUniforms {
 
   public pop(): void {
     desync(this);
-    if (this.top.contourLine) {
-      const newPlan: RenderPlan = { ...this._target.plan, contours: this.top.contourLine };
-      this._target.plan = newPlan;
-    }
     if (this.top.clipVolume)
       this.clipStack.pop();
 
@@ -156,8 +146,8 @@ export class BranchUniforms {
     assert((this._target.isReadPixelsInProgress ? 2 : 1) === this._stack.length);
   }
 
-  public changeRenderPlan(vf: ViewFlags, is3d: boolean, hline: HiddenLine.Settings | undefined): void {
-    this._stack.changeRenderPlan(vf, is3d, hline);
+  public changeRenderPlan(vf: ViewFlags, is3d: boolean, hline: HiddenLine.Settings | undefined, contourLine?: ContourDisplay | undefined): void {
+    this._stack.changeRenderPlan(vf, is3d, hline, contourLine);
   }
 
   public updateViewClip(clip: ClipVector | undefined, style: ClipStyle): void {

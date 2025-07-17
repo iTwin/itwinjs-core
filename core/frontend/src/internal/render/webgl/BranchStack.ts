@@ -8,7 +8,7 @@
 
 import { assert } from "@itwin/core-bentley";
 import { Transform } from "@itwin/core-geometry";
-import { HiddenLine, ViewFlags } from "@itwin/core-common";
+import { ContourDisplay, HiddenLine, ViewFlags } from "@itwin/core-common";
 import { FeatureSymbology } from "../../../render/FeatureSymbology";
 import { BranchState } from "./BranchState";
 import { Branch } from "./Graphic";
@@ -30,6 +30,7 @@ export class BranchStack {
       viewFlags: new ViewFlags(),
       transform: Transform.createIdentity(),
       edgeSettings: EdgeSettings.create(undefined),
+      contourLine: undefined,
       is3d: true,
       symbologyOverrides: new FeatureSymbology.Overrides(),
     });
@@ -66,9 +67,9 @@ export class BranchStack {
     }
   }
 
-  public changeRenderPlan(vf: ViewFlags, is3d: boolean, hline: HiddenLine.Settings | undefined): void {
+  public changeRenderPlan(vf: ViewFlags, is3d: boolean, hline: HiddenLine.Settings | undefined, contour?: ContourDisplay | undefined): void {
     assert(1 === this.length);
-    this.top.changeRenderPlan(vf, is3d, hline);
+    this.top.changeRenderPlan(vf, is3d, hline, contour);
   }
 
   public setSymbologyOverrides(ovrs: FeatureSymbology.Overrides) {
