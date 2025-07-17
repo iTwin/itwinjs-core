@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- ==================================================================================
+|  * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+|  * See LICENSE.md in the project root for license terms and full copyright notice.
+======================================================================================= -->
+<ECSchema schemaName="PropertyTest" alias="pt" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
+  <ECSchemaReference name="BisCore" version="01.00.01" alias="bis"/>
+  <ECSchemaReference name="CoreCustomAttributes" version="01.00.03" alias="CoreCA"/>
+  <ECSchemaReference name="Formats" version="01.00.00" alias="f"/>
+  <ECSchemaReference name="Units" version="01.00.09" alias="u"/>
+
+  <ECEntityClass typeName="EntityOne" modifier="Sealed">
+    <BaseClass>bis:PhysicalElement</BaseClass>
+    <ECProperty propertyName="PropertyWithCustomAttribute" typeName="int" displayLabel="PropertyHasAttribute" description="Property has CustomAttribute" >
+      <Localizable xmlns="CoreCustomAttributes.01.00.03"/>
+    </ECProperty>
+    <ECProperty propertyName="BinaryProperty" typeName="binary" displayLabel="binary" description="Binary Property" readOnly="true" category="TestPropertyCategory" priority="1"/>
+    <ECProperty propertyName="BooleanProperty" typeName="boolean" displayLabel="boolean" description="Boolean Property" readOnly="true" category="TestPropertyCategory" priority="2"/>
+    <ECProperty propertyName="DateTimeProperty" typeName="dateTime" displayLabel="dateTime" description="DateTime Property" readOnly="true" category="TestPropertyCategory" priority="3"/>
+    <ECProperty propertyName="DoubleProperty" typeName="double" displayLabel="double" description="Double Property" readOnly="true" minimumValue="1" category="TestPropertyCategory" kindOfQuantity="LENGTH" priority="4" />
+    <ECProperty propertyName="IntProperty" typeName="int" displayLabel="integer" description="Integer Property" readOnly="true" minimumValue="1" maximumValue="1000" category="TestPropertyCategory" kindOfQuantity="LENGTH"  priority="5"/>
+    <ECProperty propertyName="LongProperty" typeName="long" displayLabel="Long" description="Long Property" readOnly="true" minimumValue="1" category="TestPropertyCategory" kindOfQuantity="LENGTH"  priority="6"/>
+    <ECProperty propertyName="Point2dProperty" typeName="point2d" displayLabel="Point2d" description="Point2d Property" readOnly="true" category="TestPropertyCategory" priority="7"/>
+    <ECProperty propertyName="Point3dProperty" typeName="point3d" displayLabel="Point3d" description="Point3d Property" readOnly="true" category="TestPropertyCategory" priority="8"/>
+    <ECProperty propertyName="StringProperty" typeName="string" displayLabel="String" description="String Property" readOnly="true" minimumLength="1" maximumLength="1000" category="TestPropertyCategory" priority="9"/>
+    <ECProperty propertyName="IGeometryProperty" typeName="Bentley.Geometry.Common.IGeometry" displayLabel="IGeometry" description="IGeometry Property" readOnly="true" category="TestPropertyCategory" priority="10"/>
+    <ECArrayProperty propertyName="StringArrayProperty" typeName="string" displayLabel="StringArray" description="StringArray Property" readOnly="true" minOccurs="0" maxOccurs="unbounded"/>
+    <ECArrayProperty propertyName="IGeometryArrayProperty" typeName="Bentley.Geometry.Common.IGeometry" displayLabel="IGeometryArray" description="IGeometryArray Property" readOnly="true" minOccurs="0" maxOccurs="3" category="TestPropertyCategory" priority="10"/>
+    <ECStructProperty propertyName="StructProperty" typeName="TestStruct" displayLabel="StructProperty" description="Struct Property" readOnly="true"/>
+    <ECStructArrayProperty propertyName="StructArrayProperty" typeName="TestStruct" displayLabel="StructArrayProperty" description="StructArray Property" readOnly="true" minOccurs="0" maxOccurs="10"/>
+    <ECNavigationProperty propertyName="EntityTwoForward" relationshipName="EntityOneHasEntityTwo" direction="Forward" readOnly="true" displayLabel="NavTestEntityTwo" description="Navigation Property for EntityTwo"/>
+    <ECProperty propertyName="JsonProperties" typeName="string" extendedTypeName="Json" description="A JSON string containing scope and fragment specifications used to generate and validate code values"/>
+  </ECEntityClass>
+
+  <ECEntityClass typeName="EntityTwo" modifier="None">
+    <BaseClass>bis:PhysicalElement</BaseClass>
+    <ECNavigationProperty propertyName="EntityTwoParent" relationshipName="EntityTwoHasChildren" direction="Backward" readOnly="true"
+        displayLabel="EntityTwoParent" description="Navigation Property for EntityTwo parent."/>
+  </ECEntityClass>
+
+  <ECStructClass typeName="TestStruct" modifier="None">
+    <ECProperty propertyName="PropOne" typeName="double" />
+    <ECProperty propertyName="PropTwo" typeName="double" />
+  </ECStructClass>
+
+  <ECRelationshipClass typeName="EntityOneHasEntityTwo" strength="referencing" modifier="Sealed">
+    <Source multiplicity="(0..*)" roleLabel="is referenced by" polymorphic="false">
+        <Class class="EntityOne" />
+    </Source>
+    <Target multiplicity="(1..1)" roleLabel="has" polymorphic="false">
+        <Class class="EntityTwo" />
+    </Target>
+  </ECRelationshipClass>
+
+  <ECRelationshipClass typeName="EntityTwoHasChildren" strength="referencing" modifier="Sealed">
+    <Source multiplicity="(1..1)" roleLabel="has" polymorphic="false">
+        <Class class="EntityTwo" />
+    </Source>
+    <Target multiplicity="(0..*)" roleLabel="is parented by" polymorphic="false">
+        <Class class="EntityTwo" />
+    </Target>
+  </ECRelationshipClass>
+
+  <PropertyCategory typeName="TestPropertyCategory" priority="1000" />
+
+  <KindOfQuantity typeName="LENGTH" displayLabel="Length" persistenceUnit="u:M" presentationUnits="f:DefaultRealU(2)[u:M];f:DefaultRealU(2)[u:FT]" relativeError="0.0001"/>
+</ECSchema>
