@@ -154,9 +154,7 @@ describe("FieldRun", () => {
       const fieldRun = FieldRun.create({
         styleName: "fieldStyle",
         propertyHost: { elementId: "0x123", schemaName: "TestSchema", className: "TestClass" },
-        propertyPath: [
-          { property: "someProperty" },
-        ],
+        propertyPath: { propertyName: "someProperty", accessors: [0, "nestedProperty"] },
         cachedContent: "cachedValue",
       });
 
@@ -164,9 +162,7 @@ describe("FieldRun", () => {
       expect(fieldRun.propertyHost.elementId).to.equal("0x123");
       expect(fieldRun.propertyHost.schemaName).to.equal("TestSchema");
       expect(fieldRun.propertyHost.className).to.equal("TestClass");
-      expect(fieldRun.propertyPath).to.deep.equal([
-        { property: "someProperty" },
-      ]);
+      expect(fieldRun.propertyPath).to.deep.equal({ propertyName: "someProperty", accessors: [0, "nestedProperty"] });
       expect(fieldRun.cachedContent).to.equal("cachedValue");
     });
 
@@ -174,17 +170,12 @@ describe("FieldRun", () => {
       expect(FieldRun.create({
         styleName: "fieldStyle",
         propertyHost: { elementId: "0x123", schemaName: "TestSchema", className: "TestClass" },
-        propertyPath: [
-          { property: "someProperty" },
-        ],
+        propertyPath: { propertyName: "someProperty", accessors: [0, "nestedProperty"] },
       }).cachedContent).toEqual(FieldRun.invalidContentIndicator);
     });
 
     it("deeply clones propertyPath", () => {
-      const propertyPath = [
-        { property: "array1", arrayIndex: 0 },
-        { property: "array2", arrayIndex: -1 },
-      ];
+      const propertyPath = { propertyName: "array1", accessors: [0, "nestedProperty"] };
 
       const fieldRun = FieldRun.create({
         styleName: "fieldStyle",
@@ -193,12 +184,9 @@ describe("FieldRun", () => {
       });
 
       // Modify the original propertyPath to ensure the FieldRun's copy is unaffected
-      propertyPath[0].property = "modifiedArray1";
+      propertyPath.accessors![0] = 1;
 
-      expect(fieldRun.propertyPath).to.deep.equal([
-        { property: "array1", arrayIndex: 0 },
-        { property: "array2", arrayIndex: -1 },
-      ]);
+      expect(fieldRun.propertyPath).to.deep.equal({ propertyName: "array1", accessors: [0, "nestedProperty"] });
     });
 
     it("deeply clones formatter", () => {
@@ -207,7 +195,7 @@ describe("FieldRun", () => {
       const fieldRun = FieldRun.create({
         styleName: "fieldStyle",
         propertyHost: { elementId: "0x123", schemaName: "TestSchema", className: "TestClass" },
-        propertyPath: [{ property: "someProperty" }],
+        propertyPath: { propertyName: "someProperty", accessors: [0, "nestedProperty"] },
         formatter,
       });
 
@@ -226,7 +214,7 @@ describe("FieldRun", () => {
       const fieldRun = FieldRun.create({
         styleName: "fieldStyle",
         propertyHost,
-        propertyPath: [{ property: "someProperty" }],
+        propertyPath: { propertyName: "someProperty", accessors: [0, "nestedProperty"] },
       });
 
       // Modify the original propertyHost to ensure the FieldRun's copy is unaffected
@@ -243,9 +231,7 @@ describe("FieldRun", () => {
       const fieldRun = FieldRun.create({
         styleName: "fieldStyle",
         propertyHost: { elementId: "0x123", schemaName: "TestSchema", className: "TestClass" },
-        propertyPath: [
-          { property: "someProperty" },
-        ],
+        propertyPath: { propertyName: "someProperty", accessors: [0, "nestedProperty"] },
         cachedContent: "cachedValue",
       });
 
@@ -259,9 +245,7 @@ describe("FieldRun", () => {
       const fieldRun = FieldRun.create({
         styleName: "fieldStyle",
         propertyHost: { elementId: "0x123", schemaName: "TestSchema", className: "TestClass" },
-        propertyPath: [
-          { property: "someProperty" },
-        ],
+        propertyPath: { propertyName: "someProperty", accessors: [0, "nestedProperty"] },
         cachedContent: FieldRun.invalidContentIndicator,
       });
 
@@ -274,9 +258,7 @@ describe("FieldRun", () => {
       const fieldRun = FieldRun.create({
         styleName: "fieldStyle",
         propertyHost: { elementId: "0x123", schemaName: "TestSchema", className: "TestClass" },
-        propertyPath: [
-          { property: "someProperty" },
-        ],
+        propertyPath: { propertyName: "someProperty", accessors: [0, "nestedProperty"] },
         cachedContent: "cachedValue",
       });
 
@@ -289,9 +271,7 @@ describe("FieldRun", () => {
       const baseProps = {
         styleName: "fieldStyle",
         propertyHost: { elementId: "0x123", schemaName: "TestSchema", className: "TestClass" },
-        propertyPath: [
-          { property: "someProperty" },
-        ],
+        propertyPath: { propertyName: "someProperty", accessors: [0, "nestedProperty"] },
         cachedContent: "cachedValue",
       };
 
@@ -299,10 +279,10 @@ describe("FieldRun", () => {
         { propertyHost: { elementId: "0x456", schemaName: "OtherSchema", className: "OtherClass" } },
         { propertyHost: { elementId: "0x456", schemaName: "TestSchema", className: "TestClass" } },
         { propertyHost: { elementId: "0x123", schemaName: "OtherSchema", className: "OtherClass" } },
-        { propertyPath: [{ property: "otherProperty" }] },
-        { propertyPath: [{ property: "someProperty", arrayIndex: 0 }] },
-        { propertyPath: [{ property: "someProperty", arrayIndex: 1 }] },
-        { propertyPath: [{ property: "someProperty" }, { property: "otherProperty" }] },
+        { propertyPath: { propertyName: "otherProperty", accessors: [0, "nestedProperty"] } },
+        { propertyPath: { propertyName: "someProperty", accessors: [1, "nestedProperty"] } },
+        { propertyPath: { propertyName: "someProperty", accessors: [0, "otherNestedProperty"] } },
+        { propertyPath: { propertyName: "someProperty", accessors: [0, "nestedProperty", "extraNestedProperty"] } },
       ];
 
       const fieldRuns = combinations.map((combo) =>
@@ -329,18 +309,14 @@ describe("FieldRun", () => {
       const field1 = FieldRun.create({
         styleName: "fieldStyle",
         propertyHost: { elementId: "0x123", schemaName: "TestSchema", className: "TestClass" },
-        propertyPath: [
-          { property: "someProperty" },
-        ],
+        propertyPath: { propertyName: "someProperty", accessors: [0, "nestedProperty"] },
         cachedContent: "1",
       });
 
       const field2 = FieldRun.create({
         styleName: "fieldStyle",
         propertyHost: { elementId: "0x123", schemaName: "TestSchema", className: "TestClass" },
-        propertyPath: [
-          { property: "someProperty" },
-        ],
+        propertyPath: { propertyName: "someProperty", accessors: [0, "nestedProperty"] },
         cachedContent: "2",
       });
 

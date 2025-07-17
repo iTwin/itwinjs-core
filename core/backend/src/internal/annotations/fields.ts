@@ -25,24 +25,35 @@ export interface UpdateFieldsContext {
 }
 
 function getFieldProperty(field: FieldRun, iModel: IModelDb): FieldProperty | undefined {
-  // Empty path => invalid field.
-  if (field.propertyPath.length === 0) {
+  const { propertyName, accessors } = field.propertyPath;
+
+  if (!propertyName) {
     return undefined;
   }
-  
-  // Resolve the host. ###TODO handle aspects
+
   const host: Entity | undefined = iModel.elements.tryGetElement(field.propertyHost.elementId);
   if (!host) {
     return undefined;
   }
 
-  // Verify the host is of the expected class.
   const hostClass = host.getMetaDataSync();
   if (!hostClass.isSync(field.propertyHost.className, field.propertyHost.schemaName)) {
     return undefined;
   }
 
-  // ###TODO
+  /*
+  let obj: any = host[propertyName];
+  if (accessors) {
+    for (const accessor of accessors) {
+      obj = obj?.[accessor];
+      if (obj === undefined) {
+        return undefined;
+      }
+    }
+  }
+
+  return { value: obj };
+  */
   return undefined;
 }
 

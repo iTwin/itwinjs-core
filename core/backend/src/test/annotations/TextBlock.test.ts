@@ -1288,11 +1288,12 @@ describe("produceTextBlockGeometry", () => {
   });
 });
 
-describe("updateField", () => {
+describe.only("updateField", () => {
   const mockElementId = "0x1";
-  const mockPath: FieldPropertyPath = [
-    { property: "mockProperty" },
-  ];
+  const mockPath: FieldPropertyPath = {
+    propertyName: "mockProperty",
+    accessors: [0, "nestedProperty"],
+  };
   const mockCachedContent = "cachedContent";
   const mockUpdatedContent = "updatedContent";
 
@@ -1301,8 +1302,9 @@ describe("updateField", () => {
     getProperty: (field: FieldRun) => {
       const propertyPath = field.propertyPath;
       if (
-        propertyPath.length === 1 &&
-        propertyPath[0].property === "mockProperty" &&
+        propertyPath.propertyName === "mockProperty" &&
+        propertyPath.accessors?.[0] === 0 &&
+        propertyPath.accessors?.[1] === "nestedProperty" &&
         propertyValue !== undefined
       ) {
         return { value: propertyValue };

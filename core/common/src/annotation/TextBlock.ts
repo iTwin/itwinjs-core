@@ -404,25 +404,18 @@ export class TabRun extends TextBlockComponent {
   }
 }
 
-/** An entry in a [[FieldPropertyPath]] identifying a single property.
- * @beta
- */
-export interface FieldPropertyPathEntry {
-  /** The name of the BIS property. */
-  property: string;
-  /** If [[property]] identifies an array property, the index of the array element of interest.
-   * Negative array indices can be used to count backward from the end of the array (e.g., index -1 refers to the last element, -2 to the second-to-last element, and so on).
-   */
-  arrayIndex?: number;
-}
-
 /** A chain of property accesses that resolves to a primitive value that forms the basis of the displayed content
  * of a [[FieldRun]].
  * The chain may traverse through structs, arrays, and JSON objects.
- * ###TODO examples
+* ###TODO examples
  * @beta
  */
-export type FieldPropertyPath = FieldPropertyPathEntry[];
+export interface FieldPropertyPath {
+  /** The name of the BIS property. */
+  propertyName: string;
+  /** Optional accessors for arrays, structs, and/or JSON object properties. */
+  accessors?: Array<string | number>;
+}
 
 export interface FieldPropertyHost {
   elementId: Id64String;
@@ -484,7 +477,7 @@ export class FieldRun extends TextBlockComponent {
       ...super.toJSON(),
       type: "field",
       propertyHost: { ...this.propertyHost },
-      propertyPath: this.propertyPath.map((entry) => ({ ...entry })),
+      propertyPath: structuredClone(this.propertyPath),
     };
 
     if (this.cachedContent !== FieldRun.invalidContentIndicator) {
@@ -519,14 +512,18 @@ export class FieldRun extends TextBlockComponent {
       return false;
     }
 
-    if (this.propertyPath.length !== other.propertyPath.length) {
+    if (this.propertyPath.propertyName !== other.propertyPath.propertyName) {
       return false;
     }
 
-    for (let i = 0; i < this.propertyPath.length; i++) {
-      const lhs = this.propertyPath[i];
-      const rhs = other.propertyPath[i];
-      if (lhs.property !== rhs.property || lhs.arrayIndex !== rhs.arrayIndex) {
+    const thisAccessors = this.propertyPath.accessors ?? [];
+    const otherAccessors = other.propertyPath.accessors ?? [];
+    if (thisAccessors.length !== otherAccessors.length) {
+      return false;
+    }
+
+    for (let i = 0; i < thisAccessors.length; i++) {
+      if (thisAccessors[i] !== otherAccessors[i]) {
         return false;
       }
     }
