@@ -3,12 +3,17 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { FieldPropertyPath, FieldRun } from "@itwin/core-common";
+import { Code, FieldPropertyHost, FieldPropertyPath, FieldRun, SubCategoryAppearance } from "@itwin/core-common";
 import { SnapshotDb } from "../../IModelDb";
-import { IModelTestUtils } from "../IModelTestUtils";
-import { updateField } from "../../internal/annotations/fields";
+import { IModelTestUtils, TestPhysicalObjectProps } from "../IModelTestUtils";
+import { createUpdateContext, updateField } from "../../internal/annotations/fields";
+import { Id64String } from "@itwin/core-bentley";
+import { SpatialCategory } from "../../Category";
+import { Point3d, YawPitchRollAngles } from "@itwin/core-geometry";
+import { KnownTestLocations } from "../KnownTestLocations";
+import * as path from "path";
 
-describe.only("updateField", () => {
+describe("updateField", () => {
   const mockElementId = "0x1";
   const mockPath: FieldPropertyPath = {
     propertyName: "mockProperty",
@@ -116,23 +121,98 @@ describe.only("updateField", () => {
 });
 
 describe.only("UpdateFieldsContext", () => {
+  let imodel: SnapshotDb;
+  let model: Id64String;
+  let category: Id64String;
+  let elementId: Id64String;
+
+  before(async () => {
+    IModelTestUtils.registerTestBimSchema();
+
+    const iModelPath = IModelTestUtils.prepareOutputFile("UpdateFieldsContext", "test.bim");
+    imodel = SnapshotDb.createEmpty(iModelPath, { rootSubject: { name: "UpdateFieldsContext" } });
+
+    const schemaPathname = path.join(KnownTestLocations.assetsDir, "TestBim.ecschema.xml");
+    await imodel.importSchemas([schemaPathname]); // will throw an exception if import fails
+    imodel.saveChanges();
+
+    model = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(imodel, Code.createEmpty(), true)[1];
+    category = SpatialCategory.insert(imodel, SnapshotDb.dictionaryId, "UpdateFieldsContextCategory", new SubCategoryAppearance());
+    elementId = insertElement();
+  });
+
+  after(() => {
+    imodel.close();
+  });
+  
+  function insertElement(): Id64String {
+    // ###TODO gotta insert our own schema for testing complex access strings.
+    const props: TestPhysicalObjectProps = {
+      classFullName: "TestBim:TestPhysicalObject",
+      model,
+      category,
+      code: Code.createEmpty(),
+      intProperty: 100,
+      placement: {
+        origin: new Point3d(1, 2, 0),
+        angles: new YawPitchRollAngles(),
+      },
+    };
+
+    const id = imodel.elements.insertElement(props);
+    imodel.saveChanges();
+    return id;
+  }
+
   describe("getProperty", () => {
-    it("always returns undefined if the dependency was deleted", () => {
-      
+    function expectValue(expected: any, propertyPath: FieldPropertyPath, propertyHost: FieldPropertyHost | Id64String, deletedDependency = false): void {
+      if (typeof propertyHost === "string") {
+        propertyHost = { schemaName: "TestBim", className: "TestPhysicalObject", elementId: propertyHost };
+      }
+
+      const field = FieldRun.create({
+        propertyPath,
+        propertyHost,
+        styleName: "style",
+      });
+
+      const context = createUpdateContext(propertyHost.elementId, imodel, deletedDependency);
+      const actual = context.getProperty(field);
+      expect(actual?.value).to.equal(expected);
+    }
+
+    it("returns a primitive property value", () => {
+      expectValue(100, { propertyName: "intProperty" }, elementId);
+    });
+
+    it("returns undefined if the dependency was deleted", () => {
+      expectValue(undefined, { propertyName: "intProperty" }, elementId, true);
     });
 
     it("returns undefined if the host element does not exist", () => {
-      
+      expectValue(undefined, { propertyName: "intProperty" }, "0xbaadf00d", true);
     });
 
     it("returns undefined if the host element is not of the specified class or a subclass thereof", () => {
       
     });
 
-    it("returns a primitive property value", () => {
+    it("returns undefined if the specified property does not exist", () => {
+      expectValue(undefined, { propertyName: "nonExistentProperty" }, elementId);
+    });
+
+    it("returns undefined if the specified property is null", () => {
       
     });
 
+    it("returns undefined if an array index is specified for a non-array property", () => {
+      
+    });
+
+    it("returns undefined if an array index is out of bounds", () => {
+      
+    });
+  
     it("returns a primitive array value", () => {
       
     });
@@ -169,11 +249,7 @@ describe.only("UpdateFieldsContext", () => {
       
     });
 
-    it("returns undefined if the specified property does not exist", () => {
-      
-    });
-
-    it("returns undefined if the specified property is null", () => {
+    it("supports negative array indices", () => {
       
     });
   });

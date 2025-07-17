@@ -41,10 +41,24 @@ function getFieldProperty(field: FieldRun, iModel: IModelDb): FieldProperty | un
     return undefined;
   }
 
-  let obj: any = hostEntity.asAny()[propertyName];
+  let obj: any = (hostEntity as any)[propertyName];
   if (accessors) {
     for (const accessor of accessors) {
-      obj = obj?.[accessor];
+      if (typeof accessor === "number") {
+        if (!Array.isArray(obj)) {
+          return undefined;
+        }
+
+        const index = accessor < 0 ? (obj.length + accessor) : accessor;
+        obj = obj[index];
+      } else {
+        if (typeof obj !== "object") {
+          return undefined;
+        }
+
+        obj = obj?.accessor;
+      }
+      
       if (obj === undefined) {
         return undefined;
       }
