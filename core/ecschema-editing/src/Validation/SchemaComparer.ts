@@ -66,6 +66,12 @@ function labelsMatch(label1?: string, label2?: string) {
   return label1 === label2;
 }
 
+function descriptionsAreEqual(desc1?: string, desc2?: string) {
+  desc1 = desc1 === undefined ? "" : desc1;
+  desc2 = desc2 === undefined ? "" : desc2;
+  return desc1 === desc2;
+}
+
 /**
  * Compares EC Schemas and reports differences using the [[IDiagnosticReporter]] objects
  * specified.
@@ -156,7 +162,7 @@ export class SchemaComparer {
     if (schemaA.alias !== schemaB.alias)
       promises.push(this._reporter.reportSchemaDelta(schemaA, "alias", schemaA.alias, schemaB.alias, this._compareDirection));
 
-    if (schemaA.description !== schemaB.description)
+    if (!descriptionsAreEqual(schemaA.description, schemaB.description))
       promises.push(this._reporter.reportSchemaDelta(schemaA, "description", schemaA.description, schemaB.description, this._compareDirection));
 
     if (schemaA.label !== schemaB.label)
@@ -189,7 +195,7 @@ export class SchemaComparer {
       return;
     }
 
-    if (schemaItemA.description !== schemaItemB.description)
+    if (!descriptionsAreEqual(schemaItemA.description, schemaItemB.description))
       promises.push(this._reporter.reportSchemaItemDelta(schemaItemA, "description", schemaItemA.description, schemaItemB.description, this._compareDirection));
 
     if (!labelsMatch(schemaItemA.label, schemaItemB.label))
@@ -260,7 +266,7 @@ export class SchemaComparer {
     if (!labelsMatch(propertyA.label, propertyB.label))
       promises.push(this._reporter.reportPropertyDelta(propertyA, "label", propertyA.label, propertyB.label, this._compareDirection));
 
-    if (propertyA.description !== propertyB.description)
+    if (!descriptionsAreEqual(propertyA.description, propertyB.description))
       promises.push(this._reporter.reportPropertyDelta(propertyA, "description", propertyA.description, propertyB.description, this._compareDirection));
 
     if (propertyA.isReadOnly !== propertyB.isReadOnly)
@@ -834,7 +840,7 @@ export class SchemaComparer {
   private async compareEnumerators(enumeratorA: AnyEnumerator, enumeratorB: AnyEnumerator, enumA: Enumeration, enumB: Enumeration): Promise<void> {
     const promises: Array<Promise<void>> = [];
 
-    if (enumeratorA.description !== enumeratorB.description)
+    if (!descriptionsAreEqual(enumeratorA.description, enumeratorB.description))
       promises.push(this._reporter.reportEnumeratorDelta(enumA, enumeratorA, "description", enumeratorA.description, enumeratorB.description, this._compareDirection));
 
     if (!labelsMatch(enumeratorA.label, enumeratorB.label))
