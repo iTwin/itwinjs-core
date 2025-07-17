@@ -161,5 +161,6 @@ export interface GraphicBranchOptions {
    * No [ClipStyle.insideColor]($common), [ClipStyle.outsideColor]($common), or [ClipStyle.intersectionStyle]($common) will be applied.
    */
   disableClipStyle?: true;
+  /** @internal */
   contours?: ContourDisplay;
 }
