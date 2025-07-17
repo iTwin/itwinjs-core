@@ -53,6 +53,7 @@ export interface TextBlockStringifyOptions {
 
 /** Abstract representation of any of the building blocks that make up a [[TextBlock]] document - namely [[Run]]s, [[Paragraph]]s, and [[TextBlock]] itself.
  * The [[TextBlock]] can specify an [AnnotationTextStyle]($backend) that formats its contents. Each component can specify an optional [[styleOverrides]] to customize that formatting.
+ * @beta
  */
 export abstract class TextBlockComponent {
   private _styleOverrides: TextStyleSettingsProps;
