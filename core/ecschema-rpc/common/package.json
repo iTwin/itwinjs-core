@@ -20,7 +20,7 @@
     "docs": "",
     "extract-api": "betools extract-api --entry=ecschema-rpc-interface",
     "lint": "eslint \"./src/**/*.ts\" 1>&2",
-    "test": ""
+    "test": "mocha"
   },
   "keywords": [
     "iModel",
@@ -45,7 +45,13 @@
     "@itwin/core-geometry": "workspace:*",
     "@itwin/ecschema-metadata": "workspace:*",
     "@itwin/eslint-plugin": "5.0.0-dev.1",
+    "@types/chai": "4.3.1",
+    "@types/mocha": "^10.0.6",
+    "@types/sinon": "^17.0.2",
+    "chai": "^4.3.10",
     "eslint": "^9.13.0",
+    "mocha": "^11.1.0",
+    "sinon": "^17.0.2",
     "rimraf": "^6.0.1",
     "typescript": "~5.6.2"
   }
