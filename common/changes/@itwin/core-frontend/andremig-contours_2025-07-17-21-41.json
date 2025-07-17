@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-frontend",
-      "comment": "Support Contour Line for 2d",
+      "comment": "Support Contour Line on Section Drawing",
       "type": "none"
     }
   ],
