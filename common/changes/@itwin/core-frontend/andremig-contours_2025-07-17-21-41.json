@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Support Contour Line for 2d",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}
