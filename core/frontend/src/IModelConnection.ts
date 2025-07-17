@@ -960,13 +960,11 @@ export namespace IModelConnection {
         AND ECInstanceId NOT IN (SELECT ECInstanceId FROM GeometricModels)`;
 
       const iModel = this._iModel;
-      if (!iModel.isOpen) {
+      if (!iModel.isOpen)
         return [];
-      }
 
-      if (typeof modelIds === "string") {
+      if (typeof modelIds === "string")
         modelIds = [modelIds];
-      }
 
       const params = new QueryBinder();
       params.bindIdSet("ids64", modelIds);
