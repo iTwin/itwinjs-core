@@ -411,10 +411,14 @@ export class TabRun extends TextBlockComponent {
  * @beta
  */
 export interface FieldPropertyPath {
-  /** The name of the BIS property. */
+  /** The name of the root BIS property. */
   propertyName: string;
-  /** Optional accessors for arrays, structs, and/or JSON object properties. */
+  /** Optional accessors for arrays and/or structs within the property identified by [[propertyName]]. */
   accessors?: Array<string | number>;
+  /** If [[propertyName]] and [[accessors]] (if defined) resolve to a JSON property, optional accessors for
+   * selecting a field within the JSON.
+   */
+  jsonAccessors?: Array<string | number>;
 }
 
 export interface FieldPropertyHost {
@@ -518,14 +522,19 @@ export class FieldRun extends TextBlockComponent {
 
     const thisAccessors = this.propertyPath.accessors ?? [];
     const otherAccessors = other.propertyPath.accessors ?? [];
-    if (thisAccessors.length !== otherAccessors.length) {
+    const thisJsonAccessors = this.propertyPath.jsonAccessors ?? [];
+    const otherJsonAccessors = other.propertyPath.jsonAccessors ?? [];
+
+    if (thisAccessors.length !== otherAccessors.length || thisJsonAccessors.length !== otherJsonAccessors.length) {
       return false;
     }
 
-    for (let i = 0; i < thisAccessors.length; i++) {
-      if (thisAccessors[i] !== otherAccessors[i]) {
-        return false;
-      }
+    if (!thisAccessors.every((value, index) => value === otherAccessors[index])) {
+      return false;
+    }
+
+    if (!thisJsonAccessors.every((value, index) => value === otherJsonAccessors[index])) {
+      return false;
     }
 
     if (this.formatter && other.formatter) {

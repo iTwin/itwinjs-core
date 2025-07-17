@@ -279,10 +279,17 @@ describe("FieldRun", () => {
         { propertyHost: { elementId: "0x456", schemaName: "OtherSchema", className: "OtherClass" } },
         { propertyHost: { elementId: "0x456", schemaName: "TestSchema", className: "TestClass" } },
         { propertyHost: { elementId: "0x123", schemaName: "OtherSchema", className: "OtherClass" } },
+
         { propertyPath: { propertyName: "otherProperty", accessors: [0, "nestedProperty"] } },
         { propertyPath: { propertyName: "someProperty", accessors: [1, "nestedProperty"] } },
         { propertyPath: { propertyName: "someProperty", accessors: [0, "otherNestedProperty"] } },
         { propertyPath: { propertyName: "someProperty", accessors: [0, "nestedProperty", "extraNestedProperty"] } },
+
+        { propertyPath: { propertyName: "otherProperty", accessors: [0, "nestedProperty"], jsonAccessors: ["array", 2] } },
+        { propertyPath: { propertyName: "someProperty", accessors: [1, "nestedProperty"], jsonAccessors: ["array", 2] } },
+        { propertyPath: { propertyName: "someProperty", accessors: [0, "otherNestedProperty"], jsonAccessors: ["array", 2] } },
+        { propertyPath: { propertyName: "someProperty", accessors: [0, "nestedProperty", "extraNestedProperty"], jsonAccessors: ["array", 2] } },
+        { propertyPath: { propertyName: "someProperty", accessors: [0, "nestedProperty", "extraNestedProperty"], jsonAccessors: ["array", 3] } },
       ];
 
       const fieldRuns = combinations.map((combo) =>
