@@ -918,7 +918,7 @@ export namespace IModelConnection {
           max(i.MaxX), max(i.MaxY), max(i.MaxZ)
         ) AS bbox
       FROM bis.SpatialIndex AS i, bis.GeometricElement3d AS ge, bis.GeometricModel3d AS gm
-      WHERE InVirtualSet(:ids64, ge.Model.Id) AND ge.ECInstanceId=i.ECInstanceId AND InVirtualSet(:ids64, gm.ECInstanceId) AND gm.$->isNotSpatiallyLocated?=false
+      WHERE InVirtualSet(:ids64, ge.Model.Id) AND ge.ECInstanceId=i.ECInstanceId AND InVirtualSet(:ids64, gm.ECInstanceId) AND (gm.$->isNotSpatiallyLocated?=false OR gm.$->isNotSpatiallyLocated? IS NULL)
       GROUP BY ge.Model.Id
       UNION
       SELECT
@@ -936,7 +936,7 @@ export namespace IModelConnection {
           )
         ) AS bbox
       FROM bis.GeometricElement3d AS ge, bis.GeometricModel3d as gm
-      WHERE InVirtualSet(:ids64, ge.Model.Id) AND ge.Origin.X IS NOT NULL AND InVirtualSet(:ids64, gm.ECInstanceId) AND (gm.$->isNotSpatiallyLocated?=true OR gm.$->isNotSpatiallyLocated? IS NULL)
+      WHERE InVirtualSet(:ids64, ge.Model.Id) AND ge.Origin.X IS NOT NULL AND InVirtualSet(:ids64, gm.ECInstanceId) AND gm.$->isNotSpatiallyLocated?=true
       GROUP BY ge.Model.Id`;
 
       const modelExistenceQuery = `
