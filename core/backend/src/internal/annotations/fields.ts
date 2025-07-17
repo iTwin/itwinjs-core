@@ -56,7 +56,7 @@ function getFieldProperty(field: FieldRun, iModel: IModelDb): FieldProperty | un
           return undefined;
         }
 
-        obj = obj?.accessor;
+        obj = obj?.[accessor];
       }
       
       if (obj === undefined) {

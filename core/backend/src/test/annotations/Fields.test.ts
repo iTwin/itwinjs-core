@@ -157,6 +157,19 @@ describe.only("UpdateFieldsContext", () => {
         origin: new Point3d(1, 2, 0),
         angles: new YawPitchRollAngles(),
       },
+      jsonProperties: {
+        string: "abc",
+        ints: [10, 11, 12, 13],
+        zoo: {
+          address: {
+            zipcode: 12345,
+          },
+          birds: [
+            { name: "duck", sound: "quack" },
+            { name: "hawk", sound: "scree!" },
+          ],
+        },
+      },
     };
 
     const id = imodel.elements.insertElement(props);
@@ -164,8 +177,8 @@ describe.only("UpdateFieldsContext", () => {
     return id;
   }
 
-  describe("getProperty", () => {
-    function expectValue(expected: any, propertyPath: FieldPropertyPath, propertyHost: FieldPropertyHost | Id64String, deletedDependency = false): void {
+  describe.only("getProperty", () => {
+    function expectValue(expected: any, propertyPath: FieldPropertyPath, propertyHost: FieldPropertyHost | Id64String = elementId, deletedDependency = false): void {
       if (typeof propertyHost === "string") {
         propertyHost = { schemaName: "TestBim", className: "TestPhysicalObject", elementId: propertyHost };
       }
@@ -182,7 +195,7 @@ describe.only("UpdateFieldsContext", () => {
     }
 
     it("returns a primitive property value", () => {
-      expectValue(100, { propertyName: "intProperty" }, elementId);
+      expectValue(100, { propertyName: "intProperty" });
     });
 
     it("returns undefined if the dependency was deleted", () => {
@@ -190,15 +203,19 @@ describe.only("UpdateFieldsContext", () => {
     });
 
     it("returns undefined if the host element does not exist", () => {
-      expectValue(undefined, { propertyName: "intProperty" }, "0xbaadf00d", true);
+      expectValue(undefined, { propertyName: "intProperty" }, "0xbaadf00d");
     });
 
     it("returns undefined if the host element is not of the specified class or a subclass thereof", () => {
       
     });
 
+    it("returns undefined if an access string is specified for a non-object property", () => {
+      expectValue(undefined, { propertyName: "intProperty", accessors: ["property"] });
+    });
+  
     it("returns undefined if the specified property does not exist", () => {
-      expectValue(undefined, { propertyName: "nonExistentProperty" }, elementId);
+      expectValue(undefined, { propertyName: "nonExistentProperty" });
     });
 
     it("returns undefined if the specified property is null", () => {
@@ -206,10 +223,14 @@ describe.only("UpdateFieldsContext", () => {
     });
 
     it("returns undefined if an array index is specified for a non-array property", () => {
-      
+      expectValue(undefined, { propertyName: "intProperty", accessors: [0] });
     });
 
     it("returns undefined if an array index is out of bounds", () => {
+      
+    });
+    
+    it("returns undefined for a non-primitive value", () => {
       
     });
   
@@ -229,28 +250,24 @@ describe.only("UpdateFieldsContext", () => {
       
     });
     
-    it("returns a primitive value inside a JSON object", () => {
-      
-    });
-
-    it("returns a primitive array value inside a JSON object", () => {
-      
-    });
-
-    it("returns a primitive value inside a nested JSON object", () => {
-      
-    });
-
     it("returns the value of a primitive property of a member of a struct array", () => {
-      
-    });
-
-    it("returns a deeply-nested field within a JSON object", () => {
       
     });
 
     it("supports negative array indices", () => {
       
+    });
+  
+    it("returns arbitrarily-nested JSON properties", () => {
+      expectValue("abc", { propertyName: "jsonProperties", accessors: ["string"]});
+
+      expectValue(10, { propertyName: "jsonProperties", accessors: ["ints", 0] });
+      expectValue(13, { propertyName: "jsonProperties", accessors: ["ints", 3] });
+      expectValue(13, { propertyName: "jsonProperties", accessors: ["ints", -1] });
+      expectValue(11, { propertyName: "jsonProperties", accessors: ["ints", -3] });
+
+      expectValue(12345, { propertyName: "jsonProperties", accessors: ["zoo", "address", "zipcode"] });
+      expectValue("scree!", { propertyName: "jsonProperties", accessors: ["zoo", "birds", 1, "sound"] });
     });
   });
 });
