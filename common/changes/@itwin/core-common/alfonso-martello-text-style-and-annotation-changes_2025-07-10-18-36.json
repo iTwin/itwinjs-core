@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-common",
-      "comment": "TextAnnotation element props use new BIS property `textAnnotationData`. TextAnnotations now use AnnotationTextStyle. TextBlockComponents no longer propagate styling to children. Styling is implicitly inherited from parents. Paragraphs and Runs no longer have `styleId` property. Moving frames from TextAnnotations to TextStyleSettings. Annotations account for drawing scale when computing transform. Removing TextStyle class.",
+      "comment": "TextAnnotation element props use new BIS property `textAnnotationData`. TextAnnotations now use `AnnotationTextStyle`. `TextBlockComponents` no longer propagate styling to children. Styling is implicitly inherited from parents. `Paragraph`s and `Run`s no longer have `styleId` property. Moving frames from `TextAnnotation`s to `TextStyleSettings`. Annotations account for drawing scale when computing transform. Removing `TextStyle` class.",
       "type": "none"
     }
   ],

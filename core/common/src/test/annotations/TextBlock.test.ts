@@ -118,6 +118,7 @@ describe("TextBlockComponent", () => {
       originalOverrides.frame!.shape = "circle";
 
       expect(block.styleOverrides).to.deep.equal({ widthFactor: 1234, lineHeight: 42, fontName: "Consolas", frame: { shape: "rectangle" } });
+      expect(originalOverrides.frame!.shape).to.equal("circle");
     });
   });
 

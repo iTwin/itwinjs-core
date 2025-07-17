@@ -49,7 +49,7 @@ export type TextStyleColor = ColorDefProps | "subcategory";
 export interface TextFrameStyleProps {
   /** Shape of the frame. Default: "none" */
   shape?: TextAnnotationFrameShape;
-  /** The color to fill the shape of the text frame. This fill will is applied using [[FillDisplay.Blanking]]. Default: "none" */
+  /** The color to fill the shape of the text frame. This fill is applied using [[FillDisplay.Blanking]]. Default: "none" */
   fill?: TextAnnotationFillColor;
   /** The color of the text frame's outline. Default: black */
   border?: TextStyleColor;

@@ -164,6 +164,7 @@ export class TextAnnotation2d extends AnnotationElement2d {
 
 /** An element that displays textual content within a 3d model.
  * The text is stored as a [TextAnnotation]($common) from which the element's [geometry]($docs/learning/common/GeometryStream.md) and [Placement]($common) are computed.
+ * @see [[setAnnotation]] to change the textual content.
  * @public @preview
  */
 export class TextAnnotation3d extends GraphicalElement3d {
