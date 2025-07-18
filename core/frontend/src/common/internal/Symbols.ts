@@ -27,3 +27,6 @@ export const _scheduleScriptReference = Symbol.for(sym("scheduleScriptReference"
 export const _textures = Symbol.for(sym("textures"));
 export const _transformCenter = Symbol.for(sym("transformCenter"));
 export const _transforms = Symbol.for(sym("transforms"));
+export const _symbologyOverrides = Symbol.for(sym("symbologyOverrides"));
+export const _featureIds = Symbol.for(sym("featureIds"));
+export const _range = Symbol.for(sym("range"));
