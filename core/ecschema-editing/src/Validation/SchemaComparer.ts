@@ -67,8 +67,8 @@ function labelsMatch(label1?: string, label2?: string) {
 }
 
 function descriptionsAreEqual(desc1?: string, desc2?: string) {
-  desc1 = desc1 === undefined ? "" : desc1;
-  desc2 = desc2 === undefined ? "" : desc2;
+  desc1 = desc1 ?? "";
+  desc2 = desc2 ?? "";
   return desc1 === desc2;
 }
 
