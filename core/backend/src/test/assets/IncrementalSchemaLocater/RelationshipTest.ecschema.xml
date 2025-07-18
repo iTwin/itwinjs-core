@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- ==================================================================================
+|  * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+|  * See LICENSE.md in the project root for license terms and full copyright notice.
+======================================================================================= -->
+<ECSchema schemaName="RelationshipTest" alias="rt" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2" displayLabel="Car Test Schema">
+  <ECSchemaReference name="BisCore" version="01.00.01" alias="bis"/>
+  <ECSchemaReference name="CoreCustomAttributes" version="01.00.03" alias="CoreCA"/>
+
+  <ECEntityClass typeName="Car" modifier="Abstract">
+    <BaseClass>bis:PhysicalElement</BaseClass>
+    <BaseClass>IVehicle</BaseClass>
+  </ECEntityClass>
+
+  <ECEntityClass typeName="Bike" modifier="None">
+    <BaseClass>bis:PhysicalElement</BaseClass>
+    <BaseClass>IVehicle</BaseClass>
+  </ECEntityClass>
+
+  <ECEntityClass typeName="IVehicle" modifier="Abstract">
+    <BaseClass>bis:ISubModeledElement</BaseClass>
+    <ECCustomAttributes>
+      <IsMixin xmlns="CoreCustomAttributes.01.00.03">
+        <AppliesToEntityClass>bis:PhysicalElement</AppliesToEntityClass>
+      </IsMixin>
+    </ECCustomAttributes>
+  </ECEntityClass>
+
+  <ECEntityClass typeName="Honda" modifier="Sealed">
+    <BaseClass>Car</BaseClass>
+  </ECEntityClass>
+
+  <ECEntityClass typeName="Ford" modifier="Sealed">
+    <BaseClass>Car</BaseClass>
+  </ECEntityClass>
+
+  <ECEntityClass typeName="Chevy" modifier="Sealed">
+    <BaseClass>Car</BaseClass>
+  </ECEntityClass>
+
+  <ECEntityClass typeName="Owner" modifier="Sealed">
+    <BaseClass>bis:PhysicalElement</BaseClass>
+    <BaseClass>IOwner</BaseClass>
+  </ECEntityClass>
+
+  <ECEntityClass typeName="IOwner" modifier="Abstract">
+    <ECCustomAttributes>
+      <IsMixin xmlns="CoreCustomAttributes.01.00.03">
+        <AppliesToEntityClass>Owner</AppliesToEntityClass>
+      </IsMixin>
+    </ECCustomAttributes>
+  </ECEntityClass>
+
+  <ECRelationshipClass typeName="OwnerOwnsVehicles" strength="referencing" modifier="Abstract" displayLabel="VehicleOwnerRelationship" description="Vehicle Owner Relationship">
+    <BaseClass>bis:ElementRefersToElements</BaseClass>
+
+    <ECProperty propertyName="IntProperty" typeName="int"/>
+    <ECProperty propertyName="BooleanProperty" typeName="boolean"/>
+
+    <ECCustomAttributes>
+      <HiddenClass xmlns="CoreCustomAttributes.01.00.03">
+        <Show>false</Show>
+      </HiddenClass>
+      <TestCustomAttribute xmlns="RelationshipTest.01.00.00"/>
+    </ECCustomAttributes>
+
+    <Source multiplicity="(0..1)" roleLabel="Owner owns vehicles" polymorphic="true" abstractConstraint="IOwner">
+      <Class class="Owner"/>
+      <Class class="IOwner"/>
+      <ECCustomAttributes>
+        <SourceConstraintCustomAttribute xmlns="RelationshipTest.01.00.00"/>
+        <AnyConstraintCustomAttribute xmlns="RelationshipTest.01.00.00"/>
+      </ECCustomAttributes>
+    </Source>
+
+    <Target multiplicity="(0..*)" roleLabel="Vehicle belongs to owner" polymorphic="true">
+      <Class class="IVehicle"/>
+      <ECCustomAttributes>
+        <TargetConstraintCustomAttribute xmlns="RelationshipTest.01.00.00"/>
+        <AnyConstraintCustomAttribute xmlns="RelationshipTest.01.00.00"/>
+      </ECCustomAttributes>
+    </Target>
+  </ECRelationshipClass>
+
+  <ECRelationshipClass typeName="OwnerOwnsCars" strength="referencing" modifier="None" displayLabel="CarOwnerRelationship" description="Car Owner Relationship">
+    <BaseClass>OwnerOwnsVehicles</BaseClass>
+
+    <Source multiplicity="(0..1)" roleLabel="Owner owns cars" polymorphic="false">
+      <Class class='Owner'/>
+      <ECCustomAttributes>
+        <SourceConstraintCustomAttribute xmlns="RelationshipTest.01.00.00"/>
+        <AnyConstraintCustomAttribute xmlns="RelationshipTest.01.00.00"/>
+      </ECCustomAttributes>
+    </Source>
+
+    <Target multiplicity="(0..*)" roleLabel="Car belongs to owner" polymorphic="true">
+      <Class class="Car"/>
+      <ECCustomAttributes>
+        <TargetConstraintCustomAttribute xmlns="RelationshipTest.01.00.00"/>
+        <AnyConstraintCustomAttribute xmlns="RelationshipTest.01.00.00"/>
+      </ECCustomAttributes>
+    </Target>
+  </ECRelationshipClass>
+
+  <ECRelationshipClass typeName="OwnerOwnsAmericanCars" strength="referencing" modifier="Sealed">
+    <BaseClass>OwnerOwnsCars</BaseClass>
+
+    <Source multiplicity="(0..1)" roleLabel="Owner owns cars" polymorphic="true">
+      <Class class="Owner"/>
+      <ECCustomAttributes>
+        <SourceConstraintCustomAttribute xmlns="RelationshipTest.01.00.00"/>
+        <AnyConstraintCustomAttribute xmlns="RelationshipTest.01.00.00"/>
+      </ECCustomAttributes>
+    </Source>
+
+    <Target multiplicity="(0..*)" roleLabel="Car belongs to owner" polymorphic="false" abstractConstraint="Car">
+      <Class class="Ford"/>
+      <Class class="Chevy"/>
+      <ECCustomAttributes>
+        <TargetConstraintCustomAttribute xmlns="RelationshipTest.01.00.00"/>
+        <AnyConstraintCustomAttribute xmlns="RelationshipTest.01.00.00"/>
+      </ECCustomAttributes>
+    </Target>
+  </ECRelationshipClass>
+
+  <ECRelationshipClass typeName="PhysicalModelBreaksDownCarElement" strength="embedding" strengthDirection="Backward" modifier="Sealed" description="Relationship enabling break-down of an Car Element into its constituent components">
+    <BaseClass>bis:ModelModelsElement</BaseClass>
+    <Source multiplicity="(0..1)" polymorphic="false" roleLabel="breaks down">
+      <Class class="bis:PhysicalModel"/>
+      <ECCustomAttributes>
+        <SourceConstraintCustomAttribute xmlns="RelationshipTest.01.00.00"/>
+        <AnyConstraintCustomAttribute xmlns="RelationshipTest.01.00.00"/>
+      </ECCustomAttributes>
+    </Source>
+    <Target multiplicity="(1..1)" polymorphic="false" roleLabel="is broken down by">
+      <Class class="Car"/>
+      <ECCustomAttributes>
+        <TargetConstraintCustomAttribute xmlns="RelationshipTest.01.00.00"/>
+        <AnyConstraintCustomAttribute xmlns="RelationshipTest.01.00.00"/>
+      </ECCustomAttributes>
+    </Target>
+
+  </ECRelationshipClass>
+
+  <ECCustomAttributeClass typeName="TestCustomAttribute" appliesTo="RelationshipClass" modifier="Sealed"/>
+  <ECCustomAttributeClass typeName="SourceConstraintCustomAttribute" appliesTo="SourceRelationshipConstraint" modifier="Sealed"/>
+  <ECCustomAttributeClass typeName="TargetConstraintCustomAttribute" appliesTo="TargetRelationshipConstraint" modifier="Sealed"/>
+  <ECCustomAttributeClass typeName="AnyConstraintCustomAttribute" appliesTo="AnyRelationshipConstraint" modifier="Sealed"/>
+</ECSchema>
+

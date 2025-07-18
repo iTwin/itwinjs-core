@@ -71,6 +71,9 @@ importers:
       '@itwin/core-geometry':
         specifier: workspace:*
         version: link:../geometry
+      '@itwin/ecschema-locaters':
+        specifier: workspace:*
+        version: link:../ecschema-locaters
       '@itwin/ecschema-metadata':
         specifier: workspace:*
         version: link:../ecschema-metadata
@@ -89,6 +92,9 @@ importers:
       '@types/chai-as-promised':
         specifier: ^7
         version: 7.1.0
+      '@types/deep-equal-in-any-order':
+        specifier: ^1.0.4
+        version: 1.0.4
       '@types/fs-extra':
         specifier: ^4.0.7
         version: 4.0.7
@@ -113,6 +119,9 @@ importers:
       '@types/ws':
         specifier: ^7.0.0
         version: 7.2.0
+      '@xmldom/xmldom':
+        specifier: ~0.8.10
+        version: 0.8.10
       chai:
         specifier: ^4.3.10
         version: 4.3.10
@@ -122,6 +131,9 @@ importers:
       cpx2:
         specifier: ^8.0.0
         version: 8.0.0
+      deep-equal-in-any-order:
+        specifier: ^2.0.6
+        version: 2.0.6
       dotenv:
         specifier: ^16.4.5
         version: 16.4.5
@@ -131,6 +143,9 @@ importers:
       eslint:
         specifier: ^9.13.0
         version: 9.13.0
+      glob:
+        specifier: ^10.3.12
+        version: 10.3.12
       internal-tools:
         specifier: workspace:*
         version: link:../../tools/internal
@@ -550,12 +565,30 @@ importers:
       '@itwin/eslint-plugin':
         specifier: 5.0.0-dev.1
         version: 5.0.0-dev.1(eslint@9.13.0)(typescript@5.6.2)
+      '@types/chai':
+        specifier: 4.3.1
+        version: 4.3.1
+      '@types/mocha':
+        specifier: ^10.0.6
+        version: 10.0.6
+      '@types/sinon':
+        specifier: ^17.0.2
+        version: 17.0.2
+      chai:
+        specifier: ^4.3.10
+        version: 4.3.10
       eslint:
         specifier: ^9.13.0
         version: 9.13.0
+      mocha:
+        specifier: ^11.1.0
+        version: 11.1.0
       rimraf:
         specifier: ^6.0.1
         version: 6.0.1
+      sinon:
+        specifier: ^17.0.2
+        version: 17.0.2
       typescript:
         specifier: ~5.6.2
         version: 5.6.2
@@ -5718,6 +5751,9 @@ packages:
   '@types/debug@4.1.12':
     resolution: {integrity: sha512-vIChWdVG3LG1SMxEvI/AK+FWJthlrqlTu7fbrlywTkkaONwk/UAGaULXRlf8vkzFBLVm0zkMdCquhL5aOjhXPQ==}
 
+  '@types/deep-equal-in-any-order@1.0.4':
+    resolution: {integrity: sha512-nkgl+KTkRWeybgMSBCrWrc1YHFrLADVxZ6Kllj40p9U499NGsCrFUjzgHgQY+Upsa/VWOc3YlsFEvhg+drUmkA==}
+
   '@types/deep-equal@1.0.0':
     resolution: {integrity: sha512-dByakhclM+2NaoZ8vNPEPzvr78nD8/KKBsSQOkhMpYKAEgIKDVBSM4AuM5+p59XULnrHDQX06UMkYvnuSrDGlA==}
 
@@ -6872,6 +6908,9 @@ packages:
   deep-eql@5.0.2:
     resolution: {integrity: sha512-h5k/5U50IJJFpzfL6nO9jaaumfjO/f2NjK/oYB2Djzm4p9L+3T9qWpZqZ2hAbLPuuYq9wrU08WQyBTL5GbPk5Q==}
     engines: {node: '>=6'}
+
+  deep-equal-in-any-order@2.0.6:
+    resolution: {integrity: sha512-RfnWHQzph10YrUjvWwhd15Dne8ciSJcZ3U6OD7owPwiVwsdE5IFSoZGg8rlwJD11ES+9H5y8j3fCofviRHOqLQ==}
 
   deep-equal@1.0.0:
     resolution: {integrity: sha512-jAJ/YpGYX9qUM0ZMv7FWuz4JlECyma+QhYzFecyqGweO1MNyyzIi5eRPZTXgaCkra7jjxTt03AEeNp+7e1GJ3A==}
@@ -8367,6 +8406,9 @@ packages:
   lodash.isstring@4.0.1:
     resolution: {integrity: sha512-0wJxfxH1wgO3GrbuP+dTTk7op+6L41QCXbGINEmD+ny/G/eCqGzxyCsh7159S+mgDDcoarnBw6PC1PS5+wUGgw==}
 
+  lodash.mapvalues@4.6.0:
+    resolution: {integrity: sha512-JPFqXFeZQ7BfS00H58kClY7SPVeHertPE0lNuCyZ26/XlN8TvakYD7b9bGyNmXbT/D3BbtPAAmq90gPWqLkxlQ==}
+
   lodash.merge@4.6.2:
     resolution: {integrity: sha512-0KpjqXRVvrYyCsX1swR/XTK0va6VQkQM6MNo7PqW77ByjAhoARA8EfrP1N4+KlKj8YS0ZUCtRT/YUuhyYDujIQ==}
 
@@ -9616,6 +9658,9 @@ packages:
 
   slashes@3.0.12:
     resolution: {integrity: sha512-Q9VME8WyGkc7pJf6QEkj3wE+2CnvZMI+XJhwdTPR8Z/kWQRXi7boAWLDibRPyHRTUTPx5FaU7MsyrjI3yLB4HA==}
+
+  sort-any@2.0.0:
+    resolution: {integrity: sha512-T9JoiDewQEmWcnmPn/s9h/PH9t3d/LSWi0RgVmXSuDYeZXTZOZ1/wrK2PHaptuR1VXe3clLLt0pD6sgVOwjNEA==}
 
   source-map-js@1.2.1:
     resolution: {integrity: sha512-UXWMKhLOwVKb728IUtQPXxfYU+usdybtUrK/8uGE8CQMvrhOpwvzDBwj0QhSL7MQc7vIsISBG8VQ8+IDQxpfQA==}
@@ -11983,6 +12028,8 @@ snapshots:
     dependencies:
       '@types/ms': 2.1.0
 
+  '@types/deep-equal-in-any-order@1.0.4': {}
+
   '@types/deep-equal@1.0.0': {}
 
   '@types/detect-port@1.1.0': {}
@@ -13381,6 +13428,11 @@ snapshots:
       type-detect: 4.1.0
 
   deep-eql@5.0.2: {}
+
+  deep-equal-in-any-order@2.0.6:
+    dependencies:
+      lodash.mapvalues: 4.6.0
+      sort-any: 2.0.0
 
   deep-equal@1.0.0: {}
 
@@ -15116,6 +15168,8 @@ snapshots:
 
   lodash.isstring@4.0.1: {}
 
+  lodash.mapvalues@4.6.0: {}
+
   lodash.merge@4.6.2: {}
 
   lodash.once@4.1.1: {}
@@ -16459,6 +16513,10 @@ snapshots:
   slash@3.0.0: {}
 
   slashes@3.0.12: {}
+
+  sort-any@2.0.0:
+    dependencies:
+      lodash: 4.17.21
 
   source-map-js@1.2.1: {}
 
