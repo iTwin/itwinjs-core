@@ -104,7 +104,10 @@ export interface RealityDataSourceKey {
   id: string;
   /** The context id that was used when reality data was attached - if none provided, current session iTwinId will be used */
   iTwinId?: string;
+  /** If true, do not reproject tiles for this model using the GCS from the backend. Instead, just use the basic ECEF transformation. */
+  skipGcsConversion?: boolean;
 }
+
 /**
  * RealityDataSourceKey utility functions
  * @beta */
@@ -168,6 +171,11 @@ export interface ContextRealityModelProps {
    * @beta
    */
   invisible?: boolean;
+  /**
+   * See [[ContextRealityModel.skipGcsConversion]]
+   * @alpha
+   */
+  skipGcsConversion?: boolean;
 }
 
 /** @public */
@@ -214,6 +222,9 @@ export namespace ContextRealityModelProps {
     if (input.invisible)
       output.invisible = input.invisible;
 
+    if (input.skipGcsConversion)
+      output.skipGcsConversion = input.skipGcsConversion;
+
     return output;
   }
 }
@@ -242,6 +253,7 @@ export class ContextRealityModel {
   /** An optional identifier that, if present, can be used to elide a request to the reality data service. */
   public readonly realityDataId?: string;
 
+  private _skipGcsConversion: boolean;
   private _invisible: boolean;
   private readonly _classifiers: SpatialClassifiers;
   /** @alpha */
@@ -276,6 +288,7 @@ export class ContextRealityModel {
     this.realityDataId = props.realityDataId;
     this.description = props.description ?? "";
     this._invisible = props.invisible ?? false;
+    this._skipGcsConversion = props.skipGcsConversion ?? false;
     this._appearanceOverrides = props.appearanceOverrides ? FeatureAppearance.fromJSON(props.appearanceOverrides) : undefined;
     this._displaySettings = RealityModelDisplaySettings.fromJSON(props.displaySettings);
 
@@ -332,6 +345,14 @@ export class ContextRealityModel {
     this.onDisplaySettingsChanged.raiseEvent(settings, this);
     this._props.displaySettings = settings.toJSON();
     this._displaySettings = settings;
+  }
+
+  /**
+   * If true, do not reproject tiles for this model using the GCS from the backend. Instead, just use the basic ECEF transformation.
+   * @alpha
+   */
+  public get skipGcsConversion(): boolean {
+    return this._skipGcsConversion;
   }
 
   /** If true, reality model is not drawn.

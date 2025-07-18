@@ -1862,6 +1862,8 @@ export class ContextRealityModel {
     // @beta
     readonly rdSourceKey?: RealityDataSourceKey;
     readonly realityDataId?: string;
+    // @alpha
+    get skipGcsConversion(): boolean;
     toJSON(): ContextRealityModelProps;
     readonly url: string;
 }
@@ -1882,6 +1884,8 @@ export interface ContextRealityModelProps {
     // @beta
     rdSourceKey?: RealityDataSourceKey;
     realityDataId?: string;
+    // @alpha
+    skipGcsConversion?: boolean;
     tilesetUrl: string;
 }
 
@@ -7702,6 +7706,7 @@ export interface RealityDataSourceKey {
     id: string;
     iTwinId?: string;
     provider: string;
+    skipGcsConversion?: boolean;
 }
 
 // @beta

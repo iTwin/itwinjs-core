@@ -46,6 +46,7 @@ interface RealityTreeId {
   maskModelIds?: string;
   deduplicateVertices: boolean;
   produceGeometry?: boolean;
+  skipGcsConversion?: boolean;
   displaySettings: RealityModelDisplaySettings;
   backgroundBase?: BaseLayerSettings;
   backgroundLayers?: MapLayerSettings[];
@@ -79,6 +80,7 @@ namespace RealityTreeId {
       compareRealityDataSourceKeys(lhs.rdSourceKey, rhs.rdSourceKey) ||
       compareBooleans(lhs.deduplicateVertices, rhs.deduplicateVertices) ||
       compareBooleansOrUndefined(lhs.produceGeometry, rhs.produceGeometry) ||
+      compareBooleansOrUndefined(lhs.skipGcsConversion, rhs.skipGcsConversion) ||
       compareStringsOrUndefined(lhs.maskModelIds, rhs.maskModelIds) ||
       comparePossiblyUndefined((ltf, rtf) => compareTransforms(ltf, rtf), lhs.transform, rhs.transform)
     );
@@ -100,7 +102,7 @@ class RealityTreeSupplier implements TileTreeSupplier {
     if (treeId.maskModelIds)
       await iModel.models.load(CompressedId64Set.decompressSet(treeId.maskModelIds));
 
-    const opts = { deduplicateVertices: treeId.deduplicateVertices, produceGeometry: treeId.produceGeometry };
+    const opts = { deduplicateVertices: treeId.deduplicateVertices, produceGeometry: treeId.produceGeometry, skipGcsConversion: treeId.skipGcsConversion };
     return RealityModelTileTree.createRealityModelTileTree(treeId.rdSourceKey, iModel, treeId.modelId, treeId.transform, opts);
   }
 
@@ -288,16 +290,18 @@ class RealityModelTileTreeParams implements RealityTileTreeParams {
   public loader: RealityModelTileLoader;
   public rootTile: RealityTileParams;
   public baseUrl?: string;
+  public readonly skipGcsConversion?: boolean;
 
   public get location() { return this.loader.tree.location; }
   public get yAxisUp() { return this.loader.tree.yAxisUp; }
   public get priority() { return this.loader.priority; }
 
-  public constructor(tileTreeId: string, iModel: IModelConnection, modelId: Id64String, loader: RealityModelTileLoader, public readonly gcsConverterAvailable: boolean, public readonly rootToEcef: Transform | undefined, baseUrl?: string) {
+  public constructor(tileTreeId: string, iModel: IModelConnection, modelId: Id64String, loader: RealityModelTileLoader, public readonly gcsConverterAvailable: boolean, public readonly rootToEcef: Transform | undefined, baseUrl?: string, skipGcsConversion?: boolean) {
     this.loader = loader;
     this.id = tileTreeId;
     this.modelId = modelId;
     this.iModel = iModel;
+    this.skipGcsConversion = skipGcsConversion;
     const refine = loader.tree.tilesetJson.refine;
     this.rootTile = new RealityModelTileProps({
       json: loader.tree.tilesetJson,
@@ -576,6 +580,7 @@ export namespace RealityModelTileTree {
     name?: string;
     classifiers?: SpatialClassifiersState;
     planarClipMask?: PlanarClipMaskSettings;
+    skipGcsConversion?: boolean;
     getDisplaySettings(): RealityModelDisplaySettings;
     getBackgroundBase?(): BaseLayerSettings;
     getBackgroundLayers?(): MapLayerSettings[];
@@ -738,7 +743,7 @@ export namespace RealityModelTileTree {
     iModel: IModelConnection,
     modelId: Id64String,
     tilesetToDb: Transform | undefined,
-    opts?: { deduplicateVertices?: boolean, produceGeometry?: boolean },
+    opts?: { deduplicateVertices?: boolean, produceGeometry?: boolean, skipGcsConversion?: boolean },
   ): Promise<TileTree | undefined> {
     const rdSource = await RealityDataSource.fromKey(rdSourceKey, iModel.iTwinId);
     // If we can get a valid connection from sourceKey, returns the tile tree
@@ -752,7 +757,7 @@ export namespace RealityModelTileTree {
       const gcsConverterAvailable = await getGcsConverterAvailable(iModel);
       //The full tileset url is needed so that it includes the url's search parameters if any are present
       const baseUrl = rdSource instanceof RealityDataSourceTilesetUrlImpl ? rdSource.getTilesetUrl() : undefined;
-      const params = new RealityModelTileTreeParams(tileTreeId, iModel, modelId, loader, gcsConverterAvailable, props.tilesetToEcef, baseUrl);
+      const params = new RealityModelTileTreeParams(tileTreeId, iModel, modelId, loader, gcsConverterAvailable, props.tilesetToEcef, baseUrl, opts?.skipGcsConversion);
       return new RealityModelTileTree(params);
     }
     return undefined;
@@ -816,12 +821,14 @@ export namespace RealityModelTileTree {
 export class RealityTreeReference extends RealityModelTileTree.Reference {
   protected _rdSourceKey: RealityDataSourceKey;
   private readonly _produceGeometry?: boolean;
+  private readonly _skipGcsConversion?: boolean;
   private readonly _modelId: Id64String;
   public readonly useCachedDecorations?: true | undefined;
 
   public constructor(props: RealityModelTileTree.ReferenceProps) {
     super(props);
     this._produceGeometry = props.produceGeometry;
+    this._skipGcsConversion = props.skipGcsConversion;
 
     // Maybe we should throw if both props.rdSourceKey && props.url are undefined
     if (props.rdSourceKey)
@@ -853,6 +860,7 @@ export class RealityTreeReference extends RealityModelTileTree.Reference {
       maskModelIds: this.maskModelIds,
       deduplicateVertices: this._wantWiremesh,
       produceGeometry: this._produceGeometry,
+      skipGcsConversion: this._skipGcsConversion,
       displaySettings: this._getDisplaySettings(),
     };
   }
@@ -869,6 +877,7 @@ export class RealityTreeReference extends RealityModelTileTree.Reference {
       rdSourceKey: this._rdSourceKey,
       name: this._name,
       produceGeometry: true,
+      skipGcsConversion: this._skipGcsConversion,
       getDisplaySettings: () => RealityModelDisplaySettings.defaults,
     });
 
