@@ -5,7 +5,7 @@
 import { assert, expect } from "chai";
 import * as path from "path";
 import * as sinon from "sinon";
-import { DbResult, Id64, Id64String, Logger } from "@itwin/core-bentley";
+import { DbResult, Id64, Id64String, Logger, StopWatch, using } from "@itwin/core-bentley";
 import { ECDb, ECDbOpenMode, ECSqlInsertResult, ECSqlStatement, IModelJsFs, SqliteStatement, SqliteValue, SqliteValueType } from "../../core-backend";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { ECDbTestHelper } from "./ECDbTestHelper";
@@ -13,6 +13,125 @@ import { QueryOptionsBuilder } from "@itwin/core-common";
 
 describe("ECDb", () => {
   const outDir = KnownTestLocations.outputDir;
+
+  it.only("Import Simulation Result schemas", () => {
+    const fileName = "simulationRes.ecdb";
+    const ecdbPath: string = path.join(outDir, fileName);
+    using(ECDbTestHelper.createECDb(outDir, fileName), (ecdb: ECDb) => {
+      assert.isTrue(ecdb.isOpen);
+
+      ecdb.importSchema('D:\\git\\bis-schemas3\\bis-schemas\\SimulationResults\\0-Core\\SimResultsCore.ecschema.xml');
+      ecdb.importSchema('D:\\git\\bis-schemas3\\bis-schemas\\SimulationResults\\1-HydraulicAnalysis\\StormSewerResults.ecschema.xml');
+      ecdb.importSchema('D:\\git\\bis-schemas3\\bis-schemas\\SimulationResults\\1-HydraulicAnalysis\\GvfConvexResults.ecschema.xml');
+      ecdb.importSchema('D:\\git\\bis-schemas3\\bis-schemas\\SimulationResults\\1-HydraulicAnalysis\\GvfRationalResults.ecschema.xml');
+
+      const timeStepStmt = ecdb.prepareStatement("INSERT INTO simrescore.TimeStep (TimeFromStart) VALUES (?)");
+      const manholeVolumeStmt = ecdb.prepareStatement("INSERT INTO stmswrres.BasicVolumeResultRecord (ElementId, TimeStep, Volume) VALUES (?, ?, ?)");
+      const manholeOverflowStmt = ecdb.prepareStatement("INSERT INTO stmswrres.BasicOverflowingTimeVariantResultRecord (ElementId, TimeStep, IsOverflowing) VALUES (?, ?, ?)");
+      const manholeGvfConvexStmt = ecdb.prepareStatement("INSERT INTO gvfconvex.GravityNodeTimeVariantResultRecord (ElementId, TimeStep, TotalVolumeIn) VALUES (?, ?, ?)");
+
+      const conduitFlowStmt = ecdb.prepareStatement("INSERT INTO stmswrres.BasicFlowResultRecord (ElementId, TimeStep, Flow) VALUES (?, ?, ?)");
+      const conduitSystemFlowStmt = ecdb.prepareStatement("INSERT INTO gvfconvex.ConduitSystemFlowResultRecord (ElementId, SystemInfiltration, SystemTotalInfiltration, SystemInflow, SystemKnownFlow, SystemAdditionalInfiltration, SystemPopulation, SystemAdjustedPopulation, SystemServiceArea) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
+
+      const timeStepCount = 24;
+      const manholeCount = 4;
+      const manholeIds = [
+        0x2000000091f,
+        0x20000000928,
+        0x2000000092a,
+        0x2000000092c
+      ];
+      const conduitCount = 4;
+      const conduitIds = [
+        0x2000000093b,
+        0x20000000943,
+        0x2000000094b,
+        0x20000000953
+      ];
+
+      const stopWatch = new StopWatch(undefined, true);
+
+      for (let x = 0; x < timeStepCount; x++) {
+        timeStepStmt.clearBindings();
+        timeStepStmt.reset();
+        timeStepStmt.bindDouble(1, x);
+        const timeStepRes = timeStepStmt.stepForInsert();
+
+        for (let y = 0; y < manholeCount; y++) {
+          const elementId = manholeIds[y];
+
+          manholeVolumeStmt.clearBindings();
+          manholeVolumeStmt.reset();
+          manholeVolumeStmt.bindInteger(1, elementId);
+          manholeVolumeStmt.bindNavigation(2, { id: timeStepRes.id!, relClassName: "simrescore:ResultRecordAtTimeStep" });
+          manholeVolumeStmt.bindDouble(3, Math.random() * 100.0);
+          manholeVolumeStmt.stepForInsert();
+
+          manholeOverflowStmt.clearBindings();
+          manholeOverflowStmt.reset();
+          manholeOverflowStmt.bindInteger(1, elementId);
+          manholeOverflowStmt.bindNavigation(2, { id: timeStepRes.id!, relClassName: "simrescore:ResultRecordAtTimeStep" });
+          manholeOverflowStmt.bindBoolean(3, (Math.random() > 0.5));
+          manholeOverflowStmt.stepForInsert();
+
+          manholeGvfConvexStmt.clearBindings();
+          manholeGvfConvexStmt.reset();
+          manholeGvfConvexStmt.bindInteger(1, elementId);
+          manholeGvfConvexStmt.bindNavigation(2, { id: timeStepRes.id!, relClassName: "simrescore:ResultRecordAtTimeStep" });
+          manholeGvfConvexStmt.bindDouble(3, Math.random() * 50.0);
+          manholeGvfConvexStmt.stepForInsert();
+        }
+
+        for (let y = 0; y < conduitCount; y++) {
+          const elementId = conduitIds[y];
+
+          conduitFlowStmt.clearBindings();
+          conduitFlowStmt.reset();
+          conduitFlowStmt.bindInteger(1, elementId);
+          conduitFlowStmt.bindNavigation(2, { id: timeStepRes.id!, relClassName: "simrescore:ResultRecordAtTimeStep" });
+          conduitFlowStmt.bindDouble(3, Math.random() * 100.0);
+          conduitFlowStmt.stepForInsert();
+        }
+      }
+
+      for (let y = 0; y < conduitCount; y++) {
+        const elementId = conduitIds[y];
+
+        conduitSystemFlowStmt.clearBindings();
+        conduitSystemFlowStmt.reset();
+        conduitSystemFlowStmt.bindInteger(1, elementId);
+        conduitSystemFlowStmt.bindDouble(2, Math.random() * 100.0);
+        conduitSystemFlowStmt.bindDouble(3, Math.random() * 100.0);
+        conduitSystemFlowStmt.bindDouble(4, Math.random() * 100.0);
+        conduitSystemFlowStmt.bindDouble(5, Math.random() * 100.0);
+        conduitSystemFlowStmt.bindDouble(6, Math.random() * 100.0);
+        conduitSystemFlowStmt.bindDouble(7, Math.random() * 100.0);
+        conduitSystemFlowStmt.bindDouble(8, Math.random() * 100.0);
+        conduitSystemFlowStmt.bindDouble(9, Math.random() * 100.0);
+        conduitSystemFlowStmt.stepForInsert();
+      }
+
+      ecdb.saveChanges();
+      ecdb.withSqliteStatement("VACUUM", () => { });
+
+      timeStepStmt.dispose();
+      manholeVolumeStmt.dispose();
+      manholeOverflowStmt.dispose();
+      manholeGvfConvexStmt.dispose();
+      conduitFlowStmt.dispose();
+      conduitSystemFlowStmt.dispose();
+
+      const timeLapsed = stopWatch.stop();
+
+      Logger.logInfo("ECDb", "Insertion into Simulation Result Db: ${timeLapsed} ms");
+    });
+  });
+
+  it("should be able to create a new ECDb", () => {
+    using(ECDbTestHelper.createECDb(outDir, "create.ecdb"), (ecdb: ECDb) => {
+      assert.isTrue(ecdb.isOpen);
+    });
+  });
 
   it("should be able to create a new ECDb", () => {
     using ecdb = ECDbTestHelper.createECDb(outDir, "create.ecdb");
