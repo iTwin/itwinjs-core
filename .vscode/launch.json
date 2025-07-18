@@ -50,6 +50,23 @@
       ]
     },
     {
+      "name": "Backend PhysicalMaterial Domain Tests",
+      "presentation": {
+        "group": "0_CoreTests",
+        "order": 1
+      },
+      "cwd": "${workspaceFolder}/domains/physical-material/backend/",
+      "type": "node",
+      "request": "launch",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "test"
+      ],
+      "outFiles": [
+        "${workspaceFolder}/domains/physical-material/backend/**/lib/**/*.js"
+      ]
+    },
+    {
       "name": "Bentley Tests",
       "presentation": {
         "group": "0_CoreTests",
