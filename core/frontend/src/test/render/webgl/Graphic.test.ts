@@ -5,12 +5,13 @@
 
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { IModelApp } from "../../../IModelApp";
-import { EmptyLocalization, FeatureTable, PackedFeatureTable } from "@itwin/core-common";
+import { EmptyLocalization, Feature, FeatureTable, FillFlags, GraphicParams, PackedFeatureTable } from "@itwin/core-common";
 import { RenderGraphic } from "../../../render/RenderGraphic";
 import { Point3d, Range3d, Transform } from "@itwin/core-geometry";
 import { GraphicBuilder } from "../../../render/GraphicBuilder";
 import { GraphicBranch } from "../../../render/GraphicBranch";
 import { GraphicType } from "../../../common/render/GraphicType";
+import { Graphic, GraphicOwner } from "../../../internal/webgl";
 
 describe("Graphic", () => {
   beforeAll(async () => IModelApp.startup({ localization: new EmptyLocalization() }));
@@ -28,14 +29,16 @@ describe("Graphic", () => {
     return range;
   }
 
-  function createGraphic(populate: (builder: GraphicBuilder) => void): RenderGraphic {
+  function createGraphic(populate: (builder: GraphicBuilder) => void): Graphic {
     const builder = IModelApp.renderSystem.createGraphic({
       type: GraphicType.Scene,
       computeChordTolerance: () => 0.001,
     });
 
     populate(builder);
-    return builder.finish();
+    const graphic = builder.finish();
+    expect(graphic).instanceof(Graphic);
+    return graphic as Graphic;
   }
 
   function unionRange(ranges: Range3d[]): Range3d {
@@ -47,13 +50,15 @@ describe("Graphic", () => {
     return range;
   }
 
-  function createBranch(graphics: RenderGraphic[], transform: Transform): RenderGraphic {
+  function createBranch(graphics: RenderGraphic[], transform: Transform): Graphic {
     const branch = new GraphicBranch();
     for (const graphic of graphics) {
       branch.add(graphic);
     }
 
-    return IModelApp.renderSystem.createBranch(branch, transform);
+    const graphic = IModelApp.renderSystem.createBranch(branch, transform);
+    expect(graphic).instanceof(Graphic);
+    return graphic as Graphic;
   }
 
   it("computes range", () => {
@@ -101,5 +106,38 @@ describe("Graphic", () => {
 
     const batchBranch = createBranch([batch], Transform.createTranslationXYZ(-10, 20, 0));
     expectRange(batchBranch, new Range3d(-10, 20, 0, -9, 22, 3));
+  });
+
+  it("determines whether or not it has blanking fill", () => {
+    const point = createGraphic((b) => b.addPointString([new Point3d()]));
+    const line = createGraphic((b) => b.addLineString([new Point3d(0, 0, 0), new Point3d(1, 1, 1)]));
+    const shape = createGraphic((b) => b.addShape([new Point3d(0, 0, 0), new Point3d(1, 0, 0), new Point3d(1, 1, 0), new Point3d(0, 0, 0)]));
+    const blankingShape = createGraphic((b) => {
+      const params = new GraphicParams();
+      params.fillFlags = FillFlags.Blanking;
+      b.activateGraphicParams(params);
+      b.addShape([new Point3d(0, 0, 0), new Point3d(1, 0, 0), new Point3d(1, 1, 0), new Point3d(0, 0, 0)]);
+    });
+
+    expect(point.hasBlankingFill).to.be.false;
+    expect(line.hasBlankingFill).to.be.false;
+    expect(shape.hasBlankingFill).to.be.false;
+    expect(blankingShape.hasBlankingFill).to.be.true;
+
+    const shapeOwner = IModelApp.renderSystem.createGraphicOwner(shape) as GraphicOwner;
+    expect(shapeOwner.hasBlankingFill).to.be.false;
+    const blankingOwner = IModelApp.renderSystem.createGraphicOwner(blankingShape) as GraphicOwner;
+    expect(blankingOwner.hasBlankingFill).to.be.true;
+
+    const list = IModelApp.renderSystem.createGraphicList([blankingOwner, shapeOwner]) as Graphic;
+    expect(list.hasBlankingFill).to.be.true;
+
+    const features = new FeatureTable(100);
+    features.insert(new Feature("0x123"));
+    const batch = IModelApp.renderSystem.createBatch(list, features.pack(), new Range3d(0, 0, 0, 1, 1, 1)) as Graphic;
+    expect(batch.hasBlankingFill).to.be.true;
+
+    const branch = createBranch([batch], Transform.createIdentity());
+    expect(branch.hasBlankingFill).to.be.true;
   });
 });
