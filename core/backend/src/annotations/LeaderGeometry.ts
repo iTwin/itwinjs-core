@@ -6,10 +6,10 @@
  * @module ElementGeometry
  */
 
-import { ColorDef, ElementGeometry, GeometryParams, TextAnnotationLeader, TextFrameStyleProps } from "@itwin/core-common";
+import { ColorDef, ElementGeometry, GeometryParams, TextAnnotationLeader, TextFrameStyleProps, TextStyleColor } from "@itwin/core-common";
 import { CurveCurve, LineSegment3d, LineString3d, Loop, Path, Point3d, Transform, Vector3d } from "@itwin/core-geometry";
 import { computeFrame } from "./FrameGeometry";
-import { TextBlockLayout } from "./TextBlockLayout";
+import { TextBlockLayout, TextStyleResolver } from "./TextBlockLayout";
 
 /**
  * Constructs and appends leader lines and their terminators to the provided geometry builder for a text annotation.
@@ -28,8 +28,10 @@ import { TextBlockLayout } from "./TextBlockLayout";
  * @returns `true` if at least one leader with a terminator was successfully appended; otherwise, `false`.
  * @beta
  */
-export function appendLeadersToBuilder(builder: ElementGeometry.Builder, leaders: TextAnnotationLeader[], layout: TextBlockLayout, transform: Transform, params: GeometryParams, frame?: TextFrameStyleProps): boolean {
+export function appendLeadersToBuilder(builder: ElementGeometry.Builder, leaders: TextAnnotationLeader[], layout: TextBlockLayout, transform: Transform, params: GeometryParams, textStyleResolver: TextStyleResolver): boolean {
   let result = true;
+  const scaledLineHeight = textStyleResolver.blockSettings.lineHeight * textStyleResolver.scaleFactor;
+  let frame: TextFrameStyleProps | undefined = textStyleResolver.blockSettings.frame;
 
   // If there is no frame, use a rectangular frame to compute the attachmentPoints for leaders.
   if (frame === undefined || frame.shape === "none") {
@@ -39,9 +41,18 @@ export function appendLeadersToBuilder(builder: ElementGeometry.Builder, leaders
   const frameCurve = computeFrame({ frame: frame.shape, range: layout.range, transform });
 
   for (const leader of leaders) {
-    if (leader.styleOverrides?.leader?.color !== "subcategory" && leader.styleOverrides?.color !== "subcategory") {
-      const color = leader.styleOverrides?.leader?.color ?? leader.styleOverrides?.color;
-      params.lineColor = color ? ColorDef.fromJSON(color) : ColorDef.black;
+    const leaderStyle = textStyleResolver.resolveTextAnnotationLeaderSettings(leader);
+
+    let effectiveColor: TextStyleColor = "subcategory";
+
+    if (leaderStyle.leader.color === "inherit") {
+      effectiveColor = leaderStyle.color;
+    } else if (leaderStyle.leader.color !== "subcategory") {
+      effectiveColor = leaderStyle.leader.color;
+    }
+
+    if (effectiveColor !== "subcategory") {
+      params.lineColor = ColorDef.fromJSON(effectiveColor);
       result = result && builder.appendGeometryParamsChange(params);
     }
 
@@ -57,8 +68,8 @@ export function appendLeadersToBuilder(builder: ElementGeometry.Builder, leaders
       leaderLinePoints.push(point);
     });
 
-    if (leader.styleOverrides?.leader?.wantElbow) {
-      const elbowLength = (leader.styleOverrides.leader.elbowLength ?? 1) * (leader.styleOverrides.lineHeight ?? 1)
+    if (leaderStyle.leader.wantElbow) {
+      const elbowLength = leaderStyle.leader.elbowLength * scaledLineHeight;
       const elbowDirection = computeElbowDirection(attachmentPoint, frameCurve, elbowLength);
       if (elbowDirection)
         leaderLinePoints.push(attachmentPoint.plusScaled(elbowDirection, elbowLength))
@@ -75,8 +86,8 @@ export function appendLeadersToBuilder(builder: ElementGeometry.Builder, leaders
 
     const termY = terminatorDirection?.unitCrossProduct(Vector3d.unitZ());
     if (!termY || !terminatorDirection) continue; // Assuming leaders without terminators is a valid case.
-    const terminatorHeight = (leader.styleOverrides?.leader?.terminatorHeightFactor ?? 1) * (leader.styleOverrides?.lineHeight ?? 1);
-    const terminatorWidth = (leader.styleOverrides?.leader?.terminatorWidthFactor ?? 1) * (leader.styleOverrides?.lineHeight ?? 1);
+    const terminatorHeight = leaderStyle.leader.terminatorHeightFactor * scaledLineHeight;
+    const terminatorWidth = leaderStyle.leader.terminatorWidthFactor * scaledLineHeight;
     const basePoint = leader.startPoint.plusScaled(terminatorDirection, terminatorWidth);
     const termPointA = basePoint.plusScaled(termY, terminatorHeight);
     const termPointB = basePoint.plusScaled(termY.negate(), terminatorHeight);
