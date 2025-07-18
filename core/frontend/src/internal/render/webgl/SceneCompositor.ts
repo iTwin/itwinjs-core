@@ -1667,7 +1667,7 @@ class Compositor extends SceneCompositor {
 
   public override readContours(rect: ViewRect): ContourPixels | undefined {
     // Are we actually drawing any contours? If not, don't bother reading an array of all zeroes off the GPU.
-    const contours = this.target.currentContours;
+    const contours = this.target.is3d? this.target.plan.contours : this.target.currentContours;
     if (!contours || !contours.displayContours || contours.groups.length === 0) {
       return undefined;
     }

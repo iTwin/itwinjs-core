@@ -40,14 +40,15 @@ export class Contours implements WebGLDisposable {
   }
 
   private matchesSubCategories(): boolean {
-    if (this._contours === undefined && this.target.currentContours === undefined)
+    const contours = this.target.is3d? this.target.plan.contours : this.target.currentContours;
+    if (this._contours === undefined && contours === undefined)
       return true;
-    if (this._contours === undefined || this.target.currentContours === undefined)
+    if (this._contours === undefined || contours === undefined)
       return false;
-    if (this._contours.groups.length !== this.target.currentContours.groups.length)
+    if (this._contours.groups.length !== contours.groups.length)
       return false;
     for (let index = 0, len = this._contours.groups.length; index < len && index < ContourDisplay.maxContourGroups; ++index) {
-      if (!this._contours.groups[index].subCategoriesEqual(this.target.currentContours.groups[index]))
+      if (!this._contours.groups[index].subCategoriesEqual(contours.groups[index]))
         return false;
     }
     return true;

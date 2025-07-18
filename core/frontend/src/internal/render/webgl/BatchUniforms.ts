@@ -95,7 +95,7 @@ export class BatchUniforms {
   }
 
   public get wantContourLines(): boolean {
-    const contours = this._target.currentBranch.contourLine;
+    const contours = this._target.is3d? this._target.plan.contours : this._target.currentContours;
     return undefined !== contours && contours.displayContours && contours.groups.length > 0;
   }
 
