@@ -6066,7 +6066,7 @@ export abstract class TransitionSpiral3d extends CurvePrimitive {
     abstract clone(): TransitionSpiral3d;
     clonePartialCurve(fractionA: number, fractionB: number): TransitionSpiral3d;
     cloneTransformed(transform: Transform): TransitionSpiral3d;
-    constructOffsetXY(offsetDistanceOrOptions: number | OffsetOptions): CurvePrimitive | CurvePrimitive[] | undefined;
+    constructOffsetXY(offsetDistanceOrOptions: number | OffsetOptions): BSplineCurve3d | undefined;
     static curvatureToRadius(curvature: number): number;
     get designProperties(): TransitionConditionalProperties | undefined;
     protected _designProperties: TransitionConditionalProperties | undefined;
