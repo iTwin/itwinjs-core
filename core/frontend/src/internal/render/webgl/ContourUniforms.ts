@@ -56,15 +56,13 @@ export class ContourUniforms {
   }
 
   public update(target: Target): void {
-    const plan = target.plan;
-    const contourLine = target.is3d? plan.contours : target.currentContours;
-    if (this.contourDisplay && contourLine && this.contourDisplay.equals(contourLine)) {
+    if (this.contourDisplay && target.currentContours && this.contourDisplay.equals(target.currentContours)) {
       return;
     }
 
     desync(this);
 
-    this._contourDisplay = contourLine;
+    this._contourDisplay = target.currentContours;
 
     if (undefined === this.contourDisplay)
       return;
