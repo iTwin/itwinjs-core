@@ -523,7 +523,7 @@ describe("Voronoi", () => {
     const allGeometry: GeometryQuery[] = [];
 
     const path = IModelJson.Reader.parse(
-      JSON.parse(fs.readFileSync("./src/test/data/curve/voronoi/path_with_arc_and_linesegment.json", "utf8")),
+      JSON.parse(fs.readFileSync("./src/test/data/curve/voronoi/path_with_arc_and_linesegment.imjs", "utf8")),
     ) as Path;
     if (ck.testDefined(path, "path successfully parsed"))
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, path);
@@ -545,7 +545,7 @@ describe("Voronoi", () => {
     const allGeometry: GeometryQuery[] = [];
 
     const path = IModelJson.Reader.parse(
-      JSON.parse(fs.readFileSync("./src/test/data/curve/voronoi/path_with_arc_and_linestring.json", "utf8")),
+      JSON.parse(fs.readFileSync("./src/test/data/curve/voronoi/path_with_arc_and_linestring.imjs", "utf8")),
     ) as Path;
     if (ck.testDefined(path, "path successfully parsed"))
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, path);
@@ -568,7 +568,7 @@ describe("Voronoi", () => {
     const allGeometry: GeometryQuery[] = [];
 
     const path = IModelJson.Reader.parse(
-      JSON.parse(fs.readFileSync("./src/test/data/curve/voronoi/path_with_spirals.json", "utf8")),
+      JSON.parse(fs.readFileSync("./src/test/data/curve/voronoi/path_with_spirals.imjs", "utf8")),
     ) as Path;
     if (ck.testDefined(path, "path successfully parsed"))
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, path);
