@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "new reprojectGeometry option available when creating a geometry tile tree reference.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}
