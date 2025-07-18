@@ -235,15 +235,13 @@ export class ClipUtilities {
    */
   public static clipAnyRegion(region: AnyRegion, clipper: Clipper): AnyRegion | undefined {
     let result: UnionRegion | undefined;
-    // Create "local region" which is the result of rotating region to make
-    // it parallel to the xy-plane and then translating it to the xy-plane.
     const localToWorld = ClipUtilities._workTransform = FrameBuilder.createRightHandedFrame(undefined, region, ClipUtilities._workTransform);
     if (!localToWorld)
       return result;
     const worldToLocal = localToWorld?.inverse();
     if (!worldToLocal)
       return result;
-    const localRegion = region.cloneTransformed(worldToLocal) as AnyRegion;
+    const localRegion = region.cloneTransformed(worldToLocal) as AnyRegion; // parallel to xy-plane so we can ignore z
     if (!localRegion)
       return result;
     // We can only clip convex polygons with our clipper machinery, but the input region doesn't have to be
