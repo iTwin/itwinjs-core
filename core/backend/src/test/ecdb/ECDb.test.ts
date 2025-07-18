@@ -5,8 +5,8 @@
 import { assert, expect } from "chai";
 import * as path from "path";
 import * as sinon from "sinon";
-import { DbResult, Id64, Id64String, Logger, StopWatch, using } from "@itwin/core-bentley";
-import { ECDb, ECDbOpenMode, ECSqlInsertResult, ECSqlStatement, IModelJsFs, SqliteStatement, SqliteValue, SqliteValueType } from "../../core-backend";
+import { DbResult, Id64, Id64String, Logger } from "@itwin/core-bentley";
+import { ECDb, ECDbOpenMode, ECSqlInsertResult, ECSqlStatement, ECSqlWriteStatement, IModelJsFs, SqliteStatement, SqliteValue, SqliteValueType } from "../../core-backend";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { ECDbTestHelper } from "./ECDbTestHelper";
 import { QueryOptionsBuilder } from "@itwin/core-common";
@@ -17,120 +17,112 @@ describe("ECDb", () => {
   it.only("Import Simulation Result schemas", () => {
     const fileName = "simulationRes.ecdb";
     const ecdbPath: string = path.join(outDir, fileName);
-    using(ECDbTestHelper.createECDb(outDir, fileName), (ecdb: ECDb) => {
-      assert.isTrue(ecdb.isOpen);
+    using ecdb = ECDbTestHelper.createECDb(outDir, fileName);
+    assert.isTrue(ecdb.isOpen);
 
-      ecdb.importSchema('D:\\git\\bis-schemas3\\bis-schemas\\SimulationResults\\0-Core\\SimResultsCore.ecschema.xml');
-      ecdb.importSchema('D:\\git\\bis-schemas3\\bis-schemas\\SimulationResults\\1-HydraulicAnalysis\\StormSewerResults.ecschema.xml');
-      ecdb.importSchema('D:\\git\\bis-schemas3\\bis-schemas\\SimulationResults\\1-HydraulicAnalysis\\GvfConvexResults.ecschema.xml');
-      ecdb.importSchema('D:\\git\\bis-schemas3\\bis-schemas\\SimulationResults\\1-HydraulicAnalysis\\GvfRationalResults.ecschema.xml');
+    ecdb.importSchema('D:\\git\\bis-schemas3\\bis-schemas\\SimulationResults\\0-Core\\SimResultsCore.ecschema.xml');
+    ecdb.importSchema('D:\\git\\bis-schemas3\\bis-schemas\\SimulationResults\\1-HydraulicAnalysis\\StormSewerResults.ecschema.xml');
+    ecdb.importSchema('D:\\git\\bis-schemas3\\bis-schemas\\SimulationResults\\1-HydraulicAnalysis\\GvfConvexResults.ecschema.xml');
+    ecdb.importSchema('D:\\git\\bis-schemas3\\bis-schemas\\SimulationResults\\1-HydraulicAnalysis\\GvfRationalResults.ecschema.xml');
 
-      const timeStepStmt = ecdb.prepareStatement("INSERT INTO simrescore.TimeStep (TimeFromStart) VALUES (?)");
-      const manholeVolumeStmt = ecdb.prepareStatement("INSERT INTO stmswrres.BasicVolumeResultRecord (ElementId, TimeStep, Volume) VALUES (?, ?, ?)");
-      const manholeOverflowStmt = ecdb.prepareStatement("INSERT INTO stmswrres.BasicOverflowingTimeVariantResultRecord (ElementId, TimeStep, IsOverflowing) VALUES (?, ?, ?)");
-      const manholeGvfConvexStmt = ecdb.prepareStatement("INSERT INTO gvfconvex.GravityNodeTimeVariantResultRecord (ElementId, TimeStep, TotalVolumeIn) VALUES (?, ?, ?)");
+    const timeStepStmt = ecdb.prepareStatement("INSERT INTO simrescore.TimeStep (TimeFromStart) VALUES (?)");
+    const manholeVolumeStmt = ecdb.prepareStatement("INSERT INTO stmswrres.BasicVolumeResultRecord (ElementId, TimeStep, Volume) VALUES (?, ?, ?)");
+    const manholeOverflowStmt = ecdb.prepareStatement("INSERT INTO stmswrres.BasicOverflowingTimeVariantResultRecord (ElementId, TimeStep, IsOverflowing) VALUES (?, ?, ?)");
+    const manholeGvfConvexStmt = ecdb.prepareStatement("INSERT INTO gvfconvex.GravityNodeTimeVariantResultRecord (ElementId, TimeStep, TotalVolumeIn) VALUES (?, ?, ?)");
 
-      const conduitFlowStmt = ecdb.prepareStatement("INSERT INTO stmswrres.BasicFlowResultRecord (ElementId, TimeStep, Flow) VALUES (?, ?, ?)");
-      const conduitSystemFlowStmt = ecdb.prepareStatement("INSERT INTO gvfconvex.ConduitSystemFlowResultRecord (ElementId, SystemInfiltration, SystemTotalInfiltration, SystemInflow, SystemKnownFlow, SystemAdditionalInfiltration, SystemPopulation, SystemAdjustedPopulation, SystemServiceArea) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
+    const conduitFlowStmt = ecdb.prepareStatement("INSERT INTO stmswrres.BasicFlowResultRecord (ElementId, TimeStep, Flow) VALUES (?, ?, ?)");
+    const conduitSystemFlowStmt = ecdb.prepareStatement("INSERT INTO gvfconvex.ConduitSystemFlowResultRecord (ElementId, SystemInfiltration, SystemTotalInfiltration, SystemInflow, SystemKnownFlow, SystemAdditionalInfiltration, SystemPopulation, SystemAdjustedPopulation, SystemServiceArea) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
 
-      const timeStepCount = 24;
-      const manholeCount = 4;
-      const manholeIds = [
-        0x2000000091f,
-        0x20000000928,
-        0x2000000092a,
-        0x2000000092c
-      ];
-      const conduitCount = 4;
-      const conduitIds = [
-        0x2000000093b,
-        0x20000000943,
-        0x2000000094b,
-        0x20000000953
-      ];
+    const timeStepCount = 24;
+    const manholeCount = 4;
+    const manholeIds = [
+      0x2000000091f,
+      0x20000000928,
+      0x2000000092a,
+      0x2000000092c
+    ];
+    const conduitCount = 4;
+    const conduitIds = [
+      0x2000000093b,
+      0x20000000943,
+      0x2000000094b,
+      0x20000000953
+    ];
 
-      const stopWatch = new StopWatch(undefined, true);
+    for (let x = 0; x < timeStepCount; x++) {
+      timeStepStmt.clearBindings();
+      timeStepStmt.reset();
+      timeStepStmt.bindDouble(1, x);
+      const timeStepRes = timeStepStmt.stepForInsert();
 
-      for (let x = 0; x < timeStepCount; x++) {
-        timeStepStmt.clearBindings();
-        timeStepStmt.reset();
-        timeStepStmt.bindDouble(1, x);
-        const timeStepRes = timeStepStmt.stepForInsert();
+      for (let y = 0; y < manholeCount; y++) {
+        const elementId = manholeIds[y];
 
-        for (let y = 0; y < manholeCount; y++) {
-          const elementId = manholeIds[y];
+        manholeVolumeStmt.clearBindings();
+        manholeVolumeStmt.reset();
+        manholeVolumeStmt.bindInteger(1, elementId);
+        manholeVolumeStmt.bindNavigation(2, { id: timeStepRes.id!, relClassName: "simrescore:ResultRecordAtTimeStep" });
+        manholeVolumeStmt.bindDouble(3, Math.random() * 100.0);
+        manholeVolumeStmt.stepForInsert();
 
-          manholeVolumeStmt.clearBindings();
-          manholeVolumeStmt.reset();
-          manholeVolumeStmt.bindInteger(1, elementId);
-          manholeVolumeStmt.bindNavigation(2, { id: timeStepRes.id!, relClassName: "simrescore:ResultRecordAtTimeStep" });
-          manholeVolumeStmt.bindDouble(3, Math.random() * 100.0);
-          manholeVolumeStmt.stepForInsert();
+        manholeOverflowStmt.clearBindings();
+        manholeOverflowStmt.reset();
+        manholeOverflowStmt.bindInteger(1, elementId);
+        manholeOverflowStmt.bindNavigation(2, { id: timeStepRes.id!, relClassName: "simrescore:ResultRecordAtTimeStep" });
+        manholeOverflowStmt.bindBoolean(3, (Math.random() > 0.5));
+        manholeOverflowStmt.stepForInsert();
 
-          manholeOverflowStmt.clearBindings();
-          manholeOverflowStmt.reset();
-          manholeOverflowStmt.bindInteger(1, elementId);
-          manholeOverflowStmt.bindNavigation(2, { id: timeStepRes.id!, relClassName: "simrescore:ResultRecordAtTimeStep" });
-          manholeOverflowStmt.bindBoolean(3, (Math.random() > 0.5));
-          manholeOverflowStmt.stepForInsert();
-
-          manholeGvfConvexStmt.clearBindings();
-          manholeGvfConvexStmt.reset();
-          manholeGvfConvexStmt.bindInteger(1, elementId);
-          manholeGvfConvexStmt.bindNavigation(2, { id: timeStepRes.id!, relClassName: "simrescore:ResultRecordAtTimeStep" });
-          manholeGvfConvexStmt.bindDouble(3, Math.random() * 50.0);
-          manholeGvfConvexStmt.stepForInsert();
-        }
-
-        for (let y = 0; y < conduitCount; y++) {
-          const elementId = conduitIds[y];
-
-          conduitFlowStmt.clearBindings();
-          conduitFlowStmt.reset();
-          conduitFlowStmt.bindInteger(1, elementId);
-          conduitFlowStmt.bindNavigation(2, { id: timeStepRes.id!, relClassName: "simrescore:ResultRecordAtTimeStep" });
-          conduitFlowStmt.bindDouble(3, Math.random() * 100.0);
-          conduitFlowStmt.stepForInsert();
-        }
+        manholeGvfConvexStmt.clearBindings();
+        manholeGvfConvexStmt.reset();
+        manholeGvfConvexStmt.bindInteger(1, elementId);
+        manholeGvfConvexStmt.bindNavigation(2, { id: timeStepRes.id!, relClassName: "simrescore:ResultRecordAtTimeStep" });
+        manholeGvfConvexStmt.bindDouble(3, Math.random() * 50.0);
+        manholeGvfConvexStmt.stepForInsert();
       }
 
       for (let y = 0; y < conduitCount; y++) {
         const elementId = conduitIds[y];
 
-        conduitSystemFlowStmt.clearBindings();
-        conduitSystemFlowStmt.reset();
-        conduitSystemFlowStmt.bindInteger(1, elementId);
-        conduitSystemFlowStmt.bindDouble(2, Math.random() * 100.0);
-        conduitSystemFlowStmt.bindDouble(3, Math.random() * 100.0);
-        conduitSystemFlowStmt.bindDouble(4, Math.random() * 100.0);
-        conduitSystemFlowStmt.bindDouble(5, Math.random() * 100.0);
-        conduitSystemFlowStmt.bindDouble(6, Math.random() * 100.0);
-        conduitSystemFlowStmt.bindDouble(7, Math.random() * 100.0);
-        conduitSystemFlowStmt.bindDouble(8, Math.random() * 100.0);
-        conduitSystemFlowStmt.bindDouble(9, Math.random() * 100.0);
-        conduitSystemFlowStmt.stepForInsert();
+        conduitFlowStmt.clearBindings();
+        conduitFlowStmt.reset();
+        conduitFlowStmt.bindInteger(1, elementId);
+        conduitFlowStmt.bindNavigation(2, { id: timeStepRes.id!, relClassName: "simrescore:ResultRecordAtTimeStep" });
+        conduitFlowStmt.bindDouble(3, Math.random() * 100.0);
+        conduitFlowStmt.stepForInsert();
       }
+    }
 
-      ecdb.saveChanges();
-      ecdb.withSqliteStatement("VACUUM", () => { });
+    for (let y = 0; y < conduitCount; y++) {
+      const elementId = conduitIds[y];
 
-      timeStepStmt.dispose();
-      manholeVolumeStmt.dispose();
-      manholeOverflowStmt.dispose();
-      manholeGvfConvexStmt.dispose();
-      conduitFlowStmt.dispose();
-      conduitSystemFlowStmt.dispose();
+      conduitSystemFlowStmt.clearBindings();
+      conduitSystemFlowStmt.reset();
+      conduitSystemFlowStmt.bindInteger(1, elementId);
+      conduitSystemFlowStmt.bindDouble(2, Math.random() * 100.0);
+      conduitSystemFlowStmt.bindDouble(3, Math.random() * 100.0);
+      conduitSystemFlowStmt.bindDouble(4, Math.random() * 100.0);
+      conduitSystemFlowStmt.bindDouble(5, Math.random() * 100.0);
+      conduitSystemFlowStmt.bindDouble(6, Math.random() * 100.0);
+      conduitSystemFlowStmt.bindDouble(7, Math.random() * 100.0);
+      conduitSystemFlowStmt.bindDouble(8, Math.random() * 100.0);
+      conduitSystemFlowStmt.bindDouble(9, Math.random() * 100.0);
+      conduitSystemFlowStmt.stepForInsert();
+    }
 
-      const timeLapsed = stopWatch.stop();
+    ecdb.saveChanges();
+    ecdb.withSqliteStatement("VACUUM", () => { });
 
-      Logger.logInfo("ECDb", "Insertion into Simulation Result Db: ${timeLapsed} ms");
-    });
+    timeStepStmt.dispose();
+    manholeVolumeStmt.dispose();
+    manholeOverflowStmt.dispose();
+    manholeGvfConvexStmt.dispose();
+    conduitFlowStmt.dispose();
+    conduitSystemFlowStmt.dispose();
   });
 
   it("should be able to create a new ECDb", () => {
-    using(ECDbTestHelper.createECDb(outDir, "create.ecdb"), (ecdb: ECDb) => {
-      assert.isTrue(ecdb.isOpen);
-    });
+    using ecdb = ECDbTestHelper.createECDb(outDir, "create.ecdb");
+    assert.isTrue(ecdb.isOpen);
   });
 
   it("should be able to create a new ECDb", () => {
@@ -190,6 +182,7 @@ describe("ECDb", () => {
       </ECEntityClass>
       </ECSchema>`);
     assert.isTrue(testECDb.isOpen);
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     testECDb.withPreparedStatement("INSERT INTO test.Person(Name,Age) VALUES('Mary', 45)", (stmt: ECSqlStatement) => {
       const res: ECSqlInsertResult = stmt.stepForInsert();
       assert.equal(res.status, DbResult.BE_SQLITE_DONE);
@@ -207,6 +200,7 @@ describe("ECDb", () => {
     testECDb.saveChanges();
 
     const runDbListPragmaUsingStatement = (ecdb: ECDb) => {
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       return ecdb.withPreparedStatement("PRAGMA db_list", (stmt: ECSqlStatement) => {
         const result: { alias: string, filename: string, profile: string }[] = [];
         while (stmt.step() === DbResult.BE_SQLITE_ROW) {
@@ -226,6 +220,7 @@ describe("ECDb", () => {
     using testECDb0 = ECDbTestHelper.createECDb(outDir, "file2.ecdb");
     // following call will not fail but unknow ECDb profile will cause it to be attach as SQLite.
     testECDb0.attachDb(ecdbPath1, "source");
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     expect(() => testECDb0.withPreparedStatement("SELECT Name, Age FROM source.test.Person", () => { })).to.throw("ECClass 'source.test.Person' does not exist or could not be loaded.");
     expect(runDbListPragmaUsingStatement(testECDb0)).deep.equals([
       {
@@ -250,6 +245,7 @@ describe("ECDb", () => {
         profile: "ECDb"
       },
     ]);
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     expect(() => testECDb0.withPreparedStatement("SELECT Name, Age FROM source.test.Person", () => { })).to.throw("ECClass 'source.test.Person' does not exist or could not be loaded.");
 
     using testECDb1 = ECDbTestHelper.createECDb(outDir, "file4.ecdb");
@@ -300,6 +296,7 @@ describe("ECDb", () => {
       </ECEntityClass>
       </ECSchema>`);
     assert.isTrue(testECDb.isOpen);
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     testECDb.withPreparedStatement("INSERT INTO test.Person(Name,Age) VALUES('Mary', 45)", (stmt: ECSqlStatement) => {
       const res: ECSqlInsertResult = stmt.stepForInsert();
       assert.equal(res.status, DbResult.BE_SQLITE_DONE);
@@ -310,6 +307,7 @@ describe("ECDb", () => {
     testECDb.saveChanges();
 
     const runDbListPragma = (ecdb: ECDb) => {
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       return ecdb.withPreparedStatement("PRAGMA db_list", (stmt: ECSqlStatement) => {
         const result: { alias: string, filename: string, profile: string }[] = [];
         while (stmt.step() === DbResult.BE_SQLITE_ROW) {
@@ -320,6 +318,7 @@ describe("ECDb", () => {
     }
     using testECDb0 = ECDbTestHelper.createECDb(outDir, "file2.ecdb");
     testECDb0.attachDb(ecdbPath1, "source");
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     testECDb0.withPreparedStatement("SELECT Name, Age FROM source.test.Person", (stmt: ECSqlStatement) => {
       assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
       const row = stmt.getRow();
@@ -349,6 +348,7 @@ describe("ECDb", () => {
         profile: "ECDb"
       },
     ]);
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     expect(() => testECDb0.withPreparedStatement("SELECT Name, Age FROM source.test.Person", () => { })).to.throw("ECClass 'source.test.Person' does not exist or could not be loaded.");
 
     using testECDb1 = ECDbTestHelper.createECDb(outDir, "file3.ecdb");
@@ -392,7 +392,7 @@ describe("ECDb", () => {
         </ECEntityClass>
         </ECSchema>`);
       assert.isTrue(testECDb.isOpen);
-      id = testECDb.withPreparedStatement("INSERT INTO test.Person(Name,Age) VALUES('Mary', 45)", (stmt: ECSqlStatement) => {
+      id = testECDb.withCachedWriteStatement("INSERT INTO test.Person(Name,Age) VALUES('Mary', 45)", (stmt: ECSqlWriteStatement) => {
         const res: ECSqlInsertResult = stmt.stepForInsert();
         assert.equal(res.status, DbResult.BE_SQLITE_DONE);
         assert.isDefined(res.id);
@@ -406,6 +406,7 @@ describe("ECDb", () => {
     ecdb.openDb(ecdbPath, ECDbOpenMode.Readonly);
     assert.isTrue(ecdb.isOpen);
 
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     ecdb.withPreparedStatement("SELECT Name, Age FROM test.Person WHERE ECInstanceId=?", (stmt: ECSqlStatement) => {
       stmt.bindId(1, id);
       assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
@@ -522,6 +523,7 @@ describe("ECDb", () => {
 
     const expectedLabels = [undefined, "m", "", "mm"];
     let index = 0;
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     ecdb.withStatement("select label from meta.FormatCompositeUnitDef where Format.Id=0x1", (stmt: ECSqlStatement) => {
       for (let i: number = 1; i <= 4; i++) {
         assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
@@ -550,6 +552,7 @@ describe("ECDb", () => {
 
     const expectedLabelsUpdated = ["", "m", undefined, "mm"];
     index = 0;
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     ecdb.withStatement("select label from meta.FormatCompositeUnitDef where Format.Id=0x1", (stmt: ECSqlStatement) => {
       for (let i: number = 1; i <= 4; i++) {
         assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);

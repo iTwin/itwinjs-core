@@ -18,7 +18,7 @@ import { RenderGraphic } from "../render/RenderGraphic";
 import { RenderSystem } from "../render/RenderSystem";
 import { ImdlModel } from "../common/imdl/ImdlModel";
 import { convertFeatureTable, ImdlParseError, ImdlParserOptions, ImdlTimeline, parseImdlDocument } from "../common/imdl/ParseImdlDocument";
-import { decodeImdlGraphics, IModelTileContent } from "./internal";
+import { decodeImdlGraphics, IModelTileContent, Tile } from "./internal";
 import { BatchOptions } from "../common/render/BatchOptions";
 
 /** @internal */
@@ -66,6 +66,7 @@ export interface ImdlReaderCreateArgs {
   /** Supplied if the graphics in the tile are to be split up based on the nodes in the timeline. */
   timeline?: ImdlTimeline;
   modelGroups?: Id64Set[];
+  tile?: Tile;
 }
 
 /** @internal */

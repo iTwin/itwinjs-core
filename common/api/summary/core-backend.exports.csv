@@ -39,8 +39,6 @@ beta;interface;ChannelControl
 beta;namespace;ChannelControl
 beta;type;ChannelKey
 public;class;ChannelRootAspect
-internal;type;CheckpointArg
-deprecated;type;CheckpointArg
 internal;class;CheckpointManager
 public;interface;CheckpointProps
 public;class;ClassRegistry
@@ -115,14 +113,20 @@ beta;class;DriverBundleElement
 public;class;ECDb
 public;enum;ECDbOpenMode
 public;interface;ECEnumValue
+deprecated;interface;ECEnumValue
 beta;class;ECSchemaXmlContext
 public;class;ECSqlBinder
 public;interface;ECSqlColumnInfo
+deprecated;interface;ECSqlColumnInfo
 public;class;ECSqlInsertResult
 public;interface;ECSqlRowArg
 public;class;ECSqlStatement
+deprecated;class;ECSqlStatement
 public;class;ECSqlValue
+deprecated;class;ECSqlValue
 public;class;ECSqlValueIterator
+deprecated;class;ECSqlValueIterator
+public;class;ECSqlWriteStatement
 beta;interface;EditableWorkspaceContainer
 beta;interface;EditableWorkspaceDb
 public;class;ElementAspect
@@ -149,6 +153,7 @@ public;class;EmbeddedFileLink
 beta;interface;EmbedFontFileArgs
 public;class;Entity
 public;type;EntityClassType
+public;class;EntityJsClassMap
 alpha;namespace;EntityReferences
 internal;function;isValid
 internal;function;makeInvalid
@@ -232,15 +237,10 @@ public;class;GroupInformationElement
 public;class;GroupInformationModel
 public;class;GroupInformationPartition
 public;class;GroupModel
-internal;class;HubMock
 public;function;imageBufferFromImageSource
 public;interface;ImageBufferFromImageSourceArgs
 public;function;imageSourceFromImageBuffer
 public;interface;ImageSourceFromImageBufferArgs
-beta;const;IModelCloneContext
-deprecated;const;IModelCloneContext
-beta;type;IModelCloneContext
-deprecated;type;IModelCloneContext
 public;class;IModelDb
 public;namespace;IModelDb
 internal;enum;TileContentState
@@ -290,6 +290,7 @@ deprecated;enum;LockState
 internal;interface;LockStatusExclusive
 internal;interface;LockStatusShared
 internal;class;MetaDataRegistry
+deprecated;class;MetaDataRegistry
 public;class;Model
 public;class;ModelSelector
 internal;class;ModelSelectorRefersToModels
@@ -359,6 +360,7 @@ public;class;RpcTrace
 public;class;Schema
 public;interface;SchemaImportOptions
 internal;type;SchemaKey
+public;class;SchemaMap
 internal;type;SchemaMatchType
 public;class;Schemas
 internal;namespace;SchemaSync
@@ -455,7 +457,6 @@ public;class;TypeDefinitionElement
 public;interface;UpdateModelOptions
 beta;function;upgradeCustomAttributesToEC3
 public;class;UrlLink
-internal;class;V1CheckpointManager
 public;interface;V2CheckpointAccessProps
 internal;class;V2CheckpointManager
 public;interface;ValidationError

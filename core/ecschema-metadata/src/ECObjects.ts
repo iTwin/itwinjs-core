@@ -485,7 +485,7 @@ export function isSupportedSchemaItemType(value: SchemaItemType, supported: Supp
     value === SchemaItemType.StructClass ||
     value === SchemaItemType.CustomAttributeClass ||
     value === SchemaItemType.RelationshipClass)) {
-      return true;;
+      return true;
   }
 
   if(supported === AbstractSchemaItemType.SchemaItem) {

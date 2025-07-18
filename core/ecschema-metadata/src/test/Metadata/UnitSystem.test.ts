@@ -9,6 +9,7 @@ import { SchemaItemType } from "../../ECObjects";
 import { Schema } from "../../Metadata/Schema";
 import { UnitSystem } from "../../Metadata/UnitSystem";
 import { createSchemaJsonWithItems } from "../TestUtils/DeserializationHelpers";
+import { ECSchemaNamespaceUris } from "../../Constants";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 
@@ -26,7 +27,7 @@ describe("UnitSystem tests", () => {
 
   it("should get fullName", async () => {
     const schemaJson = {
-      $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+      $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
       name: "TestSchema",
       version: "1.2.3",
       items: {
@@ -95,7 +96,7 @@ describe("UnitSystem tests", () => {
     });
     it("Basic test", async () => {
       const json = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/schemaitem",
+        $schema: ECSchemaNamespaceUris.SCHEMAITEMURL3_2,
         schemaItemType: "UnitSystem",
         name: "IMPERIAL",
         label: "Imperial",
@@ -112,7 +113,7 @@ describe("UnitSystem tests", () => {
       });
       it("Basic test", () => {
         const json = {
-          $schema: "https://dev.bentley.com/json_schemas/ec/32/schemaitem",
+          $schema: ECSchemaNamespaceUris.SCHEMAITEMURL3_2,
           schemaItemType: "UnitSystem",
           name: "IMPERIAL",
           label: "Imperial",

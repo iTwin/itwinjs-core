@@ -8,7 +8,7 @@
  */
 
 import { Id64String } from "@itwin/core-bentley";
-import { BaseMapLayerSettings, ColorDef, ModelMapLayerSettings } from "@itwin/core-common";
+import { BaseMapLayerSettings, ColorDef, ModelMapLayerDrapeTarget, ModelMapLayerSettings } from "@itwin/core-common";
 import { IModelApp, MapLayerSource, MapLayerSources, MapLayerSourceStatus, NotifyMessageDetails, OutputMessagePriority, Tool, WmsUtilities } from "@itwin/core-frontend";
 import { parseBoolean } from "./parseBoolean";
 import { parseToggle } from "./parseToggle";
@@ -65,15 +65,18 @@ class AttachMapLayerBaseTool extends Tool {
  * @beta
  */
 export class AttachModelMapLayerTool extends Tool {
-  public static override get minArgs() { return 0; }
-  public static override get maxArgs() { return 1; }
+  public static override get minArgs() { return 1; }
+  public static override get maxArgs() { return 2; }
   public static override toolId = "AttachModelMapLayerTool";
   constructor(protected _formatId: string) { super(); }
 
-  public override async run(nameIn?: string): Promise<boolean> {
+  public override async run(nameIn?: string, drapeTarget?: string): Promise<boolean> {
     const vp = IModelApp.viewManager.selectedView;
     if (!vp)
       return false;
+
+    if ("0" === nameIn)
+      nameIn = undefined;
 
     const iModel = vp.iModel;
     const elements = await iModel.elements.getProps(iModel.selectionSet.elements);
@@ -86,14 +89,14 @@ export class AttachModelMapLayerTool extends Tool {
       const modelProps = await iModel.models.getProps(modelId);
       const modelName = modelProps[0].name ? modelProps[0].name : modelId;
       const name = nameIn ? (modelIds.size > 1 ? `${nameIn}: ${modelName}` : nameIn) : modelName;
-      const settings = ModelMapLayerSettings.fromJSON({ name, modelId });
+      const settings = ModelMapLayerSettings.fromJSON({ name, modelId, drapeTarget: "reality" === drapeTarget ? ModelMapLayerDrapeTarget.RealityData : undefined });
       vp.displayStyle.attachMapLayer({ settings, mapLayerIndex: { isOverlay: false, index: -1 } });
     }
     return true;
   }
 
   public override async parseAndRun(...args: string[]): Promise<boolean> {
-    return this.run(args[0]);
+    return this.run(args[0], args[1]);
   }
   public async onRestartTool() {
   }

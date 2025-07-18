@@ -25,6 +25,7 @@ import { PropertyType } from "../../PropertyTypes";
 import { createSchemaJsonWithItems } from "../TestUtils/DeserializationHelpers";
 import { createEmptyXmlDocument } from "../TestUtils/SerializationHelper";
 import { TestSchemaLocater } from "../TestUtils/FormatTestHelper";
+import { ECSchemaNamespaceUris } from "../../Constants";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 
@@ -271,7 +272,7 @@ describe("Property", () => {
 
     it("Serialization with one custom attribute- only class name", async () => {
       const propertyJson = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/schemaitem",
+        $schema: ECSchemaNamespaceUris.SCHEMAITEMURL3_2,
         name: "ValidProp",
         type: "PrimitiveProperty",
       };
@@ -286,7 +287,7 @@ describe("Property", () => {
     });
     it("Serialization with one custom attribute- additional properties", () => {
       const propertyJson = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/schemaitem",
+        $schema: ECSchemaNamespaceUris.SCHEMAITEMURL3_2,
         name: "ValidProp",
         type: "PrimitiveProperty",
       };
@@ -303,7 +304,7 @@ describe("Property", () => {
     });
     it("Serialization with multiple custom attributes- only class name", async () => {
       const propertyJson = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/schemaitem",
+        $schema: ECSchemaNamespaceUris.SCHEMAITEMURL3_2,
         name: "ValidProp",
         type: "PrimitiveProperty",
       };
@@ -320,7 +321,7 @@ describe("Property", () => {
     });
     it("Serialization with multiple custom attributes- additional properties", async () => {
       const propertyJson = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/schemaitem",
+        $schema: ECSchemaNamespaceUris.SCHEMAITEMURL3_2,
         name: "ValidProp",
         type: "PrimitiveProperty",
       };
@@ -366,7 +367,7 @@ describe("Property", () => {
 
     function getSchemaJson(customAttributeJson?: any) {
       return {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+        $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
         name: "TestSchema",
         version: "1.2.3",
         items: {

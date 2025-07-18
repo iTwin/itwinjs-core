@@ -130,7 +130,7 @@ This package provides several keyins to control the display of background maps, 
 
 * `fdt attach maplayer <name>` - Attach a background map layer from name within the map layer source list.  Partial names may be used.
 * `fdt attach mapoverlay <name>` - Attach an overlay map layer from name within the map layer source list.  Partial names may be used.
-* `fdt attach model maplayer <name>` - Attach a model map layer for each unique model of the currently selected elements.
+* `fdt attach model maplayer [name] [globe|reality]` - Attach a model map layer for each unique model of the currently selected elements to either the globe or attached reality models. If `globe` or `reality` is not specified, the attachment will default to `globe`. If `name` is specified, use that. If `name` is specified as `0`, that is considered `undefined` or unspecified.
 
 * `fdt set map base <name>` - Set the background base map from name within the map layer source list.  Partial names may be used.
 * `fdt set map base color <red, green, blue>` - Set map base color by red, green and blue values [0..255].

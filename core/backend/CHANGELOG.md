@@ -1,6 +1,18 @@
 # Change Log - @itwin/core-backend
 
-This log was last generated on Tue, 11 Mar 2025 15:27:53 GMT and should not be manually modified.
+This log was last generated on Wed, 02 Apr 2025 19:38:36 GMT and should not be manually modified.
+
+## 4.10.12
+Wed, 02 Apr 2025 19:35:47 GMT
+
+_Version update only_
+
+## 4.10.11
+Wed, 19 Mar 2025 15:30:39 GMT
+
+### Updates
+
+- new test for 3d linestyle part export
 
 ## 4.10.10
 Tue, 11 Mar 2025 15:25:11 GMT

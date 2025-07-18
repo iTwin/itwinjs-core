@@ -5,10 +5,10 @@
 
 import { expect } from "chai";
 import * as sinon from "sinon";
-import { KoqPropertyValueFormatter, LabelDefinition, PropertyValueFormat, TypeDescription } from "../../presentation-common";
-import { Content } from "../../presentation-common/content/Content";
-import { ContentFormatter, ContentPropertyValueFormatter } from "../../presentation-common/content/PropertyValueFormatter";
-import { DisplayValuesArray, DisplayValuesMap, NavigationPropertyValue, NestedContentValue } from "../../presentation-common/content/Value";
+import { KoqPropertyValueFormatter, LabelDefinition, PropertyValueFormat, TypeDescription } from "../../presentation-common.js";
+import { Content } from "../../presentation-common/content/Content.js";
+import { ContentFormatter, ContentPropertyValueFormatter } from "../../presentation-common/content/PropertyValueFormatter.js";
+import { DisplayValuesArray, DisplayValuesMap, NavigationPropertyValue, NestedContentValue } from "../../presentation-common/content/Value.js";
 import {
   createTestArrayPropertiesContentField,
   createTestContentDescriptor,
@@ -18,7 +18,7 @@ import {
   createTestPropertyInfo,
   createTestSimpleContentField,
   createTestStructPropertiesContentField,
-} from "../_helpers";
+} from "../_helpers/index.js";
 
 describe("ContentFormatter", () => {
   let formatter: ContentFormatter;

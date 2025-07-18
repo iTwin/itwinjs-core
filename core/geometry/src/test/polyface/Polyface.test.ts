@@ -1558,8 +1558,6 @@ it("synchroPolyface", () => {
     const errors = checkPolyfaceIndexErrors(polyfaceB);
     if (!ck.testUndefined(errors, "index error description"))
       GeometryCoreTestIO.consoleLog(errors);
-    // EDL July 2021 twoSided is flipping?
-    polyfaceB.twoSided = polyfaceA.twoSided;
     ck.testTrue(polyfaceA.isAlmostEqual(polyfaceB), "Compare polyfaces");
   }
   expect(ck.getNumErrors()).toBe(0);

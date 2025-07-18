@@ -6,9 +6,9 @@
  * @module PresentationRules
  */
 
-import { CustomRendererSpecification } from "./CustomRendererSpecification";
-import { CategoryIdentifier } from "./PropertyCategorySpecification";
-import { PropertyEditorSpecification } from "./PropertyEditorsSpecification";
+import { CustomRendererSpecification } from "./CustomRendererSpecification.js";
+import { CategoryIdentifier } from "./PropertyCategorySpecification.js";
+import { PropertyEditorSpecification } from "./PropertyEditorsSpecification.js";
 
 /**
  * This content modifier allows including additional calculated properties into the content.

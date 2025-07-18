@@ -14,9 +14,9 @@ import {
   insertPhysicalElement,
   insertPhysicalModelWithPartition,
   insertSpatialCategory,
-} from "../../IModelSetupUtils";
-import { collect, getFieldByLabel } from "../../Utils";
-import { describeContentTestSuite, getDisplayValue } from "./Utils";
+} from "../../IModelSetupUtils.js";
+import { collect, getFieldByLabel } from "../../Utils.js";
+import { describeContentTestSuite, getDisplayValue } from "./Utils.js";
 
 describeContentTestSuite("Array properties", () => {
   const ruleset: Ruleset = {

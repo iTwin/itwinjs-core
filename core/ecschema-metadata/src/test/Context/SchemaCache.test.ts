@@ -54,7 +54,7 @@ describe("Schema Cache", () => {
     const schema2 = new Schema(context, new SchemaKey("TestSchema2"), "ts");
     await cache.addSchema(schema2);
 
-    const schemas = cache.getAllSchemas();
+    const schemas = Array.from(cache.getAllSchemas());
     expect(schemas.length).to.equal(2);
     expect(schemas[0].schemaKey.matches(schema1.schemaKey)).to.be.true;
     expect(schemas[1].schemaKey.matches(schema2.schemaKey)).to.be.true;

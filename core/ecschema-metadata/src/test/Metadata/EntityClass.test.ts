@@ -15,6 +15,7 @@ import { RelationshipClass } from "../../Metadata/RelationshipClass";
 import { MutableSchema, Schema } from "../../Metadata/Schema";
 import { createSchemaJsonWithItems } from "../TestUtils/DeserializationHelpers";
 import { createEmptyXmlDocument, getElementChildrenByTagName } from "../TestUtils/SerializationHelper";
+import { ECSchemaNamespaceUris } from "../../Constants";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 
@@ -87,13 +88,13 @@ describe("EntityClass", () => {
       await (entityClass as ECClass as MutableClass).setBaseClass(new DelayedPromiseWithProps(baseClass.key, async () => baseClass));
       (entityClass as MutableEntityClass).addMixin(mixin);
 
-      expect(await entityClass.getProperty("MixinPrimProp")).to.be.undefined;
-      expect(await entityClass.getProperty("MixinPrimProp", true)).equal(mixinPrimProp);
+      expect(await entityClass.getProperty("MixinPrimProp", true)).to.be.undefined;
+      expect(await entityClass.getProperty("MixinPrimProp")).equal(mixinPrimProp);
       expect(await entityClass.getInheritedProperty("MixinPrimProp")).equal(mixinPrimProp);
 
-      expect(await entityClass.getProperty("BasePrimProp")).to.be.undefined;
-      expect(await entityClass.getProperty("BasePrimProp", false)).to.be.undefined;
-      expect(await entityClass.getProperty("BasePrimProp", true)).equal(basePrimProp);
+      expect(await entityClass.getProperty("BasePrimProp", true)).to.be.undefined;
+      expect(await entityClass.getProperty("BasePrimProp", true)).to.be.undefined;
+      expect(await entityClass.getProperty("BasePrimProp")).equal(basePrimProp);
       expect(await entityClass.getInheritedProperty("BasePrimProp")).equal(basePrimProp);
       expect(await entityClass.getInheritedProperty("PrimProp")).to.be.undefined;
     });
@@ -110,13 +111,13 @@ describe("EntityClass", () => {
       await (entityClass as ECClass as MutableClass).setBaseClass(new DelayedPromiseWithProps(baseClass.key, async () => baseClass));
       (entityClass as MutableEntityClass).addMixin(mixin);
 
-      expect(entityClass.getPropertySync("MixinPrimProp")).to.be.undefined;
-      expect(entityClass.getPropertySync("MixinPrimProp", true)).equal(mixinPrimProp);
+      expect(entityClass.getPropertySync("MixinPrimProp", true)).to.be.undefined;
+      expect(entityClass.getPropertySync("MixinPrimProp")).equal(mixinPrimProp);
       expect(entityClass.getInheritedPropertySync("MixinPrimProp")).equal(mixinPrimProp);
 
-      expect(entityClass.getPropertySync("BasePrimProp")).to.be.undefined;
-      expect(entityClass.getPropertySync("BasePrimProp", false)).to.be.undefined;
-      expect(entityClass.getPropertySync("BasePrimProp", true)).equal(basePrimProp);
+      expect(entityClass.getPropertySync("BasePrimProp", true)).to.be.undefined;
+      expect(entityClass.getPropertySync("BasePrimProp", true)).to.be.undefined;
+      expect(entityClass.getPropertySync("BasePrimProp")).equal(basePrimProp);
       expect(entityClass.getInheritedPropertySync("BasePrimProp")).equal(basePrimProp);
       expect(entityClass.getInheritedPropertySync("PrimProp")).to.be.undefined;
     });
@@ -561,7 +562,7 @@ describe("EntityClass", () => {
     const schema = new Schema(new SchemaContext(), "TestSchema", "ts", 1, 0, 0);
     const testEntityClass = new EntityClass(schema, "testClass");
     const schemaJsonOne = {
-      $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+      $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
       version: "1.2.3",
       name: "testClass",
       schemaItemType: "EntityClass",

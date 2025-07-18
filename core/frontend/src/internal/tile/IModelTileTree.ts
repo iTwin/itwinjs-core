@@ -10,7 +10,7 @@ import { assert, BeTimePoint, GuidString, Id64Array, Id64String } from "@itwin/c
 import { Range3d, Transform } from "@itwin/core-geometry";
 import {
   BatchType, ContentIdProvider, EdgeOptions, ElementAlignedBox3d, ElementGeometryChange, FeatureAppearanceProvider,
-  IModelTileTreeId, IModelTileTreeProps, ModelGeometryChanges, RenderSchedule, TileProps,
+  IModelTileTreeId, IModelTileTreeProps, ModelGeometryChanges, RenderSchedule, TileProps
 } from "@itwin/core-common";
 import { IModelApp } from "../../IModelApp";
 import { IModelConnection } from "../../IModelConnection";
@@ -18,8 +18,8 @@ import { GraphicalEditingScope } from "../../GraphicalEditingScope";
 import { RenderSystem } from "../../render/RenderSystem";
 import { GraphicBranch } from "../../render/GraphicBranch";
 import {
-  acquireImdlDecoder, DynamicIModelTile, ImdlDecoder, IModelTile, IModelTileParams, iModelTileParamsFromJSON, Tile, TileContent, TileDrawArgs, TileLoadPriority, TileParams, TileRequest,
-  TileRequestChannel, TileTree, TileTreeParams,
+  acquireImdlDecoder, DynamicIModelTile, ImdlDecoder, IModelTile, IModelTileParams, iModelTileParamsFromJSON, Tile,
+  TileContent, TileDrawArgs, TileLoadPriority, TileParams, TileRequest, TileRequestChannel, TileTree, TileTreeParams
 } from "../../tile/internal";
 
 export interface IModelTileTreeOptions {

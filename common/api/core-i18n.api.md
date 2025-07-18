@@ -4,8 +4,8 @@
 
 ```ts
 
-import { BackendOptions } from 'i18next-http-backend';
 import { DetectorOptions } from 'i18next-browser-languagedetector';
+import { HttpBackendOptions } from 'i18next-http-backend';
 import { i18n } from 'i18next';
 import { InitOptions } from 'i18next';
 import type { Localization } from '@itwin/core-common';
@@ -35,7 +35,7 @@ export class ITwinLocalization implements Localization {
 // @public
 export interface LocalizationOptions {
     // (undocumented)
-    backendHttpOptions?: BackendOptions;
+    backendHttpOptions?: HttpBackendOptions;
     // (undocumented)
     backendPlugin?: Module;
     // (undocumented)

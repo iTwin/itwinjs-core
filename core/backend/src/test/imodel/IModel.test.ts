@@ -9,10 +9,10 @@ import * as sinon from "sinon";
 import { DbResult, Guid, GuidString, Id64, Id64String, IModelStatus, Logger, OpenMode, ProcessDetector } from "@itwin/core-bentley";
 import {
   AxisAlignedBox3d, BisCodeSpec, BriefcaseIdValue, ChangesetIdWithIndex, Code, CodeScopeSpec, CodeSpec, ColorByName, ColorDef, DefinitionElementProps,
-  DisplayStyleProps, DisplayStyleSettings, DisplayStyleSettingsProps, EcefLocation, ElementProps, EntityMetaData, EntityProps, FilePropertyProps,
+  DisplayStyleProps, DisplayStyleSettings, DisplayStyleSettingsProps, EcefLocation, ElementProps, EntityProps, FilePropertyProps,
   FontMap, FontType, GeoCoordinatesRequestProps, GeoCoordStatus, GeographicCRS, GeographicCRSProps, GeometricElementProps, GeometryParams, GeometryStreamBuilder,
   ImageSourceFormat, IModel, IModelCoordinatesRequestProps, IModelError, LightLocationProps, MapImageryProps, PhysicalElementProps,
-  PointWithStatus, PrimitiveTypeCode, RelatedElement, RenderMode, SchemaState, SpatialViewDefinitionProps, SubCategoryAppearance, SubjectProps, TextureMapping,
+  PointWithStatus, RelatedElement, RenderMode, SchemaState, SpatialViewDefinitionProps, SubCategoryAppearance, SubjectProps, TextureMapping,
   TextureMapProps, TextureMapUnits, ViewDefinitionProps, ViewFlagProps, ViewFlags,
 } from "@itwin/core-common";
 import {
@@ -29,13 +29,14 @@ import {
   SqliteStatement, SqliteValue, SqliteValueType, StandaloneDb, SubCategory, Subject, Texture, ViewDefinition,
 } from "../../core-backend";
 import { BriefcaseDb, SnapshotDbOpenArgs } from "../../IModelDb";
-import { HubMock } from "../../HubMock";
+import { HubMock } from "../../internal/HubMock";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { DisableNativeAssertions } from "../TestUtils";
 import { samplePngTexture } from "../imageData";
 import { performance } from "perf_hooks";
 import { _hubAccess } from "../../internal/Symbols";
+import { CustomAttributeClass, EntityClass, PrimitiveArrayProperty, PrimitiveOrEnumPropertyBase, PropertyType, propertyTypeToString, SchemaItemType } from "@itwin/ecschema-metadata";
 // spell-checker: disable
 
 async function getIModelError<T>(promise: Promise<T>): Promise<IModelError | undefined> {
@@ -104,9 +105,11 @@ describe("iModel", () => {
     assert(!extents.isNull);
 
     // make sure we can construct a new element even if we haven't loaded its metadata (will be loaded in ctor)
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     assert.isUndefined(imodel1.classMetaDataRegistry.find("biscore:lightlocation"));
     const e1 = imodel1.constructEntity<LightLocation, LightLocationProps>({ category: "0x11", classFullName: "BisCore:LightLocation", model: "0x01", code: Code.createEmpty() });
     assert.isDefined(e1);
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     assert.isDefined(imodel1.classMetaDataRegistry.find("biscore:lightlocation")); // should have been loaded in ctor
   });
 
@@ -757,6 +760,7 @@ describe("iModel", () => {
 
   it("should be some categories", () => {
     const categorySql = `SELECT ECInstanceId FROM ${Category.classFullName}`;
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     imodel1.withPreparedStatement(categorySql, (categoryStatement: ECSqlStatement): void => {
       let numCategories = 0;
       while (DbResult.BE_SQLITE_ROW === categoryStatement.step()) {
@@ -777,6 +781,7 @@ describe("iModel", () => {
 
         // get the subcategories
         const subCategorySql = `SELECT ECInstanceId FROM ${SubCategory.classFullName} WHERE Parent.Id=:parentId`;
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         imodel1.withPreparedStatement(subCategorySql, (subCategoryStatement: ECSqlStatement): void => {
           let numSubCategories = 0;
           subCategoryStatement.bindId("parentId", categoryId);
@@ -796,6 +801,7 @@ describe("iModel", () => {
 
   it("should be some 2d elements", () => {
     const sql = `SELECT ECInstanceId FROM ${DrawingGraphic.classFullName}`;
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     imodel2.withPreparedStatement(sql, (statement: ECSqlStatement): void => {
       let numDrawingGraphics = 0;
       let found25: boolean = false;
@@ -892,6 +898,7 @@ describe("iModel", () => {
 
   it("should be children of RootSubject", () => {
     const sql = `SELECT ECInstanceId FROM ${Model.classFullName} WHERE ParentModel.Id=:parentModelId`;
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     imodel2.withPreparedStatement(sql, (statement: ECSqlStatement): void => {
       statement.bindId("parentModelId", IModel.repositoryModelId);
       let numModels = 0;
@@ -1035,34 +1042,34 @@ describe("iModel", () => {
     assert.throws(() => imodel4.elements.getElement(childId2), IModelError);
   });
 
-  function checkElementMetaData(obj: EntityMetaData) {
-    assert.isNotNull(obj);
-    assert.equal(obj.ecclass, Element.classFullName);
-    assert.isArray(obj.baseClasses);
-    assert.equal(obj.baseClasses.length, 0);
+  function checkElementMetaData(entityClass: EntityClass) {
+    assert.isNotNull(entityClass);
+    assert.equal(entityClass.fullName, Element.classFullName.replace(":", "."));
+    assert.isUndefined(entityClass.baseClass);
 
-    assert.isArray(obj.customAttributes);
     let foundClassHasHandler = false;
     let foundClassHasCurrentTimeStampProperty = false;
-    if (obj.customAttributes !== undefined) {
-      for (const ca of obj.customAttributes) {
-        if (ca.ecclass === "BisCore:ClassHasHandler")
-          foundClassHasHandler = true;
-        else if (ca.ecclass === "CoreCustomAttributes:ClassHasCurrentTimeStampProperty")
-          foundClassHasCurrentTimeStampProperty = true;
-      }
+    if (entityClass.customAttributes !== undefined) {
+      if (entityClass.customAttributes.has("BisCore.ClassHasHandler"))
+        foundClassHasHandler = true;
+      if (entityClass.customAttributes.has("CoreCustomAttributes.ClassHasCurrentTimeStampProperty"))
+        foundClassHasCurrentTimeStampProperty = true;
     }
     assert.isTrue(foundClassHasHandler);
     assert.isTrue(foundClassHasCurrentTimeStampProperty);
-    assert.isDefined(obj.properties.federationGuid);
-    assert.equal(obj.properties.federationGuid.primitiveType, 257);
-    assert.equal(obj.properties.federationGuid.extendedType, "BeGuid");
+    const federationGuid = entityClass.getPropertySync("federationGuid", false);
+    if (federationGuid !== undefined) {
+      assert.isTrue(federationGuid.isPrimitive());
+      assert.equal(federationGuid.propertyType, PropertyType.Binary);
+      assert.equal((federationGuid as PrimitiveOrEnumPropertyBase).extendedTypeName, "BeGuid");
+    }
   }
 
   it("should get metadata for class", () => {
-    const metaData: EntityMetaData = imodel1.getMetaData(Element.classFullName);
+    const metaData = imodel1.schemaContext.getSchemaItemSync(Element.classFullName, EntityClass);
     assert.exists(metaData);
-    checkElementMetaData(metaData);
+    if (metaData !== undefined)
+      checkElementMetaData(metaData);
   });
 
   it("update the project extents", async () => {
@@ -1139,27 +1146,32 @@ describe("iModel", () => {
     assert.isTrue(imodel5.geographicCoordinateSystem!.verticalCRS!.id === "ELLIPSOID");
   });
 
-  function checkClassHasHandlerMetaData(obj: EntityMetaData) {
-    assert.isDefined(obj.properties.restrictions);
-    assert.equal(obj.properties.restrictions.primitiveType, 2305);
-    assert.equal(obj.properties.restrictions.minOccurs, 0);
+  function checkClassHasHandlerMetaData(classToCheck: CustomAttributeClass) {
+    assert.isDefined(classToCheck);
+
+    const propertiesArray = Array.from(classToCheck.getPropertiesSync(true));
+    assert.equal(propertiesArray.length, 1);
+
+    const restrictionProperty = propertiesArray[0];
+    assert.isDefined(restrictionProperty);
+    assert.equal(restrictionProperty.name, "Restrictions");
+    assert.equal(propertyTypeToString(restrictionProperty.propertyType), "PrimitiveArrayProperty");
+    assert.equal((restrictionProperty as PrimitiveArrayProperty).minOccurs, 0);
   }
 
   it("should get metadata for CA class just as well (and we'll see a array-typed property)", () => {
-    const metaData: EntityMetaData = imodel1.getMetaData("BisCore:ClassHasHandler");
+    const metaData = imodel1.schemaContext.getSchemaItemSync("BisCore.ClassHasHandler", CustomAttributeClass);
     assert.exists(metaData);
-    checkClassHasHandlerMetaData(metaData);
-  });
-
-  it("should get metadata for CA class just as well (and we'll see a array-typed property)", () => {
-    const metaData = imodel1.getMetaData("BisCore:ClassHasHandler");
-    assert.exists(metaData);
-    checkClassHasHandlerMetaData(metaData);
+    if (metaData !== undefined) {
+      assert.equal(metaData.schemaItemType, SchemaItemType.CustomAttributeClass);
+      checkClassHasHandlerMetaData(metaData);
+    }
   });
 
   it("should exercise ECSqlStatement (backend only)", () => {
     // Reject an invalid statement
     try {
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       imodel2.prepareStatement("select no_such_property, codeValue from bis.element", false);
       assert.fail("prepare should have failed with an exception");
     } catch (err: any) {
@@ -1168,6 +1180,7 @@ describe("iModel", () => {
     }
     let lastId: string = "";
     let firstCodeValue: string = "";
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     imodel2.withPreparedStatement("select ecinstanceid, codeValue from bis.element", (stmt: ECSqlStatement) => {
       assert.isNotNull(stmt);
       // Reject an attempt to bind when there are no placeholders in the statement
@@ -1216,6 +1229,7 @@ describe("iModel", () => {
       assert.equal(firstCodeValueIter, firstCodeValue, "iterator loop should find the first non-null code value as the step loop");
     });
 
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     imodel2.withPreparedStatement("select ecinstanceid, codeValue from bis.element WHERE (ecinstanceid=?)", (stmt3: ECSqlStatement) => {
       // Now try a statement with a placeholder
       const idToFind = Id64.fromJSON(lastId);
@@ -1232,6 +1246,7 @@ describe("iModel", () => {
     });
 
     let firstCodeValueId: Id64String | undefined;
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     imodel2.withPreparedStatement("select ecinstanceid, codeValue from bis.element WHERE (codeValue = :codevalue)", (stmt4: ECSqlStatement) => {
       // Try a named placeholder
       const codeValueToFind = firstCodeValue;
@@ -1252,8 +1267,10 @@ describe("iModel", () => {
     const ids = imodel2.queryEntityIds({ from: "bis.element", where: "codevalue=:cv", bindings: { cv: firstCodeValue } });
     assert.equal(ids.values().next().value, firstCodeValueId);
 
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     imodel2.withPreparedStatement("select ecinstanceid as id, codevalue from bis.element", (stmt5: ECSqlStatement) => {
       while (DbResult.BE_SQLITE_ROW === stmt5.step()) {
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         imodel2.withPreparedStatement("select codevalue from bis.element where ecinstanceid=?", (stmt6: ECSqlStatement) => {
           stmt6.bindId(1, stmt5.getRow().id);
           while (DbResult.BE_SQLITE_ROW === stmt6.step()) {
@@ -1357,9 +1374,14 @@ describe("iModel", () => {
   });
 
   it("should import schemas", async () => {
-    const classMetaData = imodel1.getMetaData("TestBim:TestDocument"); // will throw on failure
-    assert.isDefined(classMetaData.properties.testDocumentProperty);
-    assert.isTrue(classMetaData.properties.testDocumentProperty.primitiveType === PrimitiveTypeCode.Integer);
+    const metaData = await imodel1.schemaContext.getSchemaItem("TestBim:TestDocument", EntityClass);
+    assert.isDefined(metaData);
+    if (metaData !== undefined) {
+      const property = await metaData.getProperty("testDocumentProperty");
+      assert.isDefined(property);
+      if (property !== undefined)
+        assert.isDefined(property.propertyType, propertyTypeToString(PropertyType.Integer));
+    }
   });
 
   it("should do CRUD on models", () => {
@@ -1397,7 +1419,7 @@ describe("iModel", () => {
   it("should create model with custom relationship to modeled element", async () => {
     const testImodel = imodel1;
 
-    assert.isDefined(testImodel.getMetaData("TestBim:TestModelModelsElement"), "TestModelModelsElement is expected to be defined in TestBim.ecschema.xml");
+    assert.doesNotThrow(() => testImodel.schemaContext.getSchemaItemSync("TestBim:TestModelModelsElement", EntityClass), "TestModelModelsElement is expected to be defined in TestBim.ecschema.xml");
 
     let newModelId1: Id64String;
     let newModelId2: Id64String;
@@ -1512,6 +1534,7 @@ describe("iModel", () => {
     DefinitionGroupGroupsDefinitions.insert(iModelDb, definitionGroupId, categoryId1);
     DefinitionGroupGroupsDefinitions.insert(iModelDb, definitionGroupId, categoryId2);
     DefinitionGroupGroupsDefinitions.insert(iModelDb, definitionGroupId, categoryId3);
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     const numMembers = iModelDb.withPreparedStatement(`SELECT COUNT(*) FROM ${DefinitionGroupGroupsDefinitions.classFullName}`, (statement: ECSqlStatement): number => {
       return statement.step() === DbResult.BE_SQLITE_ROW ? statement.getValue(0).getInteger() : 0;
     });
@@ -1523,7 +1546,7 @@ describe("iModel", () => {
   it("should set EC properties of various types", async () => {
 
     const testImodel = imodel1;
-    testImodel.getMetaData("TestBim:TestPhysicalObject");
+    assert.doesNotThrow(() => testImodel.schemaContext.getSchemaItemSync("TestBim:TestPhysicalObject", EntityClass), "TestPhysicalObject is expected to be defined in TestBim.ecschema.xml");
 
     // Create a new physical model
     const [, newModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(testImodel, Code.createEmpty(), true);
@@ -2559,8 +2582,11 @@ describe("iModel", () => {
   it("tryPrepareStatement", () => {
     const sql = `SELECT * FROM ${Element.classFullName} LIMIT 1`;
     const invalidSql = "SELECT * FROM InvalidSchemaName:InvalidClassName LIMIT 1";
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     assert.throws(() => imodel1.prepareStatement(invalidSql, false));
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     assert.isUndefined(imodel1.tryPrepareStatement(invalidSql));
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     using statement: ECSqlStatement | undefined = imodel1.tryPrepareStatement(sql);
     assert.isDefined(statement);
     assert.isTrue(statement?.isPrepared);

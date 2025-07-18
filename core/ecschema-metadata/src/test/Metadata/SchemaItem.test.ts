@@ -23,7 +23,7 @@ import { InvertedUnit } from "../../Metadata/InvertedUnit";
 import { Constant } from "../../Metadata/Constant";
 import { Phenomenon } from "../../Metadata/Phenomenon";
 import { UnitSystem } from "../../Metadata/UnitSystem";
-import { Format } from "../../ecschema-metadata";
+import { ECSchemaNamespaceUris, Format } from "../../ecschema-metadata";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 
@@ -39,7 +39,7 @@ describe("SchemaItem", () => {
 
     it("Serialize SchemaItem Standalone", async () => {
       const propertyJson = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/schemaitem",
+        $schema: ECSchemaNamespaceUris.SCHEMAITEMURL3_2,
         schema: "ExampleSchema",
         version: "1.0.0",
         schemaItemType: "EntityClass",
@@ -51,7 +51,7 @@ describe("SchemaItem", () => {
       await (baseClass as EntityClass).fromJSON(propertyJson);
       const testClass = (baseClass as EntityClass).toJSON(true, true);
       expect(testClass).to.exist;
-      assert.strictEqual(testClass.$schema, "https://dev.bentley.com/json_schemas/ec/32/schemaitem");
+      assert.strictEqual(testClass.$schema, ECSchemaNamespaceUris.SCHEMAITEMURL3_2);
       assert.strictEqual(testClass.schema, "ExampleSchema");
       assert.strictEqual(testClass.schemaVersion, "01.00.00");
       assert.strictEqual(testClass.schemaItemType, "EntityClass");
@@ -61,7 +61,7 @@ describe("SchemaItem", () => {
     });
     it("Serialize SchemaItem", async () => {
       const schemaItemJson = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+        $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
         name: "ExampleSchema",
         version: "1.0.0",
         alias: "ex",
@@ -78,7 +78,7 @@ describe("SchemaItem", () => {
       assert.isDefined(testEntity);
       const testClass = testEntity!.toJSON(true, true);
       expect(testClass).to.exist;
-      assert.strictEqual(testClass.$schema, "https://dev.bentley.com/json_schemas/ec/32/schemaitem");
+      assert.strictEqual(testClass.$schema, ECSchemaNamespaceUris.SCHEMAITEMURL3_2);
       assert.strictEqual(testClass.schemaVersion, "01.00.00");
       assert.strictEqual(testClass.schemaItemType, "EntityClass");
       assert.strictEqual(testClass.name, "ExampleEntity");
@@ -87,7 +87,7 @@ describe("SchemaItem", () => {
     });
     it("Serialize SchemaItem, standalone false", async () => {
       const schemaItemJson = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+        $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
         name: "ExampleSchema",
         version: "1.0.0",
         alias: "ex",
@@ -114,7 +114,7 @@ describe("SchemaItem", () => {
     });
     it("Serialize SchemaItem, JSON stringify", async () => {
       const schemaItemJson = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+        $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
         name: "ExampleSchema",
         version: "1.0.0",
         alias: "ex",
@@ -158,7 +158,7 @@ describe("SchemaItem", () => {
 
     it("Serialize SchemaItem", async () => {
       const propertyJson = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/schemaitem",
+        $schema: ECSchemaNamespaceUris.SCHEMAITEMURL3_2,
         schema: "ExampleSchema",
         version: "1.0.0",
         schemaItemType: "EntityClass",

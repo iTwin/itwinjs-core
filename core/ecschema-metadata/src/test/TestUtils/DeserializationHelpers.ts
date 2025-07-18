@@ -11,10 +11,11 @@ import { SchemaMatchType } from "../../ECObjects";
 import { Schema } from "../../Metadata/Schema";
 import { SchemaKey } from "../../SchemaKey";
 import { SchemaInfo } from "../../Interfaces";
+import { ECSchemaNamespaceUris } from "../../Constants";
 
 export function createSchemaJsonWithItems(itemsJson: any, referenceJson?: any): any {
   return {
-    $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+    $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
     name: "TestSchema",
     version: "1.2.3",
     items: {

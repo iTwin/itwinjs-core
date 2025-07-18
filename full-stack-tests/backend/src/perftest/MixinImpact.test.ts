@@ -44,6 +44,7 @@ describe("SchemaDesignPerf Impact of Mixins", () => {
   }
   function getCount(imodel: IModelDb, className: string) {
     let count = 0;
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     imodel.withPreparedStatement(`SELECT count(*) AS [count] FROM ${className}`, (stmt: ECSqlStatement) => {
       assert.equal(DbResult.BE_SQLITE_ROW, stmt.step());
       const row = stmt.getRow();
@@ -130,6 +131,7 @@ describe("SchemaDesignPerf Impact of Mixins", () => {
         const seedIModel = SnapshotDb.createEmpty(IModelTestUtils.prepareOutputFile("MixinPerformance", `mixin_${hCount}.bim`), { rootSubject: { name: "PerfTest" } });
         await seedIModel.importSchemas([st]);
         seedIModel[_nativeDb].resetBriefcaseId(BriefcaseIdValue.Unassigned);
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         assert.isDefined(seedIModel.getMetaData("TestMixinSchema:MixinElement"), "Mixin Class is not present in iModel.");
         const [, newModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(seedIModel, Code.createEmpty(), true);
         let spatialCategoryId = SpatialCategory.queryCategoryIdByName(seedIModel, IModel.dictionaryId, "MySpatialCategory");
@@ -188,6 +190,7 @@ describe("SchemaDesignPerf Impact of Mixins", () => {
       const perfimodel = IModelTestUtils.createSnapshotFromSeed(testFileName, seedFileName);
 
       const startTime = new Date().getTime();
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
       perfimodel.withPreparedStatement("SELECT * FROM tps.MixinElement", (stmt: ECSqlStatement) => {
         assert.equal(DbResult.BE_SQLITE_ROW, stmt.step());
         const row = stmt.getRow();

@@ -9,10 +9,11 @@ import * as sinon from "sinon";
 import { IpcHost, StandaloneDb } from "@itwin/core-backend";
 import { IpcSocketBackend } from "@itwin/core-common";
 import { Presentation } from "@itwin/presentation-backend";
-import { KeySet, PresentationIpcEvents } from "@itwin/presentation-common";
-import { createValidIModelFileName } from "../IModelSetupUtils";
-import { setupTestsOutputDirectory } from "../IntegrationTests";
-import { getFieldByLabel, prepareOutputFilePath, waitFor } from "../Utils";
+import { KeySet } from "@itwin/presentation-common";
+import { PresentationIpcEvents } from "@itwin/presentation-common/internal";
+import { createValidIModelFileName } from "../IModelSetupUtils.js";
+import { setupTestsOutputDirectory } from "../IntegrationTests.js";
+import { getFieldByLabel, prepareOutputFilePath, waitFor } from "../Utils.js";
 
 describe("Reacting to IModel data changes", () => {
   let imodelPath: string;

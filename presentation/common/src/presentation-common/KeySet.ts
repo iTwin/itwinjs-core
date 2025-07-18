@@ -8,9 +8,9 @@
 
 import { CompressedId64Set, Guid, GuidString, Id64, Id64String } from "@itwin/core-bentley";
 import { EntityProps } from "@itwin/core-common";
-import { InstanceId, InstanceKey } from "./EC";
-import { PresentationError, PresentationStatus } from "./Error";
-import { NodeKey } from "./hierarchy/Key";
+import { InstanceId, InstanceKey } from "./EC.js";
+import { PresentationError, PresentationStatus } from "./Error.js";
+import { NodeKey } from "./hierarchy/Key.js";
 
 /**
  * A single key that identifies something in an iTwin.js application

@@ -37,7 +37,6 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
   private _mergedPropertyCache?: Property[];
 
   public get modifier() { return this._modifier; }
-  public get properties(): IterableIterator<Property> | undefined { return this._properties?.values(); }
   public get customAttributes(): CustomAttributeSet | undefined { return this._customAttributes; }
 
   constructor(schema: Schema, name: string, modifier?: ECClassModifier) {
@@ -90,6 +89,7 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
       this._properties = new Map<string, Property>();
 
     this._properties.set(prop.name.toUpperCase(), prop);
+    this.cleanCache();
     return prop;
   }
 
@@ -101,8 +101,10 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
   protected async deleteProperty(name: string): Promise<void> {
     if (this._properties) {
       const property = await this.getProperty(name);
-      if (property)
+      if (property) {
         this._properties.delete(name.toUpperCase());
+        this.cleanCache();
+      }
     }
   }
 
@@ -114,8 +116,10 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
   protected deletePropertySync(name: string): void {
     if (this._properties) {
       const property = this.getPropertySync(name);
-      if (property)
+      if (property) {
         this._properties.delete(name.toUpperCase());
+        this.cleanCache();
+      }
     }
   }
 
@@ -128,10 +132,12 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
   }
 
   /**
-   * Searches, case-insensitive, for a local ECProperty with the name provided.
-   * @param name
+   * Searches, case-insensitive, for an ECProperty with given the name on this class and, by default, on
+   * all base classes. Set excludeInherited to 'true' to only search the local class.
+   * @param name The name of the property to retrieve.
+   * @param excludeInherited If true, excludes inherited properties from the results. Defaults to false.
    */
-  public async getProperty(name: string, includeInherited: boolean = false): Promise<Property | undefined> {
+  public async getProperty(name: string, excludeInherited: boolean = false): Promise<Property | undefined> {
     if (this._properties) {
       const upperKey = name.toUpperCase();
       const property = this._properties.get(upperKey);
@@ -139,7 +145,7 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
         return property;
     }
 
-    if (!includeInherited) {
+    if (excludeInherited) {
       return undefined;
     }
 
@@ -148,9 +154,10 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
 
   /**
    * Searches, case-insensitive, for a local ECProperty with the name provided.
-   * @param name
+   * @param name The name of the property to retrieve.
+   * @param excludeInherited If true, excludes inherited properties from the results. Defaults to false.
    */
-  public getPropertySync(name: string, includeInherited: boolean = false): Property | undefined {
+  public getPropertySync(name: string, excludeInherited: boolean = false): Property | undefined {
     if (this._properties) {
       const upperKey = name.toUpperCase();
       const property = this._properties.get(upperKey);
@@ -158,7 +165,7 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
         return property;
     }
 
-    if (!includeInherited) {
+    if (excludeInherited) {
       return undefined;
     }
 
@@ -172,7 +179,7 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
   public async getInheritedProperty(name: string): Promise<Property | undefined> {
     if (this.baseClass) {
       const baseClassObj = await this.baseClass;
-      return baseClassObj.getProperty(name, true);
+      return baseClassObj.getProperty(name);
     }
 
     return undefined;
@@ -185,7 +192,7 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
   public getInheritedPropertySync(name: string): Property | undefined {
     const baseClassObj = this.getBaseClassSync();
     if (baseClassObj)
-      return baseClassObj.getPropertySync(name, true);
+      return baseClassObj.getPropertySync(name);
 
     return undefined;
   }
@@ -199,7 +206,7 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
   protected async createPrimitiveProperty(name: string, primitiveType: PrimitiveType): Promise<PrimitiveProperty>;
   protected async createPrimitiveProperty(name: string, primitiveType: Enumeration): Promise<EnumerationProperty>;
   protected async createPrimitiveProperty(name: string, primitiveType?: string | PrimitiveType | Enumeration): Promise<Property> {
-    if (await this.getProperty(name))
+    if (await this.getProperty(name, true))
       throw new ECObjectsError(ECObjectsStatus.DuplicateProperty, `An ECProperty with the name ${name} already exists in the class ${this.name}.`);
 
     const propType = await this.loadPrimitiveType(primitiveType, this.schema);
@@ -218,7 +225,7 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
   protected createPrimitivePropertySync(name: string, primitiveType: PrimitiveType): PrimitiveProperty;
   protected createPrimitivePropertySync(name: string, primitiveType: Enumeration): EnumerationProperty;
   protected createPrimitivePropertySync(name: string, primitiveType?: string | PrimitiveType | Enumeration): Property {
-    if (this.getPropertySync(name))
+    if (this.getPropertySync(name, true))
       throw new ECObjectsError(ECObjectsStatus.DuplicateProperty, `An ECProperty with the name ${name} already exists in the class ${this.name}.`);
 
     const propType = this.loadPrimitiveTypeSync(primitiveType, this.schema);
@@ -236,7 +243,7 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
   protected async createPrimitiveArrayProperty(name: string, primitiveType: PrimitiveType): Promise<PrimitiveArrayProperty>;
   protected async createPrimitiveArrayProperty(name: string, primitiveType: Enumeration): Promise<EnumerationArrayProperty>;
   protected async createPrimitiveArrayProperty(name: string, primitiveType?: string | PrimitiveType | Enumeration): Promise<Property> {
-    if (await this.getProperty(name))
+    if (await this.getProperty(name, true))
       throw new ECObjectsError(ECObjectsStatus.DuplicateProperty, `An ECProperty with the name ${name} already exists in the class ${this.name}.`);
 
     const propType = await this.loadPrimitiveType(primitiveType, this.schema);
@@ -254,7 +261,7 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
   protected createPrimitiveArrayPropertySync(name: string, primitiveType: PrimitiveType): PrimitiveArrayProperty;
   protected createPrimitiveArrayPropertySync(name: string, primitiveType: Enumeration): EnumerationArrayProperty;
   protected createPrimitiveArrayPropertySync(name: string, primitiveType?: string | PrimitiveType | Enumeration): Property {
-    if (this.getPropertySync(name))
+    if (this.getPropertySync(name, true))
       throw new ECObjectsError(ECObjectsStatus.DuplicateProperty, `An ECProperty with the name ${name} already exists in the class ${this.name}.`);
 
     const propType = this.loadPrimitiveTypeSync(primitiveType, this.schema);
@@ -270,7 +277,7 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
    * @param structType The struct type of property to create.
    */
   protected async createStructProperty(name: string, structType: string | StructClass): Promise<StructProperty> {
-    if (await this.getProperty(name))
+    if (await this.getProperty(name, true))
       throw new ECObjectsError(ECObjectsStatus.DuplicateProperty, `An ECProperty with the name ${name} already exists in the class ${this.name}.`);
 
     return this.addProperty(new StructProperty(this, name, await this.loadStructType(structType, this.schema)));
@@ -282,7 +289,7 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
    * @param structType The struct type of property to create.
    */
   protected createStructPropertySync(name: string, structType: string | StructClass): StructProperty {
-    if (this.getPropertySync(name))
+    if (this.getPropertySync(name, true))
       throw new ECObjectsError(ECObjectsStatus.DuplicateProperty, `An ECProperty with the name ${name} already exists in the class ${this.name}.`);
 
     return this.addProperty(new StructProperty(this, name, this.loadStructTypeSync(structType, this.schema)));
@@ -294,7 +301,7 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
    * @param type
    */
   protected async createStructArrayProperty(name: string, structType: string | StructClass): Promise<StructArrayProperty> {
-    if (await this.getProperty(name))
+    if (await this.getProperty(name, true))
       throw new ECObjectsError(ECObjectsStatus.DuplicateProperty, `An ECProperty with the name ${name} already exists in the class ${this.name}.`);
 
     return this.addProperty(new StructArrayProperty(this, name, await this.loadStructType(structType, this.schema)));
@@ -306,7 +313,7 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
    * @param type
    */
   protected createStructArrayPropertySync(name: string, structType: string | StructClass): StructArrayProperty {
-    if (this.getPropertySync(name))
+    if (this.getPropertySync(name, true))
       throw new ECObjectsError(ECObjectsStatus.DuplicateProperty, `An ECProperty with the name ${name} already exists in the class ${this.name}.`);
 
     return this.addProperty(new StructArrayProperty(this, name, this.loadStructTypeSync(structType, this.schema)));
@@ -394,7 +401,7 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
     if (this.baseClass !== undefined)
       schemaJson.baseClass = this.baseClass.fullName;
     if (this._properties !== undefined && this._properties.size > 0)
-      schemaJson.properties = [...this.properties!].map((prop) => prop.toJSON());
+      schemaJson.properties = [...this._properties.values()].map((prop) => prop.toJSON());
 
     const customAttributes = serializeCustomAttributes(this.customAttributes);
     if (customAttributes !== undefined)
@@ -417,8 +424,8 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
       itemElement.appendChild(baseClassElement);
     }
 
-    if (undefined !== this.properties) {
-      for (const prop of this.properties) {
+    if (undefined !== this._properties) {
+      for (const prop of this._properties.values()) {
         const propXml = await prop.toXml(schemaXml);
         itemElement.appendChild(propXml);
       }
@@ -498,7 +505,7 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
    * Iterates (recursively) over all base classes and mixins, in "property override" order.
    * This is essentially a depth-first traversal through the inheritance tree.
    */
-  public async *getAllBaseClasses(): AsyncIterableIterator<ECClass> {
+  public async *getAllBaseClasses(): AsyncIterable<ECClass> {
     const baseClasses: ECClass[] = [this];
     const addBaseClasses = async (ecClass: AnyClass) => {
       if (SchemaItemType.EntityClass === ecClass.schemaItemType) {
@@ -541,7 +548,7 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
     }
   }
 
-  protected static mergeProperties(target: Property[], existingValues: Map<string, number>, propertiesToMerge: Property[], overwriteExisting: boolean) {
+  protected static mergeProperties(target: Property[], existingValues: Map<string, number>, propertiesToMerge: Iterable<Property>, overwriteExisting: boolean) {
     for (const property of propertiesToMerge) {
       const upperCaseName = property.name.toUpperCase();
       const existing = existingValues.get(upperCaseName);
@@ -556,63 +563,84 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
     }
   }
 
-  protected async buildPropertyCache(result: Property[], existingValues?: Map<string, number>, resetBaseCaches: boolean = false): Promise<void> {
+  protected async buildPropertyCache(result: Property[], existingValues?: Map<string, number>): Promise<void> {
     if (!existingValues) {
       existingValues = new Map<string, number>();
     }
 
     if (this.baseClass) {
-      ECClass.mergeProperties(result, existingValues, await (await this.baseClass).getProperties(resetBaseCaches), false);
+      const baseClass = await this.baseClass;
+      if(baseClass) {
+        ECClass.mergeProperties(result, existingValues, await baseClass.getProperties(), false);
+      }
     }
 
-    if (!this.properties)
+    if (!this._properties)
       return;
 
-    ECClass.mergeProperties(result, existingValues, [...this.properties], true);
+    ECClass.mergeProperties(result, existingValues, [...this._properties.values()], true);
   }
 
-  protected buildPropertyCacheSync(result: Property[], existingValues?: Map<string, number>, resetBaseCaches: boolean = false): void {
+  protected buildPropertyCacheSync(result: Property[], existingValues?: Map<string, number>): void {
     if (!existingValues) {
       existingValues = new Map<string, number>();
     }
 
     const baseClass = this.getBaseClassSync();
     if (baseClass) {
-      ECClass.mergeProperties(result, existingValues, baseClass.getPropertiesSync(resetBaseCaches), false);
+      ECClass.mergeProperties(result, existingValues, baseClass.getPropertiesSync(), false);
     }
 
-    if (!this.properties)
+    if (!this._properties)
       return;
 
-    ECClass.mergeProperties(result, existingValues, [...this.properties], true);
+    ECClass.mergeProperties(result, existingValues, [...this._properties.values()], true);
   }
 
   /**
-   * Iterates all properties, including the ones merged from base classes and mixins. To obtain only local properties, use the 'properties' field.
-   * Since this is an expensive operation, results will be cached after first call.
-   * @param resetCache if true, any previously cached results will be dropped and cache will be rebuilt
+   * Clears all caches on this object. This is called implicitly for this class,
+   * but needs to be called if derived classes have changed.
+   * @internal
    */
-  public getPropertiesSync(resetCache: boolean = false): Property[] {
-    if (!this._mergedPropertyCache || resetCache) {
+  public cleanCache() {
+    this._mergedPropertyCache = undefined;
+  }
+
+  /**
+   * Returns the properties on this class and its base classes.
+   * Since this is an expensive operation, results will be cached after first call.
+   * @param excludeInherited If true, only properties defined directly on this class will be returned. Defaults to false.
+   * @returns An array of properties, empty array if none exist.
+   */
+  public getPropertiesSync(excludeInherited?: boolean): Iterable<Property> {
+    if(excludeInherited) {
+      return this._properties && this._properties.size > 0 ? this._properties.values() : [];
+    }
+
+    if (!this._mergedPropertyCache) {
       this._mergedPropertyCache = [];
-      this.buildPropertyCacheSync(this._mergedPropertyCache, undefined, resetCache);
+      this.buildPropertyCacheSync(this._mergedPropertyCache, undefined);
     }
 
     return this._mergedPropertyCache;
   }
 
   /**
-   * Iterates all properties, including the ones merged from base classes and mixins. To obtain only local properties, use the 'properties' field.
-   * Since this is an expensive operation, results will be cached after first call.
-   * @param resetCache if true, any previously cached results will be dropped and cache will be rebuilt
+   * Quick way to check whether this class has any local properties without having to use the iterable
    */
-  public async getProperties(resetCache: boolean = false): Promise<Property[]> {
-    if (!this._mergedPropertyCache || resetCache) {
-      this._mergedPropertyCache = [];
-      await this.buildPropertyCache(this._mergedPropertyCache, undefined, resetCache);
-    }
+  public get hasLocalProperties(): boolean {
+    return this._properties !== undefined && this._properties.size > 0;
+  }
 
-    return this._mergedPropertyCache;
+  /**
+   * Returns the properties on this class and its base classes.
+   * Since this is an expensive operation, results will be cached after first call.
+   * @param excludeInherited If true, only properties defined directly on this class will be returned.
+   * @returns An array of properties, empty array if none exist.
+   */
+  public async getProperties(excludeInherited?: boolean): Promise<Iterable<Property>> {
+    // At the moment we do not lazy load properties, so this is the same as getPropertiesSync
+    return this.getPropertiesSync(excludeInherited);
   }
 
   /**

@@ -7,7 +7,6 @@ import { assert, expect } from "chai";
 import { SchemaContext } from "../../Context";
 import { ECClassModifier, PrimitiveType, PropertyType, SchemaItemType, StrengthType } from "../../ECObjects";
 import { ECObjectsError } from "../../Exception";
-import { AnySchemaItem } from "../../Interfaces";
 import { ECClass, StructClass } from "../../Metadata/Class";
 import { EntityClass } from "../../Metadata/EntityClass";
 import { Mixin } from "../../Metadata/Mixin";
@@ -17,7 +16,7 @@ import { SchemaReadHelper } from "../../Deserialization/Helper";
 import { XmlParser } from "../../Deserialization/XmlParser";
 import { SchemaKey } from "../../SchemaKey";
 
-import { Constant, CustomAttributeClass, Enumeration, Format, InvertedUnit, KindOfQuantity, Phenomenon, Property, PropertyCategory, RelationshipClass, SchemaItem, Unit, UnitSystem } from "../../ecschema-metadata";
+import { Constant, CustomAttributeClass, ECSchemaNamespaceUris, Enumeration, Format, InvertedUnit, KindOfQuantity, Phenomenon, Property, PropertyCategory, RelationshipClass, SchemaItem, Unit, UnitSystem } from "../../ecschema-metadata";
 import { DOMParser, XMLSerializer } from "@xmldom/xmldom";
 
 /* eslint-disable @typescript-eslint/naming-convention */
@@ -42,14 +41,14 @@ describe("Schema", () => {
   describe("miscellaneous API tests", () => {
     it("getReferenceNameByAlias, reference exists, correct name returned.", async () => {
       const refSchemaJson = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+        $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
         name: "RefSchema",
         version: "1.0.0",
         alias: "rs",
       };
 
       const schemaJson = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+        $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
         name: "ValidSchema",
         version: "1.2.3",
         alias: "vs",
@@ -69,14 +68,14 @@ describe("Schema", () => {
 
     it("getReferenceNameByAlias, reference does not exist, returns undefined.", async () => {
       const refSchemaJson = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+        $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
         name: "RefSchema",
         version: "1.0.0",
         alias: "rs",
       };
 
       const schemaJson = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+        $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
         name: "ValidSchema",
         version: "1.2.3",
         alias: "vs",
@@ -96,7 +95,7 @@ describe("Schema", () => {
 
     it("getReferenceNameByAlias, no references, returns undefined.", async () => {
       const schemaJson = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+        $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
         name: "ValidSchema",
         version: "1.2.3",
         alias: "vs",
@@ -142,14 +141,14 @@ describe("Schema", () => {
       await (testSchema as MutableSchema).createPropertyCategory("TestPropertyCategory");
       await (testSchema as MutableSchema).createFormat("TestFormat");
 
-      const schemaItems = testSchema.getItems();
+      const schemaItems = Array.from(testSchema.getItems());
 
-      expect(schemaItems.next().value.schemaItemType).to.equal(SchemaItemType.KindOfQuantity);
-      expect(schemaItems.next().value.schemaItemType).to.equal(SchemaItemType.Enumeration);
-      expect(schemaItems.next().value.schemaItemType).to.equal(SchemaItemType.Unit);
-      expect(schemaItems.next().value.schemaItemType).to.equal(SchemaItemType.PropertyCategory);
-      expect(schemaItems.next().value.schemaItemType).to.equal(SchemaItemType.Format);
-      expect(schemaItems.next().done).to.equal(true);
+      expect(schemaItems.length).to.equal(5);
+      expect(schemaItems[0].schemaItemType).to.equal(SchemaItemType.KindOfQuantity);
+      expect(schemaItems[1].schemaItemType).to.equal(SchemaItemType.Enumeration);
+      expect(schemaItems[2].schemaItemType).to.equal(SchemaItemType.Unit);
+      expect(schemaItems[3].schemaItemType).to.equal(SchemaItemType.PropertyCategory);
+      expect(schemaItems[4].schemaItemType).to.equal(SchemaItemType.Format);
     });
 
     it("should succeed with case-insensitive search", async () => {
@@ -582,25 +581,25 @@ describe("Schema", () => {
     });
 
     describe("getItems", () => {
-      let schemaItems: IterableIterator<AnySchemaItem>;
+      let schemaItems: SchemaItem[];
 
       before(() => {
-        schemaItems = testSchema.getItems();
+        schemaItems = Array.from(testSchema.getItems());
       });
 
       it("should return all schema items in schema", () => {
         const itemArray = Array.from(testSchema.getItems());
         expect(itemArray.length).to.equal(8);
 
-        expect(schemaItems.next().value.schemaItemType).to.equal(SchemaItemType.EntityClass);
-        expect(schemaItems.next().value.schemaItemType).to.equal(SchemaItemType.Mixin);
-        expect(schemaItems.next().value.schemaItemType).to.equal(SchemaItemType.StructClass);
-        expect(schemaItems.next().value.schemaItemType).to.equal(SchemaItemType.KindOfQuantity);
-        expect(schemaItems.next().value.schemaItemType).to.equal(SchemaItemType.Enumeration);
-        expect(schemaItems.next().value.schemaItemType).to.equal(SchemaItemType.Unit);
-        expect(schemaItems.next().value.schemaItemType).to.equal(SchemaItemType.PropertyCategory);
-        expect(schemaItems.next().value.schemaItemType).to.equal(SchemaItemType.Format);
-        expect(schemaItems.next().done).to.equal(true);
+        expect(schemaItems.length).to.equal(8);
+        expect(schemaItems[0].schemaItemType).to.equal(SchemaItemType.EntityClass);
+        expect(schemaItems[1].schemaItemType).to.equal(SchemaItemType.Mixin);
+        expect(schemaItems[2].schemaItemType).to.equal(SchemaItemType.StructClass);
+        expect(schemaItems[3].schemaItemType).to.equal(SchemaItemType.KindOfQuantity);
+        expect(schemaItems[4].schemaItemType).to.equal(SchemaItemType.Enumeration);
+        expect(schemaItems[5].schemaItemType).to.equal(SchemaItemType.Unit);
+        expect(schemaItems[6].schemaItemType).to.equal(SchemaItemType.PropertyCategory);
+        expect(schemaItems[7].schemaItemType).to.equal(SchemaItemType.Format);
       });
 
       it("should return only class items in schema", async () => {
@@ -626,7 +625,8 @@ describe("Schema", () => {
 
     type TestCase = [ xmlVersionMajor: number, xmlVersionMinor: number, deserializtionStatus: boolean, serializationStatus: boolean ];
     const testCases: TestCase[] = [
-      [Schema.currentECSpecMajorVersion, Schema.currentECSpecMinorVersion - 1, true, true],
+      // [3, 1, false, false], // Will have to be uncommented and the test below updated when the ECSpec Version gets incremented next.
+      [Schema.currentECSpecMajorVersion, Schema.currentECSpecMinorVersion - 1, false, false],
       [Schema.currentECSpecMajorVersion, Schema.currentECSpecMinorVersion, true, true],
       [Schema.currentECSpecMajorVersion, Schema.currentECSpecMinorVersion + 1, true, false],
       [Schema.currentECSpecMajorVersion + 1, Schema.currentECSpecMinorVersion, false, false],
@@ -636,11 +636,11 @@ describe("Schema", () => {
     async function testSerialization(schema: Schema, serializationStatus: boolean, expectedError: string) {
       const xmlDoc = new DOMParser().parseFromString(`<?xml version="1.0" encoding="UTF-8"?>`, "application/xml");
       if (serializationStatus) {
-        await expect(schema.toXml(xmlDoc)).to.not.be.rejectedWith(ECObjectsError, expectedError);
-        expect(() => schema.toJSON()).to.not.throw(ECObjectsError, expectedError);
+        await expect(schema.toXml(xmlDoc)).to.not.be.rejectedWith(ECObjectsError, expectedError, `Serialization failed for ECXML version ${schema.originalECSpecMajorVersion}.${schema.originalECSpecMinorVersion}`);
+        expect(() => schema.toJSON()).to.not.throw(ECObjectsError, expectedError, `Serialization failed for ECXML version ${schema.originalECSpecMajorVersion}.${schema.originalECSpecMinorVersion}`);
       } else {
-        await expect(schema.toXml(xmlDoc)).to.be.rejectedWith(ECObjectsError, expectedError);
-        expect(() => schema.toJSON()).to.throw(ECObjectsError, expectedError);
+        await expect(schema.toXml(xmlDoc)).to.be.rejectedWith(ECObjectsError, expectedError, `Serialization failed for ECXML version ${schema.originalECSpecMajorVersion}.${schema.originalECSpecMinorVersion}`);
+        expect(() => schema.toJSON()).to.throw(ECObjectsError, expectedError, `Serialization failed for ECXML version ${schema.originalECSpecMajorVersion}.${schema.originalECSpecMinorVersion}`);
       }
     }
 
@@ -660,15 +660,15 @@ describe("Schema", () => {
         try {
           reader.readSchemaSync(schema, document);
         } catch (err: any) {
-          assert.equal(err.message, `The Schema 'TestSchema' has an unsupported ECVersion and cannot be loaded.`);
-          assert.isFalse(deserializtionStatus);
+          assert.equal(err.message, `The Schema 'TestSchema' has an unsupported ECVersion ${xmlVersionMajor}.${xmlVersionMinor} and cannot be loaded.`);
+          assert.isFalse(deserializtionStatus, `Deserialization check failed for ECXML version ${xmlVersionMajor}.${xmlVersionMinor}`);
 
           // Schema serialization should fail if the major ECXml version is newer
           await testSerialization(schema, serializationStatus, unsupportedVersionError);
           continue;
         }
 
-        assert.isTrue(deserializtionStatus);
+        assert.isTrue(deserializtionStatus, `Deserialization check failed for ECXML version ${xmlVersionMajor}.${xmlVersionMinor}`);
         expect(schema.originalECSpecMajorVersion).to.equal(xmlVersionMajor);
         expect(schema.originalECSpecMinorVersion).to.equal(xmlVersionMinor);
         expect(schema.getItemSync("testClass") !== undefined).to.equal(deserializtionStatus);
@@ -692,7 +692,7 @@ describe("Schema", () => {
         try {
           await reader.readSchema(schema, new DOMParser().parseFromString(schemaXml));
         } catch (err: any) {
-          assert.equal(err.message, `The Schema 'TestSchema' has an unsupported ECVersion and cannot be loaded.`);
+          assert.equal(err.message, `The Schema 'TestSchema' has an unsupported ECVersion ${xmlVersionMajor}.${xmlVersionMinor} and cannot be loaded.`);
           assert.isFalse(deserializtionStatus);
 
           // Schema serialization should fail if the major ECXml version is newer
@@ -711,8 +711,7 @@ describe("Schema", () => {
     });
 
     it("Deserialize and serialize newer JS schemas - sync", async () => {
-      // eslint-disable-next-line prefer-const
-      for (let [ecMajorVersion, ecMinorVersion, deserializtionStatus, serializationStatus] of testCases) {
+      for (const [ecMajorVersion, ecMinorVersion, deserializtionStatus, serializationStatus] of testCases) {
         const schemaJson = {
           $schema: `https://dev.bentley.com/json_schemas/ec/${ecMajorVersion}${ecMinorVersion}/ecschema`,
           name: "TestSchema",
@@ -733,15 +732,12 @@ describe("Schema", () => {
         try {
           schema = Schema.fromJsonSync(schemaJson, new SchemaContext());
         } catch (err: any) {
-          assert.equal(err.message, `The Schema 'TestSchema' has an unsupported ECVersion and cannot be loaded.`);
+          assert.equal(err.message, `The Schema 'TestSchema' has an unsupported ECVersion ${ecMajorVersion}.${ecMinorVersion} and cannot be loaded.`);
           assert.isFalse(deserializtionStatus);
 
-          // When the ECXML major version is newer, deserialization will throw an error and the schema object will never get updated and the ECXMl version will remain the deafult latest supported.
-          // Hence serialization should succeed in this case.
-          if (ecMajorVersion > Schema.currentECSpecMajorVersion || (ecMajorVersion === Schema.currentECSpecMajorVersion && ecMinorVersion > Schema.currentECSpecMinorVersion))
-            serializationStatus = true;
-
-          await testSerialization(schema, serializationStatus, unsupportedVersionError);
+          // When the ECXML major version is newer, deserialization will throw an error and the schema object will never get updated. The ECXMl version will then remain the default latest supported.
+          // Hence, serialization should succeed in this case.
+          await testSerialization(schema, true, unsupportedVersionError);
           continue;
         }
 
@@ -756,8 +752,7 @@ describe("Schema", () => {
     });
 
     it("Deserialize and serialize newer JS schemas - async", async () => {
-      // eslint-disable-next-line prefer-const
-      for (let [ecMajorVersion, ecMinorVersion, deserializtionStatus, serializationStatus] of testCases) {
+      for (const [ecMajorVersion, ecMinorVersion, deserializtionStatus, serializationStatus] of testCases) {
         const schemaJson = {
           $schema: `https://dev.bentley.com/json_schemas/ec/${ecMajorVersion}${ecMinorVersion}/ecschema`,
           name: "TestSchema",
@@ -777,15 +772,12 @@ describe("Schema", () => {
         try {
           schema = await Schema.fromJson(schemaJson, new SchemaContext());
         } catch (err: any) {
-          assert.equal(err.message, `The Schema 'TestSchema' has an unsupported ECVersion and cannot be loaded.`);
+          assert.equal(err.message, `The Schema 'TestSchema' has an unsupported ECVersion ${ecMajorVersion}.${ecMinorVersion} and cannot be loaded.`);
           assert.isFalse(deserializtionStatus);
 
-          // When the ECXML major version is newer, deserialization will throw an error and the schema object will never get updated and the ECXMl version will remain the deafult latest supported.
-          // Hence serialization should succeed in this case.
-          if (ecMajorVersion > Schema.currentECSpecMajorVersion || (ecMajorVersion === Schema.currentECSpecMajorVersion && ecMinorVersion > Schema.currentECSpecMinorVersion))
-            serializationStatus = true;
-
-          await testSerialization(schema, serializationStatus, unsupportedVersionError);
+          // When the ECXML major version is newer, deserialization will throw an error and the schema object will never get updated. The ECXMl version will then remain the default latest supported.
+          // Hence, serialization should succeed in this case.
+          await testSerialization(schema, true, unsupportedVersionError);
           continue;
         }
 
@@ -812,7 +804,7 @@ describe("Schema", () => {
         try {
           schema.fromJSONSync(schemaJson);
         } catch (err: any) {
-          assert.equal(err.message, `The Schema 'TestSchema' has an unsupported ECVersion and cannot be loaded.`);
+          assert.equal(err.message, `The Schema 'TestSchema' has an unsupported ECVersion ${ecMajorVersion}.${ecMinorVersion} and cannot be loaded.`);
           assert.isFalse(deserializtionStatus);
 
           // Schema serialization should fail if the major ECXml version is newer
@@ -842,7 +834,7 @@ describe("Schema", () => {
         try {
           await schema.fromJSON(schemaJson);
         } catch (err: any) {
-          assert.equal(err.message, `The Schema 'TestSchema' has an unsupported ECVersion and cannot be loaded.`);
+          assert.equal(err.message, `The Schema 'TestSchema' has an unsupported ECVersion ${ecMajorVersion}.${ecMinorVersion} and cannot be loaded.`);
           assert.isFalse(deserializtionStatus);
 
           // Schema serialization should fail if the major ECXml version is newer
@@ -1271,7 +1263,7 @@ describe("Schema", () => {
 
       it("with name/version first specified in JSON", async () => {
         const propertyJson = {
-          $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+          $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
           name: "ValidSchema",
           version: "1.2.3",
           alias: "vs",
@@ -1286,7 +1278,7 @@ describe("Schema", () => {
 
       it("with name/version repeated in JSON", async () => {
         const propertyJson = {
-          $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+          $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
           name: "ValidSchema",
           version: "1.2.3",
           alias: "vs",
@@ -1301,7 +1293,7 @@ describe("Schema", () => {
 
       it("should throw for invalid alias", async () => {
         const propertyJson = {
-          $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+          $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
           name: "ValidSchema",
           version: "1.2.3",
           alias: "",
@@ -1328,7 +1320,7 @@ describe("Schema", () => {
 
       it("should throw for mismatched name", async () => {
         const json = {
-          $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+          $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
           name: "ThisDoesNotMatch",
           version: "1.2.3",
           alias: "bad",
@@ -1340,7 +1332,7 @@ describe("Schema", () => {
 
       it("should throw for mismatched version", async () => {
         const json = {
-          $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+          $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
           name: "BadSchema",
           version: "1.2.6",
           alias: "bad",
@@ -1363,7 +1355,7 @@ describe("Schema", () => {
 
       it("Simple serialization", async () => {
         const schemaJson = {
-          $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+          $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
           name: "ValidSchema",
           version: "1.2.3",
           alias: "vs",
@@ -1378,7 +1370,7 @@ describe("Schema", () => {
       });
       it("Serialization - JSON stringify", async () => {
         const schemaJson = {
-          $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+          $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
           name: "ValidSchema",
           version: "1.2.3",
           alias: "vs",
@@ -1394,7 +1386,7 @@ describe("Schema", () => {
       });
       it("Serialization with one custom attribute- only class name", async () => {
         const propertyJson = {
-          $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+          $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
           name: "ValidSchema",
           version: "1.2.3",
           alias: "vs",
@@ -1410,7 +1402,7 @@ describe("Schema", () => {
       });
       it("Serialization with one custom attribute- additional properties", () => {
         const propertyJson = {
-          $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+          $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
           name: "ValidSchema",
           version: "1.2.3",
           alias: "vs",
@@ -1427,7 +1419,7 @@ describe("Schema", () => {
       });
       it("Serialization with multiple custom attributes- only class name", async () => {
         const propertyJson = {
-          $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+          $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
           name: "ValidSchema",
           version: "1.2.3",
           alias: "vs",
@@ -1447,7 +1439,7 @@ describe("Schema", () => {
       });
       it("Serialization with multiple custom attributes- additional properties", async () => {
         const propertyJson = {
-          $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+          $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
           name: "ValidSchema",
           version: "1.2.3",
           alias: "vs",
@@ -1467,7 +1459,7 @@ describe("Schema", () => {
       });
       it("Serialization with one reference", async () => {
         const schemaJson = {
-          $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+          $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
           name: "ValidSchema",
           version: "1.2.3",
           alias: "vs",
@@ -1493,7 +1485,7 @@ describe("Schema", () => {
       });
       it("Serialization with multiple references", () => {
         const schemaJson = {
-          $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+          $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
           name: "ValidSchema",
           version: "1.2.3",
           alias: "vs",
@@ -1527,7 +1519,7 @@ describe("Schema", () => {
       });
       it("Serialization with one reference and item", async () => {
         const schemaJson = {
-          $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+          $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
           name: "TestSchema",
           version: "1.2.3",
           alias: "ts",
@@ -1563,7 +1555,7 @@ describe("Schema", () => {
       });
       it("Serialization with one reference and multiple items", async () => {
         const schemaJson = {
-          $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+          $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
           name: "TestSchema",
           version: "1.2.3",
           alias: "ts",
@@ -1639,7 +1631,7 @@ describe("Schema", () => {
 
     it("Serialization with reference containing different minor version", async () => {
       const schemaJson = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+        $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
         name: "ValidSchema",
         version: "1.2.3",
         alias: "vs",
@@ -1666,7 +1658,7 @@ describe("Schema", () => {
 
     it("Serialization with reference containing different write version, throws", async () => {
       const schemaJson = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+        $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
         name: "ValidSchema",
         version: "1.2.3",
         alias: "vs",
@@ -1721,7 +1713,7 @@ describe("Schema", () => {
 
       it("Simple serialization", async () => {
         const schemaJson = {
-          $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+          $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
           name: "ValidSchema",
           version: "1.2.3",
           alias: "vs",
@@ -1745,7 +1737,7 @@ describe("Schema", () => {
       it("Deserialize after Serialization", async () => {
 
         const referenceJson = {
-          $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+          $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
           name: "RefSchema",
           version: "1.2.3",
           alias: "rf",
@@ -1763,7 +1755,7 @@ describe("Schema", () => {
 
         const coreCASchema =
         {
-          $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+          $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
           alias: "CoreCA",
           description: "Custom attributes to indicate core EC concepts, may include struct classes intended for use in core custom attributes.",
           items: {
@@ -1791,7 +1783,7 @@ describe("Schema", () => {
         Schema.fromJsonSync(referenceJson, context);
 
         const schemaJson = {
-          $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+          $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
           name: "ValidSchema",
           version: "1.2.3",
           alias: "vs",
@@ -1832,7 +1824,7 @@ describe("Schema", () => {
 
       it("Serialization with one reference", async () => {
         const schemaJson = {
-          $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+          $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
           name: "ValidSchema",
           version: "1.2.3",
           alias: "vs",
@@ -1864,7 +1856,7 @@ describe("Schema", () => {
 
       it("Serialization with multiple references", async () => {
         const schemaJson = {
-          $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+          $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
           name: "ValidSchema",
           version: "1.2.3",
           alias: "vs",
@@ -1909,7 +1901,7 @@ describe("Schema", () => {
 
       it("Serialization with one reference and item", async () => {
         const schemaJson = {
-          $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+          $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
           name: "TestSchema",
           version: "1.2.3",
           alias: "ts",
@@ -1954,7 +1946,7 @@ describe("Schema", () => {
 
       it("Serialization with one reference and multiple items", async () => {
         const schemaJson = {
-          $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+          $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
           name: "TestSchema",
           version: "1.2.3",
           alias: "ts",
@@ -2040,7 +2032,7 @@ describe("Schema", () => {
 
       /* it("Serialization with one custom attribute defined in ref schema, only class name", async () => {
         const schemaJson = {
-          $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+          $schema: ECSchemaNamespaceUri.SCHEMAURL3_2_JSON,
           name: "ValidSchema",
           version: "1.2.3",
           alias: "vs",
@@ -2061,7 +2053,7 @@ describe("Schema", () => {
 
       it("Serialization with one custom attribute defined in same schema, only class name", async () => {
         const schemaJson = {
-          $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+          $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
           name: "ValidSchema",
           version: "1.2.3",
           alias: "vs",
@@ -2083,7 +2075,7 @@ describe("Schema", () => {
 
       it("Serialization with one qualified custom attribute defined in same schema, only class name", async () => {
         const schemaJson = {
-          $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+          $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
           name: "ValidSchema",
           version: "1.2.3",
           alias: "vs",
@@ -2105,7 +2097,7 @@ describe("Schema", () => {
 
       it("Serialization with one custom attribute, with Primitive property values", async () => {
         const schemaJson = {
-          $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+          $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
           name: "ValidSchema",
           version: "1.2.3",
           alias: "vs",
@@ -2215,7 +2207,7 @@ describe("Schema", () => {
 
       it("Serialization with one custom attribute, with PrimitiveArray property values", async () => {
         const schemaJson = {
-          $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+          $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
           name: "ValidSchema",
           version: "1.2.3",
           alias: "vs",
@@ -2256,7 +2248,7 @@ describe("Schema", () => {
 
       it("Serialization with one custom attribute, with Struct property value", async () => {
         const schemaJson = {
-          $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+          $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
           name: "ValidSchema",
           version: "1.2.3",
           alias: "vs",
@@ -2312,7 +2304,7 @@ describe("Schema", () => {
 
       it("Serialization with one custom attribute, with Enumeration property value", async () => {
         const schemaJson = {
-          $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+          $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
           name: "ValidSchema",
           version: "1.2.3",
           alias: "vs",
@@ -2363,7 +2355,7 @@ describe("Schema", () => {
 
       it("Serialization with one custom attribute, with StructArray property value", async () => {
         const schemaJson = {
-          $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+          $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
           name: "ValidSchema",
           version: "1.2.3",
           alias: "vs",
@@ -2449,7 +2441,7 @@ describe("Schema", () => {
 
       async function testKoQSerialization(presentationUnit: any): Promise<string> {
         const testSchemaJson = {
-          $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+          $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
           name: "TestSchema",
           version: "1.0.0",
           alias: "ts",
@@ -2483,7 +2475,7 @@ describe("Schema", () => {
 
       async function testCompositeFormatSerialization(compositeFormat: any): Promise<string> {
         const testSchemaJson = {
-          $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+          $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
           name: "TestSchema",
           version: "1.0.0",
           alias: "ts",

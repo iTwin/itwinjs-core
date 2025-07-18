@@ -233,6 +233,7 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
     const iModelDb = await getIModelForRpc(tokenProps);
     const classArray: string[] = [];
     while (true) {
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       const classMetaData: EntityMetaData = iModelDb.getMetaData(classFullName);
       classArray.push(classFullName);
       if (!classMetaData.baseClasses || classMetaData.baseClasses.length === 0)
@@ -246,6 +247,7 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
   public async getAllCodeSpecs(tokenProps: IModelRpcProps): Promise<any[]> {
     const codeSpecs: any[] = [];
     const iModelDb = await getIModelForRpc(tokenProps);
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     iModelDb.withPreparedStatement("SELECT ECInstanceId AS id, name, jsonProperties FROM BisCore.CodeSpec", (statement) => {
       for (const row of statement)
         codeSpecs.push({ id: row.id, name: row.name, jsonProperties: JSON.parse(row.jsonProperties) });

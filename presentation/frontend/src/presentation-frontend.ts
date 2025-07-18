@@ -8,13 +8,32 @@
  * @docs-group-description Core
  * Common types used for retrieving presentation data from iModels.
  */
-export * from "./presentation-frontend/Presentation";
-export * from "./presentation-frontend/PresentationManager";
-export * from "./presentation-frontend/RulesetManager";
-export * from "./presentation-frontend/RulesetVariablesManager";
-export * from "./presentation-frontend/favorite-properties/FavoritePropertiesManager";
-export * from "./presentation-frontend/favorite-properties/FavoritePropertiesStorage";
-export * from "./presentation-frontend/Diagnostics";
+export { PresentationProps, Presentation } from "./presentation-frontend/Presentation.js";
+export {
+  IModelHierarchyChangeEventArgs,
+  IModelContentChangeEventArgs,
+  MultipleValuesRequestOptions,
+  GetNodesRequestOptions,
+  GetContentRequestOptions,
+  GetDistinctValuesRequestOptions,
+  PresentationManagerProps,
+  PresentationManager,
+} from "./presentation-frontend/PresentationManager.js";
+export { RulesetManager } from "./presentation-frontend/RulesetManager.js";
+export { RulesetVariablesManager } from "./presentation-frontend/RulesetVariablesManager.js";
+export {
+  FavoritePropertiesScope,
+  PropertyFullName,
+  FavoritePropertiesOrderInfo,
+  FavoritePropertiesManagerProps,
+  FavoritePropertiesManager,
+} from "./presentation-frontend/favorite-properties/FavoritePropertiesManager.js";
+export {
+  IFavoritePropertiesStorage,
+  DefaultFavoritePropertiesStorageTypes,
+  createFavoritePropertiesStorage,
+} from "./presentation-frontend/favorite-properties/FavoritePropertiesStorage.js";
+export { consoleDiagnosticsHandler, createCombinedDiagnosticsHandler } from "./presentation-frontend/Diagnostics.js";
 
 /**
  * @module Logging
@@ -22,7 +41,7 @@ export * from "./presentation-frontend/Diagnostics";
  * @docs-group-description Logging
  * Types related to logging in this package.
  */
-export * from "./presentation-frontend/FrontendLoggerCategory";
+export { PresentationFrontendLoggerCategory } from "./presentation-frontend/FrontendLoggerCategory.js";
 
 /**
  * @module UnifiedSelection
@@ -30,10 +49,15 @@ export * from "./presentation-frontend/FrontendLoggerCategory";
  * @docs-group-description UnifiedSelection
  * Types related to [unified selection]($docs/presentation/unified-selection/index.md).
  */
-export * from "./presentation-frontend/selection/SelectionChangeEvent";
-export * from "./presentation-frontend/selection/ISelectionProvider";
-export * from "./presentation-frontend/selection/SelectionManager";
-export * from "./presentation-frontend/selection/SelectionScopesManager";
-export * from "./presentation-frontend/selection/SelectionHandler";
-export * from "./presentation-frontend/selection/HiliteSetProvider";
-export * from "./presentation-frontend/selection/SelectionHelper";
+export {
+  SelectionChangesListener,
+  SelectionChangeEvent,
+  SelectionChangeType,
+  SelectionChangeEventArgs,
+} from "./presentation-frontend/selection/SelectionChangeEvent.js";
+export { ISelectionProvider } from "./presentation-frontend/selection/ISelectionProvider.js";
+export { SelectionManagerProps, SelectionManager } from "./presentation-frontend/selection/SelectionManager.js";
+export { SelectionScopesManagerProps, SelectionScopesManager, createSelectionScopeProps } from "./presentation-frontend/selection/SelectionScopesManager.js";
+export { SelectionHandlerProps, SelectionHandler } from "./presentation-frontend/selection/SelectionHandler.js";
+export { HiliteSet, HiliteSetProviderProps, HiliteSetProvider } from "./presentation-frontend/selection/HiliteSetProvider.js";
+export { SelectionHelper } from "./presentation-frontend/selection/SelectionHelper.js";
