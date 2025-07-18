@@ -10,17 +10,13 @@ import { TextAnnotation2d, TextAnnotation3d } from "../../annotations/TextAnnota
 import { IModelTestUtils } from "../IModelTestUtils";
 import { GeometricElement2d, GeometricElement3d, Subject } from "../../Element";
 import { Guid, Id64, Id64String } from "@itwin/core-bentley";
-import { ComputeRangesForTextLayoutArgs, TextLayoutRanges } from "../../annotations/TextBlockLayout";
 import { DefinitionModel } from "../../Model";
 import { DrawingCategory, SpatialCategory } from "../../Category";
 import { DisplayStyle2d, DisplayStyle3d } from "../../DisplayStyle";
 import { CategorySelector, DrawingViewDefinition, ModelSelector, SpatialViewDefinition } from "../../ViewDefinition";
 import { FontFile } from "../../FontFile";
+import { computeTextRangeAsStringLength } from "../AnnotationTestUtils";
 
-function computeTextRangeAsStringLength(args: ComputeRangesForTextLayoutArgs): TextLayoutRanges {
-  const range = new Range2d(0, 0, args.chars.length, args.lineHeight);
-  return { layout: range, justification: range };
-}
 
 function mockIModel(): IModelDb {
   const iModel: Pick<IModelDb, "fonts" | "computeRangesForText" | "forEachMetaData"> = {
@@ -130,7 +126,7 @@ describe("TextAnnotation element", () => {
     annotation.orientation = YawPitchRollAngles.createDegrees(1, 0, -1);
     annotation.offset = Point3d.create(10, -5, 0);
     annotation.frame = { shape: "rectangle", border: ColorDef.red.toJSON(), fill: ColorDef.green.toJSON(), borderWeight: 2 };
-
+    annotation.leaders = [{ startPoint: Point3d.createZero(), attachment: { mode: "Nearest" } }]
     return annotation;
   }
 

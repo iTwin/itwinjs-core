@@ -2,6 +2,18 @@
   "name": "@itwin/core-backend",
   "entries": [
     {
+      "version": "5.0.4",
+      "tag": "@itwin/core-backend_v5.0.4",
+      "date": "Wed, 16 Jul 2025 14:59:59 GMT",
+      "comments": {}
+    },
+    {
+      "version": "5.0.3",
+      "tag": "@itwin/core-backend_v5.0.3",
+      "date": "Fri, 11 Jul 2025 00:56:56 GMT",
+      "comments": {}
+    },
+    {
       "version": "5.0.2",
       "tag": "@itwin/core-backend_v5.0.2",
       "date": "Thu, 26 Jun 2025 22:16:01 GMT",

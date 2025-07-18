@@ -251,6 +251,7 @@ import { TextAnnotation } from '@itwin/core-common';
 import { TextAnnotation2dProps } from '@itwin/core-common';
 import { TextAnnotation3dProps } from '@itwin/core-common';
 import { TextAnnotationFrameShape } from '@itwin/core-common';
+import { TextAnnotationLeader } from '@itwin/core-common';
 import { TextAnnotationProps } from '@itwin/core-common';
 import { TextBlock } from '@itwin/core-common';
 import { TextBlockGeometryProps } from '@itwin/core-common';
@@ -307,6 +308,9 @@ export type AnyDb = IModelDb | ECDb;
 
 // @beta
 export function appendFrameToBuilder(builder: ElementGeometry.Builder, frame: TextFrameStyleProps, range: Range2d, transform: Transform, geomParams: GeometryParams): boolean;
+
+// @beta
+export function appendLeadersToBuilder(builder: ElementGeometry.Builder, leaders: TextAnnotationLeader[], layout: TextBlockLayout, transform: Transform, params: GeometryParams, frame?: TextFrameStyleProps): boolean;
 
 // @beta
 export function appendTextAnnotationGeometry(props: AppendTextAnnotationGeometryArgs): boolean;
@@ -1532,6 +1536,9 @@ export interface ComputedProjectExtents {
 }
 
 // @beta
+export function computeElbowDirection(attachmentPoint: Point3d, frameCurve: Loop | Path, elbowLength: number): Vector3d | undefined;
+
+// @beta
 export function computeFrame(args: ComputeFrameArgs): Loop | Path;
 
 // @beta
@@ -1562,6 +1569,9 @@ export interface ComputeIntervalPointsArgs extends ComputeFrameArgs {
 
 // @beta
 export function computeLayoutTextBlockResult(args: LayoutTextBlockArgs): TextBlockLayoutResult;
+
+// @beta
+export function computeLeaderAttachmentPoint(leader: TextAnnotationLeader, frameCurve: Loop | Path, textLayout: TextBlockLayout, transform: Transform): Point3d | undefined;
 
 // @public
 export interface ComputeProjectExtentsOptions {
