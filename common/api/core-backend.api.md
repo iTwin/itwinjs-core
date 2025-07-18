@@ -32,6 +32,7 @@ import { ChangedModels } from '@itwin/core-common';
 import { ChangedValueState } from '@itwin/core-common';
 import { ChangeOpCode } from '@itwin/core-common';
 import { ChangesetFileProps } from '@itwin/core-common';
+import { ChangesetHealthStats } from '@itwin/core-common';
 import { ChangesetId } from '@itwin/core-common';
 import { ChangesetIdWithIndex } from '@itwin/core-common';
 import { ChangesetIndex } from '@itwin/core-common';
@@ -541,10 +542,16 @@ export class BriefcaseDb extends IModelDb {
     readonly briefcaseId: BriefcaseId;
     // (undocumented)
     close(): void;
+    // (undocumented)
+    disableChangesetStatTracking(): Promise<void>;
+    // (undocumented)
+    enableChangesetStatTracking(): Promise<void>;
     // @internal
     executeWritable(func: () => Promise<void>): Promise<void>;
     // (undocumented)
     static findByKey(key: string): BriefcaseDb;
+    // (undocumented)
+    getAllChangesetHealthData(): Promise<ChangesetHealthStats[]>;
     get isBriefcase(): boolean;
     get iTwinId(): GuidString;
     // (undocumented)
