@@ -272,6 +272,21 @@ export class Entity {
   }
 
   /** @internal */
+  public getMetaDataSync(): EntityClass | RelationshipClass {
+    if (this._metadata) {
+      return this._metadata;
+    }
+
+    const ecClass = this.iModel.schemaContext.getSchemaItemSync(this.schemaItemKey, ECClass);
+    if (EntityClass.isEntityClass(ecClass) || RelationshipClass.isRelationshipClass(ecClass)) {
+      this._metadata = ecClass;
+      return this._metadata;
+    } else {
+      throw new Error(`Cannot get metadata for ${this.classFullName}`);
+    }
+  }
+  
+  /** @internal */
   public static get protectedOperations(): string[] { return []; }
 
   /** return whether this Entity class is a subclass of another Entity class

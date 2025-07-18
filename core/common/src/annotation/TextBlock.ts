@@ -6,6 +6,7 @@
  * @module Annotation
  */
 
+import { assert, Id64String } from "@itwin/core-bentley";
 import { TextStyleSettingsProps } from "./TextStyle";
 
 /** Options supplied to [[TextBlockComponent.applyStyle]] to control how the style is applied to the component and its child components.
@@ -96,7 +97,7 @@ export abstract class TextBlockComponent {
 
   /** Reset any [[styleOverrides]] applied to this component's [[TextStyle]]. */
   public clearStyleOverrides(): void {
-    this.styleOverrides = { };
+    this.styleOverrides = {};
   }
 
   /** Apply the [[TextStyle]] specified by `styleName` to this component, optionally preserving [[styleOverrides]] and/or preventing propagation to sub-components. */
@@ -157,13 +158,13 @@ export abstract class TextBlockComponent {
 /**
  * @beta
  */
-export type Run = TextRun | FractionRun | TabRun | LineBreakRun;
+export type Run = TextRun | FractionRun | TabRun | LineBreakRun | FieldRun;
 
 /** The JSON representation of a [[Run]].
  * Use the `type` field to discriminate between the different kinds of runs.
  * @beta
  */
-export type RunProps = TextRunProps | FractionRunProps | TabRunProps | LineBreakRunProps;
+export type RunProps = TextRunProps | FractionRunProps | TabRunProps | LineBreakRunProps | FieldRunProps;
 
 /** A sequence of characters within a [[Paragraph]] that share a single style. Runs are the leaf nodes of a [[TextBlock]] document. When laid out for display, a single run may span
  * multiple lines, but it will never contain different styling.
@@ -180,6 +181,7 @@ export namespace Run { // eslint-disable-line @typescript-eslint/no-redeclare
       case "fraction": return FractionRun.create(props);
       case "tab": return TabRun.create(props);
       case "linebreak": return LineBreakRun.create(props);
+      case "field": return FieldRun.create(props);
     }
   }
 }
@@ -384,11 +386,11 @@ export class TabRun extends TextBlockComponent {
     return new TabRun(props);
   }
 
-    /**
-   * Converts a [[TabRun]] to its string representation.
-   * If the `tabsAsSpaces` option is provided, returns a string of spaces of the specified length.
-   * Otherwise, returns a tab character ("\t").
-   */
+  /**
+ * Converts a [[TabRun]] to its string representation.
+ * If the `tabsAsSpaces` option is provided, returns a string of spaces of the specified length.
+ * Otherwise, returns a tab character ("\t").
+ */
   public override stringify(options?: TextBlockStringifyOptions): string {
     if (options?.tabsAsSpaces) {
       return " ".repeat(options.tabsAsSpaces);
@@ -399,6 +401,143 @@ export class TabRun extends TextBlockComponent {
 
   public override equals(other: TextBlockComponent): boolean {
     return other instanceof TabRun && super.equals(other);
+  }
+}
+
+/** A chain of property accesses that resolves to a primitive value that forms the basis of the displayed content
+ * of a [[FieldRun]].
+ * The chain may traverse through structs, arrays, and JSON objects.
+* ###TODO examples
+ * @beta
+ */
+export interface FieldPropertyPath {
+  /** The name of the BIS property. */
+  propertyName: string;
+  /** Optional accessors for arrays, structs, and/or JSON object properties. */
+  accessors?: Array<string | number>;
+}
+
+export interface FieldPropertyHost {
+  elementId: Id64String;
+  /** The name of the schema containing the class identified by [[className]]. */
+  schemaName: string;
+  /** The name of the exact class (not a subclass) containing the first property in [[FieldRun.propertyPath]]. */
+  className: string;
+}
+
+// ###TODO: figure out formatting (later).
+export type FieldFormatter = { [k: string]: any };
+
+export interface FieldRunProps extends TextBlockComponentProps {
+  readonly type: "field";
+  propertyHost: FieldPropertyHost;
+  propertyPath: FieldPropertyPath;
+  formatter?: FieldFormatter;
+  cachedContent?: string;
+}
+
+export class FieldRun extends TextBlockComponent {
+  public static invalidContentIndicator = "####"; // maybe this should be specified by the text style?
+
+  public readonly type = "field";
+  public readonly propertyHost: Readonly<FieldPropertyHost>;
+  public readonly propertyPath: Readonly<FieldPropertyPath>;
+  public readonly formatter?: FieldFormatter;
+  private _cachedContent: string;
+
+  public get cachedContent(): string {
+    return this._cachedContent;
+  }
+
+  /** @internal Used by core-backend when re-evaluating field content. */
+  public setCachedContent(content: string | undefined): void {
+    this._cachedContent = content ?? FieldRun.invalidContentIndicator;
+  }
+
+  private constructor(props: Omit<FieldRunProps, "type">) {
+    super(props);
+
+    this._cachedContent = props.cachedContent ?? FieldRun.invalidContentIndicator;
+    this.propertyHost = props.propertyHost
+    this.propertyPath = props.propertyPath;
+    this.formatter = props.formatter;
+  }
+
+  public static create(props: Omit<FieldRunProps, "type">): FieldRun {
+    return new FieldRun({
+      ...props,
+      propertyHost: { ...props.propertyHost },
+      propertyPath: structuredClone(props.propertyPath),
+      formatter: structuredClone(props.formatter),
+    });
+  }
+
+  public override toJSON(): FieldRunProps {
+    const json: FieldRunProps = {
+      ...super.toJSON(),
+      type: "field",
+      propertyHost: { ...this.propertyHost },
+      propertyPath: structuredClone(this.propertyPath),
+    };
+
+    if (this.cachedContent !== FieldRun.invalidContentIndicator) {
+      json.cachedContent = this.cachedContent;
+    }
+
+    if (this.formatter) {
+      json.formatter = structuredClone(this.formatter);
+    }
+
+    return json;
+  }
+
+  public override clone(): FieldRun {
+    return new FieldRun(this.toJSON());
+  }
+
+  public override stringify(): string {
+    return this.cachedContent;
+  }
+
+  public override equals(other: TextBlockComponent): boolean {
+    if (!(other instanceof FieldRun)) {
+      return false;
+    }
+
+    if (
+      this.propertyHost.elementId !== other.propertyHost.elementId ||
+      this.propertyHost.className !== other.propertyHost.className ||
+      this.propertyHost.schemaName !== other.propertyHost.schemaName
+    ) {
+      return false;
+    }
+
+    if (this.propertyPath.propertyName !== other.propertyPath.propertyName) {
+      return false;
+    }
+
+    const thisAccessors = this.propertyPath.accessors ?? [];
+    const otherAccessors = other.propertyPath.accessors ?? [];
+    if (thisAccessors.length !== otherAccessors.length) {
+      return false;
+    }
+
+    for (let i = 0; i < thisAccessors.length; i++) {
+      if (thisAccessors[i] !== otherAccessors[i]) {
+        return false;
+      }
+    }
+
+    if (this.formatter && other.formatter) {
+      // ###TODO better comparison of formatter objects.
+      if (JSON.stringify(this.formatter) !== JSON.stringify(other.formatter)) {
+        return false;
+      }
+    } else if (this.formatter || other.formatter) {
+      return false;
+    }
+
+    return true;
   }
 }
 

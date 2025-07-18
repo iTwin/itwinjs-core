@@ -143,6 +143,7 @@ function debugRunLayout(builder: ElementGeometry.Builder, layout: TextBlockLayou
     "linebreak": ColorDef.fromString("yellow"),
     "fraction": ColorDef.fromString("green"),
     "tab": ColorDef.fromString("aquamarine"),
+    "field": ColorDef.fromString("purple"),
   }
 
   layout.lines.forEach(line => {
