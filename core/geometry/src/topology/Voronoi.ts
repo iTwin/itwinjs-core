@@ -9,6 +9,7 @@
 import { CloneFunction, Dictionary, OrderedComparator } from "@itwin/core-bentley";
 import { Arc3d } from "../curve/Arc3d";
 import { CurveChain } from "../curve/CurveCollection";
+import { CurveCurve } from "../curve/CurveCurve";
 import { CurvePrimitive } from "../curve/CurvePrimitive";
 import { AnyRegion } from "../curve/CurveTypes";
 import { LineSegment3d } from "../curve/LineSegment3d";
@@ -26,6 +27,7 @@ import { SmallSystem } from "../numerics/SmallSystem";
 import { HalfEdge, HalfEdgeGraph, HalfEdgeMask } from "./Graph";
 import { HalfEdgeGraphMerge, HalfEdgeGraphOps } from "./Merging";
 import { Triangulator } from "./Triangulation";
+import { CurveLocationDetailPair } from "../curve/CurveLocationDetail";
 
 interface Line {
   start: XAndY;
@@ -297,7 +299,7 @@ export class Voronoi {
     return voronoiDiagram;
   }
   // create a half-edge graph for the colinear points; index is assigned to the edgeTag of each graph node
-  private static createLinearGraph(pointsWithIndices: [Point3d, number][]): HalfEdgeGraph {
+  private static createLinearXYGraph(pointsWithIndices: [Point3d, number][]): HalfEdgeGraph {
     const graph = new HalfEdgeGraph();
     let point0 = pointsWithIndices[0][0];
     let point1 = pointsWithIndices[1][0];
@@ -324,7 +326,7 @@ export class Voronoi {
     p0.z = p1.z = 0; // ignore z-coordinate
     const midPoint = Point3d.createAdd2Scaled(p0, 0.5, p1, 0.5);
     const perp = Vector3d.create(p0.y - p1.y, p1.x - p0.x);
-    const scale = 10;
+    const scale = 10000;
     const bisectorStart = Point3d.createAdd2Scaled(midPoint, 1, perp, -scale);
     const bisectorEnd = Point3d.createAdd2Scaled(midPoint, 1, perp, scale);
     const bisector: Line = { start: bisectorStart, end: bisectorEnd };
@@ -366,18 +368,19 @@ export class Voronoi {
   /**
    * Creates a Voronoi diagram from a set of points.
    * @param points An array of points; xy-only (z-coordinate is ignored). Points can be colinear.
+   * @param distanceTol Optional distance tolerance to use when comparing points; default is Geometry.smallMetricDistance.
    * @returns A HalfEdgeGraph representing the Voronoi diagram, or undefined if the input is invalid.
    */
-  public static createVoronoiFromPoints(points: Point3d[]): HalfEdgeGraph | undefined {
+  public static createVoronoiFromPoints(points: Point3d[], distanceTol: number = Geometry.smallMetricDistance): HalfEdgeGraph | undefined {
     if (!points || points.length < 2)
       return undefined;
     // remove duplicates
     const uniquePoints = Array.from(new Set(points.map(p => `${p.x},${p.y}`)))
       .map(p => p.split(',').map(Number))
       .map(p => Point3d.create(p[0], p[1]));
-    if (PolylineOps.isColinear(uniquePoints)) {
+    if (PolylineOps.isColinear(uniquePoints, distanceTol, true)) {
       const sortedPoints = uniquePoints.slice().sort((a, b) => a.x - b.x || a.y - b.y); // sort points by x, then y
-      const graph = Voronoi.createLinearGraph(sortedPoints.map(point => [point, 0]));
+      const graph = Voronoi.createLinearXYGraph(sortedPoints.map(point => [point, 0]));
       return graph ? Voronoi.createVoronoiForColinearPoints(graph) : undefined;
     } else {
       const graph = Triangulator.createTriangulatedGraphFromPoints(uniquePoints);
@@ -387,26 +390,26 @@ export class Voronoi {
   // find the Voronoi diagram for a set of points with child indices and
   // then combine Voronoi faces for each child index into a single region
   private static createVoronoiFromPointsWithIndices(
-    pointsWithIndices: [Point3d, number][], numChildren: number, tol: number,
+    pointsWithIndices: [Point3d, number][], numChildren: number, distanceTol: number,
   ): AnyRegion[] | undefined {
     if (!pointsWithIndices || pointsWithIndices.length < 2)
       return undefined;
     const comparePoints: OrderedComparator<Point3d> = (p0: Point3d, p1: Point3d) => {
-      if (p0.isAlmostEqual(p1, tol))
+      if (p0.isAlmostEqual(p1, distanceTol))
         return 0;
-      if (!Geometry.isAlmostEqualNumber(p0.x, p1.x, tol)) {
+      if (!Geometry.isAlmostEqualNumber(p0.x, p1.x, distanceTol)) {
         if (p0.x < p1.x)
           return -1;
         if (p0.x > p1.x)
           return 1;
       }
-      if (!Geometry.isAlmostEqualNumber(p0.y, p1.y, tol)) {
+      if (!Geometry.isAlmostEqualNumber(p0.y, p1.y, distanceTol)) {
         if (p0.y < p1.y)
           return -1;
         if (p0.y > p1.y)
           return 1;
       }
-      if (!Geometry.isAlmostEqualNumber(p0.z, p1.z, tol)) {
+      if (!Geometry.isAlmostEqualNumber(p0.z, p1.z, distanceTol)) {
         if (p0.z < p1.z)
           return -1;
         if (p0.z > p1.z)
@@ -422,9 +425,9 @@ export class Voronoi {
       pointToIndexDic.insert(point, index);
     let voronoiDiagram: HalfEdgeGraph | undefined;
     let graph: HalfEdgeGraph | undefined;
-    if (PolylineOps.isColinear(Array.from(pointToIndexDic.keys()))) {
+    if (PolylineOps.isColinear(Array.from(pointToIndexDic.keys()), distanceTol, true)) {
       const sortedPoints = pointToIndexDic.extractPairs().slice().sort((a, b) => a.key.x - b.key.x || a.key.y - b.key.y); // sort points by x, then y
-      graph = Voronoi.createLinearGraph(sortedPoints.map(item => [item.key, item.value]));
+      graph = Voronoi.createLinearXYGraph(sortedPoints.map(item => [item.key, item.value]));
       voronoiDiagram = graph ? Voronoi.createVoronoiForColinearPoints(graph) : undefined;
     } else {
       graph = Triangulator.createTriangulatedGraphFromPoints(Array.from(pointToIndexDic.keys()));
@@ -441,7 +444,7 @@ export class Voronoi {
           return true;
         }
       );
-      voronoiDiagram = graph ? Voronoi.createVoronoi(graph, tol) : undefined;
+      voronoiDiagram = graph ? Voronoi.createVoronoi(graph, distanceTol) : undefined;
     }
     if (!voronoiDiagram)
       return undefined;
@@ -496,17 +499,20 @@ export class Voronoi {
    * Creates a Voronoi diagram from a curve chain.
    * @param curveChain A curve chain; xy-only (z-coordinate is ignored).
    * @param strokeOptions Optional stroke options to control the sampling of the curve chain.
+   * @param distanceTol Optional distance tolerance to use when comparing points; default is Geometry.smallMetricDistance.
    * @returns An array of AnyRegion where each region representing a face of Voronoi diagram corresponding a child of curve
    * chain, or undefined if the input is invalid.
    */
   public static createVoronoiFromCurveChain(
-    curveChain: CurveChain, strokeOptions?: StrokeOptions, tol: number = Geometry.smallMetricDistance // strokePoints?: Point3d[],
+    curveChain: CurveChain, strokeOptions?: StrokeOptions, distanceTol: number = Geometry.smallMetricDistance,
   ): AnyRegion[] | undefined {
+    const children = curveChain.children;
+    if (!children || children.length <= 1)
+      return undefined;
     if (strokeOptions === undefined)
       strokeOptions = new StrokeOptions();
-    const children = curveChain.children;
-    // we should add start and end points to the pointsWithIndices array to
-    // ensure that the curve chain will be inside the Voronoi boundary rectangle
+    // add start and end points to the pointsWithIndices array to ensure that
+    // the curve chain will be inside the Voronoi boundary rectangle
     const startPoint = curveChain.startPoint();
     const endPoint = curveChain.endPoint();
     if (!children || !startPoint || !endPoint)
@@ -531,7 +537,31 @@ export class Voronoi {
       }
     }
     pointsWithIndices.push([endPoint, numChildren - 1]);
-    return Voronoi.createVoronoiFromPointsWithIndices(pointsWithIndices, numChildren, tol);
+    // add 2 equidistance points from children intersections
+    // distance should be small enough so no other points exist between the 2 points
+    let radius = 0.001;
+    if (strokeOptions.maxEdgeLength && radius > strokeOptions.maxEdgeLength)
+      radius = strokeOptions.maxEdgeLength / 2;
+    const addIntersectionPoints = (circle: Arc3d, child: CurvePrimitive, childIndex: number) => {
+      const intersections = CurveCurve.intersectionProjectedXYPairs(undefined, circle, false, child, false);
+      if (intersections.length === 0)
+        return false;
+      if (intersections.length > 1)
+        intersections.sort((a, b) => a.detailA.fraction - b.detailA.fraction);
+      pointsWithIndices.push([intersections[0].detailA.point, childIndex]);
+      return true;
+    };
+    for (let i = 1; i < numChildren; i++) {
+      const length = children[i].curveLength();
+      if (length < radius)
+        radius = length / 2;
+      const circle = Arc3d.createCenterNormalRadius(children[i].startPoint(), Vector3d.create(0, 0, 1), radius);
+      if (!addIntersectionPoints(circle, children[i - 1], i - 1))
+        return undefined;
+      if (!addIntersectionPoints(circle, children[i], i))
+        return undefined;
+    }
+    return Voronoi.createVoronoiFromPointsWithIndices(pointsWithIndices, numChildren, distanceTol);
   }
 }
 
