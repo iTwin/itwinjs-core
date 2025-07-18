@@ -1057,18 +1057,19 @@ export class HalfEdge implements HalfEdgeUserData {
   /**
    * Announce edges in the super face loop, starting with the instance.
    * * A super face admits a `faceSuccessor` traversal, where the next edge at the far vertex is the first one lacking `skipMask` in a `vertexPredecessor` traversal.
-   * @param skipMask mask on edges to skip.
-   * @param announceEdge function to call at each edge that is not skipped.
-   * @param announceSkipped optional function to call at each edge that is skipped.
+   * @param skipEdge mask preset on edges to skip, or a function that is called to decide whether to skip an edge.
+   * @param announceEdge function that is called at each edge that is not skipped.
+   * @param announceSkipped optional function that is called at each edge that is skipped.
    * @return whether a super face was found. Specifically, if a vertex loop has all edges with `skipMask` set, the return value is `false`.
    */
-  public announceEdgesInSuperFace(skipMask: HalfEdgeMask, announceEdge: NodeFunction, announceSkipped?: NodeFunction): boolean {
-    const maxIter = 1000; // safeguard against infinite loops
+  public announceEdgesInSuperFace(skipEdge: HalfEdgeMask | HalfEdgeToBooleanFunction, announceEdge: NodeFunction, announceSkipped?: NodeFunction): boolean {
+    const maxIter = 10000; // safeguard against infinite loops
     let iter = 0;
+    const mySkipEdge : HalfEdgeToBooleanFunction = skipEdge instanceof Function ? skipEdge : (he: HalfEdge) => he.isMaskSet(skipEdge);
     const findNextNodeAroundVertex = (he: HalfEdge): HalfEdge | undefined => {
       let vNode = he;
       do {
-        if (!vNode.isMaskSet(skipMask))
+        if (!mySkipEdge(vNode))
           return vNode;
         announceSkipped?.(vNode);
         vNode = vNode.vertexPredecessor;
