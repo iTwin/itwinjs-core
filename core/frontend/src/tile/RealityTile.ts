@@ -70,14 +70,17 @@ export class RealityTile extends Tile {
   protected _geometry?: RealityTileGeometry;
   private _everDisplayed = false;
   /** @internal */
-  // eslint-disable-next-line @typescript-eslint/naming-convention
-  public _reprojectionTransform?: Transform;
+  protected _reprojectionTransform?: Transform;
   private _reprojectedGraphic?: RenderGraphic;
   private readonly _geometricError?: number;
   /** @internal */
   protected _copyright?: string;
   /** @internal */
-  public override readonly tree: RealityTileTree
+  public override readonly tree: RealityTileTree;
+  /** @internal */
+  public get reprojectionTransform(): Transform | undefined {
+    return this._reprojectionTransform;
+  }
 
   /** @internal */
   public constructor(props: RealityTileParams, tree: RealityTileTree) {

@@ -8361,6 +8361,8 @@ export class RealityTile extends Tile {
     // @internal (undocumented)
     reproject(rootReprojection: Transform): void;
     // @internal (undocumented)
+    get reprojectionTransform(): Transform | undefined;
+    // @internal (undocumented)
     protected _reprojectionTransform?: Transform;
     // @internal (undocumented)
     requestContent(isCanceled: () => boolean): Promise<TileRequest.Response>;
