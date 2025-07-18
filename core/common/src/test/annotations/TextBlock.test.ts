@@ -126,22 +126,31 @@ describe("TextBlockComponent", () => {
 
     const tb = TextBlock.create(props);
 
-    expect(tb.paragraphs.length).to.equal(2);
+    expect(tb.root).to.equal(tb);
+    expect(tb.children?.length).to.equal(2);
 
-    const p0 = tb.paragraphs[0];
-    const p1 = tb.paragraphs[1];
+    const p0 = tb.children![0] as Paragraph;
+    const p1 = tb.children![1] as Paragraph;
 
     expect(p0.parent).to.equal(tb);
+    expect(p0.root).to.equal(tb);
     expect(p1.parent).to.equal(tb);
+    expect(p1.root).to.equal(tb);
 
     expect(p0.runs.length).to.equal(1);
-    p0.runs.forEach((run) => {
+    p0.runs.forEach((run, index) => {
+      expect(run.previousSibling).to.equal(p0.runs[index - 1]);
+      expect(run.nextSibling).to.equal(p0.runs[index + 1]);
       expect(run.parent).to.equal(p0);
+      expect(run.root).to.equal(tb);
     });
 
     expect(p1.runs.length).to.equal(4);
-    p1.runs.forEach((run) => {
+    p1.runs.forEach((run, index) => {
+      expect(run.previousSibling).to.equal(p1.runs[index - 1]);
+      expect(run.nextSibling).to.equal(p1.runs[index + 1]);
       expect(run.parent).to.equal(p1);
+      expect(run.root).to.equal(tb);
     });
   });
 });
