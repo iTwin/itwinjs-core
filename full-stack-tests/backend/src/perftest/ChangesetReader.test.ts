@@ -204,7 +204,7 @@ describe("ChangesetReaderAPI", async () => {
     rwIModel.close();
   });
 
-  it("Large Changeset Pull Performance", async () => {
+  it("Track changeset health stats", async () => {
     const adminToken = "super manager token";
     const iModelName = "LargeChangesetPullTest";
     const rwIModelId = await HubMock.createNewIModel({ iTwinId, iModelName, description: "TestSubject", accessToken: adminToken });
