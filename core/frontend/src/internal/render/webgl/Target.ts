@@ -904,6 +904,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
       edgeSettings: top.edgeSettings,
       transform: Transform.createIdentity(),
       clipVolume: top.clipVolume,
+      contourLine: top.contourLine,
     });
 
     this.pushState(state);

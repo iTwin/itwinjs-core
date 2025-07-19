@@ -1873,6 +1873,7 @@ class Compositor extends SceneCompositor {
       iModel: top.iModel,
       is3d: top.is3d,
       edgeSettings: top.edgeSettings,
+      contourLine: top.contourLine,
     });
 
     this._vcSetStencilRenderState = new RenderState();
