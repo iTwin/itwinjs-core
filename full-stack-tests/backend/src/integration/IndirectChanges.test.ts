@@ -7,10 +7,10 @@ import { assert } from "chai";
 import { BriefcaseDb, BriefcaseManager, IModelDb, IModelHost, SnapshotDb, Subject } from "@itwin/core-backend";
 import { HubMock } from "@itwin/core-backend/lib/cjs/internal/HubMock";
 import { IModelTestUtils, KnownTestLocations } from "@itwin/core-backend/lib/cjs/test";
-import { AccessToken, Guid, Id64String } from "@itwin/core-bentley";
+import { AccessToken, Guid, Id64String, IModelStatus } from "@itwin/core-bentley";
 import { describe } from "mocha";
 import { AzuriteTest } from "./AzuriteTest";
-import { IModel } from "@itwin/core-common";
+import { IModel, IModelError } from "@itwin/core-common";
 
 
 async function assertThrowsAsync<T>(test: () => Promise<T>, contains?: string) {
@@ -31,6 +31,14 @@ describe.only("Indirect changes flag on elements", () => {
   const user2AccessToken = "token 2";
   let version0: string;
   let iModelId: string;
+
+  before(async () => {
+    await IModelHost.startup();
+  });
+
+  after(async () => {
+    await IModelHost.shutdown();
+  });
 
   beforeEach(async () => {
     iTwinId = Guid.createValue();
@@ -69,6 +77,8 @@ describe.only("Indirect changes flag on elements", () => {
 
     const b1s3 = makeSubject(b1, "Subject 3", "Description 3", true);
     assert.isDefined(b1s3, "Subject 3 should be created in b1 as an indirect change");
+
+    b1.close();
   });
 
   it("Insert direct and indirect subjects and cross pull", async () => {
@@ -187,6 +197,64 @@ describe.only("Indirect changes flag on elements", () => {
     const b2AfterConflict = b2.elements.getElement<Subject>(subjectId);
     assert.isDefined(b2AfterConflict);
     assert.strictEqual(b2AfterConflict.description, "Modified description in b1");
+
+    b1.close();
+    b2.close();
+  });
+
+  it("Element deletion without locks", async () => {
+    // First create a subject that we can later delete
+    const b1 = await openNewBriefcase(user1AccessToken);
+    await b1.locks.acquireLocks({ shared: IModel.rootSubjectId });
+    const subjectId = makeSubject(b1, "Subject to Delete", "Will be deleted");
+    assert.isDefined(subjectId);
+    b1.saveChanges();
+    await b1.pushChanges({ description: "B1: Created subject for deletion test." });
+
+    const b2 = await openNewBriefcase(user2AccessToken);
+    await b2.pullChanges();
+
+    // Verify the subject exists in both briefcases
+    const elementInB1 = b1.elements.getElement<Subject>(subjectId);
+    assert.isDefined(elementInB1);
+    const elementInB2 = b2.elements.getElement<Subject>(subjectId);
+    assert.isDefined(elementInB2);
+
+    // Test that direct deletion requires a lock and fails without one
+    await assertThrowsAsync(async () => {
+      b2.elements.deleteElement(subjectId, { indirect: false });
+    }, "exclusive lock not held on element for delete");
+
+    // Test that indirect deletion works without a lock
+    b2.elements.deleteElement(subjectId, { indirect: true });
+    b2.saveChanges();
+    await b2.pushChanges({ description: "B2: Deleted subject indirectly." });
+
+    // Pull changes and verify the element is deleted
+    await b1.pullChanges();
+
+    // The element should no longer exist in either briefcase
+    assert.throws(() => {
+      try {
+        b1.elements.getElement<Subject>(subjectId);
+      } catch (err: unknown) {
+        assert.instanceOf(err, IModelError);
+        assert.strictEqual((err as IModelError).errorNumber, IModelStatus.NotFound);
+        assert.include((err as IModelError).message, `Element=${subjectId}`);
+        throw err;
+      }
+    });
+
+    assert.throws(() => {
+      try {
+        b2.elements.getElement<Subject>(subjectId);
+      } catch (err: unknown) {
+        assert.instanceOf(err, IModelError);
+        assert.strictEqual((err as IModelError).errorNumber, IModelStatus.NotFound);
+        assert.include((err as IModelError).message, `Element=${subjectId}`);
+        throw err;
+      }
+    });
 
     b1.close();
     b2.close();
