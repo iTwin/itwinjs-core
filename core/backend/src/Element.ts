@@ -16,7 +16,7 @@ import {
 } from "@itwin/core-common";
 import { ClipVector, LowAndHighXYZProps, Range3d, Transform, YawPitchRollAngles } from "@itwin/core-geometry";
 import { CustomHandledProperty, DeserializeEntityArgs, ECSqlRow, Entity } from "./Entity";
-import { IModelDb, InsertElementOptions } from "./IModelDb";
+import { EditOptions, IModelDb, InsertElementOptions } from "./IModelDb";
 import { IModelElementCloneContext } from "./IModelElementCloneContext";
 import { DefinitionModel, DrawingModel, PhysicalModel, SectionDrawingModel } from "./Model";
 import { SubjectOwnsSubjects } from "./NavigationRelationship";
@@ -54,6 +54,9 @@ export interface OnElementIdArg extends OnElementArg {
   model: Id64String;
   /** The federationGuid of the element affected by this method */
   federationGuid: GuidString;
+
+  /** Additional options for the edit operation, such as whether the change is indirect */
+  options?: EditOptions;
 }
 
 /** Argument for the `Element.onChildXxx` static methods
@@ -203,10 +206,10 @@ export class Element extends Entity {
    * @beta
    */
   protected static onInsert(arg: OnElementPropsArg): void {
-    const { iModel, props } = arg;
+    const { iModel, props, options } = arg;
     const operation = "insert";
-    iModel.channels[_verifyChannel](arg.props.model);
-    const isIndirectChange = (arg.options && arg.options.indirect === true);
+    iModel.channels[_verifyChannel](props.model);
+    const isIndirectChange = (options && options.indirect === true);
     if (!isIndirectChange) {
       iModel.locks.checkSharedLock(props.model, "model", operation); // inserting requires shared lock on model
       if (props.parent)   // inserting requires shared lock on parent, if present
@@ -235,9 +238,9 @@ export class Element extends Entity {
    * @beta
    */
   protected static onUpdate(arg: OnElementPropsArg): void {
-    const { iModel, props } = arg;
+    const { iModel, props, options } = arg;
     iModel.channels[_verifyChannel](props.model);
-    const isIndirectChange = (arg.options && arg.options.indirect === true);
+    const isIndirectChange = (options && options.indirect === true);
     if (!isIndirectChange) {
       iModel.locks.checkExclusiveLock(props.id!, "element", "update"); // eslint-disable-line @typescript-eslint/no-non-null-assertion
     }
@@ -261,8 +264,13 @@ export class Element extends Entity {
    * @beta
    */
   protected static onDelete(arg: OnElementIdArg): void {
-    arg.iModel.channels[_verifyChannel](arg.model);
-    arg.iModel.locks.checkExclusiveLock(arg.id, "element", "delete");
+    const { iModel, id, model, options } = arg;
+    iModel.channels[_verifyChannel](model);
+
+    // If the element is NOT an indirect change, it must hold an exclusive lock.
+    if (!options?.indirect) {
+      iModel.locks.checkExclusiveLock(id, "element", "delete");
+    }
   }
 
   /** Called after an Element was deleted.
