@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Support Contour Line on Section Drawing",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

@@ -9,7 +9,7 @@
 import { assert, dispose, Id64, Id64String } from "@itwin/core-bentley";
 import { Point2d, Point3d, Range3d, Transform, XAndY, XYZ } from "@itwin/core-geometry";
 import {
-  AmbientOcclusion, AnalysisStyle, Frustum, ImageBuffer, ImageBufferFormat, Npc, RenderMode, RenderTexture, ThematicDisplayMode, ViewFlags,
+  AmbientOcclusion, AnalysisStyle, ContourDisplay, Frustum, ImageBuffer, ImageBufferFormat, Npc, RenderMode, RenderTexture, ThematicDisplayMode, ViewFlags,
 } from "@itwin/core-common";
 import { ViewRect } from "../../../common/ViewRect";
 import { canvasToImageBuffer, canvasToResizedCanvasWithBars, imageBufferToCanvas } from "../../../common/ImageUtil";
@@ -265,6 +265,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     const drape = this.currentTextureDrape;
     return undefined === drape ? this.currentPlanarClassifier : drape;
   }
+  public get currentContours(): ContourDisplay | undefined { return this.currentBranch.contourLine; }
 
   public modelToView(modelPt: XYZ, result?: Point3d): Point3d {
     return this.uniforms.branch.modelViewMatrix.multiplyPoint3dQuietNormalize(modelPt, result);
@@ -528,7 +529,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
       vf = vf.with("ambientOcclusion", false);
     }
 
-    this.uniforms.branch.changeRenderPlan(vf, plan.is3d, plan.hline);
+    this.uniforms.branch.changeRenderPlan(vf, plan.is3d, plan.hline, plan.contours);
 
     this.changeFrustum(plan.frustum, plan.fraction, plan.is3d);
 
@@ -903,6 +904,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
       edgeSettings: top.edgeSettings,
       transform: Transform.createIdentity(),
       clipVolume: top.clipVolume,
+      contourLine: top.contourLine,
     });
 
     this.pushState(state);

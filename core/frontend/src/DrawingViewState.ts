@@ -216,6 +216,7 @@ class SectionAttachment {
         is3d: true,
         scale: { x: 1, y: 1 },
       },
+      contours: view.getDisplayStyle3d().settings.contours
     };
 
     this._viewFlagOverrides = { ...view.viewFlags, lighting: false, shadows: false };
