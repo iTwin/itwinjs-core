@@ -3,16 +3,17 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { FieldRun, RelationshipProps, TextBlock } from "@itwin/core-common";
+import { ECSqlValueType, FieldRun, RelationshipProps, TextBlock } from "@itwin/core-common";
 import { IModelDb } from "../../IModelDb";
-import { Id64String, Logger } from "@itwin/core-bentley";
+import { DbResult, Id64String, Logger } from "@itwin/core-bentley";
 import { BackendLoggerCategory } from "../../BackendLoggerCategory";
 import { XAndY, XYAndZ } from "@itwin/core-geometry";
 import { ITextAnnotation } from "../../annotations/ElementDrivesTextAnnotation";
 import { Entity } from "../../Entity";
-import { Property } from "@itwin/ecschema-metadata";
+import { EntityClass, Property } from "@itwin/ecschema-metadata";
+import { ECSqlValue } from "../../ECSqlStatement";
 
-export type FieldPropertyValue = boolean | number | string | Date | XAndY | XYAndZ;
+export type FieldPrimitiveValue = boolean | number | string | Date | XAndY | XYAndZ | Uint8Array;
 
 export interface FieldPropertyMetadata {
   readonly property: Property;
@@ -20,8 +21,8 @@ export interface FieldPropertyMetadata {
 }
 
 export interface FieldProperty {
-  value: FieldPropertyValue;
-  metadata?: FieldPropertyMetadata;
+  value: FieldPrimitiveValue;
+  metadata: FieldPropertyMetadata;
 }
 
 export interface UpdateFieldsContext {
@@ -31,49 +32,114 @@ export interface UpdateFieldsContext {
 }
 
 function getFieldProperty(field: FieldRun, iModel: IModelDb): FieldProperty | undefined {
+  const host = field.propertyHost;
+  let ecClass = iModel.schemaContext.getSchemaItemSync(host.schemaName, host.className);
+  if (!EntityClass.isEntityClass(ecClass)) {
+    return undefined;
+  }
+
   const { propertyName, accessors } = field.propertyPath;
-
-  if (!propertyName) {
+  let ecProp = ecClass.getPropertySync(propertyName);
+  if (!ecProp) {
     return undefined;
   }
 
-  const hostEntity: Entity | undefined = iModel.elements.tryGetElement(field.propertyHost.elementId);
-  if (!hostEntity) {
+  // ###TODO handle aspects.
+  const rootValue: ECSqlValue | undefined = iModel.withPreparedStatement(`SELECT ${propertyName} FROM ${host.schemaName}:${host.className} WHERE ECInstanceId=${host.elementId}`, (stmt) => {
+    if (stmt.step() === DbResult.BE_SQLITE_ROW) {
+      return stmt.getValue(0);
+    }
+
+    return undefined;
+  });
+
+  if (undefined === rootValue || rootValue.isNull) {
     return undefined;
   }
 
-  const hostClass = hostEntity.getMetaDataSync();
-  if (!hostClass.isSync(field.propertyHost.className, field.propertyHost.schemaName)) {
+  let curValue;
+  switch (rootValue.columnInfo.getType()) {
+    // Unsupported:
+    // case ECSqlValueType.Geometry:
+    // case ECSqlValueType.Navigation:
+    // case ECSqlValueType.Id:
+    case ECSqlValueType.Blob:
+      curValue = rootValue.getBlob();
+      break;
+    case ECSqlValueType.Boolean:
+      curValue = rootValue.getBoolean();
+      break;
+    case ECSqlValueType.DateTime:
+      curValue = rootValue.getDateTime();
+      break;
+    case ECSqlValueType.Double:
+      curValue = rootValue.getDouble();
+      break;
+    case ECSqlValueType.Guid:
+      curValue = rootValue.getGuid();
+      break;
+    case ECSqlValueType.Int:
+    case ECSqlValueType.Int64:
+      curValue = rootValue.getInteger();
+      break;
+    case ECSqlValueType.Point2d:
+      curValue = rootValue.getXAndY();
+      break;
+    case ECSqlValueType.Point3d:
+      curValue = rootValue.getXYAndZ();
+      break;
+    case ECSqlValueType.String:
+      curValue = rootValue.getString();
+      break;
+    case ECSqlValueType.Struct: {
+      // ###TODO look up struct ECClass
+      curValue = rootValue.getStruct();
+      break;
+    }
+    case ECSqlValueType.PrimitiveArray: {
+      curValue = rootValue.getArray();
+      break;
+    }
+    case ECSqlValueType.StructArray: {
+      // ###TODO look up struct ECClass
+      curValue = rootValue.getArray();
+      break;
+    }
+  }
+
+  if (undefined === curValue) {
     return undefined;
   }
 
-  let obj: any = (hostEntity as any)[propertyName];
   if (accessors) {
     for (const accessor of accessors) {
       if (typeof accessor === "number") {
-        if (!Array.isArray(obj)) {
+        if (!Array.isArray(curValue)) {
           return undefined;
         }
 
-        const index = accessor < 0 ? (obj.length + accessor) : accessor;
-        obj = obj[index];
+        const index: number = accessor < 0 ? (curValue.length + accessor) : accessor;
+        curValue = curValue[index];
       } else {
-        // ###TODO return undefined if obj is a primitive type - it may be an object like Point2d or Point3d.
-        if (typeof obj !== "object") {
+        // ###TODO return undefined if curValue is a primitive type - it may be an object like Point2d or Point3d.
+        if (typeof curValue !== "object") {
           return undefined;
         }
 
-        obj = obj?.[accessor];
+        curValue = curValue?.[accessor];
       }
       
-      if (obj === undefined) {
+      if (curValue === undefined) {
         return undefined;
       }
     }
   }
 
   // ###TODO return undefined if obj is not a primitive type
-  return { value: obj };
+  return {
+    value: curValue,
+    metadata: { property: ecProp },
+  };
 }
 
 export function createUpdateContext(hostElementId: string, iModel: IModelDb, deleted: boolean): UpdateFieldsContext {

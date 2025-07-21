@@ -6,7 +6,7 @@ import { expect } from "chai";
 import { Code, FieldPropertyHost, FieldPropertyPath, FieldRun, SubCategoryAppearance } from "@itwin/core-common";
 import { SnapshotDb } from "../../IModelDb";
 import { IModelTestUtils, TestPhysicalObjectProps } from "../IModelTestUtils";
-import { createUpdateContext, updateField } from "../../internal/annotations/fields";
+import { createUpdateContext, FieldProperty, updateField } from "../../internal/annotations/fields";
 import { Id64String } from "@itwin/core-bentley";
 import { SpatialCategory } from "../../Category";
 import { Point3d, YawPitchRollAngles } from "@itwin/core-geometry";
@@ -24,7 +24,7 @@ describe("updateField", () => {
 
   const createMockContext = (elementId: string, propertyValue?: string) => ({
     hostElementId: elementId,
-    getProperty: (field: FieldRun) => {
+    getProperty: (field: FieldRun): FieldProperty | undefined => {
       const propertyPath = field.propertyPath;
       if (
         propertyPath.propertyName === "mockProperty" &&
@@ -32,7 +32,7 @@ describe("updateField", () => {
         propertyPath.accessors?.[1] === "nestedProperty" &&
         propertyValue !== undefined
       ) {
-        return { value: propertyValue };
+        return { value: propertyValue, metadata: { } as any };
       }
       return undefined;
     },
