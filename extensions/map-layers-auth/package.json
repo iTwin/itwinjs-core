@@ -52,7 +52,7 @@
     "@types/sinon": "^17.0.2",
     "@types/sinon-chai": "^3.2.0",
     "chai": "^4.3.10",
-    "eslint": "^9.13.0",
+    "eslint": "^9.31.0",
     "internal-tools": "workspace:*",
     "mocha": "^11.1.0",
     "nyc": "^17.1.0",

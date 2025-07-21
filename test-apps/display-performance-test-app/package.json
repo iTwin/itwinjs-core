@@ -74,7 +74,7 @@
     "dotenv": "^16.4.5",
     "dotenv-expand": "^5.1.0",
     "electron": "^37.2.0",
-    "eslint": "^9.13.0",
+    "eslint": "^9.31.0",
     "express": "^4.21.2",
     "internal-tools": "workspace:*",
     "npm-run-all2": "^7.0.2",

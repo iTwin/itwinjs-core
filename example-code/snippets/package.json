@@ -55,7 +55,7 @@
     "chai": "^4.3.10",
     "chai-as-promised": "^7.1.1",
     "cpx2": "^8.0.0",
-    "eslint": "^9.13.0",
+    "eslint": "^9.31.0",
     "mkdirp": "^1.0.4",
     "mocha": "^11.1.0",
     "npm-run-all2": "^7.0.2",

@@ -63,7 +63,7 @@
     "chai": "^4.3.10",
     "chai-as-promised": "^7.1.1",
     "cpx2": "^8.0.0",
-    "eslint": "^9.13.0",
+    "eslint": "^9.31.0",
     "internal-tools": "workspace:*",
     "jsdom": "^26.0.0",
     "mocha": "^11.1.0",
