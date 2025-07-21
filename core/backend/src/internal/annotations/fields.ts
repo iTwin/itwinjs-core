@@ -10,10 +10,25 @@ import { BackendLoggerCategory } from "../../BackendLoggerCategory";
 import { XAndY, XYAndZ } from "@itwin/core-geometry";
 import { ITextAnnotation } from "../../annotations/ElementDrivesTextAnnotation";
 import { Entity } from "../../Entity";
-import { EntityClass, Property } from "@itwin/ecschema-metadata";
+import { EntityClass, PrimitiveArrayProperty, Property } from "@itwin/ecschema-metadata";
 import { ECSqlValue } from "../../ECSqlStatement";
 
 export type FieldPrimitiveValue = boolean | number | string | Date | XAndY | XYAndZ | Uint8Array;
+type FieldStructValue = { [key: string]: any };
+type FieldArrayValue = FieldPrimitiveValue[] | FieldStructValue[];
+type FieldValue = {
+  primitive: FieldPrimitiveValue;
+  struct?: never;
+  array?: never;
+} | {
+  primitive?: never;
+  struct: FieldStructValue;
+  array?: never;
+} | {
+  primitive?: never;
+  struct?: never;
+  array: FieldArrayValue;
+}
 
 export interface FieldPropertyMetadata {
   readonly property: Property;
@@ -45,67 +60,55 @@ function getFieldProperty(field: FieldRun, iModel: IModelDb): FieldProperty | un
   }
 
   // ###TODO handle aspects.
-  const rootValue: ECSqlValue | undefined = iModel.withPreparedStatement(`SELECT ${propertyName} FROM ${host.schemaName}:${host.className} WHERE ECInstanceId=${host.elementId}`, (stmt) => {
-    if (stmt.step() === DbResult.BE_SQLITE_ROW) {
-      return stmt.getValue(0);
+  let curValue: FieldValue | undefined = iModel.withPreparedStatement(`SELECT ${propertyName} FROM ${host.schemaName}.${host.className} WHERE ECInstanceId=${host.elementId}`, (stmt) => {
+    if (stmt.step() !== DbResult.BE_SQLITE_ROW) {
+      return undefined;
+    }
+
+    const rootValue = stmt.getValue(0);
+    if (undefined === rootValue || rootValue.isNull) {
+      return undefined;
+    }
+
+    switch (rootValue.columnInfo.getType()) {
+      case ECSqlValueType.Blob:
+        return { primitive: rootValue.getBlob() };
+      case ECSqlValueType.Boolean:
+        return { primitive: rootValue.getBoolean() };
+      case ECSqlValueType.DateTime:
+        return { primitive: rootValue.getDateTime() };
+      case ECSqlValueType.Double:
+        return { primitive: rootValue.getDouble() };
+      case ECSqlValueType.Guid:
+        return { primitive: rootValue.getGuid() };
+      case ECSqlValueType.Int:
+      case ECSqlValueType.Int64:
+        return { primitive: rootValue.getInteger() };
+      case ECSqlValueType.Point2d:
+        return { primitive: rootValue.getXAndY() };
+      case ECSqlValueType.Point3d:
+        return { primitive: rootValue.getXYAndZ() };
+      case ECSqlValueType.String:
+        return { primitive: rootValue.getString() };
+      case ECSqlValueType.Struct: {
+        // ###TODO look up struct ECClass
+        return { struct: rootValue.getStruct() };
+      }
+      case ECSqlValueType.PrimitiveArray: {
+        return { array: rootValue.getArray() };
+      }
+      case ECSqlValueType.StructArray: {
+        // ###TODO look up struct ECClass
+        return { array: rootValue.getArray() };
+      }
+      // Unsupported:
+      // case ECSqlValueType.Geometry:
+      // case ECSqlValueType.Navigation:
+      // case ECSqlValueType.Id:
     }
 
     return undefined;
   });
-
-  if (undefined === rootValue || rootValue.isNull) {
-    return undefined;
-  }
-
-  let curValue;
-  switch (rootValue.columnInfo.getType()) {
-    // Unsupported:
-    // case ECSqlValueType.Geometry:
-    // case ECSqlValueType.Navigation:
-    // case ECSqlValueType.Id:
-    case ECSqlValueType.Blob:
-      curValue = rootValue.getBlob();
-      break;
-    case ECSqlValueType.Boolean:
-      curValue = rootValue.getBoolean();
-      break;
-    case ECSqlValueType.DateTime:
-      curValue = rootValue.getDateTime();
-      break;
-    case ECSqlValueType.Double:
-      curValue = rootValue.getDouble();
-      break;
-    case ECSqlValueType.Guid:
-      curValue = rootValue.getGuid();
-      break;
-    case ECSqlValueType.Int:
-    case ECSqlValueType.Int64:
-      curValue = rootValue.getInteger();
-      break;
-    case ECSqlValueType.Point2d:
-      curValue = rootValue.getXAndY();
-      break;
-    case ECSqlValueType.Point3d:
-      curValue = rootValue.getXYAndZ();
-      break;
-    case ECSqlValueType.String:
-      curValue = rootValue.getString();
-      break;
-    case ECSqlValueType.Struct: {
-      // ###TODO look up struct ECClass
-      curValue = rootValue.getStruct();
-      break;
-    }
-    case ECSqlValueType.PrimitiveArray: {
-      curValue = rootValue.getArray();
-      break;
-    }
-    case ECSqlValueType.StructArray: {
-      // ###TODO look up struct ECClass
-      curValue = rootValue.getArray();
-      break;
-    }
-  }
 
   if (undefined === curValue) {
     return undefined;
@@ -113,20 +116,38 @@ function getFieldProperty(field: FieldRun, iModel: IModelDb): FieldProperty | un
 
   if (accessors) {
     for (const accessor of accessors) {
+      if (undefined !== curValue.primitive) {
+        // Can't index into a primitive.
+        return undefined;
+      }
+
       if (typeof accessor === "number") {
-        if (!Array.isArray(curValue)) {
+        if (undefined === curValue.array || !ecProp.isArray()) {
           return undefined;
         }
 
-        const index: number = accessor < 0 ? (curValue.length + accessor) : accessor;
-        curValue = curValue[index];
+        const index: number = accessor < 0 ? (curValue.array.length + accessor) : accessor;
+        const item: FieldPrimitiveValue | FieldStructValue = curValue.array[index];
+        if (undefined === item) {
+          return undefined;
+        } else if (ecProp instanceof PrimitiveArrayProperty) {
+          curValue = { primitive: item as FieldPrimitiveValue };
+        } else {
+          // ###TODO look up struct ECClass
+          return undefined;
+        }
       } else {
-        // ###TODO return undefined if curValue is a primitive type - it may be an object like Point2d or Point3d.
-        if (typeof curValue !== "object") {
+        if (undefined === curValue.struct || !ecProp.isStruct()) {
           return undefined;
         }
 
-        curValue = curValue?.[accessor];
+        const item = curValue.struct[accessor];
+        if (undefined === item) {
+          return undefined;
+        }
+
+        // ###TODO look up the property in the struct by name, determine if it's primitive.
+        // If it isn't, look up struct ECClass
       }
       
       if (curValue === undefined) {
@@ -135,9 +156,12 @@ function getFieldProperty(field: FieldRun, iModel: IModelDb): FieldProperty | un
     }
   }
 
-  // ###TODO return undefined if obj is not a primitive type
+  if (undefined === curValue.primitive) {
+    return undefined;
+  }
+
   return {
-    value: curValue,
+    value: curValue.primitive,
     metadata: { property: ecProp },
   };
 }
