@@ -255,6 +255,7 @@ export class TextStyleResolver {
     return style;
   }
 
+  /** Resolves the effective style for a [TextAnnotationLeader]($common). The TextAnnotationLeader should be a sibling of the provided TextBlock. */
   public resolveTextAnnotationLeaderSettings(leader: TextAnnotationLeader): TextStyleSettings {
     let settings = this.blockSettings;
 

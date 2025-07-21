@@ -42,6 +42,7 @@ function getElementGeometryBuilderParams(iModel: IModelDb, modelId: Id64String, 
 export class TextAnnotation2d extends AnnotationElement2d {
   /** @internal */
   public static override get className(): string { return "TextAnnotation2d"; }
+  /** Optional string containing the data associated with the text annotation. */
   public textAnnotationData?: string;
 
   /** Extract the textual content, if present.
@@ -65,10 +66,17 @@ export class TextAnnotation2d extends AnnotationElement2d {
     this.textAnnotationData = props.textAnnotationData;
   }
 
+  /** Creates a new instance of `TextAnnotation2d` from its JSON representation. */
   public static fromJSON(props: TextAnnotation2dProps, iModel: IModelDb): TextAnnotation2d {
     return new TextAnnotation2d(props, iModel);
   }
 
+  /**
+   * Converts the current `TextAnnotation2d` instance to its JSON representation.
+   * It also computes the `elementGeometryBuilderParams` property used to create the GeometryStream.
+
+   * @inheritdoc
+   */
   public override toJSON(): TextAnnotation2dProps {
     const props = super.toJSON() as TextAnnotation2dProps;
     props.textAnnotationData = this.textAnnotationData;
@@ -79,6 +87,14 @@ export class TextAnnotation2d extends AnnotationElement2d {
     return props;
   }
 
+  /** Creates a new `TextAnnotation2d` instance with the specified properties.
+   * @param iModelDb The iModel.
+   * @param category The category ID for the annotation.
+   * @param model The model ID where the annotation will be placed.
+   * @param placement The placement properties for the annotation.
+   * @param textAnnotationData Optional [[TextAnnotation]] JSON representation used to create the `TextAnnotation2d`. Essentially an empty element if not provided.
+   * @param code Optional code for the element.
+   */
   public static create(iModelDb: IModelDb, category: Id64String, model: Id64String, placement: Placement2dProps, textAnnotationData?: TextAnnotationProps, code?: CodeProps): TextAnnotation2d {
     const props: TextAnnotation2dProps = {
       classFullName: this.classFullName,
@@ -111,6 +127,10 @@ export class TextAnnotation2d extends AnnotationElement2d {
     this.updateGeometry(arg.iModel, arg.props as TextAnnotation2dProps);
   }
 
+  /**
+   * Populates the `elementGeometryBuilderParams` property in the [textAnnotation2dProps]($common).
+   * It only does this if the `elementGeometryBuilderParams` is not already set and if there is actually a text annotation to produce geometry for.
+   */
   protected static updateGeometry(iModelDb: IModelDb, props: TextAnnotation2dProps): void {
     if (props.elementGeometryBuilderParams || !props.textAnnotationData) {
       return;
@@ -119,6 +139,10 @@ export class TextAnnotation2d extends AnnotationElement2d {
     props.elementGeometryBuilderParams = getElementGeometryBuilderParams(iModelDb, props.model, props.placement ?? Placement2d.fromJSON(), props.textAnnotationData, props.category);
   }
 
+  /**
+   * Collects reference IDs used by this `TextAnnotation2d`.
+   * @inheritdoc
+   */
   protected override collectReferenceIds(ids: EntityReferenceSet): void {
     super.collectReferenceIds(ids);
     const annotation = this.getAnnotation();
@@ -170,6 +194,7 @@ export class TextAnnotation2d extends AnnotationElement2d {
 export class TextAnnotation3d extends GraphicalElement3d {
   /** @internal */
   public static override get className(): string { return "TextAnnotation3d"; }
+  /** Optional string containing the data associated with the text annotation. */
   public textAnnotationData?: string;
 
   /** Extract the textual content, if present.
@@ -193,10 +218,16 @@ export class TextAnnotation3d extends GraphicalElement3d {
     this.textAnnotationData = props.textAnnotationData;
   }
 
+  /** Creates a new instance of `TextAnnotation3d` from its JSON representation. */
   public static fromJSON(props: TextAnnotation3dProps, iModel: IModelDb): TextAnnotation3d {
     return new TextAnnotation3d(props, iModel);
   }
 
+  /**
+   * Converts the current `TextAnnotation3d` instance to its JSON representation.
+   * It also computes the `elementGeometryBuilderParams` property used to create the GeometryStream.
+   * @inheritdoc
+   */
   public override toJSON(): TextAnnotation3dProps {
     const props = super.toJSON() as TextAnnotation3dProps;
     props.textAnnotationData = this.textAnnotationData;
@@ -207,6 +238,14 @@ export class TextAnnotation3d extends GraphicalElement3d {
     return props;
   }
 
+  /** Creates a new `TextAnnotation3d` instance with the specified properties.
+   * @param iModelDb The iModel.
+   * @param category The category ID for the annotation.
+   * @param model The model ID where the annotation will be placed.
+   * @param placement The placement properties for the annotation.
+   * @param textAnnotationData Optional [[TextAnnotation]] JSON representation used to create the `TextAnnotation3d`. Essentially an empty element if not provided.
+   * @param code Optional code for the element.
+   */
   public static create(iModelDb: IModelDb, category: Id64String, model: Id64String, placement: Placement3dProps, textAnnotationData?: TextAnnotationProps, code?: CodeProps): TextAnnotation3d {
     const props: TextAnnotation3dProps = {
       classFullName: this.classFullName,
@@ -239,6 +278,10 @@ export class TextAnnotation3d extends GraphicalElement3d {
     this.updateGeometry(arg.iModel, arg.props as TextAnnotation3dProps);
   }
 
+  /**
+   * Populates the `elementGeometryBuilderParams` property in the [textAnnotation3dProps]($common).
+   * It only does this if the `elementGeometryBuilderParams` is not already set and if there is actually a text annotation to produce geometry for.
+   */
   protected static updateGeometry(iModelDb: IModelDb, props: TextAnnotation3dProps): void {
     if (props.elementGeometryBuilderParams || !props.textAnnotationData) {
       return;
@@ -247,6 +290,10 @@ export class TextAnnotation3d extends GraphicalElement3d {
     props.elementGeometryBuilderParams = getElementGeometryBuilderParams(iModelDb, props.model, props.placement ?? Placement3d.fromJSON(), props.textAnnotationData, props.category);
   }
 
+  /**
+   * Collects reference IDs used by this `TextAnnotation3d`.
+   * @inheritdoc
+   */
   protected override collectReferenceIds(ids: EntityReferenceSet): void {
     super.collectReferenceIds(ids);
     const annotation = this.getAnnotation();
@@ -298,7 +345,14 @@ export class TextAnnotation3d extends GraphicalElement3d {
 export class AnnotationTextStyle extends DefinitionElement {
   /** @internal */
   public static override get className(): string { return "AnnotationTextStyle"; }
+  /**
+   * Optional text describing the `AnnotationTextStyle`.
+   */
   public description?: string;
+  /**
+   * The text style settings for the `AnnotationTextStyle`.
+   * @see [[TextStyleSettings]] for more information.
+   */
   public settings: TextStyleSettings;
 
   protected constructor(props: AnnotationTextStyleProps, iModel: IModelDb) {
@@ -308,11 +362,27 @@ export class AnnotationTextStyle extends DefinitionElement {
     this.settings = TextStyleSettings.fromJSON(settingsProps);
   }
 
+  /**
+   * Creates a Code for an `AnnotationTextStyle` given a name that is meant to be unique within the scope of the specified DefinitionModel.
+   *
+   * @param iModel - The IModelDb.
+   * @param definitionModelId - The ID of the DefinitionModel that contains the AnnotationTextStyle and provides the scope for its name.
+   * @param name - The AnnotationTextStyle name.
+   */
   public static createCode(iModel: IModelDb, definitionModelId: CodeScopeProps, name: string): Code {
     const codeSpec: CodeSpec = iModel.codeSpecs.getByName(BisCodeSpec.annotationTextStyle);
     return new Code({ spec: codeSpec.id, scope: definitionModelId, value: name });
   }
 
+  /**
+   * Creates a new instance of `AnnotationTextStyle` with the specified properties.
+   *
+   * @param iModelDb - The iModelDb.
+   * @param definitionModelId - The ID of the [[DefinitionModel]].
+   * @param name - The name to assign to the `AnnotationTextStyle`.
+   * @param settings - Optional text style settings used to create the `AnnotationTextStyle`. Essentially an empty element if not provided.
+   * @param description - Optional description for the `AnnotationTextStyle`.
+   */
   public static create(iModelDb: IModelDb, definitionModelId: Id64String, name: string, settings?: TextStyleSettingsProps, description?: string) {
     const props: AnnotationTextStyleProps = {
       classFullName: this.classFullName,
@@ -324,6 +394,10 @@ export class AnnotationTextStyle extends DefinitionElement {
     return new this(props, iModelDb);
   }
 
+  /**
+   * Converts the current `AnnotationTextStyle` instance to its JSON representation.
+   * @inheritdoc
+   */
   public override toJSON(): AnnotationTextStyleProps {
     const props = super.toJSON() as AnnotationTextStyleProps;
     props.description = this.description;
@@ -331,6 +405,7 @@ export class AnnotationTextStyle extends DefinitionElement {
     return props;
   }
 
+  /** Creates a new instance of `AnnotationTextStyle` from its JSON representation. */
   public static fromJSON(props: AnnotationTextStyleProps, iModel: IModelDb): AnnotationTextStyle {
     return new AnnotationTextStyle(props, iModel);
   }
