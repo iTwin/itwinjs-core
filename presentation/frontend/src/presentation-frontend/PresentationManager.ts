@@ -176,7 +176,7 @@ export interface PresentationManagerProps {
    * Callback that provides [SchemaContext]($ecschema-metadata) for supplied [IModelConnection]($core-frontend).
    * [SchemaContext]($ecschema-metadata) is used for getting metadata required for values formatting.
    *
-   * @deprecated in 5.1. [IModelConnection.schemaContext]($core-frontend) is now used by default instead.
+   * @deprecated in 5.1. By default [IModelConnection.schemaContext]($core-frontend) is now used instead.
    */
   schemaContextProvider?: (imodel: IModelConnection) => SchemaContext;
 

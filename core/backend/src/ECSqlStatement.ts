@@ -945,6 +945,7 @@ export class ECSqlValue {
  * @public
  * @deprecated in 4.11 - will not be removed until after 2026-06-13.  Use [IModelDb.createQueryReader]($backend) or [ECDb.createQueryReader]($backend) instead.
 */
+// eslint-disable-next-line @typescript-eslint/no-deprecated
 export class ECSqlValueIterator implements IterableIterator<ECSqlValue> {
   private _it: IModelJsNative.ECSqlValueIterator;
 
