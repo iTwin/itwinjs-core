@@ -16,7 +16,6 @@
     "clean": "rimraf -g ../../modules .rush/temp/package-deps*.json",
     "docs": "",
     "lint": "eslint \"./src/**/*.ts\" 1>&2",
-    "lint-deprecation": "eslint --fix -f visualstudio --no-inline-config -c ../../common/config/eslint/eslint.config.deprecation-policy.js \"./src/**/*.ts\"",
     "test": "",
     "cover": ""
   },
@@ -47,8 +46,8 @@
     "yargs": "^17.4.0"
   },
   "devDependencies": {
-    "@itwin/eslint-plugin": "5.2.2-dev.2",
+    "@itwin/eslint-plugin": "5.0.0-dev.1",
     "@types/node": "~20.17.0",
-    "eslint": "^9.31.0"
+    "eslint": "^9.13.0"
   }
 }

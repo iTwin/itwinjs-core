@@ -149,7 +149,6 @@ describe("PresentationManager", () => {
 
         // eslint-disable-next-line @typescript-eslint/no-deprecated
         async function getAreaDisplayValue(unitSystem: UnitSystemKey, defaultFormats?: FormatsMap): Promise<DisplayValue> {
-          // eslint-disable-next-line @typescript-eslint/no-deprecated
           using manager = new PresentationManager({ defaultFormats, ...config });
           const descriptor = await manager.getContentDescriptor({
             imodel,

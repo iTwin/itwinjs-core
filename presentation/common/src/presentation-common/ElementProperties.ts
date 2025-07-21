@@ -351,7 +351,6 @@ class ElementPropertiesBuilder implements IContentVisitor {
   public processPrimitiveValue(props: ProcessPrimitiveValueProps): void {
     this._currentAppender.append(props.field.label, {
       type: "primitive",
-      // eslint-disable-next-line @typescript-eslint/no-base-to-string
       value: props.displayValue?.toString() ?? "",
     });
   }
