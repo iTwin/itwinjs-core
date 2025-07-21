@@ -176,6 +176,100 @@ describe("Schema comparison tests", () => {
       validateDiagnostic(reporter.diagnostics[0], SchemaCompareCodes.SchemaDelta, DiagnosticType.Schema, schemaA, ["description", "descriptionA", "descriptionB"], schemaA);
     });
 
+    it("Missing vs empty description, diagnostic not reported", async () => {
+      const aItems = {
+      EntityA: {
+        schemaItemType: "EntityClass",
+        // description is missing (undefined)
+      },
+      RelationshipA: {
+        schemaItemType: "RelationshipClass",
+        strength: "referencing",
+        strengthDirection: "forward",
+        // description is missing (undefined)
+        source: {
+          multiplicity: "(0..*)",
+          roleLabel: "From",
+          polymorphic: false,
+          constraintClasses: ["SchemaA.EntityA"],
+        },
+        target: {
+          multiplicity: "(0..*)",
+          roleLabel: "To",
+          polymorphic: false,
+          constraintClasses: ["SchemaA.EntityA"],
+        },
+      },
+      EnumA: {
+        schemaItemType: "Enumeration",
+        type: "string",
+        // description is missing (undefined)
+        enumerators: [
+          {
+            name: "A",
+            value: "A",
+          },
+        ],
+      },
+      FormatA: {
+        schemaItemType: "Format",
+        type: "decimal",
+        // description is missing (undefined)
+      },
+    };
+
+    const bItems = {
+      EntityA: {
+        schemaItemType: "EntityClass",
+        description: "", // empty string
+      },
+      RelationshipA: {
+        schemaItemType: "RelationshipClass",
+        description: "",
+        strength: "referencing",
+        strengthDirection: "forward",
+        source: {
+          multiplicity: "(0..*)",
+          roleLabel: "From",
+          polymorphic: false,
+          constraintClasses: ["SchemaA.EntityA"],
+        },
+        target: {
+          multiplicity: "(0..*)",
+          roleLabel: "To",
+          polymorphic: false,
+          constraintClasses: ["SchemaA.EntityA"],
+        },
+      },
+    EnumA: {
+      schemaItemType: "Enumeration",
+      type: "string",
+      description: "",
+      enumerators: [
+        {
+          name: "A",
+          value: "A",
+        },
+      ],
+      },
+      FormatA: {
+        schemaItemType: "Format",
+        type: "decimal",
+        description: "",
+      },
+    };
+
+    const aJson = getSchemaJsonWithItems(schemaAJson, aItems);
+    const bJson = getSchemaJsonWithItems(schemaAJson, bItems);
+
+    const schemaA = await Schema.fromJson(aJson, contextA);
+    const schemaB = await Schema.fromJson(bJson, contextB);
+    const comparer = new SchemaComparer(reporter);
+
+    await comparer.compareSchemas(schemaA, schemaB);
+    expect(reporter.diagnostics.length).to.equal(0, "Expected no differences.");
+    });
+
     it("Different references, diagnostic reported for each schema", async () => {
       const aRefJson = {
         $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
