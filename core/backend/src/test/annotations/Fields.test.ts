@@ -198,6 +198,10 @@ describe.only("UpdateFieldsContext", () => {
       expectValue(100, { propertyName: "intProperty" });
     });
 
+    it("treats points as primitive values", () => {
+      
+    });
+
     it("returns a primitive array value", () => {
       
     });

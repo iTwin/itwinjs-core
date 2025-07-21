@@ -52,6 +52,7 @@ function getFieldProperty(field: FieldRun, iModel: IModelDb): FieldProperty | un
         const index = accessor < 0 ? (obj.length + accessor) : accessor;
         obj = obj[index];
       } else {
+        // ###TODO return undefined if obj is a primitive type - it may be an object like Point2d or Point3d.
         if (typeof obj !== "object") {
           return undefined;
         }
@@ -65,6 +66,7 @@ function getFieldProperty(field: FieldRun, iModel: IModelDb): FieldProperty | un
     }
   }
 
+  // ###TODO return undefined if obj is not a primitive type
   return { value: obj };
 }
 
