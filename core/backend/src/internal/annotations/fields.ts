@@ -10,12 +10,18 @@ import { BackendLoggerCategory } from "../../BackendLoggerCategory";
 import { XAndY, XYAndZ } from "@itwin/core-geometry";
 import { ITextAnnotation } from "../../annotations/ElementDrivesTextAnnotation";
 import { Entity } from "../../Entity";
+import { Property } from "@itwin/ecschema-metadata";
 
 export type FieldPropertyValue = boolean | number | string | Date | XAndY | XYAndZ;
 
+export interface FieldPropertyMetadata {
+  readonly property: Property;
+  // ###TODO probably want to know if it's a JSON property.
+}
+
 export interface FieldProperty {
   value: FieldPropertyValue;
-  metadata?: any; // ###TODO we'll need to know extended type, KOQ/units, etc.
+  metadata?: FieldPropertyMetadata;
 }
 
 export interface UpdateFieldsContext {

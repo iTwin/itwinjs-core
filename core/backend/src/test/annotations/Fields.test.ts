@@ -230,6 +230,14 @@ describe.only("UpdateFieldsContext", () => {
       expectValue(undefined, { propertyName: "nonExistentProperty" });
     });
 
+    it("returns undefined if the specified class does not exist", () => {
+      
+    });
+
+    it("returns undefined if the specified class is not an entity class", () => {
+      
+    });
+  
     it("returns undefined if the specified property is null", () => {
       
     });
