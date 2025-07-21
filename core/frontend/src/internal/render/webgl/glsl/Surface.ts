@@ -25,7 +25,7 @@ import { addColor } from "./Color";
 import { addChooseVec2WithBitFlagsFunction, addChooseVec3WithBitFlagFunction, addExtractNthBit, addFrustum, addShaderFlags } from "./Common";
 import { addUnpackAndNormalize2Bytes, decodeDepthRgb, unquantize2d } from "./Decode";
 import {
-  addFeatureSymbology, addMaxAlpha, addRenderOrder, addRenderOrderConstants, addSurfaceDiscard, addSurfaceHiliter, FeatureSymbologyOptions,
+  addFeatureSymbology, addMaxAlpha, addSurfaceDiscard, addSurfaceHiliter, FeatureSymbologyOptions,
 } from "./FeatureSymbology";
 import {
   addAltPickBufferOutputs, addFragColorWithPreMultipliedAlpha, addPickBufferOutputs, addWhiteOnWhiteReversal, assignFragColor,
@@ -241,16 +241,8 @@ const computePositionPrelude = `
   vec4 pos = MAT_MV * rawPos;
 `;
 
-// We used to use gl.polygonOffset() for blanking regions, but that doesn't work with logarithmic depth buffer which overwrites the
-// computed Z. Instead we must manually offset in vertex shader. We do this even if log depth is not enabled/supported.
-// NOTE: If log depth is *not* supported, then the hilite surface vertex shaders previously would still include this logic, but the
-// fragment shaders would not use v_eyeSpace. Some Ubuntu 20.04 graphics drivers cleverly and correctly optimized out the varying and the uniform,
-// causing an exception when gl.getProgramLocation() failed. So, omit this bit in that case.
 const adjustEyeSpace = `
   v_eyeSpace = pos.xyz;
-  const float blankingRegionOffset = 2.0 / 65536.0;
-  if (kRenderOrder_BlankingRegion == u_renderOrder)
-    v_eyeSpace.z -= blankingRegionOffset * (u_frustum.y - u_frustum.x);
 `;
 
 const computeConstantLodUvCustom = `
@@ -278,15 +270,12 @@ function createCommon(isInstanced: IsInstanced, animated: IsAnimated, shadowable
   addModelViewMatrix(vert);
 
   let computePosition = computePositionPrelude;
-  if (!isHiliter || System.instance.supportsLogZBuffer) {
+  if (!isHiliter) {
     addFrustum(builder);
-    addRenderOrder(builder.vert);
-    addRenderOrderConstants(builder.vert);
     builder.addVarying("v_eyeSpace", VariableType.Vec3);
-    computePosition += adjustEyeSpace;
+    computePosition += adjustEyeSpace + computeConstantLodUvCustom;
   }
-  if (!isHiliter)
-    computePosition += computeConstantLodUvCustom;
+
   computePosition += computePositionPostlude;
 
   vert.set(VertexShaderComponent.ComputePosition, computePosition);
@@ -567,6 +556,14 @@ function addNormal(builder: ProgramBuilder, animated: IsAnimated) {
 const scratchMatrix4d1 = Matrix4d.createIdentity();
 const scratchMatrix4d2 = Matrix4d.createIdentity();
 const scratchMatrix = new Matrix4();
+
+const surfaceDrapeTextureUnits = [
+  TextureUnit.SurfaceDraping0,
+  TextureUnit.SurfaceDraping1,
+  TextureUnit.SurfaceDraping2,
+  TextureUnit.SurfaceDraping3,
+];
+
 /** @internal */
 export function addTexture(builder: ProgramBuilder, animated: IsAnimated, isThematic: IsThematic, isPointCloud: boolean, isHilite: boolean, isMaplayer:boolean) {
   if (isThematic) {
@@ -630,21 +627,12 @@ export function addTexture(builder: ProgramBuilder, animated: IsAnimated, isThem
       });
     });
 
-    const textureUnits = [
-      TextureUnit.SurfaceDraping0,
-      TextureUnit.SurfaceDraping1,
-      TextureUnit.SurfaceDraping2,
-      TextureUnit.SurfaceDraping3,
-      TextureUnit.SurfaceDraping4,
-      TextureUnit.SurfaceDraping5,
-    ];
-
-    for (let i = 0; i < textureUnits.length; i++) {
+    for (let i = 0; i < surfaceDrapeTextureUnits.length; i++) {
       const textureLabel = `s_texture${i}`;
 
       builder.frag.addUniform(textureLabel, VariableType.Sampler2D, (prog) => {
         prog.addGraphicUniform(textureLabel, (uniform, params) => {
-          const textureUnit = textureUnits[i];
+          const textureUnit = surfaceDrapeTextureUnits[i];
           const mesh = params.geometry.asSurface!;
           const drapeTexture = mesh.textureParams ? mesh.textureParams.params[i].texture : undefined;
           if (drapeTexture !== undefined) {
@@ -774,7 +762,7 @@ export function createSurfaceBuilder(flags: TechniqueFlags): ProgramBuilder {
   addLighting(builder);
   addWhiteOnWhiteReversal(builder.frag);
   addApplyContours(builder);
-  addApplySurfaceDraping(builder.frag);
+  addApplySurfaceDraping(builder.frag, surfaceDrapeTextureUnits.length);
 
   if (flags.isTranslucent) {
     addTranslucency(builder);

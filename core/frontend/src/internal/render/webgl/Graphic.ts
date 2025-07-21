@@ -6,8 +6,8 @@
  * @module WebGL
  */
 
-import { assert, dispose, Id64String } from "@itwin/core-bentley";
-import { ElementAlignedBox3d, FeatureAppearanceProvider, RenderFeatureTable, ThematicDisplayMode, ViewFlags } from "@itwin/core-common";
+import { assert, dispose, Id64, Id64String } from "@itwin/core-bentley";
+import { ElementAlignedBox3d, FeatureAppearanceProvider, PackedFeature, RenderFeatureTable, ThematicDisplayMode, ViewFlags } from "@itwin/core-common";
 import { Range3d, Transform } from "@itwin/core-geometry";
 import { IModelConnection } from "../../../IModelConnection";
 import { FeatureSymbology } from "../../../render/FeatureSymbology";
@@ -29,14 +29,29 @@ import { BranchState } from "./BranchState";
 import { BatchOptions } from "../../../common/render/BatchOptions";
 import { Contours } from "./Contours";
 import { GraphicBranchFrustum } from "../GraphicBranchFrustum";
+import { computeDimensions } from "../../../common/internal/render/VertexTable";
+import { System } from "./System";
+import { LookupTexture, TextureHandle } from "./Texture";
+import { GL } from "./GL";
 
 /** @internal */
 export abstract class Graphic extends RenderGraphic implements WebGLDisposable {
+  private _blankingFill?: boolean;
+  
   public abstract addCommands(_commands: RenderCommands): void;
   public abstract get isDisposed(): boolean;
   public abstract get isPickable(): boolean;
   public addHiliteCommands(_commands: RenderCommands, _pass: RenderPass): void { assert(false); }
   public toPrimitive(): Primitive | undefined { return undefined; }
+  protected abstract get _hasBlankingFill(): boolean;
+
+  public get hasBlankingFill(): boolean {
+    if (undefined === this._blankingFill) {
+      this._blankingFill = this._hasBlankingFill;
+    }
+
+    return this._blankingFill;
+  }
 }
 
 export class GraphicOwner extends Graphic {
@@ -74,6 +89,9 @@ export class GraphicOwner extends Graphic {
   }
   public override toPrimitive(): Primitive | undefined {
     return this._graphic.toPrimitive();
+  }
+  protected override get _hasBlankingFill() {
+    return this._graphic.hasBlankingFill;
   }
 }
 
@@ -231,15 +249,42 @@ export class PerTargetData {
   }
 }
 
+/** @internal exported for unit tests. */
+export function createElementIndexLUT(featureTable: RenderFeatureTable, maxDimension: number, preserveData?: boolean): LookupTexture | undefined {
+  const { width, height } = computeDimensions(featureTable.numFeatures, 1, 0, maxDimension);
+  const buffer = new Uint32Array(width * height);
+
+  let curElementIndex = 0;
+  const elementIdToIndex = new Id64.Uint32Map<number>();
+  for (const feature of featureTable.iterable(PackedFeature.createWithIndex())) {
+    let elementIndex = elementIdToIndex.get(feature.elementId.lower, feature.elementId.upper);
+    if (undefined === elementIndex) {
+      // We write the element index as RGBA to the contour pick buffer output.
+      // A zero in the R (low) byte indicates the fragment was not produced by a contour line.
+      // A zero R and non-zero G, B, and/or A indicate the index of the element that produced the fragment.
+      // All zeroes indicates neither.
+      // Assign element indices as multiples of 0x100, starting at 0x100, to ensure zero R and non-zero G, B, and/or A.
+      elementIndex = curElementIndex = curElementIndex + 0x100;
+      elementIdToIndex.set(feature.elementId.lower, feature.elementId.upper, elementIndex);
+    }
+
+    buffer[feature.index] = elementIndex;
+  }
+
+  const handle = TextureHandle.createForData(width, height, new Uint8Array(buffer.buffer), preserveData, GL.Texture.WrapMode.ClampToEdge, GL.Texture.Format.Rgba);
+  return handle ? new LookupTexture(handle) : undefined;
+}
+
 /** @internal */
 export class Batch extends Graphic {
-  public readonly graphic: RenderGraphic;
+  public readonly graphic: Graphic;
   public readonly featureTable: RenderFeatureTable;
   public readonly range: ElementAlignedBox3d;
   private readonly _context: BatchContext = { batchId: 0 };
   /** Public strictly for tests. */
   public readonly perTargetData = new PerTargetData(this);
   public readonly options: BatchOptions;
+  public readonly elementIndexLUT?: LookupTexture;
 
   // Chiefly for debugging.
   public get tileId(): string | undefined {
@@ -273,12 +318,16 @@ export class Batch extends Graphic {
     this._context.inSectionDrawingAttachment = undefined;
   }
 
-  public constructor(graphic: RenderGraphic, features: RenderFeatureTable, range: ElementAlignedBox3d, options?: BatchOptions) {
+  public constructor(graphic: Graphic, features: RenderFeatureTable, range: ElementAlignedBox3d, options?: BatchOptions) {
     super();
     this.graphic = graphic;
     this.featureTable = features;
     this.range = range;
     this.options = options ?? {};
+
+    if (this.hasBlankingFill) {
+      this.elementIndexLUT = createElementIndexLUT(features, System.instance.maxTextureSize);
+    }
   }
 
   private _isDisposed = false;
@@ -330,6 +379,10 @@ export class Batch extends Graphic {
 
   public onTargetDisposed(target: Target) {
     this.perTargetData.onTargetDisposed(target);
+  }
+
+  protected override get _hasBlankingFill() {
+    return this.graphic.hasBlankingFill;
   }
 }
 
@@ -431,6 +484,10 @@ export class Branch extends Graphic {
     if (this.shouldAddCommands(commands))
       commands.addHiliteBranch(this, pass);
   }
+
+  protected override get _hasBlankingFill() {
+    return this.branch.entries.some((gf) => (gf as Graphic).hasBlankingFill);
+  }
 }
 
 /** @internal */
@@ -475,6 +532,10 @@ export class AnimationTransformBranch extends Graphic {
     commands.target.currentAnimationTransformNodeId = this.nodeId;
     this.graphic.addHiliteCommands(commands, pass);
     commands.target.currentAnimationTransformNodeId = undefined;
+  }
+
+  protected override get _hasBlankingFill() {
+    return this.graphic.hasBlankingFill;
   }
 }
 
@@ -533,5 +594,9 @@ export class GraphicsArray extends Graphic {
   public override unionRange(range: Range3d) {
     for (const graphic of this.graphics)
       graphic.unionRange(range);
+  }
+
+  protected override get _hasBlankingFill() {
+    return this.graphics.some((x) => (x as Graphic).hasBlankingFill);
   }
 }
